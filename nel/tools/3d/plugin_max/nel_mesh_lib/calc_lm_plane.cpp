@@ -2,7 +2,7 @@
  * This is a sub-module for calculating ligtmaps
  * This is the code of the plane wich regroup lightmap faces
  *
- * $Id: calc_lm_plane.cpp,v 1.7 2004/01/29 10:39:33 besson Exp $
+ * $Id: calc_lm_plane.cpp,v 1.8 2004/01/30 13:56:47 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,8 +81,9 @@ void SLMPlane::copyColToBitmap8 (CBitmap* pImage, uint32 nLayerNb)
 	float r, g, b;
 	for( uint32 i = 0; i < w*h; ++i )
 	{
-		// if we are in multiply x2 we have to set the following value to 127.0
-		const float fMult = 255.0f;
+		// if we are in multiply x2 we have to set the following value to 127.0 else set to 255.0
+		const float fMult = 127.0f;
+
 		r = fMult * col[i+w*h*nLayerNb].R;
 		if (r > 255.0f) r = 255.0f;
 
@@ -120,8 +121,9 @@ void SLMPlane::copyColToBitmap32 (CBitmap* pImage, uint32 nLayerNb)
 
 	for( uint32 i = 0; i < w*h; ++i )
 	{
-		// if we are in multiply x2 we have to set the following value to 127.0
-		const float fMult = 255.0;
+		// if we are in multiply x2 we have to set the following value to 127.0 else set to 255.0
+		const float fMult = 127.0;
+		
 		if( (fMult*col[i+w*h*nLayerNb].R) > 255.0 )
 			vBitmap[4*i+0] = 255;
 		else

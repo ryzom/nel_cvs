@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.49 2004/01/29 10:39:33 besson Exp $
+ * $Id: calc_lm.cpp,v 1.50 2004/01/30 13:58:22 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2226,8 +2226,11 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			thetext = "Warning ";
 			thetext += ZeNode.GetName();
 			thetext = "have all faces NOT mapped (UV2)";
-			gOptions.FeedBack->setLine (11, thetext);
-			gOptions.FeedBack->update ();
+			if (gOptions.FeedBack != NULL)
+			{
+				gOptions.FeedBack->setLine (11, thetext);
+				gOptions.FeedBack->update ();
+			}
 			//MessageBox( NULL, thetext.c_str(), "LightMap ERROR", MB_OK|MB_ICONERROR );
 			if (InfoLog)
 				InfoLog->display("CalculateLM : %d ms\n", timeGetTime()-t);
@@ -2546,12 +2549,38 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 					mprintf (message);
 				}
 			}
-			pLightMap->setUploadFormat (ITexture::RGB565);
+
+			if (gOptions.b8BitsLightmap)
+				pLightMap->setUploadFormat (ITexture::Luminance);
+			else
+				pLightMap->setUploadFormat (ITexture::RGB565);
+
 			pLightMap->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 			pLightMap->setAllowDegradation (false);
 			if (gOptions.bShowLumel)
 				pLightMap->setFilterMode (ITexture::Nearest, ITexture::NearestMipMapOff);
 
+			// If 8 bits lightmaps get the lighting factor
+			CRGBA lightingColor = CRGBA::White;
+
+			if (gOptions.b8BitsLightmap)
+			if( !vvLights.empty() && !vvLights[j].empty() )
+			{
+				// Take the first light that is not an ambiant light
+				for (uint32 li = 0; li < vvLights[j].size(); ++li)
+				{
+					SLightBuild &rTmpLB = AllLights[vvLights[j].operator[](li)];
+					if ((rTmpLB.bAmbientOnly == false) && (rTmpLB.Type != SLightBuild::LightAmbient))
+					{
+						lightingColor = rTmpLB.Diffuse;
+						break;
+					}
+				}
+				if (InfoLog)
+					InfoLog->display("%s LightMap %d Color (%d,%d,%d)\n", ZeNode.GetName(), j, lightingColor.R, lightingColor.G, lightingColor.B );
+			}
+
+			// Setup all material of the object
 			for( i = firstMaterial; i < pMBB->Materials.size(); ++i )
 			if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
 			{
@@ -2563,18 +2592,8 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 					// Set the light factor if it is a 8 bits lightmap
 					if (gOptions.b8BitsLightmap)
 					{
-						SLightBuild &rLB = AllLights[vvLights[j].operator[](0)];
-						// Take the first light that is not an ambiant light
-						for (uint32 li = 0; li < vvLights[j].size(); ++li)
-						{
-							SLightBuild &rTmpLB = AllLights[vvLights[j].operator[](li)];
-							if ((rTmpLB.bAmbientOnly == false) && (rTmpLB.Type != SLightBuild::LightAmbient))
-							{
-								rLB = rTmpLB;
-								break;
-							}
-						}
-						pMBB->Materials[i].setLightMapFactor( nLightMapNb, rLB.Diffuse );
+						pMBB->Materials[i].setLightMapColor ( nLightMapNb, lightingColor );
+						pMBB->Materials[i].setLightMapMulx2 (true);
 					}
 
 					addLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].AnimatedLight, 

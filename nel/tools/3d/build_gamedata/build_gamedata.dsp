@@ -848,6 +848,10 @@ SOURCE=.\processes\rbank\sh\build.sh
 # End Source File
 # Begin Source File
 
+SOURCE=.\processes\rbank\sh\clean.sh
+# End Source File
+# Begin Source File
+
 SOURCE=.\processes\rbank\cfg\config.cfg
 # End Source File
 # Begin Source File

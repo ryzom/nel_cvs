@@ -101,8 +101,8 @@ $build_ig_boxes
 `cat cfg/template.cfg | sed -e "s&rbank_bank_name&$rbank_bank_name&g" | sed -e "s&rbank_scratch_path&$rbank_temp_path&g" | sed -e "s&rbank_reduce_surfaces&$rbank_reduce_surfaces&g" | sed -e "s&rbank_smooth_borders&$rbank_smooth_borders&g" | sed -e "s&rbank_compute_elevation&$rbank_compute_elevation&g" | sed -e "s&rbank_compute_levels&$rbank_compute_levels&g" | sed -e "s&rbank_link_elements&$rbank_link_elements&g" | sed -e "s&rbank_cut_edges&$rbank_cut_edges&g" | sed -e "s&rbank_use_zone_square&$rbank_use_zone_square&g" | sed -e "s&rbank_zone_ul&$rbank_zone_ul&g" | sed -e "s&rbank_zone_dr&$rbank_zone_dr&g" > build_rbank.cfg`
 
 # List the zones to add
-cd ../zone/zone_lighted
-list_zone=`ls -1 *.zonel`
+cd ../zone/zone_welded
+list_zone=`ls -1 *.zonew`
 cd ../../rbank
 
 # Make a zone list
@@ -129,8 +129,8 @@ echo " " >> build_rbank.cfg
 
 # ******* PASS 1
 
-# For each ../zone/zone_lighted/*.zonel files, checks if the associated scratch/tesselation/*.tessel file
-# are up to date with the .zonel and the 8 neighbor .zonel file. If note, tesselate it.
+# For each ../zone/zone_welded/*.zonew files, checks if the associated scratch/tesselation/*.tessel file
+# are up to date with the .zonew and the 8 neighbor .zonew file. If note, tesselate it.
 
 # Log error
 echo >> log.log
@@ -148,7 +148,7 @@ echo
 for i in $list_zone ; do
 
 	# Get destination file
-	zone=`echo $i | sed -e 's/.zonel//'`
+	zone=`echo $i | sed -e 's/.zonew//'`
 
 	# Destination file
 	dest=`echo $rbank_temp_path"tesselation/"$zone".tessel"`
@@ -162,12 +162,12 @@ for i in $list_zone ; do
 	# For each zone near
 	if ( ! test -e $dest )
 	then
-		zone_to_build=`echo "../zone/zone_lighted/"$i`
+		zone_to_build=`echo "../zone/zone_welded/"$i`
 	else
 		for j in $near_zone ; do
-			  if ( test "../zone/zone_lighted/"$j.zonel -nt $dest )
+			  if ( test "../zone/zone_welded/"$j.zonew -nt $dest )
 			  then
-				zone_to_build=`echo "../zone/zone_lighted/"$i`
+				zone_to_build=`echo "../zone/zone_welded/"$i`
 			  fi
 		done
 	fi
@@ -189,8 +189,8 @@ done
 
 # ******* PASS 2
 
-# For each ../zone/zone_lighted/*.zonel files, checks if the associated scratch/tesselation/*.tessel file
-# are up to date with the .zonel and the 8 neighbor .zonel file. If note, tesselate it.
+# For each ../zone/zone_welded/*.zonew files, checks if the associated scratch/tesselation/*.tessel file
+# are up to date with the .zonew and the 8 neighbor .zonew file. If note, tesselate it.
 
 # Log error
 echo >> log.log
@@ -208,7 +208,7 @@ echo
 for i in $list_zone ; do
 
 	# Get destination file
-	zone=`echo $i | sed -e 's/.zonel//'`
+	zone=`echo $i | sed -e 's/.zonew//'`
 
 	# Source file
 	src=`echo $rbank_temp_path"tesselation/"$zone".tessel"`
@@ -244,7 +244,7 @@ echo
 for i in $list_zone ; do
 
 	# Get destination file
-	zone=`echo $i | sed -e 's/.zonel//'`
+	zone=`echo $i | sed -e 's/.zonew//'`
 
 	# Source file
 	src=`echo $rbank_temp_path"smooth/preproc/"$zone".lr"`

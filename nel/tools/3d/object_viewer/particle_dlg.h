@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.h,v 1.8 2001/07/24 09:03:20 vizerie Exp $
+ * $Id: particle_dlg.h,v 1.9 2002/04/25 08:30:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,6 +169,7 @@ protected:
 	virtual BOOL OnInitDialog();	
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

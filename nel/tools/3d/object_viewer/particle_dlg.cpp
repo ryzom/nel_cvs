@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.12 2001/07/24 09:03:20 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.13 2002/04/25 08:30:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -167,6 +167,7 @@ BEGIN_MESSAGE_MAP(CParticleDlg, CDialog)
 	ON_WM_DESTROY()
 	ON_WM_SIZE()
 	ON_WM_SHOWWINDOW()
+	ON_WM_CHAR()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -328,4 +329,14 @@ void CParticleDlg::go(void)
 		NL3D::CNELU::Driver->setupModelMatrix(_CurrPS->getSysMat()) ;
 		NL3D::CPSUtil::displayBBox(NL3D::CNELU::Driver, b, _CurrPS->getAutoComputeBBox() ? CRGBA::White : CRGBA::Red) ;
 	}
+}
+void CParticleDlg::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) 
+{
+	if (nChar == (UINT) 'p' || nChar == (UINT) 'P' || nChar == (UINT) ' ')
+	{
+		// simulate a start / stop on the system
+		StartStopDlg->toggle();
+	}
+	
+	CDialog::OnChar(nChar, nRepCnt, nFlags);
 }

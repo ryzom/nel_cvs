@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.19 2004/08/09 14:35:08 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.20 2004/08/09 17:51:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,7 @@
 #ifdef NL_PROFILE_DRIVER_D3D
 	#define H_AUTO_D3D(label) H_AUTO(label)
 #else
-	#define H_AUTO_D3D
+	#define H_AUTO_D3D(label)
 #endif
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.20 2002/07/01 16:06:08 legros Exp $
+ * $Id: entity_id.h,v 1.21 2002/07/10 13:29:36 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,9 @@ namespace NLMISC {
  */
 struct CEntityId
 {
+	// ---------------------------------------------------------------------------------
+	// static data
+
 	///The local num service id of the local machin.
 	static uint8 ServerId;
 	///The maximume of number that we could generate without generat an overtaking exception.
@@ -49,24 +52,44 @@ struct CEntityId
 	static const CEntityId Unknown;
 
 
-	/// Id of the service where the entity is.
-	uint64	DynamicId   :  8;
-	/// Id of the service who created the entity.
-	uint64	CreatorId   :  8;
-	/// Type of the entity.
-	uint64	Type :  8;
-	/// Local agent number.
-	uint64	Id : 40;
+	// ---------------------------------------------------------------------------------
+	// instantiated data
+
+	union 
+	{
+		struct
+		{
+		/// Id of the service where the entity is.
+		uint64	DynamicId   :  8;
+		/// Id of the service who created the entity.
+		uint64	CreatorId   :  8;
+		/// Type of the entity.
+		uint64	Type :  8;
+		/// Local agent number.
+		uint64	Id : 40;
+		};
+
+		uint64 FullId;
+	};
+
+
+	// ---------------------------------------------------------------------------------
+	// constructors
 
 	///\name Constructor
 	//@{
 
 	CEntityId ()
 	{
+		FullId = 0;
+		Type = 127;
+
+		/*
 		DynamicId = 0;
 		CreatorId = 0;
 		Type = 127;
 		Id = 0;
+		*/
 	}
 
 	CEntityId (uint8 type, uint64 id, uint8 creator, uint8 dynamic)
@@ -86,7 +109,9 @@ struct CEntityId
 	}
 
 	explicit CEntityId (uint64 p)
-	{			
+	{	
+		FullId = p;
+		/*
 		DynamicId = (p & 0xff);
 		p >>= 8;
 		CreatorId = (p & 0xff);
@@ -94,19 +119,25 @@ struct CEntityId
 		Type = (p & 0xff);
 		p >>= 8;
 		Id = (p);			
+		*/
 	}
 
 	CEntityId (const CEntityId &a)
 	{
+		FullId = a.FullId;
+		/*
 		DynamicId = a.DynamicId;
 		CreatorId = a.CreatorId;			
 		Type = a.Type;
 		Id = a.Id;
+		*/
 	}
 
 	///fill from read stream.
 	CEntityId (NLMISC::IStream &is)
 	{
+		is.serial(FullId);
+		/*
 		uint64 p;
 		is.serial(p);
 
@@ -117,6 +148,7 @@ struct CEntityId
 		Type = (p & 0xff);
 		p >>= 8;
 		Id = p;
+		*/
 	}
 
 	explicit CEntityId (const char *str)
@@ -156,16 +188,60 @@ struct CEntityId
 	//@}	
 	
 
+	// ---------------------------------------------------------------------------------
+	// accessors
+
+	uint64 getRawId() const
+	{
+		return FullId;
+		/*
+		return (uint64)*this;
+		*/
+	}
+
+	uint8 getType() const
+	{
+		return (uint8)Type;
+	}
+
+	uint64 getUniqueId() const
+	{
+		CEntityId id;
+		id.FullId = FullId;
+		id.DynamicId = 0;
+		return id.FullId;
+	}
+
+	bool isUnknownId() const
+	{
+		return Type == 127;
+	}
+
+
+	// ---------------------------------------------------------------------------------
+	// operators
 
 	///\name comparison of two CEntityId.
 	//@{
-	virtual bool operator == (const CEntityId &a) const
+	bool operator == (const CEntityId &a) const
+//	virtual bool operator == (const CEntityId &a) const
 	{
+
+		CEntityId testId ( FullId ^ a.FullId );
+		testId.DynamicId = 0;
+		return testId.FullId == 0;
+
+		/*
 		return (Id == a.Id && CreatorId == a.CreatorId && Type == a.Type);
+		*/
 	}
 
-	virtual bool operator < (const CEntityId &a) const
+	bool operator < (const CEntityId &a) const
+//	virtual bool operator < (const CEntityId &a) const
 	{
+		return getUniqueId() < a.getUniqueId();
+
+		/*
 		if (Type < a.Type)
 		{
 			return true;
@@ -182,10 +258,15 @@ struct CEntityId
 			}
 		}		
 		return false;
+		*/
 	}
 
-	virtual bool operator > (const CEntityId &a) const
+	bool operator > (const CEntityId &a) const
+//	virtual bool operator > (const CEntityId &a) const
 	{
+		return getUniqueId() > a.getUniqueId();
+
+		/*
 		if (Type > a.Type)
 		{
 			return true;
@@ -203,6 +284,7 @@ struct CEntityId
 		}
 		// lesser
 		return false;
+		*/
 	}
 	//@}
 
@@ -221,15 +303,20 @@ struct CEntityId
 
 	const CEntityId &operator = (const CEntityId &a)
 	{
+		FullId = a.FullId;
+		/*
 		DynamicId = a.DynamicId;
 		CreatorId = a.CreatorId;
 		Type = a.Type;
 		Id = a.Id;
+		*/
 		return *this;
 	}
 
 	const CEntityId &operator = (uint64 p)
 	{			
+		FullId = p;
+		/*
 		DynamicId = (uint64)(p & 0xff);
 		p >>= 8;
 		CreatorId = (uint64)(p & 0xff);
@@ -237,17 +324,18 @@ struct CEntityId
 		Type = (uint64)(p & 0xff);
 		p >>= 8;
 		Id = (uint64)(p);
-		
+		*/
 		return *this;
 	}
 
-	uint64 getRawId() const
-	{
-		return (uint64)*this;
-	}
+
+	// ---------------------------------------------------------------------------------
+	// other methods...
 
 	operator uint64 () const
 	{
+		return FullId;
+		/*
 		uint64 p = Id;
 		p <<= 8;
 		p |= (uint64)Type;
@@ -257,18 +345,34 @@ struct CEntityId
 		p |= (uint64)DynamicId;
 
 		return p;
+		*/
 	}
 
 	void setServiceId (uint8 sid)
 	{
+		/*
+		
+		  Daniel says: Who wrote this?! It's horrible!!!
+		  you're mixing statics and non-statics indisciminately
+		  This needs to be fixed!!!
+		
+		*/
+
 		DynamicId = sid;
 		CreatorId = sid;
 		ServerId = sid;
 	}
 
+
+	// ---------------------------------------------------------------------------------
+	// loading, saving, serialising...
+
 	/// Save the Id into an output stream.
-	virtual void save(NLMISC::IStream &os)
+	void save(NLMISC::IStream &os)
+//	virtual void save(NLMISC::IStream &os)
 	{
+		os.serial(FullId);
+		/*
 		uint64 p = Id;
 		p <<= 8;
 		p |= (uint64)Type;
@@ -277,11 +381,15 @@ struct CEntityId
 		p <<= 8;
 		p |= (uint64)DynamicId;
 		os.serial(p);
+		*/
 	}
 
 	/// Load the number from an input stream.
-	virtual void load(NLMISC::IStream &is)
+	void load(NLMISC::IStream &is)
+//	virtual void load(NLMISC::IStream &is)
 	{
+		is.serial(FullId);
+		/*
 		uint64 p;
 		is.serial(p);
 
@@ -292,10 +400,29 @@ struct CEntityId
 		Type = (uint64)(p & 0xff);
 		p >>= 8;
 		Id = (uint64)(p);
+		*/
 	}
 
+	void serial (NLMISC::IStream &f) throw (NLMISC::EStream)
+//	virtual void serial (NLMISC::IStream &f) throw (NLMISC::EStream)
+	{
+		if (f.isReading ())
+		{
+			load (f);
+		}
+		else
+		{				
+			save (f);
+		}
+	}
+
+
+	// ---------------------------------------------------------------------------------
+	// string convertions
+
 	/// Have a debug string.
-	virtual std::string toString() const
+	std::string toString() const
+//	virtual std::string toString() const
 	{
 		std::string id;
 		getDebugString (id);
@@ -303,7 +430,8 @@ struct CEntityId
 	}
 
 	/// Read from a debug string, use the same format as toString() (id:type:creator:dynamic) in hexadecimal
-	virtual void	fromString(const char *str)
+	void	fromString(const char *str)
+//	virtual void	fromString(const char *str)
 	{
 		uint64		id;
 		uint		type;
@@ -320,7 +448,8 @@ struct CEntityId
 	}
 	
 	/// Have a debug string.
-	virtual void getDebugString(std::string &str) const
+	void getDebugString(std::string &str) const
+//	virtual void getDebugString(std::string &str) const
 	{											
 		char b[256];
 		memset(b,0,255);
@@ -361,32 +490,17 @@ struct CEntityId
 //Sameh To be sure that the number is in hexa.
 		str += "0x" + std::string(b);
 	}
-
+/*
 	/// \name NLMISC::IStreamable method.
 	//@{
-	virtual std::string	getClassName ()
+	std::string	getClassName ()
+//	virtual std::string	getClassName ()
 	{
 		return std::string ("<CEntityId>");
 	}
 
-	virtual void serial (NLMISC::IStream &f) throw (NLMISC::EStream)
-	{
-		if (f.isReading ())
-		{
-			load (f);
-		}
-		else
-		{				
-			save (f);
-		}
-
-	}
-
-	uint8 getType() const
-	{
-		return (uint8)Type;
-	}
 	//@}
+*/
 
 //	friend std::stringstream &operator << (std::stringstream &__os, const CEntityId &__t);
 };	

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * 
  *
- * $Id: landscape.h,v 1.1 2001/07/11 16:09:03 legros Exp $
+ * $Id: landscape.h,v 1.2 2001/07/11 16:15:06 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,9 +25,6 @@
 
 #ifndef LANDSCAPE_H
 #define LANDSCAPE_H
-
-#include <nel/3d/u_scene.h>
-
 
 void	initLandscape();
 void	updateLandscape();

@@ -1,11 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
-<<<<<<< client.cpp
- * $Id: client.cpp,v 1.6 2001/07/11 16:11:36 lecroart Exp $
-=======
- * $Id: client.cpp,v 1.6 2001/07/11 16:11:36 lecroart Exp $
->>>>>>> 1.5
+ * $Id: client.cpp,v 1.7 2001/07/11 16:15:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,17 +37,11 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/path.h"
 #include "nel/misc/i18n.h"
-<<<<<<< client.cpp
-#include "nel/misc/config_file.h"
-
-=======
-
 #include "nel/misc/config_file.h"
 
 #include <string>
 #include <deque>
 
->>>>>>> 1.5
 #include <nel/3d/u_camera.h>
 #include <nel/3d/u_driver.h>
 #include <nel/3d/u_text_context.h>
@@ -101,7 +91,7 @@ int main(int argc, char **argv)
 //	CPath::addSearchPath (dataPath + "zones/");
 
 	// Create a driver
-	Driver=UDriver::createDriver();
+	Driver = UDriver::createDriver();
 
 	// Text context
 	Driver->setDisplay (UDriver::CMode(640, 480, 0));
@@ -113,10 +103,13 @@ int main(int argc, char **argv)
 	textContext->setFontSize (12);
 
 	// Create a scene
-	Scene=Driver->createScene();
+	Scene = Driver->createScene();
 
 	// Init the landscape using the previously created UScene
 	initLandscape();
+
+	// Init the command control
+	initCommands ();
 
 	pDriver->setMatrixMode2D11 ();
 	pDriver->drawQuad (0.1, 0.1, 0.9, 0.3, CRGBA (128, 255, 128, 128));
@@ -127,7 +120,10 @@ int main(int argc, char **argv)
 		Driver->clearBuffers (CRGBA (64,64,64,0));
 
 		// Update the landscape
-		updateLandscape();
+		updateLandscape ();
+
+		// Update the commands panel
+		updateCommands ();
 
 		// Render
 		Scene->render ();

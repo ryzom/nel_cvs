@@ -1,7 +1,7 @@
-/** \file landscape.cpp
- * Landscape management with user interface
+/** \file commands.cpp
+ * commands management with user interface
  *
- * $Id: commands.cpp,v 1.1 2001/07/11 16:11:45 lecroart Exp $
+ * $Id: commands.cpp,v 1.2 2001/07/11 16:15:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,43 +25,20 @@
 
 #include "nel/misc/types_nl.h"
 
-#include "nel/misc/command.h"
-#include "nel/misc/debug.h"
-#include "nel/misc/path.h"
-#include "nel/misc/i18n.h"
-#include "nel/misc/config_file.h"
-
-#include <string>
-#include <deque>
-
-#include <nel/3d/u_camera.h>
-#include <nel/3d/u_driver.h>
-#include <nel/3d/u_text_context.h>
-#include <nel/3d/u_instance.h>
-#include <nel/3d/u_scene.h>
-#include <nel/3d/u_3d_mouse_listener.h>
-#include <nel/3d/u_material.h>
-#include <nel/3d/u_landscape.h>
-
 #include "client.h"
 
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 
-ULandscape	*Landscape = NULL;
-
-void	initLandscape()
-{
-	Landscape = Scene->createLandscape ();
-	Landscape->loadBankFiles (ConfigFile.getVar("BankName").asString (), ConfigFile.getVar("FarBankName").asString ());
-	Landscape->setZonePath ("zones\\");
-}
-
-void	updateLandscape()
+void	initCommands()
 {
 }
 
-void	releaseLandscape()
+void	updateCommands()
+{
+}
+
+void	releaseCommands()
 {
 }

@@ -114,11 +114,23 @@ LINK32=link.exe
 # Name "client - Win32 ReleaseDebug"
 # Begin Source File
 
+SOURCE=.\client.cfg
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\client.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\client.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\commands.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\commands.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
-/** \file landscape.h
+/** \file commands.h
  * 
  *
- * $Id: commands.h,v 1.1 2001/07/11 16:11:45 lecroart Exp $
+ * $Id: commands.h,v 1.2 2001/07/11 16:15:06 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,16 +23,13 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef LANDSCAPE_H
-#define LANDSCAPE_H
+#ifndef COMMANDS_H
+#define COMMANDS_H
 
-#include <nel/3d/u_scene.h>
+void	initCommands();
+void	updateCommands();
+void	releaseCommands();
 
+#endif // COMMANDS_H
 
-void	initLandscape();
-void	updateLandscape();
-void	releaseLandscape();
-
-#endif // LANDSCAPE_H
-
-/* End of landscape.h */
+/* End of commands.h */

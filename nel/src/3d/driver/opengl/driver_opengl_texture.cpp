@@ -2,10 +2,10 @@
  * OpenGL driver implementation : setupTexture
  *
  * \todo yoyo: BUG with texture parameters. If parameters change are made between two renders, but the texture has not
- * changed (eg: only one texture in the whole world), those parameters are not bound!!! Also, like the TexEnvMode style,
- * a PackedParameter format should be done, to limit tests...
+ * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
+ * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.15 2001/01/11 13:57:25 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.16 2001/01/16 14:46:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ static	inline CTextureDrvInfosGL*	getTextureGl(ITexture& tex)
 
 // ***************************************************************************
 // Translation of TexFmt mode.
-static	inline GLint	getGlTextureFormat(ITexture& tex)
+inline GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 {
 	ITexture::TUploadFormat		texfmt= tex.getUploadFormat();
 
@@ -71,7 +71,24 @@ static	inline GLint	getGlTextureFormat(ITexture& tex)
 		}
 	}
 
-	// Get gl tex format.
+
+	// Get gl tex format, try S3TC compressed ones.
+	if(_Extensions.EXTTextureCompressionS3TC)
+	{
+		compressed= true;
+		// Try Compressed ones.
+		switch(texfmt)
+		{
+			case ITexture::DXTC1:		return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+			case ITexture::DXTC1Alpha:	return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+			case ITexture::DXTC3:		return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+			case ITexture::DXTC5:		return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		}
+	}
+
+
+	// Get standard gl tex format.
+	compressed= false;
 	switch(texfmt)
 	{
 		case ITexture::RGBA8888: return GL_RGBA8;
@@ -79,12 +96,6 @@ static	inline GLint	getGlTextureFormat(ITexture& tex)
 		case ITexture::RGBA5551: return GL_RGB5_A1;
 		case ITexture::RGB888: return GL_RGB8;
 		case ITexture::RGB565: return GL_RGB5;
-		// TODO_DXTC!!!!
-		case ITexture::DXTC1: return  GL_RGB8;
-		case ITexture::DXTC1Alpha: return GL_RGBA8;
-		case ITexture::DXTC3: return GL_RGBA8;
-		case ITexture::DXTC5: return GL_RGBA8;
-		// End tododxtc.
 		case ITexture::Luminance: return GL_LUMINANCE8;
 		case ITexture::Alpha: return GL_ALPHA8;
 		case ITexture::AlphaLuminance: return GL_LUMINANCE8_ALPHA8;
@@ -246,9 +257,12 @@ bool CDriverGL::setupTexture(ITexture& tex)
 				if(tex.getSize()>0)
 				{
 					// Get the correct texture format from texture...
-					GLint	glfmt= getGlTextureFormat(tex);
+					GLint	glfmt= getGlTextureFormat(tex, gltext->Compressed);
 
-					// TODO_DXTC
+					// TODO_DXTC if same format, and same mipmapOn/Off, use glTexCompressedImage*.
+					/*if(compatibleDXTCFormat(tex) && (tex.mipMapOff() || tex.getMipMapCount()>1) )
+					{
+					}*/
 					sint	nMipMaps;
 					tex.convertToType(CBitmap::RGBA);
 					if(tex.mipMapOn())
@@ -270,7 +284,9 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			}
 			// b. Load part of the texture case.
 			//==================================
-			else if (mustLoadPart)
+			// TODO_DXTC
+			// Replace parts of a compressed image. Maybe don't work with the actual system of invalidateRect()...
+			else if (mustLoadPart && !gltext->Compressed)
 			{
 				// Regenerate wanted part of the texture.
 				tex.generate();
@@ -279,9 +295,9 @@ bool CDriverGL::setupTexture(ITexture& tex)
 				{
 					// Get the correct texture format from texture...
 					//===============================================
-					GLint	glfmt= getGlTextureFormat(tex);
+					bool	dummy;
+					GLint	glfmt= getGlTextureFormat(tex, dummy);
 
-					// TODO_DXTC
 					sint	nMipMaps;
 					tex.convertToType(CBitmap::RGBA);
 					if(tex.mipMapOn())

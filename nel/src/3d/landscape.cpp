@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.35 2001/01/12 15:13:30 corvazier Exp $
+ * $Id: landscape.cpp,v 1.36 2001/01/16 14:46:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -458,6 +458,7 @@ ITexture		*CLandscape::findTileTexture(const std::string &textName)
 		TileTextureMap[textName]= text= new CTextureFile(textName);
 		text->setWrapS(ITexture::Clamp);
 		text->setWrapT(ITexture::Clamp);
+		text->setUploadFormat(ITexture::DXTC5);
 	}
 	return text;
 }

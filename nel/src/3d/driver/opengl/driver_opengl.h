@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.41 2001/01/11 17:29:24 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.42 2001/01/16 14:46:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,23 +63,28 @@ using NLMISC::CVector;
 class CTextureDrvInfosGL : public ITextureDrvInfos
 {
 public:
-		GLuint					ID;
-		// The current wrap modes assigned to the texture.
-		ITexture::TWrapMode		WrapS;
-		ITexture::TWrapMode		WrapT;
-		ITexture::TMagFilter	MagFilter;
-		ITexture::TMinFilter	MinFilter;
+	// The GL Id.
+	GLuint					ID;
+	// Is the internal format of the texture is a compressed one?
+	bool					Compressed;
 
-		CTextureDrvInfosGL()
-		{
-			// The id is auto created here.
-			glGenTextures(1,&ID);
-		}
-		~CTextureDrvInfosGL()
-		{
-			// The id is auto deleted here.
-			glDeleteTextures(1,&ID);
-		}
+	// The current wrap modes assigned to the texture.
+	ITexture::TWrapMode		WrapS;
+	ITexture::TWrapMode		WrapT;
+	ITexture::TMagFilter	MagFilter;
+	ITexture::TMinFilter	MinFilter;
+
+	CTextureDrvInfosGL()
+	{
+		// The id is auto created here.
+		glGenTextures(1,&ID);
+		Compressed= false;
+	}
+	~CTextureDrvInfosGL()
+	{
+		// The id is auto deleted here.
+		glDeleteTextures(1,&ID);
+	}
 };
 
 
@@ -227,6 +232,9 @@ private:
 	void					activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env);
 	void					activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env);
 	sint					getNbTextureStages() {return _Extensions.NbTextureStages;}
+
+	// According to extensions, retrieve GL tex format of the texture.
+	GLint					getGlTextureFormat(ITexture& tex, bool &compressed);
 
 };
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.2 2001/01/11 13:57:12 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.3 2001/01/16 14:46:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -203,6 +203,16 @@ static bool	setupNVVertexArrayRange(const char	*glext)
 }
 
 
+// *********************************
+static bool	setupEXTTextureCompressionS3TC(const char	*glext)
+{
+	if(strstr(glext, "GL_EXT_texture_compression_s3tc")==NULL)
+		return false;
+
+	return true;
+}
+
+
 // ***************************************************************************
 // Extension Check.
 void	registerGlExtensions(CGlExtensions &ext)
@@ -217,6 +227,9 @@ void	registerGlExtensions(CGlExtensions &ext)
 
 	ext.ARBTextureCompression= setupARBTextureCompression(glext);
 	ext.NVVertexArrayRange= setupNVVertexArrayRange(glext);
+
+	// Compression S3TC OK iff ARBTextureCompression.
+	ext.EXTTextureCompressionS3TC= (ext.ARBTextureCompression && setupEXTTextureCompressionS3TC(glext)); 
 }
 
 

@@ -8,6 +8,8 @@
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/script/interpret_message_action.h"
 #include "nel/ai/script/interpret_message_getvalue.h"
+#include "nel/ai/script/interpret_message_connect.h"
+#include "nel/ai/script/interpret_message_setvalue.h"
 #include "nel/ai/agent/main_agent_script.h"
 #include "nel/ai/agent/agent_digital.h"
 #include "nel/ai/agent/msg_group.h"
@@ -34,6 +36,8 @@
 #include "nel/ai/agent/msg_action.h"
 #include "nel/ai/agent/msg_getvalue.h"
 #include "nel/ai/agent/msg_on_change.h"
+#include "nel/ai/agent/msg_connect.h"
+#include "nel/ai/agent/msg_setvalue.h"
 #include "nel/ai/script/param_container.h"
 
 	using namespace NLAIAGENT;
@@ -710,6 +714,16 @@ namespace NLAISCRIPT
 	const NLAIC::CIdentType CGetValueMsgClass::IdGetValueMsgClass("GetValueMsg", CClassInterpretFactory((const IClassInterpret &)getvalueMsgClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tMessage),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+
+	static CConnectObjectValueMsgClass connectObjectValueMsgClass(NLAIAGENT::CStringVarName("XXX_ConnectObjectValueMsg"));
+	const NLAIC::CIdentType CConnectObjectValueMsgClass::IdConnectObjectValueMsgClass("ConnectObjectValueMsg", CClassInterpretFactory((const IClassInterpret &)connectObjectValueMsgClass),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tMessage),	
+													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
+
+	static CSetValueMsgClass setValueMsgClass(NLAIAGENT::CStringVarName("XXX_setValueMsg"));
+	const NLAIC::CIdentType CSetValueMsgClass::IdSetValueMsgClass("SetValueMsg", CClassInterpretFactory((const IClassInterpret &)setValueMsgClass),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tMessage),	
+													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 	
 	static CDebugMsgClass msgDebugMsgClass(NLAIAGENT::CStringVarName("MsgDebug"));
 	const NLAIC::CIdentType CDebugMsgClass::IdDebugMsgClass("MsgDebug", CClassInterpretFactory((const IClassInterpret &)msgDebugMsgClass),
@@ -768,6 +782,14 @@ namespace NLAISCRIPT
 		NLAIC::CTypeOfOperator::opEq );	
 
 	const NLAIC::CIdentType CGetValueMsg::IdGetValueMsg("GetValueMsgScript", NLAIC::CSelfClassFactory( CGetValueMsg(&NLAISCRIPT::getvalueMsgClass) ),
+			NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tMessage,
+			NLAIC::CTypeOfOperator::opEq );
+
+	const NLAIC::CIdentType CConnectObjectValueMsg::IdConnectObjectValueMsg("ConnectObjectValueMsgScript", NLAIC::CSelfClassFactory( CConnectObjectValueMsg(&NLAISCRIPT::connectObjectValueMsgClass) ),
+			NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tMessage,
+			NLAIC::CTypeOfOperator::opEq );
+
+	const NLAIC::CIdentType CSetValueMsg::IdSetValueMsg("SetValueMsgScript", NLAIC::CSelfClassFactory( CSetValueMsg(&NLAISCRIPT::setValueMsgClass) ),
 			NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tMessage,
 			NLAIC::CTypeOfOperator::opEq );
 

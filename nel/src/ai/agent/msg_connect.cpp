@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_connect.cpp,v 1.2 2002/03/07 11:09:04 portier Exp $
+ * $Id: msg_connect.cpp,v 1.3 2002/03/11 09:56:17 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NLAIAGENT
 {
 	CConnectObjectValueMsg::CConnectObjectValueMsg( std::list<IObjectIA *> &l, NLAISCRIPT::CMessageClass *b):CMessageScript(l,b)
 	{
-//		set(0, new DigitalType(0) );
+		set(0, new CStringType( CStringVarName("<undefined>") ) );
 	}
 
 	CConnectObjectValueMsg::CConnectObjectValueMsg(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
@@ -42,7 +42,7 @@ namespace NLAIAGENT
 		CVectorGroupType *x = new CVectorGroupType(1);		
 		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);		
-		set(0, new DigitalType(0) );
+		set(0, new CStringType(CStringVarName("<undefined>")) );
 	}
 
 	CConnectObjectValueMsg::CConnectObjectValueMsg(IBasicAgent *agent):
@@ -51,7 +51,7 @@ namespace NLAIAGENT
 		CVectorGroupType *x = new CVectorGroupType(1);
 		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);
-		set(0, new DigitalType(0) );
+		set(0, new CStringType(CStringVarName("<undefined>")) );
  	}
 
 	CConnectObjectValueMsg::CConnectObjectValueMsg(const CConnectObjectValueMsg &m): CMessageScript(m)
@@ -60,7 +60,6 @@ namespace NLAIAGENT
 
 	CConnectObjectValueMsg::~CConnectObjectValueMsg()
 	{
-		
 	}
 
 	const NLAIC::IBasicType *CConnectObjectValueMsg::clone() const

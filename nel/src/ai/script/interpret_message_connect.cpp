@@ -1,6 +1,6 @@
 /** \file interpret_message_action.cpp
  *
- * $Id: interpret_message_connect.cpp,v 1.1 2002/03/06 17:21:47 portier Exp $
+ * $Id: interpret_message_connect.cpp,v 1.2 2002/03/11 09:56:52 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NLAISCRIPT
 	CConnectObjectValueMsgClass::CConnectObjectValueMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CConnectObjectValueMsg::IdConnectObjectValueMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
+		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("ComponentName"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 		setClassName(NLAIAGENT::CStringVarName("CConnectObjectValueMsgClass"));
 		buildVTable();
@@ -46,7 +46,7 @@ namespace NLAISCRIPT
 	CConnectObjectValueMsgClass::CConnectObjectValueMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CConnectObjectValueMsg::IdConnectObjectValueMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
+		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("ComponentName"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 		setClassName(NLAIAGENT::CStringVarName("CConnectObjectValueMsgClass"));
 		buildVTable();
@@ -55,7 +55,7 @@ namespace NLAISCRIPT
 	CConnectObjectValueMsgClass::CConnectObjectValueMsgClass() : CMessageClass()
 	{		
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CConnectObjectValueMsg::IdConnectObjectValueMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
+		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("ComponentName"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 		setClassName(NLAIAGENT::CStringVarName("CConnectObjectValueMsgClass"));
 		buildVTable();
@@ -79,56 +79,4 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *x = new NLAIAGENT::CConnectObjectValueMsg( components,  (CMessageClass *) this );		
 		return x;
 	}	
-
-//#########################################
-//		CFailureMsgClass
-//#########################################
-
-/*
-	CFailureMsgClass::CFailureMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
-	{
-		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFailureMsg::IdFailureMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
-		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
-		setClassName(NLAIAGENT::CStringVarName("CFailureMsgClass"));
-		buildVTable();
-	}
-
-	CFailureMsgClass::CFailureMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
-	{
-		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFailureMsg::IdFailureMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
-		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
-		setClassName(NLAIAGENT::CStringVarName("CFailureMsgClass"));
-		buildVTable();
-	}
-
-	CFailureMsgClass::CFailureMsgClass() : CMessageClass()
-	{		
-		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFailureMsg::IdFailureMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
-		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
-		setClassName(NLAIAGENT::CStringVarName("CFailureMsgClass"));
-		buildVTable();
-	}
-	
-	const NLAIC::IBasicType *CFailureMsgClass::clone() const
-	{
-		return new CFailureMsgClass();
-	}
-
-	const NLAIC::IBasicType *CFailureMsgClass::newInstance() const
-	{
-		return new CFailureMsgClass();
-	}
-
-	NLAIAGENT::IObjectIA *CFailureMsgClass::buildNewInstance() const
-	{
-		std::list<NLAIAGENT::IObjectIA *> components;
-		createBaseClassComponents( components );
-
-		NLAIAGENT::IObjectIA *x = new NLAIAGENT::CFailureMsg( components,  (CMessageClass *) this );		
-		return x;
-	}	
-	*/
 }

@@ -1,6 +1,6 @@
 /** \file init.cpp
  *
- * $Id: init.cpp,v 1.7 2001/12/05 10:00:24 portier Exp $
+ * $Id: init.cpp,v 1.8 2002/03/11 09:56:52 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,8 @@
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/script/interpret_message_action.h"
 #include "nel/ai/script/interpret_message_getvalue.h"
+#include "nel/ai/script/interpret_message_setvalue.h"
+#include "nel/ai/script/interpret_message_connect.h"
 #include "nel/ai/script/interpret_object_manager.h"
 #include "nel/ai/script/interpret_actor.h"
 #include "nel/ai/logic/interpret_object_operator.h"
@@ -66,6 +68,8 @@ namespace NLAISCRIPT
 		reinitClass(CSuccessMsgClass(CSuccessMsgClass::IdSuccessMsgClass),CSuccessMsgClass::IdSuccessMsgClass);
 		reinitClass(CFailureMsgClass(CFailureMsgClass::IdFailureMsgClass),CFailureMsgClass::IdFailureMsgClass);
 		reinitClass(CGetValueMsgClass(CGetValueMsgClass::IdGetValueMsgClass),CGetValueMsgClass::IdGetValueMsgClass);
+		reinitClass(CSetValueMsgClass(CSetValueMsgClass::IdSetValueMsgClass),CSetValueMsgClass::IdSetValueMsgClass);
+		reinitClass(CConnectObjectValueMsgClass(CConnectObjectValueMsgClass::IdConnectObjectValueMsgClass),CConnectObjectValueMsgClass::IdConnectObjectValueMsgClass);
 		reinitClass(CDebugMsgClass(CDebugMsgClass::IdDebugMsgClass),CDebugMsgClass::IdDebugMsgClass);
 		reinitClass(CManagerClass(CManagerClass::IdManagerClass),CManagerClass::IdManagerClass);
 		reinitClass(COnChangeMsgClass(COnChangeMsgClass::IdOnChangeMsgClass),COnChangeMsgClass::IdOnChangeMsgClass);

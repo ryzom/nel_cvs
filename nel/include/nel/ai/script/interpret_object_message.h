@@ -1,7 +1,7 @@
 /** \file interpret_object_message.h
  * Class for define an message class in the interpreter.
  *
- * $Id: interpret_object_message.h,v 1.21 2001/12/11 09:26:49 chafik Exp $
+ * $Id: interpret_object_message.h,v 1.22 2002/03/11 09:57:02 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -189,6 +189,5 @@ namespace NLAISCRIPT
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;		
 		//@}
 	};
-
 }
 #endif

@@ -5,7 +5,7 @@
 
 \section introd What is NeL?
 
-NeL is a complete gaming platform aimed at running massively multiuser
+NeL is a complete platform aimed at running massively multiuser
 entertainment in a 3D environment over the Internet.
 
 \section oss Free Software
@@ -111,4 +111,6 @@ Nevrax in the nevrax.org domain. Various tools are available there to participat
   where your code is evaluated, and usually integrated directly in the reference
   platform.
 
+Potential contributors are directed to the document describing contributions
+guidelines.
  */

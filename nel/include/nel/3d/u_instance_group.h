@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.18 2002/05/24 12:38:03 vizerie Exp $
+ * $Id: u_instance_group.h,v 1.19 2002/06/13 13:51:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -220,6 +220,11 @@ public:
 	 * All the instances must be checked against the following cluster system
 	 */
 	virtual void setClusterSystem (class UInstanceGroup *pClusterSystem)=0;
+
+	/** Link this ig clusters as sons of clusters of 'ig' that conatains them.
+	  * \return true if the link succeeded
+	  */
+	virtual bool linkToParentCluster(UInstanceGroup *father) = 0;
 
 	/**
 	 * Get all dynamic portals in the instance group

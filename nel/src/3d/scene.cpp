@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.23 2001/04/09 14:25:25 berenguier Exp $
+ * $Id: scene.cpp,v 1.24 2001/04/17 12:14:33 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "nel/3d/driver.h"
 #include "nel/3d/transform_shape.h"
 #include "nel/3d/mesh_instance.h"
+#include "nel/3d/shape_bank.h"
 #include "nel/3d/skeleton_model.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
@@ -73,6 +74,8 @@ CScene::CScene()
 	LightTrav= NULL;
 	AnimDetailTrav= NULL;
 	RenderTrav= NULL;
+
+	_ShapeBank = NULL;
 
 	Root= NULL;
 	// TODO: init NULL ligthgroup root.
@@ -116,7 +119,7 @@ void	CScene::release()
 		delete	RenderTrav;
 		RenderTrav= NULL;
 	}
-
+	_ShapeBank = NULL;
 	Root= NULL;
 	CurrentCamera= NULL;
 }
@@ -232,6 +235,7 @@ IDriver	*CScene::getDriver() const
 // ***************************************************************************
 
 // ***************************************************************************
+/*
 void	CScene::addShape(const std::string &shapeName, CSmartPtr<IShape> shape)
 {
 	ShapeMap[shapeName]= shape;
@@ -239,11 +243,61 @@ void	CScene::addShape(const std::string &shapeName, CSmartPtr<IShape> shape)
 // ***************************************************************************
 void	CScene::delShape(const std::string &shapeName)
 {
+	TShapeMap::iterator smIt =  ShapeMap.find( shapeName );
+	if( smIt == ShapeMap.end() )
+	{
+		// Things are not going well throw an exception
+	}
+	else
+	{
+		// Ok we found the pointer on the shape
+		IShape *pShp = smIt->second;
+		// Look if the shape is currently in its ShapeCache
+		TShapeCacheInfoMap::iterator scimIt = ShapePtrToShapeCacheInfo.find( pShp );
+		if( scimIt == ShapePtrToShapeCacheInfo.end() )
+		{
+			// Things go wrong throw an exception
+		}
+		else
+		{
+			// Go to the ShapeCache
+		}
+
+		ShapePtrToShapeCacheInfo.erase( pShp );
+	}
 	ShapeMap.erase(shapeName);
 }
+*/
+
 // ***************************************************************************
+
+void CScene::setShapeBank(CShapeBank*pShapeBank)
+{
+	_ShapeBank = pShapeBank;
+}
+
+// ***************************************************************************
+
 CTransformShape	*CScene::createInstance(const std::string &shapeName)
 {
+	// If there is no ShapeBank attached to the scene this is an error
+	if( _ShapeBank )
+	{
+		// If the shape is not present in the bank
+		if( !_ShapeBank->isPresent( shapeName ) )
+		{
+			// Load it from file
+			_ShapeBank->load( shapeName );
+			if( !_ShapeBank->isPresent( shapeName ) )
+			{
+				return NULL;
+			}
+		}
+		// Then create a reference to the shape
+		return _ShapeBank->addRef( shapeName )->createInstance(*this);
+	}
+	return NULL;
+/*
 	TShapeMap::iterator		it;
 	it= ShapeMap.find(shapeName);
 	if(it==ShapeMap.end())
@@ -268,9 +322,91 @@ CTransformShape	*CScene::createInstance(const std::string &shapeName)
 	}
 
 	return (*it).second->createInstance(*this);
+*/
+}
+// ***************************************************************************
+void CScene::deleteInstance(CTransformShape *model)
+{
+	CTransformShape* pTrfmShp = dynamic_cast<CTransformShape*>(model);
+	IShape *pShp = NULL;
+	if( pTrfmShp != NULL )
+	{
+		pShp = pTrfmShp->Shape;
+// lionel style ???		if(pTrfmShp->Shape->getRefCount()==1)
+// lionel style ???			pShp =NULL;
+	}
+	
+	deleteModel( model );
+
+	if(pShp)
+	{
+		_ShapeBank->release( pShp );
+		/*TShapeCacheInfoMap::iterator scimIt = ShapePtrToShapeCacheInfo.find( pShp );
+		scimIt->second._RefCount -= 1;
+		if( scimIt->second._RefCount == 0 )
+		{
+			// Add this shape to its own ShapeCache
+			CShapeCache* pShapeCache = scimIt->second._Cache;
+			pShapeCache->_Elements.push_front( pShp );
+			if( pShapeCache->_Elements.size() > pShapeCache->_MaxSize )
+			{
+				IShape *pShp = pShapeCache._Elements.back();
+				TShapeCacheInfoMap::iterator scimIt = ShapePtrToShapeCacheInfo.find( pShp );
+				delShape( scimIt->second._ShapeName );
+			}
+		}*/
+	}
+	
+}
+/*
+// ***************************************************************************
+void CScene::addShapeCache(const std::string &shapeCacheName, sint32 maxSize)
+{
+	// Is the ShapeCache already exists ?
+	TShapeCacheMap::iterator it = ShapeCacheNameToShapeCache.find( shapeCacheName );
+	if( it == ShapeCacheNameToShapeCache.end() )
+	{
+		// No there is no ShapeCache previously added
+		CShapeCache newShapeCache;
+
+		newShapeCache._Elements.empty();
+		newShapeCache._MaxSize = maxSize;
+
+		ShapeCacheNameToShapeCache.insert(TShapeCacheMap::value_type( shapeCacheName, newShapeCache ));
+	}
+	else
+	{
+		// Yes, there is already a ShapeCache of this name
+		CShapeCache& rShapeCache = it->second;
+		// Shorten the cache to fit the maxSize
+		while( rShapeCache._Elements.size() > maxSize )
+		{
+			IShape *pShp = rShapeCache._Elements.back();
+			TShapeCacheInfoMap::iterator scimIt = ShapePtrToShapeCacheInfo.find( pShp );
+			delShape( scimIt->second._ShapeName );
+//			ShapePtrToShapeCacheInfo.erase( pShp );
+//			rShapeCache._Elements.pop_back();
+		}
+		rShapeCache._MaxSize = maxSize;
+	}
 }
 
-
+// ***************************************************************************
+void CScene::linkShapeToShapeCache(const std::string &shapeName, const std::string shapeCacheName)
+{
+	// Is the ShapeCache already exists ?
+	TShapeCacheMap::iterator it = ShapeCacheNameToShapeCache.find( shapeCacheName );
+	if( it == ShapeCacheNameToShapeCache.end() )
+	{
+		// No, not good throw an exception see with cyril or lionel
+	}
+	else
+	{
+		// Yes, ok so we can add the shape reference
+		ShapeNameToShapeCacheName.insert(TShapeCacheNameMap::value_type( shapeName, shapeCacheName) );
+	}
+}
+*/
 }
 
 

@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.16 2001/02/14 17:13:45 lecroart Exp $
+ * $Id: nelu.cpp,v 1.17 2001/04/17 12:14:33 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@ const float		CNELU::DefLzFar=1000.0f;
 
 IDriver				*CNELU::Driver=NULL;
 CScene				CNELU::Scene;
+CShapeBank			CNELU::ShapeBank;
 CRefPtr<CCamera>	CNELU::Camera;
 CEventServer		CNELU::EventServer;
 CEventListenerAsync	CNELU::AsyncListener;
@@ -85,6 +86,9 @@ void			CNELU::initScene(CViewport viewport)
 	CNELU::Camera= (CCamera*)Scene.createModel(NL3D::CameraId);
 	CNELU::Scene.setCam(CNELU::Camera);
 	CNELU::Camera->setFrustum(DefLx, DefLy, DefLzNear, DefLzFar);
+
+	// Link to the shape bank
+	CNELU::Scene.setShapeBank(&CNELU::ShapeBank);
 }
 
 

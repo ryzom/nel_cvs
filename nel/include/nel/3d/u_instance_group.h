@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.14 2002/04/17 12:09:22 besson Exp $
+ * $Id: u_instance_group.h,v 1.15 2002/04/29 09:07:27 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,6 +71,7 @@ public:
 	 */
 	virtual void addToScene (class UScene& scene, UDriver *driver=NULL)=0;
 	virtual void addToSceneAsync (class UScene& scene, UDriver *driver=NULL)=0;
+	virtual void stopAddToSceneAsync ()=0;
 	virtual TState getAddToSceneState ()=0;
 
 	/**
@@ -82,7 +83,9 @@ public:
 	 *	This is the static function create a stand alone instance group.
 	 */
 	static	UInstanceGroup	*createInstanceGroup (const std::string &instanceGroup);
-	static	void createInstanceGroupAsync (const std::string &instanceGroup, UInstanceGroup	**pIG);
+	static	void createInstanceGroupAsync (const std::string &instanceGroup, UInstanceGroup **pIG);
+	static	void stopCreateInstanceGroupAsync (UInstanceGroup **pIG);
+
 
 	/**
 	 * Return the count of shape instance in this group.

@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.11 2000/11/27 10:07:07 cado Exp $
+ * $Id: naming_client.cpp,v 1.12 2000/11/27 11:18:59 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -341,6 +341,42 @@ bool CNamingClient::lookupAlternate( const std::string& name, CInetAddress& addr
 		nldebug( "Service %s is at %s", name.c_str(), addr.asIPString().c_str() );
 		CNamingClient::closeT();
 		return true;
+	}
+}
+
+
+/*
+ * Obtains a socket connected to a server providing the service \e name.
+ */
+bool CNamingClient::lookupAndConnect( const std::string& name, CSocket& sock, uint16& validitytime )
+{
+	// Look up for service
+	CInetAddress servaddr;
+	if ( CNamingClient::lookup( name, servaddr, validitytime ) )
+	{
+		// Try to connect to the server
+		bool service_ok = false;
+		while ( ! service_ok )
+		{
+			try
+			{
+				sock.connect( servaddr );
+				service_ok = true;
+			}
+			catch ( ESocketConnectionFailed& )
+			{
+				// If the connection failed, inform the Naming Service and try another server
+				if ( ! CNamingClient::lookupAlternate( name, servaddr, validitytime ) )
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 

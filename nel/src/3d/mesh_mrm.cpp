@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.11 2001/06/27 14:01:14 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.12 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -822,6 +822,14 @@ void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod)
 	lod.OriginalSkinRestored= true;
 }
 
+// ***************************************************************************
+
+float CMeshMRMGeom::getNumTriangles (float distance)
+{
+	/// \todo Hulud: return good number of polygons.
+	return 0;
+}
+
 
 
 // ***************************************************************************
@@ -1180,6 +1188,12 @@ void	CMeshMRM::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	_MeshMRMGeom.serial(f);
 }
 
+
+// ***************************************************************************
+float	CMeshMRM::getNumTriangles (float distance)
+{
+	return _MeshMRMGeom.getNumTriangles (distance);
+}
 
 } // NL3D
 

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.3 2001/06/22 12:45:41 besson Exp $
+ * $Id: mesh_base_instance.h,v 1.4 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,7 @@ public:
 
 public:
 
+
 	/** The list of materials, copied from the mesh.
 	 * Each CMeshBaseInstance has those materials, so they can be animated or modified for each instance.
 	 * By default, they are copied from the Mesh.
@@ -109,7 +110,6 @@ public:
 	{
 		return _ApplySkinOk;
 	}
-
 
 protected:
 	/// Constructor

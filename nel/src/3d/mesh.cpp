@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.25 2001/06/27 13:58:39 berenguier Exp $
+ * $Id: mesh.cpp,v 1.26 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -696,6 +696,33 @@ sint	CMeshGeom::CMatrixBlock::getMatrixIdLocation(uint32 boneId) const
 }
 
 
+// ***************************************************************************
+float	CMeshGeom::getNumTriangles (float distance)
+{
+	// Sum of triangles
+	uint32 triCount=0;
+
+	// For each matrix block
+	uint mbCount=_MatrixBlocks.size();
+	for (uint mb=0; mb<mbCount; mb++)
+	{
+		CMatrixBlock &block=_MatrixBlocks[mb];
+
+		// Count of primitive block
+		uint pCount=block.RdrPass.size();
+		for (uint pb=0; pb<pCount; pb++)
+		{
+			// Ref on the primitive block
+			CRdrPass &pass=block.RdrPass[pb];
+
+			// Sum tri
+			triCount+=pass.PBlock.getNumTriangles ();
+		}
+	}
+	return triCount;
+}
+
+
 
 // ***************************************************************************
 // ***************************************************************************
@@ -918,7 +945,11 @@ uint32 CMesh::getRdrPassMaterial(uint matrixBlockIndex, uint renderingPassIndex)
 {
 	return _MeshGeom->getRdrPassMaterial(matrixBlockIndex, renderingPassIndex) ;
 }
-
+// ***************************************************************************
+float	CMesh::getNumTriangles (float distance)
+{
+	return _MeshGeom->getNumTriangles (distance);
+}
 
 
 

@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: transform_shape.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,6 +68,19 @@ public:
 	/// The shape, the object instancied.
 	CSmartPtr<IShape>		Shape;
 
+	/// \name Load balancing methods
+	// @{
+
+	/** get an approximation of the number of triangles this instance will render for a fixed distance.
+	  *
+	  * \param distance is the distance of the shape from the eye.
+	  * \return the approximate number of triangles this instance will render at this distance. This
+	  * number can be a float. The function MUST be decreasing or constant with the distance but don't 
+	  * have to be continus.
+	  */
+	virtual float			getNumTriangles (float distance);
+
+	// @}
 
 protected:
 	/// Constructor

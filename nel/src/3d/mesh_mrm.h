@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.7 2001/06/27 14:01:14 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.8 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,9 @@ public:
 
 	/// render() this mesh in a driver, given an instance and his materials.
 	virtual void	render(IDriver *drv, CTransformShape *trans);
+
+	/// get an approximation of the number of triangles this instance will render for a fixed distance.
+	virtual float	getNumTriangles (float distance);
 
 	/// serial this meshGeom.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
@@ -392,6 +395,9 @@ public:
 
 	/// render() this mesh in a driver.
 	virtual void	render(IDriver *drv, CTransformShape *trans);
+
+	/// get an approximation of the number of triangles this instance will render for a fixed distance.
+	virtual float	getNumTriangles (float distance);
 
 	/// serial this mesh.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);

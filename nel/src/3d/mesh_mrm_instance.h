@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
  * <File description>
  *
- * $Id: mesh_mrm_instance.h,v 1.1 2001/06/19 10:22:33 berenguier Exp $
+ * $Id: mesh_mrm_instance.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,6 @@ class CMeshMRMInstance : public CMeshBaseInstance
 public:
 	/// Call at the begining of the program, to register the model, and the basic observers.
 	static	void	registerBasic();
-
 
 protected:
 	/// Constructor

@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: shape.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,6 +90,14 @@ public:
 	 * CTransfromShape call this method in the render traversal.
 	 */
 	virtual void				render(IDriver *drv, CTransformShape *trans)=0;
+
+	/// \name Load balancing methods
+	// @{
+
+	/// get an approximation of the number of triangles this instance will render for a fixed distance.
+	virtual float				getNumTriangles (float distance)=0;
+
+	// @}
 };
 
 // ***************************************************************************

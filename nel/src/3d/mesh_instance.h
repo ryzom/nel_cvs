@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.3 2001/06/21 12:57:43 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.4 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,8 +59,6 @@ public:
 	static	void	registerBasic();
 
 public:
-
-
 
 protected:
 	/// Constructor

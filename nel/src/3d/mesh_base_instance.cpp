@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.2 2001/06/22 12:45:41 besson Exp $
+ * $Id: mesh_base_instance.cpp,v 1.3 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,5 +146,6 @@ void CMeshBaseInstanceAnimDetailObs::traverse(IObs *caller)
 	}
 }
 
+// ***************************************************************************
 
 } // NL3D

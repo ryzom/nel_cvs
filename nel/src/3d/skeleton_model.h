@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.2 2001/06/21 12:57:43 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.3 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,6 @@ public:
 	 */
 	std::vector<CBone>			Bones;
 
-
 public:
 	/// \name IAnimatable Interface (registering only IAnimatable sons (bones)).
 	// @{
@@ -110,8 +109,6 @@ public:
 	/// return, from skeleton shape, the BoneIdByName. -1 if not here.
 	sint32		getBoneIdByName(const std::string &name) const;
 	// @}
-
-
 
 // ***********************
 protected:

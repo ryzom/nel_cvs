@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.3 2001/06/22 12:45:41 besson Exp $
+ * $Id: mesh_base.h,v 1.4 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,7 +139,6 @@ public:
 		return _Materials[id];
 	}
 	// @}
-
 
 	/// serial the base Part of this mesh.
 	void	serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream);

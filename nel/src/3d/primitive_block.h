@@ -1,7 +1,7 @@
 /** \file primitive_block.h
  * <File description>
  *
- * $Id: primitive_block.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: primitive_block.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,8 @@ private:
 	uint32				_LineCapacity;
 	std::vector<uint32>	_Line;
 
-	// Strip/Fans (todo later).
+	/// \todo Hulud: support for strips and fans
+	// Strip/Fans
 	uint32				_StripIdx;
 	uint32*				_Strip;
 	uint32				_FanIdx;
@@ -155,6 +156,12 @@ public:
 	/// return the quad buffer, const version
 	const uint32*	getQuadPointer(void) const ;
 
+	/// return total number of triangle in this primitive block
+	uint32	getNumTriangles ()
+	{
+		// Return number of triangles in this primitive block
+		return _NbTris+2*_NbQuads+_NbLines;
+	}
 
 	void		serial(NLMISC::IStream &f);
 };

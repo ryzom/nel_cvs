@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.3 2001/06/27 13:58:39 berenguier Exp $
+ * $Id: mesh.h,v 1.4 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,6 +180,9 @@ public:
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CMesh);
 
+	/// get trinagle count.
+	virtual float	getNumTriangles (float distance);
+
 	// @}
 
 	/// \name Geometry accessors
@@ -250,6 +253,9 @@ public:
 
 	/// render() this mesh in a driver.
 	virtual void	render(IDriver *drv, CTransformShape *trans);
+
+	// get an approximation of the number of triangles this instance will render for a fixed distance.
+	virtual float	getNumTriangles (float distance);
 
 	/// serial this mesh.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);

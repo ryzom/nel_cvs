@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.6 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: transform_shape.cpp,v 1.7 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,15 @@ void		CTransformShape::registerBasic()
 	CMOT::registerObs(RenderTravId, TransformShapeId, CTransformShapeRenderObs::creator);
 }
 
+
+// ***************************************************************************
+float CTransformShape::getNumTriangles (float distance)
+{
+	// Call shape method
+	return Shape->getNumTriangles (distance);
+}
+
+
 // ***************************************************************************
 bool	CTransformShapeClipObs::clip(IBaseClipObs *caller) 
 {
@@ -75,5 +84,8 @@ void	CTransformShapeRenderObs::traverse(IObs *caller)
 	if(m->Shape)
 		m->Shape->render(drv, m);
 }
+
+
+// ***************************************************************************
 
 } // NL3D

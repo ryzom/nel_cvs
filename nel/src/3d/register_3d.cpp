@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.15 2001/06/26 10:12:03 berenguier Exp $
+ * $Id: register_3d.cpp,v 1.16 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/texture_mem.h"
 #include "3d/texture_grouped.h"
 #include "3d/mesh.h"
+#include "3d/mesh_multi_lod.h"
 #include "3d/skeleton_shape.h"
 #include "3d/track_keyframer.h"
 #include "3d/ps_util.h"
@@ -96,6 +97,7 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CSkeletonShape);
 		NLMISC_REGISTER_CLASS(CMeshMRM);
 		NLMISC_REGISTER_CLASS(CMeshMRMGeom);
+		NLMISC_REGISTER_CLASS(CMeshMultiLod);
 
 		bInitialized=true;
 	}

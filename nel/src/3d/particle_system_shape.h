@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: particle_system_shape.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,48 +55,61 @@ class CParticleSystemShape : public IShape
 {
 public:
 
-/// Default ctor
-CParticleSystemShape() ;
+	/// Default ctor
+	CParticleSystemShape() ;
 
-/// build the shape from a file (2^32 max size)
-void buildFromFile(const std::string &fileName) throw(NLMISC::EStream) ;
+	/// build the shape from a file (2^32 max size)
+	void buildFromFile(const std::string &fileName) throw(NLMISC::EStream) ;
 
-/** build the shape from a 'raw' particle system. A prototype will be created by copying the system in a memory stream
- *  NOTE : For now, prefer the instanciation from a file, which do not need reallocation
- */
-void buildFromPS(const CParticleSystem &ps) ;
+	/** build the shape from a 'raw' particle system. A prototype will be created by copying the system in a memory stream
+	 *  NOTE : For now, prefer the instanciation from a file, which do not need reallocation
+	 */
+	void buildFromPS(const CParticleSystem &ps) ;
 
-/// Dtor.
-virtual ~CParticleSystemShape() {}
+	/// Dtor.
+	virtual ~CParticleSystemShape() {}
 
-/** create a particle system instance
- * \param scene the scene used to createModel().
- * \return the specialized instance for this shape.
- */
-virtual	CTransformShape		*createInstance(CScene &scene) ;
+	/** create a particle system instance
+	 * \param scene the scene used to createModel().
+	 * \return the specialized instance for this shape.
+	 */
+	virtual	CTransformShape		*createInstance(CScene &scene) ;
 
+	/// \name From IShape
+	// @{
 
+	/** clip this system with a pyramid.
+	 * the pyramid is given in object space so the shape do not need to know the matrix of the object.
+	 * \param pyramid the clipping polytope, planes MUST be normalized.
+	 * \return true if the object is visible, false otherwise. The default behavior is to return true (never clipped).
+	 */
+	virtual bool				clip(const std::vector<CPlane>	&pyramid) ;
 
-/** clip this system with a pyramid.
- * the pyramid is given in object space so the shape do not need to know the matrix of the object.
- * \param pyramid the clipping polytope, planes MUST be normalized.
- * \return true if the object is visible, false otherwise. The default behavior is to return true (never clipped).
- */
-virtual bool				clip(const std::vector<CPlane>	&pyramid) ;
+	/** render() a particle system in a driver, with the specified TransformShape information.
+	 * CTransfromShape call this method in the render traversal.
+	 */
+	virtual void				render(IDriver *drv, CTransformShape *trans) ;
 
-/** render() a particle system in a driver, with the specified TransformShape information.
- * CTransfromShape call this method in the render traversal.
- */
-virtual void	render(IDriver *drv, CTransformShape *trans) ;
+	/** get an approximation of the number of triangles this instance will render for a fixed distance.
+	  *
+	  * \param distance is the distance of the shape from the eye.
+	  * \return the approximate number of triangles this instance will render at this distance. This
+	  * number can be a float. The function MUST be decreasing or constant with the distance but don't 
+	  * have to be continus.
+	  */
+	virtual float				getNumTriangles (float distance);
+	
+	// @}
 
 	/// serial the shape
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
-	NLMISC_DECLARE_CLASS(CParticleSystemShape) ; 
-protected:
+	NLMISC_DECLARE_CLASS(CParticleSystemShape);
 
-	
-	// A memory stream containing a particle system. Each system is instanciated from this prototype
-	NLMISC::CMemStream  _ParticleSystemProto ; 
+	protected:
+
+		
+		// A memory stream containing a particle system. Each system is instanciated from this prototype
+		NLMISC::CMemStream  _ParticleSystemProto ; 
 } ;
 
 } // NL3D

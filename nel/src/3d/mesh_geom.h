@@ -1,7 +1,7 @@
 /** \file mesh_geom.h
  * <File description>
  *
- * $Id: mesh_geom.h,v 1.1 2001/06/26 10:12:03 berenguier Exp $
+ * $Id: mesh_geom.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,19 @@ public:
 	 */
 	virtual void	render(IDriver *drv, CTransformShape *trans) =0;
 
+	/// \name Load balancing methods
+	// @{
 
+	/** get an approximation of the number of triangles this instance will render for a fixed distance.
+	  *
+	  * \param distance is the distance of the shape from the eye.
+	  * \return the approximate number of triangles this instance will render at this distance. This
+	  * number can be a float. The function MUST be decreasing or constant with the distance but don't 
+	  * have to be continus.
+	  */
+	virtual float	getNumTriangles (float distance) =0;
+
+	// @}
 };
 
 

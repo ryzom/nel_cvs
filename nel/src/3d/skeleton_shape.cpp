@@ -1,7 +1,7 @@
 /** \file skeleton_shape.cpp
  * <File description>
  *
- * $Id: skeleton_shape.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: skeleton_shape.cpp,v 1.5 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,6 +88,14 @@ void			CSkeletonShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	f.serialCont(_Bones);
 	f.serialCont(_BoneMap);
+}
+
+// ***************************************************************************
+
+float CSkeletonShape::getNumTriangles (float distance)
+{
+	// No polygons
+	return 0;
 }
 
 

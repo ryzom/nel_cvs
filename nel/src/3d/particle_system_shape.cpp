@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.7 2001/06/26 11:57:39 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.8 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -171,7 +171,14 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans)
 	}
 }
 
+// ***************************************************************************
 
+float CParticleSystemShape::getNumTriangles (float distance)
+{
+	/// \todo Hulud: return num of triangle wanted by this system.
+	return 0;
+}
 
+// ***************************************************************************
 
 } // NL3D

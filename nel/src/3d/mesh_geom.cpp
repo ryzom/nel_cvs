@@ -1,7 +1,7 @@
 /** \file mesh_geom.cpp
  * <File description>
  *
- * $Id: mesh_geom.cpp,v 1.1 2001/06/26 10:12:03 berenguier Exp $
+ * $Id: mesh_geom.cpp,v 1.2 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,5 @@
 
 namespace NL3D 
 {
-
-
-
 
 } // NL3D

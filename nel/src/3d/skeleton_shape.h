@@ -1,7 +1,7 @@
 /** \file skeleton_shape.h
  * <File description>
  *
- * $Id: skeleton_shape.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: skeleton_shape.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,6 +78,9 @@ public:
 	virtual void	render(IDriver *drv, CTransformShape *trans)
 	{
 	}
+
+	/// get an approximation of the number of triangles this instance will render for a fixed distance.
+	virtual float	getNumTriangles (float distance);
 
 	/// serial this skeletonshape.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);

@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.25 2002/01/04 18:27:30 corvazier Exp $
+ * $Id: export_material.cpp,v 1.26 2002/02/04 10:56:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "export_nel.h"
 #include "../tile_utility/tile_utility.h"
 #include <3d/texture_file.h>
+#include <3d/texture_multi_file.h>
 #include <3d/texture_cube.h>
 
 #include <vector>
@@ -52,6 +53,10 @@ using namespace std;
 #define SHADER_SPECULAR 5
 #define SHADER_WATER 6
 
+
+#define NEL_BITMAP_TEXTURE_CLASS_ID_A 0x5a8003f9
+#define NEL_BITMAP_TEXTURE_CLASS_ID_B 0x43e0955
+
 /** Test wether the given max material is a water material. A water object should only have one material, and must have planar, convex geometry.
   * Morevover, the mapping should only have scale and offsets, no rotation
   */
@@ -67,9 +72,6 @@ bool CExportNel::hasWaterMaterial(INode& node, TimeValue time)
 	CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "bWater", (ParamType2)TYPE_BOOL, &bWater, time);
 	return bWater != 0;
 }
-
-
-
 
 
 // Build an array of NeL material corresponding with max material at this node. Return the number of material exported.
@@ -639,19 +641,28 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 			static ITexture* pTexture=NULL;
 
 			// Is it a simple file ?
-			if (isClassIdCompatible(*pDifTexmap, Class_ID (BMTEX_CLASS_ID,0)))
+			if (isClassIdCompatible(*pDifTexmap, Class_ID (BMTEX_CLASS_ID, 0))
+				||	isClassIdCompatible(*pDifTexmap, Class_ID (NEL_BITMAP_TEXTURE_CLASS_ID_A, NEL_BITMAP_TEXTURE_CLASS_ID_B))
+				)
 			{
 				// List of channels used by this texture
-				CMaterialDesc materialDesc;
+				CMaterialDesc _3dsTexChannel;
 				
 				// Ok export the texture in NeL format
-				pTexture=buildATexture (*pDifTexmap, materialDesc, time, absolutePath);
+				pTexture=buildATexture (*pDifTexmap, _3dsTexChannel, time, absolutePath);
 
 				// For this shader, only need a texture channel.
-				materialInfo.RemapChannel.push_back (materialDesc);
-	
-				// Add flags if mapping coodinates are used..
-				materialInfo.MappingChannelUsed |= (materialDesc._IndexInMaxMaterial>=0)?1:0;
+				materialInfo.RemapChannel.resize (1);
+
+				// Need an explicit channel, not generated
+				if ( _3dsTexChannel._IndexInMaxMaterial < 0 )
+				{
+					materialInfo.RemapChannel[0]._IndexInMaxMaterial=UVGEN_MISSING;
+					materialInfo.RemapChannel[0]._UVMatrix.IdentityMatrix();
+				}
+				// Else copy it
+				else 
+					materialInfo.RemapChannel[0]=_3dsTexChannel;
 
 				// Add the texture if it exist
 				material.setTexture(0, pTexture);
@@ -971,37 +982,44 @@ int CExportNel::getVertMapChannel (Texmap& texmap, Matrix3& channelMatrix, TimeV
 	return texmap.GetMapChannel();
 }
 	
+// get the absolute or relative path from a texture filename
+static std::string 	ConvertTexFileName(const char *src, bool absolutePath)
+{
+	// File name, maxlen 256 under windows
+	char sFileName[512];
+	strcpy (sFileName, src);
+
+	// Let absolute path ?
+	if (!absolutePath)
+	{
+		// Decompose bitmap file name
+		char sName[256];
+		char sExt[256];
+		_splitpath (sFileName, NULL, NULL, sName, sExt);
+
+		// Make the final path
+		_makepath (sFileName, NULL, NULL, sName, sExt);
+	}
+	return std::string(sFileName);
+}
+
 // Build a NeL texture corresponding with a max Texmap.
 // Fill an array with the 3ds vertexMap used by this texture. 
 // Texture file uses only 1 channel.
 ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexChannel, TimeValue time, bool absolutePath, bool forceCubic)
 {
 	/// TODO: support other texmap than Bitmap
-
 	// By default, not build
 	ITexture* pTexture=NULL;
 
 	// Is it a bitmap texture file ?
-	if (isClassIdCompatible(texmap, Class_ID (BMTEX_CLASS_ID,0)))
+	if (isClassIdCompatible(texmap, Class_ID (BMTEX_CLASS_ID,0))
+		|| isClassIdCompatible(texmap, Class_ID(NEL_BITMAP_TEXTURE_CLASS_ID_A, NEL_BITMAP_TEXTURE_CLASS_ID_B))
+		)
 	{
 		// Cast the pointer
 		BitmapTex* pBitmap=(BitmapTex*)&texmap;
-
-		// File name, maxlen 256 under windows
-		char sFileName[512];
-		strcpy (sFileName, pBitmap->GetMapName());
-
-		// Let absolute path ?
-		if (!absolutePath)
-		{
-			// Decompose bitmap file name
-			char sName[256];
-			char sExt[256];
-			_splitpath (sFileName, NULL, NULL, sName, sExt);
-
-			// Make the final path
-			_makepath (sFileName, NULL, NULL, sName, sExt);
-		}
+		
 
 		// Get the apply crop value
 		int bApply;
@@ -1028,6 +1046,58 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 			nlassert (bRes);
 		}
 
+		
+		//  1°) build a texture that can either be a file texture or a multifile texture
+
+		ITexture  *srcTex;
+		const uint numNelTextureSlots = 4;
+		static const char *fileNamesTab[] = { "bitmap1FileName",
+											 "bitmap2FileName",
+											 "bitmap3FileName",
+										     "bitmap4FileName" };
+
+		if (isClassIdCompatible(texmap, Class_ID(NEL_BITMAP_TEXTURE_CLASS_ID_A, NEL_BITMAP_TEXTURE_CLASS_ID_B))) // is it a set of textures ?
+		{
+			uint k;
+			std::string fileName[numNelTextureSlots];
+			for (k = 0; k < numNelTextureSlots; ++k) // copy each texture of the set
+			{
+				nlassert(k < sizeof(fileNamesTab) / sizeof(const char *));				
+
+				/// get the file name from the parameter block
+				bRes=getValueByNameUsingParamBlock2 (texmap, fileNamesTab[k], (ParamType2)TYPE_STRING, &fileName[k], time);
+				nlassert (bRes);
+			}
+
+			// if only the first slot is used we create a CTextureFile...
+			if (fileName[1].empty()
+				&& fileName[2].empty()
+				&& fileName[3].empty())
+			{
+				srcTex = new CTextureFile;
+				static_cast<CTextureFile *>(srcTex)->setFileName (ConvertTexFileName(fileName[k].c_str(), absolutePath));
+			}
+			else
+			{
+				srcTex = new CTextureMultiFile(numNelTextureSlots);
+				for (k = 0; k < numNelTextureSlots; ++k) // copy each texture of the set
+				{				
+					if (!fileName[k].empty())
+					{
+						/// set the name of the texture after converting it
+						static_cast<CTextureMultiFile *>(srcTex)->setFileName(k, ConvertTexFileName(fileName[k].c_str(), absolutePath).c_str());
+					}
+				}
+			}
+		}
+		else // standard texture
+		{
+			srcTex = new CTextureFile;
+			static_cast<CTextureFile *>(srcTex)->setFileName (ConvertTexFileName(pBitmap->GetMapName(), absolutePath));
+		}
+
+		// 2 °) Use this texture 'as it', or duplicate it to create the faces of a cube map
+
 		// Force cubic
 		if (forceCubic)
 		{
@@ -1039,32 +1109,21 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 			// Alloc a cube texture
 			CTextureCube* pTextureCube = new CTextureCube;
 
-			// For each side of the cube
+			
 			for (uint side=0; side<6; side++)
-			{
-				// Alloc a file texture
-				CTextureFile *pTextureFile=new CTextureFile ();
-
-				// Set the file name
-				pTextureFile->setFileName (sFileName);
-
-				// Set the texture in the cube
-				pTextureCube->setTexture (tfNewOrder[side], pTextureFile);
+			{				
+				// Set a copy of the source texture in the cube
+				pTextureCube->setTexture (tfNewOrder[side], new CTextureMultiFile(*static_cast<CTextureMultiFile *>(srcTex)));
 			}
 
 			// Ok, good texture
 			pTexture=pTextureCube;
+			delete srcTex;
 		}
 		else
 		{
-			// Alloc a texture
-			CTextureFile *pTextureFile=new CTextureFile ();
-
-			// Set the file name
-			pTextureFile->setFileName (sFileName);
-
-			// Ok, good texture
-			pTexture=pTextureFile;
+			/// just use the source texture
+			pTexture = srcTex;			
 		}
 	}
 	else if( isClassIdCompatible(texmap, Class_ID (ACUBIC_CLASS_ID,0)) )
@@ -1087,26 +1146,12 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 
 		// For each textures
 		for( int i = 0; i< (int)names.size(); ++i )
-		{
+		{			
 			// Create a texture file
 			CTextureFile *pT = new CTextureFile;
-
-			// Tronc name
-			char sFileName[512];
-			strcpy(sFileName, names[i].c_str());
-			if (!absolutePath)
-			{
-				// Decompose bitmap file name
-				char sName[256];
-				char sExt[256];
-				_splitpath (sFileName, NULL, NULL, sName, sExt);
-
-				// Make the final path
-				_makepath (sFileName, NULL, NULL, sName, sExt);
-			}
-
+			
 			// Set the file name
-			pT->setFileName(sFileName);
+			pT->setFileName(ConvertTexFileName(names[i].c_str(), absolutePath));
 
 			// Set the texture
 			pTextureCube->setTexture(tfNewOrder[i], pT);

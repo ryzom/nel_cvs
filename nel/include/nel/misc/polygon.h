@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.15 2004/07/26 13:44:25 vizerie Exp $
+ * $Id: polygon.h,v 1.16 2004/08/03 16:25:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,8 @@ public:
 	void			clip(const CPlane *planes, uint nPlanes);
 	/// Clip a polygon with a set of planes. Cohen-sutherland clipping... clipPolygonBack() is used on planes.
 	void			clip(const std::vector<CPlane> &planes);
+
+	float			computeArea() const;
 
 	/// Serial this polygon
 	void			serial(NLMISC::IStream &f) throw(NLMISC::EStream);
@@ -189,7 +191,7 @@ public:
 	/// Get a line equation of the seg starting at the given index
 	void  getLineEquation(uint index, float &a, float &b, float &c) const;
 
-	// Test if current poly is CCW oriented
+	// Test if current poly is CCW oriented (in a right handed coord. system)
 	bool  isCCWOriented() const;
 
 private:

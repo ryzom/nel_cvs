@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.26 2004/07/26 14:51:57 vizerie Exp $
+ * $Id: polygon.cpp,v 1.27 2004/08/03 16:25:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,19 @@ CPolygon::CPolygon(const CVector &a, const CVector &b, const CVector &c)
 	Vertices.push_back(c);
 }
 
+// ***************************************************************************
+float CPolygon::computeArea() const
+{
+	float area = 0.f;
+	sint numVerts = (sint) Vertices.size();
+	for(sint k = 0; k < numVerts - 2; ++k)
+	{
+		CVector v0 = Vertices[k + 1] - Vertices[0];
+		CVector v1 = Vertices[k + 2] - Vertices[0];
+		area += (v0 ^ v1).norm();
+	}
+	return 0.5f * fabsf(area);
+}
 
 // ***************************************************************************
 void			CPolygon::clip(const CPlane	 *planes, uint nPlanes)
@@ -1110,7 +1123,8 @@ bool CPolygon2D::isCCWOriented() const
 	const TVec2fVect &V = Vertices;
 	nlassert(Vertices.size() >= 3);
 	// compute highest and lowest pos of the poly
-	float fHighest = V[0].y;	
+	float fHighest = V[0].y;
+	float fLowest = fHighest;
 	// iterators to the highest and lowest vertex	
 	TVec2fVect::const_iterator it = V.begin() ;
 	const TVec2fVect::const_iterator endIt = V.end();
@@ -1122,12 +1136,23 @@ bool CPolygon2D::isCCWOriented() const
 			fHighest = it->y;
 			pHighest = it;
 		}
+		fLowest = std::max(fLowest, it->y);
 		++it;
 	}
-	while (it != endIt);			
-	// iterator to the first vertex that has an y different from the top vertex
-	TVec2fVect::const_iterator pHighestRight = pHighest; 
+	while (it != endIt);				
 	// we seek this vertex	
+	TVec2fVect::const_iterator pHighestRight = pHighest; 
+	if (fLowest == fHighest)
+	{
+		// special case : degenerate poly		
+		while (pHighestRight->x == pHighest->x)
+		{
+			pHighestRight = Next(pHighestRight, V);
+			if (pHighestRight == pHighest) return false; // the poly is reduced to a point, returns an abritrary value
+		}
+		return pHighest->x <= pHighestRight->x;
+	}
+	// iterator to the first vertex that has an y different from the top vertex
 	while (Next(pHighestRight, V)->y == fHighest)
 	{
 		pHighestRight = Next(pHighestRight, V);
@@ -1147,7 +1172,7 @@ bool CPolygon2D::isCCWOriented() const
 	if (pHighestLeft->x != pHighestRight->x)
 	{
 		// compare right and left side
-		return pHighestLeft->x > pHighestRight->x;		
+		return pHighestLeft->x <= pHighestRight->x;		
 	}	
 	// The top of the poly is sharp
 	// We perform a cross product of the 2 highest vect to get its orientation
@@ -1155,7 +1180,7 @@ bool CPolygon2D::isCCWOriented() const
 	 float deltaYN = Next(pHighestRight, V)->y - pHighestRight->y;
 	 float deltaXP = pPrevHighestLeft->x - pHighestLeft->x;
 	 float deltaYP = pPrevHighestLeft->y - pHighestLeft->y;
-	 return (deltaXN * deltaYP - deltaYN * deltaXP) < 0;	
+	 return (deltaXN * deltaYP - deltaYN * deltaXP) >= 0;	
 }
 
 // *******************************************************************************
@@ -1503,7 +1528,7 @@ void CPolygon2D::computeOuterBorders(TRasterVect &borders, sint &minimumY)
 		++curr;
 	}
 	while (curr != last);
-
+	
 		
 	highest = (sint) floorf(fhighest);
 	lowest = (sint) floorf(flowest);
@@ -1516,6 +1541,16 @@ void CPolygon2D::computeOuterBorders(TRasterVect &borders, sint &minimumY)
 	// fill with xmin / xman
 	sint ileft = (sint) floorf(fleft);
 	sint iright = (sint) ceilf(fright);
+	minimumY = highest;
+	if (flowest == fhighest) // special case : degenerate poly
+	{
+		
+		borders.resize(1);
+		borders.front().first =  ileft;
+		borders.front().second =  ileft;
+		return;
+	}
+	//
 	for(TRasterVect::iterator it = borders.begin(); it != borders.end(); ++it)
 	{
 		it->second = ileft;
@@ -1523,7 +1558,7 @@ void CPolygon2D::computeOuterBorders(TRasterVect &borders, sint &minimumY)
 	}
 
 
-	minimumY = highest;
+	
 	pHighestRight = phighest;
 	for (;;)
 	{	
@@ -2066,3 +2101,24 @@ bool operator < (const CPolygon2D &lhs, const CPolygon2D &rhs)
 
 
 } // NLMISC
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

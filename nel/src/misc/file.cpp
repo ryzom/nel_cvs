@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.18 2002/04/24 08:14:14 besson Exp $
+ * $Id: file.cpp,v 1.19 2002/04/30 13:48:46 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,8 @@ using namespace std;
 namespace NLMISC
 {
 
+uint32 CIFile::_NbBytesSerialized = 0;
+
 // ======================================================================================================
 CIFile::CIFile() : IStream(true, true)
 {
@@ -44,6 +46,7 @@ CIFile::CIFile() : IStream(true, true)
 	_BigFileOffset = 0;
 	_IsInBigFile = false;
 	_CacheFileOnOpen = false;
+	_IsAsyncLoading = false;
 }
 
 // ======================================================================================================
@@ -56,6 +59,7 @@ CIFile::CIFile(const std::string &path, bool text) : IStream(true, true)
 	_BigFileOffset = 0;
 	_IsInBigFile = false;
 	_CacheFileOnOpen = false;
+	_IsAsyncLoading = false;
 	open(path, text);
 }
 
@@ -87,14 +91,14 @@ bool		CIFile::open(const std::string &path, bool text)
 		{
 			fseek (_F, _BigFileOffset, SEEK_SET);
 			_Cache = new uint8[_FileSize];
-			//fread (_Cache, _FileSize, 1, _F);
 			for (uint32 i = 0; i < _FileSize; i += 100*1024)
 			{
 				if ((i+100*1024) > _FileSize)
 					fread (_Cache+i, _FileSize-i, 1, _F);
 				else
 					fread (_Cache+i, 100*1024, 1, _F);
-				nlSleep (5);
+				if (_IsAsyncLoading)
+					nlSleep (5);
 			}
 			if (!_AlwaysOpened)
 			{
@@ -124,14 +128,14 @@ bool		CIFile::open(const std::string &path, bool text)
 		if ((_CacheFileOnOpen) && (_F != NULL))
 		{
 			_Cache = new uint8[_FileSize];
-			//fread (_Cache, _FileSize, 1, _F);
 			for (uint32 i = 0; i < _FileSize; i += 100*1024)
 			{
 				if ((i+100*1024) > _FileSize)
 					fread (_Cache+i, _FileSize-i, 1, _F);
 				else
 					fread (_Cache+i, 100*1024, 1, _F);
-				nlSleep (5);
+				if (_IsAsyncLoading)
+					nlSleep (5);
 			}
 			fclose (_F);
 			_F = NULL;
@@ -147,6 +151,13 @@ void		CIFile::setCacheFileOnOpen (bool newState)
 {
 	_CacheFileOnOpen = newState;
 }
+
+// ======================================================================================================
+void		CIFile::setAsyncLoading (bool newState)
+{
+	_IsAsyncLoading = true;
+}
+
 
 // ======================================================================================================
 void		CIFile::close()
@@ -207,12 +218,14 @@ void		CIFile::serialBuffer(uint8 *buf, uint len) throw(EReadError)
 	if ((!_CacheFileOnOpen) && (_F == NULL))
 		throw EFileNotOpened (_FileName);
 
-	static int tam = 0;
-	tam += len;
-	if (tam > 100*1024)
+	if (_IsAsyncLoading)
 	{
-		nlSleep(5);
-		tam = 0;
+		_NbBytesSerialized += len;
+		if (_NbBytesSerialized > 100*1024)
+		{
+			nlSleep(5);
+			_NbBytesSerialized = 0;
+		}
 	}
 
 	if (_CacheFileOnOpen)

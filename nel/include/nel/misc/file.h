@@ -1,7 +1,7 @@
 /** \file file.h
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.16 2002/04/24 08:13:02 besson Exp $
+ * $Id: file.h,v 1.17 2002/04/30 13:48:55 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,9 @@ public:		// Basic Usage.
 	/// Set the cache file on open option (default behaviour is false (file is not cached at opening)
 	void	setCacheFileOnOpen (bool newState);
 
+	/// Set the async loading state (to go to sleep 5 ms after 100 Ko serialized)
+	void	setAsyncLoading (bool newState);
+
 public:		// Advanced Usage.
 	/// Explicit close.
 	void	close();
@@ -104,6 +107,10 @@ protected:
 private:
 	FILE		*_F;
 	std::string _FileName;
+
+	// Async
+	static uint32 _NbBytesSerialized;
+	bool _IsAsyncLoading;
 
 	// Cache 
 	bool	_CacheFileOnOpen;

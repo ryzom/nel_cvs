@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * <File description>
  *
- * $Id: async_file_manager.h,v 1.5 2002/04/26 16:07:45 besson Exp $
+ * $Id: async_file_manager.h,v 1.6 2002/04/30 13:48:46 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,9 +58,11 @@ public:
 	void loadIG (const std::string &igName, CInstanceGroup **ppIG);
 	void loadIGUser (const std::string &igName, UInstanceGroup **ppIG);
 
+	// Do not use these methods with the bigfile manager
 	void loadFile (const std::string &fileName, uint8 **pPtr);
 	void loadFiles (const std::vector<std::string> &vFileNames, const std::vector<uint8**> &vPtrs);
 
+	
 	void signal (bool *pSgn); // Signal a end of loading for a group of "mesh or file" added
 	void cancelSignal (bool *pSgn);
 	

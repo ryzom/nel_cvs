@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.14 2001/09/12 16:04:54 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.15 2001/09/26 17:49:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -216,7 +216,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		{
 
 			CEditableRangeFloat *rc = new CEditableRangeFloat(std::string("RADIUS CUT"), 0, 1);
-			pushWnd(rc);
+			pushWnd(rc);			
 			_RadiusCutWrapper.S = static_cast<NL3D::CPSShockWave *>(_Bindable);
 			rc->setWrapper(&_RadiusCutWrapper);
 			rc->init(xPos + 140, yPos, this);
@@ -311,13 +311,26 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		// tail particle
 		if (dynamic_cast<NL3D::CPSTailParticle *>(_Bindable))
 		{
-			CEditableRangeUInt *nbs = new CEditableRangeUInt(std::string("TAIL_NB_SEGS"), 1, 255);
+			CEditableRangeUInt *nbs;
+			if (!dynamic_cast<NL3D::CPSRibbonLookAt *>(_Bindable))
+			{
+				nbs = new CEditableRangeUInt(std::string("TAIL_NB_SEGS"), 1, 255);
+				nbs->enableLowerBound(0, true);
+			}
+			else
+			{
+				nbs = new CEditableRangeUInt(std::string("LOOKAT_RIBBON_TAIL_NB_SEGS"), 2, 255);
+				nbs->enableLowerBound(1, true);
+			}
+
 			pushWnd(nbs);
+
 			if (dynamic_cast<NL3D::CPSTailDot *>(_Bindable))
 			{
 				nbs->enableUpperBound(256, true);
 			}
-			nbs->enableLowerBound(0, true);
+			
+			
 			_TailParticleWrapper.P = dynamic_cast<NL3D::CPSTailParticle *>(_Bindable);
 			nbs->setWrapper(&_TailParticleWrapper);
 			nbs->init(xPos + 140, yPos, this);
@@ -360,19 +373,25 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			yPos += rect.bottom + 3;
 		}
 
-		// ribbon texture (doesn't support texture animation for now)
-		if (dynamic_cast<NL3D::CPSRibbon *>(_Bindable))
+		// unanimated texture
+		if (dynamic_cast<NL3D::CPSTexturedParticleNoAnim *>(_Bindable))
 		{
-			_RibbonTextureWrapper.R = static_cast<NL3D::CPSRibbon *>(_Bindable);
+			NL3D::CPSTexturedParticleNoAnim *tp = dynamic_cast<NL3D::CPSTexturedParticleNoAnim *>(_Bindable);
+			_TextureNoAnimWrapper.TP = tp;
 			CTextureChooser *tc = new CTextureChooser;			
 			tc->enableRemoveButton();
-			tc->setWrapper(&_RibbonTextureWrapper);
+			tc->setWrapper(&_TextureNoAnimWrapper);
 			pushWnd(tc);
-						
+
 			tc->init(xPos, yPos, this);
 			tc->GetClientRect(&rect);
 			yPos += rect.bottom + 3;
+		}
 
+		// ribbon texture (doesn't support texture animation for now)
+		if (dynamic_cast<NL3D::CPSRibbon *>(_Bindable))
+		{									
+		
 			// add dialog for uv tuning with ribbon
 			CEditableRangeFloat *uvd = new CEditableRangeFloat(std::string("RIBBON UFACTOR"), 0, 5);
 			pushWnd(uvd);
@@ -400,22 +419,24 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 
 		}
 
-
-		// fanlight texture
-		if (dynamic_cast<NL3D::CPSFanLight *>(_Bindable))
-		{
-			_FanLightTextureWrapper.F = static_cast<NL3D::CPSFanLight *>(_Bindable);
-			CTextureChooser *tc = new CTextureChooser;			
-			tc->enableRemoveButton();
-			tc->setWrapper(&_FanLightTextureWrapper);
-			pushWnd(tc);
-						
-			tc->init(xPos, yPos, this);
-			tc->GetClientRect(&rect);
+		if (dynamic_cast<NL3D::CPSRibbonLookAt *>(_Bindable))
+		{									
+		
+			// add dialog for uv tuning with ribbon
+			CEditableRangeFloat *sd = new CEditableRangeFloat(std::string("SEGMENT DURATION"), 0.05f, 0.5f);
+			sd->enableLowerBound(0, true);
+			pushWnd(sd);
+			_SegDurationWrapper.R = static_cast<NL3D::CPSRibbonLookAt *>(_Bindable);
+			sd->setWrapper(&_SegDurationWrapper);
+			sd->init(xPos + 140, yPos, this);
+			CStatic *s = new CStatic;			
+			pushWnd(s);
+			s->Create("Seg Duration :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->ShowWindow(SW_SHOW);
+			sd->GetClientRect(&rect);
 			yPos += rect.bottom + 3;
-			
 		}
-
+	
 		// 'look at' independant sizes
 		bool isLookAt = dynamic_cast<NL3D::CPSFaceLookAt *>(_Bindable) != NULL;		
 		GetDlgItem(IDC_INDE_SIZES)->ShowWindow(isLookAt ? SW_SHOW : SW_HIDE);

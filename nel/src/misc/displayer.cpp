@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.38 2002/08/23 12:17:40 lecroart Exp $
+ * $Id: displayer.cpp,v 1.39 2002/08/23 12:27:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,11 +44,11 @@
 #ifdef NL_OS_WINDOWS
 // these defines is for IsDebuggerPresent(). it'll not compile on windows 95
 // just comment this and the IsDebuggerPresent to compile on wiindows 95
-#define _WIN32_WINDOWS	0x0410
-#define WINVER			0x0400
-#include <windows.h>
+#	define _WIN32_WINDOWS	0x0410
+#	define WINVER			0x0400
+#	include <windows.h>
 #else
-#define IsDebuggerPresent() false
+#	define IsDebuggerPresent() false
 #endif
 
 #include "nel/misc/displayer.h"

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.88 2003/11/20 14:05:58 corvazier Exp $
+ * $Id: path.cpp,v 1.89 2003/11/21 11:01:17 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -126,6 +126,7 @@ void CPath::clearMap ()
 	CPath *inst = CPath::getInstance();
 	nlassert(!inst->_MemoryCompressed);
 	inst->_Files.clear ();
+	CBigFile::getInstance().removeAll ();
 	NL_DISPLAY_PATH("PATH: CPath::clearMap(): map directory cleared");
 }
 

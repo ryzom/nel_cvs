@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.12 2003/11/21 10:56:15 besson Exp $
+ * $Id: big_file.cpp,v 1.13 2003/11/21 11:01:17 corvazier Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -92,7 +92,10 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 	// Is already the same bigfile name ?
 	string bigfilenamealone = CFile::getFilename (sBigFileName);
 	if (_BNPs.find(bigfilenamealone) != _BNPs.end())
+	{
+		nlwarning ("CBigFile::add : bigfile %s already added.", bigfilenamealone.c_str());
 		return false;
+	}
 
 	// Allocate a new ThreadSafe FileId for this bnp.
 	bnpTmp.ThreadFileId= _ThreadFileArray.allocate();

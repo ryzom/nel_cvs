@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.10 2001/01/17 10:16:03 lecroart Exp $
+ * $Id: font_generator.cpp,v 1.11 2001/02/07 15:33:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,7 +117,7 @@ CFontGenerator::CFontGenerator (const std::string &fontFileName, const std::stri
 uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &height, uint32 &pitch, sint32 &left, sint32 &top, sint32 &advx, uint32 &glyphIndex)
 {
 	FT_Error error;
-	
+
 	error = FT_Set_Pixel_Sizes (_Face, size, size);
 	if (error)
 	{
@@ -134,6 +134,18 @@ uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &
 		nlerror ("FT_Load_Glyph() failed: %s", getFT2Error(error));
 	}
 
+	if (size == 0)
+	{
+		width = 0;
+		height = 0;
+		pitch = 0;
+		left = 0;
+		top = 0;
+		advx = 0;
+		glyphIndex = glyph_index;
+		return NULL;
+	}
+	
 	// convert to an anti-aliased bitmap
 	error = FT_Render_Glyph (_Face->glyph, ft_render_mode_normal);
 	if (error)

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.32 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.33 2004/03/09 19:00:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1677,7 +1677,7 @@ void CPSConstraintMesh::draw(bool opaque, TAnimationTime ellapsedTime)
 		}
 		else
 		{	
-			typedef CAdvance1616Iterator<std::vector<uint32>::const_iterator, uint32> TIndexIterator;
+			typedef CAdvance1616Iterator<CPSVector<uint32>::V::const_iterator, uint32> TIndexIterator;
 			CPSConstraintMeshHelper::drawPrerotatedMeshs(TIteratorVectStep1616(_Owner->getPos().begin(), 0, step),
 														 TIndexIterator(_IndexInPrecompBasis.begin(), 0, step),
 														 *this,

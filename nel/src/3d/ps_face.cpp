@@ -1,7 +1,7 @@
 /** \file ps_face.cpp
  * Face particles.
  *
- * $Id: ps_face.cpp,v 1.6 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_face.cpp,v 1.7 2004/03/09 19:00:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -222,7 +222,7 @@ void CPSFace::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationT
 		if (_PrecompBasis.size()) // do we use precomputed basis ?
 		{			
 			// rotate all precomputed basis		
-			for (std::vector< CPlaneBasisPair >::iterator it = _PrecompBasis.begin(); it != _PrecompBasis.end(); ++it)
+			for (CPSVector< CPlaneBasisPair >::V::iterator it = _PrecompBasis.begin(); it != _PrecompBasis.end(); ++it)
 			{
 				// not optimized at all, but this will apply to very few elements anyway...
 				CMatrix mat;
@@ -255,7 +255,7 @@ void CPSFace::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationT
 	if (step == (1 << 16))
 	{
 		/// build index iterator
-		std::vector<uint32>::const_iterator indexIt = _IndexInPrecompBasis.begin();
+		CPSVector<uint32>::V::const_iterator indexIt = _IndexInPrecompBasis.begin();
 
 		/// draw the faces
 		CPSFaceHelper::drawFaces(_Owner->getPos().begin(),	
@@ -268,7 +268,7 @@ void CPSFace::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationT
 	else
 	{		
 		/// build index iterator
-		CAdvance1616Iterator<std::vector<uint32>::const_iterator, const uint32>			
+		CAdvance1616Iterator<CPSVector<uint32>::V::const_iterator, const uint32>			
 			indexIt(_IndexInPrecompBasis.begin(), 0, step);
 		CPSFaceHelper::drawFaces(TIteratorVectStep1616(_Owner->getPos().begin(), 0, step),
 								 indexIt,
@@ -358,7 +358,7 @@ void CPSFace::fillIndexesInPrecompBasis(void)
 	{
 		_IndexInPrecompBasis.resize( _Owner->getMaxSize() );
 	}	
-	for (std::vector<uint32>::iterator it = _IndexInPrecompBasis.begin(); it != _IndexInPrecompBasis.end(); ++it)
+	for (CPSVector<uint32>::V::iterator it = _IndexInPrecompBasis.begin(); it != _IndexInPrecompBasis.end(); ++it)
 	{
 		*it = rand() % nbConf;
 	}

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.22 2004/04/21 09:38:33 vizerie Exp $
+ * $Id: driver_opengl_states.cpp,v 1.23 2004/04/27 12:08:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 
 // ***************************************************************************
 // define it For Debug purpose only. Normal use is to hide this line
- //#define		NL3D_GLSTATE_DISABLE_CACHE
+//#define		NL3D_GLSTATE_DISABLE_CACHE
 
 namespace NL3D 
 {
@@ -54,7 +54,7 @@ void			CDriverGLStates::init(bool supportTextureCubeMap)
 	_ColorArrayEnabled= false;	
 	_SecondaryColorArrayEnabled= false;
 	uint	i;
-	for(i=0; i<IDRV_MAT_MAXTEXTURES; i++)
+	for(i=0; i<sizeof(_TexCoordArrayEnabled)/sizeof(_TexCoordArrayEnabled[0]); i++)
 	{
 		_TexCoordArrayEnabled[i]= false;
 	}
@@ -716,8 +716,6 @@ void CDriverGLStates::enableVertexAttribArrayARB(uint glIndex,bool enable)
 		_VertexAttribArrayEnabled[glIndex]= enable;
 	}
 }
-
-
 
 // ***************************************************************************
 void CDriverGLStates::enableVertexAttribArrayForEXTVertexShader(uint glIndex, bool enable, uint *variants)

@@ -1,6 +1,6 @@
 /** \file mesh_dlg.cpp
  * A dialog that allows to choose a mesh (for mesh particles), and display the current mesh name 
- * $Id: mesh_dlg.cpp,v 1.6 2002/11/04 15:40:44 boucher Exp $
+ * $Id: mesh_dlg.cpp,v 1.7 2003/04/07 12:44:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,7 +157,7 @@ void CMeshDlg::updateForMorph()
 		GetDlgItem(IDC_SHAPE_NAME)->EnableWindow(!enable);
 		if (!enable)
 		{
-			m_ShapeName = _ShapeParticle->getShape().c_str();
+			m_ShapeName = cm->getShape().c_str();
 		}
 		else
 		{

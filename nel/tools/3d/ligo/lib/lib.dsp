@@ -213,6 +213,14 @@ SOURCE=.\primitive.cpp
 
 SOURCE=.\primitive.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\zone_region.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\zone_region.h
+# End Source File
 # End Group
 # End Target
 # End Project

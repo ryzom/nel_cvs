@@ -1,7 +1,7 @@
 /** \file emitter_dlg.h
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.h,v 1.7 2001/12/19 15:48:01 vizerie Exp $
+ * $Id: emitter_dlg.h,v 1.8 2002/02/15 17:17:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,7 @@ public:
 	CComboBox	m_EmittedTypeCtrl;
 	BOOL	m_UseSpeedBasis;
 	BOOL	m_ConvertSpeedVectorFromEmitterBasis;
+	BOOL	m_ConsistentEmission;
 	//}}AFX_DATA
 
 
@@ -91,6 +92,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnUseSpeedBasis();	
 	afx_msg void OnConvertSpeedVectorFromEmitterBasis();
+	afx_msg void OnConsistentEmission();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

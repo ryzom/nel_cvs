@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.9 2001/12/19 17:52:51 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.10 2002/02/15 17:17:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,7 @@ CEmitterDlg::CEmitterDlg(NL3D::CPSEmitter *emitter)
 	//{{AFX_DATA_INIT(CEmitterDlg)
 	m_UseSpeedBasis = FALSE;
 	m_ConvertSpeedVectorFromEmitterBasis = FALSE;
+	m_ConsistentEmission = _Emitter->isConsistentEmissionEnabled();
 	//}}AFX_DATA_INIT
 }
 
@@ -114,6 +115,7 @@ void CEmitterDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EMITTED_TYPE, m_EmittedTypeCtrl);
 	DDX_Check(pDX, IDC_USE_SPEED_BASIS, m_UseSpeedBasis);
 	DDX_Check(pDX, IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS, m_ConvertSpeedVectorFromEmitterBasis);
+	DDX_Check(pDX, IDC_CONSISTENT_EMISSION, m_ConsistentEmission);
 	//}}AFX_DATA_MAP
 }
 
@@ -124,6 +126,7 @@ BEGIN_MESSAGE_MAP(CEmitterDlg, CDialog)
 	ON_CBN_SELCHANGE(IDC_TYPE_OF_EMISSION, OnSelchangeTypeOfEmission)
 	ON_BN_CLICKED(IDC_USE_SPEED_BASIS, OnUseSpeedBasis)	
 	ON_BN_CLICKED(IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS, OnConvertSpeedVectorFromEmitterBasis)
+	ON_BN_CLICKED(IDC_CONSISTENT_EMISSION, OnConsistentEmission)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -273,6 +276,13 @@ void CEmitterDlg::OnConvertSpeedVectorFromEmitterBasis()
 {
 	UpdateData();
 	_Emitter->setSpeedVectorInEmitterBasis(m_ConvertSpeedVectorFromEmitterBasis ? true : false);
-	UpdateData(TRUE);	
+	UpdateData(TRUE);
 }
 
+
+void CEmitterDlg::OnConsistentEmission() 
+{
+	UpdateData();
+	_Emitter->enableConsistenEmission(m_ConsistentEmission != 0 ? true : false /* VC6 warning */);
+	UpdateData(TRUE);
+}

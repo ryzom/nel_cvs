@@ -113,19 +113,6 @@ SOURCE=.\3d\render_trav.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\tile_bank.cpp
-
-!IF  "$(CFG)" == "3d - Win32 Release"
-
-# ADD CPP /YX
-
-!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=..\include\nel\3d\trav_scene.h
 # End Source File
 # End Group

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.85 2001/09/06 16:48:18 chafik Exp $
+ * $Id: agent_script.cpp,v 1.86 2001/09/07 08:40:02 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,6 @@ namespace NLAIAGENT
 	NLAISCRIPT::COperandSimpleListOr *CAgentScript::IdMsgNotifyParent = NULL;
 	NLAISCRIPT::CParam *CAgentScript::ParamRunParentNotify = NULL;
 	CAgentScript::CMethodCall **CAgentScript::StaticMethod = NULL;
-
 
 	void CAgentScript::initAgentScript()
 	{
@@ -213,9 +212,16 @@ namespace NLAIAGENT
 																				NULL,CAgentScript::CheckCount,
 																				0,
 																				new NLAISCRIPT::CObjectUnknown(
-																				new NLAISCRIPT::COperandSimple(
+																				new NLAISCRIPT::COperandSimple(																
 																				new NLAIC::CIdentType(DigitalType::IdDigitalType))));		
+
+		StaticMethod[CAgentScript::TSetStatic] = new CAgentScript::CMethodCall(	_SETSTATIC_, 
+																				CAgentScript::TSetStatic, NULL,
+																				CAgentScript::CheckCount,
+																				2,
+																				new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid)) ;
 	}
+
 
 	void CAgentScript::releaseAgentScript()
 	{		
@@ -1271,6 +1277,15 @@ namespace NLAIAGENT
 
 	////////////////////////////////////////////////////////////////////////
 
+		case TSetStatic:
+			{
+				CGroupType *param = (CGroupType *) o;
+				CStringType *comp_name = (CStringType *)((IBaseGroupType *)param)->popFront();
+				IObjectIA *value = (IObjectIA *)((IBaseGroupType *)param)->popFront();
+				int index = _AgentClass->getComponentIndex( IVarName( comp_name->getStr() ) );
+				_AgentClass->updateStaticMember(index, value);
+			}
+
 		default:
 			return IAgent::runMethodeMember(index,o);
 				
@@ -1336,6 +1351,18 @@ namespace NLAIAGENT
 			{				
 				return runTellCompoment((IBaseGroupType *)o);
 			}
+		case TSetStatic:
+			{
+				CGroupType *param = (CGroupType *) o;
+				CStringType *comp_name = (CStringType *)((IBaseGroupType *)param)->popFront();
+				IObjectIA *value = (IObjectIA *)((IBaseGroupType *)param)->popFront();
+				int index = _AgentClass->getInheritedStaticMemberIndex( comp_name->getStr() );
+				_AgentClass->updateStaticMember(index, value);
+				IObjectIA::CProcessResult a;
+				a.Result = NULL;
+				return a;
+			}
+
 
 		default:
 			return IAgent::runMethodeMember(index,o);

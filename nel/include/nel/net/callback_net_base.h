@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 4, base
  *
- * $Id: callback_net_base.h,v 1.8 2001/04/03 09:08:14 cado Exp $
+ * $Id: callback_net_base.h,v 1.9 2001/04/03 09:22:03 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,10 +80,16 @@ public:
 	void	addCallbackArray( const TCallbackItem *callbackarray, TTypeNum arraysize );
 
 	/** Update the network (call this method evenly).
-	 * Reads incoming messages until the timeout expires.
+	 * Reads incoming messages until the timeout (in millisecond) expires or no data are available
 	 * Particular values for timeout:
 	 * - 0: reads only one message
-	 * - -1: reads all messages until no data available
+	 * - -1: reads all messages until no data are available.
+	 *
+	 * If you read only one message at a time, you may get late in processing the incoming
+	 * messages that accumulate faster than you read them.
+	 * On the contrary, if you read all messages and you receive a lot of them very quickly,
+	 * your program may not exit update() (or very late), blocking your main thread.
+	 * That's why the timeout allows you to allocate a maximum amount of time to update().
 	 */
 	void	update( sint32 timeout=0 );
 

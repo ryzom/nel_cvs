@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.32 2003/07/03 19:02:18 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.33 2003/08/21 16:54:08 lecroart Exp $
  *
  */
 
@@ -1333,6 +1333,8 @@ static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 			vara.push_back (var);
 		}
 
+		if (vara.size() > 0 && vara[0] == "__log")
+			vala.push_back ("----- Result from Shard "+shardName+" Server "+(*aesit).Name+"\n");
 
 		msgin.serial (nb);
 		for (i = 0; i < nb; i++)

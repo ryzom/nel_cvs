@@ -1,7 +1,7 @@
 /** \file u_source.h
  * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.13 2002/11/04 15:40:43 boucher Exp $
+ * $Id: u_source.h,v 1.14 2002/11/25 14:08:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,15 +45,19 @@ struct CSoundContext
 {
 	// -1 for args is a special value means that unset. Don't use negative number
 	
-	CSoundContext() : Position(NLMISC::CVector::Null), PreviousRandom(100)
+	CSoundContext() 
+	:	Position(NLMISC::CVector::Null), 
+		PreviousRandom(100),
+		RelativeGain(1.0f)
 	{
 		for (uint i = 0; i < SoundContextNbArgs; i++)
 			Args[i] = -1;
 	}
 
+	float			RelativeGain;
 	NLMISC::CVector Position;
-	sint32	Args[SoundContextNbArgs];
-	uint32	PreviousRandom;
+	sint32			Args[SoundContextNbArgs];
+	uint32			PreviousRandom;
 };
 
 
@@ -65,8 +69,8 @@ class USource;
 typedef CSound* TSoundId;
 
 /// Priority of the sources (p1<p2 means p1 has higher priority than p2)
-enum TSoundPriority { HighestPri, HighPri, MidPri, LowPri };
-const uint NbSoundPriorities = 4;
+enum TSoundPriority { HighestPri, HighPri, MidPri, LowPri, NbSoundPriorities};
+//const uint NbSoundPriorities = 4;
 
 /// Type of callbacks called before a spawned source is deleted
 typedef void (*TSpawnEndCallback) (USource *, void *);
@@ -103,11 +107,11 @@ public:
 	/** Change the sound binded to the source.
 	  * The source must be of the same type as the source (ie simple or complex or background sound).
 	  */
-	virtual void					setSound( TSoundId id, CSoundContext *context = 0) = 0;
+//	virtual void					setSound( TSoundId id, CSoundContext *context = 0) = 0;
 	/// Return the sound binded to the source (or NULL if there is no sound)
 	virtual TSoundId				getSound() = 0;
 	/// Change the priority of the source
-	virtual void					setPriority( TSoundPriority pr, bool redispatch=true ) = 0;
+	virtual void					setPriority( TSoundPriority pr) = 0;
 
 	/// \name Playback control
 	//@{

@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.5 2001/07/11 16:11:29 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.6 2001/08/09 13:12:50 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,8 @@ bool CNelExport::exportMesh (const char *sPath, INode& node, Interface& ip, Time
 	{
 		// Skeleton shape
 		CSkeletonShape *skeletonShape=NULL;
+		TInodePtrInt *mapIdPtr=NULL;
+		TInodePtrInt mapId;
 
 		// If model skinned ?
 		if (CExportNel::isSkin (node))
@@ -67,16 +69,19 @@ bool CNelExport::exportMesh (const char *sPath, INode& node, Interface& ip, Time
 				CExportNel::addSkeletonBindPos (node, boneBindPos);
 
 				// Build the skeleton based on the bind pos information
-				CExportNel::buildSkeletonShape (*skeletonShape, *skeletonRoot, &boneBindPos, time);
+				CExportNel::buildSkeletonShape (*skeletonShape, *skeletonRoot, &boneBindPos, mapId, time);
+
+				// Set the pointer to not NULL
+				mapIdPtr=&mapId;
+
+				// Erase the skeleton
+				if (skeletonShape)
+					delete skeletonShape;
 			}
 		}
 
 		// Export in mesh format
-		IShape*	pShape=CExportNel::buildShape (node, ip, time, skeletonShape, false, opt, false);
-
-		// Erase the skeleton
-		if (skeletonShape)
-			delete skeletonShape;
+		IShape*	pShape=CExportNel::buildShape (node, ip, time, mapIdPtr, false, opt, false);
 
 		// Conversion success ?
 		if (pShape)
@@ -168,7 +173,8 @@ bool CNelExport::exportSkeleton	(const char *sPath, INode* pNode, Interface& ip,
 
 	// Build the skeleton format
 	CSkeletonShape *skeletonShape=new CSkeletonShape();
-	CExportNel::buildSkeletonShape (*skeletonShape, *pNode, NULL, time);
+	TInodePtrInt mapId;
+	CExportNel::buildSkeletonShape (*skeletonShape, *pNode, NULL, mapId, time);
 
 	// Open a file
 	COFile file;

@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.11 2001/08/08 11:54:47 besson Exp $
+ * $Id: nel_export_view.cpp,v 1.12 2001/08/09 13:12:50 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,16 +51,34 @@ using namespace std;
 typedef map<INode*, CExportNel::mapBoneBindPos > mapRootMapBoneBindPos;
 
 // -----------------------------------------------------------------------------------------------
+
+class CSkeletonDesc
+{
+public:
+	CSkeletonDesc (CSkeletonModel *skeletonShape, const TInodePtrInt& mapId)
+	{
+		SkeletonShape=skeletonShape;
+		MapId=mapId;
+	}
+	CSkeletonModel	*SkeletonShape;
+	TInodePtrInt	MapId;
+};
+
+// -----------------------------------------------------------------------------------------------
+
 void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt)
 {
 	// Register classes
 	registerSerial3d ();
 	CScene::registerBasics ();
+	
 	// Create an object viewer
 	IObjectViewer* view = IObjectViewer::getInterface();
+	
 	// Build a skeleton map
 	mapRootMapBoneBindPos				skeletonMap;
-	std::map<INode*, CSkeletonModel*>	mapSkeletonShape;
+
+	std::map<INode*, CSkeletonDesc>	mapSkeletonShape;
 
 	if (view)
 	{
@@ -154,7 +172,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 					{
 						// Ok, look for the set in the map of desc
 						mapRootMapBoneBindPos::iterator iteSkeleton = skeletonMap.find (skeletonRoot);
-						std::map<INode*, CSkeletonModel*>::iterator skelBindPod = mapSkeletonShape.find (skeletonRoot);
+						std::map<INode*, CSkeletonDesc>::iterator skelBindPod = mapSkeletonShape.find (skeletonRoot);
 
 						// Not found ?
 						if (skelBindPod==mapSkeletonShape.end())
@@ -162,15 +180,18 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 							// Insert it
 							CSkeletonShape *skelShape=new CSkeletonShape();
 
+							// A matrix id map
+							TInodePtrInt mapId;
+
 							// Build the skeleton based on the bind pos information
-							CExportNel::buildSkeletonShape (*skelShape, *skeletonRoot, &(iteSkeleton->second), time);
+							CExportNel::buildSkeletonShape (*skelShape, *skeletonRoot, &(iteSkeleton->second), mapId, time);
 
 							// Add the shape in the view
 							CSkeletonModel *skelInstance=view->addSkel (skelShape, skeletonRoot->GetName(), 
 								(CExportNel::getName (*skeletonRoot)+".").c_str());
 
 							// Insert in the map
-							mapSkeletonShape.insert (std::map<INode*, CSkeletonModel*>::value_type ( skeletonRoot, skelInstance));
+							mapSkeletonShape.insert (std::map<INode*, CSkeletonDesc>::value_type ( skeletonRoot, CSkeletonDesc (skelInstance, mapId)));
 						}
 					}
 				}
@@ -229,21 +250,21 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 					{
 						// Look for bind pos info for this skeleton
 						mapRootMapBoneBindPos::iterator iteSkel=skeletonMap.find (skeletonRoot);
-						std::map<INode*, CSkeletonModel*>::iterator iteSkelShape=mapSkeletonShape.find (skeletonRoot);
+						std::map<INode*, CSkeletonDesc>::iterator iteSkelShape=mapSkeletonShape.find (skeletonRoot);
 						nlassert (iteSkel!=skeletonMap.end());
 						nlassert (iteSkelShape!=mapSkeletonShape.end());
 
 						// Export the shape
 						IShape *pShape;
-						CSkeletonShape *skeletonShape=dynamic_cast<CSkeletonShape*> ((IShape*)iteSkelShape->second->Shape);
-						pShape=CExportNel::buildShape (*pNode, ip, time, skeletonShape, true, opt, true);
+						CSkeletonShape *skeletonShape=dynamic_cast<CSkeletonShape*> ((IShape*)iteSkelShape->second.SkeletonShape->Shape);
+						pShape=CExportNel::buildShape (*pNode, ip, time, &iteSkelShape->second.MapId, true, opt, true);
 
 						// Build succesful ?
 						if (pShape)
 						{
 							// Add the shape in the view
 							CMeshInstance* meshInstance=(CMeshInstance*)view->addMesh (pShape, pNode->GetName(), 
-								(CExportNel::getName (*pNode)+".").c_str(), iteSkelShape->second);
+								(CExportNel::getName (*pNode)+".").c_str(), iteSkelShape->second.SkeletonShape);
 
 							// ok
 							skined=true;

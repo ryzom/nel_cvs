@@ -54,8 +54,13 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=xilink6.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
+# ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
 # SUBTRACT LINK32 /pdb:none
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PreLink_Desc=Change version number
+PreLink_Cmds=buildinc version.ver object_viewer.rc	rc /l 0x40c /fo"Release/object_viewer.res" /d "NDEBUG" /d "_AFXDLL" object_viewer.rc
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
 
@@ -81,7 +86,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=xilink6.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
+# ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
@@ -109,7 +114,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=xilink6.exe
 # ADD BASE LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
-# ADD LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
+# ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
 
 !ENDIF 
 
@@ -121,6 +126,10 @@ LINK32=xilink6.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Source File
+
+SOURCE=.\about_dialog.cpp
+# End Source File
 # Begin Source File
 
 SOURCE=.\animation_dlg.cpp
@@ -177,6 +186,10 @@ SOURCE=.\std_afx.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\about_dialog.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\animation_dlg.h

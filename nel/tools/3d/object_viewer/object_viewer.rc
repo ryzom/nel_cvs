@@ -61,6 +61,17 @@ BEGIN
     EDITTEXT        IDC_VALUE,5,5,105,13,ES_AUTOHSCROLL
 END
 
+IDD_ABOUT DIALOG DISCARDABLE  0, 0, 147, 76
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About object viewer"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,49,50,50,14
+    ICON            IDI_APP_ICON,IDC_STATIC,20,15,21,20
+    LTEXT           "NeL object viewer",IDC_STATIC,70,15,60,10
+    LTEXT           "Can't read version",IDC_VERSION,70,25,60,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -76,6 +87,14 @@ BEGIN
         RIGHTMARGIN, 107
         TOPMARGIN, 7
         BOTTOMMARGIN, 37
+    END
+
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 140
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 69
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1053,7 +1072,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
+ FILEVERSION 1, 0, 0, 3
  PRODUCTVERSION 1,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -1072,7 +1091,7 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "object_viewer DLL\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "FileVersion", "1, 0, 0, 3\0"
             VALUE "InternalName", "object_viewer\0"
             VALUE "LegalCopyright", "Copyright (C) 2001\0"
             VALUE "LegalTrademarks", "\0"
@@ -1221,6 +1240,10 @@ BEGIN
         MENUITEM "Animation &set",              ID_WINDOW_ANIMATIONSET
         MENUITEM "&Mixer slots",                ID_WINDOW_MIXERSSLOTS
         MENUITEM "&Particles",                  ID_WINDOW_PATICLES
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About object viewer...",     ID_HELP_ABOUTOBJECTVIEWER
     END
 END
 

@@ -176,6 +176,7 @@
 #define IDB_SOUND_VOLUME                1077
 #define IDC_ATTRIB_NB_CYCLES            1078
 #define IDB_SOUND_FREQ                  1078
+#define IDD_ABOUT                       1079
 #define IDC_ATTR_BITMAP                 1081
 #define IDC_CONSTANT_VALUE_POS          1082
 #define IDC_AVAILABLE_TARGET            1086
@@ -252,6 +253,7 @@
 #define IDC_DIE_WHEN_OUT_OF_FRUSTRUM    1162
 #define IDC_DISGRADE_WITH_LOD           1163
 #define IDC_PERFORM_MOTION_WHEN_OUT_OF_FRUSTUM 1163
+#define IDC_VERSION                     1164
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -322,14 +324,15 @@
 #define ID_BUTTON32849                  32849
 #define ID_BUTTON32852                  32852
 #define IDM_SOUND                       32857
+#define ID_HELP_ABOUTOBJECTVIEWER       32858
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1079
-#define _APS_NEXT_COMMAND_VALUE         32858
-#define _APS_NEXT_CONTROL_VALUE         1164
+#define _APS_NEXT_RESOURCE_VALUE        1080
+#define _APS_NEXT_COMMAND_VALUE         32859
+#define _APS_NEXT_CONTROL_VALUE         1165
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.14 2001/08/07 14:23:02 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.15 2001/08/09 13:14:00 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,9 +113,8 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bo
 // ***************************************************************************
 
 // Export a mesh
-IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, 
-								const CSkeletonShape* skeletonShape, bool absolutePath,
-								CExportNelOptions &opt, bool view)
+IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, const TInodePtrInt *nodeMap, 
+								bool absolutePath, CExportNelOptions &opt, bool view)
 {
 
 	// Here, we must check what kind of node we can build with this mesh.
@@ -123,7 +122,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 	IShape *retShape=NULL;
 
 	// If skinning, disable skin modifier
-	if (skeletonShape)
+	if (nodeMap)
 		enableSkinModifier (node, false);
 
 	// Get a pointer on the object's node
@@ -316,7 +315,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 					bool isTransparent;
 					bool isOpaque;
 					multiLodBuild.LodMeshes.resize (1);
-					multiLodBuild.LodMeshes[0].MeshGeom=buildMeshGeom (node, ip, time, skeletonShape, absolutePath, opt, multiLodBuild.BaseMesh, 
+					multiLodBuild.LodMeshes[0].MeshGeom=buildMeshGeom (node, ip, time, nodeMap, absolutePath, opt, multiLodBuild.BaseMesh, 
 						listMaterialName, isTransparent, isOpaque, CMatrix::Identity, view);
 					multiLodBuild.LodMeshes[0].DistMax=getScriptAppData (&node, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
 					multiLodBuild.LodMeshes[0].BlendLength=getScriptAppData (&node, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT);
@@ -340,7 +339,21 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 
 					// Build a world to local matrix
 					CMatrix worldToNodeMatrix;
-					buildNeLMatrix (worldToNodeMatrix, backupedScale, backupedRot, backupedPos); 
+
+					// Is first slot is skinned ?
+					INode *rootSkel=getSkeletonRootBone (node);
+
+					// Get a node to world matrix
+					buildNeLMatrix (worldToNodeMatrix, backupedScale, backupedRot, backupedPos);
+					if (rootSkel)
+					{
+						// Yes..
+						CMatrix tmp;
+						convertMatrix (tmp, rootSkel->GetNodeTM (time));
+						worldToNodeMatrix=CMatrix::Identity;
+					}
+
+					// Invert it
 					worldToNodeMatrix.invert ();
 
 					// For all the other lods
@@ -364,7 +377,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 							convertMatrix (nodeTM, lodNode->GetNodeTM (time));
 
 							// Fill the structure
-							multiLodBuild.LodMeshes[index].MeshGeom=buildMeshGeom (*lodNode, ip, time, skeletonShape, absolutePath, opt, multiLodBuild.BaseMesh, 
+							multiLodBuild.LodMeshes[index].MeshGeom=buildMeshGeom (*lodNode, ip, time, nodeMap, absolutePath, opt, multiLodBuild.BaseMesh, 
 								listMaterialName, isTransparent, isOpaque, worldToNodeMatrix*nodeTM, view);
 							multiLodBuild.LodMeshes[index].DistMax=getScriptAppData (lodNode, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
 							multiLodBuild.LodMeshes[index].BlendLength=getScriptAppData (lodNode, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT);
@@ -413,7 +426,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 					buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, absolutePath);
 
 					CMesh::CMeshBuild buildMesh;
-					buildMeshInterface (*tri, buildMesh, maxBaseBuild, node, time, skeletonShape, absolutePath);
+					buildMeshInterface (*tri, buildMesh, maxBaseBuild, node, time, nodeMap, absolutePath);
 
 					if( hasLightMap( node, time ) && opt.bExportLighting )
 						calculateLM(&buildMesh, &buildBaseMesh, node, ip, time, absolutePath, opt);
@@ -465,7 +478,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 	}
 
 	// If skinning, renable skin modifier
-	if (skeletonShape)
+	if (nodeMap)
 		enableSkinModifier (node, true);
 
 	// Return the shape pointer or NULL if an error occured.
@@ -570,7 +583,7 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 
 // Build a mesh interface
 void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMesh, const CMaxMeshBaseBuild& maxBaseBuild, INode& node, TimeValue time, 
-									 const NL3D::CSkeletonShape* skeletonShape, bool absolutePath, const CMatrix& newBasis)
+									 const TInodePtrInt* nodeMap, bool absolutePath, const CMatrix& newBasis)
 {
 	// Get a pointer on the 3dsmax mesh
 	Mesh *pMesh=&tri.mesh;
@@ -586,7 +599,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	buildMesh.VertexFlags=IDRV_VF_XYZ|IDRV_VF_NORMAL;
 
 	// Is this mesh skined ?
-	bool skined=skeletonShape!=NULL;
+	bool skined=(nodeMap!=NULL);
 
 	// *** ***************************
 	// *** Compute the export matrix
@@ -914,7 +927,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	if (skined)
 	{
 		// Add skinning information to the buildMesh struct
-		uint error=buildSkinning (buildMesh, *skeletonShape, node);
+		uint error=buildSkinning (buildMesh, *nodeMap, node);
 
 		// Error code ?
 		if (error!=NoError)
@@ -972,7 +985,7 @@ void CExportNel::buildMRMParameters (Animatable& node, CMRMParameters& params)
 // ***************************************************************************
 
 IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time, 
-								const CSkeletonShape* skeletonShape, bool absolutePath,
+								const TInodePtrInt *nodeMap, bool absolutePath,
 								CExportNelOptions &opt, CMeshBase::CMeshBaseBuild &buildBaseMesh, 
 								std::vector<std::string>& listMaterialName,
 								bool& isTransparent,
@@ -984,10 +997,10 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 
 	// Skinning at this lod ?
 	if (!isSkin (node))
-		skeletonShape=NULL;
+		nodeMap=NULL;
 
 	// If skinning, disable skin modifier
-	if (skeletonShape)
+	if (nodeMap)
 		enableSkinModifier (node, false);
 
 	// Get a pointer on the object's node
@@ -1014,7 +1027,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 
 			// No skeleton shape
 			if (coarseMesh)
-				skeletonShape=NULL;
+				nodeMap=NULL;
 
 			// Array of name for the material
 			CMaxMeshBaseBuild maxBaseBuild;
@@ -1024,7 +1037,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 
 			// Fill the build interface of CMesh
 			CMesh::CMeshBuild buildMesh;
-			buildMeshInterface (*tri, buildMesh, maxBaseBuild, node, time, skeletonShape, absolutePath, nodeToParentMatrix);
+			buildMeshInterface (*tri, buildMesh, maxBaseBuild, node, time, nodeMap, absolutePath, nodeToParentMatrix);
 
 			// Append material names
 			isTransparent=false;
@@ -1086,7 +1099,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 	}
 
 	// If skinning, renable skin modifier
-	if (skeletonShape)
+	if (nodeMap)
 		enableSkinModifier (node, true);
 
 	// Return the shape pointer or NULL if an error occured.

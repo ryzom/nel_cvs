@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.24 2001/08/09 11:43:14 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.25 2001/08/09 13:10:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -443,8 +443,10 @@ void CObjectViewer::go ()
 		float fps = (float)(1.0 / NLMISC::CTime::ticksToSecond (newTime-lastTime));
 		lastTime=newTime;
 		char msgBar[512];
-		sprintf (msgBar, "Fps: %5.1f   -   Nb tri: %d   -   Texture VRAM used (Mo): %5.2f", fps, in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips,
-			(float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024) );
+		sprintf (msgBar, "Fps: %03.1f   -   Nb tri: %d   -   Texture VRAM used (Mo): %5.2f  -  Distance: %5.0f", fps, 
+			in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips,
+			(float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024), 
+			(_SceneCenter-CNELU::Camera->getMatrix().getPos()).norm() );
 		_MainFrame->StatusBar.SetWindowText (msgBar);
 
 

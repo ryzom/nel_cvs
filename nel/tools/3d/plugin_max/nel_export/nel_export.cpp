@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.9 2001/08/08 09:04:46 legros Exp $
+ * $Id: nel_export.cpp,v 1.10 2001/08/09 13:12:50 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,6 @@
 #include "3d/skeleton_shape.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/file.h"
-#include "checkversion.h"
 #include "../nel_mesh_lib/export_nel.h"
 #include "../nel_patch_lib/rpo.h"
 #include "nel_export_scene.h"
@@ -56,14 +55,6 @@ static const char *skeletonFilter="NeL Skeleton file (*.skel)\0*.skel\0All files
 
 void *CNelExportClassDesc::Create(BOOL loading)
 {
-	// Check only one time the version of the plugin on the server
-	static bool bPassed=false;
-	if (!bPassed)
-	{
-		bPassed=true;
-		CheckPluginVersion ("plugins max\\plugins\\nelexport.dlu");
-	}
-
 	return &theCNelExport;
 }
 
@@ -185,16 +176,49 @@ int CALLBACK OptionsDialogCallback (
 	return TRUE;
 }
 
-
-
-
-
 static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) 
 	{
 		case WM_INITDIALOG:
-			theCNelExport.Init(hWnd);
+			{
+				theCNelExport.Init(hWnd);
+
+				// Get the module path
+				HMODULE hModule = GetModuleHandle("nelexport.dlu");
+				if (hModule)
+				{
+					// Find the verion resource
+					HRSRC hRSrc=FindResource (hModule, MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
+					if (hRSrc)
+					{
+						HGLOBAL hGlobal=LoadResource (hModule, hRSrc);
+						if (hGlobal)
+						{
+							void *pInfo=LockResource (hGlobal);
+							if (pInfo)
+							{
+								uint *versionTab;
+								uint versionSize;
+								if (VerQueryValue (pInfo, "\\", (void**)&versionTab,  &versionSize))
+								{
+									// Get the pointer on the structure
+									VS_FIXEDFILEINFO *info=(VS_FIXEDFILEINFO*)versionTab;
+
+ 									// Setup version number
+									char version[512];
+									sprintf (version, "Version %d.%d.%d.%d", 
+										info->dwFileVersionMS>>16, 
+										info->dwFileVersionMS&0xffff, 
+										info->dwFileVersionLS>>16,  
+										info->dwFileVersionLS&0xffff);
+									SetWindowText (GetDlgItem (hWnd, IDC_VERSION), version);
+								}
+							}
+						}
+					}
+				}
+			}
 			break;
 
 		case WM_DESTROY:

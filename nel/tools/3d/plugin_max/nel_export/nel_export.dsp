@@ -55,7 +55,12 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 freetype.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /machine:I386 /out:"C:\3dsmax3_1\plugins\nelexport.dlu" /libpath:"D:\3DSMAX3\Maxsdk\lib" /release
+# ADD LINK32 freetype.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib version.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /machine:I386 /out:"C:\3dsmax3_1\plugins\nelexport.dlu" /libpath:"D:\3DSMAX3\Maxsdk\lib" /release
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PreLink_Desc=Change version number
+PreLink_Cmds=buildinc version.ver nel_export.rc	rc /l 0x40c /fo"Release/nel_export.res" /d "NDEBUG" nel_export.rc
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "nel_export - Win32 Debug"
 
@@ -81,7 +86,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 freetype.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelexport.dlu" /pdbtype:sept /libpath:"D:\3DSMAX3\Maxsdk\lib"
+# ADD LINK32 freetype.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib version.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelexport.dlu" /pdbtype:sept /libpath:"D:\3DSMAX3\Maxsdk\lib"
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
 PostBuild_Desc=copy dans max normal
@@ -139,7 +144,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /machine:I386 /out:"D:\3DSMAX3\stdplugs\Nel_export.dlu" /libpath:"D:\3DSMAX3\Maxsdk\lib" /release
-# ADD LINK32 freetype.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1\plugins\nelexport.dlu" /libpath:"D:\3DSMAX3\Maxsdk\lib" /release
+# ADD LINK32 freetype.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib version.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1\plugins\nelexport.dlu" /libpath:"D:\3DSMAX3\Maxsdk\lib" /release
 
 !ENDIF 
 
@@ -152,11 +157,6 @@ LINK32=link.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
-# Begin Source File
-
-SOURCE=.\checkversion.cpp
-# ADD CPP /Yu
-# End Source File
 # Begin Source File
 
 SOURCE=.\DllEntry.cpp
@@ -229,10 +229,6 @@ SOURCE=.\std_afx.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
-# Begin Source File
-
-SOURCE=.\checkversion.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\nel_export.h

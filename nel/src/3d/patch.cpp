@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.71 2001/11/05 16:26:45 berenguier Exp $
+ * $Id: patch.cpp,v 1.72 2001/11/14 15:16:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1409,7 +1409,6 @@ void			CPatch::serial(NLMISC::IStream &f)
 	{
 		Flags=NL_PATCH_SMOOTH_FLAG_MASK;
 	}
-	Flags=NL_PATCH_SMOOTH_FLAG_MASK;
 }
 
 

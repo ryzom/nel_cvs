@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.60 2002/10/02 15:50:38 lecroart Exp $
+ * $Id: path.cpp,v 1.61 2002/10/29 17:21:45 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -351,10 +351,16 @@ std::string CPath::getFullPath (const std::string &path, bool addFinalSlash)
 	}
 
 	// windows full path
-	if (path.size() > 2 && path[1] == ':')
+	if (path.size() >= 2 && path[1] == ':')
 	{
 		return sPath;
 	}
+
+	if (path.size() >= 2 && (path[0] == '/' || path[0] == '\\') && (path[1] == '/' || path[1] == '\\'))
+	{
+		return sPath;
+	}
+
 
 	// from root
 	if (path [0] == '/' || path[0] == '\\')

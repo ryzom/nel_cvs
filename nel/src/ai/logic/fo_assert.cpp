@@ -84,7 +84,7 @@ namespace NLAILOGIC
 		for ( sint32 i = 0; i < (sint32)_Outputs.size(); i++ )
 		{
 			// Créé la liste des valeurs
-			std::list<IObjetOp *> *values = f->getValues();
+			std::list<IObjectIA *> *values = f->getValues();
 //			TODO: unifier pour bool et first order operator			
 //			_Outputs[i]->propagate(values, _PosVars[i] );
 		}

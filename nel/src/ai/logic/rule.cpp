@@ -409,8 +409,8 @@ namespace NLAILOGIC
 		std::list<IObjetOp *>::iterator it_v = vals.begin();
 		while ( it_pos != pos.end() )
 		{
-			IObjetOp *l_val = (*unified)[*it_pos];
-			IObjetOp *r_val = *it_v;
+			IObjectIA *l_val = (*unified)[*it_pos];
+			IObjectIA *r_val = *it_v;
 			sint32 p = *it_pos;
 			if ( !l_val )
 			{

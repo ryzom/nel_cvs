@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Set of values
  *
- * $Id: valueset.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
+ * $Id: valueset.h,v 1.6 2001/06/19 10:10:49 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NLAILOGIC {
 	class CValueSet  : public NLAIAGENT::IObjetOp
 	{
 		protected:
-			NLAIAGENT::IObjetOp **_Values;
+			NLAIAGENT::IObjectIA **_Values;
 			sint32 _NbValues;
 
 		public: 
@@ -45,18 +45,18 @@ namespace NLAILOGIC {
 			CValueSet(const CValueSet &);
 			CValueSet(std::vector<IBaseVar *> &);
 			CValueSet(CValueSet *,std::vector<sint32> &);
-			CValueSet(sint32,std::list<NLAIAGENT::IObjetOp *> *,std::vector<sint32> &);
-			~CValueSet();
-			virtual NLAIAGENT::IObjetOp *getValue(sint32);
-			void setValue(sint32, NLAIAGENT::IObjetOp *);
+			CValueSet(sint32,std::list<NLAIAGENT::IObjectIA *> *,std::vector<sint32> &);
+			virtual ~CValueSet();
+			virtual NLAIAGENT::IObjectIA *getValue(sint32);
+			void setValue(sint32, NLAIAGENT::IObjectIA *);
 			CValueSet *unify(const CValueSet *) const ;
-			CValueSet *unify(std::list<NLAIAGENT::IObjetOp *> *vals, std::vector<sint32> &pos_vals) const;
+			CValueSet *unify(std::list<NLAIAGENT::IObjectIA *> *vals, std::vector<sint32> &pos_vals) const;
 			CValueSet *unify(CValueSet *vals, std::vector<sint32> &pos_vals) const;
 			bool operator==(CValueSet *);
-			virtual NLAIAGENT::IObjetOp *operator[](sint32);
+			virtual NLAIAGENT::IObjectIA *operator[](sint32);
 			sint32 size();
 			sint32 undefined() const;
-			std::list<NLAIAGENT::IObjetOp *> *getValues();
+			std::list<NLAIAGENT::IObjectIA *> *getValues();
 			virtual void getDebugString(std::string &) const;
 
 			virtual const NLAIC::IBasicType *clone() const;
@@ -68,8 +68,8 @@ namespace NLAILOGIC {
 			static const NLAIC::CIdentType IdValueSet;
 
 			virtual NLAIAGENT::IObjetOp *operator ! () const;
-			virtual NLAIAGENT::IObjetOp *operator != (NLAIAGENT::IObjetOp &a) const;
-			virtual NLAIAGENT::IObjetOp *operator == (NLAIAGENT::IObjetOp &a) const;
+			virtual NLAIAGENT::IObjectIA *operator != (NLAIAGENT::IObjectIA &a) const;
+			virtual NLAIAGENT::IObjectIA *operator == (NLAIAGENT::IObjectIA &a) const;
 
 			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &) const;
 			
@@ -80,6 +80,8 @@ namespace NLAILOGIC {
 
 			virtual const IObjectIA::CProcessResult &run();
 			CValueSet *forward(CClause *,std::vector<sint32> &);
+
+			virtual void setSize(sint32);
 	};
 }
 

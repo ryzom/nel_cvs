@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.20 2001/06/18 13:57:43 chafik Exp $
+ * $Id: group_type.cpp,v 1.21 2001/06/19 10:11:31 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1004,4 +1004,413 @@ namespace NLAIAGENT
 	{			
 		clear();
 	}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+	IObjetOp &CMapGroupType::::operator += (const IObjetOp &a)
+	{
+		cpy(a);
+		return *this;
+	}
+
+	IObjetOp &CMapGroupType::::operator -= (const IObjetOp &a)
+	{
+		erase(a);
+		return *this;
+	}
+
+	IObjetOp *CMapGroupType::::operator ! () const
+	{		
+		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(!size());
+		return x;
+	}
+
+	IObjectIA &CMapGroupType::::operator = (const IObjectIA &a)
+	{		
+		clear();
+		if((uint)(((const NLAIC::CTypeOfObject &)a.getType()) & NLAIC::CTypeOfObject::tList))
+		{
+			const CMapGroupType:: &g= (const CMapGroupType:: &)a;
+			tVectorType::const_iterator i = g._Vector.begin();
+			while(i != g._Vector.end())
+			{
+				_Vector.push_back((const IObjectIA *)(*i++)->clone());
+			}
+		}	
+		else 
+			_Vector.push_back((const IObjectIA *)a.clone());
+		return *this;
+	}
+
+	const NLAIC::CIdentType &CMapGroupType::::getType() const		
+	{		
+		return IdVectorGroupType;
+	}
+
+	const IObjectIA::CProcessResult &CMapGroupType::::run()
+	{
+		tVectorType::iterator i = _Vector.begin();
+		while(i != _Vector.end())
+		{
+			((IObjectIA *)(*i++))->run();
+		}
+		return IObjectIA::ProcessRun; 
+	}
+
+	CMapGroupType::::tVectorType &CMapGroupType::::getVector() 
+	{
+		return _Vector;
+	}
+
+
+	CMapGroupType::::CMapGroupType::(sint32 i): _Vector(i)
+	{
+	}
+
+	CMapGroupType::::CMapGroupType::()
+	{						
+	}
+
+	CMapGroupType::::CMapGroupType::(const CMapGroupType:: &g)
+	{
+		_Vector = g._Vector;
+		tVectorType::const_iterator i = _Vector.begin();
+		while(i != _Vector.end())
+		{
+			((IObjectIA *)(*i++))->incRef();
+		}
+	}			
+
+	void CMapGroupType::::getDebugString(std::string &text) const
+	{		
+		
+		if(_Vector.size())
+		{			
+			text += "[";
+			sint32 k = 0;
+			std::vector<const IObjectIA *>::const_iterator i = _Vector.begin();
+			while(i != _Vector.end())
+			{
+				std::string temp;
+				const IObjectIA *o = *i++;
+				o->getDebugString(temp);				
+				text += temp;
+				if(i != _Vector.end()) text += " ";
+			}
+			text += "]";
+
+		}
+		else
+		{
+			text += NLAIC::stringGetBuild("CMapGroupType::<%04x>: <empty>",this);
+		}		
+	}	
+
+//	IObjetOp *CMapGroupType::::operator ! () const;
+
+	void CMapGroupType::::push(const IObjectIA *o)
+	{
+		_Vector.push_back(o);
+	}
+
+	void CMapGroupType::::pushFront(const IObjectIA *o)
+	{
+		_Vector.push_back(o);
+		for(sint32 i = (sint32)_Vector.back() - 2; i == 0; i -- )
+		{			
+			_Vector[i + 1] = _Vector[i];
+		}
+		_Vector[0] = o;
+
+	}
+
+	void CMapGroupType::::cpy(const IObjectIA &o) 
+	{
+		_Vector.push_back((const IObjectIA *)o.clone());
+	}
+
+	const IObjectIA *CMapGroupType::::pop() 
+	{
+		const IObjectIA *Obj = _Vector.back();
+		_Vector.erase( _Vector.end() );
+		return Obj;
+	}
+
+	const IObjectIA *CMapGroupType::::get() const
+	{
+		return _Vector.back();			
+	}
+
+	const IObjectIA *CMapGroupType::::popFront() 
+	{
+		const IObjectIA *Obj = _Vector.front();
+		_Vector.erase( _Vector.begin() );
+		return Obj;
+	}
+
+	const IObjectIA *CMapGroupType::::getFront() const
+	{
+		return _Vector.front();			
+	}	
+
+	sint32 CMapGroupType::::size() const
+	{
+		return _Vector.size();
+	}
+
+	CMapGroupType::::tVectorType CMapGroupType::::findList(const IObjectIA &obj) const
+	{
+		tVectorType l;			
+		tVectorType::const_iterator i = _Vector.begin();
+		while(i != _Vector.end())
+		{
+			const IObjectIA *o = *i++;
+			if( *o == obj) l.push_back();
+		}
+		return l;
+
+	}
+
+	const IObjectIA *CMapGroupType::::operator[] (sint32 index) const
+	{
+#ifdef _DEGUG
+		if ( index >= (sint32) _Vector.size() )
+		{
+			//TODO: throw Exc::CExceptionIndexError
+		}
+#endif
+
+		return _Vector[ index ];
+	}
+
+	void CMapGroupType::::set(int index,IObjectIA *o)
+	{
+		if((IObjectIA *)_Vector[ index ] != NULL) ((IObjectIA *)_Vector[ index ])->release();
+		_Vector[ index ] = o;
+	}
+
+
+	CMapGroupType::::tVectorType::const_iterator CMapGroupType::::getBegin() const
+	{
+		return _Vector.begin();
+	}
+
+	CMapGroupType::::tVectorType::const_iterator CMapGroupType::::getEnd() const
+	{
+		return _Vector.end();
+	}
+
+	CMapGroupType::::tVectorType::iterator CMapGroupType::::getBegin()
+	{
+		return _Vector.begin();
+	}
+
+	CMapGroupType::::tVectorType::iterator CMapGroupType::::getEnd()
+	{
+		return _Vector.end();
+	}		
+
+	const IObjectIA *CMapGroupType::::find(const IObjectIA &obj) const
+	{			
+		tVectorType::const_iterator i = _Vector.begin();
+		while(i != _Vector.end())
+		{
+			const IObjectIA *o = *i++;
+			if( *o == obj) return o;
+		}
+		return NULL;
+	}	
+
+	void CMapGroupType::::eraseAll(const IObjectIA &obj) 
+	{			
+		tVectorType::iterator i = _Vector.begin();
+		while(i != _Vector.end())
+		{
+			tVectorType::iterator j = i++;
+			IObjectIA *o= (IObjectIA *)*j;
+			if( *o == obj)
+			{					
+				_Vector.erase(j);
+				o->release();
+				return;
+			}
+		}
+	}
+
+	void CMapGroupType::::erase(const IObjectIA *o) 
+	{	
+		tVectorType::iterator i = _Vector.begin();
+		while(i != _Vector.end())
+		{
+			tVectorType::iterator j = i++;
+			if( *j == o)
+			{
+				IObjectIA *o = (IObjectIA *)*j;
+				_Vector.erase(j);
+				o->release();
+				return;
+			}				
+		}
+	}
+
+	void CMapGroupType::::erase(const IObjectIA &obj) 
+	{	
+		tVectorType::iterator i = _Vector.begin();
+		while(i != _Vector.end())
+		{
+			tVectorType::iterator j = i++;
+			if ( *(*j) == obj )
+			{
+				IObjectIA *o = (IObjectIA *)*j;
+				_Vector.erase(j);
+				o->release();
+				return;
+			}				
+		}
+	}
+
+	void CMapGroupType::::erase(std::list<const IObjectIA *> &l) 
+	{			
+		std::list<const IObjectIA *>::iterator i = l.begin();
+		while(i != l.end())
+		{
+			erase(*i++);								
+		}
+	}
+
+	bool CMapGroupType::::isEqual(const IBasicObjectIA &a) const
+	{
+		const CMapGroupType:: &b = (const CMapGroupType:: &)a;			
+		if(size() != b.size()) return false;
+
+		tVectorType::const_iterator i = _Vector.begin();
+		tVectorType::const_iterator j = _Vector.begin();
+		
+		while(i != _Vector.end())
+		{
+			if(!(*i++)->isEqual(*(*j++))) return false;
+		}
+		return true;
+	}
+
+	const NLAIC::IBasicType *CMapGroupType::::clone() const
+	{
+		NLAIC::IBasicInterface *m = new CMapGroupType::(*this);
+		return m;
+	}
+
+	const NLAIC::IBasicType *CMapGroupType::::newInstance() const
+	{
+		NLAIC::IBasicInterface *m = new CMapGroupType::();
+		return m;
+	}	
+
+	void CMapGroupType::::save(NLMISC::IStream &os)
+	{	
+		sint32 size = _Vector.size();
+		os.serial( size );
+		std::vector<const IObjectIA *>::const_iterator i = _Vector.begin();
+		while(i != _Vector.end())
+		{
+			IObjectIA *o= (IObjectIA *)*i++;
+			os.serial( (NLAIC::CIdentType &) o->getType() );
+			o->save(os);
+		}			
+	}
+
+	IObjetOp &CMapGroupType::::neg()
+	{
+		tVectorType::iterator i = _Vector.begin();
+		while(i != _Vector.end())
+		{
+			const NLAIC::CTypeOfOperator &op = (const NLAIC::CTypeOfOperator &)(*i)->getType();
+			if((uint32)(op & NLAIC::CTypeOfOperator::opNeg)) ((IObjetOp *)(*i))->neg();
+			i++;
+		}
+		return *this;	
+	}
+
+	void CMapGroupType::::load(NLMISC::IStream &is)
+	{			
+		sint32 i;
+		while(_Vector.size())
+		{
+			NLAIC::IBasicInterface * o = (NLAIC::IBasicInterface *)_Vector.front();
+			o->release();
+			_Vector.erase( _Vector.begin() );
+		}
+		is.serial( i );
+		NLAIC::CIdentTypeAlloc id;
+		while(i--)
+		{				
+			is.serial( id );
+			NLAIC::IBasicInterface *o = (NLAIC::IBasicInterface *)id.allocClass();				
+			o->load(is);
+			_Vector.push_back((const IObjectIA *)o);
+				
+		}			
+	}
+
+	void CMapGroupType::::clear()
+	{
+		while(_Vector.size())
+		{
+			NLAIC::IBasicInterface * o = (NLAIC::IBasicInterface *)_Vector.front();
+			if ( o != NULL )
+				o->release();
+			_Vector.erase( _Vector.begin() );
+		}
+	}
+
+	tQueue CMapGroupType::::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
+	{
+		tQueue a;
+		NLAISCRIPT::CParam methodParam;
+		NLAISCRIPT::CParam &param = (NLAISCRIPT::CParam &)p;
+		
+		if(param.size() != 1) return IBaseGroupType::isMember(className,methodName,p);
+
+		if(className == NULL)
+		{			
+			if(*methodName == IBaseGroupType::_Method[0].MethodName)
+			{				
+				
+				CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
+				a.push(CIdMethod(_Const + IBaseGroupType::getMethodIndexSize(),0.0,NULL,c));				
+			}
+			else
+			{
+				return IBaseGroupType::isMember(className,methodName,p);
+			}
+		}
+		return a;
+	}
+
+	sint32 CMapGroupType::::getMethodIndexSize() const
+	{
+		return IBaseGroupType::getMethodIndexSize() + 1;
+	}
+
+	IObjectIA::CProcessResult CMapGroupType::::runMethodeMember(sint32, sint32, IObjectIA *)
+	{
+		return IObjectIA::CProcessResult();
+	}
+	IObjectIA::CProcessResult CMapGroupType::::runMethodeMember(sint32 index,IObjectIA *p)
+	{
+		sint32 i= index - IBaseGroupType::getMethodIndexSize();
+		if(i == _Const)
+		{
+			IBaseGroupType *param = (IBaseGroupType *)p;
+			const DigitalType *f = (const DigitalType *)param->get();
+			_Vector.reserve((int)f->getValue());
+		}
+		return IBaseGroupType::runMethodeMember(index,p);
+	}	
+
+	CMapGroupType::::~CMapGroupType::()
+	{			
+		clear();
+	}
+*/
 }

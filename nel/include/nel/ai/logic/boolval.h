@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Base classes for boolean values (conditions, rules...)
  *
- * $Id: boolval.h,v 1.4 2001/05/22 16:08:01 chafik Exp $
+ * $Id: boolval.h,v 1.5 2001/06/19 10:10:49 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,8 +81,8 @@ namespace NLAILOGIC {
 			virtual NLAIAGENT::IObjetOp *operator != (NLAIAGENT::IObjetOp &a) const;
 			virtual NLAIAGENT::IObjetOp *operator == (NLAIAGENT::IObjetOp &a) const;
 
-			virtual bool isTrue() const;
 
+			virtual bool isTrue() const;
 	};
 
 	class CBoolTrue : public CBoolType

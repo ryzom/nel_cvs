@@ -179,6 +179,7 @@ namespace NLAIAGENT
 				NLAILOGIC::CGoal *current_goal = activated_goals.front();
 				instanciateGoalArgs(current_goal);
 				current_goal->addSuccessor( (IBasicAgent *) this );
+				setTopLevel( (CAgentScript *) current_goal->getReceiver() );
 
 
 				activate();
@@ -199,7 +200,10 @@ namespace NLAIAGENT
 		else
 		{
 			if ( _IsActivated == true )
+			{
 				unActivate();			
+				_TopLevel = false;
+			}
 			return IObjectIA::ProcessRun;
 		}
 		return IObjectIA::ProcessRun;
@@ -290,7 +294,7 @@ namespace NLAIAGENT
 		}
 
 		return conflits;
-	}	
+	}
 
 
 

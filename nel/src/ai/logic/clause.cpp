@@ -211,7 +211,7 @@ namespace NLAILOGIC
 		}*/
 	}
 	
-	void CClause::propagate(std::list<IObjetOp *> *vals, std::vector<sint32> &pos_vals) 
+	void CClause::propagate(std::list<IObjectIA *> *vals, std::vector<sint32> &pos_vals) 
 	{
 		// Pour chaque liaison...
 		std::list< CValueSet *>::iterator it_l = _Liaisons.begin();
@@ -248,7 +248,7 @@ namespace NLAILOGIC
 	}	
 
 	// Tente d'unifier deux instanciations partielles des variables de la CClause
-	CValueSet *CClause::unifyLiaison( const CValueSet *fp, std::list<IObjetOp *> *vals, std::vector<sint32> &pos_vals)
+	CValueSet *CClause::unifyLiaison( const CValueSet *fp, std::list<IObjectIA *> *vals, std::vector<sint32> &pos_vals)
 	{
 		CValueSet *result;
 

@@ -64,7 +64,7 @@ namespace NLAILOGIC
 	}
 
 
-	CFact::CFact(NLAIAGENT::IVarName &name)
+	CFact::CFact(NLAIAGENT::IVarName &name) : CValueSet()
 	{
 		_AssertName = (NLAIAGENT::IVarName *) name.clone();
 	}
@@ -91,6 +91,14 @@ namespace NLAILOGIC
 		delete vals;
 		_AssertName = (NLAIAGENT::IVarName *) a.clone();
 	}
+
+	CFact::~CFact()
+	{
+/*		if ( _Assert != NULL )
+			_Assert->release();
+			*/
+	}
+
 
 	IBaseAssert *CFact::getAssert() 
 	{
@@ -131,20 +139,16 @@ namespace NLAILOGIC
 
 		for (sint32 i = 0; i < _NbValues; i++ )
 		{
-			IObjetOp *test = (*_Values[i]) != *((CValueSet &)a).getValue(i);
+/*			IObjetOp *test = (*_Values[i]) == *((CValueSet &)a).getValue(i);
 			bool test_result = test->isTrue();
 			test->release();
 			if ( test_result )
 				return false;
-/*			{
-				CBoolType *result = new CBoolType ( false );
-				result->incRef();
-				return result;
-			}*/
+				*/
+
+			if ( ! ( (*_Values[i]) == *((CValueSet &)a).getValue(i) ) )
+				return false;
 		}
-/*		CBoolType *result = new CBoolType ( true );
-		result->incRef();
-		return result;*/
 		return true;
 	}
 

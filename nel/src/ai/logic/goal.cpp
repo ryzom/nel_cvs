@@ -300,4 +300,15 @@ namespace NLAILOGIC
 	{
 		return 1.0;
 	}
+/*
+	void CGoal::setTopLevel(NLAIAGENT::CAgentScript *tl)
+	{
+		_TopLevel = tl;
+	}
+
+	const NLAIAGENT::CAgentScript *getTopLevel() const
+	{
+		return _TopLevel;
+	}
+	*/
 }

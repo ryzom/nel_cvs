@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.17 2001/05/22 16:08:01 chafik Exp $
+ * $Id: actor_script.h,v 1.18 2001/06/19 10:11:01 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,8 @@ namespace NLAIAGENT
 			std::vector<CComponentHandle *> _Actors;
 
 			std::list<IBasicAgent *>		_Launched;
+
+			CAgentScript *_TopLevel;
 			
 			/** Transfers activity to another actor.
 				The second arg bool must be set to true for this agent to stay active, false otherwise.
@@ -152,6 +154,8 @@ namespace NLAIAGENT
 			/// Priority of the operator
 			virtual float priority() const;
 
+			virtual void setTopLevel(CAgentScript *);
+			const CAgentScript *getTopLevel() const;
 	};
 }
 #endif

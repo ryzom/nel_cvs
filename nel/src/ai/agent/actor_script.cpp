@@ -15,6 +15,7 @@ namespace NLAIAGENT
 		_IsActivated = a._IsActivated;
 		_OnActivateIndex = a._OnActivateIndex;
 		_OnUnActivateIndex = a._OnUnActivateIndex;
+		_TopLevel = a._TopLevel;
 	}
 
 	CActorScript::CActorScript(IAgentManager *manager, 
@@ -26,6 +27,7 @@ namespace NLAIAGENT
 		_IsActivated = false;
 		_OnActivateIndex = -1;
 		_OnUnActivateIndex = -1;
+		_TopLevel = NULL;
 	}	
 
 	CActorScript::CActorScript(IAgentManager *manager, bool stay_alive) : CAgentScript( manager )
@@ -33,6 +35,7 @@ namespace NLAIAGENT
 		_IsActivated = false;
 		_OnActivateIndex = -1;
 		_OnUnActivateIndex = -1;
+		_TopLevel = NULL;
 	}
 
 	CActorScript::~CActorScript()
@@ -222,7 +225,6 @@ namespace NLAIAGENT
 					_OnActivateIndex = -1;
 				}
 			}
-
 			return CAgentScript::run();
 		}
 		else
@@ -419,6 +421,8 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG
 				const char *dbg_param_front_type = (const char *) child->getType();
 #endif
+				if ( _TopLevel )
+					((CActorScript *)child)->setTopLevel( _TopLevel );
 				_Launched.push_back( (NLAIAGENT::IAgent *) child );
 				addDynamicAgent( (NLAIAGENT::IBaseGroupType *) params);
 			}
@@ -427,8 +431,6 @@ namespace NLAIAGENT
 			r.Result = NULL;
 			return r;
 		}
-
-
 		return CAgentScript::runMethodBase(index, params);
 	}
 
@@ -518,6 +520,16 @@ namespace NLAIAGENT
 	{
 		// Look at predecessors priorities
 		return 1.0;
+	}
+
+	void CActorScript::setTopLevel(CAgentScript *tl)
+	{
+		_TopLevel = tl;
+	}
+
+	const CAgentScript *CActorScript::getTopLevel() const
+	{
+		return _TopLevel;
 	}
 }
 

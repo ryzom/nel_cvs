@@ -39,7 +39,7 @@ namespace NLAILOGIC
 	CValueSet::CValueSet(sint32 size)
 	{
 		_NbValues = size;
-		_Values = new IObjetOp *[ _NbValues ];
+		_Values = new IObjectIA *[ _NbValues ];
 
 		for ( sint32 i = 0; i < _NbValues; i++ )
 		{
@@ -52,11 +52,11 @@ namespace NLAILOGIC
 	{
 		_NbValues = cp._NbValues;
 
-		_Values = new IObjetOp *[ _NbValues ];
+		_Values = new IObjectIA *[ _NbValues ];
 
 		for ( sint32 i = 0; i < _NbValues; i++ )
 		{
-			_Values[i] = (IObjetOp *) cp._Values[i];
+			_Values[i] = (IObjectIA *) cp._Values[i];
 
 			if ( _Values[i] )
 				_Values[i]->incRef();
@@ -68,7 +68,7 @@ namespace NLAILOGIC
 	{
 		_NbValues = vars.size();
 
-		_Values = new IObjetOp *[ _NbValues ];
+		_Values = new IObjectIA *[ _NbValues ];
 
 		for (sint32 i = 0; i < _NbValues; i++ )
 		{
@@ -88,7 +88,7 @@ namespace NLAILOGIC
 	{
 		_NbValues = pos.size();
 
-		_Values = new IObjetOp *[ _NbValues ];
+		_Values = new IObjectIA *[ _NbValues ];
 
 		for (sint32 i = 0; i < _NbValues; i++ )
 		{
@@ -106,18 +106,18 @@ namespace NLAILOGIC
 	}
 
 	/// Builds a CValueSet with size <size> from a list of values and their positions
-	CValueSet::CValueSet(sint32 size, std::list<IObjetOp *> *vals, std::vector<sint32> &pos)
+	CValueSet::CValueSet(sint32 size, std::list<IObjectIA *> *vals, std::vector<sint32> &pos)
 	{
 		_NbValues = size;
 
-		_Values = new IObjetOp *[ _NbValues ];
+		_Values = new IObjectIA *[ _NbValues ];
 
 		for (sint32 i = 0; i < _NbValues; i++ )
 		{
 			_Values[ i ] = 	NULL;
 		}
 
-		std::list<IObjetOp *>::iterator it_val = vals->begin();
+		std::list<IObjectIA *>::iterator it_val = vals->begin();
 		std::vector<sint32>::iterator it_pos = pos.begin();
 
 		while ( it_val != vals->end() && it_pos != pos.end() )
@@ -137,7 +137,7 @@ namespace NLAILOGIC
 		delete[] _Values;
 	}
 
-	void CValueSet::setValue(sint32 pos, IObjetOp *obj)
+	void CValueSet::setValue(sint32 pos, IObjectIA *obj)
 	{
 		_Values[pos] = obj;
 		if ( obj )
@@ -166,16 +166,16 @@ namespace NLAILOGIC
 		
 		for (i = 0; i < _NbValues ; i++ )
 		{
-			IObjetOp *x_val = result->_Values[ i ];
-			IObjetOp *y_val = un->_Values[ i ];
+			IObjectIA *x_val = result->_Values[ i ];
+			IObjectIA *y_val = un->_Values[ i ];
 	
 /*			if ( !x_val && !y_val )
 				result->_Values[i] = NULL ;
 */
 			if ( x_val && y_val )
 			{
-				IObjetOp *test;
-				if ( !( test = (*x_val) != ( *y_val ) )->isTrue() )
+//				IObjectIA *test;
+				if ( (*x_val) == ( *y_val )  )
 				{
 					// Nothing to do 
 				}						
@@ -184,7 +184,7 @@ namespace NLAILOGIC
 					result->release();
 					return NULL;
 				}
-				test->release();
+//				test->release();
 			}
 			else
 			{
@@ -199,7 +199,7 @@ namespace NLAILOGIC
 	}
 
 	/// Tries to unify a CValueSet with a list of values and their positions
-	CValueSet *CValueSet::unify(std::list<IObjetOp *> *vals, std::vector<sint32> &pos_vals) const
+	CValueSet *CValueSet::unify(std::list<IObjectIA *> *vals, std::vector<sint32> &pos_vals) const
 	{
 		CValueSet *result = new CValueSet( _NbValues );
 		for (sint32 i = 0; i < _NbValues; i++ )
@@ -210,7 +210,7 @@ namespace NLAILOGIC
 
 		}
 
-		std::list<IObjetOp *>::iterator it_val = vals->begin();
+		std::list<IObjectIA *>::iterator it_val = vals->begin();
 		std::vector<sint32>::iterator it_pos = pos_vals.begin();
 
 		// -----------------
@@ -229,20 +229,20 @@ namespace NLAILOGIC
 		while ( it_val != vals->end()  && it_pos != pos_vals.end() )
 		{
 			sint32 pos = *it_pos;
-			IObjetOp *l_val = _Values[ pos ];
-			IObjetOp *r_val = *it_val;
-			IObjetOp *test = NULL;
-			if (  !l_val || !( test = (*l_val) != ( **it_val ) )->isTrue() )
+			IObjectIA *l_val = _Values[ pos ];
+			IObjectIA *r_val = *it_val;
+//			IObjectIA *test = NULL;
+			if (  !l_val || (  (*l_val) == ( **it_val ) ) )
 			{
-				if ( test )
-					test->release();
+//				if ( test )
+//					test->release();
 				result->_Values[ pos ] = *it_val;
 				result->_Values[ pos ]->incRef();
 			}
 			else
 			{
-				if ( test )
-					test->release();
+//				if ( test )
+//					test->release();
 				delete result;
 				return NULL;
 			}
@@ -269,13 +269,14 @@ namespace NLAILOGIC
 		for (i = 0; i < (sint32) pos_vals.size(); i++ )
 		{
 			sint32 pos = pos_vals[i];
-			IObjetOp *l_val = _Values[ pos ];
-			IObjetOp *r_val = (*vals)[i];
-			IObjetOp *test = NULL;
-			if (  !l_val || !( test = (*l_val) != ( *r_val ) )->isTrue() )
+			IObjectIA *l_val = _Values[ pos ];
+			IObjectIA *r_val = (*vals)[i];
+//			IObjectIA *test = NULL;
+//			if (  !l_val || !( test = (*l_val) != ( *r_val ) )->isTrue() )
+			if (  !l_val || ( (*l_val) == ( *r_val ) ) )
 			{
-				if ( test )
-					test->release();
+//				if ( test )
+//					test->release();
 				if ( !l_val )
 				{
 					result->_Values[ pos ] = r_val;
@@ -285,8 +286,8 @@ namespace NLAILOGIC
 			}
 			else
 			{
-				if ( test )
-					test->release();
+//				if ( test )
+//					test->release();
 				result->release();
 				return NULL;
 			}
@@ -306,7 +307,7 @@ namespace NLAILOGIC
 		return true;
 	}
 
-	IObjetOp *CValueSet::operator[](sint32 pos)
+	IObjectIA *CValueSet::operator[](sint32 pos)
 	{
 		if ( pos <= _NbValues )
 			return _Values[pos];	
@@ -314,7 +315,7 @@ namespace NLAILOGIC
 			return NULL;	// TODO: exception!!!!!!!!!!!!
 	}
 
-	IObjetOp *CValueSet::getValue(sint32 pos)
+	IObjectIA *CValueSet::getValue(sint32 pos)
 	{
 		if ( pos <= _NbValues )
 			return _Values[pos];	
@@ -338,10 +339,10 @@ namespace NLAILOGIC
 	}
 
 	/// Return a list of the != NULL values of the object
-	std::list<IObjetOp *> *CValueSet::getValues()
+	std::list<IObjectIA *> *CValueSet::getValues()
 	{
 		// Warning: this list must be deleted after use!!!
-		std::list<IObjetOp *> *result = new std::list<IObjetOp *>;
+		std::list<IObjectIA *> *result = new std::list<IObjectIA *>;
 		for (sint32 i = 0; i < _NbValues; i++ )
 		{
 			if ( _Values[i] )
@@ -370,7 +371,7 @@ namespace NLAILOGIC
 	{
 		sint32 nb_Values = (sint32) _NbValues;
 		os.serial( nb_Values );
-		std::list<IObjetOp *> values;
+		std::list<IObjectIA *> values;
 		std::vector<sint32> pos;
 
 		for ( sint32 i = 0; i < _NbValues; i++ )
@@ -384,7 +385,7 @@ namespace NLAILOGIC
 		sint32 size = (sint32) values.size();
 		os.serial( size );
 
-		std::list<IObjetOp *>::iterator it_val = values.begin();
+		std::list<IObjectIA *>::iterator it_val = values.begin();
 		std::vector<sint32>::iterator it_pos = pos.begin();
 
 		while ( it_val != values.end() )
@@ -412,21 +413,21 @@ namespace NLAILOGIC
 		sint32 nbvals;
 		is.serial( nbvals );
 		
-		_Values = new IObjetOp *[ _NbValues ];
+		_Values = new IObjectIA *[ _NbValues ];
 
 		for ( i = 0; i < _NbValues; i++ )
 		{
 			_Values[ i ] = NULL;
 		}
 
-		std::list<IObjetOp *> vals;
+		std::list<IObjectIA *> vals;
 		std::vector<sint32> pos;
 
 		for ( i = 0; i < nbvals; i++ )
 		{
 			NLAIC::CIdentTypeAlloc id;
 			is.serial( id );
-			IObjetOp *tmp_val = (IObjetOp *) id.allocClass();
+			IObjectIA *tmp_val = (IObjectIA *) id.allocClass();
 			tmp_val->load( is );
 			tmp_val->incRef();
 			vals.push_back(  tmp_val );
@@ -456,7 +457,7 @@ namespace NLAILOGIC
 		return result;
 	}
 
-	IObjetOp *CValueSet::operator != (IObjetOp &a) const
+	IObjectIA *CValueSet::operator != (IObjectIA &a) const
 	{
 		if ( _NbValues != ((CValueSet &)a)._NbValues )
 		{
@@ -478,7 +479,7 @@ namespace NLAILOGIC
 		return result;
 	}
 
-	IObjetOp *CValueSet::operator == (IObjetOp &a) const
+	IObjectIA *CValueSet::operator == (IObjectIA &a) const
 	{
 		if ( _NbValues != ((CValueSet &)a)._NbValues )
 		{
@@ -488,10 +489,11 @@ namespace NLAILOGIC
 
 		for (sint32 i = 0; i < _NbValues; i++ )
 		{
-			IObjetOp *test = (*_Values[i]) != *((CValueSet &)a)._Values[i];
+			bool test_result = (*_Values[i]) == *((CValueSet &)a)._Values[i];
+/*			IObjectIA *test = (*_Values[i]) != *((CValueSet &)a)._Values[i];
 			bool test_result = test->isTrue();
-			test->release();
-			if ( test_result )
+			test->release(); */
+			if ( !test_result )
 			{
 				CBoolType *result = new CBoolType ( false );
 				return result;
@@ -544,5 +546,25 @@ namespace NLAILOGIC
 			}
 		}
 		return result;
+	}
+
+	void CValueSet::setSize(sint32 size)
+	{
+		_NbValues = size;
+		sint32 i;
+
+		if ( _Values != NULL )
+		{
+			for ( i = 0; i < _NbValues; i++ );
+			_Values[i]->release();
+			delete _Values;
+		}
+
+		_Values = new IObjectIA *[ _NbValues ];
+
+		for ( i = 0; i < _NbValues; i++ )
+		{
+			_Values[ i ] = NULL;
+		}
 	}
 }

@@ -207,8 +207,8 @@ namespace NLAISCRIPT
 				{
 					sint32 l_pos = _PosVarsConc[ pos_assert[pos] ][ivar];
 
-					NLAIAGENT::IObjetOp *l_val = (*unified)[ l_pos ]; 
-					NLAIAGENT::IObjetOp *r_val = (**it_f)[ ivar ];
+					NLAIAGENT::IObjectIA *l_val = (*unified)[ l_pos ]; 
+					NLAIAGENT::IObjectIA *r_val = (**it_f)[ ivar ];
 
 					if ( !l_val )
 					{
@@ -246,8 +246,8 @@ namespace NLAISCRIPT
 				{
 					sint32 l_pos = _PosVarsCond[ pos_assert[pos] ][ivar];
 
-					NLAIAGENT::IObjetOp *l_val = (*unified)[ l_pos ]; 
-					NLAIAGENT::IObjetOp *r_val = (**it_f)[ ivar ];
+					NLAIAGENT::IObjectIA *l_val = (*unified)[ l_pos ]; 
+					NLAIAGENT::IObjectIA *r_val = (**it_f)[ ivar ];
 
 					if ( !l_val )
 					{

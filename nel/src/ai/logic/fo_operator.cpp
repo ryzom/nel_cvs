@@ -236,8 +236,8 @@ namespace NLAILOGIC
 				{
 					sint32 l_pos = _PosVarsConc[ pos_assert[pos] ][ivar];
 
-					IObjetOp *l_val = (*unified)[ l_pos ]; 
-					IObjetOp *r_val = (**it_f)[ ivar ];
+					IObjectIA *l_val = (*unified)[ l_pos ]; 
+					IObjectIA *r_val = (**it_f)[ ivar ];
 
 					if ( !l_val )
 					{
@@ -275,8 +275,8 @@ namespace NLAILOGIC
 				{
 					sint32 l_pos = _PosVarsCond[ pos_assert[pos] ][ivar];
 
-					IObjetOp *l_val = (*unified)[ l_pos ]; 
-					IObjetOp *r_val = (**it_f)[ ivar ];
+					IObjectIA *l_val = (*unified)[ l_pos ]; 
+					IObjectIA *r_val = (**it_f)[ ivar ];
 
 					if ( !l_val )
 					{

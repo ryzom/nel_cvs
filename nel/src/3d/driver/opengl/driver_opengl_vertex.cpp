@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.5 2001/07/11 11:35:38 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.6 2001/07/11 15:20:47 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -771,7 +771,10 @@ bool			CVertexArrayRange::allocate(uint32 size, IDriver::TVBHardType vbType)
 	// init the allocator.
 	if(_VertexArrayPtr)
 	{
-		_HeapMemory.initHeap(_VertexArrayPtr, size);
+		/* Init with an alignment of 8. Not sure it is usefull, but GDC01_Performance.pdf papers talks about
+		  "Data arrays must be 8-byte aligned". Don't know what "Data" is.
+		*/
+		_HeapMemory.initHeap(_VertexArrayPtr, size, 8);
 	}
 
 

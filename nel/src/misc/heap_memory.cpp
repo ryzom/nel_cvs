@@ -1,7 +1,7 @@
 /** \file heap_memory.cpp
  * A Heap manager
  *
- * $Id: heap_memory.cpp,v 1.1 2001/07/10 14:21:25 berenguier Exp $
+ * $Id: heap_memory.cpp,v 1.2 2001/07/11 15:20:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,13 +32,12 @@ namespace NLMISC
 {
 
 
-#define	NLMISC_HEAP_ALIGNEMENT	4
-
-
 // ***************************************************************************
 CHeapMemory::CHeapMemory()
 {
 	reset();
+	// For allocate to work even if the heap is not initialized.
+	_Alignment= 4;
 }
 // ***************************************************************************
 CHeapMemory::~CHeapMemory()
@@ -60,10 +59,18 @@ void			CHeapMemory::reset()
 
 
 // ***************************************************************************
-void			CHeapMemory::initHeap(void *heap, uint size)
+void			CHeapMemory::initHeap(void *heap, uint size, uint align)
 {
+	// setup alignement.
+	if(align!=4 || align!=8 || align!=16 || align!=32)
+	{
+		nlstop;
+		align= 4;
+	}
+	_Alignment= align;
+
 	// Manage alignement.
-	size= (size) & (~(NLMISC_HEAP_ALIGNEMENT-1));
+	size= (size) & (~(_Alignment-1));
 
 	// clear container.
 	reset();
@@ -81,7 +88,6 @@ void			CHeapMemory::initHeap(void *heap, uint size)
 
 	addEmptySpace(space);
 }
-
 
 
 // ***************************************************************************
@@ -113,7 +119,7 @@ void			*CHeapMemory::allocate(uint size)
 		return NULL;
 
 	// Manage alignement.
-	size= (size + (NLMISC_HEAP_ALIGNEMENT-1)) & (~(NLMISC_HEAP_ALIGNEMENT-1));
+	size= (size + (_Alignment-1)) & (~(_Alignment-1));
 
 
 	// retrieve the best block.

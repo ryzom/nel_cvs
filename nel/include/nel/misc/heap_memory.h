@@ -1,7 +1,7 @@
 /** \file heap_memory.h
  * A Heap manager
  *
- * $Id: heap_memory.h,v 1.1 2001/07/10 14:21:25 berenguier Exp $
+ * $Id: heap_memory.h,v 1.2 2001/07/11 15:20:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,9 +55,13 @@ public:
 	void			reset();
 	/** init the heap. this reset() the heap. heap ptr is stored in this class, but no CHeapMemory methods
 	 * write or read into. They use standard heap instead (new / delete).
-	 *	NB: for good alignement, heap should be at least 4-bytes aligned.
+	 *	\param heap the heap ptr. heap should be at least N-bytes aligned, where N is the alignment you need (see
+	 *	param align, 4 by default).
+	 *	\param align Any size given to allocate() will be rounded to match this alignement.
+	 *	Valid values are 4,8,16, or 32. 4 by default.
 	 */
-	void			initHeap(void *heap, uint size);
+	void			initHeap(void *heap, uint size, uint align=4);
+
 
 	/// return the size passed in setHeap().
 	uint			getHeapSize() const {return _HeapSize;}
@@ -106,6 +110,7 @@ private:
 	uint8			*_HeapPtr;
 	uint			_HeapSize;
 	uint			_HeapSizeUsed;
+	uint			_Alignment;
 
 	/// The array of empty spaces.
 	TEmptySpacePtrMap		_EmptySpaces;

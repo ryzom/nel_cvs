@@ -1,7 +1,7 @@
 /** \file emitter_dlg.h
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.h,v 1.9 2003/04/07 12:43:20 vizerie Exp $
+ * $Id: emitter_dlg.h,v 1.10 2003/04/14 15:31:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,6 +100,8 @@ protected:
 
 	/// disable / enable the period edition dialog if it is needed
 	void updatePeriodDlg(void);
+	// Choose the right entry for the list box that display the emitted type
+	void initEmittedType();
 
 	//////////////////////////////////////////////
 	//	WRAPPERS TO EDIT THE EMITTER PROPERTIES //
@@ -198,9 +200,11 @@ protected:
 		
 			struct CMaxEmissionCountWrapper : public IPSWrapperUInt
 			{
+			   CEditableRangeUInt   *MaxEmissionCountDlg;
 			   NL3D::CPSEmitter *E;
+			   HWND	HWnd;
 			   uint32 get(void) const { return E->getMaxEmissionCount(); }
-			   void set(const uint32 &count) { E->setMaxEmissionCount((uint8) count); }	
+			   void set(const uint32 &count);
 			} _MaxEmissionCountWrapper;
 
 

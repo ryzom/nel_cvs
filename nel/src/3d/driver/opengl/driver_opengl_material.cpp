@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.79 2003/11/14 15:03:17 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.80 2003/11/18 17:58:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -988,7 +988,10 @@ void			CDriverGL::setupSpecularBegin()
 	// NB don't setup the TexEnv here (stage1 setuped in setupSpecularPass() according to extensions)
 	// For all cases, setup the TexCoord gen for stage1
 	_DriverGLStates.activeTextureARB(1);
-	_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
+	
+	// todo hulud remove
+	// _DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
+
 	_DriverGLStates.setTexGenMode (1, GL_REFLECTION_MAP_ARB);
 	// setup the good matrix for stage 1.
 	glMatrixMode(GL_TEXTURE);

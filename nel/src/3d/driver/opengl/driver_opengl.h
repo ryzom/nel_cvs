@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.153 2003/11/04 18:17:05 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.154 2003/11/18 17:58:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -645,7 +645,11 @@ private:
 	// NB: CRefPtr are not used for mem/spped optimisation. setupMaterial() and setupTexture() reset those states.
 	CMaterial*				_CurrentMaterial;
 	CMaterial::TShader		_CurrentMaterialSupportedShader;
+
+	/* NB : this pointers handles the caching of glBindTexture() and setTextureMode() calls.
+	*/
 	ITexture*				_CurrentTexture[IDRV_MAT_MAXTEXTURES];
+
 	CTextureDrvInfosGL*		_CurrentTextureInfoGL[IDRV_MAT_MAXTEXTURES];
 	CMaterial::CTexEnv		_CurrentTexEnv[IDRV_MAT_MAXTEXTURES];
 	// Special Texture Environnement.

@@ -1,7 +1,7 @@
 /** \file unitime.h
  * Manage universal time (synchronized with a centralized time manager)
  *
- * $Id: unitime.h,v 1.11 2001/06/21 12:35:17 lecroart Exp $
+ * $Id: unitime.h,v 1.12 2001/10/16 09:19:15 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,7 @@ class CCallbackClient;
  * \author Nevrax France
  * \date 2000
  */
-class CUniTime : public NLMISC::CTime
+class _CUniTime : public NLMISC::CTime
 {
 public:
 
@@ -89,7 +89,7 @@ public:
 	 * syncUniTimeFromService() will still communicate with the time service, as usual,
 	 * but the local time will not be synchronized.
 	 */
-	static void				simulate() { _Simulate = true; }
+	static void				simulate() { nlstop; _Simulate = true; }
 
 	static bool				Sync;				// true if the synchronization occured
 private:

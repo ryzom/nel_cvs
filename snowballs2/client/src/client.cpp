@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.3 2001/07/11 15:38:57 lecroart Exp $
+ * $Id: client.cpp,v 1.4 2001/07/11 15:55:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,10 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+//
+// Includes
+// 
 
 #include "nel/misc/types_nl.h"
 
@@ -50,10 +54,16 @@ using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 
+//
+// Globals
+//
 
-/****************************************************************\
-							MAIN
-\****************************************************************/
+CConfigFile ConfigFile;
+
+//
+// Main
+//
+
 #if defined(NL_OS_WINDOWS) && defined (NL_RELEASE)
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdline, int nCmdShow)
 #else
@@ -62,13 +72,25 @@ int main(int argc, char **argv)
 {
 	nlinfo ("Starting Snowballs 2");
 
+	// Load config file
+
+	ConfigFile.load ("client.cfg");
+
+	// Manage paths
+
+	string dataPath = ConfigFile.getVar("DataPath").asString ();
+	if (dataPath[dataPath.size()-1] != '/') dataPath += '/';
+	CPath::addSearchPath (dataPath);
+//	CPath::addSearchPath (dataPath + "zones/");
+		
 	// Create a driver
 	UDriver	*pDriver=UDriver::createDriver();
 
 	// Text context
 	pDriver->setDisplay (UDriver::CMode(640, 480, 0));
 	pDriver->setFontManagerMaxMemory (2000000);
-	UTextContext *textContext=pDriver->createTextContext ("\\\\server\\code\\fonts\\arialuni.ttf");
+
+	UTextContext *textContext=pDriver->createTextContext (ConfigFile.getVar("FontName").asString ());
 	textContext->setHotSpot (UTextContext::TopLeft);
 	textContext->setColor (CRGBA (255,255,255));
 	textContext->setFontSize (12);

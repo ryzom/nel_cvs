@@ -240,7 +240,7 @@ int main (int argc, char **argv)
 
 				// Postfix tiles ?
 				if (!postfix.empty ())
-					bank.posfixTileFilename (postfix.c_str ());
+					bank.postfixTileFilename (postfix.c_str ());
 
 				// Resize far bank
 				farBank.setNumTile (bank.getTileCount());

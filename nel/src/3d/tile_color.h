@@ -1,7 +1,7 @@
 /** \file tile_color.h
  * <File description>
  *
- * $Id: tile_color.h,v 1.3 2001/10/29 09:36:38 corvazier Exp $
+ * $Id: tile_color.h,v 1.4 2002/04/16 17:09:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,19 +46,45 @@ class CTileColor
 public:
 	/// The RGB user color.
 	uint16			Color565;
-	/// For Bump: The Light Vector in Patch Tangent Space.
-	uint8			LightX,LightY,LightZ;
 
 public:
 
 	/// Constructor
 	CTileColor() {}
 
+	// For patch with version >= 7, just read color.
+	void	serial(NLMISC::IStream &f)
+	{
+		// NB: still don't use version number, for file size optimisation
+		f.xmlSerial (Color565, "COLOR");
+	}
+
+};
+
+
+/**
+ * Old version of TileColors for correct serialising.
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class CTileColorOldPatchVersion6
+{
+public:
+	/// The RGB user color.
+	uint16			Color565;
+
+public:
+
+	// For patch with version <= 6, read dummy LightVector
 	void	serial(NLMISC::IStream &f)
 	{
 		f.xmlSerial (Color565, "COLOR");
-		f.xmlSerial (LightX,LightY,LightZ, "LIGHT_VECTOR");
+		// read dummy bump light info
+		uint8	lightX, lightY, lightZ;
+		f.xmlSerial (lightX,lightY,lightZ, "LIGHT_VECTOR");
 	}
+
 };
 
 

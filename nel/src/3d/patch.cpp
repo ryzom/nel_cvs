@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.83 2002/04/12 15:59:57 berenguier Exp $
+ * $Id: patch.cpp,v 1.84 2002/04/16 17:09:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ namespace NL3D
 // ***************************************************************************
 CBezierPatch	CPatch::CachePatch;
 const CPatch	*CPatch::LastPatch= NULL;
-uint32			CPatch::_Version=6;
+uint32			CPatch::_Version=7;
 
 
 // ***************************************************************************
@@ -1411,6 +1411,8 @@ void			CPatch::resetRenderFar()
 void			CPatch::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 7:
+		- remove unused information from CTileColor. just keep 565 color
 	Version 6:
 		- default UnderWater flags for tileElements before version 6.
 	Version 5:
@@ -1425,7 +1427,7 @@ void			CPatch::serial(NLMISC::IStream &f)
 	Version 1:
 		- Tile color.
 	Version 0:
-		- base verison.
+		- base version.
 	*/
 	uint	ver= f.serialVersion(_Version);
 
@@ -1450,9 +1452,33 @@ void			CPatch::serial(NLMISC::IStream &f)
 	f.xmlPop ();
 
 	if(ver>=1)
-		f.xmlPush ("TILE_COLORS");
-		f.serialCont(TileColors);
-		f.xmlPop ();
+	{
+		// Read/Write TileColors.
+		if(ver<=6)
+		{
+			nlassert(f.isReading());
+
+			// read old version of tilesColors (ie with LightX/LightY/LightZ, which are deprecated now)
+			vector<CTileColorOldPatchVersion6>	tmpArray;
+			f.xmlPush ("TILE_COLORS");
+			f.serialCont(tmpArray);
+			f.xmlPop ();
+
+			// then just copy to TileColors.
+			TileColors.resize(tmpArray.size());
+			if(TileColors.size()>0)
+			{
+				memcpy(&TileColors[0], &tmpArray[0], TileColors.size()*sizeof(CTileColor));
+			}
+		}
+		else
+		{
+			// version >=7, just serial array of TileColors (16 bits TileColor only)
+			f.xmlPush ("TILE_COLORS");
+			f.serialCont(TileColors);
+			f.xmlPop ();
+		}
+	}
 	if(ver>=2)
 	{
 		f.xmlSerial (OrderS, "ORDER_S");

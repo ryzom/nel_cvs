@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.17 2003/11/07 16:30:17 besson Exp $
+ * $Id: zviewer.cpp,v 1.18 2004/03/19 10:29:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include "3d/mini_col.h"
 #include "3d/nelu.h"
 #include "3d/scene_group.h"
+#include "3d/texture_file.h"
 
 //#include "nel/net/local_entity.h"
 
@@ -90,6 +91,7 @@ struct CViewerConfig
 	float			ZFar;
 	float			LandscapeTileNear;
 	float			LandscapeThreshold;
+	bool			LandscapeNoise;
 	vector<string>	Zones;
 	vector<string>	Igs;
 
@@ -130,6 +132,7 @@ struct CViewerConfig
 		ZFar = 1000;
 		LandscapeTileNear = 50.0f;
 		LandscapeThreshold = 0.001f;
+		LandscapeNoise = true;
 
 		HeightFieldName= "";
 		HeightFieldMaxZ= 100;
@@ -211,29 +214,41 @@ void displayOrientation()
 	CVertexBuffer vb;
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (7);
-	
-	// tri
-	vb.setVertexCoord (0, CVector (-radius, 0, 0));
-	vb.setVertexCoord (1, CVector (radius, 0, 0));
-	vb.setVertexCoord (2, CVector (0, 0, 3*radius));
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock(vba);
+		
+		// tri
+		vba.setVertexCoord (0, CVector (-radius, 0, 0));
+		vba.setVertexCoord (1, CVector (radius, 0, 0));
+		vba.setVertexCoord (2, CVector (0, 0, 3*radius));
 
-	// quad
-	vb.setVertexCoord (3, CVector (-radius, 0, -radius));
-	vb.setVertexCoord (4, CVector (radius, 0, -radius));
-	vb.setVertexCoord (5, CVector (radius, 0, radius));
-	vb.setVertexCoord (6, CVector (-radius, 0, radius));
+		// quad
+		vba.setVertexCoord (3, CVector (-radius, 0, -radius));
+		vba.setVertexCoord (4, CVector (radius, 0, -radius));
+		vba.setVertexCoord (5, CVector (radius, 0, radius));
+		vba.setVertexCoord (6, CVector (-radius, 0, radius));
+	}
 	
 	CNELU::Driver->activeVertexBuffer(vb);
 
-	CPrimitiveBlock pbTri;
-	pbTri.setNumTri (1);
-	pbTri.setTri (0, 0, 1, 2);
+	CIndexBuffer pbTri;
+	pbTri.setNumIndexes (3);
+	{
+		CIndexBufferReadWrite iba;
+		pbTri.lock (iba);
+		iba.setTri (0, 0, 1, 2);
+	}
 	
-	CPrimitiveBlock pbQuad;
-	pbQuad.setNumQuad (1);
-	pbQuad.setQuad (0, 3, 4, 5, 6);
+	CIndexBuffer pbQuad;
+	pbQuad.setNumIndexes (6);
+	{
+		CIndexBufferReadWrite iba;
+		pbQuad.lock(iba);
+		iba.setTri (0, 3, 4, 5);
+		iba.setTri (3, 5, 6, 3);
+	}
 	
-
 	CNELU::Driver->setFrustum (0.f, 4.f/3.f, 0.f, 1.f, -1.f, 1.f, false);
 	CMatrix mtx;
 	mtx.identity();
@@ -248,7 +263,8 @@ void displayOrientation()
 	mtx.translate(CVector(0,0,radius));
 	CNELU::Driver->setupModelMatrix (mtx);
 	CNELU::Driver->activeVertexBuffer(vb);
-	CNELU::Driver->render(pbTri, mat);
+	CNELU::Driver->activeIndexBuffer(pbTri);
+	CNELU::Driver->renderTriangles(mat, 0, pbTri.getNumIndexes()/3);
 
 	mat.setColor(CRGBA(50,50,255,150));
 
@@ -258,8 +274,7 @@ void displayOrientation()
 	mtx.rotateY(MoveListener.getRotZ() + (float)Pi);
 	mtx.translate(CVector(0,0,radius));
 	CNELU::Driver->setupModelMatrix (mtx);
-	CNELU::Driver->activeVertexBuffer(vb);
-	CNELU::Driver->render(pbTri, mat);
+	CNELU::Driver->renderTriangles(mat, 0, pbTri.getNumIndexes()/3);
 
 	// left
 	mtx.identity();
@@ -267,8 +282,7 @@ void displayOrientation()
 	mtx.rotateY(MoveListener.getRotZ() - (float)Pi/2);
 	mtx.translate(CVector(0,0,radius));
 	CNELU::Driver->setupModelMatrix (mtx);
-	CNELU::Driver->activeVertexBuffer(vb);
-	CNELU::Driver->render(pbTri, mat);
+	CNELU::Driver->renderTriangles(mat, 0, pbTri.getNumIndexes()/3);
 
 	// right
 	mtx.identity();
@@ -276,17 +290,15 @@ void displayOrientation()
 	mtx.rotateY(MoveListener.getRotZ() + (float)Pi/2);
 	mtx.translate(CVector(0,0,radius));
 	CNELU::Driver->setupModelMatrix (mtx);
-	CNELU::Driver->activeVertexBuffer(vb);
-	CNELU::Driver->render(pbTri, mat);
+	CNELU::Driver->renderTriangles(mat, 0, pbTri.getNumIndexes()/3);
 	
 	// center
 	mtx.identity();
 	mtx.translate(CVector(x,0,y));
 	mtx.rotateY(MoveListener.getRotZ());
 	CNELU::Driver->setupModelMatrix (mtx);
-	CNELU::Driver->activeVertexBuffer(vb);
-	CNELU::Driver->render(pbQuad, mat);
-	
+	CNELU::Driver->activeIndexBuffer(pbQuad);
+	CNELU::Driver->renderTriangles(mat, 0, pbQuad.getNumIndexes()/3);	
 }
 
 
@@ -298,7 +310,6 @@ void displayOrientation()
 \*********************************************************/
 void displayZones()
 {
-
 	const float zFarStep = 5.0f;
 	const float	tileNearStep = 10.0f;
 	const float thresholdStep = 0.005f;
@@ -318,6 +329,7 @@ void displayZones()
 	CNELU::swapBuffers();
 	
 	Landscape = (CLandscapeModel*)CNELU::Scene->createModel(LandscapeModelId);
+	Landscape->Landscape.setNoiseMode (ViewerCfg.LandscapeNoise);
 	Landscape->Landscape.setTileNear(ViewerCfg.LandscapeTileNear);
 	Landscape->Landscape.setThreshold(ViewerCfg.LandscapeThreshold);
 
@@ -453,15 +465,15 @@ void displayZones()
 	CNELU::swapBuffers();
 	for(i =0; i<ViewerCfg.Igs.size(); i++)
 	{
-		CInstanceGroup group;
+		CInstanceGroup *group = new CInstanceGroup;
 		try
 		{
 			CIFile file(CPath::lookup(ViewerCfg.Igs[i]));
-			group.serial(file);
+			group->serial(file);
 			file.close();
 
 			// Add it to the scene.
-			group.addToScene (*CNELU::Scene);
+			group->addToScene (*CNELU::Scene);
 		}
 		catch(Exception &e)
 		{
@@ -753,6 +765,7 @@ void writeConfigFile(const char * configFileName)
 	fprintf(f,"LightDir = { %f, %f, %f };\n", ViewerCfg.LightDir.x, ViewerCfg.LightDir.y, ViewerCfg.LightDir.z);
 	fprintf(f,"LandscapeTileNear = %f;\n", ViewerCfg.LandscapeTileNear);
 	fprintf(f,"LandscapeThreshold = %f;\n", ViewerCfg.LandscapeThreshold);
+	fprintf(f,"LandscapeNoise = %d;\n", (int)ViewerCfg.LandscapeNoise);
 	fprintf(f,"BanksPath = \"%s\";\n",ViewerCfg.BanksPath.c_str());
 	fprintf(f,"TilesPath = \"%s\";\n",ViewerCfg.TilesPath.c_str());
 	fprintf(f,"UseDDS = \"%d\";\n",ViewerCfg.UseDDS?1:0);
@@ -850,6 +863,9 @@ void initViewerConfig(const char * configFileName)
 		CConfigFile::CVar &cvLandscapeThreshold = cf.getVar("LandscapeThreshold");
 		ViewerCfg.LandscapeThreshold = cvLandscapeThreshold.asFloat();
 
+		CConfigFile::CVar &cvLandscapeNoise = cf.getVar("LandscapeNoise");
+		ViewerCfg.LandscapeNoise = cvLandscapeNoise.asInt() != 0;
+
 		CConfigFile::CVar &cvBanksPath = cf.getVar("BanksPath");
 		ViewerCfg.BanksPath = cvBanksPath.asString();
 
@@ -934,9 +950,6 @@ void initViewerConfig(const char * configFileName)
 
 }
 
-
-
-
 /****************************************************************\
 							MAIN
 \****************************************************************/
@@ -945,7 +958,7 @@ void main()
 	try
 	{
 		// Init NELU
-		NL3D::CNELU::init(ViewerCfg.Width, ViewerCfg.Height, CViewport(), ViewerCfg.Depth, ViewerCfg.Windowed);
+		NL3D::CNELU::init(ViewerCfg.Width, ViewerCfg.Height, CViewport(), ViewerCfg.Depth, ViewerCfg.Windowed, NULL, false, false);
 		NL3D::CNELU::Camera->setTransformMode(ITransformable::DirectMatrix);
 
 		// Init the font manager
@@ -960,16 +973,10 @@ void main()
 			
 		// release nelu
 		NL3D::CNELU::release();
-			
+		
 	}
 	catch (Exception &e)
 	{
 		fprintf (stderr,"main trapped an exception: '%s'", e.what ());
 	}
-#ifndef NL_DEBUG
-	catch (...)
-	{
-		fprintf(stderr,"main trapped an unknown exception");
-	}
-#endif // NL_DEBUG
 }

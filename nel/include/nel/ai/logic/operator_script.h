@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.18 2001/07/06 08:23:22 portier Exp $
+ * $Id: operator_script.h,v 1.19 2001/07/12 17:01:22 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,6 +109,9 @@ namespace NLAIAGENT
 			std::list<NLAILOGIC::CValueSet *> *propagate(std::list<NLAILOGIC::CValueSet *> &, NLAILOGIC::CValueSet *, std::vector<sint32> &);
 			std::list<NLAILOGIC::CFact *> *propagate(std::list<NLAILOGIC::CFact *> &);
 			NLAILOGIC::CValueSet *unifyLiaison( const NLAILOGIC::CValueSet *, NLAILOGIC::CValueSet *, std::vector<sint32> &);
+
+			void lookForGoals();
+			bool checkPreconditions();
 	};
 }
 #endif

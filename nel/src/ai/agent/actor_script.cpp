@@ -89,8 +89,6 @@ namespace NLAIAGENT
 	/// Activates the actor
 	void CActorScript::activate()
 	{                              
-		
-
 #ifndef NL_DEBUG
 	//	const char *
 #endif
@@ -111,7 +109,6 @@ namespace NLAIAGENT
 				_OnActivateIndex = r.top().Index;
 			else
 				onActivate();
-
 			_IsActivated = true;
 		}
 	}
@@ -147,6 +144,76 @@ namespace NLAIAGENT
 		}
 	}
 
+	/// Pauses the actor
+	void CActorScript::pause()
+	{                              
+#ifndef NL_DEBUG
+	//	const char *
+#endif
+
+		if ( !_IsPaused )
+		{
+			CAgentScript *father = (CAgentScript *) getParent();
+
+			// Looks for the function to call when the actor is paused
+			static CStringVarName activate_func_name("OnPause");
+			tQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
+			if ( !r.empty() )
+			{
+				if ( getAgentManager() != NULL )
+				{
+					_OnPauseIndex = r.top().Index;
+					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+					context->Self = this;
+					runMethodeMember( _OnPauseIndex ,context);
+					_OnPauseIndex = -1;
+				}
+			}
+			else
+				onPause();
+			_IsPaused = true;
+		}
+	}
+
+	void CActorScript::onPause()
+	{
+	}
+
+	/// Restarts the actor
+	void CActorScript::restart()
+	{                              
+#ifndef NL_DEBUG
+	//	const char *
+#endif
+
+		if ( _IsPaused )
+		{
+			CAgentScript *father = (CAgentScript *) getParent();
+
+			// Looks for the function to call when the actor is restarted
+			static CStringVarName activate_func_name("OnRestart");
+			tQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
+			if ( !r.empty() )
+			{
+				if ( getAgentManager() != NULL )
+				{
+					_OnRestartIndex = r.top().Index;
+					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+					context->Self = this;
+					runMethodeMember( _OnPauseIndex ,context);
+					_OnRestartIndex = -1;
+				}
+			}
+			else
+				onRestart();
+			_IsPaused = false;
+		}
+	}
+
+	void CActorScript::onRestart()
+	{
+	}
+
 	/** Transfers activity to another actor.
 		The second arg bool must be set to true for this agent to stay active, false otherwise.
 	**/
@@ -154,7 +221,7 @@ namespace NLAIAGENT
 	{
 		receiver->activate();
 
-		if ( !stay_active )
+		if ( !stay_active && ( receiver != this ) )
 			unActivate();
 	}
 		
@@ -353,14 +420,65 @@ namespace NLAIAGENT
 					r.Result = NULL;
 				}
 				break;
+			case fid_launch:
+			
+				if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
+				{
+#ifdef NL_DEBUG
+					const char *dbg_param_type = (const char *) params->getType();
+					std::string dbg_param_string;
+					params->getDebugString(dbg_param_string);
+#endif
+					const IObjectIA *child = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();
+#ifdef NL_DEBUG
+					const char *dbg_param_front_type = (const char *) child->getType();
+#endif
+					addDynamicAgent( (NLAIAGENT::IBaseGroupType *) params);
+					if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
+					{
+						if ( _TopLevel )
+							((CActorScript *)child)->setTopLevel( _TopLevel );
+						else
+							((CActorScript *)child)->setTopLevel( this );
+						
+						((CActorScript *)child)->activate();
+					}
+/*
+
+					if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
+						((CActorScript *)child)->activate();
+*/
+					_Launched.push_back( (NLAIAGENT::IAgent *) child );
+
+				}
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				return r;
+				break;
+
+			case fid_pause:
+				pause();
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				return r;
+				break;
+
+			case fid_restart:
+				restart();
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				return r;
+				break;
 
 			case fid_success:
+			case fid_msg_success:
 				onSuccess(params);
 				r.Result = new NLAIAGENT::CSuccessMsg();
 				return r;
 				break;
 
 			case fid_failure:
+			case fid_msg_failure:
 				onFailure(params);
 				r.Result = new NLAIAGENT::CFailureMsg();
 				return r;
@@ -492,13 +610,29 @@ namespace NLAIAGENT
 				return r;
 				break;
 
+			case fid_pause:
+				pause();
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				return r;
+				break;
+
+			case fid_restart:
+				restart();
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				return r;
+				break;
+
 			case fid_success:
+			case fid_msg_success:
 				onSuccess(params);
 				r.Result = new NLAIAGENT::CSuccessMsg();
 				return r;
 				break;
 
 			case fid_failure:
+			case fid_msg_failure:
 				onFailure(params);
 				r.Result = new NLAIAGENT::CFailureMsg();
 				return r;
@@ -542,6 +676,10 @@ namespace NLAIAGENT
 		static NLAIAGENT::CStringVarName tell_name("RunTell");
 		static NLAIAGENT::CStringVarName toplevel_name("TopLevel");
 		static NLAIAGENT::CStringVarName owner_name("Owner");
+		static NLAIAGENT::CStringVarName success_name("Success");
+		static NLAIAGENT::CStringVarName failure_name("Failure");
+		static NLAIAGENT::CStringVarName pause_name("Pause");
+		static NLAIAGENT::CStringVarName restart_name("Restart");
 
 		if ( *name == activate_name )
 		{
@@ -587,14 +725,14 @@ namespace NLAIAGENT
 			if ( d >= 0.0 )
 			{
 				NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-				result.push( NLAIAGENT::CIdMethod(  CAgentScript::getMethodIndexSize() + fid_success, 0.0,NULL, r_type ) );
+				result.push( NLAIAGENT::CIdMethod(  CAgentScript::getMethodIndexSize() + fid_msg_success, 0.0,NULL, r_type ) );
 			}
 
 			d = ((NLAISCRIPT::CParam &)*ParamFailureMsg).eval((NLAISCRIPT::CParam &)param);
 			if ( d >= 0.0 )
 			{
 				NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-				result.push( NLAIAGENT::CIdMethod(  CAgentScript::getMethodIndexSize() + fid_failure, 0.0,NULL, r_type ) );
+				result.push( NLAIAGENT::CIdMethod(  CAgentScript::getMethodIndexSize() + fid_msg_failure, 0.0,NULL, r_type ) );
 			}
 		}
 
@@ -610,10 +748,33 @@ namespace NLAIAGENT
 			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_owner, 0.0, NULL, r_type ) );
 		}
 
+		if ( *name == success_name )
+		{
+			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_success, 0.0, NULL, r_type ) );
+		}
+
+		if ( *name == failure_name )
+		{
+			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_failure, 0.0, NULL, r_type ) );
+		}
+
+		if ( *name == pause_name )
+		{
+			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_pause, 0.0, NULL, r_type ) );
+		}
+
+		if ( *name == restart_name )
+		{
+			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_restart, 0.0, NULL, r_type ) );
+		}
+
 		if ( result.empty() )
 			return CAgentScript::getPrivateMember(className, name, param);
 
-		
 		return result;
 	}
 

@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.22 2001/07/06 08:23:22 portier Exp $
+ * $Id: actor_script.h,v 1.23 2001/07/12 17:01:22 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,8 +58,12 @@ namespace NLAIAGENT
 				fid_onUnActivate,
 				fid_switch,
 				fid_launch,
+				fid_pause,
+				fid_restart,
 				fid_success,
+				fid_msg_success,
 				fid_failure,
+				fid_msg_failure,
 				fid_toplevel,
 				fid_owner,
 				fid_last
@@ -67,9 +71,14 @@ namespace NLAIAGENT
 
 			bool _IsActivated;
 			bool _OnActivate;
+			bool _IsPaused;
 
+			// TODO: to be transfered in the class
 			sint32	_OnActivateIndex;
 			sint32	_OnUnActivateIndex;
+			sint32  _OnPauseIndex;
+			sint32	_OnRestartIndex;
+			///////////////////////////////////
 
 			std::vector<CComponentHandle *> _Actors;
 
@@ -155,6 +164,14 @@ namespace NLAIAGENT
 			/// the execution of this one.
 			virtual void success() {}
 			virtual void failure() {}
+
+			/// Pause or restart the actor
+			void pause();
+			void restart();
+
+			/// These functions can be derived to have the actor execute something when paused or restarted
+			virtual void onPause();
+			virtual void onRestart();
 
 			/// Dependencies failure and success notification
 			/// These functions are called by other operators or goals who failed or succeeded

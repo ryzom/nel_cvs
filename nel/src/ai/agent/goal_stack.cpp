@@ -57,8 +57,17 @@ namespace NLAILOGIC
 			}
 		}
 		else
-		if ( _Goals.size() == 1 )
-			_Goals.front()->select();
+		{
+			if ( _Goals.size() == 1 )
+			{
+#ifdef NL_DEBUG
+				std::string tmp;
+				 _Goals[0]->getDebugString( tmp );
+#endif
+				_Goals.front()->select();
+			}
+		}
+
 		return NLAIAGENT::IObjectIA::CProcessResult();
 	}
 

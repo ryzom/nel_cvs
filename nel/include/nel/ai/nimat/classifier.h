@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.15 2003/07/04 15:09:52 robert Exp $
+ * $Id: classifier.h,v 1.16 2003/07/24 17:03:15 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,8 @@ static NLMISC::CStringConversion<TBehaviorTerminate> conversionBehaviorTerminate
 
 typedef	char							TSensorValue;
 typedef	std::map<TSensor, TSensorValue>	TSensorMap;
+typedef	sint16							TClassifierNumber;
+typedef double							TClassifierPriority;
 
 /**
   * Base interface for an action function.
@@ -172,11 +174,11 @@ private :
 	public :
 		std::list<CClassifierConditionCell*>	ConditionWithTarget;
 		std::list<CClassifierConditionCell*>	ConditionWithoutTarget;
-		double									Priority;
+		TClassifierPriority						Priority;
 		TAction 								Behavior;
 	};
 
-	typedef	std::map<sint16, CClassifier*>::iterator  TitClassifiers;
+	typedef	std::map<TClassifierNumber, CClassifier*>::iterator  TitClassifiers;
 
 private :
 	// Functions used in selectBehavior
@@ -184,21 +186,21 @@ private :
 	void	updateTargetSensors(const CCSPerception* psensorMap, TTargetId target);
 	void	RAZTargetSensors();
 	void	RAZNoTargetSensors();
-	double	computeMaxPriorityDoingTheSameAction(const CCSPerception* psensorMap,
-												 sint16 lastClassifierNumber, 
+	TClassifierPriority	computeMaxPriorityDoingTheSameAction(const CCSPerception* psensorMap,
+												 TClassifierNumber lastClassifierNumber, 
 												 TTargetId lastTarget, 
-												 double lastSelectionMaxPriority,
-												 std::multimap<double, std::pair<TitClassifiers, TTargetId> > &mapActivableCS);
-	double	computeHigherPriority(const CCSPerception* psensorMap,
-								  double maxPriorityDoingTheSameAction,
-								  std::multimap<double, std::pair<TitClassifiers, TTargetId> > &mapActivableCS);
-	std::multimap<double, std::pair<TitClassifiers, TTargetId> >::iterator 	roulletteWheelVariation(std::multimap<double, std::pair<TitClassifiers, TTargetId> > &mapActivableCS,
-																									std::multimap<double, std::pair<TitClassifiers, TTargetId> >::iterator itMapActivableCS);
+												 TClassifierPriority lastSelectionMaxPriority,
+												 std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS);
+	TClassifierPriority	computeHigherPriority(const CCSPerception* psensorMap,
+								  TClassifierPriority maxPriorityDoingTheSameAction,
+								  std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS);
+	std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> >::iterator 	roulletteWheelVariation(std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS,
+																									std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> >::iterator itMapActivableCS);
 		
 private :
-	TSensorMap						_Sensors;			// The sensors are the inputs of the classifier system.
-	std::map<sint16, CClassifier*>	_Classifiers;		// The classifiers are the rules of the classifier system.
-	sint16							_ClassifierNumber;	// Number of classifiers
+	TSensorMap									_Sensors;			// The sensors are the inputs of the classifier system.
+	std::map<TClassifierNumber, CClassifier*>	_Classifiers;		// The classifiers are the rules of the classifier system.
+	TClassifierNumber							_ClassifierNumber;	// Number of classifiers
 
 public :
 	/// Destructor
@@ -211,7 +213,7 @@ public :
 	  * \param priority is the importance of this rule. The value should be between 0 an 1.
 	  * \param behavior is the action to execute if this classifier is selected.
 	  */
-	void addClassifier(const CConditionMap &conditionsMap, double priority, TAction behavior);
+	void addClassifier(const CConditionMap &conditionsMap, TClassifierPriority priority, TAction behavior);
 
 	/// Merge two CS
 	void addClassifierSystem(const CClassifierSystem &cs);
@@ -219,17 +221,19 @@ public :
 	/**
 	  * Select a behavior according to the values in the sensorMap.
 	  * \param sensorMap is a map whose key is the sensor name and value the sensor value.
-	  * \param mapActivableCS is the return value for the map containing all the activable CS. double is the priority, sint16 the classifier number and TTargetId la cible de l'action
+	  * \param mapActivableCS is the return value for the map containing all the activable CS. TClassifierPriority is the priority, TClassifierNumber the classifier number and TTargetId la cible de l'action
 	  */
 	void selectBehavior(const CCSPerception* psensorMap, 
-						std::multimap<double, std::pair<sint16, TTargetId> > &mapActivableCS);
+						std::multimap<TClassifierPriority, std::pair<TClassifierNumber, TTargetId> > &mapActivableCS);
 
 	/**
 	  * Give the action part of a given Classifier.
 	  * \param classifierNumber is the number of the classifier.
 	  * \return is the condition part of the wanted Classifier.
 	  */
-	TAction getActionPart(sint16 classifierNumber);
+	TAction getActionPart(TClassifierNumber classifierNumber);
+
+	TClassifierPriority getPriorityPart(TClassifierNumber classifierNumber);
 
 	void getDebugString(std::string &t) const;
 };
@@ -252,10 +256,10 @@ public :
 	TAction getName() const;
 
 	/// Ajout d'une nouvelle règle motivant cette action dans une motivation
-	void addMotivationRule (TMotivation motivationName, const CConditionMap &conditionsMap, double priority);
+	void addMotivationRule (TMotivation motivationName, const CConditionMap &conditionsMap, TClassifierPriority priority);
 
 	/// Ajout d'une nouvelle règle motivant cette action dans une action virtuel
-	void addVirtualActionRule (TAction virtualActionName, const CConditionMap &conditionsMap, double priority);
+	void addVirtualActionRule (TAction virtualActionName, const CConditionMap &conditionsMap, TClassifierPriority priority);
 
 	/// Chaine de debug
 	void getDebugString (std::string &t) const;

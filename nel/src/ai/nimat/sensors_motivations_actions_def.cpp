@@ -1,7 +1,7 @@
 /** \file sensors_motivations_actions_def.cpp
  * Sensors, motivations and actions list of enums.
  *
- * $Id: sensors_motivations_actions_def.cpp,v 1.4 2003/07/04 15:09:53 robert Exp $
+ * $Id: sensors_motivations_actions_def.cpp,v 1.5 2003/07/24 17:03:29 robert Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@ namespace NLAINIMAT
 	
 CActionResources::CActionResources()
 {
-	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Idle,  ActionResources_forwardMove));
+//	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Idle,  ActionResources_forwardMove));
 
 	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Target_MoveAway,  ActionResources_forwardMove));
 	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Target_MoveAway,  ActionResources_yaw));
@@ -43,12 +43,12 @@ CActionResources::CActionResources()
 	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Target_Approach,  ActionResources_forwardMove));
 	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Target_Approach,  ActionResources_yaw));
 	
-	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Item_Approach,  ActionResources_forwardMove));
-	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Item_Approach,  ActionResources_yaw));
+//	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Item_Approach,  ActionResources_forwardMove));
+//	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Item_Approach,  ActionResources_yaw));
 	
-	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Waypoint_MoveTo,  ActionResources_forwardMove));
-	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Waypoint_MoveTo,  ActionResources_yaw));
-	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Waypoint_MoveTo,  ActionResources_button_jump));
+//	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Waypoint_MoveTo,  ActionResources_forwardMove));
+//	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Waypoint_MoveTo,  ActionResources_yaw));
+//	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Waypoint_MoveTo,  ActionResources_button_jump));
 	
 	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToTargetFlag,  ActionResources_forwardMove));
 	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToTargetFlag,  ActionResources_yaw));
@@ -62,9 +62,27 @@ CActionResources::CActionResources()
 	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToTargetFlagGoal,  ActionResources_yaw));
 	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToTargetFlagGoal,  ActionResources_button_jump));
 	
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToMyFlagStart,  ActionResources_forwardMove));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToMyFlagStart,  ActionResources_yaw));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToMyFlagStart,  ActionResources_button_jump));
+	
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToMyFlagGoal,  ActionResources_forwardMove));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToMyFlagGoal,  ActionResources_yaw));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToMyFlagGoal,  ActionResources_button_jump));
+	
 	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_LookAround,  ActionResources_forwardMove));
 	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_LookAround,  ActionResources_yaw));
 	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_LookAround,  ActionResources_button_jump));
+
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_SelectClassScout,  ActionResources_selectClass));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_SelectClassSniper,  ActionResources_selectClass));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_SelectClassSoldier,  ActionResources_selectClass));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_SelectClassDemoman,  ActionResources_selectClass));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_SelectClassMedic,  ActionResources_selectClass));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_SelectClassHwguy,  ActionResources_selectClass));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_SelectClassPyro,  ActionResources_selectClass));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_SelectClassSpy,  ActionResources_selectClass));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_SelectClassEngineer,  ActionResources_selectClass));
 }
 
 CActionResources::~CActionResources()

@@ -1,7 +1,7 @@
 /** \file mhics.h
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.h,v 1.5 2003/07/04 15:09:52 robert Exp $
+ * $Id: mhics.h,v 1.6 2003/07/24 17:03:15 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -36,7 +36,10 @@
 
 namespace NLAINIMAT
 {
-	extern const TTargetId NullTargetId;
+
+extern const TTargetId NullTargetId;
+
+class CMHiCSagent;
 
 /**
   * A Class for manage witch source motivate a CS or an action
@@ -68,11 +71,11 @@ public :
 
 	/// Gestion des classeurs qui apportent la motivation
 	void	removeProvider(TMotivation providerName);
-	void	removeProvider(TAction providerName);
-	void	addProvider(TMotivation providerName, const CMotivationEnergy& providerMotivation);
-	void	addProvider(TAction providerName, const CMotivationEnergy& providerMotivation);
-	void	updateProvider(TMotivation providerName, const CMotivationEnergy& providerMotivation);
-	void	updateProvider(TAction providerName, const CMotivationEnergy& providerMotivation);
+//	void	removeProvider(TAction providerName);
+	void	addProvider(TMotivation providerName, TClassifierPriority classifierPriority);
+//	void	addProvider(TAction providerName, const CMotivationEnergy& providerMotivation);
+//	void	updateProvider(TMotivation providerName, const CMotivationEnergy& providerMotivation);
+//	void	updateProvider(TAction providerName, const CMotivationEnergy& providerMotivation);
 
 	/// Donne la Puissance Propre d'une Motivation
 	void setMotivationPP(TMotivation motivationName, double PP);
@@ -89,17 +92,23 @@ public :
 	/// Chaine de debug
 	void getDebugString (std::string &t) const;
 
+	void setMHiCSagent(CMHiCSagent* pmhicsAgent) {_MHiCSagent = pmhicsAgent;}
+	
 private :
 	void computeMotivationValue();
 
+	CMHiCSagent*								_MHiCSagent;
 	double										_SumValue;
-	std::map<TMotivation, TEnergyByMotivation>	_MotivationProviders;
-	std::map<TAction, TEnergyByMotivation>		_VirtualActionProviders;
+	std::multimap<TMotivation, TClassifierPriority>	_MotivationProviders;
+//	std::map<TMotivation, TEnergyByMotivation>	_MotivationProviders;
+	//	std::map<TAction, TEnergyByMotivation>		_VirtualActionProviders;
 	TEnergyByMotivation							_EnergyByMotivation;	// <MotivationSource, motivationValue>
+	CMotivationValue							_MyMotivationValue;
 };
 
 /**
-  * A Modular Hierarchical Classifier System.
+  * 
+  A Modular Hierarchical Classifier System.
   * This is the base component where all rules are stored.
   * \author Gabriel ROBERT
   * \author Nevrax France
@@ -130,11 +139,11 @@ public :
 	*/
 	void selectBehavior(TMotivation motivationName,
 						const CCSPerception* psensorMap,
-						std::multimap<double, std::pair<sint16, TTargetId> > &mapActivableCS);
+						std::multimap<double, std::pair<TClassifierNumber, TTargetId> > &mapActivableCS);
 
 //	void selectBehavior(TAction VirtualActionName,
 //						const CCSPerception* psensorMap,
-//						std::multimap<double, std::pair<sint16, TTargetId> > &mapActivableCS,
+//						std::multimap<double, std::pair<TClassifierNumber, TTargetId> > &mapActivableCS,
 //						TTargetId	&target);
 		
 	/**
@@ -143,9 +152,10 @@ public :
 	  * \param classifierNumber is the number of the classifier.
 	  * \return is the condition part of the wanted Classifier.
 	  */
-	TAction getActionPart(TMotivation motivationName, sint16 classifierNumber);
-	TAction getActionPart(TAction motivationName, sint16 classifierNumber);
-
+	TAction getActionPart(TMotivation motivationName, TClassifierNumber classifierNumber);
+//	TAction getActionPart(TAction motivationName, TClassifierNumber classifierNumber);
+	TClassifierPriority getPriorityPart(TMotivation motivationName, TClassifierNumber classifierNumber);
+	
 	/// To now if a behav selected by a CS is an action (if not, it's a common CS)
 	bool isAnAction(TAction behav) const;
 
@@ -190,8 +200,8 @@ public :
 	/// Retourne la valeur d'une motiation
 	double	getMotivationValue(TMotivation motivationName) const;
 
-	/// Retourne l'intensité de motivation reçu par un action virtuel
-	double getMotivationIntensity(TAction virtualAction) const;
+//	/// Retourne l'intensité de motivation reçu par un action virtuel
+//	double getMotivationIntensity(TAction virtualAction) const;
 
 	/// Retourne l'intensité d'exécution d'une action
 //	double getExecutionIntensity(TAction action) const;
@@ -211,22 +221,29 @@ public :
 	/// Chaine de debug
 	void getDebugString(std::string &t) const;
 
+	const CMHiCSbase* getMHiCSbase() const {return _pMHiCSbase;}
+
 private :
 	class CMotivateCS
 	{
 	public :
-		sint16				ClassifierNumber;		// Number of the last classifier actived by this motivation
+		TClassifierNumber	ClassifierNumber;		// Number of the last classifier actived by this motivation
 		TTargetId			TargetId;				// Id of the laste TaretID selected by this motivation
 		double				LastSelectionMaxPriority;//LastSelectionMaxPriority is the Priority given to the last selected classifier
 		CMotivationEnergy	MotivationIntensity;
+		void setMHiCSagent(CMHiCSagent* pmhicsAgent) {_MHiCSagent = pmhicsAgent; MotivationIntensity.setMHiCSagent(_MHiCSagent);}
 
 	public :
 		CMotivateCS()
 		{
+			_MHiCSagent = NULL;
 			ClassifierNumber		= -1;
 			TargetId = 0; //NullTargetId;
 			LastSelectionMaxPriority = 0;
 		}
+
+	private :
+		CMHiCSagent* _MHiCSagent;
 	};
 
 //	class CActionToExecute
@@ -257,7 +274,7 @@ private :
 
 	CMHiCSbase*								_pMHiCSbase;							// A pointer on the rules base.
 	std::map<TMotivation, CMotivateCS>		_ClassifiersAndMotivationIntensity;		// <motivationName, classeur> the motivationName is also the CS name.
-	std::map<TAction, CMotivateCS>			_ClassifiersAndVirtualActionIntensity;	// <virtualActionName, classeur> the virtualActionName is also the CS name.
+//	std::map<TAction, CMotivateCS>			_ClassifiersAndVirtualActionIntensity;	// <virtualActionName, classeur> the virtualActionName is also the CS name.
 	CCSPerception*							_pSensorsValues;						// Valeurs des senseurs
 	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >	_ActionsExecutionIntensityByTarget;
 //	std::map<TAction, CMotivationEnergy>	_ActionsExecutionIntensity;				// <actionName, ExecutionIntensity>

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.7 2000/11/06 15:03:39 berenguier Exp $
+ * $Id: tessellation.h,v 1.8 2000/11/07 17:25:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -316,7 +316,7 @@ public:
 
 	public:
 		CParamCoord() {}
-		CParamCoord(uint16 s, uint16 t);
+		CParamCoord(uint16 s, uint16 t) {S=s; T=t;}
 		CParamCoord	operator+(const CParamCoord &v) const	{return CParamCoord(S+v.S, T+v.T);}
 		CParamCoord	operator-(const CParamCoord &v) const	{return CParamCoord(S-v.S, T-v.T);}
 		CParamCoord	shifted() const	{return CParamCoord(S>>1, T>>1);}

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.6 2000/11/07 17:08:07 berenguier Exp $
+ * $Id: scene.cpp,v 1.7 2000/11/07 17:25:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/3d/render_trav.h"
 #include "nel/3d/transform.h"
 #include "nel/3d/camera.h"
+#include "nel/3d/landscape_model.h"
 #include "nel/3d/driver.h"
 using namespace std;
 using namespace NLMISC;
@@ -47,6 +48,7 @@ void	CScene::registerBasics()
 {
 	CTransform::registerBasic();
 	CCamera::registerBasic();
+	CLandscapeModel::registerBasic();
 }
 
 	

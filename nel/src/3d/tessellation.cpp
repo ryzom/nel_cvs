@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.7 2000/11/06 17:39:30 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.8 2000/11/07 17:25:06 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -70,6 +70,7 @@ static sint		GlobalTriListBlockRealloc= 1024;
 
 // ***************************************************************************
 sint			CPatchRdrPass::CurGlobalIndex=0;
+std::vector<uint32>	CPatchRdrPass::GlobalTriList;
 
 	
 // ***************************************************************************

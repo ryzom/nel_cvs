@@ -224,6 +224,26 @@ SOURCE=.\3d\primitive_block.cpp
 SOURCE=.\3d\vertex_buffer.cpp
 # End Source File
 # End Group
+# Begin Group "Math"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\aabbox.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\aabbox.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\bsphere.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\bsphere.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\3d\bitmap.cpp

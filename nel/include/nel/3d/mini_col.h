@@ -1,7 +1,7 @@
 /** \file mini_col.h
  * <File description>
  *
- * $Id: mini_col.h,v 1.1 2000/12/13 10:25:22 berenguier Exp $
+ * $Id: mini_col.h,v 1.2 2000/12/22 09:55:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,19 +57,15 @@ public:
 	/// Constructor
 	CMiniCol();
 
-	/** Init the center of interest of the collision system. Must be as small as possible, but all faces must be IN this
-	 * area. If any, delete all faces of the collision system.
-	 * \param size the diameter (2*radius) of the area.
+	/** Init the size of the collision system, and init it with the landscape.
+	 * \param size the radius of the area.
 	 */
-	void			init(const CVector& center, float size);
+	void			init(CLandscape *land, float radius= 100) {_Landscape= land; _Radius= radius;}
 
-	/// add faces to the collision system.
-	void			addFaces(const std::vector<CTriangle> &faces);
 
-	/** add landscape/patch faces to the collision system. 
-	 * \param size the diameter (2*radius) of the area.
+	/** Reset the center of interset of the collision system.
 	 */
-	void			addLandscapePart(CLandscape &land, const CVector &center, float size);
+	void			setCenter(const CVector& center);
 
 
 	/** This function test if a move is OK, by snaping it to ground, and test if angle is<45°.
@@ -93,6 +89,24 @@ private:
 	};
 	CQuadTree<CNode>	_QuadTree;
 
+	float				_Radius;
+	CRefPtr<CLandscape>	_Landscape;
+	bool				_Inited;
+	CVector				_Center;
+
+	/** Init the center of interest of the collision system. Must be as small as possible, but all faces must be IN this
+	 * area. If any, delete all faces of the collision system.
+	 * \param size the diameter (2*radius) of the area.
+	 */
+	void			init(const CVector& center, float size);
+
+	/// add faces to the collision system.
+	void			addFaces(const std::vector<CTriangle> &faces);
+
+	/** add landscape/patch faces to the collision system. 
+	 * \param size the diameter (2*radius) of the area.
+	 */
+	void			addLandscapePart(CLandscape &land, const CVector &center, float size);
 };
 
 

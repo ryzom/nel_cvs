@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.14 2000/12/13 14:52:17 berenguier Exp $
+ * $Id: scene.cpp,v 1.15 2000/12/22 09:56:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -225,11 +225,9 @@ CTransformShape	*CScene::createInstance(const std::string &shapeName)
 	it= ShapeMap.find(shapeName);
 	if(it==ShapeMap.end())
 	{
-		string	path= CPath::lookup(shapeName);
-		if(path.empty())
-			return NULL;
-		else
+		try
 		{
+			string	path= CPath::lookup(shapeName);
 			IShape	*shape=NULL;
 			CIFile	file;
 
@@ -246,6 +244,10 @@ CTransformShape	*CScene::createInstance(const std::string &shapeName)
 			addShape(shapeName, spShape);
 			it= ShapeMap.find(shapeName);
 			nlassert(it==ShapeMap.end());
+		}
+		catch(EPathNotFound &)
+		{
+			return NULL;
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.1 2000/12/15 18:20:22 berenguier Exp $
+ * $Id: texture_file.cpp,v 1.2 2000/12/22 09:56:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,9 @@
 
 #include "nel/3d/texture_file.h"
 #include "nel/misc/file.h"
+#include "nel/misc/path.h"
+using namespace std;
+using namespace NLMISC;
 
 
 namespace NL3D
@@ -40,12 +43,16 @@ namespace NL3D
 void CTextureFile::generate()
 {
 	NLMISC::CIFile f;
-	if(f.open(_FileName))
+	try
 	{
-		load(f);
+		string	file= CPath::lookup(_FileName);
+		if(f.open(file))
+			load(f);
+		else throw EPathNotFound(_FileName);
 	}
-	else
+	catch(EPathNotFound &)
 	{
+		// Not found...
 		makeDummy();
 	}
 	

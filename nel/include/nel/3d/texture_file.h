@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.1 2000/12/15 18:19:42 berenguier Exp $
+ * $Id: texture_file.h,v 1.2 2000/12/22 09:55:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,7 +91,7 @@ public:
 
 
 	/** 
-	 * Generate the texture
+	 * Generate the texture, looking in CPath if necessary.
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	

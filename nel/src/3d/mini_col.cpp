@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * <File description>
  *
- * $Id: mini_col.cpp,v 1.2 2000/12/13 11:05:39 berenguier Exp $
+ * $Id: mini_col.cpp,v 1.3 2000/12/22 09:56:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,8 @@ CMiniCol::CMiniCol()
 	tmp.identity();
 	tmp.setRot(I,J,K, true);
 	_QuadTree.changeBase (tmp);
+	_Radius= 100;
+	_Inited= false;
 }
 
 // ***************************************************************************
@@ -84,6 +86,35 @@ void			CMiniCol::addLandscapePart(CLandscape &land, const CVector &center, float
 	bb.setSize(CVector(size, size, size));
 	land.buildCollideFaces(bb,faces, false);
 	addFaces(faces);
+}
+
+
+// ***************************************************************************
+void			CMiniCol::setCenter(const CVector& center)
+{
+	bool	reset= false;
+	if(!_Inited)
+	{
+		_Inited= true;
+		reset= true;
+	}
+	else
+	{
+		if((center-_Center).norm()>_Radius)
+			reset= true;
+	}
+
+	if(reset)
+	{
+		_Center= center;
+		if(_Landscape)
+		{
+			float	size= 2* _Radius;
+			init(_Center, 4*size);
+			// init the col landscape of 2*size, so we can go on sphere limit, and still have good collision around us.
+			addLandscapePart(*_Landscape, _Center, 2*size);
+		}
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.21 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: landscape.h,v 1.22 2000/12/22 09:55:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/class_id.h"
+#include "nel/misc/smart_ptr.h"
 #include "nel/3d/zone.h"
 #include "nel/3d/tile_bank.h"
 #include "nel/3d/patch_rdr_pass.h"
@@ -65,7 +66,7 @@ const	sint	NbTilesMax= 65536;
  * \author Nevrax France
  * \date 2000
  */
-class CLandscape
+class CLandscape : public NLMISC::CRefCount
 {
 public:
 	// The bank of tiles information.

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.55 2001/05/10 08:12:26 lecroart Exp $
+ * $Id: service.cpp,v 1.56 2001/05/15 14:45:04 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -58,7 +58,7 @@
 #include "nel/net/net_displayer.h"
 #include "nel/net/net_log.h"
 
-//#includenel/netv2/callback_server.h"
+#include "nel/net/callback_server.h"
 #include "nel/net/net_manager.h"
 
 #include <sstream>
@@ -212,6 +212,15 @@ void AESConnection (const string &serviceName, TSockId from, void *arg)
 		CMessage msgout2 (CNetManager::getSIDA ("AES"), "SR");
 		CNetManager::send ("AES", msgout2);
 	}
+}
+
+
+/*
+ * Returns a pointer to the CCallbackServer object
+ */
+CCallbackServer *IService::getServer()
+{
+	return dynamic_cast<CCallbackServer*>(CNetManager::getNetBase(IService::_ShortName));
 }
 
 

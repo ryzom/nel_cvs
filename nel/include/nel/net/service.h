@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.21 2001/05/10 08:15:11 lecroart Exp $
+ * $Id: service.h,v 1.22 2001/05/15 14:45:13 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,8 @@
 
 namespace NLNET
 {
+
+class CCallbackServer;
 
 typedef uint8 TServiceId;
 
@@ -141,6 +143,9 @@ public:
 	static void			setUpdateTimeout (uint32 timeout) { _UpdateTimeout = timeout; } 
 
 	void setCallbackArray (TCallbackItem *callbackArray, uint16 callbackArraySize) { _CallbackArray=callbackArray; _CallbackArraySize=callbackArraySize; }
+
+	/// Returns a pointer to the CCallbackServer object
+	static CCallbackServer *getServer();
 
 protected:
 

@@ -1,6 +1,6 @@
 /** \file dup_ps.cpp
  *
- * $Id: dup_ps.cpp,v 1.1 2002/04/25 08:29:47 vizerie Exp $
+ * $Id: dup_ps.cpp,v 1.2 2002/06/07 16:10:41 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -54,9 +54,11 @@ static T	*DupSerializable(const T *in) throw(NLMISC::EStream)
 	nlassert(!ms.isReading());
 	T *nonConstIn = const_cast<T *>(in);
 	TSerializePolicy::serial(nonConstIn, ms);
-	ms.seek(0, NLMISC::IStream::begin);
+	std::vector<uint8> datas(ms.length());
+	std::copy(ms.buffer(), ms.buffer() + ms.length(), datas.begin());		
 	ms.resetPtrTable();
 	ms.invert();
+	ms.fill(&datas[0], datas.size());
 	nlassert(ms.isReading())	
 	T *newObj = NULL;
 	TSerializePolicy::serial(newObj, ms);

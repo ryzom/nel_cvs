@@ -1,7 +1,7 @@
 /** \file sound_driver.cpp
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.cpp,v 1.16.8.1 2004/09/09 14:01:49 berenguier Exp $
+ * $Id: sound_driver.cpp,v 1.16.8.2 2004/09/10 12:47:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,7 +89,7 @@ namespace NLSOUND
 // Interface version
 const uint32 ISoundDriver::InterfaceVersion = 0x08;
 
-typedef ISoundDriver* (*ISDRV_CREATE_PROC)(bool, ISoundDriver::IStringMapperProvider *stringMapper); 
+typedef ISoundDriver* (*ISDRV_CREATE_PROC)(bool, ISoundDriver::IStringMapperProvider *stringMapper, bool forceSoftwareBuffer); 
 const char *IDRV_CREATE_PROC_NAME = "NLSOUND_createISoundDriverInstance";
 
 typedef uint32 (*ISDRV_VERSION_PROC)(void); 
@@ -100,7 +100,7 @@ const char *IDRV_VERSION_PROC_NAME = "NLSOUND_interfaceVersion";
 /*
  * The static method which builds the sound driver instance
  */
-ISoundDriver	*ISoundDriver::createDriver(bool useEax, IStringMapperProvider *stringMapper, TDriver driverType)
+ISoundDriver	*ISoundDriver::createDriver(bool useEax, IStringMapperProvider *stringMapper, TDriver driverType, bool forceSoftwareBuffer)
 {
 	ISDRV_CREATE_PROC	createSoundDriver = NULL;
 	ISDRV_VERSION_PROC	versionDriver = NULL;
@@ -194,7 +194,7 @@ ISoundDriver	*ISoundDriver::createDriver(bool useEax, IStringMapperProvider *str
 #error "Dynamic DLL loading not implemented!"
 #endif // NL_OS_UNIX
 
-	ISoundDriver *ret = createSoundDriver(useEax, stringMapper);
+	ISoundDriver *ret = createSoundDriver(useEax, stringMapper, forceSoftwareBuffer);
 	if ( ret == NULL )
 	{
 		throw ESoundDriverCantCreateDriver(dllName);

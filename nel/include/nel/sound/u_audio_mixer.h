@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.33.4.1 2004/09/09 14:03:27 berenguier Exp $
+ * $Id: u_audio_mixer.h,v 1.33.4.2 2004/09/10 12:49:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,8 +156,10 @@ public:
 	 * deactivated.
 	 * autoLoadSample is used for tools like george or object viewer where you don't bother to
 	 * specifie each sample bank to load, you just want to ear the sound.
+	 *
+	 *	\param forceSoftware: to force the driver to load in software buffer, not hardware
 	 */
-	virtual void		init(uint maxTrack = 32, bool useEax = true, bool useADPCM = true, NLMISC::IProgressCallback *progressCallBack = NULL, bool autoLoadSample = false, TDriver driverType= DriverAuto) = 0;
+	virtual void		init(uint maxTrack = 32, bool useEax = true, bool useADPCM = true, NLMISC::IProgressCallback *progressCallBack = NULL, bool autoLoadSample = false, TDriver driverType= DriverAuto, bool forceSoftware= false) = 0;
 
 	/** Initialisation of the clustered sound system.
 	  */

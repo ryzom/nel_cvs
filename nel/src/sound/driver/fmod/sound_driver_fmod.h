@@ -1,7 +1,7 @@
 /** \file sound_dirver_fmod.h
  * DirectSound sound source
  *
- * $Id: sound_driver_fmod.h,v 1.1.2.1 2004/09/09 14:02:32 berenguier Exp $
+ * $Id: sound_driver_fmod.h,v 1.1.2.2 2004/09/10 12:48:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,7 +71,7 @@ public:
 	virtual	IListener *createListener();
 
 	/// Initialization
-	void init(IStringMapperProvider *stringMapper);
+	void init(IStringMapperProvider *stringMapper, bool forceSoftwareBuffer);
 
 	/// Create a sound buffer
 	virtual	IBuffer *createBuffer();
@@ -122,6 +122,8 @@ public:
 
 	bool	fmodOk() const {return _FModOk;}
 
+	bool	forceSofwareBuffer() const {return _ForceSoftwareBuffer;}
+
 private:
 
 	// The refence to the singleton.
@@ -153,6 +155,9 @@ private:
 
 	/// Master Volume [0,1]
 	float					_MasterGain;
+
+	/// If want to create buffer in software (no hardware)
+	bool					_ForceSoftwareBuffer;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.70.4.1 2004/09/09 14:00:17 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.70.4.2 2004/09/10 12:47:20 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -353,7 +353,7 @@ void CAudioMixerUser::setSamplePath(const std::string& path)
 
 // ******************************************************************
 
-void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgressCallback *progressCallBack, bool autoLoadSample, TDriver driverType)
+void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgressCallback *progressCallBack, bool autoLoadSample, TDriver driverType, bool forceSoftwareBuffer)
 {
 	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 	nldebug( "AM: Init..." );
@@ -369,7 +369,7 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgre
 	{
 		// create the wanted driver
 		nlctassert(NumDrivers == ISoundDriver::NumDrivers);
-		_SoundDriver = ISoundDriver::createDriver(useEax, this, (ISoundDriver::TDriver)driverType);
+		_SoundDriver = ISoundDriver::createDriver(useEax, this, (ISoundDriver::TDriver)driverType, forceSoftwareBuffer);
 		if(_SoundDriver)
 		{
 			_profile(( "AM: DRIVER: %s", _SoundDriver->getDllName().c_str() ));

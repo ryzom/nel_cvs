@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.28.4.1 2004/09/09 14:51:15 berenguier Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.28.4.2 2004/09/10 12:48:17 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,7 +78,7 @@ long FAR PASCAL CSoundDriverCreateWindowProc(HWND hWnd, unsigned message, WPARAM
 
 // ******************************************************************
 
-__declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance(bool useEax, ISoundDriver::IStringMapperProvider *stringMapper)
+__declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance(bool useEax, ISoundDriver::IStringMapperProvider *stringMapper, bool forceSoftwareBuffer)
 {
 	NL_ALLOC_CONTEXT(NLSOUND_ISoundDriver);
 	static bool Registered = false;

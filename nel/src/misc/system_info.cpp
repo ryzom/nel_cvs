@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.13 2003/01/03 17:04:21 lecroart Exp $
+ * $Id: system_info.cpp,v 1.14 2003/01/09 17:07:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -475,19 +475,19 @@ uint32 CSystemInfo::totalPhysicalMemory ()
 }
 
 
-NLMISC_DYNVARIABLE(uint32, AvailablePhysicalMemory, "Physical memory available on this computer in bytes")
+NLMISC_DYNVARIABLE(string, AvailablePhysicalMemory, "Physical memory available on this computer in bytes")
 {
-	if (get) *pointer = CSystemInfo::availablePhysicalMemory ();
+	if (get) *pointer = bytesToHumanReadable(CSystemInfo::availablePhysicalMemory ());
 }
 
-NLMISC_DYNVARIABLE(uint32, TotalPhysicalMemory, "Total physical memory on this computer in bytes")
+NLMISC_DYNVARIABLE(string, TotalPhysicalMemory, "Total physical memory on this computer in bytes")
 {
-	if (get) *pointer = CSystemInfo::totalPhysicalMemory ();
+	if (get) *pointer = bytesToHumanReadable(CSystemInfo::totalPhysicalMemory ());
 }
 
-NLMISC_DYNVARIABLE(uint32, ProcessUsedMemory, "Memory used by this process in bytes")
+NLMISC_DYNVARIABLE(string, ProcessUsedMemory, "Memory used by this process in bytes")
 {
-	if (get) *pointer = CHeapAllocator::getAllocatedSystemMemory ();
+	if (get) *pointer = bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ());
 }
 
 

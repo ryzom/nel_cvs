@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.33 2003/01/07 17:10:20 lecroart Exp $
+ * $Id: common.cpp,v 1.34 2003/01/09 17:07:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -378,34 +378,90 @@ bool isPowerOf2(sint32 v)
 	return true;
 }
 
-string bytesToHumanReadable (uint32 bytes)
+string bytesToHumanReadable (const std::string &bytes)
 {
-	static char *divTable[]= { "b", "kb", "mb", "gb", "tb" };
+	static char *divTable[]= { "b", "kb", "mb", "gb" };
 	uint div = 0;
-	float res = (float)bytes;
-	float newres = res;
+	uint64 res = atoiInt64(bytes.c_str());
+	uint64 newres = res;
 	while (true)
 	{
 		newres /= 1024;
-		if(newres < 1.0f || div > 4)
+		if(newres < 8 || div > 2)
 			break;
 		div++;
 		res = newres;
 	}
-	int ires = (int) res;
-	if (res-(float)ires < .01f)
-		return toString ("%.0f%s", res, divTable[div]);
-	else
-		return toString ("%.2f%s", res, divTable[div]);
+	return toString ("%"NL_I64"u%s", res, divTable[div]);
 }
 
-NLMISC_COMMAND(bthr, "Convert a bytes number into an human readable", "<int>")
+string bytesToHumanReadable (uint32 bytes)
+{
+	static char *divTable[]= { "b", "kb", "mb", "gb" };
+	uint div = 0;
+	uint32 res = bytes;
+	uint32 newres = res;
+	while (true)
+	{
+		newres /= 1024;
+		if(newres < 8 || div > 2)
+			break;
+		div++;
+		res = newres;
+	}
+	return toString ("%u%s", res, divTable[div]);
+}
+
+uint32 humanReadableToBytes (const string &str)
+{
+	uint32 res;
+
+	if(str.empty())
+		return 0;
+
+	// not a number
+	if(str[0]<'0' || str[0]>'9')
+		return 0;
+
+	res = atoi (str.c_str());
+
+	if(str[str.size()-1] == 'b')
+	{
+		if (str.size()<3)
+			return res;
+
+		// there s no break and it s **normal**
+		switch (str[str.size()-2])
+		{
+		case 'g': res *= 1024;
+		case 'm': res *= 1024;
+		case 'k': res *= 1024;
+		default: ;
+		}
+	}
+
+	return res;
+}
+
+
+NLMISC_COMMAND(btohr, "Convert a bytes number into an human readable number", "<int>")
 {
 	if (args.size() != 1)
 		return false;
 	
-	log.displayNL("%d -> %s", atoi(args[0].c_str()), bytesToHumanReadable(atoi(args[0].c_str())).c_str());
+	log.displayNL("%s -> %s", args[0].c_str(), bytesToHumanReadable(args[0]).c_str());
 
+	return true;
+}
+
+
+NLMISC_COMMAND(hrtob, "Convert a human readable number into a bytes number", "<hr>")
+{
+	if (args.size() != 1)
+		return false;
+	
+	log.displayNL("%s -> %u", args[0].c_str(), humanReadableToBytes(args[0]));
+	
 	return true;
 }
 

@@ -2,7 +2,7 @@
  * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
  * connects to the shard.
  *
- * $Id: login_client.cpp,v 1.17 2002/11/04 13:11:34 lecroart Exp $
+ * $Id: login_client.cpp,v 1.18 2003/09/03 14:12:48 cado Exp $
  *
  */
 
@@ -107,6 +107,11 @@ string CLoginClient::connectToShard (const std::string &addr, CUdpSock &cnx)
 		//
 		// S12: connect to the FES. Note: In UDP mode, it's the user that have to send the cookie to the front end
 		//
+		// If a personal firewall such as ZoneAlarm is installed and permission not granted yet,
+		// the connect blocks until the user makes a choice.
+		// If the user denies the connection, the exception ESocket is thrown.
+		// Other firewalls such as Kerio make the send() fail instead.
+		//
 		cnx.connect (CInetAddress(addr));
 	}
 	catch (ESocket &e)
@@ -125,6 +130,8 @@ string CLoginClient::connectToShard (const std::string &addr, CUdpSimSock &cnx)
 	{
 		//
 		// S12: connect to the FES. Note: In UDP mode, it's the user that have to send the cookie to the front end
+		//
+		// See firewall comment in connectToShard(string,CUdpSock)
 		//
 		cnx.connect (CInetAddress(addr));
 	}

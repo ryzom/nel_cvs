@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.24 2003/02/17 16:27:12 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.25 2003/02/18 15:31:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,6 +87,9 @@ using namespace std;
 Documentation:
 
 
+	To light a zone, you must first adding shadow caster triangles using the addTriangle() methods. 
+	Triangles can come from landscape zones or IG meshes. Then call the lighting process with ligth().
+
 	addTriangle ()
 		- Add landscape triangles to shadow caster triangle list
 			- Tesselate the landscape to shadow accuracy (2 meters)
@@ -94,9 +97,12 @@ Documentation:
 			- AlphaTest textures can be used here
 
 	light ()
-
+		The lighting process uses a software zbuffers render to compute shadow attenuation of the zone.
 		CRenderZBuffer () (multithread)
-			- Render shadow caster triangles into a light zbuffer for shadows
+			- Render shadow caster triangles into the light zbuffers for shadows. Each z value is tested and 
+			written in the pixel and in the 8 neighbor pixels.
+			- There is a zbuffer per landscape softshadow sample and an additionnal zbuffer for objects. So 
+			landscape triangles cast softshadows and object (trees and building) cast antialiased shadows.
 
 		- Render shadow caster triangles into a heightfield used for radiosity
 
@@ -105,15 +111,10 @@ Documentation:
 			- Tesselate the landscape to shadow accuracy (2 meters)
 			
 			- Compute lumel positions. 
-				- Lumel position is the average of lumel triangles center overlapping
+				Lumel position is the average of lumel triangles center overlapping
 				the lumel but using the shadow accuracy triangle position because
 				we need the same triangles than shadow caster polygons.
-				- Positions inside the first lumel border are snaped to the patch border.
-			
-			- Extand lumel position
-				- At this point, lumel positions are extended.
-				We need to extand the position to get lumel position on the border of the
-				patch (aligned with rendered lumels).
+				Border lumel position are extended to fit the patch border.
 			
 			- Tesselate to lumel accuracy (0.5 meter)
 			
@@ -134,8 +135,11 @@ Documentation:
 				
 				attenuation ()
 					- Compute shadow attenuation
-						- Algorithm
-							- todo : documentation
+						- Get an antialised attenuation value in each lansdcape softshadow zbuffer. 
+						Average it with jitter.
+						- Get an antialised attenuation value from the object zbuffer.
+						- Return the smaller value of the both.
+
 				- Compute sun lighting (dot product)
 
 				getSkyContribution ()

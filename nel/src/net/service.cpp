@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.106 2002/01/22 14:08:49 lecroart Exp $
+ * $Id: service.cpp,v 1.107 2002/02/28 15:22:50 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -317,6 +317,7 @@ void IService::setServiceName (const char *shortName, const char *longName)
 	DebugLog->addDisplayer (&fd);
 	InfoLog->addDisplayer (&fd);
 	WarningLog->addDisplayer (&fd);
+	AssertLog->addDisplayer (&fd);
 	ErrorLog->addDisplayer (&fd);
 }
 
@@ -357,7 +358,13 @@ sint IService::main ()
 
 	try
 	{
+		//
+		// init debug stuffs
+		//
+
 		createDebug ();
+
+		DebugLog->addNegativeFilter ("NETL");
 
 		//
 		// Load the config file
@@ -426,8 +433,6 @@ sint IService::main ()
 		}
 
 		nlinfo ("Starting Service '%s' using NeL ("__DATE__" "__TIME__")", _ShortName.c_str());
-		DebugLog->addNegativeFilter ("LNETL3NB_ASSOC:");
-		DebugLog->addNegativeFilter ("LNETL3NB_CB:");
 
 		//
 		// Display command line arguments
@@ -1048,8 +1053,8 @@ NLMISC_COMMAND(_nofilter, "disable all filters on Nel loggers", "")
 	DebugLog->resetFilters();
 	InfoLog->resetFilters();
 	WarningLog->resetFilters();
-	ErrorLog->resetFilters();
 	AssertLog->resetFilters();
+	ErrorLog->resetFilters();
 
 	return true;
 }

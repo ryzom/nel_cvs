@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.20 2002/02/20 18:09:17 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.21 2002/02/28 15:22:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,19 +167,17 @@ bool CBufSock::flush()
 		TBlockSize len = _ReadyToSendBuffer.size() - _RTSBIndex;
 		if ( ( res = Sock->send( &*_ReadyToSendBuffer.begin()+_RTSBIndex, len, false )) == CSock::Ok )
 		{
-#ifdef NL_DEBUG
-			// Debug display
+/*			// Debug display
 			switch ( _FlushTrigger )
 			{
 			case FTTime : nldebug( "LNETL1: Time triggered flush for %s:", asString().c_str() ); break;
 			case FTSize : nldebug( "LNETL1: Size triggered flush for %s:", asString().c_str() ); break;
 			default:	  nldebug( "LNETL1: Manual flush for %s:", asString().c_str() );
 			}
-			nldebug( "LNETL1: %s sent effectively a buffer (%d on %d B): [%s]", asString().c_str(), len, _ReadyToSendBuffer.size(), stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str() );
 			_FlushTrigger = FTManual;
-#else
 			nldebug( "LNETL1: %s sent effectively a buffer (%d on %d B)", asString().c_str(), len, _ReadyToSendBuffer.size() );
-#endif
+*/			nldebug( "LNETL1: %s sent effectively %u/%u bytes: [%s]", asString().c_str(), len, _ReadyToSendBuffer.size(), stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str() );
+
 			if ( len == _ReadyToSendBuffer.size() ) // for non-blocking mode (server)
 			{
 				// If sending is ok, clear the global buffer
@@ -201,6 +199,7 @@ bool CBufSock::flush()
 		else
 		{
 #ifdef NL_DEBUG
+			// can happen in a normal behavior if, for example, the other side is not connect anymore
 			nldebug( "LNETL1: %s failed to send effectively a buffer of %d bytes", asString().c_str(), _ReadyToSendBuffer.size() );
 #endif
 			return false;
@@ -397,7 +396,7 @@ bool CServerBufSock::receivePart()
 		if ( _BytesRead == _Length )
 		{
 #ifdef NL_DEBUG
-			nldebug( "LNETL1: %s received buffer (%u B): [%s]", asString().c_str(), _ReceiveBuffer.size(), stringFromVector(_ReceiveBuffer).c_str() );
+			nldebug( "LNETL1: %s received buffer (%u bytes): [%s]", asString().c_str(), _ReceiveBuffer.size(), stringFromVector(_ReceiveBuffer).c_str() );
 #endif
 			_NowReadingBuffer = false;
 			_BytesRead = 0;

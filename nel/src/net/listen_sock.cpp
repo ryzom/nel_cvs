@@ -1,7 +1,7 @@
 /** \file listen_sock.cpp
  * Network engine, layer 0, listening tcp socket
  *
- * $Id: listen_sock.cpp,v 1.5 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: listen_sock.cpp,v 1.6 2002/02/28 15:22:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,7 +118,7 @@ void CListenSock::init( const CInetAddress& addr )
 	{
 		throw ESocket( "Unable to listen on specified port" );
 	}
-	nldebug( "LNETL0: Socket %d listening at %s", _Sock, _LocalAddr.asString().c_str() );
+//	nldebug( "LNETL0: Socket %d listening at %s", _Sock, _LocalAddr.asString().c_str() );
 }
 
 

@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.25 2002/02/06 17:29:03 cado Exp $
+ * $Id: buf_server.cpp,v 1.26 2002/02/28 15:22:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -465,8 +465,7 @@ void CBufServer::receive( std::vector<uint8>& buffer, TSockId* phostid )
 //	nldebug ("receive message number %u", val);
 	if ((*phostid)->ReceiveNextValue != val)
 	{
-		nlwarning ("LNETL1: !!!LOST A MESSAGE!!! I received the message number %u but I'm waiting the message number %u (cnx %s)", val, (*phostid)->ReceiveNextValue, (*phostid)->asString().c_str());
-		nlstop;
+		nlstopex (("LNETL1: !!!LOST A MESSAGE!!! I received the message number %u but I'm waiting the message number %u (cnx %s), warn lecroart@nevrax.com with the log now please", val, (*phostid)->ReceiveNextValue, (*phostid)->asString().c_str()));
 		// resync the message number
 		(*phostid)->ReceiveNextValue = val;
 	}

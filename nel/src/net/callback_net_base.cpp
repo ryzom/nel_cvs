@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.30 2002/02/11 10:20:54 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.31 2002/02/28 15:22:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,9 +152,7 @@ CCallbackNetBase::CCallbackNetBase(  TRecordingState rec, const string& recfilen
 	_BytesSent = 0;
 	_BytesReceived = 0;
 
-	nldebug ("disable display layer 3 association message");
 	createDebug(); // for addNegativeFilter to work even in release and releasedebug modes
-	DebugLog->addNegativeFilter ("LNETL3NB_ASSOC");
 
 	// add the callback needed to associate messages with id
 	addCallbackArray (cbnbMessageAssociationArray, sizeof (cbnbMessageAssociationArray) / sizeof (cbnbMessageAssociationArray[0]));
@@ -210,7 +208,7 @@ void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, CSt
 		_OutputSIDA.addString (callbackarray[i].Key, ni);
 
 	}
-	nldebug ("LNETL3NB_CB: Added %d callback Now, there's %d callback associated with message type", arraysize, _CallbackArray.size ());
+//	nldebug ("LNETL3NB_CB: Added %d callback Now, there's %d callback associated with message type", arraysize, _CallbackArray.size ());
 }
 
 
@@ -334,7 +332,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 	//
 	if (_FirstUpdate)
 	{
-		nldebug("LNETL3NB: First update()");
+//		nldebug("LNETL3NB: First update()");
 		_FirstUpdate = false;
 		_LastUpdateTime = t0;
 		_LastMovedStringArray = t0;

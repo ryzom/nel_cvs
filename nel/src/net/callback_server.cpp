@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.19 2002/02/15 14:40:04 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.20 2002/02/28 15:22:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,7 +140,7 @@ void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 
 //	if (log)
 	{
-		nldebug ("LNETL3S: Server: send(%s, %s)", buffer.toString().c_str(), hostid->asString().c_str());
+//		nldebug ("LNETL3S: Server: send(%s, %s)", buffer.toString().c_str(), hostid->asString().c_str());
 	}
 
 #ifdef USE_MESSAGE_RECORDER

@@ -1,7 +1,7 @@
 /** \file tcp_sock.cpp
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.cpp,v 1.6 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: tcp_sock.cpp,v 1.7 2002/02/28 15:22:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,7 +84,7 @@ void CTcpSock::connect( const CInetAddress& addr )
 	{
 	  if ( _Logging )
 	    {
-		nldebug( "LNETL0: Closing socket %d before reconnecting", _Sock );
+//		nldebug( "LNETL0: Closing socket %d before reconnecting", _Sock );
 	    }
 	  close();
 	}	

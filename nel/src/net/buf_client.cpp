@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.12 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: buf_client.cpp,v 1.13 2002/02/28 15:22:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -201,7 +201,7 @@ void CBufClient::receive( std::vector<uint8>& buffer )
 
 	// Extract event type
 	nlassert( buffer[buffer.size()-1] == CBufNetBase::User );
-	nldebug( "LNETL1: Client read buffer (%d+%d B): [%s]", buffer.size(), sizeof(TSockId)+1, stringFromVector(buffer).c_str() );
+	nldebug( "LNETL1: Client read buffer (%d+%d B)", buffer.size(), sizeof(TSockId)+1 );
 	buffer.resize( buffer.size()-1 );
 }
 
@@ -363,9 +363,7 @@ void CClientReceiveTask::run()
 				// Receive message payload (in blocking mode)
 				vector<uint8> buffer ( len );
 				sock()->receive( &*buffer.begin(), len );
-#ifdef NL_DEBUG
-				nldebug( "LNETL1: Client %s received buffer (%u B): [%s]", _SockId->asString().c_str(), buffer.size(), stringFromVector(buffer).c_str() );
-#endif
+				nldebug( "LNETL1: Client %s received buffer (%u bytes): [%s]", _SockId->asString().c_str(), buffer.size(), stringFromVector(buffer).c_str() );
 				// Add event type
 				buffer.push_back( CBufNetBase::User );
 

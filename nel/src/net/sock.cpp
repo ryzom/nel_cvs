@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.17 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: sock.cpp,v 1.18 2002/02/28 15:22:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -260,7 +260,7 @@ void CSock::createSocket( int type, int protocol )
 
 	if ( _Logging )
 	{
-		nldebug( "LNETL0: Socket %d open (TCP)", _Sock );
+//		nldebug( "LNETL0: Socket %d open (TCP)", _Sock );
 	}
 }
 
@@ -349,14 +349,10 @@ void CSock::connect( const CInetAddress& addr )
 */
 		throw ESocketConnectionFailed( addr );
 	}
-	if ( _Logging )
-	{
-		nldebug( "LNETL0: Socket %d connected to %s", _Sock, addr.asString().c_str() );
-	}
 	setLocalAddress();
 	if ( _Logging )
 	{
-		nldebug( "LNETL0: Socket %d is at %s", _Sock, _LocalAddr.asString().c_str() );
+		nldebug( "LNETL0: Socket %d connected to %s (local %s)", _Sock, addr.asString().c_str(), _LocalAddr.asString().c_str() );
 	}	
 	_RemoteAddr = addr;
 
@@ -419,7 +415,7 @@ CSock::TSockResult CSock::send( const uint8 *buffer, uint32& len, bool throw_exc
 
 	if ( _Logging )
 	{
-		nldebug ("LNETL0: CSock::send(): Sent %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+//		nldebug ("LNETL0: CSock::send(): Sent %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
 	}
 	
 	if ( len == SOCKET_ERROR )
@@ -458,7 +454,7 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 
 		if ( _Logging )
 		{
-			nldebug ("LNETL0: CSock::receive(): NBM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+//			nldebug ("LNETL0: CSock::receive(): NBM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
 		}
 
 		_MaxReceiveTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
@@ -513,7 +509,7 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 			TTicks before = CTime::getPerformanceTime();
 			brecvd = ::recv( _Sock, (char*)(buffer+total), len-total, 0 );
 
-			nldebug ("LNETL0: CSock::receive(): BM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+//			nldebug ("LNETL0: CSock::receive(): BM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
 
 			_MaxReceiveTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
 			

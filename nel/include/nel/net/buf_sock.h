@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.13 2002/01/23 14:11:12 lecroart Exp $
+ * $Id: buf_sock.h,v 1.14 2002/02/28 15:22:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@
 namespace NLNET {
 
 
-#define nlnettrace(__msg) nldebug("LNETL1: %s",__msg);
+#define nlnettrace(__msg) //nldebug("LNETL1: %s",__msg);
 
 
 class CTcpSock;
@@ -171,7 +171,7 @@ protected:
 	bool pushBuffer( const std::vector<uint8>& buffer )
 	{
 		nlassert (this != InvalidSockId);	// invalid bufsock
-		nldebug( "LNETL1: Pushing buffer to %s", asString().c_str() );
+//		nldebug( "LNETL1: Pushing buffer to %s", asString().c_str() );
 
 		static uint32 biggerBufferSize = 64000;
 		if (buffer.size() > biggerBufferSize)

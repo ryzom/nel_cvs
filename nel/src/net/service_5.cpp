@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.17 2002/01/22 14:08:49 lecroart Exp $
+ * $Id: service_5.cpp,v 1.18 2002/02/28 15:22:50 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -308,6 +308,7 @@ void IService5::setServiceName (const char *shortName, const char *longName)
 	DebugLog->addDisplayer (&fd);
 	InfoLog->addDisplayer (&fd);
 	WarningLog->addDisplayer (&fd);
+	AssertLog->addDisplayer (&fd);
 	ErrorLog->addDisplayer (&fd);
 }
 
@@ -348,7 +349,13 @@ sint IService5::main ()
 
 	try
 	{
+		//
+		// init debug stuffs
+		//
+
 		createDebug ();
+
+		DebugLog->addNegativeFilter ("NETL");
 
 		//
 		// Load the config file
@@ -417,8 +424,6 @@ sint IService5::main ()
 		}
 
 		nlinfo ("Starting Service 5 '%s' using NeL ("__DATE__" "__TIME__")", _ShortName.c_str());
-		DebugLog->addNegativeFilter ("LNETL3NB_ASSOC:");
-		DebugLog->addNegativeFilter ("LNETL3NB_CB:");
 
 		//
 		// Display command line arguments

@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.18 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.19 2002/02/28 15:22:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,7 +89,7 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 
 //	if (log)
 	{
-		nldebug ("LNETL3C: Client: send(%s)", buffer.toString().c_str());
+////		nldebug ("LNETL3C: Client: send(%s)", buffer.toString().c_str());
 //		nldebug ("send message number %u", SendNextValue);
 	}
 
@@ -228,7 +228,11 @@ void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
 		uint32 val = *(uint32*)buffer.buffer ();
 //		nldebug ("receive message number %u", val);
 		if (ReceiveNextValue != val)
-			nlerror ("stop in the buffer %u and should be %u", val, ReceiveNextValue);
+		{
+			nlstopex (("LNETL1: !!!LOST A MESSAGE!!! I received the message number %u but I'm waiting the message number %u (cnx %s), warn lecroart@nevrax.com with the log now please", val, ReceiveNextValue, id()->asString().c_str()));
+			// resync the message number
+			ReceiveNextValue = val;
+		}
 		ReceiveNextValue++;
 
 #ifdef USE_MESSAGE_RECORDER

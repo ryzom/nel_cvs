@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.cpp,v 1.15 2004/05/10 15:46:08 distrib Exp $
+ * $Id: buf_net_base.cpp,v 1.16 2004/05/11 08:22:12 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,11 +82,13 @@ CBufNetBase::CBufNetBase() :
  */
 CBufNetBase::~CBufNetBase()
 {
+#ifdef NL_OS_UNIX
 	if ( _IsDataAvailablePipeSelfManaged )
 	{
 		::close( _DataAvailablePipeHandle[PipeRead] );
 		::close( _DataAvailablePipeHandle[PipeWrite] );
 	}
+#endif
 }
 
 

@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.28 2004/05/10 15:46:08 distrib Exp $
+ * $Id: buf_client.cpp,v 1.29 2004/05/11 08:22:12 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,11 @@ uint32 	NbClientReceiveTask = 0;
  * Constructor
  */
 CBufClient::CBufClient( bool nodelay, bool replaymode, bool initPipeForDataAvailable ) :
+#ifdef NL_OS_UNIX
 	CBufNetBase( initPipeForDataAvailable ),
+#else
+	CBufNetBase(),
+#endif
 	_NoDelay( nodelay ),
 	_PrevBytesDownloaded( 0 ),
 	_PrevBytesUploaded( 0 ),
@@ -68,11 +72,12 @@ CBufClient::CBufClient( bool nodelay, bool replaymode, bool initPipeForDataAvail
 
 	if ( replaymode )
 	{
-		_BufSock = new CNonBlockingBufSock( new CDummyTcpSock(), CBufNetBase::DefaultMaxExpectedBlockSize ); // CHANGED: non-blocking client connection
+		_BufSock = new CNonBlockingBufSock( new CDummyTcpSock(), CBufNetBase::DefaultMaxExpectedBlockSize );
 	}
 	else
 	{
-		_BufSock = new CNonBlockingBufSock( NULL, CBufNetBase::DefaultMaxExpectedBlockSize ); // CHANGED: non-blocking client connection
+
+		_BufSock = new CNonBlockingBufSock( NULL, CBufNetBase::DefaultMaxExpectedBlockSize );
 		_RecvTask = new CClientReceiveTask( this, _BufSock );
 	}
 }

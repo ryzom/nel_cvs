@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.46 2004/05/10 15:46:08 distrib Exp $
+ * $Id: buf_server.cpp,v 1.47 2004/05/11 08:22:12 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,11 @@ uint32 	NbServerReceiveTask = 0;
  */
 CBufServer::CBufServer( TThreadStategy strategy,
 	uint16 max_threads, uint16 max_sockets_per_thread, bool nodelay, bool replaymode, bool initPipeForDataAvailable ) :
+#ifdef NL_OS_UNIX
 	CBufNetBase( initPipeForDataAvailable ),
+#else
+	CBufNetBase(),
+#endif
 	_ThreadStrategy( strategy ),
 	_MaxThreads( max_threads ),
 	_MaxSocketsPerThread( max_sockets_per_thread ),

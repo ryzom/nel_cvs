@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.8 2001/10/30 10:20:10 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.9 2001/10/30 10:59:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,9 +46,15 @@
 
 
 #ifdef NL_OS_WINDOWS
- #define WIN32_LEAN_AND_MEAN
- #include "windows.h"
- #include "winbase.h"
+#  define WIN32_LEAN_AND_MEAN
+#  include "windows.h"
+#  include "winbase.h"
+#  ifdef min
+#    undef min
+#  endif
+#  ifdef max
+#    undef max
+#  endif
 #endif // NL_OS_WINDOWS
 
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.151 2002/11/13 12:06:25 lecroart Exp $
+ * $Id: service.cpp,v 1.152 2002/11/15 17:30:25 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -215,7 +215,8 @@ void AESConnection (const string &serviceName, uint16 sid, void *arg)
 	//
 
 	CMessage msgout ("SID");
-	msgout.serial (IService::getInstance()->_AliasName, IService::getInstance()->_LongName);
+	uint32 pid = getpid ();
+	msgout.serial (IService::getInstance()->_AliasName, IService::getInstance()->_LongName, pid);
 	ICommand::serialCommands (msgout);
 	CUnifiedNetwork::getInstance()->send("AES", msgout);
 

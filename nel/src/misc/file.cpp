@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.36 2003/12/04 16:59:42 corvazier Exp $
+ * $Id: file.cpp,v 1.37 2004/01/28 18:09:02 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -311,7 +311,7 @@ void		CIFile::getline (char *buffer, uint32 bufferSize)
 	uint read = 0;
 	while (true)
 	{
-		if (read == bufferSize -1)
+		if (read == bufferSize - 1)
 		{
 			*buffer = '\0';
 			return;
@@ -336,7 +336,10 @@ void		CIFile::getline (char *buffer, uint32 bufferSize)
 
 		// skip '\r' char
 		if (*buffer != '\r')
+		{
 			buffer++;
+			read++;
+		}
 	}
 
 }

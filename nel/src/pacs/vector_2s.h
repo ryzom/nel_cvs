@@ -1,7 +1,7 @@
 /** \file vector_2s.h
  * <File description>
  *
- * $Id: vector_2s.h,v 1.3 2001/08/07 14:14:32 legros Exp $
+ * $Id: vector_2s.h,v 1.4 2001/08/16 16:59:30 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,15 +46,6 @@ const float		Vector2sAccuracy = 128.0f;
 class CVector2s
 {
 private:
-	// safely pack a float into a fixed16
-	static sint16	pack(float f)
-	{
-		sint64	res = (sint64)(f*Vector2sAccuracy);
-		if (res>32767 || res<-32768)
-			nlerror("in CVector2s::pack(): Couldn't pack float into sint16 (float=%f, sint=%" NL_I64 "d)", f, res);
-		return (sint16)res;
-	}
-
 	// unpack a fixed16 into a float
 	static float	unpack(sint16 s)
 	{
@@ -64,9 +55,9 @@ private:
 	// safely cast a fixed64 into a fixed16
 	static sint16	safeCastSint16(sint64 s)
 	{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		if (s>32767 || s<-32768)
-			nlerror("in CVector2s::setSafe(): value doesn't fit sint16 (value=%" NL_I64 "d)", s);
+			nlerror("in CVector2s::safeCastSint16(sint64): value doesn't fit sint16 (value=%" NL_I64 "d)", s);
 #endif
 		return (sint16)s;
 	}
@@ -74,10 +65,10 @@ private:
 	// safely cast a premuled float into a fixed16
 	static sint16	safeCastSint16(float f)
 	{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		sint64	s = (sint64)f;
 		if (s>32767 || s<-32768)
-			nlerror("in CVector2s::setSafe(): value doesn't fit sint16 (value=%f)", f);
+			nlerror("in CVector2s::safeCastSint16(float): value doesn't fit sint16 (value=%f)", f);
 		return (sint16)s;
 #else
 		return (sint16)f;
@@ -160,8 +151,8 @@ public:		// Methods.
 	void	serial(NLMISC::IStream &f)				{f.serial(x,y);}
 	//@}
 
-	void				pack(const NLMISC::CVector &v)		{ x = pack(v.x); y = pack(v.y); }
-	void				pack(const NLMISC::CVector2f &v)	{ x = pack(v.x); y = pack(v.y); }
+	void				pack(const NLMISC::CVector &v)		{ x = safeCastSint16(v.x); y = safeCastSint16(v.y); }
+	void				pack(const NLMISC::CVector2f &v)	{ x = safeCastSint16(v.x); y = safeCastSint16(v.y); }
 	NLMISC::CVector2f	unpack() const						{ return NLMISC::CVector2f(unpack(x), unpack(y)); }
 	NLMISC::CVector		unpack3f(float hintz=0.0f) const	{ return NLMISC::CVector(unpack(x), unpack(y), hintz); }
 };

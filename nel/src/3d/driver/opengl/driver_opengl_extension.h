@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.31 2002/09/24 14:40:46 vizerie Exp $
+ * $Id: driver_opengl_extension.h,v 1.32 2003/03/17 12:53:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -137,6 +137,7 @@ public:
 		EXTBlendColor= false;
 		ATIVertexArrayObject= false;
 		ATIEnvMapBumpMap = false;
+		EXTVertexShader= false;
 
 		/// \name Disable Hardware feature. False by default. setuped by IDriver
 		DisableHardwareVertexProgram= false;

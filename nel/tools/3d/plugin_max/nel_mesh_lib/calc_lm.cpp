@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.56 2004/06/01 15:57:57 berenguier Exp $
+ * $Id: calc_lm.cpp,v 1.57 2004/11/02 16:15:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1911,7 +1911,7 @@ bool isBoxCanCastShadowOnBoxWithLight( CAABBox &b1, CAABBox &b2, SLightBuild &l 
 // -----------------------------------------------------------------------------------------------
 void supprLightNoInteractOne( vector<SLightBuild> &vLights, CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, INode &node )
 {
-	uint32 i, j;
+	uint32 i;
 
 	// temp result
 	vector<SLightBuild> result;

@@ -1,7 +1,12 @@
 /** \file stream_inline.h
  * This File Declares inline for stream.h CRegistry and CBaseStream 
  *
- * $Id: stream_inline.h,v 1.15 2000/12/07 09:15:52 chafik Exp $
+ * \todo yoyo: passer les serial en virtual, et optimiser l'ecriture en NeedSwap. => implementer les 
+ * serial virtual dans les classes dérivées. => pour optimiser, fodra pitet virer setInOut(), utile pour CMessage
+ * Pkoi? : pour optimiser la lecture/ecriture (plus de if du tout). Plus rapide pour olivier de faire des copies
+ * de messages (brut) que de se taper un if dans le CMessage.
+ *
+ * $Id: stream_inline.h,v 1.16 2000/12/08 11:13:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.78 2003/11/13 13:20:14 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.79 2003/11/14 15:03:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -752,16 +752,16 @@ void			CDriverGL::setupLightMapPass(uint pass)
 					stdEnv.ConstantColor=lmapFactor;
 					activateTexEnvColor(stage, stdEnv);
 
-
-					// TexEnv is special.
-					_CurrentTexEnvSpecial[stage] = TexEnvSpecialLightMap;
-
 					// Setup env for texture stage.
 					_DriverGLStates.activeTextureARB(stage);
-
+					_DriverGLStates.setTexGenMode(stage, 0);
+					
 					// setup TexEnvCombine4 (ignore alpha part).
 					if(_CurrentTexEnvSpecial[stage] != TexEnvSpecialLightMap)
 					{
+						// TexEnv is special.
+						_CurrentTexEnvSpecial[stage] = TexEnvSpecialLightMap;
+						
 						if (_Extensions.NVTextureEnvCombine4)
 						{											
 							// What we want to setup is  Texture*Constant + Previous*1.

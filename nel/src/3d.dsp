@@ -25,7 +25,7 @@ CFG=3d - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "3d - Win32 Release"
@@ -47,9 +47,9 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo
+# ADD LIB32 /nologo /out:"../lib/3d.lib"
 
 !ELSEIF  "$(CFG)" == "3d - Win32 Debug"
 
@@ -70,9 +70,9 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo
+# ADD LIB32 /nologo /out:"../lib/3d_debug.lib"
 
 !ENDIF 
 
@@ -87,6 +87,14 @@ SOURCE=.\3d\mot.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\mot.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\tile_bank.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\include\nel\3d\tile_bank.h
 # End Source File
 # End Target
 # End Project

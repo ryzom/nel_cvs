@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.29 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.30 2003/05/06 15:34:42 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,27 @@ class CLodCharacterManager;
 // ***************************************************************************
 // ClassIds.
 const NLMISC::CClassId		SkeletonModelId=NLMISC::CClassId(0x7d4703b4, 0x43ad6ab1);
+
+
+// ***************************************************************************
+/** Struct used when SkinGroup is used.
+ *	Used to sort specular render pass of all Skins (sorted by specular map).
+ */
+class	CSkinSpecularRdrPass
+{
+public:
+	// The skin index in the grouped rendering.
+	uint16		SkinIndex;
+	// The index of the skin rdrPass
+	uint16		RdrPassIndex;
+	// The texture id of the specular texture. This is the sort Key.
+	uint32		SpecId;
+
+	bool	operator<(const CSkinSpecularRdrPass &o) const
+	{
+		return SpecId<o.SpecId;
+	}
+};
 
 
 // ***************************************************************************

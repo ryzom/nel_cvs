@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.41 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.42 2003/05/06 15:34:42 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1355,10 +1355,37 @@ void			CSkeletonModel::renderSkinList(NLMISC::CObjectVector<CTransform*, false> 
 			// Second pass, render the primitives.
 			//------------
 			meshSkinManager.activate();
+
+			/* Render any primitives that are not specular. Group specular ones into specularRdrPasses.
+				NB: this speed a lot (specular setup is heavy)!
+			*/
+			static std::vector<CSkinSpecularRdrPass>	specularRdrPasses;
+			specularRdrPasses.clear();
 			for(uint i=startSkinId;i<skinId;i++)
 			{
 				// render the skin in the current buffer
-				skinsToGroup[i]->renderSkinGroupPrimitives(baseVertices[i]);
+				skinsToGroup[i]->renderSkinGroupPrimitives(baseVertices[i], specularRdrPasses, i);
+			}
+
+			// If any skin Specular rdrPass to render
+			if(!specularRdrPasses.empty())
+			{
+				// Sort by Specular Map
+				sort(specularRdrPasses.begin(), specularRdrPasses.end());
+
+				// Batch Specular!
+				rdrTrav.getDriver()->startSpecularBatch();
+
+				// Render all of them
+				for(uint i=0;i<specularRdrPasses.size();i++)
+				{
+					CSkinSpecularRdrPass	&specRdrPass= specularRdrPasses[i];
+					// render the associated skin in the current buffer
+					skinsToGroup[specRdrPass.SkinIndex]->renderSkinGroupSpecularRdrPass(specRdrPass.RdrPassIndex);
+				}
+
+				// End Batch Specular!
+				rdrTrav.getDriver()->endSpecularBatch();
 			}
 
 

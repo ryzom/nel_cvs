@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.40 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.41 2003/05/06 15:33:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -272,7 +272,8 @@ public:
 	// @{
 	bool			supportSkinGrouping() const;
 	sint			renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uint remainingVertices, uint8 *vbDest);
-	void			renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVertex);
+	void			renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVertex, std::vector<CSkinSpecularRdrPass> &specularRdrPasses, uint skinIndex);
+	void			renderSkinGroupSpecularRdrPass(CMeshMRMInstance	*mi, uint rdrPassId);
 	// @}
 
 	// Is this mesh Geom has a VertexProgram bound?

@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.14 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.15 2003/05/06 15:33:23 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,13 +196,22 @@ sint			CMeshMRMInstance::renderSkinGroupGeom(float alphaMRM, uint remainingVerti
 	return meshGeom.renderSkinGroupGeom(this, alphaMRM, remainingVertices, dest);
 }
 // ***************************************************************************
-void			CMeshMRMInstance::renderSkinGroupPrimitives(uint baseVertex)
+void			CMeshMRMInstance::renderSkinGroupPrimitives(uint baseVertex, std::vector<CSkinSpecularRdrPass> &specularRdrPasses, uint skinIndex)
 {
 	// Get a pointer on the shape
 	CMeshMRM		*pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
 	// render the meshGeom
 	CMeshMRMGeom	&meshGeom= const_cast<CMeshMRMGeom&>(pMesh->getMeshGeom ());
-	meshGeom.renderSkinGroupPrimitives(this, baseVertex);
+	meshGeom.renderSkinGroupPrimitives(this, baseVertex, specularRdrPasses, skinIndex);
+}
+// ***************************************************************************
+void			CMeshMRMInstance::renderSkinGroupSpecularRdrPass(uint rdrPassId)
+{
+	// Get a pointer on the shape
+	CMeshMRM		*pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+	// render the meshGeom
+	CMeshMRMGeom	&meshGeom= const_cast<CMeshMRMGeom&>(pMesh->getMeshGeom ());
+	meshGeom.renderSkinGroupSpecularRdrPass(this, rdrPassId);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.36 2003/04/08 23:10:59 corvazier Exp $
+ * $Id: transform.h,v 1.37 2003/05/06 15:33:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,7 @@ class	CSkeletonModel;
 class	CInstanceGroup;
 class	ILogicInfo;
 class	CLoadBalancingGroup;
+class	CSkinSpecularRdrPass;
 
 // ***************************************************************************
 // ClassIds.
@@ -476,9 +477,12 @@ protected:
 	 */
 	virtual	sint			renderSkinGroupGeom(float alphaMRM, uint remainingVertices, uint8 *dest) {return 0;}
 	/** if supportSkinGrouping(), called to render the primitives of the already skinned vertices (VB activated in the driver)
+	 *	Optionnaly, fill specRdrPasses with specular rdrPass to sort (used for specular grouping).
 	 *	\param baseVertex value to add to each PBlock index.
 	 */
-	virtual	void			renderSkinGroupPrimitives(uint baseVertex) {}
+	virtual	void			renderSkinGroupPrimitives(uint baseVertex, std::vector<CSkinSpecularRdrPass> &specularRdrPasses, uint skinIndex) {}
+	/// Render a specific specular renderPass returned by renderSkinGroupPrimitives 
+	virtual	void			renderSkinGroupSpecularRdrPass(uint rdrPass) {}
 
 
 	// The SkeletonModel, root of us (skinning or sticked object). NULL , if normal mode.

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.59 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.60 2003/05/06 15:33:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1452,7 +1452,7 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uin
 }
 
 // ***************************************************************************
-void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVertex)
+void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVertex, std::vector<CSkinSpecularRdrPass> &specularRdrPasses, uint skinIndex)
 {
 	// get a ptr on scene
 	CScene				*ownerScene= mi->getOwnerScene();
@@ -1485,6 +1485,7 @@ void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVert
 			// CMaterial Ref
 			CMaterial &material=mi->Materials[rdrPass.MaterialId];
 
+			// NB: don't optimize Specular Batching with quadOrLine because maybe never used (save a "if"...)
 
 			// Compute a PBlock (static to avoid reallocation) shifted to baseVertex
 			static	CPrimitiveBlock		dstPBlock;
@@ -1532,17 +1533,99 @@ void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVert
 		// CMaterial Ref
 		CMaterial &material=mi->Materials[rdrPass.MaterialId];
 
-		// Get the shifted triangles.
-		CShiftedTriangleCache::CRdrPass		&shiftedRdrPass= mi->_ShiftedTriangleCache->RdrPass[i];
+		// TestYoyo. Material Speed Test
+		/*if( material.getDiffuse()!=CRGBA(250, 251, 252) )
+		{
+			material.setDiffuse(CRGBA(250, 251, 252));
+			// Set all texture the same.
+			static CTextureFile	*pTexFile= new CTextureFile("fy_hom_visage_c1_fy_e1.tga");
+			material.setTexture(0, pTexFile );
+			// Remove Specular.
+			if(material.getShader()==CMaterial::Specular)
+			{
+				CSmartPtr<ITexture>	tex= material.getTexture(0);
+				material.setShader(CMaterial::Normal);
+				material.setTexture(0, tex );
+			}
+			// Remove MakeUp
+			material.setTexture(1, NULL);
+		}*/
 
-		// This speed up 4 ms for 80K polys.
-		uint	memToCache= shiftedRdrPass.NumTriangles*12;
-		memToCache= min(memToCache, 4096U);
-		CFastMem::precache(shiftedRdrPass.Triangles, memToCache);
+		// If the material is a specular material, don't render it now!
+		if(material.getShader()==CMaterial::Specular)
+		{
+			// Add it to the rdrPass to sort!
+			CSkinSpecularRdrPass	specRdrPass;
+			specRdrPass.SkinIndex= skinIndex;
+			specRdrPass.RdrPassIndex= i;
+			// Get the handle of the specular Map as the sort Key
+			ITexture	*specTex= material.getTexture(1);
+			if(!specTex)
+				specRdrPass.SpecId= 0;
+			else
+				specRdrPass.SpecId= drv->getTextureHandle( *specTex );
+			// Append it to the list
+			specularRdrPasses.push_back(specRdrPass);
+		}
+		else
+		{
+			// Get the shifted triangles.
+			CShiftedTriangleCache::CRdrPass		&shiftedRdrPass= mi->_ShiftedTriangleCache->RdrPass[i];
 
-		// Render with the Materials of the MeshInstance.
-		drv->renderTriangles(material, shiftedRdrPass.Triangles, shiftedRdrPass.NumTriangles);
+			// This speed up 4 ms for 80K polys.
+			uint	memToCache= shiftedRdrPass.NumTriangles*12;
+			memToCache= min(memToCache, 4096U);
+			CFastMem::precache(shiftedRdrPass.Triangles, memToCache);
+
+			// Render with the Materials of the MeshInstance.
+			drv->renderTriangles(material, shiftedRdrPass.Triangles, shiftedRdrPass.NumTriangles);
+		}
 	}
+}
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::renderSkinGroupSpecularRdrPass(CMeshMRMInstance	*mi, uint rdrPassId)
+{
+	// get a ptr on scene
+	CScene				*ownerScene= mi->getOwnerScene();
+	// get a ptr on renderTrav
+	CRenderTrav			*renderTrav= &ownerScene->getRenderTrav();
+	// get a ptr on the driver
+	IDriver				*drv= renderTrav->getDriver();
+	nlassert(drv);
+
+	// Get the lod choosen in renderSkinGroupGeom()
+	CLod	&lod= _Lods[_LastLodComputed];
+
+
+	// Profiling
+	//===========
+	H_AUTO_USE( NL3D_MeshMRMGeom_RenderSkinned );
+
+	// _ShiftedTriangleCache must have been computed in renderSkinGroupPrimitives
+	nlassert(mi->_ShiftedTriangleCache);
+
+	// NB: don't optimize Specular Batching with quadOrLine because maybe never used (save a "if"...)
+
+
+	// Render Triangles with cache
+	//===========
+	CRdrPass	&rdrPass= lod.RdrPass[rdrPassId];
+
+	// CMaterial Ref
+	CMaterial &material=mi->Materials[rdrPass.MaterialId];
+
+	// Get the shifted triangles.
+	CShiftedTriangleCache::CRdrPass		&shiftedRdrPass= mi->_ShiftedTriangleCache->RdrPass[rdrPassId];
+
+	// This speed up 4 ms for 80K polys.
+	uint	memToCache= shiftedRdrPass.NumTriangles*12;
+	memToCache= min(memToCache, 4096U);
+	CFastMem::precache(shiftedRdrPass.Triangles, memToCache);
+
+	// Render with the Materials of the MeshInstance.
+	drv->renderTriangles(material, shiftedRdrPass.Triangles, shiftedRdrPass.NumTriangles);
 }
 
 

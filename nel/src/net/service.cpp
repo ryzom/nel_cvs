@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.216 2004/12/22 19:44:29 cado Exp $
+ * $Id: service.cpp,v 1.217 2005/01/06 17:37:51 legros Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -951,7 +951,11 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		}
 
 		initAdmin (_DontUseAES);
-		
+
+		while (NLNET::CUnifiedNetwork::getInstance()->tryFlushAllQueues() != 0)
+		{
+			nlSleep(10);
+		}
 
 		//
 		// Add callback array

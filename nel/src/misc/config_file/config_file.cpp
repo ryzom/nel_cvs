@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.27 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: config_file.cpp,v 1.28 2002/02/28 15:16:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,7 +248,7 @@ CConfigFile::CVar &CConfigFile::getVar (const std::string &varName)
 	for (int i = 0; i < (int)_Vars.size(); i++)
 	{
 		// the type could be T_UNKNOWN if we add a callback on this name but this var is not in the config file
-		if (_Vars[i].Name == varName && _Vars[i].Type != CVar::T_UNKNOWN)
+		if (_Vars[i].Name == varName && (_Vars[i].Type != CVar::T_UNKNOWN || _Vars[i].Comp))
 		{
 			return _Vars[i];
 			break;
@@ -364,6 +364,16 @@ void CConfigFile::print () const
 				printf ("}\n");
 				break;
 			}
+			case CConfigFile::CVar::T_UNKNOWN:
+			{
+				printf("%-20s { }\n" , _Vars[i].Name.c_str());
+				break;
+			}
+			default:
+			{
+				printf("%-20s <default case>\n" , _Vars[i].Name.c_str());
+				break;
+			}
 			}
 		}
 		else
@@ -379,6 +389,11 @@ void CConfigFile::print () const
 			case CConfigFile::CVar::T_REAL:
 				printf("%-20s `%f`\n", _Vars[i].Name.c_str(), _Vars[i].RealValues[0]);
 				break;
+			default:
+			{
+				printf("%-20s <default case>\n" , _Vars[i].Name.c_str());
+				break;
+			}
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.3 2003/06/11 15:22:13 lecroart Exp $
+ * $Id: admin.cpp,v 1.4 2003/06/12 14:28:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -286,22 +286,23 @@ void setInformations (const vector<string> &alarms, const vector<string> &graphu
 		if(servicevarpath.Destination.size() == 0 || servicevarpath.Destination[0].second.empty())
 			continue;
 		
-		string name = servicevarpath.Destination[0].second;
-		
-		if (servicevarpath.Destination[0].first == "*" || IService::getInstance()->getServiceUnifiedName().find(servicevarpath.Destination[0].first) != string::npos && ICommand::exists(name))
+		string VarName = servicevarpath.Destination[0].second;
+		string ServiceName = servicevarpath.Destination[0].first;
+
+		if (ICommand::exists(VarName) && (ServiceName == "*" || IService::getInstance()->getServiceShortName() == ServiceName))
 		{
-			nlinfo ("Adding graphupdate '%s' update %d (varpath '%s')", name.c_str(), atoi(graphupdate[i+1].c_str()), graphupdate[i].c_str());
-			GraphUpdates.push_back(CGraphUpdate(name, atoi(graphupdate[i+1].c_str())));
+			nlinfo ("Adding graphupdate '%s' update %d (varpath '%s')", VarName.c_str(), atoi(graphupdate[i+1].c_str()), graphupdate[i].c_str());
+			GraphUpdates.push_back(CGraphUpdate(VarName, atoi(graphupdate[i+1].c_str())));
 		}
 		else
 		{
-			if (IService::getInstance()->getServiceUnifiedName().find(servicevarpath.Destination[0].first) == string::npos)
+			if (IService::getInstance()->getServiceShortName() != ServiceName)
 			{
-				nlinfo ("Skipping graphupdate '%s' limit %d (varpath '%s') (not for my service, i'm '%s')", name.c_str(), atoi(graphupdate[i+1].c_str()), graphupdate[i].c_str(), IService::getInstance()->getServiceUnifiedName().c_str());
+				nlinfo ("Skipping graphupdate '%s' limit %d (varpath '%s') (not for my service, i'm '%s')", VarName.c_str(), atoi(graphupdate[i+1].c_str()), graphupdate[i].c_str(), IService::getInstance()->getServiceUnifiedName().c_str());
 			}
 			else
 			{
-				nlinfo ("Skipping graphupdate '%s' limit %d (varpath '%s') (var not exist)", name.c_str(), atoi(graphupdate[i+1].c_str()), graphupdate[i].c_str());
+				nlinfo ("Skipping graphupdate '%s' limit %d (varpath '%s') (var not exist)", VarName.c_str(), atoi(graphupdate[i+1].c_str()), graphupdate[i].c_str());
 			}
 		}
 	}

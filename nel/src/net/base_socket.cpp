@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.21 2000/11/22 15:17:20 cado Exp $
+ * $Id: base_socket.cpp,v 1.22 2000/11/30 17:02:15 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,7 +69,7 @@ void CBaseSocket::init() throw (ESocket)
 {
 	if ( ! CBaseSocket::_Initialized )
 	{
-#ifdef WIN32
+#ifdef NL_OS_WINDOWS
 		WORD winsock_version = MAKEWORD( 2, 0 ); 
 		WSADATA wsaData;
 		int err = WSAStartup(winsock_version, &wsaData);
@@ -112,12 +112,14 @@ CBaseSocket::CBaseSocket( bool reliable, bool logging ) :
 		throw ESocket( "Socket creation failed" );
 	}
 
-	// Set Reuse Address On
+#ifndef NL_OS_WINDOWS
+	// Set Reuse Address On (does not work on Win98 and is useless on Win2000)
 	bool value = true;
 	if ( setsockopt( _Sock, SOL_SOCKET, SO_REUSEADDR, (char*)&value, sizeof(value) ) != 0 )
 	{
 		throw ESocket( "ReuseAddr failed. ", ERROR_NUM );
 	}
+#endif
 
 	if ( _Logging )
 	{

@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.h
  * <File description>
  *
- * $Id: event_mouse_listener.h,v 1.6 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: event_mouse_listener.h,v 1.7 2004/04/09 14:33:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -280,7 +280,11 @@ private:
 	/** remove composant of translations that are not permitted
 	  * \see enableModelTranslationAxis()
 	  */
-	void truncateVect(CVector &v) ;
+	void truncateVect(CVector &v);
+
+	virtual NLMISC::IEventListener &getEventListenerInterface() { return *this; }
+
+	
 }; // NL3D
 
 }

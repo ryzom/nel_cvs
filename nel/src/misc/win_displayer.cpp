@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * <File description>
  *
- * $Id: win_displayer.cpp,v 1.5 2001/08/24 09:45:36 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.6 2001/08/24 14:29:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,9 @@ CWinDisplayer::~CWinDisplayer ()
 
 LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	static vector<string> History;
+	static int	PosInHistory;
+
 	static MSGFILTER *pmf;
 	switch (message) 
 	{
@@ -133,7 +136,54 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 						if (!str.empty())
 						{
 							ICommand::execute (str, *InfoLog);
+							History.push_back(str);
+							PosInHistory = History.size();
 						}
+					}
+				}
+				else if (pmf->wParam == VK_TAB)
+				{
+					char TextSend[20000];
+
+					CWinDisplayer *cwd=(CWinDisplayer *)GetWindowLong (hWnd, GWL_USERDATA);
+
+					TextSend[0] = TextSend[1] = (char)0xFF;
+					SendMessage (cwd->_HInputEdit, WM_GETTEXT, (WPARAM)20000-1, (LPARAM)TextSend);
+					string str = TextSend;
+					ICommand::expand (str);
+					SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)str.c_str());
+
+					SendMessage (cwd->_HInputEdit, EM_SETSEL, str.size(), str.size());
+
+					return 1;
+				}
+			}
+			else if (pmf->msg == WM_KEYUP)
+			{
+				if (pmf->wParam == VK_UP)
+				{
+					CWinDisplayer *cwd=(CWinDisplayer *)GetWindowLong (hWnd, GWL_USERDATA);
+
+					if (PosInHistory > 0)
+						PosInHistory--;
+
+					if (!History.empty())
+					{
+						SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)History[PosInHistory].c_str());
+						SendMessage (cwd->_HInputEdit, EM_SETSEL, (WPARAM)History[PosInHistory].size(), (LPARAM)History[PosInHistory].size());
+					}
+				}
+				else if (pmf->wParam == VK_DOWN)
+				{
+					CWinDisplayer *cwd=(CWinDisplayer *)GetWindowLong (hWnd, GWL_USERDATA);
+
+					if (PosInHistory < History.size()-1)
+						PosInHistory++;
+
+					if (!History.empty())
+					{
+						SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)History[PosInHistory].c_str());
+						SendMessage (cwd->_HInputEdit, EM_SETSEL, (WPARAM)History[PosInHistory].size(), (LPARAM)History[PosInHistory].size());
 					}
 				}
 			}

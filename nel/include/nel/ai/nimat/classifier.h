@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.1 2001/02/26 14:08:10 robert Exp $
+ * $Id: classifier.h,v 1.2 2002/10/08 09:30:13 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,8 @@
 namespace NLAINIMAT
 {
 
+typedef	std::map< std::string , char>	TSensorMap;
+
 /**
   * A simple and minimal version of a Classifier System.
   * \author Gabriel ROBERT
@@ -46,18 +48,21 @@ private :
 	class CClassifierConditionCell
 	{
 	public :
-		CClassifierConditionCell(std::map<std::string, char>::iterator itSensor, char value);
+		CClassifierConditionCell(TSensorMap::const_iterator itSensor, char value);
 		bool isActivable() const;
+		std::string getSensorName() const;
+		char getValue();
 
 	private :
-		std::map<std::string, char>::iterator	_itSensor;	// A reference to the sensor associate with this condition.
-		char									_value;		// The condition value;
+		std::map<std::string, char>::const_iterator	_itSensor;	// A reference to the sensor associate with this condition.
+		char										_value;		// The condition value;
 	};
 
 	 // A classifier is a three parts components (condition, priority, behavior).
 	class CClassifier
 	{
 	public:
+		CClassifier();
 		~CClassifier();
 
 	public :
@@ -67,12 +72,13 @@ private :
 	};
 
 private :
-	std::map<std::string, char>	_sensors;		// The sensors are the inputs of the classifier system.
-	std::list<CClassifier*>		_classifiers;	// The classifiers are the rules of the classifier system.
+	TSensorMap				_sensors;		// The sensors are the inputs of the classifier system.
+	std::list<CClassifier*>	_classifiers;	// The classifiers are the rules of the classifier system.
 
 public :
 	/// Destructor
-	~CClassifierSystem();
+	CClassifierSystem();
+	virtual ~CClassifierSystem();
 
 	/**
 	  * Add a new classifier in the classifier system.
@@ -80,16 +86,155 @@ public :
 	  * \param priority is the importance of this rule. The value should be between 0 an 100.
 	  * \param behavior is the action to execute if this classifier is selected.
 	  */
-	void addClassifier(std::map<std::string, char> conditionsMap, sint16 priority, const char* behavior);
+	void addClassifier(const TSensorMap &conditionsMap, sint16 priority, const char* behavior);
+
+	/// Merge two CS
+	void addClassifierSystem(const CClassifierSystem &cs);
 
 	/**
 	  * Select a behavior according to the values in the sensorMap.
 	  * \param sensorMap is a map whose key is the sensor name and value the sensor value.
 	  * \return is the behvior of the selected classifier.
 	  */
-	std::string selectBehavior(std::map<std::string, char> sensorMap);
+	std::string selectBehavior(const TSensorMap &sensorMap);
+
+	void getDebugString(std::string &t) const;
 };
 
+/* ***G***
+ * Ce que je dois encore ajouter :
+ * Une fonction d'apprentissage
+ * Une fonction de création de nouveaux classeurs
+ * Une "anticipation" à ma façon
+ *
+ * Architecture NetCS
+ * 
+ */
+
+/**
+  * An action for a Classifier System.
+  * \author Gabriel ROBERT
+  * \author Nevrax France
+  * \date 2002
+  */
+class CActionCS
+{
+public :
+	CActionCS(std::string name);
+	virtual ~CActionCS();
+
+	/// Return the action name
+	std::string getName() const;
+
+	/// Ajout d'une nouvelle règle motivant cette action
+	void addMotivationRule (std::string motivationName, const TSensorMap &conditionsMap, sint16 priority);
+
+	/// Chaine de debug
+	void getDebugString (std::string &t) const;
+
+	const std::map<std::string, CClassifierSystem> *getClassifiersMap () const;
+
+private :
+	std::map<std::string, CClassifierSystem>	_ClassifiersByMotivation;
+	std::string									_Name;
+};
+
+
+/**
+  * A Class for manage witch source motivate a CS or an action
+  * \author Gabriel ROBERT
+  * \author Nevrax France
+  * \date 2002
+  */
+class CMotivationEnergy
+{
+public :
+	CMotivationEnergy();
+	virtual ~CMotivationEnergy();
+
+	sint16	getSumValue() const;
+	uint64	getID() const;
+	void	setID(uint64 id);
+	void	raz(); // Remise à 0. ID=0 et map vide
+
+private :
+	std::map<std::string, sint16>	_EnergyByMotivation;
+	uint64							_ID;
+};
+
+/**
+  * A net of a Classifier System.
+  * \author Gabriel ROBERT
+  * \author Nevrax France
+  * \date 2002
+  */
+class CNetCS
+{
+public :
+
+	CNetCS();
+	virtual ~CNetCS();
+
+	/// Add a new action in the net.
+	void addActionCS(const CActionCS &action);
+
+	/** Add a new virtual action in the net. A virtual action is an action without operator wich is also a motivation.
+	 Exemple : Figthing is a virtual action. It may satisfy the anger motivation and is a motivation for guive a sword slash.
+	 */
+	void addVirtualActionCS(const CActionCS &action);
+
+	/// Donne la Puissance Propre d'une Motivation
+	void setMotivationPP(std::string motivationName, uint16 PP);
+
+	/// Fixe la valeur d'une motivation
+	void setMotivationValue(std::string motivationName, uint16 value);
+
+	/// Return the Behavior that must be active
+	std::string selectBehavior(const TSensorMap &sensorMap);
+
+	/// Update the values in the NetCS
+	void run();
+
+	/// Chaine de debug
+	void getDebugString(std::string &t) const;
+
+private :
+	struct CMotivationValue
+	{
+		uint16 Value;
+		uint16 PP;
+	};
+	struct CMotivateCS
+	{
+		CClassifierSystem	CS;
+		CMotivationEnergy	MotivationIntensity;
+	};
+	std::map<std::string, CMotivateCS>			_ClassifiersAndMotivationIntensity;	// <motivationName, classeur> the motivationName is also the CS name.
+//	std::map<std::string, CClassifierSystem>	_Classifiers;						// <motivationName, classeur> Ensemble de mes règles
+	std::map<std::string, CMotivationValue>		_MotivationsValues;					// <motivationName, motivationValue> Les valeurs et PP des classeurs de motivation
+	std::map<uint64, TSensorMap>				_SensorsValues;						// <entity id, map de senseurs> Valeurs des senseurs pour chaque entité.
+
+	std::map<std::string, CMotivationEnergy>	_ActionsExecutionIntensity;			// <actionName, ExecutionIntensity> //***G*** C'est plus bon ça, il ...
+	// ... faudrait pour chaque action avoir l'ID de la personne sur laquel on veut le faire en plus des energies.
+};
+
+/****
+	CNetCS :
+		- renvois l'action à effectuer
+		- contient tous les CS
+		+ addAction
+		+ setPerception
+		+ run
+		+ selectBehavior
+
+	CMotivateTrack :
+		- Il y en a une par ID d'objet (plus une quand y'a personne ?)
+		- contient les niveaux de motivations de chaque CS ainsi que les actions élues de chaque CS.
+
+	CSensorCenter :
+		- centralise toutes la valeurs des senseurs
+		- il y a une liste par ID
+ ****/
 
 } // NLAINIMAT
 

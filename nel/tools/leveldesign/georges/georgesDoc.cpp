@@ -37,8 +37,9 @@ END_MESSAGE_MAP()
 CGeorgesDoc::CGeorgesDoc()
 {
 	item.SetLoader( &loader );
-	loader.SetRootDirectory( "U:\\" );
-	loader.SetWorkDirectory( "U:\\" );
+	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
+	loader.SetRootDirectory( papp->GetRootDirectory() );
+	loader.SetWorkDirectory( papp->GetWorkDirectory() );
 }
 
 CGeorgesDoc::~CGeorgesDoc()
@@ -88,6 +89,7 @@ void CGeorgesDoc::Dump(CDumpContext& dc) const
 
 void CGeorgesDoc::OnCloseDocument() 
 {
+	DeleteContents();
 	CDocument::OnCloseDocument();
 }
 
@@ -120,6 +122,7 @@ BOOL CGeorgesDoc::OnNewDocument()
 	if (!CDocument::OnNewDocument())
 		return FALSE;
 
+	DeleteContents();
 	SetModifiedFlag( FALSE );
 	CFileDialog Dlg( true );
 	int s = Dlg.m_ofn.Flags;
@@ -142,6 +145,13 @@ BOOL CGeorgesDoc::OnNewDocument()
 
 	return( TRUE );
 
+}
+
+void CGeorgesDoc::NewDocument( const CStringEx _sxfilename )
+{
+	DeleteContents();
+	item.New( _sxfilename );		
+	SetModifiedFlag( FALSE );
 }
 
 void CGeorgesDoc::DeleteContents() 

@@ -43,6 +43,9 @@ public:
 	CString GetItemFormula( const unsigned int _index ) const;
 	bool IsItemEnum( const unsigned int _index ) const;
 	void GetItemListPredef( const unsigned int _index, CStringList* _slist ) const;
+	void NewDocument( const CStringEx& _sxdfnname ) const;
+	CLoader* GetLoader() { return &loader; }
+	void NewDocument( const CStringEx _sxfilename );
 	
 // Overrides
 	// ClassWizard generated virtual function overrides

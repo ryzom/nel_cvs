@@ -8,13 +8,14 @@
 #include "georges_interface.h"
 #include "georges.h"
 #include "Mainfrm.h"
+#include "GeorgesDoc.h"
+//#include "../georges_lib/Loader.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
 // The one and only CGeorgesApp object
 
 CGeorgesApp theApp;
-
 
 
 // The interface implemented through this class
@@ -48,6 +49,36 @@ public:
 
 	// Release instance
 	static GEORGES_EXPORT void releaseInterface (IGeorges* pGeorges);
+
+
+	virtual void SetDocumentWorkDirectory( const std::string& _sxworkdirectory );
+
+	virtual void SetDocumentRootDirectory( const std::string& _sxrootdirectory );
+
+	virtual void NewDocument();
+
+	virtual void NewDocument( const std::string& _sxdfnname);
+
+	virtual void LoadDocument( const std::string& _sxfullname );
+
+	virtual void SaveDocument( const std::string& _sxfullname );
+
+	virtual void CloseDocument();
+
+
+	virtual void SetWorkDirectory( const std::string& _sxworkdirectory );
+
+	virtual void SetRootDirectory( const std::string& _sxrootdirectory );
+
+	virtual void SaveAllDocument();
+
+	virtual void CloseAllDocument();
+
+	virtual void SetTypPredef( const std::string& _sxfilename, const std::vector< std::string >& _pvsx );
+
+	virtual void MakeDfn( const std::string& _sxfullname, const std::vector< std::pair< std::string, std::string > >* const _pvdefine = 0 );
+
+	virtual void MakeTyp( const std::string& _sxfullname, const std::string& _sxtype, const std::string& _sxformula, const std::string& _sxenum, const std::string& _sxlow, const std::string& _sxhigh, const std::string& _sxdefault, const std::vector< std::pair< std::string, std::string > >* const _pvpredef = 0, const std::vector< std::pair< std::string, std::string > >* const _pvparent = 0 );
 };
 
 //---------------------------------------------
@@ -154,6 +185,122 @@ void * CGeorgesImpl::getMainFrame ()
 
 } // getMainFrame //
 
+void CGeorgesImpl::SetWorkDirectory( const std::string& _sxworkdirectory )
+{
+	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
+	papp->SetRootDirectory( _sxworkdirectory );
+} // SetWorkDirectory //
+
+void CGeorgesImpl::SetRootDirectory( const std::string& _sxrootdirectory )
+{
+	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
+	papp->SetRootDirectory( _sxrootdirectory );
+} // SetRootDirectory //
+
+void CGeorgesImpl::SetTypPredef( const std::string& _sxfilename, const std::vector< std::string >& _pvs )
+{
+	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
+	CLoader* ploader = pgdoc->GetLoader();
+	std::vector< CStringEx > vsx;
+	for( std::vector< std::string >::const_iterator it = _pvs.begin(); it != _pvs.end(); ++it )
+		vsx.push_back( *it );
+	ploader->SetTypPredef( _sxfilename, vsx );
+} // SetTypPredef //
+
+void CGeorgesImpl::MakeDfn( const std::string& _sxfullname, const std::vector< std::pair< std::string, std::string > >* const _pvdefine  )
+{
+	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
+	CLoader* ploader = pgdoc->GetLoader();
+	std::vector< std::pair< CStringEx, CStringEx > >* vsx = 0;
+	if( _pvdefine )
+	{
+		std::vector< std::pair< CStringEx, CStringEx > > v;
+		vsx = &v;
+		for( std::vector< std::pair< std::string, std::string > >::const_iterator it = _pvdefine->begin(); it != _pvdefine->end(); ++it )
+			vsx->push_back( std::make_pair( it->first , it->second  ) );
+	}
+	ploader->MakeDfn( _sxfullname, vsx );
+}
+
+void CGeorgesImpl::MakeTyp( const std::string& _sxfullname, const std::string& _sxtype, const std::string& _sxformula, const std::string& _sxenum, const std::string& _sxlow, const std::string& _sxhigh, const std::string& _sxdefault, const std::vector< std::pair< std::string, std::string > >* const _pvpredef , const std::vector< std::pair< std::string, std::string > >* const _pvparent  )
+{
+	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
+	CLoader* ploader = pgdoc->GetLoader();
+	std::vector< std::pair< CStringEx, CStringEx > >* vsx = 0;
+	std::vector< std::pair< CStringEx, CStringEx > >* vsx2 = 0;
+	if( _pvpredef )
+	{
+		std::vector< std::pair< CStringEx, CStringEx > > v; 
+		vsx = &v;
+		for( std::vector< std::pair< std::string, std::string > >::const_iterator it = _pvpredef->begin(); it != _pvpredef->end(); ++it )
+			vsx->push_back( std::make_pair( it->first, it->second ) );
+	}
+	if( _pvparent )
+	{
+		std::vector< std::pair< CStringEx, CStringEx > > v2;
+		vsx2 = &v2;
+		for( std::vector< std::pair< std::string, std::string > >::const_iterator it = _pvparent->begin(); it != _pvparent->end(); ++it )
+			vsx2->push_back( std::make_pair( it->first, it->second ) );
+	}
+	ploader->MakeTyp( _sxfullname, _sxtype, _sxformula, _sxenum, _sxlow, _sxhigh, _sxdefault, vsx, vsx2 );
+}
+
+void CGeorgesImpl::SetDocumentWorkDirectory( const std::string& _sxworkdirectory )
+{
+	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
+	CLoader* ploader = pgdoc->GetLoader();
+	ploader->SetWorkDirectory( _sxworkdirectory );
+} // SetDocumentWorkDirectory //
+
+void CGeorgesImpl::SetDocumentRootDirectory( const std::string& _sxrootdirectory )
+{
+	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
+	CLoader* ploader = pgdoc->GetLoader();
+	ploader->SetRootDirectory( _sxrootdirectory );
+} // SetDocumentRootDirectory //
+
+void CGeorgesImpl::LoadDocument( const std::string& _sxfullname )
+{
+	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
+	pgdoc->OnOpenDocument( _sxfullname.c_str() );
+}
+
+void CGeorgesImpl::SaveDocument( const std::string& _sxfullname )
+{
+	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
+	pgdoc->OnSaveDocument( _sxfullname.c_str() );
+}
+
+void CGeorgesImpl::SaveAllDocument()
+{
+	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
+	papp->SaveAllDocument();
+} // SetRootDirectory //
+
+void CGeorgesImpl::NewDocument( const std::string& _sxdfnname)
+{
+	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
+	pgdoc->NewDocument( _sxdfnname );
+}
+
+void CGeorgesImpl::NewDocument()
+{
+	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
+	pgdoc->OnNewDocument();
+}
+
+void CGeorgesImpl::CloseDocument()
+{
+	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
+	pgdoc->OnCloseDocument();
+}
+
+void CGeorgesImpl::CloseAllDocument()
+{
+	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
+	papp->CloseAllDocument();
+}
+
 // *******
 // STATICS
 // *******
@@ -209,5 +356,7 @@ void IGeorgesReleaseInterface (IGeorges* pGeorges)
 	IGeorges::releaseInterface (pGeorges);
 
 } // IGeorgesReleaseInterface //
+
+
 
 

@@ -43,6 +43,8 @@ CGeorgesApp::CGeorgesApp()
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
 	_MultiDocTemplate = NULL;
+	sxrootdirectory = "U:\\";
+	sxworkdirectory = "U:\\";
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -168,6 +170,35 @@ void CGeorgesApp::OnAppAbout()
 	CAboutDlg aboutDlg;
 	aboutDlg.DoModal();
 }
+
+void CGeorgesApp::SetWorkDirectory( const CStringEx _sxworkdirectory )
+{
+	sxworkdirectory = _sxworkdirectory;
+}
+
+void CGeorgesApp::SetRootDirectory( const CStringEx _sxrootdirectory )
+{
+	sxrootdirectory = _sxrootdirectory;
+}
+
+CStringEx CGeorgesApp::GetWorkDirectory() const
+{
+	return( sxworkdirectory );
+}
+
+CStringEx CGeorgesApp::GetRootDirectory() const
+{
+	return( sxrootdirectory );
+}
+
+void CGeorgesApp::SaveAllDocument()
+{
+}
+
+void CGeorgesApp::CloseAllDocument()
+{
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CGeorgesApp message handlers

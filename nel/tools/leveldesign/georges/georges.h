@@ -13,6 +13,7 @@
 #endif
 
 #include "resource.h"       // main symbols
+#include "../georges_lib/StringEx.h"
 
 //////////////////////////²///////////////////////////////////////////////////
 // CGeorgesApp:
@@ -21,9 +22,20 @@
 
 class CGeorgesApp : public CWinApp
 {
+	CStringEx	sxrootdirectory;
+	CStringEx	sxworkdirectory;
+
+
 	CMultiDocTemplate *_MultiDocTemplate;
 public:
 	CGeorgesApp();
+
+	void SaveAllDocument();
+	void CloseAllDocument();
+	CStringEx GetWorkDirectory() const;
+	CStringEx GetRootDirectory() const;
+	void SetWorkDirectory( const CStringEx _sxworkdirectory );
+	void SetRootDirectory( const CStringEx _sxrootdirectory );
 
 // Overrides
 	// ClassWizard generated virtual function overrides

@@ -9,6 +9,9 @@
 // Increment this version number each time you distribute a new version of the dll.
 #define GEORGES_VERSION 1
 
+#include <string>
+#include <vector>
+
 /**
  * IGeorges
  *
@@ -34,13 +37,44 @@ public:
 	virtual void releaseUI ()=0;
 
 	// Get the main frame
-	virtual void*getMainFrame ()=0;
+	virtual void *getMainFrame ()=0;
 	
 	// Get instance
 	static GEORGES_EXPORT IGeorges * getInterface (int version = GEORGES_VERSION);
 
 	// Release instance
 	static GEORGES_EXPORT void releaseInterface (IGeorges* pGeorges);
+
+
+	virtual void SetDocumentWorkDirectory( const std::string& _sxworkdirectory ) = 0;
+
+	virtual void SetDocumentRootDirectory( const std::string& _sxrootdirectory ) = 0;
+
+	virtual void NewDocument() = 0;
+
+	virtual void NewDocument( const std::string& _sxdfnname) = 0;
+
+	virtual void LoadDocument( const std::string& _sxfullname ) = 0;
+
+	virtual void SaveDocument( const std::string& _sxfullname ) = 0;
+
+	virtual void CloseDocument() = 0;
+
+
+	virtual void SetWorkDirectory( const std::string& _sxworkdirectory ) = 0;
+
+	virtual void SetRootDirectory( const std::string& _sxrootdirectory ) = 0;
+
+	virtual void SaveAllDocument() = 0;
+
+	virtual void CloseAllDocument() = 0;
+
+	virtual void SetTypPredef( const std::string& _sxfilename, const std::vector< std::string >& _pvsx ) = 0;
+
+	virtual void MakeDfn( const std::string& _sxfullname, const std::vector< std::pair< std::string, std::string > >* const _pvdefine = 0 ) = 0;
+
+	virtual void MakeTyp( const std::string& _sxfullname, const std::string& _sxtype, const std::string& _sxformula, const std::string& _sxenum, const std::string& _sxlow, const std::string& _sxhigh, const std::string& _sxdefault, const std::vector< std::pair< std::string, std::string > >* const _pvpredef = 0, const std::vector< std::pair< std::string, std::string > >* const _pvparent = 0) = 0;
+
 };
 
 

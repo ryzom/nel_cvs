@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.70 2004/09/08 16:32:17 legros Exp $
+ * $Id: debug.h,v 1.71 2004/09/21 09:12:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,7 +96,11 @@ void setCrashCallback(TCrashCallback crashCallback);
  *\endcode
  */
 #ifdef NL_RELEASE
-#	define nldebug 0&&
+#	ifdef NL_COMP_VC71
+#		define nldebug __noop
+#	else
+#		define nldebug 0&&
+#	endif
 #else // NL_RELEASE
 #	define nldebug NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog->displayNL
 #endif // NL_RELEASE
@@ -106,7 +110,11 @@ void setCrashCallback(TCrashCallback crashCallback);
  * Same as nldebug but it will be display in debug and in release mode.
  */
 #ifdef NL_RELEASE
-#	define nlinfo 0&&
+#	ifdef NL_COMP_VC71
+#		define nlinfo __noop
+#	else
+#		define nlinfo 0&&
+#	endif
 #else // NL_RELEASE
 #	define nlinfo NLMISC::createDebug (), NLMISC::InfoLog->setPosition( __LINE__, __FILE__ ), NLMISC::InfoLog->displayNL
 #endif // NL_RELEASE
@@ -130,7 +138,11 @@ void setCrashCallback(TCrashCallback crashCallback);
  */
 
 #ifdef NL_RELEASE
-#	define nlwarning 0&&
+#	ifdef NL_COMP_VC71
+#		define nlwarning __noop
+#	else
+#		define nlwarning 0&&
+#	endif
 #else // NL_RELEASE
 #	define nlwarning NLMISC::createDebug (), NLMISC::WarningLog->setPosition( __LINE__, __FILE__ ), NLMISC::WarningLog->displayNL
 #endif // NL_RELEASE
@@ -519,10 +531,20 @@ class ETrapDebug : public Exception
 };
 
 // undef default assert to force people to use nlassert() instead of assert()
-#ifdef assert
-#undef assert
+// if NL_MAP_ASSERT is set we map assert to nlassert instead of removing it
+// this makes it compatible with zeroc's ICE network library
+
+#ifdef NL_MAP_ASSERT
+#	ifdef assert
+#		undef assert
+#		define assert nlassert
+#	endif
+#else
+#	ifdef assert
+#		undef assert
+#		define assert(a) you_must_not_use_assert___use_nl_assert___read_debug_h_file
+#	endif
 #endif
-#define assert(a) you_must_not_use_assert___use_nl_assert___read_debug_h_file
 
 
 /// Get the call stack and set it with result

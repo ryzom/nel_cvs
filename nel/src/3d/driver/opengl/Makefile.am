@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.11 2002/03/19 17:42:48 valignat Exp $
+# $Id: Makefile.am,v 1.12 2002/07/11 10:10:32 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES         = Makefile.in
@@ -27,7 +27,7 @@ noinst_HEADERS		     = stdopengl.h
 AM_CXXFLAGS                  = -I$(top_srcdir)/src \
                                @OPENGL_CFLAGS@ @XF86VIDMODE_CFLAGS@
 
-libnel_drv_opengl_la_LIBADD  = @OPENGL_LIBS@ @XF86VIDMODE_LIBS@
+libnel_drv_opengl_la_LIBADD  = @OPENGL_LIBS@ @XF86VIDMODE_LIBS@ -lXmu
 libnel_drv_opengl_la_LDFLAGS = -no-undefined
 
 

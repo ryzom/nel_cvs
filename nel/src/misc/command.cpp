@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.24 2003/03/20 17:53:10 lecroart Exp $
+ * $Id: command.cpp,v 1.25 2003/06/11 15:22:14 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,7 +112,7 @@ void ICommand::init (NLMISC::CConfigFile &configFile)
 	}
 }
 
-void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quiet)
+void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quiet, bool human)
 {
 	if (!quiet) log.displayNL ("Executing command : '%s'", commandWithArgs.c_str());
 
@@ -270,7 +270,7 @@ end:
 		else
 		{
 			//printf("execute command\n");
-			if (!(*comm).second->execute (commands[u].second, log, quiet))
+			if (!(*comm).second->execute (commands[u].second, log, quiet, human))
 			{
 				if (!quiet) log.displayNL("Bad command usage, try 'help %s'", commands[u].first.c_str());
 			}

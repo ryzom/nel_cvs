@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.49 2003/04/17 16:14:06 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.50 2003/06/11 15:24:24 lecroart Exp $
  *
  */
 
@@ -355,9 +355,10 @@ static void cbGraphUpdate (CMessage &msgin, const std::string &serviceName, uint
 	msgout.serial (CurrentTime);
 	while (msgin.getPos() < (sint32)msgin.length())
 	{
-		string str;
-		msgin.serial (str);
-		msgout.serial(str);
+		string service, var;
+		uint32 val;
+		msgin.serial (service, var, val);
+		msgout.serial(service, var, val);
 	}
 	CUnifiedNetwork::getInstance ()->send ("AS", msgout);
 

@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.27 2003/03/20 16:17:29 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.28 2003/06/11 15:24:24 lecroart Exp $
  *
  */
 
@@ -378,7 +378,8 @@ static void cbGraphUpdate (CMessage &msgin, const std::string &serviceName, uint
 
 	while (msgin.getPos() < (sint32)msgin.length())
 	{
-		string var, service, val;
+		string var, service;
+		uint32 val;
 		msgin.serial (service, var, val);
 
 		AESIT aesit = findAES (sid);
@@ -404,9 +405,10 @@ static void cbGraphUpdate (CMessage &msgin, const std::string &serviceName, uint
 			}
 		}
 
-		if (!shard.empty() && !server.empty() && !service.empty() && !var.empty() && !val.empty())
+		if (!shard.empty() && !server.empty() && !service.empty() && !var.empty())
 		{
-			string rrdfilename = shard+"."+server+"."+service+"."+var+".rrd";
+			string path = CPath::standardizePath (IService::getInstance()->ConfigFile.getVar("RRDVarPath").asString());
+			string rrdfilename = path + shard+"."+server+"."+service+"."+var+".rrd";
 
 			string arg;
 			
@@ -425,7 +427,7 @@ static void cbGraphUpdate (CMessage &msgin, const std::string &serviceName, uint
 				}
 			}
 
-			arg = "update " + rrdfilename + " " + toString (CurrentTime) + ":" + val;
+			arg = "update " + rrdfilename + " " + toString (CurrentTime) + ":" + toString(val);
 			launchProgram(IService::getInstance()->ConfigFile.getVar("RRDToolPath").asString(), arg);
 		}
 		else

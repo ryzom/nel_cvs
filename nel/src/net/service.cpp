@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.175 2003/06/10 10:11:27 lecroart Exp $
+ * $Id: service.cpp,v 1.176 2003/06/11 15:22:13 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1579,7 +1579,13 @@ NLMISC_DYNVARIABLE(string, LaunchingDate, "date of the launching of the program"
 
 NLMISC_DYNVARIABLE(string, Uptime, "time from the launching of the program")
 {
-	if (get) *pointer = secondsToHumanReadable (CTime::getSecondsSince1970() - LaunchingDate);
+	if (get)
+	{
+		if (human)
+			*pointer = secondsToHumanReadable (CTime::getSecondsSince1970() - LaunchingDate);
+		else
+			*pointer = toString(CTime::getSecondsSince1970() - LaunchingDate);
+	}
 }
 
 NLMISC_VARIABLE(bool, Bench, "1 if benching 0 if not");

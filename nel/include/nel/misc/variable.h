@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.2 2003/03/20 16:19:59 lecroart Exp $
+ * $Id: variable.h,v 1.3 2003/06/11 15:22:07 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -102,27 +102,27 @@ class __name##Class : public NLMISC::IVariable \
 public: \
 	__name##Class () : IVariable(#__name, __help) { } \
 	 \
-	virtual void fromString(const std::string &val) \
+	virtual void fromString(const std::string &val, bool human) \
 	{ \
 		std::stringstream ss (val); \
 		__type p; \
 		ss >> p; \
-		pointer (&p, false); \
+		pointer (&p, false, human); \
 	} \
 	 \
-	virtual std::string toString() const \
+	virtual std::string toString(bool human) const \
 	{ \
 		__type p; \
-		pointer (&p, true); \
+		pointer (&p, true, human); \
 		std::stringstream ss; \
 		ss << p; \
 		return ss.str(); \
 	} \
 	\
-	void pointer(__type *pointer, bool get) const; \
+	void pointer(__type *pointer, bool get, bool human) const; \
 }; \
 __name##Class __name##Instance; \
-void __name##Class::pointer(__type *pointer, bool get) const
+void __name##Class::pointer(__type *pointer, bool get, bool human) const
 
 
 /**
@@ -216,11 +216,11 @@ public:
 		Type = Variable;
 	}
 		  
-	virtual void fromString(const std::string &val) = 0;
+	virtual void fromString(const std::string &val, bool human) = 0;
 	
-	virtual std::string toString() const = 0;
+	virtual std::string toString(bool human) const = 0;
 
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet)
+	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
 	{
 		if (args.size() > 1)
 			return false;
@@ -228,17 +228,17 @@ public:
 		if (args.size() == 1)
 		{
 			// set the value
-			fromString (args[0]);
+			fromString (args[0], human);
 		}
 		
 		// display the value
 		if (quiet)
 		{
-			log.displayNL(toString().c_str());
+			log.displayNL(toString(human).c_str());
 		}
 		else
 		{
-			log.displayNL("Variable %s = %s", _CommandName.c_str(), toString().c_str());
+			log.displayNL("Variable %s = %s", _CommandName.c_str(), toString(human).c_str());
 		}
 		return true;
 	}
@@ -262,13 +262,13 @@ public:
 	{
 	}
 	  
-	virtual void fromString(const std::string &val)
+	virtual void fromString(const std::string &val, bool human)
 	{
 		std::stringstream ss (val);
 		ss >> *_ValuePtr;
 	}
 	
-	virtual std::string toString() const
+	virtual std::string toString(bool human) const
 	{
 		std::stringstream ss;
 		ss << *_ValuePtr;
@@ -291,14 +291,14 @@ public:
 	{
 	}
 
-	virtual void fromString(const std::string &val)
+	virtual void fromString(const std::string &val, bool human)
 	{
 		std::stringstream ss (val);
 		ss >> _Value;
 		_Mean.addValue(val);
 	}
 	
-	virtual std::string toString() const
+	virtual std::string toString(bool human) const
 	{
 		std::stringstream ss;
 		ss << _Value;
@@ -334,7 +334,7 @@ public:
 		return s.str();
 	}
 	
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet)
+	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
 	{
 		if (args.size() > 1)
 			return false;
@@ -350,18 +350,18 @@ public:
 			else
 			{
 				// set the value
-				fromString (args[0]);
+				fromString (args[0], human);
 			}
 		}
 
 		// display the value
 		if (quiet)
 		{
-			log.displayNL(toString().c_str());
+			log.displayNL(toString(human).c_str());
 		}
 		else
 		{
-			log.displayNL("Variable %s = %s", _CommandName.c_str(), toString().c_str());
+			log.displayNL("Variable %s = %s", _CommandName.c_str(), toString(human).c_str());
 		}
 		return true;
 	}

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.202 2004/02/04 14:31:58 distrib Exp $
+ * $Id: service.cpp,v 1.203 2004/02/12 17:53:26 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -56,6 +56,7 @@
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/report.h"
 #include "nel/misc/system_info.h"
+#include "nel/misc/timeout_assertion_thread.h"
 
 #include "nel/net/naming_client.h"
 #include "nel/net/service.h"
@@ -67,8 +68,6 @@
 #include "nel/net/admin.h"
 
 #include "nel/memory/memory_manager.h"
-
-#include "nel/misc/hierarchical_timer.h"
 
 
 //
@@ -123,7 +122,7 @@ CVariable<sint32> NetSpeedLoop ("NetSpeedLoop", "duration of the last user loop 
 
 
 // this is the thread that initialized the signal redirection
-// we ll ignore other thread signals
+// we'll ignore other thread signals
 static uint SignalisedThread;
 
 static CFileDisplayer fd;
@@ -150,6 +149,11 @@ string CompilationMode = "???";
 //static bool Bench = false;
 
 CVariable<bool> Bench ("Bench", "1 if benching 0 if not", 0, true);
+
+// This produce an assertion in the thread if the update loop is too slow
+static CTimeoutAssertionThread	MyTAT;
+static void						UpdateAssertionThreadTimeoutCB(IVariable &var) { MyTAT.timeout(atoi(var.toString().c_str())); }
+static CVariable<uint32>		UpdateAssertionThreadTimeout("UpdateAssertionThreadTimeout", "in millisecond, timeout before thread assertion", 0, 0, true, UpdateAssertionThreadTimeoutCB);
 
 
 //
@@ -638,7 +642,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		nlinfo ("SERVICE: Starting Service '%s' using NeL ("__DATE__" "__TIME__") compiled %s", _ShortName.c_str(), CompilationDate.c_str());
 		nlinfo ("SERVICE: On OS: %s", CSystemInfo::getOS().c_str());
-
+		
 		setStatus (EXIT_SUCCESS);
 
 		//
@@ -715,7 +719,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		// Set the localhost name and service name to the logger
 		CLog::setProcessName (localhost+"/"+_ShortName);
-
+		nlinfo ("SERVICE: Host: %s", localhost.c_str());
+		
 		//
 		// Initialize server parameters
 		//
@@ -985,6 +990,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			SaveFilesDirectory = IService::getInstance()->getArg('W');
 		}
 
+
 		//
 		// Call the user service init
 		//
@@ -1034,7 +1040,12 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		CLightMemDisplayer mdDisplayVars;
 		logDisplayVars.addDisplayer (&mdDisplayVars);
 
-
+		//
+		// Activate the timeout assertion thread
+		//
+		
+		IThread::create(&MyTAT)->start();
+		
 		//
 		// Set service ready
 		//
@@ -1050,6 +1061,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		do
 		{
+			MyTAT.activate();
+
 			if(Bench) CHTimer::startBench(false, true, false);
 
 			// count the amount of time to manage internal system
@@ -1200,6 +1213,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				CHTimer::clear();
 				_ResetMeasures = false;
 			}
+
+			MyTAT.desactivate();
 		}
 		while (true);
 	}

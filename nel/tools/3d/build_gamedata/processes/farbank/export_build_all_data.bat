@@ -1,3 +1,3 @@
-./1_clean.bat
-./2_export.bat
-./3_build.bat
+call ./1_clean.bat
+call ./2_export.bat
+call ./3_build.bat

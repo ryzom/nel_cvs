@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.211 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.212 2004/04/09 14:38:56 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -286,6 +286,7 @@ CDriverGL::CDriverGL()
 
 	ATIWaterShaderHandleNoDiffuseMap = 0;
 	ATIWaterShaderHandle = 0;
+	ATICloudShaderHandle = 0;
 
 	_ATIDriverVersion = 0;
 	_ATIFogRangeFixed = true;
@@ -2997,13 +2998,15 @@ void CDriverGL::initFragmentShaders()
 	
 	if (_Extensions.ATIFragmentShader)
 	{
+		///////////
+		// WATER //
+		///////////
 		ATIWaterShaderHandleNoDiffuseMap = nglGenFragmentShadersATI(1);
 		ATIWaterShaderHandle = nglGenFragmentShadersATI(1);
 		if (!ATIWaterShaderHandle || !ATIWaterShaderHandleNoDiffuseMap)
 		{
 			ATIWaterShaderHandleNoDiffuseMap = ATIWaterShaderHandle = 0;
-			nlwarning("Couldn't generate water shader using ATI_fragment_shader !");
-			return;
+			nlwarning("Couldn't generate water shader using ATI_fragment_shader !");			
 		}
 		else
 		{
@@ -3035,7 +3038,35 @@ void CDriverGL::initFragmentShaders()
 			nglEndFragmentShaderATI();
 			error = glGetError();
 		    nlassert(error == GL_NONE);
-			nglBindFragmentShaderATI(0);			
+			nglBindFragmentShaderATI(0);
+		}
+		////////////
+		// CLOUDS //
+		////////////
+		ATICloudShaderHandle = nglGenFragmentShadersATI(1);		
+		if (!ATICloudShaderHandle)
+		{			
+			nlwarning("Couldn't generate cloud shader using ATI_fragment_shader !");			
+		}
+		else
+		{			
+			glGetError();			
+			nglBindFragmentShaderATI(ATICloudShaderHandle);
+			nglBeginFragmentShaderATI();			
+			//
+			nglSampleMapATI(GL_REG_0_ATI, GL_TEXTURE0_ARB, GL_SWIZZLE_STR_ATI); // sample texture 0
+			nglSampleMapATI(GL_REG_1_ATI, GL_TEXTURE1_ARB, GL_SWIZZLE_STR_ATI); // sample texture 1
+			// lerp between tex 0 & tex 1 using diffuse alpha			
+			nglAlphaFragmentOp3ATI(GL_LERP_ATI, GL_REG_0_ATI, GL_NONE, GL_PRIMARY_COLOR_ARB, GL_NONE, GL_NONE, GL_REG_0_ATI, GL_NONE, GL_NONE, GL_REG_1_ATI, GL_NONE, GL_NONE);
+			//nglAlphaFragmentOp1ATI(GL_MOV_ATI, GL_REG_0_ATI, GL_NONE, GL_REG_0_ATI, GL_NONE, GL_NONE);
+			// output 0 as RGB
+			//nglColorFragmentOp1ATI(GL_MOV_ATI, GL_REG_0_ATI, GL_NONE, GL_NONE, GL_ZERO, GL_NONE, GL_NONE);			
+			// output alpha multiplied by constant 0
+			nglAlphaFragmentOp2ATI(GL_MUL_ATI, GL_REG_0_ATI, GL_NONE, GL_REG_0_ATI, GL_NONE, GL_NONE, GL_CON_0_ATI, GL_NONE, GL_NONE);			
+			nglEndFragmentShaderATI();
+			GLenum error = glGetError();
+			nlassert(error == GL_NONE);	
+			nglBindFragmentShaderATI(0);
 		}
 	}	
 
@@ -3071,6 +3102,11 @@ void CDriverGL::deleteFragmentShaders()
 	{		
 		nglDeleteFragmentShaderATI((GLuint) ATIWaterShaderHandle);		
 		ATIWaterShaderHandle = 0;
+	}
+	if (ATICloudShaderHandle)
+	{
+		nglDeleteFragmentShaderATI((GLuint) ATICloudShaderHandle);		
+		ATICloudShaderHandle = 0;
 	}
 }
 
@@ -3244,7 +3280,8 @@ void	CDriverGL::profileVBHardAllocation(std::vector<std::string> &result)
 // ***************************************************************************
 bool CDriverGL::supportCloudRenderSinglePass() const
 {
-	return _Extensions.NVTextureEnvCombine4 || (_Extensions.ATIXTextureEnvRoute && _Extensions.EXTTextureEnvCombine);
+	// return _Extensions.NVTextureEnvCombine4 || (_Extensions.ATIXTextureEnvRoute && _Extensions.EXTTextureEnvCombine);
+	return _Extensions.NVTextureEnvCombine4 /* || _Extensions.ATIFragmentShader*/;
 }
 
 // ***************************************************************************

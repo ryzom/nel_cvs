@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.167 2004/04/08 13:01:40 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.168 2004/04/09 14:38:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1109,6 +1109,7 @@ private:
 
 			GLuint ATIWaterShaderHandleNoDiffuseMap; // water support on R200
 			GLuint ATIWaterShaderHandle; // water support on R200
+			GLuint ATICloudShaderHandle; // cloud support for R200 and more
 
 			GLuint ARBWaterShader[4]; // water support on R300, NV30 & the like
 			

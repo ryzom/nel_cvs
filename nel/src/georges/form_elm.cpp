@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.4 2002/05/21 08:59:24 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.5 2002/05/21 13:06:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -320,10 +320,10 @@ CForm *CFormElm::getForm () const
 
 bool CFormElm::getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where)
 {
-	const UFormElm **resultConst = NULL;
-	if (((const UFormElm*)this)->getNodeByName (resultConst, name, where))
+	const UFormElm *resultConst = NULL;
+	if (((const UFormElm*)this)->getNodeByName (&resultConst, name, where))
 	{
-		*result = const_cast<UFormElm*> (*resultConst);
+		*result = const_cast<UFormElm*> (resultConst);
 		return true;
 	}
 	return false;

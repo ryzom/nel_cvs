@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.23 2002/08/20 12:43:40 chafik Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.21 2001/11/06 15:12:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -487,8 +487,8 @@ namespace NLAISCRIPT
 	{
 		char* sourceFileName;
 		char* varName;
-		uint32 lineNumber;
-		sint32 first, last;
+		uint16 lineNumber;
+		sint16 first, last;
 		bool ret = false;
 
 		switch (buf[0])
@@ -536,11 +536,11 @@ namespace NLAISCRIPT
 				if (sourceFileName[0])
 				{
 					sint32 h = strcmp(sourceFileName, getSourceFileName().c_str());
-					P.ContextDebug.addBreakPoint((uint16)lineNumber,sourceFileName);
+					P.ContextDebug.addBreakPoint(lineNumber,sourceFileName);
 				}
 				else
 				{
-					P.ContextDebug.addBreakPoint((uint16)lineNumber,getSourceFileName().c_str());
+					P.ContextDebug.addBreakPoint(lineNumber,getSourceFileName().c_str());
 				}
 			}
 			delete[] sourceFileName;
@@ -553,11 +553,11 @@ namespace NLAISCRIPT
 			if (sourceFileName[0])
 			{
 				sint32 h = strcmp(sourceFileName, getSourceFileName().c_str());
-				P.ContextDebug.eraseBreakPoint((uint16)lineNumber,sourceFileName);
+				P.ContextDebug.eraseBreakPoint(lineNumber,sourceFileName);
 			}
 			else
 			{
-				P.ContextDebug.eraseBreakPoint((uint16)lineNumber,getSourceFileName().c_str());
+				P.ContextDebug.eraseBreakPoint(lineNumber,getSourceFileName().c_str());
 			}
 			delete[] sourceFileName;
 			break;

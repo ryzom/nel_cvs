@@ -44,8 +44,8 @@ for i in $interface_source_dxtc_directories ; do
 done
 
 # build all files in tga_tmp into one tga. Let the OpenGL compress it at runTime (better result for some important cases)
-../../bin/build_interface tga/texture_interface_dxtc.tga tga_tmp
-# TEMP ../../bin/tga2dds tga_tmp/texture_interface_dxtc.tga -o tga/texture_interface_dxtc.dds -a 5
+../../bin/build_interface tga/texture_interfaces_dxtc.tga tga_tmp
+# TEMP ../../bin/tga2dds tga_tmp/texture_interfaces_dxtc.tga -o tga/texture_interfaces_dxtc.dds -a 5
 
 # Idle
 ../../idle.bat

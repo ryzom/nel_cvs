@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.144 2003/04/15 15:58:31 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.144.2.1 2003/05/22 09:11:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -588,6 +588,7 @@ private:
 	uint						_LightMode[MaxLight];				// Light mode.
 	CVector						_WorldLightPos[MaxLight];			// World position of the lights.
 	CVector						_WorldLightDirection[MaxLight];		// World direction of the lights.
+	bool						_LightDirty[MaxLight];				// Light that need a View position setup in refreshRenderSetup().
 
 	//\name description of the per pixel light
 	// @{

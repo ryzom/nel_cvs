@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.23 2002/12/18 19:29:27 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.24 2002/12/19 10:45:36 lecroart Exp $
  *
  */
 
@@ -233,7 +233,7 @@ bool startService (const string &name)
 	// give the service alias to the service to forward it back when it will connected to the aes.
 	arg = " -N";
 	arg += alias;
-	
+/* use the same path as -A for log and config
 	// set the path for the config file
 	arg += " -C";
 	arg += path;
@@ -241,7 +241,7 @@ bool startService (const string &name)
 	// set the path for log
 	arg += " -L";
 	arg += path;
-	
+*/	
 	// set the path for running
 	arg += " -A";
 	arg += path;

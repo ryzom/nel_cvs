@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.13 2001/09/05 12:25:18 lecroart Exp $
+ * $Id: common.cpp,v 1.14 2001/10/25 15:39:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ void nlSleep( uint32 ms )
 
 /// \todo yoyo: BUG WITH DEBUG/_CONSOLE!!!! a Sleep(0) "block" the other thread!!!
 #ifdef NL_DEBUG
-	ms = std::max(ms, (uint32)1);
+	ms = max(ms, (uint32)1);
 #endif
 
 	Sleep( ms );

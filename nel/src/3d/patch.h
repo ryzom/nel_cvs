@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.22 2002/03/14 17:50:38 berenguier Exp $
+ * $Id: patch.h,v 1.23 2002/04/02 16:03:03 vizerie Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -139,6 +139,10 @@ struct	CPatchIdent
 	sint32		ZoneId;		// From which zone this patch come from...
 	uint16		PatchId;	// Id of this patch.
 
+	// default ctor
+	CPatchIdent() {}
+	//
+	CPatchIdent(sint32 zoneId, uint16 patchId) : ZoneId(zoneId), PatchId(patchId) {}
 public:
 	bool			operator<(const CPatchIdent &p) const
 	{

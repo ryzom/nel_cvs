@@ -1,7 +1,7 @@
 /** \file zone_region.cpp
  * <File description>
  *
- * $Id: zone_region.cpp,v 1.5 2003/09/01 12:05:57 lecroart Exp $
+ * $Id: zone_region.cpp,v 1.6 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,7 +100,7 @@ CZoneRegion::SZoneUnit2::SZoneUnit2()
 // ---------------------------------------------------------------------------
 void CZoneRegion::SZoneUnit2::serial (NLMISC::IStream &f)
 {
-	sint32 version = f.serialVersion (0);
+	/*sint32 version =*/ f.serialVersion (0);
 
 	SZoneUnit::serial (f);
 	f.serial (DateLow);

@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.6 2003/11/07 15:50:20 corvazier Exp $
+ * $Id: primitive_class.cpp,v 1.7 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -171,13 +171,13 @@ bool ReadChild (CPrimitiveClass::CChild &child, xmlNodePtr childNode, const char
 								}
 								defaultId++;
 							}
-							while (childParamValueNode = CIXml::getNextChildNode (childParamValueNode, "DEFAULT_VALUE"));
+							while ((childParamValueNode = CIXml::getNextChildNode (childParamValueNode, "DEFAULT_VALUE")));
 						}
 					}
 					else
 						goto failed;
 				}
-				while (childParamNode = CIXml::getNextChildNode (childParamNode, "PARAMETER"));
+				while ((childParamNode = CIXml::getNextChildNode (childParamNode, "PARAMETER")));
 			}
 
 			// Ok
@@ -355,13 +355,13 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 											else
 												goto failed;
 										}
-										while (comboValueValueNode = CIXml::getFirstChildNode (comboValueValueNode, "CONTEXT_VALUE"));
+										while ((comboValueValueNode = CIXml::getFirstChildNode (comboValueValueNode, "CONTEXT_VALUE")));
 									}
 								}
 								else
 									goto failed;
 							}
-							while (comboValueNode = CIXml::getNextChildNode (comboValueNode, "COMBO_VALUES"));
+							while ((comboValueNode = CIXml::getNextChildNode (comboValueNode, "COMBO_VALUES")));
 						}
 
 						// Read the combo files
@@ -418,7 +418,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 								else
 									goto failed;
 							}
-							while (comboValueNode = CIXml::getNextChildNode (comboValueNode, "COMBO_FILES"));
+							while ((comboValueNode = CIXml::getNextChildNode (comboValueNode, "COMBO_FILES")));
 						}
 
 						// Read parameters default values
@@ -449,7 +449,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 								}
 								defaultId++;
 							}
-							while (defaultValueNode = CIXml::getNextChildNode (defaultValueNode, "DEFAULT_VALUE"));
+							while ((defaultValueNode = CIXml::getNextChildNode (defaultValueNode, "DEFAULT_VALUE")));
 						}
 					}
 					else
@@ -458,7 +458,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 				else
 					goto failed;
 			}
-			while (paramNode = CIXml::getNextChildNode (paramNode, "PARAMETER"));
+			while ((paramNode = CIXml::getNextChildNode (paramNode, "PARAMETER")));
 		}
 
 		// Read static children
@@ -478,7 +478,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 				if (!ReadChild (child, childrenNode, filename, true, config))
 					goto failed;
 			}
-			while (childrenNode = CIXml::getNextChildNode (childrenNode, "STATIC_CHILD"));
+			while ((childrenNode = CIXml::getNextChildNode (childrenNode, "STATIC_CHILD")));
 		}
 
 		// Read dynamic children
@@ -498,7 +498,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 				if (!ReadChild (child, childrenNode, filename, false, config))
 					goto failed;
 			}
-			while (childrenNode = CIXml::getNextChildNode (childrenNode, "DYNAMIC_CHILD"));
+			while ((childrenNode = CIXml::getNextChildNode (childrenNode, "DYNAMIC_CHILD")));
 		}
 
 		// Read generated children
@@ -518,7 +518,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 				if (!ReadChild (child, childrenNode, filename, false, config))
 					goto failed;
 			}
-			while (childrenNode = CIXml::getNextChildNode (childrenNode, "GENERATED_CHILD"));
+			while ((childrenNode = CIXml::getNextChildNode (childrenNode, "GENERATED_CHILD")));
 		}
 
 		return true;

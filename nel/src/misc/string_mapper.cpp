@@ -5,7 +5,7 @@
  * The class can also (but not in an optimized manner) return the
  * string associated with an id.
  *
- * $Id: string_mapper.cpp,v 1.5 2003/11/06 12:51:33 besson Exp $
+ * $Id: string_mapper.cpp,v 1.6 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,7 @@ CStringMapper *CStringMapper::createLocalMapper()
 TStringId CStringMapper::localMap(const std::string &str)
 {
 	if (str.size() == 0)
-		return NULL;
+		return 0;
 
 	string *pStr = new string;
 	*pStr = str;

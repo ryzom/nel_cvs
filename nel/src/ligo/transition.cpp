@@ -1,7 +1,7 @@
 /** \file transition.cpp
  * A transition template implementation
  *
- * $Id: transition.cpp,v 1.3 2002/04/12 12:03:54 lecroart Exp $
+ * $Id: transition.cpp,v 1.4 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -210,7 +210,7 @@ void CTransition::serial (NLMISC::IStream &s)
 		s.serialCheck ((uint32)'STGL');
 
 		// Serial the version
-		sint ver = s.serialVersion (0);
+		/*sint ver =*/ s.serialVersion (0);
 
 		// Serial the edgezones
 		uint i;

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.65 2003/08/27 09:25:39 legros Exp $
+ * $Id: local_retriever.cpp,v 1.66 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1269,7 +1269,7 @@ void	NLPACS::CLocalRetriever::retrieveAccuratePosition(CVector2s estim, CCollisi
 			continue;
 
 		bool	isUpper;
-		bool	isOnBorder = false;
+		//bool	isOnBorder = false;
 
 		sint32	left = _Chains[sub.getParentId()].getLeft(),
 				right = _Chains[sub.getParentId()].getRight();
@@ -2057,7 +2057,7 @@ void	NLPACS::CLocalRetriever::replaceChain(uint32 chainId, const std::vector<NLP
 		if (newId >= (sint)_Chains.size())
 			_Chains.resize(newId+1);
 
-		CChain		&nchain = _Chains[newId];
+		//CChain		&nchain = _Chains[newId];
 
 		if (left>(sint)_Surfaces.size())
 			nlerror ("left surface id MUST be id<%d (id=%d)", _Surfaces.size(), left);
@@ -2068,8 +2068,8 @@ void	NLPACS::CLocalRetriever::replaceChain(uint32 chainId, const std::vector<NLP
 		if (newId > 65535)
 			nlerror("in NLPACS::CLocalRetriever::addChain(): reached the maximum number of chains");
 
-		CRetrievableSurface	*leftSurface = (left>=0) ? &(_Surfaces[left]) : NULL;
-		CRetrievableSurface	*rightSurface = (right>=0) ? &(_Surfaces[right]) : NULL;
+		//CRetrievableSurface	*leftSurface = (left>=0) ? &(_Surfaces[left]) : NULL;
+		//CRetrievableSurface	*rightSurface = (right>=0) ? &(_Surfaces[right]) : NULL;
 
 		CChain		&chain = _Chains[newId];
 

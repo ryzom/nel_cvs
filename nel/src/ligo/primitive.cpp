@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.19 2003/08/29 16:29:08 lecroart Exp $
+ * $Id: primitive.cpp,v 1.20 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1470,7 +1470,7 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, C
 				return false;
 			}
 		}
-		while (propNode = CIXml::getNextChildNode (propNode, "PROPERTY"));
+		while ((propNode = CIXml::getNextChildNode (propNode, "PROPERTY")));
 	}
 
 	// Get the primitive class
@@ -1575,7 +1575,7 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, C
 				return false;
 			}
 		}
-		while (childNode = CIXml::getNextChildNode (childNode, "CHILD"));
+		while ((childNode = CIXml::getNextChildNode (childNode, "CHILD")));
 	}
 
 	// Done

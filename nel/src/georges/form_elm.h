@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.20 2003/10/14 09:30:46 ledorze Exp $
+ * $Id: form_elm.h,v 1.21 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,7 @@ public:
 	CFormElm (CForm *form, CFormElm *parentNode, const CFormDfn *parentDfn, uint parentIndex);
 
 	// Destructor
-	~CFormElm ();
+	virtual ~CFormElm ();
 
 	/// Reset contents
 	virtual void	clean() {};
@@ -268,7 +268,7 @@ class CFormElmStruct : public CFormElm
 public:
 	// Default constructor
 	CFormElmStruct (CForm *form, CFormElm *parentNode, const CFormDfn *parentDfn, uint parentIndex);
-	~CFormElmStruct ();
+	virtual ~CFormElmStruct ();
 
 	// Clear sub elements
 	void clean ();
@@ -329,6 +329,7 @@ class CFormElmVirtualStruct : public CFormElmStruct
 public:
 
 	CFormElmVirtualStruct (CForm *form, CFormElm *parentNode, const CFormDfn *parentDfn, uint parentIndex);
+	virtual ~CFormElmVirtualStruct() { }
 
 	// The Dfn filename used by this struct
 	std::string			DfnFilename;
@@ -356,7 +357,7 @@ class CFormElmArray : public CFormElm
 public:
 	// Default constructor
 	CFormElmArray (CForm *form, const CFormDfn *formDfn, const CType *type, CFormElm *parentNode, const CFormDfn *parentDfn, uint parentIndex);
-	~CFormElmArray ();
+	virtual ~CFormElmArray ();
 	void clean ();
 
 	// Smart pointer on the form definition for this structure
@@ -427,6 +428,7 @@ class CFormElmAtom : public CFormElm
 public:
 	// Default constructor
 	CFormElmAtom (CForm *form, CFormElm *parentNode, const CFormDfn *parentDfn, uint parentIndex);
+	virtual ~CFormElmAtom() { }
 
 	// Pointer on the parent element
 	//CFormElmAtom				*Parent;

@@ -1,7 +1,7 @@
 /** \file ligo_config.h
  * Ligo config file 
  *
- * $Id: ligo_config.h,v 1.2 2003/11/07 15:50:19 corvazier Exp $
+ * $Id: ligo_config.h,v 1.3 2003/11/17 14:26:37 distrib Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -47,6 +47,8 @@ class IPrimitive;
 class CLigoConfig
 {
 public:
+
+	virtual ~CLigoConfig() { }
 
 	/** Load the config file. Can throw some exception if file doesn't exist or is malformed.
 	  * 

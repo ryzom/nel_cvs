@@ -1,7 +1,7 @@
 /** \file zone_template.cpp
  * Ligo zone template implementation
  *
- * $Id: zone_template.cpp,v 1.7 2003/09/01 12:05:57 lecroart Exp $
+ * $Id: zone_template.cpp,v 1.8 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -268,7 +268,7 @@ bool CZoneTemplate::build (const std::vector<NLMISC::CVector> &vertices, const s
 		while (currentVert != edgePair.end())
 		{
 			// Backup
-			uint current = currentVert->first;
+			//uint current = currentVert->first;
 			next = currentVert->second;
 
 			// Push the next vertex

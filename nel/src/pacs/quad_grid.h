@@ -1,7 +1,7 @@
 /** \file pacs/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.4 2003/02/03 16:42:13 coutelas Exp $
+ * $Id: quad_grid.h,v 1.5 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -394,7 +394,7 @@ template<class T>	void		CQuadGrid<T>::clear()
 	_Selection.Next= NULL;
 }
 // ***************************************************************************
-template<class T>	CQuadGrid<T>::CIterator	CQuadGrid<T>::erase(typename CQuadGrid<T>::CIterator it)
+template<class T>	CQuadGrid<T>::CIterator	CQuadGrid<T>::erase(CQuadGrid<T>::CIterator it)
 {
 	sint	x,y;
 	CNode	*ptr= it._Ptr;

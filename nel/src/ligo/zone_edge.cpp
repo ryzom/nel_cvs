@@ -1,7 +1,7 @@
 /** \file zone_edge.cpp
  * A ZoneEdge descriptor
  *
- * $Id: zone_edge.cpp,v 1.3 2003/09/01 12:05:57 lecroart Exp $
+ * $Id: zone_edge.cpp,v 1.4 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -175,7 +175,7 @@ bool CZoneEdge::isTheSame (const CZoneEdge &other, const CLigoConfig &config, CL
 void CZoneEdge::serial (NLMISC::IStream& s)
 {
 	// Serial the version
-	sint ver = s.serialVersion (0);
+	/*sint ver =*/ s.serialVersion (0);
 
 	s.xmlPush ("VERTICES");
 		s.serialCont (_TheEdge);

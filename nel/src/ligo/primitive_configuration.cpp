@@ -1,7 +1,7 @@
 /** \file primitive_configuration.cpp
  * Ligo primitive configuration description.
  *
- * $Id: primitive_configuration.cpp,v 1.2 2003/11/12 10:27:27 distrib Exp $
+ * $Id: primitive_configuration.cpp,v 1.3 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -84,10 +84,10 @@ bool CPrimitiveConfigurations::read (xmlNodePtr configurationNode, const char *f
 						pair.second = name;
 					}
 				}
-				while (match = CIXml::getNextChildNode (match, "MATCH"));
+				while ((match = CIXml::getNextChildNode (match, "MATCH")));
 			}
 		}
-		while (matchGroups = CIXml::getNextChildNode (matchGroups, "MATCH_GROUP"));
+		while ((matchGroups = CIXml::getNextChildNode (matchGroups, "MATCH_GROUP")));
 	}
 	return true;
 }

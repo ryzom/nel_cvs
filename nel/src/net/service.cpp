@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.196 2003/11/03 18:16:21 cado Exp $
+ * $Id: service.cpp,v 1.197 2003/11/17 14:26:38 distrib Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -246,23 +246,23 @@ void cbDirectoryChanged (IVariable &var)
 // Ctor
 IService::IService() :
 	WindowDisplayer(0),
+	WriteFilesDirectory("WriteFilesDirectory", "directory where to save generic shard information (packed_sheets for example)", ".", 0, true, cbDirectoryChanged),
+	SaveFilesDirectory("SaveFilesDirectory", "directory where to save specific shard information (shard time for example)", ".", 0, true, cbDirectoryChanged),
+	ListeningPort("ListeningPort", "listening port for this service", 0, 0, true),
 	_RecordingState(CCallbackNetBase::Off),
 	_UpdateTimeout(100),
 	_SId(0),
 	_Status(0),
 	_Initialized(false),
+	ConfigDirectory("ConfigDirectory", "directory where config files are", ".", 0, true, cbDirectoryChanged),
+	LogDirectory("LogDirectory", "directory where the service is logging", ".", 0, true, cbDirectoryChanged),
+	RunningDirectory("RunningDirectory", "directory where the service is running on", ".", 0, true, cbDirectoryChanged),
+	Version("Version", "Version of the shard", ""),
 	_CallbackArray (0),
 	_CallbackArraySize (0),
 	_DontUseNS(false),
 	_DontUseAES(false),
-	_ResetMeasures(false),
-	ListeningPort("ListeningPort", "listening port for this service", 0, 0, true),
-	RunningDirectory("RunningDirectory", "directory where the service is running on", ".", 0, true, cbDirectoryChanged),
-	ConfigDirectory("ConfigDirectory", "directory where config files are", ".", 0, true, cbDirectoryChanged),
-	LogDirectory("LogDirectory", "directory where the service is logging", ".", 0, true, cbDirectoryChanged),
-	Version("Version", "Version of the shard", ""),
-	WriteFilesDirectory("WriteFilesDirectory", "directory where to save generic shard information (packed_sheets for example)", ".", 0, true, cbDirectoryChanged),
-	SaveFilesDirectory("SaveFilesDirectory", "directory where to save specific shard information (shard time for example)", ".", 0, true, cbDirectoryChanged)
+	_ResetMeasures(false)
 {
 	// Singleton
 	_Instance = this;
@@ -1072,7 +1072,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 			NetSpeedLoop = (sint32) (CTime::getLocalTime () - before);
 			UserSpeedLoop = (sint32) (before - bbefore);
-			sint32 ok = UserSpeedLoop;
 
 			if (WindowDisplayer != NULL)
 			{

@@ -1,7 +1,7 @@
 /** \file header.cpp
  * Georges header file class
  *
- * $Id: header.cpp,v 1.6 2002/09/06 14:48:03 corvazier Exp $
+ * $Id: header.cpp,v 1.7 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,7 +200,7 @@ void CFileHeader::read (xmlNodePtr root)
 	if (node)
 	{
 		// Get a text node
-		if (node = CIXml::getFirstChildNode (node, XML_TEXT_NODE))
+		if ((node = CIXml::getFirstChildNode (node, XML_TEXT_NODE)))
 		{
 			// Get content
 			const char *comments = (const char*)xmlNodeGetContent (node);
@@ -220,7 +220,7 @@ void CFileHeader::read (xmlNodePtr root)
 	if (node)
 	{
 		// Get a text node
-		if (node = CIXml::getFirstChildNode (node, XML_TEXT_NODE))
+		if ((node = CIXml::getFirstChildNode (node, XML_TEXT_NODE)))
 		{
 			// Get content
 			const char *log = (const char*)xmlNodeGetContent (node);
@@ -253,7 +253,7 @@ void CFileHeader::warning (bool exception, const char *function, const char *for
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	// Set the warning

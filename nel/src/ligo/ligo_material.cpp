@@ -1,7 +1,7 @@
 /** \file ligo/material.cpp
  * A ligoscape material
  *
- * $Id: ligo_material.cpp,v 1.3 2003/09/30 13:49:13 lecroart Exp $
+ * $Id: ligo_material.cpp,v 1.4 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -91,7 +91,7 @@ void CMaterial::serial (NLMISC::IStream &s)
 		s.serialCheck ((uint32)'TMOL');
 
 		// Serial the version
-		sint ver = s.serialVersion (0);
+		/*sint ver =*/ s.serialVersion (0);
 
 		// Serial the zoneedge
 		s.xmlSerial (_ZoneEdge, "ZONE_EDGE");

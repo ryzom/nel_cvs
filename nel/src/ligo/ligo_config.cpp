@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.8 2003/11/07 15:50:20 corvazier Exp $
+ * $Id: ligo_config.cpp,v 1.9 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -126,7 +126,7 @@ bool CLigoConfig::readPrimitiveClass (const char *_fileName)
 						else
 							return false;
 					}
-					while (primitive = CIXml::getNextChildNode (primitive, "PRIMITIVE"));
+					while ((primitive = CIXml::getNextChildNode (primitive, "PRIMITIVE")));
 				}
 					
 				// Add the context strings
@@ -160,7 +160,7 @@ bool CLigoConfig::readPrimitiveClass (const char *_fileName)
 						else
 							return false;
 					}
-					while (configuration = CIXml::getNextChildNode (configuration, "CONFIGURATION"));
+					while ((configuration = CIXml::getNextChildNode (configuration, "CONFIGURATION")));
 				}
 
 				// Ok

@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.20 2003/08/01 13:11:23 corvazier Exp $
+ * $Id: primitive.h,v 1.21 2003/11/17 14:26:38 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,7 +84,7 @@ public:
 	CPropertyString () {};
 	CPropertyString (const char *str);
 	CPropertyString (const char *str, bool _default);
-	~CPropertyString () {};
+	virtual ~CPropertyString () {};
 	std::string			String;
 
 	// Force class to be polymorphic
@@ -101,7 +101,7 @@ class CPropertyStringArray : public IProperty
 {
 public:
 	CPropertyStringArray () {};
-	~CPropertyStringArray () {}
+	virtual ~CPropertyStringArray () {}
 	CPropertyStringArray (const std::vector<std::string> &stringArray);
 	CPropertyStringArray (const std::vector<std::string> &stringArray, bool _default);
 	std::vector<std::string>	StringArray;

@@ -74,6 +74,8 @@ protected:
 	//bool				_Modified;
 	bool				_EditingName;
 
+	CString				_Filename;
+
 	void				ResetTree();
 	HTREEITEM 			AddSound( const char *name );
 	HTREEITEM			FindInTree( const char *name );

@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.9 2001/09/03 14:40:45 cado Exp $
+ * $Id: sound.h,v 1.10 2001/09/10 17:14:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
+#include "nel/sound/u_source.h"
 #include <string>
 #include <hash_map>
 
@@ -94,6 +95,8 @@ public:
 	float				getGain() const					{ return _Gain; }
 	/// Return the pitch
 	float				getPitch() const				{ return _Pitch; }
+	/// Return the initial priority
+	TSoundPriority		getPriority() const				{ return _Priority; }
 	/// Return the looping state
 	bool				getLooping() const				{ return _Looping; }
 	/// Return true if distances and cone are meaningful
@@ -117,24 +120,25 @@ public:
 
 	/// Set properties. Returns false if one or more values are invalid (EDIT)
 	bool				setProperties( const std::string& name, const std::string& filename,
-									   float gain, float pitch, bool looping, bool detail,
+									   float gain=1.0f, float pitch=1.0f, TSoundPriority priority=MidPri, bool looping=false, bool detail=false,
 									   float mindist=1.0f, float maxdist=1000000.0f,
 									   float innerangle=6.283185f, float outerangle=6.283185f, // 360°
 									   float outergain=1.0f );
 	/// Save (output stream only) (EDIT)
 	static void			save( const std::vector<CSound*>& container, NLMISC::IStream& s );
 
+public:
+
+	/// Version (used by backward-compatibility support)
+	static uint			CurrentVersion;
+
+	/// Version of serialized (in) files
+	static uint			FileVersion;
 
 private:
 
 	// Sound driver
 	static ISoundDriver *_SoundDriver;
-
-	// Support old V1 files
-	static bool			_InputIgnorePitch;
-
-	// Support old V2 files
-	static bool			_InputIgnoreLooping;
 
 	// Allow to load sound files when corresponding wave file is missing ?
 	static bool			_AllowMissingWave;
@@ -145,6 +149,7 @@ private:
 	// Static properties
 	float				_Gain;	// [0,1]
 	float				_Pitch; // ]0,1]
+	TSoundPriority		_Priority;
 	bool				_Looping;
 	bool				_Detailed;
 	float				_MinDist, _MaxDist;

@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.16 2001/09/10 13:45:45 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.17 2001/09/10 17:14:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -216,9 +216,18 @@ void			CEnvSoundUser::selectEnv( const char *tag, bool children_too )
  */
 void	CEnvSoundUser::serialFileHeader( NLMISC::IStream& s )
 {
+	// Envsounds file header
 	s.serialCheck( (uint32)'SEN' ); // NeL Environment Sounds
-	if ( s.serialVersion( 1 ) < 1 )
+	if ( s.serialVersion( 2 ) < 2 )
 	{
+		throw EOlderStream(s);
+	}
+
+	// Check CSound version (and prepare CSound::serial() backward compatibility)
+	CSound::FileVersion = s.serialVersion( CSound::CurrentVersion );
+	if ( CSound::FileVersion == 0 ) // warning: not multithread-compliant
+	{
+		// Not supporting version 0 anymore
 		throw EOlderStream(s);
 	}
 }
@@ -249,6 +258,9 @@ uint32 CEnvSoundUser::load( CEnvSoundUser* &envSoundTreeRoot, NLMISC::IStream& s
 		serialFileHeader( s );
 		s.serialPtr( envSoundTreeRoot );
 		return envSoundTreeRoot->getCount();
+
+		// Reset CSound version
+		CSound::FileVersion = CSound::CurrentVersion; // warning: not multithread-compliant : do not serialize in different threads !
 	}
 	else
 	{

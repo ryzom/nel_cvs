@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.17 2001/09/05 14:45:50 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.18 2001/09/10 17:14:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,8 +46,18 @@ namespace NLSOUND {
 // The audio mixer singleton instance
 CAudioMixerUser		*CAudioMixerUser::_Instance = NULL;
 
+// Return the priority cstring (debug info)
+const char *PriToCStr [NbSoundPriorities] = { "XH", "HI", "MD", "LO" };
 
-const char *PriToCStr [3] = { "Hi", "Md", "Lo" };
+
+/*
+ * Return the priority cstring (debug info)
+ */
+const char *getPriorityStr( TSoundPriority p )
+{
+	nlassert( p < NbSoundPriorities );
+	return PriToCStr[p];
+}
 
 
 /*
@@ -159,6 +169,7 @@ void				CAudioMixerUser::reset()
 	{
 		ipOld = ipsrc;
 		++ipsrc;
+		// Erasing an element from a set also does not invalidate any other iterators
 		removeSource( ipOld, true ); // 3D sources, the envsounds were removed above
 	}
 

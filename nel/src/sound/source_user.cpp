@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.15 2001/09/04 13:45:41 vizerie Exp $
+ * $Id: source_user.cpp,v 1.16 2001/09/10 17:14:58 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,7 @@ void					CSourceUser::setSound( TSoundId id )
 		_Gain = _Sound->getGain();
 		_Pitch = _Sound->getPitch();
 		_Looping = _Sound->getLooping();
+		_Priority = _Sound->getPriority();
 	}
 
 	// Set the buffer

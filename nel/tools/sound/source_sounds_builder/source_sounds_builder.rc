@@ -26,7 +26,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_SOURCE_SOUNDS_BUILDER_DIALOG DIALOGEX 0, 0, 464, 304
+IDD_SOURCE_SOUNDS_BUILDER_DIALOG DIALOGEX 0, 0, 464, 354
 STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "NeL Source Sounds Builder"
@@ -34,7 +34,7 @@ FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "Tree1",IDC_TREE1,"SysTreeView32",TVS_HASLINES | 
                     TVS_EDITLABELS | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | 
-                    WS_BORDER | WS_TABSTOP,5,25,235,275
+                    WS_BORDER | WS_TABSTOP,5,25,235,325
     PUSHBUTTON      "Add a Sound",IDC_AddSound,135,5,60,14
     PUSHBUTTON      "Save File...",IDC_Save,410,5,50,14
     PUSHBUTTON      "Load File...",IDC_Load,355,5,50,14
@@ -48,65 +48,68 @@ BEGIN
     LTEXT           "You can also add sounds (button), rename them (long click or 'F2' key), and remove them (button or 'Del' key). Importing an existing name or wav file does not change the existing sound.",
                     IDC_Home3,245,155,205,35
     PUSHBUTTON      "Import wav Files...",IDC_ImpDir,70,5,60,14
-    LTEXT           "Welcome to NeL Sounds Builder v1.3.2.",IDC_STATIC,245,
+    LTEXT           "Welcome to NeL Sounds Builder v1.4.0.",IDC_STATIC,245,
                     30,205,10
 END
 
-IDD_SoundPage DIALOG DISCARDABLE  243, 20, 222, 277
+IDD_SoundPage DIALOG DISCARDABLE  243, 20, 222, 292
 STYLE DS_CONTROL | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
-    GROUPBOX        " Sound Properties ",IDC_SoundGroup,5,0,210,270
+    GROUPBOX        " Sound Properties ",IDC_SoundGroup,5,0,210,285
     LTEXT           "Filename",IDC_Filename,10,33,29,8
     EDITTEXT        IDC_EditFilename,75,30,110,12,ES_AUTOHSCROLL | WS_GROUP
     PUSHBUTTON      "...",IDC_ChooseFile,190,30,15,12,WS_GROUP
     LTEXT           "Gain",IDC_Gain,10,62,15,8
     EDITTEXT        IDC_EditGain,75,60,40,12,ES_AUTOHSCROLL | WS_GROUP
     CONTROL         "Ext. 3D Properties",IDC_Pos3D,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFTTEXT | WS_GROUP | WS_TABSTOP,9,105,73,10
-    GROUPBOX        " 3D Properties ",IDC_Pos3DGroup,10,125,200,115,WS_GROUP
-    PUSHBUTTON      "Undo",IDC_Cancel,15,250,50,14,WS_GROUP
-    LTEXT           "Min dist.",IDC_MinDist,15,140,60,8
-    LTEXT           "Max dist.",IDC_MaxDist,15,155,60,8
-    EDITTEXT        IDC_EditMaxDist,75,155,40,12,ES_AUTOHSCROLL
-    LTEXT           "Cone Inner Angle",IDC_ConeInnerAngle,15,170,55,8
-    EDITTEXT        IDC_EditInnerAngle,75,170,40,12,ES_AUTOHSCROLL
-    LTEXT           "Cone Outer Angle",IDC_ConeOuterAngle,15,185,60,8
-    EDITTEXT        IDC_EditOuterAngle,75,185,40,12,ES_AUTOHSCROLL
-    LTEXT           "Cone Outer Gain",IDC_ConeOuterGain,15,200,60,8
-    EDITTEXT        IDC_EditOuterGain,75,200,40,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EditMinDist,75,140,40,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "Remove",IDC_Remove,70,250,50,14
-    PUSHBUTTON      "Play",IDC_PlaySound,155,85,50,14
+                    BS_LEFTTEXT | WS_GROUP | WS_TABSTOP,10,125,72,10
+    GROUPBOX        " 3D Properties ",IDC_Pos3DGroup,10,140,200,115,WS_GROUP
+    PUSHBUTTON      "Undo",IDC_Cancel,15,265,50,14,WS_GROUP
+    LTEXT           "Min dist.",IDC_MinDist,15,155,60,8
+    LTEXT           "Max dist.",IDC_MaxDist,15,170,60,8
+    EDITTEXT        IDC_EditMaxDist,75,170,40,12,ES_AUTOHSCROLL
+    LTEXT           "Cone Inner Angle",IDC_ConeInnerAngle,15,185,55,8
+    EDITTEXT        IDC_EditInnerAngle,75,185,40,12,ES_AUTOHSCROLL
+    LTEXT           "Cone Outer Angle",IDC_ConeOuterAngle,15,200,60,8
+    EDITTEXT        IDC_EditOuterAngle,75,200,40,12,ES_AUTOHSCROLL
+    LTEXT           "Cone Outer Gain",IDC_ConeOuterGain,15,215,60,8
+    EDITTEXT        IDC_EditOuterGain,75,215,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EditMinDist,75,155,40,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Remove",IDC_Remove,70,265,50,14
+    PUSHBUTTON      "Play",IDC_PlaySound,155,105,50,14
     CONTROL         "Play Looped",IDC_Looped,"Button",BS_AUTOCHECKBOX | 
-                    BS_PUSHLIKE | WS_TABSTOP,155,101,50,15
+                    BS_PUSHLIKE | WS_TABSTOP,155,121,50,15
     CTEXT           "",IDC_Stereo,75,46,40,10,SS_CENTERIMAGE | SS_SUNKEN
-    CTEXT           "",IDC_BadCone,145,160,60,8
+    CTEXT           "",IDC_BadCone,145,175,60,8
     CONTROL         "Slider1",IDC_SliderInnerAngle,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,170,30,12
-    CONTROL         "Slider1",IDC_SliderOuterAngle,"msctls_trackbar32",
                     TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,185,30,12
-    CONTROL         "Slider1",IDC_SliderOuterGain,"msctls_trackbar32",
+    CONTROL         "Slider1",IDC_SliderOuterAngle,"msctls_trackbar32",
                     TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,200,30,12
+    CONTROL         "Slider1",IDC_SliderOuterGain,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,215,30,12
     CONTROL         "Slider1",IDC_SliderMinDist,"msctls_trackbar32",TBS_BOTH | 
-                    TBS_NOTICKS | WS_TABSTOP,115,140,30,12
-    CONTROL         "Slider1",IDC_SliderMaxDist,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,115,155,30,12
-    PUSHBUTTON      "Read Me !",IDC_ButtonHelp,15,221,50,14
+    CONTROL         "Slider1",IDC_SliderMaxDist,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,115,170,30,12
+    PUSHBUTTON      "Read Me !",IDC_ButtonHelp,15,236,50,14
     CONTROL         "Slider1",IDC_SliderGain,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,115,60,30,12
-    PUSHBUTTON      "Play Outside",IDC_ButtonTestOuterGain,155,220,50,14
+    PUSHBUTTON      "Play Outside",IDC_ButtonTestOuterGain,155,235,50,14
     LTEXT           "Pitch",IDC_Pitch,10,77,16,8
     EDITTEXT        IDC_EditPitch,75,75,40,12,ES_AUTOHSCROLL
     CONTROL         "Slider1",IDC_SliderPitch,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,115,75,30,15
     CONTROL         "Looping",IDC_Looping,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFTTEXT | WS_TABSTOP,9,90,73,10
-    PUSHBUTTON      "Home",IDC_Home,155,250,50,14,WS_GROUP
+                    BS_LEFTTEXT | WS_TABSTOP,10,110,72,10
+    PUSHBUTTON      "Home",IDC_Home,155,265,50,14,WS_GROUP
     CONTROL         "",IDC_SoundName,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,
                     75,17,135,8
     LTEXT           "Name",IDC_STATIC,10,18,20,8
     LTEXT           "Type",IDC_STATIC,10,47,17,8
+    LTEXT           "Priority",IDC_Prio,10,94,40,10
+    COMBOBOX        IDC_CbPriority,75,92,40,133,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
 
@@ -166,7 +169,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 457
         TOPMARGIN, 7
-        BOTTOMMARGIN, 297
+        BOTTOMMARGIN, 347
     END
 
     IDD_SoundPage, DIALOG
@@ -174,7 +177,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 270
+        BOTTOMMARGIN, 285
     END
 END
 #endif    // APSTUDIO_INVOKED

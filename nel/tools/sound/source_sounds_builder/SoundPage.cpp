@@ -7,6 +7,7 @@
 #include "SoundPage.h"
 
 #include "../src/sound/driver/buffer.h"
+#include "../src/sound/audio_mixer_user.h"
 
 #include "nel/sound/u_listener.h"
 
@@ -35,6 +36,8 @@ uint XCenter;
 uint YCenter;
 uint Radius;
 
+
+const char *PriorityStr [NbSoundPriorities] = { "Highest", "High", "Medium", "Low" };
 
 
 //----------------------------------------------------------
@@ -146,6 +149,13 @@ BOOL CSoundPage::OnInitDialog()
 		_AudioMixer = NULL;
 	}
 
+	// Fill priorities
+	uint i;
+	for ( i=0; i!=NbSoundPriorities; ++i )
+	{
+		m_Priority.AddString( PriorityStr[i] );
+	}
+
 	// We want to load nss files even if the corresponding waves are missing
 	CSound::allowMissingWave( true );
 
@@ -184,6 +194,7 @@ void CSoundPage::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSoundPage)
+	DDX_Control(pDX, IDC_CbPriority, m_Priority);
 	DDX_Text(pDX, IDC_EditFilename, m_Filename);
 	DDX_Text(pDX, IDC_EditGain, m_Gain);
 	DDV_MinMaxFloat(pDX, m_Gain, 0.f, 1.f);
@@ -286,6 +297,7 @@ void		CSoundPage::getPropertiesFromSound()
 	m_Filename = _CurrentSound->getFilename().c_str();
 	m_Gain = _CurrentSound->getGain();
 	m_Pitch = _CurrentSound->getPitch();
+	m_Priority.SetCurSel( _CurrentSound->getPriority() );
 	m_Looping = _CurrentSound->getLooping();
 	m_Pos3D = _CurrentSound->isDetailed();
 	((CSliderCtrl*)GetDlgItem( IDC_SliderGain ))->SetPos( ConvertLogScaleToLinearSliderPosTo( m_Gain*100.0f ) );
@@ -320,11 +332,11 @@ void CSoundPage::UpdateCurrentSound()
 	CString name = ((CSource_sounds_builderDlg*)GetOwner())->SoundName( _HItem );
 	if ( ! m_Pos3D )
 	{
-		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, m_Looping!=0, m_Pos3D!=0 );
+		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, (TSoundPriority)(m_Priority.GetCurSel()), m_Looping!=0, m_Pos3D!=0 );
 	}
 	else
 	{
-		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, m_Looping!=0, m_Pos3D!=0,
+		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, (TSoundPriority)(m_Priority.GetCurSel()), m_Looping!=0, m_Pos3D!=0,
 			m_MinDist, m_MaxDist, degToRad((float)m_InnerAngleDeg), degToRad((float)m_OuterAngleDeg), m_OuterGain );
 	}
 	// Argument checking is already done by the dialog wizard

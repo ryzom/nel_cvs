@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.17 2001/09/05 14:50:11 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.18 2001/09/10 17:14:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,7 +44,15 @@ class CEnvSoundUser;
 class CEnvEffect;
 
 
-// Max number of tracks (physical sources)
+/*
+ * Max number of tracks (physical sources)
+ *
+ * Note: In the Windows implementation of OpenAL, AL_SOURCES_MAX is currently defined to 32
+ * but seems unused. In alc.c (AL Context implementation), the function alcOpenDevice() contains:
+ *     // Check how many Hardware 3D Streaming buffers can be created
+ *     device->MaxNoOfSources = dsCaps.dwMaxHw3DStreamingBuffers;
+ * and this value seems to be no more than 32 in DirectX8.
+ */
 #define MAX_TRACKS 32
 
 
@@ -226,6 +234,10 @@ public: // Temp (EDIT)
 	/// Flag set in destructor
 	bool						_Leaving;
 };
+
+
+/// Return the priority cstring (debug info)
+const char *getPriorityStr( TSoundPriority p );
 
 
 } // NLSOUND

@@ -382,20 +382,34 @@ CString CSource_sounds_builderDlg::SoundName( HTREEITEM hitem )
 void CSource_sounds_builderDlg::OnSave() 
 {
 	_SoundPage->apply();
+	if ( _Filename == "" )
+	{
+		_Filename = "sounds.nss";
+	}
 
 	// Prompt filename
-	CFileDialog savedlg( false, "nss", "sounds.nss", OFN_OVERWRITEPROMPT, "NeL Source Sounds (*.nss)|*.nss||", this );
+	CFileDialog savedlg( false, "nss", _Filename, OFN_OVERWRITEPROMPT, "NeL Source Sounds (*.nss)|*.nss||", this );
 	if ( savedlg.DoModal()==IDOK )
 	{
 		CWaitCursor waitcursor;
 
-		// Save
-		COFile file;
-		file.open( string( savedlg.GetPathName() ), false );
-		CSound::save( _Sounds, file );
-		file.close();
+		try
+		{
+			// Save
+			COFile file;
+			file.open( string( savedlg.GetPathName() ), false );
+			CSound::save( _Sounds, file );
+			file.close();
+		}
+		catch ( Exception& e )
+		{
+			CString s;
+			s.Format( "Error saving %s: %s", savedlg.GetPathName(), e.what() );
+			AfxMessageBox( s );
+		}
 
 		//_Modified = false;
+		_Filename = savedlg.GetFileName();
 
 		waitcursor.Restore();
 	}
@@ -453,6 +467,7 @@ void CSource_sounds_builderDlg::OnLoad()
 		m_Tree.Expand( m_Tree.GetRootItem(), TVE_EXPAND );
 
 		//_Modified = false;
+		_Filename = opendlg.GetFileName();
 
 		waitcursor.Restore();
 	}
@@ -626,7 +641,7 @@ uint CSource_sounds_builderDlg::addSoundAndFile( const string& name )
 		hitem = AddSound( string(name + " (" + name + ".wav)").c_str() );
 		uint32 index = m_Tree.GetItemData( hitem );
 		nlassert( index < _Sounds.size() );
-		_Sounds[index]->setProperties( name, name + ".wav", 1.0f, 1.0f, false, false );
+		_Sounds[index]->setProperties( name, name + ".wav", 1.0f, 1.0f, MidPri, false, false );
 		_SoundPage->setCurrentSound( _Sounds[index], hitem );
 		_SoundPage->getPropertiesFromSound();
 		try

@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.13 2001/09/10 13:21:47 berenguier Exp $
+ * $Id: sound.cpp,v 1.14 2001/09/10 17:14:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,11 +39,20 @@ namespace NLSOUND {
 ISoundDriver	*CSound::_SoundDriver = NULL;
 
 
-// Support old V1 files
-bool			CSound::_InputIgnorePitch = false;
+/* To add a static property (or initial value), do the following:
+ * 1. Add the CSound member and its accessors (getXxxx() and setProperties()) (in sound.h),
+ *    and initialize it in the constructor (in sound.cpp)
+ * 2. Increment CSound::_CurrentVersion (in sound.cpp)
+ * 3. Serialize the member in CSound::serial(), handling old versions (in sound.cpp)
+ * 4. Add it in CSourceUser::setSound() (in source_user.cpp)
+ * 5. Add it into the NeL Sources Sound Builder GUI.
+ */
 
-// Support old V2 files
-bool			CSound::_InputIgnoreLooping = false;
+// Software current version (used by backward-compatibility support)
+uint			CSound::CurrentVersion = 4;
+
+// Input file version
+uint			CSound::FileVersion = 0;
 
 // Allow to load sound files when corresponding wave file is not present ?
 bool			CSound::_AllowMissingWave = false;
@@ -52,7 +61,7 @@ bool			CSound::_AllowMissingWave = false;
 /*
  * Constructor
  */
-CSound::CSound() : _Buffer(NULL), _Gain(1.0f), _Pitch(1.0f), _Looping(false),
+CSound::CSound() : _Buffer(NULL), _Gain(1.0f), _Pitch(1.0f), _Priority(MidPri), _Looping(false),
 	_Detailed(false), _MinDist(1.0f), _MaxDist(1000000.0f),
 	_ConeInnerAngle(6.283185f), _ConeOuterAngle(6.283185f), _ConeOuterGain( 1.0f )
 {
@@ -98,13 +107,19 @@ void				CSound::serial( NLMISC::IStream& s )
 	s.serial( _Name );
 	s.serial( _Filename );
 	s.serial( _Gain );
-	if ( ! (s.isReading() && CSound::_InputIgnorePitch) )
+	if ( (! s.isReading()) || (FileVersion>=2) )
 	{
 		s.serial( _Pitch );
 	}
-	if ( ! (s.isReading() && CSound::_InputIgnoreLooping) )
+	if ( (!s.isReading()) || (FileVersion>=3) )
 	{
 		s.serial( _Looping );
+	}
+	if ( (!s.isReading()) || (FileVersion>=4) )
+	{
+		uint8 iprio = (uint8)(_Priority+1) * 16; // allowing future other priorities
+		s.serial( iprio );
+		_Priority = (TSoundPriority)((iprio/16)-1);
 	}
 	s.serial( _Detailed );
 	if ( _Detailed )
@@ -144,7 +159,8 @@ void				CSound::serial( NLMISC::IStream& s )
 		// Prevent from writing a blank filename
 		if ( _Filename == "" )
 		{
-			throw EStream( "AM: Invalid sound filename" );
+			string reason = "Invalid sound filename for " + _Name;
+			throw EStream( reason );
 		}
 	}
 }
@@ -177,25 +193,12 @@ void				CSound::loadBuffer( const std::string& filename )
 void				CSound::serialFileHeader( NLMISC::IStream& s, uint32& nb )
 {
 	s.serialCheck( (uint32)'SSN' ); // NeL Source Sounds
-	uint ver = s.serialVersion( 3 );
-	if ( ver < 3 )
+	CSound::FileVersion = s.serialVersion( CSound::CurrentVersion );
+	if ( CSound::FileVersion == 0 ) // warning: not multithread-compliant
 	{
-		switch ( ver )
-		{
-		case 1:
-			// Supporting old version 1
-			CSound::_InputIgnorePitch = true; // warning: not multithread-compliant : do not serialize in different threads !
-			// no break
-		case 2:
-			// Supporting old version 2
-			CSound::_InputIgnoreLooping = true; // same
-			break;
-		default:
-			// Not supporting version 0 anymore
-			throw EOlderStream(s);
-		}
+		// Not supporting version 0 anymore
+		throw EOlderStream(s);
 	}
-	// CSound::_InputIgnorePitch is reset to false at the end of load()
 
 	s.serial( nb );
 }
@@ -209,12 +212,15 @@ uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s, std::vector<st
 {
 	if ( s.isReading() )
 	{
+		// Read header
 		uint32 nb, i, notfound = 0;
 		serialFileHeader( s, nb );
 		if ( notfoundfiles != NULL )
 		{
 			notfoundfiles->clear();
 		}
+
+		// Read sounds
 		for ( i=0; i!=nb; i++ )
 		{
 			CSound *sound;
@@ -239,8 +245,9 @@ uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s, std::vector<st
 				nlwarning( "AM: %s", e.what() );
 			}
 		}
-		CSound::_InputIgnorePitch = false; // warning: not multithread-compliant : do not serialize in different threads !
-		CSound::_InputIgnoreLooping = false;
+
+		// Reset file version
+		CSound::FileVersion = CSound::CurrentVersion; // warning: not multithread-compliant : do not serialize in different threads !
 		return nb - notfound;
 	}
 	else
@@ -255,7 +262,7 @@ uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s, std::vector<st
  * Set properties. Returns false if one or more values are invalid (EDIT)
  */
 bool				CSound::setProperties( const std::string& name, const std::string& filename,
-										   float gain, float pitch, bool looping, bool detail,
+										   float gain, float pitch, TSoundPriority priority, bool looping, bool detail,
 										   float mindist, float maxdist,
 										   float innerangle, float outerangle, float outergain )
 {
@@ -270,7 +277,7 @@ bool				CSound::setProperties( const std::string& name, const std::string& filen
 	else
 	{
 		_Name = name; _Filename = filename;
-		_Gain = gain; _Pitch = pitch; _Looping = looping;
+		_Gain = gain; _Pitch = pitch; _Priority = priority; _Looping = looping;
 		_Detailed = detail; _MinDist = mindist; _MaxDist = maxdist;
 		_ConeInnerAngle = innerangle; _ConeOuterAngle = outerangle; _ConeOuterGain = outergain;
 		return true;

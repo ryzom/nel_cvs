@@ -27,6 +27,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CSoundPage)
 	enum { IDD = IDD_SoundPage };
+	CComboBox	m_Priority;
 	CString	m_Filename;
 	float	m_Gain;
 	BOOL	m_Pos3D;

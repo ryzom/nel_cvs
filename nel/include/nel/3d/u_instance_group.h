@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.23 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: u_instance_group.h,v 1.24 2003/04/23 12:45:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,7 @@ class UInstanceGroup
 {
 public:
 
-	enum TState { StateNotAdded = 0, StateAdding, StateAdded };
+	enum TState { StateNotAdded = 0, StateAdding, StateAdded, StateError };
 
 	/**
 	 * Instance group

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.39 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.40 2003/04/23 12:45:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -424,6 +424,14 @@ void CSceneUser::updateWaitingIG()
 					case UInstanceGroup::StateAdded:
 						it->IGToLoad->setPos(it->Offset);
 						this->setToGlobalInstanceGroup(it->IGToLoad);
+						*it->CallerPtr = it->IGToLoad;
+						// remove from list
+						it = _WaitingIGs.erase(it);
+						erased= true;
+					break;
+					case UInstanceGroup::StateError:
+						delete it->IGToLoad;
+						it->IGToLoad = (UInstanceGroup *) -1;
 						*it->CallerPtr = it->IGToLoad;
 						// remove from list
 						it = _WaitingIGs.erase(it);

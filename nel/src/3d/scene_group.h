@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.21 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: scene_group.h,v 1.22 2003/04/23 12:45:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,7 +73,7 @@ public:
 
 	/// Should Never be changed
 	enum	{NumStaticLightPerInstance= 2};
-	enum TState { StateNotAdded = 0, StateAdding, StateAdded };
+	enum TState { StateNotAdded = 0, StateAdding, StateAdded, StateError };
 
 public:
 

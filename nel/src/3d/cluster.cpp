@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.17 2003/04/14 09:31:43 berenguier Exp $
+ * $Id: cluster.cpp,v 1.18 2003/04/23 12:45:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -427,7 +427,7 @@ void CCluster::recursTraverseClip(CTransform *caller)
 			if( !pPortal->isInFront( clipTrav.CamPos ))
 				backfaceclipped = true;
 
-		if (!backfaceclipped)
+		if (!backfaceclipped && pOtherSideCluster)
 		{
 			/* If the otherSide cluster is fully visible because the camera is IN, then don't need to clip.
 				This is important to landscape test, to ensure that pyramid are strictly equal from 2 paths which

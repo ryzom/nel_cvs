@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.52 2003/03/03 12:56:21 boucher Exp $
+ * $Id: ps_located.cpp,v 1.53 2003/04/09 16:02:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -798,7 +798,8 @@ void CPSLocated::resize(uint32 newSize)
 
 void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(4);
+	// version 4 to version 5 : bugfix with reading of collisions
+	sint ver = f.serialVersion(5);
 	CParticleSystemProcess::serial(f);
 	
 	f.serial(_Name);
@@ -816,6 +817,43 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	f.serialPtr(_CollisionInfo);
 	f.serial(_CollisionInfoNbRef);
+
+	if (_CollisionInfo)
+	{	
+		if (ver <= 4) // should be corrected with version 5
+		{		
+			if (f.isReading())
+			{
+				// apparently, with a previous version, collision haven't been saved properly in a few case, so reset them when they are loaded
+				_CollisionInfo->resize(_Pos.getMaxSize());
+				_CollisionInfo->clear();
+				CPSCollisionInfo nullCollision;
+				uint numInstances = _Pos.getSize();
+				for(uint k = 0; k < numInstances; ++k)
+				{
+					_CollisionInfo->insert(nullCollision);
+				}
+			}
+		}
+	}
+
+	#ifdef NL_DEBUG	
+		nlassert(_InvMass.getMaxSize() == _Pos.getMaxSize());
+		nlassert(_Pos.getMaxSize() == _Speed.getMaxSize());
+		nlassert(_Speed.getMaxSize() == _Time.getMaxSize());
+		nlassert(_Time.getMaxSize() == _TimeIncrement.getMaxSize());
+		//
+		nlassert(_InvMass.getSize() == _Pos.getSize());
+		nlassert(_Pos.getSize() == _Speed.getSize());
+		nlassert(_Speed.getSize() == _Time.getSize());
+		nlassert(_Time.getSize() == _TimeIncrement.getSize());
+		//
+		if (_CollisionInfo)
+		{
+			nlassert(_InvMass.getMaxSize() == _CollisionInfo->getMaxSize());
+			nlassert(_InvMass.getSize() == _CollisionInfo->getSize());
+		}
+	#endif
 
 	
 	if (f.isReading())

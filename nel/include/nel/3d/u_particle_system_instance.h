@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.3 2001/08/23 14:12:08 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.4 2001/11/21 17:49:58 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -144,10 +144,17 @@ public:
 	 //@}
 
 	 //@{ System action. All these actions need that the system be present, otherwise an assertion is raised
+
 			/** All the emitters that have the given ID emit their target.
 			  * An assertion is raised if there is no emitter with the given ID
 			  */
 			virtual void	emit(uint32 id, uint quantity = 1) = 0;
+
+			/** All the object with the given id are removed.
+			  * An assertion is raised if there is no emitter with the given ID.
+			  */
+			virtual void   removeByID(uint32 id) = 0;
+
 	 //@}
 
 	 //@}

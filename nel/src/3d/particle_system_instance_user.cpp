@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.5 2001/09/20 13:45:43 besson Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.6 2001/11/21 17:50:27 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -146,7 +146,6 @@ static inline uint32 IDToLittleEndian(uint32 input)
 
 void	CParticleSystemInstanceUser::emit(uint32 anId, uint quantity)
 {
-
 	const uint32 id = IDToLittleEndian(anId);
 	nlassert(isSystemPresent());
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
@@ -166,6 +165,27 @@ void	CParticleSystemInstanceUser::emit(uint32 anId, uint quantity)
 			}
 		}
 	}
+}
+
+void CParticleSystemInstanceUser::removeByID(uint32 anId)
+{
+	const uint32 id = IDToLittleEndian(anId);
+	nlassert(isSystemPresent());
+	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
+	uint numLb  = ps->getNumLocatedBindableByExternID(id);
+	nlassert(numLb != 0); // INVALID ID !!
+	for (uint k = 0; k < numLb; ++k)
+	{
+		CPSLocatedBindable *lb = ps->getLocatedBindableByExternID(id, k);
+		CPSLocated *owner = lb->getOwner();
+		nlassert(owner);
+		uint nbInstances  =  owner->getSize();
+		for (uint l = 0; l < nbInstances; ++l)
+		{
+			owner->deleteElement(0);
+		}		
+	}
+
 }
 
 

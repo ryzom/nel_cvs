@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.5 2001/09/20 13:45:43 besson Exp $
+ * $Id: particle_system_instance_user.h,v 1.6 2001/11/21 17:50:27 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -51,40 +51,41 @@ public:
 	// \name Object
 	// @{		
 		CParticleSystemInstanceUser(CScene *scene, IModel *model);
-		~CParticleSystemInstanceUser() ;
+		~CParticleSystemInstanceUser();
 	// @}
 
 
 	// \name inherited from uinstance
 	// @{						
-		virtual	uint				getNumMaterials() const ;	
-		virtual	UInstanceMaterial	&getMaterial(uint materialId) ;
+		virtual	uint				getNumMaterials() const;	
+		virtual	UInstanceMaterial	&getMaterial(uint materialId);
 		virtual void				getShapeAABBox(NLMISC::CAABBox &bbox) const;
 	// @}
 
 	// \name inherited from UParticleSystemInstance
 	// @{
 		virtual void		emit(uint32 id, uint quantity);
-		virtual bool		isSystemPresent		(void) const ;		
-		virtual bool		getSystemBBox(NLMISC::CAABBox &bbox) ;
-		virtual void		setUserParam		(uint index, float value) ;
-		virtual float		getUserParam		(uint index) const ;
-		virtual bool		isValid				(void) const ;
-		virtual void		registerPSObserver	(IPSObserver *observer) ;
-		virtual bool		isPSObserver		(IPSObserver *observer) ;
-		virtual void		removePSObserver	(IPSObserver *observer) ;
+		virtual void		removeByID(uint32 id);
+		virtual bool		isSystemPresent		(void) const;		
+		virtual bool		getSystemBBox(NLMISC::CAABBox &bbox);
+		virtual void		setUserParam		(uint index, float value);
+		virtual float		getUserParam		(uint index) const;
+		virtual bool		isValid				(void) const;
+		virtual void		registerPSObserver	(IPSObserver *observer);
+		virtual bool		isPSObserver		(IPSObserver *observer);
+		virtual void		removePSObserver	(IPSObserver *observer);
 	// @}
 
 	// \name inherited from  CParticleSystemModel::IPSModelObserver
 	// @{
-		virtual void invalidPS(CParticleSystemModel *psm) ; 
+		virtual void invalidPS(CParticleSystemModel *psm); 
 	// @}
 
 private:
 	/// list of observers
-	std::vector<IPSObserver *> _Observers ;
+	std::vector<IPSObserver *> _Observers;
 	/// validity flag
-	bool _Invalidated ;
+	bool _Invalidated;
 
 };
 

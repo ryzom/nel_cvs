@@ -3,7 +3,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.24 2003/01/16 09:26:48 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.25 2003/01/22 14:16:27 lecroart Exp $
  *
  */
 
@@ -1528,7 +1528,7 @@ void addRequest (const string &rawvarpath, TSockId from)
 					addRequestWaitingNb (rid);
 					(*aesit).WaitingRequestId.push_back (rid);
 
-					CMessage msgout("GET_VIEW");
+					CMessage msgout("AES_GET_VIEW");
 					msgout.serial (rid);
 					msgout.serial (subvarpath.Destination[j].second);
 					CUnifiedNetwork::getInstance ()->send ((*aesit).SId, msgout);
@@ -1550,7 +1550,7 @@ void addRequest (const string &rawvarpath, TSockId from)
 						addRequestWaitingNb (rid);
 						(*aesit).WaitingRequestId.push_back (rid);
 						
-						CMessage msgout("GET_VIEW");
+						CMessage msgout("AES_GET_VIEW");
 						msgout.serial (rid);
 						msgout.serial (subvarpath.Destination[j].second);
 						CUnifiedNetwork::getInstance ()->send ((*aesit).SId, msgout);
@@ -1594,7 +1594,7 @@ void addRequest (const string &rawvarpath, TSockId from)
 						addRequestWaitingNb (rid);
 						(*aesit).WaitingRequestId.push_back (rid);
 
-						CMessage msgout("GET_VIEW");
+						CMessage msgout("AES_GET_VIEW");
 						msgout.serial (rid);
 						msgout.serial (subvarpath.Destination[j].second);
 						CUnifiedNetwork::getInstance ()->send ((*aesit).SId, msgout);
@@ -1632,7 +1632,7 @@ void addRequest (const string &rawvarpath, TSockId from)
 					addRequestWaitingNb (rid);
 					(*aesit).WaitingRequestId.push_back (rid);
 
-					CMessage msgout("GET_VIEW");
+					CMessage msgout("AES_GET_VIEW");
 					msgout.serial (rid);
 					msgout.serial (subvarpath.Destination[j].second);
 					CUnifiedNetwork::getInstance ()->send ((*aesit).SId, msgout);

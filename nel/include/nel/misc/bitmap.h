@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.1 2001/02/28 14:31:21 berenguier Exp $
+ * $Id: bitmap.h,v 1.2 2001/03/19 09:13:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -318,6 +318,13 @@ public:
 		return _MipMapCount; 
 	}
 
+
+	/** 
+	 * Rotate a bitmap in CCW mode.
+	 *
+	 * \see releaseMipMaps().
+	 */	
+	void rotateCCW();
 
 	/** 
 	 * Build the mipmaps of the bitmap if they don't exist.

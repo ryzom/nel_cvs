@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.1 2001/02/28 14:39:04 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.2 2001/03/19 09:13:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2040,8 +2040,55 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 	return true;
 }
 
+template<class T>
+void rotateCCW (const T* src, T* dst, uint srcWidth, uint srcHeight)
+{
+	for (uint y=0; y<srcHeight; y++)
+	for (uint x=0; x<srcWidth; x++)
+	{
+		uint dstX=y;
+		uint dstY=srcWidth-x-1;
+		dst[dstX+dstY*srcHeight]=src[x+y*srcWidth];
+	}
+}
 
+/*template<class T>
+void rotateCCW (const vector<T>& src, vector<T>& dst, uint srcWidth, uint srcHeight)
+{
+	for (uint y=0; y<srcHeight; y++)
+	for (uint x=0; x<srcWidth; x++)
+	{
+		uint dstX=y;
+		uint dstY=srcWidth-x;
+		dst[dstX+dstY*srcHeight]=src[x+y*srcWidth];
+	}
+}
+*/
+void CBitmap::rotateCCW()
+{
+	// Copy the array
+	std::vector<uint8> copy=_Data[0];
+	uint size=copy.size();
 
+	switch (PixelFormat)
+	{
+	case RGBA:
+		NLMISC::rotateCCW ((uint32*)&(_Data[0][0]), (uint32*)&(copy[0]), _Width, _Height);
+		break;
+	case Luminance:
+	case Alpha:
+		NLMISC::rotateCCW (&_Data[0][0], &copy[0], _Width, _Height);
+		break;
+	case AlphaLuminance:
+		NLMISC::rotateCCW ((uint16*)&(_Data[0][0]), (uint16*)&(copy[0]), _Width, _Height);;
+		break;
+	}
+
+	uint32 tmp=_Width;
+	_Width=_Height;
+	_Height=tmp;
+	_Data[0]=copy;
+}
 
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.16 2001/03/19 14:07:57 berenguier Exp $
+ * $Id: scene.h,v 1.17 2001/03/29 09:48:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -215,8 +215,6 @@ private:
 	typedef			std::map<std::string, PShape>	TShapeMap;
 	TShapeMap		ShapeMap;
 	//@}
-
-
 };
 
 

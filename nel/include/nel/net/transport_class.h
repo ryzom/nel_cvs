@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.19 2003/07/16 13:17:17 cado Exp $
+ * $Id: transport_class.h,v 1.20 2004/04/28 18:51:41 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -139,6 +139,11 @@ public:
 	/** The name of the transport class. Must be uniq for each class.
 	 */
 	void className (const std::string &name);
+
+	/** Return the name of the transport class.
+	 *	The result is valid only AFTER calling of REGISTER_TRANSPORT_CLASS.
+	 */
+	const std::string &className()		{ return Name; }
 
 	/** One property of the class. Look description() for an example of use.
 	 * \param name The name of the property

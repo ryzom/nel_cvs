@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.20 2004/09/02 16:53:43 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.21 2004/09/07 15:23:36 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -197,6 +197,8 @@ CDriverD3D::CDriverD3D()
 	_VolatileIndexBufferAGP[1]= new CVolatileIndexBuffer;	
 	_StateBlockCategory = 0;
 	_MustRestoreLight = false;	
+	_VertexStreamStride = 0;
+	_VertexDeclStride = 0;
 }
 
 
@@ -1445,8 +1447,10 @@ void CDriverD3D::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 		);
 }
 
-// ***************************************************************************
 
+
+
+// ***************************************************************************
 bool CDriverD3D::swapBuffers() 
 {		
 	H_AUTO_D3D(CDriverD3D_swapBuffers);
@@ -1462,7 +1466,7 @@ bool CDriverD3D::swapBuffers()
 	
 
 	// todo hulud volatile
-	_DeviceInterface->SetStreamSource(0, _VolatileVertexBufferRAM[1]->VertexBuffer, 0, 12);
+	//_DeviceInterface->SetStreamSource(0, _VolatileVertexBufferRAM[1]->VertexBuffer, 0, 12);
 
 	// Is direct input running ?
 	if (_EventEmitter.getNumEmitters() > 1) 
@@ -1473,7 +1477,7 @@ bool CDriverD3D::swapBuffers()
 
 	// End now
 	if (_DeviceInterface->EndScene() != D3D_OK)
-		return false;
+		return false;	
 
 	HRESULT result;
 	if ((result=_DeviceInterface->Present( NULL, NULL, NULL, NULL)) != D3D_OK)
@@ -1485,7 +1489,7 @@ bool CDriverD3D::swapBuffers()
 			reset (_CurrentMode);
 			_DeviceInterface->EndScene();
 		}
-	}
+	}	
 	
 	// Check window size
 	handlePossibleSizeChange ();
@@ -1887,6 +1891,18 @@ bool CDriverD3D::reset (const GfxMode& mode)
 		_BackBuffer->Release();
 	_BackBuffer = NULL;
 
+	// Invalidate all occlusion querries. They should be recreated by the user (remains in an invalid state otherwise)
+	// TODO nico : for now, even if a result has been retrieved succesfully by the query, the query is put in the lost state. See if its worth improving...
+	for(TOcclusionQueryList::iterator it = _OcclusionQueryList.begin(); it != _OcclusionQueryList.end(); ++it)
+	{
+		if ((*it)->Query)
+		{			
+			(*it)->WasLost = true;			
+			(*it)->Query->Release();
+			(*it)->Query = NULL;			
+		}		
+	}
+
 	// Release internal shaders
 	releaseInternalShaders();
 
@@ -1901,6 +1917,9 @@ bool CDriverD3D::reset (const GfxMode& mode)
 		release();
 		return false;
 	}
+	
+
+
 
 	// Do the reset
 
@@ -1930,6 +1949,15 @@ bool CDriverD3D::reset (const GfxMode& mode)
 
 	// Init shaders
 	initInternalShaders();
+
+	// reallocate occlusion queries
+	for(TOcclusionQueryList::iterator it = _OcclusionQueryList.begin(); it != _OcclusionQueryList.end(); ++it)
+	{
+		if (!(*it)->Query)
+		{
+			_DeviceInterface->CreateQuery(D3DQUERYTYPE_OCCLUSION, &(*it)->Query);
+		}
+	}
 
 	return true;
 }
@@ -2330,6 +2358,8 @@ IOcclusionQuery *CDriverD3D::createOcclusionQuery()
 	oqd3d->Query = query;
 	oqd3d->VisibleCount = 0;
 	oqd3d->OcclusionType = IOcclusionQuery::NotAvailable;
+	oqd3d->QueryIssued = false;
+	oqd3d->WasLost = false;
 	_OcclusionQueryList.push_front(oqd3d);
 	oqd3d->Iterator = _OcclusionQueryList.begin();
 	return oqd3d;
@@ -2343,8 +2373,11 @@ void CDriverD3D::deleteOcclusionQuery(IOcclusionQuery *oq)
 	COcclusionQueryD3D *oqd3d = NLMISC::safe_cast<COcclusionQueryD3D *>(oq);
 	nlassert((CDriverD3D *) oqd3d->Driver == this); // should come from the same driver
 	oqd3d->Driver = NULL;
-	nlassert(oqd3d->Query);
-	oqd3d->Query->Release();	
+	if (oqd3d->Query)
+	{
+		oqd3d->Query->Release();
+		oqd3d->Query = NULL;
+	}	
 	_OcclusionQueryList.erase(oqd3d->Iterator);
 	if (oqd3d == _CurrentOcclusionQuery)
 	{
@@ -2357,30 +2390,37 @@ void CDriverD3D::deleteOcclusionQuery(IOcclusionQuery *oq)
 void COcclusionQueryD3D::begin()
 {	
 	H_AUTO_D3D(COcclusionQueryD3D_begin);	
+	if (!Query) return; // Lost device
 	nlassert(Driver);
-	nlassert(Driver->_CurrentOcclusionQuery == NULL); // only one query at a time
-	nlassert(Query);
+	nlassert(Driver->_CurrentOcclusionQuery == NULL); // only one query at a time		
 	Query->Issue(D3DISSUE_BEGIN);
 	Driver->_CurrentOcclusionQuery = this;
 	OcclusionType = NotAvailable;
+	QueryIssued = false;
+	WasLost = false;
 }
 
 // ***************************************************************************
 void COcclusionQueryD3D::end()
 {
 	H_AUTO_D3D(COcclusionQueryD3D_end);
+	if (!Query) return; // Lost device
 	nlassert(Driver);	
-	nlassert(Driver->_CurrentOcclusionQuery == this); // only one query at a time
-	nlassert(Query);
-	Query->Issue(D3DISSUE_END);
+	nlassert(Driver->_CurrentOcclusionQuery == this); // only one query at a time		
+	if (!WasLost)
+	{
+		Query->Issue(D3DISSUE_END);
+	}
 	Driver->_CurrentOcclusionQuery = NULL;
+	QueryIssued = true;	
 }
 
 // ***************************************************************************
 IOcclusionQuery::TOcclusionType COcclusionQueryD3D::getOcclusionType()
 {
+	if (!Query || WasLost) return QueryIssued ? Occluded : NotAvailable;	
 	H_AUTO_D3D(COcclusionQueryD3D_getOcclusionType);
-	nlassert(Driver);
+	nlassert(Driver);	
 	nlassert(Query);
 	nlassert(Driver->_CurrentOcclusionQuery != this) // can't query result between a begin/end pair!
 	if (OcclusionType == NotAvailable)
@@ -2398,8 +2438,9 @@ IOcclusionQuery::TOcclusionType COcclusionQueryD3D::getOcclusionType()
 // ***************************************************************************
 uint COcclusionQueryD3D::getVisibleCount()
 {
+	if (!Query || WasLost) return 0;
 	H_AUTO_D3D(COcclusionQueryD3D_getVisibleCount);	
-	nlassert(Driver);
+	nlassert(Driver);	
 	nlassert(Query);
 	nlassert(Driver->_CurrentOcclusionQuery != this) // can't query result between a begin/end pair!
 	if (getOcclusionType() == NotAvailable) return 0;
@@ -2656,6 +2697,7 @@ void CDriverD3D::CVBState::apply(CDriverD3D *driver)
 	if (VertexBuffer)
 	{
 		driver->_DeviceInterface->SetStreamSource (0, VertexBuffer, Offset, Stride);
+		driver->_VertexStreamStride = Stride;
 	}
 }
 // ***************************************************************************
@@ -2675,6 +2717,7 @@ void CDriverD3D::CVertexDeclState::apply(CDriverD3D *driver)
 	if (Decl)
 	{
 		driver->_DeviceInterface->SetVertexDeclaration (Decl);
+		driver->_VertexDeclStride = Stride;
 	}
 }
 
@@ -2727,6 +2770,27 @@ void CDriverD3D::CMaterialState::apply(CDriverD3D *driver)
 
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

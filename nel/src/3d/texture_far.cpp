@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.16 2002/04/03 17:00:40 berenguier Exp $
+ * $Id: texture_far.cpp,v 1.17 2002/04/09 14:26:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -475,6 +475,9 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 				// Get the tile number
 				sint tile=tileElm.Tile[l];
 
+				// Is the last layer ?
+				bool lastLayer = ( (l == 2) || (tileElm.Tile[l+1] == NL_TILE_ELM_LAYER_EMPTY) );
+
 				// Is an non-empty layer ?
 				if (tile!=NL_TILE_ELM_LAYER_EMPTY)
 				{
@@ -590,16 +593,16 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 							if (l>0)
 							{
 								// Additive layer ?
-								if (bAdditive)
-									;//NL3D_drawFarTileInFarTextureAdditiveAlpha (&TileFar);
+								if (bAdditive && lastLayer)
+									NL3D_drawFarTileInFarTextureAdditiveAlpha (&TileFar);
 								else	// No additive layer
 									NL3D_drawFarTileInFarTextureAlpha (&TileFar);
 							}
 							else	// no alpha
 							{
 								// Additive layer ?
-								if (bAdditive)
-									;//NL3D_drawFarTileInFarTextureAdditive (&TileFar);
+								if (bAdditive && lastLayer)
+									NL3D_drawFarTileInFarTextureAdditive (&TileFar);
 								else	// No additive layer
 									NL3D_drawFarTileInFarTexture (&TileFar);
 							}
@@ -1023,7 +1026,7 @@ void NL3D_drawFarTileInFarTextureAdditive (const NL3D_CComputeTileFar* pTileFar)
 	const CRGBA* pSrcPixels=pTileFar->SrcDiffusePixels;
 
 	// Pointer of the Src additive pixels
-	const CRGBA* pSrcAddPixels=pTileFar->SrcDiffusePixels;
+	const CRGBA* pSrcAddPixels=pTileFar->SrcAdditivePixels;
 
 	// Pointer of the Dst pixels
 	const CRGBA* pSrcLightPixels=pTileFar->SrcLightingPixels;

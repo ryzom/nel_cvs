@@ -1,7 +1,7 @@
 /** \file landscape_collision_grid.cpp
  * <File description>
  *
- * $Id: landscape_collision_grid.cpp,v 1.6 2002/02/28 12:59:49 besson Exp $
+ * $Id: landscape_collision_grid.cpp,v 1.7 2004/10/26 13:50:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,7 +95,9 @@ struct	CVector2i
 
 // ***************************************************************************
 // fastFloor function.
-#ifdef NL_OS_WINDOWS
+// Actually, it doesn't work on VC7 (functions returns bad values)
+// TODO: fix that
+#if defined(NL_OS_WINDOWS) && defined(NL_COMP_VC6)
 
 // The magic constant value. support both positive and negative numbers.
 static double	FastFloorMagicConst=pow(2,52)+pow(2,51);

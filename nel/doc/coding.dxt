@@ -4,7 +4,7 @@
 \author Vincent Archer <archer@nevrax.org>
 \author Vianney Lecroart <lecroart@nevrax.com>
 
-\section introd Introduction
+\section introcode Introduction
 
 This document defines and formalises the presentation and redaction of all source
 files in the NeL platform. A strict adherence to these conventions is required

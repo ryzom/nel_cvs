@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx2.h,v 1.2 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: std_afx2.h,v 1.3 2001/07/18 13:42:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,6 @@
 #include "main_dlg.h"
 #include "object_viewer.h"
 #include "object_viewer_interface.h"
-#include "scene_dlg.h"
 #include "select_string.h"
 
 

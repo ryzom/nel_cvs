@@ -81,7 +81,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"c:\3dsmax3_1\object_viewer.dll" /pdbtype:sept
+# ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
@@ -143,6 +143,10 @@ SOURCE=.\main_dlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\main_frame.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\object_viewer.cpp
 # ADD CPP /Yu"std_afx.h"
 # End Source File
@@ -152,13 +156,12 @@ SOURCE=.\object_viewer.rc
 # End Source File
 # Begin Source File
 
-SOURCE=.\scene_dlg.cpp
+SOURCE=.\select_string.cpp
 # ADD CPP /Yu"std_afx.h"
 # End Source File
 # Begin Source File
 
-SOURCE=.\select_string.cpp
-# ADD CPP /Yu"std_afx.h"
+SOURCE=.\set_value_dlg.cpp
 # End Source File
 # Begin Source File
 
@@ -192,6 +195,10 @@ SOURCE=.\main_dlg.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\main_frame.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\object_viewer.h
 # End Source File
 # Begin Source File
@@ -204,11 +211,11 @@ SOURCE=.\Resource.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\scene_dlg.h
+SOURCE=.\select_string.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\select_string.h
+SOURCE=.\set_value_dlg.h
 # End Source File
 # Begin Source File
 
@@ -304,11 +311,23 @@ SOURCE=.\bmp00018.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\icon1.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\nevraxpill.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\object_viewer.rc2
 # End Source File
 # Begin Source File
 
 SOURCE=.\particle.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\toolbar1.bmp
 # End Source File
 # End Group
 # Begin Group "particles editor"

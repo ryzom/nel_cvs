@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.14 2001/07/12 16:04:09 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.15 2001/07/18 13:42:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "particle_tree_ctrl.h"
 #include "located_bindable_dialog.h"
 #include "emitter_dlg.h"
+#include "main_frame.h"
 #include "particle_system_edit.h"
 
 #include "start_stop_particle_system.h"
@@ -61,7 +62,6 @@ static char THIS_FILE[] = __FILE__;
 #include "located_properties.h"
 #include "located_bindable_dialog.h"
 #include "located_target_dlg.h"
-#include "scene_dlg.h"
 #include "object_viewer.h"
 #include "ps_mover_dlg.h"
 
@@ -336,12 +336,12 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 			
 			_LastClickedPS = ps ;
 			
-			CPSMoverDlg *moverDlg = new CPSMoverDlg(this, &_ParticleDlg->SceneDlg->ObjView->getMouseListener(), nt->Loc, nt->LocatedInstanceIndex) ;			
+			CPSMoverDlg *moverDlg = new CPSMoverDlg(this, &_ParticleDlg->MainFrame->ObjView->getMouseListener(), nt->Loc, nt->LocatedInstanceIndex) ;			
 			moverDlg->init(_ParticleDlg) ;
 			_ParticleDlg->setRightPane(moverDlg) ;
 
 
-			CObjectViewer *ov = _ParticleDlg->SceneDlg->ObjView ;
+			CObjectViewer *ov = _ParticleDlg->MainFrame->ObjView ;
 
 			ov->getMouseListener().setModelMatrix(_ParticleDlg->getElementMatrix()) ;
 			ps->setCurrentEditedElement(nt->Loc, nt->LocatedInstanceIndex, moverDlg->getLocatedBindable()) ;

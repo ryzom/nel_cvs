@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.14 2001/07/11 16:11:29 corvazier Exp $
+ * $Id: object_viewer.h,v 1.15 2001/07/18 13:42:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,6 @@
 #include "main_dlg.h"
 #include "animation_set_dlg.h"
 #include "animation_dlg.h"
-#include "scene_dlg.h"
 #include "particle_dlg.h"
 #include <3d/animation_set.h>
 #include <3d/channel_mixer.h>
@@ -64,6 +63,7 @@ namespace NL3D
 class CFontGenerator;
 }
 
+class CMainFrame;
 
 /////////////////////////////////////////////////////////////////////////////
 // CObject_viewerApp
@@ -81,8 +81,6 @@ public:
 	//}}AFX_VIRTUAL
 
 	//{{AFX_MSG(CObject_viewerApp)
-		// NOTE - the ClassWizard will add and remove member functions here.
-		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
@@ -109,16 +107,16 @@ public:
 	}
 };
 
-class CObjectViewer : public IObjectViewer, public NLMISC::IEventListener
+class CObjectViewer : public IObjectViewer
 {
-	friend class CSceneDlg;
+	friend class CMainFrame;
 	friend class CAnimationSetDlg;
 public:
-	CObjectViewer ();
-	~CObjectViewer ();
+	CObjectViewer ( );
+	virtual ~CObjectViewer ();
 
 	// Init the UI
-	void initUI ();
+	void initUI (HWND parent=NULL);
 
 	// Go
 	void go ();
@@ -149,9 +147,6 @@ public:
 
 	// Load a shape
 	void resetCamera ();
-
-	// Listener
-	virtual void operator ()(const NLMISC::CEvent& event);
 
 	// get the mouse listener
 	NL3D::CEvent3dMouseListener &getMouseListener(void) { return _MouseListener ; }
@@ -195,10 +190,11 @@ public:
 	// @}
 
 private:
+
+	CMainFrame									*_MainFrame;
 	CAnimationDlg								*_AnimationDlg;
 	CMainDlg									*_SlotDlg;
 	CAnimationSetDlg							*_AnimationSetDlg;
-	CSceneDlg									*_SceneDlg;
 	CParticleDlg								*_ParticleDlg ;
 	std::vector<std::string>					_ListShapeBaseName;
 	std::vector<CMeshDesc>						_ListMeshes;
@@ -209,7 +205,6 @@ private:
 	NLMISC::CRGBA								_HotSpotColor;
 	float										_HotSpotSize;
 	NLMISC::CRGBA								_BackGroundColor;
-	bool										_ShowInfo;
 
 	// Font mgt
 	NL3D::CFontManager							_FontManager;

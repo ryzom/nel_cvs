@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.h,v 1.6 2001/07/11 16:11:29 corvazier Exp $
+ * $Id: particle_dlg.h,v 1.7 2001/07/18 13:42:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,7 @@ namespace NL3D
 
 
 class CStartStopParticleSystem ;
-class CSceneDlg ;
+class CMainFrame ;
 
 /////////////////////////////////////////////////////////////////////////////
 // CParticleDlg dialog
@@ -60,7 +60,7 @@ class CParticleDlg : public CDialog
 {
 // Construction
 public:
-	CParticleDlg(class CObjectViewer* main, CWnd *pParent, CSceneDlg* sceneDlg);   // standard constructor
+	CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame);   // standard constructor
 	~CParticleDlg() ;
 
 	void setRightPane(CWnd *pane) ;
@@ -112,7 +112,7 @@ public:
 	NLMISC::CMatrix getElementMatrix(void) const ;
 	
 	// the scene dialog
-	CSceneDlg *SceneDlg ;
+	CMainFrame *MainFrame;
 
 
 	// the fonts used for particle edition

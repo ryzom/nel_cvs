@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.10 2001/07/11 16:11:29 corvazier Exp $
+ * $Id: particle_dlg.cpp,v 1.11 2001/07/18 13:42:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,8 +75,8 @@ static char THIS_FILE[] = __FILE__;
 // CParticleDlg dialog
 
 
-CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CSceneDlg* sceneDlg)
-	: CDialog(CParticleDlg::IDD, pParent), SceneDlg(sceneDlg), CurrentRightPane(NULL)
+CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame)
+	: CDialog(CParticleDlg::IDD, pParent), MainFrame(mainFrame), CurrentRightPane(NULL)
 {
 	//{{AFX_DATA_INIT(CParticleDlg)
 		// NOTE: the ClassWizard will add member initialization here

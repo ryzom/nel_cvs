@@ -13,6 +13,112 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_TOOL_EDIT           BITMAP  DISCARDABLE     "toolbar1.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_TOOL_EDIT TOOLBAR DISCARDABLE  16, 15
+BEGIN
+    BUTTON      ID_VIEW_OBJECTMODE
+    BUTTON      ID_VIEW_FIRSTPERSONMODE
+    SEPARATOR
+    BUTTON      ID_EDIT_MOVEELEMENT
+    SEPARATOR
+    BUTTON      ID_EDIT_X
+    BUTTON      ID_EDIT_Y
+    BUTTON      ID_EDIT_Z
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SET_VALUE DIALOG DISCARDABLE  0, 0, 114, 44
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Set speed"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,5,25,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,60,25,50,14
+    EDITTEXT        IDC_VALUE,5,5,105,13,ES_AUTOHSCROLL
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_SET_VALUE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 107
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 37
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_APP_ICON            ICON    DISCARDABLE     "nevraxpill.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_BUTTON32848          "Z"
+    ID_BUTTON32849          "Object mode"
+    ID_BUTTON32852          "First person"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_BUTTON32846          "X"
+    ID_BUTTON32847          "Y"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_VIEW_OBJECTMODE      "Object mode"
+    ID_VIEW_FIRSTPERSONMODE "First person mode"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // French (France) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
@@ -20,6 +126,33 @@
 LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 #pragma code_page(1252)
 #endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_PARTICLE_SYSTEM     BITMAP  DISCARDABLE     "particle.bmp"
+IDB_LOCATED             BITMAP  DISCARDABLE     "bmp00001.bmp"
+IDB_PARTICLE            BITMAP  DISCARDABLE     "bmp00002.bmp"
+IDB_EMITTER             BITMAP  DISCARDABLE     "bitmap1.bmp"
+IDB_FORCE               BITMAP  DISCARDABLE     "bmp00003.bmp"
+IDB_COLLISION_ZONE      BITMAP  DISCARDABLE     "bmp00004.bmp"
+IDB_LIGHT               BITMAP  DISCARDABLE     "bmp00005.bmp"
+IDB_START_SYSTEM        BITMAP  DISCARDABLE     "bmp00006.bmp"
+IDB_STOP_SYSTEM         BITMAP  DISCARDABLE     "bmp00007.bmp"
+IDB_PARTICLE_SIZE       BITMAP  DISCARDABLE     "bmp00008.bmp"
+IDB_PARTICLE_COLOR      BITMAP  DISCARDABLE     "bmp00009.bmp"
+IDB_PARTICLE_ANGLE      BITMAP  DISCARDABLE     "bitmap2.bmp"
+IDB_EMISSION_QUANTITY   BITMAP  DISCARDABLE     "bmp00010.bmp"
+IDB_EMISSION_PERIOD     BITMAP  DISCARDABLE     "bmp00011.bmp"
+IDB_MODULATE_STRENGHT   BITMAP  DISCARDABLE     "bmp00012.bmp"
+IDB_LOCATED_INSTANCE    BITMAP  DISCARDABLE     "bmp00013.bmp"
+IDB_BASIS               BITMAP  DISCARDABLE     "bmp00014.bmp"
+IDB_ANIM_SEQUENCE       BITMAP  DISCARDABLE     "bmp00015.bmp"
+IDB_FORCE_INTENSITY     BITMAP  DISCARDABLE     "bmp00016.bmp"
+IDB_LIFE_TIME           BITMAP  DISCARDABLE     "bmp00017.bmp"
+IDB_WEIGHT              BITMAP  DISCARDABLE     "bmp00018.bmp"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -324,7 +457,7 @@ IDD_PARTICLE_SYSTEM_START_STOP DIALOGEX 0, 0, 68, 55
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Particle system start/stop"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Button1",IDC_START_PICTURE,7,6,24,24,BS_BITMAP
     PUSHBUTTON      "Button1",IDC_STOP_PICTURE,37,6,24,24,BS_BITMAP
@@ -915,33 +1048,6 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Bitmap
-//
-
-IDB_PARTICLE_SYSTEM     BITMAP  DISCARDABLE     "particle.bmp"
-IDB_LOCATED             BITMAP  DISCARDABLE     "bmp00001.bmp"
-IDB_PARTICLE            BITMAP  DISCARDABLE     "bmp00002.bmp"
-IDB_EMITTER             BITMAP  DISCARDABLE     "bitmap1.bmp"
-IDB_FORCE               BITMAP  DISCARDABLE     "bmp00003.bmp"
-IDB_COLLISION_ZONE      BITMAP  DISCARDABLE     "bmp00004.bmp"
-IDB_LIGHT               BITMAP  DISCARDABLE     "bmp00005.bmp"
-IDB_START_SYSTEM        BITMAP  DISCARDABLE     "bmp00006.bmp"
-IDB_STOP_SYSTEM         BITMAP  DISCARDABLE     "bmp00007.bmp"
-IDB_PARTICLE_SIZE       BITMAP  DISCARDABLE     "bmp00008.bmp"
-IDB_PARTICLE_COLOR      BITMAP  DISCARDABLE     "bmp00009.bmp"
-IDB_PARTICLE_ANGLE      BITMAP  DISCARDABLE     "bitmap2.bmp"
-IDB_EMISSION_QUANTITY   BITMAP  DISCARDABLE     "bmp00010.bmp"
-IDB_EMISSION_PERIOD     BITMAP  DISCARDABLE     "bmp00011.bmp"
-IDB_MODULATE_STRENGHT   BITMAP  DISCARDABLE     "bmp00012.bmp"
-IDB_LOCATED_INSTANCE    BITMAP  DISCARDABLE     "bmp00013.bmp"
-IDB_BASIS               BITMAP  DISCARDABLE     "bmp00014.bmp"
-IDB_ANIM_SEQUENCE       BITMAP  DISCARDABLE     "bmp00015.bmp"
-IDB_FORCE_INTENSITY     BITMAP  DISCARDABLE     "bmp00016.bmp"
-IDB_LIFE_TIME           BITMAP  DISCARDABLE     "bmp00017.bmp"
-IDB_WEIGHT              BITMAP  DISCARDABLE     "bmp00018.bmp"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Menu
 //
 
@@ -1040,6 +1146,37 @@ BEGIN
     END
 END
 
+IDR_OBJECT_VIEWER_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "Open...",                     ID_FILE_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "Load config...",              ID_FILE_LOADCONFIG
+        MENUITEM "Save config...",              ID_FILE_SAVECONFIG
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_FILE_EXIT
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "Set &move speed...",          ID_VIEW_SETMOVESPEED
+        MENUITEM "&Set background...",          ID_VIEW_SETBACKGROUND
+        MENUITEM SEPARATOR
+        MENUITEM "&Reset camera",               ID_VIEW_RESET_CAMERA
+    END
+    POPUP "&Scene"
+    BEGIN
+        MENUITEM "&Clear scene",                ID_CLEAR
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&Animation",                  ID_WINDOW_ANIMATION
+        MENUITEM "Animation &set",              ID_WINDOW_ANIMATIONSET
+        MENUITEM "&Mixer slots",                ID_WINDOW_MIXERSSLOTS
+        MENUITEM "&Paticles",                   ID_WINDOW_PATICLES
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1135,6 +1272,17 @@ BEGIN
     IDC_USER_PARAM_INDEX, 0x403, 2, 0
 0x0034, 
     0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDR_MAINFRAME           "Toto"
 END
 
 #endif    // French (France) resources

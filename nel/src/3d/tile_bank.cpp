@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.26 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.27 2001/07/18 13:42:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1188,6 +1188,53 @@ void CTileBorder::set (int width, int height, const std::vector<CBGRA>& array)
 
 	// Set
 	_Set=true;
+}
+// ***************************************************************************
+void CTileBorder::get (int &width, int &height, std::vector<CBGRA>& array) const
+{
+	// Go
+	if (_Set)
+	{
+		width=_Width;
+		height=_Height;
+		array.resize (0);
+		array.resize (_Width*_Height);
+		nlassert (_Borders[bottom].size()==(uint)_Width);
+		nlassert (_Borders[top].size()==(uint)_Width);
+		nlassert (_Borders[left].size()==(uint)_Height);
+		nlassert (_Borders[right].size()==(uint)_Height);
+
+		// Fill
+		CBGRA black(0,0,0);
+		for (int p=0; p<_Width*_Height; p++)
+		{
+			array[p]=black;
+		}
+
+		// Last line
+		int lastLine=(_Height-1)*_Width;
+		int lastCol=(_Width-1);
+
+		// Copy top/bottom border
+		for (int w=0; w<_Width; w++)
+		{
+			array[w]=_Borders[top][w];
+			array[w+lastLine]=_Borders[bottom][w];
+		}
+
+		// Copy left/right border
+		for (int h=0; h<_Height; h++)
+		{
+			array[h*_Width]=_Borders[left][h];
+			array[h*_Width+lastCol]=_Borders[right][h];
+		}
+	}
+	else
+	{
+		width=0;
+		height=0;
+		array.resize (0);
+	}
 }
 // ***************************************************************************
 bool CTileBorder::compare (const CTileBorder& border1, const CTileBorder& border2, TBorder where1, TBorder where2, int& pixel, int& composante)

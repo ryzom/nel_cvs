@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.8 2001/07/11 08:26:53 besson Exp $
+ * $Id: object_viewer_interface.h,v 1.9 2001/07/18 13:42:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,7 @@ public:
 	virtual ~IObjectViewer () {};
 
 	// Init the UI
-	virtual void initUI ()=0;
+	virtual void initUI (HWND parent=NULL)=0;
 
 	// Go
 	virtual void go ()=0;

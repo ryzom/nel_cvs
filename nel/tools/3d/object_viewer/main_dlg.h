@@ -1,7 +1,7 @@
 /** \file main_dlg.cpp
  * <File description>
  *
- * $Id: main_dlg.h,v 1.4 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: main_dlg.h,v 1.5 2001/07/18 13:42:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,7 @@ protected:
 	//{{AFX_MSG(CMainDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

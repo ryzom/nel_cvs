@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.19 2001/07/11 16:11:29 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.20 2001/07/18 13:42:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "std_afx.h"
 
+#undef OBJECT_VIEWER_EXPORT
 #define OBJECT_VIEWER_EXPORT __declspec( dllexport ) 
 
 #include "object_viewer.h"
@@ -44,6 +45,8 @@
 #include "range_manager.h"
 #include "located_properties.h"
 #include "color_button.h"
+#include "resource.h"
+#include "main_frame.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -86,8 +89,6 @@ using namespace NLMISC;
 
 BEGIN_MESSAGE_MAP(CObject_viewerApp, CWinApp)
 	//{{AFX_MSG_MAP(CObject_viewerApp)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -107,13 +108,42 @@ CObject_viewerApp theApp;
 
 // ***************************************************************************
 
+class CObjView : public CView
+{
+public:
+	CObjView() 
+	{
+		MainFrame=NULL;
+	};
+	virtual ~CObjView() {};
+	virtual void OnDraw (CDC *) {};
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC) 
+	{ 
+		return FALSE; 
+	}
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		if ((CNELU::Driver) && MainFrame)
+			MainFrame->DriverWindowProc (CNELU::Driver, m_hWnd, message, wParam, lParam);
+			
+		return CView::WindowProc(message, wParam, lParam);
+	}
+	DECLARE_DYNCREATE(CObjView)
+	CMainFrame	*MainFrame;
+};
+
+// ***************************************************************************
+
+IMPLEMENT_DYNCREATE(CObjView, CView)
+
+// ***************************************************************************
+
 CObjectViewer::CObjectViewer ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	_SlotDlg=NULL;
 	_AnimationSetDlg=NULL;
 	_AnimationDlg=NULL;
-	_SceneDlg=NULL;
 	_ParticleDlg = NULL ;
 	_FontGenerator = NULL ;
 
@@ -130,8 +160,6 @@ CObjectViewer::CObjectViewer ()
 
 	// Hotspot size
 	_HotSpotSize=10.f;
-
-	_ShowInfo=true;
 
 	// Charge l'object_viewer.ini
 	try
@@ -173,14 +201,14 @@ CObjectViewer::CObjectViewer ()
 CObjectViewer::~CObjectViewer ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	if (_MainFrame)
+		delete (_MainFrame);
 	if (_SlotDlg)	
 		delete _SlotDlg;
 	if (_AnimationSetDlg)
 		delete _AnimationSetDlg;
 	if (_AnimationDlg)
 		delete _AnimationDlg;
-	if (_SceneDlg)
-		delete _SceneDlg;
 	if (_ParticleDlg)
 		delete _ParticleDlg ;
 	if (_FontGenerator)
@@ -201,7 +229,7 @@ void initCamera ()
 
 // ***************************************************************************
 
-void CObjectViewer::initUI ()
+void CObjectViewer::initUI (HWND parent)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -223,74 +251,101 @@ void CObjectViewer::initUI ()
 	// The viewport
 	CViewport viewport;
 
-	// Init NELU
-	CNELU::init (640, 480, viewport);
+	// Create the icon
+	HICON hIcon = (HICON)LoadImage(theApp.m_hInstance, MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON,
+		16, 16, 0);
+
+	// Create a doomy driver
+	IDriver *driver= CDRU::createGlDriver();
+
+	// Get parent window
+	CWnd parentWnd;
+	CWnd *parentWndPtr=NULL;
+	if (parent)
+	{
+		parentWnd.Attach (parent);
+		parentWndPtr=&parentWnd;
+	}
+
+	// Create the main frame
+	_MainFrame = new CMainFrame (this, (winProc) driver->getWindowProc());
+
+	// Read register
+	_MainFrame->registerValue (true);
+
+	// Create the window
+	_MainFrame->CFrameWnd::Create (AfxRegisterWndClass(0, 0, NULL, hIcon), 
+		"NeL object viewer", 0x00cfc000, /*WS_OVERLAPPEDWINDOW,*/ CFrameWnd::rectDefault, parentWndPtr,
+		MAKEINTRESOURCE(IDR_OBJECT_VIEWER_MENU), 0x00000300 /*WS_EX_ACCEPTFILES*/ /*|WS_EX_CLIENTEDGE*/);
+
+	// Detach the hwnd
+	parentWnd.Detach ();
+
+	// Delete doomy driver
+	delete driver;
 
 	// Create a cwnd
-	CWnd driverWnd;
-	driverWnd.Attach((HWND)CNELU::Driver->getDisplay());
-	getRegisterWindowState (&driverWnd, REGKEY_OBJ_VIEW_OPENGL_WND, true);
+	getRegisterWindowState (_MainFrame, REGKEY_OBJ_VIEW_OPENGL_WND, true);
+	_MainFrame->ActivateFrame ();
+	_MainFrame->ShowWindow (SW_SHOW);
+	_MainFrame->UpdateWindow();
+
+	// Context to open a view
+	CCreateContext context;
+	context.m_pCurrentDoc=NULL;
+	context.m_pCurrentFrame=_MainFrame;
+	context.m_pLastView=NULL;
+	context.m_pNewDocTemplate=NULL;
+	context.m_pNewViewClass=RUNTIME_CLASS(CObjView);
+
+	// Create a view
+	CObjView *view = (CObjView*)_MainFrame->CreateView (&context);
+	view->ShowWindow (SW_SHOW);
+	_MainFrame->SetActiveView(view);
+	view = (CObjView*)_MainFrame->GetActiveView();
+	view->MainFrame = _MainFrame;
+
+	_MainFrame->ShowWindow (SW_SHOW);
+	
+	// Init NELU
+	CNELU::init (640, 480, viewport, 32, true, view->m_hWnd);
+	//CNELU::init (640, 480, viewport, 32, true, _MainFrame->m_hWnd);
 
 	// Camera
 	initCamera ();
 
-	// Hide the main window
-	//driverWnd.ShowWindow (SW_HIDE);
-
 	// Create animation set dialog
-	_AnimationDlg=new CAnimationDlg (this, &driverWnd);
+	_AnimationDlg=new CAnimationDlg (this, _MainFrame);
 	_AnimationDlg->Create (IDD_ANIMATION);
 	getRegisterWindowState (_AnimationDlg, REGKEY_OBJ_VIEW_ANIMATION_DLG, false);
 
 	// Create animation set dialog
-	_AnimationSetDlg=new CAnimationSetDlg (this, &driverWnd);
+	_AnimationSetDlg=new CAnimationSetDlg (this, _MainFrame);
 	_AnimationSetDlg->Create (IDD_ANIMATION_SET);
 	getRegisterWindowState (_AnimationSetDlg, REGKEY_OBJ_VIEW_ANIMATION_SET_DLG, false);
 
 	// Create the main dialog
-	_SlotDlg=new CMainDlg (this, &driverWnd);
+	_SlotDlg=new CMainDlg (this, _MainFrame);
 	_SlotDlg->init (&_AnimationSet);
 	_SlotDlg->Create (IDD_MAIN_DLG);
 	getRegisterWindowState (_SlotDlg, REGKEY_OBJ_VIEW_SLOT_DLG, false);
 
-	// Create animation set dialog
-	_SceneDlg=new CSceneDlg (this, &driverWnd);
-	_SceneDlg->Create (IDD_SCENE);
-	_SceneDlg->ShowWindow (TRUE);
-	getRegisterWindowState (_SceneDlg, REGKEY_OBJ_VIEW_SCENE_DLG, false);
-
 	// Create particle dialog
-	_ParticleDlg=new CParticleDlg (this, &driverWnd, _SceneDlg);
+	_ParticleDlg=new CParticleDlg (this, _MainFrame, _MainFrame);
 	_ParticleDlg->Create (IDD_PARTICLE);
 	getRegisterWindowState (_ParticleDlg, REGKEY_OBJ_PARTICLE_DLG, false);	
 
-
-	// Show the windows
-	//driverWnd.ShowWindow (SW_SHOW);
+	// Set backgroupnd color
+	setBackGroundColor(_MainFrame->BgColor);
+	_MainFrame->update ();
 
 	// Set current frame
 	setAnimTime (0.f, 100.f);
 
-	// Register this as listener
-	CNELU::EventServer.addListener (EventDestroyWindowId, this);
-
 	// Add mouse listener to event server
 	_MouseListener.addToServer(CNELU::EventServer);
 		
-	// Detach the hwnd
-	driverWnd.Detach ();
-
 	CNELU::Driver->activate ();
-}
-
-// ***************************************************************************
-
-void CObjectViewer::operator ()(const CEvent& event)
-{
-	// Destro window ?
-	if (event==EventDestroyWindowId)
-	{
-	}
 }
 
 // ***************************************************************************
@@ -328,10 +383,7 @@ void CObjectViewer::go ()
 		// Eval channel mixer for transform
 		_ChannelMixer.eval (false);
 
-		// Mouse listener
-		_SceneDlg->UpdateData();
-		
-		
+
 
 		// Clear the buffers
 
@@ -346,7 +398,7 @@ void CObjectViewer::go ()
 		CNELU::Driver->profileRenderedPrimitives (in, out);
 
 		// Draw the hotSpot
-		if (_SceneDlg->ObjectMode)
+		if (_MainFrame->MoveMode)
 		{
 			float radius=_HotSpotSize/2.f;
 			CNELU::Driver->setupModelMatrix (CMatrix::Identity);
@@ -372,42 +424,36 @@ void CObjectViewer::go ()
 				break;
 			}
 		}
-		if (CNELU::AsyncListener.isKeyPushed(KeyF2))
-		{
-			_ShowInfo^=true;
-		}
 		
 		// Calc FPS
 		static sint64 lastTime=NLMISC::CTime::getPerformanceTime ();
 		sint64 newTime=NLMISC::CTime::getPerformanceTime ();
 		float fps = (float)(1.0 / NLMISC::CTime::ticksToSecond (newTime-lastTime));
 		lastTime=newTime;
-		if (_ShowInfo)
-		{
-			topInfo.printfAt (0, 1, "Fps: %5.1f   -   Nb tri: %d   -   Texture VRAM used (Mo): %5.2f", fps, in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips,
-				(float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024) );
-		}
+		char msgBar[512];
+		sprintf (msgBar, "Fps: %5.1f   -   Nb tri: %d   -   Texture VRAM used (Mo): %5.2f", fps, in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips,
+			(float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024) );
+		_MainFrame->StatusBar.SetWindowText (msgBar);
 
 		// Swap the buffers
 		CNELU::swapBuffers();
 
 
-		if (_SceneDlg->ObjectMode)
+		if (_MainFrame->MoveMode)
 			_MouseListener.setMouseMode (CEvent3dMouseListener::edit3d);
 		else
 		{
 			_MouseListener.setMouseMode (CEvent3dMouseListener::firstPerson);
-			_MouseListener.setSpeed (_SceneDlg->MoveSpeed);
+			_MouseListener.setSpeed (_MainFrame->MoveSpeed);
 		}
-
-
-		// Pump message from the server
-		CNELU::EventServer.pump();
 
 		// Reset camera aspect ratio
 		initCamera ();
 
-		if (!_SceneDlg->MoveElement)
+		// Pump message from the server
+		CNELU::EventServer.pump();
+
+		if (!_MainFrame->MoveElement)
 		{
 			// New matrix from camera
 			CNELU::Camera->setTransformMode (ITransformable::DirectMatrix);
@@ -441,18 +487,15 @@ void CObjectViewer::releaseUI ()
 		// register window position
 		if (CNELU::Driver->getDisplay())
 		{
-			CWnd driverWnd;
-			driverWnd.Attach((HWND)CNELU::Driver->getDisplay());
-			setRegisterWindowState (&driverWnd, REGKEY_OBJ_VIEW_OPENGL_WND);
-			driverWnd.Detach ();
+			setRegisterWindowState (_MainFrame, REGKEY_OBJ_VIEW_OPENGL_WND);
 		}
 	}
 
+	// Write register
+	_MainFrame->registerValue (false);
+
 	// Release the emitter from the server
 	_MouseListener.removeFromServer (CNELU::EventServer);
-
-	// Remove this as listener
-	CNELU::EventServer.removeListener (EventDestroyWindowId, this);
 
 	// exit
 	CNELU::release();
@@ -549,7 +592,7 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 
 	// update data
 	_AnimationDlg->UpdateData ();
-	_SceneDlg->UpdateData ();
+	_MainFrame->UpdateData ();
 
 	// serial animation data
 	f.serial (_AnimationDlg->Start);
@@ -558,9 +601,9 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 	bool loop=_AnimationDlg->Loop!=0;
 	f.serial (loop);
 	_AnimationDlg->Loop=loop;
-	bool euler=_SceneDlg->Euler!=0;
+	bool euler=_MainFrame->Euler!=0;
 	f.serial (euler);
-	_SceneDlg->Euler=euler;
+	_MainFrame->Euler=euler;
 	sint32 ui=_AnimationDlg->UICurrentFrame;
 	f.serial (ui);
 	_AnimationDlg->UICurrentFrame=ui;
@@ -568,7 +611,7 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 
 	// update data
 	_AnimationDlg->UpdateData (FALSE);
-	_SceneDlg->UpdateData (FALSE);
+	_MainFrame->UpdateData (FALSE);
 
 	// For each slot
 	for (uint i=0; i<NL3D::CChannelMixer::NumAnimationSlot; i++)
@@ -714,7 +757,7 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 		}
 		catch (Exception& e)
 		{
-			_SceneDlg->MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+			_MainFrame->MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
 			return false;
 		}
 	}
@@ -723,7 +766,7 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 		// Create a message
 		char msg[512];
 		_snprintf (msg, 512, "Can't open the file %s for reading.", meshFilename);
-		_SceneDlg->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+		_MainFrame->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
 		return false;
 	}
 
@@ -750,7 +793,7 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 				}
 				catch (Exception& e)
 				{
-					_SceneDlg->MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+					_MainFrame->MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
 
 					// error
 					skelError=true;
@@ -761,7 +804,7 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 				// Create a message
 				char msg[512];
 				_snprintf (msg, 512, "Can't open the file %s for reading.", meshFilename);
-				_SceneDlg->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+				_MainFrame->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
 
 				// error
 				skelError=true;
@@ -799,7 +842,7 @@ void CObjectViewer::resetCamera ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	_SceneDlg->OnResetCamera();
+	_MainFrame->OnResetCamera();
 }
 
 // ***************************************************************************
@@ -821,7 +864,7 @@ CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* m
 	nlassert (pTrShape);
 
 	// Set the rot model
-	if (_SceneDlg->Euler)
+	if (_MainFrame->Euler)
 		pTrShape->setTransformMode (ITransformable::RotEuler);
 	else
 		pTrShape->setTransformMode (ITransformable::RotQuat);
@@ -864,7 +907,7 @@ CSkeletonModel *CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* sk
 	if (skelModel)
 	{
 		// Set the rot model
-		if (_SceneDlg->Euler)
+		if (_MainFrame->Euler)
 			pTrShape->setTransformMode (ITransformable::RotEuler);
 		else
 			pTrShape->setTransformMode (ITransformable::RotQuat);

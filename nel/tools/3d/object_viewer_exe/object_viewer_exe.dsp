@@ -81,7 +81,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 msvcrtd.lib libc.lib /nologo /subsystem:windows /incremental:no /debug /machine:I386 /out:"object_viewer_exedebug\.exe" /pdbtype:sept /libpath:"..\..\..\lib"
+# ADD LINK32 msvcrtd.lib libc.lib /nologo /subsystem:windows /debug /machine:I386 /out:"debug\object_viewer.exe" /pdbtype:sept /libpath:"..\..\..\lib"
+# SUBTRACT LINK32 /incremental:no
 
 !ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 ReleaseDebug"
 
@@ -164,6 +165,18 @@ SOURCE=.\std_afx.h
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+# Begin Source File
+
+SOURCE=.\icon1.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\nevraxpill.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\object_viewer_exe.rc
+# End Source File
 # End Group
 # Begin Source File
 

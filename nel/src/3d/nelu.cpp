@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.21 2001/07/04 16:24:41 corvazier Exp $
+ * $Id: nelu.cpp,v 1.22 2001/07/18 13:42:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,7 @@ CEventServer		CNELU::EventServer;
 CEventListenerAsync	CNELU::AsyncListener;
 
 
-void			CNELU::initDriver(uint w, uint h, uint bpp, bool windowed ) throw(EDru)
+void			CNELU::initDriver(uint w, uint h, uint bpp, bool windowed, void *systemWindow) throw(EDru)
 {
 	// Init debug system
 //	NLMISC::InitDebug();
@@ -60,7 +60,7 @@ void			CNELU::initDriver(uint w, uint h, uint bpp, bool windowed ) throw(EDru)
 	// Init driver.
 	CNELU::Driver= CDRU::createGlDriver();
 	nlverify(CNELU::Driver->init());
-	nlverify(CNELU::Driver->setDisplay(NULL, GfxMode(w, h, bpp, windowed)));
+	nlverify(CNELU::Driver->setDisplay(systemWindow, GfxMode(w, h, bpp, windowed)));
 	nlverify(CNELU::Driver->activate());
 }
 
@@ -142,10 +142,10 @@ void			CNELU::releaseDriver()
 }
 
 
-void			CNELU::init(uint w, uint h, CViewport viewport, uint bpp, bool windowed) throw(EDru)
+void			CNELU::init(uint w, uint h, CViewport viewport, uint bpp, bool windowed, void *systemWindow) throw(EDru)
 {
 	NL3D::registerSerial3d();
-	initDriver(w,h,bpp,windowed);
+	initDriver(w,h,bpp,windowed,systemWindow);
 	initScene(viewport);
 	initEventServer();
 }

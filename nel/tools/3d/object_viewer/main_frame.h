@@ -1,0 +1,128 @@
+#if !defined(AFX_MAIN_FRAME_H__90D61263_7782_11D5_9CD4_0050DAC3A412__INCLUDED_)
+#define AFX_MAIN_FRAME_H__90D61263_7782_11D5_9CD4_0050DAC3A412__INCLUDED_
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+// main_frame.h : header file
+//
+
+class CSceneDlgMouseListener : public NLMISC::IEventListener
+{
+public:
+	class CObjectViewer	*ObjViewerDlg ;	
+	class CMainFrame *SceneDlg ;
+	/** 
+	  * Register the listener to the server.
+	  */
+	void addToServer (NLMISC::CEventServer& server);
+	void releaseFromServer (NLMISC::CEventServer& server);
+
+protected:
+	virtual void operator ()(const class NLMISC::CEvent& event) ;
+
+} ;
+
+/////////////////////////////////////////////////////////////////////////////
+// CMainFrame frame
+
+typedef void (*winProc)(NL3D::IDriver *drv, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+class CMainFrame : public CFrameWnd
+{
+	//DECLARE_DYNCREATE(CMainFrame)
+public:
+	CMainFrame( CObjectViewer *objView, winProc );
+	virtual ~CMainFrame();
+
+// Attributes
+public:
+
+	CStatusBar		StatusBar;
+	CToolBar		ToolBar;
+
+	winProc			DriverWindowProc;
+	CObjectViewer	*ObjView;
+
+	bool			ShowInfo;
+	bool			AnimationWindow;
+	bool			AnimationSetWindow;
+	bool			MixerSlotsWindow;
+	bool			ParticlesWindow;
+	bool			MoveElement;
+	bool			X;
+	bool			Y;
+	bool			Z;
+	uint			MoveMode;
+	float			MoveSpeed;
+	NLMISC::CRGBA	BgColor;
+	bool			Euler;
+	
+	void update ();
+	void registerValue (bool update=true);
+
+// Operations
+public:
+
+// Overrides
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(CMainFrame)
+	protected:
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+	//}}AFX_VIRTUAL
+
+// Implementation
+protected:
+public:
+	// Generated message map functions
+	//{{AFX_MSG(CMainFrame)
+	afx_msg void OnClear();
+	afx_msg void OnEditMoveelement();
+	afx_msg void OnEditX();
+	afx_msg void OnEditY();
+	afx_msg void OnEditZ();
+	afx_msg void OnEnableElementXrotate();
+	afx_msg void OnEnableElementYrotate();
+	afx_msg void OnEnableElementZrotate();
+	afx_msg void OnFileExit();
+	afx_msg void OnFileLoadconfig();
+	afx_msg void OnFileOpen();
+	afx_msg void OnFileSaveconfig();
+	afx_msg void OnInstanciateLocated();
+	afx_msg void OnMenuDelete();
+	afx_msg void OnMenuLoadPs();
+	afx_msg void OnMenuNewlocated();
+	afx_msg void OnMenuSavePs();
+	afx_msg void OnViewFirstpersonmode();
+	afx_msg void OnViewObjectmode();
+	afx_msg void OnResetCamera();
+	afx_msg void OnViewSetbackground();
+	afx_msg void OnViewSetmovespeed();
+	afx_msg void OnWindowAnimation();
+	afx_msg void OnWindowAnimationset();
+	afx_msg void OnWindowMixersslots();
+	afx_msg void OnWindowPaticles();
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnUpdateWindowAnimation(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateWindowAnimationset(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateWindowMixersslots(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateWindowPaticles(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateViewObjectmode(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateViewFirstpersonmode(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditX(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditY(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditZ(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditMoveelement(CCmdUI* pCmdUI);
+	//}}AFX_MSG
+	DECLARE_MESSAGE_MAP()
+
+	CSceneDlgMouseListener _RightButtonMouseListener ;
+};
+
+/////////////////////////////////////////////////////////////////////////////
+
+//{{AFX_INSERT_LOCATION}}
+// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
+
+#endif // !defined(AFX_MAIN_FRAME_H__90D61263_7782_11D5_9CD4_0050DAC3A412__INCLUDED_)

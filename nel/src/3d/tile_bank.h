@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: tile_bank.h,v 1.2 2001/07/18 13:42:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,6 +226,7 @@ public:
 		reset();
 	}
 	void set (int width, int height, const std::vector<NLMISC::CBGRA>& array);
+	void get (int &width, int &height, std::vector<NLMISC::CBGRA>& array) const;
 	void doubleSize ();
 	bool operator== (const CTileBorder& border) const;
 	void operator= (const CTileBorder& border);
@@ -346,6 +347,14 @@ public:
 	const CTileSetTransition* getTransition (sint index) const
 	{
 		return _TileTransition+index;
+	}
+	const CTileBorder *getBorder128 (CTile::TBitmap bitmapType) const
+	{
+		return &(_Border128[bitmapType]);
+	}
+	const CTileBorder *getBorder256 (CTile::TBitmap bitmapType) const
+	{
+		return &(_Border256[bitmapType]);
 	}
 
 	/** 

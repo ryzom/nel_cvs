@@ -2,7 +2,9 @@
 // Microsoft Developer Studio generated include file.
 // Used by object_viewer.rc
 //
+#define IDR_MAINFRAME                   1
 #define IDEMPTY                         3
+#define IDI_MAIN_ICO                    101
 #define IDD_SLOT                        1000
 #define IDD_MAIN_DLG                    1001
 #define IDC_SCROLLBAR1                  1002
@@ -148,9 +150,11 @@
 #define IDC_LOWER_BOUND                 1064
 #define IDB_WEIGHT                      1064
 #define IDC_UPPER_BOUND                 1065
+#define IDR_OBJECT_VIEWER_MENU          1065
 #define IDD_EDIT_USER_PARAM             1065
 #define IDD_EDIT_PARTICLE_SYSTEM        1067
 #define IDD_BIN_OP                      1068
+#define IDR_TOOL_EDIT                   1069
 #define IDC_COMBO1                      1070
 #define IDC_USE_SCHEME                  1070
 #define IDC_TYPE_OF_EMISSION            1070
@@ -159,9 +163,11 @@
 #define IDC_USER_PARAM_INDEX            1070
 #define IDC_BIN_OP                      1070
 #define IDC_START_PICTURE               1071
+#define IDD_SET_VALUE                   1071
 #define IDC_STOP_PICTURE                1072
 #define IDC_SCHEME                      1073
 #define IDC_EDIT_SCHEME                 1074
+#define IDI_APP_ICON                    1074
 #define IDC_CLAMP_ATTRIB                1076
 #define IDC_SCHEME_INPUT                1077
 #define IDC_ATTRIB_NB_CYCLES            1078
@@ -277,15 +283,37 @@
 #define IDM_CENTRAL_GRAVITY             32821
 #define IDM_BROWNIAN_MOVE               32822
 #define IDM_LB_LOD1N2                   32823
+#define ID_FILE_EXIT                    32824
 #define IDM_LB_LOD1                     32824
+#define ID_CLEAR                        32825
 #define IDM_LB_LOD2                     32825
+#define ID_FILE_LOADCONFIG              32826
+#define ID_FILE_SAVECONFIG              32827
+#define ID_VIEW_SETBACKGROUND           32828
+#define ID_VIEW_RESET_CAMERA            32829
+#define ID_VIEW_OBJECTMODE              32830
+#define ID_VIEW_FIRSTPERSONMODE         32831
+#define ID_VIEW_SETMOVESPEED            32832
+#define ID_WINDOW_ANIMATIONSET          32836
+#define ID_WINDOW_MIXERSSLOTS           32837
+#define ID_WINDOW_PATICLES              32838
+#define ID_EDIT_MOVEELEMENT             32839
+#define ID_EDIT_X                       32840
+#define ID_EDIT_Y                       32841
+#define ID_EDIT_Z                       32842
+#define ID_WINDOW_ANIMATION             32845
+#define ID_BUTTON32846                  32846
+#define ID_BUTTON32847                  32847
+#define ID_BUTTON32848                  32848
+#define ID_BUTTON32849                  32849
+#define ID_BUTTON32852                  32852
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1069
-#define _APS_NEXT_COMMAND_VALUE         32826
+#define _APS_NEXT_RESOURCE_VALUE        1075
+#define _APS_NEXT_COMMAND_VALUE         32857
 #define _APS_NEXT_CONTROL_VALUE         1158
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

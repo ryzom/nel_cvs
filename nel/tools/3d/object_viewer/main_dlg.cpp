@@ -1,7 +1,7 @@
 /** \file main_dlg.cpp
  * <File description>
  *
- * $Id: main_dlg.cpp,v 1.5 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: main_dlg.cpp,v 1.6 2001/07/18 13:42:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,7 @@ void CMainDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CMainDlg, CDialog)
 	//{{AFX_MSG_MAP(CMainDlg)
 	ON_WM_DESTROY()
+	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -96,7 +97,7 @@ BOOL CMainDlg::OnInitDialog()
 	GetWindowRect (&window);
 	SetWindowPos( NULL, 0, 0, rect.right-rect.left+window.right-window.left-client.right+client.left, 
 		NL3D::CChannelMixer::NumAnimationSlot*(rect.bottom-rect.top)+window.bottom-window.top-client.bottom+client.top, 
-		SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER|SWP_SHOWWINDOW);
+		SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -212,4 +213,15 @@ void CMainDlg::OnDestroy()
 	
 	// TODO: Add your message handler code here
 	
+}
+
+int CMainDlg::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+{
+	lpCreateStruct->style&=~WS_VISIBLE;
+	if (CDialog::OnCreate(lpCreateStruct) == -1)
+		return -1;
+	
+	// TODO: Add your specialized creation code here
+	
+	return 0;
 }

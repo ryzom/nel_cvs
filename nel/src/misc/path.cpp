@@ -1,7 +1,7 @@
 /** \file path.cpp
  * CPath
  *
- * $Id: path.cpp,v 1.2 2000/12/18 13:44:46 cado Exp $
+ * $Id: path.cpp,v 1.3 2000/12/22 11:47:18 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,10 @@ void CPath::addSearchPath( const string& path )
  */
 string CPath::lookup( const string& filename )
 {
+	if ( fileExists(filename) )
+	{
+		return filename;
+	}
 	CStringVector::iterator isv;
 	string s;
 	for ( isv=CPath::_SearchPaths.begin(); isv!=CPath::_SearchPaths.end(); ++isv )

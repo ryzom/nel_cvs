@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.5 2001/07/24 15:14:35 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.6 2001/08/06 10:13:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -233,71 +233,101 @@ template <typename T> class CPSAttrib
 {
 public:
 
-	/// Constructor
-	CPSAttrib();
+	/// \name Object
+	//@{
+			/// ctor
+			CPSAttrib();
 
-	/// resize the attributes tab. This tells what is the mx number of element in this tab, but don't add elements
-	void resize(uint32 nbInstances) ;
+			/// Serialization method
+			void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	//@}
 
-	/// resize the attribute tab, but fill the whole tab of with a given value
-	void resizeNFill(uint32 nbInstances) ;
-	 
-	/// get a const reference on an attribute instance
-	const T &operator[](uint32 index) const { nlassert(index < _Tab.size()) ; return _Tab[index] ; }
-	/// get a reference on an attribute instance
-	T &operator[](uint32 index) { nlassert(index < _Tab.size()) ; return _Tab[index] ; }
+	/// \name Useful typedefs
+	//@{
+		/** Container used by this class to store its datas.
+		  * The container type is likely to change depending on memory requirement.
+		  */
+		typedef CSnappedVector<T> TContType ;
 
+		/// The type used by the container. Its is the type used to instanciate this template.
+		typedef T value_type ;
 
-	// the container type is likely to change depending on memory requirement
-	typedef CSnappedVector<T> TContType ;
-
-	typedef T type ;
-
-	/// an iterator on the datas
-	typedef TContType::iterator iterator ;
-	/// a const iterator on the datas
-	typedef TContType::const_iterator const_iterator ;
+		/// an iterator on the datas
+		typedef TContType::iterator iterator ;
+		/// a const iterator on the datas
+		typedef TContType::const_iterator const_iterator ;
+	//@}
 
 
+	/// \name Size of the container
+	//@{
+		/** Resize the attributes tab. This tells what is the max number of element in this tab, but don't add elements.
+		  * The behaviour is much like std::vector::reserve
+		  */
+		void					resize(uint32 nbInstances) ;
 
-	/// get an iterator at the beginning of the container
-	iterator begin(void) { return _Tab.begin() ; }
+		/// resize the attribute tab, but fill the whole tab of with default ctor value
+		void					resizeNFill(uint32 nbInstances) ;
 
-	/// get an iterator at the end of the container
-	iterator end(void) { return _Tab.end() ; }	
+		/// return the number of instance in the container
+		uint32 getSize(void) const { return _Tab.size() ; }
 
-	/// get an iterator at the beginning of the container
-	const_iterator begin(void) const { return _Tab.begin() ; }
+		/// return the max number of instance in the container
+		uint32 getMaxSize(void) const { return _MaxSize ; }
 
-	/// get an iterator at the end of the container
-	const_iterator end(void) const { return _Tab.end() ; }	
+	//@}
+
+
+	/// \name Element access.
+	//@{	 
+		/// get a const reference on an attribute instance
+		const T &				operator[](uint32 index) const 
+		{ 
+			nlassert(index < _Tab.size()) ; return _Tab[index] ; 
+		}
+
+		/// get a reference on an attribute instance
+		T &						operator[](uint32 index) 
+		{ 
+			nlassert(index < _Tab.size()) ; return _Tab[index] ; 
+		}
+	//@}
+
+
+
+	/// \name Iterator / enumeration
+	//@{
+
+
+		/// Get an iterator at the beginning of the container
+		iterator				begin(void) { return _Tab.begin() ; }
+
+		/// Get an iterator at the end of the container
+		iterator				end(void) { return _Tab.end() ; }	
+
+		/// Get a  const_iterator at the beginning of the container
+		const_iterator			begin(void) const { return _Tab.begin() ; }
+
+		/// Get a  const_iterator at the end of the container
+		const_iterator			end(void) const { return _Tab.end() ; }	
 	
+	/// \name Add / remove methods
+	//@{
+		/**
+		 * create a new object in the tab. It is append at the end of it
+		 * \return the index if there were enough room for it or -1 else
+		 */
+		sint32 insert(const T &t = T() ) ;		
 
-	/**
-	 * create a new object in the tab 
-	 * \return the index if there were enough room for it or -1 else
-	 */
-	sint32 insert(const T &t = T() ) ;
+		/// remove an object from the tab
+		void remove(uint32 index) ; 
 
-
-	/// return the number of instance in the container
-	uint32 getSize(void) const { return _Tab.size() ; }
-
-	/// return the max number of instance in the container
-	uint32 getMaxSize(void) const { return _MaxSize ; }
-
-
-	/// remove an object from the tab
-	void remove(uint32 index) ; 
-
-	/// Serialization method
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
-
-	/// clear the container
-	void clear(void)
-	{
-		_Tab.clear() ;			
-	}
+		/// clear the container
+		void clear(void)
+		{
+			_Tab.clear() ;			
+		}
+	//@}
 
 protected:			
 	TContType _Tab ; 

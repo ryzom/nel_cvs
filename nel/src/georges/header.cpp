@@ -1,7 +1,7 @@
 /** \file header.cpp
  * Georges header file class
  *
- * $Id: header.cpp,v 1.2 2002/05/22 12:09:45 cado Exp $
+ * $Id: header.cpp,v 1.3 2002/06/12 11:13:50 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,8 +49,8 @@ CFileHeader::CFileHeader ()
 void CFileHeader::write (xmlNodePtr node) const
 {
 	// Version
-	char tmp[100];
-	smprintf (tmp, 100, "%d.%d", MajorVersion, MinorVersion);
+	char tmp[512];
+	smprintf (tmp, 512, "%d.%d", MajorVersion, MinorVersion);
 	xmlSetProp (node, (const xmlChar*)"Version", (const xmlChar*)tmp);
 
 	// State

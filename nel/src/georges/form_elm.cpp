@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.15 2002/06/11 17:38:58 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.16 2002/06/12 11:13:50 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1541,8 +1541,8 @@ bool CFormElm::setValueByName (bool value, const char *name, bool *created)
 
 bool CFormElm::setValueByName (NLMISC::CRGBA value, const char *name, bool *created)
 {	
-	char tmp[50];
-	smprintf (tmp, 50, "%d,%d,%d", value.R, value.G, value.B);
+	char tmp[512];
+	smprintf (tmp, 512, "%d,%d,%d", value.R, value.G, value.B);
 	return setValueByName (tmp, name, created);
 }
 
@@ -2522,8 +2522,8 @@ void CFormElmArray::getFormName (std::string &result, const CFormElm *child) con
 			// This one ?
 			if (Elements[i].Element == child)
 			{
-				char name[20];
-				smprintf (name, 20, "[%d]", i);
+				char name[512];
+				smprintf (name, 512, "[%d]", i);
 
 				// Add the field name
 				result += name;

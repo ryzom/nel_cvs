@@ -1,7 +1,7 @@
 /** \file material_user.h
  * <File description>
  *
- * $Id: material_user.h,v 1.7 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: material_user.h,v 1.8 2003/01/22 11:13:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,23 +76,33 @@ public:
 	// @{
 	virtual void 			setTexture(UTexture* ptex) 
 	{
+		setTexture (0, ptex);
+	}
+
+	virtual void 			setTexture(uint stage, UTexture* ptex) 
+	{
 		NL3D_MEM_MATERIAL
 		CTextureUser	*text= dynamic_cast<CTextureUser*>(ptex);
 		if (text != NULL)
 		{
-			_Material.setTexture (0, text->getITexture());
+			_Material.setTexture (stage, text->getITexture());
 		}
 		else
 		{
-			_Material.setTexture (0, NULL);
+			_Material.setTexture (stage, NULL);
 		}
 		// NB: _Material smartpoint to this ITexture. But this is correct because so does CTextureUser.
 	}
 
 	virtual bool			texturePresent() 
 	{
+		return texturePresent (0);
+	}
+
+	virtual bool			texturePresent (uint stage) 
+	{
 		NL3D_MEM_MATERIAL
-		return _Material.texturePresent(0);
+		return _Material.texturePresent (stage);
 	}
 
 	virtual void			selectTextureSet(uint id)
@@ -144,6 +154,46 @@ public:
 	}
 	// @}
 
+	/// \name Texture environnement.
+	// @{
+
+	virtual void texEnvOpRGB(uint stage, TTexOperator ope)
+	{
+		NL3D_MEM_MATERIAL
+		_Material.texEnvOpRGB(stage, (CMaterial::TTexOperator)(uint32)ope);
+	}
+	
+	virtual void texEnvArg0RGB (uint stage, TTexSource src, TTexOperand oper)
+	{
+		NL3D_MEM_MATERIAL
+		_Material.texEnvArg0RGB (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
+	}
+	
+	virtual void texEnvArg1RGB (uint stage, TTexSource src, TTexOperand oper)
+	{
+		NL3D_MEM_MATERIAL
+		_Material.texEnvArg1RGB (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
+	}
+	
+	virtual void texEnvOpAlpha(uint stage, TTexOperator ope)
+	{
+		NL3D_MEM_MATERIAL
+		_Material.texEnvOpAlpha (stage, (CMaterial::TTexOperator)(uint32)ope);
+	}
+	
+	virtual void texEnvArg0Alpha(uint stage, TTexSource src, TTexOperand oper)
+	{
+		NL3D_MEM_MATERIAL
+		_Material.texEnvArg0Alpha (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
+	}
+	
+	virtual void texEnvArg1Alpha(uint stage, TTexSource src, TTexOperand oper)
+	{
+		NL3D_MEM_MATERIAL
+		_Material.texEnvArg1Alpha (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
+	}
+	
+	// @}
 
 	/// \name ZBuffer.
 	// @{

@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.21 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: driver_user.h,v 1.22 2003/01/22 11:13:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,6 +104,7 @@ protected:
 	CPrimitiveBlock			_PBLine, _PBTri, _PBQuad;
 
 	CVertexBuffer			_VBQuadsColUv;
+	CVertexBuffer			_VBQuadsColUv2;
 	// For security, texture are initUnlit() at init()/release().
 	CMaterialUser			_MatFlat;
 	CMaterialUser			_MatText;
@@ -298,8 +299,10 @@ public:
 	/// Draw the Quad, taking color from primitive. With UV for texture.
 	virtual	void			drawQuad(const NLMISC::CQuadColorUV &tri, UMaterial &mat) ;
 
-	virtual	void			drawQuads(const std::vector<NLMISC::CQuadColorUV> &tri, UMaterial &mat) ;
+	virtual	void			drawQuads(const std::vector<NLMISC::CQuadColorUV> &quad, UMaterial &mat) ;
+	virtual	void			drawQuads(const std::vector<NLMISC::CQuadColorUV2> &quad, UMaterial &mat) ;
 	virtual	void			drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads, UMaterial &mat) ;
+	virtual	void			drawQuads(const NLMISC::CQuadColorUV2 *quads, uint32 nbQuads, UMaterial &mat) ;
 	
 	// @}
 

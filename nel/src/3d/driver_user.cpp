@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.27 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.28 2003/01/22 11:13:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,6 +145,7 @@ CDriverUser::CDriverUser (uint windowIcon)
 	_VBUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 	_VBColorUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
 	_VBQuadsColUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
+	_VBQuadsColUv2.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::TexCoord1Flag);
 	// max is quad.
 	_VBFlat.setNumVertices(4);
 	_VBColor.setNumVertices(4);
@@ -680,6 +681,15 @@ void			CDriverUser::drawQuads(const std::vector<NLMISC::CQuadColorUV> &q, UMater
 }
 
 // ***************************************************************************
+void			CDriverUser::drawQuads(const std::vector<NLMISC::CQuadColorUV2> &q, UMaterial &mat)
+{
+	NL3D_MEM_DRIVER
+
+	const CQuadColorUV2 *qptr = &(q[0]);
+	drawQuads(qptr , q.size(), mat);
+}
+
+// ***************************************************************************
 void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads, UMaterial &mat)
 {
 	NL3D_MEM_DRIVER
@@ -704,6 +714,42 @@ void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads,
 		vb.setTexCoord (i*4+1, 0, qcuv.Uv1);
 		vb.setTexCoord (i*4+2, 0, qcuv.Uv2);
 		vb.setTexCoord (i*4+3, 0, qcuv.Uv3);
+	}
+	
+	_Driver->activeVertexBuffer(vb);
+	_Driver->renderQuads(convMat(mat), 0, nbQuads);
+}
+
+
+// ***************************************************************************
+void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV2 *quads, uint32 nbQuads, UMaterial &mat)
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_DRAW_DRIVER;
+
+	CVertexBuffer		&vb = _VBQuadsColUv2;
+
+	vb.setNumVertices (4*nbQuads);
+
+	for (uint32 i = 0; i < nbQuads; ++i)
+	{
+		const NLMISC::CQuadColorUV2 &qcuv = quads[i];
+		vb.setVertexCoord (i*4+0, qcuv.V0);
+		vb.setVertexCoord (i*4+1, qcuv.V1);
+		vb.setVertexCoord (i*4+2, qcuv.V2);
+		vb.setVertexCoord (i*4+3, qcuv.V3);
+		vb.setColor(i*4+0, qcuv.Color0);
+		vb.setColor(i*4+1, qcuv.Color1);
+		vb.setColor(i*4+2, qcuv.Color2);
+		vb.setColor(i*4+3, qcuv.Color3);
+		vb.setTexCoord (i*4+0, 0, qcuv.Uv0);
+		vb.setTexCoord (i*4+1, 0, qcuv.Uv1);
+		vb.setTexCoord (i*4+2, 0, qcuv.Uv2);
+		vb.setTexCoord (i*4+3, 0, qcuv.Uv3);
+		vb.setTexCoord (i*4+0, 1, qcuv.Uv02);
+		vb.setTexCoord (i*4+1, 1, qcuv.Uv12);
+		vb.setTexCoord (i*4+2, 1, qcuv.Uv22);
+		vb.setTexCoord (i*4+3, 1, qcuv.Uv32);
 	}
 	
 	_Driver->activeVertexBuffer(vb);

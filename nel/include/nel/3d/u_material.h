@@ -1,7 +1,7 @@
 /** \file u_material.h
  * <File description>
  *
- * $Id: u_material.h,v 1.3 2002/07/18 17:41:40 vizerie Exp $
+ * $Id: u_material.h,v 1.4 2003/01/22 11:13:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ class	UTexture;
 
 // ***************************************************************************
 /**
- * Game Interface for Material. Material for gamers are Unlighted materials!! There is only One texture stage.
+ * Game Interface for Material. Material for gamers are Unlighted materials!! Only normal material unlighted is supported.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -60,14 +60,55 @@ public:
 	enum ZFunc				{ always=0,never,equal,notequal,less,lessequal,greater,greaterequal, zfuncCount };
 	enum TBlend				{ one=0, zero, srcalpha, invsrcalpha, srccolor, invsrccolor, blendCount };
 
+	/// \name Texture Env Modes.
+	// @{
+	/** Environements operators:
+	 * Replace:			out= arg0
+	 * Modulate:		out= arg0 * arg1
+	 * Add:				out= arg0 + arg1
+	 * AddSigned:		out= arg0 + arg1 -0.5
+	 * Interpolate*:	out= arg0*As + arg1*(1-As),  where As is taken from the SrcAlpha of 
+	 *		Texture/Previous/Diffuse/Constant, respectively if operator is
+	 *		InterpolateTexture/InterpolatePrevious/InterpolateDiffuse/InterpolateConstant.
+	 * EMBM : apply to both color and alpha : the current texture, whose format is DSDT, is used to offset the texture in the next stage.
+	 *  NB : for EMBM and InterpolateConstant, this must be supported by driver.
+	 */
+	enum TTexOperator		{ Replace=0, Modulate, Add, AddSigned, 
+							  InterpolateTexture, InterpolatePrevious, InterpolateDiffuse, InterpolateConstant, EMBM };
+
+	/** Source argument.
+	 * Texture:		the arg is taken from the current texture of the stage.
+	 * Previous:	the arg is taken from the previous enabled stage. If stage 0, Previous==Diffuse.
+	 * Diffuse:		the arg is taken from the primary color vertex.
+	 * Constant:	the arg is taken from the constant color setuped for this texture stage.
+	 */
+	enum TTexSource			{ Texture=0, Previous, Diffuse, Constant };
+
+	/** Operand for the argument.
+	 * For Alpha arguments, only SrcAlpha and InvSrcAlpha are Valid!! \n
+	 * SrcColor:	arg= ColorSource.
+	 * InvSrcColor:	arg= 1-ColorSource.
+	 * SrcAlpha:	arg= AlphaSource.
+	 * InvSrcAlpha:	arg= 1-AlphaSource.
+	 */
+	enum TTexOperand		{ SrcColor=0, InvSrcColor, SrcAlpha, InvSrcAlpha };
+	// @}
+
 public:
 
 	/// \name Texture.
 	// @{
-	virtual void 			setTexture(UTexture* ptex) =0;
-	virtual bool			texturePresent() =0;
+	// Set a texture in a stage
+	virtual void 			setTexture(uint stage, UTexture* ptex) =0;
+	// Is a texture present in the stage ?
+	virtual bool			texturePresent (uint stage)=0;
 	/// select from a texture set for this material (if available)
 	virtual void			selectTextureSet(uint id)=0;
+
+	// Deprecated use setTexture(uint stage, UTexture* ptex)
+	virtual void 			setTexture(UTexture* ptex) =0;
+	// Deprecated use texturePresent (uint stage)
+	virtual bool			texturePresent() =0;
 	// @}
 
 
@@ -83,6 +124,15 @@ public:
 	virtual TBlend			getDstBlend(void)  const =0;
 	// @}
 
+	/// \name Texture environnement.
+	// @{
+	virtual void			texEnvOpRGB(uint stage, TTexOperator ope) =0;
+	virtual void			texEnvArg0RGB(uint stage, TTexSource src, TTexOperand oper) =0;
+	virtual void			texEnvArg1RGB(uint stage, TTexSource src, TTexOperand oper) =0;
+	virtual void			texEnvOpAlpha(uint stage, TTexOperator ope) =0;
+	virtual void			texEnvArg0Alpha(uint stage, TTexSource src, TTexOperand oper) =0;
+	virtual void			texEnvArg1Alpha(uint stage, TTexSource src, TTexOperand oper) =0;
+	// @}
 
 	/// \name ZBuffer.
 	// @{

@@ -3,13 +3,14 @@
 
 #include "std_afx.h"
 #include "3d/ps_located.h"
-#include "3d/ps_sound_impl.h"
+#include "nel/3d/u_particle_system_sound.h"
 #include "3d/particle_system.h"
 #include "object_viewer.h"
 #include "edit_ps_sound.h"
 #include "attrib_dlg.h"
 #include "pick_sound.h"
-#include "sound_system.h"
+#include "sound_system.H"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -18,16 +19,10 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
-
-/// the particle system sound server
-static NL3D::CPSSoundServImpl PSSoundServer;
-
 /// particle system sound system initialisation
 void initPSSoundSystem(NLSOUND::UAudioMixer *am)
 {
-	nlassert(am);
-	PSSoundServer.init(am);
-	NL3D::CParticleSystem::registerSoundServer(&PSSoundServer);
+	NL3D::UParticleSystemSound::initPSSound(am);	
 }
 
 void releasePSSoundSystem(void)

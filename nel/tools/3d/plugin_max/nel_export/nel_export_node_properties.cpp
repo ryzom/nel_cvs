@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.25 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.26 2002/03/13 10:59:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,9 +125,10 @@ public:
 										// 4th bit -> Visible from father
 										// 5th bit -> Dynamic Portal
 										// 6th bit -> Clusterize
-	std::string				InstanceName;	
-	int						DontAddToScene;	
+	std::string				InstanceShape;
+	std::string				InstanceName;
 	std::string				InstanceGroupName;
+	int						DontAddToScene;	
 	int						DontExport;
 
 	// Lighting
@@ -693,6 +694,7 @@ int CALLBACK InstanceDialogCallback (
 			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_SHAPE), currentParam->InstanceShape.c_str());
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), currentParam->InstanceName.c_str());
 			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_SETCHECK, currentParam->DontAddToScene, 0);
 
@@ -720,6 +722,8 @@ int CALLBACK InstanceDialogCallback (
 					case IDOK:
 						{
 							char tmp[512];
+							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_SHAPE), tmp, 512);
+							currentParam->InstanceShape=tmp;
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), tmp, 512);
 							currentParam->InstanceName=tmp;
 							currentParam->DontAddToScene=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_GETCHECK, 0, 0);
@@ -2137,6 +2141,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		}
 		param.AccelType = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32);
 
+		param.InstanceShape=CExportNel::getScriptAppData (node, NEL_OBJET_NAME_DATA, "");
 		param.InstanceName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "");
 		param.DontAddToScene=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, BST_UNCHECKED);
 		param.InstanceGroupName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_IGNAME, "");
@@ -2232,12 +2237,14 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32)!=param.AccelType)
 				param.AccelType = -1;
 
-			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, BST_UNCHECKED)!=param.DontAddToScene)
-				param.DontAddToScene = BST_INDETERMINATE;
+			if (CExportNel::getScriptAppData (node, NEL_OBJET_NAME_DATA, "")!=param.InstanceShape)
+				param.InstanceShape = "";
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "")!=param.InstanceName)
 				param.InstanceName = "";
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, BST_UNCHECKED)!=param.DontAddToScene)
+				param.DontAddToScene = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_IGNAME, "")!=param.InstanceGroupName)
-				param.InstanceName = "";
+				param.InstanceGroupName = "";
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED)!=param.DontExport)
 				param.DontExport= BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED)!=param.ExportNoteTrack)
@@ -2387,6 +2394,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				if (param.AccelType != -1)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ACCEL, param.AccelType);
 
+				if (param.InstanceShape != "")
+					CExportNel::setScriptAppData (node, NEL_OBJET_NAME_DATA, param.InstanceShape);
 				if (param.InstanceName != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, param.InstanceName);
 				if (param.DontAddToScene != BST_INDETERMINATE)

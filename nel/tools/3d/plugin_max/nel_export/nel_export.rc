@@ -284,19 +284,30 @@ IDD_INSTANCE DIALOG DISCARDABLE  0, 0, 360, 200
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Instance Name",IDC_STATIC,5,10,49,8
-    EDITTEXT        IDC_EDIT_INSTANCE_NAME,81,5,110,14,ES_AUTOHSCROLL
-    CONTROL         "Don't add to instance group",IDC_DONT_ADD_TO_SCENE,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,5,25,103,10
-    LTEXT           "Instance Group Name",IDC_STATIC,5,39,70,8
-    EDITTEXT        IDC_EDIT_INSTANCE_GROUP_NAME,81,39,79,14,ES_AUTOHSCROLL
-    CONTROL         "Don't Export The Shape",IDC_DONT_EXPORT,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,5,60,92,10
-    GROUPBOX        "Collision",IDC_STATIC,5,75,170,45
+    LTEXT           "Instance shape",IDC_STATIC,5,5,51,15,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_INSTANCE_GROUP_SHAPE,80,5,110,14,ES_AUTOHSCROLL
+    LTEXT           "Name of the instancied object. (ex: ""table.shape"")",
+                    IDC_STATIC,195,5,160,15,SS_CENTERIMAGE
+    LTEXT           "Instance name",IDC_STATIC,5,25,49,15,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_INSTANCE_NAME,80,25,110,14,ES_AUTOHSCROLL
+    LTEXT           "String associed with the instance in the instance group file.",
+                    IDC_STATIC,195,25,160,17
+    LTEXT           "Instance group name",IDC_STATIC,5,45,70,15,
+                    SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_INSTANCE_GROUP_NAME,80,45,110,14,ES_AUTOHSCROLL
+    LTEXT           "Name of the instance group where this instance will be inserted",
+                    IDC_STATIC,195,45,160,15
+    CONTROL         "Don't add to scene. If checked, this instance will not be added in the scene.",
+                    IDC_DONT_ADD_TO_SCENE,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,5,70,255,10
+    CONTROL         "Don't export the shape. If checked, no shape file will be exported from this object.",
+                    IDC_DONT_EXPORT,"Button",BS_AUTO3STATE | WS_TABSTOP,5,85,
+                    271,10
+    GROUPBOX        "Collision",IDC_STATIC,5,100,170,45
     CONTROL         "Collision Mesh",IDC_CHECK_COLLISION,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,10,90,110,10
+                    BS_AUTO3STATE | WS_TABSTOP,10,110,110,10
     CONTROL         "Collision Mesh Exterior",IDC_CHECK_COLLISION_EXTERIOR,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,10,105,110,10
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,10,126,110,10
 END
 
 

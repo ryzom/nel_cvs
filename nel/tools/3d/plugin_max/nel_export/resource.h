@@ -97,12 +97,15 @@
 #define IDC_VERSION                     1054
 #define IDC_EDIT_INSTANCE_GROUP_NAME    1054
 #define IDC_STATICINFO                  1055
+#define IDC_EDIT_INSTANCE_GROUP_NAME2   1055
+#define IDC_EDIT_INSTANCE_GROUP_SHAPE   1055
 #define IDC_SHOWLUMEL                   1056
 #define IDC_CLUSTERIZE                  1057
 #define IDC_EXPORT_BG_COLOR             1057
 #define IDC_EXPORT_NOTE_TRACK           1058
 #define IDC_DONT_EXPORT                 1059
 #define IDC_EDIT_LUMELSIZEMUL           1060
+#define IDC_DONT_EXPORT2                1060
 #define IDC_EDIT_SOFTSHADOW_RADIUS      1061
 #define IDC_EDIT_SOFTSHADOW_CONELENGTH  1062
 #define IDC_MISC_PROPERTIES             1063

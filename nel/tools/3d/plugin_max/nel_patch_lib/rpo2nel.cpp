@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.14 2002/03/07 10:33:12 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.15 2002/03/13 10:59:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,29 +157,35 @@ int getScriptAppData (Animatable *node, uint32 id, int def)
 
 bool RPatchMesh::getTileSymmetryRotate (const CTileBank &bank, uint tile, bool &symmetry, uint &rotate)
 {
-	// Tile exist ?
-	if (tile < (uint)bank.getTileCount())
+	// Need check the tile ?
+	if ( (symmetry || (rotate != 0)) && (tile != 0xffffffff) )
 	{
-		// Get xref
-		int tileSet;
-		int number;
-		CTileBank::TTileType type;
-
-		// Get tile xref
-		bank.getTileXRef ((int)tile, tileSet, number, type);
-
-		// Is it an oriented tile ?
-		if (bank.getTileSet (tileSet)->getOriented())
+		// Tile exist ?
+		if (tile < (uint)bank.getTileCount())
 		{
-			// New rotation value
-			rotate = 0;
+			// Get xref
+			int tileSet;
+			int number;
+			CTileBank::TTileType type;
+
+			// Get tile xref
+			bank.getTileXRef ((int)tile, tileSet, number, type);
+
+			// Is it an oriented tile ?
+			if (bank.getTileSet (tileSet)->getOriented())
+			{
+				// New rotation value
+				rotate = 0;
+			}
+
+			// Ok
+			return true;
 		}
 
-		// Ok
-		return true;
+		return false;
 	}
-
-	return false;
+	else
+		return true;
 }
 
 // ***************************************************************************

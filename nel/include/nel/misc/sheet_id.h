@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.10 2002/10/21 14:00:16 cado Exp $
+ * $Id: sheet_id.h,v 1.11 2002/10/21 17:16:40 coutelas Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -66,7 +66,7 @@ public :
 	/**
 	 *	Load the association sheet ref / sheet name 
 	 */
-	static void init(bool removeUnknownSheet);
+	static void init(bool removeUnknownSheet = true);
 	
 	/**
 	 * Return the **whole** sheet id (id+type)

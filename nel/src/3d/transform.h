@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.26 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: transform.h,v 1.27 2002/08/01 16:46:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -448,6 +448,8 @@ protected:
 
 	// @}
 
+	/// Test if obj must be displayed when sticked to an object displayed as a LOD (example: sword in hand of a character displayed as a LOD state)
+	bool				getShowWhenLODSticked() const { return _ForceCLodSticked; }
 private:
 	static IModel	*creator() {return new CTransform;}
 	friend class	CTransformHrcObs;

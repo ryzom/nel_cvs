@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.10 2002/09/09 12:27:52 berenguier Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.11 2002/09/10 13:36:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -360,24 +360,6 @@ uint	CMeshMRMGeom::NumCacheVertexNormal4= NL_BlockByteL1 / sizeof(CRawVertexNorm
 // ***************************************************************************
 // ***************************************************************************
 
-
-
-// ***************************************************************************
-void				CMeshMRMGeom::fillAGPSkinPart(CLod &lod, IVertexBufferHard *currentVBHard)
-{
-	// if VBHard OK
-	if(currentVBHard)
-	{
-		// lock buffer.
-		uint8		*vertexDst= (uint8*)currentVBHard->lock();
-
-		// do it.
-		fillAGPSkinPartWithVBHardPtr(lod, vertexDst);
-
-		// release
-		currentVBHard->unlock();
-	}
-}
 
 
 // ***************************************************************************

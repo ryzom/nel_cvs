@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.53 2002/09/09 17:02:07 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.54 2002/09/10 13:36:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2108,11 +2108,10 @@ void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod, IVertexBufferHard *current
 	nlassert(_Skinned);
 
 
-	/* NB: this copies into RAM, and not AGP.
-		This is because Geomorph needs to read Data in RAM. So the easiest way is to copy all date into RAM,
-		then duplicate  (see fillAGPSkinPart()) in AGP.
+	/*
+		YOYO: _Skinned mrms no more support vertexBufferHard
+		see note in renderSkin()
 	*/
-
 
 	// get vertexPtr / normalOff.
 	//===========================
@@ -2167,10 +2166,6 @@ void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod, IVertexBufferHard *current
 	}
 
 
-	// Fill the usefull AGP memory (if any one loaded).
-	fillAGPSkinPart(lod, currentVBHard);
-
-
 	// clean this lod part. (NB: this is not optimal, but sufficient :) ).
 	lod.OriginalSkinRestored= true;
 }
@@ -2212,8 +2207,13 @@ void				CMeshMRMGeom::updateVertexBufferHard(IDriver *drv, uint32 numVertices)
 	 *	It's because most of the MRM skins are rendered through renderSkinGroup*() methods, which use a global VBHard
 	 *	NB: meshs which are skinned but not skin applied are not optimized too. But this case is not a "realtime" game
 	 *	situation
+	 *
+	 *	Also, if the driver has slow VBhard unlock()  (ie ATI gl extension), avoid use of them if MeshMorpher 
+	 *	is used.
 	 */
-	if( _VertexBufferHardDirty && _Skinned )
+	bool	avoidVBHard;
+	avoidVBHard= _Skinned || ( _MeshMorpher.BlendShapes.size()>0 && drv->slowUnlockVertexBufferHard() );
+	if( _VertexBufferHardDirty && avoidVBHard )
 	{
 		// delete possible old VBHard.
 		if(_VBHard!=NULL)

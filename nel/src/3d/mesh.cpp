@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.70 2002/09/09 17:02:07 berenguier Exp $
+ * $Id: mesh.cpp,v 1.71 2002/09/10 13:36:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -507,10 +507,16 @@ void	CMeshGeom::updateVertexBufferHard(IDriver *drv)
 		return;
 
 
-	// If the mesh is skinned, still use normal CVertexBuffer.
-	// \todo yoyo: optimize. not done now because CMesh Skinned are not so used in game, 
-	//	and CMesh skinning is far not optimized (4 matrix mul all the time)
-	if( _VertexBufferHardDirty && _Skinned )
+	/* If the mesh is skinned, still use normal CVertexBuffer.
+	 * \todo yoyo: optimize. not done now because CMesh Skinned are not so used in game, 
+	 *	and CMesh skinning is far not optimized (4 matrix mul all the time). Should use later the renderSkinGroupGeom()
+	 *	scheme
+	 *	Also, if the driver has slow VBhard unlock()  (ie ATI gl extension), avoid use of them if MeshMorpher 
+	 *	is used.
+	 */
+	bool	avoidVBHard;
+	avoidVBHard= _Skinned || ( _MeshMorpher && _MeshMorpher->BlendShapes.size()>0 && drv->slowUnlockVertexBufferHard() );
+	if( _VertexBufferHardDirty && avoidVBHard )
 	{
 		// delete possible old VBHard.
 		if(_VertexBufferHard!=NULL)

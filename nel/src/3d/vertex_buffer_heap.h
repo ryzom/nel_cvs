@@ -1,7 +1,7 @@
 /** \file vertex_buffer_heap.h
  * <File description>
  *
- * $Id: vertex_buffer_heap.h,v 1.2 2002/08/14 12:50:56 berenguier Exp $
+ * $Id: vertex_buffer_heap.h,v 1.3 2002/09/10 13:37:26 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -87,8 +87,8 @@ public:
 
 	/// lock the VB/VBHard, for future filling
 	uint8			*lock(uint indexStart);
-	/// unlock the VB/VBHard
-	void			unlock();
+	/// unlock the VB/VBHard. Mirror the IVertexBufferHard::unlock(start, end) scheme.
+	void			unlock(uint startVert, uint endVert);
 
 	/// activate the VB/VBHard as the current VB in the driver, for future rendering
 	void			activate();

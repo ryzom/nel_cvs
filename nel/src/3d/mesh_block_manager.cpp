@@ -1,7 +1,7 @@
 /** \file mesh_block_manager.cpp
  * <File description>
  *
- * $Id: mesh_block_manager.cpp,v 1.3 2002/09/05 08:24:48 berenguier Exp $
+ * $Id: mesh_block_manager.cpp,v 1.4 2002/09/10 13:36:58 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -307,7 +307,8 @@ void			CMeshBlockManager::allocateMeshVBHeap(IMeshGeom *mesh)
 	//==================
 	uint8	*dst= vbHeapBlock->VBHeap.lock(indexStart);
 	mesh->computeMeshVBHeap(dst, indexStart);
-	vbHeapBlock->VBHeap.unlock();
+	// unlock only what vertices have changed (ATI problem)
+	vbHeapBlock->VBHeap.unlock(indexStart, indexStart+numVertices);
 }
 
 // ***************************************************************************

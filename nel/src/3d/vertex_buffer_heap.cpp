@@ -1,7 +1,7 @@
 /** \file vertex_buffer_heap.cpp
  * <File description>
  *
- * $Id: vertex_buffer_heap.cpp,v 1.1 2002/08/14 12:43:42 berenguier Exp $
+ * $Id: vertex_buffer_heap.cpp,v 1.2 2002/09/10 13:37:26 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -82,7 +82,8 @@ void			CVertexBufferHeap::init(IDriver *driver, uint vertexFormat, uint maxVerti
 		_HardMode= true;
 		// setup heap start with good AGP ptr.
 		_HeapStart= (uint8*)_VBHard->lock();
-		_VBHard->unlock();
+		// just a gestion lock, no vertices have changed.
+		_VBHard->unlock(0,0);
 	}
 	else
 	{
@@ -165,12 +166,12 @@ uint8			*CVertexBufferHeap::lock(uint indexStart)
 	return ptr + indexStart*_VertexSize;
 }
 // ***************************************************************************
-void			CVertexBufferHeap::unlock()
+void			CVertexBufferHeap::unlock(uint startVert, uint endVert)
 {
 	nlassert(enabled());
 
 	if(_HardMode)
-		_VBHard->unlock();
+		_VBHard->unlock(startVert, endVert);
 }
 // ***************************************************************************
 void			CVertexBufferHeap::activate()

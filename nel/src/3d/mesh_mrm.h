@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.36 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: mesh_mrm.h,v 1.37 2002/09/10 13:36:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -463,9 +463,6 @@ private:
 	*/
 	void				updateVertexBufferHard(IDriver *drv, uint32 numVertices);
 	void				deleteVertexBufferHard();
-
-	// Fill skin in AGP, if VBhard exist/used
-	void				fillAGPSkinPart(CLod &lod, IVertexBufferHard *currentVBHard);
 
 	// Fill skin in AGP, with a direct ptr onto AGP
 	void				fillAGPSkinPartWithVBHardPtr(CLod &lod, uint8 *vertexDst);

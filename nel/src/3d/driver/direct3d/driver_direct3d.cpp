@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.15 2004/08/09 14:35:08 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.16 2004/08/13 15:25:25 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -59,8 +59,14 @@ HINSTANCE HInstDLL = NULL;
 // Initial volatile vertex buffer size
 #define NL_VOLATILE_RAM_VB_SIZE	512*1024
 #define NL_VOLATILE_AGP_VB_SIZE	128*1024
-#define NL_VOLATILE_RAM_IB_SIZE	10*1024
-#define NL_VOLATILE_AGP_IB_SIZE	10*1024
+#define NL_VOLATILE_RAM_IB_SIZE	64*1024
+#define NL_VOLATILE_AGP_IB_SIZE	1024
+//
+#define NL_VOLATILE_RAM_VB_MAXSIZE	512*1024
+#define NL_VOLATILE_AGP_VB_MAXSIZE	2500*1024
+#define NL_VOLATILE_RAM_IB_MAXSIZE	256*1024
+#define NL_VOLATILE_AGP_IB_MAXSIZE	256*1024
+
 
 // ***************************************************************************
 
@@ -175,6 +181,18 @@ CDriverD3D::CDriverD3D()
 	_Scissor.Y = -1;
 	_Scissor.Width = -1;
 	_Scissor.Height = -1;
+	for(uint k = 0; k < MaxTexture; ++k)
+	{
+		_CurrentUVRouting[k] = (uint8) k;
+	}
+	_VolatileVertexBufferRAM[0]	= new CVolatileVertexBuffer;
+	_VolatileVertexBufferRAM[1]	= new CVolatileVertexBuffer;
+	_VolatileVertexBufferAGP[0]	= new CVolatileVertexBuffer;
+	_VolatileVertexBufferAGP[1]	= new CVolatileVertexBuffer;
+	_VolatileIndexBufferRAM[0]= new CVolatileIndexBuffer;
+	_VolatileIndexBufferRAM[1]= new CVolatileIndexBuffer;
+	_VolatileIndexBufferAGP[0]= new CVolatileIndexBuffer;
+	_VolatileIndexBufferAGP[1]= new CVolatileIndexBuffer;
 }
 
 // ***************************************************************************
@@ -188,6 +206,14 @@ CDriverD3D::~CDriverD3D()
         _D3D->Release();
 		_D3D = NULL;
 	}
+	delete _VolatileVertexBufferRAM[0];
+	delete _VolatileVertexBufferRAM[1];
+	delete _VolatileVertexBufferAGP[0];
+	delete _VolatileVertexBufferAGP[1];
+	delete _VolatileIndexBufferRAM[0];
+	delete _VolatileIndexBufferRAM[1];
+	delete _VolatileIndexBufferAGP[0];
+	delete _VolatileIndexBufferAGP[1];
 }
 
 // ***************************************************************************
@@ -275,23 +301,27 @@ void CDriverD3D::resetRenderVariables()
 	}
 	setRenderTarget (NULL, 0, 0, 0, 0, 0, 0);
 
+	CVertexBuffer::TLocation vertexAgpLocation = _DisableHardwareVertexArrayAGP ? CVertexBuffer::RAMResident : CVertexBuffer::AGPResident;
+	CIndexBuffer::TLocation indexAgpLocation = _DisableHardwareIndexArrayAGP ? CIndexBuffer::RAMResident : CIndexBuffer::AGPResident;
+	
+
 	// Init volatile vertex buffers
-	_VolatileVertexBufferRAM[0].init (CVertexBuffer::RAMResident, _VolatileVertexBufferRAM[0].Size, this);
-	_VolatileVertexBufferRAM[0].reset ();
-	_VolatileVertexBufferRAM[1].init (CVertexBuffer::RAMResident, _VolatileVertexBufferRAM[1].Size, this);
-	_VolatileVertexBufferRAM[1].reset ();
-	_VolatileVertexBufferAGP[0].init (CVertexBuffer::AGPResident, _VolatileVertexBufferAGP[0].Size, this);
-	_VolatileVertexBufferAGP[0].reset ();
-	_VolatileVertexBufferAGP[1].init (CVertexBuffer::AGPResident, _VolatileVertexBufferAGP[1].Size, this);
-	_VolatileVertexBufferAGP[1].reset ();
-	_VolatileIndexBufferRAM[0].init (CIndexBuffer::RAMResident, _VolatileIndexBufferRAM[0].Size, this);
-	_VolatileIndexBufferRAM[0].reset ();
-	_VolatileIndexBufferRAM[1].init (CIndexBuffer::RAMResident, _VolatileIndexBufferRAM[1].Size, this);
-	_VolatileIndexBufferRAM[1].reset ();
-	_VolatileIndexBufferAGP[0].init (CIndexBuffer::AGPResident, _VolatileIndexBufferAGP[0].Size, this);
-	_VolatileIndexBufferAGP[0].reset ();
-	_VolatileIndexBufferAGP[1].init (CIndexBuffer::AGPResident, _VolatileIndexBufferAGP[1].Size, this);
-	_VolatileIndexBufferAGP[1].reset ();
+	_VolatileVertexBufferRAM[0]->init (CVertexBuffer::RAMResident, _VolatileVertexBufferRAM[0]->Size, _VolatileVertexBufferRAM[0]->MaxSize, this);
+	_VolatileVertexBufferRAM[0]->reset ();
+	_VolatileVertexBufferRAM[1]->init (CVertexBuffer::RAMResident, _VolatileVertexBufferRAM[1]->Size, _VolatileVertexBufferRAM[1]->MaxSize, this);
+	_VolatileVertexBufferRAM[1]->reset ();
+	_VolatileVertexBufferAGP[0]->init (vertexAgpLocation, _VolatileVertexBufferAGP[0]->Size, _VolatileVertexBufferAGP[0]->MaxSize, this);
+	_VolatileVertexBufferAGP[0]->reset ();
+	_VolatileVertexBufferAGP[1]->init (vertexAgpLocation, _VolatileVertexBufferAGP[1]->Size, _VolatileVertexBufferAGP[1]->MaxSize, this);
+	_VolatileVertexBufferAGP[1]->reset ();
+	_VolatileIndexBufferRAM[0]->init (CIndexBuffer::RAMResident, _VolatileIndexBufferRAM[0]->Size, _VolatileIndexBufferRAM[0]->MaxSize, this);
+	_VolatileIndexBufferRAM[0]->reset ();
+	_VolatileIndexBufferRAM[1]->init (CIndexBuffer::RAMResident, _VolatileIndexBufferRAM[1]->Size, _VolatileIndexBufferRAM[1]->MaxSize, this);
+	_VolatileIndexBufferRAM[1]->reset ();
+	_VolatileIndexBufferAGP[0]->init (indexAgpLocation, _VolatileIndexBufferAGP[0]->Size, _VolatileIndexBufferAGP[0]->MaxSize, this);
+	_VolatileIndexBufferAGP[0]->reset ();
+	_VolatileIndexBufferAGP[1]->init (indexAgpLocation, _VolatileIndexBufferAGP[1]->Size, _VolatileIndexBufferAGP[1]->MaxSize, this);
+	_VolatileIndexBufferAGP[1]->reset ();
 
 	_ScissorTouched = true;
 }
@@ -1110,22 +1140,22 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 
 	// Init volatile vertex buffers
 	_CurrentRenderPass = 0;
-	_VolatileVertexBufferRAM[0].init (CVertexBuffer::RAMResident, NL_VOLATILE_RAM_VB_SIZE, this);
-	_VolatileVertexBufferRAM[0].reset ();
-	_VolatileVertexBufferRAM[1].init (CVertexBuffer::RAMResident, NL_VOLATILE_RAM_VB_SIZE, this);
-	_VolatileVertexBufferRAM[1].reset ();
-	_VolatileVertexBufferAGP[0].init (CVertexBuffer::AGPResident, NL_VOLATILE_AGP_VB_SIZE, this);
-	_VolatileVertexBufferAGP[0].reset ();
-	_VolatileVertexBufferAGP[1].init (CVertexBuffer::AGPResident, NL_VOLATILE_AGP_VB_SIZE, this);
-	_VolatileVertexBufferAGP[1].reset ();
-	_VolatileIndexBufferRAM[0].init (CIndexBuffer::RAMResident, NL_VOLATILE_RAM_IB_SIZE, this);
-	_VolatileIndexBufferRAM[0].reset ();
-	_VolatileIndexBufferRAM[1].init (CIndexBuffer::RAMResident, NL_VOLATILE_RAM_IB_SIZE, this);
-	_VolatileIndexBufferRAM[1].reset ();
-	_VolatileIndexBufferAGP[0].init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, this);
-	_VolatileIndexBufferAGP[0].reset ();
-	_VolatileIndexBufferAGP[1].init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, this);
-	_VolatileIndexBufferAGP[1].reset ();
+	_VolatileVertexBufferRAM[0]->init (CVertexBuffer::RAMResident, NL_VOLATILE_RAM_VB_SIZE, NL_VOLATILE_RAM_VB_MAXSIZE, this);
+	_VolatileVertexBufferRAM[0]->reset ();
+	_VolatileVertexBufferRAM[1]->init (CVertexBuffer::RAMResident, NL_VOLATILE_RAM_VB_SIZE, NL_VOLATILE_RAM_VB_MAXSIZE, this);
+	_VolatileVertexBufferRAM[1]->reset ();
+	_VolatileVertexBufferAGP[0]->init (CVertexBuffer::AGPResident, NL_VOLATILE_AGP_VB_SIZE, NL_VOLATILE_AGP_VB_MAXSIZE, this);
+	_VolatileVertexBufferAGP[0]->reset ();
+	_VolatileVertexBufferAGP[1]->init (CVertexBuffer::AGPResident, NL_VOLATILE_AGP_VB_SIZE, NL_VOLATILE_AGP_VB_MAXSIZE, this);
+	_VolatileVertexBufferAGP[1]->reset ();
+	_VolatileIndexBufferRAM[0]->init (CIndexBuffer::RAMResident, NL_VOLATILE_RAM_IB_SIZE, NL_VOLATILE_RAM_IB_MAXSIZE, this);
+	_VolatileIndexBufferRAM[0]->reset ();
+	_VolatileIndexBufferRAM[1]->init (CIndexBuffer::RAMResident, NL_VOLATILE_RAM_IB_SIZE, NL_VOLATILE_RAM_IB_MAXSIZE, this);
+	_VolatileIndexBufferRAM[1]->reset ();
+	_VolatileIndexBufferAGP[0]->init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, NL_VOLATILE_AGP_IB_MAXSIZE, this);
+	_VolatileIndexBufferAGP[0]->reset ();
+	_VolatileIndexBufferAGP[1]->init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, NL_VOLATILE_AGP_IB_MAXSIZE, this);
+	_VolatileIndexBufferAGP[1]->reset ();
 
 	setupViewport (CViewport());
 
@@ -1362,20 +1392,20 @@ void CDriverD3D::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 // ***************************************************************************
 
 bool CDriverD3D::swapBuffers() 
-{
+{		
 	H_AUTO_D3D(CDriverD3D_swapBuffers);
 	nlassert (_DeviceInterface);
 
 	++ _SwapBufferCounter;
 	// Swap & reset volatile buffers
 	_CurrentRenderPass++;
-	_VolatileVertexBufferRAM[_CurrentRenderPass&1].reset ();
-	_VolatileVertexBufferAGP[_CurrentRenderPass&1].reset ();
-	_VolatileIndexBufferRAM[_CurrentRenderPass&1].reset ();
-	_VolatileIndexBufferAGP[_CurrentRenderPass&1].reset ();
+	_VolatileVertexBufferRAM[_CurrentRenderPass&1]->reset ();
+	_VolatileVertexBufferAGP[_CurrentRenderPass&1]->reset ();
+	_VolatileIndexBufferRAM[_CurrentRenderPass&1]->reset ();
+	_VolatileIndexBufferAGP[_CurrentRenderPass&1]->reset ();
 
 	// todo hulud volatile
-	_DeviceInterface->SetStreamSource(0, _VolatileVertexBufferRAM[1].VertexBuffer, 0, 12);
+	_DeviceInterface->SetStreamSource(0, _VolatileVertexBufferRAM[1]->VertexBuffer, 0, 12);
 
 	// Is direct input running ?
 	if (_EventEmitter.getNumEmitters() > 1) 
@@ -1701,8 +1731,23 @@ bool CDriverD3D::setMode (const GfxMode& mode)
 	return false;
 }
 
-// ***************************************************************************
 
+// ***************************************************************************
+void CDriverD3D::deleteIndexBuffer(CIBDrvInfosD3D *indexBuffer)
+{
+	if (!indexBuffer) return;
+	CIndexBuffer *ib = indexBuffer->IndexBufferPtr;	
+	// If resident in RAM, content has not been lost
+	if (ib->getLocation () != CIndexBuffer::RAMResident)
+	{
+		// Realloc local memory
+		ib->setLocation (CIndexBuffer::NotResident);
+		delete indexBuffer;
+	}
+}
+
+
+// ***************************************************************************
 bool CDriverD3D::reset (const GfxMode& mode)
 {
 	H_AUTO_D3D(CDriverD3D_reset);
@@ -1735,22 +1780,11 @@ bool CDriverD3D::reset (const GfxMode& mode)
 	while (iteIb != _IBDrvInfos.end())
 	{
 		ItIBDrvInfoPtrList iteIbNext = iteIb;
-		iteIbNext++;
-
-		CIBDrvInfosD3D *indexBuffer = static_cast<CIBDrvInfosD3D*>(*iteIb);
-		CIndexBuffer *ib = indexBuffer->IndexBufferPtr;
-
-		// If resident in RAM, content has not been lost
-		if (ib->getLocation () != CIndexBuffer::RAMResident)
-		{
-			// Realloc local memory
-			ib->setLocation (CIndexBuffer::NotResident);
-			delete indexBuffer;
-		}
-
-		iteIb = iteIbNext;
-		
+		iteIbNext++;		
+		deleteIndexBuffer(static_cast<CIBDrvInfosD3D*>(*iteIb));
+		iteIb = iteIbNext;		
 	}
+	deleteIndexBuffer(static_cast<CIBDrvInfosD3D*>((IIBDrvInfos *) _QuadIndexesAGP.DrvInfos));
 
 	// Remove render targets
 	ItTexDrvSharePtrList ite = _TexDrvShares.begin();
@@ -1772,14 +1806,14 @@ bool CDriverD3D::reset (const GfxMode& mode)
 	}
 
 	// Free volatile buffers
-	_VolatileVertexBufferRAM[0].release ();
-	_VolatileVertexBufferRAM[1].release ();
-	_VolatileVertexBufferAGP[0].release ();
-	_VolatileVertexBufferAGP[1].release ();
-	_VolatileIndexBufferRAM[0].release ();
-	_VolatileIndexBufferRAM[1].release ();
-	_VolatileIndexBufferAGP[0].release ();
-	_VolatileIndexBufferAGP[1].release ();
+	_VolatileVertexBufferRAM[0]->release ();
+	_VolatileVertexBufferRAM[1]->release ();
+	_VolatileVertexBufferAGP[0]->release ();
+	_VolatileVertexBufferAGP[1]->release ();
+	_VolatileIndexBufferRAM[0]->release ();
+	_VolatileIndexBufferRAM[1]->release ();
+	_VolatileIndexBufferAGP[0]->release ();
+	_VolatileIndexBufferAGP[1]->release ();
 
 	// Back buffer ref
 	if (_BackBuffer)

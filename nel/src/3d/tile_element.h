@@ -1,7 +1,7 @@
 /** \file tile_element.h
  * <File description>
  *
- * $Id: tile_element.h,v 1.2 2001/07/23 14:40:20 berenguier Exp $
+ * $Id: tile_element.h,v 1.3 2002/01/28 14:41:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,15 @@ namespace NL3D
 #define NL_TILE_ELM_OFFSET_SUBNOISE			9
 #define NL_TILE_ELM_SIZE_SUBNOISE			4
 
+/** Micro-veget specific. Tells wether it is disabled, above water (the default), under water, or if it intersects a water surface.
+  * This state is represented encoded as an enum in CTileElement
+  */
+#define	NL_TILE_ELM_OFFSET_VEGETABLE      13 // start at the 14 th bit
+#define	NL_TILE_ELM_MASK_VEGETABLE        0X03 // takes 2 bits
+#define NL_TILE_ELM_SIZE_VEGETABLE		  2
+
 #define NL_TILE_ELM_LAYER_EMPTY				0xffff
+
 
 // ***************************************************************************
 /**
@@ -59,6 +67,10 @@ private:
 	uint16	Flags;	// Tile Orientation, and Tile 256x256 UV offset.
 
 public:
+
+	/// Copy this tile flags from an other tile
+	void	copyFlagsFromOther(const CTileElement &other) { Flags = other.Flags; }
+
 	/** The three tile ident. NL_TILE_ELM_LAYER_EMPTY means no Tile for this pass. Tile[0] should be !=NL_TILE_ELM_LAYER_EMPTY.
 	 * Else cross are drawn...
 	 */
@@ -105,6 +117,19 @@ public:
 
 
 	void	serial(NLMISC::IStream &f);
+
+	/// Micro vegetation position. Above water is the default
+	enum TVegetableInfo { AboveWater = 0, UnderWater, IntersectWater, VegetableDisabled, VegetInfoLast };
+
+	/// Set the micro vegetation state
+	void	setVegetableState(TVegetableInfo state);
+
+	/// Get the micro vegetable state for this tile
+	TVegetableInfo	getVegetableState() const 
+	{ 
+		return (TVegetableInfo) ((Flags >> NL_TILE_ELM_OFFSET_VEGETABLE) & NL_TILE_ELM_MASK_VEGETABLE);
+	}
+
 };
 
 

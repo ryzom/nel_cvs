@@ -1,7 +1,7 @@
 /** \file tile_element.cpp
  * <File description>
  *
- * $Id: tile_element.cpp,v 1.8 2001/10/29 09:36:38 corvazier Exp $
+ * $Id: tile_element.cpp,v 1.9 2002/01/28 14:41:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,8 +88,15 @@ uint8	CTileElement::getTileSubNoise() const
 void	CTileElement::serial(NLMISC::IStream &f)
 {
 	f.xmlSerial (Flags, "FLAGS");
-	f.xmlSerial (Tile[0], Tile[1], Tile[2], "TILES_ID");
+	f.xmlSerial (Tile[0], Tile[1], Tile[2], "TILES_ID");		
 }
 
+
+void	CTileElement::setVegetableState(TVegetableInfo state)
+{
+	nlassert(state < VegetInfoLast);
+	const uint16 mask = NL_TILE_ELM_MASK_VEGETABLE << NL_TILE_ELM_OFFSET_VEGETABLE;
+	Flags = (Flags & ~mask) | ((uint16) state << NL_TILE_ELM_OFFSET_VEGETABLE);
+}
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file event_listener.h
  * <File description>
  *
- * $Id: event_listener.h,v 1.1 2000/11/10 10:24:02 coutelas Exp $
+ * $Id: event_listener.h,v 1.2 2000/11/10 11:05:22 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,10 +27,14 @@
 #define NL_EVENT_LISTENER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/events.h"
+#include "nel/misc/bit_set.h"
 
 
 namespace NLMISC {
 
+class CEvent;
+class CEventServer;
 
 /**
  * <Class description>
@@ -45,6 +49,11 @@ public:
 	/// Constructor
 	CEventListener();
 
+	/**
+	  * Call back of the listener.
+	  * \param event is the event send to the listener
+	  */
+	virtual void operator ()(const CEvent& event)=0;
 };
 
 
@@ -54,13 +63,37 @@ public:
  * \author Nevrax France
  * \date 2000
  */
-class CEventListenerKeyState : public CEventListener
+class CEventListenerAsynch: public CEventListener
 {
 public:
 
 	/// Constructor
-	CEventListenerKeyState();
+	CEventListenerAsynch();
 
+	/** 
+	  * Register the listener to the server.
+	  */
+	void addToServer (CEventServer& server);
+
+	/** 
+	  * Unregister the listener to the server.
+	  */
+	void removeFromServer (CEventServer& server);
+
+	/**
+	  * Get a key state.
+	  * \param key is the key to check.
+	  */
+	bool isKeyPush (TKey key) const;
+
+private:
+	/*
+	 * Call back of the listener.
+	 * \param event is the event send to the listener
+	 */
+	/// Internal use
+	virtual void operator ()(const CEvent& event)=0;
+	CBitSet _KeyArray;
 };
 
 

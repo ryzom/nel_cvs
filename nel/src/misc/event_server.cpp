@@ -1,7 +1,7 @@
 /** \file event_server.cpp
  * <File description>
  *
- * $Id: event_server.cpp,v 1.1 2000/11/09 16:17:43 coutelas Exp $
+ * $Id: event_server.cpp,v 1.2 2000/11/10 11:04:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/misc/event_server.h"
+#include "nel/misc/event_listener.h"
 #include "nel/misc/event_emitter.h"
 #include "nel/misc/events.h"
 
@@ -64,7 +65,8 @@ void CEventServer::pump()
 	{
 		// pump event
 		pumpEvent(**itev);
-		itev++;
+		delete *itev;
+		itev=_Events.erase (itev);
 	}
 }
 
@@ -83,7 +85,7 @@ void CEventServer::pumpEvent(const CEvent& event)
 	// calling every callbacks
 	while(it!=_Listeners.end() && (uint64)(*it).first == id)
 	{
-		(*it).second(event);
+		(*((*it).second)) (event);
 	}
 }
 
@@ -92,18 +94,16 @@ void CEventServer::pumpEvent(const CEvent& event)
 /*------------------------------------------------------------------*\
 							addListener()
 \*------------------------------------------------------------------*/
-void CEventServer::addListener(CClassId id, 
-							   void (*CCallBackListener)(const CEvent&) )
+void CEventServer::addListener(CClassId id, CEventListener* listener )
 {
-	_Listeners.insert( mapListener::value_type(id, CCallBackListener));
+	_Listeners.insert( mapListener::value_type(id, listener));
 }
 
 
 /*------------------------------------------------------------------*\
 							removeListener()
 \*------------------------------------------------------------------*/
-void CEventServer::removeListener(CClassId id, 
-								  void (*CCallBackListener)(const CEvent&) )
+void CEventServer::removeListener(CClassId id, CEventListener* listener )
 {
 	// looking for the first occurence of id
 	mapListener::iterator it = _Listeners.find(id);
@@ -111,7 +111,7 @@ void CEventServer::removeListener(CClassId id,
 	// looking for occurence with the right callback
 	while(it!=_Listeners.end() && (*it).first == id)
 	{
-		if((*it).second==CCallBackListener)
+		if((*it).second==listener)
 		{
 			// erasing pair
 			_Listeners.erase(it);

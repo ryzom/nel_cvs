@@ -1,7 +1,7 @@
 /** \file event_emitter.cpp
  * <File description>
  *
- * $Id: event_emitter.cpp,v 1.4 2000/11/09 17:51:25 coutelas Exp $
+ * $Id: event_emitter.cpp,v 1.5 2000/11/10 11:04:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,10 +47,10 @@ void CEventEmitterWin32::submitEvents(CEventServer & server)
 			switch (msg.message)
 			{
 				case WM_KEYDOWN:
-					server.postEvent (new CEventKeyDown (msg.wParam));
+					server.postEvent (new CEventKeyDown ((TKey)msg.wParam));
 				break;
 				case WM_KEYUP:
-					server.postEvent (new CEventKeyUp (msg.wParam));
+					server.postEvent (new CEventKeyUp ((TKey)msg.wParam));
 				break;
 				case WM_CHAR:
 					server.postEvent (new CEventChar ((ucchar)msg.wParam));

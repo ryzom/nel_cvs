@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.3 2000/11/09 17:53:39 lecroart Exp $
+ * $Id: events.h,v 1.4 2000/11/10 11:05:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,147 +54,149 @@ const CClassId EventKeyUpId (0x1e62e85, 0x68a35d46);
 const CClassId EventCharId (0x552255fe, 0x75a2373f);
 const CClassId EventMouseDownId (0x35b7878, 0x5d4a0f86);
 const CClassId EventMouseUpId (0xcce1f7e, 0x7ed344d7);
-/* VK_0 thru VK_9 are the same as ASCII '0' thru '9' (0x30 - 0x39) */
-/* VK_A thru VK_Z are the same as ASCII 'A' thru 'Z' (0x41 - 0x5A) */
 
-const uint Key0				='0';
-const uint Key1				='1';
-const uint Key2				='2';
-const uint Key3				='3';
-const uint Key4				='4';
-const uint Key5				='5';
-const uint Key6				='6';
-const uint Key7				='7';
-const uint Key8				='8';
-const uint Key9				='9';
-const uint KeyA				='A';
-const uint KeyB				='B';
-const uint KeyC				='C';
-const uint KeyD				='D';
-const uint KeyE				='E';
-const uint KeyF				='F';
-const uint KeyG				='G';
-const uint KeyH				='H';
-const uint KeyI				='I';
-const uint KeyJ				='J';
-const uint KeyK				='K';
-const uint KeyL				='L';
-const uint KeyM				='M';
-const uint KeyN				='N';
-const uint KeyO				='O';
-const uint KeyP				='P';
-const uint KeyQ				='Q';
-const uint KeyR				='R';
-const uint KeyS				='S';
-const uint KeyT				='T';
-const uint KeyU				='U';
-const uint KeyV				='V';
-const uint KeyW				='W';
-const uint KeyX				='X';
-const uint KeyY				='Y';
-const uint KeyZ				='Z';
-const uint KeyLBUTTON        =0x01;
-const uint KeyRBUTTON        =0x02;
-const uint KeyCANCEL         =0x03;
-const uint KeyMBUTTON        =0x04;    /* NOT contiguous with L & RBUTTON */
-const uint KeyBACK           =0x08;
-const uint KeyTAB            =0x09;
-const uint KeyCLEAR          =0x0C;
-const uint KeyRETURN         =0x0D;
-const uint KeySHIFT          =0x10;
-const uint KeyCONTROL        =0x11;
-const uint KeyMENU           =0x12;
-const uint KeyPAUSE          =0x13;
-const uint KeyCAPITAL        =0x14;
-const uint KeyKANA           =0x15;
-const uint KeyHANGEUL        =0x15;	  /* old name - should be here for compatibility */
-const uint KeyHANGUL         =0x15;
-const uint KeyJUNJA          =0x17;
-const uint KeyFINAL          =0x18;
-const uint KeyHANJA          =0x19;
-const uint KeyKANJI          =0x19;
-const uint KeyESCAPE         =0x1B;
-const uint KeyCONVERT        =0x1C;
-const uint KeyNONCONVERT     =0x1D;
-const uint KeyACCEPT         =0x1E;
-const uint KeyMODECHANGE     =0x1F;
-const uint KeySPACE          =0x20;
-const uint KeyPRIOR          =0x21;
-const uint KeyNEXT           =0x22;
-const uint KeyEND            =0x23;
-const uint KeyHOME           =0x24;
-const uint KeyLEFT           =0x25;
-const uint KeyUP             =0x26;
-const uint KeyRIGHT          =0x27;
-const uint KeyDOWN           =0x28;
-const uint KeySELECT         =0x29;
-const uint KeyPRINT          =0x2A;
-const uint KeyEXECUTE        =0x2B;
-const uint KeySNAPSHOT       =0x2C;
-const uint KeyINSERT         =0x2D;
-const uint KeyDELETE         =0x2E;
-const uint KeyHELP           =0x2F;
-const uint KeyLWIN           =0x5B;
-const uint KeyRWIN           =0x5C;
-const uint KeyAPPS           =0x5D;
-const uint KeyNUMPAD0        =0x60;
-const uint KeyNUMPAD1        =0x61;
-const uint KeyNUMPAD2        =0x62;
-const uint KeyNUMPAD3        =0x63;
-const uint KeyNUMPAD4        =0x64;
-const uint KeyNUMPAD5        =0x65;
-const uint KeyNUMPAD6        =0x66;
-const uint KeyNUMPAD7        =0x67;
-const uint KeyNUMPAD8        =0x68;
-const uint KeyNUMPAD9        =0x69;
-const uint KeyMULTIPLY       =0x6A;
-const uint KeyADD            =0x6B;
-const uint KeySEPARATOR      =0x6C;
-const uint KeySUBTRACT       =0x6D;
-const uint KeyDECIMAL        =0x6E;
-const uint KeyDIVIDE         =0x6F;
-const uint KeyF1             =0x70;
-const uint KeyF2             =0x71;
-const uint KeyF3             =0x72;
-const uint KeyF4             =0x73;
-const uint KeyF5             =0x74;
-const uint KeyF6             =0x75;
-const uint KeyF7             =0x76;
-const uint KeyF8             =0x77;
-const uint KeyF9             =0x78;
-const uint KeyF10            =0x79;
-const uint KeyF11            =0x7A;
-const uint KeyF12            =0x7B;
-const uint KeyF13            =0x7C;
-const uint KeyF14            =0x7D;
-const uint KeyF15            =0x7E;
-const uint KeyF16            =0x7F;
-const uint KeyF17            =0x80;
-const uint KeyF18            =0x81;
-const uint KeyF19            =0x82;
-const uint KeyF20            =0x83;
-const uint KeyF21            =0x84;
-const uint KeyF22            =0x85;
-const uint KeyF23            =0x86;
-const uint KeyF24            =0x87;
-const uint KeyNUMLOCK        =0x90;
-const uint KeySCROLL         =0x91;
-const uint KeyLSHIFT         =0xA0;
-const uint KeyRSHIFT         =0xA1;
-const uint KeyLCONTROL       =0xA2;
-const uint KeyRCONTROL       =0xA3;
-const uint KeyLMENU          =0xA4;
-const uint KeyRMENU          =0xA5;
-const uint KeyPROCESSKEY     =0xE5;
-const uint KeyATTN           =0xF6;
-const uint KeyCRSEL          =0xF7;
-const uint KeyEXSEL          =0xF8;
-const uint KeyEREOF          =0xF9;
-const uint KeyPLAY           =0xFA;
-const uint KeyZOOM           =0xFB;
-const uint KeyNONAME         =0xFC;
-const uint KeyPA1            =0xFD;
-const uint KeyOEM_CLEAR      =0xFE;
+enum TKey 
+{
+	Key0				='0',
+	Key1				='1',
+	Key2				='2',
+	Key3				='3',
+	Key4				='4',
+	Key5				='5',
+	Key6				='6',
+	Key7				='7',
+	Key8				='8',
+	Key9				='9',
+	KeyA				='A',
+	KeyB				='B',
+	KeyC				='C',
+	KeyD				='D',
+	KeyE				='E',
+	KeyF				='F',
+	KeyG				='G',
+	KeyH				='H',
+	KeyI				='I',
+	KeyJ				='J',
+	KeyK				='K',
+	KeyL				='L',
+	KeyM				='M',
+	KeyN				='N',
+	KeyO				='O',
+	KeyP				='P',
+	KeyQ				='Q',
+	KeyR				='R',
+	KeyS				='S',
+	KeyT				='T',
+	KeyU				='U',
+	KeyV				='V',
+	KeyW				='W',
+	KeyX				='X',
+	KeyY				='Y',
+	KeyZ				='Z',
+	KeyLBUTTON        =0x01,
+	KeyRBUTTON        =0x02,
+	KeyCANCEL         =0x03,
+	KeyMBUTTON        =0x04,    /* NOT contiguous with L & RBUTTON */
+	KeyBACK           =0x08,
+	KeyTAB            =0x09,
+	KeyCLEAR          =0x0C,
+	KeyRETURN         =0x0D,
+	KeySHIFT          =0x10,
+	KeyCONTROL        =0x11,
+	KeyMENU           =0x12,
+	KeyPAUSE          =0x13,
+	KeyCAPITAL        =0x14,
+	KeyKANA           =0x15,
+	KeyHANGEUL        =0x15,	  /* old name - should be here for compatibility */
+	KeyHANGUL         =0x15,
+	KeyJUNJA          =0x17,
+	KeyFINAL          =0x18,
+	KeyHANJA          =0x19,
+	KeyKANJI          =0x19,
+	KeyESCAPE         =0x1B,
+	KeyCONVERT        =0x1C,
+	KeyNONCONVERT     =0x1D,
+	KeyACCEPT         =0x1E,
+	KeyMODECHANGE     =0x1F,
+	KeySPACE          =0x20,
+	KeyPRIOR          =0x21,
+	KeyNEXT           =0x22,
+	KeyEND            =0x23,
+	KeyHOME           =0x24,
+	KeyLEFT           =0x25,
+	KeyUP             =0x26,
+	KeyRIGHT          =0x27,
+	KeyDOWN           =0x28,
+	KeySELECT         =0x29,
+	KeyPRINT          =0x2A,
+	KeyEXECUTE        =0x2B,
+	KeySNAPSHOT       =0x2C,
+	KeyINSERT         =0x2D,
+	KeyDELETE         =0x2E,
+	KeyHELP           =0x2F,
+	KeyLWIN           =0x5B,
+	KeyRWIN           =0x5C,
+	KeyAPPS           =0x5D,
+	KeyNUMPAD0        =0x60,
+	KeyNUMPAD1        =0x61,
+	KeyNUMPAD2        =0x62,
+	KeyNUMPAD3        =0x63,
+	KeyNUMPAD4        =0x64,
+	KeyNUMPAD5        =0x65,
+	KeyNUMPAD6        =0x66,
+	KeyNUMPAD7        =0x67,
+	KeyNUMPAD8        =0x68,
+	KeyNUMPAD9        =0x69,
+	KeyMULTIPLY       =0x6A,
+	KeyADD            =0x6B,
+	KeySEPARATOR      =0x6C,
+	KeySUBTRACT       =0x6D,
+	KeyDECIMAL        =0x6E,
+	KeyDIVIDE         =0x6F,
+	KeyF1             =0x70,
+	KeyF2             =0x71,
+	KeyF3             =0x72,
+	KeyF4             =0x73,
+	KeyF5             =0x74,
+	KeyF6             =0x75,
+	KeyF7             =0x76,
+	KeyF8             =0x77,
+	KeyF9             =0x78,
+	KeyF10            =0x79,
+	KeyF11            =0x7A,
+	KeyF12            =0x7B,
+	KeyF13            =0x7C,
+	KeyF14            =0x7D,
+	KeyF15            =0x7E,
+	KeyF16            =0x7F,
+	KeyF17            =0x80,
+	KeyF18            =0x81,
+	KeyF19            =0x82,
+	KeyF20            =0x83,
+	KeyF21            =0x84,
+	KeyF22            =0x85,
+	KeyF23            =0x86,
+	KeyF24            =0x87,
+	KeyNUMLOCK        =0x90,
+	KeySCROLL         =0x91,
+	KeyLSHIFT         =0xA0,
+	KeyRSHIFT         =0xA1,
+	KeyLCONTROL       =0xA2,
+	KeyRCONTROL       =0xA3,
+	KeyLMENU          =0xA4,
+	KeyRMENU          =0xA5,
+	KeyPROCESSKEY     =0xE5,
+	KeyATTN           =0xF6,
+	KeyCRSEL          =0xF7,
+	KeyEXSEL          =0xF8,
+	KeyEREOF          =0xF9,
+	KeyPLAY           =0xFA,
+	KeyZOOM           =0xFB,
+	KeyNONAME         =0xFC,
+	KeyPA1            =0xFD,
+	KeyOEM_CLEAR      =0xFE,
+	KeyCount          =0xFF
+};
 
 /**
  * CEventKeyDown
@@ -202,11 +204,11 @@ const uint KeyOEM_CLEAR      =0xFE;
 class CEventKeyDown : public CEvent
 {
 public:
-	CEventKeyDown (uint key) : CEvent (EventKeyDownId)
+	CEventKeyDown (TKey key) : CEvent (EventKeyDownId)
 	{
 		Key=key;
 	}
-	uint Key;
+	TKey Key;
 };
 
 /**
@@ -215,11 +217,11 @@ public:
 class CEventKeyUp : public CEvent
 {
 public:
-	CEventKeyUp (uint key) : CEvent (EventKeyUpId)
+	CEventKeyUp (TKey key) : CEvent (EventKeyUpId)
 	{
 		Key=key;
 	}
-	uint Key;
+	TKey Key;
 };
 
 /**

@@ -1,7 +1,7 @@
 /** \file event_server.h
  * <File description>
  *
- * $Id: event_server.h,v 1.1 2000/11/09 16:17:03 coutelas Exp $
+ * $Id: event_server.h,v 1.2 2000/11/10 11:05:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,11 +35,12 @@
 namespace NLMISC {
 
 class CEventEmitter;
+class CEventListener;
 class CEvent;
 
 /*===================================================================*/
 
-typedef std::multimap<CClassId,void (*)(const CEvent& event)> mapListener;
+typedef std::multimap<CClassId, CEventListener*> mapListener;
 
 
 /**
@@ -83,21 +84,21 @@ public:
 		
 	/** 
 	 * Add a callback (associated with an id)
-	 * \param id
-	 * \param callback
+	 * \param id of the CEvent class to hook
+	 * \param listener to use with this event
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void addListener(CClassId id, void (*CCallBackListener)(const CEvent&) );
+	void addListener(CClassId id, CEventListener* listener );
 	
 	/** 
 	 * Remove a callback
 	 * \param id of event's callback
-	 * \param the callback to be removed
+	 * \param listener to be removed
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void removeListener(CClassId id, void (*CCallBackListener)(const CEvent&) );
+	void removeListener(CClassId id, CEventListener* listener );
 
 	/** 
 	 * Add an Emitter to the server 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Log error
-echo ------- >> log.log
+echo ------- > log.log
 echo --- Build clod : build .clodbank >> log.log
 echo ------- >> log.log
 echo ------- 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.5 2000/11/24 14:13:35 valignat Exp $
+# $Id: Makefile.am,v 1.6 2001/05/02 17:11:33 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in configure libtool config.guess \
@@ -11,6 +11,8 @@ MAINTAINERCLEANFILES = Makefile.in configure libtool config.guess \
 DISTCLEANFILES       = include/stamp-h include/stamp-h.in 
 
 SUBDIRS              = include src
+
+bin_SCRIPTS          = nel-config
 
 EXTRA_DIST           = nel.dsw
 

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.23 2003/04/02 15:37:16 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.24 2003/07/01 10:11:55 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -37,7 +37,11 @@ namespace NLMISC {
  * Works along with the verboseAllTraffic command
  */
 #ifndef NL_RELEASE
+#ifdef NL_OS_WINDOWS
 #define LOG_ALL_TRAFFIC
+#else
+#undef LOG_ALL_TRAFFIC
+#endif
 #endif
 
 #ifdef LOG_ALL_TRAFFIC
@@ -286,6 +290,9 @@ public:
 	 */
 	void			readBits( NLMISC::CBitSet& bitfield );
 
+	/// Display the bits of the stream just before the specified bitpos (or current pos if -1)
+	void			displayLastBits( sint nbits, sint bitpos=-1, NLMISC::CLog *log=NLMISC::DebugLog );
+
 	/// Template serialisation (should take the one from IStream)
     template<class T>
 	void			serial(T &obj)							{ obj.serial(*this); }
@@ -402,6 +409,11 @@ protected:
 	uint			_FreeBits; // From 8 downto 1
 
 };
+
+
+/// Display a part of a bitmemstream
+void	displayBitStream( const CBitMemStream& msg, sint beginbitpos, sint endbitpos, NLMISC::CLog *log=NLMISC::DebugLog );
+
 
 } // NLMISC
 

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.41 2003/06/11 15:22:14 lecroart Exp $
+ * $Id: common.cpp,v 1.42 2003/07/01 10:13:52 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -797,6 +797,56 @@ void explode (const std::string &src, const std::string &sep, std::vector<std::s
 		nlinfo (" > '%s'", res[i].c_str());
 	}
 */
+}
+
+
+/*
+ * Display the bits (with 0 and 1) composing a byte (from right to left)
+ */
+void displayByteBits( uint8 b, uint nbits, sint beginpos, bool displayBegin, NLMISC::CLog *log )
+{
+	string s1, s2;
+	sint i;
+	for ( i=nbits-1; i!=-1; --i )
+	{
+		s1 += ( (b >> i) & 1 ) ? '1' : '0';
+	}
+	log->displayRawNL( "%s", s1.c_str() );
+	if ( displayBegin )
+	{
+		for ( i=nbits; i>beginpos+1; --i )
+		{
+			s2 += " ";
+		}
+		s2 += "^";
+		log->displayRawNL( "%s beginpos=%u", s2.c_str(), beginpos );
+	}
+}
+
+
+//#define displayDwordBits(a,b,c)
+
+/*
+ * Display the bits (with 0 and 1) composing a number (uint32) (from right to left)
+ */
+void displayDwordBits( uint32 b, uint nbits, sint beginpos, bool displayBegin, NLMISC::CLog *log )
+{
+	string s1, s2;
+	sint i;
+	for ( i=nbits-1; i!=-1; --i )
+	{
+		s1 += ( (b >> i) & 1 ) ? '1' : '0';
+	}
+	log->displayRawNL( "%s", s1.c_str() );
+	if ( displayBegin )
+	{
+		for ( i=nbits; i>beginpos+1; --i )
+		{
+			s2 += " ";
+		}
+		s2 += "^";
+		log->displayRawNL( "%s beginpos=%u", s2.c_str(), beginpos );
+	}
 }
 
 

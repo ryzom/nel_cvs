@@ -1,7 +1,7 @@
 /** \file bit_set.cpp
  * CBitSet class
  *
- * $Id: bit_set.cpp,v 1.12 2003/04/24 18:04:20 corvazier Exp $
+ * $Id: bit_set.cpp,v 1.13 2003/07/01 10:14:38 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -325,6 +325,20 @@ void	CBitSet::serial(IStream &f)
 		}
 		f.serialCont(array32);
 	}
+}
+
+
+/*
+ * Return a string representing the bitfield with 1 and 0 (from left to right)
+ */
+std::string	CBitSet::toString() const
+{
+	string s;
+	for ( sint i=0; i!=(sint)size(); ++i )
+	{
+		s += (get(i) ? '1' : '0');
+	}
+	return s;
 }
 
 

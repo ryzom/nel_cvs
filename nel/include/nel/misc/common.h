@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.58 2003/06/11 15:22:07 lecroart Exp $
+ * $Id: common.h,v 1.59 2003/07/01 10:11:23 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -574,8 +574,15 @@ operator<<(std::basic_ostream<_CharT, _Traits>& __os, const sint64& __z)
 #endif // NL_OS_WINDOWS
 
 
+class CLog;
+
+/// Display the bits (with 0 and 1) composing a byte (from right to left)
+void displayByteBits( uint8 b, uint nbits, sint beginpos, bool displayBegin, NLMISC::CLog *log );
+
+/// Display the bits (with 0 and 1) composing a number (uint32) (from right to left)
+void displayDwordBits( uint32 b, uint nbits, sint beginpos, bool displayBegin, NLMISC::CLog *log );
 
 
-}	// NLMISC
+} // NLMISC
 
 #endif	// NL_COMMON_H

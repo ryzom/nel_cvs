@@ -1,7 +1,7 @@
 /** \file bit_set.h
  * CBitSet class
  *
- * $Id: bit_set.h,v 1.6 2003/01/20 14:18:55 cado Exp $
+ * $Id: bit_set.h,v 1.7 2003/07/01 10:11:35 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -174,6 +174,9 @@ public:
 
 	/// Write an uint32 into the bit set (use with caution, no check)
 	void	setUint( uint32 srcValue, uint i ) { Array[i] = srcValue; }
+
+	/// Return a string representing the bitfield with 1 and 0 (from left to right)
+	std::string	toString() const;
 
 private:
 	std::vector<uint32>	Array;

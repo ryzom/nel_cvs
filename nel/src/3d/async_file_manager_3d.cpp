@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager_3d.cpp,v 1.1 2002/11/04 15:40:43 boucher Exp $
+ * $Id: async_file_manager_3d.cpp,v 1.2 2003/05/09 12:46:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,6 +108,11 @@ private:
 		}
 		return false;
 	}
+
+	void getName (std::string &result) const
+	{
+		result = "LoadMeshCancel (" + _MeshName + ")";
+	}
 };
 
 bool CAsyncFileManager3D::cancelLoadMesh(const std::string& sMeshName)
@@ -158,6 +163,11 @@ private:
 			}
 		}
 		return false;
+	}
+
+	void getName (std::string &result) const
+	{
+		result = "LoadTextureCancel (" + _TextureFile->getFileName() + ")";
 	}
 };
 
@@ -339,6 +349,14 @@ void CAsyncFileManager3D::CMeshLoad::run()
 }
 
 // ***************************************************************************
+void CAsyncFileManager3D::CMeshLoad::getName (std::string &result) const
+{
+	result = "LoadMesh (" + MeshName + ")";
+}
+
+
+
+// ***************************************************************************
 // IGLoad
 // ***************************************************************************
 
@@ -373,6 +391,13 @@ void CAsyncFileManager3D::CIGLoad::run (void)
 	}
 	delete this;
 }
+
+// ***************************************************************************
+void CAsyncFileManager3D::CIGLoad::getName (std::string &result) const
+{
+	result = "LoadIG(" + _IGName + ")";
+}
+
 
 // ***************************************************************************
 // IGLoadUser
@@ -415,6 +440,12 @@ void CAsyncFileManager3D::CIGLoadUser::run (void)
 }
 
 // ***************************************************************************
+void CAsyncFileManager3D::CIGLoadUser::getName (std::string &result) const
+{
+	result = "LoadIGUser(" + _IGName + ")";
+}
+
+// ***************************************************************************
 // CTextureLoad
 // ***************************************************************************
 
@@ -429,6 +460,15 @@ void	CAsyncFileManager3D::CTextureLoad::run()
 	*Signal= true;
 
 	delete this;
+}
+
+// ***************************************************************************
+void CAsyncFileManager3D::CTextureLoad::getName (std::string &result) const
+{
+	if (TextureFile)
+		result = "LoadTexture(" + TextureFile->getFileName() + ")";
+	else
+		result = "LoadTexture(NULL)";
 }
 
 } // NL3D

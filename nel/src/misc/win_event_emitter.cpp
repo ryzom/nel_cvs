@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.11 2003/02/24 16:38:33 corvazier Exp $
+ * $Id: win_event_emitter.cpp,v 1.12 2003/05/09 12:46:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,36 +118,45 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 	{
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
-		// Ctrl, shit or alt ?
-		if ((int)wParam==VK_MENU)
-			_AltButton=true;
-		if ((int)wParam==VK_CONTROL)
-			_CtrlButton=true;
-		if ((int)wParam==VK_SHIFT)
-			_ShiftButton=true;
+		if (_KeyboardEventsEnabled)
+		{
+			// Ctrl, shit or alt ?
+			if ((int)wParam==VK_MENU)
+				_AltButton=true;
+			if ((int)wParam==VK_CONTROL)
+				_CtrlButton=true;
+			if ((int)wParam==VK_SHIFT)
+				_ShiftButton=true;
 
-		// Post the message
-		if (wParam < KeyCount)
-			server->postEvent (new CEventKeyDown ((NLMISC::TKey)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), (((int) wParam)&(1<<30))==0, this));
+			// Post the message
+			if (wParam < KeyCount)
+				server->postEvent (new CEventKeyDown ((NLMISC::TKey)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), (((int) wParam)&(1<<30))==0, this));
+		}
 		break;
-
+		
 	case WM_SYSKEYUP:
 	case WM_KEYUP:
-		// Ctrl, shit or alt ?
-		if ((int)wParam==VK_MENU)
-			_AltButton=false;
-		if ((int)wParam==VK_CONTROL)
-			_CtrlButton=false;
-		if ((int)wParam==VK_SHIFT)
-			_ShiftButton=false;
+		if (_KeyboardEventsEnabled)
+		{
+			// Ctrl, shit or alt ?
+			if ((int)wParam==VK_MENU)
+				_AltButton=false;
+			if ((int)wParam==VK_CONTROL)
+				_CtrlButton=false;
+			if ((int)wParam==VK_SHIFT)
+				_ShiftButton=false;
 
-		// Post the message
-		if (wParam < KeyCount)
-			server->postEvent (new CEventKeyUp ((NLMISC::TKey)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), this));
+			// Post the message
+			if (wParam < KeyCount)
+				server->postEvent (new CEventKeyUp ((NLMISC::TKey)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), this));
+		}
 		break;
 	case WM_CHAR:
-		if (wParam < KeyCount)
-			server->postEvent (new CEventChar ((ucchar)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), this));
+		if (_KeyboardEventsEnabled)
+		{
+			if (wParam < KeyCount)
+				server->postEvent (new CEventChar ((ucchar)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), this));
+		}
 		break;
 	case WM_ACTIVATE:
 		if (WA_INACTIVE==LOWORD(wParam))

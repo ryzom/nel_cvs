@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * <File description>
  *
- * $Id: async_file_manager_3d.h,v 1.2 2002/11/05 13:14:41 boucher Exp $
+ * $Id: async_file_manager_3d.h,v 1.3 2003/05/09 12:46:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,6 +96,7 @@ private:
 	public:
 		CMeshLoad (const std::string &meshName, IShape **ppShp, IDriver *pDriver);
 		void run (void);
+		void getName (std::string &result) const;
 	};
 
 	// Load a .ig
@@ -106,6 +107,7 @@ private:
 	public:
 		CIGLoad (const std::string& meshName, CInstanceGroup **ppIG);
 		void run (void);
+		void getName (std::string &result) const;
 	};
 
 	// Load a .ig User Interface
@@ -116,6 +118,7 @@ private:
 	public:
 		CIGLoadUser (const std::string& meshName, UInstanceGroup **ppIG);
 		void run (void);
+		void getName (std::string &result) const;
 	};
 
 	// Load a texture
@@ -129,7 +132,8 @@ private:
 			: TextureFile(textureFile), Signal(psgn)
 		{}
 
-		virtual	void	run();
+		void run();
+		void getName (std::string &result) const;
 	};
 
 };

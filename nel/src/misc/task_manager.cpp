@@ -1,7 +1,7 @@
 /** \file task_manager.cpp
  * <File description>
  *
- * $Id: task_manager.cpp,v 1.9 2002/10/10 12:41:50 berenguier Exp $
+ * $Id: task_manager.cpp,v 1.10 2003/05/09 12:46:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,15 +29,19 @@
 
 using namespace std;
 
+#define NLMISC_DONE_TASK_SIZE 20
+
 namespace NLMISC {
 
 /*
  * Constructor
  */
-CTaskManager::CTaskManager() : _TaskQueue ("")
+CTaskManager::CTaskManager() : _RunningTask (""), _TaskQueue (""), _DoneTaskQueue ("")
 {
 	_IsTaskRunning = false;
 	_ThreadRunning = true;
+	CSynchronized<string>::CAccessor currentTask(&_RunningTask);
+	currentTask.value () = "";
 	_Thread = IThread::create(this);
 	_Thread->start();
 }
@@ -73,7 +77,26 @@ void CTaskManager::run(void)
 		}
 		if(runnableTask)
 		{
+			{
+				CSynchronized<string>::CAccessor currentTask(&_RunningTask);
+				string temp;
+				runnableTask->getName(temp);
+				currentTask.value () = temp;
+			}
+			string taskName;
+			runnableTask->getName (taskName);
 			runnableTask->run();
+			{
+				CSynchronized<string>::CAccessor currentTask(&_RunningTask);
+				currentTask.value () = "";
+			}
+			{
+				CSynchronized<list<string> >::CAccessor doneTask(&_DoneTaskQueue);
+				doneTask.value().push_front (taskName);
+				if (doneTask.value().size () > NLMISC_DONE_TASK_SIZE)
+					doneTask.value().resize (NLMISC_DONE_TASK_SIZE);
+			}
+
 			_IsTaskRunning = false;
 		}
 		else
@@ -120,5 +143,49 @@ void	CTaskManager::waitCurrentTaskToComplete ()
 		sleepTask();
 }
 
+// ***************************************************************************
+
+void CTaskManager::dump (std::vector<std::string> &result)
+{
+	CSynchronized<string>::CAccessor accesCurrent(&_RunningTask);
+	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
+	CSynchronized<list<string> >::CAccessor accesDone(&_DoneTaskQueue);
+
+	const list<IRunnable *> &taskList = acces.value();
+	const list<string> &taskDone = accesDone.value();
+	const string &taskCurrent = accesCurrent.value();
+	
+	// Resize the destination array
+	result.clear ();
+	result.reserve (taskList.size () + taskDone.size () + 1);
+
+	// Add the waiting strings
+	list<string>::const_reverse_iterator iteDone = taskDone.rbegin ();
+	while (iteDone != taskDone.rend ())
+	{
+		result.push_back ("Done : " + *iteDone);
+		
+		// Next task
+		iteDone++;
+	}
+	
+	// Add the current string
+	if (!taskCurrent.empty())
+	{
+		result.push_back ("Current : " + taskCurrent);
+	}
+
+	// Add the waiting strings
+	list<IRunnable *>::const_iterator ite = taskList.begin ();
+	while (ite != taskList.end ())
+	{
+		string name;
+		(*ite)->getName (name);
+		result.push_back ("Waiting : " + name);
+	
+		// Next task
+		ite++;
+	}
+}
 
 } // NLMISC

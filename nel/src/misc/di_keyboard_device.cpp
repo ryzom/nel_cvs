@@ -1,7 +1,7 @@
 /** \file di_keyboard.cpp
  * <File description>
  *
- * $Id: di_keyboard_device.cpp,v 1.8 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: di_keyboard_device.cpp,v 1.9 2003/05/09 12:46:07 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -301,6 +301,11 @@ CDIKeyboard *CDIKeyboard::createKeyboardDevice(IDirectInput8 *di8,
 	result = kb->_Keyboard->SetDataFormat(&c_dfDIKeyboard);
 	kb->setBufferSize(16);
 	kb->_Keyboard->Acquire();		
+
+	// Enable win32 keyboard messages only if hardware mouse in normal mode
+	if (kb->_WE)
+		kb->_WE->enableKeyboardEvents(false);
+	
 	return kb.release();
 }
 
@@ -379,7 +384,7 @@ void CDIKeyboard::keyTriggered(bool pressed, uint dikey, CEventServer *server, u
 	CEventKey *ek;
 	if (pressed )
 	{
-		ek = new CEventKeyDown(keyValue, buildKeyButtonsFlags(), false, _DIEventEmitter);
+		ek = new CEventKeyDown(keyValue, buildKeyButtonsFlags(), true, _DIEventEmitter);
 	}
 	else 
 	{
@@ -568,7 +573,7 @@ void	CDIKeyboard::repeatKey(uint32 currentDate, CEventServer *server)
 			// arrow, home, end.. events
 			for (uint k = 0; k < numRep; ++k)
 			{	
-				CEventKey *ek = new CEventKeyDown(vkey, buildKeyButtonsFlags(), true, _DIEventEmitter);
+				CEventKey *ek = new CEventKeyDown(vkey, buildKeyButtonsFlags(), false, _DIEventEmitter);
 				server->postEvent(ek);
 			}
 		}
@@ -580,7 +585,7 @@ void	CDIKeyboard::repeatKey(uint32 currentDate, CEventServer *server)
 			// if it is an extended key, repetition won't be managed by sendUnicode
 			if (extKey && repeatable)
 			{
-				CEventKey *ek = new CEventKeyDown(vkey, buildKeyButtonsFlags(), true, _DIEventEmitter);
+				CEventKey *ek = new CEventKeyDown(vkey, buildKeyButtonsFlags(), false, _DIEventEmitter);
 				server->postEvent(ek);
 			}
 			else

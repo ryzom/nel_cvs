@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.80 2003/05/07 11:58:59 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.81 2003/05/09 12:46:08 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2643,6 +2643,12 @@ void	NLPACS::CGlobalRetriever::CLrLoader::run()
 
 	Successful = true;
 	Finished = true;
+}
+
+// ***************************************************************************
+void	NLPACS::CGlobalRetriever::CLrLoader::getName (std::string &result) const
+{
+	result = "LoadLR(" + LoadFile + ")";
 }
 
 // end of CGlobalRetriever methods implementation

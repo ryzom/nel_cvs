@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.10 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: zone_manager.cpp,v 1.11 2003/05/09 12:46:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,6 +226,13 @@ void CZoneLoadingTask::run(void)
 		*_Zone = (CZone*)-1; // Return error
 	}
 	delete this;
+}
+
+
+// ***************************************************************************
+void CZoneLoadingTask::getName (std::string &result) const
+{
+	result = "LoadZone(" + _ZoneName + ")";
 }
 
 } // NL3D

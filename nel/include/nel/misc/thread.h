@@ -1,7 +1,7 @@
 /** \file misc/thread.h
  * Base OS independant class interface for the thread management
  *
- * $Id: thread.h,v 1.18 2002/05/17 06:34:30 corvazier Exp $
+ * $Id: thread.h,v 1.19 2003/05/09 12:46:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +69,11 @@ public:
 	virtual void run()=0;
 	virtual ~IRunnable()
 	{
+	}
+	// Return the runnable name
+	virtual void getName (std::string &result) const
+	{
+		result = "NoName";
 	}
 };
 

@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * <File description>
  *
- * $Id: async_file_manager.h,v 1.1 2002/11/04 15:40:42 boucher Exp $
+ * $Id: async_file_manager.h,v 1.2 2003/05/09 12:46:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,6 +92,7 @@ private:
 	public:
 		CFileLoad (const std::string& sFileName, uint8 **ppFile);
 		void run (void);
+		void getName (std::string &result) const;
 	};
 
 	// Load multiple files
@@ -102,6 +103,7 @@ private:
 	public:
 		CMultipleFileLoad (const std::vector<std::string> &vFileNames, const std::vector<uint8**> &vPtrs);
 		void run (void);
+		void getName (std::string &result) const;
 	};
 
 	// Signal
@@ -112,6 +114,7 @@ private:
 	public:
 		CSignal (bool *pSgn);
 		void run (void);
+		void getName (std::string &result) const;
 	};
 
 };

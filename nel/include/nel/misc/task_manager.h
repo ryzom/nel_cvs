@@ -1,7 +1,7 @@
 /** \file task_manager.h
  * Manage a list of task in a separate thread
  *
- * $Id: task_manager.h,v 1.11 2002/10/10 12:42:11 berenguier Exp $
+ * $Id: task_manager.h,v 1.12 2003/05/09 12:46:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,8 @@ public:
 	/// return false if exit() is required. task added with addTask() should test this flag.
 	bool	isThreadRunning() {return _ThreadRunning;}
 
+	/// Dump task list
+	void dump (std::vector<std::string> &result);
 
 protected:
 
@@ -88,8 +90,10 @@ protected:
 protected:
 
 	/// queue of tasks, using list container instead of queue for DeleteTask methode
-	CSynchronized<std::list<IRunnable *> > _TaskQueue;
-
+	CSynchronized<std::string>				_RunningTask;
+	CSynchronized<std::list<IRunnable *> >	_TaskQueue;
+	CSynchronized<std::list<std::string> >	_DoneTaskQueue;
+	
 	/// thread pointer
 	IThread *_Thread;
 

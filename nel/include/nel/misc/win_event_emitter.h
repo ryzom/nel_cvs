@@ -1,7 +1,7 @@
 /** \file win_event_emitter.h
  * <File description>
  *
- * $Id: win_event_emitter.h,v 1.3 2002/03/28 10:34:41 vizerie Exp $
+ * $Id: win_event_emitter.h,v 1.4 2003/05/09 12:46:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@ namespace NLMISC {
 class CWinEventEmitter : public IEventEmitter
 {
 public:
-	CWinEventEmitter () : _MouseEventsEnabled(true)
+	CWinEventEmitter () : _MouseEventsEnabled(true), _KeyboardEventsEnabled(true)
 	{
 		_HWnd=NULL;
 		resetButtonFlagState ();
@@ -65,11 +65,18 @@ public:
 
 	// Reset button flag state
 	void resetButtonFlagState ();
-
+	
 	// enable / disable mouse events to be processed. The default is enabled.
 	void enableMouseEvents(bool enabled = true) { _MouseEventsEnabled = enabled;}
+	
+	// enable / disable keyboard events to be processed. The default is enabled.
+	void enableKeyboardEvents(bool enabled = true) { _KeyboardEventsEnabled = enabled;}
+	
 	// Test wether mouse events are enabled.
 	bool areMouseEventsEnabled() const { return _MouseEventsEnabled; }
+
+	// Test wether keyboard events are enabled.
+	bool areKeyboardEventsEnabled() const { return _KeyboardEventsEnabled; }
 private:
 	
 
@@ -107,6 +114,7 @@ public:
 	bool				_AltButton;
 	bool				_MouseButtons[3];
 	bool				_MouseEventsEnabled;
+	bool				_KeyboardEventsEnabled;
 private:
 	NLMISC::TMouseButton		getButtons() const;
 };

@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.2 2003/01/07 17:46:20 miller Exp $
+ * $Id: async_file_manager.cpp,v 1.3 2003/05/09 12:46:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -228,6 +228,12 @@ void CAsyncFileManager::CFileLoad::run (void)
 }
 
 // ***************************************************************************
+void CAsyncFileManager::CFileLoad::getName (std::string &result) const
+{
+	result = "FileLoad (" + _FileName + ")";
+}
+
+// ***************************************************************************
 // MultipleFileLoad
 // ***************************************************************************
 
@@ -269,6 +275,19 @@ void CAsyncFileManager::CMultipleFileLoad::run (void)
 }
 
 // ***************************************************************************
+void CAsyncFileManager::CMultipleFileLoad::getName (std::string &result) const
+{
+	result = "MultipleFileLoad (";
+	uint i;
+	for (i=0; i<_FileNames.size (); i++)
+	{
+		if (i)
+			result += ", ";
+		result += _FileNames[i];
+	}
+	result += ")";
+}
+// ***************************************************************************
 // Signal
 // ***************************************************************************
 
@@ -285,6 +304,11 @@ void CAsyncFileManager::CSignal::run (void)
 	*Sgn = true;
 }
 
+// ***************************************************************************
+void CAsyncFileManager::CSignal::getName (std::string &result) const
+{
+	result = "Signal";
+}
 
 } // NLMISC
 

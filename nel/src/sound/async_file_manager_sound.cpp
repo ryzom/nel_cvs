@@ -1,7 +1,7 @@
 /** \file async_file_manager_sound.cpp
  * <File description>
  *
- * $Id: async_file_manager_sound.cpp,v 1.5 2003/04/24 13:45:37 boucher Exp $
+ * $Id: async_file_manager_sound.cpp,v 1.6 2003/05/09 12:46:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,11 @@ class CCancelLoadWavFile : public CAsyncFileManager::ICancelCallback
 				return true;
 		}
 		return false;
+	}
+
+	void getName (std::string &result) const
+	{
+		result = "LoadWavCancel (" + _Filename + ")";
 	}
 
 public:
@@ -189,6 +194,12 @@ void CAsyncFileManagerSound::CLoadWavFile::run (void)
 	}
 }
 	
+
+// ***************************************************************************
+void CAsyncFileManagerSound::CLoadWavFile::getName (std::string &result) const
+{
+	result = "LoadWav(" + _Filename + ")";
+}
 
 
 } // NLSOUND

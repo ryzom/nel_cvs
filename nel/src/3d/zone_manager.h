@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.6 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: zone_manager.h,v 1.7 2003/05/09 12:46:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -146,7 +146,8 @@ public:
 
 	/// Runnable Task
 	void run (void);
-
+	void getName (std::string &result) const;
+	
 private:
 
 	TVolatileZonePtr	*_Zone;

@@ -1,7 +1,7 @@
 /** \file dx_event_emitter.cpp
  * <File description>
  *
- * $Id: di_event_emitter.cpp,v 1.2 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: di_event_emitter.cpp,v 1.3 2003/05/09 12:46:07 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -217,12 +217,20 @@ void	CDIEventEmitter::releaseMouse()
 IKeyboardDevice	*CDIEventEmitter::getKeyboardDevice() throw(EInputDevice)
 {
 	if (_Keyboard) return _Keyboard;
-	// create a keyboard
-	std::auto_ptr<CDIKeyboard> keyboard(CDIKeyboard::createKeyboardDevice(_DInput8, _hWnd, this, _WE));
-	// register to the device server
-	_DeviceServer.registerDevice(keyboard.get());
-	_Keyboard = keyboard.get();		
-	return keyboard.release();
+	try
+	{
+		// create a keyboard
+		std::auto_ptr<CDIKeyboard> keyboard(CDIKeyboard::createKeyboardDevice(_DInput8, _hWnd, this, _WE));
+		// register to the device server
+		_DeviceServer.registerDevice(keyboard.get());
+		_Keyboard = keyboard.get();		
+		return keyboard.release();
+	}
+	catch (...)
+	{
+		if (_WE) _WE->enableKeyboardEvents(true);
+		throw;
+	}
 }
 
 //==========================================================================
@@ -230,7 +238,11 @@ void	CDIEventEmitter::releaseKeyboard()
 {
 	if (!_Keyboard) return;
 	// reupdate the system keyboard flags
-	if (_WE)	_WE->resetButtonFlagState();
+	if (_WE)	
+	{
+		_WE->resetButtonFlagState();
+		_WE->enableKeyboardEvents(true);
+	}
 	//
 	_DeviceServer.removeDevice(_Keyboard);
 	delete _Keyboard;

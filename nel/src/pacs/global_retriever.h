@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.27 2003/04/14 18:36:37 legros Exp $
+ * $Id: global_retriever.h,v 1.28 2003/05/09 12:46:08 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,6 +135,7 @@ protected:
 		CLrLoader() : Idle(true), Finished(true) {}
 
 		void	run();
+		void	getName (std::string &result) const;
 	};
 
 	CLrLoader								_LrLoader;

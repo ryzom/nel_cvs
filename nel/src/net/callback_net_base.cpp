@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 4, base
  *
- * $Id: callback_net_base.cpp,v 1.5 2001/03/15 15:08:50 coutelas Exp $
+ * $Id: callback_net_base.cpp,v 1.6 2001/04/03 08:58:20 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,9 +108,15 @@ void CCallbackNetBase::addCallbackArray( const TCallbackItem *callbackarray, TTy
 /*
  * Update the network (call this method evenly)
  */
-void CCallbackNetBase::update()
+void CCallbackNetBase::update( sint32 timeout )
 {
 	CMsgSocket::update();
+
+	// Timeout not implemented yet, all messages are read if non-zero
+	if ( timeout != 0 )
+	{
+		while ( CMsgSocket::update() );
+	}
 }
 
 

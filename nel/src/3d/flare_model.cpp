@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.10 2002/02/28 12:59:49 besson Exp $
+ * $Id: flare_model.cpp,v 1.11 2002/04/03 13:20:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -57,17 +57,13 @@ void CFlareModel::registerBasic()
 
 
 void	CFlareRenderObs::traverse(IObs *caller)
-{
-			
+{			
 	CRenderTrav			*trav = NLMISC::safe_cast<CRenderTrav *>(Trav);
 	CFlareModel			*m    = NLMISC::safe_cast<CFlareModel *>(Model);
 	IDriver				*drv  = trav->getDriver();
-
 	if (trav->isCurrentPassOpaque()) return;
 
-
-	// transform the flare on screen
-	
+	// transform the flare on screen	
 	const CVector		upt = HrcObs->WorldMatrix.getPos(); // unstransformed pos	
 	const CVector	pt = trav->ViewMatrix * upt;
 	if (pt.y <= trav->Near) return; // flare behind us
@@ -88,8 +84,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 		// compute a color ratio for attenuation with distance
 		const float distRatio = pt.y / fs->getMaxViewDist();
 		distIntensity = distRatio > fs->getMaxViewDistRatio() ? 1.f - distRatio / fs->getMaxViewDistRatio() : 1.f;
-	}
-	
+	}	
 
 	// compute position on screen
 	uint32 width, height;
@@ -99,15 +94,10 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	const sint xPos = (width>>1) + (sint) (width * (((trav->Near * pt.x) / pt.y) - middleX) / (trav->Right - trav->Left));
 	const sint yPos = (height>>1) - (sint) (height * (((trav->Near * pt.z) / pt.y) - middleZ) / (trav->Top - trav->Bottom));	
 
-
 	// read z-buffer value at the pos we are
 	static std::vector<float> v(1);
 	NLMISC::CRect rect(xPos, height - yPos, 1, 1);
 	drv->getZBufferPart(v, rect);
-
-
-	
-
 
 	// project in screen space
 	const float z = (float) (1.0 - (1.0 / pt.y - 1.0 / trav->Far) / (1.0 /trav->Near - 1.0 / trav->Far));
@@ -181,19 +171,15 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	const float bX = - (sint) (width>>1) * aX + middleX * zPosDivNear;
 	const float aY = - ( (trav->Top - trav->Bottom) / (float) height) * zPosDivNear;
 	const float bY = - (sint) (height>>1) * aY - middleZ * zPosDivNear;
-
+	//
 	const CVector I = trav->CamMatrix.getI();
 	const CVector J = trav->CamMatrix.getJ();
 	const CVector K = trav->CamMatrix.getK();
-
-
+	//
 	CRGBA		 col;	
 	CRGBA        flareColor = fs->getColor(); 
-
-
 	const float norm = sqrtf((float) (((xPos - (width>>1)) * (xPos - (width>>1)) + (yPos - (height>>1))*(yPos - (height>>1)))))
 						   / (float) (width>>1);
-
 
 	// check for dazzle and draw it
 	if (fs->hasDazzle())
@@ -217,9 +203,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 
 			drv->renderQuads(material, 0, 1);
 		}
-	}
-
-		
+	}		
 	if (!fs->getAttenuable() )
 	{
 		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * m->_Intensity));
@@ -229,33 +213,16 @@ void	CFlareRenderObs::traverse(IObs *caller)
 		if (norm > fs->getAttenuationRange() || fs->getAttenuationRange() == 0.f) return; // nothing to draw;		
 		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * m->_Intensity * (1.f - norm / fs->getAttenuationRange() )));
 	}
-
-
-
 	material.setColor(col);	
 
-
-
-	CVector scrPos; // vector that will map to the center of the flare on screen
-	
-
-
-
-
-	
-	
-
-   
-
+	CVector scrPos; // vector that will map to the center of the flare on scree
 
 	// process each flare
-
 	// delta for each new Pos 
-	const float dX = fs->getFlareSpacing() * ((width>>1) - xPos);
-	const float dY = fs->getFlareSpacing() * ((height>>1) - yPos);
+	const float dX = fs->getFlareSpacing() * ((sint) (width >> 1) - xPos);
+	const float dY = fs->getFlareSpacing() * ((sint) (height >> 1) - yPos);
 
 	float size; // size of the current flare
-
 
 	uint k;
 	ITexture *tex;
@@ -292,28 +259,16 @@ void	CFlareRenderObs::traverse(IObs *caller)
 			// compute vector that map to the center of the flare
 
 			scrPos = (aX * (xPos + dX * fs->getRelativePos(k)) + bX) * I 
-				     +  zPos * J + (aY * (yPos + dY * fs->getRelativePos(k)) + bY) * K; 
-
-
-			
-			size = fs->getSize(k) / trav->Near;
-			
-
+				     +  zPos * J + (aY * (yPos + dY * fs->getRelativePos(k)) + bY) * K; 		
+			size = fs->getSize(k) / trav->Near;			
 			vb.setVertexCoord(0, scrPos + size * (I + K) );
 			vb.setVertexCoord(1, scrPos + size * (I - K) );
 			vb.setVertexCoord(2, scrPos + size * (-I - K) );
 			vb.setVertexCoord(3, scrPos + size * (-I + K) );
-
-
 			material.setTexture(0, tex);
-			drv->renderQuads(material, 0, 1);
-
-		
+			drv->renderQuads(material, 0, 1);		
 		}
-	}
-	
-	
-	
+	}		
 	this->traverseSons();
 }
 

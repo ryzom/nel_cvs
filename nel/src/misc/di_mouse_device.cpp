@@ -1,7 +1,7 @@
 /** \file di_mouse.cpp
  * <File description>
  *
- * $Id: di_mouse_device.cpp,v 1.3 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: di_mouse_device.cpp,v 1.4 2003/02/27 17:36:42 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -106,7 +106,6 @@ void		CDIMouse::setMouseSpeed(float speed)
 //======================================================
 void		CDIMouse::setMouseAcceleration(uint accel)
 {
-	nlassert(_MessageMode == NormalMode);
 	_MouseAccel = accel;
 }
 
@@ -153,7 +152,7 @@ CDIMouse *CDIMouse::createMouseDevice(IDirectInput8 *di8, HWND hwnd, CDIEventEmi
 	mouse->_Hardware = hardware;
 	HRESULT result = di8->CreateDevice(GUID_SysMouse, &(mouse->_Mouse), NULL);
 	if (result != DI_OK) throw EDirectInputNoMouse();
-	result = mouse->_Mouse->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | (hardware ? DISCL_EXCLUSIVE:DISCL_NONEXCLUSIVE));
+	result = mouse->_Mouse->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | (!hardware ? DISCL_EXCLUSIVE:DISCL_NONEXCLUSIVE));
 	if (result != DI_OK) throw EDirectInputCooperativeLevelFailed();
 	mouse->_Mouse->SetDataFormat(&c_dfDIMouse2);	
 	mouse->setBufferSize(64);
@@ -454,10 +453,7 @@ void	CDIMouse::setMessagesMode(TMessageMode mode)
 { 
 	nlassert(mode < AxisModeLast); 
 	_MessageMode = mode;	
-	if (mode == RawMode)
-	{
-		_FirstX = _FirstY = false;
-	}	
+	_FirstX = _FirstY = true;
 	
 	// Enable win32 mouse message only if hardware mouse in normal mode
 	if (_WE)

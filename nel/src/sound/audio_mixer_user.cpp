@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.47 2003/04/09 13:54:52 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.48 2003/04/10 08:02:30 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -377,7 +377,7 @@ void				CAudioMixerUser::init(int maxTrack, bool useEax, IProgressCallback *prog
 
 	uint i;
 
-	maxTrack = min(maxTrack, MAX_TRACKS);
+	maxTrack = min(maxTrack, (int)MAX_TRACKS);
 
 	// Init registrable classes
 	static bool initialized = false;

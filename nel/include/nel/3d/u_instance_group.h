@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.7 2001/08/14 16:22:35 besson Exp $
+ * $Id: u_instance_group.h,v 1.8 2001/08/15 12:10:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,6 +119,11 @@ public:
 
 	/**
 	 * Return the instance at a given position
+	 */
+	virtual UInstance *getByName (std::string& name) =0;
+
+	/**
+	 * Return the instance at a given position (const version)
 	 */
 	virtual const UInstance *getByName (std::string& name) const=0;
 

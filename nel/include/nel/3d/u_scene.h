@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.16 2002/03/29 13:13:30 berenguier Exp $
+ * $Id: u_scene.h,v 1.17 2002/04/12 16:15:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -178,6 +178,9 @@ public:
 	virtual	UPlayListManager	*createPlayListManager() =0;
 	/// Delete a PlayListManager.
 	virtual	void				deletePlayListManager(UPlayListManager *playListManager) =0;
+	/** Set the automatic animation set used by the scene.	  
+	  */
+	virtual void				setAutomaticAnimationSet(UAnimationSet *as) = 0;	
 	// @}
 
 	/// \name Visual Collision manager.

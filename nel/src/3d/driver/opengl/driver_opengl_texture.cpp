@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.65 2004/01/15 17:31:46 lecroart Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.66 2004/02/20 14:43:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,18 @@
 using	namespace NLMISC;
 using	namespace std;
 
+
+//#define NEL_DUMP_UPLOAD_TIME
+
+
+#ifdef NEL_DUMP_UPLOAD_TIME
+	#define NEL_MEASURE_UPLOAD_TIME_START NLMISC::TTicks startTick = CTime::getPerformanceTime();
+	#define NEL_MEASURE_UPLOAD_TIME_END NLMISC::TTicks endTick = CTime::getPerformanceTime(); \
+										nlinfo("upload time = %.2f ms", (float) (1000 * (CTime::ticksToSecond(endTick) - CTime::ticksToSecond(startTick))));
+#else
+	#define NEL_MEASURE_UPLOAD_TIME_START
+	#define NEL_MEASURE_UPLOAD_TIME_END
+#endif
 
 namespace NL3D
 {
@@ -531,12 +543,17 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 						uint	h= pTInTC->getHeight(i);
 						if (bUpload)
 						{
+							NEL_MEASURE_UPLOAD_TIME_START
 							glTexImage2D (face_map[nText], i, glfmt, w, h, 0, glSrcFmt, glSrcType, ptr);
 							bAllUploaded = true;
+							NEL_MEASURE_UPLOAD_TIME_END
+								
 						}
 						else
 						{
+							NEL_MEASURE_UPLOAD_TIME_START
 							glTexImage2D (face_map[nText], i, glfmt, w, h, 0, glSrcFmt, glSrcType, NULL);
+							NEL_MEASURE_UPLOAD_TIME_END
 						}
 						// profiling: count TextureMemory usage.
 						gltext->TextureMemory+= computeMipMapMemoryUsage(w, h, glfmt);
@@ -590,8 +607,10 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 							{
 								//nglCompressedTexImage2DARB (GL_TEXTURE_2D, i-decalMipMapResize, glfmt, 
 								//							tex.getWidth(i),tex.getHeight(i), 0, size, NULL);
+								NEL_MEASURE_UPLOAD_TIME_START
 								glTexImage2D (GL_TEXTURE_2D, i-decalMipMapResize, glfmt, tex.getWidth(i), tex.getHeight(i), 
 												0, glSrcFmt, glSrcType, NULL);
+								NEL_MEASURE_UPLOAD_TIME_END
 							}
 
 							// profiling: count TextureMemory usage.
@@ -636,13 +655,17 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 							uint	h= tex.getHeight(i);
 
 							if (bUpload)
-							{																
+							{	
+								NEL_MEASURE_UPLOAD_TIME_START
 								glTexImage2D (GL_TEXTURE_2D, i, glfmt, w, h, 0,glSrcFmt, glSrcType, ptr);
+								NEL_MEASURE_UPLOAD_TIME_END
 								bAllUploaded = true;
 							}
 							else
-							{								
+							{	
+								NEL_MEASURE_UPLOAD_TIME_START
 								glTexImage2D (GL_TEXTURE_2D, i, glfmt, w, h, 0,glSrcFmt, glSrcType, NULL);								
+								NEL_MEASURE_UPLOAD_TIME_END
 							}
 							// profiling: count TextureMemory usage.
 							gltext->TextureMemory += computeMipMapMemoryUsage (w, h, glfmt);
@@ -1207,3 +1230,24 @@ uint CDriverGL::getTextureHandle(const ITexture &tex)
 
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

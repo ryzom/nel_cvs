@@ -1,7 +1,7 @@
 /** \file mesh_morpher.cpp
  * <File description>
  *
- * $Id: mesh_morpher.cpp,v 1.8 2004/01/06 15:13:58 corvazier Exp $
+ * $Id: mesh_morpher.cpp,v 1.9 2004/02/09 11:11:17 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -295,7 +295,7 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 		CBlendShape &rBS = BlendShapes[i];
 		float rFactor = pBSFactor->operator[](i).getFactor()/100.0f;
 
-		if (rFactor > 0.0f)
+		if (rFactor != 0.0f)
 		for (j = 0; j < rBS.VertRefs.size(); ++j)
 		{
 			uint32 vp = rBS.VertRefs[j];
@@ -436,7 +436,7 @@ void CMeshMorpher::updateRawSkin (CVertexBuffer *vbOri,
 		CBlendShape		&rBS = BlendShapes[i];
 		float			rFactor = pBSFactor->operator[](i).getFactor();
 
-		if (rFactor > 0.0f)
+		if (rFactor != 0.0f)
 		{
 			rFactor*= 0.01f;
 			uint32		numVertices= rBS.VertRefs.size();

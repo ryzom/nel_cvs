@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.26 2003/07/07 10:25:59 berenguier Exp $
+ * $Id: scene_group.h,v 1.27 2004/02/09 11:11:17 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -270,7 +270,7 @@ public:
 	/// Get all the blendshapes from an instance group
 	void getBlendShapes (std::set<std::string> &BlendShapeNames);
 
-	/// Set the blendshape factor for the whole instance group (0 -> 100)
+	/// Set the blendshape factor for the whole instance group (-100 -> 100)
 	void setBlendShapeFactor (const std::string &BlendShapeName, float rFactor);
 
 

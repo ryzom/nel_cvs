@@ -1,7 +1,7 @@
 /** \file located_target_dlg.cpp
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.cpp,v 1.3 2001/06/27 16:48:11 vizerie Exp $
+ * $Id: located_target_dlg.cpp,v 1.4 2001/07/04 12:17:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,8 @@
 #include "located_target_dlg.h"
 #include "collision_zone_dlg.h"
 #include "editable_range.h"
+#include "attrib_dlg.h"
+#include "direction_attr.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -191,19 +193,63 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 	if (dynamic_cast<NL3D::CPSForceIntensity *>(_LBTarget))
 	{
 		_ForceIntensityWrapper.F = dynamic_cast<NL3D::CPSForceIntensity *>(_LBTarget) ;
-		CEditableRangeFloat *fi = new CEditableRangeFloat(std::string("FORCE INTENSITY"), 0, 100) ;
+		CAttribDlgFloat *fi = new CAttribDlgFloat(std::string("FORCE INTENSITY"), 0, 100) ;
 		pushWnd(fi) ;			
 		fi->setWrapper(&_ForceIntensityWrapper) ;
-		fi->init(posX + 140, posY, this) ;
-		CStatic *s = new CStatic ;			
-		pushWnd(s) ;
-		s->Create("Force intensity :", SS_LEFT, CRect(posX, posY, posX + 139, posY + 32), this) ;
-		s->ShowWindow(SW_SHOW) ;
+		fi->setSchemeWrapper(&_ForceIntensityWrapper) ;
 
+		HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_FORCE_INTENSITY)) ;
+		fi->init(bmh, posX, posY, this) ;
+		
 
 		fi->GetClientRect(&r) ;
 		posY += r.bottom + 3 ;			
 	}
+
+	// vortex (to tune viscosity)
+	if (dynamic_cast<NL3D::CPSCylindricVortex *>(_LBTarget))
+	{
+		CEditableRangeFloat *rv = new CEditableRangeFloat(std::string("RADIAL_VISCOSITY"), 0, 1) ;
+		pushWnd(rv) ;
+		_RadialViscosityWrapper.V = dynamic_cast<NL3D::CPSCylindricVortex *>(_LBTarget) ;
+		rv->setWrapper(&_RadialViscosityWrapper) ;
+		rv->init(posX + 140, posY, this) ;
+		CStatic *s = new CStatic ;			
+		pushWnd(s) ;
+		s->Create("Radial viscosity : ", SS_LEFT, CRect(posX, posY, posX + 139, posY + 32), this) ;
+		s->ShowWindow(SW_SHOW) ;
+
+
+		rv->GetClientRect(&r) ;
+		posY += r.bottom + 3 ;
+
+		CEditableRangeFloat *tv = new CEditableRangeFloat(std::string("TANGENTIAL_VISCOSITY"), 0, 1) ;
+		pushWnd(tv) ;
+		_TangentialViscosityWrapper.V = dynamic_cast<NL3D::CPSCylindricVortex *>(_LBTarget) ;
+		tv->setWrapper(&_TangentialViscosityWrapper) ;
+		tv->init(posX + 140, posY, this) ;
+
+		s = new CStatic ;			
+		pushWnd(s) ;
+		s->Create("Tangential Viscosity : ", SS_LEFT, CRect(posX, posY, posX + 139, posY + 32), this) ;
+		s->ShowWindow(SW_SHOW) ;
+
+		tv->GetClientRect(&r) ;
+		posY += r.bottom + 3 ;
+	}
+
+		// deals with emitters that have a direction
+	if (dynamic_cast<NL3D::CPSDirection *>(_LBTarget))
+	{
+		CDirectionAttr *da = new CDirectionAttr(std::string("DIRECTION")) ;
+		pushWnd(da) ;
+		da->init(posX, posY, this) ;
+		_DirectionWrapper.E = dynamic_cast<NL3D::CPSDirection *>(_LBTarget) ;
+		da->setWrapper(&_DirectionWrapper) ;
+		da->GetClientRect(&r) ;
+		posY += r.bottom ;
+	}
+
 
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

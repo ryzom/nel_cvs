@@ -1,7 +1,7 @@
 /** \file located_target_dlg.h
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.h,v 1.4 2001/06/27 16:48:11 vizerie Exp $
+ * $Id: located_target_dlg.h,v 1.5 2001/07/04 12:17:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,13 +87,49 @@ protected:
 	//////////////////////////////////////////////
 	// wrapper to tune the intensity of a force //
 	//////////////////////////////////////////////
-	struct CForceIntensityWrapper : public IPSWrapperFloat
+	struct CForceIntensityWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
 	{
 		NL3D::CPSForceIntensity *F ;
 		float get(void) const { return F->getIntensity() ; }
 		void set(const float &value) {F->setIntensity(value) ; }
-
+		scheme_type *getScheme(void) const { return F->getIntensityScheme() ; }
+		void setScheme(scheme_type *s) {F->setIntensityScheme(s) ; }
 	} _ForceIntensityWrapper ;
+
+	///////////////////////////////////////////////////////
+	// wrapper to tune the radial viscosity for vortices //
+	///////////////////////////////////////////////////////
+
+
+	struct CRadialViscosityWrapper : public IPSWrapperFloat
+	{
+		NL3D::CPSCylindricVortex *V ;
+		float get(void) const { return V->getRadialViscosity() ; }
+		void set(const float &value) { V->setRadialViscosity(value) ; }		
+	} _RadialViscosityWrapper ;
+
+	///////////////////////////////////////////////////////
+	// wrapper to tune the tangential viscosity for vortices //
+	///////////////////////////////////////////////////////
+
+
+	struct CTangentialViscosityWrapper : public IPSWrapperFloat
+	{
+		NL3D::CPSCylindricVortex *V ;
+		float get(void) const { return V->getTangentialViscosity() ; }
+		void set(const float &value) { V->setTangentialViscosity(value) ; }		
+	} _TangentialViscosityWrapper ;
+
+	////////////////////////////////////
+	// wrappers to tune the direction //
+	////////////////////////////////////
+
+	struct CDirectionWrapper : public IPSWrapper<NLMISC::CVector>
+	{
+	   NL3D::CPSDirection *E ;
+	   NLMISC::CVector get(void) const { return E->getDir() ; }
+	   void set(const NLMISC::CVector &d){ E->setDir(d) ; }	
+	} _DirectionWrapper ;
 
 };
 

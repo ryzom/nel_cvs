@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.84 2002/09/05 08:24:48 berenguier Exp $
+ * $Id: scene.cpp,v 1.85 2002/10/10 13:03:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,7 @@
 #include "3d/animation.h"
 #include "3d/lod_character_manager.h"
 #include "3d/seg_remanence.h"
+#include "3d/async_texture_manager.h"
 
 #include <memory>
 
@@ -151,6 +152,7 @@ CScene::CScene()
 
 	// Create here the Lod Manager.
 	_LodCharacterManager= new CLodCharacterManager;
+	_AsyncTextureManager= new CAsyncTextureManager;
 
 	_NumRender = 0;
 }
@@ -233,6 +235,10 @@ CScene::~CScene()
 	// delete the character manager
 	delete _LodCharacterManager;
 	_LodCharacterManager= NULL;
+
+	// delete the AsyncTextureManager
+	delete _AsyncTextureManager;
+	_AsyncTextureManager= NULL;
 }
 // ***************************************************************************
 void	CScene::initDefaultTravs()

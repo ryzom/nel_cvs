@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.13 2002/09/05 17:59:54 corvazier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.14 2002/10/10 12:59:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,12 +31,37 @@
 #include "3d/animation.h"
 #include "nel/misc/debug.h"
 #include "3d/anim_detail_trav.h"
+#include "3d/texture_file.h"
+#include "3d/async_texture_manager.h"
 
 
 using namespace NLMISC;
 
 namespace NL3D 
 {
+
+
+// ***************************************************************************
+CMeshBaseInstance::CMeshBaseInstance()
+{
+	IAnimatable::resize(AnimValueLast);
+	_OwnerScene= NULL;
+	_AsyncTextureToLoadRefCount= 0;
+	_AsyncTextureMode= false;
+	_AsyncTextureReady= true;
+
+	// I am a CMeshBaseInstance!!
+	CTransform::setIsMeshBaseInstance(true);
+}
+
+// ***************************************************************************
+CMeshBaseInstance::~CMeshBaseInstance()
+{
+	// If AsyncTextureMode, must disable. This ensure that async loading stop, and that no ref still exist
+	// in the AsyncTextureManager
+	if(_AsyncTextureMode)
+		enableAsyncTextureMode(false);
+}
 
 
 // ***************************************************************************
@@ -240,7 +265,27 @@ void CMeshBaseInstance::selectTextureSet(uint id)
 		{
 			if (mat.getTexture(l) && mat.getTexture(l)->isSelectable())
 			{
-				Materials[k].setTexture(l, mat.getTexture(l)->buildNonSelectableVersion(id));
+				// use a smartPtr so the textFile will be released if just used to set the name for AsyncTextures.
+				CSmartPtr<ITexture>		texNSV= mat.getTexture(l)->buildNonSelectableVersion(id);
+
+				// std case: just replace the texture.
+				if(!_AsyncTextureMode)
+				{
+					Materials[k].setTexture(l, texNSV);
+				}
+				// Async case
+				else
+				{
+					// If texture file, must copy the texture name
+					if(AsyncTextures[k].IsTextureFile[l])
+					{
+						CTextureFile	*textFile= safe_cast<CTextureFile*>((ITexture*)texNSV);
+						AsyncTextures[k].TextureNames[l]= textFile->getFileName();
+					}
+					// else replace the texture.
+					else
+						Materials[k].setTexture(l, texNSV);
+				}
 			}
 		}
 	}
@@ -276,5 +321,171 @@ CMaterial	*CMeshBaseInstance::getMaterial (uint materialId)
 {
 	return &(Materials[materialId]);
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Async texture loading
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CMeshBaseInstance::enableAsyncTextureMode(bool enable)
+{
+	// if same, no-op.
+	if(_AsyncTextureMode==enable)
+		return;
+	_AsyncTextureMode= enable;
+
+	// if comes to async texture mode, must prepare AsyncTexturing
+	if(_AsyncTextureMode)
+	{
+		_AsyncTextureReady= true;
+
+		// For all TextureFiles in material
+		for(uint i=0;i<Materials.size();i++)
+		{
+			for(uint stage=0;stage<IDRV_MAT_MAXTEXTURES;stage++)
+			{
+				// test if really a CTextureFile
+				CTextureFile	*text= dynamic_cast<CTextureFile*>(Materials[i].getTexture(stage));
+				if(text)
+				{
+					// Must setup the AsyncTextures
+					AsyncTextures[i].IsTextureFile[stage]= true;
+					AsyncTextures[i].TextureNames[stage]= text->getFileName();
+					// Now, must copy the textureFile, to Avoid writing in CMeshBase TextureFile descriptor !!!
+					CTextureFile *tf = new CTextureFile(*text);
+					// setup a dummy texture => Instance won't block rendering because texture not yet ready
+					tf->setFileName("blank.tga");
+					Materials[i].setTexture(stage, tf);
+				}
+				else
+				{
+					AsyncTextures[i].IsTextureFile[stage]= false;
+				}
+			}
+		}
+	}
+	// else, AsyncTextureMode disabled
+	else
+	{
+		// first, must stop and release all textures in the async manager.
+		releaseCurrentAsyncTextures();
+		nlassert(_AsyncTextureToLoadRefCount==0);
+		// clear the array => ensure good work if enableAsyncTextureMode(true) is made later
+		contReset(_CurrentAsyncTextures);
+
+		// For all TextureFiles in material, copy User setup from AsyncTextures, to real fileName
+		for(uint i=0;i<Materials.size();i++)
+		{
+			for(uint stage=0;stage<IDRV_MAT_MAXTEXTURES;stage++)
+			{
+				// if an async texture file
+				if(AsyncTextures[i].IsTextureFile[stage])
+				{
+					// copy the texture name into the texture file.
+					CTextureFile	*text= safe_cast<CTextureFile*>(Materials[i].getTexture(stage));
+					text->setFileName(AsyncTextures[i].TextureNames[stage]);
+					// clear string space
+					AsyncTextures[i].TextureNames[stage].clear();
+				}
+			}
+		}
+	}
+}
+
+
+// ***************************************************************************
+void			CMeshBaseInstance::startAsyncTextureLoading()
+{
+	if(!getAsyncTextureMode())
+		return;
+
+	uint	i;
+	CAsyncTextureManager	&asyncTextMgr= _OwnerScene->getAsyncTextureManager();
+
+
+	/* for all new texture names to load, add them to the manager
+		NB: done first before release because of RefCount Management (in case of same texture name).
+	*/
+	for(i=0;i<AsyncTextures.size();i++)
+	{
+		for(uint stage=0;stage<IDRV_MAT_MAXTEXTURES;stage++)
+		{
+			if(AsyncTextures[i].IsTextureFile[stage])
+			{
+				uint	id;
+				id= asyncTextMgr.addTextureRef(AsyncTextures[i].TextureNames[stage], this);
+				AsyncTextures[i].TextIds[stage]= id;
+			}
+		}
+	}
+
+	/* For all old textures (0 for the first time...), release them.
+	*/
+	releaseCurrentAsyncTextures();
+
+	// OK! bkup the setup
+	_CurrentAsyncTextures= AsyncTextures;
+
+	// texture async is not ready.
+	_AsyncTextureReady= false;
+}
+
+// ***************************************************************************
+void			CMeshBaseInstance::releaseCurrentAsyncTextures()
+{
+	CAsyncTextureManager	&asyncTextMgr= _OwnerScene->getAsyncTextureManager();
+
+	// release all texture in the manager
+	for(uint i=0;i<_CurrentAsyncTextures.size();i++)
+	{
+		for(uint stage=0;stage<IDRV_MAT_MAXTEXTURES;stage++)
+		{
+			if(_CurrentAsyncTextures[i].IsTextureFile[stage])
+			{
+				asyncTextMgr.releaseTexture(_CurrentAsyncTextures[i].TextIds[stage], this);
+			}
+		}
+	}
+}
+
+// ***************************************************************************
+bool			CMeshBaseInstance::isAsyncTextureReady()
+{
+	// if ok, just quit
+	if(_AsyncTextureReady)
+		return true;
+
+	// test if async loading ended
+	if(_AsyncTextureToLoadRefCount==0)
+	{
+		// must copy all fileNames into the actual Texture Files. Those are the valid ones now!
+		for(uint i=0;i<_CurrentAsyncTextures.size();i++)
+		{
+			for(uint stage=0;stage<IDRV_MAT_MAXTEXTURES;stage++)
+			{
+				if(_CurrentAsyncTextures[i].IsTextureFile[stage])
+				{
+					// copy the texture name into the texture file.
+					CTextureFile	*text= safe_cast<CTextureFile*>(Materials[i].getTexture(stage));
+					text->setFileName(_CurrentAsyncTextures[i].TextureNames[stage]);
+					// Since the texture is really uploaded in the driver, the true driver Texture Id will
+					// be bound to this texture.
+				}
+			}
+		}
+
+		// Ok, we are now ready.
+		_AsyncTextureReady= true;
+		return true;
+	}
+	else
+		return false;
+}
+
+
 
 } // NL3D

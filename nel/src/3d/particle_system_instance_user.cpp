@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.14 2002/08/07 08:37:40 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.15 2002/10/10 13:03:28 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -248,6 +248,21 @@ float		CParticleSystemInstanceUser::getShapeDistMax() const
 		return -1;
 }
 
+// ***************************************************************************
+void		CParticleSystemInstanceUser::enableAsyncTextureMode(bool enable) 
+{
+}
+bool		CParticleSystemInstanceUser::getAsyncTextureMode() const 
+{
+	return false;
+}
+void		CParticleSystemInstanceUser::startAsyncTextureLoading() 
+{
+}
+bool		CParticleSystemInstanceUser::isAsyncTextureReady() 
+{
+	return true;
+}
 
 
 } // NL3D

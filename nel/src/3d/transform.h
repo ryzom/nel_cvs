@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.29 2002/09/05 08:24:48 berenguier Exp $
+ * $Id: transform.h,v 1.30 2002/10/10 12:59:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -319,6 +319,9 @@ public:
 	/// non-zero if the model is renderable (ie something may appear on screen)
 	uint32				isRenderable() const {return getStateFlag(IsRenderable);}
 
+	/// non-zero if the CTransform can be casted to a CMeshBaseInstance
+	uint32				isMeshBaseInstance() const {return getStateFlag(IsMeshBaseInstance);}
+
 	// @}
 
 
@@ -446,6 +449,9 @@ protected:
 	/// Deriver must use this method with true to indicate the model support loadBalancing.
 	void				setIsLoadbalancable(bool val);
 
+	/// For CMeshBaseInstance only
+	void				setIsMeshBaseInstance(bool val) {setStateFlag(IsMeshBaseInstance, val);}
+
 	// @}
 
 	/// Test if obj must be displayed when sticked to an object displayed as a LOD (example: sword in hand of a character displayed as a LOD state)
@@ -522,8 +528,9 @@ private:
 		// Misc
 		IsDeleteChannelMixer=	0x4000,
 		IsForceAnimDetail=		0x8000,
+		IsMeshBaseInstance=		0x10000,
 
-		// NB: may continue on >=0x10000
+		// NB: may continue on >=0x20000
 	};
 
 	/// Flags for the General State of the Transform. They are both static or dynamic flags.

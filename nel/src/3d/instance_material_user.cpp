@@ -1,7 +1,7 @@
 /** \file instance_material_user.cpp
  * <File description>
  *
- * $Id: instance_material_user.cpp,v 1.3 2002/02/28 12:59:49 besson Exp $
+ * $Id: instance_material_user.cpp,v 1.4 2002/10/10 13:03:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,12 +26,80 @@
 #include "std3d.h"
 
 #include "3d/instance_material_user.h"
+#include "3d/async_texture_block.h"
+#include "3d/mesh_base_instance.h"
 
 
 namespace NL3D
 {
 
 
+// ***************************************************************************
+bool				CInstanceMaterialUser::isTextureFile(uint stage) const
+{
+	if (stage >= IDRV_MAT_MAXTEXTURES)
+	{
+		nlwarning("UInstanceMaterialUser::isTextureFile : invalid stage");
+		return false;
+	}
+	return dynamic_cast<CTextureFile *>(_Material->getTexture(stage)) != NULL;
+}
+
+// ***************************************************************************
+std::string			CInstanceMaterialUser::getTextureFileName(uint stage) const
+{		
+	if (stage >= IDRV_MAT_MAXTEXTURES)
+	{
+		nlwarning("UInstanceMaterialUser::getTextureFileName : invalid stage");
+		return "";
+	}
+
+	// If Async mode
+	if(_MBI->getAsyncTextureMode())
+	{
+		nlassert(_AsyncTextureBlock->isTextureFile(stage));
+		// return name of the async one.
+		return _AsyncTextureBlock->TextureNames[stage];
+	}
+	else
+	{
+		// return the name in the material
+		return NLMISC::safe_cast<CTextureFile *>(_Material->getTexture(stage))->getFileName();
+	}
+}
+
+// ***************************************************************************
+void				CInstanceMaterialUser::setTextureFileName(const std::string &fileName, uint stage)
+{
+	if (stage >= IDRV_MAT_MAXTEXTURES)
+	{
+		nlwarning("UInstanceMaterialUser::setTextureFileName : invalid stage");
+		return;
+	}
+
+	// If Async mode
+	if(_MBI->getAsyncTextureMode())
+	{
+		if(!_AsyncTextureBlock->isTextureFile(stage))
+		{
+			nlwarning("UInstanceMaterialUser::setTextureFileName : the texture is not a texture file");
+			return;
+		}
+		_AsyncTextureBlock->TextureNames[stage]= fileName;
+	}
+	else
+	{
+		CTextureFile *otherTex = dynamic_cast<CTextureFile *>(_Material->getTexture(stage));
+		if (!otherTex)
+		{
+			nlwarning("UInstanceMaterialUser::setTextureFileName : the texture is not a texture file");
+			return;
+		}
+		CTextureFile *tf = new CTextureFile(*otherTex);
+		tf->setFileName(fileName);
+		_Material->setTexture(stage, tf);
+	}
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.31 2002/09/05 08:24:48 berenguier Exp $
+ * $Id: scene.h,v 1.32 2002/10/10 13:03:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,7 @@ class	CCoarseMeshManager;
 class	CInstanceGroup;
 class	CSkipModel;
 class	CLodCharacterManager;
+class	CAsyncTextureManager;
 
 
 // ***************************************************************************
@@ -446,6 +447,10 @@ public:
 	/// Get a reference to the set of automatic animations
 	CAnimationSet		*getAutomaticAnimationSet() const { return _AutomaticAnimationSet; }	
 
+
+	/// Get the async texture manager
+	CAsyncTextureManager		&getAsyncTextureManager() const {return *_AsyncTextureManager;}
+
 private:
 	typedef			std::map<sint, ITravScene*>	TTravMap;
 	TTravMap		RenderTraversals;	// Sorted via their getRenderOrder().
@@ -545,6 +550,10 @@ private:
 
 	// A set of automatic animation
 	NLMISC::CSmartPtr<CAnimationSet>			_AutomaticAnimationSet;	
+
+
+	// The async texture manager.
+	CAsyncTextureManager		*_AsyncTextureManager;
 
 };
 

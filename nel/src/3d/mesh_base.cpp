@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.22 2002/07/25 17:38:34 corvazier Exp $
+ * $Id: mesh_base.cpp,v 1.23 2002/10/10 12:59:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -250,11 +250,14 @@ void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi, CScene *ownerScene)
 	
 	// setup materials.
 	//=================
-		// Copy material. Textures are referenced only
-		mi->Materials= _Materials;
+	// Copy material. Textures are referenced only
+	mi->Materials= _Materials;
 
-		// Instanciate selectable textures (use default set)
-		mi->selectTextureSet(0);
+	// Instanciate selectable textures (use default set)
+	mi->selectTextureSet(0);
+
+	// prepare possible AsyncTextures
+	mi->AsyncTextures.resize(_Materials.size());
 
 	// setup animated materials.
 	//==========================

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.16 2002/09/05 17:59:54 corvazier Exp $
+ * $Id: mesh_base_instance.h,v 1.17 2002/10/10 12:59:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/animated_material.h"
 #include "3d/animated_lightmap.h"
 #include "3d/animated_morph.h"
+#include "3d/async_texture_block.h"
 
 
 namespace NL3D
@@ -43,6 +44,8 @@ class CMesh;
 class CMeshMRM;
 class CMeshBaseInstanceAnimDetailObs;
 class CAnimatedLightmap;
+class CAsyncTextureManager;
+
 
 // ***************************************************************************
 // ClassIds.
@@ -72,6 +75,14 @@ public:
 	 * By default, they are copied from the Mesh.
 	 */
 	std::vector<CMaterial>			Materials;
+
+	/** For Aynsc Texture Loading. This has the same size as Materials.
+	 *	User can fill here the name of the texture he want to async load.
+	 *	WARNING: once AsyncTextureMode is set, Materials, Texture fields should not be modified, else
+	 *	undefined results
+	 */
+	std::vector<CAsyncTextureBlock>	AsyncTextures;
+
 
 	/// \name IAnimatable Interface (registering only IAnimatable sons).
 	// @{
@@ -138,19 +149,44 @@ public:
 	 */
 	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest) {}
 
-	/// If there are selectable texture in this mesh shape, this replace the matching material instances with the right texture	
+	/** If there are selectable texture in this mesh shape, this replace the matching material instances with the right texture	
+	 *	If getAsyncTextureMode()==true, then this replace the AsyncTexture fileNames, instead of the Materials file Names.
+	 */
 	void selectTextureSet(uint id);
+
+
+	/// \name Async Texture Loading
+	// @{
+	/** if true, the instance is said in "AsyncTextureMode". Ie user must fill AsyncTextures field with name of the
+	 *	textures to load. At each startAsyncTextureLoading(), the system start to load async them.
+	 *	Then, isAsyncTextureReady() should be test each frame, to know if loading has completed.
+	 *	By default, AsyncTextureMode=false. 
+	 *	When it swap from false to true, each texture file in Materials are replaced with 
+	 *	"blank.tga", and true fileNames are copied into AsyncTextures.
+	 *	When it swap from true to false, the inverse is applied.
+	 */
+	void			enableAsyncTextureMode(bool enable);
+	bool			getAsyncTextureMode() const {return _AsyncTextureMode;}
+	/** Start to load all textures in AsyncTextures array (if needed)
+	 *	NB: old setup is kept in Material => instance is still rendered with "coherent" textures, until new textures
+	 *	are ready
+	 *	no op if not in async texture mode.
+	 */
+	void			startAsyncTextureLoading();
+	/**	return true if all the async textures of the instances are uploaded.
+	 *	if was not ready before, this swap the 
+	 *	return always true if not in async texture mode, or if startAsyncTextureLoading() has not been called
+	 *	since last enableAsyncTextureMode(true)
+	 */
+	bool			isAsyncTextureReady();
+	// @}
 
 
 protected:
 	/// Constructor
-	CMeshBaseInstance()
-	{
-		IAnimatable::resize(AnimValueLast);
-		_OwnerScene= NULL;
-	}
+	CMeshBaseInstance();
 	/// Destructor
-	virtual ~CMeshBaseInstance() {}
+	virtual ~CMeshBaseInstance();
 
 
 private:
@@ -169,6 +205,20 @@ private:
 
 	/// The Scene where the instance is created.
 	CScene		*_OwnerScene;
+
+	/// \name Async Texture Loading
+	// @{
+	/// 0 if all the texture are async loaded. Setup by the CAsyncTextureManager
+	friend	class	CAsyncTextureManager;
+	sint							_AsyncTextureToLoadRefCount;
+	bool							_AsyncTextureMode;
+	bool							_AsyncTextureReady;
+	// A copy of AsyncTextures done at each startAsyncTextureLoading().
+	std::vector<CAsyncTextureBlock>	_CurrentAsyncTextures;
+
+	void			releaseCurrentAsyncTextures();
+
+	// @}
 
 /// public only for IMeshVertexProgram classes.
 public:

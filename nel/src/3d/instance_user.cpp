@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.11 2002/04/26 15:05:00 berenguier Exp $
+ * $Id: instance_user.cpp,v 1.12 2002/10/10 13:03:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ CInstanceUser::CInstanceUser(CScene *scene, IModel *trans) :
 		_Materials.reserve(numMat);
 		for(uint i=0;i<numMat;i++)
 		{
-			_Materials.push_back(&mi->Materials[i]);
+			_Materials.push_back(CInstanceMaterialUser(mi, &mi->Materials[i], &mi->AsyncTextures[i]));
 		}
 	}
 }
@@ -106,6 +106,36 @@ float		CInstanceUser::getShapeDistMax() const
 	}
 	else
 		return -1;
+}
+
+
+// ***************************************************************************
+void		CInstanceUser::enableAsyncTextureMode(bool enable) 
+{
+	nlassert(_Instance->isMeshBaseInstance());
+	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
+	mbi->enableAsyncTextureMode(enable) ;
+}
+// ***************************************************************************
+bool		CInstanceUser::getAsyncTextureMode() const 
+{
+	nlassert(_Instance->isMeshBaseInstance());
+	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
+	return mbi->getAsyncTextureMode() ;
+}
+// ***************************************************************************
+void		CInstanceUser::startAsyncTextureLoading() 
+{
+	nlassert(_Instance->isMeshBaseInstance());
+	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
+	mbi->startAsyncTextureLoading();
+}
+// ***************************************************************************
+bool		CInstanceUser::isAsyncTextureReady() 
+{
+	nlassert(_Instance->isMeshBaseInstance());
+	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
+	return mbi->isAsyncTextureReady();
 }
 
 

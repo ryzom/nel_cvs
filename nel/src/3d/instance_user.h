@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.10 2002/07/03 09:06:37 vizerie Exp $
+ * $Id: instance_user.h,v 1.11 2002/10/10 13:03:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,6 +106,14 @@ public:
 	virtual void		start() { _Instance->start(); }	
 	virtual void		stop()  { _Instance->stop(); }	
 	virtual bool		isStarted() const { return _Instance->isStarted(); }	
+
+	/// \name Async Texture Loading
+	// @{
+	virtual	void		enableAsyncTextureMode(bool enable) ;
+	virtual	bool		getAsyncTextureMode() const ;
+	virtual	void		startAsyncTextureLoading() ;
+	virtual	bool		isAsyncTextureReady() ;
+	// @}
 
 };
 

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.12 2002/07/03 09:06:57 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.13 2002/10/10 13:03:28 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -94,6 +94,12 @@ public:
 	// change/get Shape distMax.
 	virtual void		setShapeDistMax(float distMax);
 	virtual float		getShapeDistMax() const;
+
+	// No-op for ParticleSystem
+	virtual	void		enableAsyncTextureMode(bool enable) ;
+	virtual	bool		getAsyncTextureMode() const ;
+	virtual	void		startAsyncTextureLoading() ;
+	virtual	bool		isAsyncTextureReady() ;
 
 private:
 	/// list of observers

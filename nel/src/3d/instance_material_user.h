@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.8 2002/06/27 15:43:29 vizerie Exp $
+ * $Id: instance_material_user.h,v 1.9 2002/10/10 13:03:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,11 @@ namespace NL3D
 {
 
 
+class CMeshBaseInstance;
+class CInstanceUser;
+class CAsyncTextureBlock;
+
+
 // ***************************************************************************
 /**
  * UInstanceMaterial implementation.
@@ -48,10 +53,12 @@ class CInstanceMaterialUser : public UInstanceMaterial
 {
 public:
 	/// Constructor
-	CInstanceMaterialUser(CMaterial *mat)
+	CInstanceMaterialUser(CMeshBaseInstance	*mbi, CMaterial *mat, CAsyncTextureBlock *asyncTextBlock)
 	{
-		nlassert(mat);
+		nlassert(mat && mbi && asyncTextBlock);
+		_MBI= mbi;
 		_Material= mat;
+		_AsyncTextureBlock= asyncTextBlock;
 	}
 	/// dtor
 	virtual	~CInstanceMaterialUser()
@@ -183,44 +190,11 @@ public:
 
 	/// \name Texture files specific
 	// @{	
-	virtual bool				isTextureFile(uint stage = 0) const
-	{
-		if (stage >= IDRV_MAT_MAXTEXTURES)
-		{
-			nlwarning("UInstanceMaterialUser::isTextureFile : invalid stage");
-			return false;
-		}
-		return dynamic_cast<CTextureFile *>(_Material->getTexture(stage)) != NULL;
-	}
-	
-	virtual std::string getTextureFileName(uint stage = 0) const
-	{		
-		if (stage >= IDRV_MAT_MAXTEXTURES)
-		{
-			nlwarning("UInstanceMaterialUser::getTextureFileName : invalid stage");
-			return "";
-		}
-		return NLMISC::safe_cast<CTextureFile *>(_Material->getTexture(stage))->getFileName();
-	}
-	
-	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0)
-	{
-		CTextureFile *otherTex = dynamic_cast<CTextureFile *>(_Material->getTexture(stage));
-		if (stage >= IDRV_MAT_MAXTEXTURES)
-		{
-			nlwarning("UInstanceMaterialUser::setTextureFileName : invalid stage");
-			return;
-		}
-		if (!otherTex)
-		{
-			nlwarning("UInstanceMaterialUser::setTextureFileName : the texture is not a texture file");
-			return;
-		}
-		CTextureFile *tf = new CTextureFile(*otherTex);
-		tf->setFileName(fileName);
-		_Material->setTexture(stage, tf);
-		
-	}
+	virtual bool				isTextureFile(uint stage = 0) const;
+	virtual std::string getTextureFileName(uint stage = 0) const;
+	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0);
+	// @}
+
 
 	virtual sint				getLastTextureStage() const
 	{
@@ -237,7 +211,9 @@ public:
 
 
 private:
-	CMaterial	*_Material;
+	CMeshBaseInstance	*_MBI;
+	CMaterial			*_Material;
+	CAsyncTextureBlock	*_AsyncTextureBlock;
 
 public:
 

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.23 2002/09/05 08:24:48 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.24 2002/10/10 13:03:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "3d/lod_character_shape.h"
 #include "3d/lod_character_shape_bank.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "3d/async_texture_manager.h"
 
 using namespace NLMISC;
 
@@ -813,5 +814,20 @@ void						CSceneUser::deleteVisualCollisionManager(UVisualCollisionManager *mgr)
 	_VisualCollisionManagers.erase(dynamic_cast<CVisualCollisionManagerUser*>(mgr));
 }
 
+// ***************************************************************************
+void				CSceneUser::setupAsyncTextureLod(uint baseLevel, uint maxLevel)
+{
+	_Scene.getAsyncTextureManager().setupLod(baseLevel, maxLevel);
+}
+// ***************************************************************************
+void				CSceneUser::setupAsyncTextureMaxUploadPerFrame(uint maxup)
+{
+	_Scene.getAsyncTextureManager().setupMaxUploadPerFrame(maxup);
+}
+// ***************************************************************************
+void				CSceneUser::updateAscyncTexture()
+{
+	_Scene.getAsyncTextureManager().update(_DriverUser->getDriver());
+}
 
 } // NL3D

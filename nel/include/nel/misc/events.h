@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.13 2000/12/04 12:02:04 corvazier Exp $
+ * $Id: events.h,v 1.14 2000/12/04 14:32:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,7 @@ const CClassId EventCharId (0x552255fe, 0x75a2373f);
 // Window events
 const CClassId EventActivateId (0x7da66b0a, 0x1ef74519);
 const CClassId EventSetFocusId (0x17650fac, 0x19f85dde);
+const CClassId EventDestroyWindowId (0x69be73fe, 0x4b07603b);
 
 // Mouse events
 const CClassId EventMouseMoveId (0x3dd12fdb, 0x472f548b);
@@ -403,6 +404,17 @@ public:
 	}
 };
 
+
+/**
+ * CEventDestroyWindow
+ */
+class CEventDestroyWindow : public CEvent
+{
+public:
+	CEventDestroyWindow (IEventEmitter* emitter) : CEvent (emitter, EventDestroyWindowId)
+	{
+	}
+};
 
 
 } // NLMISC

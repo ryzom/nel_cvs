@@ -1,7 +1,7 @@
 /** \file event_emitter.cpp
  * <File description>
  *
- * $Id: event_emitter.cpp,v 1.13 2000/12/04 12:01:58 corvazier Exp $
+ * $Id: event_emitter.cpp,v 1.14 2000/12/04 14:32:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -170,6 +170,9 @@ void CEventEmitterWin32::processMessage (uint32 hWnd, uint32 msg, uint32 wParam,
 			}
 			break;
 		}
+	case WM_DESTROY:
+		server->postEvent (new CEventDestroyWindow (this));
+		break;
 	case WM_MOUSEWHEEL:
 		{
 			// MSWindows coordinates to NeL window coordinate

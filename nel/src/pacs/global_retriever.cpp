@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.24 2001/06/07 12:42:55 corvazier Exp $
+ * $Id: global_retriever.cpp,v 1.25 2001/06/08 13:42:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1338,7 +1338,7 @@ float			NLPACS::CGlobalRetriever::getMeanHeight(const CGlobalPosition &pos)
 	// if there is no acceptable leaf, just give up
 	if (leaf == NULL)
 	{
-		nlinfo("wazzaaaaaa!");
+		nlinfo("COL: quadtree: don't find the quadLeaf!");
 		return pos.LocalPosition.Estimation.z;
 	}
 	else

@@ -1,7 +1,7 @@
 /** \file view_cs.cpp
  * viewer of cluster system
  *
- * $Id: view_cs.cpp,v 1.1 2002/08/23 15:00:05 besson Exp $
+ * $Id: view_cs.cpp,v 1.2 2003/03/26 10:25:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -243,7 +243,7 @@ int CALLBACK WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	CNELU::Camera->setClusterSystem ((CInstanceGroup*)-1); 
 
 
-	CClipTrav *pClipTrav = (CClipTrav*)CNELU::Scene.getTrav (ClipTravId);
+	CClipTrav *pClipTrav = &CNELU::Scene.getClipTrav();
 	dcsTemp.Name = "Root";
 	dcsTemp.pIG = NULL;
 	DispCS.push_back (dcsTemp);

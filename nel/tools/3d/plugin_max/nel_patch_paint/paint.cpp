@@ -4124,7 +4124,7 @@ DWORD WINAPI myThread (LPVOID vData)
 							CTransformShape *tShape=CNELU::Scene.createInstance (CExportNel::getName (*pNode));
 
 							// Big hack to sort
-							CNELU::Scene.getTrav (ClipTravId)->link (TheLand, tShape);
+							TheLand->clipAddChild(tShape);
 						}
 					}
 				}

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.38 2003/03/17 16:53:43 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.39 2003/03/26 10:28:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -796,7 +796,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 					if (newModel)
 					{		
 						// link to the root for manipulation
-						NL3D::CNELU::Scene.getHrcTrav()->link(_ParticleDlg->_ObjView->getSceneRoot(), newModel);
+						_ParticleDlg->_ObjView->getSceneRoot()->hrcLinkSon(newModel);
 
 						_ParticleDlg->StartStopDlg->reset();
 						CParticleSystemModel *psm = newModel;					
@@ -871,7 +871,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 					if (newModel)
 					{									
 						// link to the root for manipulation
-						NL3D::CNELU::Scene.getHrcTrav()->link(_ParticleDlg->_ObjView->getSceneRoot(), newModel);
+						_ParticleDlg->_ObjView->getSceneRoot()->hrcLinkSon(newModel);
 
 						nt->PSModel->getPS()->merge( NLMISC::safe_cast<NL3D::CParticleSystemShape *>((NL3D::IShape *) newModel->Shape) );				
 					}

@@ -23,7 +23,7 @@ void CPaintLight::setup (NL3D::CLandscape &landscape, NL3D::CScene &scene)
 	for (uint light=0; light<_Lights.size (); light++)
 	{
 		// Create a model
-		IModel	*model= scene.createModel(PointLightModelId);
+		CTransform *model= scene.createModel(PointLightModelId);
 		
 		// If not found, return NULL.
 		if(model==NULL)

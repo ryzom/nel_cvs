@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.88 2003/02/06 15:10:46 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.89 2003/03/26 10:28:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1805,7 +1805,7 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 		nlassert (pTrShape);
 
 		// link to the root for manipulation
-		CNELU::Scene.getHrcTrav()->link(_SceneRoot, pTrShape);
+		_SceneRoot->hrcLinkSon(pTrShape);
 
 		// Get the real shape used by the instance.
 		pMeshShape= pTrShape->Shape;
@@ -1934,7 +1934,7 @@ uint CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* skelName)
 	nlassert (pTrShape);
 
 	// link to the root for manipulation
-	CNELU::Scene.getHrcTrav()->link(_SceneRoot, pTrShape);
+	_SceneRoot->hrcLinkSon(pTrShape);
 
 	// Get the real shape used by the instance.
 	pSkelShape= pTrShape->Shape;
@@ -2441,7 +2441,7 @@ void CObjectViewer::enableDynamicObjectLightingTest(NLPACS::CGlobalRetriever *gl
 		if(_ObjectLightTest!=NULL)
 		{
 			// link to the root for manipulation
-			CNELU::Scene.getHrcTrav()->link(_SceneRoot, _ObjectLightTest);
+			_SceneRoot->hrcLinkSon(_ObjectLightTest);
 
 			// setup the matrix.
 			_ObjectLightTestMatrix= _ObjectLightTest->getMatrix();

@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.19 2001/01/22 16:42:31 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.20 2001/01/22 16:53:05 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -174,20 +174,13 @@ namespace NLAISCRIPT
 		
 		sint32 i, child_index;
 
-//		std::vector< std::vector<sint32> > l_index;
-#ifdef _NL_DEBUG_
+#ifdef NL_DEBUG
 		const char *dbg_this_class_name = getClassName()->getString();
 #endif
-
 		clearIndirectMsgTable();
 
 		_MsgIndirectTable = new sint32 *[ _Methode.size() ];
-/*		for (i = 0; i < (int) _Methode.size(); i++ )
-		{
-			_MsgIndirectTable[i] =  NULL;
-			l_index.push_back( std::vector<sint32>() );
-		}
-*/
+
 		/// Counts the number of scripted components
 		for (i =0; i < (int) _Components.size() ; i++ ) // ... for each of its components ...
 		{
@@ -217,28 +210,20 @@ namespace NLAISCRIPT
 		for (i =0; i < (int) _Components.size() ; i++ ) // ... for each of its components ...
 		{
 			NLAIC::CIdentType c_type( _Components[ i ]->RegisterName->getString() );
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 			const char *dbg_class_name = _Components[ i ]->RegisterName->getString();
 #endif
 			if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ...if it's a scripted agent...
 			{
 				CAgentClass *child_class = (CAgentClass *) c_type.getFactory()->getClass();
-#ifdef _DEBUG_
+#ifdef NL_DEBUG
 				sint32 dbg_nb_funcs = child_class->getBrancheCodeSize();
 #endif
 				for (child_index =0; child_index < child_class->getBrancheCodeSize(); child_index++ ) // ... for each of its methods...
 				{
 					CMethodeName &method = child_class->getBrancheCode( (int) child_index );
-#ifdef _DEBUG_
+#ifdef NL_DEBUG
 					const char *dbg_meth_name = method.getName().getString();
-#endif
-
-#ifdef _DEBUG
-					int dbg_param_size = method.getParam().size();
-					char dbg_param_name [1024*8];
-					method.getParam().getDebugString(dbg_param_name);
-					char dbg_real_name [1024*8];
-//					sprintf(dbg_real_name,"%s.%s %s",dbg_class_name,dbg_meth_name,dbg_param_name);
 #endif
 					if ( isMessageFunc( method.getParam() ) )	// ... if it's a message processing function...
 					{

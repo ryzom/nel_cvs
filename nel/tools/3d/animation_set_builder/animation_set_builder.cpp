@@ -3,13 +3,17 @@
 
 #include <nel/misc/file.h>
 #include <nel/3d/animation_set.h>
+#include <nel/3d/register_3d.h>
 #include "anim_utility.h"
 
 using namespace NLMISC;
 using namespace NL3D;
 
+
 int main(int argc, char* argv[])
 {
+	NL3D::registerSerial3d();
+
 	// Check num of args
 	if (argc!=3)
 	{
@@ -38,11 +42,8 @@ int main(int argc, char* argv[])
 			}
 			else
 			{
-				// Error message
-				printf ("Info: can't open %s for reading. Create the file.\n", argv[1]);
-				
-				// Error code
-				return -1;
+				// Info message
+				printf ("Info: can't open %s for reading. File created.\n", argv[1]);
 			}
 
 			// Animation

@@ -1,7 +1,7 @@
 /** \file key.h
  * class CKey
  *
- * $Id: key.h,v 1.1 2001/02/05 16:52:44 corvazier Exp $
+ * $Id: key.h,v 1.2 2001/03/07 16:54:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,18 +86,23 @@ public:
 };
 
 // Predefined types
-typedef CKeyTCB<float> CKeyTCBFloat;
-typedef CKeyTCB<NLMISC::CVector> CKeyTCBVector;
-typedef CKeyTCB<NLMISC::CQuat> CKeyTCBQuat;
-typedef CKeyTCB<int> CKeyTCBInt;
+typedef CKey<std::string>			CKeyString;
+typedef CKey<bool>					CKeyBool;
+typedef CKey<float>					CKeyFloat;
+typedef CKey<NLMISC::CVector>		CKeyVector;
+typedef CKey<NLMISC::CQuat>			CKeyQuat;
+typedef CKey<int>					CKeyInt;
 
-typedef CKeyBezier<float> CKeyBezierFloat;
-typedef CKeyBezier<NLMISC::CVector> CKeyBezierVector;
-typedef CKeyBezier<NLMISC::CQuat> CKeyBezierQuat;
-typedef CKeyBezier<int> CKeyBezierInt;
+typedef CKeyTCB<float>				CKeyTCBFloat;
+typedef CKeyTCB<NLMISC::CVector>	CKeyTCBVector;
+typedef CKeyTCB<NLMISC::CQuat>		CKeyTCBQuat;
+typedef CKeyTCB<int>				CKeyTCBInt;
 
-typedef CKey<std::string> CKeyString;
-typedef CKey<bool> CKeyBool;
+typedef CKeyBezier<float>			CKeyBezierFloat;
+typedef CKeyBezier<NLMISC::CVector>	CKeyBezierVector;
+typedef CKeyBezier<NLMISC::CQuat>	CKeyBezierQuat;
+typedef CKeyBezier<int>				CKeyBezierInt;
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file precomputed_rotations_dlg.cpp
  * a dialog to edit precomputed rotations of elements in a particle system
  *
- * $Id: precomputed_rotations_dlg.cpp,v 1.4 2001/12/06 16:58:51 vizerie Exp $
+ * $Id: precomputed_rotations_dlg.cpp,v 1.5 2001/12/19 15:49:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,9 @@ void CPrecomputedRotationsDlg::enablePrecompRotationControl(void)
 	m_RotSpeedMinCtrl.EnableWindow(m_PrecomputedRotations);
 	m_RotSpeedMaxCtrl.EnableWindow(m_PrecomputedRotations);
 	m_NbModelsCtrl.EnableWindow(m_PrecomputedRotations);
-
+	GetDlgItem(IDC_UPDATE_MIN_ROT_SPEED)->EnableWindow(m_PrecomputedRotations);
+	GetDlgItem(IDC_UPDATE_MAX_ROT_SPEED)->EnableWindow(m_PrecomputedRotations);
+	GetDlgItem(IDC_UPDATE_NB_MODELS)->EnableWindow(m_PrecomputedRotations);	
 	UpdateData(FALSE);
 }
 

@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.28 2001/05/28 12:40:31 chafik Exp $
+ * $Id: common.h,v 1.29 2001/05/29 09:30:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,21 +103,7 @@ _dest = _cstring
  * \param count Size of the buffer
  * \param format of the string, it must be the last argument before the \c '...'
  */
-inline sint smprintf( char *buffer, size_t count, const char *format, ... )
-{
-	sint ret;
-
-	va_list args;
-	va_start( args, format );
-	ret = vsnprintf( buffer, count, format, args );
-	if ( ret == -1 )
-	{
-		buffer[count-1] = '\0';
-	}
-	va_end( args );
-
-	return( ret );
-}
+sint smprintf( char *buffer, size_t count, const char *format, ... );
 
 
 /** Return a float random inside the interval [0,mod]
@@ -191,114 +177,39 @@ template<class T>	inline void contReset (T& a)
  *   raiseToNextPowerOf2(8) is 8
  *   raiseToNextPowerOf2(5) is 8
  */
-inline uint	raiseToNextPowerOf2(uint v)
-{
-	uint	res=1;
-	while(res<v)
-		res<<=1;
-	
-	return res;
-}
+uint			raiseToNextPowerOf2 (uint v);
 
 /** Return the power of 2 of v.
  * Example:
  *   getPowerOf2(8) is 3
  *   getPowerOf2(5) is 3
  */
-inline uint	getPowerOf2(uint v)
-{
-	uint	res=1;
-	uint	ret=0;
-	while(res<v)
-	{
-		ret++;
-		res<<=1;
-	}
-	
-	return ret;
-}
-
+uint			getPowerOf2 (uint v);
 
 /** Return \c true if the value is a power of 2.
  */
-inline bool isPowerOf2(sint32 v)
-{
-	while(v)
-	{
-		if(v&1)
-		{
-			v>>=1;
-			if(v)
-				return false;
-		}
-		else
-			v>>=1;
-	}
-
-	return true;
-}
+bool			isPowerOf2 (sint32 v);
 
 
 /** Convert a string in lower case.
  * \param a string to transform to lower case
  */
-inline std::string &strlwr ( std::string &str )
-{
-	for (int i=str.size()-1; i>=0; i--)
-	{
-		str[i] = tolower(str[i]);
-	}
-
-	return (str);
-}
+std::string		&strlwr ( std::string &str );
 
 /** Convert a string in lower case.
  * \param a pointer to char to transform to lower case
  */
-inline char *strlwr ( char *str )
-{
-	if (str == NULL)
-		return (NULL);
-
-	while (*str != '\0')
-	{
-		*str = tolower(*str);
-		str++;
-	}
-
-	return (str);
-}
+char			*strlwr ( char *str );
 
 /** Convert a string in upper case.
  * \param a string to transform to upper case
  */
-inline std::string &strupr ( std::string &str )
-{
-	for (int i=str.size()-1; i>=0; i--)
-	{
-		str[i] = toupper(str[i]);
-	}
-
-	return (str);
-}
+std::string		&strupr ( std::string &str );
 
 /** Convert a string in upper case.
  * \param a pointer to char to transform to upper case
  */
-inline char *strupr ( char *str )
-{
-	if (str == NULL)
-		return (NULL);
-
-	while (*str != '\0')
-	{
-		*str = toupper(*str);
-		str++;
-	}
-
-	return (str);
-}
-
+char			*strupr ( char *str );
 
 /**
  * Base class for all NeL exception.
@@ -325,13 +236,13 @@ void nlSleep( uint32 ms );
 
 /// Returns Process Id (note: on Linux, Process Id is the same as the Thread Id)
 #ifdef NL_OS_WINDOWS
-#define getpid _getpid
+#	define getpid _getpid
 #endif
 
 /// Returns Thread Id (note: on Linux, Process Id is the same as the Thread Id)
 uint getThreadId();
 
-/// Returns a readable string from a vector of bytes. '\0' are replaced by ' '
+/// Returns a readable string from a vector of bytes. unprintable char are replaced by '?'
 std::string stringFromVector( const std::vector<uint8>& v );
 
 
@@ -346,126 +257,11 @@ template<class T> std::string toString (const T &t)
 	return ss.str();
 }
 
-inline sint64 atoiInt64(const char *ident,sint64 base = 10)
-{
-	uint64 k = 0;
+/// Convert a string into an sint64 (same as atoi() function but for 64 bits intergers)
+sint64 atoiInt64 (const char *ident, sint64 base = 10);
 
-	while(*ident != 0)
-	{
-		switch(*(ident++))
-		{
-		case '0':
-			k +=0;
-			break;
-		case '1':
-			k +=1;
-			break;
-		case '2':
-			k +=2;
-			break;
-		case '3':
-			k +=3;
-			break;
-		case '4':
-			k +=4;
-			break;
-		case '5':
-			k +=5;
-			break;
-		case '6':
-			k +=6;
-			break;
-		case '7':
-			k +=7;
-			break;
-		case '8':
-			k +=8;
-			break;
-		case '9':
-			k +=9;
-			break;
-		case 'a':
-			k +=10;
-			break;
-		case 'b':
-			k +=11;
-			break;
-		case 'c':
-			k +=12;
-			break;
-		case 'd':
-			k +=13;
-			break;
-		case 'e':
-			k +=14;
-			break;
-		case 'f':
-			k +=15;
-			break;
-
-		case 'A':
-			k +=10;
-			break;
-		case 'B':
-			k +=11;
-			break;
-		case 'C':
-			k +=12;
-			break;
-		case 'D':
-			k +=13;
-			break;
-		case 'E':
-			k +=14;
-			break;
-		case 'F':
-			k +=15;
-			break;
-
-		case 0:
-			return k;
-			break;
-		}
-		if(*ident != 0) k *= base;
-	}
-
-	return k;
-}
-
-
-inline void itoaInt64(sint64 numbre,char *str,sint64 base = 10) 
-{									
-	str[0] = 0;
-	char b[256];
-	if(!numbre)
-	{
-		str[0] = '0';
-		str[1] = 0;
-	}
-	memset(b,0,255);
-	memset(b,'0',64);
-	sint n;
-	uint64 x = numbre;
-	char baseTable[] = "0123456789abcdefghijklmnopqrstuvwyz";
-	for(n = 0; n < 64; n ++)
-	{
-		sint num = (sint)(x % base);
-		b[64 - n] = baseTable[num];
-		if(!x) 
-		{
-			int k;
-			int j = 0;
-			for(k = 64 - n + 1; k <= 64; k++) 	
-			{
-				str[j ++] = b[k];
-			}
-			str[j] = 0;
-			break;
-		}
-		x /= base;
-	}
-		
-}
+/// Convert an sint64 into a string (same as itoa() function but for 64 bits intergers)
+void itoaInt64 (sint64 number, char *str, sint64 base = 10);
 
 
 }	// NLMISC

@@ -71,6 +71,8 @@
 #define IDC_GROUP                       1052
 #define IDC_OK2                         1053
 #define IDC_BATCH_LOAD                  1054
+#define IDC_EXPORT_BORDER               1055
+#define IDC_IMPORT_BORDER2              1056
 #define IDC_VIEW                        1062
 #define IDC_LISTGROUP                   1063
 #define IDC_ADD_GROUP                   1064

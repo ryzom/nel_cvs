@@ -116,6 +116,8 @@ protected:
 	afx_msg void OnSubgroup9();
 	afx_msg void OnSubgroup10();
 	afx_msg void OnSubgroup11();
+	afx_msg void OnExportBorder();
+	afx_msg void OnImportBorder();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

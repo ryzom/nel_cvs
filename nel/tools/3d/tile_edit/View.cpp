@@ -202,8 +202,7 @@ int TileList::setTile128 (int tile, const std::string& name, NL3D::CTile::TBitma
 		uint Height;
 		if (!PIC_LoadPic(tileBank2.getAbsPath ()+troncated, tampon, Width, Height))
 		{
-			MessageBox (NULL, (tileBank2.getAbsPath ()+troncated).c_str(), "Can't load bitmap.", MB_OK|MB_ICONEXCLAMATION);
-			return 0;
+			return (int)(MessageBox (NULL, ((tileBank2.getAbsPath ()+troncated)+"\nContinue ?").c_str(), "Can't load bitmap.", MB_YESNO|MB_ICONEXCLAMATION)==IDYES);
 		}
 		else
 		{
@@ -219,8 +218,7 @@ int TileList::setTile128 (int tile, const std::string& name, NL3D::CTile::TBitma
 				char sTmp[512];
 				static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
 				sprintf (sTmp, "%s\nPixel: %d (%s)", CTileSet::getErrorMessage (error), pixel, comp[composante]);
-				MessageBox (NULL, sTmp, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
-				return 0;
+				return (int)(MessageBox (NULL, (std::string(sTmp)+"\nContinue ?").c_str(), "Can't add tile", MB_YESNO|MB_ICONEXCLAMATION)==IDYES);
 			}
 			else
 			{
@@ -249,7 +247,7 @@ int TileList::setTile128 (int tile, const std::string& name, NL3D::CTile::TBitma
 		// Error: bitmap not in the absolute path..
 		char msg[512];
 		sprintf (msg, "The bitmap %s is not in the absolute path %s.", name.c_str(), tileBank2.getAbsPath ().c_str());
-		MessageBox (NULL, msg, "Load error", MB_OK|MB_ICONEXCLAMATION);
+		return (int)(MessageBox (NULL, (std::string (msg)+"\nContinue ?").c_str(), "Load error", MB_YESNO|MB_ICONEXCLAMATION)==IDYES);
 	}
 
 	return 1;
@@ -266,8 +264,7 @@ int TileList::setTile256 (int tile, const std::string& name, NL3D::CTile::TBitma
 		uint Height;
 		if (!PIC_LoadPic(tileBank2.getAbsPath ()+troncated, tampon, Width, Height))
 		{
-			MessageBox (NULL, (tileBank2.getAbsPath ()+troncated).c_str(), "Can't load bitmap.", MB_OK|MB_ICONEXCLAMATION);
-			return 0;
+			return (int)(MessageBox (NULL, ((tileBank2.getAbsPath ()+troncated)+"\nContinue ?").c_str(), "Can't load bitmap.", MB_YESNO|MB_ICONEXCLAMATION)==IDYES);
 		}
 		else
 		{
@@ -283,8 +280,7 @@ int TileList::setTile256 (int tile, const std::string& name, NL3D::CTile::TBitma
 				char sTmp[512];
 				static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
 				sprintf (sTmp, "%s\nPixel: %d (%s)", CTileSet::getErrorMessage (error), pixel, comp[composante]);
-				MessageBox (NULL, sTmp, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
-				return 0;
+				return (int)(MessageBox (NULL, (std::string(sTmp)+"\nContinue ?").c_str(), "Can't add tile", MB_YESNO|MB_ICONEXCLAMATION)==IDYES);
 			}
 			else
 			{
@@ -310,7 +306,7 @@ int TileList::setTile256 (int tile, const std::string& name, NL3D::CTile::TBitma
 		// Error: bitmap not in the absolute path..
 		char msg[512];
 		sprintf (msg, "The bitmap %s is not in the absolute path %s.", name.c_str(), tileBank2.getAbsPath ().c_str());
-		MessageBox (NULL, msg, "Load error", MB_OK|MB_ICONEXCLAMATION);
+		return (int)(MessageBox (NULL, (std::string (msg)+"\nContinue ?").c_str(), "Load error", MB_YESNO|MB_ICONEXCLAMATION)==IDYES);
 	}
 
 	return 1;
@@ -330,8 +326,7 @@ int TileList::setTileTransition (int tile, const std::string& name, NL3D::CTile:
 		uint Height;
 		if (!PIC_LoadPic(tileBank2.getAbsPath ()+troncated, tampon, Width, Height))
 		{
-			MessageBox (NULL, (tileBank2.getAbsPath ()+troncated).c_str(), "Can't load bitmap.", MB_OK|MB_ICONEXCLAMATION);
-			return 0;
+			return (int)(MessageBox (NULL, ((tileBank2.getAbsPath ()+troncated)+"\nContinue ?").c_str(), "Can't load bitmap.", MB_YESNO|MB_ICONEXCLAMATION)==IDYES);
 		}
 		else
 		{
@@ -347,8 +342,7 @@ int TileList::setTileTransition (int tile, const std::string& name, NL3D::CTile:
 				char sTmp[512];
 				static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
 				sprintf (sTmp, "%s\nPixel: %d (%s)", CTileSet::getErrorMessage (error), pixel, comp[composante]);
-				MessageBox (NULL, sTmp, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
-				return 0;
+				return MessageBox (NULL, (std::string(sTmp)+"\nContinue ?").c_str(), "Can't add tile", MB_YESNO|MB_ICONEXCLAMATION)==IDYES;
 			}
 			else
 			{
@@ -426,8 +420,7 @@ int TileList::setTileTransitionAlpha (int tile, const std::string& name, int rot
 		uint Height;
 		if (!PIC_LoadPic(tileBank2.getAbsPath ()+troncated, tampon, Width, Height))
 		{
-			MessageBox (NULL, (tileBank2.getAbsPath ()+troncated).c_str(), "Can't load bitmap.", MB_OK|MB_ICONEXCLAMATION);
-			return 0;
+			return MessageBox (NULL, ((tileBank2.getAbsPath ()+troncated)+"\nContinue ?").c_str(), "Can't load bitmap.", MB_YESNO|MB_ICONEXCLAMATION)==IDYES;
 		}
 		else
 		{
@@ -464,8 +457,8 @@ int TileList::setTileTransitionAlpha (int tile, const std::string& name, int rot
 				}
 				else
 					sprintf (sMsg, "%s\nIncompatible filled tile", CTileSet::getErrorMessage (error));
-				MessageBox (NULL, sMsg, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
-				return 0;
+				
+				return MessageBox (NULL, (std::string(sMsg)+"\nContinue ?").c_str(), "Can't add tile", MB_YESNO|MB_ICONEXCLAMATION)==IDYES;
 			}
 			else
 			{
@@ -1468,6 +1461,9 @@ LRESULT CTView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 			load.m_ofn.nMaxFile = 10000-1;
 			if (load.DoModal()==IDOK)
 			{
+				// Ok ?
+				int ok=1;
+
 				//AfxMessageBox ("toto");
 				POSITION p = load.GetStartPosition(); //la doc dit que p=NULL quand il n'y a pas de selection : c'est faux, genial les MFC
 				while (p)
@@ -1498,7 +1494,7 @@ LRESULT CTView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 								index=InfoList.addTile128 ();
 
 								// Set the tile
-								if (!InfoList.setTile128 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha)))
+								if ((ok=InfoList.setTile128 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha)))==0)
 									// If prb, remove it
 									InfoList.removeTile128 (index);
 
@@ -1508,7 +1504,7 @@ LRESULT CTView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 								index=InfoList.addTile256 ();
 
 								// Set the tile
-								if (!InfoList.setTile256 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha)))
+								if ((ok=InfoList.setTile256 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha)))==0)
 									// If prb, remove it
 									InfoList.removeTile256 (index);
 
@@ -1533,17 +1529,17 @@ LRESULT CTView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 									{
 									case 0:
 										// Set the 128 tile
-										InfoList.setTile128 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha));
+										ok=InfoList.setTile128 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha));
 										break;
 									case 1:
 										// Set the 256 tile
-										InfoList.setTile256 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha));
+										ok=InfoList.setTile256 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha));
 										break;
 									case 2:
 										// Alpha texture ?
 										if (Texture!=3)
 										{
-											InfoList.setTileTransition (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha));
+											ok=InfoList.setTileTransition (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha));
 										}
 										// Alpha!
 										else
@@ -1553,13 +1549,13 @@ LRESULT CTView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 											if (selectRotation.DoModal()==IDOK)
 											{
 												// Set the alpha tile with the good rotation
-												InfoList.setTileTransitionAlpha (index, pathname, selectRotation.RotSelected);
+												ok=InfoList.setTileTransitionAlpha (index, pathname, selectRotation.RotSelected);
 											}
 										}
 										break;
 									case 3:
 										// Displacement
-										InfoList.setDisplacement (index, pathname);
+										ok=InfoList.setDisplacement (index, pathname);
 										break;
 									default:
 										nlassert (0); // no!
@@ -1569,9 +1565,16 @@ LRESULT CTView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 								// Reload last inserted tile
 								InfoList.Reload(index, 1, parent->m_128x128);
 								InfoList.Get(index, parent->m_128x128)->Selected = 0;
+
+								// Stop ?
+								if (!ok)
+									break;
 							}
 						}
 					}
+					// Stop ?
+					if (!ok)
+						break;
 				}
 			}
 			delete load.m_ofn.lpstrFile;

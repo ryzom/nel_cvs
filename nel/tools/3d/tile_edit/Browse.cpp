@@ -7,9 +7,14 @@
 #include "Browse.h"
 #include "custom.h"
 #include "getval.h"
+
 #include <3d/tile_bank.h>
 
+#include <nel/misc/bitmap.h>
+#include <nel/misc/file.h>
+
 using namespace NL3D;
+using namespace NLMISC;
 
 extern CTileBank tileBank2;
 
@@ -81,15 +86,17 @@ BEGIN_MESSAGE_MAP(Browse, CDialog)
 	ON_BN_CLICKED(IDC_SUBGROUP5, OnSubgroup5)
 	ON_BN_CLICKED(IDC_SUBGROUP6, OnSubgroup6)
 	ON_BN_CLICKED(IDC_SUBGROUP7, OnSubgroup7)
+	ON_BN_CLICKED(IDC_SUBGROUP8, OnSubgroup8)
+	ON_BN_CLICKED(IDC_SUBGROUP9, OnSubgroup9)
+	ON_BN_CLICKED(IDC_SUBGROUP10, OnSubgroup10)
+	ON_BN_CLICKED(IDC_SUBGROUP11, OnSubgroup11)
+	ON_BN_CLICKED(IDC_EXPORT_BORDER, OnExportBorder)
 	ON_BN_CLICKED(IDC_ZOOM5, OnChangeVariety)
 	ON_BN_CLICKED(IDC_ZOOM6, OnChangeVariety)
 	ON_BN_CLICKED(IDCANCEL, OnCancel)
 	ON_BN_CLICKED(IDC_CANCEL, OnCancel)
 	ON_BN_CLICKED(IDC_DISPLACE, OnChangeVariety)
-	ON_BN_CLICKED(IDC_SUBGROUP8, OnSubgroup8)
-	ON_BN_CLICKED(IDC_SUBGROUP9, OnSubgroup9)
-	ON_BN_CLICKED(IDC_SUBGROUP10, OnSubgroup10)
-	ON_BN_CLICKED(IDC_SUBGROUP11, OnSubgroup11)
+	ON_BN_CLICKED(IDC_IMPORT_BORDER2, OnImportBorder)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -886,6 +893,9 @@ void Browse::OnBatchLoad ()
 				CTileSetTransition* trans=tileBank2.getTileSet (land)->getTransition (transition);
 				if (tileBank2.getTile (trans->getTile())->getRelativeFileName (CTile::alpha)=="")
 				{
+					// Continue ?
+					int ok;
+
 					// Try to load transition with rotation
 					for (int rot=0; rot<4; rot++)
 					{
@@ -900,7 +910,7 @@ void Browse::OnBatchLoad ()
 						if (pFile)
 						{
 							fclose (pFile);
-							m_ctrl.InfoList.setTileTransitionAlpha (i, sFinal, (4-rot)%4);
+							ok=m_ctrl.InfoList.setTileTransitionAlpha (i, sFinal, (4-rot)%4);
 
 							// End
 							break;
@@ -912,6 +922,8 @@ void Browse::OnBatchLoad ()
 						if (!rotate)
 							break;
 					}
+					if (!ok)
+						break;
 				}
 			}
 			else
@@ -934,7 +946,8 @@ void Browse::OnBatchLoad ()
 					if (pFile)
 					{
 						fclose (pFile);
-						m_ctrl.InfoList.setTileTransition (i, sFinal, m_ctrl.Texture==1?CTile::diffuse:CTile::additive);
+						if (!m_ctrl.InfoList.setTileTransition (i, sFinal, m_ctrl.Texture==1?CTile::diffuse:CTile::additive))
+							break;
 					}
 				}
 			}
@@ -1321,4 +1334,147 @@ void Browse::OnSubgroup11()
 		Flags (11, false);
 	if (SubGroup11==1)
 		Flags (11, true);
+}
+
+void Browse::OnExportBorder() 
+{
+	// Select a file
+	CFileDialog sFile (false, NULL, NULL, OFN_ENABLESIZING,
+		"Targa bitmap (*.tga)|*.tga|All files (*.*)|*.*||",NULL);
+	if (sFile.DoModal()==IDOK)
+	{
+		// Get the border of the bank
+		std::vector<NLMISC::CBGRA> array;
+
+		// 256 or 128 ?
+		int width, height;
+		tileBank2.getTileSet (land)->getBorder128 (m_ctrl.Texture==1?CTile::diffuse:CTile::additive)->get (width, height, array);
+
+		// Make a bitmap
+		if (width&&height)
+		{
+			NLMISC::CBitmap bitmap;
+			bitmap.resize (width, height, NLMISC::CBitmap::RGBA);
+
+			// Get pixel
+			CRGBA *pPixel=(CRGBA*)&bitmap.getPixels()[0];
+
+			// Make a copy
+			for (int i=0; i<width*height; i++)
+			{
+				// Copy the pixel
+				pPixel->R=array[i].R;
+				pPixel->G=array[i].G;
+				pPixel->B=array[i].B;
+				pPixel->A=array[i].A;
+				pPixel++;
+			}
+
+			// Write the bitmap
+			bool error=false;
+			CString pathName=sFile.GetPathName();
+			try
+			{
+				COFile file;
+				if (file.open ((const char*)pathName))
+				{
+					// Export
+					bitmap.writeTGA (file, 32);
+				}
+				else
+					error=true;
+			}
+			catch (Exception& e)
+			{
+				const char *toto=e.what ();
+				error=true;
+			}
+
+			// Error during export ?
+			if (error)
+			{
+				// Error message
+				char tmp[512];
+				sprintf (tmp, "Can't write bitmap %s", (const char*)pathName);
+				MessageBox (tmp, "Export border", MB_OK|MB_ICONEXCLAMATION);
+			}
+		}
+	}
+}
+
+void Browse::OnImportBorder() 
+{
+	// Select a file
+	CFileDialog sFile (true, NULL, NULL, OFN_ENABLESIZING,
+		"Targa bitmap (*.tga)|*.tga|All files (*.*)|*.*||",NULL);
+	if (sFile.DoModal()==IDOK)
+	{
+		// Get the border of the bank
+		std::vector<NLMISC::CBGRA> array(128*128);
+
+		// The bitmap
+		NLMISC::CBitmap bitmap;
+
+		// Read the bitmap
+		bool error=false;
+		CString pathName=sFile.GetPathName();
+		try
+		{
+			CIFile file;
+			if (file.open ((const char*)pathName))
+			{
+				// Export
+				bitmap.load (file);
+			}
+			else
+				error=true;
+		}
+		catch (Exception& e)
+		{
+			const char *toto=e.what ();
+			error=true;
+		}
+
+		// Error during import ?
+		if (error)
+		{
+			// Error message
+			char tmp[512];
+			sprintf (tmp, "Can't read bitmap %s", (const char*)pathName);
+			MessageBox (tmp, "Import border", MB_OK|MB_ICONEXCLAMATION);
+		}
+
+		// Get pixel
+		CRGBA *pPixel=(CRGBA*)&bitmap.getPixels()[0];
+
+		// Good size
+		if ((bitmap.getWidth()==128)&&(bitmap.getHeight()==128))
+		{
+			// Make a copy
+			for (int i=0; i<128*128; i++)
+			{
+				// Copy the pixel
+				array[i].R=pPixel->R;
+				array[i].G=pPixel->G;
+				array[i].B=pPixel->B;
+				array[i].A=pPixel->A;
+				pPixel++;
+			}
+		}
+		else
+		{
+			// Error message
+			char tmp[512];
+			sprintf (tmp, "The bitmap must have a size of 128x128 (%s)", (const char*)pathName);
+			MessageBox (tmp, "Import border", MB_OK|MB_ICONEXCLAMATION);
+		}
+
+		// 256 or 128 ?
+		CTileBorder border;
+		border.set (128, 128, array);
+		tileBank2.getTileSet (land)->setBorder (m_ctrl.Texture==1?CTile::diffuse:CTile::additive, border);
+
+		// Message
+		MessageBox ("The border has been changed.", "Import border", MB_OK|MB_ICONINFORMATION);
+	}
 }

@@ -1,7 +1,7 @@
 /** \file plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.h,v 1.6 2001/09/12 13:19:07 vizerie Exp $
+ * $Id: ps_plane_basis_maker.h,v 1.7 2002/02/15 17:10:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,18 +96,38 @@ class CPSPlaneBasisFollowSpeed : public CPSAttribMaker<CPlaneBasis>
 		 *  \param startIndex usually 0, it gives the index of the first element in the located
 		 */
 
-		virtual void *make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool enableNoCopy = false) const;
+		virtual void *make(CPSLocated *loc,
+						   uint32 startIndex,
+						   void *tab,
+						   uint32 stride,
+						   uint32 numAttrib,
+						   bool enableNoCopy = false,
+						   uint32 srcStep = (1 << 16)
+						  ) const;
 
 		/** The same as make, but it replicate each attribute 4 times, thus filling 4*numAttrib. Useful for facelookat and the like
 		 *  \see make()
 		 */
-		virtual void make4(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const;
+		virtual void make4(CPSLocated *loc,
+						   uint32 startIndex,
+						   void *tab,
+						   uint32 stride,
+						   uint32 numAttrib,
+						   uint32 srcStep = (1 << 16)
+						  ) const;
 
 
 		/** the same as make4, but with nbReplicate replication isntead of 4
 		 *  \see make4
 		 */
-		virtual void makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const;
+		virtual void makeN(CPSLocated *loc,
+						   uint32 startIndex,
+						   void *tab,
+						   uint32 stride,
+						   uint32 numAttrib,
+						   uint32 nbReplicate,
+						   uint32 srcStep = (1 << 16)						   
+						  ) const;
 
 		NLMISC_DECLARE_CLASS(CPSPlaneBasisFollowSpeed);
 

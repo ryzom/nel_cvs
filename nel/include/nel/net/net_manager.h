@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.12 2001/12/28 10:17:30 lecroart Exp $
+ * $Id: net_manager.h,v 1.13 2002/01/30 10:07:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,11 +26,12 @@
 #ifndef NL_NET_MANAGER_H
 #define NL_NET_MANAGER_H
 
+#include "nel/misc/types_nl.h"
+
 #include <string>
 #include <map>
 #include <vector>
 
-#include "nel/misc/types_nl.h"
 #include "nel/misc/time_nl.h"
 #include "nel/net/callback_net_base.h"
 #include "nel/net/naming_client.h"

@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.11 2001/07/04 12:41:52 lecroart Exp $
+ * $Id: command.h,v 1.12 2002/01/30 10:07:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,13 +26,14 @@
 #ifndef NL_COMMAND_H
 #define NL_COMMAND_H
 
+#include "nel/misc/types_nl.h"
+
 #include <string>
 #include <map>
 #include <vector>
 #include <sstream>
 #include <istream>
 
-#include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 
 #include "nel/misc/log.h"

@@ -1,7 +1,7 @@
 /** \file inet_address.h
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.h,v 1.24 2001/10/25 12:16:07 cado Exp $
+ * $Id: inet_address.h,v 1.25 2002/01/30 10:07:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,8 @@
 #ifndef NL_INET_ADDRESS_H
 #define NL_INET_ADDRESS_H
 
-#include <nel/misc/types_nl.h>
+#include "nel/misc/types_nl.h"
+
 #include <string>
 #include <vector>
 

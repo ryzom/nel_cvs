@@ -1,7 +1,7 @@
 /** \file buf_fifo.h
  * Dynamically resizable FIFO container which contains different size block
  *
- * $Id: buf_fifo.h,v 1.9 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: buf_fifo.h,v 1.10 2002/01/30 10:07:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,9 +26,10 @@
 #ifndef NL_BUF_FIFO_H
 #define NL_BUF_FIFO_H
 
+#include "nel/misc/types_nl.h"
+
 #include <vector>
 
-#include "nel/misc/types_nl.h"
 #include "nel/misc/time_nl.h"
 
 

@@ -1,7 +1,7 @@
 /** \file value_smoother.h
  * <File description>
  *
- * $Id: value_smoother.h,v 1.2 2001/08/28 16:37:44 berenguier Exp $
+ * $Id: value_smoother.h,v 1.3 2002/01/30 10:07:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_VALUE_SMOOTHER_H
 
 #include "nel/misc/types_nl.h"
+
 #include <vector>
 
 

@@ -2,7 +2,7 @@
  * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
  * connects to the shard.
  *
- * $Id: login_client.h,v 1.5 2001/12/28 15:36:21 lecroart Exp $
+ * $Id: login_client.h,v 1.6 2002/01/30 10:07:57 lecroart Exp $
  * 
  */
 
@@ -28,10 +28,10 @@
 #ifndef NL_LOGIN_CLIENT_H
 #define NL_LOGIN_CLIENT_H
 
+#include "nel/misc/types_nl.h"
+
 #include <string>
 #include <vector>
-
-#include "nel/misc/types_nl.h"
 
 #include "nel/net/callback_client.h"
 

@@ -1,7 +1,7 @@
 /** \file system_info.h
  * Retrieves system information (OS, processor, memory, etc...)
  *
- * $Id: system_info.h,v 1.2 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: system_info.h,v 1.3 2002/01/30 10:07:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #ifndef NL_SYSTEM_INFO_H
 #define NL_SYSTEM_INFO_H
+
+#include "nel/misc/types_nl.h"
 
 #include <string>
 

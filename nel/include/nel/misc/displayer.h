@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.12 2002/01/14 17:52:06 lecroart Exp $
+ * $Id: displayer.h,v 1.13 2002/01/30 10:07:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #ifndef NL_DISPLAYER_H
 #define NL_DISPLAYER_H
+
+#include "nel/misc/types_nl.h"
 
 #include <string>
 

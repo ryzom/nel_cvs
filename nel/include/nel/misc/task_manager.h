@@ -1,7 +1,7 @@
 /** \file task_manager.h
  * Manage a list of task in a separate thread
  *
- * $Id: task_manager.h,v 1.7 2001/08/28 11:39:11 berenguier Exp $
+ * $Id: task_manager.h,v 1.8 2002/01/30 10:07:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,10 @@
 #ifndef NL_TASK_MANAGER_H
 #define NL_TASK_MANAGER_H
 
-#include <list>
 #include "nel/misc/types_nl.h"
+
+#include <list>
+
 #include "nel/misc/mutex.h"
 #include "nel/misc/thread.h"
 

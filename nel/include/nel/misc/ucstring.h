@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.2 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: ucstring.h,v 1.3 2002/01/30 10:07:36 lecroart Exp $
  *
  */
 
@@ -27,9 +27,9 @@
 #ifndef NL_UCSTRING_H
 #define NL_UCSTRING_H
 
-#include <string>
-
 #include "nel/misc/types_nl.h"
+
+#include <string>
 
 /**
  * \typedef ucstring

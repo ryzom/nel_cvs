@@ -1,7 +1,7 @@
 /** \file ps_sound_impl.h
  * <File description>
  *
- * $Id: u_ps_sound_impl.h,v 1.4 2001/09/10 09:32:10 vizerie Exp $
+ * $Id: u_ps_sound_impl.h,v 1.5 2002/01/30 10:05:44 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_PS_SOUND_IMPL_H
 #define NL_PS_SOUND_IMPL_H
 
-#include <string>
 #include "nel/misc/types_nl.h"
+#include <string>
 #include "nel/misc/debug.h"
 #include "nel/misc/rgba.h"
 #include "nel/sound/u_audio_mixer.h"

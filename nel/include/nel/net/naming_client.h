@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * Client part of the Naming Service
  *
- * $Id: naming_client.h,v 1.29 2001/12/31 13:32:45 lecroart Exp $
+ * $Id: naming_client.h,v 1.30 2002/01/30 10:07:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #ifndef NL_NAMING_CLIENT_H
 #define NL_NAMING_CLIENT_H
+
+#include "nel/misc/types_nl.h"
 
 #include <string>
 

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.14 2001/12/31 13:32:45 lecroart Exp $
+ * $Id: unified_network.h,v 1.15 2002/01/30 10:07:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,9 +26,10 @@
 #ifndef NL_UNIFIED_NETWORD_H
 #define NL_UNIFIED_NETWORD_H
 
+#include "nel/misc/types_nl.h"
+
 #include <hash_map>
 
-#include "nel/misc/types_nl.h"
 #include "nel/misc/time_nl.h"
 #include "nel/net/callback_client.h"
 #include "nel/net/callback_server.h"

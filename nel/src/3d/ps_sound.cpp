@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.2 2001/08/16 17:12:51 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.3 2001/08/27 10:46:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -86,22 +86,47 @@ void			CPSSound::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 								: &_Pitch;
 
 		endIt = it + toProcess;
-		do
+
+		if (!_Owner->isInSystemBasis())
 		{
-			if (*it) // was this sound instanciated?
+			do
 			{
-				(*it)->setSoundParams(*currVol
-									  , *posIt
-									  , *speedIt
-									  , *currFrequency);						  
+				if (*it) // was this sound instanciated?
+				{
+					(*it)->setSoundParams(*currVol
+										  , *posIt
+										  , *speedIt
+										  , *currFrequency);						  
+				}
+				currVol += GainPtInc;
+				currFrequency += frequencyPtInc;
+				++posIt;
+				++speedIt;
+				++it;
 			}
-			currVol += GainPtInc;
-			currFrequency += frequencyPtInc;
-			++posIt;
-			++speedIt;
-			++it;
+			while (it != endIt);
 		}
-		while (it != endIt);
+		else
+		{
+			const NLMISC::CMatrix m = _Owner->getOwner()->getSysMat();
+			do
+			{
+				if (*it) // was this sound instanciated?
+				{
+					(*it)->setSoundParams(*currVol
+										  , m * *posIt
+										  , *speedIt
+										  , *currFrequency);						  
+				}
+				currVol += GainPtInc;
+				currFrequency += frequencyPtInc;
+				++posIt;
+				++speedIt;
+				++it;
+			}
+			while (it != endIt);
+		}
+
 		
 		leftToDo -= toProcess;
 	}
@@ -210,9 +235,10 @@ void			CPSSound::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 		/// set position and activate the sound
 	
 		if (_Sounds[index])
-		{
+		{			
+			const NLMISC::CMatrix &mat = _Owner->isInSystemBasis() ? _Owner->getOwner()->getSysMat() : NLMISC::CMatrix::Identity;
+			_Sounds[index]->setSoundParams(0, mat * _Owner->getPos()[index], _Owner->getSpeed()[index], 1);
 			_Sounds[index]->play();
-			_Sounds[index]->setSoundParams(0, _Owner->getPos()[index], _Owner->getSpeed()[index], 1);
 		}
 	
 	}

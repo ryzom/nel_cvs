@@ -7,6 +7,8 @@
 #include "nel/ai/fuzzy/fuzzyset.h"
 #include "nel/ai/logic/valueset.h"
 #include "nel/ai/logic/factbase.h"
+#include "nel/ai/agent/agent_proxy_mailer.h"
+#include "nel/ai/agent/msg_goal.h"
 #include "nel/ai/script/interpret_object_message.h"
 
 namespace NLAIAGENT
@@ -186,7 +188,9 @@ namespace NLAIAGENT
 					CActorScript::processMessages();
 					return IObjectIA::ProcessRun;
 				}
-			}		
+			}
+			else
+				CActorScript::processMessages();
 		}
 		else
 		{
@@ -413,13 +417,11 @@ namespace NLAIAGENT
 		
 		while ( it_l != liaisons.end() )
 		{
-
 			NLAILOGIC::CValueSet *l = *it_l;
 
 			NLAILOGIC::CValueSet *result = unifyLiaison( l, fact, pos_vals );
 			if ( result )
 			{
-
 				if ( result->undefined() == 0 )
 				{
 					conflits->push_back( result );
@@ -613,11 +615,19 @@ namespace NLAIAGENT
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
 				return r;
+
+			case fid_order:
+				{
+					NLAIAGENT::IBaseGroupType *receivers = (NLAIAGENT::IBaseGroupType *) ((NLAIAGENT::IBaseGroupType *)params)->getFront();
+					((NLAIAGENT::IBaseGroupType *)params)->popFront();
+					NLAILOGIC::IGoal *goal = (NLAILOGIC::IGoal *) ((NLAIAGENT::IBaseGroupType *)params)->getFront();
+					((NLAIAGENT::IBaseGroupType *)params)->popFront();
+					order( receivers, goal );
+					return r;
+				}
 		}
 		return r;
 	}
-
-
 
 	IObjectIA::CProcessResult COperatorScript::runMethodBase(int index,IObjectIA *params)
 	{	
@@ -675,6 +685,16 @@ namespace NLAIAGENT
 				r.Result = NULL;
 				return r;
 
+			case fid_order:
+				{
+					NLAIAGENT::IBaseGroupType *receivers = (NLAIAGENT::IBaseGroupType *) ((NLAIAGENT::IBaseGroupType *)params)->getFront();
+					((NLAIAGENT::IBaseGroupType *)params)->popFront();
+					NLAILOGIC::IGoal *goal = (NLAILOGIC::IGoal *) ((NLAIAGENT::IBaseGroupType *)params)->getFront();
+					((NLAIAGENT::IBaseGroupType *)params)->popFront();
+					order( receivers, goal );
+					return r;
+				}
+
 		}
 		return CActorScript::runMethodBase(index, params);
 	}
@@ -701,6 +721,7 @@ namespace NLAIAGENT
 		static NLAIAGENT::CStringVarName set_priority_name("SetPriority");
 		static NLAIAGENT::CStringVarName exclusive_name("SetExclusive");
 		static NLAIAGENT::CStringVarName background_name("SetBackground");
+		static NLAIAGENT::CStringVarName order_name("Order");
 
 
 		if ( *name == modeachieve_name )
@@ -750,6 +771,12 @@ namespace NLAIAGENT
 		{
 			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod( CActorScript::getMethodIndexSize() + fid_background , 0.0,NULL, r_type ) );
+		}
+
+		if ( *name == order_name )
+		{
+			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CActorScript::getMethodIndexSize() + fid_order , 0.0,NULL, r_type ) );
 		}
 
 		if ( result.empty() )
@@ -804,6 +831,22 @@ namespace NLAIAGENT
 			}
 		}
 		return false;
+	}
+
+	void COperatorScript::order( NLAIAGENT::IBaseGroupType *receivers, NLAILOGIC::IGoal *order)
+	{
+		_NbAnswers = receivers->size();
+		while ( receivers->size() )
+		{
+			NLAIAGENT::CProxyAgentMail member( *(NLAIAGENT::CAgentNumber *)receivers->getFront() );
+			NLAIAGENT::CGoalMsg *msg = new NLAIAGENT::CGoalMsg();
+			NLAILOGIC::IGoal *goal = (NLAILOGIC::IGoal *) order->clone();
+			msg->set( 0, (NLAILOGIC::IGoal *) goal );
+			goal->setSender( this );
+			msg->setPerformatif( NLAIAGENT::IMessageBase::PAchieve );
+			member.sendMessage( msg );
+			receivers->popFront();
+		}
 	}
 
 	void COperatorScript::processMessages(NLAIAGENT::IMessageBase *msg,NLAIAGENT::IObjectIA *o)

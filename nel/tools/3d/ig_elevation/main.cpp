@@ -1,6 +1,6 @@
 /** \file main.cpp
  *
- * $Id: main.cpp,v 1.6 2002/06/17 15:30:09 vizerie Exp $
+ * $Id: main.cpp,v 1.7 2002/07/08 10:06:34 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -339,14 +339,14 @@ int main(int nNbArg, char**ppArgs)
 			}
 			else
 			{
-				outString(string("Couldn't not open " + options.HeightMapFile2 + " : heightmap 2 map ignored"));
+				outString(string("Couldn't not open " + options.HeightMapFile2 + " : heightmap 2 map ignored\n"));
 				delete HeightMap2;
 				HeightMap2 = NULL;
 			}
 		}
 		catch (Exception &e)
 		{
-			string sTmp = string("Cant load height map : ") + options.HeightMapFile2 + " : " + e.what();
+			string sTmp = string("Cant load height map : ") + options.HeightMapFile2 + " : " + e.what() + "\n";
 			outString (sTmp);
 			delete HeightMap2;
 			HeightMap1 = NULL;

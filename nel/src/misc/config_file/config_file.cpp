@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.57 2003/10/21 15:26:39 distrib Exp $
+ * $Id: config_file.cpp,v 1.58 2003/10/27 11:18:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -487,13 +487,17 @@ void CConfigFile::save () const
 		{
 			if (_Vars[i].Comp)
 			{
-				fprintf(fp, "%-20s = { ", _Vars[i].Name.c_str());
+				fprintf(fp, "%-20s = {", _Vars[i].Name.c_str());
 				switch (_Vars[i].Type)
 				{
 				case CConfigFile::CVar::T_INT:
 				{
 					for (int it=0; it < (int)_Vars[i].IntValues.size(); it++)
 					{
+						if (it%_Vars[i].SaveWrap == 0)
+						{
+							fprintf(fp, "\n\t");
+						}
 						fprintf(fp, "%d%s", _Vars[i].IntValues[it], it<(int)_Vars[i].IntValues.size()-1?", ":" ");
 					}
 					break;
@@ -502,6 +506,10 @@ void CConfigFile::save () const
 				{
 					for (int st=0; st < (int)_Vars[i].StrValues.size(); st++)
 					{
+						if (st%_Vars[i].SaveWrap == 0)
+						{
+							fprintf(fp, "\n\t");
+						}
 						fprintf(fp, "\"%s\"%s", _Vars[i].StrValues[st].c_str(), st<(int)_Vars[i].StrValues.size()-1?", ":" ");
 					}
 					break;
@@ -510,13 +518,17 @@ void CConfigFile::save () const
 				{
 					for (int rt=0; rt < (int)_Vars[i].RealValues.size(); rt++)
 					{
+						if (rt%_Vars[i].SaveWrap == 0)
+						{
+							fprintf(fp, "\n\t");
+						}
 						fprintf(fp, "%.10f%s", _Vars[i].RealValues[rt], rt<(int)_Vars[i].RealValues.size()-1?", ":" ");
 					}
 					break;
 				}
 				default: break;
 				}
-				fprintf(fp, "};\n");
+				fprintf(fp, "\n};\n");
 			}
 			else
 			{

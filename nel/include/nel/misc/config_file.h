@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.36 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: config_file.h,v 1.37 2003/10/27 11:18:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,7 +133,7 @@ public:
 	{
 	public:
 
-		CVar () : Type(T_UNKNOWN), Root(false) {}
+		CVar () : Type(T_UNKNOWN), Root(false), SaveWrap(6) {}
 
 		/// \name Access to the variable content.
 		//@{
@@ -192,6 +192,9 @@ public:
 		std::vector<int>			IntValues;
 		std::vector<double>			RealValues;
 		std::vector<std::string>	StrValues;
+
+		int							SaveWrap;
+
 		void						(*Callback)(CVar &var);
 		//@}
 	};

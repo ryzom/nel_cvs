@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.14 2002/03/04 15:33:15 lecroart Exp $
+ * $Id: login_service.cpp,v 1.15 2002/03/04 18:13:15 lecroart Exp $
  *
  */
 
@@ -70,7 +70,7 @@ bool AcceptExternalShard = true;
 bool CryptPassword = true;
 
 // store specific user information
-NLMISC::CFileDisplayer Fd ("ls.log");
+NLMISC::CFileDisplayer Fd ("login_service.stat");
 NLMISC::CStdDisplayer Sd;
 NLMISC::CLog Output;
 

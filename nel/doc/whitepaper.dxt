@@ -14,12 +14,17 @@ general interface description documents for each component are provided. There i
 separate global programming manual, describing exactly how to code for a complete product
 using NeL components.
 
+<The NeL library is cut into few library, network, ai, 3d and misc. If you want
+to use ai, 3d or network you also need misc library. but ai, 3d and network are
+totally independant so you can use only parts you really needs in your project.>
+
 \section build Building system
 
 Building systems are very different, depending on whether you work on a Windows/Visual
-C++ environment, or a Unix/C++ environment (the two development environments currently
-supported in the official NeL system). The building system reflects this and thus
-consists of two different subsystems:
+C++ environment, or a Unix/g++ environment (the two development environments currently
+supported in the official NeL system).
+
+The building system reflects this and thus consists of two different subsystems:
 
 \subsection unixbuild Unix build
 
@@ -36,7 +41,12 @@ must be done after a checkout.
 
 \subsection winbuild Windows build
 
-[to be completed]
+<First, you need to have visual c++ (VC++) version 6 and at least VC++ service pack 4.
+Only .dsp (project) files and .dsw (workspace) are stored in the CVS tree. All
+other specific visual c++ files are automatically created in the build process.
+To build NeL, you have to start vc++ and load the nel workspace and compile
+all projects contains in the workspace. Each project create a .lib (library) file in
+the lib directory.>
 
 \section components Components
 
@@ -51,17 +61,18 @@ To achieve this objective, the library implements several techniques:
 
 - Geometry:
   - The ROAM algorithm, which provides an adaptative subdivision of the landscape base
+    <depending differents parameters like distance, steep of the landscape>
   - Use of Bezier Patches to create smooth-looking landscapes
   - Multi-Resolution Meshes, to provide a smooth reduction in polygon count as objects
-    retreat further in distance
+    retreat further in distance, details degree and so on
   - Object Interfaces, which allows the correct assembly of multiple "parts" of objects
     into a single mesh without leaving unconnected parts or holes
 - Rendering:
   - Bump Mapping of surfaces for a more natural texture
-  - Environment Map
+  - Environment Map for metal like surface
   - Support of User Colors (specific areas in textures tagged for replacement with a
     program-defined color upon rendering)
-  - Hardware T&L
+  - Full hardware Transform and Lighting support
   - Hardware Pixel Shaders and Vertex Shaders
 - Animation:
   - Skinning, using a base skeleton for animations
@@ -73,19 +84,19 @@ To achieve this objective, the library implements several techniques:
     resolution meshes
   - Object Picking in a scene
 
-The library works best with a set of 3DSMax plug-ins to generate data for use with the
+The 3d library works best with a set of 3DSMax plug-ins to generate data for use with the
 software.
 
-The library itself is organised in three successive layers:
+The 3d library itself is organised in three successive layers:
 
-- Layer 1, or driver layers, which implements the effective 3D operations. This is
+- Layer 1, or driver layer, which implements the effective 3D operations. This is
   highly API and platform-dependent. Right now, an OpenGL driver is provided, but a
   directX would not require much effort.
 - Layer 2, or object layer, which implements the various objects (landscapes, meshes
-  and so on), and rendering
+  light and so on) and rendering.
 - Layer 3, or high level layer, which provide the spatial manipulation and the
   necessary interfaces to create the whole scene, and modify it according to your model
-  of your universe.
+  of your universe. <It manages the scene graph depending of the needs.>
 
 Modification of the layer 1 should be very rare, as it is the most stable part of the
 NeL 3D library. New extensions to OpenGL or new drivers will require intervention in
@@ -104,7 +115,7 @@ The purpose of the AI library is to provide a pragmatic approach to creating a d
 agents platform. Its focus is agents; individual entities that communicate regardless of
 location, using an action-reaction model.
 
-The library provide three different categories of concepts:
+The ai library provide three different categories of concepts:
 
 - Autonomous agents
   - Basic components that can be assembled to build an agent
@@ -123,14 +134,14 @@ The library provide three different categories of concepts:
   - Fuzzy logic operations
   - Evolutive algorithms
 
-The library offers three different layers of code:
+The ai library offers three different layers of code:
 
 - Layer 1, or base classes layer, which implements the basic classes, and all the basic
   AI techniques available to agents
 - Layer 2, or agent layer, which provides the base agent, and the components used to
   build an agent
 - Layer 3, or scripting layer, which defines the scripting language, the virtual machine,
-  and allows the programmer to create, assemble and define agent behaviour. This is where
+  and allows the programmer to create, assemble and define agent behaviours. This is where
   the AI programmer acts to create specific agents.
 
 Modification of the layer 1 should be very infrequent, and occur only if someone wants
@@ -146,53 +157,73 @@ or external compiled code.
 
 \subsection componentdb Database & File
 
-The storage library provides access to dynamic databases and relatively static files. It
-provides an API for general use, and a network service (see Network below).
+<The storage library provides access to hard drive file. It provides an API for general
+use based on a serialize class. All class can be serializable by inheriting a based class.
+Doing this enable the class to be serialized on every stream. It could be memory stream,
+file stream, network stream and so on. It's a full extensible system that allow us to
+add new complex stream like compressed file stream or distributed file stream.
 
-[to be completed]
+The database is managed by a third party library. It's a commercial object oriented
+database (OODBMS) that support quick object storage and access, security and backup
+system.
+>
 
 \subsection componentnet Network
 
 The network library serves a twofold purpose. It provides inter-process communication,
-and services.
+and service system.
 
 In purely network terms, the library offers 4 layers:
 
 - An abstraction of the network API and links (IPC may be across a network, or local
   messaging)
-- A buffering and structuring of messages
 - Handling of asynchronous message passing, and callbacks
 - An abstraction of destination (you address a service, not an IP/Port)
+- A buffering and structuring of messages with generic serialization system
 
 These network layers are reused to build distributed services. The network library
 presents both a generic service skeleton, which includes the base functions of the
 distributed service:
 
-- Initialisation
-- Creation and registration of callbacks for network layer 3
-- Registration to the naming service
+- Initialisation (reading configuration file, reading command line parameters)
+- Creation and registration of callbacks for network layer 2
+- Registration to the naming service for the layer 3
 
 The library will also provide pre-existing services:
 
+<
 - Naming service (1 per logical cluster)
   - This service handles the association between a service and the process or processes
-    that execute code to provide the service
+    that execute code to provide the service. Each service is registered with an ip and
+    a port
   - Handles load balancing
-  - Handles connection aging
+  - Manage all the cluster connections
 - Logging service (1 per logical cluster)
-- Administrator service (1 per physical computer)
-- Administrator interface (1 per logical cluster)
+  - Centralizing all log messages and statistics needed by the Naming service and
+    Admin service
+- Admin service (1 per logical cluster)
+  - The entry point for the cluster administrator. Enable the control all the cluster like
+    adding new service, close services, get cluster states, logging informations and so on.
+- Admin Executor service (1 per physical computer)
+  - These services get statistics of the computer and send them for the Admin service via
+    the Logging service. They also executes all Admin service requests.
+- World service (n per logial cluster)
+  - Manages agents and all the game systems created by AI.
+>
 
 Finally, the network library also proposes some basic function that are required to
 build a service able to "run" a 3D Universe, such as:
 
 - Fast communication across unreliable long-delay networks
-- Dead reckoning
+<- Dead reckoning that enable smooth moves on a slow Internet connection>
 
 The purely network library is typically self-contained, and not much subject to
 modification, unless one wants to change the entire paradigm around which the platform
 runs. Addition of a specific and non-standard network or network API would be the only
 reason one would change layer 1.
+
+<The service system provides an easy way to add new specifical service needed by
+the game.>
 
 The structure of distributed services is the point that requires the most attention,
 as these define the logical structure of a cluster.
@@ -209,16 +240,15 @@ and the client or server together.
 
 This library section deals with all the system-dependent aspects of the NeL library.
 It handles interfaces with the system functions, such as starting processes, managing
-system resources, and so on.
-
-[to be completed]
+system resources, thread class, sound management, keyboard and mouse inputs and so on.
 
 \subsection componentmisc Miscellaneous
 
 This contains all the various utility functions, classes and objects that are not
 complex and large enough to warrant their own separate component.
 
-[to be completed]
+<It contains, for example, debug features, smart pointers, internationalization system,
+math classes, generic streaming system, and so on.>
 
 \section externals External components
 
@@ -232,5 +262,4 @@ obtain them separately prior to building NeL.
 - STL Ports
 - CLAP
 
-[to be completed]
  */

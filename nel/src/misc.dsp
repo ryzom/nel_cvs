@@ -402,6 +402,14 @@ SOURCE=..\include\nel\misc\block_memory.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\heap_memory.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\heap_memory.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\pool_memory.h
 # End Source File
 # End Group

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex.cpp,v 1.4 2004/04/26 13:48:23 corvazier Exp $
+ * $Id: driver_direct3d_vertex.cpp,v 1.5 2004/06/28 16:18:46 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -674,18 +674,10 @@ void *CVolatileVertexBuffer::lock (uint size, uint stride, uint &offset)
 		CurrentIndex = (mod+1)*stride;
 
 	// Enough room for this vertex ?
-	if (size+stride > Size)
-	{
-		// No, reallocate
-		init (Location, std::max (Size+Size/2,  CurrentIndex+size+stride), Driver);
-	}
-
-	// Enough room for this vertex ?
 	if (CurrentIndex+size+stride > Size)
 	{
 		// No, reallocate
 		init (Location, std::max (Size+Size/2,  CurrentIndex+size+stride), Driver);
-		CurrentIndex = 0;
 	}
 
 	// Lock the buffer, noblocking lock here if not the first allocation since a reset

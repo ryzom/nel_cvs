@@ -1,6 +1,6 @@
 /** \file string_conversion.h
  *
- * $Id: string_conversion.h,v 1.2 2003/02/04 14:46:29 coutelas Exp $
+ * $Id: string_conversion.h,v 1.3 2003/06/06 12:54:34 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -94,6 +94,9 @@ public:
 	// init from pairs of string / value
 	CStringConversion(const CPair *pairs, uint numPairs, const DestType &notFoundValue);
 
+	// add a pair in the array
+	void insert(const char *str, TDestType value);
+		
 	// From a string, retrieve the associated value, or the 'notFoundValue' provided to the ctor of this object if the string wasn't found
 	const TDestType &fromString(const std::string &str) const;
 
@@ -117,9 +120,9 @@ private:
   *
   * // The conversion table
   * NL_BEGIN_STRING_CONVERSION_TABLE(TMyType)
-  *	  { "Foo", Foo },
-  *   { "Bar", Bar },
-  *   { "FooBar", FooBar }
+  *	  NL_STRING_CONVERSION_TABLE_ENTRY(Foo)
+  *	  NL_STRING_CONVERSION_TABLE_ENTRY(Bar)
+  *	  NL_STRING_CONVERSION_TABLE_ENTRY(FooBar)
   * NL_END_STRING_CONVERSION_TABLE(TMyType, myConversionTable, Unknown)
   *
   * // Now, we can use the 'myConversionTable' intance
@@ -128,13 +131,14 @@ private:
   * 
   */
 #define NL_BEGIN_STRING_CONVERSION_TABLE(__type)                                               \
-static const CStringConversion<__type>::CPair __type##_nl_string_conversion_table[] =          \
+static const NLMISC::CStringConversion<__type>::CPair __type##_nl_string_conversion_table[] =          \
 {                                                                                              
 #define NL_END_STRING_CONVERSION_TABLE(__type, __tableName, __defaultValue)                    \
 };                                                                                             \
-const CStringConversion<__type>                                                                \
+NLMISC::CStringConversion<__type>                                                                \
 __tableName(__type##_nl_string_conversion_table, sizeof(__type##_nl_string_conversion_table)   \
 			/ sizeof(__type##_nl_string_conversion_table[0]),  __defaultValue);
+#define NL_STRING_CONVERSION_TABLE_ENTRY(val) { #val, val},
 
 
 	
@@ -158,6 +162,15 @@ CStringConversion<DestType, Pred>::CStringConversion(const CPair *pairs, uint nu
 	}
 	_NotFoundValue = notFoundValue;
 }
+
+//
+template <class DestType, class Pred>
+void CStringConversion<DestType, Pred>::insert(const char *str, TDestType value)
+{
+	_String2DestType[str] = value;
+	_DestType2String[value] = str;
+}
+
 
 //=================================================================================================================
 template <class DestType, class Pred>

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.67 2002/12/18 14:57:14 legros Exp $
+ * $Id: global_retriever.cpp,v 1.68 2002/12/18 15:06:45 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -236,54 +236,64 @@ void	NLPACS::CGlobalRetriever::getBorders(const UGlobalPosition &pos, std::vecto
 	if (pos.InstanceId < 0)
 		return;
 
-	CRetrieverInstance	&instance = _Instances[pos.InstanceId];
-	CLocalRetriever		&retriever = const_cast<CLocalRetriever &>(getRetriever(instance.getRetrieverId()));
-	if (!retriever.isLoaded())
-		return;
-	CChainQuad			&chainquad = retriever.getChainQuad();
+	CVectorD		gpos = getDoubleGlobalPosition(pos);
+	CAABBox			sbox;
+	sbox.setCenter(gpos);
+	sbox.setHalfSize(CVector(50.0f, 50.0f, 100.0f));
 
-	CAABBox				box;
-	box.setCenter(pos.LocalPosition.Estimation);
-	box.setHalfSize(CVector(50.0f, 50.0f, 100.0f));
-	chainquad.selectEdges(box, _InternalCST);
+	selectInstances(sbox, _InternalCST);
 
-	uint		ece;
-	CVector		origin = instance.getOrigin();
-	float	zp = pos.LocalPosition.Estimation.z+origin.z;
-	for (ece=0; ece<_InternalCST.EdgeChainEntries.size(); ++ece)
+	uint	inst;
+	for (inst=0; inst<_InternalCST.CollisionInstances.size(); ++inst)
 	{
-		CEdgeChainEntry		&entry = _InternalCST.EdgeChainEntries[ece];
+		CRetrieverInstance	&instance = _Instances[_InternalCST.CollisionInstances[inst]];
+		CLocalRetriever		&retriever = const_cast<CLocalRetriever &>(getRetriever(instance.getRetrieverId()));
+		if (!retriever.isLoaded())
+			continue;
 
-		//
-		const CChain	&fchain = retriever.getChain(retriever.getOrderedChain(entry.OChainId).getParentId());
-		uint8			chainType = (fchain.getRight() >= 0 ? 1 : (fchain.isBorderChain() ? 2 : 0));
+		CChainQuad			&chainquad = retriever.getChainQuad();
 
-		if (retriever.getFullOrderedChains().size() > 0)
+		CAABBox				box;
+		CVector				origin = instance.getOrigin();
+		box.setCenter(gpos-origin);
+		box.setHalfSize(CVector(50.0f, 50.0f, 100.0f));
+		chainquad.selectEdges(box, _InternalCST);
+
+		uint		ece;
+		float		zp = (float)gpos.z;
+		for (ece=0; ece<_InternalCST.EdgeChainEntries.size(); ++ece)
 		{
-			const COrderedChain3f	&ochain = retriever.getFullOrderedChain(entry.OChainId);
+			CEdgeChainEntry		&entry = _InternalCST.EdgeChainEntries[ece];
 
-			uint	edge;
-			for (edge=entry.EdgeStart; edge+1<entry.EdgeEnd; ++edge)
+			//
+			const CChain	&fchain = retriever.getChain(retriever.getOrderedChain(entry.OChainId).getParentId());
+			uint8			chainType = (fchain.getRight() >= 0 ? 1 : (fchain.isBorderChain() ? 2 : 0));
+
+			if (retriever.getFullOrderedChains().size() > 0)
 			{
-				edges.push_back(make_pair(CLine(), chainType));
-				edges.back().first.V0 = ochain[edge] + origin;
-				edges.back().first.V0.z = zp;
-				edges.back().first.V1 = ochain[edge+1] + origin;
-				edges.back().first.V1.z = zp;
+				const COrderedChain3f	&ochain = retriever.getFullOrderedChain(entry.OChainId);
+
+				uint	edge;
+				for (edge=entry.EdgeStart; edge+1<entry.EdgeEnd; ++edge)
+				{
+					edges.push_back(make_pair(CLine(), chainType));
+					edges.back().first.V0 = ochain[edge] + origin;
+					edges.back().first.V1 = ochain[edge+1] + origin;
+				}
 			}
-		}
-		else
-		{
-			const COrderedChain	&ochain = retriever.getOrderedChain(entry.OChainId);
-
-			uint	edge;
-			for (edge=entry.EdgeStart; edge+1<entry.EdgeEnd; ++edge)
+			else
 			{
-				edges.push_back(make_pair(CLine(), chainType));
-				edges.back().first.V0 = ochain[edge].unpack3f() + origin;
-				edges.back().first.V0.z = zp;
-				edges.back().first.V1 = ochain[edge+1].unpack3f() + origin;
-				edges.back().first.V1.z = zp;
+				const COrderedChain	&ochain = retriever.getOrderedChain(entry.OChainId);
+
+				uint	edge;
+				for (edge=entry.EdgeStart; edge+1<entry.EdgeEnd; ++edge)
+				{
+					edges.push_back(make_pair(CLine(), chainType));
+					edges.back().first.V0 = ochain[edge].unpack3f() + origin;
+					edges.back().first.V0.z = zp;
+					edges.back().first.V1 = ochain[edge+1].unpack3f() + origin;
+					edges.back().first.V1.z = zp;
+				}
 			}
 		}
 	}

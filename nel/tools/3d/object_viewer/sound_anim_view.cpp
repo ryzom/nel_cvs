@@ -1,7 +1,7 @@
 /** \file sound_anim_view.cpp
  * Dialog for the sound animations 
  *
- * $Id: sound_anim_view.cpp,v 1.2 2002/06/27 15:42:00 vizerie Exp $
+ * $Id: sound_anim_view.cpp,v 1.3 2002/07/08 14:53:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -333,14 +333,22 @@ void CSoundAnimView::refresh(BOOL update)
 
 			if (soundAnim == 0)
 			{
+				bool needCreate = false;
 				try
 				{
-					animManager->loadAnimation(name);
-					soundAnim = animManager->findAnimation(name);
+					TSoundAnimId res = animManager->loadAnimation(name);
+					if(res == CSoundAnimationNoId)
+						needCreate = true;
+					else
+						soundAnim = animManager->findAnimation(name);
 				}
 				catch (exception& e)
 				{
 					nlwarning("Couldn't find sound animation <%s>: %s", name.c_str(), e.what());
+					needCreate = true;
+				}
+				if(needCreate)
+				{
 					animManager->createAnimation(name);
 					soundAnim = animManager->findAnimation(name);
 				}
@@ -535,6 +543,8 @@ void CSoundAnimView::OnPaint()
 	for (iter = _Animations.begin(); iter != _Animations.end(); iter++)
 	{
 		CSoundAnimationHolder &holder = *iter;
+
+		if (holder._Anim == NULL) continue;
 
 		dc->MoveTo(timeToPixel(holder._AnimStart), 0);
 		dc->LineTo(timeToPixel(holder._AnimStart), _PixelsViewV);

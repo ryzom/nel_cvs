@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.11 2002/06/28 20:01:41 hanappe Exp $
+ * $Id: sound_system.cpp,v 1.12 2002/07/08 14:53:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,6 @@ using namespace NLSOUND;
 UAudioMixer				*CSoundSystem::_AudioMixer = NULL;
 set<string>				CSoundSystem::_SoundBanksFileName;
 set<string>				CSoundSystem::_SampleBanksFileName;
-static CVector			SoundListenerPos = CVector::Null;
 CSoundAnimManager		*CSoundSystem::_AnimManager = NULL;
 //TSoundAnimId			CSoundSystem::_CurrentAnimation = CSoundAnimation::NoId;
 //sint32					CSoundSystem::_CurrentPlayback = -1;
@@ -52,12 +51,15 @@ string					CSoundSystem::_SamplePath;
 void CSoundSystem::setListenerMatrix(const NLMISC::CMatrix &m)
 {
 	if (_AudioMixer)
-	{	
-		UListener *l = _AudioMixer->getListener();
-		SoundListenerPos = m.getPos();
-		l->setPos(SoundListenerPos);		
-		CVector j = m.getJ(), k = m.getK();
-		l->setOrientation(j, k);
+	{
+		static CMatrix oldMatrix;
+		if(m.getPos() != oldMatrix.getPos() || m.getJ() != oldMatrix.getJ() || m.getK() != oldMatrix.getK())
+		{
+			UListener *l = _AudioMixer->getListener();
+			l->setPos(m.getPos());		
+			l->setOrientation(m.getJ(), m.getK());
+			oldMatrix = m;
+		}
 	}
 }
 
@@ -155,7 +157,9 @@ void CSoundSystem::play(const string &soundName)
 		if (src)
 		{
 			src->setLooping(false);
-			src->setPos(SoundListenerPos);
+			CVector pos;
+			_AudioMixer->getListener()->getPos(pos);
+			src->setPos(pos);
 			src->play();
 		}
 	}

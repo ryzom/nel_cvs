@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.32 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: login_server.cpp,v 1.33 2004/04/09 17:57:08 lecroart Exp $
  *
  */
 
@@ -62,8 +62,8 @@ static TDisconnectClientCallback DisconnectClientCallback = NULL;
 // true=tcp   false=udp
 static bool ModeTcp = 0;
 
-// default value is 2 minutes
-static uint TimeBeforeEraseCookie = 120;
+// default value is 15 minutes
+static uint TimeBeforeEraseCookie = 15*60;
 
 /// contains the correspondance between userid and the sockid
 map<uint32, TSockId> UserIdSockAssociations;

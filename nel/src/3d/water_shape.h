@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.4 2001/11/09 14:43:19 vizerie Exp $
+ * $Id: water_shape.h,v 1.5 2001/11/14 15:40:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -134,15 +134,21 @@ public:
 		/// get the polygon this shape, in world space
 		void getShapeInWorldSpace(NLMISC::CPolygon &poly) const;
 
+		/// Set a factor that is applied to waves height when they are displayed. default is 1
+		void	setWaveHeightFactor(float f) { _WaveHeightFactor = f; }
+
+		/// Get the factor that is applied to waves height when they are displayed. default is 1
+		float	getWaveHeightFactor() const { return _WaveHeightFactor; }
+
 	//@}
 
 
 	///\name Texture setup
 	//@{
-		 // set the environment reflected by water
-		void				setEnvMap(ITexture *envMap);
-		ITexture			*getEnvMap() { return (ITexture *) _EnvMap;}
-		const ITexture		*getEnvMap() const { return (const ITexture *) _EnvMap;}
+		 // set the environment reflected by water. Index should be 0 for the above texture and 1 for the below texture
+		void				setEnvMap(uint index, ITexture *envMap);
+		ITexture			*getEnvMap(uint index) { nlassert(index < 2); return (ITexture *) _EnvMap[index];}
+		const ITexture		*getEnvMap(uint index) const { nlassert(index < 2); return (const ITexture *) _EnvMap[index];}
 
 		/** Set a height map, used to generate a bumpmap (useful if supported by hardware...)
 		  * NB : not to be confused with the height map used to modify the geometry, it  only modify texture
@@ -164,7 +170,12 @@ public:
 		// set A 2x3 matrix used to compute position in colormap, from the x and y coordinates in world space
 		void				setColorMapMat(const NLMISC::CVector2f &column0, const NLMISC::CVector2f &column1, const NLMISC::CVector2f &pos);
 		void				getColorMapMat(NLMISC::CVector2f &column0, NLMISC::CVector2f &column1, NLMISC::CVector2f &pos);
+	//@}
 
+	///\name LOD
+	//@{
+		void	setTransitionRatio(float percent) { _TransitionRatio = percent; }		
+		float   getTransitionRatio() const		   {  return _TransitionRatio; }		
 	//@}
 
 	/// \name access default tracks.
@@ -179,13 +190,14 @@ public:
 
 private:	
 	friend class	CWaterModel;
+	friend class	CWaterShape;
 	friend class	CWaterRenderObs;
 	void								computeBBox();
 	void								envMapUpdate();
 	NLMISC::CAABBox						_BBox;	// computed from the poly
 	NLMISC::CPolygon2D					_Poly;
 	uint32								_WaterPoolID;	
-	NLMISC::CSmartPtr<ITexture>			_EnvMap;	
+	NLMISC::CSmartPtr<ITexture>			_EnvMap[2];	
 	NLMISC::CSmartPtr<ITexture>			_BumpMap[2];	
 	NLMISC::CSmartPtr<ITexture>			_ColorMap;
 
@@ -196,15 +208,19 @@ private:
 	CTrackDefaultVector					_DefaultPos;
 	CTrackDefaultVector					_DefaultScale;
 	CTrackDefaultQuat					_DefaultRotQuat;
+	float								_TransitionRatio;	
+	float								_WaveHeightFactor;
 
 
 
 	static void		initVertexProgram();
 	static void		setupVertexBuffer();	
-	static uint32							_XScreenGridSize;
+	static uint32							_XScreenGridSize; // size with y rotation = 0
 	static uint32							_YScreenGridSize;
+	static uint32							_MaxGridSize; // size with max rotation around y (without borders)
 	static uint32							_XGridBorder;
 	static uint32							_YGridBorder;
+
 	static CVertexBuffer					_VB;
 	static std::vector<uint32>				_IBUpDown;
 	static std::vector<uint32>				_IBDownUp;	

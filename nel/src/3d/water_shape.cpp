@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.4 2001/11/09 14:43:19 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.5 2001/11/14 15:40:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -41,46 +41,51 @@ namespace NL3D {
 // globals
 static std::auto_ptr<CVertexProgram> WaterVP(NULL);
 const char *WaterVpCode = "!!VP1.0\n\
-					  ADD R1, c[7], -v[0];\n\
-					  DP3 R2, R1, R1;\n\
-					  RSQ R2, R2.x;\n\
-					  MUL R3, R2, c[4].y;\n\
-					  MIN R3, c[4].x, R3;\n\
-					  MUL R0,   R3, v[8];\n\
-					  MOV R0.z,  c[4].x;\n\
-					  DP3 R3.x, R0, R0;\n\
-					  RSQ R3.x,  R3.x;\n\
-					  MUL R0,  R0, R3.x;\n\
-					  DP3 o[COL0], R0, c[6];\n\
-					  DP4 o[HPOS].x, c[0], v[0];\n\
-					  DP4 o[HPOS].y, c[1], v[0];\n\
-					  DP4 o[HPOS].z, c[2], v[0];\n\
-					  DP4 o[HPOS].w, c[3], v[0];\n\
-					  MUL R3, v[0], c[12];\n\
-					  ADD o[TEX0].xy, R3, c[11];\n\
-					  MUL R3, v[0], c[14];\n\
-					  ADD o[TEX1].xy, R3, c[13];\n\
-					  MUL R1, R1, R2.x;\n\
+					  ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
+					  DP3 R2, R1, R1;				#r1 = eye - vertex, r2 = (eye - vertex)²	\n\
+					  MAX R2, R2, c[18];            # avoid imprecision around 0				\n\
+					  RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
+					  RCP R3, R2.x;																\n\
+					  MUL R3, c[6], R3;															\n\
+					  ADD R3, c[17], -R3;														\n\
+					  MAX R3, c[5],	R3;															\n\
+					  MUL R0,   R3, v[8];			#attenuate normal with distance             \n\
+					  MUL R4.z,   R3, v[0];			#attenuate normal with distance				\n\
+					  MOV R4.xyw, v[0];															\n\
+					  MOV R0.z,  c[4].x;			#set normal z to 1							\n\
+					  DP3 R3.x, R0, R0;															\n\
+					  RSQ R3.x,  R3.x;				#normalize normal in R3						\n\
+					  MUL R0,  R0, R3.x;														\n\
+					  DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space					\n\
+					  DP4 o[HPOS].y, c[1], R4;													\n\
+					  DP4 o[HPOS].z, c[2], R4;													\n\
+					  DP4 o[HPOS].w, c[3], R4;													\n\
+					  MUL R3, v[0], c[12];			#compute bump 0 uv's						\n\
+					  ADD o[TEX0].xy, R3, c[11];												\n\
+					  MUL R3, v[0], c[14];			#compute bump 1 uv's						\n\
+					  ADD o[TEX1].xy, R3, c[13];												\n\
+					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
 					  DP3 R2.x, R1, R0;\n\
 					  MUL R0, R0, R2.x;\n\
 					  ADD R2, R0, R0;\n\
-					  ADD R0, R2, -R1;\n\
-					  MAD o[TEX2].xy, R0, c[8], c[8];\n\
+					  ADD R0, R2, -R1;				#compute reflection vector \n\
+					  MUL o[TEX2].xy, R0, c[8];\n\
 					  END\
 					  ";
 
-const char *WaterPlusAlphaVpCode = "!!VP1.0\n\
+/*
+const char *WaterVpCode = "!!VP1.0\n\
 					  ADD R1, c[7], -v[0];\n\
 					  DP3 R2, R1, R1;\n\
 					  RSQ R2, R2.x;\n\
-					  MUL R3, R2, c[4].y;\n\
+					  MUL R3, R2, c[6].x;\n\
 					  MIN R3, c[4].x, R3;\n\
 					  MUL R0,   R3, v[8];\n\
 					  MOV R0.z,  c[4].x;\n\
 					  DP3 R3.x, R0, R0;\n\
 					  RSQ R3.x,  R3.x;\n\
 					  MUL R0,  R0, R3.x;\n\
-					  DP3 o[COL0], R0, c[6];\n\
+					  DP4 R4, c[5], R1;				#compute alpha attenuation along z			\n\					  
 					  DP4 o[HPOS].x, c[0], v[0];\n\
 					  DP4 o[HPOS].y, c[1], v[0];\n\
 					  DP4 o[HPOS].z, c[2], v[0];\n\
@@ -89,8 +94,6 @@ const char *WaterPlusAlphaVpCode = "!!VP1.0\n\
 					  ADD o[TEX0].xy, R3, c[11];\n\
 					  MUL R3, v[0], c[14];\n\
 					  ADD o[TEX1].xy, R3, c[13];\n\
-					  DP4 o[TEX3].x, v[0], c[15];\n\
-					  DP4 o[TEX3].y, v[0], c[16];\n\
 					  MUL R1, R1, R2.x;\n\
 					  DP3 R2.x, R1, R0;\n\
 					  MUL R0, R0, R2.x;\n\
@@ -99,73 +102,114 @@ const char *WaterPlusAlphaVpCode = "!!VP1.0\n\
 					  MAD o[TEX2].xy, R0, c[8], c[8];\n\
 					  END\
 					  ";
+*/
+
+const char *WaterPlusAlphaVpCode = "!!VP1.0\n\
+					  ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
+					  DP3 R2, R1, R1;				#r1 = eye - vertex, r2 = (eye - vertex)²	\n\
+					  MAX R2, R2, c[18];            # avoid imprecision around 0				\n\
+					  RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
+					  RCP R3, R2.x;																\n\
+					  MUL R3, c[6], R3;															\n\
+					  ADD R3, c[17], -R3;														\n\
+					  MAX R3, c[5],	R3;															\n\
+					  MUL R0,   R3, v[8];			#attenuate normal with distance             \n\
+					  MUL R4.z,   R3, v[0];			#attenuate normal with distance				\n\
+					  MOV R4.xyw, v[0];															\n\
+					  MOV R0.z,  c[4].x;			#set normal z to 1							\n\
+					  DP3 R3.x, R0, R0;															\n\
+					  RSQ R3.x,  R3.x;				#normalize normal in R3						\n\
+					  MUL R0,  R0, R3.x;														\n\
+					  DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space					\n\
+					  DP4 o[HPOS].y, c[1], R4;													\n\
+					  DP4 o[HPOS].z, c[2], R4;													\n\
+					  DP4 o[HPOS].w, c[3], R4;													\n\
+					  MUL R3, v[0], c[12];			#compute bump 0 uv's						\n\
+					  ADD o[TEX0].xy, R3, c[11];												\n\
+					  MUL R3, v[0], c[14];			#compute bump 1 uv's						\n\
+					  ADD o[TEX1].xy, R3, c[13];												\n\
+					  DP4 o[TEX3].x, R4, c[15]; #compute uv for diffuse texture				\n\
+					  DP4 o[TEX3].y, R4, c[16];												\n\
+					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
+					  DP3 R2.x, R1, R0;\n\
+					  MUL R0, R0, R2.x;\n\
+					  ADD R2, R0, R0;\n\
+					  ADD R0, R2, -R1;				#compute reflection vector \n\
+					  MUL o[TEX2].xy, R0, c[8];\n\
+					  END\
+					  ";
+
 
 
 // temporary code for gfx card that have less than 4 stage. We keep the envmap only
 const char *WaterVpCode2Stages = "!!VP1.0\n\
-					  ADD R1, c[7], -v[0];\n\
-					  DP3 R2, R1, R1;\n\
-					  RSQ R2, R2.x;\n\
-					  MUL R3, R2, c[4].y;\n\
-					  MIN R3, c[4].x, R3;\n\
-					  MUL R0,   R3, v[8];\n\
-					  MOV R0.z,  c[4].x;\n\
-					  DP3 R3.x, R0, R0;\n\
-					  RSQ R3.x,  R3.x;\n\
-					  MUL R0,  R0, R3.x;\n\
-					  DP3 o[COL0], R0, c[6];\n\
-					  DP4 o[HPOS].x, c[0], v[0];\n\
-					  DP4 o[HPOS].y, c[1], v[0];\n\
-					  DP4 o[HPOS].z, c[2], v[0];\n\
-					  DP4 o[HPOS].w, c[3], v[0];\n\
-					  MUL R1, R1, R2.x;\n\
+					  ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
+					  DP3 R2, R1, R1;				#r1 = eye - vertex, r2 = (eye - vertex)²	\n\
+					  MAX R2, R2, c[18];            # avoid imprecision around 0				\n\
+					  RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
+					  RCP R3, R2.x;																\n\
+					  MUL R3, c[6], R3;															\n\
+					  ADD R3, c[17], -R3;														\n\
+					  MAX R3, c[5],	R3;															\n\
+					  MUL R0,   R3, v[8];			#attenuate normal with distance             \n\
+					  MUL R4.z,   R3, v[0];			#attenuate normal with distance				\n\
+					  MOV R4.xyw, v[0];															\n\
+					  MOV R0.z,  c[4].x;			#set normal z to 1							\n\
+					  DP3 R3.x, R0, R0;															\n\
+					  RSQ R3.x,  R3.x;				#normalize normal in R3						\n\
+					  MUL R0,  R0, R3.x;														\n\
+					  DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space					\n\
+					  DP4 o[HPOS].y, c[1], R4;													\n\
+					  DP4 o[HPOS].z, c[2], R4;													\n\
+					  DP4 o[HPOS].w, c[3], R4;													\n\
+					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
 					  DP3 R2.x, R1, R0;\n\
 					  MUL R0, R0, R2.x;\n\
 					  ADD R2, R0, R0;\n\
-					  ADD R0, R2, -R1;\n\
-					  MAD o[TEX0].xy, R0, c[8], c[8];\n\
+					  ADD R0, R2, -R1;				#compute reflection vector \n\
+					  MUL o[TEX0].xy, R0, c[8];\n\
 					  END\
 					  ";
 
-
-// temporary code for card that have less than 4 stage. We keep the alpha and the envmap
 const char *WaterVpCode2StagesAlpha = "!!VP1.0\n\
-					  ADD R1, c[7], -v[0];\n\
-					  DP3 R2, R1, R1;\n\
-					  RSQ R2, R2.x;\n\
-					  MUL R3, R2, c[4].y;\n\
-					  MIN R3, c[4].x, R3;\n\
-					  MUL R0,   R3, v[8];\n\
-					  MOV R0.z,  c[4].x;\n\
-					  DP3 R3.x, R0, R0;\n\
-					  RSQ R3.x,  R3.x;\n\
-					  MUL R0,  R0, R3.x;\n\
-					  DP3 o[COL0], R0, c[6];\n\
-					  DP4 o[HPOS].x, c[0], v[0];\n\
-					  DP4 o[HPOS].y, c[1], v[0];\n\
-					  DP4 o[HPOS].z, c[2], v[0];\n\
-					  DP4 o[HPOS].w, c[3], v[0];\n\
+					  ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
+					  DP3 R2, R1, R1;				#r1 = eye - vertex, r2 = (eye - vertex)²	\n\
+					  MAX R2, R2, c[18];            # avoid imprecision around 0				\n\
+					  RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
+					  RCP R3, R2.x;																\n\
+					  MUL R3, c[6], R3;															\n\
+					  ADD R3, c[17], -R3;														\n\
+					  MAX R3, c[5],	R3;															\n\
+					  MUL R0,   R3, v[8];			#attenuate normal with distance             \n\
+					  MUL R4.z,   R3, v[0];			#attenuate normal with distance				\n\
+					  MOV R4.xyw, v[0];															\n\
+					  MOV R0.z,  c[4].x;			#set normal z to 1							\n\
+					  DP3 R3.x, R0, R0;															\n\
+					  RSQ R3.x,  R3.x;				#normalize normal in R3						\n\
+					  MUL R0,  R0, R3.x;														\n\
+					  DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space					\n\
+					  DP4 o[HPOS].y, c[1], R4;													\n\
+					  DP4 o[HPOS].z, c[2], R4;													\n\
+					  DP4 o[HPOS].w, c[3], R4;													\n\
 					  DP4 o[TEX1].x, v[0], c[15];\n\
 					  DP4 o[TEX1].y, v[0], c[16];\n\
-					  MUL R1, R1, R2.x;\n\
+					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
 					  DP3 R2.x, R1, R0;\n\
 					  MUL R0, R0, R2.x;\n\
 					  ADD R2, R0, R0;\n\
-					  ADD R0, R2, -R1;\n\
-					  MAD o[TEX0].xy, R0, c[8], c[8];\n\
+					  ADD R0, R2, -R1;				#compute reflection vector \n\
+					  MUL o[TEX0].xy, R0, c[8];\n\
 					  END\
 					  ";
-
-
-
 
 
 // static members
 
-uint32									CWaterShape::_XScreenGridSize = 55;
-uint32									CWaterShape::_YScreenGridSize = 55;
-uint32									CWaterShape::_XGridBorder = 5;
-uint32									CWaterShape::_YGridBorder = 5;
+uint32									CWaterShape::_XScreenGridSize = 50;
+uint32									CWaterShape::_YScreenGridSize = 50;
+uint32									CWaterShape::_XGridBorder = 4;
+uint32									CWaterShape::_YGridBorder = 4;
+uint32									CWaterShape::_MaxGridSize;
 CVertexBuffer							CWaterShape::_VB;
 std::vector<uint32>						CWaterShape::_IBUpDown;
 std::vector<uint32>						CWaterShape::_IBDownUp;
@@ -186,7 +230,7 @@ std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgram2StagesAlpha;
 /*
  * Constructor
  */
-CWaterShape::CWaterShape() :  _WaterPoolID(0)
+CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeightFactor(1)
 {
 	_DefaultPos.setValue(NLMISC::CVector::Null);
 	_DefaultScale.setValue(NLMISC::CVector(1, 1, 1));
@@ -204,7 +248,10 @@ CWaterShape::CWaterShape() :  _WaterPoolID(0)
 
 CWaterShape::~CWaterShape()
 {
-	if (_EnvMap && dynamic_cast<CTextureBlend *>((ITexture *) _EnvMap))
+	if (
+		(_EnvMap[0] && dynamic_cast<CTextureBlend *>((ITexture *) _EnvMap[0]))
+		|| (_EnvMap[1] && dynamic_cast<CTextureBlend *>((ITexture *) _EnvMap[1]))
+		)
 	{
 		GetWaterPoolManager().unRegisterWaterShape(this);		
 	}
@@ -228,7 +275,10 @@ void CWaterShape::initVertexProgram()
 
 void CWaterShape::setupVertexBuffer()
 {
-	const uint w = _XScreenGridSize + 2 * _XGridBorder;
+	const uint rotLenght = (uint) ::ceilf(::sqrtf((float) ((_XScreenGridSize >> 1) * (_XScreenGridSize >> 1)
+								  + (_YScreenGridSize >> 1) * (_YScreenGridSize >> 1))));
+	_MaxGridSize = 2 * rotLenght;
+	const uint w =  _MaxGridSize + 2 * _XGridBorder;
 
 	_VB.clearValueEx();
 	_VB.addValueEx (WATER_VB_POS, CVertexBuffer::Float3);
@@ -282,6 +332,7 @@ CTransformShape		*CWaterShape::createInstance(CScene &scene)
 	wm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
 	wm->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
 	wm->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );
+	wm->_Scene = &scene;
 	return wm;
 }
 
@@ -374,18 +425,20 @@ void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	ITexture *map = NULL;	
 	if (f.isReading())
 	{
-		f.serialPolyPtr(map); _EnvMap = map;
+		f.serialPolyPtr(map); _EnvMap[0] = map;
+		f.serialPolyPtr(map); _EnvMap[1] = map;
 		f.serialPolyPtr(map); _BumpMap[0] = map;
 		f.serialPolyPtr(map); _BumpMap[1] = map;
 		f.serialPolyPtr(map); _ColorMap = map;
+		computeBBox();
 	}
 	else
 	{
-		map = _EnvMap; f.serialPolyPtr(map);
+		map = _EnvMap[0]; f.serialPolyPtr(map);
+		map = _EnvMap[1]; f.serialPolyPtr(map);
 		map = _BumpMap[0]; f.serialPolyPtr(map);
 		map = _BumpMap[1]; f.serialPolyPtr(map);
-		map = _ColorMap; f.serialPolyPtr(map);
-		computeBBox();
+		map = _ColorMap; f.serialPolyPtr(map);	
 	}
 
 	f.serial(_HeightMapScale[0], _HeightMapScale[1],
@@ -397,6 +450,10 @@ void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_DefaultPos);
 	f.serial(_DefaultScale);
 	f.serial(_DefaultRotQuat);
+
+	f.serial(_TransitionRatio);	
+
+	f.serial(_WaveHeightFactor);
 	
 }
 
@@ -449,7 +506,10 @@ void CWaterShape::envMapUpdate()
 {
 	// if the color map is a blend texture, we MUST be registered to the water pool manager, so that, the
 	// setBlend message will be routed to this texture.
-	if (dynamic_cast<CTextureBlend *>((ITexture *) _EnvMap))
+	if (
+		(_EnvMap[0] && dynamic_cast<CTextureBlend *>((ITexture *) _EnvMap[0]))
+		|| (_EnvMap[1] && dynamic_cast<CTextureBlend *>((ITexture *) _EnvMap[1]))
+		)
 	{
 		if (!GetWaterPoolManager().isWaterShapeObserver(this))
 		{
@@ -471,9 +531,10 @@ void CWaterShape::setColorMap(ITexture *map)
 	//colorMapUpdate();
 }
 
-void CWaterShape::setEnvMap(ITexture *envMap)
+void CWaterShape::setEnvMap(uint index, ITexture *envMap)
 {
-	_EnvMap = envMap;	
+	nlassert(index < 2);
+	_EnvMap[index] = envMap;	
 }
 
 

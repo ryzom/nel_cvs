@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.21 2004/01/15 17:26:50 lecroart Exp $
+ * $Id: bitmap.h,v 1.22 2004/02/20 14:35:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -537,8 +537,9 @@ public:
 	  * The result is a RGBA bitmap.
 	  * NB: this just works with the first mipmaps
 	  * \param factor The blend factor. 0 means the result is equal to Bm0, 256 means the result is equal to Bm1
+	  * \param inputBitmapIsMutable when true, bitmap can be converted in place when needed (no copy done)
 	  */
-	void blend(const CBitmap &Bm0, const CBitmap &Bm1, uint16 factor);
+	void blend(CBitmap &Bm0, CBitmap &Bm1, uint16 factor, bool inputBitmapIsMutable = false);
 
 };
 

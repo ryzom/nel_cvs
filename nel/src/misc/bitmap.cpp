@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.45 2004/01/15 17:39:40 lecroart Exp $
+ * $Id: bitmap.cpp,v 1.46 2004/02/20 14:34:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2814,8 +2814,7 @@ void	CBitmap::rot90CCW()
 }
 
 //===========================================================================
-
-void CBitmap::blend(const CBitmap &Bm0, const CBitmap &Bm1, uint16 factor)
+void CBitmap::blend(CBitmap &Bm0, CBitmap &Bm1, uint16 factor, bool inputBitmapIsMutable /*= false*/)
 {
 	nlassert(factor <= 256);
 
@@ -2831,9 +2830,17 @@ void CBitmap::blend(const CBitmap &Bm0, const CBitmap &Bm1, uint16 factor)
 
 	if (Bm0.PixelFormat != RGBA)
 	{
-		cp0 = Bm0;
-		cp0.convertToRGBA();
-		nBm0 = &cp0;
+		if (inputBitmapIsMutable)
+		{
+			Bm0.convertToRGBA();
+			nBm0 = &Bm0;
+		}
+		else
+		{		
+			cp0 = Bm0;
+			cp0.convertToRGBA();
+			nBm0 = &cp0;
+		}
 	}
 	else
 	{
@@ -2843,9 +2850,17 @@ void CBitmap::blend(const CBitmap &Bm0, const CBitmap &Bm1, uint16 factor)
 
 	if (Bm1.PixelFormat != RGBA)
 	{
-		cp1 = Bm1;
-		cp1.convertToRGBA();
-		nBm1 = &cp1;
+		if (inputBitmapIsMutable)
+		{
+			Bm1.convertToRGBA();
+			nBm1 = &Bm1;
+		}
+		else
+		{
+			cp1 = Bm1;
+			cp1.convertToRGBA();
+			nBm1 = &cp1;
+		}
 	}
 	else
 	{
@@ -2854,31 +2869,109 @@ void CBitmap::blend(const CBitmap &Bm0, const CBitmap &Bm1, uint16 factor)
 
 	this->resize(Bm0._Width, Bm0._Height, RGBA);
 
-	const  uint numPix = _Width * _Height; // 4 component per pixels
+	uint numPix = _Width * _Height; // 4 component per pixels
 
 
 	const uint8 *src0		= &(nBm0->_Data[0][0]);
 	const uint8 *src1		= &(nBm1->_Data[0][0]);
 	uint8 *dest				= &(this->_Data[0][0]);
-	uint8 *endPix			= dest + (numPix << 2);
+	
 
-
-	uint blendFact    = (uint) factor;
-	uint invblendFact = 256 - blendFact;
-
-	do
+	#ifdef NL_OS_WINDOWS			
+	if (CSystemInfo::hasMMX())		
 	{
-		/// blend 4 component at each pass
-		*dest = (uint8) (((blendFact * *src1)		+ (invblendFact * *src0)) >> 8);
-		*(dest + 1) = (uint8) (((blendFact * *(src1 + 1)) + (invblendFact * *(src0 + 1))) >> 8);
-		*(dest + 2) = (uint8) (((blendFact * *(src1 + 2)) + (invblendFact * *(src0 + 2))) >> 8);
-		*(dest + 3)  = (uint8) (((blendFact * *(src1 + 3)) + (invblendFact * *(src0 + 3))) >> 8);
+		// On a P4 2GHz, with a 256x256 texture, I got the following results :
+		// without mmx : 5.2 ms
+        // with mmx    : 1.7 ms
+		// I'm sure this can be further optimized..
 
-		src0 = src0 + 4;
-		src1 = src1 + 4;
-		dest = dest + 4;	
+		uint numPixLeft = numPix & 1; // process 2 pixels at once, so special case for odd number
+		numPix = numPix & ~1;
+		// do fast blend with mmx
+		uint64 blendFactor0;
+		uint64 blendFactor1;
+		uint16 *bf0 = (uint16 *) &blendFactor0;
+		uint16 *bf1 = (uint16 *) &blendFactor1;
+		bf0[0] = bf0[1] = bf0[2] = bf0[3] = factor;
+		bf1[0] = bf1[1] = bf1[2] = bf1[3] = 256 - factor;
+		__asm
+		{			
+			mov esi, src0
+			mov eax, src1
+			mov edi, dest
+			mov ebx, -8
+			mov ecx, numPix
+			shr ecx, 1 // process pixels 2 by 2
+			movq mm1, blendFactor0
+			movq mm0, blendFactor1 
+				
+		myLoop:
+			pxor mm6, mm6
+			lea  ebx, [ebx + 8] // points next location
+			pxor mm7, mm7			
+			movq mm2, [esi + ebx]
+			movq mm3, [eax + ebx]			
+			// do blend 
+			punpckhbw mm7, mm2  // mm7 contains src0 color 0 in high bytes
+			punpckhbw mm6, mm3  // mm6 contains src1 color 0 in high bytes
+			psrl	  mm7, 1
+			pxor mm4, mm4       // mm4 = 0			
+			psrl	  mm6, 1
+			pmulhw mm7, mm0     // src0 = src0 * blendFactor
+			pxor mm5, mm5       // mm5 = 0
+			pmulhw mm6, mm1     // src1 = src1 * (1 - blendfactor)
+			punpcklbw mm4, mm2  // mm4 contains src0 color 1 in high bytes
+			paddusw mm6, mm7    // mm6 = src0[0] blended with src1[0]
+			psrl      mm4, 1
+			punpcklbw mm5, mm3  // mm4 contains src1 color 1 in high bytes
+			psll      mm6, 1
+			psrl      mm5, 1
+			pmulhw    mm4, mm0     // src0 = src0 * blendFactor
+			pmulhw    mm5, mm1     // src1 = src1 * (1 - blendfactor)
+			paddusw   mm4, mm5    // mm6 = src0[1] blended with src1[1]
+			psll      mm4, 1
+			// pack result
+			packuswb  mm4, mm6
+			dec		  ecx
+			movq      [edi + ebx], mm4  // store result
+			jne myLoop
+			emms
+		}
+		if (numPixLeft)
+		{
+			// case of odd number of pixels
+			src0 += 4 * numPix;
+			src1 += 4 * numPix;
+			dest += 4 * numPix;
+			uint blendFact    = (uint) factor;
+			uint invblendFact = 256 - blendFact;			
+			*dest = (uint8) (((blendFact * *src1)		+ (invblendFact * *src0)) >> 8);
+			*(dest + 1) = (uint8) (((blendFact * *(src1 + 1)) + (invblendFact * *(src0 + 1))) >> 8);
+			*(dest + 2) = (uint8) (((blendFact * *(src1 + 2)) + (invblendFact * *(src0 + 2))) >> 8);
+			*(dest + 3)  = (uint8) (((blendFact * *(src1 + 3)) + (invblendFact * *(src0 + 3))) >> 8);
+		}
+	}	
+	else	
+	#endif //#ifdef NL_OS_WINDOWS	
+	{	
+		uint8 *endPix			= dest + (numPix << 2);
+		// no mmx version
+		uint blendFact    = (uint) factor;
+		uint invblendFact = 256 - blendFact;
+		do
+		{
+			/// blend 4 component at each pass
+			*dest = (uint8) (((blendFact * *src1)		+ (invblendFact * *src0)) >> 8);
+			*(dest + 1) = (uint8) (((blendFact * *(src1 + 1)) + (invblendFact * *(src0 + 1))) >> 8);
+			*(dest + 2) = (uint8) (((blendFact * *(src1 + 2)) + (invblendFact * *(src0 + 2))) >> 8);
+			*(dest + 3)  = (uint8) (((blendFact * *(src1 + 3)) + (invblendFact * *(src0 + 3))) >> 8);
+
+			src0 = src0 + 4;
+			src1 = src1 + 4;
+			dest = dest + 4;	
+		}
+		while (dest != endPix);
 	}
-	while (dest != endPix);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.203 2004/02/12 17:53:26 lecroart Exp $
+ * $Id: service.cpp,v 1.204 2004/03/15 12:57:48 legros Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -584,7 +584,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 			if (WindowDisplayer == NULL && disp != "NONE")
 			{
-				nlwarning ("SERVICE: Unknown value for the WindowStyle (should be GTK, WIN or NONE), use no window displayer");
+				nlinfo ("SERVICE: Unknown value for the WindowStyle (should be GTK, WIN or NONE), use no window displayer");
 			}
 		}
 
@@ -1543,6 +1543,16 @@ NLMISC_DYNVARIABLE(string, State, "Set this value to 0 to shutdown the service a
 		{
 			nlwarning ("SERVICE: Unknown value for State '%s'", (*pointer).c_str());
 		}
+	}
+}
+
+
+NLMISC_DYNVARIABLE(uint32, ShardId, "Get value of shardId set for this particular service")
+{
+	// read or write the variable
+	if (get)
+	{
+		*pointer = IService::getInstance()->getShardId();
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.46 2003/03/25 18:32:11 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.47 2003/04/09 13:54:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -355,7 +355,7 @@ void CAudioMixerUser::setSamplePath(const std::string& path)
 
 // ******************************************************************
 
-void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
+void				CAudioMixerUser::init(int maxTrack, bool useEax, IProgressCallback *progressCallBack)
 {
 	nldebug( "AM: Init..." );
 
@@ -377,6 +377,7 @@ void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
 
 	uint i;
 
+	maxTrack = min(maxTrack, MAX_TRACKS);
 
 	// Init registrable classes
 	static bool initialized = false;
@@ -389,8 +390,8 @@ void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
 	_Listener.init( _SoundDriver );
 
 	// Init tracks (physical sources)
-	_NbTracks = MAX_TRACKS; // could be chosen by the user, or according to the capabilities of the sound card
-	for ( i=0; i<MAX_TRACKS; i++ )
+	_NbTracks = maxTrack; // could be chosen by the user, or according to the capabilities of the sound card
+	for ( i=0; i<maxTrack; i++ )
 	{
 		_Tracks[i] = NULL;
 	}

@@ -1,7 +1,7 @@
 /** \file track.cpp
  * CTrack: a source selected for playing
  *
- * $Id: track.cpp,v 1.1 2001/07/10 16:48:03 cado Exp $
+ * $Id: track.cpp,v 1.2 2001/07/13 09:44:16 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,14 +27,6 @@
 
 
 namespace NLSOUND {
-
-
-/*
- * Constructor
- */
-CTrack::CTrack() : DrvSource(NULL), _Available(true)
-{
-}
 
 
 } // NLSOUND

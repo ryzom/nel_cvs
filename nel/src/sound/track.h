@@ -1,7 +1,7 @@
 /** \file track.h
  * CTrack: a source selected for playing
  *
- * $Id: track.h,v 1.1 2001/07/10 16:48:03 cado Exp $
+ * $Id: track.h,v 1.2 2001/07/13 09:44:16 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_TRACK_H
 
 #include "nel/misc/types_nl.h"
+#include "driver/sound_driver.h"
 #include "driver/source.h"
 
 
@@ -47,27 +48,30 @@ class CTrack
 public:
 
 	/// Constructor
-	CTrack();
-
+	CTrack() : DrvSource(NULL), _UserSource(NULL) {}
+	/// Init
+	void			init( ISoundDriver *sd )			{ DrvSource = sd->createSource(); }
 	/// Destructor
-	virtual			~CTrack()							{ delete DrvSource; }
-	
+	virtual			~CTrack()							{ if ( DrvSource != NULL ) delete DrvSource; }
+
+
 	/// Return availability
-	bool			available() const					{ return _Available; }
-	/// Set availability
-	void			setAvailable( bool av )				{ _Available = av; }
+	bool			isAvailable() const					{ return (_UserSource==NULL); }
+	/// Returns true if the track is physically playing (different from getUserSource()->isPlaying())
+	bool			isPlaying() const					{ nlassert( DrvSource != NULL ); return DrvSource->isPlaying(); }
+	/// Set logical source (if NULL, the track becomes available)
+	void			setUserSource( CSourceUser *src)	{ _UserSource = src; }
+	/// Return the logical source
+	CSourceUser		*getUserSource()					{ return _UserSource; }
 
-	/// Source played
+
+	/// Physical source played by the driver
 	ISource			*DrvSource;
-
-#ifdef NL_DEBUG
-	// Debug info
-	CSourceUser		*UserSource;
-#endif
 
 private:
 	
-	bool			_Available;
+	/// The current logical source
+	CSourceUser		*_UserSource;
 
 };
 

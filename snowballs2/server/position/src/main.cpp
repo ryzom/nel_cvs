@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Position Service.
  *
- * $Id: main.cpp,v 1.7 2001/08/01 15:46:37 valignat Exp $
+ * $Id: main.cpp,v 1.8 2002/02/11 10:25:00 lecroart Exp $
  */
 
 /*
@@ -258,8 +258,7 @@ void cbSnowball ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 {
 	static uint32 snowballId = START_SNOW_ID;
 
-	uint32  id,
-			playerId;
+	uint32  playerId;
 	CVector start,
 			target;
 	float   speed,
@@ -346,6 +345,7 @@ public:
 	// Initialisation
 	void init()
 	{
+		DebugLog->addNegativeFilter ("NETL");
 	}
 
 	// Update fonction, called at every frames

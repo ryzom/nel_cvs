@@ -1,7 +1,7 @@
 /** \file graph.cpp
  * Snowballs 2 specific code for managing the graph (network traffic, fps, etc).
  *
- * $Id: graph.cpp,v 1.1 2001/07/24 17:29:23 lecroart Exp $
+ * $Id: graph.cpp,v 1.2 2001/07/27 09:07:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,9 @@ void CGraph::render ()
 	TextContext->setColor (frontCol);
 	TextContext->setFontSize (10);
 	TextContext->printfAt ((X+Width+2)/ScreenWidth, (Y+value)/ScreenHeight, toString(Peak).c_str());
+
+	TextContext->setHotSpot (UTextContext::TopLeft);
+	TextContext->printfAt ((X+1)/ScreenWidth, (Y+Height-1)/ScreenHeight, Name.c_str());
 }
 
 void CGraph::addOneValue (float value)
@@ -90,6 +93,9 @@ void CGraph::addOneValue (float value)
 	Values.push_back (value);
 	while (Values.size () > Width)
 		Values.pop_front ();
+
+	if (Values.back() > Peak)
+		Peak = Values.back();
 }
 
 
@@ -113,11 +119,11 @@ void CGraph::addValue (float value)
 // Variables
 //
 
-CGraph FpsGraph (10.0f, 10.0f, 100.0f, 100.0f, CRGBA(128,0,0,128), 1000, 40.0f);
-CGraph SpfGraph (10.0f, 110.0f, 100.0f, 100.0f, CRGBA(0,128,0,128), 0, 200.0f);
+CGraph FpsGraph ("fps", 10.0f, 10.0f, 100.0f, 100.0f, CRGBA(128,0,0,128), 1000, 40.0f);
+CGraph SpfGraph ("spf", 10.0f, 110.0f, 100.0f, 100.0f, CRGBA(0,128,0,128), 0, 200.0f);
 
-CGraph DownloadGraph (10.0f, 260.0f, 100.0f, 100.0f, CRGBA(0,0,128,128), 1000, 1000.0f);
-CGraph UploadGraph (10.0f, 360.0f, 100.0f, 100.0f, CRGBA(0,128,128,128), 1000, 1000.0f);
+CGraph DownloadGraph ("download", 10.0f, 260.0f, 100.0f, 100.0f, CRGBA(0,0,128,128), 1000, 1000.0f);
+CGraph UploadGraph ("upload", 10.0f, 360.0f, 100.0f, 100.0f, CRGBA(0,128,128,128), 1000, 1000.0f);
 
 bool ShowGraph;
 

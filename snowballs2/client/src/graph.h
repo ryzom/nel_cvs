@@ -1,7 +1,7 @@
 /** \file graph.h
  * Snowballs 2 specific code for managing the graph (network traffic, fps, etc).
  *
- * $Id: graph.h,v 1.1 2001/07/24 17:29:23 lecroart Exp $
+ * $Id: graph.h,v 1.2 2001/07/27 09:07:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 //
 
 #include <deque>
+#include <string>
 
 #include <nel/misc/rgba.h>
 #include <nel/misc/time_nl.h>
@@ -42,7 +43,7 @@
 class CGraph
 {
 public:
-
+	std::string Name;
 	float X, Y, Width, Height;
 	NLMISC::CRGBA BackColor;
 	float MaxValue;
@@ -54,8 +55,8 @@ public:
 
 	NLMISC::TTime CurrentQuantumStart;
 
-	CGraph (float x, float y, float width, float height, NLMISC::CRGBA backColor, NLMISC::TTime quantum, float maxValue)
-		: X(x), Y(y), Width(width), Height(height), BackColor(backColor), Quantum(quantum),
+	CGraph (std::string name, float x, float y, float width, float height, NLMISC::CRGBA backColor, NLMISC::TTime quantum, float maxValue)
+		: Name(name), X(x), Y(y), Width(width), Height(height), BackColor(backColor), Quantum(quantum),
 		CurrentQuantumStart(NLMISC::CTime::getLocalTime()), MaxValue(maxValue), Peak(0.0f)
 	{
 	}

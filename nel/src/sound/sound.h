@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.1 2001/07/10 16:48:03 cado Exp $
+ * $Id: sound.h,v 1.2 2001/07/13 09:44:32 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,8 @@ public:
 
 	/// Constructor
 	CSound();
+	/// Destructor
+	virtual ~CSound();
 	/// Init with sound driver
 	static void			init( ISoundDriver *sd )		{ _SoundDriver = sd; }
 	/// Serialize

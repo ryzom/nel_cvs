@@ -1,7 +1,7 @@
 /** \file env_effect.h
  * CEnvEffect: environmental effects and where they are applied
  *
- * $Id: env_effect.h,v 1.1 2001/07/10 16:48:03 cado Exp $
+ * $Id: env_effect.h,v 1.2 2001/07/13 09:45:07 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,8 @@ public:
 
 	/// Constructor
 	CEnvEffect();
+	/// Destructor
+	virtual ~CEnvEffect() {}
 	/// Serialize
 	void			serial( NLMISC::IStream& s )
 	{

@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.1 2001/07/10 16:48:03 cado Exp $
+ * $Id: sound.cpp,v 1.2 2001/07/13 09:44:32 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,18 @@ CSound::CSound() : _Buffer(NULL), _Gain(1.0), _Detailed(false),
 	_MinDist(1.0f), _MaxDist(1000000.0f),
 	_ConeInnerAngle(6.283185f), _ConeOuterAngle(6.283185f), _ConeOuterGain( 1.0f )
 {
+}
+
+
+/*
+ * Destructor
+ */
+CSound::~CSound()
+{
+	if ( _Buffer != NULL )
+	{
+		delete _Buffer;
+	}
 }
 
 

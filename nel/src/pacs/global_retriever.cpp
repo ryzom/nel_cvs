@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.9 2001/05/21 08:51:50 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.10 2001/05/21 17:09:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -546,7 +546,7 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 
 // ***************************************************************************
 void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &deltaCol,
-		CSurfaceIdent startSurface, float radius, TCollisionType colType) const
+		CSurfaceIdent startSurface, float radius, const CVector2f bboxStart[4], TCollisionType colType) const
 {
 	// start currentSurface with surface start.
 	CSurfaceIdent	currentSurface= startSurface;
@@ -595,6 +595,8 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 					// test collision with this edge.
 					if(colType==CGlobalRetriever::Circle)
 						t= colEdge.testCircle(startCol, deltaCol, radius, normal);
+					else if(colType==CGlobalRetriever::BBox)
+						t= colEdge.testBBox(startCol, deltaCol, bboxStart, normal);
 					else if(colType==CGlobalRetriever::Point)
 						t= colEdge.testPoint(startCol, deltaCol);
 
@@ -757,7 +759,80 @@ const	std::vector<NLPACS::CCollisionSurfaceDesc>
 	//===========
 	CVector2f	startCol(start.x, start.y);
 	CVector2f	deltaCol(delta.x, delta.y);
-	testCollisionWithCollisionChains(cst, startCol, deltaCol, startSurface, radius, CGlobalRetriever::Circle);
+	CVector2f	obbDummy[4];	// dummy OBB (not obb here so don't bother)
+	testCollisionWithCollisionChains(cst, startCol, deltaCol, startSurface, radius, obbDummy, CGlobalRetriever::Circle);
+
+
+	// result.
+	return cst.CollisionDescs;
+}
+
+
+// ***************************************************************************
+const	std::vector<NLPACS::CCollisionSurfaceDesc>	
+	&NLPACS::CGlobalRetriever::testBBoxMove(const CGlobalPosition &startPos, const NLMISC::CVector &delta, 
+	const NLMISC::CVector &locI, const NLMISC::CVector &locJ, CCollisionSurfaceTemp &cst) const
+{
+	CSurfaceIdent	startSurface(startPos.InstanceId, startPos.LocalPosition.Surface);
+
+	// 0. reset.
+	//===========
+	// reset result.
+	cst.CollisionDescs.clear();
+
+	// store this request in cst.
+	cst.PrecStartSurface= startSurface;
+	cst.PrecStartPos= startPos.LocalPosition.Estimation;
+	cst.PrecDeltaPos= delta;
+
+
+	// 1. Choose a local basis.
+	//===========
+	// Take the retrieverInstance of startPos as a local basis.
+	CVector		origin;
+	origin= getInstance(startPos.InstanceId).getOrigin();
+
+
+	// 2. compute OBB.
+	//===========
+	CVector2f	obbStart[4];
+	// compute start, relative to the retriever instance.
+	CVector		start= startPos.LocalPosition.Estimation;
+	CVector2f	obbCenter(start.x, start.y);
+	CVector2f	locI2d(locI.x, locI.y);
+	CVector2f	locJ2d(locJ.x, locJ.y);
+
+	obbStart[0]= obbCenter - locI2d - locJ2d;
+	obbStart[1]= obbCenter - locI2d + locJ2d;
+	obbStart[2]= obbCenter + locI2d + locJ2d;
+	obbStart[3]= obbCenter + locI2d - locJ2d;
+
+	// 3. compute bboxmove.
+	//===========
+	CAABBox		bboxMove;
+	// extend the bbox.
+	bboxMove.setCenter(CVector(obbStart[0].x, obbStart[0].y, 0));
+	bboxMove.extend(CVector(obbStart[1].x, obbStart[1].y, 0));
+	bboxMove.extend(CVector(obbStart[2].x, obbStart[2].y, 0));
+	bboxMove.extend(CVector(obbStart[3].x, obbStart[3].y, 0));
+	bboxMove.extend(CVector(obbStart[0].x, obbStart[0].y, 0) + delta);
+	bboxMove.extend(CVector(obbStart[1].x, obbStart[1].y, 0) + delta);
+	bboxMove.extend(CVector(obbStart[2].x, obbStart[2].y, 0) + delta);
+	bboxMove.extend(CVector(obbStart[3].x, obbStart[3].y, 0) + delta);
+
+
+
+	// 4. find possible collisions in bboxMove+origin. fill cst.CollisionChains.
+	//===========
+	findCollisionChains(cst, bboxMove, origin);
+
+
+
+	// 5. test collisions with CollisionChains.
+	//===========
+	CVector2f	startCol(start.x, start.y);
+	CVector2f	deltaCol(delta.x, delta.y);
+	testCollisionWithCollisionChains(cst, startCol, deltaCol, startSurface, 0, obbStart, CGlobalRetriever::BBox);
 
 
 	// result.
@@ -803,7 +878,8 @@ NLPACS::CGlobalRetriever::CGlobalPosition
 	CVector		start= startPos.LocalPosition.Estimation;
 	CVector2f	startCol(start.x, start.y);
 	CVector2f	deltaCol(delta.x, delta.y);
-	testCollisionWithCollisionChains(cst, startCol, deltaCol, startSurface, 0, CGlobalRetriever::Point);
+	CVector2f	obbDummy[4];	// dummy OBB (not obb here so don't bother)
+	testCollisionWithCollisionChains(cst, startCol, deltaCol, startSurface, 0, obbDummy, CGlobalRetriever::Point);
 
 
 	// 3. run all possible collisions to get the new surface where we are now.

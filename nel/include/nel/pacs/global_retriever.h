@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.6 2001/05/21 08:51:50 berenguier Exp $
+ * $Id: global_retriever.h,v 1.7 2001/05/21 17:09:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -273,6 +273,17 @@ public:
 	 */
 	const TCollisionSurfaceDescVector	&testCylinderMove(const CGlobalPosition &start, const NLMISC::CVector &delta, 
 		float radius, CCollisionSurfaceTemp &cst) const;
+	/** Test a movement of a bbox against surface world.
+	 * \param start is the start position of the movement.
+	 * \param delta is the requested movement.
+	 * \param locI is the oriented I vector of the BBox.  I.norm()== Width.
+	 * \param locJ is the oriented J vector of the BBox.  J.norm()== Height.
+	 * \param cst is the CCollisionSurfaceTemp object used as temp copmputing (one per thread).
+	 * \return list of collision against surface, ordered by increasing time. this is a synonym for
+	 * cst.CollisionDescs. NB: this array may be modified by CGlobalRetriever on any collision call.
+	 */
+	const TCollisionSurfaceDescVector	&testBBoxMove(const CGlobalPosition &start, const NLMISC::CVector &delta, 
+		const NLMISC::CVector &locI, const NLMISC::CVector &locJ, CCollisionSurfaceTemp &cst) const;
 	/** apply a movement of a point against surface world. This must be called after test???Move().
 	 * NB: It's up to you to give good t, relative to result of test???Move(). Else, undefined results...
 	 * NB: if you don't give same start/delta as in preceding call to testMove(), start is returned.
@@ -314,8 +325,7 @@ private:
 
 	/// \name  Collisions part.
 	// @{
-	// TODO_BBOX.
-	enum	TCollisionType { Circle, Point };
+	enum	TCollisionType { Circle, Point, BBox };
 	/** reset and fill cst.CollisionChains with possible collisions in bboxMove+origin.
 	 * result: collisionChains, computed localy to origin.
 	 */
@@ -325,7 +335,7 @@ private:
 	 * NB: with colType==Point, normal in cst.CollisionDescs are undefined.
 	 */
 	void	testCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &deltaCol,
-		CSurfaceIdent startSurface, float radius, TCollisionType colType) const;
+		CSurfaceIdent startSurface, float radius, const CVector2f bbox[4], TCollisionType colType) const;
 	// @}
 
 

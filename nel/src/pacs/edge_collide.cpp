@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.4 2001/05/21 08:51:50 berenguier Exp $
+ * $Id: edge_collide.cpp,v 1.5 2001/05/21 17:09:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,9 @@ using namespace std;
 
 namespace NLPACS
 {
+
+
+static	const	float	EdgeCollideEpsilon= 1e-5f;
 
 
 // ***************************************************************************
@@ -240,6 +243,191 @@ float		CEdgeCollide::testCircle(const CVector2f &start, const CVector2f &delta, 
 	}
 
 	return tmin;
+}
+
+
+
+// ***************************************************************************
+float		CEdgeCollide::testEdge(const CVector2f &q0, const CVector2f &q1, const CVector2f &delta)
+{
+	float	a,b,cv,cc,  d,e,f;
+	CVector2f	tmp;
+
+	// compute D1 line equation of q0q1. bx - ay + c(t)=0, where c is function of time [0,1].
+	// ===========================
+	tmp= q1 - q0;		// NB: along time, the direction doesn't change.
+	// Divide by norm()², so that  a projection on this edge is true if the proj is in interval [0,1].
+	tmp/= tmp.sqrnorm();
+	a= tmp.x;
+	b= tmp.y;
+	// c= - q0(t)*CVector2f(b,-a).  but since q0(t) is a function of time t (q0+delta*t), compute cv, and cc.
+	// so c= cv*t + cc.
+	cv= - delta*CVector2f(b,-a);
+	cc= - q0*CVector2f(b,-a);
+
+	// compute D2 line equation of P0P1. ex - dy + f=0.
+	// ===========================
+	tmp= P1 - P0;
+	// Divide by norm()², so that  a projection on this edge is true if the proj is in interval [0,1].
+	tmp/= tmp.sqrnorm();
+	d= tmp.x;
+	e= tmp.y;
+	f= - P0*CVector2f(e,-d);
+
+
+	// Solve system.
+	// ===========================
+	/*
+		Compute the intersection I of 2 lines across time.
+		We have the system:
+			bx - ay + c(t)=0
+			ex - dy + f=0
+
+		which solve for:
+			det= ae-bd	(0 <=> // lines)
+			x(t)= (d*c(t) - fa) / det
+			y(t)= (e*c(t) - fb) / det
+	*/
+
+	// determinant of matrix2x2.
+	float	det= a*e - b*d;
+	// if to near of 0. (take delta for reference of test).
+	if(det==0 || fabs(det)<delta.norm()*EdgeCollideEpsilon)
+		return 1;
+
+	// intersection I(t)= pInt + vInt*t.
+	CVector2f		pInt, vInt;
+	pInt.x= ( d*cc - f*a ) / det;
+	pInt.y= ( e*cc - f*b ) / det;
+	vInt.x= ( d*cv ) / det;
+	vInt.y= ( e*cv ) / det;
+
+
+	// Project Intersection.
+	// ===========================
+	/*
+		Now, we project x,y onto each line D1 and D2, which gives  u(t) and v(t), each one giving the parameter of 
+		the parametric line function. When it is in [0,1], we are on the edge.
+
+		u(t)= (I(t)-q0(t)) * CVector2f(a,b)	= uc + uv*t
+		v(t)= (I(t)-P0) * CVector2f(d,e)	= vc + vv*t
+	*/
+	float	uc, uv;
+	float	vc, vv;
+	// NB: q0(t)= q0+delta*t
+	uc= (pInt-q0) * CVector2f(a,b);
+	uv= (vInt-delta) * CVector2f(a,b);
+	vc= (pInt-P0) * CVector2f(d,e);
+	vv= (vInt) * CVector2f(d,e);
+
+
+	// Compute intervals.
+	// ===========================
+	/*
+		Now, for each edge, compute time interval where parameter is in [0,1]. If intervals overlap, there is a collision.
+		Then clamp this collision time with [0,1].
+	*/
+	float	tu0, tu1, tv0, tv1;
+
+	// compute time interval for u(t).
+	if(uv==0 || fabs(uv)<EdgeCollideEpsilon)
+	{
+		// The intersection does not move along D1. Always projected on u(t)=uc. so if in [0,1], OK, else never collide.
+		if(uc<0 || uc>1)
+			return 1;
+		// else suppose "always valid".
+		tu0= 0;
+		tu1= 1;
+	}
+	else
+	{
+		tu0= (0-uc)/uv;	// t for u(t)=0
+		tu1= (1-uc)/uv;	// t for u(t)=1
+	}
+
+	// compute time interval for v(t).
+	if(vv==0 || fabs(vv)<EdgeCollideEpsilon)
+	{
+		// The intersection does not move along D2. Always projected on v(t)=vc. so if in [0,1], OK, else never collide.
+		if(vc<0 || vc>1)
+			return 1;
+		// else suppose "always valid".
+		tv0= 0;
+		tv1= 1;
+	}
+	else
+	{
+		tv0= (0-vc)/vv;	// t for v(t)=0
+		tv1= (1-vc)/vv;	// t for v(t)=1
+	}
+
+
+	// clip intervals.
+	// ===========================
+	// order time interval.
+	if(tu0>tu1)
+		swap(tu0, tu1);		// now, [tu0, tu1] represent the time interval where line D2 hit the edge D1.
+	if(tv0>tv1)
+		swap(tv0, tv1);		// now, [tv0, tv1] represent the time interval where line D1 hit the edge D2.
+
+	// if intervals do not overlap, no collision.
+	if(tu0>tv1 || tv0>tu1)
+		return 1;
+	else
+	{
+		// compute intersection of intervals.
+		float	tInt0= max(tu0, tv0);
+		float	tInt1= min(tu1, tv1);
+
+		// if this interval do not overlap with [0,1], no collision.
+		if(tInt0>1 || 0>tInt1)
+			return 1;
+		else
+			// return time of collision of the 2 edges.
+			return max(0.0f, tInt0);
+	}
+	
+}
+
+
+// ***************************************************************************
+float		CEdgeCollide::testBBox(const CVector2f &start, const CVector2f &delta, const CVector2f bbox[4], CVector2f &normal)
+{
+	// distance from center to line.
+	float	dist= start*Norm + C;
+	// projection of speed on normal.
+	float	speed= delta*Norm;
+
+	// test if the movement is against the line or not.
+	bool	sensPos= dist>0;
+	bool	sensSpeed= speed>0;
+	// if signs are equals, same side of the line, so we allow the circle to leave the line.
+	if(sensPos==sensSpeed)
+		return 1;
+
+	// Else, do 4 test edge/edge, and return Tmin.
+	float	tMin=1;
+	for(sint i=0;i<4;i++)
+	{
+		float	t;
+		t= testEdge(bbox[i], bbox[(i+1)&3], delta);
+		tMin= min(t, tMin);
+	}
+
+	if(tMin<1)
+	{
+		// always assume collision occurs on interior of the edge. the normal to return is +- Norm.
+		if(sensPos)	// if algebric distance of start position was >0.
+			normal= Norm;
+		else
+			normal= -Norm;
+
+		// return time of collision.
+		return tMin;
+	}
+	else
+		return 1;
+
 }
 
 

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.60 2003/11/03 18:07:52 vizerie Exp $
+ * $Id: driver.h,v 1.61 2003/11/13 08:56:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -187,8 +187,8 @@ public:
 	// Must be a HWND for Windows (WIN32).
 	virtual bool			setDisplay(void* wnd, const GfxMode& mode, bool show = true) throw(EBadDisplay)=0;
 	// Must be called after a setDisplay that initialize the mode
-	virtual bool			setMode(const GfxMode& mode) throw(EBadDisplay)=0;
-	virtual bool			getModes(std::vector<GfxMode> &modes) throw(EBadDisplay)=0;
+	virtual bool			setMode(const GfxMode& mode)=0;
+	virtual bool			getModes(std::vector<GfxMode> &modes)=0;
 
 	// Return is the associated window information. (Implementation dependant)
 	// Must be a HWND for Windows (WIN32).

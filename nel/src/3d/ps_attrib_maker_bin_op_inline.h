@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op_inline.h
  * implementation of binary operator in particle systems
  *
- * $Id: ps_attrib_maker_bin_op_inline.h,v 1.6 2003/04/09 16:03:06 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op_inline.h,v 1.7 2003/11/13 08:56:29 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,7 +123,7 @@ inline NLMISC::CRGBA PSBinOpSubtract(NLMISC::CRGBA t1, NLMISC::CRGBA t2)
 
 	
 //***********************************************************************
-uint32 CPSAttribMakerBinOp<uint32>::getMinValue(void) const
+inline uint32 CPSAttribMakerBinOp<uint32>::getMinValue(void) const
 {
 	nlassert(_Arg[0] && _Arg[1]);
 	switch(_Op)
@@ -147,7 +147,7 @@ uint32 CPSAttribMakerBinOp<uint32>::getMinValue(void) const
 }
 
 //***********************************************************************
-uint32 CPSAttribMakerBinOp<uint32>::getMaxValue(void) const
+inline uint32 CPSAttribMakerBinOp<uint32>::getMaxValue(void) const
 {
 	nlassert(_Arg[0] && _Arg[1]);
 	switch(_Op)
@@ -171,7 +171,7 @@ uint32 CPSAttribMakerBinOp<uint32>::getMaxValue(void) const
 }
 
 //***********************************************************************
-sint32 CPSAttribMakerBinOp<sint32>::getMinValue(void) const
+inline sint32 CPSAttribMakerBinOp<sint32>::getMinValue(void) const
 {
 	nlassert(_Arg[0] && _Arg[1]);
 	switch(_Op)
@@ -197,7 +197,7 @@ sint32 CPSAttribMakerBinOp<sint32>::getMinValue(void) const
 }
 
 //***********************************************************************
-sint32 CPSAttribMakerBinOp<sint32>::getMaxValue(void) const
+inline sint32 CPSAttribMakerBinOp<sint32>::getMaxValue(void) const
 {
 	nlassert(_Arg[0] && _Arg[1]);
 	switch(_Op)
@@ -223,7 +223,7 @@ sint32 CPSAttribMakerBinOp<sint32>::getMaxValue(void) const
 }
 
 //***********************************************************************
-float CPSAttribMakerBinOp<float>::getMinValue(void) const
+inline float CPSAttribMakerBinOp<float>::getMinValue(void) const
 {
 	nlassert(_Arg[0] && _Arg[1]);
 	switch(_Op)
@@ -249,7 +249,7 @@ float CPSAttribMakerBinOp<float>::getMinValue(void) const
 }
 
 //***********************************************************************
-float CPSAttribMakerBinOp<float>::getMaxValue(void) const
+inline float CPSAttribMakerBinOp<float>::getMaxValue(void) const
 {
 	nlassert(_Arg[0] && _Arg[1]);
 	switch(_Op)
@@ -283,7 +283,7 @@ float CPSAttribMakerBinOp<float>::getMaxValue(void) const
 //=================================================================================================================
 /// copy ctor
 template <class T>
-CPSAttribMakerBinOp<T>::CPSAttribMakerBinOp(const CPSAttribMakerBinOp &other) : CPSAttribMaker<T>(other) // parent copy ctor
+inline CPSAttribMakerBinOp<T>::CPSAttribMakerBinOp(const CPSAttribMakerBinOp &other) : CPSAttribMaker<T>(other) // parent copy ctor
 {	
 	std::auto_ptr<CPSAttribMaker<T> > a0(NLMISC::safe_cast<CPSAttribMaker<T> *>(other._Arg[0]->clone()))
 									, a1(NLMISC::safe_cast<CPSAttribMaker<T> *>(other._Arg[1]->clone()));	
@@ -296,7 +296,7 @@ CPSAttribMakerBinOp<T>::CPSAttribMakerBinOp(const CPSAttribMakerBinOp &other) : 
 
 //=================================================================================================================
 template <class T>
-CPSAttribMakerBinOp<T>::CPSAttribMakerBinOp() : _Op(CPSBinOp::selectArg1), _Size(0), _MaxSize(0)
+inline CPSAttribMakerBinOp<T>::CPSAttribMakerBinOp() : _Op(CPSBinOp::selectArg1), _Size(0), _MaxSize(0)
 {
 	_Arg[0] = _Arg[1] = NULL;
 	_HasMemory  = true; 
@@ -304,7 +304,7 @@ CPSAttribMakerBinOp<T>::CPSAttribMakerBinOp() : _Op(CPSBinOp::selectArg1), _Size
 
 //=================================================================================================================
 template <class T>
-void CPSAttribMakerBinOp<T>::clean(void) 
+inline void CPSAttribMakerBinOp<T>::clean(void) 
 {
 	delete _Arg[0];
 	delete _Arg[1];
@@ -312,14 +312,14 @@ void CPSAttribMakerBinOp<T>::clean(void)
 
 //=================================================================================================================
 template <class T>
-CPSAttribMakerBinOp<T>::~CPSAttribMakerBinOp() 
+inline CPSAttribMakerBinOp<T>::~CPSAttribMakerBinOp() 
 {
 	clean();
 }
 
 //=================================================================================================================
 /// cplane basis template specialization for supportOp
-bool CPSAttribMakerBinOp<CPlaneBasis>::supportOp(CPSBinOp::BinOp op) 
+inline bool CPSAttribMakerBinOp<CPlaneBasis>::supportOp(CPSBinOp::BinOp op) 
 { 
 	return  (op == CPSBinOp::selectArg1 || op == CPSBinOp::selectArg2 || op == CPSBinOp::modulate);
 }
@@ -327,7 +327,7 @@ bool CPSAttribMakerBinOp<CPlaneBasis>::supportOp(CPSBinOp::BinOp op)
 
 //=================================================================================================================
 template <class T>
-T		CPSAttribMakerBinOp<T>::get			  (CPSLocated *loc, uint32 index)
+inline T CPSAttribMakerBinOp<T>::get (CPSLocated *loc, uint32 index)
 {
 	switch (_Op)
 	{
@@ -357,7 +357,7 @@ T		CPSAttribMakerBinOp<T>::get			  (CPSLocated *loc, uint32 index)
 void MakePrivate(uint8 * dest, const NLMISC::CRGBA *src1, const NLMISC::CRGBA *src2, uint32 stride, uint32 numAttrib, CPSBinOp::BinOp op);
 // for private use
 template <class T>
-void MakePrivate(uint8 * dest, const T *src1, const T *src2, uint32 stride, uint32 numAttrib, CPSBinOp::BinOp op)
+inline void MakePrivate(uint8 * dest, const T *src1, const T *src2, uint32 stride, uint32 numAttrib, CPSBinOp::BinOp op)
 {
 	uint8 *destEnd = dest + (stride * numAttrib);
 
@@ -436,7 +436,7 @@ inline void   *CPSAttribMakerBinOp<T>::makePrivate(T *buf1,
 
 //=================================================================================================================
 template <class T>
-void   *CPSAttribMakerBinOp<T>::make	  (CPSLocated *loc,
+inline void   *CPSAttribMakerBinOp<T>::make	  (CPSLocated *loc,
 										   uint32 startIndex,
 										   void *tab,
 										   uint32 stride,
@@ -460,7 +460,7 @@ void Make4Private(uint8 * dest, const NLMISC::CRGBA *src1, const NLMISC::CRGBA *
 
 // for private use
 template <class T>
-void Make4Private(uint8 * dest, const T *src1, const T *src2, uint32 stride, uint32 numAttrib, CPSBinOp::BinOp op)
+inline void Make4Private(uint8 * dest, const T *src1, const T *src2, uint32 stride, uint32 numAttrib, CPSBinOp::BinOp op)
 {
 	const uint stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride2 << 1; 
 	uint8 *destEnd = dest + ((stride<<2) * numAttrib);
@@ -549,7 +549,7 @@ inline void    CPSAttribMakerBinOp<T>::make4Private(T *buf1,
 
 //=================================================================================================================
 template <class T>
-void    CPSAttribMakerBinOp<T>::make4	  (CPSLocated *loc,
+inline void    CPSAttribMakerBinOp<T>::make4	  (CPSLocated *loc,
 										   uint32 startIndex,
 										   void *tab,
 										   uint32 stride,
@@ -573,7 +573,7 @@ void MakeNPrivate(uint8 * dest, const NLMISC::CRGBA *src1, const NLMISC::CRGBA *
 
 // for private use
 template <class T>
-void MakeNPrivate(uint8 * dest,
+inline void MakeNPrivate(uint8 * dest,
 				  const T *src1,
 				  const T *src2,
 				  uint32 stride,

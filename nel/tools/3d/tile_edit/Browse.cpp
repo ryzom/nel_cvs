@@ -472,7 +472,7 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 				{
 					rect_scroll.bottom = rect_scroll.top + scroll_pixel;
 					pDC->FillRect(&rect_scroll,&brush);
-					int k
+					int k;
 					for (k = 0;k<iFV;k++) p++;
 					for (k = iFV;k<(old_iFV+i);k++)
 					{

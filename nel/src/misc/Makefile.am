@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.41 2002/03/14 13:54:30 lecroart Exp $
+# $Id: Makefile.am,v 1.42 2002/03/15 13:21:56 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -66,7 +66,6 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         win_displayer.cpp                  \
                         gtk_displayer.cpp                  \
                         window_displayer.cpp               \
-			debug_displayer.cpp                \
 			mem_displayer.cpp                  
 
 

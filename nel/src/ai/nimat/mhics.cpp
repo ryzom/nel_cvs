@@ -1,7 +1,7 @@
 /** \file mhics.cpp
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.cpp,v 1.1 2003/03/18 12:44:48 robert Exp $
+ * $Id: mhics.cpp,v 1.2 2003/03/18 20:18:14 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -283,7 +283,7 @@ std::pair<sint16, TTargetId> CMHiCSbase::selectBehavior(TAction motivationName, 
 	CCSPerception neoPerception;
 	neoPerception.NoTargetSensors = psensorMap->NoTargetSensors;
 	std::map<TTargetId, TSensorMap>::const_iterator	itSensorMap = psensorMap->TargetSensors.find(target);
-	nlassert(itSensorMap != psensorMap->TargetSensors.end())
+	nlassert(itSensorMap != psensorMap->TargetSensors.end());
 	neoPerception.TargetSensors[target] = (*itSensorMap).second;
 	return (*itVirtualActionClassifierSystems).second.selectBehavior(&neoPerception);
 }
@@ -411,7 +411,7 @@ void CMHiCSagent::getDebugString(std::string &t) const
 		ret += "[MI=" + NLMISC::toString((*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.getSumValue()) + "] :";
 		(*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.getDebugString(ret);
 		std::map<TAction, TTargetId>::const_iterator itIdByActions = _IdByActions.find((*itClassifiersAndVirtualActionIntensity).first);
-		nlassert (itIdByActions != _IdByActions.end())
+		nlassert (itIdByActions != _IdByActions.end());
 //		ret += " on target n#" + NLMISC::toString((*itIdByActions).second);
 		ret += " on target n#" + targetId2String((*itIdByActions).second);
 		ret += "\n  -> Classifier number " + NLMISC::toString((*itClassifiersAndVirtualActionIntensity).second.ClassifierNumber); 
@@ -424,7 +424,7 @@ void CMHiCSagent::getDebugString(std::string &t) const
 		ret += "\n <" + conversionAction.toString((* itActionsExecutionIntensity).first) + "> [EI=" + NLMISC::toString((*itActionsExecutionIntensity).second.getSumValue()) + "] : ";
 		(*itActionsExecutionIntensity).second.getDebugString(ret);
 		std::map<TAction, TTargetId>::const_iterator itIdByActions = _IdByActions.find((*itActionsExecutionIntensity).first);
-		nlassert (itIdByActions != _IdByActions.end())
+		nlassert (itIdByActions != _IdByActions.end());
 //		ret += " on target n#" + NLMISC::toString((*itIdByActions).second);
 		ret += " on target n#" + targetId2String((*itIdByActions).second);
 	}
@@ -703,7 +703,7 @@ void CMHiCSagent::virtualActionCompute()
 
 		// Get the target Id for this Virtual Action
 		std::map<TAction, TTargetId>::const_iterator itIdByActions = _IdByActions.find(selectionName);
-		nlassert (itIdByActions != _IdByActions.end())
+		nlassert (itIdByActions != _IdByActions.end());
 		TTargetId myTarget = (*itIdByActions).second;
 
 		// On fait calculer le CS
@@ -801,7 +801,7 @@ std::pair<TAction, TTargetId>CMHiCSagent::selectBehavior()
 		}
 	}
 	std::map<TAction, TTargetId>::iterator itIdByActions = _IdByActions.find(retAction);
-	nlassert (itIdByActions != _IdByActions.end()) // There's no activable action
+	nlassert (itIdByActions != _IdByActions.end()); // There's no activable action
 	_ItCurrentAction = itIdByActions;
 
 	return (*_ItCurrentAction);

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.35 2003/04/09 13:54:52 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.36 2003/04/11 13:22:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,7 +126,7 @@ public:
 	 * The sources will be auto-balanced every "balance_period" calls to update()
 	 * (set 0 for "never auto-balance")
 	 */
-	virtual void		init(int maxTrack, bool useEax, NLMISC::IProgressCallback *progressCallBack);
+	virtual void		init(uint maxTrack, bool useEax, NLMISC::IProgressCallback *progressCallBack);
 
 	virtual void		initClusteredSound(NL3D::UScene *uscene, float minGain, float maxDistance, float portalInterpolate);
 	virtual void		initClusteredSound(NL3D::CScene *scene, float minGain, float maxDistance, float portalInterpolate);
@@ -316,6 +316,10 @@ public:
 	{
 	public:
 		virtual void onUpdate() =0;
+		virtual ~IMixerUpdate()
+		{
+			nldebug("Destroying IMixerUpdate %p", this);
+		}
 	};
 
 	/// Register an object in the update list.
@@ -328,6 +332,11 @@ public:
 	{
 	public:
 		virtual void onEvent() =0;
+		virtual ~IMixerEvent()
+		{
+			nldebug("Destroying IMixerEvent %p", this);
+		}
+
 	};
 
 	/// Add an event in the future.

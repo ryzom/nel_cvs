@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.48 2003/04/10 08:02:30 besson Exp $
+ * $Id: audio_mixer_user.cpp,v 1.49 2003/04/11 13:22:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -355,7 +355,7 @@ void CAudioMixerUser::setSamplePath(const std::string& path)
 
 // ******************************************************************
 
-void				CAudioMixerUser::init(int maxTrack, bool useEax, IProgressCallback *progressCallBack)
+void				CAudioMixerUser::init(uint maxTrack, bool useEax, IProgressCallback *progressCallBack)
 {
 	nldebug( "AM: Init..." );
 
@@ -1061,9 +1061,15 @@ void				CAudioMixerUser::update()
 			for (; first != last; ++first)
 			{
 				if (first->second)
+				{
+					nldebug("Inserting update %p", first->first);
 					_UpdateList.insert(first->first);
+				}
 				else
+				{
+					nldebug("Removing update %p", first->first);
 					_UpdateList.erase(first->first);
+				}
 			}
 			_UpdateEventList.clear();
 		}
@@ -1072,8 +1078,16 @@ void				CAudioMixerUser::update()
 			TMixerUpdateContainer::iterator first(_UpdateList.begin()), last(_UpdateList.end());
 			for (; first != last; ++first)
 			{
-				// call the update method.
-				const_cast<IMixerUpdate*>(*first)->onUpdate();
+				if( *first == 0)
+				{
+					nlwarning("NULL pointeur in update list !");
+				}
+				else
+				{
+					// call the update method.
+					const IMixerUpdate	*update = *first;
+					const_cast<IMixerUpdate*>(update)->onUpdate();
+				}
 			}
 		}
 	}
@@ -1796,23 +1810,29 @@ void CAudioMixerUser::unregisterBufferAssoc(CSound *sound, IBuffer *buffer)
 /// Register an object in the update list.
 void CAudioMixerUser::registerUpdate(CAudioMixerUser::IMixerUpdate *pmixerUpdate)
 {
+	nldebug("Registering update %p", pmixerUpdate);
+	nlassert(pmixerUpdate != 0);
 	_UpdateEventList.push_back(make_pair(pmixerUpdate, true));
 }
 /// Unregister an object from the update list.
 void CAudioMixerUser::unregisterUpdate(CAudioMixerUser::IMixerUpdate *pmixerUpdate)
 {
+	nldebug("Unregistering update %p", pmixerUpdate);
+	nlassert(pmixerUpdate != 0);
 	_UpdateEventList.push_back(make_pair(pmixerUpdate, false));
 }
 
 /// Add an event in the future.
 void CAudioMixerUser::addEvent( CAudioMixerUser::IMixerEvent *pmixerEvent, const NLMISC::TTime &date)
 {
+	nlassert(pmixerEvent != 0);
 //	nldebug("Adding event %p", pmixerEvent);
 	_EventListUpdate.push_back(make_pair(date, pmixerEvent));
 }
 /// Remove any event programmed for this object.
 void CAudioMixerUser::removeEvents( CAudioMixerUser::IMixerEvent *pmixerEvent)
 {
+	nlassert(pmixerEvent != 0);
 //	nldebug("Removing event %p", pmixerEvent);
 	// store the pointer fot future removal.
 	_EventListUpdate.push_back(make_pair(0, pmixerEvent));

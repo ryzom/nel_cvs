@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSimpleSource: implementation of USource
  *
- * $Id: background_source.cpp,v 1.5 2003/03/03 12:58:08 boucher Exp $
+ * $Id: background_source.cpp,v 1.6 2003/04/11 13:22:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -154,6 +154,8 @@ void CBackgroundSource::stop()
 	}
 
 	CSourceCommon::stop();
+
+	CAudioMixerUser::instance()->unregisterUpdate(this);
 }
 
 void CBackgroundSource::updateFilterValues(const float *filterValues)

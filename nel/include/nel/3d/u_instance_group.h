@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.30 2004/03/23 10:11:28 vizerie Exp $
+ * $Id: u_instance_group.h,v 1.31 2004/04/09 14:15:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -221,6 +221,11 @@ public:
 	 * Return the instance at a given position
 	 */
 	virtual UInstance *getByName (const  std::string& name) =0;
+
+	/** get index of instance from its name, or -1 if not found
+	  * NB: lienar search so this is slow
+	  */
+	virtual sint	  getIndexByName(const std::string &name) const = 0;
 
 	/**
 	 * Return the instance at a given position (const version)

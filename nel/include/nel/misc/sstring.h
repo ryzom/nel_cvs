@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.9 2004/04/28 18:50:44 boucher Exp $
+ * $Id: sstring.h,v 1.10 2004/05/11 17:32:41 boucher Exp $
  */
 
 
@@ -232,7 +232,7 @@ public:
 	}
 
 	/// Behave like a s strtok() routine, returning the sun string extracted from (and removed from) *this
-	CSString strtok(const char *separators)
+	CSString strtok(const char *separators = " \n\r\t")
 	{
 		unsigned int i;
 		CSString result;

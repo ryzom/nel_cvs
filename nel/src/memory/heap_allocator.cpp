@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.9 2003/11/17 10:12:05 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.10 2003/11/17 10:43:34 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -629,6 +629,17 @@ uint CHeapAllocator::getBlockSize (void *block)
 
 // *********************************************************
 
+const char * CHeapAllocator::getCategory (void *block)
+{
+	// Get the node pointer
+	CNodeBegin *node = (CNodeBegin*) ((uint)block - sizeof (CNodeBegin));
+	return node->Category;
+}
+
+// *********************************************************
+
+/* trap debug static uint32 n3dDrvTotal = 0; */
+
 #ifdef NL_HEAP_ALLOCATION_NDEBUG
 void *CHeapAllocator::allocate (uint size)
 #else // NL_HEAP_ALLOCATION_NDEBUG
@@ -654,6 +665,14 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 				category = NL_HEAP_UNKNOWN_CATEGORY;
 			}
 		}
+
+		/* trap debug if (strcmp(category,"3dIns") == 0)
+		{
+			n3dDrvTotal += size;
+			uint dbg= 0;
+			dbg++;
+		}
+		*/
 
 		// Checks ?
 		if (_AlwaysCheck)
@@ -1009,6 +1028,7 @@ void CHeapAllocator::free (void *ptr)
 	}
 	else
 	{
+
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 		// Checks ?
 		if (_AlwaysCheck)
@@ -1020,6 +1040,13 @@ void CHeapAllocator::free (void *ptr)
 		
 		// Get the node pointer
 		CNodeBegin *node = (CNodeBegin*) ((uint)ptr - sizeof (CNodeBegin));
+
+		/* trap debug if (strcmp(getCategory(ptr),"3dIns") == 0)
+		{
+			n3dDrvTotal -= getNodeSize(node);
+			uint dbg= 0;
+			dbg++;
+		} */
 
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 		// Check the node CRC

@@ -1,7 +1,7 @@
 /** \file memory_manager.cpp
  * A new memory manager
  *
- * $Id: memory_manager.cpp,v 1.6 2003/11/17 10:12:05 corvazier Exp $
+ * $Id: memory_manager.cpp,v 1.7 2003/11/17 10:43:34 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -203,6 +203,13 @@ MEMORY_API void			SetOutOfMemoryHook (void (*outOfMemoryCallback)())
 MEMORY_API unsigned int GetBlockSize (void *pointer)
 {
 	return GlobalHeapAllocator->getBlockSize (pointer);
+}
+
+// *********************************************************
+
+MEMORY_API const char * GetCategory (void *pointer)
+{
+	return GlobalHeapAllocator->getCategory (pointer);
 }
 
 // *********************************************************

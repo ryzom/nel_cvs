@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.18 2003/11/17 10:12:05 corvazier Exp $
+ * $Id: memory_manager.h,v 1.19 2003/11/17 10:43:55 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -216,6 +216,7 @@ inline unsigned int GetTotalMemoryUsed () { return 0;}
 inline unsigned int GetDebugInfoSize () { return 0;}
 inline unsigned int GetAllocatedMemoryByCategory (const char *category) { return 0;}
 inline unsigned int GetBlockSize (void *pointer) { return 0;}
+inline const char * GetCategory (void *pointer) { return 0; }
 inline float		GetFragmentationRatio () { return 0.0f;}
 inline unsigned int GetAllocatedSystemMemoryByAllocator () { return 0;}
 inline unsigned int GetAllocatedSystemMemory () { return 0;}
@@ -280,6 +281,7 @@ MEMORY_API unsigned int GetTotalMemoryUsed ();
 MEMORY_API unsigned int GetDebugInfoSize ();
 MEMORY_API unsigned int GetAllocatedMemoryByCategory (const char *category);
 MEMORY_API unsigned int GetBlockSize (void *pointer);
+MEMORY_API const char * GetCategory (void *pointer);
 MEMORY_API float		GetFragmentationRatio ();
 MEMORY_API unsigned int GetAllocatedSystemMemoryByAllocator ();
 MEMORY_API unsigned int GetAllocatedSystemMemory ();

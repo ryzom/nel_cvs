@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.h,v 1.3 2003/11/17 10:12:05 corvazier Exp $
+ * $Id: heap_allocator.h,v 1.4 2003/11/17 10:43:34 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,9 @@ public:
 	
 	/** Get a block size with its pointer */
 	static uint			getBlockSize (void *block);
+
+	/** Get a block category from its pointer */
+	static const char * getCategory (void *block);
 
 	/// \name Performance control
 

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.39 2003/02/14 14:07:02 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.40 2003/02/21 15:51:20 lecroart Exp $
  *
  */
 
@@ -118,6 +118,7 @@ struct CService
 	vector<CSerialCommand>	Commands;
 	bool			AutoReconnect;	/// true means that AES must relaunch the service if lost
 	uint32			PId;			/// process Id used to kill the application
+	bool			Relaunch;		/// if true, it means that the admin want to close and relaunch the service
 
 	vector<uint32>	WaitingRequestId;		/// contains all request that the server hasn't reply yet
 
@@ -155,6 +156,7 @@ struct CService
 		AutoReconnect = false;
 		PId = 0;
 		WaitingRequestId.clear ();
+		Relaunch = false;
 	}
 
 	std::string getServiceUnifiedName () const
@@ -297,7 +299,7 @@ bool startService (const string &name)
 		nlwarning ("Error in serviceAlias '%s' in config file (%s)", alias.c_str(), e.what());
 		return false;
 	}
-	
+
 	// give the service alias to the service to forward it back when it will connected to the aes.
 	arg = " -N";
 	arg += alias;
@@ -332,10 +334,11 @@ bool startService (const string &name)
 
 
 // start service in future
-void startService (uint32 date, const string &serviceAlias)
+void startService (uint32 delay, const string &serviceAlias)
 {
-	if (date <= CTime::getSecondsSince1970())
+	if (delay == 0)
 	{
+		nlinfo ("Relaunching the service %s now", serviceAlias.c_str ());
 		startService (serviceAlias);
 	}
 	else
@@ -349,7 +352,8 @@ void startService (uint32 date, const string &serviceAlias)
 			}
 		}
 
-		WaitingToLaunchServices.push_back (make_pair(date, serviceAlias));
+		nlinfo ("Relaunching the service %s in %d seconds", serviceAlias.c_str (), delay);
+		WaitingToLaunchServices.push_back (make_pair(CTime::getSecondsSince1970() + delay, serviceAlias));
 	}
 }
 
@@ -709,6 +713,11 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 							send = false;
 #endif // NL_OS_UNIX
 						}
+						else if (subvarpath.Destination[k].first == "State=2")
+						{
+							Services[j].AutoReconnect = false;
+							Services[j].Relaunch = true;
+						}
 					}
 					
 					if (send)
@@ -769,7 +778,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 						// handle special case of non running service
 						if (subvarpath.Destination[k].first == "State")
 							val = "Offline";
-						else if (subvarpath.Destination[k].first == "State=1")
+						else if (subvarpath.Destination[k].first == "State=1" || subvarpath.Destination[k].first == "State=2")
 						{
 							// we want to start the service
 							if (startService (RegisteredServices[j]))
@@ -777,8 +786,6 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 							else
 								val = "Failed";
 						}
-						else if (subvarpath.Destination[k].first == "State=2")
-							val = "Relaunching";
 
 						vala.push_back (val);
 					}
@@ -898,7 +905,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 							// handle special case of non running service
 							if (subvarpath.Destination[k].first == "State")
 								val = "Offline";
-							else if (subvarpath.Destination[k].first == "State=1")
+							else if (subvarpath.Destination[k].first == "State=1" || subvarpath.Destination[k].first == "State=2")
 							{
 								// we want to start the service
 								if (startService (service))
@@ -906,8 +913,6 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 								else
 									val = "Failed";
 							}
-							else if (subvarpath.Destination[k].first == "State=2")
-								val = "Relaunching";
 							
 							vala.push_back (val);
 						}
@@ -936,6 +941,11 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 							kill ((*sit).PId, SIGKILL);
 							send = false;
 #endif // NL_OS_UNIX
+						}
+						else if (subvarpath.Destination[k].first == "State=2")
+						{
+							(*sit).AutoReconnect = false;
+							(*sit).Relaunch = true;
 						}
 					}
 					
@@ -1292,13 +1302,24 @@ void serviceDisconnection (const std::string &serviceName, uint16 sid, void *arg
 
 	nlinfo ("%s-%hu disconnected", Services[sid].ShortName.c_str (), Services[sid].ServiceId);
 
-	if (Services[sid].AutoReconnect)
+	if (Services[sid].Relaunch)
+	{
+		// we have to relaunch it in time because ADMIN asked it
+		sint32 delay = IService::getInstance()->ConfigFile.getVar("RestartDelay").asInt();
+
+		// must restart it so if delay is -1, set it by default to 5 seconds
+		if (delay == -1) delay = 5;
+
+		startService (delay, Services[sid].AliasName);
+	}
+	else if (Services[sid].AutoReconnect)
 	{
 		// we have to relaunch it
-		nlinfo ("Waiting few seconds and relaunching the service %s", Services[sid].toString().c_str ());
 		sint32 delay = IService::getInstance()->ConfigFile.getVar("RestartDelay").asInt();
 		if (delay >= 0)
-			startService (CTime::getSecondsSince1970()+delay, Services[sid].AliasName);
+		{
+			startService (delay, Services[sid].AliasName);
+		}
 		else
 			nlinfo ("Don't restart the service because RestartDelay is %d", delay);
 

@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.5 2001/06/07 16:17:53 lecroart Exp $
+ * $Id: command.cpp,v 1.6 2001/06/27 08:28:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,23 +36,23 @@ using namespace NLMISC;
 
 namespace NLMISC {
 
-ICommand::TCommand *ICommand::_Commands;
-bool ICommand::_CommandsInit;
+ICommand::TCommand *ICommand::Commands;
+bool ICommand::CommandsInit;
 
 ICommand::ICommand(const char *commandName, const char *commandHelp, const char *commandArgs)
 {
 	// self registration
 
-	if (!_CommandsInit)
+	if (!CommandsInit)
 	{
 		//printf("create map\n");
-		_Commands = new TCommand;
-		_CommandsInit = true;
+		Commands = new TCommand;
+		CommandsInit = true;
 	}
 
-	TCommand::iterator comm = (*_Commands).find(commandName);
+	TCommand::iterator comm = (*Commands).find(commandName);
 
-	if (comm != (*_Commands).end ())
+	if (comm != (*Commands).end ())
 	{
 		// 2 commands have the same name
 		NLMISC_BREAKPOINT;
@@ -64,15 +64,17 @@ ICommand::ICommand(const char *commandName, const char *commandHelp, const char 
 		HelpString = commandHelp;
 		CommandArgs = commandArgs;
 		_CommandName = commandName;
-		(*_Commands)[commandName] = this;
+		(*Commands)[commandName] = this;
 	}
+
+	Type = Command;
 }
 
 ICommand::~ICommand()
 {
 	// self deregistration
 
-	if (!_CommandsInit)
+	if (!CommandsInit)
 	{
 		// should never happen
 		NLMISC_BREAKPOINT;
@@ -81,19 +83,19 @@ ICommand::~ICommand()
 
 	// find the command
 
-	for (TCommand::iterator comm = (*_Commands).begin(); comm != (*_Commands).end(); comm++)
+	for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
 	{
 		if ((*comm).second == this)
 		{
 			//printf("remove command\n");
-			(*_Commands).erase (comm);
+			(*Commands).erase (comm);
 
-			if ((*_Commands).size() == 0)
+			if ((*Commands).size() == 0)
 			{
 				// if the commands map is empty, destroy it
 				//printf("delete map\n");
-				delete _Commands;
-				_CommandsInit = false;
+				delete Commands;
+				CommandsInit = false;
 			}
 			
 			return;
@@ -102,7 +104,6 @@ ICommand::~ICommand()
 	// commands is not found
 	NLMISC_BREAKPOINT;
 }
-
 
 void ICommand::execute (const std::string &commandWithArgs, CLog &log)
 {
@@ -134,8 +135,8 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log)
 	
 	// find the command	
 	
-	TCommand::iterator comm = (*_Commands).find(commandWithArgs.c_str());
-	if (comm == (*_Commands).end ())
+	TCommand::iterator comm = (*Commands).find(commandWithArgs.c_str());
+	if (comm == (*Commands).end ())
 	{
 		// the command doesn't exist
 		log.displayNL("Command '%s' not found, try 'help'", commandWithArgs.c_str());
@@ -153,7 +154,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log)
 
 void ICommand::expand (std::string &commandName)
 {
-	for (TCommand::iterator comm = (*_Commands).begin(); comm != (*_Commands).end(); comm++)
+	for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
 	{
 		if ((*comm).first.find(commandName) == 0)
 		{
@@ -163,13 +164,14 @@ void ICommand::expand (std::string &commandName)
 }
 
 
-void ICommand::getCommands (std::vector<std::string> &commands)
+void ICommand::serialCommands (IStream &f)
 {
-	commands.clear ();
-	for (TCommand::iterator comm = (*_Commands).begin(); comm != (*_Commands).end(); comm++)
+	vector<CSerialCommand> cmd;
+	for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
 	{
-		commands.push_back((*comm).first);
+		cmd.push_back (CSerialCommand ((*comm).first, (*comm).second->Type));
 	}
+	f.serialCont (cmd);
 }
 
 
@@ -178,7 +180,7 @@ NLMISC_COMMAND(help,"display help on a specific variable/commands or on all vari
 	if (args.size() == 0)
 	{
 		// display all commands
-		for (TCommand::iterator comm = (*_Commands).begin(); comm != (*_Commands).end(); comm++)
+		for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
 		{
 			log.displayNL("%-15s: %s", (*comm).first.c_str(), (*comm).second->HelpString.c_str());
 		}
@@ -186,8 +188,8 @@ NLMISC_COMMAND(help,"display help on a specific variable/commands or on all vari
 	else if (args.size() == 1)
 	{
 		// display help of the command
-		TCommand::iterator comm = (*_Commands).find(args[0].c_str());
-		if (comm == (*_Commands).end ())
+		TCommand::iterator comm = (*Commands).find(args[0].c_str());
+		if (comm == (*Commands).end ())
 		{
 			log.displayNL("command '%s' not found", args[0].c_str());
 		}

@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.8 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: command.h,v 1.9 2001/06/27 08:27:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include <istream>
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/stream.h"
 
 #include "nel/misc/log.h"
 
@@ -134,14 +135,14 @@ public: \
 			__type p; \
 			s >> p; \
 			pointer (&p, false, log); \
-			log.display("Set "); \
 		} \
 		if (args.size() >= 0) \
 		{ \
 			std::stringstream s; \
 			__type p; \
 			pointer (&p, true, log); \
-			s << _CommandName << " = " << p; \
+			std::stringstream s; \
+			s << "Variable " << _CommandName << " = " << *_Pointer; \
 			log.displayNL(s.str().c_str()); \
 		} \
 		if (args.size() > 1) \
@@ -154,9 +155,6 @@ public: \
 }; \
 __name##class __name##instance; \
 void __name##class::pointer(__type *pointer, bool get, NLMISC::CLog &log)
-
-
-
 
 
 /**
@@ -179,24 +177,44 @@ public:
 	std::string HelpString;
 	std::string CommandArgs;
 	
+	// is it a variable or a classic command?
+	enum TType { Unknown, Command, Variable };
+	TType Type;
+
+	// static members
+
 	typedef std::map<std::string, ICommand *> TCommand;
 
-	static TCommand *_Commands;
-	static bool		 _CommandsInit;
+	static TCommand *Commands;
+	static bool		 CommandsInit;
 
 	/// Executes the command and display output to the log
 	static void execute (const std::string &commandWithArgs, NLMISC::CLog &log);
 
 	static void	expand (std::string &commandName);
 
-	/// Fills the vector with all command name
-	static void getCommands (std::vector<std::string> &commands);
+	static void serialCommands (IStream &f);
 
 protected:
 
 	std::string _CommandName;
 };
 
+/** This class is only used to serialize easily a command for the admin service for example */
+struct CSerialCommand
+{
+	CSerialCommand () : Name ("<Unknown>"), Type(ICommand::Unknown) { }
+	CSerialCommand (std::string n, ICommand::TType t) : Name (n), Type(t) { }
+
+	std::string Name;
+	ICommand::TType Type;
+
+	void serial (IStream &f)
+	{
+		f.serial (Name);
+		f.serialEnum (Type);
+	}
+};
 
 
 
@@ -213,19 +231,18 @@ template <class T>
 class CVariable : public ICommand
 {
 public:
-	CVariable (const char *commandName, const char *commandHelp, T *pointer) : NLMISC::ICommand(commandName, commandHelp, "[<value>]"), _Pointer(pointer) { }
+	CVariable (const char *commandName, const char *commandHelp, T *pointer) : NLMISC::ICommand(commandName, commandHelp, "[<value>]"), _Pointer(pointer) {	Type = Variable; }
 	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log)
 	{
 		if (args.size() == 1)
 		{
 			std::stringstream s2 (args[0]);
 			s2 >> *_Pointer;
-			log.display("Set ");
 		}
 		if (args.size() >= 0)
 		{
 			std::stringstream s;
-			s << _CommandName << " = " << *_Pointer;
+			s << "Variable " << _CommandName << " = " << *_Pointer;
 			log.displayNL(s.str().c_str());
 		}
 		if (args.size() > 1)

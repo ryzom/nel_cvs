@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 4, base
  *
- * $Id: callback_net_base.h,v 1.9 2001/04/03 09:22:03 cado Exp $
+ * $Id: callback_net_base.h,v 1.10 2001/04/03 09:31:33 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,8 @@ public:
 	 * On the contrary, if you read all messages and you receive a lot of them very quickly,
 	 * your program may not exit update() (or very late), blocking your main thread.
 	 * That's why the timeout allows you to allocate a maximum amount of time to update().
+	 * Note: take care about the time your callbacks (called by update()) take to complete,
+	 * they may make update() exceed the time allowed.
 	 */
 	void	update( sint32 timeout=0 );
 

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.67 2004/05/10 14:43:09 corvazier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.68 2004/05/14 17:19:15 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1186,7 +1186,7 @@ CTrack *CAudioMixerUser::getFreeTrack(CSimpleSource *source)
 				if (t1 > t2 * tfactor)
 //				if (d1 < d2)
 				{
-					nldebug("Cutting source %p with source %p (%f > %f*%f)", src2, source, t1, tfactor, t2);
+//					nldebug("Cutting source %p with source %p (%f > %f*%f)", src2, source, t1, tfactor, t2);
 					// on peut cuter cette voie !
 					src2->stop();
 					if (_FreeTracks.empty())
@@ -1199,7 +1199,7 @@ CTrack *CAudioMixerUser::getFreeTrack(CSimpleSource *source)
 						_FreeTracks.pop_back();
 						ret->setSource(source);
 						_ReserveUsage[source->getPriority()]++;
-						nldebug("Track %p assign to source %p", ret, ret->getSource());
+//						nldebug("Track %p assign to source %p", ret, ret->getSource());
 						return ret;
 					}
 				}
@@ -1289,7 +1289,7 @@ void				CAudioMixerUser::update()
 				}
 				else
 				{
-					nldebug("Removing update %p", first->first);
+//					nldebug("Removing update %p", first->first);
 					_UpdateList.erase(first->first);
 				}
 			}
@@ -1386,9 +1386,9 @@ void				CAudioMixerUser::update()
 				// check if the source still exist before trying to play it
 				if (_Sources.find(_SourceWaitingForPlay.front()) != _Sources.end())
 					_SourceWaitingForPlay.front()->play();
-				nldebug("Before POP Sources waiting : %u", _SourceWaitingForPlay.size());
+//				nldebug("Before POP Sources waiting : %u", _SourceWaitingForPlay.size());
 				_SourceWaitingForPlay.pop_front();
-				nldebug("After POP Sources waiting : %u", _SourceWaitingForPlay.size());
+//				nldebug("After POP Sources waiting : %u", _SourceWaitingForPlay.size());
 			}
 		}
 	}
@@ -2047,7 +2047,7 @@ void CAudioMixerUser::registerUpdate(CAudioMixerUser::IMixerUpdate *pmixerUpdate
 /// Unregister an object from the update list.
 void CAudioMixerUser::unregisterUpdate(CAudioMixerUser::IMixerUpdate *pmixerUpdate)
 {
-	nldebug("Unregistering update %p", pmixerUpdate);
+//	nldebug("Unregistering update %p", pmixerUpdate);
 	nlassert(pmixerUpdate != 0);
 	_UpdateEventList.push_back(make_pair(pmixerUpdate, false));
 }

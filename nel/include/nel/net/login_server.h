@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.11 2002/05/28 18:21:20 lecroart Exp $
+ * $Id: login_server.h,v 1.12 2003/01/13 14:07:37 lecroart Exp $
  * 
  */
 
@@ -88,6 +88,9 @@ private:
 	/// This function is used by init() to create the connection to the Welcome Service
 	static void connectToWS ();
 
+	// called by other init()
+	static void init (std::string &listenAddress);
+	
 };
 
 

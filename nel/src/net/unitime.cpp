@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.22 2001/05/25 11:52:42 lecroart Exp $
+ * $Id: unitime.cpp,v 1.23 2001/05/29 11:51:34 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -249,7 +249,7 @@ TCallbackItem ServerTimeServiceCallbackArray[] =
 
 void CUniTime::installServer (CCallbackServer *server)
 {
-	static alreadyAddedCallback = false;
+	static bool alreadyAddedCallback = false;
 	nlassert (server != NULL);
 	nlassert (!alreadyAddedCallback);
 
@@ -277,7 +277,7 @@ static TCallbackItem ClientUniTimeCallbackArray[] =
 
 void CUniTime::syncUniTimeFromServer (CCallbackClient *client)
 {
-	static alreadyAddedCallback = false;
+	static bool alreadyAddedCallback = false;
 	nlassert (client != NULL);
 
 	if (!alreadyAddedCallback)

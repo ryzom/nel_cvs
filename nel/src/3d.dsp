@@ -1072,6 +1072,10 @@ SOURCE=.\3d\particle_system_instance_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\particle_system_sound_user.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\play_list_manager_user.cpp
 # End Source File
 # Begin Source File
@@ -1252,11 +1256,23 @@ SOURCE=..\include\nel\3d\u_particle_system_instance.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\3d\u_particle_system_sound.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\3d\u_play_list.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\3d\u_play_list_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\u_ps_sound_impl.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\u_ps_sound_interface.h
 # End Source File
 # Begin Source File
 
@@ -1457,18 +1473,6 @@ SOURCE=.\3d\ps_sound.cpp
 # Begin Source File
 
 SOURCE=.\3d\ps_sound.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_sound_impl.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_sound_interface.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_sound_interface.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.40.2.1 2003/08/13 09:13:03 cado Exp $
+ * $Id: buf_server.cpp,v 1.40.2.2 2003/08/20 10:30:16 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -299,8 +299,8 @@ void CBufServer::disconnect( TSockId hostid, bool quick )
 void CBufServer::send( const CMemStream& buffer, TSockId hostid )
 {
 	nlnettrace( "CBufServer::send" );
-	nlassert( buffer.length() > 0);
-	nlassert( buffer.length() <= maxSentBlockSize() );
+	nlassert( buffer.length() > 0 );
+	nlassertex( buffer.length() <= maxSentBlockSize(), ("length=%u max=%u", buffer.length(), maxSentBlockSize()) );
 
 	// slow down the layer H_AUTO (CBufServer_send);
 

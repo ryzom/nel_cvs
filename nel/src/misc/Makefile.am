@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.44 2002/03/19 17:49:14 cado Exp $
+# $Id: Makefile.am,v 1.45 2002/03/26 13:52:57 valignat Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -71,9 +71,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
 
 noinst_HEADERS	      = stdmisc.h
 
-AM_CXXFLAGS           = @XML_CFLAGS@
-
-libnelmisc_la_LIBADD  = config_file/libconfig.la -lc -lpthread @XML_LIBS@
+libnelmisc_la_LIBADD  = config_file/libconfig.la -lc -lpthread
 
 libnelmisc_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.3 2002/03/21 10:54:37 valignat Exp $
+# $Id: Makefile.am,v 1.4 2002/03/26 13:52:57 valignat Exp $
 #
 
 MAINTAINERCLEANFILES     = Makefile.in
@@ -37,9 +37,7 @@ libnelgeorges_la_SOURCES = form.cpp                        \
                            type_unit_int_unsigned.cpp      \
                            type_unit_string.cpp
 
-AM_CXXFLAGS              = @XML_CFLAGS@
-
-libnelgeorges_la_LIBADD  = -lc -lpthread @XML_LIBS@
+libnelgeorges_la_LIBADD  = -lc -lpthread
 
 libnelgeorges_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
 

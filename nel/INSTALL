@@ -5,7 +5,7 @@ Requirements
    The NeL library needs the following libraries :
 
       - STLPort 4.5    <URL:http://www.stlport.org/>            (Mandatory)
-      - LibXML 2.4.13  <URL:http://www.xmlsoft.org/>            (NeL Misc)
+      - LibXML 2.4.13  <URL:http://www.xmlsoft.org/>            (Mandatory)
       - FreeType 2     <URL:http://freetype.sourceforge.net/>   (NeL 3D)
       - OpenAL         <URL:http://www.openal.org/>             (NeL Sound)
       - Python 1.5     <URL:http://www.python.org/>             (NeL AI)

@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.35 2003/05/19 13:14:13 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.36 2003/08/20 09:56:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -250,6 +250,24 @@ bool			CDriverUser::setDisplay(const CMode &mode, bool show)
 	}
 	return false;
 }
+
+// ***************************************************************************
+bool CDriverUser::setMode(const CMode& mode)
+{
+	return _Driver->setMode(GfxMode(mode.Width, mode.Height, mode.Depth, mode.Windowed, false, mode.Frequency));
+}
+
+// ***************************************************************************
+bool CDriverUser::getModes(std::vector<CMode> &modes)
+{
+	std::vector<GfxMode> vTmp;
+	bool res = _Driver->getModes(vTmp);
+	modes.clear();
+	for (uint i = 0; i < vTmp.size(); ++i)
+		modes.push_back(CMode(vTmp[i].Width, vTmp[i].Height, vTmp[i].Depth, vTmp[i].Windowed, vTmp[i].Frequency));
+	return res;
+}
+
 // ***************************************************************************
 void			CDriverUser::release() 
 {

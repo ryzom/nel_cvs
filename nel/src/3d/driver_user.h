@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.29 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: driver_user.h,v 1.30 2003/08/20 09:56:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,6 +143,9 @@ public:
 
 	/// create the window.
 	virtual	bool			setDisplay(const CMode &mode, bool show) ;
+	virtual bool			setMode(const CMode& mode);
+	virtual bool			getModes(std::vector<CMode> &modes);
+
 	/// Release the window.
 	virtual	void			release() ;
 

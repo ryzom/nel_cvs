@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.11 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: message.cpp,v 1.12 2000/11/08 14:57:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -151,6 +151,8 @@ void CMessage::clear()
  */
 void CMessage::fill( const uint8 *srcbuf, uint32 len )
 {
+	if (len == 0) return;
+
 	_Buffer.resize( len );
 	_BufPos = _Buffer.begin();
 	memcpy( &(*_BufPos), srcbuf, len );
@@ -163,6 +165,8 @@ void CMessage::fill( const uint8 *srcbuf, uint32 len )
  */
 uint8 *CMessage::bufferToFill( uint32 msgsize )
 {
+	if (msgsize == 0) return NULL;
+
 	// Same as fill() but the memcpy is done by an external function
 	_Buffer.resize( msgsize );
 	_BufPos = _Buffer.begin();

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.20 2000/11/06 14:00:07 cado Exp $
+ * $Id: socket.cpp,v 1.21 2000/11/08 14:58:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -331,7 +331,9 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 		delete [] msgname;
 	}
 	// 4. Read all buffer and dismiss
-	CBaseSocket::doReceive( message.bufferToFill(msgsize), msgsize );
+	if (msgsize > 0)
+		CBaseSocket::doReceive( message.bufferToFill(msgsize), msgsize );
+
 	if ( _Logging )
 	{
 		if ( message.typeIsNumber() )

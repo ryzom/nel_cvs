@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.6 2000/11/02 13:48:14 berenguier Exp $
+ * $Id: patch.h,v 1.7 2000/11/03 18:06:54 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -55,17 +55,27 @@ class	CVector3s
 public:
 	sint16	x,y,z;
 
-	void	pack(const CVector &v, float bias, float scale)
+public:
+	void	pack(const CVector &v, const CVector &bias, float scale)
 	{
-		x= (sint16)(v.x/scale - bias);
-		y= (sint16)(v.y/scale - bias);
-		z= (sint16)(v.z/scale - bias);
+		float	xr,yr,zr;
+		xr= (v.x/scale - bias.x);
+		yr= (v.y/scale - bias.y);
+		zr= (v.z/scale - bias.z);
+		NLMISC::clamp(xr, -32768, 32767);
+		x= (sint16)xr;
+		y= (sint16)yr;
+		z= (sint16)zr;
 	}
-	void	unpack(CVector &v, float bias, float scale) const
+	void	unpack(CVector &v, const CVector &bias, float scale) const
 	{
-		v.x= x*scale + bias;
-		v.y= y*scale + bias;
-		v.z= z*scale + bias;
+		v.x= x*scale + bias.x;
+		v.y= y*scale + bias.y;
+		v.z= z*scale + bias.z;
+	}
+	void	serial(NLMISC::IStream &f)
+	{
+		f.serial(x,y,z);
 	}
 };
 
@@ -177,15 +187,22 @@ public:
 	/// unbind the patch from neighbors.
 	void			unbind();
 
-	/// bind the patch to 4 neighbors, given in this patch edge order (0,1,2,3). Tesselation is reseted (patch unbound first).
+	/** bind the patch to 4 neighbors, given in this patch edge order (0,1,2,3). Tesselation is reseted (patch unbound first).
+	 * NB: this patch and his neighborood must be compiled...
+	 * NB: neighbor patchs must not be NULL (but according to NPatchs).
+	 */
 	void			bind(CBindInfo	Edges[4]);
 
 
-	/// Refine / geomorph this patch.
+	/// Classify this patch as UnClipped.
+	void			forceNoClip() {Clipped= false;}
+	/// Classify this patch.
+	void			clip(const std::vector<CPlane>	&pyramid);
+	/// Refine / geomorph this patch. Even if clipped.
 	void			refine();
-	/// preRender this patch. Build RdrFace List ....
+	/// preRender this patch, if not clipped. Build RdrFace List ....
 	void			preRender();
-	/// Render this patch (append to VertexBuffers / materials primitive block).
+	/// Render this patch, if not clipped (append to VertexBuffers / materials primitive block).
 	void			renderFar0();
 	void			renderFar1();
 	void			renderTile(sint pass);
@@ -193,6 +210,8 @@ public:
 	// desired pass. NULL may be returned if the pass is not present (eg: no alpha for this tile...).
 	CPatchRdrPass	*getTileRenderPass(sint tileId, sint pass);
 
+	// Serial just the un-compiled part.
+	void			serial(NLMISC::IStream &f);
 
 // Private part.
 private:
@@ -226,6 +245,8 @@ private:
 	// Info for alpha transition with Far1.
 	float			TransitionSqrMin;
 	float			OOTransitionSqrDelta;
+	// are we cliped?
+	bool			Clipped;
 	// The root for render.
 	CTessFace		*RdrRoot;
 

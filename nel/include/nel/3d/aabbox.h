@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.1 2000/10/27 14:30:33 berenguier Exp $
+ * $Id: aabbox.h,v 1.2 2000/11/03 18:06:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/plane.h"
 #include "nel/misc/common.h"
+#include "nel/misc/stream.h"
 
 
 namespace NL3D {
@@ -72,6 +73,11 @@ public:
 		Center= (bmin+bmax)/2;
 		HalfSize= bmax-Center;
 	}
+	/** extend the bbox so it contains v.
+	 * Warning!! By default, a bbox is the vector 0,0,0. So set the first vertex with setCenter() or else the bbox will 
+	 * be the extension of v and (0,0,0)...
+	 */
+	void			extend(const CVector &v);
 	//@}
 
 
@@ -90,9 +96,12 @@ public:
 	/// \name Clip
 	// @{
 	/// Is the bbox partially in front of the plane??
-	bool	clip(const CPlane &p) const;
+	bool	clipFront(const CPlane &p) const;
+	/// Is the bbox partially in back of the plane??
+	bool	clipBack(const CPlane &p) const;
 	// @}
 
+	void			serial(NLMISC::IStream &f);
 };
 
 
@@ -133,7 +142,7 @@ public:
 		HalfSize= bmax-Center;
 		updateRadius();
 	}
-	CAABBoxExt		&operator=(const CAABBox &o) {Center= o.getCenter(); HalfSize= o.getHalfSize(); updateRadius();}
+	CAABBoxExt		&operator=(const CAABBox &o) {Center= o.getCenter(); HalfSize= o.getHalfSize(); updateRadius(); return (*this);}
 	//@}
 
 
@@ -152,11 +161,16 @@ public:
 	/// \name Clip
 	// @{
 	/// Is the bbox partially in front of the plane??
-	bool	clip(const CPlane &p) const;
-	/// same as clip(), but assume p is normalized.
-	bool	clipUnitPlane(const CPlane &p) const;
+	bool	clipFront(const CPlane &p) const;
+	/// same as clipFront(), but assume p is normalized.
+	bool	clipFrontUnitPlane(const CPlane &p) const;
+	/// Is the bbox partially in back of the plane??
+	bool	clipBack(const CPlane &p) const;
+	/// same as clipBack(), but assume p is normalized.
+	bool	clipBackUnitPlane(const CPlane &p) const;
 	// @}
 
+	void			serial(NLMISC::IStream &f);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file bsphere.cpp
  * <File description>
  *
- * $Id: bsphere.cpp,v 1.1 2000/11/02 14:03:14 berenguier Exp $
+ * $Id: bsphere.cpp,v 1.2 2000/11/03 18:07:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,12 +24,14 @@
  */
 
 #include "nel/3d/bsphere.h"
+#include "nel/misc/common.h"
+using namespace	NLMISC;
 
 
 namespace NL3D {
 
 
-bool	CBSphere::clip(const CPlane &p) const
+bool	CBSphere::clipFront(const CPlane &p) const
 {
 	// don't assume normalized planes.
 	float	norm= p.getNormal().norm();
@@ -43,7 +45,7 @@ bool	CBSphere::clip(const CPlane &p) const
 	return true;
 }
 
-bool	CBSphere::clipUnitPlane(const CPlane &p) const
+bool	CBSphere::clipFrontUnitPlane(const CPlane &p) const
 {
 	// if( SpherMax OUT )	return false.
 	float	d= p*Center;
@@ -52,5 +54,51 @@ bool	CBSphere::clipUnitPlane(const CPlane &p) const
 
 	return true;
 }
+
+
+bool	CBSphere::clipBack(const CPlane &p) const
+{
+	// don't assume normalized planes.
+	float	norm= p.getNormal().norm();
+	// This is faster than normalize p.
+
+	// if( SpherMax OUT )	return false.
+	float	d= p*Center;
+	if(d>Radius*norm)
+		return false;
+
+	return true;
+}
+
+bool	CBSphere::clipBackUnitPlane(const CPlane &p) const
+{
+	// if( SpherMax OUT )	return false.
+	float	d= p*Center;
+	if(d>Radius)
+		return false;
+
+	return true;
+}
+
+
+bool	CBSphere::include(const CVector &p) const
+{
+	float	r2= (p-Center).sqrnorm();
+	return (r2<=sqr(Radius));
+}
+
+bool	CBSphere::intersect(const CBSphere &s) const
+{
+	float	r2= (s.Center-Center).sqrnorm();
+
+	if(r2<=sqr(Radius))
+		return true;
+	if(r2<=sqr(s.Radius))
+		return true;
+	// else std method.
+	return sqrt(r2)<=(Radius+s.Radius);
+
+}
+
 
 } // RK3D

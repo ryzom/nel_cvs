@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.5 2000/11/02 13:48:14 berenguier Exp $
+ * $Id: tessellation.h,v 1.6 2000/11/03 18:06:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -417,7 +417,7 @@ public:
 
 public:
 
-	// LANDSCAPE GLOBAL INTERFACE.  Landscape must setup them at the begining at refine()/render().
+	// LANDSCAPE RENDERING CONTEXT.  Landscape must setup it at the begining at refine()/render().
 	// The current date of LandScape draw/refine.
 	static	sint	CurrentDate;
 	// The center view for refinement.

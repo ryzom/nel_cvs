@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.5 2000/11/02 13:48:50 berenguier Exp $
+ * $Id: patch.cpp,v 1.6 2000/11/03 18:07:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,7 @@ CPatch::CPatch()
 	OrderT=0;
 	Son0=NULL;
 	Son1=NULL;
+	Clipped=false;
 
 	// To froce computation on next render().
 	Far0= 0;
@@ -78,6 +79,7 @@ void			CPatch::release()
 	OrderT=0;
 	Son0=NULL;
 	Son1=NULL;
+	Clipped=false;
 
 	// To force computation on next render().
 	Far0= 0;
@@ -99,7 +101,8 @@ CBezierPatch	*CPatch::unpackIntoCache() const
 void			CPatch::unpack(CBezierPatch	&p) const
 {
 	sint	i;
-	float	bias= Zone->getPatchBias(), scale= Zone->getPatchScale();
+	const	CVector	&bias= Zone->getPatchBias();
+	float	scale= Zone->getPatchScale();
 
 	for(i=0;i<4;i++)
 		Vertices[i].unpack(p.Vertices[i], bias, scale);
@@ -132,26 +135,16 @@ CAABBox			CPatch::buildBBox() const
 	CVector			&v2= p.Vertices[2];
 
 	// Compute Bounding Box. (easiest way...)
-	CVector		bmin= v0, bmax= v0;
+	CAABBox		ret;
+	ret.setCenter(v0);
 	for(i=0;i<4;i++)
-	{
-		bmin.minof(bmin, p.Vertices[i]);
-		bmax.maxof(bmin, p.Vertices[i]);
-	}
+		ret.extend(p.Vertices[i]);
 	for(i=0;i<8;i++)
-	{
-		bmin.minof(bmin, p.Tangents[i]);
-		bmax.maxof(bmin, p.Tangents[i]);
-	}
+		ret.extend(p.Tangents[i]);
 	for(i=0;i<4;i++)
-	{
-		bmin.minof(bmin, p.Interiors[i]);
-		bmax.maxof(bmin, p.Interiors[i]);
-	}
+		ret.extend(p.Interiors[i]);
 	// TODO_NOISE: modulate with the displacement map.
 
-	CAABBox	ret;
-	ret.setMinMax(bmin, bmax);
 	return ret;
 }
 
@@ -282,6 +275,24 @@ void			CPatch::refine()
 	Son1->refine();
 }
 
+
+// ***************************************************************************
+void			CPatch::clip(const std::vector<CPlane>	&pyramid)
+{
+	Clipped= false;
+	for(sint i=0;i<(sint)pyramid.size();i++)
+	{
+		// If entirely out.
+		if(!BSphere.clipBackUnitPlane(pyramid[i]))
+		{
+			Clipped= true;
+			break;
+		}
+	}
+
+}
+
+
 // ***************************************************************************
 sint			CPatch::resetTileIndices(CTessFace *pFace)
 {
@@ -313,6 +324,10 @@ sint			CPatch::resetFarIndices(CTessFace *pFace)
 // ***************************************************************************
 void			CPatch::preRender()
 {
+	// Don't do anything if clipped.
+	if(Clipped)
+		return;
+
 	// Classify the patch.
 	//====================
 	sint	far0,far1;
@@ -466,7 +481,7 @@ sint			CPatch::getTileIndex(CTessVertex *vert, ITileUv *uv, sint idUv)
 // ***************************************************************************
 void			CPatch::renderFar0()
 {
-	if(Pass0)
+	if(Pass0 && !Clipped)
 	{
 		sint	nTris= resetFarIndices(RdrRoot);
 		// Realloc if necessary the VertexBuffer.
@@ -487,7 +502,7 @@ void			CPatch::renderFar0()
 // ***************************************************************************
 void			CPatch::renderFar1()
 {
-	if(Pass1)
+	if(Pass1 && !Clipped)
 	{
 		sint	nTris= resetFarIndices(RdrRoot);
 		// Realloc if necessary the VertexBuffer.
@@ -507,7 +522,7 @@ void			CPatch::renderFar1()
 void			CPatch::renderTile(sint pass)
 {
 	// If tile mode.
-	if(Far0==0)
+	if(Far0==0 && !Clipped)
 	{
 		sint	nTris= resetTileIndices(RdrRoot);
 		// Realloc if necessary the VertexBuffer (at max possible).
@@ -621,6 +636,17 @@ void			CPatch::bind(CBindInfo	Edges[4])
 	Son0->updateBind();
 	Son1->updateBind();
 
+}
+
+// ***************************************************************************
+void			CPatch::serial(NLMISC::IStream &f)
+{
+	uint	ver= f.serialVersion(0);
+
+	f.serial(Vertices[0], Vertices[1], Vertices[2], Vertices[3]);
+	f.serial(Tangents[0], Tangents[1], Tangents[2], Tangents[3]);
+	f.serial(Tangents[4], Tangents[5], Tangents[6], Tangents[7]);
+	f.serial(Interiors[0], Interiors[1], Interiors[2], Interiors[3]);
 }
 
 	}

@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.2 2000/11/02 13:48:14 berenguier Exp $
+ * $Id: zone.h,v 1.3 2000/11/03 18:06:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,8 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
+#include "nel/misc/stream.h"
 #include "nel/3d/tessellation.h"
 #include "nel/3d/patch.h"
+#include "nel/3d/bezier_patch.h"
 #include <vector>
 #include <map>
 
@@ -38,7 +40,6 @@ namespace NL3D {
 
 
 class CZone;
-
 
 /*
 TODO: à mettre dans zone.h ou dans landscape.h
@@ -49,8 +50,10 @@ TODO: à mettre dans zone.h ou dans landscape.h
 		- patch d'ordre 2x2 minimum.
 		- patch d'ordre 16x16 maximum.
 		- conectivité sur un edge à 1, 2, ou 4 patchs.
+		- la valeur globale du noise est globale, et ne peut pas dépasser 10 mètres.
 
 */
+#define	NL3D_NOISE_MAX	10
 
 
 // ***************************************************************************
@@ -61,12 +64,12 @@ struct	CBorderVertex
 {
 	// The index of vertex in the current zone to bind.
 	uint16			CurrentVertex;
-	// The neighbor  zone. (un-usefull for build()).
-	CZone			*NeighborZone;
 	// The neighbor zone Id.
 	uint16			NeighborZoneId;
 	// The index of vertex in the neighbor zone to bind to CurrentVertex.
 	uint16			NeighborVertex;
+
+	void			serial(NLMISC::IStream &f);
 };
 
 
@@ -109,6 +112,9 @@ public:
 		uint8			Edge1;		// same for Next1.
 		uint8			Edge2;		// ...
 		uint8			Edge3;		// ...
+
+	public:
+		void			serial(NLMISC::IStream &f);
 	};
 
 	
@@ -116,9 +122,7 @@ public:
 	/// \name Patch geometry.
 	// @{
 	/// The patch coordinates.
-	CVector			Vertices[4];
-	CVector			Tangents[8];
-	CVector			Interiors[4];
+	CBezierPatch	Patch;
 	/// Tile Order for the patch.
 	uint8			OrderS, OrderT;
 	/// The Base Size*bumpiness of the patch (/2 at each subdivide). Set to 0, if you want CZone to compute it for you.
@@ -207,9 +211,29 @@ public:
 	void			release(std::map<uint16, CZone*> &loadedZones);
 
 
+	/** Load/save a zone.
+	 * Save work even if zone is not compiled, but load must be done on a not compiled zone...
+	 */
+	void			serial(NLMISC::IStream &f);
+
+
+	// NB: for all those function, CTessFace static rendering context must be setup.
+	/// Clip a zone. To know if must be rendered etc... A zone is IN if in BACK of at least one plane of the pyramid.
+	void			clip(const std::vector<CPlane>	&pyramid);
+	/// Refine a zone (if needed).
+	void			refine();
+	/// PreRender a zone (if needed).
+	void			preRender();
+	/// Render pass (if needed).
+	void			renderFar0();
+	void			renderFar1();
+	void			renderTile(sint pass);
+
+
 	// Accessors.
-	float			getPatchBias() const {return PatchBias;}
+	const CVector	&getPatchBias() const {return PatchBias;}
 	float			getPatchScale() const {return PatchScale;}
+	bool			compiled() const {return Compiled;}
 
 
 // Private part.
@@ -229,6 +253,9 @@ private:
 		float			ErrorSize;
 		uint16			BaseVertices[4];
 		CPatchInfo::CBindInfo		BindEdges[4];
+
+	public:
+		void			serial(NLMISC::IStream &f);
 	};
 
 	// Zone vertices.
@@ -240,10 +267,12 @@ private:
 	// Misc.
 	uint16			ZoneId;
 	bool			Compiled;
-	float			PatchBias, PatchScale;
+	CAABBoxExt		ZoneBB;
+	CVector			PatchBias;
+	float			PatchScale;
 
 	// The number of vertices she access (maybe on border).
-	sint				NumVertices;
+	sint32				NumVertices;
 	// The smartptr on zone vertices.
 	TBaseVerticesVec	BaseVertices;
 	// The list of border vertices.
@@ -264,14 +293,23 @@ private:
 	bool			ComputeTileErrorMetric;
 	// REMIND: can't have any patch/zone global, since a propagated split()/updateErrorMetric() can arise.
 
+	std::vector<CPlane>	CurrentPyramid;
+	sint			ClipResult;
 
 private:
 	/**
 	 * Force border patchs (those who don't bind to current zone) to re bind() them, using new neighborood.
 	 * no-op if zone is not compiled.
 	 */
-	void			rebindBorder(const std::map<uint16, CZone*> &loadedZones);
+	void			rebindBorder(std::map<uint16, CZone*> &loadedZones);
 
+	PBaseVertex		getBaseVertex(sint vert) const {return BaseVertices[vert];}
+	CPatch			*getPatch(sint patch) {nlassert(patch>=0 && patch<(sint)Patchs.size()); return &(Patchs[patch]);}
+	static CPatch	*getZonePatch(std::map<uint16, CZone*> &loadedZones, sint zoneId, sint patch);
+	// Bind the patch with ones which are loaded...
+	static void		bindPatch(std::map<uint16, CZone*> &loadedZones, CPatch &pa, CPatchConnect &pc);
+	// Is the patch on a border of this zone???
+	bool			patchOnBorder(const CPatchConnect &pc) const;
 };
 
 

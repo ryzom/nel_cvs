@@ -1,7 +1,7 @@
 /** \file bsphere.h
  * <File description>
  *
- * $Id: bsphere.h,v 1.1 2000/11/02 14:03:00 berenguier Exp $
+ * $Id: bsphere.h,v 1.2 2000/11/03 18:06:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,14 +52,25 @@ public:
 
 	/// Empty Constructor.
 	CBSphere() {}
+	/// Constructor.
+	CBSphere(const CVector & center, float radius) : Center(center), Radius(radius) {}
 
 	/// \name Clip
 	// @{
-	/// Is the bsphere partially in front of the plane??
-	bool	clip(const CPlane &p) const;
-	/// same as clip(), but assume p is normalized.
-	bool	clipUnitPlane(const CPlane &p) const;
+	/// Is the bbox partially in front of the plane??
+	bool	clipFront(const CPlane &p) const;
+	/// same as clipFront(), but assume p is normalized.
+	bool	clipFrontUnitPlane(const CPlane &p) const;
+	/// Is the bbox partially in back of the plane??
+	bool	clipBack(const CPlane &p) const;
+	/// same as clipBack(), but assume p is normalized.
+	bool	clipBackUnitPlane(const CPlane &p) const;
 	// @}
+
+	/// Does the sphere include this point?
+	bool	include(const CVector &p) const;
+	/// Does the sphere intersect the other?
+	bool	intersect(const CBSphere &s) const;
 
 };
 

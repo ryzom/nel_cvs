@@ -1,7 +1,7 @@
 /** \file aabbox.cpp
  * <File description>
  *
- * $Id: aabbox.cpp,v 1.1 2000/10/27 14:30:18 berenguier Exp $
+ * $Id: aabbox.cpp,v 1.2 2000/11/03 18:07:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@ namespace NL3D {
 
 
 // ***************************************************************************
-bool	CAABBox::clip(const CPlane &p) const
+bool	CAABBox::clipFront(const CPlane &p) const
 {
 	CVector		hswap;
 
@@ -49,10 +49,39 @@ bool	CAABBox::clip(const CPlane &p) const
 
 	return false;
 }
+// ***************************************************************************
+bool	CAABBox::clipBack(const CPlane &p) const
+{
+	CVector		hswap;
+
+	// The bbox is back of the plane if only one of his vertex is in back.
+	if(p*(Center + HalfSize) < 0)	return true;
+	if(p*(Center - HalfSize) < 0)	return true;
+	hswap.set(-HalfSize.x, HalfSize.y, HalfSize.z);
+	if(p*(Center + hswap) < 0)	return true;
+	if(p*(Center - hswap) < 0)	return true;
+	hswap.set(HalfSize.x, -HalfSize.y, HalfSize.z);
+	if(p*(Center + hswap) < 0)	return true;
+	if(p*(Center - hswap) < 0)	return true;
+	hswap.set(HalfSize.x, HalfSize.y, -HalfSize.z);
+	if(p*(Center + hswap) < 0)	return true;
+	if(p*(Center - hswap) < 0)	return true;
+
+	return false;
+}
 
 
 // ***************************************************************************
-bool	CAABBoxExt::clip(const CPlane &p) const
+void			CAABBox::serial(NLMISC::IStream &f)
+{
+	uint	ver= f.serialVersion(0);
+	f.serial(Center);
+	f.serial(HalfSize);
+}
+
+
+// ***************************************************************************
+bool	CAABBoxExt::clipFront(const CPlane &p) const
 {
 	// don't assume normalized planes.
 	float	norm= p.getNormal().norm();
@@ -67,12 +96,10 @@ bool	CAABBoxExt::clip(const CPlane &p) const
 		return true;
 
 	// else, standard clip box.
-	return CAABBox::clip(p);
+	return CAABBox::clipFront(p);
 }
-
-
 // ***************************************************************************
-bool	CAABBoxExt::clipUnitPlane(const CPlane &p) const
+bool	CAABBoxExt::clipFrontUnitPlane(const CPlane &p) const
 {
 	// Assume normalized planes.
 
@@ -85,9 +112,64 @@ bool	CAABBoxExt::clipUnitPlane(const CPlane &p) const
 		return true;
 
 	// else, standard clip box.
-	return CAABBox::clip(p);
+	return CAABBox::clipFront(p);
 }
 
+
+// ***************************************************************************
+bool	CAABBoxExt::clipBack(const CPlane &p) const
+{
+	// don't assume normalized planes.
+	float	norm= p.getNormal().norm();
+	// This is faster than normalize p.
+
+	// if( SpherMax OUT )	return false.
+	float	d= p*Center;
+	if(d>RadiusMax*norm)
+		return false;
+	// if( SphereMin IN )	return true;
+	if(d<RadiusMin*norm)
+		return true;
+
+	// else, standard clip box.
+	return CAABBox::clipBack(p);
+}
+// ***************************************************************************
+bool	CAABBoxExt::clipBackUnitPlane(const CPlane &p) const
+{
+	// Assume normalized planes.
+
+	// if( SpherMax OUT )	return false.
+	float	d= p*Center;
+	if(d>RadiusMax)
+		return false;
+	// if( SphereMin IN )	return true;
+	if(d<RadiusMin)
+		return true;
+
+	// else, standard clip box.
+	return CAABBox::clipBack(p);
+}
+
+
+// ***************************************************************************
+void	CAABBox::extend(const CVector &v)
+{
+	CVector		bmin= getMin(), bmax= getMax();
+
+	bmin.minof(bmin, v);
+	bmax.maxof(bmax, v);
+	setMinMax(bmin, bmax);
+}
+
+
+// ***************************************************************************
+void			CAABBoxExt::serial(NLMISC::IStream &f)
+{
+	CAABBox::serial(f);
+	if(f.isReading())
+		updateRadius();
+}
 
 
 } // NL3D

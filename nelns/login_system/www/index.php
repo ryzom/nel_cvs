@@ -91,7 +91,7 @@
 		}
 		else
 		{
-			echo "You have to identify";
+			echo "<h1>You have to identify</h1>";
 			return 0;
 		}
 	}
@@ -144,24 +144,30 @@
 		mysql_select_db ("nel") or die ("Can't access to the table");
 		$query = "SELECT * FROM shard";
 		$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
-
-		echo 'Please, select a shard:<ul>';
 		
-		while($row = mysql_fetch_array($result))
+		if (mysql_num_rows ($result) == 0)
 		{
-			echo "<li>";
-			if ($row["Online"])
-			{
-				echo '<a href="'.basename($PHP_SELF).'?cmd=login&shardid='.$row["ShardId"].'&programname='.$row["ProgramName"].'"> '.$row["ShardName"].' ('.$row["NbPlayers"].' players)</a>';
-			}
-			else
-			{
-				echo $row["ShardName"].' (offline)';
-			}
-			echo "</li>";
+			echo '<h1>Sorry but now shards are available</h1>';
 		}
+		else
+		{
+			echo '<h1>Please, select a shard:<h1>';
+			while($row = mysql_fetch_array($result))
+			{
+				echo "<li>";
+				if ($row["Online"])
+				{
+					echo '<a href="'.basename($PHP_SELF).'?cmd=login&shardid='.$row["ShardId"].'&programname='.$row["ProgramName"].'"> '.$row["ShardName"].' ('.$row["NbPlayers"].' players)</a>';
+				}
+				else
+				{
+					echo $row["ShardName"].' (offline)';
+				}
+				echo "</li>";
+			}
 
-		echo '</ul>';
+			echo '</ul>';
+		}
 
 		mysql_close($link);
 		return $res;

@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.15 2003/03/03 13:01:28 boucher Exp $
+ * $Id: source_al.cpp,v 1.16 2004/02/23 14:38:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,7 +115,7 @@ bool					CSourceAL::getLooping() const
  */
 bool		CSourceAL::play()
 {
-	if ( _Buffer != NULL )
+/* TODO	if ( _Buffer != NULL )
 	{
 		// Static playing mode
 		alSourcePlay( _SourceName );
@@ -127,7 +127,7 @@ bool		CSourceAL::play()
 		nlwarning( "AM: Cannot play null buffer; streaming not implemented" );
 		nlstop;
 	}
-
+*/
 	// TODO : return a correct value, depending on alSourcePlay result.
 	return true;
 }
@@ -138,7 +138,7 @@ bool		CSourceAL::play()
  */
 void					CSourceAL::stop()
 {
-	if ( _Buffer != NULL )
+/* TODO	if ( _Buffer != NULL )
 	{
 		// Static playing mode
 		alSourceStop( _SourceName );
@@ -150,6 +150,7 @@ void					CSourceAL::stop()
 		nlwarning( "AM: Cannot stop null buffer; streaming not implemented" );
 		//nlstop;
 	}
+*/
 }
 
 
@@ -158,7 +159,7 @@ void					CSourceAL::stop()
  */
 void					CSourceAL::pause()
 {
-	if ( _Buffer != NULL )
+/* TODO	if ( _Buffer != NULL )
 	{
 		// Static playing mode
 		alSourcePause( _SourceName );
@@ -170,6 +171,7 @@ void					CSourceAL::pause()
 		nlwarning( "AM: Cannot pause null buffer; streaming not implemented" );
 		nlstop;
 	}
+*/
 }
 
 
@@ -200,9 +202,10 @@ bool					CSourceAL::isStopped() const
 /*
  * Update the source (e.g. continue to stream the data in)
  */
-void					CSourceAL::update()
+bool					CSourceAL::update()
 {
 	// Streaming not implemented
+	return false;
 }
 
 
@@ -211,7 +214,7 @@ void					CSourceAL::update()
  * 3D mode -> 3D position
  * st mode -> x is the pan value (from left (-1) to right (1)), set y and z to 0
  */
-void					CSourceAL::setPos( const NLMISC::CVector& pos )
+void					CSourceAL::setPos( const NLMISC::CVector& pos, bool deffered)
 {
 	_Pos = pos;
 	// Coordinate system: conversion from NeL to OpenAL/GL:

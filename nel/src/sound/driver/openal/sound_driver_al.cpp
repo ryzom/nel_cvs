@@ -1,7 +1,7 @@
 /** \file sound_driver_al.cpp
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.cpp,v 1.15 2003/07/03 15:17:33 boucher Exp $
+ * $Id: sound_driver_al.cpp,v 1.16 2004/02/23 14:38:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,7 +106,7 @@ ISoundDriver* NLSOUND_createISoundDriverInstance (bool useEax)
 {
 	NL_ALLOC_CONTEXT(NLSOUND_ISoundDriver);
 	CSoundDriverAL *driver = new CSoundDriverAL();
-	driver->init(useEax);
+	driver->init();
 	return driver;
 }
 
@@ -452,7 +452,7 @@ bool			CSoundDriverAL::loadWavFile( IBuffer *destbuffer, const char *filename )
 	destbuffer->fillBuffer( data, size );
 
 	string ext = CFile::getFilenameWithoutExtension(filename);
-	static_cast<CBufferAL*>(destbuffer)->setName(ext);
+// TODO	static_cast<CBufferAL*>(destbuffer)->setName(ext);
 
 #ifdef NL_OS_WINDOWS
 	alutUnloadWAV(format,data,size,freq); // Where is it on Linux ?!?

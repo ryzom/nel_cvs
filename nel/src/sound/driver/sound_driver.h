@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.17 2003/12/08 13:18:02 boucher Exp $
+ * $Id: sound_driver.h,v 1.18 2004/02/23 14:38:44 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,8 +41,11 @@ class ISource;
 /** Configuration for compiling with or without EAX support.
  *	Set to 0 if you don't have EAX library or don't whant EAX support.
  *	This definition impact on code generation for driver AND sound lib.
+ * NO EAX on linux
  */
+#ifdef NL_OS_WINDOWS
 #define EAX_AVAILABLE	1
+#endif
 /** Configuration to compile with manual or API (directx or open AL) rolloff factor.
  *	Set it to 1 for manual rolloff, 0 for API rolloff.
 */

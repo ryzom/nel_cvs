@@ -1,7 +1,7 @@
 /** \file sound_driver_al.h
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.h,v 1.10 2003/03/03 13:01:28 boucher Exp $
+ * $Id: sound_driver_al.h,v 1.11 2004/02/23 14:38:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,15 @@ public:
 
 	/// Create a source
 	virtual	ISource			*createSource();
+
+	virtual bool			readWavBuffer( IBuffer *destbuffer, const std::string &name, uint8 *wavData, uint dataSize) { /* todo*/ return false; }
+
+	virtual bool			readRawBuffer( IBuffer *destbuffer, const std::string &name, uint8 *rawData, uint dataSize, TSampleFormat format, uint32 frequency) { /* todo */ return false; }
+
+	virtual void	startBench() { /* todo */ }
+	virtual void	endBench() { /* todo */ }
+	virtual void	displayBench(NLMISC::CLog *log) { /* TODO */ }
+
 
 	/// Change the rolloff factor and apply to all sources
 	void					applyRolloffFactor( float f );

@@ -1,7 +1,7 @@
 /** \file buffer_al.h
  * OpenAL buffer
  *
- * $Id: buffer_al.h,v 1.7 2003/03/03 13:01:28 boucher Exp $
+ * $Id: buffer_al.h,v 1.8 2004/02/23 14:38:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,12 +88,22 @@ public:
 	ALuint				bufferName()							{ return _BufferName; }
 	
 	/// Return the name of the buffer (as a string)
-	virtual const std::string&	getName()							{ return _Name; }
+	virtual const NLMISC::TStringId&	getName()							{ return _Name; }
+
+	/// Return true if the buffer is loaded. Used for async load/unload.
+	virtual bool			isBufferLoaded() { /* TODO */ return false; }
 
 	/// Set the name of the buffer
-	virtual void		setName(std::string& name)				{ _Name = name; }
+	virtual void		setName(NLMISC::TStringId& name)				{ _Name = name; }
 
 	virtual void		presetName(const NLMISC::TStringId &bufferName);
+
+	virtual uint32			getBufferADPCMEncoded(std::vector<uint8> &result) { /* TODO */ return 0; }
+	/** Unoptimized utility function designed to build Mono 16 bits encoded sample bank file.
+	 *	Return the number of sample in the buffer.
+	 */
+	virtual uint32			getBufferMono16(std::vector<sint16> &result) { /* TODO */ return 0; }
+
 
 private:
 

@@ -1,7 +1,7 @@
 /** \file buffer.h
  * IBuffer: sound buffer interface
  *
- * $Id: buffer.h,v 1.7 2003/07/03 15:16:43 boucher Exp $
+ * $Id: buffer.h,v 1.8 2004/02/23 14:38:44 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,8 +109,8 @@ public:
 	virtual uint32			getBufferMono16(std::vector<sint16> &result) =0;
 
 private:
-	const static sint _IndexTable[16];
-	const static uint _StepsizeTable[89];
+	static const sint _IndexTable[16];
+	static const uint _StepsizeTable[89];
 	//@}
 
 protected:

@@ -1,7 +1,7 @@
 /** \file source_al.h
  * OpenAL sound source
  *
- * $Id: source_al.h,v 1.11 2002/11/25 14:11:41 boucher Exp $
+ * $Id: source_al.h,v 1.12 2004/02/23 14:38:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,7 +72,8 @@ public:
 	//virtual void					setNext( ISource *next );
 	//@}
 
-	
+	virtual IBuffer					*getStaticBuffer() { /* TODO */ return NULL; }
+
 	/// \name Playback control
 	//@{
 	/// Set looping on/off for future playbacks (default: off)
@@ -90,7 +91,7 @@ public:
 	/// Return true if playing is finished or stop() has been called.
 	virtual bool			isStopped() const;
 	/// Update the source (e.g. continue to stream the data in)
-	virtual void			update();
+	virtual bool			update();
 	//@}
 
 
@@ -100,7 +101,7 @@ public:
 	 * 3D mode -> 3D position
 	 * st mode -> x is the pan value (from left (-1) to right (1)), set y and z to 0
 	 */
-	virtual void			setPos( const NLMISC::CVector& pos );
+	virtual void			setPos( const NLMISC::CVector& pos, bool deffered = true );
 	/** Get the position vector.
 	 * See setPos() for details.
 	 */

@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.7 2002/02/26 17:30:25 corvazier Exp $
+ * $Id: zone_dependencies.cpp,v 1.8 2002/03/27 17:31:20 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,48 @@ using namespace NLMISC;
 using namespace NL3D;
 
 typedef pair<sint, sint> CZoneDependenciesValue;
+
+
+#define BAR_LENGTH 21
+
+char *progressbar[BAR_LENGTH]=
+{
+	"[                    ]",
+	"[.                   ]",
+	"[..                  ]",
+	"[...                 ]",
+	"[....                ]",
+	"[.....               ]",
+	"[......              ]",
+	"[.......             ]",
+	"[........            ]",
+	"[.........           ]",
+	"[..........          ]",
+	"[...........         ]",
+	"[............        ]",
+	"[.............       ]",
+	"[..............      ]",
+	"[...............     ]",
+	"[................    ]",
+	"[.................   ]",
+	"[..................  ]",
+	"[................... ]",
+	"[....................]"
+};
+
+void progress (const char *message, float progress)
+{
+	// Progress bar
+	char msg[512];
+	uint	pgId= (uint)(progress*(float)BAR_LENGTH);
+	pgId= min(pgId, (uint)(BAR_LENGTH-1));
+	sprintf (msg, "\r%s: %s", message, progressbar[pgId]);
+	for (uint i=strlen(msg); i<79; i++)
+		msg[i]=' ';
+	msg[i]=0;
+	printf (msg);
+	printf ("\r");
+}
 
 class CZoneDependencies
 {
@@ -197,6 +239,9 @@ int main (int argc, char* argv[])
 					for (y=firstY; y<=lastY; y++)
 					for (x=firstX; x<=lastX; x++)
 					{
+						// Progress
+						progress ("Build bounding boxes", (float)(x+y*lastX)/(float)(lastX*lastY));
+
 						// Make a zone file name
 						string zoneName;
 						getZoneNameByCoord (x, y, zoneName);
@@ -264,6 +309,9 @@ int main (int argc, char* argv[])
 					for (y=firstY; y<=lastY; y++)
 					for (x=firstX; x<=lastX; x++)
 					{
+						// Progress
+						progress ("Compute dependencies", (float)(x+y*lastX)/(float)(lastX*lastY));
+
 						// Index 
 						uint index=(x-firstX)+(y-firstY)*(lastX-firstX+1);
 
@@ -370,6 +418,9 @@ int main (int argc, char* argv[])
 					for (y=firstY; y<=lastY; y++)
 					for (x=firstX; x<=lastX; x++)
 					{
+						// Progress
+						progress ("Save depend files", (float)(x+y*lastX)/(float)(lastX*lastY));
+
 						// Index 
 						uint index=(x-firstX)+(y-firstY)*(lastX-firstX+1);
 
@@ -477,7 +528,6 @@ static bool computeIGBBox(const char *zoneName, NLMISC::CAABBox &result, TShapeM
 	}
 
 	bool firstBBox = true;	
-	NLMISC::CAABBox bbox;
 
 	/// now, compute the union of all bboxs
 	for (CInstanceGroup::TInstanceArray::const_iterator it = ig._InstancesInfos.begin(); it != ig._InstancesInfos.end(); ++it)
@@ -545,12 +595,12 @@ static bool computeIGBBox(const char *zoneName, NLMISC::CAABBox &result, TShapeM
 		
 			if (firstBBox)
 			{
-				bbox = currBBox;
+				result = currBBox;
 				firstBBox = false;
 			}
 			else // add to previous one
 			{						
-				bbox = NLMISC::CAABBox::computeAABBoxUnion(bbox, currBBox);
+				result = NLMISC::CAABBox::computeAABBoxUnion(result, currBBox);
 			}			
 		}		
 	}

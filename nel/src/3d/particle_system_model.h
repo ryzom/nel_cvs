@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.25 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: particle_system_model.h,v 1.26 2002/08/01 16:45:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -366,6 +366,7 @@ public:
 			trav->LoadBalancingTrav->addVisibleObs(LoadBalancingObs);
 		}
 	}
+	bool checkDestroyCondition(CParticleSystem *ps, CParticleSystemModel *m);
 };
 
 /// a render observer for a particle system

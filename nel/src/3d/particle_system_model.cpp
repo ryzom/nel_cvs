@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.37 2002/07/04 14:50:46 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.38 2002/08/01 16:45:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -534,7 +534,77 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		if (m->_InClusterAndVisible) return; // already visible
 		
 
+		CParticleSystem *ps = m->_ParticleSystem;
 
+		
+		if (ps) // system instanciated
+		{
+			// if there are no more particles, no need to even clip..
+			if (checkDestroyCondition(ps, m)) return;
+		}
+		
+		// special case : system sticked to a skeleton
+		if( ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel!=NULL )
+		{
+			bool visible = ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel->isClipVisible();
+			// Special test: if we are sticked to a skeletonModel, and if we are still visible, maybe we don't have to
+			if(Visible && m->_FatherSkeletonModel)
+			{
+				CClipTrav		*clipTrav= NLMISC::safe_cast<CClipTrav*>(Trav);
+				// must ensure the skeleton has computed the state
+				m->_FatherSkeletonModel->updateDisplayLodCharacterFlag(clipTrav);
+
+				// if our skeletonModel father is displayed with a Lod, maybe we are not to be displayed
+				if(m->_FatherSkeletonModel->isDisplayedAsLodCharacter())
+				{
+					// We are visible only if we where sticked to the skeleton with forceCLod==true.
+					// This is also true if we are actually a skeletonModel
+					if(!m->getShowWhenLODSticked())
+						// otherWise we are not visible. eg: this is the case of skins and some sticked object
+						visible = false;
+				}
+			}
+			//
+			if (visible)
+			{				
+				Visible = true;
+				insertInVisibleList();				
+				m->_InClusterAndVisible = true;
+				return;
+			}
+			else // not visible, may need animation however..
+			{				
+				if (!ps) // no resc allocated
+				{
+					CParticleSystemShape		*pss= NLMISC::safe_cast<CParticleSystemShape *>((IShape *)m->Shape);
+					nlassert(pss);
+					// invalidate the system if too far
+					const CVector pos = m->getMatrix().getPos();		
+					const CVector d = pos - trav->CamPos;
+					if (d * d > pss->_MaxViewDist * pss->_MaxViewDist) 
+					{
+						Visible = false;					
+						if (pss->_DestroyModelWhenOutOfRange)
+						{
+							m->_Invalidated = true;					
+						}													
+					}
+				}
+				else
+				{				
+					// NB : The test to see wether the system is not too far is performed by the particle system manager					
+					if (!m->_EditionMode)
+					{
+						Visible = true;     // system near, but maybe not in cluster..
+						insertInVisibleList();
+					}					
+				}
+			}
+			return;				
+		}
+
+
+		//
 		const std::vector<CPlane>	&pyramid= trav->WorldPyramid;	
 		/** traverse the sons
 		  * we must do this before us, because this object may delete himself from the scene
@@ -543,9 +613,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		// now the pyramid is directly expressed in the world
 		const CMatrix		&mat= HrcObs->WorldMatrix;	 
 
-		
-
-		CParticleSystem *ps = m->_ParticleSystem;
+				
 		// Transform the pyramid in Object space.
 
 		
@@ -591,7 +659,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 					}
 				}	
 				
-				Visible = true; // not too far, but not in cluster
+				Visible = true;
 				insertInVisibleList();				
 				m->_InClusterAndVisible = true;
 				return;						
@@ -604,13 +672,14 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 				{					
 					if ( !pss->_PrecomputedBBox.clipBack(pyramid[i]  * mat  ) ) 
 					{
+						
 						Visible = true;
 						insertInVisibleList();
 						return;					
 					}
 				}			
 
-				Visible = true; // not too far, but not in cluster				
+				Visible = true;
 				insertInVisibleList();
 				m->_InClusterAndVisible = true;
 				return;
@@ -618,60 +687,68 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 			}
 		}
 		
+		//=========================================================================================================
+		// the system is already instanciated
 		
-		//======================================system already instanciated========================
-		/** NB : we don't do this test here for always animated system, as it is done 
-		  * by the CParticleSystemManager, because this code is noit sure to be executed
-		  */
-
-		if (!m->_EditionMode)
-		{
-			if (ps || (ps && ps->getAnimType() != CParticleSystem::AnimAlways))
-			{
-				// test deletion condition (no more particle, no more particle and emitters)
-				if (ps->getDestroyCondition() != CParticleSystem::none)
-				{
-					if (ps->getSystemDate() > ps->getDelayBeforeDeathConditionTest())
-					{
-						switch (ps->getDestroyCondition())
-						{
-							case CParticleSystem::noMoreParticles:
-								if (!ps->hasParticles())
-								{							
-									m->releaseRscAndInvalidate();
-									return;
-								}
-							break;
-							case CParticleSystem::noMoreParticlesAndEmitters:
-								if (!ps->hasParticles() && !ps->hasEmitters())
-								{
-									m->releaseRscAndInvalidate();
-									return;
-								}
-							break;
-						}
-					}
-				}
-			}
-		}
-
-		/// Pyramid test. The test to see wether the system is not too far is performed by the particle system manager
+		nlassert(ps);						
+		/// Pyramid test. IMPORTANT : The test to see wether the system is not too far is performed by the particle system manager
 		if (m->checkAgainstPyramid(pyramid) == false)
 		{
 			if (!m->_EditionMode)
 			{
-				Visible = true; // not too far, but not in cluster
+				// system near, but maybe not in cluster..	
+				Visible = true;
 				insertInVisibleList();
 			}				
 			return;
 		}
 		
 
-		Visible = true; // not too far, but not in cluster
+		Visible = true;
 		insertInVisibleList();
 		m->_InClusterAndVisible = true;
 }
 
+
+//===================================================================
+bool CParticleSystemClipObs::checkDestroyCondition(CParticleSystem *ps, CParticleSystemModel *m)
+{
+	nlassert(ps && m);
+	if (!m->_EditionMode)
+	{
+		/** NB : we don't do this test here for always animated system, as it is done 
+		 * by the CParticleSystemManager, because this code is not sure to be executed if the system has been clipped by a cluster
+		 */
+		if (ps->getAnimType() != CParticleSystem::AnimAlways)
+		{
+			// test deletion condition (no more particle, no more particle and emitters)
+			if (ps->getDestroyCondition() != CParticleSystem::none)
+			{
+				if (ps->getSystemDate() > ps->getDelayBeforeDeathConditionTest())
+				{
+					switch (ps->getDestroyCondition())
+					{
+						case CParticleSystem::noMoreParticles:
+							if (!ps->hasParticles())
+							{							
+								m->releaseRscAndInvalidate();
+								return true;
+							}
+						break;
+						case CParticleSystem::noMoreParticlesAndEmitters:
+							if (!ps->hasParticles() && !ps->hasEmitters())
+							{
+								m->releaseRscAndInvalidate();
+								return true;
+							}
+						break;
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file point_light_named_array.cpp
  * <File description>
  *
- * $Id: point_light_named_array.cpp,v 1.5 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: point_light_named_array.cpp,v 1.6 2003/04/14 10:14:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,8 @@ struct	CPointLightNamedSort
 	{
 		if (PointLight->AnimatedLight < b.PointLight->AnimatedLight)
 			return true;
+		if (PointLight->AnimatedLight > b.PointLight->AnimatedLight)
+			return false;
 		return (PointLight->LightGroup < b.PointLight->LightGroup);
 	}
 };

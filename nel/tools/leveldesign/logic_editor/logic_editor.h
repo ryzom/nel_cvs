@@ -22,6 +22,9 @@
 
 class CLogic_editorApp : public CWinApp
 {
+
+	CMultiDocTemplate* _DocTemplate;
+
 public:
 	CLogic_editorApp();
 
@@ -31,8 +34,7 @@ public:
 	public:
 	//virtual BOOL InitInstance();
 	//}}AFX_VIRTUAL
-	virtual BOOL initInstance();
-	virtual BOOL initInstanceLight( int x, int y, int cx, int cy );
+	virtual BOOL initInstance (int x=0, int y=0, int cx=0, int cy=0);
 
 // Implementation
 	//{{AFX_MSG(CLogic_editorApp)

@@ -22,6 +22,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	ON_WM_CREATE()
+	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -39,17 +40,18 @@ static UINT indicators[] =
 CMainFrame::CMainFrame()
 {
 	// TODO: add member initialization code here
-	createX = 0;
-	createY = 0;
-	createCX = 0;
-	createCY = 0;
-	
+	CreateX = 0;
+	CreateY = 0;
+	CreateCX = 0;
+	CreateCY = 0;
+	Exit = false;	
 }
 
 CMainFrame::~CMainFrame()
 {
 }
 
+/////////////////////////////////////////////////////////////////////////////
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CMDIFrameWnd::OnCreate(lpCreateStruct) == -1)
@@ -80,14 +82,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
-	if ((createCX != 0)&&(createCY != 0))
+	if ((CreateCX != 0)&&(CreateCY != 0))
 	{
-		cs.x = createX;
-		cs.y = createY;
-		cs.cx = createCX;
-		cs.cy = createCY;
+		cs.x = CreateX;
+		cs.y = CreateY;
+		cs.cx = CreateCX;
+		cs.cy = CreateCY;
 	}
 
 	if( !CMDIFrameWnd::PreCreateWindow(cs) )
@@ -96,6 +99,12 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 	//  the CREATESTRUCT cs
 
 	return TRUE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+void CMainFrame::OnClose()
+{
+	Exit = true;
 }
 
 /////////////////////////////////////////////////////////////////////////////

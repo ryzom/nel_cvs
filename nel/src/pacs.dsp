@@ -82,11 +82,27 @@ LIB32=link.exe -lib
 # Name "pacs - Win32 Debug"
 # Begin Source File
 
+SOURCE=.\pacs\chain.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\chain.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\pacs\collision_desc.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\pacs\collision_desc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\local_retriever.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\local_retriever.h
 # End Source File
 # Begin Source File
 
@@ -103,6 +119,30 @@ SOURCE=.\pacs\move_primitive.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\pacs\move_primitive.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\retrievable_surface.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\retrievable_surface.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\retriever_instance.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\retriever_instance.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\surface_quad.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\surface_quad.h
 # End Source File
 # End Target
 # End Project

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_driver.h,v 1.2 2001/06/26 09:48:32 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,8 +60,6 @@ class UTextureFile;
 class UTextureRaw;
 class UMaterial;
 class UTextContext;
-class UAnimationSet;
-class UPlayListManager;
 class UShapeBank;
 class U3dMouseListener;
 
@@ -189,19 +187,6 @@ public:
 	virtual	UScene			*createScene() =0;
 	/// Delete a scene.
 	virtual	void			deleteScene(UScene	*scene) =0;
-	// @}
-
-
-	/// \name Animation gestion.
-	// @{
-	/// Create a new AnimationSet, load it from a file. Use CPath to search the animation set.  exception EPathNotFound if not found.
-	virtual	UAnimationSet	*createAnimationSet(const std::string &animationSetFile) =0;
-	/// Delete a AnimationSet. NB: actually, this animation set is internally deleted only when no more UPlayList use it.
-	virtual	void			deleteAnimationSet(UAnimationSet *animationSet) =0;
-	/// Create a new PlayListManager.
-	virtual	UPlayListManager	*createPlayListManager() =0;
-	/// Delete a PlayListManager.
-	virtual	void				deletePlayListManager(UPlayListManager *playListManager) =0;
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.2 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.3 2001/06/26 09:48:32 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,34 @@
 namespace NL3D 
 {
 
-
+// ***************************************************************************
+UAnimationSet			*CSceneUser::createAnimationSet() 
+{
+	return new CAnimationSetUser();
+}
+// ***************************************************************************
+UAnimationSet			*CSceneUser::createAnimationSet(const std::string &animationSetFile) 
+{
+	NLMISC::CIFile	f;
+	// throw exception if not found.
+	std::string	path= CPath::lookup(animationSetFile);
+	f.open(path);
+	return _AnimationSets.insert(new CAnimationSetUser(f));
+}
+// ***************************************************************************
+void			CSceneUser::deleteAnimationSet(UAnimationSet	*animationSet) 
+{
+	_AnimationSets.erase((CAnimationSetUser*)animationSet, "deleteAnimationSet(): Bad AnimationSet ptr");
+}
+// ***************************************************************************
+UPlayListManager			*CSceneUser::createPlayListManager() 
+{
+	return _PlayListManagers.insert(new CPlayListManagerUser());
+}
+// ***************************************************************************
+void			CSceneUser::deletePlayListManager(UPlayListManager	*playListManager) 
+{
+	_PlayListManagers.erase((CPlayListManagerUser*)playListManager, "deletePlayListManager(): Bad PlayListManager ptr");
+}
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.2 2001/06/22 15:03:05 corvazier Exp $
+ * $Id: primitive_world_image.cpp,v 1.3 2001/06/26 09:48:32 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,7 +81,8 @@ bool CPrimitiveWorldImage::evalCollision (CPrimitiveWorldImage& other, CCollisio
 									CMovePrimitive& otherPrimitive)
 {
 	// Mask test
-	if (( (primitive.getCollisionMask() & otherPrimitive.getOcclusionMask())  == 0) && ( (primitive.getOcclusionMask() & otherPrimitive.getCollisionMask())  == 0))
+	if (( (primitive.getCollisionMaskInternal() & otherPrimitive.getOcclusionMaskInternal())  == 0) && 
+		( (primitive.getOcclusionMaskInternal() & otherPrimitive.getCollisionMaskInternal())  == 0))
 		return false;
 
 	// Test time
@@ -93,14 +94,14 @@ bool CPrimitiveWorldImage::evalCollision (CPrimitiveWorldImage& other, CCollisio
 	lastContactTime=-FLT_MAX;
 
 	// Switch the good test
-	switch (primitive.getPrimitiveType())
+	switch (primitive.getPrimitiveTypeInternal())
 	{
 
 	// Static box over...
 	case UMovePrimitive::_2DOrientedBox:
 		{
 			// Switch second type
-			switch (otherPrimitive.getPrimitiveType())
+			switch (otherPrimitive.getPrimitiveTypeInternal())
 			{
 			
 			// Static box over movable box
@@ -123,7 +124,7 @@ bool CPrimitiveWorldImage::evalCollision (CPrimitiveWorldImage& other, CCollisio
 	case UMovePrimitive::_2DOrientedCylinder:
 		{
 			// Switch second type
-			switch (otherPrimitive.getPrimitiveType())
+			switch (otherPrimitive.getPrimitiveTypeInternal())
 			{
 			
 			// Static box over movable box
@@ -166,7 +167,7 @@ const TCollisionSurfaceDescVector *CPrimitiveWorldImage::evalCollision (CGlobalR
 		return NULL;
 
 	// Switch the good test
-	if (primitive.getPrimitiveType()==UMovePrimitive::_2DOrientedBox)
+	if (primitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedBox)
 	{
 		// Local I
 		CVector locI ((float)(_OBData.EdgeDirectionX[0]*primitive.getLength(0)/2.0), (float)(_OBData.EdgeDirectionY[0]*primitive.getLength(1)/2.0), 0);
@@ -180,10 +181,10 @@ const TCollisionSurfaceDescVector *CPrimitiveWorldImage::evalCollision (CGlobalR
 	else
 	{
 		// Check
-		nlassert (primitive.getPrimitiveType()==UMovePrimitive::_2DOrientedCylinder);
+		nlassert (primitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedCylinder);
 
 		// Test
-		return &retriever.testCylinderMove (_Position.getGlobalPos (), _DeltaPosition, primitive.getRadius(), surfaceTemp);
+		return &retriever.testCylinderMove (_Position.getGlobalPos (), _DeltaPosition, primitive.getRadiusInternal(), surfaceTemp);
 	}
 }
 
@@ -223,8 +224,8 @@ bool CPrimitiveWorldImage::evalCollisionOBoverOB (CPrimitiveWorldImage& other, C
 										   CMovePrimitive& otherPrimitive)
 {
 	// Checks
-	nlassert (primitive.getPrimitiveType()==UMovePrimitive::_2DOrientedBox);
-	nlassert (otherPrimitive.getPrimitiveType()==UMovePrimitive::_2DOrientedBox);
+	nlassert (primitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedBox);
+	nlassert (otherPrimitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedBox);
 
 	// Find a collision
 	bool find=false;
@@ -329,8 +330,8 @@ bool CPrimitiveWorldImage::evalCollisionOBoverOC (CPrimitiveWorldImage& other, C
 										   CMovePrimitive& otherPrimitive)
 {
 	// Checks
-	nlassert (primitive.getPrimitiveType()==UMovePrimitive::_2DOrientedBox);
-	nlassert (otherPrimitive.getPrimitiveType()==UMovePrimitive::_2DOrientedCylinder);
+	nlassert (primitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedBox);
+	nlassert (otherPrimitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedCylinder);
 
 	// Find a collision
 	bool find=false;
@@ -434,8 +435,8 @@ bool CPrimitiveWorldImage::evalCollisionPoverS (CPrimitiveWorldImage& other, CCo
 												CMovePrimitive& primitive, CMovePrimitive& otherPrimitive)
 {
 	// Checks
-	nlassert (primitive.getPrimitiveType()==UMovePrimitive::_2DOrientedBox);
-	nlassert (otherPrimitive.getPrimitiveType()==UMovePrimitive::_2DOrientedBox);
+	nlassert (primitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedBox);
+	nlassert (otherPrimitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedBox);
 
 	// Some constants
 	const double normalSegX=other._OBData.EdgeDirectionY[numSeg];
@@ -483,7 +484,7 @@ bool CPrimitiveWorldImage::evalCollisionPoverS (CPrimitiveWorldImage& other, CCo
 			const double ptPosZ= pointZ + _Speed.z*time;
 
 			// Included ?
-			if ( (ptPosZ <= segPosZ + otherPrimitive.getHeight()) && (ptPosZ + primitive.getHeight() >= segPosZ) )
+			if ( (ptPosZ <= segPosZ + otherPrimitive.getHeightInternal()) && (ptPosZ + primitive.getHeightInternal() >= segPosZ) )
 			{
 				// Ok Collision, fill the result
 				
@@ -553,8 +554,8 @@ bool CPrimitiveWorldImage::evalCollisionPoverOC (CPrimitiveWorldImage& other, CC
 										   CMovePrimitive& otherPrimitive)
 {
 	// Checks
-	nlassert (primitive.getPrimitiveType()==UMovePrimitive::_2DOrientedBox);
-	nlassert (otherPrimitive.getPrimitiveType()==UMovePrimitive::_2DOrientedCylinder);
+	nlassert (primitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedBox);
+	nlassert (otherPrimitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedCylinder);
 
 	/* Point Equ:
 	 * p(t) = p0 + v0*(t - t0)
@@ -586,7 +587,7 @@ bool CPrimitiveWorldImage::evalCollisionPoverOC (CPrimitiveWorldImage& other, CC
 
 	// Eval system
 	double s0, s1;
-	double squareRadius=otherPrimitive.getRadius()*otherPrimitive.getRadius();
+	double squareRadius=otherPrimitive.getRadiusInternal()*otherPrimitive.getRadiusInternal();
 	uint numSolution=secondDegree (_Bx*_Bx+_By*_By, 2.f*(_Ax*_Bx+_Ay*_By), _Ax*_Ax+_Ay*_Ay-squareRadius, s0, s1);
 	if (numSolution!=0)
 	{
@@ -624,7 +625,7 @@ bool CPrimitiveWorldImage::evalCollisionPoverOC (CPrimitiveWorldImage& other, CC
 		const double ptPosZ= pointZ + _Speed.z*time;
 
 		// Z Included ?
-		if ( (ptPosZ <= cylPosZ + otherPrimitive.getHeight()) && (ptPosZ + primitive.getHeight() >= cylPosZ) )
+		if ( (ptPosZ <= cylPosZ + otherPrimitive.getHeightInternal()) && (ptPosZ + primitive.getHeightInternal() >= cylPosZ) )
 		{
 			// Ok Collision, fill the result
 			
@@ -668,8 +669,8 @@ bool CPrimitiveWorldImage::evalCollisionSoverOC (CPrimitiveWorldImage& other, CC
 										   CMovePrimitive& otherPrimitive)
 {
 	// Checks
-	nlassert (primitive.getPrimitiveType()==UMovePrimitive::_2DOrientedBox);
-	nlassert (otherPrimitive.getPrimitiveType()==UMovePrimitive::_2DOrientedCylinder);
+	nlassert (primitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedBox);
+	nlassert (otherPrimitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedCylinder);
 
 	// Some constants
 	const double normalSegX=_OBData.EdgeDirectionY[numSeg];
@@ -685,7 +686,7 @@ bool CPrimitiveWorldImage::evalCollisionSoverOC (CPrimitiveWorldImage& other, CC
 	if ( dotProd !=0 )
 	{
 		// Time of the collision
-		double time= (otherPrimitive.getRadius() + normalSegX*(_OBData.PointPosX[numSeg] - other._3dInitPosition.x ) + 
+		double time= (otherPrimitive.getRadiusInternal() + normalSegX*(_OBData.PointPosX[numSeg] - other._3dInitPosition.x ) + 
 			normalSegY*(_OBData.PointPosY[numSeg] - other._3dInitPosition.y ) ) / dotProd;
 
 		// Position of segment point at collision time
@@ -697,8 +698,8 @@ bool CPrimitiveWorldImage::evalCollisionSoverOC (CPrimitiveWorldImage& other, CC
 		const double cylPosY= other._3dInitPosition.y + _Speed.y*time;
 
 		// Position de contact
-		const double contactX= cylPosX - normalSegX*otherPrimitive.getRadius();
-		const double contactY= cylPosY - normalSegY*otherPrimitive.getRadius();
+		const double contactX= cylPosX - normalSegX*otherPrimitive.getRadiusInternal();
+		const double contactY= cylPosY - normalSegY*otherPrimitive.getRadiusInternal();
 
 		// Direction of the collision on the segment
 		const double dirX= contactX - segPosX;
@@ -719,7 +720,7 @@ bool CPrimitiveWorldImage::evalCollisionSoverOC (CPrimitiveWorldImage& other, CC
 			const double cylPosZ= other._3dInitPosition.z + other._Speed.z*time;
 
 			// Included ?
-			if ( (cylPosZ <= segPosZ + primitive.getHeight() ) && (cylPosZ + otherPrimitive.getHeight() >= segPosZ) )
+			if ( (cylPosZ <= segPosZ + primitive.getHeightInternal() ) && (cylPosZ + otherPrimitive.getHeightInternal() >= segPosZ) )
 			{
 				// Ok Collision, fill the result
 				
@@ -760,8 +761,8 @@ bool CPrimitiveWorldImage::evalCollisionOCoverOC (CPrimitiveWorldImage& other, C
 										   CMovePrimitive& otherPrimitive)
 {
 	// Checks
-	nlassert (primitive.getPrimitiveType()==UMovePrimitive::_2DOrientedCylinder);
-	nlassert (otherPrimitive.getPrimitiveType()==UMovePrimitive::_2DOrientedCylinder);
+	nlassert (primitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedCylinder);
+	nlassert (otherPrimitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedCylinder);
 
 
 	/* Cylinder0 center equ:
@@ -794,7 +795,7 @@ bool CPrimitiveWorldImage::evalCollisionOCoverOC (CPrimitiveWorldImage& other, C
 
 	// Eval system
 	double s0, s1;
-	double radiusSquare=primitive.getRadius()+otherPrimitive.getRadius();
+	double radiusSquare=primitive.getRadiusInternal()+otherPrimitive.getRadiusInternal();
 	radiusSquare*=radiusSquare;
 	uint numSolution=secondDegree (_Bx*_Bx+_By*_By, 2.f*(_Ax*_Bx+_Ay*_By), _Ax*_Ax+_Ay*_Ay-radiusSquare, s0, s1);
 	if (numSolution!=0)
@@ -844,7 +845,7 @@ bool CPrimitiveWorldImage::evalCollisionOCoverOC (CPrimitiveWorldImage& other, C
 			const double cyl1PosZ= pointCyl1Z + other._Speed.z * cyl1Time;
 
 			// Z Included ?
-			if ( (cyl0PosZ <= cyl1PosZ + otherPrimitive.getHeight() ) && (cyl0PosZ + primitive.getHeight() >= cyl1PosZ) )
+			if ( (cyl0PosZ <= cyl1PosZ + otherPrimitive.getHeightInternal() ) && (cyl0PosZ + primitive.getHeightInternal() >= cyl1PosZ) )
 			{
 				// Ok Collision, fill the result
 				
@@ -866,8 +867,8 @@ bool CPrimitiveWorldImage::evalCollisionOCoverOC (CPrimitiveWorldImage& other, C
 				desc.ContactNormal0.normalize ();
 
 				// Contact position
-				desc.ContactPosition.x= desc.ContactNormal0.x*primitive.getRadius() + cyl0PosX;
-				desc.ContactPosition.y= desc.ContactNormal0.y*primitive.getRadius() + cyl0PosY;
+				desc.ContactPosition.x= desc.ContactNormal0.x*primitive.getRadiusInternal() + cyl0PosX;
+				desc.ContactPosition.y= desc.ContactNormal0.y*primitive.getRadiusInternal() + cyl0PosY;
 				desc.ContactPosition.z= std::max (cyl0PosZ, cyl1PosZ);
 
 				// Second cylinder normal
@@ -890,7 +891,7 @@ bool CPrimitiveWorldImage::evalCollisionOCoverOC (CPrimitiveWorldImage& other, C
 void CPrimitiveWorldImage::precalcPos (CMovePrimitive &primitive)
 {
 	// Type of the primitive
-	uint type=primitive.getPrimitiveType();
+	uint type=primitive.getPrimitiveTypeInternal();
 
 	// Box ?
 	if (type==UMovePrimitive::_2DOrientedBox)
@@ -947,7 +948,7 @@ void CPrimitiveWorldImage::precalcPos (CMovePrimitive &primitive)
 void CPrimitiveWorldImage::precalcBB (double beginTime, double endTime, CMovePrimitive &primitive)
 {
 	// Type of the primitive
-	uint type=primitive.getPrimitiveType();
+	uint type=primitive.getPrimitiveTypeInternal();
 
 	// Box ?
 	if (type==UMovePrimitive::_2DOrientedBox)
@@ -1015,8 +1016,8 @@ void CPrimitiveWorldImage::precalcBB (double beginTime, double endTime, CMovePri
 			_BBXMin=_BBXMax;
 			_BBXMax=tmp;
 		}
-		_BBXMin-=primitive.getRadius();
-		_BBXMax+=primitive.getRadius();
+		_BBXMin-=primitive.getRadiusInternal();
+		_BBXMax+=primitive.getRadiusInternal();
 
 		// Compute Y coordinates
 		_BBYMin= _3dInitPosition.y + _Speed.y*beginTime;
@@ -1027,8 +1028,8 @@ void CPrimitiveWorldImage::precalcBB (double beginTime, double endTime, CMovePri
 			_BBYMin=_BBYMax;
 			_BBYMax=tmp;
 		}
-		_BBYMin-=primitive.getRadius();
-		_BBYMax+=primitive.getRadius();
+		_BBYMin-=primitive.getRadiusInternal();
+		_BBYMax+=primitive.getRadiusInternal();
 	}
 
 	// Delta position
@@ -1154,8 +1155,8 @@ void CPrimitiveWorldImage::reaction (CPrimitiveWorldImage& second, const CCollis
 	// TODO: reaction for no collision must be made on the full deltaTime not only to CollisionTime
 
 	// Get the two reaction codes
-	UMovePrimitive::TReaction firstReaction=primitive.getReactionType();
-	UMovePrimitive::TReaction secondReaction=otherPrimitive.getReactionType();
+	UMovePrimitive::TReaction firstReaction=primitive.getReactionTypeInternal();
+	UMovePrimitive::TReaction secondReaction=otherPrimitive.getReactionTypeInternal();
 
 	// Overide collsion 
 	collision = collision && (primitive.isObstacle ()) && (otherPrimitive.isObstacle ());
@@ -1319,7 +1320,7 @@ void CPrimitiveWorldImage::reaction (const CCollisionSurfaceDesc&	surfaceDesc, c
 							   uint8 worldImage)
 {
 	// Reaction type
-	uint32 type=primitive.getReactionType();
+	uint32 type=primitive.getReactionTypeInternal();
 
 	// Reaction to the collision: copy the CGlobalRetriever::CGlobalPosition
 	_Position.setGlobalPos (globalPosition, retriever);

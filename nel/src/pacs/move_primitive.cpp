@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.9 2001/06/22 15:03:05 corvazier Exp $
+ * $Id: move_primitive.cpp,v 1.10 2001/06/26 09:48:32 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -270,5 +270,89 @@ const NLMISC::CVectorD&	CMovePrimitive::getSpeed (uint8 worldImage) const
 
 // ***************************************************************************
 
+CMovePrimitive::TType CMovePrimitive::getPrimitiveType () const
+{
+	return getPrimitiveTypeInternal ();
+}
+
+// ***************************************************************************
+
+CMovePrimitive::TReaction CMovePrimitive::getReactionType () const
+{
+	return getReactionTypeInternal ();
+}
+
+// ***************************************************************************
+
+CMovePrimitive::TTrigger CMovePrimitive::getTriggerType () const
+{
+	return getTriggerTypeInternal ();
+}
+
+// ***************************************************************************
+
+CMovePrimitive::TCollisionMask CMovePrimitive::getCollisionMask () const
+{
+	return getCollisionMaskInternal ();
+}
+
+// ***************************************************************************
+
+CMovePrimitive::TCollisionMask CMovePrimitive::getOcclusionMask () const
+{
+	return getOcclusionMaskInternal ();
+}
+
+// ***************************************************************************
+
+bool CMovePrimitive::getObstacle () const
+{
+	return isObstacle ();
+}
+
+// ***************************************************************************
+
+float CMovePrimitive::getAbsorbtion () const
+{
+	return _Attenuation;
+}
+
+// ***************************************************************************
+
+void CMovePrimitive::getSize (float& width, float& depth) const
+{
+	width=getLength(0);
+	depth=getLength(1);
+}
+
+// ***************************************************************************
+
+float CMovePrimitive::getHeight () const
+{
+	return getHeightInternal ();
+}
+
+// ***************************************************************************
+
+float CMovePrimitive::getRadius () const
+{
+	return getRadiusInternal ();
+}
+
+// ***************************************************************************
+
+double CMovePrimitive::getOrientation (uint8 worldImage) const
+{
+	return getWorldImage (worldImage)->getOrientation ();
+}
+
+// ***************************************************************************
+
+void CMovePrimitive::getGlobalPosition (UGlobalPosition& pos, uint8 worldImage) const
+{
+	pos=getWorldImage (worldImage)->getGlobalPosition();
+}
+
+// ***************************************************************************
 
 } // NLPACS

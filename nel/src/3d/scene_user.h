@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.3 2001/06/21 12:57:43 berenguier Exp $
+ * $Id: scene_user.h,v 1.4 2001/06/26 09:48:32 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,8 @@
 #include "3d/instance_group_user.h"
 #include "3d/skeleton_user.h"
 #include "3d/visual_collision_manager_user.h"
+#include "3d/animation_set_user.h"
+#include "3d/play_list_manager_user.h"
 
 
 namespace NL3D {
@@ -62,10 +64,14 @@ protected:
 	typedef	CPtrSet<CLandscapeUser>		TLandscapeSet;
 	typedef	CPtrSet<CInstanceGroupUser>	TInstanceGroupSet;
 	typedef	CPtrSet<CVisualCollisionManagerUser>	TVisualCollisionManagerSet;
+	typedef	CPtrSet<CAnimationSetUser>		TAnimationSetSet;
+	typedef	CPtrSet<CPlayListManagerUser>	TPlayListManagerSet;
 	TTransformSet				_Transforms;
 	TLandscapeSet				_Landscapes;
 	TInstanceGroupSet			_InstanceGroups;
 	TVisualCollisionManagerSet	_VisualCollisionManagers;
+	TAnimationSetSet			_AnimationSets;
+	TPlayListManagerSet			_PlayListManagers;
 
 	std::map<UInstance**,CTransformShape*> _WaitingInstances;
 
@@ -301,6 +307,22 @@ public:
 */
 	//@}
 
+	/// \name Animation.
+	//@{
+	//@}
+	/// \name Animation gestion.
+	// @{
+	/// Create an empty AnimationSet.
+	virtual	UAnimationSet	*createAnimationSet();
+	/// Create a new AnimationSet, load it from a file. Use CPath to search the animation set. exception EPathNotFound if not found.
+	virtual	UAnimationSet	*createAnimationSet(const std::string &animationSetFile) ;
+	/// Delete a AnimationSet.
+	virtual	void			deleteAnimationSet(UAnimationSet *animationSet) ;
+	/// Create a new PlayListManager.
+	virtual	UPlayListManager	*createPlayListManager() ;
+	/// Delete a PlayListManager.
+	virtual	void				deletePlayListManager(UPlayListManager *playListManager) ;
+	// @}
 
 	/// \name Visual Collision manager.
 	//@{

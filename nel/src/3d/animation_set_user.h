@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
  * <File description>
  *
- * $Id: animation_set_user.h,v 1.2 2001/06/19 08:16:34 corvazier Exp $
+ * $Id: animation_set_user.h,v 1.3 2001/06/26 09:48:32 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,15 @@ private:
 
 
 public:
+
+	/// Constructor
+	CAnimationSetUser()
+	{
+		nlassert((uint)UAnimationSet::NotFound == (uint)CAnimationSet::NotFound );
+
+		// create a smartptred animation set.
+		_AnimationSet= new CAnimationSet;
+	}
 
 	/// Constructor
 	CAnimationSetUser(NLMISC::IStream	&f)

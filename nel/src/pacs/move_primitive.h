@@ -1,7 +1,7 @@
 /** \file move_primitive.h
  * Description of movables primitives
  *
- * $Id: move_primitive.h,v 1.4 2001/06/22 15:03:05 corvazier Exp $
+ * $Id: move_primitive.h,v 1.5 2001/06/26 09:48:32 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -258,35 +258,35 @@ public:
 	}
 
 	/// Get primitive type
-	TType	getPrimitiveType () const
+	TType	getPrimitiveTypeInternal () const
 	{
 		// New position
 		return (TType)(_StaticFlags&(uint32)PrimitiveMask);
 	}
 
 	/// Get reaction type
-	TReaction	getReactionType () const
+	TReaction	getReactionTypeInternal () const
 	{
 		// New position
 		return (TReaction)(_StaticFlags&(uint32)ReactionMask);
 	}
 
 	/// Get reaction type
-	TTrigger	getTriggerType () const
+	TTrigger	getTriggerTypeInternal () const
 	{
 		// New position
 		return (TTrigger)(_StaticFlags&(uint32)TriggerMask);
 	}
 
 	/// Get collision mask
-	TCollisionMask	getCollisionMask () const
+	TCollisionMask	getCollisionMaskInternal () const
 	{
 		// New position
 		return _CollisionMask;
 	}
 
 	/// Get occlusion mask
-	TCollisionMask	getOcclusionMask () const
+	TCollisionMask	getOcclusionMaskInternal () const
 	{
 		// New position
 		return _OcclusionMask;
@@ -305,13 +305,13 @@ public:
 	}
 
 	/// Get height
-	float getHeight () const
+	float getHeightInternal () const
 	{
 		return _Height;
 	}
 
 	/// Get length
-	float getRadius () const
+	float getRadiusInternal () const
 	{
 		return _Length[0];
 	}
@@ -353,6 +353,18 @@ public:
 	const NLMISC::CVectorD&	getSpeed (uint8 worldImage) const;
 	void					insertInWorldImage (uint8 worldImage);
 	void					removeFromWorldImage (uint8 worldImage);
+	TType					getPrimitiveType () const;
+	TReaction				getReactionType () const;
+	TTrigger				getTriggerType () const;
+	TCollisionMask			getCollisionMask () const;
+	TCollisionMask			getOcclusionMask () const;
+	bool					getObstacle () const;
+	float					getAbsorbtion () const;
+	void					getSize (float& width, float& depth) const;
+	float					getHeight () const;
+	float					getRadius () const;
+	double					getOrientation (uint8 worldImage) const;
+	void					getGlobalPosition (UGlobalPosition& pos, uint8 worldImage) const;
 
 	// Test time. Return true if tetst can be perform, false if too many test have been computed for this primitive
 	bool checkTestTime (uint32 testTime, uint32 maxTestIteration)

@@ -1,7 +1,7 @@
 /** \file primitive_world_image.h
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.h,v 1.2 2001/06/22 15:03:06 corvazier Exp $
+ * $Id: primitive_world_image.h,v 1.3 2001/06/26 09:48:32 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -258,6 +258,12 @@ public:
 	const UGlobalPosition& getGlobalPosition()
 	{
 		return _Position.getGlobalPos();
+	}
+
+	// Return the orientation
+	double getOrientation () const
+	{
+		return _OBData.Orientation;
 	}
 
 	// Dirt the position flag. Position has changed.

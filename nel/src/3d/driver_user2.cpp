@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.6 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: driver_user2.cpp,v 1.7 2001/06/26 09:48:32 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,30 +72,6 @@ void			CDriverUser::deleteScene(UScene	*scene)
 
 
 
-// ***************************************************************************
-UAnimationSet			*CDriverUser::createAnimationSet(const std::string &animationSetFile) 
-{
-	NLMISC::CIFile	f;
-	// throw exception if not found.
-	string	path= CPath::lookup(animationSetFile);
-	f.open(path);
-	return _AnimationSets.insert(new CAnimationSetUser(f));
-}
-// ***************************************************************************
-void			CDriverUser::deleteAnimationSet(UAnimationSet	*animationSet) 
-{
-	_AnimationSets.erase((CAnimationSetUser*)animationSet, "deleteAnimationSet(): Bad AnimationSet ptr");
-}
-// ***************************************************************************
-UPlayListManager			*CDriverUser::createPlayListManager() 
-{
-	return _PlayListManagers.insert(new CPlayListManagerUser());
-}
-// ***************************************************************************
-void			CDriverUser::deletePlayListManager(UPlayListManager	*playListManager) 
-{
-	_PlayListManagers.erase((CPlayListManagerUser*)playListManager, "deletePlayListManager(): Bad PlayListManager ptr");
-}
 
 
 

@@ -1,7 +1,7 @@
 /** \file u_move_primitive.h
  * Description of movables primitives.
  *
- * $Id: u_move_primitive.h,v 1.5 2001/06/22 15:03:05 corvazier Exp $
+ * $Id: u_move_primitive.h,v 1.6 2001/06/26 09:48:32 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -270,7 +270,114 @@ public:
 	  */
 	virtual void	move (const NLMISC::CVectorD& speed, uint8 worldImage) =0;
 
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/// \name Access the primitive.
+
+	/**
+	  * Set the primitive type.
+	  *
+	  * \param type is the new primitive type.
+	  */
+	virtual TType		getPrimitiveType () const =0;
+
+	/**
+	  * Set the reaction type.
+	  *
+	  * \param type is the new reaction type.
+	  */
+	virtual TReaction	getReactionType () const =0;
+
+	/**
+	  * Set the trigger type. Default type is NotATrigger.
+	  *
+	  * \param type is the new trigger type.
+	  */
+	virtual TTrigger	getTriggerType () const =0;
+
+	/**
+	  * Set the collision mask for this primitive. Default mask is 0xffffffff.
+	  *
+	  * \param mask is the new collision mask.
+	  */
+	virtual TCollisionMask	getCollisionMask () const =0;
+
+	/**
+	  * Set the occlusion mask for this primitive. Default mask is 0xffffffff.
+	  *
+	  * \param mask is the new occlusion mask.
+	  */
+	virtual TCollisionMask	getOcclusionMask () const =0;
+
+	/**
+	  * Set the obstacle flag.
+	  *
+	  * \param obstacle is true if this primitive is an obstacle, else false.
+	  */
+	virtual bool			getObstacle () const =0;
+
+	/**
+	  * Set the attenuation of collision for this object. Default value is 1. Should be between 0~1.
+	  * 0, all the enrgy is attenuated by the collision. 1, all the energy stay in the object.
+	  * Used only with the flag Reflexion.
+	  *
+	  * \param attenuation is the new attenuation for the primitive.
+	  */
+	virtual float			getAbsorbtion () const =0;
+
+	/**
+	  * Set the box size. Only for boxes.
+	  *
+	  * \param width is the new width size of the box. It the size of the sides aligned on OX.
+	  * \param depth is the new depth size of the box. It the size of the sides aligned on OY.
+	  */
+	virtual void			getSize (float& width, float& depth) const =0;
+
+	/**
+	  * Set the height. For boxes or cylinder.
+	  *
+	  * \param height is the new height size of the box. It the size of the sides aligned on OZ.
+	  */
+	virtual void			getHeight (float height) const =0;
+
+	/**
+	  * Set the cylinder size. Only for cylinder.
+	  *
+	  * \param radius is the new radius size of the cylinder.
+	  */
+	virtual void			getRadius (float radius) const =0;
+
+	/// \name Setup the primitive dynamic parts.
+
+	/**
+	  * Set the new orientation of the move primitive. Only for the box primitives.
+	  *
+	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
+	  * image where you have modify it before modify any other dynamic properties in another world image.
+	  *
+	  * \param rot is the new OZ rotation in radian.
+	  * \param worldImage is the world image in which the primitive must be oriented.
+	  */
+	virtual void			getOrientation (double rot, uint8 worldImage) const =0;
+
+	/**
+	  * Set the global position of the move primitive. This method is fast because 
+	  * you must pass the global position of the primitive.
+	  *
+	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
+	  * image where you have modify it before modify any other dynamic properties in another world image.
+	  *
+	  * \param pos is the new global position of the primitive.
+	  */
+	virtual void			getGlobalPosition (UGlobalPosition& pos, uint8 worldImage) const =0;
 
 	/**
 	  * Get the position of the move primitive at the end of the movement.

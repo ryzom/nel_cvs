@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.78 2004/12/17 14:30:48 legros Exp $
+ * $Id: service.h,v 1.79 2005/01/24 14:32:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -185,6 +185,10 @@ public:
 
 	/// \name User overload methods. These methods can be overload by the user do handle init, update and release operation.
 	// @{
+
+	/** Called before the displayer is created, no displayer or network connection are built.
+	    Use this callback to check some args and perform some command line based stuff */
+	virtual void			commandStart () {}
 
 	/// Initializes the service (must be called before the first call to update())
 	virtual void			init () {}

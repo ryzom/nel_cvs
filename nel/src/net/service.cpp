@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.217 2005/01/06 17:37:51 legros Exp $
+ * $Id: service.cpp,v 1.218 2005/01/24 14:32:38 corvazier Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -531,7 +531,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		CHTimer::startBench(false, true);
 		CHTimer::endBench();
 
-
 		//
 		// Set the assert mode
 		//
@@ -579,6 +578,11 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		{
 			cbExecuteCommands(*var);
 		}
+
+		//
+		// Command line start
+		//
+		commandStart ();
 
 		//
 		// Create the window if needed

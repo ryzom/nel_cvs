@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.49 2004/09/09 18:04:41 vizerie Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.50 2004/09/17 15:04:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1308,6 +1308,15 @@ void	registerGlExtensions(CGlExtensions &ext)
 	}	
 
 	ext.IsGeforceFXOrAbove = setupNVVertexProgram(glext) && setupARBFragmentProgram(glext);
+	 
+	// fix for radeon 7200 -> disable agp
+	if (ext.NbTextureStages == 3 && (ext.ATIVertexArrayObject || ext.ARBVertexBufferObject))
+	{
+		ext.ATIVertexArrayObject = false;
+		ext.ARBVertexBufferObject = false;
+		ext.ATIMapObjectBuffer = false;
+		ext.ATIVertexAttribArrayObject = false;
+	}
 }
 
 
@@ -1362,6 +1371,27 @@ void	registerWGlExtensions(CGlExtensions &ext, HDC hDC)
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

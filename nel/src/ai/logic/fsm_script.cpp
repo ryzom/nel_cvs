@@ -24,7 +24,7 @@ namespace NLAIAGENT
 	{
 		CFsmScript::ParamIdSuccessMsg = new NLAISCRIPT::COperandSimpleListOr(2,
 															  new NLAIC::CIdentType(NLAIAGENT::CSuccessMsg::IdSuccessMsg),
-															  new NLAIC::CIdentType(NLAISCRIPT::CSuccessMsgClass::IdSuccessMsgClass)	);
+															  new NLAIC::CIdentType(NLAISCRIPT::CSuccessMsgClass::IdSuccessMsgClass)	);		
 		CFsmScript::ParamSuccessMsg = new NLAISCRIPT::CParam(1,ParamIdSuccessMsg);		
 		CFsmScript::ParamIdFailureMsg = new NLAISCRIPT::COperandSimpleListOr(2,
 																  new NLAIC::CIdentType(NLAIAGENT::CFailureMsg::IdFailureMsg),
@@ -33,10 +33,8 @@ namespace NLAIAGENT
 		CFsmScript::ParamFailureMsg = new NLAISCRIPT::CParam(1,ParamIdFailureMsg);
 	}
 	void CFsmScript::releaseClass()
-	{
-		CFsmScript::ParamIdSuccessMsg->release();
-		CFsmScript::ParamSuccessMsg->release();
-		CFsmScript::ParamIdFailureMsg->release();
+	{		
+		CFsmScript::ParamSuccessMsg->release();		
 		CFsmScript::ParamFailureMsg->release();
 	}
 

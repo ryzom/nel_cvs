@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.10 2001/04/09 09:45:36 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.11 2001/04/09 13:03:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,7 +198,6 @@ namespace NLAIPYSERVER
 #else
 		sprintf(PathPython,"%s:%s",Py_GetPath(),pathWay);
 #endif
-//		printf("%s\n",PathPython);
 				
 		CPyExport *m_pPyLib = new CPyExport;
 

@@ -1539,7 +1539,7 @@ plugin material NelMaterial
 
 			bEnableSlot_2 = true
 			iRgbOperation_2	= OptorReplace
-			iRgbArg0_1	= Src1Previous
+			iRgbArg0_2	= Src0Previous
 			iRgbArg0Operand_2	= OprdRGB
 			iAlphaOperation_2 = OptorModulate
 			iAlphaArg0_2 = Src0Texture

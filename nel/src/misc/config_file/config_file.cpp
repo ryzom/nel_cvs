@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.47 2003/09/01 15:09:30 lecroart Exp $
+ * $Id: config_file.cpp,v 1.48 2003/09/01 15:15:28 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -339,7 +339,7 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 				RootConfigFilename = path + RootConfigFilename;
 			}
 
-			if (RootConfigFilename != CFile::getFilename(fn))
+			if (RootConfigFilename != fn)
 			{
 				nlinfo ("RootConfigFilename variable found in the '%s' config file, parse the root config file '%s'", fn.c_str(), RootConfigFilename.c_str());
 				fn = RootConfigFilename;

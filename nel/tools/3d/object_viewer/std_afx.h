@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx.h,v 1.10 2002/06/20 08:41:12 hanappe Exp $
+ * $Id: std_afx.h,v 1.11 2002/07/08 14:52:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,13 @@
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
 
+#ifdef min
+#undef min
+#endif
 
+#ifdef max
+#undef max
+#endif
 
 #include "nel/misc/common.h"
 #include "nel/misc/stream.h"

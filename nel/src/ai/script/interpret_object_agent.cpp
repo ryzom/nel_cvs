@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.11 2001/01/16 11:39:50 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.12 2001/01/16 17:20:40 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -228,7 +228,6 @@ namespace NLAISCRIPT
 							else
 							{
 								// The father doesn't process this message so we've got to pick it up in its other message list.
-								l_index[ father_index ].push_back( -1 );
 							}
 						}
 					}
@@ -279,7 +278,14 @@ namespace NLAISCRIPT
 	{
 		for(sint32 i = _Components.size() - 1; i >= 0; i --)
 		{
-			if (_Components[i]->ObjectName !=NULL && *_Components[i]->ObjectName == name) 
+
+#ifdef _DEBUG
+			char buffer[1024 * 8];
+			name.getDebugString( buffer );
+			char buffer2[1024 * 8];
+			_Components[i]->ObjectName->getDebugString( buffer2 );
+#endif
+			if (_Components[i]->ObjectName !=NULL && (*_Components[i]->ObjectName) == name) 
 				return i;
 		}
 		return -1;
@@ -327,6 +333,8 @@ namespace NLAISCRIPT
 
 #ifdef _DEBUG
 		const char *dbg_this_type = (const char *) getType();
+		char buffer[1024 * 8];
+		name.getDebugString(buffer);
 #endif
 
 

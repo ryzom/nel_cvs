@@ -1,7 +1,7 @@
 /** \file font_generator.h
  * CFontGenerator class
  *
- * $Id: font_generator.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: font_generator.h,v 1.2 2001/09/04 13:25:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,12 @@ public:
 	 * \param pitch pitch of the generated bitmap (+ or - the number of bytes per row), this value is set by this function
 	 */
 	uint8	*getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &height, uint32 &pitch, sint32 &left, sint32 &top, sint32 &advx, uint32 &glyphIndex);
+
+	/** returns the width and height of a character using a specific size and
+	 *
+	 * \warning this function is not very fast (but faster than getBitmap()) because it has to load the char before.
+	 */
+	void	 getSizes (ucchar c, uint32 size, uint32 &width, uint32 &height);
 
 	void	 getKerning (ucchar left, ucchar right, sint32 &kernx);
 

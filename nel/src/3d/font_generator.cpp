@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.13 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: font_generator.cpp,v 1.14 2001/09/04 13:25:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,30 @@ CFontGenerator::CFontGenerator (const std::string &fontFileName, const std::stri
 	}
 }
 
+void CFontGenerator::getSizes (ucchar c, uint32 size, uint32 &width, uint32 &height)
+{
+	FT_Error error;
 
+	error = FT_Set_Pixel_Sizes (_Face, size, size);
+	if (error)
+	{
+		nlerror ("FT_Set_Pixel_Sizes() failed: %s", getFT2Error(error));
+	}
+
+	// retrieve glyph index from character code
+	FT_UInt glyph_index = FT_Get_Char_Index (_Face, c);
+
+	// load glyph image into the slot (erase previous one)
+	error = FT_Load_Glyph (_Face, glyph_index, FT_LOAD_DEFAULT);
+	if (error)
+	{
+		nlerror ("FT_Load_Glyph() failed: %s", getFT2Error(error));
+	}
+
+	// convert 24.6 fixed point into integer
+	width = _Face->glyph->metrics.width >> 6;
+	height = _Face->glyph->metrics.height >> 6;
+}
 
 uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &height, uint32 &pitch, sint32 &left, sint32 &top, sint32 &advx, uint32 &glyphIndex)
 {
@@ -145,7 +168,7 @@ uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &
 		glyphIndex = glyph_index;
 		return NULL;
 	}
-	
+
 	// convert to an anti-aliased bitmap
 	error = FT_Render_Glyph (_Face->glyph, ft_render_mode_normal);
 	if (error)

@@ -839,6 +839,11 @@ namespace NLAIAGENT
 
 	void CActorScript::processSuccess(NLAIAGENT::IObjectIA *param)
 	{
+		success();
+	}
+
+	void CActorScript::success()
+	{
 		static CStringVarName onsuccess_func_name("OnSuccess");
 		tQueue r = _AgentClass->isMember( NULL, &onsuccess_func_name, NLAISCRIPT::CParam() );
 		if ( !r.empty() )
@@ -853,12 +858,12 @@ namespace NLAIAGENT
 				_OnSuccessIndex = -1;
 			}
 		}
-		onSuccess( param );
+		onSuccess( NULL );
 	}
 
-	void CActorScript::processFailure(NLAIAGENT::IObjectIA *param)
+	void CActorScript::failure()
 	{
-		static CStringVarName onfailure_func_name("OnSuccess");
+		static CStringVarName onfailure_func_name("OnFailure");
 		tQueue r = _AgentClass->isMember( NULL, &onfailure_func_name, NLAISCRIPT::CParam() );
 		if ( !r.empty() )
 		{	
@@ -872,6 +877,11 @@ namespace NLAIAGENT
 				_OnFailureIndex = -1;
 			}
 		}
-		onFailure( param );
+		onFailure( NULL );
+	}
+
+	void CActorScript::processFailure(NLAIAGENT::IObjectIA *param)
+	{
+		failure();
 	}
 }

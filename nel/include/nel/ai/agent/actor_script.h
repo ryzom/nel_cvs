@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.28 2002/05/07 14:41:19 portier Exp $
+ * $Id: actor_script.h,v 1.29 2002/05/14 13:31:54 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,8 +169,8 @@ namespace NLAIAGENT
 			/// the execution of this one.
 			virtual void processSuccess(NLAIAGENT::IObjectIA *);
 			virtual void processFailure(NLAIAGENT::IObjectIA *);
-			virtual void success() {}
-			virtual void failure() {}
+			virtual void success();
+			virtual void failure();
 
 			/// Pause or restart the actor
 			void pause();

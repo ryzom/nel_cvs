@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.30 2003/08/21 09:25:06 boucher Exp $
+ * $Id: u_audio_mixer.h,v 1.31 2003/12/08 13:17:23 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -314,6 +314,14 @@ public:
 	virtual void		setUserVar(NLMISC::TStringId varName, float value) =0;
 	/// Return the current value of a user var.
 	virtual float		getUserVar(NLMISC::TStringId varName) =0;
+	//@}
+
+	//@{
+	//@name Sound driver bench
+	virtual void startDriverBench() =0;
+	virtual void endDriverBench() =0;
+	virtual void displayDriverBench(NLMISC::CLog *log) =0;
+
 	//@}
 
 	/// Destructor

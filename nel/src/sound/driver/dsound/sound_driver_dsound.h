@@ -1,7 +1,7 @@
 /** \file sound_dirver_dsound.h
  * DirectSound sound source
  *
- * $Id: sound_driver_dsound.h,v 1.11 2003/07/03 15:17:25 boucher Exp $
+ * $Id: sound_driver_dsound.h,v 1.12 2003/12/08 13:18:02 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #ifndef NL_SOUND_DRIVER_DSOUND_H
 #define NL_SOUND_DRIVER_DSOUND_H
 
+#include "nel/misc/log.h"
 #include "sound/driver/sound_driver.h"
 #include "source_dsound.h"
 #include "buffer_dsound.h"
@@ -133,6 +134,12 @@ private:
 
 	/// Remove a source (should be called by the friend destructor of the source class)
 	virtual void removeSource(ISource *source);
+
+
+	virtual void	startBench();
+	virtual void	endBench();
+	virtual void	displayBench(NLMISC::CLog *log);
+
 
 	// The DirectSound object
     LPDIRECTSOUND8			_DirectSound;

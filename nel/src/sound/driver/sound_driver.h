@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.16 2003/07/03 15:16:43 boucher Exp $
+ * $Id: sound_driver.h,v 1.17 2003/12/08 13:18:02 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,6 +167,11 @@ public:
 	virtual void			writeProfile(std::ostream& out) = 0;
 
 	// Does not create a sound loader
+
+	virtual void	startBench() =0;
+	virtual void	endBench() =0;
+	virtual void	displayBench(NLMISC::CLog *log) =0;
+
 
 	/// Destructor
 	virtual	~ISoundDriver() {}

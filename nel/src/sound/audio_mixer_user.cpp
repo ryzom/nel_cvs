@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.60 2003/11/21 16:29:48 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.61 2003/12/08 13:18:02 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "stdsound.h"
 #include "nel/memory/memory_manager.h"
+#include "nel/misc/hierarchical_timer.h"
 
 #include "simple_sound.h"
 #include "complex_sound.h"
@@ -1267,6 +1268,7 @@ void CAudioMixerUser::getPlayingSoundsPos(bool virtualPos, std::vector<std::pair
 
 void				CAudioMixerUser::update()
 {
+	H_AUTO(NLSOUND_AudioMixerUpdate)
 /*	static NLMISC::TTime lastUpdate = NLMISC::CTime::getLocalTime();
 	NLMISC::TTime now = NLMISC::CTime::getLocalTime();
 
@@ -1279,6 +1281,7 @@ void				CAudioMixerUser::update()
 
 	// update the object.
 	{
+		H_AUTO(NLSOUND_AudioMixerUpdateObjet)
 		// 1st, update the event list
 		{
 			std::vector<std::pair<IMixerUpdate*, bool> >::iterator first(_UpdateEventList.begin()), last(_UpdateEventList.end());
@@ -1317,6 +1320,7 @@ void				CAudioMixerUser::update()
 	}
 	// send the event.
 	{
+		H_AUTO(NLSOUND_AudioMixerUpdateSendEvent)
 		// 1st, update the event list
 		{
 			std::vector<std::pair<NLMISC::TTime, IMixerEvent*> >::iterator first(_EventListUpdate.begin()), last(_EventListUpdate.end());
@@ -1402,6 +1406,7 @@ void				CAudioMixerUser::update()
 
 	if (_ClusteredSound)
 	{
+		H_AUTO(NLSOUND_UpdateClusteredSound)
 		// update the clustered sound...
 		CVector view, up;
 		_Listener.getOrientation(view, up);
@@ -1429,16 +1434,19 @@ void				CAudioMixerUser::update()
 							// update the relative gain
 							_Tracks[i]->DrvSource->setGain(source->getRelativeGain()*source->getGain()*css->Gain);
 #if EAX_AVAILABLE == 1
-							// update the occlusion parameters
-							_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OCCLUSION, (void*)&css->Occlusion, sizeof(css->Occlusion));
-							_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OCCLUSIONLFRATIO, (void*)&css->OcclusionLFFactor, sizeof(css->OcclusionLFFactor));
-//							if (lastRatio[i] != css->OcclusionRoomRatio)
-//							{
-								_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OCCLUSIONROOMRATIO, (void*)&css->OcclusionRoomRatio, sizeof(css->OcclusionRoomRatio));
-//								lastRatio[i] = css->OcclusionRoomRatio;
-//								nldebug("Setting room ration.");
-//							}
-							_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OBSTRUCTION, (void*)&css->Obstruction, sizeof(css->Obstruction));
+							{
+								H_AUTO(NLSOUND_SetEaxProperties)
+								// update the occlusion parameters
+								_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OCCLUSION, (void*)&css->Occlusion, sizeof(css->Occlusion));
+								_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OCCLUSIONLFRATIO, (void*)&css->OcclusionLFFactor, sizeof(css->OcclusionLFFactor));
+	//							if (lastRatio[i] != css->OcclusionRoomRatio)
+	//							{
+									_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OCCLUSIONROOMRATIO, (void*)&css->OcclusionRoomRatio, sizeof(css->OcclusionRoomRatio));
+	//								lastRatio[i] = css->OcclusionRoomRatio;
+	//								nldebug("Setting room ration.");
+	//							}
+								_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OBSTRUCTION, (void*)&css->Obstruction, sizeof(css->Obstruction));
+							}
 #endif
 						}
 					}
@@ -2115,4 +2123,24 @@ void CAudioMixerUser::loadBackgroundSound (const std::string &continent, NLLIGO:
 	_BackgroundSoundManager->load (continent, config); 
 }
 
+void CAudioMixerUser::startDriverBench()
+{
+	if (_SoundDriver)
+		_SoundDriver->startBench();
+}
+
+void CAudioMixerUser::endDriverBench()
+{
+	if (_SoundDriver)
+		_SoundDriver->endBench();
+}
+
+void CAudioMixerUser::displayDriverBench(CLog *log)
+{
+	if (_SoundDriver)
+		_SoundDriver->displayBench(log);
+}
+
 } // NLSOUND
+
+

@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.22 2003/07/10 14:01:47 corvazier Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.23 2003/12/08 13:18:02 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include <math.h>
 #include <eax.h>
 
+#include "nel/misc/hierarchical_timer.h"
 #include "sound_driver_dsound.h"
 #include "listener_dsound.h"
 
@@ -674,6 +675,7 @@ void CALLBACK CSoundDriverDSound::TimerCallback(UINT uID, UINT uMsg, DWORD dwUse
 
 void CSoundDriverDSound::update()
 {
+	H_AUTO(NLSOUND_DSoundUpdate)
 #if NLSOUND_PROFILE
     TTicks tnow = CTime::getPerformanceTime();
 #endif
@@ -1022,6 +1024,23 @@ void CSoundDriverDSound::printDriverInfo(FILE* fp)
 }
 
 #endif
+
+
+void	CSoundDriverDSound::startBench()
+{
+	NLMISC::CHTimer::startBench();
+}
+void	CSoundDriverDSound::endBench()
+{
+	NLMISC::CHTimer::endBench();
+}
+void	CSoundDriverDSound::displayBench(CLog *log)
+{
+		NLMISC::CHTimer::displayHierarchicalByExecutionPathSorted(log, CHTimer::TotalTime, true, 48, 2);
+		NLMISC::CHTimer::displayHierarchical(log, true, 48, 2);
+		NLMISC::CHTimer::displayByExecutionPath(log, CHTimer::TotalTime);
+		NLMISC::CHTimer::display(log, CHTimer::TotalTime);
+}
 
 
 } // NLSOUND

@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.21 2003/08/21 09:27:11 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.22 2003/12/08 13:18:02 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/file.h"
 #include "nel/misc/i_xml.h"
 #include "nel/misc/path.h"
+#include "nel/misc/hierarchical_timer.h"
 
 #include "nel/ligo/primitive.h"
 #include "3d/cluster.h"
@@ -804,6 +805,7 @@ void CBackgroundSoundManager::setListenerPosition (const CVector &listenerPositi
 
 void CBackgroundSoundManager::updateBackgroundStatus()
 {
+	H_AUTO(NLSOUND_UpdateBackgroundSound)
 	if (!_Playing)
 		return;
 
@@ -829,6 +831,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 
 	// evalutate the current env fx
 	{
+		H_AUTO(NLSOUND_EvaluateEnvFx)
 		NL3D::CCluster *rootCluster = 0;
 		if (mixer->getClusteredSound())
 			rootCluster = mixer->getClusteredSound()->getRootCluster();
@@ -925,6 +928,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 
 	// compute the list of load/unload banks.
 	{
+		H_AUTO(NLSOUND_LoadUnloadSampleBank)
 		// set of bank that must be in ram.
 		std::set<std::string>	newBanks;
 
@@ -1003,6 +1007,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 		}
 	}
 
+	H_BEFORE(NLSOUND_UpdateSoundLayer)
 	// retreive the root cluster...
 	NL3D::CCluster *rootCluster = 0;
 	if (mixer->getClusteredSound() != 0)
@@ -1166,7 +1171,10 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 		} // compute source mixing
 	} // for each layer
 
-	
+	H_AFTER(NLSOUND_UpdateSoundLayer)
+
+
+	H_BEFORE(NLSOUND_DoFadeInOut)
 	// update the fade in / out
 	if (_DoFade)
 	{
@@ -1243,6 +1251,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 			mixer->unregisterUpdate(this);
 		}
 	}
+	H_AFTER(NLSOUND_DoFadeInOut)
 }
 
 void CBackgroundSoundManager::setBackgroundFlags(const UAudioMixer::TBackgroundFlags &backgroundFlags)

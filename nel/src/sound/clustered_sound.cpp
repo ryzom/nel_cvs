@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.14 2003/08/21 09:28:14 boucher Exp $
+ * $Id: clustered_sound.cpp,v 1.15 2003/12/08 13:18:02 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "stdsound.h"
 #include "nel/misc/string_mapper.h"
+#include "nel/misc/hierarchical_timer.h"
 #include "nel/georges/u_form.h"
 #include "nel/georges/u_form_elm.h"
 #include "nel/georges/load_form.h"
@@ -268,6 +269,7 @@ void CClusteredSound::init(NL3D::CScene *scene, float portalInterpolate, float m
 
 void CClusteredSound::update(const CVector &listenerPos, const CVector &view, const CVector &up)
 {
+	H_AUTO(NLSOUND_ClusteredSoundUpdate)
 	if (_Scene == 0)
 	{
 		// hum... what to do ?
@@ -408,6 +410,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 	// update the environnement effect (if any)
 	if (!vCluster.empty())
 	{
+		H_AUTO(NLSOUND_ClusteredSound_updateEnvFx)
 		CAudioMixerUser *mixer = CAudioMixerUser::instance();
 		TStringId fxId = vCluster[0]->getEnvironmentFxId();
 
@@ -477,6 +480,7 @@ NL3D::CCluster	*CClusteredSound::getRootCluster()
 
 void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSoundTravContext &travContext)
 {
+	H_AUTO(NLSOUND_soundTraverse)
 //	std::map<CCluster*, CSoundTravContext>	nextTraverse;
 	std::vector<std::pair<const CCluster*, CSoundTravContext> >	curClusters;
 	CVector		realListener (travContext.ListenerPos);

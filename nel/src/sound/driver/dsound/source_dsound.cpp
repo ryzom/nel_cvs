@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.25 2003/12/01 10:28:21 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.26 2003/12/08 13:18:02 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 
 #include "stddsound.h"
+#include "nel/misc/hierarchical_timer.h"
 #include "source_dsound.h"
 #include "sound_driver_dsound.h"
 #include "buffer_dsound.h"
@@ -1058,6 +1059,7 @@ bool CSourceDSound::needsUpdate()
 
 bool CSourceDSound::update()
 {
+	H_AUTO(NLSOUND_SourceDSoundUpdate)
 	bool updateDone = false;
 
 	EnterCriticalSection(&_CriticalSection);
@@ -1786,7 +1788,8 @@ void CSourceDSound::setEAXProperty( uint prop, void *value, uint valuesize )
 	}
 	if ( _EAXSource != NULL )
 	{
-			HRESULT res = _EAXSource->Set( DSPROPSETID_EAX_BufferProperties, prop, NULL, 0, value, valuesize );
+		H_AUTO(NLSOUND_EAXPropertySet_Set)
+		HRESULT res = _EAXSource->Set( DSPROPSETID_EAX_BufferProperties, prop, NULL, 0, value, valuesize );
 		if (res != S_OK)
 		{
 //			nlwarning("Setting EAX Param #%u fail : %x", prop, res);

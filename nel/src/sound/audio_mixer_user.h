@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.41 2003/08/21 09:26:36 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.42 2003/12/08 13:18:02 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -367,6 +367,11 @@ public:
 	void						initUserVar();
 	void						addUserControledSource(CSourceCommon *source, NLMISC::TStringId varName);
 	void						removeUserControledSource(CSourceCommon *source, NLMISC::TStringId varName);
+
+
+	virtual void startDriverBench();
+	virtual void endDriverBench();
+	virtual void displayDriverBench(NLMISC::CLog *log);
 
 private:
 

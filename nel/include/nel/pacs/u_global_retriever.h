@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.6 2001/06/22 15:03:05 corvazier Exp $
+ * $Id: u_global_retriever.h,v 1.7 2001/07/12 14:15:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 
 namespace NLMISC
 {
+class CVector;
 class CVectorD;
 class CAABBox;
 }
@@ -69,6 +70,11 @@ public:
 	  * Retrieves the position of an estimated point in the global retriever.
 	  */
 	virtual UGlobalPosition			retrievePosition(const NLMISC::CVector &estimated) const =0;
+
+	/**
+	  * Retrieves the position of an estimated point in the global retriever (double instead.)
+	  */
+	virtual UGlobalPosition			retrievePosition(const NLMISC::CVectorD &estimated) const =0;
 
 	/**
 	  * Converts a global position object into a 'human-readable' CVector.

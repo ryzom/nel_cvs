@@ -50,6 +50,8 @@ rollout db_shooter_rollout "Database Picture Shooter"
 				(
 					if (superClassOf i) != GeometryClass then
 						hide i
+					else
+						unhide i
 				)
 
 				-- Output filename

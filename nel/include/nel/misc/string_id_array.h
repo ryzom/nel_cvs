@@ -1,7 +1,7 @@
 /** \file string_id_array.h
  * <File description>
  *
- * $Id: string_id_array.h,v 1.3 2001/03/05 11:07:09 coutelas Exp $
+ * $Id: string_id_array.h,v 1.4 2001/03/06 16:50:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,8 +26,10 @@
 #ifndef NL_STRING_ID_ARRAY_H
 #define NL_STRING_ID_ARRAY_H
 
+#include <math.h>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
@@ -50,7 +52,7 @@ public:
 
 	void addString(const std::string &str, TStringId id)
 	{
-		nlassert (id > 0 && id < sizeof (TStringId));
+		nlassert (id >= 0 && id < pow(2, sizeof (TStringId)*8));
 
 		if (id > (sint32) _StringArray.size())
 			_StringArray.resize(id+1);
@@ -60,18 +62,26 @@ public:
 
 	void addString(const std::string &str)
 	{
-		nlassert (_StringArray.size () < sizeof (TStringId));
+		nlassert (_StringArray.size () < pow(2, sizeof (TStringId)*8));
 
 		// add at the end
 		addString (str, _StringArray.size ());
 	}
 
-	TStringId getId (const std::string &str) const
+	TStringId getId (const std::string &str)
 	{
 		for (TStringId i = 0; i < (TStringId) _StringArray.size(); i++)
 		{
 			if (_StringArray[i] == str)
 				return i;
+		}
+
+		// the string is not found, add it to the _AskedStringArray if necessary
+		std::vector<std::string>::iterator it = std::find (_AskedStringArray.begin(), _AskedStringArray.end(), str);
+		if (it == _AskedStringArray.end ())
+		{
+			nldebug ("Didn't found the id for '%s', adding it to _AskedStringArray", str.c_str ());
+			_AskedStringArray.push_back (str);
 		}
 		return -1;
 	}
@@ -93,9 +103,21 @@ public:
 		return _StringArray.size ();
 	}
 
+	const std::vector<std::string> &getAskedStringArray () const
+	{
+		return _AskedStringArray;
+	}
+
+	void clearAskedStringArray ()
+	{
+		_AskedStringArray.clear ();
+	}
+
 private:
-	// todo: liste des string demande qui ont pas d assoc => a l update prochain, il faudra les demander
+
 	std::vector<std::string>	_StringArray;
+
+	std::vector<std::string>	_AskedStringArray;
 };
 
 

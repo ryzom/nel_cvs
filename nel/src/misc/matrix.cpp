@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.19 2000/12/05 14:05:07 berenguier Exp $
+ * $Id: matrix.cpp,v 1.20 2001/01/03 15:26:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1167,9 +1167,7 @@ CVector		CMatrix::mulPoint(const CVector &v) const
 	}
 	else
 	{
-		ret.x=0;
-		ret.y=0;
-		ret.z=0;
+		ret= v;
 	}
 	if( hasTrans() )
 	{

@@ -53,8 +53,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/Debug/pacs"
 # PROP Intermediate_Dir "../obj/Debug/pacs"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdpacs.h" /FD /GZ /c
-# SUBTRACT CPP /Gf /Gy /Fr
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdpacs.h" /FD /GZ /Zm200 /c
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe

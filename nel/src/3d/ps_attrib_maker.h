@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.4 2001/07/04 16:00:26 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.5 2001/07/04 16:04:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -397,7 +397,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 				return *this ;
 			}
 			// dummy post decrement
-			operator--(int)
+			CRandomIterator &operator--(int)
 			{			
 			}
 			// dummy pre-decrement

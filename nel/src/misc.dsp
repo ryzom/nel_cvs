@@ -479,6 +479,14 @@ SOURCE=.\misc\stl_block_allocator.cpp
 
 SOURCE=..\include\nel\misc\stl_block_allocator.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\misc\stl_block_list.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\stl_block_list.h
+# End Source File
 # End Group
 # Begin Group "Makefile"
 

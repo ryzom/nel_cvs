@@ -1,7 +1,7 @@
 /** \file stl_block_allocator.h
  * <File description>
  *
- * $Id: stl_block_allocator.h,v 1.1 2001/12/27 14:24:03 berenguier Exp $
+ * $Id: stl_block_allocator.h,v 1.2 2001/12/27 14:31:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,6 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/block_memory.h"
-#include <list>
 
 
 namespace NLMISC {
@@ -161,42 +160,6 @@ private:
 	// The blockMemory used to allocate elements
 	CBlockMemory<T, false>		_BlockMemory;
 
-};
-
-
-
-// ***************************************************************************
-/**
- * This class is a list<> which use CSTLBlockAllocator
- *
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2001
- */
-template <class T, size_t blockSize=16>
-class CSTLBlockList : public std::list<T, CSTLBlockAllocator<T, blockSize> >
-{
-public:
-    explicit CSTLBlockList(const allocator_type& a= CSTLBlockAllocator<T, blockSize>() ) :
-		std::list<T,CSTLBlockAllocator<T, blockSize> >(a)
-    {
-    }
-
-    explicit CSTLBlockList(size_type n, const T& v=T(), const allocator_type& a=CSTLBlockAllocator<T, blockSize>() ) :
-		std::list<T,CSTLBlockAllocator<T, blockSize> >(n,v,a)
-    {
-    }
-
-	explicit CSTLBlockList(size_type __n) :
-		std::list<T, CSTLBlockAllocator<T, blockSize> >(n)
-	{
-	}
-
-
-    CSTLBlockList(const_iterator first,const_iterator last, const allocator_type& a=CSTLBlockAllocator<T, blockSize>() ):
-		std::list<T,CSTLBlockAllocator<T, blockSize> >(first,last,a)
-    {
-    }
 };
 
 

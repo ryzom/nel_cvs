@@ -1,7 +1,7 @@
 /** \file message.h
  * CMessage class
  *
- * $Id: message.h,v 1.24 2001/06/07 16:15:34 lecroart Exp $
+ * $Id: message.h,v 1.25 2001/06/12 15:39:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,8 @@ namespace NLNET
  * If MESSAGES_PLAIN_TEXT is defined, the messages will be serialized to/from plain text (human-readable),
  * instead of binary.
  * Warning: if you don't give a "sida", the message type will not be associated with id so, it'll not be optimized
+ * Warning: THE ASSOCIATION Id<->String SYSTEM FOR THE MESSAGE TYPE IS DISABLED BECAUSE 2 DIFFERENT CLIENTS COULD HAVE
+ *          SAME STRING ASSOC AND DIFFERENT ID SO WE HAVE TO PUT ONE SIDA TABLE PER CONNECTION AND NOT PER NET_BASE
  *
  * \author Vianney Lecroart
  * \author Nevrax France

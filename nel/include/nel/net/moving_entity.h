@@ -1,7 +1,7 @@
 /** \file moving_entity.h
  * Interface for all moving entities
  *
- * $Id: moving_entity.h,v 1.8 2000/12/05 11:10:29 cado Exp $
+ * $Id: moving_entity.h,v 1.9 2000/12/05 15:40:52 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -145,6 +145,7 @@ public:
 		_Vector = other._Vector;
 		_AngVel = other._AngVel;
 		_GroundMode = other._GroundMode;
+		Tag = other.Tag;
 		return *this;
 	}
 

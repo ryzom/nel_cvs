@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.24 2000/12/01 10:48:04 cado Exp $
+ * $Id: base_socket.cpp,v 1.25 2000/12/05 15:40:52 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -387,10 +387,10 @@ void CBaseSocket::send( const uint8* buffer, uint len ) throw (ESocket)
 	}
 	_BytesSent += len;
 	
-	if ( _Logging )
+	/*if ( _Logging )
 	{
 		nldebug( "Socket %d sent %d bytes", _Sock, len );
-	}
+	}*/
 }
 
 

@@ -1,7 +1,7 @@
 /** \file moving_entity.cpp
  * Interface for all moving entities
  *
- * $Id: moving_entity.cpp,v 1.7 2000/11/30 17:03:10 cado Exp $
+ * $Id: moving_entity.cpp,v 1.8 2000/12/05 15:40:52 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,7 +47,8 @@ IMovingEntity::IMovingEntity() :
 	_RollAngle( 0.0f ),
 	_Vector( CVector(0,0,0) ),
 	_AngVel( 0.0f ),
-	_GroundMode( true )
+	_GroundMode( true ),
+	Tag( 0 )
 {
 }
 
@@ -69,7 +70,8 @@ IMovingEntity::IMovingEntity( TEntityType t,
 	_RollAngle( rollangle ),
 	_Vector( vec ),
 	_AngVel( av ),
-	_GroundMode( groundmode )
+	_GroundMode( groundmode ),
+	Tag( 0 )
 {
 }
 

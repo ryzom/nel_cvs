@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.33 2000/12/01 10:06:37 cado Exp $
+ * $Id: msg_socket.cpp,v 1.34 2000/12/05 15:40:52 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -388,10 +388,10 @@ void CMsgSocket::sendToAllExceptHost( CMessage& outmsg, TSenderId excluded )
  */
 void CMsgSocket::update()
 {
-#ifdef NL_DEBUG
+/*#ifdef NL_DEBUG
 	uint nb_recvd = 0;
 	uint bytes_recvd = 0;
-#endif
+#endif*/
 
 	// Check data available on all sockets, including the server socket
 	while ( getDataAvailableStatus() )
@@ -420,10 +420,10 @@ void CMsgSocket::update()
 						// Receive message from a connected client
 						CMessage msg( "", true );
 						(*ilps)->receive( msg );
-#ifdef NL_DEBUG
+/*#ifdef NL_DEBUG
 						nb_recvd++;
 						bytes_recvd += msg.length();
-#endif
+#endif*/
 						if ( msgIsBinding( msg ) )
 						{
 							(*ilps)->processBindMessage( msg );
@@ -463,13 +463,9 @@ void CMsgSocket::update()
 		}
 		_ConnectionsToDelete.clear();
 
-#ifdef NL_DEBUG
+/*#ifdef NL_DEBUG
 		nldebug( "Nb: %u - Bytes: %u", nb_recvd, bytes_recvd );
-		/*if ( nb_recvd == 33 )
-		{
-			nlassert( false );
-		}*/
-#endif
+#endif*/
 
 		// Receive only one message per update if not in "receive all" mode
 		if ( ! receiveAllMode() )

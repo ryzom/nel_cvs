@@ -1,7 +1,7 @@
 /** \file path_content.cpp
  *	list the path content with details on each files
  *
- * $Id: path_content_diff.cpp,v 1.2 2003/01/03 17:46:28 coutelas Exp $
+ * $Id: path_content_diff.cpp,v 1.3 2003/01/06 15:33:25 coutelas Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -107,7 +107,7 @@ sint main( sint argc, char ** argv )
 		
 		uint32 refModificationDate = CFile::getFileModificationDate( refFileName );
 		uint32 newModificationDate = CFile::getFileModificationDate( newFileName );		
-		if( newModificationDate > refModificationDate )
+		if( newModificationDate != refModificationDate )
 		{
 			keepIt = true;
 		}
@@ -119,9 +119,23 @@ sint main( sint argc, char ** argv )
 			differentFiles.push_back( newFileName );
 
 			//string outputLine = newFileName + "\t\t"+toString(newSize) + "\t" + toString(newModificationDate) + "\t" + toString(newCreationDate) + "\n";
-			//output.serialBuffer((uint8*)(const_cast<char*>(outputLine.data())),outputLine.size());
-			output.serialBuffer((uint8*)(const_cast<char*>(newFileName.data())),newFileName.size());
+			string outputLine = newFileName + "\n";
+			output.serialBuffer((uint8*)(const_cast<char*>(outputLine.data())),outputLine.size());
+			
+			if( argc > 3 )
+			{
+				string systemStr = "copy /Y " + newFileName + " " + string(argv[3]);
+				uint i;
+				for (i = 6; i < systemStr.size(); ++i )
+				{
+					if( systemStr[i] == '/' ) systemStr[i] = '\\';
+				}
+				nlinfo("%s",systemStr.c_str());
+				system( systemStr.c_str() );
+			}
 		}
+
+
 	}
 
 	return 0;	

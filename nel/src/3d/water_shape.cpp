@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.34 2004/05/05 17:08:11 berenguier Exp $
+ * $Id: water_shape.cpp,v 1.35 2004/05/14 15:40:02 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -218,7 +218,7 @@ static CVertexProgram *BuildWaterVP(bool diffuseMap, bool bumpMap, bool use2Bump
 /*
  * Constructor
  */
-CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeightFactor(3), _ComputeLightmap(false)
+CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeightFactor(3), _ComputeLightmap(false), _SplashEnabled(true)
 {
 	_DefaultPos.setDefaultValue(NLMISC::CVector::Null);
 	_DefaultScale.setDefaultValue(NLMISC::CVector(1, 1, 1));
@@ -341,7 +341,8 @@ CTransformShape		*CWaterShape::createInstance(CScene &scene)
 	wm->init();		
 	if (scene.getWaterCallback())
 	{			
-		scene.getWaterCallback()->waterSurfaceAdded(getShape(), wm->getMatrix());
+		CWaterShape *ws = NLMISC::safe_cast<CWaterShape *>((IShape *) wm->Shape);
+		scene.getWaterCallback()->waterSurfaceAdded(getShape(), wm->getMatrix(), ws->isSplashEnabled());
 	}
 	return wm;
 }
@@ -461,7 +462,8 @@ const ITexture		*CWaterShape::getHeightMap(uint k) const
 
 void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(2);
+	// version 3 : added '_Splashenabled' flag
+	sint ver = f.serialVersion(3);
 	// serial 'shape' 
 	f.serial(_Poly);
 	// serial heightMap identifier
@@ -505,6 +507,9 @@ void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if (ver >= 2)
 		f.serial (_DistMax);
+
+	if (ver >= 3)
+		f.serial(_SplashEnabled);
 }
 
 //============================================

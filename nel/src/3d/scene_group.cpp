@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.71 2004/05/11 16:36:46 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.72 2004/05/14 15:43:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -598,7 +598,7 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 					if (wm)
 					{
 						const CWaterShape *ws = safe_cast<const CWaterShape *>((const IShape *) wm->Shape);
-						scene.getWaterCallback()->waterSurfaceAdded(ws->getShape(), wm->getMatrix());
+						scene.getWaterCallback()->waterSurfaceAdded(ws->getShape(), wm->getMatrix(), ws->isSplashEnabled());
 					}
 				}
 				// Static Light Setup

@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.15 2004/05/05 17:08:11 berenguier Exp $
+ * $Id: water_shape.h,v 1.16 2004/05/14 15:40:02 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -198,7 +198,14 @@ public:
 		/// Tells this shape that it can replace its colormap by a lightmap during the zone lighting
 	void				enableLightMapping(bool enable = true) { _ComputeLightmap = enable; }
 	bool				isLightMappingEnabled() const  { return _ComputeLightmap; }	
+	//@}
 
+	/// \name Misc flags
+	// @{
+		// Tells wether splashs are enabled (for client only, the flag in itself does nothing, and is here for convenience)
+	void				enableSplash(bool enable) { _SplashEnabled = enable; }
+	bool				isSplashEnabled() const { return _SplashEnabled; }
+	//@}
 private:
 	friend class	CWaterModel;	
 	void								computeBBox();
@@ -224,6 +231,7 @@ private:
 	float								_TransitionRatio;	
 	float								_WaveHeightFactor;
 	bool								_ComputeLightmap;
+	bool								_SplashEnabled;
 	bool								_HeightMapTouch[2];
 	float								_HeightMapNormalizationFactor[2];	
 		

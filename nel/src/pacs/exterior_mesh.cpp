@@ -1,7 +1,7 @@
 /** \file exterior_mesh.cpp
  *
  *
- * $Id: exterior_mesh.cpp,v 1.3 2001/08/10 12:09:44 legros Exp $
+ * $Id: exterior_mesh.cpp,v 1.4 2001/08/29 14:55:50 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

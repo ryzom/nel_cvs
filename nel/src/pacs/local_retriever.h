@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.12 2001/08/23 13:40:04 legros Exp $
+ * $Id: local_retriever.h,v 1.13 2001/08/29 14:55:50 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -396,7 +396,6 @@ public:
 
 /*
 protected:
-	friend class	CRetrieverInstance;
 */
 
 	/// Retrieves a position inside the retriever (from the local position.)

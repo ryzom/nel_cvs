@@ -1,7 +1,7 @@
 /** \file ambiant_source.h
- * <File description>
+ * CAmbiantSource: Stereo mix of a envsound, seen as a source
  *
- * $Id: ambiant_source.h,v 1.1 2001/07/17 14:22:33 cado Exp $
+ * $Id: ambiant_source.h,v 1.2 2001/07/17 15:32:12 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -37,7 +37,11 @@ namespace NLSOUND {
 
 
 /**
- * <Class description>
+ * Stereo mix of a envsound, seen as a source (see CEnvSoundUser)
+ *
+ * Plays a stereo mix made up of two channels for crossfading random ambiant sounds,
+ * plus a third channel for random sparse sounds.
+ *
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001

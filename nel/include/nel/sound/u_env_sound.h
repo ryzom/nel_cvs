@@ -1,7 +1,7 @@
 /** \file u_env_sound.h
  * UEnvSound: Game interface for localized environment sounds
  *
- * $Id: u_env_sound.h,v 1.2 2001/07/17 14:30:14 cado Exp $
+ * $Id: u_env_sound.h,v 1.3 2001/07/17 15:30:17 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,11 @@ class USource;
 /**
  * Game interface for localized environment sounds
  *
- * 
+ * An envsound object is a node of an envsound tree, which root is
+ * returned by UAudioMixer::loadEnvSounds(). The root is the world
+ * envsound: it has no bounds. The areas of children envsounds have
+ * bounds and they must be totally included in the area of their
+ * parent envsound.
  *
  * \author Olivier Cado
  * \author Nevrax France
@@ -63,7 +67,7 @@ public:
 
 
 	/// Destructor
-	virtual					~UEnvSound() {}
+	virtual							~UEnvSound() {}
 
 protected:
 

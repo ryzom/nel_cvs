@@ -1,7 +1,7 @@
 /** \file bounding_box.cpp
- * <File description>
+ * CBoundingBox: Bounding box (different from the NL3D ones)
  *
- * $Id: bounding_box.cpp,v 1.1 2001/07/17 14:22:33 cado Exp $
+ * $Id: bounding_box.cpp,v 1.2 2001/07/17 15:32:12 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

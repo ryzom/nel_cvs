@@ -1,7 +1,7 @@
 /** \file bounding_shape.h
  * IBoundingShape: interface for bounding shapes
  *
- * $Id: bounding_shape.h,v 1.1 2001/07/17 14:22:33 cado Exp $
+ * $Id: bounding_shape.h,v 1.2 2001/07/17 15:32:12 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -35,7 +35,8 @@ namespace NLSOUND {
 
 
 /**
- * Interface for bounding shapes
+ * Interface for bounding shapes (bounding spheres, bounding boxes...)
+ *
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001

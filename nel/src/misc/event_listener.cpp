@@ -1,7 +1,7 @@
 /** \file event_listener.cpp
  * <File description>
  *
- * $Id: event_listener.cpp,v 1.15 2003/07/03 09:09:16 vizerie Exp $
+ * $Id: event_listener.cpp,v 1.16 2004/04/09 14:33:45 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NLMISC {
 /*
  * Constructor
  */
-IEventListener::IEventListener()
+IEventListener::IEventListener() : _Hook(NULL)
 {
 }
 

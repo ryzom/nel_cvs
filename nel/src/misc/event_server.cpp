@@ -1,7 +1,7 @@
 /** \file event_server.cpp
  * events server
  *
- * $Id: event_server.cpp,v 1.10 2004/02/13 10:09:26 lecroart Exp $
+ * $Id: event_server.cpp,v 1.11 2004/04/09 14:32:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ bool CEventServer::pumpEvent(CEvent* event)
 	while(it!=_Listeners.end() && (uint64)(*it).first == id)
 	{
 		IEventListener *a = (IEventListener *)((*it).second);
-		(*a) (*event);
+		a->process(*event);
 		it++;
 	}
 

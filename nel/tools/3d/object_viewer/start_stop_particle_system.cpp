@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.19 2003/11/18 13:59:52 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.20 2004/03/11 17:27:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,6 +161,7 @@ void CStartStopParticleSystem::OnStartSystem()
 		_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(true);		
 		_ParticleDlg->getCurrPSModel()->enableDisplayTools(m_DisplayHelpers != FALSE);
 		_ParticleDlg->getCurrPS()->setSystemDate(0.f);
+		_ParticleDlg->getCurrPS()->reactivateSound();
 		if (_ParticleDlg->getCurrPS()->getAutoCountFlag())
 		{
 			if (_ResetAutoCount)
@@ -405,8 +406,7 @@ void CPSInitialPos::removeLocatedBindable(NL3D::CPSLocatedBindable *lb)
 void CPSInitialPos::restoreSystem()
 {
 	nlassert(_PS); // no system has been memorized yet
-
-
+	_PS->stopSound();
 	// delete all the instance of the system
 	NL3D::CPSEmitter::setBypassEmitOnDeath(true);
 	for (uint k = 0; k < _PS->getNbProcess(); ++k)
@@ -463,7 +463,7 @@ void CPSInitialPos::restoreSystem()
 				it2->Psm->setScale(it2->Index, it2->Scale.x);
 			}
 		}
-	}
+	}	
 }
 
 //******************************************************************************************************
@@ -584,7 +584,8 @@ void CStartStopParticleSystem::go()
 					// restart system
 					_SystemInitialPos.restoreSystem();
 					_SystemInitialPos.copySystemInitialPos(ps);			
-					ps->setSystemDate(0.f);					
+					ps->setSystemDate(0.f);	
+					_ParticleDlg->getCurrPS()->reactivateSound();
 				}
 			}
 		}

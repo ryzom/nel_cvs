@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.38 2002/08/01 16:45:58 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.39 2002/08/01 19:05:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -188,9 +188,11 @@ bool CParticleSystemModel::refreshRscDeletion(const std::vector<CPlane>	&worldFr
 	nlassert(_ParticleSystem);	
 	CParticleSystemShape		*shape = NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape);
 	
-	NLMISC::CVector sysPos = getTransformMode() == DirectMatrix ?
+	/* NLMISC::CVector sysPos = getTransformMode() == DirectMatrix ?
 							 getMatrix().getPos()			    :
-							 getPos();
+							 getPos(); */
+
+	NLMISC::CVector sysPos = getWorldMatrix().getPos();
 	
 	NLMISC::CVector v = sysPos - viewerPos;
 	/// test if not too far

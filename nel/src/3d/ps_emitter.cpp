@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.53 2003/11/18 15:42:37 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.54 2003/11/25 14:37:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2591,54 +2591,54 @@ void CPSRadialEmitter::emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC:
 ///===============================================================================
 void CPSEmitter::enableSpeedBasisEmission(bool enabled /*=true*/)
 {
-	bool wasFatherSkelMatNeeded = isFatherSkelMatrixUsed();
+	bool wasUserMatNeeded = isUserMatrixUsed();
 	_SpeedBasisEmission  = enabled;
-	updatePSRefCountForFatherSkelMatrixUsage(isFatherSkelMatrixUsed(), wasFatherSkelMatNeeded);
+	updatePSRefCountForUserMatrixUsage(isUserMatrixUsed(), wasUserMatNeeded);
 }
 
 ///===============================================================================
 void CPSEmitter::enableUserMatrixModeForEmissionDirection(bool enable /*=true*/)
 {
-	bool wasFatherSkelMatNeeded = isFatherSkelMatrixUsed();
+	bool wasUserMatNeeded = isUserMatrixUsed();
 	_UserMatrixModeForEmissionDirection = enable;
-	updatePSRefCountForFatherSkelMatrixUsage(isFatherSkelMatrixUsed(), wasFatherSkelMatNeeded);
+	updatePSRefCountForUserMatrixUsage(isUserMatrixUsed(), wasUserMatNeeded);
 }
 
 ///===============================================================================
 void CPSEmitter::setUserMatrixModeForEmissionDirection(TPSMatrixMode matrixMode)
 {
-	bool wasFatherSkelMatNeeded = isFatherSkelMatrixUsed();
+	bool wasUserMatNeeded = isUserMatrixUsed();
 	_UserDirectionMatrixMode = matrixMode;
-	updatePSRefCountForFatherSkelMatrixUsage(isFatherSkelMatrixUsed(), wasFatherSkelMatNeeded);
+	updatePSRefCountForUserMatrixUsage(isUserMatrixUsed(), wasUserMatNeeded);
 }
 
 
 ///==========================================================================
-void CPSEmitter::updatePSRefCountForFatherSkelMatrixUsage(bool matrixIsNeededNow, bool matrixWasNeededBefore)
+void CPSEmitter::updatePSRefCountForUserMatrixUsage(bool matrixIsNeededNow, bool matrixWasNeededBefore)
 {
 	if (_Owner && _Owner->getOwner())
 	{
 		if (matrixIsNeededNow && !matrixWasNeededBefore)
 		{
-			_Owner->getOwner()->addRefForSkeletonSysCoordInfo();
+			_Owner->getOwner()->addRefForUserSysCoordInfo();
 		}
 		else if (!matrixIsNeededNow && matrixWasNeededBefore)
 		{
-			_Owner->getOwner()->releaseRefForSkeletonSysCoordInfo();
+			_Owner->getOwner()->releaseRefForUserSysCoordInfo();
 		}
 	}
 }
 
 ///==========================================================================
-bool CPSEmitter::isFatherSkelMatrixUsed() const
+bool CPSEmitter::isUserMatrixUsed() const
 {
-	return !_SpeedBasisEmission && _UserMatrixModeForEmissionDirection && _UserDirectionMatrixMode == PSFatherSkeletonWorldMatrix;
+	return !_SpeedBasisEmission && _UserMatrixModeForEmissionDirection && _UserDirectionMatrixMode == PSUserMatrix;
 }
 
 ///==========================================================================
-bool CPSEmitter::getFatherSkelMatrixUsageCount() const
+bool CPSEmitter::getUserMatrixUsageCount() const
 {
-	return isFatherSkelMatrixUsed() ? 1 : 0;
+	return isUserMatrixUsed() ? 1 : 0;
 }
 
 

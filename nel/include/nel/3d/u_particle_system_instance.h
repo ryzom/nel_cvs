@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.10 2003/11/06 14:55:28 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.11 2003/11/25 14:34:00 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -53,16 +53,8 @@ class UParticleSystemInstance : public UInstance
 {
 public:
 	/** Tell wether the system is currently instanciated. This may not be the case when the system is not visible	  	  
-	  * You must check this before you use any method that access the system.
-	  * If you don't, there will be an assertion when you'll try to access it
-	  * example :
-	  * UParticleSystemInstance *mySystem = ...
-	  * ...
-	  * if (mySystem->isSystemPresent())
-	  * {
-	  *   /// perform modification on the system here
-	  *   mySystem->setUserParam(0, 0.5f); 
-	  * }
+	  * Unless specified otherwise, you must check this before you use any method that access the system.
+	  * If you don't, there will be an assertion when you'll try to access it	  
 	  *
 	  * \see isValid()	  
 	  */
@@ -89,8 +81,7 @@ public:
 		/** Set a user param of the system. Each user param must be >= 0 and <= 1		  
 		  * NB : even if the system is not instanciated, this will be taken in account the next time it is, so no need to call isSystemPresent() before calling that method.
 		  * \param index the index of the user param to modify. For now it ranges from 0 to 3
-		  * \value the new value of the parameter
-		  * \see isSystemPresent()
+		  * \value the new value of the parameter		  
 		  */
 		virtual void		setUserParam(uint index, float value) = 0;
 
@@ -106,8 +97,7 @@ public:
 
 		/** Get the value of a user param		  
 		  * \param index the index of the user param to get. For now it ranges from 0 to 3
-		  * \return the value of the user param (>= 0 and <= 1)
-		  * \see isSystemPresent()
+		  * \return the value of the user param (>= 0 and <= 1)		  
 		  */
 		virtual float		getUserParam(uint index) const = 0;
 
@@ -199,6 +189,17 @@ public:
 
 	 // Test if the system is shared
 	 virtual bool   isShared() const = 0;
+
+	 /** Set user matrix of the system. Passing NULL causes this matrix to be the same than the particle system matrix
+	   *
+	   * Particle can be located in various coordinate system :
+	   * - in world (identity matrix)
+	   * - local to the particle system (matrix of the particle system)
+	   * - local to the coord. sys. defined by the user matrix
+	   *	   
+	   * NB : the pointer should remains valid as long as this instance is!! no copy of the matrix is kept
+	   */
+	 virtual void	setUserMatrix(const NLMISC::CMatrix *userMat) = 0;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.61 2003/11/18 13:57:30 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.62 2003/11/25 14:37:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,7 +94,7 @@ const NLMISC::CMatrix &CPSLocated::getLocalToWorldMatrix() const
 	{
 		case PSFXWorldMatrix:				return _Owner->getSysMat();
 		case PSIdentityMatrix:				return NLMISC::CMatrix::Identity;
-		case PSFatherSkeletonWorldMatrix:	return _Owner->getFatherSkeletonMatrix();
+		case PSUserMatrix:	return _Owner->getUserMatrix();
 		default:
 			nlassert(0);
 	}
@@ -110,7 +110,7 @@ const NLMISC::CMatrix &CPSLocated::getWorldToLocalMatrix() const
 	{
 		case PSFXWorldMatrix:				return _Owner->getInvertedSysMat();
 		case PSIdentityMatrix:				return NLMISC::CMatrix::Identity;
-		case PSFatherSkeletonWorldMatrix:	return _Owner->getInvertedFatherSkeletonMatrix();
+		case PSUserMatrix:	return _Owner->getInvertedUserMatrix();
 		default:
 			nlassert(0);
 	}
@@ -574,7 +574,7 @@ const NLMISC::CMatrix &CPSLocated::getConversionMatrix(const CParticleSystem &ps
 			{
 				case PSFXWorldMatrix:				return NLMISC::CMatrix::Identity;
 				case PSIdentityMatrix:				return ps.getInvertedSysMat();	
-				case PSFatherSkeletonWorldMatrix:	return ps.getFatherSkeletonToFXMatrix();
+				case PSUserMatrix:	return ps.getUserToFXMatrix();
 				default:
 				nlassert(0);
 			}
@@ -584,17 +584,17 @@ const NLMISC::CMatrix &CPSLocated::getConversionMatrix(const CParticleSystem &ps
 			{
 				case PSFXWorldMatrix:				return ps.getSysMat();
 				case PSIdentityMatrix:				return NLMISC::CMatrix::Identity;
-				case PSFatherSkeletonWorldMatrix:	return ps.getFatherSkeletonMatrix();	
+				case PSUserMatrix:	return ps.getUserMatrix();	
 				default:
 				nlassert(0);
 			}
 		break;
-		case PSFatherSkeletonWorldMatrix:
+		case PSUserMatrix:
 			switch(srcMode)
 			{
-				case PSFXWorldMatrix:				return ps.getFXToFatherSkeletonMatrix();
-				case PSIdentityMatrix:				return ps.getInvertedFatherSkeletonMatrix();
-				case PSFatherSkeletonWorldMatrix:	return NLMISC::CMatrix::Identity;
+				case PSFXWorldMatrix:				return ps.getFXToUserMatrix();
+				case PSIdentityMatrix:				return ps.getInvertedUserMatrix();
+				case PSUserMatrix:	return NLMISC::CMatrix::Identity;
 				default:
 				nlassert(0);
 			}
@@ -857,13 +857,13 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 					creationIndex  =_Pos.insert(_Owner->getSysMat() * pos + fxPosDelta);
 				}
 				break;
-				case PSFatherSkeletonWorldMatrix:
+				case PSUserMatrix:
 				{					
 					CVector fxPosDelta;
 					_Owner->interpolateFXPosDelta(fxPosDelta, ellapsedTime);
-					CVector skelPosDelta;
-					_Owner->interpolateFatherSkeletonPosDelta(skelPosDelta, ellapsedTime);
-					creationIndex  =_Pos.insert(_Owner->getInvertedFatherSkeletonMatrix() * (_Owner->getSysMat() * pos + fxPosDelta - skelPosDelta));
+					CVector userMatrixPosDelta;
+					_Owner->interpolateUserPosDelta(userMatrixPosDelta, ellapsedTime);
+					creationIndex  =_Pos.insert(_Owner->getInvertedUserMatrix() * (_Owner->getSysMat() * pos + fxPosDelta - userMatrixPosDelta));
 				}
 				break;
 				default:
@@ -885,37 +885,37 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 					creationIndex  =_Pos.insert(pos);
 				}
 				break;
-				case PSFatherSkeletonWorldMatrix:
+				case PSUserMatrix:
 				{					
-					CVector skelPosDelta;
-					_Owner->interpolateFatherSkeletonPosDelta(skelPosDelta, ellapsedTime);
-					creationIndex  =_Pos.insert(_Owner->getInvertedFatherSkeletonMatrix() * (pos - skelPosDelta));
+					CVector userMatrixPosDelta;
+					_Owner->interpolateUserPosDelta(userMatrixPosDelta, ellapsedTime);
+					creationIndex  =_Pos.insert(_Owner->getInvertedUserMatrix() * (pos - userMatrixPosDelta));
 				}
 				break;
 				default:
 				nlassert(0);
 			}
 		break;
-		case PSFatherSkeletonWorldMatrix:
+		case PSUserMatrix:
 			switch(this->getMatrixMode())
 			{
 				case PSFXWorldMatrix:
 				{					
 					CVector fxPosDelta;
 					_Owner->interpolateFXPosDelta(fxPosDelta, ellapsedTime);
-					CVector skelPosDelta;
-					_Owner->interpolateFatherSkeletonPosDelta(skelPosDelta, ellapsedTime);
-					creationIndex  =_Pos.insert(_Owner->getInvertedSysMat() * (_Owner->getFatherSkeletonMatrix() * pos + skelPosDelta- fxPosDelta));
+					CVector userMatrixPosDelta;
+					_Owner->interpolateUserPosDelta(userMatrixPosDelta, ellapsedTime);
+					creationIndex  =_Pos.insert(_Owner->getInvertedSysMat() * (_Owner->getUserMatrix() * pos + userMatrixPosDelta- fxPosDelta));
 				}
 				break;
 				case PSIdentityMatrix:
 				{				
-					CVector skelPosDelta;
-					_Owner->interpolateFatherSkeletonPosDelta(skelPosDelta, ellapsedTime);
-					creationIndex  =_Pos.insert(_Owner->getFatherSkeletonMatrix() * pos + skelPosDelta);	
+					CVector userMatrixPosDelta;
+					_Owner->interpolateUserPosDelta(userMatrixPosDelta, ellapsedTime);
+					creationIndex  =_Pos.insert(_Owner->getUserMatrix() * pos + userMatrixPosDelta);	
 				}
 				break;
-				case PSFatherSkeletonWorldMatrix:
+				case PSUserMatrix:
 				{					
 					creationIndex  =_Pos.insert(pos);
 				}
@@ -1884,12 +1884,12 @@ void CPSLocatedBindable::setOwner(CPSLocated *psl)
 	}	
 	if (_Owner && _Owner->getOwner())
 	{
-		_Owner->getOwner()->releaseRefForSkeletonSysCoordInfo(getFatherSkelMatrixUsageCount());
+		_Owner->getOwner()->releaseRefForUserSysCoordInfo(getUserMatrixUsageCount());
 	}
 	_Owner = psl;
 	if (_Owner && _Owner->getOwner())
 	{
-		_Owner->getOwner()->addRefForSkeletonSysCoordInfo(getFatherSkelMatrixUsageCount());
+		_Owner->getOwner()->addRefForUserSysCoordInfo(getUserMatrixUsageCount());
 	} 
 }
 
@@ -1898,7 +1898,7 @@ void CPSLocatedBindable::finalize(void)
 {
 	if (_Owner && _Owner->getOwner())
 	{
-		_Owner->getOwner()->releaseRefForSkeletonSysCoordInfo(getFatherSkelMatrixUsageCount());
+		_Owner->getOwner()->releaseRefForUserSysCoordInfo(getUserMatrixUsageCount());
 	}
 }	
 
@@ -2186,14 +2186,14 @@ void CPSTargetLocatedBindable::releaseAllRef()
 }
 
 ///***************************************************************************************
-uint CPSLocated::getFatherSkelMatrixUsageCount() const
+uint CPSLocated::getUserMatrixUsageCount() const
 {
 	uint count = 0;
 	for(TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
 	{
-		count += (*it)->getFatherSkelMatrixUsageCount();		
+		count += (*it)->getUserMatrixUsageCount();		
 	}
-	return count + CParticleSystemProcess::getFatherSkelMatrixUsageCount();
+	return count + CParticleSystemProcess::getUserMatrixUsageCount();
 }
 
 

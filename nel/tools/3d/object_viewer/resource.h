@@ -759,8 +759,11 @@
 #define IDM_ACTIVATE_TEXTURE_SET_1      32875
 #define IDS_NOT_STICKED_TO_SKELETON     32875
 #define IDM_ACTIVATE_TEXTURE_SET_4      32876
+#define IDS_FX_USER_MATRIX              32876
 #define IDM_ACTIVATE_TEXTURE_SET_2      32877
+#define IDS_SCENE_MATRIX                32877
 #define IDM_ACTIVATE_TEXTURE_SET_3      32878
+#define IDS_FX_MATRIX                   32878
 #define IDM_ACTIVATE_TEXTURE_SET_5      32879
 #define IDM_ACTIVATE_TEXTURE_SET_6      32880
 #define IDM_ACTIVATE_TEXTURE_SET_7      32881
@@ -809,13 +812,18 @@
 #define ID_EDIT_MOVE_FX                 32959
 #define ID_VIEW_RESET_FX_ROOT           32960
 #define ID_WINDOW_CHOOSE_SUN_COLOR      32961
+#define ID_EDIT_MOVE_FX_USER_MATRIX     32962
+#define IDM_RESET_FX_USER_MATRIX        32963
+#define IDM_SHOW_SCENE_MATRIX           32964
+#define IDM_SHOW_FX_MATRIX              32965
+#define IDM_SHOW_FX_USER_MATRIX         32966
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1133
-#define _APS_NEXT_COMMAND_VALUE         32962
+#define _APS_NEXT_COMMAND_VALUE         32967
 #define _APS_NEXT_CONTROL_VALUE         1392
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

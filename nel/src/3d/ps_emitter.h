@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.27 2003/11/18 13:57:30 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.28 2003/11/25 14:37:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -208,7 +208,7 @@ public:
 		  * A fire p.s is linked to a torch, but the torch doesn't point to the top. So particles are emitted in the axis aligned to the torch
 		  * If matrix mode for direction emission is set to PSIdentityMatrix, then the direction is interpreted to be in world, and is thus independant from
 		  * the torch orientation : particles are always spawned in the +K direction.
-		  * Other example : an emitter sticked to a bone that must emit in the system coordinate of the skeleton (and thus with a direction of emission that is independant from in the bone matrix)
+		  *
 		  * NB  : if isSpeedBasisEmissionEnabled() == true then this flag is meaningless
           */
 		void							enableUserMatrixModeForEmissionDirection(bool enable = true);
@@ -270,7 +270,7 @@ public:
 
 
 	// from from CPSLocated
-	virtual bool			getFatherSkelMatrixUsageCount() const;
+	virtual bool			getUserMatrixUsageCount() const;
 
 protected:	
 
@@ -296,14 +296,14 @@ protected:
 	void							processRegularEmissionConsistentWithNoLOD(TAnimationTime ellapsedTime, float realEllapsedTimeRatio);
 
 
-	// test if father skeleton matrix is needed to compute direction of emission
-	bool							isFatherSkelMatrixUsed() const;
+	// test if user matrix is needed to compute direction of emission
+	bool							isUserMatrixUsed() const;
 
-	/** The particle system maintains a ref counter to see how many object requires the father skeleton matrix for their computation
+	/** The particle system maintains a ref counter to see how many object requires the user matrix for their computation
 	  * (if it isn't required, a significant amount of memory used for maintenance can be saved)
 	  * This tool function helps increasing / decreasing that count by seeing if the matrix is still required or not
 	  */
-	void							updatePSRefCountForFatherSkelMatrixUsage(bool matrixIsNeededNow, bool matrixWasNeededBefore);
+	void							updatePSRefCountForUserMatrixUsage(bool matrixIsNeededNow, bool matrixWasNeededBefore);
 	
 
 	/** This method is called each time one (and only one) located must be emitted.

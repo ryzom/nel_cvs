@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.28 2003/11/18 13:57:30 vizerie Exp $
+ * $Id: ps_located.h,v 1.29 2003/11/25 14:37:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -565,7 +565,7 @@ public:
 	float				evalMaxDuration() const;
 
 	// from CParticleSystemProcess
-	 virtual uint	getFatherSkelMatrixUsageCount() const;	
+	 virtual uint	getUserMatrixUsageCount() const;	
 	
 protected:
 
@@ -948,8 +948,8 @@ public:
 	/// called when a located has switch between incrmental / parametric motion. The default does nothing
 	virtual	void			motionTypeChanged(bool parametric) {}
 	
-	// returns the number of sub-objects (including this one, that requires the father skeleton matrix for its computations)
-	virtual bool			getFatherSkelMatrixUsageCount() const { return 0; }
+	// returns the number of sub-objects (including this one, that requires the user matrix for its computations)
+	virtual bool			getUserMatrixUsageCount() const { return 0; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

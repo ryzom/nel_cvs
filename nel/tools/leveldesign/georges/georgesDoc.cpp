@@ -198,7 +198,7 @@ void CGeorgesDoc::NewDocument( const CStringEx _sxfilename )
 	papp->SetRootDirectory( sxrootdirectory );
 	papp->SetWorkDirectory( sxworkdirectory );
 	DeleteContents();
-	item.New( _sxfilename );		
+	item.New( _sxfilename );
 	SetModifiedFlag( FALSE );
 }
 

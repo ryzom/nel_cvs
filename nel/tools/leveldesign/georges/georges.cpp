@@ -43,6 +43,8 @@ CGeorgesApp::CGeorgesApp()
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
 	_MultiDocTemplate = NULL;
+	sxrootdirectory = "U:\\";
+	sxworkdirectory = "U:\\";
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -67,10 +69,10 @@ BOOL CGeorgesApp::initInstance(int x, int y, int cx, int cy)
 
 	if (_MultiDocTemplate == NULL)
 	{
-		NLMISC_REGISTER_CLASS( CFormBodyElt );
+		/*NLMISC_REGISTER_CLASS( CFormBodyElt );
 		NLMISC_REGISTER_CLASS( CFormBodyEltAtom );
 		NLMISC_REGISTER_CLASS( CFormBodyEltList );
-		NLMISC_REGISTER_CLASS( CFormBodyEltStruct );
+		NLMISC_REGISTER_CLASS( CFormBodyEltStruct );*/
 		// Change the registry key under which our settings are stored.
 		// TODO: You should modify this string to be something appropriate
 		// such as the name of your company or organization.
@@ -113,8 +115,6 @@ BOOL CGeorgesApp::initInstance(int x, int y, int cx, int cy)
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
 
-	sxrootdirectory = "U:\\";
-	sxworkdirectory = "U:\\";
 	NLMISC::CPath::removeAllAlternativeSearchPath();
 					
     NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
@@ -216,7 +216,6 @@ void CGeorgesApp::SaveAllDocument()
 void CGeorgesApp::CloseAllDocument()
 {
 }
-
 
 /////////////////////////////////////////////////////////////////////////////
 // CGeorgesApp message handlers

@@ -50,6 +50,7 @@ public:
 
 	virtual void SetDocumentRootDirectory( const std::string& _sxrootdirectory ) = 0;
 
+
 	virtual void NewDocument() = 0;
 
 	virtual void NewDocument( const std::string& _sxdfnname) = 0;
@@ -74,6 +75,8 @@ public:
 	virtual void MakeDfn( const std::string& _sxfullname, const std::vector< std::pair< std::string, std::string > >* const _pvdefine = 0 ) = 0;
 
 	virtual void MakeTyp( const std::string& _sxfullname, const std::string& _sxtype, const std::string& _sxformula, const std::string& _sxenum, const std::string& _sxlow, const std::string& _sxhigh, const std::string& _sxdefault, const std::vector< std::pair< std::string, std::string > >* const _pvpredef = 0, const std::vector< std::pair< std::string, std::string > >* const _pvparent = 0) = 0;
+
+	virtual void createInstanceFile (const std::string &_sxFullnameWithoutExt, const std::string &_dfnname) = 0;
 
 };
 

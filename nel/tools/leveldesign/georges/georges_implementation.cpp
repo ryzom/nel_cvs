@@ -9,8 +9,11 @@
 #include "georges.h"
 #include "Mainfrm.h"
 #include "GeorgesDoc.h"
-//#include "../georges_lib/Loader.h"
 
+#include "../georges_lib/formbodyelt.h"
+#include "../georges_lib/formbodyeltatom.h"
+#include "../georges_lib/formbodyeltlist.h"
+#include "../georges_lib/formbodyeltstruct.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // The one and only CGeorgesApp object
@@ -55,6 +58,8 @@ public:
 
 	virtual void SetDocumentRootDirectory( const std::string& _sxrootdirectory );
 
+	virtual void createInstanceFile (const std::string &_sxFullnameWithoutExt, const std::string &_dfnname);
+
 	virtual void NewDocument();
 
 	virtual void NewDocument( const std::string& _sxdfnname);
@@ -89,7 +94,12 @@ CGeorgesImpl::CGeorgesImpl()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());	
 	_MainFrame = NULL;
-	
+
+	NLMISC_REGISTER_CLASS( CFormBodyElt );
+	NLMISC_REGISTER_CLASS( CFormBodyEltAtom );
+	NLMISC_REGISTER_CLASS( CFormBodyEltList );
+	NLMISC_REGISTER_CLASS( CFormBodyEltStruct );
+
 } // CGeorgesImpl //
 
 
@@ -250,6 +260,24 @@ void CGeorgesImpl::MakeTyp( const std::string& _sxfullname, const std::string& _
 	ploader->MakeTyp( _sxfullname, _sxtype, _sxformula, _sxenum, _sxlow, _sxhigh, _sxdefault, vsx, vsx2 );
 } // MakeTyp //
 
+void CGeorgesImpl::createInstanceFile (const std::string &_sxFullnameWithoutExt, const std::string &_dfnname)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
+	CLoader* ploader = papp->GetLoader();
+	CItem item;
+	std::string sFullname = _sxFullnameWithoutExt + ".";
+	int i = 0;
+	while(_dfnname[i] != '.')
+	{
+		sFullname += _dfnname[i];
+		++i;
+	}
+	item.SetLoader (ploader);
+	item.New (_dfnname);
+	item.Save (sFullname);
+} // createInstanceFile //
+
 void CGeorgesImpl::SetDocumentWorkDirectory( const std::string& _sxworkdirectory )
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -267,8 +295,8 @@ void CGeorgesImpl::SetDocumentRootDirectory( const std::string& _sxrootdirectory
 void CGeorgesImpl::LoadDocument( const std::string& _sxfullname )
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
-	pgdoc->OnOpenDocument( _sxfullname.c_str() );
+	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
+	papp->OpenDocumentFile(_sxfullname.c_str());
 } // LoadDocument //
 
 void CGeorgesImpl::SaveDocument( const std::string& _sxfullname )

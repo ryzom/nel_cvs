@@ -40,8 +40,7 @@ public:
 	void SetWorkDirectory( const CStringEx _sxworkdirectory );
 	void SetRootDirectory( const CStringEx _sxrootdirectory );
 	CLoader* GetLoader() { return &loader; }
-
-// Overrides
+	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CGeorgesApp)
 	public:

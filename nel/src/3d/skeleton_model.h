@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.32 2003/05/26 09:04:01 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.32.2.1 2003/07/10 12:53:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -198,6 +198,7 @@ public:
 	/** Tool function, especially for animation bake. It updates all bones (independent of bone usage, 
 	 *	and lod interpolation), and take a user skeleton worldMatrix as input.
 	 *	NB: no detail animation is performed here, just the compute of bone hierarchy.
+	 *	NB: also, no special AnimCtrl (IK etc....) is performed here 
 	 */
 	void		computeAllBones(const CMatrix &modelWorldMatrix);
 
@@ -212,6 +213,7 @@ public:
 
 	/** same as computeRenderedBBox() but force animation and compute of all bones => don't need render(), but slower.
 	 *	for all used bones, extend the bbox with their pos
+	 *	NB: AnimCtrl are not evaluated by this method (since computed with 0 pos).
 	 *	\param bbox return the bbox of the skinned skeleton, local to the skeleton. If the skeleton is not skinned/sticked
 	 *	at all, bbox is not modified.
 	 *  \param forceCompute force evalution even if not skinned
@@ -315,6 +317,16 @@ public:
 
 	// Lighting: get the Root world position!
 	virtual	void		getLightHotSpotInWorld(CVector &modelPos, float &modelRadius) const;
+
+	/// \name AnimCtrl (IK...)
+	// @{
+	/** Set a special ctrl on a bone. see IAnimCtrl. NB: once an animCtrl is set to a bone in a skeleton, 
+	 *	his bones are always computed each frame. 
+	 *	set to NULL if you want to reset this bone AnimCtrl.
+	 */
+	void			setBoneAnimCtrl(uint boneId, IAnimCtrl *ctrl);
+	IAnimCtrl		*getBoneAnimCtrl(uint boneId) const;
+	// @}
 
 // ***********************
 protected:
@@ -475,6 +487,11 @@ private:
 	void			renderSkinList(NLMISC::CObjectVector<CTransform*, false>	&skinList, float alphaMRM);
 	// @}
 
+	/// \name AnimCtrl (IK...)
+	// @{
+	// If >0, then user may change any if this bone each frame...
+	sint			_AnimCtrlUsage;
+	// @}
 
 };
 

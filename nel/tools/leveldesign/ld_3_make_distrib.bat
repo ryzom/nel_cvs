@@ -20,7 +20,9 @@ REM - WorldEditor
 xcopy "r:\code\nel\tools\3d\ligo\WorldEditor_Exe\releasedebug\WorldEditor_exe.exe" "\\server\code\tools\leveldesign" /D /Y
 xcopy "r:\code\nel\lib\WorldEditor_release_debug.dll" "\\server\code\tools\leveldesign" /D /Y
 xcopy "r:\code\nel\lib\nel_drv_opengl_win_rd.dll" "\\server\code\tools\leveldesign" /D /Y
-xcopy "R:\code\tool\zviewer\ReleaseDebug\zviewer.exe" "\\server\code\tools\leveldesign" /D /Y
+xcopy "r:\code\tool\zviewer\ReleaseDebug\zviewer.exe" "\\server\code\tools\leveldesign" /D /Y
+xcopy "r:\code\nel\tools\3d\ligo\WorldEditor\readme.txt" "\\server\code\tools\leveldesign" /D /Y
+rename "\\server\code\tools\leveldesign\readme.txt" "worldeditor.txt"
 
 REM - Georges
 
@@ -37,6 +39,7 @@ REM - Master
 xcopy "r:\code\nel\tools\leveldesign\master\releasedebug\master.exe" "\\server\code\tools\leveldesign" /D /Y
 xcopy "r:\code\nel\tools\leveldesign\master\n019003l.pfb" "\\server\code\tools\leveldesign" /D /Y
 xcopy "r:\code\nel\tools\leveldesign\master\readme.txt" "\\server\code\tools\leveldesign" /D /Y
+rename "\\server\code\tools\leveldesign\readme.txt" "master.txt"
 xcopy "r:\code\nel\tools\leveldesign\test_root\common\dfn\*.*" "\\server\code\tools\leveldesign\common\dfn" /D /Y
 xcopy "r:\code\nel\tools\leveldesign\test_root\ligoscape.cfg" "\\server\code\tools\leveldesign" /D /Y
 xcopy "r:\code\nel\tools\leveldesign\test_root\zoneBitmaps\_unused_.tga" "\\server\code\tools\leveldesign\zoneBitmaps" /D /Y

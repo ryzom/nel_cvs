@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.24 2002/07/02 09:00:57 legros Exp $
+ * $Id: win_displayer.cpp,v 1.25 2002/10/18 15:17:12 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -297,7 +297,10 @@ void CWinDisplayer::resizeLabels ()
 			while (i+nb != access.value().size () && !access.value()[i+nb].Value.empty()) nb++;
 
 			sint delta;
-			delta = Rect.right / nb;
+			if (nb == 0)
+				delta = 0;
+			else
+				delta = Rect.right / nb;
 
 			for (uint j = 0; j< nb; j++)
 			{

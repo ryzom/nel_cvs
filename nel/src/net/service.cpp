@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.37 2001/01/10 17:31:14 cado Exp $
+ * $Id: service.cpp,v 1.38 2001/01/22 14:01:10 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -87,6 +87,7 @@ static const char *SignalName[]=
 /* Variables */
 
 static sint ExitSignalAsked = 0;
+static CStdDisplayer sd;
 
 /* Prototypes */
 
@@ -180,6 +181,9 @@ sint IService::main (int argc, char **argv)
 
 		// Initialize debug stuffs, create displayers for nl* functions
 		InitDebug();
+		ErrorLog.addDisplayer (&sd);
+		WarningLog.addDisplayer (&sd);
+		InfoLog.addDisplayer (&sd);
 
 		for (sint i = 0; i < argc; i++)
 		{

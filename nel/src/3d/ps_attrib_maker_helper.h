@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.14 2003/04/09 16:03:06 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.15 2003/07/30 16:03:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "3d/ps_attrib_maker.h"
 
-#include "fast_floor.h" // inline assembly for fast float<->int conversions
-#include "ps_attrib_maker_iterators.h" // some iterators we use 
+#include "nel/misc/fast_floor.h" // inline assembly for fast float<->int conversions
+#include "3d/ps_attrib_maker_iterators.h" // some iterators we use 
 
 namespace NL3D 
 {
@@ -59,10 +59,10 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 
 		virtual T get(float input)
 		{
-			OptFastFloorBegin();
+			NLMISC::OptFastFloorBegin();
 			nlassert(input >= 0.f && input <= 1.f);
 			return _F(input);
-			OptFastFloorEnd();
+			NLMISC::OptFastFloorEnd();
 		}
 		
 		/** Fill tab with an attribute by using the given stride. It fills numAttrib attributes, and use it to get the
@@ -208,7 +208,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 					{
 						while (numAttrib --)
 						{	
-							*(T *)pt = _F(OptFastFractionnalPart(it.get())); 
+							*(T *)pt = _F(NLMISC::OptFastFractionnalPart(it.get())); 
 							pt += stride;
 							it.advance();
 						}
@@ -218,7 +218,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						while (numAttrib --)
 						{
 							const float time =  _NbCycles * (it.get());
-							*(T *)pt = _F(OptFastFractionnalPart(time)); 
+							*(T *)pt = _F(NLMISC::OptFastFractionnalPart(time)); 
 							pt += stride;
 							it.advance();
 						}	
@@ -317,7 +317,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						{		
 							// fill 4 attrib with the same value at once 
 							//*(T *)pt = *(T *)(pt + stride) = *(T *)(pt + stride2)  = *(T *)(pt + stride3) = _F(OptFastFractionnalPart(it.get()));		
-							*(T *) pt = _F(OptFastFractionnalPart(it.get()));
+							*(T *) pt = _F(NLMISC::OptFastFractionnalPart(it.get()));
 							*(T *) (pt + stride) = *(T *) pt;
 							pt += stride;
 							*(T *) (pt + stride) = *(T *) pt;
@@ -334,7 +334,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							const float time =  _NbCycles * (it.get());
 							// fill 4 attrib with the same value at once 
 							//*(T *)pt = *(T *)(pt + stride) = *(T *)(pt + stride2)  = *(T *)(pt + stride3) = _F(OptFastFractionnalPart(time));		
-							*(T *) pt =	_F(OptFastFractionnalPart(time));
+							*(T *) pt =	_F(NLMISC::OptFastFractionnalPart(time));
 							*(T *) (pt + stride) = *(T *) pt;
 							pt += stride;
 							*(T *) (pt + stride) = *(T *) pt;
@@ -467,7 +467,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							while (numAttrib --)
 							{		
 								// fill 4 attrib with the same value at once 
-								*(T *)pt = _F(OptFastFractionnalPart(it.get()));						
+								*(T *)pt = _F(NLMISC::OptFastFractionnalPart(it.get()));						
 								k = nbReplicate - 1;
 								do 
 								{
@@ -485,7 +485,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							{		
 								const float time =  _NbCycles * (it.get());
 								// fill 4 attrib with the same value at once 
-								*(T *)pt = _F(OptFastFractionnalPart(time));					
+								*(T *)pt = _F(NLMISC::OptFastFractionnalPart(time));					
 								k = nbReplicate - 1;
 								do 
 								{
@@ -603,7 +603,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 											 ) const
 			{
 
-				OptFastFloorBegin();
+				NLMISC::OptFastFloorBegin();
 				nlassert(loc);
 
 				if (srcStep == (1 << 16))
@@ -690,7 +690,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						break;
 					}
 
-					OptFastFloorEnd();
+					NLMISC::OptFastFloorEnd();
 					// we must alway copy the data there ...
 					return tab;
 				}
@@ -778,7 +778,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						break;
 					}
 
-					OptFastFloorEnd();
+					NLMISC::OptFastFloorEnd();
 					// we must alway copy the data there ...
 					return tab;
 				}
@@ -795,7 +795,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 											   uint32 srcStep /*= (1 << 16)*/
 											  ) const
 			{
-				OptFastFloorBegin();
+				NLMISC::OptFastFloorBegin();
 				nlassert(loc);
 
 				if (srcStep == (1 << 16))
@@ -882,7 +882,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						break;
 					}
 
-					OptFastFloorEnd();
+					NLMISC::OptFastFloorEnd();
 				}
 				else // fixed point steps
 				{
@@ -968,7 +968,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						break;
 					}
 
-					OptFastFloorEnd();
+					NLMISC::OptFastFloorEnd();
 				
 				}
 			}
@@ -984,7 +984,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 										uint32 srcStep /* = (1 << 16)*/										
 									) const
 			{
-				OptFastFloorBegin();
+				NLMISC::OptFastFloorBegin();
 				nlassert(loc);
 				if (srcStep == (1 << 16))
 				{					
@@ -1070,7 +1070,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						break;
 					}
 
-					OptFastFloorEnd();					
+					NLMISC::OptFastFloorEnd();					
 				}
 				else // fixed point steps
 				{
@@ -1156,7 +1156,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						break;
 					}
 
-					OptFastFloorEnd();				
+					NLMISC::OptFastFloorEnd();				
 				}	
 			}
 
@@ -1171,7 +1171,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 template <typename T, class F> 
 T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 {	
-	OptFastFloorBegin();
+	NLMISC::OptFastFloorBegin();
 	T result;
 	nlassert(loc);
 	switch (_InputType.InputType)
@@ -1184,7 +1184,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 				if (v > MaxInputValue) v = MaxInputValue;
 			}
 
-			result = _F(OptFastFractionnalPart(v));
+			result = _F(NLMISC::OptFastFractionnalPart(v));
 		}
 		break;
 		case CPSInputType::attrInverseMass:	
@@ -1194,7 +1194,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 			{
 				if (v > MaxInputValue) v = MaxInputValue;
 			}
-			result =  _F(OptFastFractionnalPart(v));
+			result =  _F(NLMISC::OptFastFractionnalPart(v));
 		}
 		break;		
 		case CPSInputType::attrSpeed:	
@@ -1204,7 +1204,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 			{
 				if (v > MaxInputValue) v = MaxInputValue;
 			}
-			result = _F(OptFastFractionnalPart(v));
+			result = _F(NLMISC::OptFastFractionnalPart(v));
 		}
 		break;
 
@@ -1215,7 +1215,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 			{
 				if (v > MaxInputValue) v = MaxInputValue;
 			}
-			result = _F(OptFastFractionnalPart(v));
+			result = _F(NLMISC::OptFastFractionnalPart(v));
 		}
 		break;
 		case CPSInputType::attrUniformRandom:	
@@ -1307,7 +1307,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 		break;		
 	}
 
-	OptFastFloorEnd();
+	NLMISC::OptFastFloorEnd();
 	return result;
 	
 }

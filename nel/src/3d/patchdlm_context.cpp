@@ -1,7 +1,7 @@
 /** \file patchdlm_context.cpp
  * <File description>
  *
- * $Id: patchdlm_context.cpp,v 1.13 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: patchdlm_context.cpp,v 1.14 2003/07/30 16:03:15 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "3d/bezier_patch.h"
 #include "3d/point_light.h"
 #include "3d/texture_dlm.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "3d/tile_far_bank.h"
 #include "3d/landscape.h"
 #include "nel/misc/system_info.h"

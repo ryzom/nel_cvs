@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.17 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: patch_vegetable.cpp,v 1.18 2003/07/30 16:03:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,7 @@
 #include "3d/landscape.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/common.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "3d/tile_vegetable_desc.h"
 #include "3d/vegetable_light_ex.h"
 #include "3d/patchdlm_context.h"
@@ -174,8 +174,8 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	dlmUV.V= _DLMContext->DLMVBias + _DLMContext->DLMVScale * tileV;
 	// get coordinate in 0..255.
 	CVegetableUV8	dlmUV8;
-	dlmUV8.U= (uint8)OptFastFloor(dlmUV.U * 255 + 0.5f);
-	dlmUV8.V= (uint8)OptFastFloor(dlmUV.V * 255 + 0.5f);
+	dlmUV8.U= (uint8)NLMISC::OptFastFloor(dlmUV.U * 255 + 0.5f);
+	dlmUV8.V= (uint8)NLMISC::OptFastFloor(dlmUV.V * 255 + 0.5f);
 	// bound them, ensuring 8Bits UV "uncompressed" by driver are in the lightmap area.
 	clamp(dlmUV8.U, _DLMContext->MinU8, _DLMContext->MaxU8);
 	clamp(dlmUV8.V, _DLMContext->MinV8, _DLMContext->MaxV8);
@@ -241,8 +241,8 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 			matInstance.setPos( instancePos );
 
 			// peek color into the lightmap.
-			sint	lumelS= OptFastFloor(instanceUV[j].x * NL_LUMEL_BY_TILE);
-			sint	lumelT= OptFastFloor(instanceUV[j].y * NL_LUMEL_BY_TILE);
+			sint	lumelS= NLMISC::OptFastFloor(instanceUV[j].x * NL_LUMEL_BY_TILE);
+			sint	lumelT= NLMISC::OptFastFloor(instanceUV[j].y * NL_LUMEL_BY_TILE);
 			clamp(lumelS, 0, NL_LUMEL_BY_TILE-1);
 			clamp(lumelT, 0, NL_LUMEL_BY_TILE-1);
 

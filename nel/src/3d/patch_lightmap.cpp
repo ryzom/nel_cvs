@@ -1,7 +1,7 @@
 /** \file patch_lightmap.cpp
  * Patch implementation related to lightmaping (texture Near/Far)
  *
- * $Id: patch_lightmap.cpp,v 1.9 2003/04/23 10:09:30 berenguier Exp $
+ * $Id: patch_lightmap.cpp,v 1.10 2003/07/30 16:02:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@
 #include "nel/misc/common.h"
 #include "3d/patchuv_locator.h"
 #include "3d/vegetable_manager.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "3d/light_influence_interpolator.h"
 #include "3d/patchdlm_context.h"
 using	namespace	std;
@@ -1458,8 +1458,8 @@ uint8		CPatch::getLumel(const CUV &uv) const
 	sint	h= (OrderT<<NL_LUMEL_BY_TILE_SHIFT);
 	// fastFloor: use a precision of 256 to avoid doing OptFastFloorBegin.
 	// add 128, to round and get cneter of lumel.
-	ts= OptFastFloor(uv.U* (w<<8) + 128);	ts>>=8;
-	tt= OptFastFloor(uv.V* (h<<8) + 128);	tt>>=8;
+	ts= NLMISC::OptFastFloor(uv.U* (w<<8) + 128);	ts>>=8;
+	tt= NLMISC::OptFastFloor(uv.V* (h<<8) + 128);	tt>>=8;
 	clamp(ts, 0, w-1);
 	clamp(tt, 0, h-1);
 	// get the lumel
@@ -1503,8 +1503,8 @@ void		CPatch::appendTileLightInfluences(const CUV &uv,
 	sint	h= (OrderT>>1);
 	sint	wTLI= w+1;
 	// fastFloor: use a precision of 256 to avoid doing OptFastFloorBegin.
-	x= OptFastFloor(uv.U * (w<<8));
-	y= OptFastFloor(uv.V * (h<<8));
+	x= NLMISC::OptFastFloor(uv.U * (w<<8));
+	y= NLMISC::OptFastFloor(uv.V * (h<<8));
 	clamp(x, 0, w<<8);
 	clamp(y, 0, h<<8);
 	// compute the TLI coord, and the subCoord for bilinear.

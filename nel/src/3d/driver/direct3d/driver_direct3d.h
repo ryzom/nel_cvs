@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.3 2004/03/23 10:26:20 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.4 2004/03/23 16:32:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -318,7 +318,7 @@ public:
 	virtual bool			setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBadDisplay);
 	virtual bool			release();
 	// todo hulud d3d switch mode
-	virtual bool			setMode(const GfxMode& mode) {return false;};
+	virtual bool			setMode(const GfxMode& mode);
 	virtual bool			getModes(std::vector<GfxMode> &modes);
 	virtual bool			getCurrentScreenMode(GfxMode &mode);
 	virtual bool			activate();
@@ -1102,6 +1102,7 @@ private:
 
 	bool isDepthFormatOk(UINT adapter, D3DFORMAT DepthFormat, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat);
 	bool isTextureFormatOk(UINT adapter, D3DFORMAT TextureFormat, D3DFORMAT AdapterFormat);
+	bool fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFORMAT &adapterFormat, const GfxMode& mode, UINT adapater, const D3DDISPLAYMODE &adapterMode);
 
 	// *** Texture helper
 
@@ -1129,6 +1130,13 @@ private:
 	bool createVertexDeclaration (uint16 vertexFormat, const uint8 *typeArray,
 										IDirect3DVertexDeclaration9 **vertexDecl, 
 										uint *stride = NULL);
+	// Restaure a resident vertex buffer to system memory
+	void restaureVertexBuffer (CVBDrvInfosD3D &vertexBuffer);
+
+	// *** Index buffer helper
+
+	// Restaure a resident index buffer to system memory
+	void restaureIndexBuffer (CIBDrvInfosD3D &indexBuffer);
 
 	// *** Multipass helpers
 
@@ -1228,12 +1236,10 @@ private:
 	// Windows
 	std::string				_WindowClass;
 	HWND					_HWnd;
-	uint32					_WindowWidth;
-	uint32					_WindowHeight;
 	sint32					_WindowX;
 	sint32					_WindowY;
-	sint8					_Depth;
 	bool					_DestroyWindow;
+	GfxMode					_CurrentMode;
 
 	// Directx
 	uint32					_Adapter;

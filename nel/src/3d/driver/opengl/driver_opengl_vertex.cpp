@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.40 2004/03/23 10:24:17 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.41 2004/03/23 16:32:27 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -61,32 +61,60 @@ CVBDrvInfosGL::CVBDrvInfosGL(CDriverGL *drv, ItVBDrvInfoPtrList it, CVertexBuffe
 {
 	_DriverGL = drv;
 	_VBHard = NULL;
+	_SystemMemory = NULL;
 }
 		
 // ***************************************************************************
 
 CVBDrvInfosGL::~CVBDrvInfosGL()
 {
+	// Restaure non resident memory
+	if (VertexBufferPtr)
+	{
+		VertexBufferPtr->setLocation(CVertexBuffer::NotResident);
+		VertexBufferPtr = NULL;
+	}
+
 	if (_VBHard)
 	{
 		_VBHard->disable();
 		_DriverGL->_VertexBufferHardSet.erase(_VBHard);
 	}
+	if (_SystemMemory)
+	{
+		delete [] _SystemMemory;
+	}
+	_SystemMemory = NULL;
 	_VBHard = NULL;
 }
 		
 // ***************************************************************************
 uint8 *CVBDrvInfosGL::lock (uint first, uint last, bool readOnly)
 {
-	nlassert (_VBHard);
-	return (uint8*)_VBHard->lock ();
+	if (_VBHard)
+	{
+		return (uint8*)_VBHard->lock ();
+	}
+	else
+	{
+		// Should be a system memory
+		nlassert (_SystemMemory);
+		return _SystemMemory;
+	}
 }
 
 // ***************************************************************************
 void CVBDrvInfosGL::unlock (uint first, uint last)
 {
-	nlassert (_VBHard);
-	_VBHard->unlock(first, last);
+	if (_VBHard)
+	{
+		_VBHard->unlock(first, last);
+	}
+	else
+	{
+		// Should be a system memory
+		nlassert (_SystemMemory);
+	}
 }
 
 // ***************************************************************************
@@ -114,31 +142,23 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 			// Vertex buffer hard
 			info->_VBHard = createVertexBufferHard(size, VB.capacity(), (CVertexBuffer::TPreferredMemory)preferredMemory, &VB);
 			if (info->_VBHard)
-			{
-				// Copy the vertex buffer
-				uint8 *out = info->lock (0, 0, false);
-				nlassert (out);
-				{
-					CVertexBufferRead vba;
-					VB.lock(vba);
-					memcpy (out, vba.getVertexCoordPointer(), size);
-				}
-				info->unlock (0, 0);
-
-				VB.Location = (CVertexBuffer::TLocation)preferredMemory;
-				VB.releaseNonResidentVertices();
 				break;
-			}
 			preferredMemory--;
 		}
 
-		// OK!
-		VB.resetTouchFlags();
+		// No memory found ? Use system memory
+		if (info->_VBHard == NULL)
+		{
+			nlassert (info->_SystemMemory == NULL);
+			info->_SystemMemory = new uint8[size];
+		}
+
+		// Upload the data
+		VB.setLocation ((CVertexBuffer::TLocation)preferredMemory);
 	}
 
 	return true;
 }
-
 
 // ***************************************************************************
 bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
@@ -1134,17 +1154,18 @@ void		CVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 	// Lock the buffer
 	CVertexBufferReadWrite access;
 	uint8 *ptr;
-	if (vb.isResident())
+	nlassert (vb.isResident());
+	CVBDrvInfosGL *info= safe_cast<CVBDrvInfosGL*>((IVBDrvInfos*)vb.DrvInfos);
+	nlassert (info);
+	if (info->_VBHard)
 	{
-		CVBDrvInfosGL *info= safe_cast<CVBDrvInfosGL*>((IVBDrvInfos*)vb.DrvInfos);
-		nlassert (info);
 		ptr = (uint8*)info->_VBHard->getPointer();
 		info->_VBHard->setupATIMode (ATIVBHardMode, ATIVertexObjectId);
 	}
 	else
 	{
-		vb.lock (access);
-		ptr = (uint8*)access.getVertexCoordPointer();
+		nlassert (info->_SystemMemory);
+		ptr = info->_SystemMemory;
 	}
 
 	// Get value pointer

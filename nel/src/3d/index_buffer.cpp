@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Index buffers.
  *
- * $Id: index_buffer.cpp,v 1.1 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: index_buffer.cpp,v 1.2 2004/03/23 16:32:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,15 +33,12 @@ using namespace NLMISC;
 
 namespace NL3D
 {
-
 // ***************************************************************************
 // IIBDrvInfos
 // ***************************************************************************
 
 IIBDrvInfos::~IIBDrvInfos()
 {
-	_IndexBuffer->Location = CIndexBuffer::NotResident;
-	_IndexBuffer->restoreNonResidentIndexes ();
 	_Driver->removeIBDrvInfoPtr(_DriverIterator);
 }
 
@@ -57,9 +54,8 @@ CIndexBuffer::CIndexBuffer()
 	_LockCounter = 0;
 	_LockedBuffer = NULL;
 	_PreferredMemory = RAMPreferred;
-	_WriteOnly[RAMPreferred] = false;
-	_WriteOnly[AGPPreferred] = true;
-	_WriteOnly[VRAMPreferred] = true;
+	_Location = NotResident;
+	_ResidentSize = 0;
 }
 
 // ***************************************************************************
@@ -71,10 +67,8 @@ CIndexBuffer::CIndexBuffer(const CIndexBuffer &vb)
 	_LockCounter = 0;
 	_LockedBuffer = NULL;
 	_PreferredMemory = RAMPreferred;
-	Location = NotResident;
-	_WriteOnly[RAMPreferred] = false;
-	_WriteOnly[AGPPreferred] = true;
-	_WriteOnly[VRAMPreferred] = true;
+	_Location = NotResident;
+	_ResidentSize = 0;
 	operator=(vb);
 }
 
@@ -82,6 +76,9 @@ CIndexBuffer::CIndexBuffer(const CIndexBuffer &vb)
 
 CIndexBuffer::~CIndexBuffer()
 {
+	if (DrvInfos)
+		DrvInfos->IndexBufferPtr = NULL;	// Tell the driver info to not restaure memory when it will die
+
 	// Must kill the drv mirror of this VB.
 	DrvInfos.kill();
 }
@@ -101,7 +98,8 @@ CIndexBuffer	&CIndexBuffer::operator=(const CIndexBuffer &vb)
 
 	// Set touch flags
 	_InternalFlags |= TouchedAll;
-	Location = NotResident;
+	_Location = NotResident;
+	_ResidentSize = 0;
 
 	return *this;
 }
@@ -113,20 +111,9 @@ void CIndexBuffer::setPreferredMemory (TPreferredMemory preferredMemory)
 	if (_PreferredMemory != preferredMemory)
 	{
 		_PreferredMemory = preferredMemory;
-		_InternalFlags |= TouchedIndexFormat;
-		Location = NotResident;
-	}
-}
 
-// ***************************************************************************
-
-void CIndexBuffer::setWriteOnly(TPreferredMemory preferredMemory, bool writeOnly)
-{
-	if ((preferredMemory == _PreferredMemory) && (_WriteOnly[preferredMemory] != writeOnly))
-	{
-		_WriteOnly[preferredMemory] = writeOnly;
-		_InternalFlags |= TouchedIndexFormat;
-		Location = NotResident;
+		// Force non resident
+		restaureNonResidentMemory();
 	}
 }
 
@@ -137,34 +124,12 @@ void CIndexBuffer::reserve(uint32 n)
 	nlassert (!isLocked());
 	if (_Capacity != n)
 	{
-		nlassert (!isLocked());
 		const uint oldSize = _Capacity;
-		_NonResidentIndexes.resize(n);
 		_Capacity= n;
-		if (_NbIndexes!=std::min (_NbIndexes,_Capacity))
-		{
-			_NbIndexes=std::min (_NbIndexes,_Capacity);
-			_InternalFlags |= TouchedNumIndexes;
-		}
+		_NbIndexes=std::min (_NbIndexes,_Capacity);
 
-		// Download old buffer
-		if (isResident())
-		{
-			// Readable memory ?
-			if (!_WriteOnly[Location])
-			{
-				const uint copySize = std::min ((uint)oldSize, (uint)_Capacity);
-				if (copySize)
-				{
-					nlassert (DrvInfos);
-					const uint32 *ptr = DrvInfos->lock (0, copySize, true);
-					memcpy (&(_NonResidentIndexes[0]), ptr, copySize*sizeof(uint32));
-					DrvInfos->unlock (0, 0);
-				}
-			}
-		}
-		_InternalFlags |= TouchedReserve;
-		Location = NotResident;
+		// Force non resident
+		restaureNonResidentMemory();
 	}
 }
 
@@ -199,23 +164,94 @@ void CIndexBuffer::deleteAllIndexes()
 			_InternalFlags |= TouchedNumIndexes;
 		}
 
-		_InternalFlags |= TouchedReserve;
-		Location = NotResident;
+		// Force non resident
+		restaureNonResidentMemory();
 
 		// Delete driver info
-		DrvInfos.kill();
+		nlassert (DrvInfos == NULL);
 	}
+}
+
+// ***************************************************************************
+
+void CIndexBuffer::setLocation (TLocation newLocation)
+{
+	// Upload ?
+	if (newLocation != NotResident)
+	{
+		// The driver must have setuped the driver info
+		nlassert (DrvInfos);
+
+		// The buffer must not be resident
+		if (_Location != NotResident)
+			setLocation (NotResident);
+
+		// Copy the buffer containt
+		uint32 *dest = DrvInfos->lock (0, 0, false);
+		nlassert (_NonResidentIndexes.size() == _Capacity);	// Internal buffer must have the good size
+		if (_Capacity != 0)
+			memcpy (dest, &(_NonResidentIndexes[0]), _Capacity*sizeof(uint32));
+		DrvInfos->unlock(0, 0);
+
+		// Reset the non resident container
+		contReset(_NonResidentIndexes);
+
+		// Clear touched flags
+		resetTouchFlags ();
+
+		_Location =	newLocation;
+		_ResidentSize = _Capacity*sizeof(uint32);
+	}
+	else
+	{
+		// Resize the non resident buffer
+		_NonResidentIndexes.resize (_Capacity);
+
+		// If resident in RAM, backup the data in non resident memory
+		if (_Location == RAMResident)
+		{
+			// The driver must have setuped the driver info
+			nlassert (DrvInfos);
+
+			// Copy the old buffer data
+			const uint32 *src = DrvInfos->lock (0, 0, true);
+			uint size = std::min ((uint)(_Capacity*sizeof(uint32)), (uint)_ResidentSize);
+			if (size)
+				memcpy (&(_NonResidentIndexes[0]), src, size);
+			DrvInfos->unlock(0, 0);
+		}
+
+		_Location = NotResident;
+		_ResidentSize = 0;
+
+		// Touch the buffer
+		_InternalFlags |= TouchedAll;
+	}
+}
+
+// ***************************************************************************
+
+void CIndexBuffer::restaureNonResidentMemory()
+{
+	setLocation (NotResident);
+	
+	if (DrvInfos)
+		DrvInfos->IndexBufferPtr = NULL;	// Tell the driver info to not restaure memory when it will die
+
+	// Must kill the drv mirror of this VB.
+	DrvInfos.kill();
 }
 
 // ***************************************************************************
 
 void CIndexBuffer::serial(NLMISC::IStream &f)
 {
-	/** Version 1 : index buffer
+	/** Version 2 : no more write only flags
+	  * Version 1 : index buffer
 	  * Version 0 : primitive block
 	  */
 
-	sint ver = f.serialVersion(1);
+	sint ver = f.serialVersion(2);
 
 	// Primitive block?
 	if (ver < 1)
@@ -244,33 +280,25 @@ void CIndexBuffer::serial(NLMISC::IStream &f)
 		f.serial(_NbIndexes, _Capacity);
 		f.serialCont(_NonResidentIndexes);
 		f.serialEnum(_PreferredMemory);
-		uint i;
-		for (i=0; i<PreferredCount; i++)
-			f.serial(_WriteOnly[i]);
+
+		// Read the old format
+		if (ver == 1)
+		{
+			uint i;
+			bool temp;
+			for (i=0; i<PreferredCount; i++)
+				f.serial(temp);
+		}
 	}
 
 	// Loaded ?
 	if (f.isReading())
 	{
-		_InternalFlags |= TouchedAll;
-		Location = NotResident;
+		// Force non resident
+		restaureNonResidentMemory();
 	}
 }
 
 // ***************************************************************************
 
-void CIndexBuffer::releaseNonResidentIndexes ()
-{
-	contReset(_NonResidentIndexes);
-}
-
-// ***************************************************************************
-
-void CIndexBuffer::restoreNonResidentIndexes ()
-{
-	_NonResidentIndexes.resize (_NbIndexes);
-}
-
-// ***************************************************************************
-
-}
+} // namespace NL3D

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_index.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_index.cpp,v 1.1 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_direct3d_index.cpp,v 1.2 2004/03/23 16:32:27 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -87,9 +87,9 @@ void	CIBDrvInfosD3D::unlock (uint first, uint last)
 
 DWORD RemapIndexBufferUsage[CIndexBuffer::PreferredCount]=
 {
-	D3DUSAGE_DYNAMIC,	// RAMPreferred
-	D3DUSAGE_DYNAMIC,	// AGPPreferred
-	0,					// VRAMPreferred
+	D3DUSAGE_DYNAMIC,						// RAMPreferred
+	D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY,	// AGPPreferred
+	D3DUSAGE_WRITEONLY,						// VRAMPreferred
 };
 
 // ***************************************************************************
@@ -98,7 +98,7 @@ D3DPOOL RemapIndexBufferPool[CIndexBuffer::PreferredCount]=
 {
 	D3DPOOL_SYSTEMMEM,	// RAMPreferred
 	D3DPOOL_DEFAULT,	// AGPPreferred
-	D3DPOOL_MANAGED,	// VRAMPreferred
+	D3DPOOL_DEFAULT,	// VRAMPreferred
 };
 
 // ***************************************************************************
@@ -138,7 +138,7 @@ bool CDriverD3D::activeIndexBuffer(CIndexBuffer& IB)
 			do
 			{
 				if (sucess =(_DeviceInterface->CreateIndexBuffer(size*sizeof(uint32), 
-					(IB.getWriteOnly((CIndexBuffer::TPreferredMemory)preferredMemory)?D3DUSAGE_WRITEONLY:0)|RemapIndexBufferUsage[preferredMemory],
+					RemapIndexBufferUsage[preferredMemory],
 					D3DFMT_INDEX32, RemapIndexBufferPool[preferredMemory], &(info->IndexBuffer), NULL) == D3D_OK))
 					break;
 			}
@@ -148,37 +148,10 @@ bool CDriverD3D::activeIndexBuffer(CIndexBuffer& IB)
 
 			indexCount++;
 
-			// Copy the index buffer
-			uint32 *out = info->lock (0, 0, false);
-			nlassert (out);
-			{
-				CIndexBufferRead iba;
-				IB.lock(iba);
-				memcpy (out, iba.getPtr(), size*sizeof(uint32));
-			}
-			info->unlock (0, 0);
-
-			// Set the new location
-			switch (preferredMemory)
-			{
-			case CIndexBuffer::RAMPreferred:
-				IB.Location = CIndexBuffer::RAMResident;
-				break;
-			case CIndexBuffer::AGPPreferred:
-				IB.Location = CIndexBuffer::AGPResident;
-				break;
-			case CIndexBuffer::VRAMPreferred:
-				IB.Location = CIndexBuffer::VRAMResident;
-				break;
-			}
-
 			// Release the local index buffer
 			IB.DrvInfos = info;
-			IB.releaseNonResidentIndexes();
+			IB.setLocation((CIndexBuffer::TLocation)preferredMemory);
 		}
-
-		// Reset touch flags
-		IB.resetTouchFlags ();
 
 		// Set the current index buffer
 		nlassert (IB.DrvInfos);
@@ -201,6 +174,45 @@ bool CDriverD3D::supportIndexBufferHard() const
 void CDriverD3D::disableHardwareIndexArrayAGP()
 {
 	_DisableHardwareIndexArrayAGP = true;
+}
+
+// ***************************************************************************
+
+void CDriverD3D::restaureIndexBuffer (CIBDrvInfosD3D &indexBuffer)
+{
+	/* Restaure a resident index buffer to system memory
+	 * 
+	 * We use a tricky code here. We read "writeonly" index buffer data.
+	 * We lock the whole buffer and read with the pointer returned.
+	 */
+	/* Hulud test : read in a "write only" index buffer. Seams to work well. */
+
+	CIndexBuffer *ib = indexBuffer.IndexBufferPtr;
+	const uint size = ib->capacity()*sizeof(uint32);
+	
+	// No special flag for the lock, the driver should return a valid index buffer pointer with previous values.
+	uint32 *out = indexBuffer.lock (0, 0, false);
+	nlassert (out);
+	{
+		if (ib->getLocation () == CIndexBuffer::RAMResident)
+		{
+			// Realloc local memory
+			ib->setLocation (CIndexBuffer::NotResident);	// If resident in RAM, content backuped by setLocation
+		}
+		else
+		{
+			// Realloc local memory
+			ib->setLocation (CIndexBuffer::NotResident);
+
+			// Lock the index buffer
+			CIndexBufferReadWrite iba;
+			ib->lock (iba);
+
+			// Copy the index data
+			memcpy (iba.getPtr(), out, size);
+		}
+	}
+	indexBuffer.unlock (0, 0);
 }
 
 // ***************************************************************************

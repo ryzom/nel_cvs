@@ -1,7 +1,7 @@
 /** \file index_buffer.h
  * Index buffers.
  *
- * $Id: index_buffer.h,v 1.1 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: index_buffer.h,v 1.2 2004/03/23 16:32:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,8 @@ using NLMISC::CRefPtr;
 
 // List typedef.
 class	IIBDrvInfos;
-class IDriver;
+class	CIndexBuffer;
+class	IDriver;
 typedef	std::list<IIBDrvInfos*>			TIBDrvInfoPtrList;
 typedef	TIBDrvInfoPtrList::iterator		ItIBDrvInfoPtrList;
 
@@ -57,10 +58,11 @@ class IIBDrvInfos : public CRefCount
 private:
 	IDriver				*_Driver;
 	ItIBDrvInfoPtrList	_DriverIterator;
-	class CIndexBuffer	*_IndexBuffer;
 
 public:
-	IIBDrvInfos(IDriver	*drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib) {_Driver= drv; _DriverIterator= it; _IndexBuffer = ib;}
+	CRefPtr<CIndexBuffer>	IndexBufferPtr;
+
+	IIBDrvInfos(IDriver	*drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib) {_Driver= drv; _DriverIterator= it; IndexBufferPtr = ib;}
 
 	/** Lock method.
 	  * \param first is the first index to be accessed. Put 0 to select all the indexes. What ever is this index, 
@@ -75,7 +77,8 @@ public:
 	  */
 	virtual void	unlock (uint first, uint last) =0;
 
-	// The virtual dtor is important.
+	/* The virtual dtor is important.
+	 * The driver implementation must call setLocation (NotResident) if IndexBufferPtr!=NULL.*/
 	virtual ~IIBDrvInfos();
 };
 
@@ -86,11 +89,15 @@ public:
  * Once the index buffer is resident, the driver creates its proprietary index buffer and release the internal index buffer.
  * At this moment the index buffer can be in VRAM, AGP or system memory.
  *
+ * The index buffers resident in AGP and VRAM are writeonly, i-e, you can't read them after a lock(). If you change the capacity 
+ * of the format of a writeonly buffer, the content is lost.
+ *
  */
 /* *** IMPORTANT ********************
  * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
  * **********************************
  */
+
 // All these flags are similar to DX8
 class CIndexBuffer : public CRefCount
 {
@@ -143,12 +150,17 @@ public:
 
 	// \name Private. For Driver only.
 	// @{
-	TLocation				Location;		// The driver implementation must set the location after activeIndexBuffer.
 	CRefPtr<IIBDrvInfos>	DrvInfos;
 	uint					getTouchFlags() const { return _InternalFlags&TouchedAll; }
-	void					resetTouchFlags() {_InternalFlags &= ~TouchedAll;}
-	void					releaseNonResidentIndexes ();
-	void					restoreNonResidentIndexes ();
+
+	/** Used by the driver implementation. The driver must first allocate its internal buffer and fill DrvInfos. Then it has to call setLocation(true).
+	  *
+	  * If newLocation!=NotResident, setLocation() will copy the non resident buffer in the choosed resident memory, release the non resident memory and 
+	  * untouch the buffer.
+	  *
+	  * If newLocation==NotResident, setLocation() will realloc the non resident buffer, copy the index data if the buffer was resident in RAM. Then
+	  * it will touch the buffer.*/
+	void					setLocation (TLocation newLocation);	// The driver implementation must set the location after activeIndexBuffer.
 	// @}
 
 public:
@@ -173,7 +185,7 @@ public:
 	  * Copy operator.
 	  * Do not copy DrvInfos, copy all infos and set IDRV_VF_TOUCHED_ALL.
 	  * All the destination index buffer is invalidated. Data are lost.
-	  * The index buffer must not be locked.
+	  * The source and destination buffers must be unlocked.
 	  */
 	CIndexBuffer			&operator=(const CIndexBuffer &vb);
 
@@ -189,9 +201,10 @@ public:
 	  *	 - for AGP CIndexBuffer, you should write sequentially to take full advantage of the write combiners.
 	  *	 - for VRAM CIndexBuffer, you should write only one time, to init.
 	  *
-	  * If the index buffer is resident, the data are lost and the index buffer is no more resident.
-	  * The index buffer is invalidated. Data are lost.
-	  * The index buffer must not be locked.
+	  * If the index buffer is resident in AGP or VRAM, the data are lost.
+	  * The index buffer is no more resident.
+	  * The index buffer is invalidated.
+	  * The index buffer must be unlocked before the call.
 	  */
 	void setPreferredMemory (TPreferredMemory preferredMemory);
 
@@ -203,27 +216,13 @@ public:
 	/**
 	  * Get the index buffer current location.
 	  */
-	TLocation getLocation () const { return Location; }
-
-	/**
-	  * Set the write only memory flag for each memory type. If set, the user must not read the memory of this index buffer.
-	  * Default is false for RAMPreferred and true for AGPPreferred and VRAMPreferred.
-	  *
-	  * If the index buffer is resident in the memory type modified, the data are lost and the index buffer is no more resident,
-	  * the index buffer is invalidated. Data are lost and the index buffer must not be locked.
-	  */ 
-	void setWriteOnly(TPreferredMemory preferredMemory, bool writeOnly);
-
-	/**
-	  * Get write only memory flag.
-	  */ 
-	bool getWriteOnly(TPreferredMemory preferredMemory) const {return _WriteOnly[preferredMemory];}
+	TLocation getLocation () const { return _Location; }
 
 	/**
 	  * Returns if the index buffer is driver resident or not.
 	  * The index buffer is resident after a call to IDriver::activeIndexBuffer().
 	  */
-	bool isResident () const { return (Location != NotResident) && DrvInfos; }
+	bool isResident () const { return (_Location != NotResident) && DrvInfos; }
 
 	/** 
 	  * Set the number of active indexes. It enlarge capacity, if needed.
@@ -240,19 +239,20 @@ public:
 	/**
 	  * Reset all the indexes from memory (contReset()), so that capacity() == getNumIndexes() == 0.
 	  *
-	  * If the index buffer is resident, the data are lost and the index buffer is no more resident.
-	  * The index buffer is invalidated. Data are lost.
-	  * The index buffer must not be locked.
+	  * If the index buffer is resident in AGP or VRAM, the data are lost.
+	  * The index buffer is no more resident.
+	  * The index buffer is invalidated.
+	  * The index buffer must be unlocked before the call.
 	  */
 	void					deleteAllIndexes();
 
 	/**
 	  * Reserve space for nIndexes indexes. You are allowed to write your indexes on this space.
-	  * If the index buffer is resident in a write only memory, the data are lost and the index buffer is no more resident.
-	  * If the index buffer is not resident or resident in a readable memory, the data are keeped.
 	  *
-	  * The index buffer is invalidated. Data are lost.
-	  * The index buffer must not be locked.
+	  * If the index buffer is resident in AGP or VRAM, the data are lost.
+	  * The index buffer is no more resident.
+	  * The index buffer is invalidated.
+	  * The index buffer must be unlocked before the call.
 	  */
 	void					reserve(uint32 nIndexes);
 	
@@ -262,9 +262,10 @@ public:
 	uint32					capacity() { return _Capacity; }
 
 	/**
-	  * If the index buffer is resident, the data are lost and the index buffer is no more resident.
+	  * If the index buffer is resident in AGP or VRAM, the data are lost.
+	  * The index buffer is no more resident.
 	  * The index buffer is invalidated.
-	  * The index buffer must not be locked.
+	  * The index buffer must be unlocked before the call.
 	  */
 	void					serial(NLMISC::IStream &f);
 
@@ -284,6 +285,8 @@ public:
 	  * Read only indexes access. Multi lock is possible only if no regions are used. Each lock need an accessor to be unlocked.
 	  *
 	  * Lock the index buffer and return and fill an accessor object. Once the object is destroyed, the buffer in unlocked.
+	  *
+	  * Readonly lock will fail if the buffer is resident in AGP or VRAM.
 	  *
 	  * \param accessor is the accessor object to fill
 	  * \param first is the first index to be accessed. Put 0 to select all the indexes. What ever is this index, 
@@ -313,6 +316,12 @@ private:
 	  * \param last the last index that as been modified + 1.
 	  */
 	inline void	unlock () const;
+
+	// Reset the touch flags
+	void		resetTouchFlags() {_InternalFlags &= ~TouchedAll;}
+
+	// Force non resident memory
+	void		restaureNonResidentMemory();
 	
 private:
 
@@ -334,11 +343,14 @@ private:
 	// The index buffer is locked n times
 	mutable uint			_LockCounter;
 
+	// Location of the buffer
+	TLocation				_Location;
+
 	// Prefered memory
 	TPreferredMemory		_PreferredMemory;
 
-	// Write only
-	bool					_WriteOnly[PreferredCount];
+	// Resident buffer size
+	uint32					_ResidentSize;
 };
 
 /**
@@ -504,7 +516,7 @@ inline void CIndexBuffer::lock (CIndexBufferRead &accessor, uint first, uint las
 		if (isResident())
 		{
 			// Can read it ?
-			nlassertex (!_WriteOnly[Location], ("Try to read a write only index buffer"));
+			nlassertex (_Location==RAMResident, ("Try to read a write only index buffer"));
 			_LockedBuffer = DrvInfos->lock (first, last, true);
 		}
 		else
@@ -560,146 +572,6 @@ inline void CIndexBuffer::unlock () const
 }
 
 // ***************************************************************************
-
-
-
-
-
-
-
-
-
-
-//todo hulud remove
-#if 0
-/**
- * Class CIndexBuffer
- *
- */
-/* *** IMPORTANT ********************
- * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
- * **********************************
- */
-class CIndexBuffer
-{
-private:
-	// Triangles.
-	uint32				_NbTris;
-	uint32				_TriCapacity;
-	std::vector<uint32>	_Indexes;
-
-	// Quads
-	uint32				_NbQuads;
-	uint32				_QuadCapacity;
-	std::vector<uint32>	_Quad;
-
-	// Lines
-	uint32				_NbLines;
-	uint32				_LineCapacity;
-	std::vector<uint32>	_Line;
-
-	/// \todo hulud: support for strips and fans
-	// Strip/Fans
-	uint32				_StripIdx;
-	uint32*				_Strip;
-	uint32				_FanIdx;
-	uint32*				_Fan;
-public:
-						CIndexBuffer(void) 
-						{_TriCapacity=_NbTris= _NbQuads=_QuadCapacity=_NbLines=_LineCapacity= 0;};
-						~CIndexBuffer(void) {}; 
-	
-	
-	// Lines. A line is 2 uint32.
-	
-	/// reserve space for nLines Line. You are allowed to write your Line indices on this space.
-	void				reserveLine(uint32 n);
-	/// Return the number of Line reserved.
-	uint32				capacityLine() const {return _LineCapacity;}
-	/// Set the number of active Line. It enlarge Line capacity, if needed.
-	void				setNumLine(uint32 n);
-	/// Get the number of active Lineangles.
-	uint32				getNumLine(void) const {return _NbLines;}
-
-	/// Build a Lineangle.
-	void				setLine(uint lineIdx, uint32 vidx0, uint32 vidx1);
-	/// Apend a line at getNumLine() (then resize +1 the numline).
-	void				addLine(uint32 vidx0, uint32 vidx1);
-
-	uint32*				getLinePointer(void);
-	const uint32*				getLinePointer(void) const ;
-
-
-
-	// Triangles. A triangle is 3 uint32.
-	
-	/// reserve space for nTris triangles. You are allowed to write your triangles indices on this space.
-	void				reserveTri(uint32 n);
-	/// Return the number of triangles reserved.
-	uint32				capacityTri() {return _TriCapacity;}
-	/// Set the number of active triangles. It enlarge Tri capacity, if needed.
-	void				setNumTri(uint32 n);
-	/// Get the number of active triangles.
-	uint32				getNumTri(void) const {return _NbTris;}
-
-	/// Build a triangle.
-	void				setTri(uint triIdx, uint32 vidx0, uint32 vidx1, uint32 vidx2);
-
-	uint32*				getPtr(void);
-	const uint32*				getPtr(void) const ;
-
-
-
-
-	// Quads (a quad is 4 uint32)
-
-	/**
-	 *	reserve space for quads. 
-	 */
-	void reserveQuad(uint32 n);
-	
-	/**
-	 * Return the number of triangles reserved.
-	 */
-	uint32 capacityQuad() { return _QuadCapacity; }
-	
-	/**
-	 * Set the number of active quads. It enlarges Quad capacity, if needed.
-	 */
-	void setNumQuad(uint32 n);
-	
-	/**
-	 * Get the number of active quads.
-	 */
-	uint32 getNumQuad(void) const { return _NbQuads; }
-
-	/**
-	 * Build a quad.
-	 */
-	void setQuad(uint quadIdx, uint32 vidx0, uint32 vidx1, uint32 vidx2, uint32 vidx3);
-
-	/// Apend a quad at getNumQuad() (then resize +1 the numquad).
-	void				addQuad(uint32 vidx0, uint32 vidx1, uint32 vidx2, uint32 vidx3);
-
-	/**
-	 * Return the Quad buffer
-	 */
-	uint32*	getQuadPointer(void);
-
-	/// return the quad buffer, const version
-	const uint32*	getQuadPointer(void) const ;
-
-	/// return total number of triangle in this primitive block
-	uint32	getNumTriangles ()
-	{
-		// Return number of triangles in this primitive block
-		return _NbTris+2*_NbQuads+_NbLines;
-	}
-
-	void		serial(NLMISC::IStream &f);
-};
-#endif 
-
 } // NL3D
 
 

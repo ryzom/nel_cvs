@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.39 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: vertex_buffer.cpp,v 1.40 2004/03/23 16:32:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,9 +107,8 @@ CVertexBuffer::CVertexBuffer()
 	_LockCounter = 0;
 	_LockedBuffer = NULL;
 	_PreferredMemory = RAMPreferred;
-	_WriteOnly[RAMPreferred] = false;
-	_WriteOnly[AGPPreferred] = true;
-	_WriteOnly[VRAMPreferred] = true;
+	_Location = NotResident;
+	_ResidentSize = 0;
 
 	// Default routing
 	uint i; 
@@ -128,10 +127,8 @@ CVertexBuffer::CVertexBuffer(const CVertexBuffer &vb)
 	_LockCounter = 0;
 	_LockedBuffer = NULL;
 	_PreferredMemory = RAMPreferred;
-	Location = NotResident;
-	_WriteOnly[RAMPreferred] = false;
-	_WriteOnly[AGPPreferred] = true;
-	_WriteOnly[VRAMPreferred] = true;
+	_Location = NotResident;
+	_ResidentSize = 0;
 	operator=(vb);
 
 	// Default routing
@@ -144,6 +141,9 @@ CVertexBuffer::CVertexBuffer(const CVertexBuffer &vb)
 
 CVertexBuffer::~CVertexBuffer()
 {
+	if (DrvInfos)
+		DrvInfos->VertexBufferPtr = NULL;	// Tell the driver info to not restaure memory when it will die
+
 	// Must kill the drv mirror of this VB.
 	DrvInfos.kill();
 }
@@ -153,6 +153,7 @@ CVertexBuffer::~CVertexBuffer()
 CVertexBuffer	&CVertexBuffer::operator=(const CVertexBuffer &vb)
 {
 	nlassertex (!isLocked(), ("The vertex buffer is locked."));
+	nlassertex (!vb.isLocked(), ("Source buffer is locked."));
 
 	// Single value
 	_VertexSize = vb._VertexSize;
@@ -164,8 +165,6 @@ CVertexBuffer	&CVertexBuffer::operator=(const CVertexBuffer &vb)
 	_VertexColorFormat = vb._VertexColorFormat;
 	_PreferredMemory = vb._PreferredMemory;
 	uint i;
-	for (i=0; i<PreferredCount; i++)
-		_WriteOnly[i] = vb._WriteOnly[i];
 	_LockCounter = 0;
 	_LockedBuffer = NULL;
 
@@ -182,7 +181,8 @@ CVertexBuffer	&CVertexBuffer::operator=(const CVertexBuffer &vb)
 
 	// Set touch flags
 	_InternalFlags |= TouchedAll;
-	Location = NotResident;
+	_Location = NotResident;
+	_ResidentSize = 0;
 
 	return *this;
 }
@@ -260,6 +260,9 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 
 	// Compute the vertex buffer
 	initEx ();
+
+	// Force non resident
+	restaureNonResidentMemory();
 
 	return (true);
 }
@@ -399,10 +402,6 @@ void CVertexBuffer::initEx ()
 {
 	nlassert (!isLocked());
 
-	// Reset internal flag
-	_InternalFlags=TouchedVertexFormat;
-	Location = NotResident;
-
 	// Calc vertex size and set value's offset
 	_VertexSize=0;
 	for (uint value=0; value<NumValue; value++)
@@ -426,6 +425,9 @@ void CVertexBuffer::initEx ()
 		_Capacity = _NonResidentVertices.size()/_VertexSize;
 	else
 		_Capacity = 0;
+
+	// Force non resident
+	restaureNonResidentMemory();
 }
 
 // --------------------------------------------------
@@ -435,34 +437,12 @@ void CVertexBuffer::reserve(uint32 n)
 	nlassert (!isLocked());
 	if (_Capacity != n)
 	{
-		nlassert (!isLocked());
 		const uint oldSize = _Capacity;
-		_NonResidentVertices.resize(n*_VertexSize);
 		_Capacity= n;
-		if (_NbVerts!=std::min (_NbVerts,_Capacity))
-		{
-			_NbVerts=std::min (_NbVerts,_Capacity);
-			_InternalFlags |= TouchedNumVertices;
-		}
+		_NbVerts=std::min (_NbVerts,_Capacity);
 
-		// Download old buffer
-		if (isResident())
-		{
-			// Readable memory ?
-			if (!_WriteOnly[Location])
-			{
-				const uint copySize = std::min ((uint)oldSize, (uint)_Capacity);
-				if (copySize)
-				{
-					nlassert (DrvInfos);
-					const uint8 *ptr = DrvInfos->lock (0, copySize, true);
-					memcpy (&(_NonResidentVertices[0]), ptr, copySize);
-					DrvInfos->unlock (0, 0);
-				}
-			}
-		}
-		_InternalFlags |= TouchedReserve;
-		Location = NotResident;
+		// Force non resident
+		restaureNonResidentMemory();
 	}
 }
 
@@ -497,24 +477,11 @@ void	CVertexBuffer::deleteAllVertices()
 			_InternalFlags |= TouchedNumVertices;
 		}
 
-		// If resident, touch all, data are lost
-		_InternalFlags |= TouchedReserve;
-		Location = NotResident;
+		// Force non resident
+		restaureNonResidentMemory();
 
 		// Delete driver info
-		DrvInfos.kill();
-	}
-}
-
-// --------------------------------------------------
-
-void CVertexBuffer::setWriteOnly(TPreferredMemory preferredMemory, bool writeOnly)
-{
-	if ((preferredMemory == _PreferredMemory) && (_WriteOnly[preferredMemory] != writeOnly))
-	{
-		_WriteOnly[preferredMemory] = writeOnly;
-		_InternalFlags |= TouchedVertexFormat;
-		Location = NotResident;
+		nlassert (DrvInfos == NULL);
 	}
 }
 
@@ -712,8 +679,8 @@ void		CVertexBuffer::serialOldV1Minus(NLMISC::IStream &f, sint ver)
 	_InternalFlags = 0;
 	if(f.isReading())
 	{
-		_InternalFlags |= TouchedAll;
-		Location = NotResident;
+		// Force non resident
+		restaureNonResidentMemory();
 	}
 }
 
@@ -761,7 +728,7 @@ void		CVertexBuffer::serialHeader(NLMISC::IStream &f)
 	Version 0:
 		- base verison of the header serialisation.
 	*/
-	sint	ver= f.serialVersion(2);
+	sint	ver= f.serialVersion(3);	// Hulud
 
 	// Serial VBuffers format/size.
 	//=============================
@@ -849,9 +816,6 @@ void		CVertexBuffer::serialHeader(NLMISC::IStream &f)
 	if (ver>=3)
 	{
 		f.serialEnum(_PreferredMemory);
-		uint i;
-		for (i=0; i<PreferredCount; i++)
-			f.serial(_WriteOnly[i]);
 		f.serial(_Name);
 	}
 	else
@@ -860,9 +824,6 @@ void		CVertexBuffer::serialHeader(NLMISC::IStream &f)
 		if(f.isReading())
 		{
 			_PreferredMemory = RAMPreferred;
-			_WriteOnly[RAMPreferred] = false;
-			_WriteOnly[AGPPreferred] = true;
-			_WriteOnly[VRAMPreferred] = true;
 			_Name = "";
 		}
 	}
@@ -905,6 +866,8 @@ uint8		CVertexBuffer::getNumWeight () const
 void		CVertexBuffer::serialSubset(NLMISC::IStream &f, uint vertexStart, uint vertexEnd)
 {
 	/*
+	Version 2:
+		- UVRouting
 	Version 1:
 		- weight is 4 float in standard format.
 	Version 0:
@@ -949,8 +912,8 @@ void		CVertexBuffer::serialSubset(NLMISC::IStream &f, uint vertexStart, uint ver
 	// Set touch flags
 	if(f.isReading())
 	{
-		_InternalFlags |= TouchedAll;
-		Location = NotResident;
+		// Force non resident
+		restaureNonResidentMemory();
 	}
 }
 
@@ -998,8 +961,9 @@ bool CVertexBuffer::setVertexColorFormat (TVertexColorType format)
 			}
 		}
 		_VertexColorFormat = (uint8)format;
-		_InternalFlags |= TouchedVertexFormat;
-		Location = NotResident;
+
+		// Force non resident
+		restaureNonResidentMemory();
 	}
 	return true;
 }
@@ -1011,23 +975,81 @@ void CVertexBuffer::setPreferredMemory (TPreferredMemory preferredMemory)
 	if (_PreferredMemory != preferredMemory)
 	{
 		_PreferredMemory = preferredMemory;
-		_InternalFlags |= TouchedVertexFormat;
-		Location = NotResident;
+
+		// Force non resident
+		restaureNonResidentMemory();
 	}
 }
 
 // --------------------------------------------------
-
-void CVertexBuffer::releaseNonResidentVertices ()
+void CVertexBuffer::setLocation (TLocation newLocation)
 {
-	contReset(_NonResidentVertices);
+	// Upload ?
+	if (newLocation != NotResident)
+	{
+		// The driver must have setuped the driver info
+		nlassert (DrvInfos);
+
+		// Current size of the buffer
+		const uint size = _Capacity*_VertexSize;
+
+		// The buffer must not be resident
+		if (_Location != NotResident)
+			setLocation (NotResident);
+
+		// Copy the buffer containt
+		uint8 *dest = DrvInfos->lock (0, 0, false);
+		nlassert (_NonResidentVertices.size() == size);	// Internal buffer must have the good size
+		memcpy (dest, &(_NonResidentVertices[0]), size);
+		DrvInfos->unlock(0, 0);
+
+		// Reset the non resident container
+		contReset(_NonResidentVertices);
+
+		// Clear touched flags
+		resetTouchFlags ();
+
+		_Location =	newLocation;
+		_ResidentSize = size;
+	}
+	else
+	{
+		// Current size of the buffer
+		const uint size = _Capacity*_VertexSize;
+
+		// Resize the non resident buffer
+		_NonResidentVertices.resize (size);
+
+		// If resident in RAM, backup the data in non resident memory
+		if (_Location == RAMResident)
+		{
+			// The driver must have setuped the driver info
+			nlassert (DrvInfos);
+
+			// Copy the old buffer data
+			const uint8 *src = DrvInfos->lock (0, 0, true);
+			memcpy (&(_NonResidentVertices[0]), src, std::min (size, (uint)_ResidentSize));
+			DrvInfos->unlock(0, 0);
+		}
+
+		_Location = NotResident;
+		_ResidentSize = 0;
+
+		// Touch the buffer
+		_InternalFlags |= TouchedAll;
+	}
 }
 
 // --------------------------------------------------
-
-void CVertexBuffer::restoreNonResidentVertices ()
+void CVertexBuffer::restaureNonResidentMemory()
 {
-	_NonResidentVertices.resize (_NbVerts*_VertexSize);
+	setLocation (NotResident);
+	
+	if (DrvInfos)
+		DrvInfos->VertexBufferPtr = NULL;	// Tell the driver info to not restaure memory when it will die
+
+	// Must kill the drv mirror of this VB.
+	DrvInfos.kill();
 }
 
 // --------------------------------------------------
@@ -1042,11 +1064,6 @@ void	CPaletteSkin::serial(NLMISC::IStream &f)
 
 IVBDrvInfos::~IVBDrvInfos()
 {
-	if (_VertexBuffer)
-	{
-		_VertexBuffer->Location = CVertexBuffer::NotResident;
-		_VertexBuffer->restoreNonResidentVertices ();
-	}
 	_Driver->removeVBDrvInfoPtr(_DriverIterator);
 }
 

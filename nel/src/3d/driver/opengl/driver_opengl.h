@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.160 2004/03/23 10:25:01 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.161 2004/03/23 16:32:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,6 +139,7 @@ public:
 	// Verex buffer hard ?
 	IVertexBufferHardGL		*_VBHard;
 	class CDriverGL			*_DriverGL;
+	uint8					*_SystemMemory;
 
 
 	// From IVBDrvInfos

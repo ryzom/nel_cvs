@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.3 2004/03/23 10:26:20 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.4 2004/03/23 16:32:27 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -90,8 +90,8 @@ CDriverD3D::CDriverD3D()
 	_HWnd = NULL;
 	_DeviceInterface = NULL;
 	_DestroyWindow = false;
-	_WindowWidth = 640;
-	_WindowHeight = 480;
+	_CurrentMode.Width = 640;
+	_CurrentMode.Height = 480;
 	_WindowX = 0;
 	_WindowY = 0;
 	_UserViewMtx.identity();
@@ -200,7 +200,9 @@ void CDriverD3D::resetRenderVariables()
 		_MatrixCache[i].Modified = false;
 	}
 	_VertexBuffer.Modified = false;
+	_VertexBuffer.VertexBuffer = NULL;
 	_IndexBuffer.Modified = false;
+	_IndexBuffer.IndexBuffer = NULL;
 	for (i=0; i<MaxLight; i++)
 	{
 		_LightCache[i].LightIndex = i;
@@ -516,14 +518,6 @@ static void D3DWndProc(CDriverD3D *driver, HWND hWnd, UINT message, WPARAM wPara
 	{
 		if (driver != NULL)
 		{
-			RECT rect;
-			GetClientRect (driver->_HWnd, &rect);
-
-			// Setup d3d resolution
-			driver->_WindowWidth = rect.right-rect.left;
-			driver->_WindowHeight = rect.bottom-rect.top;
-			if (driver->_DeviceInterface)
-				driver->updateProjectionMatrix ();
 		}
 	}
 	else if(message == WM_MOVE)
@@ -651,9 +645,6 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 
 	// Create a window
 	_HWnd = (HWND)wnd;
-	_Depth = mode.Depth;
-	_WindowWidth = mode.Width;
-	_WindowHeight = mode.Height;
 
 	if (_HWnd)
 	{
@@ -663,11 +654,17 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		// Init Window Width and Height
 		RECT clientRect;
 		GetClientRect (_HWnd, &clientRect);
-		_WindowWidth = clientRect.right-clientRect.left;
-		_WindowHeight = clientRect.bottom-clientRect.top;
+		_CurrentMode.OffScreen = false;
+		_CurrentMode.Width = (uint16)(clientRect.right-clientRect.left);
+		_CurrentMode.Height = (uint16)(clientRect.bottom-clientRect.top);
+		_CurrentMode.Frequency = 0;
+		_CurrentMode.Windowed = true;
+		_CurrentMode.Depth = 32;
 	}
 	else
 	{
+		_CurrentMode = mode;
+
 		// We have to destroy this window
 		_DestroyWindow = true;
 
@@ -678,8 +675,8 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		RECT	WndRect;
 		WndRect.left=0;
 		WndRect.top=0;
-		WndRect.right=_WindowWidth;
-		WndRect.bottom=_WindowHeight;
+		WndRect.right=_CurrentMode.Width;
+		WndRect.bottom=_CurrentMode.Height;
 		AdjustWindowRect(&WndRect,WndFlags,FALSE);
 
 		// Create
@@ -696,28 +693,12 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		SetWindowLong (_HWnd, GWL_USERDATA, (LONG)this);
 
 		// Show the window
-		if (show || !mode.Windowed)
+		if (show || !_CurrentMode.Windowed)
 			ShowWindow(_HWnd,SW_SHOW);
 	}
 
 	// Choose an adapter
 	UINT adapter = (_Adapter==0xffffffff)?D3DADAPTER_DEFAULT:(UINT)_Adapter;
-
-	// Create device options
-	D3DPRESENT_PARAMETERS parameters;
-	memset (&parameters, 0, sizeof(D3DPRESENT_PARAMETERS));
-	parameters.BackBufferWidth = _WindowWidth;
-	parameters.BackBufferHeight = _WindowHeight;
-    parameters.BackBufferFormat = (mode.Depth==16)?D3DFMT_R5G6B5:(mode.Depth==24)?D3DFMT_R8G8B8:D3DFMT_A8R8G8B8;
-    parameters.BackBufferCount = 1;
-    parameters.MultiSampleType = D3DMULTISAMPLE_NONE;
-    parameters.MultiSampleQuality = 0;
-    parameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    parameters.hDeviceWindow = NULL;
-    parameters.Windowed = mode.Windowed;
-    parameters.EnableAutoDepthStencil = TRUE;
-    parameters.FullScreen_RefreshRateInHz = parameters.Windowed?0:mode.Frequency;
-    parameters.PresentationInterval = D3DPRESENT_INTERVAL_DEFAULT;
 
 	// Get adapter format
     D3DDISPLAYMODE adapterMode;
@@ -727,35 +708,15 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		release();
 		return false;
 	}
-	D3DFORMAT adapterFormat = mode.Windowed?adapterMode.Format:parameters.BackBufferFormat;
 
-	// Choose a zbuffer format
-	D3DFORMAT zbufferFormats[]=
+	// Create device options
+	D3DPRESENT_PARAMETERS parameters;
+	D3DFORMAT adapterFormat;
+	if (!fillPresentParameter (parameters, adapterFormat, _CurrentMode, adapter, adapterMode))
 	{
-		D3DFMT_D32,
-		D3DFMT_D24X8,
-		D3DFMT_D24S8,
-		D3DFMT_D24X4S4,
-		D3DFMT_D24FS8,
-		D3DFMT_D16,
-	};
-	const uint zbufferFormatCount = sizeof(zbufferFormats)/sizeof(D3DFORMAT);
-	uint i;
-	for (i=0; i<zbufferFormatCount; i++)
-	{
-		if (isDepthFormatOk (adapter, zbufferFormats[i], adapterFormat, parameters.BackBufferFormat))
-			break;
-	}
-
-	if (i>=zbufferFormatCount)
-	{
-		nlwarning ("CDriverD3D::setDisplay: Can't create zbuffer");
 		release();
 		return false;
 	}
-
-	// Set the zbuffer format
-	parameters.AutoDepthStencilFormat = zbufferFormats[i];
 
 	// Create the D3D device
 	HRESULT result = _D3D->CreateDevice (adapter, RASTERIZER, (HWND)_HWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING|D3DCREATE_PUREDEVICE, 
@@ -798,6 +759,7 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 
 	// *** Check textures caps
 	uint j;
+	uint i;
 	for (i=0; i<ITexture::UploadFormatCount; i++)
 	{
 		// Default format : D3DFMT_A8R8G8B8
@@ -988,8 +950,8 @@ NLMISC::IEventEmitter	*CDriverD3D::getEventEmitter()
 
 void CDriverD3D::getWindowSize (uint32 &width, uint32 &height)
 {
-	width = _WindowWidth;
-	height = _WindowHeight;
+	width = _CurrentMode.Width;
+	height = _CurrentMode.Height;
 }
 
 // ***************************************************************************
@@ -1018,7 +980,7 @@ const char *CDriverD3D::getDriverInformation ()
 
 uint8 CDriverD3D::getBitPerPixel ()
 {
-	return _Depth;
+	return _CurrentMode.Depth;
 }
 
 // ***************************************************************************
@@ -1088,6 +1050,23 @@ bool CDriverD3D::swapBuffers()
 
 	if (_DeviceInterface->Present( NULL, NULL, NULL, NULL) != D3D_OK)
 		return false;
+
+	// If windowed, check if the size as changed
+	if (_CurrentMode.Windowed)
+	{
+		RECT rect;
+		GetClientRect (_HWnd, &rect);
+
+		// Setup d3d resolution
+		uint newWidth = rect.right-rect.left;
+		uint newHeight = rect.bottom-rect.top;
+
+		// Set the new mode. Only change the size, keep the last setDisplay/setMode settings
+		GfxMode mode = _CurrentMode;
+		mode.Width = newWidth;
+		mode.Height = newHeight;
+		setMode (mode);
+	}
 
 	/* todo hulud beginscene
 	// Begin now
@@ -1396,5 +1375,114 @@ bool CDriverD3D::supportMADOperator() const
 	return false; // don't know..
 }
 
+
+bool CDriverD3D::setMode (const GfxMode& mode)
+{
+	// Mode as change ?
+	if ((mode.Depth != _CurrentMode.Depth) ||
+		(mode.Width != _CurrentMode.Width) ||
+		(mode.Height != _CurrentMode.Height) ||
+		(mode.OffScreen != _CurrentMode.OffScreen) ||
+		(mode.Windowed != _CurrentMode.Windowed) ||
+		(mode.Frequency != _CurrentMode.Frequency))
+	{
+		// Current mode
+		_CurrentMode = mode;
+
+		// Restaure non managed vertex buffer in system memory
+		while (!_VBDrvInfos.empty())
+		{
+			CVBDrvInfosD3D *vertexBuffer = static_cast<CVBDrvInfosD3D*>(_VBDrvInfos.back());
+			restaureVertexBuffer (*vertexBuffer);
+			delete vertexBuffer;
+		}
+
+		// Restaure non managed index buffer in system memory
+		while (!_IBDrvInfos.empty())
+		{
+			CIBDrvInfosD3D *indexBuffer = static_cast<CIBDrvInfosD3D*>(_IBDrvInfos.back());
+			restaureIndexBuffer (*indexBuffer);
+			delete indexBuffer;
+		}
+		
+		// Choose an adapter
+		UINT adapter = (_Adapter==0xffffffff)?D3DADAPTER_DEFAULT:(UINT)_Adapter;
+
+		// Get adapter format
+		D3DDISPLAYMODE adapterMode;
+		if (_D3D->GetAdapterDisplayMode (adapter, &adapterMode) != D3D_OK)
+		{
+			nlwarning ("CDriverD3D::setDisplay: GetAdapterDisplayMode failed");
+			release();
+			return false;
+		}
+
+		// Make the reset
+
+		D3DPRESENT_PARAMETERS parameters;
+		D3DFORMAT adapterFormat;
+		if (!fillPresentParameter (parameters, adapterFormat, mode, adapter, adapterMode))
+			return false;
+		if (_DeviceInterface->Reset (&parameters) != D3D_OK)
+			return false;
+
+		// Reset internal caches
+		resetRenderVariables();
+	}
+
+	return true;
+}
+
+// ***************************************************************************
+
+bool CDriverD3D::fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFORMAT &adapterFormat, const GfxMode& mode, UINT adapter, const D3DDISPLAYMODE &adapterMode)
+{
+	memset (&parameters, 0, sizeof(D3DPRESENT_PARAMETERS));
+	parameters.BackBufferWidth = mode.Width;
+	parameters.BackBufferHeight = mode.Height;
+	parameters.BackBufferFormat = (mode.Depth==16)?D3DFMT_R5G6B5:(mode.Depth==24)?D3DFMT_R8G8B8:D3DFMT_A8R8G8B8;
+	parameters.BackBufferCount = 1;
+	parameters.MultiSampleType = D3DMULTISAMPLE_NONE;
+	parameters.MultiSampleQuality = 0;
+	parameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	parameters.hDeviceWindow = NULL;
+	parameters.Windowed = mode.Windowed;
+	parameters.EnableAutoDepthStencil = TRUE;
+	parameters.FullScreen_RefreshRateInHz = mode.Windowed?0:mode.Frequency;
+	parameters.PresentationInterval = D3DPRESENT_INTERVAL_DEFAULT;
+
+	adapterFormat = mode.Windowed?adapterMode.Format:parameters.BackBufferFormat;
+
+	// Choose a zbuffer format
+	D3DFORMAT zbufferFormats[]=
+	{
+		D3DFMT_D32,
+		D3DFMT_D24X8,
+		D3DFMT_D24S8,
+		D3DFMT_D24X4S4,
+		D3DFMT_D24FS8,
+		D3DFMT_D16,
+	};
+	const uint zbufferFormatCount = sizeof(zbufferFormats)/sizeof(D3DFORMAT);
+	uint i;
+	for (i=0; i<zbufferFormatCount; i++)
+	{
+		if (isDepthFormatOk (adapter, zbufferFormats[i], adapterFormat, parameters.BackBufferFormat))
+			break;
+	}
+
+	if (i>=zbufferFormatCount)
+	{
+		nlwarning ("CDriverD3D::setDisplay: Can't create zbuffer");
+		return false;
+	}
+
+	// Set the zbuffer format
+	parameters.AutoDepthStencilFormat = zbufferFormats[i];
+
+	return true;
+}
+
+// ***************************************************************************
 
 } // NL3D

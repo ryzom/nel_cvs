@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex.cpp,v 1.1 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_direct3d_vertex.cpp,v 1.2 2004/03/23 16:32:27 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -59,6 +59,13 @@ extern uint vertexCount=0;
 
 CVBDrvInfosD3D::~CVBDrvInfosD3D()
 {
+	// Restaure non resident memory
+	if (VertexBufferPtr)
+	{
+		VertexBufferPtr->setLocation(CVertexBuffer::NotResident);
+		VertexBufferPtr = NULL;
+	}
+
 	// Don't release VertexDecl, it is release by the driver
 	if (VertexBuffer)
 	{
@@ -151,9 +158,9 @@ const uint RemapVertexBufferIndexNeL2D3D[CVertexBuffer::NumValue]=
 
 DWORD RemapVertexBufferUsage[CVertexBuffer::PreferredCount]=
 {
-	D3DUSAGE_DYNAMIC,	// RAMPreferred
-	D3DUSAGE_DYNAMIC,	// AGPPreferred
-	0,					// VRAMPreferred
+	D3DUSAGE_DYNAMIC,						// RAMPreferred
+	D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY,	// AGPPreferred
+	D3DUSAGE_WRITEONLY,						// VRAMPreferred
 };
 
 // ***************************************************************************
@@ -162,7 +169,7 @@ D3DPOOL RemapVertexBufferPool[CVertexBuffer::PreferredCount]=
 {
 	D3DPOOL_SYSTEMMEM,	// RAMPreferred
 	D3DPOOL_DEFAULT,	// AGPPreferred
-	D3DPOOL_MANAGED,	// VRAMPreferred
+	D3DPOOL_DEFAULT,	// VRAMPreferred
 };
 
 // ***************************************************************************
@@ -212,8 +219,7 @@ bool CDriverD3D::activeVertexBuffer(CVertexBuffer& VB)
 			bool sucess;
 			do
 			{
-				if (sucess =(_DeviceInterface->CreateVertexBuffer(size, 
-					(VB.getWriteOnly((CVertexBuffer::TPreferredMemory)preferredMemory)?D3DUSAGE_WRITEONLY:0)|RemapVertexBufferUsage[preferredMemory],
+				if (sucess =(_DeviceInterface->CreateVertexBuffer(size, RemapVertexBufferUsage[preferredMemory],
 					0, RemapVertexBufferPool[preferredMemory], &(info->VertexBuffer), NULL) == D3D_OK))
 					break;
 			}
@@ -223,37 +229,10 @@ bool CDriverD3D::activeVertexBuffer(CVertexBuffer& VB)
 
 			vertexCount++;
 
-			// Copy the vertex buffer
-			uint8 *out = info->lock (0, 0, false);
-			nlassert (out);
-			{
-				CVertexBufferRead vba;
-				VB.lock(vba);
-				memcpy (out, vba.getVertexCoordPointer(), size);
-			}
-			info->unlock (0, 0);
-
-			// Set the new location
-			switch (preferredMemory)
-			{
-			case CVertexBuffer::RAMPreferred:
-				VB.Location = CVertexBuffer::RAMResident;
-				break;
-			case CVertexBuffer::AGPPreferred:
-				VB.Location = CVertexBuffer::AGPResident;
-				break;
-			case CVertexBuffer::VRAMPreferred:
-				VB.Location = CVertexBuffer::VRAMResident;
-				break;
-			}
-
 			// Release the local vertex buffer
 			VB.DrvInfos = info;
-			VB.releaseNonResidentVertices();
+			VB.setLocation ((CVertexBuffer::TLocation)preferredMemory);
 		}
-
-		// Reset touch flags
-		VB.resetTouchFlags ();
 
 		// Set the current vertex buffer
 		nlassert (VB.DrvInfos);
@@ -267,6 +246,29 @@ bool CDriverD3D::activeVertexBuffer(CVertexBuffer& VB)
 		for (i=0; i<MaxTexture; i++)
 			setTextureIndexUV (i, uvRouting[i]);
 	}
+
+	/* Hulud test : read in a "write only" vertex buffer. Seams to work well. */
+/*
+	// Read the vertex buffer
+	CVBDrvInfosD3D *info = static_cast<CVBDrvInfosD3D*>(static_cast<IVBDrvInfos*>(VB.DrvInfos));
+	static vector<uint8> temp;
+	uint size = VB.capacity()*VB.getVertexSize();
+	
+	// No special flag for the lock, the driver should return a valid vertex buffer pointer with previous values.
+	uint8 *out = info->lock (0, 0, false);
+	nlassert (out);
+	{
+		temp.resize (size);
+		memcpy (&(temp[0]), out, size);
+	}
+	info->unlock (0, 0);
+	out = info->lock (0, 0, false);
+	nlassert (out);
+	{
+		memcpy (out, &(temp[0]), size);
+	}
+	info->unlock (0, 0);
+*/	
 
 	return true;
 }
@@ -374,6 +376,45 @@ void CDriverD3D::disableHardwareVertexArrayAGP()
 uint CDriverD3D::getMaxVerticesByVertexBufferHard() const
 {
 	return _MaxVerticesByVertexBufferHard;
+}
+
+// ***************************************************************************
+
+void CDriverD3D::restaureVertexBuffer (CVBDrvInfosD3D &vertexBuffer)
+{
+	/* Restaure a resident vertex buffer to system memory
+	 * 
+	 * We use a tricky code here. We read "writeonly" vertex buffer data.
+	 * We lock the whole buffer and read with the pointer returned.
+	 */
+	/* Hulud test : read in a "write only" vertex buffer. Seams to work well. */
+
+	CVertexBuffer *vb = vertexBuffer.VertexBufferPtr;
+	const uint size = vb->capacity()*vb->getVertexSize();
+	
+	// No special flag for the lock, the driver should return a valid vertex buffer pointer with previous values.
+	uint8 *out = vertexBuffer.lock (0, 0, false);
+	nlassert (out);
+	{
+		if (vb->getLocation () == CVertexBuffer::RAMResident)
+		{
+			// Realloc local memory
+			vb->setLocation (CVertexBuffer::NotResident);	// If resident in RAM, content backuped by setLocation
+		}
+		else
+		{
+			// Realloc local memory
+			vb->setLocation (CVertexBuffer::NotResident);
+
+			// Lock the vertex buffer
+			CVertexBufferReadWrite vba;
+			vb->lock (vba);
+
+			// Copy the vertex data
+			memcpy (vba.getVertexCoordPointer(), out, size);
+		}
+	}
+	vertexBuffer.unlock (0, 0);
 }
 
 // ***************************************************************************

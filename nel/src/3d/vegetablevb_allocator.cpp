@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.cpp
  * <File description>
  *
- * $Id: vegetablevb_allocator.cpp,v 1.11 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: vegetablevb_allocator.cpp,v 1.12 2004/03/23 16:32:27 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -327,6 +327,10 @@ void				CVegetableVBAllocator::allocateVertexBufferAndFillVBHard(uint32 numVerti
 			// Force this VB to be hard
 			nlverify (_Driver->activeVertexBuffer (_VBHard));
 			nlassert (_VBHard.isResident());
+
+			/* todo hulud remove track out of AGP memory */
+			nlassert (_VBHard.getLocation() != CVertexBuffer::RAMResident);
+
 			if (_VBHard.getLocation() == CVertexBuffer::RAMResident)
 				_VBHard.deleteAllVertices();
 

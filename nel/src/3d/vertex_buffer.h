@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.12 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: vertex_buffer.h,v 1.13 2004/03/23 16:32:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,10 +74,11 @@ class IVBDrvInfos : public CRefCount
 private:
 	IDriver				*_Driver;
 	ItVBDrvInfoPtrList	_DriverIterator;
-	CRefPtr<CVertexBuffer>	_VertexBuffer;
 
 public:
-	IVBDrvInfos(IDriver	*drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb) {_Driver= drv; _DriverIterator= it; _VertexBuffer = vb;}
+	CRefPtr<CVertexBuffer>	VertexBufferPtr;
+
+	IVBDrvInfos(IDriver	*drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb) {_Driver= drv; _DriverIterator= it; VertexBufferPtr=vb;}
 
 	/** Lock method.
 	  * \param first is the first vertex to be accessed. Put 0 to select all the vertices. What ever is this index, 
@@ -92,7 +93,8 @@ public:
 	  */
 	virtual void	unlock (uint first, uint last) =0;
 
-	// The virtual dtor is important.
+	/* The virtual dtor is important.
+	 * The driver implementation must call setLocation (NotResident) if VertexBufferPtr!=NULL.*/
 	virtual ~IVBDrvInfos();
 };
 
@@ -116,6 +118,9 @@ struct	CPaletteSkin
  * Before the vertex buffer is resident (IDriver::activeVertexBuffer), it is in system memory.
  * Once the vertex buffer is resident, the driver creates its proprietary vertex buffer and release the internal vertex buffer.
  * At this moment the vertex buffer can be in VRAM, AGP or system memory.
+ *
+ * The vertex buffers resident in AGP and VRAM are writeonly, i-e, you can't read them after a lock(). If you change the capacity 
+ * of the format of a writeonly buffer, the content is lost.
  *
  */
 /* *** IMPORTANT ********************
@@ -289,12 +294,17 @@ public:
 
 	// \name Private. For Driver only.
 	// @{
-	TLocation				Location;		// The driver implementation must set the location after activeVertexBuffer.
 	CRefPtr<IVBDrvInfos>	DrvInfos;
 	uint					getTouchFlags() const { return _InternalFlags&TouchedAll; }
-	void					resetTouchFlags() {_InternalFlags &= ~TouchedAll;}
-	void					releaseNonResidentVertices ();
-	void					restoreNonResidentVertices ();
+
+	/** Used by the driver implementation. The driver must first allocate its internal buffer and fill DrvInfos. Then it has to call setLocation(true).
+	  *
+	  * If newLocation!=NotResident, setLocation() will copy the non resident buffer in the choosed resident memory, release the non resident memory and 
+	  * untouch the buffer.
+	  *
+	  * If newLocation==NotResident, setLocation() will realloc the non resident buffer, copy the vertex data if the buffer was resident in RAM. Then
+	  * it will touch the buffer.*/
+	void					setLocation (TLocation newLocation);	// The driver implementation must set the location after activeVertexBuffer.
 	// @}
 
 public:
@@ -319,7 +329,7 @@ public:
 	  * Copy operator.
 	  * Do not copy DrvInfos, copy all infos and set IDRV_VF_TOUCHED_ALL.
 	  * All the destination vertex buffer is invalidated. Data are lost.
-	  * The vertex buffer must not be locked.
+	  * The source and destination vertex buffers must be unlocked.
 	  */
 	CVertexBuffer			&operator=(const CVertexBuffer &vb);
 
@@ -332,12 +342,13 @@ public:
 	  *
  	  *	Performance note:
 	  *	 - for RAM CVertexBuffer, you can read / write as you like.
-	  *	 - for AGP CVertexBuffer, you should write sequentially to take full advantage of the write combiners.
-	  *	 - for VRAM CVertexBuffer, you should write only one time, to init.
+	  *	 - for AGP CVertexBuffer, you should write sequentially to take full advantage of the write combiners. You can't read.
+	  *	 - for VRAM CVertexBuffer, you should write only one time, to init. You can't read.
 	  *
-	  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
-	  * The vertex buffer is invalidated. Data are lost.
-	  * The vertex buffer must not be locked.
+	  * If the vertex buffer is resident in AGP or VRAM, the data are lost.
+	  * The vertex buffer is no more resident.
+	  * The vertex buffer is invalidated.
+	  * The vertex buffer must be unlocked before the call.
 	  */
 	void setPreferredMemory (TPreferredMemory preferredMemory);
 
@@ -349,27 +360,13 @@ public:
 	/**
 	  * Get the vertex buffer current location.
 	  */
-	TLocation getLocation () const { return Location; }
-
-	/**
-	  * Set the write only memory flag for each memory type. If set, the user must not read the memory of this vertex buffer.
-	  * Default is false for RAMPreferred and true for AGPPreferred and VRAMPreferred.
-	  *
-	  * If the vertex buffer is resident in the memory type modified, the data are lost and the vertex buffer is no more resident,
-	  * the vertex buffer is invalidated. Data are lost and the vertex buffer must not be locked.
-	  */ 
-	void setWriteOnly(TPreferredMemory preferredMemory, bool writeOnly);
-
-	/**
-	  * Get write only memory flag.
-	  */ 
-	bool getWriteOnly(TPreferredMemory preferredMemory) const {return _WriteOnly[preferredMemory];}
+	TLocation getLocation () const { return _Location; }
 
 	/**
 	  * Returns if the vertex buffer is driver resident or not.
 	  * The vertex buffer is resident after a call to IDriver::activeVertexBuffer().
 	  */
-	bool isResident () const { return (Location != NotResident) && DrvInfos; }
+	bool isResident () const { return (_Location != NotResident) && DrvInfos; }
 
 	/**
 	  * \name Standard values vertex buffer mgt.
@@ -384,9 +381,10 @@ public:
 		  * SecondaryColorFlag, FogFlag, TexCoord0Flag, TexCoord1Flag, TexCoord2Flag, 
 		  * TexCoord3Flag, TexCoord4Flag, TexCoord5Flag, TexCoord6Flag, TexCoord7Flag, PaletteSkinFlag
 		  *
-		  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
-		  * The vertex buffer is invalidated. Data are lost.
-		  * The vertex buffer must not be locked.
+		  * If the vertex buffer is resident in AGP or VRAM, the data are lost.
+		  * The vertex buffer is no more resident.
+		  * The vertex buffer is invalidated.
+		  * The vertex buffer must be unlocked before the call.
 		  *
 		  * If WeightFlag is specified, 4 float are used to setup the skinning value on 4 bones.
 		  */
@@ -441,18 +439,20 @@ public:
 		  * Clear all value in the vertex buffer. After this call, call addValue for each value you want in your vertex
 		  * buffer then call initEx() to init the vertex buffer.
 		  *
-		  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
-		  * The vertex buffer is invalidated. Data are lost.
-		  * The vertex buffer must not be locked.
+		  * If the vertex buffer is resident in AGP or VRAM, the data are lost.
+		  * The vertex buffer is no more resident.
+		  * The vertex buffer is invalidated.
+		  * The vertex buffer must be unlocked before the call.
 		  */
 		void				clearValueEx ();		
 
 		/**
 		  * Add a value in the vertex buffer. After this call, call initEx() to init the vertex buffer.
 		  *
-		  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
-		  * The vertex buffer is invalidated. Data are lost.
-		  * The vertex buffer must not be locked.
+		  * If the vertex buffer is resident in AGP or VRAM, the data are lost.
+		  * The vertex buffer is no more resident.
+		  * The vertex buffer is invalidated.
+		  * The vertex buffer must be unlocked before the call.
 		  *
 		  * \param valueId is the value id to setup.
 		  * \param type is the type used for this value.
@@ -465,9 +465,10 @@ public:
 		/**
 		  * Init the vertex buffer in extended mode.
 		  *
-		  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
-		  * The vertex buffer is invalidated. Data are lost.
-		  * The vertex buffer must not be locked.
+		  * If the vertex buffer is resident in AGP or VRAM, the data are lost.
+		  * The vertex buffer is no more resident.
+		  * The vertex buffer is invalidated.
+		  * The vertex buffer must be unlocked before the call.
 		  */
 		void				initEx ();
 
@@ -493,19 +494,20 @@ public:
 	/**
 	  * Reset all the vertices from memory (contReset()), so that capacity() == getNumVertices() == 0.
 	  *
-	  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
-	  * The vertex buffer is invalidated. Data are lost.
-	  * The vertex buffer must not be locked.
+	  * If the vertex buffer is resident in AGP or VRAM, the data are lost.
+	  * The vertex buffer is no more resident.
+	  * The vertex buffer is invalidated.
+	  * The vertex buffer must be unlocked before the call.
 	  */
 	void					deleteAllVertices();
 
 	/**
 	  * Reserve space for nVerts vertices. You are allowed to write your vertices on this space.
-	  * If the index buffer is resident in a write only memory, the data are lost and the index buffer is no more resident.
-	  * If the index buffer is not resident or resident in a readable memory, the data are keeped.
 	  *
-	  * The vertex buffer is invalidated. Data are lost.
-	  * The vertex buffer must not be locked.
+	  * If the vertex buffer is resident in AGP or VRAM, the data are lost.
+	  * The vertex buffer is no more resident.
+	  * The vertex buffer is invalidated.
+	  * The vertex buffer must be unlocked before the call.
 	  */
 	void					reserve(uint32 nVerts);
 	
@@ -535,9 +537,10 @@ public:
 	uint8					getNumWeight () const;
 
 	/**
-	  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
+	  * If the vertex buffer is resident in AGP or VRAM, the data are lost.
+	  * The vertex buffer is no more resident.
 	  * The vertex buffer is invalidated.
-	  * The vertex buffer must not be locked.
+	  * The vertex buffer must be unlocked before the call.
 	  */
 	void		serial(NLMISC::IStream &f);
 
@@ -557,6 +560,8 @@ public:
 	  * Read only vertices access. Multi lock is possible only if no regions are used. Each lock need an accessor to be unlocked.
 	  *
 	  * Lock the vertex buffer and return and fill an accessor object. Once the object is destroyed, the buffer in unlocked.
+	  *
+	  * Readonly lock will fail if the buffer is resident in AGP or VRAM.
 	  *
 	  * \param accessor is the accessor object to fill
 	  * \param first is the first vertex to be accessed. Put 0 to select all the vertices. What ever is this index, 
@@ -589,7 +594,7 @@ public:
 	  * The vertex buffer must not be resident.
 	  *
 	  * The vertex buffer is invalidated.
-	  * The vertex buffer must not be locked.
+	  * The vertex buffer must be unlocked.
 	  * \return false if the vertex buffer is resident.
 	  */
 	bool		setVertexColorFormat (TVertexColorType format);
@@ -632,6 +637,12 @@ private:
 	/// Translate old flags
 	uint16		remapV2Flags (uint32 oldFlags, uint& weightCount);
 
+	// Reset the touch flags
+	void		resetTouchFlags() {_InternalFlags &= ~TouchedAll;}
+
+	// Force non resident memory
+	void		restaureNonResidentMemory();
+
 private:
 
 	// Type of data stored in each value
@@ -671,8 +682,11 @@ private:
 	// Prefered memory
 	TPreferredMemory		_PreferredMemory;
 
-	// Write only
-	bool					_WriteOnly[PreferredCount];
+	// Location of the buffer
+	TLocation				_Location;
+
+	// Resident buffer size
+	uint32					_ResidentSize;
 
 	// Debug string
 	std::string				_Name;
@@ -1132,7 +1146,7 @@ inline void CVertexBuffer::lock (CVertexBufferRead &accessor, uint first, uint l
 		if (isResident())
 		{
 			// Can read it ?
-			nlassertex (!_WriteOnly[Location], ("Try to read a write only vertex buffer"));
+			nlassertex (_Location==RAMResident, ("Try to read a write only vertex buffer"));
 			_LockedBuffer = DrvInfos->lock (first, last, true);
 		}
 		else

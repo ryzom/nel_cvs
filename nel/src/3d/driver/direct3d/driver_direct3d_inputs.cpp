@@ -1,7 +1,7 @@
 /** \file driver_direct3d_inputs.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_inputs.cpp,v 1.1 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_direct3d_inputs.cpp,v 1.2 2004/03/23 16:32:27 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -60,8 +60,8 @@ void CDriverD3D::setMousePos(float x, float y)
 	{
 		// NeL window coordinate to MSWindows coordinates
 		POINT pt;
-		pt.x = (int)((float)(_WindowWidth)*x);
-		pt.y = (int)((float)(_WindowHeight)*(1.0f-y));
+		pt.x = (int)((float)(_CurrentMode.Width)*x);
+		pt.y = (int)((float)(_CurrentMode.Height)*(1.0f-y));
 		ClientToScreen (_HWnd, &pt);
 		SetCursorPos(pt.x, pt.y);
 	}

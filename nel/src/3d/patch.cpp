@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.64 2001/09/14 17:57:20 berenguier Exp $
+ * $Id: patch.cpp,v 1.65 2001/10/02 08:46:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1068,6 +1068,24 @@ void			CPatch::makeRoots()
 	appendFarVertexToRenderList(fd);
 	appendFaceToRenderList(Son0);
 	appendFaceToRenderList(Son1);
+
+	// UseFull for VertexProgram only: Init 2 root faces MaxNearLimit, and MaxFaceSize
+	// NB: since no geomorph is made on endpoints (StartPos==EndPos) of patchs, this is not usefull.
+	// but it is important to ensure the VP won't crash with bad float values.
+	// Init MaxFaceSize.
+	Son0->VBase->MaxFaceSize= 1;
+	Son0->VLeft->MaxFaceSize= 1;
+	Son0->VRight->MaxFaceSize= 1;
+	Son1->VBase->MaxFaceSize= 1;
+	Son1->VLeft->MaxFaceSize= 1;
+	Son1->VRight->MaxFaceSize= 1;
+	// Init MaxNearLimit.
+	Son0->VBase->MaxNearLimit= 1;
+	Son0->VLeft->MaxNearLimit= 1;
+	Son0->VRight->MaxNearLimit= 1;
+	Son1->VBase->MaxNearLimit= 1;
+	Son1->VLeft->MaxNearLimit= 1;
+	Son1->VRight->MaxNearLimit= 1;
 
 }
 

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.14 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: landscape.h,v 1.15 2001/10/02 08:46:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,7 +183,7 @@ public:
 	/// Get tile near distance.
 	float			getTileNear () const	{return _TileDistNear;}
 	/// Set threshold for subdivsion quality. The lower is threshold, the more the landscape is subdivided. Default: 0.001.
-	void			setThreshold (float thre)	{_Threshold= thre;}
+	void			setThreshold (float thre);
 	/// Get threshold.
 	float			getThreshold () const	{return _Threshold;}
 	void			setRefineMode(bool enabled) {_RefineMode= enabled;}
@@ -431,8 +431,8 @@ private:
 	// if bitmap type is CTile::alpha, Return also the additionla rot for alpha (else 0).
 	void			getTileUvScaleBiasRot(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias, uint8 &rotAlpha);
 
-	// release Far render pass/reset Tile/Far render.
-	void			resetRenderFar();
+	// release Far render pass/reset Tile/Far render. Delete also VB, and FaceVectors
+	void			resetRenderFarAndDeleteVBFV();
 	/// For changing TileMaxSubdivision. force tesselation to be under tile.
 	void			forceMergeAtTileLevel();
 
@@ -456,7 +456,8 @@ private:
 	float			_FarTransition;
 	uint			_TileMaxSubdivision;
 	uint			_RefinePeriod;
-
+	// For VertexProgram. true if change has occured in threshold since the last render().
+	float			_VPThresholdChange;
 
 	/// \name VertexBuffer mgt.
 	// @{

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.8 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: tessellation.h,v 1.9 2001/10/02 08:47:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,11 +71,21 @@ public:
 	uint32		TexCoordOff0;
 	uint32		ColorOff;
 
-	// Hulud VP_TEST
-	uint32		EndPosOff;
+	// VertexProgram Only.
+	void		*GeomInfoPointer;
+	void		*DeltaPosPointer;
+	void		*AlphaInfoPointer;
+	uint32		GeomInfoOff;
+	uint32		DeltaPosOff;
+	uint32		AlphaInfoOff;
 
-	void		setupVertexBuffer(CVertexBuffer &vb);
-	void		setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord);
+
+	void		setupVertexBuffer(CVertexBuffer &vb, bool forVertexProgram);
+	void		setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord, bool forVertexProgram);
+
+private:
+	void		setupNullPointers();
+	void		setupPointersForVertexProgram();
 };
 
 
@@ -92,11 +102,20 @@ public:
 	uint32		TexCoordOff0;
 	uint32		TexCoordOff1;
 
-	// Hulud VP_TEST
-	uint32		EndPosOff;
 
-	void		setupVertexBuffer(CVertexBuffer &vb);
-	void		setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord);
+	// VertexProgram Only.
+	void		*GeomInfoPointer;
+	void		*DeltaPosPointer;
+	uint32		GeomInfoOff;
+	uint32		DeltaPosOff;
+
+
+	void		setupVertexBuffer(CVertexBuffer &vb, bool forVertexProgram);
+	void		setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord, bool forVertexProgram);
+
+private:
+	void		setupNullPointers();
+	void		setupPointersForVertexProgram();
 };
 
 
@@ -145,11 +164,17 @@ public:
 	CVector			StartPos, EndPos;
 	// The swap, for geomorph "optim"
 	bool			GeomDone;
+	// Geomorph Information, for VertexProgram geomorph. NB: no RefineThreshold dependency here.
+	float			MaxFaceSize;	// max(SizeFaceA, SizeFaceB)
+	float			MaxNearLimit;	// max(NearLimitFaceA, NearLimitFaceB) with NearLimitFace= (1<<Patch->TileLimitLevel) * (OO32768*(32768>>Level));
 
 	CTessVertex()
 	{
 		// Must init to 0.
 		GeomDone= false;
+		// init to 0, so max always() works.
+		MaxFaceSize= 0;
+		MaxNearLimit= 0;
 	}
 };
 
@@ -316,6 +341,9 @@ public:
 	// Release Tile Uvs.
 	void			releaseTileMaterial();
 
+	// compute the NearLimit for this face. NearLimit= (1<<Patch->TileLimitLevel) / (1<<Level)
+	float			computeNearLimit();
+
 	// update the error metric (even if !NeedCompute).
 	void			updateErrorMetric();
 	// can split leaf only.
@@ -399,7 +427,9 @@ public:
 	// Distance for Alpha blend transition
 	static	float	FarTransition;
 
-	
+
+	// This Tells if VertexProgram is activated for the current landscape.
+	static	bool					VertexProgramEnabled;
 	// The current VertexBuffer for Far0
 	static	CFarVertexBufferInfo	CurrentFar0VBInfo;
 	// The current VertexBuffer for Far1.
@@ -447,8 +477,10 @@ private:
 	// baseFace TileUvRight.
 	void	heritTileUv(CTessFace *baseFace);
 
-	// If path !RenderClipped, and other state, create and fill VB for the vertex id of all faces of this tileFace.
+	// If patch !RenderClipped, and other state, create and fill VB for the vertex id of all faces of this tileFace.
 	void	checkCreateFillTileVB(TTileUvId id);
+	// If patch !RenderClipped, and other state, fill VB only for the vertex id of all faces of this tileFace.
+	void	checkFillTileVB(TTileUvId id);
 
 
 	// create The TileFaces, according to the TileMaterial passes. NO INSERTION IN RENDERLIST!!

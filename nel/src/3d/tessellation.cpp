@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.53 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.54 2001/10/02 08:46:59 berenguier Exp $
  *
  */
 
@@ -64,7 +64,32 @@ const	float TileSize= 128;
 
 
 // ***************************************************************************
-void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
+void		CFarVertexBufferInfo::setupNullPointers()
+{
+	VertexCoordPointer= NULL;
+	TexCoordPointer0= NULL;
+	ColorPointer= NULL;
+	GeomInfoPointer= NULL;
+	DeltaPosPointer= NULL;
+	AlphaInfoPointer= NULL;
+}
+
+
+// ***************************************************************************
+void		CFarVertexBufferInfo::setupPointersForVertexProgram()
+{
+	// see CLandscapeVBAllocator for program definition.
+	uint8	*vcoord= (uint8*)VertexCoordPointer;
+
+	TexCoordPointer0= vcoord + TexCoordOff0;
+	GeomInfoPointer= vcoord + GeomInfoOff;			
+	DeltaPosPointer= vcoord + DeltaPosOff;
+	AlphaInfoPointer= vcoord + AlphaInfoOff;
+}
+
+
+// ***************************************************************************
+void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb, bool forVertexProgram)
 {
 	VertexFormat= vb.getVertexFormat();
 	VertexSize= vb.getVertexSize();
@@ -72,34 +97,47 @@ void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 
 	if(NumVertices==0)
 	{
-		VertexCoordPointer= NULL;
-		TexCoordPointer0= NULL;
-		ColorPointer= NULL;
+		setupNullPointers();
 		return;
 	}
 
 	VertexCoordPointer= vb.getVertexCoordPointer();
 
-	// Hulud VP_TEST
-	//EndPosOff= vb.getNormalOff();
-
-	TexCoordOff0= vb.getTexCoordOff(0);
-	TexCoordPointer0= vb.getTexCoordPointer(0, 0);
-
-	// In Far0, we don't have Color component.
-	if(VertexFormat & CVertexBuffer::PrimaryColorFlag)
+	if(forVertexProgram)
 	{
-		ColorOff= vb.getColorOff();
-		ColorPointer= vb.getColorPointer();
+		// With VertexCoordPointer setuped, init for VP.
+		TexCoordOff0= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_TEX0);				// v[8]= Tex0.
+		GeomInfoOff= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_GEOMINFO);			// v[10]= GeomInfos.
+		DeltaPosOff= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_DELTAPOS);			// v[11]= EndPos-StartPos
+		// Init Alpha Infos only if enabled (enabled if Value 5 are).
+		AlphaInfoOff= 0;
+		if( vb.getVertexFormat() & (1<<NL3D_LANDSCAPE_VPPOS_ALPHAINFO) )
+			AlphaInfoOff= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_ALPHAINFO);		// v[12]= AlphaInfos
+
+		// update Ptrs.
+		setupPointersForVertexProgram();
 	}
 	else
 	{
-		ColorOff= 0;
-		ColorPointer= NULL;
+		TexCoordOff0= vb.getTexCoordOff(0);
+		TexCoordPointer0= vb.getTexCoordPointer(0, 0);
+
+		// In Far0, we don't have Color component.
+		if(VertexFormat & CVertexBuffer::PrimaryColorFlag)
+		{
+			ColorOff= vb.getColorOff();
+			ColorPointer= vb.getColorPointer();
+		}
+		else
+		{
+			ColorOff= 0;
+			ColorPointer= NULL;
+		}
 	}
+
 }
 // ***************************************************************************
-void		CFarVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord)
+void		CFarVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord, bool forVertexProgram)
 {
 	VertexFormat= vb.getVertexFormat();
 	VertexSize= vb.getVertexSize();
@@ -107,36 +145,73 @@ void		CFarVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *v
 
 	if(NumVertices==0)
 	{
-		VertexCoordPointer= NULL;
-		TexCoordPointer0= NULL;
-		ColorPointer= NULL;
+		setupNullPointers();
 		return;
 	}
 
 	VertexCoordPointer= vcoord;
 
-	// Hulud VP_TEST
-//	EndPosOff= vb.getNormalOff();
-
-	TexCoordOff0= vb.getValueOff (CVertexBuffer::TexCoord0);
-	TexCoordPointer0= (uint8*)vcoord + TexCoordOff0;
-
-	// In Far0, we don't have Color component.
-	if(VertexFormat & CVertexBuffer::PrimaryColorFlag)
+	if(forVertexProgram)
 	{
-		ColorOff= vb.getValueOff (CVertexBuffer::PrimaryColor);
-		ColorPointer= (uint8*)vcoord + ColorOff;
+		// With VertexCoordPointer setuped, init for VP.
+		TexCoordOff0= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_TEX0);				// v[8]= Tex0.
+		GeomInfoOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_GEOMINFO);				// v[10]= GeomInfos.
+		DeltaPosOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_DELTAPOS);				// v[11]= EndPos-StartPos
+		// Init Alpha Infos only if enabled (enabled if Value 5 are).
+		AlphaInfoOff= 0;
+		if( vb.getVertexFormat() & (1<<NL3D_LANDSCAPE_VPPOS_ALPHAINFO) )
+			AlphaInfoOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_ALPHAINFO);		// v[12]= AlphaInfos
+
+		// update Ptrs.
+		setupPointersForVertexProgram();
 	}
 	else
 	{
-		ColorOff= 0;
-		ColorPointer= NULL;
+		TexCoordOff0= vb.getValueOff (CVertexBuffer::TexCoord0);
+		TexCoordPointer0= (uint8*)vcoord + TexCoordOff0;
+
+		// In Far0, we don't have Color component.
+		if(VertexFormat & CVertexBuffer::PrimaryColorFlag)
+		{
+			ColorOff= vb.getValueOff (CVertexBuffer::PrimaryColor);
+			ColorPointer= (uint8*)vcoord + ColorOff;
+		}
+		else
+		{
+			ColorOff= 0;
+			ColorPointer= NULL;
+		}
 	}
 }
 
 
 // ***************************************************************************
-void		CNearVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
+void		CNearVertexBufferInfo::setupNullPointers()
+{
+	VertexCoordPointer= NULL;
+	TexCoordPointer0= NULL;
+	TexCoordPointer1= NULL;
+	GeomInfoPointer= NULL;
+	DeltaPosPointer= NULL;
+}
+
+
+// ***************************************************************************
+void		CNearVertexBufferInfo::setupPointersForVertexProgram()
+{
+	// see CLandscapeVBAllocator for program definition.
+	uint8	*vcoord= (uint8*)VertexCoordPointer;
+
+	TexCoordPointer0= vcoord + TexCoordOff0;
+	TexCoordPointer1= vcoord + TexCoordOff1;
+	GeomInfoPointer= vcoord + GeomInfoOff;			
+	DeltaPosPointer= vcoord + DeltaPosOff;
+
+}
+
+
+// ***************************************************************************
+void		CNearVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb, bool forVertexProgram)
 {
 	VertexFormat= vb.getVertexFormat();
 	VertexSize= vb.getVertexSize();
@@ -144,24 +219,34 @@ void		CNearVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 
 	if(NumVertices==0)
 	{
-		VertexCoordPointer= NULL;
-		TexCoordPointer0= NULL;
-		TexCoordPointer1= NULL;
+		setupNullPointers();
 		return;
 	}
 
 	VertexCoordPointer= vb.getVertexCoordPointer();
-	TexCoordPointer0= vb.getTexCoordPointer(0, 0);
-	TexCoordPointer1= vb.getTexCoordPointer(0, 1);
 
-	// Hulud VP_TEST
-//	EndPosOff= vb.getNormalOff();
+	if(forVertexProgram)
+	{
+		// With VertexCoordPointer setuped, init for VP.
+		TexCoordOff0= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_TEX0);				// v[8]= Tex0.
+		TexCoordOff1= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_TEX1);				// v[9]= Tex1.
+		GeomInfoOff= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_GEOMINFO);			// v[10]= GeomInfos.
+		DeltaPosOff= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_DELTAPOS);			// v[11]= EndPos-StartPos
 
-	TexCoordOff0= vb.getTexCoordOff(0);
-	TexCoordOff1= vb.getTexCoordOff(1);
+		// update Ptrs.
+		setupPointersForVertexProgram();
+	}
+	else
+	{
+		TexCoordPointer0= vb.getTexCoordPointer(0, 0);
+		TexCoordPointer1= vb.getTexCoordPointer(0, 1);
+
+		TexCoordOff0= vb.getTexCoordOff(0);
+		TexCoordOff1= vb.getTexCoordOff(1);
+	}
 }
 // ***************************************************************************
-void		CNearVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord)
+void		CNearVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord, bool forVertexProgram)
 {
 	VertexFormat= vb.getVertexFormat();
 	VertexSize= vb.getVertexSize();
@@ -169,21 +254,31 @@ void		CNearVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *
 
 	if(NumVertices==0)
 	{
-		VertexCoordPointer= NULL;
-		TexCoordPointer0= NULL;
-		TexCoordPointer1= NULL;
+		setupNullPointers();
 		return;
 	}
 
 	VertexCoordPointer= vcoord;
-	TexCoordPointer0= (uint8*)vcoord + vb.getValueOff (CVertexBuffer::TexCoord0);
-	TexCoordPointer1= (uint8*)vcoord + vb.getValueOff (CVertexBuffer::TexCoord1);
 
-	// Hulud VP_TEST
-//	EndPosOff= vb.getNormalOff();
+	if(forVertexProgram)
+	{
+		// With VertexCoordPointer setuped, init for VP.
+		TexCoordOff0= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_TEX0);				// v[8]= Tex0.
+		TexCoordOff1= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_TEX1);				// v[9]= Tex1.
+		GeomInfoOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_GEOMINFO);				// v[10]= GeomInfos.
+		DeltaPosOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_DELTAPOS);				// v[11]= EndPos-StartPos
 
-	TexCoordOff0= vb.getValueOff (CVertexBuffer::TexCoord0);
-	TexCoordOff1= vb.getValueOff (CVertexBuffer::TexCoord1);
+		// update Ptrs.
+		setupPointersForVertexProgram();
+	}
+	else
+	{
+		TexCoordPointer0= (uint8*)vcoord + vb.getValueOff (CVertexBuffer::TexCoord0);
+		TexCoordPointer1= (uint8*)vcoord + vb.getValueOff (CVertexBuffer::TexCoord1);
+
+		TexCoordOff0= vb.getValueOff (CVertexBuffer::TexCoord0);
+		TexCoordOff1= vb.getValueOff (CVertexBuffer::TexCoord1);
+	}
 }
 
 
@@ -251,6 +346,9 @@ float		CTessFace::TilePixelSize= 128;
 float		CTessFace::Far0Dist= 200;		// 200m.
 float		CTessFace::Far1Dist= 400;		// 400m.
 float		CTessFace::FarTransition= 10;	// Alpha transition= 10m.
+
+
+bool					CTessFace::VertexProgramEnabled= false;
 
 CFarVertexBufferInfo	CTessFace::CurrentFar0VBInfo;
 CFarVertexBufferInfo	CTessFace::CurrentFar1VBInfo;
@@ -324,6 +422,21 @@ CTessFace::~CTessFace()
 
 
 // ***************************************************************************
+float			CTessFace::computeNearLimit()
+{
+	// General formula for Level, function of Size, treshold etc...:
+	// WantedLevel= log2(BaseSize / sqrdist / RefineThreshold);
+	// <=> WantedLevel= log2( CurSize*2^Level / sqrdist / RefineThreshold).
+	// <=> WantedLevel= log2( ProjectedSize* 2^Level / RefineThreshold).
+	// <=> 2^WantedLevel= ProjectedSize* 2^Level / RefineThreshold.
+	// <=> ProjectedSize= (2^WantedLevel) * RefineThreshold / (2^Level);
+	// <=> ProjectedSize= (1<<WantedLevel) * RefineThreshold / (1<<Level);
+	// UnOptimised formula: limit= (1<<Patch->TileLimitLevel) / (1<<Level);
+	return (1<<Patch->TileLimitLevel) * (OO32768*(32768>>Level));
+}
+
+
+// ***************************************************************************
 void			CTessFace::computeTileErrorMetric()
 {
 	// We must take a more correct errometric here: We must have sons face which have
@@ -336,15 +449,13 @@ void			CTessFace::computeTileErrorMetric()
 	// It is also VERY important to take the min of 3, to ensure the split in TileMode when Far1 vertex begin
 	// to blend (see Patch::renderFar1() render).
 
+	// NB: VertexProgram geomorph take sqrdist= (SplitPoint - RefineCenter).sqrnorm();
+	// It's OK because geomorph will start "far" after the split.
+
 	if(sqrdist< TileDistFarSqr)
 	{
-		// General formula for Level, function of Size, treshold etc...:
-		// Level= log2(BaseSize / sqrdist / threshold);
-		// <=> Level= log2( CurSize*2^CurLevel / sqrdist / threshold).
-		// <=> Level= log2( ProjectedSize* 2^CurLevel / threshold).
 		float	nearLimit;
-		// UnOptimised formula: limit= (1<<Patch->TileLimitLevel) * RefineThreshold / (1<<Level);
-		nearLimit= (1<<Patch->TileLimitLevel) * RefineThreshold * (OO32768*(32768>>Level));
+		nearLimit= RefineThreshold * computeNearLimit();
 		nlassert(Level<14);
 		// If we are not so subdivided.
 		if(ErrorMetric<nearLimit)
@@ -487,9 +598,37 @@ void	CTessFace::checkCreateFillTileVB(TTileUvId id)
 
 			// May Allocate/Fill VB.
 			Patch->checkCreateVertexVBNear(vertNear);
+			Patch->checkFillVertexVBNear(vertNear);
 		}
 	}
 }
+
+
+// ***************************************************************************
+void	CTessFace::checkFillTileVB(TTileUvId id)
+{
+	// TileFaces must have been build.
+	nlassert(TileFaces[NL3D_TILE_PASS_RGB0]);
+
+	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
+	{
+		if(TileFaces[i])
+		{
+			CTessNearVertex		*vertNear;
+			switch(id)
+			{
+				case IdUvBase: vertNear= TileFaces[i]->VBase; break;
+				case IdUvLeft: vertNear= TileFaces[i]->VLeft; break;
+				case IdUvRight: vertNear= TileFaces[i]->VRight; break;
+				default: nlstop;
+			};
+
+			// May Fill VB.
+			Patch->checkFillVertexVBNear(vertNear);
+		}
+	}
+}
+
 
 // ***************************************************************************
 void	CTessFace::deleteTileUv(TTileUvId id)
@@ -996,6 +1135,10 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 		vtop->EndPos= f1->Patch->computeVertex(pctop.getS(), pctop.getT());
 		// Init Pos= InitialPos. Important in the case of enforced split.
 		vtop->Pos= vtop->StartPos;
+
+		// For VertexProgram, compute MaxFaceSize and MaxNearLimit.
+		vtop->MaxFaceSize= f1->Size;
+		vtop->MaxNearLimit= f1->computeNearLimit();
 	}
 	else
 	{
@@ -1003,6 +1146,10 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 		// NB: since *FLeft is not a leaf, FBase->SonLeft!=NULL...
 		// NB: this work with both rectangular and square triangles.
 		vtop= f1->FLeft->SonLeft->VBase;
+
+		// For VertexProgram, compute MaxFaceSize and MaxNearLimit.
+		vtop->MaxFaceSize= max( vtop->MaxFaceSize, f1->Size);
+		vtop->MaxNearLimit= max( vtop->MaxNearLimit, f1->computeNearLimit());
 	}
 	// Compute bot.
 	if(f0->FLeft==NULL || f0->FLeft->isLeaf())
@@ -1015,6 +1162,10 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 		vbot->EndPos= Patch->computeVertex(pcbot.getS(), pcbot.getT());
 		// Init Pos= InitialPos. Important in the case of enforced split.
 		vbot->Pos= vbot->StartPos;
+
+		// For VertexProgram, compute MaxFaceSize and MaxNearLimit.
+		vbot->MaxFaceSize= f0->Size;
+		vbot->MaxNearLimit= f0->computeNearLimit();
 	}
 	else
 	{
@@ -1022,6 +1173,10 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 		// NB: since *FLeft is not a leaf, FBase->SonLeft!=NULL...
 		// NB: this work with both rectangular and square triangles.
 		vbot= f0->FLeft->SonLeft->VBase;
+
+		// For VertexProgram, compute MaxFaceSize and MaxNearLimit.
+		vbot->MaxFaceSize= max( vbot->MaxFaceSize, f0->Size);
+		vbot->MaxNearLimit= max( vbot->MaxNearLimit, f0->computeNearLimit());
 	}
 
 	// In all case, must create new FarVertices, since rect split occurs on border!!
@@ -1036,7 +1191,21 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	// May Allocate/Fill VB.
 	// NB: vtop / vbot are well computed  and ready for the fill in VB.
 	Patch->checkCreateVertexVBFar(farvtop);
+	Patch->checkFillVertexVBFar(farvtop);
 	Patch->checkCreateVertexVBFar(farvbot);
+	Patch->checkFillVertexVBFar(farvbot);
+
+	// For VertexProgram only, must refill the Far vertex of neighbor(s), 
+	// because MaxFaceSize, and MaxNearLimit may have change.
+	if( CTessFace::VertexProgramEnabled )
+	{
+		// f0
+		if( ! (f0->FLeft==NULL || f0->FLeft->isLeaf()) )
+			f0->FLeft->Patch->checkFillVertexVBFar(f0->FLeft->SonLeft->FVBase);
+		// f1
+		if( ! (f1->FLeft==NULL || f1->FLeft->isLeaf()) )
+			f1->FLeft->Patch->checkFillVertexVBFar(f1->FLeft->SonLeft->FVBase);
+	}
 
 	
 	// 2. Create sons, and update links.
@@ -1143,6 +1312,33 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	// 3. Update Tile infos.
 	//----------------------
 	// There is no update tileinfo with rectangular patch, since tiles are always squares. (TileLimitLevel>SquareLimitLevel).
+
+	// NB: but must test update of tile info for neighboring, ie 2 faces around the splits.
+	// For Vertex program only
+	if( CTessFace::VertexProgramEnabled )
+	{
+		// if neighbor face splitted, and if 2 different patchs, we must update the Tile vertices
+		// because MaxFaceSize and MaxNearLimit may have changed.
+		if( f0->FLeft!=NULL && !f0->FLeft->isLeaf() && f0->FLeft->Patch!=Patch )
+		{
+			// If neighbors sons at tile level, must update their Tile vertices.
+			if( f0->FLeft->SonLeft->Level >= f0->FLeft->Patch->TileLimitLevel )
+			{
+				f0->FLeft->SonLeft->checkFillTileVB(IdUvBase);
+				f0->FLeft->SonRight->checkFillTileVB(IdUvBase);
+			}
+		}
+		// idem for f1.
+		if( f1->FLeft!=NULL && !f1->FLeft->isLeaf() && f1->FLeft->Patch!=Patch )
+		{
+			// If neighbors sons at tile level, must update their Tile vertices.
+			if( f1->FLeft->SonLeft->Level >= f1->FLeft->Patch->TileLimitLevel )
+			{
+				f1->FLeft->SonLeft->checkFillTileVB(IdUvBase);
+				f1->FLeft->SonRight->checkFillTileVB(IdUvBase);
+			}
+		}
+	}
 
 
 	// 4. Compute centers.
@@ -1333,6 +1529,10 @@ void		CTessFace::split(bool propagateSplit)
 
 		// Init Pos= InitialPos. Important in the case of enforced split.
 		newVertex->Pos= newVertex->StartPos;
+
+		// For VertexProgram, compute MaxFaceSize and MaxNearLimit.
+		newVertex->MaxFaceSize= Size;
+		newVertex->MaxNearLimit= computeNearLimit();
 	}
 	else
 	{
@@ -1341,6 +1541,10 @@ void		CTessFace::split(bool propagateSplit)
 		// NB: this work with both rectangular and square triangles (see splitRectangular()).
 		SonRight->VBase= FBase->SonLeft->VBase;
 		SonLeft->VBase= FBase->SonLeft->VBase;
+
+		// For VertexProgram, compute MaxFaceSize and MaxNearLimit.
+		SonLeft->VBase->MaxFaceSize= max( SonLeft->VBase->MaxFaceSize, Size);
+		SonLeft->VBase->MaxNearLimit= max( SonLeft->VBase->MaxNearLimit, computeNearLimit());
 	}
 
 
@@ -1363,6 +1567,12 @@ void		CTessFace::split(bool propagateSplit)
 		// May Allocate/Fill VB.
 		// NB: SonLeft->VBase->Pos is well computed and ready for the fill in VB.
 		Patch->checkCreateVertexVBFar(newFar);
+		Patch->checkFillVertexVBFar(newFar);
+
+		// For VertexProgram only, must refill the Far vertex of neighbor, 
+		// because MaxFaceSize, and MaxNearLimit may have change.
+		if( CTessFace::VertexProgramEnabled && ! (FBase==NULL || FBase->isLeaf()) )
+			FBase->Patch->checkFillVertexVBFar(FBase->SonLeft->FVBase);
 	}
 	else
 	{
@@ -1371,6 +1581,9 @@ void		CTessFace::split(bool propagateSplit)
 		// NB: this work with both rectangular and square triangles (see splitRectangular()).
 		SonRight->FVBase= FBase->SonLeft->FVBase;
 		SonLeft->FVBase= FBase->SonLeft->FVBase;
+
+		// NB For VertexProgram only: no need to refill the Far vertex of neighbor, because neighbor is of same Patch
+		// So MaxNearLimit and MaxFaceSize should be the same.
 	}
 
 
@@ -1389,6 +1602,22 @@ void		CTessFace::split(bool propagateSplit)
 	else if(SonLeft->Level > Patch->TileLimitLevel)
 	{
 		heritTileMaterial();
+	}
+
+	// For Vertex program only
+	if( CTessFace::VertexProgramEnabled )
+	{
+		// if neighbor face splitted, and if 2 different patchs, we must update the Tile vertices
+		// because MaxFaceSize and MaxNearLimit may have changed.
+		if( FBase!=NULL && !FBase->isLeaf() && FBase->Patch!=Patch )
+		{
+			// If neighbors sons at tile level, must update their Tile vertices.
+			if( FBase->SonLeft->Level >= FBase->Patch->TileLimitLevel )
+			{
+				FBase->SonLeft->checkFillTileVB(IdUvBase);
+				FBase->SonRight->checkFillTileVB(IdUvBase);
+			}
+		}
 	}
 
 
@@ -1708,10 +1937,6 @@ void		CTessFace::refine()
 		// 1.0f is the point of split().
 		// 2.0f is the end of geomorph.
 
-		// Hulud VP_TEST
-		
-		// Calc dist min dist max
-		
 
 		// 0. Test split/merge.
 		//---------------------
@@ -1750,8 +1975,6 @@ void		CTessFace::refine()
 		// Use Clipped state, because of  refineAll().
 		if(!isLeaf() && ps>1.0f && !Patch->Clipped)
 		{
-			// Hulud VP_TEST
-			
 			// NB: morph ptr is good even with rectangular patch. See splitRectangular().
 			CTessVertex		*morph=SonLeft->VBase;
 			if(morph->GeomDone)
@@ -1791,13 +2014,6 @@ void		CTessFace::refine()
 				}
 			}
 		}
-		// Hulud VP_TEST
-		/*else
-		{
-			CTessVertex		*morph=SonLeft->VBase;
-			morph->StartPos=morph->Pos;
-			morph->EndPos=morph->Pos;
-		}*/
 
 
 		// 2. Update NeedCompute.
@@ -1916,6 +2132,8 @@ void		CTessFace::unbind(CPatch *except[4])
 		{
 			if(!exceptPatch(FBase->Patch, except))
 			{
+				CTessFace	*oldNeigbhorFace= FBase;
+
 				FBase->changeNeighbor(this, NULL);
 				FBase= NULL;
 				if(!isLeaf())
@@ -1925,6 +2143,17 @@ void		CTessFace::unbind(CPatch *except[4])
 					SonLeft->VBase= Patch->getLandscape()->newTessVertex();
 					*(SonLeft->VBase)= *old;
 					SonRight->VBase= SonLeft->VBase;
+
+					// For VertexProgram, compute good MaxFaceSize and MaxNearLimit (change since unbinded)
+					// update us.
+					SonLeft->VBase->MaxFaceSize= Size;
+					SonLeft->VBase->MaxNearLimit= computeNearLimit();
+					// update our neigbhor, only if not a multiple patch face.
+					if(oldNeigbhorFace->Patch)
+					{
+						old->MaxFaceSize= oldNeigbhorFace->Size;
+						old->MaxNearLimit= oldNeigbhorFace->computeNearLimit();
+					}
 				}
 			}
 		}
@@ -1939,6 +2168,8 @@ void		CTessFace::unbind(CPatch *except[4])
 		{
 			if(!exceptPatch(FLeft->Patch, except))
 			{
+				CTessFace	*oldNeigbhorFace= FLeft;
+
 				FLeft->changeNeighbor(this, NULL);
 				FLeft= NULL;
 				if(!isLeaf())
@@ -1954,6 +2185,17 @@ void		CTessFace::unbind(CPatch *except[4])
 					nlassert(FBase && FBase->SonLeft);
 					FBase->SonLeft->VRight= SonLeft->VBase;
 
+
+					// For VertexProgram, compute good MaxFaceSize and MaxNearLimit (change since unbinded)
+					// update us.
+					SonLeft->VBase->MaxFaceSize= Size;
+					SonLeft->VBase->MaxNearLimit= computeNearLimit();
+					// update our neigbhor, only if not a multiple patch face.
+					if(oldNeigbhorFace->Patch)
+					{
+						old->MaxFaceSize= oldNeigbhorFace->Size;
+						old->MaxNearLimit= oldNeigbhorFace->computeNearLimit();
+					}
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.10 2001/09/14 09:44:26 berenguier Exp $
+ * $Id: zone.h,v 1.11 2001/10/02 08:47:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -391,8 +391,8 @@ public:
 	void			refine();
 	/// PreRender a zone (if needed).
 	void			preRender();
-	// release Far render pass/reset Tile/Far render.
-	void			resetRenderFar();
+	// release Far render pass/reset Tile/Far render. Delete also VB, and FaceVectors
+	void			resetRenderFarAndDeleteVBFV();
 	/// For changing TileMaxSubdivision. force tesselation to be under tile.
 	void			forceMergeAtTileLevel();
 

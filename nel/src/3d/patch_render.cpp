@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.3 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.4 2001/10/02 08:46:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -878,9 +878,6 @@ inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
 
 	// NB: the filling order of data is important, for AGP write combiners.
 
-	// Set Pos.
-	*(CVector*)CurVBPtr= pVert->Src->Pos;
-
 	// compute Uvs.
 	static CUV	uv;
 	CParamCoord	&pc= pVert->PCoord;
@@ -894,8 +891,33 @@ inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
 		uv.U= pc.getS()* Far0UScale + Far0UBias;
 		uv.V= pc.getT()* Far0VScale + Far0VBias;
 	}
-	// Set Uvs.
-	*(CUV*)(CurVBPtr + CTessFace::CurrentFar0VBInfo.TexCoordOff0)= uv;
+
+	// If not VertexProgram (NB: Suppose BTB kill this test).
+	if( !CTessFace::VertexProgramEnabled )
+	{
+		// Set Pos.
+		*(CVector*)CurVBPtr= pVert->Src->Pos;
+		// Set Uvs.
+		*(CUV*)(CurVBPtr + CTessFace::CurrentFar0VBInfo.TexCoordOff0)= uv;
+	}
+	else
+	{
+		// Else must setup Vertex program inputs
+		// v[0]== StartPos.
+		*(CVector*)CurVBPtr= pVert->Src->StartPos;
+		// v[8]== Tex0
+		*(CUV*)(CurVBPtr + CTessFace::CurrentFar0VBInfo.TexCoordOff0)= uv;
+
+		// v[10]== GeomInfo.
+		static CUV	geomInfo;
+		geomInfo.U= pVert->Src->MaxFaceSize * CTessFace::OORefineThreshold;
+		geomInfo.V= pVert->Src->MaxNearLimit * CTessFace::RefineThreshold;
+		*(CUV*)(CurVBPtr + CTessFace::CurrentFar0VBInfo.GeomInfoOff)= geomInfo;
+
+		// v[11]== EndPos - StartPos
+		*(CVector*)(CurVBPtr + CTessFace::CurrentFar0VBInfo.DeltaPosOff)=
+			pVert->Src->EndPos - pVert->Src->StartPos;
+	}
 }
 // ***************************************************************************
 // NB: need to be inlined only for fillFar1VB() in this file.
@@ -914,9 +936,6 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 
 	// NB: the filling order of data is important, for AGP write combiners.
 
-	// Set Pos.
-	*(CVector*)CurVBPtr= pVert->Src->Pos;
-
 	// compute Uvs.
 	static CUV		uv;
 	CParamCoord	&pc= pVert->PCoord;
@@ -930,13 +949,44 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 		uv.U= pc.getS()* Far1UScale + Far1UBias;
 		uv.V= pc.getT()* Far1VScale + Far1VBias;
 	}
-	// Set Uvs.
-	*(CUV*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.TexCoordOff0)= uv;
 
+	// If not VertexProgram (NB: Suppose BTB kill this test).
+	if( !CTessFace::VertexProgramEnabled )
+	{
+		// Set Pos.
+		*(CVector*)CurVBPtr= pVert->Src->Pos;
+		// Set Uvs.
+		*(CUV*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.TexCoordOff0)= uv;
+		// Set default color.
+		static CRGBA	col(255,255,255,255);
+		*(CRGBA*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.ColorOff)= col;
+	}
+	else
+	{
+		// Else must setup Vertex program inputs
+		// v[0]== StartPos.
+		*(CVector*)CurVBPtr= pVert->Src->StartPos;
+		// v[8]== Tex0
+		*(CUV*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.TexCoordOff0)= uv;
 
-	// Set default color.
-	static CRGBA	col(255,255,255,255);
-	*(CRGBA*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.ColorOff)= col;
+		// v[10]== GeomInfo.
+		static CUV	geomInfo;
+		geomInfo.U= pVert->Src->MaxFaceSize * CTessFace::OORefineThreshold;
+		geomInfo.V= pVert->Src->MaxNearLimit * CTessFace::RefineThreshold;
+		*(CUV*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.GeomInfoOff)= geomInfo;
+
+		// v[11]== EndPos - StartPos
+		*(CVector*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.DeltaPosOff)=
+			pVert->Src->EndPos - pVert->Src->StartPos;
+
+		// v[12]== Alpha information
+		// Hopefully, fillVBFar1Only() is called each Time the Far1 change, in preRender().
+		// So TransitionSqrMin and OOTransitionSqrDelta in CPath are valid.
+		geomInfo.U= TransitionSqrMin;
+		geomInfo.V= OOTransitionSqrDelta;
+		*(CUV*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.AlphaInfoOff)= geomInfo;
+
+	}
 }
 // ***************************************************************************
 // NB: need to be inlined only for fillTileVB() in this file.
@@ -956,12 +1006,35 @@ inline void		CPatch::fillTileVertexVB(CTessNearVertex *pVert)
 
 	// NB: the filling order of data is important, for AGP write combiners.
 
-	// Set Pos.
-	*(CVector*)CurVBPtr= pVert->Src->Pos;
+	// If not VertexProgram (NB: Suppose BTB kill this test).
+	if( !CTessFace::VertexProgramEnabled )
+	{
+		// Set Pos.
+		*(CVector*)CurVBPtr= pVert->Src->Pos;
+		// Set Uvs.
+		*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
+		*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
+	}
+	else
+	{
+		// Else must setup Vertex program inputs
+		// v[0]== StartPos.
+		*(CVector*)CurVBPtr= pVert->Src->StartPos;
+		// v[8]== Tex0
+		*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
+		// v[9]== Tex1
+		*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
 
-	// Set Uvs.
-	*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
-	*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
+		// v[10]== GeomInfo.
+		static CUV	geomInfo;
+		geomInfo.U= pVert->Src->MaxFaceSize * CTessFace::OORefineThreshold;
+		geomInfo.V= pVert->Src->MaxNearLimit * CTessFace::RefineThreshold;
+		*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.GeomInfoOff)= geomInfo;
+
+		// v[11]== EndPos - StartPos
+		*(CVector*)(CurVBPtr + CTessFace::CurrentTileVBInfo.DeltaPosOff)=
+			pVert->Src->EndPos - pVert->Src->StartPos;
+	}
 }
 
 
@@ -1255,12 +1328,30 @@ void		CPatch::updateClipPatchVB()
 void		CPatch::checkCreateVertexVBFar(CTessFarVertex *pVert)
 {
 	nlassert(pVert);
-	// If visible, and Far0 in !Tile Mode, allocate and try to fill.
+	// If visible, and Far0 in !Tile Mode, allocate.
 	// NB: must test Far0>0 because vertices are reallocated in preRender() if a change of Far occurs.
 	if(!RenderClipped && Far0>0)
 	{
 		pVert->Index0= CTessFace::CurrentFar0VBAllocator->allocateVertex();
-		// try to fill.
+	}
+
+	// Idem for Far1
+	if(!RenderClipped && Far1>0)
+	{
+		pVert->Index1= CTessFace::CurrentFar1VBAllocator->allocateVertex();
+	}
+
+}
+
+
+// ***************************************************************************
+void		CPatch::checkFillVertexVBFar(CTessFarVertex *pVert)
+{
+	nlassert(pVert);
+	// If visible, and Far0 in !Tile Mode, try to fill.
+	// NB: must test Far0>0 because vertices are reallocated in preRender() if a change of Far occurs.
+	if(!RenderClipped && Far0>0)
+	{
 		if( !CTessFace::CurrentFar0VBAllocator->reallocationOccurs() )
 			fillFar0VertexVB(pVert);
 	}
@@ -1268,12 +1359,9 @@ void		CPatch::checkCreateVertexVBFar(CTessFarVertex *pVert)
 	// Idem for Far1
 	if(!RenderClipped && Far1>0)
 	{
-		pVert->Index1= CTessFace::CurrentFar1VBAllocator->allocateVertex();
-		// try to fill.
 		if( !CTessFace::CurrentFar1VBAllocator->reallocationOccurs() )
 			fillFar1VertexVB(pVert);
 	}
-
 }
 
 
@@ -1281,11 +1369,23 @@ void		CPatch::checkCreateVertexVBFar(CTessFarVertex *pVert)
 void		CPatch::checkCreateVertexVBNear(CTessNearVertex	*pVert)
 {
 	nlassert(pVert);
-	// If visible, and Far0 in Tile Mode, allocate and try to fill.
+	// If visible, and Far0 in Tile Mode, allocate.
 	// NB: must test Far0==0 because vertices are reallocated in preRender() if a change of Far occurs.
 	if(!RenderClipped && Far0==0)
 	{
 		pVert->Index= CTessFace::CurrentTileVBAllocator->allocateVertex();
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::checkFillVertexVBNear(CTessNearVertex	*pVert)
+{
+	nlassert(pVert);
+	// If visible, and Far0 in Tile Mode, try to fill.
+	// NB: must test Far0==0 because vertices are reallocated in preRender() if a change of Far occurs.
+	if(!RenderClipped && Far0==0)
+	{
 		// try to fill.
 		if( !CTessFace::CurrentTileVBAllocator->reallocationOccurs() )
 			fillTileVertexVB(pVert);

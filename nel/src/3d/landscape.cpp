@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.81 2001/09/26 16:01:29 corvazier Exp $
+ * $Id: landscape.cpp,v 1.82 2001/10/02 08:46:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,8 +33,6 @@
 #include "3d/tile_noise_map.h"
 
 
-// Hulud VP_TEST
-#include "3d/driver/opengl/driver_opengl.h"
 #include "3d/vertex_program.h"
 
 using namespace NLMISC;
@@ -43,21 +41,6 @@ using namespace std;
 
 namespace NL3D 
 {
-
-// Hulud VP_TEST
-const char* LandscapeProgram=
-"!!VP1.0 \n\
-DP4 o[HPOS].x, c[0], v[0];\n\
-DP4 o[HPOS].y, c[1], v[0];\n\
-DP4 o[HPOS].z, c[2], v[0];\n\
-DP4 o[HPOS].w, c[3], v[0];\n\
-MOV o[TEX0], v[8];\n\
-MOV o[TEX1], v[9];\n\
-MOV o[COL0], c[4];\n\
-END\n";
-
-// Active the vertex program
-CVertexProgram vp (LandscapeProgram);
 
 
 // ***************************************************************************
@@ -198,6 +181,7 @@ CLandscape::CLandscape() :
 
 	// By default, we compute Geomorph and Alpha in software.
 	_VertexShaderOk= false;
+	_VPThresholdChange= false;
 
 	_RenderMustRefillVB= false;
 }
@@ -226,6 +210,17 @@ void			CLandscape::init()
 
 
 // ***************************************************************************
+void			CLandscape::setThreshold (float thre)
+{
+	if(thre != _Threshold)
+	{
+		_Threshold= thre;
+		_VPThresholdChange= true;
+	}
+}
+
+
+// ***************************************************************************
 void			CLandscape::setTileNear (float tileNear)
 {
 	tileNear= max(tileNear, _FarTransition);
@@ -233,7 +228,7 @@ void			CLandscape::setTileNear (float tileNear)
 	if(tileNear!=_TileDistNear)
 	{
 		_TileDistNear= tileNear;
-		resetRenderFar();
+		resetRenderFarAndDeleteVBFV();
 	}
 
 }
@@ -274,12 +269,12 @@ uint			CLandscape::getRefinePeriod() const
 
 
 // ***************************************************************************
-void			CLandscape::resetRenderFar()
+void			CLandscape::resetRenderFarAndDeleteVBFV()
 {
 	// For all patch of all zones.
 	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
 	{
-		((*it).second)->resetRenderFar();
+		((*it).second)->resetRenderFarAndDeleteVBFV();
 	}
 }
 
@@ -422,7 +417,13 @@ void			CLandscape::clear()
 void			CLandscape::setDriver(IDriver *drv)
 {
 	nlassert(drv);
-	_Driver= drv;
+	if(_Driver != drv)
+	{
+		_Driver= drv;
+
+		// Does the driver support VertexShader???
+		_VertexShaderOk= _Driver->isVertexProgramSupported();
+	}
 }
 
 // ***************************************************************************
@@ -600,6 +601,9 @@ void			CLandscape::lockBuffers ()
 	_Far0VB.lockBuffer(CTessFace::CurrentFar0VBInfo);
 	_Far1VB.lockBuffer(CTessFace::CurrentFar1VBInfo);
 	_TileVB.lockBuffer(CTessFace::CurrentTileVBInfo);
+
+	// VertexProgrma mode???
+	CTessFace::VertexProgramEnabled= _VertexShaderOk;
 }
 
 
@@ -719,7 +723,19 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 	// Reallocation Mgt. If any of the VB is reallocated, we must refill it entirely.
 	// NB: all VBs are refilled entirely. It is not optimal (maybe 3* too slow), but reallocation are supposed
 	// to be very rare.
-	if(_RenderMustRefillVB || _Far0VB.reallocationOccurs() || _Far1VB.reallocationOccurs() || _TileVB.reallocationOccurs())
+	if( _Far0VB.reallocationOccurs() || _Far1VB.reallocationOccurs() || _TileVB.reallocationOccurs() )
+		_RenderMustRefillVB= true;
+
+	// VertexProgram dependency on RefineThreshold Management. If VertexShader, and if the refineThreshold has
+	// changed since the last time, we must refill All the VB, because data are out of date.
+	if( _VertexShaderOk && _VPThresholdChange )
+	{
+		_VPThresholdChange= false;
+		_RenderMustRefillVB= true;
+	}
+
+	// If we must refill the VB (for any reason).
+	if(_RenderMustRefillVB )
 	{
 		// Ok, ok, we refill All the VB with good data.
 		_RenderMustRefillVB= false;
@@ -772,6 +788,19 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 	unlockBuffers();
 
 
+	// If VertexShader enabled, setup VertexProgram Constants.
+	if(_VertexShaderOk)
+	{
+		// c[0..3] take the ModelViewProjection Matrix.
+		driver->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
+		// c[4] take usefull constants.
+		driver->setConstant(4, 0, 1, 0.5f, 0);
+		// c[5] take RefineCenter
+		driver->setConstant(5, &refineCenter);
+		// c[6] take info for Geomorph trnasition to TileNear.
+		driver->setConstant(6, CTessFace::TileDistNearSqr, CTessFace::OOTileDistDeltaSqr, 0, 0);
+	}
+
 
 	// 1. TileRender pass.
 	//====================
@@ -780,7 +809,7 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 	// Active VB.
 	// ==================
 
-	// Active the good VB.
+	// Active the good VB, and maybe activate the VertexProgram.
 	_TileVB.activate();
 
 
@@ -968,7 +997,7 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 	// Active VB.
 	// ==================
 
-	// Active the good VB.
+	// Active the good VB, and maybe activate the VertexProgram.
 	_Far0VB.activate();
 
 
@@ -1013,7 +1042,7 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 	// Active VB.
 	// ==================
 
-	// Active the good VB.
+	// Active the good VB, and maybe activate the VertexProgram.
 	_Far1VB.activate();
 
 
@@ -1051,6 +1080,7 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 		itFar++;
 	}
 
+
 	// 4. "Release" texture materials.
 	//================================
 	FarMaterial.setTexture(0, NULL);
@@ -1065,9 +1095,9 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 	// To ensure no use but in render()..
 	CPatch::PatchCurrentDriver= NULL;
 
-	// Hulud VP_TEST
-	// Desactive the vertex program
-	//driver->activeVertexProgram (NULL);
+	// Desactive the vertex program (if anyone)
+	if(_VertexShaderOk)
+		driver->activeVertexProgram (NULL);
 
 }
 

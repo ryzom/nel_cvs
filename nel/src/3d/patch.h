@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.12 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: patch.h,v 1.13 2001/10/02 08:46:59 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -889,9 +889,12 @@ private:
 
 
 
-	// For Refine. Those methods do all the good job, and test if they can allocate / fill the VB.
+	// For Refine. Those methods do all the good job, and test if they can allocate the VB.
 	void		checkCreateVertexVBFar(CTessFarVertex *pVert);
 	void		checkCreateVertexVBNear(CTessNearVertex	*pVert);
+	// For Refine. Those methods do all the good job, and test if they can fill the VB.
+	void		checkFillVertexVBFar(CTessFarVertex *pVert);
+	void		checkFillVertexVBNear(CTessNearVertex	*pVert);
 	// For Refine. Those methods do all the good job, and test if they have to delete the VB.
 	void		checkDeleteVertexVBFar(CTessFarVertex *pVert);
 	void		checkDeleteVertexVBNear(CTessNearVertex	*pVert);

@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.52 2001/09/14 09:44:26 berenguier Exp $
+ * $Id: zone.cpp,v 1.53 2001/10/02 08:47:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1134,13 +1134,22 @@ void			CZone::preRender()
 
 
 // ***************************************************************************
-void			CZone::resetRenderFar()
+void			CZone::resetRenderFarAndDeleteVBFV()
 {
 	CPatch		*pPatch;
 	if(Patchs.size()>0)
 		pPatch= &(*Patchs.begin());
 	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 	{
+		// If patch is visible
+		if(!pPatch->RenderClipped)
+		{
+			// release VertexBuffer, and FaceBuffer
+			pPatch->deleteVBAndFaceVector();
+			// Flag.
+			pPatch->RenderClipped= true;
+		}
+
 		pPatch->resetRenderFar();
 	}
 }

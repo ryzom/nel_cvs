@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.h
  * <File description>
  *
- * $Id: landscapevb_allocator.h,v 1.1 2001/09/10 10:06:56 berenguier Exp $
+ * $Id: landscapevb_allocator.h,v 1.2 2001/10/02 08:46:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,15 @@ namespace NL3D
 class	IDriver;
 
 
+// ***************************************************************************
+// Landscape VertexProgram: Position of vertices in VertexBuffer.
+#define	NL3D_LANDSCAPE_VPPOS_STARTPOS		(CVertexBuffer::Position)
+#define	NL3D_LANDSCAPE_VPPOS_TEX0			(CVertexBuffer::TexCoord0)
+#define	NL3D_LANDSCAPE_VPPOS_TEX1			(CVertexBuffer::TexCoord1)
+#define	NL3D_LANDSCAPE_VPPOS_GEOMINFO		(CVertexBuffer::TexCoord2)
+#define	NL3D_LANDSCAPE_VPPOS_DELTAPOS		(CVertexBuffer::TexCoord3)
+#define	NL3D_LANDSCAPE_VPPOS_ALPHAINFO		(CVertexBuffer::TexCoord4)
+
 
 // ***************************************************************************
 /**
@@ -61,9 +70,13 @@ public:
 	 *  if the VBhard/Driver has been deleted externally, Vertices are lost.
 	 *	The vertex buffer is reallocated and reallocationOccurs() return true (see reallocationOccurs()).
 	 *	to do anytime you're not sure of change of the driver/vbHard state.
+	 *
+	 *	Note: the vertexProgram is created/changed here, according to driver, and TType.
+	 *
 	 *	\param driver must not be NULL.
 	 */
 	void			updateDriver(IDriver *driver);
+
 
 	// delete all VB, and free driver ressources (if RefPtr driver not deleted). clear list too.
 	void			clear();
@@ -95,7 +108,9 @@ public:
 	void			unlockBuffer();
 	bool			bufferLocked() const {return _BufferLocked;}
 
-	/// activate the VB or the VBHard in Driver setuped. nlassert if driver is NULL or if buffer is locked.
+	/** activate the VB or the VBHard in Driver setuped. nlassert if driver is NULL or if buffer is locked.
+	 * If vertexProgram possible, activate the vertexProgram too.
+	 */
 	void			activate();
 	// @}
 
@@ -137,6 +152,14 @@ private:
 	void				allocateVertexBuffer(uint32 numVertices);
 	// @}
 
+
+	/// \name Vertex Program mgt .
+	// @{
+	// Vertex Program , NULL if not enabled.
+	CVertexProgram		*_VertexProgram;
+	void				deleteVertexProgram();
+	void				setupVBFormatAndVertexProgram(bool withVertexProgram);
+	// @}
 
 };
 

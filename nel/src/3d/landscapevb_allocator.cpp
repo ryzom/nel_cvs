@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.1 2001/09/10 10:06:56 berenguier Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.2 2001/10/02 08:46:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #include "3d/landscapevb_allocator.h"
 #include "3d/driver.h"
 
+
+using namespace std;
 
 namespace NL3D 
 {
@@ -57,16 +59,7 @@ CLandscapeVBAllocator::CLandscapeVBAllocator(TType type)
 	_VBHardOk= false;
 	_BufferLocked= false;
 
-	if(_Type==Far0)
-		// v3f/t2f
-		_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
-	else if(_Type==Far1)
-		// v3f/t2f/c4ub
-		_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::PrimaryColorFlag );
-	else
-		// v3f/t2f0/t2f1
-		_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::TexCoord1Flag);
-
+	_VertexProgram= NULL;
 }
 
 // ***************************************************************************
@@ -86,6 +79,11 @@ void			CLandscapeVBAllocator::updateDriver(IDriver *driver)
 		deleteVertexBuffer();
 		_Driver= driver;
 		_VBHardOk= _Driver->supportVertexBufferHard();
+
+		// If change of driver, delete the VertexProgram first, if any
+		deleteVertexProgram();
+		// Then rebuild VB format, and VertexProgram, if needed.
+		setupVBFormatAndVertexProgram(_Driver->isVertexProgramSupported());
 
 		// must reallocate the VertexBuffer.
 		if( _NumVerticesAllocated>0 )
@@ -110,6 +108,9 @@ void			CLandscapeVBAllocator::clear()
 
 	// delete the VB.
 	deleteVertexBuffer();
+
+	// delete vertex Program, if any
+	deleteVertexProgram();
 
 	// clear other states.
 	_ReallocationOccur= false;
@@ -202,11 +203,11 @@ void			CLandscapeVBAllocator::lockBuffer(CFarVertexBufferInfo &farVB)
 	if(_VBHard)
 	{
 		void	*data= _VBHard->lock();
-		farVB.setupVertexBufferHard(*_VBHard, data);
+		farVB.setupVertexBufferHard(*_VBHard, data, _VertexProgram!=NULL );
 	}
 	else
 	{
-		farVB.setupVertexBuffer(_VB);
+		farVB.setupVertexBuffer(_VB, _VertexProgram!=NULL );
 	}
 
 	_BufferLocked= true;
@@ -221,11 +222,11 @@ void			CLandscapeVBAllocator::lockBuffer(CNearVertexBufferInfo &tileVB)
 	if(_VBHard)
 	{
 		void	*data= _VBHard->lock();
-		tileVB.setupVertexBufferHard(*_VBHard, data);
+		tileVB.setupVertexBufferHard(*_VBHard, data, _VertexProgram!=NULL );
 	}
 	else
 	{
-		tileVB.setupVertexBuffer(_VB);
+		tileVB.setupVertexBuffer(_VB, _VertexProgram!=NULL );
 	}
 
 	_BufferLocked= true;
@@ -255,6 +256,14 @@ void			CLandscapeVBAllocator::activate()
 	nlassert(_Driver);
 	nlassert(!_BufferLocked);
 
+	// If enabled, activate Vertex program first.
+	if(_VertexProgram)
+	{
+		//nlinfo("\nSTARTVP\n%s\nENDVP\n", _VertexProgram->getProgram().c_str());
+		nlverify(_Driver->activeVertexProgram(_VertexProgram));
+	}
+
+	// Activate VB.
 	if(_VBHard)
 		_Driver->activeVertexBufferHard(_VBHard);
 	else
@@ -328,6 +337,286 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 
 	//nlinfo("Alloc a LandVB %s of %d vertices in %s", _Type==Far0?"Far0":(_Type==Far1?"Far1":"Tile"), numVertices, _VBHardOk?"VBHard":"VBSoft");
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Vertex Program.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+/*
+	Common Part. Inputs and constants.
+
+	Inputs
+	--------
+	Standard:
+	v[0] == StartPos.	Hence, It is the SplitPoint of the father face.
+	v[8] == Tex0 (xy) 
+	v[9] == Tex1 (xy) (just for Tile mode).
+
+	Geomorph:
+	v[10] == { GeomFactor, MaxNearLimit }
+		* where GeomFactor == max(SizeFaceA, SizeFaceB) * OORefineThreshold.
+		It's means vertices are re-computed when the RefineThreshold setup change.
+
+		* MaxNearLimit= max(nearLimitFaceA, nearLimitFaceB)
+		NB: vertices are re-computed when the RefineThreshold setup change here too.
+
+	v[11].xyz == EndPos-StartPos
+
+	Alpha: NB: Since only usefull for Far1, v[12] is not in the VB for Far0 and Tile VertexBuffer.
+	v[12] == { TransitionSqrMin, OOTransitionSqrDelta}
+		* TransitionSqrMin, OOTransitionSqrDelta : Alpha transition, see preRender().
+			There is only 3 values possibles. It depends on Far1 type. Changed in preRender()
+
+
+	Constant:
+	--------
+	Setuped at beginning of CLandscape::render()
+	c[0..3]= ModelViewProjection Matrix.
+	c[4]= {0, 1, 0.5, 0}
+	c[5]= RefineCenter
+	c[6]= {TileDistNearSqr, OOTileDistDeltaSqr, *, *}
+*/
+
+
+// ***********************
+/*
+	Common start of the program for Far0, Far1 and Tile mode.
+	It compute the good Geomorphed position.
+	At the end of this program, nothing is written in the output register, and we have in the Temp Registers:
+
+	- R0= scratch
+	- R1= CurrentPos geomorphed
+	- R2.x= sqrDist= (startPos - RefineCenter).sqrnorm(). Usefull for alpha computing.
+
+Pgr Len= 19.
+NB: 9 ope for normal errorMetric, and 10 ope for smoothing with TileNear.
+
+	The C code for this Program is:  (v[] means data is a vertex input, c[] means it is a constant)
+	{
+		// Compute Basic ErrorMetric.
+		sqrDist= (v[StartPos] - c[RefineCenter]).sqrnorm()
+		ErrorMetric= v[GeomFactor] / sqrDist
+
+		// Compute ErrorMetric modified by TileNear transition.
+		f= (sqrDist - c[TileDistNearSqr]) * c[OOTileDistDeltaSqr]
+		clamp(f, 0, 1);
+		f= 1-f;
+		// ^4 gives better smooth result
+		f= sqr(f);	f= sqr(f);
+		// interpolate the errorMetric
+		ErrorMetricModified= v[MaxNearLimit]*f + ErrorMetric*(1-f);
+
+		// Take the max errorMetric.
+		ErrorMetric= max(ErrorMetric, ErrorMetricModified);
+
+		// Interpolate StartPos to EndPos, between 1 and 2.
+		f= ErrorMetric - 1;
+		clamp(f, 0, 1);
+		R1= f * v[EndPos-StartPos] + StartPos;
+	}
+
+*/
+const char* NL3D_LandscapeCommonStartProgram=
+"!!VP1.0																				\n\
+	# compute Basic geomorph into R0.x													\n\
+	ADD	R0, v[0], -c[5];			# R0 = startPos - RefineCenter						\n\
+	DP3	R2.x, R0, R0;				# R2.x= sqrDist= (startPos - RefineCenter).sqrnorm()\n\
+	RCP	R0.x, R2.x;					# R0.x= 1 / sqrDist									\n\
+	MUL	R0.x, v[10].x, R0.x;		# R0.x= ErrorMetric= GeomFactor / sqrDist			\n\
+																						\n\
+	# compute Transition Factor To TileNear Geomorph, into R0.z							\n\
+	ADD	R0.z, R2.x, -c[6].x;		# R0.z= sqrDist - TileDistNearSqr					\n\
+	MUL	R0.z, R0.z, c[6].y;			# R0.z= f= (sqrDist - TileDistNearSqr) * OOTileDistDeltaSqr	\n\
+	MAX R0.z, R0.z, c[4].x;																\n\
+	MIN R0.z, R0.z, c[4].y;			# R0.z= f= clamp(f, 0, 1);							\n\
+	ADD	R0.z, c[4].y, -R0.z;		# R0.z= 1-f											\n\
+	MUL R0.z, R0.z, R0.z;																\n\
+	MUL R0.z, R0.z, R0.z;			# R0.z= finalFactor= (1-f)^4						\n\
+																						\n\
+	# Apply the transition factor to the ErrorMetric => R0.w= ErrorMetricModified.		\n\
+	ADD	R0.w, v[10].y, -R0.x;		# R0.w= maxNearLimit - ErrorMetric					\n\
+	MAD	R0.w, R0.z, R0.w, R0.x;	# R0.w= finalFactor * (maxNearLimit - ErrorMetric) + ErrorMetric \n\
+																						\n\
+	# R0.w may be < R0.x; (when the point is very near). Must take the bigger errorMetric.	\n\
+	MAX	R0.x, R0.x, R0.w;			# R0.x= ErrorMetric Max								\n\
+																						\n\
+	# apply geomorph into R1															\n\
+	ADD R0.x, R0.x, -c[4].y;		# R0.x= ErrorMetric Max - 1							\n\
+	MAX R0.x, R0.x, c[4].x;																\n\
+	MIN R0.x, R0.x, c[4].y;			# R0.x= geomBlend= clamp(R0.x, 0, 1);				\n\
+	# trick here: since R1.w= 0, and v[0].w= 1, final R1.w==1.							\n\
+	MUL	R1.xyz, v[11], R0.x;		# Can't use MAD, because can't acces 2 inputs in one op.	\n\
+	ADD	R1, R1, v[0];				# R1= geomBlend * (EndPos-StartPos) + StartPos		\n\
+";
+
+
+// ***********************
+// Test Speed.
+/*"!!VP1.0																				\n\
+	# compute Basic geomorph into R0.x													\n\
+	ADD	R0, v[0], -c[5];			# R0 = startPos - RefineCenter						\n\
+	DP3	R2.x, R0, R0;				# R2.x= sqrDist= (startPos - RefineCenter).sqrnorm()\n\
+	MOV	R1, v[0];					# R1= geomBlend * (EndPos-StartPos) + StartPos		\n\
+";
+*/
+const string NL3D_LandscapeTestSpeedProgram=
+"	MOV R1, R1; \n	MOV R1, R1; \n	MOV R1, R1; \n	MOV R1, R1; \n	MOV R1, R1; \n\
+	MOV R1, R1; \n	MOV R1, R1; \n	MOV R1, R1; \n	MOV R1, R1; \n	MOV R1, R1; \n\
+";
+
+
+// ***********************
+/*
+	Far0:
+		just project, copy uv, and set RGBA to white.
+*/
+// ***********************
+const char* NL3D_LandscapeFar0EndProgram=
+"	# compute in Projection space														\n\
+	DP4 o[HPOS].x, c[0], R1;															\n\
+	DP4 o[HPOS].y, c[1], R1;															\n\
+	DP4 o[HPOS].z, c[2], R1;															\n\
+	DP4 o[HPOS].w, c[3], R1;															\n\
+	MOV o[TEX0].xy, v[8];																\n\
+	MOV o[COL0].xyzw, c[4].yyyy;	# col.RGBA= (1,1,1,1)								\n\
+	END																					\n\
+";
+
+
+// ***********************
+/*
+	Far1:
+		Compute Alpha transition.
+		Project, copy uv, and set RGB to white.
+*/
+// ***********************
+const char* NL3D_LandscapeFar1EndProgram=
+"	# compute Alpha Transition															\n\
+	ADD R0.x, R2.x, -v[12].x;		# R0.x= sqrDist-TransitionSqrMin					\n\
+	MUL	R0.x, R0.x, v[12].y;		# R0.x= (sqrDist-TransitionSqrMin) * OOTransitionSqrDelta	\n\
+	MAX R0.x, R0.x, c[4].x;																\n\
+	MIN o[COL0].w, R0.x, c[4].y;	# col.A= clamp(R0.x, 0, 1);							\n\
+																						\n\
+	# compute in Projection space														\n\
+	DP4 o[HPOS].x, c[0], R1;															\n\
+	DP4 o[HPOS].y, c[1], R1;															\n\
+	DP4 o[HPOS].z, c[2], R1;															\n\
+	DP4 o[HPOS].w, c[3], R1;															\n\
+	MOV o[TEX0].xy, v[8];																\n\
+	MOV o[COL0].xyz, c[4].yyyy;		# col.RGB= (1,1,1)									\n\
+	END																					\n\
+";
+
+
+// ***********************
+/*
+	Tile:
+		just project, copy uv 0 and uv1, and set RGBA to white.
+*/
+// ***********************
+const char* NL3D_LandscapeTileEndProgram=
+"	# compute in Projection space														\n\
+	DP4 o[HPOS].x, c[0], R1;															\n\
+	DP4 o[HPOS].y, c[1], R1;															\n\
+	DP4 o[HPOS].z, c[2], R1;															\n\
+	DP4 o[HPOS].w, c[3], R1;															\n\
+	MOV o[TEX0].xy, v[8];																\n\
+	MOV o[TEX1].xy, v[9];																\n\
+	MOV o[COL0].xyzw, c[4].yyyy;	# col.RGBA= (1,1,1,1)								\n\
+	END																					\n\
+";
+
+
+
+
+// ***************************************************************************
+void			CLandscapeVBAllocator::deleteVertexProgram()
+{
+	if(_VertexProgram)
+	{
+		delete _VertexProgram;
+		_VertexProgram= NULL;
+	}
+}
+
+
+// ***************************************************************************
+void			CLandscapeVBAllocator::setupVBFormatAndVertexProgram(bool withVertexProgram)
+{
+	// If not vertexProgram mode
+	if(!withVertexProgram)
+	{
+		// setup normal VB format.
+		if(_Type==Far0)
+			// v3f/t2f
+			_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
+		else if(_Type==Far1)
+			// v3f/t2f/c4ub
+			_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::PrimaryColorFlag );
+		else
+			// v3f/t2f0/t2f1
+			_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::TexCoord1Flag);
+	}
+	else
+	{
+		// Else Setup our Vertex Program, and good VBuffers, according to _Type.
+
+		if(_Type==Far0)
+		{
+			// Build the Vertex Format.
+			_VB.clearValueEx();
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_STARTPOS,	CVertexBuffer::Float3);	// v[0]= StartPos.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX0,		CVertexBuffer::Float2);	// v[8]= Tex0.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_GEOMINFO,	CVertexBuffer::Float2);	// v[10]= GeomInfos.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_DELTAPOS,	CVertexBuffer::Float3);	// v[11]= EndPos-StartPos.
+			_VB.initEx();
+
+			// Init the Vertex Program.
+			string	vpgram= string(NL3D_LandscapeCommonStartProgram) + 
+				string(NL3D_LandscapeFar0EndProgram);
+			_VertexProgram= new CVertexProgram(vpgram.c_str());
+		}
+		else if(_Type==Far1)
+		{
+			// Build the Vertex Format.
+			_VB.clearValueEx();
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_STARTPOS,	CVertexBuffer::Float3);	// v[0]= StartPos.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX0,		CVertexBuffer::Float2);	// v[8]= Tex0.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_GEOMINFO,	CVertexBuffer::Float2);	// v[10]= GeomInfos.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_DELTAPOS,	CVertexBuffer::Float3);	// v[11]= EndPos-StartPos.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_ALPHAINFO,	CVertexBuffer::Float2);	// v[12]= AlphaInfos.
+			_VB.initEx();
+
+			// Init the Vertex Program.
+			string	vpgram= string(NL3D_LandscapeCommonStartProgram) + 
+				string(NL3D_LandscapeFar1EndProgram);
+			_VertexProgram= new CVertexProgram(vpgram.c_str());
+		}
+		else
+		{
+			// Build the Vertex Format.
+			_VB.clearValueEx();
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_STARTPOS,	CVertexBuffer::Float3);	// v[0]= StartPos.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX0,		CVertexBuffer::Float2);	// v[8]= Tex0.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX1,		CVertexBuffer::Float2);	// v[9]= Tex1.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_GEOMINFO,	CVertexBuffer::Float2);	// v[10]= GeomInfos.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_DELTAPOS,	CVertexBuffer::Float3);	// v[11]= EndPos-StartPos.
+			_VB.initEx();
+
+			// Init the Vertex Program.
+			string	vpgram= string(NL3D_LandscapeCommonStartProgram) + 
+				string(NL3D_LandscapeTileEndProgram);
+			_VertexProgram= new CVertexProgram(vpgram.c_str());
+		}
+	}
+
+}
+
 
 
 

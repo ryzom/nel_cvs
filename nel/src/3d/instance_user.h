@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.14 2002/10/29 14:40:09 berenguier Exp $
+ * $Id: instance_user.h,v 1.15 2002/11/18 17:54:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,6 +122,19 @@ public:
 		NL3D_MEM_INSTANCE
 		return _Instance->isStarted(); 
 	}	
+	virtual float               getDistMax() const
+	{
+		NL3D_MEM_INSTANCE
+		return _Instance->getDistMax();
+	}	
+	virtual void                setDistMax(float distMax)
+	{
+		NL3D_MEM_INSTANCE
+		_Instance->setDistMax(distMax);
+	}
+	virtual void                setCoarseMeshDist(float dist);	
+	virtual float               getCoarseMeshDist() const;
+
 
 	/// \name Async Texture Loading
 	// @{

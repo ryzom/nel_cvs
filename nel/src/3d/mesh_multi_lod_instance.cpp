@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.11 2002/06/12 12:26:57 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.12 2002/11/18 17:53:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,10 +39,11 @@ namespace NL3D
 
 // ***************************************************************************
 
-CMeshMultiLodInstance::CMeshMultiLodInstance ()
+	CMeshMultiLodInstance::CMeshMultiLodInstance ()
 {
 	// No flags
 	Flags=0;
+	_CoarseMeshDistance = -1.f;
 }
 
 // ***************************************************************************
@@ -286,6 +287,14 @@ void		CMeshMultiLodInstance::changeMRMDistanceSetup(float distanceFinest, float 
 		// Affect the mesh directly.
 		pMesh->changeMRMDistanceSetup(distanceFinest, distanceMiddle, distanceCoarsest);
 	}
+}
+
+
+// ***************************************************************************
+float	   CMeshMultiLodInstance::getNumTriangles (float distance)
+{
+	CMeshMultiLod *shape = safe_cast<CMeshMultiLod*> ((IShape*)Shape);
+	return shape->getNumTrianglesWithCoarsestDist(distance, _CoarseMeshDistance);	
 }
 
 } // NL3D

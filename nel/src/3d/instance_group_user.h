@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.21 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: instance_group_user.h,v 1.22 2002/11/18 17:54:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,6 +76,11 @@ private:
 	void addToSceneAsync (class UScene& scene, UDriver *driver);
 	TState getAddToSceneState ();
 	void stopAddToSceneAsync ();
+
+	virtual void			setDistMax(uint instance, float dist);	
+	virtual float			getDistMax(uint instance) const;	
+	virtual void		    setCoarseMeshDist(uint instance, float dist);
+	virtual float           getCoarseMeshDist(uint instance) const;
 
 
 	void removeFromScene (class UScene& scene);

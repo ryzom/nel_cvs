@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.11 2002/10/29 14:40:46 berenguier Exp $
+ * $Id: u_instance.h,v 1.12 2002/11/18 17:54:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,6 +120,15 @@ public:
 	virtual void		stop()  = 0;
 	// For instance that have a start/stop caps
 	virtual bool		isStarted() const = 0;
+	
+	// Get the model distmax.
+	virtual float               getDistMax() const = 0;	
+	// Set the model distmax.
+	virtual void                setDistMax(float distMax) = 0;
+	// If the model has a coarse mesh, it set its dist. Set to -1 to keep default
+	virtual void                setCoarseMeshDist(float dist) = 0;
+	// If the model has a coarse mesh, it returns its distance if it has been set, or -1 if default is used (or if no coarse mesh present)
+	virtual float               getCoarseMeshDist() const = 0;
 
 
 	/// \name Async Texture Loading

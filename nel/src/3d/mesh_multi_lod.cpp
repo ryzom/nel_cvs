@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.27 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.28 2002/11/18 17:53:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -366,18 +366,27 @@ void CMeshMultiLod::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 // ***************************************************************************
 
-float CMeshMultiLod::getNumTriangles (float distance)
+float CMeshMultiLod::getNumTrianglesWithCoarsestDist(float distance, float coarsestMeshDist) const
 {
 	// Look in the table for good distances..
 	uint meshCount=_MeshVector.size();
-
+	
 	// At least on mesh
 	if (meshCount>0)
-	{
-		uint i=0;
+	{	
+		
+		if (coarsestMeshDist != -1)
+		{
+			if (coarsestMeshDist != 0)
+			{
+				// rescale distance to new coarse mesh distance..
+				distance *= _MeshVector[meshCount - 1].DistMax / coarsestMeshDist;
+			}
+		}		
 
+		uint i=0;		
 		// Look for good i
-		while ( _MeshVector[i].DistMax<distance )
+		while ( _MeshVector[i].DistMax < distance)
 		{
 			if (i==meshCount-1)
 				// Abort if last one
@@ -386,7 +395,7 @@ float CMeshMultiLod::getNumTriangles (float distance)
 		}
 
 		// Ref on slot
-		CMeshSlot &slot=_MeshVector[i];
+		const CMeshSlot &slot=_MeshVector[i];
 
 		// Is mesh present ?
 		if (slot.MeshGeom)

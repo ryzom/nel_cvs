@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.12 2002/06/12 12:26:57 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.13 2002/11/18 17:53:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,6 +88,13 @@ public:
 	// return the contribution of lights (for Coarse Mesh render).
 	const CLightContribution	&getLightContribution() {return _LightContribution;}
 
+	// Override the shape coarse mesh distance (-1 if not overriden)
+	void			 setCoarseMeshDist(float dist) { _CoarseMeshDistance = dist; }
+	float            getCoarseMeshDist() const { return _CoarseMeshDistance; }
+
+	// From CTransformShape
+	virtual float				getNumTriangles (float distance);
+
 private:
 
 	/// Computed first lod to display for this distance
@@ -106,6 +113,9 @@ private:
 
 	/// Alpha blending to use
 	float	BlendFactor;
+
+	/// Corse mesh distance (-1 is the one for the mesh is used)
+	float   _CoarseMeshDistance;
 
 	static IModel	*creator() {return new CMeshMultiLodInstance;}
 	friend	class CMeshMultiLod;

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.18 2002/11/14 17:32:10 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.19 2002/11/18 17:53:23 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -134,6 +134,12 @@ public:
 	virtual	float		getAsyncTextureDistance() const ;
 	virtual	void		setAsyncTextureDirty(bool flag);
 	virtual	bool		isAsyncTextureDirty() const;
+
+	// currently these methods have no effects for FXs...
+	virtual float               getDistMax() const { return -1.f; }	
+	virtual void                setDistMax(float distMax) {}	
+	virtual void                setCoarseMeshDist(float dist) {}
+	virtual float               getCoarseMeshDist() const { return -1.f; }
 
 private:
 	/// list of observers

@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.27 2002/11/04 15:40:43 boucher Exp $
+ * $Id: instance_group_user.cpp,v 1.28 2002/11/18 17:54:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/debug.h"
 #include "3d/instance_group_user.h"
 #include "3d/scene_user.h"
+#include "3d/mesh_multi_lod_instance.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 
@@ -458,6 +459,61 @@ bool			CInstanceGroupUser::getStaticLightSetup(
 	NL3D_MEM_IG
 	return _InstanceGroup.getStaticLightSetup(retrieverIdentifier, surfaceId, localPos, pointLightList, 
 		sunContribution, localAmbient);
+}
+
+// ***************************************************************************
+/*virtual*/ void CInstanceGroupUser::setDistMax(uint instance, float dist)
+{
+	if (instance > _InstanceGroup.getNumInstance())
+	{
+		nlwarning("CInstanceGroupUser::setDistMax : instance index %d is invalid", instance);
+		return;
+	}
+	if (_InstanceGroup._Instances[instance]) _InstanceGroup._Instances[instance]->setDistMax(dist);	
+}
+
+// ***************************************************************************
+/*virtual*/ float CInstanceGroupUser::getDistMax(uint instance) const
+{
+	if (instance > _InstanceGroup.getNumInstance())
+	{
+		nlwarning("CInstanceGroupUser::getDistMax : instance index %d is invalid", instance);
+		return -1.f;
+	}
+	if (_InstanceGroup._Instances[instance]) return _InstanceGroup._Instances[instance]->getDistMax();
+	else return -1.f;
+}
+
+// ***************************************************************************
+/*virtual*/ void CInstanceGroupUser::setCoarseMeshDist(uint instance, float dist)
+{
+	if (instance > _InstanceGroup.getNumInstance())
+	{
+		nlwarning("CInstanceGroupUser::setCoarseMeshDist : instance index %d is invalid", instance);
+		return;
+	}
+	if (_InstanceGroup._Instances[instance]) 
+	{	
+		CMeshMultiLodInstance *mmli = dynamic_cast<CMeshMultiLodInstance *>(_InstanceGroup._Instances[instance]);
+		if (mmli) mmli->setCoarseMeshDist(dist);
+	}
+}
+
+// ***************************************************************************
+/*virtual*/ float CInstanceGroupUser::getCoarseMeshDist(uint instance) const
+{
+	if (instance > _InstanceGroup.getNumInstance())
+	{
+		nlwarning("getCoarseMeshDist::getDistMax : instance index %d is invalid", instance);
+		return -1.f;
+	}
+	if (_InstanceGroup._Instances[instance]) 
+	{
+		CMeshMultiLodInstance *mmli = dynamic_cast<CMeshMultiLodInstance *>(_InstanceGroup._Instances[instance]);
+		if (mmli) return mmli->getCoarseMeshDist();
+		else return -1.f;
+	}		
+	else return -1.f;
 }
 
 

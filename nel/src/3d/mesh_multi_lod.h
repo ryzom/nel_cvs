@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.18 2002/07/02 12:30:03 berenguier Exp $
+ * $Id: mesh_multi_lod.h,v 1.19 2002/11/18 17:53:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -124,10 +124,7 @@ public:
 
 	/// render() this mesh in a driver.
 	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque);
-
-	/// get an approximation of the number of triangles this instance will render for a fixed distance.
-	virtual float	getNumTriangles (float distance);
-
+	
 	/// Get bbox.
 	virtual void	getAABBox(NLMISC::CAABBox &bbox) const;
 
@@ -177,6 +174,15 @@ public:
 	// @{
 	virtual IMeshGeom	*supportMeshBlockRendering (CTransformShape *trans, float &polygonCount ) const;
 	// @}
+
+	/// should not be called direclty as the intance of this shape will use 'getNumTrianglesWithCoarsestDist' themselves to get the correct distance.
+	virtual float	getNumTriangles (float distance)
+	{
+		return getNumTrianglesWithCoarsestDist(distance, -1);
+	}
+
+	// The same as getNumTriangles, but a coarsest dist is provided. When not -1, it overrides the dist of the coarsest mesh
+	float getNumTrianglesWithCoarsestDist(float distance, float coarsestMeshDist) const;
 
 private:
 

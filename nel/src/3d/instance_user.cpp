@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.15 2002/10/29 14:40:00 berenguier Exp $
+ * $Id: instance_user.cpp,v 1.16 2002/11/18 17:54:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/instance_user.h"
+#include "3d/mesh_multi_lod_instance.h"
 #include "nel/misc/debug.h"
 
 
@@ -188,6 +189,21 @@ bool		CInstanceUser::isAsyncTextureDirty() const
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
 	return mbi->isAsyncTextureDirty();
 }
+
+// ***************************************************************************
+void CInstanceUser::setCoarseMeshDist(float dist)
+{
+	CMeshMultiLodInstance *mmli = dynamic_cast<CMeshMultiLodInstance *>(_Instance);
+	if (mmli) mmli->setCoarseMeshDist(dist);
+}
+
+// ***************************************************************************
+float CInstanceUser::getCoarseMeshDist() const
+{
+	CMeshMultiLodInstance *mmli = dynamic_cast<CMeshMultiLodInstance *>(_Instance);
+	return mmli ? mmli->getCoarseMeshDist() : -1.f;
+}
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.18 2002/09/05 17:59:54 corvazier Exp $
+ * $Id: transform_shape.h,v 1.19 2002/11/18 17:50:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,7 +131,11 @@ public:
 	virtual void		stop()  {};
 	// For instance that have a start/stop caps
 	virtual bool		isStarted() const { return false; }
-
+	
+	// Get the model distmax. At startup it is setupped with the shape value
+	float               getDistMax() const { return _DistMax; }	
+	// Set the model distmax.
+	void                setDistMax(float distMax) { _DistMax = distMax; }
 protected:
 	/// Constructor
 	CTransformShape();
@@ -162,7 +166,9 @@ private:
 	CLightContribution		*_CurrentLightContribution;
 	// true If this instance use localAttenuation.
 	bool					_CurrentUseLocalAttenuation;
-
+private:
+	// The max dist for this model.
+	float                   _DistMax;	
 };
 
 

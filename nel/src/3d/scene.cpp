@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.89 2002/11/14 12:56:17 berenguier Exp $
+ * $Id: scene.cpp,v 1.90 2002/11/18 17:52:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -532,6 +532,7 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 	}
 	// Then create a reference to the shape
 	CTransformShape *pTShp = _ShapeBank->addRef( shapeName )->createInstance(*this);
+	if (pTShp) pTShp->setDistMax(pTShp->Shape->getDistMax());
 #ifdef NL_DEBUG
 //	pTShp->NameForDebug = shapeName; // \todo traptemp
 #endif

@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.20 2002/06/24 17:09:27 vizerie Exp $
+ * $Id: u_instance_group.h,v 1.21 2002/11/18 17:54:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -300,6 +300,18 @@ public:
 	virtual	bool			getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const NLMISC::CVector &localPos, 
 		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient) =0;
 
+	// @}
+
+	/// \name Distances
+	// @{
+	// set a dist max for the instance
+	virtual void			setDistMax(uint instance, float dist) = 0;
+	// get the dist max for the instance
+	virtual float			getDistMax(uint instance) const = 0;
+	// Set the coarse mesh dist for the instance (or -1 to keep default)
+	virtual void		    setCoarseMeshDist(uint instance, float dist) = 0;
+	// Get the coarse mesh dist (-1 if no coarse mesh or if default dist is used)
+	virtual float           getCoarseMeshDist(uint instance) const = 0;
 	// @}
 
 

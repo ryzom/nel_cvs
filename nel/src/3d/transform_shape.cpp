@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.33 2002/10/29 17:17:28 corvazier Exp $
+ * $Id: transform_shape.cpp,v 1.34 2002/11/18 17:50:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ CTransformShape::CTransformShape()
 	_NumTrianglesAfterLoadBalancing= 100;
 	_CurrentLightContribution= NULL;
 	_CurrentUseLocalAttenuation= false;
-
+	_DistMax = -1.f;
 	// By default all transformShape are LoadBalancable
 	CTransform::setIsLoadbalancable(true);
 
@@ -140,7 +140,7 @@ bool	CTransformShapeClipObs::clip(IBaseClipObs *caller)
 	if(m->Shape)
 	{
 		// first test DistMax (faster).
-		float maxDist = m->Shape->getDistMax();
+		float maxDist = m->getDistMax();
 		// if DistMax test enabled
 		if(maxDist!=-1)
 		{

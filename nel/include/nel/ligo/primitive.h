@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.11 2002/12/10 14:47:10 corvazier Exp $
+ * $Id: primitive.h,v 1.12 2002/12/13 14:28:35 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,6 +80,7 @@ class CPropertyStringArray : public IProperty
 {
 public:
 	CPropertyStringArray () {};
+	~CPropertyStringArray () {}
 	CPropertyStringArray (const std::vector<std::string> &stringArray);
 	std::vector<std::string>	StringArray;
 

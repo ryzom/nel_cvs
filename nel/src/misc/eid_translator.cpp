@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.20 2004/01/15 17:39:41 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.21 2004/03/01 10:01:07 fleury Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -155,7 +155,7 @@ void CEntityIdTranslator::getByEntity (const ucstring &entityName, vector<CEntit
 {
 	string lowerName = strlwr (entityName.toString());
 
-	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
+	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); ++it)
 	{
 		if (exact)
 		{
@@ -466,7 +466,8 @@ void CEntityIdTranslator::save ()
 
 uint32 CEntityIdTranslator::getUId (const string &userName)
 {
-	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
+	const reit itEnd = RegisteredEntities.end();
+	for (reit it = RegisteredEntities.begin(); it != itEnd ; ++it)
 	{
 		if ((*it).second.UserName == userName)
 		{
@@ -478,7 +479,8 @@ uint32 CEntityIdTranslator::getUId (const string &userName)
 
 string CEntityIdTranslator::getUserName (uint32 uid)
 {
-	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
+	const reit itEnd = RegisteredEntities.end();
+	for (reit it = RegisteredEntities.begin(); it != itEnd ; ++it)
 	{
 		if ((*it).second.UId == uid)
 		{
@@ -512,6 +514,37 @@ void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entit
 		uid = (*it).second.UId;
 		userName = (*it).second.UserName;
 		online = (*it).second.Online;
+	}
+}
+
+void CEntityIdTranslator::setEntityNameStringId(const ucstring &entityName, uint32 stringId)
+{
+	const reit itEnd = RegisteredEntities.end();
+	for (reit it = RegisteredEntities.begin(); it != itEnd ; ++it)
+	{
+		if ((*it).second.EntityName == entityName)
+		{
+			(*it).second.EntityNameStringId = stringId;
+			return;
+		}
+	}
+}
+
+uint32 CEntityIdTranslator::getEntityNameStringId(const CEntityId &eid)
+{
+	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
+	CEntityId reid(eid);
+	reid.setCreatorId(0);
+	reid.setDynamicId(0);
+	
+	const reit it = RegisteredEntities.find (reid);
+	if (it == RegisteredEntities.end ())
+	{
+		return 0;
+	}
+	else
+	{
+		return (*it).second.EntityNameStringId;
 	}
 }
 
@@ -563,6 +596,7 @@ std::string CEntityIdTranslator::getRegisterableString( const ucstring & entityN
 	}
 	return ret;
 }
+
 
 NLMISC_COMMAND(findEIdByUser,"Find entity ids using the user name","<username>|<uid>")
 {

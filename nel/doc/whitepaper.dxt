@@ -146,6 +146,9 @@ or external compiled code.
 
 \subsection componentdb Database & File
 
+The storage library provides access to dynamic databases and relatively static files. It
+provides an API for general use, and a network service (see Network below).
+
 [to be completed]
 
 \subsection componentnet Network
@@ -203,6 +206,10 @@ Python is currently considered as the tool that will bind all the components fro
 and the client or server together.
 
 \subsection componentsys System
+
+This library section deals with all the system-dependent aspects of the NeL library.
+It handles interfaces with the system functions, such as starting processes, managing
+system resources, and so on.
 
 [to be completed]
 

@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.13 2002/01/22 15:38:56 lecroart Exp $
+ * $Id: entity_id.h,v 1.14 2002/01/22 15:58:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,17 +44,14 @@ struct CEntityId
 	static uint8 ServerId;
 	static const uint64 MaxEntityId;
 
-	struct
-	{
-		/// Id of the service where the entity is.
-		uint64	DynamicId   :  8;
-		/// Id of the service who created the entity.
-		uint64	CreatorId   :  8;
-		/// Type of the entity.
-		uint64	Type :  8;
-		/// Local agent number.
-		uint64	Id : 40;
-	};
+	/// Id of the service where the entity is.
+	uint64	DynamicId   :  8;
+	/// Id of the service who created the entity.
+	uint64	CreatorId   :  8;
+	/// Type of the entity.
+	uint64	Type :  8;
+	/// Local agent number.
+	uint64	Id : 40;
 
 	uint64 getRawId ()
 	{

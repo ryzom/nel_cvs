@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.8 2000/11/13 13:40:05 corvazier Exp $
+ * $Id: events.h,v 1.9 2000/11/13 13:41:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,7 +106,7 @@ enum TKey
 	KeyLBUTTON        =0x01,
 	KeyRBUTTON        =0x02,
 	KeyCANCEL         =0x03,
-	KeyMBUTTON        =0x04,    /* NOT contiguous with L & RBUTTON */
+	KeyMBUTTON        =0x04,
 	KeyBACK           =0x08,
 	KeyTAB            =0x09,
 	KeyCLEAR          =0x0C,
@@ -117,7 +117,7 @@ enum TKey
 	KeyPAUSE          =0x13,
 	KeyCAPITAL        =0x14,
 	KeyKANA           =0x15,
-	KeyHANGEUL        =0x15,	  /* old name - should be here for compatibility */
+	KeyHANGEUL        =0x15,
 	KeyHANGUL         =0x15,
 	KeyJUNJA          =0x17,
 	KeyFINAL          =0x18,

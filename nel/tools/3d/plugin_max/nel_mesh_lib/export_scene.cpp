@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.2 2001/08/09 09:19:39 besson Exp $
+ * $Id: export_scene.cpp,v 1.3 2001/08/15 12:13:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,7 +151,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 			CQuat qRotTemp;
 			CVector vPosTemp;
 
-			// Try to get an APPDATA for the name of the object
+			// Try to get an APPDATA for the name of the object			
 			AppDataChunk *ad = pNode->GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA);
 			if (ad&&ad->data)
 			{
@@ -160,8 +160,20 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 			}
 			else
 			{
-				// Extract the node name
-				aIGArray[nNumIG].Name = pNode->GetName();
+				Object *obj = pNode->EvalWorldState(0).obj;
+				if (obj)
+				{
+					ad = obj->GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA);
+					if (ad&&ad->data)
+					{
+						aIGArray[nNumIG].Name=(const char*)ad->data;
+					}
+					else
+					{
+						// Extract the node name
+						aIGArray[nNumIG].Name = pNode->GetName();
+					}
+				}
 			}
 
 			//Get the local transformation matrix

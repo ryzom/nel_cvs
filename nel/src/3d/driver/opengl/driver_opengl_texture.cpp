@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.53 2002/05/13 07:49:26 besson Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.54 2002/05/16 16:30:47 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -526,8 +526,10 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
 							}
 							else
 							{
-								nglCompressedTexImage2DARB (GL_TEXTURE_2D, i-decalMipMapResize, glfmt, 
-															tex.getWidth(i),tex.getHeight(i), 0, size, NULL);
+								//nglCompressedTexImage2DARB (GL_TEXTURE_2D, i-decalMipMapResize, glfmt, 
+								//							tex.getWidth(i),tex.getHeight(i), 0, size, NULL);
+								glTexImage2D (GL_TEXTURE_2D, i-decalMipMapResize, glfmt, tex.getWidth(i), tex.getHeight(i), 
+												0, glSrcFmt, GL_UNSIGNED_BYTE, NULL);
 							}
 
 							// profiling: count TextureMemory usage.
@@ -750,7 +752,9 @@ bool CDriverGL::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 	GLint glfmt = getGlTextureFormat (tex, dummy);
 	GLint glSrcFmt = getGlSrcTextureFormat (tex, glfmt);
 	// If DXTC format
-	if (isDXTCFormat(glfmt))
+	//if (isDXTCFormat(glfmt))
+	if (_Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt) &&
+			(tex.mipMapOff() || tex.getMipMapCount()>1) )
 	{
 		nlassert (_Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt) &&
 					(tex.mipMapOff() || tex.getMipMapCount()>1) );

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.147 2002/07/25 16:45:48 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.148 2002/08/14 08:49:54 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1613,6 +1613,19 @@ void CDriverGL::getBuffer (CBitmap &bitmap)
 	CRect	rect(0,0);
 	getWindowSize(rect.Width, rect.Height);
 	getBufferPart(bitmap, rect);
+}
+
+bool CDriverGL::fillBuffer (CBitmap &bitmap)
+{
+	CRect	rect(0,0);
+	getWindowSize(rect.Width, rect.Height);
+	if( rect.Width!=bitmap.getWidth() || rect.Height!=bitmap.getHeight() || bitmap.getPixelFormat()!=CBitmap::RGBA )
+		return false;
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+	glDrawPixels (rect.Width, rect.Height, GL_RGBA, GL_UNSIGNED_BYTE, &(bitmap.getPixels()[0]) );
+
+	return true;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.13 2002/03/28 10:47:54 vizerie Exp $
+ * $Id: u_driver.h,v 1.14 2002/08/14 08:49:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -408,6 +408,13 @@ public:
 	  * \param rect the in/out (wanted/clipped) part of ZBuffer to retrieve.
 	  */
 	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect) = 0;
+
+	/** fill the RGBA back buffer
+	  *
+	  * \param bitmap will be written in the buffer. no-op if bad size.
+	  *	\return true if success
+	  */
+	virtual bool			fillBuffer (CBitmap &bitmap) = 0;
 
 	// @}
 

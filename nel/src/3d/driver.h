@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.35 2002/06/20 09:44:54 berenguier Exp $
+ * $Id: driver.h,v 1.36 2002/08/14 08:49:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -616,6 +616,13 @@ public:
 													    , uint32 x, uint32 y
 														, uint32 width, uint32 height														
 													) = 0 ;
+
+	/** fill the RGBA back buffer
+	  *
+	  * \param bitmap will be written in the buffer. no-op if bad size.
+	  *	\return true if success
+	  */
+	virtual bool			fillBuffer (CBitmap &bitmap) = 0;
 
 
 	/** Set the global polygon mode. Can be filled, line or point. The implementation driver must

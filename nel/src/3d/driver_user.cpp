@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.18 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: driver_user.cpp,v 1.19 2002/08/14 08:49:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -963,6 +963,12 @@ void			CDriverUser::getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect 
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->getZBufferPart (zbuffer, rect) ;
+}
+bool			CDriverUser::fillBuffer (CBitmap &bitmap)
+{
+	NL3D_HAUTO_UI_DRIVER;
+
+	return _Driver->fillBuffer(bitmap);
 }
 
 

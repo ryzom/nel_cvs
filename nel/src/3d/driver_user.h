@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.11 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: driver_user.h,v 1.12 2002/08/14 08:49:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -325,6 +325,7 @@ public:
 	virtual void			getZBuffer (std::vector<float>  &zbuffer) ;
 	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect) ;
 	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect) ;
+	virtual bool			fillBuffer (CBitmap &bitmap);
 	// @}
 
 

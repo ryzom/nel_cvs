@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.121 2002/07/02 12:35:05 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.122 2002/08/14 08:49:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -518,6 +518,9 @@ public:
 													    , uint32 x, uint32 y
 														, uint32 width, uint32 height														
 													)  ;
+
+	virtual bool			fillBuffer (CBitmap &bitmap);
+
 	virtual void			setPolygonMode (TPolygonMode mode);
 
 	virtual uint			getMaxLight () const;

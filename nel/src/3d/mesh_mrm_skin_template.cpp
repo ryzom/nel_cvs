@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin_template.cpp
  * File not compiled. Included from mesh_mrm_skin.cpp. It is a "old school" template.
  *
- * $Id: mesh_mrm_skin_template.cpp,v 1.6 2003/05/13 15:35:28 berenguier Exp $
+ * $Id: mesh_mrm_skin_template.cpp,v 1.7 2003/05/16 12:08:20 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -620,7 +620,7 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *
 	for(;nInf>0;)
 	{
 		// number of vertices to process for this block.
-		uint	nBlockInf= min(NumCacheVertexNormal4, nInf);
+		uint	nBlockInf= min(NumCacheVertexNormal3, nInf);
 		// next block.
 		nInf-= nBlockInf;
 

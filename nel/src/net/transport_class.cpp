@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.5 2002/03/14 13:48:12 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.6 2002/03/25 09:22:34 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -85,7 +85,7 @@ string typeToString (CTransportClass::TProp type)
 
 void CTransportClass::displayDifferentClass (uint8 sid, const string &className, const vector<CRegisteredBaseProp> &otherClass, const vector<CRegisteredBaseProp *> &myClass)
 {
-	nlinfo ("Service with sid %u send me the TransportClass '%s' with differents properties:", sid, className);
+	nlinfo ("Service with sid %u send me the TransportClass '%s' with differents properties:", sid, className.c_str());
 	uint i;
 	nlinfo ("  My local TransportClass is:");
 	for (i = 0; i < myClass.size(); i++)

@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.35 2001/09/26 16:00:38 corvazier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.36 2001/10/02 10:16:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,7 +138,7 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 static GLint	getGlSrcTextureFormat(ITexture &tex, GLint glfmt)
 {
 	// Is destination format is alpha or lumiance ?
-	if ((glfmt==CBitmap::Alpha)||(glfmt==CBitmap::AlphaLuminance)||(glfmt==CBitmap::Luminance))
+	if ((glfmt==GL_ALPHA)||(glfmt==GL_LUMINANCE_ALPHA)||(glfmt==GL_LUMINANCE))
 	{
 		switch(tex.getPixelFormat())
 		{

@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.12 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: zone_manager.cpp,v 1.13 2003/06/05 14:41:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -154,7 +154,9 @@ void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 				// Make a position
 				uint x, y;
 				getZonePos (newZone.ZoneToAddId, x, y);
-				rAFM.addTask (new CZoneLoadingTask(newZone.ZoneToAddName, &newZone.Zone, CVector ((float)x, -(float)y, 0)));
+//				rAFM.addTask (new CZoneLoadingTask(newZone.ZoneToAddName, &newZone.Zone, CVector ((float)x, -(float)y, 0)));
+				CVector v = CVector ((float)x, -(float)y, 0);
+				rAFM.addTask (new CZoneLoadingTask(newZone.ZoneToAddName, &newZone.Zone, v));
 			}
 		}
 	}

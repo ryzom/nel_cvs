@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.10 2001/08/07 14:14:32 legros Exp $
+ * $Id: global_retriever.h,v 1.11 2001/08/13 14:22:23 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,6 +179,9 @@ public:
 
 	/// Retrieves the position of an estimated point in the global retriever (double instead.)
 	UGlobalPosition					retrievePosition(const NLMISC::CVectorD &estimated) const;
+
+	/// Snaps to interior ground.
+	void							snapToInteriorGround(UGlobalPosition &position) const;
 
 	/// Converts a global position object into a 'human-readable' CVector.
 	NLMISC::CVector					getGlobalPosition(const UGlobalPosition &global) const;

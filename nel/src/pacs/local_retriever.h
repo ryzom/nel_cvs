@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.7 2001/08/07 14:14:32 legros Exp $
+ * $Id: local_retriever.h,v 1.8 2001/08/13 14:22:23 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "pacs/retrievable_surface.h"
 #include "pacs/chain_quad.h"
 #include "pacs/exterior_mesh.h"
+#include "pacs/quad_grid.h"
 
 #include "nel/pacs/u_global_position.h"
 
@@ -157,6 +158,22 @@ public:
 	};
 
 
+	/**
+	 * The faces used for snapping in interior retrievers.
+	 * \author Benjamin Legros
+	 * \author Nevrax France
+	 * \date 2001
+	 */
+	class CInteriorFace
+	{
+	public:
+		uint32	Verts[3];
+		uint32	Surface;
+	public:
+		void	serial(NLMISC::IStream &f) { f.serial(Verts[0], Verts[1], Verts[2], Surface); }
+	};
+
+
 protected:
 	friend class	CRetrieverInstance;
 	
@@ -194,8 +211,23 @@ protected:
 	/// The type of the retriever
 	EType								_Type;
 
-	/// In case of an interior retriever, the exterior mesh
+	/// \name Internior retriever specific
+	// @{
+	/// The exterior mesh, for collisions
 	CExteriorMesh						_ExteriorMesh;
+
+	/// The vertices of the collision mesh
+	std::vector<NLMISC::CVector>		_InteriorVertices;
+
+	/// The faces of the collision mesh
+	std::vector<CInteriorFace>			_InteriorFaces;
+
+	/// The face selection grid
+	mutable NL3D::CQuadGrid<uint32>		_FaceGrid;
+
+	// @}
+
+
 
 private:
 	/// The intersection between an ordered chain and the path.
@@ -262,6 +294,12 @@ public:
 	/// Returns the exterior mesh of the retriever
 	const CExteriorMesh					&getExteriorMesh() const { return _ExteriorMesh; }
 
+	/// Returns the interior vertices
+	const std::vector<NLMISC::CVector>	&getInteriorVertices() const { return _InteriorVertices; }
+
+	/// Returns the interior faces
+	const std::vector<CInteriorFace>	&getInteriorFaces() const { return _InteriorFaces; }
+
 	// @}
 
 
@@ -289,6 +327,16 @@ public:
 
 	/// Sets the bbox of the retriever
 	void								setBBox(const NLMISC::CAABBox &bbox) { _BBox = bbox; }
+
+
+	/// Returns the interior vertices
+	std::vector<NLMISC::CVector>		&getInteriorVertices() { return _InteriorVertices; }
+
+	/// Returns the interior faces
+	std::vector<CInteriorFace>			&getInteriorFaces() { return _InteriorFaces; }
+
+	/// Initializes the quad grid of faces
+	void								initFaceGrid();
 
 
 	/// Builds topologies tables.
@@ -340,6 +388,9 @@ protected:
 
 	/// Retrieves a position inside the retriever (from the local position.)
 	void								retrievePosition(NLMISC::CVector estimated, std::vector<uint8> &retrieveTable) const;
+
+	/// Snaps on the ground
+	void								snapToInteriorGround(ULocalPosition &position) const;
 
 	/// Finds a path in a given surface, from the point A to the point B.
 	void								findPath(const CLocalPosition &A, const CLocalPosition &B, std::vector<CVector2s> &path, NLPACS::CCollisionSurfaceTemp &cst) const;

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.21 2001/08/10 12:09:44 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.22 2001/08/13 14:22:23 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -391,6 +391,13 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 
 	return retrieved;
 }
+
+void	NLPACS::CRetrieverInstance::snapToInteriorGround(NLPACS::ULocalPosition &position, 
+														 const NLPACS::CLocalRetriever &retriever) const
+{
+	retriever.snapToInteriorGround(position);
+}
+
 
 CVector	NLPACS::CRetrieverInstance::getLocalPosition(const CVector &globalPosition) const
 {

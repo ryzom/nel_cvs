@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.7 2001/08/07 14:14:32 legros Exp $
+ * $Id: retriever_instance.h,v 1.8 2001/08/13 14:22:23 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -231,6 +231,9 @@ public:
 	 * is a LOCAL position (to the retriever).
 	 */
 	CLocalRetriever::CLocalPosition		retrievePosition(const NLMISC::CVectorD &estimated, const CLocalRetriever &retriever) const;
+
+	/// For the interior instances, snaps the point to the ground.
+	void								snapToInteriorGround(ULocalPosition &position, const CLocalRetriever &retriever) const;
 
 	/// Serialises this CRetrieverInstance.
 	void								serial(NLMISC::IStream &f);

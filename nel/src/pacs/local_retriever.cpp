@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.23 2001/08/10 12:09:44 legros Exp $
+ * $Id: local_retriever.cpp,v 1.24 2001/08/13 14:22:23 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "nel/misc/vector_2f.h"
+#include "nel/misc/plane.h"
 
 #include "nel/misc/debug.h"
 
@@ -673,7 +675,7 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 	Version 0:
 		- base version (with collision info).
 	*/
-	sint	ver= f.serialVersion(0);
+	sint	ver= f.serialVersion(1);
 
 	uint	i;
 	f.serialCont(_Chains);
@@ -688,6 +690,16 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 	f.serial(_BBox);
 	f.serialEnum(_Type);
 	f.serial(_ExteriorMesh);
+
+	if (ver >= 1)
+	{
+		f.serialCont(_InteriorVertices);
+		f.serialCont(_InteriorFaces);
+
+	}
+
+	if (f.isReading())
+		initFaceGrid();
 }
 
 
@@ -788,6 +800,88 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 		}
 	}
 }
+
+
+
+
+void	NLPACS::CLocalRetriever::initFaceGrid()
+{
+	_FaceGrid.clear();
+	_FaceGrid.create(64, 4.0f);
+
+	uint32	i;
+	for (i=0; i<_InteriorFaces.size(); ++i)
+	{
+		CAABBox	box;
+
+		box.setCenter(_InteriorVertices[_InteriorFaces[i].Verts[0]]);
+		box.extend(_InteriorVertices[_InteriorFaces[i].Verts[1]]);
+		box.extend(_InteriorVertices[_InteriorFaces[i].Verts[2]]);
+
+		_FaceGrid.insert(box.getMin(), box.getMax(), i);
+	}
+}
+
+void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &position) const
+{
+	// first preselect faces around the (x, y) position (CQuadGrid ?)
+	_FaceGrid.select(position.Estimation, position.Estimation);
+
+	// from the preselect faces, look for the only face that belongs to the surface
+	// and that contains the position
+	CVector	pos = position.Estimation;
+	CVector	posh = pos+CVector(0.0f, 0.0f, 1.0f);
+	float	bestDist = 1.0e10f;
+	CVector	best;
+	NL3D::CQuadGrid<uint32>::CIterator	it;
+	for (it=_FaceGrid.begin(); it!=_FaceGrid.end(); ++it)
+	{
+		const CInteriorFace	&f = _InteriorFaces[*it];
+		if (f.Surface == (uint32)position.Surface)
+		{
+			CVector	v[3];
+			v[0] = _InteriorVertices[f.Verts[0]];
+			v[1] = _InteriorVertices[f.Verts[1]];
+			v[2] = _InteriorVertices[f.Verts[2]];
+
+			float		a,b,c;		// 2D cartesian coefficients of line in plane X/Y.
+			// Line p0-p1.
+			a = -(v[1].y-v[0].y);
+			b =  (v[1].x-v[0].x);
+			c = -(v[0].x*a + v[0].y*b);
+			if (a*pos.x + b*pos.y + c < 0)	continue;
+			// Line p1-p2.
+			a = -(v[2].y-v[1].y);
+			b =  (v[2].x-v[1].x);
+			c = -(v[1].x*a + v[1].y*b);
+			if (a*pos.x + b*pos.y + c < 0)	continue;
+			//  Line p2-p0.
+			a = -(v[0].y-v[2].y);
+			b =  (v[0].x-v[2].x);
+			c = -(v[2].x*a + v[2].y*b);
+			if (a*pos.x + b*pos.y + c < 0)	continue;
+
+			CPlane	p;
+			p.make(v[0], v[1], v[2]);
+
+			CVector i = p.intersect(pos, posh);
+
+			float	d = (float)fabs(pos.z-i.z);
+
+			if (d < bestDist)
+			{
+				bestDist = d;
+				best = i;
+			}
+		}
+	}
+
+	// and computes the real position on this face
+	if (bestDist < 50.0f)
+		position.Estimation = best;
+}
+
+
 
 
 void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosition &A, 

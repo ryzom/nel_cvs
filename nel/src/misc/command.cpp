@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.6 2001/06/27 08:28:03 lecroart Exp $
+ * $Id: command.cpp,v 1.7 2001/10/05 14:53:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,7 @@ ICommand::ICommand(const char *commandName, const char *commandHelp, const char 
 	if (comm != (*Commands).end ())
 	{
 		// 2 commands have the same name
-		NLMISC_BREAKPOINT;
+		nlstopex (("There are 2 commands that have the same name in the project (command name '%s')", commandName));
 	}
 	else
 	{
@@ -77,7 +77,7 @@ ICommand::~ICommand()
 	if (!CommandsInit)
 	{
 		// should never happen
-		NLMISC_BREAKPOINT;
+		nlstop;
 		return;
 	}
 
@@ -102,7 +102,7 @@ ICommand::~ICommand()
 		}
 	}
 	// commands is not found
-	NLMISC_BREAKPOINT;
+	nlstop;
 }
 
 void ICommand::execute (const std::string &commandWithArgs, CLog &log)

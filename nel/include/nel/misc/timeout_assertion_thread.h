@@ -1,7 +1,7 @@
 /** \file timeout_assertion_thread.h
  * This class generates assert in a thread if the main thread is not fast enough
  *
- * $Id: timeout_assertion_thread.h,v 1.1 2004/02/12 17:53:04 lecroart Exp $
+ * $Id: timeout_assertion_thread.h,v 1.2 2004/02/13 16:17:44 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -66,15 +66,15 @@ public:
 		{
 			if(_Control != ACTIVE || _Timeout == 0)
 			{
-				nldebug("not active, sleep");
+				//nldebug("not active, sleep");
 				NLMISC::nlSleep(1000);
 			}
 			else
 			{
-				nldebug("active, enter sleep");
+				//nldebug("active, enter sleep");
 				lastCounter = _Counter;
 				NLMISC::nlSleep(_Timeout);
-				nldebug("active, leave sleep, test assert");
+				//nldebug("active, leave sleep, test assert");
 
 				// If this assert occured, it means that a checked part of the code was
 				// to slow and then I decided to assert to display the problem.
@@ -89,7 +89,7 @@ public:
 		nlassert(_Control == INACTIVE);
 		_Counter++;
 		_Control = ACTIVE;
-		nldebug("activate");
+		//nldebug("activate");
 	}
 
 	void desactivate()
@@ -97,20 +97,20 @@ public:
 		if(_Control == QUIT) return;
 		nlassert(_Control == ACTIVE);
 		_Control = INACTIVE;
-		nldebug("desactivate");
+		//nldebug("desactivate");
 	}
 
 	void quit()
 	{
 		nlassert(_Control != QUIT);
 		_Control = QUIT;
-		nldebug("quit");
+		//nldebug("quit");
 	}
 
 	void timeout(uint32 to)
 	{
 		_Timeout = to;
-		nldebug("change timeout to %d", to);
+		//nldebug("change timeout to %d", to);
 	}
 
 private:

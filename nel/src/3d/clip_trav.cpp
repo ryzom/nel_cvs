@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.12 2001/08/23 10:13:13 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.13 2001/08/28 11:44:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "3d/scene_group.h"
 #include "3d/transform_shape.h"
 #include "3d/camera.h"
+#include "3d/quad_grid_clip_cluster.h"
+#include "3d/quad_grid_clip_manager.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -49,6 +51,10 @@ CClipTrav::CClipTrav() : ViewPyramid(6), WorldPyramid(6)
 	RenderTrav = NULL;
 	CurrentDate = 0;
 	Accel.create (64, 16.0f);
+
+	ForceNoFrustumClip= false;
+	_QuadGridClipManager= NULL;
+
 }
 
 // ***************************************************************************
@@ -124,6 +130,12 @@ void CClipTrav::traverse()
 	}
 
 
+	// update the QuadGridClipManager.
+	if(_QuadGridClipManager)
+	{
+		_QuadGridClipManager->updateClustersFromCamera(this, CamPos);
+	}
+
 	// Clear the render list.
 	RenderTrav->clearRenderList();
 	_VisibleList.clear();
@@ -179,11 +191,10 @@ void CClipTrav::traverse()
 		IModel *pFather = getFirstParent (HrcTrav->_MovingObjects[i]);
 		while (pFather != NULL)
 		{
-			// Does the father is a cluster ?
-			CCluster *pCluster = dynamic_cast<CCluster*>(pFather);
-			if (pCluster != NULL)
+			// Does the father is a cluster, or a CQuadGridClipCluster ??
+			if ( dynamic_cast<CCluster*>(pFather)!= NULL  ||  dynamic_cast<CQuadGridClipCluster*>(pFather)!=NULL )
 			{
-				vModels.push_back (pCluster);
+				vModels.push_back (pFather);
 			}			
 			pFather = getNextParent (HrcTrav->_MovingObjects[i]);
 		}
@@ -219,14 +230,27 @@ void CClipTrav::traverse()
 			if (pCluster->Group == pTfmShp->getClusterSystem())
 			if (pCluster->isIn (c,s))
 			{
-				link (pCluster, HrcTrav->_MovingObjects[i]);
+				link (pCluster, pTfmShp);
 				bInWorld = false;
 			}
 			++itAcc;
 		}
 
-		if (bInWorld) // Moving object in the world -> link to root
-			link (RootCluster, HrcTrav->_MovingObjects[i]);
+		// Moving object in the world -> link to root or to the CQuadGridClipManager.
+		if (bInWorld)
+		{
+			if( _QuadGridClipManager && pTfmShp->isQuadGridClipManagerEnabled() )
+			{
+				// try to insert in the best cluster of the _QuadGridClipManager.
+				if(!_QuadGridClipManager->linkModel(pTfmShp, this))
+					// if fails, link to "root".
+					link (RootCluster, pTfmShp);
+			}
+			else
+			{
+				link (RootCluster, pTfmShp);
+			}
+		}
 	}
 
 	// Traverse the graph.
@@ -252,6 +276,12 @@ void CClipTrav::setRenderTrav (CRenderTrav* trav)
 void CClipTrav::setHrcTrav (CHrcTrav* trav)
 {
 	HrcTrav = trav;
+}
+
+// ***************************************************************************
+void CClipTrav::setQuadGridClipManager(CQuadGridClipManager *mgr)
+{
+	_QuadGridClipManager= mgr;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.46 2001/08/24 16:37:16 berenguier Exp $
+ * $Id: scene.cpp,v 1.47 2001/08/28 11:44:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,7 @@
 #include "3d/scene_group.h"
 #include "3d/flare_model.h"
 #include "3d/skip_model.h"
+#include "3d/quad_grid_clip_cluster.h"
 
 
 #include "nel/misc/file.h"
@@ -57,6 +58,14 @@ using namespace NLMISC;
 
 #define NL3D_SCENE_STATIC_COARSE_MANAGER_TEXTURE	"nel_coarse_texture.tga"
 #define NL3D_SCENE_DYNAMIC_COARSE_MANAGER_TEXTURE	NL3D_SCENE_STATIC_COARSE_MANAGER_TEXTURE
+
+
+#define NL3D_SCENE_QUADGRID_CLIP_CLUSTER_SIZE	400
+#define NL3D_SCENE_QUADGRID_CLIP_NUM_MAXDIST	3
+const	float	NL3D_QuadGridClipManagerMaxDist[NL3D_SCENE_QUADGRID_CLIP_NUM_MAXDIST]= {200, 400, 600};
+// The manager is limited to a square of 3000m*3000m around the camera. Beyond, models are clipped individually (bad!!).
+const	float	NL3D_QuadGridClipManagerRadiusMax= 1500;
+
 
 namespace NL3D
 {
@@ -82,6 +91,7 @@ void	CScene::registerBasics()
 	CCluster::registerBasic();
 	CFlareModel::registerBasic();
 	CSkipModel::registerBasic();
+	CQuadGridClipCluster::registerBasic();
 }
 
 	
@@ -114,10 +124,22 @@ CScene::CScene()
 	// TODO: init NULL ligthgroup root.
 
 	// \todo yoyo: init NULL ligthgroup root.
+
+
+	// Init clip features.
+	// setup maxDists clip.
+	vector<float>	maxDists;
+	for(uint i=0; i<NL3D_SCENE_QUADGRID_CLIP_NUM_MAXDIST; i++)
+		maxDists.push_back(NL3D_QuadGridClipManagerMaxDist[i]);
+	// init _QuadGridClipManager.
+	_QuadGridClipManager.init(this, NL3D_SCENE_QUADGRID_CLIP_CLUSTER_SIZE, maxDists, NL3D_QuadGridClipManagerRadiusMax);
 }
 // ***************************************************************************
 void	CScene::release()
 {
+	// reset the _QuadGridClipManager, => unlink models, and delete clusters.
+	_QuadGridClipManager.reset();
+
 	// First, delete models and un-register traversals.
 	CMOT::release();
 
@@ -289,6 +311,7 @@ void	CScene::render(bool	doHrcPass)
 	ClipTrav->setHrcTrav (HrcTrav);
 	ClipTrav->RootCluster = _GlobalInstanceGroup->_ClusterInstances[0];
 	ClipTrav->Camera = CurrentCamera;
+	ClipTrav->setQuadGridClipManager (&_QuadGridClipManager);
 
 	// For all render traversals, traverse them (except the Hrc one), in ascending order.
 	TTravMap::iterator	it;

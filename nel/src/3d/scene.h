@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.9 2001/08/24 16:37:16 berenguier Exp $
+ * $Id: scene.h,v 1.10 2001/08/28 11:44:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "3d/shape.h"
 #include "3d/animated_lightmap.h"
 #include "3d/play_list_manager.h"
+#include "3d/quad_grid_clip_manager.h"
 
 #include "nel/3d/viewport.h"
 
@@ -326,6 +327,11 @@ private:
 	//@{
 	CRefPtr<CCoarseMeshManager>	_StaticCoarseMeshManager;
 	CRefPtr<CCoarseMeshManager>	_DynamicCoarseMeshManager;
+	//@}
+
+	/// \name Clip features
+	//@{
+	CQuadGridClipManager		_QuadGridClipManager;
 	//@}
 
 };

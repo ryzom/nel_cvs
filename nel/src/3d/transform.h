@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.7 2001/08/24 16:37:16 berenguier Exp $
+ * $Id: transform.h,v 1.8 2001/08/28 11:44:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,7 +120,8 @@ public:
 
 	/** freeze the HRC so the WorldMatrix computed at next render() will be kept for long, and the model won't 
 	 *	either be tested in HRC (which is still expensive, even if the worldmatrix doesn't need to be recomputed).
-	 *	The model won't either be validated. It is suposed to not change at all.
+	 *	The model won't either be validated. It is suposed to not change at all. Also, if it is not a son of a CCluster,
+	 *	it may be accelerated during Cliping (with CQuadGridClipManager).
 	 *
 	 *	NB: the model won't be tested in HRC only if this model is a "root", ie 
 	 *	 HrcTrav->getFirstParent()==HrcTrav->getRoot().
@@ -138,6 +139,10 @@ public:
 	 */
 	void		unfreezeHRC();
 
+
+	/** special feature for CQuadGridClipManager.
+	 */
+	bool		isQuadGridClipManagerEnabled() const {return _QuadGridClipManagerEnabled;}
 
 	/**
 	 * Get the worldMatrix that is stored in the hrc observer
@@ -213,6 +218,9 @@ private:
 
 	enum	TFreezeHRCState	{ FreezeHRCStateDisabled=0, FreezeHRCStateRequest, FreezeHRCStateReady, FreezeHRCStateEnabled};
 	TFreezeHRCState			_FreezeHRCState;
+
+	// For fast clip.
+	bool			_QuadGridClipManagerEnabled;
 };
 
 

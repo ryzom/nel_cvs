@@ -1528,14 +1528,9 @@ SOURCE=.\3d\visual_collision_manager.cpp
 SOURCE=.\3d\visual_collision_manager.h
 # End Source File
 # End Group
-# Begin Source File
+# Begin Group "ClipAccelerator"
 
-SOURCE=.\3d\async_file_manager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\async_file_manager.h
-# End Source File
+# PROP Default_Filter ""
 # Begin Source File
 
 SOURCE=.\3d\cluster.cpp
@@ -1543,6 +1538,39 @@ SOURCE=.\3d\cluster.cpp
 # Begin Source File
 
 SOURCE=.\3d\cluster.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\portal.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\portal.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\quad_grid_clip_cluster.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\quad_grid_clip_cluster.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\quad_grid_clip_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\quad_grid_clip_manager.h
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\3d\async_file_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\async_file_manager.h
 # End Source File
 # Begin Source File
 
@@ -1607,14 +1635,6 @@ SOURCE=.\3d\nelu.cpp
 # Begin Source File
 
 SOURCE=.\3d\nelu.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\portal.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\portal.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.24 2001/08/24 16:37:16 berenguier Exp $
+ * $Id: transform.cpp,v 1.25 2001/08/28 11:44:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,8 @@ CTransform::CTransform()
 	_ClusterSystem = NULL;
 
 	_FreezeHRCState= FreezeHRCStateDisabled;
+
+	_QuadGridClipManagerEnabled= false;
 }
 
 // ***************************************************************************
@@ -201,7 +203,10 @@ void		CTransform::freezeHRC()
 {
 	// if disabled, say we are ready to validate our worldMatrix for long.
 	if(_FreezeHRCState==FreezeHRCStateDisabled)
+	{
 		_FreezeHRCState= FreezeHRCStateRequest;
+		_QuadGridClipManagerEnabled= true;
+	}
 }
 
 
@@ -226,6 +231,7 @@ void		CTransform::unfreezeHRC()
 		}
 
 		_FreezeHRCState= FreezeHRCStateDisabled;
+		_QuadGridClipManagerEnabled= false;
 	}
 }
 
@@ -376,20 +382,32 @@ void	CTransformClipObs::traverse(IObs *caller)
 		return;
 	Date = clipTrav->CurrentDate;
 
+	// clip: update Visible flag.
 	Visible= false;
-
-	// If linked to a SkeletonModel, don't clip, and use skeleton model clip result.
-	// This works because we are sons of the SkeletonModel in the Clip traversal...
-	bool	skeletonClip= false;
-	if( ((CTransform*)Model)->_FatherSkeletonModel!=NULL )
+	// if at least visible.
+	if(HrcObs->WorldVis)
 	{
-		skeletonClip= callerClipObs->Visible;
+		if(clipTrav->ForceNoFrustumClip)
+		{
+			Visible= true;
+		}
+		else
+		{
+			// If linked to a SkeletonModel, don't clip, and use skeleton model clip result.
+			// This works because we are sons of the SkeletonModel in the Clip traversal...
+			bool	skeletonClip= false;
+			if( ((CTransform*)Model)->_FatherSkeletonModel!=NULL )
+				skeletonClip= callerClipObs->Visible;
+
+			// clip.
+			if( skeletonClip  ||  clip(callerClipObs)  )
+				Visible= true;
+		}
 	}
 
-	// Test visibility or clip.
-	if(HrcObs->WorldVis && ( skeletonClip  ||  clip(callerClipObs) )  )
+	// if visible, add to list.
+	if(Visible)
 	{
-		Visible= true;
 		// add this observer to the visibility list.
 		clipTrav->addVisibleObs(this);
 

@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.3 2001/08/23 10:13:13 berenguier Exp $
+ * $Id: clip_trav.h,v 1.4 2001/08/28 11:44:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,8 @@ class	CHrcTrav;
 class	CCluster;
 class	CInstanceGroup;
 class	CCamera;
+class	CQuadGridClipManager;
+
 
 // ***************************************************************************
 // ClassIds.
@@ -97,6 +99,8 @@ public:
 	/// Setup the render traversal (else traverse() won't work)
 	void setRenderTrav (CRenderTrav* trav);
 	void setHrcTrav (CHrcTrav* trav);
+	void setQuadGridClipManager(CQuadGridClipManager *mgr);
+
 
 	bool fullSearch (std::vector<CCluster*>& result, CInstanceGroup *pIG, CVector& pos);
 
@@ -130,8 +134,15 @@ public:
 	
 	CQuadGrid<CCluster*> Accel;
 
+	/** for CQuadGridClipClusterClipObs only. This flag means observers traversed do not need to clip,
+	 *	they are sure to be visible.
+	 */
+	bool				ForceNoFrustumClip;
+
 private:
 	std::vector<IBaseClipObs*>	_VisibleList;
+
+	CQuadGridClipManager		*_QuadGridClipManager;
 };
 
 

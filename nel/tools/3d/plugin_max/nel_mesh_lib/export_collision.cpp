@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.7 2002/07/29 10:12:41 corvazier Exp $
+ * $Id: export_collision.cpp,v 1.8 2002/08/22 14:46:19 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -268,11 +268,11 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 	// report warnings
 	if (!warnings.empty())
 	{
-		string	message = "Warning(s) occured during collision export\n(defective links may result)";
+		string	message = "Warning(s) occured during collision export\n(defective links may result) error";
 		for (i=0; i<warnings.size(); ++i)
 			message += string("\n")+warnings[i];
 
-		outputErrorMessage ((message+"\n\n(This message was copied in the clipboard)").c_str());
+		outputWarningMessage ((message+"\n\n(This message was copied in the clipboard)").c_str());
 
 		if (OpenClipboard (NULL))
 		{
@@ -297,7 +297,7 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 	{
 		string	message = "Error(s) occured during collision export\n(edge issues)";
 		for (i=0; i<errors.size(); ++i)
-			message += string("\n")+errors[i];
+			message += string("\nERROR: ")+errors[i];
 
 		outputErrorMessage ((message+"\n\n(This message was copied in the clipboard)").c_str());
 

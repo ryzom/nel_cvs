@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.15 2002/07/03 08:45:50 corvazier Exp $
+ * $Id: zone_dependencies.cpp,v 1.16 2002/08/22 14:46:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -776,6 +776,7 @@ static void computeIGBBoxFromContinent(NLMISC::CConfigFile &parameter,
 		CConfigFile::CVar &level_design_world_directory = parameter.getVar ("level_design_world_directory");						
 		CConfigFile::CVar &level_design_dfn_directory = parameter.getVar ("level_design_dfn_directory");
 		CPath::addSearchPath(level_design_dfn_directory.asString(), true, false);
+		CPath::addSearchPath(level_design_world_directory.asString(), true, false);
 
 		std::string continentName = continent_name_var.asString();
 		if (CFile::getExtension(continentName).empty())

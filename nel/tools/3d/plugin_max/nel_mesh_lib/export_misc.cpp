@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.26 2002/08/21 13:38:05 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.27 2002/08/22 14:46:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -417,7 +417,7 @@ bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* s
 	}
 	else
 	{
-		nlwarning ("Can't found ParamBlock named %s", sName);
+		// nlwarning ("Can't found ParamBlock named %s", sName);
 		return false;
 	}
 }
@@ -702,6 +702,21 @@ void CExportNel::outputErrorMessage (const char *message)
 	mprintf ("\n");
 
 	nlwarning ("Error in max file %s : ", _Ip->GetCurFilePath());
+	nlwarning (message);
+}
+
+// --------------------------------------------------
+
+void CExportNel::outputWarningMessage (const char *message)
+{
+	if (_ErrorInDialog)
+	{
+		MessageBox (_Ip->GetMAXHWnd(), message, _ErrorTitle.c_str(), MB_OK|MB_ICONEXCLAMATION);
+	}
+	mprintf (message);
+	mprintf ("\n");
+
+	nlwarning ("Warning in max file %s : ", _Ip->GetCurFilePath());
 	nlwarning (message);
 }
 

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.60 2002/08/21 13:38:05 corvazier Exp $
+ * $Id: export_nel.h,v 1.61 2002/08/22 14:46:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -618,6 +618,7 @@ public:
 
 	// Output error message
 	void							outputErrorMessage (const char *message);
+	void							outputWarningMessage (const char *message);
 
 
 	// Get an appData VertexProgram WindTree (ensure same default values for all retrieve).

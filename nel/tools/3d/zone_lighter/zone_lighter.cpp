@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.25 2002/07/08 18:04:36 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.26 2002/08/22 14:46:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,6 +184,7 @@ static void loadIGFromContinent(NLMISC::CConfigFile &parameter, std::list<CInsta
 		CConfigFile::CVar &level_design_world_directory = parameter.getVar ("level_design_world_directory");						
 		CConfigFile::CVar &level_design_dfn_directory = parameter.getVar ("level_design_dfn_directory");
 		CPath::addSearchPath(level_design_dfn_directory.asString(), true, false);
+		CPath::addSearchPath(level_design_world_directory.asString(), true, false);
 
 		std::string continentName = continent_name_var.asString();
 		if (CFile::getExtension(continentName).empty())

@@ -1,7 +1,7 @@
 /** \file animation_playlist.h
- * <File description>
+ * TODO: File description
  *
- * $Id: animation_playlist.h,v 1.5 2003/05/16 17:07:03 berenguier Exp $
+ * $Id: animation_playlist.h,v 1.6 2004/11/15 10:24:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

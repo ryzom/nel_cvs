@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: lod_character_manager.cpp,v 1.20 2004/10/19 12:50:20 vizerie Exp $
+ * $Id: lod_character_manager.cpp,v 1.21 2004/11/15 10:24:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file motion_blur.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: motion_blur.cpp,v 1.5 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: motion_blur.cpp,v 1.6 2004/11/15 10:24:44 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

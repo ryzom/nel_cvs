@@ -1,7 +1,7 @@
-/** \file bone_user.cpp
+/** \file u_bone.cpp
  * User interface for bones.
  *
- * $Id: u_bone.cpp,v 1.3 2004/07/01 09:33:49 berenguier Exp $
+ * $Id: u_bone.cpp,v 1.4 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

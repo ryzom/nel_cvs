@@ -1,7 +1,7 @@
 /** \file static_quad_grid.h
- * <File description>
+ * TODO: File description
  *
- * $Id: static_quad_grid.h,v 1.4 2003/02/03 15:55:28 coutelas Exp $
+ * $Id: static_quad_grid.h,v 1.5 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

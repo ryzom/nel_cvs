@@ -1,7 +1,7 @@
 /** \file texture_near.h
- * <File description>
+ * TODO: File description
  *
- * $Id: texture_near.h,v 1.4 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_near.h,v 1.5 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

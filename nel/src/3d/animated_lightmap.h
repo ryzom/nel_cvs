@@ -1,7 +1,7 @@
 /** \file animated_lightmap.h
- * <File description>
+ * TODO: File description
  *
- * $Id: animated_lightmap.h,v 1.4 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: animated_lightmap.h,v 1.5 2004/11/15 10:24:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

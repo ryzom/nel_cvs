@@ -1,7 +1,7 @@
 /** \file polygon.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: polygon.cpp,v 1.29 2004/10/07 14:48:38 berenguier Exp $
+ * $Id: polygon.cpp,v 1.30 2004/11/15 10:25:05 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

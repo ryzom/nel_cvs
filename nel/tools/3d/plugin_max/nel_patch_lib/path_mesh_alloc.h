@@ -1,7 +1,7 @@
 /** \file path_mesh_alloc.h
- * <File description>
+ * TODO: File description
  *
- * $Id: path_mesh_alloc.h,v 1.2 2002/08/23 15:41:45 corvazier Exp $
+ * $Id: path_mesh_alloc.h,v 1.3 2004/11/15 10:25:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,7 @@ public:
 };
 
 /**
- * <Class description>
+ * TODO Class description
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
  * \date 2001

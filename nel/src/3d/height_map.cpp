@@ -1,7 +1,7 @@
 /** \file height_map.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: height_map.cpp,v 1.6 2003/04/25 13:44:34 berenguier Exp $
+ * $Id: height_map.cpp,v 1.7 2004/11/15 10:24:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

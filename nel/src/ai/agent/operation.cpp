@@ -1,7 +1,7 @@
 /** \file operation.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: operation.cpp,v 1.9 2003/01/27 16:55:01 chafik Exp $
+ * $Id: operation.cpp,v 1.10 2004/11/15 10:24:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file quad.h
- * <File description>
+ * TODO: File description
  *
- * $Id: quad.h,v 1.2 2001/05/16 12:21:46 saffray Exp $
+ * $Id: quad.h,v 1.3 2004/11/15 10:24:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

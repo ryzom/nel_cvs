@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
- * <File description>
+ * TODO: File description
  *
- * $Id: ps_emitter.h,v 1.31 2004/07/21 11:12:53 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.32 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

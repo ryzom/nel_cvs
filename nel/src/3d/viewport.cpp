@@ -1,7 +1,7 @@
 /** \file viewport.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: viewport.cpp,v 1.7 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: viewport.cpp,v 1.8 2004/11/15 10:24:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

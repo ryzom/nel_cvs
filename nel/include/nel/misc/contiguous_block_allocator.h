@@ -1,6 +1,6 @@
 /** \file contiguous_block_allocator.h
  *
- * $Id: contiguous_block_allocator.h,v 1.3 2004/04/09 14:17:19 vizerie Exp $
+ * $Id: contiguous_block_allocator.h,v 1.4 2004/11/15 10:24:24 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -42,7 +42,7 @@ namespace NLMISC
   * Obviously, if the quantity of memory to be allocated can't be predicted (or if no max bytes can be forseen), then other allocators may
   * be best suited.
   *
-  * \TODO: thread safety
+  * \todo thread safety
   *
   * \author Nicolas Vizerie
   * \author Nevrax France

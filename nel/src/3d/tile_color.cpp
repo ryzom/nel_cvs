@@ -1,7 +1,7 @@
 /** \file tile_color.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: tile_color.cpp,v 1.3 2002/02/28 12:59:52 besson Exp $
+ * $Id: tile_color.cpp,v 1.4 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file task_manager.h
  * Manage a list of task in a separate thread
  *
- * $Id: task_manager.h,v 1.13 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: task_manager.h,v 1.14 2004/11/15 10:24:28 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,7 @@ protected:
 	/** If any, wait the current running task to complete
 	 *	this function MUST be called in a 'accessor to the _TaskQueue' statement because a mutex is required
 	 *	eg:
-	 *	\begincode
+	 *	\code
 	 *	{
 	 *		CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
 	 *		waitCurrentTaskToComplete();

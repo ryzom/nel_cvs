@@ -1,7 +1,7 @@
 /** \file vegetable_clip_block.h
- * <File description>
+ * TODO: File description
  *
- * $Id: vegetable_clip_block.h,v 1.2 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: vegetable_clip_block.h,v 1.3 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

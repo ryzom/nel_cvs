@@ -1,7 +1,7 @@
 /** \file rect.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: rect.cpp,v 1.4 2002/01/28 14:19:49 vizerie Exp $
+ * $Id: rect.cpp,v 1.5 2004/11/15 10:25:05 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

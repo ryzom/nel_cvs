@@ -1,7 +1,7 @@
 /** \file tessellation.h
- * <File description>
+ * TODO: File description
  *
- * $Id: tessellation.h,v 1.19 2004/10/19 12:59:37 vizerie Exp $
+ * $Id: tessellation.h,v 1.20 2004/11/15 10:24:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

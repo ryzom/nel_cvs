@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.26 2004/09/23 18:50:44 berenguier Exp $
+ * $Id: rgba.h,v 1.27 2004/11/15 10:24:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -284,31 +284,31 @@ public:
 	///\name Color group manipulation
 	//@{
 		/** Add a group of colors with saturation, using mmx instructions when present.
-		  * \params dest The destination color buffer, encoded as CRGBA's.
-		  * \params src1 The first source color buffer, encoded as CRGBA's.
-		  * \params src2 The second source color buffer, encoded as CRGBA's.
-		  * \params numColors The number of colors to compute
-		  * \params Stride between each source color.
-		  * \params Stride between each destination color.
-		  * \params Dup the number of time the result must be duplicated in the destination.
+		  * \param dest The destination color buffer, encoded as CRGBA's.
+		  * \param src1 The first source color buffer, encoded as CRGBA's.
+		  * \param src2 The second source color buffer, encoded as CRGBA's.
+		  * \param numColors The number of colors to compute
+		  * \param Stride between each source color.
+		  * \param Stride between each destination color.
+		  * \param Dup the number of time the result must be duplicated in the destination.
 		  */
 		static void addColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, uint numColors, uint srcStride = sizeof(CRGBA), uint destStride = sizeof(CRGBA), uint dup = 1);
 
 		/** Modulate a group of colors with saturation, using mmx instructions when present.
-		  * \params dest The destination color buffer, encoded as CRGBA's.
-		  * \params src1 The first source color buffer, encoded as CRGBA's.
-		  * \params src2 The second source color buffer, encoded as CRGBA's.
-		  * \params numColors The number of colors to compute
-		  * \params Stride between each color.  It is the same for sources and destination.
+		  * \param dest The destination color buffer, encoded as CRGBA's.
+		  * \param src1 The first source color buffer, encoded as CRGBA's.
+		  * \param src2 The second source color buffer, encoded as CRGBA's.
+		  * \param numColors The number of colors to compute
+		  * \param Stride between each color.  It is the same for sources and destination.
 		  */
 		static void modulateColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, uint numColors, uint srcStride = sizeof(CRGBA), uint destStride = sizeof(CRGBA), uint dup = 1);
 
 		/** Subtract a group of colors with saturation (src1 - src2), using mmx instructions when present.
-		  * \params dest The destination color buffer, encoded as CRGBA's.
-		  * \params src1 The first source color buffer, encoded as CRGBA's.
-		  * \params src2 The second source color buffer, encoded as CRGBA's.
-		  * \params numColors The number of colors to compute
-		  * \params Stride between each color.  It is the same for sources and destination.
+		  * \param dest The destination color buffer, encoded as CRGBA's.
+		  * \param src1 The first source color buffer, encoded as CRGBA's.
+		  * \param src2 The second source color buffer, encoded as CRGBA's.
+		  * \param numColors The number of colors to compute
+		  * \param Stride between each color.  It is the same for sources and destination.
 		  */
 		static void subtractColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, uint numColors, uint srcStride = sizeof(CRGBA), uint destStride = sizeof(CRGBA), uint dup = 1);
 	//@}

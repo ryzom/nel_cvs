@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.h
- * <File description>
+ * TODO: File description
  *
- * $Id: unix_event_emitter.h,v 1.4 2003/06/18 14:38:57 corvazier Exp $
+ * $Id: unix_event_emitter.h,v 1.5 2004/11/15 10:24:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NLMISC {
 
 
 /**
- * <Class description>
+ * TODO Class description
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000

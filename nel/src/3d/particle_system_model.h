@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
- * <File description>
+ * TODO: File description
  *
- * $Id: particle_system_model.h,v 1.44 2004/07/21 15:25:52 berenguier Exp $
+ * $Id: particle_system_model.h,v 1.45 2004/11/15 10:24:46 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

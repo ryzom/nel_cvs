@@ -1,7 +1,7 @@
 /** \file async_texture_manager.h
- * <File description>
+ * TODO: File description
  *
- * $Id: async_texture_manager.h,v 1.6 2004/04/08 19:48:20 berenguier Exp $
+ * $Id: async_texture_manager.h,v 1.7 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

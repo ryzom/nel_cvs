@@ -1,7 +1,7 @@
 /** \file u_scene.h
- * <File description>
+ * TODO: File description
  *
- * $Id: u_scene.h,v 1.57 2004/08/03 16:18:50 vizerie Exp $
+ * $Id: u_scene.h,v 1.58 2004/11/15 10:24:19 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -369,7 +369,8 @@ public:
 	 *	NB: the sun contribution is not taken into account
 	 */
 	virtual	void				setMaxLightContribution(uint nlights) =0;
-	/// \see setMaxLightContribution()
+	/** \see setMaxLightContribution()
+	  */
 	virtual	uint				getMaxLightContribution() const =0;
 
 	/** Advanced. When a model is influenced by more light than allowed, or when it reach the limits 
@@ -381,7 +382,8 @@ public:
 	 *	NB: clamp(value, 0, 1);
 	 */
 	virtual	void				setLightTransitionThreshold(float lightTransitionThreshold) =0;
-	/// \see getLightTransitionThreshold()
+	/** \see getLightTransitionThreshold()
+	  */
 	virtual	float				getLightTransitionThreshold() const =0;
 
 

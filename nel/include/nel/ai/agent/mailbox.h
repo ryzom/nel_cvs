@@ -1,7 +1,7 @@
 /** \file mailbox.h
  * class for mailing box.
  *
- * $Id: mailbox.h,v 1.16 2003/01/23 15:40:56 chafik Exp $
+ * $Id: mailbox.h,v 1.17 2004/11/15 10:24:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,13 +90,13 @@ namespace NLAIAGENT
 			static const NLAIC::CIdentType IdLocalMailBox;
 		public:			
 			///Type deffinition for list and iterator for message container
-			//{@
+			//@{
 			typedef std::list<const IMessageBase *>::iterator TListMessageIter;
 			typedef std::list<const IMessageBase *>::const_iterator TListMessageCstIter;
 			//@}
 			
 			///Type deffinition for list aned iterator for connectong mailbox container
-			//{@
+			//@{
 			typedef std::list<IMailBox *>::iterator TListMailBoxIter;
 			typedef std::list<IMailBox *>::const_iterator TListMailBoxCstIter;
 			//@}

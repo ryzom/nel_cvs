@@ -1,7 +1,7 @@
 /** \file event_emitter.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: event_emitter.cpp,v 1.17 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: event_emitter.cpp,v 1.18 2004/11/15 10:25:04 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

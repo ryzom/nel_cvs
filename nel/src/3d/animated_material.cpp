@@ -1,7 +1,7 @@
 /** \file animated_material.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: animated_material.cpp,v 1.15 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: animated_material.cpp,v 1.16 2004/11/15 10:24:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

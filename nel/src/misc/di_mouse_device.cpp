@@ -1,7 +1,7 @@
-/** \file di_mouse.cpp
- * <File description>
+/** \file di_mouse_device.cpp
+ * TODO: File description
  *
- * $Id: di_mouse_device.cpp,v 1.9 2004/06/15 17:32:16 berenguier Exp $
+ * $Id: di_mouse_device.cpp,v 1.10 2004/11/15 10:25:04 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

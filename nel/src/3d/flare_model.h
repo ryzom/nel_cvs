@@ -1,7 +1,7 @@
 /** \file flare_model.h
- * <File description>
+ * TODO: File description
  *
- * $Id: flare_model.h,v 1.8 2004/08/03 16:27:54 vizerie Exp $
+ * $Id: flare_model.h,v 1.9 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@ struct IOcclusionQuery;
 class CMesh;
 
 /**
- * <Class description>
+ * TODO Class description
  * \author Nicolas Vizerie
  * \author Nevrax France
  * \date 2001

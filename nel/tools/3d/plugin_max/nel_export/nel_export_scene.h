@@ -1,7 +1,7 @@
 /** \file nel_export_scene.h
- * <File description>
+ * TODO: File description
  *
- * $Id: nel_export_scene.h,v 1.1 2001/06/12 12:43:54 besson Exp $
+ * $Id: nel_export_scene.h,v 1.2 2004/11/15 10:25:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

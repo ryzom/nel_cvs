@@ -1,7 +1,7 @@
 /** \file ps_float.h
- * <File description>
+ * TODO: File description
  *
- * $Id: ps_float.h,v 1.15 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_float.h,v 1.16 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

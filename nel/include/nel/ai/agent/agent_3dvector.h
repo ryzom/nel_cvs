@@ -1,7 +1,7 @@
 /** \file agent_3dvector.h
- * <File description>
+ * TODO: File description
  *
- * $Id: agent_3dvector.h,v 1.13 2003/02/05 16:05:53 chafik Exp $
+ * $Id: agent_3dvector.h,v 1.14 2004/11/15 10:24:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file nel_export_filetools.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: nel_export_filetools.cpp,v 1.2 2001/06/11 09:21:53 besson Exp $
+ * $Id: nel_export_filetools.cpp,v 1.3 2004/11/15 10:25:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

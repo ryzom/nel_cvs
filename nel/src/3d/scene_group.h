@@ -1,7 +1,7 @@
 /** \file scene_group.h
- * <File description>
+ * TODO: File description
  *
- * $Id: scene_group.h,v 1.32 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: scene_group.h,v 1.33 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

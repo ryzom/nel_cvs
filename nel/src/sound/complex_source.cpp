@@ -1,7 +1,7 @@
-/** \file source_user.cpp
+/** \file complex_source.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: complex_source.cpp,v 1.10 2004/06/18 13:16:02 boucher Exp $
+ * $Id: complex_source.cpp,v 1.11 2004/11/15 10:25:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

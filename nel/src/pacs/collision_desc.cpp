@@ -1,7 +1,7 @@
 /** \file collision_desc.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: collision_desc.cpp,v 1.3 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: collision_desc.cpp,v 1.4 2004/11/15 10:25:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

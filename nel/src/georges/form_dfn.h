@@ -1,7 +1,7 @@
-/** \file _form_dfn.h
+/** \file form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.19 2003/10/14 09:30:46 ledorze Exp $
+ * $Id: form_dfn.h,v 1.20 2004/11/15 10:24:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

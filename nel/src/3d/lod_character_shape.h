@@ -1,7 +1,7 @@
 /** \file lod_character_shape.h
- * <File description>
+ * TODO: File description
  *
- * $Id: lod_character_shape.h,v 1.6 2004/10/19 12:50:59 vizerie Exp $
+ * $Id: lod_character_shape.h,v 1.7 2004/11/15 10:24:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

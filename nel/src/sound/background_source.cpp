@@ -1,7 +1,7 @@
-/** \file source_user.cpp
+/** \file background_source.cpp
  * CSimpleSource: implementation of USource
  *
- * $Id: background_source.cpp,v 1.8 2004/11/03 17:24:08 berenguier Exp $
+ * $Id: background_source.cpp,v 1.9 2004/11/15 10:25:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

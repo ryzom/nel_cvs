@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.70 2004/05/25 08:33:55 berenguier Exp $
+ * $Id: stream.h,v 1.71 2004/11/15 10:24:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -777,7 +777,7 @@ public:
 	/**
 	  * xmlSetAttrib() set the name of the next node header attribute serialised.
 	  *
-	  * \attribName is the name of the node header attribute serialised.
+	  * \param name is the name of the node header attribute serialised.
 	  * \return true if the attribute name have been set, false if the node header is not open (the call is not between xmlPushBegin and xmlPushEnd)
 	  */
 	bool xmlSetAttrib (const char *name)
@@ -831,7 +831,7 @@ protected:
 	/// \name XML implementation interface
 
 	/** Set the XML mode
-	  * \on is true to enable XML mode else false
+	  * \param on is true to enable XML mode else false
 	  */
 	void setXMLMode (bool on);
 

@@ -1,7 +1,7 @@
 /** \file texture_dlm.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: texture_dlm.cpp,v 1.11 2003/04/25 13:44:37 berenguier Exp $
+ * $Id: texture_dlm.cpp,v 1.12 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

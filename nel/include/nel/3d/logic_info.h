@@ -1,7 +1,7 @@
 /** \file logic_info.h
- * <File description>
+ * TODO: File description
  *
- * $Id: logic_info.h,v 1.4 2004/07/20 16:20:38 berenguier Exp $
+ * $Id: logic_info.h,v 1.5 2004/11/15 10:24:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

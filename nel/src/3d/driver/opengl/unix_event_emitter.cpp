@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: unix_event_emitter.cpp,v 1.8 2003/06/18 14:38:57 corvazier Exp $
+ * $Id: unix_event_emitter.cpp,v 1.9 2004/11/15 10:24:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

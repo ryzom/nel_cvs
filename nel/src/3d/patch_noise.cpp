@@ -1,7 +1,7 @@
-/** \file patch_render.cpp
+/** \file patch_noise.cpp
  * CPatch implementation of Noise
  *
- * $Id: patch_noise.cpp,v 1.7 2003/09/15 11:14:43 lecroart Exp $
+ * $Id: patch_noise.cpp,v 1.8 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

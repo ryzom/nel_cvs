@@ -1,7 +1,7 @@
 /** \file water_height_map.h
- * <File description>
+ * TODO: File description
  *
- * $Id: water_height_map.h,v 1.8 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: water_height_map.h,v 1.9 2004/11/15 10:24:54 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -140,9 +140,9 @@ public:
 	/** Tells this height map the params to automatically generate waves. They are generated as perturbation on the border
 	  * of the field
 	  * \param   intensity The intensity of the waves. 0 disable waves
-	  * \period  the time ellapsed between each waves
-	  * \radius  the radius od the impulsion of the waves to be created
-	  * \border  true if waves should only be generated on the border of height map, (actually, where waves can't be seen because of distance, this avoid to see the impulsion)
+	  * \param period  the time ellapsed between each waves
+	  * \param radius  the radius od the impulsion of the waves to be created
+	  * \param border  true if waves should only be generated on the border of height map, (actually, where waves can't be seen because of distance, this avoid to see the impulsion)
 	  */
 	void					setWaves(float intensity, float period, uint radius, bool border);
 

@@ -1,7 +1,7 @@
-/** \file logic_variable.h
+/** \file logic_state.h
  * 
  *
- * $Id: logic_state.h,v 1.3 2002/06/20 12:17:49 lecroart Exp $
+ * $Id: logic_state.h,v 1.4 2004/11/15 10:24:24 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

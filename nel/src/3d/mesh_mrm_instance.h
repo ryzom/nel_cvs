@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
- * <File description>
+ * TODO: File description
  *
- * $Id: mesh_mrm_instance.h,v 1.16 2004/07/01 09:36:02 berenguier Exp $
+ * $Id: mesh_mrm_instance.h,v 1.17 2004/11/15 10:24:44 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file sound_dirver_fmod.h
+/** \file sound_driver_fmod.h
  * DirectSound sound source
  *
- * $Id: sound_driver_fmod.h,v 1.7 2004/11/03 17:26:35 berenguier Exp $
+ * $Id: sound_driver_fmod.h,v 1.8 2004/11/15 10:25:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file hls_texture_manager.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: hls_texture_manager.cpp,v 1.2 2004/06/21 17:38:41 lecroart Exp $
+ * $Id: hls_texture_manager.cpp,v 1.3 2004/11/15 10:24:33 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

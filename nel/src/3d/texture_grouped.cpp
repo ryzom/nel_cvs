@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: texture_grouped.cpp,v 1.15 2004/04/09 12:47:05 vizerie Exp $
+ * $Id: texture_grouped.cpp,v 1.16 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

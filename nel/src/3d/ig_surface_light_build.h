@@ -1,7 +1,7 @@
 /** \file ig_surface_light_build.h
- * <File description>
+ * TODO: File description
  *
- * $Id: ig_surface_light_build.h,v 1.3 2003/05/26 09:00:40 berenguier Exp $
+ * $Id: ig_surface_light_build.h,v 1.4 2004/11/15 10:24:34 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file water_user.cpp
+/** \file u_water.cpp
  * User interface for water manipulation
  *
- * $Id: u_water.cpp,v 1.2 2004/05/12 12:51:50 corvazier Exp $
+ * $Id: u_water.cpp,v 1.3 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

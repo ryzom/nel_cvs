@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_cluster.h
- * <File description>
+ * TODO: File description
  *
- * $Id: quad_grid_clip_cluster.h,v 1.6 2003/03/31 14:36:29 berenguier Exp $
+ * $Id: quad_grid_clip_cluster.h,v 1.7 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

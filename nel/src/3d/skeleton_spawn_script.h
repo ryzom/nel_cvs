@@ -1,7 +1,7 @@
 /** \file skeleton_spawn_script.h
- * <File description>
+ * TODO: File description
  *
- * $Id: skeleton_spawn_script.h,v 1.2 2004/08/23 18:04:56 lecroart Exp $
+ * $Id: skeleton_spawn_script.h,v 1.3 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file login_cookie.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: login_cookie.cpp,v 1.4 2002/08/21 09:44:21 lecroart Exp $
+ * $Id: login_cookie.cpp,v 1.5 2004/11/15 10:25:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file frustum.h
- * <File description>
+ * TODO: File description
  *
- * $Id: frustum.h,v 1.8 2004/03/19 17:49:05 berenguier Exp $
+ * $Id: frustum.h,v 1.9 2004/11/15 10:24:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file texture_far.h
- * <File description>
+ * TODO: File description
  *
- * $Id: texture_far.h,v 1.9 2003/09/26 14:25:33 lecroart Exp $
+ * $Id: texture_far.h,v 1.10 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

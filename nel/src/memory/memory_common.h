@@ -1,7 +1,7 @@
-/** \file memory_mutex.h
+/** \file memory_common.h
  * Common definition for memory project
  *
- * $Id: memory_common.h,v 1.3 2003/07/01 15:33:14 corvazier Exp $
+ * $Id: memory_common.h,v 1.4 2004/11/15 10:25:00 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
- * <File description>
+ * TODO: File description
  *
- * $Id: mesh_base_instance.h,v 1.26 2004/10/05 17:02:23 vizerie Exp $
+ * $Id: mesh_base_instance.h,v 1.27 2004/11/15 10:24:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

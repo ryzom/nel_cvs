@@ -1,7 +1,7 @@
 /** \file async_texture_block.h
- * <File description>
+ * TODO: File description
  *
- * $Id: async_texture_block.h,v 1.1 2002/10/10 12:55:44 berenguier Exp $
+ * $Id: async_texture_block.h,v 1.2 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

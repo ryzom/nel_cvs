@@ -1,7 +1,7 @@
 /** \file animation_time.h
- * <File description>
+ * TODO: File description
  *
- * $Id: animation_time.h,v 1.5 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: animation_time.h,v 1.6 2004/11/15 10:24:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

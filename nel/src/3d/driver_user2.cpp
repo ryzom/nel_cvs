@@ -1,7 +1,7 @@
 /** \file driver_user2.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: driver_user2.cpp,v 1.27 2004/08/13 15:33:04 vizerie Exp $
+ * $Id: driver_user2.cpp,v 1.28 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

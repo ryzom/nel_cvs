@@ -1,7 +1,7 @@
 /** \file animated_morph.h
- * <File description>
+ * TODO: File description
  *
- * $Id: animated_morph.h,v 1.3 2004/10/18 16:12:41 berenguier Exp $
+ * $Id: animated_morph.h,v 1.4 2004/11/15 10:24:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

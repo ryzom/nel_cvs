@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
- * <File description>
+ * TODO: File description
  *
- * $Id: vegetable_instance_group.h,v 1.12 2004/08/13 15:44:41 vizerie Exp $
+ * $Id: vegetable_instance_group.h,v 1.13 2004/11/15 10:24:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file input_device.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: input_device.cpp,v 1.1 2002/03/28 10:34:08 vizerie Exp $
+ * $Id: input_device.cpp,v 1.2 2004/11/15 10:25:04 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

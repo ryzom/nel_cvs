@@ -1,7 +1,7 @@
 /** \file vertex_buffer_heap.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: vertex_buffer_heap.cpp,v 1.6 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: vertex_buffer_heap.cpp,v 1.7 2004/11/15 10:24:53 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file shadow_map.h
- * <File description>
+ * TODO: File description
  *
- * $Id: shadow_map.h,v 1.4 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: shadow_map.h,v 1.5 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.

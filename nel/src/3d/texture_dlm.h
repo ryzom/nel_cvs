@@ -1,7 +1,7 @@
 /** \file texture_dlm.h
- * <File description>
+ * TODO: File description
  *
- * $Id: texture_dlm.h,v 1.6 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_dlm.h,v 1.7 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file ps_particle.h
+/** \file ps_fan_light.h
  * FanLight particles
  *
- * $Id: ps_fan_light.h,v 1.11 2004/05/19 10:19:55 vizerie Exp $
+ * $Id: ps_fan_light.h,v 1.12 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

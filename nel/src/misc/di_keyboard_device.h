@@ -1,7 +1,7 @@
 /** \file di_keyboard_device.h
- * <File description>
+ * TODO: File description
  *
- * $Id: di_keyboard_device.h,v 1.3 2004/03/19 16:31:28 lecroart Exp $
+ * $Id: di_keyboard_device.h,v 1.4 2004/11/15 10:25:04 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: text_context_user.cpp,v 1.20 2004/02/05 20:24:56 berenguier Exp $
+ * $Id: text_context_user.cpp,v 1.21 2004/11/15 10:24:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

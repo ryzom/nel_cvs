@@ -1,7 +1,7 @@
 /** \file light_influence_interpolator.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: light_influence_interpolator.cpp,v 1.3 2002/04/03 13:22:49 lecroart Exp $
+ * $Id: light_influence_interpolator.cpp,v 1.4 2004/11/15 10:24:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

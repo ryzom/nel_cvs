@@ -1,7 +1,7 @@
-/** \file skeleton_user.cpp
- * <File description>
+/** \file u_skeleton.cpp
+ * TODO: File description
  *
- * $Id: u_skeleton.cpp,v 1.4 2004/07/27 17:46:13 berenguier Exp $
+ * $Id: u_skeleton.cpp,v 1.5 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file heat_haze.h
- * <File description>
+ * TODO: File description
  *
- * $Id: heat_haze.h,v 1.1 2001/08/07 14:15:48 vizerie Exp $
+ * $Id: heat_haze.h,v 1.2 2004/11/15 10:24:33 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

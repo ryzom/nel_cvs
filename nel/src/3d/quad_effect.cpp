@@ -1,7 +1,7 @@
 /** \file quad_effect.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: quad_effect.cpp,v 1.4 2002/02/28 12:59:51 besson Exp $
+ * $Id: quad_effect.cpp,v 1.5 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

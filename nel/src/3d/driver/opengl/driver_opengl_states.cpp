@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: driver_opengl_states.cpp,v 1.27 2004/08/13 15:31:54 vizerie Exp $
+ * $Id: driver_opengl_states.cpp,v 1.28 2004/11/15 10:24:55 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file static_init.h
- * <File description>
+ * TODO: File description
  *
- * $Id: static_init.h,v 1.4 2001/10/30 15:57:29 portier Exp $
+ * $Id: static_init.h,v 1.5 2004/11/15 10:24:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file mesh_block_manager.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: mesh_block_manager.cpp,v 1.8 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh_block_manager.cpp,v 1.9 2004/11/15 10:24:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

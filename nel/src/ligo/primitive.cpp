@@ -1,7 +1,7 @@
 /** \file primitive.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: primitive.cpp,v 1.45 2004/10/07 15:42:57 boucher Exp $
+ * $Id: primitive.cpp,v 1.46 2004/11/15 10:24:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file texture_user.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: texture_user.cpp,v 1.4 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: texture_user.cpp,v 1.5 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

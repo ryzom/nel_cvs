@@ -1,7 +1,7 @@
 /** \file line.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: line.cpp,v 1.3 2002/04/23 16:25:36 vizerie Exp $
+ * $Id: line.cpp,v 1.4 2004/11/15 10:25:04 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

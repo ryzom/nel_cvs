@@ -1,7 +1,7 @@
 /** \file ps_color.h
- * <File description>
+ * TODO: File description
  *
- * $Id: ps_color.h,v 1.9 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_color.h,v 1.10 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

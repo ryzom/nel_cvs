@@ -1,7 +1,7 @@
 /** \file transformable.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: transformable.cpp,v 1.14 2002/02/28 12:59:52 besson Exp $
+ * $Id: transformable.cpp,v 1.15 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

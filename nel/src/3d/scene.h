@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.59 2004/09/20 11:55:25 berenguier Exp $
+ * $Id: scene.h,v 1.60 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -440,7 +440,8 @@ public:
 	 *	NB: the sun contribution is not taken into account
 	 */
 	void		setMaxLightContribution(uint nlights);
-	/// \see setMaxLightContribution()
+	/** \see setMaxLightContribution()
+	  */
 	uint		getMaxLightContribution() const;
 
 	/** Advanced. When a model is influenced by more light than allowed, or when it reach the limits 
@@ -452,7 +453,8 @@ public:
 	 *	NB: clamp(value, 0, 1);
 	 */
 	void		setLightTransitionThreshold(float lightTransitionThreshold);
-	/// \see getLightTransitionThreshold()
+	/** \see getLightTransitionThreshold()
+	  */
 	float		getLightTransitionThreshold() const;
 
 

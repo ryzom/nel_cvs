@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: font_manager.cpp,v 1.43 2004/10/28 17:43:00 corvazier Exp $
+ * $Id: font_manager.cpp,v 1.44 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file prim_checker.h
- * <File description>
+ * TODO: File description
  *
- * $Id: prim_checker.h,v 1.3 2004/02/13 16:16:39 legros Exp $
+ * $Id: prim_checker.h,v 1.4 2004/11/15 10:25:11 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file matrix_3x4.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: matrix_3x4.cpp,v 1.1 2002/06/20 09:44:54 berenguier Exp $
+ * $Id: matrix_3x4.cpp,v 1.2 2004/11/15 10:24:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file cpu_info.h
- * <File description>
+ * TODO: File description
  *
- * $Id: cpu_info.h,v 1.4 2002/05/21 16:34:30 lecroart Exp $
+ * $Id: cpu_info.h,v 1.5 2004/11/15 10:24:24 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file point_light_user.cpp
+/** \file u_point_light.cpp
  * User interface for point lights.
  *
- * $Id: u_point_light.cpp,v 1.3 2004/06/22 10:08:11 berenguier Exp $
+ * $Id: u_point_light.cpp,v 1.4 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

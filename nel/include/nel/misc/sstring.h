@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.17 2004/07/08 16:44:12 boucher Exp $
+ * $Id: sstring.h,v 1.18 2004/11/15 10:24:27 lecroart Exp $
  */
 
 
@@ -60,7 +60,7 @@ public:
 	/// Non-Const [] operator
 	std::string::reference operator[](std::string::size_type idx);
 
-	/// Return the first character, or '\0' is the string is empty
+	/// Return the first character, or '\\0' is the string is empty
 	char operator*();
 	/// Return the n right hand most characters of a string
 	char back() const;

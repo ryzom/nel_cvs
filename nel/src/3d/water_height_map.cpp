@@ -1,7 +1,7 @@
 /** \file water_height_map.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: water_height_map.cpp,v 1.11 2003/06/04 08:26:19 lecroart Exp $
+ * $Id: water_height_map.cpp,v 1.12 2004/11/15 10:24:54 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: zone.cpp,v 1.74 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: zone.cpp,v 1.75 2004/11/15 10:24:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

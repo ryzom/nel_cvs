@@ -1,7 +1,7 @@
 /** \file rpo.h
- * <File description>
+ * TODO: File description
  *
- * $Id: rpo.h,v 1.6 2002/08/08 11:51:49 berenguier Exp $
+ * $Id: rpo.h,v 1.7 2004/11/15 10:25:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

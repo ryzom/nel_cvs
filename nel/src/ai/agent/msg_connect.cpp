@@ -1,6 +1,6 @@
-/** \file msg_action.cpp
+/** \file msg_connect.cpp
  *
- * $Id: msg_connect.cpp,v 1.7 2003/01/23 15:41:08 chafik Exp $
+ * $Id: msg_connect.cpp,v 1.8 2004/11/15 10:24:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

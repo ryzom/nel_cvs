@@ -1,7 +1,7 @@
 /** \file triangle.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: triangle.cpp,v 1.6 2003/02/17 16:27:12 corvazier Exp $
+ * $Id: triangle.cpp,v 1.7 2004/11/15 10:25:05 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file point_light_influence.h
- * <File description>
+ * TODO: File description
  *
- * $Id: point_light_influence.h,v 1.3 2002/10/28 17:32:12 corvazier Exp $
+ * $Id: point_light_influence.h,v 1.4 2004/11/15 10:24:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

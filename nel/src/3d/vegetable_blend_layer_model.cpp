@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: vegetable_blend_layer_model.cpp,v 1.10 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: vegetable_blend_layer_model.cpp,v 1.11 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file event_emitter_multi.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: event_emitter_multi.cpp,v 1.3 2003/06/18 14:38:57 corvazier Exp $
+ * $Id: event_emitter_multi.cpp,v 1.4 2004/11/15 10:25:04 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file agent_input.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: agent_input.cpp,v 1.6 2002/03/07 11:09:03 portier Exp $
+ * $Id: agent_input.cpp,v 1.7 2004/11/15 10:24:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

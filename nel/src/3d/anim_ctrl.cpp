@@ -1,7 +1,7 @@
 /** \file anim_ctrl.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: anim_ctrl.cpp,v 1.1 2003/07/09 16:32:30 berenguier Exp $
+ * $Id: anim_ctrl.cpp,v 1.2 2004/11/15 10:24:31 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.

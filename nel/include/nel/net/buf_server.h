@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.17 2004/05/10 15:46:08 distrib Exp $
+ * $Id: buf_server.h,v 1.18 2004/11/15 10:24:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,7 +139,7 @@ typedef std::vector<NLMISC::IThread*> CThreadPool;
  * By default, the size time trigger is disabled, the time trigger is set to 20 ms.
  *
  * Where do the methods take place:
- * \begincode
+ * \code
  * send(),	                           ->  send buffer   ->  update(), flush()
  * bytesSent(), newBytesSent()
  *

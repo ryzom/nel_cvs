@@ -2,7 +2,7 @@
  * Manage universal time (synchronized with a centralized time manager)
  * THIS CLASS IS DEPRECATED, DON'T USE IT
  *
- * $Id: unitime.h,v 1.13 2003/02/07 16:07:39 lecroart Exp $
+ * $Id: unitime.h,v 1.14 2004/11/15 10:24:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,9 +83,11 @@ public:
 	 */
 	static void				syncUniTimeFromServer (CCallbackClient *client);
 
-	/// \internal used by the time service to set the universal time the first time
+	/** \internal used by the time service to set the universal time the first time
+	  */
 	static void				setUniTime (NLMISC::TTime uTime, NLMISC::TTime lTime);
-	/// \internal
+	/** \internal
+	  */
 	static void				setUniTime (NLMISC::TTime uTime);
 
 	/**

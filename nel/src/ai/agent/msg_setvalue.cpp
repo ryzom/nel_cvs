@@ -1,6 +1,6 @@
-/** \file msg_action.cpp
+/** \file msg_setvalue.cpp
  *
- * $Id: msg_setvalue.cpp,v 1.6 2003/01/21 11:24:39 chafik Exp $
+ * $Id: msg_setvalue.cpp,v 1.7 2004/11/15 10:24:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

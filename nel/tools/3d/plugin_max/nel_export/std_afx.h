@@ -1,7 +1,7 @@
 /** \file std_afx.h
- * <File description>
+ * TODO: File description
  *
- * $Id: std_afx.h,v 1.4 2002/08/08 11:01:49 lecroart Exp $
+ * $Id: std_afx.h,v 1.5 2004/11/15 10:25:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file logic_info.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: logic_info.cpp,v 1.3 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: logic_info.cpp,v 1.4 2004/11/15 10:24:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

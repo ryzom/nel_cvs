@@ -1,7 +1,7 @@
 /** \file uv.h
- * <File description>
+ * TODO: File description
  *
- * $Id: uv.h,v 1.4 2002/07/18 16:45:38 vizerie Exp $
+ * $Id: uv.h,v 1.5 2004/11/15 10:24:28 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

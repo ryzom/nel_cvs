@@ -1,7 +1,7 @@
 /** \file 3d/material.h
- * <File description>
+ * TODO: File description
  *
- * $Id: material.h,v 1.29 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: material.h,v 1.30 2004/11/15 10:24:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,7 +147,7 @@ public:
 	enum ZFunc				{ always=0,never,equal,notequal,less,lessequal,greater,greaterequal, zfuncCount };
 
 	/** Blend enums. see setSrcBlend()/setDstBlend()/setBlendFunc().
-	 *	blendConstant* enums are only valid if dirver->supportBlendConstantColor().
+	 *	blendConstant* enums are only valid if driver->supportBlendConstantColor().
 	 *	\see IDriver::supportBlendConstantColor()
 	 */
 	enum TBlend				{ one=0, zero, srcalpha, invsrcalpha, srccolor, invsrccolor, 
@@ -534,7 +534,7 @@ public:
 
 	/** test if material a driver supports rendering of that material
 	  * \param  forceBaseCaps When true, the driver is considered to have the most basic required caps (2 stages hardwares, no pixelShader, support for constant color blend & multiply-add texture operator), so that any fancy material will fail the test.
-	  * \TODO allowing the user to specify the caps he wants to test against
+	  * \todo allowing the user to specify the caps he wants to test against
 	  */
 	bool			isSupportedByDriver(IDriver &drv, bool forceBaseCaps) const;
 

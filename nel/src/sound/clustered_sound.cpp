@@ -1,7 +1,7 @@
-/** \file clustered_sound.h
+/** \file clustered_sound.cpp
  * 
  *
- * $Id: clustered_sound.cpp,v 1.22 2004/09/10 16:09:15 puzin Exp $
+ * $Id: clustered_sound.cpp,v 1.23 2004/11/15 10:25:06 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: nel_patch_mesh.cpp,v 1.11 2003/07/01 15:25:04 distrib Exp $
+ * $Id: nel_patch_mesh.cpp,v 1.12 2004/11/15 10:25:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

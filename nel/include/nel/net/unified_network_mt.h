@@ -1,7 +1,7 @@
-/** \file unified_network.h
+/** \file unified_network_mt.h
  * Network engine, layer 5
  *
- * $Id: unified_network_mt.h,v 1.2 2002/10/24 08:39:16 lecroart Exp $
+ * $Id: unified_network_mt.h,v 1.3 2004/11/15 10:24:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file particle_system_sound_user.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: particle_system_sound_user.cpp,v 1.5 2004/04/30 16:42:44 berenguier Exp $
+ * $Id: particle_system_sound_user.cpp,v 1.6 2004/11/15 10:24:46 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

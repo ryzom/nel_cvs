@@ -1,7 +1,7 @@
 /** \file dllentry.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: DllEntry.cpp,v 1.2 2001/08/28 08:39:37 besson Exp $
+ * $Id: DllEntry.cpp,v 1.3 2004/11/15 10:25:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

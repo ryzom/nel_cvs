@@ -1,7 +1,7 @@
 /** \file u_retriever_bank.h
- * <File description>
+ * TODO: File description
  *
- * $Id: u_retriever_bank.h,v 1.4 2002/12/18 14:56:38 legros Exp $
+ * $Id: u_retriever_bank.h,v 1.5 2004/11/15 10:24:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NLPACS {
 
 
 /**
- * <Class description>
+ * TODO Class description
  * \author Benjamin Legros
  * \author Nevrax France
  * \date 2001

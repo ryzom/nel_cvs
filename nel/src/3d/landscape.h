@@ -1,7 +1,7 @@
 /** \file landscape.h
- * <File description>
+ * TODO: File description
  *
- * $Id: landscape.h,v 1.58 2004/08/03 16:27:10 vizerie Exp $
+ * $Id: landscape.h,v 1.59 2004/11/15 10:24:35 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -553,7 +553,8 @@ public:
 	  */
 	void			setPZBModelPosition(const CVector &pos);
 
-	/// \see setPZBModelPosition()
+	/** \see setPZBModelPosition()
+	  */
 	const CVector	&getPZBModelPosition() const {return _PZBModelPosition;}
 
 	// @}
@@ -919,7 +920,7 @@ private:
 
 	/// Tells if the Vegetable Managemnt is enabled.
 	bool						_VegetableManagerEnabled;
-	/// Tells if the current dirver support vegetable.
+	/// Tells if the current driver support vegetable.
 	bool						_DriverOkForVegetable;
 
 	/// List of VegetableBlock, to be tested for creation each frame.
@@ -935,7 +936,8 @@ private:
 
 	/// \name Precision ZBuffer mgt.
 	// @{
-	/// \see setPZBModelPosition()
+	/** \see setPZBModelPosition()
+	  */
 	CVector						_PZBModelPosition;
 	// @}
 

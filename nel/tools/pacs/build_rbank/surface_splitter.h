@@ -1,7 +1,7 @@
 /** \file surface_splitter.h
- * <File description>
+ * TODO: File description
  *
- * $Id: surface_splitter.h,v 1.2 2003/06/16 16:23:40 lecroart Exp $
+ * $Id: surface_splitter.h,v 1.3 2004/11/15 10:25:11 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -34,7 +34,7 @@
 #include <map>
 
 /**
- * <Class description>
+ * TODO Class description
  * \author Benjamin Legros
  * \author Nevrax France
  * \date 2002

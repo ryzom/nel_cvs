@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.h
- * <File description>
+ * TODO: File description
  *
- * $Id: lod_texture_builder.h,v 1.4 2004/10/21 16:57:13 vizerie Exp $
+ * $Id: lod_texture_builder.h,v 1.5 2004/11/15 10:25:08 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

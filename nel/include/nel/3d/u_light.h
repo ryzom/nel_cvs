@@ -1,7 +1,7 @@
 /** \file u_light.h
- * <File description>
+ * TODO: File description
  *
- * $Id: u_light.h,v 1.1 2001/07/19 17:31:25 lecroart Exp $
+ * $Id: u_light.h,v 1.2 2004/11/15 10:24:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

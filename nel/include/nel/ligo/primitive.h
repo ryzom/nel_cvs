@@ -1,7 +1,7 @@
 /** \file primitive.h
- * <File description>
+ * TODO: File description
  *
- * $Id: primitive.h,v 1.37 2004/10/07 15:42:43 boucher Exp $
+ * $Id: primitive.h,v 1.38 2004/11/15 10:24:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

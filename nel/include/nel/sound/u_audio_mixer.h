@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.41 2004/11/03 17:29:40 berenguier Exp $
+ * $Id: u_audio_mixer.h,v 1.42 2004/11/15 10:24:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -220,7 +220,7 @@ public:
 	virtual bool		unloadSampleBank( const std::string &filename) = 0;
 	/** Reload all the sample bank.
 	 *	Thid method use provided for use in a sound editor or sound tool to update the list of available samples.
-	 *	\async If true, the samples are loaded in a background thread.
+	 *	\param async If true, the samples are loaded in a background thread.
 	 */
 	virtual void		reloadSampleBanks(bool async) =0;
 	/** Return the total size in byte of loaded samples.

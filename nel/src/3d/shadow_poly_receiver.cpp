@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: shadow_poly_receiver.cpp,v 1.12 2004/10/19 12:58:06 vizerie Exp $
+ * $Id: shadow_poly_receiver.cpp,v 1.13 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file water_model.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: water_model.cpp,v 1.46 2004/10/05 10:11:03 vizerie Exp $
+ * $Id: water_model.cpp,v 1.47 2004/11/15 10:24:54 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

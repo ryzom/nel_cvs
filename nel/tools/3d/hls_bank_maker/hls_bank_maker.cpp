@@ -1,7 +1,7 @@
 /** \file hls_bank_maker.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: hls_bank_maker.cpp,v 1.1 2002/10/25 16:19:25 berenguier Exp $
+ * $Id: hls_bank_maker.cpp,v 1.2 2004/11/15 10:25:08 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

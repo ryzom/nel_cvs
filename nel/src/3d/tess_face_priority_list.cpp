@@ -1,7 +1,7 @@
 /** \file tess_face_priority_list.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: tess_face_priority_list.cpp,v 1.6 2003/07/30 16:07:07 vizerie Exp $
+ * $Id: tess_face_priority_list.cpp,v 1.7 2004/11/15 10:24:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file light_trav.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: light_trav.cpp,v 1.15 2004/06/22 10:08:11 berenguier Exp $
+ * $Id: light_trav.cpp,v 1.16 2004/11/15 10:24:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file sound.cpp
+/** \file simple_sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: simple_sound.cpp,v 1.5 2004/09/16 16:41:51 berenguier Exp $
+ * $Id: simple_sound.cpp,v 1.6 2004/11/15 10:25:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file progress.h
- * <File description>
+ * TODO: File description
  *
- * $Id: progress.h,v 1.1 2001/08/08 11:57:14 besson Exp $
+ * $Id: progress.h,v 1.2 2004/11/15 10:25:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

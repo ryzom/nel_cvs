@@ -1,7 +1,7 @@
 /** \file stl_block_allocator.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: stl_block_allocator.cpp,v 1.2 2001/12/28 10:33:01 lecroart Exp $
+ * $Id: stl_block_allocator.cpp,v 1.3 2004/11/15 10:25:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file surface_light_grid.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: surface_light_grid.cpp,v 1.8 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: surface_light_grid.cpp,v 1.9 2004/11/15 10:24:49 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file block_memory.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: block_memory.cpp,v 1.3 2002/02/06 16:52:24 berenguier Exp $
+ * $Id: block_memory.cpp,v 1.4 2004/11/15 10:25:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

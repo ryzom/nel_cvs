@@ -1,7 +1,7 @@
 /** \file render_trav.h
- * <File description>
+ * TODO: File description
  *
- * $Id: render_trav.h,v 1.26 2004/08/03 16:22:59 vizerie Exp $
+ * $Id: render_trav.h,v 1.27 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

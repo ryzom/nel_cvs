@@ -1,7 +1,7 @@
 /** \file tile_vegetable_desc.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: tile_vegetable_desc.cpp,v 1.5 2004/07/21 15:25:52 berenguier Exp $
+ * $Id: tile_vegetable_desc.cpp,v 1.6 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

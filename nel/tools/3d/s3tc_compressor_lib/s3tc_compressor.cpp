@@ -1,7 +1,7 @@
 /** \file s3tc_compressor.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: s3tc_compressor.cpp,v 1.4 2004/09/07 13:25:27 berenguier Exp $
+ * $Id: s3tc_compressor.cpp,v 1.5 2004/11/15 10:25:11 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

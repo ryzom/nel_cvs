@@ -1,7 +1,7 @@
-/** \file uobject->cpp
+/** \file u_material.cpp
  * User interface for material.
  *
- * $Id: u_material.cpp,v 1.2 2004/05/12 12:51:49 corvazier Exp $
+ * $Id: u_material.cpp,v 1.3 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

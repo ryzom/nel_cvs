@@ -1,7 +1,7 @@
 /** \file cpu_info.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: cpu_info.cpp,v 1.6 2002/05/21 16:34:30 lecroart Exp $
+ * $Id: cpu_info.cpp,v 1.7 2004/11/15 10:25:03 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

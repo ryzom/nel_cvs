@@ -1,7 +1,7 @@
 /** \file u_visual_collision_entity.h
- * <File description>
+ * TODO: File description
  *
- * $Id: u_visual_collision_entity.h,v 1.10 2004/07/20 16:20:38 berenguier Exp $
+ * $Id: u_visual_collision_entity.h,v 1.11 2004/11/15 10:24:19 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

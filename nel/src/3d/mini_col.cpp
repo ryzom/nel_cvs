@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: mini_col.cpp,v 1.18 2003/04/23 10:09:12 berenguier Exp $
+ * $Id: mini_col.cpp,v 1.19 2004/11/15 10:24:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

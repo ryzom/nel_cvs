@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.18 2004/08/13 15:31:54 vizerie Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.19 2004/11/15 10:24:55 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

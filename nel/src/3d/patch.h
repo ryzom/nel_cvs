@@ -1,7 +1,7 @@
 /** \file patch.h
- * <File description>
+ * TODO: File description
  *
- * $Id: patch.h,v 1.37 2004/08/13 15:40:13 vizerie Exp $
+ * $Id: patch.h,v 1.38 2004/11/15 10:24:46 lecroart Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).

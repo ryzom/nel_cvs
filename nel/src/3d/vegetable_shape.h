@@ -1,7 +1,7 @@
 /** \file vegetable_shape.h
- * <File description>
+ * TODO: File description
  *
- * $Id: vegetable_shape.h,v 1.9 2004/08/13 15:45:16 vizerie Exp $
+ * $Id: vegetable_shape.h,v 1.10 2004/11/15 10:24:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

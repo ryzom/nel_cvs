@@ -1,7 +1,7 @@
 /** \file skeleton_shape.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: skeleton_shape.cpp,v 1.14 2002/09/05 08:24:48 berenguier Exp $
+ * $Id: skeleton_shape.cpp,v 1.15 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

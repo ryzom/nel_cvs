@@ -1,7 +1,7 @@
 /** \file landscape_collision_grid.h
- * <File description>
+ * TODO: File description
  *
- * $Id: landscape_collision_grid.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: landscape_collision_grid.h,v 1.2 2004/11/15 10:24:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

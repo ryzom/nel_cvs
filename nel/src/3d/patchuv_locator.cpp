@@ -1,7 +1,7 @@
 /** \file patchuv_locator.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: patchuv_locator.cpp,v 1.6 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: patchuv_locator.cpp,v 1.7 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

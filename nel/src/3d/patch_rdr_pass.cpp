@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: patch_rdr_pass.cpp,v 1.13 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: patch_rdr_pass.cpp,v 1.14 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

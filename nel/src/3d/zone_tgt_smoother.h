@@ -1,7 +1,7 @@
 /** \file zone_tgt_smoother.h
- * <File description>
+ * TODO: File description
  *
- * $Id: zone_tgt_smoother.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: zone_tgt_smoother.h,v 1.2 2004/11/15 10:24:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

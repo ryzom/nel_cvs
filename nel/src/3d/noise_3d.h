@@ -1,7 +1,7 @@
-/** \file cloud.h
+/** \file noise_3d.h
  * Cloud definition to work with the cloudscape
  *
- * $Id: noise_3d.h,v 1.3 2004/02/06 18:06:56 vizerie Exp $
+ * $Id: noise_3d.h,v 1.4 2004/11/15 10:24:45 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.

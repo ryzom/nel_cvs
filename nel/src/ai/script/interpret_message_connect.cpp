@@ -1,6 +1,6 @@
-/** \file interpret_message_action.cpp
+/** \file interpret_message_connect.cpp
  *
- * $Id: interpret_message_connect.cpp,v 1.2 2002/03/11 09:56:52 portier Exp $
+ * $Id: interpret_message_connect.cpp,v 1.3 2004/11/15 10:24:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file visual_collision_mesh.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: visual_collision_mesh.cpp,v 1.5 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: visual_collision_mesh.cpp,v 1.6 2004/11/15 10:24:54 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.

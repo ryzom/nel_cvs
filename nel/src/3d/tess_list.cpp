@@ -1,7 +1,7 @@
 /** \file tess_list.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: tess_list.cpp,v 1.3 2002/02/28 12:59:51 besson Exp $
+ * $Id: tess_list.cpp,v 1.4 2004/11/15 10:24:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

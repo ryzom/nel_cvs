@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: register_3d.cpp,v 1.31 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: register_3d.cpp,v 1.32 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

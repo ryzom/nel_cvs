@@ -1,7 +1,7 @@
 /** \file zone_smoother.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: zone_smoother.cpp,v 1.5 2003/12/17 14:15:40 corvazier Exp $
+ * $Id: zone_smoother.cpp,v 1.6 2004/11/15 10:24:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file play_list_manager_user.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: play_list_manager_user.cpp,v 1.7 2003/04/08 23:11:22 corvazier Exp $
+ * $Id: play_list_manager_user.cpp,v 1.8 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

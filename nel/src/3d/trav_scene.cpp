@@ -1,7 +1,7 @@
 /** \file trav_scene.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: trav_scene.cpp,v 1.3 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: trav_scene.cpp,v 1.4 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file vertex_stream_manager.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: vertex_stream_manager.cpp,v 1.5 2004/09/23 18:50:16 berenguier Exp $
+ * $Id: vertex_stream_manager.cpp,v 1.6 2004/11/15 10:24:53 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.

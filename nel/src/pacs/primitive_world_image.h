@@ -1,7 +1,7 @@
 /** \file primitive_world_image.h
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.h,v 1.9 2003/06/26 15:36:29 legros Exp $
+ * $Id: primitive_world_image.h,v 1.10 2004/11/15 10:25:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -355,8 +355,6 @@ public:
 	  * Eval collisions with the global retriever.
 	  *
 	  * \param retriever is the global retriever used to test collision
-	  * \param timeMin is the time you want to clip collision result in the past.
-	  * \param timeMax is the time you want to clip collision result in the futur.
 	  *
 	  * \return true if a collision has been detected in the time range, else false.
 	  */

@@ -1,7 +1,7 @@
 /** \file vector_2s.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: vector_2s.cpp,v 1.4 2004/06/29 17:16:28 legros Exp $
+ * $Id: vector_2s.cpp,v 1.5 2004/11/15 10:25:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

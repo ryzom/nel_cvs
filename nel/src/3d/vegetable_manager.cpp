@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: vegetable_manager.cpp,v 1.43 2004/10/19 13:00:28 vizerie Exp $
+ * $Id: vegetable_manager.cpp,v 1.44 2004/11/15 10:24:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

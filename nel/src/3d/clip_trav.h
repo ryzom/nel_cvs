@@ -1,7 +1,7 @@
 /** \file clip_trav.h
- * <File description>
+ * TODO: File description
  *
- * $Id: clip_trav.h,v 1.23 2004/06/23 09:11:27 berenguier Exp $
+ * $Id: clip_trav.h,v 1.24 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

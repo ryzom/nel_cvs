@@ -1,7 +1,7 @@
 /** \file transformable.h
- * <File description>
+ * TODO: File description
  *
- * $Id: transformable.h,v 1.3 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: transformable.h,v 1.4 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

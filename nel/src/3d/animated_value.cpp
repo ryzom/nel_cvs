@@ -1,7 +1,7 @@
 /** \file animated_value.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: animated_value.cpp,v 1.7 2003/12/05 13:47:59 berenguier Exp $
+ * $Id: animated_value.cpp,v 1.8 2004/11/15 10:24:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

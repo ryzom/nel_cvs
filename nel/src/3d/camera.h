@@ -1,7 +1,7 @@
 /** \file camera.h
- * <File description>
+ * TODO: File description
  *
- * $Id: camera.h,v 1.6 2003/11/06 09:17:03 berenguier Exp $
+ * $Id: camera.h,v 1.7 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file tile_utility.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: tile_utility.cpp,v 1.6 2003/07/01 15:42:17 distrib Exp $
+ * $Id: tile_utility.cpp,v 1.7 2004/11/15 10:25:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

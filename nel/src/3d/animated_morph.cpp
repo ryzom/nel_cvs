@@ -1,7 +1,7 @@
 /** \file animated_morph.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: animated_morph.cpp,v 1.4 2004/10/18 16:12:41 berenguier Exp $
+ * $Id: animated_morph.cpp,v 1.5 2004/11/15 10:24:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

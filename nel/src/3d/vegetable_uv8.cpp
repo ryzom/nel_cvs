@@ -1,7 +1,7 @@
 /** \file vegetable_uv8.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: vegetable_uv8.cpp,v 1.1 2002/04/23 14:38:13 berenguier Exp $
+ * $Id: vegetable_uv8.cpp,v 1.2 2004/11/15 10:24:53 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file script_debug_source.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: script_debug_source.cpp,v 1.4 2002/05/17 13:46:34 chafik Exp $
+ * $Id: script_debug_source.cpp,v 1.5 2004/11/15 10:24:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

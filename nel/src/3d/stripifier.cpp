@@ -1,7 +1,7 @@
 /** \file stripifier.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: stripifier.cpp,v 1.6 2004/10/19 12:58:42 vizerie Exp $
+ * $Id: stripifier.cpp,v 1.7 2004/11/15 10:24:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

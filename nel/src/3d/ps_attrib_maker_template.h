@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
- * <File description>
+ * TODO: File description
  *
- * $Id: ps_attrib_maker_template.h,v 1.26 2004/10/06 06:39:21 lecroart Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.27 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

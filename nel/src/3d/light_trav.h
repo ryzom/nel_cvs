@@ -1,7 +1,7 @@
 /** \file light_trav.h
- * <File description>
+ * TODO: File description
  *
- * $Id: light_trav.h,v 1.8 2003/11/07 14:27:14 besson Exp $
+ * $Id: light_trav.h,v 1.9 2004/11/15 10:24:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file stdafx.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: StdAfx.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: StdAfx.cpp,v 1.2 2004/11/15 10:25:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

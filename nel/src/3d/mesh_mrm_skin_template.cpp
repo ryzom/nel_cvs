@@ -1,7 +1,7 @@
-/** \file mesh_mrm_skin_template.cpp
+/**
  * File not compiled. Included from mesh_mrm_skin.cpp. It is a "old school" template.
  *
- * $Id: mesh_mrm_skin_template.cpp,v 1.11 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: mesh_mrm_skin_template.cpp,v 1.12 2004/11/15 10:24:44 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

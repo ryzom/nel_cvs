@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: vegetable.cpp,v 1.20 2004/03/22 17:40:38 berenguier Exp $
+ * $Id: vegetable.cpp,v 1.21 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file lod_character_builder.h
- * <File description>
+ * TODO: File description
  *
- * $Id: lod_character_builder.h,v 1.3 2002/05/15 11:42:41 berenguier Exp $
+ * $Id: lod_character_builder.h,v 1.4 2004/11/15 10:24:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file win_displayer.cpp
- * <File description>
+/** \file entity_id.cpp
+ * TODO: File description
  *
- * $Id: entity_id.cpp,v 1.8 2003/12/11 18:31:27 boucher Exp $
+ * $Id: entity_id.cpp,v 1.9 2004/11/15 10:25:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file buffer.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: buffer.cpp,v 1.3 2003/07/03 15:16:43 boucher Exp $
+ * $Id: buffer.cpp,v 1.4 2004/11/15 10:25:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

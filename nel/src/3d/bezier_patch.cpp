@@ -1,7 +1,7 @@
 /** \file bezier_patch.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: bezier_patch.cpp,v 1.12 2002/06/24 13:08:49 berenguier Exp $
+ * $Id: bezier_patch.cpp,v 1.13 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

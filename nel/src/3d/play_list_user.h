@@ -1,7 +1,7 @@
 /** \file play_list_user.h
- * <File description>
+ * TODO: File description
  *
- * $Id: play_list_user.h,v 1.10 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: play_list_user.h,v 1.11 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

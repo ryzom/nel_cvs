@@ -1,7 +1,7 @@
 /** \file bone.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: bone.cpp,v 1.14 2004/07/01 09:33:49 berenguier Exp $
+ * $Id: bone.cpp,v 1.15 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file landscape_user.h
- * <File description>
+ * TODO: File description
  *
- * $Id: landscape_user.h,v 1.29 2004/08/03 16:26:52 vizerie Exp $
+ * $Id: landscape_user.h,v 1.30 2004/11/15 10:24:37 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

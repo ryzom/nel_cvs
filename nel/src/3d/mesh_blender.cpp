@@ -1,7 +1,7 @@
 /** \file mesh_blender.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: mesh_blender.cpp,v 1.3 2003/07/30 16:00:30 vizerie Exp $
+ * $Id: mesh_blender.cpp,v 1.4 2004/11/15 10:24:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

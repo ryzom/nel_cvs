@@ -1,7 +1,7 @@
-/** \file source_user.h
+/** \file simple_source.h
  * CSimpleSource: implementation of USource
  *
- * $Id: simple_source.h,v 1.5 2003/07/03 15:16:12 boucher Exp $
+ * $Id: simple_source.h,v 1.6 2004/11/15 10:25:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,4 +159,4 @@ private:
 
 #endif // NL_SIMPLE_SOURCE_H
 
-/* End of source_user.h */
+/* End of simple_source.h */

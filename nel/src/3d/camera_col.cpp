@@ -1,7 +1,7 @@
 /** \file camera_col.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: camera_col.cpp,v 1.2 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: camera_col.cpp,v 1.3 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.

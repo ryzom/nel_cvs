@@ -1,7 +1,7 @@
 /** \file bone.h
- * <File description>
+ * TODO: File description
  *
- * $Id: bone.h,v 1.10 2004/07/01 09:33:49 berenguier Exp $
+ * $Id: bone.h,v 1.11 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

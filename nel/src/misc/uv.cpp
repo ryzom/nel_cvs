@@ -1,7 +1,7 @@
 /** \file uv.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: uv.cpp,v 1.3 2004/10/29 18:08:47 berenguier Exp $
+ * $Id: uv.cpp,v 1.4 2004/11/15 10:25:05 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

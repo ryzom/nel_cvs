@@ -1,7 +1,7 @@
 /** \file nel_export_scene.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: nel_export_lightmap_v1.cpp,v 1.5 2003/04/25 13:51:38 berenguier Exp $
+ * $Id: nel_export_lightmap_v1.cpp,v 1.6 2004/11/15 10:25:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

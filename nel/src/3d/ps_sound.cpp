@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: ps_sound.cpp,v 1.33 2004/09/02 17:05:24 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.34 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

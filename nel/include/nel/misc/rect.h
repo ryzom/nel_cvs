@@ -1,7 +1,7 @@
 /** \file rect.h
- * <File description>
+ * TODO: File description
  *
- * $Id: rect.h,v 1.4 2002/01/28 14:21:36 vizerie Exp $
+ * $Id: rect.h,v 1.5 2004/11/15 10:24:26 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

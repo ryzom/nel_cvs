@@ -1,7 +1,7 @@
 /** \file mesh_morpher.h
- * <File description>
+ * TODO: File description
  *
- * $Id: mesh_morpher.h,v 1.7 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: mesh_morpher.h,v 1.8 2004/11/15 10:24:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

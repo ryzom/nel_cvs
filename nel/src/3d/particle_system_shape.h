@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
- * <File description>
+ * TODO: File description
  *
- * $Id: particle_system_shape.h,v 1.25 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: particle_system_shape.h,v 1.26 2004/11/15 10:24:46 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

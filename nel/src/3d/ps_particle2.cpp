@@ -1,7 +1,7 @@
 /** \file ps_particle2.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: ps_particle2.cpp,v 1.9 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_particle2.cpp,v 1.10 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

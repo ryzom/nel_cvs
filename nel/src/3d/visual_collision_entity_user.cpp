@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: visual_collision_entity_user.cpp,v 1.8 2004/07/20 16:24:32 berenguier Exp $
+ * $Id: visual_collision_entity_user.cpp,v 1.9 2004/11/15 10:24:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

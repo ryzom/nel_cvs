@@ -1,7 +1,7 @@
 /** \file water_pool_manager.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: water_pool_manager.cpp,v 1.10 2004/02/20 14:37:43 vizerie Exp $
+ * $Id: water_pool_manager.cpp,v 1.11 2004/11/15 10:24:54 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file landscape_vegetable_block.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: landscape_vegetable_block.cpp,v 1.5 2002/02/28 12:59:49 besson Exp $
+ * $Id: landscape_vegetable_block.cpp,v 1.6 2004/11/15 10:24:37 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

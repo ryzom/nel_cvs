@@ -1,7 +1,7 @@
-/** \file dx_event_emitter.h
- * <File description>
+/** \file di_event_emitter.h
+ * TODO: File description
  *
- * $Id: di_event_emitter.h,v 1.5 2003/06/18 14:38:57 corvazier Exp $
+ * $Id: di_event_emitter.h,v 1.6 2004/11/15 10:24:24 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

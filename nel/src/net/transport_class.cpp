@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: transport_class.cpp,v 1.20 2003/11/03 10:10:14 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.21 2004/11/15 10:25:05 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

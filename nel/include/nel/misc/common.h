@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.75 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: common.h,v 1.76 2004/11/15 10:24:24 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -199,7 +199,7 @@ inline double	isValidDouble (double v)
 
 
 /** Convert a string in lower case.
- * \param a string to transform to lower case
+ * \param str a string to transform to lower case
  */
 
 std::string	toLower ( const std::string &str );

@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.h
- * <File description>
+ * TODO: File description
  *
- * $Id: vegetablevb_allocator.h,v 1.5 2004/09/23 18:50:16 berenguier Exp $
+ * $Id: vegetablevb_allocator.h,v 1.6 2004/11/15 10:24:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

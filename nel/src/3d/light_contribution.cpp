@@ -1,7 +1,7 @@
 /** \file light_contribution.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: light_contribution.cpp,v 1.4 2003/05/22 12:51:03 berenguier Exp $
+ * $Id: light_contribution.cpp,v 1.5 2004/11/15 10:24:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

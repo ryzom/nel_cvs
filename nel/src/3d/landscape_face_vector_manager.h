@@ -1,7 +1,7 @@
 /** \file landscape_face_vector_manager.h
- * <File description>
+ * TODO: File description
  *
- * $Id: landscape_face_vector_manager.h,v 1.3 2004/10/19 12:49:58 vizerie Exp $
+ * $Id: landscape_face_vector_manager.h,v 1.4 2004/11/15 10:24:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file hls_color_texture.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: hls_color_texture.cpp,v 1.2 2003/07/30 15:59:04 vizerie Exp $
+ * $Id: hls_color_texture.cpp,v 1.3 2004/11/15 10:24:33 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

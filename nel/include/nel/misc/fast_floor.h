@@ -1,7 +1,7 @@
 /** \file fast_floor.h
- * <File description>
+ * TODO: File description
  *
- * $Id: fast_floor.h,v 1.2 2004/10/06 06:36:53 lecroart Exp $
+ * $Id: fast_floor.h,v 1.3 2004/11/15 10:24:24 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file u_shape.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: u_shape.cpp,v 1.4 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: u_shape.cpp,v 1.5 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.

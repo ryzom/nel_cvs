@@ -1,7 +1,7 @@
 /** \file cube_grid.h
- * <File description>
+ * TODO: File description
  *
- * $Id: cube_grid.h,v 1.2 2002/02/13 13:55:37 berenguier Exp $
+ * $Id: cube_grid.h,v 1.3 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

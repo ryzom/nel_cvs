@@ -1,7 +1,7 @@
 /** \file script_debug_source.h
- * <File description>
+ * TODO: File description
  *
- * $Id: script_debug_source.h,v 1.3 2002/05/17 13:46:24 chafik Exp $
+ * $Id: script_debug_source.h,v 1.4 2004/11/15 10:24:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

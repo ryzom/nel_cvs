@@ -1,7 +1,7 @@
 /** \file di_mouse_device.h
- * <File description>
+ * TODO: File description
  *
- * $Id: di_mouse_device.h,v 1.7 2004/06/15 17:32:17 berenguier Exp $
+ * $Id: di_mouse_device.h,v 1.8 2004/11/15 10:25:04 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

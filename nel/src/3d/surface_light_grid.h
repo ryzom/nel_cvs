@@ -1,7 +1,7 @@
 /** \file surface_light_grid.h
- * <File description>
+ * TODO: File description
  *
- * $Id: surface_light_grid.h,v 1.4 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: surface_light_grid.h,v 1.5 2004/11/15 10:24:49 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

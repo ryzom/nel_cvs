@@ -1,7 +1,7 @@
 /** \file lod_character_texture.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: lod_character_texture.cpp,v 1.1 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: lod_character_texture.cpp,v 1.2 2004/11/15 10:24:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file tile_light_influence.h
- * <File description>
+ * TODO: File description
  *
- * $Id: tile_light_influence.h,v 1.1 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: tile_light_influence.h,v 1.2 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file u_ps_sound_impl.h
- * <File description>
+ * TODO: File description
  *
- * $Id: u_ps_sound_impl.h,v 1.16 2004/06/01 15:11:46 vizerie Exp $
+ * $Id: u_ps_sound_impl.h,v 1.17 2004/11/15 10:24:18 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

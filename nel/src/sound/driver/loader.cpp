@@ -1,7 +1,7 @@
 /** \file driver/loader.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: loader.cpp,v 1.2 2002/02/20 18:09:25 lecroart Exp $
+ * $Id: loader.cpp,v 1.3 2004/11/15 10:25:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

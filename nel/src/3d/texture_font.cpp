@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: texture_font.cpp,v 1.22 2004/01/13 18:10:32 besson Exp $
+ * $Id: texture_font.cpp,v 1.23 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

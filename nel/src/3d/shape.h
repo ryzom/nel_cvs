@@ -1,7 +1,7 @@
 /** \file shape.h
- * <File description>
+ * TODO: File description
  *
- * $Id: shape.h,v 1.15 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: shape.h,v 1.16 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file di_play_device.h
- * <File description>
+/** \file di_game_device.h
+ * TODO: File description
  *
- * $Id: di_game_device.h,v 1.1 2002/03/28 10:30:15 vizerie Exp $
+ * $Id: di_game_device.h,v 1.2 2004/11/15 10:25:03 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

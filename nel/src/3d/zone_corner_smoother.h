@@ -1,7 +1,7 @@
 /** \file zone_corner_smoother.h
- * <File description>
+ * TODO: File description
  *
- * $Id: zone_corner_smoother.h,v 1.1 2001/08/20 14:56:11 berenguier Exp $
+ * $Id: zone_corner_smoother.h,v 1.2 2004/11/15 10:24:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file buf_client.h
  * Network engine, layer 1, client
  *
- * $Id: buf_client.h,v 1.10 2004/05/07 12:56:21 cado Exp $
+ * $Id: buf_client.h,v 1.11 2004/11/15 10:24:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,7 +77,7 @@ private:
  * By default, the size time trigger is disabled, the time trigger is set to 20 ms.
  *
  * Where do the methods take place:
- * \begincode
+ * \code
  * send()             ->  send buffer   ->  update(), flush(),
  *                                          bytesUploaded(), newBytesUploaded()
  *

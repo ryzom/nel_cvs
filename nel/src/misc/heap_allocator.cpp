@@ -1,7 +1,7 @@
-/** \file heap_allocator.cpp
+/** \file misc/heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.12 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: heap_allocator.cpp,v 1.13 2004/11/15 10:25:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file algo.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: algo.cpp,v 1.8 2004/01/15 17:39:40 lecroart Exp $
+ * $Id: algo.cpp,v 1.9 2004/11/15 10:25:02 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

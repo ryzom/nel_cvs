@@ -1,7 +1,7 @@
 /** \file stdafx.h
- * <File description>
+ * TODO: File description
  *
- * $Id: StdAfx.h,v 1.4 2002/08/08 11:01:49 lecroart Exp $
+ * $Id: StdAfx.h,v 1.5 2004/11/15 10:25:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

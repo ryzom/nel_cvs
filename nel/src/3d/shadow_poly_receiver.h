@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.h
- * <File description>
+ * TODO: File description
  *
- * $Id: shadow_poly_receiver.h,v 1.4 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: shadow_poly_receiver.h,v 1.5 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.

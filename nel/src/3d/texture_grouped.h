@@ -1,7 +1,7 @@
 /** \file texture_grouped.h
- * <File description>
+ * TODO: File description
  *
- * $Id: texture_grouped.h,v 1.9 2004/04/09 12:47:05 vizerie Exp $
+ * $Id: texture_grouped.h,v 1.10 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,7 @@ public:
 
 	/** Check if all the textures in a tab have the same size and the same pixel format	
 	 *  \param textureTab : pointer to a texture list*
-	 *  \nbTex the number of textures in the list (>0)	 
+	 *  \param nbTex the number of textures in the list (>0)	 
 	 *  \see setTextures()
 	 */
 	bool areValid(CSmartPtr<ITexture> *textureTab, uint nbTex);
@@ -70,9 +70,9 @@ public:
 	/** This set the textures to be used. They all must have the same size.
 	 *  An assertion is thrown otherwise.	 	 
 	 *  WARNING : if you touch one of the textures in the tab later, you may need to touch this one if it changed
-	 *  \checkValid check that textures are valid
+	 *  \param checkValid check that textures are valid
 	 *  \param textureTab : pointer to a texture list
-	 *  \nbTex the number of textures in the list (>0)
+	 *  \param nbTex the number of textures in the list (>0)
 	 *  \see haveValidSizes()
 	 */
 	void setTextures(CSmartPtr<ITexture> *textureTab, uint nbTex, bool checkValid = true);

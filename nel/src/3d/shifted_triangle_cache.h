@@ -1,7 +1,7 @@
 /** \file shifted_triangle_cache.h
- * <File description>
+ * TODO: File description
  *
- * $Id: shifted_triangle_cache.h,v 1.4 2004/08/13 15:43:37 vizerie Exp $
+ * $Id: shifted_triangle_cache.h,v 1.5 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

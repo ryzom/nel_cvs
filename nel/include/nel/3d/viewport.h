@@ -1,7 +1,7 @@
 /** \file viewport.h
- * <File description>
+ * TODO: File description
  *
- * $Id: viewport.h,v 1.8 2003/04/16 13:31:04 vizerie Exp $
+ * $Id: viewport.h,v 1.9 2004/11/15 10:24:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file shader.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: shader.cpp,v 1.5 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: shader.cpp,v 1.6 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

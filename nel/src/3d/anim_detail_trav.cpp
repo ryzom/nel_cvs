@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: anim_detail_trav.cpp,v 1.14 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: anim_detail_trav.cpp,v 1.15 2004/11/15 10:24:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,6 +1,6 @@
-/** \file string_mapper.cpp
+/** \file string_mapper.h
  *
- * $Id: string_mapper.h,v 1.14 2004/11/03 17:29:19 berenguier Exp $
+ * $Id: string_mapper.h,v 1.15 2004/11/15 10:24:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

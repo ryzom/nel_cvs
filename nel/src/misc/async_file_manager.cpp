@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: async_file_manager.cpp,v 1.6 2004/10/22 13:32:25 berenguier Exp $
+ * $Id: async_file_manager.cpp,v 1.7 2004/11/15 10:25:02 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

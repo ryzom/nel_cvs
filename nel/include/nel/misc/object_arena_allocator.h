@@ -1,6 +1,6 @@
 /** \file object_arena_allocator.h
  *
- * $Id: object_arena_allocator.h,v 1.5 2004/10/21 11:46:01 lecroart Exp $
+ * $Id: object_arena_allocator.h,v 1.6 2004/11/15 10:24:26 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -37,7 +37,7 @@ class CFixedSizeAllocator;
   * One possible use is with a family of class for which new and delete have been redefined at the top of the hierarchy  
   * (which the NL_USES_DEFAULT_ARENA_OBJECT_ALLOCATOR does)
   *
-  * \TODO: thread safety
+  * \todo thread safety
   * 
   * \author Nicolas Vizerie
   * \author Nevrax France

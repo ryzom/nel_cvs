@@ -1,7 +1,7 @@
-/** \file camera_user.cpp
+/** \file u_camera.cpp
  * User interface for camera.
  *
- * $Id: u_camera.cpp,v 1.2 2004/05/12 12:51:49 corvazier Exp $
+ * $Id: u_camera.cpp,v 1.3 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

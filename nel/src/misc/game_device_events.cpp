@@ -1,7 +1,7 @@
 /** \file game_device_event.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: game_device_events.cpp,v 1.1 2002/03/28 10:34:08 vizerie Exp $
+ * $Id: game_device_events.cpp,v 1.2 2004/11/15 10:25:04 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file deform_2d.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: deform_2d.cpp,v 1.7 2004/09/02 17:10:57 vizerie Exp $
+ * $Id: deform_2d.cpp,v 1.8 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

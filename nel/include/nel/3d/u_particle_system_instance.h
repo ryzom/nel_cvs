@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
- * <File description>
+ * TODO: File description
  *
- * $Id: u_particle_system_instance.h,v 1.17 2004/06/01 16:21:39 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.18 2004/11/15 10:24:17 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -165,7 +165,7 @@ public:
 	   * If not used, the fx would only start when it enters the camera, and thus could be late.
 	   * The system must have persistence when it is not visible (for example be flagged as 'SpellFX) or the system will only persist for 1 frame.
 	   * NB : no effect if the fx has been invalidated (because it is finished) or if it is already instanciated
-	   * \TODO : detect the 'SpellFX' flag of fx at loading to automate this ? (not useful for projectile, though, so it may be better to let the decision to the caller for now..)
+	   * \todo detect the 'SpellFX' flag of fx at loading to automate this ? (not useful for projectile, though, so it may be better to let the decision to the caller for now..)
 	   */
 	 void   forceInstanciate();
 

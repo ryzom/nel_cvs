@@ -1,7 +1,7 @@
 /** \file animation_optimizer.h
- * <File description>
+ * TODO: File description
  *
- * $Id: animation_optimizer.h,v 1.2 2002/06/06 08:47:16 berenguier Exp $
+ * $Id: animation_optimizer.h,v 1.3 2004/11/15 10:24:31 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: nel_export_script.cpp,v 1.28 2004/06/09 16:56:15 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.29 2004/11/15 10:25:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file texture_user.h
- * <File description>
+ * TODO: File description
  *
- * $Id: texture_user.h,v 1.9 2004/06/29 13:34:47 vizerie Exp $
+ * $Id: texture_user.h,v 1.10 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

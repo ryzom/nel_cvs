@@ -1,7 +1,7 @@
 /** \file agent_init.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: agent_init.cpp,v 1.15 2003/01/23 15:41:08 chafik Exp $
+ * $Id: agent_init.cpp,v 1.16 2004/11/15 10:24:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

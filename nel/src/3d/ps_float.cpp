@@ -1,7 +1,7 @@
 /** \file ps_float.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: ps_float.cpp,v 1.20 2004/03/11 17:26:32 vizerie Exp $
+ * $Id: ps_float.cpp,v 1.21 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

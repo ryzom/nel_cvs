@@ -1,7 +1,7 @@
-/** \file form_elt.h
+/** \file form_elm.cpp
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.44 2004/10/27 12:58:28 boucher Exp $
+ * $Id: form_elm.cpp,v 1.45 2004/11/15 10:24:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

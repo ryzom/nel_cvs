@@ -1,7 +1,7 @@
-/** \file water_user.cpp
+/** \file cloud_scape_user.cpp
  * implementation of the user interface for water
  *
- * $Id: cloud_scape_user.cpp,v 1.3 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: cloud_scape_user.cpp,v 1.4 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

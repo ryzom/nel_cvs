@@ -1,7 +1,7 @@
 /** \file ps_located.h
- * <File description>
+ * TODO: File description
  *
- * $Id: ps_located.h,v 1.38 2004/09/17 15:02:33 vizerie Exp $
+ * $Id: ps_located.h,v 1.39 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file fasthls_modifier.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: fasthls_modifier.cpp,v 1.4 2004/09/21 09:13:41 lecroart Exp $
+ * $Id: fasthls_modifier.cpp,v 1.5 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

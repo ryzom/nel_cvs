@@ -1,7 +1,7 @@
 /** \file root_model.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: root_model.cpp,v 1.4 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: root_model.cpp,v 1.5 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

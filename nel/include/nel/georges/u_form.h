@@ -1,7 +1,7 @@
-/** \file form.cpp
+/** \file u_form.h
  * Georges form interface class
  *
- * $Id: u_form.h,v 1.7 2003/10/08 17:10:44 corvazier Exp $
+ * $Id: u_form.h,v 1.8 2004/11/15 10:24:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file instance_material_user.cpp
- * <File description>
+/** \file u_instance_material.cpp
+ * TODO: File description
  *
- * $Id: u_instance_material.cpp,v 1.1 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: u_instance_material.cpp,v 1.2 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file primitive_block.cpp
+/** \file index_buffer.cpp
  * Index buffers.
  *
- * $Id: index_buffer.cpp,v 1.6 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: index_buffer.cpp,v 1.7 2004/11/15 10:24:34 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

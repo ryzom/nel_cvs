@@ -1,7 +1,7 @@
 /** \file keyboard_device.h
- * <File description>
+ * TODO: File description
  *
- * $Id: keyboard_device.h,v 1.2 2002/04/10 12:44:17 vizerie Exp $
+ * $Id: keyboard_device.h,v 1.3 2004/11/15 10:24:26 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -69,4 +69,4 @@ struct IKeyboardDevice	: public IInputDevice
 
 #endif // NL_KEYBOARD_DEVICE_H
 
-/* End of u_keyboard_device.h */
+/* End of keyboard_device.h */

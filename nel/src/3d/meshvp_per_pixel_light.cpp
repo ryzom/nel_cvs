@@ -1,7 +1,7 @@
 /** \file meshvp_per_pixel_light.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: meshvp_per_pixel_light.cpp,v 1.8 2004/04/09 14:30:05 vizerie Exp $
+ * $Id: meshvp_per_pixel_light.cpp,v 1.9 2004/11/15 10:24:44 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

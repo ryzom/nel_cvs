@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: meshvp_wind_tree.cpp,v 1.12 2004/04/09 14:29:46 vizerie Exp $
+ * $Id: meshvp_wind_tree.cpp,v 1.13 2004/11/15 10:24:44 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

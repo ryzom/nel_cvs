@@ -1,7 +1,7 @@
 /** \file lod_character_shape.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: lod_character_shape.cpp,v 1.11 2004/10/19 12:50:38 vizerie Exp $
+ * $Id: lod_character_shape.cpp,v 1.12 2004/11/15 10:24:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

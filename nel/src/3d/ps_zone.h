@@ -1,7 +1,7 @@
 /** \file ps_zone.h
- * <File description>
+ * TODO: File description
  *
- * $Id: ps_zone.h,v 1.13 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_zone.h,v 1.14 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

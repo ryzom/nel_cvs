@@ -1,7 +1,7 @@
 /** \file point_light.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: point_light.cpp,v 1.8 2004/10/22 07:58:17 berenguier Exp $
+ * $Id: point_light.cpp,v 1.9 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

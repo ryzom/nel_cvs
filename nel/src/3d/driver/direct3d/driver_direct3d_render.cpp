@@ -1,7 +1,7 @@
-/** \file driver_direct3d_vertex.cpp
+/** \file driver_direct3d_render.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_render.cpp,v 1.13 2004/10/25 16:24:25 vizerie Exp $
+ * $Id: driver_direct3d_render.cpp,v 1.14 2004/11/15 10:24:55 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */

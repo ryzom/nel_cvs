@@ -1,7 +1,7 @@
-/** \file unified_network.cpp
+/** \file unified_network_mt.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network_mt.cpp,v 1.4 2004/07/12 13:58:12 miller Exp $
+ * $Id: unified_network_mt.cpp,v 1.5 2004/11/15 10:25:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

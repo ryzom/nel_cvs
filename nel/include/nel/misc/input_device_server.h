@@ -1,7 +1,7 @@
 /** \file input_device_server.h
- * <File description>
+ * TODO: File description
  *
- * $Id: input_device_server.h,v 1.1 2002/03/28 10:36:37 vizerie Exp $
+ * $Id: input_device_server.h,v 1.2 2004/11/15 10:24:26 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

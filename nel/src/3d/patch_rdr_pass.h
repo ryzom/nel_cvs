@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.h
- * <File description>
+ * TODO: File description
  *
- * $Id: patch_rdr_pass.h,v 1.5 2003/04/23 10:12:50 berenguier Exp $
+ * $Id: patch_rdr_pass.h,v 1.6 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

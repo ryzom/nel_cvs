@@ -1,7 +1,7 @@
 /** \file transform.h
- * <File description>
+ * TODO: File description
  *
- * $Id: transform.h,v 1.58 2004/10/18 16:12:41 berenguier Exp $
+ * $Id: transform.h,v 1.59 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

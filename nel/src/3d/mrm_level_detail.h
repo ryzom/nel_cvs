@@ -1,7 +1,7 @@
 /** \file mrm_level_detail.h
- * <File description>
+ * TODO: File description
  *
- * $Id: mrm_level_detail.h,v 1.2 2002/10/30 16:18:04 berenguier Exp $
+ * $Id: mrm_level_detail.h,v 1.3 2004/11/15 10:24:45 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

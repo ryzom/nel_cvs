@@ -1,7 +1,7 @@
-/** \file _type.cpp
+/** \file type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.22 2003/10/13 08:35:15 corvazier Exp $
+ * $Id: type.cpp,v 1.23 2004/11/15 10:24:58 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

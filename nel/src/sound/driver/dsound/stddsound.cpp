@@ -1,7 +1,7 @@
-/** \file stdsound.cpp
+/** \file stddsound.cpp
  * 
  *
- * $Id: stddsound.cpp,v 1.1 2002/05/24 16:50:48 hanappe Exp $
+ * $Id: stddsound.cpp,v 1.2 2004/11/15 10:25:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

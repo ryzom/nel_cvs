@@ -1,7 +1,7 @@
 /** \file track_sampled_common.h
- * <File description>
+ * TODO: File description
  *
- * $Id: track_sampled_common.h,v 1.2 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: track_sampled_common.h,v 1.3 2004/11/15 10:24:51 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

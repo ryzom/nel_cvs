@@ -1,7 +1,7 @@
 /** \file surface_splitter.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: surface_splitter.cpp,v 1.3 2004/01/07 10:16:07 legros Exp $
+ * $Id: surface_splitter.cpp,v 1.4 2004/11/15 10:25:11 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

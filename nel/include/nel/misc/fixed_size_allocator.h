@@ -1,6 +1,6 @@
 /** \file fixed_size_allocator.h
  *
- * $Id: fixed_size_allocator.h,v 1.2 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: fixed_size_allocator.h,v 1.3 2004/11/15 10:24:24 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NLMISC
   *
   * NB : number of blocks per chunks must be at least 3
   * 
-  * \TODO: thread safety
+  * \todo thread safety
   *
   * \author Nicolas Vizerie
   * \author Nevrax France

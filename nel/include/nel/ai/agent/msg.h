@@ -1,7 +1,7 @@
 /** \file msg.h
  * class message.
  *
- * $Id: msg.h,v 1.23 2003/01/27 09:04:48 chafik Exp $
+ * $Id: msg.h,v 1.24 2004/11/15 10:24:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -176,7 +176,7 @@ namespace NLAIAGENT
 		//@}
 
 		///Sender can be change on a multible send/run messages.
-		//{@
+		//@{
 
 		///The sendMessage set automatically the sender on the message header, if user want keep sender have to use this method
 		void protectSender()

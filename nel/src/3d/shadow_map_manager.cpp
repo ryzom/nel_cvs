@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: shadow_map_manager.cpp,v 1.16 2004/10/05 17:01:01 vizerie Exp $
+ * $Id: shadow_map_manager.cpp,v 1.17 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file light_user.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: light_user.cpp,v 1.3 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: light_user.cpp,v 1.4 2004/11/15 10:24:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

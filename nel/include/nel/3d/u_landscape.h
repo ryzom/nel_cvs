@@ -1,7 +1,7 @@
 /** \file u_landscape.h
- * <File description>
+ * TODO: File description
  *
- * $Id: u_landscape.h,v 1.30 2004/08/03 16:19:20 vizerie Exp $
+ * $Id: u_landscape.h,v 1.31 2004/11/15 10:24:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -206,7 +206,8 @@ public:
 	 */
 	virtual void			setRefineCenterAuto(bool mode) =0;
 	virtual bool			getRefineCenterAuto() const =0;
-	/// \see setRefineCenterAuto
+	/** \see setRefineCenterAuto
+	  */
 	virtual void			setRefineCenterUser(const CVector &refineCenter) =0;
 	virtual const CVector	&getRefineCenterUser() const =0;
 	// @}

@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: water_shape.cpp,v 1.37 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: water_shape.cpp,v 1.38 2004/11/15 10:24:54 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

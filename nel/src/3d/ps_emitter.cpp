@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: ps_emitter.cpp,v 1.61 2004/10/06 06:38:41 lecroart Exp $
+ * $Id: ps_emitter.cpp,v 1.62 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

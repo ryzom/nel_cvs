@@ -1,7 +1,7 @@
 /** \file triangle.h
- * <File description>
+ * TODO: File description
  *
- * $Id: triangle.h,v 1.3 2003/02/14 14:14:43 lecroart Exp $
+ * $Id: triangle.h,v 1.4 2004/11/15 10:24:28 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

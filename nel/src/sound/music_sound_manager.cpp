@@ -1,7 +1,7 @@
 /** \file music_sound_manager.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: music_sound_manager.cpp,v 1.1 2004/11/03 17:24:49 berenguier Exp $
+ * $Id: music_sound_manager.cpp,v 1.2 2004/11/15 10:25:06 lecroart Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.

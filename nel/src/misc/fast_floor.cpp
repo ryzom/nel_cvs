@@ -1,7 +1,7 @@
 /** \file fast_floor.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: fast_floor.cpp,v 1.1 2003/07/30 16:09:56 vizerie Exp $
+ * $Id: fast_floor.cpp,v 1.2 2004/11/15 10:25:04 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

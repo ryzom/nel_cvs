@@ -1,7 +1,7 @@
 /** \file point_light_named.h
- * <File description>
+ * TODO: File description
  *
- * $Id: point_light_named.h,v 1.3 2003/08/19 14:11:34 berenguier Exp $
+ * $Id: point_light_named.h,v 1.4 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

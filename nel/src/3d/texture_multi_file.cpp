@@ -1,7 +1,7 @@
 /** \file texture_multi_file.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: texture_multi_file.cpp,v 1.9 2004/05/10 13:53:07 corvazier Exp $
+ * $Id: texture_multi_file.cpp,v 1.10 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

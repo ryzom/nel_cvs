@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.94 2004/08/13 15:31:54 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.95 2004/11/15 10:24:55 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2258,7 +2258,7 @@ void CDriverGL::setupWaterPassARB(const CMaterial &mat)
 			}
 			else
 			{
-				//\TODO nico: test this pass when we got hardware to test it
+				// \todo nico: test this pass when we got hardware to test it
 				nglProgramEnvParameter4fARB(GL_FRAGMENT_PROGRAM_ARB, 2, - 1.f/  (_FogEnd - _FogStart), _FogEnd / (_FogEnd - _FogStart), 0.f, 0.f);
 				
 					

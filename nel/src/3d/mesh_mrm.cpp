@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: mesh_mrm.cpp,v 1.76 2004/10/27 16:37:54 lecroart Exp $
+ * $Id: mesh_mrm.cpp,v 1.77 2004/11/15 10:24:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

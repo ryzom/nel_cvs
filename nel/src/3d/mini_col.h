@@ -1,7 +1,7 @@
 /** \file mini_col.h
- * <File description>
+ * TODO: File description
  *
- * $Id: mini_col.h,v 1.2 2003/09/26 14:25:33 lecroart Exp $
+ * $Id: mini_col.h,v 1.3 2004/11/15 10:24:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

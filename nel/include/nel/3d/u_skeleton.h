@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
- * <File description>
+ * TODO: File description
  *
- * $Id: u_skeleton.h,v 1.20 2004/07/27 17:48:38 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.21 2004/11/15 10:24:19 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

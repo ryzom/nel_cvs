@@ -1,7 +1,7 @@
 /** \file tile_far_bank.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: tile_far_bank.cpp,v 1.9 2003/02/17 16:25:39 corvazier Exp $
+ * $Id: tile_far_bank.cpp,v 1.10 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

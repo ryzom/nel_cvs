@@ -1,7 +1,7 @@
 /** \file zone_corner_smoother.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: zone_corner_smoother.cpp,v 1.2 2002/02/28 12:59:52 besson Exp $
+ * $Id: zone_corner_smoother.cpp,v 1.3 2004/11/15 10:24:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

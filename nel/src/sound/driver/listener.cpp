@@ -1,7 +1,7 @@
 /** \file listener.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: listener.cpp,v 1.3 2004/10/29 18:08:47 berenguier Exp $
+ * $Id: listener.cpp,v 1.4 2004/11/15 10:25:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

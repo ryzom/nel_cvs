@@ -1,7 +1,7 @@
 /** \file operation.h
- * <File description>
+ * TODO: File description
  * File contain class to transform an agent script to an IObjectOp
- * $Id: operation.h,v 1.6 2003/01/27 16:54:43 chafik Exp $
+ * $Id: operation.h,v 1.7 2004/11/15 10:24:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file mesh_vertex_program.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: mesh_vertex_program.cpp,v 1.2 2002/02/28 12:59:50 besson Exp $
+ * $Id: mesh_vertex_program.cpp,v 1.3 2004/11/15 10:24:44 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

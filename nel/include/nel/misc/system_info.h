@@ -1,7 +1,7 @@
 /** \file system_info.h
  * Retrieves system information (OS, processor, memory, etc...)
  *
- * $Id: system_info.h,v 1.13 2004/09/24 12:38:48 lecroart Exp $
+ * $Id: system_info.h,v 1.14 2004/11/15 10:24:28 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NLMISC {
 
 
 /**
- * <Class description>
+ * TODO Class description
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000

@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
- * <File description>
+ * TODO: File description
  *
- * $Id: vegetable_manager.h,v 1.20 2004/03/22 17:40:39 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.21 2004/11/15 10:24:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

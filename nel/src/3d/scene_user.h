@@ -1,7 +1,7 @@
 /** \file scene_user.h
- * <File description>
+ * TODO: File description
  *
- * $Id: scene_user.h,v 1.58 2004/08/03 16:20:56 vizerie Exp $
+ * $Id: scene_user.h,v 1.59 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ namespace NL3D {
 class UWaterEnvMap;
 
 /**
- * <Class description>
+ * TODO Class description
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001

@@ -1,6 +1,6 @@
-/** \file msg_action.h
+/** \file msg_setvalue.h
  *
- * $Id: msg_setvalue.h,v 1.3 2003/01/27 16:54:43 chafik Exp $
+ * $Id: msg_setvalue.h,v 1.4 2004/11/15 10:24:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

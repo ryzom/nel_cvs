@@ -1,7 +1,7 @@
 /** \file mesh.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: mesh.cpp,v 1.88 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: mesh.cpp,v 1.89 2004/11/15 10:24:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

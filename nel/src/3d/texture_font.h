@@ -1,7 +1,7 @@
 /** \file texture_font.h
- * <File description>
+ * TODO: File description
  *
- * $Id: texture_font.h,v 1.8 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_font.h,v 1.9 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

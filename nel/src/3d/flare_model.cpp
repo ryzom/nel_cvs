@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: flare_model.cpp,v 1.29 2004/10/26 13:49:56 lecroart Exp $
+ * $Id: flare_model.cpp,v 1.30 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

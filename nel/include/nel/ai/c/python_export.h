@@ -1,7 +1,7 @@
 /** \file registry.h
  * Includes class factory object for register class.
  *
- * $Id: python_export.h,v 1.9 2003/01/31 14:59:43 chafik Exp $
+ * $Id: python_export.h,v 1.10 2004/11/15 10:24:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,7 @@ namespace NLAIC
 	public:
 
 		///Python header attribut.
-		//{@		
+		//@{		
 		PyObject_HEAD
 		//@}
 		T  *Instance;

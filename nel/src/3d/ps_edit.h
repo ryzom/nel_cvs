@@ -1,7 +1,7 @@
 /** \file ps_edit.h
- * <File description>
+ * TODO: File description
  *
- * $Id: ps_edit.h,v 1.6 2004/09/02 17:05:23 vizerie Exp $
+ * $Id: ps_edit.h,v 1.7 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

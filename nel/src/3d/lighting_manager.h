@@ -1,7 +1,7 @@
 /** \file lighting_manager.h
- * <File description>
+ * TODO: File description
  *
- * $Id: lighting_manager.h,v 1.5 2004/07/20 16:22:32 berenguier Exp $
+ * $Id: lighting_manager.h,v 1.6 2004/11/15 10:24:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file animation.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: animation.cpp,v 1.19 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: animation.cpp,v 1.20 2004/11/15 10:24:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

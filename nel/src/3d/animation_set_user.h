@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
- * <File description>
+ * TODO: File description
  *
- * $Id: animation_set_user.h,v 1.14 2004/11/15 09:53:01 vizerie Exp $
+ * $Id: animation_set_user.h,v 1.15 2004/11/15 10:24:32 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

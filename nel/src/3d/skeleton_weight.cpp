@@ -1,7 +1,7 @@
 /** \file skeleton_weight.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: skeleton_weight.cpp,v 1.7 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: skeleton_weight.cpp,v 1.8 2004/11/15 10:24:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file transform_shape.h
- * <File description>
+ * TODO: File description
  *
- * $Id: transform_shape.h,v 1.27 2004/07/27 16:55:13 berenguier Exp $
+ * $Id: transform_shape.h,v 1.28 2004/11/15 10:24:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file landscape_collision_grid.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: landscape_collision_grid.cpp,v 1.7 2004/10/26 13:50:38 lecroart Exp $
+ * $Id: landscape_collision_grid.cpp,v 1.8 2004/11/15 10:24:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

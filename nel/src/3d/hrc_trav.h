@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
- * <File description>
+ * TODO: File description
  *
- * $Id: hrc_trav.h,v 1.9 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: hrc_trav.h,v 1.10 2004/11/15 10:24:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file track_keyframer.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: track_keyframer.cpp,v 1.8 2003/02/19 17:37:45 besson Exp $
+ * $Id: track_keyframer.cpp,v 1.9 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

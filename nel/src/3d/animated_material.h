@@ -1,7 +1,7 @@
 /** \file animated_material.h
- * <File description>
+ * TODO: File description
  *
- * $Id: animated_material.h,v 1.5 2004/10/06 09:15:11 berenguier Exp $
+ * $Id: animated_material.h,v 1.6 2004/11/15 10:24:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file patch.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: patch.cpp,v 1.100 2004/09/30 19:11:31 berenguier Exp $
+ * $Id: patch.cpp,v 1.101 2004/11/15 10:24:46 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
- * <File description>
+ * TODO: File description
  *
- * $Id: ps_attrib_maker_helper.h,v 1.20 2004/10/06 06:39:21 lecroart Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.21 2004/11/15 10:24:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1414,7 +1414,7 @@ template <typename T> class CPSAttribMakerMemoryBase : public CPSAttribMaker<T>
 {
 public:	
 
-	///\TODO : create a base class for CPSAttribMaker, that don't have the attributes not needed for this class
+	/// \todo create a base class for CPSAttribMaker, that don't have the attributes not needed for this class
 	/// ctor (note : we don't use the nbCycle field ...)
 	CPSAttribMakerMemoryBase() : CPSAttribMaker<T>(1.f), _Scheme(NULL)
 	{

@@ -1,7 +1,7 @@
 /** \file motion_blur.h
- * <File description>
+ * TODO: File description
  *
- * $Id: motion_blur.h,v 1.1 2001/08/07 15:08:53 vizerie Exp $
+ * $Id: motion_blur.h,v 1.2 2004/11/15 10:24:44 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.22 2004/06/29 08:17:08 vizerie Exp $
+ * $Id: matrix.h,v 1.23 2004/11/15 10:24:26 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -321,7 +321,8 @@ public:
 	CVector		mulVector(const CVector &v) const;
 	/// Multiply a point. ie v.w=1 so the Translation component do affect result. Projection doesn't affect result.
 	CVector		mulPoint(const CVector &v) const;
-	/// Multiply a point. \sa mulPoint
+	/** Multiply a point. \sa mulPoint
+	  */
 	CVector		operator*(const CVector &v) const
 	{
 		return mulPoint(v);

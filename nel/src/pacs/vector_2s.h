@@ -1,7 +1,7 @@
 /** \file vector_2s.h
- * <File description>
+ * TODO: File description
  *
- * $Id: vector_2s.h,v 1.7 2004/06/29 17:16:28 legros Exp $
+ * $Id: vector_2s.h,v 1.8 2004/11/15 10:25:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NLPACS {
 const float		Vector2sAccuracy = 128.0f;
 
 /**
- * <Class description>
+ * TODO Class description
  * \author Benjamin Legros
  * \author Nevrax France
  * \date 2001

@@ -1,7 +1,7 @@
 /** \file track.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: track.cpp,v 1.19 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: track.cpp,v 1.20 2004/11/15 10:24:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: landscape.cpp,v 1.151 2004/10/19 12:49:58 vizerie Exp $
+ * $Id: landscape.cpp,v 1.152 2004/11/15 10:24:35 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

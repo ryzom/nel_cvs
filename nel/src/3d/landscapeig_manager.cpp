@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
- * <File description>
+ * TODO: File description
  *
- * $Id: landscapeig_manager.cpp,v 1.16 2004/10/22 15:06:52 berenguier Exp $
+ * $Id: landscapeig_manager.cpp,v 1.17 2004/11/15 10:24:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.14 2003/01/23 17:59:29 berenguier Exp $
+ * $Id: text_context_user.cpp,v 1.15 2003/01/27 10:24:09 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -304,6 +304,12 @@ void CTextContextUser::printClipAt(URenderStringBuffer &renderBuffer, float x, f
 
 	_TextContext.printClipAt(static_cast<CRenderStringBuffer&>(renderBuffer), x, y, i, xmin, ymin, xmax, ymax);
 	// Don't need to restore Matrix context here since no driver change
+}
+void CTextContextUser::printClipAtOld (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax)
+{
+	static	CRenderStringBuffer	rdrBuffer;
+	printClipAt(rdrBuffer, x, y ,i, xmin, ymin, xmax, ymax);
+	flushRenderBuffer(&rdrBuffer);
 }
 void CTextContextUser::printAt(float x, float y, ucstring ucstr) 
 {

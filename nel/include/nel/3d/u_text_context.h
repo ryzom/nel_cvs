@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.11 2003/01/23 17:59:36 berenguier Exp $
+ * $Id: u_text_context.h,v 1.12 2003/01/27 10:24:46 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -251,6 +251,8 @@ public:
 	/** Same as printAt but special version for interface: clip and insert in a temp buffer.
 	 */
 	virtual	void			printClipAt (URenderStringBuffer &renderBuffer, float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;
+	// TEMP
+	virtual	void			printClipAtOld (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;
 	/**
 	 * compute and print a ucstring at the location (2D method) x/y E [0,1]
 	 */

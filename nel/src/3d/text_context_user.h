@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.13 2003/01/23 17:59:29 berenguier Exp $
+ * $Id: text_context_user.h,v 1.14 2003/01/27 10:24:09 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,6 +111,7 @@ public:
 	void clear()  ;
 	void printAt(float x, float y, uint32 i) ;
 	void printClipAt(URenderStringBuffer &renderBuffer, float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) ;
+	void printClipAtOld (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax);
 
 	void printAt(float x, float y, ucstring ucstr) ;
 	void printfAt(float x, float y, const char * format, ...) ;

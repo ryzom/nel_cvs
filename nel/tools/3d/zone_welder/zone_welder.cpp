@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.4 2001/01/11 16:02:21 corvazier Exp $
+ * $Id: zone_welder.cpp,v 1.5 2001/01/16 08:35:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "nel/misc/file.h"
 #include "nel/3d/quad_tree.h"
 #include "nel/3d/zone.h"
+#include "nel/3d/zone_smoother.h"
+#include "nel/3d/zone_tgt_smoother.h"
 #include <vector>
 #include <set>
 
@@ -379,7 +381,7 @@ void weldZones(const char *center)
 	std::vector<CPatchInfo> centerZonePatchs;
 	std::vector<CBorderVertex> centerZoneBorderVertices;
 	zone.retrieve(centerZonePatchs, centerZoneBorderVertices);
-	
+
 	std::vector<CPatchInfo>::iterator itptch;
 	std::vector<CBorderVertex>::iterator itbv;
 
@@ -409,11 +411,24 @@ void weldZones(const char *center)
 #endif
 
 
+	// Yoyo was here: Smooth the tangents of the zone.
+	//================================================
+	{
+		CZoneSmoother	zonesmoother;
+		CZoneSmoother::CZoneInfo	smoothZones[5];
+		smoothZones[0].ZoneId= centerZoneId;
+		smoothZones[0].Patchs= &centerZonePatchs;
+		// 30° ???
+		zonesmoother.smoothTangents(smoothZones, (float)(Pi/6));
+	}
+
+
 
 	// load 8 adjacent adjZones
-	bool adjZoneFileFound[8];
-	CZone adjZones[8];
-	uint16 adjZonesId[8];
+	bool		adjZoneFileFound[8];
+	CZone		adjZones[8];
+	CZoneInfo	adjZoneInfos[8];
+	uint16		adjZonesId[8];
 	std::vector<std::string> adjZonesName;
 	getAdjacentZonesName(center, adjZonesName);
 	for(i=0; i<8; i++)
@@ -429,7 +444,8 @@ void weldZones(const char *center)
 			{
 				printf("reading file %s\n", ss.c_str());
 				adjZones[i].serial(f);
-				adjZonesId[i] = adjZones[i].getZoneId();
+				adjZones[i].retrieve(adjZoneInfos[i].Patchs, adjZoneInfos[i].BorderVertices);
+				adjZoneInfos[i].ZoneId= adjZonesId[i] = adjZones[i].getZoneId();
 				f.close();
 			}
 			else
@@ -473,9 +489,8 @@ void weldZones(const char *center)
 		quadTrees[i].changeBase(base);
 
 		// retrieving infos from the current adjacent zone
-		std::vector<CPatchInfo> adjZonePatchs;
-		std::vector<CBorderVertex> adjZoneBorderVertices;
-		adjZones[i].retrieve(adjZonePatchs, adjZoneBorderVertices);
+		std::vector<CPatchInfo>		&adjZonePatchs= adjZoneInfos[i].Patchs;
+		std::vector<CBorderVertex>	&adjZoneBorderVertices= adjZoneInfos[i].BorderVertices;
 
 
 		// if no id yet, we add a correct id
@@ -483,6 +498,7 @@ void weldZones(const char *center)
 		if(adjZonesId[i]==0) 
 		{
 			adjZonesId[i] = createZoneId(getName (adjZonesName[i]));
+			adjZoneInfos[i].ZoneId= adjZonesId[i];
 			
 			// edge neighbour : current zone
 			for(itptch = adjZonePatchs.begin(); itptch!=adjZonePatchs.end(); itptch++)
@@ -757,6 +773,59 @@ void weldZones(const char *center)
 			
 		}
 
+	}
+
+
+	// Yoyo: make coplanar beetween zones.
+	//====================================
+	{
+		std::vector<CZoneInfo>	zones;
+		CZoneInfo	zinf;
+
+		// center.
+		zinf.ZoneId= centerZoneId;
+		zinf.Patchs= centerZonePatchs;
+		zinf.BorderVertices= centerZoneBorderVertices;
+		zones.push_back(zinf);
+
+		// adjs.
+		for(i=0;i<8;i++)
+		{
+			if(adjZonesName[i]=="empty") continue;
+			if(!adjZoneFileFound[i]) continue;
+			zones.push_back(adjZoneInfos[i]);
+		}
+
+		CZoneTgtSmoother	tgtsmoother;
+		tgtsmoother.makeVerticesCoplanar(zones);
+
+		// retrieve center zone result.
+		centerZonePatchs= zones[0].Patchs;
+		centerZoneBorderVertices= zones[0].BorderVertices;
+
+		// retrieve adj zone result.
+		sint	numZone= 1;
+		for(i=0;i<8;i++)
+		{
+			if(adjZonesName[i]=="empty") continue;
+			if(!adjZoneFileFound[i]) continue;
+
+			adjZoneInfos[i]= zones[numZone];
+			numZone++;
+		}
+	}
+
+
+	// Save adjacent zones.
+	//=====================
+	for(i=0;i<8;i++)
+	{
+		if(adjZonesName[i]=="empty") continue;
+		if(!adjZoneFileFound[i]) continue;
+
+		std::vector<CPatchInfo>		&adjZonePatchs= adjZoneInfos[i].Patchs;
+		std::vector<CBorderVertex>	&adjZoneBorderVertices= adjZoneInfos[i].BorderVertices;
+
 		adjZones[i].build(adjZonesId[i], adjZonePatchs, adjZoneBorderVertices);
 #if WELD_LOG
 		fprintf(fdbg,"[%d] binds :\n");
@@ -769,8 +838,11 @@ void weldZones(const char *center)
 		COFile adjSave(strtmp);
 		printf("writing file %s\n",strtmp.c_str());
 		adjZones[i].serial(adjSave);
+
 	}
 
+	// Save center zone.
+	//==================
 	zone.build(centerZoneId, centerZonePatchs, centerZoneBorderVertices);
 	std::string strtmp;
 	strtmp = outputDir+center+outputExt;

@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.18 2001/01/12 13:21:52 corvazier Exp $
+ * $Id: zone.h,v 1.19 2001/01/16 08:35:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,6 +147,22 @@ public:
 	{
 		ErrorSize= 0;
 	}
+};
+
+
+// ***************************************************************************
+/**
+ * The struct for building a zone. 
+ * NB: Different from the one which is stored.
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+struct	CZoneInfo
+{
+	uint16						ZoneId;
+	std::vector<CPatchInfo>		Patchs;
+	std::vector<CBorderVertex>	BorderVertices;
 };
 
 

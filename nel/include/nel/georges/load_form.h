@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.3 2002/06/06 15:15:42 lecroart Exp $
+ * $Id: load_form.h,v 1.4 2002/06/18 10:01:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,6 +123,10 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	std::vector<std::string> filenames;
 	for (uint i = 0; i < sheetFilters.size(); i++)
 		NLMISC::CSheetId::buildIdVector(sheetIds, filenames, sheetFilters[i]);
+
+	// if there s no file, nothing to do
+	if (sheetIds.empty())
+		return;
 
 	// check if we need to create a new .pitems or just read it
 	uint32 packedFiledate = NLMISC::CFile::getFileModificationDate(packedFilename);

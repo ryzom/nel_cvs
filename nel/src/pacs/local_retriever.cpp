@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.18 2001/06/08 15:38:28 legros Exp $
+ * $Id: local_retriever.cpp,v 1.19 2001/06/13 08:46:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -270,8 +270,10 @@ sint32	NLPACS::CLocalRetriever::addSurface(uint8 normalq, uint8 orientationq,
 	surf._IsFloor = (surf._NormalQuanta <= 1);
 	surf._IsCeiling = (surf._NormalQuanta >= 3);
 
+	surf._Flags = 0;
 	surf._Flags |= (surf._IsFloor) ? (1<<CRetrievableSurface::IsFloorBit) : 0;
 	surf._Flags |= (surf._IsCeiling) ? (1<<CRetrievableSurface::IsCeilingBit) : 0;
+	surf._Flags |= (!surf._IsFloor && !surf._IsCeiling) ? (1<<CRetrievableSurface::IsSlantBit) : 0;
 
 	surf._Flags |= ((0xffffffff<<(CRetrievableSurface::NormalQuantasStartBit)) & CRetrievableSurface::NormalQuantasBitMask);
 
@@ -820,10 +822,8 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosition &A, 
 										  const NLPACS::CLocalRetriever::CLocalPosition &B, 
 										  std::vector<NLPACS::CVector2s> &path, 
-										  NLPACS::CCollisionSurfaceTemp &cst, 
-										  vector<NLPACS::CLocalRetriever::CIntersectionMarker> &intersections) const
+										  NLPACS::CCollisionSurfaceTemp &cst) const
 {
-
 	if (A.Surface != B.Surface)
 	{
 		nlwarning("in NLPACS::CLocalRetriever::findPath()");
@@ -836,7 +836,8 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 
 	_ChainQuad.selectEdges(a, b, cst);
 
-//	vector<CIntersectionMarker>	intersections;
+	// TODO: use smart allocations here
+	vector<CIntersectionMarker>	intersections;
 
 	uint	i, j;
 	sint32	surfaceId = A.Surface;
@@ -872,7 +873,7 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 				if (va*vb <= 0.0f)
 				{
 					const CChain	&parent = _Chains[chain.getParentId()];
-					bool			isIn = (va < 0.0f) ^ (parent.getLeft() == surfaceId) ^ chain.isForward();
+					bool			isIn = (va-vb < 0.0f) ^ (parent.getLeft() == surfaceId) ^ chain.isForward();
 
 					intersections.push_back(CIntersectionMarker(va/(va-vb), entry.OChainId, j, isIn));
 				}
@@ -882,39 +883,53 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 
 	sort(intersections.begin(), intersections.end());
 
-	// Check intersections have a valid order
-	if (intersections.size() & 1)
+	uint	intersStart = 0;
+	uint	intersEnd = intersections.size();
+
+	if (intersEnd > 0)
 	{
-		nlwarning("in NLPACS::CLocalRetriever::findPath()");
-		nlerror("Found an odd (%d) number of intersections", intersections.size());
-	}
-	
-	for (i=0; i<intersections.size(); )
-	{
-		uint	exitLoop, enterLoop;
+		while (intersStart < intersections.size() &&
+			   intersections[intersStart].In && intersections[intersStart].Position < 1.0e-4f)
+			++intersStart;
 
-		const CChain	&exitChain = _Chains[_OrderedChains[intersections[i].OChain].getParentId()];
-		exitLoop = (exitChain.getLeft() == surfaceId) ? exitChain.getLeftLoop() : exitChain.getRightLoop();
+		while (intersStart < intersEnd &&
+			   !intersections[intersEnd-1].In && intersections[intersEnd-1].Position > 1.0f-1.0e-4f)
+			--intersEnd;
 
-		if (intersections[i++].In)
+		// Check intersections have a valid order
+		if ((intersEnd-intersStart) & 1)
 		{
 			nlwarning("in NLPACS::CLocalRetriever::findPath()");
-			nlerror("Entered the surface before exited", intersections.size());
+			nlerror("Found an odd (%d) number of intersections", intersections.size());
 		}
-
-		const CChain	&enterChain = _Chains[_OrderedChains[intersections[i].OChain].getParentId()];
-		enterLoop = (enterChain.getLeft() == surfaceId) ? enterChain.getLeftLoop() : enterChain.getRightLoop();
-
-		if (!intersections[i++].In)
+		
+		for (i=intersStart; i<intersEnd; )
 		{
-			nlwarning("in NLPACS::CLocalRetriever::findPath()");
-			nlerror("Exited twice the surface", intersections.size());
-		}
+			uint	exitLoop, enterLoop;
 
-		if (exitLoop != enterLoop)
-		{
-			nlwarning("in NLPACS::CLocalRetriever::findPath()");
-			nlerror("Exited and rentered by a different loop");
+			const CChain	&exitChain = _Chains[_OrderedChains[intersections[i].OChain].getParentId()];
+			exitLoop = (exitChain.getLeft() == surfaceId) ? exitChain.getLeftLoop() : exitChain.getRightLoop();
+
+			if (intersections[i++].In)
+			{
+				nlwarning("in NLPACS::CLocalRetriever::findPath()");
+				nlerror("Entered the surface before exited", intersections.size());
+			}
+
+			const CChain	&enterChain = _Chains[_OrderedChains[intersections[i].OChain].getParentId()];
+			enterLoop = (enterChain.getLeft() == surfaceId) ? enterChain.getLeftLoop() : enterChain.getRightLoop();
+
+			if (!intersections[i++].In)
+			{
+				nlwarning("in NLPACS::CLocalRetriever::findPath()");
+				nlerror("Exited twice the surface", intersections.size());
+			}
+
+			if (exitLoop != enterLoop)
+			{
+				nlwarning("in NLPACS::CLocalRetriever::findPath()");
+				nlerror("Exited and rentered by a different loop");
+			}
 		}
 	}
 
@@ -922,7 +937,7 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 
 	path.push_back(CVector2s(A.Estimation));
 
-	for (i=0; i<intersections.size(); )
+	for (i=intersStart; i<intersEnd; )
 	{
 		uint								exitChainId = _OrderedChains[intersections[i].OChain].getParentId(),
 											enterChainId = _OrderedChains[intersections[i+1].OChain].getParentId();
@@ -965,7 +980,7 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 		}
 		else
 		{
-			forward = (_OrderedChains[intersections[i].OChain].getIndexInParent() < _OrderedChains[intersections[i+1].OChain].getIndexInParent());
+			forward = !thisChainForward ^ (_OrderedChains[intersections[i].OChain].getIndexInParent() < _OrderedChains[intersections[i+1].OChain].getIndexInParent());
 		}
 
 		path.push_back(CVector2s(A.Estimation+intersections[i].Position*(B.Estimation-A.Estimation)));

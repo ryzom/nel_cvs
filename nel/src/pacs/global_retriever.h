@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.3 2001/06/12 14:15:19 berenguier Exp $
+ * $Id: global_retriever.h,v 1.4 2001/06/13 08:46:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@
 #include "pacs/local_retriever.h"
 #include "pacs/retriever_instance.h"
 #include "pacs/vector_2s.h"
+#include "pacs/collision_surface_temp.h"
 
 #include "nel/pacs/u_global_retriever.h"
 
@@ -88,14 +89,19 @@ public:
 		void							serial(NLMISC::IStream &f) { f.serial(InstanceId, LocalPosition); }
 	};
 
-private:
-//	typedef	std::pair<CGlobalPosition, CGlobalPosition>	TLocalPathTips;
-	struct CLocalPathTips
+	class CLocalPath
 	{
-		sint32							InstanceId;
-		CLocalRetriever::CLocalPosition	Start;
-		CLocalRetriever::CLocalPosition	End;
+	public:
+		sint32								InstanceId;
+		CLocalRetriever::CLocalPosition		Start;
+		CLocalRetriever::CLocalPosition		End;
+		std::vector<CVector2s>				Path;
 	};
+
+	typedef std::vector<CLocalPath>			CGlobalPath;
+
+private:
+	mutable CCollisionSurfaceTemp			_InternalCST;
 
 protected:
 
@@ -266,6 +272,8 @@ public:
 	/// Resets all links within the global retriever.
 	void							resetAllLinks();
 
+	/// Inits all the instances inside the global retriever.
+	void							initAll();
 	/// Links the instance referred by its id to its 4 neighbors.
 	void							makeLinks(uint n);
 	/// Links all the instances inside the global retriever.
@@ -342,11 +350,11 @@ public:
 	/// Finds an A* path from a given global position to another.
 	// TODO: secure search to avoid crashes...
 	// TODO: add surface criteria
-	void							findAStarPath(const CGlobalPosition &begin, const CGlobalPosition &end, std::vector<CRetrieverInstance::CAStarNodeAccess> &path);
+	void							findAStarPath(const CGlobalPosition &begin, const CGlobalPosition &end, std::vector<CRetrieverInstance::CAStarNodeAccess> &path, uint32 forbidFlags) const;
 
 	/// Finds a path from a given global position to another
 	// TODO: include path width
-	void							findPath(const CGlobalPosition &begin, const CGlobalPosition &end, std::vector<CVector2s> &waypoints);
+	void							findPath(const CGlobalPosition &begin, const CGlobalPosition &end, CGlobalPath &path, uint32 forbidFlags=0) const;
 
 	// @}
 
@@ -355,7 +363,7 @@ private:
 	// @{
 
 	/// Gets the CAStarNodeInfo referred by its access.
-	CRetrieverInstance::CAStarNodeInfo	&getNode(CRetrieverInstance::CAStarNodeAccess &access)
+	CRetrieverInstance::CAStarNodeInfo	&getNode(CRetrieverInstance::CAStarNodeAccess &access) const
 	{
 		return _Instances[access.InstanceId]._NodesInformation[access.NodeId];
 	}

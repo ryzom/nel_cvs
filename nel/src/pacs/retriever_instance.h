@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: retriever_instance.h,v 1.3 2001/06/13 08:46:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,6 +78,8 @@ protected:
 		sint32	InstanceId;
 		uint16	NodeId;
 		uint16	ThroughChain;
+
+		CAStarNodeAccess() :InstanceId(-1), NodeId(0xffff), ThroughChain(0xffff) {}
 
 		bool	operator == (const CAStarNodeAccess &node) { return InstanceId == node.InstanceId && NodeId == node.NodeId; }
 		bool	operator != (const CAStarNodeAccess &node) { return InstanceId != node.InstanceId || NodeId != node.NodeId; }
@@ -173,7 +175,10 @@ public:
 	uint8								getRetrieverEdge(uint8 instanceEdge) const { return (instanceEdge+4-_Orientation)%4; }
 
 
-	/// Initializes the instance.
+	/// Inits the instance (after a serial for instance.)
+	void								init(const CLocalRetriever &retriever);
+
+	/// Builds the instance.
 	void								make(sint32 instanceId, sint32 retrieverId, const CLocalRetriever &retriever,
 											 uint8 orientation, const NLMISC::CVector &origin);
 

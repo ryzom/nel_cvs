@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: retrievable_surface.h,v 1.3 2001/06/13 08:46:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,6 +89,21 @@ public:
 		void							serial(NLMISC::IStream &f) { f.serial(Chain, Surface); }
 	};
 
+	enum
+	{
+		IsFloorBit = 24,
+		IsSlantBit = 25,
+		IsCeilingBit = 26,
+		NormalQuantasStartBit = 0,
+		NormalQuantasStopBit = 3,
+		NormalQuantasBitMask = 0x0000000f,
+		CharacterQuantasStartBit = 8,
+		CharacterQuantasStopBit = 11,
+		CharacterQuantasBitMask = 0x00000f00,
+		MaterialQuantasStartBit = 16,
+		MaterialQuantasStopBit = 23,
+		MaterialQuantasBitMask = 0x00ff0000
+	};
 
 protected:
 	friend class CLocalRetriever;
@@ -109,21 +124,6 @@ protected:
 	bool								_IsFloor;
 	bool								_IsCeiling;
 	//@}
-
-	enum
-	{
-		IsFloorBit = 24,
-		IsCeilingBit = 25,
-		NormalQuantasStartBit = 0,
-		NormalQuantasStopBit = 3,
-		NormalQuantasBitMask = 0x0000000f,
-		CharacterQuantasStartBit = 8,
-		CharacterQuantasStopBit = 11,
-		CharacterQuantasBitMask = 0x00000f00,
-		MaterialQuantasStartBit = 16,
-		MaterialQuantasStopBit = 23,
-		MaterialQuantasBitMask = 0x00ff0000
-	};
 
 	/// Various flags.
 	uint32								_Flags;
@@ -160,6 +160,7 @@ public:
 	bool								isCeiling() const { return _IsCeiling; }
 	const CSurfaceQuadTree				&getQuadTree() const { return _Quad; }
 	sint32								getTopology(uint model) const { return _Topologies[model]; }
+	uint32								getFlags() const { return _Flags; }
 
 	/// Gets links from this surface to its neighbors through chains...
 	const std::vector<CSurfaceLink>		&getChains() const { return _Chains; }

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.13 2001/06/08 15:38:28 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.14 2001/06/13 08:46:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,15 +73,29 @@ void	NLPACS::CRetrieverInstance::reset()
 	// this is a HARD reset !
 	// only the instance i reset, no care about neighbors !!
 	_RetrieveTable.clear();
+	_NodesInformation.clear();
 	_InstanceId = -1;
 	_RetrieverId = -1;
 	_Orientation = 0;
 	_Origin = CVector::Null;
-/*
-	_BBox.setHalfSize(CVector::Null);
-	_BBox.setCenter(CVector::Null);
-*/
 	resetLinks();
+}
+
+void	NLPACS::CRetrieverInstance::init(const CLocalRetriever &retriever)
+{
+	_RetrieveTable.resize(retriever.getSurfaces().size());
+	_NodesInformation.resize(retriever.getSurfaces().size());
+	uint	i;
+	// Resets _RetrieveTable for later internal use (retrievePosition)
+	for (i=0; i<_RetrieveTable.size(); ++i)
+		_RetrieveTable[i] = 0;
+
+	// Resets _NodesInformation for later pathfinding graph annotation.
+	for (i=0; i<_NodesInformation.size(); ++i)
+	{
+		CVector	pos = getGlobalPosition(retriever.getSurfaces()[i].getCenter());
+		_NodesInformation[i].Position = CVector2f(pos.x, pos.y);
+	}
 }
 
 void	NLPACS::CRetrieverInstance::make(sint32 instanceId, sint32 retrieverId, const CLocalRetriever &retriever,
@@ -99,24 +113,8 @@ void	NLPACS::CRetrieverInstance::make(sint32 instanceId, sint32 retrieverId, con
 	_RetrieverId = retrieverId;
 	_Orientation = (orientation%4);
 	_Origin = origin;
-	_RetrieveTable.resize(retriever.getSurfaces().size());
-	_NodesInformation.resize(retriever.getSurfaces().size());
-	uint	i;
-	// Resets _RetrieveTable for later internal use (retrievePosition)
-	for (i=0; i<_RetrieveTable.size(); ++i)
-		_RetrieveTable[i] = 0;
 
-	// Resets _NodesInformation for later pathfinding graph annotation.
-	for (i=0; i<_NodesInformation.size(); ++i)
-	{
-		CVector	pos = getGlobalPosition(retriever.getSurfaces()[i].getCenter());
-		_NodesInformation[i].Position = CVector2f(pos.x, pos.y);
-	}
-
-/*
-	_BBox = retriever.getBBox();
-	_BBox.setCenter(getGlobalPosition(_BBox.getCenter()));
-*/
+	init(retriever);
 }
 
 /* Links the current retriever instance to another instance

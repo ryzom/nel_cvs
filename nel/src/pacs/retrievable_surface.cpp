@@ -1,7 +1,7 @@
 /** \file retrievable_surface.cpp
  *
  *
- * $Id: retrievable_surface.cpp,v 1.6 2001/06/08 15:38:28 legros Exp $
+ * $Id: retrievable_surface.cpp,v 1.7 2001/06/13 08:46:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,14 +23,14 @@
  * MA 02111-1307, USA.
  */
 
-#include <vector>
-
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 
 #include "nel/misc/debug.h"
 
 #include "pacs/retrievable_surface.h"
+
+#include <vector>
 
 using namespace std;
 using namespace NLMISC;
@@ -59,6 +59,7 @@ void	NLPACS::CRetrievableSurface::serial(IStream &f)
 		f.serial(_Topologies[i]);
 	f.serial(_Center);
 	f.serial(_IsFloor, _IsCeiling);
+	f.serial(_Flags);
 }
 
 void	NLPACS::CRetrievableSurface::TLoop::serial(IStream &f)

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.29 2001/06/12 14:15:19 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.30 2001/06/13 08:46:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,6 +156,14 @@ void	NLPACS::CGlobalRetriever::makeAllLinks()
 		makeLinks(n);
 }
 
+void	NLPACS::CGlobalRetriever::initAll()
+{
+	uint	n;
+	for (n=0; n<_Instances.size(); ++n)
+		if (_Instances[n].getInstanceId() != -1 && _Instances[n].getRetrieverId() != -1)
+			_Instances[n].init(_RetrieverBank->getRetriever(_Instances[n].getRetrieverId()));
+}
+
 //
 
 NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint x, uint y, uint32 retriever, uint8 orientation, const CVector &origin)
@@ -231,7 +239,8 @@ CVector		NLPACS::CGlobalRetriever::getInstanceCenter(uint x, uint y) const
 
 void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CGlobalPosition &begin,
 													const NLPACS::CGlobalRetriever::CGlobalPosition &end,
-													vector<NLPACS::CRetrieverInstance::CAStarNodeAccess> &path)
+													vector<NLPACS::CRetrieverInstance::CAStarNodeAccess> &path,
+													uint32 forbidFlags) const
 {
 	// open and close lists
 	// TODO: Use a smart allocator to avoid huge alloc/free and memory fragmentation
@@ -264,7 +273,7 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 	open.insert(make_pair(beginInfo.F, node));
 
 	// TO DO: use a CVector2f instead
-	CVector													endPosition = getGlobalPosition(end);
+	CVector2f												endPosition = CVector2f(getGlobalPosition(end));
 
 	uint	i;
 
@@ -295,7 +304,6 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 				++numNodes;
 				CRetrieverInstance							&instance = _Instances[pathNode.InstanceId];
 				CRetrieverInstance::CAStarNodeInfo			&pathInfo = instance._NodesInformation[pathNode.NodeId];
-				nlinfo("pathNode = (InstanceId=%d, NodeId=%d)", pathNode.InstanceId, pathNode.NodeId);
 				pathNode = pathInfo.Parent;
 			}
 
@@ -309,6 +317,24 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 				pathNode = pathInfo.Parent;
 			}
 
+			for (i=0; i<path.size(); ++i)
+			{
+				CRetrieverInstance							&instance = _Instances[path[i].InstanceId];
+				const CLocalRetriever						&retriever = _RetrieverBank->getRetriever(instance.getRetrieverId());
+				nlinfo("pathNode %d = (Inst=%d, Node=%d, Through=%d)", i, path[i].InstanceId, path[i].NodeId, path[i].ThroughChain);
+				if (path[i].ThroughChain != 0xffff)
+				{
+					const CChain								&chain = retriever.getChain(path[i].ThroughChain);
+					nlinfo("   chain: edge=%d left=%d right=%d", chain.getEdge(), chain.getLeft(), chain.getRight());
+					if (CChain::isEdgeId(chain.getRight()))
+					{
+						sint	edge = instance.getInstanceEdge(chain.getEdge());
+						sint	instanceid = instance.getNeighbor(edge);
+						sint	id = instance.getEdgeChainLink(edge, CChain::convertEdgeId(chain.getRight()));
+						nlinfo("      right: edge=%d instance=%d surf=%d", edge, instanceid, id);
+					}
+				}
+			}
 			nlinfo("open.size()=%d", open.size());
 			nlinfo("close.size()=%d", close.size());
 			return;
@@ -323,6 +349,8 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 		CRetrieverInstance								*nextInstance;
 		const CLocalRetriever							*nextRetriever;
 		const CRetrievableSurface						*nextSurface;
+
+		nlinfo("examine node (instance=%d,surf=%d,cost=%g)", node.InstanceId, node.NodeId, inst._NodesInformation[node.NodeId].Cost);
 
 		for (i=0; i<chains.size(); ++i)
 		{
@@ -365,13 +393,16 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 
 			nextSurface = &(nextRetriever->getSurface(nextNode.NodeId));
 
+			if (nextSurface->getFlags() & forbidFlags)
+				continue;
+
 			// compute new node value (heuristic and cost)
 
-			float	stepCost = (surf.getCenter()-nextSurface->getCenter()).norm();
-			float	nextCost = inst._NodesInformation[node.NodeId].Cost+stepCost;
-			float	nextHeuristic = (nextSurface->getCenter()-endPosition).norm();
-			float	nextF = nextCost+nextHeuristic;
 			CRetrieverInstance::CAStarNodeInfo	&nextInfo = nextInstance->_NodesInformation[nextNode.NodeId];
+			float	stepCost = (nextInfo.Position-inst._NodesInformation[node.NodeId].Position).norm();
+			float	nextCost = inst._NodesInformation[node.NodeId].Cost+stepCost;
+			float	nextHeuristic = (nextInfo.Position-endPosition).norm();
+			float	nextF = nextCost+nextHeuristic;
 
 			vector<CRetrieverInstance::CAStarNodeAccess>::iterator			closeIt;
 			for (closeIt=close.begin(); closeIt!=close.end() && *closeIt!=nextNode; ++closeIt)
@@ -394,9 +425,11 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 				close.erase(closeIt);
 
 			nextInfo.Parent = node;
-			nextInfo.Parent.ThroughChain = i;
+			nextInfo.Parent.ThroughChain = (uint16)(chains[i].Chain);
 			nextInfo.Cost = nextCost;
 			nextInfo.F = nextF;
+
+			nlinfo("  adding node (instance=%d,surf=%d) f=%g, through=%d", nextNode.InstanceId, nextNode.NodeId, nextInfo.F, i);
 
 			open.insert(make_pair(nextInfo.F, nextNode));
 		}
@@ -408,20 +441,21 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 
 void	NLPACS::CGlobalRetriever::findPath(const NLPACS::CGlobalRetriever::CGlobalPosition &begin, 
 										   const NLPACS::CGlobalRetriever::CGlobalPosition &end, 
-										   vector<NLPACS::CVector2s> &waypoints)
+										   NLPACS::CGlobalRetriever::CGlobalPath &path,
+										   uint32 forbidFlags) const
 {
-	vector<CRetrieverInstance::CAStarNodeAccess>	path;
-	vector<CLocalPathTips>							surfInfos;
+	vector<CRetrieverInstance::CAStarNodeAccess>	astarPath;
+	findAStarPath(begin, end, astarPath, forbidFlags);
 
-	findAStarPath(begin, end, path);
-
-	surfInfos.reserve(path.size());
+	path.clear();
+	path.resize(astarPath.size());
 
 	uint	i, j;
-	for (i=0; i<path.size(); ++i)
+	for (i=0; i<astarPath.size(); ++i)
 	{
-		CLocalPathTips	surf;
-		surf.InstanceId = path[i].InstanceId;
+		CLocalPath		&surf = path[i];
+		surf.InstanceId = astarPath[i].InstanceId;
+		const CLocalRetriever	&retriever = _RetrieverBank->getRetriever(_Instances[surf.InstanceId].getRetrieverId());
 
 		// computes start point
 		if (i == 0)
@@ -433,14 +467,14 @@ void	NLPACS::CGlobalRetriever::findPath(const NLPACS::CGlobalRetriever::CGlobalP
 		{
 			// else, take the previous value and convert it in the current instance axis
 			// TODO: avoid this if the instances are the same
-			CVector	prev = _Instances[surfInfos[i-1].InstanceId].getGlobalPosition(surfInfos[i-1].End.Estimation);
+			CVector	prev = _Instances[path[i-1].InstanceId].getGlobalPosition(path[i-1].End.Estimation);
 			CVector	current = _Instances[surf.InstanceId].getLocalPosition(prev);
-			surf.End.Surface = path[i].NodeId;
-			surf.End.Estimation = current;
+			surf.Start.Surface = astarPath[i].NodeId;
+			surf.Start.Estimation = current;
 		}
 
 		// computes end point
-		if (i == path.size()-1)
+		if (i == astarPath.size()-1)
 		{
 			surf.End = end.LocalPosition;
 		}
@@ -448,16 +482,28 @@ void	NLPACS::CGlobalRetriever::findPath(const NLPACS::CGlobalRetriever::CGlobalP
 		{
 			// get to the middle of the chain
 			// first get the chain between the 2 surfaces
-			const CLocalRetriever	&retriever = _RetrieverBank->getRetriever(_Instances[surf.InstanceId].getRetrieverId());
-			const CChain			&chain = retriever.getChain(path[i].ThroughChain);
+			const CChain			&chain = retriever.getChain(astarPath[i].ThroughChain);
 			float					cumulLength = 0.0f, midLength=chain.getLength()*0.5f;
 			for (j=0; j<chain.getSubChains().size() && cumulLength<=midLength; ++j)
 				cumulLength += retriever.getOrderedChain(chain.getSubChain(j)).getLength();
 			--j;
 			const COrderedChain		&ochain = retriever.getOrderedChain(chain.getSubChain(j));
-			surf.End.Surface = path[i].NodeId;
-			surf.End.Estimation = ochain[ochain.getVertices().size()/2].unpack3f();
+			surf.End.Surface = astarPath[i].NodeId;
+			{
+				if (ochain.getVertices().size() & 1)
+				{
+					surf.End.Estimation = ochain[ochain.getVertices().size()/2].unpack3f();
+				}
+				else
+				{
+					surf.End.Estimation = (ochain[ochain.getVertices().size()/2].unpack3f()+
+										  ochain[ochain.getVertices().size()/2-1].unpack3f())*0.5f;
+				}
+			}
 		}
+
+
+		retriever.findPath(surf.Start, surf.End, surf.Path, _InternalCST);
 	}
 }
 
@@ -1454,6 +1500,7 @@ NLPACS::UGlobalRetriever *NLPACS::UGlobalRetriever::createGlobalRetriever (const
 	file.serial(*retriever);
 
 	retriever->setRetrieverBank(bank);
+	retriever->initAll();
 
 	return static_cast<UGlobalRetriever *>(retriever);
 }

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: local_retriever.h,v 1.3 2001/06/13 08:46:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -345,7 +345,7 @@ protected:
 	void								retrievePosition(NLMISC::CVector estimated, std::vector<uint8> &retrieveTable) const;
 
 	/// Finds a path in a given surface, from the point A to the point B.
-	void								findPath(const CLocalPosition &A, const CLocalPosition &B, std::vector<CVector2s> &path, NLPACS::CCollisionSurfaceTemp &cst, std::vector<CIntersectionMarker> &intersections) const;
+	void								findPath(const CLocalPosition &A, const CLocalPosition &B, std::vector<CVector2s> &path, NLPACS::CCollisionSurfaceTemp &cst) const;
 
 private:
 	const NLMISC::CVector				&getStartVector(uint32 chain) const;

@@ -1,7 +1,7 @@
 /** \file chain_quad.cpp
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.cpp,v 1.7 2001/06/08 15:38:28 legros Exp $
+ * $Id: chain_quad.cpp,v 1.8 2001/06/13 08:46:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -354,6 +354,38 @@ sint		CChainQuad::selectEdges(CVector start, CVector end, CCollisionSurfaceTemp 
 
 	if (end.x < start.x)
 		swap(start, end);
+
+	float	minx = _X*_QuadElementSize,
+			miny = _Y*_QuadElementSize,
+			maxx = minx + _Width*_QuadElementSize,
+			maxy = miny + _Height*_QuadElementSize;
+
+	if (start.x > maxx || end.x < minx || start.y > maxy || end.y < miny)
+		return nRes;
+
+	if (start.x < minx)
+	{
+		start.y = start.y+(end.y-start.y)*(minx-start.x)/(end.x-start.x);
+		start.x = minx;
+	}
+
+	if (start.y < miny)
+	{
+		start.x = start.x+(end.x-start.x)*(miny-start.y)/(end.y-start.y);
+		start.y = miny;
+	}
+
+	if (end.x > maxx)
+	{
+		end.y = start.y+(end.y-start.y)*(minx-start.x)/(end.x-start.x);
+		end.x = maxx;
+	}
+
+	if (end.y > maxy)
+	{
+		end.x = start.x+(end.x-start.x)*(miny-start.y)/(end.y-start.y);
+		end.y = maxy;
+	}
 
 	sint32	x0, x1, ya, yb;
 	sint	x, y;

@@ -1,7 +1,7 @@
 /** \file u_track.h
  * User interface to access tracks fonctionnalities
  *
- * $Id: u_track.h,v 1.3 2001/08/28 15:56:45 vizerie Exp $
+ * $Id: u_track.h,v 1.4 2001/08/30 10:14:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -176,7 +176,7 @@ public:
 	/** Retrieve the keys that are in the given range ]t1, t2] of the track. They can then be evaluated
 	  * \param result a vector that will be cleared, and filled with the date ofthe keys
 	  */
-	void getKeysInRange(CAnimationTime t1, CAnimationTime t2, std::vector<CAnimationTime> &result);	
+	virtual void getKeysInRange(CAnimationTime t1, CAnimationTime t2, std::vector<CAnimationTime> &result)=0;	
 };
 
 

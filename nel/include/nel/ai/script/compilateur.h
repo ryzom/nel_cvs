@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.10 2001/01/17 16:53:18 chafik Exp $
+ * $Id: compilateur.h,v 1.11 2001/01/18 17:53:47 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -438,6 +438,7 @@ namespace NLAISCRIPT
 		void pushParamExpression();
 		void setImediateVar();
 		void setImediateVarNill();
+		void setPerformative(NLAIAGENT::IMessageBase::TPerformatif p);
 		void setListVar();
 		void setChaineVar();
 		void setStackVar(const NLAIC::CIdentType &);

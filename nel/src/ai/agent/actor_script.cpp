@@ -348,7 +348,7 @@ namespace NLAIAGENT
 
 	int CActorScript::getBaseMethodCount() const
 	{
-		return CAgentScript::getBaseMethodCount() + fid_switch +1;
+		return CAgentScript::getBaseMethodCount() + fid_last;
 	}
 
 

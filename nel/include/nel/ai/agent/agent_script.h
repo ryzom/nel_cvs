@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.7 2001/01/18 15:47:53 chafik Exp $
+ * $Id: agent_script.h,v 1.8 2001/01/18 17:53:47 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,11 @@ namespace NLAIAGENT
 				Index = i;
 				CheckArgType = checkArg;
 				ArgCount = argCount;
+			}
+
+			~CMethodCall()
+			{
+				ReturnValue->release();
 			}
 			///Name of the method.
 			CStringVarName MethodName;

@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.9 2001/01/17 16:53:23 chafik Exp $
+ * $Id: var_control.cpp,v 1.10 2001/01/18 17:53:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -346,6 +346,39 @@ namespace NLAISCRIPT
 			_ExpressionType->incRef();
 		}
 		_ExpressionType = NULL;
+	}
+
+	void CCompilateur::setPerformative(NLAIAGENT::IMessageBase::TPerformatif p)
+	{
+		if(_LastFact.Value != NULL) 
+							_LastFact.Value->release();
+		switch(p)
+		{
+		case NLAIAGENT::IMessageBase::PExec:
+			_LastFact.Value = &NLAIAGENT::IMessageBase::IdExec;
+			break;
+		case NLAIAGENT::IMessageBase::PAchieve:
+			_LastFact.Value = &NLAIAGENT::IMessageBase::IdAchieve;
+			break;
+		case NLAIAGENT::IMessageBase::PAsk:
+			_LastFact.Value = &NLAIAGENT::IMessageBase::IdAsk;
+			break;
+		case NLAIAGENT::IMessageBase::PBreak:
+			_LastFact.Value = &NLAIAGENT::IMessageBase::IdBreak;
+			break;
+		case NLAIAGENT::IMessageBase::PTell:
+			_LastFact.Value = &NLAIAGENT::IMessageBase::IdTell;
+			break;
+		case NLAIAGENT::IMessageBase::PKill:
+			_LastFact.Value = &NLAIAGENT::IMessageBase::IdKill;
+			break;
+		}
+
+		_LastFact.Value->incRef();
+		_LastFact.VarType = varTypeImediate;
+		_LastFact.IsUsed = false;		
+		if(_FlotingExpressionType != NULL) _FlotingExpressionType->release();
+		_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType(_LastFact.Value->getType()));
 	}
 
 	void CCompilateur::setImediateVarNill()

@@ -1,6 +1,6 @@
 /** \file type_def.cpp
  *
- * $Id: type_def.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
+ * $Id: type_def.cpp,v 1.6 2001/01/18 17:53:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,70 @@ namespace NLAISCRIPT
 	IOpType::~IOpType()
 	{
 	}	
+	
+	double IOpType::evalParam(IOpType *e)
+	{
+		double d;
+		if(e->getConstraintTypeOf() != NULL)
+		{
+			const NLAIC::CIdentType &idG = *getConstraintTypeOf();
+			const NLAIC::CIdentType &idD = *e->getConstraintTypeOf();
+			if(!(idG == idD))
+			{
+				if(((const NLAIC::CTypeOfObject &)idD) & NLAIC::CTypeOfObject::tAgentInterpret)
+				{
+					const IClassInterpret *o = (const IClassInterpret *)((CClassInterpretFactory *)idD.getFactory())->getClass();						
+					bool type = false;						
+					d = 0.0;
+					while(o != NULL)
+					{								
+						if( o->getType() == idG)
+						{
+							d += 1.0;
+							type = true;
+							break;
+						}
+						o = o->getBaseClass();						
+					}
+					if(!type) return -1.0;
+					else return d;
+				}
+				else
+				{
+					//NLAIC::CTypeOfObject o_t(tNombre | tString | tList | tLogic);
+					if(((const NLAIC::CTypeOfObject &)idD) & ((const NLAIC::CTypeOfObject &)idG))
+					{
+						return 0.0;
+					}
+					else return -1.0;
+				}
+			}
+			else return 0.0;
+		}
+		else return -1.0;		
+	}
 
+	double IOpType::eval(IOpType *e)
+	{
+		if(getConstraintTypeOf() != NULL && e->getConstraintTypeOf() != NULL)
+		{
+			if(e->getTypeOfClass() == operandSimpleListOr)
+			{
+				COperandSimpleListOr *l = (COperandSimpleListOr *)e;
+				std::list<NLAIC::CIdentType *>::const_iterator i = l->getList().begin();
+				while(i != l->getList().end() )
+				{
+					COperandSimple *x =new COperandSimple (new NLAIC::CIdentType(*(*i++)));
+					double d = evalParam(x);
+					delete x;
+					if(d >= 0.0) return d;					
+				}
+
+			}
+			else return evalParam(e);
+		}
+		return -1.0;
+	}
 
 	bool COperationTypeGD::satisfied()
 	{			
@@ -62,5 +125,35 @@ namespace NLAISCRIPT
 			return true;
 		}
 		return false;
+	}
+
+
+	COperandSimpleListOr::COperandSimpleListOr(int count, ...)
+	{
+		va_list marker;
+		
+		va_start( marker, count );
+		while(count --)
+		{
+			NLAIC::CIdentType *o = va_arg( marker, NLAIC::CIdentType *);
+			_TypeListe.push_back(o);
+		}
+		char txt[1028*8];		
+		sprintf(txt,"constraint<COperandSimpleListOr> for ...");
+		_TxtInfo = new char [strlen(txt) + 1];
+		strcpy(_TxtInfo,txt);
+	}
+
+	double COperandSimpleListOr::eval (IOpType *e)
+	{
+		std::list<NLAIC::CIdentType *>::const_iterator i = getList().begin();
+		while(i != getList().end() )
+		{
+			COperandSimple *x =new COperandSimple (new NLAIC::CIdentType(*(*i++)));
+			double d = x->eval(e);
+			delete x;
+			if(d >= 0.0) return d;					
+		}
+		return -1.0;
 	}
 }

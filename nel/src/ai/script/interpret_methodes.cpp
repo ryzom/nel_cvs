@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.10 2001/01/17 17:20:38 chafik Exp $
+ * $Id: interpret_methodes.cpp,v 1.11 2001/01/18 17:53:51 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,49 +66,58 @@ namespace NLAISCRIPT
 	double CParam::eval(const CParam &p) const
 	{
 		sint32 l;
-		double D = 0.0;
-		double d;
+		double D = 0.0;		
 		if(( l = _Param.size() ) != (sint32)p._Param.size()) return -1.0;
 		double k = 1.0;
 		for(sint32 i = 0; i<l; i++)
 		{
 			IOpType &p1 = *_Param[i], &p2 = *p._Param[i];
-			if(p1.getConstraintTypeOf() != NULL && p2.getConstraintTypeOf() != NULL)
-			{
-				const NLAIC::CIdentType &idG = *p1.getConstraintTypeOf();
-				const NLAIC::CIdentType &idD = *p2.getConstraintTypeOf();
-				if(!(idG == idD))
+			double r = p1.eval(&p2);
+			if( r < 0) return -1.0;
+			D += (r*r)*k;
+			k += 1.0;
+			/*if(p1.getConstraintTypeOf() != NULL && p2.getConstraintTypeOf() != NULL)
+			{				
+				
+				if(!(p1 == p2))
 				{
-					if(((const NLAIC::CTypeOfObject &)idD) & NLAIC::CTypeOfObject::tAgentInterpret)
+					const NLAIC::CIdentType &idG = *p1.getConstraintTypeOf();
+					const NLAIC::CIdentType &idD = *p2.getConstraintTypeOf();
+					if(!(idG == idD))
 					{
-						const IClassInterpret *o = (const IClassInterpret *)((CClassInterpretFactory *)idD.getFactory())->getClass();						
-						bool type = false;						
-						sint32 i = 0;						
-						while(o != NULL)
+						if(((const NLAIC::CTypeOfObject &)idD) & NLAIC::CTypeOfObject::tAgentInterpret)
 						{
-							i ++;							
-							if( o->getType() == idG)
+							const IClassInterpret *o = (const IClassInterpret *)((CClassInterpretFactory *)idD.getFactory())->getClass();						
+							bool type = false;						
+							sint32 i = 0;						
+							while(o != NULL)
 							{
-								d = ((double)(o->sizeVTable() - i - 1))*k;
-								D += d*d;
-								type = true;
+								i ++;							
+								if( o->getType() == idG)
+								{
+									d = ((double)(o->sizeVTable() - i - 1))*k;
+									D += d*d;
+									type = true;
+								}
+								o = o->getBaseClass();
 							}
-							o = o->getBaseClass();
+							if(!type) return -1.0;
 						}
-						if(!type) return -1.0;
-					}
-					else
-					{
-						//NLAIC::CTypeOfObject o_t(tNombre | tString | tList | tLogic);
-						if(((const NLAIC::CTypeOfObject &)idD) & ((const NLAIC::CTypeOfObject &)idG))
+						else
 						{
-							return 0.0;
+							//NLAIC::CTypeOfObject o_t(tNombre | tString | tList | tLogic);
+							if(((const NLAIC::CTypeOfObject &)idD) & ((const NLAIC::CTypeOfObject &)idG))
+							{
+								return 0.0;
+							}
+							else return -1.0;
 						}
-						else return -1.0;
 					}
 				}
-				k += 1.0;
-			}			
+				else return 0.0;
+				
+				
+			}*/		
 		}
 		if(D != 0.0) return sqrt(D);
 		else return 0.0;

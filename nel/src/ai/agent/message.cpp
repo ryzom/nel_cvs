@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: message.cpp,v 1.4 2001/01/15 17:58:29 chafik Exp $
+ * $Id: message.cpp,v 1.5 2001/01/18 17:53:51 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,9 +23,18 @@
  */
 #include "nel/ai/agent/agent.h"
 #include "nel/ai/logic/boolval.h"
+#include "nel/ai/agent/agent_digital.h"
 
 namespace NLAIAGENT
 {
+
+	IntegerType IMessageBase::IdExec = IntegerType(IMessageBase::PExec);
+	IntegerType IMessageBase::IdAchieve = IntegerType(IMessageBase::PAchieve);
+	IntegerType IMessageBase::IdAsk = IntegerType(IMessageBase::PAsk);
+	IntegerType IMessageBase::IdBreak = IntegerType(IMessageBase::PBreak);
+	IntegerType IMessageBase::IdTell = IntegerType(IMessageBase::PTell);
+	IntegerType IMessageBase::IdKill = IntegerType(IMessageBase::PKill);
+
 
 	IObjectIA &IMessageBase::operator = (const IObjectIA &a)
 	{

@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.8 2001/01/17 10:32:10 chafik Exp $
+ * $Id: yacc.cpp,v 1.9 2001/01/18 17:53:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -559,7 +559,7 @@ namespace NLAISCRIPT
 			COperandSimple *x = new COperandSimple(new NLAIC::CIdentType("Message"));
 			p.push(x);						
 			
-			if( ( isRun && _Param.back()->size() > 1 )  || ( isSend && _Param.back()->size() != 1 ))
+			if( ( isRun && _Param.back()->size() > 1 )  ||  isSend)
 			{
 				char txt[1024*8];
 				sprintf(txt,"method %s have more than 1 parametre",_MethodName.back().getString());
@@ -706,7 +706,7 @@ namespace NLAISCRIPT
 #endif
 		CBagOfCode *sendOp = NULL;
 		NLAIAGENT::CStringType *s = (NLAIAGENT::CStringType *)_LastStringParam.back()->get();
-		if(	!strcmp(s->getStr().getString(),_SEND_) && _Param.back()->size() == 1)
+		if(	!strcmp(s->getStr().getString(),_SEND_)/* && _Param.back()->size() == 1*/)
 		{			
 			_LastBloc->addCode(new CNopOpCode());
 			sendOp = _LastBloc->getBagOfCode();
@@ -772,7 +772,12 @@ namespace NLAISCRIPT
 #ifdef NL_DEBUG	
 	nameRun->getDebugString(mName);
 #endif
-			_Param.back()->incRef();
+			//_Param.back()->incRef();
+			CParam *paramRun = new CParam;			
+			IOpType *p = (IOpType *)(*_Param.back())[1];
+			p->incRef();
+			paramRun->push(p);
+
 			int baseIsNew = false;
 			if(_LastbaseClass == NULL)
 			{
@@ -780,12 +785,12 @@ namespace NLAISCRIPT
 				baseIsNew = true;
 			}
 			_LastbaseClass->incRef();
-			c = getMethodConstraint(CConstraintFindRun((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,0,_LastbaseClass,nameRun,_Param.back(),0,0));
+			paramRun->incRef();
+			c = getMethodConstraint(CConstraintFindRun((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,0,_LastbaseClass,nameRun,paramRun,0,0));
 			if(c == NULL)
-			{				
-				_Param.back()->incRef();
+			{								
 				if(_LastbaseClass && !baseIsNew) _LastbaseClass->incRef();
-				c = new CConstraintFindRun((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,0,_LastbaseClass,nameRun,_Param.back(),yyLine,yyColone);				
+				c = new CConstraintFindRun((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,0,_LastbaseClass,nameRun,paramRun,yyLine,yyColone);				
 				_MethodConstraint.push_back(c);
 			}
 			else

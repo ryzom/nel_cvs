@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.12 2001/01/17 16:53:23 chafik Exp $
+ * $Id: agent_script.cpp,v 1.13 2001/01/18 17:53:51 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,14 +31,49 @@
 #include "nel/ai/agent/message_script.h"
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/script/interpret_object_agent.h"
+#include "nel/ai/agent/agent_nombre.h"
 
 namespace NLAIAGENT
-{
-	const int CAgentScript::sendTag = 0;
-	const int CAgentScript::getChildTag = 1;
-	const int CAgentScript::addChildTag = 2;
-	const int CAgentScript::baseMethodIn = CAgentScript::addChildTag + 1;
+{	
 	static CGroupType listBidon;
+
+	static NLAISCRIPT::COperandSimpleListOr *msgType = new NLAISCRIPT::COperandSimpleListOr(3,	
+																							new NLAIC::CIdentType(CMessage::IdMessage),
+																							new NLAIC::CIdentType(CMessageVector::IdMessageVector),
+																							new NLAIC::CIdentType(NLAISCRIPT::CMessageClass::IdMessageClass));
+
+	static NLAISCRIPT::CParam SendParamMessageScript(2, new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(IntegerType::IdIntegerType)), msgType);
+
+
+	CAgentScript::CMethodCall CAgentScript::StaticMethod[] = 
+	{
+
+		CAgentScript::CMethodCall(	_SEND_, 
+									CAgentScript::TSend, &SendParamMessageScript,
+									CAgentScript::CheckAll,
+									2,
+									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid)),
+
+		///Send with continuation arg count must be 3.
+		CAgentScript::CMethodCall(	_SEND_, 
+									CAgentScript::TSendContinuation, 
+									NULL,CAgentScript::CheckCount,
+									3,
+									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid)),
+
+		CAgentScript::CMethodCall(	_GETCHILD_, 
+									CAgentScript::TGetChildTag, 
+									NULL,
+									CAgentScript::CheckCount,
+									1,
+									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(IAgent::IdAgent)))),
+
+		CAgentScript::CMethodCall(	_ADDCHILD_, 
+									CAgentScript::TAddChildTag, 
+									NULL,CAgentScript::CheckCount,
+									2,
+									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType))))
+	};
 
 	CAgentScript::CAgentScript(const CAgentScript &a): IAgentManager(a)
 	{
@@ -364,6 +399,15 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CAgentScript::sendMethod(IObjectIA *param)
 	{
+		INombreDefine *p = (INombreDefine *)((IBaseGroupType *)param)->popFront();
+		IMessageBase *msg = (IMessageBase *)((IBaseGroupType *)param)->popFront();
+		msg->setPerformatif((IMessageBase::TPerformatif)(sint)p->getNumber());
+		p->release();
+		return sendMessage(msg);
+	}
+
+	IObjectIA::CProcessResult CAgentScript::sendMethodContinuation(IObjectIA *param)
+	{
 		IMessageBase *msg = (IMessageBase *)((IBaseGroupType *)param)->pop();		
 		return sendMessage(msg);
 	}
@@ -491,46 +535,64 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CAgentScript::runMethodBase(int heritance, int index,IObjectIA *o)
 	{
-		if(index == sendTag)
-		{			
-			return sendMethod(o);
-		}
-		else
-		if(index == getChildTag)
+		switch(index - IAgent::getMethodIndexSize())
 		{
-			return getDynamicAgent((IBaseGroupType *)o);			
+		case TSend:
+			{
+				return sendMethod(o);
+			}
+
+		case TSendContinuation:
+			{
+				return sendMethodContinuation(o);
+			}
+
+		case TGetChildTag:
+			{
+				return getDynamicAgent((IBaseGroupType *)o);
+			}
+
+		case TAddChildTag:
+			{
+				return addDynamicAgent((IBaseGroupType *)o);
+			}
+		default:
+			return IAgent::runMethodeMember(heritance,index,o);
 		}
-		else
-		if(index == addChildTag)
-		{
-			return addDynamicAgent((IBaseGroupType *)o);			
-		}
-		return IAgent::runMethodeMember(heritance,index,o);
+		
 	}
 
 	IObjectIA::CProcessResult CAgentScript::runMethodBase(int index,IObjectIA *o)
 	{		
-		int i = index - IAgent::getMethodIndexSize();
-		if(i == sendTag)
+		switch(index - IAgent::getMethodIndexSize())
 		{
-			return sendMethod(o);
+		case TSend:
+			{
+				return sendMethod(o);
+			}
+
+		case TSendContinuation:
+			{
+				return sendMethodContinuation(o);
+			}
+
+		case TGetChildTag:
+			{
+				return getDynamicAgent((IBaseGroupType *)o);
+			}
+
+		case TAddChildTag:
+			{
+				return addDynamicAgent((IBaseGroupType *)o);
+			}
+		default:
+			return IAgent::runMethodeMember(index,o);
 		}
-		else
-		if(i == getChildTag)
-		{
-			return getDynamicAgent((IBaseGroupType *)o);			
-		}
-		else
-		if(i == addChildTag)
-		{
-			return addDynamicAgent((IBaseGroupType *)o);			
-		}
-		else return IAgent::runMethodeMember(index,o);
 	}
 
 	int CAgentScript::getBaseMethodCount() const
 	{
-		return IAgentManager::getBaseMethodCount() + baseMethodIn;
+		return IAgentManager::getBaseMethodCount() + CAgentScript::TLastM;
 	}
 
 	IObjectIA::CProcessResult CAgentScript::runMethodeMember(sint32 inheritance, sint32 index, IObjectIA *c)	
@@ -645,91 +707,74 @@ namespace NLAIAGENT
 		}
 
 		*context.Code = ip;
-		context.Code = opTmp;
-		/*IObjectIA::CProcessResult r;
-		r.Result = NULL;
-		r.ResultState = k;*/
+		context.Code = opTmp;		
 		return r;
 	}
 
 	tQueue CAgentScript::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
-	{		
-		CStringVarName send(_SEND_);
-		CStringVarName gChild(_GETCHILD_);
-		CStringVarName aChild(_ADDCHILD_);
+	{			
+		CAgentScript::TMethodNumDef index = CAgentScript::TLastM;
 
-		if(*methodName == send)
+		if(className == NULL || *className == CStringVarName((const char *)IdAgentScript))
 		{
-			tQueue r;			
-			NLAISCRIPT::CParam p;
-			NLAISCRIPT::COperandSimple m(new NLAIC::CIdentType(NLAISCRIPT::CMessageClass::IdMessageClass));
-			m.incRef();
-			p.push(&m);
-#ifdef NL_DEBUG
-	char txt1[1024*4];
-	char txt2[1024*4];
-
-	param.getDebugString(txt1);
-	p.getDebugString(txt2);
-#endif			
-
-			if(p.eval( (const NLAISCRIPT::CParam &)param ) >= 0.0)
+			sint i;
+			for(i = 0; i < CAgentScript::TLastM; i ++)
 			{
-				NLAISCRIPT::COperandVoid typeR;
-				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
-				r.push(CIdMethod((IAgent::getMethodIndexSize() + sendTag),0.0,NULL,t));
-			}			
-			return r;
-		}
-		else
-		if(*methodName == gChild)
-		{
-			tQueue r;			
-
-			NLAISCRIPT::CParam p;
-			NLAISCRIPT::COperandSimple m(new NLAIC::CIdentType(CStringType::IdStringType));
-			m.incRef();
-			p.push(&m);		
+				if(CAgentScript::StaticMethod[i].MethodName == *methodName)
+				{
+					index = (CAgentScript::TMethodNumDef)CAgentScript::StaticMethod[i].Index;
+					switch(CAgentScript::StaticMethod[i].CheckArgType)
+					{
+					case CAgentScript::CheckAll:
+						{
+							double d = ((NLAISCRIPT::CParam &)*CAgentScript::StaticMethod[i].ArgType).eval((NLAISCRIPT::CParam &)param);
+							if(d >= 0.0)
+							{								
+								tQueue r;
+								CAgentScript::StaticMethod[i].ReturnValue->incRef();
+								r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i].Index),
+													0.0,
+													NULL,
+													CAgentScript::StaticMethod[i].ReturnValue));
+								return r;
+							}
+						}
+						break;
 					
-			if(p.eval( (const NLAISCRIPT::CParam &)param ) >= 0.0)
-			{
-				NLAISCRIPT::COperandSimple typeR(new NLAIC::CIdentType(IAgent::IdAgent));
-				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());				
-				r.push(CIdMethod((IAgent::getMethodIndexSize() + getChildTag),0.0,NULL,t));
-			}
+
+					case CAgentScript::CheckCount:
+						{
+							if(((NLAISCRIPT::CParam &)param).size() == CAgentScript::StaticMethod[i].ArgCount)
+							{								
+								tQueue r;
+								CAgentScript::StaticMethod[i].ReturnValue->incRef();
+								r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i].Index),
+													0.0,
+													NULL,
+													CAgentScript::StaticMethod[i].ReturnValue));
+								return r;
+							}
+						}
+						break;
+
+					case CAgentScript::DoNotCheck:
+						{							
+							tQueue r;
+							CAgentScript::StaticMethod[i].ReturnValue->incRef();
+							r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i].Index),
+												0.0,
+												NULL,
+												CAgentScript::StaticMethod[i].ReturnValue));
+							return r;						
+						}
+						break;
+					}
+				}
 				
-			return r;		
-		}
-		else
-		if(*methodName == aChild)
-		{
-			tQueue r;	
-			NLAISCRIPT::CParam p;
-			NLAISCRIPT::COperandSimple m(new NLAIC::CIdentType(CStringType::IdStringType));
-			NLAISCRIPT::COperandSimple n(new NLAIC::CIdentType("Agent"));
-
-			m.incRef();
-			p.push(&m);
-			
-			n.incRef();
-			p.push(&n);
-
-			if(p.eval( (const NLAISCRIPT::CParam &)param ) >= 0.0)
-			{
-				NLAISCRIPT::COperandSimple typeR(new NLAIC::CIdentType(DigitalType::IdDigitalType));
-				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
-				r.push(CIdMethod((IAgent::getMethodIndexSize() + addChildTag),0.0,NULL,t));
 			}
-			return r;
 		}
-		else
-		if(_AgentClass != NULL)
-		{
-			tQueue r = _AgentClass->isMember(className,methodName,param);
-			if(r.size() != 0) return r;
-		}
-
-		return IAgent::isMember(className,methodName,param);
+		if(index == CAgentScript::TLastM) return IAgent::isMember(className,methodName,param);
+		return tQueue();
 	}
 
 	sint32 CAgentScript::isClassInheritedFrom(const IVarName &name) const

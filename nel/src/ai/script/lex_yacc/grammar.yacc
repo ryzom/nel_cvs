@@ -22,7 +22,8 @@ using  namespace NLAIFUZZY;
 %token	OR_LOG		AND_LOG
 %token	NON_BIN		OR_BIN		AND_BIN		XOR_BIN		SCOP
 %token	PLUS		MOINS		FOIS		DIV			POWER
-%token	POINT_VI	LEPOINT		POINT_DEUX	INTERROGATION CHAINE NILL
+%token	POINT_VI	LEPOINT		POINT_DEUX	INTERROGATION CHAINE NILL 
+%token	EXEC ACHIEVE ASK BREAK TELL KILL
 
 %token  BEGIN_GRAMMAR
 %token	FROM 
@@ -765,7 +766,38 @@ using  namespace NLAIFUZZY;
 							}	
 						;
 
-	Facteur				:	NILL
+	Facteur				:	
+							EXEC
+							{
+								_IsFacteurIsExpression = false;
+								setPerformative(NLAIAGENT::IMessageBase::PExec);
+							}
+						|	ACHIEVE 
+							{
+								_IsFacteurIsExpression = false;
+								setPerformative(NLAIAGENT::IMessageBase::PAchieve);
+							}
+						|	ASK 
+							{
+								_IsFacteurIsExpression = false;
+								setPerformative(NLAIAGENT::IMessageBase::PAsk);
+							}
+						|	BREAK 
+							{
+								_IsFacteurIsExpression = false;
+								setPerformative(NLAIAGENT::IMessageBase::PBreak);
+							}
+						|	TELL 
+							{
+								_IsFacteurIsExpression = false;
+								setPerformative(NLAIAGENT::IMessageBase::PTell);
+							}
+						|	KILL
+							{
+								_IsFacteurIsExpression = false;
+								setPerformative(NLAIAGENT::IMessageBase::PKill);
+							}
+						|	NILL
 							{
 								_IsFacteurIsExpression = false;
 								setImediateVarNill();

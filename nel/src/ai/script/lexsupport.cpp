@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.7 2001/01/18 15:04:57 portier Exp $
+ * $Id: lexsupport.cpp,v 1.8 2001/01/18 17:53:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,7 +124,14 @@ namespace NLAISCRIPT
 		DicoDeNom.insert(Arbre::value_type("CFuzzyVar", FUZZYVAR) );
 		DicoDeNom.insert(Arbre::value_type("is", FIS) );
 		DicoDeNom.insert(Arbre::value_type("sets", SETS) );
-		DicoDeNom.insert(Arbre::value_type("Null",NILL) );		
+		DicoDeNom.insert(Arbre::value_type("Null",NILL) );
+		     
+		DicoDeNom.insert(Arbre::value_type("EXEC",EXEC) );
+		DicoDeNom.insert(Arbre::value_type("ACHIEVE",ACHIEVE) );
+		DicoDeNom.insert(Arbre::value_type("ASK",ASK) );
+		DicoDeNom.insert(Arbre::value_type("BREAK",BREAK) );
+		DicoDeNom.insert(Arbre::value_type("TELL",TELL) );
+		DicoDeNom.insert(Arbre::value_type("KILL",KILL) );
 
 		
 		//DicoDeNom.insert(Arbre::value_type("Digital",DIGITAL) );		

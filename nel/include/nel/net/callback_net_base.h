@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.17 2001/06/18 09:38:15 lecroart Exp $
+ * $Id: callback_net_base.h,v 1.18 2001/06/27 08:29:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,6 +84,12 @@ public:
 	 */
 	virtual void	send (const CMessage &buffer, TSockId hostid = 0, bool log = true) = 0;
 
+	uint64	getBytesSended () { return _BytesSended; }
+	uint64	getBytesReceived () { return _BytesReceived; }
+
+	virtual uint64	getReceiveQueueSize () = 0;
+	virtual uint64	getSendQueueSize () = 0;
+
 	/** Force to send all data pending in the send queue.
 	 * On a client, the hostid isn't used.
 	 * On a server, you must provide a hostid.
@@ -150,6 +156,8 @@ public:
 
 protected:
 
+	uint64	_BytesSended, _BytesReceived;
+
 	/// Used by client and server class
 	TNetCallback _NewDisconnectionCallback;
 
@@ -208,7 +216,7 @@ private:
 	friend void cbnbNewDisconnection (TSockId from, void *data);
 
 protected:
-	/// \todo debug feature that we should remove one day
+	/// \todo ace: debug feature that we should remove one day nefore releasing the game
 	uint	_ThreadId;
 	void	checkThreadId () const;
 };

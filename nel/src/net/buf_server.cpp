@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.11 2001/06/18 09:03:17 cado Exp $
+ * $Id: buf_server.cpp,v 1.12 2001/06/27 08:29:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,7 +66,8 @@ CBufServer::CBufServer( TThreadStategy strategy,
 	_PrevBytesPushedOut( 0 ),
 	_ReplayMode( replaymode ),
 	_ListenTask( NULL ),
-	_ListenThread( NULL )
+	_ListenThread( NULL ),
+	_NbConnections (0)
 {
 	nlnettrace( "CBufServer::CBufServer" );
 	if ( ! _ReplayMode )
@@ -504,6 +505,41 @@ void CBufServer::update()
 	//nlnettrace( "CBufServer::update-END" );
 }
 
+uint32 CBufServer::getSendQueueSize( TSockId destid )
+{
+	if ( destid != NULL )
+	{
+		return destid->SendFifo.size();
+	}
+	else
+	{
+		// add all client buffers
+
+		uint32 total = 0;
+
+		// For each thread
+		CThreadPool::iterator ipt;
+		{
+			CSynchronized<CThreadPool>::CAccessor poolsync( &_ThreadPool );
+			for ( ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
+			{
+				// For each thread of the pool
+				CServerReceiveTask *task = receiveTask(ipt);
+				CConnections::iterator ipb;
+				{
+					CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
+					for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
+					{
+						// For each socket of the thread, update sending
+						total = (*ipb)->SendFifo.size ();
+					}
+				}
+			}
+		}
+		return total;
+	}
+}
+
 
 /*
  * Returns the number of bytes received since the previous call to this method
@@ -828,7 +864,7 @@ void CServerReceiveTask::run()
 		{
 			case  0 : continue; // time-out expired, no results
 
-			// TODO: the error code is not properly retrieved
+			/// \todo cado: the error code is not properly retrieved
 			case -1 : nlerror( "L1: Select failed: %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
 		}
 

@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.10 2001/06/21 12:33:00 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.11 2001/06/27 08:29:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,7 +66,6 @@ CCallbackClient::CCallbackClient( TRecordingState rec, const std::string& recfil
 	_InputSIDA.ignoreAllUnknownId (true);
 
 	_IsAServer = false;
-
 }
 
 
@@ -82,6 +81,8 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 	nlassert (connected ());
 	nlassert (buffer.length() != 0);
 	nlassert (buffer.typeIsSet());
+
+	_BytesSended += buffer.length ();
 
 //	if (log)
 	{
@@ -105,11 +106,10 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 	}
 	else
 	{	
-		// TODO: Check that the next sending is the same
+		/// \todo cado: check that the next sending is the same
 	}
 #endif
 }
-
 
 /*
  * Force to send all data pending in the send queue.

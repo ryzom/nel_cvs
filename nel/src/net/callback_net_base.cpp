@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.20 2001/06/21 12:33:00 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.21 2001/06/27 08:29:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,6 +152,9 @@ CCallbackNetBase::CCallbackNetBase(  TRecordingState rec, const string& recfilen
 	_ThreadId = getThreadId ();
 	_NewDisconnectionCallback = cbnbNewDisconnection;
 
+	_BytesSended = 0;
+	_BytesReceived = 0;
+
 	nldebug ("disable display layer 3 association message");
 	DebugLog->addNegativeFilter ("L3NB_ASSOC");
 
@@ -223,6 +226,8 @@ void CCallbackNetBase::processOneMessage ()
 	CMessage msgin (_OutputSIDA, "", true);
 	TSockId tsid;
 	receive (msgin, &tsid);
+
+	_BytesReceived += msgin.length ();
 
 	nldebug ("L3NB: Received a message %s from %s", msgin.toString().c_str(), tsid->asString().c_str());
 	

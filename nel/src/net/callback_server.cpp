@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.12 2001/06/21 12:33:00 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.13 2001/06/27 08:29:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,6 +125,17 @@ void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 	nlassert (buffer.length() != 0);
 	nlassert (buffer.typeIsSet());
 
+	if (hostid == 0)
+	{
+		// broadcast
+		sint nb = nbConnections ();
+		_BytesSended += buffer.length () * nb;
+	}
+	else
+	{
+		_BytesSended += buffer.length ();
+	}
+
 //	if (log)
 	{
 		nldebug ("L3S: Server: send(%s, %s)", buffer.toString().c_str(), hostid->asString().c_str());
@@ -147,7 +158,7 @@ void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 	}
 	else
 	{	
-		// TODO: Check that the next sending is the same
+		/// \todo cado: check that the next sending is the same
 	}
 #endif
 }
@@ -387,7 +398,7 @@ void CCallbackServer::noticeConnection( TSockId hostid )
 	}
 	else
 	{
-		// TODO: connection stats
+		/// \todo cado: connection stats
 	}
 }
 

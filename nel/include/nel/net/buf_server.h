@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.7 2001/06/18 09:03:35 cado Exp $
+ * $Id: buf_server.h,v 1.8 2001/06/27 08:29:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -203,7 +203,7 @@ public:
 
 
 	// Returns the size in bytes of the data stored in the send queue.
-	uint32	getSendQueueSize( TSockId destid ) const { nlassert( destid != NULL ); return destid->SendFifo.size(); }
+	uint32	getSendQueueSize( TSockId destid );
 
 	/** Sets the time flush trigger (in millisecond). When this time is elapsed,
 	 * all data in the send queue is automatically sent (-1 to disable this trigger)

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.56 2002/02/01 18:17:57 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.57 2002/03/01 10:45:23 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -210,7 +210,7 @@ void	NLPACS::CGlobalRetriever::check() const
 							lnk.ChainId >= getRetriever(_Instances[lnk.Instance].getRetrieverId()).getChains().size() ||
 							lnk.BorderChainId >= getRetriever(_Instances[lnk.Instance].getRetrieverId()).getBorderChains().size())
 						{
-							nlwarning("retriever %d, instance %d, link %d: reference on instance is not valid", instance.getRetrieverId(), instance.getInstanceId(), link);
+							nlwarning("retriever %d, instance %d, link %d: reference on instance may be not valid [Inst=%d, Surf=%d, Chain=%d, BorderChain=%d]", instance.getRetrieverId(), instance.getInstanceId(), link, lnk.Instance, lnk.SurfaceId, lnk.ChainId, lnk.BorderChainId);
 						}
 					}
 				}

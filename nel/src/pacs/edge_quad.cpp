@@ -1,7 +1,7 @@
 /** \file edge_quad.cpp
  * a quadgrid of list of exterior edges.
  *
- * $Id: edge_quad.cpp,v 1.9 2002/01/21 13:48:36 legros Exp $
+ * $Id: edge_quad.cpp,v 1.10 2002/03/01 10:45:23 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -318,7 +318,25 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 					}
 				}
 			}
-			}
+		}
+
+	}
+
+	nlinfo("Built ExteriorEdgeQuad, linked following doors:");
+	for (i=0; i<(sint)_EdgeEntries.size(); ++i)
+	{
+		if (edges[_EdgeEntries[i].EdgeId].Link != -1 && 
+			(_EdgeEntries[i].Interior.RetrieverInstanceId == -1 || _EdgeEntries[i].Interior.SurfaceId == -1 ||
+			 _EdgeEntries[i].Exterior.RetrieverInstanceId == -1 || _EdgeEntries[i].Exterior.SurfaceId == -1))
+		{
+			nlwarning("In NLPACS::CEdgeQuad::build(): exterior door %d has corrupted link", i);
+		}
+		else if (edges[_EdgeEntries[i].EdgeId].Link != -1)
+		{
+			nlinfo("Inst=%d ExtEdge=%d IntInst=%d IntSurf=%d IntChain=%d ExtInst=%d ExtSurf=%d", thisInstance, _EdgeEntries[i].EdgeId,
+				_EdgeEntries[i].Interior.RetrieverInstanceId, _EdgeEntries[i].Interior.SurfaceId, _EdgeEntries[i].ChainId,
+				_EdgeEntries[i].Exterior.RetrieverInstanceId, _EdgeEntries[i].Exterior.SurfaceId);
+		}
 	}
 
 	// 2. Mem optimisation: Use only 1 block for ALL quads of the grid.

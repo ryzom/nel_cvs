@@ -1,9 +1,32 @@
-// located_target_dlg.cpp : implementation file
-//
+/** \file located_target_dlg.cpp
+ * a dialog that allow to choose targets for a particle system object (collision zone, forces)
+ *
+ * $Id: located_target_dlg.cpp,v 1.2 2001/06/25 13:24:16 vizerie Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
 
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "located_target_dlg.h"
+#include "collision_zone_dlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -144,6 +167,19 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 				m_AvailableTargets.SetItemData(l, (DWORD) loc ) ;				
 			}
 		}
+	}
+
+
+	const sint posX = 5 ;
+	sint posY = 180 ;
+
+	// collision zone case
+
+	if (dynamic_cast<NL3D::CPSZone *>(_LBTarget))
+	{
+		CCollisionZoneDlg *czd = new CCollisionZoneDlg(dynamic_cast<NL3D::CPSZone *>(_LBTarget)) ;
+		pushWnd(czd) ;
+		czd->init(posX, posY, this) ;
 	}
 
 	

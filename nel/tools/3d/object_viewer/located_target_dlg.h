@@ -1,3 +1,28 @@
+/** \file located_target_dlg.h
+ * a dialog that allow to choose targets for a particle system object (collision zone, forces)
+ *
+ * $Id: located_target_dlg.h,v 1.3 2001/06/25 13:24:16 vizerie Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
 #if !defined(AFX_LOCATED_TARGET_DLG_H__FA197835_AE71_4057_88A4_48F28A01E367__INCLUDED_)
 #define AFX_LOCATED_TARGET_DLG_H__FA197835_AE71_4057_88A4_48F28A01E367__INCLUDED_
 
@@ -9,14 +34,18 @@
 
 #include "3d/ps_located.h"
 
+#include "dialog_stack.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CLocatedTargetDlg dialog
 
-class CLocatedTargetDlg : public CDialog
+class CLocatedTargetDlg : public CDialog, public CDialogStack
 {
 // Construction
 public:
 	CLocatedTargetDlg(NL3D::CPSTargetLocatedBindable *blTarget);   // standard constructor
+
+
 
 	// init the dialog with the given parent
 	void init(CWnd* pParent) ;
@@ -40,6 +69,8 @@ public:
 protected:
 	// the target we're focusing on
 	NL3D::CPSTargetLocatedBindable *_LBTarget ;
+
+	
 
 	// Generated message map functions
 	//{{AFX_MSG(CLocatedTargetDlg)

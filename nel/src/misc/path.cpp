@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.78 2003/08/11 16:31:15 cado Exp $
+ * $Id: path.cpp,v 1.79 2003/08/20 14:50:33 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1263,6 +1263,23 @@ struct CFileEntry
 
 static vector <CFileEntry> FileToCheck;
 
+void CFile::removeFileChangeCallback (const std::string &filename)
+{
+	string fn = CPath::lookup(filename, false, false);
+	if (fn.empty())
+	{
+		fn = filename;
+	}
+	for (uint i = 0; i < FileToCheck.size(); i++)
+	{
+		if(FileToCheck[i].FileName == fn)
+		{
+			nlinfo ("CFile::removeFileChangeCallback: '%s' is removed from checked files modification", fn.c_str());
+			FileToCheck.erase(FileToCheck.begin()+i);
+			return;
+		}
+	}
+}
 
 void CFile::addFileChangeCallback (const std::string &filename, void (*cb)(const string &filename))
 {

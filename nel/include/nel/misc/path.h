@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.35 2003/04/28 13:15:08 berenguier Exp $
+ * $Id: path.h,v 1.36 2003/08/20 14:50:33 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -313,7 +313,12 @@ struct CFile
 	 *
 	 */
 	static void addFileChangeCallback (const std::string &filename, void (*)(const std::string &filename));
-
+	
+	/**
+	 * Remove a file that was previously added by addFileChangeCallback
+	 */
+	static void removeFileChangeCallback (const std::string &filename);
+	
 	/**
 	 * You have to call this function evenly (each frame for example) to enable the file change callback system.
 	 * If the file not exists and is created in the run time, the callback will be called.

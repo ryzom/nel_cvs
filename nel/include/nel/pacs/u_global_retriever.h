@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.7 2001/07/12 14:15:09 legros Exp $
+ * $Id: u_global_retriever.h,v 1.8 2001/08/07 14:12:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ public:
 	/**
 	  * Return the average height for a global position
 	  */
-	virtual float					getMeanHeight(const UGlobalPosition &pos) =0;
+	virtual float					getMeanHeight(const UGlobalPosition &pos) const =0;
 
 	/**
 	  * Retrieves the position of an estimated point in the global retriever.

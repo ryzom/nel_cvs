@@ -11,6 +11,10 @@ namespace NLMEMORY
 	extern sint32			GlobalHeapAllocatorSystemAllocated;
 }
 
+#ifdef WIN32
+#ifdef _DEBUG
+#ifndef NL_USE_DEFAULT_MEMORY_MANAGER
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
 int MemoryHook( int allocType, void *userData, size_t size, int blockType, 
 			   long requestNumber, const unsigned char *filename, int lineNumber)
 {
@@ -30,6 +34,10 @@ int MemoryHook( int allocType, void *userData, size_t size, int blockType,
 	
 	return TRUE;
 }
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NL_USE_DEFAULT_MEMORY_MANAGER
+#endif // _DEBUG
+#endif // WIN32
 
 
 BOOL APIENTRY DllMain( HANDLE hModule, 
@@ -40,11 +48,15 @@ BOOL APIENTRY DllMain( HANDLE hModule,
     switch (ul_reason_for_call)
 	{
 		case DLL_PROCESS_ATTACH:
+#ifdef WIN32
+#ifdef _DEBUG
 #ifndef NL_USE_DEFAULT_MEMORY_MANAGER
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 			_CrtSetAllocHook(MemoryHook);
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 #endif // NL_USE_DEFAULT_MEMORY_MANAGER
+#endif // _DEBUG
+#endif // WIN32
 			NLMEMORY::GlobalHeapAllocator = (NLMEMORY::CHeapAllocator*)malloc (sizeof (NLMEMORY::CHeapAllocator));
 #undef new
 			new (NLMEMORY::GlobalHeapAllocator) NLMEMORY::CHeapAllocator (1024*1024*10, 1);

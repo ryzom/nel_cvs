@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.11 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: mesh_base.cpp,v 1.12 2001/09/10 13:21:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,7 +109,7 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream
 	sint	ver= f.serialVersion(1);
 
 	if(ver<1)
-		throw NLMISC::EStream("MeshBuild in Stream is too old (MeshBaseBuild version < 1)");
+		throw NLMISC::EStream(f, "MeshBuild in Stream is too old (MeshBaseBuild version < 1)");
 
 	f.serial( DefaultPos );
 	f.serial( DefaultPivot );
@@ -135,7 +135,7 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 	sint	ver= f.serialVersion(1);
 
 	if(ver<1)
-		throw NLMISC::EStream("Mesh in Stream is too old (MeshBase version < 1)");
+		throw NLMISC::EStream(f, "Mesh in Stream is too old (MeshBase version < 1)");
 
 	f.serial (_DefaultPos);
 	f.serial (_DefaultPivot);

@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.31 2001/08/29 14:33:43 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.32 2001/09/10 13:21:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,7 @@ void    CTileBank::serial(IStream &f) throw(EStream)
 	if (f.isReading())
 	{
 		if (streamver<2)
-			throw EOlderStream();
+			throw EOlderStream(f);
 	}
 
 	switch (streamver)

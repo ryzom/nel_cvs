@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.38 2001/09/10 07:41:29 corvazier Exp $
+ * $Id: mesh.cpp,v 1.39 2001/09/10 13:21:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1079,7 +1079,7 @@ void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 	if(ver<6)
-		throw NLMISC::EStream("Mesh in Stream is too old (Mesh version < 6)");
+		throw NLMISC::EStream(f, "Mesh in Stream is too old (Mesh version < 6)");
 
 
 	// serial Materials infos contained in CMeshBase.

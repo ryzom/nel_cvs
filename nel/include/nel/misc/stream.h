@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.46 2001/07/11 16:11:54 corvazier Exp $
+ * $Id: stream.h,v 1.47 2001/09/10 13:21:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,9 @@ namespace	NLMISC
 {
 
 
+class	IStream;
+
+
 // ======================================================================================================
 // ======================================================================================================
 // Stream System.
@@ -69,26 +72,37 @@ struct EStream : public Exception
 	EStream() : Exception( "Stream Error" ) {}
 
 	EStream( const std::string& str ) : Exception( str ) {}
+
+	EStream( const IStream &f );
+
+	EStream( const IStream &f, const std::string& str );
+
+	// May Not be Filled...
+	std::string	StreamName;
 };
 
 struct EOlderStream : public EStream
 {
-	EOlderStream() : EStream( "The version in stream is older than the class" ) {}
+	EOlderStream() : EStream("The version in stream is older than the class" ) {}
+	EOlderStream(const IStream &f) : EStream(f, "The version in stream is older than the class" ) {}
 };
 
 struct ENewerStream : public EStream
 {
-	ENewerStream() : EStream( "The version in stream is newer than the class" ) {}
+	ENewerStream() : EStream("The version in stream is newer than the class" ) {}
+	ENewerStream(const IStream &f) : EStream(f, "The version in stream is newer than the class" ) {}
 };
 
 struct EInvalidDataStream : public EStream
 {
-	EInvalidDataStream() : EStream( "Invalid data format" ) {}
+	EInvalidDataStream() : EStream("Invalid data format" ) {}
+	EInvalidDataStream(const IStream &f) : EStream(f, "Invalid data format" ) {}
 };
 
 struct ESeekNotSupported : public EStream
 {
-	ESeekNotSupported() : EStream( "Seek fonctionnality is not supported" ) {}
+	ESeekNotSupported() : EStream("Seek fonctionnality is not supported" ) {}
+	ESeekNotSupported(const IStream &f) : EStream(f, "Seek fonctionnality is not supported" ) {}
 };
 
 
@@ -463,7 +477,7 @@ public:
 			T read;
 			serial (read); 
 			if (read!=value) 
-				throw EInvalidDataStream(); 
+				throw EInvalidDataStream(*this); 
 		} 
 		else 
 		{ 
@@ -507,6 +521,12 @@ public:
 	 * \see ESeekNotSupported SeekOrigin seek
 	 */
 	virtual sint32		getPos () ;
+
+
+	/** Get a name for this stream. maybe a fileName if FileStream.
+	 *	Default is to return "".
+	 */
+	virtual std::string		getStreamName() const;
 
 
 protected:

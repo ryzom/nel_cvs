@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.49 2001/09/10 10:06:56 berenguier Exp $
+ * $Id: zone.cpp,v 1.50 2001/09/10 13:21:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -346,7 +346,7 @@ void			CZone::serial(NLMISC::IStream &f)
 	// No more compatibility before version 3
 	if (ver<3)
 	{
-		throw EOlderStream();
+		throw EOlderStream(f);
 	}
 
 	f.serialCheck((uint32)'ENOZ');

@@ -1,7 +1,7 @@
 /** \file file.cpp
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.13 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: file.h,v 1.14 2001/09/10 13:21:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,6 +92,9 @@ public:		// Advanced Usage.
 	/// Gt the location of the file pointer
 	sint32	getPos () throw(EStream);
 
+	// Imp the Name of the stream as the name of the file.
+	virtual std::string		getStreamName() const;
+
 protected:
 	virtual void		serialBuffer(uint8 *buf, uint len)throw(EReadError);
 	virtual void		serialBit(bool &bit) throw(EReadError);
@@ -130,6 +133,9 @@ public:		// Advanced Usage.
 	bool	seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream);
 	/// Gt the location of the file pointer
 	sint32	getPos () throw(EStream);
+
+	// Imp the Name of the stream as the name of the file.
+	virtual std::string		getStreamName() const;
 
 	// very useful to serialize string in text mode (without the size)
 	virtual void		serialBuffer(uint8 *buf, uint len) throw(EWriteError);

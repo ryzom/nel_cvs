@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.18 2001/05/24 14:18:31 cado Exp $
+ * $Id: stream.cpp,v 1.19 2001/09/10 13:21:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,26 @@ using namespace std;
 
 namespace NLMISC
 {
+
+
+// ======================================================================================================
+// ======================================================================================================
+// EStream.
+// ======================================================================================================
+// ======================================================================================================
+
+
+// ======================================================================================================
+EStream::EStream( const IStream &f ) : Exception( "In Stream: " + f.getStreamName() + string(": Stream Error") )
+{
+	StreamName= f.getStreamName();
+}
+
+EStream::EStream( const IStream &f, const std::string& str )
+ : Exception( "In Stream: " + f.getStreamName() + ": " + str )
+{
+	StreamName= f.getStreamName();
+}
 
 
 // ======================================================================================================
@@ -185,9 +205,9 @@ uint IStream::serialVersion(uint currentVersion)
 
 		// Exception test.
 		if(_ThrowOnOlder && streamVersion < currentVersion)
-			throw EOlderStream();
+			throw EOlderStream(*this);
 		if(_ThrowOnNewer && streamVersion > currentVersion)
-			throw ENewerStream();
+			throw ENewerStream(*this);
 	}
 	else
 	{
@@ -289,13 +309,13 @@ void			IStream::serialCont(vector<bool> &cont)
 // ======================================================================================================
 bool			IStream::seek (sint32 offset, TSeekOrigin origin) 
 {
-	throw ESeekNotSupported();
+	throw ESeekNotSupported(*this);
 	return false;
 }
 // ======================================================================================================
 sint32			IStream::getPos () 
 {
-	throw ESeekNotSupported();
+	throw ESeekNotSupported(*this);
 }
 
 // ======================================================================================================
@@ -304,6 +324,12 @@ void			IStream::setInOut(bool inputStream)
 	_InputStream= inputStream;
 }
 
+
+// ======================================================================================================
+string			IStream::getStreamName() const
+{
+	return "";
+}
 
 
 

@@ -1,7 +1,7 @@
 /** \file env_effect.cpp
  * CEnvEffect: environmental effects and where they are applied
  *
- * $Id: env_effect.cpp,v 1.5 2001/08/24 12:40:43 cado Exp $
+ * $Id: env_effect.cpp,v 1.6 2001/09/10 13:21:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,7 +47,7 @@ void			CEnvEffect::serialFileHeader( NLMISC::IStream& s, uint32& nb )
 	s.serialCheck( (uint32)'FEN' ); // NeL Environment FX
 	if ( s.serialVersion( 2 ) < 2 )
 	{
-		throw EOlderStream();
+		throw EOlderStream(s);
 	}
 	
 	s.serial( nb );

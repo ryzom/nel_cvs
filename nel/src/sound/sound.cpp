@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.12 2001/09/05 14:09:27 cado Exp $
+ * $Id: sound.cpp,v 1.13 2001/09/10 13:21:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -192,7 +192,7 @@ void				CSound::serialFileHeader( NLMISC::IStream& s, uint32& nb )
 			break;
 		default:
 			// Not supporting version 0 anymore
-			throw EOlderStream();
+			throw EOlderStream(s);
 		}
 	}
 	// CSound::_InputIgnorePitch is reset to false at the end of load()

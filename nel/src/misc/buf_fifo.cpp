@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.27 2004/01/15 17:39:40 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.28 2004/02/20 22:20:54 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,7 @@ CBufFIFO::~CBufFIFO()
 {
 	if (_Buffer != NULL)
 	{
-		delete _Buffer;
+		delete []_Buffer;
 #if DEBUG_FIFO
 		nldebug("%p delete", this);
 #endif
@@ -505,7 +505,7 @@ void CBufFIFO::resize (uint32 s)
 	// delete old buffer if needed
 	if (_Buffer != NULL)
 	{
-		delete _Buffer;
+		delete []_Buffer;
 #if DEBUG_FIFO
 		nldebug ("delete", this);
 #endif

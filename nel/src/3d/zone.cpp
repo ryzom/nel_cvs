@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.42 2001/07/10 10:01:19 berenguier Exp $
+ * $Id: zone.cpp,v 1.43 2001/07/17 09:34:49 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -840,7 +840,7 @@ void			CZone::refine()
 void			CZone::excludePatchFromRefineAll(uint patch, bool exclude)
 {
 	nlassert(Compiled);
-	nlassert(patch>=Patchs.size());
+	nlassert(patch<Patchs.size());
 
 	if(patch>=Patchs.size())
 		return;

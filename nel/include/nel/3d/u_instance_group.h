@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.3 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_instance_group.h,v 1.4 2001/07/18 14:00:37 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,11 @@ namespace NL3D
 class UInstanceGroup
 {
 public:
+
+	/**
+	 * Instance group
+	 */
+	virtual ~UInstanceGroup () {};
 
 	/**
 	 *	add this instance group to the given scene

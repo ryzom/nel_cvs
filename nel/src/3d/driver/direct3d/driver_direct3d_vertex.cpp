@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex.cpp,v 1.8.4.1 2004/09/14 15:33:43 vizerie Exp $
+ * $Id: driver_direct3d_vertex.cpp,v 1.8.4.2 2004/10/07 18:30:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -488,16 +488,20 @@ bool CDriverD3D::createVertexDeclaration (uint16 vertexFormat, const uint8 *type
 		// Slot used ?
 		if (vertexFormat & (1<<i))
 		{
-			D3DVERTEXELEMENT9 &vertexElement = declaration.VertexElements[j];
-			vertexElement.Stream = 0;
-			vertexElement.Type = RemapVertexBufferTypeNeL2D3D[(uint)typeArray[i]];
-			vertexElement.Offset = offset;
-			vertexElement.Method = D3DDECLMETHOD_DEFAULT;
-			vertexElement.Usage = RemapVertexBufferUsageNeL2D3D[(uint)i];
-			vertexElement.UsageIndex = RemapVertexBufferIndexNeL2D3D[(uint)i];
-			
-			offset += CVertexBuffer::SizeType[typeArray[i]];
-			j++;
+			if ((i != CVertexBuffer::Weight && i != CVertexBuffer::PaletteSkin) || _PixelShaderVersion != D3DPS_VERSION(1, 4)) // fix for radeon 8500/9000/9200 : hand when this is declared and not used
+																															   // don't let gap for other cards else render bug on some ...
+			{
+				D3DVERTEXELEMENT9 &vertexElement = declaration.VertexElements[j];
+				vertexElement.Stream = 0;
+				vertexElement.Type = RemapVertexBufferTypeNeL2D3D[(uint)typeArray[i]];
+				vertexElement.Offset = offset;
+				vertexElement.Method = D3DDECLMETHOD_DEFAULT;
+				vertexElement.Usage = RemapVertexBufferUsageNeL2D3D[(uint)i];
+				vertexElement.UsageIndex = RemapVertexBufferIndexNeL2D3D[(uint)i];
+				j++;
+			}
+				
+			offset += CVertexBuffer::SizeType[typeArray[i]];			
 		}
 	}
 

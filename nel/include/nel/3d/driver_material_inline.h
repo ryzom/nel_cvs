@@ -2,7 +2,7 @@
  * 
  * 
  *
- * $Id: driver_material_inline.h,v 1.3 2000/11/14 13:25:28 berenguier Exp $
+ * $Id: driver_material_inline.h,v 1.4 2000/11/21 18:15:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,7 +95,7 @@ inline void CMaterial::setZBias(float val)
 	_Touched|=IDRV_TOUCHED_ZBIAS;
 }
 
-inline void CMaterial::setColor(CRGBA& rgba)
+inline void CMaterial::setColor(CRGBA rgba)
 {
 	_Color=rgba;
 	_Touched|=IDRV_TOUCHED_COLOR;
@@ -109,10 +109,10 @@ inline void CMaterial::setBlend(bool active)
 }
 
 inline void CMaterial::setLighting(	bool active, bool DefMat,
-									CRGBA& emissive, 
-									CRGBA& ambient, 
-									CRGBA& diffuse, 
-									CRGBA& specular )
+									CRGBA emissive, 
+									CRGBA ambient, 
+									CRGBA diffuse, 
+									CRGBA specular )
 {
 	if (active)
 	{

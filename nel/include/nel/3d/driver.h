@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.20 2000/11/17 15:57:37 berenguier Exp $
+ * $Id: driver.h,v 1.21 2000/11/21 18:15:24 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,15 +142,15 @@ public:
 	void					setZBias(float val);
 
 	CRGBA					getColor(void) { return(_Color); }
-	void					setColor(CRGBA& rgba);
+	void					setColor(CRGBA rgba);
 
 	void					setBlend(bool active);
 
 	void					setLighting(	bool active, bool DefMat=true,
-											CRGBA& emissive=CRGBA(0,0,0), 
-											CRGBA& ambient=CRGBA(0,0,0), 
-											CRGBA& diffuse=CRGBA(0,0,0), 
-											CRGBA& specular=CRGBA(0,0,0) );
+											CRGBA emissive=CRGBA(0,0,0), 
+											CRGBA ambient=CRGBA(0,0,0), 
+											CRGBA diffuse=CRGBA(0,0,0), 
+											CRGBA specular=CRGBA(0,0,0) );
 
 	void					setAlpha(float val);
 
@@ -227,7 +227,7 @@ public:
 	void					setVertexCoord(uint idx, const CVector &v);
 	void					setNormalCoord(uint idx, const CVector &v);
 	void					setTexCoord(uint idx, uint8 stage, float u, float v);
-	void					setRGBA(uint idx, CRGBA& rgba);
+	void					setRGBA(uint idx, CRGBA rgba);
 
 
 	void*					getVertexCoordPointer(uint idx=0);
@@ -362,7 +362,7 @@ public:
 
 	virtual NLMISC::IEventEmitter*	getEventEmitter(void)=0;
 
-	virtual bool			clear2D(CRGBA& rgba)=0;
+	virtual bool			clear2D(CRGBA rgba)=0;
 
 	virtual bool			clearZBuffer(float zval=1)=0;
 

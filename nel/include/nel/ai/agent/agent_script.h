@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.9 2001/01/24 09:08:36 portier Exp $
+ * $Id: agent_script.h,v 1.10 2001/01/29 11:11:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,7 @@ namespace NLAIAGENT
 			TSendContinuation, ///Index of the send with continuation method.
 			TGetChildTag, ///Index of the getChild method
 			TAddChildTag,///Index of the addChild method
+			TFather,
 			TLastM ///The count of export method.
 		};
 

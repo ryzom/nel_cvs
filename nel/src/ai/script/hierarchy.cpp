@@ -1,6 +1,6 @@
 /** \file hierarchy.cpp
  *
- * $Id: hierarchy.cpp,v 1.6 2001/01/10 10:10:08 chafik Exp $
+ * $Id: hierarchy.cpp,v 1.7 2001/01/29 11:11:42 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,9 +125,9 @@ namespace NLAISCRIPT
 				}							
 				else
 				{
-					char text[4096*4];
+					/*char text[4096*4];
 					sprintf(text,"you try to access to '%s' and this class is not define in the hierarchy of '%s' class",lastClassName.getString(),(const char *)baseClass->getType());
-					yyerror(text);
+					yyerror(text);*/
 					return NULL;
 				}
 			}

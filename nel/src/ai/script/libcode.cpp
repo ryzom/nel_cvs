@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.7 2001/01/17 10:32:10 chafik Exp $
+ * $Id: libcode.cpp,v 1.8 2001/01/29 11:11:42 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "nel/ai/script/interpret_object_manager.h"
 #include "nel/ai/script/interpret_actor.h"
 #include "nel/ai/script/libcode.h"
+#include "nel/ai/script/test_method.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
 
@@ -75,6 +76,13 @@ namespace NLAISCRIPT
 		}		
 		else 
 		{
+			if(*mathodName == format)
+			{
+				NLAISCRIPT::COperandSimple typeR(new NLAIC::CIdentType(NLAIAGENT::CStringType::IdStringType));
+				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
+				m.push(NLAIAGENT::CIdMethod(2,0.0,NULL,t));
+			}
+			else
 			if(*mathodName == print)
 			{
 				NLAISCRIPT::COperandVoid typeR;
@@ -166,6 +174,7 @@ namespace NLAISCRIPT
 	void initExternalLib()
 	{		
 		CCallPrint p;
+		CLibTest c;
 
 		NLAIC::CSelfClassCFactory &f = (NLAIC::CSelfClassCFactory&)*((CAgentClass::IdAgentClass).getFactory());
 		f = NLAISCRIPT::CAgentClass(CAgentClass::IdAgentClass);

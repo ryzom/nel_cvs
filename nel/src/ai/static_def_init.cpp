@@ -368,7 +368,7 @@
 		NLAIC::CTypeOfOperator::opAdd );
 
 	const NLAIC::CIdentType CLocalAgentMail::LocalAgentMail = NLAIC::CIdentType( "LocalAgentMail", 
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CLocalAgentMail()), 
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CLocalAgentMail((IBasicAgent *)&staticAgent)), 
 		NLAIC::CTypeOfObject::tAgent,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 

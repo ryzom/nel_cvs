@@ -1,6 +1,6 @@
 /** \file constraint.cpp
  *
- * $Id: constraint.cpp,v 1.8 2001/01/25 10:13:19 chafik Exp $
+ * $Id: constraint.cpp,v 1.9 2001/01/29 11:11:42 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,16 @@ namespace NLAISCRIPT
 				_M = comp.findMethode(cl,*_MethodName,*_Param);
 			}
 			else
-			{				
+			{	
+				char txt[1024*8];
+				char param[1024*8];
+				char Method[1024*8];
+				
+				_Param->getDebugString(param);
+				_MethodName->getDebugString(Method);
+				sprintf(txt,"can't find the method '%s%s'",Method,param);
+				_Txt = new char [strlen(txt) + 1];
+				strcpy(_Txt,txt);
 				return;
 			}			
 		}
@@ -179,6 +188,7 @@ namespace NLAISCRIPT
 			}
 			else
 			{
+				_Satisfied = true;
 				switch(_CallType)
 				{
 				case normalCall:

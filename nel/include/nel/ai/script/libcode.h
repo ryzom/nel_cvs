@@ -1,7 +1,7 @@
 /** \file libcode.h
  * Library class exemple for the script.
  *
- * $Id: libcode.h,v 1.4 2001/01/17 10:32:29 chafik Exp $
+ * $Id: libcode.h,v 1.5 2001/01/29 11:11:24 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ namespace NLAISCRIPT
 		//@{
 		virtual sint32 isClassInheritedFrom(const NLAIAGENT::IVarName &) const
 		{
-			return -1;
+			return 0;
 		}		
 		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *mathodName,const NLAIAGENT::IObjectIA &) const;		
 		virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 heritance, sint32 index, NLAIAGENT::IObjectIA *);

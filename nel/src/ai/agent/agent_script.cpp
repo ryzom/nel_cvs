@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.21 2001/01/26 13:36:35 chafik Exp $
+ * $Id: agent_script.cpp,v 1.22 2001/01/29 11:11:42 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,12 @@ namespace NLAIAGENT
 									CAgentScript::TAddChildTag, 
 									NULL,CAgentScript::CheckCount,
 									2,
-									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType))))
+									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType)))),
+		CAgentScript::CMethodCall(	_FATHER_, 
+									CAgentScript::TFather, 
+									NULL,CAgentScript::DoNotCheck,
+									2,
+									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(CAgentScript::IdAgentScript))))
 	};
 
 	CAgentScript::CAgentScript(const CAgentScript &a): IAgentManager(a)
@@ -407,6 +412,7 @@ namespace NLAIAGENT
 		tmapDefNameAgent::iterator it = _DynamicAgentName.find(s);
 		if(it == _DynamicAgentName.end())
 		{
+			o->setParent( (const IWordNumRef *) *this );
 			_DynamicAgentName.insert(tPairName(s,addChild(o)));
 		}
 		r.Result = NULL;
@@ -625,7 +631,15 @@ namespace NLAIAGENT
 			}
 			_ScriptMail->popMessage();
 		}
-		IAgent::processMessages();
+		try
+		{
+			IAgent::processMessages();
+		}
+		catch(NLAIE::IException &e)
+		{
+			NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *)_AgentManager->getAgentContext();
+			if(context !=NULL) context->InputOutput->Echo("\n\n%s\n\n",(char *)e.what());
+		}		
 	}
 
 	const IObjectIA::CProcessResult &CAgentScript::run()
@@ -707,6 +721,13 @@ namespace NLAIAGENT
 			{
 				return addDynamicAgent((IBaseGroupType *)o);
 			}
+		case TFather:
+			{
+				IObjectIA::CProcessResult a;
+				a.Result = (IObjectIA *)getParent();
+				a.Result->incRef();
+				return a;
+			}
 		default:
 			return IAgent::runMethodeMember(heritance,index,o);
 		}
@@ -735,6 +756,13 @@ namespace NLAIAGENT
 		case TAddChildTag:
 			{
 				return addDynamicAgent((IBaseGroupType *)o);
+			}
+		case TFather:
+			{
+				IObjectIA::CProcessResult a;
+				a.Result = (IObjectIA *)getParent();
+				a.Result->incRef();
+				return a;
 			}
 		default:
 			return IAgent::runMethodeMember(index,o);

@@ -1,6 +1,6 @@
 
 
-* bug unix compilation fixed on GL_GLEXT_PROTOTYPES missing
+* driver_opengl bug unix compilation fixed on GL_GLEXT_PROTOTYPES missing
 * bugfix in FT_* when minimize the window
 * bugfix in CFile::getFileName()
 

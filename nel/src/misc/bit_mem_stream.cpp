@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.34 2004/07/12 14:03:40 miller Exp $
+ * $Id: bit_mem_stream.cpp,v 1.35 2004/09/22 10:20:30 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -530,7 +530,7 @@ inline	void		CBitMemStream::serial(ucstring &b)
 		if(isReading())
 		{
 			serial(len);
-			if (len > length()-getPos())
+			if (len > sint32(length())-sint32(getPos()))
 				throw NLMISC::EInvalidDataStream( "BMS: Trying to read an ucstring of %u bytes, past stream size", len );
 			b.resize(len);
 		}

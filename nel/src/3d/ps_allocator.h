@@ -1,6 +1,6 @@
 /** \file ps_allocator.h
  *
- * $Id: ps_allocator.h,v 1.5 2004/05/14 15:38:53 vizerie Exp $
+ * $Id: ps_allocator.h,v 1.6 2004/09/22 10:20:31 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -33,7 +33,7 @@
 namespace NL3D
 {
 
-#if	defined(NL_OS_WINDOWS) && !defined(NL_COMP_VC7)
+#if	defined(NL_OS_WINDOWS) && !defined(NL_COMP_VC7) && !defined(NL_COMP_VC71)
 	// fast mem alloc of particle systems only on windows for now
 	//
 	// NB : When using NL_MEMORY, we solve the redefinition of new errors as follow :	

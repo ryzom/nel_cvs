@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.4 2001/06/13 10:23:02 lecroart Exp $
+ * $Id: login_server.h,v 1.5 2001/12/28 15:36:21 lecroart Exp $
  * 
  */
 
@@ -41,7 +41,7 @@ namespace NLNET
 /// Callback function type called when a new client is identified (with the login password procedure)
 typedef void (*TNewClientCallback) (TSockId from, const CLoginCookie &cookie);
 
-
+class CUdpSock;
 class IDisplayer;
 
 /** This class is the server part of the Login System. It is used in the Front End Service.
@@ -57,14 +57,23 @@ class IDisplayer;
 class CLoginServer {
 public:
 
-	/// Create the connection to the Welcome Service and install callbacks to the callback server
+	/// Create the connection to the Welcome Service and install callbacks to the callback server (for a TCP cnx)
 	static void init (CCallbackServer &server, TNewClientCallback ncl);
+
+	/// Create the connection to the Welcome Service for an UDP connection
+	static void init (CUdpSock &server, TNewClientCallback ncl);
+
+	/// Used only in UDP, check if the cookie is valid. return empty string if valid, reason otherwise
+	static std::string CLoginServer::isValidCookie (CLoginCookie &lc);
 
 	/// Call this method when a user is disconnected or the server disconnect the user.
 	/// This method will warn the login system that the user is not here anymore
 	static void clientDisconnected (uint32 userId);
 
 private:
+
+	/// This function is used by init() to create the connection to the Welcome Service
+	static void connectToWS ();
 
 };
 

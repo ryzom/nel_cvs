@@ -2,7 +2,7 @@
  * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
  * connects to the shard.
  *
- * $Id: login_client.h,v 1.4 2001/06/13 14:34:45 lecroart Exp $
+ * $Id: login_client.h,v 1.5 2001/12/28 15:36:21 lecroart Exp $
  * 
  */
 
@@ -38,6 +38,8 @@
 namespace NLNET
 {
 
+class CLoginCookie;
+class CUdpSock;
 class IDisplayer;
 
 /**
@@ -81,13 +83,19 @@ public:
 	static std::string authenticate (const std::string &loginServiceAddr, const std::string &login, const std::string &password, uint32 clientVersion);
 
 
-	/** Try to connect to the shard and return the connection to the shard.
+	/** Try to connect to the shard and return a TCP connection to the shard.
 	 */
 	static std::string connectToShard (uint32 shardListIndex, CCallbackClient &cnx);
+
+	/** Try to connect to the shard and return an UDP connection to the shard.
+	 */
+	static std::string connectToShard (uint32 shardListIndex, CUdpSock &cnx, CLoginCookie &cookie);
 
 	static TShardList ShardList;
 
 private:
+
+	static std::string confirmConnection (uint32 shardListIndex);
 
 	static std::string _GfxInfos;
 

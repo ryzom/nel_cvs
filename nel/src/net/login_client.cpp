@@ -2,7 +2,7 @@
  * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
  * connects to the shard.
  *
- * $Id: login_client.cpp,v 1.11 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: login_client.cpp,v 1.12 2001/12/28 15:36:14 lecroart Exp $
  *
  */
 
@@ -33,6 +33,8 @@
 
 #include "nel/net/login_cookie.h"
 #include "nel/net/login_client.h"
+
+#include "nel/net/udp_sock.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -195,10 +197,8 @@ static TCallbackItem FESCallbackArray[] =
 	{ "SV", cbShardValidate },
 };
 
-
-string CLoginClient::connectToShard (uint32 shardListIndex, CCallbackClient &cnx)
+string CLoginClient::confirmConnection (uint32 shardListIndex)
 {
-	nlassert (!cnx.connected());
 	nlassert (_CallbackClient != NULL && _CallbackClient->connected());
 	nlassert (shardListIndex < ShardList.size());
 
@@ -241,6 +241,16 @@ string CLoginClient::connectToShard (uint32 shardListIndex, CCallbackClient &cnx
 	// ok, we can try to connect to the good front end
 
 	nlinfo("addr:%s cookie:%s", ShardChooseShardAddr.c_str(), ShardChooseShardCookie.toString().c_str());
+	
+	return "";
+}
+
+string CLoginClient::connectToShard (uint32 shardListIndex, CCallbackClient &cnx)
+{
+	nlassert (!cnx.connected());
+	
+	string res = confirmConnection (shardListIndex);
+	if (!res.empty()) return res;
 
 	try
 	{
@@ -268,6 +278,30 @@ string CLoginClient::connectToShard (uint32 shardListIndex, CCallbackClient &cnx
 		
 		// have we received the answer?
 		if (!ShardValidate) return "FES disconnect me";
+	}
+	catch (ESocket &e)
+	{
+		return "FES refused the connection (%s)", e.what ();
+	}
+
+	return ShardValidateReason;
+}
+
+string CLoginClient::connectToShard (uint32 shardListIndex, CUdpSock &cnx, CLoginCookie &cookie)
+{
+	nlassert (!cnx.connected());
+	
+	string res = confirmConnection (shardListIndex);
+	if (!res.empty()) return res;
+
+	try
+	{
+		//
+		// S12: connect to the FES. Note: In UDP mode, it's the user that have to send the cookie to the front end
+		//
+		cnx.connect (CInetAddress(ShardChooseShardAddr));
+
+		cookie = ShardChooseShardCookie;
 	}
 	catch (ESocket &e)
 	{

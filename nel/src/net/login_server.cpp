@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.10 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: login_server.cpp,v 1.11 2001/12/28 15:36:14 lecroart Exp $
  *
  */
 
@@ -34,6 +34,8 @@
 #include "nel/net/login_cookie.h"
 #include "nel/net/login_server.h"
 
+#include "nel/net/udp_sock.h"
+
 using namespace std;
 using namespace NLMISC;
 
@@ -53,7 +55,7 @@ static string ListenAddr;
 /// contains the correspondance between userid and the sockid
 map<uint32, TSockId> UserIdSockAssociations;
 
-TNewClientCallback NewClientCallback;
+TNewClientCallback NewClientCallback = NULL;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -190,25 +192,7 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 	msgin.serial (cookie);
 
 	// verify that the user was pending
-	list<CPendingUser>::iterator it;
-	for (it = PendingUsers.begin(); it != PendingUsers.end (); it++)
-	{
-		if ((*it).Cookie == cookie)
-		{
-			// ok, it was validate, remove it
-			break;
-		}
-	}
-
-	if (it == PendingUsers.end ())
-	{
-		reason = "I didn't receive the cookie from WS";
-	}
-	else
-	{
-		PendingUsers.erase (it);
-		reason = "";
-	}
+	reason = CLoginServer::isValidCookie (cookie);
 
 	CMessage msgout2 (netbase.getSIDA (), "SV");
 	msgout2.serial (reason);
@@ -222,28 +206,13 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 	}
 	else
 	{
+		// add the user association
+		uint32 userid = cookie.getUserId();
+		UserIdSockAssociations.insert (make_pair(userid, from));
+
 		// identification OK, let's call the user callback
 		if (NewClientCallback != NULL)
 			NewClientCallback (from, cookie);
-
-		// warn the WS that the client effectively connected
-		uint8 con = 1;
-		CMessage msgout ("CC");
-		uint32 userid = cookie.getUserId();
-		msgout.serial (userid);
-		msgout.serial (con);
-
-		if (CUnifiedNetwork::isUsed ())
-		{
-			CUnifiedNetwork::getInstance()->send("WS", msgout);
-		}
-		else
-		{
-			CNetManager::send("WS", msgout);
-		}
-
-		// add the user association
-		UserIdSockAssociations.insert (make_pair(userid, from));
 
 		// ok, now, he can call all callback
 		Server->authorizeOnly (NULL, from);
@@ -274,6 +243,63 @@ static const TCallbackItem ClientCallbackArray[] =
 void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl)
 {
 	// connect to the welcome service
+	connectToWS ();
+
+	// add callback to the server
+	server.addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
+	server.setConnectionCallback (ClientConnection, NULL);
+
+	ListenAddr = server.listenAddress ().asIPString();
+	nlinfo("Listen Addresss trapped %s", ListenAddr.c_str());
+
+	NewClientCallback = ncl;
+	Server = &server;
+}
+
+void CLoginServer::init (CUdpSock &server, TNewClientCallback ncl)
+{
+	// connect to the welcome service
+	connectToWS ();
+
+	ListenAddr = server.localAddr().asIPString();
+	nlinfo("Listen Addresss trapped %s", ListenAddr.c_str());
+}
+
+string CLoginServer::isValidCookie (CLoginCookie &lc)
+{
+	// verify that the user was pending
+	list<CPendingUser>::iterator it;
+	for (it = PendingUsers.begin(); it != PendingUsers.end (); it++)
+	{
+		if ((*it).Cookie == lc)
+		{
+			// ok, it was validate, remove it
+			PendingUsers.erase (it);
+
+			// warn the WS that the client effectively connected
+			uint8 con = 1;
+			CMessage msgout ("CC");
+			uint32 userid = lc.getUserId();
+			msgout.serial (userid);
+			msgout.serial (con);
+
+			if (CUnifiedNetwork::isUsed ())
+			{
+				CUnifiedNetwork::getInstance()->send("WS", msgout);
+			}
+			else
+			{
+				CNetManager::send("WS", msgout);
+			}
+
+			return "";
+		}
+	}
+	return "I didn't receive the cookie from WS";
+}
+
+void CLoginServer::connectToWS ()
+{
 	if (CUnifiedNetwork::isUsed ())
 	{
 		CUnifiedNetwork::getInstance()->addCallbackArray(WSCallbackArray5, sizeof(WSCallbackArray5)/sizeof(WSCallbackArray5[0]));
@@ -291,16 +317,6 @@ void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl)
 		msg.serial(ssid);	// serializes a 16 bits service id
 		CNetManager::send("WS", msg);
 	}
-
-	// add callback to the server
-	server.addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
-	server.setConnectionCallback (ClientConnection, NULL);
-
-	ListenAddr = server.listenAddress ().asIPString();
-	nlinfo("Listen Addresss trapped %s", ListenAddr.c_str());
-
-	NewClientCallback = ncl;
-	Server = &server;
 }
 
 void CLoginServer::clientDisconnected (uint32 userId)

@@ -168,6 +168,10 @@ SOURCE=.\ai\agent\msg_group.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\agent\msg_notify.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\agent\paire_type.cpp
 # End Source File
 # End Group
@@ -261,6 +265,10 @@ SOURCE=..\include\nel\ai\agent\msg_container.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\agent\msg_group.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\msg_notify.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 4, base
  *
- * $Id: callback_net_base.h,v 1.7 2001/04/03 08:58:28 cado Exp $
+ * $Id: callback_net_base.h,v 1.8 2001/04/03 09:08:14 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,7 +85,7 @@ public:
 	 * - 0: reads only one message
 	 * - -1: reads all messages until no data available
 	 */
-	void	update( sint32 timeout );
+	void	update( sint32 timeout=0 );
 
 	/// Sets callback for detecting a disconnection (or NULL to disable callback)
 	void	setDisconnectionCallback( TNetCallback cb ) { _DisconnectionCallback = cb; }

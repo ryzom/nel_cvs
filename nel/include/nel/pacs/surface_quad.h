@@ -1,7 +1,7 @@
 /** \file surface_quad.h
  * 
  *
- * $Id: surface_quad.h,v 1.3 2001/05/10 12:18:41 legros Exp $
+ * $Id: surface_quad.h,v 1.4 2001/05/16 15:57:40 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,6 +65,14 @@ public:
 		bbox.setCenter(NLMISC::CVector(_XCenter, _YCenter, 0.0f));
 		bbox.setHalfSize(NLMISC::CVector(_HalfSize, _HalfSize, 10000.0f));
 		return bbox;
+	}
+
+	virtual void			translate(const NLMISC::CVector &translation)
+	{
+		_XCenter += translation.x;
+		_YCenter += translation.y;
+		_MinHeight += translation.z;
+		_MaxHeight += translation.z;
 	}
 
 	virtual bool			check() const	{ return (_MaxHeight >= _MinHeight); }
@@ -131,14 +139,20 @@ public:
 	void					addVertex(NLMISC::CVector &v);
 	bool					check() const;
 
+	void					translate(const NLMISC::CVector &translation)
+	{
+		IQuadNode::translate(translation);
+		uint	i;
+		for (i=0; i<4; ++i)
+			if (_Children[i] != NULL)
+				_Children[i]->translate(translation);
+	}
+
 	void					serial(NLMISC::IStream &f);
 };
 
 class CSurfaceQuadTree
 {
-public:
-	//
-
 protected:
 
 	IQuadNode					*_Root;
@@ -164,6 +178,12 @@ public:
 
 	bool						check() const;
 	const CQuadLeaf				*getLeaf(const NLMISC::CVector &v) const;
+
+	void						translate(const NLMISC::CVector &translation)
+	{
+		if (_Root != NULL)
+			_Root->translate(translation);
+	}
 
 	void						serial(NLMISC::IStream &f);
 };

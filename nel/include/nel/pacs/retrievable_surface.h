@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.3 2001/05/10 12:18:41 legros Exp $
+ * $Id: retrievable_surface.h,v 1.4 2001/05/16 15:57:40 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,9 +125,16 @@ public:
 	sint32								getTopology(uint model) const { return _Topologies[model]; }
 
 	const std::vector<CSurfaceLink>		&getChains() const { return _Chains; }
+	CSurfaceLink						getChain(uint n) const { return _Chains[n]; }
 
 	const NLMISC::CVector				&getCenter() const { return _Center; }
 
+	void								translate(const NLMISC::CVector &translation)
+	{
+		_Center += translation;
+		_Quad.translate(translation);
+	}
+	
 	void								serial(NLMISC::IStream &f);
 };
 

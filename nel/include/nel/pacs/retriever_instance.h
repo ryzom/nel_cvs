@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.4 2001/05/15 08:03:09 legros Exp $
+ * $Id: retriever_instance.h,v 1.5 2001/05/16 15:57:40 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,9 +59,8 @@ public:
 		CSurfaceEdge(sint32 from=0, sint32 to=0) : From(from), To(to) {}
 	};
 
-//protected:
-public:
-	//friend class ...;
+protected:
+	friend class CGlobalRetriever;
 
 	/**
 	 * The link to another node

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.4 2001/05/15 08:02:55 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.5 2001/05/16 15:58:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,7 +156,7 @@ void	NLPACS::CRetrieverInstance::link(const CRetrieverInstance &neighbor, uint8 
 
 	for (i=0; i<edgeTips.size(); ++i)
 	{
-		CVector	point = tips[edgeTips[i]].Point;
+		CVector	point = neighbor.getLocalPosition(getGlobalPosition(tips[edgeTips[i]].Point));
 		sint	bestTip = -1;
 		float	bestDistance = 1.0e10f;
 
@@ -220,7 +220,7 @@ void	NLPACS::CRetrieverInstance::link(const CRetrieverInstance &neighbor, uint8 
 			nlerror("Instance %d and instance %d have different number of tips on common edge", _InstanceId, neighbor._InstanceId);
 		}
 
-		_EdgeChainLinks[edge].push_back(j);
+		_EdgeChainLinks[edge].push_back(nEdgeChains[j]);
 	}
 }
 
@@ -246,12 +246,13 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	CLocalRetriever::CLocalPosition	retrieved;
 
 	// !!!!!! MODIFY THIS !!!!!!
-	localEstimated = estimated;
+	localEstimated = getLocalPosition(estimated);
 
 	retriever.retrievePosition(localEstimated, _RetrieveTable);
 
 	uint	surf;
 	sint	bestSurf = -1;
+	sint	lastSurf = -1;
 	float	bestDistance = 1.0e10f;
 	float	bestMeanHeight;
 
@@ -259,6 +260,8 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	{
 		if (_RetrieveTable[surf] != 0)
 		{
+			lastSurf = surf;
+			_RetrieveTable[surf] = 0;
 			const CQuadLeaf	*leaf = retriever.getSurfaces()[surf].getQuadTree().getLeaf(estimated);
 			if (leaf == NULL)
 				continue;
@@ -281,7 +284,7 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	}
 	else
 	{
-		retrieved.Surface = -1;
+		retrieved.Surface = lastSurf;
 		retrieved.Estimation = estimated;
 	}
 
@@ -290,8 +293,25 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 
 CVector	NLPACS::CRetrieverInstance::getLocalPosition(const CVector &globalPosition) const
 {
-	static const float	sinTable[4] = { 0.0f, 1.0f, 0.0f, -1.0f };
+	switch (_Orientation)
+	{
+	default:
+	case 0:
+		return CVector(+globalPosition.x-_Origin.x, +globalPosition.y-_Origin.y, globalPosition.z-_Origin.z);
+		break;
+	case 1:
+		return CVector(+globalPosition.y-_Origin.y, -globalPosition.x+_Origin.x, globalPosition.z-_Origin.z);
+		break;
+	case 2:
+		return CVector(-globalPosition.x+_Origin.x, -globalPosition.y+_Origin.y, globalPosition.z-_Origin.z);
+		break;
+	case 3:
+		return CVector(-globalPosition.y+_Origin.y, +globalPosition.x-_Origin.x, globalPosition.z-_Origin.z);
+		break;
+	}
+/*
 	static const float	cosTable[4] = { 1.0f, 0.0f, -1.0f, 0.0f };
+	static const float	sinTable[4] = { 0.0f, 1.0f, 0.0f, -1.0f };
 
 	float	s = sinTable[_Orientation],
 			c = cosTable[_Orientation];
@@ -299,12 +319,30 @@ CVector	NLPACS::CRetrieverInstance::getLocalPosition(const CVector &globalPositi
 	return CVector(	+c*(globalPosition.x-_Origin.x)+s*(globalPosition.y-_Origin.y),
 					-s*(globalPosition.x-_Origin.x)+c*(globalPosition.y-_Origin.y),
 					+globalPosition.z-_Origin.z );
+*/
 }
 
 CVector	NLPACS::CRetrieverInstance::getGlobalPosition(const CVector &localPosition) const
 {
-	static const float	sinTable[4] = { 0.0f, 1.0f, 0.0f, -1.0f };
+	switch (_Orientation)
+	{
+	default:
+	case 0:
+		return CVector(+localPosition.x+_Origin.x, +localPosition.y+_Origin.y, localPosition.z+_Origin.z );
+		break;
+	case 1:
+		return CVector(-localPosition.y+_Origin.x, +localPosition.x+_Origin.y, localPosition.z+_Origin.z );
+		break;
+	case 2:
+		return CVector(-localPosition.x+_Origin.x, -localPosition.y+_Origin.y, localPosition.z+_Origin.z );
+		break;
+	case 3:
+		return CVector(+localPosition.y+_Origin.x, -localPosition.x+_Origin.y, localPosition.z+_Origin.z );
+		break;
+	}
+/*
 	static const float	cosTable[4] = { 1.0f, 0.0f, -1.0f, 0.0f };
+	static const float	sinTable[4] = { 0.0f, 1.0f, 0.0f, -1.0f };
 
 	float	s = sinTable[_Orientation],
 			c = cosTable[_Orientation];
@@ -312,10 +350,28 @@ CVector	NLPACS::CRetrieverInstance::getGlobalPosition(const CVector &localPositi
 	return CVector(	+c*localPosition.x-s*localPosition.y+_Origin.x,
 					+s*localPosition.x+c*localPosition.y+_Origin.y,
 					localPosition.z+_Origin.z );
+*/
 }
 
 CVectorD	NLPACS::CRetrieverInstance::getDoubleGlobalPosition(const CVector &localPosition) const
 {
+	switch (_Orientation)
+	{
+	default:
+	case 0:
+		return CVectorD(+(double)localPosition.x+(double)_Origin.x, +(double)localPosition.y+(double)_Origin.y, (double)localPosition.z+(double)_Origin.z );
+		break;
+	case 1:
+		return CVectorD(-(double)localPosition.y+(double)_Origin.x, +(double)localPosition.x+(double)_Origin.y, (double)localPosition.z+(double)_Origin.z );
+		break;
+	case 2:
+		return CVectorD(-(double)localPosition.x+(double)_Origin.x, -(double)localPosition.y+(double)_Origin.y, (double)localPosition.z+(double)_Origin.z );
+		break;
+	case 3:
+		return CVectorD(+(double)localPosition.y+(double)_Origin.x, -(double)localPosition.x+(double)_Origin.y, (double)localPosition.z+(double)_Origin.z );
+		break;
+	}
+/*
 	static const float	sinTable[4] = { 0.0f, 1.0f, 0.0f, -1.0f };
 	static const float	cosTable[4] = { 1.0f, 0.0f, -1.0f, 0.0f };
 
@@ -325,6 +381,7 @@ CVectorD	NLPACS::CRetrieverInstance::getDoubleGlobalPosition(const CVector &loca
 	return CVectorD( +c*localPosition.x-s*localPosition.y+_Origin.x,
 					 +s*localPosition.x+c*localPosition.y+_Origin.y,
 					 (double)(localPosition.z)+(double)(_Origin.z) );
+*/
 }
 
 

@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.3 2001/05/16 15:17:12 berenguier Exp $
+ * $Id: global_retriever.h,v 1.4 2001/05/16 15:57:40 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,8 @@
 #define NL_GLOBAL_RETRIEVER_H
 
 #include <vector>
+#include <list>
+
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/file.h"
@@ -101,7 +103,7 @@ public:
 
 	const std::vector<CRetrieverInstance>	getInstances() const { return _Instances; }
 
-	const CRetrieverInstance		&getInstance(uint id) const { return getInstance(id); }
+	const CRetrieverInstance		&getInstance(uint id) const { return _Instances[id]; }
 	const CRetrieverInstance		&getInstance(uint x, uint y) const { return getInstance(x, y); }
 	const CRetrieverInstance		&getInstance(const NLMISC::CVector &p) const { return getInstance(p); }
 
@@ -138,8 +140,11 @@ public:
 	void							setHeight(uint16 height) { _Height = height; _Instances.resize(_Width*_Height); }
 
 	void							setBBox(const NLMISC::CAABBox &bbox) { _BBox = bbox; }
+	void							setCenter(const NLMISC::CVector &center) { _BBox.setCenter(center); }
+	void							updateBBox() { _BBox.setSize(NLMISC::CVector(_Width*160.0f, _Height*160.0f, 20000.0f)); }
 
 	CRetrieverInstance				&makeInstance(uint x, uint y, uint32 retriever, uint8 orientation, const NLMISC::CVector &origin);
+	CRetrieverInstance				&makeInstance(uint x, uint y, uint32 retriever, uint8 orientation);
 
 	CRetrieverInstance				&getInstanceFullAccess(uint id) { return _Instances[id]; }
 	CRetrieverInstance				&getInstanceFullAccess(uint x, uint y)
@@ -192,7 +197,7 @@ public:
 	// A* methods
 public:
 	/// Finds an A* path from a given global position to another.
-	void								findAStarPath(const CGlobalPosition &begin, const CGlobalPosition &end);
+	void								findAStarPath(const CGlobalPosition &begin, const CGlobalPosition &end, std::list<CRetrieverInstance::CAStarNodeAccess> &path);
 
 private:
 	CRetrieverInstance::CAStarNodeInfo	&getNode(CRetrieverInstance::CAStarNodeAccess &access)

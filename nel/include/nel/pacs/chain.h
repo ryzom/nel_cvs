@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.5 2001/05/16 15:17:39 berenguier Exp $
+ * $Id: chain.h,v 1.6 2001/05/16 15:57:40 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,9 @@ public:
 
 	/// Returns the parent chain Id of this ordered chain.
 	uint16								getParentId() const { return _ParentId; }
-	
+
+	void								translate(const NLMISC::CVector &translation);
+
 	void								serial(NLMISC::IStream &f);
 };
 
@@ -111,6 +113,7 @@ protected:
 public:
 	/// Returns a vector of ordered chains that compose the entire chain
 	const std::vector<uint16>			&getSubChains() const { return _SubChains; }
+	uint16								getSubChain(uint n) const { return _SubChains[n]; }
 
 	/// Returns the left surface id.
 	sint32								getLeft() const { return _Left; }

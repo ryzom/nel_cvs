@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.8 2001/05/16 15:17:12 berenguier Exp $
+ * $Id: local_retriever.h,v 1.9 2001/05/16 15:57:40 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,11 @@ public:
 		{
 			f.serial(Point);
 			f.serialCont(Chains);
+		}
+
+		void	translate(const NLMISC::CVector &translation)
+		{
+			Point += translation;
 		}
 	};
 
@@ -217,6 +222,7 @@ public:
 	void								findEdgeTips();
 	void								findEdgeChains();
 	void								updateChainIds();
+	void								translate(const NLMISC::CVector &translation);
 
 	void								serial(NLMISC::IStream &f);
 

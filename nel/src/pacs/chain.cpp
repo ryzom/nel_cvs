@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.5 2001/05/15 08:02:55 legros Exp $
+ * $Id: chain.cpp,v 1.6 2001/05/16 15:58:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,12 @@ static inline bool	isEqual(const CVector &a, const CVector &b)
 	return (a == b);
 }
 
+void	NLPACS::COrderedChain::translate(const CVector &translation)
+{
+	uint	i;
+	for (i=0; i<_Vertices.size(); ++i)
+		_Vertices[i] += translation;
+}
 
 void	NLPACS::COrderedChain::serial(IStream &f)
 {

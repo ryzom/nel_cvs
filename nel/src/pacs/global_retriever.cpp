@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.3 2001/05/16 15:17:12 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.4 2001/05/16 15:58:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include <vector>
+#include <list>
 #include <map>
 
 #include "nel/misc/types_nl.h"
@@ -41,8 +42,8 @@ using namespace NLMISC;
 
 NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::getInstanceFullAccess(const CVector &position)
 {
-	CVector			offset = _BBox.getMin()-position;
-	const float		zdim = 160.0f;
+	CVector				offset = position-_BBox.getMin();
+	static const float	zdim = 160.0f;
 	return getInstanceFullAccess((uint)(offset.x/zdim), (uint)(offset.y/zdim));
 }
 
@@ -58,28 +59,28 @@ void	NLPACS::CGlobalRetriever::makeLinks(uint n)
 	uint	x, y;
 	convertId(n, x, y);
 
-	if (x > 0 && _Instances[n-1].getInstanceId() >= 0)
+	if (x > 0 && _Instances[n].getInstanceId() >= 0 && _Instances[n-1].getInstanceId() >= 0)
 	{
 		_Instances[n].link(_Instances[n-1], 0, _RetrieverBank->getRetrievers());
 		_Instances[n-1].link(_Instances[n], 2, _RetrieverBank->getRetrievers());
 	}
 
-	if (y < (uint)(_Height-1) && _Instances[n-_Width].getInstanceId() >= 0)
+	if (y < (uint)(_Height-1) && _Instances[n].getInstanceId() >= 0 && _Instances[n+_Width].getInstanceId() >= 0)
 	{
-		_Instances[n].link(_Instances[n-_Width], 1, _RetrieverBank->getRetrievers());
-		_Instances[n-_Width].link(_Instances[n], 3, _RetrieverBank->getRetrievers());
+		_Instances[n].link(_Instances[n+_Width], 1, _RetrieverBank->getRetrievers());
+		_Instances[n+_Width].link(_Instances[n], 3, _RetrieverBank->getRetrievers());
 	}
 
-	if (x < (uint)(_Width-1) && _Instances[n+1].getInstanceId() >= 0)
+	if (x < (uint)(_Width-1) && _Instances[n].getInstanceId() >= 0 && _Instances[n+1].getInstanceId() >= 0)
 	{
 		_Instances[n].link(_Instances[n+1], 2, _RetrieverBank->getRetrievers());
 		_Instances[n+1].link(_Instances[n], 0, _RetrieverBank->getRetrievers());
 	}
 
-	if (y > 0 && _Instances[n+_Width].getInstanceId() >= 0)
+	if (y > 0 && _Instances[n].getInstanceId() >= 0 && _Instances[n-_Width].getInstanceId() >= 0)
 	{
-		_Instances[n].link(_Instances[n+_Width], 3, _RetrieverBank->getRetrievers());
-		_Instances[n+_Width].link(_Instances[n], 1, _RetrieverBank->getRetrievers());
+		_Instances[n].link(_Instances[n-_Width], 3, _RetrieverBank->getRetrievers());
+		_Instances[n-_Width].link(_Instances[n], 1, _RetrieverBank->getRetrievers());
 	}
 }
 
@@ -106,6 +107,11 @@ NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint x, uint 
 	return inst;
 }
 
+NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint x, uint y, uint32 retriever, uint8 orientation)
+{
+	CVector	center = getInstanceCenter(x, y);
+	return makeInstance(x, y, retriever, orientation, center);
+}
 
 
 NLPACS::CGlobalRetriever::CGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated)
@@ -135,7 +141,8 @@ CVector		NLPACS::CGlobalRetriever::getInstanceCenter(uint x, uint y) const
 
 
 void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CGlobalPosition &begin,
-													const NLPACS::CGlobalRetriever::CGlobalPosition &end)
+													const NLPACS::CGlobalRetriever::CGlobalPosition &end,
+													list<CRetrieverInstance::CAStarNodeAccess> &path)
 {
 	multimap<float, CRetrieverInstance::CAStarNodeAccess>	open;
 	vector<CRetrieverInstance::CAStarNodeAccess>			close;
@@ -162,6 +169,8 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 
 	uint	i;
 
+	path.clear();
+
 	while (true)
 	{
 		if (open.empty())
@@ -179,6 +188,18 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 		if (node == endNode)
 		{
 			// found a path
+			nlinfo("found a path");
+			CRetrieverInstance::CAStarNodeAccess			pathNode = node;
+			while (pathNode.InstanceId != -1)
+			{
+				path.push_front(pathNode);
+				CRetrieverInstance							&instance = _Instances[pathNode.InstanceId];
+				CRetrieverInstance::CAStarNodeInfo			&pathInfo = instance._NodesInformation[pathNode.NodeId];
+				nlinfo("pathNode = (InstanceId=%d, NodeId=%d)", pathNode.InstanceId, pathNode.NodeId);
+				pathNode = pathInfo.Parent;
+			}
+			nlinfo("open.size()=%d", open.size());
+			nlinfo("close.size()=%d", close.size());
 			return;
 		}
 
@@ -209,9 +230,13 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 				if (nextNode.InstanceId < 0)
 					continue;
 
-				nextNode.NodeId = inst.getEdgeChainLink(edge, edgeIndex);
 				nextInstance = &_Instances[nextNode.InstanceId];
 				nextRetriever = &(_RetrieverBank->getRetriever(nextInstance->getRetrieverId()));
+
+				uint	chain = inst.getEdgeChainLink(edge, edgeIndex);
+				sint	nodeId = nextRetriever->getChain(chain).getLeft();
+				nlassert(nodeId >= 0);
+				nextNode.NodeId = (uint16)nodeId;
 			}
 			else
 			{
@@ -257,9 +282,9 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 
 			open.insert(make_pair(nextInfo.F, nextNode));
 		}
+		close.push_back(node);
 	}
 }
-
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.2 2001/05/15 08:03:09 legros Exp $
+ * $Id: retriever_bank.h,v 1.3 2001/05/16 15:57:40 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,8 @@
 #define NL_RETRIEVER_BANK_H
 
 #include <vector>
+#include <string>
+
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/file.h"
@@ -55,6 +57,21 @@ public:
 	const CLocalRetriever				&getRetriever(uint n) const { return _Retrievers[n]; }
 
 	void								addRetriever(const CLocalRetriever &retriever) { _Retrievers.push_back(retriever); }
+	void								addRetriever(const std::string &filename)
+	{
+		NLMISC::CIFile	input;
+		_Retrievers.resize(_Retrievers.size()+1);
+		CLocalRetriever	&localRetriever = _Retrievers.back();
+		nlinfo("load retriever file %s", filename.c_str());
+		input.open(filename);
+		localRetriever.serial(input);
+		input.close();
+	}
+
+	void								serial(NLMISC::IStream &f)
+	{
+		f.serialCont(_Retrievers);
+	}
 };
 
 }; // NLPACS

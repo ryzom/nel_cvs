@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.21 2002/10/10 13:32:48 vizerie Exp $
+ * $Id: ps_located.h,v 1.22 2002/11/14 17:35:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -211,10 +211,15 @@ public:
 	* It can be used with any attribute modification method of located and located bindable
 	* \param indexInEmitter The index of the emitter (in the emitterLocated object)
 	* \param basisConversionForSpeed : if false, the speed vector is taken as if even if emitter and emittee basis are differents.
+	* \param ellapsedTime
 	*/
 
-	sint32 newElement(const NLMISC::CVector &pos = NLMISC::CVector::Null					
-		, const NLMISC::CVector &speed = NLMISC::CVector::Null, CPSLocated *emitterLocated = NULL, uint32 indexInEmitter = 0, bool basisConversionForSpeed = true);
+	sint32 newElement(const NLMISC::CVector &pos = NLMISC::CVector::Null,
+		              const NLMISC::CVector &speed = NLMISC::CVector::Null,
+					  CPSLocated *emitterLocated = NULL,
+					  uint32 indexInEmitter = 0,
+					  bool basisConversionForSpeed = true,
+					  TAnimationTime ellapsedTime = 0.f);
 
 
 	/**

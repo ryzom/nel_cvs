@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.50 2002/10/10 13:32:48 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.51 2002/11/14 17:35:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -422,8 +422,6 @@ const NLMISC::CMatrix &CPSLocated::getConversionMatrix(const CPSLocated *A, cons
 		{
 			return A->_Owner->getInvertedSysMat();
 		}
-
-
 	}
 }
 
@@ -583,7 +581,7 @@ void CPSLocated::unregisterDtorObserver(CPSLocatedBindable *anObserver)
  * new element generation
  */
 
-sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocated *emitter, uint32 indexInEmitter, bool basisConversionForSpeed)
+sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocated *emitter, uint32 indexInEmitter, bool basisConversionForSpeed, TAnimationTime ellapsedTime /* = 0.f */)
 {	
 	if (_UpdateLock)
 	{
@@ -606,11 +604,26 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 	
 	if (_MaxSize == _Size) return -1;
 
+	// During creation, we interpolate the position of the system (by using the ellapsed time) if particle are created in world basis and if the emitter is in local basis.
+	// Example a fireball FX let particles in world basis, but the fireball is moving. If we dont interpolate position between 2 frames, emission will appear to be "sporadic".
+	// For now, we manage the local to world case. The world to local is possible, but not very useful
 	const CMatrix &convMat = emitter ? CPSLocated::getConversionMatrix(this, emitter) 
-							:  CMatrix::Identity;
-	
-
-	creationIndex  =_Pos.insert(convMat * pos);
+									 :  CMatrix::Identity;
+	if (!_SystemBasisEnabled && emitter && emitter->_SystemBasisEnabled)
+	{
+		// Interpolate linearly position of the system based on the ellapsed time.
+		// The system keep track the ellapsed time passed in the call to step(), so it can compute the right position for us
+		#ifdef NL_DEBUG
+			nlassert(_Owner);
+		#endif
+		CVector sysPosDelta;
+		_Owner->interpolatePosDelta(sysPosDelta, ellapsedTime);
+		creationIndex  =_Pos.insert(convMat * pos + sysPosDelta);
+	}
+	else
+	{
+		creationIndex  =_Pos.insert(convMat * pos);
+	}	
 	nlassert(creationIndex != -1); // all attributs must contains the same number of elements
 	
 	_Speed.insert(basisConversionForSpeed ? convMat.mulVector(speed) : speed);

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.63 2001/04/27 14:25:42 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.64 2001/05/07 14:41:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,7 +87,7 @@ public:
 	ITexture::TMinFilter	MinFilter;
 
 	// The gl id is auto created here.
-	CTextureDrvInfosGL();
+	CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it);
 	// The gl id is auto deleted here.
 	~CTextureDrvInfosGL();
 };
@@ -105,7 +105,7 @@ public:
 	// Software Skinning: flags to know what vertex must be computed.
 	std::vector<uint8>		SoftSkinFlags;
 
-	CVBDrvInfosGL() {}
+	CVBDrvInfosGL(IDriver *drv, ItVBDrvInfoPtrList it) : IVBDrvInfos(drv, it) {}
 };
 
 // --------------------------------------------------
@@ -121,6 +121,8 @@ public:
 	GLfloat		Ambient[4];
 	GLfloat		Diffuse[4];
 	GLfloat		Specular[4];
+
+	CShaderGL(IDriver *drv, ItShaderPtrList it) : IShader(drv, it) {}
 };
 
 // --------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.16 2001/05/02 11:42:43 vizerie Exp $
+ * $Id: vertex_buffer.cpp,v 1.17 2001/05/07 14:41:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "nel/3d/vertex_buffer.h"
 #include "nel/misc/vector.h"
+#include "nel/3d/driver.h"
 using namespace NLMISC;
 
 
@@ -358,6 +359,14 @@ void		CVertexBuffer::serial(NLMISC::IStream &f)
 void	CPaletteSkin::serial(NLMISC::IStream &f)
 {
 	f.serial(MatrixId[0], MatrixId[1], MatrixId[2], MatrixId[3]);
+}
+
+
+
+//****************************************************************************
+IVBDrvInfos::~IVBDrvInfos()
+{
+	_Driver->removeVBDrvInfoPtr(_DriverIterator);
 }
 
 

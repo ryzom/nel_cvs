@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.98 2001/04/27 14:25:42 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.99 2001/05/07 14:41:57 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -705,9 +705,10 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 	//==================================
 	if (!VB.DrvInfos)
 	{
-		VB.DrvInfos=new CVBDrvInfosGL;
 		// insert into driver list. (so it is deleted when driver is deleted).
-		_VBDrvInfos.push_back(VB.DrvInfos);
+		ItVBDrvInfoPtrList	it= _VBDrvInfos.insert(_VBDrvInfos.end());
+		// create and set iterator, for future deletion.
+		*it= VB.DrvInfos= new CVBDrvInfosGL(this, it);
 	}
 
 	// 2. If necessary, do modifications.

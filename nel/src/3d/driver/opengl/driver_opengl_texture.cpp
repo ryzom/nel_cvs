@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.24 2001/04/23 17:12:39 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.25 2001/05/07 14:41:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NL3D
 
 
 // ***************************************************************************
-CTextureDrvInfosGL::CTextureDrvInfosGL()
+CTextureDrvInfosGL::CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it) : ITextureDrvInfos(drv, it)
 {
 	// The id is auto created here.
 	glGenTextures(1,&ID);
@@ -192,11 +192,10 @@ bool CDriverGL::setupTexture(ITexture& tex)
 	//=======================================
 	if ( !tex.TextureDrvShare )
 	{
-		// Create the shared texture.
-		tex.TextureDrvShare= new CTextureDrvShare;
-
-		// Insert into Driver list.
-		_TexDrvShares.push_back(tex.TextureDrvShare);
+		// insert into driver list. (so it is deleted when driver is deleted).
+		ItTexDrvSharePtrList	it= _TexDrvShares.insert(_TexDrvShares.end());
+		// create and set iterator, for future deletion.
+		*it= tex.TextureDrvShare= new CTextureDrvShare(this, it);
 
 		// Must (re)-create the texture.
 		tex.touch();
@@ -230,26 +229,28 @@ bool CDriverGL::setupTexture(ITexture& tex)
 
 
 			// insert or get the texture.
-			ITextureDrvInfos	*gltext;
 			{
 				CSynchronized<TTexDrvInfoPtrMap>::CAccessor access(&_SyncTexDrvInfos);
 				TTexDrvInfoPtrMap &rTexDrvInfos = access.value();
-				gltext = rTexDrvInfos[name];
-		
-				/* There is a trick here: this test both if:
-					- the textureptr was not in the map. (because CRefPtr() is inited to NULL)
-					- the texture was deleted (by smartptr) by TextureDrvShare. Hence the entry is not deleted even if
-						the ptr is.
-				*/
-				if(gltext==NULL)
+
+				ItTexDrvInfoPtrMap	itTex;
+				itTex= rTexDrvInfos.find(name);
+
+				// texture not found?
+				if( itTex==rTexDrvInfos.end() )
 				{
-					rTexDrvInfos[name]= tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL;
+					// insert into driver map. (so it is deleted when driver is deleted).
+					itTex= (rTexDrvInfos.insert(make_pair(name, (ITextureDrvInfos*)NULL))).first;
+					// create and set iterator, for future deletion.
+					itTex->second= tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL(this, itTex);
+
 					// need to load ALL this texture.
 					mustLoadAll= true;
 				}
 				else
 				{
-					tex.TextureDrvShare->DrvTexture= gltext;
+					tex.TextureDrvShare->DrvTexture= itTex->second;
+
 					// Do not need to reload this texture, even if the format/mipmap has changed, since we found this 
 					// couple in the map.
 					mustLoadAll= false;
@@ -263,10 +264,12 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			// If texture not already created.
 			if(!tex.TextureDrvShare->DrvTexture)
 			{
-				// Must create it.
-				// Create auto a GL id (in constructor).
+				// Must create it. Create auto a GL id (in constructor).
 				// Do not insert into the map. This un-shared texture will be deleted at deletion of the texture.
-				tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL;
+				// Inform ITextureDrvInfos by passing NULL _Driver.
+				tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL(NULL, ItTexDrvInfoPtrMap());
+
+				// need to load ALL this texture.
 				mustLoadAll= true;
 			}
 			else if(tex.isAllInvalidated())

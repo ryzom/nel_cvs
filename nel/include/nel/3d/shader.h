@@ -1,7 +1,7 @@
 /** \file shader.h
  * <File description>
  *
- * $Id: shader.h,v 1.3 2001/01/08 17:58:29 corvazier Exp $
+ * $Id: shader.h,v 1.4 2001/05/07 14:41:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,11 +28,16 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
+#include <list>
 
 
 namespace NL3D {
 
 using NLMISC::CRefCount;
+
+
+class	IDriver;
+
 
 /**
  * <Class description>
@@ -44,14 +49,26 @@ using NLMISC::CRefCount;
  */
 // --------------------------------------------------
 
+
+// List typedef.
+class	IShader;
+typedef	std::list<IShader*>			TShaderPtrList;
+typedef	TShaderPtrList::iterator	ItShaderPtrList;
+
+
 class IShader : public CRefCount
 {
-protected:
+private:
+	IDriver				*_Driver;
+	ItShaderPtrList		_DriverIterator;
+
 public:
+	IShader(IDriver	*drv, ItShaderPtrList it) {_Driver= drv; _DriverIterator= it;}
 	// The virtual dtor is important.
-	virtual ~IShader() {};
+	virtual ~IShader();
 
 };
+
 
 } // NL3D
 

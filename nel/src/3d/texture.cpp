@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.15 2001/04/19 11:10:06 berenguier Exp $
+ * $Id: texture.cpp,v 1.16 2001/05/07 14:41:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/3d/texture.h"
+#include "nel/3d/driver.h"
 #include <vector>
 
 
@@ -94,6 +95,23 @@ void		ITexture::setFilterMode(TMagFilter magf, TMinFilter minf)
 		touch();
 	}
 }
+
+
+
+// ***************************************************************************
+CTextureDrvShare::~CTextureDrvShare()
+{
+	_Driver->removeTextureDrvSharePtr(_DriverIterator);
+}
+// ***************************************************************************
+ITextureDrvInfos::~ITextureDrvInfos()
+{
+	// NB: _Driver may be NULL because texture may not be stored in the share texture map.
+	// so there is no need to remove it from this map!!
+	if(_Driver)
+		_Driver->removeTextureDrvInfoPtr(_DriverIterator);
+}
+
 
 
 } // NL3D

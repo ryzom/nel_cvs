@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.26 2001/04/19 11:10:06 berenguier Exp $
+ * $Id: texture.h,v 1.27 2001/05/07 14:41:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/misc/bitmap.h"
 #include <string>
 #include <list>
+#include <map>
 
 
 namespace NL3D 
@@ -42,23 +43,47 @@ namespace NL3D
 using NLMISC::CBitmap;
 
 
+class	IDriver;
+
+
 //****************************************************************************
+
+// List typedef.
+class	ITextureDrvInfos;
+class	CTextureDrvShare;
+class TTexDrvInfoPtrMap : public std::map< std::string, ITextureDrvInfos*> {};
+typedef	std::list<CTextureDrvShare*>		TTexDrvSharePtrList;
+typedef	TTexDrvInfoPtrMap::iterator			ItTexDrvInfoPtrMap;
+typedef	TTexDrvSharePtrList::iterator		ItTexDrvSharePtrList;
+
+
 // Class for interaction of textures with Driver.
 // ITextureDrvInfos represent the real data of the texture, stored into the driver (eg: just a GLint for opengl).
 class ITextureDrvInfos : public NLMISC::CRefCount
 {
 private:
+	IDriver					*_Driver;
+	ItTexDrvInfoPtrMap		_DriverIterator;
+
 public:
-			ITextureDrvInfos() {};
-			ITextureDrvInfos(class IDriver& driver);
-			virtual ~ITextureDrvInfos(void){ };
+	ITextureDrvInfos(IDriver *drv, ItTexDrvInfoPtrMap it) {_Driver= drv; _DriverIterator= it;}
+	ITextureDrvInfos(class IDriver& driver);
+	virtual ~ITextureDrvInfos(void);
 };
 
 // Many ITexture may point to the same ITextureDrvInfos, through CTextureDrvShare.
 class CTextureDrvShare : public NLMISC::CRefCount
 {
+private:
+	IDriver					*_Driver;
+	ItTexDrvSharePtrList	_DriverIterator;
+
 public:
 	NLMISC::CSmartPtr<ITextureDrvInfos>		DrvTexture;
+
+public:
+	CTextureDrvShare(IDriver *drv, ItTexDrvSharePtrList it) {_Driver= drv; _DriverIterator= it;}
+	~CTextureDrvShare();
 };
 
 

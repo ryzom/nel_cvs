@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.cpp,v 1.30 2001/04/27 14:26:39 vizerie Exp $
+ * $Id: driver.cpp,v 1.31 2001/05/07 14:41:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NL3D
 {
 
 // ***************************************************************************
-const uint32 IDriver::InterfaceVersion = 0x19;
+const uint32 IDriver::InterfaceVersion = 0x1A;
 
 // ***************************************************************************
 IDriver::IDriver()
@@ -74,13 +74,12 @@ bool		IDriver::release(void)
 	// DO THIS FIRST => to auto kill real textures (by smartptr).
 	// First, Because must not kill a pointer owned by a CSmartPtr.
 	// Release Textures drv.
-	ItTexDrvSharePtrList		ittex = _TexDrvShares.begin();
-	while( ittex!=_TexDrvShares.end() )
+	ItTexDrvSharePtrList		ittex;
+	while( (ittex = _TexDrvShares.begin()) !=_TexDrvShares.end() )
 	{
-		ittex->kill();
-		ittex++;
+		// NB: at CTextureDrvShare deletion, this->_TexDrvShares is updated (entry deleted);
+		delete *ittex;
 	}
-	_TexDrvShares.clear();
 
 
 	// Release refptr of TextureDrvInfos. Should be all null (because of precedent pass).
@@ -88,33 +87,25 @@ bool		IDriver::release(void)
 		CSynchronized<TTexDrvInfoPtrMap>::CAccessor access(&_SyncTexDrvInfos);
 		TTexDrvInfoPtrMap &rTexDrvInfos = access.value();
 
-		ItTexDrvInfoPtrMap ittexmap = rTexDrvInfos.begin();
-		while( ittexmap!=rTexDrvInfos.end() )
-		{
-			// Do not need to kill the pointer must be NULL.
-			nlassert((*ittexmap).second==NULL);
-			ittexmap++;
-		}
-		rTexDrvInfos.clear();
+		// must be empty, because precedent pass should have deleted all.
+		nlassert(rTexDrvInfos.empty());
 	}
 
 	// Release Shader drv.
-	ItShaderPtrList		itshd = _Shaders.begin();
-	while( itshd!=_Shaders.end() )
+	ItShaderPtrList		itshd;
+	while( (itshd = _Shaders.begin()) != _Shaders.end() )
 	{
-		itshd->kill();
-		itshd++;
+		// NB: at IShader deletion, this->_Shaders is updated (entry deleted);
+		delete *itshd;
 	}
-	_Shaders.clear();
 
 	// Release VBs drv.
-	ItVBDrvInfoPtrList		itvb = _VBDrvInfos.begin();
-	while( itvb!=_VBDrvInfos.end() )
+	ItVBDrvInfoPtrList		itvb;
+	while( (itvb = _VBDrvInfos.begin()) != _VBDrvInfos.end() )
 	{
-		itvb->kill();
-		itvb++;
+		// NB: at IVBDrvInfo deletion, this->_VBDrvInfos is updated (entry deleted);
+		delete *itvb;
 	}
-	_VBDrvInfos.clear();
 
 	return true;
 }
@@ -202,6 +193,34 @@ IDriver::TMessageBoxId IDriver::systemMessageBox (const char* message, const cha
 	nlassert (0);		// no!
 	return okId;
 }
+
+
+
+
+// ***************************************************************************
+void			IDriver::removeVBDrvInfoPtr(ItVBDrvInfoPtrList  vbDrvInfoIt)
+{
+	_VBDrvInfos.erase(vbDrvInfoIt);
+}
+// ***************************************************************************
+void			IDriver::removeTextureDrvInfoPtr(ItTexDrvInfoPtrMap texDrvInfoIt)
+{
+	CSynchronized<TTexDrvInfoPtrMap>::CAccessor access(&_SyncTexDrvInfos);
+	TTexDrvInfoPtrMap &rTexDrvInfos = access.value();
+
+	rTexDrvInfos.erase(texDrvInfoIt);
+}
+// ***************************************************************************
+void			IDriver::removeTextureDrvSharePtr(ItTexDrvSharePtrList texDrvShareIt)
+{
+	_TexDrvShares.erase(texDrvShareIt);
+}
+// ***************************************************************************
+void			IDriver::removeShaderPtr(ItShaderPtrList shaderIt)
+{
+	_Shaders.erase(shaderIt);
+}
+
 
 }
 

@@ -2,10 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
- * Add lights mgt to the driver.
- *
- * $Id: driver.h,v 1.65 2001/04/27 14:25:25 vizerie Exp $
+ * $Id: driver.h,v 1.66 2001/05/07 14:41:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +35,8 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/uv.h"
 #include "nel/3d/texture.h"
+#include "nel/3d/shader.h"
+#include "nel/3d/vertex_buffer.h"
 #include "nel/misc/mutex.h"
 
 #include <vector>
@@ -61,10 +60,7 @@ using NLMISC::CMatrix;
 using NLMISC::CSynchronized;
 
 
-class IShader;
-class IVBDrvInfos;
 class CMaterial;
-class CVertexBuffer;
 class CPrimitiveBlock;
 class CLight;
 
@@ -119,20 +115,6 @@ class IDriver
 public:
 	/// Version of the driver interface. To increment when the interface change.
 	static const uint32						InterfaceVersion;
-
-protected:
-	// The map of shared textures.
-	
-	class TTexDrvInfoPtrMap : public std::map< std::string, CRefPtr<ITextureDrvInfos> > {};
-
-	// The list of pointer on shared textures.
-	typedef	std::list< CRefPtr<CTextureDrvShare> >	TTexDrvSharePtrList;
-	typedef	std::list< CRefPtr<IShader> >			TShaderPtrList;
-	typedef	std::list< CRefPtr<IVBDrvInfos> >		TVBDrvInfoPtrList;
-	typedef	TTexDrvInfoPtrMap::iterator				ItTexDrvInfoPtrMap;
-	typedef	TTexDrvSharePtrList::iterator			ItTexDrvSharePtrList;
-	typedef	TShaderPtrList::iterator				ItShaderPtrList;
-	typedef	TVBDrvInfoPtrList::iterator				ItVBDrvInfoPtrList;
 
 public:
 	enum TMessageBoxId { okId=0, yesId, noId, abortId, retryId, cancelId, ignoreId, idCount };
@@ -446,6 +428,18 @@ public:
 	{
 		return _PolygonMode;
 	}
+
+protected:
+	friend	class	IVBDrvInfos;
+	friend	class	CTextureDrvShare;
+	friend	class	ITextureDrvInfos;
+	friend	class	IShader;
+
+	/// remove ptr from the lists in the driver.
+	void			removeVBDrvInfoPtr(ItVBDrvInfoPtrList  vbDrvInfoIt);
+	void			removeTextureDrvInfoPtr(ItTexDrvInfoPtrMap texDrvInfoIt);
+	void			removeTextureDrvSharePtr(ItTexDrvSharePtrList texDrvShareIt);
+	void			removeShaderPtr(ItShaderPtrList shaderIt);
 };
 
 // --------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.8 2001/05/02 11:42:55 vizerie Exp $
+ * $Id: vertex_buffer.h,v 1.9 2001/05/07 14:41:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/uv.h"
 #include <vector>
+#include <list>
 
 namespace NLMISC 
 {
@@ -50,7 +51,16 @@ using NLMISC::CVector ;
 using NLMISC::CUV;
 
 
+class	IDriver;
+
 // --------------------------------------------------
+
+
+// List typedef.
+class	IVBDrvInfos;
+typedef	std::list<IVBDrvInfos*>			TVBDrvInfoPtrList;
+typedef	TVBDrvInfoPtrList::iterator		ItVBDrvInfoPtrList;
+
 
 // *** IMPORTANT ********************
 // *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
@@ -58,9 +68,13 @@ using NLMISC::CUV;
 class IVBDrvInfos : public CRefCount
 {
 private:
+	IDriver				*_Driver;
+	ItVBDrvInfoPtrList	_DriverIterator;
+
 public:
+	IVBDrvInfos(IDriver	*drv, ItVBDrvInfoPtrList it) {_Driver= drv; _DriverIterator= it;}
 	// The virtual dtor is important.
-	virtual ~IVBDrvInfos() {};
+	virtual ~IVBDrvInfos();
 };
 
 

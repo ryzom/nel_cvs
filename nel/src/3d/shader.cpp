@@ -1,7 +1,7 @@
 /** \file shader.cpp
  * <File description>
  *
- * $Id: shader.cpp,v 1.1 2000/12/21 13:40:37 corvazier Exp $
+ * $Id: shader.cpp,v 1.2 2001/05/07 14:41:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,9 +24,17 @@
  */
 
 #include "nel/3d/shader.h"
+#include "nel/3d/driver.h"
 
 
-namespace NL3D {
+namespace NL3D 
+{
+
+
+IShader::~IShader()
+{
+	_Driver->removeShaderPtr(_DriverIterator);
+}
 
 
 } // NL3D

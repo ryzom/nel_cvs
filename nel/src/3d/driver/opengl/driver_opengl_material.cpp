@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.24 2001/04/06 14:54:10 corvazier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.25 2001/05/07 14:41:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,9 +120,10 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	//==================================
 	if (!mat.pShader)
 	{
-		mat.pShader=new CShaderGL;
-		// insert into driver list.
-		_Shaders.push_back(mat.pShader);
+		// insert into driver list. (so it is deleted when driver is deleted).
+		ItShaderPtrList		it= _Shaders.insert(_Shaders.end());
+		// create and set iterator, for future deletion.
+		*it= mat.pShader= new CShaderGL(this, it);
 
 		// Must create all OpenGL shader states.
 		touched= 0xFFFFFFFF;

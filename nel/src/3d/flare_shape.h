@@ -1,7 +1,7 @@
 /** \file flare_shape.h
  * <File description>
  *
- * $Id: flare_shape.h,v 1.2 2001/07/24 13:38:51 vizerie Exp $
+ * $Id: flare_shape.h,v 1.3 2001/07/25 10:19:22 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -71,25 +71,46 @@ public:
 
 
 	/// set a texture for the flare
-	void						setTexture(ITexture *tex) { _Tex = tex ; }
+	void						setTexture(ITexture *tex) 
+	{ 
+		_Tex = tex ; 
+	}
 
 	/// get the texture used by the flare
-	ITexture					*getTexture(void) { return _Tex ; }
+	ITexture					*getTexture(void) 
+	{ 
+		return _Tex ; 
+	}
 
 	/// get the texture used by the flare (const version)
-	const ITexture				*getTexture(void) const { return _Tex ; }
+	const ITexture				*getTexture(void) const 
+	{ 
+		return _Tex ; 
+	}
 
 	/// set the size of the flare
-	void						setSize(float size) { _Size = size ; }
+	void						setSize(float size) 
+	{ 
+		_Size = size ; 
+	}
 
 	/// get the size of the flare
-	float						getSize(void) const { return _Size ; }
+	float						getSize(void) const 
+	{ 
+		return _Size ; 
+	}
 
 	/// set the color of the flare
-	void						setColor(NLMISC::CRGBA col) { _Color = col ; }
+	void						setColor(NLMISC::CRGBA col) 
+	{ 
+		_Color = col ; 
+	}
 
 	/// get the color of the shape
-	NLMISC::CRGBA				getColor(void) const { return _Color ; }
+	NLMISC::CRGBA				getColor(void) const 
+	{ 
+		return _Color ; 
+	}
 
 	/// set the persistence of this shape, in second (the time it takes to fade from white to black)
 	void						setPersistence(CAnimationTime persistence) 

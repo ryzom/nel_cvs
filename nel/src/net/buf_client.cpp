@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.8 2001/06/01 13:38:06 cado Exp $
+ * $Id: buf_client.cpp,v 1.9 2001/06/01 13:57:09 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,7 +102,7 @@ void CBufClient::send( const std::vector<uint8>& buffer )
 	nlassert( ! buffer.empty() );
 
 	// Size check in debug
-	nlassert( buffer.size() <= maxSentBlockSize() )
+	nlassert( buffer.size() <= maxSentBlockSize() );
 
 	if ( ! _BufSock->pushBuffer( buffer ) )
 	{

@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.8 2001/06/01 13:38:06 cado Exp $
+ * $Id: buf_server.cpp,v 1.9 2001/06/01 13:57:09 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -284,7 +284,7 @@ void CBufServer::send( const std::vector<uint8>& buffer, TSockId hostid )
 	nlassert( ! buffer.empty() );
 
 	// Size check in debug
-	nlassert( buffer.size() <= maxSentBlockSize() )
+	nlassert( buffer.size() <= maxSentBlockSize() );
 
 	if ( hostid != NULL )
 	{

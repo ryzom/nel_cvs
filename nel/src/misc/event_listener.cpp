@@ -1,7 +1,7 @@
 /** \file event_listener.cpp
  * <File description>
  *
- * $Id: event_listener.cpp,v 1.11 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: event_listener.cpp,v 1.12 2002/04/15 12:04:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,18 +94,86 @@ void CEventListenerAsync::operator ()(const CEvent& event)
 		CEventKeyDown *pEvent=(CEventKeyDown*)&event;
 		_KeyArray.set (pEvent->Key);
 		_KeyDownArray.set (pEvent->Key);
+		switch(pEvent->Key)
+		{
+			case KeyRCONTROL:
+			case KeyLCONTROL:
+				_KeyArray.set (KeyCONTROL);
+				_KeyDownArray.set (KeyCONTROL);
+			break;
+			case KeyRSHIFT:
+			case KeyLSHIFT:
+				_KeyArray.set (KeySHIFT);
+				_KeyDownArray.set (KeySHIFT);
+			break;
+			case KeyRMENU:
+			case KeyLMENU:
+				_KeyArray.set (KeyMENU);
+				_KeyDownArray.set (KeyMENU);
+			break;
+			default:
+			break;
+		}
 	}
 	// Key up ?
 	if (event==EventKeyUpId)
 	{
 		CEventKeyUp *pEvent=(CEventKeyUp*)&event;
+		
+
+		switch(pEvent->Key)
+		{
+			case KeyRCONTROL:
+			case KeyLCONTROL:
+				// Do not "raise up" the key, until someone has get the state of this key.						
+				if (!_KeyArray[KeyLCONTROL] && !_KeyArray[KeyRCONTROL])
+				{
+					_KeyArray.clear(KeyCONTROL);					
+
+					if(_KeyReleaseArray.get(KeyCONTROL))
+					{						
+						_KeyDownArray.clear (KeyCONTROL);						
+						_KeyReleaseArray.clear (KeyCONTROL);
+					}
+				}
+			break;
+			case KeyRSHIFT:
+			case KeyLSHIFT:
+				if (!_KeyArray[KeyLSHIFT] && !_KeyArray[KeyRSHIFT])
+				{
+					_KeyArray.clear(KeySHIFT);					
+
+					if(_KeyReleaseArray.get(KeySHIFT))
+					{						
+						_KeyDownArray.clear (KeySHIFT);						
+						_KeyReleaseArray.clear (KeySHIFT);
+					}
+				}
+			break;
+			case KeyRMENU:
+			case KeyLMENU:
+				if (!_KeyArray[KeyLMENU] && !_KeyArray[KeyRMENU])
+				{
+					_KeyArray.clear(KeyMENU);					
+
+					if(_KeyReleaseArray.get(KeyMENU))
+					{						
+						_KeyDownArray.clear (KeyMENU);						
+						_KeyReleaseArray.clear (KeyMENU);
+					}
+				}
+			break;			
+		}
+
+
 		_KeyArray.clear (pEvent->Key);
 		// Do not "raise up" the key, until someone has get the state of this key.
 		if(_KeyReleaseArray.get(pEvent->Key))
-		{
+		{			
 			_KeyDownArray.clear (pEvent->Key);
 			_KeyReleaseArray.clear (pEvent->Key);
 		}
+
 	}
 	// Activate false ?
 	if (event==EventSetFocusId)
@@ -116,7 +184,7 @@ void CEventListenerAsync::operator ()(const CEvent& event)
 			// Disactive all keys
 			_KeyArray.clearAll ();
 			_KeyDownArray.clearAll ();
-			_KeyReleaseArray.clearAll ();
+			_KeyReleaseArray.clearAll ();			
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.26 2004/10/25 16:26:56 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.27 2004/10/25 16:32:42 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -2958,13 +2958,12 @@ void CDriverD3D::CRenderState::apply(CDriverD3D *driver)
 	*/
 }
 		
-volatile bool cacheTSS = true;
 
 // ***************************************************************************
 void CDriverD3D::CTextureState::apply(CDriverD3D *driver)
 {		
 	H_AUTO_D3D(CDriverD3D_CTextureState);		
-	if (Value != DeviceValue || !cacheTSS)
+	if (Value != DeviceValue)
 	{
 		driver->_DeviceInterface->SetTextureStageState (StageID, StateID, Value);
 		DeviceValue = Value;

@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.10 2002/12/17 16:14:02 legros Exp $
+ * $Id: build_surf.cpp,v 1.11 2003/01/06 18:18:04 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -476,6 +476,8 @@ void	NLPACS::CSurfElement::computeQuantas()
 //	hasInside = zbbox.include(v0) || zbbox.include(v1) || zbbox.include(v2);
 //	hasOutside = !zbbox.include(v0) || !zbbox.include(v1) || !zbbox.include(v2);
 //	IsMergable = hasInside && !hasOutside;
+
+	QuantHeight = (uint8)(fmod((v0.z+v1.z+v2.z)/3.0f, 2.0))%255;
 	
 	Area = 0.5f*n.norm();
 
@@ -930,10 +932,12 @@ void	NLPACS::CComputableSurface::floodFill(CSurfElement *first, sint32 surfId)
 	Character = first->Character;
 	Level = first->Level;
 	IsHorizontal = first->IsHorizontal;
+	QuantHeight = first->QuantHeight;
 	uint	waterShape = first->WaterShape;
 
 	IsUnderWater = (first->WaterShape != 255);
 	WaterHeight = IsUnderWater ? first->Root->RootZoneTessellation->WaterShapes[first->WaterShape].Vertices[0].z : 123456.0f;
+
 
 	uint32	currentZoneId = first->Root->ZoneId;
 
@@ -957,7 +961,8 @@ void	NLPACS::CComputableSurface::floodFill(CSurfElement *first, sint32 surfId)
 				pop->EdgeLinks[i]->Character == Character &&
 				pop->EdgeLinks[i]->Level == Level &&
 				pop->EdgeLinks[i]->Root->ZoneId == currentZoneId &&
-				pop->EdgeLinks[i]->WaterShape == waterShape)
+				pop->EdgeLinks[i]->WaterShape == waterShape &&
+				pop->EdgeLinks[i]->QuantHeight == QuantHeight)
 			{
 				pop->EdgeLinks[i]->SurfaceId = SurfaceId;
 				stack.push_back(pop->EdgeLinks[i]);
@@ -1873,6 +1878,10 @@ void	NLPACS::CZoneTessellation::compile()
 					if (e0.Level == e1.Level)							e.Level = e0.Level;
 					if (e1.Level == e2.Level)							e.Level = e1.Level;
 					if (e0.Level == e2.Level)							e.Level = e2.Level;
+
+					if (e0.QuantHeight == e1.QuantHeight)				e.QuantHeight = e0.QuantHeight;
+					if (e1.QuantHeight == e2.QuantHeight)				e.QuantHeight = e1.QuantHeight;
+					if (e0.QuantHeight == e2.QuantHeight)				e.QuantHeight = e2.QuantHeight;
 				}
 			}
 		}

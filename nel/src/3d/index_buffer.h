@@ -1,7 +1,7 @@
 /** \file index_buffer.h
  * Index buffers.
  *
- * $Id: index_buffer.h,v 1.4 2004/04/08 13:01:39 lecroart Exp $
+ * $Id: index_buffer.h,v 1.5 2004/06/28 10:08:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -520,7 +520,7 @@ inline void CIndexBuffer::lock (CIndexBufferReadWrite &accessor, uint first, uin
 		nlassert (_LockedBuffer == NULL);
 
 		// No
-		if (isResident())
+		if (isResident() && !_KeepLocalMemory)
 		{
 			if (last == 0)
 				last = _NbIndexes;
@@ -553,7 +553,7 @@ inline void CIndexBuffer::lock (CIndexBufferRead &accessor, uint first, uint las
 		nlassert (_LockedBuffer == NULL);
 
 		// No
-		if (isResident())
+		if (isResident() && !_KeepLocalMemory)
 		{
 			if (last == 0)
 				last = _NbIndexes;
@@ -587,7 +587,7 @@ inline void CIndexBuffer::unlock (uint first, uint end)
 
 	if (_LockCounter == 0)
 	{
-		if (isResident())
+		if (isResident() && !_KeepLocalMemory)
 			DrvInfos->unlock (0, 0);
 
 		_LockedBuffer = NULL;
@@ -606,7 +606,7 @@ inline void CIndexBuffer::unlock () const
 
 	if (_LockCounter == 0)
 	{
-		if (isResident())
+		if (isResident() && !_KeepLocalMemory)
 			DrvInfos->unlock (0, 0);
 
 		_LockedBuffer = NULL;

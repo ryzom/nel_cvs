@@ -1,7 +1,7 @@
 /** \file driver_direct3d_index.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_index.cpp,v 1.4 2004/04/26 13:48:23 corvazier Exp $
+ * $Id: driver_direct3d_index.cpp,v 1.5 2004/06/28 10:08:53 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -176,7 +176,10 @@ bool CDriverD3D::activeIndexBuffer(CIndexBuffer& IB)
 		const uint size = (uint)IB.capacity();
 		uint preferredMemory;
 		if (_DisableHardwareIndexArrayAGP)
+		{
 			preferredMemory = CIndexBuffer::RAMResident;
+			info->Volatile = false;
+		}
 		else
 		{
 			switch (IB.getPreferredMemory ())

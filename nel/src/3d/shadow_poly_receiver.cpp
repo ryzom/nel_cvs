@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.cpp
  * <File description>
  *
- * $Id: shadow_poly_receiver.cpp,v 1.7 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: shadow_poly_receiver.cpp,v 1.8 2004/06/28 10:08:31 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -49,6 +49,9 @@ CShadowPolyReceiver::CShadowPolyReceiver(uint quadGridSize, float quadGridCellSi
 	_TriangleGrid.create(quadGridSize, quadGridCellSize);
 
 	_VB.setVertexFormat(CVertexBuffer::PositionFlag);
+	// lock volatile, to avoid cpu stall when rendering multiple shadows in the same polyReceiver
+	_VB.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
+	_RenderTriangles.setPreferredMemory(CIndexBuffer::RAMVolatile, false);
 }
 
 
@@ -229,10 +232,17 @@ void			CShadowPolyReceiver::render(IDriver *drv, CMaterial &shadowMat, const CSh
 
 	uint	currentTriIdx= 0;
 	{
+		// Volatile: must resize before lock
+		_VB.setNumVertices(_Vertices.size());
+		_RenderTriangles.setNumIndexes(_Triangles.size() * 3);
+		
+		// lock volatile, to avoid cpu stall
 		CVertexBufferReadWrite vba;
 		_VB.lock(vba);
-		// TODODO: en D3D, ca rame ptet ca paske ca fait un indexBuffer::lock() par triangle
-
+		CIndexBufferReadWrite iba;
+		_RenderTriangles.lock (iba);
+		uint32 *triPtr = iba.getPtr();
+		
 		// For All triangles, clip them.
 		uint	currentVbIdx= 0;
 		for(it=_TriangleGrid.begin();it!=_TriangleGrid.end();it++)
@@ -272,10 +282,6 @@ void			CShadowPolyReceiver::render(IDriver *drv, CMaterial &shadowMat, const CSh
 			// if triangle not clipped, add the triangle
 			if( (triFlag & NL3D_SPR_NUM_CLIP_PLANE_MASK)==0 )
 			{
-				CIndexBufferReadWrite iba;
-				_RenderTriangles.lock (iba);
-				uint32 *ptr = iba.getPtr();
-
 				// Add the 3 vertices to the VB, and to the index buffer.
 				for(i=0;i<3;i++)
 				{
@@ -293,7 +299,7 @@ void			CShadowPolyReceiver::render(IDriver *drv, CMaterial &shadowMat, const CSh
 					}
 
 					// add the index to the tri list.
-					ptr[currentTriIdx++]= vbId;
+					triPtr[currentTriIdx++]= vbId;
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * <File description>
  *
- * $Id: ps_mesh.cpp,v 1.1 2001/12/06 16:51:49 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.2 2001/12/12 10:27:22 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "3d/ps_mesh.h"
 
+#include "3d/shape.h"
 #include "3d/mesh.h"
 #include "3d/transform_shape.h"
 #include "3d/shape_bank.h"
@@ -1491,6 +1492,11 @@ void CPSConstraintMesh::CMeshDisplayShare::buildVB(uint32 destFormat, CVertexBuf
 			}
 		}
 	}
+}
+
+//=====================================================================================
+CPSConstraintMesh::CMeshDisplayShare::CKey::~CKey()
+{
 }
 
 

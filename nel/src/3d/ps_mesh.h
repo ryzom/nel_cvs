@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * <File description>
  *
- * $Id: ps_mesh.h,v 1.1 2001/12/06 16:51:49 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.2 2001/12/12 10:27:22 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -374,6 +374,7 @@ protected:
 			typedef  NLMISC::CSmartPtr<IShape> PShape;
 			struct CKey
 			{
+				~CKey();
 				PShape Shape;
 				uint32 Format;
 				bool operator == (const CKey &key) const { return Shape == key.Shape && Format == key.Format; }

@@ -1,7 +1,7 @@
 /** \file naming_service.h
  * Naming Service (NS)
  *
- * $Id: naming_service.h,v 1.3 2001/05/18 16:50:40 lecroart Exp $
+ * $Id: naming_service.h,v 1.4 2001/08/30 17:09:00 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,6 +109,7 @@ public:
 	static const NLNET::TServiceId	BaseSId;
 	
 	void init();
+	bool update ();
 
 };
 

@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.11 2001/08/23 15:43:21 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.12 2001/08/30 17:09:00 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "naming_service.h"
 
 #include "nel/misc/debug.h"
+#include "nel/misc/command.h"
 
 #include "nel/net/unitime.h"
 #include "nel/net/net_manager.h"
@@ -1226,6 +1227,7 @@ TCallbackItem CallbackArray[] =
 //	{ "LKS", cbLookupAllServices },
 };
 
+TTime tt;
 
 void CNamingService::init()
 {
@@ -1256,6 +1258,18 @@ void CNamingService::init()
 	// DebugLog->addDisplayer( new CStdDisplayer() );
 }
 
+bool CNamingService::update ()
+{
+/*	static int nbup=0;
+
+	if (nbup == 0)
+	{
+		tt = CTime::getLocalTime ();
+	}
+
+	nlinfo ("virtual %u real: %u", (nbup++)*10, (uint32)(CTime::getLocalTime()-tt));
+*/	return true;
+}
 
 /// Default validity time is 2 minutes
 const uint16		CNamingService::ValidTime = 120;
@@ -1269,3 +1283,23 @@ const TServiceId	CNamingService::BaseSId = 128;
 
 /// Naming Service
 NLNET_SERVICE_MAIN (CNamingService, "NS", "naming_service", 50000, CallbackArray )
+
+
+//
+// Commands
+//
+
+
+NLMISC_COMMAND (services, "displays the list all of registered services", "")
+{
+	if(args.size() != 0) return false;
+
+	log.displayNL ("Display the %d registered services :", RegisteredServices.size());
+	for (list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+	{
+		log.displayNL ("> %s '%s' %s-%hu '%s'", (*it).SockId->asString().c_str(), CNetManager::getNetBase ("NS")->hostAddress((*it).SockId).asString().c_str(), (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str());
+	}
+	log.displayNL ("End ot the list");
+
+	return true;
+}

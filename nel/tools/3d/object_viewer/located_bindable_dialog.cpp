@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.33 2004/07/20 12:25:05 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.34 2004/07/22 08:55:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -490,6 +490,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			s = new CStatic;			
 			pushWnd(s);
 			s->Create("Texture V factor :", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
+			s->SetFont(CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT)));
 			s->ShowWindow(SW_SHOW);
 			uvd->GetClientRect(&rect);
 			yPos += rect.bottom + 3;
@@ -508,7 +509,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			sd->init(xPos + 140, yPos, this);
 			CStatic *s = new CStatic;
 			pushWnd(s);
-			s->Create("Seg Duration :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->Create("Seg Duration :", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
 			s->SetFont(CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT)));			
 			s->ShowWindow(SW_SHOW);
 			sd->GetClientRect(&rect);
@@ -807,4 +808,5 @@ void CLocatedBindableDialog::OnZalign()
 	bool align = ((CButton *) GetDlgItem(IDC_ZALIGN))->GetCheck() != 0;
 	NL3D::CPSFaceLookAt *fla = NLMISC::safe_cast<NL3D::CPSFaceLookAt *>(_Bindable);
 	fla->setAlignOnZAxis(align);
+	updateModifiedFlag();
 }

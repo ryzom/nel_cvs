@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin_template.cpp
  * File not compiled. Included from mesh_mrm_skin.cpp. It is a "old school" template.
  *
- * $Id: mesh_mrm_skin_template.cpp,v 1.1 2002/03/28 13:18:57 berenguier Exp $
+ * $Id: mesh_mrm_skin_template.cpp,v 1.2 2002/04/09 11:44:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,7 @@ static void	applyArraySkinNormalT(uint numMatrixes, uint32 *infPtr, CMesh::CSkin
 {
 	/* Prefetch all vertex/normal before, it is to be faster.
 	*/
+#ifdef NL_OS_WINDOWS
 	{
 		uint	nInfTmp= nInf;
 		uint32	*infTmpPtr= infPtr;
@@ -72,6 +73,7 @@ static void	applyArraySkinNormalT(uint numMatrixes, uint32 *infPtr, CMesh::CSkin
 
 		}
 	}
+#endif
 
 	// Process vertices.
 	switch(numMatrixes)
@@ -191,6 +193,7 @@ static void	applyArraySkinTangentSpaceT(uint numMatrixes, uint32 *infPtr, CMesh:
 {
 	/* Prefetch all vertex/normal/tgSpace before, it is faster.
 	*/
+#ifdef NL_OS_WINDOWS
 	{
 		uint	nInfTmp= nInf;
 		uint32	*infTmpPtr= infPtr;
@@ -216,6 +219,7 @@ static void	applyArraySkinTangentSpaceT(uint numMatrixes, uint32 *infPtr, CMesh:
 
 		}
 	}
+#endif
 
 	// Process vertices.
 	switch(numMatrixes)

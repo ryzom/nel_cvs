@@ -1,7 +1,7 @@
 /** \file buffer.h
  * IBuffer: sound buffer interface
  *
- * $Id: buffer.h,v 1.1 2001/06/26 15:28:10 cado Exp $
+ * $Id: buffer.h,v 1.2 2002/06/11 09:36:46 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,31 +50,34 @@ class IBuffer
 public:
 
 	/// Set the sample format. Example: freq=44100
-	virtual void		setFormat( TSampleFormat format, uint freq ) = 0;
+	virtual void			setFormat( TSampleFormat format, uint freq ) = 0;
 	/// Set the buffer size and fill the buffer.  Return true if ok. Call setFormat() first.
-	virtual bool		fillBuffer( void *src, uint32 bufsize ) = 0;
+	virtual bool			fillBuffer( void *src, uint32 bufsize ) = 0;
 
 	/// Return the size of the buffer, in bytes
-	virtual uint32		getSize() const = 0;
+	virtual uint32			getSize() const = 0;
 	/// Return the duration (in ms) of the sample in the buffer
-	virtual float		getDuration() const = 0;
+	virtual float			getDuration() const = 0;
 	/// Return true if the buffer is stereo, false if mono
-	virtual bool		isStereo() const = 0;
+	virtual bool			isStereo() const = 0;
 	/// Return the format and frequency
-	virtual void		getFormat( TSampleFormat& format, uint& freq ) const = 0;
+	virtual void			getFormat( TSampleFormat& format, uint& freq ) const = 0;
 
 	/** Return true if the buffer is able to be fill part by part, false if it must be filled in one call
 	 * OpenAL 1.0 -> false
 	 */
-	virtual bool		isFillMoreSupported() const = 0;
+	virtual bool			isFillMoreSupported() const = 0;
 	/// Force the buffer size without filling data (if isFillMoreSupported() only)
-	virtual void		setSize( uint32 size )					{ throw ESoundDriverNotSupp(); }
+	virtual void			setSize( uint32 size )					{ throw ESoundDriverNotSupp(); }
 	/** Fill the buffer partially (if isFillMoreSupported() only),
 	 * beginning at the pos changed by a previous call to fillMore().
 	 * If the pos+srcsize exceeds the buffer size, the exceeding data is put at the beginning
 	 * of the buffer. srcsize must be smaller than the buffer size.
 	 */
-	virtual bool		fillMore( void *src, uint32 srcsize )	{ throw ESoundDriverNotSupp(); }
+	virtual bool			fillMore( void *src, uint32 srcsize )	{ throw ESoundDriverNotSupp(); }
+
+	/// Return the name of this buffer
+	virtual std::string&	getName() = 0;
 
 protected:
 

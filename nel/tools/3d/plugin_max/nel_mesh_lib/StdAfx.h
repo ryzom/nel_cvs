@@ -1,7 +1,7 @@
 /** \file stdafx.h
  * <File description>
  *
- * $Id: StdAfx.h,v 1.2 2001/06/11 07:31:13 corvazier Exp $
+ * $Id: StdAfx.h,v 1.3 2001/07/18 12:21:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,21 @@
 // Character Studio SDK include
 #include <bipexp.h>
 #include <phyexp.h>
+
+#include <string>
+#include <vector>
+
+#include "../nel_patch_lib/rpo.h"
+#include "nel/misc/time_nl.h"
+#include "nel/misc/file.h"
+#include "nel/misc/triangle.h"
+#include "nel/misc/bsphere.h"
+#include "nel/3d/quad_tree.h"
+#include "3d/scene_group.h"
+#include "3d/skeleton_shape.h"
+#include "3d/texture_file.h"
+#include "3d/light.h"
+
 
 // TODO: reference additional headers your program requires here
 

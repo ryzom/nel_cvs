@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: inet_address.h,v 1.1 2000/09/14 16:18:47 lecroart Exp $
+ * $Id: inet_address.h,v 1.2 2000/09/18 17:13:15 cado Exp $
  *
  * Interface for CInetAddress
  */
@@ -31,7 +31,7 @@ class ESocket;
 
 
 /**
- * Internet addresses
+ * Internet address (IP + port)
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -49,6 +49,9 @@ public:
 	/// Copy constructor
 	CInetAddress( const CInetAddress& other );
 
+	/// Assignment operator
+	CInetAddress& operator=( const CInetAddress& other );
+
 	/// Destructor
 	~CInetAddress();
 
@@ -58,8 +61,10 @@ public:
 	/// Sets port
 	void				setPort( uint16 port );
 
-	/// Sets internal socket address directly (contents is copied)
-	void				setSockAddr( const sockaddr_in* saddr );
+	/** Sets internal socket address directly (contents is copied).
+	 * It also retrieve the host name if CInetAddress::RetrieveNames is true.
+	 */
+	void				setSockAddr( const sockaddr_in* saddr ) throw (ESocket);
 
 	/// Returns if object (address and port) is valid
 	bool				isValid() const;
@@ -79,7 +84,13 @@ public:
 	/// Creates a CInetAddress object with local host address, port=0
 	static CInetAddress	localHost() throw(ESocket);
 
+	/// If true, setSockAddr() always tries to retrieve the host name from the address
+	static bool RetrieveNames;
+
 private:
+
+	// Constructor contents
+	void				init();
 
 	std::string	_HostName;
 	sockaddr_in	*_SockAddr;

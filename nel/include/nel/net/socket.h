@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: socket.h,v 1.2 2000/09/14 16:40:53 cado Exp $
+ * $Id: socket.h,v 1.3 2000/09/18 17:13:15 cado Exp $
  *
  * Interface for CSocket
  */
@@ -38,16 +38,26 @@ class ESocket : public Exception
 {
 public:
 
-	ESocket( const char *reason=NULL )
+	/// Constructor
+	ESocket( const char *reason="", uint errnum=0 )
 	{
 		_Reason = std::string("Socket error: ") + std::string(reason);
+		_ErrNum = errnum;
 	}
-	
+
+	/// Returns the reason of the exception	
 	virtual const char	*what() const throw() { return _Reason.c_str(); }
+
+	/// Returns the error code
+	uint				errNum()
+	{
+		return _ErrNum;
+	}
 
 private:
 
 	std::string	_Reason;
+	uint		_ErrNum;
 };
 
 
@@ -61,7 +71,7 @@ private:
 
 
 /**
- * Connected socket (for TCP streams)
+ * Client socket (for TCP connected streams). Allows to send/receive CMessage objects.
  * \todo Advanced error handling
  * \todo What about byte swapping for message headers ???
  * \author Olivier Cado
@@ -72,14 +82,25 @@ class CSocket
 {
 public:
 
+	/** Initializes the network engine if it is not already done (under Windows, calls WSAStartup()).
+	 * Called by CSocket constructors.
+	 */
+	static void init() throw (ESocket);
+
 	/// Constructor
 	CSocket();
+
+	/// Construct a CSocket object using an already connected socket and its associated address
+	CSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket);
 
 	// Destructor
 	//~CSocket();
 	
+	/// Sets/unsets TCP_NODELAY
+	void	setNoDelay( bool value ) throw (ESocket);
+
 	/// Connection
-	void	connect( const CInetAddress& addr );
+	void	connect( const CInetAddress& addr ) throw (ESocket);
 
 	/// Closure
 	void	close();
@@ -88,10 +109,16 @@ public:
 	void	send( const CMessage& message );
 
 	/// Checks if there are some data to receive
-	bool	dataAvailable();
+	bool	dataAvailable() throw (ESocket);
 
 	/// Receives data (returns false if !dataAvailable()). The capacity of the message must be large enough.
-	bool	receive( CMessage& message );
+	bool	receive( CMessage& message ) throw (ESocket);
+
+	/// Returns the address of the remote host
+	const CInetAddress& remoteAddr() const
+	{
+		return _RemoteAddr;
+	}
 
 private:
 

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: message.h,v 1.1 2000/09/14 16:18:47 lecroart Exp $
+ * $Id: message.h,v 1.2 2000/09/18 17:13:15 cado Exp $
  *
  * Interface of CMessage
  */
@@ -22,18 +22,22 @@
 namespace NLNET
 {
 
+/// This exception is raised when someone tries to serialize in more than there is.
 class EStreamOverflow : public NLMISC::EStream
 {
+	/// Returns the exception name
 	virtual const char	*what() const throw() {return "Stream Overflow Error";}
 
 };
 
 
+/// Iterator on vector<uint8>
 typedef std::vector<uint8>::iterator it8;
 
 
 /**
- * Message memory stream
+ * Message memory stream. Can be serialized to/from (see SerialBuffer()). Can be sent or received
+ * over a network, using a CSocket object.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -43,10 +47,10 @@ class CMessage : public NLMISC::IStream
 public:
 
 	/// Initialization constructor
-	CMessage( uint32 defaultcapacity=32, bool inputStream=false );
+	CMessage( bool inputStream=false, uint32 defaultcapacity=32 );
 
 	/// Method inherited from IStream
-	virtual void	serial(uint8 *buf, uint len) throw(EStreamOverflow);
+	virtual void	serialBuffer(uint8 *buf, uint len) throw(EStreamOverflow);
 
 	/// Method inherited from IStream
 	virtual void	serialBit(bool &bit) throw(EStreamOverflow);

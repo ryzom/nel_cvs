@@ -8,9 +8,11 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.2 2000/09/14 16:40:53 cado Exp $
+ * $Id: socket.cpp,v 1.3 2000/09/18 17:13:15 cado Exp $
  *
- * Implementation for CSocket
+ * Implementation for CSocket.
+ * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
+ * from which I took some ideas
  */
 
 #include "nel/net/socket.h"
@@ -41,12 +43,10 @@ namespace NLNET
 bool CSocket::_Initialized = false;
 
 
-/*
- * Constructor
+/* Initializes the network engine if it is not already done (under Windows, calls WSAStartup()).
+ * Called by CSocket constructors.
  */
-CSocket::CSocket()
-: _Sock( 0 ),
-  _Connected( false )
+void CSocket::init() throw (ESocket)
 {
 	if ( ! CSocket::_Initialized )
 	{
@@ -54,13 +54,53 @@ CSocket::CSocket()
 		WORD winsock_version = MAKEWORD( 2, 0 ); 
 		WSADATA wsaData;
 		int err = WSAStartup(winsock_version, &wsaData);
-		if ( err == 0 )
+		if ( err != 0 )
 		{
 			throw ESocket("Winsock initialization failed");
 		}
 #endif
 		CSocket::_Initialized = true;
 	}
+}
+
+
+/*
+ * Constructor
+ */
+CSocket::CSocket()
+: _Sock( 0 ),
+  _Connected( false )
+{
+	CSocket::init();
+}
+
+
+/*
+ * Construct a CSocket object using an already connected socket and its associated address
+ */
+CSocket::CSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket)
+: _Sock( sock ),
+  _Connected( false ),
+  _RemoteAddr( remoteaddr )
+{
+	CSocket::init();
+
+	// Check remote address
+	if ( ! _RemoteAddr.isValid() )
+	{
+		throw ESocket( "Could not init a socket object with an invalid address" );
+	}
+
+	// Get local socket name
+	sockaddr saddr;
+	int saddrlen = sizeof(saddr);
+	if ( getsockname( _Sock, &saddr, &saddrlen ) != 0 )
+	{
+		// log( "Network error: getsockname() failed (CSocket(','))" );
+	}
+	_LocalAddr.setSockAddr( (const sockaddr_in *)&saddr );
+
+	_Connected = true;
 }
 
 
@@ -73,10 +113,23 @@ CSocket::CSocket()
 }
 */
 
+
+/*
+ * Sets/unsets TCP_NODELAY
+ */
+void CSocket::setNoDelay( bool value ) throw (ESocket)
+{
+	if ( setsockopt( _Sock, IPPROTO_TCP, TCP_NODELAY, (char*)&value, sizeof(value) ) != 0 )
+	{
+		throw ESocket( "Setsockopt(TCP_NODELAY) failed. " );
+	}
+}
+
+
 /*
  * Connection
  */
-void CSocket::connect( const CInetAddress& addr )
+void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 {
 	// Check address
 	if ( ! addr.isValid() )
@@ -106,6 +159,7 @@ void CSocket::connect( const CInetAddress& addr )
 		// log( "Network error: getsockname() failed (CSocket::connect)" );
 	}
 	_LocalAddr.setSockAddr( (const sockaddr_in *)&saddr );
+	_RemoteAddr = addr;
 	_Connected = true;
 }
 
@@ -149,10 +203,13 @@ void CSocket::send( const CMessage& message )
 	}
 
 	// 2. Write message name (optional)
-	bsent = ::send( _Sock, message.msgName().c_str(), msgnamelen, 0 );
-	if ( bsent != msgnamelen )
+	if ( msgnamelen != 0 )
 	{
-		throw "Unable to send msgname";
+		bsent = ::send( _Sock, message.msgName().c_str(), msgnamelen, 0 );
+		if ( bsent != msgnamelen )
+		{
+			throw "Unable to send msgname";
+		}
 	}
 
 	// 3. Write message size
@@ -175,7 +232,7 @@ void CSocket::send( const CMessage& message )
 /*
  * Checks if there are some data to receive
  */
-bool CSocket::dataAvailable()
+bool CSocket::dataAvailable() throw (ESocket)
 {
 	if ( ! _Connected )
 	{
@@ -198,7 +255,7 @@ bool CSocket::dataAvailable()
 	{
 		if ( res == -1 )
 		{
-			throw ESocket("select failed");
+			throw ESocket("dataAvailable(): select failed");
 		}
 	}
 	return false;
@@ -208,7 +265,7 @@ bool CSocket::dataAvailable()
 /*
  * Receives data (returns false if !dataAvailable()). The capacity of the message must be large enough.
  */
-bool CSocket::receive( CMessage& message )
+bool CSocket::receive( CMessage& message ) throw (ESocket)
 {
 	if ( ! dataAvailable() )
 	{
@@ -224,10 +281,11 @@ bool CSocket::receive( CMessage& message )
 
 	// 2. Read message name (optional)
 	uint16 msgnamelen = 0;
-	char *msgname = new char[msgnamelen+1];
+	char *msgname = NULL;
 	if ( msgtype < 0 )
 	{
 		msgnamelen = msgtype & 0x7FFF; // msgtype when bit 15 is 1 is length of msgname
+		msgname = new char[msgnamelen+1];
 		if ( ::recv( _Sock, msgname, msgnamelen, 0 ) == SOCKET_ERROR )
 		{
 			throw ESocket("Cannot receive msgname");
@@ -242,7 +300,7 @@ bool CSocket::receive( CMessage& message )
 	}
 
 	// 4. Read all buffer and dismiss
-	message.setHeader( msgtype, std::string(msgname) );
+	message.setHeader( msgtype, std::string( msgname!=NULL ? msgname : "" ) );
 	delete [] msgname;
 	if ( ::recv( _Sock, (char*)(message.bufferToFill(msgsize)), msgsize, 0 ) == SOCKET_ERROR )
 	{

@@ -8,32 +8,35 @@
  */
 
 /*
- * $Id: message.cpp,v 1.2 2000/09/14 16:40:53 cado Exp $
+ * $Id: message.cpp,v 1.3 2000/09/18 17:13:15 cado Exp $
  *
  * Implementation of CMessage
  */
 
 #include "nel/net/message.h"
+#include <algorithm>
 
 
 namespace NLNET
 {
 
+	
 /*
  * Initialization constructor
  */
-CMessage::CMessage( uint32 defaultcapacity, bool inputStream )
+CMessage::CMessage( bool inputStream, uint32 defaultcapacity )
 : NLMISC::IStream( inputStream, true ),
-  _BufPos( _Buffer.begin() )
+  _MsgType( 0 )
 {
-	_Buffer.reserve( defaultcapacity );
+	_Buffer.reserve( std::max(defaultcapacity,(uint32)32) );
+	_BufPos = _Buffer.begin();
 }
 
 
 /*
  * serial (inherited from IStream)
  */
-void CMessage::serial(uint8 *buf, uint len) throw(EStreamOverflow)
+void CMessage::serialBuffer(uint8 *buf, uint len) throw(EStreamOverflow)
 {
 	if ( isReading() )
 	{
@@ -131,5 +134,6 @@ uint8 *CMessage::bufferToFill( uint32 msgsize )
 	_BufPos = _Buffer.begin();
 	return _BufPos;
 }
+
 
 }

@@ -8,9 +8,9 @@
  */
 
 /*
- * $Id: inet_address.cpp,v 1.2 2000/09/14 16:40:53 cado Exp $
+ * $Id: inet_address.cpp,v 1.3 2000/09/18 17:13:15 cado Exp $
  *
- * Implementation for CInetAddress
+ * Implementation for CInetAddress.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  */
@@ -23,6 +23,7 @@
 	#include <winsock2.h>
 #elif defined NL_OS_LINUX
 	#include <netinet/in.h>
+	#define WSAGetLastError() 0
 #endif
 
 
@@ -33,17 +34,17 @@ using namespace std;
 namespace NLNET
 {
 
+
+bool CInetAddress::RetrieveNames = true; // may be suppressed
+
+
 /*
  * Constructor
  */
 CInetAddress::CInetAddress()
 : _Valid( false )
 {
-	_SockAddr = new sockaddr_in;
-	_SockAddr->sin_family = AF_INET;
-	_SockAddr->sin_port = 0; // same as htons(0)
-	memset( &_SockAddr->sin_addr, 0, sizeof(in_addr) );
-	memset( _SockAddr->sin_zero, 0, 8 );
+	init();
 }
 
 
@@ -53,10 +54,11 @@ CInetAddress::CInetAddress()
  */
 CInetAddress::CInetAddress( const std::string& hostName, uint16 port )
 {
-	CInetAddress();
+	init();
 	setPort( port );
 	getByName( hostName );
 }
+
 
 
 /*
@@ -64,9 +66,35 @@ CInetAddress::CInetAddress( const std::string& hostName, uint16 port )
  */
 CInetAddress::CInetAddress( const CInetAddress& other )
 {
-	CInetAddress();
+	init();
 	_HostName = other._HostName;
 	memcpy( _SockAddr, other._SockAddr, sizeof( *_SockAddr ) );
+	_Valid = other._Valid;
+}
+
+
+/*
+ * Assignment operator
+ */
+CInetAddress& CInetAddress::operator=( const CInetAddress& other )
+{
+	_HostName = other._HostName;
+	memcpy( _SockAddr, other._SockAddr, sizeof( *_SockAddr ) );
+	_Valid = other._Valid;
+	return *this;
+}
+
+
+/*
+ * Constructor contents
+ */
+void CInetAddress::init()
+{
+	_SockAddr = new sockaddr_in;
+	_SockAddr->sin_family = AF_INET;
+	_SockAddr->sin_port = 0; // same as htons(0)
+	memset( &_SockAddr->sin_addr, 0, sizeof(in_addr) );
+	memset( _SockAddr->sin_zero, 0, 8 );
 }
 
 
@@ -83,20 +111,32 @@ CInetAddress::~CInetAddress()
 /*
  * Resolves a name
  */
-CInetAddress& CInetAddress::getByName( const std::string& hostName )
+CInetAddress& CInetAddress::getByName( const std::string& hostName ) throw (ESocket)
 {
-	hostent *phostent = gethostbyname( hostName.c_str() );
-	if ( phostent == NULL )
+	// Try to convert directly for addresses such as a.b.c.d
+	in_addr iaddr;
+	iaddr.S_un.S_addr = inet_addr( hostName.c_str() );
+	if ( iaddr.S_un.S_addr == INADDR_NONE )
 	{
-		_Valid = false;
-		// log("Network error: Hostname resolution failed (CInetAddress::getByName)");
-		// return *this;
-		throw ESocket("Hostname resolution failed");
+		// Otherwise use the traditional DNS look-up
+		hostent *phostent = gethostbyname( hostName.c_str() );
+		if ( phostent == NULL )
+		{
+			_Valid = false;
+			// log("Network error: Hostname resolution failed (CInetAddress::getByName)");
+			// return *this;
+			throw ESocket("Hostname resolution failed");
+		}
+		_HostName = string( phostent->h_name );
+		memcpy( &_SockAddr->sin_addr, phostent->h_addr, sizeof(in_addr) );
 	}
-	_HostName = string( phostent->h_name );
-	memcpy( &_SockAddr->sin_addr, phostent->h_addr, sizeof(in_addr) );
-	return *this;
+	else
+	{
+		_HostName = hostName;
+		memcpy( &_SockAddr->sin_addr, &iaddr, sizeof(iaddr) );
+	}
 	_Valid = true;
+	return *this;
 }
 
 
@@ -110,20 +150,24 @@ void CInetAddress::setPort( uint16 port )
 }
 
 
-/*
- * Sets internal socket address directly (contents is copied)
+/* Sets internal socket address directly (contents is copied).
+ * It also retrieve the host name if CInetAddress::RetrieveNames is true.
  */
-void CInetAddress::setSockAddr( const sockaddr_in* saddr )
+void CInetAddress::setSockAddr( const sockaddr_in* saddr ) throw (ESocket)
 {
-	memcpy( _SockAddr, saddr, sizeof(saddr) );
+	memcpy( _SockAddr, saddr, sizeof(*saddr) );
 
 	// Get host name
-	hostent *phostent = gethostbyaddr( (char*)&saddr->sin_addr.s_addr, 4,  AF_INET );
-	if ( phostent == NULL )
+	// Warning: when it can't find it, it take more than 4 seconds
+	if ( CInetAddress::RetrieveNames )
 	{
-		throw ESocket("Could not resolve host name from address");
+		hostent *phostent = gethostbyaddr( (char*)&saddr->sin_addr.s_addr, 4,  AF_INET );
+		if ( phostent == NULL )
+		{
+			throw ESocket("Could not resolve host name from address",WSAGetLastError());
+		}
+		_HostName = string( phostent->h_name );
 	}
-	_HostName = string( phostent->h_name );
 	_Valid = true;
 }
 
@@ -178,7 +222,7 @@ uint16 CInetAddress::port() const
 /*
  * Creates a CInetAddress object with local host address, port=0
  */
-CInetAddress CInetAddress::localHost()
+CInetAddress CInetAddress::localHost() throw (ESocket)
 {
 	const uint maxlength = 80;
 	char localhost [maxlength];

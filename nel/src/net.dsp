@@ -98,6 +98,14 @@ SOURCE=..\include\nel\net\message.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\net\server_socket.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\server_socket.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\service.cpp
 # End Source File
 # Begin Source File

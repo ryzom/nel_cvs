@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.127 2002/06/12 10:16:34 lecroart Exp $
+ * $Id: service.cpp,v 1.128 2002/06/12 16:50:05 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -482,7 +482,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Init the hierarchical timer
 		//
 
-		CHTimer::startBench();
+		CHTimer::startBench(false, true);
 
 		//
 		// Load the config file
@@ -577,15 +577,12 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// adding default displayed variables
 			displayedVariables.push_back(make_pair(string("NetLop|NetSpeedLoop"), WindowDisplayer->createLabel ("NetLop")));
 			displayedVariables.push_back(make_pair(string("UsrLop|UserSpeedLoop"), WindowDisplayer->createLabel ("UsrLop")));
-			displayedVariables.push_back(make_pair(string("Rcv|ReceivedBytes"), WindowDisplayer->createLabel ("Rcv")));
-			displayedVariables.push_back(make_pair(string("Snd|SentBytes"), WindowDisplayer->createLabel ("Snd")));
-			displayedVariables.push_back(make_pair(string("RcvQ|ReceivedQueueSize"), WindowDisplayer->createLabel ("RcvQ")));
-			displayedVariables.push_back(make_pair(string("SndQ|SentQueueSize"), WindowDisplayer->createLabel ("SndQ")));
+//			displayedVariables.push_back(make_pair(string("Rcv|ReceivedBytes"), WindowDisplayer->createLabel ("Rcv")));
+//			displayedVariables.push_back(make_pair(string("Snd|SentBytes"), WindowDisplayer->createLabel ("Snd")));
+//			displayedVariables.push_back(make_pair(string("RcvQ|ReceivedQueueSize"), WindowDisplayer->createLabel ("RcvQ")));
+//			displayedVariables.push_back(make_pair(string("SndQ|SentQueueSize"), WindowDisplayer->createLabel ("SndQ")));
 			displayedVariables.push_back(make_pair(string("|Scroller"), WindowDisplayer->createLabel ("NeL Rulez")));
 			
-//			WindowDisplayer->createLabel ("@Toto|doTotoStuff");
-//			WindowDisplayer->createLabel ("@printConfigFile");
-
 			try
 			{
 				CConfigFile::CVar &v = ConfigFile.getVar("DisplayedVariables");

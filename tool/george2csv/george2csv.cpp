@@ -122,6 +122,40 @@ private:
 	std::string	_name;
 };
 
+
+/** Replace _false_ and _true_ with true and false
+ *	this is used because excell force true and false in 
+ *	uppercase when is save the file in cvs mode.
+ */
+void replaceTrueAndFalseTagFromCsv(vector<string> &args)
+{
+	for (uint i=0; i<args.size(); ++i)
+	{
+		CSString str = args[i];
+
+		str = str.replace("_false_", "false");
+		str = str.replace("_true_", "true");
+
+		args[i] = str;
+	}
+}
+
+/** Replace false and true with _false_ and _true_
+ *	this is used because excell force true and false in 
+ *	uppercase when is save the file in cvs mode.
+ *	NB : this do the opposite jobs of the previous function
+ */
+void replaceTrueAndFalseTagToCsv(string &arg)
+{
+	CSString str = arg;
+
+	str.replace("false", "_false_");
+	str.replace("true", "_true_");
+
+	arg = str;
+}
+
+
 /*
 	Some routines for dealing with script input
 */
@@ -366,6 +400,8 @@ void scanFiles(const CSString &filespec)
 //					setErrorString	(valueString, fields[i]._evaluated, where);
 //				}
 
+				replaceTrueAndFalseTagToCsv(valueString);
+
 				fprintf(Outf,"%s%s", SEPARATOR, valueString);
 				
 //				UFormElm::TWhereIsValue where;
@@ -496,7 +532,7 @@ void executeScriptFile(const string &filename)
 
 	if (temp.empty())
 	{
-		fprintf(stderr, "the fiel '%s' is empty.\n", filename);
+		fprintf(stderr, "the field '%s' is empty.\n", filename);
 		return;
 	}
 	string buf = temp.toString();
@@ -796,6 +832,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			continue;
 
 		eraseCarriageReturnsAndMakeBlankNonAsciiChars( args[0] );
+		replaceTrueAndFalseTagFromCsv(args);
 
 		// Skip empty lines
 		if ( args[0].empty() || (args[0] == string(".")+sheetType) )

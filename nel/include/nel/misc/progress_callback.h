@@ -1,7 +1,7 @@
 /** \file progress_callback.h
  * Progess callback interface
  *
- * $Id: progress_callback.h,v 1.3 2002/12/17 11:20:41 corvazier Exp $
+ * $Id: progress_callback.h,v 1.4 2002/12/18 10:56:34 coutelas Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -50,7 +50,7 @@ public:
 	  *
 	  * progressValue should be 0 ~ 1
 	  */
-	virtual void progress (float progressValue) = 0;
+	virtual void progress (float progressValue);
 
 	/**
 	  * Push crop values

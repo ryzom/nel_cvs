@@ -1,7 +1,7 @@
 /** \file progress_callback.cpp
  * <File description>
  *
- * $Id: progress_callback.cpp,v 1.1 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: progress_callback.cpp,v 1.2 2002/12/18 10:56:34 coutelas Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -55,5 +55,8 @@ void IProgressCallback::popCropedValues ()
 	_CropedValues.pop_back ();
 }
 
+void IProgressCallback::progress (float progressValue)
+{
+}
 
-} // NLMISC
+// NLMISC

@@ -1,12 +1,12 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.2 2000/10/23 14:08:30 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.3 2000/10/24 14:18:28 lecroart Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
 
-/** Copyright, 2000 Nevrax Ltd.
+/* Copyright, 2000 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify

@@ -1,10 +1,10 @@
 /** \file bezier_patch.cpp
  * <File description>
  *
- * $Id: bezier_patch.cpp,v 1.1 2000/10/23 12:14:34 berenguier Exp $
+ * $Id: bezier_patch.cpp,v 1.2 2000/10/24 14:18:28 lecroart Exp $
  */
 
-/** Copyright, 2000 Nevrax Ltd.
+/* Copyright, 2000 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify

@@ -1,7 +1,7 @@
 /** \file list_manager.h
  * Sevral class for objects manipulation.
  *
- * $Id: list_manager.h,v 1.1 2001/03/01 13:44:05 chafik Exp $
+ * $Id: list_manager.h,v 1.2 2001/03/01 16:53:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,15 +117,15 @@ namespace NLAIAGENT
 
 	};
 
-	class CVectorListManager: public IListManager
+	class CVectorGroupManager: public IListManager
 	{
 	public:
-		static const NLAIC::CIdentType IdVectorListManager;
+		static const NLAIC::CIdentType IdVectorGroupManager;
 
 	public:
-		CVectorListManager(sint32);
-		CVectorListManager();
-		CVectorListManager(const CVectorListManager &);
+		CVectorGroupManager(sint32);
+		CVectorGroupManager();
+		CVectorGroupManager(const CVectorGroupManager &);
 		
 		virtual const NLAIC::CIdentType &getType() const;		
 		virtual const NLAIC::IBasicType *clone() const;
@@ -134,7 +134,7 @@ namespace NLAIAGENT
 		virtual void trie();
 		virtual const IObjectIA *getObject(const CObjectIdent &) const;
 
-		virtual ~CVectorListManager();
+		virtual ~CVectorGroupManager();
 	};
 }
 #endif

@@ -1,6 +1,6 @@
 /** \file list_manager.cpp
  *
- * $Id: list_manager.cpp,v 1.1 2001/03/01 13:44:01 chafik Exp $
+ * $Id: list_manager.cpp,v 1.2 2001/03/01 16:54:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -236,46 +236,46 @@ namespace NLAIAGENT
 
 /*
 	########################
-	class CVectorListManager
+	class CVectorGroupManager
 	########################
 */
-	CVectorListManager::CVectorListManager(sint32 i):IListManager(new CVectorGroupType(i))
+	CVectorGroupManager::CVectorGroupManager(sint32 i):IListManager(new CVectorGroupType(i))
 	{
 	}
 
-	CVectorListManager::CVectorListManager():IListManager(new CVectorGroupType())
+	CVectorGroupManager::CVectorGroupManager():IListManager(new CVectorGroupType())
 	{
 	}
 
-	CVectorListManager::CVectorListManager(const CVectorListManager &l):IListManager(l)
+	CVectorGroupManager::CVectorGroupManager(const CVectorGroupManager &l):IListManager(l)
 	{
 	}
 
-	CVectorListManager::~CVectorListManager()
+	CVectorGroupManager::~CVectorGroupManager()
 	{
 	}
 
-	const NLAIC::CIdentType &CVectorListManager::getType() const
+	const NLAIC::CIdentType &CVectorGroupManager::getType() const
 	{
-		return IdVectorListManager;
+		return IdVectorGroupManager;
 	}
 
-	const NLAIC::IBasicType *CVectorListManager::clone() const
+	const NLAIC::IBasicType *CVectorGroupManager::clone() const
 	{
-		return new CVectorListManager(*this);
+		return new CVectorGroupManager(*this);
 	}
 
-	const NLAIC::IBasicType *CVectorListManager::newInstance() const
+	const NLAIC::IBasicType *CVectorGroupManager::newInstance() const
 	{
-		return new CVectorListManager();
+		return new CVectorGroupManager();
 	}
 
-	void CVectorListManager::trie()
+	void CVectorGroupManager::trie()
 	{
 
 	}
 
-	const IObjectIA *CVectorListManager::getObject(const CObjectIdent &) const
+	const IObjectIA *CVectorGroupManager::getObject(const CObjectIdent &) const
 	{
 		return NULL;
 	}

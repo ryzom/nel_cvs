@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.16 2002/06/10 14:02:47 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.17 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,12 +165,6 @@ public:
 
 
 	// @}
-
-
-	/** Lighting behavior. return true because skins/stickedObjects may surely need its LightContribution
-	 *	Actually return getUserLightable();
-	 */
-	virtual bool		isLightable() const {return getUserLightable();}
 
 
 	/// \name CLod / Character Lod
@@ -363,10 +357,6 @@ public:
 	 *  - If needed flag _DisplayedAsLodCharacter as true, and add renderObs in this case
 	 */
 	virtual	void	traverse(IObs *caller);
-
-	/// Leave clip() method as CTransformShape one, but the skeleton model is not renderable.
-	virtual	bool	isRenderable() const {return false;}
-
 
 public:
 	static IObs	*creator() {return new CSkeletonModelClipObs;}

@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.10 2002/06/12 12:26:57 berenguier Exp $
+ * $Id: clip_trav.h,v 1.11 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,6 +54,7 @@ class	CInstanceGroup;
 class	CCamera;
 class	CQuadGridClipManager;
 class	CRootModel;
+class	CTransformClipObs;
 
 
 // ***************************************************************************
@@ -117,13 +118,13 @@ public:
 
 	bool fullSearch (std::vector<CCluster*>& result, CInstanceGroup *pIG, CVector& pos);
 
-	/// \name Visible List mgt. Those visible observers are updated each traverse().
+	/// \name Visible List mgt. Those visible observers are updated each traverse(). Only support Transform Type obs.
 	//@{
 	uint				numVisibleObs() const {return _VisibleList.size();}
-	IBaseClipObs		*getVisibleObs(uint i) const {return _VisibleList[i];}
+	CTransformClipObs	*getVisibleObs(uint i) const {return _VisibleList[i];}
 
 	// For ClipObservers only. NB: list is cleared at begining of traverse().
-	void				addVisibleObs(IBaseClipObs *obs);
+	void				addVisibleObs(CTransformClipObs *obs);
 	//@}
 
 
@@ -165,7 +166,7 @@ public:
 private:
 	friend class	IBaseClipObs;
 
-	std::vector<IBaseClipObs*>	_VisibleList;
+	std::vector<CTransformClipObs*>	_VisibleList;
 
 	CQuadGridClipManager		*_QuadGridClipManager;
 };
@@ -182,7 +183,7 @@ private:
  * \b DERIVER \b RULES:
  * - implement the notification system (see IObs and IObs() for details).
  * - implement the clip() method.
- * - implement the traverse(), which should call clip() and isRenderable(). see CTransform for an implementation.
+ * - implement the traverse(), which should call clip(). see CTransform for an implementation.
  * - possibly modify/extend the graph methods (such as a graph behavior).
  *
  * \sa CClipTrav
@@ -222,13 +223,6 @@ public:
 
 	/// Build shortcut to HrcObs and RenderObs.
 	virtual	void	init();
-
-
-
-	/** Should return true if object has to be inserted in RenderTrav list.
-	 *	eg: a mesh must be inserted in a render list, but not a light, or a NULL transform.
-	 */
-	virtual	bool	isRenderable() const =0;
 
 
 	/** Should return true if object is visible (eg in frustum)
@@ -284,9 +278,6 @@ private:
 class CDefaultClipObs : public IBaseClipObs
 {
 public:
-
-	/// don't render.
-	virtual	bool	isRenderable() const {return false;}
 
 	/// Don't clip.
 	virtual	bool	clip(IBaseClipObs *caller) {return true;}

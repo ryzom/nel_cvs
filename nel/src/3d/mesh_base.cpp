@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.20 2002/06/24 17:13:08 vizerie Exp $
+ * $Id: mesh_base.cpp,v 1.21 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -271,6 +271,9 @@ void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi, CScene *ownerScene)
 		// Append this animated material.
 		mi->_AnimatedMaterials.push_back(aniMat);
 	}
+
+	// Misc
+	//==========================
 	
 	// Setup position with the default value
 	mi->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
@@ -283,13 +286,15 @@ void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi, CScene *ownerScene)
 	mi->setOpacity( false );
 	for( i = 0; i < mi->Materials.size(); ++i )
 	if( mi->Materials[i].getBlend() )
-	{
 		mi->setTransparency( true );
-	}
 	else
-	{
 		mi->setOpacity( true );
-	}	
+
+	// if the mesh is lightable, then the instance is
+	mi->setIsLightable(this->isLightable());
+
+	// a mesh is considered big for lightable if it uses localAttenuation
+	mi->setIsBigLightable(this->useLightingLocalAttenuation());
 
 }
 

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.21 2002/05/15 16:55:56 berenguier Exp $
+ * $Id: transform.h,v 1.22 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,9 @@ const NLMISC::CClassId		TransformId=NLMISC::CClassId(0x174750cb, 0xf952024);
  *
  * CTransform Default tracks are identity (derived class may change this).
  *
- * No observer is provided for RenderTrav (not renderable => use default).
+ * CTransform by default IS NOT RENDERABLE. ie never inserted in renderList.
+ *	Deriver should call setIsRenderable(true) to make the model renderable
+ *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -95,10 +97,11 @@ public:
 public:
 
 	/// Accessors for opacity/transparency
-	void setTransparency(bool v) { _Transparent = v; }
-	void setOpacity(bool v) { _Opaque = v; }
-	bool isOpaque() { return _Opaque; }
-	bool isTransparent() { return _Transparent; }
+	void			setTransparency(bool v) { setStateFlag(IsTransparent, v); }
+	void			setOpacity(bool v) { setStateFlag(IsOpaque, v); }
+	// return a non-zero value if true
+	uint32			isOpaque() { return getStateFlag(IsOpaque); }
+	uint32			isTransparent() { return getStateFlag(IsTransparent); }
 
 
 	/** Set the current layer for this transform.
@@ -108,17 +111,17 @@ public:
 	  * Layer 1 is for water surfaces
 	  * Layer 2 is for object above water
 	  */
-	void  setOrderingLayer(uint layer) { _OrderingLayer = layer; }
+	void			setOrderingLayer(uint layer) { _OrderingLayer = layer; }
 
 	/// Get the ordering layer
-	uint getOrderingLayer() const { return _OrderingLayer; }
+	uint			getOrderingLayer() const { return _OrderingLayer; }
 
 	/// Hide the object and his sons.
-	void		hide();
+	void			hide();
 	/// Show the objet and his sons.
-	void		show();
+	void			show();
 	/// herit the visibility from his father. (default behavior).
-	void		heritVisibility();
+	void			heritVisibility();
 	/// Get the local visibility state.
 	CHrcTrav::TVisibility	getVisibility() {return Visibility;}
 	/// Get the skeleton model. Returnr NULL in normal mode.
@@ -139,8 +142,8 @@ public:
 	  * It should be called AFTER this object has been registered to a channel mixer, because a new registration will broke the ownership.
 	  * This is useful for automatic animations, when there's no owner of the channel mixer that could delete it.
 	  */
-	void		setChannelMixerOwnerShip(bool enable = true)	{ _DeleteChannelMixer  = enable; }
-	bool		getChannelMixerOwnerShip() const { return _DeleteChannelMixer; }
+	void			setChannelMixerOwnerShip(bool enable = true)	{ setStateFlag(IsDeleteChannelMixer, enable); }
+	bool			getChannelMixerOwnerShip() const { return getStateFlag(IsDeleteChannelMixer)!=0; }
 	  
 
 	/** freeze the preceding position of the model. Do not use, special code for cluster.
@@ -150,8 +153,8 @@ public:
 	 *	- change in position (directly or indireclty, such as animation) is performed after the freeze().
 	 *	- the "frozen" state of a father is not enabled (or disabled by a change in position of him :) ).
 	 */
-	void		freeze();
-	void		setDontUnfreezeChildren(bool val);
+	void			freeze();
+	void			setDontUnfreezeChildren(bool val);
 
 
 	/** freeze the HRC so the WorldMatrix computed at next render() will be kept for long, and the model won't 
@@ -168,27 +171,27 @@ public:
 	 *	NB: if the hierarchy of this object must change, or if the object must moves, you must call unfreezeHRC() first,
 	 *	and you should do this for all the parents of this model.
 	 */
-	void		freezeHRC();
+	void			freezeHRC();
 
 
 	/**	see freezeHRC().
 	 */
-	void		unfreezeHRC();
+	void			unfreezeHRC();
 
 
-	/** special feature for CQuadGridClipManager.
+	/** special feature for CQuadGridClipManager. return a non-zero value if true
 	 */
-	bool		isQuadGridClipManagerEnabled() const {return _QuadGridClipManagerEnabled;}
+	uint32			isQuadGridClipEnabled() const {return getStateFlag(QuadGridClipEnabled);}
 
 	/**
 	 * Get the worldMatrix that is stored in the hrc observer
 	 */
-	const CMatrix& getWorldMatrix();
+	const CMatrix&	getWorldMatrix();
 
 	/**
 	 * Get the Visible state that is stored in the clip observer. True if visible.
 	 */
-	bool	getLastClippedState() const;
+	bool			getLastClippedState() const;
 
 
 
@@ -205,21 +208,22 @@ public:
 	 */
 	void				resetLighting();
 
-	/** override this method if the model can be lighted (such as CMeshBaseInstance)
+	/** true if the model can be lighted (such as CMeshBaseInstance)
 	 *	Default behavior is false.
-	 *	Derived MUST take into account _UserLightable, and return false if _UserLightable==false.
+	 *	Deriver must use setIsLightable(true) method if the instance can be lighted.
+	 *	\return 0 if getUserLightable() is false, or if the model can't be lighted at all. else return a non-zero value
 	 */
-	virtual bool		isLightable() const {return false;}
+	uint32				isLightable() const {return getStateFlag(IsFinalLightable);}
 
 	/** Set the UserLightable flag. if false, isLightable() will always return false.
 	 *	Doing this, user can disable lighting on a model which may be interesting for speed.
 	 *	Default behavior is UserLightable==true.
 	 */
-	void				setUserLightable(bool enable) {_UserLightable= enable;}
+	void				setUserLightable(bool enable);
 
 	/** Get the UserLightable flag.
 	 */
-	bool				getUserLightable() const {return _UserLightable;}
+	bool				getUserLightable() const {return getStateFlag(IsUserLightable)!=0;}
 
 	/** Freeze and set the Static Light Setup. Called by CInstanceGroup::addToScene()
 	 *	NB: it calls resetLighting() first.
@@ -234,10 +238,10 @@ public:
 	 */
 	void				unfreezeStaticLightSetup();
 
-	/** override this method if the lighting Manager must take into account the bbox of the transform.
-	 *	Default behavior is false.
+	/** non-zero if the lighting Manager must take into account the bbox of the transform.
+	 *	Default behavior is false. Deriver must call setIsBigLightable() at initialisation to change it.
 	 */
-	virtual bool		isBigLightable() const {return false;}
+	uint32				isBigLightable() const {return getStateFlag(IsBigLightable);}
 
 	// @}
 
@@ -273,6 +277,15 @@ public:
 	// @}
 
 
+	/// \name Skinning Behavior.
+	// @{
+	/// return non-zero if I am a skeleton. if yes, static_cast<CSkeletonModel*> may be used
+	uint32				isSkeleton() const {return getStateFlag(IsSkeleton);}
+	/// non-zero if the model is skinned onto a skeleton.
+	uint32				isSkinned() const {return getStateFlag(IsSkinned);}
+	// @}
+
+
 	/// name Misc
 	// @{
 
@@ -284,6 +297,9 @@ public:
 
 	/// see setMeanColor()
 	CRGBA				getMeanColor() const {return _MeanColor;}
+
+	/// non-zero if the model is renderable (ie something may appear on screen)
+	uint32				isRenderable() const {return getStateFlag(IsRenderable);}
 
 	// @}
 
@@ -326,14 +342,13 @@ protected:
 	/// \name Skinning Behavior.
 	// @{
 
-	/// Deriver must change this method if the model can be skinned.
+	/// Deriver must change this method if the model can be skinned. called rarely
 	virtual	bool			isSkinnable() const {return false;}
-	/// Deriver must change this method to konw when the model is skinned.
-	virtual	bool			isSkinned() const {return false;}
 	/** Deriver must change this method if isSkinnable(). called by CSkeletonModel::bindSkin()
 	 *	NB: _FatherSkeletonModel is valid when setApplySkin() is called
+	 *	The default behavior must be called: it sets the flag so isSkinned() return the good thing
 	 */
-	virtual	void			setApplySkin(bool state) {}
+	virtual	void			setApplySkin(bool state);
 	/** Deriver must change this method if isSkinnable(). It return the list of bone (correct skeleton index)
 	 *	used by the skins (NB: without the parents of the bone).
 	 *	default is to return NULL.
@@ -354,15 +369,10 @@ protected:
 	/// The contribution of all lights. This enlarge the struct only of approx 15%
 	CLightContribution		_LightContribution;
 
-	/// true if the object needs to updatelighting.
-	bool					_NeedUpdateLighting;
-	/// true if the object has a FrozenStaticLightSetup not correclty updated.
-	bool					_NeedUpdateFrozenStaticLightSetup;
-
-
-	/// true (default) if the user agree that the object is lightable.
-	bool					_UserLightable;
-
+	/// non-zero if the object needs to updatelighting.
+	uint32					isNeedUpdateLighting() const {return getStateFlag(IsNeedUpdateLighting);}
+	/// non-zero if the object has a FrozenStaticLightSetup not correclty updated.
+	uint32					isNeedUpdateFrozenStaticLightSetup() const {return getStateFlag(IsNeedUpdateFrozenStaticLightSetup);}
 
 	/// each transform may be in a quadGird of lighted models (see CLightingManager)
 	CLightingManager::CQGItLightedModel		_LightedModelIt;
@@ -373,6 +383,25 @@ protected:
 	/** get the channelMixer owned by the transform. return result of a refPtr => may be NULL.
 	 */
 	CChannelMixer			*getChannelMixer() const {return _ChannelMixer;}
+
+
+	/// \name Model Feature initialisation.
+	// @{
+
+	/// Deriver must use this method with true to indicate the model support lighting.
+	void				setIsLightable(bool val);
+	/** Deriver must use this method with true to indicate the model can be rendered.
+	 *	"can be rendered" means if object has to be inserted in RenderTrav list.
+	 *	eg: a mesh must be inserted in a render list, but not a light, or a NULL transform.
+	 *	The default is false.
+	 */
+	void				setIsRenderable(bool val);
+	/// Deriver must use this method with true to indicate the model is a big lightable.
+	void				setIsBigLightable(bool val);
+	/// For CSkeletonModel only.
+	void				setIsSkeleton(bool val);
+
+	// @}
 
 private:
 	static IModel	*creator() {return new CTransform;}
@@ -394,24 +423,14 @@ private:
 	// For anim detail.
 	NLMISC::CRefPtr<CChannelMixer>		_ChannelMixer;
 
-	// ownership of the channel mixer ?
-	bool								_DeleteChannelMixer;
-
 	// Last date of ITransformable matrix.
 	uint64			_LastTransformableMatrixDate;
-
-	// Information of transparency
-	bool			_Opaque;
-	bool			_Transparent;
 
 	CInstanceGroup* _ClusterSystem;
 
 
 	enum	TFreezeHRCState	{ FreezeHRCStateDisabled=0, FreezeHRCStateRequest, FreezeHRCStateReady, FreezeHRCStateEnabled};
 	TFreezeHRCState			_FreezeHRCState;
-
-	// For fast clip.
-	bool			_QuadGridClipManagerEnabled;
 
 	uint8				_OrderingLayer;
 
@@ -426,6 +445,58 @@ private:
 	/// see setMeanColor()
 	CRGBA				_MeanColor;
 
+
+	/// \name State Flag mgt (boolean compression)
+	// @{
+
+	/// State Flags.
+	enum	TState	{
+		// Post-clipping Traversal flags. If set, then the object is inserted into traversal list.
+		IsAnimDetailable=		0x0001,
+		IsLoadBalancable=		0x0002,
+		IsLightable=			0x0004,
+		IsRenderable=			0x0008,
+		// Transparency Flags.
+		IsTransparent=			0x0010,
+		IsOpaque=				0x0020,
+		// For fast clip.
+		QuadGridClipEnabled=	0x0040,
+		// Lighting.
+		IsUserLightable=		0x0080,
+		IsFinalLightable=		0x0100,		// IsLightable && IsUserLightable
+		IsBigLightable=			0x0200,
+		IsNeedUpdateLighting=	0x0400,
+		IsNeedUpdateFrozenStaticLightSetup= 
+								0x0800,
+		// Skinning
+		IsSkeleton=				0x1000,		// set if the model is a skeleton (faster than dynamic_cast)
+		IsSkinned=				0x2000,		// true if the model is isSkinnable() and if currently skinned
+		// Misc
+		IsDeleteChannelMixer=	0x4000,
+
+		// NB: may continue on >=0x10000
+	};
+
+	/// Flags for the General State of the Transform. They are both static or dynamic flags.
+	uint32				_StateFlags;
+
+	/// This is used to set Static or dynamic flags. val must take 0 or 1.
+	void				setStateFlag(uint32 mask, bool val)
+	{
+		// reset the state.
+		_StateFlags&= ~mask;
+		// set the state
+		_StateFlags|= ( 0- ((uint32)val) ) & mask;
+	}
+
+	/// return a non zero-value if state is set.
+	uint32				getStateFlag(uint32 mask) const
+	{
+		return _StateFlags&mask;
+	}
+
+	// @}
+
 protected:
 	// shortcut to the HrcObs.
 	CTransformHrcObs	*_HrcObs;
@@ -433,6 +504,7 @@ protected:
 	CTransformClipObs	*_ClipObs;
 	// shortcut to the LightObs.
 	CTransformLightObs	*_LightObs;
+
 
 };
 
@@ -512,9 +584,6 @@ public:
 public:
 
 	CTransformClipObs() : Date(0) {}
-
-	/// don't render.
-	virtual	bool	isRenderable() const {return false;}
 
 	/// Don't clip.
 	virtual	bool	clip(IBaseClipObs *caller) 
@@ -610,7 +679,7 @@ public:
 	/** 
 	 * The base light method. This do all the good thing and should not be derived.
 	 * traverse() is called only on visible objects with no _AncestorSkeletonModel, 
-	 * It test if transform->_NeedUpdateLighting==true.
+	 * It test if transform->isNeedUpdateLighting()
 	 *
 	 * The observers should not traverseSons(), for speed improvement.
 	 */

@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.8 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.9 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -199,7 +199,7 @@ void				CLoadBalancingTrav::traverseVisibilityList()
 	uint	nObs= _ClipTrav->numVisibleObs();
 	for(uint i=0; i<nObs; i++)
 	{
-		IBaseClipObs	*clipObs= _ClipTrav->getVisibleObs(i);
+		CTransformClipObs	*clipObs= _ClipTrav->getVisibleObs(i);
 		clipObs->LoadBalancingObs->traverse(NULL);
 	}
 }

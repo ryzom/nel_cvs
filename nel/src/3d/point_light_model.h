@@ -1,7 +1,7 @@
 /** \file point_light_model.h
  * <File description>
  *
- * $Id: point_light_model.h,v 1.2 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: point_light_model.h,v 1.3 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,12 +160,7 @@ class CPointLightModelLightObs : public CTransformLightObs
 {
 public:
 
-	/** 
-	 * The base light method. This do all the good thing and should not be derived.
-	 * traverse() is called only on visible objects with no _AncestorSkeletonModel, 
-	 * It test if transform->_NeedUpdateLighting==true.
-	 *
-	 * The observers should not traverseSons(), for speed improvement.
+	/** update the dynamic light
 	 */
 	virtual	void	traverse(IObs *caller);
 

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.19 2002/06/10 14:02:47 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.20 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,9 +81,19 @@ CSkeletonModel::CSkeletonModel()
 	_CLodWrapMode= true;
 	_CLodVertexColorDirty= true;
 
+	// Inform the transform that I am a skeleton
+	CTransform::setIsSkeleton(true);
+
 	// The model may be rendered when it enters in LodCharacter mode. Must be rendered at Opaque Pass only.
 	setOpacity(true);
 	setTransparency(false);
+
+	// Lighting behavior. Lightable because skins/stickedObjects may surely need its LightContribution
+	CTransform::setIsLightable(true);
+
+	// Render behavior. I am NOT renderable by default, but clip Observer is special and may addRenderObs() in some case
+	// Override CTransformShape behavior which is renderable
+	CTransform::setIsRenderable(false);
 }
 
 	

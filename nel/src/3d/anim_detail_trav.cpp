@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.cpp
  * <File description>
  *
- * $Id: anim_detail_trav.cpp,v 1.7 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: anim_detail_trav.cpp,v 1.8 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,10 @@
 #include "3d/transform.h"
 #include "3d/skeleton_model.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/debug.h"
+
+
+using namespace NLMISC;
 
 
 namespace NL3D 
@@ -56,10 +60,10 @@ void				CAnimDetailTrav::traverse()
 	uint	nObs= _ClipTrav->numVisibleObs();
 	for(uint i=0; i<nObs; i++)
 	{
-		IBaseClipObs		*clipObs= _ClipTrav->getVisibleObs(i);
-		// If this object is a transform and if it has an ancestorSkeletonModel
-		CTransformHrcObs*	hrcObs= dynamic_cast<CTransformHrcObs*>(clipObs->HrcObs);
-		if(hrcObs && hrcObs->_AncestorSkeletonModel)
+		CTransformClipObs	*clipObs= _ClipTrav->getVisibleObs(i);
+		// If this object has an ancestorSkeletonModel
+		CTransformHrcObs	*hrcObs= safe_cast<CTransformHrcObs*>(clipObs->HrcObs);
+		if(hrcObs->_AncestorSkeletonModel)
 		{
 			// then just skip it! because it will be parsed hierarchically by the first 
 			// skeletonModel whith hrcObs->_AncestorSkeletonModel==NULL. (only if this one is visible)
@@ -67,14 +71,15 @@ void				CAnimDetailTrav::traverse()
 		}
 		else
 		{
+			// get the model
+			CTransform	*model= safe_cast<CTransform*>(clipObs->Model);
 			// If this is a skeleton model, and because hrcObs->_AncestorSkeletonModel==NULL,
 			// then it means that it is the Root of a hierarchy of transform that have 
 			// hrcObs->_AncestorSkeletonModel!=NULL.
-			CSkeletonModelAnimDetailObs*	skelObs= dynamic_cast<CSkeletonModelAnimDetailObs*>(clipObs->AnimDetailObs);
-			if(skelObs)
+			if( model->isSkeleton() )
 			{
 				// Then I must update hierarchically me and the sons (according to HRC hierarchy graph) of this model.
-				traverseHrcRecurs(skelObs);
+				traverseHrcRecurs(clipObs->AnimDetailObs);
 			}
 			else
 			{

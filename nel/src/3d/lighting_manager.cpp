@@ -1,7 +1,7 @@
 /** \file lighting_manager.cpp
  * <File description>
  *
- * $Id: lighting_manager.cpp,v 1.7 2002/04/12 15:59:57 berenguier Exp $
+ * $Id: lighting_manager.cpp,v 1.8 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -259,7 +259,6 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 	// the position of the model.
 	CVector modelPos;
 	float	modelRadius;
-	bool	isBigLightable= model->isBigLightable();
 
 	// get the untransformed bbox from the model.
 	CAABBox		bbox;
@@ -267,7 +266,7 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 	// get transformed center pos of bbox
 	modelPos= model->getWorldMatrix() * bbox.getCenter();
 	// If the model is a big lightable, must take radius from aabbox, else suppose 0 radius.
-	if(isBigLightable)
+	if(model->isBigLightable())
 	{
 		// get size of the bbox (bounding sphere)
 		modelRadius= bbox.getRadius();

@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.22 2002/04/25 10:33:38 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.23 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -344,7 +344,6 @@ public:
 class CParticleSystemClipObs : public CTransformClipObs
 {
 public:
-	virtual	bool		isRenderable() const {return true;}
 	void				traverse(IObs *caller);
 	static IObs			*creator() {return new CParticleSystemClipObs;}
 	

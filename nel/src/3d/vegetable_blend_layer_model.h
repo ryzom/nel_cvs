@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.h
  * <File description>
  *
- * $Id: vegetable_blend_layer_model.h,v 1.1 2001/12/03 16:34:40 berenguier Exp $
+ * $Id: vegetable_blend_layer_model.h,v 1.2 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,12 +116,8 @@ class CVegetableBlendLayerClipObs : public CTransformClipObs
 public:
 
 	/** 
-	 * Setup clip so that always visible, and rnderable.
+	 * Setup clip so that always visible
 	 */
-	virtual	bool	isRenderable() const
-	{
-		return true;
-	}
 	virtual	bool	clip(IBaseClipObs *caller) 
 	{
 		return true;

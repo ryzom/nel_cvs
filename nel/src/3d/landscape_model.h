@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.5 2001/12/03 16:34:39 berenguier Exp $
+ * $Id: landscape_model.h,v 1.6 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,12 +101,7 @@ public:
 
 
 protected:
-	CLandscapeModel()
-	{
-		Landscape.init();
-		_ActiveAdditive=false;
-		_Additive=1.f;
-	}
+	CLandscapeModel();
 	virtual ~CLandscapeModel() {}
 
 private:
@@ -132,9 +127,6 @@ public:
 
 	/// link this model to the RootCluster.
 	virtual	void	init();
-
-	/// Hey!! I'm renderable!!!
-	virtual	bool	isRenderable() const {return true;}
 
 	/// clip.
 	virtual	bool	clip(IBaseClipObs *caller);

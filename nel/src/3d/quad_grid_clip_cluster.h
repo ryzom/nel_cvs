@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_cluster.h
  * <File description>
  *
- * $Id: quad_grid_clip_cluster.h,v 1.2 2002/06/12 12:26:57 berenguier Exp $
+ * $Id: quad_grid_clip_cluster.h,v 1.3 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,7 +100,6 @@ public:
 
 
 	// not used by traverse().
-	virtual	bool	isRenderable() const {return false;}
 	virtual	bool	clip(IBaseClipObs *caller) {return true;}
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.42 2002/06/20 09:44:54 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.43 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -910,9 +910,9 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel *skeleton;
 	skeleton = mi->getSkeletonModel();
-	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and isSkinApply().
+	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and instance isSkinned()
 	bool bMorphApplied = _MeshMorpher.BlendShapes.size() > 0;
-	bool bSkinApplied = _Skinned && mi->isSkinApply() && skeleton;
+	bool bSkinApplied = _Skinned && mi->isSkinned() && skeleton;
 	bool useNormal= (_VBufferFinal.getVertexFormat() & CVertexBuffer::NormalFlag)!=0;
 	bool useTangentSpace = _MeshVertexProgram && _MeshVertexProgram->needTangentSpace();
 

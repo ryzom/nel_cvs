@@ -1,7 +1,7 @@
 /** \file root_model.h
  * <File description>
  *
- * $Id: root_model.h,v 1.1 2001/12/11 16:40:40 berenguier Exp $
+ * $Id: root_model.h,v 1.2 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,6 @@ class	CRootModelClipObs : public IBaseClipObs
 public:
 	CRootModelClipObs() {}
 
-	virtual	bool	isRenderable() const {return false;}
 	virtual	bool	clip(IBaseClipObs *caller)	{return true;}
 	virtual	void	traverse(IObs *caller);
 

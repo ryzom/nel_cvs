@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.5 2002/06/13 13:47:29 vizerie Exp $
+ * $Id: cluster.h,v 1.6 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -203,9 +203,6 @@ class CClusterClipObs : public IBaseClipObs
 public:
 	CClusterClipObs();
 	
-	/// don't render.
-	virtual	bool isRenderable () const;
-
 	/// Don't clip.
 	virtual	bool clip (IBaseClipObs *caller);
 

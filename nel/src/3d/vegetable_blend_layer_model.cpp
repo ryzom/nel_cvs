@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.cpp
  * <File description>
  *
- * $Id: vegetable_blend_layer_model.cpp,v 1.6 2002/06/10 09:30:09 berenguier Exp $
+ * $Id: vegetable_blend_layer_model.cpp,v 1.7 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,6 +55,9 @@ CVegetableBlendLayerModel::CVegetableBlendLayerModel()
 	// The model must always be renderer in transparency pass only.
 	setTransparency(true);
 	setOpacity(false);
+
+	// The model is of course renderable
+	CTransform::setIsRenderable(true);
 }
 
 

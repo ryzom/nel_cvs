@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.13 2002/06/24 17:13:08 vizerie Exp $
+ * $Id: mesh_base_instance.h,v 1.14 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,17 +121,6 @@ public:
 	// @}
 
 
-	// Return true if this mesh is a skin apply on a skeleton else false.
-	bool isSkinApply () const
-	{
-		return _ApplySkinOk;
-	}
-
-
-	/// Lighting behavior. return true if mesh!=NULL and if not all lightMapped.
-	virtual bool		isLightable() const;
-	
-
 	/// Get the scene which owns this instance.
 	CScene				*getScene() const {return _OwnerScene;}
 
@@ -154,20 +143,11 @@ protected:
 	CMeshBaseInstance()
 	{
 		IAnimatable::resize(AnimValueLast);
-		_ApplySkinOk= false;
 		_OwnerScene= NULL;
 	}
 	/// Destructor
 	virtual ~CMeshBaseInstance() {}
 
-
-	/// \name Skinning Behavior.
-	// @{
-	/// Am I skinned ??
-	virtual	bool			isSkinned() const {return _ApplySkinOk;}
-	/// change my state.
-	virtual	void			setApplySkin(bool state) {_ApplySkinOk= state;}
-	// @}
 
 private:
 	static IModel	*creator() {return new CMeshBaseInstance;}
@@ -182,9 +162,6 @@ private:
 	std::vector<CAnimatedLightmap*> _AnimatedLightmap;
 
 	std::vector<CAnimatedMorph> _AnimatedMorphFactor; 
-
-	/// Skinning. true if skinned to the _Skeleton.
-	bool		_ApplySkinOk;
 
 	/// The Scene where the instance is created.
 	CScene		*_OwnerScene;

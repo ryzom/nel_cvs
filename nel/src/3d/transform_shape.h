@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.13 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: transform_shape.h,v 1.14 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,10 +101,6 @@ public:
 	// @}
 
 
-	/// Derived from CTranform. By default a shape is considered big for lightable if it uses localAttenuation
-	virtual bool		isBigLightable() const;
-
-
 	/// \name Mesh Block Render Tools
 	// @{
 	/// setup lighting for this instance into driver. The render observer must have been called before.
@@ -153,7 +149,7 @@ private:
 /**
  * This observer:
  * - leave the notification system to DO NOTHING.
- * - implement the clip() method to return Shape->clip(), and renderable==true.
+ * - implement the clip() method to return Shape->clip()
  * - leave the traverse() method as CTransformClipObs.
  *
  * \sa CClipTrav CTransformClipObs
@@ -168,7 +164,6 @@ public:
 
 	/// clip the shape, and set renderable.
 	virtual	bool	clip(IBaseClipObs *caller);
-	virtual	bool	isRenderable() const {return true;}
 
 	/// if last call to clip() return false, and if clip reason was a "DistMax clip", return true
 	bool			isLastClipDueToDistMax() const {return _ClipDueToDistMax;}

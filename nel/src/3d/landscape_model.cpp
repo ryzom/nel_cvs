@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.25 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.26 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,18 @@ void	CLandscapeModel::registerBasic()
 	CMOT::registerModel(LandscapeModelId, TransformId, CLandscapeModel::creator);
 	CMOT::registerObs(ClipTravId, LandscapeModelId, CLandscapeClipObs::creator);
 	CMOT::registerObs(RenderTravId, LandscapeModelId, CLandscapeRenderObs::creator);
+}
+
+
+// ***************************************************************************
+CLandscapeModel::CLandscapeModel()
+{
+	Landscape.init();
+	_ActiveAdditive=false;
+	_Additive=1.f;
+
+	// The model is renderable
+	CTransform::setIsRenderable(true);
 }
 
 

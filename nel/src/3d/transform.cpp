@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.43 2002/05/15 16:55:56 berenguier Exp $
+ * $Id: transform.cpp,v 1.44 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,32 +67,44 @@ CTransform::CTransform()
 
 	_FatherSkeletonModel= NULL;
 
-	_Transparent = false;
-	_Opaque = true;
-
 	_ClusterSystem = NULL;
 
 	_FreezeHRCState= FreezeHRCStateDisabled;
 
-	_QuadGridClipManagerEnabled= false;
-
 	_OrderingLayer = 0;
 
-	_NeedUpdateLighting= false;
-	_NeedUpdateFrozenStaticLightSetup= false;
-
-	// default, the model may be lighted.
-	_UserLightable= true;
-
+	
 	// No logicInfo by default
 	_LogicInfo= NULL;
-
-	_DeleteChannelMixer = false;
 
 	_ForceCLodSticked= false;
 
 	// default MeanColor value
 	_MeanColor.set(100,100,100);
+
+
+	// Setup some state.
+
+	/*
+		Default are:
+			IsAnimDetailable= 1
+			IsLoadBalancable= 1
+			IsLightable= 0
+			IsRenderable= 0
+			IsTransparent= 0
+			IsOpaque= 1
+			QuadGridClipEnabled= 0.
+
+			IsUserLightable= 1			// default, the model may be lighted.
+			IsFinalLightable= 0
+			IsNeedUpdateLighting= 0
+			ISNeedUpdateFrozenStaticLightSetup= 0
+
+			IsSkeleton= 0
+
+			IsDeleteChannelMixer = 0;
+	*/
+	_StateFlags= IsAnimDetailable | IsLoadBalancable | IsOpaque | IsUserLightable;
 }
 
 
@@ -111,7 +123,7 @@ void	CTransform::initModel()
 CTransform::~CTransform()
 {
 	/* cannot detach me from skeleton here because detachSkeletonSon()
-		use some virtual calls of transform: isSkinned(), setApplySkin().
+		use some virtual calls of transform: setApplySkin().
 		Hence, It is the deriver job to detach himself from the skeleton.
 	*/
 	nlassert(_FatherSkeletonModel==NULL);
@@ -128,7 +140,7 @@ CTransform::~CTransform()
 		_LightedModelIt= lightTrav->LightingManager.eraseStaticLightedModel(_LightedModelIt);
 	}
 
-	if (_DeleteChannelMixer) delete (CChannelMixer *) _ChannelMixer;
+	if (getChannelMixerOwnerShip()) delete (CChannelMixer *) _ChannelMixer;
 }
 
 // ***************************************************************************
@@ -195,10 +207,10 @@ ITrack* CTransform::getDefaultTrack (uint valueId)
 // ***************************************************************************
 void	CTransform::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix)
 {
-	if (_DeleteChannelMixer && chanMixer != _ChannelMixer)
+	if (getChannelMixerOwnerShip() && chanMixer != _ChannelMixer)
 	{
 		delete _ChannelMixer;
-		_DeleteChannelMixer = false;
+		setChannelMixerOwnerShip(false);
 	}
 
 	// Hey!! we are animated!!
@@ -288,7 +300,7 @@ void		CTransform::freezeHRC()
 	if(_FreezeHRCState==FreezeHRCStateDisabled)
 	{
 		_FreezeHRCState= FreezeHRCStateRequest;
-		_QuadGridClipManagerEnabled= true;
+		setStateFlag(QuadGridClipEnabled, true);
 	}
 }
 
@@ -323,7 +335,7 @@ void		CTransform::unfreezeHRC()
 		}
 
 		_FreezeHRCState= FreezeHRCStateDisabled;
-		_QuadGridClipManagerEnabled= false;
+		setStateFlag(QuadGridClipEnabled, false);
 	}
 }
 
@@ -431,6 +443,46 @@ void		CTransform::setMeanColor(CRGBA color)
 			_FatherSkeletonModel->dirtLodVertexColor();
 		}
 	}
+}
+
+
+// ***************************************************************************
+void		CTransform::setIsLightable(bool val)
+{
+	setStateFlag(IsLightable, val);
+	// update IsFinalLightable
+	setStateFlag(IsFinalLightable, (getStateFlag(IsLightable) && getStateFlag(IsUserLightable)) );
+}
+// ***************************************************************************
+void		CTransform::setUserLightable(bool enable)
+{
+	setStateFlag(IsUserLightable, enable);
+	// update IsFinalLightable
+	setStateFlag(IsFinalLightable, (getStateFlag(IsLightable) && getStateFlag(IsUserLightable)) );
+}
+
+
+// ***************************************************************************
+void		CTransform::setIsRenderable(bool val)
+{
+	setStateFlag(IsRenderable, val);
+}
+
+// ***************************************************************************
+void		CTransform::setIsBigLightable(bool val)
+{
+	setStateFlag(IsBigLightable, val);
+}
+// ***************************************************************************
+void		CTransform::setIsSkeleton(bool val)
+{
+	setStateFlag(IsSkeleton, val);
+}
+
+// ***************************************************************************
+void		CTransform::setApplySkin(bool state)
+{
+	setStateFlag(IsSkinned, state);
 }
 
 
@@ -656,7 +708,7 @@ void	CTransformClipObs::traverse(IObs *caller)
 		clipTrav->addVisibleObs(this);
 
 		// Insert the model in the render list.
-		if(isRenderable())
+		if( transform->isRenderable() )
 		{
 			clipTrav->RenderTrav->addRenderObs(RenderObs);
 		}
@@ -734,9 +786,9 @@ void	CTransformAnimDetailObs::traverse(IObs *caller)
 // ***************************************************************************
 void		CTransform::resetLighting()
 {
-	// if the model is already _NeedUpdateLighting, his light setup is reseted.
+	// if the model is already isNeedUpdateLighting, his light setup is reseted.
 	// so no need to reset again
-	if(_NeedUpdateLighting)
+	if(isNeedUpdateLighting())
 		return;
 
 
@@ -766,8 +818,7 @@ void		CTransform::resetLighting()
 
 
 	// the model needs to update his lighting.
-	_NeedUpdateLighting= true;
-
+	setStateFlag(IsNeedUpdateLighting, true);
 	
 }
 
@@ -796,7 +847,7 @@ void			CTransform::freezeStaticLightSetup(CPointLight *pointLight[NL3D_MAX_LIGHT
 		// Enable at max.
 		_LightContribution.Factor[i]= 255;
 		// Compute static AttFactor Later because don't have WorlPosition of the model here!!
-		_NeedUpdateFrozenStaticLightSetup= true;
+		setStateFlag(IsNeedUpdateFrozenStaticLightSetup, true);
 
 		// Do NOT set the iterator, because it is a staticLight.
 	}
@@ -820,7 +871,7 @@ void			CTransform::unfreezeStaticLightSetup()
 	_LightContribution.FrozenAmbientLight= NULL;
 
 	// Don't need to update StaticLightSetup since no more exist.
-	_NeedUpdateFrozenStaticLightSetup= false;
+	setStateFlag(IsNeedUpdateFrozenStaticLightSetup, false);
 }
 
 
@@ -830,12 +881,12 @@ void	CTransformLightObs::traverse(IObs *caller)
 	CTransform		*transform= (CTransform*)Model;
 
 	// if the model do not need to update his lighting, just skip.
-	if(!transform->_NeedUpdateLighting)
+	if(!transform->isNeedUpdateLighting())
 		return;
 
 
 	// If a freezeStaticLightSetup() has been called on this model recently.
-	if(transform->_NeedUpdateFrozenStaticLightSetup)
+	if(transform->isNeedUpdateFrozenStaticLightSetup())
 	{
 		// Now, the correct matrix is computed.
 		// get the untransformed bbox from the model.
@@ -856,7 +907,7 @@ void	CTransformLightObs::traverse(IObs *caller)
 		}
 
 		// clean.
-		transform->_NeedUpdateFrozenStaticLightSetup= false;
+		transform->setStateFlag(CTransform::IsNeedUpdateFrozenStaticLightSetup, false);
 	}
 
 
@@ -866,7 +917,7 @@ void	CTransformLightObs::traverse(IObs *caller)
 		transform->_LightContribution, transform->_LogicInfo);
 
 	// done!
-	transform->_NeedUpdateLighting= false;
+	transform->setStateFlag(CTransform::IsNeedUpdateLighting, false);
 }
 
 

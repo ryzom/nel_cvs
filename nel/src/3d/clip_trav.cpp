@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.23 2002/06/12 12:26:57 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.24 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -279,7 +279,7 @@ void CClipTrav::traverse()
 		// Moving object in the world -> link to root or to the CQuadGridClipManager.
 		if (bInWorld)
 		{
-			if( _QuadGridClipManager && pTfmShp->isQuadGridClipManagerEnabled() )
+			if( _QuadGridClipManager && pTfmShp->isQuadGridClipEnabled() )
 			{
 				// try to insert in the best cluster of the _QuadGridClipManager.
 				if(!_QuadGridClipManager->linkModel(pTfmShp, this))
@@ -372,7 +372,7 @@ void CClipTrav::setSonsOfAncestorSkeletonModelGroup(CRootModel *m)
 
 
 // ***************************************************************************
-void CClipTrav::addVisibleObs(IBaseClipObs *obs)
+void CClipTrav::addVisibleObs(CTransformClipObs *obs)
 {
 	obs->_IndexInVisibleList= _VisibleList.size();
 	_VisibleList.push_back(obs);

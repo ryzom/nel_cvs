@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.12 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.13 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -612,13 +612,6 @@ void CCoarseMeshManager::CRenderPass::CPrimitiveBlockInfo::init (uint size)
 {
 	// Reserve triangles
 	PrimitiveBlock.reserveTri (size);
-}
-
-// ***************************************************************************
-
-bool	CCoarseMeshClipObs::isRenderable() const
-{
-	return false;
 }
 
 // ***************************************************************************

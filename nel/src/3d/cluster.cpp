@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.9 2002/06/13 13:47:29 vizerie Exp $
+ * $Id: cluster.cpp,v 1.10 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -317,12 +317,6 @@ void CClusterHrcObs::traverse (IObs *caller)
 CClusterClipObs::CClusterClipObs ()
 {
 	Visited = false;
-}
-
-// ***************************************************************************
-bool CClusterClipObs::isRenderable () const
-{
-	return false;
 }
 
 // ***************************************************************************

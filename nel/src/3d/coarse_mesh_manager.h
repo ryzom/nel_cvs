@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.11 2002/05/07 09:27:53 berenguier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.12 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,6 +92,9 @@ const NLMISC::CClassId		CoarseMeshManagerId=NLMISC::CClassId(0x77554f87, 0x5bb37
  * in the new common texture.
  *
  * The manager must have been setuped with the common texture.
+ *
+ * NB: the manager is not renderable, because CoarseMeshManager must be rendered at end of frame in a direct call 
+ *	by CRenderTrav::traverse(), after coarse mesh instances added/removed in
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
@@ -319,9 +322,7 @@ private:
 
 /**
  * This observer:
- * - return false at isRenderable.
  * - return false at clip.
- *	Important because CoarseMeshManager must be rendered at end of frame, after coarse mesh instances added/removed in
  *	MeshMultiLod rendering
  */
 class	CCoarseMeshClipObs : public CTransformClipObs
@@ -330,7 +331,6 @@ public:
 
 	/// From CTransformClipObs
 	// @{
-	virtual	bool	isRenderable() const;
 	virtual	bool	clip(IBaseClipObs *caller);
 	// @}
 

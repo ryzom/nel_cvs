@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.27 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.28 2002/06/26 16:48:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,9 @@ CTransformShape::CTransformShape()
 	_NumTrianglesAfterLoadBalancing= 100;
 	_CurrentLightContribution= NULL;
 	_CurrentUseLocalAttenuation= false;
+
+	// The model is renderable
+	CTransform::setIsRenderable(true);
 }
 
 
@@ -80,17 +83,6 @@ void		CTransformShape::getAABBox(NLMISC::CAABBox &bbox) const
 		bbox.setCenter(CVector::Null);
 		bbox.setHalfSize(CVector::Null);
 	}
-}
-
-
-// ***************************************************************************
-bool		CTransformShape::isBigLightable() const
-{
-	// By default a shape is considered big for lightable if it uses localAttenuation
-	if(Shape)
-		return Shape->useLightingLocalAttenuation ();
-	else
-		return false;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.135 2005/02/22 10:19:11 besson Exp $
+ * $Id: scene.cpp,v 1.136 2005/03/24 18:54:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -199,6 +199,8 @@ CScene::CScene(bool bSmallScene) : LightTrav(bSmallScene)
 	//_WaterEnvMap = new CTextureCube;
 
 	_WaterEnvMap = NULL;
+
+	_GlobalSystemTime= 0.0;
 }
 // ***************************************************************************
 void	CScene::release()
@@ -571,7 +573,10 @@ void	CScene::renderPart(UScene::TRenderPart rp, bool	doHrcPass)
 		_FirstFlare = NULL;
 
 		double fNewGlobalSystemTime = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());
-		_DeltaSystemTimeBetweenRender= fNewGlobalSystemTime - _GlobalSystemTime;
+		if(_GlobalSystemTime==0)
+			_DeltaSystemTimeBetweenRender= 0.020;
+		else
+			_DeltaSystemTimeBetweenRender= fNewGlobalSystemTime - _GlobalSystemTime;
 		_GlobalSystemTime = fNewGlobalSystemTime;
 		//
 		++ _NumRender;

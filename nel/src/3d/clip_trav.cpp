@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * TODO: File description
  *
- * $Id: clip_trav.cpp,v 1.47 2005/02/22 10:19:09 besson Exp $
+ * $Id: clip_trav.cpp,v 1.48 2005/03/24 18:54:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,7 @@ CClipTrav::CClipTrav() : ViewPyramid(6), WorldPyramid(6)
 
 	ForceNoFrustumClip= false;
 	_QuadGridClipManager= NULL;
+	_TrackClusterVisibility= false;
 }
 
 // ***************************************************************************

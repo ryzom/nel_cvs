@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.18 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.19 2002/02/15 14:40:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,8 @@ void cbsNewConnection (TSockId from, void *data)
 #endif
 
 	// send all my association to the new client
-	server->sendAllMyAssociations (from);
+// association are disactivated so we don t need to send them
+//	server->sendAllMyAssociations (from);
 
 	// call the client callback if necessary
 	if (server->_ConnectionCallback != NULL)

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.46 2003/03/17 19:41:44 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.47 2003/03/18 10:00:21 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -924,22 +924,28 @@ bool CInstanceGroup::removeFromScene (CScene& scene)
 {
 	uint32 i, j, k;
 
-	// TempYoyo
-	if(_Instances.size()<_InstancesInfos.size())
-		return false;
+	// Test if portals are linked to their 2 clusters 
+	for (i = 0; i < _Portals.size(); ++i)
+	for (j = 0; j < 2; ++j)
+	{
+		if (_Portals[i]._Clusters[j] == NULL)
+		{
+			nlwarning("Portal %d (name:%s) is not linked to 2 clusters. Instance Group Not Removed From Scene.", i, _Portals[i].getName().c_str());
+			return false;
+		}
+	}
 
 	// Remove shapes
-	vector<CTransformShape*>::iterator it = _Instances.begin();
-	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
+	for (i = 0; i < _Instances.size(); ++i)
 	{
-		CTransformShape *pTShape = *it;
+		CTransformShape *pTShape = _Instances[i];
 		if(pTShape)
 		{
 			// For security, unfreeze any StaticLightSetup setuped.
 			pTShape->unfreezeStaticLightSetup();
 			// delete the instance
 			scene.deleteInstance (pTShape);
-			*it = NULL;
+			_Instances[i] = NULL;
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.3 2000/12/05 11:10:29 cado Exp $
+ * $Id: mem_stream.cpp,v 1.4 2000/12/06 13:01:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -203,4 +203,27 @@ uint8 *CMemStream::bufferToFill( uint32 msgsize )
 }
 
 
+/*
+ * Transforms the message from input to output or from output to input
+ */
+void CMemStream::invert()
+{
+	if ( isReading() )
+	{
+		// In->Out: We want to write (serialize out) what we have read (serialized in)
+		resetPtrTable();
+		setInOut( false );
+		_BufPos = _Buffer.begin();
+	}
+	else
+	{
+		// Out->In: We want to read (serialize in) what we have written (serialized out)
+		resetPtrTable();
+		setInOut( true );
+		_BufPos = _Buffer.begin();
+	}
 }
+
+
+}
+

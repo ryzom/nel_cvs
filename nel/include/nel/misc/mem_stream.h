@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * CMemStream class
  *
- * $Id: mem_stream.h,v 1.3 2000/12/05 11:10:29 cado Exp $
+ * $Id: mem_stream.h,v 1.4 2000/12/06 13:01:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,7 +92,7 @@ public:
 	/** 
 	 * Moves the stream pointer to a specified location.
 	 * 
-	 * NB: If the stream doesn't support the seek fonctionnality, it throw ESeekNotSupported.
+	 * NB: If the stream doesn't support the seek fonctionnality, it throws ESeekNotSupported.
 	 * Default implementation: 
 	 * { throw ESeekNotSupported; }
 	 * \param offset is the wanted offset from the origin.
@@ -105,7 +105,7 @@ public:
 	/** 
 	 * Get the location of the stream pointer.
 	 * 
-	 * NB: If the stream doesn't support the seek fonctionnality, it throw ESeekNotSupported.
+	 * NB: If the stream doesn't support the seek fonctionnality, it throws ESeekNotSupported.
 	 * Default implementation: 
 	 * { throw ESeekNotSupported; }
 	 * \param offset is the wanted offset from the origin.
@@ -150,6 +150,8 @@ public:
 	 */
 	uint8			*bufferToFill( uint32 msgsize );
 
+	/// Transforms the message from input to output or from output to input
+	void			invert();
 
 protected:
 

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.27 2000/12/05 16:36:56 cado Exp $
+ * $Id: socket.cpp,v 1.28 2000/12/06 13:01:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,9 +28,6 @@
 #include "nel/net/socket.h"
 #include "nel/net/message.h"
 #include "nel/misc/debug.h"
-
-/*#include <iostream> //debug
-using namespace std;*/
 
 #ifdef NL_OS_WINDOWS
 
@@ -99,6 +96,7 @@ void CSocket::send( CMessage& message ) throw(ESocket)
 {
 #ifdef NL_DEBUG
 	uint len = message.length();
+	//std::string name = message.typeAsString();
 #endif
 	CMessage alldata = encode( message );
 
@@ -117,6 +115,7 @@ void CSocket::send( CMessage& message ) throw(ESocket)
 			nldebug( "Socket %d sent message %s (%d bytes +%d)",
 				_Sock, message.typeAsString().c_str(), len, alldata.length()-len );
 		}
+		nlnetoutput( localAddr().asString().c_str(), remoteAddr().asString().c_str(), message.typeAsString().c_str(), message.length() );
 	}
 #endif
 }
@@ -357,7 +356,7 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 
 	if ( _Logging )
 	{
-		if ( message.typeIsNumber() )
+		/*if ( message.typeIsNumber() )
 		{
 			nldebug( "Socket %d received message %hd (%d bytes +%d)",
 				_Sock, message.typeAsNumber(), message.length(), sizeof(msgtype)+msgnamelen+sizeof(msgsize) );
@@ -366,7 +365,8 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 		{
 			nldebug( "Socket %d received message %s (%d bytes +%d)",
 				_Sock, message.typeAsString().c_str(), message.length(), sizeof(msgtype)+msgnamelen+sizeof(msgsize) );
-		}
+		}*/
+		nlnetinput( remoteAddr().asString().c_str(), localAddr().asString().c_str() );
 	}
 }
 

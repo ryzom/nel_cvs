@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.25 2000/12/05 15:40:52 cado Exp $
+ * $Id: base_socket.cpp,v 1.26 2000/12/06 13:01:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,8 @@ typedef int SOCKET;
 
 namespace NLNET {
 
+
+CNetLog NetLog;
 
 bool CBaseSocket::_Initialized = false;
 

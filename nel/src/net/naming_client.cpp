@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.14 2000/12/01 10:08:00 cado Exp $
+ * $Id: naming_client.cpp,v 1.15 2000/12/06 13:01:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -225,7 +225,7 @@ uint16 CNamingClient::queryServicePort( const std::string& name, const CInetAddr
 	msgout.serial( const_cast<CInetAddress&>(addr) );
 	CNamingClient::_ClientSock->send( msgout );
 
-	// Wait for answer
+	// Wait for answer (warning: it can receive a bad answer if another request has been done before and not processed)
 	uint16 port = 0;
 	CMessage msgin( "", true );
 	CNamingClient::_ClientSock->receive( msgin );
@@ -290,7 +290,7 @@ bool CNamingClient::lookup( const std::string& name, CInetAddress& addr, uint16&
 	msgout.serial( const_cast<std::string&>(name) );
 	CNamingClient::_ClientSock->send( msgout );
 
-	// Wait for answer
+	// Wait for answer (warning: it can receive a bad answer if another request has been done before and not processed)
 	CMessage msgin( "", true );
 	CNamingClient::_ClientSock->receive( msgin );
 	msgin.serial( validitytime );
@@ -325,7 +325,7 @@ bool CNamingClient::lookupAlternate( const std::string& name, CInetAddress& addr
 	msgout.serial( addr );
 	CNamingClient::_ClientSock->send( msgout );
 
-	// Wait for answer
+	// Wait for answer (warning: it can receive a bad answer if another request has been done before and not processed)
 	CMessage msgin( "", true );
 	CNamingClient::_ClientSock->receive( msgin );
 	msgin.serial( validitytime );

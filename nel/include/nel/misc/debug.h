@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.19 2000/12/05 11:10:29 cado Exp $
+ * $Id: debug.h,v 1.20 2000/12/06 13:01:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,6 +122,7 @@ NLMISC::WarningLog.setParam( __LINE__, __FILE__ ); NLMISC::WarningLog.displayNL
  */
 #define nlerror \
 NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlFatalError
+
 
 /**
  * \def nlassert(exp)

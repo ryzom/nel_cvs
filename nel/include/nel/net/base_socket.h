@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.h,v 1.16 2000/11/10 10:06:24 cado Exp $
+ * $Id: base_socket.h,v 1.17 2000/12/06 13:01:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_BASE_SOCKET_H
 
 #include "nel/net/inet_address.h"
+#include "nel/net/net_log.h"
 
 
 namespace NLNET {
@@ -256,6 +257,13 @@ private:
 	static bool		_Initialized;
 
 };
+
+
+extern CNetLog NetLog;
+
+#define nlnetoutput NetLog.output
+#define nlnetinput NetLog.input
+
 
 
 } // NLNET

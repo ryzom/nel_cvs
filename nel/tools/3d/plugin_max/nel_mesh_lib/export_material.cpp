@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.22 2001/12/12 10:37:53 vizerie Exp $
+ * $Id: export_material.cpp,v 1.23 2001/12/13 14:58:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -379,7 +379,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 
 
 		/// test wether texture matrix animation should be exported
-		int bExportTexMatAnim;
+		int bExportTexMatAnim = 0;
 		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bExportTextureMatrix", (ParamType2)TYPE_BOOL, &bExportTexMatAnim, 0);
 		materialInfo.TextureMatrixEnabled = (bExportTexMatAnim != 0);
 

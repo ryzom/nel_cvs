@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.110 2001/07/11 07:43:55 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.111 2001/07/11 11:35:38 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -55,6 +55,12 @@
 
 using namespace std;
 using namespace NLMISC;
+
+
+
+// ***************************************************************************
+// try to allocate 16Mo by default of AGP Ram.
+#define	NL3D_DRV_VERTEXARRAY_AGP_INIT_SIZE		(16384*1024)
 
 
 
@@ -138,7 +144,7 @@ static Bool WndProc(Display *d, XEvent *e, char *arg)
 */
 #endif // NL_OS_UNIX
 
-CDriverGL::CDriverGL()
+CDriverGL::CDriverGL() : _AGPVertexArrayRange(this), _VRAMVertexArrayRange(this)
 {
 
 #ifdef NL_OS_WINDOWS
@@ -178,6 +184,7 @@ CDriverGL::CDriverGL()
 	_VertexMode= NL3D_VERTEX_MODE_NORMAL;
 
 	_CurrentVertexArrayRange= NULL;
+	_CurrentVertexBufferHard= NULL;
 
 	_AllocatedTextureMemory= 0;
 }
@@ -598,7 +605,12 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	// Reset VertexArrayRange.
 	_CurrentVertexArrayRange= NULL;
-
+	_CurrentVertexBufferHard= NULL;
+	if(_Extensions.NVVertexArrayRange)
+	{
+		// try to allocate 16Mo by default of AGP Ram.
+		initVertexArrayRange(NL3D_DRV_VERTEXARRAY_AGP_INIT_SIZE, 0);
+	}
 
 
 	// Activate the default texture environnments for all stages.
@@ -748,6 +760,13 @@ bool CDriverGL::swapBuffers()
 	_PrimitiveProfileOut.reset();
 
 
+	// Reset VertexArrayRange.
+	if(_CurrentVertexBufferHard)
+	{
+		_CurrentVertexBufferHard->disable();
+	}
+
+
 	return true;
 }
 
@@ -786,13 +805,7 @@ bool CDriverGL::release()
 
 
 	// Reset VertexArrayRange.
-	if(_CurrentVertexArrayRange)
-	{
-		_CurrentVertexArrayRange->disable();
-		_CurrentVertexArrayRange= NULL;
-	}
-	// Clear any VertexBufferHard created.
-	_VertexBufferHardSet.clear();
+	resetVertexArrayRange();
 
 
 #ifdef NL_OS_WINDOWS

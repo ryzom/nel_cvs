@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.4 2001/07/06 17:06:11 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.5 2001/07/11 11:35:38 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -43,6 +43,10 @@ using namespace NLMISC;
 // 3 means "vertex may need compute".
 // 1 means "Primitive say vertex must be computed".
 // 0 means "vertex is computed".
+
+
+// 500K min.
+#define	NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE		(512*1024)
 
 
 
@@ -268,9 +272,9 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	// For MultiPass Material.
 	_LastVB.setupVertexBuffer(VB);
 
-	// Disalbe the current vertexArrayRange if setuped.
-	if(_CurrentVertexArrayRange)
-		_CurrentVertexArrayRange->disable();
+	// Disalbe the current vertexBufferHard if setuped.
+	if(_CurrentVertexBufferHard)
+		_CurrentVertexBufferHard->disable();
 
 	// Setup the OpenGL arrays.
 	setupGlArrays(_LastVB, vbInf, skinning, paletteSkinning);
@@ -602,10 +606,6 @@ IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint32 vertexFormat, uint32
 		if(numVertices > _Extensions.NVVertexArrayRangeMaxVertex)
 			return NULL;
 
-		// \todo yoyo: TODO_OPTIMIZE: for now, create one VertexArrayRange for any VBufferHard.
-		// This is not a good idea, dixit NVidia.
-
-
 		// Create a CVertexBufferHardGL
 		CVertexBufferHardGL		*vb;
 		vb= new CVertexBufferHardGL();
@@ -625,13 +625,13 @@ IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint32 vertexFormat, uint32
 // ***************************************************************************
 void			CDriverGL::deleteVertexBufferHard(IVertexBufferHard *VB)
 {
-	// If one _CurrentVertexArrayRange enabled, first disable it.
-	if(_CurrentVertexArrayRange)
+	// If one _CurrentVertexBufferHard enabled, first disable it.
+	if(_CurrentVertexBufferHard)
 	{
-		_CurrentVertexArrayRange->disable();
+		_CurrentVertexBufferHard->disable();
 	}
 
-	// The just delete the VBuffer hard from list.
+	// Then just delete the VBuffer hard from list.
 	_VertexBufferHardSet.erase(safe_cast<CVertexBufferHardGL*>(VB));
 }
 
@@ -640,27 +640,47 @@ void			CDriverGL::deleteVertexBufferHard(IVertexBufferHard *VB)
 // ***************************************************************************
 CVertexBufferHardGL::CVertexBufferHardGL() 
 {
+	_Driver= NULL;
 	_VertexArrayRange= NULL;
+	_VertexPtr= NULL;
 }
 
 
 // ***************************************************************************
 bool	CVertexBufferHardGL::init(CDriverGL *drv, uint32 vertexFormat, uint32 numVertices, IDriver::TVBHardType vbType)
 {
+	_Driver= drv;
+	_VertexArrayRange= NULL;
+	_VertexPtr= NULL;
+
+
 	// Init the format of the VB.
 	IVertexBufferHard::initFormat(vertexFormat, numVertices);
 
 	// compute size to allocate.
 	uint32	size= getVertexSize() * getNumVertices();
 
-	// create a VertexArrayRange.
-	_VertexArrayRange= new CVertexArrayRange(drv);
+	// choose the VertexArrayRange.
+	switch(vbType)
+	{
+	case IDriver::VBHardAGP: 
+		_VertexArrayRange= &_Driver->_AGPVertexArrayRange;
+		break;
+	case IDriver::VBHardVRAM:
+		_VertexArrayRange= &_Driver->_VRAMVertexArrayRange;
+		break;
+	};
+
+	// try to allocate
+	if( _VertexArrayRange && _VertexArrayRange->allocated())
+	{
+		 _VertexPtr= _VertexArrayRange->allocateVB(size);
+	}
 
 	// If allocation fails.
-	if(!_VertexArrayRange->allocate(size, vbType))
+	if( !_VertexPtr )
 	{
 		// just destroy this object (no free()).
-		delete _VertexArrayRange;
 		_VertexArrayRange= NULL;
 		return false;
 	}
@@ -674,8 +694,9 @@ CVertexBufferHardGL::~CVertexBufferHardGL()
 {
 	if(_VertexArrayRange)
 	{
-		_VertexArrayRange->free();
-		delete _VertexArrayRange;
+		_VertexArrayRange->freeVB(_VertexPtr);
+		_VertexPtr= NULL;
+		_VertexArrayRange= NULL;
 	}
 }
 
@@ -684,14 +705,12 @@ CVertexBufferHardGL::~CVertexBufferHardGL()
 void		*CVertexBufferHardGL::lock()
 {
 	// sync the 3d card with the system.
-	_VertexArrayRange->flush();
+	// if same VBHard than one activated.
+	if(this==_Driver->_CurrentVertexBufferHard)
+		glFlushVertexArrayRangeNV();
 
 
-	/* \todo yoyo: TODO_OPTIMIZE: when optimizing VertexArrayRange use, should do a flush only if 
-		current VertexBufferHard is the current one setuped.
-	*/
-
-	return _VertexArrayRange->getVertexPtr();
+	return _VertexPtr;
 }
 
 
@@ -699,7 +718,33 @@ void		*CVertexBufferHardGL::lock()
 void		CVertexBufferHardGL::unlock()
 {
 	// sync the 3d card with the system.
-	_VertexArrayRange->flush();
+	// if same VBHard than one activated.
+	if(this==_Driver->_CurrentVertexBufferHard)
+		glFlushVertexArrayRangeNV();
+}
+
+
+// ***************************************************************************
+void			CVertexBufferHardGL::enable()
+{
+	if(_Driver->_CurrentVertexBufferHard != this)
+	{
+		nlassert(_VertexArrayRange);
+		_VertexArrayRange->enable();
+		_Driver->_CurrentVertexBufferHard= this;
+	}
+}
+
+
+// ***************************************************************************
+void			CVertexBufferHardGL::disable()
+{
+	if(_Driver->_CurrentVertexBufferHard != NULL)
+	{
+		nlassert(_VertexArrayRange);
+		_VertexArrayRange->disable();
+		_Driver->_CurrentVertexBufferHard= NULL;
+	}
 }
 
 
@@ -722,6 +767,14 @@ bool			CVertexArrayRange::allocate(uint32 size, IDriver::TVBHardType vbType)
 	};
 #endif	// NL_OS_WINDOWS
 
+
+	// init the allocator.
+	if(_VertexArrayPtr)
+	{
+		_HeapMemory.initHeap(_VertexArrayPtr, size);
+	}
+
+
 	return _VertexArrayPtr!=NULL;
 }
 
@@ -732,9 +785,15 @@ void			CVertexArrayRange::free()
 	// release the ptr.
 	if(_VertexArrayPtr)
 	{
+		// reset the allocator.
+		_HeapMemory.reset();
+
+
+		// Free special memory.
 #ifdef	NL_OS_WINDOWS
 		wglFreeMemoryNV(_VertexArrayPtr);
 #endif	// NL_OS_WINDOWS
+
 
 		_VertexArrayPtr= NULL;
 	}
@@ -755,18 +814,6 @@ void			CVertexArrayRange::enable()
 
 
 // ***************************************************************************
-void			CVertexArrayRange::flush()
-{
-	// if the current VertexArrayRange is the one setuped, must flush.
-	if(_Driver->_CurrentVertexArrayRange!=this)
-	{
-		glFlushVertexArrayRangeNV();
-	}
-
-}
-
-
-// ***************************************************************************
 void			CVertexArrayRange::disable()
 {
 	// if not already disabled.
@@ -776,6 +823,20 @@ void			CVertexArrayRange::disable()
 		glVertexArrayRangeNV(0, 0);
 		_Driver->_CurrentVertexArrayRange= NULL;
 	}
+}
+
+
+// ***************************************************************************
+void			*CVertexArrayRange::allocateVB(uint32 size)
+{
+	return _HeapMemory.allocate(size);
+}
+
+
+// ***************************************************************************
+void			CVertexArrayRange::freeVB(void	*ptr)
+{
+	_HeapMemory.free(ptr);
 }
 
 
@@ -1105,6 +1166,76 @@ void		CVertexBufferInfo::setupVertexBufferHard(CVertexBufferHardGL &vb)
 		PaletteSkinPointer= vb.getPaletteSkinPointer();
 }
 
+
+
+// ***************************************************************************
+void			CDriverGL::resetVertexArrayRange()
+{
+	if(_CurrentVertexBufferHard)
+	{
+		_CurrentVertexBufferHard->disable();
+	}
+	// Clear any VertexBufferHard created.
+	_VertexBufferHardSet.clear();
+
+	// After, Clear the 2 vertexArrayRange, if any.
+	_AGPVertexArrayRange.free();
+	_VRAMVertexArrayRange.free();
+}
+
+
+// ***************************************************************************
+bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
+{
+	if(!supportVertexBufferHard())
+		return false;
+
+	// First, reset any VBHard created.
+	resetVertexArrayRange();
+	bool	ok= true;
+
+	// Try to allocate AGPMemory.
+	if(agpMem>0)
+	{
+		agpMem&= ~15;	// ensure 16-bytes aligned mem count (maybe usefull :) ).
+		agpMem= max(agpMem, (uint)NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE);
+		while(agpMem>= NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE)
+		{
+			if(_AGPVertexArrayRange.allocate(agpMem, IDriver::VBHardAGP))
+				break;
+			else
+			{
+				agpMem/=2;
+				agpMem &=~15;
+			}
+		}
+
+		ok= false;
+	}
+
+
+	// Try to allocate VRAMMemory.
+	if(vramMem>0)
+	{
+		vramMem&= ~15;	// ensure 16-bytes aligned mem count (maybe usefull :) ).
+		vramMem= max(vramMem, (uint)NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE);
+		while(vramMem>= NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE)
+		{
+			if(_VRAMVertexArrayRange.allocate(vramMem, IDriver::VBHardVRAM))
+				break;
+			else
+			{
+				vramMem/=2;
+				vramMem &=~15;
+			}
+		}
+
+		ok= false;
+	}
+
+
+	return ok;
+}
 
 
 } // NL3D

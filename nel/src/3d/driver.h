@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.6 2001/07/09 15:39:43 berenguier Exp $
+ * $Id: driver.h,v 1.7 2001/07/11 11:35:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -235,6 +235,18 @@ public:
 	/** return true if driver support VertexBufferHard.
 	 */
 	virtual	bool			supportVertexBufferHard() const =0;
+
+
+	/** Allocate the initial VertexArray Memory. (no-op if !supportVertexBufferHard()).
+	 *	VertexArrayRange is first reseted, so any VBhard created before will be deleted.
+	 *	NB: call it after setDisplay(). But setDisplay() by default call initVertexArrayRange(16Mo, 0);
+	 *	so this is not necessary.
+	 *	NB: If allocation fails, mem/=2, and retry, until mem < 500K.
+	 *	\param agpMem ammount of AGP Memory required. if 0, reseted.
+	 *	\param vramMem ammount of VRAM Memory required. if 0, reseted.
+	 *	\return false if one the Buffer has not been allocated (at least at 500K).
+	 */
+	virtual	bool			initVertexArrayRange(uint agpMem, uint vramMem=0) =0;
 
 
 	/** create a IVertexBufferHard. delete it with deleteVertexBufferHard.

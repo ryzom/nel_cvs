@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.74 2001/07/09 15:39:43 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.75 2001/07/11 11:35:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,7 @@
 #include "nel/misc/event_emitter.h"
 #include "nel/misc/bit_set.h"
 #include "3d/ptr_set.h"
+#include "nel/misc/heap_memory.h"
 
 
 
@@ -143,7 +144,9 @@ public:
 // --------------------------------------------------
 
 
-/// Work only if ARRAY_RANGE_NV is enabled.
+/** Work only if ARRAY_RANGE_NV is enabled. else, only call to ctor/dtor/free() is valid.
+ *	any call to allocateVB() will return NULL.
+ */
 class CVertexArrayRange
 {
 public:
@@ -154,6 +157,10 @@ public:
 		_VertexArraySize= 0;
 	}
 
+
+	bool			allocated() const {return _VertexArrayPtr!=NULL;}
+
+
 	/// allocate a vertex array sapce. false if error. must free before re-allocate.
 	bool			allocate(uint32 size, IDriver::TVBHardType vbType);
 	/// free this space.
@@ -163,18 +170,23 @@ public:
 	// Those methods read/write in _Driver->_CurrentVertexArrayRange.
 	/// active this VertexArrayRange as the current vertex array range used. no-op if already setup.
 	void			enable();
-	/// If this VertexArrayRange is the one currently activated in driver, flush it, else no-op.
-	void			flush();
-	/// disable this VertexArrayRange.
+	/// disable this VertexArrayRange. _Driver->_CurrentVertexArrayRange= NULL;
 	void			disable();
 
 
-	void			*getVertexPtr() {return _VertexArrayPtr;}
+	/// Allocate a small subset of the memory. NULL if not enough mem.
+	void			*allocateVB(uint32 size);
+	/// free a VB allocated with allocateVB. No-op if NULL.
+	void			freeVB(void	*ptr);
+
 
 private:
 	CDriverGL	*_Driver;
 	void		*_VertexArrayPtr;
 	uint32		_VertexArraySize;
+
+	// Allocator.
+	NLMISC::CHeapMemory		_HeapMemory;
 
 };
 
@@ -194,16 +206,8 @@ public:
 	virtual	void		unlock();
 
 
-	void			enable()
-	{
-		nlassert(_VertexArrayRange);
-		_VertexArrayRange->enable();
-	}
-	void			disable()
-	{
-		nlassert(_VertexArrayRange);
-		_VertexArrayRange->disable();
-	}
+	void			enable();
+	void			disable();
 
 
 
@@ -211,43 +215,46 @@ public:
 	// NB: do not check if format is OK. return invalid result if format is KO.
 	void				*getVertexCoordPointer()
 	{
-		nlassert(_VertexArrayRange);
-		return _VertexArrayRange->getVertexPtr();
+		nlassert(_VertexPtr);
+		return _VertexPtr;
 	}
 	void				*getNormalCoordPointer()
 	{
-		nlassert(_VertexArrayRange);
-		return (uint8*)_VertexArrayRange->getVertexPtr() + getNormalOff();
+		nlassert(_VertexPtr);
+		return (uint8*)_VertexPtr + getNormalOff();
 	}
 	void				*getTexCoordPointer(uint stageid)
 	{
-		nlassert(_VertexArrayRange);
-		return (uint8*)_VertexArrayRange->getVertexPtr() + getTexCoordOff(stageid);
+		nlassert(_VertexPtr);
+		return (uint8*)_VertexPtr + getTexCoordOff(stageid);
 	}
 	void				*getColorPointer()
 	{
-		nlassert(_VertexArrayRange);
-		return (uint8*)_VertexArrayRange->getVertexPtr() + getColorOff();
+		nlassert(_VertexPtr);
+		return (uint8*)_VertexPtr + getColorOff();
 	}
 	void				*getSpecularPointer()
 	{
-		nlassert(_VertexArrayRange);
-		return (uint8*)_VertexArrayRange->getVertexPtr() + getSpecularOff();
+		nlassert(_VertexPtr);
+		return (uint8*)_VertexPtr + getSpecularOff();
 	}
 	void				*getWeightPointer(uint wid)
 	{
-		nlassert(_VertexArrayRange);
-		return (uint8*)_VertexArrayRange->getVertexPtr() + getWeightOff(wid);
+		nlassert(_VertexPtr);
+		return (uint8*)_VertexPtr + getWeightOff(wid);
 	}
 	void				*getPaletteSkinPointer()
 	{
-		nlassert(_VertexArrayRange);
-		return (uint8*)_VertexArrayRange->getVertexPtr() + getPaletteSkinOff();
+		nlassert(_VertexPtr);
+		return (uint8*)_VertexPtr + getPaletteSkinOff();
 	}
 
 
 private:
+	CDriverGL			*_Driver;
 	CVertexArrayRange	*_VertexArrayRange;
+	void				*_VertexPtr;
+
 };
 
 
@@ -356,6 +363,8 @@ public:
 
 
 	virtual	bool			supportVertexBufferHard() const;
+
+	virtual	bool			initVertexArrayRange(uint agpMem, uint vramMem);
 
 	virtual	IVertexBufferHard	*createVertexBufferHard(uint32 vertexFormat, uint32 numVertices, IDriver::TVBHardType vbType);
 
@@ -655,7 +664,20 @@ private:
 	// @{
 	CPtrSet<CVertexBufferHardGL>	_VertexBufferHardSet;
 	friend class					CVertexArrayRange;
+	friend class					CVertexBufferHardGL;
+	// The CVertexArrayRange activated.
 	CVertexArrayRange				*_CurrentVertexArrayRange;
+	// The CVertexBufferHardGL activated.
+	CVertexBufferHardGL				*_CurrentVertexBufferHard;
+
+	// The AGP VertexArrayRange.
+	CVertexArrayRange				_AGPVertexArrayRange;
+	// The VRAM VertexArrayRange.
+	CVertexArrayRange				_VRAMVertexArrayRange;
+
+
+	void							resetVertexArrayRange();
+
 	// @}
 
 

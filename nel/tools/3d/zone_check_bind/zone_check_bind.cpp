@@ -1,7 +1,7 @@
 /** \file zone_check_bind.cpp
  * This tool check that each patch of a zone to see wether they are bound correctly.
  *
- * $Id: zone_check_bind.cpp,v 1.1 2002/04/02 15:28:26 vizerie Exp $
+ * $Id: zone_check_bind.cpp,v 1.2 2002/04/02 16:09:04 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include <algorithm>
 #include <memory>
 #include <set>
+
 
 
 
@@ -89,18 +90,6 @@ static inline operator < (const CPatchIdentPair &lhs, const CPatchIdentPair &rhs
 typedef std::vector<CPatchVertexInfo *> TPVVect;
 typedef CQuadGrid<CPatchVertexInfo>   TPVQuadGrid;
 
-//=========================================================================================================================
-
-
-// Context for the bind checker
-struct CBindCheckerContext
-{	
-	// middle zone file name
-	std::string					MiddleZoneName;
-	// extensions to use with zones
-	std::string					ZoneExt;	
-};
-
 
 //=========================================================================================================================
 //=========================================================================================================================
@@ -111,12 +100,12 @@ struct CBindCheckerContext
   * return a pointer to the zone, or NULL if not found
   * Throw an exception if a read error occured
   */
-static CZone *LoadZone(uint16 xPos, uint16 yPos, CBindCheckerContext &context)
+static CZone *LoadZone(uint16 xPos, uint16 yPos, std::string zoneExt)
 {
 	std::string zoneName;
 	::getZoneNameByCoord(xPos, yPos, zoneName);
 	std::auto_ptr<CZone> zone(new CZone);		
-	std::string lookedUpZoneName = CPath::lookup(zoneName + context.ZoneExt, false);
+	std::string lookedUpZoneName = CPath::lookup(zoneName + zoneExt, false, false, false);
 	if (lookedUpZoneName.empty()) return NULL;
 	CIFile iF;
 	if (!iF.open(lookedUpZoneName))
@@ -179,63 +168,15 @@ static sint GetWeldableVertex(const CBezierPatch &bp, const CVector &pos, float 
 	return -1;
 }
 
-//=========================================================================================================================
-/** Build the context of the app
-  */
-static void BuildAppContext(CBindCheckerContext &bcc, char *argv[])
-{
-	//
-	bcc.ZoneExt = CFile::getExtension(argv[1]);	
-	if (bcc.ZoneExt.empty())
-	{
-		bcc.ZoneExt = ".zone";
-	}
-	else
-	{
-		bcc.ZoneExt = "." + bcc.ZoneExt;
-	}
-	//
-	bcc.MiddleZoneName = CFile::getFilenameWithoutExtension(std::string(argv[1]));	
-}
-
 
 //=========================================================================================================================
-int main(int argc, char* argv[])
+static void CheckZone(std::string middleZoneName, float weldThreshold, float middleEdgeWeldThreshold)
 {
+	uint numErrors = 0;
 	uint k, l, m, n, p, q;	// some loop counters	
-	uint numErrors = 0;	
-	if (argc < 3)
-	{
-		std::string appName = CFile::getFilename(std::string(argv[0]));
-		nlinfo("usage : %s zoneToCheck zonesDirectory weldTheshold middleEdgeWeldTheshold", appName.empty() ? "zone_check_bind" : appName.c_str());
-		return -1;
-	}
-
-	float weldThreshold, middleEdgeWeldThreshold;
-
-	if (::sscanf(argv[3], "%f", &weldThreshold) != 1)
-	{
-		nlinfo("invalid weldThreshold");
-		return -1;
-	}
-
-	if (::sscanf(argv[4], "%f", &middleEdgeWeldThreshold) != 1)
-	{
-		nlinfo("invalid middleEdgeWeldThreshold");
-		return -1;
-	}
-
-	CPath::addSearchPath(std::string(argv[2]));
-
-	// the context of the app
-	CBindCheckerContext bcc;
-
 	// This avoid reporting errors twice (for readability)
 	std::set<CPatchIdentPair> errorPairs;
 
-	// Build it
-	::BuildAppContext(bcc, argv);
-	
 	////////////////////////////
 	// Load the zones around  //
 	////////////////////////////
@@ -245,23 +186,25 @@ int main(int argc, char* argv[])
 		CZoneInfo					zoneInfos[9];				
 		uint16  xPos, yPos;
 		const sint16 posOffs[][2] = { {0, 0}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1} };
-		::getZoneCoordByName(bcc.MiddleZoneName.c_str(), xPos, yPos);
+		::getZoneCoordByName(middleZoneName.c_str(), xPos, yPos);
 		try
 		{
-			zones[0].reset(::LoadZone(xPos, yPos, bcc));
+			std::string ext = CFile::getExtension(middleZoneName);
+			zones[0].reset(::LoadZone(xPos, yPos, ext.empty() ? "" : "." + ext));
 			if (zones[0].get() == NULL)
 			{
-				nlinfo("can't load zone to check");
+				nlwarning("Can't load zone %s", middleZoneName.c_str());
+				return;
 			}
 			for (uint k = 1; k < 9; ++k)
 			{
-				zones[k].reset(::LoadZone(xPos + posOffs[k][0], yPos + posOffs[k][1], bcc));
+				zones[k].reset(::LoadZone(xPos + posOffs[k][0], yPos + posOffs[k][1], ext.empty() ? "" : "." + ext));
 			}
 		}
 		catch (NLMISC::Exception &e)
 		{
 			nlinfo("Zones loading failed : %d", e.what());
-			return -1;
+			return;
 		}
 	
 	///////////////////////////////
@@ -352,7 +295,7 @@ int main(int argc, char* argv[])
 							if (std::find(errorPairs.begin(), errorPairs.end(), errPair) == errorPairs.end()) // error already displayed ?
 							{									
 								nlinfo("**** Patch %d of zone %s has 1 - 1 connectivity error, try binding it with patch %d of zone %s",
-										l + 1, bcc.MiddleZoneName.c_str(), verts[0][n]->PatchIndex + 1, zoneNames[verts[0][n]->ZoneIndex].c_str());										
+										l + 1, middleZoneName.c_str(), verts[0][n]->PatchIndex + 1, zoneNames[verts[0][n]->ZoneIndex].c_str());										
 								errorPairs.insert(std::make_pair(pi2, pi1));
 								++numErrors;
 							}
@@ -394,7 +337,7 @@ int main(int argc, char* argv[])
 							if (std::find(errorPairs.begin(), errorPairs.end(), errPair) == errorPairs.end()) // error already displayed ?
 							{									
 								nlinfo("**** Patch %d of zone %s has 1 - 2 connectivity error, try binding it with patch %d of zone %s",
-										l + 1, bcc.MiddleZoneName.c_str(), pv.PatchIndex + 1, zoneNames[pv.ZoneIndex].c_str());										
+										l + 1, middleZoneName.c_str(), pv.PatchIndex + 1, zoneNames[pv.ZoneIndex].c_str());										
 								errorPairs.insert(std::make_pair(pi2, pi1));
 								++numErrors;										
 							}
@@ -446,7 +389,7 @@ int main(int argc, char* argv[])
 							if (std::find(errorPairs.begin(), errorPairs.end(), errPair) == errorPairs.end()) // error already displayed ?
 							{									
 								nlinfo("**** Patch %d of zone %s has 1 - 4 connectivity error, try binding it with patch %d of zone %s",
-									   l + 1, bcc.MiddleZoneName.c_str(), pv.PatchIndex + 1, zoneNames[pv.ZoneIndex].c_str());										
+									   l + 1, middleZoneName.c_str(), pv.PatchIndex + 1, zoneNames[pv.ZoneIndex].c_str());										
 								++numErrors;
 								errorPairs.insert(std::make_pair(pi2, pi1));
 							}
@@ -459,7 +402,51 @@ int main(int argc, char* argv[])
 	}
 	////////////////////////////////
 	////////////////////////////////
-	nlinfo("%d error(s) found", numErrors);
+	if (numErrors != 0)
+	{
+		nlinfo("%d errors found", numErrors);
+	}
+}
+
+//=========================================================================================================================
+int main(int argc, char* argv[])
+{		
+	if (argc < 4)
+	{
+		std::string appName = CFile::getFilename(std::string(argv[0]));
+		nlinfo("usage : %s <zonesDirectory><weldTheshold><middleEdgeWeldTheshold>\n", appName.empty() ? "zone_check_bind" : appName.c_str());		
+		return -1;
+	}
+
+	float weldThreshold, middleEdgeWeldThreshold;
+
+	if (::sscanf(argv[2], "%f", &weldThreshold) != 1)
+	{
+		nlinfo("invalid weldThreshold");
+		return -1;
+	}
+
+	if (::sscanf(argv[3], "%f", &middleEdgeWeldThreshold) != 1)
+	{
+		nlinfo("invalid middleEdgeWeldThreshold");
+		return -1;
+	}
+
+	std::string zonePaths(argv[1]);
+	CPath::addSearchPath(zonePaths);
+	
+	// Contains all the zone in the directory
+	std::vector<std::string> zoneNames;
+	
+	CPath::getPathContent(zonePaths, true, false, true, zoneNames);
+
+	// check'em
+	for (uint k = 0; k < zoneNames.size(); ++k)
+	{
+		nlinfo("============================================================================");
+		nlinfo("Checking : %s", zoneNames[k].c_str());
+		::CheckZone(zoneNames[k], weldThreshold, middleEdgeWeldThreshold);
+	}
 }
 
 	

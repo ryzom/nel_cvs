@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.14 2003/06/02 14:44:48 berenguier Exp $
+ * $Id: i18n.h,v 1.15 2003/10/10 12:05:05 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,8 +122,9 @@ public:
 	 *	
 	 *	Optionnaly, you can force the reader to consider the file as
 	 *	UTF-8 encoded.
+	 *	Optionnaly, you can ask the reader to interpret #include commands.
 	 */
-	static void readTextFile(const std::string &filename, ucstring &result, bool forceUtf8 = false, bool fileLookup = true);
+	static void readTextFile(const std::string &filename, ucstring &result, bool forceUtf8 = false, bool fileLookup = true, bool preprocess = false);
 
 	/** Read the content of a buffer as a unicode text.
 	 *	This is to read preloaded unicode files.

@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.39 2003/08/29 15:34:15 lecroart Exp $
+ * $Id: i18n.cpp,v 1.40 2003/10/10 12:05:36 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -371,7 +371,7 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 }
 
 
-void CI18N::readTextFile(const std::string &filename, ucstring &result, bool forceUtf8, bool fileLookup)
+void CI18N::readTextFile(const std::string &filename, ucstring &result, bool forceUtf8, bool fileLookup, bool preprocess)
 {
 	std::string fullName;
 	if (fileLookup)
@@ -396,7 +396,57 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 		text.push_back(c);
 	}
 
-	readTextBuffer((uint8*)&text[0], text.size(), result, forceUtf8);
+	if (!text.empty())
+		readTextBuffer((uint8*)&text[0], text.size(), result, forceUtf8);
+
+	if (preprocess)
+	{
+		ucstring final;
+		// parse the file, looking for preprocessor command.
+		ucstring::size_type pos = 0;
+		ucstring::size_type lastPos = 0;
+		ucstring	includeCmd("#include");
+
+		while ((pos = result.find(includeCmd, pos)) != ucstring::npos)
+		{
+			// copy the previous text
+			final.append(result.substr(lastPos, pos - lastPos));
+
+			// extract the inserted file name.
+			ucstring::const_iterator first, last;
+			first = result.begin()+pos+includeCmd.size();
+			last = result.end();
+
+			ucstring name;
+			skipWhiteSpace(first, last);
+			if (parseMarkedString('\"', '\"', first, last, name))
+			{
+				string subFilename = name.toString();
+				nldebug("Including '%s' into '%s'",
+					subFilename.c_str(),
+					filename.c_str());
+				ucstring inserted;
+				readTextFile(subFilename, inserted, forceUtf8, fileLookup, preprocess);
+
+				final += inserted;
+			}
+			else
+			{
+				nlwarning("Error parsing include file in line '%s' from file '%s'",
+					result.substr(pos, result.find(ucstring("\n"), pos) - pos).c_str(),
+					filename.c_str());
+			}
+
+			pos = lastPos = first - result.begin();
+		}
+
+		// copy the remaining chars
+		final.append(result.substr(lastPos));
+
+		result = final;
+	}
+
+
 }
 
 void CI18N::readTextBuffer(uint8 *buffer, uint size, ucstring &result, bool forceUtf8)

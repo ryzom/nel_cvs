@@ -1,7 +1,7 @@
 /** \file win_displayer.h
- * <File description>
+ * Implementation of the CDisplayer (look at displayer.h) that display on a Win32 Windows
  *
- * $Id: win_displayer.h,v 1.1 2001/06/15 10:00:07 lecroart Exp $
+ * $Id: win_displayer.h,v 1.2 2001/06/27 08:23:14 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,13 +48,20 @@ class CWinDisplayer : public NLMISC::IDisplayer
 {
 public:
 
-	CWinDisplayer () : _Init (false) { }
+	CWinDisplayer () : _Init (false), _ToolBarHeight (25) { }
 
 	/// Destructor
 	virtual ~CWinDisplayer ();
 
-	void create (std::string WindowNameEx = "", uint w = 700, uint h = 300, sint hs = 1000);
+	void create (std::string WindowNameEx = "", uint w = 700, uint h = 300, sint hs = 10000);
 	void update ();
+	void clear ();
+
+	uint	createLabel (const char *Name);
+	void	setLabel (uint Label, const char *Name);
+
+	void	setWindowParams (sint x, sint y, sint w, sint h);
+
 protected:
 
 	/** Sends the string to the logging server
@@ -71,7 +78,16 @@ private:
 
 	sint _HistorySize;
 
+	HWND _HClearBtn;
+	HWND _HLabel1;
+	sint _ToolBarHeight;
+
+	vector<HWND>	_HLabels;
+
+	void resizeLabel ();
+
 	friend LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 };
 
 } // NLMISC

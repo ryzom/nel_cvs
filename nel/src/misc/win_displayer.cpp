@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * <File description>
  *
- * $Id: win_displayer.cpp,v 1.1 2001/06/15 10:00:07 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.2 2001/06/27 08:23:14 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,15 +65,63 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				int w = lParam & 0xFFFF;
 				int h = (lParam >> 16) & 0xFFFF;
-				SetWindowPos (cwd->_HEdit, NULL, 0, 0, w, h, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
+				SetWindowPos (cwd->_HEdit, NULL, 0, 0, w, h-cwd->_ToolBarHeight, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
+				cwd->resizeLabel ();
 			}
-			break;
 		}
+		break;
 	case WM_DESTROY:	PostQuitMessage (0); break;
 	case WM_CLOSE:		raise (SIGINT); break;
-	default: return DefWindowProc (hWnd, message, wParam, lParam);
+	case WM_COMMAND:
+		{
+			if (HIWORD(wParam) == BN_CLICKED)
+			{
+				// clear button clicked
+				CWinDisplayer *cwd=(CWinDisplayer *)GetWindowLong (hWnd, GWL_USERDATA);
+				cwd->clear ();
+			}
+		}
+		break;
    }
-   return 0;
+   return DefWindowProc (hWnd, message, wParam, lParam);
+}
+
+void CWinDisplayer::resizeLabel ()
+{
+	RECT Rect;
+	GetClientRect (_HWnd, &Rect);
+	sint delta = Rect.right / (_HLabels.size () + 1);
+
+	SetWindowPos (_HClearBtn, NULL, 0, 0, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
+	
+	for (uint i = 0; i< _HLabels.size (); i++)
+	{
+		SetWindowPos (_HLabels[i], NULL, (i+1)*delta, 0, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
+	}
+}
+
+uint CWinDisplayer::createLabel (const char *Name)
+{
+	HWND label = CreateWindow ("STATIC", Name, WS_CHILD | WS_VISIBLE | SS_SIMPLE, 0, 0, 0, 0, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
+	SendMessage (label, WM_SETFONT, (LONG) _HFont, TRUE);
+	_HLabels.push_back (label);
+	resizeLabel();
+	return (uint)label;
+}
+
+void CWinDisplayer::setLabel (uint label, const char *Name)
+{
+	SendMessage ((HWND)label, WM_SETTEXT, 0, (LONG) Name);
+}
+
+void CWinDisplayer::setWindowParams (sint x, sint y, sint w, sint h)
+{
+	LONG flag = SWP_NOZORDER | SWP_NOACTIVATE;
+	
+	if (x == -1 && y == -1) flag |= SWP_NOMOVE;
+	if (w == -1 && h == -1) flag |= SWP_NOSIZE;
+
+	SetWindowPos (_HWnd, NULL, x, y, w, h, flag);
 }
 
 void CWinDisplayer::create (string WindowNameEx, uint w, uint h, sint hs)
@@ -89,20 +137,18 @@ void CWinDisplayer::create (string WindowNameEx, uint w, uint h, sint hs)
 	wc.hInstance		= GetModuleHandle(NULL);
 	wc.hIcon			= NULL;
 	wc.hCursor			= LoadCursor(NULL,IDC_ARROW);
-	wc.hbrBackground	= WHITE_BRUSH;
+	wc.hbrBackground	= (HBRUSH)COLOR_WINDOW;
 	wc.lpszClassName	= "NLClass";
 	wc.lpszMenuName		= NULL;
 	if ( !RegisterClass(&wc) ) return;
 
-	_HFont = CreateFont (15, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEVICE_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, "Arial");
-
 	ULONG	WndFlags;
 	RECT	WndRect;
-	WndFlags=WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS;
-	WndRect.left=0;
-	WndRect.top=0;
-	WndRect.right=w;
-	WndRect.bottom=h;
+	WndFlags = WS_OVERLAPPEDWINDOW /*| WS_CLIPCHILDREN | WS_CLIPSIBLINGS*/;
+	WndRect.left = 0;
+	WndRect.top = 0;
+	WndRect.right = w;
+	WndRect.bottom = h;
 	AdjustWindowRect(&WndRect,WndFlags,FALSE);
 	string wn = "Nel Service Console (compiled " __DATE__ " " __TIME__ ") ";
 	if (!wn.empty())
@@ -111,8 +157,11 @@ void CWinDisplayer::create (string WindowNameEx, uint w, uint h, sint hs)
 		wn += WindowNameEx;
 	}
 
+	// create the window
+
 	_HWnd = CreateWindow ("NLClass", wn.c_str(), WndFlags, CW_USEDEFAULT,CW_USEDEFAULT, WndRect.right,WndRect.bottom, NULL, NULL, GetModuleHandle(NULL), NULL);
 	SetWindowLong (_HWnd, GWL_USERDATA, (LONG)this);
+	
 	// resize the window
 	RECT rc;
 	SetRect (&rc, 0, 0, w, h);
@@ -121,8 +170,23 @@ void CWinDisplayer::create (string WindowNameEx, uint w, uint h, sint hs)
 
 	ShowWindow(_HWnd,SW_SHOW);
 
-	_HEdit = CreateWindow("EDIT",NULL,WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL, 0, 0, w, h, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
-	SendMessage (_HEdit, WM_SETFONT, (long) _HFont, TRUE);
+	// create the font
+	_HFont = CreateFont (-13, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial");
+
+	// create the edit control
+	_HEdit = CreateWindow ("EDIT", NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL, 0, _ToolBarHeight, w, h-_ToolBarHeight, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
+	SendMessage (_HEdit, WM_SETFONT, (LONG) _HFont, TRUE);
+
+	// create the edit control
+	_HClearBtn = CreateWindow ("BUTTON", "Clear", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 0, 0, 100, _ToolBarHeight, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
+	SendMessage (_HClearBtn, WM_SETFONT, (LONG) _HFont, TRUE);
+	
+	// set the edit to read only
+	SendMessage (_HEdit, EM_SETREADONLY, TRUE, 0);
+
+	// set the edit text limit to lot of :)
+	SendMessage (_HEdit, EM_LIMITTEXT, -1, 0);
+
 
 	_Thread = getThreadId ();
 	update ();
@@ -136,6 +200,21 @@ void CWinDisplayer::update ()
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+}
+
+void CWinDisplayer::clear ()
+{
+	// get number of line
+	sint nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
+
+	// get size of the last line
+	sint nIndex = SendMessage (_HEdit, EM_LINEINDEX, nLine, 0);
+
+	// select all the text
+	SendMessage (_HEdit, EM_SETSEL, 0, nIndex);
+
+	// clear all the text
+	SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) "");
 }
 
 /** Sends the string to the logging server
@@ -190,24 +269,39 @@ void CWinDisplayer::doDisplay (const NLMISC::TDisplayInfo &args, const char *mes
 	}
 	ss << pos;
 
-	sint nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
-	sint nIndex = SendMessage (_HEdit, EM_LINEINDEX, nLine, 0);
-	SendMessage (_HEdit, EM_SETSEL, nIndex, nIndex);
-	SendMessage (_HEdit, EM_LIMITTEXT, 0, 0);
-	SendMessage (_HEdit, EM_REPLACESEL, TRUE, (long) ss.str().c_str());
-	SendMessage (_HEdit, EM_SETREADONLY, TRUE, 0);
+	// store old selection
+	DWORD startSel, endSel;
+	SendMessage (_HEdit, EM_GETSEL, (LONG)&startSel, (LONG)&endSel);
 
+	// get number of line
+	sint nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
+
+	// clear old line if history size is too big
 	if (_HistorySize > 0 && nLine > _HistorySize)
 	{
 		sint oldIndex1 = SendMessage (_HEdit, EM_LINEINDEX, 0, 0);
 		sint oldIndex2 = SendMessage (_HEdit, EM_LINEINDEX, nbl, 0);
 		SendMessage (_HEdit, EM_SETSEL, oldIndex1, oldIndex2);
-		SendMessage (_HEdit, EM_REPLACESEL, TRUE, (long) "");
+		SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) "");
 	}
+
+	// get number of line
+	nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
+	
+	// get size of the last line
+	sint nIndex = SendMessage (_HEdit, EM_LINEINDEX, nLine, 0);
+
+	// select the end of the last line
+	SendMessage (_HEdit, EM_SETSEL, nIndex, nIndex);
+
+	// add the string to the edit control
+	SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) ss.str().c_str());
+
+	// restore old selection
+	SendMessage (_HEdit, EM_SETSEL, startSel, endSel);
 
 	update ();
 }
-
 
 } // NLMISC
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.36 2004/04/01 19:10:24 vizerie Exp $
+ * $Id: driver_opengl_extension.h,v 1.37 2004/04/27 12:11:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,11 +103,16 @@ struct	CGlExtensions
 	bool    ATIEnvMapBumpMap;
 	bool    ATIFragmentShader;
 	bool	ATIXTextureEnvRoute;
+	bool	ATIVertexAttribArrayObject;
 	// ARB Extensions
 	bool	ARBTextureCompression;
 	bool	ARBFragmentProgram;
 	bool	ARBVertexBufferObject;
 	bool	ARBVertexProgram;
+
+	// hint : is it an ATI or above 9500
+	bool	IsATI9500OrAbove;
+
 public:
 
 	/// \name Disable Hardware feature. False by default. setuped by IDriver
@@ -149,6 +154,7 @@ public:
 		ATIFragmentShader = false;
 		ATIVertexArrayObject = false;
 		ATIMapObjectBuffer = false;
+		ATIVertexAttribArrayObject = false;
 		EXTVertexShader= false;
 		ARBFragmentProgram = false;
 		ARBVertexBufferObject = false;
@@ -158,6 +164,9 @@ public:
 		DisableHardwareVertexProgram= false;
 		DisableHardwareVertexArrayAGP= false;
 		DisableHardwareTextureShader= false;
+
+		// misc
+		IsATI9500OrAbove = false;
 	};
 };
 
@@ -445,6 +454,13 @@ extern NEL_PFNGLALPHAFRAGMENTOP2ATIPROC				nglAlphaFragmentOp2ATI;
 extern NEL_PFNGLALPHAFRAGMENTOP3ATIPROC				nglAlphaFragmentOp3ATI;
 extern NEL_PFNGLSETFRAGMENTSHADERCONSTANTATIPROC	nglSetFragmentShaderConstantATI;
 
+// GL_ATI_vertex_attrib_array_object
+//==================================
+extern NEL_PFNGLVERTEXATTRIBARRAYOBJECTATIPROC nglVertexAttribArrayObjectATI;
+extern NEL_PFNGLGETVERTEXATTRIBARRAYOBJECTFVATIPROC nglGetVertexAttribArrayObjectfvATI;
+extern NEL_PFNGLGETVERTEXATTRIBARRAYOBJECTIVATIPROC nglGetVertexAttribArrayObjectivATI;
+
+
 
 
 // GL_ARB_fragment_shader_extension
@@ -482,6 +498,8 @@ extern PFNGLMAPBUFFERARBPROC nglMapBufferARB;
 extern PFNGLUNMAPBUFFERARBPROC nglUnmapBufferARB;
 extern PFNGLGETBUFFERPARAMETERIVARBPROC nglGetBufferParameterivARB;
 extern PFNGLGETBUFFERPOINTERVARBPROC nglGetBufferPointervARB;
+
+
 
 // GL_ARB_vertex_program
 //==================================

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.44 2004/04/06 18:27:24 vizerie Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.45 2004/04/27 12:11:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -274,6 +274,12 @@ NEL_PFNGLGETVARIANTARRAYOBJECTIVATIPROC	nglGetVariantArrayObjectivATI;
 NEL_PFNGLMAPOBJECTBUFFERATIPROC   nglMapObjectBufferATI;
 NEL_PFNGLUNMAPOBJECTBUFFERATIPROC nglUnmapObjectBufferATI;
 
+
+// GL_ATI_vertex_attrib_array_object
+//==================================
+NEL_PFNGLVERTEXATTRIBARRAYOBJECTATIPROC nglVertexAttribArrayObjectATI;
+NEL_PFNGLGETVERTEXATTRIBARRAYOBJECTFVATIPROC nglGetVertexAttribArrayObjectfvATI;
+NEL_PFNGLGETVERTEXATTRIBARRAYOBJECTIVATIPROC nglGetVertexAttribArrayObjectivATI;
 
 
 // GL_ATI_envmap_bumpmap extension
@@ -905,8 +911,7 @@ static bool	setupATIVertexArrayObject(const char *glext)
 {
 	if(strstr(glext, "GL_ATI_vertex_array_object")==NULL)
 		return false;
-
-	if(!(nglBlendColorEXT= (NEL_PFNGLBLENDCOLOREXTPROC)nelglGetProcAddress("glBlendColorEXT"))) return false;
+	
 	if(!(nglNewObjectBufferATI= (NEL_PFNGLNEWOBJECTBUFFERATIPROC)nelglGetProcAddress("glNewObjectBufferATI"))) return false;
 	if(!(nglIsObjectBufferATI= (NEL_PFNGLISOBJECTBUFFERATIPROC)nelglGetProcAddress("glIsObjectBufferATI"))) return false;
 	if(!(nglUpdateObjectBufferATI= (NEL_PFNGLUPDATEOBJECTBUFFERATIPROC)nelglGetProcAddress("glUpdateObjectBufferATI"))) return false;
@@ -921,17 +926,19 @@ static bool	setupATIVertexArrayObject(const char *glext)
 	if(!(nglArrayObjectATI= (NEL_PFNGLARRAYOBJECTATIPROC)nelglGetProcAddress("glArrayObjectATI"))) return false;
 	if(!(nglGetArrayObjectfvATI= (NEL_PFNGLGETARRAYOBJECTFVATIPROC)nelglGetProcAddress("glGetArrayObjectfvATI"))) return false;
 	if(!(nglGetArrayObjectivATI= (NEL_PFNGLGETARRAYOBJECTIVATIPROC)nelglGetProcAddress("glGetArrayObjectivATI"))) return false;
-	if(!(nglVariantArrayObjectATI= (NEL_PFNGLVARIANTARRAYOBJECTATIPROC)nelglGetProcAddress("glVariantArrayObjectATI"))) return false;
-	if(!(nglGetVariantArrayObjectfvATI= (NEL_PFNGLGETVARIANTARRAYOBJECTFVATIPROC)nelglGetProcAddress("glGetVariantArrayObjectfvATI"))) return false;
-	if(!(nglGetVariantArrayObjectivATI= (NEL_PFNGLGETVARIANTARRAYOBJECTIVATIPROC)nelglGetProcAddress("glGetVariantArrayObjectivATI"))) return false;
-
+	if(strstr(glext, "GL_EXT_vertex_shader") != NULL)
+	{	
+		// the following exist only if ext vertex shader is present
+		if(!(nglVariantArrayObjectATI= (NEL_PFNGLVARIANTARRAYOBJECTATIPROC)nelglGetProcAddress("glVariantArrayObjectATI"))) return false;
+		if(!(nglGetVariantArrayObjectfvATI= (NEL_PFNGLGETVARIANTARRAYOBJECTFVATIPROC)nelglGetProcAddress("glGetVariantArrayObjectfvATI"))) return false;
+		if(!(nglGetVariantArrayObjectivATI= (NEL_PFNGLGETVARIANTARRAYOBJECTIVATIPROC)nelglGetProcAddress("glGetVariantArrayObjectivATI"))) return false;
+	}
 	return true;
 }
 
 
 static bool	setupATIMapObjectBuffer(const char *glext)
-{	
-	return false; // tmp fix
+{		
 	if(strstr(glext, "GL_ATI_map_object_buffer")==NULL)
 		return false;
 	if (!(nglMapObjectBufferATI= (NEL_PFNGLMAPOBJECTBUFFERATIPROC)nelglGetProcAddress("glMapObjectBufferATI"))) return false;
@@ -961,6 +968,17 @@ static bool	setupATIFragmentShader(const char *glext)
 	if (!(nglAlphaFragmentOp3ATI = (NEL_PFNGLALPHAFRAGMENTOP3ATIPROC)nelglGetProcAddress("glAlphaFragmentOp3ATI"))) return false;
 	if (!(nglSetFragmentShaderConstantATI = (NEL_PFNGLSETFRAGMENTSHADERCONSTANTATIPROC)nelglGetProcAddress("glSetFragmentShaderConstantATI"))) return false;
 
+	return true;
+}
+
+// *********************************
+static bool setupATIVertexAttribArrayObject(const char *glext)
+{
+	if (strstr(glext, "GL_ATI_vertex_attrib_array_object")==NULL)
+		return false;
+	if (!(nglVertexAttribArrayObjectATI= (NEL_PFNGLVERTEXATTRIBARRAYOBJECTATIPROC)nelglGetProcAddress("glVertexAttribArrayObjectATI"))) return false;
+	if (!(nglGetVertexAttribArrayObjectfvATI= (NEL_PFNGLGETVERTEXATTRIBARRAYOBJECTFVATIPROC)nelglGetProcAddress("glGetVertexAttribArrayObjectfvATI"))) return false;
+	if (!(nglGetVertexAttribArrayObjectivATI= (NEL_PFNGLGETVERTEXATTRIBARRAYOBJECTIVATIPROC)nelglGetProcAddress("glGetVertexAttribArrayObjectivATI"))) return false;
 	return true;
 }
 
@@ -1167,12 +1185,20 @@ void	registerGlExtensions(CGlExtensions &ext)
 	// Disable feature ???
 	if(!ext.DisableHardwareTextureShader)
 	{	
-		ext.NVTextureShader = setupNVTextureShader(glext);
+		ext.NVTextureShader = setupNVTextureShader(glext);		
+		ext.ATIEnvMapBumpMap = setupATIEnvMapBumpMap(glext);		
+		ext.ATIFragmentShader = setupATIFragmentShader(glext);	
+		ext.ARBFragmentProgram = setupARBFragmentProgram(glext);		
 	}
 	else
 	{
+		ext.ATIEnvMapBumpMap = false;
 		ext.NVTextureShader = false;
+		ext.ATIFragmentShader = false;
+		ext.ARBFragmentProgram = false;
 	}
+
+	
 
 	// For now, the only way to know if emulation, is to test some extension which exist only on GeForce3.
 	// if GL_NV_texture_shader is not here, then we are not on GeForce3.
@@ -1203,23 +1229,32 @@ void	registerGlExtensions(CGlExtensions &ext)
 	if(!ext.DisableHardwareVertexArrayAGP)
 	{	
 		ext.ATIVertexArrayObject= setupATIVertexArrayObject(glext);
-		ext.ATIMapObjectBuffer= setupATIMapObjectBuffer(glext);		
+		ext.ATIMapObjectBuffer= setupATIMapObjectBuffer(glext);
+		ext.ATIVertexAttribArrayObject = setupATIVertexAttribArrayObject(glext);		
 	}
 	// Check ATIXTextureEnvCombine3.
 	ext.ATITextureEnvCombine3= setupATITextureEnvCombine3(glext);
 	// Check ATIXTextureEnvRoute
 	ext.ATIXTextureEnvRoute= setupATIXTextureEnvRoute(glext);
-	// Check ATIEnvMapBumpMap
-	ext.ATIEnvMapBumpMap = setupATIEnvMapBumpMap(glext);
-	// Check ATIFragmentShader
-	ext.ATIFragmentShader = setupATIFragmentShader(glext);	
+		
+	if (ext.ATITextureEnvCombine3)
+	{
+		ext.IsATI9500OrAbove = setupARBFragmentProgram(glext);
+	}
 
 	// ARB extensions
 	// -------------
-	ext.ARBFragmentProgram = setupARBFragmentProgram(glext);
 	if(!ext.DisableHardwareVertexArrayAGP)
 	{
 		ext.ARBVertexBufferObject = setupARBVertexBufferObject(glext);
+	}	
+
+	// with the 9500 and above, the ATI_env_map_bump_map seems to be broken (with catalyst 4.4)
+	// moreover, in my tries ATI_fragment_shader doesn't like to be used With ARB_fragment_program (maybe a driver bug, display become corrupted)
+	if (ext.IsATI9500OrAbove)
+	{
+		ext.ATIEnvMapBumpMap = false;
+		ext.ATIFragmentShader = false;
 	}	
 }
 

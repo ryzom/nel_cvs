@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.17 2004/08/13 15:23:46 vizerie Exp $
+ * $Id: coarse_mesh_manager.h,v 1.18 2004/09/23 18:50:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,6 +99,7 @@ public:
 	  *	\return false if the mesh can't be added to this pass BECAUSE OF TOO MANY VERTICES or TOO MANY PRIMITIVES reason
 	  *	You may call flushRender(), then restart a block. 
 	  *	NB: if numVertices>NL3D_COARSEMESH_VERTEXBUFFER_SIZE or if numTriangles>NL3D_COARSEMESH_TRIANGLE_SIZE, it will always
+	  *	NB: the color of vbUffer must already be correct against IDriver::getVertexColorFormat()
 	  *	return false
 	  */
 	bool		addMesh (uint numVertices, const uint8 *vBuffer, uint numTris, const uint32 *indexBuffer);

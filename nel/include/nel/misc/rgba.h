@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.25 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: rgba.h,v 1.26 2004/09/23 18:50:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -328,6 +328,12 @@ public:
 			void buildFromHLS(float h, float l, float s);
 	//@}
 
+
+	/// Swap the B and R components, to simulate a CBRGA
+	void	swapBR()
+	{
+		std::swap(R,B);
+	}
 
 
 	/// Red componant.

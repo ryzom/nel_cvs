@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.37 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.38 2004/09/23 18:50:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -571,8 +571,12 @@ void CMeshMultiLod::renderCoarseMesh (uint slot, IDriver *drv, CMeshMultiLodInst
 			// get average sun color
 			CRGBA	sunContrib= trans->getCoarseMeshLighting();
 
+			// Invert BR if driver is BGRA
+			if(drv->getVertexColorFormat()==CVertexBuffer::TBGRA)
+				sunContrib.swapBR();
+
 			// Set color
-			trans->setColorCoarseMesh ( sunContrib, manager->getVertexSize(), manager->getColorOff() );
+			trans->setColorCoarseMesh ( sunContrib, manager->getVertexSize(), manager->getColorOff());
 		}
 
 		// Add dynamic to the manager

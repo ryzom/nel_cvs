@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.19 2004/09/17 15:24:55 vizerie Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.20 2004/09/23 18:50:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,6 +121,16 @@ void CCoarseMeshManager::flushRender (IDriver *drv)
 {
 	H_AUTO( NL3D_StaticLod_Render );
 	if (_Meshs.empty()) return;
+
+	// if the driver is BGRA (Direct3D), then invert color format 
+	if(!_VBuffer.isResident() && drv->getVertexColorFormat()==CVertexBuffer::TBGRA)
+	{
+		// since actually empty, no need to swap current memory
+		_VBuffer.setNumVertices(0);
+		_VBuffer.setVertexColorFormat(CVertexBuffer::TBGRA);
+	}
+
+	// init
 	_VBuffer.setNumVertices(_CurrentNumVertices);
 	_Triangles.setNumIndexes(_CurrentNumTriangles * 3);
 	_VBuffer.lock (_VBA);

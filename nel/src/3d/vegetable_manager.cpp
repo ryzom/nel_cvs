@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.41 2004/09/21 09:13:41 lecroart Exp $
+ * $Id: vegetable_manager.cpp,v 1.42 2004/09/23 18:50:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1204,6 +1204,15 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	uint	dstBendOff= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_BENDINFO);
 	uint	dstCenterOff= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_CENTER);
 
+	// For D3D, If the VertexBuffer is in BGRA mode
+	if(allocator->isBGRA())
+	{
+		// then swap only the B and R (no cpu cycle added per vertex)
+		primaryRGBA.swapBR();
+		secondaryRGBA.swapBR();
+		diffusePL[0].swapBR();
+		diffusePL[1].swapBR();
+	}
 
 	// Usefull For !destLighted only.
 	CVector		deltaPos;
@@ -2448,6 +2457,16 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 	uint	srcNormalOff= (instanceLighted? shape->VB.getNormalOff() : 0);
 	uint	dstColor0Off= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR0);
 	uint	dstColor1Off= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR1);
+	
+	// For D3D, If the VertexBuffer is in BGRA mode
+	if(allocator->isBGRA())
+	{
+		// then swap only the B and R (no cpu cycle added per vertex)
+		primaryRGBA.swapBR();
+		secondaryRGBA.swapBR();
+		diffusePL[0].swapBR();
+		diffusePL[1].swapBR();
+	}
 	
 	CVertexBufferRead vba;
 	shape->VB.lock (vba);

@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.18 2004/09/09 15:26:20 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.19 2004/09/23 18:50:16 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -385,7 +385,7 @@ bool			CLodCharacterManager::addRenderCharacterKey(CLodCharacterInstance &instan
 	// For ASM / MMX, must set 0 to alpha part, because replaced by *alphaPtr (with add)
 	ambient.A= 0;
 	diffuse.A= 0;
-	
+
 
 	// Get the Shape and current key.
 	//=============
@@ -446,6 +446,15 @@ bool			CLodCharacterManager::addRenderCharacterKey(CLodCharacterInstance &instan
 		_LockDone= true;
 	}
 
+	// After lock, For D3D, the VertexColor may be in BGRA format
+	if(_VertexStream.isBRGA())
+	{
+		// then swap only the B and R (no cpu cycle added per vertex)
+		ambient.swapBR();
+		diffuse.swapBR();
+	}
+	
+	
 	// Prepare Transform
 	//=============
 

@@ -1,7 +1,7 @@
 /** \file vertex_stream_manager.h
  * <File description>
  *
- * $Id: vertex_stream_manager.h,v 1.3 2004/09/02 17:06:42 vizerie Exp $
+ * $Id: vertex_stream_manager.h,v 1.4 2004/09/23 18:50:16 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -98,6 +98,9 @@ public:
 
 	/// activate the currentVBhard as the current VB in the driver, for future rendering
 	void			activate();
+
+	/// return true if the current activated VBHard is in BGRA mode. nlassert(_Lockdone)
+	bool			isBRGA() const;
 
 	/** Swap to the next VBHard. This allow some parralelism, since CPU fill one VBHard while the other is rendered
 	 *	NB: no-op if the vertex stream manager falls down to the VBSoft solution.

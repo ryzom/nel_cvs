@@ -1,7 +1,7 @@
 /** \file vertex_stream_manager.cpp
  * <File description>
  *
- * $Id: vertex_stream_manager.cpp,v 1.4 2004/09/02 17:06:42 vizerie Exp $
+ * $Id: vertex_stream_manager.cpp,v 1.5 2004/09/23 18:50:16 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -179,6 +179,14 @@ void			CVertexStreamManager::swapVBHard()
 		_CurentVB++;
 		_CurentVB= _CurentVB%_NumVB;
 	}
+}
+
+// ***************************************************************************
+bool			CVertexStreamManager::isBRGA() const
+{
+	nlassert(_InitOk);
+	nlassert(_LockDone);
+	return _VBA.getParent()->getVertexColorFormat()==CVertexBuffer::TBGRA;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.h
  * <File description>
  *
- * $Id: vegetablevb_allocator.h,v 1.4 2004/03/31 14:30:06 berenguier Exp $
+ * $Id: vegetablevb_allocator.h,v 1.5 2004/09/23 18:50:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,6 +115,9 @@ public:
 	/// if any, unlock the AGP buffer.
 	void			unlockBuffer();
 	bool			bufferLocked() const {return _VBHard.isLocked();}
+
+	/// true if the VBHard is in BGRA mode
+	bool			isBGRA() const {return _VBHard.getVertexColorFormat()==CVertexBuffer::TBGRA;}
 
 	/** activate the VB or the VBHard in Driver setuped. nlassert if driver is NULL or if buffer is locked.
 	 */

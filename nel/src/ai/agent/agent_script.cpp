@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.113 2002/05/03 15:49:00 portier Exp $
+ * $Id: agent_script.cpp,v 1.114 2002/05/06 12:55:52 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,6 +77,18 @@ namespace NLAIAGENT
 	NLAISCRIPT::COperandSimpleListOr *CAgentScript::ParamIdInitComponentMsg = NULL;
 	NLAISCRIPT::CParam *CAgentScript::ParamInitComponentMsg = NULL;
 
+	const NLAIAGENT::IVarName *CAgentScript::getClassName() const
+	{
+		const NLAIAGENT::IVarName *classname;
+		if ( _AgentClass != NULL )
+		{
+			classname = _AgentClass->getClassName();
+		}
+		else
+			classname = new CStringVarName("<unknown>"); // Memory leak ?
+
+		return classname;
+	}
 
 	void CAgentScript::initAgentScript()
 	{
@@ -245,14 +257,13 @@ namespace NLAIAGENT
 																			new NLAISCRIPT::COperandSimple(
 																			new NLAIC::CIdentType(CStringType::IdStringType))));
 
-		StaticMethod[CAgentScript::TGetClass] = new CAgentScript::CMethodCall(	"GetClass", 
-																			CAgentScript::TGetClass, 
+		StaticMethod[CAgentScript::TGetClassName] = new CAgentScript::CMethodCall(	"GetClassName", 
+																			CAgentScript::TGetClassName, 
 																			NULL,CAgentScript::CheckCount,
 																			0,
 																			new NLAISCRIPT::CObjectUnknown(
 																			new NLAISCRIPT::COperandSimple(
 																			new NLAIC::CIdentType(CStringType::IdStringType))));
-
 
 		StaticMethod[CAgentScript::TRemoveChild] = new CAgentScript::CMethodCall(	_REMOVECHILD_, 
 																				CAgentScript::TRemoveChild, 
@@ -1575,12 +1586,12 @@ namespace NLAIAGENT
 				return r;
 			}
 
-		case TGetClass:
+		case TGetClassName:
 			{
 				IObjectIA::CProcessResult r;
 				if ( _AgentClass != NULL )
 				{
-					const NLAIAGENT::IVarName *classname = _AgentClass->getClassName();
+					const NLAIAGENT::IVarName *classname = getClassName();
 					r.Result = new CStringType( *classname );
 				}
 				else
@@ -1701,16 +1712,12 @@ namespace NLAIAGENT
 				return r;
 			}
 
-		case TGetClass:
+		case TGetClassName:
 			{
 				IObjectIA::CProcessResult r;
-				if ( _AgentClass != NULL )
-				{
-					const NLAIAGENT::IVarName *classname = _AgentClass->getClassName();
-					r.Result = new CStringType( *classname );
-				}
-				else
-					r.Result = new CStringType( CStringVarName("<unknown>"));
+				const NLAIAGENT::IVarName *classname = getClassName();
+				r.Result = new CStringType( *classname );
+
 				return r;
 			}
 

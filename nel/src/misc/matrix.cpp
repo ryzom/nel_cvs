@@ -8,13 +8,14 @@
  */
 
 /*
- * $Id: matrix.cpp,v 1.1 2000/09/19 16:39:04 berenguier Exp $
+ * $Id: matrix.cpp,v 1.2 2000/09/20 10:09:45 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
 
 
 #include "nel/misc/matrix.h"
+#include "nel/misc/plane.h"
 #include <algorithm>
 using namespace std;
 
@@ -98,19 +99,23 @@ void		CMatrix::identity()
 	a41=0; a42=0; a43=0; a44=1; 
 }
 // ======================================================================================================
-void		CMatrix::setRot(const CVector &i, const CVector &j, const CVector &k)
+void		CMatrix::setRot(const CVector &i, const CVector &j, const CVector &k, bool hintNoScale)
 {
 	CHECK_VALID();
 	StateBit|= MAT_ROT | MAT_SCALEANY;
+	if(hintNoScale)
+		StateBit&= ~(MAT_SCALEANY|MAT_SCALEUNI);
 	a11= i.x; a12= j.x; a13= k.x; 
 	a21= i.y; a22= j.y; a23= k.y; 
 	a31= i.z; a32= j.z; a33= k.z; 
 }
 // ======================================================================================================
-void		CMatrix::setRot(const float m33[9])
+void		CMatrix::setRot(const float m33[9], bool hintNoScale)
 {
 	CHECK_VALID();
 	StateBit|= MAT_ROT | MAT_SCALEANY;
+	if(hintNoScale)
+		StateBit&= ~(MAT_SCALEANY|MAT_SCALEUNI);
 	a11= m33[0]; a12= m33[3]; a13= m33[6]; 
 	a21= m33[1]; a22= m33[4]; a23= m33[7]; 
 	a31= m33[2]; a32= m33[5]; a33= m33[8]; 

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: matrix.h,v 1.1 2000/09/19 16:38:53 berenguier Exp $
+ * $Id: matrix.h,v 1.2 2000/09/20 10:09:51 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -16,12 +16,13 @@
 #ifndef NL_MATRIX_H
 #define NL_MATRIX_H
 
-
 #include "nel/misc/vector.h"
-#include "nel/misc/plane.h"
+
 
 namespace	NLMISC
 {
+
+class	CPlane;
 
 
 // ======================================================================================================
@@ -89,14 +90,18 @@ public:
 	 * \param i The I vector of the cartesian base.
 	 * \param j The J vector of the cartesian base.
 	 * \param k The K vector of the cartesian base.
+	 * \param hintNoScale set it to true if you are sure that your rot matrix is a pure rot matrix with no scale. 
+	 * If set to true and your rotation is not an orthonormal basis, unpredictable result are excepted.
 	 */
-	void		setRot(const CVector &i, const CVector &j, const CVector &k);
+	void		setRot(const CVector &i, const CVector &j, const CVector &k, bool hintNoScale=false);
 	/** Explicit setup the Rotation/Scale matrix (base).
 	 * Avoid it. It implies low compute since no check is done on m33 to see what type of matrix it is 
 	 * (identity, raotation, scale, uniform scale)
 	 * \param m33 the 3*3 column rotation matrix. (3x3 matrix stored in column-major order as 9 consecutive values)
+	 * \param hintNoScale set it to true if you are sure that your rot matrix is a pure rot matrix with no scale. 
+	 * If set to true and your rotation is not an orthonormal basis, unpredictable result are excepted.
 	 */
-	void		setRot(const float m33[9]);
+	void		setRot(const float m33[9], bool hintNoScale=false);
 	/** Explicit setup the Translation component.
 	 * v==Null is tested to see if the matrix now have a translation component.
 	 * \param v the translation vector.

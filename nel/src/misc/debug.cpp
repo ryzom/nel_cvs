@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.cpp,v 1.9 2000/10/09 10:37:12 lecroart Exp $
+ * $Id: debug.cpp,v 1.10 2000/10/10 16:07:39 cado Exp $
  *
  * Debug
  */
@@ -33,17 +33,15 @@
  *
  * \subsection init_log Initialization
  * In the initialization of your service, attach some displayers to the global NLMISC::CLog objects
- * \e ErrorLog, \e WarningLog, \e InfoLog, \e DebugLog.
- * NLMISC::CStdDisplayer is for the screen (and VC++ debug window).
+ * \e ErrorLog, \e WarningLog, \e InfoLog, \e DebugLog and \e AssertLog.
+ * NLMISC::CStdDisplayer is for the screen (and VC++ debug window). It is attached by default to all of the five logger objects mentionned above.
  * NLMISC::CFileDisplayer is for a file.
  * NLMISC::CMsgBoxDisplayer is for a message box.
  * NLNET::CNetDisplayer is for a logging server (see CLogService in the server documentation)
  *
  * Example :
  * \code
- * NLMISC::CStdDisplayer sd;
  * NLNET::CNetDisplayer nd ( NLNET::CInetAddress( "log_service_machine", log_port ) )
- * NLMISC::ErrorLog.addDisplayer( &sd );
  * NLMISC::DebugLog.addDisplayer( &nd );
  * \endcode
  *
@@ -61,6 +59,24 @@
  * }
  * \endcode
  *
+ * How to log string without repeating the header ?
+ *
+ * The macros nldebug and nlerror call a few methods of NLMISC::CLog, including displayNL().
+ * It prints a string with an information header.
+ * If you don't want to print the header, use the others methods of NLMISC::CLog.
+ *
+ * Example :
+ * \code
+ * NLMISC::DebugLog.displayNL ( "Dump of Values :" );
+ * for ( int j=0; j!=height; ++j )
+ * {
+ *     for ( int i=0; i!=width; ++i )
+ *     {
+ *         NLMISC::DebugLog.displayRaw( "%d ", Values[j][i] );
+ *     }
+ *     NLMISC::DebugLog.displayRawNL( ": line %d", j );
+ * }
+ * \endcode
  */
 
  

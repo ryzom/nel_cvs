@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: naming_client.h,v 1.1 2000/10/10 15:28:15 cado Exp $
+ * $Id: naming_client.h,v 1.2 2000/10/10 16:07:39 cado Exp $
  *
  * Interface for CNamingClient
  */
@@ -41,19 +41,21 @@ typedef std::map<std::string,CInetAddress> CRegServices;
 
 
 /**
- * Client side of Naming Service.
+ * Client side of Naming Service. Allows to register/unregister services, and to lookup for
+ * a registered service.
  *
  * If you want, you can declare a CNamingClient object instead of calling finalize().
- * This static methods will be called at the object's destruction (determined by its scope).
+ * This static method will be called at the object's destruction (determined by its scope).
  * Thus, if an exception is raised within the scope, finalize() will be called automatically.
  *
  * By default, TransactionMode is true, i.e. you don't need to call open() and close(), they
- * are called each time you call lookUp(), registerService(), and unregisterService().
+ * are called each time you call lookup(), registerService(), and unregisterService().
  * If you plan to call several times these methods in a block, set TransactionMode to false
  * and call open() at the beginning of the block and close() at the end.
  *
  * \todo cado/lecroart Move service registration to IService (but not for the NS itself) and
  * ensure unregistration is called when stopping the service (Ctrl-C must call release())
+ * \test Test program is /code/test/network/log_service/main.cpp
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -70,8 +72,6 @@ public:
 	/// Destructor. Calls finalize().
 	~CNamingClient();
 
-	/// Initialization
-
 	/// Finalization. Unregisters all services registered by registerService() and not unregistered yet.
 	static void			finalize();
 
@@ -81,8 +81,7 @@ public:
 	/// Disconnection from the naming service
 	static void			close();
 
-	/** \name Requests to the Naming Service.
-	 * \anchor nsrequests
+	/** \name \anchor nsrequests Requests to the Naming Service. 
 	 * \brief If TransactionMode is true, these method perform open() and close() themselves.
 	 */
 	//@{

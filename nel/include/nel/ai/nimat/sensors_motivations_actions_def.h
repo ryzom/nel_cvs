@@ -1,7 +1,7 @@
 /** \file sensors_motivations_actions_def.h
  * Sensors, motivations and actions list of enums.
  *
- * $Id: sensors_motivations_actions_def.h,v 1.1 2003/03/10 14:17:39 robert Exp $
+ * $Id: sensors_motivations_actions_def.h,v 1.2 2003/03/14 14:27:45 robert Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -55,6 +55,7 @@ enum TAction
 	Action_Flee,
 	Action_MoveToTarget,
 	Action_MoveToRestPlace,
+	Action_SelfHeal,
 	Action_Unknown
 };
 
@@ -74,7 +75,8 @@ static const NLMISC::CStringConversion<TAction>::CPair stringTableAction [] =
 	{ "Fight",			Action_Fight },
 	{ "Flee",			Action_Flee },
 	{ "MoveToTarget",	Action_MoveToTarget },
-	{ "MoveToRestPlace",Action_MoveToRestPlace }
+	{ "MoveToRestPlace",Action_MoveToRestPlace },
+	{ "SelfHeal",		Action_SelfHeal }
 };
 
 static NLMISC::CStringConversion<TAction> conversionAction

@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.34 2003/04/18 15:15:04 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.35 2003/05/26 14:18:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -841,15 +841,44 @@ void CExportNel::addParentLodNode (INode &child, std::set<INode*> &lodListToExcl
 
 // --------------------------------------------------
 /// Transform a 3dsmax uv matrix to a nel uv matrix
-void CExportNel::uvMatrix2NelUVMatrix (const Matrix3& uvMatrix, NLMISC::CMatrix &dest)
+void CExportNel::uvMatrix2NelUVMatrix (const Matrix3& maxMatrix, NLMISC::CMatrix &dest)
 {
-	CMatrix mat;
-	convertMatrix(mat, uvMatrix);
-	CMatrix convMat;
-	convMat.setRot(CVector::I, - CVector::J, CVector::K);
-	convMat.setPos(CVector::J);
-	dest = convMat * mat;
-	convertMatrix(dest, uvMatrix);
+		// Basis vector
+	CVector I, J, K, P;
+
+	// Build the rot matrix
+	I.x= maxMatrix.GetRow(0).x;
+	I.y= maxMatrix.GetRow(0).y;
+	I.z= maxMatrix.GetRow(0).z;
+	J.x= maxMatrix.GetRow(1).x;
+	J.y= maxMatrix.GetRow(1).y;
+	J.z= maxMatrix.GetRow(1).z;
+	K.x= maxMatrix.GetRow(2).x;
+	K.y= maxMatrix.GetRow(2).y;
+	K.z= maxMatrix.GetRow(2).z;
+
+	// Build the translation vector
+	P.x= maxMatrix.GetTrans().x;
+	P.y= maxMatrix.GetTrans().y;
+	P.z= maxMatrix.GetTrans().z;
+
+	// *** Build the NeL matrix
+
+	// Set it to identity to have the good flags in it
+	dest.identity();
+
+	// Set the rotation part
+	dest.setRot(I, J, K); 
+
+	// Set the position part
+	dest.setPos(P);	
+
+	// transfo matrix
+	
+	CMatrix convert;
+	convert.setRot(CVector::I, -CVector::J, CVector::K);
+	convert.setPos(CVector::J);
+	dest = convert * dest * convert; // exported v are already inverted therefore the conversion
 }
 
 

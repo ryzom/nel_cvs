@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.10 2000/12/15 18:20:22 berenguier Exp $
+ * $Id: font_manager.cpp,v 1.11 2000/12/18 14:25:02 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -211,7 +211,7 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 \*------------------------------------------------------------------*/
 void CFontManager::computeString (const std::string &s,
 								  CFontGenerator *fontGen,
-								  NLMISC::CRGBA &color,
+								  const NLMISC::CRGBA &color,
 								  uint32 fontSize,
 								  const CDisplayDescriptor &desc,
 								  CComputedString &output)
@@ -225,7 +225,7 @@ void CFontManager::computeString (const std::string &s,
 \*------------------------------------------------------------------*/
 void CFontManager::computeString (const ucstring &s,
 								  CFontGenerator *fontGen,
-								  NLMISC::CRGBA &color,
+								  const NLMISC::CRGBA &color,
 								  uint32 fontSize,
 								  const CDisplayDescriptor &desc,
 								  CComputedString &output)

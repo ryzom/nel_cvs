@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 4, base
  *
- * $Id: callback_net_base.h,v 1.5 2001/02/23 15:44:30 cado Exp $
+ * $Id: callback_net_base.h,v 1.6 2001/03/15 15:14:23 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,6 +84,9 @@ public:
 
 	/// Sets callback for detecting a disconnection (or NULL to disable callback)
 	void	setDisconnectionCallback( TNetCallback cb ) { _DisconnectionCallback = cb; }
+
+	/// Sets timeout for receive() in milliseconds
+	void	setTimeout( uint32 ms );
 
 	// Internal use
 	friend void cbProcessDisconnectionCallback( CMessage& msg, TSockId id );

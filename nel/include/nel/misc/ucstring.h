@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.11 2003/11/17 10:39:02 besson Exp $
+ * $Id: ucstring.h,v 1.12 2004/03/26 16:11:57 boucher Exp $
  *
  */
 
@@ -49,7 +49,15 @@ public:
 
 	ucstring (const std::string &str) : ucstringbase ()
 	{
-		*this=str;
+		// We need to convert the char into 8bits unsigned int before promotion to 16 bits
+		// otherwise, as char are signed on some compiler (MSCV for ex), the sign bit is extended to 16 bits.
+		resize(str.size());
+		std::string::const_iterator first(str.begin()), last(str.end());
+		iterator dest(begin());
+		for (;first != last; ++first, ++dest)
+		{
+			*dest = uint8(*first);
+		}
 	}
 
 	~ucstring () {}
@@ -66,7 +74,7 @@ public:
 		resize (strlen (str));
 		for (sint i = 0; i < (sint) strlen (str); i++)
 		{
-			operator[](i) = str[i];
+			operator[](i) = uint8(str[i]);
 		}
 		return *this;
 	}
@@ -76,7 +84,7 @@ public:
 		resize (str.size ());
 		for (sint i = 0; i < (sint) str.size (); i++)
 		{
-			operator[](i) = str[i];
+			operator[](i) = uint8(str[i]);
 		}
 		return *this;
 	}
@@ -100,7 +108,7 @@ public:
 		resize (s + strlen(str));
 		for (sint i = 0; i < (sint) strlen(str); i++)
 		{
-			operator[](s+i) = str[i];
+			operator[](s+i) = uint8(str[i]);
 		}
 		return *this;
 	}
@@ -111,7 +119,7 @@ public:
 		resize (s + str.size());
 		for (sint i = 0; i < (sint) str.size(); i++)
 		{
-			operator[](s+i) = str[i];
+			operator[](s+i) = uint8(str[i]);		
 		}
 		return *this;
 	}
@@ -135,7 +143,10 @@ public:
 		str.resize (size ());
 		for (sint i = 0; i < (sint) str.size (); i++)
 		{
-			str[i] = (char) operator[](i);
+			if (operator[](i) > 255)
+				str[i] = '?';
+			else
+				str[i] = (char) operator[](i);
 		}
 	}
 

@@ -1,7 +1,7 @@
 
 /** \file debug_vb.h
  *
- * $Id: debug_vb.h,v 1.1 2004/09/17 15:24:19 vizerie Exp $
+ * $Id: debug_vb.h,v 1.2 2005/04/04 10:12:02 cado Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.

@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.12 2003/12/18 18:02:52 vizerie Exp $
+ * $Id: seg_remanence.cpp,v 1.13 2004/03/04 14:30:37 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -144,20 +144,38 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb,
 	const uint vertexSize = vb.getVertexSize();
 	uint8 *datas = (uint8 *) vb.getVertexCoordPointer();
 	uint numCorners = _Ribbons.size();
-	uint k;	
-	#ifdef DEBUG_SEG_REMANENCE_DISPLAY
-		drv->setupModelMatrix(getWorldMatrix());
-		if (!numCorners) return;
-		for(k = 0; k < numCorners - 1; ++k)
-		{
-			CDRU::drawLine(srs->getCorner(k), srs->getCorner(k + 1), CRGBA::White, *drv);
-		}
-	#endif
+	uint k;		
 	for(k = 0; k < numCorners; ++k)
 	{
 		_Ribbons[k].fillVB(datas, vertexSize, srs->getNumSlices(), _SliceTime);
 		datas += (_NumSlice + 1) * vertexSize;
-	}	
+	}
+	//#define DEBUG_SEG_REMANENCE_DISPLAY 
+	#ifdef DEBUG_SEG_REMANENCE_DISPLAY
+		drv->setupModelMatrix(CMatrix::Identity);
+		if (!numCorners) return;
+		/*
+		for(k = 0; k < numCorners - 1; ++k)
+		{
+			CDRU::drawLine(srs->getCorner(k), srs->getCorner(k + 1), CRGBA::White, *drv);
+		}
+		*/
+		datas = (uint8 *) vb.getVertexCoordPointer();
+		for(uint k = 0; k < _NumSlice - 1; ++k)
+		{
+			for(uint l = 0; l < _NumCorners - 1; ++l)
+			{
+				const NLMISC::CVector &v0 = *(const NLMISC::CVector *) (datas + vertexSize * (k + l * (_NumSlice + 1)));
+				const NLMISC::CVector &v1 = *(const NLMISC::CVector *) (datas + vertexSize * (k + 1 + l * (_NumSlice + 1)));
+				const NLMISC::CVector &v2 = *(const NLMISC::CVector *) (datas + vertexSize * (k + 1 + (l + 1) * (_NumSlice + 1)));
+				const NLMISC::CVector &v3 = *(const NLMISC::CVector *) (datas + vertexSize * (k + 1 + (l + 1) * (_NumSlice + 1)));
+				CDRU::drawLine(v0, v1, CRGBA::White, *drv);
+				CDRU::drawLine(v0, v3, CRGBA::White, *drv);
+				CDRU::drawLine(v0, v2, CRGBA::White, *drv);
+			}
+		}
+
+	#endif
 	
 	// roll / unroll using texture matrix
 	CMatrix texMat;	

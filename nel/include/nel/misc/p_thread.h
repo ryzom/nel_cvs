@@ -1,7 +1,7 @@
 /** \file p_thread.h
  * <File description>
  *
- * $Id: p_thread.h,v 1.2 2001/02/14 10:57:57 cado Exp $
+ * $Id: p_thread.h,v 1.3 2001/02/14 13:39:58 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,7 +68,8 @@ public:
 	IRunnable	*Runnable;
 
 private:
-	pthread_t	ThreadHandle;
+	bool		_Started;
+	pthread_t	_ThreadHandle;
 
 };
 

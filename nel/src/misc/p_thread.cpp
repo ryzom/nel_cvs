@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * <File description>
  *
- * $Id: p_thread.cpp,v 1.2 2001/02/13 18:25:48 corvazier Exp $
+ * $Id: p_thread.cpp,v 1.3 2001/02/14 13:40:18 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,7 +47,7 @@ IThread *IThread::create( IRunnable *runnable )
 /*
  * Thread beginning
  */
-static void ProxyFunc( void *arg )
+static void *ProxyFunc( void *arg )
 {
 	CPThread *parent = (CPThread*)arg;
 
@@ -56,6 +56,8 @@ static void ProxyFunc( void *arg )
 
 	// Run the code of the thread
 	parent->Runnable->run();
+
+	return NULL;
 }
 
 
@@ -63,7 +65,7 @@ static void ProxyFunc( void *arg )
 /*
  * Constructor
  */
-CPThread::CPThread( IRunnable *runnable ) : Runnable( runnable ), ThreadHandle( -1 )
+CPThread::CPThread( IRunnable *runnable ) : _Runnable( runnable ), _Started( false )
 {}
 
 
@@ -72,8 +74,8 @@ CPThread::CPThread( IRunnable *runnable ) : Runnable( runnable ), ThreadHandle( 
  */
 CPThread::~CPThread()
 {
-	pthread_detach( &ThreadHandle ); // free allocated resources after termination
-	if ( ThreadHandle != -1 )
+	pthread_detach( _ThreadHandle ); // free allocated resources after termination
+	if ( _Started )
 	{
 		terminate();
 	}
@@ -85,10 +87,11 @@ CPThread::~CPThread()
  */
 void CPThread::start()
 {
-	if ( pthread_create( &ThreadHandle, NULL, ProxyFunc, this ) != 0 )
+	if ( pthread_create( &_ThreadHandle, NULL, ProxyFunc, this ) != 0 )
 	{
 		throw EThread( "Cannot start new thread" );
 	}
+	_Started = true;
 }
 
 
@@ -97,8 +100,8 @@ void CPThread::start()
  */
 void CPThread::terminate()
 {
-	pthread_cancel( ThreadHandle );
-	ThreadHandle = -1;
+	pthread_cancel( _ThreadHandle );
+	_Started = false;
 }
 
 
@@ -109,11 +112,11 @@ void CPThread::wait ()
 {
 	if (ThreadHandle != -1)
 	{
-		if ( pthread_join( ThreadHandle ) != 0 )
+		if ( pthread_join( _ThreadHandle, NULL ) != 0 )
 		{
 			throw EThread( "Cannot join with thread" );
 		}
-		ThreadHandle = -1;
+		_Started = false;;
 	}
 }
 

@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.10 2003/04/09 13:34:10 lecroart Exp $
+ * $Id: patch.cpp,v 1.11 2003/04/23 14:21:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,13 +49,23 @@ struct CEntry
 void setRWAccess (const string &filename)
 {
 	if (!NLMISC::CFile::setRWAccess(filename))
+	{
+		nlwarning ("Can't have read/write access to '%s' file : code=%d %s", filename.c_str(), errno, strerror(errno));
 		throw Exception ("Can't have read/write access to '%s' file : code=%d %s", filename.c_str(), errno, strerror(errno));
+	}
 }
 
-void deleteFile (const string &filename, bool throwException=true)
+string deleteFile (const string &filename, bool throwException=true)
 {
-	if (!NLMISC::CFile::deleteFile(filename) && throwException)
-		throw Exception ("Can't delete '%s' file : code=%d %s", filename.c_str(), errno, strerror(errno));
+	if (!NLMISC::CFile::deleteFile(filename))
+	{
+		string str = toString("Can't delete '%s' file : code=%d %s", filename.c_str(), errno, strerror(errno));
+		nlwarning (str.c_str());
+		if(throwException)
+			throw Exception (str);
+		return str;
+	}
+	return "";
 }
 
 void setVersion(const std::string &version)
@@ -157,9 +167,8 @@ private:
 				}
 			}
 
-			// first, get the file that contains all files
+			// first, get the file that contains all files (dir.ngz)
 			deleteFile (DirFilename.c_str(), false);
-
 			downloadFile (ServerRootPath+DirFilename, DirFilename);
 
 			// now parse the file
@@ -325,17 +334,18 @@ private:
 				}
 				if (j == filesList.size ())
 				{
-					string file = ClientPatchPath+res[i];
-					nlinfo ("Deleting %s", file.c_str());
-					setState(true, "Deleting %s", res[i]);
-					deleteFile (file);
+					string file = ClientPatchPath+fn;
+					setState(true, "Deleting %s", file.c_str());
+					string err = deleteFile (file, false);
+					if (!err.empty()) setState(true, err.c_str());
 				}
 			}
 
 			// remove the files list file
-			nlinfo ("Deleting %s", DirFilename.c_str());
-			deleteFile (DirFilename);
-
+			setState (true, "Deleting %s", DirFilename.c_str());
+			string err = deleteFile (DirFilename, false);
+			if (!err.empty()) setState(true, err.c_str());
+			
 			// now that all is ok, we set the new client version
 			setState (true, "set client version to %s", ServerVersion.c_str ());
 			setVersion (ServerVersion);

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.45 2001/11/07 17:13:17 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.46 2001/11/12 16:20:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,7 +205,10 @@ CObjectViewer::CObjectViewer ()
 	try
 	{
 		// Get the module path
-#ifdef NL_DEBUG
+// must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
+#ifdef NL_DEBUG_FAST
+		HMODULE hModule = GetModuleHandle("object_viewer_debug_fast.dll");
+#elif defined (NL_DEBUG)
 		HMODULE hModule = GetModuleHandle("object_viewer_debug.dll");
 #elif defined (NL_RELEASE_DEBUG)
 		HMODULE hModule = GetModuleHandle("object_viewer_rd.dll");

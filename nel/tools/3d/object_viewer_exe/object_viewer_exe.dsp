@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
-CFG=object_viewer_exe - Win32 Debug
+CFG=object_viewer_exe - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,13 +13,14 @@ CFG=object_viewer_exe - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "object_viewer_exe.mak" CFG="object_viewer_exe - Win32 Debug"
+!MESSAGE NMAKE /f "object_viewer_exe.mak" CFG="object_viewer_exe - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "object_viewer_exe - Win32 Release" (based on "Win32 (x86) Application")
 !MESSAGE "object_viewer_exe - Win32 Debug" (based on "Win32 (x86) Application")
 !MESSAGE "object_viewer_exe - Win32 ReleaseDebug" (based on "Win32 (x86) Application")
+!MESSAGE "object_viewer_exe - Win32 DebugFast" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -113,6 +114,35 @@ LINK32=link.exe
 # ADD BASE LINK32 msvcrt.lib libc.lib /nologo /subsystem:windows /machine:I386 /out:"Release/object_viewer.exe"
 # ADD LINK32 msvcrt.lib libc.lib /nologo /subsystem:windows /debug /machine:I386 /out:"ReleaseDebug/object_viewer.exe"
 
+!ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 DebugFast"
+
+# PROP BASE Use_MFC 2
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "object_viewer_exe___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "object_viewer_exe___Win32_DebugFast"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 2
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "DebugFast"
+# PROP Intermediate_Dir "DebugFast"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "__STL_DEBUG" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "NL_DEBUG_FAST" /Yu"stdafx.h" /FD /GZ /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 msvcrtd.lib libc.lib /nologo /subsystem:windows /debug /machine:I386 /out:"debug\object_viewer.exe" /pdbtype:sept /libpath:"..\..\..\lib"
+# SUBTRACT BASE LINK32 /incremental:no
+# ADD LINK32 msvcrtd.lib libc.lib /nologo /subsystem:windows /debug /machine:I386 /out:"DebugFast\object_viewer.exe" /pdbtype:sept /libpath:"..\..\..\lib"
+# SUBTRACT LINK32 /incremental:no
+
 !ENDIF 
 
 # Begin Target
@@ -120,6 +150,7 @@ LINK32=link.exe
 # Name "object_viewer_exe - Win32 Release"
 # Name "object_viewer_exe - Win32 Debug"
 # Name "object_viewer_exe - Win32 ReleaseDebug"
+# Name "object_viewer_exe - Win32 DebugFast"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -135,6 +166,11 @@ SOURCE=.\object_viewer_exe.cpp
 
 !ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 ReleaseDebug"
 
+!ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 DebugFast"
+
+# ADD BASE CPP /Yu"std_afx.h"
+# ADD CPP /Yu"std_afx.h"
+
 !ENDIF 
 
 # End Source File
@@ -149,6 +185,11 @@ SOURCE=.\std_afx.cpp
 # ADD CPP /Yc"std_afx.h"
 
 !ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 DebugFast"
+
+# ADD BASE CPP /Yc"std_afx.h"
+# ADD CPP /Yc"std_afx.h"
 
 !ENDIF 
 

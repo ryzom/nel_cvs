@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.5 2001/07/23 10:08:24 cado Exp $
+ * $Id: sound_driver.h,v 1.6 2001/11/12 16:20:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,10 @@ class ISource;
 
 
 #ifdef NL_OS_WINDOWS
-#ifdef NL_DEBUG
+// must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
+#ifdef NL_DEBUG_FAST
+#define NLSOUND_DLL_NAME "nel_drv_openal_win_debug_fast.dll"
+#elif defined (NL_DEBUG)
 #define NLSOUND_DLL_NAME "nel_drv_openal_win_debug.dll"
 #elif defined (NL_RELEASE_DEBUG)
 #define NLSOUND_DLL_NAME "nel_drv_openal_win_rd.dll"

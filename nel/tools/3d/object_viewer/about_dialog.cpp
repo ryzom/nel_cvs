@@ -46,7 +46,10 @@ BOOL CAboutDialog::OnInitDialog()
 	CDialog::OnInitDialog();
 	
 	// Get the module path
-#ifdef NL_DEBUG
+// must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
+#ifdef NL_DEBUG_FAST
+		HMODULE hModule = GetModuleHandle("object_viewer_debug_fast.dll");
+#elif defined (NL_DEBUG)
 		HMODULE hModule = GetModuleHandle("object_viewer_debug.dll");
 #elif defined (NL_RELEASE_DEBUG)
 		HMODULE hModule = GetModuleHandle("object_viewer_rd.dll");

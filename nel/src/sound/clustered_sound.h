@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.h,v 1.2 2003/01/10 17:11:56 boucher Exp $
+ * $Id: clustered_sound.h,v 1.3 2003/02/06 09:21:28 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -193,6 +193,8 @@ public:
 
 	const TClusterStatusMap &getAudibleClusters() {return _AudibleClusters;}
 
+	const std::vector<std::pair<NLMISC::CVector, NLMISC::CVector> >	&getAudioPath() { return _AudioPath;}
+
 
 
 private:
@@ -246,6 +248,8 @@ private:
 	TClusterStatusMap		_AudibleClusters;
 	/// The cluster for the next travesal step
 	TClusterTravContextMap	_NextTraversalStep;
+	/// The segment of all the audio path.
+	std::vector<std::pair<NLMISC::CVector, NLMISC::CVector> >	_AudioPath;
 
 	/// The current cluster playing source indexed with sound group id
 //	std::map<std::string, CClusterSound>	_Sources;

@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.4 2003/01/10 18:08:56 boucher Exp $
+ * $Id: clustered_sound.cpp,v 1.5 2003/02/06 09:21:28 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -115,6 +115,7 @@ float EAX_MATERIAL_PARAM[] =
 	float(pow(10, -6000/2000)),
 	float(pow(10, -1200/2000))
 };
+#define EAXLISTENER_MAXENVIRONMENTSIZE 100;
 #endif	// EAX_AVAILABLE
 
 
@@ -426,6 +427,18 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 		CVector vsize = box.getHalfSize();
 		float	size = NLMISC::minof(vsize.x, vsize.y, vsize.z) * 2;
 
+		// special case for root cluster (ie, external)
+		if (vCluster[0] == _RootCluster)
+		{
+			// this is the root cluster. This cluster have a size of 0 !
+			size = EAXLISTENER_MAXENVIRONMENTSIZE;
+		}
+		else
+		{
+			// else, clip the env size to max eax supported size
+			size = min(size, EAXLISTENER_MAXENVIRONMENTSIZE);
+		}
+
 		static uint lastEnv = 0xffffffff;
 		uint newEnv;
 
@@ -476,6 +489,8 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 //	std::map<CCluster*, CSoundTravContext>	nextTraverse;
 	std::vector<std::pair<const CCluster*, CSoundTravContext> >	curClusters;
 	CVector		realListener (travContext.ListenerPos);
+
+	_AudioPath.clear();
 
 	// fill the initial cluster liste
 	CClusterSoundStatus css;
@@ -627,6 +642,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 								stc.Alpha = alpha;
 								stc.PreviousVector = (nearPos - travContext.ListenerPos).normed();
 								addNextTraverse(otherCluster, stc);
+								_AudioPath.push_back(make_pair(travContext.ListenerPos, nearPos));
 							}
 						}
 					}
@@ -710,7 +726,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 								if (h < 0)
 								{
 //									obst = float(2000 + asinf(-(soundDir ^ travContext.PreviousVector).norm()) / (Pi/2) * 2000);
-									obst = float(2000 + -(soundDir ^ travContext.PreviousVector).norm() * 2000);
+									obst = float(4000 - (soundDir ^ travContext.PreviousVector).norm() * 2000);
 								}
 								else
 								{
@@ -760,6 +776,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 								tc.PreviousVector = soundDir;
 
 								addNextTraverse(otherCluster, tc);
+								_AudioPath.push_back(make_pair(travContext.ListenerPos, nearPos));
 							}
 						}
 					}
@@ -817,6 +834,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 								stc.Alpha = alpha;
 								stc.PreviousVector = (nearPos - travContext.ListenerPos).normed();
 								addNextTraverse(c, stc);
+								_AudioPath.push_back(make_pair(travContext.ListenerPos, nearPos));
 							}
 						}
 					}
@@ -1058,9 +1076,10 @@ float CClusteredSound::getPolyNearestPos(const std::vector<CVector> &poly, const
 	CVector proj = plane.project(pos);
 	float	minDist = FLT_MAX;
 	bool	projIn = true;
+	uint	nbVertex = poly.size();
 
 	// loop throw all vertex
-	for (uint j=0; j<poly.size(); ++j)
+	for (uint j=0; j<nbVertex; ++j)
 	{
 		float d = (pos-poly[j]).sqrnorm();
 		// check if the vertex is the nearest point
@@ -1069,15 +1088,15 @@ float CClusteredSound::getPolyNearestPos(const std::vector<CVector> &poly, const
 			nearPoint = poly[j];
 			minDist = d;
 		}
-		if (projIn && j<poly.size()-1)
+//		if (projIn /*&& j<poly.size()-1*/)
 		{
 			// check each segment
-			if (plane.getNormal()*((poly[j+1] - poly[j]) ^ (proj - poly[j])) < 0)
+			if (plane.getNormal()*((poly[(j+1)%nbVertex] - poly[j]) ^ (proj - poly[j])) < 0)
 			{
 				// the point is not inside the poly surface !
 				projIn = false;
 				// check if the nearest point is on this segment
-				CVector v1 = (poly[j+1] - poly[j]);
+				CVector v1 = (poly[(j+1)%nbVertex] - poly[j]);
 				float v1Len = v1.norm();
 				v1 = v1 / v1Len;
 				CVector v2 = proj - poly[j];

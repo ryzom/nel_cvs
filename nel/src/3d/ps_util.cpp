@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.20 2001/07/13 16:59:39 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.21 2001/08/07 14:06:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,7 @@
 #include "3d/ps_float.h"
 #include "3d/ps_int.h"
 #include "3d/ps_plane_basis_maker.h"
+#include "3d/ps_sound.h"
 
 #include "3d/particle_system_shape.h"
 
@@ -150,6 +151,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSPlaneBasisMemory) ;
 		NLMISC_REGISTER_CLASS(CPSPlaneBasisBinOp) ;
 		NLMISC_REGISTER_CLASS(CPSPlaneBasisFollowSpeed) ;
+		NLMISC_REGISTER_CLASS(CPSSound) ;
 
 		// while we are here, we perform some important inits
 		CPSRotated2DParticle::initRotTable() ; // init the precalc rot table for face lookat

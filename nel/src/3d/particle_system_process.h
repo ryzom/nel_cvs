@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.12 2003/11/18 13:57:52 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.13 2003/11/25 14:38:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,7 @@ enum TPSMatrixMode
 {
 	PSFXWorldMatrix = 0,
 	PSIdentityMatrix,
-	PSFatherSkeletonWorldMatrix,
+	PSUserMatrix,
 	PSMatrixModeCount
 };
 
@@ -174,8 +174,8 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		// Helper to know if this class can be downcasted to a CPSLocated class
 		virtual bool            isLocated() const { return false; }
 
-		// returns the number of sub-objects (including this one, that requires the father skeleton matrix for its computations)
-		virtual uint			getFatherSkelMatrixUsageCount() const;
+		// returns the number of sub-objects (including this one, that requires the user matrix for its computations)
+		virtual uint			getUserMatrixUsageCount() const;
 
 			
 	protected:

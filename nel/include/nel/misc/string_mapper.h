@@ -1,6 +1,6 @@
 /** \file string_mapper.cpp
  *
- * $Id: string_mapper.h,v 1.6 2003/11/07 08:47:36 besson Exp $
+ * $Id: string_mapper.h,v 1.7 2003/11/25 14:35:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,6 +134,8 @@ public:
 	TSStringId			add(const std::string &str);
 
 	void				memoryCompress();
+	// Uncompress the map.
+	void				memoryUncompress();
 	/// Globaly unmap a string
 	const char *		get(TSStringId stringId);
 	/// Return the global id for the empty string (helper function)

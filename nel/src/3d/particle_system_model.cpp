@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.58 2003/11/18 13:58:06 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.59 2003/11/25 14:38:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,8 @@ CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
 											   _EmitterActive(true),
 											   _BypassGlobalUserParam(0),
 											   _AnimType(CParticleSystem::AnimVisible),
-											   _UserColor(CRGBA::White)
+											   _UserColor(CRGBA::White),
+ 											   _UserMatrix(NULL)
 {
 	setOpacity(false);
 	setTransparency(true);
@@ -496,8 +497,10 @@ void	CParticleSystemModel::doAnimate()
 	CParticleSystem		*ps = getPS();
 	CClipTrav			&clipTrav= getOwnerScene()->getClipTrav();
 	const CMatrix		&mat= getWorldMatrix();	 
-	ps->setSysMat(&mat);
-	ps->setFatherSkeletonMatrix(_FatherSkeletonModel ? &_FatherSkeletonModel->getWorldMatrix() : &mat);
+	// Set the 'hide' flag. This prevent trails from being created is the system is hidden, moved, and then showed in the next frame.	  	  
+	ps->hide(!this->isHrcVisible());
+	ps->setSysMat(&mat);	
+	ps->setUserMatrix(_UserMatrix);
 	ps->setViewMat(clipTrav.ViewMatrix);
 	updateOpacityInfos();
 	updateLightingInfos();

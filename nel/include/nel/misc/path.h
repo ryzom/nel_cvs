@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.40 2003/11/20 14:03:12 besson Exp $
+ * $Id: path.h,v 1.41 2003/11/25 14:37:59 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -196,6 +196,8 @@ public:
 	/** For the moment after memoryCompress you cant addsearchpath anymore 
 	*/
 	static void memoryCompress();
+
+	static void memoryUncompress();
 
 private:
 

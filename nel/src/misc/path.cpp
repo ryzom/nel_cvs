@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.91 2003/11/25 14:14:32 corvazier Exp $
+ * $Id: path.cpp,v 1.92 2003/11/25 14:38:09 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1244,6 +1244,15 @@ void CPath::memoryCompress()
 	contReset(inst->_Files);
 	inst->_MemoryCompressed = true;
 }
+
+void CPath::memoryUncompress()
+{
+	CPath *inst = CPath::getInstance ();
+	inst->SSMext.memoryUncompress(); 
+	inst->SSMpath.memoryUncompress(); 	
+	inst->_MemoryCompressed = false;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.7 2001/06/25 13:15:32 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.8 2001/06/26 12:00:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +69,7 @@ static void NbCyclesWriter(float value, void *lParam) { ((CAttribDlg *) lParam)-
 // GENERAL INTERFACE FOR BLENDER EDITION //
 ///////////////////////////////////////////
 
+
 /**  T is the type to be edited (color, float, etc..)
  *   E is the dialog to create. It must have at least a constructor with a single parameter of type std::string
  *     It must also derive from CEditAttribDlg, and have a set wrapper method that match the T type
@@ -83,7 +84,7 @@ class CValueBlenderDlgClientT : public IValueBlenderDlgClient
 						 // must be filled by the user
 
 		// the scheme being used. Must be set by the user
-		NL3D::CPSValueBlender<T> *Scheme ;
+		NL3D::CPSValueBlendFuncBase<T> *SchemeFunc ;
 
 	protected:
 		virtual CEditAttribDlg *createDialog(uint index)
@@ -93,7 +94,7 @@ class CValueBlenderDlgClientT : public IValueBlenderDlgClient
 			E *dlg = new E(id) ;
 			dlg->setWrapper(&_ValueInfos[index]) ;
 			_ValueInfos[index].ValueIndex = index ;
-			_ValueInfos[index].Scheme = Scheme ;
+			_ValueInfos[index].SchemeFunc = SchemeFunc ;
 
 			return dlg ;
 		}
@@ -105,20 +106,20 @@ class CValueBlenderDlgClientT : public IValueBlenderDlgClient
 			// valuet 0 or 1 being edited
 			uint ValueIndex ;
 			// the scheme being edited
-			NL3D::CPSValueBlender<T> *Scheme ;
+			NL3D::CPSValueBlendFuncBase<T> *SchemeFunc ;
 
 			virtual T get(void) const 
 			{ 
 				T t1, t2 ;
-				Scheme->_F.getValues(t1, t2) ;
+				SchemeFunc->getValues(t1, t2) ;
 				return ValueIndex == 0 ? t1 : t2 ;
 			}			
 			virtual void set(const T &value)
 			{
 				T t1, t2 ;
-				Scheme->_F.getValues(t1, t2) ;
+				SchemeFunc->getValues(t1, t2) ;
 				if (ValueIndex == 0 ) t1 = value ; else t2 = value ;
-				Scheme->_F.setValues(t1, t2) ;
+				SchemeFunc->setValues(t1, t2) ;
 			}
 		} ;
 
@@ -558,7 +559,7 @@ END_MESSAGE_MAP()
 		{				
 			CValueBlenderDlgClientT<float, CEditableRangeFloat> myInterface ;
 			myInterface.Id = std::string("FLOAT_BLENDER") ;
-			myInterface.Scheme = (NL3D::CPSValueBlender<float> *) scheme ;
+			myInterface.SchemeFunc = & ((NL3D::CPSValueBlenderSample<float, 64> *) scheme)->_F ;
 			
 			CValueBlenderDlg bd(&myInterface, this) ;
 			bd.DoModal() ;
@@ -686,7 +687,7 @@ END_MESSAGE_MAP()
 		{				
 			CValueBlenderDlgClientT<uint32, CEditableRangeUInt> myInterface ;
 			myInterface.Id = std::string("FLOAT_BLENDER") ;
-			myInterface.Scheme = (NL3D::CPSValueBlender<uint32> *) scheme ;
+			myInterface.SchemeFunc = & ((NL3D::CPSValueBlenderSample<uint32, 64> *) scheme)->_F ;
 			
 			CValueBlenderDlg bd(&myInterface, this) ;
 			bd.DoModal() ;
@@ -833,7 +834,7 @@ END_MESSAGE_MAP()
 		{				
 			CValueBlenderDlgClientT<CRGBA, CColorEdit> myInterface ;
 			myInterface.Id = std::string("RGBA_BLENDER") ;
-			myInterface.Scheme = (NL3D::CPSValueBlender<CRGBA> *) scheme ;
+			myInterface.SchemeFunc = & ((NL3D::CPSValueBlenderSample<CRGBA, 64> *) scheme)->_F ;
 			
 			CValueBlenderDlg bd(&myInterface, this) ;
 			bd.DoModal() ;

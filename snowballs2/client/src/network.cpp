@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.13 2001/07/27 09:07:53 lecroart Exp $
+ * $Id: network.cpp,v 1.14 2001/07/27 13:05:00 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -251,9 +251,15 @@ void	sendChatLine (string Line)
 
 	CMessage msgout (Connection->getSIDA(), "CHAT");
 	if (Self != NULL)
-		msgout.serial (Self->Name + string("> ") + Line);
+	{
+		string line = Self->Name + string("> ") + Line;
+		msgout.serial (line);
+	}
 	else
-		msgout.serial (string("Unknown> ") + Line);
+	{
+		string line = string("Unknown> ") + Line;
+		msgout.serial (line);
+	}
 
 	Connection->send (msgout);
 }

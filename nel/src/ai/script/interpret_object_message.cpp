@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.23 2001/06/19 16:50:08 chafik Exp $
+ * $Id: interpret_object_message.cpp,v 1.24 2001/07/19 13:20:15 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -263,7 +263,7 @@ namespace NLAISCRIPT
 	CFactMsgClass::CFactMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFactMsg::IdFactMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("CFact"),NLAIAGENT::CStringVarName("FactObject"));
+		registerComponent(NLAIAGENT::CStringVarName("FactObject"),NLAIAGENT::CStringVarName("Fact"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 		setClassName(NLAIAGENT::CStringVarName("CFactMsgClass"));
 		buildVTable();
@@ -272,7 +272,7 @@ namespace NLAISCRIPT
 	CFactMsgClass::CFactMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFactMsg::IdFactMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("CFact"),NLAIAGENT::CStringVarName("FactObject"));
+		registerComponent(NLAIAGENT::CStringVarName("FactObject"),NLAIAGENT::CStringVarName("Fact"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 		setClassName(NLAIAGENT::CStringVarName("CFactMsgClass"));
 		buildVTable();
@@ -281,7 +281,7 @@ namespace NLAISCRIPT
 	CFactMsgClass::CFactMsgClass() : CMessageClass()
 	{		
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("CFact"),NLAIAGENT::CStringVarName("FactObject"));
+		registerComponent(NLAIAGENT::CStringVarName("FactObject"),NLAIAGENT::CStringVarName("Fact"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 		setClassName(NLAIAGENT::CStringVarName("CFactMsgClass"));
 		buildVTable();

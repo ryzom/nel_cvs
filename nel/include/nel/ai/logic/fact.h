@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic facts
  *
- * $Id: fact.h,v 1.8 2001/06/19 16:50:17 chafik Exp $
+ * $Id: fact.h,v 1.9 2001/07/19 13:19:54 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,7 @@ namespace NLAILOGIC {
 			static const NLAIC::CIdentType IdFact;
 
 			IBaseAssert *getAssert();
+			NLAIAGENT::IVarName &getAssertName();
 			virtual void getDebugString(std::string &) const;
 			virtual void propagate();
 			virtual bool operator == (const NLAIAGENT::IBasicObjectIA &a) const;

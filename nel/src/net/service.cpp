@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.cpp,v 1.12 2000/10/11 10:05:19 lecroart Exp $
+ * $Id: service.cpp,v 1.13 2000/10/11 10:06:00 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -139,6 +139,8 @@ sint IService::main (int argc, char **argv)
 	{
 		Service = this;
 		atexit (ExitFunc);
+
+		InitSignal();
 
 		for (sint i = 0; i < argc; i++)
 		{

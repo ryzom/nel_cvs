@@ -8,6 +8,7 @@
 #include <vector>
 #include <process.h>
 #include <direct.h>
+#include "mshtml.h"
 
 #include "nel/misc/config_file.h"
 
@@ -111,6 +112,7 @@ HCURSOR CNel_launcherDlg::OnQueryDragIcon()
 BEGIN_EVENTSINK_MAP(CNel_launcherDlg, CDialog)
     //{{AFX_EVENTSINK_MAP(CNel_launcherDlg)
 	ON_EVENT(CNel_launcherDlg, IDC_EXPLORER1, 250 /* BeforeNavigate2 */, OnBeforeNavigate2Explorer1, VTS_DISPATCH VTS_PVARIANT VTS_PVARIANT VTS_PVARIANT VTS_PVARIANT VTS_PVARIANT VTS_PBOOL)
+	ON_EVENT(CNel_launcherDlg, IDC_EXPLORER1, 259 /* DocumentComplete */, OnDocumentCompleteExplorer1, VTS_DISPATCH VTS_PVARIANT)
 	//}}AFX_EVENTSINK_MAP
 END_EVENTSINK_MAP()
 
@@ -226,4 +228,32 @@ void CNel_launcherDlg::OnSize(UINT nType, int cx, int cy)
 	CRect rect;
 	GetClientRect (&rect);	
 	m_explore.SetWindowPos ((CWnd* )HWND_TOP, rect.left, rect.top, rect.right, rect.bottom, SWP_SHOWWINDOW);
+}
+
+void CNel_launcherDlg::OnDocumentCompleteExplorer1(LPDISPATCH pDisp, VARIANT FAR* URL) 
+{
+	IHTMLDocument2* pHTMLDocument2;
+	LPDISPATCH lpDispatch;
+	lpDispatch = m_explore.GetDocument();
+
+    if (lpDispatch)
+	{
+		HRESULT hr;
+		hr = lpDispatch->QueryInterface(IID_IHTMLDocument2, (LPVOID*) &pHTMLDocument2);
+		lpDispatch->Release();
+
+		IHTMLElement* pBody;
+		hr = pHTMLDocument2->get_body(&pBody);
+
+		if (FAILED(hr))
+			return;
+
+		BSTR bstr;                
+		pBody->get_innerHTML(&bstr);
+		CString csourceCode( bstr );
+		string sourceCode( (LPCSTR)csourceCode );
+		
+		SysFreeString(bstr);
+		pBody->Release();
+	}
 }

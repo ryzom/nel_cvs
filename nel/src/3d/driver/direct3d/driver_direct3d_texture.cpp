@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.3 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.4 2004/06/02 16:33:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -622,8 +622,16 @@ bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 												// Copy the block
 												const uint8 *src = &(texture->getPixels(i)[block*blockSize]);
 												uint8 *dest = ((uint8*)rect.pBits)+block*rect.Pitch;
-												if (destFormat == D3DFMT_A8R8G8B8)
+												if (destFormat == D3DFMT_A8R8G8B8)												
 													copyRGBA2BGRA ((uint32*)dest, (const uint32*)src, blockSize>>2);
+												else if (destFormat == D3DFMT_V8U8)
+												{
+													for(uint k = 0; k < blockSize; ++k)
+													{
+														*dest++ = (uint8) ((sint8) (*src++) + 128);
+													}
+													
+												}
 												else
 													memcpy (dest, src, blockSize);
 											}

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.47 2002/08/23 07:58:05 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.48 2002/08/28 15:16:08 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -586,8 +586,31 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 	// connect to all connection
 	bool	connectSuccess;
 	
+	vector<CInetAddress> laddr = CInetAddress::localAddresses();
+
 	for (uint i = 0; i < addr.size(); i++)
 	{
+		// first we have to look if we have a network that can established the connection
+
+		uint j = 0;
+		// it s 127.0.0.1, it s ok
+		if (!addr[i].is127001 ())
+		{
+			for (j = 0; j < laddr.size (); j++)
+			{
+				if (laddr[j].internalNetAddress () == addr[i].internalNetAddress ())
+				{
+					// it's ok, we can try
+					break;
+				}
+			}
+			if (j == laddr.size ())
+			{
+				nlinfo ("I can't access '%s' because I haven't a net card on this network", addr[i].asString ().c_str ());
+				continue;
+			}
+		}
+
 		// create a new connection with the service, setup callback and connect
 		CCallbackClient	*cbc = new CCallbackClient();
 		cbc->setDisconnectionCallback(uncbDisconnection, NULL);
@@ -633,7 +656,7 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 			uint16		ssid = _SId;
 			msg.serial(_Name);
 			msg.serial(ssid);	// serializes a 16 bits service id
-			uint8 pos = i;
+			uint8 pos = j;
 			msg.serial(pos);	// send the position in the connection table
 			cbc->send (msg);
 		}
@@ -1027,14 +1050,22 @@ void	CUnifiedNetwork::setServiceDownCallback (const string &serviceName, TUnifie
 uint64 CUnifiedNetwork::getBytesSent ()
 {
 	uint64	sent = 0;
-	uint	i,j;
-	/// \todo ace optim: use the _UsedConnection for quick access
-	for (i=0; i<_IdCnx.size(); ++i)
+	uint	j;
+
+	for (vector<uint16>::iterator it = _UsedConnection.begin (); it != _UsedConnection.end(); it++)
+	{
+		if (_IdCnx[(*it)].State == CUnifiedNetwork::CUnifiedConnection::Ready)
+			for (j=0; j<_IdCnx[(*it)].Connection.size (); ++j)
+				if(_IdCnx[(*it)].Connection[j].valid () && !_IdCnx[(*it)].Connection[j].IsServerConnection)
+					sent += _IdCnx[(*it)].Connection[j].CbNetBase->getBytesSent();
+	}
+
+/*	for (i=0; i<_IdCnx.size(); ++i)
 		if (_IdCnx[i].State == CUnifiedNetwork::CUnifiedConnection::Ready)
 			for (j=0; j<_IdCnx[i].Connection.size (); ++j)
 				if(_IdCnx[i].Connection[j].valid () && !_IdCnx[i].Connection[j].IsServerConnection)
 					sent += _IdCnx[i].Connection[j].CbNetBase->getBytesSent();
-
+*/
 	sent += _CbServer->getBytesSent();
 	return sent;
 }
@@ -1042,14 +1073,22 @@ uint64 CUnifiedNetwork::getBytesSent ()
 uint64 CUnifiedNetwork::getBytesReceived ()
 {
 	uint64	received = 0;
-	uint	i,j;
-	/// \todo ace optim: use the _UsedConnection for quick access
-	for (i=0; i<_IdCnx.size(); ++i)
+	uint	j;
+
+	for (vector<uint16>::iterator it = _UsedConnection.begin (); it != _UsedConnection.end(); it++)
+	{
+		if (_IdCnx[(*it)].State == CUnifiedNetwork::CUnifiedConnection::Ready)
+			for (j=0; j<_IdCnx[(*it)].Connection.size (); ++j)
+				if(_IdCnx[(*it)].Connection[j].valid () && !_IdCnx[(*it)].Connection[j].IsServerConnection)
+					received += _IdCnx[(*it)].Connection[j].CbNetBase->getBytesReceived();
+	}
+	
+/*	for (i=0; i<_IdCnx.size(); ++i)
 		if (_IdCnx[i].State == CUnifiedNetwork::CUnifiedConnection::Ready)
 			for (j=0; j<_IdCnx[i].Connection.size (); ++j)
 				if(_IdCnx[i].Connection[j].valid () && !_IdCnx[i].Connection[j].IsServerConnection)
 					received += _IdCnx[i].Connection[j].CbNetBase->getBytesReceived();
-
+*/
 	received += _CbServer->getBytesReceived();
 	return received;
 }
@@ -1057,14 +1096,22 @@ uint64 CUnifiedNetwork::getBytesReceived ()
 uint64 CUnifiedNetwork::getSendQueueSize ()
 {
 	uint64	sent = 0;
-	uint	i,j;
-	/// \todo ace optim: use the _UsedConnection for quick access
-	for (i=0; i<_IdCnx.size(); ++i)
+	uint	j;
+
+	for (vector<uint16>::iterator it = _UsedConnection.begin (); it != _UsedConnection.end(); it++)
+	{
+		if (_IdCnx[(*it)].State == CUnifiedNetwork::CUnifiedConnection::Ready)
+			for (j=0; j<_IdCnx[(*it)].Connection.size (); ++j)
+				if(_IdCnx[(*it)].Connection[j].valid () && !_IdCnx[(*it)].Connection[j].IsServerConnection)
+					sent += _IdCnx[(*it)].Connection[j].CbNetBase->getSendQueueSize();
+	}
+
+/*	for (i=0; i<_IdCnx.size(); ++i)
 		if (_IdCnx[i].State == CUnifiedNetwork::CUnifiedConnection::Ready)
 			for (j=0; j<_IdCnx[i].Connection.size (); ++j)
 				if(_IdCnx[i].Connection[j].valid () && !_IdCnx[i].Connection[j].IsServerConnection)
 					sent += _IdCnx[i].Connection[j].CbNetBase->getSendQueueSize();
-
+*/
 	sent += _CbServer->getSendQueueSize();
 	return sent;
 }
@@ -1072,14 +1119,22 @@ uint64 CUnifiedNetwork::getSendQueueSize ()
 uint64 CUnifiedNetwork::getReceiveQueueSize ()
 {
 	uint64	received = 0;
-	uint	i,j;
-	/// \todo ace optim: use the _UsedConnection for quick access
-	for (i=0; i<_IdCnx.size(); ++i)
+	uint	j;
+
+	for (vector<uint16>::iterator it = _UsedConnection.begin (); it != _UsedConnection.end(); it++)
+	{
+		if (_IdCnx[(*it)].State == CUnifiedNetwork::CUnifiedConnection::Ready)
+			for (j=0; j<_IdCnx[(*it)].Connection.size (); ++j)
+				if(_IdCnx[(*it)].Connection[j].valid () && !_IdCnx[(*it)].Connection[j].IsServerConnection)
+					received += _IdCnx[(*it)].Connection[j].CbNetBase->getReceiveQueueSize();
+	}
+
+/*	for (i=0; i<_IdCnx.size(); ++i)
 		if (_IdCnx[i].State == CUnifiedNetwork::CUnifiedConnection::Ready)
 			for (j=0; j<_IdCnx[i].Connection.size (); ++j)
 				if(_IdCnx[i].Connection[j].valid () && !_IdCnx[i].Connection[j].IsServerConnection)
 					received += _IdCnx[i].Connection[j].CbNetBase->getReceiveQueueSize();
-
+*/
 	received += _CbServer->getReceiveQueueSize();
 	return received;
 }
@@ -1137,6 +1192,52 @@ TUnifiedMsgCallback CUnifiedNetwork::findCallback (const std::string &callbackNa
 		return NULL;
 	else
 		return (*itcb).second;
+}
+
+bool CUnifiedNetwork::isServiceLocal (const std::string &serviceName)
+{
+	// it s me, of course we are local
+	if (serviceName == _Name)
+		return true;
+
+	pair<TNameMappedConnection::const_iterator,TNameMappedConnection::const_iterator>	range;
+	range = _NamedCnx.equal_range(serviceName);
+
+	bool found = false;
+	if (range.first != _NamedCnx.end())
+	{
+		uint16	sid = (*(range.first)).second;
+		return isServiceLocal (sid);
+	}
+
+	return false;
+}
+
+bool CUnifiedNetwork::isServiceLocal (uint16 sid)
+{
+	// it s me, of course we are local
+	if (sid == _SId)
+		return true;
+
+	if (sid >= _IdCnx.size () || _IdCnx[sid].State != CUnifiedNetwork::CUnifiedConnection::Ready)
+	{
+		return false;
+	}
+
+	vector<CInetAddress> laddr = CInetAddress::localAddresses();
+
+	for (uint i = 0; i < laddr.size(); i++)
+	{
+		for (uint j = 0; j < _IdCnx[sid].ExtAddress.size(); j++)
+		{
+			if (_IdCnx[sid].ExtAddress[j].is127001 ())
+				return true;
+
+			if (_IdCnx[sid].ExtAddress[j].internalIPAddress () == laddr[i].internalIPAddress ())
+				return true;
+		}
+	}
+	return false;
 }
 
 //
@@ -1463,6 +1564,12 @@ NLMISC_COMMAND(msgin, "Simulate an input message from another service (ex: msgin
 {
 	if(args.size() < 2) return false;
 	
+	if (!CUnifiedNetwork::isUsed ())
+	{
+		log.displayNL("Can't do that because the service doesn't use CUnifiedNetwork");
+		return false;
+	}
+
 	uint16 serviceId = atoi (args[0].c_str());
 	string serviceName = args[0].c_str();
 	string messageName = args[1].c_str();
@@ -1518,7 +1625,13 @@ NLMISC_COMMAND(msgin, "Simulate an input message from another service (ex: msgin
 NLMISC_COMMAND(msgout, "Send a message to a specified service (ex: msgout 128 REGISTER u32 10 b 1 f 1.5)", "<ServiceName>|<ServiceId> <MessageName> [<ParamType> <Param>]*")
 {
 	if(args.size() < 2) return false;
-	
+
+	if (!CUnifiedNetwork::isUsed ())
+	{
+		log.displayNL("Can't do that because the service doesn't use CUnifiedNetwork");
+		return false;
+	}
+
 	uint16 serviceId = atoi (args[0].c_str());
 	string serviceName = args[0].c_str();
 	string messageName = args[1].c_str();
@@ -1559,7 +1672,7 @@ NLMISC_COMMAND(msgout, "Send a message to a specified service (ex: msgout 128 RE
 	return true;
 }
 
-NLMISC_COMMAND(l5InternalTables, "displays internal table of network layer5", "")
+NLMISC_COMMAND(l5InternalTables, "Displays internal table of network layer5", "")
 {
 	if(args.size() != 0) return false;
 
@@ -1570,6 +1683,29 @@ NLMISC_COMMAND(l5InternalTables, "displays internal table of network layer5", ""
 	}
 
 	CUnifiedNetwork::getInstance ()->displayInternalTables(&log);
+
+	return true;
+}
+
+NLMISC_COMMAND(isServiceLocal, "Says if a service is local or not compare with this service", "<sid>|<service name>")
+{
+	if(args.size() != 1) return false;
+
+	if (!CUnifiedNetwork::isUsed ())
+	{
+		log.displayNL("Can't do that because the service doesn't use CUnifiedNetwork");
+		return false;
+	}
+
+	uint16 sid = atoi (args[0].c_str ());
+	if (sid > 0)
+	{
+		log.displayNL ("Service %s-%hu and sid %s are %son the same computer", CUnifiedNetwork::getInstance ()->_Name.c_str(), (uint16)CUnifiedNetwork::getInstance ()->_SId, args[0].c_str(), CUnifiedNetwork::getInstance ()->isServiceLocal (sid)?"":"not ");
+	}
+	else
+	{
+		log.displayNL ("Service %s-%hu and %s are %son the same computer", CUnifiedNetwork::getInstance ()->_Name.c_str(), (uint16)CUnifiedNetwork::getInstance ()->_SId, args[0].c_str(), CUnifiedNetwork::getInstance ()->isServiceLocal (args[0])?"":"not ");
+	}
 
 	return true;
 }

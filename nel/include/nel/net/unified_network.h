@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.26 2002/08/22 13:17:51 lecroart Exp $
+ * $Id: unified_network.h,v 1.27 2002/08/28 15:16:04 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -182,10 +182,18 @@ public:
 	 */
 	void	addDefaultNetwork (const std::string &defnet) { nlinfo ("HNETL5: Add default network '%s'", defnet.c_str()); _DefaultNetwork.push_back (defnet); }
 
-	/** Clear all default network */
+	/// Clear all default network
 	void	clearDefaultNetwork () { _DefaultNetwork.clear (); }
 
+	/// Returns true if the sid service is on the same computer than this service
+	bool	isServiceLocal (uint16 sid);
 
+	/// Returns true if the serviceName service is on the same computer than this service
+	bool	isServiceLocal (const std::string &serviceName);
+
+	
+	/// \warning You should not use getNetBase functions because it could have more than one connection to a service and in this case
+	///          it ll return the first connection
 
 	/// Gets the CCallbackNetBase of the service
 	CCallbackNetBase	*getNetBase(const std::string &name, TSockId &host);
@@ -470,6 +478,7 @@ private:
 	friend void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
 	friend void	uNetRegistrationBroadcast(const std::string &name, TServiceId sid, const std::vector<CInetAddress> &addr);
 	friend void	uNetUnregistrationBroadcast(const std::string &name, TServiceId sid, const std::vector<CInetAddress> &addr);
+	friend struct isServiceLocalClass;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file transformable.h
  * <File description>
  *
- * $Id: transformable.h,v 1.10 2001/04/09 14:23:33 berenguier Exp $
+ * $Id: transformable.h,v 1.11 2001/04/09 15:07:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,6 +70,9 @@ public:
 	/// Constructor. By default, RotQuat mode.
 	ITransformable();
 
+
+// Fucking GCC link bug with abstract classes / inline functions.
+#ifdef NL_OS_WINDOWS
 
 	/// Get the matrix, compute her if necessary (work in all modes).
 	const CMatrix	&getMatrix() const {updateMatrix(); return _LocalMatrix;}
@@ -232,6 +235,35 @@ public:
 		return _Pivot.Value;
 	}
 	//@}
+
+#else	// NL_OS_WINDOWS
+
+
+	const CMatrix	&getMatrix() const;
+	bool			compareMatrixDate(uint64 callerDate) const;
+	uint64			getMatrixDate() const;
+	void	setTransformMode(TTransformMode mode, CMatrix::TRotOrder ro= CMatrix::ZXY);
+	void	setPos(const CVector &pos);
+	void	setRotEuler(const CVector &rot);
+	void	setRotQuat(const CQuat &quat);
+	void	setScale(const CVector &scale);
+	void	setPivot(const CVector &pivot);
+	void	setMatrix(const CMatrix &mat);
+	TTransformMode	getTransformMode();
+	CMatrix::TRotOrder	getRotOrder();
+	void	getPos(CVector &pos);
+	void	getRotEuler(CVector &rot);
+	void	getRotQuat(CQuat &quat);
+	void	getScale(CVector &scale);
+	void	getPivot(CVector &pivot);
+	CVector	getPos();
+	CVector	getRotEuler();
+	CQuat	getRotQuat();
+	CVector	getScale();
+	CVector getPivot();
+
+
+#endif
 
 
 	/// \name Misc

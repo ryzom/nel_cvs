@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: test_method.cpp,v 1.5 2001/03/27 16:11:43 chafik Exp $
+ * $Id: test_method.cpp,v 1.6 2001/03/30 12:40:26 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,6 +21,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+#include <time.h>
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/script/interpret_object_manager.h"
@@ -28,25 +29,63 @@
 #include "nel/ai/script/test_method.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
+#include "nel/ai/agent/agent_digital.h"
 
 
 namespace NLAISCRIPT
 {
 	CLibTest test;
-	const NLAIC::CIdentType CLibTest::IdLibTest = NLAIC::CIdentType("Check",
+	const NLAIC::CIdentType CLibTest::IdLibTest = NLAIC::CIdentType("External",
 																	NLAIC::CSelfClassFactory(test),
 																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
 	//const char *IsNULL = ;
 	CLibTest::CMethodCall CLibTest::StaticMethod[] = 
 	{
+		
+
+		CLibTest::CMethodCall(	_CONSTRUCTOR_,
+								CLibTest::TConst, NULL,
+								CLibTest::CheckCount,
+								0,
+								new CObjectUnknown(new NLAISCRIPT::COperandVoid)),
+
 		CLibTest::CMethodCall(	"IsNotNull", 
 								CLibTest::TIsNULL, NULL,
 								CLibTest::CheckCount,
 								1,
-								new CObjectUnknown(new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::DigitalType::IdDigitalType))))
+								new CObjectUnknown(new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::DigitalType::IdDigitalType)))),
+
+		CLibTest::CMethodCall(	"Rand", 
+								CLibTest::TRand1, 
+								new NLAISCRIPT::CParam(1,new NLAISCRIPT::COperandSimpleListOr(2,
+															new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType),
+															new NLAIC::CIdentType(NLAIAGENT::DigitalType::IdDigitalType))),
+								CLibTest::CheckAll,
+								1,
+								new CObjectUnknown(new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType)))),
+
+		CLibTest::CMethodCall(	"Rand", 
+								CLibTest::TRand2, 
+								new NLAISCRIPT::CParam(2,new NLAISCRIPT::COperandSimpleListOr(2,
+															new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType),
+															new NLAIC::CIdentType(NLAIAGENT::DigitalType::IdDigitalType)),
+															new NLAISCRIPT::COperandSimpleListOr(2,
+															new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType),
+															new NLAIC::CIdentType(NLAIAGENT::DigitalType::IdDigitalType))),
+								CLibTest::CheckAll,
+								2,
+								new CObjectUnknown(new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType))))
 	};
 
+
+
+	CLibTest::CLibTest()
+	{	
+
+		srand(clock());
+
+	}
 	sint32 CLibTest::isClassInheritedFrom(const NLAIAGENT::IVarName &className) const
 	{
 		NLAIAGENT::CStringVarName check((const char *)IdLibTest);
@@ -126,21 +165,54 @@ namespace NLAISCRIPT
 	}
 
 	NLAIAGENT::IObjectIA::CProcessResult CLibTest::runMethodeMember(sint32 index,NLAIAGENT::IObjectIA *p)
-	{
-		NLAIAGENT::IObjectIA *param = (NLAIAGENT::IObjectIA *)((NLAIAGENT::IBaseGroupType *)p)->get();
+	{		
 		NLAIAGENT::IObjectIA::CProcessResult r;
 
-		if( ((const NLAIC::CTypeOfObject &)param->getType()) & NLAIC::CTypeOfObject::tNombre)
-		{			
-			param->incRef();
-			r.Result = param;
-			return r;
-		}
-		else
+		switch(index)
 		{
-			r.Result = new NLAIAGENT::DigitalType(1.0);
-			return r;
+		case CLibTest::TIsNULL:
+			{
+				NLAIAGENT::IObjectIA *param = (NLAIAGENT::IObjectIA *)((NLAIAGENT::IBaseGroupType *)p)->get();
+				if( ((const NLAIC::CTypeOfObject &)param->getType()) & NLAIC::CTypeOfObject::tNombre)
+				{			
+					param->incRef();
+					r.Result = param;
+					return r;
+				}
+				else
+				{
+					r.Result = new NLAIAGENT::DigitalType(1.0);
+					return r;
+				}
+			}
+			break;
+		case CLibTest::TRand1:
+			{
+				NLAIAGENT::DDigitalType *param = (NLAIAGENT::DDigitalType *)((NLAIAGENT::IBaseGroupType *)p)->get();
+				r.Result = new NLAIAGENT::DDigitalType(rand(0.0,param->getNumber()));
+				return r;
+			}			
+
+		case CLibTest::TRand2:
+			{
+				NLAIAGENT::CIteratorContener iter = ((NLAIAGENT::IBaseGroupType *)p)->getIterator();
+				NLAIAGENT::DDigitalType *p1 = (NLAIAGENT::DDigitalType *)(iter ++);
+				NLAIAGENT::DDigitalType *p2 = (NLAIAGENT::DDigitalType *)(iter ++);
+				r.Result = new NLAIAGENT::DDigitalType(rand(p1->getNumber(),p2->getNumber()));
+				return r;
+			}
 		}
+		return r;
+	}
+
+	double CLibTest::rand(double d1, double d2) const
+	{
+		double r = ((double)::rand() - (((double)RAND_MAX)/2));
+
+		r /= ((double)RAND_MAX);
+
+		return d1 + r*(d2 - d1);
+
 	}
 
 }

@@ -1,7 +1,7 @@
 /** \file agent_3dvector.cpp
  * This file contain a class to manage a 3DVector in the script.
  *
- * $Id: agent_3dvector.cpp,v 1.2 2001/03/26 09:26:56 chafik Exp $
+ * $Id: agent_3dvector.cpp,v 1.3 2001/03/30 12:40:26 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -194,10 +194,10 @@ namespace NLAIAGENT
 			else if((*methodName) == constructor)
 			{
 				NLAISCRIPT::CParam constructParam;
-				constructParam.push(NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType)));
-				constructParam.push(NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType)));
-				constructParam.push(NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType)));
-				if(param == constructParam)
+				constructParam.push(NLAISCRIPT::COperandSimpleListOr(2,new NLAIC::CIdentType(DDigitalType::IdDDigitalType),new NLAIC::CIdentType(DigitalType::IdDigitalType)));
+				constructParam.push(NLAISCRIPT::COperandSimpleListOr(2,new NLAIC::CIdentType(DDigitalType::IdDDigitalType),new NLAIC::CIdentType(DigitalType::IdDigitalType)));
+				constructParam.push(NLAISCRIPT::COperandSimpleListOr(2,new NLAIC::CIdentType(DDigitalType::IdDDigitalType),new NLAIC::CIdentType(DigitalType::IdDigitalType)));
+				if(constructParam.eval(param) >= 0.0 )
 				{		
 					tQueue a;
 					//Type du retour du constructeur , c'est un void dont de type VoidType c'est à dire CIdentType::VoidType;

@@ -1,7 +1,7 @@
 /** \file test_method.h
  * Library class exemple for the binary test.
  *
- * $Id: test_method.h,v 1.2 2001/03/05 13:48:34 portier Exp $
+ * $Id: test_method.h,v 1.3 2001/03/30 12:40:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,9 @@ namespace NLAISCRIPT
 		enum  TMethodNumDef {
 			//TIsAgent, ///Test if an expression is an agent;
 			TIsNULL, ///Test if an expression is NULL;
+			TRand1,
+			TRand2,
+			TConst,
 			TLastM ///The count of export method.
 		};
 
@@ -87,9 +90,7 @@ namespace NLAISCRIPT
 		static const NLAIC::CIdentType IdLibTest;
 
 	public:
-		CLibTest()
-		{
-		}
+		CLibTest();		
 
 		/// \name NLAIAGENT::IObjectIA method.
 		//@{
@@ -99,6 +100,8 @@ namespace NLAISCRIPT
 		{
 			return 0;
 		}
+
+		double rand(double,double) const;
 		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *mathodName,const NLAIAGENT::IObjectIA &) const;		
 		virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 heritance, sint32 index, NLAIAGENT::IObjectIA *);
 		virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index,NLAIAGENT::IObjectIA *);

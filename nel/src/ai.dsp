@@ -625,10 +625,6 @@ SOURCE=.\ai\logic\goal.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\ai\script\interpret_fsm.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\ai\logic\interpret_object_operator.cpp
 # End Source File
 # Begin Source File
@@ -710,6 +706,10 @@ SOURCE=..\include\nel\ai\logic\goal.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\logic\ia_assert.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\script\interpret_fsm.h
 # End Source File
 # Begin Source File
 

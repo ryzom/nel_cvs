@@ -1,7 +1,7 @@
 /** \file collision_mesh_build.h
  * 
  *
- * $Id: collision_mesh_build.h,v 1.6 2002/01/11 10:01:14 legros Exp $
+ * $Id: collision_mesh_build.h,v 1.7 2002/09/03 16:42:52 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -198,12 +198,18 @@ public:
 				ItTLinkRelloc	it;
 				if ((it = relloc.find(CEdgeKey(va, vb))) != relloc.end())
 				{
+					CCollisionFace	&left0 = Faces[(*it).second.Left];
+					CCollisionFace	&left1 = Faces[i];
 					// in this case, the left triangle of the edge has already been found.
 					// should throw an error
 					NLMISC::CVector	eva = Vertices[va], evb = Vertices[vb];
 					static char	buf[512];
-					sprintf(buf, "Edge issue: (%.2f,%.2f,%.2f)-(%.2f,%.2f,%.2f)",
-									eva.x, eva.y, eva.z, evb.x, evb.y, evb.z);
+					sprintf(buf, "Edge issue: (%.2f,%.2f,%.2f)-(%.2f,%.2f,%.2f) [left face already found]\n"
+								 "left.0:%d: v0:(%.2f,%.2f) v1:(%.2f,%.2f), v2:(%.2f,%.2f)\n"
+								 "left.1:%d: v0:(%.2f,%.2f) v1:(%.2f,%.2f), v2:(%.2f,%.2f)",
+									eva.x, eva.y, eva.z, evb.x, evb.y, evb.z,
+									(*it).second.Left, Vertices[left0.V[0]].x, Vertices[left0.V[0]].y, Vertices[left0.V[1]].x, Vertices[left0.V[1]].y, Vertices[left0.V[2]].x, Vertices[left0.V[2]].y,
+									i,                 Vertices[left1.V[0]].x, Vertices[left1.V[0]].y, Vertices[left1.V[1]].x, Vertices[left1.V[1]].y, Vertices[left1.V[2]].x, Vertices[left1.V[2]].y);
 					errors.push_back(std::string(buf));
 					continue;
 /*					nlerror("On face %d, edge %d: left side of edge (%d,%d) already linked to face %d",
@@ -214,10 +220,16 @@ public:
 					// in this case, we must check the right face has been set yet
 					if ((*it).second.Right != -1)
 					{
+						CCollisionFace	&right0 = Faces[(*it).second.Right];
+						CCollisionFace	&right1 = Faces[i];
 						NLMISC::CVector	eva = Vertices[va], evb = Vertices[vb];
 						static char	buf[512];
-						sprintf(buf, "Edge issue: (%.2f,%.2f,%.2f)-(%.2f,%.2f,%.2f)",
-										eva.x, eva.y, eva.z, evb.x, evb.y, evb.z);
+						sprintf(buf, "Edge issue: (%.2f,%.2f,%.2f)-(%.2f,%.2f,%.2f) [right face already found]\n"
+									 "right.0:%d: v0:(%.2f,%.2f) v1:(%.2f,%.2f), v2:(%.2f,%.2f)\n"
+									 "right.1:%d: v0:(%.2f,%.2f) v1:(%.2f,%.2f), v2:(%.2f,%.2f)",
+										eva.x, eva.y, eva.z, evb.x, evb.y, evb.z,
+										(*it).second.Right, Vertices[right0.V[0]].x, Vertices[right0.V[0]].y, Vertices[right0.V[1]].x, Vertices[right0.V[1]].y, Vertices[right0.V[2]].x, Vertices[right0.V[2]].y,
+										i,                  Vertices[right1.V[0]].x, Vertices[right1.V[0]].y, Vertices[right1.V[1]].x, Vertices[right1.V[1]].y, Vertices[right1.V[2]].x, Vertices[right1.V[2]].y);
 						errors.push_back(std::string(buf));
 						continue;
 /*						nlerror("On face %d, edge %d: right side of edge (%d,%d) already linked to face %d",

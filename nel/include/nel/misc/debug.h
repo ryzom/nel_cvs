@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.13 2000/11/07 16:44:44 cado Exp $
+ * $Id: debug.h,v 1.14 2000/11/08 15:07:00 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,9 @@
 #ifndef NL_DEBUG_H
 #define NL_DEBUG_H
 
-#include "nel/misc/log.h"
+#include <stdio.h>
 
+#include "nel/misc/log.h"
 
 namespace NLMISC
 {
@@ -42,6 +43,10 @@ extern CLog AssertLog;
 
 /* Functions */
 
+/// never use this function (internal use only)
+void nlFatalError (const char *format, ...);
+
+/// never use this function but call the nlerror macro
 void nlError (const char *format, ...);
 
 void InitDebug ();
@@ -108,13 +113,8 @@ NLMISC::WarningLog.setParam( __LINE__, __FILE__ ); NLMISC::WarningLog.displayNL
 	}
  *\endcode
  */
-#if defined (NL_DEBUG) && defined (NL_OS_WINDOWS)
 #define nlerror \
-_asm int 3; //
-#else
-#define nlerror \
-NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlError
-#endif
+NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlFatalError
 
 /**
  * \def nlassert(exp)
@@ -330,12 +330,17 @@ NULL
 
 #endif // NL_DEBUG
 
+struct EFatalError : public Exception
+{
+	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, ""); return str; }
+};
+
 
 // undef default assertto force people to use nlassert
 #ifdef assert
 #undef assert
 #endif
-#define assert(a) you_must_not_use_assert__use_nl_assert__read_debug_h_file
+#define assert(a) you_must_not_use_assert___use_nl_assert___read_debug_h_file
 
 } // NLMISC
 

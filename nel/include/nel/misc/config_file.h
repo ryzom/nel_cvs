@@ -1,7 +1,7 @@
 /** \file config_file.h
  * CConfigFile class
  *
- * $Id: config_file.h,v 1.9 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: config_file.h,v 1.10 2000/11/08 15:07:00 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,7 +47,7 @@ namespace NLMISC
  * 	CConfigFile cf;
  *
  * 	// Load and parse "test.txt" file
- *  cf.parse ("test.txt");
+ *  cf.load ("test.txt");
  *
  *	// Attach a callback to the var1 variable. When the var1 will changed, this cvar1cb function will be called
  *	cf.setCallback ("var1", var1cb);
@@ -160,14 +160,13 @@ public:
 		//@}
 	};
 
-	/// Load and parse a file
 	virtual ~CConfigFile ();
 
 	/// Get a variable with the variable name
 	const CVar &getVar (const std::string &varName) const;
 
 	/// load and parse the file
-	void parse (const std::string &fileName);
+	void load (const std::string &fileName);
 
 	/// reload and reparse the file
 	void reparse ();

@@ -309,6 +309,26 @@ SOURCE=.\3d\font_manager.cpp
 SOURCE=..\include\nel\3d\font_manager.h
 # End Source File
 # End Group
+# Begin Group "Container"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\include\nel\3d\quad_tree.h
+# End Source File
+# End Group
+# Begin Group "Tiles"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\tile_bank.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tile_bank.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\3d\bitmap.cpp
@@ -354,14 +374,6 @@ SOURCE=.\3d\scene_ut.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\scene_ut.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\tile_bank.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\tile_bank.h
 # End Source File
 # End Target
 # End Project

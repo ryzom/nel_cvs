@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.2 2001/07/05 08:33:04 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.3 2001/07/06 12:22:55 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -690,6 +690,8 @@ bool			CVertexArrayRange::allocate(uint32 size, IDriver::TVBHardType vbType)
 {
 	nlassert(_VertexArrayPtr==NULL);
 	_VertexArraySize= size;
+
+#ifdef	NL_OS_WINDOWS
 	// try to allocate AGP or VRAM data.
 	switch(vbType)
 	{
@@ -700,6 +702,7 @@ bool			CVertexArrayRange::allocate(uint32 size, IDriver::TVBHardType vbType)
 		_VertexArrayPtr= wglAllocateMemoryNV(size, 0, 0, 1.0f);
 		break;
 	};
+#endif	// NL_OS_WINDOWS
 
 	return _VertexArrayPtr!=NULL;
 }
@@ -711,7 +714,10 @@ void			CVertexArrayRange::free()
 	// release the ptr.
 	if(_VertexArrayPtr)
 	{
+#ifdef	NL_OS_WINDOWS
 		wglFreeMemoryNV(_VertexArrayPtr);
+#endif	// NL_OS_WINDOWS
+
 		_VertexArrayPtr= NULL;
 	}
 }

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.10 2001/07/05 08:33:04 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.11 2001/07/06 12:22:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,6 +200,12 @@ static bool	setupARBTextureCompression(const char	*glext)
 // *********************************
 static bool	setupNVVertexArrayRange(const char	*glext)
 {
+	// \todo_yoyo: TODO_LINUX: for now, just return false.
+#ifndef NL_OS_WINDOWS
+	return false;
+#endif
+
+
 	if(strstr(glext, "GL_NV_vertex_array_range")==NULL)
 		return false;
 

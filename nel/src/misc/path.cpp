@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.32 2002/04/30 13:26:46 lecroart Exp $
+ * $Id: path.cpp,v 1.33 2002/05/23 08:32:15 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -348,6 +348,7 @@ DIR *opendir (const char *path)
 int closedir (DIR *dir)
 {
 	nlassert (sDirBackup[0] != '\0');
+	FindClose(hFind);
 	sDirBackup[0] = '\0';
 	return 0;
 }

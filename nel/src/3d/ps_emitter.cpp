@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.60 2004/09/02 17:05:23 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.61 2004/10/06 06:38:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1043,8 +1043,17 @@ void CPSEmitter::processRegularEmissionConsistent(uint firstInstanceIndex, float
 	sint32 nbToGenerate;
 
 
-	TPSAttribTime::iterator phaseIt = _Phase.begin() + firstInstanceIndex, endPhaseIt; 
-	TPSAttribUInt8::iterator numEmitIt = _NumEmission.begin() + firstInstanceIndex; 
+	TPSAttribTime::iterator phaseIt = _Phase.begin() + firstInstanceIndex, endPhaseIt;
+	TPSAttribUInt8::iterator numEmitIt;
+	if(firstInstanceIndex < _NumEmission.getSize())
+	{
+		numEmitIt = _NumEmission.begin() + firstInstanceIndex;
+	}
+	else
+	{
+		numEmitIt = _NumEmission.end();
+	}
+
 
 	float ellapsedTimeLOD = CParticleSystem::EllapsedTime * emitLOD;
 	uint maxEmissionCountLOD = (uint8) (_MaxEmissionCount * emitLOD);
@@ -1446,7 +1455,7 @@ void CPSEmitter::processRegularEmissionConsistent(uint firstInstanceIndex, float
 void CPSEmitter::processRegularEmissionConsistentWithNoLOD(uint firstInstanceIndex)
 {
 	NL_PS_FUNC(CPSEmitter_processRegularEmissionConsistentWithNoLOD)
-	/// hmm some code factorisation would do no harm, but we want to keep tests outside the loops as much as possible...
+	/// hum, some code factorization would do no harm, but we want to keep tests outside the loops as much as possible...
 
 	nlassert(_Owner);
 	nlassert(_Owner->getOwner());
@@ -1468,7 +1477,11 @@ void CPSEmitter::processRegularEmissionConsistentWithNoLOD(uint firstInstanceInd
 
 
 	TPSAttribTime::iterator phaseIt = _Phase.begin() + firstInstanceIndex, endPhaseIt; 
-	TPSAttribUInt8::iterator numEmitIt = _NumEmission.begin() + firstInstanceIndex; 	
+	TPSAttribUInt8::iterator numEmitIt;
+	if (firstInstanceIndex < _NumEmission.getSize())
+		numEmitIt = _NumEmission.begin() + firstInstanceIndex;
+	else
+		numEmitIt = _NumEmission.end();
 	do
 	{
 		toProcess = leftToDo < EMITTER_BUFF_SIZE ? leftToDo : EMITTER_BUFF_SIZE;

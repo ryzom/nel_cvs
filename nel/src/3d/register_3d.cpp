@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.19 2001/08/07 14:05:52 vizerie Exp $
+ * $Id: register_3d.cpp,v 1.20 2001/10/26 08:18:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,9 @@
 #include "3d/ps_util.h"
 #include "3d/mesh_mrm.h"
 #include "3d/flare_shape.h"
+#include "3d/water_shape.h"
+#include "3d/texture_bump.h"
+
 
 
 namespace NL3D 
@@ -57,6 +60,8 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CTextureFont);
 		NLMISC_REGISTER_CLASS(CTextureGrouped);
 		NLMISC_REGISTER_CLASS(CTextureCube);
+		NLMISC_REGISTER_CLASS(CTextureBump);
+
 
 		// Track
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerTCBFloat);
@@ -90,7 +95,7 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CTrackDefaultRGBA);
 		
 		// Particle system
-		CPSUtil::registerSerialParticleSystem() ;		
+		CPSUtil::registerSerialParticleSystem();		
 
 		// Don't register CTextureCroos,, since local, and not designed to be serialised.
 
@@ -101,7 +106,8 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CMeshMRM);
 		NLMISC_REGISTER_CLASS(CMeshMRMGeom);
 		NLMISC_REGISTER_CLASS(CMeshMultiLod);
-		NLMISC_REGISTER_CLASS(CFlareShape) ;
+		NLMISC_REGISTER_CLASS(CFlareShape);
+		NLMISC_REGISTER_CLASS(CWaterShape);
 
 		bInitialized=true;
 	}

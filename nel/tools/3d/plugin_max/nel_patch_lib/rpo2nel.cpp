@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.15 2002/03/13 10:59:41 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.16 2002/03/18 16:30:26 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -835,10 +835,12 @@ void RPatchMesh::importZone (PatchMesh* pPM, NL3D::CZone& zone, int &zoneId)
 
 	// Number of vertices
 	pPM->setNumVerts (4*patchs.size());
+	SetNumVerts (0);
 	SetNumVerts (4*patchs.size());
 
 	// Number of patches
 	pPM->setNumPatches (patchs.size());
+	SetNumPatches (0);
 	SetNumPatches (patchs.size());
 
 	// Number of tangents
@@ -951,7 +953,15 @@ void RPatchMesh::importZone (PatchMesh* pPM, NL3D::CZone& zone, int &zoneId)
 	}
 
 	// Rebuild the patch mesh
+	pPM->InvalidateGeomCache();
 	nlverify (pPM->buildLinkages ()==TRUE);
+	pPM->computeInteriors ();
+	pPM->ApplyConstraints ();
+
+	// Invalidate
+	InvalidateBindingInfo ();
+	UpdateBinding (*pPM, 0);
+	Validity (*pPM, true);
 }
 
 // ***************************************************************************

@@ -3240,6 +3240,15 @@ int getBindedEdge (int nPatch, int nVertInPatch, const PatchMesh& patch, const R
 		}
 		else
 		{
+#ifdef NL_DEBUG
+			const UI_VERTEX &uiv = rpatch.getUIVertex (nVertInMesh);
+			Patch &patch0 = patch.patches[uiv.Binding.nPatch];
+			Patch &patch1 = patch.patches[nPatch];
+			uint vertIndex0 = (uiv.Binding.nEdge+1)&3;
+			uint vertIndex1 = (nVertInPatch-1)&3;
+			uint vert0 = patch0.v[vertIndex0];
+			uint vert1 = patch1.v[vertIndex1];
+#endif // NL_DEBUG
 			nlassert (patch.patches[rpatch.getUIVertex (nVertInMesh).Binding.nPatch].v[(rpatch.getUIVertex (nVertInMesh).Binding.nEdge+1)&3]==
 				patch.patches[nPatch].v[(nVertInPatch-1)&3]);
 			return (nVertInPatch-1)&3;

@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.15 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: seg_remanence.cpp,v 1.16 2004/06/02 16:29:16 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -37,6 +37,7 @@
 
 
 
+
 namespace NL3D
 {
 
@@ -61,6 +62,8 @@ static inline void BuildHermiteVector(const NLMISC::CVector &P0,
 			  h1 * P0.z + h2 * P1.z + h3 * T0.z + h4 * T1.z);
 
 }
+
+
 
 //===============================================================
 CSegRemanence::CSegRemanence() : _NumSlice(0),
@@ -137,6 +140,7 @@ void CSegRemanence::registerBasic()
 }
 
 
+
 //===============================================================
 void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CIndexBuffer &pb, CMaterial &mat)
 {
@@ -154,7 +158,7 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CIndexBuffer &pb, CM
 			datas += (_NumSlice + 1) * vertexSize;
 		}
 //#define DEBUG_SEG_REMANENCE_DISPLAY 
-#ifdef DEBUG_SEG_REMANENCE_DISPLAY
+#ifdef DEBUG_SEG_REMANENCE_DISPLAY		
 		drv->setupModelMatrix(CMatrix::Identity);
 		if (!numCorners) return;
 		/*
@@ -165,7 +169,9 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CIndexBuffer &pb, CM
 			CDRU::drawLine(srs->getCorner(k), srs->getCorner(k + 1), CRGBA::White, *drv);
 		}
 		*/
-		datas = (uint8 *) vb.getVertexCoordPointer();
+		CVertexBufferReadWrite bfrw;
+		vb.lock(bfrw);
+		datas = (uint8 *) bfrw.getVertexCoordPointer();
 		for(uint k = 0; k < _NumSlice - 1; ++k)
 		{
 			for(uint l = 0; l < _NumCorners - 1; ++l)
@@ -178,17 +184,16 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CIndexBuffer &pb, CM
 				CDRU::drawLine(v0, v3, CRGBA::White, *drv);
 				CDRU::drawLine(v0, v2, CRGBA::White, *drv);
 			}
-		}
-
+		}		
 #endif
 	}
 	
 	// roll / unroll using texture matrix
 	CMatrix texMat;	
 	texMat.setPos(NLMISC::CVector(1.f - _UnrollRatio, 0, 0));
-	if (mat.getTexture(0) != NULL)
-		mat.setUserTexMat(0, texMat);
 	
+	if (mat.getTexture(0) != NULL)
+		mat.setUserTexMat(0, texMat);		
 	drv->setupModelMatrix(CMatrix::Identity);
 	
 	drv->activeVertexBuffer(vb);	
@@ -513,7 +518,5 @@ void CSegRemanence::setSliceTime(float duration)
 		_SliceTime = duration;
 	}
 }
-
-
 
 }

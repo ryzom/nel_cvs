@@ -81,7 +81,7 @@ void CVariablePage::addVariable( CLogic_editorDoc *pDoc, CString varName )
 
 	// if the doc has not been loaded from file, the variable is not yet in doc
 	void * pointer;
-	if( (pDoc->m_variables.Find(varName) == NULL) || (pDoc->m_counters.Lookup(varName, pointer) == FALSE) )
+	if( (pDoc->m_variables.Find(varName) == NULL) )//|| (pDoc->m_counters.Lookup(varName, pointer) == FALSE) )
 	{
 		pDoc->m_variables.AddTail( varName );
 	}

@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.16 2002/06/11 10:30:47 berenguier Exp $
+ * $Id: hierarchical_timer.cpp,v 1.17 2002/06/12 10:12:31 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -326,7 +326,7 @@ void	CHTimer::display(CLog *log, TSortCriterion criterion, bool displayInline /*
 	}
 	std::string statsInline;
 
-	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits | loc% / glb% |       min |       max |      mean");
+	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits |  loc%/ glb% |       min |       max |      mean");
 
 	for(TTimerStatPtrVect::iterator statIt = statsPtr.begin(); statIt != statsPtr.end(); ++statIt)
 	{
@@ -353,7 +353,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 {	
 	CSimpleClock	benchClock;
 	benchClock.start();
-	log->displayNL("HTIMER: =========================================================================");
+	log->displayRawNL("HTIMER: =========================================================================");
 	log->displayRawNL("HTIMER: Bench by execution path");
 	nlassert(_BenchStartedOnce); // should have done at least one bench	
 	bool wasBenching = _Benching;	
@@ -422,7 +422,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 		}
 	}
 
-	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits | loc% / glb% |       min |       max |      mean");
+	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits |  loc%/ glb% |       min |       max |      mean");
 
 	for(TNodeStatPtrVect::iterator it = nodeStatsPtrs.begin(); it != nodeStatsPtrs.end(); ++it)
 	{
@@ -468,7 +468,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 		nodeLeft.insert(nodeLeft.end(), currNode->Sons.begin(), currNode->Sons.end());
 
 	}
-	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |  loc%% /  glb%% |       min |       max |      mean", labelNumChar, "");
+	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |  loc%%/ glb%% |       min |       max |      mean", labelNumChar, "");
 
 	/// 2 ) get root total time.
 	CStats	rootStats;
@@ -546,7 +546,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 	TDisplayInfo	dummyDspInfo;
 	log->displayNL("HTIMER: =========================================================================");
 	log->displayRawNL("HTIMER: Hierarchical display of bench by execution path");
-	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |  loc%% /  glb%% |       min |       max |      mean", labelNumChar, "");
+	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |  loc%%/ glb%% |       min |       max |      mean", labelNumChar, "");
 
 
 	// use list because vector of vector is bad.
@@ -738,7 +738,7 @@ void CHTimer::CStats::getStats(std::string &dest, bool statEx, double rootTotalT
 		}
 		else
 		{
-			NLMISC::smprintf(buf, 1024, " | %10.3f | %10.3f | %12s |%5.1f%% /%5.1f%% | %9.3f | %9.3f | %9.3f",
+			NLMISC::smprintf(buf, 1024, " | %10.3f | %10.3f | %12s | %5.1f/%5.1f | %9.3f | %9.3f | %9.3f",
 					  (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), 
 					  float(100*TotalTimeWithoutSons/rootTotalTime), float(100*TotalTime/rootTotalTime), 
 					  (float) MinTime, (float) MaxTime, (float) MeanTime
@@ -753,7 +753,7 @@ void CHTimer::CStats::getStats(std::string &dest, bool statEx, double rootTotalT
 		}
 		else
 		{
-			NLMISC::smprintf(buf, 1024, " | %10.3f | %10.3f | %12s |%5.1f%% /%5.1f%% | %9.3f | %9.3f | %9.3f | std deviation %9.3f",
+			NLMISC::smprintf(buf, 1024, " | %10.3f | %10.3f | %12s | %5.1f/%5.1f | %9.3f | %9.3f | %9.3f | std deviation %9.3f",
 							  (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), 
 							  float(100*TotalTimeWithoutSons/rootTotalTime), float(100*TotalTime/rootTotalTime), 
 							  (float) MinTime, (float) MaxTime, (float) MeanTime,

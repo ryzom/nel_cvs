@@ -1,7 +1,7 @@
 /** \file frustum.cpp
  * <File description>
  *
- * $Id: frustum.cpp,v 1.10 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: frustum.cpp,v 1.11 2003/05/28 12:55:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@ void			CFrustum::initPerspective(float fov, float aspectRatio, float znear, floa
 	NL3D_MEM_FRUSTRUM
 	float	w,h;
 	w= 2*znear*(float)tan(fov/2);
-	h= w/aspectRatio;
+	h= aspectRatio != 0.f ? w/aspectRatio : 0.f;
 	init(w,h,znear,zfar,true);
 }
 void			CFrustum::getValues(float &left, float &right, float &bottom, float &top, float &znear, float &zfar) const

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.96 2003/05/26 09:04:49 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.97 2003/05/28 12:57:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -509,14 +509,14 @@ void CObjectViewer::initCamera ()
 	CFrustum frustrum;
 	uint32 width, height;
 	CNELU::Driver->getWindowSize (width, height);
-	frustrum.initPerspective( _CameraFocal *(float)Pi/180.f, (float)width/(float)height, 0.1f, 1000.f);
+	frustrum.initPerspective( _CameraFocal *(float)Pi/180.f, height != 0 ? (float)width/(float)height : 0.f, 0.1f, 1000.f);
 	CNELU::Camera->setFrustum (frustrum);
 
 	// Others camera
 	uint i;
 	for (i=0; i<_Cameras.size (); i++)
 	{
-		frustrum.initPerspective( _ListInstance[_Cameras[i]]->Camera->getFov(), (float)width/(float)height, 0.1f, 1000.f);
+		frustrum.initPerspective( _ListInstance[_Cameras[i]]->Camera->getFov(), height != 0 ? (float)width/(float)height : 0.f, 0.1f, 1000.f);
 		_ListInstance[_Cameras[i]]->Camera->setFrustum (frustrum);
 	}
 }
@@ -527,7 +527,7 @@ void CObjectViewer::initUI (HWND parent)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	// init sound
+	// init sound	
 	CSoundSystem::initSoundSystem ();
 
 	// The fonts manager
@@ -1045,7 +1045,7 @@ void CObjectViewer::go ()
 			// Clear the buffers
 
 
-			CNELU::clearBuffers(_BackGroundColor);
+			CNELU::clearBuffers(_BackGroundColor);			
 
 			// Draw the scene		
 			CNELU::Scene.render();		
@@ -1277,6 +1277,7 @@ void CObjectViewer::go ()
 			CSoundSystem::setListenerMatrix(_MouseListener.getViewMatrix());
 			CSoundSystem::poll();
 
+			
 
 			// simulate frame delay
 			if (_FrameDelay)
@@ -1287,7 +1288,6 @@ void CObjectViewer::go ()
 
 			// Save last time
 			_LastTime=_AnimationDlg->getTime();
-
 			theApp.OnIdle (0);
 		}
 		else
@@ -1305,7 +1305,7 @@ void CObjectViewer::go ()
 				if (isParentWnd(_MainFrame->m_hWnd, GetForegroundWindow()))
 					break;
 			}
-		}
+		}		
 	}
 	while (!CNELU::AsyncListener.isKeyPushed(KeyESCAPE)&&CNELU::Driver->isActive());
 	_InstanceRunning = false;

@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: ps_attrib.h,v 1.2 2001/06/25 13:58:25 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -137,7 +137,14 @@ CPSAttrib<T>::CPSAttrib(uint32 maxNbInstances) : _MaxSize(maxNbInstances), _Size
 template <typename T> 
 void CPSAttrib<T>::resizeNFill(uint32 nbInstances)
 {
+	nlassert(_Size == _Tab.size()) ;
 	_Tab.reserve(nbInstances) ;
+	if (_Size > nbInstances)
+	{
+		_Tab.resize(nbInstances) ;
+		_Size = nbInstances ;
+		return ;
+	}
 	sint32 leftToFill = nbInstances - _Size ;
 
 	if (leftToFill > 0)
@@ -151,20 +158,28 @@ void CPSAttrib<T>::resizeNFill(uint32 nbInstances)
 
 	_Size = _MaxSize = nbInstances ;
 	
+	nlassert(_Size == _Tab.size()) ;
 }
 
 
 template <typename T> 
 void CPSAttrib<T>::resize(uint32 nbInstances)
 {
+	nlassert(_Size == _Tab.size()) ;
 	_Tab.reserve(nbInstances) ;
 	_MaxSize = nbInstances ;
+	if (_Size > _MaxSize)
+	{
+		_Size = _MaxSize ;
+	}
+	nlassert(_Size == _Tab.size()) ;
 }
 
 
 template <typename T> 
 sint32 CPSAttrib<T>::insert(const T &t)
 {
+	nlassert(_Size == _Tab.size()) ;
 	if (_Size == _MaxSize) 
 	{
 		return -1 ;
@@ -172,12 +187,15 @@ sint32 CPSAttrib<T>::insert(const T &t)
 	++ _Size ;
 	_Tab.push_back(t) ;
 	return _Size - 1 ;
+
+	nlassert(_Size == _Tab.size()) ;
 }
 
 
 template <typename T> 
 void CPSAttrib<T>::remove(uint32 index)
 {
+	nlassert(_Size == _Tab.size()) ;
 	nlassert(index < _Size) ;
 	// we copy the last element in place of this one
 	if (index != _Size - 1)
@@ -187,6 +205,8 @@ void CPSAttrib<T>::remove(uint32 index)
 	_Tab.pop_back() ;
 
 	-- _Size ;
+
+	nlassert(_Size == _Tab.size()) ;
 }
 
 template <typename T> 

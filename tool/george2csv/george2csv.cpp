@@ -474,14 +474,24 @@ void clearSheet( CForm *form, UFormElm* node )
 
 
 /*
- *
+ * - Remove CSV carriage returns.
+ * - Ensure there is no non-ascii char (such as Excel's special blank crap), set them to ' '.
  */
-void eraseCarriageReturns( string& s )
+void eraseCarriageReturnsAndMakeBlankNonAsciiChars( string& s )
 {
 	const char CR = '\n';
 	string::size_type p = s.find( CR );
 	while ( (p=s.find( CR )) != string::npos )
 		s.erase( p, 1 );
+	for ( p=0; p!=s.size(); ++p )
+	{
+		uint8& c = (uint8&)s[p]; // ensure the test is unsigned
+		if ( c > 127 )
+		{
+			//nldebug( "Blanking bad char %u in '%s'", c, s.c_str() );
+			s[p] = ' ';
+		}
+	}
 }
 
 
@@ -525,7 +535,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 	uint i;
 	for ( i=1; i!=fields.size(); ++i )
 	{
-		eraseCarriageReturns( fields[i] );
+		eraseCarriageReturnsAndMakeBlankNonAsciiChars( fields[i] );
 		if ( fields[i].empty() )
 		{
 			nlinfo( "Skipping field #%u (empty)", i );
@@ -552,6 +562,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 	}
 
 	uint dirmapLetterIndex = ~0;
+	bool dirmapLetterBackward = false;
 	vector<string> dirmapDirs;
 	string dirmapSheetCode, addExtension, outputPath;
 	bool WriteEmptyProperties = false, WriteSheetsToDisk = true;
@@ -563,43 +574,6 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 		{
 			CConfigFile dirmapcfg;
 			dirmapcfg.load( sheetType + "_dirmap.cfg" );
-			CConfigFile::CVar *letterIndex1 = dirmapcfg.getVarPtr( "LetterIndex" );
-			if ( letterIndex1 && letterIndex1->asInt() > 0 )
-			{
-				dirmapLetterIndex = letterIndex1->asInt() - 1;
-				CConfigFile::CVar dirs = dirmapcfg.getVar( "Directories" );
-				for ( sint idm=0; idm!=dirs.size(); ++idm )
-				{
-					dirmapDirs.push_back( dirs.asString( idm ) );
-					nlinfo( "Directory: %s", dirmapDirs.back() );
-					if ( ! CFile::isExists( dirmapDirs.back() ) )
-					{
-						CFile::createDirectory( dirmapDirs.back() );
-					}
-					else
-					{
-						if ( ! CFile::isDirectory( dirmapDirs.back() ) )
-						{
-							nlwarning( "Already existing but not a directory!" );
-						}
-					}
-				}
-
-				nlinfo( "Mapping letter #%u of sheet name to directory", dirmapLetterIndex + 1 );
-			}
-			
-			CConfigFile::CVar *sheetCode = dirmapcfg.getVarPtr( "SheetCode" );
-			if ( sheetCode )
-				dirmapSheetCode = sheetCode->asString();
-			nlinfo( "Sheet code: %s", dirmapSheetCode.c_str() );
-
-			dirmapLetterIndex += dirmapSheetCode.size();
-
-			CConfigFile::CVar *addExt = dirmapcfg.getVarPtr( "AddExtension" );
-			if ( addExt )
-				addExtension = addExt->asString();
-			if ( ! addExtension.empty() )
-				nlinfo( "Adding extension if not present: %s", addExtension.c_str() );
 
 			CConfigFile::CVar *path = dirmapcfg.getVarPtr( "OutputPath" );
 			if ( path )
@@ -608,10 +582,53 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			{
 				nlinfo( "Using output path: %s", outputPath.c_str() );
 				if ( outputPath[outputPath.size()-1] != '/' )
-					nlwarning( "Output path is not a path but a filename prefix (not ending with '/')" );
+					outputPath += '/';
 				else if ( ! CFile::isDirectory( outputPath ) )
 					nlwarning( "Output path does not exist" );
 			}
+
+			CConfigFile::CVar *letterIndex1 = dirmapcfg.getVarPtr( "LetterIndex" );
+			if ( letterIndex1 && letterIndex1->asInt() > 0 )
+			{
+				dirmapLetterIndex = letterIndex1->asInt() - 1;
+
+				CConfigFile::CVar *letterWay = dirmapcfg.getVarPtr( "LetterWay" );
+				dirmapLetterBackward = (letterWay && (letterWay->asInt() == 1));
+				
+				CConfigFile::CVar dirs = dirmapcfg.getVar( "Directories" );
+				for ( sint idm=0; idm!=dirs.size(); ++idm )
+				{
+					dirmapDirs.push_back( dirs.asString( idm ) );
+					nlinfo( "Directory: %s", dirmapDirs.back() );
+					if ( ! CFile::isExists( outputPath + dirmapDirs.back() ) )
+					{
+						CFile::createDirectory( outputPath + dirmapDirs.back() );
+					}
+					else
+					{
+						if ( ! CFile::isDirectory( outputPath + dirmapDirs.back() ) )
+						{
+							nlwarning( "Already existing but not a directory!" );
+						}
+					}
+				}
+
+				nlinfo( "Mapping letter #%u (%s) of sheet name to directory", dirmapLetterIndex + 1, dirmapLetterBackward?"backward":"forward" );
+			}
+			
+			CConfigFile::CVar *sheetCode = dirmapcfg.getVarPtr( "AddSheetCode" );
+			if ( sheetCode )
+				dirmapSheetCode = sheetCode->asString();
+			nlinfo( "Sheet code: %s", dirmapSheetCode.c_str() );
+
+			CConfigFile::CVar *addExt = dirmapcfg.getVarPtr( "AddExtension" );
+			if ( addExt )
+				addExtension = addExt->asString();
+			if ( ! addExtension.empty() )
+				nlinfo( "Adding extension if not present: %s", addExtension.c_str() );
+
+			if ( ! dirmapLetterBackward )
+				dirmapLetterIndex += dirmapSheetCode.size();
 
 			CConfigFile::CVar *wep = dirmapcfg.getVarPtr( "WriteEmptyProperties" );
 			if ( wep )
@@ -648,7 +665,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 		if (args.size() < 1)
 			continue;
 
-		eraseCarriageReturns( args[0] );
+		eraseCarriageReturnsAndMakeBlankNonAsciiChars( args[0] );
 
 		// Skip empty lines
 		if ( args[0].empty() || (args[0] == string(".")+sheetType) )
@@ -688,7 +705,13 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 				{
 					if ( dirmapLetterIndex < filebase.size() )
 					{
-						char c = tolower(filebase[dirmapLetterIndex]);
+						uint letterIndex;
+						char c;
+						if ( dirmapLetterBackward )
+							letterIndex = filebase.size() - 2 - (CFile::getExtension( filebase ).size()+1) - dirmapLetterIndex;
+						else
+							letterIndex = dirmapLetterIndex;
+						c = tolower( filebase[letterIndex] );
 						vector<string>::const_iterator idm;
 						for ( idm=dirmapDirs.begin(); idm!=dirmapDirs.end(); ++idm )
 						{
@@ -700,7 +723,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 						}
 						if ( idm==dirmapDirs.end() )
 						{
-							nlinfo( "Directory mapping not found for %s", filebase.c_str() );
+							nlinfo( "Directory mapping not found for %s (index %u)", filebase.c_str(), letterIndex );
 							dirbase = ""; // put into root
 						}
 					}
@@ -741,7 +764,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			const string	&var = fields[i];
 			string			&val = args[i];
 
-			eraseCarriageReturns( val );
+			eraseCarriageReturnsAndMakeBlankNonAsciiChars( val );
 
 			// Skip column with inactive field (empty or not in DFN)
 			if ( (! activeFields[i]) )
@@ -791,7 +814,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 				}
 			}
 
-			//nldebug( "%s: %s %s", args[0].c_str(), var.c_str(), val.c_str() );
+			//nldebug( "%s: %s '%s'", args[0].c_str(), var.c_str(), val.c_str() );
 			form->getRootNode().setValueByName(val.c_str(), var.c_str());
 
 			if ( ! isNewSheet )

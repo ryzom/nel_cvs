@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.55 2003/03/13 15:25:57 corvazier Exp $
+ * $Id: transform.cpp,v 1.56 2003/03/20 14:57:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/scene.h"
 #include "3d/root_model.h"
 #include "3d/fast_floor.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 using namespace NLMISC;
@@ -101,6 +102,7 @@ CTransform::CTransform()
 			ISNeedUpdateFrozenStaticLightSetup= 0
 
 			IsSkeleton= 0
+			IsTransformShape=0
 
 			IsDeleteChannelMixer = 0;
 	*/
@@ -345,6 +347,15 @@ void		CTransform::freezeHRC()
 	{
 		_FreezeHRCState= FreezeHRCStateRequest;
 		setStateFlag(QuadGridClipEnabled, true);
+
+		/* If the transform is not frozen (ie staticaly inserted in a cluster),
+			We must be sure it will be tested against QuadGridClipManager at next ClipTrav pass.
+			=> must make this object a "moving object" at next render=> dirt LocalMatrixDate.
+		*/
+		if(!_HrcObs->Frozen)
+		{
+			foulTransform();
+		}
 	}
 }
 
@@ -379,6 +390,9 @@ void		CTransform::unfreezeHRC()
 		}
 
 		_FreezeHRCState= FreezeHRCStateDisabled;
+
+		// unlink me from any QuadCluster, and disable QuadCluster
+		unlinkFromQuadCluster();
 		setStateFlag(QuadGridClipEnabled, false);
 	}
 }
@@ -522,7 +536,6 @@ void		CTransform::setIsSkeleton(bool val)
 {
 	setStateFlag(IsSkeleton, val);
 }
-
 // ***************************************************************************
 void		CTransform::setApplySkin(bool state)
 {
@@ -631,9 +644,9 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 			WorldMatrix=  *pFatherWM * LocalMatrix;
 			WorldDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
 
-			// Add the model to the moving object list
-			if (!Frozen)
-				static_cast<CHrcTrav*>(Trav)->_MovingObjects.push_back (Model);
+			// Add the model to the moving object list, only if I am a transform shape
+			if (!Frozen && transModel->isTransformShape())
+				static_cast<CHrcTrav*>(Trav)->_MovingObjects.push_back (static_cast<CTransformShape*>(Model));
 		}
 	}
 
@@ -729,6 +742,8 @@ void	CTransformHrcObs::traverse(IObs *caller)
 // ***************************************************************************
 void	CTransformClipObs::traverse(IObs *caller)
 {
+	H_AUTO( NL3D_TransformClip );
+
 	nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
 
 	CClipTrav		*clipTrav= safe_cast<CClipTrav*>(Trav);

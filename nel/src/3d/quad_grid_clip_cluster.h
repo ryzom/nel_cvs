@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_cluster.h
  * <File description>
  *
- * $Id: quad_grid_clip_cluster.h,v 1.3 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: quad_grid_clip_cluster.h,v 1.4 2003/03/20 15:00:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,86 +30,60 @@
 #include "3d/mot.h"
 #include "3d/clip_trav.h"
 #include "nel/misc/aabbox.h"
+#include "3d/fast_ptr_list.h"
 
 
 namespace NL3D 
 {
 
 
-// ***************************************************************************
-// ClassIds.
-const NLMISC::CClassId		QuadGridClipClusterId=NLMISC::CClassId(0x31d517aa, 0x2c4357a0);
-
+class	CTransformShapeClipObs;
 
 // ***************************************************************************
 /**
- * A cluster of object for fast BBox clip. This is a simple model to not test sons if they are totaly
- *	clipped.
+ * A cluster of object for fast BBox clip.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
  */
-class CQuadGridClipCluster : public IModel
+class CQuadGridClipCluster
 {
 public:
-	/// Call at the begining of the program, to register the model, and the basic observers.
-	static	void	registerBasic();
+	// For insertion in the QuadGridClipManager
+	CFastPtrListNode		ListNode;
 
-	void		extendCluster(const NLMISC::CAABBox &worldBBox);
 
-	void		setDistMax(float d) {_DistMax= d;}
+public:
+	/// Constructor
+	CQuadGridClipCluster(float distMax);
+	~CQuadGridClipCluster();
 
-	// never need to update, so unlink me from ValidateList.
-	virtual void update();
+	void		addModel(const NLMISC::CAABBox &worldBBox, CTransformShapeClipObs *clipObs);
+	// NB: the BBox is not recomputed.
+	void		removeModel(CTransformShapeClipObs *clipObs);
+
+	void		clip(CClipTrav *clipTrav);
+
+	// NB it is possible that getNumChildren()==0 and isEmpty()==false!!
+	bool					isEmpty() const {return _Empty;}
+	const NLMISC::CAABBox	&getBBox() const {return _BBox;}
+	sint					getNumChildren() const {return _Models.size();}
+
+	void		resetSons(CClipTrav *clipTrav);
 
 protected:
-	/// Constructor
-	CQuadGridClipCluster() {_Empty= true; _DistMax= -1;}
-	/// Destructor
-	virtual ~CQuadGridClipCluster() {}
 
-private:
-	static IModel	*creator() {return new CQuadGridClipCluster;}
-	friend class	CQuadGridClipClusterClipObs;
+	NLMISC::CAABBox							_BBox;
+	NLMISC::CAABBoxExt						_BBoxExt;
+	float									_DistMax;
+	float									_SqrDistMaxRadius;
+	CFastPtrList<CTransformShapeClipObs>	_Models;
+	bool									_Empty;
+	bool									_TestDistMax;
 
-	NLMISC::CAABBox		_BBox;
-	bool				_Empty;
-	float				_DistMax;
-	float				_Radius;
-};
+	bool									_LastClipWasFrustumClip;
 
-
-// ***************************************************************************
-/**
- * This observer:
- * - leave the notification system to do nothing
- * - implement the traverse() method
- *
- * \sa CHrcTrav IBaseHrcObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CQuadGridClipClusterClipObs : public IBaseClipObs
-{
-	bool		_LastClipWasDistMaxClip;
-	bool		_LastClipWasFrustumClip;
-
-public:
-	CQuadGridClipClusterClipObs();
-
-
-	// not used by traverse().
-	virtual	bool	clip(IBaseClipObs *caller) {return true;}
-
-
-	/// \name The base doit method.
-	//@{
-	/// clip the bbox of the model and traverse sons if clip result uspecified.
-	virtual	void	traverse(IObs *caller);
-	//@}
-
-	static IObs	*creator() {return new CQuadGridClipClusterClipObs;}
+	void		clipSons();
 
 };
 

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.32 2003/03/11 09:42:50 berenguier Exp $
+ * $Id: transform.h,v 1.33 2003/03/20 14:57:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -321,9 +321,19 @@ public:
 
 	/// non-zero if the CTransform can be casted to a CMeshBaseInstance
 	uint32				isMeshBaseInstance() const {return getStateFlag(IsMeshBaseInstance);}
+	/// non-zero if the CTransform can be casted to a CTransformShape
+	uint32				isTransformShape() const {return getStateFlag(IsTransformShape);}
+	/// non-zero if the CTransform can be casted to a CCluster
+	uint32				isCluster() const {return getStateFlag(IsCluster);}
 
 	// @}
 
+	// shortcut to the HrcObs.
+	CTransformHrcObs			*getHrcObs() const { return _HrcObs;}
+	// shortcut to the ClipObs.
+	CTransformClipObs			*getClipObs() const { return _ClipObs;}
+	// shortcut to the LightObs.
+	CTransformLightObs			*getLightObs() const { return _LightObs;}
 
 // ********
 private:
@@ -359,6 +369,9 @@ protected:
 
 	/// Implement the initModel method.
 	virtual void	initModel();
+
+	/// special feature for CQuadGridClipManager. called at unfreezeHRC(). Used by CTransformShape.
+	virtual	void	unlinkFromQuadCluster() {}
 
 	/// \name Skinning Behavior.
 	// @{
@@ -451,6 +464,10 @@ protected:
 
 	/// For CMeshBaseInstance only
 	void				setIsMeshBaseInstance(bool val) {setStateFlag(IsMeshBaseInstance, val);}
+	/// For CTransformShape only.
+	void				setIsTransformShape(bool val) {setStateFlag(IsTransformShape, val);}
+	/// For CCluster only.
+	void				setIsCluster(bool val) {setStateFlag(IsCluster, val);}
 
 	// @}
 
@@ -529,8 +546,10 @@ private:
 		IsDeleteChannelMixer=	0x4000,
 		IsForceAnimDetail=		0x8000,
 		IsMeshBaseInstance=		0x10000,
+		IsTransformShape=		0x20000,	// set if the model is a transform_shape (faster than dynamic_cast)
+		IsCluster=				0x40000,	// set if the model is a cluster (faster than dynamic_cast)
 
-		// NB: may continue on >=0x20000
+		// NB: may continue on >=0x80000
 	};
 
 	/// Flags for the General State of the Transform. They are both static or dynamic flags.

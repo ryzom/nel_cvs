@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.35 2003/03/11 09:42:50 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.36 2003/03/20 14:59:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/clip_trav.h"
 #include "3d/render_trav.h"
 #include "3d/load_balancing_trav.h"
+#include "3d/quad_grid_clip_cluster.h"
 
 #define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dInst )
 
@@ -66,6 +67,9 @@ CTransformShape::CTransformShape()
 
 	// The model is renderable
 	CTransform::setIsRenderable(true);
+
+	// I am a CTransformShape
+	CTransform::setIsTransformShape(true);
 }
 
 
@@ -127,15 +131,21 @@ CMaterial *CTransformShape::getMaterial (uint materialId)
 	return NULL;
 }
 
+// ***************************************************************************
+void	CTransformShape::unlinkFromQuadCluster()
+{
+	// if linked to a quadGridClipCluster, unlink it
+	((CTransformShapeClipObs*)getClipObs())->unlinkFromQuadCluster();
+}
+
 
 // ***************************************************************************
 bool	CTransformShapeClipObs::clip(IBaseClipObs *caller) 
 {
+	H_AUTO( NL3D_TrShape_Clip );
+
 	CClipTrav			*trav= (CClipTrav*)Trav;
 	CTransformShape		*m= (CTransformShape*)Model;
-
-	// reset
-	_ClipDueToDistMax= false;
 
 	if(m->Shape)
 	{
@@ -151,8 +161,6 @@ bool	CTransformShapeClipObs::clip(IBaseClipObs *caller)
 			// if dist > maxDist, skip
 			if (sqrDist > maxDist)
 			{
-				// flag this state
-				_ClipDueToDistMax= true;
 				// Ok, not shown
 				return false;
 			}

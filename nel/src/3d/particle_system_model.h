@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.29 2003/03/04 18:16:30 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.30 2003/03/20 15:00:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -323,10 +323,10 @@ public:
   *
   */
 
-class CParticleSystemClipObs : public CTransformClipObs
+class CParticleSystemClipObs : public CTransformShapeClipObs
 {
 public:
-	void				traverse(IObs *caller);
+	virtual void		traverse(IObs *caller);
 	static IObs			*creator() {return new CParticleSystemClipObs;}
 	
 	// insert the observer in the Clip/AnimDetail/LoadBalacing visible list.
@@ -346,6 +346,9 @@ public:
 		}
 	}
 	bool checkDestroyCondition(CParticleSystem *ps, CParticleSystemModel *m);
+
+	// no-op clip() because all done in special traverse()
+	virtual	bool	clip(IBaseClipObs *caller);
 };
 
 /// a render observer for a particle system

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.17 2000/11/22 15:56:47 cado Exp $
+ * $Id: debug.h,v 1.18 2000/11/27 11:34:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,12 +226,18 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlFatalError
 
 #ifdef NL_DEBUG
 
+#ifdef NL_OS_WINDOWS
+#define BEAKPOINT _asm { int 3 }
+#else
+#define BEAKPOINT 
+#endif
+
 #define nlassert(exp) \
 { \
 	if (!(exp)) { \
 		NLMISC::AssertLog.setParam (__LINE__, __FILE__); \
 		NLMISC::AssertLog.displayNL ("\"%s\" ", #exp); \
-		_asm { int 3 } \
+		BEAKPOINT \
 	} \
 }
 
@@ -242,7 +248,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlFatalError
 		ignoreAlways=true; \
 		NLMISC::AssertLog.setParam( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog.displayNL ("\"%s\" ", #exp); \
-		_asm { int 3 } \
+		BEAKPOINT \
 	} \
 }
 
@@ -253,7 +259,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlFatalError
 		NLMISC::AssertLog.setParam( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog.display ("\"%s\" ", #exp); \
 		NLMISC::AssertLog.displayRawNL str; \
-		_asm { int 3 } \
+		BEAKPOINT \
 	} \
 }
 
@@ -262,7 +268,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlFatalError
 	if (!(exp)) { \
 		NLMISC::AssertLog.setParam (__LINE__, __FILE__); \
 		NLMISC::AssertLog.displayNL ("\"%s\" ", #exp); \
-		_asm { int 3 } \
+		BEAKPOINT \
 	} \
 }
 
@@ -273,7 +279,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlFatalError
 		ignoreAlways=true; \
 		NLMISC::AssertLog.setParam( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog.displayNL ("\"%s\" ", #exp); \
-		_asm { int 3 } \
+		BEAKPOINT \
 	} \
 }
 
@@ -284,7 +290,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlFatalError
 		NLMISC::AssertLog.setParam( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog.display ("\"%s\" ", #exp); \
 		NLMISC::AssertLog.displayRawNL str; \
-		_asm { int 3 } \
+		BEAKPOINT \
 	} \
 }
 
@@ -292,7 +298,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlFatalError
 { \
 	NLMISC::AssertLog.setParam (__LINE__, __FILE__); \
 	NLMISC::AssertLog.displayNL ("STOP "); \
-	_asm { int 3 } \
+	BEAKPOINT \
 }
 
 #define nlstoponce \
@@ -302,7 +308,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlFatalError
 		ignoreAlways=true; \
 		NLMISC::AssertLog.setParam( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog.displayNL ("STOP "); \
-		_asm { int 3 } \
+		BEAKPOINT \
 	} \
 }
 
@@ -311,7 +317,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlFatalError
 	NLMISC::AssertLog.setParam( __LINE__, __FILE__ ); \
 	NLMISC::AssertLog.display ("STOP "); \
 	NLMISC::AssertLog.displayRawNL str; \
-	_asm { int 3 } \
+	BEAKPOINT \
 }
 
 #else // NL_DEBUG

@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.15 2001/04/12 16:32:21 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.16 2001/05/17 15:37:17 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,6 +65,8 @@ CBufFIFO::~CBufFIFO()
 
 void CBufFIFO::push(const std::vector<uint8> &buffer)
 {
+	nlassert( buffer.size() < 0x10000 ); // size check in debug mode
+
 	TTicks before = CTime::getPerformanceTime();
 
 	TFifoSize size = buffer.size();

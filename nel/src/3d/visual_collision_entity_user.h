@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.h
  * UVisualCollisionEntity implementation.
  *
- * $Id: visual_collision_entity_user.h,v 1.2 2001/07/13 16:08:14 berenguier Exp $
+ * $Id: visual_collision_entity_user.h,v 1.3 2001/07/16 10:11:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,25 @@ public:
 	virtual bool	snapToGround(CVector &pos, CVector &normal)
 	{
 		return _Entity->snapToGround(pos, normal);
+	}
+
+
+
+	virtual void	setGroundMode(bool groundMode)
+	{
+		_Entity->setGroundMode(groundMode);
+	}
+	virtual void	setCeilMode(bool ceilMode)
+	{
+		_Entity->setCeilMode(ceilMode);
+	}
+	virtual bool	getGroundMode() const
+	{
+		return _Entity->getGroundMode();
+	}
+	virtual bool	getCeilMode() const
+	{
+		return _Entity->getCeilMode();
 	}
 
 

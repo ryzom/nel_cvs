@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.6 2001/07/16 08:34:07 legros Exp $
+ * $Id: visual_collision_entity.cpp,v 1.7 2001/07/16 10:11:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,10 @@ CVisualCollisionEntity::CVisualCollisionEntity(CVisualCollisionManager *owner) :
 	_PatchQuadBlocks.reserve(_StartPatchQuadBlockSize);
 
 	_CurrentBBox.setHalfSize(CVector::Null);
+
+	_GroundMode= true;
+	_CeilMode= false;
+
 }
 
 
@@ -191,8 +195,9 @@ void		CVisualCollisionEntity::snapToLandscapeCurrentTesselation(CVector &pos, co
 }
 
 
+
 // ***************************************************************************
-bool		CVisualCollisionEntity::triangleIntersect(CTriangle &tri, const CVector &pos0, const CVector &pos1, CVector &hit)
+bool		CVisualCollisionEntity::triangleIntersect2DGround(CTriangle &tri, const CVector &pos0)
 {
 	CVector		&p0= tri.V0;
 	CVector		&p1= tri.V1;
@@ -217,6 +222,55 @@ bool		CVisualCollisionEntity::triangleIntersect(CTriangle &tri, const CVector &p
 	b= (p0.x-p2.x);
 	c= -(p2.x*a + p2.y*b);
 	if( (a*pos0.x + b*pos0.y + c) < 0)	return false;
+
+	return true;
+}
+
+// ***************************************************************************
+bool		CVisualCollisionEntity::triangleIntersect2DCeil(CTriangle &tri, const CVector &pos0)
+{
+	CVector		&p0= tri.V0;
+	CVector		&p1= tri.V1;
+	CVector		&p2= tri.V2;
+
+	// Test if the face enclose the pos in X/Y plane.
+	// NB: compute and using a BBox to do a rapid test is not a very good idea, since it will 
+	// add an overhead which is NOT negligeable compared to the following test.
+	float		a,b,c;		// 2D cartesian coefficients of line in plane X/Y.
+	// Line p0-p1.
+	a= -(p1.y-p0.y);
+	b= (p1.x-p0.x);
+	c= -(p0.x*a + p0.y*b);
+	if( (a*pos0.x + b*pos0.y + c) > 0)	return false;
+	// Line p1-p2.
+	a= -(p2.y-p1.y);
+	b= (p2.x-p1.x);
+	c= -(p1.x*a + p1.y*b);
+	if( (a*pos0.x + b*pos0.y + c) > 0)	return false;
+	// Line p2-p0.
+	a= -(p0.y-p2.y);
+	b= (p0.x-p2.x);
+	c= -(p2.x*a + p2.y*b);
+	if( (a*pos0.x + b*pos0.y + c) > 0)	return false;
+
+	return true;
+}
+
+// ***************************************************************************
+bool		CVisualCollisionEntity::triangleIntersect(CTriangle &tri, const CVector &pos0, const CVector &pos1, CVector &hit)
+{
+	CVector		&p0= tri.V0;
+	CVector		&p1= tri.V1;
+	CVector		&p2= tri.V2;
+
+	bool	ok= false;
+	if( _GroundMode && triangleIntersect2DGround(tri, pos0) )
+		ok= true;
+	if(!ok && _CeilMode && triangleIntersect2DCeil(tri, pos0) )
+		ok= true;
+	if(!ok)
+		return false;
+
 
 	// Compute the possible height.
 	CVector		tmp;

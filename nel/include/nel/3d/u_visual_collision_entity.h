@@ -1,7 +1,7 @@
 /** \file u_visual_collision_entity.h
  * <File description>
  *
- * $Id: u_visual_collision_entity.h,v 1.2 2001/07/13 16:08:13 berenguier Exp $
+ * $Id: u_visual_collision_entity.h,v 1.3 2001/07/16 10:11:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,22 @@ public:
 	 */
 	virtual bool	snapToGround(CVector &pos, CVector &normal) =0;
 
+
+
+	/** If groundMode is true, the entity is snapped on faces with normal.z > 0. Default is true.
+	 *	NB: if both groundMode and ceilMode are false, snapToGround is a no-op.
+	 */
+	virtual void	setGroundMode(bool groundMode) =0;
+
+
+	/** If ceilMode is true, the entity is snapped on faces with normal.z < 0. Default is false.
+	 *	NB: if both groundMode and ceilMode are false, snapToGround is a no-op.
+	 */
+	virtual void	setCeilMode(bool ceilMode) =0;
+
+
+	virtual bool	getGroundMode() const =0;
+	virtual bool	getCeilMode() const =0;
 
 };
 

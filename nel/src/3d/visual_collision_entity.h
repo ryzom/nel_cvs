@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.h
  * <File description>
  *
- * $Id: visual_collision_entity.h,v 1.2 2001/07/13 16:08:14 berenguier Exp $
+ * $Id: visual_collision_entity.h,v 1.3 2001/07/16 10:11:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,9 +70,29 @@ public:
 
 
 
+	/** If groundMode is true, the entity is snapped on faces with normal.z > 0. Default is true.
+	 *	NB: if both groundMode and ceilMode are false, snapToGround is a no-op.
+	 */
+	void	setGroundMode(bool groundMode) {_GroundMode= groundMode;}
+
+
+	/** If ceilMode is true, the entity is snapped on faces with normal.z < 0. Default is false.
+	 *	NB: if both groundMode and ceilMode are false, snapToGround is a no-op.
+	 */
+	void	setCeilMode(bool ceilMode) {_CeilMode= ceilMode;}
+
+
+	bool	getGroundMode() const {return _GroundMode;}
+	bool	getCeilMode() const {return _CeilMode;}
+
+
+
 // ***********************
 private:
 	CVisualCollisionManager		*_Owner;
+
+	bool	_CeilMode;
+	bool	_GroundMode;
 
 
 	/// \name Landscape part.
@@ -100,7 +120,12 @@ private:
 
 
 	/// Fast "2D" test of a triangle against ray P0 P1.
+	bool		triangleIntersect2DGround(CTriangle &tri, const CVector &pos0);
+	bool		triangleIntersect2DCeil(CTriangle &tri, const CVector &pos0);
+	/// Fast "2D" test of a triangle against ray P0 P1.
 	bool		triangleIntersect(CTriangle &tri, const CVector &pos0, const CVector &pos1, CVector &hit);
+
+
 	/// test if the new position is outside the preceding setuped bbox, and then compute tiles infos around the position.
 	void		testComputeLandscape(const CVector &pos);
 	/// compute tiles infos around the position.

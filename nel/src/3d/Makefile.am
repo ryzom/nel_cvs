@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.7 2000/12/18 15:27:41 lecroart Exp $
+# $Id: Makefile.am,v 1.8 2000/12/19 14:26:21 corvazier Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -20,7 +20,7 @@ libnel3d_la_SOURCES  = aabbox.cpp bezier_patch.cpp bitmap.cpp bsphere.cpp \
                        vertex_buffer.cpp viewport.cpp zone.cpp frustum.cpp \
                        polygon.cpp texture_font.cpp texture_file.cpp \
                        texture_mem.cpp register_3d.cpp transform_shape.cpp \
-                       mesh.cpp shape.cpp
+                       mesh.cpp shape.cpp tile_far_bank.cpp
 
 libnel3d_la_LIBADD    = @FREETYPE_LIBS@
 

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.7 2001/07/12 15:55:00 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.8 2001/08/06 10:12:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,9 @@
 namespace NL3D {
 
 
-// this struct only contains an enum that tell chat the input of an atribute maker is
+/** this struct only contains an enum that tell chat the input of an attribute maker is
+  * \see class CPSAttributeMaker
+  */
 struct CPSInputType
 {
 	/// ctor
@@ -64,7 +66,7 @@ struct CPSInputType
 
 	union
 	{
-		/// the user param being used
+		/// The user param being used. Valid only when InputType has been set to attrUserParam.
 		uint32 UserParamNum ;
 	} ;
 
@@ -84,159 +86,163 @@ struct CPSInputType
 /**
  * Here we define attribute maker, that is object that can produce an attribute following some rule.
  * This allow, for example, creation of a color gradient, or color flicker, size strectching and so on...
- * These attributes apply to particles. see paticle_system.h and ps_located.h
+ * See also particle_system.h and ps_located.h.
  */
 
 
 
-// the max value for inputs
+// The max value for inputs of an attribute maker.
 const float MaxInputValue = 0.9999f ;
 
 
 /**
- * This is the base class for any attrib maker
- * It can be used to fill a vertex buffer, or a table
+ * This is the base class for any attrib maker. It produce an attribute used in a particle system.
+ * It can be used to fill a vertex buffer, or a table.
  * \author Nicolas Vizerie
  * \author Nevrax France
  * \date 2001
  */
 
-
 template <typename T> class CPSAttribMaker : public NLMISC::IStreamable
 {	
 public:
+	/// \name Object
+	//@{
+		/** construct the attrib maker specifying the number of cycles to do.
+		 *  \see setNbCycles()
+		 */	 
+		CPSAttribMaker(float nbCycles = 1.f) : _NbCycles(nbCycles), _HasMemory(false)
+		{		
+		}
+
+		/// serialisation of the object. Derivers MUST call this, (if they use the attribute of this class at least)
+		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+		{
+			f.serialVersion(1) ;
+			f.serial(_NbCycles) ;	
+		}
+
+		/// dtor
+		virtual ~CPSAttribMaker() {}
+	//@}
+
+	/// \name Production of attribute
+	//@{
+		/// compute one value of the attribute for the given index
+		virtual T get(CPSLocated *loc, uint32 index) = 0 ;
 
 
-	/// compute one value of the attribute for the given index
-	virtual T get(CPSLocated *loc, uint32 index) = 0 ;
+		/** Fill tab with an attribute by using the given stride. It fills numAttrib attributes.
+		 *  \param loc the 'located' that hold the 'located bindable' that need an attribute to be filled
+		 *  \param startIndex usually 0, it gives the index of the first element in the located
+		 *  \param tab where the data will be written
+		 *  \param stride the stride, in byte, between each value to write
+		 *  \param numAttrib the number of attributes to compute
+		 *  \param allowNoCopy data may be already present in memory, and may not need computation. When set to true, this allow no computation to be made
+		 *         the return parameter is then le location of the datas. this may be tab (if recomputation where needed), or another value 
+		 *         for this to work, the stride must most of the time be sizeof(T). This is intended to be used with derivers of CPSAttribMaker
+		 *         that store values that do not depend on the input. The make method then just copy the data, we is sometime useless
+		 *  \return where the data have been copied, this is always tab, unless allowNoCopy is set to true, in which case this may be different
+		 *                                         
+		 */
 
+		  virtual void *make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy = false) const = 0 ;
 
-	/** Fill tab with an attribute by using the given stride. It fills numAttrib attributes.
-	 *  \param loc the 'located' that hold the 'located bindable' that need an attribute to be filled
-	 *  \param startIndex usually 0, it gives the index of the first element in the located
-	 *  \param tab where the data will be written
-	 *  \param stride the stride, in byte, between each value to write
-	 *  \param numAttrib the number of attributes to compute
-     *  \param allowNoCopy data may be already present in memory, and may not need computation. When set to true, this allow no computation to be made
-	 *         the return parameter is then le location of the datas. this may be tab (if recomputation where needed), or another value 
-	 *         for this to work, the stride must most of the time be sizeof(T). This is intended to be used with derivers of CPSAttribMaker
-	 *         that store values that do not depend on the input. The make method then just copy the data, we is sometime useless
-	 *  \return where the data have been copied, this is always tab, unless allowNoCopy is set to true, in which case this may be different
-	 *                                         
-	 */
+		/** The same as make, but it replicate each attribute 4 times, thus filling 4*numAttrib. Useful for facelookat and the like
+		 *  \see make()
+		 */
+		  virtual void make4(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const = 0 ;
 
-	  virtual void *make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy = false) const = 0 ;
+		/** The same as make4, but with n replication instead of 4	 
+		 *  \see make4
+		 */
+		 virtual void makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const = 0 ;
+	//@}
 
-	/** The same as make, but it replicate each attribute 4 times, thus filling 4*numAttrib. Useful for facelookat and the like
-	 *  \see make()
-	 */
-	  virtual void make4(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const = 0 ;
+	
 
-	/** The same as make4, but with n replication instead of 4	 
-	 *  \see make4
-	 */
-	 virtual void makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const = 0 ;
-
-	/// serialisation of the object. Derivers MUST call this, (if they use the attribute of this class at least)
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-	{
-		f.serialVersion(1) ;
-		f.serial(_NbCycles) ;	
-	}
-
-	/// get the max value (meaningful for orderer set only)
-
+	/// get the max value (meaningful for ordered set only)
 	virtual T getMaxValue(void) const { return T() ; /* no mean by default */ }
 
 
-	/** Set the number of cycles that must be done during the life of a particle,
-	 * or the number of cycle per second for a particle that has no life limit
-	 * It must be >= 0
-	 */
-	void setNbCycles(float nbCycles) 
-	{ 
-		nlassert(nbCycles >= 0) ;
-		_NbCycles = nbCycles ; 
-	}
+	/// \name Input properties of the attribute maker
+	//@{
+		/** Set the number of cycles that must be done during the life of a particle,
+		 * or the number of cycle per second for a particle that has no life limit. It is used to multiply
+		 * the input used by this attribute maker
+		 * It must be >= 0
+		 */
+		void setNbCycles(float nbCycles) 
+		{ 
+			nlassert(nbCycles >= 0) ;
+			_NbCycles = nbCycles ; 
+		}
 
-	/** Retrieve the number of cycles
-	 *  \see setNbCycles()
-	 */
-	float getNbCycles(void) const { return _NbCycles ; }
+		/** Retrieve the number of cycles
+		 *  \see setNbCycles()
+		 */
+		float getNbCycles(void) const { return _NbCycles ; }
+
+		/// tells wether one may choose one attribute from a CPSLocated to use as an input. If false, the input(s) is fixed
+		virtual bool hasCustomInput(void) { return false ; }
+			
+
+		/** set a new input type (if supported). The default does nothing
+		 *  \see hasCustomInput()
+		 */
+		virtual void setInput(const CPSInputType &input) {}
 
 
-	/** construct the attrib maker specifying the number of cycles to do.
-	 *  \see setNbCycles()
-	 */	 
-	CPSAttribMaker(float nbCycles = 1.f) : _NbCycles(nbCycles), _HasMemory(false)
-	{
-	
-	}
-
-
-	/// tells wether one may choose one attribute from a CPSLocated to use as an input. If false, the input(s) is fixed
-	virtual bool hasCustomInput(void) { return false ; }
+		/** get the type of input (if supported). The default return attrDate
+		 *  \see hasCustomInput()
+		 */
+		virtual CPSInputType getInput(void) const { return CPSInputType() ; }
 		
 
-	/** set a new input type (if supported). The default does nothing
-	 *  \see hasCustomInput()
-	 */
-	virtual void setInput(const CPSInputType &input) {}
+
+		/** tells wether clamping is supported for the input (value can't go above MaxInputValue)
+		 *  The default is false
+		 */
+		virtual bool isClampingSupported(void) const { return false ; }
 
 
-	/** get the type of input (if supported). The default return attrDate
-	 *  \see hasCustomInput()
-	 */
-	virtual CPSInputType getInput(void) const { return CPSInputType() ; }
-	
+		/** Enable, disable the clamping of input values.
+		 *  The default does nothing (clamping unsupported)
+		 *  \see isClampingSupported()
+		 */
+		virtual void setClamping(bool enable = true) {} ;
 
 
-	/** tells wether clamping is supported for the input (value can't go above MaxInputValue)
-	 *  The default is false
-	 */
-	virtual bool isClampingSupported(void) const { return false ; }
+		/** Test if the clamping is enabled.
+		 *  The default is false (clamping unsupported)
+		 *  \see isClampingSupported()
+		 */
+		virtual bool getClamping(void) const  { return false  ; }
+	//@}
 
 
-	/** Enable, disable the clamping of input values.
-	 *  The default does nothing (clamping unsupported)
-	 *  \see isClampingSupported()
-	 */
-	virtual void setClamping(bool enable = true) {} ;
+	/// \name Memory managment
+	//@{
+		/** Some attribute makers may hold memory. this return true when this is the case. This also
+		  * mean that you must call newElement, deleteElement, and resize, when it is called for the owning object
+		  * (which is likely to be a CPSLocatedBindable)
+		  */
+		bool hasMemory(void) const { return _HasMemory ; }
 
+		/// delete an element, given its index. this must be called  only if memory management is used.
+		virtual void deleteElement(uint32 index) { nlassert(false) ; }
 
-	/** Test if the clamping is enabled.
-	 *  The default is false (clamping unsupported)
-	 *  \see isClampingSupported()
-	 */
-	virtual bool getClamping(void) const  { return false  ; } ;
+		/** create a new element, and provides the emitter, 
+		  *	this must be called only if this attribute maker has its own memory
+		  */
+		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { nlassert(false) ; }
 
-
-	/** Some attribute makers may hold memory. this return true when this is the case. This also
-	  * mean that you must call newElement, deleteElement, and resize, when it is called for the owning object
-	  * (which is likely to be a CPSLocatedBindable)
-	  */
-	bool hasMemory(void) const { return _HasMemory ; }
-
-	/// delete an element, given its index. this must be called  only if memory management is used.
-	virtual void deleteElement(uint32 index) { nlassert(false) ; }
-
-	/** create a new element, and provides the emitter, 
-	  *	this must be called only if this attribute maker has its own memory
-	  */
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { nlassert(false) ; }
-
-	/** set a new capacity for the memorized attribute, and a number of used element. This usually is 0
-	  * , but during edition, this may not be ... so new element are created.
-	  * this must be called only if this attribute maker has its own memory
-	  */
-	virtual void resize(uint32 capacity, uint32 nbPresentElements) { nlassert(false) ; }
-
-
-
-	/// dtor
-	virtual ~CPSAttribMaker() {}
-
-
+		/** set a new capacity for the memorized attribute, and a number of used element. This usually is 0
+		  * , but during edition, this may not be ... so new element are created.
+		  * this must be called only if this attribute maker has its own memory
+		  */
+		virtual void resize(uint32 capacity, uint32 nbPresentElements) { nlassert(false) ; }
+	//@}
 
 protected:	
 

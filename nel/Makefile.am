@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.8 2002/03/19 17:42:48 valignat Exp $
+# $Id: Makefile.am,v 1.9 2002/05/14 13:33:59 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in configure libtool config.guess \
@@ -14,7 +14,7 @@ SUBDIRS              = include src
 
 bin_SCRIPTS          = nel-config
 
-EXTRA_DIST           = acconfig.h nel.dsw bootstrap doc
+EXTRA_DIST           = acconfig.h nel.dsw bootstrap doc tools
 
 dist-hook:
 	find $(distdir) -name CVS -print | xargs rm -fr

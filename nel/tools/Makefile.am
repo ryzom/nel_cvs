@@ -1,10 +1,8 @@
 #
-# $Id: Makefile.am,v 1.1 2002/05/13 15:44:57 valignat Exp $
+# $Id: Makefile.am,v 1.2 2002/05/14 13:33:59 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
-
-DIST_SUBDIRS         = 3d
 
 SUBDIRS              = 3d
 

@@ -17,6 +17,7 @@
 #include "3d/primitive_block.h"
 #include "3d/material.h"
 #include "3d/texture_file.h"
+#include "3d/texture_mem.h"
 
 using namespace NLLIGO;
 using namespace std;
@@ -29,6 +30,8 @@ using NLMISC::CUV;
 using NLMISC::CMatrix;
 using NLMISC::CSmartPtr;
 
+using NL3D::ITexture;
+using NL3D::CTextureMem;
 using NL3D::CTextureFile;
 using NL3D::CVertexBuffer;
 using NL3D::CPrimitiveBlock;
@@ -41,8 +44,35 @@ using NL3D::CNELU;
 // ***************************************************************************
 
 // ---------------------------------------------------------------------------
+CDataBase::SCacheTexture::SCacheTexture()
+{
+	Enabled = false;
+}
+
+// ---------------------------------------------------------------------------
+bool CDataBase::SCacheTexture::isFull()
+{
+	if (!Enabled)
+		return false;
+	for (uint32 i = 0; i < FreePlace.size(); ++i)
+		if (FreePlace[i])
+			return false;
+	return true;
+}
+
+// ***************************************************************************
+// CDataBase
+// ***************************************************************************
+
+// ---------------------------------------------------------------------------
 CDataBase::CDataBase ()
 {
+	_RefCacheTextureSizeX = _RefCacheTextureSizeY = 1024; // Size of the texture cache
+	_RefSizeX = _RefSizeY = 32; // Size of a zone in pixel
+	_RefCacheTextureNbEltX = _RefCacheTextureSizeX / _RefSizeX;
+	_RefCacheTextureNbEltY = _RefCacheTextureSizeY / _RefSizeY;
+	for (uint32 i; i < 64; ++i)
+		_CacheTexture[i].Enabled = false;
 }
 
 // ---------------------------------------------------------------------------
@@ -53,6 +83,7 @@ CDataBase::~CDataBase ()
 // ---------------------------------------------------------------------------
 bool CDataBase::initFromPath (const string &Path)
 {
+	/*
 	char sDirBackup[512];
 	char sDirNew[512];
 	GetCurrentDirectory (512, sDirBackup);
@@ -84,6 +115,8 @@ bool CDataBase::initFromPath (const string &Path)
 	}
 	SetCurrentDirectory (sDirBackup);
 	return true;
+	*/
+	return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -96,24 +129,96 @@ bool CDataBase::init (const string &Path, CZoneBank &zb)
 	strcat (sDirNew, "\\");
 	strcat (sDirNew, Path.c_str());
 	SetCurrentDirectory (sDirNew);
-
-
-
+	sint32 i, k, l, m, n, o, p;
 	vector<string> ZoneNames;
 	zb.getCategoryValues ("Zone", ZoneNames);
-	for (uint32 i = 0; i < ZoneNames.size(); ++i)
+	for (i = 0; i < ZoneNames.size(); ++i)
 	{
 		SElement zdbTmp;
-
+		CZoneBankElement *pZBE = zb.getElementByZoneName (ZoneNames[i]);
 		// Read the texture file
-		zdbTmp.Name = ZoneNames[i];
-		zdbTmp.Texture = loadTexture (zdbTmp.Name + ".TGA");
-		zdbTmp.WinBitmap = convertToWin (zdbTmp.Texture);
+		string zdbTmpName = ZoneNames[i];
+		zdbTmp.SizeX = pZBE->getSizeX ();
+		zdbTmp.SizeY = pZBE->getSizeY ();
+		const vector<bool> &rMask = pZBE->getMask();
 
+		NLMISC::CBitmap *pBitmap = loadBitmap (zdbTmpName + ".TGA");
+		zdbTmp.WinBitmap = convertToWin (pBitmap);
+		pBitmap->flipV ();
+
+		for (l = 0; l < zdbTmp.SizeY; ++l)
+		for (k = 0; k < zdbTmp.SizeX; ++k)
+		if (rMask[k+l*zdbTmp.SizeX])
+		{
+			SCacheZone czTmp;
+
+			czTmp.PosX = k;
+			czTmp.PosY = l;
+
+			// Found first non full texture cache
+			for (m = 0; m < 64; ++m)
+			if (_CacheTexture[m].Enabled == false)
+			{
+				// Create the texture
+				_CacheTexture[m].FreePlace.resize (_RefCacheTextureNbEltX*_RefCacheTextureNbEltY, true);
+				_CacheTexture[m].Texture = new CTextureMem();
+				_CacheTexture[m].PtrMem.resize (4*_RefCacheTextureSizeX*_RefCacheTextureSizeY);
+				_CacheTexture[m].Texture->resize (_RefCacheTextureSizeX, _RefCacheTextureSizeY);
+				_CacheTexture[m].Texture->setPointer (&_CacheTexture[m].PtrMem[0], 4*_RefCacheTextureSizeX*_RefCacheTextureSizeY,
+											false, false);
+
+				_CacheTexture[m].Enabled = true;
+				break;
+			}
+			else
+			{
+				if (!_CacheTexture[m].isFull())
+					break;
+			}
+
+			nlassert (m<64);
+
+			// Found first place in this texture
+
+			for (n = 0; n < _CacheTexture[m].FreePlace.size(); ++n)
+			if (_CacheTexture[m].FreePlace[n])
+			{
+				sint32 xSrc = k*_RefSizeX;
+				sint32 ySrc = l*_RefSizeY;
+				sint32 xDst = (n%_RefCacheTextureNbEltX)*_RefSizeX;
+				sint32 yDst = (n/_RefCacheTextureNbEltX)*_RefSizeY;
+				uint8 *pSrc = &pBitmap->getPixels()[(xSrc+ySrc*pBitmap->getWidth())*4];
+				uint8 *pDst = &_CacheTexture[m].PtrMem[(xDst+yDst*_RefCacheTextureSizeX)*4];
+				// Copy part of the bitmap into cache texture
+				for (p = 0; p < _RefSizeY; ++p)
+				for (o = 0; o < _RefSizeX; ++o)
+				{
+					pDst[(o+p*_RefCacheTextureSizeX)*4+0] = pSrc[(o+p*pBitmap->getWidth())*4+0];
+					pDst[(o+p*_RefCacheTextureSizeX)*4+1] = pSrc[(o+p*pBitmap->getWidth())*4+1];
+					pDst[(o+p*_RefCacheTextureSizeX)*4+2] = pSrc[(o+p*pBitmap->getWidth())*4+2];
+					pDst[(o+p*_RefCacheTextureSizeX)*4+3] = pSrc[(o+p*pBitmap->getWidth())*4+3];
+				}
+				czTmp.PosUV.U = ((float)xDst) / ((float)_RefCacheTextureSizeX);
+				czTmp.PosUV.V = ((float)yDst) / ((float)_RefCacheTextureSizeY);
+				czTmp.CacheTexture = _CacheTexture[m].Texture;
+				_CacheTexture[m].FreePlace[n] = false;
+				break;
+			}
+			nlassert (m<_CacheTexture[m].FreePlace.size());
+			zdbTmp.ZonePieces.push_back (czTmp);
+		}
 		// Add the entry in the DataBase
-		_ZoneDB.push_back (zdbTmp);
+		_ZoneDBmap.insert (pair<string,SElement>(zdbTmpName, zdbTmp));
+		delete pBitmap;
 	}
-	UnusedTexture = loadTexture ("_UNUSED_.TGA");
+
+	// Upload all textures in VRAM
+	for (m = 0; m < 64; ++m)
+	if (_CacheTexture[m].Enabled)
+		_CacheTexture[m].Texture->touch ();
+
+
+	_UnusedTexture = loadTexture ("_UNUSED_.TGA");
 	SetCurrentDirectory (sDirBackup);
 	return true;
 }
@@ -121,20 +226,40 @@ bool CDataBase::init (const string &Path, CZoneBank &zb)
 // ---------------------------------------------------------------------------
 CBitmap *CDataBase::getBitmap (const string &ZoneName)
 {
-	for (uint32 i = 0; i < _ZoneDB.size(); ++i)
-		if (ZoneName == _ZoneDB[i].Name)
-			return _ZoneDB[i].WinBitmap;
-	return NULL;
+	map<string,SElement>::iterator it = _ZoneDBmap.find (ZoneName);
+	if (it != _ZoneDBmap.end())
+		return it->second.WinBitmap;
+	else
+		return NULL;
 }
 
 // ---------------------------------------------------------------------------
-CTextureFile *CDataBase::getTexture (const string &ZoneName)
+ITexture* CDataBase::getTexture (const string &ZoneName, sint32 nPosX, sint32 nPosY, CUV &retUVmin, CUV &retUVmax)
 {
 	if (ZoneName == STRING_UNUSED)
-		return UnusedTexture;
-	for (uint32 i = 0; i < _ZoneDB.size(); ++i)
-		if (ZoneName == _ZoneDB[i].Name)
-			return _ZoneDB[i].Texture;
+	{
+		retUVmin.U = 0.0f;
+		retUVmin.V = 1.0f - 0.0f;
+		retUVmax.U = 1.0f;
+		retUVmax.V = 1.0f - 1.0f;
+		return _UnusedTexture;
+	}
+
+	map<string,SElement>::iterator it = _ZoneDBmap.find (ZoneName);
+	if (it != _ZoneDBmap.end())
+	{
+		SElement &rElt = it->second;
+		for (uint32 j = 0; j < rElt.ZonePieces.size(); ++j)
+		if ((rElt.ZonePieces[j].PosX == nPosX) && (rElt.ZonePieces[j].PosY == nPosY))
+		{
+			retUVmin = rElt.ZonePieces[j].PosUV;
+			retUVmax = retUVmin;
+			retUVmax.U += ((float)_RefSizeX) / ((float)_RefCacheTextureSizeX);
+			retUVmax.V += ((float)_RefSizeY) / ((float)_RefCacheTextureSizeY);
+			return rElt.ZonePieces[j].CacheTexture;
+		}
+	}
+
 	return NULL;
 }
 
@@ -143,10 +268,10 @@ CTextureFile *CDataBase::getTexture (const string &ZoneName)
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-CBitmap *CDataBase::convertToWin (CTextureFile *pTF)
+CBitmap *CDataBase::convertToWin (NLMISC::CBitmap *pBitmap)
 {
 	CBitmap *pWinBitmap = new CBitmap;
-	vector<uint8> &rPixel = pTF->getPixels();
+	vector<uint8> &rPixel = pBitmap->getPixels();
 	uint8 *pNewPixel = new uint8[rPixel.size()];
 	for (uint32 i = 0; i < (rPixel.size()/4); ++i)
 	{
@@ -155,7 +280,7 @@ CBitmap *CDataBase::convertToWin (CTextureFile *pTF)
 		pNewPixel[i*4+2] = rPixel[i*4+0];
 		pNewPixel[i*4+3] = rPixel[i*4+3];
 	}
-	pWinBitmap->CreateBitmap (pTF->getWidth(), pTF->getHeight(), 1, 32, pNewPixel);
+	pWinBitmap->CreateBitmap (pBitmap->getWidth(), pBitmap->getHeight(), 1, 32, pNewPixel);
 	return pWinBitmap;
 }
 
@@ -167,6 +292,27 @@ CTextureFile *CDataBase::loadTexture (const std::string &fileName)
 	pTexture->setReleasable (false);
 	pTexture->generate ();
 	return pTexture;
+}
+
+// ---------------------------------------------------------------------------
+NLMISC::CBitmap *CDataBase::loadBitmap (const std::string &fileName)
+{
+	NLMISC::CBitmap *pBitmap = new NLMISC::CBitmap();
+
+	try
+	{
+		CIFile fileIn;
+		fileIn.open (fileName);
+		pBitmap->load (fileIn);
+	}
+	catch (Exception& e)
+	{
+		MessageBox (NULL, e.what(), "Warning", MB_OK);
+		delete pBitmap;
+		return NULL;
+	}
+
+	return pBitmap;
 }
 
 // ***************************************************************************
@@ -289,28 +435,78 @@ bool CBuilderZone::save(const char *fileName)
 }
 
 // ---------------------------------------------------------------------------
+// SCacheRender is a simple structure to store triangles for each texture in the scene
+struct SCacheRender
+{
+	bool			Used;
+	CVertexBuffer	VB;
+	CPrimitiveBlock PB;
+	CMaterial		Mat;
+
+	SCacheRender()
+	{
+		Used = false;
+		Mat.initUnlit ();
+		Mat.setBlend (false);
+		VB.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag);
+	}
+};
+
+// ---------------------------------------------------------------------------
 void CBuilderZone::render (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax)
 {
-	CVertexBuffer VB;
-	CPrimitiveBlock PB;
-	CMaterial Mat;
+	static SCacheRender CacheRender[64+2]; // 64+2 (unused and NULL)
+	sint32 i;
 
-	Mat.initUnlit ();
-	Mat.setBlend (false);
-	VB.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag);
+	for (i = 0; i < (64+2); ++i)
+	{
+		CacheRender[i].VB.setNumVertices (0);
+		CacheRender[i].PB.setNumTri (0);
+	}
 
 	// Select all blocks visible
 	float minx = floorf(viewMin.x/_Display->_CellSize)*_Display->_CellSize;
 	float miny = floorf(viewMin.y/_Display->_CellSize)*_Display->_CellSize;
 	float maxx = ceilf(viewMax.x/_Display->_CellSize)*_Display->_CellSize;
 	float maxy = ceilf(viewMax.y/_Display->_CellSize)*_Display->_CellSize;
-
+	CVector pos1, pos2, pos3, pos4;
+	CUV uvMin, uvMax;
+	sint32 x, y;
+	ITexture *pTexture;
+	
 	while (minx < maxx)
 	{
 		miny = floorf(viewMin.y/_Display->_CellSize)*_Display->_CellSize;
 		while (miny < maxy)
 		{
-			CVector pos1, pos2, pos3, pos4;
+			x = (sint32)floor(minx / _Display->_CellSize);
+			y = (sint32)floor(miny / _Display->_CellSize);
+
+			const string &rSZone = _ZoneRegion.getName (x, y);
+			CZoneBankElement *pZBE = _ZoneBank.getElementByZoneName (rSZone);
+
+			if (pZBE == NULL)
+				pTexture = _DataBase.getTexture (rSZone, 0, 0, uvMin, uvMax);
+			else
+				pTexture = _DataBase.getTexture (rSZone, _ZoneRegion.getPosX(x, y), 
+												_ZoneRegion.getPosY(x, y), uvMin, uvMax);
+
+			// Look if already existing texture exists in the cache
+			for (i = 0; i < (64+2); ++i)
+			if (CacheRender[i].Used)
+				if (CacheRender[i].Mat.getTexture(0) == pTexture)
+					break;
+
+			if (i == (64+2))
+			{
+				// Use a new CacheRender slot
+				for (i = 0; i < (64+2); ++i)
+					if (!CacheRender[i].Used)
+						break;
+				nlassert(i<(64+2));
+				CacheRender[i].Used = true;
+				CacheRender[i].Mat.setTexture (0, pTexture);
+			}
 
 			pos1.x = (minx-viewMin.x)/(viewMax.x-viewMin.x);
 			pos1.y = 0.0f;
@@ -328,68 +524,184 @@ void CBuilderZone::render (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax)
 			pos4.y = 0.0f;
 			pos4.z = (_Display->_CellSize+miny-viewMin.y)/(viewMax.y-viewMin.y);
 
-			VB.setNumVertices (4);
-			VB.setVertexCoord (0, pos1);
-			VB.setVertexCoord (1, pos2);
-			VB.setVertexCoord (2, pos3);
-			VB.setVertexCoord (3, pos4);
+			uint32 nBasePt = CacheRender[i].VB.getNumVertices();
+			CacheRender[i].VB.setNumVertices (nBasePt+4);
+			CacheRender[i].VB.setVertexCoord (nBasePt+0, pos1);
+			CacheRender[i].VB.setVertexCoord (nBasePt+1, pos2);
+			CacheRender[i].VB.setVertexCoord (nBasePt+2, pos3);
+			CacheRender[i].VB.setVertexCoord (nBasePt+3, pos4);
 
-			PB.setNumTri (2);
-			PB.setTri (0, 0, 1, 2);
-			PB.setTri (1, 0, 2, 3);
+			uint32 nBaseTri = CacheRender[i].PB.getNumTri ();
+			CacheRender[i].PB.setNumTri (nBaseTri+2);
+			CacheRender[i].PB.setTri (nBaseTri+0, nBasePt+0, nBasePt+1, nBasePt+2);
+			CacheRender[i].PB.setTri (nBaseTri+1, nBasePt+0, nBasePt+2, nBasePt+3);
 
-			sint32 x = (sint32)floor(minx / _Display->_CellSize);
-			sint32 y = (sint32)floor(miny / _Display->_CellSize);
-
-			const string &rSZone = _ZoneRegion.getName (x, y);
-			CZoneBankElement *pZBE = _ZoneBank.getElementByZoneName (rSZone);
-			float uMin, vMin, uMax, vMax;
-			if (pZBE == NULL)
+			if (_ZoneRegion.getFlip (x, y) == 1)
 			{
-				Mat.setTexture (0, _DataBase.getTexture (rSZone));
-				uMin = 0.0f;
-				vMin = 1.0f - 0.0f;
-				uMax = 1.0f;
-				vMax = 1.0f - 1.0f;
-				VB.setTexCoord (0, 0, CUV(uMin, vMin));
-				VB.setTexCoord (1, 0, CUV(uMax, vMin));
-				VB.setTexCoord (2, 0, CUV(uMax, vMax));
-				VB.setTexCoord (3, 0, CUV(uMin, vMax));
+				float rTmp = uvMin.U;
+				uvMin.U = uvMax.U;
+				uvMax.U = rTmp;
 			}
-			else
-			{
-				Mat.setTexture (0, _DataBase.getTexture (rSZone));
-				uMin = ((float)_ZoneRegion.getPosX (x, y)) / pZBE->getSizeX();
-				vMin = 1.0f - ((float)_ZoneRegion.getPosY (x, y)) / pZBE->getSizeY();
-				uMax = ((float)_ZoneRegion.getPosX (x, y)+1.0f) / pZBE->getSizeX();
-				vMax = 1.0f - ((float)_ZoneRegion.getPosY (x, y)+1.0f) / pZBE->getSizeY();
 
-				if (_ZoneRegion.getFlip (x, y) == 1)
-				{
-					float rTmp = uMin;
-					uMin = uMax;
-					uMax = rTmp;
-				}
-
-				VB.setTexCoord ((_ZoneRegion.getRot (x, y)+0)%4, 0, CUV(uMin, vMin));
-				VB.setTexCoord ((_ZoneRegion.getRot (x, y)+1)%4, 0, CUV(uMax, vMin));
-				VB.setTexCoord ((_ZoneRegion.getRot (x, y)+2)%4, 0, CUV(uMax, vMax));
-				VB.setTexCoord ((_ZoneRegion.getRot (x, y)+3)%4, 0, CUV(uMin, vMax));
-			}
-			
-			CMatrix mtx;
-			mtx.identity();
-			CNELU::Driver->setupViewport (CViewport());
-			CNELU::Driver->setupViewMatrix (mtx);
-			CNELU::Driver->setupModelMatrix (mtx);
-			CNELU::Driver->setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
-			CNELU::Driver->activeVertexBuffer (VB);
-			CNELU::Driver->render (PB, Mat);
-
+			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegion.getRot (x, y)+0)%4, 0, CUV(uvMin.U, uvMin.V));
+			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegion.getRot (x, y)+1)%4, 0, CUV(uvMax.U, uvMin.V));
+			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegion.getRot (x, y)+2)%4, 0, CUV(uvMax.U, uvMax.V));
+			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegion.getRot (x, y)+3)%4, 0, CUV(uvMin.U, uvMax.V));
+		
 			miny += _Display->_CellSize;
 		}
 		minx += _Display->_CellSize;
 	}
+
+
+	CMatrix mtx;
+	mtx.identity();
+	CNELU::Driver->setupViewport (CViewport());
+	CNELU::Driver->setupViewMatrix (mtx);
+	CNELU::Driver->setupModelMatrix (mtx);
+	CNELU::Driver->setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
+
+	for (i = 0; i < (64+2); ++i)
+	if (CacheRender[i].Used)
+	{
+		// Render with driver
+		CNELU::Driver->activeVertexBuffer (CacheRender[i].VB);
+		CNELU::Driver->render (CacheRender[i].PB, CacheRender[i].Mat);
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::displayGrid (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax)
+{
+	// Select all blocks visible
+	float rMinX = floorf (viewMin.x / _Display->_CellSize)*_Display->_CellSize;
+	float rMinY = floorf (viewMin.y / _Display->_CellSize)*_Display->_CellSize;
+	float rMaxX = ceilf  (viewMax.x / _Display->_CellSize)*_Display->_CellSize;
+	float rMaxY = ceilf  (viewMax.y / _Display->_CellSize)*_Display->_CellSize;
+
+	sint32 nMinX = (sint32)floor (rMinX / _Display->_CellSize);
+	sint32 nMinY = (sint32)floor (rMinY / _Display->_CellSize);
+	sint32 nMaxX = (sint32)floor (rMaxX / _Display->_CellSize);
+	sint32 nMaxY = (sint32)floor (rMaxY / _Display->_CellSize);
+
+	static vector<uint8> vBars;
+	sint32 nBarsW = (nMaxX-nMinX)+1;
+	sint32 nBarsH = (nMaxY-nMinY)+1;
+	vBars.resize (nBarsW*nBarsH, 0);
+
+	sint32 x, y, i, j;
+
+	for (y = nMinY; y <= nMaxY; ++y)
+	for (x = nMinX; x <= nMaxX; ++x)
+	{
+		const string &sZone = _ZoneRegion.getName (x, y);
+		CZoneBankElement *pZBE = _ZoneBank.getElementByZoneName (sZone);
+		if (pZBE != NULL)
+		if ((pZBE->getSizeX() > 1) || (pZBE->getSizeY() > 1))
+		{
+			sint32 sizeX = pZBE->getSizeX(), sizeY = pZBE->getSizeY();
+			sint32 posX = _ZoneRegion.getPosX (x, y), posY = _ZoneRegion.getPosY (x, y);
+			uint8 rot = _ZoneRegion.getRot (x, y);
+			uint8 flip = _ZoneRegion.getFlip (x, y);
+			sint32 deltaX, deltaY;
+		
+			if (flip == 0)
+			{
+				switch (rot)
+				{
+					case 0: deltaX = -posX; deltaY = -posY; break;
+					case 1: deltaX = -(sizeY-1-posY); deltaY = -posX; break;
+					case 2: deltaX = -(sizeX-1-posX); deltaY = -(sizeY-1-posY); break;
+					case 3: deltaX = -posY; deltaY = -(sizeX-1-posX); break;
+				}
+			}
+			else
+			{
+				switch (rot)
+				{
+					case 0: deltaX = -(sizeX-1-posX); deltaY = -posY; break;
+					case 1: deltaX = -(sizeY-1-posY); deltaY = -(sizeX-1-posX); break;
+					case 2: deltaX = -posX; deltaY = -(sizeY-1-posY); break;
+					case 3: deltaX = -posY; deltaY = -posX; break;
+				}
+			}
+
+			static CBuilderZoneRegion::SPiece sMask;
+			sMask.Tab.resize (sizeX*sizeY);
+			for(i = 0; i < sizeX*sizeY; ++i)
+				sMask.Tab[i] = pZBE->getMask()[i];
+			sMask.w = sizeX;
+			sMask.h = sizeY;
+			_ZoneRegion.rotFlip (sMask, rot, flip);
+
+			for (j = 0; j < sMask.h; ++j)
+			for (i = 0; i < sMask.w; ++i)
+			if (sMask.Tab[i+j*sMask.w])
+			{
+				if (((x+deltaX+i-nMinX)>=0) && ((x+deltaX+i-nMinX)<nBarsW) &&
+					((y+deltaY+j-nMinY)>=0) && ((y+deltaY+j-nMinY)<nBarsH))
+				{
+					if ((i > 0) && (sMask.Tab[i-1+j*sMask.w]))
+						vBars[x+deltaX+i-nMinX + (y+deltaY+j-nMinY)*nBarsW] |= 1;
+
+					if ((j > 0) && (sMask.Tab[i+(j-1)*sMask.w]))
+						vBars[x+deltaX+i-nMinX + (y+deltaY+j-nMinY)*nBarsW] |= 2;
+				}
+			}
+		}
+	}
+
+	CVertexBuffer VB;
+	CPrimitiveBlock PB;
+	CMaterial Mat;
+
+	Mat.initUnlit ();
+	Mat.setBlend (false);
+	VB.setVertexFormat (CVertexBuffer::PositionFlag);
+	VB.setNumVertices ((nBarsW+1)*(nBarsH+1));
+	
+	for (y = nMinY; y <= nMaxY+1; ++y)
+	for (x = nMinX; x <= nMaxX+1; ++x)
+	{
+		CVector pos;
+
+		pos.x = (x*_Display->_CellSize - viewMin.x)/(viewMax.x-viewMin.x);
+		pos.y = 0.0f;
+		pos.z = (y*_Display->_CellSize - viewMin.y)/(viewMax.y-viewMin.y);
+		VB.setVertexCoord (x-nMinX+(y-nMinY)*(nBarsW+1), pos);
+	}
+
+	PB.setNumLine (nBarsW*nBarsH*2);
+	uint32 nNbLine = 0;
+	for (y = 0; y < nBarsH; ++y)
+	for (x = 0; x < nBarsW; ++x)
+	{
+		// Vertical Line ?
+		if ((vBars[x+y*nBarsW] & 1) == 0)
+		{
+			PB.setLine (nNbLine, x+y*(nBarsW+1), x+(y+1)*(nBarsW+1));
+			++nNbLine;
+		}
+
+		// Horizontal Line ?
+		if ((vBars[x+y*nBarsW] & 2) == 0)
+		{
+			PB.setLine (nNbLine, x+y*(nBarsW+1), (x+1)+y*(nBarsW+1));
+			++nNbLine;
+		}
+	}
+	PB.setNumLine (nNbLine);
+
+	// Render with driver
+	CMatrix mtx;
+	mtx.identity();
+	CNELU::Driver->setupViewport (CViewport());
+	CNELU::Driver->setupViewMatrix (mtx);
+	CNELU::Driver->setupModelMatrix (mtx);
+	CNELU::Driver->setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
+	CNELU::Driver->activeVertexBuffer (VB);
+	CNELU::Driver->render (PB, Mat);
+	
 }
 
 // ---------------------------------------------------------------------------
@@ -475,205 +787,3 @@ bool CBuilderZone::initZoneBank (const string &pathName)
 	SetCurrentDirectory (sDirBackup);
 	return true;
 }
-
-
-
-/*
-// ---------------------------------------------------------------------------
-void CBuilderZone::setTrans (sint32 x, sint32 y, CZoneBankElement *pZBE)
-{
-}
-
-// ---------------------------------------------------------------------------
-void CBuilderZone::placeRandomTrans (sint32 x, sint32 y, string TransNameVal)
-{	
-	vector<CZoneBankElement*> Selection;
-	_ZoneBank.getSelection (Selection);
-	if (Selection.size() == 0)
-		return;
-
-	string MatA, MatB;
-	sint32 m, n;
-
-	for (m = 0; m < (sint32)TransNameVal.size(); ++m)
-	{
-		if (TransNameVal[m] == '_')
-			break;
-		MatA += TransNameVal[m];
-	}
-	++m;
-	for (; m < (sint32)TransNameVal.size(); ++m)
-		MatB += TransNameVal[m];
-
-	CZoneBankElement* localMap[9];
-	for (m = -1; m <= 1; ++m)
-	for (n = -1; n <= 1; ++n)
-	{
-		const string &rSZone = _ZoneRegion.getName (x+n, y+m);
-		CZoneBankElement *pElt = _ZoneBank.getElementByZoneName (rSZone);
-		localMap[n+1+(m+1)*3] = pElt;
-	}
-
-	// If we have a material different up and down
-	if ((((localMap[1] != NULL)&&(localMap[7] != NULL)) &&
-		(((localMap[1]->getCategory("Material") == MatA) && (localMap[7]->getCategory("Material") == MatB)) ||
-		((localMap[1]->getCategory("Material") == MatB) && (localMap[7]->getCategory("Material") == MatA)))) ||
-		(((localMap[3] != NULL)&&(localMap[5] != NULL)) &&
-		(((localMap[3]->getCategory("Material") == MatA) && (localMap[5]->getCategory("Material") == MatB)) ||
-		((localMap[3]->getCategory("Material") == MatB) && (localMap[5]->getCategory("Material") == MatA)))))
-	{
-		_ZoneBank.addAndSwitch ("TransType", "Flat");
-		_ZoneBank.getSelection (Selection);
-		if (Selection.size() == 0)
-			return;
-
-		// Select the tile
-		uint32 nSel = (uint32)(NLMISC::frand (1.0) * Selection.size());
-		NLMISC::clamp (nSel, (uint32)0, (uint32)(Selection.size()-1));
-		
-		CZoneBankElement *pZBE = Selection[nSel];
-
-		_ZoneRegion.set (x, y, 0, 0, pZBE->getName());
-		nSel = (uint32)(NLMISC::frand (1.0) * 2);
-		NLMISC::clamp (nSel, (uint32)0, (uint32)1);
-		if (nSel)
-			_ZoneRegion.setFlip (x, y, 1);
-		if ((localMap[1] != NULL)&&(localMap[1]->getCategory("Material") != STRING_NO_CAT_TYPE))
-		{
-			if (localMap[1]->getCategory("Material") == MatA)
-			{
-				_ZoneRegion.setRot (x, y, 2);
-			}
-			else
-			{
-				_ZoneRegion.setRot (x, y, 0);
-			}
-
-			// Update Left and Right transition if any
-			//if ((localMap[3] != NULL)&&(localMap[3]->getCategory("TransName") != STRING_NO_CAT_TYPE))
-			//{
-			//	const string &rNum = pZBE->getCategory("TransNum");
-			//	if (rNum == "11")
-			//	{
-			//		if (_ZoneRegion.getRot(x,y) == 0)
-			//			updateTrans (x-1, y, 1, ); // (x,y,RIGHT,
-			//	}
-			//	localMap[3]->getCategory ("")
-			//}
-		}
-		else
-		{
-			if (localMap[3]->getCategory("Material") == MatA)
-				_ZoneRegion.setRot (x, y, 1);
-			else
-				_ZoneRegion.setRot (x, y, 3);
-		}
-
-
-
-		return;
-	}
-	
-}*/
-
-
-// ---------------------------------------------------------------------------
-/*
-void CBuilderZone::putAndSolve (sint32 x, sint32 y, CZoneBankElement *pZBE)
-{
-	uint32 i, j;
-	sint32 k, l;
-	sint32 m, n;
-
-	// 1st - Suppress already present tiles
-	for (j = 0; j < pZBE->getSizeY(); ++j)
-	for (i = 0; i < pZBE->getSizeX(); ++i)
-	if (pZBE->getMask()[i+j*pZBE->getSizeX()])
-	{
-		removeAndSolve (x+i, y+j);
-	}
-
-	// 2nd - Suppress all stuff around that is not from the same material
-	const string &CurMat = pZBE->getCategory ("Material");
-	for (j = 0; j < pZBE->getSizeY(); ++j)
-	for (i = 0; i < pZBE->getSizeX(); ++i)
-	if (pZBE->getMask()[i+j*pZBE->getSizeX()])
-	{
-		for (k = -1; k <= 1; ++k)
-		for (l = -1; l <= 1; ++l)
-		{
-			const string &rSZone = _ZoneRegion.getName (x+i+l, y+j+k);
-			CZoneBankElement *pZBE2 = _ZoneBank.getElementByZoneName (rSZone);
-
-			if (pZBE2 != NULL)
-			{
-				const string &Mat = pZBE2->getCategory ("Material");
-				if (Mat != CurMat)
-				{
-					removeAndSolve (x+i+l, y+j+k);
-				}
-			}
-		}
-	}
-
-	// 3rd - Put the new tile
-	for (j = 0; j < pZBE->getSizeY(); ++j)
-	for (i = 0; i < pZBE->getSizeX(); ++i)
-	if (pZBE->getMask()[i+j*pZBE->getSizeX()])
-	{
-		_ZoneRegion.set (x+i, y+j, i, j, pZBE->getName());
-		_ZoneRegion.setRot (x+i, y+j, 0);
-		_ZoneRegion.setFlip (x+i, y+j, 0);
-	}
-
-	// 4th - Put direct transition
-	for (j = 0; j < pZBE->getSizeY(); ++j)
-	for (i = 0; i < pZBE->getSizeX(); ++i)
-	if (pZBE->getMask()[i+j*pZBE->getSizeX()])
-	{
-		for (k = -1; k <= 1; ++k)
-		for (l = -1; l <= 1; ++l)
-		{
-			const string &rSZone = _ZoneRegion.getName (x+i+l, y+j+k);
-			if (rSZone == STRING_UNUSED)
-			{
-				// Calculate the number of material around
-				set<string> matNameSet;
-				for (m = -1; m <= 1; ++m)
-				for (n = -1; n <= 1; ++n)
-				{
-					const string &rSZone2 = _ZoneRegion.getName (x+i+l+n, y+j+k+m);
-					CZoneBankElement *pElt = _ZoneBank.getElementByZoneName (rSZone2);
-					if (pElt != NULL)
-					{
-						const string &rMatName = pElt->getCategory ("Material");
-						if (rMatName != STRING_NO_CAT_TYPE)
-						{
-							matNameSet.insert (rMatName);
-						}
-					}
-				}
-				if (matNameSet.size() == 2)
-				{
-					set<string>::iterator it = matNameSet.begin();
-					string sTmp = *it;
-					++it;
-					sTmp += "_" + *it;
-					_ZoneBank.resetSelection ();
-					_ZoneBank.addOrSwitch ("TransName", sTmp);
-					placeRandomTrans (x+i+l, y+j+k, sTmp);
-					it = matNameSet.begin();
-					sTmp = *it;
-					++it;
-					sTmp = *it + "_" + sTmp;
-					_ZoneBank.resetSelection ();
-					_ZoneBank.addOrSwitch ("TransName", sTmp);
-					placeRandomTrans (x+i+l, y+j+k, sTmp);
-				}
-			}
-		}
-	}
-
-	// 5th - Put corner transition
-}
-*/

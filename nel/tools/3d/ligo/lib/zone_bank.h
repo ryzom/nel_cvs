@@ -1,7 +1,7 @@
 /** \file zone_bank.h
  * Zone Bank
  *
- * $Id: zone_bank.h,v 1.2 2001/11/05 11:20:57 besson Exp $
+ * $Id: zone_bank.h,v 1.3 2001/11/07 13:28:38 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -44,16 +44,12 @@ namespace NLLIGO
 
 class CZoneBankElement
 {
-	struct SCategory
-	{
-		std::string		Type;		// Ex: "Material", "Size", ...
-		std::string		Value;		// Ex: "Grass", "2x2", ...
-
-		void serial (NLMISC::IStream &f);
-	};
 
 	// Category stuff
-	std::vector<SCategory>	_Categories;
+	// The key is the Type of the category	(Ex: "Material", "Size", ...)
+	// The second element is the value		(Ex: "Grass", "2x2", ...)
+	std::map<std::string, std::string>	_CategoriesMap;
+
 	// In this list the category type and value must be unique and 2 categories MUST
 	// appears : "Zone" (The zone name) and "Size" (*x* (ex:4x4 3x1 etc...))
 	// Some categories used in WorldEditor : "Material", "Transition"
@@ -88,15 +84,17 @@ public:
 class CZoneBank
 {
 
-	std::vector<CZoneBankElement>	_Elements;
+	std::map<std::string,CZoneBankElement>	_ElementsMap;
 
 	std::vector<CZoneBankElement*>	_Selection;
 
 public:
 
 	// Debug stuff beg
+	// ---------------
 	void debugInit(); // \todo trap see with hulud how we initialize this structure
 	void debugSaveInit(CZoneBankElement &zbeTmp, const std::string &fileName);
+	// ---------------
 	// Debug stuff end
 
 	/// Initialize the zone bank with all files present in the path given (note pathName must not end with '\\')

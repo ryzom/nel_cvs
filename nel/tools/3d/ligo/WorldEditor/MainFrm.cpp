@@ -286,7 +286,8 @@ bool CMainFrame::loadConfig ()
 		}
 	}
 	// Can't found the module put some default values
-	_Config.CellSize = 160.0f;
+//	_Config.CellSize = 160.0f;
+	_Config.CellSize = 10.0f;
 	_Config.Snap = 1.0f;
 	return false;
 }

@@ -7,6 +7,8 @@
 // ***************************************************************************
 
 #include "nel/misc/vector.h"
+#include "nel/misc/uv.h"
+#include "nel/misc/bitmap.h"
 #include "nel/misc/smart_ptr.h"
 
 #include "../lib/zone_bank.h"
@@ -26,28 +28,57 @@ namespace NL3D
 	class CVertexBuffer;
 	class CPrimitiveBlock;
 	class CTextureFile;
+	class CTextureMem;
+	class ITexture;
 }
 
 // ***************************************************************************
 // CDataBase contains the image database for Nel and Windows
+// A big texture (called CacheTexture) contains all zone (called SCacheZone)
+// An element is composed of zones (the number of zones is equal to the number
+// of true in the mask (the mask is in the zone bank))
 class CDataBase
 {
+	struct SCacheTexture
+	{
+		bool									Enabled;
+		NLMISC::CSmartPtr<NL3D::CTextureMem>	Texture;
+		std::vector<bool>						FreePlace;
+		std::vector<uint8>						PtrMem;
+
+		SCacheTexture();
+		bool isFull();
+	};
+
+	struct SCacheZone
+	{
+		NL3D::CTextureMem						*CacheTexture;
+		NLMISC::CUV								PosUV;
+		uint8									PosX, PosY;
+	};
+
 	struct SElement
 	{
-		std::string								Name;
-		NLMISC::CSmartPtr<NL3D::CTextureFile>	Texture;
+		uint8									SizeX, SizeY;
+		std::vector<SCacheZone>					ZonePieces;
 		CBitmap									*WinBitmap;
 	};
 
 private:
 
-	CBitmap				*convertToWin (NL3D::CTextureFile *pTexture);
+	CBitmap				*convertToWin (NLMISC::CBitmap *pBitmap);
 	NL3D::CTextureFile	*loadTexture (const std::string &fileName);
+	NLMISC::CBitmap		*loadBitmap (const std::string &fileName);
 
 private:
 
-	std::vector<SElement>					_ZoneDB;
-	NLMISC::CSmartPtr<NL3D::CTextureFile>	UnusedTexture;
+	SCacheTexture							_CacheTexture[64];
+	std::map<std::string, SElement>			_ZoneDBmap;
+	NLMISC::CSmartPtr<NL3D::CTextureFile>	_UnusedTexture;
+
+	uint32									_RefSizeX, _RefSizeY;
+	uint32									_RefCacheTextureSizeX, _RefCacheTextureSizeY;
+	uint32									_RefCacheTextureNbEltX, _RefCacheTextureNbEltY;
 
 public:
 
@@ -58,11 +89,14 @@ public:
 	bool				init (const std::string &Path, NLLIGO::CZoneBank &zb);
 
 	CBitmap				*getBitmap (const std::string &ZoneName);
-	NL3D::CTextureFile	*getTexture (const std::string &ZoneName);
+	NL3D::ITexture		*getTexture (const std::string &ZoneName, sint32 nPosX, sint32 nPosY, 
+									NLMISC::CUV &retUVmin, NLMISC::CUV &retUVmax);
 };
 
 // ***************************************************************************
-// CBuilderZone contains all the shared data between the tools and the motor
+// CBuilderZone contains all the shared data between the tools and the engine
+// ZoneBank contains the macro zones that is composed of several zones plus a mask
+// DataBase contains the graphics for the zones
 class CBuilderZone
 {
 	NLLIGO::CZoneBank			_ZoneBank;
@@ -107,18 +141,13 @@ public:
 
 	void				add (NLMISC::CVector &worldPos);
 	void				del (NLMISC::CVector &worldPos);
-	/*
-	void				putAndSolve (sint32 x, sint32 y, NLLIGO::CZoneBankElement *pZBE);
-	void				removeAndSolve (sint32 x, sint32 y);
-	void				placeRandomTrans (sint32 x, sint32 y, std::string TransNameVal);
-	void				setTrans (sint32 x, sint32 y, NLLIGO::CZoneBankElement *pZBE);
-	*/
 	bool				initZoneBank (const std::string &Path);
 
 	// Accessors
 	NLLIGO::CZoneBank	&getZoneBank () { return _ZoneBank; }
 
 	void				render (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax);
+	void				displayGrid (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax);
 
 };
 

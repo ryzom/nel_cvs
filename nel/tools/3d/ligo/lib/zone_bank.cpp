@@ -1,7 +1,7 @@
 /** \file zone_bank.cpp
  * Zone Bank
  *
- * $Id: zone_bank.cpp,v 1.2 2001/11/05 11:20:57 besson Exp $
+ * $Id: zone_bank.cpp,v 1.3 2001/11/07 13:28:37 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NLLIGO
 // ***************************************************************************
 // CZoneBankElement
 // ***************************************************************************
+
 string CZoneBankElement::_NoCatTypeFound = STRING_NO_CAT_TYPE;
 
 // ---------------------------------------------------------------------------
@@ -49,18 +50,7 @@ CZoneBankElement::CZoneBankElement()
 // ---------------------------------------------------------------------------
 void CZoneBankElement::addCategory (const std::string &CatType, const std::string &CatValue)
 {
-	SCategory cat;
-
-	for (uint32 i = 0; i < _Categories.size(); ++i)
-		if (_Categories[i].Type == CatType)
-		{
-			_Categories[i].Value = CatValue;
-			return;
-		}
-
-	cat.Type = CatType;
-	cat.Value = CatValue;
-	_Categories.push_back (cat);
+	_CategoriesMap.insert(pair<string,string>(CatType, CatValue));
 }
 
 // ---------------------------------------------------------------------------
@@ -78,10 +68,11 @@ const string& CZoneBankElement::getSize ()
 // ---------------------------------------------------------------------------
 const string& CZoneBankElement::getCategory (const string &CatType)
 {
-	for (uint32 i = 0; i < _Categories.size(); ++i)
-		if (_Categories[i].Type == CatType)
-			return _Categories[i].Value;
-	return _NoCatTypeFound;
+	map<string,string>::iterator it = _CategoriesMap.find (CatType);
+	if (it == _CategoriesMap.end())
+		return _NoCatTypeFound;
+	else
+		return it->second;
 }
 
 // ---------------------------------------------------------------------------
@@ -109,13 +100,6 @@ void CZoneBankElement::convertSize()
 }
 
 // ---------------------------------------------------------------------------
-void CZoneBankElement::SCategory::serial (IStream &f)
-{
-	f.serial (Type);
-	f.serial (Value);
-}
-
-// ---------------------------------------------------------------------------
 void CZoneBankElement::serial (IStream &f)
 {
 	f.xmlPush ("LIGOZONE");
@@ -126,7 +110,7 @@ void CZoneBankElement::serial (IStream &f)
 	f.serialCheck (check);
 
 	f.xmlPush ("CATEGORIES");
-		f.serialCont (_Categories);
+		f.serialCont (_CategoriesMap);
 	f.xmlPop ();
 	
 	f.xmlPush ("MASK");
@@ -143,6 +127,7 @@ void CZoneBankElement::serial (IStream &f)
 // CZoneBank
 // ***************************************************************************
 
+// ---------------------------------------------------------------------------
 void CZoneBank::debugSaveInit (CZoneBankElement &zbeTmp, const string &fileName)
 {
 	try
@@ -159,6 +144,7 @@ void CZoneBank::debugSaveInit (CZoneBankElement &zbeTmp, const string &fileName)
 
 }
 
+// ---------------------------------------------------------------------------
 void CZoneBank::debugInit() // \ todo trap remove this
 {
 	CZoneBankElement zbeTmp;
@@ -166,9 +152,9 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("Size", "1x1");
 	zbeTmp.addCategory ("Material", "titFleur");
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\Zone001.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	
 
@@ -176,9 +162,9 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("Size", "1x1");
 	zbeTmp.addCategory ("Material", "titFleur");
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\Zone002.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 
 	zbeTmp.addCategory ("Zone", "Zone003");
@@ -188,9 +174,9 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (false);
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\Zone003.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 
 	zbeTmp.addCategory ("Zone", "Zone004");
@@ -200,18 +186,18 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\Zone004.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 
 	zbeTmp.addCategory ("Zone", "Zone005");
 	zbeTmp.addCategory ("Size", "1x1");
 	zbeTmp.addCategory ("Material", "grozFleur");
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\Zone005.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 
 	zbeTmp.addCategory ("Zone", "Zone006");
@@ -225,21 +211,21 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (false);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\Zone006.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
-	_Elements.clear ();
+	_ElementsMap.clear ();
 
 	zbeTmp.addCategory ("Zone", "Zone007");
 	zbeTmp.addCategory ("Size", "1x1");
 	zbeTmp.addCategory ("Material", "grozFleur");
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\Zone007.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
-	_Elements.clear ();
+	_ElementsMap.clear ();
 
 	zbeTmp.addCategory ("Zone", "ZT0");
 	zbeTmp.addCategory ("Size", "1x1");
@@ -247,11 +233,11 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransType", "Flat");
 	zbeTmp.addCategory ("TransNum", "0");
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\ZT0.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
-	_Elements.clear ();
+	_ElementsMap.clear ();
 
 	zbeTmp.addCategory ("Zone", "ZT1");
 	zbeTmp.addCategory ("Size", "1x1");
@@ -259,11 +245,11 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransType", "Flat");
 	zbeTmp.addCategory ("TransNum", "1");
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\ZT1.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
-	_Elements.clear ();
+	_ElementsMap.clear ();
 
 	zbeTmp.addCategory ("Zone", "ZT2");
 	zbeTmp.addCategory ("Size", "1x1");
@@ -271,11 +257,11 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransType", "Flat");
 	zbeTmp.addCategory ("TransNum", "2");
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\ZT2.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
-	_Elements.clear ();
+	_ElementsMap.clear ();
 
 	zbeTmp.addCategory ("Zone", "ZT3");
 	zbeTmp.addCategory ("Size", "1x1");
@@ -283,11 +269,11 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransType", "CornerA");
 	zbeTmp.addCategory ("TransNum", "3");
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\ZT3.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
-	_Elements.clear ();
+	_ElementsMap.clear ();
 
 	zbeTmp.addCategory ("Zone", "ZT4");
 	zbeTmp.addCategory ("Size", "1x1");
@@ -295,11 +281,11 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransType", "CornerA");
 	zbeTmp.addCategory ("TransNum", "4");
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\ZT4.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
-	_Elements.clear ();
+	_ElementsMap.clear ();
 
 	zbeTmp.addCategory ("Zone", "ZT5");
 	zbeTmp.addCategory ("Size", "1x1");
@@ -307,11 +293,11 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransType", "CornerA");
 	zbeTmp.addCategory ("TransNum", "5");
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\ZT5.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
-	_Elements.clear ();
+	_ElementsMap.clear ();
 
 	zbeTmp.addCategory ("Zone", "ZT6");
 	zbeTmp.addCategory ("Size", "1x1");
@@ -319,11 +305,11 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransType", "CornerB");
 	zbeTmp.addCategory ("TransNum", "6");
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\ZT6.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
-	_Elements.clear ();
+	_ElementsMap.clear ();
 
 	zbeTmp.addCategory ("Zone", "ZT7");
 	zbeTmp.addCategory ("Size", "1x1");
@@ -331,11 +317,11 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransType", "CornerB");
 	zbeTmp.addCategory ("TransNum", "7");
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\ZT7.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
-	_Elements.clear ();
+	_ElementsMap.clear ();
 
 	zbeTmp.addCategory ("Zone", "ZT8");
 	zbeTmp.addCategory ("Size", "1x1");
@@ -343,11 +329,11 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransType", "CornerB");
 	zbeTmp.addCategory ("TransNum", "8");
 	zbeTmp._Mask.push_back (true);
-	_Elements.push_back (zbeTmp);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, "ZoneLigos\\ZT8.ligozone");
-	zbeTmp._Categories.clear ();
+	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
-	_Elements.clear ();
+	_ElementsMap.clear ();
 
 }
 
@@ -362,7 +348,7 @@ void CZoneBank::addElement (const std::string &elementName)
 		CIXml input;
 		input.init (fileIn);
 		zbeTmp.serial (input);
-		_Elements.push_back (zbeTmp);
+		_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(),zbeTmp));
 	}
 	catch (Exception& e)
 	{
@@ -372,61 +358,66 @@ void CZoneBank::addElement (const std::string &elementName)
 // ---------------------------------------------------------------------------
 void CZoneBank::getCategoriesType (std::vector<std::string> &CategoriesType)
 {
-	for (uint32 i = 0; i < _Elements.size(); ++i)
+	map<string,CZoneBankElement>::iterator itElt = _ElementsMap.begin();
+
+	while (itElt != _ElementsMap.end())
 	{
-		CZoneBankElement &rZBE = _Elements[i];
-		for (uint32 j = 0; j < rZBE._Categories.size(); ++j)
+		CZoneBankElement &rZBE = itElt->second;
+
+		map<string,string>::iterator it = rZBE._CategoriesMap.begin();
+
+		while (it != rZBE._CategoriesMap.end())
 		{
-			CZoneBankElement::SCategory &rCat = rZBE._Categories[j];
 			bool bFound = false;
 			for (uint32 k = 0; k < CategoriesType.size(); ++k)
-				if (rCat.Type == CategoriesType[k])
+				if (it->first == CategoriesType[k])
 				{
 					bFound = true;
 					break;
 				}
 			if (!bFound)
-				CategoriesType.push_back (rCat.Type);
+				CategoriesType.push_back (it->first);
+
+			++it;
 		}
+		++itElt;
 	}
 }
 
 // ---------------------------------------------------------------------------
 void CZoneBank::getCategoryValues (const std::string &CategoryType, std::vector<std::string> &CategoryValues)
 {
-	for (uint32 i = 0; i < _Elements.size(); ++i)
-	{
-		CZoneBankElement &rZBE = _Elements[i];
-		for (uint32 j = 0; j < rZBE._Categories.size(); ++j)
-		{
-			CZoneBankElement::SCategory &rCat = rZBE._Categories[j];
+	map<string,CZoneBankElement>::iterator itElt = _ElementsMap.begin();
 
-			if (rCat.Type == CategoryType)
-			{
-				bool bFound = false;
-				for (uint32 k = 0; k < CategoryValues.size(); ++k )
-					if (rCat.Value == CategoryValues[k])
-					{
-						bFound = true;
-						break;
-					}
-				if (!bFound)
-					CategoryValues.push_back (rCat.Value);
-			}
+	while (itElt != _ElementsMap.end())
+	{
+		CZoneBankElement &rZBE = itElt->second;
+
+		map<string,string>::iterator it = rZBE._CategoriesMap.find (CategoryType);
+
+		if (it != rZBE._CategoriesMap.end())
+		{
+			bool bFound = false;
+			for (uint32 k = 0; k < CategoryValues.size(); ++k )
+				if (it->second == CategoryValues[k])
+				{
+					bFound = true;
+					break;
+				}
+			if (!bFound)
+				CategoryValues.push_back (it->second);
 		}
+		++itElt;
 	}
 }
 
 // ---------------------------------------------------------------------------
 CZoneBankElement *CZoneBank::getElementByZoneName (const std::string &ZoneName)
 {
-	for (uint32 i = 0; i < _Elements.size(); ++i)
+	map<string,CZoneBankElement>::iterator it = _ElementsMap.find (ZoneName);
+	if (it != _ElementsMap.end())
 	{
-		CZoneBankElement *pZBE = &_Elements[i];
-		if (pZBE->getName () == ZoneName)
-		{
-			return pZBE;
-		}
+		return &(it->second);
 	}
 	return NULL;
 }
@@ -440,14 +431,17 @@ void CZoneBank::resetSelection ()
 // ---------------------------------------------------------------------------
 void CZoneBank::addOrSwitch (const std::string &CategoryType, const std::string &CategoryValue)
 {
-	for (uint32 i = 0; i < _Elements.size(); ++i)
-	{
-		CZoneBankElement &rZBE = _Elements[i];
-		for (uint32 j = 0; j < rZBE._Categories.size(); ++j)
-		{
-			CZoneBankElement::SCategory &rCat = rZBE._Categories[j];
+	map<string,CZoneBankElement>::iterator itElt = _ElementsMap.begin();
 
-			if ((rCat.Type == CategoryType) && (rCat.Value == CategoryValue))
+	while (itElt != _ElementsMap.end())
+	{
+		CZoneBankElement &rZBE = itElt->second;
+
+		map<string,string>::iterator it = rZBE._CategoriesMap.find (CategoryType);
+
+		if (it != rZBE._CategoriesMap.end())
+		{
+			if (it->second == CategoryValue)
 			{
 				// Check if the element is not already present in the selection
 				bool bFound = false;
@@ -461,6 +455,7 @@ void CZoneBank::addOrSwitch (const std::string &CategoryType, const std::string 
 					_Selection.push_back (&rZBE);
 			}
 		}
+		++itElt;
 	}
 }
 
@@ -474,10 +469,11 @@ void CZoneBank::addAndSwitch (const std::string &CategoryType, const std::string
 	{
 		CZoneBankElement *pZBE = _Selection[i];
 		bool bFound = false;
-		for (j = 0; j < pZBE->_Categories.size(); ++j)
+
+		map<string,string>::iterator it = pZBE->_CategoriesMap.find (CategoryType);
+		if (it != pZBE->_CategoriesMap.end())
 		{
-			CZoneBankElement::SCategory &rCat = pZBE->_Categories[j];
-			if ((rCat.Type == CategoryType) && (rCat.Value == CategoryValue))
+			if (it->second == CategoryValue)
 				bFound = true;
 		}
 		if (!bFound)

@@ -122,7 +122,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_RELEASE_DEBUG" /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG" /d "_AFXDLL"
@@ -132,7 +132,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 freetype.lib libxml2.lib /nologo /subsystem:windows /dll /machine:I386
+# ADD LINK32 freetype.lib libxml2.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../../lib/WorldEditor_release_debug.dll"
 
 !ENDIF 
 
@@ -278,6 +278,29 @@ SOURCE=.\WorldEditor_debug_fast.def
 # PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "WorldEditor - Win32 DebugFast"
+
+!ELSEIF  "$(CFG)" == "WorldEditor - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\WorldEditor_release_debug.def
+
+!IF  "$(CFG)" == "WorldEditor - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "WorldEditor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "WorldEditor - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "WorldEditor - Win32 ReleaseDebug"
 

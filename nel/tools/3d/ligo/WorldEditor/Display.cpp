@@ -35,7 +35,7 @@ END_MESSAGE_MAP()
 IMPLEMENT_DYNCREATE(CDisplay, CView)
 
 // ---------------------------------------------------------------------------
-CDisplay::CDisplay()
+CDisplay::CDisplay ()
 {
 	_MouseRightDown = false;
 	_MouseLeftDown = false;
@@ -48,7 +48,7 @@ CDisplay::CDisplay()
 }
 
 // ---------------------------------------------------------------------------
-void CDisplay::init(CMainFrame *pMF)
+void CDisplay::init (CMainFrame *pMF)
 {
 	_MainFrame = pMF;
 	pMF->_PRegionBuilder.setDisplay (this);
@@ -113,7 +113,7 @@ CVector CDisplay::convertToWorld (CPoint&p)
 	CRect rect;
 	
 	GetClientRect (rect);
-	calcCurView();
+	calcCurView ();
 	ret.x = ((float)p.x) / ((float)rect.Width());
 	ret.x = ret.x*(_CurViewMax.x-_CurViewMin.x) + _CurViewMin.x;
 	ret.y = 1.0f - (((float)p.y) / ((float)rect.Height()));
@@ -123,28 +123,7 @@ CVector CDisplay::convertToWorld (CPoint&p)
 }
 
 // ---------------------------------------------------------------------------
-void CDisplay::displayGrid()
-{
-	float rAdvX = (- fmodf(_CurViewMin.x, _CellSize)) / (_CurViewMax.x - _CurViewMin.x);
-
-	while (rAdvX < 1.0)
-	{
-		CDRU::drawLine (rAdvX, 0, rAdvX, 1,*CNELU::Driver);
-		rAdvX += _CellSize / (_CurViewMax.x - _CurViewMin.x);
-	}
-
-	float rAdvY = (- fmodf(_CurViewMin.y, _CellSize)) / (_CurViewMax.y - _CurViewMin.y);
-
-	while (rAdvY < 1.0)
-	{
-		CDRU::drawLine (0, rAdvY, 1, rAdvY, *CNELU::Driver);
-		rAdvY += _CellSize / (_CurViewMax.y - _CurViewMin.y);
-	}
-}
-
-
-// ---------------------------------------------------------------------------
-void CDisplay::OnDraw(CDC* pDC)
+void CDisplay::OnDraw (CDC* pDC)
 {
 	if (CNELU::Driver == NULL)
 		return;
@@ -152,13 +131,13 @@ void CDisplay::OnDraw(CDC* pDC)
 	CNELU::clearBuffers ();
 
 	// Display the grid
-	calcCurView();
+	calcCurView ();
 
 	if (_DisplayZone)
 		_MainFrame->_ZoneBuilder.render (_CurViewMin, _CurViewMax);
 
 	if (_DisplayGrid)
-		displayGrid();
+		_MainFrame->_ZoneBuilder.displayGrid (_CurViewMin, _CurViewMax);
 
 	if (_DisplayLogic)
 		_MainFrame->_PRegionBuilder.render (_CurViewMin, _CurViewMax);

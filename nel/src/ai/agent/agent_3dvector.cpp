@@ -1,7 +1,7 @@
 /** \file agent_3dvector.cpp
  * This file contain a class to manage a 3DVector in the script.
  *
- * $Id: agent_3dvector.cpp,v 1.5 2001/08/30 08:30:19 chafik Exp $
+ * $Id: agent_3dvector.cpp,v 1.6 2001/12/05 09:54:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,8 +117,7 @@ namespace NLAIAGENT
 						//Type du retour de la method y(), c'est un void dont de type VoidType c'est à dire CIdentType::VoidType;
 						//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
 						//la variable NLAIC::CIdentType::VoidType est un static dans la class NLAIC::CIdentType.
-						NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
-						t->incRef();
+						NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));						
 						//CIdMethod est dans basicai.h elle va être documenter.
 						a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 4,0.0,NULL,t));
 						return a;
@@ -132,8 +131,7 @@ namespace NLAIAGENT
 					tQueue a;
 					//Type du retour de la method x(), c'est un Float dont de type DDigitalType c'est à dire DDigitalType::IdDDigitalType;
 					//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
-					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));
-					t->incRef();
+					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));					
 					//CIdMethod est dans basicai.h elle va être documenter.
 					a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 5,0.0,NULL,t));
 					return a;
@@ -148,8 +146,7 @@ namespace NLAIAGENT
 						//Type du retour de la method x(), c'est un void dont de type VoidType c'est à dire NLAIC::CIdentType::VoidType;
 						//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
 						//la variable NLAIC::CIdentType::VoidType est un static dans la class NLAIC::CIdentType.
-						NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
-						t->incRef();
+						NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));						
 						//CIdMethod est dans basicai.h elle va être documenter.
 						a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 6,0.0,NULL,t));
 						return a;
@@ -162,8 +159,7 @@ namespace NLAIAGENT
 				{
 					tQueue a;
 					//Return a void type (no value return)
-					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));
-					t->incRef();
+					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));					
 					a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 7,0.0,NULL,t));
 					return a;
 				}
@@ -174,8 +170,7 @@ namespace NLAIAGENT
 				{
 					tQueue a;
 					//Return a digital type
-					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));
-					t->incRef();
+					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));					
 					a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 8,0.0,NULL,t));
 					return a;
 				}
@@ -186,8 +181,7 @@ namespace NLAIAGENT
 				{
 					tQueue a;
 					//Return a void type
-					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
-					t->incRef();
+					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));					
 					a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 9,0.0,NULL,t));
 					return a;
 				}
@@ -204,8 +198,7 @@ namespace NLAIAGENT
 					//Type du retour du constructeur , c'est un void dont de type VoidType c'est à dire CIdentType::VoidType;
 					//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
 					//la variable NLAIC::CIdentType::VoidType est un static dans la class NLAIC::CIdentType.
-					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
-					t->incRef();
+					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));					
 					//CIdMethod est dans basicai.h elle va être documentee.
 					a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 0,0.0,NULL,t));
 					return a;

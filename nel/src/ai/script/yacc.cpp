@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.30 2001/12/04 16:54:53 chafik Exp $
+ * $Id: yacc.cpp,v 1.31 2001/12/05 09:54:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -152,10 +152,6 @@ namespace NLAISCRIPT
 						{
 							NLAIC::CIdentType *id = new NLAIC::CIdentType(*_ExpressionType->getConstraintTypeOf());
 							IOpType * c= new COperandSimple(id);
-#ifdef NL_DEBUG
-	static sint kaka = 0;
-	nlinfo ("UnTruc: %d at %0x %0x",kaka ++, id,c);
-#endif
 							i = new CObjectUnknown(c);
 							_ExpressionType->release();
 							_ExpressionType = NULL;

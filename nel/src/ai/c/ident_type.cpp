@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.16 2001/11/09 11:23:44 chafik Exp $
+ * $Id: ident_type.cpp,v 1.17 2001/12/05 09:54:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,6 +164,11 @@ namespace NLAIC
 
 	CIdentType::CIdentType(const CIdentType &i):_Index(-1),_ObjType((CTypeOfObject *)i._ObjType->clone()),_OpSupport((CTypeOfOperator *)i._OpSupport->clone())
 	{
+/*#ifdef NL_DEBUG
+	static sint kaka = 0;
+	nlinfo ("UnTruc: %d at %0x %0x",kaka ++, _ObjType, _OpSupport);
+#endif*/
+
 		_Index = i._Index;
 		_Ident = new char [strlen(i._Ident) + 1];
 		strcpy((char *)_Ident,i._Ident);

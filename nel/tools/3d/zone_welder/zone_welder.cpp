@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.20 2003/12/17 14:15:40 corvazier Exp $
+ * $Id: zone_welder.cpp,v 1.21 2004/01/15 15:05:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,26 @@ std::string outputExt;
 
 float weldRadius = 1.1f;
 
+/* Zone ID
+	0   1   2
+	3       4
+	5   6   7
+*/
+
+// Define this to stop the welder on a source edge
+// #define NL_DEBUG_WELD
+#define NL_DEBUG_WELD_V0 (CVector(16320,-24064,0))
+#define NL_DEBUG_WELD_V1 (CVector(16352,-24065,0))
+#define NL_DEBUG_WELD_THRESHOLD 1.f
+
+#ifdef NL_DEBUG_WELD
+bool isTheSame (const CVector &v0, const CVector &v1)
+{
+	CVector delta = v0 - v1;
+	delta.z = 0;
+	return delta.norm() < NL_DEBUG_WELD_THRESHOLD;
+}
+#endif // NL_DEBUG_WELD
 
 /**
  * CWeldableVertexInfos
@@ -449,6 +469,10 @@ void weldZones(const char *center)
 					// we keep the closest.
 					if(dist<weldRadius && dist<minDistance) 
 					{
+#ifdef NL_DEBUG_WELD
+						nlverify (!isTheSame (centerZonePatchs[ptch].Patch.Vertices[j], NL_DEBUG_WELD_V0));
+						nlverify (!isTheSame (centerZonePatchs[ptch].Patch.Vertices[j], NL_DEBUG_WELD_V1));
+#endif // NL_DEBUG_WELD
 						minDistance = dist;
 						wvinf = (*itqdt);
 					}
@@ -498,6 +522,15 @@ void weldZones(const char *center)
 			
 			for(j=0; j<4; j++) 
 			{
+#ifdef NL_DEBUG_WELD
+					if (
+						(isTheSame (centerZonePatchs[ptch].Patch.Vertices[j], NL_DEBUG_WELD_V0) || 
+						 isTheSame (centerZonePatchs[ptch].Patch.Vertices[(j+1)%4], NL_DEBUG_WELD_V0) ) &&
+						(isTheSame (centerZonePatchs[ptch].Patch.Vertices[j], NL_DEBUG_WELD_V1) || 
+						 isTheSame (centerZonePatchs[ptch].Patch.Vertices[(j+1)%4], NL_DEBUG_WELD_V1) )
+						 )
+						 nlstop;
+#endif // NL_DEBUG_WELD
 				// if vertex has been welded...
 				if(toWeld[j] == false) continue;
 				// ...we look if next vertex(i.e if the edge) in center zone has to be welded
@@ -518,6 +551,9 @@ void weldZones(const char *center)
 						nearVertexInfos[j].IndexInZone,
 						nearVertexInfos[(j+1)%4].IndexInZone);
 #endif
+					nlwarning ("ERROR : zone_welder : Can't find patch containing the following edge : %d - %d\n",
+						nearVertexInfos[j].IndexInZone,
+						nearVertexInfos[(j+1)%4].IndexInZone);
 					continue;
 				}
 
@@ -577,6 +613,15 @@ void weldZones(const char *center)
 				}
 				else
 				{
+#ifdef NL_DEBUG_WELD
+					if (
+						(isTheSame (centerZonePatchs[ptch].Patch.Vertices[j], NL_DEBUG_WELD_V0) || 
+						 isTheSame (centerZonePatchs[ptch].Patch.Vertices[(j+1)%4], NL_DEBUG_WELD_V0) ) &&
+						(isTheSame (centerZonePatchs[ptch].Patch.Vertices[j], NL_DEBUG_WELD_V1) || 
+						 isTheSame (centerZonePatchs[ptch].Patch.Vertices[(j+1)%4], NL_DEBUG_WELD_V1) )
+						 )
+						 nlstop;
+#endif // NL_DEBUG_WELD
 					centerZonePatchs[ptch].BindEdges[j].NPatchs = 1;
 					centerZonePatchs[ptch].BindEdges[j].ZoneId = adjZonesId[i];
 					centerZonePatchs[ptch].BindEdges[j].Next[0] = patchIndex;   

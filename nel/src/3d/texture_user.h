@@ -1,7 +1,7 @@
 /** \file texture_user.h
  * <File description>
  *
- * $Id: texture_user.h,v 1.6 2003/04/23 10:29:26 besson Exp $
+ * $Id: texture_user.h,v 1.7 2004/05/26 17:55:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -199,7 +199,14 @@ public:
 	{
 		((CTextureFile*)(ITexture*)_Texture)->setAllowDegradation(allow);
 	}
-
+	virtual void	setDontStretchNonPOW2Tex(bool dontStretch) 
+	{ 
+		((CTextureFile*)(ITexture*)_Texture)->setDontStretchNonPOW2Tex(dontStretch); 
+	}
+	virtual bool	getDontStretchNonPOW2Tex() const 
+	{ 
+		return ((CTextureFile*)(ITexture*)_Texture)->getDontStretchNonPOW2Tex(); 
+	}
 };
 
 

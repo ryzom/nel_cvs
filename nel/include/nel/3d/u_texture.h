@@ -1,7 +1,7 @@
 /** \file u_texture.h
  * <File description>
  *
- * $Id: u_texture.h,v 1.6 2003/12/02 11:21:52 besson Exp $
+ * $Id: u_texture.h,v 1.7 2004/05/26 17:54:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -192,6 +192,10 @@ public:
 	virtual bool	allowDegradation() const =0;
 	/// Change the degradation mode. NB: this must be done before first render(), ie just after creation.
 	virtual void	setAllowDegradation(bool allow) =0;
+
+	// Flag that tell that textures that have dimension that are not power of 2 are snapped to the top-left corner of a power-of-2 sized texture
+	virtual void	setDontStretchNonPOW2Tex(bool dontStretch)  = 0;
+	virtual bool	getDontStretchNonPOW2Tex() const = 0;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.21 2004/09/03 09:19:55 legros Exp $
+ * $Id: connection_ws.cpp,v 1.22 2004/09/03 10:16:29 legros Exp $
  *
  */
 
@@ -621,6 +621,12 @@ static void	cbWSReportNoPatch(CMessage &msgin, const std::string &serviceName, u
 	}
 
 	CShard&	shard = Shards[shardPos];
+
+	uint	i;
+	for (i=0; i<shard.FrontEnds.size(); ++i)
+	{
+		shard.FrontEnds[i].Patching = false;
+	}
 
 	string query = "UPDATE shard SET DynPatchURL='' WHERE ShardId='"+toString(shard.ShardId)+"'";
 	sint ret = mysql_query (DatabaseConnection, query.c_str ());

@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.10 2002/06/18 08:23:05 corvazier Exp $
+ * $Id: form_elm.h,v 1.11 2002/08/21 11:39:06 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,9 +44,9 @@ class CForm;
   */
 class CFormElm : public UFormElm
 {
-	friend CForm;
-	friend CType;
-	friend CFormDfn;
+	friend class CForm;
+	friend class CType;
+	friend class CFormDfn;
 public:
 
 	// Contructor
@@ -393,9 +393,9 @@ public:
   */
 class CFormElmAtom : public CFormElm
 {
-	friend CForm;
-	friend CFormElm;
-	friend CType;
+	friend class CForm;
+	friend class CFormElm;
+	friend class CType;
 public:
 	// Default constructor
 	CFormElmAtom (CForm *form, CFormElm *parentNode, const CFormDfn *parentDfn, uint parentIndex);

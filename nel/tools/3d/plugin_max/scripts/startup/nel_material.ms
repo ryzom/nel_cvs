@@ -15,6 +15,10 @@
 
 -- *** Some constant
 
+-- Options
+
+debug = false
+
 -- Blend mode
 
 BlendOne = 1
@@ -85,6 +89,13 @@ ShaderUserColor = 3
 ShaderLightmap = 4
 ShaderSpecular = 5
 ShaderWater = 6
+
+-- Functions
+
+fn debugMessage message =
+(
+	if debug == true then messagebox message
+)
 
 -- Nel Material properties
 plugin material NelMaterial
@@ -1804,6 +1815,8 @@ plugin material NelMaterial
 
 	on load do 
 	( 
+		debugMessage "Begin Load NeLMaterial"
+
 		-- Update to version 4 ?
 		if updateToVersion4 == true then
 		(
@@ -1881,16 +1894,24 @@ plugin material NelMaterial
 		)
 
 		updateToVersion4 = false
+
+		debugMessage "End Load NeLMaterial"
 	)
 
 	on create do 
 	( 
+		debugMessage "Begin Create NeLMaterial"
+
 		-- Single shader
 		loadShader ShaderSingleTexture
+
+		debugMessage "End Create NeLMaterial"
 	)
 
 	on update do 
 	( 
+		debugMessage "Begin Update NeLMaterial"
+
 		-- Initialise V3 fields.
 		if (version < 3) and (version >= 2) then
 		(
@@ -1912,6 +1933,8 @@ plugin material NelMaterial
 		(
 			updateToVersion4 = true
 		)
+
+		debugMessage "End Update NeLMaterial"
 	) 
 
 	fn globalUpdateUI update =

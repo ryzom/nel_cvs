@@ -1,7 +1,7 @@
 /** \file  editable_range.cpp
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.cpp,v 1.6 2001/09/05 08:47:47 vizerie Exp $
+ * $Id: editable_range.cpp,v 1.7 2001/09/13 14:27:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,26 +63,26 @@ CEditableRange::CEditableRange(const std::string &id)
 BOOL CEditableRange::EnableWindow( BOOL bEnable)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	m_ValueCtrl.EnableWindow(bEnable) ;
-	m_SliderCtrl.EnableWindow(bEnable) ;
-	m_UpdateValue.EnableWindow(bEnable) ;
-	m_SelectRange.EnableWindow(bEnable) ;
+	m_ValueCtrl.EnableWindow(bEnable);
+	m_SliderCtrl.EnableWindow(bEnable);
+	m_UpdateValue.EnableWindow(bEnable);
+	m_SelectRange.EnableWindow(bEnable);
 
-	UpdateData(FALSE) ;
+	UpdateData(FALSE);
 
-	return CEditAttribDlg::EnableWindow(bEnable) ;
+	return CEditAttribDlg::EnableWindow(bEnable);
 }
 
 void CEditableRange::init(uint32 x, uint32 y, CWnd *pParent)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	Create(IDD_EDITABLE_RANGE, pParent) ;
-	RECT r  ;
-	GetClientRect(&r) ;
-	MoveWindow(x, y, r.right, r.bottom) ;
+	Create(IDD_EDITABLE_RANGE, pParent);
+	RECT r;
+	GetClientRect(&r);
+	MoveWindow(x, y, r.right, r.bottom);
 	// set the slider size
-	CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_SLIDER) ;	
-	ShowWindow(SW_SHOW) ;
+	CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_SLIDER);	
+	ShowWindow(SW_SHOW);
 }
 
 
@@ -108,9 +108,10 @@ void CEditableRange::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CEditableRange, CDialog)
 	//{{AFX_MSG_MAP(CEditableRange)
 	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_SLIDER, OnReleasedcaptureSlider)
-	ON_BN_CLICKED(IDC_SELECT_RANGE, OnSelectRange)
-	ON_BN_CLICKED(IDC_UPDATE_VALUE, OnUpdateValue)
+	ON_BN_CLICKED(IDC_SELECT_RANGE, OnSelectRange)	
 	ON_EN_SETFOCUS(IDC_VALUE, OnSetfocusValue)
+	ON_WM_KEYDOWN()
+	ON_BN_CLICKED(IDC_UPDATE_VALUE, OnUpdateValue)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -127,8 +128,8 @@ BOOL CEditableRange::OnInitDialog()
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CDialog::OnInitDialog();
 	
-	updateRange() ;
-	updateValueFromReader() ;
+	updateRange();
+	updateValueFromReader();
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -138,8 +139,8 @@ BOOL CEditableRange::OnInitDialog()
 void CEditableRange::OnReleasedcaptureSlider(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	UpdateData() ;
-	CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_SLIDER) ;	
+	UpdateData();
+	CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_SLIDER);	
 	if (
 		(sl->GetRangeMax() -  sl->GetRangeMin()) != 0
 		)
@@ -155,30 +156,40 @@ void CEditableRange::OnReleasedcaptureSlider(NMHDR* pNMHDR, LRESULT* pResult)
 
 void CEditableRange::OnSelectRange() 
 {
-	selectRange() ;
+	selectRange();
 }
 
 
 
 void CEditableRange::OnUpdateValue() 
 {
-	UpdateData() ;	
-	updateValueFromText()  ;
+	UpdateData();	
+	updateValueFromText();
+}
+
+
+void CEditableRange::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 
+{
+	if (nChar == 13)
+	{
+		UpdateData();	
+		updateValueFromText();		
+	}
 }
 
 
 void CEditableRange::emptyDialog(void)
 {
-	m_Value = CString("") ;
-	m_SliderPos = 0 ;
-	UpdateData(FALSE) ;
+	m_Value = CString("");
+	m_SliderPos = 0;
+	UpdateData(FALSE);
 }
 
 void CEditableRange::OnSetfocusValue() 
 {
-	CEdit *ce = (CEdit *) GetDlgItem(IDC_VALUE) ;
-	ce->PostMessage(EM_SETSEL, 0, -1) ;	
-	ce->Invalidate() ;
+	CEdit *ce = (CEdit *) GetDlgItem(IDC_VALUE);
+	ce->PostMessage(EM_SETSEL, 0, -1);	
+	ce->Invalidate();
 }
 
 
@@ -198,17 +209,17 @@ CEditableRangeT<float>::CEditableRangeT(const std::string &id, float defaultMin,
 
 		void CEditableRangeT<float>::value2CString(float value, CString &dest)
 		{
-			dest.Format("%g", (double) value) ;
+			dest.Format("%g", (double) value);
 		}
 		const char *CEditableRangeT<float>::string2value(const CString &value, float &result)
 		{			
 			if (sscanf((LPCTSTR) value, "%f", &result) == 1)
 			{			
-				return NULL ;
+				return NULL;
 			}
 			else
 			{
-				return "invalid value" ;
+				return "invalid value";
 			}	
 		}
 
@@ -223,26 +234,26 @@ CEditableRangeT<float>::CEditableRangeT(const std::string &id, float defaultMin,
 
 		void CEditableRangeT<uint32>::value2CString(uint32 value, CString &dest)
 		{
-			dest.Format("%d", value) ;
+			dest.Format("%d", value);
 		}
 		const char *CEditableRangeT<uint32>::string2value(const CString &value, uint32 &result)
 		{			
-			uint32 tmp ;
+			uint32 tmp;
 			if (sscanf((LPCTSTR) value, "%d", &tmp) == 1)
 			{
 				if (strchr((LPCTSTR) value, '-'))
 				{
-					return "negative values not allowed" ;
+					return "negative values not allowed";
 				}
 				else
 				{
-					result = tmp ;
-					return NULL ;
+					result = tmp;
+					return NULL;
 				}
 			}
 			else
 			{
-				return "invalid value" ;
+				return "invalid value";
 			}	
 		}
 
@@ -257,19 +268,19 @@ CEditableRangeT<float>::CEditableRangeT(const std::string &id, float defaultMin,
 
 		void CEditableRangeT<sint32>::value2CString(sint32 value, CString &dest)
 		{
-			dest.Format("%d", value) ;
+			dest.Format("%d", value);
 		}
 		const char *CEditableRangeT<sint32>::string2value(const CString &value, sint32 &result)
 		{			
-			uint32 tmp ;
+			uint32 tmp;
 			if (sscanf((LPCTSTR) value, "%d", &tmp) == 1)
 			{				
-				result = tmp ;
-				return NULL ;				
+				result = tmp;
+				return NULL;				
 			}
 			else
 			{
-				return "invalid value" ;
+				return "invalid value";
 			}	
 		}
 

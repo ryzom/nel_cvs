@@ -1,7 +1,7 @@
 /** \file vegetable_shape.cpp
  * TODO: File description
  *
- * $Id: vegetable_shape.cpp,v 1.11 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vegetable_shape.cpp,v 1.12 2005/02/08 15:01:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,17 +104,17 @@ void		CVegetableShape::build(CVegetableShapeBuild &vbuild)
 		TriangleIndices[i*3+2]= *(srcTri++);
 	}
 
+	// Fill vertices.
+	//---------
+	// resize
+	uint32		nbVerts= vbuild.VB.getNumVertices();
+	VB.setNumVertices(nbVerts);
 
 	CVertexBufferRead vba;
 	vbuild.VB.lock (vba);
 	CVertexBufferReadWrite vbaOut;
 	VB.lock (vbaOut);
 
-	// Fill vertices.
-	//---------
-	// resize
-	uint32		nbVerts= vbuild.VB.getNumVertices();
-	VB.setNumVertices(nbVerts);
 	// if no vertex color, 
 	float	maxZ= 0;
 	bool	bendFromColor= true;

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.59 2003/08/20 09:56:10 besson Exp $
+ * $Id: driver.h,v 1.60 2003/11/03 18:07:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -488,7 +488,19 @@ public:
 	 */
 	virtual void			renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)=0;
 
-
+	/** Render quads with previously setuped VertexBuffer / Matrixes.
+	  * There's a garanty for the orientation of its diagonal, which is drawn as follow :
+      *
+	  *  3----2
+      *  |  / |
+	  *  | /  |
+	  *  |/   |
+	  *  0----1
+	  * 
+	  * The rendering may be slower than with 'renderQuads', however
+	  * This orientation is not garanteed with renderQuads, and depends on the hardware
+      */
+	virtual void		   renderOrientedQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)=0;
 
 	/// Swap the back and front buffers.
 	virtual bool			swapBuffers(void)=0;

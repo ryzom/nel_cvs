@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.21 2004/10/04 09:01:02 berenguier Exp $
+ * $Id: export_skinning.cpp,v 1.22 2004/11/02 16:17:07 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -594,7 +594,7 @@ uint CExportNel::buildSkinning (CMesh::CMeshBuild& buildMesh, const TInodePtrInt
 
 							// Sum the NL3D_MESH_SKINNING_MAX_MATRIX highest bones
 							float sum=0.f;
-							std::map<float, uint>::iterator ite=weightMap.begin();
+							std::multimap<float, uint>::iterator ite=weightMap.begin();
 							while (ite!=weightMap.end())
 							{
 								// Add to the sum
@@ -787,7 +787,7 @@ uint CExportNel::buildSkinning (CMesh::CMeshBuild& buildMesh, const TInodePtrInt
 
 							// Sum the NL3D_MESH_SKINNING_MAX_MATRIX highest bones
 							float sum=0.f;
-							std::map<float, INode*>::iterator ite=weightMap.begin();
+							std::multimap<float, INode*>::iterator ite=weightMap.begin();
 							while (ite!=weightMap.end())
 							{
 								// Add to the sum

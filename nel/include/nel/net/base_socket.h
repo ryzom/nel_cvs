@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.h,v 1.21 2000/12/13 14:36:19 cado Exp $
+ * $Id: base_socket.h,v 1.22 2001/01/11 15:20:57 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,11 +75,8 @@ class ESocketConnectionFailed : public ESocket
 {
 public:
 	/// Constructor
-	ESocketConnectionFailed( uint errnum=0 )
-	{
-		_Reason = "Connection failed";
-		_ErrNum = errnum;
-	}
+	ESocketConnectionFailed( uint errnum=0 ) : ESocket( "Connection failed", errnum )
+	{}
 };
 
 
@@ -88,11 +85,8 @@ class ESocketConnectionClosed : public ESocket
 {
 public:
 	/// Constructor
-	ESocketConnectionClosed()
-	{
-		_Reason = "Connection closed";
-		_ErrNum = 0;
-	}
+	ESocketConnectionClosed() : ESocket( "Connection closed", 0 )
+	{}
 };
 
 

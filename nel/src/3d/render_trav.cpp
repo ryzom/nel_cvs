@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.56 2004/09/02 17:06:42 vizerie Exp $
+ * $Id: render_trav.cpp,v 1.57 2004/09/17 15:18:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,13 +43,20 @@
 #include "nel/misc/fast_floor.h"
 #include "3d/vertex_stream_manager.h"
 #include "3d/landscape_model.h"
+#include "3d/shape_bank.h"
 
 using namespace std;
 using namespace NLMISC;
 
-
 namespace	NL3D
 {
+
+// default is undefined, allows to see which CTransformShape are displayed in a scene, useful for debugging
+//#define NL_DEBUG_RENDER_TRAV
+
+
+
+
 
 
 // ***************************************************************************
@@ -90,10 +97,15 @@ CRenderTrav::CRenderTrav()
 }
 
 
+
 // ***************************************************************************
 void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 {
+	#ifdef NL_DEBUG_RENDER_TRAV
+		nlwarning("Render trave begin");
+	#endif
 	H_AUTO( NL3D_TravRender );			
+	if (getDriver()->isLost()) return; // device is lost so no need to render anything		
 	CTravCameraScene::update();
 	// Bind to Driver.
 	setupDriverCamera();
@@ -223,8 +235,19 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 		_CurrentPassOpaque = true;
 		OrderOpaqueList.begin();
 		while( OrderOpaqueList.get() != NULL )
-		{			
+		{						
 			CTransform	*tr= OrderOpaqueList.get();			
+			#ifdef NL_DEBUG_RENDER_TRAV
+				CTransformShape *trShape = dynamic_cast<CTransformShape *>(tr);
+				if (trShape)
+				{
+					const std::string *shapeName = Scene->getShapeBank()->getShapeNameFromShapePtr(trShape->Shape);
+					if (shapeName)
+					{
+						nlwarning("Displaying %s", shapeName->c_str());
+					}
+				}
+			#endif
 			tr->traverseRender();			
 			OrderOpaqueList.next();			
 		}
@@ -334,7 +357,18 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 		{		
 			it->begin(_LayersRenderingOrder);	
 			while( it->get() != NULL )
-			{				
+			{			
+				#ifdef NL_DEBUG_RENDER_TRAV
+					CTransformShape *trShape = dynamic_cast<CTransformShape *>(it->get());
+					if (trShape)
+					{
+						const std::string *shapeName = Scene->getShapeBank()->getShapeNameFromShapePtr(trShape->Shape);
+						if (shapeName)
+						{
+							nlwarning("Displaying %s", shapeName->c_str());
+						}
+					}
+				#endif
 				it->get()->traverseRender();				
 				it->next();
 			}
@@ -365,7 +399,18 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 			while( it->get() != NULL )
 			{			
 				if (!it->get()->isFlare())
-				{					
+				{		
+					#ifdef NL_DEBUG_RENDER_TRAV
+						CTransformShape *trShape = dynamic_cast<CTransformShape *>(it->get());
+						if (trShape)
+						{
+							const std::string *shapeName = Scene->getShapeBank()->getShapeNameFromShapePtr(trShape->Shape);
+							if (shapeName)
+							{
+								nlwarning("Displaying %s", shapeName->c_str());
+							}
+						}
+					#endif
 					it->get()->traverseRender();					
 				}
 				it->next();
@@ -400,7 +445,18 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 			while( it->get() != NULL )
 			{			
 				if (it->get()->isFlare())
-				{					
+				{			
+					#ifdef NL_DEBUG_RENDER_TRAV
+						CTransformShape *trShape = dynamic_cast<CTransformShape *>(it->get());
+						if (trShape)
+						{
+							const std::string *shapeName = Scene->getShapeBank()->getShapeNameFromShapePtr(trShape->Shape);
+							if (shapeName)
+							{
+								nlwarning("Displaying %s", shapeName->c_str());
+							}
+						}
+					#endif
 					it->get()->traverseRender();					
 				}
 				it->next();

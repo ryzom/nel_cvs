@@ -1,3 +1,9 @@
+August 22 2002
+==============
+
+*  NLNET: Rewrite all the layer 5. Now manage more than one network and doesn't manage multi threading.
+          Also rewrite the naming service to manage multi network.
+
 June 20 2002
 ============
 

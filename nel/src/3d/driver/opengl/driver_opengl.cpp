@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.161 2002/09/11 13:55:38 besson Exp $
+ * $Id: driver_opengl.cpp,v 1.162 2002/09/12 16:36:04 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -648,6 +648,12 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 			ShowWindow(_hWnd,SW_SHOW);
 		}
+
+		// Init Window Width and Height
+		RECT clientRect;
+		GetClientRect (_hWnd, &clientRect);
+		_WindowWidth = clientRect.right-clientRect.left;
+		_WindowHeight = clientRect.bottom-clientRect.top;
 
 		_hDC=GetDC(_hWnd);
 		wglMakeCurrent(_hDC,NULL);

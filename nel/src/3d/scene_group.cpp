@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.56 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: scene_group.cpp,v 1.57 2003/06/26 14:53:23 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -912,16 +912,16 @@ bool CInstanceGroup::linkToParent (CInstanceGroup *pFather)
 				(this->_ClusterInstances[j]->VisibleFromFather))
 			{
 				for (i = 0; i < pFather->_ClusterInstances .size(); ++i)
-				{			
-					
+				{
+					// If my cluster j is in the cluster i of the father
 					if (pFather->_ClusterInstances[i]->isIn(this->_ClusterInstances[j]->getBBox()))
 					{
-						if (this->_ClusterInstances[j]->Father != pFather->_ClusterInstances[i]) // not already sons of the right cluster ?
+						if (this->_ClusterInstances[j]->Father != pFather->_ClusterInstances[i]) // and not already son of the father cluster ?
 						{						
 							// unlink from parent
 							this->_ClusterInstances[j]->unlinkFromParent();
 
-							// relink in hierarchy
+							// relink to the new father found
 							pFather->_ClusterInstances[i]->Children.push_back(this->_ClusterInstances[j]);
 							this->_ClusterInstances[j]->Father = pFather->_ClusterInstances[i];
 						}

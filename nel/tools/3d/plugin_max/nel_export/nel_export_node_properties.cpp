@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.32 2002/04/12 16:33:21 vizerie Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.33 2002/04/23 16:27:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,6 +102,7 @@ public:
 			SubDlg[i] = NULL;
 		for (i=0; i<VP_COUNT; i++)
 			SubVPDlg[i] = NULL;
+		InterfaceThreshold = 0.1f;
 	}
 
 	// Lod.
@@ -135,6 +136,8 @@ public:
 	std::string				InstanceShape;
 	std::string				InstanceName;
 	std::string				InstanceGroupName;
+	std::string				InterfaceFileName;
+	float					InterfaceThreshold;
 	int						DontAddToScene;	
 	int						DontExport;
 
@@ -731,8 +734,7 @@ int CALLBACK InstanceDialogCallback (
 			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_SETCHECK, currentParam->DontAddToScene, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_AUTOMATIC_ANIM), BM_SETCHECK, currentParam->AutomaticAnimation, 0);
 
-
-			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), currentParam->InstanceGroupName.c_str());
+			
 
 			EnableWindow (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), true);
 			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), BM_SETCHECK, currentParam->DontExport, 0);
@@ -765,7 +767,8 @@ int CALLBACK InstanceDialogCallback (
 							currentParam->DontAddToScene=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_GETCHECK, 0, 0);
 							currentParam->AutomaticAnimation=SendMessage (GetDlgItem (hwndDlg, IDC_AUTOMATIC_ANIM), BM_GETCHECK, 0, 0);
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), tmp, 512);
-							currentParam->InstanceGroupName=tmp;
+							currentParam->InstanceGroupName=tmp;							
+
 							currentParam->DontExport=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), BM_GETCHECK, 0, 0);
 
 							currentParam->Collision= SendMessage (GetDlgItem (hwndDlg, IDC_CHECK_COLLISION), BM_GETCHECK, 0, 0);
@@ -1570,6 +1573,15 @@ int CALLBACK MiscDialogCallback (
 			// Radial normals
 			for (uint smoothGroup=0; smoothGroup<NEL3D_RADIAL_NORMAL_COUNT; smoothGroup++)
 				SetWindowText (GetDlgItem (hwndDlg, IDC_RADIAL_NORMAL_29+smoothGroup), currentParam->RadialNormals[smoothGroup].c_str());
+
+			// Mesh interfaces
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), currentParam->InstanceGroupName.c_str());
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_FILE), currentParam->InterfaceFileName.c_str());
+			
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_THRESHOLD), 
+							currentParam->InterfaceThreshold != -1.f ? toString(currentParam->InterfaceThreshold).c_str()
+																	 : ""
+						  );
 		}
 		break;
 
@@ -1606,6 +1618,16 @@ int CALLBACK MiscDialogCallback (
 								GetWindowText (edit, tmp, 512);
 								currentParam->RadialNormals[smoothGroup]=tmp;
 							}
+
+							// mesh interfaces
+							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_FILE), tmp, 512);
+							currentParam->InterfaceFileName=tmp;
+							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_THRESHOLD), tmp, 512);
+							float threshold;
+							if (::sscanf(tmp, "%g", &threshold) == 1)
+							{
+								currentParam->InterfaceThreshold = threshold;
+							}							
 						}
 					break;
 					case IDC_EXPORT_NOTE_TRACK:
@@ -2219,6 +2241,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.DontAddToScene=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, BST_UNCHECKED);
 		param.AutomaticAnimation=CExportNel::getScriptAppData (node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, BST_UNCHECKED);
 		param.InstanceGroupName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_IGNAME, "");
+		param.InterfaceFileName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INTERFACE_FILE, "");
+		param.InterfaceThreshold=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INTERFACE_THRESHOLD, 0.1f);
 		param.DontExport=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED);
 		param.ExportNoteTrack=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED);
 		param.ExportAnimatedMaterials=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, BST_UNCHECKED);
@@ -2339,6 +2363,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.AutomaticAnimation = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_IGNAME, "")!=param.InstanceGroupName)
 				param.InstanceGroupName = "";
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INTERFACE_FILE, "")!=param.InterfaceFileName)
+				param.InterfaceFileName = "";
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INTERFACE_THRESHOLD, 0.1f)!=param.InterfaceThreshold)
+				param.InterfaceThreshold = -1;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED)!=param.DontExport)
 				param.DontExport= BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED)!=param.ExportNoteTrack)
@@ -2513,6 +2541,11 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, param.AutomaticAnimation);
 				if (param.InstanceGroupName != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_IGNAME, param.InstanceGroupName);
+				if (param.InterfaceFileName != "")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INTERFACE_FILE, param.InterfaceFileName);
+				if (param.InterfaceThreshold != -1)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INTERFACE_THRESHOLD, param.InterfaceThreshold);								
+
 				if (param.DontExport != BST_INDETERMINATE)
 				{
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, param.DontExport);

@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.22 2002/04/12 16:31:32 vizerie Exp $
+ * $Id: export_lod.h,v 1.23 2002/04/23 16:28:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,10 @@
 #define NEL3D_APPDATA_INSTANCE_NAME					(1423062562)
 #define NEL3D_APPDATA_DONT_ADD_TO_SCENE				(1423062563)
 #define NEL3D_APPDATA_IGNAME						(1423062564)
+#define NEL3D_APPDATA_INTERFACE_FILE				(1423062700)
+#define NEL3D_APPDATA_INTERFACE_THRESHOLD			(1423062701)
+
+
 
 #define NEL3D_APPDATA_DONTEXPORT					(1423062565)
 #define NEL3D_APPDATA_EXPORT_NOTE_TRACK				(1423062566)

@@ -50,6 +50,7 @@
 #define IDC_CHECKEXPORTSHAPES           1010
 #define ID_SAVECOLLISION                1010
 #define IDC_CHECKEXPORTLIGHTING         1011
+#define ID_TEST_INTERFACE_MESH          1011
 #define IDC_RADIONORMALEXPORTLIGHTING   1012
 #define IDC_RADIORADIOSITYEXPORTLIGHTING 1013
 #define IDC_EDITEXPORTINSTANCEGROUP     1014
@@ -103,8 +104,11 @@
 #define IDC_SHOWLUMEL                   1056
 #define IDC_CLUSTERIZE                  1057
 #define IDC_EXPORT_BG_COLOR             1057
+#define IDC_INTERFACE_FILE              1057
+#define IDC_EDIT_INTERFACE_FILE         1057
 #define IDC_EXPORT_NOTE_TRACK           1058
 #define IDC_DONT_EXPORT                 1059
+#define IDC_EDIT_INTERFACE_THRESHOLD    1059
 #define IDC_EDIT_LUMELSIZEMUL           1060
 #define IDC_DONT_EXPORT2                1060
 #define IDC_EDIT_SOFTSHADOW_RADIUS      1061
@@ -194,6 +198,7 @@
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
+#define IDC_EDIT_INTERFACE_FILE_NAME    1497
 
 // Next default values for new objects
 // 

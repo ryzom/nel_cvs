@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.67 2004/05/24 16:10:47 berenguier Exp $
+ * $Id: stream.h,v 1.68 2004/05/24 16:59:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -923,7 +923,7 @@ private:
 			uint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
-				nlassert(ssize >= len*sizeof(T::value_type));
+				nlassert(ssize >= len);
 			}
 
 			for(sint i=0;i<len;i++)
@@ -1026,7 +1026,7 @@ protected:
 			uint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
-				nlassert(ssize >= len*sizeof(T::value_type));
+				nlassert(ssize >= len);
 			}
 			
 			// Open a node header
@@ -1088,7 +1088,7 @@ private:
 			uint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
-				nlassert(ssize >= len*sizeof(void*));
+				nlassert(ssize >= len);
 			}
 			
 			
@@ -1202,7 +1202,7 @@ private:
 			uint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
-				nlassert(ssize >= len*sizeof(void*));
+				nlassert(ssize >= len);
 			}
 			
 			
@@ -1330,7 +1330,7 @@ private:
 			uint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
-				nlassert(ssize >= len*(sizeof(T::key_type) + sizeof(T::value_type)) );
+				nlassert(ssize >= len);
 			}
 			
 			
@@ -1427,7 +1427,7 @@ private:
 			uint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
-				nlassert(ssize >= len*(sizeof(T::key_type) + sizeof(T::value_type)) );
+				nlassert(ssize >= len);
 			}
 			
 			

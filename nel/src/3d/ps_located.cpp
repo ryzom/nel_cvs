@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.63 2004/02/12 16:55:30 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.64 2004/02/12 18:50:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2111,8 +2111,7 @@ void	CPSLocatedBindable::setExternID(uint32 id)
 	if (ps) 
 	{
 		ps->unregisterLocatedBindableExternID(this);
-		_ExternID = 0;
-		return;
+		_ExternID = 0;		
 	}
 	if (id != 0)
 	{	

@@ -18,7 +18,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	if( logicEditor )
 	{
 		// test the default file creation
-		logicEditor->createDefaultFile();
+		//logicEditor->createDefaultFile();
 
 		// Init ui
 		logicEditor->initUI();

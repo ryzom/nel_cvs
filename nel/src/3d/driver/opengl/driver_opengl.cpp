@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.145 2002/07/02 12:35:05 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.146 2002/07/12 14:28:47 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -165,6 +165,8 @@ CDriverGL::CDriverGL()
 
 #elif defined (NL_OS_UNIX) // NL_OS_WINDOWS
 
+	cursor = None;
+	
 #ifdef XF86VIDMODE
 	// zero the old screen mode
 	memset(&_OldScreenMode, 0, sizeof(_OldScreenMode));

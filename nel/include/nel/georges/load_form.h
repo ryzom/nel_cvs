@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.9 2002/07/30 12:00:43 lecroart Exp $
+ * $Id: load_form.h,v 1.10 2002/07/30 21:06:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -216,7 +216,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		}
 
 		// Load the form with given sheet id
-		form = formLoader->loadForm (sheetIds[j].toString().c_str ());
+		form = formLoader->loadForm (sheetIds[NeededToRecompute[j]].toString().c_str ());
 		if (form)
 		{
 /*			if (packedFiledate > 0)
@@ -228,9 +228,9 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 			}*/
 			
 			// add the new creature, it could be already loaded by the packed sheets but will be overwrite with the new one
-			std::pair<std::map<NLMISC::CSheetId, T>::iterator, bool> res = container.insert(std::make_pair(sheetIds[j],T()));
+			std::pair<std::map<NLMISC::CSheetId, T>::iterator, bool> res = container.insert(std::make_pair(sheetIds[NeededToRecompute[j]],T()));
 
-			(*res.first).second.readGeorges (form, sheetIds[j]);
+			(*res.first).second.readGeorges (form, sheetIds[NeededToRecompute[j]]);
 			containerChanged = true;
 		}
 	}

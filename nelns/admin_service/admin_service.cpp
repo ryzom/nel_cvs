@@ -3,7 +3,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.19 2002/12/11 08:35:26 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.20 2002/12/19 14:58:22 lecroart Exp $
  *
  */
 
@@ -817,6 +817,34 @@ static void cbServiceAliasList (CMessage& msgin, TSockId from, CCallbackNetBase 
 	displayServices ();
 }*/
 
+// send services that should be running on this AES
+void sendHostedServices (uint16 sid)
+{
+	AESIT aesit = findAES (sid);
+
+	vector<string> registeredServices;
+	MYSQL_ROW row = sqlQuery ("select name from service where server='%s'", (*aesit).Name.c_str());
+
+	while (row != NULL)
+	{
+		string service = row[0];
+		registeredServices.push_back (service);
+		row = sqlNextRow ();
+	}
+
+	nlinfo ("Sending the new list of services that is managed by %s AES-%hu", (*aesit).Name.c_str(), (*aesit).SId);
+	CMessage msgout("REGISTERED_SERVICES");
+	msgout.serialCont (registeredServices);
+	CUnifiedNetwork::getInstance ()->send (sid, msgout);
+}
+
+void rejectAES(uint16 sid, const string &res)
+{
+	CMessage msgout("REJECTED");
+	msgout.serial ((string &)res);
+	CUnifiedNetwork::getInstance ()->send (sid, msgout);
+}
+
 // i'm connected to a new admin executor service
 void cbAESConnection /*(const string &serviceName, TSockId from, void *arg)*/(const std::string &serviceName, uint16 sid, void *arg)
 {
@@ -828,8 +856,8 @@ void cbAESConnection /*(const string &serviceName, TSockId from, void *arg)*/(co
 
 	if (aesit != AdminExecutorServices.end ())
 	{
-		nlwarning ("Connection of an AES that already are in the list, disconnecting him (%s)", ia.asString ().c_str ());
-		cnb->disconnect (from);
+		nlwarning ("Connection of an AES that already are in the list (%s)", ia.asString ().c_str ());
+		rejectAES (sid, "This AES is already in the AS list");
 		return;
 	}
 
@@ -837,32 +865,19 @@ void cbAESConnection /*(const string &serviceName, TSockId from, void *arg)*/(co
 
 	if (row == NULL)
 	{
-		nlwarning ("Connection of an AES that is not in database server list, disconnecting him (%s)", ia.asString ().c_str ());
-		cnb->disconnect (from);
+		nlwarning ("Connection of an AES that is not in database server list (%s)", ia.asString ().c_str ());
+		rejectAES (sid, "This AES is not registered in the database");
 		return;
 	}
 
-	AdminExecutorServices.push_back (CAdminExecutorService(row[0], sid));
-
 	string server = row[0];
+
+	AdminExecutorServices.push_back (CAdminExecutorService(server, sid));
 
 	nlinfo ("%s-%hu, server name %s, connected and added in the list", serviceName.c_str(), sid, server.c_str());
 	
 	// send him services that should run on this server
-
-	vector<string> registeredServices;
-	row = sqlQuery ("select name from service where server='%s'", server.c_str());
-
-	while (row != NULL)
-	{
-		string service = row[0];
-		registeredServices.push_back (service);
-		row = sqlNextRow ();
-	}
-
-	CMessage msgout("REGISTERED_SERVICES");
-	msgout.serialCont (registeredServices);
-	CUnifiedNetwork::getInstance ()->send (sid, msgout);
+	sendHostedServices(sid);
 
 /*
 	// broadcast the message that an admin exec is connected to all admin client
@@ -1316,6 +1331,23 @@ void addRequest (const string &rawvarpath, TSockId from)
 		string str;
 		sendString (from, str);
 	}
+
+	//
+	// special cases
+	//
+
+	if(rawvarpath == "reload")
+	{
+		// it means the we have to resend the list of services managed by AES from the mysql tables
+		for (AESIT aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
+			sendHostedServices ((*aesit).SId);
+
+		return;
+	}
+
+	//
+	// normal cases
+	//
 
 	CVarPath varpath (rawvarpath);
 

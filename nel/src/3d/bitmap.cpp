@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.19 2001/01/26 12:38:08 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.20 2001/01/29 09:31:01 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -178,7 +178,7 @@ void	CBitmap::makeDummy()
 	_Data[0].resize(_Width*_Height*sizeof(NLMISC::CRGBA));
 	NLMISC::CRGBA	*pix= (NLMISC::CRGBA*)(&(*_Data[0].begin()));
 
-	for(sint i=0;i<_Width*_Height;i++)
+	for(sint i=0;i<(sint)(_Width*_Height);i++)
 	{
 		if(bitmap[i])
 			pix[i].set(255,255,255,255);

@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.6 2001/01/26 16:24:50 coutelas Exp $
+ * $Id: zviewer.cpp,v 1.7 2001/01/29 09:32:08 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -273,36 +273,24 @@ void displayZones()
 	CNELU::swapBuffers();
 	
 	CIFile bankFile(CPath::lookup(ViewerCfg.Bank));
-	try
-	{
-		Landscape->Landscape.TileBank.serial(bankFile);
-	}
-	catch(EStream& e)
-	{
-		printf(e.what ());
-	}
+	Landscape->Landscape.TileBank.serial(bankFile);
+	bankFile.close();
+	
 #ifdef BANK_PAH_RELATIVE
 	Landscape->Landscape.TileBank.makeAllPathRelative();
 #endif
 	sint idx = ViewerCfg.Bank.find(".");
 	string farBank = ViewerCfg.Bank.substr(0,idx);
 	farBank += ".farbank";
+	
 	CIFile farbankFile(CPath::lookup(farBank));
-	try
-	{
-		Landscape->Landscape.TileFarBank.serial(farbankFile);
-	}
-	catch (EStream& e)
-	{
-		printf(e.what ());
-	}
+	Landscape->Landscape.TileFarBank.serial(farbankFile);
+	farbankFile.close();
+	
 	if ( ! Landscape->Landscape.initTileBanks() )
 	{
 		nlwarning( "You need to recompute bank.farbank for the far textures" );
 	}
-	bankFile.close();
-	farbankFile.close();
-	
 	
 	// Init light color
 	CNELU::clearBuffers(CRGBA(0,0,0));
@@ -342,15 +330,22 @@ void displayZones()
 	for(uint32 i =0; i<ViewerCfg.Zones.size(); i++)
 	{
 		CZone zone;
-		CIFile file(CPath::lookup(ViewerCfg.Zones[i]));
-		zone.serial(file);
-		file.close();
-		
-		// Add it to landscape.
-		Landscape->Landscape.addZone(zone);
+		try
+		{
+			CIFile file(CPath::lookup(ViewerCfg.Zones[i]));
+			zone.serial(file);
+			file.close();
 
-		// Add it to collision manager.
-		CollisionManager.addZone(zone.getZoneId());
+			// Add it to landscape.
+			Landscape->Landscape.addZone(zone);
+
+			// Add it to collision manager.
+			CollisionManager.addZone(zone.getZoneId());
+		}
+		catch(Exception &e)
+		{
+			printf(e.what ());
+		}		
 	}
 	
 	

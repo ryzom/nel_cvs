@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.22 2001/04/17 09:23:49 chafik Exp $
+ * $Id: baseai.cpp,v 1.23 2001/04/24 09:06:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -500,10 +500,10 @@ namespace NLAIAGENT
 		addInConnectionList(b);		
 	}
 
-	void IConnectIA::removeConnection(IConnectIA &Agent)
+	void IConnectIA::removeConnection(IConnectIA *Agent)
 	{		
-		Agent.removeInConnectedList(this);
-		removeInConnectionList(&Agent);			
+		Agent->removeInConnectedList(this);
+		removeInConnectionList(Agent);			
 	}
 
 	IConnectIA::~IConnectIA()

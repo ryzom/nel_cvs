@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.57 2001/04/19 13:45:09 chafik Exp $
+ * $Id: agent_script.cpp,v 1.58 2001/04/24 09:06:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -554,7 +554,17 @@ namespace NLAIAGENT
 	}
 
 	void CAgentScript::onKill(IConnectIA *a)
-	{
+	{		
+		tsetDefNameAgent::iterator iter = _DynamicAgentName.begin();
+		while( iter != _DynamicAgentName.end() )
+		{			
+			if((*(*iter).Itr) == a)
+			{
+				_DynamicAgentName.erase(iter);
+				break;
+			}
+			iter++;
+		}
 		IAgent::onKill(a);
 	}
 
@@ -585,26 +595,6 @@ namespace NLAIAGENT
 
 		return r;
 	}
-/*
-	IObjectIA::CProcessResult CAgentScript::removeDynamic(NLAIAGENT::IBaseGroupType *g)
-	{
-		CStringType *s = (CStringType *)g->get();
-		tsetDefNameAgent::iterator i = _DynamicAgentName.find(CKeyAgent(*s));
-		IObjectIA::CProcessResult r;
-		r.ResultState = IObjectIA::ProcessIdle;
-
-		if(i != _DynamicAgentName.end())
-		{			
-			//removeChild((*i).second);
-			//r.Result = new DigitalType(1.0);
-			//return r;
-			throw;
-		}		
-		r.Result = &DigitalType::NullOperator;
-		r.Result->incRef();
-		return r;
-	}
-*/
 
 	IObjectIA::CProcessResult CAgentScript::removeDynamic(NLAIAGENT::IBaseGroupType *g)
 	{
@@ -614,13 +604,14 @@ namespace NLAIAGENT
 		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(*s));
 
 		if(p.first != p.second)
-		{				
+		{	
+			tsetDefNameAgent::iterator debut = p.first;
 			while(p.first != p.second)
 			{
 				removeChild(*p.first->Itr);
-				_DynamicAgentName.erase(p.first);
-				p.first++;
-			}						
+				p.first ++;
+			}
+			_DynamicAgentName.erase(debut,p.second);			
 			r.Result = new DigitalType(1.0);
 			return r;
 			//throw;
@@ -739,6 +730,7 @@ namespace NLAIAGENT
 		INombreDefine *p = (INombreDefine *)((IBaseGroupType *)It++);
 		IMessageBase *msg = (IMessageBase *)((IBaseGroupType *)It++);
 		msg->setPerformatif((IMessageBase::TPerformatif)(sint)p->getNumber());
+		msg->incRef();
 		return sendMessage(n->getStr(),msg);
 	}	
 	

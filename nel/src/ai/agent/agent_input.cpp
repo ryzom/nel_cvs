@@ -1,7 +1,7 @@
 /** \file agent_input.cpp
  * <File description>
  *
- * $Id: agent_input.cpp,v 1.4 2001/03/27 08:21:35 chafik Exp $
+ * $Id: agent_input.cpp,v 1.5 2001/04/24 09:06:56 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,7 +54,7 @@ namespace NLAIAGENT
 
 	void IAgentInput::releaseInputConnexion(IConnectIA* obj)
 	{
-		removeConnection(*obj);
+		removeConnection(obj);
 		_ConnexionList.erase(obj);
 		if (_ConnexionList.size() == 0)
 		{

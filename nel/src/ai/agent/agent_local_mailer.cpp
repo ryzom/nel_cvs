@@ -1,6 +1,6 @@
 /** \file agent_local_mailer.cpp
  *
- * $Id: agent_local_mailer.cpp,v 1.4 2001/03/26 14:50:01 chafik Exp $
+ * $Id: agent_local_mailer.cpp,v 1.5 2001/04/24 09:06:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,8 @@ namespace NLAIAGENT
 	CLocalAgentMail::CLocalAgentMail(IBasicAgent *host):IAgent(NULL)
 	{
 		_HostAgent = host;
-		//_HostAgent->connect(this);
+		if(_HostAgent != NULL) connect(_HostAgent);
+		//
 	}
 
 	CLocalAgentMail::~CLocalAgentMail()
@@ -56,8 +57,9 @@ namespace NLAIAGENT
 	}
 	void CLocalAgentMail::onKill(IConnectIA *a)
 	{
-		//if(a == _HostAgent) _HostAgent->release();
-
+		_HostAgent = NULL;
+		IAgent::onKill(a);
+		release();
 	}
 
 	tQueue CLocalAgentMail::isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const

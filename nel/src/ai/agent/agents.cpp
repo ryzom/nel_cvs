@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.31 2001/04/19 13:45:09 chafik Exp $
+ * $Id: agents.cpp,v 1.32 2001/04/24 09:06:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,15 +56,17 @@ namespace NLAIAGENT
 		while ( _AgentList.size() )
 		{					
 			IConnectIA *c = _AgentList.front();
-			c->onKill(this);
 			_AgentList.pop_front();
+			c->onKill(this);
+			c->release();			
 		}
+		IAgentComposite::Kill();
 	}
 
 	void IAgent::onKill(IConnectIA *a)
 	{
 		eraseFromList<IBasicAgent *>(&_AgentList,(IBasicAgent *)a);
-		removeConnection(*a);
+		removeConnection(a);
 	}
 
 	const NLAIC::IBasicType *IAgent::clone() const

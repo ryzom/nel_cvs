@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.17 2001/04/19 08:13:12 chafik Exp $
+ * $Id: mailbox.cpp,v 1.18 2001/04/24 09:06:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -324,7 +324,7 @@ namespace NLAIAGENT
 	void CLocalMailBox::removeMailBox(IMailBox *mail)
 	{				
 		eraseFromList<IMailBox *>(&_ListMailBox,mail);
-		removeConnection(*mail);
+		removeConnection(mail);
 	}
 
 	void CLocalMailBox::setName(const IVarName &)
@@ -450,7 +450,8 @@ namespace NLAIAGENT
 	{		
 		while(_ListSharedMessage.size())
 		{
-			((IMessageBase *)_ListSharedMessage.back())->release();
+			IMessageBase *b = (IMessageBase *)_ListSharedMessage.back();
+			b->release();
 			_ListSharedMessage.pop_back();
 		}
 		tListMailBoxIter j;

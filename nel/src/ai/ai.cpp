@@ -36,7 +36,7 @@ namespace NLAILINK
 		NLAIAGENT::CAgentManagerTimer::initClass();
 		CLibTimerManager::initClass();
 		CAgentWatchTimer::initClass();
-		CAgentClockTimer::initClass();
+		CAgentClockTimer::initClass();		
 	}
 
 	void releaseIALib()
@@ -58,7 +58,7 @@ namespace NLAILINK
 		NLAIAGENT::CAgentManagerTimer::releaseClass();
 		CLibTimerManager::releaseClass();
 		CAgentClockTimer::releaseClass();
-		CAgentWatchTimer::releaseClass();
+		CAgentWatchTimer::releaseClass();		
 
 		staticReleaseLibClass();
 	}

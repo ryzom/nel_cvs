@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * <File description>
  *
- * $Id: camera.cpp,v 1.3 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: camera.cpp,v 1.4 2000/11/23 15:51:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,14 @@ void		CCamera::setFrustum(float left, float right, float bottom, float top, floa
 void		CCamera::setFrustum(float width, float height, float znear, float zfar, bool perspective)
 {
 	setFrustum(-width/2, width/2, -height/2, height/2, znear, zfar, perspective);
+}
+// ***************************************************************************
+void		CCamera::setPerspective(float fov, float aspectRatio, float znear, float zfar)
+{
+	float	w,h;
+	w= 2*znear*(float)tan(fov/2);
+	h= w/aspectRatio;
+	setFrustum(w,h,znear,zfar,true);
 }
 // ***************************************************************************
 void		CCamera::getFrustum(float &left, float &right, float &bottom, float &top, float &znear, float &zfar)

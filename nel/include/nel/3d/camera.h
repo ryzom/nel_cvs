@@ -1,7 +1,7 @@
 /** \file camera.h
  * 
  *
- * $Id: camera.h,v 1.4 2000/11/14 13:38:21 coutelas Exp $
+ * $Id: camera.h,v 1.5 2000/11/23 15:51:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,6 +74,15 @@ public:
 	bool		isOrtho();
 	/// Is a perspective camera?
 	bool		isPerspective();
+
+
+	/** Setup a perspective camera, giving a fov in radians.
+	 * \param fov the horizontal angle of view, in radians. (Pi/2 as example)
+	 * \param aspectRatio the ratio horizontal/vertical (1.33 as example).
+	 * \param znear the front clipping plane distance.
+	 * \param zfar the back clipping plane distance.
+	 */
+	void		setPerspective(float fov, float aspectRatio, float znear, float zfar);
 
 protected:
 	// NB: znear and zfar are be >0 (if perspective).

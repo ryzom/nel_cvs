@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.62 2004/02/06 18:52:49 miller Exp $
+ * $Id: debug.h,v 1.63 2004/05/04 12:58:12 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -509,7 +509,7 @@ template<class T, class U>	inline T	safe_cast(U o)
 /**
  * type_cast<>: this is a function which nlassert() a dynamic_cast in Debug, and just do a static_cast in release.
  * So slow check is made in debug, but only fast cast is made in release.
- * Differs from safe_cast by allowinf NULL objets.
+ * Differs from safe_cast by allowinf NULL objets. (ask Stephane LE DORZE for more explanations).
  */
 template<class T, class U>	inline T	type_cast(U o)
 {
@@ -519,7 +519,7 @@ template<class T, class U>	inline T	type_cast(U o)
 		nlassert(dynamic_cast<T >(o));
 #endif
 	//	optimization made to check pointeur validity before adresse translation. (hope it works on linux).
-	if ((long)(static_cast<T>((U)0x0400))==(long)((U)0x0400))
+	if ((size_t)(static_cast<T>((U)0x0400))==(size_t)((U)0x0400))
 	{
 		return static_cast<T >(o);
 	}
@@ -529,6 +529,65 @@ template<class T, class U>	inline T	type_cast(U o)
 	}
 
 }
+
+/**
+*	Allow to verify an object was accessed before its destructor call.
+*	For instance, it could be used to check if the user take care of method call return.
+*	ex:
+*		CMustConsume<TErrorCode>	foo()
+*		{
+*			..
+*			return	ErrorInvalidateType;		//	part of TErrorCode enum.
+*		}
+*	Exclusive implémentations samples:
+*		TerrorCode code=foo().consumeValue();	//	Good!
+*		foo().consume();						//	Good!
+*		TerrorCode code=foo();					//	Mistake!
+*		foo();									//	Will cause an assert at next ending brace during execution time.
+*		TerrorCode code=foo().Value();			//	Will cause an assert at next ending brace during execution time.
+*	(ask Stephane LE DORZE for more explanations).
+*/
+
+template	<class T>
+class CMustConsume
+{
+public:
+	CMustConsume(const T &value):_consumed(false), _Value(value)
+	{}
+	~CMustConsume()
+	{
+#ifndef FINAL_VERSION
+		nlassert(_consumed==true);
+#endif
+	}
+	//	Get the value without validating the access.
+	const	T	&value()	const
+	{
+		return	_Value;
+	}
+	//	Get the value and validat the access.
+	const	T	&consumeValue()	const
+	{
+#ifndef FINAL_VERSION
+		_consumed=true;
+#endif
+		return	_Value;
+	}
+	//	Only consume the access.
+	void	consume		()	const
+	{
+#ifndef FINAL_VERSION
+		_consumed=true;
+#endif
+	}
+protected:
+	
+private:
+	T		_Value;
+#ifndef FINAL_VERSION
+	mutable	bool	_consumed;
+#endif
+};
 
 /** Compile time assertion
   */

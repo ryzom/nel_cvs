@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.41 2001/07/09 17:17:06 corvazier Exp $
+ * $Id: scene.cpp,v 1.42 2001/07/24 08:36:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,7 @@
 #include "3d/skeleton_model.h"
 #include "3d/particle_system_model.h"
 #include "3d/coarse_mesh_manager.h"
+#include "3d/flare_model.h"
 
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
@@ -74,6 +75,7 @@ void	CScene::registerBasics()
 	CParticleSystemModel::registerBasic() ;
 	CMeshMultiLodInstance::registerBasic();
 	CCoarseMeshManager::registerBasic();
+	CFlareModel::registerBasic() ;
 }
 
 	

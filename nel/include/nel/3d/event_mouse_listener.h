@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.h
  * <File description>
  *
- * $Id: event_mouse_listener.h,v 1.4 2001/02/28 16:24:23 berenguier Exp $
+ * $Id: event_mouse_listener.h,v 1.5 2001/04/24 14:55:51 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,8 +64,17 @@ public:
 	  * MouseRotateHotSpot:			ALT + MIDDLEMOUSE
 	  * MouseTranslateXYHotSpot:	MIDDLEMOUSE
 	  * MouseTranslateZHotSpot:		CTRL + MIDDLEMOUSE
+	  * 
+	  * (firstPerson) First person shoorter style is:
+	  * MouseRotateView:			MOUSE MOVE
+	  * KeyUp:						MOVE FORWARD
+	  * KeyDown:					MOVE BACKWARD
+	  * Left:						STRAF LEFT
+	  * Right:						STRAF RIGHT
+	  * PageUp:						MOVE UP
+	  * PageDown:					MOVE DOWN
 	  */
-	enum TMouseMode { nelStyle, edit3d };
+	enum TMouseMode { nelStyle, edit3d, firstPerson };
 
 	/** 
 	  * Constructor. 
@@ -126,6 +135,16 @@ public:
 		_MouseMode=mouseMode;
 	}
 
+	/** 
+	  * Set the speed for first person mode. Default 10.f;
+	  * \param speed is in unit per second.
+	  * \see TMouseMode
+	  */
+	void setSpeed (float speed)
+	{
+		_Speed=speed;
+	}
+
 	/// \name Get
 
 	/**
@@ -133,9 +152,17 @@ public:
 	  * \return The current view matrix.
 	  * \see setMatrix()
 	  */
-	const NLMISC::CMatrix& getViewMatrix () const
+	const NLMISC::CMatrix& getViewMatrix ();
+
+	/** 
+	  * Get the current hot spot.
+	  * \return the target used when the mouse move. It can be for exemple the center.
+	  * of the selected object. The hotspot is not modified by mouse events.
+	  * \see getViewMatrix()
+	  */
+	CVector getHotSpot () const
 	{
-		return _Matrix;
+		return _HotSpot;
 	}
 
 	/** 
@@ -152,16 +179,19 @@ private:
 	/// Internal use
 	virtual void operator ()(const NLMISC::CEvent& event);
 
-	CMatrix		_Matrix;
-	CFrustum	_Frustrum;
-	CVector		_HotSpot;
+	CMatrix				_Matrix;
+	CFrustum			_Frustrum;
+	CVector				_HotSpot;
 	NL3D::CViewport		_Viewport;
-	bool		_LeftPushed;
-	bool		_MiddlePushed;
-	bool		_RightPushed;
-	float		_X;
-	float		_Y;
-	TMouseMode	_MouseMode;
+	bool				_LeftPushed;
+	bool				_MiddlePushed;
+	bool				_RightPushed;
+	float				_X;
+	float				_Y;
+	float				_Speed;
+	uint64				_LastTime;
+	TMouseMode			_MouseMode;
+	NLMISC::CEventListenerAsync	_AsyncListener;
 }; // NL3D
 
 }

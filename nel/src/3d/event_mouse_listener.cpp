@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.4 2000/12/13 15:01:46 corvazier Exp $
+ * $Id: event_mouse_listener.cpp,v 1.5 2001/04/24 14:55:51 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "nel/3d/event_mouse_listener.h"
 #include "nel/misc/event_server.h"
 #include "nel/3d/camera.h"
+#include "nel/misc/time_nl.h"
 
 using namespace NLMISC;
 
@@ -40,6 +41,8 @@ CEvent3dMouseListener::CEvent3dMouseListener()
 	_Viewport.initFullScreen();
 	_Frustrum.init (2.f, 2.f, -1.f, 1.f);
 	_MouseMode=nelStyle;
+	setSpeed (10.f);
+	_LastTime=CTime::getLocalTime ();
 }
 
 void CEvent3dMouseListener::operator ()(const CEvent& event)
@@ -51,27 +54,40 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 		bool bTranslateXY=false;
 		bool bTranslateZ=false;
 		bool bZoom=false;
-		
+
+		// Rotate Axis
+		CVector axis;
+
 		if (_MouseMode==nelStyle)
 		{
 			bRotate=(mouseEvent->Button==(ctrlButton|rightButton));
 			bTranslateXY=(mouseEvent->Button==(ctrlButton|leftButton));
 			bTranslateZ=(mouseEvent->Button==(ctrlButton|shiftButton|leftButton));
 			bZoom=(mouseEvent->Button==(altButton|leftButton));
+			axis=_HotSpot;
 		}
-		else	// 3d edit style (edit3dStyle)
+		else if (_MouseMode==edit3d)
 		{
 			bRotate=(mouseEvent->Button==(altButton|middleButton)) || (mouseEvent->Button==(altButton|leftButton));
 			bTranslateXY=(mouseEvent->Button==(ctrlButton|leftButton)) || (mouseEvent->Button==middleButton);
 			bTranslateZ=(mouseEvent->Button==(ctrlButton|shiftButton|leftButton)) || (mouseEvent->Button==(ctrlButton|middleButton));
 			bZoom=(mouseEvent->Button==(shiftButton|leftButton)) || (mouseEvent->Button==(ctrlButton|altButton|middleButton));
+			axis=_HotSpot;
+		}
+		else // if (_MouseMode==firstPerson)
+		{
+			bRotate=(mouseEvent->Button&leftButton)!=0;
+			bTranslateXY=false;
+			bTranslateZ=false;
+			bZoom=false;
+			axis=_Matrix.getPos();
 		}
 
 		if (bRotate)
 		{
 			// First in the hotSpot
 			CMatrix comeFromHotSpot=_Matrix;
-			comeFromHotSpot.setPos (_HotSpot);
+			comeFromHotSpot.setPos (axis);
 
 			// Then turn along the Z axis with X mouse
 			CMatrix turnZ;
@@ -90,9 +106,9 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 			// Make the matrix
 			CMatrix negPivot, Pivot;
 			negPivot.identity();
-			negPivot.setPos (-_HotSpot);
+			negPivot.setPos (-axis);
 			Pivot.identity();
-			Pivot.setPos (_HotSpot);
+			Pivot.setPos (axis);
 
 			// Make this transformation \\//
 			//_Matrix=Pivot*turnZ*negPivot*comeFromHotSpot*turnX*goToHotSpot*_Matrix;
@@ -114,7 +130,7 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 
 			// Plane of the hotspot
 			CPlane plane;
-			plane.make (_Matrix.getJ(), _HotSpot);
+			plane.make (_Matrix.getJ(), axis);
 
 			// Get ray from mouse point
 			CVector worldPoint1, worldPoint2;
@@ -135,7 +151,7 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 			else if (bZoom)
 			{
 				CVector vect=worldPoint1-worldPoint2;
-				CVector direc=_HotSpot-_Matrix.getPos();
+				CVector direc=axis-_Matrix.getPos();
 				direc.normalize();
 				_Matrix.setPos(_Matrix.getPos()+direc*(vect.x+vect.y+vect.z));
 			}
@@ -178,7 +194,7 @@ void CEvent3dMouseListener::addToServer (CEventServer& server)
 	server.addListener (EventMouseDownId, this);
 	server.addListener (EventMouseUpId, this);
 	server.addListener (EventMouseWheelId, this);
-	
+	_AsyncListener.addToServer (server);
 }
 
 void CEvent3dMouseListener::removeFromServer (CEventServer& server)
@@ -187,6 +203,76 @@ void CEvent3dMouseListener::removeFromServer (CEventServer& server)
 	server.removeListener (EventMouseDownId, this);
 	server.removeListener (EventMouseUpId, this);
 	server.removeListener (EventMouseWheelId, this);
+	_AsyncListener.removeFromServer (server);
+}
+
+const NLMISC::CMatrix& CEvent3dMouseListener::getViewMatrix ()
+{
+	// Mode first person ?
+	if (_MouseMode==firstPerson)
+	{
+		// CVector
+		CVector dir (0,0,0);
+		bool find=false;
+
+		// Key pushed ?
+		if (_AsyncListener.isKeyDown (KeyUP))
+		{
+			dir+=CVector (0, 1, 0);
+			find=true;
+		}
+		if (_AsyncListener.isKeyDown (KeyDOWN))
+		{
+			dir+=CVector (0, -1, 0);
+			find=true;
+		}
+		if (_AsyncListener.isKeyDown (KeyRIGHT))
+		{
+			dir+=CVector (1, 0, 0);
+			find=true;
+		}
+		if (_AsyncListener.isKeyDown (KeyLEFT))
+		{
+			dir+=CVector (-1, 0, 0);
+			find=true;
+		}
+		if (_AsyncListener.isKeyDown (KeyNEXT))
+		{
+			dir+=CVector (0, 0, -1);
+			find=true;
+		}
+		if (_AsyncListener.isKeyDown (KeyPRIOR))
+		{
+			dir+=CVector (0, 0, 1);
+			find=true;
+		}
+
+		// key found ?
+		if (find)
+		{
+			// Time elapsed
+			uint32 milli=(uint32)(CTime::getLocalTime ()-_LastTime);
+
+			// Speed
+			float dPos=_Speed*(float)milli/1000.f;
+
+			// Good direction
+			dir.normalize ();
+			dir*=dPos;
+
+			// Orientation
+			dir=_Matrix.mulVector (dir);
+
+			// New position
+			_Matrix.setPos (_Matrix.getPos ()+dir);
+		}
+	}
+
+	// Last time
+	_LastTime=CTime::getLocalTime ();
+
+	// Return the matrix
+	return _Matrix;
 }
 
 }; // NL3D

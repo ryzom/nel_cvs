@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.cpp
  * <File description>
  *
- * $Id: unix_event_emitter.cpp,v 1.2 2000/12/19 14:35:31 lecroart Exp $
+ * $Id: unix_event_emitter.cpp,v 1.3 2000/12/19 16:07:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,16 +105,22 @@ TKey getKey (KeySym keysym)
 	case XK_Print: return KeyPRINT;
 	case XK_Insert: return KeyINSERT;
 	case XK_Num_Lock: return KeyNUMLOCK;
-//	case XK_KP_0: return Key;
-//	case XK_KP_1: return Key;
-//	case XK_KP_2: return Key;
-//	case XK_KP_3: return Key;
-//	case XK_KP_4: return Key;
-//	case XK_KP_5: return Key;
-//	case XK_KP_6: return Key;
-//	case XK_KP_7: return Key;
-//	case XK_KP_8: return Key;
-//	case XK_KP_9: return Key;
+	case XK_KP_0: return KeyNUMPAD0;
+	case XK_KP_1: return KeyNUMPAD1;
+	case XK_KP_2: return KeyNUMPAD2;
+	case XK_KP_3: return KeyNUMPAD3;
+	case XK_KP_4: return KeyNUMPAD4;
+	case XK_KP_5: return KeyNUMPAD5;
+	case XK_KP_6: return KeyNUMPAD6;
+	case XK_KP_7: return KeyNUMPAD7;
+	case XK_KP_8: return KeyNUMPAD8;
+	case XK_KP_9: return KeyNUMPAD9;
+	case XK_KP_Add: return KeyADD;
+	case XK_KP_Subtract: return KeySUBTRACT;
+	case XK_KP_Divide: return KeyDIVIDE;
+	case XK_KP_Multiply: return KeyMULTIPLY;
+	case XK_KP_Decimal: return KeyDECIMAL;
+	  //	case XK_KP_Enter: return KeyENTER;
 	case XK_F1: return KeyF1;
 	case XK_F2: return KeyF2;
 	case XK_F3: return KeyF3;
@@ -183,6 +189,7 @@ TKey getKey (KeySym keysym)
 	case XK_x: return KeyX;
 	case XK_y: return KeyY;
 	case XK_z: return KeyZ;
+	default: nldebug ("0x%x %d", keysym, keysym);
 	}
 ///	return Key;
 }
@@ -210,8 +217,7 @@ void CUnixEventEmitter::processMessage (XEvent &event, CEventServer &server)
 	XWindowAttributes xwa;
 	XGetWindowAttributes (_dpy, _win, &xwa);
 	float fX = (float) event.xbutton.x / (float) xwa.width;
-	float fY = (float) event.xbutton.y / (float) xwa.height;
-	//	nlinfo("%f %f", fX, fY);
+	float fY = 1.0f - (float) event.xbutton.y / (float) xwa.height;
 	TMouseButton button=getMouseButton (event.xbutton.state);
 	server.postEvent (new CEventMouseMove (fX, fY, button, this));
 	break;
@@ -244,7 +250,7 @@ void CUnixEventEmitter::processMessage (XEvent &event, CEventServer &server)
      
 	TKey key = getKey (k);
 	// TODO manage the bool (first time pressed)
-	server.postEvent (new CEventKeyDown (key, true, this));
+	server.postEvent (new CEventKeyUp (key, this));
 	break;
       }
     Case(FocusIn)

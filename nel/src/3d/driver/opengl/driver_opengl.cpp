@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.37 2000/12/19 14:35:31 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.38 2000/12/19 16:07:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -278,15 +278,15 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 
 	int sAttribList[] =
 	{
-	GLX_RGBA,
-	GLX_DOUBLEBUFFER,
-	GLX_BUFFER_SIZE, 32, 
-	GLX_DEPTH_SIZE, 16,
-	GLX_RED_SIZE, 8,
-	GLX_GREEN_SIZE, 8,
-	GLX_BLUE_SIZE, 8,
-	GLX_ALPHA_SIZE, 8,
-	None
+	  GLX_RGBA,
+	  GLX_DOUBLEBUFFER,
+	  GLX_BUFFER_SIZE, 16,
+	  GLX_DEPTH_SIZE, 16,
+	  GLX_RED_SIZE, 4,
+	  GLX_GREEN_SIZE, 4,
+	  GLX_BLUE_SIZE, 4,
+	  //GLX_ALPHA_SIZE, 8,
+	  None
 	};
 
 	XVisualInfo *visual_info = glXChooseVisual (dpy, DefaultScreen(dpy), sAttribList);

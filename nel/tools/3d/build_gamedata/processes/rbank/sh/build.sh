@@ -37,14 +37,17 @@ rbank_zone_dr=`cat ../../cfg/config.cfg | grep "rbank_zone_dr" | sed -e 's/rbank
 rbank_rbank_name=`cat ../../cfg/config.cfg | grep "rbank_rbank_name" | sed -e 's/rbank_rbank_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
 rbank_ig_pathes=`cat ../../cfg/config.cfg | grep "rbank_ig_path" | sed -e 's/rbank_ig_path//' | sed -e 's/ //g' | sed -e 's/=//g'`
 rbank_shape_pathes=`cat ../../cfg/config.cfg | grep "rbank_shape_path" | sed -e 's/rbank_shape_path//' | sed -e 's/ //g' | sed -e 's/=//g'`
+rbank_temp_path=`echo $rbank_scratch_path$rbank_rbank_name`/
 
 # Make some directories
-mkdir $rbank_scratch_path"retrievers"
-mkdir $rbank_scratch_path"tesselation"
-mkdir $rbank_scratch_path"smooth"
-mkdir $rbank_scratch_path"smooth/preproc"
-mkdir $rbank_scratch_path"raw"
-mkdir $rbank_scratch_path"raw/preproc"
+mkdir $rbank_scratch_path
+mkdir $rbank_temp_path
+mkdir $rbank_temp_path"retrievers"
+mkdir $rbank_temp_path"tesselation"
+mkdir $rbank_temp_path"smooth"
+mkdir $rbank_temp_path"smooth/preproc"
+mkdir $rbank_temp_path"raw"
+mkdir $rbank_temp_path"raw/preproc"
 
 # Global options
 build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -95,7 +98,7 @@ $build_ig_boxes
 # ***** Build the rbank, gr files
 
 # Copy template
-`cat cfg/template.cfg | sed -e "s&rbank_bank_name&$rbank_bank_name&g" | sed -e "s&rbank_scratch_path&$rbank_scratch_path&g" | sed -e "s&rbank_reduce_surfaces&$rbank_reduce_surfaces&g" | sed -e "s&rbank_smooth_borders&$rbank_smooth_borders&g" | sed -e "s&rbank_compute_elevation&$rbank_compute_elevation&g" | sed -e "s&rbank_compute_levels&$rbank_compute_levels&g" | sed -e "s&rbank_link_elements&$rbank_link_elements&g" | sed -e "s&rbank_cut_edges&$rbank_cut_edges&g" | sed -e "s&rbank_use_zone_square&$rbank_use_zone_square&g" | sed -e "s&rbank_zone_ul&$rbank_zone_ul&g" | sed -e "s&rbank_zone_dr&$rbank_zone_dr&g" > build_rbank.cfg`
+`cat cfg/template.cfg | sed -e "s&rbank_bank_name&$rbank_bank_name&g" | sed -e "s&rbank_scratch_path&$rbank_temp_path&g" | sed -e "s&rbank_reduce_surfaces&$rbank_reduce_surfaces&g" | sed -e "s&rbank_smooth_borders&$rbank_smooth_borders&g" | sed -e "s&rbank_compute_elevation&$rbank_compute_elevation&g" | sed -e "s&rbank_compute_levels&$rbank_compute_levels&g" | sed -e "s&rbank_link_elements&$rbank_link_elements&g" | sed -e "s&rbank_cut_edges&$rbank_cut_edges&g" | sed -e "s&rbank_use_zone_square&$rbank_use_zone_square&g" | sed -e "s&rbank_zone_ul&$rbank_zone_ul&g" | sed -e "s&rbank_zone_dr&$rbank_zone_dr&g" > build_rbank.cfg`
 
 # List the zones to add
 cd ../zone/zone_lighted
@@ -148,7 +151,7 @@ for i in $list_zone ; do
 	zone=`echo $i | sed -e 's/.zonel//'`
 
 	# Destination file
-	dest=`echo $rbank_scratch_path"tesselation/"$zone".tessel"`
+	dest=`echo $rbank_temp_path"tesselation/"$zone".tessel"`
 
 	# Get the 9 zones list
 	near_zone=`$get_neighbors $zone`
@@ -208,10 +211,10 @@ for i in $list_zone ; do
 	zone=`echo $i | sed -e 's/.zonel//'`
 
 	# Source file
-	src=`echo $rbank_scratch_path"tesselation/"$zone".tessel"`
+	src=`echo $rbank_temp_path"tesselation/"$zone".tessel"`
 
 	# Destination file
-	dest=`echo $rbank_scratch_path"smooth/preproc/"$zone".lr"`
+	dest=`echo $rbank_temp_path"smooth/preproc/"$zone".lr"`
 
 	# Check dates
 	if ( ! test -e $dest ) || ( test $src -nt $dest )
@@ -244,10 +247,10 @@ for i in $list_zone ; do
 	zone=`echo $i | sed -e 's/.zonel//'`
 
 	# Source file
-	src=`echo $rbank_scratch_path"smooth/preproc/"$zone".lr"`
+	src=`echo $rbank_temp_path"smooth/preproc/"$zone".lr"`
 
 	# Destination file
-	dest=`echo $rbank_scratch_path"smooth/"$zone".lr"`
+	dest=`echo $rbank_temp_path"smooth/"$zone".lr"`
 
 	# Check dates
 	if ( ! test -e $dest ) || ( test $src -nt $dest )
@@ -303,10 +306,10 @@ for i in $list_cmb ; do
 done
 
 echo "};" >> build_indoor_rbank.cfg
-echo OutputPath = \"$rbank_scratch_path"retrievers/"\"\; >> build_indoor_rbank.cfg
+echo OutputPath = \"$rbank_temp_path"retrievers/"\"\; >> build_indoor_rbank.cfg
 echo OutputPrefix = "unused"\; >> build_indoor_rbank.cfg
 echo Merge = 1\; >> build_indoor_rbank.cfg 
-echo MergePath = \"$rbank_scratch_path"smooth/"\"\; >> build_indoor_rbank.cfg
+echo MergePath = \"$rbank_temp_path"smooth/"\"\; >> build_indoor_rbank.cfg
 echo MergeInputPrefix  = \"temp\"\; >> build_indoor_rbank.cfg
 echo MergeOutputPrefix  = \"tempMerged\"\; >> build_indoor_rbank.cfg
 
@@ -344,6 +347,6 @@ echo
 
 
 # Copy the files
-cp $rbank_scratch_path"retrievers"/tempMerged.rbank output/$rbank_rbank_name".rbank" 2>> log.log
-cp $rbank_scratch_path"retrievers"/tempMerged.gr output/$rbank_rbank_name".gr" 2>> log.log
+cp $rbank_temp_path"retrievers"/tempMerged.rbank output/$rbank_rbank_name".rbank" 2>> log.log
+cp $rbank_temp_path"retrievers"/tempMerged.gr output/$rbank_rbank_name".gr" 2>> log.log
 

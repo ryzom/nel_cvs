@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.11 2003/11/21 16:19:55 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.12 2003/11/24 11:11:46 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -375,7 +375,6 @@ void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &manager
 // ***************************************************************************
 static inline void	computeLodLighting(CRGBA &lightRes, const CVector &lightObjectSpace, const CVector &normalPtr, CRGBA ambient, CRGBA diffuse)
 {
-	// \todo yoyo: TODO_OPTIMIZE
 	float	f= lightObjectSpace * normalPtr;
 	sint	f8= NLMISC::OptFastFloor(f);
 	fastClamp8(f8);

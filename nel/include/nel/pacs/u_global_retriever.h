@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.3 2001/06/06 10:17:44 corvazier Exp $
+ * $Id: u_global_retriever.h,v 1.4 2001/06/06 12:53:57 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 
+#include "nel/pacs/u_retriever_bank.h"
+
 
 namespace NLPACS 
 {
@@ -44,9 +46,6 @@ class UGlobalRetriever
 {
 public:
 
-	/// Constructor
-	UGlobalRetriever();
-
 	/// Make a raytrace test. For the time, always return false.
 	virtual bool			testRaytrace (const NLMISC::CVectorD &v0, const NLMISC::CVectorD &v1) =0;
 
@@ -54,10 +53,10 @@ public:
 	  * Create a global retriever.
 	  *
 	  * \param globalRetriver is the global retriver path file name.
-	  * \param retriverBank is the global retriver bank path file name.
+	  * \param retriverBank is the global retriver bank associated to the global retriever.
 	  *
 	  */
-	static UGlobalRetriever	*createGlobalRetriever (const char* globalRetriver, const char* retriverBank);
+	static UGlobalRetriever	*createGlobalRetriever (const char* globalRetriever, const URetrieverBank* retrieverBank);
 
 	/**
 	  * Delete a global retriever.

@@ -79,7 +79,7 @@ $build_ig_boxes
 # ***** Build the rbank, gr files
 
 # Copy template
-`cat cfg/template.cfg | sed -e "s&rbank_bank_name&$rbank_bank_name&g" | sed -e "s&rbank_scratch_path&$rbank_scratch_path&g" | sed -e "s&rbank_reduce_surfaces&$rbank_reduce_surfaces&g" | sed -e "s&rbank_smooth_borders&$rbank_smooth_borders&g" | sed -e "s&rbank_compute_elevation&$rbank_compute_elevation&g" | sed -e "s&rbank_compute_levels&$rbank_compute_levels&g" | sed -e "s&rbank_link_elements&$rbank_link_elements&g" | sed -e "s&rbank_cut_edges&$rbank_cut_edges&g" | sed -e "s&rbank_use_zone_square&$rbank_use_zone_square&g" | sed -e "s&rbank_zone_ul&$rbank_zone_ul&g" | sed -e "s&rbank_zone_dr&$rbank_zone_dr&g" > moulinette.cfg`
+`cat cfg/template.cfg | sed -e "s&rbank_bank_name&$rbank_bank_name&g" | sed -e "s&rbank_scratch_path&$rbank_scratch_path&g" | sed -e "s&rbank_reduce_surfaces&$rbank_reduce_surfaces&g" | sed -e "s&rbank_smooth_borders&$rbank_smooth_borders&g" | sed -e "s&rbank_compute_elevation&$rbank_compute_elevation&g" | sed -e "s&rbank_compute_levels&$rbank_compute_levels&g" | sed -e "s&rbank_link_elements&$rbank_link_elements&g" | sed -e "s&rbank_cut_edges&$rbank_cut_edges&g" | sed -e "s&rbank_use_zone_square&$rbank_use_zone_square&g" | sed -e "s&rbank_zone_ul&$rbank_zone_ul&g" | sed -e "s&rbank_zone_dr&$rbank_zone_dr&g" > build_rbank.cfg`
 
 # List the zones to add
 cd ../zone/zone_lighted
@@ -88,24 +88,24 @@ cd ../../rbank
 
 # Make a zone list
 for i in $list_zone ; do
-	echo \"$i\", >> moulinette.cfg
+	echo \"$i\", >> build_rbank.cfg
 done
 
 # Close the file
-echo "};" >> moulinette.cfg
-echo " " >> moulinette.cfg
+echo "};" >> build_rbank.cfg
+echo " " >> build_rbank.cfg
 
 # List ig pathes
-echo Pathes = \{ >> moulinette.cfg
+echo Pathes = \{ >> build_rbank.cfg
 for i in $rbank_ig_pathes ; do
-	echo \"$i\"\, >> moulinette.cfg
+	echo \"$i\"\, >> build_rbank.cfg
 done
 for i in $rbank_shape_pathes ; do
-	echo \"$i\"\, >> moulinette.cfg
+	echo \"$i\"\, >> build_rbank.cfg
 done
-echo \}\; >> moulinette.cfg
+echo \}\; >> build_rbank.cfg
 
-echo " " >> moulinette.cfg
+echo " " >> build_rbank.cfg
 
 # Log error
 echo ------- >> log.log

@@ -223,6 +223,14 @@ SOURCE=.\pacs\chain.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\pacs\exterior_mesh.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\exterior_mesh.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\pacs\global_retriever.cpp
 # End Source File
 # Begin Source File

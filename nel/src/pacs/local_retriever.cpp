@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.20 2001/07/09 08:26:26 legros Exp $
+ * $Id: local_retriever.cpp,v 1.21 2001/07/24 08:44:19 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,12 @@ static float	hybrid2dNorm(const CVector &v)
 
 
 
+
+
+NLPACS::CLocalRetriever::CLocalRetriever()
+{
+	_Type = Landscape;
+}
 
 
 

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.5 2001/07/09 08:26:26 legros Exp $
+ * $Id: local_retriever.h,v 1.6 2001/07/24 08:44:19 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "pacs/chain.h"
 #include "pacs/retrievable_surface.h"
 #include "pacs/chain_quad.h"
+#include "pacs/exterior_mesh.h"
 
 #include "nel/pacs/u_global_position.h"
 
@@ -143,6 +144,18 @@ public:
 		//void							serial(NLMISC::IStream &f) { f.serial(Surface, Estimation); }
 	};
 
+	/**
+	 * The different types of retriever (landscape or interior.)
+	 * \author Benjamin Legros
+	 * \author Nevrax France
+	 * \date 2001
+	 */
+	enum EType
+	{
+		Landscape = 0,
+		Interior
+	};
+
 
 protected:
 	friend class	CRetrieverInstance;
@@ -175,6 +188,12 @@ protected:
 	/// For collisions, the chainquad.
 	CChainQuad							_ChainQuad;
 
+	/// The type of the retriever
+	EType								_Type;
+
+	/// In case of an interior retriever, the exterior mesh
+	CExteriorMesh						_ExteriorMesh;
+
 
 private:
 	/// The intersection between an ordered chain and the path.
@@ -192,6 +211,12 @@ private:
 	};
 
 public:
+	/// @name Constructors
+	// @{
+
+	CLocalRetriever();
+
+	// @}
 
 	/// @name Selectors
 	// @{

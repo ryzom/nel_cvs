@@ -116,6 +116,30 @@ SOURCE=..\include\nel\net\base_socket.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\net\callback_client.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\callback_client.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\callback_net_base.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\callback_net_base.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\callback_server.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\callback_server.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\cubic_entity_interpolator.cpp
 # End Source File
 # Begin Source File

@@ -217,7 +217,6 @@ SOURCE=.\3d\aabbox.cpp
 
 SOURCE=..\include\nel\3d\aabbox.h
 # End Source File
-
 # End Group
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file primitive_block.h
  * <File description>
  *
- * $Id: primitive_block.h,v 1.4 2001/05/31 09:21:30 vizerie Exp $
+ * $Id: primitive_block.h,v 1.5 2001/05/31 10:46:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,7 +153,7 @@ public:
 	uint32*	getQuadPointer(void);
 
 	/// return the quad buffer, const version
-	uint32*	getQuadPointer(void) const ;
+	const uint32*	getQuadPointer(void) const ;
 
 
 	void		serial(NLMISC::IStream &f);

@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Primitive Block implementation
  *
- * $Id: primitive_block.cpp,v 1.9 2001/01/05 18:44:10 coutelas Exp $
+ * $Id: primitive_block.cpp,v 1.10 2001/05/31 10:46:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,15 @@ uint32* CPrimitiveBlock::getLinePointer(void)
 	else
 		return(&(*_Line.begin()));
 }
+
+const uint32* CPrimitiveBlock::getLinePointer(void) const
+{
+	if(_Line.begin()==_Line.end())
+		return NULL;
+	else
+		return(&(*_Line.begin()));
+}
+
 
 
 void				CPrimitiveBlock::reserveLine(uint32 n)
@@ -84,6 +93,15 @@ uint32* CPrimitiveBlock::getTriPointer(void)
 	else
 		return(&(*_Tri.begin()));
 }
+
+const uint32* CPrimitiveBlock::getTriPointer(void) const
+{
+	if(_Tri.begin()==_Tri.end())
+		return NULL;
+	else
+		return(&(*_Tri.begin()));
+}
+
 
 
 void				CPrimitiveBlock::reserveTri(uint32 n)
@@ -130,6 +148,15 @@ uint32* CPrimitiveBlock::getQuadPointer(void)
 	else
 		return(&(*_Quad.begin()));
 }
+
+const uint32* CPrimitiveBlock::getQuadPointer(void) const
+{
+	if(_Quad.begin()==_Quad.end())
+		return NULL;
+	else
+		return(&(*_Quad.begin()));
+}
+
 
 
 /*---------------------------------------------------------------------------*\

@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.6 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_ribbon.cpp,v 1.7 2003/04/10 16:39:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -258,13 +258,13 @@ inline uint CPSRibbon::getNumVerticesInSlice() const
 
 
 //=======================================================	
-void CPSRibbon::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
+void CPSRibbon::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realET)
 {	
 	if (pass == PSMotion)
 	{	
 		if (!_Parametric)
 		{
-			updateGlobals();
+			updateGlobals(realET);
 		}
 	}
 	else
@@ -357,20 +357,26 @@ static inline uint8 *ComputeRibbonSlice(const NLMISC::CVector &prev,
 									    uint  numVerts,
 									    uint8 *dest,
 									    uint  vertexSize,
-										float size
+										float size,
+										NLMISC::CMatrix &basis
 									   )
 {	
 	// compute a basis from the next and previous position.
-	// (not optimized for now, but not widely used, either...)	
-	static NLMISC::CMatrix m;
-	m.setPos(next);
-	CPSUtil::buildSchmidtBasis(next - prev, m);
-	m.scale(size);
+	// (not optimized for now, but not widely used, either...)		
+	const float epsilon = 10E-5f;	
+	if (fabsf(next.x - prev.x) > epsilon
+		|| fabsf(next.y - prev.y) > epsilon
+		|| fabsf(next.z - prev.z) > epsilon)
+	{	
+		// build a new basis, or use the previous one otherwise
+		CPSUtil::buildSchmidtBasis(next - prev, basis);
+	}
+	basis.setPos(next);
 	
 	const NLMISC::CVector *shapeEnd = shape + numVerts;
 	do
-	{
-		*(NLMISC::CVector *) dest = m * (*shape);
+	{		
+		*(NLMISC::CVector *) dest = basis * (size * (*shape));
 		++shape;
 		dest += vertexSize;
 	}
@@ -392,7 +398,9 @@ static inline uint8 *ComputeUntexturedRibbonMesh(uint8 *destVb,
 												 float sizeIncrement,
 												 float size
 												)
-{					
+{			
+	CMatrix basis;
+	basis.scale(0);
 	do
 	{
 		destVb = ComputeRibbonSlice(curve[1],
@@ -401,7 +409,8 @@ static inline uint8 *ComputeUntexturedRibbonMesh(uint8 *destVb,
 									numVerticesInShape,
 									destVb,
 									vertexSize,
-									size);
+									size,
+									basis);
 		++ curve;
 		size -= sizeIncrement;
 	}
@@ -422,7 +431,8 @@ static inline uint8 *ComputeTexturedRibbonMesh(uint8 *destVb,
 											   float size
 											  )
 {	
-			
+	CMatrix basis;
+	basis.scale(0);	
 	do
 	{
 		uint8 *nextDestVb = ComputeRibbonSlice(curve[1],
@@ -431,7 +441,8 @@ static inline uint8 *ComputeTexturedRibbonMesh(uint8 *destVb,
 											   numVerticesInShape,
 											   destVb,
 											   vertexSize,
-											   size
+											   size,
+											   basis
 											  );
 		// duplicate last vertex ( equal first)
 		* (NLMISC::CVector *) nextDestVb = * (NLMISC::CVector *) destVb;

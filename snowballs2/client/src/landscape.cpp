@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape interface between the game and NeL
  *
- * $Id: landscape.cpp,v 1.13 2001/07/20 14:29:56 legros Exp $
+ * $Id: landscape.cpp,v 1.14 2001/07/20 17:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -137,10 +137,15 @@ void	initLandscape()
 								   1000.0f);
 
 	// color of the landscape shadow
+	CRGBA diffuse (ConfigFile.getVar("LandscapeDiffuseColor").asInt(0), ConfigFile.getVar("LandscapeDiffuseColor").asInt(1), ConfigFile.getVar("LandscapeDiffuseColor").asInt(2));
+	
 	Landscape->setupStaticLight(
+		diffuse,
 		CRGBA(ConfigFile.getVar("LandscapeAmbiantColor").asInt(0), ConfigFile.getVar("LandscapeAmbiantColor").asInt(1), ConfigFile.getVar("LandscapeAmbiantColor").asInt(2)),
-		CRGBA(ConfigFile.getVar("LandscapeDiffuseColor").asInt(0), ConfigFile.getVar("LandscapeDiffuseColor").asInt(1), ConfigFile.getVar("LandscapeDiffuseColor").asInt(2)),
-		ConfigFile.getVar("LandscapeMultiplyFactor").asFloat(0));
+		ConfigFile.getVar("LandscapeMultiplyFactor").asFloat());
+
+	Scene->setDynamicCoarseMeshManagerColor (diffuse);
+	Scene->setStaticCoarseMeshManagerColor (diffuse);
 
 	InstanceGroup = UInstanceGroup::createInstanceGroup ("6_AG.ig");
 	nlassert (InstanceGroup != NULL);

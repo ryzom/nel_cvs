@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.9 2001/07/19 17:30:39 lecroart Exp $
+ * $Id: network.cpp,v 1.10 2001/07/20 17:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,17 +68,35 @@ static void cbClientDisconnected (TSockId from, void *arg)
 
 static void cbAddEntity (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	nlinfo ("Receive add entity");
+	uint32 id;
+	string name;
+	uint8 race;
+	CVector startPosition;
+
+	msgin.serial (id, name, race, startPosition);
+
+	nlinfo ("Receive add entity %u '%s' %s (%f,%f,%f)", id, name.c_str(), race==0?"penguin":"gnu", startPosition.x, startPosition.y, startPosition.z);
 }
 
 static void cbRemoveEntity (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	nlinfo ("Receive remove entity");
+	uint32 id;
+
+	msgin.serial (id);
+
+	nlinfo ("Receive remove entity %u", id);
 }
 
 static void cbEntityPos (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	nlinfo ("Receive entity pos");
+	uint32 id;
+	CVector position;
+	float angle;
+	uint32 state;
+
+	msgin.serial (id, position, angle, state);
+
+	nlinfo ("Receive entity pos %u (%f,%f,%f) %f, %u", id, position.x, position.y, position.z, angle, state);
 }
 
 static void cbSBHit(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
@@ -112,6 +130,15 @@ static TCallbackItem ClientCallbackArray[] =
 bool	isOnline ()
 {
 	return Connection != NULL && Connection->connected ();
+}
+
+void	sendAddEntity (uint32 id, string &name, uint8 race, CVector &startPosition)
+{
+	if (!isOnline ()) return;
+
+	CMessage msgout (Connection->getSIDA(), "ADD_ENTITY");
+	msgout.serial (id, name, race, startPosition);
+	Connection->send (msgout);
 }
 
 void	sendChatLine (string Line)

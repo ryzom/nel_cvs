@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.39 2001/07/20 14:35:51 lecroart Exp $
+ * $Id: client.cpp,v 1.40 2001/07/20 17:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include <windows.h>
 #endif
 
+#include <time.h>
 #include <string>
 
 #include <nel/misc/config_file.h>
@@ -236,7 +237,8 @@ int main(int argc, char **argv)
 
 	// Creates the self entity
 	displayLoadingState ("Adding your entity");
-	addEntity(0xFFFFFFFF, CEntity::Self, CVector(ConfigFile.getVar("StartPoint").asFloat(0),
+	srand (time(NULL));
+	addEntity(rand(), CEntity::Self, CVector(ConfigFile.getVar("StartPoint").asFloat(0),
 												 ConfigFile.getVar("StartPoint").asFloat(1),
 												 ConfigFile.getVar("StartPoint").asFloat(2)),
 										 CVector(ConfigFile.getVar("StartPoint").asFloat(0),
@@ -247,8 +249,10 @@ int main(int argc, char **argv)
 	displayLoadingState ("Initialize Network");
 	initNetwork();
 
+	displayLoadingState ("Ready !!!");
+
 	// Display the first line
-	nlinfo ("Welcome to Snowballs 2");
+	nlinfo ("Welcome to Snowballs 1");
 
 	// Get the current time
 	NewTime = CTime::getLocalTime();
@@ -270,7 +274,7 @@ int main(int argc, char **argv)
 		NewTime = CTime::getLocalTime();
 
 		// Update animation
-		updateAnimation ();
+//		updateAnimation ();
 
 		// Update all entities positions
 		MouseListener->update();
@@ -308,6 +312,8 @@ int main(int argc, char **argv)
 
 		// Update the radar
 		updateRadar ();
+
+		updateAnimation ();
 
 		// Render the name on top of the other players
 		renderEntitiesNames();
@@ -426,7 +432,14 @@ int main(int argc, char **argv)
 		}
 		else if (Driver->AsyncListener.isKeyPushed (KeyH))
 		{
-			playAnimation (*Self, HitAnim);
+			playAnimation (*Self, HitAnim, true);
+
+			// todo get isWalking in the entity
+			if (Driver->AsyncListener.isKeyDown (KeyUP) || Driver->AsyncListener.isKeyDown (KeyDOWN) ||
+				Driver->AsyncListener.isKeyDown (KeyLEFT) || Driver->AsyncListener.isKeyDown (KeyRIGHT))
+				playAnimation (*Self, WalkAnim);
+			else
+				playAnimation (*Self, IdleAnim);
 		}
 
 		// Check if the config file was modified by another program
@@ -495,7 +508,7 @@ void displayLoadingState (char *state)
 	TextContext->setHotSpot (UTextContext::MiddleMiddle);
 
 	TextContext->setFontSize (40);
-	TextContext->printAt (0.5f, 0.5f, ucstring("Welcome to Snowballs 2 !"));
+	TextContext->printAt (0.5f, 0.5f, ucstring("Welcome to Snowballs 1 !"));
 	
 	TextContext->setFontSize (30);
 	TextContext->printAt (0.5f, 0.2f, ucstring(state));
@@ -581,6 +594,9 @@ void updateLoginInterface ()
 				{
 					askString ("You are online!!!", "", 2, CRGBA(0,64,0,128));
 					loginState = 0;
+
+					// send to the network my entity					
+					sendAddEntity (Self->Id, "toto"+toString(rand), 1, Self->Position);
 				}
 			}
 			break;

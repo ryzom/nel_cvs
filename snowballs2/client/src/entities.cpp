@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.32 2001/07/20 14:58:49 legros Exp $
+ * $Id: entities.cpp,v 1.33 2001/07/20 17:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -422,20 +422,29 @@ void stateNormal (CEntity &entity)
 		if (isAiming && !wasAiming)
 		{
 			// start aiming
-			playAnimation (*Self, PrepareSnowBall);
+			playAnimation (*Self, PrepareSnowBall, true);
+			playAnimation (*Self, PrepareSnowBallCycle, false);
 		}
 		else if (wasAiming && !isAiming)
 		{
 			// end aiming
-			playAnimation (*Self, ThrowSnowball);
+			playAnimation (*Self, ThrowSnowball, true);
+
+			// todo get isWalking in the entity
+			if (Driver->AsyncListener.isKeyDown (KeyUP) || Driver->AsyncListener.isKeyDown (KeyDOWN) ||
+				Driver->AsyncListener.isKeyDown (KeyLEFT) || Driver->AsyncListener.isKeyDown (KeyRIGHT))
+				playAnimation (*Self, WalkAnim);
+			else
+				playAnimation (*Self, IdleAnim);
+		
 		}
 		else if (!wasWalking && isWalking)
 		{
-			playAnimation (*Self, WalkAnim);
+			playAnimation (*Self, WalkAnim, true);
 		}
 		else if (wasWalking && !isWalking)
 		{
-			playAnimation (*Self, IdleAnim);
+			playAnimation (*Self, IdleAnim, true);
 		}
 
 		wasAiming = isAiming;

@@ -1,7 +1,7 @@
 /** \file entities.h
  * Snowballs 2 specific code for managing the entities
  *
- * $Id: entities.h,v 1.20 2001/07/20 14:29:56 legros Exp $
+ * $Id: entities.h,v 1.21 2001/07/20 17:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,9 +32,12 @@
 
 #include <string>
 #include <map>
+#include <queue>
 
 #include <nel/misc/vector.h>
 #include <nel/misc/time_nl.h>
+
+#include <nel/3d/animation_time.h>
 
 #include "physics.h"
 #include "animation.h"
@@ -74,7 +77,7 @@ public:
 	// Create a default entity
 	CEntity () :
 	  Id(0xffffffff), Name("<Unknown>"), AutoMove(false), Instance(NULL), Skeleton(NULL),
-		  Particule(NULL), PlayList(NULL), CurrentAnim(NoAnim), NextEmptySlot(0), Source (NULL),
+		  Particule(NULL), PlayList(NULL), NextEmptySlot(0), Source (NULL),
 	  Angle(0.0f), AuxiliaryAngle(0.0f), InterpolatedAuxiliaryAngle(0.0f) { }
 
 
@@ -128,17 +131,18 @@ public:
 	// The particle system (for appear and disappear effects)
 	NL3D::UInstance					*Particule;
 
-	//
-	NL3D::UPlayList					*PlayList;
-
 	// The sound source associated to the entity
 	NLSOUND::USource				*Source;
 
-	EAnim							 CurrentAnim;
+	// Animation variables
+
+	// Playlist linked to this entity
+	NL3D::UPlayList					*PlayList;
 	uint							 NextEmptySlot;
+	std::queue<EAnim>				 AnimQueue;
+	NL3D::CAnimationTime			 StartAnimationTime;
 
-	void	setState (TState state);
-
+	void setState (TState state);
 };
 
 //

@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.8 2001/07/20 14:35:51 lecroart Exp $
+ * $Id: animation.cpp,v 1.9 2001/07/20 17:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,10 +39,12 @@
 #include "nel/3d/u_skeleton.h"
 #include "nel/3d/u_play_list.h"
 #include "nel/3d/u_animation_set.h"
+#include "nel/3d/u_animation.h"
 #include "nel/3d/u_play_list_manager.h"
 #include "nel/3d/u_play_list.h"
 #include "nel/3d/u_transform.h"
 #include "nel/3d/u_instance.h"
+#include "nel/3d/u_text_context.h"
 
 #include "animation.h"
 #include "entities.h"
@@ -72,9 +74,10 @@ UPlayListManager *PlayListManager = NULL;
 
 struct Anim
 {
-	char	*Name;
-	bool	 Loop;
-	uint	 Id;
+	char		*Name;
+	bool		 Loop;
+	uint		 Id;
+	UAnimation	*Animation;
 };
 
 Anim AnimIdArray[][2] =
@@ -84,7 +87,8 @@ Anim AnimIdArray[][2] =
 	{ { "log_on.anim", false }, { "" } },
 	{ { "log_off.anim", false }, { "" } },
 	{ { "lancelaboule.anim", false }, { "" } },
-	{ { "prepaboule.anim", true }, { "" } },
+	{ { "prepaboule.anim", false }, { "" } },
+	{ { "prepaboulecycle.anim", true }, { "" } },
 	{ { "impact.anim", false }, { "" } },
 };
 
@@ -93,9 +97,42 @@ Anim AnimIdArray[][2] =
 // Functions
 //
 
-void	playAnimation (CEntity &entity, EAnim anim)
+void	playAnimation (CEntity &entity, EAnim anim, bool force)
 {
-	if (entity.Skeleton == NULL)
+	// Get the current time
+	CAnimationTime currentTime = CAnimationTime(CTime::getLocalTime ())/1000.0f;
+
+	// If the first time we play an animation, creates the animation class
+	if (entity.PlayList == NULL)
+		createAnimation (entity);
+
+	if (force)
+	{
+		// clear the animation queue
+		while (!entity.AnimQueue.empty())
+			entity.AnimQueue.pop ();
+
+		nlinfo ("clearing animation queue");
+
+		nlinfo ("playing animation %s ct%f st%f et%f", AnimIdArray[anim][0].Name, currentTime, AnimIdArray[anim][0].Animation->getBeginTime (), AnimIdArray[anim][0].Animation->getEndTime ());
+		entity.PlayList->setAnimation (0, AnimIdArray[anim][0].Id);
+		entity.PlayList->setStartWeight (0, 1.0f, currentTime);
+		entity.PlayList->setEndWeight (0, 1.0f, currentTime+TransitionTime);
+		entity.PlayList->setTimeOrigin (0, currentTime);
+		entity.PlayList->setWeightSmoothness (0, 1.0f);
+
+		if (AnimIdArray[anim][0].Loop)
+			entity.PlayList->setWrapMode (0, UPlayList::Repeat);
+		else
+			entity.PlayList->setWrapMode (0, UPlayList::Clamp);
+
+		entity.StartAnimationTime = currentTime;
+	}
+
+	nlinfo ("pushing animation %s", AnimIdArray[anim][0].Name);
+	entity.AnimQueue.push (anim);
+
+/*	if (entity.Skeleton == NULL)
 		return;
 
 	// If the first time we play an animation, creates the animation class
@@ -163,7 +200,7 @@ void	playAnimation (CEntity &entity, EAnim anim)
 
 	// Keep in mind what is the last animation id we set
 	entity.CurrentAnim = anim;
-}
+*/}
 
 void	createAnimation (CEntity &entity)
 {
@@ -192,10 +229,16 @@ void	initAnimation()
 	for (uint i = 0; i < sizeof (AnimIdArray) / sizeof (AnimIdArray[0]); i++)
 	{
 		if (AnimIdArray[i][0].Name[0] != '\0')
+		{
 			AnimIdArray[i][0].Id = AnimationSet->addAnimation (AnimIdArray[i][0].Name, AnimIdArray[i][0].Name);
+			AnimIdArray[i][0].Animation = AnimationSet->getAnimation (AnimIdArray[i][0].Id);
+		}
 
 		if (AnimIdArray[i][1].Name[0] != '\0')
+		{
 			AnimIdArray[i][1].Id = AnimationSet->addAnimation (AnimIdArray[i][1].Name, AnimIdArray[i][1].Name);
+			AnimIdArray[i][1].Animation = AnimationSet->getAnimation (AnimIdArray[i][1].Id);
+		}
 	}
 	AnimationSet->build ();
 
@@ -204,32 +247,50 @@ void	initAnimation()
 
 void	updateAnimation()
 {
-/*	// Get the current time
-	CAnimationTime CurrentTime = CAnimationTime(CTime::getLocalTime ())/1000.0f;
+	// Get the current time
+	CAnimationTime currentTime = CAnimationTime(CTime::getLocalTime ())/1000.0f;
 
-	for (EIT eit = Entities.begin (); eit != Entities.end (); )
+	for (EIT eit = Entities.begin (); eit != Entities.end (); eit++)
 	{
 		CEntity	&entity = (*eit).second;
-		if (entity.CurrentAnim == HitAnim)
-		{
-			// Hit special case
-			uint HitSlot = 3;
 
-			// Get the starting time of the old animation slot
-			CAnimationTime OldStartWeight;
-			entity.PlayList->getStartWeight (HitSlot, OldStartWeight);
-			if (CurrentTime > OldStartWeight + TransitionTime)
+		if (entity.AnimQueue.empty ())
+		{
+			nlwarning ("empty queue update!!!");
+			continue;
+		}
+
+		EAnim currentAnim = entity.AnimQueue.front ();
+		if (!AnimIdArray[currentAnim][0].Loop && currentTime >= entity.StartAnimationTime + AnimIdArray[currentAnim][0].Animation->getEndTime ())
+		{
+			// remove the current anim
+			entity.AnimQueue.pop ();
+
+			if (entity.AnimQueue.empty ())
 			{
-				entity.PlayList->setAnimation (HitSlot, AnimIdArray[anim][0].Id);
-				entity.PlayList->setTimeOrigin (HitSlot, CurrentTime);
-				entity.PlayList->setWrapMode (newSlot, UPlayList::Clamp);
-				entity.PlayList->setStartWeight (HitSlot, 0.0f, CurrentTime);
-				entity.PlayList->setEndWeight (HitSlot, 1.0f, CurrentTime+TransitionTime);
-				entity.PlayList->setWeightSmoothness (HitSlot, 1.0f);
+				nlwarning ("empty queue!!!!!!");
+				continue;
 			}
+
+			EAnim newAnim = entity.AnimQueue.front ();
+
+			nlinfo ("playing animation %s ct%f st%f et%f", AnimIdArray[newAnim][0].Name, currentTime, AnimIdArray[newAnim][0].Animation->getBeginTime (), AnimIdArray[newAnim][0].Animation->getEndTime ());
+			// setup the new anim
+			entity.PlayList->setAnimation (0, AnimIdArray[newAnim][0].Id);
+			entity.PlayList->setTimeOrigin (0, currentTime);
+			entity.PlayList->setStartWeight (0, 1.0f, currentTime);
+			entity.PlayList->setEndWeight (0, 1.0f, currentTime+TransitionTime);
+			entity.PlayList->setWeightSmoothness (0, 1.0f);
+
+			if (AnimIdArray[newAnim][0].Loop)
+				entity.PlayList->setWrapMode (0, UPlayList::Repeat);
+			else
+				entity.PlayList->setWrapMode (0, UPlayList::Clamp);
+
+			entity.StartAnimationTime = currentTime;
 		}
 	}
-*/
+
 	// compute new animation position depending of the current time
 	PlayListManager->animate (float(CTime::getLocalTime ())/1000.0f);
 }

@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.27 2001/01/03 16:38:20 cado Exp $
+ * $Id: local_area.cpp,v 1.28 2001/01/04 11:30:38 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ CLocalArea* CLocalArea::Instance = NULL;
 
 
 // Creates a new remote entity
-inline void NLNET::createRemoteEntity( const IMovingEntity& es )
+void NLNET::createRemoteEntity( const IMovingEntity& es )
 {
 	CRemoteEntity *new_entity = new CRemoteEntity( es );
 	CLocalArea::Instance->addNeighbor( new_entity );
@@ -53,7 +53,7 @@ inline void NLNET::createRemoteEntity( const IMovingEntity& es )
 
 
 // Returns true and a valid iterator if the entity is found
-inline bool NLNET::findEntity( TEntityId id, ItRemoteEntities& ire )
+bool NLNET::findEntity( TEntityId id, ItRemoteEntities& ire )
 {
 	ire = CLocalArea::Instance->_Neighbors.find( id );
 	return ( ire != CLocalArea::Instance->_Neighbors.end() );

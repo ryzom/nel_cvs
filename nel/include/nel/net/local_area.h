@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.15 2000/12/22 13:46:16 cado Exp $
+ * $Id: local_area.h,v 1.16 2001/01/04 11:30:38 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,8 +138,8 @@ public:
 	CMsgSocket				*ClientSocket;
 
 	// Friend helper functions
-	friend inline void createRemoteEntity( const IMovingEntity& es );
-	friend inline bool findEntity( TEntityId id, ItRemoteEntities& ire );
+	friend void createRemoteEntity( const IMovingEntity& es );
+	friend bool findEntity( TEntityId id, ItRemoteEntities& ire );
 	friend void processEntityState( IMovingEntity& es );
 
 	// Callbacks

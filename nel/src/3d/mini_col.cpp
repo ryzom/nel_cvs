@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * <File description>
  *
- * $Id: mini_col.cpp,v 1.8 2001/01/08 16:21:29 cado Exp $
+ * $Id: mini_col.cpp,v 1.9 2001/01/12 11:09:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -334,10 +334,14 @@ bool			CMiniCol::testMove(const CVector &prec, CVector &cur)
 	CVector	dir= cur-prec;
 	dir.normalize();
 
+	// Angle max.
+	float	anglemax= 65;	// 65 degrees.
+	anglemax= (float)tan( anglemax*Pi/180);
+
 	// Must not go to near of a wall.
 	CVector	test= cur+dir*0.5;
 	float	norm= (test-prec).norm();
-	norm*=3;
+	norm*=anglemax;
 	if(!snapToGround(test, norm, norm))
 	{
 		cur= prec;
@@ -347,7 +351,7 @@ bool			CMiniCol::testMove(const CVector &prec, CVector &cur)
 	{
 		// Must test and snap the current position.
 		norm= (cur-prec).norm();
-		norm*=3;
+		norm*=anglemax;
 		if(!snapToGround(cur, norm, norm))
 		{
 			cur= prec;

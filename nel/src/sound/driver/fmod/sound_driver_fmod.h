@@ -1,7 +1,7 @@
 /** \file sound_dirver_fmod.h
  * DirectSound sound source
  *
- * $Id: sound_driver_fmod.h,v 1.6 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: sound_driver_fmod.h,v 1.7 2004/11/03 17:26:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,6 +134,9 @@ public:
 	// is the music playing
 	virtual bool	isMusicEnded();
 
+	// music length
+	virtual float	getMusicLength();
+	
 	// set music volume
 	virtual void	setMusicVolume(float gain);
 

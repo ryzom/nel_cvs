@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.25 2004/10/28 17:38:06 corvazier Exp $
+ * $Id: sound_driver.h,v 1.26 2004/11/03 17:25:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -204,6 +204,10 @@ public:
 	/** Return true if a song is finished.
 	 */
 	virtual bool	isMusicEnded() =0;
+	
+	/** Return the total length (in second) of the music currently played
+	 */
+	virtual float	getMusicLength() =0;
 	
 	/** Set the music volume (if any music played). (volume value inside [0 , 1]) (default: 1)
 	 *	NB: the volume of music is NOT affected by IListener::setGain()

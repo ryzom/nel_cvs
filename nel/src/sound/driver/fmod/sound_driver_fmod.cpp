@@ -1,7 +1,7 @@
 /** \file sound_driver_fmod.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_fmod.cpp,v 1.6 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: sound_driver_fmod.cpp,v 1.7 2004/11/03 17:26:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -622,6 +622,24 @@ bool	CSoundDriverFMod::isMusicEnded()
 		}
 	}	
 	return false;
+}
+
+// ***************************************************************************
+float	CSoundDriverFMod::getMusicLength()
+{
+	if(!_FModOk)
+		return 0.f;
+	
+	// return the active music channel length
+	CMusicChannel	&chan= _MusicChannel[_ActiveMusicChannel];
+	
+	// If playing
+	if(chan.FModMusicStream && chan.FModMusicChannel != -1)
+	{
+		return FSOUND_Stream_GetLengthMs(chan.FModMusicStream)*0.001f;
+	}
+
+	return 0.f;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.34 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.35 2004/11/03 17:26:06 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1096,6 +1096,12 @@ bool	CSoundDriverDSound::isMusicEnded()
 {
 	// unsupported
 	return false;
+}
+
+float	CSoundDriverDSound::getMusicLength()
+{
+	// unsupoorted
+	return 0.f;
 }
 
 void	CSoundDriverDSound::setMusicVolume(float gain)

@@ -1,7 +1,7 @@
 /** \file sound_dirver_dsound.h
  * DirectSound sound source
  *
- * $Id: sound_driver_dsound.h,v 1.18 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: sound_driver_dsound.h,v 1.19 2004/11/03 17:26:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,6 +119,7 @@ public:
 	virtual void	pauseMusic();
 	virtual void	resumeMusic();
 	virtual bool	isMusicEnded();
+	virtual float	getMusicLength();
 	virtual void	setMusicVolume(float gain);
 	virtual bool	getSongTitle(const std::string &filename, std::string &result, uint fileOffset=0, uint fileSize=0);
 		

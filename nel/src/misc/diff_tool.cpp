@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.14 2004/09/29 14:16:02 boucher Exp $
+ * $Id: diff_tool.cpp,v 1.15 2004/11/17 09:27:05 vuarand Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -309,6 +309,11 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 
 	CI18N::readTextFile(filename, doc, false, false, true, CI18N::LINE_FMT_CRLF);
 
+	return readPhraseFileFromString(doc, filename, phrases, forceRehash);
+}
+
+bool readPhraseFileFromString(ucstring const& doc, const std::string &filename, vector<TPhrase> &phrases, bool forceRehash)
+{
 	std::string lastRead("nothing");
 
 	ucstring::const_iterator first(doc.begin()), last(doc.end());

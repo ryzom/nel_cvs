@@ -1,6 +1,6 @@
 /** \file diff_tool.h
  *
- * $Id: diff_tool.h,v 1.7 2004/09/21 06:33:18 boucher Exp $
+ * $Id: diff_tool.h,v 1.8 2004/11/17 09:27:50 vuarand Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -508,6 +508,7 @@ namespace STRING_MANAGER
 	ucstring	prepareStringFile(const std::vector<TStringInfo> &strings, bool removeDiffComments, bool noDiffInfo = false);
 
 	bool		readPhraseFile(const std::string &filename, std::vector<TPhrase> &phrases, bool forceRehash);
+	bool		readPhraseFileFromString(ucstring const& doc, const std::string &filename, std::vector<TPhrase> &phrases, bool forceRehash);
 	ucstring	tabLines(uint nbTab, const ucstring &str);
 	ucstring	preparePhraseFile(const std::vector<TPhrase> &phrases, bool removeDiffComments);
 

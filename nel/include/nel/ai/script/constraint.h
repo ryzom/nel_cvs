@@ -1,7 +1,7 @@
 /** \file constraint.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: constraint.h,v 1.9 2001/05/22 16:08:01 chafik Exp $
+ * $Id: constraint.h,v 1.10 2002/05/27 09:22:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -145,6 +145,8 @@ namespace NLAISCRIPT
 			operandSimple,
 			///class COperandSimpleListOr
 			operandSimpleListOr,
+			///Any class!!!!
+			operandAnyObject,
 			///Class COperandVoid
 			operandVoid,
 			///Class COperandUnknown

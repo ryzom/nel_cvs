@@ -1,7 +1,7 @@
 /** \file type_def.h
  * Sevral class for typing object.
  *
- * $Id: type_def.h,v 1.12 2002/01/30 15:40:10 chafik Exp $
+ * $Id: type_def.h,v 1.13 2002/05/27 09:22:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -137,6 +137,77 @@ namespace NLAISCRIPT
 		}		
 
 		virtual ~COperandVoid()
+		{						
+		}
+	};
+
+	/**
+	* Class COperandAnyObject.
+	* 
+	* This class define an void type, its use for the no return method type.
+	*
+	* \author Chafik sameh	
+	* \author Nevrax France
+	* \date 2000
+	*/	
+	class COperandAnyObject: public IOpType
+	{
+	
+	public:
+		COperandAnyObject()
+		{						
+		}
+
+		const char *getInfo()
+		{
+			return "constraint<COperandAnyObject>";
+		}
+
+		const NLAIC::CIdentType *getConstraintTypeOf()
+		{
+			return &NLAIC::CIdentType::VoidType;
+		}
+
+		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
+		{
+			if ( f.isReading() )
+			{
+				throw NLMISC::EStream();
+			}
+			else
+			{
+				sint32 n =  (sint32)getTypeOfClass();
+				f.serial(n);
+			}
+		}
+
+		virtual ConstraintTypeEnum getTypeOfClass() const
+		{
+			return operandAnyObject;
+		}
+
+		bool operator == (const IConstraint &c) const
+		{			
+			return true;
+		}
+
+		bool dependOn(const IConstraint *) const
+		{
+			return false;
+		}
+
+		const IConstraint *clone() const
+		{
+			IConstraint *x = new COperandAnyObject();
+			return x;
+		}		
+
+		bool satisfied()
+		{
+			return true;
+		}		
+
+		virtual ~COperandAnyObject()
 		{						
 		}
 	};
@@ -919,6 +990,10 @@ namespace NLAISCRIPT
 	
 		switch(k)
 		{
+		case operandAnyObject:
+			x = new  COperandAnyObject();
+			return x;
+
 		case operandVoid:
 			x = new COperandVoid();
 			return x;

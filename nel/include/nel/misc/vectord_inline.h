@@ -1,7 +1,7 @@
-/** \file vector_inline.h
+/** \file vectord_inline.h
  * CVectorD class inline definitions.
  *
- * $Id: vectord_inline.h,v 1.2 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: vectord_inline.h,v 1.3 2000/10/25 13:39:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

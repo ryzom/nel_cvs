@@ -1,7 +1,7 @@
-/** \file class_d.h
+/** \file class_id.h
  * CClassId class
  *
- * $Id: class_id.h,v 1.2 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: class_id.h,v 1.3 2000/10/25 13:39:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

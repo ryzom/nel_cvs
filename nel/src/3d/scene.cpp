@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.50 2001/08/31 14:39:15 besson Exp $
+ * $Id: scene.cpp,v 1.51 2001/09/04 13:43:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -568,6 +568,8 @@ void CScene::animate( CAnimationTime atTime )
 	else
 	{
 		_EllapsedTime = atTime - _RealTime ;
+		nlassert(_EllapsedTime >= 0);
+		_EllapsedTime = fabsf(_EllapsedTime);
 		_RealTime = atTime ;
 		_CurrentTime += _EllapsedTime ;
 	}

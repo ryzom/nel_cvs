@@ -86,7 +86,7 @@ void buildFileVector(std::vector<std::string> &filenames,std::string filespec)
 	uint i,j;
 	// split up the filespec into chains
 	std::vector<std::string> in, out;
-	for (i=0;i<filespec.size();i++)
+	for (i=0;i<filespec.size();)
 	{
 		for (j=i;j<filespec.size() && filespec[j]!=' ' && filespec[j]!='\t';j++) {}
 		switch(filespec[i])
@@ -102,23 +102,26 @@ void buildFileVector(std::vector<std::string> &filenames,std::string filespec)
 	// use the filespec as a filter while we build the sheet file vector
 	for (i=0;i<files.size();i++)
 	{
-		bool ok=false;
-		for (j=0;j<in.size() && !ok;j++)
-			if (files[i].find(in[j])!=-1)
+		bool ok=true;
+
+		// make sure the filename includes all of the include strings
+		for (j=0;j<in.size() && ok;j++)
+			if (files[i].find(in[j])==-1)
 			{
-				printf("Matched: %s: +%s\n",files[i].c_str(),in[j].c_str());
-				ok=true;
+				ok=false;
 			}
-		if (ok)
-			for (j=0;j<out.size();j++)
-				if (files[i].find(out[j])!=-1)
-				{
-					printf("Matched: %s: -%s\n",files[i].c_str(),out[j].c_str());
-					ok=false;
-				}
+
+		// make sure the filename includes none of the exclude strings
+		for (j=0;j<out.size() && ok;j++)
+			if (files[i].find(out[j])!=-1)
+			{
+				ok=false;
+			}
+
+		// if the filename matched all of the above criteria then add it to the list
 		if (ok)
 		{
-			printf("Added: %s\n",files[i].c_str());
+			printf("Added: %s\n",CFile::getFilename(files[i]).c_str());
 			filenames.push_back(files[i]);
 		}
 	}
@@ -278,8 +281,14 @@ void executeScriptBuf(char *txt)
 		{
 			// this is a comment or the end of file line so ignore it
 		}
+		else if (strcmpi(command,"DFNPATH")==0)
+		{
+			//CPath::getPathContent(args,true,false,true,files);
+			CPath::addSearchPath(args, true, false); // for the dfn files
+		}
 		else if (strcmpi(command,"PATH")==0)
 		{
+			files.clear();
 			CPath::getPathContent(args,true,false,true,files);
 			CPath::addSearchPath(args, true, false); // for the dfn files
 		}
@@ -349,11 +358,12 @@ int main(int argc, char* argv[])
 		fprintf(stderr,"Syntax: %s <script file name>", argv[0]);
 		fprintf(stderr,"\n");
 		fprintf(stderr,"Script commands:\n", argv[0]);
-		fprintf(stderr,"\tPATH\t\t<search path>\n");
+		fprintf(stderr,"\tDFNPATH\t\t<search path for george dfn files>\n");
+		fprintf(stderr,"\tPATH\t\t<search path for files to scan>\n");
 		fprintf(stderr,"\tOUTPUT\t\t<output file>\n");
 		fprintf(stderr,"\tFIELD\t\t<field in george file>\n");
 		fprintf(stderr,"\tSOURCE\t\t<field in george file>\n");
-		fprintf(stderr,"\tSCANFILES\t\t[+<filename include text>|-<filename exclude text>[...]]\n");
+		fprintf(stderr,"\tSCANFILES\t[+<text>|-<text>[...]]\n");
 		fprintf(stderr,"\tSCRIPT\t\t<script file to execute>\n");
 		fprintf(stderr,"\n");
 	}

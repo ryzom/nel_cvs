@@ -8,6 +8,8 @@
 #include "object_viewer.h"
 #include "edit_ps_sound.h"
 #include "attrib_dlg.h"
+#include "pick_sound.h"
+#include "sound_system.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -125,22 +127,23 @@ END_MESSAGE_MAP()
 
 void CEditPSSound::OnBrowseSound() 
 {
-	CFileDialog fd(TRUE, ".wav", "*.wav", 0, NULL, this) ;
-	if (fd.DoModal() == IDOK)
-	{
-		// Add to the path
-		char drive[256];
-		char dir[256];
-		char path[256];
+	CPickSound::TNameVect names;
+	
 
-		// Add search path for the sound
-		_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
-		_makepath (path, drive, dir, NULL, NULL);
-		NLMISC::CPath::addSearchPath (path);
-		_Sound->setSoundName(std::string(path));
-		m_SoundName = path;
-		UpdateData(FALSE);												
-	}					
+	NLSOUND::UAudioMixer *audioMixer = CSoundSystem::getAudioMixer();
+	if (audioMixer)
+	{
+		audioMixer->getSoundNames(names);
+	}
+
+	CPickSound ps(names, this);
+
+	if (ps.DoModal() == IDOK)
+	{
+		m_SoundName = ps.getName().c_str();
+		_Sound->setSoundName(ps.getName());
+		UpdateData(FALSE);
+	}
 }
 
 BOOL CEditPSSound::OnInitDialog() 

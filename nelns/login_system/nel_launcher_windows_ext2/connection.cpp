@@ -1,6 +1,6 @@
 /** \file connexion.h
  *
- * $Id: connection.cpp,v 1.2 2004/01/07 11:10:48 lecroart Exp $
+ * $Id: connection.cpp,v 1.3 2004/01/07 18:45:39 distrib Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -172,6 +172,16 @@ string checkLogin(const string &login, const string &password, const string &cli
 		vector<string> lines;
 		
 		explode(res, "\n", lines, true);
+
+		if(VerboseLog)
+		{
+			nlinfo ("Exploded '%s', with '%s', %d res", res.c_str(), "\n", lines.size());
+			for (uint i = 0; i < lines.size(); i++)
+			{
+				nlinfo (" > '%s'", lines[i].c_str());
+			}
+		}
+
 		if(lines.size() != nbs+1)
 		{
 			nlwarning("bad shard lines number %d != %d", lines.size(), nbs+1);
@@ -183,6 +193,16 @@ string checkLogin(const string &login, const string &password, const string &cli
 		{
 			vector<string> res;
 			explode(lines[i], "|", res);
+
+			if(VerboseLog)
+			{
+				nlinfo ("Exploded '%s', with '%s', %d res", lines[i].c_str(), "|", res.size());
+				for (uint i = 0; i < res.size(); i++)
+				{
+					nlinfo (" > '%s'", res[i].c_str());
+				}
+			}
+
 			if(res.size() != 7)
 			{
 				nlwarning("bad | numbers %d != %d", res.size(), 7);

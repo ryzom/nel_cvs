@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.29 2003/03/06 11:08:40 boucher Exp $
+ * $Id: i18n.cpp,v 1.30 2003/03/06 17:25:21 coutelas Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -250,7 +250,8 @@ void CI18N::load (const std::string &languageCode)
 //	nlassert (lid < _NbLanguages);
 //	nlassert (_LanguagesNamesLoaded);
 
-	for (uint i=0; i<_NbLanguages; ++i)
+  uint i;
+	for (i=0; i<_NbLanguages; ++i)
 	{
 		if (_LanguageCodes[i] == languageCode)
 			break;

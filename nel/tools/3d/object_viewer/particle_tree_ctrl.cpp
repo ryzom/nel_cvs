@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.24 2001/09/12 13:34:23 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.25 2001/09/17 14:03:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -736,59 +736,60 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 
 				try
-				{
-				
+				{				
 					_ParticleDlg->StartStopDlg->stop();
 					static char BASED_CODE szFilter[] = "ps & shapes files(*.ps;*.shape)|*.ps; *.shape||";
 					CFileDialog fd( TRUE, ".ps", "*.ps;*.shape", 0, szFilter);
+					int res = fd.DoModal();
+					if (res != IDOK)
+					{ 
+						return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+					}
 					
-					if (fd.DoModal() == IDOK)
-					{
-						// Add to the path
-						char drive[256];
-						char dir[256];
-						char path[256];
+					// Add to the path
+					char drive[256];
+					char dir[256];
+					char path[256];
 
-						// Add search path for the texture
-						_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
-						_makepath (path, drive, dir, NULL, NULL);
-						NLMISC::CPath::addSearchPath (path);
-															
-					
-					
-						NL3D::IShape *sh = nt->PSModel->Shape;																			
-						NL3D::CNELU::Scene.deleteInstance(nt->PSModel);
-						NL3D::CNELU::Scene.getShapeBank()->reset();						
-					
-						DeleteItem(TVI_ROOT);				
-					
-						NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance(std::string((LPCTSTR) fd.GetFileName())));
+					// Add search path for the texture
+					_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
+					_makepath (path, drive, dir, NULL, NULL);
+					NLMISC::CPath::addSearchPath (path);
+														
+				
+				
+					NL3D::IShape *sh = nt->PSModel->Shape;																			
+					NL3D::CNELU::Scene.deleteInstance(nt->PSModel);
+					NL3D::CNELU::Scene.getShapeBank()->reset();						
+				
+					DeleteItem(TVI_ROOT);				
+				
+					NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance(std::string((LPCTSTR) fd.GetFileName())));
 
-						if (newModel)
-						{																											
+					if (newModel)
+					{																											
+					
+						nt->PSModel = newModel;
+						nt->PSModel->setEditionMode(true);
+						nt->PS = nt->PSModel->getPS();									
+						nt->PSModel->enableAutoGetEllapsedTime(false);
+						nt->PSModel->setEllapsedTime(0.f); // system is paused
+						nt->PSModel->enableDisplayTools(true);							
+				
+						_ParticleDlg->setRightPane(NULL);
+						_ParticleDlg->setNewCurrPS(nt->PS, nt->PSModel);
+
+						nt->PS->setFontManager(_ParticleDlg->FontManager);
+						nt->PS->setFontGenerator(_ParticleDlg->FontGenerator);
+
 						
-							nt->PSModel = newModel;
-							nt->PSModel->setEditionMode(true);
-							nt->PS = nt->PSModel->getPS();									
-							nt->PSModel->enableAutoGetEllapsedTime(false);
-							nt->PSModel->setEllapsedTime(0.f); // system is paused
-							nt->PSModel->enableDisplayTools(true);							
-					
-							_ParticleDlg->setRightPane(NULL);
-							_ParticleDlg->setNewCurrPS(nt->PS, nt->PSModel);
-
-							nt->PS->setFontManager(_ParticleDlg->FontManager);
-							nt->PS->setFontGenerator(_ParticleDlg->FontGenerator);
-
-							
-							buildTreeFromPS(nt->PS, nt->PSModel);
-						}
-						else
-						{
-							throw NLMISC::Exception("Unable to load or intanciate the system");
-							
-						}
-					}					
+						buildTreeFromPS(nt->PS, nt->PSModel);
+					}
+					else
+					{
+						throw NLMISC::Exception("Unable to load or intanciate the system");
+						
+					}								
 				}
 
 				catch (NLMISC::Exception &e)

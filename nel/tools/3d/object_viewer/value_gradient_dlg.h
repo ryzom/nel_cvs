@@ -1,7 +1,7 @@
 /** \file value_gradient_dlg.h
  * a dialog that allows to edit a gradient of value, used in a particle system
  *
- * $Id: value_gradient_dlg.h,v 1.7 2002/08/08 11:00:45 lecroart Exp $
+ * $Id: value_gradient_dlg.h,v 1.8 2004/06/17 07:58:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,7 @@ struct IPopupNotify;
 #include "ps_wrapper.h"
 #include "attrib_list_box.h"
 #include "editable_range.h"
+#include "particle_workspace.h"
 
 class CEditAttribDlg;
 
@@ -57,7 +58,7 @@ struct IValueGradientDlgClient
 	 * \param index the index of the value in the dialog
 	 * \grad the dlg that called this method (deriver can ask a redraw then)
 	 */
-	virtual CEditAttribDlg *createDialog(uint index, CValueGradientDlg *grad) = 0;
+	virtual CEditAttribDlg *createDialog(uint index, CValueGradientDlg *grad, CParticleWorkspace::CNode *ownerNode) = 0;
 
 	/// this enumerate the action that we can apply on a gradient
 	enum TAction { Add, Insert, Delete, Up, Down };
@@ -96,9 +97,13 @@ public:
 	 * \param minSize The minimum number of elements that the gradient must have.
 	 */
 
-	CValueGradientDlg(IValueGradientDlgClient *clientInterface, bool destroyClientInterface						
-						, CWnd* pParent, IPopupNotify *pn, bool canTuneNbStages = true
-						, uint minSize = 2
+	CValueGradientDlg(IValueGradientDlgClient *clientInterface,
+					  CParticleWorkspace::CNode *ownerNode,
+		              bool destroyClientInterface,
+					  CWnd* pParent,
+					  IPopupNotify *pn,
+					  bool canTuneNbStages = true,
+					  uint minSize = 2
 					 );
 
 	/// invalidate the gradient list box
@@ -129,28 +134,22 @@ public:
 
 // Implementation
 protected:
-
 	// the minimum number of element in the gradient
 	uint					 _MinSize;
-
 	// false to disable the dialog that control the number of stages between each value
 	bool					 _CanTuneNbStages;
-
 	IValueGradientDlgClient *_ClientInterface;
-
-	bool					_DestroyClientInterface;
-	
+	bool					_DestroyClientInterface;	
 	// the dialog for edition of the current value
 	CEditAttribDlg			*_EditValueDlg;
-
 	// the dialog to edit the current number of step for gradient interpolation
 	CEditableRangeUInt		*_NbStepDlg;
-
 	// the current size of the gradient
 	uint					_Size;
-
 	// interface to tells the parent that we have been closed
-		IPopupNotify		*_PN;
+	IPopupNotify			*_PN;
+	// Owner node
+	CParticleWorkspace::CNode *_Node;
 
 	// Generated message map functions
 	//{{AFX_MSG(CValueGradientDlg)

@@ -1,7 +1,7 @@
 /** \file vegetable_edit_tools.cpp
  * <File description>
  *
- * $Id: vegetable_edit_tools.cpp,v 1.1 2001/11/22 17:16:36 berenguier Exp $
+ * $Id: vegetable_edit_tools.cpp,v 1.2 2004/06/17 07:57:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 
 
 CDirectEditableRangeFloat::CDirectEditableRangeFloat(const std::string &id, float defaultMin, float defaultMax, const std::string &title)
-	: CEditableRangeFloat(id, defaultMin, defaultMax), _Title(title)
+	: CEditableRangeFloat(id, NULL, defaultMin, defaultMax), _Title(title)
 {
 }
 

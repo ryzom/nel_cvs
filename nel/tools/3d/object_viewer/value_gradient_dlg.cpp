@@ -1,7 +1,7 @@
 /** \file value_gradient_dlg.cpp
  * a dialog that allows to edit a gradient of value, used in a particle system
  *
- * $Id: value_gradient_dlg.cpp,v 1.9 2002/11/04 15:40:45 boucher Exp $
+ * $Id: value_gradient_dlg.cpp,v 1.10 2004/06/17 07:58:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,19 +38,25 @@
 // CValueGradientDlg dialog
 
 
-CValueGradientDlg::CValueGradientDlg(IValueGradientDlgClient *clientInterface, bool destroyClientInterface,
-									 CWnd* pParent, IPopupNotify *pn,  bool canTuneNbStages /* = true*/, uint minSize /*= 2*/)
-	: CDialog(CValueGradientDlg::IDD, pParent)
-	 , _ClientInterface(clientInterface)	
-	 , _DestroyClientInterface(destroyClientInterface)
-	 , _EditValueDlg(NULL)
-	 , _CanTuneNbStages(canTuneNbStages)
-	 , _MinSize(minSize)
-	 , _PN(pn)
+CValueGradientDlg::CValueGradientDlg(IValueGradientDlgClient *clientInterface,
+									 CParticleWorkspace::CNode *ownerNode,
+									 bool destroyClientInterface,
+									 CWnd* pParent,
+									 IPopupNotify *pn,
+									 bool canTuneNbStages /* = true*/,
+									 uint minSize /*= 2*/)
+	: CDialog(CValueGradientDlg::IDD, pParent),
+	  _ClientInterface(clientInterface),
+	  _Node(ownerNode),
+	  _DestroyClientInterface(destroyClientInterface),
+	  _EditValueDlg(NULL),
+	  _CanTuneNbStages(canTuneNbStages),
+	  _MinSize(minSize),
+	  _PN(pn)
 {
 	//{{AFX_DATA_INIT(CValueGradientDlg)
 	//}}AFX_DATA_INIT	
-	_NbStepDlg = new CEditableRangeUInt(std::string("GRADIENT NB STEP"), 1, 255);
+	_NbStepDlg = new CEditableRangeUInt(std::string("GRADIENT NB STEP"), ownerNode, 1, 255);
 }
 
 
@@ -217,7 +223,7 @@ void CValueGradientDlg::OnSelchangeGradientList()
 	nlassert(_ClientInterface);
 	UpdateData(TRUE);
 	delete _EditValueDlg;	
-	_EditValueDlg =	_ClientInterface->createDialog(m_GradientList.GetCurSel(), this);
+	_EditValueDlg =	_ClientInterface->createDialog(m_GradientList.GetCurSel(), this, _Node);
 
 	RECT r, or;
 	GetWindowRect(&or);

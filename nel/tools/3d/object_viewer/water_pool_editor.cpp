@@ -84,7 +84,7 @@ BOOL CWaterPoolEditor::OnInitDialog()
 	// damping
 	GetDlgItem(IDC_DAMPING)->GetWindowRect(&r);
 	ScreenToClient(&r);
-	_DampingDlg = new CEditableRangeFloat("WATER_DAMPING",0.9f ,0.999f);
+	_DampingDlg = new CEditableRangeFloat("WATER_DAMPING", NULL,0.9f ,0.999f);
 	_DampingDlg->setWrapper(&_DampingWrapper);
 	_DampingDlg->init(r.left, r.top, this);
 	_DampingDlg->enableLowerBound(0, false);
@@ -95,7 +95,7 @@ BOOL CWaterPoolEditor::OnInitDialog()
 	// filter weight
 	GetDlgItem(IDC_FILTER_WEIGHT)->GetWindowRect(&r);
 	ScreenToClient(&r);
-	_FilterWeightDlg = new CEditableRangeFloat("FILTER_WEIGHT", 4, 10);
+	_FilterWeightDlg = new CEditableRangeFloat("FILTER_WEIGHT", NULL, 4, 10);
 	_FilterWeightDlg->setWrapper(&_FilterWeightWrapper);
 	_FilterWeightDlg->init(r.left, r.top, this);
 	_FilterWeightDlg->enableLowerBound(0, false);
@@ -103,7 +103,7 @@ BOOL CWaterPoolEditor::OnInitDialog()
 	// water unit size
 	GetDlgItem(IDC_WATER_UNIT_SIZE)->GetWindowRect(&r);
 	ScreenToClient(&r);
-	_WaterUnitSizeDlg = new CEditableRangeFloat("WATER_UNIT_SIZE", 0.1f, 1);
+	_WaterUnitSizeDlg = new CEditableRangeFloat("WATER_UNIT_SIZE", NULL, 0.1f, 1);
 	_WaterUnitSizeDlg->setWrapper(&_WaterUnitSizeWrapper);
 	_WaterUnitSizeDlg->init(r.left, r.top, this);	
 	_WaterUnitSizeDlg->enableLowerBound(0, true);
@@ -111,14 +111,14 @@ BOOL CWaterPoolEditor::OnInitDialog()
 	// wave impulsion strenght
 	GetDlgItem(IDC_IMPULSION_STRENGHT)->GetWindowRect(&r);
 	ScreenToClient(&r);
-	_ImpulsionStrenghtDlg = new CEditableRangeFloat("WAVE_IMPULSION_STRENGHT", 0.2f, 3.0f);
+	_ImpulsionStrenghtDlg = new CEditableRangeFloat("WAVE_IMPULSION_STRENGHT", NULL, 0.2f, 3.0f);
 	_ImpulsionStrenghtDlg->setWrapper(&_ImpulsionStrenghtWrapper);
 	_ImpulsionStrenghtDlg->init(r.left, r.top, this);	
 
 	// wave period
 	GetDlgItem(IDC_PERIOD)->GetWindowRect(&r);
 	ScreenToClient(&r);
-	_WavePeriodDlg = new CEditableRangeFloat("WAVE_PERIOD", 0, 5);
+	_WavePeriodDlg = new CEditableRangeFloat("WAVE_PERIOD", NULL, 0, 5);
 	_WavePeriodDlg->setWrapper(&_WavePeriodWrapper);
 	_WavePeriodDlg->init(r.left, r.top, this);
 	_WavePeriodDlg->enableLowerBound(0, false);
@@ -126,7 +126,7 @@ BOOL CWaterPoolEditor::OnInitDialog()
 	// propagation time
 	GetDlgItem(IDC_PROPAGATION_TIME)->GetWindowRect(&r);
 	ScreenToClient(&r);
-	_PropagationTimeDlg = new CEditableRangeFloat("PROPAGATION_TIME", 0, 2);
+	_PropagationTimeDlg = new CEditableRangeFloat("PROPAGATION_TIME", NULL, 0, 2);
 	_PropagationTimeDlg->setWrapper(&_PropagationTimeWrapper);
 	_PropagationTimeDlg->init(r.left, r.top, this);
 	_PropagationTimeDlg->enableLowerBound(0, false);
@@ -134,7 +134,7 @@ BOOL CWaterPoolEditor::OnInitDialog()
 	// wave impulsion radius
 	GetDlgItem(IDC_IMPULSION_RADIUS)->GetWindowRect(&r);
 	ScreenToClient(&r);
-	_WaveImpulsionRadiusDlg = new CEditableRangeUInt("WAVE_IMPULSION_RADIUS", 2, 5);
+	_WaveImpulsionRadiusDlg = new CEditableRangeUInt("WAVE_IMPULSION_RADIUS", NULL, 2, 5);
 	_WaveImpulsionRadiusDlg->setWrapper(&_WaveImpulsionRadiusWrapper);
 	_WaveImpulsionRadiusDlg->init(r.left, r.top, this);
 	_WaveImpulsionRadiusDlg->enableLowerBound(0, true);

@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.39 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: dru.cpp,v 1.40 2004/08/13 15:33:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -195,6 +195,7 @@ void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& te
 	mat.setZFunc(CMaterial::always);
 
 	static CVertexBuffer vb;
+	if (vb.getName().empty()) vb.setName("CDRU::drawBitmap");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag);
 	vb.setNumVertices (4);
 	{
@@ -212,6 +213,7 @@ void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& te
 	driver.activeVertexBuffer(vb);
 
 	static CIndexBuffer pb;
+	if (pb.getName().empty()) NL_SET_IB_NAME(pb, "CDRU::drawBitmap");
 	pb.setNumIndexes (6);
 	{
 		CIndexBufferReadWrite iba;
@@ -244,6 +246,7 @@ void	CDRU::drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	mat.setZFunc (CMaterial::always);
 
 	static CVertexBuffer vb;
+	if (vb.getName().empty()) vb.setName("CDRU::drawLine");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (2);
 	{
@@ -255,6 +258,7 @@ void	CDRU::drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	driver.activeVertexBuffer(vb);
 
 	static CIndexBuffer pb;
+	if (pb.getName().empty()) NL_SET_IB_NAME(pb, "CDRU::drawLine");
 	pb.setNumIndexes (2);
 	{
 		CIndexBufferReadWrite iba;
@@ -286,6 +290,7 @@ void	CDRU::drawTriangle (float x0, float y0, float x1, float y1, float x2, float
 	mat.setZFunc (CMaterial::always);
 
 	static CVertexBuffer vb;
+	if (vb.getName().empty()) vb.setName("CDRU::drawTriangle");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (3);
 	{
@@ -298,6 +303,7 @@ void	CDRU::drawTriangle (float x0, float y0, float x1, float y1, float x2, float
 	driver.activeVertexBuffer(vb);
 
 	static CIndexBuffer pb;
+	if (pb.getName().empty()) NL_SET_IB_NAME(pb, "CDRU::drawTriangle");
 	pb.setNumIndexes (3);
 	{
 		CIndexBufferReadWrite iba;
@@ -330,6 +336,7 @@ void	CDRU::drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	mat.setZFunc (CMaterial::always);
 	
 	static CVertexBuffer vb;
+	if (vb.getName().empty()) vb.setName("CDRU::drawQuad");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (4);
 	{
@@ -365,6 +372,7 @@ void	CDRU::drawQuad (float xcenter, float ycenter, float radius, IDriver& driver
 	mat.setZFunc (CMaterial::always);
 	
 	static CVertexBuffer vb;
+	if (vb.getName().empty()) vb.setName("CDRU::drawQuad");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (4);
 	{
@@ -413,6 +421,7 @@ void	CDRU::drawWiredQuad (float xcenter, float ycenter, float radius, IDriver& d
 void			CDRU::drawTrianglesUnlit(const NLMISC::CTriangleUV	*trilist, sint ntris, CMaterial &mat, IDriver& driver)
 {
 	static CVertexBuffer vb;
+	if (vb.getName().empty()) vb.setName("CDRU::drawTrianglesUnlit");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 	vb.setNumVertices (ntris*3);
 
@@ -456,6 +465,7 @@ void			CDRU::drawTrianglesUnlit(const std::vector<NLMISC::CTriangleUV> &trilist,
 void			CDRU::drawLinesUnlit(const NLMISC::CLine	*linelist, sint nlines, CMaterial &mat, IDriver& driver)
 {
 	static CVertexBuffer vb;
+	if (vb.getName().empty()) vb.setName("CDRU::drawLinesUnlit");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (nlines*2);
 
@@ -524,6 +534,7 @@ void			CDRU::drawQuad (float x0, float y0, float x1, float y1, CRGBA col0, CRGBA
 	mat.setZFunc (CMaterial::always);
 	
 	static CVertexBuffer vb;
+	if (vb.getName().empty()) vb.setName("CDRU::drawQuad");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::PrimaryColorFlag);
 	vb.setNumVertices (4);
 	{

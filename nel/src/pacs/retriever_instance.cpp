@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.22 2001/08/13 14:22:23 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.23 2001/08/14 13:59:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -294,15 +294,35 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 			// at least remembers the last seen surface...
 			lastSurf = surf;
 			_RetrieveTable[surf] = 0;
-			// search in the surface's quad tree for the actual height
-			const CQuadLeaf	*leaf = retriever.getSurfaces()[surf].getQuadTree().getLeaf(localEstimated);
-			// if there is no acceptable leaf, just give up
-			if (leaf == NULL)
-				continue;
+			float			meanHeight;
+			const CQuadLeaf	*leaf;
+			ULocalPosition	lp;
 
-			// computes the mean height of the leaf, and remembers the surface
+			switch (_Type)
+			{
+			case CLocalRetriever::Landscape:
+				// for landscape
+				// search in the surface's quad tree for the actual height
+				leaf = retriever.getSurfaces()[surf].getQuadTree().getLeaf(localEstimated);
+				// if there is no acceptable leaf, just give up
+				if (leaf == NULL)
+					continue;
+				meanHeight = leaf->getMaxHeight();
+				break;
+			case CLocalRetriever::Interior:
+				// for interior
+				// get the exact position
+				lp.Surface = surf;
+				lp.Estimation = localEstimated;
+				retriever.snapToInteriorGround(lp);
+				meanHeight = lp.Estimation.z;
+				break;
+			default:
+				// hu?
+				continue;
+			}
+
 			// if it is closer to the estimation than the previous remembered...
-			float	meanHeight = leaf->getMaxHeight();
 			float	distance = (float)fabs(localEstimated.z-meanHeight);
 			if (distance < bestDistance)
 			{

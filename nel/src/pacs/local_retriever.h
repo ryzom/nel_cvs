@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.9 2001/08/13 15:55:22 legros Exp $
+ * $Id: local_retriever.h,v 1.10 2001/08/14 13:59:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@
 #include "pacs/retrievable_surface.h"
 #include "pacs/chain_quad.h"
 #include "pacs/exterior_mesh.h"
-#include "pacs/quad_grid.h"
+#include "pacs/face_grid.h"
 
 #include "nel/pacs/u_global_position.h"
 
@@ -223,7 +223,7 @@ protected:
 	std::vector<CInteriorFace>			_InteriorFaces;
 
 	/// The face selection grid
-//	mutable NL3D::CQuadGrid<uint32>		_FaceGrid;
+	CFaceGrid							_FaceGrid;
 
 	// @}
 
@@ -335,7 +335,7 @@ public:
 	/// Returns the interior faces
 	std::vector<CInteriorFace>			&getInteriorFaces() { return _InteriorFaces; }
 
-	/// Initializes the quad grid of faces
+	/// Inits the face grid
 	void								initFaceGrid();
 
 

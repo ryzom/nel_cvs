@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.11 2001/08/13 14:22:23 legros Exp $
+ * $Id: global_retriever.h,v 1.12 2001/08/14 13:59:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -168,6 +168,31 @@ public:
 
 	/// Get the local retriever
 	const CLocalRetriever			&getRetriever(uint32 id) const { return _RetrieverBank->getRetriever(id); }
+
+
+	/// Get the material at this position
+	uint32							getMaterial(const UGlobalPosition &pos) const
+	{
+		if (pos.InstanceId < 0 || pos.InstanceId >= (sint)_Instances.size())
+			return 0xFFFFFFFF;
+
+		const CRetrieverInstance	&instance = _Instances[pos.InstanceId];
+		const CLocalRetriever		&retriever = getRetriever(instance.getRetrieverId());
+
+		if (pos.LocalPosition.Surface < 0 || pos.LocalPosition.Surface >= (sint)retriever.getSurfaces().size())
+			return 0xFFFFFFFF;
+
+		return retriever.getSurface(pos.LocalPosition.Surface).getMaterial();
+	}
+
+	/// Test if the position is an interior
+	bool							isInterior(const UGlobalPosition &pos) const
+	{
+		if (pos.InstanceId < 0 || pos.InstanceId >= (sint)_Instances.size())
+			return false;
+
+		return (_Instances[pos.InstanceId].getType() == CLocalRetriever::Interior);
+	}
 
 	//@}
 

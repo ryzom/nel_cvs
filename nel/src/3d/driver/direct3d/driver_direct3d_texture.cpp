@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.17 2005/03/02 10:58:43 vizerie Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.18 2005/03/15 18:08:29 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -485,6 +485,16 @@ bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3D
 }
 
 // ***************************************************************************
+inline void CDriverD3D::setupTextureWrapMode(ITexture& tex)
+{	
+	CTextureDrvInfosD3D *d3dtext = CDriverD3D::getTextureD3D(tex);
+	nlassert(d3dtext);
+	d3dtext->WrapS = RemapTextureAdressTypeNeL2D3D[tex.getWrapS()];
+	d3dtext->WrapT = RemapTextureAdressTypeNeL2D3D[tex.getWrapT()];
+	d3dtext->MagFilter = RemapMagTextureFilterTypeNeL2D3D[tex.getMagFilter()];
+	d3dtext->MinFilter = RemapMinTextureFilterTypeNeL2D3D[tex.getMinFilter()];
+	d3dtext->MipFilter = RemapMipTextureFilterTypeNeL2D3D[tex.getMinFilter()];	
+}
 
 bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded, bool bMustRecreateSharedTexture)
 {
@@ -508,7 +518,10 @@ bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 
 	// Does the texture has been touched ?
 	if ( (!tex.touched()) && (!mustCreate) )
+	{		
+		setupTextureWrapMode(tex); // update basics parameters if needed		
 		return true; // Do not do anything
+	}
 
 
 	// 1. If modified, may (re)load texture part or all of the texture.
@@ -583,7 +596,9 @@ bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 	}
 
 	if(tex.isTextureCube() && (!_TextureCubeSupported))
+	{		
 		return true;
+	}
 
 	// B. Setup texture.
 	//==================
@@ -795,16 +810,9 @@ bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 		// Release, if wanted.
 		if(tex.getReleasable())
 			tex.release();
-
-		// Basic parameters.
-		//==================
-		d3dtext->WrapS = RemapTextureAdressTypeNeL2D3D[tex.getWrapS()];
-		d3dtext->WrapT = RemapTextureAdressTypeNeL2D3D[tex.getWrapT()];
-		d3dtext->MagFilter = RemapMagTextureFilterTypeNeL2D3D[tex.getMagFilter()];
-		d3dtext->MinFilter = RemapMinTextureFilterTypeNeL2D3D[tex.getMinFilter()];
-		d3dtext->MipFilter = RemapMipTextureFilterTypeNeL2D3D[tex.getMinFilter()];
-	}
-
+	}		
+	
+	setupTextureWrapMode(tex);
 	// The texture is correctly setuped.
 	tex.clearTouched();
 	return true;
@@ -879,6 +887,18 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 
 	if (d3dtext->SrcCompressed)
 	{
+		nlassert ((x0 & 0x3) == 0);
+		nlassert ((y0 & 0x3) == 0);
+		nlassert (((x1 & 0x3) == 0) || (x1<4));
+		nlassert (((y1 & 0x3) == 0) || (y1<4));
+		x1 = std::max(4, x1);
+		y1 = std::max(4, y1);
+
+		/*
+		x1= (x1 + 3) & ~3;
+		y1= (y1 + 3) & ~3;
+		*/
+/*
 		// Must be aligned on 4x4
 		nlassert ((x0 & 0x3) == 0);
 		nlassert ((y0 & 0x3) == 0);
@@ -891,12 +911,14 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 		 * for mipmap levels > 0.
 		 *				- Locks on DXTC textures must be aligned in all other cases.
 		 */
+		/*
 		if (x1 & 0x3)
 			x1 = std::min ((x1 & ~0x3) + 4, std::max ((sint)1, (sint)(d3dtext->Width>>destMipmap)));
 		if (y1 & 0x3)
 			y1 = std::min ((y1 & ~0x3) + 4, std::max ((sint)1, (sint)(d3dtext->Height>>destMipmap)));
 		x1 = std::max(4, x1);
 		y1 = std::max(4, y1);
+		*/
 	}
 
 	// Size of a line

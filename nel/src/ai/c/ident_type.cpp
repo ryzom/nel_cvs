@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.12 2001/10/17 08:34:10 chafik Exp $
+ * $Id: ident_type.cpp,v 1.13 2001/10/24 15:52:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,7 +106,8 @@ namespace NLAIC
 				
 		try
 		{				
-			_Index = getRegistry()->registerClass(*this,classCFactory);
+			CRegistry *r = getRegistry();
+			_Index = r->registerClass(*this,classCFactory);
 			const CIdentType &id= getRegistry()->getIdent(_Index);			
 		}
 		catch (NLAIE::IException &err)
@@ -127,8 +128,9 @@ namespace NLAIC
 
 		try
 		{				
-			_Index = getRegistry()->getNumIdent(*this);
-			const CIdentType &id= getRegistry()->getIdent(_Index);
+			CRegistry *r = getRegistry();			
+			_Index = r->getNumIdent(*this);
+			const CIdentType &id= r->getIdent(_Index);
 			_ObjType = (CTypeOfObject *)&((const CTypeOfObject &)id);
 			_ObjType->incRef();
 			_OpSupport = (CTypeOfOperator *)&((const CTypeOfOperator &)id);

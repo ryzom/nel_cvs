@@ -155,6 +155,8 @@ BEGIN
     IDS_NO_FINITE_DURATION_FOR_OBJ 
                             "The system must have a finite duration for this setting! Please check that the following object doesn't live forever or doesn't create a loop in the system :"
     IDS_ERROR               "Error"
+    IDS_AUTO_COUNT_ERROR    "Current FX uses auto count feature, and it has been modified. You should run the system entirely at least once at full detail before saving so that the editor can compute the number of particles in the system. If user params are used to modify system aspect, you should run the system for extreme cases before saving."
+    IDS_WARNING             "WARNING"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -168,6 +170,21 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_VIEW_OBJECTMODE      "Object mode"
     ID_VIEW_FIRSTPERSONMODE "First person mode"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_NUM_PARTICLES       "Num particles : "
+    IDS_SYSTEM_DATE         "System date : "
+    IDS_UNLOCK_PS           "Unlock"
+    IDS_LOCK_PS             "Lock"
+    IDS_FORCE_APPLIED_ON_OBJECT_THAT_LAST_FOREVER 
+                            "The target object last forever. Applying a force on such an object may result in instability in the system after a while. Continue ? (clue : you've been warned..)"
+    IDS_PS_NO_FINITE_DURATION 
+                            "Can't perform operation : the system is flagged with 'No max nb steps' or uses the preset 'Spell FX', and thus, should have a finite duration. Please remove that flag first."
+    IDS_HAS_FORCE_APPLIED   "The object has force(s) applied on it. If it last forever, its motion can become instable after a while. Continue anyway ? (clue : you've been warned ..)"
+    IDS_ENABLE_AUTOCOUNT    "Enable auto count ?"
+    IDS_PARTICLE_SYSTEM_EDITOR "Particle system editor"
 END
 
 #endif    // English (U.S.) resources
@@ -419,15 +436,15 @@ BEGIN
     CONTROL         "Slider1",IDC_SLIDER,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,34,6,59,12
     PUSHBUTTON      "range...",IDC_SELECT_RANGE,192,6,30,13
-    EDITTEXT        IDC_MAX_RANGE,95,6,29,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_MAX_RANGE,95,6,29,12,ES_AUTOHSCROLL | ES_READONLY
     EDITTEXT        IDC_VALUE,128,6,29,12,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_AUTOHSCROLL | ES_WANTRETURN,WS_EX_RIGHT
-    EDITTEXT        IDC_MIN_RANGE,4,6,27,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_MIN_RANGE,4,6,27,12,ES_AUTOHSCROLL | ES_READONLY
     PUSHBUTTON      "update",IDC_UPDATE_VALUE,162,6,26,13
     GROUPBOX        "",IDC_STATIC,0,0,225,21
 END
 
-IDD_LOCATED_PROPERTIES DIALOG DISCARDABLE  0, 0, 351, 266
+IDD_LOCATED_PROPERTIES DIALOGEX 0, 0, 351, 266
 STYLE DS_CONTROL | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -435,9 +452,9 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,17,48,63,12
     CONTROL         "Use system basis",IDC_SYSTEM_BASIS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,17,29,69,13
-    LTEXT           "Max number of particles",IDC_STATIC,16,7,52,19
+    LTEXT           "Max number of particles",IDC_STATIC,3,7,52,19
     LTEXT           "Motion every n frames :",IDC_STATIC,2,209,51,18
-    CONTROL         "",IDC_PARTICLE_NUMBER_POS,"Static",SS_BLACKFRAME,70,7,
+    CONTROL         "",IDC_PARTICLE_NUMBER_POS,"Static",SS_BLACKFRAME,55,5,
                     225,21
     CONTROL         "Disgrade with lod",IDC_DISGRADE_WITH_LOD,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,94,31,69,11
@@ -447,6 +464,9 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,94,46,67,13
     PUSHBUTTON      "Edit",IDC_EDIT_TRIGGER_ON_DEATH,165,47,26,12
     GROUPBOX        "",IDC_STATIC,89,40,106,22
+    EDITTEXT        IDC_CURR_NUM_PARTS,313,10,29,13,ES_AUTOHSCROLL | 
+                    WS_DISABLED,WS_EX_RIGHT
+    PUSHBUTTON      "<-",IDC_ASSIGN_COUNT,288,10,16,13
 END
 
 IDD_SELECT_RANGE DIALOG DISCARDABLE  0, 0, 119, 66
@@ -462,21 +482,32 @@ BEGIN
     LTEXT           "Upper bound",IDC_STATIC,13,27,44,14
 END
 
-IDD_PARTICLE_SYSTEM_START_STOP DIALOGEX 0, 0, 109, 71
+IDD_PARTICLE_SYSTEM_START_STOP DIALOGEX 0, 0, 109, 182
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Particle system start/stop"
-FONT 8, "MS Sans Serif", 0, 0, 0x1
+FONT 8, "MS Sans Serif"
 BEGIN
     PUSHBUTTON      "Button1",IDC_START_PICTURE,7,6,24,24,BS_BITMAP
     PUSHBUTTON      "Button1",IDC_STOP_PICTURE,69,6,24,24,BS_BITMAP
     CONTROL         "Display bbox",IDC_DISPLAY_BBOX,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,49,87,17
+                    WS_TABSTOP,22,58,55,10
     PUSHBUTTON      "Button1",IDC_PAUSE_PICTURE,39,7,24,24,BS_BITMAP
     CONTROL         "Slider1",IDC_ANIM_SPEED,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,15,38,70,11
     LTEXT           "0 %",IDC_STATIC,2,39,12,8
     LTEXT           "100 %",IDC_STATIC,84,39,22,8
+    CONTROL         "Display helpers",IDC_DISPLAY_HELPERS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,22,72,61,8
+    GROUPBOX        "",IDC_STATIC,15,51,74,34
+    GROUPBOX        "",IDC_STATIC,13,87,79,46
+    CONTROL         "Enable auto count",IDC_ENABLE_AUTO_COUNT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,92,73,15
+    PUSHBUTTON      "Reset count",IDC_RESET_COUNT,30,108,46,17
+    LTEXT           "Num particles : ? / ?",IDC_NUM_PARTICLES,4,155,103,9
+    LTEXT           "System date : ? s",IDC_SYSTEM_DATE,4,166,103,9
+    CONTROL         "Auto repeat",IDC_AUTOREPEAT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,1,138,105,16
 END
 
 IDD_ATTRIB_DLG DIALOG DISCARDABLE  0, 0, 346, 71
@@ -523,31 +554,33 @@ BEGIN
                     WS_TABSTOP,216,6,50,11
     CONTROL         "Global color lighting",ID_GLOBAL_COLOR_LIGHTING,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,19,70,11
+    CONTROL         "Align on motion",IDC_ALIGN_ON_MOTION,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,82,21,67,8
 END
 
 IDD_COLOR_EDIT DIALOG DISCARDABLE  0, 0, 226, 32
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
-    SCROLLBAR       IDC_RED_AMOUNT,47,0,64,8
-    SCROLLBAR       IDC_GREEN_AMOUNT,47,8,64,8
-    SCROLLBAR       IDC_BLUE_AMOUNT,47,16,64,8
-    LTEXT           "R    0",IDC_STATIC,27,0,19,8
-    LTEXT           "G    0",IDC_STATIC,27,8,20,8
-    LTEXT           "B    0",IDC_STATIC,27,16,20,8
+    LTEXT           "R    0",IDC_STATIC,27,0,18,8
+    LTEXT           "G    0",IDC_STATIC,27,8,18,8
+    LTEXT           "B    0",IDC_STATIC,27,16,18,8
     LTEXT           "255",IDC_STATIC,114,0,14,8
     LTEXT           "255",IDC_STATIC,114,8,15,8
     LTEXT           "255",IDC_STATIC,114,16,13,8
     CONTROL         "Button1",IDC_PARTICLE_COLOR,"Button",BS_OWNERDRAW | 
                     WS_TABSTOP,3,2,20,20
     PUSHBUTTON      "Browse...",IDC_BROWSE_COLOR,187,6,38,12
-    SCROLLBAR       IDC_ALPHA_AMOUNT,47,24,64,8
-    LTEXT           "A    0",IDC_STATIC,27,24,20,8
+    LTEXT           "A    0",IDC_STATIC,27,24,18,8
     LTEXT           "255",IDC_STATIC,114,24,13,8
     EDITTEXT        IDC_RED_EDIT,129,0,22,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_BLUE_EDIT,129,15,22,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_GREEN_EDIT,152,7,22,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_ALPHA_EDIT,151,20,22,12,ES_AUTOHSCROLL
+    SCROLLBAR       IDC_RED_AMOUNT,45,0,67,8
+    SCROLLBAR       IDC_GREEN_AMOUNT,45,8,67,8
+    SCROLLBAR       IDC_BLUE_AMOUNT,45,16,67,8
+    SCROLLBAR       IDC_ALPHA_AMOUNT,45,24,67,8
 END
 
 IDD_VALUE_BLENDER DIALOGEX 0, 0, 271, 82
@@ -794,11 +827,11 @@ FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Integration",IDC_STATIC,5,23,297,73
     CONTROL         "Enable motion slowDown",IDC_ENABLE_SLOW_DOWN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,33,93,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,31,93,12
     CONTROL         "Accurate integration",IDC_ACCURATE_INTEGRATION,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,9,11,81,11
-    LTEXT           "Time threshold :",IDC_STATIC,16,46,38,18
-    LTEXT           "Max steps:",IDC_STATIC,16,77,42,11
+    LTEXT           "Time threshold :",IDC_STATIC,8,46,34,18
+    LTEXT           "Max steps:",IDC_STATIC,7,74,34,11
     LTEXT           "User param1 :",IDC_STATIC,7,108,46,11
     LTEXT           "User param2 :",IDC_STATIC,7,129,46,11
     LTEXT           "User param3 :",IDC_STATIC,7,152,46,11
@@ -810,15 +843,17 @@ BEGIN
     CONTROL         "Use Precomputed Bounding Box",IDC_PRECOMPUTE_BBOX,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,251,121,8
     GROUPBOX        "",IDC_STATIC,4,256,186,38
-    EDITTEXT        IDC_BB_X,8,264,29,16,ES_AUTOHSCROLL
-    EDITTEXT        IDC_BB_Y,39,264,27,16,ES_AUTOHSCROLL
-    EDITTEXT        IDC_BB_Z,69,264,28,16,ES_AUTOHSCROLL
-    LTEXT           "X",IDC_STATIC,19,282,8,10
-    LTEXT           "Y",IDC_STATIC,50,283,8,10
-    LTEXT           "Z",IDC_STATIC,81,283,8,10
-    PUSHBUTTON      "Update",IDC_UPDATE_BBOX,102,264,29,16
-    PUSHBUTTON      "+ 10 %",IDC_INC_BBOX,134,264,26,16
-    PUSHBUTTON      "- 10 %",IDC_DEC_BBOX,162,264,24,16
+    EDITTEXT        IDC_BB_X,69,264,29,12,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_AUTOHSCROLL | ES_WANTRETURN
+    EDITTEXT        IDC_BB_Y,100,264,27,12,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_AUTOHSCROLL | ES_WANTRETURN
+    EDITTEXT        IDC_BB_Z,130,264,28,12,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_AUTOHSCROLL | ES_WANTRETURN
+    LTEXT           "X",IDC_STATIC,80,278,8,8
+    LTEXT           "Y",IDC_STATIC,110,278,8,8
+    LTEXT           "Z",IDC_STATIC,138,277,8,10
+    PUSHBUTTON      "+ 10 %",IDC_INC_BBOX,161,278,24,12
+    PUSHBUTTON      "- 10 %",IDC_DEC_BBOX,161,264,23,13
     GROUPBOX        "",IDC_STATIC,4,298,295,78
     CONTROL         "Model removed when out of range",
                     IDC_DIE_WHEN_OUT_OF_RANGE,"Button",BS_AUTOCHECKBOX | 
@@ -864,6 +899,12 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,186,10,94,13
     CONTROL         "Auto delay",IDC_AUTO_DELAY,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,242,355,48,15
+    CONTROL         "Auto",IDC_AUTO_BBOX,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,12,262,30,14
+    PUSHBUTTON      "Reset",IDC_RESET_BBOX,11,276,34,15
+    GROUPBOX        "",IDC_TIME_THRESHOLD_PLACE_HOLDER,42,40,226,24
+    GROUPBOX        "",IDC_MAX_STEP_PLACE_HOLDER,42,66,226,24
+    PUSHBUTTON      "Lock",IDC_LOCK_FRAME_DELAY,270,43,25,20
 END
 
 IDD_BIN_OP DIALOG DISCARDABLE  0, 0, 390, 174
@@ -1524,7 +1565,7 @@ IDD_CHOOSE_BG_COLOR DIALOGEX 0, 0, 233, 44
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Background color"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "",IDC_BG_COLOR,5,7,226,32,NOT WS_VISIBLE
 END
@@ -1543,7 +1584,7 @@ IDD_CHOOSE_SUN_COLOR DIALOGEX 0, 0, 235, 135
 STYLE WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Sun color"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "",IDC_SPECULAR,4,98,225,32,NOT WS_VISIBLE
     GROUPBOX        "",IDC_DIFFUSE,4,11,225,32,NOT WS_VISIBLE
@@ -1647,7 +1688,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 102
         TOPMARGIN, 7
-        BOTTOMMARGIN, 64
+        BOTTOMMARGIN, 175
     END
 
     IDD_ATTRIB_DLG, DIALOG

@@ -1,7 +1,7 @@
 /** \file u_global_position.h
  * <File description>
  *
- * $Id: u_global_position.h,v 1.1 2001/06/15 09:50:53 corvazier Exp $
+ * $Id: u_global_position.h,v 1.2 2001/08/27 08:46:33 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_U_GLOBAL_POSITION_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/vector.h"
 
 
 namespace NLPACS 

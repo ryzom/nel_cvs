@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.24 2001/08/21 09:50:41 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.25 2001/08/27 08:46:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -168,11 +168,14 @@ void	NLPACS::CRetrieverInstance::linkEdgeQuad(NLPACS::CGlobalRetriever &gr)
 		{
 			const CExteriorMesh::CLink		&link = em.getLink(edge.Link);
 
-			CRetrieverInstance::CLink	&borderLink = _BorderChainLinks[link.BorderChainId];
-			borderLink.ChainId = 0xFFFF;		// no opposite chain
-			borderLink.BorderChainId = 0xFFFF;	// idem
-			borderLink.Instance = (uint16)(ee[i].Exterior.RetrieverInstanceId);
-			borderLink.SurfaceId = (uint16)(ee[i].Exterior.SurfaceId);
+			if (link.SurfaceId != 0xFFFF && link.ChainId != 0xFFFF && link.BorderChainId != 0xFFFF)
+			{
+				CRetrieverInstance::CLink	&borderLink = _BorderChainLinks[link.BorderChainId];
+				borderLink.ChainId = 0xFFFF;		// no opposite chain
+				borderLink.BorderChainId = 0xFFFF;	// idem
+				borderLink.Instance = (uint16)(ee[i].Exterior.RetrieverInstanceId);
+				borderLink.SurfaceId = (uint16)(ee[i].Exterior.SurfaceId);
+			}
 		}
 	}
 }

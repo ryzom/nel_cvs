@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.28 2001/08/23 13:40:04 legros Exp $
+ * $Id: local_retriever.cpp,v 1.29 2001/08/27 08:46:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -706,6 +706,8 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 		- interior vertices and faces, for interior ground snapping
 	Version 2:
 		- face grid added.
+	Version 3:
+		- identifier added.
 	*/
 	sint	ver= f.serialVersion(2);
 
@@ -732,6 +734,10 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 	if (ver >= 2)
 	{
 		f.serial(_FaceGrid);
+	}
+	if (ver >= 3)
+	{
+		f.serial(_Id);
 	}
 }
 

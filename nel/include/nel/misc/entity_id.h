@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.19 2002/06/03 11:47:15 saffray Exp $
+ * $Id: entity_id.h,v 1.20 2002/07/01 16:06:08 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -300,6 +300,23 @@ struct CEntityId
 		std::string id;
 		getDebugString (id);
 		return "(" + id + ")";
+	}
+
+	/// Read from a debug string, use the same format as toString() (id:type:creator:dynamic) in hexadecimal
+	virtual void	fromString(const char *str)
+	{
+		uint64		id;
+		uint		type;
+		uint		creatorId;
+		uint		dynamicId;
+
+		if (sscanf(str, "(%"NL_I64"x:%x:%x:%x)", &id, &type, &creatorId, &dynamicId) != 4)
+			return;
+
+		Id = id;
+		Type = type;
+		CreatorId = creatorId;
+		DynamicId = dynamicId;
 	}
 	
 	/// Have a debug string.

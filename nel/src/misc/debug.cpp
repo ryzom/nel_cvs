@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.57 2002/08/23 12:17:40 lecroart Exp $
+ * $Id: debug.cpp,v 1.58 2002/08/23 12:25:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,11 +40,12 @@
 #	define WINVER			0x0400
 #	include <windows.h>
 #	include <direct.h>
-#  include <imagehlp.h>
-#  pragma comment(lib, "imagehlp.lib")
-#  define getcwd(_a, _b) (_getcwd(_a,_b))
+#	include <imagehlp.h>
+#	pragma comment(lib, "imagehlp.lib")
+#	define getcwd(_a, _b) (_getcwd(_a,_b))
 #elif defined NL_OS_UNIX
-#  include <unistd.h>
+#	include <unistd.h>
+#	define IsDebuggerPresent
 #endif
 
 #include <stdarg.h>

@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.15 2002/08/23 12:18:13 lecroart Exp $
+ * $Id: displayer.h,v 1.16 2002/08/23 12:20:24 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,7 +164,7 @@ private:
 class CMsgBoxDisplayer : virtual public IDisplayer
 {
 public:
-	CMsgBoxDisplayer (const char *displayerName = "") : IgnoreNextTime(false), IDisplayer (displayerName) {}
+	CMsgBoxDisplayer (const char *displayerName = "") : IDisplayer (displayerName), IgnoreNextTime(false) {}
 
 	bool IgnoreNextTime;
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.59 2002/03/14 18:28:20 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.60 2002/03/20 11:13:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1065,7 +1065,7 @@ const uint SpecularMapSize = 32; */
 
 
 // ***************************************************************************
-inline CTextureCube   *CDriverGL::getSpecularCubeMap(uint exp)
+CTextureCube	*CDriverGL::getSpecularCubeMap(uint exp)
 {
 	const uint SpecularMapSize = 32;
 	const uint SpecularMapSizeHighExponent = 64;

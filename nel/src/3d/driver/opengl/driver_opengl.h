@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.113 2002/03/18 14:46:16 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.114 2002/03/20 11:13:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -762,8 +762,24 @@ private:
 	// Force Activate Texture Environnement. no caching here. TexEnvSpecial is disabled.
 	void					forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env);
 	void					activateTexEnvColor(uint stage, NLMISC::CRGBA col);
-	void					forceActivateTexEnvColor(uint stage, NLMISC::CRGBA col);
-	void					forceActivateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env);
+	void					forceActivateTexEnvColor(uint stage, NLMISC::CRGBA col)
+	{
+		static	const float	OO255= 1.0f/255;	
+		_CurrentTexEnv[stage].ConstantColor= col;
+		// Setup the gl cte color.
+		_DriverGLStates.activeTextureARB(stage);
+		GLfloat		glcol[4];
+		glcol[0]= col.R*OO255;
+		glcol[1]= col.G*OO255;
+		glcol[2]= col.B*OO255;
+		glcol[3]= col.A*OO255;
+		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, glcol);	
+	}
+	void					forceActivateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env)
+	{	
+		forceActivateTexEnvColor(stage, env.ConstantColor);	
+	}
+
 
 	/// nv texture shaders. Should be used only if this caps is present!
 	void					enableNVTextureShader(bool enabled);

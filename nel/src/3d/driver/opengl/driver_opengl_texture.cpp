@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.50 2002/03/14 18:28:20 vizerie Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.51 2002/03/20 11:13:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -822,22 +822,6 @@ void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &
 
 
 // ***************************************************************************
-inline void		CDriverGL::forceActivateTexEnvColor(uint stage, NLMISC::CRGBA col)
-{
-	static	const float	OO255= 1.0f/255;	
-	_CurrentTexEnv[stage].ConstantColor= col;
-		// Setup the gl cte color.
-	_DriverGLStates.activeTextureARB(stage);
-	GLfloat		glcol[4];
-	glcol[0]= col.R*OO255;
-	glcol[1]= col.G*OO255;
-	glcol[2]= col.B*OO255;
-	glcol[3]= col.A*OO255;
-	glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, glcol);	
-}
-
-
-// ***************************************************************************
 void		CDriverGL::activateTexEnvColor(uint stage, NLMISC::CRGBA col)
 {	
 	if (col != _CurrentTexEnv[stage].ConstantColor)
@@ -845,14 +829,6 @@ void		CDriverGL::activateTexEnvColor(uint stage, NLMISC::CRGBA col)
 		forceActivateTexEnvColor(stage, col);	
 	}
 }
-
-// ***************************************************************************
-void		CDriverGL::forceActivateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env)
-{	
-	const CRGBA		&col= env.ConstantColor;
-	forceActivateTexEnvColor(stage, col);	
-}
-
 
 
 // ***************************************************************************

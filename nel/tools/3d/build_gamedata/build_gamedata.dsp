@@ -360,10 +360,6 @@ SOURCE=.\processes\smallbank\4_install.bat
 # End Source File
 # Begin Source File
 
-SOURCE=.\processes\smallbank\sh\build.sh
-# End Source File
-# Begin Source File
-
 SOURCE=.\processes\smallbank\sh\export.sh
 # End Source File
 # Begin Source File

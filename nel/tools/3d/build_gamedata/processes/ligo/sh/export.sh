@@ -29,8 +29,8 @@ bank_filename=`cat ../../cfg/properties.cfg | grep "bank_name" | sed -e 's/bank_
 bankfar_filename=`cat ../../cfg/properties.cfg | grep "bankfar_name" | sed -e 's/bankfar_name//' | sed -e 's/ //g' | sed -e 's/=//g'  | sed -e 's/"//g' | sed -e 's/;//g'`
 
 # Copy the bank file
-cp $bank_filename smallbank/ligo.smallbank
-cp $bankfar_filename smallbank/ligo.farbank
+cp $bank_filename smallbank/ligo.smallbank 2> log.log
+cp $bankfar_filename smallbank/ligo.farbank 2> log.log
 
 # delete ini file
 

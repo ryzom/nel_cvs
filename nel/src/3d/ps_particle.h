@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.14 2001/09/12 13:20:10 vizerie Exp $
+ * $Id: ps_particle.h,v 1.15 2001/09/17 14:04:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1943,6 +1943,19 @@ protected:
 	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner; }
 
 }; 
+
+
+/** A ribbon look at particle. It is like a ribbon, but textured (with no animation), and it always faces the user
+  */
+class CPSRibbonLookAt : public  CPSParticle, public CPSSizedParticle, public CPSColoredParticle
+{
+public:
+	/// ctor
+
+protected:
+
+};
+
 
 
 } // NL3D

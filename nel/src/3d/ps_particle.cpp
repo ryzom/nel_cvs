@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.47 2001/09/14 17:37:37 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.48 2001/09/17 14:04:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1821,13 +1821,7 @@ void CPSFanLight::draw(bool opaque)
 	}
 
 	_Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
-
-
-
-
 	const uint32 particleBunchSize = 512; // the size of a bunch of particle to deal with at a time
-
-
 	float pSizes[particleBunchSize];
 	float pAngles[particleBunchSize];
 
@@ -1930,6 +1924,11 @@ void CPSFanLight::draw(bool opaque)
 			currentAnglePt = &_Angle2D;			
 		}	
 
+		float fSize, firstSize, sizeStepBase, sizeStep;
+		if (_PhaseSmoothness)
+		{
+			sizeStepBase = 1.f / _PhaseSmoothness;
+		}
 		for (;posIt != endPosIt; ++posIt, ++timeIt)
 		{	
 			
@@ -1949,13 +1948,31 @@ void CPSFanLight::draw(bool opaque)
 			currentSizePt += currentSizePtIncrement;
 			currentAnglePt += currentAnglePtIncrement;
 
-			for (k = 0; k <= _NbFans; ++k)
+			// compute radius & vect for first fan
+			firstSize  = fanSize + (moveIntensity * CPSUtil::getCos(randomPhaseTab[k] + phaseAdd));
+			*(CVector *) ptVect = (*posIt) + I * firstSize * (CPSUtil::getCos((sint32) currentAngle))
+								  + K * firstSize * (CPSUtil::getSin((sint32) currentAngle));
+			currentAngle += angleStep;
+			ptVect += stride;
+			// computes other fans
+			for (k = 1; k <= (_NbFans - _PhaseSmoothness); ++k)
 			{
-				const float fSize  = fanSize + (moveIntensity * CPSUtil::getCos(randomPhaseTab[k] + phaseAdd));
+				fSize  = fanSize + (moveIntensity * CPSUtil::getCos(randomPhaseTab[k] + phaseAdd));
 				*(CVector *) ptVect = (*posIt) + I * fSize * (CPSUtil::getCos((sint32) currentAngle))
 									  + K * fSize * (CPSUtil::getSin((sint32) currentAngle));
 				currentAngle += angleStep;
 				ptVect += stride;
+			}
+
+			// interpolate radius, so that the fanlight loops correctly
+			sizeStep = sizeStepBase * (firstSize - fSize);
+			for (; k <= _NbFans; ++k)
+			{				
+				*(CVector *) ptVect = (*posIt) + I * fSize * (CPSUtil::getCos((sint32) currentAngle))
+									  + K * fSize * (CPSUtil::getSin((sint32) currentAngle));
+				currentAngle += angleStep;
+				ptVect += stride;
+				fSize  += sizeStep;
 			}
 		}
 
@@ -2044,7 +2061,7 @@ void CPSFanLight::resize(uint32 size)
 		
 	delete _IndexBuffer;		
 
-	_IndexBuffer = new uint32[ size * (_NbFans + 1) * 3];
+	_IndexBuffer = new uint32[ size * (_NbFans + 2) * 3];
 		
 
 
@@ -2080,11 +2097,11 @@ void CPSFanLight::resize(uint32 size)
 	{			
 		if (_Tex)
 		{
-			_Vb.setTexCoord(k * _NbFans + 2, 0, NLMISC::CUV(0, 0));
+			_Vb.setTexCoord(k * (_NbFans + 2), 0, NLMISC::CUV(0, 0));
 		}
 		if (!_UseColorScheme)
 		{
-			_Vb.setColor(k * _NbFans + 2, _Color);			
+			_Vb.setColor(k * (_NbFans + 2), _Color);			
 		}		
 		if (!_Tex)
 		{
@@ -2095,7 +2112,7 @@ void CPSFanLight::resize(uint32 size)
 		}
 		else
 		{
-			for(l = 1; l <= _NbFans; ++l)
+			for(l = 1; l <= _NbFans + 1; ++l)
 			{
 				_Vb.setColor(l + k * (_NbFans + 2), CRGBA(0, 0, 0));
 				_Vb.setTexCoord(l + k * (_NbFans + 2), 0, NLMISC::CUV((l - 1) / (float) _NbFans, 1));
@@ -2112,6 +2129,7 @@ void CPSFanLight::init(void)
 	_Mat.setLighting(false);	
 	_Mat.setZFunc(CMaterial::less);
 	_Mat.setDoubleSided(true);
+	_Mat.setColor(NLMISC::CRGBA::White);
 
 	updateMatAndVbForColor();
 }

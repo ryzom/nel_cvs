@@ -1,7 +1,7 @@
 /** \file time_nl.h
  * OS independant time class provided system clock
  *
- * $Id: time_nl.h,v 1.9 2002/01/23 14:45:48 lecroart Exp $
+ * $Id: time_nl.h,v 1.10 2005/01/06 16:21:33 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,35 +50,43 @@ typedef sint64 TTicks;
 
 /**
  * This class provide a independant local time system.
- * \author Vianney Lecroart
+ * \author Vianney Lecroart, Olivier Cado
  * \author Nevrax France
- * \date 2000
+ * \date 2000-2005
  */
 class CTime
 {
 public:
 
-	/** returns the number of second since midnight (00:00:00), January 1, 1970,
+	/** Return the number of second since midnight (00:00:00), January 1, 1970,
 	 * coordinated universal time, according to the system clock.
 	 * This values is the same on all computer if computers are synchronized (with NTP for example).
 	 */
 	static uint32	getSecondsSince1970 ();
 
-	/** get the time in millisecond. It's a \b local time, it means that the value
-	 * is \b different on 2 differents computers. Use the CUniTime to get a universal
+	/** Return the local time in milliseconds.
+	 * Use it only to measure time difference, the absolute value does not mean anything.
+	 * On Unix, getLocalTime() will try to use the Monotonic Clock if available, otherwise
+	 * the value can jump backwards if the system time is changed by a user or a NTP time sync process.
+	 * The value is different on 2 different computers; use the CUniTime class to get a universal
 	 * time that is the same on all computers.
-	 * \warning On Windows, the value is on 32 bits only.
+	 * \warning On Win32, the value is on 32 bits only. It wraps around to 0 every about 49.71 days.
 	 */
 	static TTime	getLocalTime ();
 
-	/** get the time in processor ticks. Use it for profile purpose. Only implemented
-	 *  under windows for the time. If the performance time is not supported on this
-	 *  hardware, it returns 0.
+	/** Return the time in processor ticks. Use it for profile purpose.
+	 * If the performance time is not supported on this hardware, it returns 0.
+	 * \warning On a multiprocessor system, the value returned by each processor may
+	 * be different. The only way to workaround this is to set a processor affinity
+	 * to the measured thread.
+	 * \warning The speed of tick increase can vary (especially on laptops or CPUs with
+	 * power management), so profiling several times and computing the average could be
+	 * a wise choice.
 	 */
 	static TTicks	getPerformanceTime ();
 
-	/** convert a ticks count into second. If the performance time is not supported on this
-	 *  hardware, it returns 0.0.
+	/** Convert a ticks count into second. If the performance time is not supported on this
+	 * hardware, it returns 0.0.
 	 */
 	static double	ticksToSecond (TTicks ticks);
 };

@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.16 2003/02/03 15:55:09 coutelas Exp $
+ * $Id: time_nl.cpp,v 1.17 2005/01/06 16:21:33 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,8 +39,9 @@
 namespace NLMISC
 {
 
-/*
- *
+/* Return the number of second since midnight (00:00:00), January 1, 1970,
+ * coordinated universal time, according to the system clock.
+ * This values is the same on all computer if computers are synchronized (with NTP for example).
  */
 uint32 CTime::getSecondsSince1970 ()
 {
@@ -48,30 +49,32 @@ uint32 CTime::getSecondsSince1970 ()
 }
 
 
-
-/*
- *
+/* Return the local time in milliseconds.
+ * Use it only to measure time difference, the absolute value does not mean anything.
+ * On Unix, getLocalTime() will try to use the Monotonic Clock if available, otherwise
+ * the value can jump backwards if the system time is changed by a user or a NTP time sync process.
+ * The value is different on 2 different computers; use the CUniTime class to get a universal
+ * time that is the same on all computers.
+ * \warning On Win32, the value is on 32 bits only. It wraps around to 0 every about 49.71 days.
  */
 TTime CTime::getLocalTime ()
 {
+
 #ifdef NL_OS_WINDOWS
 
-	static bool byperfcounter;
-	static bool initdone = false;
-
+	//static bool initdone = false;
+	//static bool byperfcounter;
 	// Initialization
-	if ( ! initdone )
-	{
-		byperfcounter = (getPerformanceTime() != 0);
-		initdone = true;
-	}
+	//if ( ! initdone )
+	//{
+		//byperfcounter = (getPerformanceTime() != 0);
+		//initdone = true;
+	//}
 
 	/* Retrieve time is ms
      * Why do we prefer getPerformanceTime() to timeGetTime() ? Because on one dual-processor Win2k
 	 * PC, we have noticed that timeGetTime() slows down when the client is running !!!
 	 */
-
-
 	/* Now we have noticed that on all WinNT4 PC the getPerformanceTime can give us value that
 	 * are less than previous
 	 */
@@ -82,25 +85,75 @@ TTime CTime::getLocalTime ()
 	//}
 	//else
 	//{
+		// This is not affected by system time changes. But it cycles every 49 days.
 		return timeGetTime();
 	//}
 
 #elif defined (NL_OS_UNIX)
 
-	struct timeval tv;
-
-	if ( gettimeofday( &tv, NULL) == -1 )
+	static bool initdone = false;
+	static bool isMonotonicClockSupported = false;
+	if ( ! initdone )
 	{
-		nlerror ("Cannot get time of day.");
+
+#ifdef _POSIX_TIMERS
+#ifdef _POSIX_MONOTONIC_CLOCK
+
+		/* Initialize the local time engine.
+		* On Unix, this method will find out if the Monotonic Clock is supported
+		* (seems supported by kernel 2.6, not by kernel 2.4). See getLocalTime().
+		*/
+		struct timespec tv;
+		if ( (clock_gettime( CLOCK_MONOTONIC, &tv ) == 0) &&
+			 (clock_getres( CLOCK_MONOTONIC, &tv ) == 0) )
+		{
+			nldebug( "Monotonic local time supported (resolution %.6f ms)", ((float)tv.tv_sec)*1000.0f + ((float)tv_nsec)/1000000.0f );
+			isMonotonicClockSupported = true;
+		}
+		else
+
+#endif
+#endif
+		{
+			nlwarning( "Monotonic local time not supported, caution with time sync" );
+		}
+
+		initdone = true;
 	}
+
+#ifdef _POSIX_TIMERS
+#ifdef _POSIX_MONOTONIC_CLOCK
+
+    struct timespec tv;
+	if ( isMonotonicClockSupported )
+	{
+		// This is not affected by system time changes.
+		if ( clock_gettime( CLOCK_MONOTONIC, &tv ) != 0 )
+			nlerror ("Can't get clock time again");
+	    return (TTime)tv.tv_sec * (TTime)1000 + (TTime)((tv.tv_nsec/*+500*/) / 1000000);
+	}
+
+#endif
+#endif
+
+	// This is affected by system time changes.
+	struct timeval tv;
+	if ( gettimeofday( &tv, NULL) != 0 )
+		nlerror ("Can't get time of day");
 	return (TTime)tv.tv_sec * (TTime)1000 + (TTime)tv.tv_usec / (TTime)1000;
 
 #endif
 }
 
 
-/*
- *
+/* Return the time in processor ticks. Use it for profile purpose.
+ * If the performance time is not supported on this hardware, it returns 0.
+ * \warning On a multiprocessor system, the value returned by each processor may
+ * be different. The only way to workaround this is to set a processor affinity
+ * to the measured thread.
+ * \warning The speed of tick increase can vary (especially on laptops or CPUs with
+ * power management), so profiling several times and computing the average could be
+ * a wise choice.
  */
 TTicks CTime::getPerformanceTime ()
 {
@@ -137,8 +190,8 @@ TTicks CTime::getPerformanceTime ()
 */
 
 
-/*
- *
+/* Convert a ticks count into second. If the performance time is not supported on this
+ * hardware, it returns 0.0.
  */
 double CTime::ticksToSecond (TTicks ticks)
 {

@@ -1,7 +1,7 @@
 /** \file attrib_list_box.cpp
- * <File description>
+ * A list box that can be filled with owner drawn items. Just provide a interface for drawing
  *
- * $Id: attrib_list_box.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: attrib_list_box.cpp,v 1.3 2001/06/25 13:15:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "object_viewer.h"
 #include "attrib_list_box.h"
 #include "value_gradient_dlg.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

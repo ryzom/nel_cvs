@@ -1,7 +1,7 @@
 /** \file attrib_list_box.h
- * <File description>
+ * A list box that can be filled with owner drawn items. Just provide a interface for drawing
  *
- * $Id: attrib_list_box.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: attrib_list_box.h,v 1.3 2001/06/25 13:15:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

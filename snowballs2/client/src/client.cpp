@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.46 2001/08/14 12:31:36 lecroart Exp $
+ * $Id: client.cpp,v 1.47 2001/08/29 13:03:41 valignat Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -263,7 +263,7 @@ int main(int argc, char **argv)
 	displayLoadingState ("Ready !!!");
 
 	// Display the first line
-	nlinfo ("Welcome to Snowballs 1");
+	nlinfo ("Welcome to Snowballs");
 	nlinfo ("");
 	nlinfo ("Press SHIFT-ESC to exit the game");
 

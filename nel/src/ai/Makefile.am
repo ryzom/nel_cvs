@@ -1,12 +1,13 @@
 #
-# $Id: Makefile.am,v 1.7 2001/03/27 08:13:02 chafik Exp $
+# $Id: Makefile.am,v 1.8 2001/04/03 12:32:21 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
 
 lib_LTLIBRARIES      = libnelai.la
 
-SUBDIRS              = agent c character fuzzy logic nimat pyserver script .
+SUBDIRS              = agent c character fuzzy logic nimat pyserver script \
+                       tools .
 
 libnelai_la_SOURCES  = ai.cpp static_def_init.cpp agent_init.cpp
 
@@ -17,7 +18,8 @@ libnelai_la_LIBADD   = agent/libagent.la \
                        logic/liblogic.la \
                        nimat/libnimat.la \
                        pyserver/libpyserver.la \
-                       script/libscript.la
+                       script/libscript.la \
+                       tools/libtools.la
 
 libnelai_la_LDFLAGS  = -version-info @LIBTOOL_VERSION@
 

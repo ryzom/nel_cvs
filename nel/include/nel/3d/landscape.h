@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.11 2000/12/01 17:18:30 berenguier Exp $
+ * $Id: landscape.h,v 1.12 2000/12/01 18:41:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -137,6 +137,10 @@ public:
 	void			flushTiles(IDriver *drv, uint16 tileStart, uint16 nbTiles);
 	/// Force a range of tiles to be loaded in the driver...
 	void			releaseTiles(uint16 tileStart, uint16 nbTiles);
+
+
+	/// Return the texture for a tile Id. UseFull for Tile edition.
+	NLMISC::CSmartPtr<ITexture>		getTileTexture(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias);
 
 
 private:

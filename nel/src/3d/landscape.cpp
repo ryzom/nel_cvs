@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.13 2000/12/01 17:26:05 berenguier Exp $
+ * $Id: landscape.cpp,v 1.14 2000/12/01 18:41:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -413,15 +413,21 @@ void			CLandscape::loadTile(uint16 tileId)
 	// Retrieve or create texture.
 	// ===========================
 	// Tile Must exist.
-	nlassert(tileId<TileBank.getTileCount());
-	tile= TileBank.getTile(tileId);
+	nlassert(tileId==0xFFFF || tileId<TileBank.getTileCount());
+	if(tileId<TileBank.getTileCount())
+		tile= TileBank.getTile(tileId);
+	else
+		tile= NULL;
 	// TileInfo must not exist.
 	nlassert(TileInfos[tileId]==NULL);
 	TileInfos[tileId]= tileInfo= new CTileInfo;
 
 	// Fill additive part.
 	// ===================
-	textName= tile->getFileName(CTile::additive);
+	if(tile)
+		textName= tile->getFileName(CTile::additive);
+	else
+		textName= "";
 	// If no additive for this tile, rdrpass is NULL.
 	if(textName=="")
 		tileInfo->AdditiveRdrPass= NULL;
@@ -453,10 +459,16 @@ void			CLandscape::loadTile(uint16 tileId)
 	else
 		pass.BlendType= CPatchRdrPass::NegativeAlpha;
 	// The diffuse part for a tile is inevitable.
-	pass.TextureDiffuse= findTileTexture(tile->getFileName(CTile::diffuse));
-	textName= tile->getFileName(CTile::bump);
-	if(textName!="")
-		pass.TextureBump= findTileTexture(textName);
+	if(tile)
+		pass.TextureDiffuse= findTileTexture(tile->getFileName(CTile::diffuse));
+	else
+		pass.TextureDiffuse= new CTextureCross;
+	if(tile)
+	{
+		textName= tile->getFileName(CTile::bump);
+		if(textName!="")
+			pass.TextureBump= findTileTexture(textName);
+	}
 
 	// Fill tileInfo.
 	tileInfo->DiffuseRdrPass= findTileRdrPass(pass);
@@ -548,6 +560,24 @@ void			CLandscape::getTileUvScaleBias(uint16 tileId, CTile::TBitmap bitmapType, 
 		case CTile::bump:
 			uvScaleBias= tile->BumpUvScaleBias; break;
 	}
+}
+
+
+// ***************************************************************************
+NLMISC::CSmartPtr<ITexture>		CLandscape::getTileTexture(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias)
+{
+	CPatchRdrPass	*pass;
+	if(bitmapType== CTile::additive)
+		pass= getTileRenderPass(tileId, true);
+	else
+		pass= getTileRenderPass(tileId, false);
+	if(!pass)
+		return NULL;
+	getTileUvScaleBias(tileId, bitmapType, uvScaleBias);
+	if(bitmapType== CTile::diffuse)
+		return pass->TextureDiffuse;
+	else
+		return pass->TextureBump;
 }
 
 

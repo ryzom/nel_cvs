@@ -1,0 +1,39 @@
+ligoscript.txt
+---------------
+
+Ligoscape maxscript new functions:
+
+
+**********************************************
+
+NeLLigoExportZoneTemplate node "Filename.anim" only_check error_in_dialog
+
+Export a zone template file from a max NeL patch mesh.
+
+node is a MaxNode. It must be a max NeL patch mesh.
+Filename is the file name to export the zone template
+only_check is true to export the file, false to only check it
+error_in_dialog is true to display the errors message in a dialog, false in the listener
+
+**********************************************
+
+NeLLigoGetErrorZoneTemplate code_array vertex_id_array message_array
+
+Get the export errors after a call to NeLLigoExportZoneTemplate.
+
+code_array is an integer array with the error code. (2 for OpenedEdge, 4 for InvalidVertexList, 5 for NotInserted)
+vertex_id_array is an integer array with the id of the vertex where an error occured.
+message_array is a string array with the error message for the vertices
+
+All thoses arraies have the same size.
+
+The function return a global error code undex a string. (0 for noerror, 1 for NoBoundaryVertices, 2 for opened edge, 3 for MulitpleEdge, 4 for InvalidVertexList)
+
+**********************************************
+
+NeLLigoGetSnap 
+
+Return the snap defined in the config file, else return undefined
+
+**********************************************
+

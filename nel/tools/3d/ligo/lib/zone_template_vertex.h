@@ -1,0 +1,80 @@
+/** \file zone_template_vertex.h
+ * Ligo zone template vertex definition
+ *
+ * $Id: zone_template_vertex.h,v 1.1 2001/10/12 13:26:01 corvazier Exp $
+ */
+
+/* Copyright, 2000, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#ifndef NL_ZONE_TEMPLATE_VERTEX_H
+#define NL_ZONE_TEMPLATE_VERTEX_H
+
+#include "nel/misc/types_nl.h"
+#include "nel/misc/vector.h"
+
+namespace NLMISC
+{
+class NLMISC::IStream;
+}
+
+namespace NLLIGO
+{
+
+/**
+ * Ligo zone template vertex 
+ *
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CZoneTemplateVertex
+{
+public:
+
+	/// Vertex position flag
+	enum TVertexEdge
+	{
+		SnappedXFlag	=1,
+		SnappedYFlag	=2,
+	};
+
+	/// Default constructor does nothing
+	CZoneTemplateVertex () {};
+
+	/// Constructor
+	CZoneTemplateVertex (const NLMISC::CVector& pos, uint edgeFlags);
+
+	/// Serial
+	void serial (NLMISC::IStream &s);
+
+private:
+
+	/// Vertex position
+	NLMISC::CVector		_Position;
+
+	/// Edge flags
+	uint32				_EdgeFlags;
+};
+
+}
+
+#endif // NL_ZONE_TEMPLATE_VERTEX_H
+
+/* End of zone_template_vertex.h */

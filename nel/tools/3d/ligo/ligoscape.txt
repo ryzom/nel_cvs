@@ -1,0 +1,23 @@
+INTRODUCTION:
+-------------
+
+Ligoscape is a landscape generation method based on the NeL landscape technologie.
+
+PROJECT STRUCTURE:
+------------------
+
+The project is composed of :
+
+* A static library for shared code
+* A 3dsmax plugin to check, debug and export ligo data from max
+
+PROJECT DEPENDENCIES:
+---------------------
+
+// "ProjectA <- ProjectB" is for "ProjectA needs ProjectB"
+
+ligoscape_lib <- nel_3d
+ligoscape_lib <- nel_misc
+
+ligoscape_plugin_max <- ligoscape_lib
+ligoscape_plugin_max <- nel_patch_lib

@@ -1,0 +1,27 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: lib - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\cyrilc\LOCALS~1\Temp\RSP4B2.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "_MBCS" /D "_LIB" /D "WIN32" /D "_DEBUG" /D "__STL_DEBUG" /Fp"Debug/lib.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"R:\code\nel\tools\3d\ligoscape\lib\zone_template.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\cyrilc\LOCALS~1\Temp\RSP4B2.tmp" 
+Creating command line "link.exe -lib /nologo /out:"Debug\lib.lib"  .\Debug\ligo_config.obj .\Debug\zone_template.obj .\Debug\zone_template_vertex.obj .\Debug\ligo_error.obj \code\nel\lib\nlmisc_debug.lib "
+<h3>Output Window</h3>
+Compiling...
+zone_template.cpp
+Creating library...
+
+
+
+<h3>Results</h3>
+lib.lib - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

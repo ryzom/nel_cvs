@@ -1,0 +1,73 @@
+/** \file ligo_error.cpp
+ * Error handling implementation
+ *
+ * $Id: ligo_error.cpp,v 1.1 2001/10/12 13:26:01 corvazier Exp $
+ */
+
+/* Copyright, 2000, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#include "ligo_error.h"
+
+namespace NLLIGO
+{
+
+// ***************************************************************************
+
+CLigoError::CLigoError()
+{
+	clear ();
+}
+
+// ***************************************************************************
+
+void CLigoError::pushVertexError (TError code, uint id, uint edge)
+{
+	// Add a vertex error
+	_VertexError.push_back (CVertex (code, id, edge));
+}
+
+// ***************************************************************************
+
+uint CLigoError::numVertexError () const
+{
+	return _VertexError.size ();
+}
+
+// ***************************************************************************
+
+CLigoError::TError CLigoError::getVertexError (uint error, uint &id, uint &edge) const
+{
+	const CVertex &vertex = _VertexError[error];
+	id = vertex.Id;
+	edge = vertex.Edge;
+	return vertex.Code;
+}
+
+// ***************************************************************************
+
+void CLigoError::clear ()
+{
+	MainError = NoError;
+	_VertexError.clear ();
+}
+
+// ***************************************************************************
+
+}

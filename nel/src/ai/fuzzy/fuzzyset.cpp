@@ -1,7 +1,7 @@
 /** \file fuzzyset.cpp
  * Fuzzy sets: triangle, trapeze...
  *
- * $Id: fuzzyset.cpp,v 1.8 2001/05/22 16:08:16 chafik Exp $
+ * $Id: fuzzyset.cpp,v 1.9 2001/09/12 12:17:54 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -194,7 +194,7 @@ namespace NLAIFUZZY
 
 	double CRightFuzzySet::membership(double val)
 	{
-		if ( val > _X2 && val < _X3 )
+		if ( val >= _X2 && val <= _X3 )
 			return 1.0;
 
 		if ( val > _X1 && val < _X2 ) 
@@ -207,7 +207,7 @@ namespace NLAIFUZZY
 
 	bool CRightFuzzySet::isIn(double val)
 	{
-		return ( val > _X1 && val < _X3 );
+		return ( val >= _X1 && val <= _X3 );
 	}
 
 	double CRightFuzzySet::surface()
@@ -572,7 +572,7 @@ namespace NLAIFUZZY
 
 	double CLeftFuzzySet::membership(double val)
 	{
-		if ( val > _X1 && val < _X2 )
+		if ( val >= _X1 && val <= _X2 )
 			return 1.0;
 
 		if ( val > _X2 && val < _X3 )
@@ -585,7 +585,7 @@ namespace NLAIFUZZY
 
 	bool CLeftFuzzySet::isIn(double val)
 	{
-		return ( val > _X1 && val < _X3 );
+		return ( val >= _X1 && val <= _X3 );
 	}
 
 	double CLeftFuzzySet::surface()

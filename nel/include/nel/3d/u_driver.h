@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.49 2004/09/17 15:13:12 vizerie Exp $
+ * $Id: u_driver.h,v 1.50 2004/10/19 13:00:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -206,6 +206,10 @@ public:
 	virtual	void			clearBuffers(CRGBA col= CRGBA(255,255,255,255)) =0;
 	/// This swap the back and front buffer (ALL the buffer :) ).
 	virtual	void			swapBuffers() =0;
+	// Finish all commands
+	virtual void            finish() = 0;
+	// Flush the command buffer then immediately returns
+	virtual void            flush() = 0;
 
 	/** set the number of VBL wait when a swapBuffers() is issued. 0 means no synchronisation to the VBL
 	 *	Default is 1. Values >1 may be clamped to 1 by the driver.

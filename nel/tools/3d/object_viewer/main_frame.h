@@ -38,7 +38,7 @@ public:
 // Attributes
 public:
 
-	enum	TMouseMove {MoveCamera=0, MoveSceneRoot, MoveElement, MoveObjectLightTest};
+	enum	TMouseMove {MoveCamera=0, MoveSceneRoot, MoveElement, MoveObjectLightTest, MoveFX};
 	enum	TCameraMode {FirstMode=0, ObjectMode, CameraMode };
 
 	CStatusBar		StatusBar;
@@ -60,6 +60,7 @@ public:
 	bool		    LightGroupWindow;
 	bool			ChooseFrameDelayWindow;
 	bool			ChooseBGColorWindow;
+	bool			ChooseSunColorWindow;
 	TMouseMove		MouseMoveType;
 	bool			X;
 	bool			Y;
@@ -79,6 +80,7 @@ public:
 	bool			isMoveCamera() const {return MouseMoveType==MoveCamera;}
 	bool			isMoveSceneRoot() const {return MouseMoveType==MoveSceneRoot;}
 	bool			isMoveElement() const {return MouseMoveType==MoveElement;}
+	bool			isMoveFX() const {return MouseMoveType==MoveFX;}
 	bool			isMoveObjectLightTest() const {return MouseMoveType==MoveObjectLightTest;}
 
 // Operations
@@ -99,6 +101,7 @@ public:
 	afx_msg void OnReloadTextures();
 	afx_msg void OnClear();
 	afx_msg void OnEditMoveelement();
+	afx_msg void OnEditMoveFX();
 	afx_msg void OnEditX();
 	afx_msg void OnEditY();
 	afx_msg void OnEditZ();
@@ -126,6 +129,7 @@ public:
 	afx_msg void OnWindowSoundAnim();
 	afx_msg void OnWindowChooseFrameDelay();
 	afx_msg void OnWindowChooseBGColor();
+	afx_msg void OnWindowChooseSunColor();
 	afx_msg void OnSetLightGroupFactor();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
@@ -138,6 +142,7 @@ public:
 	afx_msg void OnUpdateWindowSoundAnim(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowChooseFrameDelay(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowBGColor(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateWindowSunColor(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewObjectmode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewFirstpersonmode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewCamera(CCmdUI* pCmdUI);
@@ -145,6 +150,7 @@ public:
 	afx_msg void OnUpdateEditY(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditZ(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditMoveelement(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditMoveFX(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowLightGroup(CCmdUI* pCmdUI);
 	afx_msg void OnHelpAboutobjectviewer();	
 	afx_msg void OnRemoveAllInstancesFromScene();
@@ -161,6 +167,7 @@ public:
 	afx_msg void OnEditMovescene();
 	afx_msg void OnUpdateEditMovescene(CCmdUI* pCmdUI);
 	afx_msg void OnViewResetSceneRoot();
+	afx_msg void OnViewResetFXRoot();
 	afx_msg void OnViewSetSceneRotation();
 	afx_msg void OnShootScene();
 	//}}AFX_MSG

@@ -47,6 +47,7 @@ BEGIN
     BUTTON      ID_EDIT_MOVESCENE
     BUTTON      ID_EDIT_MOVEELEMENT
     BUTTON      ID_EDIT_MOVE_OBJECT_LIGHT_TEST
+    BUTTON      ID_EDIT_MOVE_FX
 END
 
 
@@ -215,6 +216,8 @@ IDB_PARTICLE_WIDTH      BITMAP  DISCARDABLE     "bmp00022.bmp"
 IDB_PARTICLE_HEIGHT     BITMAP  DISCARDABLE     "bmp00023.bmp"
 IDB_MORPH_SCHEME        BITMAP  DISCARDABLE     "bmp00024.bmp"
 IDB_PAUSE_SYSTEM        BITMAP  DISCARDABLE     "bmp00025.bmp"
+IDB_LIGHT_ATTEN_START   BITMAP  DISCARDABLE     "bmp00026.bmp"
+IDB_LIGHT_ATTEN_END     BITMAP  DISCARDABLE     "light_at.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -411,7 +414,7 @@ END
 
 IDD_EDITABLE_RANGE DIALOGEX 0, 0, 226, 24
 STYLE WS_CHILD
-FONT 8, "MS Sans Serif", 0, 0, 0x1
+FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "Slider1",IDC_SLIDER,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,34,6,59,12
@@ -518,6 +521,8 @@ BEGIN
     GROUPBOX        "",IDC_WIDTH_HEIGHT_BOX,172,0,40,18
     CONTROL         "No Auto LOD",IDC_NO_AUTO_LOD,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,216,6,50,11
+    CONTROL         "Global color lighting",ID_GLOBAL_COLOR_LIGHTING,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,19,70,11
 END
 
 IDD_COLOR_EDIT DIALOG DISCARDABLE  0, 0, 226, 32
@@ -848,13 +853,15 @@ BEGIN
     LTEXT           "(Wrn : Bypass multitex, not supported by all types)",
                     IDC_STATIC,204,273,81,24
     CONTROL         "Enable load balancing",IDC_ENABLE_LOAD_BALANCING,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,119,9,128,15
+                    BS_AUTOCHECKBOX | WS_TABSTOP,93,9,83,15
     PUSHBUTTON      "global",IDC_GLOBAL_USER_PARAM_1,279,105,22,15
     PUSHBUTTON      "global",IDC_GLOBAL_USER_PARAM_2,279,126,22,15
     PUSHBUTTON      "global",IDC_GLOBAL_USER_PARAM_3,280,148,21,15
     PUSHBUTTON      "global",IDC_GLOBAL_USER_PARAM_4,280,169,22,15
     CONTROL         "No max nb steps",IDC_BYPASS_MAX_NUM_STEPS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,227,340,65,14
+    CONTROL         "Force global lighting",IDC_FORCE_GLOBAL_LIGHITNG,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,186,10,94,13
 END
 
 IDD_BIN_OP DIALOG DISCARDABLE  0, 0, 390, 174
@@ -1511,12 +1518,37 @@ BEGIN
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_CHOOSE_BG_COLOR DIALOG DISCARDABLE  0, 0, 233, 45
+IDD_CHOOSE_BG_COLOR DIALOGEX 0, 0, 233, 44
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Background color"
 FONT 8, "MS Sans Serif"
 BEGIN
-    GROUPBOX        "",IDC_BG_COLOR,5,6,226,32,NOT WS_VISIBLE
+    GROUPBOX        "",IDC_BG_COLOR,5,7,226,32,NOT WS_VISIBLE
+END
+
+IDD_PS_LIGHT DIALOG DISCARDABLE  0, 0, 354, 219
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "",IDC_COLOR_PLACEHOLDER,3,3,346,71,NOT WS_VISIBLE
+    GROUPBOX        "",IDC_ATTEN_START_PLACEHOLDER,3,74,346,71,NOT 
+                    WS_VISIBLE
+    GROUPBOX        "",IDC_ATTEN_END_PLACEHOLDER,3,144,346,71,NOT WS_VISIBLE
+END
+
+IDD_CHOOSE_SUN_COLOR DIALOGEX 0, 0, 235, 135
+STYLE WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Sun color"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "",IDC_SPECULAR,4,98,225,32,NOT WS_VISIBLE
+    GROUPBOX        "",IDC_DIFFUSE,4,11,225,32,NOT WS_VISIBLE
+    GROUPBOX        "",IDC_AMBIENT,4,54,225,32,NOT WS_VISIBLE
+    LTEXT           "Diffuse :",IDC_STATIC,7,2,93,18
+    LTEXT           "Ambient :",IDC_STATIC,8,47,33,10
+    LTEXT           "Specular :",IDC_STATIC,9,88,33,10
 END
 
 
@@ -2069,7 +2101,23 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 226
         TOPMARGIN, 7
-        BOTTOMMARGIN, 38
+        BOTTOMMARGIN, 37
+    END
+
+    IDD_PS_LIGHT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 347
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 212
+    END
+
+    IDD_CHOOSE_SUN_COLOR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 128
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2213,6 +2261,7 @@ BEGIN
             MENUITEM "&Radial",                     IDM_RADIAL_EMITTER
         END
         MENUITEM "Bind &sound",                 IDM_SOUND
+        MENUITEM "Bind &light",                 IDM_LIGHT
         MENUITEM SEPARATOR
         MENUITEM "&Copy located",               IDM_COPY_LOCATED
         MENUITEM "&Paste bindable",             IDM_PASTE_BINDABLE
@@ -2295,6 +2344,7 @@ BEGIN
             MENUITEM "&Radial",                     IDM_RADIAL_EMITTER_LOC
         END
         MENUITEM "Bind s&ound",                 IDM_SOUND_LOC
+        MENUITEM "Bind &l&ight",                IDM_LIGHT_LOC
     END
 END
 
@@ -2341,6 +2391,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Reset camera",               ID_VIEW_RESET_CAMERA
         MENUITEM "Reset Scene &Matrix",         ID_VIEW_RESET_SCENE_ROOT
+        MENUITEM "Reset F&X Matrix",            ID_VIEW_RESET_FX_ROOT
         MENUITEM "Set Scene Rotation",          ID_VIEW_SET_SCENE_ROTATION
         MENUITEM SEPARATOR
         MENUITEM "Activate texture set &1",     IDM_ACTIVATE_TEXTURE_SET_1
@@ -2383,6 +2434,7 @@ BEGIN
         MENUITEM "&Light Group Factor",         ID_SCENE_SETLIGHTGROUPFACTOR
         MENUITEM "Choose frame delay",          ID_WINDOW_CHOOSE_FRAME_DELAY
         MENUITEM "Background color",            ID_WINDOW_CHOOSE_BG_COLOR
+        MENUITEM "Sun color",                   ID_WINDOW_CHOOSE_SUN_COLOR
     END
     POPUP "&Help"
     BEGIN

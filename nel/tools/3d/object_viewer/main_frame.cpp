@@ -9,6 +9,7 @@
 #include "about_dialog.h"
 #include "choose_frame_delay.h"
 #include "choose_bg_color_dlg.h"
+#include "choose_sun_color_dlg.h"
 #include "day_night_dlg.h"
 #include "water_pool_editor.h"
 #include "vegetable_dlg.h"
@@ -102,6 +103,7 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	LightGroupWindow=false;
 	ChooseFrameDelayWindow=false;
 	ChooseBGColorWindow=false;
+	ChooseSunColorWindow=false;
 	MouseMoveType= MoveCamera;
 	MoveMode=ObjectMode;
 	X=true;
@@ -132,6 +134,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(IDC_RELOAD_TEXTURES, OnReloadTextures)
 	ON_COMMAND(ID_CLEAR, OnClear)
 	ON_COMMAND(ID_EDIT_MOVEELEMENT, OnEditMoveelement)
+	ON_COMMAND(ID_EDIT_MOVE_FX, OnEditMoveFX)
 	ON_COMMAND(ID_EDIT_X, OnEditX)
 	ON_COMMAND(ID_EDIT_Y, OnEditY)
 	ON_COMMAND(ID_EDIT_Z, OnEditZ)
@@ -159,6 +162,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_WINDOW_ANIMSOUND, OnWindowSoundAnim)
 	ON_COMMAND(ID_WINDOW_CHOOSE_FRAME_DELAY, OnWindowChooseFrameDelay)	
 	ON_COMMAND(ID_WINDOW_CHOOSE_BG_COLOR, OnWindowChooseBGColor)
+	ON_COMMAND(ID_WINDOW_CHOOSE_SUN_COLOR, OnWindowChooseSunColor)
 	ON_COMMAND(ID_SCENE_SETLIGHTGROUPFACTOR, OnSetLightGroupFactor)
 	ON_WM_CREATE()
 	ON_WM_ERASEBKGND()
@@ -171,6 +175,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ANIMSOUND, OnUpdateWindowSoundAnim)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_CHOOSE_FRAME_DELAY, OnUpdateWindowChooseFrameDelay)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_CHOOSE_BG_COLOR, OnUpdateWindowBGColor)
+	ON_UPDATE_COMMAND_UI(ID_WINDOW_CHOOSE_SUN_COLOR, OnUpdateWindowSunColor)
 	ON_UPDATE_COMMAND_UI(ID_SCENE_SETLIGHTGROUPFACTOR, OnUpdateWindowLightGroup)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_OBJECTMODE, OnUpdateViewObjectmode)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIRSTPERSONMODE, OnUpdateViewFirstpersonmode)
@@ -179,6 +184,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_Y, OnUpdateEditY)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_Z, OnUpdateEditZ)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVEELEMENT, OnUpdateEditMoveelement)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVE_FX, OnUpdateEditMoveFX)
 	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)	
 	ON_COMMAND(IDM_REMOVE_ALL_INSTANCES_FROM_SCENE, OnRemoveAllInstancesFromScene)	
 	ON_COMMAND_RANGE(IDM_ACTIVATE_TEXTURE_SET_1, IDM_ACTIVATE_TEXTURE_SET_8, OnActivateTextureSet)
@@ -194,6 +200,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_EDIT_MOVESCENE, OnEditMovescene)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVESCENE, OnUpdateEditMovescene)
 	ON_COMMAND(ID_VIEW_RESET_SCENE_ROOT, OnViewResetSceneRoot)
+	ON_COMMAND(ID_VIEW_RESET_FX_ROOT, OnViewResetFXRoot)	
 	ON_COMMAND(ID_VIEW_SET_SCENE_ROTATION, OnViewSetSceneRotation)
 	ON_COMMAND(ID_SHOOT_SCENE, OnShootScene)
 	//}}AFX_MSG_MAP
@@ -231,6 +238,7 @@ void CMainFrame::update ()
 	ObjView->_LightGroupDlg->ShowWindow (LightGroupWindow?SW_SHOW:SW_HIDE);
 	ObjView->_ChooseFrameDelayDlg->ShowWindow (ChooseFrameDelayWindow?SW_SHOW:SW_HIDE);
 	ObjView->_ChooseBGColorDlg->ShowWindow (ChooseBGColorWindow?SW_SHOW:SW_HIDE);
+	ObjView->_ChooseSunColorDlg->ShowWindow (ChooseSunColorWindow?SW_SHOW:SW_HIDE);
 }
 
 // ***************************************************************************
@@ -275,6 +283,8 @@ void CMainFrame::registerValue (bool read)
 			RegQueryValueEx (hKey, "ViewChooseFrameDelay", 0, &type, (LPBYTE)&ChooseFrameDelayWindow, &len);
 			len=sizeof (BOOL);
 			RegQueryValueEx (hKey, "ViewChooseBGColor", 0, &type, (LPBYTE)&ChooseBGColorWindow, &len);
+			len=sizeof (BOOL);
+			RegQueryValueEx (hKey, "ViewChooseSunColor", 0, &type, (LPBYTE)&ChooseSunColorWindow, &len);
 		}
 	}
 	else
@@ -295,6 +305,7 @@ void CMainFrame::registerValue (bool read)
 			RegSetValueEx(hKey, "ViewLightGroupWind", 0, REG_BINARY, (LPBYTE)&LightGroupWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewChooseFrameDelay", 0, REG_BINARY, (LPBYTE)&ChooseFrameDelayWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewChooseBGColor", 0, REG_BINARY, (LPBYTE)&ChooseBGColorWindow, sizeof(bool));
+			RegSetValueEx(hKey, "ViewChooseSunColor", 0, REG_BINARY, (LPBYTE)&ChooseSunColorWindow, sizeof(bool));
 			RegSetValueEx(hKey, "MoveSpeed", 0, REG_BINARY, (LPBYTE)&MoveSpeed, sizeof(float));
 			RegSetValueEx(hKey, "ObjectMode", 0, REG_BINARY, (LPBYTE)&MoveMode, sizeof(uint));
 			RegSetValueEx(hKey, "BackGroundColor", 0, REG_BINARY, (LPBYTE)&BgColor, sizeof(NLMISC::CRGBA));
@@ -860,6 +871,13 @@ void CMainFrame::OnWindowChooseBGColor()
 	update ();
 }
 
+void CMainFrame::OnWindowChooseSunColor() 
+{
+	ChooseSunColorWindow^= true;
+	update ();
+}
+
+
 
 
 void CMainFrame::OnSetLightGroupFactor() 
@@ -977,6 +995,11 @@ void CMainFrame::OnUpdateWindowChooseFrameDelay(CCmdUI* pCmdUI)
 void CMainFrame::OnUpdateWindowBGColor(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck (ChooseBGColorWindow);
+}
+
+void CMainFrame::OnUpdateWindowSunColor(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck (ChooseSunColorWindow);
 }
 
 void CMainFrame::OnUpdateWindowLightGroup(CCmdUI* pCmdUI) 
@@ -1108,13 +1131,37 @@ void CMainFrame::OnEditMoveelement()
 	ObjView->getMouseListener().enableModelMatrixEdition(true) ;
 	ObjView->getMouseListener().enableTranslateXYInWorld(false);
 	ObjView->getMouseListener().setModelMatrix(ObjView->getParticleDialog()->getElementMatrix()) ;
-	// Each move must be multiplied by inverese of scene root matrix.
-	ObjView->getMouseListener().setModelMatrixTransformMove(ObjView->_SceneRoot->getMatrix().inverted());
+	// Each move must be multiplied by inverse of scene root matrix.
+	//ObjView->getMouseListener().setModelMatrixTransformMove(ObjView->_SceneRoot->getMatrix().inverted());
+	ObjView->getMouseListener().setModelMatrixTransformMove(CMatrix::Identity);
 
 	/*ctrl->EnableXCtrl.EnableWindow(MoveElement) ;
 	EnableYCtrl.EnableWindow(MoveElement) ;
 	EnableZCtrl.EnableWindow(MoveElement) ;*/
 }
+
+void CMainFrame::OnEditMoveFX() 
+{
+	// no op if already the case
+	if(isMoveFX())
+		return;
+
+	MouseMoveType= MoveFX;
+	UpdateData() ;
+	ToolBar.Invalidate ();
+
+	ObjView->getMouseListener().enableModelMatrixEdition(true) ;
+	ObjView->getMouseListener().enableTranslateXYInWorld(false);
+	ObjView->getMouseListener().setModelMatrix(ObjView->getParticleDialog()->getPSWorldMatrix()) ;
+	// Each move must be multiplied by inverese of scene root matrix.
+	//ObjView->getMouseListener().setModelMatrixTransformMove(ObjView->_SceneRoot->getMatrix().inverted());
+	ObjView->getMouseListener().setModelMatrixTransformMove(CMatrix::Identity);
+
+	/*ctrl->EnableXCtrl.EnableWindow(MoveElement) ;
+	EnableYCtrl.EnableWindow(MoveElement) ;
+	EnableZCtrl.EnableWindow(MoveElement) ;*/
+}
+
 
 void CMainFrame::OnEditMoveObjectLightTest() 
 {
@@ -1150,6 +1197,11 @@ void CMainFrame::OnUpdateEditMoveelement(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck (isMoveElement());
 }
 
+void CMainFrame::OnUpdateEditMoveFX(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (isMoveFX());
+}
+
 void CMainFrame::OnUpdateEditMoveObjectLightTest(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck (isMoveObjectLightTest());
@@ -1169,7 +1221,17 @@ void CMainFrame::OnViewResetSceneRoot()
 }
 
 // ***************************************************************************
+void CMainFrame::OnViewResetFXRoot() 
+{
+	CMatrix	ident;
+	ObjView->_ParticleDlg->setPSMatrix(ident);
+	if(isMoveFX())
+	{
+		ObjView->_MouseListener.setModelMatrix (ident);
+	}
+}
 
+// ***************************************************************************
 void CMainFrame::OnViewSetSceneRotation() 
 {
 	CSceneRotDlg	sceneRotDlg(this);

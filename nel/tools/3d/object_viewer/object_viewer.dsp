@@ -196,6 +196,10 @@ SOURCE=.\choose_pool_id.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\choose_sun_color_dlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\day_night_dlg.cpp
 # End Source File
 # Begin Source File
@@ -324,6 +328,10 @@ SOURCE=.\choose_name.h
 # Begin Source File
 
 SOURCE=.\choose_pool_id.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\choose_sun_color_dlg.h
 # End Source File
 # Begin Source File
 
@@ -515,7 +523,15 @@ SOURCE=.\bmp00025.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\bmp00026.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\icon1.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\light_at.bmp
 # End Source File
 # Begin Source File
 
@@ -684,6 +700,14 @@ SOURCE=.\edit_morph_mesh_dlg.cpp
 # Begin Source File
 
 SOURCE=.\edit_morph_mesh_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\edit_ps_light.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\edit_ps_light.h
 # End Source File
 # Begin Source File
 

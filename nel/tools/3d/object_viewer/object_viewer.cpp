@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.102 2003/07/30 11:19:20 boucher Exp $
+ * $Id: object_viewer.cpp,v 1.103 2003/08/08 16:58:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,7 @@
 #include "sound_anim_dlg.h"
 #include "light_group_factor.h"
 #include "choose_bg_color_dlg.h"
+#include "choose_sun_color_dlg.h"
 
 
 
@@ -694,6 +695,11 @@ void CObjectViewer::initUI (HWND parent)
 	_ChooseBGColorDlg->Create(IDD_CHOOSE_BG_COLOR, _MainFrame);
 	getRegisterWindowState (_ChooseBGColorDlg, REGKEY_CHOOSE_BG_COLOR_DLG, false);
 
+	// Create bg color window (must create after the background color has been set)
+	_ChooseSunColorDlg = new CChooseSunColorDlg(&CNELU::Scene, _MainFrame);
+	_ChooseSunColorDlg->Create(IDD_CHOOSE_SUN_COLOR, _MainFrame);
+	getRegisterWindowState (_ChooseSunColorDlg, REGKEY_CHOOSE_SUN_COLOR_DLG, false);
+
 
 	_MainFrame->update ();
 	
@@ -1226,7 +1232,11 @@ void CObjectViewer::go ()
 			if (_MainFrame->isMoveElement())
 			{
 				// for now we apply a transform on the selected object in the particle system			
-				_ParticleDlg->moveElement(_MouseListener.getModelMatrix());		
+				_ParticleDlg->moveElement(_MouseListener.getModelMatrix());
+			}
+			else if (_MainFrame->isMoveFX())
+			{
+				_ParticleDlg->setPSWorldMatrix(_MouseListener.getModelMatrix());
 			}
 			else if (_MainFrame->isMoveObjectLightTest())
 			{

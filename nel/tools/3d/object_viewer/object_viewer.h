@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.47 2003/07/11 16:50:16 corvazier Exp $
+ * $Id: object_viewer.h,v 1.48 2003/08/08 16:58:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,7 @@
 #define REGKEY_OBJ_LIGHT_GROUP_DLG "Software\\Nevrax\\nel\\object_viewer\\light_group_dlg"
 #define REGKEY_CHOOSE_FRAME_DELAY_DLG "Software\\Nevrax\\nel\\object_viewer\\choose_frame_delay_dlg"
 #define REGKEY_CHOOSE_BG_COLOR_DLG "Software\\Nevrax\\nel\\object_viewer\\choose_bg_color_dlg"
+#define REGKEY_CHOOSE_SUN_COLOR_DLG "Software\\Nevrax\\nel\\object_viewer\\choose_sun_color_dlg"
 
 
 
@@ -89,6 +90,7 @@ class CSoundAnimDlg;
 class CLightGroupFactor;
 class CChooseFrameDelay;
 class CChooseBGColorDlg;
+class CChooseSunColorDlg;
 
 
 
@@ -477,6 +479,7 @@ private:
 	CLightGroupFactor							*_LightGroupDlg;
 	CChooseFrameDelay							*_ChooseFrameDelayDlg;
 	CChooseBGColorDlg							*_ChooseBGColorDlg;
+	CChooseSunColorDlg							*_ChooseSunColorDlg;
 	uint32										_SelectedObject;
 	sint										_CurrentCamera;
 

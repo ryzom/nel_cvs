@@ -241,7 +241,8 @@ using  namespace NLAIFUZZY;
 								if ( classIsAnOperator() )
 								{
 									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
-									op_class->setGoal( NLAIAGENT::CStringVarName( LastyyText[1] ) );
+									NLAIAGENT::CStringVarName goal_name( LastyyText[1] );
+									op_class->setGoal( (NLAIAGENT::CStringVarName &) goal_name );
 								}
 							}
 							POINT_VI

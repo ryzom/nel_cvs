@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.9 2002/09/24 15:03:00 vizerie Exp $
+ * $Id: vertex_buffer.h,v 1.10 2003/03/13 13:40:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -254,7 +254,11 @@ private:
 	// Offset of each value
 	uint16					_Offset[NumValue];
 
+	// The UV routing table
+	uint8					_UVRouting[MaxStage];
+
 public:
+
 	// \name Private. For Driver only.
 	// @{
 	CRefPtr<IVBDrvInfos>	DrvInfos;
@@ -496,6 +500,9 @@ public:
 	void		serialSubset(NLMISC::IStream &f, uint vertexStart, uint vertexEnd);
 	// @}
 
+	/// \name UV Routing.
+	const uint8	*getUVRouting () const { return _UVRouting; }
+	void		setUVRouting (uint8 uvChannel, uint newUVRouting) { _UVRouting[uvChannel] = newUVRouting; }
 
 private:
 	/// Old version serialisation. V0 and V1.

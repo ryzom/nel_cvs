@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.cpp
  * <File description>
  *
- * $Id: vegetablevb_allocator.cpp,v 1.8 2002/09/10 13:39:22 berenguier Exp $
+ * $Id: vegetablevb_allocator.cpp,v 1.9 2003/03/13 13:40:59 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -329,7 +329,7 @@ void				CVegetableVBAllocator::allocateVertexBufferAndFillVBHard(uint32 numVerti
 		// try to create new one, in AGP Ram
 		// If too many vertices wanted, abort VBHard.
 		if(numVertices <= _MaxVertexInBufferHard)
-			_VBHard= _Driver->createVertexBufferHard(_VB.getVertexFormat(), _VB.getValueTypePointer(), numVertices, IDriver::VBHardAGP);
+			_VBHard= _Driver->createVertexBufferHard(_VB.getVertexFormat(), _VB.getValueTypePointer(), numVertices, IDriver::VBHardAGP, _VB.getUVRouting());
 		else
 			_VBHard= NULL;
 

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.64 2002/11/20 10:21:36 berenguier Exp $
+ * $Id: export_nel.h,v 1.65 2003/03/13 13:40:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,7 @@
 #define NEL_REMANENT_SEGMENT_CLASS_ID_A 0x72f3588b
 #define NEL_REMANENT_SEGMENT_CLASS_ID_B 0x6eda0a52
 
-
+#define MAX_MAX_TEXTURE					8
 
 #define MAX_MORPHER_CLASS_ID			Class_ID(0x17bb6854, 0xa5cba2a3)
 
@@ -715,8 +715,10 @@ private:
 			AlphaVertex = false;
 			ColorVertex = false;
 			AlphaVertexChannel = 0;
-			MappingChannelUsed = 0;
 			TextureMatrixEnabled = false;
+			uint i;
+			for (i=0; i<MAX_MAX_TEXTURE; i++)
+				UVRouting[i] = 0xff;
 		};
 
 		// Remap UV channel
@@ -728,8 +730,12 @@ private:
 		// Alpha vertex in this material
 		bool										AlphaVertex;
 
-		// Mapping channel used
-		uint										MappingChannelUsed;
+		/* UV channel routing : 
+		 * (UVRouting[i] == 0xff)	UV channel i is not needed
+		 * (UVRouting[i] != 0xff)	UV channel i is needed for the material
+		 * (UVRouting[i] == i)		UV channel i is present in the vertex buffer
+		 * (UVRouting[i] != i)		UV channel i is not present in the vertex buffer. It is routed to another UV channel.*/
+		uint8										UVRouting[MAX_MAX_TEXTURE];
 
 		// Color vertex in this material
 		bool										ColorVertex;
@@ -748,7 +754,9 @@ private:
 		CMaxMeshBaseBuild ()
 		{
 			NeedVertexColor = false;
-			MappingChannelUsed = 0;
+			uint i;
+			for (i=0; i<MAX_MAX_TEXTURE; i++)
+				UVRouting[i] = 0xff;
 		}
 
 		// First material in the array
@@ -757,8 +765,12 @@ private:
 		// Num of materials
 		uint										NumMaterials;
 
-		// Mapping channel used
-		uint										MappingChannelUsed;
+		/* UV channel routing : 
+		 * (UVRouting[i] == 0xff)	UV channel i is not needed
+		 * (UVRouting[i] != 0xff)	UV channel i is needed for the material
+		 * (UVRouting[i] == i)		UV channel i is present in the vertex buffer
+		 * (UVRouting[i] != i)		UV channel i is not present in the vertex buffer. It is routed to another UV channel.*/
+		uint8										UVRouting[MAX_MAX_TEXTURE];
 
 		// Need vertex color
 		bool										NeedVertexColor;

@@ -1,7 +1,7 @@
 /** \file mesh_skin_manager.cpp
  * <File description>
  *
- * $Id: mesh_skin_manager.cpp,v 1.2 2002/08/30 11:59:42 berenguier Exp $
+ * $Id: mesh_skin_manager.cpp,v 1.3 2003/03/13 13:40:58 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -61,10 +61,15 @@ void			CMeshSkinManager::init(IDriver *driver, uint vertexFormat, uint maxVertic
 	CVertexBuffer	vb;
 	vb.setVertexFormat(vertexFormat);
 
+	// For the moment, all UV channel are routed to UV0
+	uint i;
+	for (i=0; i<CVertexBuffer::MaxStage; i++)
+		vb.setUVRouting (i, 0);
+
 	// create the VBHard, if possible
-	for(uint i=0;i<NumVBHard;i++)
+	for(i=0;i<NumVBHard;i++)
 	{
-		_VBHard[i]= _Driver->createVertexBufferHard(vb.getVertexFormat(), vb.getValueTypePointer(), maxVertices, IDriver::VBHardAGP);
+		_VBHard[i]= _Driver->createVertexBufferHard(vb.getVertexFormat(), vb.getValueTypePointer(), maxVertices, IDriver::VBHardAGP, vb.getUVRouting());
 		// if filas, release all, and quit
 		if(_VBHard[i]==NULL)
 		{

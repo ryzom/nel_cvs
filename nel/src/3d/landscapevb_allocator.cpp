@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.11 2002/09/24 14:45:45 vizerie Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.12 2003/03/13 13:40:58 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -277,7 +277,7 @@ void			CLandscapeVBAllocator::synchronizeATIVBHard()
 		// try to create new one, in AGP Ram
 		// If too many vertices wanted, abort VBHard.
 		if(numVertices <= NL3D_VERTEX_MAX_VERTEX_VBHARD)
-			_ATIVBHard= _Driver->createVertexBufferHard(_VB.getVertexFormat(), _VB.getValueTypePointer(), numVertices, IDriver::VBHardAGP);
+			_ATIVBHard= _Driver->createVertexBufferHard(_VB.getVertexFormat(), _VB.getValueTypePointer(), numVertices, IDriver::VBHardAGP, _VB.getUVRouting());
 		else
 			_ATIVBHard= NULL;
 
@@ -388,7 +388,7 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 		// try to create new one, in AGP Ram
 		// If too many vertices wanted, abort VBHard.
 		if(numVertices <= NL3D_VERTEX_MAX_VERTEX_VBHARD)
-			_VBHard= _Driver->createVertexBufferHard(_VB.getVertexFormat(), _VB.getValueTypePointer(), numVertices, IDriver::VBHardAGP);
+			_VBHard= _Driver->createVertexBufferHard(_VB.getVertexFormat(), _VB.getValueTypePointer(), numVertices, IDriver::VBHardAGP, _VB.getUVRouting());
 		else
 			_VBHard= NULL;
 

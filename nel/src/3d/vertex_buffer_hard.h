@@ -1,7 +1,7 @@
 /** \file vertex_buffer_hard.h
  * <File description>
  *
- * $Id: vertex_buffer_hard.h,v 1.4 2002/08/30 11:58:41 berenguier Exp $
+ * $Id: vertex_buffer_hard.h,v 1.5 2003/03/13 13:40:59 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@ public:
 	uint32					getNumVertices(void) const  {return(_NbVerts);}
 	CVertexBuffer::TType	getValueType (uint value) const { nlassert (value<CVertexBuffer::NumValue); return((CVertexBuffer::TType)_Type[value]); }
 	uint8					getNumWeight () const;
+	const uint8				*getUVRouting () const { return _UVRouting; }
 	// @}
 
 
@@ -130,8 +131,10 @@ protected:
 	IVertexBufferHard() {}
 	virtual ~IVertexBufferHard() {}
 
+	// The routing
+	uint8					_UVRouting[CVertexBuffer::MaxStage];
 
-	void					initFormat (uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices);
+	void					initFormat (uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting);
 
 };
 

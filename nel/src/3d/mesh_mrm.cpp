@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.57 2003/03/12 13:39:07 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.58 2003/03/13 13:40:58 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2258,7 +2258,7 @@ void				CMeshMRMGeom::updateVertexBufferHard(IDriver *drv, uint32 numVertices)
 		// bkup drv in a refptr. (so we know if the vbuffer hard has to be deleted).
 		_Driver= drv;
 		// try to create new one, in AGP Ram
-		_VBHard= _Driver->createVertexBufferHard(_VBufferFinal.getVertexFormat(), _VBufferFinal.getValueTypePointer (), numVertices, IDriver::VBHardAGP);
+		_VBHard= _Driver->createVertexBufferHard(_VBufferFinal.getVertexFormat(), _VBufferFinal.getValueTypePointer (), numVertices, IDriver::VBHardAGP, _VBufferFinal.getUVRouting());
 
 
 		// If KO, use normal VertexBuffer, else, Fill it with VertexBuffer.

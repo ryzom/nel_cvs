@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.53 2003/01/31 16:14:10 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.54 2003/03/13 13:40:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -688,7 +688,27 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	// *** ***************************
 
 	// Get the uv flags
-	buildMesh.VertexFlags|=maxBaseBuild.MappingChannelUsed<<(CVertexBuffer::TexCoord0);
+	uint mappingChannelUsed = 0;
+	uint i;
+	for (i=0; i<MAX_MAX_TEXTURE; i++)
+	{
+		// This UV channel is used ?
+		if (maxBaseBuild.UVRouting[i] == i)
+			mappingChannelUsed |= 1<<i;
+	}
+	buildMesh.VertexFlags|=mappingChannelUsed<<(CVertexBuffer::TexCoord0);
+
+	// Set the Uv routing
+	const uint count = std::min((uint)MAX_MAX_TEXTURE, (uint)CVertexBuffer::MaxStage);
+	for (i=0; i<count; i++)
+	{
+		if (maxBaseBuild.UVRouting[i] == 0xff)
+			buildMesh.UVRouting[i] = i;
+		else
+			buildMesh.UVRouting[i] = maxBaseBuild.UVRouting[i];
+	}
+	for (; i<CVertexBuffer::MaxStage; i++)
+		buildMesh.UVRouting[i] = i;
 
 	// *** ***************
 	// *** Export vertices

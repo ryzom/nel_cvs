@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.5 2003/03/12 13:40:11 berenguier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.6 2003/03/13 13:40:59 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -217,13 +217,13 @@ void			CVertexArrayRangeNVidia::freeVB(void	*ptr)
 
 
 // ***************************************************************************
-IVertexBufferHardGL		*CVertexArrayRangeNVidia::createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices)
+IVertexBufferHardGL		*CVertexArrayRangeNVidia::createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting)
 {
 	// create a NVidia VBHard
 	CVertexBufferHardGLNVidia	*newVbHard= new CVertexBufferHardGLNVidia(_Driver);
 
 	// Init the format of the VB.
-	newVbHard->initFormat(vertexFormat, typeArray, numVertices);
+	newVbHard->initFormat(vertexFormat, typeArray, numVertices, uvRouting);
 
 	// compute size to allocate.
 	uint32	size= newVbHard->getVertexSize() * newVbHard->getNumVertices();
@@ -472,13 +472,13 @@ void					CVertexArrayRangeATI::free()
 	}
 }
 // ***************************************************************************
-IVertexBufferHardGL		*CVertexArrayRangeATI::createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices)
+IVertexBufferHardGL		*CVertexArrayRangeATI::createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting)
 {
 	// create a ATI VBHard
 	CVertexBufferHardGLATI	*newVbHard= new CVertexBufferHardGLATI(_Driver);
 
 	// Init the format of the VB.
-	newVbHard->initFormat(vertexFormat, typeArray, numVertices);
+	newVbHard->initFormat(vertexFormat, typeArray, numVertices, uvRouting);
 
 	// compute size to allocate.
 	uint32	size= newVbHard->getVertexSize() * newVbHard->getNumVertices();

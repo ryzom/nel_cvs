@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.36 2002/08/27 14:36:25 corvazier Exp $
+ * $Id: export_material.cpp,v 1.37 2003/03/13 13:40:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -206,9 +206,6 @@ void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMe
 
 				// Need vertex color ?
 				maxBaseBuild.NeedVertexColor |= maxBaseBuild.MaterialInfo[nSub].AlphaVertex | maxBaseBuild.MaterialInfo[nSub].ColorVertex;
-
-				// UV flag
-				maxBaseBuild.MappingChannelUsed |= maxBaseBuild.MaterialInfo[nSub].MappingChannelUsed;
 			}
 		}
 		// Else export only this material, so, count is 1
@@ -228,9 +225,32 @@ void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMe
 
 			// Need vertex color ?
 			maxBaseBuild.NeedVertexColor |= maxBaseBuild.MaterialInfo[0].AlphaVertex | maxBaseBuild.MaterialInfo[0].ColorVertex;
+		}
+	}
 
-			// UV flag
-			maxBaseBuild.MappingChannelUsed |= maxBaseBuild.MaterialInfo[0].MappingChannelUsed;
+	// Normalize UVRouting
+	uint i;
+	for (i=0; i<maxBaseBuild.MaterialInfo.size (); i++)
+	{
+		uint j;
+		for (j=0; j<MAX_MAX_TEXTURE; j++)
+		{
+			uint8 routing = maxBaseBuild.MaterialInfo[i].UVRouting[j];
+			if (maxBaseBuild.UVRouting[j] == 0xff)
+			{
+				maxBaseBuild.UVRouting[j] = routing;
+			}
+			else
+			{
+				if (routing != 0xff )
+				{
+					if (routing != maxBaseBuild.UVRouting[j])
+					{
+						// Active the channel because someone need it
+						maxBaseBuild.UVRouting[j] = j;
+					}
+				}
+			}
 		}
 	}
 
@@ -549,7 +569,19 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 					materialInfo.RemapChannel.push_back (materialDesc);
 		
 					// Add flags if mapping coodinates are used..
-					materialInfo.MappingChannelUsed |= (materialDesc._IndexInMaxMaterial>=0)?(1<<i):0;
+					if (materialDesc._IndexInMaxMaterial>=0)
+					{
+						uint j;
+						for (j=0; j<i; j++)
+						{
+							// Same UV channel ?
+							if (materialInfo.RemapChannel[j]._IndexInMaxMaterial == materialDesc._IndexInMaxMaterial)
+								break;
+						}
+
+						// Channel routing
+						materialInfo.UVRouting[i] = (j == i) ? i : j;
+					}
 
 					// Add the texture if it exist
 					material.setTexture (i, pTexture);
@@ -800,11 +832,16 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 					}
 				}
 				
+	
 				// Add flags if mapping coodinates are used..
-				materialInfo.MappingChannelUsed |= (_3dsTexChannel._IndexInMaxMaterial>=0)?1:0;
+				if (_3dsTexChannel._IndexInMaxMaterial>=0)
+				{
+					// Channel routing
+					materialInfo.UVRouting[0] = 0;
+				}
 
 				// Export mapping channel 2 if lightmap asked.
-				if( bLightMap ) // lightmap enabled ?
+				if ( bLightMap ) // lightmap enabled ?
 				{
 					materialInfo.RemapChannel.resize( 2 );
 					// Copy information from channel 0
@@ -813,7 +850,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 					materialInfo.RemapChannel[1]._IndexInMaxMaterialAlternative = materialInfo.RemapChannel[0]._IndexInMaxMaterial;
 
 					// Add flags if mapping coodinates are used..
-					materialInfo.MappingChannelUsed |= 2;
+					materialInfo.UVRouting[1] |= 1;
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: vertex_buffer_hard.cpp,v 1.4 2002/02/28 12:59:52 besson Exp $
+ * $Id: vertex_buffer_hard.cpp,v 1.5 2003/03/13 13:40:59 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,7 @@ namespace NL3D
 
 // ***************************************************************************
 
-void	IVertexBufferHard::initFormat (uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices)
+void	IVertexBufferHard::initFormat (uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting)
 {
 	// _NbVerts.
 	_NbVerts= numVertices;
@@ -64,6 +64,11 @@ void	IVertexBufferHard::initFormat (uint16 vertexFormat, const uint8 *typeArray,
 			_Type[value]=typeArray[value];
 		}
 	}
+
+	// For each UV channel
+	uint i;
+	for (i=0; i<CVertexBuffer::MaxStage; i++)
+		_UVRouting[i] = uvRouting ? uvRouting[i] : i;
 }
 
 // ***************************************************************************

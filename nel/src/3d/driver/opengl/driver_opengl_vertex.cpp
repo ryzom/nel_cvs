@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.34 2003/03/12 13:41:44 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.35 2003/03/13 13:40:59 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -396,7 +396,7 @@ uint			CDriverGL::getMaxVerticesByVertexBufferHard() const
 
 
 // ***************************************************************************
-IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, IDriver::TVBHardType vbType)
+IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, IDriver::TVBHardType vbType, const uint8 *uvRouting)
 {
 	// choose the VertexArrayRange of good type
 	IVertexArrayRange	*vertexArrayRange= NULL;
@@ -422,7 +422,7 @@ IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint16 vertexFormat, const 
 		// Create a CVertexBufferHardGL
 		IVertexBufferHardGL		*vb;
 		// let the VAR create the vbhard.
-		vb= vertexArrayRange->createVBHardGL(vertexFormat, typeArray, numVertices);
+		vb= vertexArrayRange->createVBHardGL(vertexFormat, typeArray, numVertices, uvRouting);
 		// if fails
 		if(!vb)
 		{
@@ -617,10 +617,11 @@ void		CDriverGL::setupGlArraysStd(CVertexBufferInfo &vb)
 
 	// Setup Uvs
 	//-----------
+	// Get the routing
 	for(sint i=0; i<inlGetNumTextStages(); i++)
 	{
 		// normal behavior: each texture has its own UV.
-		setupUVPtr(i, vb, i);
+		setupUVPtr(i, vb, vb.UVRouting[i]);
 	}
 }
 
@@ -979,6 +980,13 @@ void		CVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 			Type[i]=vb.getValueType (i);
 		}
 	}
+
+	// Copy the UVRouting table
+	const uint8 *uvRouting = vb.getUVRouting();
+	for (i=0; i<CVertexBuffer::MaxStage; i++)
+	{
+		UVRouting[i] = uvRouting[i];
+	}
 }
 
 
@@ -1038,6 +1046,13 @@ void		CVertexBufferInfo::setupVertexBufferHard(IVertexBufferHardGL &vb)
 				Type[i]= vbHardATI.getValueType (i);
 			}
 		}
+	}
+
+	// Copy the UVRouting table
+	const uint8 *uvRouting = vb.getUVRouting ();
+	for (i=0; i<CVertexBuffer::MaxStage; i++)
+	{
+		UVRouting[i] = uvRouting[i];
 	}
 }
 

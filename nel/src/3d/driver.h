@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.48 2003/03/06 10:05:13 corvazier Exp $
+ * $Id: driver.h,v 1.49 2003/03/13 13:40:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -372,10 +372,11 @@ public:
 	 *	\param vertexFormat see CVertexBuffer::setVertexFormat().
 	 *	\param numVertices the number of vertices to be created.
 	 *	\param vbType kind of RAM shere the VB will be allocated.
+	 *	\param uvRouting is the uv routing table. If NULL, set the default routing table.
 	 *	\return a vertexBufferHard interface. 
 	 */
 	virtual	IVertexBufferHard	*createVertexBufferHard(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, 
-														TVBHardType vbType) =0;
+														TVBHardType vbType, const uint8 *uvRouting) =0;
 
 
 	/** delete a IVertexBufferHard. NB: VertexBufferHard are automatically deleted at IDriver::release();

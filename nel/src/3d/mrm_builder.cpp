@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.29 2002/11/20 10:20:36 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.30 2003/03/13 13:40:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1970,8 +1970,11 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 		mbuild.VBuffer.initEx();
 	}
 
-	
-
+	// Copy the UVRouting
+	for (i=0; i<CVertexBuffer::MaxStage; i++)
+	{
+		mbuild.VBuffer.setUVRouting (i, mb.UVRouting[i]);
+	}
 
 	// Setup the VertexBuffer.
 	// ========================

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.36 2002/09/24 15:03:00 vizerie Exp $
+ * $Id: vertex_buffer.cpp,v 1.37 2003/03/13 13:40:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,6 +103,11 @@ CVertexBuffer::CVertexBuffer()
 	_NbVerts = 0;
 	_InternalFlags = 0;
 	_VertexSize = 0;
+
+	// Default routing
+	uint i; 
+	for (i=0; i<MaxStage; i++)
+		_UVRouting[i] = i;
 }
 
 // --------------------------------------------------
@@ -114,6 +119,11 @@ CVertexBuffer::CVertexBuffer(const CVertexBuffer &vb)
 	_NbVerts = 0;
 	_VertexSize = 0;
 	operator=(vb);
+
+	// Default routing
+	uint i; 
+	for (i=0; i<MaxStage; i++)
+		_UVRouting[i] = i;
 }
 
 // --------------------------------------------------
@@ -142,6 +152,11 @@ CVertexBuffer	&CVertexBuffer::operator=(const CVertexBuffer &vb)
 		_Offset[value]= vb._Offset[value];
 		_Type[value]= vb._Type[value];
 	}
+
+	// Copy the routing
+	uint i;
+	for (i=0; i<MaxStage; i++)
+		_UVRouting[i] = vb._UVRouting[i];
 
 	// Set touch flags
 	_InternalFlags |= TouchedAll;
@@ -939,7 +954,7 @@ void		CVertexBuffer::serialSubset(NLMISC::IStream &f, uint vertexStart, uint ver
 	Version 0:
 		- base verison of a vbuffer subset serialisation.
 	*/
-	(void)f.serialVersion(1);
+	sint ver = f.serialVersion(2);
 
 
 	// Serial VBuffers components.
@@ -959,6 +974,20 @@ void		CVertexBuffer::serialSubset(NLMISC::IStream &f, uint vertexStart, uint ver
 				f.serialBuffer ((uint8*)ptr, SizeType[_Type[value]]);
 			}
 		}
+	}
+
+	// Serial the UV Routing table
+	//============================
+	if (ver>=2)
+	{
+		f.serialBuffer (_UVRouting, sizeof(uint8)*MaxStage);
+	}
+	else
+	{
+		// Reset the table
+		uint i;
+		for (i=0; i<MaxStage; i++)
+			_UVRouting[i] = i;
 	}
 
 	// Set touch flags

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.74 2003/03/12 13:39:05 berenguier Exp $
+ * $Id: mesh.cpp,v 1.75 2003/03/13 13:40:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,6 +188,9 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 	}
 	nlassert(numMaxMaterial>0);
 
+	// Copy the UV routing table
+	for (i=0; i<CVertexBuffer::MaxStage; i++)
+		_VBuffer.setUVRouting (i, m.UVRouting[i]);
 
 	/// 0. First, make bbox.
 	//======================
@@ -560,7 +563,7 @@ void	CMeshGeom::updateVertexBufferHard(IDriver *drv)
 		// bkup drv in a refptr. (so we know if the vbuffer hard has to be deleted).
 		_Driver= drv;
 		// try to create new one, in AGP Ram
-		_VertexBufferHard= _Driver->createVertexBufferHard(_VBuffer.getVertexFormat(), _VBuffer.getValueTypePointer (), _VBuffer.getNumVertices(), IDriver::VBHardAGP);
+		_VertexBufferHard= _Driver->createVertexBufferHard(_VBuffer.getVertexFormat(), _VBuffer.getValueTypePointer (), _VBuffer.getNumVertices(), IDriver::VBHardAGP, _VBuffer.getUVRouting());
 
 		// If KO, use normal VertexBuffer.
 		if(_VertexBufferHard==NULL)
@@ -2191,6 +2194,7 @@ CMesh::CMeshBuild::CMeshBuild()
 	for (uint k = 0; k < CVertexBuffer::MaxStage; ++k)
 	{
 		NumCoords[k] = 2;
+		UVRouting[k] = k;
 	}
 }
 

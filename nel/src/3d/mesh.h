@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.35 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh.h,v 1.36 2003/03/13 13:40:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -177,6 +177,7 @@ public:
 		 */
 		sint32						VertexFlags;
 		uint8						NumCoords[CVertexBuffer::MaxStage]; // tells for each uvw if is uses 2 or 3 coords
+		uint8						UVRouting[CVertexBuffer::MaxStage]; // gives the uv routing table. Each final UV channel can be routed to any vertex uv
 
 		// Vertices array
 		std::vector<CVector>		Vertices;

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.h
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.h,v 1.2 2003/03/12 13:40:11 berenguier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.h,v 1.3 2003/03/13 13:40:59 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -59,7 +59,7 @@ public:
 	/// free this space.
 	virtual	void					free()= 0;
 	/// create a IVertexBufferHardGL
-	virtual	IVertexBufferHardGL		*createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices) =0;
+	virtual	IVertexBufferHardGL		*createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting) =0;
 	/// return the size allocated. 0 if not allocated or failure
 	virtual	uint					sizeAllocated() const =0;
 
@@ -100,9 +100,9 @@ public:
 
 public:
 	// shortcut to IVertexBufferHard::initFormat()
-	void					initFormat (uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices)
+	void					initFormat (uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting)
 	{
-		IVertexBufferHard::initFormat(vertexFormat, typeArray, numVertices);
+		IVertexBufferHard::initFormat(vertexFormat, typeArray, numVertices, uvRouting);
 	}
 
 
@@ -136,7 +136,7 @@ public:
 	/// free this space.
 	virtual	void					free();
 	/// create a IVertexBufferHardGL
-	virtual	IVertexBufferHardGL		*createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices);
+	virtual	IVertexBufferHardGL		*createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting);
 	/// return the size allocated. 0 if not allocated or failure
 	virtual	uint					sizeAllocated() const;
 	// @}
@@ -254,7 +254,7 @@ public:
 	/// free this space.
 	virtual	void					free();
 	/// create a IVertexBufferHardGL
-	virtual	IVertexBufferHardGL		*createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices);
+	virtual	IVertexBufferHardGL		*createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting);
 	/// return the size allocated. 0 if not allocated or failure
 	virtual	uint					sizeAllocated() const;
 	// @}

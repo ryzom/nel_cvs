@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.139 2003/03/06 10:05:13 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.140 2003/03/13 13:40:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,6 +169,7 @@ public:
 	uint32					NumVertices;
 	uint32					NumWeight;	
 	CVertexBuffer::TType	Type[CVertexBuffer::NumValue];
+	uint8					UVRouting[CVertexBuffer::MaxStage];
 
 	// NB: ptrs are invalid if VertexFormat does not support the compoennt. must test VertexFormat, not the ptr.
 	void					*ValuePtr[CVertexBuffer::NumValue];
@@ -308,7 +309,7 @@ public:
 	virtual	bool			initVertexArrayRange(uint agpMem, uint vramMem);
 
 	virtual	IVertexBufferHard	*createVertexBufferHard(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, 
-														IDriver::TVBHardType vbType);
+														IDriver::TVBHardType vbType, const uint8 *uvRouting);
 
 	virtual	void			deleteVertexBufferHard(IVertexBufferHard *VB);
 

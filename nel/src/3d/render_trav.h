@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.15 2002/08/14 12:39:25 berenguier Exp $
+ * $Id: render_trav.h,v 1.16 2003/03/13 13:40:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,10 @@ class	CMeshSkinManager;
 
 
 // ***************************************************************************
-// Skin Manager setup
+/* Skin Manager setup
+ * For the moment, the skin manager vertex buffer routes all its UV channel to UV0.
+ * See void	CMeshSkinManager::init(IDriver *driver, uint vertexFormat, uint maxVertices)
+ */
 #define	NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT		(CVertexBuffer::PositionFlag | CVertexBuffer::NormalFlag | CVertexBuffer::TexCoord0Flag)
 #define	NL3D_MESH_SKIN_MANAGER_MAXVERTICES		10000
 

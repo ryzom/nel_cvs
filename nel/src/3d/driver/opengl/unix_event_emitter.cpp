@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.cpp
  * <File description>
  *
- * $Id: unix_event_emitter.cpp,v 1.5 2000/12/20 09:29:28 lecroart Exp $
+ * $Id: unix_event_emitter.cpp,v 1.1 2000/12/20 09:30:06 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

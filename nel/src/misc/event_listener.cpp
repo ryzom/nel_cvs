@@ -1,7 +1,7 @@
 /** \file event_listener.cpp
  * <File description>
  *
- * $Id: event_listener.cpp,v 1.9 2000/12/06 12:49:59 corvazier Exp $
+ * $Id: event_listener.cpp,v 1.10 2000/12/13 15:01:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,13 +67,13 @@ void CEventListenerAsync::removeFromServer (CEventServer& server)
 	server.removeListener (EventSetFocusId, this);
 }
 // ***************************************************************************
-bool CEventListenerAsync::isKeyPush (TKey key) const
+bool CEventListenerAsync::isKeyDown (TKey key) const
 {
 	return _KeyArray.get(key);
 }
 
 // ***************************************************************************
-bool CEventListenerAsync::isKeyDown (TKey key, bool release)
+bool CEventListenerAsync::isKeyPushed (TKey key, bool release)
 {
 	bool	ret= _KeyDownArray.get(key) && !(_KeyReleaseArray.get(key));
 	if(ret && release)

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.18 2000/12/13 12:54:07 berenguier Exp $
+ * $Id: landscape.h,v 1.19 2000/12/13 14:58:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -167,7 +167,6 @@ public:
 	/// Return the texture for a tile Id. UseFull for Tile edition.
 	NLMISC::CSmartPtr<ITexture>		getTileTexture(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias);
 	// @}
-
 
 // ********************************
 private:

@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.3 2000/11/21 17:19:34 valignat Exp $
+ * $Id: time_nl.cpp,v 1.4 2000/12/13 15:01:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,34 @@ TTime CTime::getLocalTime ()
 	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
 
 #endif
+}
+
+TTicks CTime::getPerformanceTime ()
+{
+#ifdef NL_OS_WINDOWS
+	LARGE_INTEGER ret;
+	if (QueryPerformanceCounter (&ret))
+		return ret.QuadPart;
+	else
+		return 0;
+#else // NL_OS_WINDOWS
+	return 0;
+#endif // NL_OS_WINDOWS
+}
+
+double CTime::ticksToSecond (TTicks ticks)
+{
+#ifdef NL_OS_WINDOWS
+	LARGE_INTEGER ret;
+	if (QueryPerformanceFrequency(&ret))
+	{
+		return (double)(sint64)ticks/(double)ret.QuadPart;
+	}
+	else
+		return 0.0;
+#else // NL_OS_WINDOWS
+	return 0.0;
+#endif // NL_OS_WINDOWS
 }
 
 } // NLMISC

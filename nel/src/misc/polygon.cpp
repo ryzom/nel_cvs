@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.19 2004/02/19 09:50:10 vizerie Exp $
+ * $Id: polygon.cpp,v 1.20 2004/03/04 14:33:44 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1150,7 +1150,7 @@ void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY)
 	if (pHighestLeft->x != pHighestRight->x)
 	{
 		// compare right and left side
-		if (pHighestLeft->x> pHighestRight->x)
+		if (pHighestLeft->x > pHighestRight->x)
 		{
 			ccw = true;  // the list is CCW oriented
 			std::swap(pHighestLeft, pHighestRight);		
@@ -1403,8 +1403,8 @@ void CPolygon2D::computeBordersLarge(TRasterVect &borders, sint &minimumY)
 	sint iright = (sint) ceil(fright);
 	for(TRasterVect::iterator it = borders.begin(); it != borders.end(); ++it)
 	{
-		it->second = iright;
-		it->first = ileft;
+		it->second = ileft;
+		it->first = iright;
 	}
 
 
@@ -1449,11 +1449,7 @@ void CPolygon2D::computeBordersLarge(TRasterVect &borders, sint &minimumY)
 		}
 	}
 	else
-	{
-	// pHighestRight = pHighestLeft = phighest;
-	// le haut du poly n'est pas plat donc celui a gauche est celui qui a la plus petite pente
-	// on fait le produit vectoriel des vecteur suivant et precedent pour avoir
-	// l'orientation
+	{		
 		pHighestRightNext = pHighestRight + 1;
 		if (pHighestRightNext == last) pHighestRightNext = first;
 		 deltaXN = pHighestRightNext->x - pHighestRight->x;
@@ -1462,7 +1458,7 @@ void CPolygon2D::computeBordersLarge(TRasterVect &borders, sint &minimumY)
 		 deltaYP = pPrevHighestLeft->y - pHighestLeft->y;
 		 if ((deltaXN * deltaYP - deltaYN * deltaXP) < 0)
 		 {
-			ccw = true;  // bord gauche oriente dans sens de la liste
+			ccw = true;
 			std::swap(pHighestLeft, pHighestRight);				   
 		 }
 		 else
@@ -1495,7 +1491,6 @@ void CPolygon2D::computeBordersLarge(TRasterVect &borders, sint &minimumY)
 			curr = next;
 		}
 		while (curr != pHighestLeft);
-
 	}
 	else
 	{

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.48 2003/11/20 15:38:26 distrib Exp $
+ * $Id: common.cpp,v 1.49 2004/01/07 18:45:02 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -799,18 +799,26 @@ void explode (const std::string &src, const std::string &sep, std::vector<std::s
 
 	res.clear ();
 
+	nlinfo("%d", src.size());
+
 	do
 	{
 		pos = src.find (sep, oldpos);
-		string s = src.substr (oldpos, ((pos==string::npos)?(pos):(pos-oldpos)));
+		string s;
+		if(pos == string::npos)
+			s = src.substr (oldpos);
+		else
+			s = src.substr (oldpos, (pos-oldpos));
+
 		if (!skipEmpty || !s.empty())
 			res.push_back (s);
-		oldpos = pos+1;
+
+			oldpos = pos+1;
 	}
 	while(pos != string::npos);
 
-/*	// debug
-	nlinfo ("Exploded '%s', with '%s', %d res", src.c_str(), sep.c_str(), res.size());
+	// debug
+/*	nlinfo ("Exploded '%s', with '%s', %d res", src.c_str(), sep.c_str(), res.size());
 	for (uint i = 0; i < res.size(); i++)
 	{
 		nlinfo (" > '%s'", res[i].c_str());

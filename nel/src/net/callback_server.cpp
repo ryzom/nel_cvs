@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.16 2001/11/27 14:12:48 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.17 2001/12/10 14:34:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,7 +47,7 @@ void cbsNewConnection (TSockId from, void *data)
 	nlassert (data != NULL);
 	CCallbackServer *server = (CCallbackServer *)data;
 
-	nldebug("L3S: newConnection()");
+	nldebug("LNETL3S: newConnection()");
 
 #ifdef USE_MESSAGE_RECORDER
 	// Record connection
@@ -98,13 +98,13 @@ void CCallbackServer::sendAllMyAssociations (TSockId to)
 	CStringIdArray::TStringId size;
 	size = _OutputSIDA.size ();
 
-	nldebug ("L3S: Send all (%d) my string association to %s", size, to->asString().c_str());
+	nldebug ("LNETL3S: Send all (%d) my string association to %s", size, to->asString().c_str());
 	
 	msgout.serial (size);
 
 	for (CStringIdArray::TStringId i = 0; i < size; i++)
 	{
-//		nldebug ("L3S:  sending association '%s' -> %d", _OutputSIDA.getString(i).c_str (), i);
+//		nldebug ("LNETL3S:  sending association '%s' -> %d", _OutputSIDA.getString(i).c_str (), i);
 		string str(_OutputSIDA.getString(i));
 		msgout.serial (str);
 		msgout.serial (i);
@@ -139,7 +139,7 @@ void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 
 //	if (log)
 	{
-		nldebug ("L3S: Server: send(%s, %s)", buffer.toString().c_str(), hostid->asString().c_str());
+		nldebug ("LNETL3S: Server: send(%s, %s)", buffer.toString().c_str(), hostid->asString().c_str());
 	}
 
 #ifdef USE_MESSAGE_RECORDER
@@ -175,7 +175,7 @@ void CCallbackServer::update ( sint32 timeout )
 	checkThreadId ();
 	nlassert (connected ());
 
-	//	nldebug ("L3S: Client: update()");
+	//	nldebug ("LNETL3S: Client: update()");
 	baseUpdate ( timeout ); // first receive
 
 #ifdef USE_MESSAGE_RECORDER
@@ -360,7 +360,7 @@ bool CCallbackServer::replaySystemCallbacks()
 				// Bind it to the "old" sockid
 				_MR_SockIds.insert( make_pair( _MR_Recorder.ReceivedMessages.front().SockId, sockid ) );
 
-				nldebug( "L1: Connection event for %p", sockid );
+				nldebug( "LNETL1: Connection event for %p", sockid );
 				sockid->setConnectedState( true );
 					
 				// Call callback if needed
@@ -371,7 +371,7 @@ bool CCallbackServer::replaySystemCallbacks()
 				break;
 				}
 			default:
-				nlerror( "L1: Invalid system event type in client receive queue" );
+				nlerror( "LNETL1: Invalid system event type in client receive queue" );
 			}
 			// Extract system event
 			_MR_Recorder.ReceivedMessages.pop();

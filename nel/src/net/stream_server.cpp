@@ -1,7 +1,7 @@
 /** \file stream_server.cpp
  * Network engine, layer 2, server
  *
- * $Id: stream_server.cpp,v 1.3 2001/06/01 13:38:23 cado Exp $
+ * $Id: stream_server.cpp,v 1.4 2001/12/10 14:34:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,7 @@ void CStreamServer::send (const CMemStream &buffer, TSockId hostid)
 {
 	nlassert (buffer.length() != 0);  // no size limit anymore
 
-	nldebug ("L2S: send()");
+	nldebug ("LNETL2S: send()");
 
 	CBufServer::send (buffer.bufferAsVector(), hostid);
 }
@@ -48,7 +48,7 @@ void CStreamServer::send (const CMemStream &buffer, TSockId hostid)
 
 void CStreamServer::receive (NLMISC::CMemStream &buffer, TSockId *hostid)
 {
-	nldebug ("L2S: receive()");
+	nldebug ("LNETL2S: receive()");
 
 	CBufServer::receive (buffer.bufferAsVector (), hostid);
 	buffer.resetBufPos ();

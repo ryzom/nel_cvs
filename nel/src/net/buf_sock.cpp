@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.17 2001/09/21 13:36:03 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.18 2001/12/10 14:34:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -171,14 +171,14 @@ bool CBufSock::flush()
 			// Debug display
 			switch ( _FlushTrigger )
 			{
-			case FTTime : nldebug( "L1: Time triggered flush for %s:", asString().c_str() ); break;
-			case FTSize : nldebug( "L1: Size triggered flush for %s:", asString().c_str() ); break;
-			default:	  nldebug( "L1: Manual flush for %s:", asString().c_str() );
+			case FTTime : nldebug( "LNETL1: Time triggered flush for %s:", asString().c_str() ); break;
+			case FTSize : nldebug( "LNETL1: Size triggered flush for %s:", asString().c_str() ); break;
+			default:	  nldebug( "LNETL1: Manual flush for %s:", asString().c_str() );
 			}
-			nldebug( "L1: %s sent effectively a buffer (%d on %d B): [%s]", asString().c_str(), len, _ReadyToSendBuffer.size(), stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str() );
+			nldebug( "LNETL1: %s sent effectively a buffer (%d on %d B): [%s]", asString().c_str(), len, _ReadyToSendBuffer.size(), stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str() );
 			_FlushTrigger = FTManual;
 #else
-			nldebug( "L1: %s sent effectively a buffer (%d on %d B)", asString().c_str(), len, _ReadyToSendBuffer.size() );
+			nldebug( "LNETL1: %s sent effectively a buffer (%d on %d B)", asString().c_str(), len, _ReadyToSendBuffer.size() );
 #endif
 			if ( len == _ReadyToSendBuffer.size() ) // for non-blocking mode (server)
 			{
@@ -201,7 +201,7 @@ bool CBufSock::flush()
 		else
 		{
 #ifdef NL_DEBUG
-			nldebug( "L1: %s failed to send effectively a buffer of %d bytes", asString().c_str(), _ReadyToSendBuffer.size() );
+			nldebug( "LNETL1: %s failed to send effectively a buffer of %d bytes", asString().c_str(), _ReadyToSendBuffer.size() );
 #endif
 			return false;
 		}
@@ -372,7 +372,7 @@ bool CServerBufSock::receivePart()
 				// Test size limit
 				if ( _Length > _OwnerTask->server()->maxExpectedBlockSize() )
 				{
-					nlwarning( "L1: Socket %s received length exceeding max expected, in block header... Disconnecting", asString().c_str() );
+					nlwarning( "LNETL1: Socket %s received length exceeding max expected, in block header... Disconnecting", asString().c_str() );
 					throw ESocket( "Received length exceeding max expected", false );
 				}
 
@@ -381,7 +381,7 @@ bool CServerBufSock::receivePart()
 			}
 			else
 			{
-				nlwarning( "L1: Socket %s received null length in block header", asString().c_str() );
+				nlwarning( "LNETL1: Socket %s received null length in block header", asString().c_str() );
 			}
 			_BytesRead = 0;
 		}
@@ -397,7 +397,7 @@ bool CServerBufSock::receivePart()
 		if ( _BytesRead == _Length )
 		{
 #ifdef NL_DEBUG
-			nldebug( "L1: %s received buffer (%u B): [%s]", asString().c_str(), _ReceiveBuffer.size(), stringFromVector(_ReceiveBuffer).c_str() );
+			nldebug( "LNETL1: %s received buffer (%u B): [%s]", asString().c_str(), _ReceiveBuffer.size(), stringFromVector(_ReceiveBuffer).c_str() );
 #endif
 			_NowReadingBuffer = false;
 			_BytesRead = 0;

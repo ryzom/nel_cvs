@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.22 2001/11/22 10:40:13 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.23 2001/12/10 14:34:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,7 +96,7 @@ void CBufServer::init( uint16 port )
 	}
 	else
 	{
-		nldebug( "L0: Binding listen socket to any address, port %hu", port );
+		nldebug( "LNETL0: Binding listen socket to any address, port %hu", port );
 	}
 }
 
@@ -137,7 +137,7 @@ void CServerTask::wakeUp()
 	uint8 b;
 	if ( write( _WakeUpPipeHandle[PipeWrite], &b, 1 ) == -1 )
 	{
-		nldebug( "L1: In CServerTask::wakeUp(): write() failed" );
+		nldebug( "LNETL1: In CServerTask::wakeUp(): write() failed" );
 	}
 }
 #endif
@@ -177,7 +177,7 @@ CBufServer::~CBufServer()
 		// Clean receive thread exits
 		CThreadPool::iterator ipt;
 		{
-			nldebug( "L1: Waiting for end of threads..." );
+			nldebug( "LNETL1: Waiting for end of threads..." );
 			CSynchronized<CThreadPool>::CAccessor poolsync( &_ThreadPool );
 			for ( ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
 			{
@@ -210,7 +210,7 @@ CBufServer::~CBufServer()
 				(*ipt)->wait();
 			}
 
-			nldebug( "L1: Deleting sockets, tasks and threads..." );
+			nldebug( "LNETL1: Deleting sockets, tasks and threads..." );
 			for ( ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
 			{
 				// Delete the socket objects
@@ -315,7 +315,7 @@ void CBufServer::send( const std::vector<uint8>& buffer, TSockId hostid )
 	{
 		// debug features, we number all packet to be sure that they are all sent and received
 		// \todo remove this debug feature when ok
-		nldebug ("send message number %u", hostid->SendNextValue);
+//		nldebug ("send message number %u", hostid->SendNextValue);
 		*(uint32*)&buffer[0] = hostid->SendNextValue++;
 
 		pushBufferToHost( buffer, hostid );
@@ -339,7 +339,7 @@ void CBufServer::send( const std::vector<uint8>& buffer, TSockId hostid )
 						{
 							// debug features, we number all packet to be sure that they are all sent and received
 							// \todo remove this debug feature when ok
-							nldebug ("send message number %u", (*ipb)->SendNextValue);
+//							nldebug ("send message number %u", (*ipb)->SendNextValue);
 							*(uint32*)&buffer[0] = (*ipb)->SendNextValue++;
 
 							pushBufferToHost( buffer, *ipb );
@@ -389,7 +389,7 @@ bool CBufServer::dataAvailable()
 				{
 
 					TSockId sockid = *((TSockId*)(&*buffer.begin()));
-					nldebug( "L1: Disconnection event for %p", sockid );
+					nldebug( "LNETL1: Disconnection event for %p", sockid );
 
 					sockid->setConnectedState( false );
 
@@ -400,7 +400,7 @@ bool CBufServer::dataAvailable()
 					}
 
 					// Add socket object into the synchronized remove list
-					nldebug( "L1: Adding the connection to the remove list" );
+					nldebug( "LNETL1: Adding the connection to the remove list" );
 					nlassert( ((CServerBufSock*)sockid)->ownerTask() != NULL );
 					((CServerBufSock*)sockid)->ownerTask()->addToRemoveSet( sockid );
 					break;
@@ -409,7 +409,7 @@ bool CBufServer::dataAvailable()
 				case CBufNetBase::Connection:
 				{
 					TSockId sockid = *((TSockId*)(&*buffer.begin()));
-					nldebug( "L1: Connection event for %p", sockid );
+					nldebug( "LNETL1: Connection event for %p", sockid );
 
 					sockid->setConnectedState( true );
 					
@@ -421,11 +421,11 @@ bool CBufServer::dataAvailable()
 					break;
 				}
 				default:
-					nlinfo( "L1: Invalid block type: %hu", (uint16)(buffer[buffer.size()-1]) );
-					nlinfo( "L1: Buffer (%d B): [%s]", buffer.size(), stringFromVector(buffer).c_str() );
-					nlinfo( "L1: Receive queue:" );
+					nlinfo( "LNETL1: Invalid block type: %hu", (uint16)(buffer[buffer.size()-1]) );
+					nlinfo( "LNETL1: Buffer (%d B): [%s]", buffer.size(), stringFromVector(buffer).c_str() );
+					nlinfo( "LNETL1: Receive queue:" );
 					recvfifo.value().display();
-					nlerror( "L1: Invalid system event type in server receive queue" );
+					nlerror( "LNETL1: Invalid system event type in server receive queue" );
 
 				}
 
@@ -461,10 +461,10 @@ void CBufServer::receive( std::vector<uint8>& buffer, TSockId* phostid )
 	// debug features, we number all packet to be sure that they are all sent and received
 	// \todo remove this debug feature when ok
 	uint32 val = *(uint32*)&buffer[0];
-	nldebug ("receive message number %u", val);
+//	nldebug ("receive message number %u", val);
 	if ((*phostid)->ReceiveNextValue != val)
 	{
-		nlwarning ("!!!LOST A MESSAGE!!! I received the message number %u but I'm waiting the message number %u (cnx %s)", val, (*phostid)->ReceiveNextValue, (*phostid)->asString().c_str());
+		nlwarning ("LNETL1: !!!LOST A MESSAGE!!! I received the message number %u but I'm waiting the message number %u (cnx %s)", val, (*phostid)->ReceiveNextValue, (*phostid)->asString().c_str());
 		nlstop;
 		// resync the message number
 		(*phostid)->ReceiveNextValue = val;
@@ -473,7 +473,7 @@ void CBufServer::receive( std::vector<uint8>& buffer, TSockId* phostid )
 	(*phostid)->ReceiveNextValue++;
 
 	buffer.resize( buffer.size()-sizeof(TSockId)-1 );
-	nldebug( "L1: Read buffer (%d+%d B): [%s] from %s", buffer.size(), sizeof(TSockId)+1, stringFromVector(buffer).c_str(), (*phostid)->asString().c_str() );
+	nldebug( "LNETL1: Read buffer (%d+%d B): [%s] from %s", buffer.size(), sizeof(TSockId)+1, stringFromVector(buffer).c_str(), (*phostid)->asString().c_str() );
 
 	// Statistics
 	_BytesPoppedIn += buffer.size() + sizeof(TBlockSize);
@@ -508,7 +508,7 @@ void CBufServer::update()
 				    if ( ! ((*ipb)->Sock->connected() && (*ipb)->update()) )
 				    {
 						// Update did not work or the socket is not connected anymore
-				        nldebug( "L1: Socket %s is disconnected", (*ipb)->asString().c_str() );
+				        nldebug( "LNETL1: Socket %s is disconnected", (*ipb)->asString().c_str() );
 						// Disconnection event if disconnected (known either from flush (in update) or when receiving data)
 						(*ipb)->advertiseDisconnection( this, *ipb );
 					
@@ -631,10 +631,10 @@ void CListenTask::run()
 				// we'll ignore message (Interrupted system call) caused by a CTRL-C
 				if (CSock::getLastError() == 4)
 				{
-					nldebug ("L1: Select failed (in listen thread): %s (code %u) but IGNORED", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError());
+					nldebug ("LNETL1: Select failed (in listen thread): %s (code %u) but IGNORED", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError());
 					continue;
 				}
-				nlerror( "L1: Select failed (in listen thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
+				nlerror( "LNETL1: Select failed (in listen thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
 			}
 
 			if ( FD_ISSET( _WakeUpPipeHandle[PipeRead], &readers ) )
@@ -642,13 +642,13 @@ void CListenTask::run()
 				uint8 b;
 				if ( read( _WakeUpPipeHandle[PipeRead], &b, 1 ) == -1 ) // we were woken-up by the wake-up pipe
 				{
-					nldebug( "L1: In CListenTask::run(): read() failed" );
+					nldebug( "LNETL1: In CListenTask::run(): read() failed" );
 				}
-				nldebug( "L1: listen thread select woken-up" );
+				nldebug( "LNETL1: listen thread select woken-up" );
 				continue;
 			}
 #endif
-			nldebug( "L1: Incoming connection..." );
+			nldebug( "LNETL1: Incoming connection..." );
 			CServerBufSock *bufsock = new CServerBufSock( _ListenSock.accept() );
 			nldebug( "New connection : %s", bufsock->asString().c_str() );
 			bufsock->Sock->setNonBlockingMode( true );
@@ -724,9 +724,9 @@ void CBufServer::dispatchNewSocket( CServerBufSock *bufsock )
 			
 			if ( min >= (uint)_MaxSocketsPerThread )
 			{
-				nlwarning( "L1: Exceeding the maximum number of sockets per thread" );
+				nlwarning( "LNETL1: Exceeding the maximum number of sockets per thread" );
 			}
-			nldebug( "L1: New socket dispatched to thread %d", iptmin-poolsync.value().begin() );
+			nldebug( "LNETL1: New socket dispatched to thread %d", iptmin-poolsync.value().begin() );
 		}
 
 	}
@@ -747,7 +747,7 @@ void CBufServer::dispatchNewSocket( CServerBufSock *bufsock )
 		{
 			if ( poolsync.value().size() == _MaxThreads )
 			{
-				nlwarning( "L1: Exceeding the maximum number of threads" );
+				nlwarning( "LNETL1: Exceeding the maximum number of threads" );
 			}
 			addNewThread( poolsync.value(), bufsock );
 		}
@@ -760,7 +760,7 @@ void CBufServer::dispatchNewSocket( CServerBufSock *bufsock )
 #ifdef NL_OS_UNIX
 			task->wakeUp();
 #endif			
-			nldebug( "L1: New socket dispatched to thread %d", ipt-poolsync.value().begin() );
+			nldebug( "LNETL1: New socket dispatched to thread %d", ipt-poolsync.value().begin() );
 		}
 	}
 }
@@ -785,8 +785,8 @@ void CBufServer::addNewThread( CThreadPool& threadpool, CServerBufSock *bufsock 
 	{
 		threadpool.push_back( thr );
 		thr->start();
-		nldebug( "L1: Added a new thread; pool size is %d", threadpool.size() );
-		nldebug( "L1: New socket dispatched to thread %d", threadpool.size()-1 );
+		nldebug( "LNETL1: Added a new thread; pool size is %d", threadpool.size() );
+		nldebug( "LNETL1: New socket dispatched to thread %d", threadpool.size()-1 );
 	}
 }
 
@@ -904,11 +904,11 @@ void CServerReceiveTask::run()
 				// we'll ignore message (Interrupted system call) caused by a CTRL-C
 				/*if (CSock::getLastError() == 4)
 				{
-					nldebug ("L1: Select failed (in receive thread): %s (code %u) but IGNORED", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError());
+					nldebug ("LNETL1: Select failed (in receive thread): %s (code %u) but IGNORED", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError());
 					continue;
 				}*/
-				//nlerror( "L1: Select failed (in receive thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
-				nldebug( "L1: Select failed (in receive thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
+				//nlerror( "LNETL1: Select failed (in receive thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
+				nldebug( "LNETL1: Select failed (in receive thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
 				return;
 		}
 
@@ -962,11 +962,11 @@ void CServerReceiveTask::run()
 				}
 				catch ( ESocketConnectionClosed& )
 				{
-					nldebug( "L1: Connection %s closed", serverbufsock->asString().c_str() );
+					nldebug( "LNETL1: Connection %s closed", serverbufsock->asString().c_str() );
 				}
 				catch ( ESocket& )
 				{
-					nldebug( "L1: Connection %s broken", serverbufsock->asString().c_str() );
+					nldebug( "LNETL1: Connection %s broken", serverbufsock->asString().c_str() );
 					(*ic)->Sock->disconnect();
 				}
 /*
@@ -986,9 +986,9 @@ void CServerReceiveTask::run()
 			uint8 b;
 			if ( read( _WakeUpPipeHandle[PipeRead], &b, 1 ) == -1 ) // we were woken-up by the wake-up pipe
 			{
-				nldebug( "L1: In CServerReceiveTask::run(): read() failed" );
+				nldebug( "LNETL1: In CServerReceiveTask::run(): read() failed" );
 			}
-			nldebug( "L1: Receive thread select woken-up" );
+			nldebug( "LNETL1: Receive thread select woken-up" );
 		}
 #endif
 		
@@ -1013,7 +1013,7 @@ void CServerReceiveTask::clearClosedConnections()
 				NLMISC::CSynchronized<CConnections>::CAccessor connectionssync( &_Connections );
 				for ( ic=removesetsync.value().begin(); ic!=removesetsync.value().end(); ++ic )
 				{
-					nldebug( "L1: Removing a connection" );
+					nldebug( "LNETL1: Removing a connection" );
 
 					// Delete the socket object
 					delete (*ic);

@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.10 2001/06/18 09:03:17 cado Exp $
+ * $Id: buf_client.cpp,v 1.11 2001/12/10 14:34:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,11 +165,11 @@ bool CBufClient::dataAvailable()
 					break;
 
 				default:
-					nlinfo( "L1: Invalid block type: %hu", (uint16)(buffer[buffer.size()-1]) );
-					nlinfo( "L1: Buffer (%d B): [%s]", buffer.size(), stringFromVector(buffer).c_str() );
-					nlinfo( "L1: Receive queue:" );
+					nlinfo( "LNETL1: Invalid block type: %hu", (uint16)(buffer[buffer.size()-1]) );
+					nlinfo( "LNETL1: Buffer (%d B): [%s]", buffer.size(), stringFromVector(buffer).c_str() );
+					nlinfo( "LNETL1: Receive queue:" );
 					recvfifo.value().display();
-					nlerror( "L1: Invalid system event type in client receive queue" );
+					nlerror( "LNETL1: Invalid system event type in client receive queue" );
 
 				}
 				// Extract system event
@@ -200,7 +200,7 @@ void CBufClient::receive( std::vector<uint8>& buffer )
 
 	// Extract event type
 	nlassert( buffer[buffer.size()-1] == CBufNetBase::User );
-	nldebug( "L1: Client read buffer (%d+%d B): [%s]", buffer.size(), sizeof(TSockId)+1, stringFromVector(buffer).c_str() );
+	nldebug( "LNETL1: Client read buffer (%d+%d B): [%s]", buffer.size(), sizeof(TSockId)+1, stringFromVector(buffer).c_str() );
 	buffer.resize( buffer.size()-1 );
 }
 
@@ -310,7 +310,7 @@ CBufClient::~CBufClient()
 	// Clean thread termination
 	if ( _RecvThread != NULL )
 	{
-		nldebug( "L1: Waiting for the end of the receive thread..." );
+		nldebug( "LNETL1: Waiting for the end of the receive thread..." );
 		_RecvThread->wait();
 	}
 
@@ -355,7 +355,7 @@ void CClientReceiveTask::run()
 				// Test size limit
 				if ( len > _Client->maxExpectedBlockSize() )
 				{
-					nlwarning( "L1: Socket %s received length exceeding max expected, in block header... Disconnecting", _SockId->asString().c_str() );
+					nlwarning( "LNETL1: Socket %s received length exceeding max expected, in block header... Disconnecting", _SockId->asString().c_str() );
 					throw ESocket( "Received length exceeding max expected", false );
 				}
 
@@ -363,7 +363,7 @@ void CClientReceiveTask::run()
 				vector<uint8> buffer ( len );
 				sock()->receive( &*buffer.begin(), len );
 #ifdef NL_DEBUG
-				nldebug( "L1: Client %s received buffer (%u B): [%s]", _SockId->asString().c_str(), buffer.size(), stringFromVector(buffer).c_str() );
+				nldebug( "LNETL1: Client %s received buffer (%u B): [%s]", _SockId->asString().c_str(), buffer.size(), stringFromVector(buffer).c_str() );
 #endif
 				// Add event type
 				buffer.push_back( CBufNetBase::User );
@@ -373,17 +373,17 @@ void CClientReceiveTask::run()
 			}
 			else
 			{
-				nlwarning( "L1: Socket %s received null length in block header", _SockId->asString().c_str() );
+				nlwarning( "LNETL1: Socket %s received null length in block header", _SockId->asString().c_str() );
 			}
 		}
 		catch ( ESocketConnectionClosed& )
 		{
-			nldebug( "L1: Client connection %s closed", _SockId->asString().c_str() );
+			nldebug( "LNETL1: Client connection %s closed", _SockId->asString().c_str() );
 			connected = false;
 		}
 		catch ( ESocket& )
 		{
-			nldebug( "L1: Client connection %s broken", _SockId->asString().c_str() );
+			nldebug( "LNETL1: Client connection %s broken", _SockId->asString().c_str() );
 			sock()->disconnect();
 			connected = false;
 		}

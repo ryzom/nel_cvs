@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.10 2001/09/12 16:54:53 lecroart Exp $
+ * $Id: buf_server.h,v 1.11 2001/12/10 14:37:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -443,7 +443,7 @@ public:
 			// See clearClosedConnections().
 			NLMISC::CSynchronized<CConnections>::CAccessor removesetsync( &_RemoveSet );
 			removesetsync.value().insert( sockid );
-			//nldebug( "L1: ic: %p - RemoveSet.size(): %d", ic, removesetsync.value().size() );
+			//nldebug( "LNETL1: ic: %p - RemoveSet.size(): %d", ic, removesetsync.value().size() );
 		}
 #ifdef NL_OS_UNIX
 		wakeUp();

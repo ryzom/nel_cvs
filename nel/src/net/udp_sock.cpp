@@ -1,7 +1,7 @@
 /** \file udp_sock.cpp
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.cpp,v 1.7 2001/10/09 09:34:25 cado Exp $
+ * $Id: udp_sock.cpp,v 1.8 2001/12/10 14:34:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,7 +104,7 @@ void CUdpSock::bind( const CInetAddress& addr )
 	_Bound = true;
 	if ( _Logging )
 	{
-		nldebug( "L0: Socket %d bound at %s", _Sock, _LocalAddr.asString().c_str() );
+		nldebug( "LNETL0: Socket %d bound at %s", _Sock, _LocalAddr.asString().c_str() );
 	}
 }
 
@@ -124,7 +124,7 @@ void CUdpSock::sendTo( const uint8 *buffer, uint len, const CInetAddress& addr )
 
 	if ( _Logging )
 	{
-		nldebug( "L0: Socket %d sent %d bytes to %s", _Sock, len, addr.asString().c_str() );
+		nldebug( "LNETL0: Socket %d sent %d bytes to %s", _Sock, len, addr.asString().c_str() );
 	}
 
 	// If socket is unbound, retrieve local address
@@ -169,7 +169,7 @@ void CUdpSock::receive( uint8 *buffer, uint32& len )
 	_BytesReceived += len;
 	if ( _Logging )
 	{
-		nldebug( "L0: Socket %d received %d bytes from peer %s", _Sock, len, _RemoteAddr.asString().c_str() );
+		nldebug( "LNETL0: Socket %d received %d bytes from peer %s", _Sock, len, _RemoteAddr.asString().c_str() );
 	}
 }
 
@@ -197,7 +197,7 @@ void CUdpSock::receivedFrom( uint8 *buffer, uint& len, CInetAddress& addr )
 	_BytesReceived += len;
 	if ( _Logging )
 	{
-		nldebug( "L0: Socket %d received %d bytes from %s", _Sock, len, addr.asString().c_str() );
+		nldebug( "LNETL0: Socket %d received %d bytes from %s", _Sock, len, addr.asString().c_str() );
 	}
 }
 

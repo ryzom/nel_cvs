@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.24 2001/11/29 15:39:54 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.25 2001/12/10 14:34:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -239,7 +239,7 @@ void	cbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 		if (itcb == inst->_Callbacks.end())
 		{
 			// the callback doesn't exist
-			nlwarning("L5: can't find callback %s called by service %d", msgin.getName().c_str(), sid);
+			nlwarning("HNETL5: can't find callback %s called by service %d", msgin.getName().c_str(), sid);
 		}
 		else
 		{
@@ -256,7 +256,7 @@ void	cbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 	else
 	{
 		// service not yet identified
-		nlwarning("L5: received the message %s from a not yet identified service", msgin.getName().c_str());
+		nlwarning("HNETL5: received the message %s from a not yet identified service", msgin.getName().c_str());
 	}
 }
 
@@ -367,7 +367,9 @@ void	CUnifiedNetwork::release()
 	{
 		if (idAccess.value()[i].EntryUsed && !idAccess.value()[i].IsServerConnection)
 		{
-			idAccess.value()[i].Connection.CbClient->disconnect();
+			if (idAccess.value()[i].Connection.CbClient->connected ())
+				idAccess.value()[i].Connection.CbClient->disconnect();
+
 			delete idAccess.value()[i].Connection.CbClient;
 			idAccess.value()[i].Connection.CbClient = NULL;
 		}
@@ -410,7 +412,7 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 	}
 	catch (ESocketConnectionFailed &e)
 	{
-		nlwarning ("L5: can't connect to %s (sid %u) now (%s)", name.c_str(), sid, e.what ());
+		nlwarning ("HNETL5: can't connect to %s (sid %u) now (%s)", name.c_str(), sid, e.what ());
 	}
 
 	if (!connectSuccess && !autoRetry)
@@ -591,7 +593,7 @@ void	CUnifiedNetwork::updateConnectionTable()
 			}
 			catch (ESocketConnectionFailed &e)
 			{
-				nlinfo ("L5: can't connect to %s (sid %u) now (%s)", cnx.ServiceName.c_str(), cnx.ServiceId, e.what ());
+				nlinfo ("HNETL5: can't connect to %s (sid %u) now (%s)", cnx.ServiceName.c_str(), cnx.ServiceId, e.what ());
 			}
 		}
 
@@ -666,7 +668,7 @@ void	CUnifiedNetwork::updateConnectionTable()
 				cnx.Connection.HostId = _ConnectionStack[i].SHost;
 			}
 
-			nldebug("L5: Updated table with connection to %s %d", cnx.ServiceName.c_str(), cnx.ServiceId);
+			nldebug("HNETL5: Updated table with connection to %s %d", cnx.ServiceName.c_str(), cnx.ServiceId);
 
 			cnx.AutoRetry = false;
 		}
@@ -767,7 +769,7 @@ void	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout)
 		}
 
 		if (!found)
-			nlwarning("L5: can't find service %s to send message %s", serviceName.c_str(), msgout.getName().c_str());
+			nlwarning("HNETL5: can't find service %s to send message %s", serviceName.c_str(), msgout.getName().c_str());
 	}
 	leaveReentrant();
 }
@@ -780,7 +782,7 @@ void	CUnifiedNetwork::send(uint16 sid, const CMessage &msgout)
 
 		if (_TempDisconnectionTable[sid])
 		{
-			nlwarning("L5: service %d just got disconnected", sid);
+			nlwarning("HNETL5: service %d just got disconnected", sid);
 			goto SendCSLeave;
 		}
 
@@ -795,7 +797,7 @@ void	CUnifiedNetwork::send(uint16 sid, const CMessage &msgout)
 					goto SendCSLeave;
 				}
 			}
-			nlwarning("L5: incorrect service id %d to send message %s", sid, msgout.getName().c_str());
+			nlwarning("HNETL5: incorrect service id %d to send message %s", sid, msgout.getName().c_str());
 		}
 		else
 		{
@@ -953,12 +955,12 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &
 	
 	if (count <= 0)
 	{
-		nlwarning("L5: couldn't access the service %s", name.c_str());
+		nlwarning("HNETL5: couldn't access the service %s", name.c_str());
 		return NULL;
 	}
 	else if (count > 1)
 	{
-		nlwarning("L5: %d services %s to get CCallbackNetBase", count, name.c_str());
+		nlwarning("HNETL5: %d services %s to get CCallbackNetBase", count, name.c_str());
 	}
 
 	TNameMappedConnection::const_iterator	itnmc = nameAccess.value().find(name);
@@ -981,7 +983,7 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(TServiceId sid, TSockId &host)
 
 	if (sid>=idAccess.value().size() || !idAccess.value()[sid].EntryUsed || !idAccess.value()[sid].EntryUsed)
 	{
-		nlwarning("L5: incorrect service id %d to get netbase", sid);
+		nlwarning("HNETL5: incorrect service id %d to get netbase", sid);
 		return NULL;
 	}
 

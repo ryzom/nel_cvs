@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.16 2001/11/27 14:12:48 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.17 2001/12/10 14:34:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,8 +87,8 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 
 //	if (log)
 	{
-		nldebug ("L3C: Client: send(%s)", buffer.toString().c_str());
-		nldebug ("send message number %u", SendNextValue);
+		nldebug ("LNETL3C: Client: send(%s)", buffer.toString().c_str());
+//		nldebug ("send message number %u", SendNextValue);
 	}
 
 	// debug features, we number all packet to be sure that they are all sent and received
@@ -224,7 +224,7 @@ void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
 		// debug features, we number all packet to be sure that they are all sent and received
 		// \todo remove this debug feature when ok
 		uint32 val = *(uint32*)buffer.buffer ();
-		nldebug ("receive message number %u", val);
+//		nldebug ("receive message number %u", val);
 		if (ReceiveNextValue != val)
 			nlerror ("stop in the buffer %u and should be %u", val, ReceiveNextValue);
 		ReceiveNextValue++;
@@ -322,7 +322,7 @@ void CCallbackClient::connect( const CInetAddress& addr )
 			throw ESocketConnectionFailed( addr );
 			//break;
 		default :
-			nlwarning( "L3C: No connection event in replay data, at update #%"NL_I64"u", _MR_UpdateCounter );
+			nlwarning( "LNETL3C: No connection event in replay data, at update #%"NL_I64"u", _MR_UpdateCounter );
 		}
 	}
 #endif
@@ -360,7 +360,7 @@ void CCallbackClient::disconnect( TSockId hostid )
 			// Read (skip) disconnection in the file
 			if ( ! (_MR_Recorder.checkNextOne( _MR_UpdateCounter ) == Disconnecting) )
 			{
-				nlwarning( "L3C: No disconnection event in the replay data, at update #%"NL_I64"u", _MR_UpdateCounter );
+				nlwarning( "LNETL3C: No disconnection event in the replay data, at update #%"NL_I64"u", _MR_UpdateCounter );
 			}
 		}
 		// Record or replay disconnection (because disconnect() in the client does not push a disc. event)
@@ -403,7 +403,7 @@ bool CCallbackClient::replaySystemCallbacks()
 				break;
 
 			default:
-				nlerror( "L1: Invalid system event type in client receive queue" );
+				nlerror( "LNETL1: Invalid system event type in client receive queue" );
 			}
 			// Extract system event
 			_MR_Recorder.ReceivedMessages.pop();

@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.36 2001/10/25 12:12:03 cado Exp $
+ * $Id: inet_address.cpp,v 1.37 2001/12/10 14:34:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -230,7 +230,7 @@ CInetAddress& CInetAddress::setByName( const std::string& hostName )
 		if ( phostent == NULL )
 		{
 			_Valid = false;
-			nldebug( "L0: Network error: resolution of hostname '%s' failed", hostName.c_str() );
+			nldebug( "LNETL0: Network error: resolution of hostname '%s' failed", hostName.c_str() );
 			// return *this;
 			throw ESocket( (string("Hostname resolution failed for ")+hostName).c_str() );
 		}

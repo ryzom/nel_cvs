@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service_5.h,v 1.5 2001/11/15 15:08:42 lecroart Exp $
+ * $Id: service_5.h,v 1.6 2001/12/10 14:37:18 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@
 
 #if defined(NL_OS_WINDOWS) && defined(_WINDOWS)
 #	include <windows.h>
+#	undef min
+#	undef max
 #endif
 
 #include "nel/misc/config_file.h"

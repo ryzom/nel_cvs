@@ -1,7 +1,7 @@
 /** \file listen_sock.cpp
  * Network engine, layer 0, listening tcp socket
  *
- * $Id: listen_sock.cpp,v 1.3 2001/11/27 14:12:48 lecroart Exp $
+ * $Id: listen_sock.cpp,v 1.4 2001/12/10 14:34:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,7 @@ void CListenSock::init( uint16 port )
 	// Now set the address visible from outside
 	_LocalAddr = CInetAddress::localHost();
 	_LocalAddr.setPort( port );
-	nldebug( "L0: Socket %d listen socket is at %s", _Sock, _LocalAddr.asString().c_str() );
+	nldebug( "LNETL0: Socket %d listen socket is at %s", _Sock, _LocalAddr.asString().c_str() );
 }
 
 
@@ -93,7 +93,7 @@ void CListenSock::init( const CInetAddress& addr )
 {
 	if ( ! addr.isValid() )
 	{
-		nldebug( "L0: Binding listen socket to any address, port %hu", addr.port() );
+		nldebug( "LNETL0: Binding listen socket to any address, port %hu", addr.port() );
 	}
 
 #ifndef NL_OS_WINDOWS
@@ -118,7 +118,7 @@ void CListenSock::init( const CInetAddress& addr )
 	{
 		throw ESocket( "Unable to listen on specified port" );
 	}
-	nldebug( "L0: Socket %d listening at %s", _Sock, _LocalAddr.asString().c_str() );
+	nldebug( "LNETL0: Socket %d listening at %s", _Sock, _LocalAddr.asString().c_str() );
 }
 
 
@@ -133,7 +133,7 @@ CTcpSock *CListenSock::accept()
 	SOCKET newsock = ::accept( _Sock, (sockaddr*)&saddr, &saddrlen );
 	if ( newsock == INVALID_SOCKET )
 	{
-	  /*nlinfo( "L0: Error accepting a connection");
+	  /*nlinfo( "LNETL0: Error accepting a connection");
 	  // See accept() man on Linux
 	  newsock = ::accept( _Sock, (sockaddr*)&saddr, &saddrlen );
 	  if ( newsock == INVALID_SOCKET )*/
@@ -145,7 +145,7 @@ CTcpSock *CListenSock::accept()
 	// Construct and save a CTcpSock object
 	CInetAddress addr;
 	addr.setSockAddr( &saddr );
-	nldebug( "L0: Socket %d accepted an incoming connection from %s, opening socket %d", _Sock, addr.asString().c_str(), newsock );
+	nldebug( "LNETL0: Socket %d accepted an incoming connection from %s, opening socket %d", _Sock, addr.asString().c_str(), newsock );
 	CTcpSock *connection = new CTcpSock( newsock, addr );
 	return connection;
 }

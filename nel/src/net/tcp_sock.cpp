@@ -1,7 +1,7 @@
 /** \file tcp_sock.cpp
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.cpp,v 1.4 2001/09/10 13:43:56 cado Exp $
+ * $Id: tcp_sock.cpp,v 1.5 2001/12/10 14:34:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,7 +84,7 @@ void CTcpSock::connect( const CInetAddress& addr )
 	{
 	  if ( _Logging )
 	    {
-		nldebug( "L0: Closing socket %d before reconnecting", _Sock );
+		nldebug( "LNETL0: Closing socket %d before reconnecting", _Sock );
 	    }
 	  close();
 	}	
@@ -100,7 +100,7 @@ void CTcpSock::connect( const CInetAddress& addr )
  */
 void CTcpSock::disconnect()
 {
-	nldebug( "L0: Socket %d disconnecting from %s...", _Sock, _RemoteAddr.asString().c_str() );
+	nldebug( "LNETL0: Socket %d disconnecting from %s...", _Sock, _RemoteAddr.asString().c_str() );
 
 	// This shutdown resets the connection immediatly (not a graceful closure)
 #ifdef NL_OS_WINDOWS

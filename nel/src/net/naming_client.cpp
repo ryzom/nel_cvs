@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.39 2001/11/27 17:34:09 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.40 2001/12/10 14:34:31 lecroart Exp $
  *
  */
 
@@ -583,12 +583,12 @@ NLMISC_COMMAND(services, "displays registered services", "")
 {
 	if(args.size() != 0) return false;
 
-	nldebug ("Display the %d registered services :", CNamingClient::getRegisteredServices().size());
+	log.displayNL ("Display the %d registered services :", CNamingClient::getRegisteredServices().size());
 	for (std::list<CNamingClient::CServiceEntry>::const_iterator it = CNamingClient::getRegisteredServices().begin(); it != CNamingClient::getRegisteredServices().end(); it++)
 	{
-		nldebug (" > %s-%hu '%s'", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str());
+		log.displayNL (" > %s-%hu '%s'", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str());
 	}
-	nldebug ("End ot the list");
+	log.displayNL ("End ot the list");
 
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.15 2001/11/29 15:39:54 lecroart Exp $
+ * $Id: sock.cpp,v 1.16 2001/12/10 14:34:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -260,7 +260,7 @@ void CSock::createSocket( int type, int protocol )
 
 	if ( _Logging )
 	{
-		nldebug( "L0: Socket %d open (TCP)", _Sock );
+		nldebug( "LNETL0: Socket %d open (TCP)", _Sock );
 	}
 }
 
@@ -272,7 +272,7 @@ void CSock::close()
 {
 	if ( _Logging )
 	{
-		nldebug( "L0: Socket %d closing for %s at %s", _Sock, _RemoteAddr.asString().c_str(), _LocalAddr.asString().c_str() );
+		nldebug( "LNETL0: Socket %d closing for %s at %s", _Sock, _RemoteAddr.asString().c_str(), _LocalAddr.asString().c_str() );
 	}
 #ifdef NL_OS_WINDOWS
 	closesocket( _Sock );
@@ -294,7 +294,7 @@ CSock::~CSock()
 	{
 		if ( _Logging )
 		{
-			nldebug( "L0: Socket %d closing for %s at %s", _Sock, _RemoteAddr.asString().c_str(), _LocalAddr.asString().c_str() );
+			nldebug( "LNETL0: Socket %d closing for %s at %s", _Sock, _RemoteAddr.asString().c_str(), _LocalAddr.asString().c_str() );
 		}
 
 		if ( connected() )
@@ -318,7 +318,7 @@ CSock::~CSock()
  */
 void CSock::connect( const CInetAddress& addr )
 {
-	nldebug( "L0: Socket %d connecting to %s...", _Sock, addr.asString().c_str() );
+	nldebug( "LNETL0: Socket %d connecting to %s...", _Sock, addr.asString().c_str() );
 
 	// Check address
 	if ( ! addr.isValid() )
@@ -351,12 +351,12 @@ void CSock::connect( const CInetAddress& addr )
 	}
 	if ( _Logging )
 	{
-		nldebug( "L0: Socket %d connected to %s", _Sock, addr.asString().c_str() );
+		nldebug( "LNETL0: Socket %d connected to %s", _Sock, addr.asString().c_str() );
 	}
 	setLocalAddress();
 	if ( _Logging )
 	{
-		nldebug( "L0: Socket %d is at %s", _Sock, _LocalAddr.asString().c_str() );
+		nldebug( "LNETL0: Socket %d is at %s", _Sock, _LocalAddr.asString().c_str() );
 	}	
 	_RemoteAddr = addr;
 
@@ -419,7 +419,7 @@ CSock::TSockResult CSock::send( const uint8 *buffer, uint32& len, bool throw_exc
 
 	if ( _Logging )
 	{
-		nldebug ("L0: CSock::send(): Sent %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+		nldebug ("LNETL0: CSock::send(): Sent %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
 	}
 	
 	if ( len == SOCKET_ERROR )
@@ -458,7 +458,7 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 
 		if ( _Logging )
 		{
-			nldebug ("L0: CSock::receive(): NBM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+			nldebug ("LNETL0: CSock::receive(): NBM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
 		}
 
 		_MaxReceiveTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
@@ -513,7 +513,7 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 			TTicks before = CTime::getPerformanceTime();
 			brecvd = ::recv( _Sock, (char*)(buffer+total), len-total, 0 );
 
-			nldebug ("L0: CSock::receive(): BM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+			nldebug ("LNETL0: CSock::receive(): BM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
 
 			_MaxReceiveTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
 			
@@ -550,7 +550,7 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 
 	/*if ( _Logging )
 	{
-		nldebug( "L0: Socket %d received %d bytes", _Sock, len );
+		nldebug( "LNETL0: Socket %d received %d bytes", _Sock, len );
 	}*/
 	_BytesReceived += len;
 	return CSock::Ok;
@@ -564,11 +564,11 @@ bool CSock::connected()
 {
   /*bool b;
   {
-    //nldebug( "L0: CSock::connected-BEGIN (socket %u)", descriptor() );
+    //nldebug( "LNETL0: CSock::connected-BEGIN (socket %u)", descriptor() );
     CSynchronized<bool>::CAccessor sync( &_SyncConnected );
     b = sync.value();
   }
-  //nldebug( "L0: CSock::connected-END" );
+  //nldebug( "LNETL0: CSock::connected-END" );
   return b;*/
 	return _Connected;
 }

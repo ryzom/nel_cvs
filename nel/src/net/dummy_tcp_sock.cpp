@@ -1,7 +1,7 @@
 /** \file dummy_tcp_sock.cpp
  * Dummy TCP socket, used ny the message recorder for playback
  *
- * $Id: dummy_tcp_sock.cpp,v 1.3 2001/09/10 13:43:56 cado Exp $
+ * $Id: dummy_tcp_sock.cpp,v 1.4 2001/12/10 14:34:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,7 +47,7 @@ void CDummyTcpSock::connect( const CInetAddress& addr )
 	//sync.value() = true;
 	_Connected = true;
 
-	nldebug( "L0: Socket connected to %s", addr.asString().c_str() );
+	nldebug( "LNETL0: Socket connected to %s", addr.asString().c_str() );
 }
 
 
@@ -56,7 +56,7 @@ void CDummyTcpSock::connect( const CInetAddress& addr )
  */
 void CDummyTcpSock::disconnect()
 {
-	nldebug( "L0: Socket disconnecting from %s...", _RemoteAddr.asString().c_str() );
+	nldebug( "LNETL0: Socket disconnecting from %s...", _RemoteAddr.asString().c_str() );
 
 	//CSynchronized<bool>::CAccessor sync( &_SyncConnected );
 	//sync.value() = false;

@@ -498,21 +498,22 @@ CMasterTreeDlg::CMasterTreeDlg ()
 }
 
 // ---------------------------------------------------------------------------
-#define MAX_SYS_DIR 4
+#define MAX_SYS_DIR 5
 char *gSysDir[MAX_SYS_DIR] = 
 {
 	".",
 	"..",
 	"ZoneBitmaps",
-	"ZoneLigos"
+	"ZoneLigos",
+	"DFN"
 };
 
-#define MAX_VALID_EXT	2
+/*#define MAX_VALID_EXT	2
 char *gValidExt[MAX_VALID_EXT] =
 {
 	".prim",
-	".land"
-};
+	".land",
+};*/
 
 FILETIME getFileTime (const string &fname)
 {
@@ -654,6 +655,7 @@ void CMasterTreeDlg::parseAdd(HTREEITEM itRoot, const string &path, char SortTyp
 		else
 		{
 			// Look if the name is a valid filename (look at the extension)
+			/*
 			bool bFound = false;
 			for (uint32 j = 0; j < MAX_VALID_EXT; ++j)
 				if (strlen(SortTable[i].c_str()) > strlen(gValidExt[j]))
@@ -664,12 +666,13 @@ void CMasterTreeDlg::parseAdd(HTREEITEM itRoot, const string &path, char SortTyp
 				}
 			if (bFound)
 			{
+				*/
 				HTREEITEM item = pTree->InsertItem (SortTable[i].c_str(), 1, 1, itRoot);
 				string sTemp = path;
 				sTemp += "\\";
 				sTemp += SortTable[i].c_str();
 				_Files.insert(map<HTREEITEM,string>::value_type(item, sTemp));
-			}
+			//}
 
 		}
 	}
@@ -762,6 +765,11 @@ void CMasterTreeDlg::openAnyFile (const char *fname)
 	{
 		pMF->openWorldEditor ();
 		pMF->openWorldEditorFile (fname);
+	}
+	if (stricmp(&fname[size-6],".logic") == 0)
+	{
+		pMF->openLogicEditor ();
+		pMF->openLogicEditorFile (fname);
 	}
 }
 

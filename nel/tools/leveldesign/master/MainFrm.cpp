@@ -335,7 +335,7 @@ void CMainFrame::openLogicEditor ()
 // ---------------------------------------------------------------------------
 void CMainFrame::openLogicEditorFile (const char *fileName)
 {
-//	_LogicEditor->loadFile (fileName);
+	_LogicEditor->loadFile (fileName);
 }
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file entities.h
  * Snowballs 2 specific code for managing the entities
  *
- * $Id: entities.h,v 1.23 2001/07/23 16:42:34 lecroart Exp $
+ * $Id: entities.h,v 1.24 2001/07/24 17:29:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -200,7 +200,7 @@ void	updateEntities ();
 // Reset the pacs position of an entity (in case pacs went wrong)
 void	resetEntityPosition(uint32 eid);
 // Process the event when an entity shoots a snowball
-void	shotSnowball(uint32 eid, const NLMISC::CVector &start, const NLMISC::CVector &target, const NLMISC::CVector &speed);
+void	shotSnowball(uint32 eid, const NLMISC::CVector &start, const NLMISC::CVector &target, float speed, NLMISC::TTime startTime);
 
 void	renderEntitiesNames ();
 

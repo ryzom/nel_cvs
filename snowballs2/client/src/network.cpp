@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.11 2001/07/23 16:42:34 lecroart Exp $
+ * $Id: network.cpp,v 1.12 2001/07/24 17:29:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,7 @@
 #include "network.h"
 #include "entities.h"
 #include "interface.h"
+#include "graph.h"
 
 //
 // Namespaces
@@ -78,7 +79,7 @@ static void cbAddEntity (CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 
 	msgin.serial (id, name, race, startPosition);
 
-	nlinfo ("Receive add entity %u '%s' %s (%f,%f,%f)", id, name.c_str(), race==0?"penguin":"gnu", startPosition.x, startPosition.y, startPosition.z);
+	nlinfo ("receive add entity %u '%s' %s (%f,%f,%f)", id, name.c_str(), race==0?"penguin":"gnu", startPosition.x, startPosition.y, startPosition.z);
 
 	if (id != Self->Id)
 	{
@@ -112,6 +113,12 @@ static void cbEntityPos (CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 
 	nlinfo ("Receive entity pos %u (%f,%f,%f) %f, %u", id, position.x, position.y, position.z, angle, state);
 
+	if (Self->Id = id)
+	{
+		// receive my info, ignore them, i know where i am
+		return;
+	}
+
 	EIT eit = findEntity (id, false);
 	if (eit == Entities.end ())
 	{
@@ -139,13 +146,15 @@ static void cbSBHit(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 static void cbSnowball (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	uint32 eid;
-	CVector start, target, speed;
+	CVector position, target;
+	float speed;
+	TTime startTime;
 
-	msgin.serial (eid, start, target, speed);
+	msgin.serial (eid, position, target, speed, startTime);
 	
 	nlinfo ("Receive a snowball message");
 
-	shotSnowball (eid, start, target, speed);
+	shotSnowball (eid, position, target, speed, startTime);
 }
 
 static void cbChat (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
@@ -160,8 +169,24 @@ static void cbIdentification (CMessage &msgin, TSockId from, CCallbackNetBase &n
 	uint32 id;
 	msgin.serial (id);
 	
-	Self->Id = id;
+	if (Self == NULL)
+		nlerror ("Self is NULL");
 
+	// copy my old entity
+	CEntity me = *Self;
+	
+	// set my new online id
+	me.Id = id;
+
+	// add my new entity in the array
+	EIT eit = (Entities.insert (make_pair (id, me))).first;
+
+	// remove my old entity
+	Entities.erase (Self->Id);
+
+	// remap Self
+	Self = &((*eit).second);
+	
 	nlinfo ("my online id is %u", id);
 
 	// send to the network my entity					
@@ -219,20 +244,23 @@ void	sendEntityPos (CEntity &entity)
 
 	CMessage msgout (Connection->getSIDA(), "ENTITY_POS");
 	msgout.serial (entity.Id, entity.Position, entity.Angle, state);
+
+	UploadGraph.addValue ((float)msgout.length ());
+	
 	Connection->send (msgout);
 	
 	nlinfo("sending pos to network (%f,%f,%f, %f), %u", entity.Position.x, entity.Position.y, entity.Position.z, entity.Angle, state);
 }
 
-void	sendSnowBall (uint32 eid, const CVector &start, const CVector &target, const CVector &speed)
+void	sendSnowBall (uint32 eid, const NLMISC::CVector &position, const NLMISC::CVector &target, float speed, NLMISC::TTime startTime)
 {
 	if (!isOnline ()) return;
 
 	CMessage msgout (Connection->getSIDA(), "SNOWBALL");
-	msgout.serial (eid, const_cast<CVector &>(start), const_cast<CVector &>(target), const_cast<CVector &>(speed));
+	msgout.serial (eid, const_cast<CVector &>(position), const_cast<CVector &>(target), speed, startTime);
 	Connection->send (msgout);
 
-	nlinfo("sending snowball to network (%f,%f,%f) to (%f,%f,%f) with (%f,%f,%f)", start.x, start.y, start.z, target.x, target.y, target.z, speed.x, speed.y, speed.z);
+	nlinfo("sending snowball to network (%f,%f,%f) to (%f,%f,%f) with %f %"NL_I64"d", position.x, position.y, position.z, target.x, target.y, target.z, speed, startTime);
 }
 
 
@@ -251,20 +279,25 @@ void	updateNetwork()
 {
 	if (Connection != NULL)
 	{
+		sint64 newBytesDownloaded = (sint64) Connection->newBytesDownloaded ();
+		sint64 newBytesUploaded = (sint64) Connection->newBytesUploaded ();
+
 		TextContext->setHotSpot (UTextContext::MiddleTop);
 		TextContext->setColor (CRGBA(255, 255, 255, 255));
 		TextContext->setFontSize (14);
-		TextContext->printfAt (0.5f, 0.99f, "u:%"NL_I64"u d:%"NL_I64"u / u:%"NL_I64"u d:%"NL_I64"u / u:%"NL_I64"u d:%"NL_I64"u",
-			Connection->bytesUploaded (), Connection->bytesDownloaded (),
-			Connection->getBytesSended (), Connection->getBytesReceived (),
-			Connection->newBytesUploaded (), Connection->newBytesDownloaded ());
+		TextContext->printfAt (0.5f, 0.99f, "d:%"NL_I64"u u:%"NL_I64"u / d:%"NL_I64"u u:%"NL_I64"u / d:%"NL_I64"u u:%"NL_I64"u",
+			Connection->bytesDownloaded (), Connection->bytesUploaded (),
+			Connection->getBytesReceived (),Connection->getBytesSended (),
+			newBytesDownloaded, newBytesUploaded);
+
+		DownloadGraph.addValue ((float)newBytesDownloaded);
+		UploadGraph.addValue ((float)newBytesUploaded);
 
 		Connection->update ();
 
-
 		if (isOnline () && Self != NULL)
 		{
-			if (CTime::getLocalTime () > LastPosSended + 1000)
+			if (CTime::getLocalTime () > LastPosSended + 100)
 			{
 				sendEntityPos (*Self);
 

@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.cpp,v 1.13 2001/07/23 16:42:34 lecroart Exp $
+ * $Id: mouse_listener.cpp,v 1.14 2001/07/24 17:29:23 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -177,11 +177,11 @@ void C3dMouseListener::operator ()(const CEvent& event)
 
 		if (isOnline ())
 		{
-			sendSnowBall (Self->Id, _AimingPosition, _AimedTarget, direction*SnowballSpeed);
+			sendSnowBall (Self->Id, _AimingPosition, _AimedTarget, SnowballSpeed, CTime::getLocalTime());
 		}
 		else
 		{
-			shotSnowball(Self->Id, _AimingPosition, _AimedTarget, direction*SnowballSpeed);
+			shotSnowball (Self->Id, _AimingPosition, _AimedTarget, SnowballSpeed, CTime::getLocalTime());
 		}
 	}
 	else if (event==EventMouseWheelId)

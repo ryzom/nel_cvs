@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera interface between the game and NeL
  *
- * $Id: camera.cpp,v 1.15 2001/07/23 16:42:34 lecroart Exp $
+ * $Id: camera.cpp,v 1.16 2001/07/24 17:29:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,9 +92,9 @@ void	initCamera()
 	CamCollisionEntity->setCeilMode(true);
 
 	// Create the snowing particle system
-	Snow = Scene->createInstance("snow.ps");
+	//Snow = Scene->createInstance("snow.ps");
 	// And setup it
-	Snow->setTransformMode (UTransformable::DirectMatrix);
+	//Snow->setTransformMode (UTransformable::DirectMatrix);
 
 	//
 	// Setup the sky scene
@@ -131,7 +131,7 @@ void	updateCamera()
 	// Set the new position of the snow emitter
 	CMatrix	mat = CMatrix::Identity;
 	mat.setPos (Camera->getMatrix().getPos());
-	Snow->setMatrix(mat);
+	//Snow->setMatrix(mat);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file physics.cpp
  * Snowballs trajectory computation
  *
- * $Id: physics.cpp,v 1.2 2001/07/23 16:34:38 legros Exp $
+ * $Id: physics.cpp,v 1.3 2001/07/24 17:29:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

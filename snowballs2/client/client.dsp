@@ -103,7 +103,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386 /nodefaultlib:"msvcrtd.lib"
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"msvcrtd.lib" /out:"ReleaseDebug/snowballs.exe"
-# SUBTRACT LINK32 /pdb:none
+# SUBTRACT LINK32 /profile /pdb:none
 
 !ENDIF 
 
@@ -163,6 +163,14 @@ SOURCE=.\src\entities.cpp
 # Begin Source File
 
 SOURCE=.\src\entities.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\graph.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\graph.h
 # End Source File
 # Begin Source File
 

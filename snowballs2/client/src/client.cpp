@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.41 2001/07/23 16:42:34 lecroart Exp $
+ * $Id: client.cpp,v 1.42 2001/07/24 17:29:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,7 @@
 #include "mouse_listener.h"
 #include "radar.h"
 #include "compass.h"
+#include "graph.h"
 
 //
 // Namespaces
@@ -211,9 +212,13 @@ int main(int argc, char **argv)
 	displayLoadingState ("Initialize Radar");
 	initRadar();
 
-	// Init Compass
+	// Init compass
 	displayLoadingState ("Initialize Compass");
 	initCompass();
+
+	// Init graph
+	displayLoadingState ("Initialize Graph");
+	initGraph();
 
 	// Init sound control
 	displayLoadingState ("Initialize Sound");
@@ -271,7 +276,7 @@ int main(int argc, char **argv)
 
 		// Update the time counters
 		LastTime = NewTime;
-		NewTime = CTime::getLocalTime();
+		NewTime = CTime::ticksToSecond (CTime::getPerformanceTime())*1000;//getLocalTime();
 
 		// Update animation
 //		updateAnimation ();
@@ -313,6 +318,9 @@ int main(int argc, char **argv)
 		// Update the radar
 		updateRadar ();
 
+		// Update the radar
+		updateGraph ();
+
 		updateAnimation ();
 
 		// Render the name on top of the other players
@@ -334,6 +342,10 @@ int main(int argc, char **argv)
 		TextContext->setColor (CRGBA(255, 255, 255, 255));
 		TextContext->setFontSize (14);
 		TextContext->printfAt (0.01f, 0.99f, "%.2ffps %ums", fps, dt);
+
+		// one more frame
+		FpsGraph.addValue (1.0f);
+		SpfGraph.addOneValue ((float)dt);
 
 		update3dLogo ();
 
@@ -457,6 +469,7 @@ int main(int argc, char **argv)
 
 	releaseLensFlare ();
 	releaseRadar ();
+	releaseGraph ();
 	releaseCompass ();
 	releaseInterface ();
 	releaseNetwork ();

@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.37 2001/07/23 16:42:34 lecroart Exp $
+ * $Id: entities.cpp,v 1.38 2001/07/24 17:29:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -447,7 +447,7 @@ void stateNormal (CEntity &entity)
 				CVector	AimedTarget = getTarget(AimingPosition,
 												direction,
 												100);
-				shotSnowball(entity.Id, AimingPosition, AimedTarget, direction*SnowballSpeed);
+				shotSnowball(entity.Id, AimingPosition, AimedTarget, SnowballSpeed, CTime::getLocalTime ());
 			}
 			break;
 		case 4:
@@ -796,7 +796,7 @@ void	resetEntityPosition(uint32 eid)
 }
 
 
-void	shotSnowball(uint32 eid, const CVector &start, const CVector &target, const CVector &speed)
+void	shotSnowball(uint32 eid, const CVector &start, const CVector &target, float speed, NLMISC::TTime startTime)
 {
 	uint32 sbid = NextEID++;
 	EIT eit = findEntity (eid);
@@ -812,7 +812,7 @@ void	shotSnowball(uint32 eid, const CVector &start, const CVector &target, const
 	CEntity	&snowball = (*eit).second;
 	snowball.AutoMove = 1;
 
-	snowball.Trajectory.init(start, target, snowball.Speed, CTime::getLocalTime());
+	snowball.Trajectory.init(start, target, speed, startTime);
 }
 
 

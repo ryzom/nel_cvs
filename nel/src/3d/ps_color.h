@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * <File description>
  *
- * $Id: ps_color.h,v 1.3 2001/07/12 15:50:52 vizerie Exp $
+ * $Id: ps_color.h,v 1.4 2001/08/06 10:12:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,7 +61,7 @@ public:
 		_F.setValues(startColor, endColor) ;
 	}
 	
-	// F is serialized by base classes...
+	// _F is serialized by base classes...
 
 } ;
 
@@ -77,7 +77,7 @@ public:
 		_F.setValues(startColor, endColor) ;
 	}
 	
-	// F is serialized by base classes...
+	// _F is serialized by base classes...
 
 } ;
 

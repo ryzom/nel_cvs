@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.h
  * <File description>
  *
- * $Id: main.cpp,v 1.1 2002/11/08 18:44:23 berenguier Exp $
+ * $Id: main.cpp,v 1.2 2002/11/12 15:52:38 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "3d/mesh.h"
 #include "3d/mesh_mrm.h"
 #include "3d/register_3d.h"
+#include "nel/misc/config_file.h"
+#include "nel/misc/algo.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -38,39 +40,26 @@ using namespace NL3D;
 
 
 // ***************************************************************************
-int main(int argc, char *argv[])
+bool	computeOneShape(const char *lodFile, const char *shapeIn, const char *shapeOut)
 {
-	// Filter addSearchPath
-	NLMISC::createDebug();
-	NLMISC::InfoLog->addNegativeFilter ("adding the path");
-
-	NL3D::registerSerial3d();
-
-	if (argc != 4)
-	{
-		nlwarning("%s compute a Lod textureInfo to put in a shape", argv[0]);
-		nlwarning("usage : %s clod_in shape_in shape_out ", argv[0]);
-		exit(-1);
-	}
-
 	try
 	{
 		// Load the clod.
 		CLodCharacterShapeBuild		theLod;
 		CIFile	fIn;
-		if(!fIn.open(argv[1]))
-			throw Exception("Can't load %s", argv[1]);
+		if(!fIn.open(lodFile))
+			throw Exception("Can't load %s", lodFile);
 		fIn.serial(theLod);
 		fIn.close();
 
 		// Load the shape.
 		CSmartPtr<IShape>			theShape;
-		if(!fIn.open(argv[2]))
-			throw Exception("Can't load %s", argv[2]);
+		if(!fIn.open(shapeIn))
+			throw Exception("Can't load %s", shapeIn);
 		CShapeStream	ss;
 		fIn.serial(ss);
 		if(!ss.getShapePointer())
-			throw Exception("Can't load %s", argv[2]);
+			throw Exception("Can't load %s", shapeIn);
 		theShape= ss.getShapePointer();
 		fIn.close();
 
@@ -87,7 +76,7 @@ int main(int argc, char *argv[])
 		else if(meshMRM)
 			lodBuilder.computeTexture(*meshMRM, lodTexture);
 		else
-			throw Exception("The shape %s is not a Mesh/MeshMRM", argv[2]);
+			throw Exception("The shape %s is not a Mesh/MeshMRM", shapeIn);
 
 		// store in mesh
 		if(mesh)
@@ -96,8 +85,8 @@ int main(int argc, char *argv[])
 			meshMRM->setupLodCharacterTexture(lodTexture);
 		// serial
 		COFile	fOut;
-		if(!fOut.open(argv[3]))
-			throw Exception("Can't open %s for writing", argv[2]);
+		if(!fOut.open(shapeOut))
+			throw Exception("Can't open %s for writing", shapeOut);
 		ss.setShapePointer(theShape);
 		fOut.serial(ss);
 
@@ -111,6 +100,139 @@ int main(int argc, char *argv[])
 	catch(Exception &e)
 	{
 		nlwarning("ERROR: %s", e.what());
+		return false;
+	}
+
+	return true;
+}
+
+
+// ***************************************************************************
+int main(int argc, char *argv[])
+{
+	// Filter addSearchPath
+	NLMISC::createDebug();
+	NLMISC::InfoLog->addNegativeFilter ("adding the path");
+
+	NL3D::registerSerial3d();
+
+	// What usage?
+	bool	usageSingle= argc==4;
+	bool	usageDir= argc==6 && argv[1]==string("-d");
+
+	if (! (usageSingle || usageDir) )
+	{
+		string	execName= CFile::getFilename(argv[0]);
+		printf("%s compute a Lod textureInfo to put in a shape\n", execName.c_str());
+		printf("   usage 1: %s clod_in shape_in shape_out \n", execName.c_str());
+		printf("   usage 2: %s -d clod_filters.cfg  clod_dir_in  shape_dir_in  shape_dir_out \n", execName.c_str());
+		printf("      This usage type try to build lod_tex according to 'clod_tex_shape_filters' variable in the cfg.\n");
+		printf("      'clod_tex_shape_filters' is a list of tuple: lod_file / shape file expression\n");
+		printf("      eg: clod_tex_shape_filters= {\n");
+		printf("                                  \"HOM_LOD\", \"FY_HOM*\", \n");
+		printf("                                  \"HOM_LOD\", \"??_HOM*\", \n");
+		printf("                                  }; \n");
+		printf("      NB: unmatched shapes are just copied into dest directory\n");
+		printf("      NB: if error in config_file, shapes are just copied into dest directory\n");
+		printf("      NB: file date is checked, allowing caching\n");
+		exit(-1);
+	}
+
+
+	if(usageSingle)
+	{
+		computeOneShape(argv[1], argv[2], argv[3]);
+	}
+	else
+	{
+		string	clod_cfg= argv[2];
+		string	clod_dir_in= argv[3];
+		string	shape_dir_in= argv[4];
+		string	shape_dir_out= argv[5];
+
+		// dir check
+		if(!CFile::isDirectory(clod_dir_in))
+			nlwarning("ERROR: %s is not a directory", clod_dir_in.c_str());
+		if(!CFile::isDirectory(shape_dir_in))
+			nlwarning("ERROR: %s is not a directory", shape_dir_in.c_str());
+		if(!CFile::isDirectory(shape_dir_out))
+			nlwarning("ERROR: %s is not a directory", shape_dir_out.c_str());
+
+		// Open the CFG, and read the vars.
+		vector<string>	LodNames;
+		vector<string>	LodFilters;
+		try
+		{
+			CConfigFile		fcfg;
+			fcfg.load(clod_cfg);
+			CConfigFile::CVar	&var= fcfg.getVar("clod_tex_shape_filters");
+			if(var.size()<2)
+				throw Exception("Must have 2+ strings in clod_tex_shape_filters");
+			LodNames.resize(var.size()/2);
+			LodFilters.resize(var.size()/2);
+			for(uint i=0;i<LodNames.size();i++)
+			{
+				LodNames[i]= var.asString(i*2+0);
+				LodFilters[i]= var.asString(i*2+1);
+			}
+		}
+		catch(Exception &e)
+		{
+			// It is not an error to have a bad config file: files will be copied
+			nlwarning(e.what());
+		}
+
+		// List all files.
+		vector<string>		fileList;
+		CPath::getPathContent(shape_dir_in, false, false, true, fileList);
+
+		// For all files.
+		for(uint i=0;i<fileList.size();i++)
+		{
+			string	pathNameIn= fileList[i];
+			string	fileNameIn= CFile::getFilename(pathNameIn);
+			uint32	fileInDate= CFile::getFileModificationDate(pathNameIn);
+			string	pathNameOut= shape_dir_out + "/" + fileNameIn;
+
+			// First try cache. If file exist and not newer, continue.
+			// If File Out exist 
+			if(CFile::fileExists(pathNameOut))
+			{
+				// If newer than file In (and also newer than retrieverInfos), skip
+				uint32		fileOutDate= CFile::getFileModificationDate(pathNameOut);
+				if(	fileOutDate >= fileInDate )
+				{
+					printf("Skiping %s\n", fileNameIn.c_str());
+					continue;
+				}
+			}
+
+			// progress
+			printf("Processing %s", fileNameIn.c_str());
+
+			// search in all lods if the file Name match a filter
+			for(uint j=0;j<LodFilters.size();j++)
+			{
+				if( testWildCard(fileNameIn.c_str(), LodFilters[j].c_str()) )
+				{
+					// Ok, try to do the compute.
+					if( computeOneShape( (clod_dir_in+"/"+LodNames[j]+".clod").c_str(), pathNameIn.c_str(), pathNameOut.c_str() ) )
+					{
+						// succed => stop
+						printf(" - CLod Textured with %s", LodNames[j].c_str());
+						break;
+					}
+				}
+			}
+			// if fail to find a valid filter, just do a copy
+			if(j==LodFilters.size())
+			{
+				CFile::copyFile(pathNameOut.c_str(), pathNameIn.c_str());
+				printf(" - Copied");
+			}
+
+			printf("\n");
+		}
 	}
 
 	return 0;

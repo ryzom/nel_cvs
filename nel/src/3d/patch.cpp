@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.42 2001/02/06 18:19:14 berenguier Exp $
+ * $Id: patch.cpp,v 1.43 2001/02/14 15:12:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1527,7 +1527,7 @@ void		CPatch::packShadowMap (const CTileLumel *pLumel)
 }
 
 	nlassert ((lineCount&0x3)==0);
-	uint size=((OrderS*NL_LUMEL_BY_TILE+1)*(OrderT*NL_LUMEL_BY_TILE+1))/8+1;
+	uint size=(OrderT*NL_LUMEL_BY_TILE+1)/8+1;
 
 	// On bit per lumel
 	uint size=numLineBlock*numLumelBlock*8;

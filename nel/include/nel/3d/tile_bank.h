@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.16 2001/01/30 13:44:12 berenguier Exp $
+ * $Id: tile_bank.h,v 1.17 2001/02/14 15:12:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,13 @@ class CTileBank;
  */
 class CTile
 {
+	// Mask for flags
+#define NL3D_CTILE_ROT_MASK				0x0000000f
+#define NL3D_CTILE_ROT_RSHIFT			0x0
+#define NL3D_CTILE_GROUP_MASK			0x000000f0
+#define NL3D_CTILE_GROUP_RSHIFT			0x4
+#define NL3D_CTILE_FREE_FLAG			0x00000100
+
 public:
 	friend class CTileSet;
 	friend class CTileBank;
@@ -59,49 +66,82 @@ public:
 public:
 	CTile ()
 	{
-		_Free=true;
-		_Invert=false;
+		_Flags=NL3D_CTILE_FREE_FLAG;
 	}
-	const std::string& getFileName (TBitmap bitmapType) const 
+	const std::string& getRelativeFileName (TBitmap bitmapType) const
 	{ 
 		return _BitmapName[bitmapType]; 
 	}
 	bool isFree () const
 	{
-		return _Free;
-	}
-	bool isInvert () const
-	{
-		return _Invert;
-	}
-	void setInvert (bool invert)
-	{
-		_Invert=invert;
+		return (_Flags&NL3D_CTILE_FREE_FLAG)!=0;
 	}
 	void    serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
 	void setFileName (TBitmap bitmapType, const std::string& name)
 	{ 
-		_Free=false;
+		// not free
+		_Flags&=~NL3D_CTILE_FREE_FLAG;
+
+		// set filename
 		_BitmapName[bitmapType]=name;
 	}
 
 	/// Get the additional orientation (CCW) for alpha texture.
-	uint8	getRotAlpha()
+	uint8	getRotAlpha ()
 	{
-		// TODO_ALPHA.
-		return 0;
+		return (uint8)((_Flags&NL3D_CTILE_ROT_MASK)>>NL3D_CTILE_ROT_RSHIFT);
+	}
+
+	/// Set the additional orientation (CCW) for alpha texture.
+	void	setRotAlpha (uint8 rot)
+	{
+		// Checks
+		nlassert (rot<4);
+
+		// Clear flags
+		_Flags&=~NL3D_CTILE_ROT_MASK;
+
+		// Set flags
+		_Flags|=(((uint32)rot)<<NL3D_CTILE_ROT_RSHIFT);
+	}
+
+	/**
+	  * Get the group flags for this tile.
+	  *
+	  * If the tile is in the I-ne gourp, the flag 1<<I is set. There are 4 groups.
+	  */
+	uint8	getGroupFlags ()
+	{
+		return (uint8)((_Flags&NL3D_CTILE_GROUP_MASK)>>NL3D_CTILE_GROUP_RSHIFT);
+	}
+
+	/**
+	  * Set the group flags for this tile.
+	  *
+	  * If the tile is in the I-ne gourp, the flag 1<<I is set. There are 4 groups.
+	  */
+	void	setGroupFlags (uint8 group)
+	{
+		// Checks
+		nlassert (group<0x10);
+
+		// Clear flags
+		_Flags&=~NL3D_CTILE_GROUP_MASK;
+
+		// Set flags
+		_Flags|=(((uint32)group)<<NL3D_CTILE_GROUP_RSHIFT);
 	}
 
 private:
 	void	clearTile (CTile::TBitmap type);
 	void	free ()
 	{
-		nlassert (!_Free);
-		_Free=true;
+		nlassert ((_Flags&=NL3D_CTILE_FREE_FLAG)==0);
+		_Flags|=NL3D_CTILE_FREE_FLAG;
 	}
 
-	bool						_Free;
-	bool						_Invert;
+	// Internal members
+	uint32						_Flags;
 	std::string					_BitmapName[bitmapCount];
 	static const sint			_Version;
 };
@@ -192,9 +232,10 @@ public:
 	void reset()
 	{
 		_Set=false;
-		_Borders[CTile::diffuse].clear();
-		_Borders[CTile::additive].clear();
-		_Borders[CTile::alpha].clear();
+		_Borders[top].clear();
+		_Borders[bottom].clear();
+		_Borders[left].clear();
+		_Borders[right].clear();
 	}
 	sint32 getWidth() const
 	{
@@ -204,9 +245,10 @@ public:
 	{
 		return _Height;
 	}
-	void	invertAlpha();
+	void	rotate();
 
-	static bool compare (const CTileBorder& border1, const CTileBorder& border2, TBorder where1, TBorder where2, int& pixel, int& composante, bool bInvertFirst=false, bool bInvertSecond=false);
+	static bool allAlphaSet (const CTileBorder& border, TBorder where, int& pixel, int& composante);
+	static bool compare (const CTileBorder& border1, const CTileBorder& border2, TBorder where1, TBorder where2, int& pixel, int& composante);
 
 private:
 	bool _Set;
@@ -230,6 +272,7 @@ public:
 		rightInterfaceProblem, addFirstA128128, topBottomNotTheSame, rightLeftNotTheSame, 
 		sizeInvalide, errorCount };
 	enum TTransition { first=0, last=47, count=48, notfound=-1 };
+	enum TDisplacement { FirstDisplace=0, LastDisplace=15, CountDisplace=16 };
 	enum TBorder { top=0, bottom, left, right, borderCount };
 	enum TFlagBorder { _1111=0,	_0111, _1110, _0001, _1000, _0000, dontcare=-1 };
 
@@ -245,19 +288,33 @@ public:
 	void clearTile128 (int indexInTileSet, CTile::TBitmap type, CTileBank& bank);
 	void clearTile256 (int indexInTileSet, CTile::TBitmap type, CTileBank& bank);
 	void clearTransition (TTransition transition, CTile::TBitmap type, CTileBank& bank);
+	void clearDisplacement (TDisplacement displacement);
 
 	// set
 	void setName (const std::string& name);
 	void setTile128 (int indexInTileSet, const std::string& name, CTile::TBitmap type, CTileBank& bank);
 	void setTile256 (int indexInTileSet, const std::string& name, CTile::TBitmap type, CTileBank& bank);
-	void setTileTransition (TTransition transition, const std::string& name, CTile::TBitmap type, CTileBank& bank, const CTileBorder& border, bool bInvert);
+	void setTileTransition (TTransition transition, const std::string& name, CTile::TBitmap type, CTileBank& bank, const CTileBorder& border);
+	void setTileTransitionAlpha (TTransition transition, const std::string& name, CTileBank& bank, const CTileBorder& border, uint8 rotAlpha);
 	void setBorder (CTile::TBitmap type, const CTileBorder& border);
+	void setDisplacement (TDisplacement displacement, const std::string& fileName);
 
 	// check
 	TError checkTile128 (CTile::TBitmap type, const CTileBorder& border, int& pixel, int& composante);
 	TError checkTile256 (CTile::TBitmap type, const CTileBorder& border, int& pixel, int& composante);
 	TError checkTileTransition (TTransition transition, CTile::TBitmap type, const CTileBorder& border, int& indexError,
-		int& pixel, int& composante, bool bInvert);
+		int& pixel, int& composante);
+
+	// is
+	bool isDisplacement (TDisplacement displacement)
+	{
+		// checks
+		nlassert (displacement>=FirstDisplace);
+		nlassert (displacement<=LastDisplace);
+
+		// return file name
+		return *(_DisplacementFileName[displacement].c_str())!=NULL;
+	}
 
 	// get
 	const std::string& getName () const;
@@ -285,6 +342,22 @@ public:
 	{
 		return _TileTransition+index;
 	}
+
+	/** 
+	  * Return the file name of the displacement map for the map n° displacement.
+	  * This file name is relative at the absolute path.
+	  */
+	const std::string& getDisplacementFileName (TDisplacement displacement)
+	{
+		// checks
+		nlassert (displacement>=FirstDisplace);
+		nlassert (displacement<=LastDisplace);
+
+		// return file name
+		return _DisplacementFileName[displacement];
+	}
+
+	// Static methods
 	static const char* getErrorMessage (TError error)
 	{
 		return _ErrorMessage[error];
@@ -299,6 +372,7 @@ public:
 	{
 		return _TransitionFlags[_what][_where];
 	}
+	static TTransition rotateTransition (TTransition transition);
 
 	// other
 	void addChild (const std::string& name);
@@ -320,9 +394,11 @@ private:
 	std::vector<sint32>	_Tile256;
 	CTileSetTransition _TileTransition[count];
 	std::set<std::string> _ChildName;
-	CTileBorder _Border128[CTile::bitmapCount];
-	CTileBorder _Border256[CTile::bitmapCount];
+	CTileBorder _Border128[2];
+	CTileBorder _Border256[2];
 	CTileBorder _BorderTransition[count][CTile::bitmapCount];
+	std::string _DisplacementFileName[CTileSet::CountDisplace];
+
 	static const sint _Version;
 	static const char* _ErrorMessage[CTileSet::errorCount];
 	static const TFlagBorder _TransitionFlags[count][4];
@@ -385,10 +461,28 @@ public:
 	void clear ();
 	sint getNumBitmap (CTile::TBitmap bitmap) const;
 	void computeXRef ();
+
+	/**
+	  * Return the xref for a tile.
+	  *
+	  * \param tile is the tile number.
+	  * \param tileSet will receive the tile set number in which the tile is. -1 if the tile is not used.
+	  * \param number will receive the number of the tile in the tileset.
+	  * \param type is the type of tile.
+	  */
 	void getTileXRef (int tile, int &tileSet, int &number, TTileType& type) const;
+
 	void makeAllPathRelative ();
 	/// This method change ".tga" of texture filename, to ".dds". Do this only for Additive and Diffuse part (not alpha).
 	void makeAllExtensionDDS ();
+	void setAbsPath (const std::string& newPath)
+	{
+		_AbsPath=newPath;
+	}
+	const std::string& getAbsPath () const
+	{
+		return _AbsPath;
+	}
 
 	void    serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
 private:
@@ -415,6 +509,7 @@ private:
 	std::vector<CTileSet>	_TileSetVector;
 	std::vector<CTile>	_TileVector;
 	std::vector<CTileXRef>	_TileXRef;
+	std::string			_AbsPath;
 	static const sint	_Version;
 };
 

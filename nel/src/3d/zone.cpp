@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.29 2001/01/23 14:31:41 corvazier Exp $
+ * $Id: zone.cpp,v 1.30 2001/02/14 15:12:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,15 +116,29 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 		pa.Tiles= pi.Tiles;
 		pa.TileColors= pi.TileColors;
 
-		// Pack the lumel map
-		pa.packShadowMap (&pi.Lumels[0]);
+		// Copy order of the patch
+		pa.OrderS= pi.OrderS;
+		pa.OrderT= pi.OrderT;
+
+		// Number of lumels in this patch
+		uint lumelCount=(pi.OrderS*NL_LUMEL_BY_TILE+1)*(pi.OrderT*NL_LUMEL_BY_TILE+1);
+
+		// Lumel empty ?
+		if (pi.Lumels.size ()==lumelCount)
+		{
+			// Pack the lumel map
+			pa.packShadowMap (&pi.Lumels[0]);
+		}
+		else
+		{
+			// Reset lightmap
+			pa.resetCompressedLumels ();
+		}
 
 		nlassert(pa.Tiles.size()== (uint)pi.OrderS*pi.OrderT);
 		nlassert(pa.TileColors.size()== (uint)(pi.OrderS+1)*(pi.OrderT+1));
 
 		// Build the patchConnect.
-		pa.OrderS= pi.OrderS;
-		pa.OrderT= pi.OrderT;
 		pc.ErrorSize= pi.ErrorSize;
 		for(i=0;i<4;i++)
 		{

@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.20 2001/01/30 13:44:13 berenguier Exp $
+ * $Id: tile_bank.cpp,v 1.21 2001/02/14 15:12:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,7 @@ void CTileLand::setName (const std::string& name)
 
 
 // ***************************************************************************
-const sint CTileBank::_Version=2;
+const sint CTileBank::_Version=3;
 // ***************************************************************************
 void    CTileBank::serial(IStream &f) throw(EStream)
 {
@@ -92,9 +92,52 @@ void    CTileBank::serial(IStream &f) throw(EStream)
 			throw EOlderStream();
 	}
 
-	f.serialCont (_LandVector);
-	f.serialCont (_TileSetVector);
-	f.serialCont (_TileVector);
+	switch (streamver)
+	{
+	case 3:
+		f.serial (_AbsPath);
+	case 2:
+		// Serial all containers
+		f.serialCont (_LandVector);
+		f.serialCont (_TileSetVector);
+		f.serialCont (_TileVector);
+	}
+
+	// Compute XRef in read mode
+	if (f.isReading())
+		computeXRef ();
+
+	// If Version<=2, remove diffuse and alpha tiles in transitions
+	if (streamver<=2)
+	{
+		// Must be reading
+		nlassert (f.isReading());
+
+		// Reset _AbsPath
+		_AbsPath="";
+
+		// Remove diffuse and additive in transition
+		uint tileCount=(uint)getTileCount ();
+		for (uint i=0; i<tileCount; i++)
+		{
+			int tileSet;
+			int number;
+			TTileType type;
+
+			// Get xref
+			getTileXRef (i, tileSet, number, type);
+
+			// Transition ?
+			if (type==transition)
+			{
+				// Remove diffuse bitmap
+				getTileSet(tileSet)->clearTransition ((CTileSet::TTransition)number, CTile::diffuse, *this);
+				
+				// Remove alpha bitmap
+				getTileSet(tileSet)->clearTransition ((CTileSet::TTransition)number, CTile::alpha, *this);
+			}
+		}
+	}
 }
 // ***************************************************************************
 sint CTileBank::addLand (const std::string& name)
@@ -197,7 +240,7 @@ sint CTileBank::getNumBitmap (CTile::TBitmap bitmap) const
 	{
 		if (!_TileVector[i].isFree())
 		{
-			const std::string &str=_TileVector[i].getFileName (bitmap);
+			const std::string &str=_TileVector[i].getRelativeFileName (bitmap);
 			if (str!="")
 			{
 				std::vector<char> vect (str.length()+1);
@@ -212,7 +255,14 @@ sint CTileBank::getNumBitmap (CTile::TBitmap bitmap) const
 // ***************************************************************************
 void CTileBank::computeXRef ()
 {
+	// Resize
 	_TileXRef.resize (_TileVector.size());
+
+	// Erase number of the tileset in xref
+	for (int tile=0; tile<(sint)_TileVector.size(); tile++)
+		_TileXRef[tile]._XRefTileSet=-1;
+
+	// Erase number of the tileset in xref
 	for (int s=0; s<(sint)_TileSetVector.size(); s++)
 	{
 		int t;
@@ -288,15 +338,15 @@ void CTileBank::makeAllPathRelative ()
 		char sTmpFileName[512];
 
 		// Diffuse
-		TroncFileName (sTmpFileName, _TileVector[nTile].getFileName (CTile::diffuse).c_str());
+		TroncFileName (sTmpFileName, _TileVector[nTile].getRelativeFileName (CTile::diffuse).c_str());
 		_TileVector[nTile].setFileName (CTile::diffuse, sTmpFileName);
 
 		// Additive
-		TroncFileName (sTmpFileName, _TileVector[nTile].getFileName (CTile::additive).c_str());
+		TroncFileName (sTmpFileName, _TileVector[nTile].getRelativeFileName (CTile::additive).c_str());
 		_TileVector[nTile].setFileName (CTile::additive, sTmpFileName);
 
-		// Bump
-		TroncFileName (sTmpFileName, _TileVector[nTile].getFileName (CTile::alpha).c_str());
+		// Alpha
+		TroncFileName (sTmpFileName, _TileVector[nTile].getRelativeFileName (CTile::alpha).c_str());
 		_TileVector[nTile].setFileName (CTile::alpha, sTmpFileName);
 	}
 }
@@ -313,7 +363,7 @@ void CTileBank::makeAllExtensionDDS ()
 		sint		pos;
 
 		// Diffuse
-		tmp= _TileVector[nTile].getFileName (CTile::diffuse);
+		tmp= _TileVector[nTile].getRelativeFileName (CTile::diffuse);
 		pos= tmp.rfind(".tga");
 		if(pos!= string::npos)
 		{
@@ -322,7 +372,7 @@ void CTileBank::makeAllExtensionDDS ()
 		}
 
 		// Additive.
-		tmp= _TileVector[nTile].getFileName (CTile::additive);
+		tmp= _TileVector[nTile].getRelativeFileName (CTile::additive);
 		pos= tmp.rfind(".tga");
 		if(pos!= string::npos)
 		{
@@ -343,21 +393,48 @@ void CTileBank::makeAllExtensionDDS ()
 
 
 // ***************************************************************************
-const sint CTile::_Version=1;
+const sint CTile::_Version=2;
 // ***************************************************************************
 void CTile::serial(IStream &f) throw(EStream)
 {
 	sint streamver = f.serialVersion(_Version);
 
+	// Tmp value
+	bool tmp;
+	string tmpStr;
+
 	switch (streamver)
 	{
-	case 1:
-		f.serial (_Invert);				// Don't break, read the version 0
-	case 0:
-		f.serial (_Free);
+	case 2:
+		f.serial (_Flags);
 		f.serial (_BitmapName[diffuse]);
 		f.serial (_BitmapName[additive]);
 		f.serial (_BitmapName[alpha]);
+		break;
+	case 1:
+		// Don't need invert many more
+		f.serial (tmp);
+	case 0:
+		// Initialize flags
+		_Flags=0;
+		
+		// Initialize alpha name
+		_BitmapName[alpha]="";
+		
+		// Read free flag
+		f.serial (tmp);
+
+		// If free, set the flag
+		if (tmp)
+			_Flags|=NL3D_CTILE_FREE_FLAG;
+
+		// Read diffuse bitmap and additive
+		f.serial (_BitmapName[diffuse]);
+		f.serial (_BitmapName[additive]);
+
+		// Don't need bump name
+		f.serial (tmpStr);
+
 		break;
 	}
 }
@@ -376,7 +453,7 @@ void CTile::clearTile (CTile::TBitmap type)
 
 
 // ***************************************************************************
-const sint CTileSet::_Version=0;
+const sint CTileSet::_Version=1;
 // ***************************************************************************
 const char* CTileSet::_ErrorMessage[CTileSet::errorCount]=
 {
@@ -464,24 +541,54 @@ void CTileSet::serial(IStream &f) throw(EStream)
 {
 	sint streamver = f.serialVersion(_Version);
 
-	int i;
-	f.serial (_Name);
-	f.serialCont (_Tile128);
-	f.serialCont (_Tile256);
-	for (i=0; i<count; i++)
-		f.serial (_TileTransition[i]);
-	f.serialCont (_ChildName);
-	f.serial (_Border128[CTile::diffuse]);
-	f.serial (_Border128[CTile::additive]);
-	f.serial (_Border128[CTile::alpha]);
-	f.serial (_Border256[CTile::diffuse]);
-	f.serial (_Border256[CTile::additive]);
-	f.serial (_Border256[CTile::alpha]);
-	for (i=0; i<count; i++)
+	CTileBorder tmp;
+
+	switch (streamver)
 	{
-		f.serial (_BorderTransition[i][CTile::diffuse]);
-		f.serial (_BorderTransition[i][CTile::additive]);
-		f.serial (_BorderTransition[i][CTile::alpha]);
+	case 1:
+		// Serial displacement map filename
+		{
+			for (uint displace=FirstDisplace; displace<CountDisplace; displace++)
+				f.serial (_DisplacementFileName[displace]);
+		}
+	case 0:
+		{
+			int i;
+			f.serial (_Name);
+			f.serialCont (_Tile128);
+			f.serialCont (_Tile256);
+			for (i=0; i<count; i++)
+				f.serial (_TileTransition[i]);
+			f.serialCont (_ChildName);
+			f.serial (_Border128[CTile::diffuse]);
+			f.serial (_Border128[CTile::additive]);
+
+			// old field, border bump 128
+			if (streamver==0)
+				f.serial (tmp);
+
+			f.serial (_Border256[CTile::diffuse]);
+			f.serial (_Border256[CTile::additive]);
+
+			// old field, border bump 256
+			if (streamver==0)
+				f.serial (tmp);
+
+			for (i=0; i<count; i++)
+			{
+				f.serial (_BorderTransition[i][CTile::diffuse]);
+				f.serial (_BorderTransition[i][CTile::additive]);
+				f.serial (_BorderTransition[i][CTile::alpha]);
+
+				// Reset the diffuse and alpha border if old version
+				if (streamver==0)
+				{
+					_BorderTransition[i][CTile::diffuse].reset();
+					_BorderTransition[i][CTile::alpha].reset();
+				}
+			}
+		}
+		break;
 	}
 }
 // ***************************************************************************
@@ -510,6 +617,7 @@ void CTileSet::setTile128 (int indexInTileSet, const std::string& name, CTile::T
 	// Edit a tile
 	CTile *tile=bank.getTile (_Tile128[indexInTileSet]);
 	tile->setFileName (type, name);
+	tile->setRotAlpha (0);
 }
 // ***************************************************************************
 CTileSet::TError CTileSet::checkTile128 (CTile::TBitmap type, const CTileBorder& border, int& pixel, int& composante)
@@ -592,118 +700,127 @@ void CTileSet::setTile256 (int indexInTileSet, const std::string& name, CTile::T
 	// Edit a tile
 	CTile *tile=bank.getTile (_Tile256[indexInTileSet]);
 	tile->setFileName (type, name);
+	tile->setRotAlpha (0);
 }
 // ***************************************************************************
 void CTileSet::setTileTransition (TTransition transition, const std::string& name, CTile::TBitmap type,	CTileBank& bank, 
-											  const CTileBorder& border, bool bInvert)
+											  const CTileBorder& border)
 {
+	// Check is not an alpha channel
+	nlassert (type!=CTile::alpha);		// use setTileTransitionAlpha
+
 	// Create a tile
 	_BorderTransition[transition][type]=border;
-
-	// Invert alpha if needed. All border always not inverted
-	if (bInvert)
-		_BorderTransition[transition][type].invertAlpha();
 
 	// Set the tile file name
 	CTile *tile=bank.getTile (_TileTransition[transition]._Tile);
 	tile->setFileName (type, name);
 }
 // ***************************************************************************
+void CTileSet::setTileTransitionAlpha (TTransition transition, const std::string& name, CTileBank& bank, 
+									   const CTileBorder& border, uint8 rot)
+{
+	// Check some args
+	nlassert (rot<4);
+
+	// Create a tile
+	_BorderTransition[transition][CTile::alpha]=border;
+
+	// Set the tile file name
+	CTile *tile=bank.getTile (_TileTransition[transition]._Tile);
+	tile->setFileName (CTile::alpha, name);
+	tile->setRotAlpha (rot);
+}
+// ***************************************************************************
 CTileSet::TError CTileSet::checkTileTransition (TTransition transition, CTile::TBitmap type, const CTileBorder& border, int& indexError,
-		int& pixel, int& composante, bool bInvert)
+		int& pixel, int& composante)
 {
 	nlassert (transition>=0);
 	nlassert (transition<count);
 
 	// Check
 	indexError=-1;
-	if (_Border128[type].isSet())
+
+	// Top
+	indexError=getExistingTransitionTile ((TFlagBorder)_TransitionFlags[transition][top], dontcare, dontcare, dontcare, transition, type);
+	if (indexError!=-1)
 	{
-		// Top
-		indexError=getExistingTransitionTile ((TFlagBorder)_TransitionFlags[transition][top], dontcare, dontcare, dontcare, transition, type);
-		if (indexError!=-1)
-		{
-			if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::top, CTileBorder::top, pixel, composante, bInvert, false))
-				return topInterfaceProblem;
-		}
-		indexError=getExistingTransitionTile (dontcare, (TFlagBorder)_TransitionFlags[transition][top], dontcare, dontcare, transition, type);
-		if (indexError!=-1)
-		{
-			if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::top, CTileBorder::bottom, pixel, composante, bInvert, false))
-				return topInterfaceProblem;
-		}
-		indexError=-1;
-		if (_TransitionFlags[transition][top]==_1111)
-		{
-			if (!CTileBorder::compare (border, _Border128[type], CTileBorder::top, CTileBorder::top, pixel, composante, bInvert, false))
-				return topInterfaceProblem;
-		}
-
-		// Bottom
-		indexError=getExistingTransitionTile (dontcare, (TFlagBorder)_TransitionFlags[transition][bottom], dontcare, dontcare, transition, type);
-		if (indexError!=-1)
-		{
-			if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::bottom, CTileBorder::bottom, pixel, composante, bInvert, false))
-				return bottomInterfaceProblem;
-		}
-		indexError=getExistingTransitionTile ((TFlagBorder)_TransitionFlags[transition][bottom], dontcare, dontcare, dontcare, transition, type);
-		if (indexError!=-1)
-		{
-			if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::bottom, CTileBorder::top, pixel, composante, bInvert, false))
-				return bottomInterfaceProblem;
-		}
-		indexError=-1;
-		if (_TransitionFlags[transition][bottom]==_1111)
-		{
-			if (!CTileBorder::compare (border, _Border128[type], CTileBorder::bottom, CTileBorder::bottom, pixel, composante, bInvert, false))
-				return bottomInterfaceProblem;
-		}
-
-		// Left
-		indexError=getExistingTransitionTile (dontcare, dontcare, (TFlagBorder)_TransitionFlags[transition][left], dontcare, transition, type);
-		if (indexError!=-1)
-		{
-			if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::left, CTileBorder::left, pixel, composante, bInvert, false))
-				return leftInterfaceProblem;
-		}
-		indexError=getExistingTransitionTile (dontcare, dontcare, dontcare, (TFlagBorder)_TransitionFlags[transition][left], transition, type);
-		if (indexError!=-1)
-		{
-			if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::left, CTileBorder::right, pixel, composante, bInvert, false))
-				return leftInterfaceProblem;
-		}
-		indexError=-1;
-		if (_TransitionFlags[transition][left]==_1111)
-		{
-			if (!CTileBorder::compare (border, _Border128[type], CTileBorder::left, CTileBorder::left, pixel, composante, bInvert, false))
-				return leftInterfaceProblem;
-		}
-
-		// Right
-		indexError=getExistingTransitionTile (dontcare, dontcare, dontcare, (TFlagBorder)_TransitionFlags[transition][right], transition, type);
-		if (indexError!=-1)
-		{
-			if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::right, CTileBorder::right, pixel, composante, bInvert, false))
-				return rightInterfaceProblem;
-		}
-		indexError=getExistingTransitionTile (dontcare, dontcare, (TFlagBorder)_TransitionFlags[transition][right], dontcare, transition, type);
-		if (indexError!=-1)
-		{
-			if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::right, CTileBorder::left, pixel, composante, bInvert, false))
-				return rightInterfaceProblem;
-		}
-		indexError=-1;
-		if (_TransitionFlags[transition][right]==_1111)
-		{
-			if (!CTileBorder::compare (border, _Border128[type], CTileBorder::right, CTileBorder::right, pixel, composante, bInvert, false))
-				return rightInterfaceProblem;
-		}
-		return ok;
+		if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::top, CTileBorder::top, pixel, composante))
+			return topInterfaceProblem;
 	}
-	else
+	indexError=getExistingTransitionTile (dontcare, (TFlagBorder)_TransitionFlags[transition][top], dontcare, dontcare, transition, type);
+	if (indexError!=-1)
 	{
-		return addFirstA128128;
+		if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::top, CTileBorder::bottom, pixel, composante))
+			return topInterfaceProblem;
 	}
+	indexError=-1;
+	if (_TransitionFlags[transition][top]==_1111)
+	{
+		if (!CTileBorder::allAlphaSet (border, CTileBorder::top, pixel, composante))
+			return topInterfaceProblem;
+	}
+
+	// Bottom
+	indexError=getExistingTransitionTile (dontcare, (TFlagBorder)_TransitionFlags[transition][bottom], dontcare, dontcare, transition, type);
+	if (indexError!=-1)
+	{
+		if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::bottom, CTileBorder::bottom, pixel, composante))
+			return bottomInterfaceProblem;
+	}
+	indexError=getExistingTransitionTile ((TFlagBorder)_TransitionFlags[transition][bottom], dontcare, dontcare, dontcare, transition, type);
+	if (indexError!=-1)
+	{
+		if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::bottom, CTileBorder::top, pixel, composante))
+			return bottomInterfaceProblem;
+	}
+	indexError=-1;
+	if (_TransitionFlags[transition][bottom]==_1111)
+	{
+		if (!CTileBorder::allAlphaSet (border, CTileBorder::bottom, pixel, composante))
+			return bottomInterfaceProblem;
+	}
+
+	// Left
+	indexError=getExistingTransitionTile (dontcare, dontcare, (TFlagBorder)_TransitionFlags[transition][left], dontcare, transition, type);
+	if (indexError!=-1)
+	{
+		if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::left, CTileBorder::left, pixel, composante))
+			return leftInterfaceProblem;
+	}
+	indexError=getExistingTransitionTile (dontcare, dontcare, dontcare, (TFlagBorder)_TransitionFlags[transition][left], transition, type);
+	if (indexError!=-1)
+	{
+		if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::left, CTileBorder::right, pixel, composante))
+			return leftInterfaceProblem;
+	}
+	indexError=-1;
+	if (_TransitionFlags[transition][left]==_1111)
+	{
+		if (!CTileBorder::allAlphaSet (border, CTileBorder::left, pixel, composante))
+			return leftInterfaceProblem;
+	}
+
+	// Right
+	indexError=getExistingTransitionTile (dontcare, dontcare, dontcare, (TFlagBorder)_TransitionFlags[transition][right], transition, type);
+	if (indexError!=-1)
+	{
+		if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::right, CTileBorder::right, pixel, composante))
+			return rightInterfaceProblem;
+	}
+	indexError=getExistingTransitionTile (dontcare, dontcare, (TFlagBorder)_TransitionFlags[transition][right], dontcare, transition, type);
+	if (indexError!=-1)
+	{
+		if (!CTileBorder::compare (border, _BorderTransition[indexError][type], CTileBorder::right, CTileBorder::left, pixel, composante))
+			return rightInterfaceProblem;
+	}
+	indexError=-1;
+	if (_TransitionFlags[transition][right]==_1111)
+	{
+		if (!CTileBorder::allAlphaSet (border, CTileBorder::right, pixel, composante))
+			return rightInterfaceProblem;
+	}
+	return ok;
 }
 // ***************************************************************************
 void CTileSet::removeTile128 (int indexInTileSet, CTileBank& bank)
@@ -859,6 +976,16 @@ CTileSet::TFlagBorder CTileSet::getOrientedBorder (TBorder where, TFlagBorder bo
 	return _0000;
 }
 // ***************************************************************************
+CTileSet::TTransition CTileSet::rotateTransition (TTransition transition)
+{
+	return getTransitionTile (
+		getOrientedBorder (top, getOrientedBorder (right, _TransitionFlags[transition][right])),	// top
+		getOrientedBorder (bottom, getOrientedBorder (left, _TransitionFlags[transition][left])),	// bottom
+		getOrientedBorder (left, getOrientedBorder (top, _TransitionFlags[transition][top])),		// left
+		getOrientedBorder (right, getOrientedBorder (bottom, _TransitionFlags[transition][bottom])) // right
+		);
+}
+// ***************************************************************************
 void CTileSet::clearTile128 (int indexInTileSet, CTile::TBitmap type, CTileBank& bank)
 {
 	int nTile=_Tile128[indexInTileSet];
@@ -901,7 +1028,7 @@ void CTileSet::deleteBordersIfLast (const CTileBank& bank, CTile::TBitmap type)
 	while (ite!=_Tile128.end())
 	{
 		// If the file name is valid
-		if (bank.getTile (*ite)->getFileName(type)!="")
+		if (bank.getTile (*ite)->getRelativeFileName(type)!="")
 		{
 			// Don't delete, 
 			bDelete=false;
@@ -918,7 +1045,7 @@ void CTileSet::deleteBordersIfLast (const CTileBank& bank, CTile::TBitmap type)
 	while (ite!=_Tile256.end())
 	{
 		// If the file name is valid
-		if (bank.getTile (*ite)->getFileName(type)!="")
+		if (bank.getTile (*ite)->getRelativeFileName(type)!="")
 		{
 			// Don't delete, 
 			bDelete=false;
@@ -942,14 +1069,13 @@ void CTileSet::deleteBordersIfLast (const CTileBank& bank, CTile::TBitmap type)
 		if (nTile!=-1)
 		{
 			// If the file name is valid
-			if (bank.getTile (nTile)->getFileName(type)!="")
+			if (bank.getTile (nTile)->getRelativeFileName(type)!="")
 			{
 				// Don't delete, 
 				bDelete=false;
 				break;
 			}
 		}
-		ite++;
 	}
 	if (trans!=count)
 		return;
@@ -958,7 +1084,26 @@ void CTileSet::deleteBordersIfLast (const CTileBank& bank, CTile::TBitmap type)
 	_Border128[type].reset();
 	_Border256[type].reset();
 }
+// ***************************************************************************
+void CTileSet::clearDisplacement (TDisplacement displacement)
+{
+	// checks
+	nlassert (displacement>=FirstDisplace);
+	nlassert (displacement<=LastDisplace);
 
+	// Clear file name
+	_DisplacementFileName[displacement]="";
+}
+// ***************************************************************************
+void CTileSet::setDisplacement (TDisplacement displacement, const std::string& fileName)
+{
+	// checks
+	nlassert (displacement>=FirstDisplace);
+	nlassert (displacement<=LastDisplace);
+
+	// Clear file name
+	_DisplacementFileName[displacement]=fileName;
+}
 
 // ***************************************************************************
 // ***************************************************************************
@@ -1020,7 +1165,7 @@ void CTileBorder::set (int width, int height, const std::vector<CBGRA>& array)
 	_Set=true;
 }
 // ***************************************************************************
-bool CTileBorder::compare (const CTileBorder& border1, const CTileBorder& border2, TBorder where1, TBorder where2, int& pixel, int& composante, bool bInvertFirst, bool bInvertSecond)
+bool CTileBorder::compare (const CTileBorder& border1, const CTileBorder& border2, TBorder where1, TBorder where2, int& pixel, int& composante)
 {
 	// Check border is initialized
 	nlassert (border1.isSet());
@@ -1030,7 +1175,6 @@ bool CTileBorder::compare (const CTileBorder& border1, const CTileBorder& border
 		return false;
 	for (pixel=0; pixel<(int)border1._Borders[where1].size(); pixel++)
 	{
-		pixel=pixel;
 		if (border1._Borders[where1][pixel].R!=border2._Borders[where2][pixel].R)
 		{
 			composante=0;
@@ -1046,16 +1190,28 @@ bool CTileBorder::compare (const CTileBorder& border1, const CTileBorder& border
 			composante=2;
 			return false;
 		}
-		else
+		else if (border1._Borders[where1][pixel].A!=border2._Borders[where2][pixel].A)
 		{
-			int alpha1=border1._Borders[where1][pixel].A;
-			int alpha2=border2._Borders[where2][pixel].A;
-			if ((bInvertFirst?(255-alpha1):alpha1)!=(bInvertSecond?(255-alpha2):alpha2))
-			{
-				composante=3;
-				return false;
-			}
+			composante=3;
+			return false;
 		}
+	}
+
+	return true;
+}
+// ***************************************************************************
+bool CTileBorder::allAlphaSet (const CTileBorder& border, TBorder where, int& pixel, int& composante)
+{
+	// Check border is initialized
+	nlassert (border.isSet());
+
+	// always Alpha
+	composante=3;
+
+	for (pixel=0; pixel<(int)border._Borders[where].size(); pixel++)
+	{
+		if (border._Borders[where][pixel].A!=0xff)
+			return false;
 	}
 
 	return true;
@@ -1097,13 +1253,38 @@ void CTileBorder::doubleSize ()
 	}
 }
 // ***************************************************************************
-void CTileBorder::invertAlpha()
+void CTileBorder::rotate()
 {
-	for (int b=0; b<borderCount; b++)
-	{
-		for (int s=0; s<(int)_Borders[b].size(); s++)
-			_Borders[b][s].A=255-_Borders[b][s].A;
-	}
+	// Copy the right
+	std::vector<NLMISC::CBGRA> tmpLeft=_Borders[left];
+
+	// Top inverted becomes left
+	uint i, size;
+	size=_Borders[top].size();
+	_Borders[left].resize (size);
+
+	// copy inverted
+	for (i=0; i<size; i++)
+		_Borders[left][i]=_Borders[top][size-i-1];
+
+	// Right become top
+	_Borders[top]=_Borders[right];
+
+	// bottom inverted becomes right
+	size=_Borders[bottom].size();
+	_Borders[right].resize (size);
+
+	// copy inverted
+	for (i=0; i<size; i++)
+		_Borders[right][i]=_Borders[bottom][size-i-1];
+
+	// Left become bottom
+	_Borders[bottom]=tmpLeft;
+
+	// Invert size
+	sint32 tmpSize=_Width;
+	_Width=_Height;
+	_Height=tmpSize;
 }
 
 // ***************************************************************************

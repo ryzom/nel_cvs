@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.42 2001/02/01 16:32:54 berenguier Exp $
+ * $Id: landscape.cpp,v 1.43 2001/02/14 15:12:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -604,7 +604,7 @@ void			CLandscape::loadTile(uint16 tileId)
 	// Fill additive part.
 	// ===================
 	if(tile)
-		textName= tile->getFileName(CTile::additive);
+		textName= tile->getRelativeFileName(CTile::additive);
 	else
 		textName= "";
 	// If no additive for this tile, rdrpass is NULL.
@@ -614,7 +614,7 @@ void			CLandscape::loadTile(uint16 tileId)
 	{
 		// Fill rdrpass.
 		CPatchRdrPass	pass;
-		pass.TextureDiffuse= findTileTexture(textName);
+		pass.TextureDiffuse= findTileTexture(TileBank.getAbsPath()+textName);
 		// No alpha part for additive.
 
 		// Fill tileInfo.
@@ -633,16 +633,16 @@ void			CLandscape::loadTile(uint16 tileId)
 	CPatchRdrPass	pass;
 	// The diffuse part for a tile is inevitable.
 	if(tile)
-		pass.TextureDiffuse= findTileTexture(tile->getFileName(CTile::diffuse));
+		pass.TextureDiffuse= findTileTexture(TileBank.getAbsPath()+tile->getRelativeFileName(CTile::diffuse));
 	else
 		pass.TextureDiffuse= new CTextureCross;
 	if(tile)
 	{
 		// TODO_ALPHA: replace CTile::diffuse by CTile::alpha.
 		// patch yoyo: en attendant le changement de tilebank, on prend l'alpha de la texture diffuse.
-		textName= tile->getFileName(CTile::diffuse);
+		textName= tile->getRelativeFileName (CTile::diffuse);
 		if(textName!="")
-			pass.TextureAlpha= findTileTexture(textName);
+			pass.TextureAlpha= findTileTexture(TileBank.getAbsPath()+textName);
 	}
 
 

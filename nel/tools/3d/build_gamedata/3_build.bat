@@ -1,5 +1,5 @@
 @echo off
 
-call set_title.bat %1
+call set_title.bat Build %1
 
 bash sh\build.sh

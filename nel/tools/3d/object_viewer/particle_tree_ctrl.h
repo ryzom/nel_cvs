@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
- * <File description>
+ * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.h,v 1.5 2001/06/19 08:14:31 corvazier Exp $
+ * $Id: particle_tree_ctrl.h,v 1.6 2001/06/25 13:30:44 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,6 +164,10 @@ public:
 	} ;
 
 protected:
+
+	// the last ps that had a selected instance in it
+	NL3D::CParticleSystem *_LastClickedPS ;
+
 	// node that we allocated
 	std::vector<CNodeType *> _NodeTypes ;
 

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.cpp
  * <File description>
  *
- * $Id: ps_attrib_maker_bin_op.cpp,v 1.3 2001/10/03 10:14:00 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op.cpp,v 1.4 2001/12/06 16:48:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,19 +29,83 @@
 namespace NL3D
 {
 
-// instanciation of template static members
+	void MakePrivate(uint8 * dest, const NLMISC::CRGBA *src1, const NLMISC::CRGBA *src2, uint32 stride, uint32 numAttrib, CPSBinOp::BinOp op)
+	{
+		switch (op)
+		{
+			case CPSBinOp::modulate:
+			{
+				// CRGBA OPTIMISATION
+				NLMISC::CRGBA::modulateColors((NLMISC::CRGBA *) dest, src1, src2, numAttrib, sizeof(NLMISC::CRGBA), stride);				
+			}
+			break;
+			case CPSBinOp::add:
+			{
+				// CRGBA OPTIMISATION
+				NLMISC::CRGBA::addColors((NLMISC::CRGBA *) dest, src1, src2, numAttrib, sizeof(NLMISC::CRGBA), stride);				
+			}
+			break;
+			case CPSBinOp::subtract:
+			{
+				// CRGBA OPTIMISATION
+				NLMISC::CRGBA::subtractColors((NLMISC::CRGBA *) dest, src1, src2, numAttrib, sizeof(NLMISC::CRGBA), stride);
+			}
+			break;
+		}
+	}
 
-/*float CPSAttribMakerBinOp<float>::_Buf1[PSBinOpBufSize] ;
-float CPSAttribMakerBinOp<float>::_Buf2[PSBinOpBufSize] ;
-uint32 CPSAttribMakerBinOp<uint32>::_Buf1[PSBinOpBufSize] ;
-uint32 CPSAttribMakerBinOp<uint32>::_Buf2[PSBinOpBufSize] ;
-sint32 CPSAttribMakerBinOp<sint32>::_Buf1[PSBinOpBufSize] ;
-sint32 CPSAttribMakerBinOp<sint32>::_Buf2[PSBinOpBufSize] ;
-NLMISC::CRGBA CPSAttribMakerBinOp<NLMISC::CRGBA>::_Buf1[PSBinOpBufSize] ;
-NLMISC::CRGBA CPSAttribMakerBinOp<NLMISC::CRGBA>::_Buf2[PSBinOpBufSize] ;
-CPlaneBasis CPSAttribMakerBinOp<CPlaneBasis>::_Buf1[PSBinOpBufSize] ;
-CPlaneBasis CPSAttribMakerBinOp<CPlaneBasis>::_Buf2[PSBinOpBufSize] ;
-*/
+	void Make4Private(uint8 * dest, const NLMISC::CRGBA *src1, const NLMISC::CRGBA *src2, uint32 stride, uint32 numAttrib, CPSBinOp::BinOp op)
+	{		
+		switch (op)
+		{
+			case CPSBinOp::modulate:
+			{
+				// CRGBA OPTIMISATION
+				NLMISC::CRGBA::modulateColors((NLMISC::CRGBA *) dest, src1, src2, numAttrib, sizeof(NLMISC::CRGBA), stride, 4);				
+			}
+			break;
+			case CPSBinOp::add:
+			{
+				// CRGBA OPTIMISATION
+				NLMISC::CRGBA::addColors((NLMISC::CRGBA *) dest, src1, src2, numAttrib, sizeof(NLMISC::CRGBA), stride, 4);				
+			}
+			break;
+			case CPSBinOp::subtract:
+			{
+				// CRGBA OPTIMISATION
+				NLMISC::CRGBA::subtractColors((NLMISC::CRGBA *) dest, src1, src2, numAttrib, sizeof(NLMISC::CRGBA), stride, 4);
+			}
+			break;
+		}
+	}
+
+	
+	void MakeNPrivate(uint8 * dest, const NLMISC::CRGBA *src1, const NLMISC::CRGBA *src2, uint32 stride, uint32 numAttrib, CPSBinOp::BinOp op, uint nbReplicate)
+	{
+		switch (op)
+		{
+			case CPSBinOp::modulate:
+			{
+				// CRGBA OPTIMISATION
+				NLMISC::CRGBA::modulateColors((NLMISC::CRGBA *) dest, src1, src2, numAttrib, sizeof(NLMISC::CRGBA), stride, nbReplicate);				
+			}
+			break;
+			case CPSBinOp::add:
+			{
+				// CRGBA OPTIMISATION
+				NLMISC::CRGBA::addColors((NLMISC::CRGBA *) dest, src1, src2, numAttrib, sizeof(NLMISC::CRGBA), stride, nbReplicate);				
+			}
+			break;
+			case CPSBinOp::subtract:
+			{
+				// CRGBA OPTIMISATION
+				NLMISC::CRGBA::subtractColors((NLMISC::CRGBA *) dest, src1, src2, numAttrib, sizeof(NLMISC::CRGBA), stride, nbReplicate);
+			}
+			break;
+		}		
+	}
+
+
 
 
 

@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.12 2003/08/29 15:34:47 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.13 2003/08/29 16:29:22 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -380,8 +380,10 @@ void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entit
 	{
 		nlwarning ("%s is not registered in CEntityIdTranslator", eid.toString().c_str());
 		entityName = "";
-		uid = 0;
+		entitySlot = -1;
+		uid = ~0;
 		userName = "";
+		online = false;
 	}
 	else
 	{

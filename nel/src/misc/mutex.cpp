@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * <File description>
  *
- * $Id: mutex.cpp,v 1.8 2001/04/19 12:07:31 cado Exp $
+ * $Id: mutex.cpp,v 1.9 2001/04/20 09:59:33 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,7 +207,7 @@ void CMutex::enter ()
 #endif // NL_OS_WINDOWS
 
 	// DEBUG
-	if ( this != ATMutex )
+	if ( ( this != ATMutex ) && ( ATMutex != NULL ) )
 	{
 		TTime diff = CTime::getLocalTime()-before;
 		ATMutex->enter();

@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.10 2002/02/15 17:01:29 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.11 2002/02/20 11:00:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -267,9 +267,6 @@ public:
 		  */
 		void					resize(uint32 nbInstances);
 
-		/// resize the attribute tab, but fill the whole tab of with default ctor value
-		void					resizeNFill(uint32 nbInstances);
-
 		/// return the number of instance in the container
 		uint32 getSize(void) const { return _Tab.size(); }
 
@@ -347,13 +344,6 @@ template <typename T>
 CPSAttrib<T>::CPSAttrib()
 {
 	_MaxSize = DefaultMaxLocatedInstance;
-}
-
-template <typename T> 
-void CPSAttrib<T>::resizeNFill(uint32 nbInstances)
-{	
-	_Tab.resize(nbInstances); // ensure the container can handle enoiugh intances	
-	_MaxSize = nbInstances;
 }
 
 

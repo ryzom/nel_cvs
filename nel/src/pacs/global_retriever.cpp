@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.85 2003/07/02 18:29:57 legros Exp $
+ * $Id: global_retriever.cpp,v 1.86 2003/07/22 09:28:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -513,7 +513,7 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 			uint32						id = _InternalCST.SortedSurfaces[selInstance].Instance;
 			const CRetrieverInstance	&instance = _Instances[id];
 
-			if (instance.getType() == CLocalRetriever::Interior && _InternalCST.SortedSurfaces[selInstance].Distance < bestDist+5.0f)
+			if (instance.getType() == CLocalRetriever::Interior && _InternalCST.SortedSurfaces[selInstance].Distance < bestDist+6.0f)
 				break;
 
 			if (selInstance == 0)

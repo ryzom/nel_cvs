@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.8 2001/01/23 15:47:09 robert Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.9 2001/01/23 17:40:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,8 +41,7 @@ namespace NLAISCRIPT
 	}
 
 	CCodeBrancheRunDebug::CCodeBrancheRunDebug(sint32 N,const IOpCode &op):
-	CCodeBrancheRun(N, op),
-	_SourceCode(NULL)
+		CCodeBrancheRun(N, op),	_SourceCode(NULL)
 	{
 		initCBRD();
 	}

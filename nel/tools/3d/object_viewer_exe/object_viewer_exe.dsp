@@ -178,11 +178,15 @@ SOURCE=.\std_afx.cpp
 
 !IF  "$(CFG)" == "object_viewer_exe - Win32 Release"
 
+# ADD CPP /Yc"std_afx.h"
+
 !ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 Debug"
 
 # ADD CPP /Yc"std_afx.h"
 
 !ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 ReleaseDebug"
+
+# ADD CPP /Yc"std_afx.h"
 
 !ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 DebugFast"
 

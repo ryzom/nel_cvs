@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.19 2001/12/18 18:33:19 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.20 2001/12/19 15:46:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,15 +204,26 @@ public:
 				Scheme->setValues(tab, Scheme->getNumValues() + 1, Scheme->getNumStages());
 			break;
 			case IValueGradientDlgClient::Insert:
-				memcpy(tab + (index + 1), tab + index, sizeof(T) * (Scheme->getNumValues() - index));
+				::memmove(tab + (index + 1), tab + index, sizeof(T) * (Scheme->getNumValues() - index));
 				tab[index] = DefaultValue;
 				Scheme->setValues(tab, Scheme->getNumValues() + 1, Scheme->getNumStages());
 			break;
 			case IValueGradientDlgClient::Delete:
-				memcpy(tab + index, tab + index + 1, sizeof(T) * (Scheme->getNumValues() - index - 1));
+				::memmove(tab + index, tab + index + 1, sizeof(T) * (Scheme->getNumValues() - index - 1));
 				Scheme->setValues(tab, Scheme->getNumValues() - 1, Scheme->getNumStages());
 			break;
+			case IValueGradientDlgClient::Up:
+				nlassert(index > 0)
+				std::swap(tab[index], tab[index - 1]);
+				Scheme->setValues(tab, Scheme->getNumValues(), Scheme->getNumStages());
+			break;
+			case IValueGradientDlgClient::Down:
+				nlassert(index <  Scheme->getNumValues() - 1);
+				std::swap(tab[index], tab[index + 1]);
+				Scheme->setValues(tab, Scheme->getNumValues(), Scheme->getNumStages());
+			break;
 		}
+
 		delete[] tab;
 	}		
 	virtual uint32 getSchemeSize(void) const { return Scheme->getNumValues(); }
@@ -306,11 +317,7 @@ void CAttribDlg::init(HBITMAP bitmap, sint x, sint y, CWnd *pParent)
 	GetWindowRect(&ro);
 	_NbCyclesDlg->init(r.left - ro.left, r.top - ro.top, this);
 
-
 	// fill the combo box with the list of available scheme
-
-
-
 	m_Scheme.InitStorage(getNumScheme(), 32); // 32 char per string pre-allocated
 
 	for (uint k = 0; k < getNumScheme(); ++k)
@@ -319,9 +326,6 @@ void CAttribDlg::init(HBITMAP bitmap, sint x, sint y, CWnd *pParent)
 		m_Scheme.InsertString(k, getSchemeName(k).c_str());
 
 	}
-
-
-	
 
 	if (useScheme())
 	{

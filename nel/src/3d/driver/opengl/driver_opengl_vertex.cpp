@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.44 2004/04/06 13:40:39 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.45 2004/04/07 09:59:49 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -131,36 +131,44 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 	const bool touched = (VB.getTouchFlags() & (CVertexBuffer::TouchedReserve|CVertexBuffer::TouchedVertexFormat)) != 0;
 	if( touched || (VB.DrvInfos == NULL))
 	{
-		// 1. Retrieve/Create driver shader.
-		//==================================
+		// delete first
+		if(VB.DrvInfos)
+			delete VB.DrvInfos;
 		VB.DrvInfos = NULL;
-		// insert into driver list. (so it is deleted when driver is deleted).
-		ItVBDrvInfoPtrList	it= _VBDrvInfos.insert(_VBDrvInfos.end());
-		// create and set iterator, for future deletion.
-		CVBDrvInfosGL *info = new CVBDrvInfosGL(this, it, &VB);
-		*it= VB.DrvInfos = info;
 		
-		// Preferred memory
-		const uint size = VB.capacity()*VB.getVertexSize();
-		uint preferredMemory = _Extensions.DisableHardwareVertexArrayAGP?CVertexBuffer::RAMPreferred:VB.getPreferredMemory ();
-		while (preferredMemory != CVertexBuffer::RAMPreferred)
+		// create only if some vertices
+		if(VB.getNumVertices())
 		{
-			// Vertex buffer hard
-			info->_VBHard = createVertexBufferHard(size, VB.capacity(), (CVertexBuffer::TPreferredMemory)preferredMemory, &VB);
-			if (info->_VBHard)
-				break;
-			preferredMemory--;
+			// 1. Retrieve/Create driver shader.
+			//==================================
+			// insert into driver list. (so it is deleted when driver is deleted).
+			ItVBDrvInfoPtrList	it= _VBDrvInfos.insert(_VBDrvInfos.end());
+			// create and set iterator, for future deletion.
+			CVBDrvInfosGL *info = new CVBDrvInfosGL(this, it, &VB);
+			*it= VB.DrvInfos = info;
+			
+			// Preferred memory
+			const uint size = VB.capacity()*VB.getVertexSize();
+			uint preferredMemory = _Extensions.DisableHardwareVertexArrayAGP?CVertexBuffer::RAMPreferred:VB.getPreferredMemory ();
+			while (preferredMemory != CVertexBuffer::RAMPreferred)
+			{
+				// Vertex buffer hard
+				info->_VBHard = createVertexBufferHard(size, VB.capacity(), (CVertexBuffer::TPreferredMemory)preferredMemory, &VB);
+				if (info->_VBHard)
+					break;
+				preferredMemory--;
+			}
+			
+			// No memory found ? Use system memory
+			if (info->_VBHard == NULL)
+			{
+				nlassert (info->_SystemMemory == NULL);
+				info->_SystemMemory = new uint8[size];
+			}
+			
+			// Upload the data
+			VB.setLocation ((CVertexBuffer::TLocation)preferredMemory);
 		}
-		
-		// No memory found ? Use system memory
-		if (info->_VBHard == NULL)
-		{
-			nlassert (info->_SystemMemory == NULL);
-			info->_SystemMemory = new uint8[size];
-		}
-		
-		// Upload the data
-		VB.setLocation ((CVertexBuffer::TLocation)preferredMemory);
 	}
 	
 	return true;

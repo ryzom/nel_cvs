@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.4 2000/12/18 09:45:54 corvazier Exp $
+ * $Id: shape.h,v 1.5 2000/12/18 15:13:20 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,9 +90,6 @@ public:
 	 * CTransfromShape call this method in the render traversal.
 	 */
 	virtual void				render(IDriver *drv)=0;
-
-	/// serial the shape.
-	virtual void				serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 };
 
 // ***************************************************************************

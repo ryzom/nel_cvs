@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.19 2001/06/14 13:35:44 berenguier Exp $
+ * $Id: mesh.h,v 1.20 2001/06/15 09:25:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "nel/3d/material.h"
 #include "nel/3d/primitive_block.h"
 #include "nel/3d/animated_material.h"
+#include "nel/3d/mesh_base.h"
 #include <set>
 #include <vector>
 
@@ -61,7 +62,7 @@ using	NLMISC::CMatrix;
  * \author Nevrax France
  * \date 2000
  */
-class CMesh : public IShape
+class CMesh : public CMeshBase
 {
 public:
 
@@ -118,43 +119,13 @@ public:
 	};
 
 
-	struct CMatStage
-	{ 
-		uint8 nMatNb, nStageNb; 
-		void	serial(NLMISC::IStream &f)
-		{
-			f.serial(nMatNb);
-			f.serial(nStageNb);
-		}
-	};
-	struct CLightInfoMapList : std::list< CMatStage >
-	{
-		void	serial(NLMISC::IStream &f)
-		{
-			f.serialCont((std::list< CMatStage >&)*this);
-		}
-	};
-	typedef std::map< std::string, CLightInfoMapList >	TLightInfoMap;
-
 	/// A mesh information.
-	struct	CMeshBuild
+	struct	CMeshBuild : public CMeshBase::CMeshBaseBuild
 	{
-		bool					bCastShadows;
-		bool					bRcvShadows;
 		/** the IDRV_VF* flags which tells what vertices data are used. See IDriver::setVertexFormat() for 
 		 * more information. NB: IDRV_VF_XYZ is always considered to true.
 		 */
 		sint32					VertexFlags;
-
-		// Default value for position of this mesh
-		CVector					DefaultPos;
-		CVector					DefaultPivot;
-		CVector					DefaultRotEuler;
-		CQuat					DefaultRotQuat;
-		CVector					DefaultScale;
-
-		// Material array
-		std::vector<CMaterial>	Materials;
 
 		// Vertices array
 		std::vector<CVector>	Vertices;
@@ -164,9 +135,6 @@ public:
 
 		// Faces array
 		std::vector<CFace>		Faces;
-
-		// Map of light information
-		TLightInfoMap			LightInfoMap;
 
 		// Serialization
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
@@ -181,24 +149,6 @@ public:
 
 	/// Build a mesh, replacing old. WARNING: This has a side effect of deleting AnimatedMaterials.
 	void			build(CMeshBuild &mbuild);
-
-
-	/// \name animated material mgt. do it after build().
-	// @{
-	/// setup a material as animated. Material must exist or else no-op.
-	void			setAnimatedMaterial(uint id, const std::string &matName);
-	/// return NULL if this material is NOT animated. (or if material do not exist)
-	CMaterialBase	*getAnimatedMaterial(uint id);
-	// @}
-
-	/// \name access default tracks.
-	// @{
-	CTrackDefaultVector*	getDefaultPos ()		{return &_DefaultPos;}
-	CTrackDefaultVector*	getDefaultPivot ()		{return &_DefaultPivot;}
-	CTrackDefaultVector*	getDefaultRotEuler ()	{return &_DefaultRotEuler;}
-	CTrackDefaultQuat*		getDefaultRotQuat ()	{return &_DefaultRotQuat;}
-	CTrackDefaultVector*	getDefaultScale ()		{return &_DefaultScale;}
-	// @}
 
 	/// \name From IShape
 	// @{
@@ -218,20 +168,8 @@ public:
 
 	// @}
 
-	/// \name Geometry and material accessors
+	/// \name Geometry accessors
 	// @{
-
-	/// Get the number of materials in the mesh
-	uint getNbMaterial() const
-	{
-		return _Materials.size();
-	}
-
-	/// Get a material
-	const CMaterial& getMaterial(uint id) const
-	{
-		return _Materials[id];
-	}
 
 	/// get the extended axis aligned bounding box of the mesh
 	const NLMISC::CAABBoxExt& getBoundingBox() const
@@ -451,31 +389,12 @@ private:
 private:
 	/// The only one VBuffer of the mesh.
 	CVertexBuffer				_VBuffer;
-	/// The Materials.
-	std::vector<CMaterial>		_Materials;
 	/// The matrix blocks.
 	std::vector<CMatrixBlock>	_MatrixBlocks;
 	/// For clipping.
 	NLMISC::CAABBoxExt			_BBox;
 	/// This tells if the mesh is correctly skinned.
 	bool						_Skinned;
-
-public:
-	// Map of light information ( LightName, list(MaterialNb, StageNb) )
-	TLightInfoMap				_LightInfos;	
-
-private:
-	/// Animated Material mgt.
-	typedef std::map<uint32, CMaterialBase>	TAnimatedMaterialMap;
-	TAnimatedMaterialMap		_AnimatedMaterials;
-
-
-	/// Transform default tracks. Those default tracks are instancied, ie, CInstanceMesh will have the same and can't specialize it.
-	CTrackDefaultVector			_DefaultPos;
-	CTrackDefaultVector			_DefaultPivot;
-	CTrackDefaultVector			_DefaultRotEuler;
-	CTrackDefaultQuat			_DefaultRotQuat;
-	CTrackDefaultVector			_DefaultScale;
 
 private:
 	// Locals, for build.
@@ -535,6 +454,10 @@ private:
 
 	// build skinning.
 	void	buildSkin(CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces);
+
+
+	/// serialisation of Version 5+ mesh stream.
+	void	serialV5Plus(NLMISC::IStream &f, sint ver) throw(NLMISC::EStream);
 
 };
 

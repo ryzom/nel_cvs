@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.18 2001/06/11 09:25:58 besson Exp $
+ * $Id: mesh.cpp,v 1.19 2001/06/15 09:25:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -145,15 +145,13 @@ void CMesh::CSkinWeight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 // ***************************************************************************
 void CMesh::CMeshBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	sint	ver= f.serialVersion(0);
 
+	// Serial mesh base (material info).
+	CMeshBaseBuild::serial(f);
+
+	// Serial Geometry.
 	f.serial( VertexFlags );
-	f.serial( DefaultPos );
-	f.serial( DefaultPivot );
-	f.serial( DefaultRotEuler );
-	f.serial( DefaultRotQuat );
-	f.serial( DefaultScale );
-
-	f.serialCont( Materials );
 	f.serialCont( Vertices );
 	f.serialCont( SkinWeights );
 	f.serialCont( Faces );
@@ -172,13 +170,6 @@ void CMesh::CMeshBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 CMesh::CMesh()
 {
 	_Skinned= false;
-
-	// To have same functionnality than previous version, init to identity.
-	_DefaultPos.setValue(CVector(0,0,0));
-	_DefaultPivot.setValue(CVector(0,0,0));
-	_DefaultRotEuler.setValue(CVector(0,0,0));
-	_DefaultRotQuat.setValue(CQuat::Identity);
-	_DefaultScale.setValue(CVector(1,1,1));
 }
 
 
@@ -474,6 +465,8 @@ void	CMesh::render(IDriver *drv, CTransformShape *trans)
 void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 5+:
+		- see serialV5Plus
 	Version 4:
 		- lightinfo
 	Version 3:
@@ -485,8 +478,17 @@ void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(4);
+	sint	ver= f.serialVersion(5);
 
+	// Too much complicated here, call an other function.
+	if(ver>=5)
+	{
+		serialV5Plus(f, ver);
+		return;
+	}
+
+	// Else old serial version V4-.
+	//===================
 	f.serial(_VBuffer);
 
 	if(ver>=4)
@@ -548,34 +550,26 @@ void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 // ***************************************************************************
-// ***************************************************************************
-// Animated material.
-// ***************************************************************************
-// ***************************************************************************
-
-
-// ***************************************************************************
-void			CMesh::setAnimatedMaterial(uint id, const std::string &matName)
+void	CMesh::serialV5Plus(NLMISC::IStream &f, sint ver) throw(NLMISC::EStream)
 {
-	if(id<_Materials.size())
-	{
-		// add / replace animated material.
-		_AnimatedMaterials[id].Name= matName;
-		// copy Material default.
-		_AnimatedMaterials[id].copyFromMaterial(&_Materials[id]);
-	}
+	/*
+	Version 5:
+		- separate serialisation in CMeshBase / CMesh. this function will receive V5+ serialisation.
+	*/
+	// NB: the version is serialised in serial().
+	// so if you want to increment version, do it at beggining of serial().
+
+	// serial Materials infos contained in CMeshBase.
+	CMeshBase::serialMeshBase(f);
+
+	// serial geometry.
+	f.serial(_VBuffer);
+	f.serialCont(_MatrixBlocks);
+	f.serial(_BBox);
+	f.serial (_Skinned);
+
 }
 
-// ***************************************************************************
-CMaterialBase	*CMesh::getAnimatedMaterial(uint id)
-{
-	TAnimatedMaterialMap::iterator	it;
-	it= _AnimatedMaterials.find(id);
-	if(it!=_AnimatedMaterials.end())
-		return &it->second;
-	else
-		return NULL;
-}
 
 
 // ***************************************************************************

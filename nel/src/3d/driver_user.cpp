@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.25 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.26 2002/11/21 15:53:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1062,6 +1062,24 @@ void			CDriverUser::getWindowSize (uint32 &width, uint32 &height)
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->getWindowSize (width, height);
+}
+uint			CDriverUser::getWindowWidth ()
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER;
+
+	uint32 width, height;
+	_Driver->getWindowSize (width, height);
+	return width;
+}
+uint			CDriverUser::getWindowHeight ()
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER;
+
+	uint32 width, height;
+	_Driver->getWindowSize (width, height);
+	return height;
 }
 void			CDriverUser::getBuffer (CBitmap &bitmap) 
 {

@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.6 2002/09/11 13:51:26 besson Exp $
+ * $Id: computed_string.h,v 1.7 2002/11/21 15:55:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,13 +64,16 @@ public:
 	CVertexBuffer VerticesClipped;
 	CMaterial	*Material;
 	CRGBA Color;
+	/// The width of the string, in pixels (eg: 30)
 	float StringWidth;
+	/// The height of the string, in pixels (eg: 10)
 	float StringHeight;
 
-	// StringLine is the size from bottom of the whole string image to the hotspot
-	// for instance if the hotspot is bottomLeft the imaginary line of the string "bpc"
-	// is under the b, under the loop of the p but over the leg of the p. So StringLine
-	// is a positive value.
+	/** StringLine is the size from bottom of the whole string image to the hotspot in pixels.
+	 *	for instance if the hotspot is bottomLeft the imaginary line of the string "bpc"
+	 *	is under the b, under the loop of the p but over the leg of the p. So StringLine
+	 *	is a positive value in this case. It may be a negative value for the string "^" for example.
+	 */
 	float StringLine; 
 
 	/**
@@ -122,20 +125,33 @@ public:
 	 * \param scaleX abscissa scale
 	 * \param scaleY ordinate scale
 	 * \param rotateY rotation angle (axe perpendicular to screen)
+	 * \param useScreenAR43 if false then string is displayed with a pixel Ratio 1:1 (independent of window resolution). 
+	 *	if true, the string is scaled according to window width and height, to support 4:3 aspect ratio even on weird 
+	 *	screen resolution such as 640*240 (ie the char still look square, but the pixel ratio is 2:1)
+	 * \param roundToNearestPixel if true, snap the final string position to the nearest pixel. if set to true, and if 
+	 *	useScreenAR43= false, you are sure that texels of the fonts fit exactly on centers of pixels (no apparent bi-linear).
 	 */	
 	void render2D (IDriver& driver, 
 					float x, float z,
 					THotSpot hotspot = BottomLeft,
 					float scaleX = 1, float scaleZ = 1,
-					float rotateY = 0);
+					float rotateY = 0,
+					bool  useScreenAR43= false,
+					bool  roundToNearestPixel= true
+					);
 
-	// Hotspot = bottomLeft
+	/** same as render2D but clip the quads to xmin,ymin/xmax,ymax.
+	 *	NB: behavior is same as render2D with: Hotspot = bottomLeft, scaleX=1, scaleZ=1, rotateY=0,
+	 *	useScreenAR43= false, roundToNearestPixel= false
+	 */
 	void render2DClip (IDriver& driver, 
 					float x, float z,
-					float xmin=0, float ymin=0, float xmax=1, float ymax=1);
+					float xmin=0, float ymin=0, float xmax=1, float ymax=1
+					);
 
 	/** 
-	 * Render the unicode string in a driver.
+	 * Render the unicode string in a driver, in 3D with a user matrix.
+	 *	NB: size of the string is first scaled by 1/windowHeight.
 	 * \param driver the driver where to render the primitives
 	 * \param matrix transformation matrix
 	 * \param hotspot position of string origine

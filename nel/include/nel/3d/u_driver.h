@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.20 2002/11/14 17:37:55 vizerie Exp $
+ * $Id: u_driver.h,v 1.21 2002/11/21 15:53:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -391,6 +391,10 @@ public:
 
 	/// Get the width and the height of the window
 	virtual void			getWindowSize (uint32 &width, uint32 &height) = 0;
+	/// Get the width of the window
+	virtual uint			getWindowWidth () =0;
+	/// Get the height of the window
+	virtual uint			getWindowHeight () =0;
 
 	/** get the RGBA back buffer
 	  *

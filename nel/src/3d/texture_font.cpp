@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.18 2002/09/11 13:51:26 besson Exp $
+ * $Id: texture_font.cpp,v 1.19 2002/11/21 15:56:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -211,18 +211,16 @@ void CTextureFont::rebuildLetter (sint cat, sint x, sint y)
 			++pSrc;
 		}
 	}
-	// Bordure noire a gauche et a droite
-	rLetter.CharHeight += 1;
-	rLetter.CharWidth += 1;
 
-	for (i = 0; i < rLetter.CharHeight; ++i)
+	// Black border bottom and right
+	for (i = 0; i < rLetter.CharHeight+1; ++i)
 	{
-		_Data[0][posx + rLetter.CharWidth-1 + (posy+i)*TextureSizeY] = 0;
+		_Data[0][posx + rLetter.CharWidth + (posy+i)*TextureSizeY] = 0;
 	}
 
-	for (i = 0; i < rLetter.CharWidth; ++i)
+	for (i = 0; i < rLetter.CharWidth+1; ++i)
 	{
-		_Data[0][posx + i + (posy+rLetter.CharHeight-1)*TextureSizeY] = 0;
+		_Data[0][posx + i + (posy+rLetter.CharHeight)*TextureSizeY] = 0;
 	}
 
 	/*
@@ -332,15 +330,14 @@ CTextureFont::SLetterInfo* CTextureFont::getLetterInfo (SLetterKey& k)
 	sint32 nLeft, nTop, nAdvX;
 	k.FontGenerator->getBitmap (k.Char, k.Size, width, height, nPitch, nLeft, nTop, 
 														nAdvX, nGlyphIndex );
-	width += 1;
-	height += 1;
-	cat = 0;
 
-	if (((sint)width > Categories[TEXTUREFONT_NBCATEGORY-1]) ||
-		((sint)height > Categories[TEXTUREFONT_NBCATEGORY-1]))
+	// Add 1 pixel space for black border to get correct category
+	cat = 0;
+	if (((sint)width+1 > Categories[TEXTUREFONT_NBCATEGORY-1]) ||
+		((sint)height+1 > Categories[TEXTUREFONT_NBCATEGORY-1]))
 		return NULL;
 
-	while (((sint)width > Categories[cat]) || ((sint)height > Categories[cat]))
+	while (((sint)width+1 > Categories[cat]) || ((sint)height+1 > Categories[cat]))
 	{
 		++cat;
 		nlassert (cat != TEXTUREFONT_NBCATEGORY);
@@ -392,7 +389,8 @@ CTextureFont::SLetterInfo* CTextureFont::getLetterInfo (SLetterKey& k)
 		++c;
 	}
 
-	CRect r (x, y, width, height);
+	// must update the char, WITH the black borders
+	CRect r (x, y, width+1, height+1);
 
 	touchRect (r);
 

@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.24 2002/09/11 13:51:26 besson Exp $
+ * $Id: computed_string.cpp,v 1.25 2002/11/21 15:55:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,15 +84,21 @@ void CComputedString::render2D (IDriver& driver,
 								float x, float z,
 								THotSpot hotspot,
 								float scaleX, float scaleZ,
-								float rotateY
+								float rotateY,
+								bool useScreenAR43, bool roundToNearestPixel
 								)
 {
 	if (Vertices.getNumVertices() == 0)
 		return;
-	//x*=ResX/ResY;
-	x*=(float)4/3;
 
-	driver.setFrustum(0, 4.0f/3.0f, 0, 1, -1, 1, false);  // resX/resY
+	// get window size
+	uint32	wndWidth, wndHeight;
+	driver.getWindowSize(wndWidth, wndHeight);
+	// scale to window size.
+	x*= wndWidth;
+	z*= wndHeight;
+
+	driver.setFrustum(0, (float)wndWidth, 0, (float)wndHeight, -1, 1, false);  // resX/resY
 
 	// Computing hotspot translation vector
 	CVector hotspotVector = getHotSpotVector(hotspot);
@@ -109,7 +115,21 @@ void CComputedString::render2D (IDriver& driver,
 	matrix.translate(CVector(x,0,z));
 	matrix.rotateY(rotateY);
 	matrix.scale(CVector(scaleX,1,scaleZ));
+	// scale the string to follow window aspect Ratio
+	if(useScreenAR43)
+	{
+		matrix.scale(CVector((3.0f*wndWidth)/(4.0f*wndHeight),1,1));
+	}
 	matrix.translate(hotspotVector);
+	// if roundToNearestPixel, then snap the position to the nearest pixel
+	if( roundToNearestPixel)
+	{
+		CVector	pos= matrix.getPos();
+		pos.x= (float)floor(pos.x+0.5f);
+		pos.z= (float)floor(pos.z+0.5f);
+		matrix.setPos(pos);
+	}
+	// setup the matrix
 	driver.setupModelMatrix(matrix);
 	
 	driver.activeVertexBuffer(Vertices);
@@ -130,11 +150,19 @@ void CComputedString::render2DClip (IDriver& driver,
 {
 	if (Vertices.getNumVertices() == 0)
 		return;
-	x *= 4.0f/3.0f;
-	xmin *= 4.0f/3.0f;
-	xmax *= 4.0f/3.0f;
 
-	driver.setFrustum(0, 4.0f/3.0f, 0, 1, -1, 1, false);  // resX/resY
+	// get window size
+	uint32	wndWidth, wndHeight;
+	driver.getWindowSize(wndWidth, wndHeight);
+	// scale to window size.
+	x*= wndWidth;
+	z*= wndHeight;
+	xmin*= wndWidth;
+	xmax*= wndWidth;
+	zmin*= wndHeight;
+	zmax*= wndHeight;
+
+	driver.setFrustum(0, (float)wndWidth, 0, (float)wndHeight, -1, 1, false);  // resX/resY
 
 	// tansformation matrix initialized to identity
 	CMatrix matrix;
@@ -245,6 +273,13 @@ void CComputedString::render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot)
 	CVector hotspotVector = getHotSpotVector(hotspot);
 	matrix.translate(hotspotVector);
 
+	// get window size
+	uint32	wndWidth, wndHeight;
+	driver.getWindowSize(wndWidth, wndHeight);
+	// scale according to window height (backward compatibility)
+	matrix.scale(1.0f/wndHeight);
+
+	// render
 	driver.setupModelMatrix(matrix);
 	driver.activeVertexBuffer(Vertices);
 

@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.19 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: driver_user.h,v 1.20 2002/11/21 15:53:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -335,6 +335,8 @@ public:
 	virtual const char*		getVideocardInformation ();
 	virtual	sint			getNbTextureStages();
 	virtual void			getWindowSize (uint32 &width, uint32 &height);
+	virtual uint			getWindowWidth ();
+	virtual uint			getWindowHeight ();
 	virtual void			getBuffer (CBitmap &bitmap) ;
 	virtual void			getZBuffer (std::vector<float>  &zbuffer) ;
 	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect) ;

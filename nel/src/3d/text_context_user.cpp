@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.9 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: text_context_user.cpp,v 1.10 2002/11/21 15:56:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,6 +74,25 @@ NLMISC::CVector UTextContext::CStringInfo::getHotSpotVector(UTextContext::THotSp
 		hotspotVector = CVector(-StringWidth,0,-StringHeight);
 
 	return hotspotVector;
+}
+
+
+// ***************************************************************************
+void		UTextContext::CStringInfo::convertTo01Size(UDriver *drv)
+{
+	uint32	w,h;
+	drv->getWindowSize(w,h);
+	StringWidth/= w;
+	StringHeight/= h;
+	StringLine/= h;
+}
+void		UTextContext::CStringInfo::convertToPixelSize(UDriver *drv)
+{
+	uint32	w,h;
+	drv->getWindowSize(w,h);
+	StringWidth*= w;
+	StringHeight*= h;
+	StringLine*= h;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.6 2002/09/11 13:51:26 besson Exp $
+ * $Id: u_text_context.h,v 1.7 2002/11/21 15:53:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 
 namespace NL3D {
 
+class	UDriver;
 
 // ***************************************************************************
 /**
@@ -72,8 +73,15 @@ public:
 	/// The render size of a string.
 	struct	CStringInfo
 	{
+		/// The width of the string, in pixels (eg: 30)
 		float StringWidth;
+		/// The height of the string, in pixels (eg: 10)
 		float StringHeight;
+		/** StringLine is the size from bottom of the whole string image to the hotspot in pixels.
+		 *	for instance if the hotspot is bottomLeft the imaginary line of the string "bpc"
+		 *	is under the b, under the loop of the p but over the leg of the p. So StringLine
+		 *	is a positive value in this case. It may be a negative value for the string "^" for example.
+		 */
 		float StringLine;
 
 		CStringInfo() {StringWidth= StringHeight= StringLine= 0;}
@@ -84,6 +92,11 @@ public:
 		 * \param hotspot the origin of the string
 		 */
 		NLMISC::CVector getHotSpotVector(THotSpot hotspot);
+
+		/// convert size in pixels to size in 0-1 relative coordinates, according to Driver current size
+		void		convertTo01Size(UDriver *drv);
+		/// convert back to pixels size, according to Driver current size
+		void		convertToPixelSize(UDriver *drv);
 	};
 
 
@@ -184,10 +197,12 @@ public:
 	virtual	void			erase (uint32 i) = 0;
 	/**
 	 * Get a string information from the list. return CStringInfo(0,0) if not found.
+	 *	The returned string info is in pixel size per default.
 	 */
 	virtual	CStringInfo		getStringInfo (uint32 i) = 0;
 	/**
 	 * Get a string information from the ucstring
+	 *	The returned string info is in pixel size per default.
 	 */
 	virtual	CStringInfo		getStringInfo (const ucstring &ucstr) = 0;
 	/**

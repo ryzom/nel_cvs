@@ -2,7 +2,7 @@
  * Snowballs 2 specific code for managing the lens flare.
  * This code was taken from Snowballs 1.
  *
- * $Id: lens_flare.cpp,v 1.4 2001/07/19 17:30:39 lecroart Exp $
+ * $Id: lens_flare.cpp,v 1.5 2001/07/23 16:42:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,8 @@ class CLensFlare
 			Material->setTexture (texture);
 			Material->setBlendFunc (UMaterial::srcalpha, UMaterial::one);
 			Material->setBlend(true);
+			Material->setZFunc (UMaterial::always);
+			Material->setZWrite (false);
 
 			// quad dimension
 			Width = width;

@@ -1,7 +1,7 @@
 /** \file entities.h
  * Snowballs 2 specific code for managing the entities
  *
- * $Id: entities.h,v 1.22 2001/07/20 17:31:08 legros Exp $
+ * $Id: entities.h,v 1.23 2001/07/23 16:42:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,7 +77,7 @@ public:
 	// Create a default entity
 	CEntity () :
 		Id(0xffffffff), Name("<Unknown>"), AutoMove(false), Instance(NULL), Skeleton(NULL),
-		Particule(NULL), PlayList(NULL), CurrentAnim(NoAnim), NextEmptySlot(0), Source (NULL),
+		Particule(NULL), PlayList(NULL), /*CurrentAnim(NoAnim), */NextEmptySlot(0), Source (NULL),
 		Angle(0.0f), AuxiliaryAngle(0.0f), InterpolatedAuxiliaryAngle(0.0f),
 		IsWalking(false), WasWalking(false), IsAiming(false), WasAiming(false), BotState(0)
 		{ }
@@ -144,7 +144,7 @@ public:
 	bool							WasAiming;
 
 	// Playlist linked to this entity
-	EAnim							CurrentAnim;
+//	EAnim							CurrentAnim;
 	uint							NextEmptySlot;
 	NL3D::UPlayList					*PlayList;
 	std::queue<EAnim>				AnimQueue;
@@ -188,6 +188,8 @@ typedef std::map<uint32, CEntity>::iterator	EIT;
 //
 // External functions
 //
+
+EIT findEntity (uint32 eid, bool needAssert = true);
 
 void	addEntity (uint32 eid, CEntity::TType type, const NLMISC::CVector &startPosition, const NLMISC::CVector &serverPosition);
 void	removeEntity (uint32 eid);

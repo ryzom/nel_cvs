@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.10 2001/07/20 17:08:11 lecroart Exp $
+ * $Id: network.cpp,v 1.11 2001/07/23 16:42:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #include "commands.h"
 #include "network.h"
 #include "entities.h"
+#include "interface.h"
 
 //
 // Namespaces
@@ -64,6 +65,8 @@ CCallbackClient *Connection = NULL;
 static void cbClientDisconnected (TSockId from, void *arg)
 {
 	nlwarning ("You lost the connection to the server");
+
+	askString ("You are offline!!!", "", 2, CRGBA(64,0,0,128));
 }
 
 static void cbAddEntity (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
@@ -76,6 +79,15 @@ static void cbAddEntity (CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 	msgin.serial (id, name, race, startPosition);
 
 	nlinfo ("Receive add entity %u '%s' %s (%f,%f,%f)", id, name.c_str(), race==0?"penguin":"gnu", startPosition.x, startPosition.y, startPosition.z);
+
+	if (id != Self->Id)
+	{
+		addEntity(id, CEntity::Other, startPosition, startPosition);
+	}
+	else
+	{
+		nlinfo ("receive my add entity");
+	}
 }
 
 static void cbRemoveEntity (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
@@ -85,6 +97,8 @@ static void cbRemoveEntity (CMessage &msgin, TSockId from, CCallbackNetBase &net
 	msgin.serial (id);
 
 	nlinfo ("Receive remove entity %u", id);
+
+	removeEntity (id);
 }
 
 static void cbEntityPos (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
@@ -97,6 +111,24 @@ static void cbEntityPos (CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 	msgin.serial (id, position, angle, state);
 
 	nlinfo ("Receive entity pos %u (%f,%f,%f) %f, %u", id, position.x, position.y, position.z, angle, state);
+
+	EIT eit = findEntity (id, false);
+	if (eit == Entities.end ())
+	{
+		nlwarning ("can't find entity %u", id);
+	}
+	else
+	{
+		CEntity	&entity = (*eit).second;
+
+		entity.ServerPosition = position;
+		entity.AuxiliaryAngle = angle;
+		if (state&1)
+		{
+			entity.IsAiming = true;
+			entity.IsWalking = false;
+		}
+	}
 }
 
 static void cbSBHit(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
@@ -104,11 +136,36 @@ static void cbSBHit(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 	nlinfo ("Receive hit msg");
 }
 
+static void cbSnowball (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	uint32 eid;
+	CVector start, target, speed;
+
+	msgin.serial (eid, start, target, speed);
+	
+	nlinfo ("Receive a snowball message");
+
+	shotSnowball (eid, start, target, speed);
+}
+
 static void cbChat (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	string line;
 	msgin.serial (line);
 	addLine (line);
+}
+
+static void cbIdentification (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	uint32 id;
+	msgin.serial (id);
+	
+	Self->Id = id;
+
+	nlinfo ("my online id is %u", id);
+
+	// send to the network my entity					
+	sendAddEntity (Self->Id, Self->Name, 1, Self->Position);
 }
 
 /*static void cbDummy (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
@@ -123,6 +180,8 @@ static TCallbackItem ClientCallbackArray[] =
 	{ "ENTITY_POS", cbEntityPos },
 	{ "SB_HIT", cbSBHit },
 	{ "CHAT", cbChat },
+	{ "SNOWBALL", cbSnowball },
+	{ "IDENTIFICATION", cbIdentification },
 //	{ "", cbDummy },
 };
 
@@ -154,12 +213,26 @@ void	sendEntityPos (CEntity &entity)
 {
 	if (!isOnline ()) return;
 
+	// is aiming? is launching etc...
+	uint32 state = 0;
+	state |= (entity.IsAiming?1:0);
+
 	CMessage msgout (Connection->getSIDA(), "ENTITY_POS");
-	msgout.serial (entity.Position);
-	msgout.serial (entity.Angle);
+	msgout.serial (entity.Id, entity.Position, entity.Angle, state);
 	Connection->send (msgout);
 	
-	nlinfo("sending pos to network (%f,%f,%f,%f)", entity.Position.x, entity.Position.y, entity.Position.z, entity.Angle);
+	nlinfo("sending pos to network (%f,%f,%f, %f), %u", entity.Position.x, entity.Position.y, entity.Position.z, entity.Angle, state);
+}
+
+void	sendSnowBall (uint32 eid, const CVector &start, const CVector &target, const CVector &speed)
+{
+	if (!isOnline ()) return;
+
+	CMessage msgout (Connection->getSIDA(), "SNOWBALL");
+	msgout.serial (eid, const_cast<CVector &>(start), const_cast<CVector &>(target), const_cast<CVector &>(speed));
+	Connection->send (msgout);
+
+	nlinfo("sending snowball to network (%f,%f,%f) to (%f,%f,%f) with (%f,%f,%f)", start.x, start.y, start.z, target.x, target.y, target.z, speed.x, speed.y, speed.z);
 }
 
 

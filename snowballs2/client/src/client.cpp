@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.40 2001/07/20 17:08:11 lecroart Exp $
+ * $Id: client.cpp,v 1.41 2001/07/23 16:42:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -595,8 +595,7 @@ void updateLoginInterface ()
 					askString ("You are online!!!", "", 2, CRGBA(0,64,0,128));
 					loginState = 0;
 
-					// send to the network my entity					
-					sendAddEntity (Self->Id, "toto"+toString(rand), 1, Self->Position);
+					// now we have to wait the identification message to know my id
 				}
 			}
 			break;

@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.cpp,v 1.12 2001/07/20 17:31:08 legros Exp $
+ * $Id: mouse_listener.cpp,v 1.13 2001/07/23 16:42:34 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,7 @@
 #include "entities.h"
 #include "camera.h"
 #include "landscape.h"
+#include "network.h"
 
 //
 // Namespaces
@@ -75,7 +76,7 @@ C3dMouseListener::C3dMouseListener()
 	setSpeed (10.f);
 	_LastTime=CTime::getLocalTime ();
 
-	_ViewLagBehind = 3.0f;
+	_ViewLagBehind = 20.0f;
 	_ViewHeight = 2.0f;
 	_ViewTargetHeight = 3.0f;
 
@@ -85,7 +86,7 @@ C3dMouseListener::C3dMouseListener()
 	_AimingMax = 5.0f;
 	_AimingStartTime = 0;
 	_AimingRefreshRate = 100;
-	_AimingInstance = Scene->createInstance("box.shape");
+	_AimingInstance = Scene->createInstance("aim.shape");
 	_AimingInstance->setTransformMode(UTransformable::RotQuat);
 
 	_X = 0.5f;
@@ -173,14 +174,22 @@ void C3dMouseListener::operator ()(const CEvent& event)
 		_AimingState = false;
 		_AimingStartTime = 0;
 		CVector	direction = (_AimedTarget-_AimingPosition).normed();
-		shotSnowball(Self->Id, _AimingPosition, _AimedTarget, direction*SnowballSpeed);
+
+		if (isOnline ())
+		{
+			sendSnowBall (Self->Id, _AimingPosition, _AimedTarget, direction*SnowballSpeed);
+		}
+		else
+		{
+			shotSnowball(Self->Id, _AimingPosition, _AimedTarget, direction*SnowballSpeed);
+		}
 	}
 	else if (event==EventMouseWheelId)
 	{
 		CEventMouseWheel* mouseEvent=(CEventMouseWheel*)&event;
 		_ViewLagBehind += (mouseEvent->Direction? -MouseZoomStep : +MouseZoomStep);
-		if (_ViewLagBehind < 0.5f)
-			_ViewLagBehind = 0.5f;
+		if (_ViewLagBehind < 2.0f)
+			_ViewLagBehind = 2.0f;
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera interface between the game and NeL
  *
- * $Id: camera.cpp,v 1.14 2001/07/20 09:55:49 lecroart Exp $
+ * $Id: camera.cpp,v 1.15 2001/07/23 16:42:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,12 +118,12 @@ void	initCamera()
 	LogoScene = Driver->createScene();
 
 	CViewport v;
-	v.init (0.05f, 0.75f, 0.2f, 0.2f);
+	v.init (0.0f, 0.80f, 0.2f, 0.2f);
 	LogoScene->setViewport (v);
 
-	Logo = LogoScene->createInstance("gnu.shape");
+	Logo = LogoScene->createInstance("nel_logo.shape");
 	Logo->setMatrix(CMatrix::Identity);
-	Logo->setPos (0.0f, 3.0f, -1.5f);
+	Logo->setPos (0.0f, 3.0f, 0.0f);
 }
 
 void	updateCamera()

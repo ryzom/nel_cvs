@@ -1,7 +1,7 @@
 /** \file network.h
  * Network interface between the game and NeL
  *
- * $Id: network.h,v 1.8 2001/07/20 17:08:11 lecroart Exp $
+ * $Id: network.h,v 1.9 2001/07/23 16:42:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,6 +70,9 @@ void	sendChatLine (std::string Line);
 
 // Send the user entity position to the server
 void	sendEntityPos (CEntity &entity);
+
+// Send a new snowball to the server
+void	sendSnowBall (uint32 eid, const NLMISC::CVector &start, const NLMISC::CVector &target, const NLMISC::CVector &speed);
 
 void	initNetwork ();
 void	updateNetwork ();

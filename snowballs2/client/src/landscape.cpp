@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape interface between the game and NeL
  *
- * $Id: landscape.cpp,v 1.14 2001/07/20 17:08:11 lecroart Exp $
+ * $Id: landscape.cpp,v 1.15 2001/07/23 16:42:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,15 +147,23 @@ void	initLandscape()
 	Scene->setDynamicCoarseMeshManagerColor (diffuse);
 	Scene->setStaticCoarseMeshManagerColor (diffuse);
 
-	InstanceGroup = UInstanceGroup::createInstanceGroup ("6_AG.ig");
-	nlassert (InstanceGroup != NULL);
-	InstanceGroup->addToScene (*Scene);
+	CConfigFile::CVar igv = ConfigFile.getVar("InstanceGroups");
+	for (sint32 i = 0; i < igv.size (); i++)
+	{
+		InstanceGroup = UInstanceGroup::createInstanceGroup (igv.asString (i));
+		if (InstanceGroup == NULL)
+		{
+			nlwarning ("Instance group '%s' not found", igv.asString (i).c_str ());
+		}
+		else
+		{
+			InstanceGroup->addToScene (*Scene);
+		}
+	}
 
 	Sun = ULight::createLight ();
 	nlassert (Sun != NULL);
 	Sun->setMode (ULight::DirectionalLight);
-//	Sun->setupDirectional (CRGBA(255,0,0), CRGBA(0,255,0), CRGBA(0,0,255), CVector(1,0,0));
-	Driver->setLight (0, *Sun);
 	Driver->enableLight (0);
 
 	ConfigFile.setCallback ("LandscapeTileNear", cbUpdateLandscape);

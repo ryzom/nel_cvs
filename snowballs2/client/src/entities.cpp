@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.36 2001/07/23 16:34:37 legros Exp $
+ * $Id: entities.cpp,v 1.37 2001/07/23 16:42:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,7 +89,7 @@ float					WorldWidth = 20*160;
 float					WorldHeight = 6*160;
 
 // Entity Id, only used offline
-uint32					NextEID = 0;
+uint32					NextEID = 1000000;
 
 // The speed settings
 float					PlayerSpeed = 1.8f;		// 6.5 km/h
@@ -111,7 +111,7 @@ void CEntity::setState (TState state)
 
 
 // Get an map iterator on a entity, specified by its id
-EIT findEntity (uint32 eid, bool needAssert = true)
+EIT findEntity (uint32 eid, bool needAssert)
 {
 	EIT entity = Entities.find (eid);
 	if (entity == Entities.end () && needAssert)
@@ -175,7 +175,7 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		// the self is an obstacle
 		entity.MovePrimitive->setObstacle(true);
 		// the size of the cylinder
-		entity.MovePrimitive->setRadius(0.5f);
+		entity.MovePrimitive->setRadius(2.0f);
 		entity.MovePrimitive->setHeight(1.8f);
 		// only use one world image, so use insert in world image 0
 		entity.MovePrimitive->insertInWorldImage(0);
@@ -183,17 +183,20 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
 
 		// create instance of the mesh character
-		entity.Instance = Scene->createInstance("gnu.shape");
+		entity.Instance = Scene->createInstance ("gnu.shape");
 		entity.Skeleton = Scene->createSkeleton ("gnu.skel");
 		// use the instance on the skeleton
 		entity.Skeleton->bindSkin (entity.Instance);
 
 		entity.Instance->hide ();
 
+		entity.Angle = MouseListener->getOrientation();
+
 		// setup final parameters
 		entity.Speed = PlayerSpeed;
-		entity.Particule = Scene->createInstance("appear.ps");
+		entity.Particule = Scene->createInstance ("appear.ps");
 		entity.setState (CEntity::Appear);
+		playAnimation (entity, LogInAnim);
 		playAnimation (entity, IdleAnim);
 
 		break;
@@ -205,19 +208,20 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.MovePrimitive->setCollisionMask(OtherCollisionBit+SelfCollisionBit+SnowballCollisionBit);
 		entity.MovePrimitive->setOcclusionMask(OtherCollisionBit);
 		entity.MovePrimitive->setObstacle(true);
-		entity.MovePrimitive->setRadius(0.5f);
+		entity.MovePrimitive->setRadius(2.0f);
 		entity.MovePrimitive->setHeight(1.8f);
 		entity.MovePrimitive->insertInWorldImage(0);
 		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
 
-		entity.Instance = Scene->createInstance("gnu.shape");
+		entity.Instance = Scene->createInstance ("gnu.shape");
 		entity.Skeleton = Scene->createSkeleton ("gnu.skel");
 		entity.Skeleton->bindSkin (entity.Instance);
 		entity.Instance->hide ();
 
 		entity.Speed = PlayerSpeed;
-		entity.Particule = Scene->createInstance("appear.ps");
+		entity.Particule = Scene->createInstance ("appear.ps");
 		entity.setState (CEntity::Appear);
+		playAnimation (entity, LogInAnim);
 		playAnimation (entity, IdleAnim);
 
 		break;
@@ -227,7 +231,7 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		// allows collision snapping to the ceiling
 		entity.VisualCollisionEntity->setCeilMode(true);
 
-		entity.Instance = Scene->createInstance("snowball.ps");
+		entity.Instance = Scene->createInstance ("snowball.ps");
 		entity.Skeleton = NULL;
 		entity.Speed = SnowballSpeed;
 
@@ -275,6 +279,7 @@ void removeEntity (uint32 eid)
 		entity.Particule->setPos (entity.Position);
 	}
 
+	playAnimation (entity, LogOffAnim, true);
 	entity.setState (CEntity::Disappear);
 }
 
@@ -481,7 +486,7 @@ void stateNormal (CEntity &entity)
 			{
 				Scene->deleteInstance (t);
 			}
-			t = Scene->createInstance("snowball.ps");
+			t = Scene->createInstance("pills.ps");
 			t->setScale (10,10,10);
 			CVector tp2 = tp;
 			tp2.z+=20;
@@ -508,11 +513,14 @@ void stateNormal (CEntity &entity)
 			// end aiming
 			playAnimation (entity, ThrowSnowball, true);
 
-			// todo get isWalking in the entity
 			if (entity.IsWalking)
 				playAnimation (entity, WalkAnim);
 			else
 				playAnimation (entity, IdleAnim);
+		}
+		else if (entity.WasAiming && entity.IsAiming)
+		{
+			// currently aiming => do northing
 		}
 		else if (!entity.WasWalking && entity.IsWalking)
 		{
@@ -831,10 +839,8 @@ NLMISC_COMMAND(add_entity,"add a local entity","<nb_entities> <auto_update>")
 	for (uint i = 0; i < nb ; i++)
 	{
 		uint32 eid = NextEID++;
-		float x = 1000.0f; ///frand(1000.0f);
-		float y = -1000.0f; ///-frand(1000.0f);
-		float z = 2.0f;
-		addEntity (eid, CEntity::Other, CVector(x, y, z), CVector(x, y, z));
+		CVector start(ConfigFile.getVar("StartPoint").asFloat(0), ConfigFile.getVar("StartPoint").asFloat(1), ConfigFile.getVar("StartPoint").asFloat(2));
+		addEntity (eid, CEntity::Other, start, start);
 		EIT eit = findEntity (eid);
 		(*eit).second.AutoMove = atoi(args[1].c_str()) == 1;
 	}
@@ -842,31 +848,31 @@ NLMISC_COMMAND(add_entity,"add a local entity","<nb_entities> <auto_update>")
 	return true;
 }
 
-NLMISC_COMMAND(set_speed,"set the speed of an identity","<eid> <speed in m/s>")
+NLMISC_COMMAND(speed,"set the player speed","[<entity_id>] <speed in km/h>")
 {
 	// check args, if there s not the right number of parameter, return bad
-	if(args.size() != 2) return false;
-
-	uint eid = (uint)atoi(args[0].c_str());
-	EIT eit = findEntity (eid);
-	CEntity	&entity = (*eit).second;
-
-	entity.Speed = (float)atof(args[1].c_str());
-	if (entity.Type == CEntity::Self)
+	if(args.size() == 1)
 	{
-		MouseListener->setSpeed(entity.Speed);
+		float speed = min( max( (float)atof(args[0].c_str()), 0.1f ), 200.0f ); // speed range in km/h
+		if (Self != NULL)
+		{
+			MouseListener->setSpeed( speed / 3.6f );
+			Self->Speed = speed / 3.6f;
+		}
 	}
-	return true;
-}
-
-NLMISC_COMMAND(speed,"set the player speed","<speed in km/h>")
-{
-	// check args, if there s not the right number of parameter, return bad
-	if(args.size() != 1) return false;
-	float speed = min( max( (float)atof(args[0].c_str()), 0.1f ), 200.0f ); // speed range in km/h
-	if (Self != NULL)
+	else if(args.size() == 2)
 	{
-		MouseListener->setSpeed( speed / 3.6f );
+		float speed = min( max( (float)atof(args[1].c_str()), 0.1f ), 200.0f ); // speed range in km/h
+
+		uint eid = (uint)atoi(args[0].c_str());
+		EIT eit = findEntity (eid);
+		CEntity	&entity = (*eit).second;
+
+		entity.Speed = speed / 3.6f;
+		if (entity.Type == CEntity::Self)
+		{
+			MouseListener->setSpeed(entity.Speed);
+		}
 	}
 	return true;
 }
@@ -876,10 +882,7 @@ NLMISC_COMMAND(goto, "go to a given position", "<x> <y>")
 	// check args, if there s not the right number of parameter, return bad
 	if(args.size() != 2) return false;
 
-	if (Self == NULL)
-	{
-		return false;
-	}
+	if (Self == NULL) return false;
 
 	CEntity	&entity = *Self;
 

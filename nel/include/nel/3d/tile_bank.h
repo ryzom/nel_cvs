@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.19 2001/02/16 11:09:04 corvazier Exp $
+ * $Id: tile_bank.h,v 1.20 2001/03/05 09:14:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,10 +55,12 @@ class CTile
 	// Mask for flags
 #define NL3D_CTILE_ROT_MASK				0x0000000f
 #define NL3D_CTILE_ROT_RSHIFT			0x0
-#define NL3D_CTILE_GROUP_MASK			0x000000f0
+#define NL3D_CTILE_OLD_GROUP_MASK		0x000000f0
+#define NL3D_CTILE_GROUP_MASK			0x00000ff0
 #define NL3D_CTILE_GROUP_RSHIFT			0x4
-#define NL3D_CTILE_FREE_FLAG			0x00000100
-#define NL3D_CTILE_NUM_GROUP			4
+#define NL3D_CTILE_FREE_FLAG			0x00001000
+#define NL3D_CTILE_OLD_FREE_FLAG		0x00000100
+#define NL3D_CTILE_NUM_GROUP			8
 
 public:
 	friend class CTileSet;
@@ -111,7 +113,7 @@ public:
 	  *
 	  * If the tile is in the I-ne gourp, the flag 1<<I is set. There are 4 groups.
 	  */
-	uint8	getGroupFlags ()
+	uint8	getGroupFlags () const
 	{
 		return (uint8)((_Flags&NL3D_CTILE_GROUP_MASK)>>NL3D_CTILE_GROUP_RSHIFT);
 	}
@@ -124,7 +126,7 @@ public:
 	void	setGroupFlags (uint8 group)
 	{
 		// Checks
-		nlassert (group<0x10);
+		nlassert (group<NL3D_CTILE_NUM_GROUP);
 
 		// Clear flags
 		_Flags&=~NL3D_CTILE_GROUP_MASK;

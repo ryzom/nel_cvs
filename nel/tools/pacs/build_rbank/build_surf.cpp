@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.8 2002/07/16 17:14:43 legros Exp $
+ * $Id: build_surf.cpp,v 1.9 2002/09/26 14:54:12 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -367,6 +367,17 @@ bool	isInside(const CPolygon &poly, const NLPACS::CSurfElement &elem)
 
 
 /*
+ */
+class CAABBoxPred
+{
+public:
+	bool	operator () (const CAABBox &a, const CAABBox &b) const
+	{
+		return a.getCenter().z < b.getCenter().z;
+	}
+};
+
+/*
  * CStats methods...
  */
 
@@ -690,17 +701,19 @@ void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
 
 	uint			level = 0;
 	CVector			center = ((*Vertices)[Tri[0]]+(*Vertices)[Tri[1]]+(*Vertices)[Tri[2]])/3.0f;
-	grid.select(center-CVector(0.01f, 0.01f, 0.01f), center+CVector(0.01f, 0.01f, 0.01f));
+
+	CAABBox			centerBox = getBBox();
+	centerBox.setHalfSize(centerBox.getHalfSize()+CVector(0.05f, 0.05f, 0.40f));
+
+	grid.select(centerBox.getMin(), centerBox.getMax());
 	CQuadGrid<CSurfElement *>::CIterator	it;
 
-	CAABBox			centerBox;
+	CVector		emin = centerBox.getMin(),
+				emax = centerBox.getMax();
+	
+/*
 	vector<CAABBox>	checkedBoxes;
 	uint			i;
-
-	centerBox.setCenter((*Vertices)[Tri[0]]);
-	centerBox.extend((*Vertices)[Tri[1]]);
-	centerBox.extend((*Vertices)[Tri[2]]);
-	centerBox.setHalfSize(centerBox.getHalfSize()+CVector(0.05f, 0.05f, 0.05f));
 
 	for (it=grid.begin(); it!=grid.end(); ++it)
 	{
@@ -751,8 +764,89 @@ void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
 			checkedBoxes.push_back(box);
 		}
 	}
+*/
+	vector<CAABBox>	checkedBoxes;
+	uint			i;
 
-	Level = level;
+	for (it=grid.begin(); it!=grid.end(); ++it)
+	{
+		CSurfElement	&el = *(*it);
+		if (&el == this)
+			continue;
+
+		const CVector	&V0 = (*(el.Vertices))[el.Tri[0]],
+						&V1 = (*(el.Vertices))[el.Tri[1]],
+						&V2 = (*(el.Vertices))[el.Tri[2]];
+
+		CAABBox			box = el.getBBox();
+		CVector			bmin = box.getMin(),
+						bmax = box.getMax();
+
+		// only keep elements in surroundings
+		if (bmin.x > emax.x || bmin.y > emax.y || bmax.x < emin.x || bmax.y < emin.y)
+			continue;
+
+		// drop patch neighbors
+		if (centerBox.intersect(box))
+			continue;
+
+		// drop higher elements
+		if (bmin.z > centerBox.getCenter().z+centerBox.getHalfSize().z)
+			continue;
+
+		for (i=0; i<checkedBoxes.size(); ++i)
+			if (checkedBoxes[i].intersect(V0, V1, V2))
+				break;
+
+		if (i<checkedBoxes.size())
+		{
+			checkedBoxes[i].extend(V0);
+			checkedBoxes[i].extend(V1);
+			checkedBoxes[i].extend(V2);
+			continue;
+		}
+
+		// clip elemnts by elevation
+		tri2.Vertices.clear();
+		tri2.Vertices.push_back(V0);
+		tri2.Vertices.push_back(V1);
+		tri2.Vertices.push_back(V2);
+		tri2.clip(planes);
+
+		// if intersection not empty, keep box
+		if (!tri2.Vertices.empty())
+			checkedBoxes.push_back(box);
+	}
+
+	bool	merge;
+	do
+	{
+		merge = false;
+		vector<CAABBox>::iterator	it1, it2;
+		for (it1=checkedBoxes.begin(); it1!=checkedBoxes.end(); ++it1)
+		{
+			it2 = it1;
+			++it2;
+			for (; it2!=checkedBoxes.end(); )
+			{
+				if ((*it1).intersect(*it2))
+				{
+					(*it1).extend((*it2).getMin());
+					(*it1).extend((*it2).getMax());
+					it2 = checkedBoxes.erase(it2);
+					merge = true;
+				}
+				else
+				{
+					++it2;
+				}
+			}
+		}
+	}
+	while (merge);
+
+//	Level = level;
+	Level = checkedBoxes.size();
 }
 
 
@@ -915,6 +1009,14 @@ void	NLPACS::CComputableSurface::floodFill(CSurfElement *first, sint32 surfId)
 				stack.push_back(pop->EdgeLinks[i]);
 			}
 		}
+	}
+
+	if (Elements.size() == 1 &&
+		Elements[0]->EdgeLinks[0] != NULL && Elements[0]->EdgeLinks[0]->NoLevelSurfaceId == NoLevelSurfaceId &&
+		Elements[0]->EdgeLinks[1] != NULL && Elements[0]->EdgeLinks[1]->NoLevelSurfaceId == NoLevelSurfaceId &&
+		Elements[0]->EdgeLinks[2] != NULL && Elements[0]->EdgeLinks[2]->NoLevelSurfaceId == NoLevelSurfaceId)
+	{
+		nlwarning("1 seperated element surface found");
 	}
 
 	nldebug("%d elements added", Elements.size());
@@ -1769,6 +1871,7 @@ void	NLPACS::CZoneTessellation::compile()
 	{
 		CSurfElement	&element = *(Elements[el]);
 		element.computeQuantas();
+		element.ElemId = el;
 	}
 
 	if (ReduceSurfaces)
@@ -1945,6 +2048,10 @@ void	NLPACS::CZoneTessellation::compile()
 
 			for (i=0; i<(sint)surf.Elements.size(); ++i)
 			{
+/*
+				if (surf.Elements[i]->ElemId == 32911)
+					nlstop;
+*/
 				surf.Elements[i]->computeLevel(quadGrid);
 			}
 

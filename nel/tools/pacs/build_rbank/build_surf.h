@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.5 2002/07/16 17:14:43 legros Exp $
+ * $Id: build_surf.h,v 1.6 2002/09/26 14:54:12 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,6 +192,11 @@ class CSurfElement
 {
 public:
 	/**
+	 *
+	 */
+	uint32							ElemId;
+
+	/**
 	 * The support of the surface element.
 	 * The index to the 3 vertices of the triangle.
 	 */
@@ -277,6 +282,7 @@ public:
 	 */
 	CSurfElement()
 	{
+		ElemId = 0;
 		Root = NULL;
 		EdgeLinks[0] = NULL;
 		EdgeLinks[1] = NULL;
@@ -288,6 +294,7 @@ public:
 		EdgeFlag[1] = false;
 		EdgeFlag[2] = false;
 		SurfaceId = UnaffectedSurfaceId;
+		NoLevelSurfaceId = UnaffectedSurfaceId;
 		NormalQuanta = 0;
 		OrientationQuanta = 0;
 		Material = 0;

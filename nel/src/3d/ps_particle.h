@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.10 2001/08/09 08:02:46 vizerie Exp $
+ * $Id: ps_particle.h,v 1.11 2001/08/15 12:08:14 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,9 +114,9 @@ public:
 	
 	/// serialisation. Derivers must override this, and call their parent version
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-	{ 
+	{ 		
 		f.serialVersion(1);
-		CPSLocatedBindable::serial(f); 
+		CPSLocatedBindable::serial(f);	
 	}
 protected:
 
@@ -1259,7 +1259,7 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle
 			CVertexBuffer _Vb;	
 
 			// an index buffer
-			uint32 *_Ib; 
+			std::vector<uint32> _Ib; 
 		
 			/** used to memorize the last positions in all ribbon. Position are stored consecutively		 
 			 */

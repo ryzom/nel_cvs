@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertx_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.4 2001/10/18 11:51:29 berenguier Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.5 2001/10/31 10:13:36 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -231,20 +231,9 @@ void CDriverGL::setConstant (uint index, const NLMISC::CVectorD* value)
 
 const uint CDriverGL::GLMatrix[IDriver::NumMatrix]=
 {
-	GL_NONE,
 	GL_MODELVIEW,
 	GL_PROJECTION,
-	GL_TEXTURE,
-	GL_COLOR,
-	GL_MODELVIEW_PROJECTION_NV,
-	GL_MATRIX0_NV,
-	GL_MATRIX1_NV,
-	GL_MATRIX2_NV,
-	GL_MATRIX3_NV,
-	GL_MATRIX4_NV,
-	GL_MATRIX5_NV,
-	GL_MATRIX6_NV,
-	GL_MATRIX7_NV
+	GL_MODELVIEW_PROJECTION_NV
 };
 
 
@@ -266,12 +255,34 @@ void CDriverGL::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver:
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
-		// Track a matrix
+		// First, ensure that the ModelView matrix is ocrreclty setuped.
+		if(_ModelViewMatrixDirty[0])
+		{
+			_ModelViewMatrixDirty.clear(0);
+			// By default, the first model matrix is active
+			glLoadMatrixf( _ModelViewMatrix[0].get() );
+		}
+
+		// Track the matrix
 		glTrackMatrixNV (GL_VERTEX_PROGRAM_NV, index, GLMatrix[matrix], GLTransform[transform]);
+		// Release Track => matrix data is copied.
+		glTrackMatrixNV (GL_VERTEX_PROGRAM_NV, index, GL_NONE, GL_IDENTITY_NV);
 	}
 }
 
 // ***************************************************************************
 
+void CDriverGL::enableVertexProgramDoubleSidedColor(bool doubleSided)
+{
+	// Vertex program exist ?
+	if (_Extensions.NVVertexProgram)
+	{
+		// change mode (not cached because supposed to be rare)
+		if(doubleSided)
+			glEnable (GL_VERTEX_PROGRAM_TWO_SIDE_NV);
+		else
+			glDisable (GL_VERTEX_PROGRAM_TWO_SIDE_NV);
+	}
+}
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.3 2001/10/26 08:27:11 vizerie Exp $
+ * $Id: driver_opengl_states.h,v 1.4 2001/10/31 10:13:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,7 @@ namespace NL3D
 			- GL_NORMAL_ARRAY
 			- GL_VERTEX_WEIGHTING_EXT
 			- GL_COLOR_ARRAY
+			- GL_SECONDARY_COLOR_ARRAY_EXT
 			- GL_TEXTURE_COORD_ARRAY
 			- GL_VERTEX_ATTRIB_ARRAY0_NV + i.
 		- glDepthMask()
@@ -126,6 +127,7 @@ public:
 	void			enableNormalArray(bool enable);
 	void			enableWeightArray(bool enable);
 	void			enableColorArray(bool enable);
+	void			enableSecondaryColorArray(bool enable);
 	/// same as glClientActiveTextureARB(). usefull for enableTexCoordArray.
 	void			clientActiveTextureARB(uint stage);
 	/// NB: caller must call correct clientActiveTextureARB() before.
@@ -160,6 +162,7 @@ private:
 	bool			_NormalArrayEnabled;
 	bool			_WeightArrayEnabled;
 	bool			_ColorArrayEnabled;
+	bool			_SecondaryColorArrayEnabled;
 	uint			_CurrentClientActiveTextureARB;
 	bool			_TexCoordArrayEnabled[IDRV_MAT_MAXTEXTURES];
 	bool			_VertexAttribArrayEnabled[CVertexBuffer::NumValue];

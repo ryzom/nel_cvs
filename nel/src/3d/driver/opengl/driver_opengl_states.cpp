@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.3 2001/10/26 08:27:11 vizerie Exp $
+ * $Id: driver_opengl_states.cpp,v 1.4 2001/10/31 10:13:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,7 @@ void			CDriverGLStates::init(bool supportTextureCubeMap)
 	_NormalArrayEnabled= false;
 	_WeightArrayEnabled= false;
 	_ColorArrayEnabled= false;
+	_SecondaryColorArrayEnabled= false;
 	uint	i;
 	for(i=0; i<IDRV_MAT_MAXTEXTURES; i++)
 	{
@@ -434,6 +435,20 @@ void			CDriverGLStates::enableColorArray(bool enable)
 		else
 			glDisableClientState(GL_COLOR_ARRAY);
 		_ColorArrayEnabled= enable;
+	}
+}
+
+
+// ***************************************************************************
+void			CDriverGLStates::enableSecondaryColorArray(bool enable)
+{
+	if(_SecondaryColorArrayEnabled != enable)
+	{
+		if(enable)
+			glEnableClientState(GL_SECONDARY_COLOR_ARRAY_EXT);
+		else
+			glDisableClientState(GL_SECONDARY_COLOR_ARRAY_EXT);
+		_SecondaryColorArrayEnabled= enable;
 	}
 }
 

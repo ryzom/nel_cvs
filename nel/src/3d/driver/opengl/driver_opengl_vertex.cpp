@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.15 2001/10/16 16:45:23 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.16 2001/10/31 10:13:36 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1206,6 +1206,8 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 			uint glIndex=GLVertexAttribIndex[value];
 			_DriverGLStates.enableVertexAttribArray(glIndex, false);
 		}
+		_DriverGLStates.enableColorArray(false);
+		_DriverGLStates.enableSecondaryColorArray(false);
 
 		// no more a vertex program setup.
 		_LastSetupGLArrayVertexProgram= false;
@@ -1388,9 +1390,52 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 			// Not setuped value and used
 			if (flags & flag)
 			{
-				// Active this value
-				_DriverGLStates.enableVertexAttribArray(glIndex, true);
-				glVertexAttribPointerNV (glIndex, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
+				/* OpenGL Driver Bug with VertexProgram, UChar4 type, and VertexArrayRange.
+					Don't work and lead to very poor performance (1/10) (VAR is "disabled").
+				*/
+				// Test if can use glColorPointer() / glSecondaryColorPointerEXT() instead.
+				if( (glIndex==3 || glIndex==4) )
+				{
+					if( type == CVertexBuffer::UChar4 )
+					{
+						// Must disable VertexAttrib array.
+						_DriverGLStates.enableVertexAttribArray(glIndex, false);
+
+						// Active this value, with standard gl calls
+						if(glIndex==3)
+						{
+							// Primary color
+							_DriverGLStates.enableColorArray(true);
+							glColorPointer(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[value]);
+						}
+						else
+						{
+							// Secondary color
+							_DriverGLStates.enableSecondaryColorArray(true);
+							glSecondaryColorPointerEXT(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[value]);
+						}
+					}
+					else
+					{
+						// Can use normal VertexAttribArray.
+						// Disable first standard Color Array.
+						if(glIndex==3)
+							_DriverGLStates.enableColorArray(false);
+						else
+							_DriverGLStates.enableSecondaryColorArray(false);
+
+						// Active this value
+						_DriverGLStates.enableVertexAttribArray(glIndex, true);
+						glVertexAttribPointerNV (glIndex, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
+					}
+				}
+				// Else normal case, can't do anything for other values with UChar4....
+				else
+				{
+					// Active this value
+					_DriverGLStates.enableVertexAttribArray(glIndex, true);
+					glVertexAttribPointerNV (glIndex, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
+				}
 			}
 			else
 			{

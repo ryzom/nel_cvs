@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.20 2001/10/26 08:27:11 vizerie Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.21 2001/10/31 10:13:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -176,6 +176,27 @@ PFNGLVERTEXATTRIBS4DVNVPROC			glVertexAttribs4dvNV;
 PFNGLVERTEXATTRIBS4FVNVPROC			glVertexAttribs4fvNV;
 PFNGLVERTEXATTRIBS4SVNVPROC			glVertexAttribs4svNV;
 PFNGLVERTEXATTRIBS4UBVNVPROC		glVertexAttribs4ubvNV;
+
+
+// SecondaryColor extension
+//========================
+PFNGLSECONDARYCOLOR3BEXTPROC		glSecondaryColor3bEXT;
+PFNGLSECONDARYCOLOR3BVEXTPROC		glSecondaryColor3bvEXT;
+PFNGLSECONDARYCOLOR3DEXTPROC		glSecondaryColor3dEXT;
+PFNGLSECONDARYCOLOR3DVEXTPROC		glSecondaryColor3dvEXT;
+PFNGLSECONDARYCOLOR3FEXTPROC		glSecondaryColor3fEXT;
+PFNGLSECONDARYCOLOR3FVEXTPROC		glSecondaryColor3fvEXT;
+PFNGLSECONDARYCOLOR3IEXTPROC		glSecondaryColor3iEXT;
+PFNGLSECONDARYCOLOR3IVEXTPROC		glSecondaryColor3ivEXT;
+PFNGLSECONDARYCOLOR3SEXTPROC		glSecondaryColor3sEXT;
+PFNGLSECONDARYCOLOR3SVEXTPROC		glSecondaryColor3svEXT;
+PFNGLSECONDARYCOLOR3UBEXTPROC		glSecondaryColor3ubEXT;
+PFNGLSECONDARYCOLOR3UBVEXTPROC		glSecondaryColor3ubvEXT;
+PFNGLSECONDARYCOLOR3UIEXTPROC		glSecondaryColor3uiEXT;
+PFNGLSECONDARYCOLOR3UIVEXTPROC		glSecondaryColor3uivEXT;
+PFNGLSECONDARYCOLOR3USEXTPROC		glSecondaryColor3usEXT;
+PFNGLSECONDARYCOLOR3USVEXTPROC		glSecondaryColor3usvEXT;
+PFNGLSECONDARYCOLORPOINTEREXTPROC	glSecondaryColorPointerEXT;
 
 
 #endif // NL_OS_WINDOWS
@@ -447,6 +468,38 @@ static bool	setupNVVertexProgram(const char	*glext)
 
 
 // *********************************
+static bool	setupEXTSecondaryColor(const char	*glext)
+{
+	if(strstr(glext, "GL_EXT_secondary_color")==NULL)
+		return false;
+
+#ifdef NL_OS_WINDOWS
+	if(!(glAreProgramsResidentNV= (PFNGLAREPROGRAMSRESIDENTNVPROC)wglGetProcAddress("glAreProgramsResidentNV"))) return false;
+
+	if(!(glSecondaryColor3bEXT= (PFNGLSECONDARYCOLOR3BEXTPROC)wglGetProcAddress("glSecondaryColor3bEXT"))) return false;
+	if(!(glSecondaryColor3bvEXT= (PFNGLSECONDARYCOLOR3BVEXTPROC)wglGetProcAddress("glSecondaryColor3bvEXT"))) return false;
+	if(!(glSecondaryColor3dEXT= (PFNGLSECONDARYCOLOR3DEXTPROC)wglGetProcAddress("glSecondaryColor3dEXT"))) return false;
+	if(!(glSecondaryColor3dvEXT= (PFNGLSECONDARYCOLOR3DVEXTPROC)wglGetProcAddress("glSecondaryColor3dvEXT"))) return false;
+	if(!(glSecondaryColor3fEXT= (PFNGLSECONDARYCOLOR3FEXTPROC)wglGetProcAddress("glSecondaryColor3fEXT"))) return false;
+	if(!(glSecondaryColor3fvEXT= (PFNGLSECONDARYCOLOR3FVEXTPROC)wglGetProcAddress("glSecondaryColor3fvEXT"))) return false;
+	if(!(glSecondaryColor3iEXT= (PFNGLSECONDARYCOLOR3IEXTPROC)wglGetProcAddress("glSecondaryColor3iEXT"))) return false;
+	if(!(glSecondaryColor3ivEXT= (PFNGLSECONDARYCOLOR3IVEXTPROC)wglGetProcAddress("glSecondaryColor3ivEXT"))) return false;
+	if(!(glSecondaryColor3sEXT= (PFNGLSECONDARYCOLOR3SEXTPROC)wglGetProcAddress("glSecondaryColor3sEXT"))) return false;
+	if(!(glSecondaryColor3svEXT= (PFNGLSECONDARYCOLOR3SVEXTPROC)wglGetProcAddress("glSecondaryColor3svEXT"))) return false;
+	if(!(glSecondaryColor3ubEXT= (PFNGLSECONDARYCOLOR3UBEXTPROC)wglGetProcAddress("glSecondaryColor3ubEXT"))) return false;
+	if(!(glSecondaryColor3ubvEXT= (PFNGLSECONDARYCOLOR3UBVEXTPROC)wglGetProcAddress("glSecondaryColor3ubvEXT"))) return false;
+	if(!(glSecondaryColor3uiEXT= (PFNGLSECONDARYCOLOR3UIEXTPROC)wglGetProcAddress("glSecondaryColor3uiEXT"))) return false;
+	if(!(glSecondaryColor3uivEXT= (PFNGLSECONDARYCOLOR3UIVEXTPROC)wglGetProcAddress("glSecondaryColor3uivEXT"))) return false;
+	if(!(glSecondaryColor3usEXT= (PFNGLSECONDARYCOLOR3USEXTPROC)wglGetProcAddress("glSecondaryColor3usEXT"))) return false;
+	if(!(glSecondaryColor3usvEXT= (PFNGLSECONDARYCOLOR3USVEXTPROC)wglGetProcAddress("glSecondaryColor3usvEXT"))) return false;
+	if(!(glSecondaryColorPointerEXT= (PFNGLSECONDARYCOLORPOINTEREXTPROC)wglGetProcAddress("glSecondaryColorPointerEXT"))) return false;
+
+#endif
+
+	return false;
+}
+
+// *********************************
 static bool	setupNVTextureShader(const char	*glext)
 {
 	if(strstr(glext, "GL_NV_texture_shader")==NULL)
@@ -523,6 +576,8 @@ void	registerGlExtensions(CGlExtensions &ext)
 	// if GL_NV_texture_shader is not here, then we are not on GeForce3.
 	ext.NVVertexProgramEmulated= ext.NVVertexProgram && (strstr(glext, "GL_NV_texture_shader")==NULL);
 
+	// Check EXTSecondaryColor
+	ext.EXTSecondaryColor= setupEXTSecondaryColor(glext);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.17 2001/10/26 08:27:11 vizerie Exp $
+ * $Id: driver_opengl_extension.h,v 1.18 2001/10/31 10:13:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,6 +85,7 @@ struct	CGlExtensions
 	bool	NVTextureShader;
 	// true if NVVertexProgram and if we know that VP is emulated
 	bool	NVVertexProgramEmulated;
+	bool	EXTSecondaryColor;
 
 public:
 	CGlExtensions()
@@ -105,6 +106,7 @@ public:
 		NVTextureShader= false;
 		NVVertexProgram= false;
 		NVVertexProgramEmulated= false;
+		EXTSecondaryColor= false;
 	};
 };
 
@@ -266,6 +268,27 @@ extern PFNGLVERTEXATTRIBS4DVNVPROC			glVertexAttribs4dvNV;
 extern PFNGLVERTEXATTRIBS4FVNVPROC			glVertexAttribs4fvNV;
 extern PFNGLVERTEXATTRIBS4SVNVPROC			glVertexAttribs4svNV;
 extern PFNGLVERTEXATTRIBS4UBVNVPROC			glVertexAttribs4ubvNV;
+
+
+// SecondaryColor extension
+//========================
+extern PFNGLSECONDARYCOLOR3BEXTPROC			glSecondaryColor3bEXT;
+extern PFNGLSECONDARYCOLOR3BVEXTPROC		glSecondaryColor3bvEXT;
+extern PFNGLSECONDARYCOLOR3DEXTPROC			glSecondaryColor3dEXT;
+extern PFNGLSECONDARYCOLOR3DVEXTPROC		glSecondaryColor3dvEXT;
+extern PFNGLSECONDARYCOLOR3FEXTPROC			glSecondaryColor3fEXT;
+extern PFNGLSECONDARYCOLOR3FVEXTPROC		glSecondaryColor3fvEXT;
+extern PFNGLSECONDARYCOLOR3IEXTPROC			glSecondaryColor3iEXT;
+extern PFNGLSECONDARYCOLOR3IVEXTPROC		glSecondaryColor3ivEXT;
+extern PFNGLSECONDARYCOLOR3SEXTPROC			glSecondaryColor3sEXT;
+extern PFNGLSECONDARYCOLOR3SVEXTPROC		glSecondaryColor3svEXT;
+extern PFNGLSECONDARYCOLOR3UBEXTPROC		glSecondaryColor3ubEXT;
+extern PFNGLSECONDARYCOLOR3UBVEXTPROC		glSecondaryColor3ubvEXT;
+extern PFNGLSECONDARYCOLOR3UIEXTPROC		glSecondaryColor3uiEXT;
+extern PFNGLSECONDARYCOLOR3UIVEXTPROC		glSecondaryColor3uivEXT;
+extern PFNGLSECONDARYCOLOR3USEXTPROC		glSecondaryColor3usEXT;
+extern PFNGLSECONDARYCOLOR3USVEXTPROC		glSecondaryColor3usvEXT;
+extern PFNGLSECONDARYCOLORPOINTEREXTPROC	glSecondaryColorPointerEXT;
 
 
 #endif

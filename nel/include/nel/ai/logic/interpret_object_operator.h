@@ -1,7 +1,7 @@
 /** \file interpret_object_operator.h
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.20 2002/02/20 18:05:10 lecroart Exp $
+ * $Id: interpret_object_operator.h,v 1.21 2002/09/19 10:09:34 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -245,7 +245,7 @@ public:
 			_Priority = p;
 		}
 
-		float getPriority()
+		float getPriority() const
 		{
 			return _Priority;
 		}

@@ -202,6 +202,7 @@ namespace NLAISCRIPT
 
 		// Création du message
 		NLAIAGENT::COperatorScript *instance = new NLAIAGENT::COperatorScript( NULL, NULL ,components,  (COperatorClass *) this );
+		instance->setPriority(getPriority());
 
 		return instance;
 	}

@@ -23,6 +23,7 @@ namespace NLAIAGENT
 		_Maintain = a._Maintain;
 		_Priority = 0;
 		_Exclusive = a._Exclusive;
+		_BasePriority = a._BasePriority;
 	}
 
 	COperatorScript::COperatorScript(IAgentManager *manager, 
@@ -854,11 +855,6 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG
 	const char *txt = (const char *)msg->getType();
 #endif
-
-		if(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass == msg->getType())
-		{
-			_BasePriority = ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getPriority();
-		}		
 		CAgentScript::processMessages(msg,o);
 	}
 

@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.18 2002/01/18 14:54:05 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.19 2002/01/28 14:18:53 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2265,8 +2265,8 @@ bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
 	// size to go to the next line in the source
 	const uint srcStride = srcRealWidth * bytePerPixs;
 	
-	// lenght in bytes of a line to copy
-	const uint lineLenght = width * bytePerPixs;
+	// length in bytes of a line to copy
+	const uint lineLength = width * bytePerPixs;
 
 
 	uint8  *destPos = &(_Data[0][0]) + destStride * destStartY + bytePerPixs * destStartX;
@@ -2275,7 +2275,7 @@ bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
 	// copy each hline
 	for (sint k = 0; k < height; ++k)
 	{
-		::memcpy(destPos, srcPos, lineLenght);
+		::memcpy(destPos, srcPos, lineLength);
 		destPos += destStride;
 		srcPos += srcStride;
 	}

@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.16 2002/03/14 18:35:55 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.17 2002/06/19 17:24:59 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -59,10 +59,10 @@ const char *WaterVpCode = "!!VP1.0\n\
 					  DP3 R3.x, R0, R0;															\n\
 					  RSQ R3.x,  R3.x;				#normalize normal in R3						\n\
 					  MUL R0,  R0, R3.x;														\n\
-					  DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space					\n\
-					  DP4 o[HPOS].y, c[1], R4;													\n\
-					  DP4 o[HPOS].z, c[2], R4;													\n\
-					  DP4 o[HPOS].w, c[3], R4;													\n\
+					  DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space				\n\
+					  DP4 o[HPOS].y, c[1], R4;												\n\
+					  DP4 o[HPOS].z, c[2], R4;												\n\
+					  DP4 o[HPOS].w, c[3], R4;												\n\
 					  MUL R3, v[0], c[10];			#compute bump 0 uv's						\n\
 					  ADD o[TEX0].xy, R3, c[9];													\n\
 					  MUL R3, v[0], c[12];			#compute bump 1 uv's						\n\

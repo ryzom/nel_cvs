@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.21 2002/06/10 09:30:09 berenguier Exp $
+ * $Id: water_model.cpp,v 1.22 2002/06/19 17:24:59 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -172,11 +172,13 @@ static void SetupWaterVertex(  sint  qLeft,
 							   float invWaterRatio,							   
 							   sint  doubleWaterHeightMapSize,
 							   CWaterHeightMap &whm,
-							   uint8 *&vbPointer
+							   uint8 *&vbPointer,
+							   float offsetX,
+							   float offsetY
 							   )
 {
-	const float wXf = invWaterRatio * inter.x;
-	const float wYf = invWaterRatio * inter.y;
+	const float wXf = invWaterRatio * (inter.x + offsetX);
+	const float wYf = invWaterRatio * (inter.y + offsetY);
 
 	sint wx = (sint) floorf(wXf);
 	sint wy = (sint) floorf(wYf);
@@ -489,7 +491,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 
 	
 	NLMISC::CMatrix modelMat;
-	modelMat.setPos(NLMISC::CVector(0, 0, zHeight));
+	modelMat.setPos(NLMISC::CVector(obsPos.x, obsPos.y, zHeight));
 	drv->setupModelMatrix(modelMat);
 	
 
@@ -722,8 +724,9 @@ void	CWaterRenderObs::traverse(IObs *caller)
 					{	
 						t =   denom / currV.z;						
 						// compute intersection with plane											
-						CVector inter = obsPos + t * currV;		
-						SetupWaterVertex(qLeft, qRight, qUp, qDown, qSubLeft, qSubDown, inter, invWaterRatio, doubleWaterHeightMapSize, whm, vbPointer);
+						CVector inter = t * currV;
+						inter.z += obsPos.z;
+						SetupWaterVertex(qLeft, qRight, qUp, qDown, qSubLeft, qSubDown, inter, invWaterRatio, doubleWaterHeightMapSize, whm, vbPointer, obsPos.x, obsPos.y);
 						currV += xStep;						
 					}
 
@@ -783,9 +786,11 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	//=========================================//
 
 	if (endClippedPoly.Vertices.size() != 0)
-	{				
+	{	
+		CMatrix mtx; /*= HrcObs->WorldMatrix;*/
+		mtx.setPos(NLMISC::CVector(-obsPos.x, -obsPos.y, obsPos.z));
 		//setAttenuationFactor(drv, true, obsPos, camMat.getJ(), farDist);				
-		DrawPoly2D(shape->_VB, drv, HrcObs->WorldMatrix, endClippedPoly);
+		DrawPoly2D(shape->_VB, drv, mtx, endClippedPoly);
 	}
 
 	/*if (endTransitionClippedPoly.Vertices.size() != 0)
@@ -889,8 +894,8 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 
 
 			// setup 2x3 matrix for lookup in diffuse map
-			cst[13 - cstOffset].set(shape->_ColorMapMatColumn0.x, shape->_ColorMapMatColumn1.x, 0, shape->_ColorMapMatPos.x); 
-			cst[14 - cstOffset].set(shape->_ColorMapMatColumn0.y, shape->_ColorMapMatColumn1.y, 0, shape->_ColorMapMatPos.y);			
+			cst[13 - cstOffset].set(shape->_ColorMapMatColumn0.x, shape->_ColorMapMatColumn1.x, 0, shape->_ColorMapMatColumn0.x * obsPos.x + shape->_ColorMapMatColumn1.x * obsPos.y + shape->_ColorMapMatPos.x); 
+			cst[14 - cstOffset].set(shape->_ColorMapMatColumn0.y, shape->_ColorMapMatColumn1.y, 0, shape->_ColorMapMatColumn0.y * obsPos.x + shape->_ColorMapMatColumn1.y * obsPos.y + shape->_ColorMapMatPos.y);			
 			WaterMat.texEnvOpRGB(alphaMapStage, CMaterial::Modulate);
 			WaterMat.texEnvOpAlpha(alphaMapStage, CMaterial::Modulate);
 		}
@@ -920,9 +925,9 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 		// retrieve current time
 		float date  = 0.001f * NLMISC::CTime::getLocalTime();
 		// set bumpmaps pos
-		cst[9  - cstOffset].set(date * shape->_HeightMapSpeed[0].x, date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 0 offset
+		cst[9  - cstOffset].set(obsPos.x * shape->_HeightMapScale[0].x + date * shape->_HeightMapSpeed[0].x, shape->_HeightMapScale[0].y * obsPos.y + date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 0 offset
 		cst[10  - cstOffset].set(shape->_HeightMapScale[0].x, shape->_HeightMapScale[0].y, 0, 0); // bump map 0 scale
-		cst[11  - cstOffset].set(date * shape->_HeightMapSpeed[1].x, date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 1 offset
+		cst[11  - cstOffset].set(shape->_HeightMapScale[1].x * obsPos.x + date * shape->_HeightMapSpeed[1].x, shape->_HeightMapScale[1].y * obsPos.y + date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 1 offset
 		cst[12  - cstOffset].set(shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 0, 0); // bump map 1 scale
 
 				
@@ -931,7 +936,7 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 
 
 		cst[4  - cstOffset].set(1.f, 1.f, 1.f, 1.f); // use with min man, and to get the 1 constant		
-		cst[7  - cstOffset].set(obsPos.x, obsPos.y, obsPos.z - zHeight, 0.f);
+		cst[7  - cstOffset].set(0, 0, obsPos.z - zHeight, 0.f);
 		cst[8  - cstOffset].set(0.5f, 0.5f, 0.f, 0.f); // used to scale reflected ray into the envmap
 
 	

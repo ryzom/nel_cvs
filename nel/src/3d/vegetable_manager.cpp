@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.35 2003/09/26 14:25:33 lecroart Exp $
+ * $Id: vegetable_manager.cpp,v 1.36 2003/12/18 14:34:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -235,7 +235,7 @@ CVegetableVBAllocator	&CVegetableManager::getVBAllocatorForRdrPassAndVBHardMode(
 	v[10] == Center of the vegetable in world space.
 	v[2]  == Normal (present if lighted only)
 	v[3]  == Color (if unlit) or DiffuseColor (if lighted)
-	v[4]  == SecondaryColor (==ambient if Lighted or backFace color if Unlit)
+	v[4]  == SecondaryColor (==ambient if Lighted, and use only Alpha part for DLM if Unlit)
 	v[8]  == Tex0 (xy) 
 	v[9]  == BendInfo (xyz) = {BendWeight/2, BendPhase, BendFrequencyFactor}
 		NB: /2 because compute a quaternion
@@ -291,14 +291,14 @@ CVegetableVBAllocator	&CVegetableManager::getVBAllocatorForRdrPassAndVBHardMode(
 
 	Normal program length (unlit/2Sided/No Alpha Blend) is:
 		12 (bend-delta) + 
-		2  (unlit 2Sided) + 
+		1  (unlit) + 
 		5  (proj + tex)
 		2  (Dynamic lightmap copy)
-		21
+		20
 
 	AlphaBlend program length (unlit/2Sided/Alpha Blend) is:
 		12 (bend-delta) + 
-		2  (unlit 2Sided) + 
+		1  (unlit) + 
 		5  (Alpha Blend)
 		5  (proj + tex)
 		2  (Dynamic lightmap copy)
@@ -485,28 +485,11 @@ const char* NL3D_LightedStartVegetableProgram=
 	RSQ R0.x, R0.x;					# R0.x= 1/norm()									\n\
 	MUL	R6, R6.xyzz, R0.x;				# R6= R6.normed()								\n\
 	DP3	R0.x, R6, c[9];																	\n\
-";
-
-
-//	1Sided lighting.
-const char* NL3D_LightedMiddle1SidedVegetableProgram=
-"	#FrontFacing																		\n\
+																						\n\
+	#FrontFacing																		\n\
 	MAX	R0.y, -R0.x, c[8].x;		# R0.y= diffFactor= max(0, -R6*LightDir)			\n\
 	MUL	R1.xyz, R0.y, v[3];			# R7= diffFactor*DiffuseColor						\n\
 	ADD	o[COL0].xyz, R1, v[4];		# col0.RGB= AmbientColor + diffFactor*DiffuseColor	\n\
-";
-
-
-//	2Sided lighting.
-const char* NL3D_LightedMiddle2SidedVegetableProgram=
-"	#FrontFacing																		\n\
-	MAX	R0.y, -R0.x, c[8].x;		# R0.y= diffFactor= max(0, -R6*LightDir)			\n\
-	MUL	R1.xyz, R0.y, v[3];			# R7= diffFactor*DiffuseColor						\n\
-	ADD	o[COL0].xyz, R1, v[4];		# col0.RGB= AmbientColor + diffFactor*DiffuseColor	\n\
-	# BackFacing.																		\n\
-	MAX	R0.y, R0.x, c[8].x;			# R0.y= diffFactor= max(0, -(-R6)*LightDir)			\n\
-	MUL	R1.xyz, R0.y, v[3];			# R7= diffFactor*DiffuseColor						\n\
-	ADD	o[BFC0].xyz, R1, v[4];		# bfc0.RGB= AmbientColor + diffFactor*DiffuseColor	\n\
 ";
 
 
@@ -519,53 +502,22 @@ const char* NL3D_LightedMiddle2SidedVegetableProgram=
 
 
 // Common start program.
-// nothing to add.
+// Lighting.
 const char* NL3D_UnlitStartVegetableProgram= 
-"";
-
-
-//	1Sided "lighting".
-const char* NL3D_UnlitMiddle1SidedVegetableProgram=
 "	MOV o[COL0].xyz, v[3];			# col.RGBA= vertex color							\n\
 																						\n\
 ";
 
 
-//	2Sided "lighting".
-const char* NL3D_UnlitMiddle2SidedVegetableProgram=
-"	MOV o[COL0].xyz, v[3];			# col.RGBA= vertex color							\n\
-	MOV o[BFC0].xyz, v[4];			# bfc0.RGBA= bcf color								\n\
-																						\n\
-";
-
-
-//	2Sided "lighting" + AlphaBlend.
-const char* NL3D_UnlitMiddle2SidedAlphaBlendVegetableProgram=
-"	MOV o[COL0].xyz, v[3];			# col.RGBA= vertex color							\n\
-	MOV o[BFC0].xyz, v[4];			# bfc0.RGBA= bcf color								\n\
-																						\n\
-	#Blend transition. NB: in R5, we already have the position relative to the camera	\n\
-	DP3	R0.x, R5, R5;				# R0.x= sqr(dist to viewer).						\n\
-	RSQ R0.y, R0.x;																		\n\
-	MUL R0.x, R0.x, R0.y;			# R0.x= dist to viewer								\n\
-	# setup alpha Blending. Distance of appartition is encoded in the vertex.			\n\
-	MAD o[COL0].w, R0.x, c[11].x, v[9].w;												\n\
-	MAD o[BFC0].w, R0.x, c[11].x, v[9].w;												\n\
-";
-
-
-//	1Sided "lighting" + AlphaBlend.
-const char* NL3D_UnlitMiddle1SidedAlphaBlendVegetableProgram=
-"	MOV o[COL0].xyz, v[3];			# col.RGBA= vertex color							\n\
-																						\n\
-	#Blend transition. NB: in R5, we already have the position relative to the camera	\n\
+//	AlphaBlend.
+const char* NL3D_UnlitAlphaBlendVegetableProgram=
+"	#Blend transition. NB: in R5, we already have the position relative to the camera	\n\
 	DP3	R0.x, R5, R5;				# R0.x= sqr(dist to viewer).						\n\
 	RSQ R0.y, R0.x;																		\n\
 	MUL R0.x, R0.x, R0.y;			# R0.x= dist to viewer								\n\
 	# setup alpha Blending. Distance of appartition is encoded in the vertex.			\n\
 	MAD o[COL0].w, R0.x, c[11].x, v[9].w;												\n\
 ";
-
 
 
 
@@ -602,7 +554,6 @@ const char* NL3D_SimpleStartVegetableProgram=
 	# make local to camera pos															\n\
 	ADD R5, R5, -c[10];																	\n\
 	MOV o[COL0].xyz, v[3];			# col.RGBA= vertex color							\n\
-	MOV o[BFC0].xyz, v[4];			# bfc0.RGBA= bcf color								\n\
 ";
 
 
@@ -619,36 +570,20 @@ void					CVegetableManager::initVertexProgram(uint vpType)
 	else
 		vpgram= NL3D_FastBendProgram;
 
-	// If double sided V.P are not supported, switch to 1-sided version
-	bool doubleSided = _LastDriver->supportVertexProgramDoubleSidedColor();
-
 	// combine the VP according to Type
 	switch(vpType)
 	{
 	case NL3D_VEGETABLE_RDRPASS_LIGHTED:
-		vpgram+= string(NL3D_LightedStartVegetableProgram);
-		vpgram+= string(NL3D_LightedMiddle1SidedVegetableProgram);
-		break;
 	case NL3D_VEGETABLE_RDRPASS_LIGHTED_2SIDED:		
 		vpgram+= string(NL3D_LightedStartVegetableProgram);
-		vpgram+= string(doubleSided ? NL3D_LightedMiddle2SidedVegetableProgram 
-			                        : NL3D_LightedMiddle1SidedVegetableProgram);
 		break;
 	case NL3D_VEGETABLE_RDRPASS_UNLIT:		
-		vpgram+= string(NL3D_UnlitStartVegetableProgram);
-		vpgram+= string(NL3D_UnlitMiddle1SidedVegetableProgram);
-		break;
 	case NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED:		
 		vpgram+= string(NL3D_UnlitStartVegetableProgram);
-		vpgram+= string(doubleSided ? NL3D_UnlitMiddle2SidedVegetableProgram
-			                        : NL3D_UnlitMiddle1SidedVegetableProgram
-			           );
 		break;
 	case NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT:		
 		vpgram+= string(NL3D_UnlitStartVegetableProgram);
-		vpgram+= string(doubleSided ? NL3D_UnlitMiddle2SidedAlphaBlendVegetableProgram
-			                        : NL3D_UnlitMiddle1SidedAlphaBlendVegetableProgram
-			           );
+		vpgram+= string(NL3D_UnlitAlphaBlendVegetableProgram);
 		break;	
 	}
 
@@ -1001,10 +936,9 @@ void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CV
 
 
 // ***************************************************************************
-inline void		computeVegetVertexLighting(const CVector &rotNormal, bool instanceDoubleSided,
+inline void		computeVegetVertexLighting(const CVector &rotNormal, 
 	const CVector &sunDir, CRGBA primaryRGBA, CRGBA secondaryRGBA,
-	CVegetableLightEx &vegetLex, CRGBA diffusePL[2],
-	CRGBA *dstFront, CRGBA *dstBack)
+	CVegetableLightEx &vegetLex, CRGBA diffusePL[2], CRGBA *dst)
 {
 	float	dpSun;
 	float	dpPL[2];
@@ -1043,50 +977,15 @@ inline void		computeVegetVertexLighting(const CVector &rotNormal, bool instanceD
 		resColor.A= primaryRGBA.A;
 
 		// copy to dest
-		*dstFront= resColor;
-	}
-
-	// If 2Sided
-	if(instanceDoubleSided)
-	{
-		// reuse dotproduct of front-facing computing.
-
-		// Compute Sun Light.
-		float	f= max(0.f, dpSun);
-		col.modulateFromuiRGBOnly(primaryRGBA, NLMISC::OptFastFloor(f*256));
-		// Add it with ambient
-		resColor.addRGBOnly(col, secondaryRGBA);
-
-		// Add influence of 2 lights only. (unrolled for better BTB use)
-		// Compute Light 0 ?
-		if(vegetLex.NumLights>=1)
-		{
-			f= max(0.f, dpPL[0]);
-			col.modulateFromuiRGBOnly(diffusePL[0], NLMISC::OptFastFloor(f*256));
-			resColor.addRGBOnly(col, resColor);
-			// Compute Light 1 ?
-			if(vegetLex.NumLights>=2)
-			{
-				f= max(0.f, dpPL[1]);
-				col.modulateFromuiRGBOnly(diffusePL[1], NLMISC::OptFastFloor(f*256));
-				resColor.addRGBOnly(col, resColor);
-			}
-		}
-
-		// Keep correct V of Dynamic Lightmap UV encoded in secondaryRGBA Alpha part.
-		resColor.A= secondaryRGBA.A;
-
-		// copy to dest
-		*dstBack= resColor;
+		*dst= resColor;
 	}
 }
 
 
 // ***************************************************************************
-inline void		computeVegetVertexLightingForceBestSided(const CVector &rotNormal, bool instanceDoubleSided,
+inline void		computeVegetVertexLightingForceBestSided(const CVector &rotNormal, 
 	const CVector &sunDir, CRGBA primaryRGBA, CRGBA secondaryRGBA,
-	CVegetableLightEx &vegetLex, CRGBA diffusePL[2],
-	CRGBA *dstFront, CRGBA *dstBack)
+	CVegetableLightEx &vegetLex, CRGBA diffusePL[2], CRGBA *dst)
 {
 	float	dpSun;
 	float	dpPL[2];
@@ -1094,7 +993,7 @@ inline void		computeVegetVertexLightingForceBestSided(const CVector &rotNormal, 
 	CRGBA	resColor;
 
 
-	// compute front-facing coloring.
+	// compute best-facing coloring.
 	{
 		// Compute Sun Light.
 		dpSun= rotNormal*sunDir;
@@ -1127,20 +1026,9 @@ inline void		computeVegetVertexLightingForceBestSided(const CVector &rotNormal, 
 		resColor.A= primaryRGBA.A;
 
 		// copy to dest
-		*dstFront= resColor;
+		*dst= resColor;
 	}
 
-	// If 2Sided
-	if(instanceDoubleSided)
-	{
-		// Since forceBestSided, same color as front_facing
-
-		// Keep correct V of Dynamic Lightmap UV encoded in secondaryRGBA Alpha part.
-		resColor.A= secondaryRGBA.A;
-
-		// copy to dest
-		*dstBack= resColor;
-	}
 }
 
 
@@ -1200,7 +1088,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		primaryRGBA.R= diffuseRGBA.R;
 		primaryRGBA.G= diffuseRGBA.G;
 		primaryRGBA.B= diffuseRGBA.B;
-		// useFull if 2Sided
+		// may not be useFull (2Sided lighting no more supported)
 		secondaryRGBA= primaryRGBA;
 	}
 
@@ -1307,10 +1195,8 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 	// dst info
 	uint	dstNormalOff= (destLighted? dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_NORMAL) : 0);
-	// got 2nd color if really lighted (for ambient) or if 2Sided.
-	uint	dstColor1Off= ( (destLighted||instanceDoubleSided)? 
-		dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR1) : 0);
 	uint	dstColor0Off= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR0);
+	uint	dstColor1Off= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR1);
 	uint	dstTex0Off= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_TEX0);
 	uint	dstBendOff= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_BENDINFO);
 	uint	dstCenterOff= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_CENTER);
@@ -1397,8 +1283,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 				*(CVector*)(dstPtr + dstNormalOff)= normalMat.mulVector( *(CVector*)(srcPtr + srcNormalOff) );
 			}
 			// If destLighted, secondaryRGBA is the ambient
-			// else if(instanceDoubleSided), secondaryRGBA is backface color.
-			// else, still important to copy secondaryRGBA, because alpha part contains Dynamic LightMap V.
+			// else secondaryRGBA is used only for Alpha (DLM uv.v).
 			*(CRGBA*)(dstPtr + dstColor1Off)= secondaryRGBA;
 		}
 		else
@@ -1413,19 +1298,19 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 			// Do the compute.
 			if(!bestSidedPrecomputeLighting)
 			{
-				computeVegetVertexLighting(rotNormal, instanceDoubleSided, 
+				computeVegetVertexLighting(rotNormal, 
 					_DirectionalLight, primaryRGBA, secondaryRGBA, 
-					vegetLex, diffusePL, 
-					(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );
+					vegetLex, diffusePL, (CRGBA*)(dstPtr + dstColor0Off) );
 			}
 			else
 			{
-				computeVegetVertexLightingForceBestSided(rotNormal, instanceDoubleSided, 
+				computeVegetVertexLightingForceBestSided(rotNormal, 
 					_DirectionalLight, primaryRGBA, secondaryRGBA, 
-					vegetLex, diffusePL, 
-					(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );
+					vegetLex, diffusePL, (CRGBA*)(dstPtr + dstColor0Off) );
 			}
 
+			// copy secondaryRGBA, used only for Alpha (DLM uv.v).
+			*(CRGBA*)(dstPtr + dstColor1Off)= secondaryRGBA;
 		}
 
 
@@ -2009,8 +1894,6 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 				bool	doubleSided= doubleSidedRdrPass(rdrPass);
 				// set the 2Sided flag in the material
 				_VegetableMaterial.setDoubleSided( doubleSided );
-				// must enable VP DoubleSided coloring
-				driver->enableVertexProgramDoubleSidedColor(doubleSided);
 
 
 				// Activate the unique material.
@@ -2228,9 +2111,6 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 	// disable VertexProgram.
 	driver->activeVertexProgram(NULL);
 
-	// reset state to default.
-	driver->enableVertexProgramDoubleSidedColor(false);
-
 
 	// restore Fog.
 	driver->enableFog(bkupFog);
@@ -2271,8 +2151,6 @@ void		CVegetableManager::setupRenderStateForBlendLayerModel(IDriver *driver)
 
 	// setup doubleSidedmaterial for this rdrPass.
 	bool	doubleSided= doubleSidedRdrPass(rdrPass);
-	// must enable VP DoubleSided coloring
-	driver->enableVertexProgramDoubleSidedColor(doubleSided);
 
 	// Activate the unique material (correclty setuped for AlphaBlend in render()).
 	driver->setupMaterial(_VegetableMaterial);
@@ -2303,9 +2181,6 @@ void		CVegetableManager::exitRenderStateForBlendLayerModel(IDriver *driver)
 {
 	// disable VertexProgram.
 	driver->activeVertexProgram(NULL);
-
-	// reset state to default.
-	driver->enableVertexProgramDoubleSidedColor(false);
 
 	// restore Fog.
 	driver->enableFog(_BkupFog);
@@ -2540,12 +2415,9 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 	const CVertexBuffer	&dstVBInfo= allocator->getSoftwareVertexBuffer();
 
 	uint	srcNormalOff= (instanceLighted? shape->VB.getNormalOff() : 0);
-
-	// got 2nd color if really lighted (for ambient) or if 2Sided.
-	uint	dstColor1Off= ( (destLighted||instanceDoubleSided)? 
-		dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR1) : 0);
 	uint	dstColor0Off= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR0);
-
+	uint	dstColor1Off= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR1);
+	
 
 
 	// For all vertices, recompute lighting.
@@ -2581,17 +2453,15 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 			// Do the compute.
 			if(!bestSidedPrecomputeLighting)
 			{
-				computeVegetVertexLighting(rotNormal, instanceDoubleSided, 
+				computeVegetVertexLighting(rotNormal, 
 					_DirectionalLight, primaryRGBA, secondaryRGBA, 
-					vegetLex, diffusePL, 
-					(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );
+					vegetLex, diffusePL, (CRGBA*)(dstPtr + dstColor0Off) );
 			}
 			else
 			{
-				computeVegetVertexLightingForceBestSided(rotNormal, instanceDoubleSided, 
+				computeVegetVertexLightingForceBestSided(rotNormal, 
 					_DirectionalLight, primaryRGBA, secondaryRGBA, 
-					vegetLex, diffusePL, 
-					(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );
+					vegetLex, diffusePL, (CRGBA*)(dstPtr + dstColor0Off) );
 			}
 
 		}

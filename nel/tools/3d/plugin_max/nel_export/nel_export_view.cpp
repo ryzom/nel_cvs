@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.38 2002/08/27 14:36:24 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.39 2002/08/28 15:32:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -583,7 +583,7 @@ void CNelExport::viewMesh (TimeValue time)
 		}
 		else
 		{
-			// Setup ambient light
+			/*// Setup ambient light
 			view->setAmbientColor (_ExportNel->getAmbientColor (time));
 
 			// Build light vector
@@ -599,7 +599,7 @@ void CNelExport::viewMesh (TimeValue time)
 				// Insert each lights
 				for (uint light=0; light<vectLight.size(); light++)
 					view->setLight (light, vectLight[light]);
-			}
+			}*/
 		}
 
 		// Reset the camera

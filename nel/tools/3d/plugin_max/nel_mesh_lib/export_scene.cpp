@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.24 2002/08/27 14:36:25 corvazier Exp $
+ * $Id: export_scene.cpp,v 1.25 2002/08/28 15:32:57 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -838,6 +838,7 @@ void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, I
 	}
 	else
 	{
+		/*
 		// Setup ambient light
 		driver.setAmbientColor (getAmbientColor (tvTime));
 		scene.setAmbientGlobal (getAmbientColor (tvTime));
@@ -863,6 +864,7 @@ void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, I
 				driver.setLight (light, vectLight[light]);
 			}
 		}
+		*/
 	}
 
 	_Options.FeedBack = NULL;

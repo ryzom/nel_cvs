@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.16 2002/09/25 09:12:55 corvazier Exp $
+ * $Id: primitive_world_image.cpp,v 1.17 2003/03/13 17:21:12 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -941,7 +941,9 @@ void CPrimitiveWorldImage::precalcPos (CMovePrimitive &primitive)
 		_OBData.PointPosY[3]=sinus*(-halfWidth)+cosinus*halfDepth+_3dInitPosition.y;
 
 		// Direction
-		double oneOverLength[2]= { 1 / primitive.getLength(0), 1 / primitive.getLength(1) };
+		double length0 = (primitive.getLength(0)==0)? 0.001 : primitive.getLength(0);
+		double length1 = (primitive.getLength(1)==0)? 0.001 : primitive.getLength(1);
+		double oneOverLength[2]= { 1 / length0, 1 / length1 };
 
 		// Direction
 		uint i;

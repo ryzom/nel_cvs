@@ -1,7 +1,7 @@
 /** \file eval_num_expr.cpp
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.cpp,v 1.5 2002/09/03 10:25:07 corvazier Exp $
+ * $Id: eval_num_expr.cpp,v 1.6 2003/03/13 17:21:12 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1011,7 +1011,14 @@ CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TT
 				v0 *= v1;
 				break;
 			case Div:
-				v0 /= v1;
+				if (v1 == 0)
+				{
+					return DividByZero;
+				}
+				else
+				{
+					v0 /= v1;
+				}
 				break;
 			case Remainder:
 				v0 = fmod (v0, v1);
@@ -1274,6 +1281,7 @@ const char *CEvalNumExpr::_ErrorString[ReturnValueCount]=
 	"Should not be an unary operator",
 	"Should be the end of the expression",
 	"Should be a double quote",
+	"Divid by zero",
 };
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file eval_num_expr.h
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.h,v 1.6 2002/09/03 10:25:07 corvazier Exp $
+ * $Id: eval_num_expr.h,v 1.7 2003/03/13 17:21:12 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -55,6 +55,7 @@ public:
 		NotUnaryOperator,	// Should not be an unary operator
 		MustBeEnd,			// Should be the end
 		MustBeDoubleQuote,	// Should be a double quote
+		DividByZero,		// Divide by zero
 		ReturnValueCount
 	};
 

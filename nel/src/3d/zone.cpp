@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.14 2000/11/30 10:54:58 berenguier Exp $
+ * $Id: zone.cpp,v 1.15 2000/11/30 17:54:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,6 +186,7 @@ void			CZone::serial(NLMISC::IStream &f)
 {
 	uint	ver= f.serialVersion(0);
 
+	f.serialCheck((uint32)'ENOZ');
 	f.serial(ZoneId, ZoneBB, PatchBias, PatchScale, NumVertices);
 	f.serialCont(BorderVertices);
 	f.serialCont(Patchs);

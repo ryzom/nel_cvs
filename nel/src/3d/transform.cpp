@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.4 2000/11/21 18:11:35 valignat Exp $
+ * $Id: transform.cpp,v 1.5 2000/11/30 17:53:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,32 +47,16 @@ CTransform::CTransform()
 {
 	Touch.resize(Last);
 
-	Visibility= CHrcTrav::Herit;
-
-	Pos= Rot= CVector::Null;
-	Scale.set(1,1,1);
-	RotOrder= CMatrix::XYZ;
-	PosRotScaleMode= true;
-
 	LocalMatrix.identity();
-	BadLocalMatrix= false;
+	Visibility= CHrcTrav::Herit;
 }
 
 
 // ***************************************************************************
 void		CTransform::setMatrix(const CMatrix &mat)
 {
-	PosRotScaleMode= false;
 	LocalMatrix= mat;
 	foul();
-}
-// ***************************************************************************
-void		CTransform::getMatrix(CMatrix &mat) const
-{
-	// update the local matrix.
-	CTransform	*self= const_cast<CTransform*>(this);
-	self->updateLocalMatrix();
-	mat= self->LocalMatrix;
 }
 
 

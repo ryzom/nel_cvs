@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.4 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: transform.h,v 1.5 2000/11/30 17:53:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,7 @@ const NLMISC::CClassId		TransformId=NLMISC::CClassId(0x174750cb, 0xf952024);
 
 // ***************************************************************************
 /**
- * A basic node which provide orientation / translation / scale.
+ * A basic node which provide a matrix.
  * May be derived for each node who want to support such a scheme (CCamera, CLight, CInstance ... )
  *
  * No observer is provided for LightTrav and RenderTrav (not lightable, nor renderable => use default).
@@ -62,52 +62,6 @@ const NLMISC::CClassId		TransformId=NLMISC::CClassId(0x174750cb, 0xf952024);
  */
 class CTransform : public IModel
 {
-private:
-	// Add our own dirty states.
-	enum	TDirty
-	{
-		TransformDirty= IModel::Last,	// The matrix or the visibility state is modified.
-		Last
-	};
-
-private:
-	CHrcTrav::TVisibility	Visibility;
-	CVector					Pos, Rot, Scale;
-	CMatrix::TRotOrder		RotOrder;
-	bool					PosRotScaleMode;
-	CMatrix					LocalMatrix;
-	bool					BadLocalMatrix;		// The posrotscale has been modified.
-
-
-	void	foul()
-	{
-		IModel::foul();
-		Touch.set(TransformDirty);
-	}
-	void	indirect()
-	{
-		PosRotScaleMode= true;
-		BadLocalMatrix= true;
-		foul();
-	}
-
-	// update the matrix (usefull in indirect mode).
-	void	updateLocalMatrix()
-	{
-		if(BadLocalMatrix)
-		{
-			if(PosRotScaleMode)
-			{
-				// Recompute the local Matrix.
-				LocalMatrix.identity();
-				LocalMatrix.translate(Pos);
-				LocalMatrix.rotate(Rot, RotOrder);
-				LocalMatrix.scale(Scale);
-			}
-			BadLocalMatrix= false;
-		}
-	}
-
 public:
 	/// Call at the begining of the program, to register the model, and the basic observers.
 	static	void	registerBasic();
@@ -118,42 +72,11 @@ public:
 	/// Constructor
 	CTransform();
 
-	/** \name Pos/Rot/Scale Matrix operations.
-	 * The set() method enter the transform in a indirect mode: the localmatrix is computed from the following method.
-	 * The get() method work only in indirect mode.
-	 */
-	//@{
-	/// Just reset the indirect mode to default.
-	void		reset() { indirect(); LocalMatrix.identity(); Pos= Rot= CVector::Null; Scale.set(1,1,1); RotOrder= CMatrix::XYZ;}
-	void		setPos(const CVector &pos) { indirect(); Pos= pos;}
-	void		setRot(const CVector &rot) { indirect(); Rot= rot;}
-	void		addPos(const CVector &pos) { indirect(); Pos+= pos;}
-	void		addRot(const CVector &rot) { indirect(); Rot+= rot;}
-	void		setScale(const CVector &scale) { indirect(); Scale= scale;}
-	void		setRotOrder(CMatrix::TRotOrder order) { indirect(); RotOrder= order;}
-	void		getPos(CVector &pos) const {pos= Pos;}
-	void		getRot(CVector &rot) const {rot= Rot;}
-	void		getScale(CVector &scale) const {scale= Scale;}
-	void		getRotOrder(CMatrix::TRotOrder &order) const { order= RotOrder;}
-	CVector		getPos() const {return Pos;}
-	CVector		getRot() const {return Rot;}
-	CVector		getScale() const {return Scale;}
-	CMatrix::TRotOrder	getRotOrder() const {return RotOrder;}
-	// TODO: set/get pivots, set/get shear.
-	//@}
-
 
 	/// \name Direct Matrix operations.
 	//@{
-	/** The setMatrix() enter the transform in a Direct mode: LocalMatrix= mat.
-	 * The direct get*() methods won't work after this.
-	 */
-	void		setMatrix(const CMatrix &mat);
-	void		getMatrix(CMatrix &mat) const;
-	CMatrix		getMatrix() const
-	{
-		CMatrix	ret; getMatrix(ret); return ret;
-	}
+	void			setMatrix(const CMatrix &mat);
+	const CMatrix	&getMatrix() const	{return LocalMatrix;}
 	//@}
 
 
@@ -167,14 +90,32 @@ public:
 	CHrcTrav::TVisibility	getVisibility() {return Visibility;}
 
 
+// ********
+private:
+	// Add our own dirty states.
+	enum	TDirty
+	{
+		TransformDirty= IModel::Last,	// The matrix or the visibility state is modified.
+		Last
+	};
+
+private:
+	CHrcTrav::TVisibility	Visibility;
+	CMatrix					LocalMatrix;
+
+
+	void	foul()
+	{
+		IModel::foul();
+		Touch.set(TransformDirty);
+	}
+
 protected:
 	/// Implement the clean method.
 	virtual void	clean()
 	{
 		IModel::clean();
-
 		// Clean up the model.
-		updateLocalMatrix();
 		Touch.clear(TransformDirty);
 	}
 

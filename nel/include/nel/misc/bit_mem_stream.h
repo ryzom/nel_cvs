@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.16 2003/01/14 13:27:04 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.17 2003/01/20 14:18:33 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -31,6 +31,9 @@
 
 
 namespace NLMISC {
+
+
+class CBitSet;
 
 
 /**
@@ -171,10 +174,26 @@ public:
 		}
 	}
 
-	/* Rewrite the nbits lowest bits of a value at the specified position bitpos of the current output bit stream.
-	 * Precondition: bitpos+nbits <= the current length in bit of the stream.
+	/** In a output bit stream, serialize nbits bits (no matter their value).
+	 * Works even if the number of bits to add is larger than 64. See also poke() and pokeBits().
+	 */
+	void			reserveBits( uint nbits );
+
+	/** Rewrite the nbits lowest bits of a value at the specified position bitpos of the current output bit stream.
+	 * Precondition: bitpos+nbits <= the current length in bit of the stream. See also reserveBits().
 	 */
 	void			poke( uint32 value, uint bitpos, uint nbits );
+
+	/** Rewrite the bitfield at the specified position bitpos of the current output bit stream.
+	 * The size of the bitfield is *not* written into the stream (unlike serialCont()).
+	 * Precondition: bitpos+bitfield.size() <= the current length in bit of the stream. See also reserveBits().
+	 */
+	void			pokeBits( const NLMISC::CBitSet& bitfield, uint bitpos );
+
+	/** Read bitfield.size() bits from the input stream to fill the bitfield.
+	 * It means you have to know the size and to resize the bitfield yourself.
+	 */
+	void			readBits( NLMISC::CBitSet& bitfield );
 
 	/// Template serialisation (should take the one from IStream)
     template<class T>

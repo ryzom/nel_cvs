@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.23 2003/01/14 13:27:32 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.24 2003/01/20 14:17:15 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdmisc.h"
 
 #include "nel/misc/bit_mem_stream.h"
+#include "nel/misc/bit_set.h"
 
 using namespace std;
 
@@ -253,6 +254,22 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 
 
 /*
+ * In a output bit stream, serialize nbits bits (no matter their value).
+ * Works even if the number of bits to add is larger than 64. See also poke() and pokeBits().
+ */
+void	CBitMemStream::reserveBits( uint nbits )
+{
+	uint32 v = 0;
+	while ( nbits > 32 )
+	{
+		serial( v, 32 );
+		nbits -= 32;
+	}
+	serial( v, nbits );
+}
+
+
+/*
  * Helper for poke(), to write a value inside an output stream
  */
 void	CBitMemStream::serialPoke( uint32 value, uint nbits )
@@ -307,7 +324,6 @@ void	CBitMemStream::poke( uint32 value, uint bitpos, uint nbits )
 	nlassert( (nbits <= 32) && (nbits != 0) );
 	nlassert( ! isReading() );
 	nlassert( bitpos+nbits <= (uint)getPosInBit() );
-	uint origSize = _Buffer.size();
 #endif
 
 	// Save the current pointers of the stream, and make them point to the required position
@@ -323,10 +339,67 @@ void	CBitMemStream::poke( uint32 value, uint bitpos, uint nbits )
 	// Restore the current pointers
 	_FreeBits = savedFreeBits;
 	_BufPos = savedBufPos;
+}
 
+
+/* Rewrite the bitfield at the specified position bitpos of the current output bit stream.
+ * The size of the bitfield is *not* written into stream (unlike serialCont()).
+ * Precondition: bitpos+bitfield.size() <= the current length in bit of the stream. See also reserveBits().
+ */
+void	CBitMemStream::pokeBits( const CBitSet& bitfield, uint bitpos )
+{
 #ifdef NL_DEBUG
-	nlassert( _Buffer.size() == origSize );
+	nlassert( ! isReading() );
+	nlassert( bitpos+bitfield.size() <= (uint)getPosInBit() );
 #endif
+
+	// Save the current pointers of the stream, and make them point to the required position
+	uint savedFreeBits = _FreeBits;
+	uint bytepos = bitpos >> 3;
+	_FreeBits = 8 - (bitpos - (bytepos << 3));
+	uint8 *savedBufPos = _BufPos;
+	_BufPos = _Buffer.getPtr() + bytepos;
+
+	// Serial
+	const vector<uint32>& uintVec = bitfield.getVector();
+	if ( ! uintVec.empty() )
+	{
+		for ( uint i=0; i<uintVec.size()-1; ++i )
+		{
+			serialPoke( uintVec[i], 32 );
+		}
+		serialPoke( uintVec.back(), bitfield.size() % 32 );
+	}
+
+	// Restore the current pointers
+	_FreeBits = savedFreeBits;
+	_BufPos = savedBufPos;
+}
+
+
+/* Read nbits from the input stream to fill the bitfield.
+ * It means you have to know its size.
+ */
+void	CBitMemStream::readBits( NLMISC::CBitSet& bitfield )
+{
+#ifdef NL_DEBUG
+	nlassert( isReading() );
+#endif
+	uint len = bitfield.size();
+	if ( len != 0 )
+	{
+		uint i = 0;
+		uint32 v;
+		while ( len > 32 )
+		{
+			serial( v, 32 );
+			bitfield.setUint( v, i );
+			len -= 32;
+			++i;
+		}
+		serial( v, len );
+		bitfield.setUint( v, i );
+	}
 }
 
 

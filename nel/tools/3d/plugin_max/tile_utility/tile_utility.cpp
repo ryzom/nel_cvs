@@ -1,7 +1,7 @@
 /** \file tile_utility.cpp
  * <File description>
  *
- * $Id: tile_utility.cpp,v 1.2 2001/06/15 16:24:46 corvazier Exp $
+ * $Id: tile_utility.cpp,v 1.3 2001/08/09 17:19:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,6 @@
 #include <3d/tile_bank.h>
 #include <nel/misc/file.h>
 #include "../nel_patch_lib/rpo.h"
-#include "../nel_export/checkversion.h"
 
 #define TILE_UTILITY_CLASS_ID	Class_ID(0x2301c0, 0x4c156b46)
 
@@ -81,13 +80,6 @@ class Tile_utilityClassDesc:public ClassDesc2
 	int 			IsPublic() {return 1;}
 	void *			Create(BOOL loading = FALSE) 
 	{
-		static bool bPassed=false;
-		if (!bPassed)
-		{
-			bPassed=true;
-			CheckPluginVersion ("plugins max\\plugins\\neltileutility.dlu");
-		}
-
 		return &theTile_utility;
 	}
 	const TCHAR *	ClassName() {return "NeL Tile Bank";}
@@ -106,8 +98,46 @@ static BOOL CALLBACK Tile_utilityDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 	switch (msg) 
 	{
 	case WM_INITDIALOG:
-		//  load the sampler dropdown
-		theTile_utility.Init(hWnd);
+		{
+			//  load the sampler dropdown
+
+			// Get the module path
+			HMODULE hModule = GetModuleHandle("neltileutility.dlu");
+			if (hModule)
+			{
+				// Find the verion resource
+				HRSRC hRSrc=FindResource (hModule, MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
+				if (hRSrc)
+				{
+					HGLOBAL hGlobal=LoadResource (hModule, hRSrc);
+					if (hGlobal)
+					{
+						void *pInfo=LockResource (hGlobal);
+						if (pInfo)
+						{
+							uint *versionTab;
+							uint versionSize;
+							if (VerQueryValue (pInfo, "\\", (void**)&versionTab,  &versionSize))
+							{
+								// Get the pointer on the structure
+								VS_FIXEDFILEINFO *info=(VS_FIXEDFILEINFO*)versionTab;
+
+ 								// Setup version number
+								char version[512];
+								sprintf (version, "Version %d.%d.%d.%d", 
+									info->dwFileVersionMS>>16, 
+									info->dwFileVersionMS&0xffff, 
+									info->dwFileVersionLS>>16,  
+									info->dwFileVersionLS&0xffff);
+								SetWindowText (GetDlgItem (hWnd, IDC_VERSION), version);
+							}
+						}
+					}
+				}
+			}
+
+			theTile_utility.Init(hWnd);
+		}
 		break;
 	case WM_DESTROY:
 		//  load the sampler dropdown

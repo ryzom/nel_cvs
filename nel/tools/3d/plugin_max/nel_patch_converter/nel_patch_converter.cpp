@@ -1,7 +1,7 @@
 /** \file nel_patch_converter.cpp
  * <File description>
  *
- * $Id: nel_patch_converter.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: nel_patch_converter.cpp,v 1.2 2001/08/09 17:19:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -129,7 +129,40 @@ BOOL CALLBACK DlgProc_Panel(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 		// -----
 		case WM_INITDIALOG: 
 		{
-			SetDlgItemText(hWnd,ID_TST,"test");
+			// Get the module path
+			HMODULE hModule = GetModuleHandle("nelconvertpatch.dlm");
+			if (hModule)
+			{
+				// Find the verion resource
+				HRSRC hRSrc=FindResource (hModule, MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
+				if (hRSrc)
+				{
+					HGLOBAL hGlobal=LoadResource (hModule, hRSrc);
+					if (hGlobal)
+					{
+						void *pInfo=LockResource (hGlobal);
+						if (pInfo)
+						{
+							uint *versionTab;
+							uint versionSize;
+							if (VerQueryValue (pInfo, "\\", (void**)&versionTab,  &versionSize))
+							{
+								// Get the pointer on the structure
+								VS_FIXEDFILEINFO *info=(VS_FIXEDFILEINFO*)versionTab;
+
+ 								// Setup version number
+								char version[512];
+								sprintf (version, "Version %d.%d.%d.%d", 
+									info->dwFileVersionMS>>16, 
+									info->dwFileVersionMS&0xffff, 
+									info->dwFileVersionLS>>16,  
+									info->dwFileVersionLS&0xffff);
+								SetWindowText (GetDlgItem (hWnd, IDC_VERSION), version);
+							}
+						}
+					}
+				}
+			}
 		 	return TRUE;
 		}
 		// -----

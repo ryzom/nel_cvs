@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.182 2003/07/22 16:25:57 coutelas Exp $
+ * $Id: service.cpp,v 1.183 2003/08/19 15:34:49 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1199,7 +1199,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// if we can, try to setup where to write files
 		if ((var = ConfigFile.getVarPtr ("WriteFilesDirectory")) != NULL)
 		{
-			WriteFilesDirectory = CPath::standardizePath(var->asString());
+			WriteFilesDirectory = CPath::getFullPath(var->asString());
 		}
 
 
@@ -1215,7 +1215,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			SaveFilesDirectory = IService::getInstance()->ConfigFile.getVar ("SaveFilesDirectory").asString();
 		}
 		if (!SaveFilesDirectory.empty())
-			SaveFilesDirectory = CPath::standardizePath(SaveFilesDirectory);
+			SaveFilesDirectory = CPath::getFullPath(SaveFilesDirectory);
 		
 		//
 		// Call the user service init
@@ -1635,11 +1635,24 @@ NLMISC_DYNVARIABLE(string, RunningDirectory, "path where the service is running"
 NLMISC_DYNVARIABLE(string, LogDirectory, "path where the service is logging")
 {
 	if (get) *pointer = IService::getInstance()->_LogDir;
+	else IService::getInstance()->_LogDir = *pointer;
 }
 
 NLMISC_DYNVARIABLE(string, ConfigDirectory, "path where the config file is")
 {
 	if (get) *pointer = IService::getInstance()->_ConfigDir + IService::getInstance()->_LongName + ".cfg";
+}
+
+NLMISC_DYNVARIABLE(string, WriteFilesDirectory, "path where to save generic shard information (packed_sheets for example)")
+{
+	if (get) *pointer = IService::getInstance()->WriteFilesDirectory;
+	else IService::getInstance()->WriteFilesDirectory = *pointer;
+}
+
+NLMISC_DYNVARIABLE(string, SaveFilesDirectory, "path where to save specific shard information (shard time for example)")
+{
+	if (get) *pointer = IService::getInstance()->SaveFilesDirectory;
+	else IService::getInstance()->SaveFilesDirectory = *pointer;
 }
 
 NLMISC_DYNVARIABLE(string, Scroller, "current size in bytes of the sent queue size")

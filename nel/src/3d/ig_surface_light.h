@@ -1,7 +1,7 @@
 /** \file ig_surface_light.h
  * <File description>
  *
- * $Id: ig_surface_light.h,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: ig_surface_light.h,v 1.2 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -89,10 +89,10 @@ public:
 	 *	Position local to the LocalRetriever!! ie gp.LocalPosition.Estimated
 	 *	\param pointLightList list of pointlight to append pointLight influecnes
 	 *	\return false if retrieverIdentifier / surfaceId is not found. In this case pointLightList is not
-	 *	modified, and sunContribution is set to 255
+	 *	modified, and sunContribution is set to 255, and localAmbient is set to 0
 	 */
 	bool			getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const CVector &localPos,
-		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution);
+		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient);
 
 
 	float			getCellSize() const {return _CellSize;}

@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.14 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: instance_group_user.cpp,v 1.15 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -342,9 +342,10 @@ void			CInstanceGroupUser::setPointLightFactor(const std::string &lightGroupName
 // ***************************************************************************
 bool			CInstanceGroupUser::getStaticLightSetup(
 		const std::string &retrieverIdentifier, sint surfaceId, const NLMISC::CVector &localPos, 
-		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution)
+		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
 {
-	return _InstanceGroup.getStaticLightSetup(retrieverIdentifier, surfaceId, localPos, pointLightList, sunContribution);
+	return _InstanceGroup.getStaticLightSetup(retrieverIdentifier, surfaceId, localPos, pointLightList, 
+		sunContribution, localAmbient);
 }
 
 

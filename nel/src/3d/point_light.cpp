@@ -1,7 +1,7 @@
 /** \file point_light.cpp
  * <File description>
  *
- * $Id: point_light.cpp,v 1.2 2002/02/11 16:54:27 berenguier Exp $
+ * $Id: point_light.cpp,v 1.3 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,17 +51,27 @@ CPointLight::CPointLight() : _LightedModels(&_LightedModelListMemory)
 	_AttenuationBegin= 10;
 	_AttenuationEnd= 30;
 
+	// Default spot setup. this is arbitrary
+	_SpotDirection.set(0,1,0);
+	_SpotAngleBegin= float(NLMISC::Pi/4);
+	_SpotAngleEnd= float(NLMISC::Pi/2);
+
 	// compute AttenuationFactors only one time.
 	static	bool	done= false;
 	static	float	cAtt, lAtt, qAtt;
+	static	float	spotCOOD, spotCAE, spotEXP;
 	if(!done)
 	{
 		done= true;
 		computeAttenuationFactors();
+		computeSpotAttenuationFactors();
 		// bkup setup.
 		cAtt= _ConstantAttenuation;
 		lAtt= _LinearAttenuation;
 		qAtt= _QuadraticAttenuation;
+		spotCAE= _CosSpotAngleEnd;
+		spotCOOD= _OOCosSpotAngleDelta;
+		spotEXP= _SpotExponent;
 	}
 	else
 	{
@@ -69,6 +79,9 @@ CPointLight::CPointLight() : _LightedModels(&_LightedModelListMemory)
 		_ConstantAttenuation= cAtt;
 		_LinearAttenuation= lAtt;
 		_QuadraticAttenuation= qAtt;
+		_CosSpotAngleEnd= spotCAE;
+		_OOCosSpotAngleDelta= spotCOOD;
+		_SpotExponent= spotEXP;
 	}
 }
 
@@ -79,6 +92,16 @@ CPointLight::~CPointLight()
 	resetLightedModels();
 }
 
+
+// ***************************************************************************
+void			CPointLight::setType(TType type)
+{
+	_Type= type;
+}
+CPointLight::TType		CPointLight::getType() const
+{
+	return _Type;
+}
 
 // ***************************************************************************
 void			CPointLight::setupAttenuation(float attenuationBegin, float attenuationEnd)
@@ -92,6 +115,27 @@ void			CPointLight::setupAttenuation(float attenuationBegin, float attenuationEn
 	// update factors.
 	computeAttenuationFactors();
 
+}
+
+
+// ***************************************************************************
+void			CPointLight::setupSpotAngle(float spotAngleBegin, float spotAngleEnd)
+{
+	clamp(spotAngleBegin, 0.f, float(Pi));
+	clamp(spotAngleEnd, spotAngleBegin, float(Pi));
+	_SpotAngleBegin= spotAngleBegin;
+	_SpotAngleEnd= spotAngleEnd;
+
+	// update factors.
+	computeSpotAttenuationFactors();
+}
+
+
+// ***************************************************************************
+void			CPointLight::setupSpotDirection(const CVector &dir)
+{
+	_SpotDirection= dir;
+	_SpotDirection.normalize();
 }
 
 
@@ -126,9 +170,44 @@ void			CPointLight::computeAttenuationFactors()
 
 
 // ***************************************************************************
+void			CPointLight::computeSpotAttenuationFactors()
+{
+	// Factors for linear Attenuation.
+	float	cosSpotAngleBegin= (float)cosf(_SpotAngleBegin);
+	_CosSpotAngleEnd= (float)cos(_SpotAngleEnd);
+	if(cosSpotAngleBegin - _CosSpotAngleEnd > 0)
+		_OOCosSpotAngleDelta= 1.0f / (cosSpotAngleBegin - _CosSpotAngleEnd);
+	else
+		_OOCosSpotAngleDelta= 1e10f;
+
+	// compute an exponent such that at middleAngle, att is 0.5f.
+	float	caMiddle= (cosSpotAngleBegin + _CosSpotAngleEnd) /2;
+	float divid=(float)log (caMiddle);
+	if (divid==0.f)
+		divid=0.0001f;
+	_SpotExponent= (float)(log (0.5)/divid);
+}
+
+
+// ***************************************************************************
 void			CPointLight::serial(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	sint	ver= f.serialVersion(1);
+
+	if(ver>=1)
+	{
+		f.serialEnum(_Type);
+		f.serial(_SpotDirection);
+		f.serial(_SpotAngleBegin);
+		f.serial(_SpotAngleEnd);
+	}
+	else if(f.isReading())
+	{
+		_Type= PointLight;
+		_SpotDirection.set(0,1,0);
+		_SpotAngleBegin= float(NLMISC::Pi/4);
+		_SpotAngleEnd= float(NLMISC::Pi/2);
+	}
 
 	f.serial(_Position);
 	f.serial(_Ambient);
@@ -141,27 +220,89 @@ void			CPointLight::serial(NLMISC::IStream &f)
 	if(f.isReading())
 	{
 		computeAttenuationFactors();
+		computeSpotAttenuationFactors();
 	}
 
 }
 
 
 // ***************************************************************************
-float			CPointLight::computeLinearAttenuation(float dist) const
+float			CPointLight::computeLinearAttenuation(const CVector &pos) const
 {
+	return computeLinearAttenuation(pos, (pos - _Position).norm() );
+}
+
+// ***************************************************************************
+float			CPointLight::computeLinearAttenuation(const CVector &pos, float dist, float modelRadius) const
+{
+	float	gAtt;
+
+	// Attenuation Distance
 	if(_AttenuationEnd==0)
-		return 1;
+		gAtt= 1;
 	else
 	{
-		if(dist<_AttenuationBegin)
-			return 1;
-		else if(dist<_AttenuationEnd)
+		float	distMinusRadius= dist - modelRadius;
+		if(distMinusRadius<_AttenuationBegin)
+			gAtt= 1;
+		else if(distMinusRadius<_AttenuationEnd)
 		{
-			return (_AttenuationEnd - dist) * _OODeltaAttenuation;
+			gAtt= (_AttenuationEnd - distMinusRadius) * _OODeltaAttenuation;
 		}
 		else
-			return 0;
+			gAtt= 0;
 	}
+
+	// Spot Attenuation
+	if(_Type== SpotLight)
+	{
+		float	spotAtt;
+
+		// Compute unnormalized direction
+		CVector	dir= pos - _Position;
+		// get cosAngle(dir, SpotDirection):
+		float	cosAngleDirSpot= (dir*_SpotDirection) / dist;
+
+		// Modify with modelRadius. NB: made Only for big models.
+		if(modelRadius>0)
+		{
+			// If the pointLight is in the model, consider no spotAtt
+			if(modelRadius > dist)
+				spotAtt= 1;
+			else
+			{
+				// compute the angle of the cone made by the model sphere and the pointLightCenter.
+				float	cosAngleSphere= modelRadius / sqrtf( sqr(dist) + sqr(modelRadius) ); 
+				/* If this one is smaller than cosAngleDirSpot, it's mean that the angle of this cone is greater than the 
+					angleDirSpot, hence a part of the sphere "ps" exist such that _SportDirection*(ps-_Position).normed() == 1
+					=> no spotAttenuation
+				*/
+				if(cosAngleSphere < cosAngleDirSpot)
+					spotAtt= 1;
+				else
+				{
+					// Must compute cos( AngleDirSpot-AngleSphere )
+					float	sinAngleSphere= sqrtf(1 - sqr(cosAngleSphere));
+					float	sinAngleDirSpot= sqrtf(1 - sqr(cosAngleDirSpot));
+					float	cosDelta= cosAngleSphere * cosAngleDirSpot + sinAngleSphere * sinAngleDirSpot;
+
+					// spot attenuation on the exterior of the sphere
+					spotAtt= (cosDelta - _CosSpotAngleEnd) * _OOCosSpotAngleDelta;
+				}
+			}
+		}
+		else
+		{
+			// spot attenuation
+			spotAtt= (cosAngleDirSpot - _CosSpotAngleEnd) * _OOCosSpotAngleDelta;
+		}
+
+		// modulate
+		clamp(spotAtt, 0.f, 1.f);
+		gAtt*= spotAtt;
+	}
+
+	return gAtt;
 }
 
 // ***************************************************************************
@@ -177,8 +318,18 @@ void			CPointLight::setupDriverLight(CLight &light, uint8 factor)
 	specular.modulateFromuiRGBOnly(_Specular, ufactor);
 
 	// setup the pointLight
-	light.setupPointLight(ambient, diffuse, specular, _Position, CVector::Null, 
-		_ConstantAttenuation, _LinearAttenuation, _QuadraticAttenuation);
+	if(_Type == SpotLight )
+	{
+		light.setupSpotLight(ambient, diffuse, specular, _Position, _SpotDirection, 
+			_SpotExponent, float(NLMISC::Pi/2) ,
+			_ConstantAttenuation, _LinearAttenuation, _QuadraticAttenuation);
+	}
+	// PointLight or AmbientLight
+	else
+	{
+		light.setupPointLight(ambient, diffuse, specular, _Position, CVector::Null, 
+			_ConstantAttenuation, _LinearAttenuation, _QuadraticAttenuation);
+	}
 }
 
 
@@ -194,7 +345,8 @@ void			CPointLight::setupDriverLightUserAttenuation(CLight &light, uint8 factor)
 	diffuse.modulateFromuiRGBOnly(_Diffuse, ufactor);
 	specular.modulateFromuiRGBOnly(_Specular, ufactor);
 
-	// setup the pointLight, disabling attenuation.
+	// setup the pointLight, disabling attenuation. 
+	// NB: setup a pointLight even if it is a SpotLight because already attenuated
 	light.setupPointLight(ambient, diffuse, specular, _Position, CVector::Null, 
 		1, 0, 0);
 }

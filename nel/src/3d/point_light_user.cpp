@@ -1,7 +1,7 @@
 /** \file point_light_user.cpp
  * <File description>
  *
- * $Id: point_light_user.cpp,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: point_light_user.cpp,v 1.2 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,42 @@ float			CPointLightUser::getAttenuationBegin() const
 float			CPointLightUser::getAttenuationEnd() const
 {
 	return _PointLightModel->PointLight.getAttenuationEnd();
+}
+
+
+// ***************************************************************************
+void			CPointLightUser::enableSpotlight(bool enable) 
+{
+	if(enable)
+		_PointLightModel->PointLight.setType(CPointLight::SpotLight);
+	else
+		_PointLightModel->PointLight.setType(CPointLight::PointLight);
+}
+bool			CPointLightUser::isSpotlight() const 
+{
+	return _PointLightModel->PointLight.getType() == CPointLight::SpotLight;
+}
+void			CPointLightUser::setupSpotAngle(float spotAngleBegin, float spotAngleEnd) 
+{
+	_PointLightModel->PointLight.setupSpotAngle(spotAngleBegin, spotAngleEnd);
+}
+float			CPointLightUser::getSpotAngleBegin() const 
+{
+	return _PointLightModel->PointLight.getSpotAngleBegin();
+}
+float			CPointLightUser::getSpotAngleEnd() const 
+{
+	return _PointLightModel->PointLight.getSpotAngleEnd();
+}
+
+// ***************************************************************************
+void			CPointLightUser::setDeltaPosToSkeletonWhenOutOfFrustum(const CVector &deltaPos) 
+{
+	_PointLightModel->setDeltaPosToSkeletonWhenOutOfFrustum(deltaPos) ;
+}
+const CVector	&CPointLightUser::getDeltaPosToSkeletonWhenOutOfFrustum() const 
+{
+	return _PointLightModel->getDeltaPosToSkeletonWhenOutOfFrustum() ;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.33 2002/02/13 13:37:41 berenguier Exp $
+ * $Id: transform.cpp,v 1.34 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -368,6 +368,14 @@ void		CTransform::update()
 
 
 // ***************************************************************************
+void	CTransform::getAABBox(NLMISC::CAABBox &bbox) const
+{
+	bbox.setCenter(CVector::Null);
+	bbox.setHalfSize(CVector::Null);
+}
+
+
+// ***************************************************************************
 // ***************************************************************************
 // Observers.
 // ***************************************************************************
@@ -678,7 +686,7 @@ void		CTransform::resetLighting()
 
 // ***************************************************************************
 void			CTransform::freezeStaticLightSetup(CPointLight *pointLight[NL3D_MAX_LIGHT_CONTRIBUTION], 
-		uint numPointLights, uint8 sunContribution)
+		uint numPointLights, uint8 sunContribution, CPointLight *frozenAmbientlight)
 {
 	nlassert(numPointLights <= NL3D_MAX_LIGHT_CONTRIBUTION);
 
@@ -689,6 +697,9 @@ void			CTransform::freezeStaticLightSetup(CPointLight *pointLight[NL3D_MAX_LIGHT
 	_LightContribution.FrozenStaticLightSetup= true;
 	_LightContribution.NumFrozenStaticLight= numPointLights;
 	_LightContribution.SunContribution= sunContribution;
+	// setup the FrozenAmbientLight
+	_LightContribution.FrozenAmbientLight= frozenAmbientlight;
+	// Setup other pointLights
 	uint i;
 	for(i=0;i<numPointLights;i++)
 	{
@@ -717,6 +728,8 @@ void			CTransform::unfreezeStaticLightSetup()
 	_LightContribution.NumFrozenStaticLight= 0;
 	// End the list
 	_LightContribution.PointLight[0]= NULL;
+	// No more FrozenAmbientLight
+	_LightContribution.FrozenAmbientLight= NULL;
 
 	// Don't need to update StaticLightSetup since no more exist.
 	_NeedUpdateFrozenStaticLightSetup= false;
@@ -746,7 +759,7 @@ void	CTransformLightObs::traverse(IObs *caller)
 			const CPointLight	*pl= transform->_LightContribution.PointLight[i];
 			// don't worry about the precision of floor, because of *255.
 			float	distToModel= (pl->getPosition() - worldModelPos).norm();
-			sint	attFactor= OptFastFloor( 255 * pl->computeLinearAttenuation(distToModel) );
+			sint	attFactor= OptFastFloor( 255 * pl->computeLinearAttenuation(worldModelPos, distToModel) );
 			transform->_LightContribution.AttFactor[i]= (uint8)attFactor;
 		}
 

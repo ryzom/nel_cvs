@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.h
  * UVisualCollisionEntity implementation.
  *
- * $Id: visual_collision_entity_user.h,v 1.5 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: visual_collision_entity_user.h,v 1.6 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,9 +98,10 @@ public:
 	}
 
 
-	virtual bool	getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution)
+	virtual bool	getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, 
+		uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
 	{
-		return _Entity->getStaticLightSetup(pos, pointLightList, sunContribution);
+		return _Entity->getStaticLightSetup(pos, pointLightList, sunContribution, localAmbient);
 	}
 
 

@@ -1,7 +1,7 @@
 /** \file ig_surface_light.cpp
  * <File description>
  *
- * $Id: ig_surface_light.cpp,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: ig_surface_light.cpp,v 1.2 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -67,7 +67,7 @@ void			CIGSurfaceLight::build(const TRetrieverGridMap &retrieverGridMap, float c
 			{
 				CSurfaceLightGrid::CCellCorner	&cell= grid.Cells[iCell];
 
-				// For all light id.
+				// For all point light id.
 				for(uint lid= 0; lid<CSurfaceLightGrid::NumLightPerCorner; lid++)
 				{
 					if(cell.Light[lid] == 0xFF)
@@ -75,6 +75,10 @@ void			CIGSurfaceLight::build(const TRetrieverGridMap &retrieverGridMap, float c
 					else
 						cell.Light[lid]= plRemap[cell.Light[lid]];
 				}
+
+				// remap ambient light
+				if(cell.LocalAmbientId!=0xFF)
+					cell.LocalAmbientId= plRemap[cell.LocalAmbientId];
 			}
 		}
 	}
@@ -100,12 +104,13 @@ void			CIGSurfaceLight::serial(NLMISC::IStream &f)
 
 // ***************************************************************************
 bool			CIGSurfaceLight::getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const CVector &localPos, 
-	std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution)
+	std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
 {
 	nlassert(_Owner);
 
 	// default
 	sunContribution= 255;
+	localAmbient.set(0,0,0,0);
 
 	ItRetrieverGridMap	it;
 	it= _RetrieverGridMap.find(retrieverIdentifier);
@@ -118,7 +123,7 @@ bool			CIGSurfaceLight::getStaticLightSetup(const std::string &retrieverIdentifi
 		return false;
 
 	// Else, ok, get it.
-	rlg.Grids[surfaceId].getStaticLightSetup(localPos, pointLightList, sunContribution, *this);
+	rlg.Grids[surfaceId].getStaticLightSetup(localPos, pointLightList, sunContribution, *this, localAmbient);
 	return true;
 }
 

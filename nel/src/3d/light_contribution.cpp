@@ -1,7 +1,7 @@
 /** \file light_contribution.cpp
  * <File description>
  *
- * $Id: light_contribution.cpp,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: light_contribution.cpp,v 1.2 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,8 @@ CLightContribution::CLightContribution()
 	PointLight[0]= NULL;
 	// default is to take fully light from the sun.
 	SunContribution= 255;
+
+	FrozenAmbientLight= NULL;
 }
 
 

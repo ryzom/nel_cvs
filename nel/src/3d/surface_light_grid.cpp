@@ -1,7 +1,7 @@
 /** \file surface_light_grid.cpp
  * <File description>
  *
- * $Id: surface_light_grid.cpp,v 1.2 2002/02/13 17:44:41 lecroart Exp $
+ * $Id: surface_light_grid.cpp,v 1.3 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -57,7 +57,8 @@ void		CSurfaceLightGrid::serial(NLMISC::IStream &f)
 
 
 // ***************************************************************************
-void		CSurfaceLightGrid::getStaticLightSetup(const CVector &localPos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, CIGSurfaceLight &igsl) const
+void		CSurfaceLightGrid::getStaticLightSetup(const CVector &localPos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, 
+	CIGSurfaceLight &igsl, NLMISC::CRGBA &localAmbient) const
 {
 	// Get local coordinate to the grid.
 	float	xfloat= (localPos.x - Origin.x) * igsl.getOOCellSize();
@@ -98,6 +99,10 @@ void		CSurfaceLightGrid::getStaticLightSetup(const CVector &localPos, std::vecto
 	// For 4 corners.
 	uint	x,y;
 	uint	sunContribFixed= 0;
+	uint	rLocalAmbientFixed= 0;
+	uint	gLocalAmbientFixed= 0;
+	uint	bLocalAmbientFixed= 0;
+	uint	aLocalAmbientFixed= 0;
 	for(y=0;y<2;y++)
 	{
 		for(x=0;x<2;x++)
@@ -133,7 +138,23 @@ void		CSurfaceLightGrid::getStaticLightSetup(const CVector &localPos, std::vecto
 			//-------------
 			uint	xBi= (x==0)?256-xSub : xSub;
 			uint	yBi= (y==0)?256-ySub : ySub;
-			sunContribFixed+= cellCorner.SunContribution * xBi * yBi;
+			uint	mulBi= xBi * yBi;
+			sunContribFixed+= cellCorner.SunContribution * mulBi;
+
+
+			// BiLinear Ambient Contribution.
+			//-------------
+			// If FF, then take Sun Ambient => leave color and alpha To 0.
+			if(cellCorner.LocalAmbientId!=0xFF)
+			{
+				// take current ambient from pointLight
+				CRGBA	ambCorner= igPointLights[cellCorner.LocalAmbientId].getAmbient();
+				rLocalAmbientFixed+= ambCorner.R * mulBi;
+				gLocalAmbientFixed+= ambCorner.G * mulBi;
+				bLocalAmbientFixed+= ambCorner.B * mulBi;
+				// increase the influence of igPointLights in alpha
+				aLocalAmbientFixed+= 255 * mulBi;
+			}
 		}
 	}
 	// interpolate PointLights.
@@ -141,6 +162,13 @@ void		CSurfaceLightGrid::getStaticLightSetup(const CVector &localPos, std::vecto
 
 	// Final SunContribution
 	sunContribution= sunContribFixed>>16;
+
+	// Final SunContribution
+	localAmbient.R= rLocalAmbientFixed>>16;
+	localAmbient.G= gLocalAmbientFixed>>16;
+	localAmbient.B= bLocalAmbientFixed>>16;
+	localAmbient.A= aLocalAmbientFixed>>16;
+
 }
 
 

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.14 2002/02/11 16:54:27 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.15 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -239,6 +239,7 @@ void		CRenderTrav::resetLightSetup()
 	// setup the precise cache, and setup lights according to this cache?
 	// setup blackSun (factor==0).
 	_LastSunFactor= 0;
+	_LastSunAmbient.set(0,0,0,255);
 	CLight		light;
 	light.setupDirectional(CRGBA::Black, CRGBA::Black, CRGBA::Black, _SunDirection);
 	Driver->setLight(0, light);
@@ -277,26 +278,55 @@ void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution, bool 
 		// if the setup is !NULL
 		if(lightContribution)
 		{
+			// Compute SunAmbient / LocalAmbient
+			//-----------
+			CRGBA	finalAmbient;
+			// Different case if the contribution is frozen or not.
+			if(lightContribution->FrozenStaticLightSetup)
+			{
+				// Any FrozenAmbientLight provided??
+				if(lightContribution->FrozenAmbientLight)
+					// Take his current (maybe animated) ambient
+					finalAmbient= lightContribution->FrozenAmbientLight->getAmbient();
+				else
+					// Take the sun ones.
+					finalAmbient= SunAmbient;
+			}
+			else
+			{
+				// must interpolate between SunAmbient and localAmbient
+				uint	uAmbFactor= lightContribution->LocalAmbient.A;
+				// expand 0..255 to 0..256, to avoid loss of precision.
+				uAmbFactor+= uAmbFactor>>7;
+				// Blend, but LocalAmbient.r/g/b is already multiplied by a.
+				finalAmbient.modulateFromuiRGBOnly(SunAmbient, 256 - uAmbFactor);
+				finalAmbient.addRGBOnly(finalAmbient, lightContribution->LocalAmbient);
+			}
+			// Force Alpha to 255 for good cache test.
+			finalAmbient.A= 255;
+
+
 			// Setup the directionnal Sunlight.
 			//-----------
 			// expand 0..255 to 0..256, to avoid loss of precision.
 			uint	ufactor= lightContribution->SunContribution;
 			//	different SunLight as in cache ??
 			//	NB: sunSetup can't change during renderPass, so need only to test factor.
-			if(ufactor != _LastSunFactor)
+			if(ufactor != _LastSunFactor || finalAmbient != _LastSunAmbient)
 			{
 				// cache (before expanding!!)
 				_LastSunFactor= ufactor;
+				// Cache final ambient light
+				_LastSunAmbient= finalAmbient;
 
 				// expand to 0..256.
 				ufactor+= ufactor>>7;	// add 0 or 1.
 				// modulate color with factor of the lightContribution.
-				CRGBA	sunAmbient, sunDiffuse, sunSpecular;
-				sunAmbient.modulateFromuiRGBOnly(SunAmbient, ufactor);
+				CRGBA	sunDiffuse, sunSpecular;
 				sunDiffuse.modulateFromuiRGBOnly(SunDiffuse, ufactor);
 				sunSpecular.modulateFromuiRGBOnly(SunSpecular, ufactor);
 				// setup driver light
-				light.setupDirectional(sunAmbient, sunDiffuse, sunSpecular, _SunDirection);
+				light.setupDirectional(finalAmbient, sunDiffuse, sunSpecular, _SunDirection);
 				Driver->setLight(0, light);
 			}
 

@@ -1,7 +1,7 @@
 /** \file point_light.h
  * <File description>
  *
- * $Id: point_light.h,v 1.2 2002/02/11 16:54:27 berenguier Exp $
+ * $Id: point_light.h,v 1.3 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,8 +55,11 @@ class	CTransform;
  *	With the special sunLight, this is the only light which can interact with CTransform models in the
  *	standard lighting system.
  *
- *	Only Positionnal with or without attenuation are supported. No spot, no directionnal.
+ *	Only Positionnal with or without attenuation are supported. no directionnal.
  *	This restriction is for faster rendering, especially if VertexProgram is used.
+ *	New: Spot are managed but VertexProgrammed meshes won't use localAttenuation.
+ *	Special Ambiant are provided too but they are considered like PointLight for dynamic light.
+ *	They are used in a special way for static light in Igs.
  *
  * \author Lionel Berenguier
  * \author Nevrax France
@@ -70,9 +73,23 @@ public:
 	typedef	NLMISC::CSTLBlockList<CTransform*>	TTransformList;
 	typedef	TTransformList::iterator			ItTransformList;
 
+	enum	TType 
+	{
+		// The light is a point.
+		PointLight= 0, 
+
+		// The light is a spotlight with a cone.
+		SpotLight,
+
+		// The light is an Ambient PointLight in an Ig.
+		AmbientLight
+	};
+
+
 public:
 
 	/** Constructor
+	 *	Default type is PointLight.
 	 *	Default ambient is Black, Diffuse and Specular are white.
 	 *	Position is CVector::Null.
 	 *	Attenuation is 10-30.
@@ -84,6 +101,10 @@ public:
 
 	/// \name Light setup
 	// @{
+
+	/// set/get the type of the light.
+	void			setType(TType type);
+	TType			getType() const;
 
 	/// Set the position in WorldSpace.
 	void			setPosition(const CVector &v) {_Position= v;}
@@ -118,6 +139,24 @@ public:
 	float			getAttenuationEnd() const {return _AttenuationEnd;}
 
 
+	/** setup the spot AngleBegin and AngleEnd that define spot attenuation of the light. Usefull only if SpotLight
+	 *	NB: clamp(angleBegin, 0, PI); clamp(angleEnd, angleBegin, PI); Default is PI/4, PI/2
+	 */
+	void			setupSpotAngle(float spotAngleBegin, float spotAngleEnd);
+	/// get the begin radius of the SpotAngles.
+	float			getSpotAngleBegin() const {return _SpotAngleBegin;}
+	/// get the end radius of the SpotAngles.
+	float			getSpotAngleEnd() const {return _SpotAngleEnd;}
+
+
+	/** setup the spot Direction. Usefull only if SpotLight. Normalized internally
+	 *	Default is (0, 1, 0)
+	 */
+	void			setupSpotDirection(const CVector &dir);
+	/// get the spot Direction
+	const CVector	&getSpotDirection() const {return _SpotDirection;}
+
+
 	// serial
 	void			serial(NLMISC::IStream &f);
 
@@ -129,8 +168,14 @@ public:
 	/// \name Render tools.
 	// @{
 
-	/// Compute a linear attenuation for a given distance from the pointLight. Return [0,1]
-	float			computeLinearAttenuation(float dist) const;
+	/// Compute a linear attenuation from a point according to attenuation and spot setup. Return [0,1]
+	float			computeLinearAttenuation(const CVector &pos) const;
+
+	/** Compute a linear attenuation from a point and precomputed distance according to attenuation and spot setup. Return [0,1]
+	 *	\param modelRadius if !0, suppose the point is a sphere, and compute the approximate Max attenuation from every point on
+	 *	this sphere
+	 */
+	float			computeLinearAttenuation(const CVector &pos, float precomputedDist, float modelRadius=0) const;
 
 	/// setup the CLight with current pointLight state. factor is used to modulate the colors.
 	void			setupDriverLight(CLight &light, uint8 factor);
@@ -154,20 +199,33 @@ public:
 
 // ******************
 private:
+
+	// Type of the light
+	TType			_Type;
+
 	// The position.
-	CVector		_Position;
+	CVector			_Position;
 
 	// The light color.
-	NLMISC::CRGBA		_Ambient;
-	NLMISC::CRGBA		_Diffuse;
-	NLMISC::CRGBA		_Specular;
+	NLMISC::CRGBA	_Ambient;
+	NLMISC::CRGBA	_Diffuse;
+	NLMISC::CRGBA	_Specular;
 
 	// Attenuation. setup / preComputed.
-	float		_AttenuationBegin, _AttenuationEnd;
-	float		_OODeltaAttenuation;
-	float		_ConstantAttenuation;
-	float		_LinearAttenuation;
-	float		_QuadraticAttenuation;
+	float			_AttenuationBegin, _AttenuationEnd;
+	float			_OODeltaAttenuation;
+	float			_ConstantAttenuation;
+	float			_LinearAttenuation;
+	float			_QuadraticAttenuation;
+
+	// Spot Setup
+	CVector			_SpotDirection;
+	float			_SpotAngleBegin;
+	float			_SpotAngleEnd;
+	float			_CosSpotAngleEnd;
+	// 1 / (_CosSpotAngleBegin * _CosSpotAngleEnd)
+	float			_OOCosSpotAngleDelta;
+	float			_SpotExponent;
 
 
 	// The memory for list of LightedModels
@@ -177,6 +235,7 @@ private:
 
 
 	void		computeAttenuationFactors();
+	void		computeSpotAttenuationFactors();
 
 };
 

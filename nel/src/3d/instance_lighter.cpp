@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.5 2002/02/15 15:21:50 corvazier Exp $
+ * $Id: instance_lighter.cpp,v 1.6 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,6 +57,7 @@ CInstanceLighter::CLightDesc::CLightDesc ()
 	GridCellSize=4;
 	Shadow= true;
 	OverSampling= 0;
+	DisableSunContribution= false;
 }
 
 // ***************************************************************************
@@ -345,6 +346,7 @@ void CInstanceLighter::light (const CInstanceGroup &igIn, CInstanceGroup &igOut,
 					CSurfaceLightGrid::CCellCorner		defaultCellCorner;
 					defaultCellCorner.SunContribution= 0;
 					defaultCellCorner.Light[0]= 0xFF;
+					defaultCellCorner.LocalAmbientId= 0xFF;
 					
 					// Init the grid.
 					surfDst.Origin= surfSrc.Origin;
@@ -416,7 +418,7 @@ void CInstanceLighter::light (const CInstanceGroup &igIn, CInstanceGroup &igOut,
 			name = CPath::lookup (name, false, false);
 
 			// Find the shape in the bank
-			iteMap= shapeMap.find(name);
+			iteMap= shapeMap.find (name);
 			if (iteMap==shapeMap.end())
 			{
 				// Input file
@@ -641,8 +643,50 @@ void	CInstanceLighter::computeSunContribution(const CLightDesc &lightDesc, std::
 	dummyPointLightFromLandscape.reserve(1024);
 
 
+	// If DisableSunContribution, easy, 
+	if(lightDesc.DisableSunContribution)
+	{
+		// Light all instances.
+		//==========
+		for(i=0; i<(sint)_Instances.size(); i++)
+		{
+			// If staticLight not enabled, skip.
+			if( !_Instances[i].StaticLightEnabled )
+				continue;
+
+			// fill SunContribution to 0
+			_Instances[i].SunContribution= 0;
+		}
+
+		// Light SurfaceGrid Cells.
+		//==========
+		if(_IGSurfaceLightBuild)
+		{
+			// Begin cell iteration
+			beginCell();
+			// For all surface cell corners
+			while( !isEndCell() )
+			{
+				// get the current cell and cellInfo iterated.
+				CIGSurfaceLightBuild::CCellCorner	&cellInfo= getCurrentCellInfo();
+				CSurfaceLightGrid::CCellCorner		&cell= getCurrentCell();
+
+				// if the cell corner lies in the polygon surface.
+				if(cellInfo.InSurface)
+				{
+					// fill SunContribution to 0
+					cell.SunContribution= 0;
+					// copy it to cellInfo
+					cellInfo.SunContribution= cell.SunContribution;
+				}
+
+				// next cell
+				nextCell();
+			}
+		}
+	}
 	// If no Raytrace Shadow, easy, 
-	if(!lightDesc.Shadow)
+	else if(!lightDesc.Shadow)
 	{
 		// Light all instances.
 		//==========
@@ -663,7 +707,8 @@ void	CInstanceLighter::computeSunContribution(const CLightDesc &lightDesc, std::
 				uint8	landSunContribution;
 				dummyPointLightFromLandscape.clear();
 				// If find faces under me
-				if(VCE->getStaticLightSetup(pos, dummyPointLightFromLandscape, landSunContribution) )
+				NLMISC::CRGBA	dummyAmbient;
+				if(VCE->getStaticLightSetup(pos, dummyPointLightFromLandscape, landSunContribution, dummyAmbient) )
 				{
 					_Instances[i].SunContribution= landSunContribution;
 				}
@@ -745,7 +790,8 @@ void	CInstanceLighter::computeSunContribution(const CLightDesc &lightDesc, std::
 				uint8	landSunContribution;
 				dummyPointLightFromLandscape.clear();
 				// If find faces under me
-				if(VCE->getStaticLightSetup(pos, dummyPointLightFromLandscape, landSunContribution) )
+				NLMISC::CRGBA	dummyAmbient;
+				if(VCE->getStaticLightSetup(pos, dummyPointLightFromLandscape, landSunContribution, dummyAmbient) )
 				{
 					_Instances[i].SunContribution= landSunContribution;
 					landUsed= true;
@@ -908,6 +954,19 @@ bool	CInstanceLighter::CPointLightRT::testRaytrace(const CVector &v, sint instan
 	if(!BSphere.include(v))
 		return false;
 
+	// If Ambient light, just skip
+	if(PointLight.getType()== CPointLight::AmbientLight)
+		return false;
+
+	// If SpotLight verify in angle radius.
+	if(PointLight.getType()== CPointLight::SpotLight)
+	{
+		float	att= PointLight.computeLinearAttenuation(v);
+		if (att==0)
+			return false;
+	}
+
+
 	// Select in the cubeGrid
 	FaceCubeGrid.select(v);
 	// For all faces selected
@@ -1009,28 +1068,32 @@ void			CInstanceLighter::compilePointLightRT(uint gridSize, float gridCellSize, 
 			// Create the cubeGrid
 			plRT.FaceCubeGrid.create(plRT.PointLight.getPosition(), NL3D_INSTANCE_LIGHTER_CUBE_GRID_SIZE);
 
-			// Select only obstacle Faces around the light. Other are not usefull
-			CAABBox	bbox;
-			bbox.setCenter(plRT.PointLight.getPosition());
-			float	hl= plRT.PointLight.getAttenuationEnd();
-			bbox.setHalfSize(CVector(hl,hl,hl));
-			obstacleGrid.select(bbox.getMin(), bbox.getMax());
-
-			// For all faces, fill the cubeGrid.
-			CQuadGrid<CTriangle*>::CIterator	itObstacle;
-			itObstacle= obstacleGrid.begin();
-			while( itObstacle!=obstacleGrid.end() )
+			// AmbiantLIghts: do nothing.
+			if(plRT.PointLight.getType()!=CPointLight::AmbientLight)
 			{
-				CTriangle	&tri= *(*itObstacle);
-				// Test BackFace culling. Only faces which are BackFace the point light are inserted.
-				// This is to avoid AutoOccluding problems
-				if( tri.getPlane() * plRT.BSphere.Center < 0)
-				{
-					// Insert the triangle in the CubeGrid
-					plRT.FaceCubeGrid.insert( tri.Triangle, &tri);
-				}
+				// Select only obstacle Faces around the light. Other are not usefull
+				CAABBox	bbox;
+				bbox.setCenter(plRT.PointLight.getPosition());
+				float	hl= plRT.PointLight.getAttenuationEnd();
+				bbox.setHalfSize(CVector(hl,hl,hl));
+				obstacleGrid.select(bbox.getMin(), bbox.getMax());
 
-				itObstacle++;
+				// For all faces, fill the cubeGrid.
+				CQuadGrid<CTriangle*>::CIterator	itObstacle;
+				itObstacle= obstacleGrid.begin();
+				while( itObstacle!=obstacleGrid.end() )
+				{
+					CTriangle	&tri= *(*itObstacle);
+					// Test BackFace culling. Only faces which are BackFace the point light are inserted.
+					// This is to avoid AutoOccluding problems
+					if( tri.getPlane() * plRT.BSphere.Center < 0)
+					{
+						// Insert the triangle in the CubeGrid
+						plRT.FaceCubeGrid.insert( tri.Triangle, &tri);
+					}
+
+					itObstacle++;
+				}
 			}
 
 			// Compile the CubeGrid.
@@ -1110,6 +1173,10 @@ void			CInstanceLighter::processIGPointLightRT(std::vector<CPointLightNamed> &li
 		// get the point of the instance.
 		CVector		pos= inst.CenterPos;
 		
+		// Default: takes no LocalAmbientLight;
+		inst.LocalAmbientLight= NULL;
+		float	furtherAmbLight= 0;
+
 		// Compute Which light influences him.
 		//---------
 		lightInfs.clear();
@@ -1121,16 +1188,36 @@ void			CInstanceLighter::processIGPointLightRT(std::vector<CPointLightNamed> &li
 		{
 			CPointLightRT	*pl= *it;
 
-			// Test if really in the radius of the light or if no occlusion
+			// Test if really in the radius of the light, no occlusion, not an ambient, and in Spot Angle setup
 			if( pl->testRaytrace(pos, _CurrentInstanceComputed) )
 			{
 				// Ok, add the light to the lights which influence the instance
 				lightInfs.push_back(pl);
 			}
 
+			// Ambient Light ??
+			if( pl->PointLight.getType() == CPointLight::AmbientLight )
+			{
+				// If the instance is in radius of the ambiant light.
+				float	dRadius= pl->BSphere.Radius - (pl->BSphere.Center - pos).norm();
+				if(dRadius>0)
+				{
+					// Take the best ambient light: the one which is further from the circumference
+					if(dRadius > furtherAmbLight)
+					{
+						furtherAmbLight= dRadius;
+						inst.LocalAmbientLight= pl;
+					}
+				}
+			}
+
 			// next
 			it++;
 		}
+
+		// If ambientLight chosen, inc Ref count of it
+		if(inst.LocalAmbientLight)
+			inst.LocalAmbientLight->RefCount++;
 
 		// Choose the Best ones.
 		//---------
@@ -1189,6 +1276,10 @@ void			CInstanceLighter::processIGPointLightRT(std::vector<CPointLightNamed> &li
 				// get the point of the cell.
 				CVector		pos= cellInfo.CenterPos;
 				
+				// Default: takes no LocalAmbientLight;
+				cellInfo.LocalAmbientLight= NULL;
+				float	furtherAmbLight= 0;
+
 				// Compute Which light influences him.
 				//---------
 				lightInfs.clear();
@@ -1200,16 +1291,37 @@ void			CInstanceLighter::processIGPointLightRT(std::vector<CPointLightNamed> &li
 				{
 					CPointLightRT	*pl= *it;
 
-					// Test if really in the radius of the light or if no occlusion
+					// Test if really in the radius of the light, no occlusion, not an ambient, and in Spot Angle setup
 					if( pl->testRaytrace(pos, _CurrentInstanceComputed) )
 					{
 						// Ok, add the light to the lights which influence the cell
 						lightInfs.push_back(pl);
 					}
 
+					// Ambient Light ??
+					if( pl->PointLight.getType() == CPointLight::AmbientLight )
+					{
+						// If the instance is in radius of the ambiant light.
+						float	dRadius= pl->BSphere.Radius - (pl->BSphere.Center - pos).norm();
+						if(dRadius>0)
+						{
+							// Take the best ambient light: the one which is further from the circumference
+							if(dRadius > furtherAmbLight)
+							{
+								furtherAmbLight= dRadius;
+								cellInfo.LocalAmbientLight= pl;
+							}
+						}
+					}
+
 					// next
 					it++;
 				}
+
+				// If ambientLight chosen, inc Ref count of it
+				if(cellInfo.LocalAmbientLight)
+					((CPointLightRT*)cellInfo.LocalAmbientLight)->RefCount++;
+
 
 				// Choose the Best ones.
 				//---------
@@ -1277,10 +1389,12 @@ void			CInstanceLighter::processIGPointLightRT(std::vector<CPointLightNamed> &li
 		if( !_Instances[i].StaticLightEnabled )
 			continue;
 
+		CInstanceInfo				&instSrc= _InstanceInfos[i];
+		CInstanceGroup::CInstance	&instDst= _Instances[i];
+
+		// Do it for PointLights
 		for(uint lightId= 0; lightId<CInstanceGroup::NumStaticLightPerInstance; lightId++)
 		{
-			CInstanceInfo				&instSrc= _InstanceInfos[i];
-			CInstanceGroup::CInstance	&instDst= _Instances[i];
 			if(instSrc.Light[lightId] == NULL)
 			{
 				// Mark as unused.
@@ -1292,6 +1406,12 @@ void			CInstanceLighter::processIGPointLightRT(std::vector<CPointLightNamed> &li
 				instDst.Light[lightId]= instSrc.Light[lightId]->DstId;
 			}
 		}
+
+		// Do it for Ambientlight
+		if(instSrc.LocalAmbientLight == NULL)
+			instDst.LocalAmbientId= 0xFF;
+		else
+			instDst.LocalAmbientId= instSrc.LocalAmbientLight->DstId;
 	}
 
 	// For each cell, compress Point light info
@@ -1308,6 +1428,7 @@ void			CInstanceLighter::processIGPointLightRT(std::vector<CPointLightNamed> &li
 
 			if(cellInfo.InSurface)
 			{
+				// Do it for PointLights
 				for(uint lightId= 0; lightId<CSurfaceLightGrid::NumLightPerCorner; lightId++)
 				{
 					if(cellInfo.LightInfo[lightId] == NULL)
@@ -1321,6 +1442,12 @@ void			CInstanceLighter::processIGPointLightRT(std::vector<CPointLightNamed> &li
 						cell.Light[lightId]= reinterpret_cast<CPointLightRT*>(cellInfo.LightInfo[lightId])->DstId;
 					}
 				}
+
+				// Do it for Ambientlight
+				if(cellInfo.LocalAmbientLight == NULL)
+					cell.LocalAmbientId= 0xFF;
+				else
+					cell.LocalAmbientId= ((CPointLightRT*)cellInfo.LocalAmbientLight)->DstId;
 			}
 
 			// next cell
@@ -1383,8 +1510,7 @@ void	CInstanceLighter::lightIgSimple(CInstanceLighter &instLighter, const CInsta
 				name = CPath::lookup (name, false, false);
 
 				// Find the shape in the bank
-				iteMap= shapeMap.find(name);
-
+				iteMap= shapeMap.find (name);
 				if (iteMap==shapeMap.end())
 				{
 					// Input file
@@ -1674,6 +1800,9 @@ void			CInstanceLighter::dilateLightingOnSurfaceCells()
 						// Just Copy PointLight info.
 						for(uint lightId= 0; lightId<CSurfaceLightGrid::NumLightPerCorner; lightId++)
 							cell.Light[lightId]= nbCell.Light[lightId];
+						// Just Copy AmbientLight info.
+						cell.LocalAmbientId= nbCell.LocalAmbientId;
+
 
 						// For debug mesh only, copy z from nb cellInfo
 						cellInfo.CenterPos.z= nbCellInfo.CenterPos.z;

@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.19 2002/02/11 16:54:27 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.20 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,6 +62,17 @@ void		CTransformShape::getAABBox(NLMISC::CAABBox &bbox) const
 		bbox.setCenter(CVector::Null);
 		bbox.setHalfSize(CVector::Null);
 	}
+}
+
+
+// ***************************************************************************
+bool		CTransformShape::isBigLightable() const
+{
+	// By default a shape is considered big for lightable if it uses localAttenuation
+	if(Shape)
+		return Shape->useLightingLocalAttenuation ();
+	else
+		return false;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file light_contribution.h
  * <File description>
  *
- * $Id: light_contribution.h,v 1.2 2002/02/11 16:54:27 berenguier Exp $
+ * $Id: light_contribution.h,v 1.3 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_LIGHT_CONTRIBUTION_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/rgba.h"
 #include "3d/point_light.h"
 
 
@@ -70,6 +71,8 @@ public:
 	uint8				Factor[NL3D_MAX_LIGHT_CONTRIBUTION];
 	/// the Attenuation factor of influence to apply to each point light. Used if the model
 	uint8				AttFactor[NL3D_MAX_LIGHT_CONTRIBUTION];
+	/// the Dynamic Local Ambient. If A==0 then full SunAmbient is taken. If A==255, take full LocalAmbient color.
+	NLMISC::CRGBA		LocalAmbient;
 
 
 	/// Tells if there is some frozen static light setup.
@@ -79,8 +82,13 @@ public:
 	 *	that the model is not touched by any static pointLight.
 	 */
 	uint8				NumFrozenStaticLight;
-	// The contribution of the sun (directionnal light) on this model
+	// The contribution of the sun (directionnal light) on this model. This not apply to ambient part of the sun
 	uint8				SunContribution;
+	/** if FrozenStaticLightSetup, this is the frozen AmbientLight in ig. 
+	 *	can't be stored as RGBA, because the ambient color may change. 
+	 *	NULL means take full Sun ambient
+	 */
+	CPointLight			*FrozenAmbientLight;
 
 public:
 

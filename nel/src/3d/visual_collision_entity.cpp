@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.12 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.13 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -479,11 +479,14 @@ void		CVisualCollisionEntity::doComputeLandscape(const CVector &pos)
 
 // ***************************************************************************
 bool		CVisualCollisionEntity::getStaticLightSetup(const CVector &pos, 
-	std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution)
+	std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
 {
 	// Get Patch Triangle Under Us
 	CVector		res;
 	CTrianglePatch	*tri= getPatchTriangleUnderUs(pos, res);
+
+	// For now, no localAmbient support on landscape.
+	localAmbient.set(0,0,0,0);
 
 	// result. NB: if not found, dot not modify.
 	if( tri )

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.22 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.23 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,12 +46,15 @@ CInstanceGroup::CInstance::CInstance ()
 	AvoidStaticLightPreCompute= false;
 	StaticLightEnabled= false;
 	DontCastShadow= false;
+	LocalAmbientId= 0xFF;
 }
 
 // ***************************************************************************
 void CInstanceGroup::CInstance::serial (NLMISC::IStream& f)
 {
 	/*
+	Version 4:
+		- LocalAmbientId.
 	Version 3:
 		- StaticLight.
 	Version 2:
@@ -60,7 +63,18 @@ void CInstanceGroup::CInstance::serial (NLMISC::IStream& f)
 		- Clusters
 	*/
 	// Serial a version number
-	sint version=f.serialVersion (3);
+	sint version=f.serialVersion (4);
+
+
+	// Serial the LocalAmbientId.
+	if (version >= 4)
+	{
+		f.serial(LocalAmbientId);
+	}
+	else if(f.isReading())
+	{
+		LocalAmbientId= 0xFF;
+	}
 
 	// Serial the StaticLight
 	if (version >= 3)
@@ -180,6 +194,7 @@ CInstanceGroup::CInstanceGroup()
 	_GlobalPos = CVector(0,0,0);
 	_Root = NULL;
 	_ClusterSystem = NULL;
+	_RealTimeSunContribution= true;
 }
 
 // ***************************************************************************
@@ -307,13 +322,26 @@ void CInstanceGroup::serial (NLMISC::IStream& f)
 	f.serialCheck ((uint32)'TPRG');
 
 	/*
+	Version 5:
+		_ _RealTimeSunContribution
 	Version 4:
 		_ IGSurfaceLight
 	Version 3:
 		- PointLights
 	*/
 	// Serial a version number
-	sint version=f.serialVersion (4);
+	sint version=f.serialVersion (5);
+
+
+	// _RealTimeSunContribution
+	if (version >= 5)
+	{
+		f.serial(_RealTimeSunContribution);
+	}
+	else if(f.isReading())
+	{
+		_RealTimeSunContribution= true;
+	}
 
 
 	// Serial the IGSurfaceLight
@@ -462,8 +490,17 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 						pls[j]= (CPointLight*)(&_PointLightArray.getPointLights()[plId]);
 					}
 
+					// get frozenAmbientlight.
+					CPointLight *frozenAmbientlight;
+					if(rInstanceInfo.LocalAmbientId == 0xFF)
+						// must take the sun one.
+						frozenAmbientlight= NULL;
+					else
+						// ok, take the local ambient one.
+						frozenAmbientlight= (CPointLight*)(&_PointLightArray.getPointLights()[rInstanceInfo.LocalAmbientId]);
+
 					// Setup the instance.
-					_Instances[i]->freezeStaticLightSetup(pls, numPointLights, rInstanceInfo.SunContribution);
+					_Instances[i]->freezeStaticLightSetup(pls, numPointLights, rInstanceInfo.SunContribution, frozenAmbientlight);
 				}
 
 				// Driver not NULL ?
@@ -864,6 +901,7 @@ void			CInstanceGroup::buildPointLightList(const std::vector<CPointLightNamed> &
 		if(!inst.StaticLightEnabled)
 			continue;
 
+		// remap pointlights
 		for(uint l=0; l<CInstanceGroup::NumStaticLightPerInstance; l++)
 		{
 			// If NULL light, break and continue to next instance
@@ -876,7 +914,13 @@ void			CInstanceGroup::buildPointLightList(const std::vector<CPointLightNamed> &
 				// Remap index, because of light sorting.
 				inst.Light[l]= plRemap[inst.Light[l]];
 			}
+		}
 
+		// remap ambient light
+		if(inst.LocalAmbientId!=0xFF)
+		{
+			nlassert(inst.LocalAmbientId < _PointLightArray.getPointLights().size());
+			inst.LocalAmbientId= plRemap[inst.LocalAmbientId];
 		}
 	}
 
@@ -886,6 +930,13 @@ void			CInstanceGroup::buildPointLightList(const std::vector<CPointLightNamed> &
 void			CInstanceGroup::setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor)
 {
 	_PointLightArray.setPointLightFactor(lightGroupName, nFactor);
+}
+
+
+// ***************************************************************************
+void			CInstanceGroup::enableRealTimeSunContribution(bool enable)
+{
+	_RealTimeSunContribution= enable;
 }
 
 

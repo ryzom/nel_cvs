@@ -1,7 +1,7 @@
 /** \file lighting_manager.cpp
  * <File description>
  *
- * $Id: lighting_manager.cpp,v 1.3 2002/02/13 17:42:31 lecroart Exp $
+ * $Id: lighting_manager.cpp,v 1.4 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/transform.h"
 #include "3d/fast_floor.h"
 #include "nel/3d/logic_info.h"
+#include "nel/misc/aabbox.h"
 
 
 using namespace NLMISC;
@@ -246,7 +247,28 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 	lightList.clear();
 
 	// the position of the model.
-	const CVector &modelPos= model->getWorldMatrix().getPos();
+	CVector modelPos;
+	float	modelRadius;
+	bool	isBigLightable= model->isBigLightable();
+
+	// If the model is a big lightable, must change the position of the model according to the bbox.
+	if(isBigLightable)
+	{
+		// get the untransformed bbox from the model.
+		CAABBox		bbox;
+		model->getAABBox(bbox);
+		// get transformed center pos of bbox
+		modelPos= model->getWorldMatrix() * bbox.getCenter();
+		// get size of the bbox (bounding sphere)
+		modelRadius= bbox.getRadius();
+	}
+	else
+	{
+		// Just take model position (faster)
+		modelPos= model->getWorldMatrix().getPos();
+		// Assume 0 radius => faster computeLinearAttenuation()
+		modelRadius= 0;
+	}
 
 
 	// First pass, fill the list of light which touch this model.
@@ -262,12 +284,14 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 		{
 			// Default: suppose full SunLight and no PointLights.
 			lightContrib.SunContribution= 255;
+			// Take full SunAmbient.
+			lightContrib.LocalAmbient.set(0,0,0,0);
 			// do not append any pointLight to the setup
 		}
 		else
 		{
 			// NB: SunContribution is computed by logicInfo
-			logicInfo->getStaticLightSetup(lightList, lightContrib.SunContribution);
+			logicInfo->getStaticLightSetup(lightList, lightContrib.SunContribution, lightContrib.LocalAmbient);
 		}
 	}
 
@@ -281,36 +305,48 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 
 		// get the distance from the light to the model
 		float	dist= (pl->getPosition() - modelPos).norm();
+		float	distMinusRadius= dist - modelRadius;
 
 		// modulate the factor by the distance and the attenuation distance.
 		float	 inf;
 		float	attBegin= pl->getAttenuationBegin();
 		float	attEnd= pl->getAttenuationEnd();
-		// if no attenuation, then factor is 1.
+		// if no attenuation
 		if( attEnd==0 )
+		{
+			// influence is awlays 1.
 			inf= 1;
+
+			// If SpotLight, must modulate with SpotAttenuation.
+			if(pl->getType() == CPointLight::SpotLight)
+				inf*= pl->computeLinearAttenuation(modelPos, dist, modelRadius);
+		}
 		else
 		{
 			// if correct attenuation radius
-			if(dist<attBegin)
+			if(distMinusRadius<attBegin)
 			{
 				// NB: we are sure that attBegin>0, because dist>=0.
 				// if < attBegin, inf should be ==1, but must select the nearest lights; for better
 				// understanding of the scene
-				inf= 1 + _OutOfAttLightInfFactor * (attBegin - dist);	// inf E [1, +oo[
+				inf= 1 + _OutOfAttLightInfFactor * (attBegin - distMinusRadius);	// inf E [1, +oo[
 				// NB: this formula favour big lights (ie light with big attBegin).
+
+				// If SpotLight, must modulate with SpotAttenuation.
+				if(pl->getType() == CPointLight::SpotLight)
+					inf*= pl->computeLinearAttenuation(modelPos, dist, modelRadius);
 			}
-			else if(dist<attEnd)
+			else if(distMinusRadius<attEnd)
 			{
 				// we are sure attEnd-attBegin>0 because of the test
-				// compute influence of the light
-				inf= (attEnd-dist)/(attEnd-attBegin);
+				// compute influence of the light: attenuation and SpotAttenuation
+				inf= pl->computeLinearAttenuation(modelPos, dist, modelRadius);
 			}
 			else
 			{
 				// if >= attEnd, inf should be ==0, but must select the nearest lights; for better
 				// understanding of the scene
-				inf= _OutOfAttLightInfFactor * (attEnd - dist);		// inf E |-oo, 0]
+				inf= _OutOfAttLightInfFactor * (attEnd - distMinusRadius);		// inf E ]-oo, 0]
 			}
 		}
 
@@ -386,7 +422,8 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 
 				// Compute the Final Att factor for models using Global Attenuation. NB: modulate with Factor
 				// don't worry about the precision of floor, because of *255.
-				sint	attFactor= OptFastFloor( lightContrib.Factor[i] * pl->computeLinearAttenuation(distToModel) );
+				// NB: compute att on the center of the model => modelRadius==0
+				sint	attFactor= OptFastFloor( lightContrib.Factor[i] * pl->computeLinearAttenuation(modelPos, distToModel) );
 				lightContrib.AttFactor[i]= (uint8)attFactor;
 
 				// must append this lightedModel to the list in the light.

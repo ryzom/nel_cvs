@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.9 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: scene_group.h,v 1.10 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,6 +108,10 @@ public:
 		uint8 	SunContribution;		// Contribution of the Sun.
 		// Ids of the lights. FF == disabled. if Lights[i]==FF, then all lights >=i are considered disabled.
 		uint8	Light[NumStaticLightPerInstance];
+		/** Id of the ambiant Light to take for this instance. Ambient light are stored too in ig->getPointLigths()
+		 *	If 0xFF => take Ambient of the sun.
+		 */
+		uint8	LocalAmbientId;
 
 
 		/// Constructor
@@ -266,7 +270,7 @@ public:
 
 public:
 
-	/// \name PointLight part
+	/// \name RealTime lighting part
 	// @{
 
 	/// get the list of light. NB: the array is sorted by LightGroupName.
@@ -277,11 +281,15 @@ public:
 
 	/// See CIGSurfaceLight::getStaticLightSetup()
 	bool			getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const CVector &localPos,
-		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution)
+		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
 	{
 		return _IGSurfaceLight.getStaticLightSetup(retrieverIdentifier, surfaceId, localPos,
-			pointLightList, sunContribution);
+			pointLightList, sunContribution, localAmbient);
 	}
+
+	/// Setuped at export, tells if the ig is touched by the sun. true by default.
+	void			enableRealTimeSunContribution(bool enable);
+	bool			getRealTimeSunContribution() const {return _RealTimeSunContribution;}
 
 	// @}
 
@@ -311,6 +319,9 @@ public:
 private:
 	/// \name PointLight part
 	// @{
+
+	/// RealTimeSunContribution. Used for ig_lighter and zone_ig_lighter
+	bool							_RealTimeSunContribution;
 
 	/// Array of pointLights
 	CPointLightNamedArray			_PointLightArray;

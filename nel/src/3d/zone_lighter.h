@@ -1,7 +1,7 @@
 /** \file zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.8 2002/02/15 17:14:40 vizerie Exp $
+ * $Id: zone_lighter.h,v 1.9 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -488,8 +488,9 @@ private:
 
 		CPointLightRT();
 
-		/** Tells if a point is visible from this light. NB: test first if in BSphere.
+		/** Tells if a point is visible from this light. NB: test first if in BSphere
 		 *	If occluded or out of radius, return false, else return true.
+		 *	Also Skip if the light is an Ambient, and skip if the light is a spot and if the position is out of the cone
 		 */
 		bool		testRaytrace(const CVector &v);
 	};

@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.9 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: transform_shape.h,v 1.10 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,6 +99,11 @@ public:
 	float					getNumTrianglesAfterLoadBalancing() {return _NumTrianglesAfterLoadBalancing;}
 
 	// @}
+
+
+	/// Derived from CTranform. By default a shape is considered big for lightable if it uses localAttenuation
+	virtual bool		isBigLightable() const;
+
 
 protected:
 	/// Constructor

@@ -1,7 +1,7 @@
 /** \file surface_light_grid.h
  * <File description>
  *
- * $Id: surface_light_grid.h,v 1.1 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: surface_light_grid.h,v 1.2 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/rgba.h"
 #include "nel/misc/object_vector.h"
 #include "nel/misc/vector_2f.h"
 #include "nel/misc/vector.h"
@@ -67,11 +68,24 @@ public:
 		uint8	SunContribution;
 		/// Light that influence this point. 0xFF if none. if Light[i]==0xFF, then Light[j] with j>i is disabled too
 		uint8	Light[NumLightPerCorner];
+		/** Id of the ambiant Light to take for this corner. Ambient light are stored too in ig->getPointLigths()
+		 *	If 0xFF => take Ambient of the sun.
+		 */
+		uint8	LocalAmbientId;
 
 		void		serial(NLMISC::IStream &f)
 		{
-			uint	ver= f.serialVersion(0);
+			uint	ver= f.serialVersion(1);
 			nlassert(NumLightPerCorner==2);
+
+			if(ver>=1)
+			{
+				f.serial(LocalAmbientId);
+			}
+			else if(f.isReading())
+			{
+				LocalAmbientId= 0xFF;
+			}
 			f.serial(SunContribution);
 			f.serial(Light[0]);
 			f.serial(Light[1]);
@@ -93,7 +107,7 @@ public:
 	CSurfaceLightGrid();
 
 	// Get Infos from the grid
-	void		getStaticLightSetup(const CVector &localPos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, CIGSurfaceLight &igsl) const;
+	void		getStaticLightSetup(const CVector &localPos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, CIGSurfaceLight &igsl, NLMISC::CRGBA &localAmbient) const;
 
 	// serial
 	void		serial(NLMISC::IStream &f);

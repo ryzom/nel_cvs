@@ -1,7 +1,7 @@
 /** \file point_light_user.h
  * <File description>
  *
- * $Id: point_light_user.h,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: point_light_user.h,v 1.2 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,6 +77,17 @@ public:
 	virtual void			setupAttenuation(float attenuationBegin, float attenuationEnd);
 	virtual float			getAttenuationBegin() const;
 	virtual float			getAttenuationEnd() const;
+
+	virtual void			enableSpotlight(bool enable) ;
+	virtual bool			isSpotlight() const ;
+	virtual void			setupSpotAngle(float spotAngleBegin, float spotAngleEnd) ;
+	virtual float			getSpotAngleBegin() const ;
+	virtual float			getSpotAngleEnd() const ;
+
+
+	virtual void			setDeltaPosToSkeletonWhenOutOfFrustum(const CVector &deltaPos) ;
+	virtual const CVector	&getDeltaPosToSkeletonWhenOutOfFrustum() const ;
+
 
 };
 

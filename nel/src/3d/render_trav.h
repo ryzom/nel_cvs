@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.5 2002/02/11 16:54:27 berenguier Exp $
+ * $Id: render_trav.h,v 1.6 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -197,6 +197,7 @@ private:
 
 	// More precise setup
 	uint						_LastSunFactor;
+	NLMISC::CRGBA				_LastSunAmbient;
 	CPointLight					*_LastPointLight[NL3D_MAX_LIGHT_CONTRIBUTION];
 	uint8						_LastPointLightFactor[NL3D_MAX_LIGHT_CONTRIBUTION];
 	bool						_LastPointLightLocalAttenuation[NL3D_MAX_LIGHT_CONTRIBUTION];

@@ -1,7 +1,7 @@
 /** \file point_light_model.h
  * <File description>
  *
- * $Id: point_light_model.h,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: point_light_model.h,v 1.2 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,7 @@ const NLMISC::CClassId		PointLightModelId=NLMISC::CClassId(0x7e842eba, 0x140b6c6
 /**
  * This model is a dynamic light. It handles a PointLight, where Pos is the worldPos updated by CScene
  *	at each render(). CPointLightModel are linked to the LightModelRoot in the LightTrav.
+ *	It can handles SpotLight too, see PointLight.
  *
  *	Hrc: Lights herit CTransform so they can be put in hierarchy, even sticked to a skeleton. They can be hide,
  *	moved etc... (default CTransform).
@@ -70,6 +71,9 @@ public:
 
 	/** The pointLight setup (color/attenuation). Do not use PointLight.Pos to setup the position.
 	 *	Use the CTransform interface to set the position.
+	 *	To enable SpotLight, use PointLight.setType(), and use PointLight.setSpotAngle() but don't use 
+	 *	PointLight.setSpotDirection to setup the direction. The direction of the spotLight is driven by
+	 *	the J vector of the Transform WorldMatrix.
 	 */
 	CPointLight		PointLight;
 
@@ -131,6 +135,12 @@ private:
 
 	/// see setDeltaPosToSkeletonWhenOutOfFrustum()
 	CVector			_DeltaPosToSkeletonWhenOutOfFrustum;
+
+	/** Same problem as _DeltaPosToSkeletonWhenOutOfFrustum, but this one is computed at each Visible frame.
+	 *	And we interpolate between actual direction and backuped direction when the spot become visible (5 frames, hardcoded)
+	 */
+	CVector			_LastWorldSpotDirectionWhenOutOfFrustum;
+	float			_TimeFromLastClippedSpotDirection;
 };
 
 

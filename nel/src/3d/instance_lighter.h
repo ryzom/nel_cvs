@@ -1,7 +1,7 @@
 /** \file instance_lighter.h
  * <File description>
  *
- * $Id: instance_lighter.h,v 1.3 2002/02/15 15:21:50 corvazier Exp $
+ * $Id: instance_lighter.h,v 1.4 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,9 @@ public:
 	public:
 		// Default Ctor
 		CLightDesc ();
+
+		// Disable Sun contribution: ie set 0 to all contributions of sun on instances and surfaces?? false by default
+		bool					DisableSunContribution;
 
 		// Sun direction
 		NLMISC::CVector			LightDirection;
@@ -192,6 +195,9 @@ private:
 
 		// Temp light which influence this instance.
 		CPointLightRT	*Light[CInstanceGroup::NumStaticLightPerInstance];
+
+		// Temp Ambient light which influence this instance.
+		CPointLightRT	*LocalAmbientLight;
 	};
 
 	// Instance of the current ig to be lighted.
@@ -226,6 +232,7 @@ private:
 		/** Tells if a point is visible from this light. NB: test first if in BSphere.
 		 *	If occluded or out of radius, return false, else return true.
 		 *	if instanceComputed>=0, then skip obstacles with InstanceId==instanceComputed.
+		 *	Also Skip if the light is an Ambient, and skip if the light is a spot and if the position is out of the cone
 		 */
 		bool		testRaytrace(const CVector &v, sint instanceComputed= -1);
 	};

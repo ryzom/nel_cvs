@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.h
  * <File description>
  *
- * $Id: visual_collision_entity.h,v 1.7 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: visual_collision_entity.h,v 1.8 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,7 +120,7 @@ public:
 	 *	darken the object too much. To avoid this, the sunContribution is raised to a power (0..1).
 	 *	See CVisualCollisionManager::setSunContributionPower(). Default is 0.5
 	 */
-	bool		getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution);
+	bool		getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient);
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.14 2002/02/06 16:55:16 berenguier Exp $
+ * $Id: zone_lighter.cpp,v 1.15 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2788,6 +2788,18 @@ bool	CZoneLighter::CPointLightRT::testRaytrace(const CVector &v)
 	if(!BSphere.include(v))
 		return false;
 
+	// If Ambient light, just skip
+	if(PointLight.getType()== CPointLight::AmbientLight)
+		return false;
+
+	// If SpotLight verify in angle radius.
+	if(PointLight.getType()== CPointLight::SpotLight)
+	{
+		float	att= PointLight.computeLinearAttenuation(v);
+		if (att==0)
+			return false;
+	}
+
 	// Select in the cubeGrid
 	FaceCubeGrid.select(v);
 	// For all faces selected
@@ -2885,28 +2897,32 @@ void			CZoneLighter::compilePointLightRT(uint gridSize, float gridCellSize, std:
 			// Create the cubeGrid
 			plRT.FaceCubeGrid.create(plRT.PointLight.getPosition(), NL3D_ZONE_LIGHTER_CUBE_GRID_SIZE);
 
-			// Select only obstacle Faces around the light. Other are not usefull
-			CAABBox	bbox;
-			bbox.setCenter(plRT.PointLight.getPosition());
-			float	hl= plRT.PointLight.getAttenuationEnd();
-			bbox.setHalfSize(CVector(hl,hl,hl));
-			obstacleGrid.select(bbox.getMin(), bbox.getMax());
-
-			// For all faces, fill the cubeGrid.
-			CQuadGrid<CTriangle*>::CIterator	itObstacle;
-			itObstacle= obstacleGrid.begin();
-			while( itObstacle!=obstacleGrid.end() )
+			// AmbiantLIghts: do nothing.
+			if(plRT.PointLight.getType()!=CPointLight::AmbientLight)
 			{
-				CTriangle	&tri= *(*itObstacle);
-				// Test BackFace culling. Only faces which are BackFace the point light are inserted.
-				// This is to avoid AutoOccluding problems
-				if( tri.getPlane() * plRT.BSphere.Center < 0)
-				{
-					// Insert the triangle in the CubeGrid
-					plRT.FaceCubeGrid.insert( tri.Triangle, &tri);
-				}
+				// Select only obstacle Faces around the light. Other are not usefull
+				CAABBox	bbox;
+				bbox.setCenter(plRT.PointLight.getPosition());
+				float	hl= plRT.PointLight.getAttenuationEnd();
+				bbox.setHalfSize(CVector(hl,hl,hl));
+				obstacleGrid.select(bbox.getMin(), bbox.getMax());
 
-				itObstacle++;
+				// For all faces, fill the cubeGrid.
+				CQuadGrid<CTriangle*>::CIterator	itObstacle;
+				itObstacle= obstacleGrid.begin();
+				while( itObstacle!=obstacleGrid.end() )
+				{
+					CTriangle	&tri= *(*itObstacle);
+					// Test BackFace culling. Only faces which are BackFace the point light are inserted.
+					// This is to avoid AutoOccluding problems
+					if( tri.getPlane() * plRT.BSphere.Center < 0)
+					{
+						// Insert the triangle in the CubeGrid
+						plRT.FaceCubeGrid.insert( tri.Triangle, &tri);
+					}
+
+					itObstacle++;
+				}
 			}
 
 			// Compile the CubeGrid.
@@ -3033,7 +3049,7 @@ void			CZoneLighter::processZonePointLightRT(vector<CPointLightNamed> &listPoint
 						// nearly 0 and the point should be occluded.
 						const float	deltaY= 0.05f;
 						CVector	posToRT= pos + normal * deltaY;
-						// Test if really in the radius of the light or if no occlusion
+						// Test if really in the radius of the light, if no occlusion, and if in SpotAngle
 						if( pl->testRaytrace(posToRT) )
 						{
 							// Ok, add the light to the lights which influence the TLI 

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.14 2002/02/11 16:54:27 berenguier Exp $
+ * $Id: transform.h,v 1.15 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,12 @@
 #include "3d/light_trav.h"
 #include "3d/light_contribution.h"
 #include "3d/lighting_manager.h"
+
+
+namespace	NLMISC
+{
+	class	CAABBox;
+};
 
 
 namespace	NL3D
@@ -208,13 +214,18 @@ public:
 	 *	NB: nlassert(numPointLights<=NL3D_MAX_LIGHT_CONTRIBUTION)
 	 */
 	void				freezeStaticLightSetup(CPointLight *pointLight[NL3D_MAX_LIGHT_CONTRIBUTION], 
-		uint numPointLights, uint8 sunContribution);
+		uint numPointLights, uint8 sunContribution, CPointLight *frozenAmbientlight);
 
 	/** unFreeze the Static Light Setup. Must be called if static pointLights are deleted.
 	 *	NB: it calls resetLighting() first.
 	 *	NB: do not need to call it if pointLights and this transform are deleted at same time.
 	 */
 	void				unfreezeStaticLightSetup();
+
+	/** override this method if the lighting Manager must take into account the bbox of the transform.
+	 *	Default behavior is false.
+	 */
+	virtual bool		isBigLightable() const {return false;}
 
 	// @}
 
@@ -223,6 +234,11 @@ public:
 	 *	Ptr is kept in CTransfrom, so should call setLogicInfo(NULL) before to clean up.
 	 */
 	void				setLogicInfo(ILogicInfo *logicInfo) {_LogicInfo= logicInfo;}
+
+
+	/** Get the untransformed AABBox of the transform. NULL (gtCenter()= 0, gtSize()==0) by default.
+	 */
+	virtual void					getAABBox(NLMISC::CAABBox &bbox) const;
 
 
 // ********

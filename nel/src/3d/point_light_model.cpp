@@ -1,7 +1,7 @@
 /** \file point_light_model.cpp
  * <File description>
  *
- * $Id: point_light_model.cpp,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: point_light_model.cpp,v 1.2 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,7 @@ void	CPointLightModel::registerBasic()
 CPointLightModel::CPointLightModel()
 {
 	_DeltaPosToSkeletonWhenOutOfFrustum.set(0, 0, 1.5f);
+	_TimeFromLastClippedSpotDirection= 0;
 }
 
 
@@ -104,6 +105,26 @@ void	CPointLightModelLightObs::traverse(IObs *caller)
 		{
 			// recompute the worldPosition of the light.
 			plModel->PointLight.setPosition( plModel->getWorldMatrix().getPos() );
+
+			// recompute the worldSpotDirection of the light.
+			if(plModel->PointLight.getType() == CPointLight::SpotLight)
+			{
+				// Interpolate over time. (hardcoded)
+				plModel->_TimeFromLastClippedSpotDirection-= 0.05f;
+				if(plModel->_TimeFromLastClippedSpotDirection <= 0)
+				{
+					plModel->PointLight.setupSpotDirection(plModel->getWorldMatrix().getJ());
+				}
+				else
+				{
+					CVector		actualSpotDir= plModel->getWorldMatrix().getJ();
+					// Interpolate
+					float	t= plModel->_TimeFromLastClippedSpotDirection;
+					CVector		interpSpotDir= actualSpotDir*(1-t) + plModel->_LastWorldSpotDirectionWhenOutOfFrustum * t;
+					// set the interpolated one.
+					plModel->PointLight.setupSpotDirection(interpSpotDir);
+				}
+			}
 		}
 		else
 		{
@@ -112,6 +133,21 @@ void	CPointLightModelLightObs::traverse(IObs *caller)
 			const CMatrix &skMatrix= plModel->getHrcObs()->_AncestorSkeletonModel->getWorldMatrix();
 
 			plModel->PointLight.setPosition( skMatrix * plModel->_DeltaPosToSkeletonWhenOutOfFrustum );
+
+			// recompute the worldSpotDirection of the light.
+			if(plModel->PointLight.getType() == CPointLight::SpotLight)
+			{
+				// If last frame, this pointLight was visible (Time is not 1)
+				if(plModel->_TimeFromLastClippedSpotDirection != 1)
+				{
+					// Take the current World spot direction
+					plModel->_LastWorldSpotDirectionWhenOutOfFrustum= plModel->PointLight.getSpotDirection();
+					// reset time.
+					plModel->_TimeFromLastClippedSpotDirection= 1;
+				}
+
+				// Don't need to modify PointLight spot direction since already setuped (when model was visible)
+			}
 		}
 
 		// now, insert this light in the quadGrid. NB: in CLightTrav::traverse(), the quadGrid is cleared before here.

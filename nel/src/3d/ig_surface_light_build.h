@@ -1,7 +1,7 @@
 /** \file ig_surface_light_build.h
  * <File description>
  *
- * $Id: ig_surface_light_build.h,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: ig_surface_light_build.h,v 1.2 2002/02/18 13:21:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -76,6 +76,7 @@ public:
 		 *	Yes, void* is ugly, but it is to avoid too much dependencies.
 		 */
 		void				*LightInfo[CSurfaceLightGrid::NumLightPerCorner];
+		void				*LocalAmbientLight;
 	};
 
 

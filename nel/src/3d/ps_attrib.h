@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.3 2001/06/28 07:56:17 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.4 2001/07/24 08:41:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,14 +26,197 @@
 #ifndef NL_PS_ATTRIB_H
 #define NL_PS_ATTRIB_H
 
+
+
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include "nel/3d/animation_time.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/rgba.h"
+#include "nel/misc/common.h"
 
 
 namespace NL3D {
+
+/** a container that is like a vector, but snapped to (1<<snapPower) byte memory pages   
+  */
+template <class T, const uint snapPower = 5>
+class CSnappedVector
+{
+public:
+	typedef T *iterator ;
+	typedef const T *const_iterator ;
+	typedef T value_type ;
+
+	CSnappedVector() : _Size(0), _Capacity(0), _Start(NULL), _Tab(NULL) {}
+	~CSnappedVector() 
+	{ 
+		nlassert(_Size <= _Capacity) ;
+		for (iterator it = _Tab, endIt = _Tab + _Size; it != endIt ; ++it)
+		{
+			it->~T() ;
+		}
+		delete _Start ; 
+	}
+	iterator begin(void) { return _Tab ; }
+	const_iterator begin(void) const { return _Tab ; }
+	iterator end(void) { return _Tab + _Size ; }
+	const_iterator end(void) const { return _Tab + _Size ; }
+
+	T &operator[](uint index) { nlassert(index < _Size && _Size) ; return _Tab[index]  ; }
+	const T &operator[](uint index) const { nlassert(index < _Size && _Size) ; return _Tab[index] ; }
+
+	/// set a new usable size (note : the real allocated size change, even if the new capacity is smaller...)
+	void reserve(uint capacity)
+	{	
+		uint8 *newStart = NULL ;
+		try
+		{			
+			newStart = new uint8[sizeof(T) * capacity + (1 << snapPower)] ;
+			T *newTab = (T *) ( (uint) (newStart + (1 << snapPower))  & ~((1 << snapPower) - 1)) ; // snap to a page
+
+			
+		
+			for (iterator src = _Tab, end = _Tab + (capacity < _Size ? capacity : _Size), dest = newTab 
+				 ; src != end 
+				 ; ++ src, ++dest)
+			{
+				new ((void *) dest) T(*src) ; // copy object
+			}
+
+			// swap datas
+			std::swap(_Start, newStart) ;
+			std::swap(_Tab, newTab) ;
+
+			// destroy previous objects. We assume that we can't have exceptions raised from destructors
+			for (iterator it = newTab /* old tab */, endIt = newTab + _Size ; it != endIt ; ++ it)
+			{
+				it->~T() ;
+			}
+
+			// set new size
+			_Capacity = capacity ;
+			_Size    = capacity < _Size ? capacity : _Size ;
+
+
+			// delete old vect (that was swapped with the new one)
+			delete [] newStart ;
+			nlassert(_Size <= _Capacity) ;
+		}
+		catch (...)
+		{
+			delete [] newStart ;
+		}
+	
+	}
+	void resize(uint size)
+	{
+		
+		if (size < _Size)
+		{
+			for (iterator it = _Tab + size, endIt = _Tab + _Size ; it != endIt ; ++it)
+			{
+				it->~T() ;
+			}			
+		}
+		else
+		{
+			if (size > _Capacity) 
+			{
+				reserve(size) ;
+			}
+			for (iterator it = _Tab + _Size, endIt = _Tab + size ; it != endIt ; ++it)
+			{
+				new ((void *) it) T() ;
+			}
+		}
+
+		_Size = size ;
+		nlassert(_Size <= _Capacity) ;
+	}
+
+	void push_back(const T &t)
+	{
+		if (_Size < _Capacity)
+		{
+			new ((void *) (_Tab + _Size)) T(t) ;
+			++_Size ;
+		}
+		else
+		if (!_Size)
+		{
+			reserve(2) ;
+			new ((void *) _Tab) T(t) ;
+			_Size = 1 ;
+		}
+		else
+		if (_Size == _Capacity) 
+		{ 
+			if (_Capacity == 1) 
+			{
+				reserve(2) ;
+			}
+			else
+			{
+				reserve(_Capacity + (_Capacity>>1)) ;
+			}
+			nlassert(_Size <= _Capacity) ;
+			new ((void *) (_Tab + _Size)) T(t) ;
+			++_Size ;
+		}
+	}
+
+	void pop_back()
+	{
+		nlassert(_Size) ;
+		_Tab[_Size - 1].~T() ;
+		--_Size ;
+	}
+
+
+	uint capacity() const  { return _Capacity ; }
+	uint size() const { return _Size ; }
+
+	/// serialization
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	{
+		if (f.isReading())
+		{
+			clear() ;
+			uint32 size, maxsize ;
+			f.serial(size, maxsize) ;
+			reserve(maxsize) ;
+			for (uint k = 0 ; k < size ; ++k)
+			{
+				T tmp ;
+				f.serial(tmp) ;
+				push_back(tmp) ;
+			}
+		}
+		else
+		{
+			f.serial(_Size, _Capacity) ;
+			for (uint k = 0 ; k < _Size ; ++k)
+			{
+				f.serial(_Tab[k]) ;
+			}
+		}		
+	}
+
+	// clear
+	void clear() { resize(0) ; }
+
+protected:
+
+	uint8 *_Start ;   // real allocation address
+	T *_Tab ;       // first element
+	uint32 _Size ;    // used elements
+	uint32 _Capacity ; // max size
+} ;
+
+
+
+
 
 
 /**
@@ -47,14 +230,10 @@ namespace NL3D {
 	
 template <typename T> class CPSAttrib
 {
-protected:
-	// the container type is likely to change depending on memory requirement
-	typedef std::vector<T> TContType ;
-	typedef T type ;
 public:
 
 	/// Constructor
-	CPSAttrib(uint32 maxNbInstances = DefaultMaxLocatedInstance);
+	CPSAttrib();
 
 	/// resize the attributes tab. This tells what is the mx number of element in this tab, but don't add elements
 	void resize(uint32 nbInstances) ;
@@ -63,12 +242,15 @@ public:
 	void resizeNFill(uint32 nbInstances) ;
 	 
 	/// get a const reference on an attribute instance
-	const T &operator[](uint32 index) const { nlassert(index < _Size) ; return _Tab[index] ; }
+	const T &operator[](uint32 index) const { nlassert(index < _Tab.size()) ; return _Tab[index] ; }
 	/// get a reference on an attribute instance
-	T &operator[](uint32 index) { nlassert(index < _Size) ; return _Tab[index] ; }
+	T &operator[](uint32 index) { nlassert(index < _Tab.size()) ; return _Tab[index] ; }
 
-	/// insert 
 
+	// the container type is likely to change depending on memory requirement
+	typedef CSnappedVector<T> TContType ;
+
+	typedef T type ;
 
 	/// an iterator on the datas
 	typedef TContType::iterator iterator ;
@@ -98,10 +280,10 @@ public:
 
 
 	/// return the number of instance in the container
-	uint32 getSize(void) const { return _Size ; }
+	uint32 getSize(void) const { return _Tab.size() ; }
 
 	/// return the max number of instance in the container
-	uint32 getMaxSize(void) const { return _MaxSize ; }
+	uint32 getMaxSize(void) const { return _Tab.capacity() ; }
 
 
 	/// remove an object from the tab
@@ -113,15 +295,15 @@ public:
 	/// clear the container
 	void clear(void)
 	{
-		_Tab.clear() ;
-		_Tab.reserve(_MaxSize) ;
-		_Size = 0 ;
+		_Tab.clear() ;			
 	}
 
-protected:		
+protected:			
 	TContType _Tab ; 
-	uint32 _Size, _MaxSize ;
+
 } ;
+
+
 
 
 
@@ -130,92 +312,91 @@ protected:
 /////////////////////////////////////////////////////////////////////////
 
 template <typename T> 
-CPSAttrib<T>::CPSAttrib(uint32 maxNbInstances) : _MaxSize(maxNbInstances), _Size(0)
+CPSAttrib<T>::CPSAttrib()
 {
 }
 
 template <typename T> 
 void CPSAttrib<T>::resizeNFill(uint32 nbInstances)
-{
-	nlassert(_Size == _Tab.size()) ;
-	_Tab.reserve(nbInstances) ;
-	if (_Size > nbInstances)
-	{
-		_Tab.resize(nbInstances) ;
-		_Size = nbInstances ;
-		return ;
-	}
-	sint32 leftToFill = nbInstances - _Size ;
-
-	if (leftToFill > 0)
-	{
-		do
-		{
-			_Tab.push_back(T()) ;
-		}
-		while (--leftToFill) ;
-	}
-
-	_Size = _MaxSize = nbInstances ;
-	
-	nlassert(_Size == _Tab.size()) ;
+{	
+	_Tab.resize(nbInstances) ;	
 }
 
 
 template <typename T> 
 void CPSAttrib<T>::resize(uint32 nbInstances)
-{
-	nlassert(_Size == _Tab.size()) ;
+{	
 	_Tab.reserve(nbInstances) ;
-	_MaxSize = nbInstances ;
-	if (_Size > _MaxSize)
-	{
-		_Size = _MaxSize ;
-	}
-	nlassert(_Size == _Tab.size()) ;
 }
 
 
 template <typename T> 
 sint32 CPSAttrib<T>::insert(const T &t)
-{
-	nlassert(_Size == _Tab.size()) ;
-	if (_Size == _MaxSize) 
+{	
+	if (_Tab.size() == _Tab.capacity() && _Tab.size() > DefaultMaxLocatedInstance) 
 	{
 		return -1 ;
-	}
-	++ _Size ;
+	}	
 	_Tab.push_back(t) ;
-	return _Size - 1 ;
-
-	nlassert(_Size == _Tab.size()) ;
+	return _Tab.size() - 1 ;	
 }
 
 
 template <typename T> 
 void CPSAttrib<T>::remove(uint32 index)
-{
-	nlassert(_Size == _Tab.size()) ;
-	nlassert(index < _Size) ;
+{	
+	nlassert(index < _Tab.size()) ;
 	// we copy the last element in place of this one
-	if (index != _Size - 1)
+	if (index != _Tab.size() - 1)
 	{
-		_Tab[index] = _Tab[_Size - 1] ;
+		_Tab[index] = _Tab[_Tab.size() - 1] ;
 	}
 	_Tab.pop_back() ;
-
-	-- _Size ;
-
-	nlassert(_Size == _Tab.size()) ;
+	
 }
 
 template <typename T> 
 void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
-	f.serialVersion(1) ;
-	f.serial(_Size) ;
-	f.serial(_MaxSize) ;
-	f.serialCont(_Tab) ;
+	sint ver = f.serialVersion(2) ;
+	// in the first version, size and capacity were duplicated, we were using a std::vector ...
+
+	if (ver == 1)
+	{		
+		if(f.isReading())
+		{	
+			uint32 size, maxSize ;
+			f.serial(size) ;
+			f.serial(maxSize) ;
+			_Tab.reserve(maxSize) ;
+			f.serial(size) ; // useless but, we were previously doing a serialCont... compatibility purpose only
+			T tmp ;
+			// Read the vector
+			for(uint i = 0 ; i < size ; i++)
+			{
+				f.serial(tmp);
+				_Tab.push_back(tmp) ;
+			}
+			nlassert(_Tab.size() == size) ;
+		}
+		else
+		{
+			uint32 size = _Tab.size(), maxSize = _Tab.capacity() ;
+			f.serial(size) ;
+			f.serial(maxSize) ;		
+			f.serial(size) ;
+			// write the vector
+			for(uint i = 0 ; i < size ; i++)
+			{
+				f.serial(_Tab[i]);				
+			}
+		}
+	}
+
+	if (ver == 2)
+	{
+		f.serial(_Tab) ;
+	}	
 }
 
 

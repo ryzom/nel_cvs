@@ -1,7 +1,7 @@
 /** \file ps_sound_interface.h
  * <File description>
  *
- * $Id: ps_sound_interface.h,v 1.2 2001/08/16 17:13:44 vizerie Exp $
+ * $Id: ps_sound_interface.h,v 1.3 2001/08/29 10:37:11 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -73,6 +73,9 @@ struct IPSSoundInstance
 
 	/// start to play the sound
 	virtual void play(void) = 0;
+
+	/// tells wether the sound is playing
+	virtual bool isPlaying(void) const = 0;
 
 	/// stop the sound
 	virtual void stop(void) = 0;

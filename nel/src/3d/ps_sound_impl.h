@@ -1,7 +1,7 @@
 /** \file ps_sound_impl.h
  * <File description>
  *
- * $Id: ps_sound_impl.h,v 1.4 2001/08/23 14:11:10 vizerie Exp $
+ * $Id: ps_sound_impl.h,v 1.5 2001/08/29 10:37:11 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -69,6 +69,12 @@ public:
 		_Source->play();
 	}
 
+
+	virtual bool isPlaying(void) const
+	{
+		return _Source->isPlaying();
+	}
+
 	/// stop the sound
 	virtual void stop(void)
 	{
@@ -128,8 +134,7 @@ public:
 		nlassert(_AudioMixer);
 		NLSOUND::USource *source = _AudioMixer->createSource(soundName.c_str());
 		if (source)
-		{			
-			source->setLooping(false);
+		{						
 			return new CPSSoundInstanceImpl(source);
 		}
 		else

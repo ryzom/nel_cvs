@@ -1,7 +1,7 @@
 /** \file ps_sound.h
  * <File description>
  *
- * $Id: ps_sound.h,v 1.2 2001/08/16 17:12:37 vizerie Exp $
+ * $Id: ps_sound.h,v 1.3 2001/08/29 10:37:11 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -147,6 +147,7 @@ protected:
 	CPSAttribMaker<float> *			_GainScheme;
 	float							_Pitch;
 	CPSAttribMaker<float> *			_PitchScheme;
+	bool							_SoundStopped; 
 
 };
 

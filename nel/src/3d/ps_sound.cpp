@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.3 2001/08/27 10:46:14 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.4 2001/08/29 10:37:11 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ static const uint SoundBufSize = 1024;
 
 
 CPSSound::CPSSound() : _GainScheme(NULL), _PitchScheme(NULL)
-					   ,_Gain(1.f)	  , _Pitch(1.f)
+					   ,_Gain(1.f)	  , _Pitch(1.f), _SoundStopped(false)
 {
 	_Name = std::string("sound");
 }
@@ -57,9 +57,48 @@ uint32			CPSSound::getType(void) const
 void			CPSSound::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 {
 	if (pass != PSMotion) return;
-	nlassert(_Owner);
-	const uint32 size = _Owner->getSize();
+	const uint32 size = _Owner->getSize();	
+
+	CPSAttrib<IPSSoundInstance *>::iterator it = _Sounds.begin()
+												, endIt;
+
+	if (ellapsedTime == 0.f)
+	{
+		_SoundStopped = true;
+		// paused, stop all the sounds...
+		endIt = _Sounds.end();
+		while (it != endIt)
+		{
+			if (*it)
+			{
+				(*it)->stop();
+			}
+			++it;
+		}
+		
+		return;
+	}
+
+	if (_SoundStopped)
+	{
+		_SoundStopped = false;
+		endIt = _Sounds.end();
+		while (it != endIt)
+		{
+			if (*it)
+			{
+				(*it)->play();
+			}
+			++it;
+		}
+		while (it != endIt);
+		it = _Sounds.begin();
+	}
+
 	if (!size) return;
+		
+
+	nlassert(_Owner);	
 	uint32 toProcess, leftToDo = size;
 
 	float   Gains[SoundBufSize];
@@ -70,8 +109,7 @@ void			CPSSound::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 	float   *currVol, *currFrequency;
 	
 
-	CPSAttrib<IPSSoundInstance *>::iterator it = _Sounds.begin()
-												, endIt;
+	
 	CPSAttrib<NLMISC::CVector>::const_iterator posIt = _Owner->getPos().begin();
 	CPSAttrib<NLMISC::CVector>::const_iterator speedIt = _Owner->getSpeed().begin();
 
@@ -92,7 +130,7 @@ void			CPSSound::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 			do
 			{
 				if (*it) // was this sound instanciated?
-				{
+				{					
 					(*it)->setSoundParams(*currVol
 										  , *posIt
 										  , *speedIt
@@ -181,8 +219,14 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		_Sounds.resizeNFill(nbSounds);
 		for (sint k = 0; k < nbSounds; ++k)
 		{
-			/// we could also recreate an interface...
-			_Sounds[k] = NULL;
+			if (CParticleSystem::getSoundServer())
+			{
+				_Sounds[k] = CParticleSystem::getSoundServer()->createSound(_SoundName);				
+			}
+			else
+			{
+				_Sounds[k] = NULL;
+			}
 		}		
 	}
 	else
@@ -220,7 +264,12 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	else
 	{
 		f.serial(_Pitch);
-	}			
+	}	
+	
+	if (f.isReading())
+	{
+		_SoundStopped = true;
+	}
 }
 	
 

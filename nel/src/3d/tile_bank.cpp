@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.36 2001/11/23 13:15:13 berenguier Exp $
+ * $Id: tile_bank.cpp,v 1.37 2001/12/06 10:15:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1453,6 +1453,11 @@ void CTileSet::cleanUnusedData ()
 void CTileSet::setTileVegetableDescFileName (const std::string &fileName)
 {
 	_TileVegetableDescFileName= fileName;
+}
+// ***************************************************************************
+const std::string& CTileSet::getTileVegetableDescFileName () const
+{
+	return _TileVegetableDescFileName;
 }
 // ***************************************************************************
 void CTileSet::setTileVegetableDesc (const CTileVegetableDesc	&tvd)

@@ -35,6 +35,7 @@
 #define IDB_BITMAP3                     129
 #define IDB_BITMAP4                     130
 #define IDB_BITMAP5                     131
+#define IDD_CHOOSE_VEGET                132
 #define IDC_CLOSEBUTTON                 1000
 #define IDC_DOSTUFF                     1000
 #define IDC_BUTTON_GO                   1005
@@ -50,6 +51,7 @@
 #define IDC_EDIT_TERRITOIRE             1011
 #define IDC_EDIT_TILESET                1012
 #define IDC_EDIT_CHILDREN               1013
+#define IDC_CHOOSE_VEGET                1013
 #define IDC_EDIT_MONTER                 1014
 #define IDC_EDIT_DESCENDRE              1015
 #define IDC_JOUR                        1020
@@ -95,6 +97,7 @@
 #define IDC_SUBGROUP2                   1084
 #define IDC_PATH                        1084
 #define IDC_SUBGROUP3                   1085
+#define IDC_BROWSE                      1085
 #define IDC_SUBGROUP4                   1086
 #define IDC_SUBGROUP5                   1087
 #define IDC_SUBGROUP6                   1088
@@ -114,9 +117,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        132
+#define _APS_NEXT_RESOURCE_VALUE        133
 #define _APS_NEXT_COMMAND_VALUE         40007
-#define _APS_NEXT_CONTROL_VALUE         1085
+#define _APS_NEXT_CONTROL_VALUE         1086
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

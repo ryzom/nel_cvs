@@ -389,6 +389,10 @@ SOURCE=.\Browse.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\choose_veget_set.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\custom.cpp
 # End Source File
 # Begin Source File
@@ -495,6 +499,10 @@ SOURCE=.\Pic\readpic.h
 # Begin Source File
 
 SOURCE=.\Browse.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\choose_veget_set.h
 # End Source File
 # Begin Source File
 

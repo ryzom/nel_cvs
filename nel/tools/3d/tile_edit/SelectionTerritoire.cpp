@@ -8,6 +8,7 @@
 #include "SelectionTerritoire.h"
 #include "GetVal.h"
 #include "Browse.h"
+#include "choose_veget_set.h"
 #include "3d/tile_bank.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/file.h"
@@ -59,7 +60,6 @@ BEGIN_MESSAGE_MAP(SelectionTerritoire, CDialog)
 	ON_BN_CLICKED(IDC_REMOVE_TERRITOIRE, OnRemoveTerritoire)
 	ON_BN_CLICKED(IDC_ADD_TILESET, OnAddTileSet)
 	ON_BN_CLICKED(IDC_EDIT_TILESET, OnEditTileSet)
-	ON_BN_CLICKED(IDC_EDIT_CHILDREN, OnEditChildren)
 	ON_BN_CLICKED(IDC_REMOVE_TILESET, OnRemoveTileSet)
 	ON_BN_CLICKED(IDC_EDIT_MONTER, OnMonter)
 	ON_BN_CLICKED(IDC_EDIT_DESCENDRE, OnDescendre)
@@ -68,6 +68,7 @@ BEGIN_MESSAGE_MAP(SelectionTerritoire, CDialog)
 	ON_BN_CLICKED(ID_SAVE_AS, OnSaveAs)
 	ON_BN_CLICKED(IDC_PATH, OnPath)
 	ON_BN_CLICKED(ID_EXPORT, OnExport)
+	ON_BN_CLICKED(IDC_CHOOSE_VEGET, OnChooseVeget)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -84,7 +85,7 @@ void SelectionTerritoire::OnAddTerritoire()
 		CListBox *list=(CListBox*)GetDlgItem(IDC_LIST_TERRITOIRE);
 		if (list->FindStringExact(0,GetStr.name)!=LB_ERR)
 		{
-			MessageBox("Ce nom existe deja","Erreur",MB_ICONERROR);
+			MessageBox("Ce nom existe deja","Error",MB_ICONERROR);
 		}
 		else
 		{
@@ -148,7 +149,7 @@ void SelectionTerritoire::OnEditTerritoire()
 	}
 	else
 	{
-		MessageBox("Aucun territoire selectionne","Erreur",MB_ICONERROR);
+		MessageBox("No tilesset selected","Error",MB_ICONERROR);
 	}
 }
 
@@ -164,7 +165,7 @@ void SelectionTerritoire::OnRemoveTerritoire()
 	}
 	else
 	{
-		MessageBox("Aucun territoire selectionne","Chcrois kca va pas etreuu possibleuuu",MB_ICONERROR);
+		MessageBox("No tilesset selected","Chcrois kca va pas etreuu possibleuuu",MB_ICONERROR);
 	}
 }
 
@@ -182,7 +183,7 @@ void SelectionTerritoire::OnAddTileSet()
 		CListBox *list=(CListBox*)GetDlgItem(IDC_TILE_SET);
 		if (list->FindStringExact(0,GetStr.name)!=LB_ERR)
 		{
-			MessageBox("Ce nom existe deja","Erreur",MB_ICONERROR);
+			MessageBox("Ce nom existe deja","Error",MB_ICONERROR);
 		}
 		else
 		{
@@ -234,23 +235,6 @@ private:
 	int _tileSet;
 };
 
-void SelectionTerritoire::OnEditChildren() 
-{
-	// TODO: Add your control notification handler code here
-
-	CListBox *list=(CListBox*)GetDlgItem(IDC_TILE_SET);
-	int index=list->GetCurSel();
-	if (index!=LB_ERR) 
-	{
-		EditTileSet set (index);
-		set.DoModal();
-	}
-	else
-	{
-		MessageBox("Aucun territoire selectionne","Erreur",MB_ICONERROR);
-	}
-}
-
 void SelectionTerritoire::OnEditTileSet() 
 {
 	// TODO: Add your control notification handler code here
@@ -269,7 +253,7 @@ void SelectionTerritoire::OnEditTileSet()
 	}
 	else
 	{
-		MessageBox("Aucun territoire selectionne","Erreur",MB_ICONERROR);
+		MessageBox("No tilesset selected","Error",MB_ICONERROR);
 	}
 }
 
@@ -285,7 +269,7 @@ void SelectionTerritoire::OnRemoveTileSet()
 	}
 	else
 	{
-		MessageBox("Aucun territoire selectionne","Chcrois kca va pas etreuu possibleuuu",MB_ICONERROR);
+		MessageBox("No tilesset selected","Chcrois kca va pas etreuu possibleuuu",MB_ICONERROR);
 	}
 }
 
@@ -316,7 +300,7 @@ void SelectionTerritoire::OnMonter()
 	}
 	else
 	{
-		MessageBox("Aucun territoire selectionne","Chcrois kca va pas etreuu possibleuuu",MB_ICONERROR);
+		MessageBox("No tilesset selected","Chcrois kca va pas etreuu possibleuuu",MB_ICONERROR);
 	}
 }
 
@@ -347,7 +331,7 @@ void SelectionTerritoire::OnDescendre()
 	}
 	else
 	{
-		MessageBox("Aucun territoire selectionne","Chcrois kca va pas etreuu possibleuuu",MB_ICONERROR);
+		MessageBox("No tilesset selected","Chcrois kca va pas etreuu possibleuuu",MB_ICONERROR);
 	}
 }
 
@@ -716,5 +700,24 @@ void SelectionTerritoire::OnExport()
 
 		// Save it
 		Save (sFile.GetPathName(), copy);
+	}
+}
+
+void SelectionTerritoire::OnChooseVeget() 
+{
+	// Create a choose veget dialog
+	CListBox *list=(CListBox*)GetDlgItem(IDC_TILE_SET);
+	int index=list->GetCurSel();
+	if (index!=LB_ERR) 
+	{
+		CChooseVegetSet chooseVeget ( this, tileBank.getTileSet (index)->getTileVegetableDescFileName () );
+		if (chooseVeget.DoModal ()==IDOK)
+		{
+			tileBank.getTileSet (index)->setTileVegetableDescFileName (chooseVeget.FileName);
+		}
+	}
+	else
+	{
+		MessageBox("No tilesset selected","Error",MB_ICONERROR);
 	}
 }

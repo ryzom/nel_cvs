@@ -54,7 +54,6 @@ protected:
 	afx_msg void OnRemoveTerritoire();
 	afx_msg void OnAddTileSet();
 	afx_msg void OnEditTileSet();
-	afx_msg void OnEditChildren();
 	afx_msg void OnRemoveTileSet();
 	afx_msg void OnMonter();
 	afx_msg void OnDescendre();
@@ -65,6 +64,7 @@ protected:
 	virtual void OnSaveAs();
 	afx_msg void OnPath();
 	afx_msg void OnExport();
+	afx_msg void OnChooseVeget();
 	//}}AFX_MSG
 	void Save(const char* path, NL3D::CTileBank &toSave);
 

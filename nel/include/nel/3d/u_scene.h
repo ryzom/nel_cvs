@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.48 2004/03/12 16:24:49 berenguier Exp $
+ * $Id: u_scene.h,v 1.49 2004/03/23 10:10:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -579,6 +579,16 @@ public:
 	// set a callback to know when a water surface is instanciated
 	virtual void			setWaterCallback(IWaterSurfaceAddedCallback *wcb) = 0;
 	virtual IWaterSurfaceAddedCallback *getWaterCallback() const = 0;
+
+	/** Setup transparency sorting
+	  * \param maxPriority Defines the valid range for priority in the [0, n] interval. By default, there's no prioriy sorting (0 -> single priority, 255 -> 256 possible priorities)
+	  *                    Objects with highers priority are displayed before any other object with lower priority,
+	  *                    whatever their distance is.
+	  * \param NbDistanceEntries Defines the granularity for distance sorting. A value of N with a view distance of D meters means 
+	  *                          that the sorting accuracy will be of D / N meters at worst (when visible objects occupy the whole distance range)
+	  * NB : The memory allocated is a multiple of NumPriority * NbDistanceEntries * 2 (2 if because of water ordering)
+	  */
+	virtual void setupTransparencySorting(uint8 maxPriority = 0, uint NbDistanceEntries = 1024) = 0;
 
 };
 

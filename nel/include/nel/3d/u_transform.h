@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.20 2003/12/01 09:39:48 vizerie Exp $
+ * $Id: u_transform.h,v 1.21 2004/03/23 10:09:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -224,6 +224,12 @@ public:
 	// return a non-zero value if true
 	virtual uint32			isOpaque() = 0;
 	virtual uint32			isTransparent() = 0;
+	/** Set priority for transparency ordering
+	  * Transparent objects are sorted by priority, and then by distances
+	  * The priority is clamped by the priority range of the scene. By default this range is [0, 0] so there's no priority sorting
+	  * This range can be changed by calling UScene::setupTransparencySorting
+	  */
+	virtual	void			setTransparencyPriority(uint8 priority) = 0;
 	// @}
 
 	/// \name ShadowMapping

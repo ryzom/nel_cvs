@@ -18,6 +18,24 @@ Package=<4>
 
 ###############################################################################
 
+Project: "chat"=.\server\chat\chat.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name net
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "client"=.\client\client.dsp - Package Owner=<4>
 
 Package=<5>
@@ -81,6 +99,24 @@ Package=<4>
 
 ###############################################################################
 
+Project: "frontend"=.\server\frontend\frontend.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name net
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "misc"=..\nel\src\misc.dsp - Package Owner=<4>
 
 Package=<5>
@@ -113,6 +149,24 @@ Package=<5>
 
 Package=<4>
 {{{
+}}}
+
+###############################################################################
+
+Project: "position"=.\server\position\position.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name net
+    End Project Dependency
 }}}
 
 ###############################################################################

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.4 2001/06/15 09:47:01 corvazier Exp $
+ * $Id: local_retriever.h,v 1.5 2001/07/09 08:26:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,7 +85,7 @@ public:
 			void	serial(NLMISC::IStream &f) { f.serial(Chain, Start); }
 		};
 
-		CTip() : Point(NLMISC::CVector::Null), Edges(0) {}
+		CTip() : Point(NLMISC::CVector::Null) {}
 
 		/// The position of the tip.x
 		NLMISC::CVector					Point;
@@ -93,15 +93,11 @@ public:
 		// The chains linked to that tip.
 		std::vector<CChainTip>			Chains;
 
-		/// The edges on which is located the tip (marked with a 1 bit)
-		uint8							Edges;
-
 	public:
 		/// Serialises the CTip.
 		void	serial(NLMISC::IStream &f)
 		{
 			f.serial(Point);
-			f.serial(Edges);
 			f.serialCont(Chains);
 		}
 
@@ -164,11 +160,8 @@ protected:
 	/// The tips making links between different chains.
 	std::vector<CTip>					_Tips;
 
-	/// The tips on the edges of the zone.
-	std::vector<uint16>					_EdgeTips[4];
-
 	/// The chains on the edges of the zone.
-	std::vector<uint16>					_EdgeChains[4];
+	std::vector<uint16>					_BorderChains;
 
 	/// The topologies within the zone.
 	std::vector<CTopology>				_Topologies[NumCreatureModels];
@@ -184,34 +177,6 @@ protected:
 
 
 private:
-	/// A class that allows to sort tips among x axis (increasingly or decreasingly.)
-	struct CXPred
-	{
-		const std::vector<CTip>			*Tips;
-		bool							Reverse;
-		CXPred(const std::vector<CTip> *tips, bool reverse=false) : Tips(tips), Reverse(reverse) {}
-		bool							operator() (uint16 a, uint16 b) const
-		{
-			return (Reverse) ?
-				(*Tips)[a].Point.x > (*Tips)[b].Point.x :
-				(*Tips)[a].Point.x < (*Tips)[b].Point.x;
-		}
-	};
-
-	/// A class that allows to sort tips among y axis (increasingly or decreasingly.)
-	struct CYPred
-	{
-		const std::vector<CTip>			*Tips;
-		bool							Reverse;
-		CYPred(const std::vector<CTip> *tips, bool reverse=false) : Tips(tips), Reverse(reverse) {}
-		bool							operator() (uint16 a, uint16 b) const
-		{
-			return (Reverse) ?
-				(*Tips)[a].Point.y > (*Tips)[b].Point.y :
-				(*Tips)[a].Point.y < (*Tips)[b].Point.y;
-		}
-	};
-
 	/// The intersection between an ordered chain and the path.
 	struct CIntersectionMarker
 	{
@@ -236,17 +201,6 @@ public:
 	/// Returns the nth tip in the retriever.
 	const CTip							&getTip(uint n) const { return _Tips[n]; }
 
-	/**
-	 * Returns the ids of the tips on the edge-th edge of the retriever.
-	 * edge corresponds to the number of the edge in the CLocalRetriever (and not its instance.)
-	 */
-	const std::vector<uint16>			&getEdgeTips(sint edge) const { nlassert(0<=edge && edge<4); return _EdgeTips[edge]; }
-	/**
-	 * Returns the id of the nth tip on the edge-th edge of the retriever.
-	 * edge corresponds to the number of the edge in the CLocalRetriever (and not its instance.)
-	 */
-	uint16								getEdgeTip(sint edge, uint n) const { nlassert(0<=edge && edge<4); return _EdgeTips[edge][n]; }
-
 	/// Returns the ordered chains.
 	const std::vector<COrderedChain>	&getOrderedChains() const { return _OrderedChains; }
 	/// Returns the nth ordered chain.
@@ -263,9 +217,9 @@ public:
 	const CChain						&getChain(uint n) const { return _Chains[n]; }
 
 	/// Returns the ids of the chains on the edge-th edge of the retriever.
-	const std::vector<uint16>			&getEdgeChains(sint edge) const { nlassert(0<=edge && edge<4); return _EdgeChains[edge]; }
+	const std::vector<uint16>			&getBorderChains() const { return _BorderChains; }
 	/// Returns the id of the nth chain on the edge-th edge of the retriever.
-	uint16								getEdgeChain(sint edge, uint n) const { nlassert(0<=edge && edge<4); return _EdgeChains[edge][n]; }
+	uint16								getBorderChain(uint n) const { return _BorderChains[n]; }
 
 	/// Returns the surfaces.
 	const std::vector<CRetrievableSurface>	&getSurfaces() const { return _Surfaces; }
@@ -290,7 +244,7 @@ public:
 	 * the left and right surfaces id and the edge on which the chain is stuck
 	 */
 	sint32								addChain(const std::vector<NLMISC::CVector> &vertices,
-												 sint32 left, sint32 right, sint edge);
+												 sint32 left, sint32 right);
 
 	/// Builds topologies tables.
 	void								computeTopologies();
@@ -298,10 +252,8 @@ public:
 	/// Builds tips
 	void								computeLoopsAndTips();
 
-	/// Found tips on the edges of the retriever and fills _EdgeTips tables.
-	void								findEdgeTips();
-	/// Found chains on the edges of the retriever and fills _EdgeChains tables.
-	void								findEdgeChains();
+	/// Found chains on the edges of the retriever and fills _BorderChains tables.
+	void								findBorderChains();
 
 	/// Updates surfaces links from the links contained in the chains...
 	void								updateChainIds();
@@ -359,8 +311,6 @@ private:
 	
 	void								setStartTip(uint32 chain, sint32 surface, uint16 startTip);
 	void								setStopTip(uint32 chain, sint32 surface, uint16 stopTip);
-
-	void								mergeTip(uint from, uint to);
 
 	uint32								getPreviousChain(uint32 chain, sint32 surface) const;
 	uint32								getNextChain(uint32 chain, sint32 surface) const;

@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.6 2001/06/22 15:03:05 corvazier Exp $
+ * $Id: global_retriever.h,v 1.7 2001/07/09 08:26:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -154,6 +154,8 @@ public:
 	const CRetrieverInstance		&getInstance(uint x, uint y) const { return _Instances[convertId(x, y)]; }
 	/// Gets the retriever instance referred by its global position.
 	const CRetrieverInstance		&getInstance(const NLMISC::CVector &p) const;
+	/// Gets the best retriever instances matching thr given position.
+	void							getInstances(const NLMISC::CVector &p, const CRetrieverInstance *instances[4]) const;
 
 
 	/// Get the retriever bank associated to this global retriever.
@@ -346,16 +348,36 @@ public:
 
 	/// Finds an A* path from a given global position to another.
 	// TODO: secure search to avoid crashes...
-	// TODO: add surface criteria
-	void							findAStarPath(const CGlobalPosition &begin, const CGlobalPosition &end, std::vector<CRetrieverInstance::CAStarNodeAccess> &path, uint32 forbidFlags) const;
+	void							findAStarPath(const UGlobalPosition &begin, const UGlobalPosition &end, std::vector<CRetrieverInstance::CAStarNodeAccess> &path, uint32 forbidFlags) const;
 
 	/// Finds a path from a given global position to another
 	// TODO: include path width
-	void							findPath(const CGlobalPosition &begin, const CGlobalPosition &end, CGlobalPath &path, uint32 forbidFlags=0) const;
+	void							findPath(const UGlobalPosition &begin, const UGlobalPosition &end, CGlobalPath &path, uint32 forbidFlags=0) const;
 
 	// @}
 
 private:
+	/// \name  Retrieve part.
+	// @{
+
+	const CRetrieverInstance		*getInstancePtr(uint x, uint y) const
+	{
+		if (x<0 || x>_Width || y<0 || y>_Height || _Instances[x+_Width*y].getInstanceId()==-1)
+			return NULL;
+		else
+			return &_Instances[x+_Width*y];
+	}
+
+	CRetrieverInstance				*getInstancePtr(sint x, sint y)
+	{
+		if (x<0 || x>_Width || y<0 || y>_Height || _Instances[x+_Width*y].getInstanceId()==-1)
+			return NULL;
+		else
+			return &_Instances[x+_Width*y];
+	}
+
+	// @}
+
 	/// \name  Pathfinding part.
 	// @{
 

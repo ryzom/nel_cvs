@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.19 2001/06/13 08:46:42 legros Exp $
+ * $Id: local_retriever.cpp,v 1.20 2001/07/09 08:26:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -178,34 +178,6 @@ uint32			NLPACS::CLocalRetriever::getNextChain(uint32 chain, sint32 surface) con
 
 
 
-void			NLPACS::CLocalRetriever::mergeTip(uint from, uint to)
-{
-	CTip	&fromTip = _Tips[from],
-			&toTip = _Tips[to];
-
-	toTip.Edges |= fromTip.Edges;
-
-	uint	i;
-	for (i=0; i<fromTip.Chains.size(); ++i)
-	{
-		CChain	&chain = _Chains[fromTip.Chains[i].Chain];
-		if (fromTip.Chains[i].Start)
-			chain._StartTip = to;
-		else
-			chain._StopTip = to;
-
-		toTip.Chains.push_back(CTip::CChainTip(fromTip.Chains[i].Chain, fromTip.Chains[i].Start));
-	}
-
-	fromTip.Chains.clear();
-	fromTip.Edges = 0;
-}
-
-
-
-
-
-
 void	NLPACS::CLocalRetriever::dumpSurface(uint surf) const
 {
 	const CRetrievableSurface	&surface = _Surfaces[surf];
@@ -281,7 +253,7 @@ sint32	NLPACS::CLocalRetriever::addSurface(uint8 normalq, uint8 orientationq,
 }
 
 sint32	NLPACS::CLocalRetriever::addChain(const vector<CVector> &verts,
-										  sint32 left, sint32 right, sint edge)
+										  sint32 left, sint32 right)
 {
 	vector<CVector>	vertices = verts;
 	uint		i;
@@ -359,7 +331,7 @@ sint32	NLPACS::CLocalRetriever::addChain(const vector<CVector> &verts,
 	chain._StopTip = 0xffff;
 
 	// make the chain and its subchains.
-	chain.make(vertices, left, right, _OrderedChains, (uint16)newId, edge, _FullOrderedChains);
+	chain.make(vertices, left, right, _OrderedChains, (uint16)newId, _FullOrderedChains);
 
 	return newId;
 }
@@ -408,7 +380,8 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 
 			while (true)
 			{
-				loopCloseDistance = hybrid2dNorm(loopStart-currentEnd);
+//				loopCloseDistance = hybrid2dNorm(loopStart-currentEnd);
+				loopCloseDistance = (loopStart-currentEnd).norm();
 
 				// choose the best matching start vector
 				sint	bestChain = -1;
@@ -419,7 +392,8 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 					if (chainFlags[j])
 						continue;
 					thisStart = getStartVector(surface._Chains[j].Chain, i);
-					float	d = hybrid2dNorm(thisStart-currentEnd);
+//					float	d = hybrid2dNorm(thisStart-currentEnd);
+					float	d = (thisStart-currentEnd).norm();
 					if (d < best)
 					{
 						best = d;
@@ -427,7 +401,7 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 					}
 				}
 
-				if (bestChain == -1 && loopCloseDistance > 3.0e-2f)
+				if ((bestChain == -1 || best > 3.0e-2f)&& loopCloseDistance > 3.0e-2f)
 				{
 					nlwarning("in NLPACS::CLocalRetriever::computeTips()");
 
@@ -446,7 +420,8 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 					nlwarning("loopCloseDistance=%f", loopCloseDistance);
 					nlerror("Couldn't close loop on surface=%d", i);
 				}
-				else if (best > 1.0e0f && loopCloseDistance < 3.0e-2f)
+				else if (best > 1.0e0f && loopCloseDistance < 3.0e-2f ||
+						 loopCloseDistance < 1.0e-3f)
 				{
 					break;
 				}
@@ -526,17 +501,15 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 		uint	startTip = _Chains[i].getStartTip(),
 				stopTip = _Chains[i].getStopTip();
 
+/*
 		if (_Chains[i].getEdge() >= 0 && startTip == stopTip)
 		{
 			nlwarning("NLPACS::CLocalRetriever::computeLoopsAndTips(): chain %d on edge %d has same StartTip and StopTip", i, _Chains[i].getEdge(), startTip, stopTip);
 		}
-
-		uint	edgeFlag = (_Chains[i].getEdge() >= 0) ? (1<<_Chains[i].getEdge()) : 0;
+*/
 
 		_Tips[startTip].Chains.push_back(CTip::CChainTip(i, true));
-		_Tips[startTip].Edges |= edgeFlag;
 		_Tips[stopTip].Chains.push_back(CTip::CChainTip(i, false));
-		_Tips[stopTip].Edges |= edgeFlag;
 	}
 
 	for (i=0; i<_Surfaces.size(); ++i)
@@ -550,8 +523,21 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 				_Surfaces[i]._Loops[j].Length += _Chains[_Surfaces[i]._Chains[_Surfaces[i]._Loops[j][k]].Chain].getLength();
 		}
 
-//		dumpSurface(i);
 	}
+
+/*
+	dumpSurface(80);
+	CRetrievableSurface	&surface = _Surfaces[80];
+
+	for (j=0; j<surface._Chains.size(); ++j)
+	{
+		CVector	start = getStartVector(surface._Chains[j].Chain, 80);
+		CVector	end = getStopVector(surface._Chains[j].Chain, 80);
+		nlinfo("surf=%d chain=%d", i, surface._Chains[j].Chain);
+		nlinfo("start=(%f,%f,%f)", start.x, start.y, start.z);
+		nlinfo("end=  (%f,%f,%f)", end.x, end.y, end.z);
+	}
+*/
 }
 
 
@@ -564,40 +550,19 @@ void	NLPACS::CLocalRetriever::sortTips()
 
 
 
-void	NLPACS::CLocalRetriever::findEdgeTips()
-{
-	uint	i, j;
-
-	for (i=0; i<_Tips.size(); ++i)
-		for (j=0; j<4; ++j)
-			if (_Tips[i].Edges & (1<<j))
-				_EdgeTips[j].push_back(i);
-
-	// sorts the tips on each edge so we can directly match them at instance linking.
-	sort(_EdgeTips[0].begin(), _EdgeTips[0].end(), CYPred(&_Tips, false));
-	sort(_EdgeTips[1].begin(), _EdgeTips[1].end(), CXPred(&_Tips, false));
-	sort(_EdgeTips[2].begin(), _EdgeTips[2].end(), CYPred(&_Tips, true));
-	sort(_EdgeTips[3].begin(), _EdgeTips[3].end(), CXPred(&_Tips, true));
-}
-
-void	NLPACS::CLocalRetriever::findEdgeChains()
+void	NLPACS::CLocalRetriever::findBorderChains()
 {
 	uint	chain;
 
 	// for each chain, if it belongs to an edge of the
-	// local retriever, then adds it to the _EdgeChains tables.
+	// local retriever, then adds it to the _BorderChains.
 	for (chain=0; chain<_Chains.size(); ++chain)
-	{
-		sint	edge = _Chains[chain]._Edge;
-
-		if (edge >= 0)
+		if (_Chains[chain].isBorderChain())
 		{
-			sint32	numOnEdge = _EdgeChains[edge].size();
-			_EdgeChains[edge].push_back(chain);
-			// sets index so we can easily retrieve the neighbor after linking.
-			_Chains[chain].setIndexOnEdge(edge, numOnEdge);
+			sint32	index = _BorderChains.size();
+			_BorderChains.push_back(chain);
+			_Chains[chain].setBorderChainIndex(index);
 		}
-	}
 }
 
 void	NLPACS::CLocalRetriever::updateChainIds()
@@ -710,10 +675,7 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 	f.serialCont(_FullOrderedChains);
 	f.serialCont(_Surfaces);
 	f.serialCont(_Tips);
-	for (i=0; i<4; ++i)
-		f.serialCont(_EdgeTips[i]);
-	for (i=0; i<4; ++i)
-		f.serialCont(_EdgeChains[i]);
+	f.serialCont(_BorderChains);
 	for (i=0; i<NumCreatureModels; ++i)
 		f.serialCont(_Topologies[i]);
 	f.serial(_ChainQuad);
@@ -933,7 +895,7 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 		}
 	}
 
-	dumpSurface(surfaceId);
+//	dumpSurface(surfaceId);
 
 	path.push_back(CVector2s(A.Estimation));
 

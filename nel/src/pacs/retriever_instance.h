@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.3 2001/06/13 08:46:42 legros Exp $
+ * $Id: retriever_instance.h,v 1.4 2001/07/09 08:26:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,14 +55,20 @@ const	float	SnapPrecision= 1024;
 class CRetrieverInstance
 {
 public:
-	class CSurfaceEdge
+	/**
+	 * A neighbor link
+	 */
+	class CLink
 	{
 	public:
-		sint32							From;
-		sint32							To;
-	public:
-		CSurfaceEdge(sint32 from=0, sint32 to=0) : From(from), To(to) {}
+		uint16				Instance;
+		uint16				BorderChainId;
+		uint16				ChainId;
+		uint16				SurfaceId;
+		CLink() : Instance(0xffff), BorderChainId(0xffff), ChainId(0xffff), SurfaceId(0xffff) {}
+		void	serial(NLMISC::IStream &f) { f.serial(Instance, BorderChainId, ChainId, SurfaceId); }
 	};
+
 
 protected:
 	friend class CGlobalRetriever;
@@ -123,14 +129,15 @@ protected:
 	NLMISC::CVector						_Origin;
 	//@}
 
+	/// @name Instance linkage.
+	//@{
+
 	/// The instance ids of the neighbors.
-	sint32								_Neighbors[4];
+	std::vector<sint32>					_Neighbors;
 
-	/// The neighbor tips on each edge (in the corresponding neighbor.)
-	std::vector<uint16>					_EdgeTipLinks[4];
-
-	/// The neighbor  chains on each edge (cf tips.)
-	std::vector<uint16>					_EdgeChainLinks[4];
+	/// The neighbor  chains on the border (cf tips.)
+	std::vector<CLink>					_BorderChainLinks;
+	//@}
 
 	/// The BBox.
 //	NLMISC::CAABBox						_BBox;
@@ -141,10 +148,10 @@ public:
 
 	/// Resets the instance. This doesn't affect any neighboring instances...
 	void								reset();
+	/// Resets links to the given instance. This doesn't affect any neighbor.
+	void								resetLinks(uint32 id);
 	/// Resets links of the instance. This doesn't affect any neighboring instances...
 	void								resetLinks();
-	/// Resets links of the instance on the given edge. This doesn't affect any neighboring instances...
-	void								resetLinks(uint edge);
 
 	/// Returns the id of this instance.
 	sint32								getInstanceId() const { return _InstanceId; }
@@ -156,18 +163,15 @@ public:
 	NLMISC::CVector						getOrigin() const { return _Origin; }
 
 
+	/// Gets the neighbors.
+	std::vector<sint32>					getNeighbors() const { return _Neighbors; }
 	/// Gets the id of the neighbor on the edge.
-	sint32								getNeighbor(uint edge) const { return _Neighbors[edge]; }
-
-	/// Gets the ids of the neighbor tips on the given edge.
-	const std::vector<uint16>			&getEdgeTipLinks(uint edge) const { return _EdgeTipLinks[edge]; }
-	/// Gets the id of the nth neighbor tip on the given edge.
-	uint16								getEdgeTipLink(uint edge, uint n) const { return _EdgeTipLinks[edge][n]; }
+	sint32								getNeighbor(uint n) const { return _Neighbors[n]; }
 
 	/// Gets the ids of the neighbor chains on the given edge.
-	const std::vector<uint16>			&getEdgeChainLinks(uint edge) const { return _EdgeChainLinks[edge]; }
+	const std::vector<CLink>			&getBorderChainLinks() const { return _BorderChainLinks; }
 	/// Gets the id of the nth neighbor chain on the given edge.
-	uint16								getEdgeChainLink(uint edge, uint n) const { return _EdgeChainLinks[edge][n]; }
+	CLink								getBorderChainLink(uint n) const { return _BorderChainLinks[n]; }
 
 	/// Returns the number of the edge on the instance corresponding to the edge on the retriever.
 	uint8								getInstanceEdge(uint8 retrieverEdge) const { return (retrieverEdge+_Orientation)%4; }
@@ -183,10 +187,10 @@ public:
 											 uint8 orientation, const NLMISC::CVector &origin);
 
 	/// Links the instance to a given neighbor on the given edge.
-	void								link(const CRetrieverInstance &neighbor, uint8 edge,
+	void								link(CRetrieverInstance &neighbor,
 											 const std::vector<CLocalRetriever> &retrievers);
 
-	/// Unlinks the given edge. The neighbor instance is AFFECTED.
+	/// Unlinks the instance. The neighbor instance are AFFECTED.
 	void								unlink(std::vector<CRetrieverInstance> &instances);
 
 

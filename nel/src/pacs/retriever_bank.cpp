@@ -1,7 +1,7 @@
 /** \file retriever_bank.cpp
  *
  *
- * $Id: retriever_bank.cpp,v 1.3 2001/06/22 15:03:06 corvazier Exp $
+ * $Id: retriever_bank.cpp,v 1.4 2001/07/09 08:26:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,6 +62,15 @@ void	NLPACS::URetrieverBank::deleteRetrieverBank (NLPACS::URetrieverBank *retrie
 
 	// Delete
 	delete r;
+}
+
+void	NLPACS::CRetrieverBank::clean()
+{
+	uint	i;
+	for (i=0; i<_Retrievers.size(); ++i)
+	{
+		_Retrievers[i].flushFullOrderedChains();
+	}
 }
 
 // end of CRetrieverBank methods implementation

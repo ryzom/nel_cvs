@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.14 2001/06/13 08:46:42 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.15 2001/07/09 08:26:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,22 +49,29 @@ void	NLPACS::CRetrieverInstance::resetLinks()
 	// WARNING !!
 	// this is a HARD reset !
 	// only the instance i reset, no care about neighbors !!
-	for (i=0; i<4; ++i)
-	{
+	for (i=0; i<_Neighbors.size(); ++i)
 		_Neighbors[i] = -1;
-		_EdgeTipLinks[i].clear();
-		_EdgeChainLinks[i].clear();
-	}
+	_BorderChainLinks.clear();
 }
 
-void	NLPACS::CRetrieverInstance::resetLinks(uint edge)
+void	NLPACS::CRetrieverInstance::resetLinks(uint32 id)
 {
-	// WARNING !!
-	// this is a HARD reset !
-	// only the instance i reset, no care about neighbors !!
-	_Neighbors[edge] = -1;
-	_EdgeTipLinks[edge].clear();
-	_EdgeChainLinks[edge].clear();
+	vector<sint32>::iterator	rit;
+	for (rit=_Neighbors.begin(); rit!=_Neighbors.end(); )
+		if (*rit == (sint32)id)
+			rit = _Neighbors.erase(rit);
+		else
+			++rit;
+
+	uint	i;
+	for (i=0; i<_BorderChainLinks.size(); ++i)
+		if (_BorderChainLinks[i].Instance == id)
+		{
+			_BorderChainLinks[i].Instance = 0xffff;
+			_BorderChainLinks[i].BorderChainId = 0xffff;
+			_BorderChainLinks[i].ChainId = 0xffff;
+			_BorderChainLinks[i].SurfaceId = 0xffff;
+		}
 }
 
 void	NLPACS::CRetrieverInstance::reset()
@@ -96,6 +103,8 @@ void	NLPACS::CRetrieverInstance::init(const CLocalRetriever &retriever)
 		CVector	pos = getGlobalPosition(retriever.getSurfaces()[i].getCenter());
 		_NodesInformation[i].Position = CVector2f(pos.x, pos.y);
 	}
+
+	_BorderChainLinks.resize(retriever.getBorderChains().size());
 }
 
 void	NLPACS::CRetrieverInstance::make(sint32 instanceId, sint32 retrieverId, const CLocalRetriever &retriever,
@@ -120,137 +129,87 @@ void	NLPACS::CRetrieverInstance::make(sint32 instanceId, sint32 retrieverId, con
 /* Links the current retriever instance to another instance
  * on the given edge.
  */
-void	NLPACS::CRetrieverInstance::link(const CRetrieverInstance &neighbor, uint8 edge,
+void	NLPACS::CRetrieverInstance::link(CRetrieverInstance &neighbor,
 										 const vector<CLocalRetriever> &retrievers)
 {
-	uint	nEdge = (edge+2)%4;
-
-	// First check if there is no previous link
-	if (_Neighbors[edge] != -1 && _Neighbors[edge] != neighbor._InstanceId)
-	{
-		nlwarning("in call to NLPACS::CRetrieverInstance::link");
-		nlwarning("_InstanceId=%d _RetrieverId=%d _Neighbors[%d]=%d", _InstanceId, _RetrieverId, edge, _Neighbors[edge]);
-		nlwarning("neighbor._InstanceId=%d", neighbor._InstanceId);
-		nlerror("Neighbor %d has already been set to %d in instance %d", edge, _Neighbors[edge], _InstanceId);
-	}
-
-	if (_Neighbors[edge] == neighbor._InstanceId)
-		return;
-
-	if (neighbor._Neighbors[nEdge] != -1 && neighbor._Neighbors[nEdge] != _InstanceId)
-	{
-		nlwarning("in call to NLPACS::CRetrieverInstance::link");
-		nlerror("Neighbor %d (instance %d) has already a neighbor (instance %d) on edge %d", edge, neighbor._InstanceId, neighbor._Neighbors[nEdge], nEdge);
-	}
-
-	_Neighbors[edge] = neighbor._InstanceId;
-
-	const CLocalRetriever	&retriever = retrievers[_RetrieverId];
-	const CLocalRetriever	&nRetriever = retrievers[neighbor._RetrieverId];
-
-	uint	retrieverEdge = (edge+4-_Orientation)%4;
-	uint	nRetrieverEdge = (nEdge+4-neighbor._Orientation)%4;
-
-	const vector<CLocalRetriever::CTip>			&tips = retriever.getTips(),
-												&nTips = nRetriever.getTips();
-	const vector<uint16>						&edgeTips = retriever.getEdgeTips(retrieverEdge),
-												&nEdgeTips = nRetriever.getEdgeTips(nRetrieverEdge);
-
-	if (edgeTips.size() != nEdgeTips.size())
-	{
-		uint	ets = edgeTips.size(),
-				nets = nEdgeTips.size();
-		nlwarning("in call to NLPACS::CRetrieverInstance::link");
-		nlerror("Instance %d and instance %d have different number of tips on common edge", _InstanceId, neighbor._InstanceId);
-	}
-
 	uint	i, j;
+	for (i=0; i<_Neighbors.size(); ++i)
+		if (_Neighbors[i] == neighbor._InstanceId)
+			return;
 
-	for (i=0; i<edgeTips.size(); ++i)
-	{
-		CVector	point = neighbor.getLocalPosition(getGlobalPosition(tips[edgeTips[i]].Point));
-		sint	bestTip = -1;
-		float	bestDistance = 1.0e10f;
-
-		for (j=0; j<nEdgeTips.size(); ++j)
-		{
-			float	d = (nTips[nEdgeTips[j]].Point-point).norm();
-			if (d < bestDistance)
-			{
-				bestDistance = d;
-				bestTip = nEdgeTips[j];
-			}
-		}
-
-		if (bestDistance > 1.0f)
-		{
-			nlwarning("in call to NLPACS::CRetrieverInstance::link");
-			nlerror("Impossible to match tip");
-		}
-
-		_EdgeTipLinks[edge].push_back(bestTip);
-	}
+	const CLocalRetriever						&retriever = retrievers[_RetrieverId];
+	const CLocalRetriever						&nRetriever = retrievers[neighbor._RetrieverId];
 
 	const vector<CChain>						&chains = retriever.getChains(),
 												&nChains = nRetriever.getChains();
-	const vector<uint16>						&edgeChains = retriever.getEdgeChains(retrieverEdge),
-												&nEdgeChains = nRetriever.getEdgeChains(nRetrieverEdge);
+	const vector<uint16>						&borderChains = retriever.getBorderChains(),
+												&nBorderChains = nRetriever.getBorderChains();
 
-	if (edgeChains.size() != nEdgeChains.size())
+	vector< pair<CVector,CVector> >				chainTips,
+												nChainTips;
+
+	for (i=0; i<borderChains.size(); ++i)
+		chainTips.push_back(make_pair(retriever.getTip(chains[borderChains[i]].getStartTip()).Point,
+									  retriever.getTip(chains[borderChains[i]].getStopTip()).Point));
+
+	/// \todo Compute real position using _Orientation
+
+	CVector	translation = neighbor._Origin - _Origin;
+
+	for (i=0; i<nBorderChains.size(); ++i)
+		nChainTips.push_back(make_pair(nRetriever.getTip(nChains[nBorderChains[i]].getStartTip()).Point+translation,
+									   nRetriever.getTip(nChains[nBorderChains[i]].getStopTip()).Point+translation));
+
+	for (i=0; i<borderChains.size(); ++i)
 	{
-		nlwarning("in call to NLPACS::CRetrieverInstance::link");
-		nlerror("Instance %d and instance %d have different number of chains on common edge", _InstanceId, neighbor._InstanceId);
-	}
+		// if the chain is already linked, just step
+		if (_BorderChainLinks[i].Instance != 0xffff || _BorderChainLinks[i].BorderChainId != 0xffff ||
+			_BorderChainLinks[i].ChainId != 0xffff || _BorderChainLinks[i].SurfaceId != 0xffff)
+			continue;
 
-	for (i=0; i<edgeChains.size(); ++i)
-	{
-		uint16	tip0 = chains[edgeChains[i]].getStartTip(),
-				tip1 = chains[edgeChains[i]].getStopTip();
+		float	bestDist = 1.0f;
+		sint	best = -1;
 
-		for (j=0; j<edgeTips.size() && edgeTips[j]!=tip0; ++j)	;
-		tip0 = _EdgeTipLinks[edge][j];
-		for (j=0; j<edgeTips.size() && edgeTips[j]!=tip1; ++j)	;
-		tip1 = _EdgeTipLinks[edge][j];
-
-		bool	found = false;
-
-		for (j=0; j<nEdgeChains.size(); ++j)
+		for (j=0; j<nBorderChains.size(); ++j)
 		{
-			uint16	nTip0 = nChains[nEdgeChains[j]].getStartTip(),
-					nTip1 = nChains[nEdgeChains[j]].getStopTip();
-			
-			if ((nTip0 == tip0 && nTip1 == tip1) || (nTip0 == tip1 && nTip1 == tip0))
+			if (neighbor._BorderChainLinks[j].Instance != 0xffff || neighbor._BorderChainLinks[j].BorderChainId != 0xffff ||
+				neighbor._BorderChainLinks[j].ChainId != 0xffff || neighbor._BorderChainLinks[j].SurfaceId != 0xffff)
+				continue;
+
+			float	d = (chainTips[i].first-nChainTips[j].second).norm()+(chainTips[i].second-nChainTips[j].first).norm();
+			if (d < bestDist)
 			{
-				found = true;
-				break;
+				bestDist = d;
+				best = j;
 			}
 		}
 
-		if (!found)
-		{
-			nlwarning("in call to NLPACS::CRetrieverInstance::link");
-			nlerror("Couldn't find opposite edge (on instance %d) to edge %d (on instance %d)", neighbor._InstanceId, edgeChains[i], _InstanceId);
-		}
+		// if no best match, just don't link
+		if (bestDist > 1.0e-1f || best == -1)
+			continue;
 
-		_EdgeChainLinks[edge].push_back(nEdgeChains[j]);
+		_BorderChainLinks[i].Instance = (uint16)neighbor._InstanceId;
+		_BorderChainLinks[i].BorderChainId = (uint16)best;
+		_BorderChainLinks[i].ChainId = nBorderChains[_BorderChainLinks[i].BorderChainId];
+		_BorderChainLinks[i].SurfaceId = (uint16)nChains[_BorderChainLinks[i].ChainId].getLeft();
+
+		neighbor._BorderChainLinks[best].Instance = (uint16)_InstanceId;
+		neighbor._BorderChainLinks[best].BorderChainId = (uint16)i;
+		neighbor._BorderChainLinks[best].ChainId = borderChains[neighbor._BorderChainLinks[best].BorderChainId];
+		neighbor._BorderChainLinks[best].SurfaceId = (uint16)chains[neighbor._BorderChainLinks[best].ChainId].getLeft();
 	}
+
+	_Neighbors.push_back(neighbor._InstanceId);
+	neighbor._Neighbors.push_back(_InstanceId);
 }
 
 
 void	NLPACS::CRetrieverInstance::unlink(vector<CRetrieverInstance> &instances)
 {
-	uint	edge;
+	uint	i;
 
-	for (edge=0; edge<4; ++edge)
-	{
-		// on each edge, reset links and neighbor reverse links...
-		if (_Neighbors[edge] != -1)
-		{
-			CRetrieverInstance	&neighbor = instances[_Neighbors[edge]];
-			neighbor.resetLinks((edge+2)%4);
-		}
-		resetLinks(edge);
-	}
+	for (i=0; i<_Neighbors.size(); ++i)
+		instances[_Neighbors[i]].resetLinks(_InstanceId);
 }
 
 
@@ -427,12 +386,8 @@ void	NLPACS::CRetrieverInstance::serial(NLMISC::IStream &f)
 {
 	uint	i;
 	f.serial(_InstanceId, _RetrieverId, _Orientation, _Origin);
-	for (i=0; i<4; ++i)
-	{
-		f.serial(_Neighbors[i]);
-		f.serialCont(_EdgeTipLinks[i]);
-		f.serialCont(_EdgeChainLinks[i]);
-	}
+	f.serialCont(_Neighbors);
+	f.serialCont(_BorderChainLinks);
 
 	// serialises the number of nodes
 	uint16	totalNodes = _RetrieveTable.size();

@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: chain.h,v 1.3 2001/07/09 08:26:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -187,9 +187,6 @@ protected:
 	uint16								_StartTip;
 	uint16								_StopTip;
 
-	/// The edge on which the chain is stuck (-1 if not stuck on any edge)
-	sint8								_Edge;
-
 	/// The length of the whole chain.
 	float								_Length;
 
@@ -201,10 +198,8 @@ protected:
 	friend class CLocalRetriever;
 
 	/// Build the whole surface from a vector of CVector and the left and right surfaces.
-	void								make(const std::vector<NLMISC::CVector> &vertices, sint32 left, sint32 right, std::vector<COrderedChain> &chains, uint16 thisId, sint edges,
+	void								make(const std::vector<NLMISC::CVector> &vertices, sint32 left, sint32 right, std::vector<COrderedChain> &chains, uint16 thisId,
 											 std::vector<COrderedChain3f> &fullChains);
-
-	void								setIndexOnEdge(uint edge, sint32 index);
 
 	void								setLoopIndexes(sint32 surface, uint loop, uint loopIndex)
 	{
@@ -220,10 +215,12 @@ protected:
 		}
 	}
 
+	void								setBorderChainIndex(sint32 id)	{ _Right = convertBorderChainId(id); }
+
 public:
 
 	/// Constructor.
-	CChain() :	_Left(-1), _Right(-1), _StartTip(0xffff), _StopTip(0xffff), _Edge(-1), _Length(0.0f),
+	CChain() :	_Left(-1), _Right(-1), _StartTip(0xffff), _StopTip(0xffff), _Length(0.0f),
 				_LeftLoop(0), _LeftLoopIndex(0), _RightLoop(0), _RightLoopIndex(0) {}
 
 	/// Returns a vector of ordered chain ids that compose the entire chain.
@@ -245,26 +242,29 @@ public:
 	/// returns the legnth of the whole chain.
 	float								getLength() const { return _Length; }
 
-	/// Gets the index of the chain on the given edge (in the local retriever object.)
-	sint32								getIndexOnEdge(sint edge) const
+	/// Gets the index of the chain on border (in the local retriever object.)
+	sint32								getBorderChainIndex() const
 	{
-		return (_Edge == edge && isEdgeId(_Right)) ? convertEdgeId(_Right) : -1;
+		return (isBorderChainId(_Right)) ? convertBorderChainId(_Right) : -1;
 	}
 
-	/// Returns true iff  the given id corresponds to a link on an edge.
-	static bool							isEdgeId(sint32 id) { return id <= -256; }
+	/// Returns true iff the given id corresponds to a link on the border.
+	static bool							isBorderChainId(sint32 id) { return id <= -256; }
 
-	/// Converts the edge id into the real index to the link (in the EdgeChainLinks of the CRetrieverInstance.)
-	static sint32						convertEdgeId(sint32 id) { return -(id+256); }
+	/// Converts the surf id into the real index to the link (in the BorderChainLinks of the CRetrieverInstance.)
+	static sint32						convertBorderChainId(sint32 id) { return -(id+256); }
+
+	/// Returns true iff the chaion is a border chain
+	bool								isBorderChain() const { return isBorderChainId(_Right); }
+
+	/// Returns true iff the chaion is a border chain
+	static sint32						getDummyBorderChainId() { return convertBorderChainId(0); }
 
 	/// Returns the id of the start tip of the chain.
 	uint16								getStartTip() const { return _StartTip; }
 
 	/// Returns the id of the end tip of the chain.
 	uint16								getStopTip() const { return _StopTip; }
-
-	/// Returns the number of the retriever's edge on which the chain is stuck (-1 if none.)
-	sint8								getEdge() const { return _Edge; }
 
 	/// Serialises the CChain object.
 	void								serial(NLMISC::IStream &f);

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.33 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.34 2001/07/09 08:26:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,17 @@
 #include "pacs/global_retriever.h"
 #include "pacs/retriever_bank.h"
 
+
+#include "nel/misc/time_nl.h"
+extern NLMISC::TTicks	AStarTicks;
+extern NLMISC::TTicks	PathTicks;
+extern NLMISC::TTicks	ChainTicks;
+extern NLMISC::TTicks	SurfTicks;
+NLMISC::TTicks			ThisAStarTicks;
+NLMISC::TTicks			ThisPathTicks;
+NLMISC::TTicks			ThisChainTicks;
+NLMISC::TTicks			ThisSurfTicks;
+
 using namespace std;
 using namespace NLMISC;
 
@@ -62,6 +73,50 @@ const NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::getInstance(const CV
 	return getInstance((uint)(offsetX/zdim), (uint)(offsetY/zdim));
 }
 
+void	NLPACS::CGlobalRetriever::getInstances(const CVector &p, const CRetrieverInstance *instances[4]) const
+{
+	float				offsetX = p.x - _BBox.getMin().x;
+	float				offsetY = _BBox.getMax().y - p.y;
+	// please NOTE that offsetY decreases as position.y increases!!
+	static const float	zdim = 160.0f;
+	uint				xp = (uint)(offsetX/zdim),
+						yp = (uint)(offsetY/zdim);
+	CVector				c = getInstanceCenter(xp, yp);
+
+	instances[0] = getInstancePtr(xp, yp);
+	
+	if (p.x > c.x)
+	{
+		if (p.y > c.y)
+		{
+			instances[1] = getInstancePtr(xp+1, yp);
+			instances[2] = getInstancePtr(xp, yp-1);
+			instances[3] = getInstancePtr(xp+1, yp-1);
+		}
+		else
+		{
+			instances[1] = getInstancePtr(xp+1, yp);
+			instances[2] = getInstancePtr(xp, yp+1);
+			instances[3] = getInstancePtr(xp+1, yp+1);
+		}
+	}
+	else
+	{
+		if (p.y > c.y)
+		{
+			instances[1] = getInstancePtr(xp-1, yp-1);
+			instances[2] = getInstancePtr(xp, yp-1);
+			instances[3] = getInstancePtr(xp-1, yp);
+		}
+		else
+		{
+			instances[1] = getInstancePtr(xp-1, yp);
+			instances[2] = getInstancePtr(xp-1, yp+1);
+			instances[3] = getInstancePtr(xp, yp+1);
+		}
+	}
+}
+
 //
 
 void	NLPACS::CGlobalRetriever::serial(NLMISC::IStream &f)
@@ -78,13 +133,46 @@ void	NLPACS::CGlobalRetriever::makeLinks(uint n)
 	uint	x, y;
 	convertId(n, x, y);
 
+	if (_Instances[n].getInstanceId() == -1)
+		return;
+
 	// links nth instance with its leftmost neighbor.
-	if (x > 0 && _Instances[n].getInstanceId() >= 0 && _Instances[n-1].getInstanceId() >= 0)
+	if (x > 0  && y > 0 && _Instances[n-1-_Width].getInstanceId() >= 0)
 	{
 		try
 		{
-			_Instances[n].link(_Instances[n-1], 0, _RetrieverBank->getRetrievers());
-			_Instances[n-1].link(_Instances[n], 2, _RetrieverBank->getRetrievers());
+			_Instances[n].link(_Instances[n-1-_Width], _RetrieverBank->getRetrievers());
+			_Instances[n-1-_Width].link(_Instances[n], _RetrieverBank->getRetrievers());
+		}
+		catch (Exception &e)
+		{
+			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
+			nlwarning("caught an exception: %s", e.what());
+		}
+	}
+
+	// links nth instance with its leftmost neighbor.
+	if (x > 0 && _Instances[n-1].getInstanceId() >= 0)
+	{
+		try
+		{
+			_Instances[n].link(_Instances[n-1], _RetrieverBank->getRetrievers());
+			_Instances[n-1].link(_Instances[n], _RetrieverBank->getRetrievers());
+		}
+		catch (Exception &e)
+		{
+			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
+			nlwarning("caught an exception: %s", e.what());
+		}
+	}
+
+	// links nth instance with its leftmost neighbor.
+	if (x > 0  && y < (uint)(_Height-1) && _Instances[n-1+_Width].getInstanceId() >= 0)
+	{
+		try
+		{
+			_Instances[n].link(_Instances[n-1+_Width], _RetrieverBank->getRetrievers());
+			_Instances[n-1+_Width].link(_Instances[n], _RetrieverBank->getRetrievers());
 		}
 		catch (Exception &e)
 		{
@@ -94,12 +182,12 @@ void	NLPACS::CGlobalRetriever::makeLinks(uint n)
 	}
 
 	// links nth instance with its downmost neighbor.
-	if (y < (uint)(_Height-1) && _Instances[n].getInstanceId() >= 0 && _Instances[n+_Width].getInstanceId() >= 0)
+	if (y < (uint)(_Height-1) && _Instances[n+_Width].getInstanceId() >= 0)
 	{
 		try
 		{
-			_Instances[n].link(_Instances[n+_Width], 1, _RetrieverBank->getRetrievers());
-			_Instances[n+_Width].link(_Instances[n], 3, _RetrieverBank->getRetrievers());
+			_Instances[n].link(_Instances[n+_Width], _RetrieverBank->getRetrievers());
+			_Instances[n+_Width].link(_Instances[n], _RetrieverBank->getRetrievers());
 		}
 		catch (Exception &e)
 		{
@@ -109,12 +197,42 @@ void	NLPACS::CGlobalRetriever::makeLinks(uint n)
 	}
 
 	// links nth instance with its rightmost neighbor.
-	if (x < (uint)(_Width-1) && _Instances[n].getInstanceId() >= 0 && _Instances[n+1].getInstanceId() >= 0)
+	if (x < (uint)(_Width-1) && y < (uint)(_Height-1) && _Instances[n+1+_Width].getInstanceId() >= 0)
 	{
 		try
 		{
-			_Instances[n].link(_Instances[n+1], 2, _RetrieverBank->getRetrievers());
-			_Instances[n+1].link(_Instances[n], 0, _RetrieverBank->getRetrievers());
+			_Instances[n].link(_Instances[n+1+_Width], _RetrieverBank->getRetrievers());
+			_Instances[n+1+_Width].link(_Instances[n], _RetrieverBank->getRetrievers());
+		}
+		catch (Exception &e)
+		{
+			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
+			nlwarning("caught an exception: %s", e.what());
+		}
+	}
+
+	// links nth instance with its rightmost neighbor.
+	if (x < (uint)(_Width-1) && _Instances[n+1].getInstanceId() >= 0)
+	{
+		try
+		{
+			_Instances[n].link(_Instances[n+1], _RetrieverBank->getRetrievers());
+			_Instances[n+1].link(_Instances[n], _RetrieverBank->getRetrievers());
+		}
+		catch (Exception &e)
+		{
+			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
+			nlwarning("caught an exception: %s", e.what());
+		}
+	}
+
+	// links nth instance with its rightmost neighbor.
+	if (x < (uint)(_Width-1) && y > 0 && _Instances[n+1-_Width].getInstanceId() >= 0)
+	{
+		try
+		{
+			_Instances[n].link(_Instances[n+1-_Width], _RetrieverBank->getRetrievers());
+			_Instances[n+1-_Width].link(_Instances[n], _RetrieverBank->getRetrievers());
 		}
 		catch (Exception &e)
 		{
@@ -124,12 +242,12 @@ void	NLPACS::CGlobalRetriever::makeLinks(uint n)
 	}
 
 	// links nth instance with its uppermost neighbor.
-	if (y > 0 && _Instances[n].getInstanceId() >= 0 && _Instances[n-_Width].getInstanceId() >= 0)
+	if (y > 0 && _Instances[n-_Width].getInstanceId() >= 0)
 	{
 		try
 		{
-			_Instances[n].link(_Instances[n-_Width], 3, _RetrieverBank->getRetrievers());
-			_Instances[n-_Width].link(_Instances[n], 1, _RetrieverBank->getRetrievers());
+			_Instances[n].link(_Instances[n-_Width], _RetrieverBank->getRetrievers());
+			_Instances[n-_Width].link(_Instances[n], _RetrieverBank->getRetrievers());
 		}
 		catch (Exception &e)
 		{
@@ -185,6 +303,36 @@ NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint x, uint 
 
 NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated) const
 {
+	// the retrieved position
+	CGlobalPosition				result = CGlobalPosition(-1, CLocalRetriever::CLocalPosition(-1, estimated));
+	// get the 4 best matching instances
+	const CRetrieverInstance	*instances[4];
+	getInstances(estimated, instances);
+
+	uint	i;
+	float	bestDist = 1.0e10f;
+
+	// for each instance, try to retrieve the position
+	for (i=0; i<4; ++i)
+	{
+		if (instances[i] != NULL)
+		{
+			// if the retrieved position is on a surface and it best match the estimated position
+			// remember it
+			CLocalRetriever::CLocalPosition	ret = instances[i]->retrievePosition(estimated, _RetrieverBank->getRetriever(instances[i]->getRetrieverId()));
+			float	d = (float)fabs(estimated.z-ret.Estimation.z);
+			if (d < bestDist && ret.Surface != -1)
+			{
+				bestDist = d;
+				result.LocalPosition = ret;
+				result.InstanceId = instances[i]->getInstanceId();
+			}
+		}
+	}
+
+	return result;
+	
+/*
 	const CRetrieverInstance	&instance = getInstance(estimated);
 	if (instance.getRetrieverId() >= 0)
 	{
@@ -197,6 +345,7 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 		// if there is no instance there, return a blank position
 		return CGlobalPosition(instance.getInstanceId(), CLocalRetriever::CLocalPosition(-1, estimated));
 	}
+*/
 }
 
 CVector		NLPACS::CGlobalRetriever::getGlobalPosition(const UGlobalPosition &global) const
@@ -238,11 +387,15 @@ CVector		NLPACS::CGlobalRetriever::getInstanceCenter(uint x, uint y) const
 
 //
 
-void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CGlobalPosition &begin,
-													const NLPACS::CGlobalRetriever::CGlobalPosition &end,
+void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::UGlobalPosition &begin,
+													const NLPACS::UGlobalPosition &end,
 													vector<NLPACS::CRetrieverInstance::CAStarNodeAccess> &path,
 													uint32 forbidFlags) const
 {
+	TTicks  astarStart;
+	ThisAStarTicks = 0;
+	astarStart = CTime::getPerformanceTime();
+
 	// open and close lists
 	// TODO: Use a smart allocator to avoid huge alloc/free and memory fragmentation
 	// open is a priority queue (implemented as a stl multimap)
@@ -297,7 +450,6 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 		if (node == endNode)
 		{
 			// found a path
-			nlinfo("found a path");
 			CRetrieverInstance::CAStarNodeAccess			pathNode = node;
 			uint											numNodes = 0;
 			while (pathNode.InstanceId != -1)
@@ -318,6 +470,9 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 				pathNode = pathInfo.Parent;
 			}
 
+			ThisAStarTicks += (CTime::getPerformanceTime()-astarStart);
+
+			nlinfo("found a path");
 			for (i=0; i<path.size(); ++i)
 			{
 				CRetrieverInstance							&instance = _Instances[path[i].InstanceId];
@@ -326,18 +481,19 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 				if (path[i].ThroughChain != 0xffff)
 				{
 					const CChain								&chain = retriever.getChain(path[i].ThroughChain);
-					nlinfo("   chain: edge=%d left=%d right=%d", chain.getEdge(), chain.getLeft(), chain.getRight());
-					if (CChain::isEdgeId(chain.getRight()))
+					nlinfo("   chain: left=%d right=%d", chain.getLeft(), chain.getRight());
+					if (CChain::isBorderChainId(chain.getRight()))
 					{
-						sint	edge = instance.getInstanceEdge(chain.getEdge());
-						sint	instanceid = instance.getNeighbor(edge);
-						sint	id = instance.getEdgeChainLink(edge, CChain::convertEdgeId(chain.getRight()));
-						nlinfo("      right: edge=%d instance=%d surf=%d", edge, instanceid, id);
+						CRetrieverInstance::CLink	lnk = instance.getBorderChainLink(CChain::convertBorderChainId(chain.getRight()));
+						sint	instanceid = lnk.Instance;
+						sint	id = lnk.SurfaceId;
+						nlinfo("      right: instance=%d surf=%d", instanceid, id);
 					}
 				}
 			}
 			nlinfo("open.size()=%d", open.size());
 			nlinfo("close.size()=%d", close.size());
+
 			return;
 		}
 
@@ -358,14 +514,13 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 			sint32	nextNodeId = chains[i].Surface;
 			CRetrieverInstance::CAStarNodeAccess		nextNode;
 
-			if (CChain::isEdgeId(nextNodeId))
+			if (CChain::isBorderChainId(nextNodeId))
 			{
 				// if the chain points to another retriever
 
 				// first get the edge on the retriever
-				uint	edge = inst.getInstanceEdge(retriever.getChain(chains[i].Chain).getEdge());
-				sint	edgeIndex = CChain::convertEdgeId(nextNodeId);
-				nextNode.InstanceId = inst.getNeighbor(edge);
+				CRetrieverInstance::CLink	lnk = inst.getBorderChainLink(CChain::convertBorderChainId(nextNodeId));
+				nextNode.InstanceId = lnk.Instance;
 
 				if (nextNode.InstanceId < 0)
 					continue;
@@ -373,8 +528,7 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 				nextInstance = &_Instances[nextNode.InstanceId];
 				nextRetriever = &(_RetrieverBank->getRetriever(nextInstance->getRetrieverId()));
 
-				uint	chain = inst.getEdgeChainLink(edge, edgeIndex);
-				sint	nodeId = nextRetriever->getChain(chain).getLeft();
+				sint	nodeId = lnk.SurfaceId;
 				nlassert(nodeId >= 0);
 				nextNode.NodeId = (uint16)nodeId;
 			}
@@ -440,13 +594,21 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 
 
 
-void	NLPACS::CGlobalRetriever::findPath(const NLPACS::CGlobalRetriever::CGlobalPosition &begin, 
-										   const NLPACS::CGlobalRetriever::CGlobalPosition &end, 
+void	NLPACS::CGlobalRetriever::findPath(const NLPACS::UGlobalPosition &begin, 
+										   const NLPACS::UGlobalPosition &end, 
 										   NLPACS::CGlobalRetriever::CGlobalPath &path,
 										   uint32 forbidFlags) const
 {
+
 	vector<CRetrieverInstance::CAStarNodeAccess>	astarPath;
 	findAStarPath(begin, end, astarPath, forbidFlags);
+
+	TTicks	surfStart;
+	TTicks	chainStart;
+
+	ThisChainTicks = 0;
+	ThisSurfTicks = 0;
+	ThisPathTicks = 0;
 
 	path.clear();
 	path.resize(astarPath.size());
@@ -454,6 +616,7 @@ void	NLPACS::CGlobalRetriever::findPath(const NLPACS::CGlobalRetriever::CGlobalP
 	uint	i, j;
 	for (i=0; i<astarPath.size(); ++i)
 	{
+		chainStart = CTime::getPerformanceTime();
 		CLocalPath		&surf = path[i];
 		surf.InstanceId = astarPath[i].InstanceId;
 		const CLocalRetriever	&retriever = _RetrieverBank->getRetriever(_Instances[surf.InstanceId].getRetrieverId());
@@ -502,10 +665,18 @@ void	NLPACS::CGlobalRetriever::findPath(const NLPACS::CGlobalRetriever::CGlobalP
 				}
 			}
 		}
+		ThisChainTicks += (CTime::getPerformanceTime()-chainStart);
 
-
+		surfStart = CTime::getPerformanceTime();
 		retriever.findPath(surf.Start, surf.End, surf.Path, _InternalCST);
+		ThisSurfTicks += (CTime::getPerformanceTime()-surfStart);
 	}
+
+	ThisPathTicks = ThisAStarTicks+ThisChainTicks+ThisSurfTicks;
+	PathTicks += ThisPathTicks;
+	SurfTicks += ThisSurfTicks;
+	AStarTicks += ThisAStarTicks;
+	ChainTicks += ThisChainTicks;
 }
 
 
@@ -636,7 +807,7 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 
 			// If RightSurface is not an "edgeId" ie a pointer on a neighbor surface on an other retrieverInstance.
 			const	CChain		&originalChain= localRetriever.getChain(cc.ChainId);
-			if( !originalChain.isEdgeId(cc.RightSurface.SurfaceId) )
+			if( !originalChain.isBorderChainId(cc.RightSurface.SurfaceId) )
 			{
 				cc.RightSurface.RetrieverInstanceId= curInstance;
 			}
@@ -645,6 +816,11 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 				// we must find the surfaceIdent of the neighbor.
 				// \todo yoyo: TODO_INTERIOR: this work only for zone. Must work too for houses.
 
+				CRetrieverInstance::CLink	link;
+				// get the link to the next surface from the instance
+				link = retrieverInstance.getBorderChainLink(CChain::convertBorderChainId(cc.RightSurface.SurfaceId));
+
+/*
 				// On which edge of the zone is this chain.
 				sint	edgeChain= originalChain.getEdge();
 				nlassert(edgeChain>=0);
@@ -657,6 +833,12 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 				sint	neighborInstanceId= retrieverInstance.getNeighbor(edgeChain);
 				// store in the current collisionChain Right.
 				cc.RightSurface.RetrieverInstanceId= neighborInstanceId;
+*/
+
+				// get the neighbor instanceId.
+				sint	neighborInstanceId= link.Instance;
+				// store in the current collisionChain Right.
+				cc.RightSurface.RetrieverInstanceId= neighborInstanceId;
 
 				// If no instance near us, this is a WALL.
 				if(neighborInstanceId<0)
@@ -667,17 +849,26 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 				else
 				{
 					// Get the good neighbor surfaceId.
+					cc.RightSurface.SurfaceId= link.SurfaceId;
+
+					// Get the good neighbor surfaceId.
 					//================
 					// get the chainId of the neighborInstance 's localRetriever.
+/*
 					sint	neighborChainId= retrieverInstance.getEdgeChainLink(edgeChain, 
 						CChain::convertEdgeId(cc.RightSurface.SurfaceId));
 
-					// get the chain of the neighborInstance 's localRetriever.
+					sint	neighborBorderChain = link.Id;
 					const CRetrieverInstance	&neighborInstance= getInstance(neighborInstanceId);
+
+					sint	neighborChainId= (_RetrieverBank->getRetriever(neighborInstance.getRetrieverId())).getBorderChain(neighborBorderChain);
+
+					// get the chain of the neighborInstance 's localRetriever.
 					const CChain		&neighborChain= (_RetrieverBank->getRetriever(neighborInstance.getRetrieverId())).getChain(neighborChainId);
 
 					// Now we have this chain, we are sure that chain.Left is our SurfaceId of cc.Right.
 					cc.RightSurface.SurfaceId= neighborChain.getLeft();
+*/
 				}
 			}
 		}

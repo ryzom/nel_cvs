@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.13 2001/06/08 15:38:28 legros Exp $
+ * $Id: chain.cpp,v 1.14 2001/07/09 08:26:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,14 +129,13 @@ void	NLPACS::COrderedChain::serial(IStream &f)
 // the chains vector is the vector where to store generated ordered chains.
 // thisId is the current id of the CChain, and edge is the number of the edge the CChain belongs to (-1
 // if none.)
-void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 right, vector<COrderedChain> &chains, uint16 thisId, sint edge,
+void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 right, vector<COrderedChain> &chains, uint16 thisId,
 							 vector<COrderedChain3f> &fullChains)
 {
 	sint		first = 0, last = 0, i;
 
 	_Left = left;
 	_Right = right;
-	_Edge = edge;
 	_Length = 0.0f;
 
 	// splits the vertices list in ordered sub chains.
@@ -197,34 +196,9 @@ void	NLPACS::CChain::serial(IStream &f)
 	f.serialCont(_SubChains);
 	f.serial(_Left, _Right);
 	f.serial(_StartTip, _StopTip);
-	f.serial(_Edge);
 	f.serial(_Length);
 	f.serial(_LeftLoop, _LeftLoopIndex);
 	f.serial(_RightLoop, _RightLoopIndex);
-}
-
-// sets value to the right surface id for later edge link
-void	NLPACS::CChain::setIndexOnEdge(uint edge, sint32 index)
-{
-	// the _Right id should have been previously set to -2.
-	if (_Right >= 0)
-	{
-		nlwarning("in NLPACS::CChain::setIndexOnEdge()");
-		nlwarning("Tried to set the right surface of a chain whereas previous value (%d) is greater than -1", _Right);
-		return;
-	}
-
-	// The index must be positive or zero
-	if (index < 0)
-	{
-		nlwarning("in NLPACS::CChain::setIndexOnEdge()");
-		nlwarning("Can't set negative index");
-		return;
-	}
-
-	// sets _Edge and _Right values.
-	_Edge = edge;
-	_Right = -index-256;
 }
 
 // end of CChain methods implementation

@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.5 2001/07/20 16:08:43 cado Exp $
+ * $Id: u_audio_mixer.h,v 1.6 2001/07/31 12:52:17 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,7 +102,11 @@ public:
 	/// Choose the environmental effect(s) corresponding to tag
 	virtual void		selectEnvEffects( const char *tag ) = 0;
 	/// Update audio mixer (call evenly)
-	virtual void		update() = 0; 
+	virtual void		update() = 0;
+
+
+	/// Return the number of mixing tracks (voices)
+	virtual uint		getPolyphony() const = 0;
 
 
 	/// Destructor

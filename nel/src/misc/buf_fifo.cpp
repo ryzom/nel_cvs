@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.9 2001/03/07 15:55:25 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.10 2001/03/07 16:10:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ CBufFIFO::~CBufFIFO()
 	{
 		delete _Buffer;
 #if DEBUG_FIFO
-		nldebug("delete");
+		nldebug("%p delete", this);
 #endif
 	}
 }
@@ -69,7 +69,7 @@ void CBufFIFO::push(const std::vector<uint8> &buffer)
 	uint32 size = buffer.size();
 
 #if DEBUG_FIFO
-	nldebug("push(%d)", size);
+	nldebug("%p push(%d)", this, size);
 #endif
 
 	nlassert(size > 0 && size < 1000);
@@ -106,7 +106,7 @@ void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> 
 	uint32 size = buffer1.size() + buffer2.size ();
 
 #if DEBUG_FIFO
-	nldebug("push2(%d)", size);
+	nldebug("%p push2(%d)", this, size);
 #endif
 
 	nlassert(size > 0 && size < 1000);
@@ -150,7 +150,7 @@ void CBufFIFO::pop ()
 	if (_Rewinder != NULL && _Tail == _Rewinder)
 	{
 #if DEBUG_FIFO
-		nldebug("pop rewind!");
+		nldebug("%p pop rewind!", this);
 #endif
 
 		// need to rewind
@@ -163,7 +163,7 @@ void CBufFIFO::pop ()
 	nlassert(size > 0 && size < 1000);
 
 #if DEBUG_FIFO
-	nldebug("pop(%d)", size);
+	nldebug("%p pop(%d)", this, size);
 #endif
 
 #ifdef NL_DEBUG
@@ -195,7 +195,7 @@ void CBufFIFO::front (vector<uint8> &buffer)
 	if (_Rewinder != NULL && tail == _Rewinder)
 	{
 #if DEBUG_FIFO
-		nldebug("front rewind!");
+		nldebug("%p front rewind!", this);
 #endif
 
 		// need to rewind
@@ -207,7 +207,7 @@ void CBufFIFO::front (vector<uint8> &buffer)
 	nlassert (size > 0 && size < 1000);
 
 #if DEBUG_FIFO
-	nldebug("front(%d)", size);
+	nldebug("%p front(%d)", this, size);
 #endif
 
 	tail += sizeof (uint32);
@@ -265,7 +265,7 @@ void CBufFIFO::resize (uint32 size)
 	if (size == 0) size = 100;
 
 #if DEBUG_FIFO
-	nldebug("resize(%d)", size);
+	nldebug("%p resize(%d)", this, size);
 #endif
 
 	if (size > _BiggestBuffer) _BiggestBuffer = size;
@@ -287,7 +287,7 @@ void CBufFIFO::resize (uint32 size)
 	memset (NewBuffer, '-', size);
 
 #if DEBUG_FIFO
-	nldebug("new %d bytes", size);
+	nldebug("%p new %d bytes", this, size);
 #endif
 
 	// copy the old buffer to the new one
@@ -319,7 +319,7 @@ void CBufFIFO::resize (uint32 size)
 	{
 		delete _Buffer;
 #if DEBUG_FIFO
-		nldebug ("delete");
+		nldebug ("delete", this);
 #endif
 	}
 
@@ -334,26 +334,26 @@ void CBufFIFO::resize (uint32 size)
 
 void CBufFIFO::displayStats ()
 {
-	nldebug ("_BiggestBlock: %d\n", _BiggestBlock);
-	nldebug ("_SmallestBlock: %d\n", _SmallestBlock);
-	nldebug ("_BiggestBuffer: %d\n", _BiggestBuffer);
-	nldebug ("_SmallestBuffer: %d\n", _SmallestBuffer);
-	nldebug ("_Pushed : %d\n", _Pushed );
-	nldebug ("_Fronted: %d\n", _Fronted);
-	nldebug ("_Resized: %d\n", _Resized);
-	nldebug ("_PushedTime: %"NL_I64"d %f\n", _PushedTime, (double)(sint64)_PushedTime / (double)_Pushed);
-	nldebug ("_FrontedTime: %"NL_I64"d %f\n", _FrontedTime, (double)(sint64)_FrontedTime / (double)_Fronted);
-	nldebug ("_ResizedTime: %"NL_I64"d %f\n", _ResizedTime, (double)(sint64)_ResizedTime / (double)_Resized);
+	nldebug ("_BiggestBlock: %d\n", this, _BiggestBlock);
+	nldebug ("_SmallestBlock: %d\n", this, _SmallestBlock);
+	nldebug ("_BiggestBuffer: %d\n", this, _BiggestBuffer);
+	nldebug ("_SmallestBuffer: %d\n", this, _SmallestBuffer);
+	nldebug ("_Pushed : %d\n", this, _Pushed );
+	nldebug ("_Fronted: %d\n", this, _Fronted);
+	nldebug ("_Resized: %d\n", this, _Resized);
+	nldebug ("_PushedTime: %"NL_I64"d %f\n", this, _PushedTime, (double)(sint64)_PushedTime / (double)_Pushed);
+	nldebug ("_FrontedTime: %"NL_I64"d %f\n", this, _FrontedTime, (double)(sint64)_FrontedTime / (double)_Fronted);
+	nldebug ("_ResizedTime: %"NL_I64"d %f\n", this, _ResizedTime, (double)(sint64)_ResizedTime / (double)_Resized);
 }
 
 void CBufFIFO::display ()
 {
-	int size = 5000;
+	int size = 500;
 	int gran = size/30;
 
 	char str[1024];
 
-	smprintf(str, 1024, "%p (%5d) %p %p %p ", _Buffer, _BufferSize, _Rewinder, _Tail, _Head);
+	smprintf(str, 1024, "%p %p (%5d %5d) %p %p %p ", this, _Buffer, _BufferSize, CBufFIFO::size(), _Rewinder, _Tail, _Head);
 
 	int i;
 	for (i = 0; i < (sint32) _BufferSize; i+= gran)
@@ -390,7 +390,11 @@ void CBufFIFO::display ()
 			if (strlen(str) < 1023)
 			{
 				uint32 p = strlen(str);
-				str[p] = *pos;
+				if (isprint(*pos))
+					str[p] = *pos;
+				else
+					str[p] = '$';
+
 				str[p+1] = '\0';
 			}
 		}
@@ -419,7 +423,7 @@ bool CBufFIFO::canFit (uint32 size)
 			{
 				// reset the pointer
 #if DEBUG_FIFO
-				nldebug("reset tail and head");
+				nldebug("%p reset tail and head", this);
 #endif
 				_Head = _Tail = _Buffer;
 				return true;
@@ -428,7 +432,7 @@ bool CBufFIFO::canFit (uint32 size)
 			{
 				// buffer not big enough
 #if DEBUG_FIFO
-				nldebug("buffer full buffersize<size");
+				nldebug("%p buffer full buffersize<size", this);
 #endif
 				return false;
 			}
@@ -437,7 +441,7 @@ bool CBufFIFO::canFit (uint32 size)
 		{
 			// buffer full
 #if DEBUG_FIFO
-			nldebug("buffer full h=t");
+			nldebug("%p buffer full h=t", this);
 #endif
 			return false;
 		}
@@ -448,7 +452,7 @@ bool CBufFIFO::canFit (uint32 size)
 		{
 			// can fit after _Head
 #if DEBUG_FIFO
-			nldebug("fit after");
+			nldebug("%p fit after", this);
 #endif
 			return true;
 		}
@@ -456,11 +460,11 @@ bool CBufFIFO::canFit (uint32 size)
 		{
 			// can fit at the beginning
 #if DEBUG_FIFO
-			nldebug("fit at beginning");
+			nldebug("%p fit at beginning", this);
 #endif
 			_Rewinder = _Head;
 #if DEBUG_FIFO
-			nldebug("set the rewinder");
+			nldebug("%p set the rewinder", this);
 #endif
 			_Head = _Buffer;
 			return true;
@@ -469,7 +473,7 @@ bool CBufFIFO::canFit (uint32 size)
 		{
 			// can't fit
 #if DEBUG_FIFO
-			nldebug("no room t<h");
+			nldebug("%p no room t<h", this);
 #endif
 			return false;
 		}
@@ -479,14 +483,14 @@ bool CBufFIFO::canFit (uint32 size)
 		if (_Tail - _Head >= (sint32) size)
 		{
 #if DEBUG_FIFO
-			nldebug("fit t>h");
+			nldebug("%p fit t>h", this);
 #endif
 			return true;
 		}
 		else
 		{
 #if DEBUG_FIFO
-			nldebug("no room t>h");
+			nldebug("%p no room t>h", this);
 #endif
 			return false;
 		}

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.29 2004/04/09 14:28:48 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.30 2004/04/13 13:05:50 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -44,8 +44,8 @@ namespace NL3D {
  * \author Nevrax France
  * \date 2001
  */
-class CParticleSystemInstanceUser : public UParticleSystemInstance,
-								    virtual public CInstanceUser,
+class CParticleSystemInstanceUser : virtual public UParticleSystemInstance,
+								    public CInstanceUser,
 								    public CParticleSystemModel::IPSModelObserver
 {
 public:	

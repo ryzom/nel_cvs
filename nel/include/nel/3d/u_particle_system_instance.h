@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.14 2004/03/04 14:35:55 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.15 2004/04/13 13:05:50 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ namespace NL3D {
  * \author Nevrax France
  * \date 2001
  */
-class UParticleSystemInstance : public UInstance
+class UParticleSystemInstance : virtual public UInstance
 {
 public:
 	/** Tell wether the system is currently instanciated. This may not be the case when the system is not visible	  	  

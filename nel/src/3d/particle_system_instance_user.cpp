@@ -1,7 +1,7 @@
-/** \file particle_system_instance_user.cpp
+	/** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.30 2004/04/09 14:28:48 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.31 2004/04/13 13:05:50 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.75 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: patch.cpp,v 1.76 2002/02/12 17:19:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3437,7 +3437,8 @@ void		CPatch::appendTileLightInfluences(const CUV &uv,
 			const CTileLightInfluence				&tli= TileLightInfluences[ (yTLI+y)*wTLI + xTLI+x ];
 			CLightInfluenceInterpolator::CCorner	&corner= interp.Corners[y*2 + x];
 			// For all lights
-			for(uint lid= 0; lid<CTileLightInfluence::NumLightPerCorner; lid++)
+			uint lid;
+			for(lid= 0; lid<CTileLightInfluence::NumLightPerCorner; lid++)
 			{
 				// get the id of the light in the zone
 				uint	tliLightId= tli.Light[lid];

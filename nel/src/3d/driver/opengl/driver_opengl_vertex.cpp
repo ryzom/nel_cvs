@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.30 2002/08/30 11:58:02 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.31 2002/09/24 14:42:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -112,7 +112,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	// For MultiPass Material.
 	_LastVB.setupVertexBuffer(VB);
 
-	// Disalbe the current vertexBufferHard if setuped.
+	// Disable the current vertexBufferHard if setuped.
 	if(_CurrentVertexBufferHard)
 		_CurrentVertexBufferHard->disable();
 
@@ -133,7 +133,7 @@ bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 // ***************************************************************************
 bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
-{
+{	
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
@@ -151,7 +151,7 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 	for(uint pass=0;pass<nPass; pass++)
 	{
 		// setup the pass.
-		setupPass(pass);
+		setupPass(pass);		
 		// draw the primitives.
 		if(PB.getNumTri()!=0)
 			glDrawElements(GL_TRIANGLES,3*PB.getNumTri(),GL_UNSIGNED_INT,PB.getTriPointer());
@@ -554,21 +554,88 @@ const uint		CDriverGL::GLVertexAttribIndex[CVertexBuffer::NumValue]=
 };
 
 
+
 // ***************************************************************************
-void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
+void		CDriverGL::setupGlArraysStd(CVertexBufferInfo &vb)
 {
 	uint32	flags= vb.VertexFormat;
+	// setup vertex ptr.
+	//-----------
+	uint numVertexCoord = CVertexBuffer::NumComponentsType[vb.Type[CVertexBuffer::Position]];
+	nlassert (numVertexCoord >= 2);
 
-	/** \todo yoyo, or nico: this code should change with ATI VertexProgram.
-	 *	For now, ATI VBHard is only coded for non-VertexProgram case.
-	 */
+	_DriverGLStates.enableVertexArray(true);
+	// Setup ATI VBHard or std ptr.
+	if(vb.ATIVBHardMode)
+		nglArrayObjectATI(GL_VERTEX_ARRAY, numVertexCoord, GL_FLOAT, vb.VertexSize, 
+			vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::Position]);
+	else
+		glVertexPointer(numVertexCoord, GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Position]);
 
+
+	// setup normal ptr.
+	//-----------
+	// Check for normal param in vertex buffer
+	if (flags & CVertexBuffer::NormalFlag)
+	{
+		// Check type
+		nlassert (vb.Type[CVertexBuffer::Normal]==CVertexBuffer::Float3);
+
+		_DriverGLStates.enableNormalArray(true);
+		// Setup ATI VBHard or std ptr.
+		if(vb.ATIVBHardMode)
+			nglArrayObjectATI(GL_NORMAL_ARRAY, 3, GL_FLOAT, vb.VertexSize, 
+				vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::Normal]);
+		else
+			glNormalPointer(GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Normal]);
+	}
+	else
+	{
+		_DriverGLStates.enableNormalArray(false);
+	}
+
+
+	// Setup Color
+	//-----------
+	// Check for color param in vertex buffer
+	if (flags & CVertexBuffer::PrimaryColorFlag)
+	{
+		// Check type
+		nlassert (vb.Type[CVertexBuffer::PrimaryColor]==CVertexBuffer::UChar4);
+
+		_DriverGLStates.enableColorArray(true);
+		// Setup ATI VBHard or std ptr.
+		if(vb.ATIVBHardMode)
+			nglArrayObjectATI(GL_COLOR_ARRAY, 4, GL_UNSIGNED_BYTE, vb.VertexSize, 
+				vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::PrimaryColor]);
+		else
+			glColorPointer(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[CVertexBuffer::PrimaryColor]);
+	}
+	else
+		_DriverGLStates.enableColorArray(false);
+
+
+	// Setup Uvs
+	//-----------
+	for(sint i=0; i<inlGetNumTextStages(); i++)
+	{
+		// normal behavior: each texture has its own UV.
+		setupUVPtr(i, vb, i);
+	}
+}
+
+
+
+// ***************************************************************************
+void		CDriverGL::toggleGlArraysForNVVertexProgram()
+{
 	// If change of setup type, must disable olds.
 	//=======================
 
 	// If last was a VertexProgram setup, and now it is a standard GL array setup.
 	if( _LastSetupGLArrayVertexProgram && !isVertexProgramEnabled () )
 	{
+				
 		// Disable all VertexAttribs.
 		for (uint value=0; value<CVertexBuffer::NumValue; value++)
 		{
@@ -577,7 +644,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 			_DriverGLStates.enableVertexAttribArray(glIndex, false);
 		}
 		_DriverGLStates.enableColorArray(false);
-		_DriverGLStates.enableSecondaryColorArray(false);
+		_DriverGLStates.enableSecondaryColorArray(false);		
 
 		// no more a vertex program setup.
 		_LastSetupGLArrayVertexProgram= false;
@@ -600,161 +667,287 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 		// now, vertex program setup.
 		_LastSetupGLArrayVertexProgram= true;
 	}
+}
 
 
-	// Setup Vertex / Normal.
+// ***************************************************************************
+void		CDriverGL::toggleGlArraysForEXTVertexShader()
+{
+	// If change of setup type, must disable olds.
 	//=======================
 
-	// Use a vertex program ?
-	if (!isVertexProgramEnabled ())
+
+	// If last was a VertexProgram setup, and now it is a standard GL array setup.
+	if( _LastSetupGLArrayVertexProgram && !isVertexProgramEnabled () )
 	{
-		// setup vertex ptr.
-		//-----------
-		nlassert (vb.Type[CVertexBuffer::Position]==CVertexBuffer::Float3);
-
-		_DriverGLStates.enableVertexArray(true);
-		// Setup ATI VBHard or std ptr.
-		if(vb.ATIVBHardMode)
-			nglArrayObjectATI(GL_VERTEX_ARRAY, 3, GL_FLOAT, vb.VertexSize, 
-				vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::Position]);
-		else
-			glVertexPointer(3,GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Position]);
-
-
-		// setup normal ptr.
-		//-----------
-		// Check for normal param in vertex buffer
-		if (flags & CVertexBuffer::NormalFlag)
-		{
-			// Check type
-			nlassert (vb.Type[CVertexBuffer::Normal]==CVertexBuffer::Float3);
-
-			_DriverGLStates.enableNormalArray(true);
-			// Setup ATI VBHard or std ptr.
-			if(vb.ATIVBHardMode)
-				nglArrayObjectATI(GL_NORMAL_ARRAY, 3, GL_FLOAT, vb.VertexSize, 
-					vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::Normal]);
-			else
-				glNormalPointer(GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Normal]);
+		CVertexProgram *vp = _LastSetuppedVP;
+		if (vp)
+		{		
+			CVertexProgamDrvInfosGL *drvInfo = NLMISC::safe_cast<CVertexProgamDrvInfosGL *>((IVertexProgramDrvInfos *) vp->_DrvInfo);
+			if (drvInfo)
+			{
+				// Disable all VertexAttribs.
+				for (uint value=0; value<CVertexBuffer::NumValue; value++)
+				{
+					_DriverGLStates.enableVertexAttribArrayForEXTVertexShader(value, false, drvInfo->Variants);
+				}
+			}										
 		}
-		else
-		{
-			_DriverGLStates.enableNormalArray(false);
-		}
+		// no more a vertex program setup.
+		_LastSetupGLArrayVertexProgram= false;
+	}
 
-
-		// Setup Color
-		//-----------
-		// Check for color param in vertex buffer
-		if (flags & CVertexBuffer::PrimaryColorFlag)
-		{
-			// Check type
-			nlassert (vb.Type[CVertexBuffer::PrimaryColor]==CVertexBuffer::UChar4);
-
-			_DriverGLStates.enableColorArray(true);
-			// Setup ATI VBHard or std ptr.
-			if(vb.ATIVBHardMode)
-				nglArrayObjectATI(GL_COLOR_ARRAY, 4, GL_UNSIGNED_BYTE, vb.VertexSize, 
-					vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::PrimaryColor]);
-			else
-				glColorPointer(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[CVertexBuffer::PrimaryColor]);
-		}
-		else
-			_DriverGLStates.enableColorArray(false);
-
-
-		// Setup Uvs
-		//-----------
+	// If last was a standard GL array setup, and now it is a VertexProgram setup.
+	if( !_LastSetupGLArrayVertexProgram && isVertexProgramEnabled () )
+	{
+		// Disable all standards ptrs.
+		_DriverGLStates.enableVertexArray(false);
+		_DriverGLStates.enableNormalArray(false);
+		_DriverGLStates.enableColorArray(false);
 		for(sint i=0; i<inlGetNumTextStages(); i++)
 		{
-			// normal behavior: each texture has its own UV.
-			setupUVPtr(i, vb, i);
+			_DriverGLStates.clientActiveTextureARB(i);
+			_DriverGLStates.enableTexCoordArray(false);
 		}
+
+
+		// now, vertex program setup.
+		_LastSetupGLArrayVertexProgram= true;
 	}
-	else
+}
+
+// ***************************************************************************
+void		CDriverGL::setupGlArraysForNVVertexProgram(CVertexBufferInfo &vb)
+{			
+	uint32	flags= vb.VertexFormat;
+	
+	// For each value
+	for (uint value=0; value<CVertexBuffer::NumValue; value++)
 	{
-		// Setup vertex program attributes.
-		//=================================
+		// Flag
+		uint16 flag=1<<value;
 
-		// Extension must exist
-		nlassert (_Extensions.NVVertexProgram);
+		// Type
+		CVertexBuffer::TType type=vb.Type[value];
 
-		// For each value
-		for (uint value=0; value<CVertexBuffer::NumValue; value++)
+		// Index
+		uint glIndex=GLVertexAttribIndex[value];
+
+		// Not setuped value and used
+		if (flags & flag)
 		{
-			// Flag
-			uint16 flag=1<<value;
-
-			// Type
-			CVertexBuffer::TType type=vb.Type[value];
-
-			// Index
-			uint glIndex=GLVertexAttribIndex[value];
-
-			// Not setuped value and used
-			if (flags & flag)
+			/* OpenGL Driver Bug with VertexProgram, UChar4 type, and VertexArrayRange.
+				Don't work and lead to very poor performance (1/10) (VAR is "disabled").
+			*/
+			// Test if can use glColorPointer() / glSecondaryColorPointerEXT() instead.
+			if( (glIndex==3 || glIndex==4) )
 			{
-				/* OpenGL Driver Bug with VertexProgram, UChar4 type, and VertexArrayRange.
-					Don't work and lead to very poor performance (1/10) (VAR is "disabled").
-				*/
-				// Test if can use glColorPointer() / glSecondaryColorPointerEXT() instead.
-				if( (glIndex==3 || glIndex==4) )
+				if( type == CVertexBuffer::UChar4 )
 				{
-					if( type == CVertexBuffer::UChar4 )
-					{
-						// Must disable VertexAttrib array.
-						_DriverGLStates.enableVertexAttribArray(glIndex, false);
+					// Must disable VertexAttrib array.
+					_DriverGLStates.enableVertexAttribArray(glIndex, false);
 
-						// Active this value, with standard gl calls
-						if(glIndex==3)
-						{
-							// Primary color
-							_DriverGLStates.enableColorArray(true);
-							glColorPointer(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[value]);
-						}
-						else
-						{
-							// Secondary color
-							_DriverGLStates.enableSecondaryColorArray(true);
-							nglSecondaryColorPointerEXT(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[value]);
-						}
+					// Active this value, with standard gl calls
+					if(glIndex==3)
+					{
+						// Primary color
+						_DriverGLStates.enableColorArray(true);
+						glColorPointer(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[value]);
 					}
 					else
 					{
-						// Can use normal VertexAttribArray.
-						// Disable first standard Color Array.
-						if(glIndex==3)
-							_DriverGLStates.enableColorArray(false);
-						else
-							_DriverGLStates.enableSecondaryColorArray(false);
-
-						// Active this value
-						_DriverGLStates.enableVertexAttribArray(glIndex, true);
-						nglVertexAttribPointerNV (glIndex, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
+						// Secondary color
+						_DriverGLStates.enableSecondaryColorArray(true);
+						nglSecondaryColorPointerEXT(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[value]);
 					}
 				}
-				// Else normal case, can't do anything for other values with UChar4....
 				else
 				{
+					// Can use normal VertexAttribArray.
+					// Disable first standard Color Array.
+					if(glIndex==3)
+						_DriverGLStates.enableColorArray(false);
+					else
+						_DriverGLStates.enableSecondaryColorArray(false);
+
 					// Active this value
 					_DriverGLStates.enableVertexAttribArray(glIndex, true);
 					nglVertexAttribPointerNV (glIndex, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
 				}
 			}
+			// Else normal case, can't do anything for other values with UChar4....
 			else
 			{
-				_DriverGLStates.enableVertexAttribArray(glIndex, false);
-				/* OpenGL Driver Bug with VertexProgram, UChar4 type, and VertexArrayRange.
-					Must also disable colorArray in standard gl calls.
-				*/
-				if(glIndex==3)
-					_DriverGLStates.enableColorArray(false);
-				else if(glIndex==4)
-					_DriverGLStates.enableSecondaryColorArray(false);
+				// Active this value
+				_DriverGLStates.enableVertexAttribArray(glIndex, true);
+				nglVertexAttribPointerNV (glIndex, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
 			}
 		}
+		else
+		{
+			_DriverGLStates.enableVertexAttribArray(glIndex, false);
+			/* OpenGL Driver Bug with VertexProgram, UChar4 type, and VertexArrayRange.
+				Must also disable colorArray in standard gl calls.
+			*/
+			if(glIndex==3)
+				_DriverGLStates.enableColorArray(false);
+			else if(glIndex==4)
+				_DriverGLStates.enableSecondaryColorArray(false);
+		}
 	}
+}
 
+
+// ***************************************************************************
+void		CDriverGL::setupGlArraysForEXTVertexShader(CVertexBufferInfo &vb)
+{
+
+	CVertexProgram *vp = _LastSetuppedVP;
+	if (!vp) return;		
+	CVertexProgamDrvInfosGL *drvInfo = NLMISC::safe_cast<CVertexProgamDrvInfosGL *>((IVertexProgramDrvInfos *) vp->_DrvInfo);
+	if (!drvInfo) return;
+	
+	uint32	flags= vb.VertexFormat;
+
+	// For each value
+	for (uint value=0; value<CVertexBuffer::NumValue; value++)
+	{
+		// Flag
+		uint16 flag=1<<value;
+
+		// Type
+		CVertexBuffer::TType type=vb.Type[value];
+
+		// Index
+		uint glIndex=GLVertexAttribIndex[value];
+
+		// Not setuped value and used
+		if (flags & flag & drvInfo->UsedVertexComponents)
+		{						
+			_DriverGLStates.enableVertexAttribArrayForEXTVertexShader(glIndex, true, drvInfo->Variants);
+			// use variant or open gl standard array
+			switch(value)
+			{
+					case CVertexBuffer::Position: // position 
+					{					
+						nlassert(NumCoordinatesType[type] >= 2);
+						if(vb.ATIVBHardMode) nglArrayObjectATI(GL_VERTEX_ARRAY, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::Position]);
+					    else                 glVertexPointer(NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
+					}
+					break;
+					case CVertexBuffer::Weight: // skin weight
+					{
+						nlassert(NumCoordinatesType[type] == 4); // variant, only 4 component supported
+						if(vb.ATIVBHardMode) nglVariantArrayObjectATI(drvInfo->Variants[CDriverGL::EVSSkinWeightVariant], GLType[type], vb.VertexSize, vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::Weight]);
+					    else                 nglVariantPointerEXT(drvInfo->Variants[CDriverGL::EVSSkinWeightVariant], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
+					}
+					break;
+					case CVertexBuffer::Normal: // normal
+					{
+						nlassert(NumCoordinatesType[type] == 3); // must have 3 components for normals
+						if(vb.ATIVBHardMode) nglArrayObjectATI(GL_NORMAL_ARRAY, 3, GLType[type], vb.VertexSize, vb.ATIVertexObjectId, vb.ATIValueOffset[value]);
+					    else                 glNormalPointer(GLType[type], vb.VertexSize, vb.ValuePtr[CVertexBuffer::Normal]);						
+					}
+					break;
+					case CVertexBuffer::PrimaryColor: // color
+					{
+						nlassert(NumCoordinatesType[type] >= 3); // must have 3 or 4 components for primary color
+						if(vb.ATIVBHardMode) nglArrayObjectATI(GL_COLOR_ARRAY, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::PrimaryColor]);
+					    else                 glColorPointer(NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
+					}						
+					break;
+					case CVertexBuffer::SecondaryColor: // secondary color
+					{								
+						// implemented using a variant, as not available with EXTVertexShader
+						nlassert(NumCoordinatesType[type] == 4); // variant, only 4 component supported
+						if(vb.ATIVBHardMode) nglVariantArrayObjectATI(drvInfo->Variants[CDriverGL::EVSSecondaryColorVariant], GLType[type], vb.VertexSize, vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::SecondaryColor]);
+					    else                 nglVariantPointerEXT(drvInfo->Variants[CDriverGL::EVSSecondaryColorVariant], GLType[type], vb.VertexSize, vb.ValuePtr[value]);													
+					}						
+					break;
+					case CVertexBuffer::Fog: // fog coordinate
+					{
+						// implemented using a variant
+						nlassert(NumCoordinatesType[type] == 4); // variant, only 4 component supported
+						if(vb.ATIVBHardMode) nglVariantArrayObjectATI(drvInfo->Variants[CDriverGL::EVSFogCoordsVariant], GLType[type], vb.VertexSize, vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::Fog]);
+						else                 nglVariantPointerEXT(drvInfo->Variants[CDriverGL::EVSFogCoordsVariant], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
+					}						
+					break;
+					case CVertexBuffer::PaletteSkin: // palette skin
+					{					
+						// implemented using a variant
+						nlassert(NumCoordinatesType[type] == 4); // variant, only 4 component supported
+						if(vb.ATIVBHardMode) nglVariantArrayObjectATI(drvInfo->Variants[CDriverGL::EVSPaletteSkinVariant], GLType[type], vb.VertexSize, vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::PaletteSkin]);
+						else                 nglVariantPointerEXT(drvInfo->Variants[CDriverGL::EVSPaletteSkinVariant], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
+					}
+					break;
+					case CVertexBuffer::Empty: // empty
+						nlstop
+					break;
+					case CVertexBuffer::TexCoord0:
+					case CVertexBuffer::TexCoord1:
+					case CVertexBuffer::TexCoord2:
+					case CVertexBuffer::TexCoord3:
+					case CVertexBuffer::TexCoord4:
+					case CVertexBuffer::TexCoord5:
+					case CVertexBuffer::TexCoord6:
+					case CVertexBuffer::TexCoord7:
+					{			
+						_DriverGLStates.clientActiveTextureARB(value - CVertexBuffer::TexCoord0);
+						if(vb.ATIVBHardMode) nglArrayObjectATI(GL_TEXTURE_COORD_ARRAY, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ATIVertexObjectId, vb.ATIValueOffset[value]);
+						else glTexCoordPointer(NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value ]);
+					}
+					break;
+					default:
+						nlstop; // invalid value
+					break;					
+			}			
+		}
+		else
+		{
+			_DriverGLStates.enableVertexAttribArrayForEXTVertexShader(glIndex, false, drvInfo->Variants);
+		}
+	}	
+}
+
+
+
+// ***************************************************************************
+void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
+{
+	uint32	flags= vb.VertexFormat;
+
+	/** \todo yoyo, or nico: this code should change with ATI VertexProgram.
+	 *	For now, ATI VBHard is only coded for non-VertexProgram case.
+	 */
+
+	// Standard case (NVVertexProgram or no vertex program case)
+	if (_Extensions.NVVertexProgram || !_Extensions.EXTVertexShader)
+	{	
+		toggleGlArraysForNVVertexProgram();
+		// Use a vertex program ?
+		if (!isVertexProgramEnabled ())
+		{
+			setupGlArraysStd(vb);
+		}
+		else
+		{		
+			setupGlArraysForNVVertexProgram(vb);
+		}
+	}	
+	else // EXTVertexShader case
+	{
+		toggleGlArraysForEXTVertexShader();
+		// Use a vertex program ?
+		if (!isVertexProgramEnabled ())
+		{
+			setupGlArraysStd(vb);
+		}
+		else
+		{		
+			setupGlArraysForEXTVertexShader(vb);
+		}		
+	}
+	
 	// Reset specials flags.
 	_LastVertexSetupIsLightMap= false;
 }

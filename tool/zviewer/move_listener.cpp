@@ -1,7 +1,7 @@
 /** \file move_listener.cpp
  * <File description>
  *
- * $Id: move_listener.cpp,v 1.2 2001/01/23 15:10:54 coutelas Exp $
+ * $Id: move_listener.cpp,v 1.3 2001/10/29 09:38:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "move_listener.h"
 #include "nel/misc/event_server.h"
-#include "nel/3d/driver.h"
-#include "nel/3d/nelu.h"
+#include "3d/driver.h"
+#include "3d/nelu.h"
 
 
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.13 2001/05/28 09:53:04 corvazier Exp $
+ * $Id: zviewer.cpp,v 1.14 2001/10/29 09:38:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,21 +29,21 @@
 #include "nel/misc/path.h"
 #include "nel/misc/i18n.h"
 
-#include "nel/3d/driver.h"
-#include "nel/3d/camera.h"
-#include "nel/3d/landscape_model.h"
-#include "nel/3d/landscape.h"
-#include "nel/3d/text_context.h"
-#include "nel/3d/mini_col.h"
-#include "nel/3d/nelu.h"
-#include "nel/3d/scene_group.h"
+#include "3d/driver.h"
+#include "3d/camera.h"
+#include "3d/landscape_model.h"
+#include "3d/landscape.h"
+#include "3d/text_context.h"
+#include "3d/mini_col.h"
+#include "3d/nelu.h"
+#include "3d/scene_group.h"
 
 //#include "nel/net/local_entity.h"
 
 #include "move_listener.h"
 
 // Tempyoyo.
-#include "nel/3d/tmp/height_map.h"
+#include "nel/3d/height_map.h"
 
 
 #include <string>
@@ -198,7 +198,7 @@ void displayOrientation()
 	mat.setBlend(true);
 	
 	CVertexBuffer vb;
-	vb.setVertexFormat (IDRV_VF_XYZ);
+	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (7);
 	
 	// tri

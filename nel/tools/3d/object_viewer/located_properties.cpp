@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.14 2001/10/03 15:53:38 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.15 2002/02/15 17:17:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,7 @@ CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc,  CParticleDlg *pdl
 	
 
 	_MaxNbParticles = new CEditableRangeUInt("MAX_NB_PARTICLES", 1, 501);
+	_MaxNbParticles->enableUpperBound(30000, false);
 
 	_SkipFramesDlg = new CEditableRangeUInt("LOCATED SKIP FRAME RATE", 0, 4);
 	

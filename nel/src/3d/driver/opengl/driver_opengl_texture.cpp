@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.75 2004/04/27 12:07:09 vizerie Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.76 2004/05/14 15:03:44 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -170,6 +170,7 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 // ***************************************************************************
 static GLint	getGlSrcTextureFormat(ITexture &tex, GLint glfmt)
 {
+
 	// Is destination format is alpha or lumiance ?
 	if ((glfmt==GL_ALPHA8)||(glfmt==GL_LUMINANCE8_ALPHA8)||(glfmt==GL_LUMINANCE8))
 	{
@@ -971,7 +972,7 @@ bool CDriverGL::uploadTextureCube (ITexture& tex, CRect& rect, uint8 nNumMipMap,
 
 // ***************************************************************************
 bool CDriverGL::activateTexture(uint stage, ITexture *tex)
-{	
+{
 	if (this->_CurrentTexture[stage]!=tex)
 	{
 		_DriverGLStates.activeTextureARB(stage);
@@ -1030,7 +1031,7 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 			else
 			{
 				// setup texture mode, after activeTextureARB()
-				_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);								
+				_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);	
 
 				// Activate texture...
 				//======================
@@ -1077,7 +1078,12 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 			// Force no texturing for this stage.
 			_CurrentTextureInfoGL[stage]= NULL;
 			// setup texture mode, after activeTextureARB()
-			_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);									
+			_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
+			if (_Extensions.ATITextureEnvCombine3)
+			{
+				// very strange bug with ATI cards : when a texture is set to NULL at a stage, the stage is still active sometimes...
+				activateTexEnvMode(stage, _TexEnvReplace); // set the whole stage to replace fix the problem
+			}			
 		}
 
 		this->_CurrentTexture[stage]= tex;	
@@ -1100,7 +1106,6 @@ static	const	GLenum	OperandLUT[4]= { GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_SR
 // This maps the CMaterial::TTexOperator, used for openGL Arg2 setup.
 static	const	GLenum	InterpolateSrcLUT[8]= { GL_TEXTURE, GL_TEXTURE, GL_TEXTURE, GL_TEXTURE, 
                                                 GL_TEXTURE, GL_PREVIOUS_EXT, GL_PRIMARY_COLOR_EXT, GL_CONSTANT_EXT };
-
 
 // ***************************************************************************
 // Set general tex env using ENV_COMBINE4 for the current setupped stage (used by forceActivateTexEnvMode)
@@ -1388,15 +1393,13 @@ static void	forceActivateTexEnvModeEnvCombine4(const CMaterial::CTexEnv  &env)
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_ALPHA_NV, GL_ZERO);
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_ALPHA_NV, GL_SRC_ALPHA);
 		break;
-	}
-	
-		
+	}			
 }
+
 
 // ***************************************************************************
 void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
-{	
-
+{
 	// cache mgt.
 	_CurrentTexEnv[stage].EnvPacked= env.EnvPacked;
 	// Disable Special tex env f().
@@ -1518,7 +1521,7 @@ void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &
 						glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_SRC_ALPHA);
 					}
 				}
-			}
+			}			
 		}
 	}
 	// Very Bad drivers.
@@ -1534,7 +1537,7 @@ void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &
 
 // ***************************************************************************
 void		CDriverGL::activateTexEnvColor(uint stage, NLMISC::CRGBA col)
-{	
+{
 	if (col != _CurrentTexEnv[stage].ConstantColor)
 	{	
 		forceActivateTexEnvColor(stage, col);	
@@ -1547,7 +1550,7 @@ void		CDriverGL::activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
 {
 	// If a special Texture environnement is setuped, or if not the same normal texture environnement,
 	// must setup a new normal Texture environnement.
-	if( _CurrentTexEnvSpecial[stage] != TexEnvSpecialDisabled || _CurrentTexEnv[stage].EnvPacked!= env.EnvPacked)
+	if(_CurrentTexEnvSpecial[stage] != TexEnvSpecialDisabled || _CurrentTexEnv[stage].EnvPacked!= env.EnvPacked)
 	{ 
 		forceActivateTexEnvMode(stage, env);
 	}

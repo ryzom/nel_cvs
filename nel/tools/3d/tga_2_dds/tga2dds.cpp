@@ -1,7 +1,7 @@
 /** \file tga2dds.cpp
  * TGA to DDS converter
  *
- * $Id: tga2dds.cpp,v 1.5 2001/04/18 09:17:16 berenguier Exp $
+ * $Id: tga2dds.cpp,v 1.6 2001/08/07 07:26:22 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,6 @@ using namespace std;
 
 
 
-extern BOOL CheckPluginVersion (const char* sServerPluginFileName);
 bool sameType(const char *sFileNameDest, uint8 algo);
 bool dataCheck(const char *sFileNameSrc, const char *sFileNameDest, uint8 algo);
 std::string getOutputFileName(std::string inputFileName);
@@ -332,12 +331,6 @@ bool	parseOptions(int argc, char **argv)
 void main(int argc, char **argv)
 {
 	uint8 algo;
-	/*
-	if(!CheckPluginVersion ("tga_2_dds\\tga2dds.exe"))
-	{
-		cerr<<" (!) A newer version of this program can be found on the server"<<endl;
-	}
-	*/
 
 	
 	// Parse Command Line.

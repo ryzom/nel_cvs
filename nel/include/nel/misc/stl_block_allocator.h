@@ -1,7 +1,7 @@
 /** \file stl_block_allocator.h
  * <File description>
  *
- * $Id: stl_block_allocator.h,v 1.6 2002/10/28 17:32:12 corvazier Exp $
+ * $Id: stl_block_allocator.h,v 1.7 2003/03/21 16:16:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ namespace NLMISC {
  * \author Nevrax France
  * \date 2001
  */
-#ifdef NL_OS_WINDOWS
+#if defined(NL_OS_WINDOWS) && !defined(_STLP_MEMBER_TEMPLATE_CLASSES)
 
 template<class T>
 class CSTLBlockAllocator

@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.36 2001/07/19 09:06:23 lecroart Exp $
+ * $Id: client.cpp,v 1.37 2001/07/20 09:55:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,6 +113,9 @@ static bool			 CaptureState = false;
 void startLoginInterface ();
 void updateLoginInterface ();
 
+void initLoadingState ();
+void displayLoadingState (char *state);
+
 //
 // Functions
 //
@@ -166,22 +169,30 @@ int main(int argc, char **argv)
 	// Create a Text context for later text rendering
 	TextContext = Driver->createTextContext (CPath::lookup(ConfigFile.getVar("FontName").asString ()));
 
+	// You can't call displayLoadingState() before init the loading state system
+	initLoadingState ();
+
 	// Create a scene
 	Scene = Driver->createScene();
 
 	// Init the landscape using the previously created UScene
+	displayLoadingState ("Initialize Landscape");
 	initLandscape();
 
 	// Init the pacs
+	displayLoadingState ("Initialize PACS");
 	initPACS();
 
 	// Init the aiming system
+	displayLoadingState ("Initialize Aiming");
 	initAiming();
 
 	// Init the user camera
+	displayLoadingState ("Initialize Camera");
 	initCamera();
 
 	// Create a 3D mouse listener
+	displayLoadingState ("Initialize MouseListener");
 	MouseListener = new C3dMouseListener();
 	MouseListener->addToServer(Driver->EventServer);
 	MouseListener->setCamera(Camera);
@@ -192,30 +203,39 @@ int main(int argc, char **argv)
 	initMouseListenerConfig();
 
 	// Init interface
+	displayLoadingState ("Initialize Interface");
 	initInterface();
 
 	// Init radar
+	displayLoadingState ("Initialize Radar");
 	initRadar();
 
 	// Init Compass
+	displayLoadingState ("Initialize Compass");
 	initCompass();
 
 	// Init sound control
+	displayLoadingState ("Initialize Sound");
 	initSound();
 
 	// Init the command control
+	displayLoadingState ("Initialize Commands");
 	initCommands ();
 
 	// Init the entities prefs
+	displayLoadingState ("Initialize Entities");
 	initEntities();
 
 	// Init animation system
+	displayLoadingState ("Initialize Animation");
 	initAnimation ();
 
 	// Init the lens flare
+	displayLoadingState ("Initialize LensFlare");
 	initLensFlare ();
 
 	// Creates the self entity
+	displayLoadingState ("Adding your entity");
 	addEntity(0xFFFFFFFF, CEntity::Self, CVector(ConfigFile.getVar("StartPoint").asFloat(0),
 												 ConfigFile.getVar("StartPoint").asFloat(1),
 												 ConfigFile.getVar("StartPoint").asFloat(2)),
@@ -224,6 +244,7 @@ int main(int argc, char **argv)
 												 ConfigFile.getVar("StartPoint").asFloat(2)));
 
 	// Init the network structure
+	displayLoadingState ("Initialize Network");
 	initNetwork();
 
 	// Display the first line
@@ -242,7 +263,7 @@ int main(int argc, char **argv)
 		updateLoginInterface ();
 		
 		// Clear all buffers
-		Driver->clearBuffers ();
+		Driver->clearBuffers (CRGBA (0, 0, 0));
 
 		// Update the time counters
 		LastTime = NewTime;
@@ -308,6 +329,8 @@ int main(int argc, char **argv)
 		TextContext->setFontSize (14);
 		TextContext->printfAt (0.01f, 0.99f, "%.2ffps %ums", fps, dt);
 
+		update3dLogo ();
+
 		// Update network messages
 		updateNetwork ();
 
@@ -336,15 +359,17 @@ int main(int argc, char **argv)
 			if (isOnline())
 				Connection->disconnect ();
 		}
-		else if(Driver->AsyncListener.isKeyDown(KeyF3))
+		else if(Driver->AsyncListener.isKeyPushed (KeyF3))
 		{
-			// F3 -> radar zoom out
-			RadarDistance += 50;
+			// F3 -> toggle wireframe/solid
+			UDriver::TPolygonMode p = Driver->getPolygonMode ();
+			p = UDriver::TPolygonMode(((int)p+1)%3);
+			Driver->setPolygonMode (p);
 		}
-		else if(Driver->AsyncListener.isKeyDown(KeyF4))
+		else if (Driver->AsyncListener.isKeyPushed (KeyF4))
 		{
-			// F4 -> radar zoom in
-			RadarDistance -= 50;
+			// F4 -> clear the command (chat) output
+			clearCommands ();
 		}
 		else if (Driver->AsyncListener.isKeyPushed (KeyF5))
 		{
@@ -356,10 +381,15 @@ int main(int argc, char **argv)
 			// F6 -> display/hide the radar interface
 			RadarState = (RadarState+1)%3;
 		}
-		else if (Driver->AsyncListener.isKeyPushed (KeyF8))
+		else if(Driver->AsyncListener.isKeyDown (KeyF7))
 		{
-			// F8 -> clear the command (chat) output
-			clearCommands ();
+			// F7 -> radar zoom out
+			RadarDistance += 50;
+		}
+		else if(Driver->AsyncListener.isKeyDown(KeyF8))
+		{
+			// F8 -> radar zoom in
+			RadarDistance -= 50;
 		}
 		else if (Driver->AsyncListener.isKeyPushed (KeyF9))
 		{
@@ -429,6 +459,46 @@ int main(int argc, char **argv)
 	// Exit
 	return EXIT_SUCCESS;
 }
+
+//
+// Loading state procedure
+//
+
+static UTexture *NelLogo = NULL;
+static UTexture *NevraxLogo = NULL;
+static float	 ScreenWidth, ScreenHeight;
+
+void initLoadingState ()
+{
+	NelLogo = Driver->createTextureFile ("nel128.tga");
+	NevraxLogo = Driver->createTextureFile ("nevrax.tga");
+	uint32 width, height;
+	Driver->getWindowSize (width, height);
+	ScreenWidth = (float) width;
+	ScreenHeight = (float) height;
+}
+
+
+void displayLoadingState (char *state)
+{
+	Driver->clearBuffers (CRGBA(0,0,0));
+
+	Driver->setMatrixMode2D (CFrustum (0.0f, ScreenWidth, 0.0f, ScreenHeight, 0.0f, 1.0f, false));
+	Driver->drawBitmap (10, ScreenHeight-128-10, 128, 128, *NelLogo);
+	Driver->drawBitmap (ScreenWidth-128-10, ScreenHeight-16-10, 128, 16, *NevraxLogo);
+
+	TextContext->setColor (CRGBA (255, 255, 255));
+	TextContext->setHotSpot (UTextContext::MiddleMiddle);
+
+	TextContext->setFontSize (40);
+	TextContext->printAt (0.5f, 0.5f, ucstring("Welcome to Snowballs 2 !"));
+	
+	TextContext->setFontSize (30);
+	TextContext->printAt (0.5f, 0.2f, ucstring(state));
+	
+	Driver->swapBuffers ();
+}
+
 
 //
 // Login procedure

@@ -1,7 +1,7 @@
 /** \file animation.h
  * Animation interface between the game and NeL
  *
- * $Id: animation.h,v 1.2 2001/07/18 16:06:20 lecroart Exp $
+ * $Id: animation.h,v 1.3 2001/07/20 09:55:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@ class CEntity;
 //
 
 // Animation id used by playAnimation()
-extern uint WalkAnimId, IdleAnimId;
+enum EAnim { NoAnim = -1, WalkAnim, IdleAnim, LogInAnim, LogOffAnim, ThrowSnowball, PrepareSnowBall, HitAnim };
 
 //
 // External functions
@@ -47,7 +47,7 @@ extern uint WalkAnimId, IdleAnimId;
 void	createAnimation (CEntity &entity);
 
 // Change the animation of an entity. You have to give the animation id
-void	playAnimation (CEntity &entity, uint id);
+void	playAnimation (CEntity &entity, EAnim anim);
 
 // This function must be called before releasing the entity to delete the entity animation
 void	deleteAnimation (CEntity &entity);

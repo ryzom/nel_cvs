@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.5 2001/07/19 13:45:53 lecroart Exp $
+ * $Id: animation.cpp,v 1.6 2001/07/20 09:55:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,23 +70,39 @@ CAnimationTime TransitionTime = 0.25f;
 UAnimationSet *AnimationSet = NULL;
 UPlayListManager *PlayListManager = NULL;
 
-uint WalkAnimId, IdleAnimId;
+struct Anim
+{
+	char	*Name;
+	uint	 Id;
+};
+
+Anim AnimIdArray[][2] =
+{
+	{ { "marche.anim" }, { "" } },
+	{ { "idle.anim" }, { "" } },
+	{ { "log_on.anim" }, { "" } },
+	{ { "log_off.anim" }, { "" } },
+	{ { "lancelaboule.anim" }, { "" } },
+	{ { "prepaboule.anim" }, { "" } },
+	{ { "impact.anim" }, { "" } },
+};
+
 
 //
 // Functions
 //
 
-void	playAnimation (CEntity &entity, uint id)
+void	playAnimation (CEntity &entity, EAnim anim)
 {
 	// If the first time we play an animation, creates the animation class
 	if (entity.PlayList == NULL)
 		createAnimation (entity);
 
 	// If we try to play the same animation as the current one, do nothing
-	if (entity.CurrentAnimId == id) return;
+	if (entity.CurrentAnim == anim) return;
 
 	// todo a virer
-	nlinfo ("set animation for entity %u from %u to %u", entity.Id, entity.CurrentAnimId, id);
+	nlinfo ("set animation for entity %u from %u to %u", entity.Id, entity.CurrentAnim, anim);
 
 	// Find the new slot for the full animation (0 or 1)
 	uint newSlot, oldSlot;
@@ -103,7 +119,7 @@ void	playAnimation (CEntity &entity, uint id)
 	CAnimationTime CurrentTime = CAnimationTime(CTime::getLocalTime ())/1000.0f;
 
 	// Fill the new animation slot with the new animation to play
-	entity.PlayList->setAnimation (newSlot, id);
+	entity.PlayList->setAnimation (newSlot, AnimIdArray[anim][0].Id);
 	entity.PlayList->setTimeOrigin (newSlot, CurrentTime);
 	entity.PlayList->setWrapMode (newSlot, UPlayList::Repeat);
 
@@ -118,26 +134,6 @@ void	playAnimation (CEntity &entity, uint id)
 
 	// Compute the new transition value depending of the current time
 
-/*	todo si ca marche, il faut le virer
-
-	if (dt > TransitionTime)
-	{
-		OldStartWeight = CurrentTime;
-		OldEndWeight = CurrentTime + TransitionTime;
-		
-		NewStartWeight = CurrentTime;
-		NewEndWeight = CurrentTime + TransitionTime;
-	}
-	else
-	{
-		OldStartWeight = CurrentTime - (TransitionTime - dt);
-		OldEndWeight = CurrentTime + dt;
-		
-		NewStartWeight = CurrentTime;
-		NewEndWeight = CurrentTime + dt;
-	}
-*/
-	
 	if (dt > TransitionTime)
 		dt = TransitionTime;
 
@@ -158,7 +154,7 @@ void	playAnimation (CEntity &entity, uint id)
 	entity.PlayList->setWeightSmoothness (newSlot, 1.0f);
 
 	// Keep in mind what is the last animation id we set
-	entity.CurrentAnimId = id;
+	entity.CurrentAnim = anim;
 }
 
 void	createAnimation (CEntity &entity)
@@ -185,8 +181,14 @@ void	initAnimation()
 	AnimationSet = Scene->createAnimationSet ();
 	
 	// Add all animations in the animation set
-	IdleAnimId = AnimationSet->addAnimation ("idle.anim","IDLE");
-	WalkAnimId = AnimationSet->addAnimation ("marche.anim","WALK");
+	for (uint i = 0; i < sizeof (AnimIdArray) / sizeof (AnimIdArray[0]); i++)
+	{
+		if (AnimIdArray[i][0].Name[0] != '\0')
+			AnimIdArray[i][0].Id = AnimationSet->addAnimation (AnimIdArray[i][0].Name, AnimIdArray[i][0].Name);
+
+		if (AnimIdArray[i][1].Name[0] != '\0')
+			AnimIdArray[i][1].Id = AnimationSet->addAnimation (AnimIdArray[i][1].Name, AnimIdArray[i][1].Name);
+	}
 	AnimationSet->build ();
 
 	PlayListManager = Scene->createPlayListManager ();

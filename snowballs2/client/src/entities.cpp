@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.28 2001/07/19 13:47:40 legros Exp $
+ * $Id: entities.cpp,v 1.29 2001/07/20 09:55:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -208,7 +208,7 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.Speed = PlayerSpeed;
 		entity.Particule = Scene->createInstance("appear.ps");
 		entity.setState (CEntity::Appear);
-		playAnimation (entity, IdleAnimId);
+		playAnimation (entity, IdleAnim);
 
 		break;
 	case CEntity::Other:
@@ -232,7 +232,7 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.Speed = PlayerSpeed;
 		entity.Particule = Scene->createInstance("appear.ps");
 		entity.setState (CEntity::Appear);
-		playAnimation (entity, IdleAnimId);
+		playAnimation (entity, IdleAnim);
 
 		break;
 	case CEntity::Snowball:
@@ -407,7 +407,7 @@ void stateNormal (CEntity &entity)
 										 (float)sin(entity.AuxiliaryAngle),
 										 0.0f)*EntityMaxSpeed;
 
-		playAnimation (entity, WalkAnimId);
+		playAnimation (entity, WalkAnim);
 	}
 	else if (entity.Type == CEntity::Snowball && entity.AutoMove && pDelta.norm() < 0.1f)
 	{
@@ -440,7 +440,7 @@ void stateNormal (CEntity &entity)
 			{
 				entity.AuxiliaryAngle = 0;
 			}
-			playAnimation (*Self, isAiming ? IdleAnimId : WalkAnimId);
+			playAnimation (*Self, isAiming ? PrepareSnowBall : WalkAnim);
 		}
 		else if (Driver->AsyncListener.isKeyDown (KeyDOWN))
 		{
@@ -456,21 +456,21 @@ void stateNormal (CEntity &entity)
 			{
 				entity.AuxiliaryAngle = (float)Pi;
 			}
-			playAnimation (*Self, isAiming ? IdleAnimId : WalkAnimId);
+			playAnimation (*Self, isAiming ? PrepareSnowBall : WalkAnim);
 		}
 		else if (Driver->AsyncListener.isKeyDown (KeyLEFT))
 		{
 			entity.AuxiliaryAngle = (float)Pi/2.0f;
-			playAnimation (*Self, isAiming ? IdleAnimId : WalkAnimId);
+			playAnimation (*Self, isAiming ? PrepareSnowBall : WalkAnim);
 		}
 		else if (Driver->AsyncListener.isKeyDown (KeyRIGHT))
 		{
 			entity.AuxiliaryAngle = -(float)Pi/2.0f;
-			playAnimation (*Self, isAiming ? IdleAnimId : WalkAnimId);
+			playAnimation (*Self, isAiming ? PrepareSnowBall : WalkAnim);
 		}
 		else
 		{
-			playAnimation (*Self, IdleAnimId);
+			playAnimation (*Self, isAiming ? PrepareSnowBall : IdleAnim);
 		}
 
 		if (isAiming)

@@ -1,7 +1,7 @@
 /** \file entities.h
  * Snowballs 2 specific code for managing the entities
  *
- * $Id: entities.h,v 1.18 2001/07/18 17:30:17 lecroart Exp $
+ * $Id: entities.h,v 1.19 2001/07/20 09:55:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,8 @@
 
 #include <nel/misc/vector.h>
 #include <nel/misc/time_nl.h>
+
+#include "animation.h"
 
 //
 // External definitions
@@ -71,7 +73,7 @@ public:
 	// Create a default entity
 	CEntity () :
 	  Id(0xffffffff), Name("<Unknown>"), AutoMove(false), Instance(NULL), Skeleton(NULL),
-	  Particule(NULL), PlayList(NULL), CurrentAnimId(0xffffffff), NextEmptySlot(0), Source (NULL),
+		  Particule(NULL), PlayList(NULL), CurrentAnim(NoAnim), NextEmptySlot(0), Source (NULL),
 	  Angle(0.0f), AuxiliaryAngle(0.0f), InterpolatedAuxiliaryAngle(0.0f) { }
 
 
@@ -127,7 +129,7 @@ public:
 	// The sound source associated to the entity
 	NLSOUND::USource				*Source;
 
-	uint							 CurrentAnimId;
+	EAnim							 CurrentAnim;
 	uint							 NextEmptySlot;
 
 	void	setState (TState state);

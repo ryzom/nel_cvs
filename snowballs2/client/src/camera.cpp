@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera interface between the game and NeL
  *
- * $Id: camera.cpp,v 1.13 2001/07/18 17:30:17 lecroart Exp $
+ * $Id: camera.cpp,v 1.14 2001/07/20 09:55:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include <nel/3d/u_skeleton.h>
 #include <nel/3d/u_visual_collision_entity.h>
 #include <nel/3d/u_visual_collision_manager.h>
+#include <nel/3d/viewport.h>
 
 #include "client.h"
 #include "entities.h"
@@ -67,6 +68,11 @@ static UScene				*SkyScene = NULL;
 static UCamera				*SkyCamera = NULL;
 static UInstance			*Sky = NULL;
 
+// The logo 3D objects
+static UScene				*LogoScene = NULL;
+static UInstance			*Logo = NULL;
+
+
 //
 // Functions
 //
@@ -90,7 +96,10 @@ void	initCamera()
 	// And setup it
 	Snow->setTransformMode (UTransformable::DirectMatrix);
 
+	//
 	// Setup the sky scene
+	//
+
 	SkyScene = Driver->createScene();
 
 	SkyCamera = SkyScene->getCam ();
@@ -101,6 +110,20 @@ void	initCamera()
 	Sky = SkyScene->createInstance("sky.shape");
 	Sky->setTransformMode (UTransformable::DirectMatrix);
 	Sky->setMatrix(CMatrix::Identity);
+
+	//
+	// Setup the logo scene
+	//
+
+	LogoScene = Driver->createScene();
+
+	CViewport v;
+	v.init (0.05f, 0.75f, 0.2f, 0.2f);
+	LogoScene->setViewport (v);
+
+	Logo = LogoScene->createInstance("gnu.shape");
+	Logo->setMatrix(CMatrix::Identity);
+	Logo->setPos (0.0f, 3.0f, -1.5f);
 }
 
 void	updateCamera()
@@ -130,4 +153,16 @@ void	updateSky ()
 void	releaseCamera()
 {
 	Driver->deleteScene (SkyScene);
+}
+
+void	update3dLogo ()
+{
+	Driver->clearZBuffer();
+
+	static float angle=0.0;
+	angle+=0.05f;
+	Logo->setRotEuler (0.0f,0.0f,angle);
+	Logo->setTransformMode (UTransformable::RotEuler);
+	LogoScene->animate (float(NewTime)/1000);
+	LogoScene->render ();
 }

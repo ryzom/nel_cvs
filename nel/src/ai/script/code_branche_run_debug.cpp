@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.20 2001/09/25 08:41:10 portier Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.21 2001/11/06 15:12:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -433,7 +433,7 @@ namespace NLAISCRIPT
 				// The variable wasn't composit.
 				std::string buf;
 				base->getDebugString(buf);
-				InputOutput->Echo("%s\n",buf);
+				InputOutput->Echo("%s\n",buf.c_str());
 			}
 			else
 			{
@@ -457,7 +457,7 @@ namespace NLAISCRIPT
 				{
 					std::string buf;
 					base->getStaticMember(j)->getDebugString(buf);
-					InputOutput->Echo("%s\n",buf);
+					InputOutput->Echo("%s\n",buf.c_str());
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.3 2001/07/05 08:33:04 berenguier Exp $
+ * $Id: vertex_buffer.h,v 1.4 2001/07/06 12:26:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,6 +164,9 @@ public:
 	void					setNumVertices(uint32 n);
 	/// Get the number of active vertices.
 	uint32					getNumVertices(void) const  {return(_NbVerts);}
+
+	/// Reset all the vertices from memory (contReset()), so that capacity() == getNumVertices() == 0.
+	void					deleteAllVertices();
 
 
 	// It is an error (assert) to set a vertex component if not setuped in setVertexFormat().

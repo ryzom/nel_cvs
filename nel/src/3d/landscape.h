@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.4 2001/07/05 11:37:48 berenguier Exp $
+ * $Id: landscape.h,v 1.5 2001/07/06 12:26:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -388,8 +388,26 @@ private:
 	uint			_TileMaxSubdivision;
 
 	// The temp VB for tiles and far passes.
-	CVertexBuffer	FarVB;
+	CVertexBuffer	Far0VB;
+	CVertexBuffer	Far1VB;
 	CVertexBuffer	TileVB;
+
+	/// \name temp Hard VB for tiles and far passes.
+	// @{
+
+	CRefPtr<IVertexBufferHard>	_Far0VBHard;
+	CRefPtr<IVertexBufferHard>	_Far1VBHard;
+	CRefPtr<IVertexBufferHard>	_TileVBHard;
+	// a refPtr on the driver, to delete VBuffer Hard at clear().
+	CRefPtr<IDriver>			_Driver;
+
+	/* try to create a vertexBufferHard. NB: enlarge capacity of the VBHard as necessary.
+		After this call, the vertexBufferHard may be NULL.
+	*/
+	void				updateVertexBufferHard(IDriver *drv, CRefPtr<IVertexBufferHard> &vbHard, uint32 format, uint32 numVertices);
+	void				deleteVertexBufferHard(CRefPtr<IVertexBufferHard> &vbHard);
+	void				deleteAllVertexBufferHards();
+	// @}
 
 
 	// Tiles Types.

@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.2 2001/07/04 10:06:32 legros Exp $
+ * $Id: zone.h,v 1.3 2001/07/06 12:26:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -357,6 +357,8 @@ public:
 	void			refine();
 	/// PreRender a zone (if needed).
 	void			preRender(const std::vector<CPlane>	&pyramid);
+	/// if not clipped, fill VBuffer for Tiles.
+	void			fillTileVertexBuffer();
 	/// Render pass (if needed).
 	void			renderFar0();
 	void			renderFar1();

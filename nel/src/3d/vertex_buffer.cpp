@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.23 2001/07/05 08:33:04 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.24 2001/07/06 12:26:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,6 +172,20 @@ void CVertexBuffer::setNumVertices(uint32 n)
 		_NbVerts=n;
 	}
 }
+
+
+void	CVertexBuffer::deleteAllVertices()
+{
+	// free memory.
+	contReset(_Verts);
+	_Capacity= 0;
+	if(_NbVerts!=0)
+	{
+		_NbVerts=0;
+		_Touch|= IDRV_VF_TOUCHED_NUM_VERTICES;
+	}
+}
+
 
 // --------------------------------------------------
 

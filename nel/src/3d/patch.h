@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.4 2001/07/05 11:37:48 berenguier Exp $
+ * $Id: patch.h,v 1.5 2001/07/06 12:26:48 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -374,9 +374,11 @@ public:
 	void			clip(const std::vector<CPlane>	&pyramid);
 	/// Refine / geomorph this patch. Even if clipped.
 	void			refine();
-	/// preRender this patch, if not clipped. Build RdrFace List ....
+	/// preRender this patch, if not clipped. Build Max faces / pass etc... Build max vertices needed...
 	void			preRender(const std::vector<CPlane>	&pyramid);
-	/// Render this patch, if not clipped (append to VertexBuffers / materials primitive block).
+	/// if not clipped, fill VBuffer for Tiles.
+	void			fillTileVertexBuffer();
+	/// Render this patch, if not clipped (fill VBuffer / fill materials primitive block).
 	void			renderFar0();
 	void			renderFar1();
 	void			renderTile(sint pass);

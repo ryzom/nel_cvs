@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.2 2001/07/02 14:43:17 berenguier Exp $
+ * $Id: tessellation.h,v 1.3 2001/07/06 12:26:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,7 @@ using NLMISC::CUV;
 class	CPatch;
 class	CPatchRdrPass;
 class	CVertexBuffer;
+class	IVertexBufferHard;
 class	CTessFace;
 
 
@@ -65,6 +66,43 @@ class	CTessFace;
 
 // ***************************************************************************
 const	float	OO32768= 1.0f/0x8000;
+
+
+// ***************************************************************************
+/// Info for the current Far VertexBuffer setuped (iether normal or hard).
+class	CFarVertexBufferInfo
+{
+public:
+	uint32		VertexFormat;
+	uint32		VertexSize;
+	uint32		NumVertices;
+	void		*VertexCoordPointer;
+	void		*TexCoordPointer0;
+	void		*ColorPointer;
+	uint32		TexCoordOff0;
+	uint32		ColorOff;
+
+	void		setupVertexBuffer(CVertexBuffer &vb);
+	void		setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord);
+};
+
+
+/// Info for the current Far VertexBuffer setuped (iether normal or hard).
+class	CNearVertexBufferInfo
+{
+public:
+	uint32		VertexFormat;
+	uint32		VertexSize;
+	uint32		NumVertices;
+	void		*VertexCoordPointer;
+	void		*TexCoordPointer0;
+	void		*TexCoordPointer1;
+	uint32		TexCoordOff0;
+	uint32		TexCoordOff1;
+
+	void		setupVertexBuffer(CVertexBuffer &vb);
+	void		setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord);
+};
 
 
 
@@ -342,14 +380,28 @@ public:
 	static	float	Far0Dist, Far1Dist;
 	// Distance for Alpha blend transition
 	static	float	FarTransition;
-	// The current VertexBuffer for Far.
-	static	CVertexBuffer	*CurrentFarVB;
+
+	
+	// The current VertexBuffer for Far0 (got no Color info)
+	static	CFarVertexBufferInfo	CurrentFar0VBInfo;
+	// The current VertexBuffer for Far1.
+	static	CFarVertexBufferInfo	CurrentFar1VBInfo;
 	// The current VertexBuffer for Tile.
-	static	CVertexBuffer	*CurrentTileVB;
+	static	CNearVertexBufferInfo	CurrentTileVBInfo;
+
 	// The current Vertex Index for each pass of landscape render. Start at 0.
-	static	sint	CurrentFarIndex;
+	static	sint	CurrentFar0Index;
+	// The current Vertex Index for each pass of landscape render. Start at 0.
+	static	sint	CurrentFar1Index;
 	// The current Vertex Index for each pass of landscape render. Start at 0.
 	static	sint	CurrentTileIndex;
+	// The Max Vertex Index for each pass of landscape render. Start at 0.
+	static	sint	MaxFar0Index;
+	// The Max Vertex Index for each pass of landscape render. Start at 0.
+	static	sint	MaxFar1Index;
+	// The Max Vertex Index for each pass of landscape render. Start at 0.
+	static	sint	MaxTileIndex;
+
 
 	// PATCH GLOBAL INTERFACE.  patch must setup them at the begining at refine()/render().
 	// NO!!! REMIND: can't have any patch global, since a propagated split()/updateErrorMetric()

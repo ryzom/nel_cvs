@@ -331,6 +331,10 @@ SOURCE=.\3d\patch_rdr_pass.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\patch_render.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\tess_block.cpp
 # End Source File
 # Begin Source File

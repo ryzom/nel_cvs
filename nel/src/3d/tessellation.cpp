@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.44 2001/07/05 11:37:48 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.45 2001/07/06 12:26:48 berenguier Exp $
  *
  */
 
@@ -30,6 +30,8 @@
 #include "nel/misc/common.h"
 #include "3d/landscape_profile.h"
 #include "3d/landscape.h"
+#include "3d/vertex_buffer.h"
+#include "3d/vertex_buffer_hard.h"
 using namespace NLMISC;
 using namespace std;
 
@@ -51,6 +53,93 @@ const	uint8	TileUvFmtNormal5= 4;
 // ***************************************************************************
 // \todo yoyo: may change this.
 const	float TileSize= 128;
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// VertexBufferInfo.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
+{
+	VertexFormat= vb.getVertexFormat();
+	VertexSize= vb.getVertexSize();
+	NumVertices= vb.getNumVertices();
+	VertexCoordPointer= vb.getVertexCoordPointer();
+
+	TexCoordOff0= vb.getTexCoordOff(0);
+	TexCoordPointer0= vb.getTexCoordPointer(0, 0);
+
+	// In Far0, we don't have Color component.
+	if(VertexFormat && IDRV_VF_COLOR)
+	{
+		ColorOff= vb.getColorOff();
+		ColorPointer= vb.getColorPointer();
+	}
+	else
+	{
+		ColorOff= 0;
+		ColorPointer= NULL;
+	}
+}
+// ***************************************************************************
+void		CFarVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord)
+{
+	VertexFormat= vb.getVertexFormat();
+	VertexSize= vb.getVertexSize();
+	NumVertices= vb.getNumVertices();
+	VertexCoordPointer= vcoord;
+
+	TexCoordOff0= vb.getTexCoordOff(0);
+	TexCoordPointer0= (uint8*)vcoord + TexCoordOff0;
+
+	// In Far0, we don't have Color component.
+	if(VertexFormat && IDRV_VF_COLOR)
+	{
+		ColorOff= vb.getColorOff();
+		ColorPointer= (uint8*)vcoord + ColorOff;
+	}
+	else
+	{
+		ColorOff= 0;
+		ColorPointer= NULL;
+	}
+}
+
+
+// ***************************************************************************
+void		CNearVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
+{
+	VertexFormat= vb.getVertexFormat();
+	VertexSize= vb.getVertexSize();
+	NumVertices= vb.getNumVertices();
+
+	VertexCoordPointer= vb.getVertexCoordPointer();
+	TexCoordPointer0= vb.getTexCoordPointer(0, 0);
+	TexCoordPointer1= vb.getTexCoordPointer(0, 1);
+
+	TexCoordOff0= vb.getTexCoordOff(0);
+	TexCoordOff1= vb.getTexCoordOff(1);
+}
+// ***************************************************************************
+void		CNearVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord)
+{
+	VertexFormat= vb.getVertexFormat();
+	VertexSize= vb.getVertexSize();
+	NumVertices= vb.getNumVertices();
+
+	VertexCoordPointer= vcoord;
+	TexCoordPointer0= (uint8*)vcoord + vb.getTexCoordOff(0);
+	TexCoordPointer1= (uint8*)vcoord + vb.getTexCoordOff(1);
+
+	TexCoordOff0= vb.getTexCoordOff(0);
+	TexCoordOff1= vb.getTexCoordOff(1);
+}
+
 
 
 // ***************************************************************************
@@ -99,10 +188,17 @@ float		CTessFace::TilePixelSize= 128;
 float		CTessFace::Far0Dist= 200;		// 200m.
 float		CTessFace::Far1Dist= 400;		// 400m.
 float		CTessFace::FarTransition= 10;	// Alpha transition= 10m.
-CVertexBuffer	*CTessFace::CurrentFarVB=NULL;
-sint		CTessFace::CurrentFarIndex=1;
-CVertexBuffer	*CTessFace::CurrentTileVB=NULL;
+
+sint		CTessFace::CurrentFar0Index=1;
+sint		CTessFace::CurrentFar1Index=1;
 sint		CTessFace::CurrentTileIndex=1;
+sint		CTessFace::MaxFar0Index= 0;
+sint		CTessFace::MaxFar1Index= 0;
+sint		CTessFace::MaxTileIndex= 0;
+
+CFarVertexBufferInfo	CTessFace::CurrentFar0VBInfo;
+CFarVertexBufferInfo	CTessFace::CurrentFar1VBInfo;
+CNearVertexBufferInfo	CTessFace::CurrentTileVBInfo;
 
 
 CTessFace	CTessFace::CantMergeFace;

@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.38 2001/07/04 10:06:32 legros Exp $
+ * $Id: zone.cpp,v 1.39 2001/07/06 12:26:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -875,6 +875,24 @@ void			CZone::preRender(const std::vector<CPlane>	&pyramid)
 		pPatch->preRender(pyramid);
 	}
 }
+
+
+// ***************************************************************************
+void			CZone::fillTileVertexBuffer()
+{
+	nlassert(Compiled);
+	if(ClipResult==ClipOut)
+		return;
+
+	// fillTileVertexBuffer Pass.
+	CPatch		*pPatch= &(*Patchs.begin());
+	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+	{
+		pPatch->fillTileVertexBuffer();
+	}
+}
+
+
 // ***************************************************************************
 void			CZone::renderFar0()
 {

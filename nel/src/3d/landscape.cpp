@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.63 2001/07/05 11:37:48 berenguier Exp $
+ * $Id: landscape.cpp,v 1.64 2001/07/06 12:26:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +53,14 @@ namespace NL3D
 */
 #define	NL3D_TESS_ALLOC_BLOCKSIZE		16000
 #define	NL3D_TESSRDR_ALLOC_BLOCKSIZE	8000
+
+
+/*
+	Once a reallocation of a VBHard occurs, how many vertices we add to the re-allocation, to avoid 
+	as possible reallocations.
+*/
+#define	NL3D_VBHARD_VERTEX_SECURITY		500
+
 
 
 // ***************************************************************************
@@ -165,6 +173,11 @@ CLandscape::CLandscape() :
 	_TileMaxSubdivision= 0;
 
 	_NFreeLightMaps= 0;
+
+	_Far0VBHard= NULL;
+	_Far1VBHard= NULL;
+	_TileVBHard= NULL;
+
 }
 // ***************************************************************************
 CLandscape::~CLandscape()
@@ -176,13 +189,14 @@ CLandscape::~CLandscape()
 // ***************************************************************************
 void			CLandscape::init()
 {
+	// v3f/t2f
+	Far0VB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0]);
+
 	// v3f/t2f/c4ub
-	FarVB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] | IDRV_VF_COLOR );
-	FarVB.reserve(1024);
+	Far1VB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] | IDRV_VF_COLOR );
 
 	// v3f/t2f0/t2f1
 	TileVB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] | IDRV_VF_UV[1]);
-	TileVB.reserve(1024);
 
 	// Fill Far mat.
 	// Must init his BlendFunction here!!! becaus it switch between blend on/off during rendering.
@@ -348,6 +362,9 @@ void			CLandscape::clear()
 	// ensure the quadgrid is empty.
 	_PatchQuadGrid.clear();
 
+
+	// If not done, delete all VBhards allocated.
+	deleteAllVertexBufferHards();
 }
 // ***************************************************************************
 void			CLandscape::clip(const CVector &refineCenter, const std::vector<CPlane>	&pyramid)
@@ -452,11 +469,10 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, const st
 	// -1. Update globals
 	//====================
 	updateGlobals (refineCenter);
-	// Render.
-	CTessFace::CurrentTileVB= &TileVB;
-	CTessFace::CurrentTileIndex= 0;
-	CTessFace::CurrentFarVB= &FarVB;
-	CTessFace::CurrentFarIndex= 0;
+	// update MaxVertices used for this frame.
+	CTessFace::MaxTileIndex= 0;
+	CTessFace::MaxFar0Index= 0;
+	CTessFace::MaxFar1Index= 0;
 
 
 	// 0. preRender pass.
@@ -482,14 +498,41 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, const st
 	// preRender.
 	// Clip TessBlocks against pyramid and Far Limit.
 	// Compute MaxTris of each RenderPass (tile and far).
-	// Compute Vertices in VBuffers.
+	// Compute NbVertices in VBuffers.
 	for(it= Zones.begin();it!=Zones.end();it++)
 	{
 		(*it).second->preRender(pyramid);
 	}
-	CTessFace::CurrentFarVB->setNumVertices(CTessFace::CurrentFarIndex);
-	CTessFace::CurrentTileVB->setNumVertices(CTessFace::CurrentTileIndex);
 
+	// reset current vertices.
+	CTessFace::CurrentTileIndex= 0;
+	CTessFace::CurrentFar0Index= 0;
+	CTessFace::CurrentFar1Index= 0;
+
+
+	// try to allocate the VertexBufferHards (if not already OK).
+	updateVertexBufferHard(driver, _Far0VBHard, Far0VB.getVertexFormat(), CTessFace::MaxFar0Index);
+	updateVertexBufferHard(driver, _Far1VBHard, Far1VB.getVertexFormat(), CTessFace::MaxFar1Index);
+	updateVertexBufferHard(driver, _TileVBHard, TileVB.getVertexFormat(), CTessFace::MaxTileIndex);
+
+
+	// For each VertexBufferHard KO, must use conventionnal VB, so allocate it, 
+	// else reset the conventionnal VB from memory (no use),
+	// Far0.
+	if(_Far0VBHard==NULL)
+		Far0VB.setNumVertices(CTessFace::MaxFar0Index);
+	else
+		Far0VB.deleteAllVertices();
+	// Far1.
+	if(_Far1VBHard==NULL)
+		Far1VB.setNumVertices(CTessFace::MaxFar1Index);
+	else
+		Far1VB.deleteAllVertices();
+	// Tile.
+	if(_TileVBHard==NULL)
+		TileVB.setNumVertices(CTessFace::MaxTileIndex);
+	else
+		TileVB.deleteAllVertices();
 
 
 	// 0.a for each RenderPass, compute his starting ptr.
@@ -518,13 +561,52 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, const st
 	}
 
 
+
 	// 1. TileRender pass.
 	//====================
+
+	// Fill the Tile VB. NB all vertices of all TilePass are builded here.
+	// ==================
+
+	// if VBHard OK, fill it, else fill the normal VB.
+	if(_TileVBHard!=NULL)
+	{
+		// Lock the VB.
+		void	*ptr= _TileVBHard->lock();
+		CTessFace::CurrentTileVBInfo.setupVertexBufferHard(*_TileVBHard, ptr);
+	}
+	else
+		CTessFace::CurrentTileVBInfo.setupVertexBuffer(TileVB);
+
+	// Then Fill the Tile VB.
+	for(it= Zones.begin();it!=Zones.end();it++)
+	{
+		(*it).second->fillTileVertexBuffer();
+	}
+
+	// if VBHard OK, must unlock.
+	if(_TileVBHard!=NULL)
+	{
+		_TileVBHard->unlock();
+	}
+
+
+
 	// Active VB.
-	driver->activeVertexBuffer(*CTessFace::CurrentTileVB);
+	// ==================
+
+	// Active the good VB.
+	if(_TileVBHard!=NULL)
+		driver->activeVertexBufferHard(_TileVBHard);
+	else
+		driver->activeVertexBuffer(TileVB);
+
+
+	// Render.
+	// ==================
 
 	// Render Order. Must "invert", since initial order is NOT the render order. This is done because the lightmap pass
-	// DO NOT have to do any renderTil(), since it is computed in RGB0 pass.
+	// DO NOT have to do any renderTile(), since it is computed in RGB0 pass.
 	nlassert(NL3D_MAX_TILE_PASS==5);
 	static	sint	RenderOrder[NL3D_MAX_TILE_PASS]= {NL3D_TILE_PASS_RGB0, NL3D_TILE_PASS_RGB1, NL3D_TILE_PASS_RGB2,
 		NL3D_TILE_PASS_LIGHTMAP, NL3D_TILE_PASS_ADD};
@@ -670,14 +752,47 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, const st
 
 	// 2. Far0Render pass.
 	//====================
-	// Process all zones.
+
+	// Fill VB.
+	// ==================
+	// NB: If VBHard ok, there is some //ism here, because 3d card still continue to render last Tile pass,
+	// and we fill an other VertexBuffer here.
+
+	// if VBHard OK, fill it, else fill the normal VB.
+	if(_Far0VBHard!=NULL)
+	{
+		// Lock the VB.
+		void	*ptr= _Far0VBHard->lock();
+		CTessFace::CurrentFar0VBInfo.setupVertexBufferHard(*_Far0VBHard, ptr);
+	}
+	else
+		CTessFace::CurrentFar0VBInfo.setupVertexBuffer(Far0VB);
+
+	// for all zones, build VertexBuffer, and build triangles.
 	for(it= Zones.begin();it!=Zones.end();it++)
 	{
 		(*it).second->renderFar0();
 	}
 
+	// if VBHard OK, must unlock.
+	if(_Far0VBHard!=NULL)
+	{
+		_Far0VBHard->unlock();
+	}
+
+
 	// Active VB.
-	driver->activeVertexBuffer(*CTessFace::CurrentFarVB);
+	// ==================
+
+	// Active the good VB.
+	if(_Far0VBHard!=NULL)
+		driver->activeVertexBufferHard(_Far0VBHard);
+	else
+		driver->activeVertexBuffer(Far0VB);
+
+
+	// Render.
+	// ==================
 
 	// Setup common material.
 	FarMaterial.setBlend(false);
@@ -701,16 +816,51 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, const st
 		itFar++;
 	}
 
+
+
 	// 3. Far1Render pass.
 	//====================
+
+	// Fill VB.
+	// ==================
+	// NB: If VBHard ok, there is some //ism here, because 3d card still continue to render last Far0 pass,
+	// and we fill an other VertexBuffer here.
+
+	// if VBHard OK, fill it, else fill the normal VB.
+	if(_Far1VBHard!=NULL)
+	{
+		// Lock the VB.
+		void	*ptr= _Far1VBHard->lock();
+		CTessFace::CurrentFar1VBInfo.setupVertexBufferHard(*_Far1VBHard, ptr);
+	}
+	else
+		CTessFace::CurrentFar1VBInfo.setupVertexBuffer(Far1VB);
+
 	// Process all zones.
 	for(it= Zones.begin();it!=Zones.end();it++)
 	{
 		(*it).second->renderFar1();
 	}
 
+	// if VBHard OK, must unlock.
+	if(_Far1VBHard!=NULL)
+	{
+		_Far1VBHard->unlock();
+	}
+
+
 	// Active VB.
-	driver->activeVertexBuffer(*CTessFace::CurrentFarVB);
+	// ==================
+
+	// Active the good VB.
+	if(_Far1VBHard!=NULL)
+		driver->activeVertexBufferHard(_Far1VBHard);
+	else
+		driver->activeVertexBuffer(Far1VB);
+
+
+	// Render
+	// ==================
 
 	// Setup common material.
 	FarMaterial.setBlend(true);
@@ -2030,6 +2180,71 @@ void				CLandscape::deleteTileFace(CTileFace *tf)
 	TileFaceAllocator.free(tf);
 }
 
+
+
+// ***************************************************************************
+// ***************************************************************************
+// VertexBufferHard mgt.
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
+void				CLandscape::deleteVertexBufferHard(CRefPtr<IVertexBufferHard> &vbHard)
+{
+	// test (refptr) if the object still exist in memory.
+	if(vbHard!=NULL)
+	{
+		// A vbufferhard should still exist only if driver still exist.
+		nlassert(_Driver!=NULL);
+
+		// delete it from driver.
+		_Driver->deleteVertexBufferHard(vbHard);
+		vbHard= NULL;
+	}
+}
+
+// ***************************************************************************
+void				CLandscape::deleteAllVertexBufferHards()
+{
+	deleteVertexBufferHard(_Far0VBHard);
+	deleteVertexBufferHard(_Far1VBHard);
+	deleteVertexBufferHard(_TileVBHard);
+}
+
+
+// ***************************************************************************
+void				CLandscape::updateVertexBufferHard(IDriver *drv, CRefPtr<IVertexBufferHard> &vbHard, uint32 format, uint32 numVertices)
+{
+	// If the vbufferhard is not here, or if do not have enough vertices.
+	if(vbHard==NULL || vbHard->getNumVertices() < numVertices)
+	{
+		// delete possible old VBHard.
+		if(vbHard!=NULL)
+		{
+			// VertexBufferHard lifetime < Driver lifetime.
+			nlassert(_Driver!=NULL);
+			_Driver->deleteVertexBufferHard(vbHard);
+		}
+
+		// bkup drv in a refptr. (so we know if the vbuffer hard has to be deleted).
+		_Driver= drv;
+		// try to create new one, in AGP Ram
+		// to avoid as possible reallocations, add a little security to the number of vertices we want.
+		vbHard= _Driver->createVertexBufferHard(format, numVertices + NL3D_VBHARD_VERTEX_SECURITY, IDriver::VBHardAGP);
+
+		/*if(vbHard!=NULL)
+		{
+			string	whatVB;
+			if(vbHard==_TileVBHard)	whatVB= "Tile";
+			else if(vbHard==_Far0VBHard)	whatVB= "Far0";
+			else if(vbHard==_Far1VBHard)	whatVB= "Far1";
+			nlinfo("Landscape: reallocate a %sVertexBufferHard of %d vertices", whatVB.c_str(), numVertices);
+		}*/
+	}
+
+}
 
 
 

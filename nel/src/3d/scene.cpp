@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.97 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: scene.cpp,v 1.98 2003/03/31 10:29:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -305,6 +305,7 @@ void	CScene::render(bool	doHrcPass)
 	RenderTrav.setCamMatrix (CurrentCamera->getWorldMatrix());
 	LoadBalancingTrav.setCamMatrix (CurrentCamera->getWorldMatrix());
 
+	
 	// clip
 	ClipTrav.traverse();
 	// animDetail
@@ -320,11 +321,11 @@ void	CScene::render(bool	doHrcPass)
 	// **** Misc.
 
 	/** Particle system handling (remove the resources of those which are too far, as their clusters may not have been parsed).
-      * Not that only a few of them are tested at each call
+      * Note that only a few of them are tested at each call
 	  */
 	_ParticleSystemManager.refreshModels(ClipTrav.WorldFrustumPyramid, ClipTrav.CamPos);
 	
-	// Wainting Instance handling
+	// Waiting Instance handling
 	double deltaT = _DeltaSystemTimeBetweenRender;
 	clamp (deltaT, 0.01, 0.1);
 	updateWaitingInstances(deltaT);

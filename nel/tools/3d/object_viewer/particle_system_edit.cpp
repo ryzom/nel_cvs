@@ -1,7 +1,7 @@
  /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.21 2004/03/11 17:26:04 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.22 2004/05/14 16:20:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,7 @@ CParticleSystemEdit::~CParticleSystemEdit()
 	REMOVE_WND(_LODRatioDlg); 
 	REMOVE_WND(_AutoLODDlg);
 	REMOVE_WND(_GlobalColorDlg);
-	_ParticleTreeCtrl->getParticleDlg()->getObjectViewer()->getFrameDelayDlg()->lockToPS(false);
+	//_ParticleTreeCtrl->getParticleDlg()->getObjectViewer()->getFrameDelayDlg()->lockToPS(false);
 
 }
 

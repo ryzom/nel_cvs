@@ -454,12 +454,11 @@ END
 
 IDD_LOCATED_PROPERTIES DIALOGEX 0, 0, 351, 266
 STYLE DS_CONTROL | WS_CHILD
-FONT 8, "MS Sans Serif", 0, 0, 0x1
+FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "Limited life time",IDC_LIMITED_LIFE_TIME,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,17,48,63,12
     LTEXT           "Max number of particles",IDC_STATIC,3,7,52,19
-    LTEXT           "Motion every n frames :",IDC_STATIC,2,209,51,18
     CONTROL         "",IDC_PARTICLE_NUMBER_POS,"Static",SS_BLACKFRAME,55,5,
                     225,21
     CONTROL         "Disgrade with lod",IDC_DISGRADE_WITH_LOD,"Button",
@@ -495,7 +494,7 @@ IDD_PARTICLE_SYSTEM_START_STOP DIALOGEX 0, 0, 109, 225
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Particle system start/stop"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Button1",IDC_START_PICTURE,7,6,24,24,BS_BITMAP
     PUSHBUTTON      "Button1",IDC_STOP_PICTURE,69,6,24,24,BS_BITMAP

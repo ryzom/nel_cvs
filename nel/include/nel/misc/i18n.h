@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.17 2004/01/15 17:27:40 lecroart Exp $
+ * $Id: i18n.h,v 1.18 2004/03/05 16:37:55 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,9 +62,9 @@ namespace NLMISC {
  *	Update 26-02-2002 Boris Boucher
  *
  *	Language are now preferably handled via official language code.
- *	We use the ISO 639-2 code for language.
+ *	We use the ISO 639-1 code for language.
  *	Optionnaly, we can append a country code (ISO 3066) to differentiate
- *	between language flavor (eg chinese is ISO 639-2 zh, but come in
+ *	between language flavor (eg chinese is ISO 639-1 zh, but come in
  *	traditionnal or simplified form. So we append the country code :
  *	zh-CN (china) for simplified, zh for traditionnal).
  *	

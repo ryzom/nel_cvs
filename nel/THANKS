@@ -1,13 +1,13 @@
-We would like to thanks these peoples :
+We would like to thanks these people :
 
 Leighton Haynes <dayta@ucc.gu.uwa.edu.au>
    for X11 fullscreen support.
 Loic Dachary <loic@senga.org>
-   for the configure script improvement and advices.
+   for the configure script improvement and advice.
 Dan Erikson <derikson@montana.com>
    for X11 improved mouse management and mouse button and mouse wheel support.
 Vincent Caron <v.caron@zerodeux.net>
-   for his help and advices.
+   for his help and advice.
 Guillaume Morin <guillaume@morinfr.org>
    for PPC port
 

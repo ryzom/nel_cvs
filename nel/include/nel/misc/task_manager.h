@@ -1,7 +1,7 @@
 /** \file task_manager.h
  * Manage a list of task in a separate thread
  *
- * $Id: task_manager.h,v 1.8 2002/01/30 10:07:36 lecroart Exp $
+ * $Id: task_manager.h,v 1.9 2002/02/11 10:21:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,7 +62,7 @@ public:
 	bool deleteTask(IRunnable *r);
 
 	/// Sleep a Task
-	void sleepTask(void) { nlSleep(0); }
+	void sleepTask(void) { nlSleep(10); }
 
 	/// Task list size
 	uint taskListSize(void); 

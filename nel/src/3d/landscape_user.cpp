@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.17 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.18 2002/02/11 10:20:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,7 +105,7 @@ void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius, std::v
 		}
 		else
 		{
-			nlSleep(0);
+			nlSleep(1);
 		}
 	}
 

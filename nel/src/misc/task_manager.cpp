@@ -1,7 +1,7 @@
 /** \file task_manager.cpp
  * <File description>
  *
- * $Id: task_manager.cpp,v 1.7 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: task_manager.cpp,v 1.8 2002/02/11 10:20:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ CTaskManager::~CTaskManager()
 {
 	_ThreadRunning = false;
 	while(!_ThreadRunning)
-		nlSleep(0);
+		nlSleep(10);
 }
 
 // Manage TaskQueue

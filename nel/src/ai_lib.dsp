@@ -21,6 +21,7 @@ CFG=ai_lib - Win32 DebugFast
 !MESSAGE "ai_lib - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE "ai_lib - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
 !MESSAGE "ai_lib - Win32 DebugFast" (based on "Win32 (x86) Static Library")
+!MESSAGE "ai_lib - Win32 ReleaseProfile" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -122,6 +123,29 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\lib\nlai_lib_debug.lib"
 # ADD LIB32 /nologo /out:"..\lib\nlai_lib_debug_fast.lib"
 
+!ELSEIF  "$(CFG)" == "ai_lib - Win32 ReleaseProfile"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "ai_lib___Win32_ReleaseProfile"
+# PROP BASE Intermediate_Dir "ai_lib___Win32_ReleaseProfile"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "ai_lib___Win32_ReleaseProfile"
+# PROP Intermediate_Dir "ai_lib___Win32_ReleaseProfile"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD BASE RSC /l 0x40c /d "NDEBUG"
+# ADD RSC /l 0x40c /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"..\lib\nlai_lib.lib"
+# ADD LIB32 /nologo /out:"..\lib\nlai_lib.lib"
+
 !ENDIF 
 
 # Begin Target
@@ -130,6 +154,7 @@ LIB32=link.exe -lib
 # Name "ai_lib - Win32 Debug"
 # Name "ai_lib - Win32 ReleaseDebug"
 # Name "ai_lib - Win32 DebugFast"
+# Name "ai_lib - Win32 ReleaseProfile"
 # Begin Group "agent"
 
 # PROP Default_Filter ""

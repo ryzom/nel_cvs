@@ -1,6 +1,21 @@
 
-No news, good news ...
+20 marth 2002
+=============
 
-Currently, this file exist to get rid of an Automake error. The content of
-that file will be what it should be at the next release.
+* NLMISC: New toString() function in common.h that enables you to create
+          string without printf() like function.
+          ex: int val = 100; string res = toString ("0x%x", val);
+
+15 marth 2002
+=============
+
+* NLMISC: CCommand now manages spaces in parameter putting "" around parameters
+*  NLNET: New msgin and msgout commands in services to simulate incoming
+          messages from a service and send messages to other service
+
+8 marth 2002
+=============
+
+*  NLNET: Add CTransportClass class that enables sending classes between
+          services with different class parameters
 

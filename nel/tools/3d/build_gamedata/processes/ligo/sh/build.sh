@@ -30,6 +30,8 @@ dir_ligobricks=`cat ../../cfg/directories.cfg | grep "ligo_bricks_directory" | s
 dir_dfn=`cat ../../cfg/site.cfg | grep "level_design_dfn_directory" | sed -e 's/level_design_dfn_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 continent_file=`cat ../../cfg/config.cfg | grep "continent_file" | sed -e 's/continent_file//' | sed -e 's/ //g' | sed -e 's/=//g'`
 dir_world=`cat ../../cfg/site.cfg | grep "level_design_world_directory" | sed -e 's/level_design_world_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+dir_continents=`cat ../../cfg/site.cfg | grep "continents_directory" | sed -e 's/continents_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
 
 
 
@@ -38,6 +40,7 @@ dir_world=`cat ../../cfg/site.cfg | grep "level_design_world_directory" | sed -e
 echo "RefZoneDir = \"$dir_ligobricks/zones\";" >> land_exporter.cfg
 echo "RefIGDir = \"$dir_ligobricks/igs\";" >> land_exporter.cfg
 echo "AdditionnalIGInDir = \"$dir_ligobricks/igs\";" >> land_exporter.cfg
+echo "ContinentsDir = \"$dir_continents\";" >> land_exporter.cfg
 
 
 

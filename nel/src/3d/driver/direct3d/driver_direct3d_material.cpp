@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.14.4.2 2004/09/14 18:15:25 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.14.4.3 2004/09/15 18:29:41 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -301,8 +301,8 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 	// Now we can get the supported shader from the cache.
 	CMaterial::TShader matShader = mat.getShader();
 
-	H_AUTO_D3D(CDriverD3D_setupMaterial_light)
 	{			
+		H_AUTO_D3D(CDriverD3D_setupMaterial_light)
 		// if the shader has changed since last time
 		if(matShader != _CurrentMaterialSupportedShader)
 		{
@@ -337,8 +337,8 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 	}
 	
 
-	H_AUTO_D3D(CDriverD3D_setupMaterial_touchupdate)
 	{
+		H_AUTO_D3D(CDriverD3D_setupMaterial_touchupdate)
 	// Something to setup ?
 	if (touched)
 	{
@@ -541,8 +541,8 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 	}
 
 
-	H_AUTO_D3D(CDriverD3D_setupMaterial_bindTexture)
 	{
+		H_AUTO_D3D(CDriverD3D_setupMaterial_bindTexture)
 	// 2. Setup / Bind Textures.
 	//==========================
 	// Must setup textures each frame. (need to test if touched).
@@ -566,8 +566,8 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 	// Do not do it for Lightmap and per pixel lighting , because done in multipass in a very special fashion.
 	// This avoid the useless multiple change of texture states per lightmapped object.
 	// Don't do it also for Specular because the EnvFunction and the TexGen may be special.
-	H_AUTO_D3D(CDriverD3D_setupMaterial_normalShaderActivateTextures)
 	{
+		H_AUTO_D3D(CDriverD3D_setupMaterial_normalShaderActivateTextures)
 	if(matShader == CMaterial::Normal)
 	{
 		uint stage;

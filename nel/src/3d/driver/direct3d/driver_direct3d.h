@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.22.4.3 2004/09/14 17:21:19 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.22.4.4 2004/09/15 18:30:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1592,6 +1592,19 @@ private:
 	
 	bool validateShader(CShader *shader);
 
+	void activePass (uint pass)
+	{
+		H_AUTO_D3D(CDriverD3D_activePass);		
+		if (_CurrentShader)
+		{			
+			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);			
+			drvInfo->Effect->Pass (pass);			
+		}
+
+		// Update render states
+		updateRenderVariablesInternal();
+	}
+
 	void beginMultiPass ()
 	{
 		H_AUTO_D3D(CDriverD3D_beginMultiPass);
@@ -1611,26 +1624,14 @@ private:
 				//setTextureState (i, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 			}
 
-			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);
+			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);			
 			drvInfo->Effect->Begin (&_CurrentShaderPassCount, D3DXFX_DONOTSAVESTATE|D3DXFX_DONOTSAVESHADERSTATE);
 		}
 		else
 			// No shader setuped
 			_CurrentShaderPassCount = 1;
-	};
-
-	void activePass (uint pass)
-	{
-		H_AUTO_D3D(CDriverD3D_activePass);
-		if (_CurrentShader)
-		{
-			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);
-			drvInfo->Effect->Pass (pass);
-		}
-
-		// Update render states
-		updateRenderVariablesInternal();
 	}
+
 
 	void endMultiPass ()
 	{
@@ -1655,6 +1656,8 @@ private:
 	// Build a pixel shader for normal shader
 	IDirect3DPixelShader9	*buildPixelShader (const CNormalShaderDesc &normalShaderDesc, bool unlightedNoVertexColor);
 
+	void notifyAllShaderDrvOfLostDevice();
+	void notifyAllShaderDrvOfResetDevice();
 
 	// *** Debug helpers
 
@@ -1916,7 +1919,6 @@ private:
 	CShader					_ShaderWaterNoDiffuse;	
 	CShader					_ShaderWaterDiffuse;	
 
-	uint32					_StateBlockCategory; // category of render variables to be recorded in the state block
 
 	// Backup frame buffer
 	IDirect3DSurface9		*_BackBuffer;

@@ -2,9 +2,11 @@
 //
 
 #include "stdafx.h"
-#include "tile_edit_dll.h"
+//#include "tile_edit_dll.h"
+#include "resource.h"
 #include "Browse.h"
 #include "custom.h"
+#include "getval.h"
 #include <nel/3d/tile_bank.h>
 
 using namespace NL3D;
@@ -53,6 +55,7 @@ BEGIN_MESSAGE_MAP(Browse, CDialog)
 	ON_WM_RBUTTONDOWN()
 	ON_BN_CLICKED(IDC_CANCEL, OnCancel)
 	ON_BN_CLICKED(IDC_OK2, OnUpdateTiles)
+	ON_BN_CLICKED(IDC_BATCH_LOAD, OnBatchLoad)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -525,7 +528,9 @@ unsigned long Browse::MyControllingFunction( void* pParam )
 		int *ld; 
 		std::string path;
 		LPBITMAPINFO pBmp; 
-		std::vector<NLMISC::CRGBA>* bits;
+		std::vector<NLMISC::CBGRA>* bits;
+		bool bMulAlpha=false;
+		bool bInverted=false;
 
 		switch (br->m_128x128)
 		{
@@ -539,7 +544,9 @@ unsigned long Browse::MyControllingFunction( void* pParam )
 			break;
 		case 2:
 			{
+				bMulAlpha=true;
 				int index=tileBank2.getTileSet (br->m_ctrl.InfoList._tileSet)->getTransition (i)->getTile();
+				bInverted=tileBank2.getTile (index)->isInvert();
 				if (index!=-1)
 					path = tileBank2.getTile (index)->getFileName ((CTile::TBitmap)(br->m_ctrl.Texture-1));
 				else
@@ -568,7 +575,7 @@ unsigned long Browse::MyControllingFunction( void* pParam )
 			break;
 		}
 
-		if ((path!="") /*&& !*ld */&& _LoadBitmap(path, pBmp, *bits))
+		if ((path!="") /*&& !*ld */&& _LoadBitmap(path, pBmp, *bits, bMulAlpha, bInverted))
 		{			
 			*ld=1;
 			int iFV,iLV; br->m_ctrl.GetVisibility(iFV, iLV, br->m_128x128);
@@ -589,7 +596,8 @@ unsigned long Browse::MyControllingFunction( void* pParam )
 void Browse::LoadInThread(void)
 {
 	if (!thread_actif)
-	CreateThread(NULL, 0, MyControllingFunction, this, 0, &thread_id);
+	//CreateThread(NULL, 0, MyControllingFunction, this, 0, &thread_id);
+	MyControllingFunction (this);
 }
 
 
@@ -951,11 +959,13 @@ void Browse::OnOk()
 	// TODO: Add your control notification handler code here
 	if (thread_actif) return;
 
-	if (::MessageBox (NULL, "Are you sure you want to cancel?", "Cancel", MB_OK|MB_ICONQUESTION|MB_YESNO)==IDYES)
+	/*if (::MessageBox (NULL, "Are you sure you want to cancel?", "Cancel", MB_OK|MB_ICONQUESTION|MB_YESNO)==IDYES)
 	{
 		this->SendMessage(WM_CLOSE);
 		EndDialog(1);
-	}
+	}*/
+	this->SendMessage(WM_CLOSE);
+	EndDialog(1);
 }
 
 void Browse::OnRButtonDown(UINT nFlags, CPoint point) 
@@ -1029,4 +1039,92 @@ void Browse::OnChangeVariety()
 	GetVisibility(iFV, iLV, parent->m_128x128);
 	UpdateBar(iFV, iLV, parent->m_128x128);*/
 	UpdateData(FALSE);
+}
+
+void Browse::OnBatchLoad ()
+{
+	CFileDialog sFile (true, NULL, NULL /*m_ctrl.LastPath.c_str()*/, OFN_ENABLESIZING,
+		"Targa bitmap (*.tga)|*.tga|All files (*.*)|*.*||",NULL);
+
+	if (sFile.DoModal()==IDOK)
+	{
+		char sDrive[256];
+		char sPath[256];
+		char sName[256];
+		char sExt[256];
+		_splitpath (sFile.GetPathName(), sDrive, sPath, sName, sExt);
+
+		// Try to load inverted tile ?
+		bool bInvert=false;
+		if (m_ctrl.Texture==1)
+		{
+			if (MessageBox ("Do you want to try loading tiles with inverted alpha ?", "tile edit", MB_YESNO|MB_ICONQUESTION)==IDYES)
+				bInvert=true;
+		}
+
+		// look for some numbers..
+		char *sNumber=sName+strlen(sName)-1;
+		while ((sNumber>sName)&&(*sNumber>='0')&&(*sNumber<='9'))
+		{
+			sNumber--;
+		}
+		sNumber[1]=0;
+
+		for (int i=0; i<CTileSet::count; i++)
+		{
+			bool bLoadInvert=false;
+			CTileSetTransition* trans=tileBank2.getTileSet (land)->getTransition (i);
+			if (tileBank2.getTile (trans->getTile())->getFileName (m_ctrl.Texture==1?CTile::diffuse:(m_ctrl.Texture==2?CTile::additive:CTile::bump))=="")
+			{
+				// Try to load a tile with a file name like /tiletransition0.tga
+				char sName2[256];
+				char sFinal[256];
+				sprintf (sName2, "%s%d", sName, i);
+				_makepath (sFinal, sDrive, sPath, sName2, sExt);
+				FILE *pFile=fopen (sFinal, "rb");
+				if (!pFile)
+				{
+					// Try to load a name like /tiletransition00.tga
+					sprintf (sName2, "%s%02d", sName, i);
+					_makepath (sFinal, sDrive, sPath, sName2, sExt);
+					pFile=fopen (sFinal, "rb");
+					
+					if (!pFile)
+					{
+						if (bInvert)
+						{
+							// *** Try to load an inverted alpha transition
+							bLoadInvert=true;
+
+							// Find the border desc of the wanted tile
+							CTileSet::TTransition invert=tileBank2.getTileSet (land)->getComplementaryTransition ((CTileSet::TTransition)i);
+
+							// *** Load it by the two ways
+
+							// Try to load a tile with a file name like /tiletransition0.tga
+							sprintf (sName2, "%s%d", sName, invert);
+							_makepath (sFinal, sDrive, sPath, sName2, sExt);
+							pFile=fopen (sFinal, "rb");
+							if (!pFile)
+							{
+								// Try to load a name like /tiletransition00.tga
+								sprintf (sName2, "%s%02d", sName, invert);
+								_makepath (sFinal, sDrive, sPath, sName2, sExt);
+								pFile=fopen (sFinal, "rb");
+							}
+						}
+					}
+				}
+
+				// Close the file and add the tile if opened
+				if (pFile)
+				{
+					fclose (pFile);
+					m_ctrl.InfoList.setTileTransition (i, sFinal, m_ctrl.Texture==1?CTile::diffuse:(m_ctrl.Texture==2?CTile::additive:CTile::bump), bLoadInvert);
+				}
+			}
+		}
+		m_ctrl.Invalidate ();
+
+	}
 }

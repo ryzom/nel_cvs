@@ -173,6 +173,8 @@ BEGIN
     LISTBOX         IDC_TILE_SET,5,130,105,120,LBS_NOINTEGRALHEIGHT | 
                     WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Edit children",IDC_EDIT_CHILDREN,115,190,50,15
+    PUSHBUTTON      "Up",IDC_EDIT_MONTER,115,210,50,15
+    PUSHBUTTON      "Down",IDC_EDIT_DESCENDRE,115,230,50,15
 END
 
 IDD_GETSTR DIALOG DISCARDABLE  0, 0, 134, 46
@@ -220,6 +222,7 @@ BEGIN
                     45,8
     CONTROL         "Transitions",IDC_ZOOM6,"Button",BS_AUTORADIOBUTTON,15,
                     195,50,8
+    PUSHBUTTON      "Batch load...",IDC_BATCH_LOAD,5,275,65,16
 END
 
 IDD_GROUPE DIALOG DISCARDABLE  0, 0, 225, 146
@@ -355,19 +358,6 @@ IDC_CURSOR1             CURSOR  DISCARDABLE     "cursor1.cur"
 //
 
 IDB_BITMAP1             BITMAP  DISCARDABLE     "tile32_32.bmp"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// String Table
-//
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_INSERER              "Inserer un tile"
-    IDM_INSERER             "Inserer au debut de la liste"
-    ID_SUPPRIMER            "Supprimer"
-END
-
 #endif    // French (France) resources
 /////////////////////////////////////////////////////////////////////////////
 

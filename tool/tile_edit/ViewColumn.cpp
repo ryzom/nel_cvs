@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "tile_edit_dll.h"
+#include "resource.h"
 #include "ViewColumn.h"
 #include "Browse.h"
 

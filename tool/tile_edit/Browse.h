@@ -9,7 +9,7 @@
 #include "SelectionTerritoire.h"
 #include "View.h"
 
-#define REGKEY_TILEDIT "Software\\Nevrax\\Ryzom\\Tile_Edit"
+#define REGKEY_TILEDIT "Software\\Nevrax\\Nel\\Tile_Edit"
 #define REGKEY_BUTTONZOOM "Zoom button"
 #define REGKEY_BUTTONVARIETY "Zoom variety"
 #define REGKEY_BUTTONTEXTURE "Texture button"
@@ -89,6 +89,7 @@ protected:
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnSelchangeListtype();
 	afx_msg void OnUpdateTiles();
+	afx_msg void OnBatchLoad ();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "DialogEditList.h"
-#include "tile_edit_dll.h"
+#include "resource.h"
 #include "SelectionTerritoire.h"
 #include "GetVal.h"
 #include "Browse.h"
@@ -91,6 +91,8 @@ BEGIN_MESSAGE_MAP(SelectionTerritoire, CDialog)
 	ON_BN_CLICKED(IDC_EDIT_TILESET, OnEditTileSet)
 	ON_BN_CLICKED(IDC_EDIT_CHILDREN, OnEditChildren)
 	ON_BN_CLICKED(IDC_REMOVE_TILESET, OnRemoveTileSet)
+	ON_BN_CLICKED(IDC_EDIT_MONTER, OnMonter)
+	ON_BN_CLICKED(IDC_EDIT_DESCENDRE, OnDescendre)
 	ON_BN_CLICKED(ID_SELECT, OnSelect)
 	ON_BN_CLICKED(ID_SAVE, OnSave)
 	ON_BN_CLICKED(ID_SAVE_AS, OnSaveAs)
@@ -344,11 +346,67 @@ void SelectionTerritoire::OnRemoveTileSet()
 	}
 }
 
+void SelectionTerritoire::OnMonter()
+{
+	// TODO: Add your control notification handler code here
+	CListBox *list=(CListBox*)GetDlgItem(IDC_TILE_SET);	
+	int nindex=list->GetCurSel();
+	if (nindex!=LB_ERR) 
+	{
+		if (nindex>0)
+		{
+			tileBank.xchgTileset (nindex, nindex-1);
 
+			// xchg the name
+			CString tmp1, tmp2;
+			list->GetText(nindex-1, tmp1);
+			list->GetText(nindex, tmp2);
+			
+			list->DeleteString (nindex-1);
+			list->DeleteString (nindex-1);
 
+			list->InsertString (nindex-1, tmp1);
+			list->InsertString (nindex-1, tmp2);
 
+			list->SetCurSel(nindex-1);
+		}
+	}
+	else
+	{
+		MessageBox("Aucun territoire selectionne","Chcrois kca va pas etreuu possibleuuu",MB_ICONERROR);
+	}
+}
 
+void SelectionTerritoire::OnDescendre()
+{
+	// TODO: Add your control notification handler code here
+	CListBox *list=(CListBox*)GetDlgItem(IDC_TILE_SET);	
+	int nindex=list->GetCurSel();
+	if (nindex!=LB_ERR) 
+	{
+		if (nindex<(list->GetCount()-1))
+		{
+			tileBank.xchgTileset (nindex, nindex+1);
+		
+			// xchg the name
+			CString tmp1, tmp2;
+			list->GetText(nindex, tmp1);
+			list->GetText(nindex+1, tmp2);
 
+			list->DeleteString (nindex);
+			list->DeleteString (nindex);
+
+			list->InsertString (nindex, tmp1);
+			list->InsertString (nindex, tmp2);
+
+			list->SetCurSel(nindex+1);
+		}
+	}
+	else
+	{
+		MessageBox("Aucun territoire selectionne","Chcrois kca va pas etreuu possibleuuu",MB_ICONERROR);
+	}
+}
 
 void SelectionTerritoire::OnSelect() 
 {

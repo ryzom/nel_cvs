@@ -1,6 +1,6 @@
 Mode d'emploi des macros Nevrax
 02/08/00 cado@nevrax.com
-$Id: nevrax_macros_howto.txt,v 1.7 2000/12/14 10:55:43 cado Exp $
+$Id: nevrax_macros_howto.txt,v 1.8 2001/01/08 10:21:17 corvazier Exp $
 ----------
 
 Dernière mise à jour : 14/12/2000
@@ -87,7 +87,7 @@ jaune), OK, Close.
 
 - NevraxNewClass (bouton installé en 1.c. ci-dessus)
   Cette macro est un assistant de création de classe, adaptée pour
-  Ryzom. Elle doit être utilisée quand un projet C++ est ouvert.
+  NeL. Elle doit être utilisée quand un projet C++ est ouvert.
   Les étapes :
   1. Choix du nom de la classe. Ex: CMaClasse
   2. Confirmation du nom des fichiers .h et .cpp à créer. Ex: Pour

@@ -50,18 +50,18 @@ public:
 	//~TileInfo();
 	//TileInfo(const TileInfo&);
 
-	bool Load (int index);
+	bool Load (int index, bool bMulAlpha, bool bInvertAlpha);
 	void Delete ();
 	//operateurs
 	//int operator < (const TileInfo &) const;
 
 	//data
 	BITMAPINFO BmpInfo; 
-	std::vector<NLMISC::CRGBA> Bits;
+	std::vector<NLMISC::CBGRA> Bits;
 	BITMAPINFO bumpBmpInfo; 
-	std::vector<NLMISC::CRGBA> bumpBits;
+	std::vector<NLMISC::CBGRA> bumpBits;
 	BITMAPINFO nightBmpInfo; 
-	std::vector<NLMISC::CRGBA> nightBits;
+	std::vector<NLMISC::CBGRA> nightBits;
 	/*std::string path; 
 	std::string bumpPath; 
 	std::string nightPath;*/
@@ -94,7 +94,7 @@ public:
 
 	int setTile128 (int tile, const std::string& name, NL3D::CTile::TBitmap type);
 	int setTile256 (int tile, const std::string& name, NL3D::CTile::TBitmap type);
-	int setTileTransition (int tile, const std::string& name, NL3D::CTile::TBitmap type);
+	int setTileTransition (int tile, const std::string& name, NL3D::CTile::TBitmap type, bool bInvert);
 
 	void removeTile128 (int index);
 	void removeTile256 (int index);
@@ -141,7 +141,7 @@ public:
 
 typedef list<_Edge> edgelist;*/
 //extern int _LoadBitmap(const char *path,LPBITMAPINFO BitmapInfo,void **Bits);//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
-extern int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo,std::vector<NLMISC::CRGBA>&Tampon);//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
+extern int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo,std::vector<NLMISC::CBGRA>&Tampon, bool bMulAlpha, bool bInvertAlpha);//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
 
 class CTView : public CStatic
 {

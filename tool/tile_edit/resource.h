@@ -41,6 +41,8 @@
 #define IDC_EDIT_TERRITOIRE             1011
 #define IDC_EDIT_TILESET                1012
 #define IDC_EDIT_CHILDREN               1013
+#define IDC_EDIT_MONTER                 1014
+#define IDC_EDIT_DESCENDRE              1015
 #define IDC_JOUR                        1020
 #define IDC_NUIT                        1021
 #define IDC_BUMP                        1022
@@ -58,6 +60,7 @@
 #define IDC_FILENAME                    1051
 #define IDC_GROUP                       1052
 #define IDC_OK2                         1053
+#define IDC_BATCH_LOAD                  1054
 #define IDC_VIEW                        1062
 #define IDC_LISTGROUP                   1063
 #define IDC_ADD_GROUP                   1064

@@ -37,7 +37,7 @@ int CALLBACK CompareFunc(LPARAM lParam1,LPARAM lParam2,LPARAM lParamSort)
 
 
 //Attention : windows veut que le buffer image commence du bas vers le haut
-int _LoadBitmap(const char *path,LPBITMAPINFO BitmapInfo,void **Bits)//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
+/*int _LoadBitmap(const char *path,LPBITMAPINFO BitmapInfo,void **Bits)//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
 {
 	int pathsize = strlen(path);
 	if (pathsize<=3) return 0; //le fichier ne contient pas d'extension
@@ -67,7 +67,7 @@ int _LoadBitmap(const char *path,LPBITMAPINFO BitmapInfo,void **Bits)//charge un
 	fclose(ptr);
 	return 1;
 }
-
+*/
 
 
 
@@ -264,7 +264,7 @@ void TileCtrl::Init()
 	char name[256];
 	char *defautpath = ((SelectionTerritoire*)GetParent()->GetParent())->DefautPath.GetBuffer(256);
 	sprintf(name,"%s%s",defautpath,"croix.bmp");
-	if (_LoadBitmap(name,&TileCroix.BmpInfo,&TileCroix.Bits))
+	if (_LoadBitmap(name,&TileCroix.BmpInfo,&TileCroix.Bits,false,false))
 	{
 		int size=TileCroix.BmpInfo.bmiHeader.biHeight*TileCroix.BmpInfo.bmiHeader.biWidth*TileCroix.BmpInfo.bmiHeader.biBitCount/8;
 		char *temp = new char[size];

@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "tile_edit_dll.h"
+#include "resource.h"
 #include "View.h"
 #include "SelectionTerritoire.h"
 #include "Browse.h"
@@ -41,16 +41,16 @@ __int64 flagGroupSort = 0; int showNULL = 0;
 /////////////////////////////////////////////////////////////////////////////
 // CTView
 //Attention : windows veut que le buffer image commence du bas vers le haut
-int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo,std::vector<NLMISC::CRGBA>&Tampon)//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
+int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo,std::vector<NLMISC::CBGRA>&Tampon, bool bMulAlpha, bool bInvertAlpha)//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
 {
-	//vector<NLMISC::CRGBA> Tampon;
+	//vector<NLMISC::CBGRA> Tampon;
 	uint Width;
 	uint Height;
 	if (PIC_LoadPic(path, Tampon, Width, Height))
 	{
 		BitmapInfo->bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
 		BitmapInfo->bmiHeader.biWidth=Width;
-		BitmapInfo->bmiHeader.biHeight=-Height;
+		BitmapInfo->bmiHeader.biHeight=-(int)Height;
 		BitmapInfo->bmiHeader.biPlanes=1;
 		BitmapInfo->bmiHeader.biBitCount=32;
 		BitmapInfo->bmiHeader.biCompression=BI_RGB;
@@ -62,6 +62,21 @@ int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo,std::vector<NLMI
 		BitmapInfo->bmiColors->rgbBlue=0;
 		BitmapInfo->bmiColors->rgbRed=0;
 		BitmapInfo->bmiColors->rgbGreen=0;
+
+		if (bMulAlpha)
+		{
+			// Pre mul RGB componates by Alpha one
+			int nPixelCount=(int)(Width*Height);
+			for (int p=0; p<nPixelCount; p++)
+			{
+				// Invert alpha ?
+				int alpha=bInvertAlpha?255-Tampon[p].A:Tampon[p].A;
+				Tampon[p].R=(uint8)(((int)Tampon[p].R*alpha)>>8);
+				Tampon[p].G=(uint8)(((int)Tampon[p].G*alpha)>>8);
+				Tampon[p].B=(uint8)(((int)Tampon[p].B*alpha)>>8);
+			}
+		}
+
 		return 1;
 	}
 	else
@@ -388,7 +403,7 @@ int TileList::setTile128 (int tile, const std::string& name, NL3D::CTile::TBitma
 	while (smAcces) {}
 	smAcces = 1;
 
-	vector<NLMISC::CRGBA> tampon;
+	vector<NLMISC::CBGRA> tampon;
 	uint Width;
 	uint Height;
 	if (!PIC_LoadPic(name, tampon, Width, Height))
@@ -403,11 +418,16 @@ int TileList::setTile128 (int tile, const std::string& name, NL3D::CTile::TBitma
 		border.set (Width, Height, tampon);
 
 		CTileSet::TError error;
-		error=tileBank2.getTileSet(_tileSet)->checkTile128 (type, border);
+		int pixel=-1;
+		int composante=4;
+		error=tileBank2.getTileSet(_tileSet)->checkTile128 (type, border, pixel, composante);
 		if ((error!=CTileSet::ok)&&(error!=CTileSet::addFirstA128128))
 		{
 			smAcces = 0;
-			MessageBox (NULL, CTileSet::getErrorMessage (error), "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
+			char sTmp[512];
+			static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
+			sprintf (sTmp, "%s\nPixel: %d (%s)", CTileSet::getErrorMessage (error), pixel, comp[composante]);
+			MessageBox (NULL, sTmp, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
 			return 0;
 		}
 		else
@@ -427,7 +447,7 @@ int TileList::setTile128 (int tile, const std::string& name, NL3D::CTile::TBitma
 				theList128[tile].bumpLoaded=0;
 				break;
 			}
-			theList128[tile].Load (tileBank2.getTileSet(_tileSet)->getTile128(tile));
+			theList128[tile].Load (tileBank2.getTileSet(_tileSet)->getTile128(tile), false, false);
 		}
 	}
 
@@ -439,7 +459,7 @@ int TileList::setTile256 (int tile, const std::string& name, NL3D::CTile::TBitma
 {
 	while (smAcces) {}
 	smAcces = 1;
-	vector<NLMISC::CRGBA> tampon;
+	vector<NLMISC::CBGRA> tampon;
 	uint Width;
 	uint Height;
 	if (!PIC_LoadPic(name, tampon, Width, Height))
@@ -454,10 +474,15 @@ int TileList::setTile256 (int tile, const std::string& name, NL3D::CTile::TBitma
 		border.set (Width, Height, tampon);
 		
 		CTileSet::TError error;
-		if ((error=tileBank2.getTileSet(_tileSet)->checkTile256 (type, border))!=CTileSet::ok)
+		int pixel=-1;
+		int composante=4;
+		if ((error=tileBank2.getTileSet(_tileSet)->checkTile256 (type, border, pixel, composante))!=CTileSet::ok)
 		{
 			smAcces = 0;
-			MessageBox (NULL, CTileSet::getErrorMessage (error), "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
+			char sTmp[512];
+			static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
+			sprintf (sTmp, "%s\nPixel: %d (%s)", CTileSet::getErrorMessage (error), pixel, comp[composante]);
+			MessageBox (NULL, sTmp, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
 			return 0;
 		}
 		else
@@ -475,7 +500,7 @@ int TileList::setTile256 (int tile, const std::string& name, NL3D::CTile::TBitma
 				theList256[tile].bumpLoaded=0;
 				break;
 			}
-			theList256[tile].Load (tileBank2.getTileSet(_tileSet)->getTile256(tile));
+			theList256[tile].Load (tileBank2.getTileSet(_tileSet)->getTile256(tile), false, false);
 		}
 	}
 
@@ -483,12 +508,12 @@ int TileList::setTile256 (int tile, const std::string& name, NL3D::CTile::TBitma
 	return 1;
 }
 
-int TileList::setTileTransition (int tile, const std::string& name, NL3D::CTile::TBitmap type)
+int TileList::setTileTransition (int tile, const std::string& name, NL3D::CTile::TBitmap type, bool bInvert)
 {
 	while (smAcces) {}
 	smAcces = 1;
 
-	vector<NLMISC::CRGBA> tampon;
+	vector<NLMISC::CBGRA> tampon;
 	uint Width;
 	uint Height;
 	if (!PIC_LoadPic(name, tampon, Width, Height))
@@ -503,15 +528,40 @@ int TileList::setTileTransition (int tile, const std::string& name, NL3D::CTile:
 		border.set (Width, Height, tampon);
 		
 		CTileSet::TError error;
-		if ((error=tileBank2.getTileSet(_tileSet)->checkTileTransition ((CTileSet::TTransition)tile, type, border))!=CTileSet::ok)
+		int indexError;
+		int pixel=-1;
+		int composante=4;
+		if ((error=tileBank2.getTileSet(_tileSet)->checkTileTransition ((CTileSet::TTransition)tile, type, border, indexError,
+			pixel, composante, bInvert))!=CTileSet::ok)
 		{
 			smAcces = 0;
-			MessageBox (NULL, CTileSet::getErrorMessage (error), "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
+			char sMsg[512];
+			if ((error==CTileSet::topInterfaceProblem)||(error==CTileSet::bottomInterfaceProblem)||(error==CTileSet::leftInterfaceProblem)
+				||(error==CTileSet::rightInterfaceProblem)||(error==CTileSet::topBottomNotTheSame)||(error==CTileSet::rightLeftNotTheSame)
+				||(error==CTileSet::topInterfaceProblem))
+			{
+				static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
+				if (indexError!=-1)
+					sprintf (sMsg, "%s\nIncompatible with tile n°%d\nPixel: %d (%s)", CTileSet::getErrorMessage (error), indexError,
+						pixel, comp[composante]);
+				else
+					sprintf (sMsg, "%s\nIncompatible with the 128x128 tile\nPixel: %d (%s)", CTileSet::getErrorMessage (error),
+						pixel, comp[composante]);
+				}
+			else
+				sprintf (sMsg, "%s\nIncompatible filled tile", CTileSet::getErrorMessage (error));
+			if (bInvert)
+			{
+				char addInvert[256];
+				sprintf (addInvert, "\n\nWarning: This tile is added with inverted alpha!");
+				strcat (sMsg, addInvert);
+			}
+			MessageBox (NULL, sMsg, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
 			return 0;
 		}
 		else
 		{
-			tileBank2.getTileSet(_tileSet)->setTileTransition ((CTileSet::TTransition)tile, name, type, tileBank2, border);
+			tileBank2.getTileSet(_tileSet)->setTileTransition ((CTileSet::TTransition)tile, name, type, tileBank2, border, bInvert);
 			switch (type)
 			{
 			case CTile::diffuse:
@@ -524,7 +574,7 @@ int TileList::setTileTransition (int tile, const std::string& name, NL3D::CTile:
 				theListTransition[tile].bumpLoaded=0;
 				break;
 			}
-			theListTransition[tile].Load (tileBank2.getTileSet(_tileSet)->getTransition(tile)->getTile());
+			theListTransition[tile].Load (tileBank2.getTileSet(_tileSet)->getTransition(tile)->getTile(), true, bInvert);
 		}
 	}
 
@@ -569,7 +619,7 @@ void TileList::clearTile128 (int index, CTile::TBitmap bitmap)
 		theList128[index].bumpBits.resize(0);
 		break;
 	}
-	tileBank2.getTile (tileBank2.getTileSet (_tileSet)->getTile128 (index))->clearTile (bitmap);
+	tileBank2.getTileSet (_tileSet)->clearTile128 (index, bitmap, tileBank2);
 }
 
 void TileList::clearTile256 (int index, CTile::TBitmap bitmap)
@@ -589,7 +639,7 @@ void TileList::clearTile256 (int index, CTile::TBitmap bitmap)
 		theList256[index].bumpBits.resize(0);
 		break;
 	}
-	tileBank2.getTile (tileBank2.getTileSet (_tileSet)->getTile256 (index))->clearTile (bitmap);
+	tileBank2.getTileSet (_tileSet)->clearTile256 (index, bitmap, tileBank2);
 }
 
 void TileList::clearTransition (int index, CTile::TBitmap bitmap)
@@ -609,9 +659,7 @@ void TileList::clearTransition (int index, CTile::TBitmap bitmap)
 		theListTransition[index].bumpBits.resize(0);
 		break;
 	}
-	int indexT=tileBank2.getTileSet (_tileSet)->getTransition (index)->getTile();
-	if (indexT!=-1)
-		tileBank2.getTile (indexT)->clearTile (bitmap);
+	tileBank2.getTileSet (_tileSet)->clearTransition ((CTileSet::TTransition)index, bitmap, tileBank2);
 }
 
 /*void TileList::UpdateLF(void)
@@ -731,12 +779,12 @@ const std::string& TileInfo::getFileName (CTile::TBitmap type, int index)
 	return tileBank2.getTile (index)->getFileName (type);
 }
 
-bool TileInfo::Load (int index)
+bool TileInfo::Load (int index, bool bMulAlpha, bool bInvertAlpha)
 {
 	bool bRes=true;
 	if (!loaded && getFileName (CTile::diffuse, index)!="")
 	{
-		if (!_LoadBitmap(getFileName (CTile::diffuse, index), &BmpInfo, Bits))
+		if (!_LoadBitmap(getFileName (CTile::diffuse, index), &BmpInfo, Bits, bMulAlpha, bInvertAlpha))
 		{
 			bRes=false;
 			MessageBox (NULL, getFileName (CTile::diffuse, index).c_str(), "Can't load file", MB_OK|MB_ICONEXCLAMATION);
@@ -745,7 +793,7 @@ bool TileInfo::Load (int index)
 	}
 	if (!nightLoaded && getFileName (CTile::additive, index)!="")
 	{
-		if (!_LoadBitmap(getFileName (CTile::additive, index), &nightBmpInfo, nightBits))
+		if (!_LoadBitmap(getFileName (CTile::additive, index), &nightBmpInfo, nightBits, bMulAlpha, false))
 		{
 			bRes=false;
 			MessageBox (NULL, getFileName (CTile::additive, index).c_str(), "Can't load file", MB_OK|MB_ICONEXCLAMATION);
@@ -754,7 +802,7 @@ bool TileInfo::Load (int index)
 	}
 	if (!bumpLoaded && getFileName (CTile::bump, index)!="")
 	{
-		if (!_LoadBitmap(getFileName (CTile::bump, index), &bumpBmpInfo, bumpBits))
+		if (!_LoadBitmap(getFileName (CTile::bump, index), &bumpBmpInfo, bumpBits, bMulAlpha, false))
 		{
 			bRes=false;
 			MessageBox (NULL, getFileName (CTile::bump, index).c_str(), "Can't load file", MB_OK|MB_ICONEXCLAMATION);
@@ -771,17 +819,17 @@ void TileList::Reload(int first, int count, int n) //recharge en memoire une tra
 		switch (n)
 		{
 		case 0:
-			theList[n][i].Load (tileBank2.getTileSet(_tileSet)->getTile128 (i));
+			theList[n][i].Load (tileBank2.getTileSet(_tileSet)->getTile128 (i), false, false);
 			break;
 		case 1:
-			theList[n][i].Load (tileBank2.getTileSet(_tileSet)->getTile256 (i));
+			theList[n][i].Load (tileBank2.getTileSet(_tileSet)->getTile256 (i), false, false);
 			break;
 		case 2:
 			{
 				int index=tileBank2.getTileSet(_tileSet)->getTransition (i)->getTile();
 				if (index!=-1)
 				{
-					theList[n][i].Load (index);
+					theList[n][i].Load (index, true, tileBank2.getTile (index)->isInvert());
 				}
 			}
 			break;
@@ -819,7 +867,7 @@ void CTView::Init(int _land, int n)
 	char name[256];
 	char *defautpath = ((SelectionTerritoire*)GetParent()->GetParent())->DefautPath.GetBuffer(256);
 	sprintf(name,"%s%s",defautpath,"croix.bmp");
-	if (_LoadBitmap(std::string((const char*)name),&TileCroix.BmpInfo,TileCroix.Bits))
+	if (_LoadBitmap(std::string((const char*)name),&TileCroix.BmpInfo,TileCroix.Bits, false, false))
 	{
 		int size=TileCroix.BmpInfo.bmiHeader.biHeight*TileCroix.BmpInfo.bmiHeader.biWidth*TileCroix.BmpInfo.bmiHeader.biBitCount/8;
 		char *temp = new char[size];
@@ -1351,7 +1399,7 @@ void CTView::DrawTile(tilelist::iterator i,CDC *pDC,int clear, int n)
 	
 	LPBITMAPINFO bmpinf;
 	std::string pth; 
-	std::vector<NLMISC::CRGBA> *bits;
+	std::vector<NLMISC::CBGRA> *bits;
 	int loaded;
 
 	switch (n)
@@ -1752,15 +1800,13 @@ LRESULT CTView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 								}
 								break;
 							case 2:
-								nlassert (id!=ID_MENU_ADD);
-								InfoList.setTileTransition (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::bump));
-								tileBank2.getTileSet (InfoList._tileSet)->getTransition (index)->setInvert (false);
-								/*if (AfxMessageBox ("Use invert alpha trick ?",MB_ICONQUESTION|MB_YESNO)==IDYES)
 								{
-									int index2=CTileSet::getComplementaryTransition ((CTileSet::TTransition)index);
-									InfoList.setTileTransition (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::bump));
-									tileBank2.getTileSet (InfoList._tileSet)->getTransition (index2)->setInvert (true);
-								}*/
+									nlassert (id!=ID_MENU_ADD);
+									bool bInvert=false;
+									if (MessageBox ("Do you want to add this transition tile with inverted alpha ?", "Tile edit", MB_YESNO|MB_ICONQUESTION)==IDYES)
+										bInvert=true;
+									InfoList.setTileTransition (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::bump), bInvert);
+								}
 								break;
 							default:
 								nlassert (0); // no!

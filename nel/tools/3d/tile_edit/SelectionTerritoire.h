@@ -34,7 +34,7 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(SelectionTerritoire)
-	protected:
+	protected: 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	//}}AFX_VIRTUAL
@@ -51,6 +51,8 @@ protected:
 	afx_msg void OnEditTileSet();
 	afx_msg void OnEditChildren();
 	afx_msg void OnRemoveTileSet();
+	afx_msg void OnMonter();
+	afx_msg void OnDescendre();
 	afx_msg void OnSelect();
 	virtual void OnOK();
 	virtual void OnCancel();

@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.10 2002/03/21 10:54:37 valignat Exp $
+dnl $Id: acinclude.m4,v 1.11 2002/03/26 14:37:45 valignat Exp $
 dnl 
 dnl =========================================================================
 
@@ -662,7 +662,7 @@ fi
 
 dnl Checking the FreeType 2 instalation
 _CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CXXFLAGS $FREETYPE_CFLAGS"
+CPPFLAGS=" $FREETYPE_CFLAGS $CXXFLAGS"
 
 AC_MSG_CHECKING(for FreeType version = 2)
 
@@ -689,7 +689,7 @@ then
     FREETYPE_LIBS="-L$freetype_libraries -l$freetype_lib"
 fi
 
-CPPFLAGS="$CXXFLAGS $FREETYPE_LIBS"
+CPPFLAGS="$FREETYPE_LIBS $CXXFLAGS"
     
 AC_TRY_LINK( , , have_freetype_libraries="yes", have_freetype_libraries="no")
 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.73 2002/03/20 10:55:51 berenguier Exp $
+# $Id: Makefile.am,v 1.74 2002/03/26 14:37:46 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -168,7 +168,7 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        meshvp_wind_tree.cpp                            \
                        meshvp_per_pixel_light.cpp                      \
                        meshvp_per_pixel_light.h                        \
-					   mini_col.cpp                                    \
+                       mini_col.cpp                                    \
                        mini_col.h                                      \
                        mot.cpp                                         \
                        mot.h                                           \

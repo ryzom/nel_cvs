@@ -1176,7 +1176,6 @@ SOURCE=..\include\nel\ai\nimat\black_box.h
 SOURCE=..\include\nel\ai\nimat\classifier.h
 # End Source File
 # End Group
-# End Group
 # Begin Group "character"
 
 # PROP Default_Filter ""
@@ -1203,6 +1202,7 @@ SOURCE=..\include\nel\ai\character\character.h
 
 SOURCE=..\include\nel\ai\character\zone.h
 # End Source File
+# End Group
 # End Group
 # End Group
 # Begin Group "tools"

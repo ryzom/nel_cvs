@@ -152,7 +152,7 @@ namespace NLAIAGENT
 				if ( ( _CurrentGoal != NULL && _CurrentGoal->isSelected() ) || ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() == NULL)
 				{
 					activate();
-					execOnActivate();	// Execs onActivate() function in the script if defined otherwise in C++ inherited from CActorScript.
+					execOnActivate();	// Execs onActivate() function in the script if defined otherwise the C++ one inherited from CActorScript.
 				}
 			}
 			else

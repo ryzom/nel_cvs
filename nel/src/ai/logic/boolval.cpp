@@ -83,6 +83,7 @@ namespace NLAILOGIC
 			text += "true";
 		else
 			text += "false";
+		text += ">";
 	}
 
 	bool CBoolType::isTrue() const

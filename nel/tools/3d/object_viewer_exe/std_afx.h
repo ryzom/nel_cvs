@@ -31,7 +31,13 @@
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
+#ifdef min
+#undef min
+#endif
 
+#ifdef max
+#undef max
+#endif
 
 #include <3d/register_3d.h>
 #include <3d/scene.h>

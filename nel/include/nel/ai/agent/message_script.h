@@ -1,7 +1,7 @@
 /** \file message_script.h
  * class for script message.
  *
- * $Id: message_script.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
+ * $Id: message_script.h,v 1.5 2001/01/24 09:08:36 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,9 +91,9 @@ namespace NLAIAGENT
 				
 
 			///get the closure correspondent of the method indexed by index in the base class inheritance.
-			NLAISCRIPT::IOpCode &getMethode(sint32 inheritance,sint32 index); 
+			NLAISCRIPT::IOpCode *getMethode(sint32 inheritance,sint32 index); 
 			///get the closure correspondent of the method indexed by index.
-			NLAISCRIPT::IOpCode &getMethode(sint32 index);
+			NLAISCRIPT::IOpCode *getMethode(sint32 index);
 
 			/// Return the nomber of internal C++ hard coded method that the class can process.
 			sint32 getBaseMethodCount() const;

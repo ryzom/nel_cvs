@@ -1,7 +1,7 @@
 /** \file interpret_methodes.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: interpret_methodes.h,v 1.5 2001/01/17 17:20:23 chafik Exp $
+ * $Id: interpret_methodes.h,v 1.6 2001/01/24 09:08:36 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -149,7 +149,7 @@ exemple:
 		void setTypeOfMethode(IOpType *);
 		CParam &getParam();
 		void setCode(IOpCode *c);
-		IOpCode &getCode();
+		IOpCode *getCode();
 		const IOpType *getTypeOfMethode() const;
 
 		/// \name NLAIC::IBasicInterface and NLAIAGENT::IObjectIA method.

@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.7 2001/01/12 13:01:47 portier Exp $
+ * $Id: interpret_object_agent.h,v 1.8 2001/01/24 09:08:36 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -104,7 +104,7 @@ namespace NLAISCRIPT
 		typedef std::vector<CMethodeName *>	tVectorMethode;
 		tVectorMethode						_Methode;
 		std::vector<const CAgentClass  *>	_VTable;
-		sint32								**_MsgIndirectTable;
+		std::vector<sint32 *>				_MsgIndirectTable;
 		sint32 _lastRef;		
 		sint32 _RunIndex;
 		sint32 _NbScriptedComponents;		// Number of static components which are interpreted object (which means derived from CAgentScript)

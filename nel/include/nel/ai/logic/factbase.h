@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Factbase, a container for 0 or first order logic asserts and facts of an agent
  *
- * $Id: factbase.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: factbase.h,v 1.4 2001/01/24 09:08:36 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_FACTBASE_H
 
 #include "nel/ai/agent/agent.h"
+#include "nel/ai/agent/agent_string.h"
 
 namespace NLAILOGIC
 {
@@ -35,7 +36,7 @@ namespace NLAILOGIC
 	class CFactPattern  ;
 	class CValueSet;
 	class CFact;
-
+	
 	class CFactBase : public NLAIAGENT::IObjetOp {
 		private:
 			std::list<IBaseAssert *> _Asserts;
@@ -67,6 +68,8 @@ namespace NLAILOGIC
 			virtual bool isTrue() const;
 
 			virtual std::list<CFact *> *getAssertFacts(IBaseAssert *);
+
+			virtual void addGoal(NLAIAGENT::IVarName &, CValueSet *);
 	};
 }
 #endif

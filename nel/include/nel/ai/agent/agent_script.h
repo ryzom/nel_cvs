@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.8 2001/01/18 17:53:47 chafik Exp $
+ * $Id: agent_script.h,v 1.9 2001/01/24 09:08:36 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -155,9 +155,9 @@ namespace NLAIAGENT
 		*/
 		virtual IObjectIA::CProcessResult getDynamicAgent(NLAIAGENT::IBaseGroupType *g);
 		///get the closure correspondent of the method indexed by index in the base class inheritance.
-		NLAISCRIPT::IOpCode &getMethode(sint32 inheritance,sint32 index); 
+		NLAISCRIPT::IOpCode *getMethode(sint32 inheritance,sint32 index); 
 		///get the closure correspondent of the method indexed by index.
-		NLAISCRIPT::IOpCode &getMethode(sint32 index);
+		NLAISCRIPT::IOpCode *getMethode(sint32 index);
 		///Get the manager of the instance.
 		const IAgentManager *getAgentManager() const
 		{

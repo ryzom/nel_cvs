@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Base class for operators
  *
- * $Id: operator.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: operator.h,v 1.4 2001/01/24 09:08:36 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/ai/agent/agent.h"
 #include "nel/ai/logic/boolval.h"
+#include "nel/ai/logic/goal.h"
 
 namespace NLAILOGIC
 {
@@ -45,6 +46,8 @@ namespace NLAILOGIC
 
 			/// Description of the operator
 			char							*_Comment;
+			/// 
+			IBaseAssert						*_Goal;
 			/// Preconditions asserts
 			std::vector<IBaseAssert *>		_Conds;				
 			/// Postconditions asserts			
@@ -62,11 +65,28 @@ namespace NLAILOGIC
 			~IBaseOperator();
 			IBaseOperator(const IBaseOperator &);
 
+			/// Sets the comment for the operator
+			void setComment(char *);
+
+			/// Sets the goals the operator tries to achieve
+			virtual void setGoal(IBaseAssert *);
+
 			/// Asks wether the operator's preconditions are validated,
 			virtual bool isValid(CFactBase *) =0;
 
-			/// Sets the comment for the operator
-			void setComment(char *);
+			/// Priority of the operator
+//			virtual float priority() const = 0;
+
+			/// Own success and failure functions
+			/// These function telle other operators and goals that might be waiting for
+			/// the execution of this one.
+//			virtual void success() = 0;
+//			virtual void failure() = 0;
+
+			/// Dependencies failure and success notification
+			/// These functions are called by other operators or goals who failed or succeeded
+//			virtual void success( IBaseOperator *) = 0;
+//			virtual void failure( IBaseOperator *) = 0;
 
 			const std::vector<IBaseAssert *> &getPrecondAsserts() const;
 			const std::vector<IBaseAssert *> &getPostCondAsserts() const;

@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.13 2001/01/19 12:09:27 coutelas Exp $
+ * $Id: text_context.h,v 1.14 2001/01/23 17:43:00 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,14 +39,6 @@ namespace NL3D {
 
 /**
  * CTextContext
- *
-	example : 
-	CTextContext textContext;
-	textContext.setFontGenerator(fontName);
-	textContext.setWindowSize(width,height);
-	textContext.setColor(color);
-	textContext.setFontSize(fontSize);
-	textContext.print(str, x, y);
  *
  * \author Stephane Coutelas
  * \author Nevrax France
@@ -87,6 +79,12 @@ class CTextContext
 	/// maximum index reached
 	sint32 _MaxIndex;
 
+	/// true if text is shaded
+	bool _Shaded;
+
+	/// shade's extent
+	float _ShadeExtent;
+
 
 public:
 
@@ -108,6 +106,9 @@ public:
 		_XBound = 0;
 
 		_MaxIndex = -1;
+
+		_Shaded = false;
+		_ShadeExtent = 0.001f;
 	}
 	
 	/**
@@ -202,6 +203,31 @@ public:
 		 return _ScaleZ;
 	}
 
+	/**
+	 * set the shade states
+	 * \param the shade state
+	 */
+	void setShaded(bool b)
+	{
+		_Shaded = b;
+	}
+
+	/**
+	 * \return the shade state
+	 */
+	bool getShaded() const 
+	{
+		 return _Shaded;
+	}
+
+	/**
+	 * set the shadow's size
+	 * \param the shade extent
+	 */
+	void setShadeExtent(float shext)
+	{
+		_ShadeExtent = shext;
+	}
 
 	/**
 	 * get the hot spot
@@ -311,11 +337,18 @@ public:
 		vsprintf(str, format, args);
 		va_end(args);
 
-		NL3D::CComputedString cptdstr;
-		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
-		cptdstr.render2D(*NL3D::CNELU::Driver,x,z,_HotSpot,_ScaleX,_ScaleZ);
+		if(_Shaded)
+		{
+			NL3D::CComputedString cptdstr1;
+			_FontManager.computeString(str,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,NL3D::CNELU::Driver,cptdstr1);
+			cptdstr1.render2D(*NL3D::CNELU::Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
+		}
 
-		_XBound = x + cptdstr.StringWidth;
+		NL3D::CComputedString cptdstr2;
+		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr2);
+		cptdstr2.render2D(*NL3D::CNELU::Driver,x,z,_HotSpot,_ScaleX,_ScaleZ);
+
+		_XBound = x + cptdstr2.StringWidth;
 	}
 	
 	

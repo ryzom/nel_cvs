@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.59 2001/12/13 17:59:28 valignat Exp $
+# $Id: Makefile.am,v 1.60 2001/12/14 17:49:55 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -131,6 +131,7 @@ libnel3d_la_SOURCES  = anim_detail_trav.h \
                        quad_grid_clip_manager.h \
                        register_3d.h \
                        render_trav.h \
+                       root_model.h \
                        scene.h \
                        scene_group.h \
                        scene_user.h \
@@ -325,6 +326,7 @@ libnel3d_la_SOURCES  = anim_detail_trav.h \
                        quad_grid_clip_manager.cpp \
                        register_3d.cpp \
                        render_trav.cpp \
+                       root_model.cpp \
                        scene.cpp \
                        scene_group.cpp \
                        scene_user.cpp \

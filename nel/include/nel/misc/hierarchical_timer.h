@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.7 2002/05/29 12:25:57 vizerie Exp $
+ * $Id: hierarchical_timer.h,v 1.8 2002/05/29 13:32:23 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -79,10 +79,8 @@ inline uint64 rdtsc()
 {
 	uint64 ticks;
 #	ifndef NL_OS_WINDOWS		
-		__asm__ volatile(".byte 0x0f, 0xa2"); // using 'cpuid' before calling this prevent out of order execution
 		__asm__ volatile(".byte 0x0f, 0x31" : "=a" (ticks.low), "=d" (ticks.high));				
 #	else 		
-		__asm	cpuid
 		__asm	rdtsc
 		__asm	mov		DWORD PTR [ticks], eax
 		__asm	mov		DWORD PTR [ticks + 4], edx		

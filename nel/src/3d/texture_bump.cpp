@@ -1,7 +1,7 @@
 /** \file texture_bump.cpp
  * <File description>
  *
- * $Id: texture_bump.cpp,v 1.11 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_bump.cpp,v 1.12 2004/06/02 16:21:36 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -385,6 +385,7 @@ float CTextureBump::getNormalizationFactor()
 	{	
 		if (_NormalizationFactor) return *_NormalizationFactor;
 	}
+	if (!_HeightMap) return 1.f;
 	// not computed yet, see if another map has computed it
 	TNameToNI::iterator it = _NameToNF.find(getShareName());
 	if (it != _NameToNF.end())

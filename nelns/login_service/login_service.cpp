@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.4 2001/05/18 16:51:01 lecroart Exp $
+ * $Id: login_service.cpp,v 1.5 2001/06/18 15:34:22 lecroart Exp $
  *
  */
 
@@ -65,7 +65,7 @@ vector<CShard>	Shards;
 
 // config file name that load and save the universal time
 const char		*PlayerDatabaseName = "login_service_database.cfg";
-CConfigFile		*PlayerDatabase;
+CConfigFile		*PlayerDatabase = NULL;
 
 // Functions
 
@@ -356,7 +356,8 @@ void writePlayerDatabase ()
 
 		fclose (fp);
 
-		PlayerDatabase->setLastModifiedNow ();
+		if (PlayerDatabase != NULL)
+			PlayerDatabase->setLastModifiedNow ();
 	}
 
 	displayShards ();

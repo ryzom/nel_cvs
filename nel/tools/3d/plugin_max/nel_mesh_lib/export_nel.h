@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.57 2002/07/03 09:16:28 vizerie Exp $
+ * $Id: export_nel.h,v 1.58 2002/07/03 13:24:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -645,6 +645,8 @@ public:
 	// get a ptr to max interface
 	Interface					  *getInterface() const { return _Ip; }	
 
+	/// Return true if error must be in dialog, false if error must not stop the process.
+	bool		isErrorInDialog () const;
 
 private:
 

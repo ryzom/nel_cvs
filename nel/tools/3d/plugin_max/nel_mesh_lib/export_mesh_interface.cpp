@@ -1,6 +1,6 @@
 /** \file export_mesh_interface.cpp
  *
- * $Id: export_mesh_interface.cpp,v 1.4 2002/06/10 15:30:25 vizerie Exp $
+ * $Id: export_mesh_interface.cpp,v 1.5 2002/07/03 13:24:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@
 
 using namespace NLMISC;
 using namespace NL3D;
+using namespace std;
 
 
 
@@ -485,15 +486,74 @@ static bool BuildMeshInterfaces(const char *cMaxFileName, std::vector<CMeshInter
 			maxFileNameWithSlash += maxFileName[k];
 		}
 	}
+
+	// Before merging, rename the materials if in non-echec export mode and backup there original names in a map
+	map<string, string> renameMap;
+	nlassert (exportNel.getInterface ());
+	MtlBaseLib *lib = exportNel.getInterface ()->GetSceneMtls ();
+	nlassert (lib);
+	uint size = lib->Count ();
+	uint i;
+	for (i=0; i<size; i++)
+	{
+		// Rename the material
+		string newName = "NelAutoMergeRenamedTmp" + toString (i);
+		string originalName = (*lib)[i]->GetName ();
+		renameMap.insert (map<string, string>::value_type (newName, originalName));
+		(*lib)[i]->SetName (newName.c_str ());
+	}
+
+	// Merge the interface project
+	bool mergeSuccess = true;
 	std::string command("mergeMAXFile \"" + maxFileNameWithSlash + "\" #noRedraw #mergeDups");
 	if (CExportNel::scriptEvaluate(command.c_str(), NULL, scriptNothing) == false)
 	{
 		nlwarning("Unable to merge %s", maxFileName.c_str());
 		CExportNel::scriptEvaluate(("print \"Failed to load mesh interfaces " + maxFileNameWithSlash + "\"").c_str(), NULL, scriptNothing);
-		return false;
+		mergeSuccess = false;
 	}
 
-	
+	// Rename the new material name with a generics names
+	nlassert (exportNel.getInterface ());
+	lib = exportNel.getInterface ()->GetSceneMtls ();
+	nlassert (lib);
+	size = lib->Count ();
+
+	// First, rename all the new materials in the scene
+	for (i=0; i<size; i++)
+	{
+		// Find the name in the map ?
+		string key = (*lib)[i]->GetName ();
+		map<string, string>::iterator ite = renameMap.find (key);
+
+		// Not found ? This is a merged material
+		if (ite == renameMap.end ())
+		{
+			// Rename the material
+			string newName = "NelAutoMergeRenamed" + toString (i);
+			string originalName = (*lib)[i]->GetName ();
+			renameMap.insert (map<string, string>::value_type (newName, originalName));
+			(*lib)[i]->SetName (newName.c_str ());
+		}
+	}
+
+	// Now, rename all the old materials in the scene with there original names
+	for (i=0; i<size; i++)
+	{
+		// Find the name
+		string key = (*lib)[i]->GetName ();
+		map<string, string>::iterator ite = renameMap.find (key);
+		if (ite != renameMap.end ())
+		{
+			// Rename the material with its original name
+			(*lib)[i]->SetName (ite->second.c_str ());
+		}
+	}
+
+	// Continue ?
+	if (!mergeSuccess)
+		return false;
+
 	// make a set of current scene nodes + merged nodes
 	nodes.clear();
 	exportNel.getObjectNodes(nodes, tvTime);		

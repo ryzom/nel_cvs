@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.24 2002/06/06 17:35:29 vizerie Exp $
+ * $Id: export_misc.cpp,v 1.25 2002/07/03 13:24:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1135,4 +1135,9 @@ std::string toStringMax(int value)
 	return str;*/
 }
 
+
+bool		CExportNel::isErrorInDialog () const
+{
+	return _ErrorInDialog;
+}
 

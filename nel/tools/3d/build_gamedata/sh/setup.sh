@@ -9,6 +9,17 @@ process_to_complete=`cat cfg/config.cfg | grep "process_to_complete" | sed -e 's
 # Get the update directory
 update_directory=`cat cfg/config.cfg | grep "update_directory" | sed -e 's/update_directory//' | sed -e 's/ //g' | sed -e 's/=//g' | sed -e 's/,/ /g'`
 
+# Get the database directory
+database_directory=`cat cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+# Get the database letter
+database_letter=`cat cfg/site.cfg | grep "database_letter" | sed -e 's/database_letter//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+# Get the database server
+database_server=`cat cfg/site.cfg | grep "database_server" | sed -e 's/database_server//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+`cat _idle.bat | sed -e "s&database_directory&$database_directory&g" | sed -e "s&database_letter&$database_letter&g" | sed -e "s&database_server&$database_server&g" > idle.bat`
+
 # Log error
 echo  > log.log
 date >> log.log

@@ -732,6 +732,10 @@ SOURCE=.\4_install.bat
 # End Source File
 # Begin Source File
 
+SOURCE=.\_idle.bat
+# End Source File
+# Begin Source File
+
 SOURCE=.\sh\build.sh
 # End Source File
 # Begin Source File
@@ -765,10 +769,6 @@ SOURCE=.\export_build_all_data.bat
 # Begin Source File
 
 SOURCE=.\export_build_data.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\idle.bat
 # End Source File
 # Begin Source File
 

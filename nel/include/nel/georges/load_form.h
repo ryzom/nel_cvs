@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.22 2003/03/20 15:41:14 coutelas Exp $
+ * $Id: load_form.h,v 1.23 2003/04/09 13:41:39 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,7 +126,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	// check the extension (i know that file like "foo.packed_sheetsbar" will be accepted but this check is enough...)
 	nlassert (packedFilename.find (".packed_sheets") != std::string::npos);
 
-	std::string packedFilenamePath = NLMISC::CPath::lookup(packedFilename, false);
+	std::string packedFilenamePath = NLMISC::CPath::lookup(NLMISC::CFile::getFilename(packedFilename), false);
 	if (packedFilenamePath.empty())
 	{
 		packedFilenamePath = packedFilename;

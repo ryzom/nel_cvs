@@ -1,7 +1,7 @@
 /** \file net_log.cpp
  * Class CNetLog (logger for network transfers)
  *
- * $Id: net_log.cpp,v 1.10 2001/06/21 08:45:13 cado Exp $
+ * $Id: net_log.cpp,v 1.11 2001/10/16 09:22:03 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,10 @@ void CNetLog::output( const char *srchost, uint8 msgnum,
 
 	displayRawNL( line );
 	*/
-	displayRawNL( "@@%"NL_I64"d@%s@%hu@%s@%s@%s@%u@", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0),
+/*	displayRawNL( "@@%"NL_I64"d@%s@%hu@%s@%s@%s@%u@", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0),
+		srchost, (uint16)msgnum, _ProcessName.c_str(), desthost, msgname, msgsize );
+*/
+	displayRawNL( "@@0@%s@%hu@%s@%s@%s@%u@",
 		srchost, (uint16)msgnum, _ProcessName.c_str(), desthost, msgname, msgsize );
 }
 
@@ -76,7 +79,10 @@ void CNetLog::input( const char *srchost, uint8 msgnum, const char *desthost )
 			  srchost, msgnum, _ProcessName.c_str(), desthost );
 	displayRawNL( line );
 */
-	displayRawNL( "##%"NL_I64"d#%s#%hu#%s#%s#", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0),
+/*	displayRawNL( "##%"NL_I64"d#%s#%hu#%s#%s#", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0),
+		  srchost, msgnum, _ProcessName.c_str(), desthost );
+*/
+	displayRawNL( "##0#%s#%hu#%s#%s#", 
 		  srchost, msgnum, _ProcessName.c_str(), desthost );
 }
 

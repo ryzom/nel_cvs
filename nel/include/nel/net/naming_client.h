@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * Client part of the Naming Service
  *
- * $Id: naming_client.h,v 1.27 2001/06/27 08:30:54 lecroart Exp $
+ * $Id: naming_client.h,v 1.28 2001/10/16 09:21:05 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,19 @@ typedef void (*TBroadcastCallback)(const std::string &name, TServiceId sid, cons
  */
 class CNamingClient
 {
+public:
+	struct CServiceEntry
+	{
+		CServiceEntry (std::string n, TServiceId s, CInetAddress a) : Addr(a), Name(n), SId (s) { }
+
+		// name of the service
+		std::string		Name;
+		// id of the service
+		TServiceId		SId;
+		// address to send to the service who wants to lookup this service
+		CInetAddress	Addr;
+	};
+
 public:
 
 	/// Connect to the naming service.
@@ -121,6 +134,11 @@ public:
 	 */
 	static void			lookupAll (const std::string &name, std::vector<CInetAddress> &addresses);
 
+	/**
+	 * Returns all registered services.
+	 */
+	static const std::list<CServiceEntry>	&getRegisteredServices() { return RegisteredServices; }
+
 
 	/** Obtains a socket connected to a service providing the service \e name.
 	 * In case of failure to connect, the method informs the Naming Service and tries to get another service.
@@ -162,18 +180,6 @@ private:
 	static void doReceiveLookupAnswer (const std::string &name, std::vector<CInetAddress> &addrs);
 
 
-
-	struct CServiceEntry
-	{
-		CServiceEntry (std::string n, TServiceId s, CInetAddress a) : Addr(a), Name(n), SId (s) { }
-
-		// name of the service
-		std::string		Name;
-		// id of the service
-		TServiceId		SId;
-		// address to send to the service who wants to lookup this service
-		CInetAddress	Addr;
-	};
 
 	static std::list<CServiceEntry>	RegisteredServices;
 	static NLMISC::CMutex RegisteredServicesMutex;

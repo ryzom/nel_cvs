@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.6 2001/10/04 15:45:40 lecroart Exp $
+ * $Id: login_server.cpp,v 1.7 2001/10/16 09:22:03 legros Exp $
  *
  */
 
@@ -32,7 +32,7 @@
 #include "nel/misc/command.h"
 
 #include "nel/net/callback_client.h"
-#include "nel/net/net_manager.h"
+#include "nel/net/unified_network.h"
 
 #include "nel/net/login_cookie.h"
 #include "nel/net/login_server.h"
@@ -50,8 +50,8 @@ struct CPendingUser
 
 static list<CPendingUser> PendingUsers;
 
-static string ListenAddr;
 static CCallbackServer *Server;
+static string ListenAddr;
 
 /// contains the correspondance between userid and the sockid
 map<uint32, TSockId> UserIdSockAssociations;
@@ -64,7 +64,7 @@ TNewClientCallback NewClientCallback;
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cbWSChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the WS call me that a new client want to come in my shard
 	string reason;
@@ -95,14 +95,14 @@ void cbWSChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 		reason = "";
 	}
 
-	CMessage msgout (CNetManager::getSIDA ("WS"), "SCS");
+	CMessage msgout ("SCS");
 	msgout.serial (reason);
 	msgout.serial (cookie);
 	msgout.serial (ListenAddr);
-	CNetManager::send ("WS", msgout);
+	CUnifiedNetwork::getInstance()->send ("WS", msgout);
 }
 
-void cbWSDisconnectClient (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+void cbWSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the WS tells me that i have to disconnect a client
 
@@ -122,7 +122,7 @@ void cbWSDisconnectClient (CMessage &msgin, TSockId from, CCallbackNetBase &netb
 }
 
 
-static TCallbackItem WSCallbackArray[] =
+static TUnifiedCallbackItem WSCallbackArray[] =
 {
 	{ "CS", cbWSChooseShard },
 
@@ -166,7 +166,7 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 
 	CMessage msgout2 (netbase.getSIDA (), "SV");
 	msgout2.serial (reason);
-	netbase.send (msgout2);
+	netbase.send (msgout2, from);
 	
 	if (!reason.empty())
 	{
@@ -182,11 +182,11 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 
 		// warn the WS that the client effectively connected
 		uint8 con = 1;
-		CMessage msgout (CNetManager::getSIDA("WS"), "CC");
+		CMessage msgout ("CC");
 		uint32 userid = cookie.getUserId();
 		msgout.serial (userid);
 		msgout.serial (con);
-		CNetManager::send("WS", msgout);
+		CUnifiedNetwork::getInstance()->send("WS", msgout);
 
 		// add the user association
 		UserIdSockAssociations.insert (make_pair(userid, from));
@@ -220,8 +220,7 @@ static const TCallbackItem ClientCallbackArray[] =
 void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl)
 {
 	// connect to the welcome service
-	CNetManager::addClient ("WS");
-	CNetManager::addCallbackArray ("WS", WSCallbackArray, sizeof (WSCallbackArray) / sizeof (WSCallbackArray[0]));
+	CUnifiedNetwork::getInstance()->addCallbackArray(WSCallbackArray, sizeof(WSCallbackArray)/sizeof(WSCallbackArray[0]));
 
 	// add callback to the server
 	server.addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
@@ -237,10 +236,10 @@ void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl)
 void CLoginServer::clientDisconnected (uint32 userId)
 {
 	uint8 con = 0;
-	CMessage msgout (CNetManager::getSIDA("WS"), "CC");
+	CMessage msgout ("CC");
 	msgout.serial (userId);
 	msgout.serial (con);
-	CNetManager::send("WS", msgout);
+	CUnifiedNetwork::getInstance()->send("WS", msgout);
 
 	// remove the user association
 	UserIdSockAssociations.erase (userId);

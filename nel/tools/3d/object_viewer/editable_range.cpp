@@ -1,7 +1,7 @@
 /** \file  editable_range.cpp
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.cpp,v 1.9 2001/11/26 11:03:44 vizerie Exp $
+ * $Id: editable_range.cpp,v 1.10 2002/04/25 10:34:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,8 +67,7 @@ void CEditableRange::update()
 }
 
 BOOL CEditableRange::EnableWindow( BOOL bEnable)
-{
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+{	
 	m_ValueCtrl.EnableWindow(bEnable);
 	m_SliderCtrl.EnableWindow(bEnable);
 	m_UpdateValue.EnableWindow(bEnable);
@@ -80,8 +79,7 @@ BOOL CEditableRange::EnableWindow( BOOL bEnable)
 }
 
 void CEditableRange::init(uint32 x, uint32 y, CWnd *pParent)
-{
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+{	
 	Create(IDD_EDITABLE_RANGE, pParent);
 	RECT r;
 	GetClientRect(&r);
@@ -93,8 +91,7 @@ void CEditableRange::init(uint32 x, uint32 y, CWnd *pParent)
 
 
 void CEditableRange::DoDataExchange(CDataExchange* pDX)
-{
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+{	
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CEditableRange)
 	DDX_Control(pDX, IDC_SLIDER, m_SliderCtrl);
@@ -132,7 +129,6 @@ END_MESSAGE_MAP()
 
 BOOL CEditableRange::OnInitDialog() 
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CDialog::OnInitDialog();
 	
 	updateRange();
@@ -144,8 +140,7 @@ BOOL CEditableRange::OnInitDialog()
 
 
 void CEditableRange::OnReleasedcaptureSlider(NMHDR* pNMHDR, LRESULT* pResult) 
-{
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+{	
 	UpdateData();
 	CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_SLIDER);	
 	if (

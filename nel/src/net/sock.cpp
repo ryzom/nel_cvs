@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.22 2002/08/21 09:43:59 lecroart Exp $
+ * $Id: sock.cpp,v 1.23 2002/08/22 14:47:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -413,7 +413,7 @@ CSock::TSockResult CSock::send( const uint8 *buffer, uint32& len, bool throw_exc
 	len = ::send( _Sock, (const char*)buffer, len, 0 );
 	_MaxSendTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxSendTime );
 
-//	nlinfo ("CSock::send(): Sent %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+	nlinfo ("CSock::send(): Sent %d bytes to %d (%d)", len, _Sock, ERROR_NUM);
 
 	if ( _Logging )
 	{

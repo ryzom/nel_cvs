@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.29 2002/08/22 14:47:13 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.30 2002/08/22 14:50:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -248,6 +248,8 @@ bool CBufSock::update()
 	nlassert (this != InvalidSockId);	// invalid bufsock
 //	nlnettrace( "CBufSock::update-BEGIN" );
 	// Time trigger
+
+	nlwarning ("bufsock update %u", (uint32)_TriggerTime);
 	if ( _TriggerTime != -1 )
 	{
 		TTime now = CTime::getLocalTime();

@@ -1,7 +1,7 @@
 /** \file buf_client.h
  * Network engine, layer 1, client
  *
- * $Id: buf_client.h,v 1.3 2001/05/17 15:39:38 cado Exp $
+ * $Id: buf_client.h,v 1.4 2001/05/18 13:58:00 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,7 +96,7 @@ public:
 	CBufClient( bool nodelay=true );
 
 	/// Destructor
-	~CBufClient();
+	virtual ~CBufClient();
 	
 	/// Connects to the specified host
 	void	connect( const CInetAddress& addr );

@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.3 2001/05/17 15:39:38 cado Exp $
+ * $Id: buf_server.h,v 1.4 2001/05/18 13:58:00 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ class CServerTask
 public:
 
 	/// Destructor
-	~CServerTask();
+	virtual ~CServerTask();
 
 	/// Tells the task to exit
 	void	requireExit() { _ExitRequired = true; }
@@ -148,7 +148,7 @@ public:
 				bool nodelay=true );
 
 	/// Destructor
-	~CBufServer();
+	virtual ~CBufServer();
 
 	/// Listens on the specified port
 	void	init( uint16 port );

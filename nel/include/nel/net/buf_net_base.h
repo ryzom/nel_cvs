@@ -1,7 +1,7 @@
 /** \file buf_net_base.h
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.h,v 1.1 2001/05/02 12:36:30 lecroart Exp $
+ * $Id: buf_net_base.h,v 1.2 2001/05/18 13:58:00 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,9 @@ public:
 
 	/// Type of incoming events (max 256)
 	enum TEventType { User, Connection, Disconnection };
+
+	/// Destructor
+	virtual ~CBufNetBase() {};
 
 	/// Sets callback for detecting a disconnection (or NULL to disable callback)
 	void	setDisconnectionCallback( TNetCallback cb, void* arg ) { _DisconnectionCallback = cb; _DisconnectionCbArg = arg; }

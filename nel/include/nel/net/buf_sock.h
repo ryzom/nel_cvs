@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.3 2001/05/11 09:29:19 cado Exp $
+ * $Id: buf_sock.h,v 1.4 2001/05/18 13:58:00 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ class CBufSock
 public:
 
 	/// Destructor
-	~CBufSock();
+	virtual ~CBufSock();
 
 	/// Sets the application identifier
 	void	setAppId( uint64 id ) { _AppId = id; }

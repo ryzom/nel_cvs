@@ -1,7 +1,7 @@
 /** \file agent_3dvector.h
  * <File description>
  *
- * $Id: agent_3dvector.h,v 1.1 2001/03/26 08:45:22 chafik Exp $
+ * $Id: agent_3dvector.h,v 1.2 2001/03/27 08:21:42 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "nel/misc/vector.h"
 
 
-using NLMISC::CVector;
+//using NLMISC::CVector;
 
 
 namespace NLAIAGENT
@@ -47,7 +47,7 @@ namespace NLAIAGENT
 	class IVector: public IObjetOp
 	{
 	protected:
-		CVector _Value;
+		NLMISC::CVector _Value;
 
 	public:
 
@@ -55,7 +55,12 @@ namespace NLAIAGENT
 		IVector(float x, float y, float z):_Value(x, y, z)
 		{
 		}
-		IVector(const IVector &value):IObjetOp(value), _Value((CVector)value._Value)
+
+		IVector(const NLMISC::CVector &v):_Value(v)
+		{			
+		}
+
+		IVector(const IVector &value):IObjetOp(value), _Value((NLMISC::CVector)value._Value)
 		{
 		}
 		IVector()
@@ -90,12 +95,12 @@ namespace NLAIAGENT
 			return true;
 		}
 
-		CVector getValue() const
+		NLMISC::CVector getValue() const
 		{
 			return _Value;
 		}
 
-		void setValue(CVector value) 
+		void setValue(NLMISC::CVector value) 
 		{
 			_Value = value;
 		}		
@@ -147,21 +152,21 @@ namespace NLAIAGENT
 
 		virtual IObjectIA &operator = (const IObjectIA &a)
 		{
-			CVector v((CVector)((const IVector &)a).getValue());
+			NLMISC::CVector v((NLMISC::CVector)((const IVector &)a).getValue());
 			_Value = v;
 			return *this;
 		}
 
 		virtual IObjetOp &operator += (const IObjetOp &a)
 		{
-			CVector v = (CVector)((const IVector &)a).getValue();
+			NLMISC::CVector v = (NLMISC::CVector)((const IVector &)a).getValue();
 			_Value += _Value;
 			return *this;
 		}
 
 		virtual IObjetOp &operator -= (const IObjetOp &a)
 		{
-			CVector v = (CVector)((const IVector &)a).getValue();
+			NLMISC::CVector v = (NLMISC::CVector)((const IVector &)a).getValue();
 			_Value -= _Value;
 			return *this;
 		}
@@ -182,7 +187,7 @@ namespace NLAIAGENT
 
 		virtual IObjetOp *operator != (IObjetOp &a) const
 		{
-			CVector v = (CVector)((const IVector &)a).getValue();			
+			NLMISC::CVector v = (NLMISC::CVector)((const IVector &)a).getValue();			
 			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value != v);
 			x->incRef();
 			return x;
@@ -190,7 +195,7 @@ namespace NLAIAGENT
 
 		virtual IObjetOp *operator == (IObjetOp &a) const
 		{
-			CVector v = (CVector)((const IVector &)a).getValue();			
+			NLMISC::CVector v = (NLMISC::CVector)((const IVector &)a).getValue();			
 			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value == v);
 			x->incRef();
 			return x;
@@ -220,6 +225,10 @@ namespace NLAIAGENT
 
 	public:
 		VectorType(float x, float y, float z):IVector(x, y, z)
+		{			
+		}
+
+		VectorType(const NLMISC::CVector &v):IVector(v)
 		{			
 		}
 

@@ -1,7 +1,7 @@
 /** \file agent_input.h
  * An interface giving a direct value from an agent component or telling when the value changed.
  *
- * $Id: agent_input.h,v 1.3 2001/03/26 14:49:56 chafik Exp $
+ * $Id: agent_input.h,v 1.4 2001/03/27 08:21:42 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,54 +33,68 @@
 
 namespace NLAIAGENT
 {
-/**
- * An interface giving a direct value from an agent component or telling when the value changed.
- * \author Gabriel ROBERT
- * \author Nevrax France
- * \date 2001
- */
-class IAgentInput : public IConnectIA
-{
-protected :
-	bool				_ActiveInput;	// True if _ConnexionList not empty.
-	const IObjectIA*	_LocalValue;	// Last value of the component for know if his value as changed.
-	CListGroupManager	_ConnexionList;	// A list of IConnectIA interested by the change of the value.	
+	/**
+	 * An interface giving a direct value from an agent component or telling when the value changed.
+	 * \author Gabriel ROBERT
+	 * \author Nevrax France
+	 * \date 2001
+	 */
+	class IAgentInput : public IConnectIA
+	{
+	protected :
+		bool				_ActiveInput;	// True if _ConnexionList not empty.
+		IObjectIA			*_LocalValue;	// Last value of the component for know if his value as changed.
+		CListGroupManager	_ConnexionList;	// A list of IConnectIA interested by the change of the value.	
 
-public:
+	public:
 
-	///Constructor
-	IAgentInput();
+		///Constructor
+		IAgentInput();
 
-	/// Destructor
-	virtual ~IAgentInput();
+		IAgentInput(const IAgentInput &);
 
-	/// Add an obj to the list of IconnectIA interested by the value change.
-	void addInputConnection(IConnectIA* obj);
+		///Constructor with an value
+		IAgentInput(IObjectIA *);
 
-	/// Remove an obj to the list of IconnectIA interested by the value change.
-	void releaseInputConnexion(IConnectIA* obj);
+		/// Destructor
+		virtual ~IAgentInput();
 
-	/// Return the value managed by this IAgentInput. Must be Reimplemented.
-	virtual const IObjectIA* getValue() {return _LocalValue;}
+		virtual bool isEqual(const IBasicObjectIA &a) const;
+		virtual const CProcessResult &getState() const
+		{
+			return IObjectIA::ProcessRun;
+		}
+		virtual void setState(TProcessStatement s, IObjectIA *result) {}	
 
-	virtual	const CProcessResult runMsg(COnChangeMsg &msg);	
+		/// Add an obj to the list of IconnectIA interested by the value change.
+		void addInputConnection(IConnectIA* obj);
 
-	/// \name IObjectIA member method. 
-	//@{
-	virtual	const CProcessResult&run ();
-	//@}
-	
-	/// \name IConnectIA member method. 
-	//@{
-	virtual void onKill(IConnectIA* c);
-	//@}
+		/// Remove an obj to the list of IconnectIA interested by the value change.
+		void releaseInputConnexion(IConnectIA* obj);
 
-	/// \name IBasicInterface member method. 
-	//@{
-	virtual void save(NLMISC::IStream &);
-	virtual void load(NLMISC::IStream &);
-	//@}
-};
+		/// Return the value managed by this IAgentInput. Must be Reimplemented.
+		virtual const IObjectIA* getValue() const {return _LocalValue;}
+
+		virtual void setValue(IObjectIA *);
+
+		virtual	const CProcessResult runMsg(COnChangeMsg &msg);	
+
+		/// \name IObjectIA member method. 
+		//@{
+		virtual	const CProcessResult&run ();
+		//@}
+		
+		/// \name IConnectIA member method. 
+		//@{
+		virtual void onKill(IConnectIA* c);
+		//@}
+
+		/// \name IBasicInterface member method. 
+		//@{
+		virtual void save(NLMISC::IStream &);
+		virtual void load(NLMISC::IStream &);
+		//@}
+	};
 
 
 } // NLAIAGENT

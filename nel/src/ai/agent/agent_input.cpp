@@ -1,7 +1,7 @@
 /** \file agent_input.cpp
  * <File description>
  *
- * $Id: agent_input.cpp,v 1.3 2001/03/27 08:13:02 chafik Exp $
+ * $Id: agent_input.cpp,v 1.4 2001/03/27 08:21:35 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,90 +28,90 @@
 
 namespace NLAIAGENT
 {
-IAgentInput::IAgentInput():_ActiveInput(false),_LocalValue(NULL)
-{	 
-}
-
-IAgentInput::IAgentInput(IObjectIA *o):_ActiveInput(false),_LocalValue(o)
-{	 
-}
-
-IAgentInput::IAgentInput(const IAgentInput &c):_ActiveInput(c._ActiveInput),_LocalValue(c._LocalValue != NULL? (IObjectIA *)c._LocalValue->clone() : NULL)
-{
-}
-
-IAgentInput::~IAgentInput()
-{
-	if(_LocalValue != NULL) _LocalValue->release();
-}
-
-void IAgentInput::addInputConnection(IConnectIA* obj)
-{
-	_ActiveInput = true; // The Input become active when an IconnectIA is interested by the change of the value.
-	connect(obj);
-	_ConnexionList.push(obj);
-}
-
-void IAgentInput::releaseInputConnexion(IConnectIA* obj)
-{
-	removeConnection(*obj);
-	_ConnexionList.erase(obj);
-	if (_ConnexionList.size() == 0)
-	{
-		_ActiveInput = false;
+	IAgentInput::IAgentInput():_ActiveInput(false),_LocalValue(NULL)
+	{	 
 	}
-}
 
-void IAgentInput::onKill(IConnectIA* c)
-{
-	releaseInputConnexion(c);
-}
+	IAgentInput::IAgentInput(IObjectIA *o):_ActiveInput(false),_LocalValue(o)
+	{	 
+	}
 
-const IObjectIA::CProcessResult IAgentInput::runMsg(COnChangeMsg &msg)
-{
-	return IAgentInput::_ConnexionList.sendMessage(&msg);
-}
-
-void IAgentInput::setValue(IObjectIA *o)
-{
-	if(_LocalValue != NULL) _LocalValue->release();
-	_LocalValue = o;
-}
-
-const IObjectIA::CProcessResult&  IAgentInput::run ()
-{
-	if (IAgentInput::_ActiveInput)
+	IAgentInput::IAgentInput(const IAgentInput &c):_ActiveInput(c._ActiveInput),_LocalValue(c._LocalValue != NULL? (IObjectIA *)c._LocalValue->clone() : NULL)
 	{
-		const IObjectIA* value = IAgentInput::getValue();
-		if (!(*value == *_LocalValue))
+	}
+
+	IAgentInput::~IAgentInput()
+	{
+		if(_LocalValue != NULL) _LocalValue->release();
+	}
+
+	void IAgentInput::addInputConnection(IConnectIA* obj)
+	{
+		_ActiveInput = true; // The Input become active when an IconnectIA is interested by the change of the value.
+		connect(obj);
+		_ConnexionList.push(obj);
+	}
+
+	void IAgentInput::releaseInputConnexion(IConnectIA* obj)
+	{
+		removeConnection(*obj);
+		_ConnexionList.erase(obj);
+		if (_ConnexionList.size() == 0)
 		{
-			// If the component value as changed, we send a message to the list of interested IConnectIA.
-			setValue((IObjectIA*) value);
-			COnChangeMsg msg;
-			IAgentInput::_ConnexionList.sendMessage(&msg);
+			_ActiveInput = false;
 		}
 	}
-	return IObjectIA::ProcessRun;
-}
 
-void IAgentInput::save(NLMISC::IStream &os)
-{
-	IConnectIA::save(os);
-	os.serial(_ActiveInput);
-	os.serial(_ConnexionList);
-}
+	void IAgentInput::onKill(IConnectIA* c)
+	{
+		releaseInputConnexion(c);
+	}
 
-void IAgentInput::load(NLMISC::IStream &is)
-{
-	IConnectIA::load(is);
-	is.serial(_ActiveInput);
-	is.serial(_ConnexionList);
-}
+	const IObjectIA::CProcessResult IAgentInput::runMsg(COnChangeMsg &msg)
+	{
+		return IAgentInput::_ConnexionList.sendMessage(&msg);
+	}
+
+	void IAgentInput::setValue(IObjectIA *o)
+	{
+		if(_LocalValue != NULL) _LocalValue->release();
+		_LocalValue = o;
+	}
+
+	const IObjectIA::CProcessResult&  IAgentInput::run ()
+	{
+		if (IAgentInput::_ActiveInput)
+		{
+			const IObjectIA* value = IAgentInput::getValue();
+			if (!(*value == *_LocalValue))
+			{
+				// If the component value as changed, we send a message to the list of interested IConnectIA.
+				setValue((IObjectIA*) value);
+				COnChangeMsg msg;
+				IAgentInput::_ConnexionList.sendMessage(&msg);
+			}
+		}
+		return IObjectIA::ProcessRun;
+	}
+
+	void IAgentInput::save(NLMISC::IStream &os)
+	{
+		IConnectIA::save(os);
+		os.serial(_ActiveInput);
+		os.serial(_ConnexionList);
+	}
+
+	void IAgentInput::load(NLMISC::IStream &is)
+	{
+		IConnectIA::load(is);
+		is.serial(_ActiveInput);
+		is.serial(_ConnexionList);
+	}
 
 
-bool IAgentInput::isEqual(const IBasicObjectIA &a) const
-{
-	if(_LocalValue != NULL) return _LocalValue->isEqual(a);
-	return false;
-}
+	bool IAgentInput::isEqual(const IBasicObjectIA &a) const
+	{
+		if(_LocalValue != NULL) return _LocalValue->isEqual(a);
+		return false;
+	}
 } // NLAIAGENT

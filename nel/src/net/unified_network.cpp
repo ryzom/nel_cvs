@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.40 2002/06/12 10:16:34 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.41 2002/06/25 09:35:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1157,7 +1157,7 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &
 		// service might not be in table yet, look in _ConnectionStack
 		uint	i;
 		for (i=0; i<_ConnectionStack.size(); ++i)
-			if (_ConnectionStack[i].SName == name)
+			if (_ConnectionStack[i].SName == name && !_TempDisconnectionTable[_ConnectionStack[i].SId])
 			{
 				host = _ConnectionStack[i].SHost;
 				return _CbServer;
@@ -1174,6 +1174,13 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &
 	TNameMappedConnection::const_iterator	itnmc = nameAccess.value().find(name);
 
 	const CUnifiedConnection	&cnx = idAccess.value()[(*itnmc).second];
+
+	if (_TempDisconnectionTable[cnx.ServiceId])
+	{
+		nlwarning("HNETL5: service %s just got disconnected", name.c_str());
+		return NULL;
+	}
+
 	if (cnx.IsServerConnection)
 	{
 		host = cnx.Connection.HostId;
@@ -1197,7 +1204,7 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(TServiceId sid, TSockId &host)
 		// service might not be in table yet, look in _ConnectionStack
 		uint	i;
 		for (i=0; i<_ConnectionStack.size(); ++i)
-			if (_ConnectionStack[i].SId == sid)
+			if (_ConnectionStack[i].SId == sid && !_TempDisconnectionTable[sid])
 			{
 				host = _ConnectionStack[i].SHost;
 				return _CbServer;
@@ -1208,6 +1215,13 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(TServiceId sid, TSockId &host)
 	}
 
 	const CUnifiedConnection	&cnx = idAccess.value()[sid];
+
+	if (_TempDisconnectionTable[cnx.ServiceId])
+	{
+		nlwarning("HNETL5: service %d just got disconnected", sid);
+		return NULL;
+	}
+
 	if (cnx.IsServerConnection)
 	{
 		host = cnx.Connection.HostId;

@@ -1,7 +1,7 @@
 /** \file ViewDialog.cpp
  * implementation file
  *
- * $Id: ViewDialog.cpp,v 1.3 2002/12/20 16:32:58 cado Exp $
+ * $Id: ViewDialog.cpp,v 1.4 2003/04/02 18:03:46 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -287,7 +287,7 @@ void CViewDialog::DoDataExchange(CDataExchange* pDX)
 
 
 /*
- *Load, using the current filters
+ * Load, using the current filters
  */
 void		CViewDialog::reload()
 {
@@ -299,46 +299,61 @@ void		CViewDialog::reload()
 
 	((CButton*)GetDlgItem( IDC_BUTTON1 ))->ShowWindow( SW_SHOW );
 	((CButton*)GetDlgItem( IDC_BUTTON2 ))->ShowWindow( SW_SHOW );
-	m_Caption.Format( "%s %u+ %u- (%s)", Filename, PosFilter.size(), NegFilter.size(), LogSessionStartDate.IsEmpty()?"all":CString("session ")+LogSessionStartDate );
+	m_Caption.Format( "%s (%u file%s) %u+ %u- (%s)", Seriesname, Filenames.size(), Filenames.size()>1?"s":"", PosFilter.size(), NegFilter.size(), LogSessionStartDate.IsEmpty()?"all":CString("session ")+LogSessionStartDate );
 	UpdateData( false );
 	clear();
 	setRedraw( false );
 
-	ifstream ifs( Filename );
-	if ( ! ifs.fail() )
-	{
-		char line [1024];
-		while ( ! ifs.eof() )
-		{
-			ifs.getline( line, 1024 );
-			if ( SessionDatePassed )
-			{
-				// Stop if the session is finished
-				if ( (! LogSessionStartDate.IsEmpty()) && (strstr( line, LogDateString )) )
-					break;
-
-				// Apply the filters
-				if ( passFilter( line ) )
-					addLine( line );
-			}
-			else
-			{
-				// Look for the session beginning
-				if ( strstr( line, LogSessionStartDate ) != NULL )
-				{
-					SessionDatePassed = true;
-				}
-			}
-		}
-	}
-	else
-	{
-		addLine( "<Cannot open log file>" );
-	}
+	loadFileOrSeries();
 
 	commitAddedLines();
 
 	setRedraw( true );
+}
+
+
+/*
+ * Load a log file or series
+ */
+void		CViewDialog::loadFileOrSeries()
+{
+	for ( unsigned int i=0; i!=Filenames.size(); ++i )
+	{
+		CString& filename = Filenames[i];
+		ifstream ifs( filename );
+		if ( ! ifs.fail() )
+		{
+			char line [1024];
+			while ( ! ifs.eof() )
+			{
+				ifs.getline( line, 1024 );
+				if ( SessionDatePassed )
+				{
+					// Stop if the session is finished
+					if ( (! LogSessionStartDate.IsEmpty()) && (strstr( line, LogDateString )) )
+						return;
+
+					// Apply the filters
+					if ( passFilter( line ) )
+						addLine( line );
+				}
+				else
+				{
+					// Look for the session beginning
+					if ( strstr( line, LogSessionStartDate ) != NULL )
+					{
+						SessionDatePassed = true;
+					}
+				}
+			}
+		}
+		else
+		{
+			CString s;
+			s.Format( "<Cannot open log file %s>", filename );
+			addLine( s );
+		}
+	}
 }
 
 
@@ -393,7 +408,7 @@ void		CViewDialog::reloadTrace()
 	{
 		SessionDatePassed = true;
 		if ( PosFilter.empty() )
-			m_Caption = "Trace of " + Filename + " (all)";
+			m_Caption = "Trace of " + Seriesname + " (all)";
 		else
 			m_Caption = "Trace of " + PosFilter[0] + " (all)";
 	}
@@ -404,7 +419,7 @@ void		CViewDialog::reloadTrace()
 			SessionDatePassed = true;
 		}
 		if ( PosFilter.empty() )
-			m_Caption = "Trace of " + Filename + " (session " + LogSessionStartDate + ")" ;
+			m_Caption = "Trace of " + Seriesname + " (session " + LogSessionStartDate + ")" ;
 		else
 			m_Caption = "Trace of " + PosFilter[0] + " (session " + LogSessionStartDate + ")" ;
 	}
@@ -412,7 +427,7 @@ void		CViewDialog::reloadTrace()
 	UpdateData( false );
 	clear();
 
-	ifstream ifs( Filename );
+	ifstream ifs( Seriesname );
 	if ( ! ifs.fail() )
 	{
 		char line [1024];
@@ -666,7 +681,7 @@ COLORREF CViewDialog::getColorForLine( int index )
 		return RGB(0x80,0x80,0x80);
 	else if ( Buffer[index].Find( "WRN" ) != -1 )
 		return RGB(0x80,0,0);
-	else if ( Buffer[index].Find( "ERR" ) != -1 )
+	else if ( (Buffer[index].Find( "ERR" ) != -1) || (Buffer[index].Find( "AST" ) != -1) )
 		return RGB(0xFF,0,0);
 	else // INF and others
 		return RGB(0,0,0);

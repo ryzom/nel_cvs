@@ -42,6 +42,8 @@ BEGIN
     CONTROL         "Browse Log Sessions",IDC_CheckSessions,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,295,5,120,10
     PUSHBUTTON      "Help",IDC_HelpBtn,240,5,50,14
+    CONTROL         "Browse All File Series",IDC_CheckAllFileSeries,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,295,15,81,10
 END
 
 IDD_View DIALOG DISCARDABLE  0, 0, 492, 282

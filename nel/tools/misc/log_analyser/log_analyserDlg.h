@@ -1,7 +1,7 @@
 /** \file Log_analyserDlg.h
  * header file
  *
- * $Id: log_analyserDlg.h,v 1.1 2002/10/18 12:04:56 cado Exp $
+ * $Id: log_analyserDlg.h,v 1.2 2003/04/02 18:03:46 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -62,6 +62,9 @@ public:
 
 	///
 	void						insertTraceLine( int index, char *traceLine );
+
+	///
+	void						getLogSeries( const CString& filenameStr, std::vector<CString>& filenameList );
 
 	CFilterDialog						FilterDialog;
 	bool								Trace;

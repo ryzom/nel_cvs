@@ -1,7 +1,7 @@
 /** \file log_analyserDlg.cpp
  * implementation file
  *
- * $Id: log_analyserDlg.cpp,v 1.3 2002/12/20 16:32:58 cado Exp $
+ * $Id: log_analyserDlg.cpp,v 1.4 2003/04/02 18:03:46 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -220,37 +220,105 @@ CViewDialog *CLog_analyserDlg::onAddCommon( const CString& filename )
 
 	// Set params
 	view->Index = Views.size()-1;
-	view->Filename = filename;
+	view->Seriesname = filename;
+	getLogSeries( filename, view->Filenames );
 	view->LogSessionStartDate = "";
 	view->SessionDatePassed = false;
+	LogSessionsDialog.clear();
 
 	if ( ((CButton*)GetDlgItem( IDC_CheckSessions ))->GetCheck() == 1 )
 	{
-		// Scan file for log sessions dates
-		int nbsessions = 0;
-		ifstream ifs( filename );
-		if ( ! ifs.fail() )
+		LogSessionsDialog.addLogSession( "Beginning" );
+		for ( i=0; i!=view->Filenames.size(); ++i )
 		{
-			LogSessionsDialog.addLogSession( "Beginning" );
-
-			char line [1024];
-			while ( ! ifs.eof() )
+			// Scan file for log sessions dates
+			int nbsessions = 0;
+			ifstream ifs( view->Filenames[i] );
+			if ( ! ifs.fail() )
 			{
-				ifs.getline( line, 1024 );
-				if ( strstr( line, LogDateString ) != NULL )
+				char line [1024];
+				while ( ! ifs.eof() )
 				{
-					LogSessionsDialog.addLogSession( line );
-					++nbsessions;
+					ifs.getline( line, 1024 );
+					if ( strstr( line, LogDateString ) != NULL )
+					{
+						LogSessionsDialog.addLogSession( line );
+						++nbsessions;
+					}
 				}
-			}
-			if ( (nbsessions>1) && (LogSessionsDialog.DoModal() == IDOK) )
-			{
-				view->LogSessionStartDate = LogSessionsDialog.getStartDate();
+				if ( (nbsessions>1) && (LogSessionsDialog.DoModal() == IDOK) )
+				{
+					view->LogSessionStartDate = LogSessionsDialog.getStartDate();
+				}
 			}
 		}
 	}
 
 	return view;
+}
+
+
+int smprintf( char *buffer, size_t count, const char *format, ... )
+{
+	int ret;
+
+	va_list args;
+	va_start( args, format );
+	ret = vsnprintf( buffer, count, format, args );
+	if ( ret == -1 )
+	{
+		buffer[count-1] = '\0';
+	}
+	va_end( args );
+
+	return( ret );
+}
+
+
+/*
+ *
+ */
+void CLog_analyserDlg::getLogSeries( const CString& filenameStr, std::vector<CString>& filenameList )
+{
+	if ( ((CButton*)GetDlgItem( IDC_CheckAllFileSeries ))->GetCheck() == 1 )
+	{
+		string filename = filenameStr;
+		unsigned int dotpos = filename.find_last_of ('.');
+		if ( dotpos != string::npos )
+		{
+			string start = filename.substr( 0, dotpos );
+			string end = filename.substr( dotpos );
+			char numchar [4];
+			unsigned int i = 0;
+			bool anymore = true;
+			while ( anymore )
+			{
+				// If filename is my_service.log, try my_service001.log..my_service999.log
+				string npath = start;
+				smprintf( numchar, 4, "%03d", i );
+				npath += numchar + end;
+				if ( ! ! fstream( npath.c_str(), ios::in ) )
+				{
+					// File exists => add it
+					filenameList.push_back( npath.c_str() );
+					if ( i == 999 )
+					{
+						filenameList.push_back( "<Too many log files in the series>" );
+						anymore = false;
+					}
+					++i;
+				}
+				else
+				{
+					// No more files
+					anymore = false;
+				}
+			}
+		}
+	}
+
+	// At last, add the filename
+	filenameList.push_back( filenameStr );
 }
 
 
@@ -454,12 +522,15 @@ void CLog_analyserDlg::OnDestroy()
  */
 void CLog_analyserDlg::OnHelpBtn() 
 {
-	CString s = "NeL Log Analyser v1.1.0\n(c) 2002 Nevrax\n\n";
+	CString s = "NeL Log Analyser v1.2.0\n(c) 2002-2003 Nevrax\n\n";
 	s += "Simple Mode: open one or more log files using the button 'Add View...'.\n";
 	s += "If the file being opened contains several log sessions, you can choose one or choose\n";
-	s += "to display all sessions, if the checkbox 'Browse Log Sessions' is enabled. You can\n";
-	s += "also add some filters. Then click a log line to display it in its entirety in the\n";
-	s += "top field.\n\n";
+	s += "to display all sessions, if the checkbox 'Browse Log Sessions' is enabled. If the\n";
+	s += "checkbox 'Browse All File Series' is checked and you choose my_service.log, all log\n";
+	s += "files of the series beginning with my_service000.log up to the biggest number found,\n";
+	s += "and ending with my_service.log, will be opened in the same view.\n";
+	s += "You can add some filters. Finally, you may click a log line to display it in its\n";
+	s += "entirety in the top field.\n\n";
 	s += "Trace Mode: open several log files in Trace Format (see below) using the button\n";
 	s += "'Add Trace View...', you can limit the lines loaded to the ones containing a\n";
 	s += "specific service shortname (see below). Then click the button 'Compute Traces'\n";

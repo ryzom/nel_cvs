@@ -1,7 +1,7 @@
 /** \file LogSessions.h
  * header file
  *
- * $Id: LogSessions.h,v 1.1 2002/10/18 12:04:56 cado Exp $
+ * $Id: LogSessions.h,v 1.2 2003/04/02 18:03:46 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -45,6 +45,9 @@ public:
 
 	///
 	void		addLogSession( CString line );
+
+	///
+	void		clear() { Lines.clear(); }
 
 	///
 	CString		getStartDate() const;

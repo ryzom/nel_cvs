@@ -1,7 +1,7 @@
 /** \file ViewDialog.h
  * header file
  *
- * $Id: ViewDialog.h,v 1.2 2002/12/20 16:32:58 cado Exp $
+ * $Id: ViewDialog.h,v 1.3 2003/04/02 18:03:46 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -99,6 +99,9 @@ public:
 	/// Fill from getNbLines() to maxNbLines with blank lines
 	void		fillGaps( int maxNbLines );
 
+	/// Load a log file or series
+	void		loadFileOrSeries();
+
 	/// Add one line
 	void		addLine( const CString &line ) { Buffer.push_back( line ); }
 
@@ -121,7 +124,8 @@ public:
 	COLORREF	getColorForLine( int index );
 
 	int						Index;
-	CString					Filename;
+	CString					Seriesname;
+	std::vector<CString>	Filenames;
 	std::vector<CString>	PosFilter;
 	std::vector<CString>	NegFilter;
 	CString					LogSessionStartDate;

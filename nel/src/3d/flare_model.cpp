@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.11 2002/04/03 13:20:54 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.12 2002/04/03 14:53:34 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -167,11 +167,12 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	const float zPosDivNear      = zPos / trav->Near;
 
 	// compute the coeeff so that x = ax * px + bx; y = ax * py + by
-	const float aX = ( (trav->Right - trav->Left) / (float) width) * zPosDivNear;
-	const float bX = - (sint) (width>>1) * aX + middleX * zPosDivNear;
-	const float aY = - ( (trav->Top - trav->Bottom) / (float) height) * zPosDivNear;
-	const float bY = - (sint) (height>>1) * aY - middleZ * zPosDivNear;
+	const float aX = ( (trav->Right - trav->Left) / (float) width) * zPosDivNear;	
+	const float bX = zPosDivNear * (middleX - 0.5f * (trav->Right - trav->Left));
 	//
+	const float aY = - ( (trav->Top - trav->Bottom) / (float) height) * zPosDivNear;	
+	const float bY = zPosDivNear * (middleZ + 0.5f * (trav->Top - trav->Bottom));
+
 	const CVector I = trav->CamMatrix.getI();
 	const CVector J = trav->CamMatrix.getJ();
 	const CVector K = trav->CamMatrix.getK();
@@ -259,7 +260,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 			// compute vector that map to the center of the flare
 
 			scrPos = (aX * (xPos + dX * fs->getRelativePos(k)) + bX) * I 
-				     +  zPos * J + (aY * (yPos + dY * fs->getRelativePos(k)) + bY) * K; 		
+				     +  zPos * J + (aY * (yPos + dY * fs->getRelativePos(k)) + bY) * K + trav->CamMatrix.getPos(); 		
 			size = fs->getSize(k) / trav->Near;			
 			vb.setVertexCoord(0, scrPos + size * (I + K) );
 			vb.setVertexCoord(1, scrPos + size * (I - K) );

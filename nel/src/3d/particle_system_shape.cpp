@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.1 2001/05/11 17:18:21 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.2 2001/05/14 13:07:20 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,9 +58,9 @@ void CParticleSystemShape::buildFromFile(const std::string &fileName) throw(NLMI
 	CIFile inputFile(fileName) ;
 	IStream &f = inputFile ;
 
-	f.seek(0, IStream::TSeekOrigin::end) ;
+	f.seek(0, IStream::end) ;
 	uint32 fileSize = f.getPos() ;
-	f.seek(0, IStream::TSeekOrigin::begin) ;
+	f.seek(0, IStream::begin) ;
 
 	// must be sure that we are wirtting in the stream
 	if (_ParticleSystemProto.isReading())

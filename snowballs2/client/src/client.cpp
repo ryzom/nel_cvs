@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs main file
  *
- * $Id: client.cpp,v 1.56 2002/10/10 17:52:05 lecroart Exp $
+ * $Id: client.cpp,v 1.57 2002/10/25 16:52:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,6 +65,7 @@
 #include <nel/3d/u_text_context.h>
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_texture.h>
+#include <nel/3d/u_cloud_scape.h>
 
 #include <nel/net/login_client.h>
 
@@ -323,6 +324,15 @@ int main(int argc, char **argv)
 	nlinfo ("");
 	nlinfo ("Press SHIFT-ESC to exit the game");
 
+
+	SCloudScapeSetup css;
+	UCloudScape *clouds = Scene->createCloudScape ();
+	clouds->init (&css);
+	clouds->setQuality (160);
+	clouds->setNbCloudToUpdateIn80ms (1);
+
+
+
 	// Get the current time
 	NewTime = CTime::getLocalTime();
 
@@ -330,6 +340,8 @@ int main(int argc, char **argv)
 	{
 		// Update the login request interface
 		
+		clouds->anim (NewTime-LastTime);
+
 		// Clear all buffers
 		Driver->clearBuffers (CRGBA (0, 0, 0));
 
@@ -360,6 +372,8 @@ int main(int argc, char **argv)
 
 		// Render the sky scene before the main scene
 		updateSky ();
+
+		clouds->render ();
 
 		// Render
 		Scene->render ();

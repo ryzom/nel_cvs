@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.183 2003/04/25 13:46:57 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.184 2003/04/28 12:28:22 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -52,6 +52,7 @@
 #include "3d/primitive_block.h"
 #include "nel/misc/rect.h"
 #include "nel/misc/di_event_emitter.h"
+#include "nel/misc/mouse_device.h"
 #include "driver_opengl_vertex_buffer_hard.h"
 
 
@@ -2317,6 +2318,33 @@ NLMISC::IInputDeviceManager		*CDriverGL::getLowLevelInputDeviceManager()
 	#else
 		return NULL;
 	#endif
+}
+
+// ***************************************************************************
+uint CDriverGL::getDoubleClickDelay(bool hardwareMouse)
+{
+		NLMISC::IMouseDevice *md = NULL;
+		if (_EventEmitter.getNumEmitters() >= 2)
+		{		
+			NLMISC::CDIEventEmitter *diee = NLMISC::safe_cast<CDIEventEmitter *>(_EventEmitter.getEmitter(1));					
+			if (diee->isMouseCreated())
+			{			
+				try
+				{
+					md = diee->getMouseDevice(hardwareMouse);					
+				}
+				catch (EDirectInput &)
+				{
+					// could not get device ..					
+				}			
+			}
+		}
+		if (md)
+		{
+			return md->getDoubleClickDelay();
+		}
+		// try to read the good value from windows
+		return ::GetDoubleClickTime();
 }
 
 // ***************************************************************************

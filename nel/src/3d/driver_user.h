@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.25 2003/03/06 10:05:13 corvazier Exp $
+ * $Id: driver_user.h,v 1.26 2003/04/28 12:29:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -359,6 +359,8 @@ public:
 	//
 	virtual NLMISC::IKeyboardDevice			*enableLowLevelKeyboard(bool enable) ;
 	virtual NLMISC::IInputDeviceManager		*getLowLevelInputDeviceManager();
+	virtual uint	getDoubleClickDelay(bool hardwareMouse);
+
 	/// show cursor if b is true, or hide it if b is false
 	virtual void			showCursor (bool b);
 	/// x and y must be between 0.0 and 1.0

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.53 2003/04/15 15:57:45 vizerie Exp $
+ * $Id: driver.h,v 1.54 2003/04/28 12:28:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -614,6 +614,10 @@ public:
 		  * A call to disable the keyboard returns NULL, and restore the default keyboard behaviour		  
 		  */
 		virtual NLMISC::IKeyboardDevice			*enableLowLevelKeyboard(bool enable) = 0;
+
+		/** Get the delay in ms for mouse double clicks. 
+		  */
+		virtual uint	getDoubleClickDelay(bool hardwareMouse) = 0;
 
 		/** If true, capture the mouse to force it to stay under the window.
 		  * NB : this has no effects if a low level mouse is used

@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.32 2003/04/03 13:01:18 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.33 2003/04/28 12:29:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1224,6 +1224,14 @@ NLMISC::IKeyboardDevice			*CDriverUser::enableLowLevelKeyboard(bool enable)
 
 	return _Driver->enableLowLevelKeyboard(enable);
 }
+
+uint CDriverUser::getDoubleClickDelay(bool hardwareMouse)
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER;
+	return _Driver->getDoubleClickDelay(hardwareMouse);
+}
+
 NLMISC::IInputDeviceManager		*CDriverUser::getLowLevelInputDeviceManager()
 {
 	NL3D_MEM_DRIVER

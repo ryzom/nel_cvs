@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.144 2003/04/15 15:58:31 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.145 2003/04/28 12:28:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -386,6 +386,8 @@ public:
 	virtual NLMISC::IKeyboardDevice			*enableLowLevelKeyboard(bool enable);
 
 	virtual NLMISC::IInputDeviceManager		*getLowLevelInputDeviceManager();
+
+	virtual uint							 getDoubleClickDelay(bool hardwareMouse);
 
 	virtual void			getWindowSize (uint32 &width, uint32 &height);
 

@@ -1,7 +1,7 @@
 /** \file vector_2f.h
  * <File description>
  *
- * $Id: vector_2f.h,v 1.3 2001/12/12 16:00:03 vizerie Exp $
+ * $Id: vector_2f.h,v 1.4 2002/04/23 16:24:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,6 +62,10 @@ public:		// Methods.
 	CVector2f(const CVector2f &v) : x(v.x), y(v.y) {}
 	/// Constructor that uses the (x,y) coordinates of a CVector.
 	CVector2f(const CVector &v) : x(v.x), y(v.y) {}
+	// conversion operator
+	operator CVector() const { return this->asVector(); }
+	// convert to a CVector by setting z to 0
+	CVector  asVector() const { return CVector(x, y, 0); }
 	//@}
 
 	/// @name Base Maths.

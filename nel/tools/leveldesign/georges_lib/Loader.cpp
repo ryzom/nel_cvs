@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "Loader.h"
 
+#include "nel/misc/path.h"
 #include "FormBodyEltAtom.h"
 #include "FormBodyEltStruct.h"
 #include "FormBodyEltList.h"
@@ -16,11 +17,6 @@
 CLoader::CLoader()
 {
 	ml.SetLoader( this );
-	sxworkdirectory = "U:\\";
-	sxrootdirectory = "U:\\";
-	NLMISC::CPath::clearMap();
-    NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
-    NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
 }
 
 CLoader::~CLoader()
@@ -65,17 +61,11 @@ CMoldElt* CLoader::LoadMold( const CStringEx _sxfilename, const CStringEx _sxdat
 void CLoader::SetWorkDirectory( const CStringEx _sxworkdirectory )
 {
 	sxworkdirectory = _sxworkdirectory;
-	NLMISC::CPath::clearMap();
-    NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
-    NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
 }
 
 void CLoader::SetRootDirectory( const CStringEx _sxrootdirectory )
 {
 	sxrootdirectory = _sxrootdirectory;
-	NLMISC::CPath::clearMap();
-    NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
-    NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
 }
 
 CStringEx CLoader::GetWorkDirectory() const

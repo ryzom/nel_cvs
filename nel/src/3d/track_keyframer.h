@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.2 2001/06/20 09:36:09 berenguier Exp $
+ * $Id: track_keyframer.h,v 1.3 2001/08/28 15:57:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/misc/matrix.h"
 
 
+
 namespace NL3D
 {
 
@@ -57,7 +58,7 @@ namespace NL3D
  * \date 2001
  */
 template<class CKeyT>
-class ITrackKeyFramer : public ITrack
+class ITrackKeyFramer : public ITrack, public UTrackKeyframer
 {
 public:
 	// Some types
@@ -233,6 +234,24 @@ public:
 		if(f.isReading())
 			_Dirty= true;
 	}
+
+	/** From UTrackKeyframer, retrieve the keys that are in the given range [t1, t2[ of the track
+	  * \param result a vector that will be cleared, and filled with the date ofthe keys
+	  */
+	void getKeysInRange(CAnimationTime t1, CAnimationTime t2, std::vector<CAnimationTime> &result)
+	{
+		nlassert(t1 <= t2);
+		TMapTimeCKey::const_iterator it = _MapKey.lower_bound(t1);
+									, ub = _MapKer.upper_bound(t2);
+		result.clear;
+		while (it != ub)
+		{
+			result.push_back(it->first);
+			++it;
+		}
+	}
+
+
 
 private:
 	mutable	bool		_Dirty;

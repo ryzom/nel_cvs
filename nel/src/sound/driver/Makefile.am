@@ -1,10 +1,10 @@
 #
-# $Id: Makefile.am,v 1.2 2001/08/03 10:16:59 valignat Exp $
+# $Id: Makefile.am,v 1.3 2002/02/18 16:26:34 valignat Exp $
 #
 
 MAINTAINERCLEANFILES          = Makefile.in
 
-SUBDIRS                       = openal .
+SUBDIRS                       = openal
 
 noinst_LTLIBRARIES            = libnelsnd_lowlevel.la
 

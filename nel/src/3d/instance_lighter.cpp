@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.8 2002/03/01 14:06:59 berenguier Exp $
+ * $Id: instance_lighter.cpp,v 1.9 2002/03/12 16:28:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -417,7 +417,9 @@ void CInstanceLighter::light (const CInstanceGroup &igIn, CInstanceGroup &igOut,
 				name += ".shape";
 
 			// Get the instance shape name
-			name = CPath::lookup (name, false, false);
+			string nameLookup = CPath::lookup (name, false, false);
+			if (!nameLookup.empty())
+				name = nameLookup;
 
 			// Find the shape in the bank
 			iteMap= shapeMap.find (name);
@@ -1495,6 +1497,9 @@ void	CInstanceLighter::lightIgSimple(CInstanceLighter &instLighter, const CInsta
 		// For all instances of igIn.
 		for(i=0; i<(sint)igIn.getNumInstance();i++)
 		{
+			// progress
+			instLighter.progress("Loading Shapes obstacles", float(i)/igIn.getNumInstance());
+
 			// Skip it??
 			if(igIn.getInstance(i).DontCastShadow)
 				continue;
@@ -1514,7 +1519,9 @@ void	CInstanceLighter::lightIgSimple(CInstanceLighter &instLighter, const CInsta
 					name += ".shape";
 
 				// Get the instance shape name
-				name = CPath::lookup (name, false, false);
+				string nameLookup = CPath::lookup (name, false, false);
+				if (!nameLookup.empty())
+					name = nameLookup;
 
 				// Find the shape in the bank
 				iteMap= shapeMap.find (name);

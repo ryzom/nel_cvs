@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.4 2003/08/19 11:54:22 lecroart Exp $
+ * $Id: eid_translator.h,v 1.5 2003/08/29 15:22:33 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -57,15 +57,21 @@ public:
 	// return true if an entity name already exists
 	bool				entityNameExists (const ucstring &entityName);
 		
-	void				registerEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const std::string &userName);
+	void				registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName);
 	void				unregisterEntity (const CEntityId &eid);
+
+	// set an eid to online or not
+	void				setEntityOnline (const CEntityId &eid, bool online);
+
+	// is an entity in online
+	bool				isEntityOnline (const CEntityId &eid);
 
 	// check if parameters are coherent with the content of the class, if not, set with the parameters and warn
 	void				checkEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const std::string &userName);
 	
 	void				load (const std::string &fileName);
 
-	void				getEntityIdInfo (const CEntityId &eid, ucstring &entityName, uint32 &uid, std::string &userName);
+	void				getEntityIdInfo (const CEntityId &eid, ucstring &entityName, sint8 &entitySlot, uint32 &uid, std::string &userName, bool &online);
 
 	// return the user id and 0 if not found
 	uint32				getUId (const std::string &userName);
@@ -73,27 +79,31 @@ public:
 	
 	struct CEntity
 	{
-		CEntity () { }
+		CEntity () :
+		UId(~0), EntitySlot(-1)
+		{ }
 		
-		CEntity (const ucstring &entityName, uint32 uid, const std::string &userName) :
-		EntityName (entityName), UId (uid), UserName (userName)
+		CEntity (const ucstring &entityName, uint32 uid, const std::string &userName, sint8 entitySlot) :
+		EntityName(entityName), EntitySlot(entitySlot), UId(uid), UserName(userName), Online(false)
 		{ }
 		
 		ucstring EntityName;
+		sint8 EntitySlot;
 		
 		uint32 UId;
 		std::string UserName;
-		
-		void serial (NLMISC::IStream &s)
-		{
-			s.serial (EntityName);
-			s.serial (UId);
-			s.serial (UserName);
-		}
+
+		bool Online;
+
+		void serial (NLMISC::IStream &s);
 	};
 
 	const std::map<NLMISC::CEntityId, CEntity>	&getRegisteredEntities () { return RegisteredEntities; }
 	
+	static const uint Version;
+
+	uint FileVersion;
+
 private:
 
 	typedef std::map<NLMISC::CEntityId, CEntity>::iterator reit;

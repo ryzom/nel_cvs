@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.10 2003/08/27 16:16:25 distrib Exp $
+ * $Id: eid_translator.cpp,v 1.11 2003/08/29 15:22:33 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -49,10 +49,34 @@ namespace NLMISC {
 
 CEntityIdTranslator *CEntityIdTranslator::Instance = NULL;
 
+// don't forget to increment the number when you change the file format
+const uint CEntityIdTranslator::Version = 1;
 
 //
 // Functions
 //
+
+void CEntityIdTranslator::CEntity::serial (NLMISC::IStream &s)
+{
+	s.serial (EntityName);
+	
+	if (CEntityIdTranslator::getInstance()->FileVersion >= 1)
+		s.serial (EntitySlot);
+	else
+	{
+		if(s.isReading())
+		{
+			EntitySlot = -1;
+		}
+		else
+		{
+			sint8 slot = -1;
+			s.serial (slot);
+		}
+	}
+	s.serial (UId);
+	s.serial (UserName);
+}
 
 CEntityIdTranslator *CEntityIdTranslator::getInstance ()
 {
@@ -181,7 +205,7 @@ bool CEntityIdTranslator::entityNameExists (const ucstring &entityName)
 	return false;
 }
 
-void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const string &userName)
+void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const string &userName)
 {
 	if (RegisteredEntities.find (eid) != RegisteredEntities.end ())
 	{
@@ -196,7 +220,7 @@ void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &
 	}
 	
 	nlinfo ("Register EId %s EntityName %s UId %d UserName %s", eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
-	RegisteredEntities.insert (make_pair(eid, CEntityIdTranslator::CEntity(entityName, uid, userName)));
+	RegisteredEntities.insert (make_pair(eid, CEntityIdTranslator::CEntity(entityName, uid, userName, entitySlot)));
 
 	save ();
 }
@@ -289,6 +313,8 @@ void CEntityIdTranslator::load (const string &fileName)
 	CIFile ifile;
 	if( ifile.open(FileName) )
 	{
+		ofile.serialVersion (FileVersion);
+		FileVersion = 0;
 		ifile.serialCont (RegisteredEntities);
 
 		ifile.close ();
@@ -303,7 +329,7 @@ void CEntityIdTranslator::save ()
 {
 	if (FileName.empty())
 	{
-		nlwarning ("Can't save empty filename for EntityIdTranslator (you forget the load() it before?)");
+		nlwarning ("Can't save empty filename for EntityIdTranslator (you forgot to load() it before?)");
 		return;
 	}
 
@@ -312,6 +338,8 @@ void CEntityIdTranslator::save ()
 	COFile ofile;
 	if( ofile.open(FileName) )
 	{
+		ofile.serialVersion (Version);
+		FileVersion = Version;
 		ofile.serialCont (RegisteredEntities);
 
 		ofile.close ();
@@ -346,7 +374,7 @@ string CEntityIdTranslator::getUserName (uint32 uid)
 	return 0;
 }
 
-void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entityName, uint32 &uid, string &userName)
+void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entityName, sint8 &entitySlot, uint32 &uid, string &userName, bool &online)
 {
 	reit it = RegisteredEntities.find (eid);
 	if (it == RegisteredEntities.end ())
@@ -359,8 +387,37 @@ void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entit
 	else
 	{
 		entityName = (*it).second.EntityName;
+		entitySlot = (*it).second.EntitySlot;
 		uid = (*it).second.UId;
 		userName = (*it).second.UserName;
+		online = (*it).second.Online;
+	}
+}
+
+void CEntityIdTranslator::setEntityOnline (const CEntityId &eid, bool online)
+{
+	reit it = RegisteredEntities.find (eid);
+	if (it == RegisteredEntities.end ())
+	{
+		nlwarning ("%s is not registered in CEntityIdTranslator", eid.toString().c_str());
+	}
+	else
+	{
+		(*it).second.Online = online;
+	}
+}
+
+bool CEntityIdTranslator::isEntityOnline (const CEntityId &eid)
+{
+	reit it = RegisteredEntities.find (eid);
+	if (it == RegisteredEntities.end ())
+	{
+		nlwarning ("%s is not registered in CEntityIdTranslator", eid.toString().c_str());
+		return false;
+	}
+	else
+	{
+		return (*it).second.Online;
 	}
 }
 
@@ -413,12 +470,14 @@ NLMISC_COMMAND(findEIdByEntity,"Find entity id using the entity name","<entityna
 	}
 
 	ucstring entityName;
+	sint8 entitySlot;
 	uint32 uid;
 	string userName;
+	bool online;
 
-	CEntityIdTranslator::getInstance()->getEntityIdInfo(eid, entityName, uid, userName);
+	CEntityIdTranslator::getInstance()->getEntityIdInfo(eid, entityName, entitySlot, uid, userName, online);
 
-	log.displayNL("EId %s EntityName '%s' UId %d UserName '%s'", eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+	log.displayNL("UId %d UserName '%s' EId %s EntityName '%s' EntitySlot %hd %s", uid, userName.c_str(), eid.toString().c_str(), entityName.toString().c_str(), (sint16)entitySlot, (online?"Online":"Offline"));
 	
 	return true;
 }
@@ -431,7 +490,7 @@ NLMISC_COMMAND(playerInfo,"Get informations about a player or all players in CEn
 		log.displayNL("%d result(s) for 'all players informations'", res.size());
 		for (map<CEntityId, CEntityIdTranslator::CEntity>::const_iterator it = res.begin(); it != res.end(); it++)
 		{
-			log.displayNL("UId %d UserName '%s' EId %s EntityName '%s'", (*it).second.UId, (*it).second.UserName.c_str(), (*it).first.toString().c_str(), (*it).second.EntityName.toString().c_str());
+			log.displayNL("UId %d UserName '%s' EId %s EntityName '%s' EntitySlot %hd %s", (*it).second.UId, (*it).second.UserName.c_str(), (*it).first.toString().c_str(), (*it).second.EntityName.toString().c_str(), (sint16)((*it).second.EntitySlot), ((*it).second.Online?"Online":"Offline"));
 		}
 
 		return true;
@@ -439,10 +498,10 @@ NLMISC_COMMAND(playerInfo,"Get informations about a player or all players in CEn
 	else if (args.size () == 1)
 	{
 		vector<CEntityId> res;
-		
+
 		CEntityId eid (args[0].c_str());
 		uint32 uid = atoi (args[0].c_str());
-		
+
 		if (eid != CEntityId::Unknown)
 		{
 			res.push_back(eid);
@@ -463,18 +522,19 @@ NLMISC_COMMAND(playerInfo,"Get informations about a player or all players in CEn
 		for (uint i = 0; i < res.size(); i++)
 		{
 			ucstring entityName;
+			sint8 entitySlot;
 			uint32 uid;
 			string userName;
-			CEntityIdTranslator::getInstance()->getEntityIdInfo (res[i], entityName, uid, userName);
-			
-			log.displayNL("UId %d UserName '%s' EId %s EntityName '%s'", uid, userName.c_str(), res[i].toString().c_str(), entityName.toString().c_str());
+			bool online;
+			CEntityIdTranslator::getInstance()->getEntityIdInfo (res[i], entityName, entitySlot, uid, userName, online);
+
+			log.displayNL("UId %d UserName '%s' EId %s EntityName '%s' EntitySlot %hd %s", uid, userName.c_str(), res[i].toString().c_str(), entityName.toString().c_str(), (sint16)entitySlot, (online?"Online":"Offline"));
 		}
-		
+
 		return true;
 	}
-	
+
 	return false;
 }
-
 
 }

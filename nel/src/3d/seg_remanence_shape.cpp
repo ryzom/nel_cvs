@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.4 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.5 2002/09/05 08:24:48 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -148,7 +148,8 @@ CTransformShape *CSegRemanenceShape::createInstance(CScene &scene)
 	}
 	sr->setAnimatedMaterial(aniMat);
 	sr->setupFromShape();
-	sr->setLoadBalancingGroup("Global");
+	// SegRemanence are added to the "Fx" Load Balancing Group.
+	sr->setLoadBalancingGroup("Fx");
 	return sr;
 }
 

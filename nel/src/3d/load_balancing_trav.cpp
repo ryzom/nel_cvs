@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.11 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: load_balancing_trav.cpp,v 1.12 2002/09/05 08:24:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,9 +134,6 @@ CLoadBalancingTrav::CLoadBalancingTrav()
 	// set the DefaultGroup ptr.
 	_DefaultGroup= &_GroupMap["Default"];
 
-	// Add also a global group.
-	_GroupMap["Global"].Name= "Global";
-
 	// prepare some space
 	_VisibleList.reserve(1024);
 }
@@ -219,19 +216,6 @@ void				CLoadBalancingTrav::traverseVisibilityList()
 float				CLoadBalancingTrav::getNbFaceAsked () const
 {
 	return _SumNbFacePass0;
-}
-
-
-// ***************************************************************************
-void				CLoadBalancingTrav::setNbFaceWanted(uint nFaces)
-{
-	setGroupNbFaceWanted("Global", nFaces);
-}
-
-// ***************************************************************************
-uint				CLoadBalancingTrav::getNbFaceWanted()
-{
-	return getGroupNbFaceWanted("Global");
 }
 
 

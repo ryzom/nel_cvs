@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.30 2002/07/08 12:59:27 vizerie Exp $
+ * $Id: scene.h,v 1.31 2002/09/05 08:24:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -270,14 +270,6 @@ public:
 	/// \name LoadBalancing mgt.
 	//@{
 
-	/** Setup the number of faces max you want. For backward compatibility only, this is same as
-	 *	setGroupLoadMaxPolygon("Global", nFaces);
-	 */
-	void					setLoadMaxPolygon(uint nFaces);
-	/** Get the number of faces max you asked. For backward compatibility only, this is same as
-	 *	getGroupLoadMaxPolygon("Global", nFaces);
-	 */
-	uint					getLoadMaxPolygon();
 	/** Get the last face count asked from the instances before reduction.
 	 *	It gets the sum of All groups.
 	 */

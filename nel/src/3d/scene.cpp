@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.83 2002/07/08 12:59:27 vizerie Exp $
+ * $Id: scene.cpp,v 1.84 2002/09/05 08:24:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -750,23 +750,6 @@ void CScene::animate( TGlobalAnimationTime atTime )
 			ig->setPointLightFactor(anlNames[i], anlFactors[i]);
 		}
 	}
-}
-
-
-// ***************************************************************************
-void	CScene::setLoadMaxPolygon(uint nFaces)
-{
-	nlassert(LoadBalancingTrav);
-	nFaces= max(nFaces, (uint)1);
-	LoadBalancingTrav->setNbFaceWanted(nFaces);
-}
-
-
-// ***************************************************************************
-uint	CScene::getLoadMaxPolygon()
-{
-	nlassert(LoadBalancingTrav);
-	return LoadBalancingTrav->getNbFaceWanted();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_block_manager.cpp
  * <File description>
  *
- * $Id: mesh_block_manager.cpp,v 1.2 2002/08/14 12:43:35 berenguier Exp $
+ * $Id: mesh_block_manager.cpp,v 1.3 2002/09/05 08:24:48 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/mesh_block_manager.h"
+#include "nel/misc/hierarchical_timer.h"
 
 using namespace NLMISC;
 
@@ -113,6 +114,8 @@ void			CMeshBlockManager::addInstance(IMeshGeom *meshGeom, CMeshBaseInstance *in
 void			CMeshBlockManager::flush(IDriver *drv, CScene *scene, CRenderTrav *renderTrav)
 {
 	uint	i,j;
+
+	H_AUTO( NL3D_MeshBlockManager );
 
 	// setup the manager
 	nlassert(drv && scene && renderTrav);

@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.23 2002/07/08 13:00:12 vizerie Exp $
+ * $Id: u_scene.h,v 1.24 2002/09/05 08:24:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -233,14 +233,6 @@ public:
 	virtual	TPolygonBalancingMode	getPolygonBalancingMode() const =0;
 
 
-	/** Setup the number of faces max you want. For backward compatibility only, this is same as
-	 *	setGroupLoadMaxPolygon("Global", nFaces);
-	 */
-	virtual	void				setLoadMaxPolygon(uint nFaces) =0;
-	/** Get the number of faces max you asked. For backward compatibility only, this is same as
-	 *	getGroupLoadMaxPolygon("Global", nFaces);
-	 */
-	virtual	uint				getLoadMaxPolygon() =0;
 	/** Get the last face count asked from the instances before reduction.
 	 *	It gets the sum of All groups.
 	 */

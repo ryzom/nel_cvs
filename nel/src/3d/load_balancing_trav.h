@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.h
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.h,v 1.6 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: load_balancing_trav.h,v 1.7 2002/09/05 08:24:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,12 +153,6 @@ public:
 	typedef CLoadBalancingGroup::TPolygonBalancingMode	TPolygonBalancingMode;
 	TPolygonBalancingMode	PolygonBalancingMode;
 
-
-	/// Set the number of faces wanted for the "Global" LoadBlancingGroup. Backward compatibility method.
-	void				setNbFaceWanted(uint nFaces);
-
-	/// Get the number of faces wanted for the "Global" LoadBlancingGroup. Backward compatibility method.
-	uint				getNbFaceWanted();
 
 	/** Set the number of faces wanted for a LoadBlancingGroup.
 	 *	The Group is created if did not exist.

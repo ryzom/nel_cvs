@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.22 2002/07/08 12:59:27 vizerie Exp $
+ * $Id: scene_user.cpp,v 1.23 2002/09/05 08:24:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,20 +136,6 @@ CSceneUser::TPolygonBalancingMode	CSceneUser::getPolygonBalancingMode() const
 }
 
 
-// ***************************************************************************
-void			CSceneUser::setLoadMaxPolygon(uint nFaces)
-{
-	NL3D_HAUTO_UI_SCENE;
-
-	_Scene.setLoadMaxPolygon(nFaces);
-}
-// ***************************************************************************
-uint			CSceneUser::getLoadMaxPolygon()
-{
-	NL3D_HAUTO_UI_SCENE;
-
-	return _Scene.getLoadMaxPolygon();
-}
 // ***************************************************************************
 float			CSceneUser::getNbFaceAsked () const
 {

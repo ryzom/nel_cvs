@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.28 2002/08/09 15:00:18 berenguier Exp $
+ * $Id: transform.h,v 1.29 2002/09/05 08:24:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -278,7 +278,7 @@ public:
 	 *	NB: if models are skinned, it is their Skeleton which drive the group
 	 *
 	 *	By default, models lies in the "Default" group, but Skeletons for skinning and ParticlesSystems which
-	 *	are in "Global" group (for backward compatibility).
+	 *	are in "Skin" and "Fx" group respectively.
 	 *	The "Default" group is special because it is not balanced (ie models are only degraded from 
 	 *	their distance to camera)
 	 */

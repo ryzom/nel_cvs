@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.29 2002/07/08 12:59:27 vizerie Exp $
+ * $Id: scene_user.h,v 1.30 2002/09/05 08:24:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -224,8 +224,6 @@ public:
 	virtual	void					setPolygonBalancingMode(TPolygonBalancingMode polBalMode);
 	virtual	TPolygonBalancingMode	getPolygonBalancingMode() const;
 
-	virtual	void				setLoadMaxPolygon(uint nFaces);
-	virtual	uint				getLoadMaxPolygon();
 	virtual float				getNbFaceAsked () const;
 
 	virtual	void				setGroupLoadMaxPolygon(const std::string &group, uint nFaces);

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.5 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: vertex_buffer.h,v 1.6 2001/09/07 07:32:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,7 +148,7 @@ public:
 		PrimaryColorFlag	=	1<<PrimaryColor, 
 		SecondaryColorFlag	=	1<<SecondaryColor, 
 		WeightFlag			=	1<<Weight,
-		PaletteSkinFlag		=	1<<PaletteSkin,
+		PaletteSkinFlag		=	(1<<PaletteSkin)|(1<<Weight),
 		FogFlag				=	1<<Fog, 
 		EmptyFlag			=	1<<Empty,
 	};
@@ -599,8 +599,7 @@ inline void CVertexBuffer::setWeight(uint idx, uint8 wgt, float w)
 	float*	ptrf;
 
 	nlassert(wgt<MaxWeight);
-	nlassert(_Flags & (WeightFlag<<wgt));
-	nlassert(_Type[Weight]==Float4);
+	nlassert(_Flags & (WeightFlag));
 
 	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
 	ptr+=_Offset[Weight]+sizeof(float)*wgt;
@@ -615,7 +614,7 @@ inline void	CVertexBuffer::setPaletteSkin(uint idx, CPaletteSkin ps)
 	uint8*	ptr;
 	CPaletteSkin	*pPalSkin;
 
-	nlassert (_Flags & PaletteSkinFlag);
+	nlassert ( (_Flags & PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag);
 	nlassert (_Type[PaletteSkin]==UChar4);
 
 	ptr=(uint8*)(&_Verts[idx*_VertexSize]);

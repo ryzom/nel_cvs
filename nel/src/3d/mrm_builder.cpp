@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.20 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: mrm_builder.cpp,v 1.21 2001/09/07 07:32:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1876,7 +1876,7 @@ void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParamete
 	_SkinReduction= params.SkinReduction;
 
 	// Skinning??
-	_Skinned= (mbuild.VertexFlags & CVertexBuffer::PaletteSkinFlag)!=0;
+	_Skinned= ((mbuild.VertexFlags & CVertexBuffer::PaletteSkinFlag)==CVertexBuffer::PaletteSkinFlag);
 	// Skinning is OK only if SkinWeights are of same size as vertices.
 	_Skinned= _Skinned && ( mbuild.Vertices.size()==mbuild.SkinWeights.size() );
 	

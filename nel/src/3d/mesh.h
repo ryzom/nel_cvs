@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.11 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: mesh.h,v 1.12 2001/09/07 07:32:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -544,7 +544,7 @@ private:
 				_VBuffer.setSpecular(id, corn->Specular);
 
 			// setup palette skinning.
-			if(CCornerTmp::Flags & CVertexBuffer::PaletteSkinFlag)
+			if ((CCornerTmp::Flags & CVertexBuffer::PaletteSkinFlag)==CVertexBuffer::PaletteSkinFlag)
 			{
 				_VBuffer.setPaletteSkin(id, corn->Palette);
 				for(i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.83 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.84 2001/09/07 07:32:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -726,6 +726,7 @@ private:
 	void			setConstant (uint index, double, double, double, double);
 	void			setConstant (uint indexStart, const NLMISC::CVector* value);
 	void			setConstant (uint indexStart, const NLMISC::CVectorD* value);
+	void			setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform);
 	
 	// @}
 
@@ -742,6 +743,8 @@ private:
 	static const uint NumCoordinatesType[CVertexBuffer::NumType];
 	static const uint GLType[CVertexBuffer::NumType];
 	static const uint GLVertexAttribIndex[CVertexBuffer::NumValue];
+	static const uint GLMatrix[IDriver::NumMatrix];
+	static const uint GLTransform[IDriver::NumTransform];
 };
 
 } // NL3D

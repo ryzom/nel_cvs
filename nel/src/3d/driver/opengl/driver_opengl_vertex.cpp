@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.10 2001/09/06 07:25:38 corvazier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.11 2001/09/07 07:32:09 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -74,7 +74,7 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 	{
 		CVBDrvInfosGL	*vbInf= static_cast<CVBDrvInfosGL*>((IVBDrvInfos*)(VB.DrvInfos));
 		// Software and Skinning: must allocate PostRender Vertices and normals.
-		if(!_PaletteSkinHard && (VB.getVertexFormat() & CVertexBuffer::PaletteSkinFlag))
+		if(!_PaletteSkinHard && ((VB.getVertexFormat() & CVertexBuffer::PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag) )
 		{
 			// Must reallocate post-rendered vertices/normals Flags.
 			vbInf->SoftSkinFlags.resize(VB.getNumVertices());
@@ -121,10 +121,10 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 
 	// Skin mode.
 	// NB: this test either if palette skin is enabled, or normal skinning is enabled.
-	bool	skinning= (flags & CVertexBuffer::PaletteSkinFlag)!=0;
+	bool	skinning= ( (flags & CVertexBuffer::PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag);
 	skinning= skinning && (_VertexMode & NL3D_VERTEX_MODE_SKINNING)!=0;
 	// NB: this test if palette skin is enabled.
-	bool	paletteSkinning= skinning && (flags & CVertexBuffer::PaletteSkinFlag) != 0;
+	bool	paletteSkinning= skinning && ( (flags & CVertexBuffer::PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag );
 
 
 	// 0. Setup Matrixes.
@@ -909,10 +909,10 @@ void			CDriverGL::activeVertexBufferHard(IVertexBufferHard *iVB)
 
 	// Skin mode.
 	// NB: this test either if palette skin is enabled, or normal skinning is enabled.
-	bool	skinning= (flags & CVertexBuffer::PaletteSkinFlag)!=0;
+	bool	skinning= ( (flags & CVertexBuffer::PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag);
 	skinning= skinning && (_VertexMode & NL3D_VERTEX_MODE_SKINNING)!=0;
 	// NB: this test if palette skin is enabled.
-	bool	paletteSkinning= skinning && (flags & CVertexBuffer::PaletteSkinFlag) != 0;
+	bool	paletteSkinning= skinning && ( (flags & CVertexBuffer::PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag );
 
 
 	// If _PaletteSkinHard is not supported, disable all skinning.

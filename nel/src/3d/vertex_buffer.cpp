@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.25 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: vertex_buffer.cpp,v 1.26 2001/09/07 07:32:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -191,7 +191,7 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 	}
 
 	// Palette skin ?
-	if (flags & PaletteSkinFlag)
+	if ((flags & PaletteSkinFlag)==CVertexBuffer::PaletteSkinFlag)
 	{
 		// Add a standard primary color value
 		addValueEx (PaletteSkin, UChar4);
@@ -388,7 +388,7 @@ void* CVertexBuffer::getPaletteSkinPointer(uint idx)
 {
 	uint8*	ptr;
 
-	if ( !(_Flags & PaletteSkinFlag) )
+	if ( (_Flags & PaletteSkinFlag) != CVertexBuffer::PaletteSkinFlag )
 	{
 		return(NULL);
 	}
@@ -503,7 +503,7 @@ const void* CVertexBuffer::getPaletteSkinPointer(uint idx) const
 {
 	const uint8*	ptr;
 
-	if ( !(_Flags & PaletteSkinFlag) )
+	if ( (_Flags & PaletteSkinFlag) != CVertexBuffer::PaletteSkinFlag )
 	{
 		return(NULL);
 	}
@@ -692,7 +692,7 @@ void		CVertexBuffer::serialOldV1Minus(NLMISC::IStream &f, sint ver)
 			f.serial(w);
 		}
 		// CPaletteSkin (version 1+ only).
-		if((ver>=1) && (_Flags & PaletteSkinFlag))
+		if((ver>=1) && ((_Flags & PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag) )
 		{
 			CPaletteSkin	&ps= *(CPaletteSkin*)getPaletteSkinPointer(id);
 			f.serial(ps);

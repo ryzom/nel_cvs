@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.14 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: driver.h,v 1.15 2001/09/07 07:32:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -602,6 +602,34 @@ public:
 	/// \name Vertex program interface
 	// @{
 
+	enum TMatrix
+	{
+		None=0,
+		ModelView,
+		Projection,
+		Texture,
+		Color,
+		ModelViewProjection,
+		Matrix0,
+		Matrix1,
+		Matrix2,
+		Matrix3,
+		Matrix4,
+		Matrix5,
+		Matrix6,
+		Matrix7,
+		NumMatrix
+	};
+
+	enum TTransform
+	{
+		Identity=0,
+		Inverse,
+		Transpose,
+		InverseTranspose,
+		NumTransform
+	};
+
 	/**
 	  * Does the driver supports vertex programs ?
 	  */
@@ -621,8 +649,18 @@ public:
 	  */
 	virtual void			setConstant (uint index, float, float, float, float) =0;
 	virtual void			setConstant (uint index, double, double, double, double) =0;
-	virtual void			setConstant (uint indexStart, const NLMISC::CVector* value) =0;
-	virtual void			setConstant (uint indexStart, const NLMISC::CVectorD* value) =0;
+	virtual void			setConstant (uint index, const NLMISC::CVector* value) =0;
+	virtual void			setConstant (uint index, const NLMISC::CVectorD* value) =0;
+
+	/**
+	  * Setup constants with current a matrix
+	  *
+	  * \param index is the base constant index where to store the matrix. This index must be a multiple of 4.
+	  * \param matrix is the matrix id to store in the constants
+	  * \param transform is the transformation to apply to the matrix before store it in the constants.
+	  *
+	  */
+	virtual void			setConstantMatrix (uint index, TMatrix matrix, TTransform transform) =0;
 
 	// @}
 

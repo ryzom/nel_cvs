@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.36 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: mesh.cpp,v 1.37 2001/09/07 07:32:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,7 +86,7 @@ bool	CMeshGeom::CCornerTmp::operator<(const CCornerTmp &c) const
 	if((CCornerTmp::Flags & CVertexBuffer::SecondaryColorFlag) && Specular!=c.Specular)
 		return Specular<c.Specular;
 
-	if (CCornerTmp::Flags & CVertexBuffer::PaletteSkinFlag)
+	if ((CCornerTmp::Flags & CVertexBuffer::PaletteSkinFlag)==CVertexBuffer::PaletteSkinFlag)
 	{
 		for(i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)
 		{
@@ -169,7 +169,7 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 	for(i=0;i<(sint)tmpFaces.size();i++)
 		tmpFaces[i]= m.Faces[i];
 
-	_Skinned= (m.VertexFlags & CVertexBuffer::PaletteSkinFlag)!=0;
+	_Skinned= ((m.VertexFlags & CVertexBuffer::PaletteSkinFlag)==CVertexBuffer::PaletteSkinFlag);
 	// Skinning is OK only if SkinWeights are of same size as vertices.
 	_Skinned= _Skinned && (m.Vertices.size()==m.SkinWeights.size());
 

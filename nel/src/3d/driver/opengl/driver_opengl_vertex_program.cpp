@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertx_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.1 2001/09/06 07:33:58 corvazier Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.2 2001/09/07 07:32:09 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -99,14 +99,38 @@ bool CDriverGL::activeVertexProgram (CVertexProgram *program)
 				glLoadProgramNV (GL_VERTEX_PROGRAM_NV, drvInfo->ID, program->getProgram().length(), (const GLubyte*)program->getProgram().c_str());
 
 				// Get loading error code
-				GLint errorLine;
-				glGetIntegerv (GL_PROGRAM_ERROR_POSITION_NV, &errorLine);
+				GLint errorOff;
+				glGetIntegerv (GL_PROGRAM_ERROR_POSITION_NV, &errorOff);
 
 				// Compilation error ?
-				if (errorLine>=0)
+				if (errorOff>=0)
 				{
+					// String length
+					uint length = program->getProgram ().length();
+					const char* sString= program->getProgram ().c_str();
+
+					// Line count and char count
+					uint line=1;
+					uint charC=1;
+
+					// Find the line
+					uint offset=0;
+					while ((offset<length)&&(offset<(uint)errorOff))
+					{
+						if (sString[offset]=='\n')
+						{
+							line++;
+							charC=1;
+						}
+						else
+							charC++;
+
+						// Next character
+						offset++;
+					}
+
 					// Show the error
-					nlinfo ("Vertex program syntax error line %d\n", errorLine);
+					nlinfo ("Vertex program syntax error line %d character %d\n", line, charC);
 
 					// Disable vertex program
 					glDisable (GL_VERTEX_PROGRAM_NV);
@@ -196,6 +220,50 @@ void CDriverGL::setConstant (uint index, const NLMISC::CVectorD* value)
 	}
 }
 
+
+// ***************************************************************************
+
+const uint CDriverGL::GLMatrix[IDriver::NumMatrix]=
+{
+	GL_NONE,
+	GL_MODELVIEW,
+	GL_PROJECTION,
+	GL_TEXTURE,
+	GL_COLOR,
+	GL_MODELVIEW_PROJECTION_NV,
+	GL_MATRIX0_NV,
+	GL_MATRIX1_NV,
+	GL_MATRIX2_NV,
+	GL_MATRIX3_NV,
+	GL_MATRIX4_NV,
+	GL_MATRIX5_NV,
+	GL_MATRIX6_NV,
+	GL_MATRIX7_NV
+};
+
+
+// ***************************************************************************
+
+const uint CDriverGL::GLTransform[IDriver::NumTransform]=
+{
+	GL_IDENTITY_NV,
+	GL_INVERSE_NV,
+	GL_TRANSPOSE_NV,
+	GL_INVERSE_TRANSPOSE_NV
+};
+
+
+// ***************************************************************************
+
+void CDriverGL::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform)
+{
+	// Vertex program exist ?
+	if (_Extensions.NVVertexProgram)
+	{
+		// Track a matrix
+		glTrackMatrixNV (GL_VERTEX_PROGRAM_NV, index, GLMatrix[matrix], GLTransform[transform]);
+	}
+}
 
 // ***************************************************************************
 

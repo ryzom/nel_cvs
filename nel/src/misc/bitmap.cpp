@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.5 2001/05/21 16:59:58 cado Exp $
+ * $Id: bitmap.cpp,v 1.6 2001/06/13 16:04:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/misc/bitmap.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/common.h"
+#include "nel/misc/file.h"
 
 
 namespace NLMISC
@@ -2206,6 +2207,108 @@ bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
 
 	return true ;
 }
+
+
+
+void	CBitmap::loadSize(NLMISC::IStream &f, uint32 &retWidth, uint32 &retHeight)
+{
+	retWidth= 0;
+	retHeight= 0;
+
+
+	nlassert(f.isReading()); 
+	
+	// testing if DDS
+	uint32 fileType = 0;
+	f.serial(fileType);
+	if(fileType == DDS)
+	{
+		// read entire DDS header.
+		uint32 size = 0;
+		f.serial(size); // size in Bytes of header(without "DDS")
+		uint32 * _DDSSurfaceDesc = new uint32[size]; 
+		std::auto_ptr<uint32> _DDSSurfaceDescAuto(_DDSSurfaceDesc);
+		_DDSSurfaceDesc[0]= size;
+
+		for(uint i= 0; i<size/4 - 1; i++)
+		{
+			f.serial(_DDSSurfaceDesc[i+1]);
+		}
+		
+		// flags determines which members of the header structure contain valid data
+		uint32 flags = _DDSSurfaceDesc[1];
+
+		//verify if file have linearsize set
+		if(!(flags & DDSD_LINEARSIZE)) 
+		{
+			throw EDDSBadHeader();
+		}
+		
+		//-------------- extracting and testing useful info
+		retWidth = _DDSSurfaceDesc[2];
+		retHeight  = _DDSSurfaceDesc[3];
+	}
+	// assuming it's TGA
+	else 
+	{
+		if(!f.seek (0, NLMISC::IStream::begin))
+		{
+			throw ESeekFailed();
+		}
+
+		// Reading header, 
+		// To make sure that the bitmap is TGA, we check imageType and imageDepth.
+		uint8	lengthID;
+		uint8	cMapType;
+		uint8	imageType;
+		uint16	tgaOrigin;
+		uint16	length;
+		uint8	depth;
+		uint16	xOrg;
+		uint16	yOrg;
+		uint16	width;
+		uint16	height;
+		uint8	imageDepth;
+		uint8	desc;
+		
+		f.serial(lengthID);
+		f.serial(cMapType);
+		f.serial(imageType);
+		if(imageType!=2 && imageType!=3 && imageType!=10 && imageType!=11) return;
+		f.serial(tgaOrigin);
+		f.serial(length);
+		f.serial(depth);
+		f.serial(xOrg);
+		f.serial(yOrg);
+		f.serial(width);
+		f.serial(height);
+		f.serial(imageDepth);
+		if(imageDepth!=8 && imageDepth!=24 && imageDepth!=32) return;
+		f.serial(desc);
+
+		// Ok, we have width and height.
+		retWidth= width;
+		retHeight= height;
+	}
+
+	// reset stream.
+	if(!f.seek (0, NLMISC::IStream::begin))
+	{
+		throw ESeekFailed();
+	}
+}
+
+
+void	CBitmap::loadSize(const std::string &path, uint32 &retWidth, uint32 &retHeight)
+{
+	retWidth= 0;
+	retHeight= 0;
+
+	CIFile		f(path);
+	if(f.open(path))
+		loadSize(f, retWidth, retHeight);
+}
+
 
 
 } // NLMISC

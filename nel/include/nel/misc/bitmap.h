@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.3 2001/05/08 13:37:35 vizerie Exp $
+ * $Id: bitmap.h,v 1.4 2001/06/13 16:04:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -237,7 +237,26 @@ public:
 	 * \return image depth (24 or 32), or 0 if load failed
 	 * \throw ESeekFailed : seek has failed
 	 */
-	uint8 load(NLMISC::IStream &f);
+	uint8	load(NLMISC::IStream &f);
+
+
+	/** 
+	 * Determinate the bitmap size from a bitmap(TGA or DDS) from an IStream. load just header of the file.
+	 * Bitmap supported are DDS (DXTC1, DXTC1 with Alpha, DXTC3, DXTC5, and
+	 * uncompressed TGA (24 and 32 bits).
+	 * NB: at the end, f is seeked to begin.
+	 * \param IStream The stream must be in reading mode.
+	 * \param width the width of the image. 0 if fails.
+	 * \param height the height of the image. 0 if fails.
+	 * \throw ESeekFailed : seek has failed
+	 */
+	static void		loadSize(NLMISC::IStream &f, uint32 &width, uint32 &height);
+
+
+	/** same than other loadSize(), but with a pathName. 
+	 * \see loadSize()
+	 */
+	static void		loadSize(const std::string &path, uint32 &retWidth, uint32 &retHeight);
 
 
 	/** 

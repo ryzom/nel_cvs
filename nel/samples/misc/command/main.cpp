@@ -1,10 +1,10 @@
 /** \file command/main.cpp
  * example of the NeL command system (misc/command.h)
  *
- * $Id: main.cpp,v 1.2 2002/11/29 10:08:01 lecroart Exp $
+ * $Id: main.cpp,v 1.3 2003/09/05 08:59:33 lecroart Exp $
  */
 
-/* Copyright, 2001 Nevrax Ltd.
+/* Copyright, 2003 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify

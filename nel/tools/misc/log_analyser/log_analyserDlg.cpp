@@ -1,7 +1,7 @@
 /** \file log_analyserDlg.cpp
  * implementation file
  *
- * $Id: log_analyserDlg.cpp,v 1.1 2002/10/18 12:04:56 cado Exp $
+ * $Id: log_analyserDlg.cpp,v 1.2 2002/10/21 09:01:02 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -28,15 +28,21 @@
 #include "stdafx.h"
 #include "log_analyser.h"
 #include "log_analyserDlg.h"
+//#include <nel/misc/config_file.h>
 #include <fstream>
 
 using namespace std;
+//using namespace NLMISC;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+
+CString						LogDateString;
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CLog_analyserDlg dialog
@@ -84,6 +90,18 @@ BOOL CLog_analyserDlg::OnInitDialog()
 
 	Trace = false;
 	((CButton*)GetDlgItem( IDC_CheckSessions ))->SetCheck( 1 );
+
+	/*try
+	{
+		CConfigFile cf;
+		cf.load( "log_analyser.cfg" );
+		LogDateString = cf.getVar( "LogDateString" ).asString().c_str();
+	}
+	catch ( EConfigFile& )
+	{*/
+	LogDateString = "Log Starting [";
+	//}
+	
 
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
@@ -213,17 +231,19 @@ CViewDialog *CLog_analyserDlg::onAddCommon( const CString& filename )
 		ifstream ifs( filename );
 		if ( ! ifs.fail() )
 		{
+			LogSessionsDialog.addLogSession( "Beginning" );
+
 			char line [1024];
 			while ( ! ifs.eof() )
 			{
 				ifs.getline( line, 1024 );
-				if ( strstr( line, "Log Starting [" ) != NULL )
+				if ( strstr( line, LogDateString ) != NULL )
 				{
 					LogSessionsDialog.addLogSession( line );
 					++nbsessions;
 				}
 			}
-			if ( (nbsessions>1) && LogSessionsDialog.DoModal() == IDOK )
+			if ( (nbsessions>1) && (LogSessionsDialog.DoModal() == IDOK) )
 			{
 				view->LogSessionStartDate = LogSessionsDialog.getStartDate();
 			}

@@ -1,7 +1,7 @@
 /** \file ViewDialog.cpp
  * implementation file
  *
- * $Id: ViewDialog.cpp,v 1.1 2002/10/18 12:04:56 cado Exp $
+ * $Id: ViewDialog.cpp,v 1.2 2002/10/21 09:01:02 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -40,6 +40,10 @@ using namespace std;
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+extern CString						LogDateString;
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CViewDialog dialog
 
@@ -69,7 +73,7 @@ void CViewDialog::DoDataExchange(CDataExchange* pDX)
 void		CViewDialog::reload()
 {
 	CWaitCursor wc;
-	if ( LogSessionStartDate.IsEmpty() )
+	if ( LogSessionStartDate.IsEmpty() || (LogSessionStartDate == "Beginning") )
 	{
 		SessionDatePassed = true;
 	}
@@ -90,7 +94,7 @@ void		CViewDialog::reload()
 			if ( SessionDatePassed )
 			{
 				// Stop if the session is finished
-				if ( (! LogSessionStartDate.IsEmpty()) && (strstr( line, "Log Starting [" )) )
+				if ( (! LogSessionStartDate.IsEmpty()) && (strstr( line, LogDateString )) )
 					break;
 
 				// Apply the filters
@@ -174,6 +178,10 @@ void		CViewDialog::reloadTrace()
 	}
 	else
 	{
+		if ( LogSessionStartDate == "Beginning" )
+		{
+			SessionDatePassed = true;
+		}
 		if ( PosFilter.empty() )
 			m_Caption = "Trace of " + Filename + " (session " + LogSessionStartDate + ")" ;
 		else
@@ -193,7 +201,7 @@ void		CViewDialog::reloadTrace()
 			if ( SessionDatePassed )
 			{
 				// Stop if the session is finished
-				if ( (! LogSessionStartDate.IsEmpty()) && (strstr( line, "Log Starting [" )) )
+				if ( (! LogSessionStartDate.IsEmpty()) && (strstr( line, LogDateString )) )
 					break;
 
 				// Read if it's a TRACE

@@ -1,7 +1,7 @@
 /** \file bezier_patch.cpp
  * <File description>
  *
- * $Id: bezier_patch.cpp,v 1.7 2001/04/23 16:31:32 berenguier Exp $
+ * $Id: bezier_patch.cpp,v 1.8 2001/06/05 13:49:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -240,6 +240,89 @@ CVector		CBezierPatch::evalNormal(float ps, float pt) const
 	CVector	norm= tgtT^tgtS;
 	norm.normalize();
 	return norm;
+}
+
+
+
+// ***************************************************************************
+void		CBezierPatch::CBezierCurve::subdivide(CBezierCurve &left, CBezierCurve &right, float t)
+{
+	float	t1= 1-t;
+
+	// Subdivide the 2 curves.
+	left.P0= P0;
+	right.P3= P3;
+
+	left.P1= t1*P0 + t*P1;
+	right.P2= t1*P2 + t*P3;
+	CVector		middle12= t1*P1 + t*P2;
+
+	left.P2= t1*left.P1 + t*middle12;
+	right.P1= t1*middle12 + t*right.P2;
+
+	left.P3= right.P0= t1*left.P2 + t*right.P1;
+}
+
+
+// ***************************************************************************
+void		CBezierPatch::subdivideS(CBezierPatch &left, CBezierPatch &right, float s) const
+{
+	CBezierCurve	curveT[4];
+	CBezierCurve	curveTLeft[4];
+	CBezierCurve	curveTRight[4];
+
+	// Setup horizontal curves.
+	curveT[0].set(Vertices[0], Tangents[7] , Tangents[6] , Vertices[3]);
+	curveT[1].set(Tangents[0], Interiors[0], Interiors[3], Tangents[5]);
+	curveT[2].set(Tangents[1], Interiors[1], Interiors[2], Tangents[4]);
+	curveT[3].set(Vertices[1], Tangents[2] , Tangents[3] , Vertices[2]);
+
+	// Subdivide curves.
+	for(sint i=0;i<4;i++)
+		curveT[i].subdivide(curveTLeft[i], curveTRight[i], s);
+
+	// Setup bezier patchs.
+	// left.
+	curveTLeft[0].get(left.Vertices[0], left.Tangents[7] , left.Tangents[6] , left.Vertices[3]);
+	curveTLeft[1].get(left.Tangents[0], left.Interiors[0], left.Interiors[3], left.Tangents[5]);
+	curveTLeft[2].get(left.Tangents[1], left.Interiors[1], left.Interiors[2], left.Tangents[4]);
+	curveTLeft[3].get(left.Vertices[1], left.Tangents[2] , left.Tangents[3] , left.Vertices[2]);
+	// right.
+	curveTRight[0].get(right.Vertices[0], right.Tangents[7] , right.Tangents[6] , right.Vertices[3]);
+	curveTRight[1].get(right.Tangents[0], right.Interiors[0], right.Interiors[3], right.Tangents[5]);
+	curveTRight[2].get(right.Tangents[1], right.Interiors[1], right.Interiors[2], right.Tangents[4]);
+	curveTRight[3].get(right.Vertices[1], right.Tangents[2] , right.Tangents[3] , right.Vertices[2]);
+}
+
+
+// ***************************************************************************
+void		CBezierPatch::subdivideT(CBezierPatch &top, CBezierPatch &bottom, float t) const
+{
+	CBezierCurve	curveS[4];
+	CBezierCurve	curveSTop[4];
+	CBezierCurve	curveSBottom[4];
+
+	// Setup vertical curves.
+	curveS[0].set(Vertices[0], Tangents[0] , Tangents[1] , Vertices[1]);
+	curveS[1].set(Tangents[7], Interiors[0], Interiors[1], Tangents[2]);
+	curveS[2].set(Tangents[6], Interiors[3], Interiors[2], Tangents[3]);
+	curveS[3].set(Vertices[3], Tangents[5] , Tangents[4] , Vertices[2]);
+
+	// Subdivide curves.
+	for(sint i=0;i<4;i++)
+		curveS[i].subdivide(curveSTop[i], curveSBottom[i], t);
+
+	// Setup bezier patchs.
+	// top.
+	curveSTop[0].get(top.Vertices[0], top.Tangents[0] , top.Tangents[1] , top.Vertices[1]);
+	curveSTop[1].get(top.Tangents[7], top.Interiors[0], top.Interiors[1], top.Tangents[2]);
+	curveSTop[2].get(top.Tangents[6], top.Interiors[3], top.Interiors[2], top.Tangents[3]);
+	curveSTop[3].get(top.Vertices[3], top.Tangents[5] , top.Tangents[4] , top.Vertices[2]);
+	// bottom.
+	curveSBottom[0].get(bottom.Vertices[0], bottom.Tangents[0] , bottom.Tangents[1] , bottom.Vertices[1]);
+	curveSBottom[1].get(bottom.Tangents[7], bottom.Interiors[0], bottom.Interiors[1], bottom.Tangents[2]);
+	curveSBottom[2].get(bottom.Tangents[6], bottom.Interiors[3], bottom.Interiors[2], bottom.Tangents[3]);
+	curveSBottom[3].get(bottom.Vertices[3], bottom.Tangents[5] , bottom.Tangents[4] , bottom.Vertices[2]);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file bezier_patch.h
  * <File description>
  *
- * $Id: bezier_patch.h,v 1.7 2001/01/15 15:45:23 corvazier Exp $
+ * $Id: bezier_patch.h,v 1.8 2001/06/05 13:49:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,36 @@ public:
 	CVectorD	evalDouble(double s, double t) const;	// s,t coordinates for quad.
 	/// Evaluate the normal at (s,t). returned vector is normalized.
 	CVector		evalNormal(float s, float t) const;		// s,t coordinates for quad.
+
+
+	/// \name Subdivision.
+	// @{
+	/** Subdivide the bezier patch in 2 bezier patch along s, at s (beetween [0,1]).
+	 * NB: left goes from 0 to s, right goes from s to 1.
+	 */
+	void		subdivideS(CBezierPatch &left, CBezierPatch &right, float s=0.5f) const;
+	/** Subdivide the bezier patch in 2 bezier patch along t, at t (beetween [0,1]).
+	 * NB: top goes from 0 to t, bottom goes from t to 1.
+	 */
+	void		subdivideT(CBezierPatch &top, CBezierPatch &bottom, float t=0.5f) const;
+	// @}
+
+
+// **********************************
+private:
+	struct	CBezierCurve
+	{
+		CVector	P0, P1, P2, P3;
+		void	subdivide(CBezierCurve &left, CBezierCurve &right, float t);
+		void	set(const CVector &a, const CVector &b, const CVector &c, const CVector &d)
+		{
+			P0= a; P1= b; P2= c; P3= d;
+		}
+		void	get(CVector &a, CVector &b, CVector &c, CVector &d)
+		{
+			a= P0; b= P1; c= P2; d= P3;
+		}
+	};
 
 };
 

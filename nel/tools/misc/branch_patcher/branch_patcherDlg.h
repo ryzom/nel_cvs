@@ -55,7 +55,7 @@ public:
 	CDirDialog		DirDialog;
 	CRichEditCtrl	*m_Display;
 	bool			SaveDiff, EnteringTokens;
-	CString			Token1, Token2, SrcDirBackup, TargetDirBackup;
+	CString			Token1, Token2, SrcDirBackup, TargetDirBackup, PatchExeDir;
 
 	
 // Dialog Data

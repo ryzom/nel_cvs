@@ -19,7 +19,9 @@ static char THIS_FILE[] = __FILE__;
 extern CBranch_patcherApp theApp;
 
 const CString TEMP_DIFF_FILE = "C:\\tempFile.diff";
+const CString DIFF_ERRORS = "C:\\diffLog.txt";
 const CString PATCH_RESULT = "C:\\patchResult.txt";
+const CString PATCH_ERRORS = "C:\\patchErrors.txt";
 
 
 CBranch_patcherDlg::CBranch_patcherDlg(CWnd* pParent /*=NULL*/)
@@ -257,6 +259,34 @@ int CDirDialog::DoBrowse ()
 }
 
 
+/*
+ * Adapted from function by Jonah Bishop <jonahb@nc.rr.com>
+ */
+BOOL SendTextToClipboard(CString source)
+{
+    // Return value is TRUE if the text was sent
+    // Return value is FALSE if something went wrong
+    if(OpenClipboard(NULL))
+    {
+        HGLOBAL clipbuffer;
+        char* buffer;
+
+        EmptyClipboard(); // Empty whatever's already there
+
+        clipbuffer = GlobalAlloc(GMEM_DDESHARE, source.GetLength()+1);
+        buffer = (char*)GlobalLock(clipbuffer);
+        strcpy(buffer, LPCSTR(source));
+        GlobalUnlock(clipbuffer);
+
+        SetClipboardData(CF_TEXT, clipbuffer); // Send the data
+
+        CloseClipboard(); // VERY IMPORTANT
+        return TRUE;
+    }
+    return FALSE;
+}
+
+
 void CBranch_patcherDlg::displayMessage( const CString& msg )
 {
 	m_Display->SetSel( 0, -1 );
@@ -270,10 +300,11 @@ void CBranch_patcherDlg::OnButtonPatch()
 	UpdateData( true );
 
 	CString diffCmdLine;
-	diffCmdLine.Format( "cvs.exe diff -c > %s", TEMP_DIFF_FILE ); // needs a valid cvs login before! and cvs.exe in the path
+	diffCmdLine.Format( "cvs.exe diff -c > %s 2> %s", TEMP_DIFF_FILE, DIFF_ERRORS ); // needs a valid cvs login before! and cvs.exe in the path
 	CString text;
-	text.Format( "Get diff from directory %s?\n\nCommand:\n%s", m_SrcDir, diffCmdLine );
-	if ( ::MessageBox( m_hWnd, text, "Confirmation", MB_OKCANCEL | MB_ICONQUESTION ) == IDOK )
+	text.Format( "Get diff from directory %s?\n\nCommand (choose No to copy it into the clipboard):\n%s", m_SrcDir, diffCmdLine );
+	int result;
+	if ( (result = ::MessageBox( m_hWnd, text, "Confirmation", MB_YESNOCANCEL | MB_ICONQUESTION )) == IDYES )
 	{
 		if ( _chdir( m_SrcDir ) == 0 )
 		{
@@ -287,7 +318,7 @@ void CBranch_patcherDlg::OnButtonPatch()
 			if ( (m_Display->GetLineCount() == 0) ||
 				 (m_Display->GetLineCount() == 1 && m_Display->LineLength(0)<2) )
 			{
-				displayMessage( "Diff is empty.\r\nIf this is not the expected result:\r\n- check if the source directory is part of a CVS tree\r\n- check if cvs.exe is in your PATH\r\n- check if you are logged to the cvs server with 'cvs login'\r\n- check if C:\\ has enough free space and access rights to write a file." );
+				displayMessage( "Diff is empty.\r\nIf this is not the expected result:\r\n- check if the source directory is part of a CVS tree\r\n- check if cvs.exe is in your PATH\r\n- check if you are logged to the cvs server with 'cvs login' (set your home cvs directory in the HOME environment variable if needed)\r\n- check if C:\\ has enough free space and access rights to write a file." );
 			}
 			else
 			{
@@ -299,6 +330,10 @@ void CBranch_patcherDlg::OnButtonPatch()
 		{
 			displayMessage( "Source directory not found" );
 		}
+	}
+	else if ( result == IDNO )
+	{
+		SendTextToClipboard( diffCmdLine );
 	}
 }
 
@@ -325,7 +360,7 @@ void CBranch_patcherDlg::displayFile( const CString& filename )
 	CFile cFile( filename, CFile::modeRead );
 	EDITSTREAM es;
 	es.dwCookie = (DWORD) &cFile;
-	es.pfnCallback = MyStreamInCallback; 
+	es.pfnCallback = MyStreamInCallback;
 	m_Display->StreamIn( SF_TEXT, es );
 }
 
@@ -393,15 +428,21 @@ void CBranch_patcherDlg::OnDoPatch()
 	}
 
 	// Apply the patch
-	CString patchCmdLine;
-	patchCmdLine.Format( "patch.exe -c -p0 < %s > %s", TEMP_DIFF_FILE, PATCH_RESULT ); // needs patch.exe in the path
+	CString patchCmdLine, concatOutput, delPatchErrors;
+	patchCmdLine.Format( "%spatch.exe -c -p0 --verbose < %s > %s 2> %s", PatchExeDir, TEMP_DIFF_FILE, PATCH_RESULT, PATCH_ERRORS ); // needs patch.exe in the path
+	concatOutput.Format( "copy %s+%s %s", PATCH_RESULT, PATCH_ERRORS, PATCH_RESULT );
+	delPatchErrors.Format( "del %s", PATCH_ERRORS );
+
 	CString text;
-	text.Format( "Patch diff to directory %s?\n\nCommand:\n%s", m_DestDir, patchCmdLine );
-	if ( ::MessageBox( m_hWnd, text, "Confirmation", MB_OKCANCEL | MB_ICONQUESTION ) == IDOK )
+	text.Format( "Patch diff to directory %s?\n\nCommand (choose No to copy it into the clipboard):\n%s", m_DestDir, patchCmdLine );
+	int result;
+	if ( (result = ::MessageBox( m_hWnd, text, "Confirmation", MB_YESNOCANCEL | MB_ICONQUESTION )) == IDYES )
 	{
 		if ( _chdir( m_DestDir ) == 0 )
 		{
 			system( patchCmdLine );
+			system( concatOutput );
+			system( delPatchErrors );
 			displayFile( PATCH_RESULT );
 			SaveDiff = false;
 			m_Display->LineScroll( 0 );
@@ -410,7 +451,7 @@ void CBranch_patcherDlg::OnDoPatch()
 				 (m_Display->GetLineCount() == 1 && m_Display->LineLength(0)<2) )
 			{
 				CString s;
-				s.Format( "Nothing was patched.\r\nIf this is not the expected result:\r\n- check if patch.exe is in your PATH\r\n- check if %s exists (generated by previous diff)\r\n- check if C:\\ has enough free space and access rights to write a file.", TEMP_DIFF_FILE );
+				s.Format( "Nothing was patched.\r\nIf this is not the expected result:\r\n- check if the good patch.exe is in %s\r\n- check if %s exists (generated by previous diff)\r\n- check if C:\\ has enough free space and access rights to write a file.", TEMP_DIFF_FILE );
 				displayMessage( s );
 			}
 			else
@@ -423,6 +464,10 @@ void CBranch_patcherDlg::OnDoPatch()
 		{
 			displayMessage( "Target directory not found" );
 		}
+	}
+	else if ( result == IDNO )
+	{
+		SendTextToClipboard( patchCmdLine );
 	}
 }
 
@@ -573,6 +618,7 @@ void CBranch_patcherDlg::loadConfiguration()
 	}
 	Token1 = theApp.GetProfileString( _T( ""), _T("Token1") );
 	Token2 = theApp.GetProfileString( _T( ""), _T("Token2") );
+	PatchExeDir = theApp.GetProfileString( _T( ""), _T("PatchExeDir") );
 }
 
 

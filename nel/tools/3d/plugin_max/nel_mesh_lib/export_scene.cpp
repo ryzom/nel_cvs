@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.31 2003/04/23 10:06:09 corvazier Exp $
+ * $Id: export_scene.cpp,v 1.32 2003/04/23 14:52:44 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -358,7 +358,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 			{
 				// ERROR
 				char tam[256];
-				sprintf(tam,"ERROR: The portal %s has not 2 clusters.",vectNode[i]->GetName());
+				sprintf(tam,"ERROR: The portal %s has not 2 clusters but %s",vectNode[i]->GetName(), nNbCluster);
 				//MessageBox(NULL,tam,"Error",MB_OK|MB_ICONERROR);
 				nlwarning(tam);
 			}

@@ -1,7 +1,7 @@
 /** \file u_texture.h
  * TODO: File description
  *
- * $Id: u_texture.h,v 1.10 2004/11/15 10:24:19 lecroart Exp $
+ * $Id: u_texture.h,v 1.11 2005/03/31 13:36:21 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -195,8 +195,8 @@ public:
 	virtual void	setAllowDegradation(bool allow) =0;
 
 	// Flag that tell that textures that have dimension that are not power of 2 are snapped to the top-left corner of a power-of-2 sized texture
-	virtual void	setDontStretchNonPOW2Tex(bool dontStretch)  = 0;
-	virtual bool	getDontStretchNonPOW2Tex() const = 0;
+	virtual void	setEnlargeCanvasNonPOW2Tex(bool dontStretch)  = 0;
+	virtual bool	getEnlargeCanvasNonPOW2Tex() const = 0;
 
 };
 

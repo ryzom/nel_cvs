@@ -1,6 +1,6 @@
 /** \file ps_mover_dlg.h
  * this dialog display coordinate of an instance of a located in a particle system 
- * $Id: ps_mover_dlg.h,v 1.7 2001/09/26 17:51:49 vizerie Exp $
+ * $Id: ps_mover_dlg.h,v 1.8 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,7 @@ template <class T> class CEditableRangeT ;
 typedef CEditableRangeT<float> CEditableRangeFloat ;
 
 class CDirectionAttr ;
+class CParticleDlg;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPSMoverDlg dialog
@@ -85,7 +86,7 @@ public:
 	void updatePosition(void) ;
 
 
-	void init(CWnd *parent) ;
+	void init(CParticleDlg	*parent) ;
 
 	// get the current moving interface, or NULL, if the selected object has no IPSMover interface
 	NL3D::IPSMover *getMoverInterface(void)  ;
@@ -105,6 +106,7 @@ public:
 protected:
 
 	
+	CParticleDlg	*_ParticleDlg;
 	NL3D::CPSLocated *_EditedLocated ;
 	uint32 _EditedLocatedIndex ;
 	NL3D::CEvent3dMouseListener *_MouseListener ;

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.33 2002/03/04 14:54:09 corvazier Exp $
+ * $Id: object_viewer.h,v 1.34 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,9 @@
 #include <3d/font_manager.h>
 #include <nel/misc/event_listener.h>
 #include <nel/misc/stream.h>
+
+#include <nel/3d/logic_info.h>
+#include <nel/pacs/u_global_position.h>
 
 namespace NL3D
 {
@@ -358,6 +361,10 @@ public:
 	 */
 	virtual void setupSceneLightingSystem(bool enable, const NLMISC::CVector &sunDir, NLMISC::CRGBA sunAmbiant, NLMISC::CRGBA sunDiffuse, NLMISC::CRGBA sunSpecular);
 
+	/** inherited from CObjectViewerInterface
+	 */
+	virtual void enableDynamicObjectLightingTest(NLPACS::CGlobalRetriever *globalRetriever, NL3D::CInstanceGroup *ig);
+
 	/// \name Landscape Vegetable Edition
 	// @{
 
@@ -477,6 +484,30 @@ private:
 	NLMISC::CRGBA								_SceneLightSunAmbiant;
 	NLMISC::CRGBA								_SceneLightSunDiffuse;
 	NLMISC::CRGBA								_SceneLightSunSpecular;
+
+	/// \name dynamic object lighting testing
+	// @{
+	NLPACS::CGlobalRetriever					*_GlobalRetriever;
+	NL3D::CTransformShape						*_ObjectLightTest;
+	std::string									_ObjectLightTestShape;
+	// The matrix not snapped by pacs.
+	NLMISC::CMatrix								_ObjectLightTestMatrix;
+
+	// the lightInfo linked to the ig.
+	class	COVLogicInfo : public NL3D::ILogicInfo
+	{
+	public:
+		NLPACS::UGlobalPosition		GPos;
+		NL3D::CInstanceGroup		*Ig;
+		NLPACS::CGlobalRetriever	*GlobalRetriever;
+
+		virtual void	getStaticLightSetup(std::vector<NL3D::CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &ambient);
+	};
+	// instnace
+	COVLogicInfo								_ObjectLightTestLogicInfo;
+
+	// @}
+
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

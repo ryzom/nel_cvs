@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.31 2001/12/12 10:32:54 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.32 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -369,7 +369,10 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 
 			CObjectViewer *ov = _ParticleDlg->MainFrame->ObjView;
 
-			ov->getMouseListener().setModelMatrix(_ParticleDlg->getElementMatrix());
+			if(_ParticleDlg->MainFrame->MoveElement)
+			{
+				ov->getMouseListener().setModelMatrix(_ParticleDlg->getElementMatrix());
+			}
 			ps->setCurrentEditedElement(nt->Loc, nt->LocatedInstanceIndex, moverDlg->getLocatedBindable());
 			
 		}

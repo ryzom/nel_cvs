@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.59 2002/03/04 17:04:16 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.60 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,8 @@
 #include <3d/visual_collision_entity.h>
 
 
+#include <pacs/global_retriever.h>
+
 
 
 #include "editable_range.h"
@@ -102,6 +104,7 @@ using namespace std;
 using namespace NL3D;
 using namespace NLMISC;
 using namespace NLSOUND;
+using namespace NLPACS;
 
 //
 //	Note!
@@ -217,6 +220,9 @@ CObjectViewer::CObjectViewer ()
 
 	_Wpm = &NL3D::GetWaterPoolManager();
 
+	_GlobalRetriever= NULL;
+	_ObjectLightTest= NULL;
+
 	// Charge l'object_viewer.ini
 	try
 	{
@@ -325,6 +331,14 @@ CObjectViewer::CObjectViewer ()
 		{
 			_SceneLightSunDir.set(0, 1, -1);
 			_SceneLightSunDir.normalize();
+		}
+		try
+		{
+			CConfigFile::CVar &var = cf.getVar("object_light_test");
+			_ObjectLightTestShape= var.asString();
+		}
+		catch (EUnknownVar &)
+		{
 		}
 
 
@@ -941,7 +955,16 @@ void CObjectViewer::go ()
 		// Reset camera aspect ratio
 		initCamera (_CameraFocal);
 
-		if (!_MainFrame->MoveElement)
+		if (_MainFrame->MoveElement)
+		{
+			// for now we apply a transform on the selected object in the particle system			
+			_ParticleDlg->moveElement(_MouseListener.getModelMatrix());		
+		}
+		else if (_MainFrame->MoveObjectLightTest)
+		{
+			_ObjectLightTestMatrix= _MouseListener.getModelMatrix();
+		}
+		else
 		{
 			// New matrix from camera
 			CNELU::Camera->setTransformMode (ITransformable::DirectMatrix);
@@ -965,10 +988,26 @@ void CObjectViewer::go ()
 				}
 			}
 		}
-		else
+
+
+		// Update lighting test Dynamic object position
+		if(_ObjectLightTest && _GlobalRetriever)
 		{
-			// for now we apply a transform on the selected object in the particle system			
-			_ParticleDlg->moveElement(_MouseListener.getModelMatrix());		
+			// Get the position of the object snapped.
+			UGlobalPosition		gPos= _GlobalRetriever->retrievePosition(_ObjectLightTestMatrix.getPos());
+			CVector	pos= _GlobalRetriever->getGlobalPosition(gPos);
+			_ObjectLightTest->setPos(pos);
+			_ObjectLightTest->setRotQuat(_ObjectLightTestMatrix.getRot());
+
+			// Update the matrix and the mouseListener.
+			if (_MainFrame->MoveObjectLightTest)
+			{
+				_ObjectLightTestMatrix.setPos(pos);
+				_MouseListener.setModelMatrix(_ObjectLightTestMatrix);
+			}
+
+			// Update the logicInfo so lighting is well computed.
+			_ObjectLightTestLogicInfo.GPos= gPos;
 		}
 
 		// Pump message from the server
@@ -1843,6 +1882,12 @@ void CObjectViewer::removeAllInstancesFromScene()
 	}
 	_ListIG.clear();
 
+	// clear dynamic lighting test
+	_GlobalRetriever= NULL;
+	CNELU::Scene.deleteInstance(_ObjectLightTest);
+	_ObjectLightTest= NULL;
+
+
 	// Invalidate dialogs
 	if (CNELU::Driver->isActive())
 	{
@@ -2021,6 +2066,59 @@ void CObjectViewer::setupSceneLightingSystem(bool enable, const NLMISC::CVector 
 	CNELU::Scene.setSunDirection(sunDir);
 }
 
+
+// ***************************************************************************
+void CObjectViewer::enableDynamicObjectLightingTest(NLPACS::CGlobalRetriever *globalRetriever, NL3D::CInstanceGroup *ig)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	// first delete the instance
+	if(_ObjectLightTest)
+	{
+		CNELU::Scene.deleteInstance(_ObjectLightTest);
+		_ObjectLightTest= NULL;
+	}
+
+	_GlobalRetriever= globalRetriever;
+
+	// if enabled
+	if(_GlobalRetriever)
+	{
+		nlassert(ig);
+
+		// this mesh is the dynamic one to move around.
+		_ObjectLightTest= CNELU::Scene.createInstance(_ObjectLightTestShape);
+		if(_ObjectLightTest!=NULL)
+		{
+			// setup the matrix.
+			_ObjectLightTestMatrix= _ObjectLightTest->getMatrix();
+			// setup the logic info.
+			_ObjectLightTestLogicInfo.GlobalRetriever= _GlobalRetriever;
+			_ObjectLightTestLogicInfo.Ig= ig;
+			// Default the GPos to uninitialized
+			_ObjectLightTestLogicInfo.GPos.InstanceId= -1;
+			_ObjectLightTest->setLogicInfo(&_ObjectLightTestLogicInfo);
+		}
+		else
+		{
+			string	str= string("Path not found for Light Test Shape: ") + _ObjectLightTestShape;
+			::MessageBox(NULL, str.c_str(), "Dynamic Object Light Test", MB_OK|MB_ICONEXCLAMATION);
+			// disable.
+			_ObjectLightTest= NULL;
+			_GlobalRetriever= NULL;
+		}
+	}
+}
+
+
+// ***************************************************************************
+void	CObjectViewer::COVLogicInfo::getStaticLightSetup(std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, CRGBA &ambient)
+{
+	Ig->getStaticLightSetup(GlobalRetriever->getIdentifier(GPos), 
+		GPos.LocalPosition.Surface,
+		GPos.LocalPosition.Estimation, 
+		pointLightList, sunContribution, ambient);
+}
 
 
 // ***************************************************************************

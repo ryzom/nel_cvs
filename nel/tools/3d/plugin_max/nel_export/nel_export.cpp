@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.22 2002/02/26 17:30:23 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.23 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,6 +111,15 @@ int CALLBACK OptionsDialogCallback (
 				SendMessage( GetDlgItem(hwndDlg,IDC_EXPORT_BG_COLOR), BM_SETCHECK, BST_CHECKED, 0 );
 			else
 				SendMessage( GetDlgItem(hwndDlg,IDC_EXPORT_BG_COLOR), BM_SETCHECK, BST_UNCHECKED, 0 );
+
+			// SurfaceLighting
+			if( theExportSceneStruct.bTestSurfaceLighting )
+				SendMessage( GetDlgItem(hwndDlg,IDC_TEST_SURFACE_LIGHT), BM_SETCHECK, BST_CHECKED, 0 );
+			else
+				SendMessage( GetDlgItem(hwndDlg,IDC_TEST_SURFACE_LIGHT), BM_SETCHECK, BST_UNCHECKED, 0 );
+			sprintf( tmp, "%f", theExportSceneStruct.SurfaceLightingCellSize );
+			SendMessage( GetDlgItem(hwndDlg,IDC_EDITCELLSIZE), WM_SETTEXT, 0, (long)tmp );
+
 		}
 		break;
 
@@ -170,6 +179,11 @@ int CALLBACK OptionsDialogCallback (
 					else
 						theExportSceneStruct.bShowLumel = false;
 					theExportSceneStruct.bExportBgColor = ( SendMessage( GetDlgItem(hwndDlg,IDC_EXPORT_BG_COLOR), BM_GETCHECK, 0, 0 ) == BST_CHECKED );
+
+					// SurfaceLighting
+					theExportSceneStruct.bTestSurfaceLighting= (SendMessage( GetDlgItem(hwndDlg,IDC_TEST_SURFACE_LIGHT), BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+					SendMessage( GetDlgItem(hwndDlg,IDC_EDITCELLSIZE), WM_GETTEXT, 1024, (long)tmp );
+					theExportSceneStruct.SurfaceLightingCellSize= (float)atof( tmp );
 
 					// End the dialog
 					EndDialog(hwndDlg, TRUE);
@@ -432,7 +446,8 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 						{
 						}
 						// Try to export a mesh
-						else if (CExportNel::isMesh (*pNode, time))
+						// Don't exlclude collision since I want only them :)
+						else if (CExportNel::isMesh (*pNode, time, false))
 						{
 							nodes.push_back(pNode);
 						}

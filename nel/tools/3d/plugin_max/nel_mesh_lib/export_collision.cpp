@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.2 2001/11/29 14:22:29 legros Exp $
+ * $Id: export_collision.cpp,v 1.3 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,9 @@
 #include "../nel_export/nel_export_scene.h"
 
 #include "pacs/collision_mesh_build.h"
+#include "pacs/retriever_bank.h"
+#include "pacs/global_retriever.h"
+#include "pacs/build_indoor.h"
 #include "3d/quad_grid.h"
 
 using namespace std;
@@ -325,5 +328,146 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 	return pCollisionMeshBuild;
 }
 
+
 // ***************************************************************************
+bool	CExportNel::createCollisionMeshBuildList(std::vector<INode *> &nodes, Interface& ip, TimeValue time,
+	std::vector<std::pair<std::string, NLPACS::CCollisionMeshBuild*> > &meshBuildList)
+{
+	nlassert(meshBuildList.size()==0);
+	// Result to return
+	bool bRet=false;
+
+	// Eval the objects a time
+	uint	i, j;
+
+	for (i=0; i<nodes.size(); ++i)
+	{
+		ObjectState os = nodes[i]->EvalWorldState(time);
+		if (!os.obj)
+			return bRet;
+	}
+
+	std::vector<std::pair<std::string, std::vector<INode *> > >	igs;
+	for (i=0; i<nodes.size(); ++i)
+	{
+		// Object is flagged as a collision?
+		int	bCol= getScriptAppData(nodes[i], NEL3D_APPDATA_COLLISION, BST_UNCHECKED);
+		if(bCol == BST_CHECKED)
+		{
+			// If yes, add it to list
+			std::string	ig = CExportNel::getScriptAppData(nodes[i], NEL3D_APPDATA_IGNAME, "");
+			if (ig == "")
+				ig = "unknown_ig";
+
+			for (j=0; j<igs.size() && ig!=igs[j].first; ++j)
+				;
+			if (j == igs.size())
+			{
+				igs.push_back();
+				igs[j].first = ig;
+			}
+
+			igs[j].second.push_back(nodes[i]);
+		}
+	}
+
+
+	for (i=0; i<igs.size(); ++i)
+	{
+		std::string				igname = igs[i].first;
+		std::vector<INode *>	&ignodes = igs[i].second;
+		// Object exist ?
+		CCollisionMeshBuild	*pCmb = CExportNel::createCollisionMeshBuild(ignodes, time);
+
+		// Conversion success ?
+		if (pCmb)
+		{
+			meshBuildList.push_back(make_pair(igname, pCmb));
+			
+			// All is good
+			bRet=true;
+		}
+	}
+
+	return bRet;
+}
+
+
+// ***************************************************************************
+void	CExportNel::computeCollisionRetrieverFromScene(Interface& ip, TimeValue time, 
+	CRetrieverBank *&retrieverBank, CGlobalRetriever *&globalRetriever,
+	const char *igNamePrefix, const char *igNameSuffix, std::string &retIgName)
+{
+	// Default: empty retrieverBank/globalRetriever
+	retrieverBank= NULL;
+	globalRetriever= NULL;
+	retIgName= "";
+
+	// get list of nodes from scene
+	std::vector<INode*>	nodes;
+	getObjectNodes (nodes, time, ip);
+
+	// build list of cmb.
+	std::vector<std::pair<std::string, NLPACS::CCollisionMeshBuild*> >	meshBuildList;
+	if( createCollisionMeshBuildList(nodes, ip, time, meshBuildList) && meshBuildList.size()>0 )
+	{
+		// create a retriverBnak and a global retrevier.
+		retrieverBank= new CRetrieverBank;
+		globalRetriever= new CGlobalRetriever;
+
+		// list of valid instance to create.
+		vector<pair<uint32, CVector> >	retrieverInstances;
+
+		// fill the retrieverBank
+		uint	i;
+		for(i=0; i<meshBuildList.size();i++)
+		{
+			std::string				igname = meshBuildList[i].first;
+			CCollisionMeshBuild		*pCmb = meshBuildList[i].second;
+
+			// compute a localRetriever 
+			CLocalRetriever		lr;
+			CVector				translation;
+			string				error;
+			if( NLPACS::computeRetriever(*pCmb, lr, translation, error ) )
+			{
+				// set his id to the igname.
+				lr.setIdentifier(igname);
+
+				// Add to the retrieverBank
+				uint32	lrId= retrieverBank->addRetriever(lr);
+
+				// add this valid retrieverInstnace.
+				retrieverInstances.push_back(make_pair(lrId, translation));
+			}
+
+			// free the CCollisionMeshBuild.
+			delete pCmb;
+
+			// does igname match prefix/suffix???
+			if(igname.find(igNamePrefix)==0)
+			{
+				uint	lenPrefix= strlen(igNamePrefix);
+				sint	pos= igname.find(igNameSuffix, lenPrefix);
+				if(pos!=string::npos)
+				{
+					// Yes => setup the name between prefix/suffix
+					retIgName= igname.substr(lenPrefix, pos-lenPrefix);
+				}
+			}
+		}
+
+		// fill the globalRetriever with all instances created.
+		globalRetriever->setRetrieverBank(retrieverBank);
+		for(i=0; i<retrieverInstances.size();i++)
+		{
+			// must set -translation
+			globalRetriever->makeInstance(retrieverInstances[i].first, 0, -retrieverInstances[i].second);
+		}
+		// compile the globalRetriever.
+		globalRetriever->initQuadGrid();
+		globalRetriever->makeAllLinks();
+	}
+
+}
 

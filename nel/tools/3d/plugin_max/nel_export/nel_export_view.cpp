@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.28 2002/03/11 11:19:27 vizerie Exp $
+ * $Id: nel_export_view.cpp,v 1.29 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,13 @@
 #include "3d/water_pool_manager.h"
 #include "3d/instance_lighter.h"
 
+#include "pacs/retriever_bank.h"
+#include "pacs/global_retriever.h"
+
 #include "r:/code/nel/tools/3d/object_viewer/object_viewer_interface.h"
+
+// For lighting ig with pacs.
+#include "r:/code/nel/tools/3d/ig_lighter_lib/ig_lighter_lib.h"
 
 
 #include "../nel_mesh_lib/export_nel.h"
@@ -367,14 +373,14 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 						// Add to the view, but don't create the instance (created in ig).						
 						if (!(nelObjectName.find(".shape") != std::string::npos || nelObjectName.find(".ps") != std::string::npos))
 						{
-							nelObjectNameNoExt = nelObjectName + ".";
+							nelObjectNameNoExt = nelObjectName;
 							nelObjectName += ".shape";							
 						}
 						else
 						{
 							std::string::size_type pos = nelObjectName.find(".");
 							nlassert(pos != std::string::npos);
-							nelObjectNameNoExt = std::string(nelObjectName, 0, pos + 1);
+							nelObjectNameNoExt = std::string(nelObjectName, 0, pos);
 						}
 						
 						// Add to the view, but don't create the instance (created in ig).
@@ -454,6 +460,10 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		// * Export instance Group.
 		// *******************
 
+		// Info for lighting: retrieverBank and globalRetriever.
+		CIgLighterLib::CSurfaceLightingInfo		slInfo;
+		slInfo.RetrieverBank= NULL;
+		slInfo.GlobalRetriever= NULL;
 
 		// Result instance group
 		vector<INode*> resultInstanceNode;
@@ -487,8 +497,24 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				lightDesc.DisableSunContribution= !ig->getRealTimeSunContribution();
 
 
-				// Simply Light Ig.
-				CInstanceLighter::lightIgSimple(maxInstanceLighter, *ig, *igOut, lightDesc);
+				// If View SurfaceLighting enabled
+				if(opt.bTestSurfaceLighting)
+				{
+					// Setup a CSurfaceLightingInfo
+					slInfo.CellSurfaceLightSize= opt.SurfaceLightingCellSize;
+					NLMISC::clamp(slInfo.CellSurfaceLightSize, 0.001f, 1000000.f);
+					slInfo.CellRaytraceDeltaZ= 0.20f;
+					slInfo.ColIdentifierPrefix= "col_";
+					slInfo.ColIdentifierSuffix= "_";
+					// Build RetrieverBank and GlobalRetriever from collisions in scene
+					CExportNel::computeCollisionRetrieverFromScene(ip, time, 
+						slInfo.RetrieverBank, slInfo.GlobalRetriever, 
+						slInfo.ColIdentifierPrefix.c_str(), slInfo.ColIdentifierSuffix.c_str(), slInfo.IgFileName);
+				}
+
+
+				// Light Ig.
+				CIgLighterLib::lightIg(maxInstanceLighter, *ig, *igOut, lightDesc, slInfo);
 
 				// Close the lighter.
 				maxInstanceLighter.closeMaxLighter();
@@ -527,8 +553,6 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		// * Launch
 		// *******************
 
-		// Setup ambient light
-		view->setAmbientColor (CExportNel::getAmbientColor (ip, time));
 
 		// Setup background color
 		if (opt.bExportBgColor)
@@ -537,11 +561,23 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		// ExportLighting?
 		if ( opt.bExportLighting )
 		{
+			// Take the ambient of the scene as the ambient of the sun.
+			CRGBA	sunAmb= CExportNel::getAmbientColor (ip, time);
+
+			// Disable Global ambient light
+			view->setAmbientColor (CRGBA::Black);
+
 			// setup lighting and sun, if any light added. Else use std OpenGL front lighting
-			view->setupSceneLightingSystem(true, igSunDirection, CRGBA::Black, igSunColor, igSunColor);
+			view->setupSceneLightingSystem(true, igSunDirection, sunAmb, igSunColor, igSunColor);
+			// If GlobalRetriever for DynamicObjectLightingTest is present, use it.
+			if(slInfo.GlobalRetriever && ig)
+				view->enableDynamicObjectLightingTest(slInfo.GlobalRetriever, ig);
 		}
 		else
 		{
+			// Setup ambient light
+			view->setAmbientColor (CExportNel::getAmbientColor (ip, time));
+
 			// Build light vector
 			std::vector<CLight> vectLight;
 			CExportNel::getLights (vectLight, time, ip);
@@ -569,6 +605,10 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 		// Delete the pointer
 		IObjectViewer::releaseInterface (view);
+
+		// Collisions informations are no more used.
+		delete slInfo.RetrieverBank;
+		delete slInfo.GlobalRetriever;
 	}
 }
 

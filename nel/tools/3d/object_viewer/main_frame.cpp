@@ -99,6 +99,7 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	VegetableWindow=false;
 	GlobalWindWindow= false;
 	MoveElement=false;
+	MoveObjectLightTest=false;
 	MoveMode=true;
 	X=true;
 	Y=true;
@@ -165,6 +166,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_VEGETABLE, OnUpdateWindowVegetable)
 	ON_COMMAND(ID_WINDOW_GLOBALWIND, OnWindowGlobalwind)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_GLOBALWIND, OnUpdateWindowGlobalwind)
+	ON_COMMAND(ID_EDIT_MOVE_OBJECT_LIGHT_TEST, OnEditMoveObjectLightTest)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVE_OBJECT_LIGHT_TEST, OnUpdateEditMoveObjectLightTest)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -401,6 +404,9 @@ void CMainFrame::OnResetCamera()
 	ObjView->_MouseListener.setViewport (CViewport());
 	ObjView->_MouseListener.setHotSpot (hotSpot);
 	ObjView->_MouseListener.setMouseMode (CEvent3dMouseListener::edit3d);
+
+	// reset ObjectLightTest.
+	ObjView->_ObjectLightTestMatrix.setPos(hotSpot);
 }
 
 void CMainFrame::OnClear() 
@@ -414,7 +420,11 @@ void CMainFrame::OnClear()
 void CMainFrame::OnEditMoveelement() 
 {
 	MoveElement^=true;
+	// In all case, disable MoveObjectLightTest
+	MoveObjectLightTest= false;
 	UpdateData() ;
+	ToolBar.Invalidate ();
+
 	if (!MoveElement) // switch back to camera mode ?
 	{
 		ObjView->getMouseListener().enableModelMatrixEdition(false) ;
@@ -802,6 +812,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	ToolBar.SetButtonStyle (5, TBBS_CHECKBOX);
 	ToolBar.SetButtonStyle (6, TBBS_CHECKBOX);
 	ToolBar.SetButtonStyle (7, TBBS_CHECKBOX);
+	ToolBar.SetButtonStyle (9, TBBS_CHECKBOX);
 	ToolBar.EnableDocking(CBRS_ALIGN_ANY);
 
 	InitialUpdateFrame (NULL, TRUE);
@@ -936,3 +947,28 @@ void CMainFrame::OnActivateTextureSet(UINT nID)
 }
 
 
+
+///===========================================================================================
+void CMainFrame::OnEditMoveObjectLightTest() 
+{
+	MoveObjectLightTest^=true;
+	// In all case, disable MoveElement
+	MoveElement= false;
+	UpdateData() ;
+	ToolBar.Invalidate ();
+
+	if (!MoveObjectLightTest) // switch back to camera mode ?
+	{
+		ObjView->getMouseListener().enableModelMatrixEdition(false) ;
+	}
+	else
+	{
+		ObjView->getMouseListener().enableModelMatrixEdition() ;
+		ObjView->getMouseListener().setModelMatrix(ObjView->_ObjectLightTestMatrix) ;
+	}
+}
+
+void CMainFrame::OnUpdateEditMoveObjectLightTest(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (MoveObjectLightTest);
+}

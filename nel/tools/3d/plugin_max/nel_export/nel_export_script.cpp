@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.12 2002/02/26 17:30:23 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.13 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,6 +88,10 @@ Value* export_shape_cf (Value** arg_list, int count)
 	// Is the flag dont export set ?
 	if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, 0))
 		return ret;
+	// Object is flagged as a collision?
+	int	bCol= CExportNel::getScriptAppData(node, NEL3D_APPDATA_COLLISION, BST_UNCHECKED);
+	if(bCol == BST_CHECKED)
+		return ret;
 
 	// For the moment load the default config file.
 	CExportNelOptions opt;
@@ -162,6 +166,10 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 
 	// Is the flag dont export set ?
 	if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, 0))
+		return ret;
+	// Object is flagged as a collision?
+	int	bCol= CExportNel::getScriptAppData(node, NEL3D_APPDATA_COLLISION, BST_UNCHECKED);
+	if(bCol == BST_CHECKED)
 		return ret;
 
 	try

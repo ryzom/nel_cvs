@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.45 2002/03/04 14:54:09 corvazier Exp $
+ * $Id: export_nel.h,v 1.46 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,6 +90,14 @@ namespace NL3D
 	class CVegetableShape;
 };
 
+
+namespace NLPACS
+{
+	class CRetrieverBank;
+	class CGlobalRetriever;
+};
+
+
 // ***************************************************************************
 // Interface for feed back during calculation
 class IProgress
@@ -112,6 +120,8 @@ struct CExportNelOptions
 	bool bExcludeNonSelected;
 	IProgress *FeedBack;
 	bool bShowLumel;
+	bool bTestSurfaceLighting;
+	float SurfaceLightingCellSize;
 
 
 	CExportNelOptions::CExportNelOptions()
@@ -127,15 +137,20 @@ struct CExportNelOptions
 		bExcludeNonSelected = false;
 		FeedBack = NULL;
 		bShowLumel = false;
+		bTestSurfaceLighting= true;
+		SurfaceLightingCellSize= 1.5f;
 	}
 
 	void serial(NLMISC::IStream& stream)
 	{
-		sint version = stream.serialVersion (2);
+		sint version = stream.serialVersion (3);
 
 		// Check version
 		switch (version)
 		{
+		case 3:
+			stream.serial (bTestSurfaceLighting);
+			stream.serial (SurfaceLightingCellSize);
 		case 2:
 			stream.serial (bExportBgColor);
 		case 1:
@@ -244,8 +259,11 @@ public:
 	  * Return true if it is a mesh.
 	  *
 	  * skeletonShape must be NULL if no bones.
+	  *
+	  *	if excludeCollision then return false if the mesh is a collision (NL3D_APPDATA_COLLISION)
+	  *	else don't test NL3D_APPDATA_COLLISION.
 	  */
-	static bool						isMesh (INode& node, TimeValue time);
+	static bool						isMesh (INode& node, TimeValue time, bool excludeCollision= true);
 	static bool						isVegetable (INode& node, TimeValue time);
 
 	/**
@@ -381,7 +399,27 @@ public:
 	// *** Ëxport collision
 	// *********************
 
+	/** Export a CCollisionMeshBuild from a list of node.
+	 *	NB: do not check NEL3D_APPDATA_COLLISION.
+	 */
 	static NLPACS::CCollisionMeshBuild*	createCollisionMeshBuild(std::vector<INode *> &nodes, TimeValue tvTime);
+
+	/** Export a list of CCollisionMeshBuild from a list of node, grouped by igName. User must delete the meshBuilds.
+	 *	meshBuildList is a vector of tuple igName-Cmb
+	 *	NB: check NEL3D_APPDATA_COLLISION. if not set, the node is not exported
+	 */
+	static bool createCollisionMeshBuildList(std::vector<INode *> &nodes, Interface& ip, TimeValue time, 
+		std::vector<std::pair<std::string, NLPACS::CCollisionMeshBuild*> > &meshBuildList);
+
+	/**
+	 *	Parse all the scene and build retrieverBank and globalRetriever. NULL if no collisions mesh found.
+	 *	\param retIgName eg: if IgName of a collisionMesh "col_pipo_1" is found in the scene, and if 
+	 *	igNamePrefix=="col_" and igNameSuffix=="_", then retIgName returned is "pipo".
+	 *	If different igName may match, result is undefined (random).
+	 */
+	static void	computeCollisionRetrieverFromScene(Interface& ip, TimeValue time, 
+					NLPACS::CRetrieverBank *&retrieverBank, NLPACS::CGlobalRetriever *&globalRetriever,
+					const char *igNamePrefix, const char *igNameSuffix, std::string &retIgName);
 
 	// *********************
 	// *** Ëxport misc

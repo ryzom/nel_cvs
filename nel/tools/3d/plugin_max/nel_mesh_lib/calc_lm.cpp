@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.34 2002/03/04 13:03:01 berenguier Exp $
+ * $Id: calc_lm.cpp,v 1.35 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -970,6 +970,17 @@ void getLightNodeList (std::vector<INode*>& vectLightNode, TimeValue tvTime, Int
 // -----------------------------------------------------------------------------------------------
 void getLightBuilds( vector<SLightBuild> &lights, TimeValue tvTime, Interface& ip )
 {
+	vector<INode*> nodeLights;
+
+	getLightNodeList (nodeLights, tvTime, ip);
+
+	lights.resize(nodeLights.size());
+	for(uint32 i = 0; i < nodeLights.size(); ++i)
+	{
+		lights[i].convertFromMaxLight (nodeLights[i], tvTime);
+	}
+
+	// Add the global Ambient one.
 	SLightBuild amb;
 
 	amb.Type = SLightBuild::EType::LightAmbient;
@@ -980,16 +991,6 @@ void getLightBuilds( vector<SLightBuild> &lights, TimeValue tvTime, Interface& i
 	amb.Ambient.A = 255;
 	amb.Specular = amb.Diffuse = CRGBA(0,0,0,0);
 	lights.push_back( amb );
-
-	vector<INode*> nodeLights;
-
-	getLightNodeList (nodeLights, tvTime, ip);
-
-	lights.resize(nodeLights.size());
-	for(uint32 i = 0; i < nodeLights.size(); ++i)
-	{
-		lights[i].convertFromMaxLight (nodeLights[i], tvTime);
-	}
 }
 
 // -----------------------------------------------------------------------------------------------

@@ -54,6 +54,7 @@ public:
 	bool		    VegetableWindow;
 	bool		    GlobalWindWindow;
 	bool			MoveElement;
+	bool			MoveObjectLightTest;
 	bool			X;
 	bool			Y;
 	bool			Z;
@@ -126,6 +127,8 @@ public:
 	afx_msg void OnUpdateWindowVegetable(CCmdUI* pCmdUI);
 	afx_msg void OnWindowGlobalwind();
 	afx_msg void OnUpdateWindowGlobalwind(CCmdUI* pCmdUI);
+	afx_msg void OnEditMoveObjectLightTest();
+	afx_msg void OnUpdateEditMoveObjectLightTest(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.17 2002/02/28 13:42:32 berenguier Exp $
+ * $Id: export_lod.h,v 1.18 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,6 +108,10 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 /// SWT weight for bones
 #define NEL3D_APPDATA_EXPORT_SWT					(1423062611)
 #define NEL3D_APPDATA_EXPORT_SWT_WEIGHT				(1423062612)
+
+/// Collision Flags
+#define NEL3D_APPDATA_COLLISION						(1423062613)
+#define NEL3D_APPDATA_COLLISION_EXTERIOR			(1423062614)
 
 // ***************************************************************************
 

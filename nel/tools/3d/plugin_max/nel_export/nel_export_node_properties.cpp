@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.24 2002/03/04 16:26:09 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.25 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,6 +169,12 @@ public:
 	int						VegetableBendCenter;
 	std::string				VegetableBendFactor;
 
+
+	// Collision
+	int						Collision;
+	int						CollisionExterior;
+
+
 	// Dialog
 	HWND					SubDlg[TAB_COUNT];
 
@@ -259,6 +265,15 @@ void VegetableStateChanged (HWND hwndDlg)
 	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_LIGHTED_DYNAMIC), enable && !alphaBlend);
 	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_UNLIGHTED), enable && !alphaBlend);
 	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_DOUBLE_SIDED), enable && !alphaBlend);
+}
+
+
+// ***************************************************************************
+void InstanceStateChanged (HWND hwndDlg)
+{
+	bool	colEnable= ( SendMessage (GetDlgItem (hwndDlg, IDC_CHECK_COLLISION), BM_GETCHECK, 0, 0)!=BST_UNCHECKED );
+
+	EnableWindow (GetDlgItem (hwndDlg, IDC_CHECK_COLLISION_EXTERIOR), colEnable);
 }
 
 // ***************************************************************************
@@ -685,6 +700,11 @@ int CALLBACK InstanceDialogCallback (
 
 			EnableWindow (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), true);
 			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), BM_SETCHECK, currentParam->DontExport, 0);
+
+			SendMessage (GetDlgItem (hwndDlg, IDC_CHECK_COLLISION), BM_SETCHECK, currentParam->Collision, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_CHECK_COLLISION_EXTERIOR), BM_SETCHECK, currentParam->CollisionExterior, 0);
+
+			InstanceStateChanged(hwndDlg);
 		}
 		break;
 
@@ -706,12 +726,20 @@ int CALLBACK InstanceDialogCallback (
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), tmp, 512);
 							currentParam->InstanceGroupName=tmp;
 							currentParam->DontExport=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), BM_GETCHECK, 0, 0);
+
+							currentParam->Collision= SendMessage (GetDlgItem (hwndDlg, IDC_CHECK_COLLISION), BM_GETCHECK, 0, 0);
+							currentParam->CollisionExterior= SendMessage (GetDlgItem (hwndDlg, IDC_CHECK_COLLISION_EXTERIOR), BM_GETCHECK, 0, 0);
 						}
 					break;
 					case IDC_DONT_ADD_TO_SCENE:
 					case IDC_DONT_EXPORT:
+					case IDC_CHECK_COLLISION:
+					case IDC_CHECK_COLLISION_EXTERIOR:
 						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
 							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+						// if change collision state
+						if ( LOWORD(wParam) == IDC_CHECK_COLLISION )
+							InstanceStateChanged(hwndDlg);
 						break;
 				}
 			}
@@ -2159,6 +2187,11 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		CExportNel::getScriptAppDataVPWT(node, param.VertexProgramWindTree);
 
 
+		// Collision
+		param.Collision= CExportNel::getScriptAppData (node, NEL3D_APPDATA_COLLISION, BST_UNCHECKED);
+		param.CollisionExterior= CExportNel::getScriptAppData (node, NEL3D_APPDATA_COLLISION_EXTERIOR, BST_UNCHECKED);
+
+
 		// Something selected ?
 		std::set<INode*>::const_iterator ite=listNode.begin();
 		ite++;
@@ -2302,6 +2335,11 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			// simply disable VertexProgram edition of multiple selection... 
 			param.VertexProgramId= -1;
 
+			// Collision
+			if(CExportNel::getScriptAppData (node, NEL3D_APPDATA_COLLISION, BST_UNCHECKED) != param.Collision)
+				param.Collision= BST_INDETERMINATE;
+			if(CExportNel::getScriptAppData (node, NEL3D_APPDATA_COLLISION_EXTERIOR, BST_UNCHECKED) != param.CollisionExterior)
+				param.CollisionExterior= BST_INDETERMINATE;
 
 			// Next sel
 			ite++;
@@ -2452,6 +2490,12 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 						CExportNel::setScriptAppDataVPWT(node, param.VertexProgramWindTree);
 					}
 				}
+
+				// Collision
+				if (param.Collision != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_COLLISION, param.Collision);
+				if (param.CollisionExterior != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_COLLISION_EXTERIOR, param.CollisionExterior);
 
 				// Next node
 				ite++;

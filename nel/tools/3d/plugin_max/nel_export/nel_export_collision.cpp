@@ -1,7 +1,7 @@
 /** \file nel_export_collision.cpp
  * 
  *
- * $Id: nel_export_collision.cpp,v 1.2 2001/11/29 14:22:23 legros Exp $
+ * $Id: nel_export_collision.cpp,v 1.3 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,36 +39,13 @@ using namespace NLPACS;
 
 bool CNelExport::exportCollision (const char *sPath, std::vector<INode *> &nodes, Interface& ip, TimeValue time, CExportNelOptions &opt)
 {
+	// get list of CMB froms nodes.
+	std::vector<std::pair<std::string, NLPACS::CCollisionMeshBuild*> >	meshBuildList;
+	if(!CExportNel::createCollisionMeshBuildList(nodes, ip, time, meshBuildList))
+		return false;
+
 	// Result to return
 	bool bRet=false;
-
-	// Eval the objects a time
-	uint	i, j;
-
-	for (i=0; i<nodes.size(); ++i)
-	{
-		ObjectState os = nodes[i]->EvalWorldState(time);
-		if (!os.obj)
-			return bRet;
-	}
-
-	std::vector<std::pair<std::string, std::vector<INode *> > >	igs;
-	for (i=0; i<nodes.size(); ++i)
-	{
-		std::string	ig = CExportNel::getScriptAppData(nodes[i], NEL3D_APPDATA_IGNAME, "");
-		if (ig == "")
-			ig = "unknown_ig";
-
-		for (j=0; j<igs.size() && ig!=igs[j].first; ++j)
-			;
-		if (j == igs.size())
-		{
-			igs.push_back();
-			igs[j].first = ig;
-		}
-
-		igs[j].second.push_back(nodes[i]);
-	}
 
 //	ULONG SelectDir(HWND Parent, char* Title, char* Path);
 
@@ -76,37 +53,31 @@ bool CNelExport::exportCollision (const char *sPath, std::vector<INode *> &nodes
 	if (path.size() == 0 || path[path.size()-1] != '\\' && path[path.size()-1] != '/')
 		path.insert(path.end(), '/');
 
-	for (i=0; i<igs.size(); ++i)
+	for (uint i=0; i<meshBuildList.size(); ++i)
 	{
-		std::string				igname = igs[i].first;
-		std::vector<INode *>	&ignodes = igs[i].second;
+		std::string				igname = meshBuildList[i].first;
 		std::string				filename = path+igname+".cmb";
-		// Object exist ?
-		CCollisionMeshBuild	*pCmb = CExportNel::createCollisionMeshBuild(ignodes, time);
+		CCollisionMeshBuild		*pCmb = meshBuildList[i].second;
 
-		// Conversion success ?
-		if (pCmb)
+		// Open a file
+		COFile file;
+		if (file.open (filename))
 		{
-			// Open a file
-			COFile file;
-			if (file.open (filename))
+			try
 			{
-				try
-				{
-					// Serialise the collision mesh build
-					file.serial(*pCmb);
+				// Serialise the collision mesh build
+				file.serial(*pCmb);
 
-					// All is good
-					bRet=true;
-				}
-				catch (...)
-				{
-				}
+				// All is good
+				bRet=true;
 			}
-
-			// Delete the pointer
-			delete pCmb;
+			catch (...)
+			{
+			}
 		}
+
+		// Delete the pointer
+		delete pCmb;
 	}
 
 /*

@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.15 2002/03/04 14:54:09 corvazier Exp $
+ * $Id: object_viewer_interface.h,v 1.16 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #endif // OBJECT_VIEWER_EXPORT
 
 // Increment this version number each time you distribute a new version of the dll.
-#define OBJECT_VIEWER_VERSION 3
+#define OBJECT_VIEWER_VERSION 4
 
 namespace NL3D
 {
@@ -45,6 +45,12 @@ namespace NL3D
 namespace NLMISC
 {
 	class CRGBA;
+}
+
+namespace NLPACS
+{
+	class	CRetrieverBank;
+	class	CGlobalRetriever;
 }
 
 class IObjectViewer
@@ -103,6 +109,11 @@ public:
 	/** Setup Scene lighting System. Disabled by default
 	 */
 	virtual void setupSceneLightingSystem(bool enable, const NLMISC::CVector &sunDir, NLMISC::CRGBA sunAmbiant, NLMISC::CRGBA sunDiffuse, NLMISC::CRGBA sunSpecular)=0;
+
+	/** Scene lighting System: enable dynamic object testing. Give the ig the shape must be light_tested against
+	 *	globalRetriever is not deleted by the ObjectViewer.
+	 */
+	virtual void enableDynamicObjectLightingTest(NLPACS::CGlobalRetriever *globalRetriever, NL3D::CInstanceGroup *ig) =0;
 
 
 	// Get instance

@@ -1,6 +1,6 @@
 /** \file ps_mover_dlg.cpp
  * this dialog display coordinate of an instance of a located in a particle system 
- * $Id: ps_mover_dlg.cpp,v 1.7 2001/07/12 16:02:43 vizerie Exp $
+ * $Id: ps_mover_dlg.cpp,v 1.8 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #include "object_viewer.h"
 #include "ps_mover_dlg.h"
 #include "particle_tree_ctrl.h"
+#include "particle_dlg.h"
+#include "main_frame.h"
 #include "3d/ps_located.h"
 #include "3d/particle_system.h"
 
@@ -79,12 +81,14 @@ CPSMoverDlg::~CPSMoverDlg()
 
 void CPSMoverDlg::updateListener(void)
 {
-	const NLMISC::CVector &pos = _EditedLocated->getPos()[_EditedLocatedIndex] ;
-	NLMISC::CMatrix m ;
-	m = _MouseListener->getModelMatrix() ;
-	m.setPos(pos) ;
-	_MouseListener->setModelMatrix(m) ;
-
+	if(_ParticleDlg->MainFrame->MoveElement)
+	{
+		const NLMISC::CVector &pos = _EditedLocated->getPos()[_EditedLocatedIndex] ;
+		NLMISC::CMatrix m ;
+		m = _MouseListener->getModelMatrix() ;
+		m.setPos(pos) ;
+		_MouseListener->setModelMatrix(m) ;
+	}
 }
 
 void CPSMoverDlg::updatePosition(void)
@@ -329,8 +333,9 @@ NL3D::IPSMover *CPSMoverDlg::getMoverInterface(void)
 	return dynamic_cast<NL3D::IPSMover *>((NL3D::CPSLocatedBindable *)(m_SubComponentCtrl.GetItemData(currIndex))) ;
 }
 
-void CPSMoverDlg::init(CWnd *parent)
+void CPSMoverDlg::init(CParticleDlg	*parent)
 {
+	_ParticleDlg= parent;
 
 	Create(CPSMoverDlg::IDD, parent) ;
 	ShowWindow(SW_SHOW) ;

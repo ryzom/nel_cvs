@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.16 2002/03/04 13:03:01 berenguier Exp $
+ * $Id: export_misc.cpp,v 1.17 2002/03/12 16:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -564,7 +564,7 @@ void CExportNel::getLocalMatrix (Matrix3& localMatrix, INode& node, TimeValue ti
 
 // --------------------------------------------------
 
-bool CExportNel::isMesh (INode& node, TimeValue time)
+bool CExportNel::isMesh (INode& node, TimeValue time, bool excludeCollision)
 {
 	// Result false by default
 	bool bRet=false;
@@ -578,6 +578,15 @@ bool CExportNel::isMesh (INode& node, TimeValue time)
 		// Object can convert itself to NeL patchmesh ?
 		if (os.obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0)))
 			bRet=true;
+	}
+
+	// Want to exclude collision Mesh??
+	if(excludeCollision)
+	{
+		// Object is flagged as a collision?
+		int	bCol= getScriptAppData(&node, NEL3D_APPDATA_COLLISION, BST_UNCHECKED);
+		if(bCol == BST_CHECKED)
+			bRet= false;
 	}
 
 	// Return result

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.75 2004/09/23 15:03:54 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.76 2004/09/28 17:20:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2264,7 +2264,7 @@ bool	CAudioMixerUser::playMusic(const std::string &fileName)
 	{
 		NLMISC::CIFile		fileIn;
 		bool	state= false;
-		if(fileIn.open(CPath::lookup(fileName)))
+		if(fileIn.open(CPath::lookup(fileName, false)))
 		{
 			state= getSoundDriver()->playMusic(fileIn);
 		}

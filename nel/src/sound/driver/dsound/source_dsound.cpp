@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.20 2003/03/03 17:21:17 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.21 2003/03/04 17:47:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,8 @@
 
 #if EAX_AVAILABLE == 1
 #include <eax.h>
+#undef min
+#undef max
 #endif
 
 

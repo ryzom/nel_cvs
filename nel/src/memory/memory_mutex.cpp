@@ -1,7 +1,7 @@
 /** \file memory_mutex.cpp
  * Mutex used by the memory manager
  *
- * $Id: memory_mutex.cpp,v 1.2 2003/07/01 15:33:14 corvazier Exp $
+ * $Id: memory_mutex.cpp,v 1.3 2004/01/15 17:37:53 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -38,7 +38,7 @@ CMemoryMutex::CMemoryMutex ()
 	_Lock = 0;
 }
 
-#else NL_OS_WINDOWS
+#else // NL_OS_WINDOWS
 
 /*
  * Unix version
@@ -74,6 +74,6 @@ void CMemoryMutex::leave()
 
 // *********************************************************
 
-#endif NL_OS_WINDOWS
+#endif // NL_OS_WINDOWS
 
 } // NLMEMORY

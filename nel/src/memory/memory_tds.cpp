@@ -1,7 +1,7 @@
 /** \file memory_tds.cpp
  * Thread dependant storage class
  *
- * $Id: memory_tds.cpp,v 1.1 2002/11/05 16:48:25 corvazier Exp $
+ * $Id: memory_tds.cpp,v 1.2 2004/01/15 17:37:53 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -29,6 +29,10 @@
 
 #include <windows.h>
 
+#else // NL_OS_WINDOWS
+
+#include <pthread.h>
+
 #endif // NL_OS_WINDOWS
 
 namespace NLMEMORY 
@@ -43,8 +47,8 @@ CMemoryTDS::CMemoryTDS ()
 	_Handle = TlsAlloc ();
 	TlsSetValue (_Handle, NULL);
 #else // NL_OS_WINDOWS
-	_Key = pthread_key_create (&_Key, NULL);
-	pthread_setspecific(_Key, NULL);
+	_Key = pthread_key_create (&_Key, 0);
+	pthread_setspecific(_Key, 0);
 #endif // NL_OS_WINDOWS
 }
 

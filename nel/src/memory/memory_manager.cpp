@@ -1,7 +1,7 @@
 /** \file memory_manager.cpp
  * A new memory manager
  *
- * $Id: memory_manager.cpp,v 1.7 2003/11/17 10:43:34 besson Exp $
+ * $Id: memory_manager.cpp,v 1.8 2004/01/15 17:37:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -288,18 +288,18 @@ MEMORY_API void* NelMemoryAllocate (unsigned int size)
 {
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 	return NLMEMORY::GlobalHeapAllocator->allocate (size, "", 0, 0);
-#else NL_HEAP_ALLOCATION_NDEBUG
+#else // NL_HEAP_ALLOCATION_NDEBUG
 	return NLMEMORY::GlobalHeapAllocator->allocate (size);
-#endif NL_HEAP_ALLOCATION_NDEBUG
+#endif // NL_HEAP_ALLOCATION_NDEBUG
 }
 
 MEMORY_API void* NelMemoryAllocateDebug (uint size, const char *filename, uint line, const char *category)
 {
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 	return NLMEMORY::GlobalHeapAllocator->allocate (size, filename, line, category);
-#else NL_HEAP_ALLOCATION_NDEBUG
+#else // NL_HEAP_ALLOCATION_NDEBUG
 	return NLMEMORY::GlobalHeapAllocator->allocate (size);
-#endif NL_HEAP_ALLOCATION_NDEBUG
+#endif // NL_HEAP_ALLOCATION_NDEBUG
 }
 
 MEMORY_API void NelMemoryDeallocate (void *pointer)

@@ -1,7 +1,0 @@
-
-October 10 2002
-===============
-
-* Snowballs server now use Layer5 instead of Layer4 that is deprecated
-
-* Snowballs client can run without server with Local=1; in the client.cfg

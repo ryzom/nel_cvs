@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.16 2004/02/03 15:25:34 legros Exp $
+ * $Id: build_rbank.cpp,v 1.17 2004/02/13 16:16:39 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,84 +148,6 @@ void processAllPasses(string &zoneName)
 			tessellation.build();
 
 			CAABBox	tbox = tessellation.computeBBox();
-
-/*
-			vector<CIGBox>				boxes;
-			try
-			{
-				if (CFile::fileExists (IGBoxes))
-				{
-					CIFile		binput(IGBoxes);
-					binput.serialCont(boxes);
-				}
-				else
-				{
-					nlinfo("WARNING: IG list no found");
-				}
-			}
-			catch (Exception &) { nlinfo("WARNING: IG list no found"); }
-
-			for (i=0; i<boxes.size(); ++i)
-			{
-				if (tbox.intersect(boxes[i].BBox))
-				{
-					try
-					{
-						// load ig associated to the zone
-						string	igname = boxes[i].Name;
-						CIFile			monStream(CPath::lookup(igname));
-						CInstanceGroup	ig;
-						monStream.serial(ig);
-
-						// search in group for water instance
-						for (j=0; j<ig._InstancesInfos.size(); ++j)
-						{
-							string	shapeName = ig._InstancesInfos[j].Name;
-							if (CFile::getExtension (shapeName) == "")
-								shapeName += ".shape";
-
-							string	shapeNameLookup = CPath::lookup (shapeName, false, false);
-							if (!shapeNameLookup.empty())
-							{
-								CIFile			f;
-								if (f.open (shapeNameLookup))
-								{
-									CShapeStream	shape;
-									shape.serial(f);
-
-									CWaterShape	*wshape = dynamic_cast<CWaterShape *>(shape.getShapePointer());
-									if (wshape == NULL)
-										continue;
-
-									CMatrix	matrix;
-									ig.getInstanceMatrix(j, matrix);
-
-									CPolygon			wpoly;
-									wshape->getShapeInWorldSpace(wpoly);
-
-									uint	k;
-									for (k=0; k<wpoly.Vertices.size(); ++k)
-									{
-										//wpoly.Vertices[k].z = 0.0f;
-										wpoly.Vertices[k] = matrix * wpoly.Vertices[k];
-									}
-
-									tessellation.addWaterShape(wpoly);
-								}
-								else
-								{
-									nlwarning ("Can't load shape %s", shapeNameLookup.c_str());
-								}
-							}
-						}
-					}
-					catch (Exception &e)
-					{
-						nlwarning("%s", e.what());
-					}
-				}
-			}
-*/
 
 			tessellation.compile();
 			tessellation.generateBorders(1.0);

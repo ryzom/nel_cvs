@@ -1,7 +1,7 @@
 /** \file prim_checker.cpp
  * <File description>
  *
- * $Id: prim_checker.cpp,v 1.4 2004/02/03 16:36:21 legros Exp $
+ * $Id: prim_checker.cpp,v 1.5 2004/02/13 16:16:39 legros Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -381,6 +381,47 @@ void	CPrimChecker::render(const CPolygon &poly, uint16 value)
 
 				_Grid.index((uint)x, (uint)(ymin+dy), value);
 				_Grid.set((uint)x, (uint)(ymin+dy), Water);
+			}
+		}
+	}
+
+}
+
+/*
+ * Render a CPolygon of bit value
+ */
+void	CPrimChecker::renderBits(const CPolygon &poly, uint8 bits)
+{
+	list<CPolygon>		convex;
+
+	// divide poly in convex polys
+	if (!poly.toConvexPolygons(convex, CMatrix::Identity))
+	{
+		convex.clear();
+		CPolygon	reverse = poly;
+		std::reverse(reverse.Vertices.begin(), reverse.Vertices.end());
+		if (!reverse.toConvexPolygons(convex, CMatrix::Identity))
+			return;
+	}
+
+	list<CPolygon>::iterator	it;
+	for (it=convex.begin(); it!=convex.end(); ++it)
+	{
+		CPolygon2D					convex2d(*it);
+
+		CPolygon2D::TRasterVect		rasterized;
+		sint						ymin;
+
+		convex2d.computeBorders(rasterized, ymin);
+
+		sint	dy;
+		for (dy=0; dy<(sint)rasterized.size(); ++dy)
+		{
+			sint	x;
+
+			for (x=rasterized[dy].first; x<=rasterized[dy].second; ++x)
+			{
+				_Grid.set((uint)x, (uint)(ymin+dy), bits);
 			}
 		}
 	}

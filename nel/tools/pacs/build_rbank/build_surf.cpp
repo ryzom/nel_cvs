@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.20 2004/02/03 15:25:34 legros Exp $
+ * $Id: build_surf.cpp,v 1.21 2004/02/13 16:16:39 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -298,11 +298,6 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 
 	CVector	n = (nv1-nv0) ^ (nv2-nv0);
 
-/*
-	CAABBox		zbbox = Root->RootZoneTessellation->OriginalBBox;
-	zbbox.setHalfSize(zbbox.getHalfSize()-CVector(1.0e-2f, 1.0e-2f, 0.0f));
-*/
-
 	double	hmin = std::min(v0.z, std::min(v1.z, v2.z));
 	//QuantHeight = ((uint8)(floor((v0.z+v1.z+v2.z)/6.0f)))%255;
 	QuantHeight = ((uint8)floor(hmin/2.0))%255;
@@ -321,6 +316,8 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 
 	uint8	bits = bits0|bits1|bits2;
 
+	bool	forceExclude = false;
+
 	if (bits & CPrimChecker::Include)
 	{
 		IsValid = true;
@@ -329,6 +326,7 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 	if (bits & CPrimChecker::Exclude)
 	{
 		IsValid = false;
+		forceExclude = true;
 	}
 
 	if (bits & CPrimChecker::ClusterHint && IsValid)
@@ -336,7 +334,10 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 		ClusterHint = true;
 	}
 
-	if (bits & CPrimChecker::Water && IsValid)
+//	if ((bits & CPrimChecker::Cliff) && (bits & CPrimChecker::Water))
+//		IsValid = false;
+
+	if (bits & CPrimChecker::Water && (Normal.z > 0.3f) && !forceExclude)
 	{
 		bool	w0 = ((bits0&CPrimChecker::Water) != 0);
 		bool	w1 = ((bits1&CPrimChecker::Water) != 0);
@@ -359,35 +360,16 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 		float	wh = PrimChecker.waterHeight(ws, exists);
 		if (exists && ((*Vertices)[Tri[0]].z < wh || (*Vertices)[Tri[1]].z < wh || (*Vertices)[Tri[2]].z < wh))
 		{
+			if (bits & CPrimChecker::Cliff)
+			{
+				IsValid = false;
+				return;
+			}
+
+			IsValid = true;
 			WaterShape = ws;
 		}
 	}
-
-/*
-	CVector	vmin;
-	CVector	vmax;
-	vmin.minof((*Vertices)[Tri[0]], (*Vertices)[Tri[1]]);
-	vmin.minof(vmin, (*Vertices)[Tri[2]]);
-	vmax.maxof((*Vertices)[Tri[0]], (*Vertices)[Tri[1]]);
-	vmax.maxof(vmax, (*Vertices)[Tri[2]]);
-
-	zoneTessel->WaterGrid.select(vmin, vmax);
-
-	CQuadGrid<uint32>::CIterator	it = zoneTessel->WaterGrid.begin();
-	bool	inWater = false;
-
-	for (; it!=zoneTessel->WaterGrid.end(); ++it)
-	{
-		uint	shape = (*it);
-		CPolygon	&poly = zoneTessel->WaterShapes[shape];
-		if (isInside(poly, *this) &&
-			((*Vertices)[Tri[0]].z < poly.Vertices[0].z || (*Vertices)[Tri[1]].z < poly.Vertices[0].z || (*Vertices)[Tri[2]].z < poly.Vertices[0].z))
-		{
-			WaterShape = shape;
-			break;
-		}
-	}
-*/
 }
 
 CAABBox	NLPACS::CSurfElement::getBBox() const
@@ -440,7 +422,7 @@ void	NLPACS::CComputableSurfaceBorder::smooth(float val)
 
 	// filtering passes
 	uint	numPass = 3;
-	for (; numPass>0; --numPass)
+	for (; numPass>0 && Vertices.size()>3; --numPass)
 	{
 		CVector	previous = Vertices[0];
 		for (i=1; i<Vertices.size()-1; ++i)
@@ -1069,32 +1051,66 @@ void	NLPACS::CZoneTessellation::build()
 void	NLPACS::CZoneTessellation::compile()
 {
 	sint	el;
-	uint	i, j;
+	uint	i;
 
 	CAABBox	tbox = computeBBox();
-/*
-	// setup water quad grid
-	WaterGrid.create(128, 4.0f);
-	for (i=0; i<WaterShapes.size(); ++i)
+
+	// setup cliffs
+	for (el=0; el<(sint)Elements.size(); ++el)
 	{
-		CVector	vvmin = WaterShapes[i].Vertices[0];
-		CVector	vvmax = vvmin;
+		CSurfElement	&element = *(Elements[el]);
 
-		for (j=1; j<WaterShapes[i].Vertices.size(); ++j)
+		// a cliff ?
+		if (element.Normal.z < 0.0)
 		{
-			vvmin.minof(vvmin, WaterShapes[i].Vertices[j]);
-			vvmax.maxof(vvmax, WaterShapes[i].Vertices[j]);
+			CVector		&v0 = _Vertices[element.Tri[0]],
+						&v1 = _Vertices[element.Tri[1]],
+						&v2 = _Vertices[element.Tri[2]];
+
+			uint8		bits0 = PrimChecker.get((uint)v0.x, (uint)v0.y);
+			uint8		bits1 = PrimChecker.get((uint)v1.x, (uint)v1.y);
+			uint8		bits2 = PrimChecker.get((uint)v2.x, (uint)v2.y);
+
+			bool		w0 = ((bits0&CPrimChecker::Water) != 0);
+			bool		w1 = ((bits1&CPrimChecker::Water) != 0);
+			bool		w2 = ((bits2&CPrimChecker::Water) != 0);
+
+			if ((bits0 & CPrimChecker::Water)!=0 || (bits1 & CPrimChecker::Water)!=0 || (bits2 & CPrimChecker::Water)!=0)
+			{
+				uint		ws;
+
+				uint16		ws0 = PrimChecker.index((uint)v0.x, (uint)v0.y);
+				uint16		ws1 = PrimChecker.index((uint)v1.x, (uint)v1.y);
+				uint16		ws2 = PrimChecker.index((uint)v2.x, (uint)v2.y);
+
+				if ((w0 && w1 && ws0 == ws1) || (w0 && w2 && ws0 == ws2))
+					ws = ws0;
+				else if (w1 && w2 && ws1 == ws2)
+					ws = ws1;
+				else if (w0)
+					ws = ws0;
+				else if (w1)
+					ws = ws1;
+				else if (w2)
+					ws = ws2;
+
+				float		minz = std::min(_Vertices[element.Tri[0]].z, 
+								   std::min(_Vertices[element.Tri[1]].z,
+											_Vertices[element.Tri[2]].z));
+
+				bool		exists;
+				float		wh = PrimChecker.waterHeight(ws, exists)+WaterThreshold;
+
+				// 
+				if (minz <= wh)
+				{
+					CPolygon	p(v0, v1, v2);
+					PrimChecker.renderBits(p, CPrimChecker::Cliff);
+				}
+			}
 		}
-
-		vvmin = vmax(vvmin, tbox.getMin());
-		vvmax = vmin(vvmax, tbox.getMax());
-
-		if (vvmin.x >= vvmax.x || vvmin.y >= vvmax.y)
-			continue;
-
-		WaterGrid.insert(vvmin, vvmax, i);
 	}
-*/
+
 
 	// compute elements features
 	if (Verbose)
@@ -1141,6 +1157,10 @@ void	NLPACS::CZoneTessellation::compile()
 					if (e0.QuantHeight == e1.QuantHeight)				e.QuantHeight = e0.QuantHeight;
 					if (e1.QuantHeight == e2.QuantHeight)				e.QuantHeight = e1.QuantHeight;
 					if (e0.QuantHeight == e2.QuantHeight)				e.QuantHeight = e2.QuantHeight;
+
+					if (e0.WaterShape == e1.WaterShape)					e.WaterShape = e0.WaterShape;
+					if (e1.WaterShape == e2.WaterShape)					e.WaterShape = e1.WaterShape;
+					if (e0.WaterShape == e2.WaterShape)					e.WaterShape = e2.WaterShape;
 				}
 			}
 		}
@@ -1286,22 +1306,16 @@ void	NLPACS::CZoneTessellation::compile()
 		if (s != s0 && s != s1 && s0 != s1)
 		{
 			VerticesFlags[elem->Tri[2]] = 1;
-//			if (s >= 0)
-//				nlstop
 		}
 
 		if (s != s1 && s != s2 && s1 != s2)
 		{
 			VerticesFlags[elem->Tri[0]] = 1;
-//			if (s >= 0)
-//				nlstop
 		}
 
 		if (s != s2 && s != s0 && s2 != s0)
 		{
 			VerticesFlags[elem->Tri[1]] = 1;
-//			if (s >= 0)
-//				nlstop
 		}
 	}
 }

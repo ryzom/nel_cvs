@@ -1,7 +1,7 @@
 /** \file prim_checker.h
  * <File description>
  *
- * $Id: prim_checker.h,v 1.2 2004/02/03 15:25:34 legros Exp $
+ * $Id: prim_checker.h,v 1.3 2004/02/13 16:16:39 legros Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -63,7 +63,8 @@ public:
 		Include = 1,
 		Exclude = 2,
 		ClusterHint = 4,
-		Water = 8
+		Water = 8,
+		Cliff = 16
 	};
 
 
@@ -90,6 +91,9 @@ public:
 		exists = true;
 		return _WaterHeight[index];
 	}
+
+	/// Render a CPolygon of bit value
+	void	renderBits(const NLMISC::CPolygon &poly, uint8 bits);
 
 private:
 
@@ -194,10 +198,10 @@ private:
 
 				CGridElm() : _Value(0)	{}
 
-				uint8		flags() const						{ return (uint8)((_Value >> 12) & 0x0f); }
-				void		flags(uint8 bits)					{ _Value |= (((uint16)bits) << 12); }
-				uint16		index() const						{ return _Value & 0x0fff; }
-				void		index(uint16 idx)					{ _Value = ((idx & 0x0fff) | (_Value & 0xf000)); }
+				uint8		flags() const						{ return (uint8)((_Value >> 11) & 0x1f); }
+				void		flags(uint8 bits)					{ _Value |= (((uint16)bits) << 11); }
+				uint16		index() const						{ return _Value & 0x07ff; }
+				void		index(uint16 idx)					{ _Value = ((idx & 0x07ff) | (_Value & 0xf800)); }
 
 				void		serial(NLMISC::IStream &f)			{ f.serial(_Value); }
 			};

@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.8 2003/09/16 15:08:14 lecroart Exp $
+ * $Id: algo.h,v 1.9 2003/10/02 17:54:23 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include <vector>
 #include <string>
+#include "nel/misc/ucstring.h"
 
 
 namespace NLMISC 
@@ -168,6 +169,27 @@ bool		testWildCard(const std::string &strIn, const std::string &wildCard);
  *	eg: splitString("hello|bye|||bee", "|", list) return 3 string into list: "hello", "bye" and "bee".
  */
 void		splitString(const std::string &str, const std::string &separator, std::vector<std::string> &retList);
+
+
+// ***************************************************************************
+/// In a string or ucstring, find a substr and replace it with an other
+template<class T, class U>
+void		strFindReplace(T &str, const T &strFind, const U &strReplace)
+{
+	uint	pos= str.find(strFind);
+	if(pos != T::npos)
+	{
+		str.replace(pos, strFind.size(), T(strReplace) );
+	}
+}
+
+template<class T, class U>
+void		strFindReplace(T &str, const char *strFind, const U &strReplace)
+{
+	T	tempStr= strFind;
+	strFindReplace(str, tempStr, strReplace);
+}
+
 
 
 } // NLMISC

@@ -166,12 +166,6 @@ namespace NLAIAGENT
 		const char *dbg_class_name = (const char *) getType();
 #endif
 
-		//_ScriptMail->run();
-		getMail()->run();
-		runChildren();
-		
-		processMessages();
-
 		bool is_activated = false;
 
 		// Looks for the goal

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.46 2001/04/03 12:32:04 chafik Exp $
+ * $Id: agent_script.cpp,v 1.47 2001/04/03 15:09:08 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -196,7 +196,7 @@ namespace NLAIAGENT
 																			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) );
 
 		StaticMethod[CAgentScript::TCancelGoal] = new CAgentScript::CMethodCall(	_RUNACHIEVE_, 
-																			CAgentScript::TGoal, ParamCancelGoalMsg,
+																			CAgentScript::TCancelGoal, ParamCancelGoalMsg,
 																			CAgentScript::CheckAll,
 																			1,
 																			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) );
@@ -1494,6 +1494,15 @@ namespace NLAIAGENT
 		char buffer[1024 * 2];
 		goal->getDebugString( buffer );
 #endif
+
+		// Removes goals
+		std::vector<NLAILOGIC::CGoal *>::iterator it_g = _GoalStack.begin();
+		while ( it_g != _GoalStack.end() )
+		{
+			if ( (**it_g) == (*goal) )
+				(*it_g)->cancel();
+			it_g++;
+		}
 /*		goal->setReceiver( (IBasicAgent *) this );
 		_GoalStack.push_back( goal );
 */

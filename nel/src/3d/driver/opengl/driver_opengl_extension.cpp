@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.39 2003/03/31 11:54:56 vizerie Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.39.2.1 2003/04/29 14:10:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -341,6 +341,13 @@ PFNWGLGETPIXELFORMATATTRIBFVARBPROC	wglGetPixelFormatAttribfvARB;
 PFNWGLCHOOSEPIXELFORMATARBPROC		wglChoosePixelFormatARB;
 #endif
 
+
+// Swap control extension
+//===========================
+#ifdef NL_OS_WINDOWS
+PFNWGLSWAPINTERVALEXTPROC			wglSwapIntervalEXT;
+PFNWGLGETSWAPINTERVALEXTPROC		wglGetSwapIntervalEXT;
+#endif
 
 // WGL_ARB_extensions_string
 #ifdef NL_OS_WINDOWS
@@ -1026,6 +1033,21 @@ void	registerGlExtensions(CGlExtensions &ext)
 }
 
 
+// *********************************
+static bool	setupWGLEXTSwapControl(const char	*glext)
+{
+	if(strstr(glext, "WGL_EXT_swap_control")==NULL)
+		return false;
+
+#ifdef NL_OS_WINDOWS
+	if(!(wglSwapIntervalEXT= (PFNWGLSWAPINTERVALEXTPROC)nelglGetProcAddress("wglSwapIntervalEXT"))) return false;
+	if(!(wglGetSwapIntervalEXT= (PFNWGLGETSWAPINTERVALEXTPROC)nelglGetProcAddress("wglGetSwapIntervalEXT"))) return false;
+#endif
+
+	return true;
+}
+
+
 #ifdef NL_OS_WINDOWS
 // ***************************************************************************
 void	registerWGlExtensions(CGlExtensions &ext, HDC hDC)
@@ -1052,6 +1074,9 @@ void	registerWGlExtensions(CGlExtensions &ext, HDC hDC)
 
 	// Check for pixel format
 	ext.WGLARBPixelFormat= setupWGLARBPixelFormat(glext);
+
+	// Check for swap control
+	ext.WGLEXTSwapControl= setupWGLEXTSwapControl(glext);
 }
 #endif // NL_OS_WINDOWS
 

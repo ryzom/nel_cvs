@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.182 2003/04/15 15:58:31 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.182.2.1 2003/04/29 14:10:53 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1260,6 +1260,12 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 					_Extensions.EXTVertexShader = false;
 				}
 			}
+	}
+
+	// TempYoyo BETA
+	if(_Extensions.WGLEXTSwapControl)
+	{
+		wglSwapIntervalEXT(0);
 	}
 
 	return true;

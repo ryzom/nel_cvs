@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.21 2001/11/07 10:40:54 vizerie Exp $
+ * $Id: register_3d.cpp,v 1.22 2001/11/27 16:28:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,6 +112,7 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CMeshMultiLod);
 		NLMISC_REGISTER_CLASS(CFlareShape);
 		NLMISC_REGISTER_CLASS(CWaterShape);
+		NLMISC_REGISTER_CLASS(CWaveMakerShape);
 
 		bInitialized=true;
 	}

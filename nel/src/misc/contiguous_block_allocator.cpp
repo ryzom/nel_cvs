@@ -1,6 +1,6 @@
 /** \file contiguous_allocator.cpp
  *
- * $Id: contiguous_block_allocator.cpp,v 1.1 2004/03/04 14:33:15 vizerie Exp $
+ * $Id: contiguous_block_allocator.cpp,v 1.2 2004/03/30 09:17:43 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -50,7 +50,7 @@ CContiguousBlockAllocator::~CContiguousBlockAllocator()
 //*********************************************************************************************************
 void CContiguousBlockAllocator::init(uint numBytes /*=0*/)
 {
-	if (_BlockStart) _DefaultAlloc.deallocate(_BlockStart);
+	if (_BlockStart) _DefaultAlloc.deallocate(_BlockStart, _BlockEnd-_BlockStart);
 	_BlockEnd =  NULL;
 	_BlockStart = NULL;
 	_NumAllocatedBytes = 0;

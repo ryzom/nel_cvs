@@ -5,7 +5,7 @@
 
 \section introd What is NeL?
 
-NeL is a complete platform aimed at running massively multiuser
+NeL is a complete platform aimed at running massively multi-user
 entertainment in a 3D environment over the Internet.
 
 \section oss Free Software
@@ -23,9 +23,9 @@ multiplayer role-playing game in a 3D world. This means that there is a
 permanent core of developpers who are paid to work on NeL, build upon it,
 and use it.
 
-The fact that the source code is available doesn't just mean you can have a
-peek at the innards of the platform. Communication works both ways, so you
-can also build upon it for yourself, and contribute to its development.
+The fact that the source code is available doesn't simply mean you can have a
+peek at the innards of the platform. Communication works both ways, so you can
+also contribute to its development.
 Any bug fix, added functionality, optimisation is not only possible, but
 welcome, and improvements will be integrated into the reference platform
 maintained by Nevrax.
@@ -34,12 +34,12 @@ NeL is currently developped and tested under Linux and Windows environments.
 
 \section structure NeL Structure
 
-The platform is actually built upon 4 different components.
+The platform is currenty built upon 4 different components.
 
 \subsection subnel The NeL Library
 
 The NeL library provides the core functionality required to build a
-multiuser platform. It provides everything from 3D representation to AI to
+multi-user platform. It provides everything from 3D representation to AI to
 network services. It is the true heart of the project, and something that
 makes use of the best available technologies out there. There is a lot of
 room for additions in NeL, from 3D stuff to database to networking.
@@ -90,7 +90,7 @@ experience.
 
 \section contribs Community
 
-Beside the working core of the NeL developpers, everyone may improve the NeL
+Beside the working core of NeL developpers, everyone may improve the NeL
 platform. There is a supported community for the development of NeL hosted by
 Nevrax in the nevrax.org domain. Various tools are available there to participate:
 
@@ -111,6 +111,4 @@ Nevrax in the nevrax.org domain. Various tools are available there to participat
   where your code is evaluated, and usually integrated directly in the reference
   platform.
 
-Potential contributors are directed to the document describing contributions
-guidelines.
  */

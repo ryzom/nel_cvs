@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.26 2004/02/19 09:47:42 vizerie Exp $
+ * $Id: shape_bank.cpp,v 1.27 2004/03/04 14:31:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -797,6 +797,7 @@ void CShapeBank::preLoadShapes(const std::string &shapeCacheName,
 						IShape	*shp= addRef(fileName);
 						if(shp)
 						{
+							//nlinfo("Loading %s", CPath::lookup(fileName.c_str(), false, false).c_str());
 							if (flushTextures && drv)
 							{							
 								shp->flushTextures(*drv, 0);

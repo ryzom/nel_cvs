@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.15 2002/03/14 09:49:04 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.16 2002/04/09 12:27:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,6 +76,7 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				int w = lParam & 0xFFFF;
 				int h = (lParam >> 16) & 0xFFFF;
+
 				SetWindowPos (cwd->_HEdit, NULL, 0, cwd->_ToolBarHeight, w, h-cwd->_ToolBarHeight-cwd->_InputEditHeight, SWP_NOZORDER | SWP_NOACTIVATE );
 				SetWindowPos (cwd->_HInputEdit, NULL, 0, h-cwd->_InputEditHeight, w, cwd->_InputEditHeight, SWP_NOZORDER | SWP_NOACTIVATE );
 				cwd->resizeLabels ();
@@ -238,7 +239,8 @@ void CWinDisplayer::resizeLabels ()
 	
 		for (uint i = 0; i< access.value().size (); i++)
 		{
-			SetWindowPos ((HWND)access.value()[i].Hwnd, NULL, (i+1)*delta, 0, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
+			if ((HWND)access.value()[i].Hwnd != NULL)
+				SetWindowPos ((HWND)access.value()[i].Hwnd, NULL, (i+1)*delta, 0, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
 		}
 	}
 }
@@ -282,21 +284,6 @@ void CWinDisplayer::open (string windowNameEx, sint x, sint y, sint w, sint h, s
 	_HWnd = CreateWindow ("NLClass", wn.c_str(), WndFlags, CW_USEDEFAULT,CW_USEDEFAULT, WndRect.right,WndRect.bottom, NULL, NULL, GetModuleHandle(NULL), NULL);
 	SetWindowLong (_HWnd, GWL_USERDATA, (LONG)this);
 	
-	// resize the window
-	RECT rc;
-	SetRect (&rc, 0, 0, w, h);
-	AdjustWindowRectEx (&rc, GetWindowStyle (_HWnd), GetMenu (_HWnd) != NULL, GetWindowExStyle (_HWnd));
-
-	LONG flag = SWP_NOZORDER | SWP_NOACTIVATE;
-	
-	if (x == -1 && y == -1) flag |= SWP_NOMOVE;
-	if (w == -1 && h == -1) flag |= SWP_NOSIZE;
-
-	SetWindowPos (_HWnd, NULL, x, y, w, h, flag);
-	SetWindowPos (_HWnd, NULL, x, y, rc.right - rc.left, rc.bottom - rc.top, flag);
-
-	ShowWindow(_HWnd,SW_SHOW);
-
 	// create the font
 	_HFont = CreateFont (-13, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial");
 
@@ -330,6 +317,22 @@ void CWinDisplayer::open (string windowNameEx, sint x, sint y, sint w, sint h, s
 	dwEvent |= ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_CHANGE;
 	SendMessage(_HInputEdit, EM_SETEVENTMASK, (WPARAM)0, (LPARAM)dwEvent);
 
+	// resize the window
+	RECT rc;
+	SetRect (&rc, 0, 0, w, h);
+	AdjustWindowRectEx (&rc, GetWindowStyle (_HWnd), GetMenu (_HWnd) != NULL, GetWindowExStyle (_HWnd));
+
+	LONG flag = SWP_NOZORDER | SWP_NOACTIVATE;
+	
+	if (x == -1 && y == -1) flag |= SWP_NOMOVE;
+	if (w == -1 && h == -1) flag |= SWP_NOSIZE;
+
+	SetWindowPos (_HWnd, NULL, x, y, w, h, flag);
+	SetWindowPos (_HWnd, NULL, x, y, rc.right - rc.left, rc.bottom - rc.top, flag);
+
+	ShowWindow(_HWnd,SW_SHOW);
+
+	
 	SetFocus(_HInputEdit);
 
 	_Init = true;

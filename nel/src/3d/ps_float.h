@@ -1,7 +1,7 @@
 /** \file ps_size.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.4 2001/09/12 13:19:07 vizerie Exp $
+ * $Id: ps_float.h,v 1.5 2001/09/13 14:22:21 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/ps_attrib_maker_bin_op.h"
 #include "nel/3d/animation_time.h"
 #include <algorithm>
+#include <nel/misc/vector_h.h>
 
 namespace NL3D {
 
@@ -96,6 +97,66 @@ class CPSFloatBinOp : public CPSAttribMakerBinOp<float>
 public:
 	NLMISC_DECLARE_CLASS(CPSFloatBinOp);
 	CPSAttribMakerBase *clone() const { return new CPSFloatBinOp(*this); }
+};
+
+/// this functor produce float based on a hermite curb
+class CPSFloatLagrangeFunctor
+{
+	public:
+		/// ctor. The default is a cst function whose value is 1
+		CPSFloatLagrangeFunctor();
+
+		/** set a control point. The first and last controls point dates must be 0 and 1
+		  * \param index renge from 0 to 3
+		  */
+		void							setControlPoint(uint index, float date, float value);
+
+		/** get a control point.
+		  * \return a <date, value> std::pair
+		  */
+		const std::pair<float, float>  &getControlPoint(uint index) const;
+
+		/// set the number of samples used with this curb
+		void							setNumSamples(uint32 numSamples);
+
+		/// get the numer of samples used with this curb
+		uint32							getNumSamples(void) const;
+
+		/** This return a sampled value from the hermite curb. The more steps there are, the more accurate it is
+		  * You can also get an 'exact value'.
+		  * This must be called between beginFastFloor() and endFastFloor() statements
+		  * \see getValue
+		  */
+		#ifdef NL_OS_WINDOWS
+			__forceinline
+		#endif
+		float operator()(CAnimationTime time) const
+		{
+			return _Tab[OptFastFloor(time * _NumSamples)];
+		}
+
+		/// compute an exact value at the given date, which must be in [0, 1[
+		float							getValue(float date) const;
+
+		/// serialization
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+
+	protected:
+		/// update the value tab
+		void							updateTab(void);
+
+		/// coeff of the interpolator poly must be recalculated
+		void							touchCoeffs(void) const { _CoeffsTouched = true; }
+
+		// recompute the polynom coefficients
+		void							updateCoeffs(void) const;
+
+		std::pair<float, float>		_CtrlPoints[4];
+		uint32						_NumSamples;
+		std::vector<float>			_Tab;
+		mutable bool				_CoeffsTouched;
+		/// the polynom used for interpolation
+		mutable NLMISC::CVectorH	_Coeffs;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file tile_utility.h
  * <File description>
  *
- * $Id: tile_utility.h,v 1.1 2001/04/26 16:37:32 corvazier Exp $
+ * $Id: tile_utility.h,v 1.2 2001/11/22 08:49:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,5 +37,7 @@
 extern TCHAR *GetString(int id);
 
 extern HINSTANCE hInstance;
+
+#define RGBAddClassID (Class_ID(0x5621932, 0x565a6387))
 
 #endif // __TILE_UTILITY__H

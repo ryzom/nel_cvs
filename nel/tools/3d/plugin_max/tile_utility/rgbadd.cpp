@@ -1,7 +1,7 @@
 /** \file rgbadd.cpp
  * <File description>
  *
- * $Id: rgbadd.cpp,v 1.1 2001/04/26 16:37:32 corvazier Exp $
+ * $Id: rgbadd.cpp,v 1.2 2001/11/22 08:49:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,8 +35,6 @@ TCHAR *GetString(int id);
 
 #define NSUBTEX 2    // number of texture map slots
 #define NCOLS 2
-
-static Class_ID RGBAddClassID(Class_ID(0x5621932, 0x565a6387));
 
 static int subTexId[NSUBTEX] = { IDC_MULT_TEX1, IDC_MULT_TEX2 };
 

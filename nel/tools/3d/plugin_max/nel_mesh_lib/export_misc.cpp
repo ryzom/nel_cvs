@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.8 2001/11/07 17:18:59 vizerie Exp $
+ * $Id: export_misc.cpp,v 1.9 2001/11/22 08:49:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -319,6 +319,11 @@ bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* s
 							rTab.resize(total);
 							for( uint i = 0; i < total; ++i )
 								rTab[i] = param->GetInt(id, tvTime, i) ? true : false;
+						}
+						break;
+						case TYPE_TEXMAP:
+						{
+							bRes=param->GetValue(id, tvTime, *(Texmap**)pValue, ivalid);
 						}
 						break;
 					}

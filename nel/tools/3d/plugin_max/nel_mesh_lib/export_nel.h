@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.30 2001/11/14 15:13:17 corvazier Exp $
+ * $Id: export_nel.h,v 1.31 2001/11/22 08:49:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,11 +36,11 @@
 #include <pacs/collision_mesh_build.h>
 
 #define UVGEN_MISSING (-1)
-#define UVGEN_OBJXYZ (MAX_MESHMAPS+1)
-#define UVGEN_WORLDXYZ (MAX_MESHMAPS+2)
+#define UVGEN_REFLEXION (-2)
 #define FLOAT_EPSILON 0.001
 
-
+#define NEL_MTL_A						0x64c75fec
+#define NEL_MTL_B						0x222b9eb9
 #define NEL_LIGHT_CLASS_ID_A			0x36e3181f
 #define NEL_LIGHT_CLASS_ID_B			0x3ac24049
 #define NEL_PARTICLE_SYSTEM_CLASS_ID	0x58ce2893
@@ -474,6 +474,7 @@ private:
 			AlphaVertex = false;
 			ColorVertex = false;
 			AlphaVertexChannel = 0;
+			MappingChannelUsed = 0;
 		};
 
 		// Remap UV channel
@@ -484,6 +485,9 @@ private:
 
 		// Alpha vertex in this material
 		bool										AlphaVertex;
+
+		// Mapping channel used
+		uint										MappingChannelUsed;
 
 		// Color vertex in this material
 		bool										ColorVertex;
@@ -499,6 +503,7 @@ private:
 		CMaxMeshBaseBuild ()
 		{
 			NeedVertexColor = false;
+			MappingChannelUsed = 0;
 		}
 
 		// First material in the array
@@ -507,9 +512,12 @@ private:
 		// Num of materials
 		uint										NumMaterials;
 
+		// Mapping channel used
+		uint										MappingChannelUsed;
+
 		// Need vertex color
 		bool										NeedVertexColor;
-		
+
 		// Remap UV channel
 		std::vector<CMaxMaterialInfo>				MaterialInfo;
 	};
@@ -519,8 +527,8 @@ private:
 	// *********************
 
 	// Get 3ds UVs channel used by a texmap and make a good index channel
-	// Can return an interger in [0; MAX_MESHMAPS-1] or on of the following value: UVGEN_MISSING, UVGEN_OBJXYZ or UVGEN_WORLDXYZ
-	static int						getVertMapChannel (Texmap& texmap, Matrix3& channelMatrix);
+	// Can return an interger in [0; MAX_MESHMAPS-1] or on of the following value: UVGEN_REFLEXION, UVGEN_MISSING
+	static int						getVertMapChannel (Texmap& texmap, Matrix3& channelMatrix, TimeValue time);
 
 	// Build a CLight
 	static bool						buildLight (GenLight &maxLight, NL3D::CLight& nelLight, INode& node, TimeValue time);
@@ -587,7 +595,7 @@ private:
 	static void						buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& materialInfo, Mtl& mtl, TimeValue time, bool absolutePath);
 
 	// Build a NeL texture corresponding with a max Texmap.
-	static NL3D::ITexture*			buildATexture (Texmap& texmap, std::vector<CMaterialDesc>& remap3dsTexChannel, TimeValue time, bool absolutePath);
+	static NL3D::ITexture*			buildATexture (Texmap& texmap, CMaterialDesc& remap3dsTexChannel, TimeValue time, bool absolutePath);
 
 	// *********************
 	// *** Export Animation

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.25 2001/11/14 15:44:15 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.26 2001/11/22 08:49:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -714,23 +714,8 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	// *** Build remap uv channel data
 	// *** ***************************
 
-	// Get the max number of UVs channel used in the materials
-	int nMapsChannelUsed=0;
-	for (int nMat=0; nMat<(sint)maxBaseBuild.MaterialInfo.size(); nMat++)
-	{
-		// Greater than previous ?
-		if ((sint)maxBaseBuild.MaterialInfo[nMat].RemapChannel.size()>nMapsChannelUsed)
-		{
-			nMapsChannelUsed=maxBaseBuild.MaterialInfo[nMat].RemapChannel.size();
-		}
-	}
-
-	// Add flags to the mesh vertex format
-	for (int nChannels=0; nChannels<nMapsChannelUsed; nChannels++)
-	{
-		buildMesh.VertexFlags|=(CVertexBuffer::TexCoord0Flag<<nChannels);
-	}
-
+	// Get the uv flags
+	buildMesh.VertexFlags|=maxBaseBuild.MappingChannelUsed<<(CVertexBuffer::TexCoord0);
 
 	// *** ***************
 	// *** Export vertices
@@ -803,9 +788,6 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 		nlassert (buildMesh.Faces[face].MaterialId>=0);
 		nlassert (buildMesh.Faces[face].MaterialId<(sint)(maxBaseBuild.FirstMaterial+maxBaseBuild.NumMaterials));
 
-		//if( buildMesh.Materials[buildMesh.Faces[face].MaterialId].getShader() == CMaterial::Specular )
-		//	buildMesh.VertexFlags |= CVertexBuffer::TexCoord1Flag;
-
 		// Export the 3 corners
 		for (int corner=0; corner<3; corner++)
 		{
@@ -850,67 +832,70 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			int nNumChannelUsed=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel.size();
 
 			// For each mapping channels used by this material
-			for (int uv=0; uv<nNumChannelUsed; uv++)
+			int uv;
+			for (uv=0; uv<nNumChannelUsed; uv++)
 			{
+				// No explicit channel or unsupported mapping channel, fill with garbage
+				pCorner->Uvs[uv].U=0.f;
+				pCorner->Uvs[uv].V=0.f;
+
 				// Corresponding max channel
 				int nMaxChan=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._IndexInMaxMaterial;
 
-				if( ! pMesh->mapSupport(nMaxChan) )
+				// Not a generated mapping channel ?
+				if (nMaxChan>=0)
 				{
-					nMaxChan = maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._IndexInMaxMaterialAlternative;
-				}
+					if( ! pMesh->mapSupport(nMaxChan) )
+					{
+						nMaxChan = maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._IndexInMaxMaterialAlternative;
+					}
 
-				// UVs matrix
-				const Matrix3 &uvMatrix=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._UVMatrix;
+					// UVs matrix
+					const Matrix3 &uvMatrix=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._UVMatrix;
 
-				// Crop values
-				float fCropU=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropU;
-				float fCropV=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropV;
-				float fCropW=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropW;
-				float fCropH=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropH;
+					// Crop values
+					float fCropU=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropU;
+					float fCropV=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropV;
+					float fCropW=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropW;
+					float fCropH=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropH;
 
-				// Check kind of channel and if channel is supported
-				if ((nMaxChan>=0)&&(nMaxChan<MAX_MESHMAPS)&&pMesh->mapSupport(nMaxChan))
-				{
-					// *** Explicit channel
+					// Check kind of channel and if channel is supported
+					if ((nMaxChan>=0)&&(nMaxChan<MAX_MESHMAPS)&&pMesh->mapSupport(nMaxChan))
+					{
+						// *** Explicit channel
 
-					// Get a pointer on Mappingvertex for this channel
-					TVFace *pMapFace=pMesh->mapFaces(nMaxChan);
+						// Get a pointer on Mappingvertex for this channel
+						TVFace *pMapFace=pMesh->mapFaces(nMaxChan);
 
-					// Get the index of the mapping vertex
-					DWORD nMapVert=pMapFace[face].getTVert (corner);
+						// Get the index of the mapping vertex
+						DWORD nMapVert=pMapFace[face].getTVert (corner);
 
-					// Check it's a valid channel (not a color channel ie !=0)
-					nlassert (nMaxChan>0);
-					nlassert (nMaxChan<MAX_MESHMAPS);
-					
-					// Pointer on the mapping vertex
-					UVVert *pMapVert=&pMesh->mapVerts(nMaxChan)[nMapVert];
+						// Check it's a valid channel (not a color channel ie !=0)
+						nlassert (nMaxChan>0);
+						nlassert (nMaxChan<MAX_MESHMAPS);
+						
+						// Pointer on the mapping vertex
+						UVVert *pMapVert=&pMesh->mapVerts(nMaxChan)[nMapVert];
 
-					// Transforme the UV vertex
-					Point3 uvTransformed=(*pMapVert)*uvMatrix;
+						// Transforme the UV vertex
+						Point3 uvTransformed=(*pMapVert)*uvMatrix;
 
-					// Crop it
-					uvTransformed.x=uvTransformed.x*fCropW+fCropU;
+						// Crop it
+						uvTransformed.x=uvTransformed.x*fCropW+fCropU;
 
-					// Max UV coordinate origine is the BottomLeft corner. In NeL, it is in the TopLeft corner.
-					// So, inverse the V coordinate
-					uvTransformed.y=(1.f-uvTransformed.y)*fCropH+fCropV;
+						// Max UV coordinate origine is the BottomLeft corner. In NeL, it is in the TopLeft corner.
+						// So, inverse the V coordinate
+						uvTransformed.y=(1.f-uvTransformed.y)*fCropH+fCropV;
 
-					// Store value
-					pCorner->Uvs[uv].U=uvTransformed.x;
-					pCorner->Uvs[uv].V=uvTransformed.y;
-				}
-				else
-				{
-					// No explicit channel or unsupported mapping channel, fill with garbage
-					pCorner->Uvs[uv].U=0.f;
-					pCorner->Uvs[uv].V=0.f;
+						// Store value
+						pCorner->Uvs[uv].U=uvTransformed.x;
+						pCorner->Uvs[uv].V=uvTransformed.y;
+					}
 				}
 			}
 
 			// For other channels, fill with garbage..
-			for (; uv<nMapsChannelUsed; uv++)
+			for (; uv<nNumChannelUsed; uv++)
 			{
 				pCorner->Uvs[uv].U=0.f;
 				pCorner->Uvs[uv].V=0.f;
@@ -1464,310 +1449,321 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 
 	// Get primary material pointer of the node
 	Mtl* pNodeMat=node.GetMtl();
-	nlassert(pNodeMat != NULL);
-	nlassert(pNodeMat->NumSubMtls() == 0); // no submaterial allowed
-
-	// we use displacement, bump, and reflection map
-
-	// look for available maps
-
-	// Look for a diffuse texmap
-	std::vector<bool> mapEnables;
-	CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "mapEnables", (ParamType2)TYPE_BOOL_TAB, &mapEnables, time);
-
-
-	if (!mapEnables[ID_DP] || !mapEnables[ID_RL] || !mapEnables[ID_BU])
+	if ((pNodeMat!=NULL) && isClassIdCompatible (*pNodeMat, Class_ID(NEL_MTL_A,NEL_MTL_B)))
 	{
-		nlinfo("ERROR : BuildWaterShape : didn't found all required map when exporting water node %s , see material.txt for help", node.GetName());
-		// need these maps to do the job
-		return NULL;
-	}
+		nlassert(pNodeMat != NULL);
+		nlassert(pNodeMat->NumSubMtls() == 0); // no submaterial allowed
 
-	/// build a texture from each map
-	Texmap *maxDisplaceMap = pNodeMat->GetSubTexmap (ID_DP);
-	Texmap *maxBumpMap     = pNodeMat->GetSubTexmap (ID_BU);
-	Texmap *maxEnvMap      = pNodeMat->GetSubTexmap (ID_RL);
+		// we use displacement, bump, and reflection map
 
-	Texmap *maxDiffuseMap = NULL;
-	Texmap *maxEnvMap2 = NULL;
-	Texmap *maxEnvMapUnderWater  = NULL;
-	Texmap *maxEnvMapUnderWater2 = NULL;
+		// look for available maps
 
+		// Look for enable map
+		int mapEnable1;
+		int mapEnable2;
+		int mapEnable3;
+		int mapEnable4;
+		int mapEnable5;
+		int mapEnable6;
+		int mapEnable7;
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "bEnableSlot_1", (ParamType2)TYPE_BOOL, &mapEnable1, time);
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "bEnableSlot_2", (ParamType2)TYPE_BOOL, &mapEnable2, time);
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "bEnableSlot_3", (ParamType2)TYPE_BOOL, &mapEnable3, time);
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "bEnableSlot_4", (ParamType2)TYPE_BOOL, &mapEnable4, time);
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "bEnableSlot_5", (ParamType2)TYPE_BOOL, &mapEnable5, time);
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "bEnableSlot_6", (ParamType2)TYPE_BOOL, &mapEnable6, time);
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "bEnableSlot_7", (ParamType2)TYPE_BOOL, &mapEnable7, time);
 
-
-
-	if (!isClassIdCompatible(*maxDisplaceMap, Class_ID (BMTEX_CLASS_ID,0))) 
-	{
-		nlinfo("ERROR : BuildWaterShape : displace map is not a valid bitmap (when exporting water node : %s)", node.GetName());
-		return NULL;
-	}
-	if (!isClassIdCompatible(*maxBumpMap, Class_ID (BMTEX_CLASS_ID,0)))
-	{
-		nlinfo("ERROR : BuildWaterShape : bump map is not a valid bitmap (when exporting water node : %s)", node.GetName());
-		return NULL;
-	}
-	if (!isClassIdCompatible(*maxEnvMap, Class_ID (BMTEX_CLASS_ID,0)))
-	{
-		nlinfo("ERROR : BuildWaterShape : env map is not a valid bitmap (when exporting water node : %s)", node.GetName());
-		return NULL;
-	}
-
-	if (mapEnables[ID_DI])
-	{
-		maxDiffuseMap = pNodeMat->GetSubTexmap (ID_DI);
-		if (!isClassIdCompatible(*maxDiffuseMap, Class_ID (BMTEX_CLASS_ID,0))) 
+		if (!(mapEnable1!=0) || !(mapEnable5!=0) || !(mapEnable6!=0))
 		{
-			nlinfo("ERROR : BuildWaterShape : diffuse map is not a valid bitmap (when exporting water node : %s)", node.GetName());
+			nlinfo("ERROR : BuildWaterShape : didn't found all required map when exporting water node %s , see material.txt for help", node.GetName());
+			// need these maps to do the job
 			return NULL;
 		}
-	}
 
-	if (mapEnables[ID_RR])
-	{
-		maxEnvMap2 = pNodeMat->GetSubTexmap (ID_RR);
-		if (!isClassIdCompatible(*maxEnvMap2, Class_ID (BMTEX_CLASS_ID,0))) 
+		/// Build a texture from each map
+		Texmap *maxDisplaceMap			= NULL;
+		Texmap *maxBumpMap				= NULL;
+		Texmap *maxEnvMap				= NULL;
+		Texmap *maxDiffuseMap			= NULL;
+		Texmap *maxEnvMap2				= NULL;
+		Texmap *maxEnvMapUnderWater		= NULL;
+		Texmap *maxEnvMapUnderWater2	= NULL;
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "tTexture_1", (ParamType2)TYPE_TEXMAP, &maxEnvMap, time);
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "tTexture_2", (ParamType2)TYPE_TEXMAP, &maxEnvMap2, time);
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "tTexture_3", (ParamType2)TYPE_TEXMAP, &maxEnvMapUnderWater, time);
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "tTexture_4", (ParamType2)TYPE_TEXMAP, &maxEnvMapUnderWater2, time);
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "tTexture_5", (ParamType2)TYPE_TEXMAP, &maxBumpMap, time);
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "tTexture_6", (ParamType2)TYPE_TEXMAP, &maxDisplaceMap, time);
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "tTexture_7", (ParamType2)TYPE_TEXMAP, &maxDiffuseMap, time);
+
+		if (!isClassIdCompatible(*maxDisplaceMap, Class_ID (BMTEX_CLASS_ID,0))) 
 		{
-			nlinfo("ERROR : BuildWaterShape : refraction map is not a valid bitmap (when exporting water node : %s)", node.GetName());
+			nlinfo("ERROR : BuildWaterShape : displace map is not a valid bitmap (when exporting water node : %s)", node.GetName());
 			return NULL;
 		}
-	}
-	
-
-	if (mapEnables[ID_OP])
-	{
-		maxEnvMapUnderWater = pNodeMat->GetSubTexmap (ID_OP);
-		if (!isClassIdCompatible(*maxEnvMapUnderWater, Class_ID (BMTEX_CLASS_ID,0))) 
+		if (!isClassIdCompatible(*maxBumpMap, Class_ID (BMTEX_CLASS_ID,0)))
 		{
-			nlinfo("ERROR : BuildWaterShape : spcular map is not a valid bitmap (when exporting water node : %s)", node.GetName());
+			nlinfo("ERROR : BuildWaterShape : bump map is not a valid bitmap (when exporting water node : %s)", node.GetName());
 			return NULL;
 		}
-	}
-
-	if (mapEnables[ID_FI])
-	{
-		maxEnvMapUnderWater2 = pNodeMat->GetSubTexmap (ID_FI);
-		if (!isClassIdCompatible(*maxEnvMapUnderWater2, Class_ID (BMTEX_CLASS_ID,0))) 
+		if (!isClassIdCompatible(*maxEnvMap, Class_ID (BMTEX_CLASS_ID,0)))
 		{
-			nlinfo("ERROR : BuildWaterShape : opacity map is not a valid bitmap (when exporting water node : %s)", node.GetName());
+			nlinfo("ERROR : BuildWaterShape : env map is not a valid bitmap (when exporting water node : %s)", node.GetName());
 			return NULL;
 		}
-	}
 
-
-
-
-	// List of channels used by this texture (we don't use it though)
-	std::vector<CMaterialDesc> _3dsTexChannel;
-				
-	NLMISC::CSmartPtr<ITexture> bumpMap		 = buildATexture (*maxBumpMap, _3dsTexChannel, time, absolutePath);
-	NLMISC::CSmartPtr<ITexture> displaceMap  = buildATexture (*maxDisplaceMap, _3dsTexChannel, time, absolutePath);
-	if (bumpMap->supportSharing() && displaceMap->supportSharing())
-	{
-		if (bumpMap->getShareName() == displaceMap->getShareName())
+		if (mapEnable7)
 		{
-			nlinfo("Water shape : bump map and displacement map should not be the same");
-			return NULL;
+			if (!isClassIdCompatible(*maxDiffuseMap, Class_ID (BMTEX_CLASS_ID,0))) 
+			{
+				nlinfo("ERROR : BuildWaterShape : diffuse map is not a valid bitmap (when exporting water node : %s)", node.GetName());
+				return NULL;
+			}
 		}
-	}				
-	NLMISC::CSmartPtr<ITexture> colorMap = NULL;
-	if (maxDiffuseMap)
-	{
-		colorMap = buildATexture (*maxDiffuseMap, _3dsTexChannel, time, absolutePath);
-	}
-	NLMISC::CSmartPtr<ITexture> envMap				= NULL;
-	NLMISC::CSmartPtr<ITexture> envMapUnderWater	= NULL;
 
-
-
-
-	if (maxEnvMap)
-	{
-		if (!maxEnvMap2)
+		if (mapEnable2)
 		{
-			envMap = buildATexture (*maxEnvMap, _3dsTexChannel, time, absolutePath);
+			if (!isClassIdCompatible(*maxEnvMap2, Class_ID (BMTEX_CLASS_ID,0))) 
+			{
+				nlinfo("ERROR : BuildWaterShape : refraction map is not a valid bitmap (when exporting water node : %s)", node.GetName());
+				return NULL;
+			}
 		}
-		else
-		{
-			NLMISC::CSmartPtr<ITexture> tex0, tex1;
-			tex0	 = buildATexture (*maxEnvMap, _3dsTexChannel, time, absolutePath);
-			tex1	 = buildATexture (*maxEnvMap2, _3dsTexChannel, time, absolutePath);
-			envMap = new CTextureBlend;
-			(static_cast<CTextureBlend *>((ITexture *) envMap))->setBlendTexture(0, tex0);
-			(static_cast<CTextureBlend *>((ITexture *) envMap))->setBlendTexture(1, tex1);
-		}
-	}
-
-	if (maxEnvMapUnderWater)
-	{
-		if (!maxEnvMapUnderWater2)
-		{
-			envMapUnderWater = buildATexture (*maxEnvMapUnderWater, _3dsTexChannel, time, absolutePath);
-		}
-		else
-		{
-			NLMISC::CSmartPtr<ITexture> tex0, tex1;
-			tex0	 = buildATexture (*maxEnvMapUnderWater, _3dsTexChannel, time, absolutePath);
-			tex1	 = buildATexture (*maxEnvMapUnderWater2, _3dsTexChannel, time, absolutePath);
-			envMapUnderWater = new CTextureBlend;
-			(static_cast<CTextureBlend *>((ITexture *) envMapUnderWater))->setBlendTexture(0, tex0);
-			(static_cast<CTextureBlend *>((ITexture *) envMapUnderWater))->setBlendTexture(1, tex1);
-		}
-	}
-
-
-	nlinfo("buildWaterShape : Texture have been built");
-
-
-
-
-
-
-	ws->setEnvMap(0, (ITexture *) envMap);
-	ws->setEnvMap(1, (ITexture *) envMapUnderWater);
-
-	ws->setHeightMap(0, (ITexture *) displaceMap);
-	ws->setHeightMap(1, (ITexture *) bumpMap);
-
-	/// rertrieve bump maps scale and speed
-
-	NLMISC::CVector2f bumpMapScale;
-	NLMISC::CVector2f bumpMapSpeed;
-	NLMISC::CVector2f displaceMapScale;
-	NLMISC::CVector2f displaceMapSpeed;
-
-	CExportNel::getValueByNameUsingParamBlock2(node, "fBumpUScale", (ParamType2)TYPE_FLOAT, &bumpMapScale.x, 0) ;
-	CExportNel::getValueByNameUsingParamBlock2(node, "fBumpVScale", (ParamType2)TYPE_FLOAT, &bumpMapScale.y, 0) ;
-	CExportNel::getValueByNameUsingParamBlock2(node, "fBumpUSpeed", (ParamType2)TYPE_FLOAT, &bumpMapSpeed.x, 0) ;
-	CExportNel::getValueByNameUsingParamBlock2(node, "fBumpVSpeed", (ParamType2)TYPE_FLOAT, &bumpMapSpeed.y, 0) ;
-
-	CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapUScale", (ParamType2)TYPE_FLOAT, &displaceMapScale.x, 0) ;
-	CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapVScale", (ParamType2)TYPE_FLOAT, &displaceMapScale.y, 0) ;
-	CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapUSpeed", (ParamType2)TYPE_FLOAT, &displaceMapSpeed.x, 0) ;
-	CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapVSpeed", (ParamType2)TYPE_FLOAT, &displaceMapSpeed.y, 0) ;
-
-
-
-	ws->setHeightMapScale(0, displaceMapScale);
-	ws->setHeightMapScale(1, bumpMapScale);
-
-	ws->setHeightMapSpeed(0, displaceMapSpeed);
-	ws->setHeightMapSpeed(1, bumpMapSpeed);
-
-
-
-	if (colorMap != NULL)
-	{
-		if (pMesh->getNumTVerts() == 0) // no mapping
-		{
-			nlinfo("ERROR : BuildWaterShape : diffuse map found, but no mapping has been applied (when exporting water node : %s)", node.GetName());
-			return NULL;
-		}
-		ws->setColorMap((ITexture *) colorMap);
-		uint i0, i1, i2;
-		projDest.getBestTriplet(i0, i1, i2);
-		nlinfo("i0 = %d, i1 =  %d, i2 = %d", i0, i1, i2);
-		Matrix3  m = node.GetNodeTM(0);
-
-		NLMISC::CVector v0, v1, v2;
-		CExportNel::convertVector(v0, m * pMesh->getVert(i0));
-		CExportNel::convertVector(v1, m * pMesh->getVert(i1));
-		CExportNel::convertVector(v2, m * pMesh->getVert(i2));
 		
-		NLMISC::CMatrix A, B, C;
-		A.setRot(NLMISC::CVector(v0.x, v0.y, 1), NLMISC::CVector(v1.x, v1.y, 1), NLMISC::CVector(v2.x, v2.y, 1));
-		C.setRot(NLMISC::CVector(pMesh->getTVert(i0).x, 1.f - pMesh->getTVert(i0).y, 0),
-				 NLMISC::CVector(pMesh->getTVert(i1).x, 1.f - pMesh->getTVert(i1).y, 0),
-				 NLMISC::CVector(pMesh->getTVert(i2).x, 1.f - pMesh->getTVert(i2).y, 1)
-				);
 
-		B = C * A.inverted();		
-		ws->setColorMapMat(NLMISC::CVector2f(B.getI().x, B.getI().y),
-						   NLMISC::CVector2f(B.getJ().x, B.getJ().y),
-						   NLMISC::CVector2f(B.getK().x, B.getK().y));
-
-
-		/** compute the texture offset and scale
-		  * U must be mapped along the x coordinates
-		  * V must be mapped along the y coordinate
-		  */
-/*
-		const std::vector<NLMISC::CVector2f> &v = projDest.Vertices;
-		float minX = v[0].x, maxX = v[0].x;
-		float minY = v[0].y, maxY = v[0].y;
-
-		uint k;
-		for (k = 0; k < CHNumVerts; ++k)
+		if (mapEnable3)
 		{
-			minX = std::min(v[k].x, minX);
-			maxX = std::max(v[k].x, maxX);
-			minY = std::min(v[k].y, minY);
-			maxY = std::max(v[k].y, maxY);
+			if (!isClassIdCompatible(*maxEnvMapUnderWater, Class_ID (BMTEX_CLASS_ID,0))) 
+			{
+				nlinfo("ERROR : BuildWaterShape : spcular map is not a valid bitmap (when exporting water node : %s)", node.GetName());
+				return NULL;
+			}
 		}
 
-		// gets the UVs from the mesh
-		float minU = pMesh->getTVert(0).x;
-		float maxU = pMesh->getTVert(0).x;
+		if (mapEnable4)
+		{
+			if (!isClassIdCompatible(*maxEnvMapUnderWater2, Class_ID (BMTEX_CLASS_ID,0))) 
+			{
+				nlinfo("ERROR : BuildWaterShape : opacity map is not a valid bitmap (when exporting water node : %s)", node.GetName());
+				return NULL;
+			}
+		}
+
+		// List of channels used by this texture (we don't use it though)
+		CMaterialDesc _3dsTexChannel;
+					
+		NLMISC::CSmartPtr<ITexture> bumpMap		 = buildATexture (*maxBumpMap, _3dsTexChannel, time, absolutePath);
+		NLMISC::CSmartPtr<ITexture> displaceMap  = buildATexture (*maxDisplaceMap, _3dsTexChannel, time, absolutePath);
+		if (bumpMap->supportSharing() && displaceMap->supportSharing())
+		{
+			if (bumpMap->getShareName() == displaceMap->getShareName())
+			{
+				nlinfo("Water shape : bump map and displacement map should not be the same");
+				return NULL;
+			}
+		}
+
+		NLMISC::CSmartPtr<ITexture> colorMap = NULL;
+		if (maxDiffuseMap)
+		{
+			colorMap = buildATexture (*maxDiffuseMap, _3dsTexChannel, time, absolutePath);
+		}
+		NLMISC::CSmartPtr<ITexture> envMap				= NULL;
+		NLMISC::CSmartPtr<ITexture> envMapUnderWater	= NULL;
 
 
-		float minV = 1.f - pMesh->getTVert(0).y;
-		float maxV = 1.f - pMesh->getTVert(0).y;
+
+
+		if (maxEnvMap)
+		{
+			if (!maxEnvMap2)
+			{
+				envMap = buildATexture (*maxEnvMap, _3dsTexChannel, time, absolutePath);
+			}
+			else
+			{
+				NLMISC::CSmartPtr<ITexture> tex0, tex1;
+				tex0	 = buildATexture (*maxEnvMap, _3dsTexChannel, time, absolutePath);
+				tex1	 = buildATexture (*maxEnvMap2, _3dsTexChannel, time, absolutePath);
+				envMap = new CTextureBlend;
+				(static_cast<CTextureBlend *>((ITexture *) envMap))->setBlendTexture(0, tex0);
+				(static_cast<CTextureBlend *>((ITexture *) envMap))->setBlendTexture(1, tex1);
+			}
+		}
+
+		if (maxEnvMapUnderWater)
+		{
+			if (!maxEnvMapUnderWater2)
+			{
+				envMapUnderWater = buildATexture (*maxEnvMapUnderWater, _3dsTexChannel, time, absolutePath);
+			}
+			else
+			{
+				NLMISC::CSmartPtr<ITexture> tex0, tex1;
+				tex0	 = buildATexture (*maxEnvMapUnderWater, _3dsTexChannel, time, absolutePath);
+				tex1	 = buildATexture (*maxEnvMapUnderWater2, _3dsTexChannel, time, absolutePath);
+				envMapUnderWater = new CTextureBlend;
+				(static_cast<CTextureBlend *>((ITexture *) envMapUnderWater))->setBlendTexture(0, tex0);
+				(static_cast<CTextureBlend *>((ITexture *) envMapUnderWater))->setBlendTexture(1, tex1);
+			}
+		}
+
+
+		nlinfo("buildWaterShape : Texture have been built");
+
+		ws->setEnvMap(0, (ITexture *) envMap);
+		ws->setEnvMap(1, (ITexture *) envMapUnderWater);
+
+		ws->setHeightMap(0, (ITexture *) displaceMap);
+		ws->setHeightMap(1, (ITexture *) bumpMap);
+
+		/// rertrieve bump maps scale and speed
+
+		NLMISC::CVector2f bumpMapScale;
+		NLMISC::CVector2f bumpMapSpeed;
+		NLMISC::CVector2f displaceMapScale;
+		NLMISC::CVector2f displaceMapSpeed;
+
+		CExportNel::getValueByNameUsingParamBlock2(node, "fBumpUScale", (ParamType2)TYPE_FLOAT, &bumpMapScale.x, 0) ;
+		CExportNel::getValueByNameUsingParamBlock2(node, "fBumpVScale", (ParamType2)TYPE_FLOAT, &bumpMapScale.y, 0) ;
+		CExportNel::getValueByNameUsingParamBlock2(node, "fBumpUSpeed", (ParamType2)TYPE_FLOAT, &bumpMapSpeed.x, 0) ;
+		CExportNel::getValueByNameUsingParamBlock2(node, "fBumpVSpeed", (ParamType2)TYPE_FLOAT, &bumpMapSpeed.y, 0) ;
+
+		CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapUScale", (ParamType2)TYPE_FLOAT, &displaceMapScale.x, 0) ;
+		CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapVScale", (ParamType2)TYPE_FLOAT, &displaceMapScale.y, 0) ;
+		CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapUSpeed", (ParamType2)TYPE_FLOAT, &displaceMapSpeed.x, 0) ;
+		CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapVSpeed", (ParamType2)TYPE_FLOAT, &displaceMapSpeed.y, 0) ;
+
+
+
+		ws->setHeightMapScale(0, displaceMapScale);
+		ws->setHeightMapScale(1, bumpMapScale);
+
+		ws->setHeightMapSpeed(0, displaceMapSpeed);
+		ws->setHeightMapSpeed(1, bumpMapSpeed);
+
+
+
+		if (colorMap != NULL)
+		{
+			if (pMesh->getNumTVerts() == 0) // no mapping
+			{
+				nlinfo("ERROR : BuildWaterShape : diffuse map found, but no mapping has been applied (when exporting water node : %s)", node.GetName());
+				return NULL;
+			}
+			ws->setColorMap((ITexture *) colorMap);
+			uint i0, i1, i2;
+			projDest.getBestTriplet(i0, i1, i2);
+			nlinfo("i0 = %d, i1 =  %d, i2 = %d", i0, i1, i2);
+			Matrix3  m = node.GetNodeTM(0);
+
+			NLMISC::CVector v0, v1, v2;
+			CExportNel::convertVector(v0, m * pMesh->getVert(i0));
+			CExportNel::convertVector(v1, m * pMesh->getVert(i1));
+			CExportNel::convertVector(v2, m * pMesh->getVert(i2));
+			
+			NLMISC::CMatrix A, B, C;
+			A.setRot(NLMISC::CVector(v0.x, v0.y, 1), NLMISC::CVector(v1.x, v1.y, 1), NLMISC::CVector(v2.x, v2.y, 1));
+			C.setRot(NLMISC::CVector(pMesh->getTVert(i0).x, 1.f - pMesh->getTVert(i0).y, 0),
+					 NLMISC::CVector(pMesh->getTVert(i1).x, 1.f - pMesh->getTVert(i1).y, 0),
+					 NLMISC::CVector(pMesh->getTVert(i2).x, 1.f - pMesh->getTVert(i2).y, 1)
+					);
+
+			B = C * A.inverted();		
+			ws->setColorMapMat(NLMISC::CVector2f(B.getI().x, B.getI().y),
+							   NLMISC::CVector2f(B.getJ().x, B.getJ().y),
+							   NLMISC::CVector2f(B.getK().x, B.getK().y));
+
+
+			/** compute the texture offset and scale
+			  * U must be mapped along the x coordinates
+			  * V must be mapped along the y coordinate
+			  */
+	/*
+			const std::vector<NLMISC::CVector2f> &v = projDest.Vertices;
+			float minX = v[0].x, maxX = v[0].x;
+			float minY = v[0].y, maxY = v[0].y;
+
+			uint k;
+			for (k = 0; k < CHNumVerts; ++k)
+			{
+				minX = std::min(v[k].x, minX);
+				maxX = std::max(v[k].x, maxX);
+				minY = std::min(v[k].y, minY);
+				maxY = std::max(v[k].y, maxY);
+			}
+
+			// gets the UVs from the mesh
+			float minU = pMesh->getTVert(0).x;
+			float maxU = pMesh->getTVert(0).x;
+
+
+			float minV = 1.f - pMesh->getTVert(0).y;
+			float maxV = 1.f - pMesh->getTVert(0).y;
+			
+			for (k = 0; k < (uint) numVerts; ++k)
+			{
+				minU = std::min(pMesh->getTVert(k).x, minU);
+				maxU = std::max(pMesh->getTVert(k).x, maxU);
+				minV = std::min(1.f - pMesh->getTVert(k).y, minV);
+				maxV = std::max(1.f - pMesh->getTVert(k).y, maxV);
+			}
+
+
+			NLMISC::CVector2f scale;
+			NLMISC::CVector2f offset;
+			if (minX != maxX && minY != maxY)
+			{
+				scale.set((maxU - minU) / (maxX - minX), (maxV - minV) / (minY - maxY));
+				offset.set((maxX * minU - minX * maxU) / (maxX - minX),
+						   (maxY * minV - minY * maxV)  / (maxY - minY));
+						   
+			}
+			else
+			{
+				scale.set(0, 0);
+				offset.set(0, 0);
+			}			
+			ws->setColorMapPos(scale, offset);
+			*/
+		}
+
 		
-		for (k = 0; k < (uint) numVerts; ++k)
-		{
-			minU = std::min(pMesh->getTVert(k).x, minU);
-			maxU = std::max(pMesh->getTVert(k).x, maxU);
-			minV = std::min(1.f - pMesh->getTVert(k).y, minV);
-			maxV = std::max(1.f - pMesh->getTVert(k).y, maxV);
-		}
+
+		ws->setWaterPoolID(0);
+		ws->setShape(convexPoly);
 
 
-		NLMISC::CVector2f scale;
-		NLMISC::CVector2f offset;
-		if (minX != maxX && minY != maxY)
-		{
-			scale.set((maxU - minU) / (maxX - minX), (maxV - minV) / (minY - maxY));
-			offset.set((maxX * minU - minX * maxU) / (maxX - minX),
-					   (maxY * minV - minY * maxV)  / (maxY - minY));
-					   
-		}
-		else
-		{
-			scale.set(0, 0);
-			offset.set(0, 0);
-		}			
-		ws->setColorMapPos(scale, offset);
-		*/
+		// Export default transformation
+
+		// Get the node matrix
+		Matrix3 localTM;
+		getLocalMatrix (localTM, node, time);
+
+		// Get the translation, rotation, scale of the node
+		CVector pos, scale;
+		CQuat rot;
+		decompMatrix (scale, rot, pos, localTM);
+
+		// Set the default values
+		ws->getDefaultPos()->setValue(pos);					
+		ws->getDefaultScale()->setValue(scale);
+		ws->getDefaultRotQuat()->setValue(rot);
+
+
+
+
+		// Delete the triObject if we should...
+		if (deleteIt)
+			delete tri;
+
+		return ws;
 	}
-
-	
-
-	ws->setWaterPoolID(0);
-	ws->setShape(convexPoly);
-
-
-	// Export default transformation
-
-	// Get the node matrix
-	Matrix3 localTM;
-	getLocalMatrix (localTM, node, time);
-
-	// Get the translation, rotation, scale of the node
-	CVector pos, scale;
-	CQuat rot;
-	decompMatrix (scale, rot, pos, localTM);
-
-	// Set the default values
-	ws->getDefaultPos()->setValue(pos);					
-	ws->getDefaultScale()->setValue(scale);
-	ws->getDefaultRotQuat()->setValue(rot);
-
-
-
-
-	// Delete the triObject if we should...
-	if (deleteIt)
-		delete tri;
-
-	return ws;
+	else
+	{
+		nlinfo("ERROR : BuildWaterShape : must have a NeL material : %s)", node.GetName());
+		return NULL;
+	}
 }
 

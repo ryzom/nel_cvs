@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.cpp,v 1.2 2002/08/27 10:02:27 lecroart Exp $
+ * $Id: report.cpp,v 1.3 2002/08/29 11:59:28 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -140,11 +140,11 @@ static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				if (res)
 				{
 					EnableWindow(sendReport, FALSE);
-					MessageBox (dialog, "The email was succefully sent", "email", MB_OK);
+					MessageBox (dialog, "The email was successfully sent", "email", MB_OK);
 				}
 				else
 				{
-					MessageBox (dialog, "Failed to sent the email", "email", MB_OK | MB_ICONERROR);
+					MessageBox (dialog, "Failed to send the email", "email", MB_OK | MB_ICONERROR);
 				}
 			}
 		}

@@ -53,7 +53,8 @@ void CTileUndo::getUndoList ()
 			_RedoSize++;
 
 		// Decal redo list
-		for (uint l=_RedoSize-1; l>0; l--)
+		uint l;
+		for (l=_RedoSize-1; l>0; l--)
 			// Copy array
 			_RedoList[l]=_RedoList[l-1];
 
@@ -89,7 +90,8 @@ void CTileUndo::getRedoList ()
 			_UndoSize++;
 
 		// Decal undo list
-		for (uint l=_UndoSize-1; l>0; l--)
+		uint l;
+		for (l=_UndoSize-1; l>0; l--)
 			// Copy array
 			_UndoList[l]=_UndoList[l-1];
 

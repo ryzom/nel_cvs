@@ -215,7 +215,8 @@ void PaintPatchData::RescaleWorldUnits(float f)
 void PaintPatchData::RecordTopologyTags(PatchMesh *patch) 
 {
 	// First, stuff all -1's into aux fields
-	for (int i = 0; i < patch->numVerts; ++i)
+	int i;
+	for (i = 0; i < patch->numVerts; ++i)
 		patch->verts[i].aux1 = 0xffffffff;
 	for (i = 0; i < patch->numVecs; ++i)
 		patch->vecs[i].aux1 = 0xffffffff;

@@ -1,7 +1,7 @@
 /** \file script.cpp
  * <File description>
  *
- * $Id: script.cpp,v 1.12 2002/09/13 08:22:01 corvazier Exp $
+ * $Id: script.cpp,v 1.13 2003/07/01 16:21:17 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1695,7 +1695,8 @@ void DoAttach(INode *node, PatchMesh *patch, RPatchMesh *rpatch, INode *attNode,
 				UI_PATCH rpatch=rattPatch->getUIPatch (i);
 				int ctU=rpatch.NbTilesU<<1;
 				int ctV=rpatch.NbTilesV<<1;
-				for (int nU=0; nU<ctU; nU++)
+				int nU;
+				for (nU=0; nU<ctU; nU++)
 				{
 					for (int nV=0; nV<ctV; nV++)
 					{
@@ -1783,7 +1784,8 @@ void DoAttach(INode *node, PatchMesh *patch, RPatchMesh *rpatch, INode *attNode,
 		}
 	}
 
-	for (int i = 0; i < attPatch->numVerts; ++i)
+	int i;
+	for (i = 0; i < attPatch->numVerts; ++i)
 		attPatch->verts[i].p = attPatch->verts[i].p * attMat;
 	for (i = 0; i < attPatch->numVecs; ++i)
 		attPatch->vecs[i].p = attPatch->vecs[i].p * attMat;

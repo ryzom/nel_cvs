@@ -1638,7 +1638,8 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 		0
 	};
 	tileSetIndex nCorner[4];
-	for (int i=0; i<4; i++)
+	int i;
+	for (i=0; i<4; i++)
 		nCorner[i].TileSet=-1;
 	CTileSet::TFlagBorder nBorder[4][3];
 	tileDesc pIndex;
@@ -1652,7 +1653,8 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 	bool bDiff=false;
 
 	// For each voisin
-	for (int v=0; v<4; v++)
+	int v;
+	for (v=0; v<4; v++)
 	{
 		// Voisin already visited ?
 		if (tile->voisins[v])
@@ -1954,7 +1956,8 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 			CTileSet::TFlagBorder border[4];
 
 			bool bFilled[4];
-			for (int c=0; c<4; c++)
+			int c;
+			for (c=0; c<4; c++)
 				bFilled[c]=!(nCorner[c]<*ite);
 
 			for (c=0; c<4; c++)
@@ -2485,7 +2488,8 @@ BOOL EPM_PaintMouseProc::PutTile (int tile, int mesh, bool first, const CTileBan
 			EPM_PaintMouseProc::Rotation=0;
 		else
 		{
-			for (int i=0; i<desc.getNumLayer(); i++)
+			int i;
+			for (i=0; i<desc.getNumLayer(); i++)
 			{
 				if ((sint)desc.getLayer (i).Tile==tile)
 				{
@@ -3521,7 +3525,8 @@ void EPM_PaintCMode::DoPaint ()
 		float fMaxX=-FLT_MAX;
 		float fMaxY=-FLT_MAX;
 		float fMaxZ=-FLT_MAX;
-		for (int i = 0; i < (int)vectMesh.size(); i++)
+		int i;
+		for (i = 0; i < (int)vectMesh.size(); i++)
 		{
 			// Get pointers
 			PaintPatchData *patchData = vectMesh[i].PatchData;

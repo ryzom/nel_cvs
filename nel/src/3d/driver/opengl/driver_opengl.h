@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.100 2001/11/14 15:48:33 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.101 2001/11/21 16:08:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -678,6 +678,8 @@ private:
 	CTexEnvSpecial			_CurrentTexEnvSpecial[IDRV_MAT_MAXTEXTURES];
 	// Texture addressing mode
 	GLenum					_CurrentTexAddrMode[IDRV_MAT_MAXTEXTURES];
+	// Reset texture shaders to their initial state if they are used
+	void					resetTextureShaders();
 	// activation of texture shaders
 	bool					_NVTextureShaderEnabled;
 
@@ -690,7 +692,8 @@ private:
 
 	bool					_CurrentGlNormalize;
 
-private:
+private:	
+
 	bool					setupVertexBuffer(CVertexBuffer& VB);
 	// Activate Texture Environnement. Do it with caching.
 	bool					activateTexture(uint stage, ITexture *tex);

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.128 2001/11/21 13:53:10 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.129 2001/11/21 16:07:51 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -149,8 +149,7 @@ static Bool WndProc(Display *d, XEvent *e, char *arg)
 #endif // NL_OS_UNIX
 
 CDriverGL::CDriverGL()
-{
-
+{	
 	_AGPVertexArrayRange.init(this);
 	_VRAMVertexArrayRange.init(this);
 
@@ -205,7 +204,7 @@ CDriverGL::CDriverGL()
 	// Compute the Flag which say if one texture has been changed in CMaterial.
 	uint	i;
 	_MaterialAllTextureTouchedFlag= 0;
-	for(i=0; i<IDRV_MAT_MAXTEXTURES; i++)
+	for(i=0; i < IDRV_MAT_MAXTEXTURES; i++)
 	{
 		_MaterialAllTextureTouchedFlag|= IDRV_TOUCHED_TEX[i];
 		_CurrentTexAddrMode[i] = GL_NONE;
@@ -628,8 +627,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	if (_NVTextureShaderEnabled)
 	{
-		glDisable(GL_TEXTURE_SHADER_NV);
-		_NVTextureShaderEnabled = false;
+		enableNVTextureShader(false);		
 	}
 
 	// Be always in EXTSeparateSpecularColor.
@@ -667,12 +665,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		// Not special TexEnv.
 		_CurrentTexEnvSpecial[stage]= TexEnvSpecialDisabled;
 
-		// texture addressing mode use previous texture
-		if (stage !=0 && _Extensions.NVTextureShader)
-		{
-			glTexEnvi(GL_TEXTURE_SHADER_NV, GL_PREVIOUS_TEXTURE_INPUT_NV, GL_TEXTURE0_ARB + stage - 1);	
-			glTexEnvi(GL_TEXTURE_SHADER_NV, GL_SHADER_OPERATION_NV, GL_NONE);	
-		}
+		resetTextureShaders();		
 	}
 
 	// Get num of light for this driver
@@ -704,6 +697,27 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	_NbSetupModelMatrixCall= 0;
 
 	return true;
+}
+
+
+void CDriverGL::resetTextureShaders()
+{	
+	if (_Extensions.NVTextureShader)
+	{
+		glEnable(GL_TEXTURE_SHADER_NV);
+		for (uint stage = 0; stage < (uint) getNbTextureStages(); ++stage)
+		{		
+			_DriverGLStates.activeTextureARB(stage);
+			if (stage != 0)
+			{
+				glTexEnvi(GL_TEXTURE_SHADER_NV, GL_PREVIOUS_TEXTURE_INPUT_NV, GL_TEXTURE0_ARB + stage - 1);	
+			}
+			glTexEnvi(GL_TEXTURE_SHADER_NV, GL_SHADER_OPERATION_NV, GL_NONE);	
+			_CurrentTexAddrMode[stage] = GL_NONE;			
+		}
+		glDisable(GL_TEXTURE_SHADER_NV);
+		_NVTextureShaderEnabled = false;
+	}
 }
 
 // --------------------------------------------------
@@ -785,7 +799,9 @@ bool CDriverGL::clearZBuffer(float zval)
 // --------------------------------------------------
 
 bool CDriverGL::swapBuffers()
-{
+{	
+	// Reset texture shaders
+	//resetTextureShaders();
 	// Reset VertexArrayRange.
 	if(_CurrentVertexBufferHard)
 	{
@@ -830,7 +846,7 @@ bool CDriverGL::swapBuffers()
 		forceActivateTexEnvMode(stage, env);
 		forceActivateTexEnvColor(stage, env);
 	}
-
+	
 
 	// Activate the default material.
 	//===========================================================
@@ -1528,7 +1544,7 @@ bool CDriverGL::isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) c
 {
 	if (_Extensions.NVTextureShader)
 	{
-		// all the gicen addessing mode are supported with this extension
+		// all the given addessing mode are supported with this extension
 		return true;
 	}
 	else
@@ -1552,30 +1568,39 @@ void CDriverGL::setMatrix2DForTextureOffsetAddrMode(const uint stage, const floa
 void      CDriverGL::enableNVTextureShader(bool enabled)
 {		
 	if (enabled != _NVTextureShaderEnabled)
-	{		
+	{
 
 		if (enabled)
-		{			
+		{							
 			glEnable(GL_TEXTURE_SHADER_NV);			
 		}
 		else
-		{			
-			glDisable(GL_TEXTURE_SHADER_NV);			
+		{						
+			glDisable(GL_TEXTURE_SHADER_NV);		
 		}
-		_NVTextureShaderEnabled = enabled;						
-	}
+		_NVTextureShaderEnabled = enabled;
+	}	
 }
 
 
 // ****************************************************************************
 void CDriverGL::verifyNVTextureShaderConfig()
 {
-	int consistent;
-	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+	if (_NVTextureShaderEnabled)
 	{
-		_DriverGLStates.activeTextureARB(k);
-		glGetTexEnviv(GL_TEXTURE_SHADER_NV, GL_SHADER_CONSISTENT_NV, & consistent);
-		if(consistent == GL_FALSE) nlassert(0);
+		int consistent;
+		for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+		{
+			_DriverGLStates.activeTextureARB(k);
+			glGetTexEnviv(GL_TEXTURE_SHADER_NV, GL_SHADER_CONSISTENT_NV, & consistent);
+			if(consistent == GL_FALSE)
+			{
+				int texAddrMode;
+				glGetTexEnviv(GL_TEXTURE_SHADER_NV, GL_SHADER_OPERATION_NV, &texAddrMode);
+				nlinfo("inconsistent shader, stage = %d, shader = %d", k, texAddrMode);
+				nlassert(0);
+			}
+		}
 	}
 }
 

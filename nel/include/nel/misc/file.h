@@ -1,7 +1,7 @@
 /** \file file.h
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.15 2002/02/20 18:05:44 lecroart Exp $
+ * $Id: file.h,v 1.16 2002/04/24 08:13:02 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,9 +79,11 @@ public:		// Basic Usage.
 	~CIFile();
 
 	/// Open a file for reading. false if failed. close() if a file was opened.
-	bool	open(const std::string &path, bool text=false);
+	bool	open (const std::string &path, bool text=false);
 
-	
+	/// Set the cache file on open option (default behaviour is false (file is not cached at opening)
+	void	setCacheFileOnOpen (bool newState);
+
 public:		// Advanced Usage.
 	/// Explicit close.
 	void	close();
@@ -100,8 +102,19 @@ protected:
 	virtual void		serialBit(bool &bit) throw(EReadError);
 
 private:
-	FILE	*_F;
+	FILE		*_F;
 	std::string _FileName;
+
+	// Cache 
+	bool	_CacheFileOnOpen;
+	uint8	*_Cache;
+	sint32	_ReadPos;
+	uint32	_FileSize;
+
+	// Big file
+	bool	_AlwaysOpened;
+	bool	_IsInBigFile;
+	uint32	_BigFileOffset;
 };
 
 

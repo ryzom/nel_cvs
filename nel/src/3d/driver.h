@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.16 2001/09/14 09:39:36 berenguier Exp $
+ * $Id: driver.h,v 1.17 2001/09/18 14:39:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -453,6 +453,9 @@ public:
 
 	/// Return true if driver is still active. Return false else. If he user close the window, must return false.
 	virtual bool			isActive()=0;
+
+	/// Return the depth of the driver after init().
+	virtual uint8			getBitPerPixel ()=0;
 
 	/** Output a system message box and print a message with an icon. This method can be call even if the driver is not initialized.
 	  * This method is used to return internal driver problem when string can't be displayed in the driver window.

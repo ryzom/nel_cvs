@@ -108,7 +108,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="freetype219MT_D.lib libxml2d_a.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="freetype219MT_D.lib libxml2_a.lib odbc32.lib odbccp32.lib"
 				OutputFile="Debug/snowballs.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"

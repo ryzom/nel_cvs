@@ -1,7 +1,7 @@
 /** \file vegetable_edit_tools.h
  * Some tools and define for vegetable edition.
  *
- * $Id: vegetable_edit_tools.h,v 1.1 2001/11/22 17:16:36 berenguier Exp $
+ * $Id: vegetable_edit_tools.h,v 1.2 2001/12/12 13:29:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,9 @@
 #define	NL_VEGETABLE_ROTATEZ_ABS_DEFAULT	0.f
 #define	NL_VEGETABLE_ROTATEZ_RAND_DEFAULT	3000.f
 #define	NL_VEGETABLE_ROTATEZ_FREQ_DEFAULT	10.f
+// BendFreq									
+#define	NL_VEGETABLE_BENDFREQ_RANGE_MIN		0.f
+#define	NL_VEGETABLE_BENDFREQ_RANGE_MAX		4.f
 
 
 

@@ -14,6 +14,7 @@ namespace	NL3D
 
 
 class	CVegetableNoiseValueDlg;
+class	CDirectEditableRangeFloat;
 class	CVegetableDlg;
 
 
@@ -68,6 +69,9 @@ protected:
 	// The NoiseValue edition.
 	CVegetableNoiseValueDlg			*_SxyDlg;
 	CVegetableNoiseValueDlg			*_SzDlg;
+
+	// BendFreqFactor
+	CDirectEditableRangeFloat		*_BendFreqFactorDlg;
 
 
 	// The vegetable to edit.

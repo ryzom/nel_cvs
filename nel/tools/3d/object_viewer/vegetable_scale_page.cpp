@@ -23,7 +23,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNCREATE(CVegetableScalePage, CPropertyPage)
 
 CVegetableScalePage::CVegetableScalePage() : CPropertyPage(CVegetableScalePage::IDD),
-	_SxyDlg(NULL), _SzDlg(NULL)
+	_SxyDlg(NULL), _SzDlg(NULL), _BendFreqFactorDlg(NULL)
 {
 	//{{AFX_DATA_INIT(CVegetableScalePage)
 		// NOTE: the ClassWizard will add member initialization here
@@ -35,6 +35,7 @@ CVegetableScalePage::~CVegetableScalePage()
 	#define  REMOVE_WND(wnd) if (wnd) { wnd->DestroyWindow(); delete wnd; }
 	REMOVE_WND(_SxyDlg);
 	REMOVE_WND(_SzDlg);
+	REMOVE_WND(_BendFreqFactorDlg);	
 }
 
 void CVegetableScalePage::DoDataExchange(CDataExchange* pDX)
@@ -71,6 +72,11 @@ void CVegetableScalePage::setVegetableToEdit(NL3D::CVegetable *vegetable)
 		// ----------
 		_SxyDlg->setNoiseValue(&_Vegetable->Sxy, _VegetableDlg);
 		_SzDlg->setNoiseValue(&_Vegetable->Sz, _VegetableDlg);
+
+		// init _BendFreqFactorDlg
+		// ----------
+		// Enable the checkBox and the slider
+		_BendFreqFactorDlg->setFloat(&_Vegetable->BendFrequencyFactor, _VegetableDlg);
 	}
 
 }
@@ -108,6 +114,15 @@ BOOL CVegetableScalePage::OnInitDialog()
 	_SzDlg->setDefaultRangeFreq(NL_VEGETABLE_FREQ_RANGE_MIN, NL_VEGETABLE_FREQ_RANGE_MAX);
 	_SzDlg->init(x, y, this);
 	y+= CVegetableNoiseValueDlg::ControlHeight + spaceDy;
+
+
+	// Init BendFreqFactorDlg Dialog.
+	_BendFreqFactorDlg = new CDirectEditableRangeFloat (std::string("VEGET_BEND_FREQ_FACTOR"), 
+		NL_VEGETABLE_BENDFREQ_RANGE_MIN, NL_VEGETABLE_BENDFREQ_RANGE_MAX, "FreqFactor");
+	_BendFreqFactorDlg->enableLowerBound(0, false);
+	y+= 25;
+	_BendFreqFactorDlg->init(x+10, y, this);
+	y+= CDirectEditableRangeFloat::ControlHeight + spaceDy;
 
 		
 	return TRUE;  // return TRUE unless you set the focus to a control

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * <File description>
  *
- * $Id: ps_mesh.cpp,v 1.6 2001/12/19 15:45:05 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.7 2002/01/03 15:34:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -469,11 +469,13 @@ static void CheckForOpaqueAndTransparentFacesInMesh(const CMesh &m, bool &hasTra
 
 CPSConstraintMesh::CPSConstraintMesh() : _ModelBank(NULL),
 										 _Touched(1),
-										 _ReinitGlobalAnimTimeOnNewElement(0),						  
+										 _ReinitGlobalAnimTimeOnNewElement(0),
+										 _GlobalAnimationEnabled(0),
 										 _ModulatedStages(0),
 										 _VertexColorLightingForced(false),
 										 _MorphScheme(NULL),
-										 _MorphValue(0)
+										 _MorphValue(0),
+
 {		
 	_Name = std::string("ConstraintMesh");
 }

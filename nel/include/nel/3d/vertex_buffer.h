@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.7 2001/04/13 09:49:20 berenguier Exp $
+ * $Id: vertex_buffer.h,v 1.8 2001/05/02 11:42:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,12 +29,13 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
+#include "nel/misc/vector.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/uv.h"
 #include <vector>
 
 namespace NLMISC 
 {
-	class CVector;
 	class CUV;
 }
 
@@ -45,7 +46,7 @@ namespace NL3D
 using NLMISC::CRefCount;
 using NLMISC::CRefPtr;
 using NLMISC::CRGBA;
-using NLMISC::CVector;
+using NLMISC::CVector ;
 using NLMISC::CUV;
 
 
@@ -152,15 +153,15 @@ public:
 
 
 	// It is an error (assert) to set a vertex component if not setuped in setVertexFormat().
-	void					setVertexCoord(uint idx, float x, float y, float z);
-	void					setVertexCoord(uint idx, const CVector &v);
-	void					setNormalCoord(uint idx, const CVector &v);
-	void					setTexCoord(uint idx, uint8 stage, float u, float v);
-	void					setTexCoord(uint idx, uint8 stage, const CUV &uv);
-	void					setColor(uint idx, CRGBA rgba);
-	void					setSpecular(uint idx, CRGBA rgba);
-	void					setWeight(uint idx, uint8 wgt, float w);
-	void					setPaletteSkin(uint idx, CPaletteSkin ps);
+	inline void					setVertexCoord(uint idx, float x, float y, float z);
+	inline void					setVertexCoord(uint idx, const CVector &v);
+	inline void					setNormalCoord(uint idx, const CVector &v);
+	inline void					setTexCoord(uint idx, uint8 stage, float u, float v);
+	inline void					setTexCoord(uint idx, uint8 stage, const CUV &uv);
+	inline void					setColor(uint idx, CRGBA rgba);
+	inline void					setSpecular(uint idx, CRGBA rgba);
+	inline void					setWeight(uint idx, uint8 wgt, float w);
+	inline void					setPaletteSkin(uint idx, CPaletteSkin ps);
 
 
 	// It is an error (assert) to query a vertex offset of a vertex component not setuped in setVertexFormat().
@@ -185,6 +186,147 @@ public:
 
 	void		serial(NLMISC::IStream &f);
 };
+
+
+//////////////////////////////////////
+// implementation of inline methods //
+//////////////////////////////////////
+// --------------------------------------------------
+
+inline void CVertexBuffer::setVertexCoord(uint idx, float x, float y, float z)
+{
+	float*	ptr;
+
+	nlassert(_Flags & IDRV_VF_XYZ);
+
+	ptr=(float*)(&_Verts[idx*_VertexSize]);
+	*ptr=x;
+	ptr++;
+	*ptr=y;
+	ptr++;
+	*ptr=z;
+}
+
+// --------------------------------------------------
+
+inline void CVertexBuffer::setVertexCoord(uint idx, const CVector &v)
+{
+	uint8*	ptr;
+
+	nlassert(_Flags & IDRV_VF_XYZ);
+	ptr=&_Verts[idx*_VertexSize];
+	memcpy(ptr, &(v.x), 3*sizeof(float));
+}
+
+// --------------------------------------------------
+
+inline void CVertexBuffer::setNormalCoord(uint idx, const CVector &v)
+{
+	uint8*	ptr;
+
+	nlassert(_Flags & IDRV_VF_NORMAL);
+
+	ptr=&_Verts[idx*_VertexSize];
+	ptr+=_NormalOff;
+	memcpy(ptr, &(v.x), 3*sizeof(float));
+}
+
+// --------------------------------------------------
+
+inline void CVertexBuffer::setColor(uint idx, CRGBA rgba)
+{
+	uint8*	ptr;
+	CRGBA	*pCol;
+
+	nlassert(_Flags & IDRV_VF_COLOR);
+
+	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
+	ptr+=_RGBAOff;
+	pCol= (CRGBA*)ptr;
+	*pCol= rgba;
+}
+
+// --------------------------------------------------
+
+inline void CVertexBuffer::setSpecular(uint idx, CRGBA rgba)
+{
+	uint8*	ptr;
+	CRGBA	*pCol;
+
+	nlassert(_Flags & IDRV_VF_SPECULAR);
+
+	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
+	ptr+=_SpecularOff;
+	pCol= (CRGBA*)ptr;
+	*pCol= rgba;
+}
+
+// --------------------------------------------------
+
+inline void CVertexBuffer::setTexCoord(uint idx, uint8 stage, float u, float v)
+{
+	uint8*	ptr;
+	float*	ptrf;
+
+	nlassert(stage<IDRV_VF_MAXSTAGES);
+	nlassert(_Flags & IDRV_VF_UV[stage]);
+
+	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
+	ptr+=_UVOff[stage];
+	ptrf=(float*)ptr;
+	*ptrf=u;
+	ptrf++;
+	*ptrf=v;
+}
+
+// --------------------------------------------------
+
+inline void	CVertexBuffer::setTexCoord(uint idx, uint8 stage, const CUV &uv)
+{
+	uint8*	ptr;
+	CUV*	ptruv;
+
+	nlassert(stage<IDRV_VF_MAXSTAGES);
+	nlassert(_Flags & IDRV_VF_UV[stage]);
+
+	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
+	ptr+=_UVOff[stage];
+	ptruv=(CUV*)ptr;
+	*ptruv=uv;
+}
+
+
+// --------------------------------------------------
+
+inline void CVertexBuffer::setWeight(uint idx, uint8 wgt, float w)
+{
+	uint8*	ptr;
+	float*	ptrf;
+
+	nlassert(wgt<IDRV_VF_MAXW);
+	nlassert(_Flags & IDRV_VF_W[wgt]);
+
+	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
+	ptr+=_WOff[wgt];
+	ptrf=(float*)ptr;
+	*ptrf=w;
+}
+
+// --------------------------------------------------
+
+inline void	CVertexBuffer::setPaletteSkin(uint idx, CPaletteSkin ps)
+{
+	uint8*	ptr;
+	CPaletteSkin	*pPalSkin;
+
+	nlassert((_Flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN);
+
+	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
+	ptr+=_PaletteSkinOff;
+	pPalSkin= (CPaletteSkin*)ptr;
+	*pPalSkin= ps;
+}
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.15 2001/04/13 09:49:20 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.16 2001/05/02 11:42:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,6 @@
  */
 
 #include "nel/3d/vertex_buffer.h"
-#include "nel/misc/uv.h"
 #include "nel/misc/vector.h"
 using namespace NLMISC;
 
@@ -267,141 +266,6 @@ void* CVertexBuffer::getPaletteSkinPointer(uint idx)
 }
 
 
-// --------------------------------------------------
-
-void CVertexBuffer::setVertexCoord(uint idx, float x, float y, float z)
-{
-	float*	ptr;
-
-	nlassert(_Flags & IDRV_VF_XYZ);
-
-	ptr=(float*)(&_Verts[idx*_VertexSize]);
-	*ptr=x;
-	ptr++;
-	*ptr=y;
-	ptr++;
-	*ptr=z;
-}
-
-// --------------------------------------------------
-
-void CVertexBuffer::setVertexCoord(uint idx, const CVector &v)
-{
-	uint8*	ptr;
-
-	nlassert(_Flags & IDRV_VF_XYZ);
-	ptr=&_Verts[idx*_VertexSize];
-	memcpy(ptr, &(v.x), 3*sizeof(float));
-}
-
-// --------------------------------------------------
-
-void CVertexBuffer::setNormalCoord(uint idx, const CVector &v)
-{
-	uint8*	ptr;
-
-	nlassert(_Flags & IDRV_VF_NORMAL);
-
-	ptr=&_Verts[idx*_VertexSize];
-	ptr+=_NormalOff;
-	memcpy(ptr, &(v.x), 3*sizeof(float));
-}
-
-// --------------------------------------------------
-
-void CVertexBuffer::setColor(uint idx, CRGBA rgba)
-{
-	uint8*	ptr;
-	CRGBA	*pCol;
-
-	nlassert(_Flags & IDRV_VF_COLOR);
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_RGBAOff;
-	pCol= (CRGBA*)ptr;
-	*pCol= rgba;
-}
-
-// --------------------------------------------------
-
-void CVertexBuffer::setSpecular(uint idx, CRGBA rgba)
-{
-	uint8*	ptr;
-	CRGBA	*pCol;
-
-	nlassert(_Flags & IDRV_VF_SPECULAR);
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_SpecularOff;
-	pCol= (CRGBA*)ptr;
-	*pCol= rgba;
-}
-
-// --------------------------------------------------
-
-void CVertexBuffer::setTexCoord(uint idx, uint8 stage, float u, float v)
-{
-	uint8*	ptr;
-	float*	ptrf;
-
-	nlassert(stage<IDRV_VF_MAXSTAGES);
-	nlassert(_Flags & IDRV_VF_UV[stage]);
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_UVOff[stage];
-	ptrf=(float*)ptr;
-	*ptrf=u;
-	ptrf++;
-	*ptrf=v;
-}
-
-// --------------------------------------------------
-
-void	CVertexBuffer::setTexCoord(uint idx, uint8 stage, const CUV &uv)
-{
-	uint8*	ptr;
-	CUV*	ptruv;
-
-	nlassert(stage<IDRV_VF_MAXSTAGES);
-	nlassert(_Flags & IDRV_VF_UV[stage]);
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_UVOff[stage];
-	ptruv=(CUV*)ptr;
-	*ptruv=uv;
-}
-
-
-// --------------------------------------------------
-
-void CVertexBuffer::setWeight(uint idx, uint8 wgt, float w)
-{
-	uint8*	ptr;
-	float*	ptrf;
-
-	nlassert(wgt<IDRV_VF_MAXW);
-	nlassert(_Flags & IDRV_VF_W[wgt]);
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_WOff[wgt];
-	ptrf=(float*)ptr;
-	*ptrf=w;
-}
-
-// --------------------------------------------------
-
-void	CVertexBuffer::setPaletteSkin(uint idx, CPaletteSkin ps)
-{
-	uint8*	ptr;
-	CPaletteSkin	*pPalSkin;
-
-	nlassert((_Flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN);
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_PaletteSkinOff;
-	pPalSkin= (CPaletteSkin*)ptr;
-	*pPalSkin= ps;
-}
 
 
 //****************************************************************************

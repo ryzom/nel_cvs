@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.49 2003/11/07 14:27:14 besson Exp $
+ * $Id: scene.h,v 1.50 2004/02/19 09:48:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -582,6 +582,9 @@ public:
 	uint			getShadowMapMaxCasterAround() const {return _ShadowMapMaxCasterAround;}
 	// @}
 
+	void			setWaterCallback(IWaterSurfaceAddedCallback *wcb) { _WaterCallback = wcb; }
+	IWaterSurfaceAddedCallback *getWaterCallback() const { return _WaterCallback; }
+
 private:
 
 	/// The camera / Viewport.
@@ -702,6 +705,8 @@ private:
 
 	// profile
 	bool						_NextRenderProfile;
+
+	IWaterSurfaceAddedCallback	*_WaterCallback;
 
 
 // ******************

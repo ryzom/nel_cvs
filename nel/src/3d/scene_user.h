@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.49 2003/11/07 14:27:14 besson Exp $
+ * $Id: scene_user.h,v 1.50 2004/02/19 09:48:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -316,6 +316,9 @@ public:
 	virtual	void			setShadowMapMaxCasterAround(uint num);
 	virtual	uint			getShadowMapMaxCasterAround() const;
 	// @}
+
+	void						setWaterCallback(IWaterSurfaceAddedCallback *wcb);
+	IWaterSurfaceAddedCallback *getWaterCallback() const;
 
 public:
 	/// \name Accessor for CSceneUser.

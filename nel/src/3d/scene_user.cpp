@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.54 2003/11/07 14:27:14 besson Exp $
+ * $Id: scene_user.cpp,v 1.55 2004/02/19 09:48:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1111,6 +1111,17 @@ uint			CSceneUser::getShadowMapMaxCasterAround() const
 {
 	return _Scene.getShadowMapMaxCasterAround();
 }
+// ***************************************************************************
+void CSceneUser::setWaterCallback(IWaterSurfaceAddedCallback *wcb)
+{
+	_Scene.setWaterCallback(wcb);
+}
+// ***************************************************************************
+IWaterSurfaceAddedCallback *CSceneUser::getWaterCallback() const
+{
+	return _Scene.getWaterCallback();
+}
+
 
 
 } // NL3D

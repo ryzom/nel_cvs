@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.115 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: scene.cpp,v 1.116 2004/02/19 09:48:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -185,6 +185,8 @@ CScene::CScene(bool bSmallScene) : LightTrav(bSmallScene)
 	_ShadowMapDistFadeEnd= NL3D_SCENE_DEFAULT_SHADOW_MAP_DIST_FADE_END;
 	_ShadowMapMaxCasterInScreen= NL3D_SCENE_DEFAULT_SHADOW_MAP_MAX_CASTER_IN_SCREEN;
 	_ShadowMapMaxCasterAround= NL3D_SCENE_DEFAULT_SHADOW_MAP_MAX_CASTER_AROUND;
+
+	_WaterCallback = NULL;
 }
 // ***************************************************************************
 void	CScene::release()

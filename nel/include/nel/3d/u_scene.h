@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.45 2003/11/17 10:25:59 lecroart Exp $
+ * $Id: u_scene.h,v 1.46 2004/02/19 09:45:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@ namespace NLMISC
 {
 class CRGBA;
 class CVector;
+class CPolygon2D;
 };
 
 namespace NL3D
@@ -63,6 +64,15 @@ public:
 	/// Because the async loader set the pointer of the user after the whole loading (ig+shapes)
 	/// what is passed through this method is the value that will be affected
 	virtual void InstanceGroupCreated(UInstanceGroup *newVal) = 0;
+};
+
+// callback to know when a water surface is added
+class IWaterSurfaceAddedCallback
+{
+public:
+	// A water surface with the given height has been added. 	 
+	virtual void waterSurfaceAdded(float height, const NLMISC::CPolygon2D &shape, const NLMISC::CMatrix &worldMatrix) = 0;
+	
 };
 
 //****************************************************************************
@@ -557,6 +567,10 @@ public:
 	virtual	uint			getShadowMapMaxCasterAround() const =0;
 
 	// @}
+
+	// set a callback to know when a water surface is instanciated
+	virtual void			setWaterCallback(IWaterSurfaceAddedCallback *wcb) = 0;
+	virtual IWaterSurfaceAddedCallback *getWaterCallback() const = 0;
 
 };
 

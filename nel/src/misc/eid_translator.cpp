@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.5 2003/04/16 18:51:23 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.6 2003/04/17 08:42:11 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -124,8 +124,17 @@ bool CEntityIdTranslator::entityNameExists (const ucstring &entityName)
 
 void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const string &userName)
 {
-	nlassert(RegisteredEntities.find (eid) == RegisteredEntities.end ());
-	nlassert(!entityNameExists(entityName));
+	if (RegisteredEntities.find (eid) != RegisteredEntities.end ())
+	{
+		nlwarning ("Can't register EId %s EntityName %s UId %d UserName %s because EId is already in the map", eid.toString().c_str(), entityName.c_str(), uid, userName.c_str());
+		return;
+	}
+
+	if (entityNameExists(entityName))
+	{
+		nlwarning ("Can't register EId %s EntityName %s UId %d UserName %s because EntityName is already in the map", eid.toString().c_str(), entityName.c_str(), uid, userName.c_str());
+		return;
+	}
 	
 	RegisteredEntities.insert (make_pair(eid, CEntityIdTranslator::CEntity(entityName, uid, userName)));
 	nlinfo ("Registered %s with %s %d %s", eid.toString().c_str(), entityName.c_str(), uid, userName.c_str());
@@ -137,7 +146,11 @@ void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 {
 	reit it = RegisteredEntities.find (eid);
 	
-	nlassert(it != RegisteredEntities.end ());
+	if (it == RegisteredEntities.end ())
+	{
+		nlwarning ("Can't unregister EId %s because EId is not in the map", eid.toString().c_str());
+		return;
+	}
 	
 	nlinfo ("Unregister %s with %s %d %s", eid.toString().c_str(), (*it).second.EntityName.c_str(), (*it).second.UId, (*it).second.UserName.c_str());
 	RegisteredEntities.erase (eid);
@@ -147,9 +160,18 @@ void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 
 void CEntityIdTranslator::load (const string &fileName)
 {
-	nlassert (!fileName.empty());
-	nlassert (FileName.empty());
+	if (fileName.empty())
+	{
+		nlwarning ("Can't load empty filename for EntityIdTranslator");
+		return;
+	}
 
+	if (!FileName.empty())
+	{
+		nlwarning ("Can't load file '%s' for EntityIdTranslator because we already load the file '%s'", fileName.c_str(), FileName.c_str());
+		return;
+	}
+	
 	FileName = fileName;
 
 	CIFile ifile;
@@ -159,13 +181,17 @@ void CEntityIdTranslator::load (const string &fileName)
 
 		ifile.close ();
 	}
+	else
+	{
+		nlwarning ("Can't load filename '%s' for EntityIdTranslator", FileName.c_str());
+	}
 }
 
 void CEntityIdTranslator::save ()
 {
 	if (FileName.empty())
 	{
-		nlwarning ("Can't save the eid translator file");
+		nlwarning ("Can't save empty filename for EntityIdTranslator (you forget the load() it before?)");
 		return;
 	}
 
@@ -175,6 +201,10 @@ void CEntityIdTranslator::save ()
 		ofile.serialCont (RegisteredEntities);
 
 		ofile.close ();
+	}
+	else
+	{
+		nlwarning ("Can't save filename '%s' for EntityIdTranslator", FileName.c_str());
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.18 2002/06/06 17:35:29 vizerie Exp $
+ * $Id: export_scene.cpp,v 1.19 2002/06/07 08:56:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,7 +153,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 
 		if ((nAccelType&3) == 0) // If not an accelerator
 		if (!RPO::isZone (*pNode, tvTime))
-		if (CExportNel::isMesh (*pNode, tvTime))
+		if (CExportNel::isMesh (*pNode, tvTime) || CExportNel::isDummy(*pNode, tvTime))
 		{
 			CVector vScaleTemp;
 			CQuat qRotTemp;
@@ -361,7 +361,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 
 		if ((nAccelType&3) == 0) // If not an accelerator
 		if (!RPO::isZone (*pNode, tvTime))
-		if (CExportNel::isMesh (*pNode, tvTime))
+		if (CExportNel::isMesh (*pNode, tvTime) || CExportNel::isDummy(*pNode, tvTime))
 		{
 			if (nAccelType&32) // Is the flag clusterize set ?
 			{

@@ -1178,6 +1178,10 @@ SOURCE=.\processes\clodbank\sh\install.sh
 
 SOURCE=.\processes\clodbank\cfg\local_path.cfg
 # End Source File
+# Begin Source File
+
+SOURCE=.\processes\clodbank\process_doc.txt
+# End Source File
 # End Group
 # End Target
 # End Project

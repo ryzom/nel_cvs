@@ -1,7 +1,7 @@
 /** \file init.h
  * Library class exemple for the script.
  *
- * $Id: init.h,v 1.1 2001/04/13 14:51:43 chafik Exp $
+ * $Id: init.h,v 1.2 2002/10/08 10:14:50 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,3 +31,4 @@ namespace NLAISCRIPT
 }
 
 #endif
+

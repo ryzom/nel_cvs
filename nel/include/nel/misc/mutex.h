@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.11 2001/09/13 10:25:41 lecroart Exp $
+ * $Id: mutex.h,v 1.12 2001/09/14 09:32:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@
 #include <semaphore.h>
 #endif
 
-#define MUTEX_DEBUG
+#undef MUTEX_DEBUG
 
 
 namespace NLMISC {

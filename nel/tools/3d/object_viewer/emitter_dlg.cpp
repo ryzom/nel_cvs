@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.12 2002/11/18 17:56:55 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.13 2003/04/07 12:43:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,7 @@ CEmitterDlg::CEmitterDlg(NL3D::CPSEmitter *emitter)
 	m_UseSpeedBasis = FALSE;
 	m_ConvertSpeedVectorFromEmitterBasis = FALSE;
 	m_ConsistentEmission = _Emitter->isConsistentEmissionEnabled();
+	m_BypassAutoLOD = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -110,6 +111,7 @@ void CEmitterDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_USE_SPEED_BASIS, m_UseSpeedBasis);
 	DDX_Check(pDX, IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS, m_ConvertSpeedVectorFromEmitterBasis);
 	DDX_Check(pDX, IDC_CONSISTENT_EMISSION, m_ConsistentEmission);
+	DDX_Check(pDX, IDC_BYPASS_AUTOLOD, m_BypassAutoLOD);
 	//}}AFX_DATA_MAP
 }
 
@@ -121,6 +123,7 @@ BEGIN_MESSAGE_MAP(CEmitterDlg, CDialog)
 	ON_BN_CLICKED(IDC_USE_SPEED_BASIS, OnUseSpeedBasis)	
 	ON_BN_CLICKED(IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS, OnConvertSpeedVectorFromEmitterBasis)
 	ON_BN_CLICKED(IDC_CONSISTENT_EMISSION, OnConsistentEmission)
+	ON_BN_CLICKED(IDC_BYPASS_AUTOLOD, OnBypassAutoLOD)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -157,9 +160,6 @@ BOOL CEmitterDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 	
 	RECT r;
-	
-	
-
 
 	 GetDlgItem(IDC_SPEED_INHERITANCE_FACTOR_FRAME)->GetWindowRect(&r);
 	 ScreenToClient(&r);
@@ -256,6 +256,20 @@ BOOL CEmitterDlg::OnInitDialog()
 
 	updatePeriodDlg();
 
+	// bypass auto LOD
+	nlassert(_Emitter->getOwner() && _Emitter->getOwner()->getOwner());
+	NL3D::CParticleSystem &ps = *_Emitter->getOwner()->getOwner();
+	CButton *button = (CButton *) GetDlgItem(IDC_BYPASS_AUTOLOD);
+	if (ps.isAutoLODEnabled() && !ps.isSharingEnabled())
+	{		
+		button->EnableWindow(TRUE);
+		button->SetCheck(_Emitter->getBypassAutoLOD() ? 1 : 0);
+	}
+	else
+	{
+		button->EnableWindow(FALSE);
+	}
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -280,4 +294,11 @@ void CEmitterDlg::OnConsistentEmission()
 	UpdateData();
 	_Emitter->enableConsistenEmission(m_ConsistentEmission != 0 ? true : false /* VC6 warning */);
 	UpdateData(TRUE);
+}
+
+void CEmitterDlg::OnBypassAutoLOD() 
+{
+	UpdateData();
+	_Emitter->setBypassAutoLOD(m_BypassAutoLOD ? true : false);
+	UpdateData(TRUE);	
 }

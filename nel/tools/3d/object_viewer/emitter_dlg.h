@@ -1,7 +1,7 @@
 /** \file emitter_dlg.h
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.h,v 1.8 2002/02/15 17:17:19 vizerie Exp $
+ * $Id: emitter_dlg.h,v 1.9 2003/04/07 12:43:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,6 +64,7 @@ public:
 	BOOL	m_UseSpeedBasis;
 	BOOL	m_ConvertSpeedVectorFromEmitterBasis;
 	BOOL	m_ConsistentEmission;
+	BOOL	m_BypassAutoLOD;
 	//}}AFX_DATA
 
 
@@ -93,6 +94,7 @@ protected:
 	afx_msg void OnUseSpeedBasis();	
 	afx_msg void OnConvertSpeedVectorFromEmitterBasis();
 	afx_msg void OnConsistentEmission();
+	afx_msg void OnBypassAutoLOD();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -1,11 +1,12 @@
 #
-# $Id: Makefile.am,v 1.4 2002/04/10 07:33:07 lecroart Exp $
+# $Id: Makefile.am,v 1.5 2002/06/12 10:22:28 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES   = Makefile.in
 
 EXTRA_DIST		       = naming_service.cfg \
-				 naming_service.dsp
+				 naming_service.dsp \
+				 common.cfg
 
 sbin_PROGRAMS          = naming_service
 

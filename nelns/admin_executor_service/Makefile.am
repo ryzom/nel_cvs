@@ -1,11 +1,12 @@
 #
-# $Id: Makefile.am,v 1.6 2002/04/10 07:33:07 lecroart Exp $
+# $Id: Makefile.am,v 1.7 2002/06/12 10:21:25 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES           = Makefile.in
 
 EXTRA_DIST		       = admin_executor_service.cfg \
-				 admin_executor_service.dsp
+				 admin_executor_service.dsp \
+				 common.cfg
 
 sbin_PROGRAMS                  = admin_executor_service
 

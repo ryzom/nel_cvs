@@ -1,11 +1,12 @@
 #
-# $Id: Makefile.am,v 1.5 2002/04/10 07:33:07 lecroart Exp $
+# $Id: Makefile.am,v 1.6 2002/06/12 10:22:14 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
 
 EXTRA_DIST		       = welcome_service.cfg \
-				 welcome_service.dsp
+				 welcome_service.dsp \
+				 common.cfg
 
 sbin_PROGRAMS           = welcome_service
 

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.15 2002/04/09 12:29:15 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.16 2002/06/12 10:20:24 lecroart Exp $
  *
  */
 
@@ -55,6 +55,7 @@
 #include "nel/misc/config_file.h"
 #include "nel/misc/thread.h"
 #include "nel/misc/command.h"
+#include "nel/misc/path.h"
 
 #include "nel/net/service.h"
 #include "nel/net/net_manager.h"

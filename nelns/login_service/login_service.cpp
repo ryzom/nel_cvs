@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.18 2002/03/26 09:45:06 lecroart Exp $
+ * $Id: login_service.cpp,v 1.19 2002/06/12 10:21:45 lecroart Exp $
  *
  */
 
@@ -457,8 +457,8 @@ public:
 		readPlayerDatabase ();
 
 		Output.addDisplayer (&Fd);
-		if (_WindowDisplayer != NULL)
-			Output.addDisplayer (_WindowDisplayer);
+		if (WindowDisplayer != NULL)
+			Output.addDisplayer (WindowDisplayer);
 
 		connectionClientInit ();
 		

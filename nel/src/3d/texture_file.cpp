@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.11 2001/12/06 15:10:48 corvazier Exp $
+ * $Id: texture_file.cpp,v 1.12 2001/12/14 16:48:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,7 @@ void CTextureFile::doGenerate()
 			path += "_usercolor" + ext;
 
 			// Loopup the texture
-			string file2 = CPath::lookup( path, false);
+			string file2 = CPath::lookup( path, false, false);
 			if (file2 != "")
 			{
 				// The file2 exist, load and compute it

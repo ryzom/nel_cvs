@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.2 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_quad.cpp,v 1.3 2003/04/09 15:59:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -263,7 +263,7 @@ bool CPSQuad::completeBBox(NLMISC::CAABBox &box) const
 	}
 	else
 	{
-		CPSUtil::addRadiusToAABBox(box, _SizeScheme->getMaxValue());
+		CPSUtil::addRadiusToAABBox(box, std::max(fabsf(_SizeScheme->getMaxValue()), fabsf(_SizeScheme->getMinValue())));
 	}
 	return true ;	
 }

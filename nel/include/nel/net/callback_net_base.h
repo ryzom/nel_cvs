@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.22 2001/12/28 10:17:30 lecroart Exp $
+ * $Id: callback_net_base.h,v 1.23 2002/03/14 09:47:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,6 +170,7 @@ protected:
 	/// Used by client and server class
 	void baseUpdate ( sint32 timeout=0 );
 
+	/// Read a message from the network and process it
 	void processOneMessage ();
 
 	/// On this layer, you can't call directly receive, It s the update() function that receive and call your callaback

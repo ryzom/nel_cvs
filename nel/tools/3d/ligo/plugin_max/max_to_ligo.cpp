@@ -1,7 +1,7 @@
 /** \file max_to_ligo.cpp
  * Convert a 3dsmax nel patch mesh in ligo data
  *
- * $Id: max_to_ligo.cpp,v 1.7 2003/08/01 13:11:23 corvazier Exp $
+ * $Id: max_to_ligo.cpp,v 1.8 2004/03/12 16:57:49 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -104,7 +104,11 @@ bool CMaxToLigo::buildZoneTemplate (INode* pNode, const PatchMesh &patchMesh, CZ
 	for (uint edge=0; edge<(uint)patchMesh.numEdges; edge++)
 	{
 		// Open edge ?
+#if (MAX_RELEASE < 4000)
 		if (patchMesh.edges[edge].patch2<0)
+#else // (MAX_RELEASE < 4000)
+		if (patchMesh.edges[edge].patches[1]<0)
+#endif // (MAX_RELEASE < 4000)
 		{
 			// Add this edge
 			if (sym)

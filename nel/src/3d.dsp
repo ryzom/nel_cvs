@@ -1195,11 +1195,31 @@ SOURCE=.\3d\particle_system.h
 # End Source File
 # Begin Source File
 
+SOURCE=R:\code\nel\src\3d\particle_system_process.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\particle_system_process.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\ps_attrib.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\3d\ps_attrib_maker.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\ps_attrib_maker_bin_op.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\ps_attrib_maker_bin_op.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\ps_attrib_maker_helper.h
 # End Source File
 # Begin Source File
 
@@ -1260,6 +1280,10 @@ SOURCE=.\3d\ps_located.cpp
 # Begin Source File
 
 SOURCE=.\3d\ps_located.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\ps_lod.h
 # End Source File
 # Begin Source File
 

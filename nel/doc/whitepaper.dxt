@@ -61,12 +61,12 @@ To achieve this objective, the library implements several techniques:
   - Environment Map
   - Support of User Colors (specific areas in textures tagged for replacement with a
     program-defined color upon rendering)
-  - Hardware T&L as now available in recent graphic cards
-  - Hardware Pixel Shaders and Vertex Shaders for the next generation graphic cards
+  - Hardware T&L
+  - Hardware Pixel Shaders and Vertex Shaders
 - Animation:
   - Skinning, using a base skeleton for animations
   - Blended Shapes, to provide lip-sync style animations
-  - Inverse cinematics
+  - Inverse kinematics
   - Blend of animations to provide smooth transitions between various animations
 - Low level services:
   - Object streaming, to provide a transparent load-on-demand, including the multi-

@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.12 2002/06/27 13:26:26 vizerie Exp $
+ * $Id: panoply_maker.cpp,v 1.13 2002/07/01 08:48:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -262,7 +262,7 @@ static void BuildColoredVersions(const CBuildInfo &bi)
 			std::string fileExt = "." + NLMISC::strupr(NLMISC::CFile::getExtension(tgaFiles[k]));						
 			if (fileExt == bi.BitmapExtensions[l])
 			{
-				nlwarning("Processing : %s ", tgaFiles[k].c_str());				
+				//nlwarning("Processing : %s ", tgaFiles[k].c_str());				
 				try
 				{
 					if (CheckIfNeedRebuildColoredVersionForOneBitmap(bi, NLMISC::CFile::getFilename(tgaFiles[k])))
@@ -273,7 +273,7 @@ static void BuildColoredVersions(const CBuildInfo &bi)
 					}
 					else
 					{
-						nlwarning(("No need to rebuild " + NLMISC::CFile::getFilename(tgaFiles[k])).c_str());
+						//nlwarning(("No need to rebuild " + NLMISC::CFile::getFilename(tgaFiles[k])).c_str());
 					}
 				}
 				catch (std::exception &e)

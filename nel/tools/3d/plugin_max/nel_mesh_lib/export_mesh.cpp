@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.30 2001/12/12 11:07:12 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.31 2001/12/18 13:40:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,7 +128,7 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bo
 IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, const TInodePtrInt *nodeMap, 
 								bool absolutePath, CExportNelOptions &opt, bool view)
 {
-
+	
 	// Here, we must check what kind of node we can build with this mesh.
 	// For the time, just Triobj is supported.
 	IShape *retShape=NULL;
@@ -145,6 +145,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 	{
 		Class_ID  clid = obj->ClassID();
 		// is the object a particle system ? (we do this defore meshs, because for now there is a mesh in max scenes to say where a particle system is...)
+
 		if (clid.PartA() == NEL_PARTICLE_SYSTEM_CLASS_ID)
 		{
 			// build the shape from the file name
@@ -163,24 +164,25 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 					// *** Export default transformation
 					// ********************************
 
-						// Get the node matrix
-						Matrix3 localTM;
-						getLocalMatrix (localTM, node, time);
+					// Get the node matrix
+					Matrix3 localTM;
+					getLocalMatrix (localTM, node, time);
 
-						// Get the translation, rotation, scale of the node
-						CVector pos, scale;
-						CQuat rot;
-						decompMatrix (scale, rot, pos, localTM);
+					// Get the translation, rotation, scale of the node
+					CVector pos, scale;
+					CQuat rot;
+					decompMatrix (scale, rot, pos, localTM);
 
-						// Set the default values
-						pss->getDefaultPos()->setValue(pos);					
-						pss->getDefaultScale()->setValue(scale);					
-						pss->getDefaultRotQuat()->setValue(rot);												
-						return pss;
+					// Set the default values
+					pss->getDefaultPos()->setValue(pos);					
+					pss->getDefaultScale()->setValue(scale);					
+					pss->getDefaultRotQuat()->setValue(rot);												
+					return pss;
 				}
 				else
 				{
-					throw NLMISC::EStream("file not found (particle system file)");
+					mprintf("Error : Can't find %s while exporting a particle system \n", (const char *) ad->data);
+					return NULL;
 				}				
 			}
 		}

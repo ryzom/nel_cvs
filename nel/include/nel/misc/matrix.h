@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.14 2001/03/16 16:39:17 berenguier Exp $
+ * $Id: matrix.h,v 1.15 2001/04/03 13:03:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -283,6 +283,10 @@ public:
 	/// \name Misc
 	//@{
 	void		serial(IStream &f);
+	/// return true if the matrix has a scale part (by scale(), by multiplication etc...)
+	bool		hasScalePart() const;
+	/// return true if the matrix has a projection part (by setProj(), by multiplication etc...)
+	bool		hasProjectionPart() const;
 	//@}
 
 	// Friend.

@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.17 2003/02/25 14:16:48 berenguier Exp $
+ * $Id: events.h,v 1.18 2004/03/12 16:42:06 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -208,6 +208,17 @@ enum TKey
 	KeyRCONTROL       =0xA3,
 	KeyLMENU          =0xA4,
 	KeyRMENU          =0xA5,
+	KeySEMICOLON	  =0xBA,
+	KeyEQUALS	  =0xBB,
+	KeyCOMMA	  =0xBC,
+	KeyDASH		  =0xBD,
+	KeyPERIOD	  =0xBE,
+	KeySLASH	  =0xBF,
+	KeyTILDE	  =0xC0,
+	KeyLBRACKET	  =0xDB,
+	KeyBACKSLASH	  =0xDC,
+	KeyRBRACKET	  =0xDD,
+	KeyAPOSTROPHE	  =0xDE,
 	KeyPROCESSKEY     =0xE5,
 	KeyATTN           =0xF6,
 	KeyCRSEL          =0xF7,

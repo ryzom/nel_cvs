@@ -1,7 +1,7 @@
 /** \file events.cpp
  * Events
  *
- * $Id: events.cpp,v 1.3 2003/02/25 14:16:57 berenguier Exp $
+ * $Id: events.cpp,v 1.4 2004/03/12 16:42:06 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,6 +165,17 @@ static const CStringConversion<TKey>::CPair stringTable [] =
 	{ "KeyRCONTROL", KeyRCONTROL },
 	{ "KeyLMENU", KeyLMENU },
 	{ "KeyRMENU", KeyRMENU },
+	{ "KeySEMICOLON", KeySEMICOLON },
+	{ "KeyEQUALS", KeyEQUALS },
+	{ "KeyCOMMA", KeyCOMMA },
+	{ "KeyDASH", KeyDASH },
+	{ "KeyPERIOD", KeyPERIOD },
+	{ "KeySLASH", KeySLASH },
+	{ "KeyTILDE", KeyTILDE },
+	{ "KeyLBRACKET", KeyLBRACKET },
+	{ "KeyBACKSLASH", KeyBACKSLASH },
+	{ "KeyRBRACKET", KeyRBRACKET },
+	{ "KeyAPOSTROPHE", KeyAPOSTROPHE },
 	{ "KeyPROCESSKEY", KeyPROCESSKEY },
 	{ "KeyATTN", KeyATTN },
 	{ "KeyCRSEL", KeyCRSEL },

@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.10 2003/01/30 18:06:27 robert Exp $
+ * $Id: classifier.cpp,v 1.11 2003/02/20 15:52:54 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,7 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdpch.h"
 #include "nel/ai/nimat/classifier.h"
 
 namespace NLAINIMAT

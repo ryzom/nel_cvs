@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.13 2001/06/19 10:10:49 portier Exp $
+ * $Id: goal.h,v 1.14 2001/06/19 14:35:20 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NLAILOGIC
 	{
 		private:
 			NLAIAGENT::IVarName *_Name;
-			std::vector<NLAIAGENT::IObjectIA *>	_Args;
+			std::vector<NLAIAGENT::IObjectIA *>		_Args;
 			std::vector<NLAIAGENT::IBasicAgent *>	_Predecessors;
 			std::vector<NLAIAGENT::IBasicAgent *>	_Successors;
 

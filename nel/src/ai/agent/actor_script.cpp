@@ -331,6 +331,7 @@ namespace NLAIAGENT
 
 
 		IObjectIA::CProcessResult r;
+		std::vector<CStringType *> handles;
 
 #ifndef NL_DEBUG
 		/*
@@ -339,97 +340,91 @@ namespace NLAIAGENT
 		*/
 #endif
 
+		switch( i )
+		{
 		
-		if ( i == fid_activate )
-		{
-			activate();
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-		}
+			case fid_activate:
+				activate();
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				break;
 
-		if ( i == fid_onActivate )
-		{
-			onActivate();
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-		}
+			case fid_onActivate:
+				onActivate();
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				break;
 
-		if ( i == fid_unActivate )
-		{
-			unActivate();
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-		}
+			case fid_unActivate:
+				unActivate();
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				break;
+			
+			case fid_onUnActivate:
+				onUnActivate();
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				return r;
+				break;
 
-		if ( i == fid_onUnActivate )
-		{
-			onUnActivate();
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-			return r;
-		}
-
-		if ( i == fid_switch )
-		{
-			std::vector<CStringType *> handles;
-			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
-			{
+			case fid_switch:
+				if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
+				{
 #ifdef NL_DEBUG
-				const char *dbg_param_type = (const char *) params->getType();
-				std::string dbg_param_string;
-				params->getDebugString(dbg_param_string);
+					const char *dbg_param_type = (const char *) params->getType();
+					std::string dbg_param_string;
+					params->getDebugString(dbg_param_string);
 #endif
-				const IObjectIA *fw = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();
+					const IObjectIA *fw = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();
 #ifdef NL_DEBUG
-				const char *dbg_param_front_type = (const char *) fw->getType();
+					const char *dbg_param_front_type = (const char *) fw->getType();
 #endif
 
-				//( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
-//				while ( fw->size() )
-//				{
-					handles.push_back( (CStringType *) fw);
-//					fw->popFront();
-//				}
+					//( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
+//					while ( fw->size() )
+//					{
+						handles.push_back( (CStringType *) fw);
+//						fw->popFront();
+//					}
 
-				std::vector<CComponentHandle *> switched;
-				int i;
-				for ( i = 0; i < (int) handles.size(); i++)
-					switched.push_back( new CComponentHandle( handles[ i ]->getStr(), (IAgent *) getParent() ) );
-				switchActor( switched, false );
-				for ( i = 0; i < (int) switched.size(); i++)
-					delete switched[i];
-			}
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-		}
+					std::vector<CComponentHandle *> switched;
+					int i;
+					for ( i = 0; i < (int) handles.size(); i++)
+						switched.push_back( new CComponentHandle( handles[ i ]->getStr(), (IAgent *) getParent() ) );
+					switchActor( switched, false );
+					for ( i = 0; i < (int) switched.size(); i++)
+						delete switched[i];
+				}
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				break;
 
-		if ( i == fid_launch )
-		{
-			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
-			{
+			case fid_launch:
+			
+				if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
+				{
 #ifdef NL_DEBUG
-				const char *dbg_param_type = (const char *) params->getType();
-				std::string dbg_param_string;
-				params->getDebugString(dbg_param_string);
+					const char *dbg_param_type = (const char *) params->getType();
+					std::string dbg_param_string;
+					params->getDebugString(dbg_param_string);
 #endif
-				const IObjectIA *child = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();
+					const IObjectIA *child = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();
 #ifdef NL_DEBUG
-				const char *dbg_param_front_type = (const char *) child->getType();
+					const char *dbg_param_front_type = (const char *) child->getType();
 #endif
-				if ( _TopLevel )
-					((CActorScript *)child)->setTopLevel( _TopLevel );
-				_Launched.push_back( (NLAIAGENT::IAgent *) child );
-				addDynamicAgent( (NLAIAGENT::IBaseGroupType *) params);
-			}
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-			return r;
+					if ( _TopLevel )
+						((CActorScript *)child)->setTopLevel( _TopLevel );
+					else
+						((CActorScript *)child)->setTopLevel( this );
+
+					_Launched.push_back( (NLAIAGENT::IAgent *) child );
+					addDynamicAgent( (NLAIAGENT::IBaseGroupType *) params);
+				}
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				return r;
+				break;
 		}
 		return CAgentScript::runMethodBase(index, params);
 	}
@@ -507,7 +502,6 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG
 		const char *dbg_this_type = (const char *) getType();
 #endif
-
 		while ( _Launched.size() )
 		{
 			_Launched.front()->Kill();
@@ -532,4 +526,6 @@ namespace NLAIAGENT
 		return _TopLevel;
 	}
 }
+
+
 

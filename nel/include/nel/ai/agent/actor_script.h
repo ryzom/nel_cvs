@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.18 2001/06/19 10:11:01 portier Exp $
+ * $Id: actor_script.h,v 1.19 2001/06/19 14:35:03 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,7 +136,7 @@ namespace NLAIAGENT
 //			virtual IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
 			virtual sint32 getMethodIndexSize() const;
 
-			void getFatherComponent(IVarName &);
+//			void getFatherComponent(IVarName &);
 
 			virtual void cancel();
 

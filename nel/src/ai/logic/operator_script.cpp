@@ -179,8 +179,7 @@ namespace NLAIAGENT
 				NLAILOGIC::CGoal *current_goal = activated_goals.front();
 				instanciateGoalArgs(current_goal);
 				current_goal->addSuccessor( (IBasicAgent *) this );
-				setTopLevel( (CAgentScript *) current_goal->getReceiver() );
-
+//				setTopLevel( this/*(CAgentScript *) current_goal->getReceiver() */);
 
 				activate();
 

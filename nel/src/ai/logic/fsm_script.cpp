@@ -218,7 +218,7 @@ namespace NLAIAGENT
 		// Returns a list of active states
 		if ( *name == CStringVarName("getActive") )
 		{
-			
+			// Todo
 		}
 
 		return result;

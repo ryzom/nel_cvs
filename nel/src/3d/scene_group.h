@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.13 2002/04/26 16:07:45 besson Exp $
+ * $Id: scene_group.h,v 1.14 2002/05/02 12:24:19 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,7 @@ namespace NL3D {
 class CScene;
 class CTransformShape;
 class IDriver;
+class ITransformName;
 
 /**
   * A CInstanceGroup is a group of mesh instance and so composed by
@@ -195,6 +196,9 @@ public:
 
 	/// Add all the instances to the scene
 	void createRoot (CScene& scene);
+
+	/// Setup the callback in charge of changing name at the addToScene moment
+	void setTransformNameCallback (ITransformName *pTN);
 
 	/**
 	  * Add all the instances to the scene. By default, freezeHRC() those instances and the root.
@@ -367,6 +371,8 @@ private:
 	CScene		*_AddToSceneTempScene;
 	IDriver		*_AddToSceneTempDriver;
 	// @}
+
+	ITransformName *_TransformName;
 };
 
 

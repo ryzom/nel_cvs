@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.28 2002/04/26 16:07:45 besson Exp $
+ * $Id: scene_group.cpp,v 1.29 2002/05/02 12:24:19 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/transform_shape.h"
 #include "3d/mesh_instance.h"
 #include "3d/shape_bank.h"
+#include "nel/3d/u_instance_group.h"
 
 using namespace NLMISC;
 using namespace std;
@@ -205,6 +206,7 @@ CInstanceGroup::CInstanceGroup()
 	_ClusterSystem = NULL;
 	_RealTimeSunContribution= true;
 	_AddToSceneState = StateNotAdded;
+	_TransformName = NULL;
 }
 
 // ***************************************************************************
@@ -431,6 +433,12 @@ void CInstanceGroup::createRoot (CScene& scene)
 }
 
 // ***************************************************************************
+void CInstanceGroup::setTransformNameCallback (ITransformName *pTN)
+{
+	_TransformName = pTN;
+}
+
+// ***************************************************************************
 bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 {
 	uint32 i;
@@ -446,15 +454,25 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 		CInstance &rInstanceInfo = *it;
 		if (!rInstanceInfo.DontAddToScene)
 		{
+			string shapeName;
+
 			if (rInstanceInfo.Name.find('.') == std::string::npos)
 			{
-				_Instances[i] = scene.createInstance (rInstanceInfo.Name + ".shape");
+				shapeName = rInstanceInfo.Name + ".shape";
 			}
 			else	// extension has already been added
 			{
-				_Instances[i] = scene.createInstance (rInstanceInfo.Name);
+				shapeName = rInstanceInfo.Name;
 			}
+			strlwr (shapeName);
 
+			// If there is a callback added to this instance group then transform
+			// the name of the shape to load.
+			if (_TransformName != NULL)
+				shapeName = _TransformName->transformName (shapeName);
+
+			strlwr (shapeName);
+			_Instances[i] = scene.createInstance (shapeName);
 			if( _Instances[i] == NULL )
 			{
 				#ifdef NL_DEBUG
@@ -692,19 +710,26 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
 				shapeName  = rInstanceInfo.Name;
 			}
 			shapeName = strlwr (shapeName);
+
+			// If there is a callback added to this instance group then transform
+			// the name of the shape to load.
+			if (_TransformName != NULL)
+				shapeName = _TransformName->transformName (shapeName);
+
+			shapeName = strlwr (shapeName);
 			if (allShapesToLoad.find(shapeName) == allShapesToLoad.end())
 			{
 				allShapesToLoad.insert (shapeName);
 				if (scene.getShapeBank()->isPresent(shapeName) != CShapeBank::Present)
 				{
 					// Load it from file asynchronously
-					scene.getShapeBank()->loadAsync (shapeName, scene.getDriver());
+					scene.getShapeBank()->loadAsync (shapeName, scene.getDriver(), &_AddToSceneSignal);
 				}
 			}
 		}
 	}
 	_AddToSceneSignal = false;
-	CAsyncFileManager::getInstance().signal (&_AddToSceneSignal);
+	//CAsyncFileManager::getInstance().signal (&_AddToSceneSignal);
 	return true;
 }
 

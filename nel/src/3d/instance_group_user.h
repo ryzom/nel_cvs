@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.14 2002/04/26 16:07:45 besson Exp $
+ * $Id: instance_group_user.h,v 1.15 2002/05/02 12:24:19 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,8 @@ public:
 
 private:
 	// From UInstanceGroup
+	void setTransformNameCallback (ITransformName *pTN);
+	
 	void addToScene (class UScene& scene, UDriver *driver);
 	void addToScene (class CScene& scene, IDriver *driver);
 

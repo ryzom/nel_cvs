@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.19 2002/04/30 14:00:16 vizerie Exp $
+ * $Id: instance_group_user.cpp,v 1.20 2002/05/02 12:24:19 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,6 +118,12 @@ bool CInstanceGroupUser::init (const std::string &instanceGroup)
 
 	// Ok
 	return true;
+}
+
+// ***************************************************************************
+void CInstanceGroupUser::setTransformNameCallback (ITransformName *pTN)
+{
+	_InstanceGroup.setTransformNameCallback (pTN);
 }
 
 // ***************************************************************************

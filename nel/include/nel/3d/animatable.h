@@ -1,7 +1,7 @@
 /** \file animatable.h
  * Class IAnimatable
  *
- * $Id: animatable.h,v 1.3 2001/02/12 15:42:10 corvazier Exp $
+ * $Id: animatable.h,v 1.4 2001/03/16 16:57:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,8 @@ namespace NL3D
 {
 
 class ITrack;
+class CChannelMixer;
+
 
 /**
  * An animatable object. 
@@ -45,15 +47,24 @@ class ITrack;
  * Animated values are animated by a CChannelMixer object.
  * Each value have a name and a default track.
  *
+ * An IAnimatable may have IAnimatable sons (list of bones, list of materails etc...). The value count and valueId of 
+ * the IAnimatable DO NOT count those sons, but register() should register his sons too.
+ * A father propagated touch system (setFather()) is implemented. When a son is touched, he touchs his fathers, his grandfather
+ * and so on.
+ *
  * When a class derives from IAnimatable, it must implement all the 
  * interface's methods:
  *
- *	virtual uint getValueCount () const;
+ *	extend TAnimValues enum, beginning to BaseClass::AnimValueLast
+ *	ctor(): just type "IAnimatable::resize (AnimValueLast);"
  *	virtual IAnimatedValue* getValue (uint valueId);
- *	virtual const std::string& getValueName (uint valueId) const;
+ *	virtual const char *getValueName (uint valueId) const;
  *	virtual ITrack* getDefaultTrack (uint valueId);
  *
- * Watch NL3D::CTransform for exemple.
+ *	virtual register(CChannelMixer *, const string &prefix);
+ *
+ *
+ * Watch NL3D::ITransformable for a good example.
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
@@ -66,26 +77,29 @@ public:
 
 	/**
 	  * Default Constructor. Set number of value to 0.
+	  * Deriver: should just write:  IAnimatable::resize (getValueCount());
 	  * 
 	  */
 	IAnimatable ()
 	{
 		bitSet.resize (1);
+		_Father= NULL;
 	}
 
 	/// \name Interface
-
+	// @{
 	/**
-	  * Get animated value count.
-	  *
-	  * \return number of animated value in this object.
+	  * The enum of animated values. (same system in CMOT). Deriver should extend this enum, beginning to BaseClass::AnimValueLast.
 	  */
-	virtual uint getValueCount () const =0;
+	enum	TAnimValues
+	{
+		AnimValueLast=0,
+	};
 
 	/** 
 	  * Get a value pointer.
 	  *
-	  * \param valueId is the animated value ID in the object.
+	  * \param valueId is the animated value ID in the object. IGNORING IANIMATABLE SONS (eg: bones, materials...).
 	  * \return The pointer on the animated value.
 	  */
 	virtual IAnimatedValue* getValue (uint valueId) =0;
@@ -93,37 +107,64 @@ public:
 	/**
 	  * Get animated value name.
 	  *
-	  * \param valueId is the animated value ID in the object we want the name.
+	  * \param valueId is the animated value ID in the object we want the name. IGNORING IANIMATABLE SONS (eg: bones, materials...).
 	  * \return the name of the animated value.
 	  */
-	virtual const std::string& getValueName (uint valueId) const =0;
+	virtual const char *getValueName (uint valueId) const =0;
 
 	/** 
 	  * Get default track pointer.
 	  *
-	  * \param valueId is the animated value ID in the object we want the default track.
+	  * \param valueId is the animated value ID in the object we want the default track. IGNORING IANIMATABLE SONS (eg: bones, materials...).
 	  * \return The pointer on the default track of the value.
 	  */
 	virtual ITrack* getDefaultTrack (uint valueId) =0;
 
+	/** 
+	  * register the Aniamtable to a channelMixer (using CChannelMixer::addChannel()).
+	  * This method should:
+	  *		- call is BaseClass method.
+	  *		- register local AnimatableValues, with channel name:	prefix+getValueName().
+	  *		- register local sons!!. eg: matlist[0]->registerToChannelMixer(chanMixer, prefix+"mat0.").
+	  *
+	  * \param chanMixer is the channel mixer.
+	  * \param prefix prefix to be append to valueNames
+	  */
+	virtual	void	registerToChannelMixer(CChannelMixer &chanMixer, const std::string &prefix) =0;
+
+	// @}
+
+
+
 	/// \name Touch flags management
+	// @{
+
+	/**
+	  * Say which (if any) IAnimatable owns this one. This is important for Touch propagation.
+	  * By this system, Fathers and ancestors know if they must check their sons (isTouched() return true).
+	  *
+	  * \param valueId is the animated value ID in the object we want to touch. IGNORING IANIMATABLE SONS (eg: bones, materials...).
+	  */
+	void	setFather(IAnimatable *father) {_Father= father;}
+
 
 	/**
 	  * Touch a value because it has been modified.
 	  *
-	  * \param valueId is the animated value ID in the object we want to touch.
+	  * \param valueId is the animated value ID in the object we want to touch. IGNORING IANIMATABLE SONS (eg: bones, materials...).
 	  */
 	void touch (uint valueId)
 	{
 		// Set the bit
 		bitSet.set (valueId+1);
 
-		// The first bit is the "something is touched" flag. touch it.
-		bitSet.set (0);
+		// propagate the touch to the bit 0, and the fathers.
+		propagateTouch();
 	}
 
 	/**
-	  * Return true if at least one value of this object as been touched else false.
+	  * Return true if at least one value of this object as been touched, or if at least one son has been touched.
+	  * Else return false.
 	  */
 	bool isTouched () const
 	{
@@ -161,11 +202,39 @@ public:
 		// Bit are reseted after resize (doc), nothing invalidate
 		bitSet.resize (count+1);
 	}
+	// @}
+
 
 private:
 
 	// Use a CBitSet to manage the flags
 	NLMISC::CBitSet bitSet;
+	// The owner of this IAnimatable.
+	IAnimatable		*_Father;
+
+	void	propagateTouch()
+	{
+		IAnimatable		*pCur= this;
+		// Stop when no father, or when father is already touched (and so the grandfather...!!!).
+		while(pCur && !pCur->isTouched())
+		{
+			// The first bit is the "something is touched" flag. touch it.
+			pCur->bitSet.set (0);
+			pCur= pCur->_Father;
+		}
+	}
+
+
+protected:
+	/// This is a tool function which add a given value to a channel.
+	void	addValue(CChannelMixer &chanMixer, uint valueId, const std::string &prefix);
+
+	/// This method clear a bit in the bitset.
+	void	clearFlag(uint valueId)
+	{
+		bitSet.clear(valueId+1);
+	}
+
 };
 
 

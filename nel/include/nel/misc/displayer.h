@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.18 2003/02/07 17:42:30 cado Exp $
+ * $Id: displayer.h,v 1.19 2003/02/10 10:27:08 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,6 +106,7 @@ protected:
 
 	/// Display the string to stdout and OutputDebugString on Windows
 	virtual void doDisplay ( const CLog::TDisplayInfo& args, const char *message );
+
 };
 
 
@@ -138,6 +139,8 @@ private:
 	FILE		*_FilePointer;
 
 	bool		_NeedHeader;
+
+	uint		_LastLogSizeChecked;
 };
 
 /**

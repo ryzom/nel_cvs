@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.50 2003/02/07 17:44:32 lecroart Exp $
+ * $Id: displayer.cpp,v 1.51 2003/02/10 10:26:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,11 +190,16 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 
 	string s = ss.str();
 
+#if defined(NL_OS_WINDOWS) && defined(_CONSOLE)
 	// we don't use cout because sometimes, it crashs because cout isn't already init, printf doesn t crash.
-	printf ("%s", s.c_str()); 
-	printf (args.CallstackAndLog.c_str());
-
+	if (!s.empty())
+		printf ("%s", s.c_str());
+	
+	if (!args.CallstackAndLog.empty())
+		printf (args.CallstackAndLog.c_str());
+	
 	fflush(stdout);
+#endif
 
 #ifdef NL_OS_WINDOWS
 	// display the string in the debugger is the application is started with the debugger
@@ -292,13 +297,13 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 #endif
 }
 
-CFileDisplayer::CFileDisplayer (const std::string &filename, bool eraseLastLog, const char *displayerName) : IDisplayer (displayerName), _NeedHeader(true)
+CFileDisplayer::CFileDisplayer (const std::string &filename, bool eraseLastLog, const char *displayerName) : IDisplayer (displayerName), _NeedHeader(true), _LastLogSizeChecked(0)
 {
 	setParam (filename, eraseLastLog);
 	_FilePointer = (FILE*)1;
 }
 
-CFileDisplayer::CFileDisplayer () : IDisplayer (""), _NeedHeader(true)
+CFileDisplayer::CFileDisplayer () : IDisplayer (""), _NeedHeader(true), _LastLogSizeChecked(0)
 {
 	_FilePointer = (FILE*)1;
 }
@@ -321,14 +326,6 @@ void CFileDisplayer::setParam (const std::string &filename, bool eraseLastLog)
 			nlwarning ("CFileDisplayer::setParam(): Can't open and clear the log file '%s', don't log", filename.c_str());
 		}
 	}
-}
-
-
-uint32	toto (FILE *fp)
-{
-	if (fp == NULL) return 0;
-	fseek (fp, 0, SEEK_END);
-	return ftell (fp);
 }
 
 // Log format: "2000/01/15 12:05:30 <ProcessName> <LogType> <ThreadId> <Filename> <Line> : <Msg>"
@@ -388,12 +385,13 @@ void CFileDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mes
 
 	if (_FilePointer > (FILE*)1)
 	{
-		// if the file is too big (>5mb), rename it and create another one
-		if (ftell (_FilePointer) > 5*1024*1024)
+		// if the file is too big (>5mb), rename it and create another one (check only after 20 lines to speed up)
+		if (_LastLogSizeChecked++ > 20 && ftell (_FilePointer) > 5*1024*1024)
 		{
 			fclose (_FilePointer);
 			rename (_FileName.c_str(), CFile::findNewFile (_FileName).c_str());
 			_FilePointer = (FILE*) 1;
+			_LastLogSizeChecked = 0;
 		}
 	}
 
@@ -413,8 +411,12 @@ void CFileDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mes
 			_NeedHeader = false;
 		}
 		
-		fwrite (ss.str().c_str(), ss.str().size (), 1, _FilePointer);
-		fwrite (args.CallstackAndLog.c_str(), args.CallstackAndLog.size (), 1, _FilePointer);
+		if(!ss.str().empty())
+			fwrite (ss.str().c_str(), ss.str().size (), 1, _FilePointer);
+
+		if(!args.CallstackAndLog.empty())
+			fwrite (args.CallstackAndLog.c_str(), args.CallstackAndLog.size (), 1, _FilePointer);
+
 		fflush (_FilePointer);
 	}
 }

@@ -10,6 +10,7 @@ The project is composed of :
 
 * A static library for shared code
 * A 3dsmax plugin to check, debug and export ligo data from max
+* A MFC tool to paint the landscape with base zone
 
 PROJECT DEPENDENCIES:
 ---------------------
@@ -21,3 +22,10 @@ ligoscape_lib <- nel_misc
 
 ligoscape_plugin_max <- ligoscape_lib
 ligoscape_plugin_max <- nel_patch_lib
+
+WorldEditor <- ligoscape_lib
+WorldEditor <- nel_3d
+WorldEditor <- nel_misc
+WorldEditor <- nel_driver_opengl
+
+WorldEditor_Exe <- WorldEditor

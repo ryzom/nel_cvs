@@ -1,7 +1,7 @@
 /** \file matrix.h
  * <description>
  *
- * $Id: matrix.h,v 1.7 2000/11/17 11:10:38 cado Exp $
+ * $Id: matrix.h,v 1.8 2000/11/22 13:13:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,7 @@ public:
 	/// \name Object
 	//@{
 	/// Constructor which do nothing!!
-	CMatrix() {}
+	CMatrix() {StateBit= 0; /* Not valid By default*/}
 	/// Copy Constructor.
 	CMatrix(const CMatrix &);
 	/// operator=.

@@ -1,7 +1,7 @@
 /** \file scene_ut.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.2 2000/11/10 09:58:04 berenguier Exp $
+ * $Id: nelu.cpp,v 1.3 2000/11/22 13:15:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,9 @@ IDriver			*CSceneUt::Driver;
 
 void			CSceneUt::init3d(CScene &scene, uint w, uint h, uint bpp, bool windowed )
 {
+	// Init debug system
+	NLMISC::InitDebug();
+
 	// Init driver.
 	CSceneUt::Driver= CDRU::createGlDriver();
 	nlverify(CSceneUt::Driver->init());

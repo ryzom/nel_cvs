@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.230 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.230.10.1 2004/12/30 18:04:27 testserver Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1464,7 +1464,12 @@ bool CDriverGL::setMode(const GfxMode& mode)
 		
 		if (!_FullScreen)
 		{
+			// Under the XP theme desktop, this function call the winproc WM_SIZE and change _WindowWidth and _WindowHeight
+			sint32 windowWidth = _WindowWidth;
+			sint32 windowHeight = _WindowHeight;
 			modifyStyle(_hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS, WS_POPUP);
+			_WindowWidth = windowWidth;
+			_WindowHeight = windowHeight;
 		}
 	}
 

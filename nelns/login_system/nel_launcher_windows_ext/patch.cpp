@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.5 2003/06/23 13:35:28 lecroart Exp $
+ * $Id: patch.cpp,v 1.6 2003/06/23 14:36:23 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -384,6 +384,12 @@ private:
 				
 				fclose (fp);
 
+				// remove the files list file
+				setState (true, "Deleting %s", DirFilename.c_str());
+				string err = deleteFile (DirFilename, false);
+				if (!err.empty()) setState(true, err.c_str());
+				
+				// launching the .bat
 				setState (true, "Launching %s", UpdateNelLauncherBatchFilename.c_str());
 				
 				//if (_execlp ("update_nel_launcher.bat", "update_nel_launcher.bat", NULL) == -1)
@@ -438,14 +444,14 @@ private:
 				{
 					executeFinalizeBat = true;
 				}
-					
-				// put the file in the ryzom root directory
-				string path = ClientRootPath + needToGetFilesList[i].Filename;
 				
-				// if the file is not found in the ryzom root directory and is not a dll, put it in the patch directory
-				if (!NLMISC::CFile::fileExists (path) && NLMISC::CFile::getExtension(path) != "dll")
+				// put the file in the ryzom patch directory
+				string path = ClientPatchPath + needToGetFilesList[i].Filename;
+
+				//nldebug ("path '%s' -> %d %s", path.c_str(), NLMISC::CFile::fileExists (ClientRootPath + needToGetFilesList[i].Filename), strlwr(NLMISC::CFile::getExtension(needToGetFilesList[i].Filename)).c_str());
+				if (NLMISC::CFile::fileExists (ClientRootPath + needToGetFilesList[i].Filename) || strlwr(NLMISC::CFile::getExtension(needToGetFilesList[i].Filename)) == "dll")
 				{
-					path = ClientPatchPath + needToGetFilesList[i].Filename;
+					path = ClientRootPath + needToGetFilesList[i].Filename;
 				}
 
 				nlinfo ("Get the file from '%s' to '%s'", string(DisplayedServerRootPath+needToGetFilesList[i].Filename).c_str(), path.c_str());

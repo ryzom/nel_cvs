@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.4 2000/12/12 16:43:41 lecroart Exp $
+ * $Id: computed_string.cpp,v 1.5 2000/12/15 17:39:11 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,10 +53,10 @@ void CComputedString::render2D (IDriver& driver,
 	// Computing hotspot translation vector
 	CVector hotspotVector(0,0,0);
 
-	if(hotspot==LeftMiddle)
+	if(hotspot==MiddleLeft)
 		hotspotVector = CVector(0,0,-StringHeight/2);
 	
-	if(hotspot==LeftTop)
+	if(hotspot==TopLeft)
 		hotspotVector = CVector(0,0,StringHeight);
 	
 	if(hotspot==MiddleBottom)
@@ -68,13 +68,13 @@ void CComputedString::render2D (IDriver& driver,
 	if(hotspot==MiddleTop)
 		hotspotVector = CVector(-StringWidth/2,0,-StringHeight);
 	
-	if(hotspot==RightBottom)
+	if(hotspot==BottomRight)
 		hotspotVector = CVector(-StringWidth,0,0);
 	
-	if(hotspot==RightMiddle)
+	if(hotspot==MiddleRight)
 		hotspotVector = CVector(-StringWidth,0,-StringHeight/2);
 	
-	if(hotspot==RightTop)
+	if(hotspot==TopRight)
 		hotspotVector = CVector(-StringWidth,0,-StringHeight);
 	
 	

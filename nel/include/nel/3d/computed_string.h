@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.4 2000/11/28 13:21:56 coutelas Exp $
+ * $Id: computed_string.h,v 1.5 2000/12/15 17:40:16 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,15 +94,15 @@ struct CComputedString
 	 */
 	enum THotSpot 
 	{
-		LeftBottom,
-		LeftMiddle, 
-		LeftTop,
+		BottomLeft,
+		MiddleLeft, 
+		TopLeft,
 		MiddleBottom, 
 		MiddleMiddle, 
 		MiddleTop, 
-		RightBottom, 
-		RightMiddle,
-		RightTop
+		BottomRight, 
+		MiddleRight,
+		TopRight
 	};
 
 	/**
@@ -124,7 +124,7 @@ struct CComputedString
 	 */	
 	void render2D (IDriver& driver, 
 					float x, float z,
-					THotSpot hotspot = LeftBottom,
+					THotSpot hotspot = BottomLeft,
 					float scaleX = 1, float scaleZ = 1,
 					float rotateY = 0);
 

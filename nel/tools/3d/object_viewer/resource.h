@@ -486,10 +486,14 @@
 #define IDC_SPEED_INHERITANCE_FACTOR_FRAME 1317
 #define IDC_U_SCALE_START               1318
 #define IDC_DELAYED_EMISSION_FRAME      1318
+#define IDC_RED_EDIT                    1318
 #define IDC_V_SCALE_START               1319
 #define IDC_MAX_EMISSION_COUNT_FRAME    1319
+#define IDC_BLUE_EDIT                   1319
 #define IDC_WROT_SPEED_TEXT             1320
+#define IDC_GREEN_EDIT                  1320
 #define IDC_WROT_ACCEL_TEXT             1321
+#define IDC_ALPHA_EDIT                  1321
 #define IDC_WROT_SPEED                  1322
 #define IDC_WROT_ACCEL                  1323
 #define IDM_DOT_LOC                     2000
@@ -613,7 +617,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1112
 #define _APS_NEXT_COMMAND_VALUE         32873
-#define _APS_NEXT_CONTROL_VALUE         1318
+#define _APS_NEXT_CONTROL_VALUE         1319
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

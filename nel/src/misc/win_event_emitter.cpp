@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.3 2001/02/12 15:56:02 coutelas Exp $
+ * $Id: win_event_emitter.cpp,v 1.4 2001/02/23 09:08:52 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,7 +66,20 @@ void CWinEventEmitter::submitEvents(CEventServer & server)
 \*------------------------------------------------------------------*/
 
 
-TMouseButton getMouseButton (uint32 wParam)
+TKeyButton getKeyButton (bool _altButton, bool _shiftButton, bool _ctrlButton)
+{
+	TKeyButton button=noKeyButton;
+	if (_altButton)
+		(int&)button|=altKeyButton;
+	if (_shiftButton)
+		(int&)button|=shiftKeyButton;
+	if (_ctrlButton)
+		(int&)button|=ctrlKeyButton;
+ 
+	return button;
+}
+
+TMouseButton getMouseButton (uint32 wParam, bool _altButton)
 {
 	TMouseButton button=noButton;
 	if (wParam&MK_CONTROL)
@@ -79,7 +92,7 @@ TMouseButton getMouseButton (uint32 wParam)
 		(int&)button|=middleButton;
 	if (wParam&MK_SHIFT)
 		(int&)button|=shiftButton;
-	if (GetAsyncKeyState(VK_MENU)&(1<<15))
+	if (_altButton)
 		(int&)button|=altButton;
  
 	return button;
@@ -92,24 +105,55 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 	switch (msg)
 	{
 	case WM_KEYDOWN:
-		server->postEvent (new CEventKeyDown ((TKey)wParam, (((int) wParam)&(1<<30))==0, this));
+	case WM_SYSKEYDOWN:
+		// Ctrl, shit or alt ?
+		if ((int)wParam==VK_MENU)
+			_AltButton=true;
+		if ((int)wParam==VK_CONTROL)
+			_CtrlButton=true;
+		if ((int)wParam==VK_SHIFT)
+			_ShiftButton=true;
+
+		// Post the message
+		server->postEvent (new CEventKeyDown ((TKey)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), (((int) wParam)&(1<<30))==0, this));
 		break;
+
+	case WM_SYSKEYUP:
 	case WM_KEYUP:
-		server->postEvent (new CEventKeyUp ((TKey)wParam, this));
+		// Ctrl, shit or alt ?
+		if ((int)wParam==VK_MENU)
+			_AltButton=false;
+		if ((int)wParam==VK_CONTROL)
+			_CtrlButton=false;
+		if ((int)wParam==VK_SHIFT)
+			_ShiftButton=false;
+
+		// Post the message
+		server->postEvent (new CEventKeyUp ((TKey)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), this));
 		break;
 	case WM_CHAR:
-		server->postEvent (new CEventChar ((ucchar)wParam, this));
+		server->postEvent (new CEventChar ((ucchar)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), this));
 		break;
 	case WM_ACTIVATE:
 		if (WA_INACTIVE==LOWORD(wParam))
 			server->postEvent (new CEventActivate (false, this));
 		else
+		{
+			// Reset flags state
+			resetButtonFlagState ();
+
+			// Post the message
 			server->postEvent (new CEventActivate (true, this));
+		}
 		break;
 	case WM_KILLFOCUS:
 		server->postEvent (new CEventSetFocus (false, this));
 		break;
 	case WM_SETFOCUS:
+		// Reset flags state
+		resetButtonFlagState ();
+
+		// Post the message
 		server->postEvent (new CEventSetFocus (true, this));
 		break;
 	case WM_MOUSEMOVE:
@@ -135,7 +179,7 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 			fY=1.f-yPos/(float)(client.bottom-client.top);
 
 			// buttons
-			TMouseButton button=getMouseButton (wParam);
+			TMouseButton button=getMouseButton (wParam, _AltButton);
 
 			// Reswitch
 			switch (msg)
@@ -189,12 +233,19 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 			fY=1.f-(float)HIWORD(lParam)/(float)(client.bottom-client.top);
 
 			// buttons
-			TMouseButton button=getMouseButton (LOWORD(wParam));
+			TMouseButton button=getMouseButton (LOWORD(wParam), _AltButton);
 
 			server->postEvent (new CEventMouseWheel (fX, fY, button, (short) HIWORD(wParam)>=0, this));
 			break;
 		}
 	}
+}
+
+void CWinEventEmitter::resetButtonFlagState ()
+{
+	_CtrlButton=( (GetAsyncKeyState(VK_CONTROL)&0x8000) != 0);
+	_ShiftButton=( (GetAsyncKeyState(VK_SHIFT)&0x8000) != 0);
+	_AltButton=( (GetAsyncKeyState(VK_MENU)&0x8000) != 0);
 }
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file win_event_emitter.h
  * <File description>
  *
- * $Id: win_event_emitter.h,v 1.1 2000/12/19 09:55:14 lecroart Exp $
+ * $Id: win_event_emitter.h,v 1.2 2001/02/23 09:08:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,10 +43,12 @@ public:
 	CWinEventEmitter ()
 	{
 		_HWnd=NULL;
+		resetButtonFlagState ();
 	}
 	void setHWnd (uint32 hWnd)
 	{
 		_HWnd=hWnd;
+		resetButtonFlagState ();
 	}
 
 	/** 
@@ -56,6 +58,9 @@ public:
 	 */	
 	virtual void submitEvents(CEventServer & server);
 private:
+	// Reset button flag state
+	void resetButtonFlagState ();
+
 	// Private internal server message
 	class CWinEventServer : CEventServer
 	{
@@ -81,8 +86,11 @@ public:
 	  */
 	void processMessage (uint32 hWnd, uint32 msg, uint32 wParam, uint32 lParam, CEventServer *server=NULL);
 private:
-	CWinEventServer _InternalServer;
-	uint32 _HWnd;
+	CWinEventServer		_InternalServer;
+	uint32				_HWnd;
+	bool				_CtrlButton;
+	bool				_ShiftButton;
+	bool				_AltButton;
 };
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.103 2003/08/08 16:58:46 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.104 2003/08/21 09:30:19 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1158,8 +1158,8 @@ void CObjectViewer::go ()
 			uint nbPlayingSources, nbSources;
 			if (CSoundSystem::getAudioMixer())
 			{
-				nbPlayingSources = CSoundSystem::getAudioMixer()->getPlayingSourcesNumber();
-				nbSources = CSoundSystem::getAudioMixer()->getSourcesNumber();
+				nbPlayingSources = CSoundSystem::getAudioMixer()->getUsedTracksCount();
+				nbSources = CSoundSystem::getAudioMixer()->getPlayingSourcesCount();
 			}
 			else
 			{

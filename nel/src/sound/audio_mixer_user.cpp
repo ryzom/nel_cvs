@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.57 2003/08/01 13:11:23 corvazier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.58 2003/08/21 09:26:27 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,6 +123,7 @@ CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL),
 									 _Leaving(false),
 									 _BackgroundSoundManager(0),
 									 _PlayingSources(0),
+									 _PlayingSourcesMuted(0),
 									 _ClusteredSound(0),
 									_PackedSheetPath(""),
 									_UseADPCM(true),
@@ -256,11 +257,13 @@ void				CAudioMixerUser::writeProfile(std::ostream& out)
 	}
 */
 	out << "Mixer: \n";
-	out << "Playing sources: " << getPlayingSourcesNumber() << " \n";
-	out << "Available tracks: " << getNumberAvailableTracks() << " \n";
+	out << "Playing sources: " << getPlayingSourcesCount() << " \n";
+	out << "Available tracks: " << getAvailableTracksCount() << " \n";
+	out << "Used tracks: " << getUsedTracksCount() << " \n";
 //	out << "Muted sources: " << nb << " \n";
 //	out << "Muted sources: " << max(0, sint(_PlayingSources.size())-sint(_NbTracks)) << " \n";
-	out << "Muted sources: " << max(0, sint(_PlayingSources)-sint(_NbTracks)) << " \n";
+//	out << "Muted sources: " << max(0, sint(_PlayingSources)-sint(_NbTracks)) << " \n";
+	out << "Muted sources: " << _PlayingSourcesMuted << "\n";
 	out << "Sources waiting for play: " << _SourceWaitingForPlay.size() << " \n";
 	out << "HighestPri: " << _ReserveUsage[HighestPri] << " / " << _PriorityReserve[HighestPri] << " \n";
 	out << "HighPri:    " << _ReserveUsage[HighPri] << " / " << _PriorityReserve[HighPri] << "\n";
@@ -1608,7 +1611,7 @@ retrySound:
 				return NULL;
 			}
 
-			if (!missingFiles.empty() && count <= missingFiles.size())
+			if (!missingFiles.empty()/* && count <= missingFiles.size()*/)
 			{
 				// try to load missing sample bank
 				for (uint i=0; i<missingFiles.size(); ++i)
@@ -1849,17 +1852,23 @@ void			CAudioMixerUser::getSoundNames( std::vector<NLMISC::TStringId> &names ) c
 
 // ******************************************************************
 
-uint			CAudioMixerUser::getPlayingSourcesNumber() const
+uint			CAudioMixerUser::getPlayingSourcesCount() const
 {
 	return _PlayingSources;
 }
 
 // ******************************************************************
 
-uint			CAudioMixerUser::getNumberAvailableTracks() const
+uint			CAudioMixerUser::getAvailableTracksCount() const
 {
 	return _FreeTracks.size();
 }
+
+uint			CAudioMixerUser::getUsedTracksCount() const
+{
+	return _NbTracks - _FreeTracks.size();
+}
+
 
 
 // ******************************************************************
@@ -1959,108 +1968,6 @@ void			CAudioMixerUser::getLoadedSampleBankInfo(std::vector<std::pair<std::strin
 }
 
 
-// ******************************************************************
-/*
-void			CAudioMixerUser::redispatchSourcesToTrack()
-{
-*/	// TODO : rewrite ?
-/*
-	if ( _NbTracks == 0 )
-	{
-		return;
-	}
-
-	_profile(( "AM: [%u]---------------------------------------------------------------", curTime() ));
-	_profile(( "AM: Redispatching sources" ));
-	
-	const CVector &listenerpos = _Listener.getPos();
-
-	// Get a copy of the sources set (we will modify it)
-	static TSourceContainer sources_copy; 
-	sources_copy = _PlayingSources;
-	// FIXME: SWAPTEST
-	//nlassert( sources_copy.size() >= _NbTracks );
-
-	// Select the nbtracks "smallest" sources (the ones that have the higher priorities)
-	TSourceContainer::iterator ips;
-	static TSourceContainer selected_sources;
-	uint32 i;
-
-	selected_sources.clear();
-
-	// Select the sources
-
-	// Select the nbtracks "smallest" sources (the ones that have the higher priorities)
-	// FIXME: SWAPTEST
-	//for ( i=0; i!=_NbTracks; i++ )
-	// TODO : optimize : this is a very BAD PERFORMANCE code
-	while (!sources_copy.empty() && (selected_sources.size() < _NbTracks))
-	{
-		ips = min_element( sources_copy.begin(), sources_copy.end(), CompareSources( listenerpos ) );
-
-		if ((*ips)->isPlaying())
-		{
-			selected_sources.insert( *ips );
-		}
-
-		sources_copy.erase( ips );
-	}
-
-	// Clear the current tracks where the sources are not selected anymore
-	_profile(( "AM: Total sources: %u", _PlayingSources.size() ));
-	_profile(( "AM: Selected sources: %u", selected_sources.size() ));
-	for ( i=0; i!=_NbTracks; i++ )
-	{
-		// FIXME: SWAPTEST
-		if ( _Tracks[i] && ! _Tracks[i]->isAvailable() )
-		{
-			// Optimization note: instead of searching the source in selected_sources, we could have
-			// set a boolean in the source object and tested it.
-			if ( (ips = selected_sources.find( _Tracks[i]->getSource() )) == selected_sources.end() )
-			{
-				// There will be a new source in this track
-				_profile(( "AM: TRACK: %p: REPLACED, SOURCE: %p", _Tracks[i], _Tracks[i]->getSource() ));
-				if (_Tracks[i]->getSource() != 0)
-				{
-					_Tracks[i]->getSource()->leaveTrack();
-//					nlassert(_PlayingSources.find(_Tracks[i]->getSource()) != _PlayingSources.end());
-					_PlayingSources.erase(_Tracks[i]->getSource());
-				}
-			}
-			else
-			{
-				// The track will remain unchanged
-				selected_sources.erase( ips );
-				_profile(( "AM: TRACK: %p: UNCHANGED, SOURCE: %p", _Tracks[i], _Tracks[i]->getSource() ));
-			}
-		}
-		else
-		{
-			_profile(( "AM: TRACK: %p: FREE", _Tracks[i] ));
-		}
-	}
-
-	if (!selected_sources.empty())
-	{
-		// Now, only the sources to add into the tracks remain in selected_sources
-		CTrack *track [MAX_TRACKS]; // a little bit more than needed (avoiding a "new")
-		getFreeTracks( selected_sources.size(), track );
-
-		_profile(( "AM: Remaining sources: %u", selected_sources.size() ));
-
-		for (i=0, ips=selected_sources.begin(); ips!=selected_sources.end(); ++ips )
-		{
-			// FIXME: SWAPTEST
-			(*ips)->enterTrack( track[i] );
-//			nlassert(_PlayingSources.find(*ips) == _PlayingSources.end());
-//			_PlayingSources.insert(*ips);
-	//		_profile(( "AM: TRACK: %p: ASSIGNED, SOURCE: %p", track[i], track[i]->getSource() ));
-			_profile(( "AM: TRACK: %p: ASSIGNED, SOURCE: %p", track[i], *ips ));
-			i++;
-		}
-	}
-*/
-//}
 
 void CAudioMixerUser::setListenerPos (const NLMISC::CVector &pos)
 {

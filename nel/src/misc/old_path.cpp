@@ -1,9 +1,10 @@
 #if 0
 
+
 /** \file path.cpp
  * CPath
  *
- * $Id: old_path.cpp,v 1.3 2002/04/15 08:43:09 lecroart Exp $
+ * $Id: old_path.cpp,v 1.4 2002/04/15 08:43:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

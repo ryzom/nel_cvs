@@ -18,11 +18,10 @@ dir_database=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/dat
 dir_ligosrc=`cat ../../cfg/directories.cfg | grep "ligo_source_directory" | sed -e 's/ligo_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g' | sed -e 's&\/&\\\&g'`
 
 echo "LigoPath=$dir_database\\$dir_ligosrc\\max\\" >> $max_directory/plugcfg/nelligo.ini
-echo "LigoExportPath=$dir_database\\$dir_ligosrc\\" >> $max_directory/plugcfg/nelligo.ini
+#echo "LigoExportPath=$dir_database\\$dir_ligosrc\\" >> $max_directory/plugcfg/nelligo.ini
 
-mkdir $dir_database\\$dir_ligosrc\\zoneBitmaps
-mkdir $dir_database\\$dir_ligosrc\\zoneLigos
-mkdir $dir_database\\$dir_ligosrc\\zones
+dir_gamedata=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g' | sed -e 's&\/&\\\&g'`
+echo "LigoExportPath=$dir_gamedata\\processes\\ligo\\" >> $max_directory/plugcfg/nelligo.ini
 
 # export
 

@@ -15,12 +15,15 @@ echo "OutZoneDir = \"output\";" >> land_exporter.cfg
 
 dir_database=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 dir_ligosrc=`cat ../../cfg/directories.cfg | grep "ligo_source_directory" | sed -e 's/ligo_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-echo "RefZoneDir = \"$dir_database/$dir_ligosrc/zones\";" >> land_exporter.cfg
+
+#echo "RefZoneDir = \"$dir_database/$dir_ligosrc/zones\";" >> land_exporter.cfg
+echo "RefZoneDir = \"zones\";" >> land_exporter.cfg
 
 
 # LigoBankDir is Where all .ligozone are (those used by the .land)
 
-echo "LigoBankDir = \"$dir_database/$dir_ligosrc/zoneligos\";" >> land_exporter.cfg
+#echo "LigoBankDir = \"$dir_database/$dir_ligosrc/zoneligos\";" >> land_exporter.cfg
+echo "LigoBankDir = \"zoneligos\";" >> land_exporter.cfg
 
 
 # TileBankFile is the .bank file (used to know if a tile is oriented and the like)

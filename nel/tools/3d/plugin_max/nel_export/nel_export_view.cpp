@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.2 2001/04/30 17:01:00 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,10 +57,6 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time)
 
 	// Build a skeleton map
 	mapRootMapBoneBindPos	skeletonMap;
-
-	// Skeleton shape pointers
-	typedef std::map<INode*, CSkeletonModel*>	mapNodeSkel;
-	mapNodeSkel									nodeSkelMap;
 
 	if (view)
 	{
@@ -146,50 +142,31 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time)
 					// Skeleton exist ?
 					if (skeletonRoot)
 					{
-						// Look for a preexisting skeleton
-						mapNodeSkel::iterator ite=nodeSkelMap.find (skeletonRoot);
+						// Build a skeleton
+						CSkeletonShape *skeletonShape=new CSkeletonShape();
 
-						// Not found ?
-						if (ite==nodeSkelMap.end())
-						{
-							// Build a skeleton
-							CSkeletonShape *skeletonShape=new CSkeletonShape();
+						// Look for bind pos info for this skeleton
+						mapRootMapBoneBindPos::iterator iteSkel=skeletonMap.find (skeletonRoot);
+						nlassert (iteSkel!=skeletonMap.end());
 
-							// Look for bind pos info for this skeleton
-							mapRootMapBoneBindPos::iterator iteSkel=skeletonMap.find (skeletonRoot);
-							nlassert (iteSkel!=skeletonMap.end());
-
-							// Build the skeleton based on the bind pos information
-							CExportNel::buildSkeletonShape (*skeletonShape, *skeletonRoot, &(iteSkel->second), time);
-
-							// Add the skeleton in the scene
-							//CSkeletonModel *skel=(CSkeletonModel*)view->addMesh (skeletonShape, skeletonRoot->GetName(), "");
-
-							// Add a skeleton entry
-							/*nodeSkelMap.insert (mapNodeSkel::value_type (skeletonRoot, skel));
-							ite=nodeSkelMap.find (skeletonRoot);
-
-							// Add skeleton animation in the anim
-							CExportNel::addBoneTracks (*anim, *skeletonRoot, "", &ip);*/
-						}
+						// Build the skeleton based on the bind pos information
+						CExportNel::buildSkeletonShape (*skeletonShape, *skeletonRoot, &(iteSkel->second), time);
 
 						// Export the shape
 						IShape *pShape;
-						pShape=CExportNel::buildShape (*pNode, ip, time, (CSkeletonShape*)(IShape*)(ite->second->Shape), true);
+						pShape=CExportNel::buildShape (*pNode, ip, time, skeletonShape, true);
 
 						// Build succesful ?
 						if (pShape)
 						{
 							// Add the shape in the view
-							//CMeshInstance* meshInstance=(CMeshInstance*)view->addShape (pShape, pNode->GetName(), (CExportNel::getName (*pNode)+".").c_str());
-							CMeshInstance* meshInstance=(CMeshInstance*)view->addMesh (pShape, NULL, pNode->GetName(), (CExportNel::getName (*pNode)+".").c_str());
-
-							// Bind to the skeleton
-							//ite->second->bindSkin (meshInstance);
+							CMeshInstance* meshInstance=(CMeshInstance*)view->addMesh (pShape, skeletonShape, pNode->GetName(), skeletonRoot->GetName(), (CExportNel::getName (*pNode)+".").c_str());
 
 							// ok
 							skined=true;
 						}
+						else
+							delete skeletonShape;
 					}
 				}
 				
@@ -204,7 +181,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time)
 					if (pShape)
 					{
 						// Add to the view
-						view->addMesh (pShape, NULL, pNode->GetName(), (CExportNel::getName (*pNode)+".").c_str());
+						view->addMesh (pShape, NULL, pNode->GetName(), NULL, (CExportNel::getName (*pNode)+".").c_str());
 					}
 				}
 

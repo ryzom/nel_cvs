@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.2 2001/04/30 17:01:00 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,53 +143,8 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 								// Skin objects
 								CSkeletonShape *pSkinShape=NULL;
 
-								// Check if it is a skin
-								if (CExportNel::isSkin (*pNode))
-								{
-									char sSkinMsg[256];
-									char sSkeletonPath[512];
-									sprintf (sSkinMsg, "Select a skeleton for %s", pNode->GetName());
-
-									// Ask for a skin
-									if (theCNelExport.SelectFileForLoad(hWnd, sSkinMsg, skeletonFilter, sSkeletonPath))
-									{
-										// Load the skin
-										CIFile file;
-										if (file.open (sSkeletonPath))
-										{
-											// Serial the skeleton
-											try
-											{
-												// Serial
-												CShapeStream serialShape;
-												serialShape.serial (file);
-
-												// Get the pointer
-												pSkinShape=dynamic_cast<CSkeletonShape*> (serialShape.getShapePointer ());
-
-												// If it is the wrong class, delete this pointer
-												if (pSkinShape==NULL)
-													delete pSkinShape;
-											}
-											catch (Exception& e)
-											{
-												char sErrorMsg[512];
-												sprintf (sErrorMsg, "Error during reading the skeleton: %s.", e.what());
-												MessageBox (hWnd, sErrorMsg, "NeL export", MB_OK|MB_ICONEXCLAMATION);
-											}
-										}
-										else
-										{
-											// Error message
-											char sErrorMsg[512];
-											sprintf (sErrorMsg, "Can't open file %s for reading.", sSkeletonPath);
-											MessageBox (hWnd, sErrorMsg, "NeL export", MB_OK|MB_ICONEXCLAMATION);
-										}
-									}
-								}
-
-								// Export the zone
-								if (!theCNelExport.exportMesh (sSavePath, *pNode, *theCNelExport.ip, time, pSkinShape))
+								// Export the mesh
+								if (!theCNelExport.exportMesh (sSavePath, *pNode, *theCNelExport.ip, time))
 								{
 									// Error message
 									char sErrorMsg[512];

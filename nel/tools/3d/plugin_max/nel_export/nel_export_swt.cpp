@@ -1,7 +1,7 @@
 /** \file nel_export_swt.cpp
  * <File description>
  *
- * $Id: nel_export_swt.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: nel_export_swt.cpp,v 1.2 2001/04/30 17:01:00 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,8 +31,6 @@
 #include "nel/3d/skeleton_weight.h"
 #include "nel/misc/file.h"
 #include "../nel_mesh_lib/export_nel.h"
-//#include <max.h>
-//#include <modstack.h>
 
 using namespace NL3D;
 using namespace NLMISC;
@@ -69,31 +67,19 @@ bool CNelExport::exportSWT(const char *sPath, std::vector<INode*>& vectNode, Int
 		CExportNel::getValueByNameUsingParamBlock2( *pModifier, "swtScaleValue", (ParamType2)TYPE_FLOAT, &rScaleValue, 0);
 
 		// Store them in the temporary list
-		if (( rPosValue == rRotValue) && ( rPosValue == rScaleValue))
-		{
-			aSWNodes.resize(nNumNode+1);
-			// We can optimize the number of SWT
-			aSWNodes[nNumNode].Name = pNode->GetName();
-			aSWNodes[nNumNode].Name += ".";
-			aSWNodes[nNumNode].Weight = rRotValue;
-			++nNumNode;
-		}
-		else
-		{
-			aSWNodes.resize(nNumNode+3);
-			aSWNodes[nNumNode].Name = pNode->GetName();
-			aSWNodes[nNumNode].Name += ".rot";
-			aSWNodes[nNumNode].Weight = rRotValue;
-			++nNumNode;
-			aSWNodes[nNumNode].Name = pNode->GetName();
-			aSWNodes[nNumNode].Name += ".pos";
-			aSWNodes[nNumNode].Weight = rPosValue;
-			++nNumNode;
-			aSWNodes[nNumNode].Name = pNode->GetName();
-			aSWNodes[nNumNode].Name += ".scale";
-			aSWNodes[nNumNode].Weight = rScaleValue;
-			++nNumNode;
-		}
+		aSWNodes.resize(nNumNode+3);
+		aSWNodes[nNumNode].Name = pNode->GetName();
+		aSWNodes[nNumNode].Name += std::string (".")+ITransformable::getRotQuatValueName();
+		aSWNodes[nNumNode].Weight = rRotValue;
+		++nNumNode;
+		aSWNodes[nNumNode].Name = pNode->GetName();
+		aSWNodes[nNumNode].Name += std::string (".")+ITransformable::getPosValueName ();
+		aSWNodes[nNumNode].Weight = rPosValue;
+		++nNumNode;
+		aSWNodes[nNumNode].Name = pNode->GetName();
+		aSWNodes[nNumNode].Name += std::string (".")+ITransformable::getScaleValueName();
+		aSWNodes[nNumNode].Weight = rScaleValue;
+		++nNumNode;
 	}
 
 	if (aSWNodes.size())

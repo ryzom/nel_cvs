@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.2 2001/04/30 17:01:00 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,7 +90,7 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 	}
 
 	// Add bones tracks
-	// addBonesTracks (animation, node, sBaseName, ip);
+	addBonesTracks (animation, node, sBaseName, ip);
 }
 
 // --------------------------------------------------

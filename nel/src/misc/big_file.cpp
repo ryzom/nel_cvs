@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.4 2002/10/25 15:48:22 berenguier Exp $
+ * $Id: big_file.cpp,v 1.5 2002/11/18 09:25:06 berenguier Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -176,11 +176,11 @@ void CBigFile::remove (const std::string &sBigFileName)
 // ***************************************************************************
 void CBigFile::list (const std::string &sBigFileName, std::vector<std::string> &vAllFiles)
 {
-	string zeFileName, zeBigFileName, lwrFileName = strlwr (sBigFileName);
-	if (_BNPs.find (zeBigFileName) == _BNPs.end())
+	string lwrFileName = strlwr (sBigFileName);
+	if (_BNPs.find (lwrFileName) == _BNPs.end())
 		return;
 	vAllFiles.clear ();
-	BNP &rbnp = _BNPs.find (zeBigFileName)->second;
+	BNP &rbnp = _BNPs.find (lwrFileName)->second;
 	map<string,BNPFile>::iterator it = rbnp.Files.begin();
 	while (it != rbnp.Files.end())
 	{

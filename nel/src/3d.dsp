@@ -498,6 +498,14 @@ SOURCE=.\3d\patch_vegetable.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\patchdlm_context.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\patchdlm_context.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\patchuv_locator.cpp
 # End Source File
 # Begin Source File
@@ -535,6 +543,14 @@ SOURCE=.\3d\tessellation.cpp
 # Begin Source File
 
 SOURCE=.\3d\tessellation.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_dlm.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_dlm.h
 # End Source File
 # Begin Source File
 

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: log.h,v 1.8 2000/10/09 15:21:46 cado Exp $
+ * $Id: log.h,v 1.9 2000/10/11 08:31:07 lecroart Exp $
  *
  * Interface for CLog
  */
@@ -59,7 +59,7 @@ public:
 	void removeDisplayer (IDisplayer *displayer);
 
 	/// Sets the local host name, with has to be determined outside
-	void setLocalHostAndService( const std::string& hostname, const std::string& servicename )
+	static void setLocalHostAndService( const std::string& hostname, const std::string& servicename )
 	{
 		_LocalHostAndService = hostname + " " + servicename + " ";
 	}
@@ -96,7 +96,7 @@ protected:
 private:
 
 	TLogPriority				_Priority;
-	std::string					_LocalHostAndService;
+	static std::string			_LocalHostAndService;
 	bool						_Long;
 
 	uint						_Line;

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.cpp,v 1.9 2000/10/09 14:53:44 lecroart Exp $
+ * $Id: service.cpp,v 1.10 2000/10/11 08:31:07 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -21,6 +21,10 @@
 
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
+
+#include "nel/net/base_socket.h"
+#include "nel/net/service.h"
+#include "nel/net/inet_address.h"
 
 #include "nel/net/service.h"
 
@@ -37,11 +41,18 @@ void ExitFunc ()
 	try
 	{
 		if (Service != NULL)
-			Service->release ();
+		{
+			// release only one time
+			IService *is = Service;
+			Service = NULL;
+
+			is->release ();
+		}
 	}
-	catch (Exception& e)
+	catch (Exception &e)
 	{
-		cout << "Error releasing service : " << e.what() << endl;
+		nlerror ("Error releasing service : %s", e.what());
+		if (Service != NULL) Service->setStatus (EXIT_FAILURE);
 	}
 }
 
@@ -60,25 +71,47 @@ sint IService::main (int argc, char **argv)
 
 		setStatus (EXIT_SUCCESS);
 
-		NLMISC_InitDebug();
+		string localhost;
+		try
+		{
+			// initialize WSAStartup and network stuffs
+			CBaseSocket::init();
 
+			// get the localhost name
+			localhost = CInetAddress::localHost().hostName();
+		}
+		catch (NLNET::ESocket &)
+		{
+			localhost = "<UnknownHost>";
+		}
+
+		// set the localhost name and service name to the logger
+		CLog::setLocalHostAndService (localhost, _Name);
+
+		// initialize debug stuffs, create displayers for rk* functions
+		InitDebug();
+
+		// user service init
 		init ();
+
+		// user service update call each loop
 		while (update())
 		{
 			CConfigFile::checkConfigFiles ();
 		}
-		Service = NULL;
-		release ();
+		ExitFunc ();
 	}
 	catch (Exception &e)
 	{
-		cout << e.what() << endl;
+		nlerror ("Error running the service \"%s\": %s", _Name, e.what());
 		setStatus (EXIT_FAILURE);
 		ExitFunc ();
 	}
 	catch (...)
 	{
-		cout << "Unknown exception\n" << endl;
+		nlerror ("Unknown external exception");
+		setStatus (EXIT_FAILURE);
+		ExitFunc ();
 	}
 	return getStatus ();
 }

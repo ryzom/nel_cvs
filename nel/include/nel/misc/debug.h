@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.h,v 1.7 2000/10/09 14:53:44 lecroart Exp $
+ * $Id: debug.h,v 1.8 2000/10/11 08:31:07 lecroart Exp $
  *
  * This file contains all features that help us to debug applications/
  */
@@ -42,8 +42,9 @@ extern CLog AssertLog;
 
 /* Functions */
 
-void NLMISC_InitDebug ();
+void nlError (const char *format, ...);
 
+void InitDebug ();
 
 /* Macros */
 
@@ -104,7 +105,7 @@ void NLMISC_InitDebug ();
 	}
  *\endcode
  */
-#define nlerror NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::ErrorLog.displayNL
+#define nlerror NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); nlError
 
 /**
  * \def nlassert(exp)

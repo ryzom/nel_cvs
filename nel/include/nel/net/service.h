@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.h,v 1.8 2000/10/09 14:12:37 lecroart Exp $
+ * $Id: service.h,v 1.9 2000/10/11 08:31:07 lecroart Exp $
  *
  * Base class for all network services
  */
@@ -45,13 +45,16 @@ namespace NLNET
 #define NLNET_SERVICE_MAIN(ServiceClassName, ServiceName) \
 const char IService::_Name[] = ServiceName; \
 	int main(int argc, char **argv) { \
-	ServiceClassName scn; \
-	return scn.main (argc, argv); \
+	ServiceClassName *scn = new ServiceClassName; \
+	bool retval = scn->main (argc, argv); \
+	delete scn; \
+	return retval; \
 }
 
 
 /**
- * Base class for all network services.
+ * Base class for all network services. You must inherite this class to create your own service. You must not
+ * create ctor and dtor but use init() and release() functions.
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: log.cpp,v 1.6 2000/10/09 15:21:39 cado Exp $
+ * $Id: log.cpp,v 1.7 2000/10/11 08:31:07 lecroart Exp $
  *
  * Implementation for CLog
  */
@@ -32,13 +32,13 @@ using namespace std;
 namespace NLMISC
 {
 
+string CLog::_LocalHostAndService = "<UnknownHost> <UnknownService> ";
 
 CLog::CLog( TLogPriority priority, bool longinfo ) :
 	_Priority( priority ),
 	_Line( 0 ),
 	_File( NULL ),
-	_Long( longinfo ),
-	_LocalHostAndService( "<unknown>" )
+	_Long( longinfo )
 {
 }
 

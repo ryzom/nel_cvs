@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.cpp,v 1.11 2000/10/10 16:30:52 cado Exp $
+ * $Id: debug.cpp,v 1.12 2000/10/11 08:31:07 lecroart Exp $
  *
  * Debug
  */
@@ -93,7 +93,23 @@ CLog AssertLog( LOG_ASSERT, true );
 
 CStdDisplayer sd;
 
-void NLMISC_InitDebug ()
+
+void nlError (const char *format, ...)
+{
+	// Build the string
+	char cstring [1024];
+
+	va_list args;
+	va_start( args, format );
+	vsprintf( cstring, format, args );
+	va_end( args );
+	strcat( cstring, "\n" );
+
+	NLMISC::ErrorLog.displayNL (cstring);
+	exit (EXIT_FAILURE);
+}
+
+void InitDebug ()
 {
 	static int alreadyInit = false;
 

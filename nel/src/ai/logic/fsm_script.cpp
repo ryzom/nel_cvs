@@ -192,11 +192,14 @@ namespace NLAIAGENT
 
 		tQueue result = CAgentScript::isMember( className, name, param);
 
+		static NLAIAGENT::CStringVarName run_tell("RunTell");
+		static NLAIAGENT::CStringVarName get_active("getActive");
+
 		if ( result.size() )
 			return result;
 
 		// Processes succes and failure functions
-		if ( *name == CStringVarName("RunTell") )
+		if ( *name ==  run_tell)
 		{
 			double d;
 			d = ((NLAISCRIPT::CParam &)*ParamSuccessMsg).eval((NLAISCRIPT::CParam &)param);
@@ -215,7 +218,7 @@ namespace NLAIAGENT
 		}
 
 		// Returns a list of active states
-		if ( *name == CStringVarName("getActive") )
+		if ( *name == get_active )
 		{
 			// Todo
 		}

@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.15 2001/05/10 15:15:57 portier Exp $
+ * $Id: lexsupport.cpp,v 1.16 2001/06/26 13:27:32 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,13 +162,16 @@ namespace NLAISCRIPT
 	int GetIdentType(char *Str)
 	{
 		CStringType S = Str;
-		
-		Arbre::iterator Itr = DicoDeNom.find(S);
 
-		if(Itr != DicoDeNom.end())
-		{
-			return (*Itr).second;
-		}		
+		if(DicoDeNom.size())
+		{		
+			Arbre::iterator Itr = DicoDeNom.find(S);
+
+			if(Itr != DicoDeNom.end())
+			{
+				return (*Itr).second;
+			}
+		}
 		return IDENT;
 	}
 

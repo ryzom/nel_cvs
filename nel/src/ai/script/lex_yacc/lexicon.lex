@@ -422,7 +422,7 @@ reel {entier10}"."{entier10}
 		return CROCHER_D;
 	}
 "["	{
-		yyColone ++;
+		yyColone ++;²
 		return CROCHER_G;
 	}
 

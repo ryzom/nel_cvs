@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.32 2001/09/12 10:07:05 legros Exp $
+ * $Id: local_retriever.cpp,v 1.33 2001/09/14 09:50:49 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -779,12 +779,13 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 
 void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<uint8> &retrieveTable, CCollisionSurfaceTemp &cst) const
 {
-	CAABBox		box;
+	CAABBox			box;
 	box.setMinMax(CVector(estimated.x, _BBox.getMin().y, 0.0f), CVector(estimated.x, _BBox.getMax().y, 0.0f));
-	uint	numEdges = _ChainQuad.selectEdges(box, cst);
+	uint			numEdges = _ChainQuad.selectEdges(box, cst);
 
-	uint	ochain, i;
-	CVector2s	estim = CVector2s(estimated);
+	uint			ochain, i;
+	CVector2s		estim = CVector2s(estimated);
+	const double	BorderThreshold = 2.0e-2f;
 
 	// WARNING!!
 	// retrieveTable is assumed to be 0 filled !!
@@ -809,6 +810,7 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 			continue;
 
 		bool	isUpper;
+		bool	isOnBorder = false;
 
 		if (estim.y < min.y)
 		{
@@ -859,17 +861,26 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 					// the very rare case the edge is vertical, and the
 					// retrieved position is exactly on the edge...
 					isUpper = true;
+					isOnBorder = true;
 				}
 				else
 				{
 					sint16	intersect = vstart.y + (vstop.y-vstart.y)*(estim.x-vstart.x)/(vstop.x-vstart.x);
 					isUpper = estim.y > intersect;
+					isOnBorder = (fabs(estim.y - intersect)<BorderThreshold);
 				}
 			}
 		}
 
 		sint32	left = _Chains[sub.getParentId()].getLeft(),
 				right = _Chains[sub.getParentId()].getRight();
+
+		if (isOnBorder)
+		{
+			if (left >= 0)	++retrieveTable[left];
+			if (right >= 0)	++retrieveTable[right];
+			continue;
+		}
 
 		// Depending on the chain is forward, up the position, increase/decrease the surface table...
 		if (sub.isForward())

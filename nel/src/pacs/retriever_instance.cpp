@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.28 2001/09/13 10:25:26 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.29 2001/09/14 09:50:50 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -296,7 +296,7 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 		if (_RetrieveTable[surf] != 0)
 		{
 			// at least remembers the last seen surface...
-			lastSurf = surf;
+//			lastSurf = surf;
 			_RetrieveTable[surf] = 0;
 			float			meanHeight;
 			const CQuadLeaf	*leaf;
@@ -332,7 +332,7 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 
 			// if it is closer to the estimation than the previous remembered...
 			float	distance = (float)fabs(localEstimated.z-meanHeight);
-			if (distance < bestDistance)
+			if (distance < bestDistance && lfound)
 			{
 				bestDistance = distance;
 				bestHeight = meanHeight;
@@ -384,7 +384,7 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 		if (_RetrieveTable[surf] != 0)
 		{
 			// at least remembers the last seen surface...
-			lastSurf = surf;
+//			lastSurf = surf;
 			_RetrieveTable[surf] = 0;
 			float			meanHeight;
 			const CQuadLeaf	*leaf;
@@ -420,7 +420,7 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 
 			// if it is closer to the estimation than the previous remembered...
 			float	distance = (float)fabs(localEstimated.z-meanHeight);
-			if (distance < bestDistance)
+			if (distance < bestDistance && lfound)
 			{
 				bestDistance = distance;
 				bestHeight = meanHeight;

@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.10 2001/06/18 08:58:52 cado Exp $
+ * $Id: mem_stream.cpp,v 1.11 2001/10/09 16:37:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NLMISC
 CMemStream::CMemStream( bool inputStream, uint32 defaultcapacity ) :
 	NLMISC::IStream( inputStream, true )
 {
-	_Buffer.reserve( defaultcapacity );
+	_Buffer.reserve( std::max( defaultcapacity, (uint32)4 ) ); // prevent from no allocation
 	_BufPos = _Buffer.begin();
 }
 

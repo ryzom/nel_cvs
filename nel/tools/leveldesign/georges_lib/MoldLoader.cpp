@@ -65,6 +65,9 @@ CMoldElt* CMoldLoader::LoadMold( const CStringEx _sxfilename )
 	// find if loaded
 	CMoldElt* pme;
 	CStringEx sxfullname = pl->WhereIsDfnTyp( sxfn );
+	if (sxfullname == "")
+		throw NLMISC::Exception ("Unable to find " + sxfn);
+
 	sxfullname.make_lower();
 	std::map< CStringEx, CMoldElt* >::iterator it = mmold.find( sxfullname );
 	if( it != mmold.end() )

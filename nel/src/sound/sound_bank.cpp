@@ -1,7 +1,7 @@
 /** \file sound_bank.cpp
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.cpp,v 1.6 2002/11/04 15:40:44 boucher Exp $
+ * $Id: sound_bank.cpp,v 1.7 2002/11/04 17:29:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -234,9 +234,10 @@ void				CSoundBank::load()
 //						NLSOUND::CSound* sound = new CSound();
 //						sound->importForm((*iter), form->getRootNode());
 						CSound* sound = CSound::createSound((*iter), form->getRootNode());
-						_Sounds.insert(make_pair(sound->getName().c_str(), sound));
-						//nldebug("Loaded %s.sound with sample %s.wav", sound->getName().c_str(), sound->getBuffername().c_str());
-
+						if (sound != 0)
+							_Sounds.insert(make_pair(sound->getName().c_str(), sound));
+						else
+							nlwarning("Failed to create the sound %s", (*iter).c_str());
 					} 
 					else
 					{

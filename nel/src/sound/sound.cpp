@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.23 2002/11/04 15:40:44 boucher Exp $
+ * $Id: sound.cpp,v 1.24 2002/11/04 17:29:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,12 @@ CSound *CSound::createSound(const std::string &filename, NLGEORGES::UFormElm& fo
 
 	NLGEORGES::UFormElm *psoundType;
 
-	formRoot.getNodeByName(&psoundType, ".SoundType");
+	if (!formRoot.getNodeByName(&psoundType, ".SoundType"))
+	{
+		nlassertex(false, ("No SoundType in : %s", dfnName.c_str()));
+		return NULL
+	}
+
 	if (psoundType != NULL)
 	{
 		std::string dfnName;

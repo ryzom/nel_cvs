@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.cpp,v 1.25 2001/01/16 11:23:03 cado Exp $
+ * $Id: inet_address.cpp,v 1.26 2001/03/15 16:41:16 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -294,7 +294,7 @@ uint16 CInetAddress::port() const
 std::string CInetAddress::asString() const
 {
 	stringstream ss;
-	ss << hostName() << "/" << port();
+	ss << hostName() << "/" << port() << "(" << ipAddress() << ")";
 	return ss.str();
 }
 
@@ -330,6 +330,7 @@ CInetAddress CInetAddress::localHost()
 	char localhost [maxlength];
 	if ( gethostname( localhost, maxlength ) != 0 )
 		throw ESocket( "Unable to get local hostname" );
+	nlassert( CInetAddress( string(localhost) ).ipAddress() != "127.0.0.1" ) ;
 	return CInetAddress( string(localhost) );
 }
 

@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.3 2000/11/21 15:26:36 lecroart Exp $
+ * $Id: font_generator.cpp,v 1.4 2000/11/22 10:11:55 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,8 @@ FT_Library	CFontGenerator::_Library;
 bool		CFontGenerator::_LibraryInit = false;
 
 
+
+
 const char *CFontGenerator::getFT2Error(FT_Error fte)
 {
 	static char ukn[1024];
@@ -64,6 +66,8 @@ const char *CFontGenerator::getFT2Error(FT_Error fte)
 	sprintf (ukn, "Unknown freetype2 error, errcode: 0x%x", fte);
 	return ukn;
 }
+
+
 
 /*
  * Constructor
@@ -97,6 +101,8 @@ CFontGenerator::CFontGenerator (const std::string fontFileName, const std::strin
 		}
 	}
 }
+
+
 
 uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &height, uint32 &pitch, sint32 &left, sint32 &top, sint32 &advx, uint32 &glyphIndex)
 {
@@ -139,6 +145,8 @@ uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &
 	return (uint8 *) _Face->glyph->bitmap.buffer;
 }
 
+
+
 void CFontGenerator::getKerning (ucchar left, ucchar right, sint32 &kernx)
 {
 	if (!FT_HAS_KERNING(_Face))
@@ -156,6 +164,8 @@ void CFontGenerator::getKerning (ucchar left, ucchar right, sint32 &kernx)
 		kernx = kerning.x;
 	}
 }
+
+
 
 uint32	 CFontGenerator::getCharIndex (ucchar c)
 {

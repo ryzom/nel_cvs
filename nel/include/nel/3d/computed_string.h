@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.1 2000/11/17 14:58:38 coutelas Exp $
+ * $Id: computed_string.h,v 1.2 2000/11/22 10:11:35 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,10 @@ struct CFontDescriptor;
 
 /**
  * CDisplayDescriptor
+ * used to describe screen configuration :
+ * - screen width
+ * - screen height
+ * - font ratio  
  * \author Stephane Coutelas
  * \author Nevrax France
  * \date 2000
@@ -53,6 +57,9 @@ struct CDisplayDescriptor
 	uint32	ResY;
 	float	FontRatio;
 
+	/**
+	 * Default constructor
+	 */
 	CDisplayDescriptor()
 	{
 		ResX = ResY = 0;
@@ -68,6 +75,8 @@ struct CDisplayDescriptor
 
 /**
  * CComputedString
+ * A CComputedString is a structure which permits to render a string
+ * in a driver. It computes 1 primitive block per char.
  * \author Stephane Coutelas
  * \author Nevrax France
  * \date 2000
@@ -80,6 +89,9 @@ struct CComputedString
 	float StringWidth;
 	float StringHeight;
 
+	/**
+	 * Hotspot positions (origine for the string placement)
+	 */
 	enum THotSpot 
 	{
 		LeftBottom,

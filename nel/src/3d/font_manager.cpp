@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.4 2000/11/21 15:26:36 lecroart Exp $
+ * $Id: font_manager.cpp,v 1.5 2000/11/22 10:11:55 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,7 +156,7 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 
 			output.StringWidth -= x;
 
-			x = (penx + dx + pTexFont->getCharWidth()) * desc.FontRatio;
+			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * desc.FontRatio;
 			z = (penz + dz) * desc.FontRatio;
 			x/= desc.ResY;
 			z/= desc.ResY;
@@ -166,8 +166,8 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 
 			output.StringWidth += x;
 
-			x = (penx + dx + pTexFont->getCharWidth()) * desc.FontRatio;
-			z = (penz + dz + pTexFont->getCharHeight()) * desc.FontRatio;
+			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * desc.FontRatio;
+			z = (penz + dz + (sint32)pTexFont->getCharHeight()) * desc.FontRatio;
 			x/= desc.ResY;
 			z/= desc.ResY;
 			output.Vertices.setVertexCoord(4*i+2, x, 0, z); 
@@ -175,7 +175,7 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 			output.Vertices.setRGBA(4*i+2, color);
 
 			x = (penx + dx) * desc.FontRatio;
-			z = (penz + dz + pTexFont->getCharHeight()) * desc.FontRatio;
+			z = (penz + dz + (sint32)pTexFont->getCharHeight()) * desc.FontRatio;
 			x/= desc.ResY;
 			z/= desc.ResY;
 			output.Vertices.setVertexCoord(4*i+3, x, 0, z); 

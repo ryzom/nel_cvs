@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.5 2000/11/17 14:57:33 coutelas Exp $
+ * $Id: texture.cpp,v 1.6 2000/11/22 10:11:55 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,13 +71,25 @@ void CTextureFont::generate()
 
 	// computing new width and height as powers of 2
 	if(!NLMISC::isPowerOf2(_CharWidth))
+	{
 		_Width = NLMISC::raiseToNextPowerOf2(_CharWidth);
+		CBitmap::_Width = _Width;
+	}
 	else
+	{
 		_Width = _CharWidth;
+		CBitmap::_Width = _Width;
+	}
 	if(!NLMISC::isPowerOf2(_CharHeight))
+	{
 		_Height = NLMISC::raiseToNextPowerOf2(_CharHeight);
+		CBitmap::_Height = _Height;
+	}
 	else
+	{
 		_Height = _CharHeight;
+		CBitmap::_Height = _Height;
+	}
 	
 
 	// calculating memory size taken by the bitmap

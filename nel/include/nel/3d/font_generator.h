@@ -1,7 +1,7 @@
 /** \file font_generator.h
  * CFontGenerator class
  *
- * $Id: font_generator.h,v 1.3 2000/11/14 14:55:17 lecroart Exp $
+ * $Id: font_generator.h,v 1.4 2000/11/22 10:11:35 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,13 +74,29 @@ private:
 };
 
 
+
+/**
+ * Descriptor of a character
+ * \author Vianney Lecroart
+ * \author Nevrax France
+ * \date 2000
+ */
 struct CFontDescriptor 
 {
 	CFontGenerator *FontGen;
 	ucchar C;
 	uint32 Size;
 	
+	/** Constructor
+	 * \param fg the font generator
+	 * \param c the unicode char
+	 * \param sz size of the font
+	 */
 	CFontDescriptor(CFontGenerator *fg, ucchar c, uint32 sz): FontGen(fg),C(c),Size(sz) { }
+	
+	/** operator<
+	 * used for ordering generated char
+	 */
 	bool operator< (const CFontDescriptor& desc) const
 	{
 		if (FontGen->FontFileName<desc.FontGen->FontFileName)

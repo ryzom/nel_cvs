@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.6 2000/11/17 15:21:03 coutelas Exp $
+ * $Id: texture.h,v 1.7 2000/11/22 10:11:35 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,6 +180,11 @@ public:
 
 /**
  * CTextureFont
+ *
+ * Rq : _Width and _Height are duplicated from CBitmap because the texture
+ *      can be released by the driver, which sets these values to zero.
+ *		But these values are necessary to compute strings.
+ *
  * \author Stephane Coutelas
  * \author Nevrax France
  * \date 2000
@@ -188,6 +193,9 @@ class CTextureFont : public ITexture
 {
 	uint32 _CharWidth;
 	uint32 _CharHeight;
+	uint32 _Width;
+	uint32 _Height;
+
 	uint32 _Size;
 	CFontGenerator *_FontGen;
 public:
@@ -202,6 +210,8 @@ public:
 		_CharWidth = 0;
 		_CharHeight = 0;
 		_FontGen = desc.FontGen;
+		_Width = 0;
+		_Height = 0;
 	}
 
 	/** constructor
@@ -214,10 +224,15 @@ public:
 		_CharWidth = 0;
 		_CharHeight = 0;
 		_FontGen = fg;
+		_Width = 0;
+		_Height = 0;
 	}
 
 	uint32	getCharWidth() const {return _CharWidth;}
 	uint32	getCharHeight() const {return _CharHeight;}
+
+	uint32	getWidth() const {return _Width;}
+	uint32	getHeight() const {return _Height;}
 
 	/** return the descriptor of this letter
 	 * /return CFontDescriptor letter descriptor

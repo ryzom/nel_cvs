@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.8 2000/11/17 14:58:06 coutelas Exp $
+ * $Id: bitmap.h,v 1.9 2000/11/22 10:11:35 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -273,7 +273,7 @@ public:
 	 * \param mipMap mipmap level 
 	 * \return image width (0 if mipmap not found)
 	 */	
-	uint32 getWidth(uint32 numMipMap = 0) const;
+	virtual uint32 getWidth(uint32 numMipMap = 0) const;
 
 
 	/** 
@@ -281,7 +281,7 @@ public:
 	 * \param mipMap mipmap level 
 	 * \return image height (0 if mipmap not found)
 	 */	
-	uint32 getHeight(uint32 numMipMap = 0) const;
+	virtual uint32 getHeight(uint32 numMipMap = 0) const;
 
 
 	/** 

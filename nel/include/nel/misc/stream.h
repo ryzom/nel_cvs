@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.36 2001/04/26 15:08:22 vizerie Exp $
+ * $Id: stream.h,v 1.37 2001/05/09 15:04:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -528,7 +528,7 @@ public:
 			}
 			else
 			{
-				node= (uint64)ptr;
+				node= (uint64)(uint)ptr;
 				serial(node);
 
 				// Test if object already written.

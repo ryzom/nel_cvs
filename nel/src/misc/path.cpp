@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.26 2002/04/10 17:17:08 besson Exp $
+ * $Id: path.cpp,v 1.27 2002/04/12 16:37:05 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -282,6 +282,7 @@ DIR *opendir (const char *path)
 		return NULL;
 	}
 
+
 	if (!CFile::isDirectory(path))
 	{
 		// failed
@@ -393,7 +394,7 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 
 		if (isdirectory(de))
 		{
-			string stdName = standardizePath(path + getname(de));
+			string stdName = standardizePath(path + '/' + getname(de));
 			if (recurse)
 			{
 				NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): need to recurse into '%s'", path.c_str(), recurse, wantDir, wantFile, stdName.c_str());
@@ -429,7 +430,9 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 
 	// let s recurse
 	for (uint i = 0; i < recursPath.size (); i++)
+	{		
 		getPathContent (recursPath[i], recurse, wantDir, wantFile, result);
+	}
 }
 
 void CPath::removeAllAlternativeSearchPath ()

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.19 2002/02/26 14:17:55 berenguier Exp $
+ * $Id: scene.h,v 1.20 2002/03/01 14:06:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,6 +224,10 @@ public:
 	void	loadLightmapAutoAnim (const std::string &);
 	void	setAutoAnim (CAnimation *pAnim);
 	void	animate (TGlobalAnimationTime atTime);
+	/// Add an IG for auto PointLight Factor animation. called by CInstanceGroup::addToScene()
+	void	addInstanceGroupForLightAnimation(CInstanceGroup *ig);
+	/// Remove an IG for auto PointLight Factor animation. called by CInstanceGroup::removeFromScene()
+	void	removeInstanceGroupForLightAnimation(CInstanceGroup *ig);
 	// TODO:
 	// TurnOff/TurnOn
 	// Animate
@@ -422,7 +426,10 @@ private:
 	CAnimationSet	_LightmapAnimations;
 	std::set<CAnimatedLightmap*> _AnimatedLightmap;
 	CPlayListManager _LMAnimsAuto;
-	//std::list<CLight*> _StaticLightList;
+	// List of InstanceGroup to animate PointLightFactor.
+	typedef std::set<CInstanceGroup*>	TAnimatedIgSet;
+	typedef TAnimatedIgSet::iterator	ItAnimatedIgSet;
+	TAnimatedIgSet	_AnimatedIgSet;
 
 	/// \name Shape/Instances.
 	//@{

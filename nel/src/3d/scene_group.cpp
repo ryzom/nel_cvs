@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.24 2002/02/28 12:59:51 besson Exp $
+ * $Id: scene_group.cpp,v 1.25 2002/03/01 14:06:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -627,6 +627,13 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 	freezeHRC();
 
 
+	// Register the instanceGroup for light animation
+	// -----------------
+	// If some PointLight to animate
+	if(_PointLightArray.getPointLights().size() > 0)
+		scene.addInstanceGroupForLightAnimation(this);
+
+
 	return true;
 }
 
@@ -706,6 +713,14 @@ bool CInstanceGroup::removeFromScene (CScene& scene)
 
 	scene.deleteModel (_Root);
 	_Root = NULL;
+
+
+	// UnRegister the instanceGroup for light animation
+	// -----------------
+	// If some PointLight to animate
+	if(_PointLightArray.getPointLights().size() > 0)
+		scene.removeInstanceGroupForLightAnimation(this);
+
 
 	return true;
 }

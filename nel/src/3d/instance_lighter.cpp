@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.7 2002/02/28 12:59:49 besson Exp $
+ * $Id: instance_lighter.cpp,v 1.8 2002/03/01 14:06:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1086,13 +1086,18 @@ void			CInstanceLighter::compilePointLightRT(uint gridSize, float gridCellSize, 
 				while( itObstacle!=obstacleGrid.end() )
 				{
 					CTriangle	&tri= *(*itObstacle);
-					// Test BackFace culling. Only faces which are BackFace the point light are inserted.
-					// This is to avoid AutoOccluding problems
-					if( tri.getPlane() * plRT.BSphere.Center < 0)
-					{
-						// Insert the triangle in the CubeGrid
-						plRT.FaceCubeGrid.insert( tri.Triangle, &tri);
-					}
+					/* Don't Test BackFace culling Here (unlike in CZoneLighter !!).
+					   For objects:
+						AutoOccluding problem is avoided with _CurrentInstanceComputed scheme.
+						Also, With pointLights, there is no multiSampling (since no factor stored)
+						Hence we are sure that no Object samples will lies under floor, and that the center of the 
+						object is far away.
+					   For IGSurface lighting:
+						notice that we already add 20cm in height because of "stairs problem" so
+						floor/surface auto_shadowing is not a problem here...
+					*/
+					// Insert the triangle in the CubeGrid
+					plRT.FaceCubeGrid.insert( tri.Triangle, &tri);
 
 					itObstacle++;
 				}

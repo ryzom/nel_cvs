@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.65 2002/02/28 12:59:51 besson Exp $
+ * $Id: scene.cpp,v 1.66 2002/03/01 14:06:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -612,6 +612,7 @@ void CScene::loadLightmapAutoAnim( const std::string &filename )
 	}
 }
 
+// ***************************************************************************
 void CScene::animate( TGlobalAnimationTime atTime )
 {
 	if (_FirstAnimateCall)
@@ -634,6 +635,35 @@ void CScene::animate( TGlobalAnimationTime atTime )
 	
 	_LMAnimsAuto.animate( atTime );
 	_ParticleSystemManager.processAnimate(_EllapsedTime); // deals with permanently animated particle systems
+
+
+	// Change PointLightFactors of all pointLights in registered Igs.
+	//----------------
+	static	vector<string>	anlNames;
+	static	vector<CRGBA>	anlFactors;
+	anlNames.clear();
+	anlFactors.clear();
+	// First list all current AnimatedLightmaps (for faster vector iteration per ig)
+	std::set<CAnimatedLightmap*>::iterator	itAnlSet;
+	for(itAnlSet= _AnimatedLightmap.begin(); itAnlSet!=_AnimatedLightmap.end(); itAnlSet++)
+	{
+		const char *GroupName = strchr( (*itAnlSet)->getName().c_str(), '.')+1;
+		// Append to vector
+		anlNames.push_back(GroupName);
+		anlFactors.push_back( (*itAnlSet)->getFactor() );
+	}
+
+	// For all registered igs.
+	ItAnimatedIgSet		itAnIgSet;
+	for(itAnIgSet= _AnimatedIgSet.begin(); itAnIgSet!=_AnimatedIgSet.end(); itAnIgSet++)
+	{
+		CInstanceGroup	*ig= *itAnIgSet;
+		// For all Animated Light Factor
+		for(uint i= 0; i<anlNames.size(); i++)
+		{
+			ig->setPointLightFactor(anlNames[i], anlFactors[i]);
+		}
+	}
 }
 
 
@@ -779,6 +809,24 @@ void		CScene::setLightTransitionThreshold(float lightTransitionThreshold)
 float		CScene::getLightTransitionThreshold() const
 {
 	return LightTrav->LightingManager.getLightTransitionThreshold();
+}
+
+
+// ***************************************************************************
+void		CScene::addInstanceGroupForLightAnimation(CInstanceGroup *ig)
+{
+	nlassert( ig );
+	nlassert( _AnimatedIgSet.find(ig) == _AnimatedIgSet.end() );
+	_AnimatedIgSet.insert(ig);
+}
+
+// ***************************************************************************
+void		CScene::removeInstanceGroupForLightAnimation(CInstanceGroup *ig)
+{
+	nlassert( ig );
+	ItAnimatedIgSet		itIg= _AnimatedIgSet.find(ig);
+	nlassert( itIg != _AnimatedIgSet.end() );
+	_AnimatedIgSet.erase(itIg);
 }
 
 

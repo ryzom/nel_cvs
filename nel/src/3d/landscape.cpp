@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.137 2004/01/26 10:34:38 vizerie Exp $
+ * $Id: landscape.cpp,v 1.138 2004/02/06 14:37:44 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2662,9 +2662,10 @@ void			CLandscape::setupStaticLight (const CRGBA &diffuse, const CRGBA &ambiant,
 		sint b=(((nMultiply*diffuse.B*i)>>8)+ambiant.B*(256-i))>>8;
 		if (b>max)
 			max=b;
-		r<<=8;
-		g<<=8;
-		b<<=8;
+		// Not << 8 but << 7 because the _LightValue color table represent a ramp from 0 to 512
+		r <<= 7;
+		g <<= 7;
+		b <<= 7;
 		max=std::max(max, 256);
 		r/=max;
 		g/=max;

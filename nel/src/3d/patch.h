@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.35 2003/12/17 14:15:39 corvazier Exp $
+ * $Id: patch.h,v 1.36 2004/02/06 14:37:44 besson Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -636,7 +636,7 @@ public:
 	/** For CTextureFar, compute current TLI Lightmap at tile level. array should be allocated of at least
 	 *  sqr(NL_MAX_TILES_BY_PATCH_EDGE+1).
 	 */
-	void		computeCurrentTLILightmap(NLMISC::CRGBA *array) const;
+	void		computeCurrentTLILightmapDiv2(NLMISC::CRGBA *array) const;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file patch_lightmap.cpp
  * Patch implementation related to lightmaping (texture Near/Far)
  *
- * $Id: patch_lightmap.cpp,v 1.12 2003/12/17 14:15:39 corvazier Exp $
+ * $Id: patch_lightmap.cpp,v 1.13 2004/02/06 14:37:44 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -399,18 +399,64 @@ inline void		bilinearColor(CRGBA	corners[4], uint x, uint y, uint &R, uint &G, u
 // bilinear at center of the pixels. x E [0, 3], y E [0, 3].
 inline void		bilinearColorAndModulate(CRGBA	corners[4], uint x, uint y, CRGBA &res)
 {
-	uint	R,G,B;
+	uint R, G, B;
 	bilinearColor(corners, x, y, R, G, B);
 
 	// modulate with input.
-	R*= res.R;
-	G*= res.G;
-	B*= res.B;
+	R *= res.R;
+	G *= res.G;
+	B *= res.B;
+
+	// R,G,B are on 14 bits
+	res.R = R >> 14;
+	res.G = G >> 14;
+	res.B = B >> 14;
+}
+
+
+// ***************************************************************************
+// bilinear at center of the pixels. x E [0, 3], y E [0, 3].
+inline void		bilinearColorAndModulatex2(CRGBA	corners[4], uint x, uint y, CRGBA &res)
+{
+	uint R, G, B;
+	bilinearColor(corners, x, y, R, G, B);
+
+	// modulate with input.
+	R *= res.R;
+	G *= res.G;
+	B *= res.B;
+
+	// result not >> 14 but >> 13 and clamp from 0 to 255
+	R = R >> 13;
+	G = G >> 13;
+	B = B >> 13;
+
+	res.R = min (R, 255U);
+	res.G = min (G, 255U);
+	res.B = min (B, 255U);
+}
+
+
+// ***************************************************************************
+// bilinear at center of the pixels. x E [0, 3], y E [0, 3].
+inline void		bilinearColorDiv2AndAdd(CRGBA	corners[4], uint x, uint y, CRGBA &res)
+{
+	uint	R,G,B;
+	bilinearColor(corners, x, y, R, G, B);
+
+	// add with input. Resulting TLI must be on 7 bits.
+	R= (R>>7) + res.R;
+	G= (G>>7) + res.G;
+	B= (B>>7) + res.B;
+
+	R= min(R, 255U);
+	G= min(G, 255U);
+	B= min(B, 255U);
 
 	// result.
-	res.R= R >> 14;
-	res.G= G >> 14;
-	res.B= B >> 14;
+	res.R= R;
+	res.G= G;
+	res.B= B;
 }
 
 
@@ -421,10 +467,11 @@ inline void		bilinearColorAndAdd(CRGBA	corners[4], uint x, uint y, CRGBA &res)
 	uint	R,G,B;
 	bilinearColor(corners, x, y, R, G, B);
 
-	// add with input.
+	// add with input. Resulting TLI must be on 7 bits.
 	R= (R>>6) + res.R;
 	G= (G>>6) + res.G;
 	B= (B>>6) + res.B;
+
 	R= min(R, 255U);
 	G= min(G, 255U);
 	B= min(B, 255U);
@@ -451,7 +498,7 @@ void		CPatch::modulateTileLightmapWithTileColors(uint ts, uint tt, CRGBA *dest, 
 		for(x=0; x<NL_LUMEL_BY_TILE; x++)
 		{
 			// compute this pixel, and modulate
-			bilinearColorAndModulate(corners, x, y, dest[y*stride + x]);
+			bilinearColorAndModulatex2(corners, x, y, dest[y*stride + x]);
 		}
 	}
 }
@@ -488,7 +535,7 @@ void		CPatch::modulateTileLightmapEdgeWithTileColors(uint ts, uint tt, uint edge
 		if(inverse)		where= (NL_LUMEL_BY_TILE-1)-i;
 		else			where= i;
 		// compute this pixel, and modulate
-		bilinearColorAndModulate(corners, x, y, dest[where*stride]);
+		bilinearColorAndModulatex2(corners, x, y, dest[where*stride]);
 	}
 }
 
@@ -501,7 +548,7 @@ void		CPatch::modulateTileLightmapPixelWithTileColors(uint ts, uint tt, uint s, 
 	getTileTileColors(ts, tt, corners);
 
 	// compute this pixel, and modulate
-	bilinearColorAndModulate(corners, s, t, *dest);
+	bilinearColorAndModulatex2(corners, s, t, *dest);
 }
 
 
@@ -1702,7 +1749,7 @@ void		CPatch::addTileLightmapWithTLI(uint ts, uint tt, NLMISC::CRGBA *dest, uint
 		for(x=0; x<NL_LUMEL_BY_TILE; x++)
 		{
 			// compute this pixel, and add
-			bilinearColorAndAdd(corners, x, y, dest[y*stride + x]);
+			bilinearColorDiv2AndAdd(corners, x, y, dest[y*stride + x]);
 		}
 	}
 }
@@ -1738,7 +1785,7 @@ void		CPatch::addTileLightmapEdgeWithTLI(uint ts, uint tt, uint edge, NLMISC::CR
 		if(inverse)		where= (NL_LUMEL_BY_TILE-1)-i;
 		else			where= i;
 		// compute this pixel, and modulate
-		bilinearColorAndAdd(corners, x, y, dest[where*stride]);
+		bilinearColorDiv2AndAdd(corners, x, y, dest[where*stride]);
 	}
 }
 
@@ -1750,12 +1797,12 @@ void		CPatch::addTileLightmapPixelWithTLI(uint ts, uint tt, uint s, uint t, NLMI
 	getCurrentTileTLIColors(ts, tt, corners);
 
 	// compute this pixel, and modulate
-	bilinearColorAndAdd(corners, s, t, *dest);
+	bilinearColorDiv2AndAdd(corners, s, t, *dest);
 }
 
 
 // ***************************************************************************
-void		CPatch::computeCurrentTLILightmap(NLMISC::CRGBA *array) const
+void		CPatch::computeCurrentTLILightmapDiv2(NLMISC::CRGBA *array) const
 {
 	// Size of TileLightInfluences
 	uint	wTLI= (OrderS>>1)+1;
@@ -1775,6 +1822,9 @@ void		CPatch::computeCurrentTLILightmap(NLMISC::CRGBA *array) const
 		for(x=0;x<wTLI;x++)
 		{
 			*dst= getCurrentTLIColor(x, y);
+			dst->R >>= 1;
+			dst->G >>= 1;
+			dst->B >>= 1;
 			// skip 2 tiles corners.
 			dst++;
 			dst++;

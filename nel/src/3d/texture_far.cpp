@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.25 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_far.cpp,v 1.26 2004/02/06 14:37:44 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -577,7 +577,7 @@ void CTextureFar::rebuildPatch (const CVector2s texturePos, const CPatchIdent &p
 	lightMap.StaticLightColor=patch->getZone()->getLandscape()->getStaticLight();
 	lightMap.DstPixels=_LightmapExpanded;
 	// Compute current TLI colors.
-	patch->computeCurrentTLILightmap(_TileTLIColors);
+	patch->computeCurrentTLILightmapDiv2(_TileTLIColors);
 	lightMap.TLIColor= _TileTLIColors;
 
 	// Expand the shadowmap
@@ -1166,7 +1166,7 @@ static void		NL3D_asmAssembleShading1x1(const uint8 *lumels, const CRGBA *colorM
 		punpcklbw	mm1, mm7
 		pmullw		mm0, mm1
 		// unpack
-		psrlw       mm0, 8
+		psrlw       mm0, 7
 		packuswb    mm0, mm0
 
 		// store
@@ -1245,7 +1245,7 @@ static void		NL3D_asmAssembleShading2x2(const uint8 *lumels, const CRGBA *colorM
 		punpcklbw	mm1, mm7
 		pmullw		mm0, mm1
 		// unpack
-		psrlw       mm0, 8
+		psrlw       mm0, 7
 		packuswb    mm0, mm0
 
 		// store
@@ -1310,7 +1310,7 @@ static void		NL3D_asmAssembleShading4x4(const uint8 *lumels, const CRGBA *colorM
 		punpcklbw	mm1, mm7
 		pmullw		mm0, mm1
 		// unpack
-		psrlw       mm0, 8
+		psrlw       mm0, 7
 		packuswb    mm0, mm0
 
 		// store
@@ -1591,6 +1591,10 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 
 						// Mul by the userColor
 						lineDestPtr[u].modulateFromColorRGBOnly(col, lineUSCPtr[u]);
+
+						lineDestPtr[u].R = min(((uint)lineDestPtr[u].R)*2, 255U);
+						lineDestPtr[u].G = min(((uint)lineDestPtr[u].G)*2, 255U);
+						lineDestPtr[u].B = min(((uint)lineDestPtr[u].B)*2, 255U);
 					}
 				}
 
@@ -1642,6 +1646,10 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 
 						// Mul by the userColor
 						lineDestPtr[u].modulateFromColorRGBOnly(col, lineUSCPtr[u]);
+
+						lineDestPtr[u].R = min(((uint)lineDestPtr[u].R)*2, 255U);
+						lineDestPtr[u].G = min(((uint)lineDestPtr[u].G)*2, 255U);
+						lineDestPtr[u].B = min(((uint)lineDestPtr[u].B)*2, 255U);
 					}
 				}
 
@@ -1685,6 +1693,10 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 
 					// Mul by the userColor
 					lineDestPtr[u].modulateFromColorRGBOnly(col, lineUSCPtr[u]);
+					
+					lineDestPtr[u].R = min(((uint)lineDestPtr[u].R)*2, 255U);
+					lineDestPtr[u].G = min(((uint)lineDestPtr[u].G)*2, 255U);
+					lineDestPtr[u].B = min(((uint)lineDestPtr[u].B)*2, 255U);
 				}
 			}
 			break;

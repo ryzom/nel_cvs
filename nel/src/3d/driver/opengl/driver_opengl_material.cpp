@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.12 2000/12/04 16:58:59 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.13 2000/12/13 14:52:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,9 +172,27 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		{
 			glDisable(GL_BLEND);
 		}
+
 		// Color unlit part.
 		CRGBA	col= mat.getColor();
 		glColor4ub(col.R, col.G, col.B, col.A);
+
+		// Light Part.
+		if(mat.getFlags()&IDRV_MAT_LIGHTING)
+		{
+			glEnable(GL_LIGHTING);
+			// Temp. Yoyo, defo light.
+			glEnable(GL_LIGHT0);
+			// Temp. Yoyo, suppose DEFMAT.
+			GLfloat		one[4]= {1,1,1,1};
+			GLfloat		zero[4]= {0,0,0,1};
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, one);
+			glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, zero);
+			glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
+		}
+		else
+			glDisable(GL_LIGHTING);
+
 
 
 		_CurrentMaterial=&mat;

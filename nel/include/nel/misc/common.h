@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.71 2004/04/15 17:17:16 corvazier Exp $
+ * $Id: common.h,v 1.72 2004/05/13 13:36:07 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,12 @@ inline uint64 rdtsc()
 }
 
 #endif	// NL_CPU_INTEL
+
+
+/** breakable statement, used to allow break call inside parenthesis.
+ */
+#define		breakable	\
+	switch(1) case 1: default:
 
 
 /** Pi constant in double format.

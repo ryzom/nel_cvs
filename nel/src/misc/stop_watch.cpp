@@ -1,7 +1,7 @@
 /** \file stop_watch.cpp
  * Performance stopwatch
  *
- * $Id: stop_watch.cpp,v 1.1 2001/11/27 14:03:26 cado Exp $
+ * $Id: stop_watch.cpp,v 1.2 2001/12/10 14:32:09 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -140,7 +140,10 @@ TMsDuration	CStopWatch::getDuration() const
  */
 TMsDuration	CStopWatch::getPartialAverage() const
 {
-	return (TMsDuration)(CTime::ticksToSecond( accumulate( _Queue.begin(), _Queue.end(), 0 ) / _Queue.size() ) * 1000.0);
+	if (_Queue.size() == 0)
+		return (TMsDuration)0;
+	else
+		return (TMsDuration)(CTime::ticksToSecond( accumulate( _Queue.begin(), _Queue.end(), 0 ) / _Queue.size() ) * 1000.0);
 }
 
 

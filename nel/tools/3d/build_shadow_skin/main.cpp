@@ -179,23 +179,29 @@ void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const st
 		CIndexBuffer		pb;
 		// fill
 		pb.setNumIndexes(shadowTriangles.size());
-		CIndexBufferReadWrite iba;
-		pb.lock (iba);
-		for(i=0;i<shadowTriangles.size()/3;i++)
 		{
-			iba.setTri(i*3, shadowTriangles[i*3 + 0],
-						 shadowTriangles[i*3 + 1],
-						 shadowTriangles[i*3 + 2]);
+			CIndexBufferReadWrite iba;
+			pb.lock (iba);
+			for(i=0;i<shadowTriangles.size()/3;i++)
+			{
+				iba.setTri(i*3, shadowTriangles[i*3 + 0],
+							 shadowTriangles[i*3 + 1],
+							 shadowTriangles[i*3 + 2]);
+			}
 		}
 		// optimize
 		CStripifier		stripifier;
 		stripifier.optimizeTriangles(pb, pb);
 		// get.
-		const uint32	*triPtr= iba.getPtr();
-		for(i=0;i<shadowTriangles.size();i++)
 		{
-			shadowTriangles[i]= *triPtr;
-			triPtr++;
+			CIndexBufferReadWrite iba;
+			pb.lock (iba);
+			const uint32	*triPtr= iba.getPtr();
+			for(i=0;i<shadowTriangles.size();i++)
+			{
+				shadowTriangles[i]= *triPtr;
+				triPtr++;
+			}
 		}
 	}
 

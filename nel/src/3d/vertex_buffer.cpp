@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.21 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: vertex_buffer.cpp,v 1.22 2001/06/27 14:00:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -376,7 +376,7 @@ const void* CVertexBuffer::getPaletteSkinPointer(uint idx) const
 
 
 //****************************************************************************
-void		CVertexBuffer::serial(NLMISC::IStream &f)
+void		CVertexBuffer::serialOldV1Minus(NLMISC::IStream &f, sint ver)
 {
 	/*
 	Version 1:
@@ -384,7 +384,6 @@ void		CVertexBuffer::serial(NLMISC::IStream &f)
 	Version 0:
 		- base verison.
 	*/
-	sint	ver= f.serialVersion(1);
 
 	// Serial VBuffers format/size.
 	//=============================
@@ -461,6 +460,131 @@ void		CVertexBuffer::serial(NLMISC::IStream &f)
 
 }
 
+
+//****************************************************************************
+void		CVertexBuffer::serial(NLMISC::IStream &f)
+{
+	/*
+	Version 2:
+		- cut to use serialHeader() serialSubset().
+	Version 1:
+		- PaletteSkin version.
+	Version 0:
+		- base verison.
+	*/
+	sint	ver= f.serialVersion(2);
+
+	if(ver<=1)
+		serialOldV1Minus(f, ver);
+	else
+	{
+		// read write the header of the VBuffer.
+		serialHeader(f);
+
+		// read write the entire subset.
+		serialSubset(f, 0, _NbVerts);
+	}
+}
+
+
+//****************************************************************************
+void		CVertexBuffer::serialHeader(NLMISC::IStream &f)
+{
+	/*
+	Version 0:
+		- base verison of the header serialisation.
+	*/
+	sint	ver= f.serialVersion(0);
+
+	// Serial VBuffers format/size.
+	//=============================
+	f.serial(_Flags);
+	f.serial(_NbVerts);
+	if(f.isReading())
+	{
+		reserve(0);
+		setVertexFormat(_Flags);
+		setNumVertices(_NbVerts);
+	}
+	// All other infos (but _Verts) are computed by setVertexFormat() and setNumVertices().
+}
+
+
+//****************************************************************************
+void		CVertexBuffer::serialSubset(NLMISC::IStream &f, uint vertexStart, uint vertexEnd)
+{
+	/*
+	Version 0:
+		- base verison of a vbuffer subset serialisation.
+	*/
+	sint	ver= f.serialVersion(0);
+
+
+	// Serial VBuffers components.
+	//============================
+	sint	i;
+	nlassert(vertexStart<_NbVerts);
+	nlassert(vertexEnd<=_NbVerts);
+	for(uint id=vertexStart; id<vertexEnd; id++)
+	{
+		// XYZ.
+		if(_Flags & IDRV_VF_XYZ)
+		{
+			CVector		&vert= *(CVector*)getVertexCoordPointer(id);
+			f.serial(vert);
+		}
+		// Normal
+		if(_Flags & IDRV_VF_NORMAL)
+		{
+			CVector		&norm= *(CVector*)getNormalCoordPointer(id);
+			f.serial(norm);
+		}
+		// Uvs.
+		for(i=0;i<IDRV_VF_MAXSTAGES;i++)
+		{
+			if(_Flags & IDRV_VF_UV[i])
+			{
+				CUV		&uv= *(CUV*)getTexCoordPointer(id, i);
+				f.serial(uv);
+			}
+		}
+		// Color.
+		if(_Flags & IDRV_VF_COLOR)
+		{
+			CRGBA		&col= *(CRGBA*)getColorPointer(id);
+			f.serial(col);
+		}
+		// Specular.
+		if(_Flags & IDRV_VF_SPECULAR)
+		{
+			CRGBA		&col= *(CRGBA*)getSpecularPointer(id);
+			f.serial(col);
+		}
+		// Weights
+		for(i=0;i<IDRV_VF_MAXW;i++)
+		{
+			if(_Flags & IDRV_VF_W[i])
+			{
+				float	&w= *(float*)getWeightPointer(id, i);
+				f.serial(w);
+			}
+		}
+		// CPaletteSkin.
+		if( (_Flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN )
+		{
+			CPaletteSkin	&ps= *(CPaletteSkin*)getPaletteSkinPointer(id);
+			f.serial(ps);
+		}
+
+	}
+
+	// Set touch flags
+	if(f.isReading())
+		_Touch= IDRV_VF_TOUCHED_ALL;
+}
+
+
+//****************************************************************************
 // CPaletteSkin serial (no version chek).
 void	CPaletteSkin::serial(NLMISC::IStream &f)
 {

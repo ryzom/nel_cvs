@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: vertex_buffer.h,v 1.2 2001/06/27 14:00:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,6 +207,23 @@ public:
 
 
 	void		serial(NLMISC::IStream &f);
+
+
+	/// \name Lod VB serialisation.
+	// @{
+	/// just read/write the VertexFormat of the VB, number of vertices .... If read, VB is resized to numVertices.
+	void		serialHeader(NLMISC::IStream &f);
+	/** just read/write a subset of the vertex buffer. NB: because a version is serialised by subset, you must read 
+	 * same subset of vertices you have saved. (can't write 0-10, 10-20, and after load 0-5, 5-20).
+	 */
+	void		serialSubset(NLMISC::IStream &f, uint vertexStart, uint vertexEnd);
+	// @}
+
+
+private:
+	/// Old version serialisation. V0 and V1.
+	void		serialOldV1Minus(NLMISC::IStream &f, sint ver);
+
 };
 
 

@@ -60,11 +60,11 @@ echo "LigoExportPath=$dir_gamedata\\processes\\ligo\\" >> $max_directory/plugcfg
 land_name=`cat ../../cfg/config.cfg | grep "ligo_export_land" | sed -e 's/ligo_export_land//' | sed -e 's/ //g' | sed -e 's/=//g'`
 if test -z "$land_name" ; then
 	echo Try 1 >> log.log
-	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript nel_ligo_export.ms -q -mi
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript nel_ligo_export.ms -q -mi -vn
 
 	echo Try 2 >> log.log
-	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript nel_ligo_export.ms -q -mi
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript nel_ligo_export.ms -q -mi -vn
 
 	echo Try 3 >> log.log
-	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript nel_ligo_export.ms -q -mi
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript nel_ligo_export.ms -q -mi -vn
 fi

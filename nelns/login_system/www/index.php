@@ -85,6 +85,9 @@
 						{
 							$reason =  $reason."was just disconnected. Now you can retry the identification.";
 
+							$query = "update shard set NbPlayers=NbPlayers-1 where ShardId=$row[3]";
+							$result = mysql_query ($query) or die ("Can't execute the query: '$query' errno:".mysql_errno().": ".mysql_error());
+
 							$query = "update user set ShardId=-1, State='Offline' where UId=$row[0]";
 							$result = mysql_query ($query) or die ("Can't execute the query: '$query' errno:".mysql_errno().": ".mysql_error());
 						}

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.14 2001/06/25 13:36:18 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.15 2001/06/26 14:58:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -651,9 +651,14 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 		}
 	}
 
-	// Add the shape
+	// Add the skel shape
+	NL3D::CSkeletonModel *transformSkel=NULL;
+	if (shapeSkel)
+		transformSkel=addSkel (shapeSkel, skeleton, "");
+
+	// Add the skel shape
 	if (shapeMesh)
-		addMesh (shapeMesh, shapeSkel, meshFilename, skeleton, "");
+		addMesh (shapeMesh, meshFilename, "", transformSkel);
 
 	// Add an entry for config
 	_ListMeshes.push_back (CMeshDesc (meshFilename, skeleton));
@@ -672,7 +677,7 @@ void CObjectViewer::resetCamera ()
 
 // ***************************************************************************
 
-CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, NL3D::IShape* pSkelShape, const char* meshName, const char* skelName, const char *animBaseName)
+CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, const char *meshBaseName, CSkeletonModel* pSkel)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -682,7 +687,7 @@ CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, NL3D::IShape*
 	CNELU::ShapeBank->add (meshName, CSmartPtr<IShape> (pMeshShape));
 
 	// Store the name of the shape
-	_ListShapeBaseName.push_back (animBaseName);
+	_ListShapeBaseName.push_back (meshBaseName);
 
 	// Create a model and add it to the scene
 	CTransformShape	*pTrShape=CNELU::Scene.createInstance (meshName);
@@ -697,45 +702,55 @@ CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, NL3D::IShape*
 	// Store the transform shape pointer
 	_ListTransformShape.push_back (pTrShape);
 
-	// *** Add the skeleton
+	// *** Bind to the skeleton
 
 	// Get a mesh instance
 	CMeshInstance  *meshInstance=dynamic_cast<CMeshInstance*>(pTrShape);
 
-	if (meshInstance&&pSkelShape)
-	{
-		// Store the shape pointer
-		CNELU::ShapeBank->add (skelName, CSmartPtr<IShape> (pSkelShape));
-
-		// Create a model and add it to the scene
-		pTrShape=CNELU::Scene.createInstance (skelName);
-		nlassert (pTrShape);
-
-		// Get a skeleton model
-		CSkeletonModel *skelModel=dynamic_cast<CSkeletonModel*>(pTrShape);
-
-		// Is a skel ?
-		if (skelModel)
-		{
-			// Set the rot model
-			if (_SceneDlg->Euler)
-				pTrShape->setTransformMode (ITransformable::RotEuler);
-			else
-				pTrShape->setTransformMode (ITransformable::RotQuat);
-
-			// Store the name of the shape
-			_ListShapeBaseName.push_back (animBaseName);
-
-			// Store the transform shape pointer
-			_ListTransformShape.push_back (skelModel);
-
-			// Bind the mesh
-			skelModel->bindSkin (meshInstance);
-		}
-	}
+	// Bind the mesh
+	if (pSkel)
+		pSkel->bindSkin (meshInstance);
 
 	// Return the instance
 	return pTrShape;
+}
+
+// ***************************************************************************
+
+CSkeletonModel *CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* skelName, const char *skelBaseName)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	// *** Add the shape
+
+	// Store the shape pointer
+	CNELU::ShapeBank->add (skelName, CSmartPtr<IShape> (pSkelShape));
+
+	// Create a model and add it to the scene
+	CTransformShape	*pTrShape=CNELU::Scene.createInstance (skelName);
+	nlassert (pTrShape);
+
+	// Get a skeleton model
+	CSkeletonModel *skelModel=dynamic_cast<CSkeletonModel*>(pTrShape);
+
+	// Is a skel ?
+	if (skelModel)
+	{
+		// Set the rot model
+		if (_SceneDlg->Euler)
+			pTrShape->setTransformMode (ITransformable::RotEuler);
+		else
+			pTrShape->setTransformMode (ITransformable::RotQuat);
+
+		// Store the name of the shape
+		_ListShapeBaseName.push_back (skelBaseName);
+
+		// Store the transform shape pointer
+		_ListTransformShape.push_back (skelModel);
+	}
+
+	// Return the instance
+	return skelModel;
 }
 
 // ***************************************************************************

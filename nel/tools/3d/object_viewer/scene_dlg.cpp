@@ -1,7 +1,7 @@
 /** \file scene_dlg.cpp
  * <File description>
  *
- * $Id: scene_dlg.cpp,v 1.13 2001/06/26 09:20:32 vizerie Exp $
+ * $Id: scene_dlg.cpp,v 1.14 2001/06/26 14:58:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,11 @@ using namespace NL3D;
 void CSceneDlgMouseListener::addToServer (NLMISC::CEventServer& server)
 {
 	server.addListener (EventMouseDownId, this);
+}
+
+void CSceneDlgMouseListener::releaseFromServer (NLMISC::CEventServer& server)
+{
+	server.removeListener (EventMouseDownId, this);
 }
 
 void CSceneDlgMouseListener::operator ()(const CEvent& event)
@@ -151,6 +156,7 @@ CSceneDlg::~CSceneDlg()
 		RegSetValueEx(hKey, "MoveSpeed", 0, REG_BINARY, (LPBYTE)&MoveSpeed, sizeof(float));
 		RegSetValueEx(hKey, "ObjectMode", 0, REG_BINARY, (LPBYTE)&ObjectMode, sizeof(BOOL));
 	}
+	_RightButtonMouseListener.releaseFromServer (CNELU::EventServer);
 }
 
 void CSceneDlg::DoDataExchange(CDataExchange* pDX)

@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.8 2001/06/22 12:45:42 besson Exp $
+ * $Id: export_anim.cpp,v 1.9 2001/06/26 14:58:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,7 +94,7 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 		}
 
 		// Add bones tracks
-		addBonesTracks (animation, node, sBaseName, ip);
+		//addBonesTracks (animation, node, sBaseName, ip);
 
 		// Add light tracks
 		addLightTracks (animation, node, sBaseName, ip);
@@ -300,7 +300,7 @@ void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const 
 
 // --------------------------------------------------
 
-void CExportNel::addBonesTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip)
+/*void CExportNel::addBonesTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip)
 {
 	// Get root bone
 	INode *root=getSkeletonRootBone (node);
@@ -311,7 +311,7 @@ void CExportNel::addBonesTracks (NL3D::CAnimation& animation, INode& node, const
 		// Go for normal export!
 		addBoneTracks (animation, *root, parentName, ip);
 	}
-}
+}*/
 
 // --------------------------------------------------
 

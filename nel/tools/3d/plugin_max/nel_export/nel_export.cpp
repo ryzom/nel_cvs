@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.5 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.6 2001/06/26 14:58:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,6 @@ ClassDesc2* GetCNelExportDesc() {return &CNelExportDesc;}
 static const char *zoneFilter="NeL zone file (*.zone)\0*.zone\0All files (*.*)\0*.*\0";
 static const char *meshFilter="NeL shape file (*.shape)\0*.shape\0All files (*.*)\0*.*\0";
 static const char *animModelFilter="NeL model animation file (*.anim)\0*.anim\0All files (*.*)\0*.*\0";
-static const char *animSceneFilter="NeL scene animation file (*.sceneanim)\0*.sceneanim\0All files (*.*)\0*.*\0";
 static const char *SWTFilter="NeL Skeleton Weight Template file (*.swt)\0*.swt\0All files (*.*)\0*.*\0";
 static const char *InstanceGroupFilter="NeL Instance Group file (*.ig)\0*.ig\0All files (*.*)\0*.*\0";
 static const char *skeletonFilter="NeL Skeleton file (*.skel)\0*.skel\0All files (*.*)\0*.*\0";
@@ -309,7 +308,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 						strcpy (sSavePath, (*vectNode.begin())->GetName());
 
 						// Choose a file to export
-						if (theCNelExport.SelectFileForSave (hWnd, sNodeMsg, (LOWORD(wParam)==ID_SAVE_MODEL_ANIM)?animModelFilter:animSceneFilter, 
+						if (theCNelExport.SelectFileForSave (hWnd, sNodeMsg, (LOWORD(wParam)==ID_SAVE_MODEL_ANIM)?animModelFilter:animModelFilter, 
 							sSavePath))
 						{
 							// Export the zone

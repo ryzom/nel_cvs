@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.10 2001/06/22 12:45:42 besson Exp $
+ * $Id: object_viewer.h,v 1.11 2001/06/26 14:58:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,7 +126,10 @@ public:
 	void setAutoAnimation (NL3D::CAnimation* pAnim);
 
 	// Add a mesh
-	NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, NL3D::IShape* pSkelShape, const char* meshName, const char* skelName, const char *animBaseName);
+	NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, const char* meshName, const char *meshBaseName, NL3D::CSkeletonModel* pSkel);
+
+	// Add a skel
+	NL3D::CSkeletonModel	*addSkel (NL3D::IShape* pSkelShape, const char* skelName, const char *skelBaseName);
 
 	// Load a mesh
 	bool loadMesh (const char* meshFilename, const char* skeleton="");

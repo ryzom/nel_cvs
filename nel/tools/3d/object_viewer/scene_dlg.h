@@ -1,7 +1,7 @@
 /** \file scene_dlg.h
  * <File description>
  *
- * $Id: scene_dlg.h,v 1.9 2001/06/26 09:20:32 vizerie Exp $
+ * $Id: scene_dlg.h,v 1.10 2001/06/26 14:58:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,7 @@ public:
 	  * Register the listener to the server.
 	  */
 	void addToServer (NLMISC::CEventServer& server);
+	void releaseFromServer (NLMISC::CEventServer& server);
 
 protected:
 	virtual void operator ()(const class NLMISC::CEvent& event) ;

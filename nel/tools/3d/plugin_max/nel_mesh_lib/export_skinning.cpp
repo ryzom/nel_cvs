@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: export_skinning.cpp,v 1.5 2001/06/26 14:58:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -778,13 +778,13 @@ INode* CExportNel::getSkeletonRootBone (INode& node)
 
 // ***************************************************************************
 
-void CExportNel::addSkeletonBindPos (INode& node, mapBoneBindPos& boneBindPos)
+void CExportNel::addSkeletonBindPos (INode& skinedNode, mapBoneBindPos& boneBindPos)
 {
 	// Return success
 	uint ok=NoError;
 
 	// Get the skin modifier
-	Modifier* skin=getModifier (&node, SKIN_CLASS_ID);
+	Modifier* skin=getModifier (&skinedNode, SKIN_CLASS_ID);
 
 	// Found it ?
 	if (skin)
@@ -799,7 +799,7 @@ void CExportNel::addSkeletonBindPos (INode& node, mapBoneBindPos& boneBindPos)
 		if (comSkinInterface)
 		{
 			// Get local data
-			ISkinContextData *localData=comSkinInterface->GetContextInterface(&node);
+			ISkinContextData *localData=comSkinInterface->GetContextInterface(&skinedNode);
 
 			// Should been controled with isSkin before.
 			nlassert (localData);
@@ -842,7 +842,7 @@ void CExportNel::addSkeletonBindPos (INode& node, mapBoneBindPos& boneBindPos)
 	else
 	{
 		// Get the skin modifier
-		Modifier* skin=getModifier (&node, PHYSIQUE_CLASS_ID);
+		Modifier* skin=getModifier (&skinedNode, PHYSIQUE_CLASS_ID);
 
 		// Should been controled with isSkin before.
 		nlassert (skin);
@@ -860,7 +860,7 @@ void CExportNel::addSkeletonBindPos (INode& node, mapBoneBindPos& boneBindPos)
 			if (physiqueInterface)
 			{
 				// Get local data
-				IPhyContextExport *localData=physiqueInterface->GetContextInterface(&node);
+				IPhyContextExport *localData=physiqueInterface->GetContextInterface(&skinedNode);
 
 				// Should been controled with isSkin before.
 				nlassert (localData);

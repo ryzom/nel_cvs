@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.44 2003/12/29 13:35:56 lecroart Exp $
+ * $Id: inet_address.cpp,v 1.44.12.1 2004/12/16 13:59:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -357,7 +357,8 @@ string CInetAddress::ipAddress() const
 	/*stringstream ss; // or use inet_ntoa
 	ss << inet_ntoa ( _SockAddr->sin_addr );
 	return ss.str();*/
-	return string( inet_ntoa( _SockAddr->sin_addr ) );
+	const char *name = inet_ntoa ( _SockAddr->sin_addr );
+	return name ? string (name) : "";
 }
 
 

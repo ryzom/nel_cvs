@@ -29,10 +29,17 @@ Background = { 100, 100, 255 };
 ZFar = 1000.0;	               
 LandscapeTileNear = 50.0;       
 LandscapeThreshold = 0.001;    
-BanksPath = "//server/gamedata/data/tiles/" ; 
-Bank = "bank.bank";
-ZonesPath = "//server/gamedata/data/zones/" ; 
+BanksPath = "C:\WINDOWS\Bureau\zviewer\" ;
+Bank = "fyros_landf.bank" ;
+TilesPath = "C:\WINDOWS\Bureau\zviewer\tiles" ;
+ZonesPath = "C:\WINDOWS\Bureau\zviewer\zones" ;
+IgPath = "C:\WINDOWS\Bureau\zviewer\ig" ;
+ShapePath = "C:\WINDOWS\Bureau\zviewer\shapes" ;
+MapsPath = "C:\WINDOWS\Bureau\zviewer\maps" ;
 Zones = { "3_AC.zonel","3_AD.zonel" }; 
+Zonessave = { "3_AC.zonel","3_AD.zonel" }; 
+Zones = { "3_AC.zonel","3_AD.zonel" }; 
+Ig = { "3_AC.ig","3_AD.ig" }; 
 
 Avec :
 

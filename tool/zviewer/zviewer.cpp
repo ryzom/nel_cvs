@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.12 2001/05/28 09:44:16 berenguier Exp $
+ * $Id: zviewer.cpp,v 1.13 2001/05/28 09:53:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "nel/3d/text_context.h"
 #include "nel/3d/mini_col.h"
 #include "nel/3d/nelu.h"
+#include "nel/3d/scene_group.h"
 
 //#include "nel/net/local_entity.h"
 
@@ -71,6 +72,10 @@ struct CViewerConfig
 	CRGBA			Background;
 	string			ZonesPath;
 	string			BanksPath;
+	string			TilesPath;
+	string			IgPath;
+	string			ShapePath;
+	string			MapsPath;
 	string			Bank;
 	string			FontPath;
 	CTextContext	TextContext;
@@ -79,6 +84,7 @@ struct CViewerConfig
 	float			LandscapeTileNear;
 	float			LandscapeThreshold;
 	vector<string>	Zones;
+	vector<string>	Igs;
 
 	// HeightField.
 	string			HeightFieldName;
@@ -104,6 +110,10 @@ struct CViewerConfig
 		Background = CRGBA(100,100,255);
 		ZonesPath = "./";
 		BanksPath = "./";
+		TilesPath = "./";
+		IgPath = "./";
+		ShapePath = "./";
+		MapsPath = "./";
 		Bank = "bank.bank";
 		FontPath = "\\\\server\\code\\fonts\\arialuni.ttf";
 		ZFar = 1000;
@@ -321,18 +331,22 @@ void displayZones()
 	ViewerCfg.TextContext.printfAt(0.5f,0.5f,"Initializing TileBanks...");
 	CNELU::swapBuffers();
 	
-	CIFile bankFile(CPath::lookup(ViewerCfg.Bank));
+	CIFile bankFile (ViewerCfg.BanksPath + "/" + ViewerCfg.Bank);
 	Landscape->Landscape.TileBank.serial(bankFile);
 	bankFile.close();
+
+	if ((Landscape->Landscape.TileBank.getAbsPath ()!="")&&(ViewerCfg.TilesPath!=""))
+		Landscape->Landscape.TileBank.setAbsPath (ViewerCfg.TilesPath + "/");
 	
 #ifdef BANK_PAH_RELATIVE
 	Landscape->Landscape.TileBank.makeAllPathRelative();
 #endif
+
 	sint idx = ViewerCfg.Bank.find(".");
 	string farBank = ViewerCfg.Bank.substr(0,idx);
 	farBank += ".farbank";
 	
-	CIFile farbankFile(CPath::lookup(farBank));
+	CIFile farbankFile(ViewerCfg.BanksPath + "/" + farBank);
 	Landscape->Landscape.TileFarBank.serial(farbankFile);
 	farbankFile.close();
 	
@@ -374,7 +388,8 @@ void displayZones()
 	CNELU::clearBuffers(CRGBA(0,0,0));
 	ViewerCfg.TextContext.printfAt(0.5f,0.5f,"Loading zones...");
 	CNELU::swapBuffers();
-	for(uint32 i =0; i<ViewerCfg.Zones.size(); i++)
+	uint32 i;
+	for(i =0; i<ViewerCfg.Zones.size(); i++)
 	{
 		CZone zone;
 		try
@@ -395,6 +410,30 @@ void displayZones()
 		}		
 	}
 	
+
+		
+
+	// Load instance group.
+	CNELU::clearBuffers(CRGBA(0,0,0));
+	ViewerCfg.TextContext.printfAt(0.5f,0.5f,"Loading objects...");
+	CNELU::swapBuffers();
+	for(i =0; i<ViewerCfg.Igs.size(); i++)
+	{
+		CInstanceGroup group;
+		try
+		{
+			CIFile file(CPath::lookup(ViewerCfg.Igs[i]));
+			group.serial(file);
+			file.close();
+
+			// Add it to the scene.
+			group.addToScene (CNELU::Scene);
+		}
+		catch(Exception &e)
+		{
+			printf(e.what ());
+		}		
+	}
 	
 	// Init collision Manager.
 	CNELU::clearBuffers(CRGBA(0,0,0));
@@ -678,8 +717,13 @@ void writeConfigFile(const char * configFileName)
 	fprintf(f,"LandscapeTileNear = %f;\n", ViewerCfg.LandscapeTileNear);
 	fprintf(f,"LandscapeThreshold = %f;\n", ViewerCfg.LandscapeThreshold);
 	fprintf(f,"BanksPath = \"%s\";\n",ViewerCfg.BanksPath.c_str());
+	fprintf(f,"TilesPath = \"%s\";\n",ViewerCfg.TilesPath.c_str());
 	fprintf(f,"Bank = \"%s\";\n",ViewerCfg.Bank.c_str());
 	fprintf(f,"ZonesPath = \"%s\";\n",ViewerCfg.ZonesPath.c_str());
+	fprintf(f,"IgPath = \"%s\";\n",ViewerCfg.IgPath.c_str());
+	fprintf(f,"ShapePath = \"%s\";\n",ViewerCfg.ShapePath.c_str());
+	fprintf(f,"MapsPath = \"%s\";\n",ViewerCfg.MapsPath.c_str());
+	
 
 
 	fprintf(f,"HeightFieldName = \"%s\";\n", ViewerCfg.HeightFieldName.c_str());
@@ -694,6 +738,10 @@ void writeConfigFile(const char * configFileName)
 
 	fprintf(f,"Zones = {\n");
 	fprintf(f,"};\n");
+
+	fprintf(f,"Ig = {\n");
+	fprintf(f,"};\n");
+
 	fclose(f);
 }
 
@@ -754,10 +802,11 @@ void initViewerConfig(const char * configFileName)
 		CConfigFile::CVar &cvLandscapeThreshold = cf.getVar("LandscapeThreshold");
 		ViewerCfg.LandscapeThreshold = cvLandscapeThreshold.asFloat();
 
-
 		CConfigFile::CVar &cvBanksPath = cf.getVar("BanksPath");
 		ViewerCfg.BanksPath = cvBanksPath.asString();
-		CPath::addSearchPath(cvBanksPath.asString());
+
+		CConfigFile::CVar &cvTilesPath = cf.getVar("TilesPath");
+		ViewerCfg.TilesPath = cvTilesPath.asString();
 
 		CConfigFile::CVar &cvBank = cf.getVar("Bank");
 		ViewerCfg.Bank = cvBank.asString();
@@ -766,6 +815,17 @@ void initViewerConfig(const char * configFileName)
 		ViewerCfg.ZonesPath = cvZonesPath.asString();
 		CPath::addSearchPath(cvZonesPath.asString());
 
+		CConfigFile::CVar &cvIgPath = cf.getVar("IgPath");
+		ViewerCfg.IgPath = cvIgPath.asString();
+		CPath::addSearchPath(cvIgPath.asString());
+
+		CConfigFile::CVar &cvShapePath = cf.getVar("ShapePath");
+		ViewerCfg.ShapePath = cvShapePath.asString();
+		CPath::addSearchPath(cvShapePath.asString());
+
+		CConfigFile::CVar &cvMapsPath = cf.getVar("MapsPath");
+		ViewerCfg.MapsPath = cvMapsPath.asString();
+		CPath::addSearchPath(cvMapsPath.asString());
 
 		CConfigFile::CVar &cvHeightFieldName = cf.getVar("HeightFieldName");
 		ViewerCfg.HeightFieldName = cvHeightFieldName.asString();
@@ -800,9 +860,16 @@ void initViewerConfig(const char * configFileName)
 
 
 		CConfigFile::CVar &cvZones = cf.getVar("Zones");
-		for(int i=0; i<cvZones.size(); i++)
+		int i;
+		for(i=0; i<cvZones.size(); i++)
 		{
 			ViewerCfg.Zones.push_back(cvZones.asString(i));
+		}
+
+		CConfigFile::CVar &cvIgs = cf.getVar("Ig");
+		for(i=0; i<cvIgs.size(); i++)
+		{
+			ViewerCfg.Igs.push_back(cvIgs.asString(i));
 		}
 
 	}

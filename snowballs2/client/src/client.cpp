@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.19 2001/07/12 15:43:05 lecroart Exp $
+ * $Id: client.cpp,v 1.20 2001/07/12 16:29:19 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,7 @@
 #include "entities.h"
 #include "camera.h"
 #include "pacs.h"
+#include "network.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -86,9 +87,6 @@ bool				 NeedExit = false;
 
 bool				 ShowRadar;
 bool				 ShowCommands;
-
-// true if the client is in online mode
-bool				 Online = false;
 
 //
 // Main

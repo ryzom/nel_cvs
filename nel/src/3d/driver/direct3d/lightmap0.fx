@@ -19,5 +19,7 @@ technique one_stage_1
 		ColorOp[0] = MODULATE;
 		ColorArg1[0] = TEXTURE;
 		ColorArg2[0] = DIFFUSE;
+		AlphaOp[0] = SELECTARG1; // for alpha test
+		AlphaArg1[0] = TEXTURE;
 	}
 };

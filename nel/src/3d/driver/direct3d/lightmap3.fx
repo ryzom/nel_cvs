@@ -26,10 +26,11 @@ pixelshader four_stages_ps = asm
 	tex t2;
 	tex t3;
 	// multiply lightmap with factor, and add with LMCAmbient+DynamicLight term
-	mad r0, c1, t1, v0;
-	mad r0, c2, t2, r0;
-	mad r0, c3, t3, r0;
-	mul r0, r0, t0;
+	mad r0.xyz, c1, t1, v0;
+	mad r0.xyz, c2, t2, r0;
+	mad r0.xyz, c3, t3, r0;
+	mul r0.xyz, r0, t0;
+	+mov r0.w, t0;
 };
 
 technique four_stages_4
@@ -66,9 +67,10 @@ pixelshader three_stages_0_ps = asm
 	tex t1;
 	tex t2;
 	// multiply lightmap with factor, and add with LMCAmbient+DynamicLight term
-	mad r0, c1, t1, v0;
-	mad r0, c2, t2, r0;
-	mul r0, r0, t0;
+	mad r0.xyz, c1, t1, v0;
+	mad r0.xyz, c2, t2, r0;
+	mul r0.xyz, r0, t0;
+	+mov r0.w, t0;
 };
 
 technique three_stages_3
@@ -112,6 +114,12 @@ technique three_stages_3
 		ColorArg1[1] = CURRENT;
 		ColorArg2[1] = TEXTURE;
 		ColorOp[2] = DISABLE;
+		// Alpha stage 0 unused
+		AlphaOp[0] = SELECTARG1;
+		AlphaArg1[0] = TFACTOR;
+		AlphaOp[1] = SELECTARG1;
+		AlphaArg1[1] = TEXTURE; // for case when there's alpha test
+		AlphaOp[2] = DISABLE;
 		PixelShader = (NULL);
 	}
 }
@@ -142,6 +150,11 @@ technique two_stages_2
 		ColorOp[1] = MODULATE;
 		ColorArg1[1] = CURRENT;
 		ColorArg2[1] = TEXTURE;
+		// Alpha stage 0 unused
+		AlphaOp[0] = SELECTARG1;
+		AlphaArg1[0] = TFACTOR;
+		AlphaOp[1] = SELECTARG1; // alpha in case were alpha test is used
+		AlphaArg1[1] = TEXTURE;
 	}
 	pass p1
 	{

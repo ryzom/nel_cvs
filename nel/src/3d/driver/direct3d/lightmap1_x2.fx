@@ -36,5 +36,9 @@ technique two_stages_2
 		ColorOp[1] = MODULATE2X;
 		ColorArg1[1] = CURRENT;
 		ColorArg2[1] = TEXTURE;
+		AlphaOp[0] =   SELECTARG1;
+		AlphaArg1[0] = TFACTOR;
+		AlphaOp[1] =   SELECTARG1; // for alpha test
+		AlphaArg1[1] = TEXTURE;
 	}
 };

@@ -30,7 +30,7 @@ pixelshader four_stages_ps = asm
 	mad r0.xyz, c2, t2, r0;
 	mad r0.xyz, c3, t3, r0;
 	mul r0.xyz, r0, t0;
-	mov r0.w, t0;
+	+mov r0.w, t0;
 };
 
 technique four_stages_4
@@ -72,7 +72,7 @@ pixelshader three_stages_0_ps = asm
 	mad r0.xyz, c1, t1, v0;
 	mad r0.xyz, c2, t2, r0;
 	mul r0.xyz, r0, t0;
-	mov r0.w, t0;
+	+mov r0.w, t0;
 };
 
 technique three_stages_3

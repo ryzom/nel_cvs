@@ -23,9 +23,10 @@ pixelshader three_stages_ps = asm
 	tex t1;
 	tex t2;
 	// multiply lightmap with factor, and add with LMCAmbient+DynamicLight term
-	mad r0, c1, t1, v0;
-	mad r0, c2, t2, r0;
-	mul_x2 r0, r0, t0;
+	mad r0.xyz, c1, t1, v0;
+	mad r0.xyz, c2, t2, r0;
+	mul_x2 r0.xyz, r0, t0;
+	+mov r0.w, t0;
 };
 
 technique three_stages_3
@@ -77,6 +78,11 @@ technique two_stages_2
 		ColorOp[1] = MODULATE2X;
 		ColorArg1[1] = CURRENT;
 		ColorArg2[1] = TEXTURE;
+		// Alpha stage 0 unused
+		AlphaOp[0] = SELECTARG1;
+		AlphaArg1[0] = TFACTOR;
+		AlphaOp[1] = SELECTARG1; // for alpha test if enabled
+		AlphaArg1[1] = TEXTURE;
 	}
 	pass p1
 	{

@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.11 2003/07/02 17:06:57 corvazier Exp $
+ * $Id: memory_manager.h,v 1.12 2003/07/02 17:40:38 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -321,6 +321,8 @@ inline void* operator new(size_t size, const char *filename, int line)
 
 // *********************************************************
 
+#ifdef WIN32
+
 inline void* operator new(size_t size)
 {
 	return NLMEMORY::MemoryAllocateDebug (size, "::new (size_t size) operator", 0, 0);
@@ -354,14 +356,24 @@ inline void operator delete[](void* p, const char *filename, int line)
 	NLMEMORY::MemoryDeallocate (p);
 }
 
+#endif
+
 // *********************************************************
 // Macros
 // *********************************************************
 
 /* New operator in debug mode
  * Doesn't work with placement new. To do a placement new, undef new, make your placement new, and redefine new with the macro NL_NEW */
+#ifdef WIN32
+
 #define NL_NEW new(__FILE__, __LINE__)
 #define new NL_NEW
+
+#else
+
+#define NL_NEW new
+
+#endif
 
 // Use allocation context ?
 #define NL_ALLOC_CONTEXT(str) ((void)0);

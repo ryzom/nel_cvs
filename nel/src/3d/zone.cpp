@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.35 2001/04/23 16:31:32 berenguier Exp $
+ * $Id: zone.cpp,v 1.36 2001/04/24 14:57:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -831,6 +831,35 @@ void			CZone::refine()
 	}
 
 }
+// ***************************************************************************
+void			CZone::refineAll()
+{
+	nlassert(Compiled);
+
+	// Fuck stlport....
+	if(Patchs.size()==0)
+		return;
+
+	// Do a dummy clip.
+	ComputeTileErrorMetric= true;
+	ClipResult= ClipIn;
+	CPatch		*pPatch= &(*Patchs.begin());
+	sint n;
+	for(n=(sint)Patchs.size();n>0;n--, pPatch++)
+	{
+		pPatch->forceNoClip();
+	}
+
+
+	// refine ALL patchs (even those which may be invisible).
+	pPatch= &(*Patchs.begin());
+	for(n=(sint)Patchs.size();n>0;n--, pPatch++)
+	{
+		pPatch->refine();
+	}
+
+}
+
 // ***************************************************************************
 void			CZone::preRender(const std::vector<CPlane>	&pyramid)
 {

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.53 2001/04/24 09:36:52 berenguier Exp $
+ * $Id: landscape.cpp,v 1.54 2001/04/24 14:57:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -312,6 +312,21 @@ void			CLandscape::refine(const CVector &refineCenter)
 		(*it).second->refine();
 	}
 }
+// ***************************************************************************
+void			CLandscape::refineAll(const CVector &refineCenter)
+{
+	// -1. Update globals
+	updateGlobals (refineCenter);
+
+	// Increment the update date.
+	CTessFace::CurrentDate++;
+
+	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+	{
+		(*it).second->refineAll();
+	}
+}
+
 // ***************************************************************************
 void			CLandscape::updateGlobals (const CVector &refineCenter) const
 {

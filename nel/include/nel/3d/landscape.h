@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.38 2001/04/23 16:31:32 berenguier Exp $
+ * $Id: landscape.h,v 1.39 2001/04/24 14:57:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -199,6 +199,8 @@ public:
 	void			refine(const CVector &refineCenter);
 	/// Render the landscape. A more precise clip is made on TessBlocks. pyramid should be the same as one passed to clip().
 	void			render(IDriver *drv, const CVector &refineCenter, const std::vector<CPlane>	&pyramid, bool doTileAddPass=false);
+	/// Refine/Geomorph ALL the tesselation of the landscape, from the view point refineCenter. Even if !RefineMode.
+	void			refineAll(const CVector &refineCenter);
 	// @}
 
 

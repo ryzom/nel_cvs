@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.27 2001/04/23 16:31:32 berenguier Exp $
+ * $Id: zone.h,v 1.28 2001/04/24 14:57:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -364,6 +364,8 @@ public:
 	void			resetRenderFar();
 	/// For changing TileMaxSubdivision. force tesselation to be under tile.
 	void			forceMergeAtTileLevel();
+	/// force Refine a zone.
+	void			refineAll();
 
 
 	// Accessors.

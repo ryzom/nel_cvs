@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.7 2001/07/24 14:24:40 lecroart Exp $
+ * $Id: source_al.cpp,v 1.8 2001/07/25 08:40:58 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,8 @@ using namespace NLMISC;
 
 namespace NLSOUND {
 
+
+// Currently, the OpenAL headers are different between Windows and Linux versions !
 #ifdef NL_OS_UNIX
 #define alGetSourcei alGetSourceiv
 #define alGetSourcef alGetSourcefv

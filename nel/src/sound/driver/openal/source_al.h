@@ -1,7 +1,7 @@
 /** \file source_al.h
  * OpenAL sound source
  *
- * $Id: source_al.h,v 1.5 2001/07/24 14:24:40 lecroart Exp $
+ * $Id: source_al.h,v 1.6 2001/07/25 08:40:58 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,9 @@ namespace NLSOUND {
  *
  * Note: the creation/deletion of sources and the setting of their rolloff factor
  * are done in CSoundDriverAL.
+ *
+ * The EAX extensions are not available on all sound cards, and currently not at
+ * all on Linux.
  *
  * \author Olivier Cado
  * \author Nevrax France

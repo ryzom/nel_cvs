@@ -1,7 +1,7 @@
 /** \file buffer_al.h
  * OpenAL buffer
  *
- * $Id: buffer_al.h,v 1.3 2001/07/24 14:24:40 lecroart Exp $
+ * $Id: buffer_al.h,v 1.4 2001/07/25 08:40:58 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,11 @@ namespace NLSOUND {
 
 /**
  * OpenAL buffer
+ *
+ * A buffer can be filled with data. An OpenAL buffer cannot be streamed in, i.e.
+ * isFillMoreSupported() returns false (instead, streaming would be implemented
+ * by buffer queueing).
+ *
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001

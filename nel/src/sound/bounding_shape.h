@@ -1,7 +1,7 @@
 /** \file bounding_shape.h
  * IBoundingShape: interface for bounding shapes
  *
- * $Id: bounding_shape.h,v 1.3 2001/07/24 14:24:40 lecroart Exp $
+ * $Id: bounding_shape.h,v 1.4 2001/07/25 08:40:58 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -36,6 +36,9 @@ namespace NLSOUND {
 
 /**
  * Interface for bounding shapes (bounding spheres, bounding boxes...)
+ *
+ * These bounding shapes are used by EnvSounds and EnvEffects areas.
+ * There is no common interface in NLMISC for performance purpose.
  *
  * \author Olivier Cado
  * \author Nevrax France

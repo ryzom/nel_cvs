@@ -1,7 +1,7 @@
 /** \file listener_al.cpp
  * OpenAL sound listener
  *
- * $Id: listener_al.cpp,v 1.5 2001/07/24 14:24:40 lecroart Exp $
+ * $Id: listener_al.cpp,v 1.6 2001/07/25 08:40:58 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,6 +69,8 @@ void					CListenerAL::setPos( const NLMISC::CVector& pos )
  */
 void					CListenerAL::getPos( NLMISC::CVector& pos ) const
 {
+// Currently, the OpenAL headers are different between Windows and Linux versions !
+// alGetListener3f() is part of the spec, though.
 #ifdef NL_OS_WINDOWS
 	alGetListener3f( AL_POSITION, &pos.x, &pos.y, &pos.z );
 #else

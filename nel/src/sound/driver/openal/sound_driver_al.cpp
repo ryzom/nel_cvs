@@ -1,7 +1,7 @@
 /** \file sound_driver_al.cpp
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.cpp,v 1.5 2001/07/24 14:24:40 lecroart Exp $
+ * $Id: sound_driver_al.cpp,v 1.6 2001/07/25 08:40:58 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,14 @@ EAXGet					EAXGetProp = NULL;
 #endif
 
 
+// Currently, the OpenAL headers are different between Windows and Linux versions !
+// AL_INVALID_XXXX are part of the spec, though.
+#ifdef NL_OS_UNIX
+#define AL_ILLEGAL_ENUM AL_INVALID_ENUM
+#define AL_ILLEGAL_COMMAND AL_INVALID_OPERATION
+#endif
+
+
 #ifdef NL_DEBUG
 // Test error in debug mode
 void TestALError()
@@ -55,19 +63,11 @@ void TestALError()
 	{
 	case AL_NO_ERROR : break;
 	case AL_INVALID_NAME : nlerror( "OpenAL: Invalid name" );
-#ifdef NL_OS_WINDOWS
 	case AL_INVALID_ENUM  : nlerror( "OpenAL: Invalid enum" );
-#else
-	case AL_ILLEGAL_ENUM  : nlerror( "OpenAL: Invalid enum" );
-#endif
 	case AL_INVALID_VALUE  : nlerror( "OpenAL: Invalid value" );
-#ifdef NL_OS_WINDOWS
 	case AL_INVALID_OPERATION  : nlerror( "OpenAL: Invalid operation" );
-#else
-	case AL_ILLEGAL_COMMAND  : nlerror( "OpenAL: Invalid operation" );
-#endif
 	case AL_OUT_OF_MEMORY  : nlerror( "OpenAL: Out of memory" );
-	// alGetString( errcode ) does not work !
+	// alGetString( errcode ) seems to fail !
 	}
 }
 #endif
@@ -425,6 +425,7 @@ TSampleFormat ALtoNLSoundFormat( ALenum alformat )
  */
 bool			CSoundDriverAL::loadWavFile( IBuffer *destbuffer, const char *filename )
 {
+// Currently, the OpenAL UT headers are different between Windows and Linux versions
 #ifdef NL_OS_WINDOWS
 	ALsizei size,freq;
 	ALenum format;

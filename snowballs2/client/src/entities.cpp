@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.34 2001/07/20 17:31:07 legros Exp $
+ * $Id: entities.cpp,v 1.35 2001/07/23 08:03:48 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -471,6 +471,24 @@ void stateNormal (CEntity &entity)
 
 	if (entity.Type == CEntity::Snowball && entity.AutoMove && pDelta.norm() < 0.1f)
 	{
+/*
+		CVector	tp(1140,-833,30);
+		nlinfo("dist=%f", (entity.Position-tp).norm());
+		if ((entity.Position-tp).norm()<30.0f)
+		{
+			static UInstance *t = NULL;
+			if (t != NULL)
+			{
+				Scene->deleteInstance (t);
+			}
+			t = Scene->createInstance("snowball.ps");
+			t->setScale (10,10,10);
+			CVector tp2 = tp;
+			tp2.z+=20;
+			t->setPos (tp2);
+			nlinfo("touche");
+		}
+*/
 		removeEntity(entity.Id);
 	}
 

@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.9 2001/07/20 17:08:11 lecroart Exp $
+ * $Id: animation.cpp,v 1.10 2001/07/23 08:03:48 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -256,7 +256,7 @@ void	updateAnimation()
 
 		if (entity.AnimQueue.empty ())
 		{
-			nlwarning ("empty queue update!!!");
+//			nlwarning ("empty queue update!!!");
 			continue;
 		}
 
@@ -268,7 +268,7 @@ void	updateAnimation()
 
 			if (entity.AnimQueue.empty ())
 			{
-				nlwarning ("empty queue!!!!!!");
+//				nlwarning ("empty queue!!!!!!");
 				continue;
 			}
 

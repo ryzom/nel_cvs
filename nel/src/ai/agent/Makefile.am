@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.17 2001/10/04 09:56:10 chafik Exp $
+# $Id: Makefile.am,v 1.18 2001/10/04 13:03:17 chafik Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -7,8 +7,7 @@ MAINTAINERCLEANFILES    = Makefile.in
 noinst_LTLIBRARIES      = libagent.la
 
 libagent_la_SOURCES     = baseai.cpp \
-                          agents.cpp \
-                          baseia.cpp \
+                          agents.cpp \                          
                           msg.cpp \
                           mailbox.cpp \
                           actor.cpp \

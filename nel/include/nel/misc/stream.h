@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.45 2001/07/10 08:59:19 corvazier Exp $
+ * $Id: stream.h,v 1.46 2001/07/11 16:11:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -567,8 +567,9 @@ private:
 		{
 			for(sint i=0;i<len;i++)
 			{
-				__iterator it = cont.insert(cont.end(), __value_type());
-				serial(const_cast<__value_type&>(*it));
+				__value_type v;
+				serial(v);
+				__iterator it = cont.insert(cont.end(), v);
 			}
 		}
 		else
@@ -635,15 +636,26 @@ protected:
 			serial(len);
 			// special version for vector: adjut good size.
 			contReset(cont);
-			cont.reserve(len);
+			cont.resize (len);
+
+			// Read the vector
+			for(sint i=0;i<len;i++)
+			{
+				serial(cont[i]);
+			}
 		}
 		else
 		{
 			len= cont.size();
 			serial(len);
-		}
 
-		serialSTLContLen(cont, len);
+			// Write the vector
+			__iterator		it= cont.begin();
+			for(sint i=0;i<len;i++, it++)
+			{
+				serial(const_cast<__value_type&>(*it));
+			}
+		}
 	}
 
 
@@ -845,9 +857,10 @@ private:
 			serial(len);
 			for(sint i=0;i<len;i++)
 			{
-				__iterator it = cont.insert(cont.end(), __value_type());
-				serial( const_cast<__key_type&>(it->first) );
-				serial(it->second);
+				__value_type v;
+				serial ( const_cast<__key_type&>(v.first) );
+				serial (v.second);
+				cont.insert(cont.end(), v);
 			}
 		}
 		else

@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.12 2004/09/07 11:56:57 boucher Exp $
+ * $Id: diff_tool.cpp,v 1.13 2004/09/21 06:33:02 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -224,7 +224,7 @@ bool loadStringFile(const std::string filename, vector<TStringInfo> &stringInfos
 }
 
 
-ucstring prepareStringFile(const vector<TStringInfo> &strings, bool removeDiffComments)
+ucstring prepareStringFile(const vector<TStringInfo> &strings, bool removeDiffComments, bool noDiffInfo)
 {
 	ucstring diff;
 
@@ -273,8 +273,11 @@ ucstring prepareStringFile(const vector<TStringInfo> &strings, bool removeDiffCo
 		{
 			// add hash value comment if needed
 //			if (si.Comments.find(ucstring("// HASH_VALUE ")) == ucstring::npos)
+			if (!noDiffInfo)
+			{
 			str += ucstring("// HASH_VALUE ") + CI18N::hashToString(si.HashValue)+ nl;
 			str += ucstring("// INDEX ") + NLMISC::toString("%u", first-strings.begin())+ nl;
+			}
 			str += si.Identifier + '\t';
 
 			ucstring text = CI18N::makeMarkedString('[', ']', si.Text);;

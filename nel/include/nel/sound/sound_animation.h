@@ -1,7 +1,7 @@
 /** \file sound_anim_marker.h
  * A sound event marer on a sound track
  *
- * $Id: sound_animation.h,v 1.1 2002/06/18 16:02:32 hanappe Exp $
+ * $Id: sound_animation.h,v 1.2 2002/06/20 08:18:09 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #ifndef NL_SOUND_ANIM_TRACK_H
 #define NL_SOUND_ANIM_TRACK_H
 
+#include "nel/sound/sound_anim_manager.h"
 
 namespace NLMISC
 {
@@ -38,8 +39,6 @@ class CSoundAnimMarker;
 
 typedef std::vector<CSoundAnimMarker*> TMarkerVector;
 
-
-typedef sint32 TSoundAnimId;
 
 
 class CSoundAnimation

@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.h,v 1.1 2002/06/18 16:02:32 hanappe Exp $
+ * $Id: sound_anim_manager.h,v 1.2 2002/06/20 08:18:09 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,14 +27,17 @@
 #ifndef NL_SOUND_ANIM_MANAGER_H
 #define NL_SOUND_ANIM_MANAGER_H
 
-#include "sound_animation.h"
-#include "sound_anim_player.h"
 
 #include "nel/misc/vector.h"
 #include <hash_map>
 
 
 namespace NLSOUND {
+
+
+class CSoundAnimPlayer;
+class CSoundAnimation;
+class UAudioMixer;
 
 
 // Comparision for const char*
@@ -47,6 +50,12 @@ struct eqsndanim
 };
 
 
+/// 
+typedef sint32 TSoundAnimId;
+
+///
+typedef sint32 TSoundAnimPlayId;
+
 /// Animation name-to-id hash map
 typedef std::hash_map<const char*, TSoundAnimId, std::hash<const char*>, eqsndanim> TSoundAnimMap;
 
@@ -57,13 +66,14 @@ typedef std::vector<CSoundAnimation*> TSoundAnimVector;
 typedef std::set<CSoundAnimPlayer*> TPlayerSet;
 
 
+
 class CSoundAnimManager
 {
 public:
 
 	static CSoundAnimManager* instance() { return _Instance; }
 
-	CSoundAnimManager(NLSOUND::UAudioMixer* mixer);
+	CSoundAnimManager(UAudioMixer* mixer);
 	virtual ~CSoundAnimManager();
 
 	/** Load the sound animation with the specified name. 
@@ -98,23 +108,23 @@ public:
 	 *  or -1 if the animation was not found.
  	 *  \param name The id of the animation to play.
 	 */
-	virtual sint32					playAnimation(TSoundAnimId id, float time, NLMISC::CVector* position);
+	virtual TSoundAnimPlayId		playAnimation(TSoundAnimId id, float time, NLMISC::CVector* position);
 
 	/** Start playing a sound animation. Returns an id number of this playback instance
 	 *  or -1 if the animation was not found.
  	 *  \param name The name of the animation to play.
 	 */
-	virtual sint32					playAnimation(std::string& name, float time, NLMISC::CVector* position);
+	virtual TSoundAnimPlayId		playAnimation(std::string& name, float time, NLMISC::CVector* position);
 
 	/** Stop the playing of a sound animation. 
  	 *  \param name The playback id that was returned by playAnimation.
 	 */
-	virtual void					stopAnimation(sint32 playbackId);
+	virtual void					stopAnimation(TSoundAnimPlayId playbackId);
 
 	/** Returns true is the animation with the specified playback ID is playing
  	 *  \param name The playback id that was returned by playAnimation.
 	 */
-	//virtual bool				isPlaying(sint32 playbackId);
+	virtual bool					isPlaying(TSoundAnimPlayId playbackId);
 
 	/** Update all the sound animations during playback. 
 	 */
@@ -127,7 +137,7 @@ protected:
 	static CSoundAnimManager*		_Instance;
 
 	/** The mixer */
-	NLSOUND::UAudioMixer			*_Mixer;
+	UAudioMixer						*_Mixer;
 
 	/** The conversion table from animation name to id */
 	TSoundAnimMap					_IdMap;
@@ -139,7 +149,7 @@ protected:
 	TPlayerSet						_Players;
 
 	/** The id of the next player */
-	sint32							_PlayerId;
+	TSoundAnimPlayId				_PlayerId;
 
 	/** An auxilary vector to help remove players from the active set */
 	std::vector<CSoundAnimPlayer*>	_Garbage;

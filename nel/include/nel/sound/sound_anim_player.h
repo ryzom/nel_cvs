@@ -1,7 +1,7 @@
 /** \file sound_anim_player.h
  * A sound event marer on a sound track
  *
- * $Id: sound_anim_player.h,v 1.1 2002/06/18 16:02:32 hanappe Exp $
+ * $Id: sound_anim_player.h,v 1.2 2002/06/20 08:18:09 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,14 +26,18 @@
 #ifndef NL_SOUND_ANIM_PLAYER_H
 #define NL_SOUND_ANIM_PLAYER_H
 
-#include "nel/sound/u_audio_mixer.h"
-#include "nel/misc/vector.h"
+#include "nel/sound/sound_anim_manager.h"
+
+namespace NLMISC {
+	class CVector;
+}
 
 namespace NLSOUND {
 
 typedef enum { NLSOUND_SOUND_ANIM_PLAYING, NLSOUND_SOUND_ANIM_STOPPED } TSoundAnimPlayerState;
 
 class CSoundAnimation;
+class UAudioMixer;
 
 /**
 
@@ -59,7 +63,7 @@ public:
 	 *  \param time The offset in time of the animation. 
 	 *  \param position A pointer to a vector indicating the position of the animation.
      */
-	CSoundAnimPlayer(CSoundAnimation* animation, float time, NLMISC::CVector *position, NLSOUND::UAudioMixer* mixer, sint32 id);
+	CSoundAnimPlayer(CSoundAnimation* animation, float time, NLMISC::CVector *position, NLSOUND::UAudioMixer* mixer, TSoundAnimPlayId id);
 
 	virtual ~CSoundAnimPlayer() {}
 
@@ -72,12 +76,12 @@ public:
 	virtual bool				isPlaying()		{ return _Playing; }
 
 	/** Get the unique id of this player instance */
-	virtual sint32				getId()			{ return _Id; }
+	virtual TSoundAnimPlayId	getId()			{ return _Id; }
 
 protected:
 
 	/** The audio mixer */
-	NLSOUND::UAudioMixer		*_Mixer;
+	UAudioMixer					*_Mixer;
 
 	/** The start time of this animation */
 	float						_StartTime;
@@ -98,7 +102,7 @@ protected:
 	NLMISC::CVector				*_Position;
 
 	/** The ID of the player */
-	sint32						_Id;
+	TSoundAnimPlayId			_Id;
 };
 
 } // namespace NLSOUND

@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * basic types, define and class
  *
- * $Id: types_nl.h,v 1.14 2000/11/21 15:27:25 lecroart Exp $
+ * $Id: types_nl.h,v 1.15 2000/11/21 18:19:05 valignat Exp $
  *
  * \todo ace: create the ucstring type (unicode string type based on a STL basic_string?)
  *
@@ -41,6 +41,7 @@
 #include	<string>
 #include	<exception>
 
+
 // Operating systems definition
 
 #ifdef WIN32
@@ -54,6 +55,7 @@
 #else
 #  define NL_OS_UNIX
 #  define NL_BIG_ENDIAN
+#include <sys/types.h>
 #endif
 
 // Stupid Visual C++ warning
@@ -163,14 +165,14 @@ typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 
 #elif defined (NL_OS_UNIX)
 
-typedef	signed		char		sint8;
-typedef	unsigned	char		uint8;
-typedef	signed		short		sint16;
-typedef	unsigned	short		uint16;
-typedef	signed		int			sint32;
-typedef	unsigned	int			uint32;
-typedef	signed		long long	sint64;
-typedef	unsigned	long long	uint64;
+typedef	int8_t		sint8;
+typedef	u_int8_t	uint8;
+typedef	int16_t		sint16;
+typedef	u_int16_t	uint16;
+typedef	int32_t		sint32;
+typedef	u_int32_t	uint32;
+typedef	int64_t		sint64;
+typedef	u_int64_t	uint64;
 
 typedef	signed		int			sint;			// at least 32bits (depend of processor)
 typedef	unsigned	int			uint;			// at least 32bits (depend of processor)

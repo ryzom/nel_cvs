@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.34 2001/06/22 12:45:41 besson Exp $
+ * $Id: scene.cpp,v 1.35 2001/06/22 16:12:25 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -415,7 +415,7 @@ void CScene::setAutoAnim( CAnimation *pAnim )
 
 	CAnimationPlaylist *pl = new CAnimationPlaylist();
 	pl->setAnimation( 0, nAnimNb );
-	pl->setWrapMode( 0, CAnimationPlaylist::TWrapMode::Repeat );
+	pl->setWrapMode( 0, CAnimationPlaylist::Repeat );
 	_LMAnimsAuto.addPlaylist(pl,cm);
 }
 

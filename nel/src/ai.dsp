@@ -846,10 +846,6 @@ SOURCE=.\ai\script\factor_type.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ai\script\gd_agent_class.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\ai\script\hierarchy.cpp
 # End Source File
 # Begin Source File

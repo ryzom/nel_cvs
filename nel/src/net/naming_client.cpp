@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.23 2001/02/15 14:17:45 cado Exp $
+ * $Id: naming_client.cpp,v 1.24 2001/02/23 10:27:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "nel/net/naming_client.h"
 #include "nel/net/socket.h"
+#include "nel/net/callback_client.h"
 #include "nel/misc/debug.h"
 #include <sstream>
 
@@ -549,6 +550,43 @@ bool CNamingClient::lookupAndConnect( const std::string& name, CSocket& sock, ui
 	{
 		return false;
 	}
+}
+
+
+/*
+ * See lookupAndConnect( const std::string&, CSocket&, uint16& )
+ */
+bool CNamingClient::lookupAndConnect( const std::string& name, CCallbackClient& sock, uint16& validitytime )
+{
+	// Look up for service
+	CInetAddress servaddr;
+	if ( CNamingClient::lookup( name, servaddr, validitytime ) )
+	{
+		// Try to connect to the server
+		bool service_ok = false;
+		while ( ! service_ok )
+		{
+			try
+			{
+				sock.connect( servaddr );
+				service_ok = true;
+			}
+			catch ( ESocketConnectionFailed& )
+			{
+				// If the connection failed, inform the Naming Service and try another server
+				if ( ! CNamingClient::lookupAlternate( name, servaddr, validitytime ) )
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
 }
 
 

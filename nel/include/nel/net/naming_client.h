@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.16 2001/02/15 16:20:03 cado Exp $
+ * $Id: naming_client.h,v 1.17 2001/02/23 10:27:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NLNET {
 
 
 class CSocket;
+class CCallbackClient;
 
 
 /// Type of map of registered services
@@ -140,14 +141,17 @@ public:
 	static bool			lookupAlternate( TServiceId sid, CInetAddress& addr, uint16& validitytime );
 
 	/** Obtains a socket connected to a server providing the service \e name.
-	 * In case of failure, the method throws EServiceNotFound
+	 * In case of failure to connect, the method informs the Naming Service and tries to get another server
 	 * \param name [in] Name of the service to find and connected
-	 * \param sock [out] The returned socket.
+	 * \param sock [out] The connected socket.
 	 * \param validitytime [out] After this number of seconds are elapsed, another lookup will be necessary
 	 * before sending a message to the service
-	 * \return True if all worked fine
+	 * \return True if the service was not found
 	 */
 	static bool			lookupAndConnect( const std::string& name, CSocket& sock, uint16& validitytime );
+
+	/// See lookupAndConnect( const std::string&, CSocket&, uint16& )
+	static bool			lookupAndConnect( const std::string& name, CCallbackClient& sock, uint16& validitytime );
 
 	/**
 	 * Returns all services corresponding to the specified name.

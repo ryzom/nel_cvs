@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.h
  * <File description>
  *
- * $Id: event_mouse_listener.h,v 1.2 2001/06/25 13:43:24 vizerie Exp $
+ * $Id: event_mouse_listener.h,v 1.3 2002/03/13 15:03:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -176,6 +176,15 @@ public:
 	bool isModelTranslationEnabled(TAxis axis) ;
 
 
+	/** if true, XY translation is made in XY World plane (instead of XY view plane).
+	 *	false by default.
+	 */
+	void enableTranslateXYInWorld(bool enabled);
+
+	/** \see translateXYInWorld()
+	 */
+	bool isTranslateXYInWorldEnabled() const {return _TranslateXYInWorld;}
+
 	/** 
 	  * Set the speed for first person mode. Default 10.f;
 	  * \param speed is in unit per second.
@@ -254,6 +263,7 @@ private:
 	float				_Speed;
 	uint64				_LastTime;
 	TMouseMode			_MouseMode;
+	bool				_TranslateXYInWorld;
 	NLMISC::CEventListenerAsync	_AsyncListener;
 
 

@@ -428,10 +428,12 @@ void CMainFrame::OnEditMoveelement()
 	if (!MoveElement) // switch back to camera mode ?
 	{
 		ObjView->getMouseListener().enableModelMatrixEdition(false) ;
+		ObjView->getMouseListener().enableTranslateXYInWorld(false);
 	}
 	else
 	{
 		ObjView->getMouseListener().enableModelMatrixEdition() ;
+		ObjView->getMouseListener().enableTranslateXYInWorld(false);
 		ObjView->getMouseListener().setModelMatrix(ObjView->getParticleDialog()->getElementMatrix()) ;
 	}
 
@@ -960,10 +962,13 @@ void CMainFrame::OnEditMoveObjectLightTest()
 	if (!MoveObjectLightTest) // switch back to camera mode ?
 	{
 		ObjView->getMouseListener().enableModelMatrixEdition(false) ;
+		ObjView->getMouseListener().enableTranslateXYInWorld(false);
 	}
 	else
 	{
 		ObjView->getMouseListener().enableModelMatrixEdition() ;
+		// Better to move in XY world plane.
+		ObjView->getMouseListener().enableTranslateXYInWorld(true);
 		ObjView->getMouseListener().setModelMatrix(ObjView->_ObjectLightTestMatrix) ;
 	}
 }

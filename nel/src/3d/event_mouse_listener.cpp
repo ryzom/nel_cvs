@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.12 2002/02/28 12:59:49 besson Exp $
+ * $Id: event_mouse_listener.cpp,v 1.13 2002/03/13 15:03:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,7 @@ CEvent3dMouseListener::CEvent3dMouseListener() :  _CurrentModelRotationAxis(zAxi
 	_MouseMode=nelStyle;
 	setSpeed (10.f);
 	_LastTime=CTime::getLocalTime ();
+	_TranslateXYInWorld= false;
 }
 
 
@@ -197,42 +198,56 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 
 			CPlane plane;
 
+			// For precision problem, do all the compute local to the hotspot/model.
+			CVector		decal;
+
 			// Plane of the hotspot
 			if (! _EnableModelMatrixEdition)
 			{			
-				plane.make (_Matrix.getJ(), axis);
+				decal= axis;
 			}
 			else
 			{			
-				plane.make (_Matrix.getJ(), _ModelMatrix.getPos());
+				decal= _ModelMatrix.getPos();
+			}
+			// Choose plane to move on
+			if (bTranslateXY && _TranslateXYInWorld)
+			{
+				plane.make (CVector::K, CVector::Null);
+			}
+			else
+			{
+				plane.make (_Matrix.getJ(), CVector::Null);
 			}
 
 
 			// Get ray from mouse point
-			CVector worldPoint1, worldPoint2;
+			CMatrix		localViewMatrix= _Matrix;
+			localViewMatrix.setPos(_Matrix.getPos() - decal);
+			CVector localPoint1, localPoint2;
 			CVector pos, dir;
-			_Viewport.getRayWithPoint (_X, _Y, pos, dir, _Matrix, _Frustrum);
-			worldPoint1=plane.intersect (pos, pos+dir);
-			_Viewport.getRayWithPoint (mouseEvent->X, mouseEvent->Y, pos, dir, _Matrix, _Frustrum);
-			worldPoint2=plane.intersect (pos, pos+dir);
+			_Viewport.getRayWithPoint (_X, _Y, pos, dir, localViewMatrix, _Frustrum);
+			localPoint1=plane.intersect (pos, pos+dir);
+			_Viewport.getRayWithPoint (mouseEvent->X, mouseEvent->Y, pos, dir, localViewMatrix, _Frustrum);
+			localPoint2=plane.intersect (pos, pos+dir);
 
 			// Move the camera
 			if (bTranslateXY)
 			{
 				if (! _EnableModelMatrixEdition)
 				{
-					_Matrix.setPos(_Matrix.getPos()+worldPoint1-worldPoint2);
+					_Matrix.setPos(_Matrix.getPos()+localPoint1-localPoint2);
 				}
 				else
 				{
-					CVector dir =  - worldPoint1 + worldPoint2 ;
+					CVector dir =  - localPoint1 + localPoint2 ;
 					truncateVect(dir) ;
 					_ModelMatrix.setPos(_ModelMatrix.getPos()+dir);
 				}
 			}
 			else if (bTranslateZ)
 			{
-				CVector vect=worldPoint1-worldPoint2;
+				CVector vect=localPoint1-localPoint2;
 				if (! _EnableModelMatrixEdition)
 				{
 					_Matrix.setPos(_Matrix.getPos()+_Matrix.getK()*(vect.x+vect.y+vect.z));
@@ -246,7 +261,7 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 			}
 			else if (bZoom)
 			{
-				CVector vect=worldPoint1-worldPoint2;
+				CVector vect=localPoint1-localPoint2;
 				CVector direc=axis-_Matrix.getPos();
 				direc.normalize();
 				if (! _EnableModelMatrixEdition)
@@ -260,10 +275,6 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 			}
 		}
 		
-		if (bTranslateZ)
-		{
-			// Move up
-		}
 
 		// Update mouse position
 		_X=mouseEvent->X;
@@ -386,6 +397,12 @@ const NLMISC::CMatrix& CEvent3dMouseListener::getViewMatrix ()
 	
 	// Return the matrix
 	return _Matrix;
+}
+
+
+void CEvent3dMouseListener::enableTranslateXYInWorld(bool enabled)
+{
+	_TranslateXYInWorld= enabled;
 }
 
 

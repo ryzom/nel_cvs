@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.4 2001/05/31 15:28:11 lecroart Exp $
+ * $Id: command.cpp,v 1.5 2001/06/07 16:17:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -161,6 +161,17 @@ void ICommand::expand (std::string &commandName)
 		}
 	}
 }
+
+
+void ICommand::getCommands (std::vector<std::string> &commands)
+{
+	commands.clear ();
+	for (TCommand::iterator comm = (*_Commands).begin(); comm != (*_Commands).end(); comm++)
+	{
+		commands.push_back((*comm).first);
+	}
+}
+
 
 NLMISC_COMMAND(help,"display help on a specific variable/commands or on all variables and commands", "[<variable>|<command>]")
 {	

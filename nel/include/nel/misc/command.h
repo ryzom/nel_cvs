@@ -1,7 +1,7 @@
 /** \file command.h
  * <File description>
  *
- * $Id: command.h,v 1.5 2001/05/28 12:40:31 chafik Exp $
+ * $Id: command.h,v 1.6 2001/06/07 16:17:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -184,14 +184,17 @@ public:
 	static TCommand *_Commands;
 	static bool		 _CommandsInit;
 
+	/// Executes the command and display output to the log
 	static void execute (const std::string &commandWithArgs, NLMISC::CLog &log);
 
-	static void expand (std::string &commandName);
+	static void	expand (std::string &commandName);
+
+	/// Fills the vector with all command name
+	static void getCommands (std::vector<std::string> &commands);
 
 protected:
 
 	std::string _CommandName;
-
 };
 
 

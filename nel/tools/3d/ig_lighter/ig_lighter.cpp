@@ -1,7 +1,7 @@
 /** \file ig_lighter.cpp
  * ig_lighter.cpp : Instance lighter
  *
- * $Id: ig_lighter.cpp,v 1.2 2002/02/07 09:33:26 berenguier Exp $
+ * $Id: ig_lighter.cpp,v 1.3 2002/02/07 13:46:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -638,6 +638,7 @@ int main(int argc, char* argv[])
 			vector<string>				listFile;
 			vector<CInstanceGroup*>		listIg;
 			vector<string>				listIgFileName;
+			vector<string>				listIgPathName;
 			CPath::getPathContent(directoryIn, false, false, true, listFile);
 			for(uint iFile=0; iFile<listFile.size(); iFile++)
 			{
@@ -653,6 +654,7 @@ int main(int argc, char* argv[])
 
 					// add to list.
 					listIg.push_back(ig);
+					listIgPathName.push_back(igFile);
 					listIgFileName.push_back(CFile::getFilename(igFile));
 				}
 			}
@@ -662,14 +664,28 @@ int main(int argc, char* argv[])
 			//=================
 			for(uint iIg= 0; iIg<listIg.size(); iIg++)
 			{
+				string	fileNameIn= listIgFileName[iIg];
+				string	fileNameOut= pathOut + fileNameIn;
+
+				// If File Out exist and newer than file In, skip
+				if(CFile::fileExists(fileNameOut))
+				{
+					if(	CFile::getFileModificationDate(fileNameOut) >
+						CFile::getFileModificationDate(listIgPathName[iIg]) )
+					{
+						printf("Skiping %s\n", fileNameIn.c_str());
+						continue;
+					}
+				}
+
 				// progress
-				printf("Processing %s\n", listIgFileName[iIg].c_str());
+				printf("Processing %s\n", fileNameIn.c_str());
 
 				CInstanceGroup	igOut;
 
 				// Export a debugSun Name.
 				string	debugSunName;
-				debugSunName= pathOut + "/" + CFile::getFilenameWithoutExtension(listIgFileName[iIg]) + "_debug_sun_.shape";
+				debugSunName= pathOut + "/" + CFile::getFilenameWithoutExtension(fileNameIn) + "_debug_sun_.shape";
 
 				// light the ig.
 				CSurfaceLightingInfo	slInfo;
@@ -677,7 +693,7 @@ int main(int argc, char* argv[])
 				slInfo.CellRaytraceDeltaZ= cellRaytraceDeltaZ;
 				slInfo.RetrieverBank= retrieverBank;
 				slInfo.GlobalRetriever= globalRetriever;
-				slInfo.IgFileName= CFile::getFilenameWithoutExtension(listIgFileName[iIg]);
+				slInfo.IgFileName= CFile::getFilenameWithoutExtension(fileNameIn);
 				slInfo.ColIdentifierPrefix= colIdentifierPrefix;
 				slInfo.ColIdentifierSuffix= colIdentifierSuffix;
 				slInfo.BuildDebugSurfaceShape= buildDebugSurfaceShape;
@@ -686,7 +702,7 @@ int main(int argc, char* argv[])
 
 				// Save this ig.
 				COFile	fout;
-				fout.open(pathOut+listIgFileName[iIg]);
+				fout.open(fileNameOut);
 				fout.serial(igOut);
 				fout.close();
 

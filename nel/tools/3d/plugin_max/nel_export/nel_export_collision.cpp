@@ -1,7 +1,7 @@
 /** \file nel_export_collision.cpp
  * 
  *
- * $Id: nel_export_collision.cpp,v 1.5 2002/03/29 14:58:33 corvazier Exp $
+ * $Id: nel_export_collision.cpp,v 1.6 2002/06/06 14:40:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,6 +55,7 @@ bool CNelExport::exportCollision (const char *sPath, std::vector<INode *> &nodes
 	if (path.size() == 0 || path[path.size()-1] != '\\' && path[path.size()-1] != '/')
 		path.insert(path.end(), '/');
 
+	if (meshBuildList.empty()) return true;
 	for (uint i=0; i<meshBuildList.size(); ++i)
 	{
 		std::string				igname = meshBuildList[i].first;

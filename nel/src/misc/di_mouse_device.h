@@ -1,7 +1,7 @@
 /** \file di_mouse_device.h
  * <File description>
  *
- * $Id: di_mouse_device.h,v 1.6 2004/02/11 09:52:56 vizerie Exp $
+ * $Id: di_mouse_device.h,v 1.7 2004/06/15 17:32:17 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -96,6 +96,7 @@ public:
 		}
 		float				getXFactor() const { nlassert(_MessageMode == NormalMode); return _XFactor; }
 		float				getYFactor() const { 	nlassert(_MessageMode == NormalMode); return _YFactor; }
+		void				convertStdMouseMoveInMickeys(float &dx, float &dy) const;
 	//@}
 
 	///\name From IInputDevice

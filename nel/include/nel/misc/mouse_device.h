@@ -1,7 +1,7 @@
 /** \file mouse_device.h
  * <File description>
  *
- * $Id: mouse_device.h,v 1.2 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: mouse_device.h,v 1.3 2004/06/15 17:32:53 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -81,11 +81,9 @@ struct IMouseDevice : public IInputDevice
 		  */
 		virtual float					getMouseSpeed() const  = 0;
 		/** Set the mouse acceleration. It is the threshold in mickey, when start the acceleration. 0 means not acceleration.
-		  * NB : invalid in raw message mode
 		  */
 		virtual void					setMouseAcceleration(uint speed)  = 0;
 		/** Get the mouse acceleration.
-		  * NB : invalid in raw message mode
 		  */
 		virtual uint					getMouseAcceleration() const  = 0;
 		/** Set the current frame in which the mouse can move, expressed in pixels.
@@ -127,6 +125,9 @@ struct IMouseDevice : public IInputDevice
 	virtual uint					getDoubleClickDelay() const = 0;	
 	// Force the position of the mouse, expressed in pixels
 	virtual void					setMousePos(float x, float y) = 0;
+
+	/// From a delta of a mouse position input (eg from CEventMouseMove), deduce delta in mickeys (eg: like received from a CGDMouseMove)
+	virtual void					convertStdMouseMoveInMickeys(float &dx, float &dy) const = 0;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file di_mouse.cpp
  * <File description>
  *
- * $Id: di_mouse_device.cpp,v 1.8 2004/03/19 16:31:28 lecroart Exp $
+ * $Id: di_mouse_device.cpp,v 1.9 2004/06/15 17:32:16 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -427,6 +427,19 @@ void	CDIMouse::updateMove(CEventServer *server)
 	}
 }
 
+
+//======================================================
+void	CDIMouse::convertStdMouseMoveInMickeys(float &dx, float &dy) const
+{
+	// get in same scale as _XAcc and _YAcc
+	double	xacc= ((double)dx/_XFactor) / _MouseSpeed; 
+	double	yacc= ((double)dy/_YFactor) / _MouseSpeed; 
+
+	dx= float(xacc);
+	dy =float(yacc);
+}
+
+
 //======================================================
 void CDIMouse::transitionOccured(CEventServer *server, const IInputDeviceEvent *)
 {
@@ -464,7 +477,7 @@ void	CDIMouse::setMouseFrame(const CRect &rect)
 //======================================================
 void	CDIMouse::setMessagesMode(TMessageMode mode)
 { 
-	nlassert(mode < AxisModeLast); 
+	nlassert(mode < MessageModeLast); 
 	_MessageMode = mode;	
 	_FirstX = _FirstY = true;
 	

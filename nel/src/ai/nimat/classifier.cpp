@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.11 2003/02/20 15:52:54 besson Exp $
+ * $Id: classifier.cpp,v 1.12 2003/02/27 11:10:27 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,6 @@
  * MA 02111-1307, USA.
  */
 
-#include "stdpch.h"
 #include "nel/ai/nimat/classifier.h"
 
 namespace NLAINIMAT
@@ -51,7 +50,7 @@ CClassifierSystem::~CClassifierSystem()
 	}
 }
 
-void CClassifierSystem::addClassifier(const TSensorMap &conditionsMap, double priority, TAction behavior)
+void CClassifierSystem::addClassifier(const CConditionMap &conditionsMap, double priority, TAction behavior)
 {
 	// We build a new classifier.
 	CClassifier* classifier = new CClassifier();
@@ -59,14 +58,14 @@ void CClassifierSystem::addClassifier(const TSensorMap &conditionsMap, double pr
 	classifier->Priority = priority;
 
 	CClassifierConditionCell* condCell;
-	std::map<TSensor, char>::const_iterator itCondition;
+	std::map<TSensor, std::pair<TSensorValue, bool> >::const_iterator itCondition;
 	for (itCondition = conditionsMap.begin(); itCondition != conditionsMap.end(); itCondition++)
 	{
 		// We add the new sensor in the sensor map and init it with a joker value '#'
 		_sensors[(*itCondition).first] = '#';
 
 		// A new condition cell is added to the classifier condition.
-		condCell = new CClassifierConditionCell(_sensors.find((*itCondition).first), (*itCondition).second);
+		condCell = new CClassifierConditionCell(_sensors.find((*itCondition).first), (*itCondition).second.first, (*itCondition).second.second);
 		classifier->Condition.push_back(condCell);
 	}
 
@@ -80,13 +79,13 @@ void CClassifierSystem::addClassifierSystem(const CClassifierSystem &cs)
 	std::map<sint16, CClassifier*>::const_iterator itCSClassifiers;
 	for (itCSClassifiers = cs._classifiers.begin(); itCSClassifiers != cs._classifiers.end(); itCSClassifiers++)
 	{
-		TSensorMap conditionsMap;
+		CConditionMap conditionsMap;
 
 		std::list<CClassifierConditionCell*>::const_iterator itCondCell;
 		for (itCondCell = (*itCSClassifiers).second->Condition.begin(); itCondCell !=(*itCSClassifiers).second->Condition.end(); itCondCell++)
 		{
 			CClassifierConditionCell* pCondCell = (*itCondCell);
-			conditionsMap[pCondCell->getSensorName()] = pCondCell->getValue();
+			conditionsMap.addSensorCondition(pCondCell->getSensorName(), pCondCell->getValue(),pCondCell->getSensorIsTrue());
 		}
 		addClassifier(conditionsMap, (*itCSClassifiers).second->Priority, (*itCSClassifiers).second->Behavior);
 	}
@@ -105,7 +104,7 @@ std::pair<sint16, TTargetId> CClassifierSystem::selectBehavior( const CCSPercept
 		itNoTargetSensors = psensorMap->NoTargetSensors.find(sensName);
 		if (itNoTargetSensors != psensorMap->NoTargetSensors.end())
 		{
-			char c = (*itNoTargetSensors).second;
+			TSensorValue c = (*itNoTargetSensors).second;
 			(*itSensors).second = c;
 		}
 	}
@@ -152,7 +151,7 @@ std::pair<sint16, TTargetId> CClassifierSystem::selectBehavior( const CCSPercept
 			itTargetSensors = (*itTargetSensorMap).second.find(sensName);
 			if (itTargetSensors != (*itTargetSensorMap).second.end())
 			{
-				char c = (*itTargetSensors).second;
+				TSensorValue c = (*itTargetSensors).second;
 				(*itSensors).second = c;
 			}
 		}
@@ -224,7 +223,14 @@ void CClassifierSystem::getDebugString(std::string &t) const
 		for (itConditions = (*itClassifiers).second->Condition.begin(); itConditions != (*itClassifiers).second->Condition.end(); itConditions++)
 		{
 			CClassifierConditionCell* condCell = (*itConditions);
-			dbg += " (" + conversionSensor.toString(condCell->getSensorName()) + "=" + condCell->getValue() + ") +";
+			if (condCell->getSensorIsTrue())
+			{
+				dbg += " (" + conversionSensor.toString(condCell->getSensorName()) + "= " + condCell->getValue() + ") +";
+			}
+			else
+			{
+				dbg += " (" + conversionSensor.toString(condCell->getSensorName()) + "=!" + condCell->getValue() + ") +";
+			}
 		}
 		std::string actionName = conversionAction.toString((*itClassifiers).second->Behavior);
 		double		prio = (*itClassifiers).second->Priority;
@@ -255,18 +261,29 @@ CClassifierSystem::CClassifier::~CClassifier()
 // CClassifierConditionCell
 ///////////////////////////
 
-CClassifierSystem::CClassifierConditionCell::CClassifierConditionCell(TSensorMap::const_iterator itSensor, char value)
+CClassifierSystem::CClassifierConditionCell::CClassifierConditionCell(TSensorMap::const_iterator itSensor, TSensorValue value, bool sensorIsTrue)
 {
 	_itSensor = itSensor;
 	_value = value;
+	_sensorIsTrue = sensorIsTrue;
 }
 
 bool CClassifierSystem::CClassifierConditionCell::isActivable() const
 {
-	if ((*_itSensor).second == _value)
-		return true;
+	if (_sensorIsTrue)
+	{
+		if ((*_itSensor).second == _value)
+			return true;
+		else
+			return false;
+	}
 	else
-		return false;
+	{
+		if ((*_itSensor).second == _value)
+			return false;
+		else
+			return true;
+	}
 }
 
 TSensor CClassifierSystem::CClassifierConditionCell::getSensorName() const
@@ -274,9 +291,33 @@ TSensor CClassifierSystem::CClassifierConditionCell::getSensorName() const
 	return (*_itSensor).first;
 }
 
-char CClassifierSystem::CClassifierConditionCell::getValue()
+TSensorValue CClassifierSystem::CClassifierConditionCell::getValue() const
 {
 	return _value;
+}
+
+bool CClassifierSystem::CClassifierConditionCell::getSensorIsTrue() const
+{
+	return _sensorIsTrue;
+}
+
+///////////////////////////
+// CConditionMap
+///////////////////////////
+
+void CConditionMap::addIfSensorCondition(TSensor sensorName, TSensorValue sensorValue)
+{
+	_ConditionMap[sensorName] = std::make_pair(sensorValue, true);
+}
+
+void CConditionMap::addIfNotSensorCondition(TSensor sensorName, TSensorValue sensorValue)
+{
+	_ConditionMap[sensorName] = std::make_pair(sensorValue, false);
+}
+
+void CConditionMap::addSensorCondition(TSensor sensorName, TSensorValue sensorValue, bool sensorIsTrue)
+{
+	_ConditionMap[sensorName] = std::make_pair(sensorValue, sensorIsTrue);
 }
 
 ///////////////////////////
@@ -297,7 +338,7 @@ TAction CActionCS::getName() const
 	return _Name;
 }
 
-void CActionCS::addMotivationRule (TMotivation motivationName, const TSensorMap &conditionsMap, double priority)
+void CActionCS::addMotivationRule (TMotivation motivationName, const CConditionMap &conditionsMap, double priority)
 {
 	CClassifierSystem* pCS;
 
@@ -305,7 +346,7 @@ void CActionCS::addMotivationRule (TMotivation motivationName, const TSensorMap 
 	pCS->addClassifier(conditionsMap, priority, _Name);
 }
 
-void CActionCS::addVirtualActionRule (TAction virtualActionName, const TSensorMap &conditionsMap, double priority)
+void CActionCS::addVirtualActionRule (TAction virtualActionName, const CConditionMap &conditionsMap, double priority)
 {
 	CClassifierSystem* pCS;
 
@@ -508,6 +549,7 @@ CMHiCSagent::CMHiCSagent(CMHiCSbase* pMHiCSbase)
 {
 	nlassert (pMHiCSbase != NULL);
 	_pMHiCSbase = pMHiCSbase;
+	_IdByActions[Action_DoNothing] = NullTargetId;
 }
 
 CMHiCSagent::~CMHiCSagent()
@@ -767,8 +809,13 @@ void CMHiCSagent::virtualActionCompute()
 		// Updating the number of activation counter
 		pCSselection->dbgNumberOfActivations++;
 
+		// Get the target Id for this Virtual Action
+		std::map<TAction, TTargetId>::const_iterator itIdByActions = _IdByActions.find(selectionName);
+		nlassert (itIdByActions != _IdByActions.end())
+		TTargetId myTarget = (*itIdByActions).second;
+
 		// On fait calculer le CS
-		std::pair<sint16, TTargetId> mySelection = _pMHiCSbase->selectBehavior(selectionName,_pSensorsValues);
+		std::pair<sint16, TTargetId> mySelection = _pMHiCSbase->selectBehavior(selectionName,_pSensorsValues, myTarget);
 		sint16 selectedClassifierNumber = mySelection.first;
 		if (selectedClassifierNumber < 0) return; // ***G*** Ici on décide de rien faire si on sait pas quoi faire. En fait il faudrait créer un règle.
 		TAction behav = _pMHiCSbase->getActionPart(selectionName, selectedClassifierNumber);
@@ -841,10 +888,10 @@ void CMHiCSagent::setSensors(CCSPerception* psensorMap)
 }
 
 
-TAction CMHiCSagent::selectBehavior()
+std::pair<TAction, TTargetId>CMHiCSagent::selectBehavior()
 {
 	// On prend le max
-	TAction ret;
+	TAction retAction = Action_DoNothing;
 	double executionIntensity = 0;
 	std::map<TAction, CMotivationEnergy>::iterator itActionsExecutionIntensity;
 	for (itActionsExecutionIntensity = _ActionsExecutionIntensity.begin(); itActionsExecutionIntensity != _ActionsExecutionIntensity.end(); itActionsExecutionIntensity++)
@@ -853,11 +900,44 @@ TAction CMHiCSagent::selectBehavior()
 		if (value > executionIntensity)
 		{
 			executionIntensity = value;
-			ret = (*itActionsExecutionIntensity).first;
+			retAction = (*itActionsExecutionIntensity).first;
 		}
 	}
-	return ret;
+	std::map<TAction, TTargetId>::iterator itIdByActions = _IdByActions.find(retAction);
+	nlassert (itIdByActions != _IdByActions.end()) // There's no activable action
+	_ItCurrentAction = itIdByActions;
+
+	return (*itIdByActions);
 }
+
+/// Inform the MHiCSAgent that an action ended
+void CMHiCSagent::behaviorTerminate(TBehaviorTerminate how_does_it_terminate)
+{
+	// ***G*** Tant qu'il n'y a pas d'apprentissage, on se contente de retirer l'action de la liste.
+	// Je pense qu'il faut aussi remettre en question toute les actions virtuel portant sur cette cible.
+	// Remettre en question signifie qu'il faut gardr une trace pour favoriser la continuité d'action sur un perso.
+	TTargetId maCibleRemiseEnQuestion = (*_ItCurrentAction).second;
+	std::map<TAction, TTargetId>::iterator	itIdByActions;
+	for (itIdByActions = _IdByActions.begin(); itIdByActions != _IdByActions.end(); itIdByActions++)
+	{
+		TTargetId scanedId = (*itIdByActions).second;
+		if ( scanedId == maCibleRemiseEnQuestion ) 
+		{
+			TAction theAction = (*itIdByActions).first;
+			// Removing from action
+			_IdByActions.erase(itIdByActions);
+
+			// Removing the virtual_classifier that may be associate
+			_ClassifiersAndVirtualActionIntensity.erase(theAction);
+
+			// Removing from the actionExecutionIntensity
+			_ActionsExecutionIntensity.erase(theAction);
+		}
+	}
+	run();
+	//_IdByActions.erase(_ItCurrentAction);
+}
+
 
 ///////////////////////////
 // CMHiCSbase
@@ -911,11 +991,16 @@ std::pair<sint16, TTargetId> CMHiCSbase::selectBehavior(TMotivation motivationNa
 	return (*itMotivationClassifierSystems).second.selectBehavior(psensorMap);
 }
 
-std::pair<sint16, TTargetId> CMHiCSbase::selectBehavior(TAction motivationName, const CCSPerception* psensorMap)
+std::pair<sint16, TTargetId> CMHiCSbase::selectBehavior(TAction motivationName, const CCSPerception* psensorMap, TTargetId target)
 {
 	std::map<TAction, CClassifierSystem>::iterator itVirtualActionClassifierSystems = _VirtualActionClassifierSystems.find(motivationName);
 	nlassert(itVirtualActionClassifierSystems != _VirtualActionClassifierSystems.end());
-	return (*itVirtualActionClassifierSystems).second.selectBehavior(psensorMap);
+	CCSPerception neoPerception;
+	neoPerception.NoTargetSensors = psensorMap->NoTargetSensors;
+	std::map<TTargetId, TSensorMap>::const_iterator	itSensorMap = psensorMap->TargetSensors.find(target);
+	nlassert(itSensorMap != psensorMap->TargetSensors.end())
+	neoPerception.TargetSensors[target] = (*itSensorMap).second;
+	return (*itVirtualActionClassifierSystems).second.selectBehavior(&neoPerception);
 }
 
 TAction CMHiCSbase::getActionPart(TMotivation motivationName, sint16 classifierNumber)

@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.8 2003/01/30 18:06:15 robert Exp $
+ * $Id: classifier.h,v 1.9 2003/02/27 11:10:15 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,42 +45,73 @@ enum TAction
 {
 	Action_CloseCombat = 0,
 	Action_DistanceCombat,
-	Action_Flee,
 	Action_Eat,
-	Action_Rest,
 	Action_V_Fight,
+
+	Action_Wander,
+	Action_Graze,
+	Action_Rest,
+	Action_Migrate,
+	Action_Fight,
+	Action_Flee,
+	Action_MoveToTarget,
+	Action_MoveToRestPlace,
+	Action_DoNothing,
 	Action_Unknown
 };
 
 static const NLMISC::CStringConversion<TAction>::CPair stringTableAction [] =
 { 
-	{ "CloseCombat", Action_CloseCombat },
-	{ "DistanceCombat", Action_DistanceCombat },
-	{ "Flee", Action_Flee },
-	{ "Eat", Action_Eat },
-	{ "Rest", Action_Rest },
-	{ "V_Fight", Action_V_Fight }
+	{ "CloseCombat",	Action_CloseCombat },
+	{ "DistanceCombat",	Action_DistanceCombat },
+	{ "Eat",			Action_Eat },
+	{ "V_Fight",		Action_V_Fight },
+
+	{ "Wander",			Action_Wander },
+	{ "Graze",			Action_Graze },
+	{ "Rest",			Action_Rest },
+	{ "Migrate",		Action_Migrate },
+	{ "Fight",			Action_Fight },
+	{ "Flee",			Action_Flee },
+	{ "MoveToTarget",	Action_MoveToTarget },
+	{ "MoveToRestPlace",Action_MoveToRestPlace },
+	{ "DoNothing",		Action_DoNothing }
 };
-static NLMISC::CStringConversion<TAction> conversionAction(stringTableAction, sizeof(stringTableAction) / sizeof(stringTableAction[0]),  Action_Unknown);
+static NLMISC::CStringConversion<TAction> conversionAction
+(
+	stringTableAction,
+	sizeof(stringTableAction) / sizeof(stringTableAction[0]),
+	Action_Unknown
+);
 
 /// This type give all the motivations of an Agent.
 enum TMotivation
 {
-	Motivation_Hunger = 0,
+	Motivation_Wander = 0,
+	Motivation_Hunger,
+	Motivation_Fatigue,
+	Motivation_Flock,
 	Motivation_Aggro,
 	Motivation_Fear,
-	Motivation_Fatigue,
+	
 	Motivation_Unknown
 };
 
 static const NLMISC::CStringConversion<TMotivation>::CPair stringTableMotivation [] =
 { 
-	{ "Hunger", Motivation_Hunger },
-	{ "Aggro", Motivation_Aggro },
-	{ "Fear", Motivation_Fear },
-	{ "Fatigue", Motivation_Fatigue }
+	{ "Wander",		Motivation_Wander },
+	{ "Hunger",		Motivation_Hunger },
+	{ "Fatigue",	Motivation_Fatigue },
+	{ "Flock",		Motivation_Flock },
+	{ "Aggro",		Motivation_Aggro },
+	{ "Fear",		Motivation_Fear }
 };
-static NLMISC::CStringConversion<TMotivation> conversionMotivation(stringTableMotivation, sizeof(stringTableMotivation) / sizeof(stringTableMotivation[0]),  Motivation_Unknown);
+static NLMISC::CStringConversion<TMotivation> conversionMotivation
+(
+	stringTableMotivation,
+	sizeof(stringTableMotivation) / sizeof(stringTableMotivation[0]),
+	Motivation_Unknown
+);
 
 /// This type give all the sensors of an Agent.
 enum TSensor
@@ -88,24 +119,88 @@ enum TSensor
 	Sensor_MunitionsAmount = 0,
 	Sensor_FoodType,
 	Sensor_IsAlive,
-	Sensor_IAmStronger,	
 	Sensor_IAmAttacked,
+
+	// Self inner state
+	Sensor_IAmAlive,		// 'T'rue,		'F'alse
+
+	// Self description
+	Sensor_IAmOnNest,		// 'T'rue,		'F'alse
+
+	// Self action
+	Sensor_IAmEngaged,		// 'T'arget,	'O'ther target,	'N'ot engaged
+	Sensor_IAmFleeing,		// 'T'arget,	'O'ther target,	'N'ot fleeing
+	
+	// Target inner state
+	Sensor_ItIsAlive,		// 'T'rue,		'F'alse
+
+	// Target description
+	Sensor_ItIsA,			// 'B'idoche,	'P'redator,		'H'erbivore,	'S'cavenger,	'O'min
+	Sensor_NotItIsA,		// 'B'idoche,	'P'redator,		'H'erbivore,	'S'cavenger
+
+	// Target Action
+	Sensor_ItIsEngagedOn,	// 'F'riend,	'E'nnemy,		'U'ndefined,	'M'e,		'N'ot engaged
+
+	// Self <-> target relation information
+	Sensor_DistanceContact,	// 'T'rue,		'F'alse
+	Sensor_DistanceEngage,	// 'T'rue,		'F'alse
+	Sensor_IAmStronger,		// 'T'rue,		'F'alse
+	Sensor_Relationship,	// 'F'riend,	'E'nnemy,		'U'ndefined
+
 	Sensor_Unknown
 };
 
 // The conversion table
 static const NLMISC::CStringConversion<TSensor>::CPair stringTableSensor [] =
 { 
-	{ "MunitionsAmount", Sensor_MunitionsAmount },
-	{ "FoodType", Sensor_FoodType },
-	{ "IsAlive", Sensor_IsAlive },
-	{ "IAmStronger", Sensor_IAmStronger },
-	{ "IAmAttacked", Sensor_IAmAttacked }
-};
-static NLMISC::CStringConversion<TSensor> conversionSensor(stringTableSensor, sizeof(stringTableSensor) / sizeof(stringTableSensor[0]),  Sensor_Unknown);
+	{ "MunitionsAmount",	Sensor_MunitionsAmount },
+	{ "FoodType",			Sensor_FoodType },
+	{ "IsAlive",			Sensor_IsAlive },
+	{ "IAmAttacked",		Sensor_IAmAttacked },
 
-typedef	std::map<TSensor, char>	TSensorMap;
-typedef uint64	TTargetId;
+	{ "IAmAlive",			Sensor_IAmAlive },
+	{ "ItIsAlive",			Sensor_ItIsAlive },
+	{ "ItIsA",				Sensor_ItIsA },
+	{ "NotItIsA",			Sensor_NotItIsA },
+	{ "DistanceContact",	Sensor_DistanceContact },
+	{ "DistanceEngage",		Sensor_DistanceEngage },
+	{ "IAmStronger",		Sensor_IAmStronger },
+	{ "IAmOnNest",			Sensor_IAmOnNest },
+	{ "IAmEngaged",			Sensor_IAmEngaged },
+	{ "ItIsEngagedOn",		Sensor_ItIsEngagedOn },
+	{ "Relationship",		Sensor_Relationship },
+	{ "IAmFleeing",			Sensor_IAmFleeing }
+};
+static NLMISC::CStringConversion<TSensor> conversionSensor
+(
+	stringTableSensor,
+	sizeof(stringTableSensor) / sizeof(stringTableSensor[0]),
+	Sensor_Unknown
+);
+
+enum TBehaviorTerminate
+{
+	BehaviorTerminate_Success,
+	BehaviorTerminate_Failure,
+	BehaviorTerminate_Interupt,
+	BehaviorTerminate_Unknown
+};
+static const NLMISC::CStringConversion<TBehaviorTerminate>::CPair stringTableBehaviorTerminate [] =
+{ 
+	{ "Success",	BehaviorTerminate_Success },
+	{ "Failure",	BehaviorTerminate_Failure },
+	{ "Interupt",	BehaviorTerminate_Interupt },
+};
+static NLMISC::CStringConversion<TBehaviorTerminate> conversionBehaviorTerminate
+(
+ stringTableBehaviorTerminate,
+ sizeof(stringTableBehaviorTerminate) / sizeof(stringTableBehaviorTerminate[0]),
+ BehaviorTerminate_Unknown
+);
+
+typedef	char	TSensorValue;
+typedef	std::map<TSensor, TSensorValue>	TSensorMap;
+typedef uint32	TTargetId;
 
 class CCSPerception
 {
@@ -117,6 +212,32 @@ public:
 	TSensorMap						NoTargetSensors;
 	/// Sensors with a target (defined by an uint64) Id.
 	std::map<TTargetId, TSensorMap>	TargetSensors;
+};
+
+/**
+  * A condition map.
+  * Used to describes all the conditions that must be associate to an CActionCS.
+  * \author Gabriel ROBERT
+  * \author Nevrax France
+  * \date 2003
+  */
+class CConditionMap
+{
+public:
+	/// Used to add an if sensor == condition rule
+	void addIfSensorCondition(TSensor sensorName, TSensorValue sensorValue);
+
+	/// Used to add an if sensor != condition rule
+	void addIfNotSensorCondition(TSensor sensorName, TSensorValue sensorValue);
+
+	void addSensorCondition(TSensor sensorName, TSensorValue sensorValue, bool sensorIsTrue);
+
+	std::map<TSensor, std::pair<TSensorValue, bool> >::const_iterator begin() const {return _ConditionMap.begin();}
+	std::map<TSensor, std::pair<TSensorValue, bool> >::const_iterator end() const {return _ConditionMap.end();}
+	void clear(){_ConditionMap.clear();}
+
+private:
+	std::map<TSensor, std::pair<TSensorValue, bool> > _ConditionMap;// The boolean is used to know if the condition is sensor==value or sensor!=value.
 };
 
 
@@ -133,14 +254,16 @@ private :
 	class CClassifierConditionCell
 	{
 	public :
-		CClassifierConditionCell(TSensorMap::const_iterator itSensor, char value);
-		bool	isActivable()	const;
-		TSensor	getSensorName()	const;
-		char	getValue();
+		CClassifierConditionCell(TSensorMap::const_iterator itSensor, TSensorValue value, bool sensorIsTrue);
+		bool			isActivable()	const;
+		TSensor			getSensorName()	const;
+		TSensorValue	getValue()		const;
+		bool			getSensorIsTrue() const;
 
 	private :
-		std::map<TSensor, char>::const_iterator	_itSensor;			// A reference to the sensor associate with this condition.
-		char									_value;				// The condition value;
+		std::map<TSensor, TSensorValue>::const_iterator	_itSensor;			// A reference to the sensor associate with this condition.
+		TSensorValue									_value;				// The condition value.
+		bool											_sensorIsTrue;		// Used to know if the condition is sensor==value or sensor!=value.
 	};
 
 	 // A classifier is a three parts components (condition, priority, behavior).
@@ -172,7 +295,7 @@ public :
 	  * \param priority is the importance of this rule. The value should be between 0 an 1.
 	  * \param behavior is the action to execute if this classifier is selected.
 	  */
-	void addClassifier(const TSensorMap &conditionsMap, double priority, TAction behavior);
+	void addClassifier(const CConditionMap &conditionsMap, double priority, TAction behavior);
 
 	/// Merge two CS
 	void addClassifierSystem(const CClassifierSystem &cs);
@@ -211,10 +334,10 @@ public :
 	TAction getName() const;
 
 	/// Ajout d'une nouvelle règle motivant cette action dans une motivation
-	void addMotivationRule (TMotivation motivationName, const TSensorMap &conditionsMap, double priority);
+	void addMotivationRule (TMotivation motivationName, const CConditionMap &conditionsMap, double priority);
 
 	/// Ajout d'une nouvelle règle motivant cette action dans une action virtuel
-	void addVirtualActionRule (TAction virtualActionName, const TSensorMap &conditionsMap, double priority);
+	void addVirtualActionRule (TAction virtualActionName, const CConditionMap &conditionsMap, double priority);
 
 	/// Chaine de debug
 	void getDebugString (std::string &t) const;
@@ -310,7 +433,7 @@ public :
 	  * \return is the number of the the selected classifier.
 	  */
 	std::pair<sint16, TTargetId> selectBehavior(TMotivation motivationName, const CCSPerception* psensorMap);
-	std::pair<sint16, TTargetId> selectBehavior(TAction motivationName, const CCSPerception* psensorMap);
+	std::pair<sint16, TTargetId> selectBehavior(TAction motivationName, const CCSPerception* psensorMap, TTargetId target);
 
 	/**
 	  * Give the action part of a given Classifier.
@@ -354,7 +477,10 @@ public :
 	void setMotivationValue(TMotivation motivationName, double value);
 
 	/// Return the Behavior that must be active
-	TAction selectBehavior();
+	std::pair<TAction, TTargetId> selectBehavior();
+
+	/// Inform the MHiCSAgent that an action ended
+	void behaviorTerminate(TBehaviorTerminate how_does_it_terminate);
 
 	/// Update the values in the NetCS
 	void run();
@@ -394,39 +520,8 @@ private :
 	CCSPerception*							_pSensorsValues;						// Valeurs des senseurs
 	std::map<TAction, CMotivationEnergy>	_ActionsExecutionIntensity;				// <actionName, ExecutionIntensity>
 	std::map<TAction, TTargetId>			_IdByActions;							// Id associate with each action.
+	std::map<TAction, TTargetId>::iterator	_ItCurrentAction;						// Iterator on the current active action in _IdByActions
 };
-
-
-/****
-MHiCS s'articule autoure d'une partie active (MHiCSagent) associé à chaque agent et une partie passive (MHiCSbase) qui est la base des règles partagée.
-
-MHiCSagent :
-------------
-Composents :
- - Une map de valeurs de senseurs
- - Un ensemble de valeurs de motivations (MV & RP)
- - Une valeur de motivation d'ordre (associé directement à une action virtuel ou non)
- - Une référence à un MHiCSbase
- - Une trace des classeurs actifs (MI)
- - Une trace des actions actives (EI)
-
-MHiCSbase :
------------
-Composents :
- - Un ensemble de CS
-
-
-NOTES :
--------
-But : tester des règles pour chaque ID d'une perception.
-Je dois donc pour chaque senseur savoir s'il dépent d'un ID ou pas.
-Pour le moment on passait une liste de senseurs, maintenant se sera une liste d'Id.
-Pour faire la selection de l'action d'un CS, il faut maintenant un premier passage des
- senseurs sans ID, puis pour chaque cible un passage des senseurs avec Id.
-je pourrais aussi avoir un objet senseur qui sur demande me renvois une liste de tableau de valeurs de senseurs. 
-
-
- ****/
 
 } // NLAINIMAT
 

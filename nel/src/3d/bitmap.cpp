@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.7 2000/11/17 14:57:13 coutelas Exp $
+ * $Id: bitmap.cpp,v 1.8 2000/11/17 15:37:31 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1630,7 +1630,7 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 			scanline = new uint8[slsize];
 			if(!scanline)
 			{
-				throw(EAllocationFailure());
+				throw EAllocationFailure();
 			}
 
 			for(y=0; y<_Height ;y++)
@@ -1746,7 +1746,7 @@ uint32 CBitmap::writeTGA( NLMISC::IStream &f, uint32 d)
 	scanline = new uint8[slsize];
 	if(!scanline)
 	{
-		throw(EAllocationFailure());
+		throw EAllocationFailure();
 	}
 
 	for(y=0; y<(sint32)height; y++)

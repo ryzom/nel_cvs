@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.208 2004/06/14 15:05:15 cado Exp $
+ * $Id: service.cpp,v 1.209 2004/06/16 15:22:33 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1133,6 +1133,14 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 							_ClosureClearanceStatus = CCWaitingForClearance;
 						}
 					}
+					else if ( _ClosureClearanceStatus >= CCCallbackThenClose )
+					{
+						// Always direct closure, because we don't have a connection to the naming service anymore
+						// But still call the callback
+						_RequestClosureClearanceCallback();
+						CHTimer::endBench();
+						break;
+					}
 				}
 				else
 				{
@@ -1150,6 +1158,21 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 			// get and manage layer 5 messages
 			CUnifiedNetwork::getInstance()->update (_UpdateTimeout);
+
+			// Allow direct closure if the naming service was lost
+			if ( _RequestClosureClearanceCallback )
+			{
+				if ( ! CNamingClient::connected() )
+				{
+					if ( _ClosureClearanceStatus < CCCallbackThenClose )
+						_ClosureClearanceStatus += CCCallbackThenClose; // change status but backup old value
+				}
+				else
+				{
+					if ( _ClosureClearanceStatus >= CCCallbackThenClose )
+						_ClosureClearanceStatus -= CCCallbackThenClose; // set the closure state back if the NS comes back
+				}
+			}
 
 			// resync the clock every hours
 //			if (resyncEvenly)

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.75 2004/06/14 15:05:14 cado Exp $
+ * $Id: service.h,v 1.76 2004/06/16 15:22:33 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -408,10 +408,10 @@ private:
 	/// Shard Id
 	uint32								_ShardId;
 
-	enum TClosureClearanceStatus { CCMustRequestClearance, CCWaitingForClearance, CCClearedForClosure };
+	enum TClosureClearanceStatus { CCMustRequestClearance, CCWaitingForClearance, CCClearedForClosure, CCCallbackThenClose=256 };
 
-	/// Closure clearance state
-	TClosureClearanceStatus				_ClosureClearanceStatus;
+	/// Closure clearance state (either CCMustRequestClearance, CCWaitingForClearance, CCClearedForClosure or CCCallbackThenClose + any other as a backup value)
+	uint								_ClosureClearanceStatus;
 
 	/// Closure clearance callback (NULL if no closure clearance required)
 	TRequestClosureClearanceCallback	_RequestClosureClearanceCallback;

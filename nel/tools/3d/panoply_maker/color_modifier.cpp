@@ -1,7 +1,7 @@
 /** \file color_modifier.cpp
  * A class describing color modifications
  *
- * $Id: color_modifier.cpp,v 1.6 2002/07/11 13:47:26 vizerie Exp $
+ * $Id: color_modifier.cpp,v 1.7 2002/07/16 10:10:07 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -60,8 +60,7 @@ void CColorModifier::convertBitmap(NLMISC::CBitmap &destBitmap, const NLMISC::CB
 	for (uint y = 0; y < srcBitmap.getHeight(); ++y)
 	{
 		for (uint x = 0; x < srcBitmap.getWidth(); ++x)
-		{
-			uint8 alpha = src->A;
+		{			
 			if (src->convertToHLS(h, l, s)) // achromatic ?
 			{
 				h = 0;
@@ -77,14 +76,18 @@ void CColorModifier::convertBitmap(NLMISC::CBitmap &destBitmap, const NLMISC::CB
 			result.B = CalcBrightnessContrast(result.B, Luminosity, Contrast, grey);
 
 			// blend to the destination by using the mask alpha			
-			dest->blendFromui(*dest, result, mask->R);
+			result.blendFromui(*dest, result, mask->R);
 			
 
 			/// keep alpha from the source			
-			dest->A = alpha;
-			
-			++ src;
+			dest->R = result.R;
+			dest->G = result.G;
+			dest->B = result.B;
+			dest->A = src->A;
+
+						
 			++ mask;
+			++ src;
 			++ dest;
 		}
 	}

@@ -220,7 +220,7 @@ int		main(int argc, char *argv[])
 	CIFile		shapeFileIn;
 	if(!shapeFileIn.open(shapeNameIn))
 	{
-		nlwarning("ERROR: cannot open input file %s", shapeNameIn.c_str());
+		nlwarning("ERROR: cannot open input file: %s", shapeNameIn.c_str());
 		exit(-1);
 	}
 	shapeStreamIn.serial(shapeFileIn);
@@ -228,13 +228,13 @@ int		main(int argc, char *argv[])
 	shapeFileIn.close();
 	if(!pMesh)
 	{
-		nlwarning("ERROR: Not a MRM Mesh %s", shapeNameIn.c_str());
+		nlwarning("ERROR: Not a MRM Mesh: %s", shapeNameIn.c_str());
 		exit(-1);
 	}
 	CMeshMRMGeom	*pMeshGeom= (CMeshMRMGeom*)&pMesh->getMeshGeom();
 	if( !pMeshGeom->isSkinned() )
 	{
-		nlwarning("ERROR: Not a Skinned MRM Mesh %s", shapeNameIn.c_str());
+		nlwarning("ERROR: Not a Skinned MRM Mesh: %s", shapeNameIn.c_str());
 		exit(-1);
 	}
 
@@ -252,7 +252,7 @@ int		main(int argc, char *argv[])
 	COFile		shapeFileOut;
 	if(!shapeFileOut.open(shapeNameOut) )
 	{
-		nlwarning("ERROR: cannot open output file %s", shapeNameOut.c_str());
+		nlwarning("ERROR: cannot open output file: %s", shapeNameOut.c_str());
 		exit(-1);
 	}
 	shapeStreamOut.setShapePointer(pMesh);

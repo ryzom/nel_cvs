@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.6 2001/07/25 12:58:39 cado Exp $
+ * $Id: sound.cpp,v 1.7 2001/08/24 12:44:03 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,13 +36,20 @@ namespace NLSOUND {
 
 
 // Sound driver
-ISoundDriver *CSound::_SoundDriver = NULL;
+ISoundDriver	*CSound::_SoundDriver = NULL;
+
+
+// Support V1 files
+bool			CSound::_InputIgnorePitch = false;
+
+// Allow to load sound files when corresponding wave file is not present ?
+bool			CSound::_AllowMissingWave = false;
 
 
 /*
  * Constructor
  */
-CSound::CSound() : _Buffer(NULL), _Gain(1.0), _Detailed(false),
+CSound::CSound() : _Buffer(NULL), _Gain(1.0f), _Pitch(1.0f), _Detailed(false),
 	_MinDist(1.0f), _MaxDist(1000000.0f),
 	_ConeInnerAngle(6.283185f), _ConeOuterAngle(6.283185f), _ConeOuterGain( 1.0f )
 {
@@ -88,6 +95,10 @@ void				CSound::serial( NLMISC::IStream& s )
 	s.serial( _Name );
 	s.serial( _Filename );
 	s.serial( _Gain );
+	if ( ! (s.isReading() && CSound::_InputIgnorePitch) )
+	{
+		s.serial( _Pitch );
+	}
 	s.serial( _Detailed );
 	if ( _Detailed )
 	{
@@ -110,7 +121,14 @@ void				CSound::serial( NLMISC::IStream& s )
 			}
 			catch ( Exception& e )
 			{
-				nlwarning( "AM: %s", e.what() );
+				if ( CSound::_AllowMissingWave )
+				{
+					nlwarning( "AM: %s", e.what() );
+				}
+				else
+				{
+					throw ESoundFileNotFound( _Filename );
+				}
 			}
 		}
 	}
@@ -152,20 +170,43 @@ void				CSound::loadBuffer( const std::string& filename )
 void				CSound::serialFileHeader( NLMISC::IStream& s, uint32& nb )
 {
 	s.serialCheck( (uint32)'SSN' ); // NeL Source Sounds
-	s.serialVersion( 1 );
+	uint ver = s.serialVersion( 2 );
+	if ( ver < 2 )
+	{
+		if ( ver == 1 )
+		{
+			// Supporting version 1
+			CSound::_InputIgnorePitch = true; // warning: not multithread-compliant : do not serialize in different threads !
+		}
+		else
+		{
+			// Not supporting version 0 anymore
+			throw EOlderStream();
+		}
+	}
+	else
+	{
+		CSound::_InputIgnorePitch = false; // warning: not multithread-compliant : do not serialize in different threads !
+	}
+
 	s.serial( nb );
 }
 
 
 /*
- * Load several sounds and return the number of sound loaded
+ * Load several sounds and return the number of sound loaded.
+ * If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
  */
-uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s )
+uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s, std::vector<std::string> *notfoundfiles )
 {
 	if ( s.isReading() )
 	{
-		uint32 nb, i, notfound=0;
+		uint32 nb, i, notfound = 0;
 		serialFileHeader( s, nb );
+		if ( notfoundfiles != NULL )
+		{
+			notfoundfiles->clear();
+		}
 		for ( i=0; i!=nb; i++ )
 		{
 			CSound *sound;
@@ -178,8 +219,12 @@ uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s )
 			}
 			catch ( ESoundFileNotFound& e )
 			{
-				delete sound;
 				notfound++;
+				if ( notfoundfiles != NULL )
+				{
+					notfoundfiles->push_back( sound->getFilename() );
+				}
+				delete sound;
 				nlwarning( "AM: %s", e.what() );
 			}
 		}
@@ -194,16 +239,28 @@ uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s )
 
 
 /*
- * Set properties (EDIT)
+ * Set properties. Returns false if one or more values are invalid (EDIT)
  */
-void				CSound::setProperties( const std::string& name, const std::string& filename,
-										   float gain, bool detail,
+bool				CSound::setProperties( const std::string& name, const std::string& filename,
+										   float gain, float pitch, bool detail,
 										   float mindist, float maxdist,
 										   float innerangle, float outerangle, float outergain )
 {
-	_Name = name; _Filename = filename;
-	_Gain = gain; _Detailed = detail; _MinDist = mindist; _MaxDist = maxdist;
-	_ConeInnerAngle = innerangle; _ConeOuterAngle = outerangle; _ConeOuterGain = outergain;
+	if ( ((_Gain < 0) && (_Gain > 1))
+	  || ((_Pitch <= 0) && (_Pitch > 1 ))
+	  || (_MinDist < 0)
+	  || (_MaxDist < 0)
+	  || ((_ConeOuterGain < 0) && (_ConeOuterGain > 1)) )
+	{
+		return false;
+	}
+	else
+	{
+		_Name = name; _Filename = filename;
+		_Gain = gain; _Pitch = pitch; _Detailed = detail; _MinDist = mindist; _MaxDist = maxdist;
+		_ConeInnerAngle = innerangle; _ConeOuterAngle = outerangle; _ConeOuterGain = outergain;
+		return true;
+	}
 }
 
 		  

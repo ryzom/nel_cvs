@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.5 2001/07/20 16:08:33 cado Exp $
+ * $Id: sound.h,v 1.6 2001/08/24 12:44:03 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,6 +69,10 @@ public:
 	virtual ~CSound();
 	/// Init with sound driver
 	static void			init( ISoundDriver *sd )		{ _SoundDriver = sd; }
+	/** Allow to load sound files when corresponding wave file is missing
+	 * (default: false, i.e. an input serial or a load throws an exception ESoundFileNotFound)
+	 */
+	static void			allowMissingWave( bool b )		{ _AllowMissingWave = b; }
 	/// Serialize
 	void				serial( NLMISC::IStream& s );
 	/** Load the buffer (automatically done by serial()).
@@ -79,13 +83,17 @@ public:
 	void				loadBuffer( const std::string& filename );
 	/// Serialize file header
 	static void			serialFileHeader( NLMISC::IStream& s, uint32& nb );
-	/// Load several sounds and return the number of sounds loaded
-	static uint32		load( TSoundMap& container, NLMISC::IStream& s );
+	/** Load several sounds and return the number of sounds loaded
+	 * If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
+	 */
+	static uint32		load( TSoundMap& container, NLMISC::IStream& s, std::vector<std::string> *notfoundfiles=NULL );
 
 	/// Return the buffer
 	IBuffer				*getBuffer()					{ return _Buffer; }
 	/// Return the gain
 	float				getGain() const					{ return _Gain; }
+	/// Return the pitch
+	float				getPitch() const				{ return _Pitch; }
 	/// Return true if distances and cone are meaningful
 	bool				isDetailed() const				{ return _Detailed; }
 	/// Return the min distance (if detailed())
@@ -105,9 +113,9 @@ public:
 	/// Return the name (must be unique)
 	const std::string&	getName() const						{ return _Name; }
 
-	/// Set properties (EDIT)
-	void				setProperties( const std::string& name, const std::string& filename,
-									   float gain, bool detail,
+	/// Set properties. Returns false if one or more values are invalid (EDIT)
+	bool				setProperties( const std::string& name, const std::string& filename,
+									   float gain, float pitch, bool detail,
 									   float mindist=1.0f, float maxdist=1000000.0f,
 									   float innerangle=6.283185f, float outerangle=6.283185f, // 360°
 									   float outergain=1.0f );
@@ -120,11 +128,18 @@ private:
 	// Sound driver
 	static ISoundDriver *_SoundDriver;
 
+	// Support V1 files
+	static bool			_InputIgnorePitch;
+
+	// Allow to load sound files when corresponding wave file is missing ?
+	static bool			_AllowMissingWave;
+
 	// Buffer
 	IBuffer				*_Buffer;
 
 	// Static properties
-	float				_Gain;
+	float				_Gain;	// [0,1]
+	float				_Pitch; // ]0,1]
 	bool				_Detailed;
 	float				_MinDist, _MaxDist;
 	float				_ConeInnerAngle, _ConeOuterAngle, _ConeOuterGain;

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.14 2002/03/25 09:27:34 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.15 2002/04/09 12:29:15 lecroart Exp $
  *
  */
 
@@ -386,6 +386,10 @@ static void cbStartService (CMessage& msgin, TSockId from, CCallbackNetBase &net
 
 	// set the path for log
 	command += " -L";
+	command += path;
+
+	// set the path for running
+	command += " -A";
 	command += path;
 
 #ifdef NL_OS_WINDOWS

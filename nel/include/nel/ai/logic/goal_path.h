@@ -1,7 +1,7 @@
 /** \file fact.h
  *	First order logic facts
  *
- * $Id: goal_path.h,v 1.4 2002/08/26 13:58:11 portier Exp $
+ * $Id: goal_path.h,v 1.5 2002/08/27 09:12:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,11 @@ class CGoalPath : public NLAIAGENT::CActorScript
 
 		void setGoalStack(NLAILOGIC::CGoalStack * );
 		void addGoal(CGoal *, bool action = true, int on_succes = 0 , int on_failure = 0);
+
+		void setFather( NLAIAGENT::CProxyAgentMail *f)
+		{
+			_Father = f;
+		}
 
 		virtual void onActivate();
 		virtual void onUnActivate();

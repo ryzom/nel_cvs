@@ -1,6 +1,6 @@
 /** \file opcode_lpt.cpp
  *
- * $Id: goal_path.cpp,v 1.4 2002/08/26 13:58:11 portier Exp $
+ * $Id: goal_path.cpp,v 1.5 2002/08/27 09:12:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -268,6 +268,4 @@ namespace NLAILOGIC
 			_Father->sendMessage(msg);
 		}
 	}
-
-
 } // NLAILOGIC

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.4 2001/07/09 15:39:43 berenguier Exp $
+ * $Id: u_driver.h,v 1.5 2001/07/19 17:31:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,7 @@ class UMaterial;
 class UTextContext;
 class UShapeBank;
 class U3dMouseListener;
+class ULight;
 
 
 // ***************************************************************************
@@ -181,6 +182,12 @@ public:
 	virtual	void			setupFog(float start, float end, CRGBA color)=0;
 	// @}
 
+	/// \name Light support.
+	// @{
+	virtual void			setLight (uint8 num, const ULight& light) = 0;
+	virtual void			enableLight (uint8 num, bool enable=true) = 0;
+	virtual void			setAmbientColor (CRGBA color) = 0;
+	// @}
 
 
 	/// \name Scene gestion.

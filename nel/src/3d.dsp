@@ -947,6 +947,14 @@ SOURCE=.\3d\landscape_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\light_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\light_user.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\material_user.cpp
 # End Source File
 # Begin Source File
@@ -1116,6 +1124,10 @@ SOURCE=..\include\nel\3d\u_instance_material.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\u_landscape.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\u_light.h
 # End Source File
 # Begin Source File
 

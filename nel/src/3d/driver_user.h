@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.4 2001/07/09 15:39:43 berenguier Exp $
+ * $Id: driver_user.h,v 1.5 2001/07/19 17:31:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_DRIVER_USER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
 #include "nel/3d/u_driver.h"
 #include "3d/event_mouse_listener.h"
 #include "3d/driver.h"
@@ -37,6 +38,7 @@
 #include "3d/material_user.h"
 #include "3d/ptr_set.h"
 #include "3d/shape_bank_user.h"
+#include "3d/light_user.h"
 
 
 namespace NL3D 
@@ -185,6 +187,24 @@ public:
 	}
 	// @}
 
+	/// \name Light support.
+	// @{
+	virtual void			setLight (uint8 num, const ULight& light)
+	{
+		CLightUser	*plight= (CLightUser*)&light;
+		_Driver->setLight (num, plight->_Light);
+	}
+
+	virtual void			enableLight (uint8 num, bool enable=true)
+	{
+		_Driver->enableLight (num, enable);
+	}
+
+	virtual void			setAmbientColor (CRGBA color)
+	{
+		_Driver->setAmbientColor (color);
+	}
+	// @}
 
 
 	/// \name Scene gestion.

@@ -1,7 +1,7 @@
 /** \file net_layer5/object.h
  * Objects for the sample. Link between 3d instance and collision primitives.
  *
- * $Id: object.h,v 1.3 2003/10/10 10:08:49 corvazier Exp $
+ * $Id: object.h,v 1.4 2004/12/28 12:43:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/vectord.h"
 #include "nel/pacs/u_move_primitive.h"
 #include "nel/pacs/u_global_position.h"
+#include "nel/3d/u_instance.h"
 
 // External classes
 
@@ -49,7 +50,6 @@ class UGlobalPosition;
 namespace NL3D
 {
 class UScene;
-class UInstance;
 };
 
 /**
@@ -110,7 +110,7 @@ private:
 	NLMISC::CVectorD			_TryPosition;
 	NLMISC::CVectorD			_Speed;
 	NLPACS::UMovePrimitive		*_MovePrimitive;
-	NL3D::UInstance				*_Instance;
+	NL3D::UInstance				_Instance;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file pacs/main.cpp
  * Pacs sample using user interface.
  *
- * $Id: main.cpp,v 1.5 2003/11/07 14:30:15 besson Exp $
+ * $Id: main.cpp,v 1.6 2004/12/28 12:43:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -183,15 +183,15 @@ int main ()
 		}
 
 		// Setup camera
-		UCamera	*pCam=pScene->getCam();
-		pCam->setTransformMode (UTransformable::DirectMatrix);
-		pCam->setPerspective ((float)Pi/2.f, 1.33f, 0.1f, 1000);
+		UCamera	pCam=pScene->getCam();
+		pCam.setTransformMode (UTransformable::DirectMatrix);
+		pCam.setPerspective ((float)Pi/2.f, 1.33f, 0.1f, 1000);
 
 		// Setup the mouse listener
 		U3dMouseListener *plistener=pDriver->create3dMouseListener ();
 		plistener->setHotSpot (CVectorD (0,0,0));
-		plistener->setFrustrum (pCam->getFrustum());
-		plistener->setMatrix (pCam->getMatrix());
+		plistener->setFrustrum (pCam.getFrustum());
+		plistener->setMatrix (pCam.getMatrix());
 		plistener->setMouseMode (U3dMouseListener::edit3d);
 
 		// Array of dynamic objects
@@ -312,11 +312,11 @@ int main ()
 				plistener->setHotSpot (arrayObj[selected]->getPos());
 
 				// Look at selected primitive
-				pCam->lookAt (plistener->getViewMatrix().getPos (), arrayObj[selected]->getPos());
+				pCam.lookAt (plistener->getViewMatrix().getPos (), arrayObj[selected]->getPos());
 			}
 
 			// Force listener current matrix
-			plistener->setMatrix (pCam->getMatrix());
+			plistener->setMatrix (pCam.getMatrix());
 
 			// Clear
 			pDriver->clearBuffers (clearColor);
@@ -325,7 +325,7 @@ int main ()
 			pScene->render ();
 
 			// Draw some lines
-			pDriver->setMatrixMode3D(*pCam);
+			pDriver->setMatrixMode3D(pCam);
 
 			// Compute triggers
 			uint in = 0;

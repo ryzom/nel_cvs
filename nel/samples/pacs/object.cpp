@@ -1,7 +1,7 @@
 /** \file net_layer5/object.cpp
  * Objects for the sample. Link between 3d instance and collision primitives.
  *
- * $Id: object.cpp,v 1.4 2003/11/07 14:30:15 besson Exp $
+ * $Id: object.cpp,v 1.5 2004/12/28 12:43:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 // Misc includes
 #include <nel/misc/vectord.h>
 #include <nel/misc/quat.h>
+#include <nel/misc/path.h> 
 
 // 3d includes
 #include <nel/3d/u_scene.h>
@@ -55,19 +56,22 @@ CObjectDyn::CObjectDyn (double width, double depth, double height, double orient
 				 uint8 worldImage, uint8 nbImage, uint8 insertWorldImage)
 {
 	// Create a box instance
-	_Instance = scene.createInstance ("rectangle.shape");
-	nlassert (_Instance);
+	_Instance = scene.createInstance(CPath::lookup("rectangle.shape"));
+	if(_Instance.empty())
+	{
+		nlerror("Failed to load shape: %s", CPath::lookup("rectangle.shape").c_str());
+	}
 
 	// Freezed
 	Freezed = reaction == UMovePrimitive::DoNothing;
 	
 	// Setup the instance
-	if (_Instance->getNumMaterials())
+	if (_Instance.getNumMaterials())
 	{
 		uint i;
-		for (i=0; i<_Instance->getNumMaterials(); i++)
+		for (i=0; i<_Instance.getNumMaterials(); i++)
 		{
-			UInstanceMaterial &material = _Instance->getMaterial(i);
+			UInstanceMaterial &material = _Instance.getMaterial(i);
 			if (trigger != UMovePrimitive::NotATrigger)
 			{
 				// material.setBlend(true);
@@ -90,8 +94,8 @@ CObjectDyn::CObjectDyn (double width, double depth, double height, double orient
 	}
 
 	// Setup the instance
-	_Instance->setScale (CVectorD (width, depth, height));
-	_Instance->setRotQuat (CQuat (CVectorD (0, 0, 1), (float)orientation));
+	_Instance.setScale (CVectorD (width, depth, height));
+	_Instance.setRotQuat (CQuat (CVectorD (0, 0, 1), (float)orientation));
 	
 	// Create a collision volume
 	_MovePrimitive = container.addCollisionablePrimitive (worldImage, nbImage);
@@ -132,19 +136,22 @@ CObjectDyn::CObjectDyn (double diameter, double height, const CVectorD& pos, con
 	NLPACS::UMovePrimitive::TTrigger trigger, uint8 worldImage, uint8 nbImage, uint8 insertWorldImage)
 {
 	// Create a box instance
-	_Instance = scene.createInstance ("cylinder.shape");
-	nlassert (_Instance);
+	_Instance = scene.createInstance(CPath::lookup("cylinder.shape"));
+	if(_Instance.empty())
+	{
+		nlerror("Failed to load shape: %s",CPath::lookup("cylinder.shape").c_str());
+	}
 
 	// Freezed
 	Freezed = reaction == UMovePrimitive::DoNothing;
 	
 	// Setup the instance
-	if (_Instance->getNumMaterials())
+	if (_Instance.getNumMaterials())
 	{
 		uint i;
-		for (i=0; i<_Instance->getNumMaterials(); i++)
+		for (i=0; i<_Instance.getNumMaterials(); i++)
 		{
-			UInstanceMaterial &material = _Instance->getMaterial(i);
+			UInstanceMaterial &material = _Instance.getMaterial(i);
 			if (trigger != UMovePrimitive::NotATrigger)
 			{
 				// material.setBlend(true);
@@ -167,7 +174,7 @@ CObjectDyn::CObjectDyn (double diameter, double height, const CVectorD& pos, con
 	}
 	
 	// Setup the instance
-	_Instance->setScale (CVectorD (diameter, diameter, height));
+	_Instance.setScale (CVectorD (diameter, diameter, height));
 
 	// Create a collision volume
 	_MovePrimitive = container.addCollisionablePrimitive (worldImage, nbImage);
@@ -244,8 +251,8 @@ void CObjectDyn::doMove (double deltaTime, uint8 worldImage)
 void CObjectDyn::setPos (const CVectorD& pos)
 {
 	_Position=pos;
-	if (_Instance)
-		_Instance->setPos (pos);
+	if (!_Instance.empty())
+		_Instance.setPos (pos);
 }
 
 // ***************************************************************************
@@ -272,7 +279,7 @@ void CObjectDyn::remove (NLPACS::UMoveContainer &container, UScene &scene)
 	container.removePrimitive (_MovePrimitive);
 
 	// Remove instance
-	if (_Instance)
+	if (!_Instance.empty())
 		scene.deleteInstance (_Instance);
 }
 

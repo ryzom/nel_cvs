@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.18 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.19 2002/08/27 14:36:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ using namespace NLMISC;
 
 // --------------------------------------------------
 
-bool CNelExport::exportMesh (const char *sPath, INode& node, TimeValue time, CExportNelOptions &opt)
+bool CNelExport::exportMesh (const char *sPath, INode& node, TimeValue time)
 {
 	// Result to return
 	bool bRet=false;
@@ -85,7 +85,7 @@ bool CNelExport::exportMesh (const char *sPath, INode& node, TimeValue time, CEx
 		}
 
 		// Export in mesh format
-		IShape*	pShape=_ExportNel->buildShape (node, time, mapIdPtr, opt, true);
+		IShape*	pShape=_ExportNel->buildShape (node, time, mapIdPtr, true);
 
 		// Conversion success ?
 		if (pShape)

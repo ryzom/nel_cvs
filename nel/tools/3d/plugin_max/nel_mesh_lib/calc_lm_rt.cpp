@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.cpp
  * Raytrace part of the lightmap calculation
  *
- * $Id: calc_lm_rt.cpp,v 1.5 2002/03/29 14:58:34 corvazier Exp $
+ * $Id: calc_lm_rt.cpp,v 1.6 2002/08/27 14:36:25 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -357,7 +357,7 @@ void CRTWorld::addNode (INode *pNode, vector< CMesh::CMeshBuild* > &Meshes,  vec
 	if (CExportNel::isMesh (*pNode, tvTime))
 	{
 		// Nel export
-		CExportNel exportNel (_ErrorInDialog, _View, true, _Ip, _ErrorTitle);
+		CExportNel exportNel (_ErrorInDialog, _View, true, _Ip, _ErrorTitle, NULL);
 
 		CMesh::CMeshBuild *pMB;
 		CMeshBase::CMeshBaseBuild *pMBB;

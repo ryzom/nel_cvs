@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.42 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.43 2002/08/27 14:36:24 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1985,7 +1985,7 @@ void addLightInfo( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB, stri
 // -----------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
 
-void CExportNel::deleteLM(INode& ZeNode, CExportNelOptions& opt)
+void CExportNel::deleteLM(INode& ZeNode)
 {
 	sint32 i;
 
@@ -1993,7 +1993,7 @@ void CExportNel::deleteLM(INode& ZeNode, CExportNelOptions& opt)
 	for( i = 0; i < 8; ++i )
 	{		
 		string sSaveName;
-		sSaveName = opt.sExportLighting;
+		sSaveName = _Options.sExportLighting;
 		if( sSaveName[sSaveName.size()-1] != '\\' ) sSaveName += "\\";
 		sSaveName += ZeNode.GetName();
 		char tmp[32];
@@ -2093,11 +2093,11 @@ void sans_majuscule_au_debut_LinkToObjectAround (CMesh::CMeshBuild *pMB, CMeshBa
 // absolutePath tell this code to put the name of the lightmap in absolute or relative path
 // this is very usefull for viewer inside MAX
 bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild, INode& ZeNode, 
-							TimeValue tvTime, CExportNelOptions &structExport, uint firstMaterial )
+							TimeValue tvTime, uint firstMaterial )
 {
 	uint32 i, j;
 
-	gOptions = structExport;
+	gOptions = _Options;
 
 	string sLumelSizeMul = CExportNel::getScriptAppData (&ZeNode, NEL3D_APPDATA_LUMELSIZEMUL, "1.0");
 	float rLumelSizeMul = (float)atof(sLumelSizeMul.c_str());

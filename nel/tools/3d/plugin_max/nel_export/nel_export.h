@@ -1,7 +1,7 @@
 /** \file nel_export.h
  * <File description>
  *
- * $Id: nel_export.h,v 1.15 2002/05/13 16:49:21 berenguier Exp $
+ * $Id: nel_export.h,v 1.16 2002/08/27 14:36:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,14 +69,14 @@ public:
 	void getSelectedNode (std::vector<INode*>& vectNode);
 
 	bool	exportZone	(const char *sName, INode& node, TimeValue time);
-	bool	exportMesh	(const char *sPath, INode& node, TimeValue time, CExportNelOptions &opt);
+	bool	exportMesh	(const char *sPath, INode& node, TimeValue time);
 	bool	exportAnim	(const char *sPath, std::vector<INode*>& vectNode, TimeValue time, bool scene);
 	bool	exportSWT	(const char *sPath, std::vector<INode*>& vectNode);
 
 	bool	exportInstanceGroup	(std::string filename, std::vector<INode*>& vectNode);
 	bool	exportSkeleton	(const char *sPath, INode* pNode, TimeValue time);
 
-	bool	exportCollision	(const char *sPath, std::vector<INode *> &nodes, TimeValue time, CExportNelOptions &opt);
+	bool	exportCollision	(const char *sPath, std::vector<INode *> &nodes, TimeValue time);
 
 	bool	exportPACSPrimitives (const char *sPath, std::vector<INode *> &nodes, TimeValue time);
 
@@ -84,7 +84,7 @@ public:
 
 	bool	exportLodCharacter (const char *sPath, INode& node, TimeValue time);
 
-	void	viewMesh (TimeValue time, CExportNelOptions &opt);
+	void	viewMesh (TimeValue time);
 
 	static void initOptions(); // read the CNelExportSceneStruct from disk or init it
 	static void deleteLM(INode& ZeNode); // the export scene struct MUST be initialized before calling this fn

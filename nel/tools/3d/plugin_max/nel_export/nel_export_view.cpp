@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.37 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.38 2002/08/27 14:36:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,8 @@ using namespace NLMISC;
 using namespace NL3D;
 using namespace std;
 
+extern CExportNelOptions theExportSceneStruct;
+
 #define VIEW_WIDTH 800
 #define VIEW_HEIGHT 600
 
@@ -102,7 +104,7 @@ public:
 
 // -----------------------------------------------------------------------------------------------
 
-void CNelExport::viewMesh (TimeValue time, CExportNelOptions &opt)
+void CNelExport::viewMesh (TimeValue time)
 {
 	// Register classes
 	// done in dllentry registerSerial3d ();
@@ -283,7 +285,7 @@ void CNelExport::viewMesh (TimeValue time, CExportNelOptions &opt)
 		// Build Mesh Shapes.
 		CProgressBar ProgBar;
 		ProgBar.initProgressBar (nNbMesh, *_Ip);
-		opt.FeedBack = &ProgBar;
+		theExportSceneStruct.FeedBack = &ProgBar;
 		nNbMesh = 0;
 
 		// Map for IG animations
@@ -336,7 +338,7 @@ void CNelExport::viewMesh (TimeValue time, CExportNelOptions &opt)
 
 						// Export the shape
 						IShape *pShape;
-						pShape=_ExportNel->buildShape (*pNode, time, &iteSkelShape->second.MapId, opt, true);
+						pShape=_ExportNel->buildShape (*pNode, time, &iteSkelShape->second.MapId, true);
 
 						// Build succesful ?
 						if (pShape)
@@ -361,7 +363,7 @@ void CNelExport::viewMesh (TimeValue time, CExportNelOptions &opt)
 				{
 					// Export the shape
 					IShape *pShape = NULL;
-					pShape=_ExportNel->buildShape (*pNode, time, NULL, opt, true);
+					pShape=_ExportNel->buildShape (*pNode, time, NULL, true);
 
 					// Export successful ?
 					if (pShape)
@@ -416,7 +418,7 @@ void CNelExport::viewMesh (TimeValue time, CExportNelOptions &opt)
 		}
 
 		// if ExportLighting, Export all lights in scene (not only selected ones).
-		if(opt.bExportLighting)
+		if(theExportSceneStruct.bExportLighting)
 		{
 			// List all nodes in scene.
 			vector<INode*>	nodeList;
@@ -460,7 +462,7 @@ void CNelExport::viewMesh (TimeValue time, CExportNelOptions &opt)
 
 
 		ProgBar.uninitProgressBar();
-		opt.FeedBack = NULL;
+		theExportSceneStruct.FeedBack = NULL;
 	
 
 		// *******************
@@ -480,7 +482,7 @@ void CNelExport::viewMesh (TimeValue time, CExportNelOptions &opt)
 		if(ig)
 		{
 			// If ExportLighting
-			if( opt.bExportLighting )
+			if( theExportSceneStruct.bExportLighting )
 			{
 				// Light the ig.
 				NL3D::CInstanceGroup	*igOut= new NL3D::CInstanceGroup;
@@ -493,8 +495,8 @@ void CNelExport::viewMesh (TimeValue time, CExportNelOptions &opt)
 				// Copy map to get info on shapes.
 				lightDesc.UserShapeMap= igShapeMap;
 				// Setup Shadow and overSampling.
-				lightDesc.Shadow= opt.bShadow;
-				lightDesc.OverSampling= NLMISC::raiseToNextPowerOf2(opt.nOverSampling);
+				lightDesc.Shadow= theExportSceneStruct.bShadow;
+				lightDesc.OverSampling= NLMISC::raiseToNextPowerOf2(theExportSceneStruct.nOverSampling);
 				clamp(lightDesc.OverSampling, 0U, 32U);
 				if(lightDesc.OverSampling==1)
 					lightDesc.OverSampling= 0;
@@ -505,12 +507,12 @@ void CNelExport::viewMesh (TimeValue time, CExportNelOptions &opt)
 
 
 				// If View SurfaceLighting enabled
-				if(opt.bTestSurfaceLighting)
+				if(theExportSceneStruct.bTestSurfaceLighting)
 				{
 					// Setup a CSurfaceLightingInfo
-					slInfo.CellSurfaceLightSize= opt.SurfaceLightingCellSize;
+					slInfo.CellSurfaceLightSize= theExportSceneStruct.SurfaceLightingCellSize;
 					NLMISC::clamp(slInfo.CellSurfaceLightSize, 0.001f, 1000000.f);
-					slInfo.CellRaytraceDeltaZ= opt.SurfaceLightingDeltaZ;
+					slInfo.CellRaytraceDeltaZ= theExportSceneStruct.SurfaceLightingDeltaZ;
 					slInfo.ColIdentifierPrefix= "col_";
 					slInfo.ColIdentifierSuffix= "_";
 					// Build RetrieverBank and GlobalRetriever from collisions in scene
@@ -561,11 +563,11 @@ void CNelExport::viewMesh (TimeValue time, CExportNelOptions &opt)
 
 
 		// Setup background color
-		if (opt.bExportBgColor)
+		if (theExportSceneStruct.bExportBgColor)
 			view->setBackGroundColor(_ExportNel->getBackGroundColor(time));
 
 		// ExportLighting?
-		if ( opt.bExportLighting )
+		if ( theExportSceneStruct.bExportLighting )
 		{
 			// Take the ambient of the scene as the ambient of the sun.
 			CRGBA	sunAmb= _ExportNel->getAmbientColor (time);

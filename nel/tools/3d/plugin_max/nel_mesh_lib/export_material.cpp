@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.35 2002/08/21 13:38:05 corvazier Exp $
+ * $Id: export_material.cpp,v 1.36 2002/08/27 14:36:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -268,6 +268,11 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 		// Get the shader value now
 		int iShaderType = 0;
 		CExportNel::getValueByNameUsingParamBlock2 (mtl, "iShaderType", (ParamType2)TYPE_INT, &iShaderType, time);
+
+		// Carefule with options
+		if ((iShaderType == SHADER_LIGHTMAP) && (!_Options.bExportLighting))
+			iShaderType = SHADER_NORMAL;
+
 		// Water or lightmap ??
 		bool	isWaterOrLightmap= iShaderType==SHADER_WATER || iShaderType==SHADER_LIGHTMAP;
 		bool	isLightmap= iShaderType==SHADER_LIGHTMAP;

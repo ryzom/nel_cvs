@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.62 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: export_nel.h,v 1.63 2002/08/27 14:36:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -255,7 +255,7 @@ public:
 	typedef std::map<INode*, Matrix3> mapBoneBindPos;
 
 	/// Constructor
-	CExportNel (bool errorInDialog, bool view, bool absolutePath, Interface *ip, std::string errorTitle);
+	CExportNel (bool errorInDialog, bool view, bool absolutePath, Interface *ip, std::string errorTitle, CExportNelOptions *opt);
 
 	// *********************
 	// *** Ëxport mesh
@@ -267,7 +267,7 @@ public:
 	  * skeletonShape must be NULL if no bones.
 	  */
 	NL3D::IShape*					buildShape (INode& node, TimeValue time, const TInodePtrInt *nodeMap, 
-												CExportNelOptions &opt, bool buildLods);
+												bool buildLods);
 
 	/**
 	  * Build a NeL meshBuild
@@ -322,7 +322,7 @@ public:
 	  * \param onlySelected If it is true, build only selected nodes
 	  * \param buildLods If it is true, build lod of objects
 	  */
-	void							buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, NL3D::IDriver &driver, TimeValue tvTime, const CExportNelOptions &options, 
+	void							buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, NL3D::IDriver &driver, TimeValue tvTime, 
 												NL3D::CLandscape *landscape, IProgress *progress, bool buildHidden, bool onlySelected, bool buildLods);
 
 
@@ -347,16 +347,16 @@ public:
 	  * Return true if the node is a mesh and has a Nel_Material attached to it
 	  */
 	static bool						hasLightMap (INode& node, TimeValue time);
-	static void						deleteLM (INode& node, CExportNelOptions& structExport);
+	void							deleteLM (INode& node);
 	bool							calculateLM (NL3D::CMesh::CMeshBuild *pZeMeshBuild, 
 												NL3D::CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild,
 												INode& ZeNode, 
-												TimeValue tvTime, CExportNelOptions& structExport, uint firstMaterial);
+												TimeValue tvTime, uint firstMaterial);
 
 	bool							calculateLMRad(NL3D::CMesh::CMeshBuild *pZeMeshBuild, 
 												NL3D::CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild,
 												INode& ZeNode, 
-												TimeValue tvTime, CExportNelOptions& structExport);
+												TimeValue tvTime);
 	
 
 	// *********************
@@ -811,7 +811,7 @@ private:
 	  * Build a mesh geom with a node
 	  */
 	NL3D::IMeshGeom					*buildMeshGeom (INode& node, TimeValue time, const TInodePtrInt *nodeMap,
-													CExportNelOptions &opt, NL3D::CMeshBase::CMeshBaseBuild &buildBaseMesh, std::vector<std::string>& listMaterialName,
+													NL3D::CMeshBase::CMeshBaseBuild &buildBaseMesh, std::vector<std::string>& listMaterialName,
 													bool& isTransparent, bool& isOpaque, const NLMISC::CMatrix& parentMatrix);
 	/**
 	  * Build the mesh morpher info in the mesh geom	  */
@@ -1015,6 +1015,9 @@ private:
 
 	// Error title
 	std::string						_ErrorTitle;
+
+	// Build options
+	CExportNelOptions				_Options;
 };
 
 /** replacment for sprintf scanf (because of localisation in max)

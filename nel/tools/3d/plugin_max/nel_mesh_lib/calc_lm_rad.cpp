@@ -1,7 +1,7 @@
 /** \file calc_lm_rad.cpp
  * extension of the lightmapper with radiosity
  *
- * $Id: calc_lm_rad.cpp,v 1.2 2002/03/29 14:58:34 corvazier Exp $
+ * $Id: calc_lm_rad.cpp,v 1.3 2002/08/27 14:36:25 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 using namespace NL3D;
 
 bool CExportNel::calculateLMRad( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild, INode& ZeNode, 
-							TimeValue tvTime, CExportNelOptions &structExport )
+							TimeValue tvTime)
 {
 	return true;
 }

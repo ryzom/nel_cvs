@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.20 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.21 2002/08/27 14:36:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,8 @@ char *sExportAnimationErrorMsg = "NelExportAnimation [node array] [Filename.anim
 char *sExportCollisionErrorMsg = "NelExportCollision [node array] [output directory]";
 char *sExportPACSPrimitivesErrorMsg = "NelExportPACSPrimitves [node array] [output filename]";
 
+extern CExportNelOptions theExportSceneStruct;
+
 Value* export_shape_cf (Value** arg_list, int count)
 {
 	// Make sure we have the correct number of arguments (2)
@@ -99,29 +101,9 @@ Value* export_shape_cf (Value** arg_list, int count)
 	if(bCol == BST_CHECKED)
 		return ret;
 
-	// For the moment load the default config file.
-	CExportNelOptions opt;
-	char sConfigFileName[512];
-	strcpy( sConfigFileName, ip->GetDir(APP_PLUGCFG_DIR) );
-	strcat( sConfigFileName, "\\NelExportScene.cfg" );
-	if( CNelExport::FileExists(sConfigFileName) )
-	{
-		// Serial the configuration
-		try {
-			CIFile inputFile;
-			if( inputFile.open(sConfigFileName) )
-			{
-				opt.serial( inputFile );
-			}
-		}
-		catch(...)
-		{
-		}
-	}
-	
 	// Export
-	CExportNel::deleteLM( *node, opt );
-	if (theCNelExport.exportMesh (sPath, *node, ip->GetTime(), opt))
+	theCNelExport._ExportNel->deleteLM( *node);
+	if (theCNelExport.exportMesh (sPath, *node, ip->GetTime()))
 		ret = &true_value;
 
 	return ret;
@@ -159,15 +141,14 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 	std::string sPath=arg_list[1]->to_string();
 
 	// Ex argu
-	CExportNelOptions opt;
-	opt.bShadow = arg_list[2]->to_bool()!=FALSE;
-	opt.bExportLighting = arg_list[3]->to_bool()!=FALSE;
-	opt.sExportLighting = arg_list[4]->to_string();
-	opt.nExportLighting = arg_list[5]->to_int();
-	opt.rLumelSize = arg_list[6]->to_float();
-	opt.nOverSampling = arg_list[7]->to_int();
-	opt.bExcludeNonSelected = arg_list[8]->to_bool()!=FALSE;
-	opt.bShowLumel = arg_list[9]->to_bool()!=FALSE;
+	theExportSceneStruct.bShadow = arg_list[2]->to_bool()!=FALSE;
+	theExportSceneStruct.bExportLighting = arg_list[3]->to_bool()!=FALSE;
+	theExportSceneStruct.sExportLighting = arg_list[4]->to_string();
+	theExportSceneStruct.nExportLighting = arg_list[5]->to_int();
+	theExportSceneStruct.rLumelSize = arg_list[6]->to_float();
+	theExportSceneStruct.nOverSampling = arg_list[7]->to_int();
+	theExportSceneStruct.bExcludeNonSelected = arg_list[8]->to_bool()!=FALSE;
+	theExportSceneStruct.bShowLumel = arg_list[9]->to_bool()!=FALSE;
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -183,8 +164,8 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 	try
 	{
 		// Export
-		CExportNel::deleteLM( *node, opt );
-		if (theCNelExport.exportMesh (sPath.c_str(), *node, ip->GetTime(), opt))
+		theCNelExport._ExportNel->deleteLM( *node );
+		if (theCNelExport.exportMesh (sPath.c_str(), *node, ip->GetTime()))
 			ret = &true_value;
 	}
 	catch (Exception &e)
@@ -421,27 +402,7 @@ Value* view_shape_cf (Value** arg_list, int count)
 
 	theCNelExport.init (true, true, ip);
 
-	// View
-	// For the moment load the default options for lightmap
-	CExportNelOptions opt;
-	char sConfigFileName[512];
-	strcpy( sConfigFileName, ip->GetDir(APP_PLUGCFG_DIR) );
-	strcat( sConfigFileName, "\\NelExportScene.cfg" );
-	if( CNelExport::FileExists(sConfigFileName) )
-	{
-		// Serial the configuration
-		try {
-			CIFile inputFile;
-			if( inputFile.open(sConfigFileName) )
-			{
-				opt.serial( inputFile );
-			}
-		}
-		catch(...)
-		{
-		}
-	}
-	theCNelExport.viewMesh (ip->GetTime(), opt);
+	theCNelExport.viewMesh (ip->GetTime());
 
 	return &true_value;
 }
@@ -623,7 +584,7 @@ Value* export_collision_cf (Value** arg_list, int count)
 		// Warning as the export options are not used, they are not loaded!
 
 		// Export
-		if (theCNelExport.exportCollision (sPath.c_str(), nodes, time, *(CExportNelOptions*)NULL))
+		if (theCNelExport.exportCollision (sPath.c_str(), nodes, time))
 			ret = &true_value;
 	}
 	catch (Exception &e)

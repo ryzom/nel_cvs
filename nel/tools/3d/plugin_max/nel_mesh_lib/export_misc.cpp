@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.28 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.29 2002/08/27 14:36:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,13 +48,17 @@ const char* CExportNel::ErrorMessage[CodeCount]=
 
 // --------------------------------------------------
 
-CExportNel::CExportNel (bool errorInDialog, bool view, bool absolutePath, Interface *ip, std::string errorTitle)
+CExportNel::CExportNel (bool errorInDialog, bool view, bool absolutePath, Interface *ip, std::string errorTitle, CExportNelOptions *opt)
 {
 	_Ip = ip;
 	_AbsolutePath = absolutePath;
 	_View = view;
 	_ErrorInDialog = errorInDialog;
 	_ErrorTitle = errorTitle;
+
+	// No options ?
+	if (opt)
+		_Options = *opt;
 }
 
 // --------------------------------------------------

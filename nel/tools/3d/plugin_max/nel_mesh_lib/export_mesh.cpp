@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.48 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.49 2002/08/27 14:36:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,7 +126,7 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, CM
 // ***************************************************************************
 
 // Export a mesh
-IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt *nodeMap, CExportNelOptions &opt, bool buildLods)
+IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt *nodeMap, bool buildLods)
 {
 
 	// Is this a multi lod object ?
@@ -228,7 +228,7 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 					bool isTransparent;
 					bool isOpaque;
 					multiLodBuild.LodMeshes.resize (1);
-					multiLodBuild.LodMeshes[0].MeshGeom=buildMeshGeom (node, time, nodeMap, opt, multiLodBuild.BaseMesh, 
+					multiLodBuild.LodMeshes[0].MeshGeom=buildMeshGeom (node, time, nodeMap, multiLodBuild.BaseMesh, 
 						listMaterialName, isTransparent, isOpaque, nodeMatrix);
 					multiLodBuild.LodMeshes[0].DistMax=getScriptAppData (&node, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
 					multiLodBuild.LodMeshes[0].BlendLength=getScriptAppData (&node, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT);
@@ -291,7 +291,7 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 							}
 
 							// Fill the structure
-							multiLodBuild.LodMeshes[index].MeshGeom=buildMeshGeom (*lodNode, time, nodeMap, opt, multiLodBuild.BaseMesh, 
+							multiLodBuild.LodMeshes[index].MeshGeom=buildMeshGeom (*lodNode, time, nodeMap, multiLodBuild.BaseMesh, 
 								listMaterialName, isTransparent, isOpaque, parentMatrix);
 							multiLodBuild.LodMeshes[index].DistMax=getScriptAppData (lodNode, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
 							multiLodBuild.LodMeshes[index].BlendLength=getScriptAppData (lodNode, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT);
@@ -345,8 +345,8 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 					CMesh::CMeshBuild buildMesh;
 					buildMeshInterface (*tri, buildMesh, buildBaseMesh, maxBaseBuild, node, time, nodeMap);
 
-					if( hasLightMap( node, time ) && opt.bExportLighting )
-						calculateLM(&buildMesh, &buildBaseMesh, node, time, opt, maxBaseBuild.FirstMaterial);
+					if( hasLightMap( node, time ) && _Options.bExportLighting )
+						calculateLM(&buildMesh, &buildBaseMesh, node, time, maxBaseBuild.FirstMaterial);
 
 					// MRM mesh ?
 					if (getScriptAppData (&node, NEL3D_APPDATA_LOD_MRM, 0))
@@ -1162,7 +1162,7 @@ void CExportNel::buildMRMParameters (Animatable& node, CMRMParameters& params)
 // ***************************************************************************
 
 IMeshGeom *CExportNel::buildMeshGeom (INode& node, TimeValue time, const TInodePtrInt *nodeMap, 
-								CExportNelOptions &opt, CMeshBase::CMeshBaseBuild &buildBaseMesh, 
+								CMeshBase::CMeshBaseBuild &buildBaseMesh, 
 								std::vector<std::string>& listMaterialName,
 								bool& isTransparent, bool& isOpaque, const CMatrix& parentMatrix)
 {
@@ -1239,8 +1239,8 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, TimeValue time, const TInodeP
 				listMaterialName.push_back (maxBaseBuild.MaterialInfo[i].MaterialName);
 			}
 
-			if( hasLightMap( node, time ) && opt.bExportLighting )
-				calculateLM(&buildMesh, &buildBaseMesh, node, time, opt, maxBaseBuild.FirstMaterial);
+			if( hasLightMap( node, time ) && _Options.bExportLighting )
+				calculateLM(&buildMesh, &buildBaseMesh, node, time, maxBaseBuild.FirstMaterial);
 
 			// MRM mesh ?
 			if (getScriptAppData (&node, NEL3D_APPDATA_LOD_MRM, 0) && (!coarseMesh) )

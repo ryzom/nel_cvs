@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.33 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.34 2002/08/27 14:36:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -301,9 +301,6 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					nlassert (theIP);
 					theCNelExport.init (false, true, theIP);
 
-					// Load the options
-					theCNelExport.initOptions();
-
 					// Register 3d models
 					// done in dllentry registerSerial3d();
 
@@ -399,9 +396,9 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 								// Skin objects
 								CSkeletonShape *pSkinShape=NULL;
 
-								CExportNel::deleteLM( *pNode, theExportSceneStruct );
+								theCNelExport._ExportNel->deleteLM( *pNode );
 								// Export the mesh
-								if (!theCNelExport.exportMesh (sSavePath, *pNode, time, theExportSceneStruct))
+								if (!theCNelExport.exportMesh (sSavePath, *pNode, time))
 								{
 									// Error message
 									char sErrorMsg[512];
@@ -514,7 +511,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					if (theCNelExport.SelectDir(hWnd, sNodeMsg, sSavePath))
 					{
 						// Export the mesh
-						if (!theCNelExport.exportCollision (sSavePath, nodes, time, theExportSceneStruct))
+						if (!theCNelExport.exportCollision (sSavePath, nodes, time))
 						{
 							// Error message
 							MessageBox (hWnd, "Error during export collision", "NeL export", MB_OK|MB_ICONEXCLAMATION);
@@ -532,10 +529,9 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
 					// Get time
 					TimeValue time=theCNelExport._Ip->GetTime();
-					theCNelExport.initOptions();
 
 					// View mesh
-					theCNelExport.viewMesh (time, theExportSceneStruct);
+					theCNelExport.viewMesh (time);
 				}
 				break;
 			// ---
@@ -585,8 +581,6 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					char sConfigFileName[512];
 					strcpy( sConfigFileName, theCNelExport._Ip->GetDir(APP_PLUGCFG_DIR) );
 					strcat( sConfigFileName, "\\NelExportScene.cfg" );
-
-					theCNelExport.initOptions();
 
 					// Do a modal dialog box to choose the scene export options
 					if( DialogBox(	hInstance,
@@ -857,8 +851,13 @@ void CNelExport::init (bool view, bool errorInDialog, Interface *ip)
 		delete (_ExportNel);
 		_ExportNel = NULL;
 	}
-	
+
 	// Create a new nelexport
 	_Ip = ip;
-	_ExportNel = new CExportNel (errorInDialog, view, view, ip, "NeL Export");
+	
+	// Load the options
+	theCNelExport.initOptions();
+
+	// Create the CExportNel class
+	_ExportNel = new CExportNel (errorInDialog, view, view, ip, "NeL Export", &theExportSceneStruct);
 }

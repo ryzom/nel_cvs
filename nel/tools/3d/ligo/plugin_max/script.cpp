@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.15 2002/08/21 13:38:05 corvazier Exp $
+ * $Id: script.cpp,v 1.16 2002/08/27 14:36:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2021,8 +2021,8 @@ bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, c
 
 			// Build the scene
 			CExportNelOptions options;
-			CExportNel export (errorInDialog, false, true, MAXScript_interface, "Snapshot ligozone");
-			export.buildScene (CNELU::Scene, *CNELU::ShapeBank, *CNELU::Driver, 0, options, &theLand->Landscape, NULL, false, false, false);
+			CExportNel export (errorInDialog, false, true, MAXScript_interface, "Snapshot ligozone", &options);
+			export.buildScene (CNELU::Scene, *CNELU::ShapeBank, *CNELU::Driver, 0, &theLand->Landscape, NULL, false, false, false);
 
 			theLand->Landscape.setTileNear (50.f);
 			theLand->Landscape.TileBank=tileBank;

@@ -4086,7 +4086,7 @@ DWORD WINAPI myThread (LPVOID vData)
 			TheLand->Landscape.setupStaticLight (LightDiffuse, LightAmbiant, LightMultiply);
 
 			// *******************
-			CExportNel export (true, true, true, pData->eproc->ip, "NeL Patch Painter");
+			CExportNel export (true, true, true, pData->eproc->ip, "NeL Patch Painter", NULL);
 
 			// Add meshes in the scene
 			if (pData->pobj->includeMeshes)
@@ -4112,11 +4112,7 @@ DWORD WINAPI myThread (LPVOID vData)
 						
 						// Export the shape
 						IShape *pShape;
-						CExportNelOptions opt;
-						opt.bShadow=false;
-						opt.bExportLighting=false;
-						
-						pShape=export.buildShape (*pNode, pData->T, NULL, opt, true);
+						pShape=export.buildShape (*pNode, pData->T, NULL, true);
 
 						// Export successful ?
 						if (pShape)

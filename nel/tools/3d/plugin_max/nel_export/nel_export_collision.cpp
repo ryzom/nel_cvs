@@ -1,7 +1,7 @@
 /** \file nel_export_collision.cpp
  * 
  *
- * $Id: nel_export_collision.cpp,v 1.7 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: nel_export_collision.cpp,v 1.8 2002/08/27 14:36:24 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@ using namespace NLPACS;
 
 // --------------------------------------------------
 
-bool CNelExport::exportCollision (const char *sPath, std::vector<INode *> &nodes, TimeValue time, CExportNelOptions &opt)
+bool CNelExport::exportCollision (const char *sPath, std::vector<INode *> &nodes, TimeValue time)
 {
 	// get list of CMB froms nodes.
 	std::vector<std::pair<std::string, NLPACS::CCollisionMeshBuild*> >	meshBuildList;

@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.23 2002/08/27 12:40:46 corvazier Exp $
+ * $Id: export_scene.cpp,v 1.24 2002/08/27 14:36:25 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -550,12 +550,11 @@ public:
 // ***************************************************************************
 
 void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, IDriver &driver, TimeValue tvTime, 
-							 const CExportNelOptions &opts, NL3D::CLandscape *landscape, IProgress *progress, bool buildHidden, 
+							 NL3D::CLandscape *landscape, IProgress *progress, bool buildHidden, 
 							 bool onlySelected, bool buildLods)
 {
 	// Register classes
 	// done in dllentry registerSerial3d ();
-	CExportNelOptions options = opts;
 
 	CScene::registerBasics ();
 
@@ -579,7 +578,7 @@ void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, I
 	SLightBuild								sgLightBuild;
 
 	// Build Mesh Shapes.
-	options.FeedBack = progress;
+	_Options.FeedBack = progress;
 	nNbMesh = 0;
 
 	// View all selected objects
@@ -649,7 +648,7 @@ void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, I
 					{
 						// Export the shape
 						IShape *pShape = NULL;
-						pShape=buildShape (*pNode, tvTime, NULL, options, buildLods);
+						pShape=buildShape (*pNode, tvTime, NULL, buildLods);
 
 						// Export successful ?
 						if (pShape)
@@ -698,7 +697,7 @@ void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, I
 	}
 
 	// if ExportLighting, Export all lights in scene (not only selected ones).
-	if(options.bExportLighting)
+	if(_Options.bExportLighting)
 	{
 		// List all nodes in scene.
 		vector<INode*>	nodeList;
@@ -740,7 +739,7 @@ void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, I
 		}
 	}
 
-	options.FeedBack = NULL;
+	_Options.FeedBack = NULL;
 
 
 	// *******************
@@ -760,7 +759,7 @@ void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, I
 	if(ig)
 	{
 		// If ExportLighting
-		if( options.bExportLighting )
+		if( _Options.bExportLighting )
 		{
 			// Light the ig.
 			NL3D::CInstanceGroup	*igOut= new NL3D::CInstanceGroup;
@@ -773,8 +772,8 @@ void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, I
 			// Copy map to get info on shapes.
 			lightDesc.UserShapeMap= igShapeMap;
 			// Setup Shadow and overSampling.
-			lightDesc.Shadow= options.bShadow;
-			lightDesc.OverSampling= NLMISC::raiseToNextPowerOf2(options.nOverSampling);
+			lightDesc.Shadow= _Options.bShadow;
+			lightDesc.OverSampling= NLMISC::raiseToNextPowerOf2(_Options.nOverSampling);
 			clamp(lightDesc.OverSampling, 0U, 32U);
 			if(lightDesc.OverSampling==1)
 				lightDesc.OverSampling= 0;
@@ -785,12 +784,12 @@ void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, I
 
 
 			// If View SurfaceLighting enabled
-			if(options.bTestSurfaceLighting)
+			if(_Options.bTestSurfaceLighting)
 			{
 				// Setup a CSurfaceLightingInfo
-				slInfo.CellSurfaceLightSize= options.SurfaceLightingCellSize;
+				slInfo.CellSurfaceLightSize= _Options.SurfaceLightingCellSize;
 				NLMISC::clamp(slInfo.CellSurfaceLightSize, 0.001f, 1000000.f);
-				slInfo.CellRaytraceDeltaZ= options.SurfaceLightingDeltaZ;
+				slInfo.CellRaytraceDeltaZ= _Options.SurfaceLightingDeltaZ;
 				slInfo.ColIdentifierPrefix= "col_";
 				slInfo.ColIdentifierSuffix= "_";
 			}
@@ -819,7 +818,7 @@ void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, I
 	// *******************
 
 	// ExportLighting?
-	if ( options.bExportLighting )
+	if ( _Options.bExportLighting )
 	{
 		// Take the ambient of the scene as the ambient of the sun.
 		CRGBA	sunAmb= getAmbientColor (tvTime);
@@ -865,4 +864,6 @@ void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, I
 			}
 		}
 	}
+
+	_Options.FeedBack = NULL;
 }

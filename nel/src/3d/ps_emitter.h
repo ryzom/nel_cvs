@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.12 2001/09/06 10:14:14 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.13 2001/10/04 12:18:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -393,6 +393,18 @@ protected:
 	virtual void resize(uint32 capacity);
 }; 
 
+
+/// a radial emitter. The direction gives the normal to the plane of emission
+class CPSRadialEmitter : public CPSEmitterDirectionnal
+{
+	public:
+	CPSRadialEmitter()
+	{ _Name = std::string("RadialEmitter"); }
+	/// serialisation
+ 	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
+	NLMISC_DECLARE_CLASS(CPSRadialEmitter);
+	virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
+};
 
 /// emit randomly in all direction
 class CPSEmitterOmni : public CPSEmitter, public CPSModulatedEmitter

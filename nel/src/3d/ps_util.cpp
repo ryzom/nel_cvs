@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.29 2001/10/03 15:50:48 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.30 2001/10/04 12:19:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,6 +106,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSEmitterRectangle);
 		NLMISC_REGISTER_CLASS(CPSEmitterConic);
 		NLMISC_REGISTER_CLASS(CPSSphericalEmitter);
+		NLMISC_REGISTER_CLASS(CPSRadialEmitter);
 		NLMISC_REGISTER_CLASS(CPSDirectionnalForce); 
 		NLMISC_REGISTER_CLASS(CPSGravity); 
 		NLMISC_REGISTER_CLASS(CPSBrownianForce);

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.29 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.30 2001/10/04 12:18:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -821,6 +821,36 @@ void CPSSphericalEmitter::resize(uint32 size)
 	resizeEmitteeSpeed(size);	
 	_Radius.resize(size);
 }
+
+
+
+/////////////////////////////////////
+// CPSRadialEmitter implementation //
+/////////////////////////////////////
+
+
+void CPSRadialEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(1);
+	CPSEmitterDirectionnal::serial(f);
+}
+
+void CPSRadialEmitter::emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed)
+{
+	// TODO : verifier que ca marche si une particule s'emet elle-mem
+	nlassert(_EmittedType);	
+
+	static const double divRand = (2.0 / RAND_MAX);
+	CVector dir((float) (rand() * divRand - 1)
+				, (float) (rand() * divRand - 1)
+				, (float) (rand() * divRand - 1) );
+	dir -= (dir * _Dir) * _Dir; //keep tangential direction
+	dir.normalize();
+	
+	speed = (_EmitteeSpeedScheme ? _EmitteeSpeedScheme->get(_Owner, index) : _EmitteeSpeed) * dir;		
+	pos = _Owner->getPos()[index];	
+}
+
 
 
 } // NL3D

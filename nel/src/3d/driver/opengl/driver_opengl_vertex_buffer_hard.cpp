@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.1 2002/08/30 11:58:02 berenguier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.2 2002/09/04 09:58:35 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -172,7 +172,12 @@ void			CVertexArrayRangeNVidia::enable()
 		// Setup the ptrs only if differnets from last time (may rarely happens)
 		if( _Driver->_NVCurrentVARSize != _VertexArraySize || _Driver->_NVCurrentVARPtr != _VertexArrayPtr)
 		{
+			// Yoyo: fucking NVidia Bug ?? must do this strange thing, this ensure that it is correclty setuped.
+			glFinish();
 			nglVertexArrayRangeNV(_VertexArraySize, _VertexArrayPtr);
+			glEnableClientState(GL_VERTEX_ARRAY_RANGE_NV);
+			glVertexPointer(3,GL_FLOAT, 0, _VertexArrayPtr);
+			// cache.
 			_Driver->_NVCurrentVARSize= _VertexArraySize;
 			_Driver->_NVCurrentVARPtr= _VertexArrayPtr;
 		}

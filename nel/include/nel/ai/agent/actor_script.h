@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.31 2002/08/22 15:11:40 chafik Exp $
+ * $Id: actor_script.h,v 1.32 2002/08/26 13:56:11 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,13 +163,14 @@ namespace NLAIAGENT
 			virtual void processSuccess(NLAIAGENT::IObjectIA *);
 			virtual void processFailure(NLAIAGENT::IObjectIA *);
 			virtual void success();
+
 			virtual void failure();
 
 			/// Pause or restart the actor
 			void pause();
 			void restart();
 
-			/// These functions can be derived to have the actor execute something when paused or restarted
+			/// These functions can be overloaded to have the actor execute something when paused or restarted
 			virtual void onPause();
 			virtual void onRestart();
 
@@ -183,6 +184,8 @@ namespace NLAIAGENT
 
 			virtual void setTopLevel(CAgentScript *);
 			const CAgentScript *getTopLevel() const;
+
+			virtual IMessageBase *runTell(const IMessageBase &m);
 
 		public:
 			static void initClass();

@@ -71,9 +71,9 @@ namespace NLAISCRIPT
 			_Comment = NULL;
 
 		if ( c._FactBase != NULL)
-				_FactBase = (NLAILOGIC::CFactBase *) c._FactBase->clone();
-			else
-				_FactBase = new NLAILOGIC::CFactBase();
+			_FactBase = (NLAILOGIC::CFactBase *) c._FactBase->clone();
+		else
+			_FactBase = new NLAILOGIC::CFactBase();
 
 		_UpdateCycles = c._UpdateCycles;
 		_Priority = c._Priority;
@@ -921,7 +921,7 @@ namespace NLAISCRIPT
 		}
 		catch (NLAIE::IException &err)
 		{				
-			throw CExceptionHaveNoType(err.what());
+			throw CExceptionHaveNoType( err.what() );
 		}
 	}
 

@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.cpp,v 1.66 2002/08/22 15:11:29 chafik Exp $
+ * $Id: actor_script.cpp,v 1.67 2002/08/26 13:56:41 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -907,7 +907,8 @@ namespace NLAIAGENT
 
 	void CActorScript::processSuccess(NLAIAGENT::IObjectIA *param)
 	{
-		param->incRef();
+		if ( param != NULL )
+			param->incRef();
 		success();
 	}
 
@@ -953,5 +954,11 @@ namespace NLAIAGENT
 	{
 		param->incRef();
 		failure();
+	}
+
+	IMessageBase *CActorScript::runTell(const IMessageBase &m)
+	{
+		processSuccess( (NLAIAGENT::IObjectIA *) m.getMessageGroup() );
+		return new NLAIAGENT::CSuccessMsg();
 	}
 }

@@ -1,6 +1,6 @@
 /** \file opcode_lpt.cpp
  *
- * $Id: goal_path.cpp,v 1.3 2002/08/22 08:41:56 portier Exp $
+ * $Id: goal_path.cpp,v 1.4 2002/08/26 13:58:11 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,7 @@
  */
 #include "nel/ai/logic/goal_path.h"
 #include "nel/ai/agent/object_type.h"
+#include "nel/ai/agent/msg_goal.h"
 
 
 namespace NLAILOGIC
@@ -50,35 +51,45 @@ namespace NLAILOGIC
 
 	void CGoalPath::success()
 	{
-		if ( _JmpNext[ _CurrentState ] == true )
+		if ( _CurrentState < ( _Goals.size() - 1 ) )
 		{
-			if ( _CurrentState < ( _Goals.size() - 1 ) )
-			{
-				_CurrentState++;
-				_GoalStack->addGoal( _Goals[ _CurrentState ] );
-			}
-			else
-			{
-				// Sends the launcher a succes, then dies
-				CActorScript::success();
-			}
+			_CurrentState++;
+			NLAIAGENT::IMessageBase *msg = new NLAIAGENT::CGoalMsg((NLAIAGENT::IBasicAgent *)NULL);
+			msg->setPerformatif(NLAIAGENT::IMessageBase::PAchieve);
+			CGoal *g = _Goals[ _CurrentState ];
+			g->setSender( this );
+			msg->set(0, g );
+			msg->setSender( this );
+			msg->setReceiver( _Father);
+			_Father->sendMessage(msg);
+
+		}
+		else
+		{
+			// Sends the launcher a succes, then dies
+			CActorScript::success();
 		}
 	}
 
 	void CGoalPath::failure()
 	{
-		if ( _JmpNext[ _CurrentState ] == true )
+		if ( _CurrentState < ( _Goals.size() - 1 ) )
 		{
-			if ( _CurrentState < ( _Goals.size() - 1 ) )
-			{
-				// Relaunches 
-				_GoalStack->addGoal( _Goals[ _CurrentState ] );
-			}
-			else
-			{
-				// Sends the launcher a failure, then dies
-				CActorScript::failure();
-			}
+			// Relaunches 
+			NLAIAGENT::IMessageBase *msg = new NLAIAGENT::CGoalMsg((NLAIAGENT::IBasicAgent *)NULL);
+			msg->setPerformatif(NLAIAGENT::IMessageBase::PAchieve);
+			CGoal *g = _Goals[ _CurrentState ];
+			g->setSender( this );
+			msg->set(0, g );
+			msg->setSender( this );
+			msg->setReceiver( _Father);
+			_Father->sendMessage(msg);
+
+		}
+		else
+		{
+			// Sends the launcher a failure, then dies
+			CActorScript::failure();
 		}
 	}
 
@@ -200,12 +211,63 @@ namespace NLAILOGIC
 	{
 		return CActorScript::getBaseMethodCount() + 2;
 	}
-
-	void CGoalPath::onActivate()
+/*
+	void CGoalPath::onPause()
 	{
 		if ( _Father != NULL )
 		{
+			NLAIAGENT::IMessageBase *msg = new NLAIAGENT::CCancelGoalMsg((NLAIAGENT::IBasicAgent *)NULL);
+			msg->setPerformatif(NLAIAGENT::IMessageBase::PAchieve);
+			msg->set(0, _Goals[ _CurrentState ] );
+			msg->setSender( this );
+			msg->setReceiver( _Father);
+			_Father->sendMessage(msg);
 		}
 	}
+
+	void CGoalPath::onRestart()
+	{
+		if ( _Father != NULL )
+		{
+			NLAIAGENT::IMessageBase *msg = new NLAIAGENT::CGoalMsg((NLAIAGENT::IBasicAgent *)NULL);
+			msg->setPerformatif(NLAIAGENT::IMessageBase::PAchieve);
+			msg->set(0, _Goals[ _CurrentState ] );
+			msg->setSender( this );
+			msg->setReceiver( _Father);
+			_Father->sendMessage(msg);
+		}
+	}
+*/
+
+	void CGoalPath::onActivate()
+	{
+		_CurrentState = 0;
+		if ( _Father != NULL )
+		{
+			NLAIAGENT::IMessageBase *msg = new NLAIAGENT::CGoalMsg((NLAIAGENT::IBasicAgent *)NULL);
+			msg->setPerformatif(NLAIAGENT::IMessageBase::PAchieve);
+			CGoal *g = _Goals[ _CurrentState ];
+			g->setSender( this );
+			msg->set(0, g );
+			msg->setSender( this );
+			msg->setReceiver( _Father);
+			_Father->sendMessage(msg);
+		}
+	}
+
+	void CGoalPath::onUnActivate()
+	{
+		_CurrentState = 0;
+		if ( _Father != NULL )
+		{
+			NLAIAGENT::IMessageBase *msg = new NLAIAGENT::CCancelGoalMsg((NLAIAGENT::IBasicAgent *)NULL);
+			msg->setPerformatif(NLAIAGENT::IMessageBase::PAchieve);
+			msg->set(0, _Goals[ _CurrentState ] );
+			msg->setSender( this );
+			msg->setReceiver( _Father);
+			_Father->sendMessage(msg);
+		}
+	}
+
 
 } // NLAILOGIC

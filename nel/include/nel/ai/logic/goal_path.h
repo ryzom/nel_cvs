@@ -1,7 +1,7 @@
 /** \file fact.h
  *	First order logic facts
  *
- * $Id: goal_path.h,v 1.3 2002/08/22 08:41:56 portier Exp $
+ * $Id: goal_path.h,v 1.4 2002/08/26 13:58:11 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,13 +58,20 @@ class CGoalPath : public NLAIAGENT::CActorScript
 		void addGoal(CGoal *, bool action = true, int on_succes = 0 , int on_failure = 0);
 
 		virtual void onActivate();
+		virtual void onUnActivate();
 
 
 		/// Own success and failure functions
 		/// These function tell other operators and goals that might be waiting for 
 		/// the execution of this one.
 		virtual void success();
+
 		virtual void failure();
+
+
+		/// These functions can be overloaded to have the actor execute something when paused or restarted
+//		virtual void onPause();
+//		virtual void onRestart();
 
 		// Script hardcoded functions
 		virtual int getBaseMethodCount() const;

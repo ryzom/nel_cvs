@@ -2,6 +2,7 @@
 #include "nel/ai/logic/var.h"
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/logic/operator_script.h"
+#include "nel/ai/agent/msg_action.h"
 
 namespace NLAILOGIC
 {
@@ -73,22 +74,43 @@ namespace NLAILOGIC
 
 	void IGoal::failure()
 	{
+		/*
 		for ( int i = 0; i < (int) _Successors.size(); i++ )
 		{
 			// TODO: Envoi de message "failed"
+		}
+		*/
+		if ( _Sender != NULL )
+		{
+			NLAIAGENT::IMessageBase *msg = new NLAIAGENT::CSuccessMsg((NLAIAGENT::IBasicAgent *)NULL);
+			msg->setPerformatif(NLAIAGENT::IMessageBase::PTell);
+			msg->setSender( this );
+			msg->setReceiver( _Sender);
+			_Sender->sendMessage(msg);
 		}
 	}
 
 	void IGoal::success()
 	{
+		/*
 		for ( int i = 0; i < (int) _Successors.size(); i++ )
 		{
 			// TODO: Envoi de message "success"
+		}
+		*/
+		if ( _Sender != NULL )
+		{
+			NLAIAGENT::IMessageBase *msg = new NLAIAGENT::CSuccessMsg((NLAIAGENT::IBasicAgent *)NULL);
+			msg->setPerformatif(NLAIAGENT::IMessageBase::PTell);
+			msg->setSender( this );
+			msg->setReceiver( _Sender);
+			_Sender->sendMessage(msg);
 		}
 	}
 
 	void IGoal::operatorSuccess(NLAIAGENT::IBasicAgent *op)
 	{
+		success();
 //		nlinfo("operatorSuccess: 0x%0x, %d, (0x%0x, %s)", this, _Successors.size(),op,(const char *)op->getType());
 		std::vector<NLAIAGENT::IBasicAgent *>::iterator it_s = _Successors.begin();
 		while ( it_s != _Successors.end() )
@@ -109,7 +131,7 @@ namespace NLAILOGIC
 		switch ( _Mode )
 		{
 			case achieveOnce:
-				( (NLAIAGENT::CAgentScript *) _Receiver)->removeGoal( this );
+				( (NLAIAGENT::CAgentScript *) _Receiver)->removeGoal( (NLAILOGIC::CGoal *) this );
 				break;
 
 			case achieveForever:
@@ -120,6 +142,7 @@ namespace NLAILOGIC
 
 	void IGoal::operatorFailure(NLAIAGENT::IBasicAgent *op)
 	{
+		failure();
 		std::vector<NLAIAGENT::IBasicAgent *>::iterator it_s = _Successors.begin();
 		while ( it_s != _Successors.end() )
 		{
@@ -135,7 +158,7 @@ namespace NLAILOGIC
 		switch ( _Mode )
 		{
 			case achieveOnce:
-				( (NLAIAGENT::CAgentScript *) _Receiver )->removeGoal( this );
+				( (NLAIAGENT::CAgentScript *) _Receiver )->removeGoal( (NLAILOGIC::CGoal *) this );
 				break;
 
 			case achieveForever:
@@ -177,6 +200,7 @@ namespace NLAILOGIC
 
 	void CGoal::operatorSuccess(NLAIAGENT::IBasicAgent *op)
 	{
+		success();
 //		nlinfo("operatorSuccess: 0x%0x, %d, (0x%0x, %s)", this, _Successors.size(),op,(const char *)op->getType());
 		std::vector<NLAIAGENT::IBasicAgent *>::iterator it_s = _Successors.begin();
 		while ( it_s != _Successors.end() )
@@ -197,7 +221,10 @@ namespace NLAILOGIC
 		switch ( _Mode )
 		{
 			case achieveOnce:
-				( (NLAIAGENT::CAgentScript *) _Receiver)->removeGoal( this );
+				{
+					NLAIAGENT::CAgentScript *dest = (NLAIAGENT::CAgentScript *) _Receiver;
+					dest->removeGoal( this );
+				}
 				break;
 
 			case achieveForever:
@@ -208,6 +235,7 @@ namespace NLAILOGIC
 
 	void CGoal::operatorFailure(NLAIAGENT::IBasicAgent *op)
 	{
+		failure();
 		std::vector<NLAIAGENT::IBasicAgent *>::iterator it_s = _Successors.begin();
 		while ( it_s != _Successors.end() )
 		{
@@ -544,7 +572,7 @@ namespace NLAILOGIC
 		switch ( _Mode )
 		{
 			case achieveOnce:
-				( (NLAIAGENT::CAgentScript *) _Receiver)->removeGoal( this );
+				( (NLAIAGENT::CAgentScript *) _Receiver)->removeGoal( (NLAILOGIC::CGoal *) this );
 				break;
 
 			case achieveForever:
@@ -570,7 +598,7 @@ namespace NLAILOGIC
 		switch ( _Mode )
 		{
 			case achieveOnce:
-				( (NLAIAGENT::CAgentScript *) _Receiver )->removeGoal( this );
+				( (NLAIAGENT::CAgentScript *) _Receiver )->removeGoal( (NLAILOGIC::CGoal *) this );
 				break;
 
 			case achieveForever:

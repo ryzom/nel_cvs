@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.57 2002/08/21 14:52:44 portier Exp $
+ * $Id: agent_script.h,v 1.58 2002/08/26 13:56:11 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -392,7 +392,7 @@ namespace NLAIAGENT
 			return IObjectIA::CProcessResult();
 		}
 
-		virtual void removeGoal( NLAILOGIC::IGoal *)
+		virtual void removeGoal( NLAILOGIC::CGoal *)
 		{
 		}
 

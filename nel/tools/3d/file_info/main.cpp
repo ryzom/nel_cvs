@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.6 2003/07/07 10:27:24 berenguier Exp $
+ * $Id: main.cpp,v 1.7 2003/07/15 09:42:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ void	displayGeom(FILE *logStream, const CMeshGeom &geom)
 			numFaces+= geom.getRdrPassPrimitiveBlock(i,j).getNumTri();
 		}
 	}
-	fprintf(logStream, "  Standard Mesh %s\n", geom.isSkinned()?"Skinned":"" );
+	fprintf(logStream, "Standard Mesh %s\n", geom.isSkinned()?"Skinned":"" );
 	fprintf(logStream, "  NumFaces: %d\n", numFaces );
 	fprintf(logStream, "  NumVertices: %d\n", geom.getVertexBuffer().getNumVertices() );
 }
@@ -74,16 +74,46 @@ void	displayMRMGeom(FILE *logStream, const CMeshMRMGeom &geom)
 				numFacesLodMax+= nPassFaces;
 		}
 	}
-	fprintf(logStream, "  MRM Mesh %s\n", geom.isSkinned()?"Skinned":"" );
+	fprintf(logStream, "MRM Mesh %s\n", geom.isSkinned()?"Skinned":"" );
 	fprintf(logStream, "  NumFaces(Max Lod): %d\n", numFacesLodMax );
 	fprintf(logStream, "  NumFaces(Sum all Lods): %d\n", numFaces );
 	fprintf(logStream, "  NumVertices(Sum all Lods): %d\n", geom.getVertexBuffer().getNumVertices() );
 }
 
 
+uint	MaxNumLightMap= 0;
+void	displayMeshBase(FILE *logStream, CMeshBase *meshBase)
+{
+	uint	nMat= meshBase->getNbMaterial();
+	uint	nLms= meshBase->_LightInfos.size();
+	MaxNumLightMap= max(MaxNumLightMap, nLms);
+	if(nLms)
+	{
+		fprintf(logStream, "The Mesh has %d lightmaps for %d Materials\n", nLms, nMat );
+		for(uint i=0;i<nLms;i++)
+		{
+			uint32		lg= meshBase->_LightInfos[i].LightGroup;
+			string		al= meshBase->_LightInfos[i].AnimatedLight;
+			fprintf(logStream, "  LightGroup=%d; AnimatedLight='%s'; mat/stage: ", lg, al.c_str());
+			std::list<CMeshBase::CLightMapInfoList::CMatStage>::iterator	it= meshBase->_LightInfos[i].StageList.begin();
+			while(it!=meshBase->_LightInfos[i].StageList.end())
+			{
+				fprintf(logStream, "%d/%d, ", it->MatId, it->StageId);
+				it++;
+			}
+			fprintf(logStream, "\n");
+		}
+	}
+	else
+	{
+		fprintf(logStream, "The Mesh has %d Materials\n", nMat );
+	}
+}
+
+
 // ***************************************************************************
 /// Dispaly info for file in stdout
-void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<string> &options)
+void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<string> &options, bool displayShortFileName)
 {
 	if(fileName==NULL)
 		return;
@@ -124,7 +154,15 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 	else
 	{
 		// some general info.
-		fprintf(logStream, "File: %s\n", fileName);
+		if(displayShortFileName)
+		{
+			string	sfn= CFile::getFilename(fileName);
+			fprintf(logStream, "File: %s\n", sfn.c_str());
+		}
+		else
+		{
+			fprintf(logStream, "File: %s\n", fileName);
+		}
 		fprintf(logStream, "***********\n\n");
 
 		if(strstr(fileName, ".zone"))
@@ -296,6 +334,13 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 			CMeshMRM		*meshMRM= dynamic_cast<CMeshMRM*>(shapeStream.getShapePointer());
 			CMeshMultiLod	*meshMulti= dynamic_cast<CMeshMultiLod*>(shapeStream.getShapePointer());
 
+			// Material infos
+			CMeshBase		*meshBase= dynamic_cast<CMeshBase*>(shapeStream.getShapePointer());
+			if(meshBase)
+			{
+				displayMeshBase(logStream, meshBase);
+			}
+
 			// Mesh ??
 			if( mesh )
 			{
@@ -340,13 +385,13 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 
 // ***************************************************************************
 // dispaly info for a file.
-void		displayInfoFile(FILE *logStream, const char *fileName, const set<string> &options)
+void		displayInfoFile(FILE *logStream, const char *fileName, const set<string> &options, bool displayShortFileName)
 {
 	// Display on screen.
-	displayInfoFileInStream(stdout, fileName,options);
+	displayInfoFileInStream(stdout, fileName,options, displayShortFileName);
 	// Display in log
 	if(logStream)
-		displayInfoFileInStream(logStream, fileName,options);
+		displayInfoFileInStream(logStream, fileName,options, displayShortFileName);
 }
 
 
@@ -391,15 +436,22 @@ int		main(int argc, const char *argv[])
 		std::vector<std::string>	listFile;
 		CPath::getPathContent (fileName, false, false, true, listFile);
 
+		fprintf(stdout,		"Scanning Directory '%s' .........\n\n\n", fileName);
+		fprintf(logStream,	"Scanning Directory '%s' .........\n\n\n", fileName);
+
 		// For all files.
 		for(uint i=0;i<listFile.size();i++)
 		{
-			displayInfoFile(logStream, listFile[i].c_str(), options);
+			displayInfoFile(logStream, listFile[i].c_str(), options, true);
 		}
+
+		// display info for lightmaps
+		fprintf(stdout,		"\n\n ************** \n I HAVE FOUND AT MAX %d LIGHTMAPS IN A SHAPE\n", MaxNumLightMap);
+		fprintf(logStream,	"\n\n ************** \n I HAVE FOUND AT MAX %d LIGHTMAPS IN A SHAPE\n", MaxNumLightMap);
 	}
 	else
 	{
-		displayInfoFile(logStream, fileName, options);
+		displayInfoFile(logStream, fileName, options, false);
 	}
 
 

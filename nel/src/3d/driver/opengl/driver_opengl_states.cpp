@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.2 2001/10/16 16:45:23 berenguier Exp $
+ * $Id: driver_opengl_states.cpp,v 1.3 2001/10/26 08:27:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,6 +105,9 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, _CurShininess);
 
+
+	/// NV texture shaders
+	_NVTextureShader = false;
 
 	// TexModes
 	for(uint stage=0;stage<nbStages; stage++)
@@ -319,6 +322,23 @@ void			CDriverGLStates::setShininess(float shin)
 	{
 		_CurShininess= shin;
 		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shin);
+	}
+}
+
+// ***************************************************************************
+void      CDriverGLStates::enableNVTextureShader(bool enabled)
+{
+	if (enabled != _NVTextureShader)
+	{
+		if (enabled)
+		{
+			glEnable(GL_TEXTURE_SHADER_NV);
+		}
+		else
+		{
+			glDisable(GL_TEXTURE_SHADER_NV);
+		}
+		_NVTextureShader = enabled;
 	}
 }
 

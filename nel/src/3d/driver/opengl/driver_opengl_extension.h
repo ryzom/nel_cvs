@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.16 2001/10/18 11:51:28 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.17 2001/10/26 08:27:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,6 +82,7 @@ struct	CGlExtensions
 	bool	NVTextureEnvCombine4;
 	bool	ARBTextureCubeMap;
 	bool	NVVertexProgram;
+	bool	NVTextureShader;
 	// true if NVVertexProgram and if we know that VP is emulated
 	bool	NVVertexProgramEmulated;
 
@@ -101,6 +102,7 @@ public:
 		EXTSeparateSpecularColor= false;
 		NVTextureEnvCombine4= false;
 		ARBTextureCubeMap= false;
+		NVTextureShader= false;
 		NVVertexProgram= false;
 		NVVertexProgramEmulated= false;
 	};

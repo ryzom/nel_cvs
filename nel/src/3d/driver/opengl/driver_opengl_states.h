@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.2 2001/10/16 16:45:23 berenguier Exp $
+ * $Id: driver_opengl_states.h,v 1.3 2001/10/26 08:27:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,7 +87,7 @@ public:
 	/// enable and set good AlphaFunc.
 	void			enableAlphaTest(uint enable);
 	void			enableLighting(uint enable);
-	void			enableZWrite(uint enable);
+	void			enableZWrite(uint enable);	
 	// @}
 
 	/// glBlendFunc.
@@ -104,6 +104,9 @@ public:
 	void			setSpecular(uint32 packedColor, const GLfloat color[4]);
 	void			setShininess(float shin);
 	// @}
+
+	/// nv texture shaders. Should be used only if this caps is present!
+	void            enableNVTextureShader(bool enabled);
 
 	/// \name Texture Mode setting.
 	// @{
@@ -131,13 +134,13 @@ public:
 	void			enableVertexAttribArray(uint glIndex, bool enable);
 	// @}
 
-
 private:
 	bool			_CurBlend;
 	bool			_CurCullFace;
 	bool			_CurAlphaTest;
 	bool			_CurLighting;
 	bool			_CurZWrite;
+	bool			_NVTextureShader;
 
 	GLenum			_CurBlendSrc;
 	GLenum			_CurBlendDst;

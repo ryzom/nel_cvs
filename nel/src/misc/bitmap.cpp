@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.21 2002/02/28 12:59:52 besson Exp $
+ * $Id: bitmap.cpp,v 1.22 2002/04/11 14:54:54 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2626,7 +2626,7 @@ void	CBitmap::rot90CCW()
 
 void CBitmap::blend(const CBitmap &Bm0, const CBitmap &Bm1, uint16 factor)
 {
-nlassert(factor <= 256)
+nlassert(factor <= 256);
 
 nlassert(Bm0._Width != 0 && Bm0._Height != 0
 		 && Bm1._Width != 0 && Bm1._Height != 0);

@@ -1,7 +1,7 @@
 /** \file o_xml.cpp
  * Output xml stream
  *
- * $Id: o_xml.cpp,v 1.4 2002/01/22 14:11:49 lecroart Exp $
+ * $Id: o_xml.cpp,v 1.5 2002/04/11 14:54:54 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ const char SEPARATOR = ' ';
 inline void COXml::flushContentString ()
 {
 	// Current node must exist here
-	nlassert (_CurrentNode)
+	nlassert (_CurrentNode);
 
 	// String size
 	uint size=_ContentString.length();

@@ -5,7 +5,7 @@
  * The class can also (but not in an optimized manner) return the
  * string associated with an id.
  *
- * $Id: string_mapper.cpp,v 1.7 2003/11/25 14:35:53 vizerie Exp $
+ * $Id: string_mapper.cpp,v 1.8 2003/12/18 18:02:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -191,6 +191,46 @@ void CStaticStringMapper::clear()
 	_MemoryCompressed = false;
 	add("");
 }
+
+// ****************************************************************************
+void CStaticStringMapper::serial(IStream &f, TSStringId &strId) throw(EStream)
+{
+	std::string tmp;
+	if (f.isReading())
+	{		
+		f.serial(tmp);
+		strId = add(tmp);
+	}
+	else
+	{
+		tmp = get(strId);
+		f.serial(tmp);
+	}
+}
+
+// ****************************************************************************
+void CStaticStringMapper::serial(IStream &f, std::vector<TSStringId> &strIdVect) throw(EStream)
+{
+	std::vector<std::string> vsTmp;
+	std::string sTmp;
+	// Serialize class components.
+	if (f.isReading())
+	{				
+		f.serialCont(vsTmp);		// FXs played only when attacking and according to the power.
+		strIdVect.resize(vsTmp.size());
+		for(uint i = 0; i < vsTmp.size(); ++i)
+			strIdVect[i] = add(vsTmp[i]);
+			}
+	else
+	{		
+		vsTmp.resize(strIdVect.size());
+		for (uint i = 0; i < vsTmp.size(); ++i)
+			vsTmp[i] = get(strIdVect[i]);
+		f.serialCont(vsTmp);		// FXs played only when attacking and according to the power.
+				
+	}
+}
+
 
 
 } // namespace NLMISC

@@ -1,6 +1,6 @@
 /** \file string_mapper.cpp
  *
- * $Id: string_mapper.h,v 1.7 2003/11/25 14:35:53 vizerie Exp $
+ * $Id: string_mapper.h,v 1.8 2003/12/18 18:02:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #define STRING_MAPPER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/stream.h"
 #include <hash_map>
 #include <map>
 #include <vector>
@@ -144,6 +145,12 @@ public:
 	void				clear();
 
 	uint32 getCount() { return _IdCounter; }
+
+	// helper serialize a string id as a string
+	void				serial(NLMISC::IStream &f, TSStringId &strId) throw(EStream);
+
+	// helper serialize a string id vector
+	void				serial(NLMISC::IStream &f, std::vector<TSStringId> &strIdVect) throw(EStream);
 	
 };
 

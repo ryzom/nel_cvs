@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.12 2002/10/02 13:33:01 corvazier Exp $
+ * $Id: type.cpp,v 1.13 2002/10/08 17:24:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -600,6 +600,18 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 					}
 					else
 					{
+						// Zero padding
+						char zeroPadding = 0;
+
+						// Format code ?
+						if ( ( (nextEnd - offset) >= 3 ) && ( result[offset] == '$' ) && ( result[offset+1] == 'z' ) 
+							&& ( result[offset+2] <= '9' ) && ( result[offset+2] >= '0'  ) )
+						{
+							// Save padding
+							zeroPadding = result[offset+2] - '0';
+							offset += 3;
+						}
+
 						// try to get a Form value
 						string valueName = result.substr ( offset, nextEnd-offset );
 
@@ -626,7 +638,11 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 						if (error == CEvalNumExpr::NoError)
 						{
 							// To string
-							dest += toString (value);
+							char format[200];
+							char result[200];
+							smprintf (format, 200, "%%0%cg", zeroPadding+'0');
+							smprintf (result, 200, format, value);
+							dest += result;
 						}
 						else
 						{

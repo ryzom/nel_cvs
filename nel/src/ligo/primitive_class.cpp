@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.8 2003/11/28 15:04:09 corvazier Exp $
+ * $Id: primitive_class.cpp,v 1.9 2003/12/03 12:57:17 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -651,7 +651,10 @@ bool CPrimitiveClass::CParameter::translateAutoname (std::string &result, const 
 										{
 											if (!(array->StringArray.empty()))
 											{
-												result += array->StringArray[0];
+												uint i;
+												for (i=0; i<array->StringArray.size()-1; i++)
+													result += array->StringArray[i] + "\n";
+												result += array->StringArray[i];
 												break;
 											}
 										}
@@ -710,7 +713,24 @@ bool CPrimitiveClass::CParameter::getDefaultValue (std::vector<std::string> &res
 		{
 			result.clear ();
 			if (!temp.empty())
-				result.push_back (temp);
+			{
+				string tmp;
+				uint i;
+				for (i=0; i<temp.size(); i++)
+				{
+					if (temp[i] == '\n')
+					{
+						result.push_back (tmp);
+						tmp.clear();
+					}
+					else
+					{
+						tmp.push_back(temp[i]);
+					}
+				}				
+				if (!tmp.empty())
+					result.push_back (tmp);
+			}
 			return true;
 		}
 		else

@@ -1,6 +1,6 @@
 /** \file list_manager.cpp
  *
- * $Id: list_manager.cpp,v 1.5 2001/04/03 12:32:04 chafik Exp $
+ * $Id: list_manager.cpp,v 1.6 2001/04/03 15:09:35 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -231,6 +231,7 @@ namespace NLAIAGENT
 		{
 			IObjectIA *obj = (IObjectIA *)(itr++);
 			obj->sendMessage(msg);
+			if(!itr.isInEnd()) msg->incRef();
 		}
 		return IObjectIA::CProcessResult();
 	}

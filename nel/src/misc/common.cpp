@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.26 2002/11/08 13:28:51 lecroart Exp $
+ * $Id: common.cpp,v 1.27 2002/11/12 17:22:32 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,8 @@
 #elif defined NL_OS_UNIX
 #include <unistd.h>
 #endif
+
+#include "nel/misc/command.h"
 
 using namespace std;
 
@@ -369,6 +371,37 @@ bool isPowerOf2(sint32 v)
 		else
 			v>>=1;
 	}
+
+	return true;
+}
+
+string bytesToHumanReadable (uint32 bytes)
+{
+	static char *divTable[]= { "b", "kb", "mb", "gb", "tb" };
+	uint div = 0;
+	float res = (float)bytes;
+	float newres = res;
+	while (true)
+	{
+		newres /= 1024;
+		if(newres < 1.0f || div > 4)
+			break;
+		div++;
+		res = newres;
+	}
+	int ires = (int) res;
+	if (res-(float)ires < .01f)
+		return toString ("%.0f%s", res, divTable[div]);
+	else
+		return toString ("%.2f%s", res, divTable[div]);
+}
+
+NLMISC_COMMAND(bthr, "Convert a bytes number into an human readable", "<int>")
+{
+	if (args.size() != 1)
+		return false;
+	
+	log.displayNL("%d -> %s", atoi(args[0].c_str()), bytesToHumanReadable(atoi(args[0].c_str())).c_str());
 
 	return true;
 }

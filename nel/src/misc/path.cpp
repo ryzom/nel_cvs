@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.22 2002/02/19 13:55:07 lecroart Exp $
+ * $Id: path.cpp,v 1.23 2002/03/12 18:05:41 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -103,15 +103,18 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 {
 	CPath *inst = CPath::getInstance();
 
-	if (ext1.empty() || ext2.empty())
+	string ext1lwr = strlwr (ext1);
+	string ext2lwr = strlwr (ext2);
+
+	if (ext1lwr.empty() || ext2lwr.empty())
 	{
-		nlwarning ("CPath::remapExtension(%s, %s, %d): can't remap empty extension", ext1.c_str(), ext2.c_str(), substitute);
+		nlwarning ("CPath::remapExtension(%s, %s, %d): can't remap empty extension", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
 	}
 
 	if (!substitute)
 	{
 		// remove the mapping from the mapping list
-		sint n = inst->findExtension (ext1, ext2);
+		sint n = inst->findExtension (ext1lwr, ext2lwr);
 		nlassert (n != -1);
 		inst->_Extensions.erase (inst->_Extensions.begin() + n);
 
@@ -121,55 +124,55 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 		while (it != inst->_Files.end ())
 		{
 			nit++;
-			if ((*it).second.Remapped && (*it).second.Extension == ext2)
+			if ((*it).second.Remapped && (*it).second.Extension == ext2lwr)
 			{
 				inst->_Files.erase (it);
 			}
 			it = nit;
 		}
-		NL_DISPLAY_PATH("CPath::remapExtension(%s, %s, %d): extension removed", ext1.c_str(), ext2.c_str(), substitute);
+		NL_DISPLAY_PATH("CPath::remapExtension(%s, %s, %d): extension removed", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
 	}
 	else
 	{
-		sint n = inst->findExtension (ext1, ext2);
+		sint n = inst->findExtension (ext1lwr, ext2lwr);
 		if (n != -1)
 		{
-			nlwarning ("CPath::remapExtension(%s, %s, %d): remapping already set", ext1.c_str(), ext2.c_str(), substitute);
+			nlwarning ("CPath::remapExtension(%s, %s, %d): remapping already set", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
 			return;
 		}
 
 		// adding mapping into the mapping list
-		inst->_Extensions.push_back (make_pair (ext1, ext2));
+		inst->_Extensions.push_back (make_pair (ext1lwr, ext2lwr));
 
 		// adding mapping into the map
 		vector<string> newFiles;
 		map<string, CFileEntry>::iterator it = inst->_Files.begin();
 		while (it != inst->_Files.end ())
 		{
-			if (!(*it).second.Remapped && (*it).second.Extension == ext1)
+			if (!(*it).second.Remapped && (*it).second.Extension == ext1lwr)
 			{
 				// find if already exist
 				sint pos = (*it).first.find_last_of (".");
 				if (pos != string::npos)
 				{
 					string file = (*it).first.substr (0, pos + 1);
-					file += ext2;
+					file += ext2lwr;
 
 					map<string, CFileEntry>::iterator nit = inst->_Files.find (file);
 					if (nit != inst->_Files.end())
 					{
-						nlwarning ("CPath::remapExtension(%s, %s): The file '%s' is in conflict with the remapping file '%s', skip it", ext1.c_str(), ext2.c_str(), file.c_str(), (*it).first.c_str());
+						nlwarning ("CPath::remapExtension(%s, %s): The file '%s' is in conflict with the remapping file '%s', skip it", ext1lwr.c_str(), ext2lwr.c_str(), file.c_str(), (*it).first.c_str());
 					}
 					else
 					{
 // TODO perhaps a problem because I insert in the current map that i parcours
-						insertFileInMap (file, (*it).second.Path, true, ext2);
+						insertFileInMap (file, (*it).second.Path, true, ext2lwr);
 					}
 				}
 			}
 			it++;
 		}
-		NL_DISPLAY_PATH("CPath::remapExtension(%s, %s, %d): extension added", ext1.c_str(), ext2.c_str(), substitute);
+		NL_DISPLAY_PATH("CPath::remapExtension(%s, %s, %d): extension added", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
 	}
 }
 
@@ -552,9 +555,9 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 	else
 	{
 		if (remap)
-			nlwarning ("CPath::addSearchPath(%s, %d, %s): remapped file '%s' already inserted in the map directory (location: %s)", file.c_str(), remap, virtual_ext.c_str(), filename.c_str(), (*it).second.Path.c_str());
+			nlwarning ("CPath::addSearchFile(%s, %d, %s): remapped file '%s' already inserted in the map directory (location: %s)", file.c_str(), remap, virtual_ext.c_str(), filename.c_str(), (*it).second.Path.c_str());
 		else
-			nlwarning ("CPath::addSearchPath(%s, %d, %s): file '%s' already inserted in the map directory (location: %s)", file.c_str(), remap, virtual_ext.c_str(), filename.c_str(), (*it).second.Path.c_str());
+			nlwarning ("CPath::addSearchFile(%s, %d, %s): file '%s' already inserted in the map directory (location: %s)", file.c_str(), remap, virtual_ext.c_str(), filename.c_str(), (*it).second.Path.c_str());
 	}
 
 	if (!remap && !ext.empty())
@@ -562,7 +565,7 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 		// now, we have to see extension and insert in the map the remapped files
 		for (uint i = 0; i < inst->_Extensions.size (); i++)
 		{
-			if (inst->_Extensions[i].first == ext)
+			if (inst->_Extensions[i].first == strlwr(ext))
 			{
 				// need to remap
 				addSearchFile (newFile, true, inst->_Extensions[i].second);
@@ -619,8 +622,8 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 	}
 	else
 	{
-		inst->_Files.insert (make_pair (strlwr(filename), CFileEntry (filepath, remap, extension)));
-		NL_DISPLAY_PATH("CPath::insertFileInMap(%s, %s, %d, %s): added", filename.c_str(), filepath.c_str(), remap, extension.c_str());
+		inst->_Files.insert (make_pair (strlwr(filename), CFileEntry (filepath, remap, strlwr(extension))));
+		NL_DISPLAY_PATH("CPath::insertFileInMap(%s, %s, %d, %s): added", strlwr(filename).c_str(), filepath.c_str(), remap, strlwr(extension).c_str());
 	}
 }
 

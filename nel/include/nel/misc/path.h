@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.17 2002/02/19 13:55:02 lecroart Exp $
+ * $Id: path.h,v 1.18 2002/03/12 18:05:34 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -63,6 +63,8 @@ public:
 	 * When Alternative is false, all added file names must be uniq or a warning will be display. In the Alternative directories, it could have
 	 * more than one file with the same name.
 	 *
+	 * \warning the path you provide is case sensitive, you must be sure that the path name is exactly the same
+	 *
 	 * \param path the path name. The separator for directories could be '/' or '\' (bit '\' will be translate into '/' in the function).
 	 * \param recurse true if you want the function recurse in sub-directories.
 	 * \param Alternative true if you want to add the path in the Alternative directories.
@@ -88,8 +90,11 @@ public:
 	 * The directory separator is always '/'.
 	 * First, the lookup() lookups in standard directories (Alternative=false).
 	 * If not found, it lookups in the Alternative directories.
-	 * If not found the lookup() returns empty string "" (and generate an excpetion if throwException is true)
-	 * 
+	 * If not found the lookup() returns empty string "" (and generate an exception if throwException is true)
+	 *
+	 * The filename is not case sensitive so if the real filename is "FooBAR.Jpg" and you call lookup("fOOBar.jPg"), it'll
+	 * return the real filename "FooBAR.Jpg"
+	 *
 	 * \param filename the file name you are seeking. (ex: "test.txt")
 	 * \param throwException used for backward compatibility, set to true to generate an EPathNotFound.
 	 * \param displayWarning set to false if you don't want the function displays a warning if the file is not found
@@ -103,9 +108,13 @@ public:
 	static void clearMap ();
 
 	/** Add a remapping function to allow file extension substitution.
-	 * - eg RemapExtension(".DDS",".TGA",TRUE) Where the boolean indicates whether
-	 * the ".DDS" should replace a ".TGA" if one exists - again - a warning should
+	 * - eg remapExtension("dds", "tga", true) Where the boolean indicates whether
+	 * the "dds" should replace a "tga" if one exists - again - a warning should
 	 * be generated if the two are present.
+	 *
+	 * ie: If you have a file called pic.dds and you call remapExtension("dds", "tga", true),
+	 *     if you call lookup("pic.tga"), it'll return "pic.dds"
+	 *
 	 */
 	static void remapExtension (const std::string &ext1, const std::string &ext2, bool substitute);
 

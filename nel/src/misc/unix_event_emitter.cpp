@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.cpp
  * <File description>
  *
- * $Id: unix_event_emitter.cpp,v 1.3 2000/12/19 16:07:01 lecroart Exp $
+ * $Id: unix_event_emitter.cpp,v 1.4 2000/12/19 17:30:26 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,7 +120,7 @@ TKey getKey (KeySym keysym)
 	case XK_KP_Divide: return KeyDIVIDE;
 	case XK_KP_Multiply: return KeyMULTIPLY;
 	case XK_KP_Decimal: return KeyDECIMAL;
-	  //	case XK_KP_Enter: return KeyENTER;
+	case XK_KP_Enter: return KeyRETURN;
 	case XK_F1: return KeyF1;
 	case XK_F2: return KeyF2;
 	case XK_F3: return KeyF3;

@@ -1,7 +1,7 @@
 /** \file bit_set.cpp
  * CBitSet class
  *
- * $Id: bit_set.cpp,v 1.5 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: bit_set.cpp,v 1.6 2000/11/21 17:12:13 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,7 +192,8 @@ CBitSet	&CBitSet::operator&=(const CBitSet &bs)
 		return *this;
 
 	sint	minSize= min(Array.size(), bs.Array.size());
-	for(sint i=0;i<minSize;i++)
+        sint	i;
+	for(i=0;i<minSize;i++)
 		Array[i]= Array[i] & bs.Array[i];
 	for(i=minSize;i<(sint)Array.size();i++)
 		Array[i]=0;
@@ -340,3 +341,4 @@ void	CBitSet::serial(IStream &f)
 
 
 }
+

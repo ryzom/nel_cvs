@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.cpp
  * <File description>
  *
- * $Id: visual_collision_manager.cpp,v 1.5 2002/02/28 12:59:52 besson Exp $
+ * $Id: visual_collision_manager.cpp,v 1.6 2002/06/25 09:45:03 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ CVisualCollisionManager::CVisualCollisionManager() :
 	_Landscape= NULL;
 
 	// Default.
-	setSunContributionPower(0.5f);
+	setSunContributionPower(0.5f, 0.5f);
 }
 // ***************************************************************************
 CVisualCollisionManager::~CVisualCollisionManager()
@@ -105,14 +105,14 @@ void					CVisualCollisionManager::deletePatchQuadBlock(CPatchQuadBlock *ptr)
 
 
 // ***************************************************************************
-void					CVisualCollisionManager::setSunContributionPower(float power)
+void					CVisualCollisionManager::setSunContributionPower(float power, float maxThreshold)
 {
 	NLMISC::clamp(power, 0.f, 1.f);
 
 	for(uint i=0; i<256; i++)
 	{
 		float	f= i/255.f;
-		f= powf(f, power);
+		f = powf(f/maxThreshold, power);
 		sint	uf= (sint)floor(255*f);
 		NLMISC::clamp(uf, 0, 255);
 		_SunContributionLUT[i]= uf;

@@ -1,7 +1,7 @@
 /** \file u_visual_collision_manager.h
  * Interface to visual collision manager.
  *
- * $Id: u_visual_collision_manager.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_visual_collision_manager.h,v 1.2 2002/06/25 09:45:03 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,6 +67,17 @@ public:
 	 */
 	virtual void					deleteEntity(UVisualCollisionEntity	*entity) =0;
 
+
+	/** 
+	 *  Build a lighting table to remap sun contribution from landscape to sun contribution for objects.
+	 *  The value remap the landscape sun contribution (0 ~ 1) to an object sun contribution (0 ~1)
+	 *  using the following formula:
+	 *
+	 *  objectSunContribution = min ( powf ( landscapeSunContribution / maxThreshold, power ), 1 );
+	 *
+	 *	Default is 0.5 (=> sqrt) for power and 0.5 for maxThreshold.
+	 */
+	virtual void					setSunContributionPower (float power, float maxThreshold) =0;
 
 };
 

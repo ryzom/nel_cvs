@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.h
  * <File description>
  *
- * $Id: visual_collision_manager.h,v 1.2 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: visual_collision_manager.h,v 1.3 2002/06/25 09:45:03 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,11 +91,18 @@ public:
 	void						deleteEntity(CVisualCollisionEntity	*entity);
 
 
-	/** for CVisualCollisionEntity::getStaticLightSetup(). SunContribution comming from 
-	 *	landscape is raised to this power (0..1). \see CVisualCollisionEntity::getStaticLightSetup()
-	 *	Default is 0.5 (=> sqrt).
+	/** for CVisualCollisionEntity::getStaticLightSetup(). 
+	 *  \see CVisualCollisionEntity::getStaticLightSetup()
+	 *
+	 *  Build a lighting table to remap sun contribution from landscape to sun contribution for objects.
+	 *  The value remap the landscape sun contribution (0 ~ 1) to an object sun contribution (0 ~1)
+	 *  using the following formula:
+	 *
+	 *  objectSunContribution = min ( powf ( landscapeSunContribution / maxThreshold, power ), 1 );
+	 *
+	 *	Default is 0.5 (=> sqrt) for power and 0.5 for maxThreshold.
 	 */
-	void						setSunContributionPower(float power);
+	void						setSunContributionPower(float power, float maxThreshold);
 
 
 // ***************************

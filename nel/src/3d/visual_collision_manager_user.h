@@ -1,7 +1,7 @@
 /** \file visual_collision_manager_user.h
  * UVisualCollisionManager implementation.
  *
- * $Id: visual_collision_manager_user.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: visual_collision_manager_user.h,v 1.2 2002/06/25 09:45:03 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,10 @@ public:
 		_Entities.erase(dynamic_cast<CVisualCollisionEntityUser*>(entity));
 	}
 
+	virtual void					setSunContributionPower (float power, float maxThreshold)
+	{
+		_Manager.setSunContributionPower (power, maxThreshold);
+	}
 
 protected:
 	CVisualCollisionManager		_Manager;

@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.35 2004/05/14 15:40:02 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.36 2004/08/03 16:15:52 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -44,6 +44,57 @@ namespace NL3D {
 // globals
 
 
+/////////////////////////
+// WATER WITH NO WAVES //
+/////////////////////////
+
+static const char *WaterVPNoWave =
+"!!VP1.0                                                                        \n\
+ DP4 o[HPOS].x, c[0], v[0];	          #transform vertex in view space	        \n\
+ DP4 o[HPOS].y, c[1], v[0];												        \n\
+ DP4 o[HPOS].z, c[2], v[0];												        \n\
+ DP4 o[HPOS].w, c[3], v[0];												        \n\
+ # MUL R1, R2.x, R1;                                                            \n\
+ DP4 o[FOGC].x, c[4], v[0];	      #setup fog					                \n\
+ MUL R3, v[0], c[5];			      #compute bump 0 uv's			            \n\
+ ADD o[TEX0], R3, c[6];										                    \n\
+ MUL R3, v[0], c[7];			      #compute bump 1 uv's			            \n\
+ ADD o[TEX1], R3, c[8];											                \n\
+ ADD R0, c[9], -v[0];			      #r1 = eye - vertex						\n\
+ DP3 R1, R0, R0;				      #r1 = eye - vertex, r2 = (eye - vertex)²	\n\
+ RSQ R1, R1.x;					      #r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
+ MUL R0, R0, R1;                                                                \n\
+ DP3 R1.x, R0.xyww, R0.xyww;                                                    \n\
+ MAD o[TEX2], -R0, c[10], c[10];		  #envmap tex coord						\n\
+ END";
+
+// a diffuse texture is added
+static const char *WaterVPNoWaveDiffuse =
+"!!VP1.0\n\
+DP4 o[HPOS].x, c[0], v[0];	          #transform vertex in view space	        \n\
+DP4 o[HPOS].y, c[1], v[0];												        \n\
+DP4 o[HPOS].z, c[2], v[0];												        \n\
+DP4 o[HPOS].w, c[3], v[0];												        \n\
+# MUL R1, R2.x, R1;                                                             \n\
+DP4 o[FOGC].x, c[4], v[0];	          #setup fog					            \n\
+MUL R3, v[0], c[5];			          #compute bump 0 uv's			            \n\
+ADD o[TEX0], R3, c[6];										                    \n\
+MUL R3, v[0], c[7];			          #compute bump 1 uv's			            \n\
+ADD o[TEX1], R3, c[8];											                \n\
+ADD R0, c[9], -v[0];			      #r1 = eye - vertex						\n\
+DP3 R1, R0, R0;				          #r1 = eye - vertex, r2 = (eye - vertex)²	\n\
+RSQ R1, R1.x;					      #r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
+MUL R0, R0, R1;                                                                 \n\
+MAD o[TEX2], -R0, c[10], c[10];		  #envmap tex coord							\n\
+DP4 o[TEX3].x, v[0], c[11];           #compute uv for diffuse texture			\n\
+DP4 o[TEX3].y, v[0], c[12];													    \n\
+END";
+
+
+
+////////////////
+// WAVY WATER //
+////////////////
 
 // common start for Water vertex programs
 /** The first part of the program does the following :
@@ -58,125 +109,93 @@ namespace NL3D {
   * R4 = position of point with attenuated height
   */
 
-const char *WaterVPStartCode =
+static const char *WaterVPStartCode =
 "!!VP1.0\n\
-	ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
-	DP3 R2, R1, R1;				    #r1 = eye - vertex, r2 = (eye - vertex)²	\n\
-	MAX R2, R2, c[16];            # avoid imprecision around 0				\n\
-	RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
-	RCP R3, R2.x;																\n\
-	MAD R3, c[6].xxxx, -R3, c[6].yyyy;											\n\
-	MAX R3, c[5],	R3;															\n\
-	MUL R0, R3, v[8];			#attenuate normal with distance					\n\
-	MUL R4.z,   R3, v[0];			#attenuate height with distance				\n\
-	MOV R4.xyw, v[0];															\n\
-	MOV R0.z,  c[4].x;			#set normal z to 1								\n\
-	DP3 R3.x, R0, R0;															\n\
-	RSQ R3.x,  R3.x;				#normalize normal in R3						\n\
-	MUL R0,  R0, R3.x;															\n\
-	DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space				    \n\
-	DP4 o[HPOS].y, c[1], R4;												    \n\
-	DP4 o[HPOS].z, c[2], R4;												    \n\
-	DP4 o[HPOS].w, c[3], R4;												    \n\
-	MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
-	DP3 R2.x, R1.xyww, R1.xyww;                                                 \n\
-	# MUL R1, R2.x, R1;                                                         \n\
-	DP4 o[FOGC].x, c[18], R4;	    #setup fog								    \n\
+	ADD R1, c[7], -v[0];			      #r1 = eye - vertex						\n\
+	DP3 R2, R1, R1;				          #r1 = eye - vertex, r2 = (eye - vertex)²	\n\
+	MAX R2, R2, c[16];                    # avoid imprecision around 0				\n\
+	RSQ R2, R2.x;					      #r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
+	RCP R3, R2.x;																    \n\
+	MAD R3, c[6].xxxx, -R3, c[6].yyyy;											    \n\
+	MAX R3, c[5],	R3;															    \n\
+	MUL R0, R3, v[8];			          #attenuate normal with distance		    \n\
+	MUL R4.z,   R3, v[0];			      #attenuate height with distance 	        \n\
+	MOV R4.xyw, v[0];														 	    \n\
+	MOV R0.z,  c[4].x;			          #set normal z to 1 				        \n\
+	DP3 R3.x, R0, R0;															    \n\
+	RSQ R3.x,  R3.x;				      #normalize normal in R3			        \n\
+	MUL R0,  R0, R3.x;															    \n\
+	DP4 o[HPOS].x, c[0], R4;	          #transform vertex in view space	        \n\
+	DP4 o[HPOS].y, c[1], R4;												        \n\
+	DP4 o[HPOS].z, c[2], R4;												        \n\
+	DP4 o[HPOS].w, c[3], R4;												        \n\
+	MUL R1, R1, R2.x;		              #normalize r1, r1 = (eye - vertex).normed \n\
+	# DP3 R2.x, R1.xyww, R1.xyww;                                                     \n\
+	# MUL R1, R2.x, R1;                                                             \n\
+	DP4 o[FOGC].x, c[18], R4;	          #setup fog					            \n\
 ";
-
-/*
-const char *WaterVPStartCode =
-"!!VP1.0\n\
-	ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
-	DP3 R2, R1, R1;				    #r1 = eye - vertex, r2 = (eye - vertex)²	\n\
-	MAX R2, R2, c[16];              # avoid imprecision around 0				\n\
-	RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
-	RCP R3, R2.x;																\n\
-	MUL R3, c[6], R3;                                                           \n\
-	ADD R3, c[15], -R3;                                                         \n\
-	MAX R3, c[5],	R3;															\n\
-	MUL R0, R3, v[8];			#attenuate normal with distance					\n\
-	MUL R4.z,   R3, v[0];			#attenuate height with distance				\n\
-	MOV R4.xyw, v[0];															\n\
-	MOV R0.z,  c[4].x;			#set normal z to 1								\n\
-	DP3 R3.x, R0, R0;															\n\
-	RSQ R3.x,  R3.x;				#normalize normal in R3						\n\
-	MUL R0,  R0, R3.x;															\n\
-	DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space				    \n\
-	DP4 o[HPOS].y, c[1], R4;												    \n\
-	DP4 o[HPOS].z, c[2], R4;												    \n\
-	DP4 o[HPOS].w, c[3], R4;												    \n\
-	MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
-	DP4 o[FOGC].x, c[18], R4;	    #setup fog								    \n\
-";
-*/
-
 /** This part of vertex program compute 2 layers of bump (for use with texture shaders)
   */
-const char *WaterVpBump2LayersCode = "MUL R3, v[0], c[10];			#compute bump 0 uv's			\n\
-						   ADD o[TEX0], R3, c[9];												\n\
-						   MUL R3, v[0], c[12];			#compute bump 1 uv's						\n\
-						   ADD o[TEX1], R3, c[11];												\n\
-						   DP3 R2.x, R1, R0;														\n\
-						   MUL R0, R0, R2.x;														\n\
-						   ADD R2, R0, R0;															\n\
-						   ADD R0, R2, -R1;				#compute reflection vector					\n\
-						   MAD o[TEX2], R0, c[8], c[8];											\n\
-						   ";
-
-
+static const char *WaterVpBump2LayersCode = 
+"	MUL R3, v[0], c[10];			#compute bump 0 uv's			\n\
+	ADD o[TEX0], R3, c[9];										    \n\
+	MUL R3, v[0], c[12];			#compute bump 1 uv's			\n\
+	ADD o[TEX1], R3, c[11];											\n\
+	DP3 R2.x, R1, R0;												\n\
+	MUL R0, R0, R2.x;												\n\
+	ADD R2, R0, R0;													\n\
+	ADD R0, R2, -R1;				#compute reflection vector		\n\
+	MAD o[TEX2], R0, c[8], c[8];									\n\
+";
 /** Version with one bump map only (Texture shaders support chaining of offset textures, EMBM does not)
   */
-const char *WaterVpBump1LayersCode = "MUL R3, v[0], c[12];			#compute bump 1 uv's				\n\
-									  ADD o[TEX0], R3, c[11];										\n\
-									  DP3 R2.x, R1, R0;													\n\
-									  MUL R0, R0, R2.x;													\n\
-									  ADD R2, R0, R0;													\n\
-									  ADD R0, R2, -R1;				#compute reflection vector			\n\
-									  MAD o[TEX1], R0, c[8], c[8];									\n\
-									  ";
-
+static const char *WaterVpBump1LayersCode = 
+"MUL R3, v[0], c[12];			#compute bump 1 uv's				\n\
+ ADD o[TEX0], R3, c[11];										    \n\
+ DP3 R2.x, R1, R0;													\n\
+ MUL R0, R0, R2.x;													\n\
+ ADD R2, R0, R0;													\n\
+ ADD R0, R2, -R1;				#compute reflection vector			\n\
+ MAD o[TEX1], R0, c[8], c[8];									    \n\
+";
 /** Optionnal diffuse texture in stage 3
   */
-const char *WaterVpDiffuseMapStage3Code = "DP4 o[TEX3].x, R4, c[13]; #compute uv for diffuse texture					\n\
-									       DP4 o[TEX3].y, R4, c[14];													\n\
-								          ";
-
+static const char *WaterVpDiffuseMapStage3Code = 
+"DP4 o[TEX3].x, R4, c[13]; #compute uv for diffuse texture					\n\
+ DP4 o[TEX3].y, R4, c[14];													\n\
+";
 /** Optionnal diffuse texture in stage 2
   */
-const char *WaterVpDiffuseMapStage2Code = "DP4 o[TEX2].x, R4, c[13]; #compute uv for diffuse texture					\n\
-									       DP4 o[TEX2].y, R4, c[14];													\n\
-								          ";
+static const char *WaterVpDiffuseMapStage2Code = 
+"DP4 o[TEX2].x, R4, c[13]; #compute uv for diffuse texture					\n\
+ DP4 o[TEX2].y, R4, c[14];													\n\
+";
 
 /** Optionnal diffuse texture in stage 1
   */
-const char *WaterVpDiffuseMapStage1Code = "DP4 o[TEX1].x, R4, c[13]; #compute uv for diffuse texture					\n\
-									       DP4 o[TEX1].y, R4, c[14];													\n\
-								          ";
-
-
+static const char *WaterVpDiffuseMapStage1Code = 
+"DP4 o[TEX1].x, R4, c[13]; #compute uv for diffuse texture					\n\
+ DP4 o[TEX1].y, R4, c[14];													\n\
+";
 
 // Envmap is setup in texture 0, no bump is used
-const char *WaterVpNoBumpCode = "  DP3 R2.x, R1, R0;				#project view vector on normal for symetry	\n\
-								   MUL R0, R0, R2.x;															\n\
-								   ADD R2, R0, R0;															\n\
-								   ADD R0, R2, -R1;				#compute reflection vector					\n\
-								   MAD o[TEX0], R0, c[8], c[8];											\n\
-								   DP4 o[FOGC].x, c[18], R4;	#setup fog									\n\
-								 ";
+static const char *WaterVpNoBumpCode = 
+"  DP3 R2.x, R1, R0;			 #project view vector on normal for symetry	\n\
+   MUL R0, R0, R2.x;														\n\
+   ADD R2, R0, R0;															\n\
+   ADD R0, R2, -R1;				 #compute reflection vector					\n\
+   MAD o[TEX0], R0, c[8], c[8];											    \n\
+   DP4 o[FOGC].x, c[18], R4;	 #setup fog									\n\
+";
 
 
 // static members
-
-uint32									CWaterShape::_XScreenGridSize = 40;
-uint32									CWaterShape::_YScreenGridSize = 40;
+uint32									CWaterShape::_XScreenGridSize = 20;
+uint32									CWaterShape::_YScreenGridSize = 20;
+//
 uint32									CWaterShape::_XGridBorder = 4;
 uint32									CWaterShape::_YGridBorder = 4;
 uint32									CWaterShape::_MaxGridSize;
-CVertexBuffer							CWaterShape::_VB;
-CIndexBuffer							CWaterShape::_IBUpDown;
-CIndexBuffer							CWaterShape::_IBDownUp;
-//NLMISC::CSmartPtr<IDriver>				CWaterShape::_Driver;
 bool									CWaterShape::_GridSizeTouched = true;
 std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramBump1;
 std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramBump2;
@@ -184,6 +203,9 @@ std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramBump1Diffuse;
 std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramBump2Diffuse;
 std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramNoBump;
 std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramNoBumpDiffuse;
+// water with no waves
+std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramNoWave;
+std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramNoWaveDiffuse;
 
 
 /** Build a vertex program for water depending on requirements
@@ -228,7 +250,8 @@ CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeig
 	{
 		_HeightMapScale[k].set(1, 1);
 		_HeightMapSpeed[k].set(0, 0);
-		_HeightMapTouch[k] = true;
+		_HeightMapTouch[k] = true;		
+		_UsesSceneWaterEnvMap[k] = false;		
 	}
 	_ColorMapMatColumn0.set(1, 0);
 	_ColorMapMatColumn1.set(0, 1);
@@ -236,7 +259,6 @@ CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeig
 }
 
 //============================================
-
 CWaterShape::~CWaterShape()
 {
 	if (
@@ -249,13 +271,12 @@ CWaterShape::~CWaterShape()
 }
 
 //============================================
-
 void CWaterShape::initVertexProgram()
 {	
 	static bool created = false;
 	if (!created)
 	{
-
+		// waves
 		_VertexProgramBump1 = std::auto_ptr<CVertexProgram>(BuildWaterVP(false, true, false));
 		_VertexProgramBump2 = std::auto_ptr<CVertexProgram>(BuildWaterVP(false, true, true));
 
@@ -264,71 +285,14 @@ void CWaterShape::initVertexProgram()
 
 		_VertexProgramNoBump = std::auto_ptr<CVertexProgram>(BuildWaterVP(false, false, false));
 		_VertexProgramNoBumpDiffuse = std::auto_ptr<CVertexProgram>(BuildWaterVP(true, false, false));
+		// no waves
+		_VertexProgramNoWave.reset(new CVertexProgram(WaterVPNoWave));
+		_VertexProgramNoWaveDiffuse.reset(new CVertexProgram(WaterVPNoWaveDiffuse));
 		created = true;
 	}
 }
 
-
 //============================================
-
-void CWaterShape::setupVertexBuffer()
-{
-	const uint rotLength = (uint) ::ceilf(::sqrtf((float) ((_XScreenGridSize >> 1) * (_XScreenGridSize >> 1)
-								  + (_YScreenGridSize >> 1) * (_YScreenGridSize >> 1))));
-	_MaxGridSize = 2 * rotLength;
-	const uint w =  _MaxGridSize + 2 * _XGridBorder;
-
-	_VB.clearValueEx();
-	_VB.addValueEx (WATER_VB_POS, CVertexBuffer::Float3);
-	_VB.addValueEx (WATER_VB_DX, CVertexBuffer::Float2);	
-
-	_VB.initEx();
-	_VB.setNumVertices((w + 1) * 2);
-	
-
-	
-	uint x;
-
-	// setup each index buffer
-	// We need 2 vb, because, each time 2 lines of the vertex buffer are filled, we start at the beginning again
-	// So we need 1 vb for triangle drawn up to down, and one other for triangle drawn down to top	
-
-	_IBUpDown.setNumIndexes(6 * w);	
-	CIndexBufferReadWrite ibaWrite;
-	_IBUpDown.lock (ibaWrite);
-	uint32 *ptr = ibaWrite.getPtr();
-	for (x = 0; x < w; ++x)
-	{
-		ptr [ 6 * x      ] = x;
-		ptr [ 6 * x  + 1 ] = x + 1 + (w + 1);
-		ptr [ 6 * x  + 2 ] = x + 1;
-
-		ptr [ 6 * x  + 3 ] = x;
-		ptr [ 6 * x  + 4 ] = x + 1 + (w + 1);
-		ptr [ 6 * x  + 5 ] = x     + (w + 1);
-
-	}
-
-	_IBDownUp.setNumIndexes(6 * w);
-	_IBDownUp.lock (ibaWrite);
-	ptr = ibaWrite.getPtr();
-	for (x = 0; x < w; ++x)
-	{
-		ptr [ 6 * x      ] = x;
-		ptr [ 6 * x  + 1 ] = x + 1;
-		ptr [ 6 * x  + 2 ] = x + 1 + (w + 1);
-
-		ptr [ 6 * x  + 3 ] = x;
-		ptr [ 6 * x  + 4 ] = x     + (w + 1);
-		ptr [ 6 * x  + 5 ] = x + 1 + (w + 1);
-
-	}
-
-	_GridSizeTouched = false;
-}
-
-//============================================
-
 CTransformShape		*CWaterShape::createInstance(CScene &scene)
 {
 	CWaterModel *wm = NLMISC::safe_cast<CWaterModel *>(scene.createModel(WaterModelClassId) );
@@ -342,13 +306,12 @@ CTransformShape		*CWaterShape::createInstance(CScene &scene)
 	if (scene.getWaterCallback())
 	{			
 		CWaterShape *ws = NLMISC::safe_cast<CWaterShape *>((IShape *) wm->Shape);
-		scene.getWaterCallback()->waterSurfaceAdded(getShape(), wm->getMatrix(), ws->isSplashEnabled());
+		scene.getWaterCallback()->waterSurfaceAdded(getShape(), wm->getMatrix(), ws->isSplashEnabled(), ws->getUseSceneWaterEnvMap(0) || ws->getUseSceneWaterEnvMap(1));
 	}
 	return wm;
 }
 
 //============================================
-
 float CWaterShape::getNumTriangles (float distance)
 {
 	// TODO
@@ -356,7 +319,6 @@ float CWaterShape::getNumTriangles (float distance)
 }
 
 //============================================
-
 void CWaterShape::flushTextures (IDriver &driver, uint selectedTexture)
 {
 	// Test if bump maps are supported by driver before to flush them.	
@@ -384,7 +346,6 @@ void CWaterShape::flushTextures (IDriver &driver, uint selectedTexture)
 }
 
 //============================================
-
 void	CWaterShape::setScreenGridSize(uint32 x, uint32 y)
 {
 	nlassert(x > 0 && y > 0);
@@ -394,7 +355,6 @@ void	CWaterShape::setScreenGridSize(uint32 x, uint32 y)
 }
 
 //============================================
-
 void		CWaterShape::setGridBorderSize(uint32 x, uint32 y)
 {
 	_XGridBorder = x;
@@ -403,7 +363,6 @@ void		CWaterShape::setGridBorderSize(uint32 x, uint32 y)
 }
 
 //============================================
-
 void CWaterShape::setShape(const NLMISC::CPolygon2D &poly)
 {
 	nlassert(poly.Vertices.size() != 0); // empty poly not allowed
@@ -412,7 +371,6 @@ void CWaterShape::setShape(const NLMISC::CPolygon2D &poly)
 }
 
 //============================================
-
 void CWaterShape::computeBBox()
 {
 	nlassert(_Poly.Vertices.size() != 0);
@@ -429,7 +387,6 @@ void CWaterShape::computeBBox()
 }
 
 //============================================
-
 void				CWaterShape::setHeightMap(uint k, ITexture *hm)
 {
 	nlassert(k < 2);	
@@ -443,7 +400,6 @@ void				CWaterShape::setHeightMap(uint k, ITexture *hm)
 }
 
 //============================================
-
 ITexture			*CWaterShape::getHeightMap(uint k)
 {
 	nlassert(k < 2);
@@ -451,7 +407,6 @@ ITexture			*CWaterShape::getHeightMap(uint k)
 }
 
 //============================================
-
 const ITexture		*CWaterShape::getHeightMap(uint k) const
 {
 	nlassert(k < 2);
@@ -459,11 +414,11 @@ const ITexture		*CWaterShape::getHeightMap(uint k) const
 }
 
 //============================================
-
 void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	// version 4 : added scene water env map
 	// version 3 : added '_Splashenabled' flag
-	sint ver = f.serialVersion(3);
+	sint ver = f.serialVersion(4);
 	// serial 'shape' 
 	f.serial(_Poly);
 	// serial heightMap identifier
@@ -510,10 +465,23 @@ void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if (ver >= 3)
 		f.serial(_SplashEnabled);
+
+	if (ver >= 4)
+	{
+		f.serial(_UsesSceneWaterEnvMap[0], _UsesSceneWaterEnvMap[1]);
+	}	
+
+	// tmp
+	/*
+	if (f.isReading())
+	{
+		_UsesSceneWaterEnvMap[0] = true;
+		_UsesSceneWaterEnvMap[1] = true;		
+	}
+	*/
 }
 
 //============================================
-
 bool CWaterShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 {	
 	for (uint k = 0; k < pyramid.size(); ++k)
@@ -524,7 +492,6 @@ bool CWaterShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldM
 }
 
 //============================================
-
 void				CWaterShape::setHeightMapScale(uint k, const NLMISC::CVector2f &scale)
 {
 	nlassert(k < 2);
@@ -532,7 +499,6 @@ void				CWaterShape::setHeightMapScale(uint k, const NLMISC::CVector2f &scale)
 }
 
 //============================================
-
 NLMISC::CVector2f	CWaterShape::getHeightMapScale(uint k) const
 {
 	nlassert(k < 2);
@@ -540,7 +506,6 @@ NLMISC::CVector2f	CWaterShape::getHeightMapScale(uint k) const
 }
 
 //============================================
-
 void			    CWaterShape::setHeightMapSpeed(uint k, const NLMISC::CVector2f &speed)
 {
 	nlassert(k < 2);
@@ -548,7 +513,6 @@ void			    CWaterShape::setHeightMapSpeed(uint k, const NLMISC::CVector2f &speed
 }
 
 //============================================
-
 NLMISC::CVector2f   CWaterShape::getHeightMapSpeed(uint k) const
 {
 	nlassert(k < 2);
@@ -556,7 +520,6 @@ NLMISC::CVector2f   CWaterShape::getHeightMapSpeed(uint k) const
 }
 
 //============================================
-
 void	CWaterShape::setColorMapMat(const NLMISC::CVector2f &column0, const NLMISC::CVector2f &column1, const NLMISC::CVector2f &pos)
 {
 	_ColorMapMatColumn0 = column0;
@@ -565,7 +528,6 @@ void	CWaterShape::setColorMapMat(const NLMISC::CVector2f &column0, const NLMISC:
 }
 
 //============================================
-
 void	CWaterShape::getColorMapMat(NLMISC::CVector2f &column0, NLMISC::CVector2f &column1, NLMISC::CVector2f &pos)
 {
 	column0 = _ColorMapMatColumn0;
@@ -574,7 +536,6 @@ void	CWaterShape::getColorMapMat(NLMISC::CVector2f &column0, NLMISC::CVector2f &
 }
 
 //============================================
-
 void CWaterShape::envMapUpdate()
 {
 	// if the color map is a blend texture, we MUST be registered to the water pool manager, so that, the
@@ -599,7 +560,6 @@ void CWaterShape::envMapUpdate()
 }
 
 //============================================
-
 void CWaterShape::setColorMap(ITexture *map)
 { 
 	_ColorMap = map; 
@@ -607,7 +567,6 @@ void CWaterShape::setColorMap(ITexture *map)
 }
 
 //============================================
-
 void CWaterShape::setEnvMap(uint index, ITexture *envMap)
 {
 	nlassert(index < 2);
@@ -615,7 +574,6 @@ void CWaterShape::setEnvMap(uint index, ITexture *envMap)
 }
 
 //============================================
-
 void CWaterShape::getShapeInWorldSpace(NLMISC::CPolygon &poly) const
 {
 	poly.Vertices.resize(_Poly.Vertices.size());
@@ -677,7 +635,6 @@ void  CWaterShape::updateHeightMapNormalizationFactors()
 
 
 //============================================
-
 CWaveMakerShape::CWaveMakerShape() : _Period(1),
 				     _Radius(3),
 				     _PoolID(0),
@@ -687,13 +644,11 @@ CWaveMakerShape::CWaveMakerShape() : _Period(1),
 }
 
 //============================================
-
 CWaveMakerShape::~CWaveMakerShape()
 {
 }
 
 //============================================
-
 void CWaveMakerShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(0);
@@ -701,7 +656,6 @@ void CWaveMakerShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 //============================================
-
 CTransformShape		*CWaveMakerShape::createInstance(CScene &scene)
 {
 	CWaveMakerModel *wmm = NLMISC::safe_cast<CWaveMakerModel *>(scene.createModel(WaveMakerModelClassId) );
@@ -712,7 +666,6 @@ CTransformShape		*CWaveMakerShape::createInstance(CScene &scene)
 }
 
 //============================================
-
 bool	CWaveMakerShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 {
 	// we just test if not too far

@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.14 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: water_model.h,v 1.15 2004/08/03 16:15:52 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/material.h"
 #include "3d/vertex_buffer.h"
 #include "3d/texture_emboss.h"
+#include "3d/driver.h"
 
 
 namespace MISC
@@ -47,9 +48,17 @@ namespace NL3D {
 class CWaterPoolManager;
 class CWaterShape;
 class IDriver;
+class CVertexBufferReadWrite;
 
 /**
- * A water quad
+ * A water surface
+ *
+ * In order to get precise reflections, we tesselate the shape by projecting it on screen, and by subdividing it by a fixed size grid.
+ * For each grid cell :
+ * - if it is entirely inside the projected shape, it is displayed as it
+ * - if is outside,  no-op
+ * - when it intersect the projected shape border, we generate some triangles by clipping the grid cell against the projected shape
+ *
  * \author Nicolas Vizerie
  * \author Nevrax France
  * \date 2001
@@ -57,8 +66,13 @@ class IDriver;
 class CWaterModel : public CTransformShape
 {
 public:
+	static CVertexBuffer VB;
+public:
 	/// ctor
 	CWaterModel();
+
+	// dtor
+	~CWaterModel();	
 
 	// to call the first time after the shape & the matrix  has been set
 	void init()
@@ -91,30 +105,59 @@ public:
 	virtual	bool	clip();
 	// @}
 
+	// get num wanted vertices for current frame (& precache clipped triangles)
+	uint getNumWantedVertices();
+
+	// fill vertex buffer with this shape datas, and returns pointer to next free location
+	uint fillVB(void *dataStart, uint startTri, IDriver &drv);
+
+	// setup vertex buffer before render
+	static void setupVertexBuffer(uint numWantedVertices, IDriver *drv);
+
 protected:
 	friend class CWaterShape;	
-	void setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist, float zHeight);
+	void setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float zHeight);
+	//
+	void setupSimpleRender(CWaterShape *shape, const NLMISC::CVector &obsPos, bool above);
 	// compute the clipped poly for cards that have vertex shaders
-	void computeClippedPoly();
-	// compute the clipped poly for simple shader version
-	void computeSimpleClippedPoly();
+	void computeClippedPoly();	
 	// simple rendering version
-	void doSimpleRender(IDriver *drv);
-
+	//void doSimpleRender(IDriver *drv);
 private:
-	NLMISC::CPolygon _ClippedPoly;
-	NLMISC::CPolygon _EndClippedPoly;	
+	static NLMISC::CRefPtr<IDriver> _CurrDrv;
 	CSmartPtr<CTextureEmboss> _EmbossTexture;
 	// Matrix to compute uv of diffuse map
-	NLMISC::CVector2f   _ColorMapMatColumn0, _ColorMapMatColumn1, _ColorMapMatPos;	
-	uint64              _MatrixUpdateDate;
-
-	void updateDiffuseMapMatrix(bool force = false);
-
-	// vertex buffer for simple rendering
-	static CVertexBuffer _SimpleRenderVB;
-	static CMaterial _WaterMat;
-	static CMaterial _SimpleWaterMat;
+	NLMISC::CVector2f		  _ColorMapMatColumn0, _ColorMapMatColumn1, _ColorMapMatPos;	
+	uint64					  _MatrixUpdateDate;
+	// vertex buffer for simple rendering	
+	static CMaterial		  _WaterMat;
+	static CMaterial		  _SimpleWaterMat;
+	// grid cells that are exactly inside the poly
+	NLMISC::CPolygon2D::TRasterVect	 _Inside;
+	sint							 _MinYInside;
+	// water surface clipped by frustum
+	NLMISC::CPolygon		   _ClippedPoly;
+	// link into list of water model to display
+public:
+	CWaterModel **_Prev;
+	CWaterModel *_Next;
+private:
+	// clipped tris of the shape after it has been projected on grid, all packed in a single vector
+	std::vector<NLMISC::CVector2f> _ClippedTris;
+	// for each clipped tri, gives it number of vertices
+	std::vector<uint>		   _ClippedTriNumVerts;
+	// vertex range into global vb for current render
+	uint32					   _StartTri;
+	uint32                     _NumTris;
+	CVertexBuffer			   *_VB;
+public:
+	// for use by CScene
+	void unlink();
+	void link();
+private:
+	void updateDiffuseMapMatrix(bool force = false);	
+	uint fillVBHard(void *dataStart, uint startIndex);
+	uint fillVBSoft(void *dataStart, uint startIndex);	
 };
 
 //=====================================================================================================================
@@ -149,7 +192,8 @@ protected:
 	TAnimationTime  _Time;
 };
 
-
+// tmp for debug
+extern uint8 *waterVBEnd;
 
 } // NL3D
 

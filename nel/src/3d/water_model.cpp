@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.42 2004/04/09 14:19:13 vizerie Exp $
+ * $Id: water_model.cpp,v 1.43 2004/08/03 16:15:52 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -40,13 +40,10 @@
 #include "3d/anim_detail_trav.h"
 #include "3d/texture_emboss.h"
 #include "3d/texture_bump.h"
+#include "3d/water_env_map.h"
 
 
-
-//#define NO_WATER_TESSEL
-
-// to force the rendering of water with the simplest shader on all cards
-//#define FORCE_SIMPLE_WATER_RENDER
+using NLMISC::CVector2f;
 
 
 namespace NL3D {
@@ -55,23 +52,67 @@ namespace NL3D {
 CMaterial CWaterModel::_WaterMat;
 // for simple rendering
 CMaterial CWaterModel::_SimpleWaterMat;
-CVertexBuffer CWaterModel::_SimpleRenderVB;
+const uint WATER_MODEL_DEFAULT_NUM_VERTICES = 5000;
+
+NLMISC::CRefPtr<IDriver> CWaterModel::_CurrDrv;
+
+CVertexBuffer CWaterModel::VB;
+
 
 
 //=======================================================================
+void CWaterModel::setupVertexBuffer(uint numWantedVertices, IDriver *drv)
+{
+	if (!numWantedVertices) return;	
+	if (VB.getNumVertices() == 0 || drv != _CurrDrv) // not setupped yet, or driver changed ?
+	{
+		VB.setNumVertices(0);
+		VB.setPreferredMemory(CVertexBuffer::AGPPreferred, false);
+		if (drv->isWaterShaderSupported())
+		{		
+			VB.setVertexFormat(CVertexBuffer::PositionFlag);
+		}
+		else
+		{
+			VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
+		}
+		_CurrDrv = drv;
+	}
+	uint numVerts = std::max(numWantedVertices, WATER_MODEL_DEFAULT_NUM_VERTICES);
+	if (numVerts > VB.getNumVertices())
+	{
+		const uint VB_INCREASE_SIZE = 1000;
+		numVerts = VB_INCREASE_SIZE * ((numVerts + (VB_INCREASE_SIZE - 1)) / VB_INCREASE_SIZE); // snap size
+		VB.setNumVertices((uint32) numVerts);
+	}
+}
 
+//=======================================================================
 CWaterModel::CWaterModel()
 {
 	setOpacity(false);
 	setTransparency(true);
 	setOrderingLayer(1);
-
 	// RenderFilter: We are a SegRemanece
 	_RenderFilterType= UScene::FilterWater;
+	_Prev = NULL;
+	_Next = NULL;
+	_VB = NULL;
 }
 
 //=======================================================================
+CWaterModel::~CWaterModel()
+{
+	CScene *scene = getOwnerScene();
+	if (scene && scene->getWaterCallback())
+	{
+		nlassert(Shape);
+		CWaterShape *ws = NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);
+		scene->getWaterCallback()->waterSurfaceRemoved(ws->getUseSceneWaterEnvMap(0) || ws->getUseSceneWaterEnvMap(1));
+	}
+}
 
+//=======================================================================
 void CWaterModel::registerBasic()
 {
 	CScene::registerModel(WaterModelClassId, TransformShapeId, CWaterModel::creator);	
@@ -79,7 +120,6 @@ void CWaterModel::registerBasic()
 
 
 //=======================================================================
-
 ITrack* CWaterModel::getDefaultTrack (uint valueId)
 {
 	nlassert(Shape);
@@ -95,8 +135,8 @@ ITrack* CWaterModel::getDefaultTrack (uint valueId)
 	}
 }
 
-//=======================================================================
 
+//=======================================================================
 uint32	CWaterModel::getWaterHeightMapID() const
 {
 	CWaterShape *ws = NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);
@@ -104,7 +144,6 @@ uint32	CWaterModel::getWaterHeightMapID() const
 }
 
 //=======================================================================
-
 float	CWaterModel::getHeightFactor() const
 {
 	CWaterShape *ws = NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);
@@ -113,8 +152,7 @@ float	CWaterModel::getHeightFactor() const
 
 
 //=======================================================================
-
-float   CWaterModel::getHeight(const NLMISC::CVector2f &pos)
+float   CWaterModel::getHeight(const CVector2f &pos)
 {
 	CWaterShape *ws		 = NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);	
 	CWaterHeightMap &whm = GetWaterPoolManager().getPoolByID(ws->_WaterPoolID);
@@ -123,8 +161,7 @@ float   CWaterModel::getHeight(const NLMISC::CVector2f &pos)
 }
 
 //=======================================================================
-
-float   CWaterModel::getAttenuatedHeight(const NLMISC::CVector2f &pos, const NLMISC::CVector &viewer)
+float   CWaterModel::getAttenuatedHeight(const CVector2f &pos, const NLMISC::CVector &viewer)
 {	
 	CWaterShape *ws		 = NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);			
 	CWaterHeightMap &whm = GetWaterPoolManager().getPoolByID(ws->_WaterPoolID);
@@ -150,6 +187,9 @@ float   CWaterModel::getAttenuatedHeight(const NLMISC::CVector2f &pos, const NLM
 //   0---1
 //   |   |
 //   3---2
+
+/*
+
 static float inline BilinFilter(float v0, float v1, float v2, float v3, float u, float v)
 {
 	float g = v * v3 + (1.f - v) * v0;
@@ -172,10 +212,12 @@ static void inline FillWaterVB(uint8 *&vbPointer, float x, float y, float z, flo
 	vbPointer += 5 * sizeof(float);
 }
 
+ */
+
+
+
 //***************************************************************************************************************
-
-
-/// this inline function setup one WaterPrev vertex
+/*
 #ifdef NL_OS_WINDOWS
 	__forceinline
 #endif
@@ -222,24 +264,11 @@ static void SetupWaterVertex(  sint  qLeft,
 		const sint offset = xm + stride * ym;
 		const float			  *ptWater     = whm.getPointer()	  + offset;
 
-	/*	float epsilon = 10E-5f;
-		if (ptWater[0] > epsilon			 || ptWater[0] < epsilon 
-			|| ptWater[1] > epsilon			 || ptWater[1] < epsilon 
-			|| ptWater[stride] > epsilon	 || ptWater[stride] < epsilon
-			|| ptWater[stride + 1] > epsilon || ptWater[stride + 1] < epsilon
-			)
-		{*/
-
+	
 			float deltaU = wXf - wx;
 			float deltaV = wYf - wy;
 			//nlassert(deltaU >= 0.f && deltaU <= 1.f  && deltaV >= 0.f && deltaV <= 1.f);
-			/*
-			if (deltaU <= 0.f || deltaU >= 1.f  || deltaV <= 0.f || deltaV >= 1.f)
-			{
-				nlwarning ("water problem, deltaU %f deltaV %f", deltaU, deltaV);
-				return;
-			}
-			*/
+			
 			const float			  *ptWaterPrev = whm.getPrevPointer()  + offset;
 
 
@@ -307,83 +336,16 @@ static void SetupWaterVertex(  sint  qLeft,
 
 
 			//NLMISC::CVector2f *ptGrad  = whm.getGradPointer() + offset;
-
-
-
-
-
-		/*	float dh1 = deltaV * ptWater[stride] + (1.f - deltaV) *  ptWater[0];
-			float dh2 = deltaV * ptWater[stride + 1] + (1.f - deltaV) *  ptWater[1];
-			float h = deltaU * dh2 + (1.f - deltaU ) * dh1;
-
-			
-			float gR = deltaV * ptGrad[stride + 1].x + (1.f - deltaV) * ptGrad[1].x;
-			float gL = deltaV * ptGrad[stride].x + (1.f - deltaV) * ptGrad[0].x;
-
-			float grU = 4.5f * (deltaU *  gR + (1.f - deltaU) * gL);
-
-			gR = deltaV * ptGrad[stride + 1].y + (1.f - deltaV) * ptGrad[1].y;
-			gL = deltaV * ptGrad[stride].y + (1.f - deltaV) * ptGrad[0].y;
-
-			float grV = 4.5f * (deltaU *  gR + (1.f - deltaU) * gL);
-
-			vb.setValueFloat3Ex (Water_VB_POS, vbIndex, inter.x, inter.y, h);
-			vb.setValueFloat2Ex (Water_VB_DX, vbIndex, grU, grV);
-			*/
-		/*}
-		else
-		{
-			// no perturbation is visible
-			FillWaterVB(vbPointer, inter.x, inter.y, 0, 0, 0);		
-		}*/
+		
 	}
 }
 
-//*********************************************************
-// compute a rotation matrix from the K and the up vector
-static void ComputeUpMatrix(const NLMISC::CVector &J, NLMISC::CMatrix &dest, const NLMISC::CMatrix &defaultMat)
-{
-	// if the J vector is oriented toward K, we must use another vector to compute the matrix
-	const float JdotK = J.z;
-	if ( (1.0f - fabsf(J.z)) < 10E-6)
-	{	
-		dest.setRot(defaultMat.getRot());		
-	}
-	else
-	{
-		NLMISC::CVector up	  = (NLMISC::CVector::K - JdotK * J).normed();
-		NLMISC::CVector right = J ^ up;
-		dest.setRot(right, J, up);
-	}
-}
-
-//*************************************************************
-// draw a 2d polygon after a transformation
-
-/*
-static void DrawPoly2D(CVertexBuffer &vb, IDriver *drv, const NLMISC::CVector &pos, const NLMISC::CPolygon &p)
-{
-	uint k;
-
-	for (k = 0; k < p.Vertices.size(); ++k)
-	{
-		vb.setValueFloat3Ex (WATER_VB_POS, k, p.Vertices[k].x + pos.x, p.Vertices[k].y + pos.y, p.Vertices[k].z + pos.z);
-		vb.setValueFloat2Ex (WATER_VB_DX,  k, 0, 0);			
-	}
-	static std::vector<uint32> ib;
-	ib.resize(3 * p.Vertices.size());
-
-	for (k = 0; k < p.Vertices.size() - 2; ++k)
-	{
-		ib[ k * 3      ] = 0;
-		ib[ k * 3  + 1 ] = k + 1;
-		ib[ k * 3  + 2 ] = k + 2;
-	}	
-	drv->renderSimpleTriangles(&ib[0], p.Vertices.size() - 2);	
-}
 */
 
 
+/*
+
+//*****************************************************************************************************
 static void DrawPoly2D(CVertexBuffer &vb, IDriver *drv, const NLMISC::CMatrix &mat, const NLMISC::CPolygon &p)
 {
 	uint k;
@@ -414,35 +376,11 @@ static void DrawPoly2D(CVertexBuffer &vb, IDriver *drv, const NLMISC::CMatrix &m
 	drv->activeIndexBuffer(ib);
 	drv->renderSimpleTriangles(0, p.Vertices.size() - 2);
 }
-
-
-
-
-/*
-static void DrawPoly2D(CVertexBuffer &vb, IDriver *drv, const NLMISC::CPolygon &p)
-{
-	uint k;
-
-	for (k = 0; k < p.Vertices.size(); ++k)
-	{		
-		vb.setValueFloat3Ex (WATER_VB_POS, k, p.Vertices[k].x, p.Vertices[k].y, p.Vertices[k].z);
-		vb.setValueFloat2Ex (WATER_VB_DX,  k, 0, 0);			
-	}
-	static std::vector<uint32> ib;
-	ib.resize(3 * p.Vertices.size());
-
-	for (k = 0; k < p.Vertices.size() - 2; ++k)
-	{
-		ib[ k * 3      ] = 0;
-		ib[ k * 3  + 1 ] = k + 1;
-		ib[ k * 3  + 2 ] = k + 2;
-	}	
-	drv->renderSimpleTriangles(&ib[0], p.Vertices.size() - 2);	
-}
 */
 
 
 //***************************************************************************************************************
+/*
 void	CWaterModel::traverseRender()
 {				
 	H_AUTO( NL3D_Water_Render );
@@ -471,7 +409,7 @@ void	CWaterModel::traverseRender()
 	//NLMISC::CMatrix invObjMat = getWorldMatrix().inverted();
 
 	// viewer pos in world space
-	const NLMISC::CVector &obsPos = /*invObjMat **/ renderTrav.CamPos;
+	const NLMISC::CVector &obsPos =  renderTrav.CamPos;
 
 	// camera matrix in world space
 	const NLMISC::CMatrix &camMat = renderTrav.CamMatrix;
@@ -557,20 +495,24 @@ void	CWaterModel::traverseRender()
 
 		static NLMISC::CPolygon2D projPoly; // projected poly
 		projPoly.Vertices.resize(_ClippedPoly.Vertices.size());
-		const float Near = renderTrav.Near;
-		const float xFactor = (numStepX >> 1) * Near  / renderTrav.Right;
-		const float xOffset = (float) (numStepX >> 1) + 0.5f;
-		const float yFactor = - (numStepX >> 1) * Near  / renderTrav.Top;
-		const float yOffset = (float) (numStepY >> 1) - 0.5f * isAbove;
+		const float Near = renderTrav.Near;				
+		
+
+		const float xFactor = numStepX * Near / (renderTrav.Right - renderTrav.Left);
+		const float xOffset = numStepX * (-renderTrav.Left / (renderTrav.Right - renderTrav.Left)) + 0.5f;
+		const float yFactor = numStepY * Near  / (renderTrav.Bottom - renderTrav.Top);
+		const float yOffset = numStepY * (-renderTrav.Top / (renderTrav.Bottom - renderTrav.Top)) - 0.5f * isAbove;
+
+		
 		
 		const NLMISC::CMatrix projMat =  matViewUp * getWorldMatrix();
-		uint k;
+		uint k;		
 		for (k = 0; k < _ClippedPoly.Vertices.size(); ++k)
 		{
 			// project points in the view
 			NLMISC::CVector t = projMat * _ClippedPoly.Vertices[k];
 			float invY = 1.f / t.y;
-			projPoly.Vertices[k].set(xFactor * t.x * invY + xOffset, yFactor * t.z * invY + yOffset);
+			projPoly.Vertices[k].set(xFactor * t.x * invY + xOffset, yFactor * t.z * invY + yOffset);			
 		}
 
 
@@ -615,12 +557,11 @@ void	CWaterModel::traverseRender()
 			//	compute heightmap useful area      //
 			//=====================================//
 
-			/** We don't store a heighmap for a complete Water area
-			  * we just consider the height of Water columns that are near the observer
-			  */
-			/** Compute a quad in Water height field space that contains the useful heights
-			  * This helps us to decide wether we should do a lookup in the height map
-			  */
+			// We don't store a heighmap for a complete Water area
+			// we just consider the height of Water columns that are near the observer
+			//
+			// Compute a quad in Water height field space that contains the useful heights
+			// This helps us to decide wether we should do a lookup in the height map			
 
 			sint mapPosX, mapPosY;
 
@@ -628,12 +569,7 @@ void	CWaterModel::traverseRender()
 			/// every 'PropagationTime' second
  			whm.getUserPos(mapPosX, mapPosY);
 
-			const uint mapBorder = 3;
-			/*const sint qRight = (sint) mapPosX + (WaterHeightMapSize >> 1) - mapBorder;
-				  sint qLeft  = (sint) mapPosX - (WaterHeightMapSize >> 1);
-			const sint qUp    = (sint) mapPosY + (WaterHeightMapSize >> 1) - mapBorder;
-				  sint qDown  = (sint) mapPosY - (WaterHeightMapSize >> 1); */
-
+			const uint mapBorder = 3;			
 
 			const sint qRight = (sint) mapPosX + WaterHeightMapSize - mapBorder;
 				  sint qLeft  = (sint) mapPosX;
@@ -835,12 +771,12 @@ void	CWaterModel::traverseRender()
 	drv->activeVertexProgram(NULL);
 	
 }
+*/
 
 //***********************
 // Water MATERIAL SETUP //
 //***********************
-
-
+/*
 void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist, float zHeight)
 {			
 	static bool matSetupped = false;
@@ -869,13 +805,42 @@ void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, c
 	CWaterModel::_WaterMat.setTexture(1, shape->_BumpMap[1]);
 	CWaterModel::_WaterMat.setTexture(3, shape->_ColorMap);
 
+	CScene *scene = getOwnerScene();
 	if (!above && shape->_EnvMap[1])
 	{
-		CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[1]);				
+		if (shape->_UsesSceneWaterEnvMap[1])
+		{
+			if (scene->getWaterEnvMap())
+			{			
+				CWaterModel::_WaterMat.setTexture(2, scene->getWaterEnvMap()->getEnvMap2D());
+			}
+			else
+			{
+				CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[1]);
+			}
+		}
+		else
+		{				
+			CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[1]);
+		}
 	}
 	else
 	{
-		CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[0]);
+		if (shape->_UsesSceneWaterEnvMap[0])
+		{
+			if (scene->getWaterEnvMap())
+			{			
+				CWaterModel::_WaterMat.setTexture(2, scene->getWaterEnvMap()->getEnvMap2D());
+			}
+			else
+			{
+				CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[0]);
+			}
+		}
+		else
+		{		
+			CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[0]);
+		}
 	}
 
 
@@ -911,9 +876,6 @@ void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, c
 	const float invMaxDist = shape->_WaveHeightFactor / maxDist;
 	cst[6  - cstOffset].set(invMaxDist, shape->_WaveHeightFactor, 0, 0);		
 
-	/*cst[6  - cstOffset].set(invMaxDist, invMaxDist, invMaxDist, invMaxDist); // upcoming light vectorshape->_WaveHeightFactor		
-	cst[15  - cstOffset].set(shape->_WaveHeightFactor, shape->_WaveHeightFactor, shape->_WaveHeightFactor, shape->_WaveHeightFactor);
-	*/
 
 
 			
@@ -966,7 +928,7 @@ void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, c
 	}
 	*/
 	
-	
+/*	
 
 	result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramBump2Diffuse).get())
 											: drv->activeVertexProgram((shape->_VertexProgramBump2).get());
@@ -974,170 +936,764 @@ void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, c
 	//
 	if (!result) nlwarning("no vertex program setupped");							
 }
-
-//=======================================================================================
-//							wave maker implementation
-//=======================================================================================
+*/
 
 
-CWaveMakerModel::CWaveMakerModel() : _Time(0)
-{
-	// AnimDetail behavior: Must be traversed in AnimDetail, even if no channel mixer registered
-	CTransform::setIsForceAnimDetail(true);
-}
 
-//================================================
-
-void CWaveMakerModel::registerBasic()
-{
-	CScene::registerModel(WaveMakerModelClassId, TransformShapeId, CWaveMakerModel::creator);
-}
-
-//================================================
-
-ITrack* CWaveMakerModel::getDefaultTrack (uint valueId)
-{
-	nlassert(Shape);
-	CWaveMakerShape *ws = NLMISC::safe_cast<CWaveMakerShape *>((IShape *) Shape);
-	switch (valueId)
+void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float zHeight)
+{			
+	static bool matSetupped = false;
+	if (!matSetupped)
+	{	
+		_WaterMat.setLighting(false);
+		_WaterMat.setDoubleSided(true);	
+		_WaterMat.setColor(NLMISC::CRGBA::White);
+		_WaterMat.setBlend(true);
+		_WaterMat.setSrcBlend(CMaterial::srcalpha);
+		_WaterMat.setDstBlend(CMaterial::invsrcalpha);
+		_WaterMat.setZWrite(true);
+		_WaterMat.setShader(CMaterial::Water);
+	}		
+	const uint cstOffset = 5; // 4 places for the matrix
+	NLMISC::CVectorH cst[13];		
+	//=========================//
+	//	setup Water material   //
+	//=========================//		
+	CWaterModel::_WaterMat.setTexture(0, shape->_BumpMap[0]);
+	CWaterModel::_WaterMat.setTexture(1, shape->_BumpMap[1]);
+	CWaterModel::_WaterMat.setTexture(3, shape->_ColorMap);
+	CScene *scene = getOwnerScene();
+	if (!above && shape->_EnvMap[1])
 	{
-		case PosValue:			return ws->getDefaultPos(); break;	
-		default: // delegate to parent
-			return CTransformShape::getDefaultTrack(valueId);
-		break;
-	}
-}
-
-//================================================
-void	CWaveMakerModel::traverseAnimDetail()
-{
-	CTransformShape::traverseAnimDetail();
-	nlassert(getOwnerScene());
-	/// get the shape
-	CWaveMakerShape *wms = NLMISC::safe_cast<CWaveMakerShape *>((IShape *) Shape);
-	const NLMISC::CVector	worldPos = getWorldMatrix().getPos();
-	const NLMISC::CVector2f pos2d(worldPos.x, worldPos.y);
-	/// get the water height map
-	CWaterHeightMap &whm = GetWaterPoolManager().getPoolByID(wms->_PoolID);
-	// get the time delta 
-	const TAnimationTime deltaT  = std::min(getOwnerScene()->getEllapsedTime(), (TAnimationTime) whm.getPropagationTime());
-	_Time += deltaT;
-	if (!wms->_ImpulsionMode)
-	{
-		whm.perturbate(pos2d, wms->_Intensity * cosf(2.f / wms->_Period * (float) NLMISC::Pi * _Time), wms->_Radius);
+		if (shape->_UsesSceneWaterEnvMap[1])
+		{
+			if (scene->getWaterEnvMap())
+			{			
+				CWaterModel::_WaterMat.setTexture(2, scene->getWaterEnvMap()->getEnvMap2D());
+			}
+			else
+			{
+				CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[1]);
+			}
+		}
+		else
+		{				
+			CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[1]);
+		}
 	}
 	else
 	{
-		if (_Time > wms->_Period)
+		if (shape->_UsesSceneWaterEnvMap[0])
 		{
-			_Time -= wms->_Period;
-			whm.perturbate(pos2d, wms->_Intensity, wms->_Radius);
+			if (scene->getWaterEnvMap())
+			{			
+				CWaterModel::_WaterMat.setTexture(2, scene->getWaterEnvMap()->getEnvMap2D());
+			}
+			else
+			{
+				CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[0]);
+			}
+		}
+		else
+		{		
+			CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[0]);
 		}
 	}
+	shape->envMapUpdate();	
+	if (shape->_ColorMap)
+	{					
+		// setup 2x3 matrix for lookup in diffuse map
+		updateDiffuseMapMatrix();
+		cst[11].set(_ColorMapMatColumn0.x, _ColorMapMatColumn1.x, 0, _ColorMapMatColumn0.x * obsPos.x + _ColorMapMatColumn1.x * obsPos.y + _ColorMapMatPos.x);
+		cst[12].set(_ColorMapMatColumn0.y, _ColorMapMatColumn1.y, 0, _ColorMapMatColumn0.y * obsPos.x + _ColorMapMatColumn1.y * obsPos.y + _ColorMapMatPos.y);
+	}					
+	/// set matrix		
+	drv->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);	
+	// retrieve current time
+	double date  = scene->getCurrentTime();
+	// set bumpmaps pos
+	cst[6].set(fmodf(obsPos.x * shape->_HeightMapScale[0].x, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[0].x, 1), fmodf(shape->_HeightMapScale[0].y * obsPos.y, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[0].y, 1), 0.f, 1.f); // bump map 0 offset
+	cst[5].set(shape->_HeightMapScale[0].x, shape->_HeightMapScale[0].y, 0, 0); // bump map 0 scale
+	cst[8].set(fmodf(shape->_HeightMapScale[1].x * obsPos.x, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[1].x, 1), fmodf(shape->_HeightMapScale[1].y * obsPos.y, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[1].y, 1), 0.f, 1.f); // bump map 1 offset
+	cst[7].set(shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 0, 0); // bump map 1 scale					
+	cst[9].set(0, 0, obsPos.z - zHeight, 1.f);
+	cst[10].set(0.5f, 0.5f, 0.f, 1.f); // used to scale reflected ray into the envmap	
+	/// set all our constants in one call
+	drv->setConstant(cstOffset, sizeof(cst) / sizeof(cst[0]) - cstOffset, (float *) &cst[cstOffset]);
+	shape->initVertexProgram();	
+	drv->activeVertexProgram(shape->_ColorMap ? CWaterShape::_VertexProgramNoWaveDiffuse.get() : CWaterShape::_VertexProgramNoWave.get());
+	drv->setConstantFog(4);
 }
 
 //================================================
-void CWaterModel::computeSimpleClippedPoly()
+void CWaterModel::setupSimpleRender(CWaterShape *shape, const NLMISC::CVector &obsPos, bool above)
 {	
-	CWaterShape	*shape = NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);
-	CClipTrav	&clipTrav		= getOwnerScene()->getClipTrav();
-	const std::vector<CPlane>	&worldPyramid   = getOwnerScene()->getClipTrav().WorldFrustumPyramid;	
-	
-	_ClippedPoly.Vertices.resize(shape->_Poly.Vertices.size());
-	uint k;
-	for (k = 0; k < shape->_Poly.Vertices.size(); ++k)
+	// rendering of water when no vertex / pixel shaders are available	
+	CRenderTrav	&renderTrav		= getOwnerScene()->getRenderTrav();
+	static bool init = false;
+	if (!init)
 	{
-		_ClippedPoly.Vertices[k].set(shape->_Poly.Vertices[k].x, 
-									shape->_Poly.Vertices[k].y,
-									0
-								   );
+		// setup the material, no special shader is used here
+		_SimpleWaterMat.setLighting(false);
+		_SimpleWaterMat.setDoubleSided(true);	
+		_SimpleWaterMat.setColor(NLMISC::CRGBA::White);
+
+		_SimpleWaterMat.setBlend(true);
+		_SimpleWaterMat.setSrcBlend(CMaterial::srcalpha);
+		_SimpleWaterMat.setDstBlend(CMaterial::invsrcalpha);
+		_SimpleWaterMat.setZWrite(true);
+		_SimpleWaterMat.setShader(CMaterial::Normal);
+
+		// stage 0
+		_SimpleWaterMat.texEnvOpRGB(0, CMaterial::Replace);
+		_SimpleWaterMat.texEnvOpAlpha(0, CMaterial::Replace);
+		_SimpleWaterMat.texEnvArg0RGB(0, CMaterial::Texture, CMaterial::SrcColor);
+		_SimpleWaterMat.texEnvArg0Alpha(0, CMaterial::Texture, CMaterial::SrcAlpha);
+
+		// stage 1
+		_SimpleWaterMat.texEnvOpRGB(1, CMaterial::Modulate);
+		_SimpleWaterMat.texEnvOpAlpha(1, CMaterial::Modulate);
+		_SimpleWaterMat.texEnvArg0RGB(0, CMaterial::Texture, CMaterial::SrcColor);
+		_SimpleWaterMat.texEnvArg0Alpha(0, CMaterial::Texture, CMaterial::SrcAlpha);
+		_SimpleWaterMat.texEnvArg1RGB(0, CMaterial::Previous, CMaterial::SrcColor);
+		_SimpleWaterMat.texEnvArg1Alpha(0, CMaterial::Previous, CMaterial::SrcAlpha);
+		
+		init = true;
+	}			
+	// envmap is always present and is in stage 0	
+	CScene *scene = getOwnerScene();
+	if (above && shape->_EnvMap[1])
+	{		
+		if (shape->_UsesSceneWaterEnvMap[1])
+		{
+			if (scene->getWaterEnvMap())
+			{			
+				_SimpleWaterMat.setTexture(0, scene->getWaterEnvMap()->getEnvMap2D());
+			}
+			else
+			{
+				_SimpleWaterMat.setTexture(0, shape->_EnvMap[1]);
+			}
+		}
+		else
+		{
+			_SimpleWaterMat.setTexture(0, shape->_EnvMap[1]);
+		}
 	}
-	
-	static std::vector<CPlane> xformPyram;
-	const uint numPlanes = (uint) worldPyramid.size();
-	xformPyram.resize(numPlanes);	
-	for (k = 0; k < numPlanes; ++k)
+	else
 	{
-		xformPyram[k] = worldPyramid[k] * getWorldMatrix(); // put the plane in object space
+		if (shape->_UsesSceneWaterEnvMap[0])
+		{
+			if (scene->getWaterEnvMap())
+			{			
+				_SimpleWaterMat.setTexture(0, scene->getWaterEnvMap()->getEnvMap2D());
+			}
+			else
+			{
+				_SimpleWaterMat.setTexture(0, shape->_EnvMap[0]);
+			}
+		}
+		else
+		{
+			_SimpleWaterMat.setTexture(0, shape->_EnvMap[0]);
+		}
+	}		
+	//
+	if (shape->_ColorMap == NULL)
+	{
+		// version with no color map
+		if (!_EmbossTexture)
+		{
+			_EmbossTexture = new CTextureEmboss;
+			_EmbossTexture->setSlopeFactor(4.f);						
+		}
+		if (shape->_BumpMap[1] && shape->_BumpMap[1]->isBumpMap())
+		{
+			CTextureBump *bm = static_cast<CTextureBump *>((ITexture *) shape->_BumpMap[1]);
+			if (bm->getHeightMap())
+			{		
+				_EmbossTexture->setHeightMap(bm->getHeightMap());
+			}
+		}
+		_SimpleWaterMat.setTexture(1, _EmbossTexture);
+		_SimpleWaterMat.setTexCoordGen(1, true);
+		_SimpleWaterMat.setTexCoordGenMode(1, CMaterial::TexCoordGenObjectSpace);
+		double date  = scene->getCurrentTime();
+		CMatrix texMat;
+		texMat.scale(CVector(shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 1.f));
+		texMat.setPos(CVector(fmodf(shape->_HeightMapScale[1].x * obsPos.x, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[1].x, 1),
+			          fmodf(shape->_HeightMapScale[1].y * obsPos.y, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[1].y, 1),
+			          1.f)
+					 );
+		_SimpleWaterMat.enableUserTexMat(1, true);
+		_SimpleWaterMat.setUserTexMat(1, texMat);
 	}
-	// do the clip
-	_ClippedPoly.clip(xformPyram);	
+	else
+	{
+		updateDiffuseMapMatrix();
+		// version with a color map : it remplace the emboss texture						
+		_SimpleWaterMat.setTexture(1, shape->_ColorMap);
+		_SimpleWaterMat.setTexCoordGen(1, true);
+		_SimpleWaterMat.setTexCoordGenMode(1, CMaterial::TexCoordGenObjectSpace);
+		CMatrix texMat;
+		/*
+		float mat[16] = 
+		{
+			_ColorMapMatColumn0.x, _ColorMapMatColumn1.x, 0, _ColorMapMatColumn0.x * obsPos.x + _ColorMapMatColumn1.x * obsPos.y + _ColorMapMatPos.x},
+			_ColorMapMatColumn0.y, _ColorMapMatColumn1.y, 0, _ColorMapMatColumn0.y * obsPos.x + _ColorMapMatColumn1.y * obsPos.y + _ColorMapMatPos.y,
+			0.f, 0.f, 1.f, 0.f,
+			0.f, 0.f, 0.f, 1.f
+		}
+		*/
+		float mat[16] = 
+		{
+			_ColorMapMatColumn0.x, _ColorMapMatColumn0.y, 0.f, 0.f,
+			_ColorMapMatColumn1.x, _ColorMapMatColumn1.y, 0.f, 0.f,
+			0.f,                   0.f,                   1.f, 0.f,
+			_ColorMapMatColumn0.x * obsPos.x + _ColorMapMatColumn1.x * obsPos.y + _ColorMapMatPos.x, _ColorMapMatColumn0.y * obsPos.x + _ColorMapMatColumn1.y * obsPos.y + _ColorMapMatPos.y, 0.f, 1.f
+		};
+		texMat.set(mat);
+		_SimpleWaterMat.enableUserTexMat(1, true);
+		_SimpleWaterMat.setUserTexMat(1, texMat);
+	}					
 }
+
 
 //================================================
 void CWaterModel::computeClippedPoly()
 {
 	CWaterShape	*shape = NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);
 	CClipTrav	&clipTrav		= getOwnerScene()->getClipTrav();
-	const std::vector<CPlane>	&worldPyramid   = getOwnerScene()->getClipTrav().WorldFrustumPyramid;	
-	
+	const std::vector<CPlane>	&worldPyramid   = getOwnerScene()->getClipTrav().WorldFrustumPyramid;		
 	_ClippedPoly.Vertices.resize(shape->_Poly.Vertices.size());
 	uint k;
 	for (k = 0; k < shape->_Poly.Vertices.size(); ++k)
 	{
 		_ClippedPoly.Vertices[k].set(shape->_Poly.Vertices[k].x, 
-									shape->_Poly.Vertices[k].y,
-									0
-								   );
-	}
-	
-	_EndClippedPoly = _ClippedPoly;
-
-	const sint numStepX = CWaterShape::getScreenXGridSize();
-	const sint numStepY = CWaterShape::getScreenYGridSize();
-	const NLMISC::CMatrix &viewMat = clipTrav.ViewMatrix;
-
-	// Build the view pyramid. We need to rebuild it because we use a wider one to avoid holes on the border of the screen
-
+									 shape->_Poly.Vertices[k].y,
+									 0.f
+								    );
+	}			
+	/*
 	NLMISC::CPlane plvect[6];
-
-	const float borderFactor = 0.67f; // we must avoid numerical imprecision as well as the rotation case (must divide by sqrt(2))
-	const float fRight = clipTrav.Right * (2.f * borderFactor * (float) CWaterShape::_XGridBorder +  (float) numStepX) / numStepX;
-	const float fTop   = clipTrav.Top   * (2.f * borderFactor * (float) CWaterShape::_YGridBorder +  (float) numStepY) / numStepY;
-
+	const NLMISC::CMatrix &viewMat = clipTrav.ViewMatrix;
+	
+	const sint numStepX = CWaterShape::getScreenXGridSize();
+	const sint numStepY = CWaterShape::getScreenYGridSize();	
+	// Build the view pyramid. We need to rebuild it because we use a wider one to avoid holes on the border of the screen due to water animation		
+	float centerX = 0.5f  * (clipTrav.Right + clipTrav.Left);
+	const float fRight = centerX + (clipTrav.Right -  centerX) * (-(float) CWaterShape::_XGridBorder +  (float) numStepX) / numStepX;
+	const float fLeft = centerX + (clipTrav.Left -  centerX) * (-(float) CWaterShape::_XGridBorder +  (float) numStepX) / numStepX;
+	float centerY = 0.5f  * (clipTrav.Bottom + clipTrav.Top);
+	const float fTop   = centerY + (clipTrav.Top - centerY)  * (-(float) CWaterShape::_YGridBorder +  (float) numStepY) / numStepY;
+	const float fBottom   = centerY + (clipTrav.Bottom - centerY)  * (-(float) CWaterShape::_YGridBorder +  (float) numStepY) / numStepY;
 	// build pyramid corners
 	const float nearDist	    = clipTrav.Near;
-	const float farDist			= clipTrav.Far;	
-	#ifdef NO_WATER_TESSEL
-		const float transitionDist	= nearDist * 0.99f;
-	#else
-		const float transitionDist	= shape->_TransitionRatio   * farDist;
-	#endif
-	
-
+	const float farDist			= clipTrav.Far;		
+	//		
 	const NLMISC::CVector		pfoc(0,0,0);
-	const NLMISC::CVector		lb(-fRight,  nearDist, - fTop );
-	const NLMISC::CVector		lt(-fRight,  nearDist, fTop  );
-	const NLMISC::CVector		rb( fRight,  nearDist, -fTop );
+	const NLMISC::CVector		lb( fLeft,  nearDist, fBottom );
+	const NLMISC::CVector		lt( fLeft,  nearDist, fTop  );
+	const NLMISC::CVector		rb( fRight,  nearDist, fBottom );
 	const NLMISC::CVector		rt(fRight,	nearDist, fTop  );
-
-	const NLMISC::CVector		lbfarDist(-fRight, transitionDist, -fTop);
-	const NLMISC::CVector		ltfarDist(-fRight, transitionDist, fTop );
-	const NLMISC::CVector		rtfarDist(fRight , transitionDist, fTop  );
-
-	
+	const NLMISC::CVector		lbfarDist(fLeft, farDist, fBottom);
+	const NLMISC::CVector		ltfarDist(fLeft, farDist, fTop );
+	const NLMISC::CVector		rtfarDist(fRight , farDist, fTop  );
+	//	
 	plvect[0].make(lt, lb, rt);							// near plane
 	plvect[1].make(lbfarDist, ltfarDist, rtfarDist);    // far plane
-
 	plvect[2].make(pfoc, lt, lb);
 	plvect[3].make(pfoc, rt, lt);
 	plvect[4].make(pfoc, rb, rt);
-	plvect[5].make(pfoc, lb, rb);
-
-		
-	const NLMISC::CMatrix pyramidMat = viewMat * getWorldMatrix();
+	plvect[5].make(pfoc, lb, rb);	
+	const NLMISC::CMatrix pyramidMat = viewMat * getWorldMatrix();	
 	for (k = 0; k < worldPyramid.size(); ++k)
 	{
-		plvect[k] = plvect[k] * pyramidMat; // put the plane in object space
+		plvect[k] = plvect[k] * pyramidMat; // put the plane in object space		
 	}
-
-	_ClippedPoly.clip(plvect, 6);	// get the tesselated part of the poly 
-
-	// modify the pyramid to get the transition part of the poly (no tesselated)
-	plvect[0].d   += (transitionDist - nearDist);
-	plvect[1].d   -= (farDist - transitionDist);	
-	_EndClippedPoly.clip(plvect, 6);	
+	_ClippedPoly.clip(plvect, 6);	
+	*/
+	static std::vector<CPlane> tp;
+	tp.resize(worldPyramid.size());
+	for(uint k = 0; k < tp.size(); ++k)
+	{
+		tp[k] = worldPyramid[k] * getWorldMatrix();
+	}
+	_ClippedPoly.clip(tp);	
 }
+
+//***********************************************************************************************************
+void CWaterModel::unlink()
+{
+	if (!_Prev)
+	{
+		nlassert(!_Next);
+		return;
+	}
+	if (_Next)
+	{
+		_Next->_Prev = _Prev;
+	}	
+	*_Prev = _Next;
+	_Next = NULL;	
+	_Prev = NULL;
+}
+
+//***********************************************************************************************************
+void CWaterModel::link()
+{
+	nlassert(_Next == NULL);
+	CScene *scene = getOwnerScene();
+	nlassert(scene);	
+	CRenderTrav &rt = scene->getRenderTrav();
+	_Prev = &rt._FirstWaterModel;
+	_Next = rt._FirstWaterModel;
+	rt._FirstWaterModel = this;
+}
+
+//***********************************************************************************************************
+uint CWaterModel::getNumWantedVertices()
+{	
+	H_AUTO( NL3D_Water_Render );	
+	nlassert(!_ClippedPoly.Vertices.empty());
+	//
+	CRenderTrav					&renderTrav		= getOwnerScene()->getRenderTrav();	
+	CWaterShape					*shape			= NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);
+	// viewer pos in world space
+	const NLMISC::CVector &obsPos = renderTrav.CamPos;	
+	// view matrix (inverted cam matrix)
+	const NLMISC::CMatrix &viewMat = renderTrav.ViewMatrix;	
+	// plane z pos in world
+	const float zHeight =  getWorldMatrix().getPos().z;
+	const sint numStepX = CWaterShape::getScreenXGridSize();
+	const sint numStepY = CWaterShape::getScreenYGridSize();	
+	const sint isAbove = obsPos.z > zHeight ? 1 : 0;				
+	NLMISC::CMatrix modelMat;
+	modelMat.setPos(NLMISC::CVector(obsPos.x, obsPos.y, zHeight));	
+	static NLMISC::CPolygon2D projPoly; // projected poly
+	projPoly.Vertices.resize(_ClippedPoly.Vertices.size());	
+	// factor to project to grid units
+	const float xFactor = numStepX * renderTrav.Near / (renderTrav.Right - renderTrav.Left);	
+	const float yFactor = numStepY * renderTrav.Near  / (renderTrav.Top - renderTrav.Bottom);	
+	// project poly on near plane		
+	const NLMISC::CMatrix &projMat =  viewMat * getWorldMatrix();
+	uint k;		
+	for (k = 0; k < _ClippedPoly.Vertices.size(); ++k)
+	{
+		// project points in the view
+		NLMISC::CVector t = projMat * _ClippedPoly.Vertices[k];
+		float invY = 1.f / t.y;
+		projPoly.Vertices[k].set(xFactor * t.x * invY, yFactor * t.z * invY);			
+	}
+	// compute grid cells that are entirely inside		
+	projPoly.computeInnerBorders(_Inside, _MinYInside);
+	// compute grid cells that are touched
+	static NLMISC::CPolygon2D::TRasterVect border;
+	sint minYBorder;
+	projPoly.computeOuterBorders(border, minYBorder);
+	// border - inside -> gives grid cells that must be clipped to fit the shape boundaries
+	// Make sure that rasters  array for inside has the same size that raster array for borders (by inserting NULL rasters)
+	sint bottomYBorder = minYBorder + border.size();
+	sint bottomYInside = _MinYInside + _Inside.size();
+	sint height = border.size();				
+	_Inside.resize(height);
+	sint topGap = minYBorder - _MinYInside;;
+	if (topGap)
+	{	
+		std::copy_backward(_Inside.begin(), _Inside.end() -  topGap, _Inside.end());	
+		for(sint y = 0; y < topGap; ++y)
+		{		
+			_Inside[y].first =  border[y].first;
+			_Inside[y].second = border[y].first - 1; // insert null raster
+		}
+	}
+	sint bottomGap = bottomYBorder - bottomYInside;	
+	if (bottomGap)
+	{	
+		for(sint y = height - bottomGap; y < height; ++y)
+		{		
+			_Inside[y].first =  border[y].first;
+			_Inside[y].second = border[y].first - 1; // insert null raster
+		}	
+	}
+	//
+	for(sint y = topGap; y < height - bottomGap; ++y)
+	{
+		if (_Inside[y].first > _Inside[y].second)
+		{
+			_Inside[y].first =  border[y].first;
+			_Inside[y].second = border[y].first - 1;
+		}		
+		else if (border[y].first > border[y].second)
+		{
+			border[y].first = _Inside[y].first;
+			border[y].second = _Inside[y].first - 1;
+		}		
+	}
+	// compute clip planes
+	static std::vector<CPlane> clipPlanes;
+	
+	const CVector2f *prevVert = &projPoly.Vertices.back();
+	const CVector2f *currVert = &projPoly.Vertices.front();
+	uint numVerts = projPoly.Vertices.size();		
+	bool ccw = projPoly.isCCWOriented();
+	clipPlanes.resize(numVerts);
+	for(uint k = 0; k < numVerts; ++k)
+	{			
+		NLMISC::CVector v0;
+		NLMISC::CVector v1;
+		NLMISC::CVector v2;
+		v0.set(prevVert->x, prevVert->y, 0.f);
+		v1.set(currVert->x, currVert->y, 0.f);
+		v2.set(prevVert->x, prevVert->y, (*currVert - *prevVert).norm());
+		clipPlanes[k].make(v0, v1, v2);
+		if (!ccw)
+		{
+			clipPlanes[k].invert();
+		}
+		prevVert = currVert;
+		++ currVert;
+	}	
+	// compute clipped tris
+	_ClippedTriNumVerts.clear();
+	_ClippedTris.clear();
+	static NLMISC::CPolygon clipPoly;
+	uint totalNumVertices = 0;
+	// compute number of vertices for whole grid cells
+	for(sint k = 0; k < (sint) border.size(); ++k)
+	{
+		// left clipped blocks
+		for (sint x = border[k].first; x < _Inside[k].first; ++x)
+		{
+			clipPoly.Vertices.resize(4);
+			clipPoly.Vertices[0].set((float) x, (float) (k + _MinYInside), 0.f);
+			clipPoly.Vertices[1].set((float) (x + 1), (float) (k + _MinYInside), 0.f);
+			clipPoly.Vertices[2].set((float) (x + 1), (float) (k + _MinYInside + 1), 0.f);
+			clipPoly.Vertices[3].set((float) x, (float) (k + _MinYInside + 1), 0.f);
+			clipPoly.clip(clipPlanes);
+			if (!clipPoly.Vertices.empty())
+			{
+				// backup result (will be unprojected later)
+				_ClippedTriNumVerts.push_back(clipPoly.Vertices.size());
+				uint prevSize = _ClippedTris.size();
+				_ClippedTris.resize(_ClippedTris.size() + clipPoly.Vertices.size());
+				std::copy(clipPoly.Vertices.begin(), clipPoly.Vertices.end(), _ClippedTris.begin() + prevSize); // append to packed list
+				totalNumVertices += (clipPoly.Vertices.size() - 2) * 3;
+			}
+		}				
+		// middle block, are not clipped, but count the number of wanted vertices
+		if (_Inside[k].first <= _Inside[k].second)
+		{
+			totalNumVertices += 6 * (_Inside[k].second - _Inside[k].first + 1);
+		}		
+		// right clipped blocks
+		for (sint x = _Inside[k].second + 1; x <= border[k].second; ++x)
+		{
+			clipPoly.Vertices.resize(4);
+			clipPoly.Vertices[0].set((float) x, (float)  (k + _MinYInside), 0.f);
+			clipPoly.Vertices[1].set((float) (x + 1), (float)  (k + _MinYInside), 0.f);
+			clipPoly.Vertices[2].set((float) (x + 1), (float)  (k + _MinYInside + 1), 0.f);
+			clipPoly.Vertices[3].set((float) x, (float)  (k + _MinYInside + 1), 0.f);
+			clipPoly.clip(clipPlanes);
+			if (!clipPoly.Vertices.empty())
+			{
+				// backup result (will be unprojected later)
+				_ClippedTriNumVerts.push_back(clipPoly.Vertices.size());
+				uint prevSize = _ClippedTris.size();
+				_ClippedTris.resize(_ClippedTris.size() + clipPoly.Vertices.size());
+				std::copy(clipPoly.Vertices.begin(), clipPoly.Vertices.end(), _ClippedTris.begin() + prevSize); // append to packed list
+				totalNumVertices += (clipPoly.Vertices.size() - 2) * 3;
+			}
+		}
+	}
+	return totalNumVertices;
+}
+
+//***********************************************************************************************************
+uint CWaterModel::fillVB(void *datas, uint startTri, IDriver &drv)
+{	
+	H_AUTO( NL3D_Water_Render );
+	_VB = &VB;
+	if (drv.isWaterShaderSupported())
+	{
+		return fillVBHard(datas, startTri);
+	}
+	else
+	{
+		return fillVBSoft(datas, startTri);
+	}
+}
+
+
+
+static const double WATER_WAVE_SPEED = 1.7;
+static const double WATER_WAVE_SCALE = 0.05;
+static const double WATER_WAVE_FREQ = 0.3;
+static const float WATER_WAVE_ATTEN = 0.2f;
+
+
+
+
+// compute single water vertex in software mode
+static 
+#ifndef NL_DEBUG
+	inline 
+#endif
+void computeWaterVertexSoft(float px, float py, CVector &pos, CVector2f &envMapTexCoord, const CVector &camI, const CVector &camJ, const CVector &camK, float denom, double date, const CVector &camPos)
+{	
+	CVector d = px * camI + py * camK + camJ;
+	//nlassert(d.z > 0.f);
+	float intersectionDist = denom / d.z;
+	pos.x  = intersectionDist * d.x;
+	pos.y  = intersectionDist * d.y;
+	pos.z  = 0.f;
+	//				
+	CVector R(- pos.x,
+		      - pos.y,
+		      - denom
+		     );
+	float dist = R.norm();
+	if (dist)
+	{		
+		R /= dist;
+	}
+	envMapTexCoord.set(- 0.5f * R.x + 0.5f, - 0.5f * R.y + 0.5f);
+	if (dist)
+	{
+		float invDist = 1.f / (WATER_WAVE_ATTEN * dist);
+		if (invDist > 1.f) invDist = 1.f;
+		// TODO : optimize cos if need (for now there are not much call per frame ...)
+		envMapTexCoord.x += (float) (invDist * WATER_WAVE_SCALE * (float) cos(date + WATER_WAVE_FREQ * (camPos.x + pos.x)));
+	}
+}
+
+//***********************************************************************************************************
+uint CWaterModel::fillVBSoft(void *datas, uint startTri)
+{
+	_StartTri = (uint32) startTri;
+	CRenderTrav			  &renderTrav		= getOwnerScene()->getRenderTrav();
+	const NLMISC::CMatrix &camMat = renderTrav.CamMatrix;
+	const sint numStepX = CWaterShape::getScreenXGridSize();
+	const sint numStepY = CWaterShape::getScreenYGridSize();	
+	CVector camI = camMat.getI() * (1.f / numStepX) * (renderTrav.Right - renderTrav.Left) / renderTrav.Near;
+	CVector camJ = camMat.getJ();
+	CVector camK = camMat.getK() * (1.f / numStepY) * (renderTrav.Top - renderTrav.Bottom) / renderTrav.Near;
+	float obsZ = camMat.getPos().z;		
+	float denom = getWorldMatrix().getPos().z - obsZ;
+	uint8 *dest = (uint8 *) datas + startTri * 3 * WATER_VERTEX_SOFT_SIZE;
+	/*NLMISC::CVector eye = renderTrav.CamPos;
+	eye.z -= getWorldMatrix().getPos().z; 	*/
+	NLMISC::CVector eye(0.f, 0.f, - denom);	
+	CVector R;
+	CScene *scene = getOwnerScene();	
+	double date = WATER_WAVE_SPEED * scene->getCurrentTime();
+	if (!_ClippedTriNumVerts.empty())
+	{	
+		const CVector2f *currVert =  &_ClippedTris.front();
+		static std::vector<CVector> unprojectedTriSoft;
+		static std::vector<CVector2f> envMap;
+		for(uint k = 0; k < _ClippedTriNumVerts.size(); ++k)
+		{			
+			unprojectedTriSoft.resize(_ClippedTriNumVerts[k]);
+			envMap.resize(_ClippedTriNumVerts[k]);
+			uint numVerts = _ClippedTriNumVerts[k];			
+			for(uint l = 0; l < _ClippedTriNumVerts[k]; ++l)
+			{
+				computeWaterVertexSoft(currVert->x, currVert->y, unprojectedTriSoft[l], envMap[l], camI, camJ, camK, denom, date, camMat.getPos());
+				++ currVert;				
+			}
+			for(uint l = 0; l < numVerts - 2; ++l)
+			{					
+				*(CVector *) dest = unprojectedTriSoft[0];
+				dest += sizeof(float[3]);
+				*(CVector2f *) dest = envMap[0];
+				dest += sizeof(float[2]);
+				*(CVector *) dest = unprojectedTriSoft[l + 1];
+				dest += sizeof(float[3]);
+				*(CVector2f *) dest = envMap[l + 1];
+				dest += sizeof(float[2]);
+				*(CVector *) dest = unprojectedTriSoft[l + 2];
+				dest += sizeof(float[3]);
+				*(CVector2f *) dest = envMap[l + 2];
+				dest += sizeof(float[2]);
+			}			
+		}
+	}
+	//	TODO : optimize if needed
+	for(sint k = 0; k < (sint) _Inside.size(); ++k)
+	{		
+		sint y = k + _MinYInside;
+		CVector proj[4];
+		CVector2f envMap[4];
+		if (_Inside[k].first <= _Inside[k].second)
+		{		
+			// middle block, are not clipped, but count the number of wanted vertices
+			for(sint x = _Inside[k].first; x <= _Inside[k].second; ++x)
+			{				
+				computeWaterVertexSoft((float) x, (float) y, proj[0], envMap[0], camI, camJ, camK, denom, date, camMat.getPos());
+				computeWaterVertexSoft((float)(x + 1), (float) y, proj[1], envMap[1], camI, camJ, camK, denom, date, camMat.getPos());
+				computeWaterVertexSoft((float) (x + 1), (float) (y + 1), proj[2], envMap[2], camI, camJ, camK, denom, date, camMat.getPos());
+				computeWaterVertexSoft((float) x, (float) (y + 1), proj[3], envMap[3], camI, camJ, camK, denom, date, camMat.getPos());
+				//				
+				*(CVector *) dest = proj[0];
+				dest += sizeof(float[3]);
+				*(CVector2f *) dest = envMap[0];
+				dest += sizeof(float[2]);
+				*(CVector *) dest = proj[2];
+				dest += sizeof(float[3]);
+				*(CVector2f *) dest = envMap[2];
+				dest += sizeof(float[2]);
+				*(CVector *) dest = proj[1];
+				dest += sizeof(float[3]);
+				*(CVector2f *) dest = envMap[1];
+				dest += sizeof(float[2]);
+				*(CVector *) dest = proj[0];
+				dest += sizeof(float[3]);
+				*(CVector2f *) dest = envMap[0];
+				dest += sizeof(float[2]);
+				*(CVector *) dest = proj[3];
+				dest += sizeof(float[3]);
+				*(CVector2f *) dest = envMap[3];
+				dest += sizeof(float[2]);
+				*(CVector *) dest = proj[2];
+				dest += sizeof(float[3]);
+				*(CVector2f *) dest = envMap[2];
+				dest += sizeof(float[2]);
+			}					
+		}
+	}	
+	nlassert((dest - (uint8 * ) datas) % (3 * WATER_VERTEX_SOFT_SIZE) == 0);
+	uint endTri = (dest - (uint8 * ) datas) / (3 * WATER_VERTEX_SOFT_SIZE);
+	_NumTris = endTri - _StartTri;	
+	return endTri;	
+}
+
+// compute single water vertex for hardware render
+static 
+#ifndef NL_DEBUG
+inline 
+#endif
+void computeWaterVertexHard(float px, float py, CVector &pos, const CVector &camI, const CVector &camJ, const CVector &camK, float denom)
+{	
+	CVector d = px * camI + py * camK + camJ;	
+	float intersectionDist = denom / d.z;
+	pos.x  = intersectionDist * d.x;
+	pos.y  = intersectionDist * d.y;
+	pos.z  = 0.f;	
+}
+
+//***********************************************************************************************************
+uint CWaterModel::fillVBHard(void *datas, uint startTri)
+{	
+	_StartTri = (uint32) startTri;
+	CRenderTrav			  &renderTrav		= getOwnerScene()->getRenderTrav();
+	const NLMISC::CMatrix &camMat = renderTrav.CamMatrix;
+	const sint numStepX = CWaterShape::getScreenXGridSize();
+	const sint numStepY = CWaterShape::getScreenYGridSize();
+	CVector camI = camMat.getI() * (1.f / numStepX) * (renderTrav.Right - renderTrav.Left) / renderTrav.Near;
+	CVector camJ = camMat.getJ();
+	CVector camK = camMat.getK() * (1.f / numStepY) * (renderTrav.Top - renderTrav.Bottom) / renderTrav.Near;
+	float obsZ = camMat.getPos().z;		
+	float denom = getWorldMatrix().getPos().z - obsZ;
+	uint8 *dest = (uint8 *) datas + startTri * WATER_VERTEX_HARD_SIZE * 3;
+	if (!_ClippedTriNumVerts.empty())
+	{	
+		const CVector2f *currVert =  &_ClippedTris.front();
+		static std::vector<CVector> unprojectedTri;
+		for(uint k = 0; k < _ClippedTriNumVerts.size(); ++k)
+		{
+			unprojectedTri.resize(_ClippedTriNumVerts[k]);
+			uint numVerts = _ClippedTriNumVerts[k];			
+			for(uint l = 0; l < _ClippedTriNumVerts[k]; ++l)
+			{				
+				computeWaterVertexHard(currVert->x, currVert->y, unprojectedTri[l], camI, camJ, camK, denom);				
+				++ currVert;				
+			}
+			for(uint l = 0; l < numVerts - 2; ++l)
+			{					
+				*(CVector *) dest = unprojectedTri[0];
+				dest += WATER_VERTEX_HARD_SIZE;
+				*(CVector *) dest = unprojectedTri[l + 1];
+				dest += WATER_VERTEX_HARD_SIZE;								
+				*(CVector *) dest = unprojectedTri[l + 2];
+				dest += WATER_VERTEX_HARD_SIZE;				
+			}			
+		}
+	}	
+	//	TODO : optimize if needed
+	for(sint k = 0; k < (sint) _Inside.size(); ++k)
+	{		
+		sint y = k + _MinYInside;
+		CVector proj[4];
+		if (_Inside[k].first <= _Inside[k].second)
+		{		
+			// middle block, are not clipped, but count the number of wanted vertices
+			for(sint x = _Inside[k].first; x <= _Inside[k].second; ++x)
+			{
+				computeWaterVertexHard((float) x, (float) y, proj[0], camI, camJ, camK, denom);
+				computeWaterVertexHard((float) (x + 1), (float) y, proj[1], camI, camJ, camK, denom);
+				computeWaterVertexHard((float) (x + 1), (float) (y + 1), proj[2], camI, camJ, camK, denom);
+				computeWaterVertexHard((float) x, (float) (y + 1), proj[3], camI, camJ, camK, denom);				
+				//				
+				*(CVector *) dest = proj[0];
+				dest += WATER_VERTEX_HARD_SIZE;
+				*(CVector *) dest = proj[2];
+				dest += WATER_VERTEX_HARD_SIZE;								
+				*(CVector *) dest = proj[1];
+				dest += WATER_VERTEX_HARD_SIZE;
+				*(CVector *) dest = proj[0];
+				dest += WATER_VERTEX_HARD_SIZE;				
+				*(CVector *) dest = proj[3];
+				dest += WATER_VERTEX_HARD_SIZE;
+				*(CVector *) dest = proj[2];
+				dest += WATER_VERTEX_HARD_SIZE;				
+			}					
+		}
+	}	
+	nlassert((dest - (uint8 * ) datas) % (3 * WATER_VERTEX_HARD_SIZE) == 0);
+	uint endTri = (dest - (uint8 * ) datas) / (3 * WATER_VERTEX_HARD_SIZE);	
+	_NumTris = endTri - _StartTri;
+	return endTri;
+}
+
+
+
+
+
+//***************************************************************************************************************
+void	CWaterModel::traverseRender()
+{				
+	H_AUTO( NL3D_Water_Render );
+	nlassert(_VB);
+
+	CRenderTrav					&renderTrav		= getOwnerScene()->getRenderTrav();
+	IDriver						*drv			= renderTrav.getDriver();		
+	CWaterShape					*shape			= NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);	
+	const NLMISC::CVector		&obsPos         = renderTrav.CamPos;
+	const float					zHeight         =  getWorldMatrix().getPos().z;
+	
+
+	NLMISC::CMatrix modelMat;
+	modelMat.setPos(NLMISC::CVector(obsPos.x, obsPos.y, zHeight));
+	drv->setupModelMatrix(modelMat);	
+	bool isAbove = obsPos.z > getWorldMatrix().getPos().z;	
+	if (drv->isWaterShaderSupported())
+	{
+		setupMaterialNVertexShader(drv, shape, obsPos, isAbove, zHeight);
+		nlassert(_VB->getNumVertices() > 0);
+		drv->activeVertexBuffer(*_VB);
+		drv->renderRawTriangles(CWaterModel::_WaterMat, _StartTri, _NumTris);	
+		drv->activeVertexProgram(NULL);
+	}
+	else
+	{
+		setupSimpleRender(shape, obsPos, isAbove);
+		drv->activeVertexBuffer(*_VB);
+		drv->activeVertexProgram(NULL);		
+		drv->renderRawTriangles(CWaterModel::_SimpleWaterMat, _StartTri, _NumTris);		
+	}
+}
+
 
 
 //***********************************************************************************************************
@@ -1145,34 +1701,25 @@ bool CWaterModel::clip()
 {
 	H_AUTO( NL3D_Water_Render );
 	CClipTrav			&clipTrav= getOwnerScene()->getClipTrav();
-
+	CRenderTrav			&renderTrav= getOwnerScene()->getRenderTrav();
+	if (renderTrav.CamPos.z == getWorldMatrix().getPos().z) return false;
 	if(Shape)
 	{
-		IDriver *drv = getOwnerScene()->getDriver();
-		
-		#ifndef FORCE_SIMPLE_WATER_RENDER
-			if (drv->isWaterShaderSupported())
-			{		
-				computeClippedPoly();
-				if (_ClippedPoly.Vertices.empty() && _EndClippedPoly.Vertices.empty()) return false;
-			}
-			else
-		#endif
-			{
-
-				computeSimpleClippedPoly();
-				if (_ClippedPoly.Vertices.empty()) 
-				{
-					return false;
-				}
-			}
-
+		IDriver *drv = getOwnerScene()->getDriver();						
+		computeClippedPoly();
+		if (_ClippedPoly.Vertices.empty()) return false;		
+		// unlink from water model list
+		unlink();
+		// link into water model list
+		link();
 		return true;
 	}
 	else
 		return false; 
 }
 
+
+/*
 // struct used to build vertices for the simple shader
 struct CSimpleVertexInfo
 {
@@ -1227,13 +1774,42 @@ void CWaterModel::doSimpleRender(IDriver *drv)
 	bool isAbove = obsPos.z > worldMatrix.getPos().z;	
 
 	// envmap is always present and is in stage 0
+	CScene *scene = getOwnerScene();
 	if (!isAbove && shape->_EnvMap[1])
-	{
-		_SimpleWaterMat.setTexture(0, shape->_EnvMap[1]);				
+	{		
+		if (shape->_UsesSceneWaterEnvMap[1])
+		{
+			if (scene->getWaterEnvMap())
+			{			
+				_SimpleWaterMat.setTexture(0, scene->getWaterEnvMap()->getEnvMap2D());
+			}
+			else
+			{
+				_SimpleWaterMat.setTexture(0, shape->_EnvMap[1]);
+			}
+		}
+		else
+		{
+			_SimpleWaterMat.setTexture(0, shape->_EnvMap[1]);
+		}
 	}
 	else
 	{
-		_SimpleWaterMat.setTexture(0, shape->_EnvMap[0]);
+		if (shape->_UsesSceneWaterEnvMap[0])
+		{
+			if (scene->getWaterEnvMap())
+			{			
+				_SimpleWaterMat.setTexture(0, scene->getWaterEnvMap()->getEnvMap2D());
+			}
+			else
+			{
+				_SimpleWaterMat.setTexture(0, shape->_EnvMap[0]);
+			}
+		}
+		else
+		{
+			_SimpleWaterMat.setTexture(0, shape->_EnvMap[0]);
+		}
 	}
 	//	
 	static std::vector<CSimpleVertexInfo> verts;	
@@ -1249,9 +1825,7 @@ void CWaterModel::doSimpleRender(IDriver *drv)
 		if (!_EmbossTexture)
 		{
 			_EmbossTexture = new CTextureEmboss;
-			_EmbossTexture->setSlopeFactor(4.f);			
-			/*te->setAmbient(CRGBA(127, 127, 127));
-			te->setDiffuse(CRGBA(127, 127, 127)); */
+			_EmbossTexture->setSlopeFactor(4.f);						
 		}
 		if (shape->_BumpMap[1] && shape->_BumpMap[1]->isBumpMap())
 		{
@@ -1265,10 +1839,10 @@ void CWaterModel::doSimpleRender(IDriver *drv)
 		_SimpleRenderVB.setNumVertices(numVerts);
 		// retrieve current time
 		float date  = 0.001f * (NLMISC::CTime::getLocalTime() & 0xffffff); // must keep some precision.
-		/** Compute tex coordinates for emboss first.
-		  * On some 3D chip, textures coords can't grow too mush or texture filtering loose accuracy.
-		  * So we must keep texCoord as low as possible.
-		  */			
+		// Compute tex coordinates for emboss first.
+		// On some 3D chip, textures coords can't grow too mush or texture filtering loose accuracy.
+		// So we must keep texCoord as low as possible.
+		//
 		verts.resize(numVerts);		
 		for(k = 0; k < numVerts; ++k)
 		{
@@ -1357,7 +1931,7 @@ void CWaterModel::doSimpleRender(IDriver *drv)
 	drv->setupMaterial(_SimpleWaterMat);
 	drv->activeIndexBuffer(indices);
 	drv->renderSimpleTriangles(0, numVerts - 2);	
-}
+}*/
 
 //***********************************************************************************************************
 void CWaterModel::updateDiffuseMapMatrix(bool force /* = false*/)
@@ -1386,6 +1960,114 @@ void CWaterModel::updateDiffuseMapMatrix(bool force /* = false*/)
 	}
 }
 
+//=======================================================================================
+//							wave maker implementation
+//=======================================================================================
+
+CWaveMakerModel::CWaveMakerModel() : _Time(0)
+{
+	// AnimDetail behavior: Must be traversed in AnimDetail, even if no channel mixer registered
+	CTransform::setIsForceAnimDetail(true);
+}
+
+//================================================
+
+void CWaveMakerModel::registerBasic()
+{
+	CScene::registerModel(WaveMakerModelClassId, TransformShapeId, CWaveMakerModel::creator);
+}
+
+//================================================
+
+ITrack* CWaveMakerModel::getDefaultTrack (uint valueId)
+{
+	nlassert(Shape);
+	CWaveMakerShape *ws = NLMISC::safe_cast<CWaveMakerShape *>((IShape *) Shape);
+	switch (valueId)
+	{
+	case PosValue:			return ws->getDefaultPos(); break;	
+	default: // delegate to parent
+		return CTransformShape::getDefaultTrack(valueId);
+		break;
+	}
+}
+
+//================================================
+void	CWaveMakerModel::traverseAnimDetail()
+{
+	CTransformShape::traverseAnimDetail();
+	nlassert(getOwnerScene());
+	/// get the shape
+	CWaveMakerShape *wms = NLMISC::safe_cast<CWaveMakerShape *>((IShape *) Shape);
+	const NLMISC::CVector	worldPos = getWorldMatrix().getPos();
+	const CVector2f pos2d(worldPos.x, worldPos.y);
+	/// get the water height map
+	CWaterHeightMap &whm = GetWaterPoolManager().getPoolByID(wms->_PoolID);
+	// get the time delta 
+	const TAnimationTime deltaT  = std::min(getOwnerScene()->getEllapsedTime(), (TAnimationTime) whm.getPropagationTime());
+	_Time += deltaT;
+	if (!wms->_ImpulsionMode)
+	{
+		whm.perturbate(pos2d, wms->_Intensity * cosf(2.f / wms->_Period * (float) NLMISC::Pi * _Time), wms->_Radius);
+	}
+	else
+	{
+		if (_Time > wms->_Period)
+		{
+			_Time -= wms->_Period;
+			whm.perturbate(pos2d, wms->_Intensity, wms->_Radius);
+		}
+	}
+}
+
 
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

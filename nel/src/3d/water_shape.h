@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.16 2004/05/14 15:40:02 vizerie Exp $
+ * $Id: water_shape.h,v 1.17 2004/08/03 16:15:52 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -49,17 +49,15 @@
 
 namespace NL3D {
 
-// defines
-const CVertexBuffer::TValue   WATER_VB_POS  = CVertexBuffer::Position;
-const CVertexBuffer::TValue   WATER_VB_DX   = CVertexBuffer::TexCoord0;
-
-
-
 // class id for water
 const NLMISC::CClassId WaterModelClassId =  NLMISC::CClassId(0x41a0732e, 0x6c664506);
 
 // class id for wave maker
 const NLMISC::CClassId WaveMakerModelClassId =  NLMISC::CClassId(0x16da3356, 0x7dec65fd);
+
+const uint WATER_VERTEX_HARD_SIZE = sizeof(float[3]);
+const uint WATER_VERTEX_SOFT_SIZE = sizeof(float[5]);
+
 
 /**
  * A water shape.
@@ -129,7 +127,7 @@ public:
 		static uint32	getYGridBorder()  { return _YGridBorder; }
 
 	
-		// set a polygon that represent this shape. It must be a 2d polygon, with z kzpt to 0 everywhere
+		// set a polygon that represent this shape. It must be a 2d polygon, with z kept to 0 everywhere
 		void					setShape(const NLMISC::CPolygon2D &poly);
 
 		/// get the polygon used by this shape, in the object space
@@ -205,19 +203,22 @@ public:
 		// Tells wether splashs are enabled (for client only, the flag in itself does nothing, and is here for convenience)
 	void				enableSplash(bool enable) { _SplashEnabled = enable; }
 	bool				isSplashEnabled() const { return _SplashEnabled; }
+	// Use envmap computed from scene instead of user envmap
+	void				setUseSceneWaterEnvMap(uint index, bool enable) { nlassert(index < 2); _UsesSceneWaterEnvMap[index] = enable; }
+	bool				getUseSceneWaterEnvMap(uint index) const { nlassert(index < 2); return _UsesSceneWaterEnvMap[index]; }	
 	//@}
 private:
 	friend class	CWaterModel;	
 	void								computeBBox();
 	void								envMapUpdate();
 	void								updateHeightMapNormalizationFactors();
-	static void							initVertexProgram();
-	static void							setupVertexBuffer();	
+	static void							initVertexProgram();	
 private:
 	NLMISC::CAABBox						_BBox;	// computed from the poly
 	NLMISC::CPolygon2D					_Poly;
 	uint32								_WaterPoolID;	
-	NLMISC::CSmartPtr<ITexture>			_EnvMap[2];	
+	NLMISC::CSmartPtr<ITexture>			_EnvMap[2];
+	bool								_UsesSceneWaterEnvMap[2];	
 	NLMISC::CSmartPtr<ITexture>			_BumpMap[2];	
 	NLMISC::CSmartPtr<ITexture>			_ColorMap;
 
@@ -230,7 +231,7 @@ private:
 	CTrackDefaultQuat					_DefaultRotQuat;
 	float								_TransitionRatio;	
 	float								_WaveHeightFactor;
-	bool								_ComputeLightmap;
+	bool								_ComputeLightmap;	
 	bool								_SplashEnabled;
 	bool								_HeightMapTouch[2];
 	float								_HeightMapNormalizationFactor[2];	
@@ -241,9 +242,7 @@ private:
 	static uint32							_XGridBorder;
 	static uint32							_YGridBorder;
 
-	static CVertexBuffer					_VB;
-	static CIndexBuffer						_IBUpDown;
-	static CIndexBuffer						_IBDownUp;	
+	
 	static bool								_GridSizeTouched;
 
 	//
@@ -255,6 +254,9 @@ private:
 	//
 	static std::auto_ptr<CVertexProgram>	_VertexProgramNoBump;
 	static std::auto_ptr<CVertexProgram>	_VertexProgramNoBumpDiffuse;
+	//
+	static std::auto_ptr<CVertexProgram>    _VertexProgramNoWave;
+	static std::auto_ptr<CVertexProgram>    _VertexProgramNoWaveDiffuse;
 };
 
 
@@ -334,3 +336,24 @@ private:
 #endif // NL_WATER_SHAPE_H
 
 /* End of water_shape.h */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

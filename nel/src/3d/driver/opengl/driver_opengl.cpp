@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.74 2001/02/13 14:18:30 coutelas Exp $
+ * $Id: driver_opengl.cpp,v 1.75 2001/02/20 11:06:12 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -584,6 +584,16 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 
 
 // --------------------------------------------------
+void	CDriverGL::renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)
+{
+	if ( !setupMaterial(Mat) )
+		return;
+	if(ntris!=0)
+		glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT, tri);
+}
+
+
+// --------------------------------------------------
 
 bool CDriverGL::swapBuffers()
 {
@@ -831,7 +841,6 @@ const char *CDriverGL::getVideocardInformation ()
 void CDriverGL::setCapture (bool b)
 {
 #ifdef NL_OS_WINDOWS
-
 
 	if (b)
 	{

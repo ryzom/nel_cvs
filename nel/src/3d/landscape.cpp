@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.116 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: landscape.cpp,v 1.117 2002/07/04 07:16:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1569,7 +1569,7 @@ void			CLandscape::loadTile(uint16 tileId)
 	// Retrieve or create texture.
 	// ===========================
 	// Tile Must exist.
-	nlassert(tileId==0xFFFF || tileId<TileBank.getTileCount());
+	// nlassert(tileId==0xFFFF || tileId<TileBank.getTileCount());
 	if(tileId<TileBank.getTileCount())
 		tile= TileBank.getTile(tileId);
 	else

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.48 2004/04/27 12:06:26 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.49 2004/05/14 15:05:09 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -55,12 +55,16 @@ using namespace NLMISC;
 
 
 
+
+
 namespace NL3D
 {
 
-
-		
-
+	
+	
+	
+	
+	
 // ***************************************************************************
 
 CVBDrvInfosGL::CVBDrvInfosGL(CDriverGL *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb) : IVBDrvInfos(drv, it, vb)
@@ -125,7 +129,7 @@ void CVBDrvInfosGL::unlock (uint first, uint last)
 
 // ***************************************************************************
 bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
-{		
+{
 	// 2. If necessary, do modifications.
 	//==================================
 	const bool touched = (VB.getTouchFlags() & (CVertexBuffer::TouchedReserve|CVertexBuffer::TouchedVertexFormat)) != 0;
@@ -181,8 +185,7 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 // ***************************************************************************
 bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 {
-	// NB: must duplicate changes in activeVertexBufferHard()
-
+	// NB: must duplicate changes in activeVertexBufferHard()	
 	uint32	flags;
 
 	if (!setupVertexBuffer(VB))
@@ -196,19 +199,21 @@ bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 	// Get VB flags, to setup matrixes and arrays.
 	flags=VB.getVertexFormat();
-
+	
 
 	// 2. Setup Arrays.
-	//===================
-
+	//===================	
 	// For MultiPass Material.
-	CVertexBufferInfo::TVBMode lastVBMode = _LastVB.VBMode;
-	_LastVB.setupVertexBuffer(VB);
-	if (lastVBMode == CVertexBufferInfo::HwARB && _LastVB.VBMode != CVertexBufferInfo::HwARB)
-	{
-		_DriverGLStates.bindARBVertexBuffer(0); // unbind ARB vertex buffer 
-	}
+	CVertexBufferInfo::TVBMode lastVBMode = _LastVB.VBMode;	
 	CVBDrvInfosGL		*info= safe_cast<CVBDrvInfosGL*>((IVBDrvInfos*)VB.DrvInfos);
+	if (!info->_VBHard ||  (info->_VBHard && !info->_VBHard->isInvalid()))
+	{	
+		_LastVB.setupVertexBuffer(VB);
+		if (lastVBMode == CVertexBufferInfo::HwARB && _LastVB.VBMode != CVertexBufferInfo::HwARB)
+		{
+			_DriverGLStates.bindARBVertexBuffer(0); // unbind ARB vertex buffer 
+		}
+	}	
 	if (info->_VBHard == NULL)
 	{
 		// Fence mgt.
@@ -219,7 +224,7 @@ bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 			_CurrentVertexBufferHard->disable();
 	}
 	else
-	{
+	{	
 		// 2. Setup Arrays.
 		//===================
 
@@ -228,12 +233,11 @@ bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 		// Enable the vertexArrayRange of this array.
 		info->_VBHard->enable();
-	}
-
-	// Setup the OpenGL arrays.
-	setupGlArrays(_LastVB);
-
-
+	}	
+	if (!info->_VBHard ||  (info->_VBHard && !info->_VBHard->isInvalid()))
+	{
+		setupGlArrays(_LastVB);
+	}			
 	return true;
 }
 
@@ -247,7 +251,7 @@ bool CDriverGL::activeIndexBuffer(CIndexBuffer& IB)
 // ***************************************************************************
 
 bool CDriverGL::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
-{	
+{		
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
@@ -282,8 +286,7 @@ bool CDriverGL::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
-		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
-
+		_CurrentVertexBufferHard->GPURenderingAfterFence= true;	
 	return true;
 }
 
@@ -325,17 +328,14 @@ bool CDriverGL::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris)
 
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
-		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
-
+		_CurrentVertexBufferHard->GPURenderingAfterFence= true;	
 	return true;
-
-
 }
 
 // ***************************************************************************
 
 bool CDriverGL::renderSimpleTriangles(uint32 firstTri, uint32 ntris)
-{
+{	
 	nlassert(ntris>0);
 
 	// update matrix and Light in OpenGL if needed
@@ -357,14 +357,14 @@ bool CDriverGL::renderSimpleTriangles(uint32 firstTri, uint32 ntris)
 
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
-		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
+		_CurrentVertexBufferHard->GPURenderingAfterFence= true;	
 	return true;
 }
 
 // ***************************************************************************
 
 bool CDriverGL::renderRawPoints(CMaterial& mat, uint32 startIndex, uint32 numPoints)
-{
+{	
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
@@ -397,15 +397,14 @@ bool CDriverGL::renderRawPoints(CMaterial& mat, uint32 startIndex, uint32 numPoi
 
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
-		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
-	
+		_CurrentVertexBufferHard->GPURenderingAfterFence= true;		
 	return true;
 }
 
 // ***************************************************************************
 
 bool CDriverGL::renderRawLines(CMaterial& mat, uint32 startIndex, uint32 numLines)
-{
+{	
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
@@ -438,14 +437,14 @@ bool CDriverGL::renderRawLines(CMaterial& mat, uint32 startIndex, uint32 numLine
 
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
-		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
+		_CurrentVertexBufferHard->GPURenderingAfterFence= true;	
 	return true;
 }
 
 // ***************************************************************************
 
 bool CDriverGL::renderRawTriangles(CMaterial& mat, uint32 startIndex, uint32 numTris)
-{
+{	
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
@@ -480,7 +479,7 @@ bool CDriverGL::renderRawTriangles(CMaterial& mat, uint32 startIndex, uint32 num
 
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
-		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
+		_CurrentVertexBufferHard->GPURenderingAfterFence= true;	
 	return true;
 }
 
@@ -489,7 +488,6 @@ bool CDriverGL::renderRawTriangles(CMaterial& mat, uint32 startIndex, uint32 num
 bool CDriverGL::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuads)
 {
 	if (!numQuads) return true;
-	
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
@@ -604,7 +602,7 @@ bool CDriverGL::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuad
 
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
-		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
+		_CurrentVertexBufferHard->GPURenderingAfterFence= true;	
 	return true;
 }
 
@@ -923,7 +921,6 @@ void		CDriverGL::setupGlArraysStd(CVertexBufferInfo &vb)
 }
 
 
-
 // ***************************************************************************
 void		CDriverGL::toggleGlArraysForNVVertexProgram()
 {
@@ -938,8 +935,8 @@ void		CDriverGL::toggleGlArraysForNVVertexProgram()
 		for (uint value=0; value<CVertexBuffer::NumValue; value++)
 		{
 			// Index
-			uint glIndex=GLVertexAttribIndex[value];
-			_DriverGLStates.enableVertexAttribArray(glIndex, false);
+			uint glIndex=GLVertexAttribIndex[value];						
+			_DriverGLStates.enableVertexAttribArray(glIndex, false);			
 		}
 		_DriverGLStates.enableColorArray(false);
 		_DriverGLStates.enableSecondaryColorArray(false);
@@ -976,21 +973,44 @@ void		CDriverGL::toggleGlArraysForARBVertexProgram()
 	// If last was a VertexProgram setup, and now it is a standard GL array setup.
 	if( _LastSetupGLArrayVertexProgram && !isVertexProgramEnabled () )
 	{
+		if (_Extensions.ATITextureEnvCombine3)
+		{			
+			// fix for ATI : when switching from Vertex Program to fixed Pipe, must clean texture, otherwise texture may be disabled in next render 
+			// (seems to be a driver bug)
+			ITexture *oldTex[IDRV_MAT_MAXTEXTURES];			
+			for(sint stage=0 ; stage < inlGetNumTextStages() ; stage++)
+			{			
+				oldTex[stage] = _CurrentTexture[stage];
+				// activate the texture, or disable texturing if NULL.
+				activateTexture(stage, NULL);			
+			}		
+			glBegin(GL_QUADS);
+			glVertex4f(0.f, 0.f, 0.f, 1.f);
+			glVertex4f(0.f, 0.f, 0.f, 1.f);
+			glVertex4f(0.f, 0.f, 0.f, 1.f);
+			glVertex4f(0.f, 0.f, 0.f, 1.f);
+			glEnd();		
+			for(sint stage=0 ; stage<inlGetNumTextStages() ; stage++)
+			{			
+				// activate the texture, or disable texturing if NULL.
+				activateTexture(stage, oldTex[stage]);			
+			}
+		}
 		
 		// Disable all VertexAttribs.
 		for (uint value=0; value<CVertexBuffer::NumValue; value++)
 		{								
 			// Index
-			uint glIndex=GLVertexAttribIndex[value];
+			uint glIndex=GLVertexAttribIndex[value];			
 			_DriverGLStates.enableVertexAttribArrayARB(glIndex, false);			
-		}		
+		}	
 		// no more a vertex program setup.
-		_LastSetupGLArrayVertexProgram= false;
+		_LastSetupGLArrayVertexProgram= false;		
 	}
 	
 	// If last was a standard GL array setup, and now it is a VertexProgram setup.
 	if( !_LastSetupGLArrayVertexProgram && isVertexProgramEnabled () )
-	{
+	{		
 		// Disable all standards ptrs.
 		_DriverGLStates.enableVertexArray(false);
 		_DriverGLStates.enableNormalArray(false);
@@ -1002,9 +1022,10 @@ void		CDriverGL::toggleGlArraysForARBVertexProgram()
 			_DriverGLStates.enableTexCoordArray(false);
 		}		
 		// now, vertex program setup.
-		_LastSetupGLArrayVertexProgram= true;
-	}
+		_LastSetupGLArrayVertexProgram= true;		
+	}	
 }
+
 
 
 // ***************************************************************************
@@ -1056,7 +1077,7 @@ void		CDriverGL::toggleGlArraysForEXTVertexShader()
 
 // ***************************************************************************
 void		CDriverGL::setupGlArraysForNVVertexProgram(CVertexBufferInfo &vb)
-{			
+{
 	uint32	flags= vb.VertexFormat;
 	
 	// For each value
@@ -1159,6 +1180,7 @@ static const GLboolean ARBVertexProgramMustNormalizeAttrib[] =
 // ***************************************************************************
 void		CDriverGL::setupGlArraysForARBVertexProgram(CVertexBufferInfo &vb)
 {			
+	
 	uint32	flags= vb.VertexFormat;
 	
 	nlctassert(CVertexBuffer::NumValue == sizeof(ARBVertexProgramMustNormalizeAttrib) / sizeof(ARBVertexProgramMustNormalizeAttrib[0]));
@@ -1238,6 +1260,7 @@ void		CDriverGL::setupGlArraysForARBVertexProgram(CVertexBufferInfo &vb)
 // ***************************************************************************
 void		CDriverGL::setupGlArraysForEXTVertexShader(CVertexBufferInfo &vb)
 {
+	
 
 	CVertexProgram *vp = _LastSetuppedVP;
 	if (!vp) return;		
@@ -1421,9 +1444,9 @@ void		CDriverGL::setupGlArraysForEXTVertexShader(CVertexBufferInfo &vb)
 
 // ***************************************************************************
 void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
-{
+{	
 	uint32	flags= vb.VertexFormat;
-
+	
 	/** \todo yoyo, or nico: this code should change with ATI VertexProgram.
 	 *	For now, ATI VBHard is only coded for non-VertexProgram case.
 	 */
@@ -1443,9 +1466,9 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 		}
 	}	
 	else if (_Extensions.ARBVertexProgram)
-	{
+	{		
 		toggleGlArraysForARBVertexProgram();
-		// Use a vertex program ?
+		// Use a vertex program ?		
 		if (!isVertexProgramEnabled ())
 		{
 			setupGlArraysStd(vb);
@@ -1453,7 +1476,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 		else
 		{		
 			setupGlArraysForARBVertexProgram(vb);
-		}
+		}		
 	}
 	else if (_Extensions.EXTVertexShader)
 	{
@@ -1530,7 +1553,7 @@ void		CVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 
 // ***************************************************************************
 void			CDriverGL::resetVertexArrayRange()
-{
+{	
 	if(_CurrentVertexBufferHard)
 	{
 		// Must ensure it has ended any drawing
@@ -1552,7 +1575,7 @@ void			CDriverGL::resetVertexArrayRange()
 
 // ***************************************************************************
 bool			CDriverGL::initVertexBufferHard(uint agpMem, uint vramMem)
-{
+{	
 	if(!supportVertexBufferHard())
 		return false;
 	
@@ -1622,7 +1645,7 @@ bool			CDriverGL::initVertexBufferHard(uint agpMem, uint vramMem)
 
 // ***************************************************************************
 uint32				CDriverGL::getAvailableVertexAGPMemory ()
-{
+{	
 	if (_AGPVertexArrayRange)
 		return _AGPVertexArrayRange->sizeAllocated();
 	else
@@ -1632,7 +1655,7 @@ uint32				CDriverGL::getAvailableVertexAGPMemory ()
 
 // ***************************************************************************
 uint32				CDriverGL::getAvailableVertexVRAMMemory ()
-{
+{	
 	if (_VRAMVertexArrayRange)
 		return _VRAMVertexArrayRange->sizeAllocated();
 	else
@@ -1642,7 +1665,7 @@ uint32				CDriverGL::getAvailableVertexVRAMMemory ()
 
 // ***************************************************************************
 void				CDriverGL::fenceOnCurVBHardIfNeeded(IVertexBufferHardGL *newVBHard)
-{
+{	
 	// If old is not a VBHard, or if not a NVidia VBHard, no-op.
 	if( _CurrentVertexBufferHard==NULL || !_CurrentVertexBufferHard->VBType == IVertexBufferHardGL::NVidiaVB)
 		return;
@@ -1692,6 +1715,7 @@ void CIndexBufferInfo::setupIndexBuffer(CIndexBuffer &ib)
 // ***************************************************************************
 
 } // NL3D
+
 
 
 

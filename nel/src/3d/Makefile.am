@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.43 2001/08/07 14:18:44 vizerie Exp $
+# $Id: Makefile.am,v 1.44 2001/08/09 13:16:33 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -204,6 +204,8 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        ps_zone.h                           \
                        ptr_set.cpp                         \
                        ptr_set.h                           \
+                       ps_sound.h                          \
+                       ps_sound.cpp                        \
                        quad_grid.h                         \
                        register_3d.cpp                     \
                        register_3d.h                       \

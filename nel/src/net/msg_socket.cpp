@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.10 2000/10/04 14:34:10 cado Exp $
+ * $Id: msg_socket.cpp,v 1.11 2000/10/05 13:36:20 cado Exp $
  *
  * Implementation of CMsgSocket.
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
@@ -51,9 +51,6 @@ using namespace std;
 typedef int SOCKET;
 
 #endif
-
-
-using namespace std;
 
 
 namespace NLNET

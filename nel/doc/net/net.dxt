@@ -1,6 +1,19 @@
 /**
  * \page network Network
  *
- * \section networkintro Introduction
+ * \subsection networkintro Introduction
  *
+ * Conceptually, the network subsystem is divided into two layers and two more concepts :
+ * -# Layer 1 is the socket layer : it allows to send/receive any data using a network.
+ * -# Layer 2 is the message layer : it allows to send/receive messages and to call
+ * event-driven callback functions
+ * -# The recipient of a connection need not be an Internet address. It can be pointed to
+ * as a specific service using a Naming Service.
+ * -# Any object can be serialized to/from a message, using a stream interface.
+ *
+ * Here is the implementation point of view :
+ * -# Layer 1 is implemented by NLNET::CSocket. It could be more abstract than it is at present.
+ * -# Layer 2 is implemented by NLNET::CMsgSocket.
+ * -# The addresses are implemented by NLNET::CInetAddress.
+ * -# The NLNET::CMessage class inherits from NLMISC::IStream.
  */

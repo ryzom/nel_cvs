@@ -18,31 +18,29 @@
  */
 
 /*
- * $Id: debug.cpp,v 1.4 2000/10/04 15:27:53 cado Exp $
+ * $Id: debug.cpp,v 1.5 2000/10/05 13:36:20 cado Exp $
  *
- * <Replace this by a description of the file>
+ * Debug
  */
-
-#include "nel/misc/debug.h"
 
 /**
  * \page log_howto How to log information ?
  * This document explains how to log some information (into the screen, into a file or to a logging server) , e.g. in order to debug your code.
  *
  * \subsection init_log Initialization
- * In the initialization of your service, attach some displayers to the global CLog objects
+ * In the initialization of your service, attach some displayers to the global NLMISC::CLog objects
  * \e ErrorLog, \e WarningLog, \e InfoLog, \e DebugLog.
- * CStdDisplayer is for the screen (and VC++ debug window).
- * CFileDisplayer is for a file.
- * CMsgBoxDisplayer is for a message box.
- * CNetDisplayer is for a logging server (see CLogService)
+ * NLMISC::CStdDisplayer is for the screen (and VC++ debug window).
+ * NLMISC::CFileDisplayer is for a file.
+ * NLMISC::CMsgBoxDisplayer is for a message box.
+ * NLNET::CNetDisplayer is for a logging server (see CLogService)
  *
  * Example :
  * \code
- * CStdDisplayer sd;
- * CNetDisplayer nd ( CInetAddress( "log_service_machine", log_port ) )
- * ErrorLog.addDisplayer( &sd );
- * DebugLog.addDisplayer( &nd );
+ * NLMISC::CStdDisplayer sd;
+ * CNLNET::NetDisplayer nd ( NLNET::CInetAddress( "log_service_machine", log_port ) )
+ * NLMISC::ErrorLog.addDisplayer( &sd );
+ * NLMISC::DebugLog.addDisplayer( &nd );
  * \endcode
  *
  * \subsection use_log Logging information
@@ -60,6 +58,9 @@
  * \endcode
  *
  */
+
+ 
+#include "nel/misc/debug.h"
 
 
 namespace NLMISC {

@@ -320,7 +320,7 @@ COLS_IN_ALPHA_INDEX    = 5
 # The IGNORE_PREFIX tag can be used to specify one or more prefixes that 
 # should be ignored while generating the index headers. 
 
-IGNORE_PREFIX          = C I E P
+IGNORE_PREFIX          = C I P
 
 #---------------------------------------------------------------------------
 # configuration options related to the HTML output
@@ -564,12 +564,12 @@ EXPAND_AS_DEFINED      =
 
 # The TAGFILES tag can be used to specify one or more tagfiles. 
 
-TAGFILES          =
+TAGFILES               = R:/code/server/doc/server.tag=/code/server/doc/html
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create 
 # a tag file that is based on the input files it reads. 
 
-GENERATE_TAGFILE       = 
+GENERATE_TAGFILE       = nel.tag
 
 # If the ALLEXTERNALS tag is set to YES all external classes will be listed 
 # in the class index. If set to NO only the inherited external classes 

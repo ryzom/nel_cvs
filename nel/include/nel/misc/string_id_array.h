@@ -1,7 +1,7 @@
 /** \file string_id_array.h
  * <File description>
  *
- * $Id: string_id_array.h,v 1.1 2001/03/02 09:54:30 lecroart Exp $
+ * $Id: string_id_array.h,v 1.2 2001/03/05 09:29:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ public:
 
 	typedef sint16 TStringId;
 
-	void addString(const std::string &str, sint32 id)
+	void addString(const std::string &str, TStringId id)
 	{
 		nlassert (id > 0 && id < sizeof (TStringId));
 
@@ -66,7 +66,7 @@ public:
 		addString (str, _StringArray.size ());
 	}
 
-	TStringId getId (const std::string &str)
+	TStringId getId (const std::string &str) const
 	{
 		for (TStringId i = 0; i < (TStringId) _StringArray.size(); i++)
 		{
@@ -76,14 +76,27 @@ public:
 		return -1;
 	}
 
-	std::string getString (TStringId id)
+	std::string getString (TStringId id) const
 	{
 		nlassert (id > 0 && id < (TStringId)_StringArray.size());
 
 		return _StringArray[id];
 	}
 
+	void resize (TStringId size)
+	{
+		_StringArray.resize (size);
+	}
+
+	TStringId size () const
+	{
+		return _StringArray.size ();
+	}
+
 private:
+	std::vector<std::string>	_StringArray;
+
+	// todo: liste des string demande qui ont pas d assoc => a l update prochain, il faudra les demander
 	std::vector<std::string>	_StringArray;
 };
 

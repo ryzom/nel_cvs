@@ -18,7 +18,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "driver_opengl"=..\..\nel\src\3d\driver\driver_opengl\driver_opengl.dsp - Package Owner=<4>
+Project: "driver_opengl"=..\..\nel\src\3d\driver\opengl\driver_opengl.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

@@ -9,7 +9,7 @@
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
 ' when Scripting.FileSystemObject cannot be instanciated
-' $Id: nevrax_macros_98.dsm,v 1.10 2001/01/08 17:59:41 corvazier Exp $
+' $Id: nevrax_macros_98.dsm,v 1.11 2001/01/25 14:29:05 cado Exp $
 '------------------------------------------------------------------------------
 
 
@@ -25,10 +25,10 @@ Sub NevraxInsertFileHeader( filename, productname )
 		"/** \file " + filename + vbLf + _
 		" * <File description>" + vbLf + _
 		" *" + vbLf + _
-		" * $Id: nevrax_macros_98.dsm,v 1.10 2001/01/08 17:59:41 corvazier Exp $" + vbLf + _
+		" * $Id: nevrax_macros_98.dsm,v 1.11 2001/01/25 14:29:05 cado Exp $" + vbLf + _
 		" */" + vbLf + vbLf
 	ActiveDocument.Selection = _
-		"/* Copyright, 2000 Nevrax Ltd." + vbLf + _
+		"/* Copyright, 2001 Nevrax Ltd." + vbLf + _
 		" *" + vbLf + _
 		" * This file is part of NEVRAX " + productname + "." + vbLf + _
 		" * NEVRAX " + productname + " is free software; you can redistribute it and/or modify" + vbLf + _
@@ -241,7 +241,7 @@ Sub NevraxNewClass()
 		" * <Class description>" + vbLf + _
 		" * \author " + CurrentProgrammerName + vbLf + _
 		" * \author Nevrax France" + vbLf + _
-		" * \date 2000" + vbLf + _
+		" * \date 2001" + vbLf + _
 		" */" + vbLf + _
 		"class " + ClassName
 	if AncClassName <> "" then

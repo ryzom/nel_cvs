@@ -1,7 +1,7 @@
 /** \file point_light_named_array.h
  * <File description>
  *
- * $Id: point_light_named_array.h,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: point_light_named_array.h,v 1.2 2002/04/16 16:21:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,8 +56,12 @@ public:
 	 */
 	void			build(const std::vector<CPointLightNamed> &pointLights, std::vector<uint> &indexRemap);
 
-	/// get the pointLights sorted.
+
+	/// get the pointLights sorted (const version).
 	const std::vector<CPointLightNamed>		&getPointLights() const {return _PointLights;}
+
+	/// get the pointLights sorted (mutable version). Be sure what you do!
+	std::vector<CPointLightNamed>		&getPointLights() {return _PointLights;}
 
 	/// set the Light factor for all pointLights "lightGroupName".
 	void			setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);

@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.27 2002/07/03 09:16:08 vizerie Exp $
+ * $Id: export_lod.h,v 1.28 2002/07/04 14:51:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,6 +139,7 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 #define NEL3D_APPDATA_USE_REMANENCE					(1423062631)
 #define NEL3D_APPDATA_REMANENCE_SLICE_NUMBER		(1423062632)
 #define NEL3D_APPDATA_REMANENCE_SAMPLING_PERIOD     (1423062633)
+#define NEL3D_APPDATA_REMANENCE_ROLLUP_RATIO        (1423062635)
 #define NEL3D_APPDATA_REMANENCE_SHIFTING_TEXTURE    (1423062634)
 
 

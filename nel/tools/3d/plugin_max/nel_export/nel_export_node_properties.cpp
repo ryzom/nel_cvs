@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.41 2002/07/03 09:14:31 vizerie Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.42 2002/07/04 14:51:45 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,7 +180,7 @@ public:
 	int						RemanenceShiftingTexture;
 	int						RemanenceSliceNumber;
 	float					RemanenceSamplingPeriod;
-
+	float                   RemanenceRollupRatio;
 
 	// Vegetable
 	int						Vegetable;
@@ -1613,6 +1613,7 @@ int CALLBACK MiscDialogCallback (
 			SendMessage (GetDlgItem (hwndDlg, IDC_REMANENCE_SHIFTING_TEXTURE), BM_SETCHECK, currentParam->RemanenceShiftingTexture, 0);
 			SetWindowText (GetDlgItem (hwndDlg, IDC_REMANENCE_SLICE_NUMBER), currentParam->RemanenceSliceNumber != - 1 ? toStringMax(currentParam->RemanenceSliceNumber).c_str() : "");
 			SetWindowText (GetDlgItem (hwndDlg, IDC_REMANENCE_SAMPLING_PERIOD), currentParam->RemanenceSamplingPeriod != -1 ? toStringMax(currentParam->RemanenceSamplingPeriod).c_str() : "");
+			SetWindowText (GetDlgItem (hwndDlg, IDC_REMANENCE_ROLLUP_RATIO), currentParam->RemanenceRollupRatio != -1 ? toStringMax(currentParam->RemanenceRollupRatio).c_str() : "");
 		}
 		break;
 
@@ -1676,6 +1677,8 @@ int CALLBACK MiscDialogCallback (
 							}
 							GetWindowText (GetDlgItem (hwndDlg, IDC_REMANENCE_SAMPLING_PERIOD), tmp, 512);
 							toFloatMax(tmp, currentParam->RemanenceSamplingPeriod);
+							GetWindowText (GetDlgItem (hwndDlg, IDC_REMANENCE_ROLLUP_RATIO), tmp, 512);
+							toFloatMax(tmp, currentParam->RemanenceRollupRatio);
 						}
 					break;
 					case IDC_EXPORT_NOTE_TRACK:
@@ -2305,6 +2308,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.RemanenceShiftingTexture=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SHIFTING_TEXTURE, BST_CHECKED);
 		param.RemanenceSliceNumber=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SLICE_NUMBER, 16);
 		param.RemanenceSamplingPeriod=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SAMPLING_PERIOD, 0.02f);
+		param.RemanenceRollupRatio=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_ROLLUP_RATIO, 1.f);
+
 
 
 
@@ -2448,6 +2453,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.RemanenceShiftingTexture = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SAMPLING_PERIOD, 0.01f)!=param.RemanenceSamplingPeriod)
 				param.RemanenceSamplingPeriod = -1.f;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_ROLLUP_RATIO, 1.f)!=param.RemanenceRollupRatio)
+				param.RemanenceRollupRatio = -1.f;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SLICE_NUMBER, 64)!=param.RemanenceSliceNumber)
 				param.RemanenceSliceNumber = -1;
 			
@@ -2771,6 +2778,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_REMANENCE_SLICE_NUMBER, param.RemanenceSliceNumber);
 				if (param.RemanenceSamplingPeriod != -1.f)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_REMANENCE_SAMPLING_PERIOD, param.RemanenceSamplingPeriod);
+				if (param.RemanenceRollupRatio != -1.f)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_REMANENCE_ROLLUP_RATIO, param.RemanenceRollupRatio);
 
 
 				// Next node

@@ -1,6 +1,6 @@
 /** \file export_remanence.cpp
  *
- * $Id: export_remanence.cpp,v 1.2 2002/07/03 13:11:38 vizerie Exp $
+ * $Id: export_remanence.cpp,v 1.3 2002/07/04 14:51:32 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -50,12 +50,15 @@ NL3D::IShape *CExportNel::buildRemanence(INode& node, TimeValue time)
 	std::auto_ptr<CSegRemanenceShape> srs(new CSegRemanenceShape);
 	uint  numSlices = getScriptAppData (&node, NEL3D_APPDATA_REMANENCE_SLICE_NUMBER, 2);
 	float samplingPeriod = getScriptAppData (&node, NEL3D_APPDATA_REMANENCE_SAMPLING_PERIOD, 0.02f);
+	float rollupRatio    = getScriptAppData (&node, NEL3D_APPDATA_REMANENCE_ROLLUP_RATIO, 1.f);
 
 	if (samplingPeriod <= 0.f) samplingPeriod = 0.02f;
 	if (numSlices <= 2) numSlices = 2;
+	if (rollupRatio <= 0) rollupRatio = 1.f;
 	
 	srs->setNumSlices((uint32) numSlices);
 	srs->setSliceTime(samplingPeriod);
+	srs->setRollupRatio(rollupRatio);
 
 	// get material from this node
 	std::vector<NL3D::CMaterial> materials;

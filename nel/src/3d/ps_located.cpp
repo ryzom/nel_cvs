@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.55 2003/05/22 15:25:47 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.56 2003/07/04 10:19:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,13 @@
 #include "nel/misc/common.h"
 
 
+
+#ifdef NL_DEBUG
+	#define CHECK_PS_INTEGRITY checkIntegrity();
+#else
+	#define CHECK_PS_INTEGRITY
+#endif
+
 namespace NL3D {
 
 
@@ -79,8 +86,29 @@ namespace NL3D {
 
 
 ///=============================================================================
+void CPSLocated::checkIntegrity() const
+{
+	nlassert(_InvMass.getMaxSize() == _Pos.getMaxSize());
+	nlassert(_Pos.getMaxSize() == _Speed.getMaxSize());
+	nlassert(_Speed.getMaxSize() == _Time.getMaxSize());
+	nlassert(_Time.getMaxSize() == _TimeIncrement.getMaxSize());
+	//
+	nlassert(_InvMass.getSize() == _Pos.getSize());
+	nlassert(_Pos.getSize() == _Speed.getSize());
+	nlassert(_Speed.getSize() == _Time.getSize());
+	nlassert(_Time.getSize() == _TimeIncrement.getSize());
+	//
+	if (_CollisionInfo)
+	{
+		nlassert(_InvMass.getMaxSize() == _CollisionInfo->getMaxSize());
+		nlassert(_InvMass.getSize() == _CollisionInfo->getSize());
+	}
+}
+
+///=============================================================================
 bool CPSLocated::setLastForever()
 {
+	CHECK_PS_INTEGRITY
 	_LastForever = true;
 	if (_Owner && _Owner->getBypassMaxNumIntegrationSteps())
 	{
@@ -92,6 +120,7 @@ bool CPSLocated::setLastForever()
 			return false;
 		}
 	}
+	CHECK_PS_INTEGRITY
 	return true;
 }
 
@@ -99,16 +128,19 @@ bool CPSLocated::setLastForever()
 ///=============================================================================
 void CPSLocated::systemDateChanged()
 {
+	CHECK_PS_INTEGRITY
 	for(TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
 	{
 		(*it)->systemDateChanged();
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
 ///=============================================================================
 void CPSLocated::releaseRefTo(const CParticleSystemProcess *other)
 {
+	CHECK_PS_INTEGRITY
 	// located bindables
 	{	
 		for(TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
@@ -129,11 +161,13 @@ void CPSLocated::releaseRefTo(const CParticleSystemProcess *other)
 			}
 		}
 	}
+	CHECK_PS_INTEGRITY
 }
 
 ///=============================================================================
 void CPSLocated::releaseAllRef()
 {
+	CHECK_PS_INTEGRITY
 	 // located bindables
 	{	
 		for(TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
@@ -158,16 +192,19 @@ void CPSLocated::releaseAllRef()
 	nlassert(_IntegrableForces.size() == 0);
 	nlassert(_NonIntegrableForceNbRefs == 0);
 	nlassert(!_CollisionInfo);
+	CHECK_PS_INTEGRITY
 }
 
 
 ///=============================================================================
 void CPSLocated::notifyMotionTypeChanged(void)
 {
+	CHECK_PS_INTEGRITY
 	for (TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
 	{
 		(*it)->motionTypeChanged(_ParametricMotion);
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
@@ -177,6 +214,7 @@ void CPSLocated::integrateSingle(float startDate, float deltaT, uint numStep,
 								NLMISC::CVector *destPos,						
 								uint stride /*= sizeof(NLMISC::CVector)*/)
 {
+	CHECK_PS_INTEGRITY
 	nlassert(supportParametricMotion() && _ParametricMotion);
 	if (_IntegrableForces.size() != 0)
 	{
@@ -213,10 +251,12 @@ void CPSLocated::integrateSingle(float startDate, float deltaT, uint numStep,
 				while (--numStep);
 			}	
 	}
+	CHECK_PS_INTEGRITY
 }
 
 void CPSLocated::performParametricMotion(TAnimationTime date, TAnimationTime ellapsedTime, TAnimationTime realEllapsedTime)
 {
+	CHECK_PS_INTEGRITY
 	if (!_Size) return;	
 	nlassert(supportParametricMotion() && _ParametricMotion);
 
@@ -248,11 +288,13 @@ void CPSLocated::performParametricMotion(TAnimationTime date, TAnimationTime ell
 		while (it != endIt);
 	}
 	//step(PSEmit, ellapsedTime, realEllapsedTime);	
+	CHECK_PS_INTEGRITY
 }
 
 /// allocate parametric infos
 void  CPSLocated::allocateParametricInfos(void)
 {
+	CHECK_PS_INTEGRITY
 	if (_ParametricMotion) return;
 	nlassert(supportParametricMotion());
 	nlassert(_Owner);
@@ -268,15 +310,18 @@ void  CPSLocated::allocateParametricInfos(void)
 	}
 	_ParametricMotion = true;
 	notifyMotionTypeChanged();
+	CHECK_PS_INTEGRITY
 }
 
 /// release parametric infos
 void  CPSLocated::releaseParametricInfos(void)
 {
+	CHECK_PS_INTEGRITY
 	if (!_ParametricMotion) return;
 	NLMISC::contReset(_PInfo);
 	_ParametricMotion = false;
 	notifyMotionTypeChanged();
+	CHECK_PS_INTEGRITY
 }
 
 
@@ -291,6 +336,7 @@ bool      CPSLocated::supportParametricMotion(void) const
   */
 void	CPSLocated::enableParametricMotion(bool enable /*= true*/)
 {
+	CHECK_PS_INTEGRITY
 	nlassert(supportParametricMotion());
 	if (enable)
 	{
@@ -300,11 +346,13 @@ void	CPSLocated::enableParametricMotion(bool enable /*= true*/)
 	{
 		releaseParametricInfos();
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
 void CPSLocated::setSystemBasis(bool sysBasis)
 {			
+	CHECK_PS_INTEGRITY
 	if (sysBasis != isInSystemBasis())
 	{		
 		for (TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
@@ -318,11 +366,13 @@ void CPSLocated::setSystemBasis(bool sysBasis)
 		{			
 			integrableForceBasisChanged( (*fIt)->getOwner()->isInSystemBasis() );
 		}				
-	}			
+	}
+	CHECK_PS_INTEGRITY
 }
 
 void CPSLocated::notifyMaxNumFacesChanged(void)
 {
+	CHECK_PS_INTEGRITY
 	if (!_Owner) return;
 	
 	// we examine wether we have particle attached to us, and ask for the max number of faces they may want
@@ -335,7 +385,8 @@ void CPSLocated::notifyMaxNumFacesChanged(void)
 			///nlassertex(maxNumFaces < ((1 << 16) - 1), ("%s", (*it)->getClassName().c_str()));
 			_MaxNumFaces += maxNumFaces;
 		}
-	}	
+	}
+	CHECK_PS_INTEGRITY
 }
 
 
@@ -347,21 +398,25 @@ uint CPSLocated::querryMaxWantedNumFaces(void)
 
 /// tells wether there are alive entities / particles in the system
 bool CPSLocated::hasParticles(void) const
-{
+{	
+	CHECK_PS_INTEGRITY
 	for (TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
 	{
 		if ((*it)->getType() == PSParticle && (*it)->hasParticles()) return true;
 	}
+	CHECK_PS_INTEGRITY
 	return false;
 }
 
 /// tells wether there are alive emitters
 bool CPSLocated::hasEmitters(void) const
 {
+	CHECK_PS_INTEGRITY
 	for (TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
 	{
 		if ((*it)->getType() == PSEmitter && (*it)->hasEmitters()) return true;
 	}
+	CHECK_PS_INTEGRITY
 	return false;
 }
 
@@ -369,7 +424,9 @@ bool CPSLocated::hasEmitters(void) const
 void CPSLocated::getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis)
 {
 	nlassert(_Owner);
+	CHECK_PS_INTEGRITY
 	_Owner->getLODVect(v, offset, systemBasis);
+	CHECK_PS_INTEGRITY
 }
 
 
@@ -377,23 +434,27 @@ void CPSLocated::getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis)
 float CPSLocated::getUserParam(uint numParam) const
 {
 	nlassert(_Owner);
+	CHECK_PS_INTEGRITY
 	return _Owner->getUserParam(numParam);
 }
 
 CScene *CPSLocated::getScene(void)
 {
 	nlassert(_Owner);
+	CHECK_PS_INTEGRITY
 	return _Owner->getScene();
 }
 
 
 void CPSLocated::incrementNbDrawnParticles(uint num)
 {
+	CHECK_PS_INTEGRITY
 	CParticleSystem::NbParticlesDrawn += num; // for benchmark purpose	
 }
 
 void CPSLocated::setInitialLife(TAnimationTime lifeTime)
 {
+	CHECK_PS_INTEGRITY
 	_LastForever = false;
 	_InitialLife = lifeTime;
 	delete _LifeScheme;
@@ -406,28 +467,34 @@ void CPSLocated::setInitialLife(TAnimationTime lifeTime)
 	{
 		_Time[k] = 0.f;
 	}
-
+	CHECK_PS_INTEGRITY
 }
 void CPSLocated::setLifeScheme(CPSAttribMaker<float> *scheme)
 {
+	CHECK_PS_INTEGRITY
 	nlassert(scheme);
 	nlassert(!scheme->hasMemory()); // scheme with memory is invalid there !!
 	_LastForever = false;
 	delete _LifeScheme;
 	_LifeScheme = scheme;
+	CHECK_PS_INTEGRITY
 }
 void CPSLocated::setInitialMass(float mass)
 {
+	CHECK_PS_INTEGRITY
 	_InitialMass = mass;
 	delete _MassScheme;
 	_MassScheme = NULL;	
+	CHECK_PS_INTEGRITY
 }
 void CPSLocated::setMassScheme(CPSAttribMaker<float> *scheme)
 {
+	CHECK_PS_INTEGRITY
 	nlassert(scheme);
 	nlassert(!scheme->hasMemory()); // scheme with memory is invalid there !!
 	delete _MassScheme;
 	_MassScheme = scheme;	
+	CHECK_PS_INTEGRITY
 }
 	
 
@@ -450,12 +517,13 @@ const NLMISC::CMatrix &CPSLocated::getConversionMatrix(const CPSLocated *A, cons
 		{
 			return A->_Owner->getInvertedSysMat();
 		}
-	}
+	}	
 }
 
 
 NLMISC::CVector CPSLocated::computeI(void) const 
 {
+	CHECK_PS_INTEGRITY
 	if (!_SystemBasisEnabled)
 	{
 		return _Owner->getInvertedViewMat().getI();
@@ -465,11 +533,13 @@ NLMISC::CVector CPSLocated::computeI(void) const
 		// we must express the I vector in the system basis, so we need to multiply it by the inverted matrix of the system
 		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getI());
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
 NLMISC::CVector CPSLocated::computeJ(void) const 
 {
+	CHECK_PS_INTEGRITY
 	if (!_SystemBasisEnabled)
 	{
 		return _Owner->getInvertedViewMat().getJ();
@@ -479,12 +549,14 @@ NLMISC::CVector CPSLocated::computeJ(void) const
 		// we must express the J vector in the system basis, so we need to multiply it by the inverted matrix of the system
 		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getJ());
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
 
 NLMISC::CVector CPSLocated::computeK(void) const
 {
+	CHECK_PS_INTEGRITY
 	if (!_SystemBasisEnabled)
 	{
 		return _Owner->getInvertedViewMat().getK();
@@ -494,12 +566,14 @@ NLMISC::CVector CPSLocated::computeK(void) const
 		// we must express the K vector in the system basis, so we need to multiply it by the inverted matrix of the system
 		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getK());
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
 
 IDriver *CPSLocated::getDriver() const 
 { 
+	CHECK_PS_INTEGRITY
 	nlassert(_Owner);
 	nlassert (_Owner->getDriver() ); // you haven't called setDriver on the system
 	return _Owner->getDriver();
@@ -509,6 +583,7 @@ IDriver *CPSLocated::getDriver() const
 
 CPSLocated::~CPSLocated()
 {
+	CHECK_PS_INTEGRITY
 	// we must do a copy, because the subsequent call can modify this vector
 	TDtorObserversVect copyVect(_DtorObserversVect.begin(), _DtorObserversVect.end());
 	// call all the dtor observers
@@ -535,6 +610,7 @@ CPSLocated::~CPSLocated()
 
 	delete _LifeScheme;
 	delete _MassScheme;
+	CHECK_PS_INTEGRITY
 }
 
 
@@ -544,6 +620,7 @@ CPSLocated::~CPSLocated()
 */
 bool CPSLocated::bind(CPSLocatedBindable *lb)
 {
+	CHECK_PS_INTEGRITY
 	nlassert(std::find(_LocatedBoundCont.begin(), _LocatedBoundCont.end(), lb) == _LocatedBoundCont.end());	
 	TLocatedBoundCont::iterator it = _LocatedBoundCont.begin();
 	while (it != _LocatedBoundCont.end() && **it < *lb) // the "<" operator sort them correctly
@@ -591,6 +668,7 @@ bool CPSLocated::bind(CPSLocatedBindable *lb)
 			ps->registerLocatedBindableExternID(lb->getExternID(), lb);
 		}
 	}
+	CHECK_PS_INTEGRITY
 	return true;
 }
 
@@ -598,27 +676,33 @@ bool CPSLocated::bind(CPSLocatedBindable *lb)
 
 void CPSLocated::remove(const CPSLocatedBindable *p)
 {
+	CHECK_PS_INTEGRITY
 	TLocatedBoundCont::iterator it = std::find(_LocatedBoundCont.begin(), _LocatedBoundCont.end(), p);
 	nlassert(it != _LocatedBoundCont.end());	
 	(*it)->finalize();
 	delete *it;
 	_LocatedBoundCont.erase(it);
+	CHECK_PS_INTEGRITY
 }
 
 
 void CPSLocated::registerDtorObserver(CPSLocatedBindable *anObserver)
 {
+	CHECK_PS_INTEGRITY
 	// check wether the observer wasn't registered twice
 	nlassert(std::find(_DtorObserversVect.begin(), _DtorObserversVect.end(), anObserver) == _DtorObserversVect.end());
 	_DtorObserversVect.push_back(anObserver);
+	CHECK_PS_INTEGRITY
 }
 
 void CPSLocated::unregisterDtorObserver(CPSLocatedBindable *anObserver)
 {
+	CHECK_PS_INTEGRITY
 	// check that it was registered
 	TDtorObserversVect::iterator it = std::find(_DtorObserversVect.begin(), _DtorObserversVect.end(), anObserver);
 	nlassert(it != _DtorObserversVect.end());
 	_DtorObserversVect.erase(it);
+	CHECK_PS_INTEGRITY
 }
 
 
@@ -631,17 +715,13 @@ void CPSLocated::unregisterDtorObserver(CPSLocatedBindable *anObserver)
 
 sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocated *emitter, uint32 indexInEmitter, bool basisConversionForSpeed, TAnimationTime ellapsedTime /* = 0.f */)
 {	
+	CHECK_PS_INTEGRITY
 	if (_UpdateLock)
 	{
 		postNewElement(pos, speed);
 		return -1;
 	}
-	
-
-	if (_CollisionInfo)
-	{
-		_CollisionInfo->insert();
-	}
+		
 
 	sint32 creationIndex;
 
@@ -651,6 +731,10 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 	
 	
 	if (_MaxSize == _Size) return -1;
+	if (_CollisionInfo)
+	{
+		_CollisionInfo->insert();
+	}
 
 	// During creation, we interpolate the position of the system (by using the ellapsed time) if particle are created in world basis and if the emitter is in local basis.
 	// Example a fireball FX let particles in world basis, but the fireball is moving. If we dont interpolate position between 2 frames, emission will appear to be "sporadic".
@@ -708,7 +792,7 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 				// of the CPSLocatedClass (which is called just above)
 
 	
-
+	CHECK_PS_INTEGRITY
 	return creationIndex;
 }
 
@@ -737,6 +821,8 @@ static inline uint32 IDToLittleEndian(uint32 input)
 
 void CPSLocated::deleteElement(uint32 index)
 {
+	CHECK_PS_INTEGRITY
+	
 	nlassert(index < _Size);
 	
 	// delete all bindable before : they may need our coordinate
@@ -793,6 +879,7 @@ void CPSLocated::deleteElement(uint32 index)
 			}
 		}
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
@@ -800,6 +887,7 @@ void CPSLocated::deleteElement(uint32 index)
 
 void CPSLocated::resize(uint32 newSize)
 {
+	CHECK_PS_INTEGRITY	
 	nlassert(newSize < (1 << 16));
 	if (newSize < _Size)
 	{
@@ -841,13 +929,16 @@ void CPSLocated::resize(uint32 newSize)
 
 	/// compute the new max number of faces
 	notifyMaxNumFacesChanged();
+	CHECK_PS_INTEGRITY
 }
 
 
 void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	CHECK_PS_INTEGRITY	
+
 	// version 4 to version 5 : bugfix with reading of collisions
-	sint ver = f.serialVersion(5);
+	sint ver = f.serialVersion(6);
 	CParticleSystemProcess::serial(f);
 	
 	f.serial(_Name);
@@ -868,7 +959,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if (_CollisionInfo)
 	{	
-		if (ver <= 4) // should be corrected with version 5
+		if (ver <= 5) // should be corrected with version 5
 		{		
 			if (f.isReading())
 			{
@@ -885,23 +976,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		}
 	}
 
-	#ifdef NL_DEBUG	
-		nlassert(_InvMass.getMaxSize() == _Pos.getMaxSize());
-		nlassert(_Pos.getMaxSize() == _Speed.getMaxSize());
-		nlassert(_Speed.getMaxSize() == _Time.getMaxSize());
-		nlassert(_Time.getMaxSize() == _TimeIncrement.getMaxSize());
-		//
-		nlassert(_InvMass.getSize() == _Pos.getSize());
-		nlassert(_Pos.getSize() == _Speed.getSize());
-		nlassert(_Speed.getSize() == _Time.getSize());
-		nlassert(_Time.getSize() == _TimeIncrement.getSize());
-		//
-		if (_CollisionInfo)
-		{
-			nlassert(_InvMass.getMaxSize() == _CollisionInfo->getMaxSize());
-			nlassert(_InvMass.getSize() == _CollisionInfo->getSize());
-		}
-	#endif
+	CHECK_PS_INTEGRITY	
 
 	
 	if (f.isReading())
@@ -1034,12 +1109,13 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		f.serial(_TriggerOnDeath, _TriggerID);
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
 // integrate speed of particles. Makes eventually use of SSE instructions when present
 static void IntegrateSpeed(uint count, float *src1, const float *src2 ,float ellapsedTime)
-{	
+{		
 	#if 0 // this works, but is not enabled for now. The precision is not that good...
 		#ifdef NL_OS_WINDOWS
 
@@ -1144,14 +1220,13 @@ static void IntegrateSpeed(uint count, float *src1, const float *src2 ,float ell
 		{
 			*src1++ += ellapsedTime * *src2++;			
 		}
-
-
-	}
+	}	
 }
 
 
 void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
 {	
+	CHECK_PS_INTEGRITY
 	if (!_Size) return;	
 
 
@@ -1279,10 +1354,12 @@ void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 		}
 
 	}
+	CHECK_PS_INTEGRITY
 }
 
 void CPSLocated::updateLife(TAnimationTime ellapsedTime)
 {
+	CHECK_PS_INTEGRITY
 	if (!_Size) return;
 	if (! _LastForever)
 	{
@@ -1358,6 +1435,7 @@ void CPSLocated::updateLife(TAnimationTime ellapsedTime)
 			*itTime += ellapsedTime;
 		}
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
@@ -1365,16 +1443,19 @@ void CPSLocated::updateLife(TAnimationTime ellapsedTime)
 
 void CPSLocated::updateNewElementRequestStack(void)
 {
+	CHECK_PS_INTEGRITY
 	while (!_RequestStack.empty())
 	{
 		newElement(_RequestStack.top()._Pos, _RequestStack.top()._Speed);
 		_RequestStack.pop();
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
 bool CPSLocated::computeBBox(NLMISC::CAABBox &box) const
 {
+	CHECK_PS_INTEGRITY
 	if (!_Size) return false; // something to compute ?
 
 
@@ -1424,7 +1505,7 @@ bool CPSLocated::computeBBox(NLMISC::CAABBox &box) const
 			}
 		}
 	}
-
+	CHECK_PS_INTEGRITY
 	return true;
 }
 
@@ -1432,6 +1513,7 @@ bool CPSLocated::computeBBox(NLMISC::CAABBox &box) const
 /// Setup the driver model matrix. It is set accordingly to the basis used for rendering	
 void CPSLocated::setupDriverModelMatrix(void) 
 {
+	CHECK_PS_INTEGRITY
 	if (_SystemBasisEnabled)
 	{
 		getDriver()->setupModelMatrix(_Owner->getSysMat());		
@@ -1440,6 +1522,7 @@ void CPSLocated::setupDriverModelMatrix(void)
 	{
 		getDriver()->setupModelMatrix(CMatrix::Identity);
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
@@ -1447,6 +1530,7 @@ void CPSLocated::setupDriverModelMatrix(void)
 
 void CPSLocated::queryCollisionInfo(void)
 {
+	CHECK_PS_INTEGRITY
 	if (_CollisionInfoNbRef)
 	{
 		++ _CollisionInfoNbRef;
@@ -1462,10 +1546,12 @@ void CPSLocated::queryCollisionInfo(void)
 			_CollisionInfo->insert();
 		}		
 	}
+	CHECK_PS_INTEGRITY
 }
 
 void CPSLocated::releaseCollisionInfo(void)
 {
+	CHECK_PS_INTEGRITY
 	nlassert(_CollisionInfoNbRef); // check whether queryCollisionInfo was called
 									// so the number of refs must not = 0									
     --_CollisionInfoNbRef;
@@ -1474,11 +1560,13 @@ void CPSLocated::releaseCollisionInfo(void)
 		delete _CollisionInfo;
 		_CollisionInfo = NULL;
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
 void CPSLocated::resetCollisionInfo(void)
 {
+	CHECK_PS_INTEGRITY
 	nlassert(_CollisionInfo);
 
 	TPSAttribCollisionInfo::iterator it = _CollisionInfo->begin(), endIt = _CollisionInfo->end();
@@ -1487,10 +1575,12 @@ void CPSLocated::resetCollisionInfo(void)
 	{
 		it->reset();
 	}
+	CHECK_PS_INTEGRITY
 }
 
 void CPSLocated::registerIntegrableForce(CPSForce *f)
-{	
+{
+	CHECK_PS_INTEGRITY
 	nlassert(std::find(_IntegrableForces.begin(), _IntegrableForces.end(), f) == _IntegrableForces.end()); // force registered twice
 	_IntegrableForces.push_back(f);
 	if (_SystemBasisEnabled != f->getOwner()->isInSystemBasis())
@@ -1498,11 +1588,13 @@ void CPSLocated::registerIntegrableForce(CPSForce *f)
 		++_NumIntegrableForceWithDifferentBasis;
 		releaseParametricInfos();
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
 void CPSLocated::unregisterIntegrableForce(CPSForce *f)
 {
+	CHECK_PS_INTEGRITY
 	nlassert(f->getOwner()); // f must be attached to a located
 	std::vector<CPSForce *>::iterator it = std::find(_IntegrableForces.begin(), _IntegrableForces.end(), f);
 	nlassert(it != _IntegrableForces.end() );	
@@ -1511,23 +1603,29 @@ void CPSLocated::unregisterIntegrableForce(CPSForce *f)
 	{
 		--_NumIntegrableForceWithDifferentBasis;
 	}
+	CHECK_PS_INTEGRITY
 }
 
 void CPSLocated::addNonIntegrableForceRef(void)
 {
+	CHECK_PS_INTEGRITY
 	++_NonIntegrableForceNbRefs;
 	releaseParametricInfos();
+	CHECK_PS_INTEGRITY
 }
 
 void CPSLocated::releaseNonIntegrableForceRef(void)
 {
+	CHECK_PS_INTEGRITY
 	nlassert(_NonIntegrableForceNbRefs != 0);
 	--_NonIntegrableForceNbRefs;
+	CHECK_PS_INTEGRITY
 }
 
 
 void CPSLocated::integrableForceBasisChanged(bool basis)
 {	
+	CHECK_PS_INTEGRITY
 	if (_SystemBasisEnabled != basis)
 	{
 		++_NumIntegrableForceWithDifferentBasis;
@@ -1537,34 +1635,40 @@ void CPSLocated::integrableForceBasisChanged(bool basis)
 	{
 		--_NumIntegrableForceWithDifferentBasis;
 	}
+	CHECK_PS_INTEGRITY
 }
 
 
 ///=============================================================================
 CPSLocatedBindable *CPSLocated::unbind(uint index)
 {	
+	CHECK_PS_INTEGRITY
 	nlassert(index < _LocatedBoundCont.size());
 	CPSLocatedBindable *lb = _LocatedBoundCont[index];		
 	lb->setOwner(NULL);	
 	_LocatedBoundCont.erase(_LocatedBoundCont.begin() + index);
 	return lb;
+	CHECK_PS_INTEGRITY
 }
 
 ///=============================================================================
 bool CPSLocated::isBound(const CPSLocatedBindable *lb) const
 {
+	CHECK_PS_INTEGRITY
 	TLocatedBoundCont::const_iterator it = std::find(_LocatedBoundCont.begin(), _LocatedBoundCont.end(), lb);
 	return it != _LocatedBoundCont.end();
+	CHECK_PS_INTEGRITY
 }
 
 ///=============================================================================
 uint CPSLocated::getIndexOf(const CPSLocatedBindable *lb) const
 {
+	CHECK_PS_INTEGRITY
 	for(uint k = 0; k < _LocatedBoundCont.size(); ++k)
 	{
 		if (_LocatedBoundCont[k] == lb) return k;
 	}
-	nlassert(0);
+	nlassert(0);	
 	return 0;
 }
 

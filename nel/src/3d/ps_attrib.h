@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.17 2003/04/09 16:03:06 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.18 2003/07/04 10:19:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -436,7 +436,8 @@ void CPSAttrib<T>::remove(uint32 index)
 template <typename T> 
 void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
-	sint ver = f.serialVersion(4);
+	// version 4 to 5 => bug with size being > capacity
+	sint ver = f.serialVersion(5);
 
 	// in the first version, size was duplicated, we were using a std::vector ...
 	if (ver == 1)
@@ -501,10 +502,41 @@ void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			{
 				f.serial(size);
 			}
-			_Tab.resize(size);
-			for (uint k = 0; k < size; ++k)
-			{				
-				f.serial(_Tab[k]);				
+			if (ver > 4)
+			{			
+				_Tab.resize(size);
+				for (uint k = 0; k < size; ++k)
+				{				
+					f.serial(_Tab[k]);				
+				}
+			}
+			else
+			{
+				// bug for version 4: size may be > maxsize
+				if (size <= maxsize)
+				{
+					// ok, no bug
+					_Tab.resize(size);
+					for (uint k = 0; k < size; ++k)
+					{				
+						f.serial(_Tab[k]);				
+					}
+				}
+				else
+				{						
+					// size > maxsize, not good ..!
+					_Tab.resize(maxsize);
+					uint k;
+					for (k = 0; k < maxsize; ++k)
+					{				
+						f.serial(_Tab[k]);				
+					}				
+					T dummy;
+					for (; k < size; ++k)
+					{				
+						f.serial(dummy);				
+					}					
+				}
 			}
 		}
 		else

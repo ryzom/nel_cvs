@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.24 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: ps_located.h,v 1.25 2003/07/04 10:19:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -723,6 +723,11 @@ protected:
 
 	 /// notify the attached object that we have switch between parametric / incremental motion
 	 void notifyMotionTypeChanged(void);
+
+	 // for debug : check that system integrity is ok, otherwise -> assert
+	 void checkIntegrity() const;
+
+
 public:
 	 /// PRIVATE USE: register a force that is integrable on this located. It must have been registered only once
 	 void registerIntegrableForce(CPSForce *f);

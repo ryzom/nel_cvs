@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.8 2001/03/07 15:37:32 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.9 2001/03/07 15:55:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 
 using namespace std;
 
-#define DEBUG_FIFO 0
+#define DEBUG_FIFO 1
 
 namespace NLMISC {
 
@@ -351,7 +351,9 @@ void CBufFIFO::display ()
 	int size = 5000;
 	int gran = size/30;
 
-	DebugLog.display("%p (%5d) %p %p %p ", _Buffer, _BufferSize, _Rewinder, _Tail, _Head);
+	char str[1024];
+
+	smprintf(str, 1024, "%p (%5d) %p %p %p ", _Buffer, _BufferSize, _Rewinder, _Tail, _Head);
 
 	int i;
 	for (i = 0; i < (sint32) _BufferSize; i+= gran)
@@ -363,41 +365,47 @@ void CBufFIFO::display ()
 			{
 				if (_Rewinder != NULL && _Rewinder >= pos && _Rewinder < pos + gran)
 				{
-					DebugLog.displayRaw("*");
+					strncat (str, "*", 1024);
 				}
 				else
 				{
-					DebugLog.displayRaw("@");
+					strncat (str, "@", 1024);
 				}
 			}
 			else
 			{
-				DebugLog.displayRaw("T");
+				strncat (str, "T", 1024);
 			}
 		}
 		else if (_Head >= pos && _Head < pos + gran)
 		{
-			DebugLog.displayRaw("H");
+			strncat (str, "H", 1024);
 		}
 		else if (_Rewinder != NULL && _Rewinder >= pos && _Rewinder < pos + gran)
 		{
-			DebugLog.displayRaw("R");
+			strncat (str, "R", 1024);
 		}
 		else
 		{
-			DebugLog.displayRaw("%c", *pos);
+			if (strlen(str) < 1023)
+			{
+				uint32 p = strlen(str);
+				str[p] = *pos;
+				str[p+1] = '\0';
+			}
 		}
 	}
 
 	for (; i < size; i+= gran)
 	{
-		DebugLog.displayRaw(" ");
+		strncat (str, " ", 1024);
 	}
 #ifdef NL_DEBUG
-	DebugLog.displayRaw("\n");
+	strncat (str, "\n", 1024);
 #else
-	DebugLog.displayRaw("\r");
+	strncat (str, "\r", 1024);
 #endif
+	DebugLog.display (str);
 }
 
 bool CBufFIFO::canFit (uint32 size)

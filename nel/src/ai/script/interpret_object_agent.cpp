@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.47 2002/07/02 08:50:12 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.48 2002/07/03 08:36:02 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1022,10 +1022,5 @@ namespace NLAISCRIPT
 	{
 		CComponent *component = getComponent( NLAIAGENT::CStringVarName( c_name.c_str() ) );
 		return component->StaticValue;
-	}
-
-	sint32 CAgentClass::getConstructorIndex()
-	{
-		return _ConstructorIndex;
 	}
 }

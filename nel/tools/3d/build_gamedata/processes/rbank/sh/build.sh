@@ -5,16 +5,21 @@
 build_rbank='../../bin/build_rbank.exe'
 build_indoor_rbank='../../bin/build_indoor_rbank.exe'
 build_ig_boxes='../../bin/build_ig_boxes.exe'
+get_neighbors='../../bin/get_neighbors.exe'
 
 # **** Copy ig and shapes
 
 # Log error
+echo >> log.log
 echo ------- > log.log
 echo --- Generate config script >> log.log
 echo ------- >> log.log
+echo >> log.log
+echo 
 echo ------- 
 echo --- Generate config script
 echo ------- 
+echo 
 
 
 # Get arguments
@@ -44,6 +49,17 @@ mkdir $rbank_scratch_path"raw/preproc"
 # Global options
 build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
+# Log error
+echo >> log.log
+echo ------- >> log.log
+echo --- Build the bbox file >> log.log
+echo ------- >> log.log
+echo >> log.log
+echo 
+echo ------- 
+echo --- Build the bbox file
+echo ------- 
+echo 
 
 # ***** Build the bbox file
 
@@ -107,54 +123,155 @@ echo \}\; >> build_rbank.cfg
 
 echo " " >> build_rbank.cfg
 
+
+# ******* PASS 1
+
+# For each ../zone/zone_lighted/*.zonel files, checks if the associated scratch/tesselation/*.tessel file
+# are up to date with the .zonel and the 8 neighbor .zonel file. If note, tesselate it.
+
 # Log error
+echo >> log.log
 echo ------- >> log.log
 echo --- Tesselate >> log.log
 echo ------- >> log.log
+echo >> log.log
+echo 
 echo ------- 
 echo --- Tesselate
 echo ------- 
+echo 
 
 # Tesselate
 for i in $list_zone ; do
-	$build_rbank -T -m -l -g $i
+
+	# Get destination file
+	zone=`echo $i | sed -e 's/.zonel//'`
+
+	# Destination file
+	dest=`echo $rbank_scratch_path"tesselation/"$zone".tessel"`
+
+	# Get the 9 zones list
+	near_zone=`$get_neighbors $zone`
+
+	# Zone to build
+	zone_to_build=`echo ""`
+
+	# For each zone near
+	if ( ! test -e $dest )
+	then
+		zone_to_build=`echo "../zone/zone_lighted/"$i`
+	else
+		for j in $near_zone ; do
+			  if ( test "../zone/zone_lighted/"$j.zonel -nt $dest )
+			  then
+				zone_to_build=`echo "../zone/zone_lighted/"$i`
+			  fi
+		done
+	fi
+
+	# Build it only if the file exist
+	# if ( test -f $zone_to_build )
+	if ( test "$zone_to_build" )
+	then
+		$build_rbank -T -m -l -g $i
+		echo
+		echo >> log.log
+	else
+		echo SKIP $dest 
+		echo
+		echo SKIP $dest >> log.log
+		echo >> log.log
+	fi
 done
 
+# ******* PASS 2
+
+# For each ../zone/zone_lighted/*.zonel files, checks if the associated scratch/tesselation/*.tessel file
+# are up to date with the .zonel and the 8 neighbor .zonel file. If note, tesselate it.
+
 # Log error
+echo >> log.log
 echo ------- >> log.log
 echo --- Compute >> log.log
 echo ------- >> log.log
+echo >> log.log
+echo 
 echo ------- 
 echo --- Compute
 echo ------- 
+echo 
 
 # Compute
 for i in $list_zone ; do
-	echo $i
-	$build_rbank -t -M -l -g $i
+
+	# Get destination file
+	zone=`echo $i | sed -e 's/.zonel//'`
+
+	# Source file
+	src=`echo $rbank_scratch_path"tesselation/"$zone".tessel"`
+
+	# Destination file
+	dest=`echo $rbank_scratch_path"smooth/preproc/"$zone".lr"`
+
+	# Check dates
+	if ( ! test -e $dest ) || ( test $src -nt $dest )
+	then
+		$build_rbank -t -M -l -g $i
+	else
+		echo SKIP $dest
+		echo SKIP $dest >> log.log
+	fi
+	echo
+	echo >> log.log
 done
 
 # Log error
+echo >> log.log
 echo ------- >> log.log
 echo --- Proclocal >> log.log
 echo ------- >> log.log
+echo >> log.log
+echo 
 echo ------- 
 echo --- Proclocal
 echo ------- 
+echo 
 
 # Proclocal
 for i in $list_zone ; do
-	echo $i
-	$build_rbank -t -m -L -g $i
+
+	# Get destination file
+	zone=`echo $i | sed -e 's/.zonel//'`
+
+	# Source file
+	src=`echo $rbank_scratch_path"smooth/preproc/"$zone".lr"`
+
+	# Destination file
+	dest=`echo $rbank_scratch_path"smooth/"$zone".lr"`
+
+	# Check dates
+	if ( ! test -e $dest ) || ( test $src -nt $dest )
+	then
+		$build_rbank -t -m -L -g $i
+	else
+		echo SKIP $dest
+		echo SKIP $dest >> log.log
+	fi
+	echo
+	echo >> log.log
 done
 
 # Log error
+echo >> log.log
 echo ------- >> log.log
 echo --- Procglobal >> log.log
 echo ------- >> log.log
+echo >> log.log
+echo 
 echo ------- 
 echo --- Procglobal
 echo ------- 
+echo 
 
 # Procglobal
 $build_rbank -t -m -l -G
@@ -194,12 +311,16 @@ echo MergeInputPrefix  = \"temp\"\; >> build_indoor_rbank.cfg
 echo MergeOutputPrefix  = \"tempMerged\"\; >> build_indoor_rbank.cfg
 
 # Log error
+echo >> log.log
 echo ------- >> log.log
 echo --- Merge cmb in rbank >> log.log
 echo ------- >> log.log
+echo >> log.log
+echo 
 echo ------- 
 echo --- Merge cmb in rbank 
 echo ------- 
+echo 
 
 $build_indoor_rbank
 
@@ -208,13 +329,21 @@ $build_indoor_rbank
 
 
 
-
-
+echo >> log.log
+echo ------- >> log.log
+echo --- Copy gr and rbank >> log.log
+echo ------- >> log.log
+echo >> log.log
+echo 
+echo ------- 
+echo --- Copy gr and rbank
+echo ------- 
+echo 
 
 
 
 
 # Copy the files
-cp $rbank_scratch_path"retrievers"/tempMerged.rbank output/$rbank_rbank_name".rbank"
-cp $rbank_scratch_path"retrievers"/tempMerged.gr output/$rbank_rbank_name".gr"
+cp $rbank_scratch_path"retrievers"/tempMerged.rbank output/$rbank_rbank_name".rbank" 2>> log.log
+cp $rbank_scratch_path"retrievers"/tempMerged.gr output/$rbank_rbank_name".gr" 2>> log.log
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.21 2000/12/18 09:30:42 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.22 2000/12/18 15:23:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -174,6 +174,8 @@ public:
 	{
 		return "Opengl 1.2 NeL Driver";
 	}
+
+	virtual bool			isActive();
 
 	virtual void showCursor(bool b);
 

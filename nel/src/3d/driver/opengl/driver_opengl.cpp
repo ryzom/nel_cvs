@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.32 2000/12/18 10:59:49 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.33 2000/12/18 15:23:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -558,6 +558,16 @@ void CDriverGL::setMousePos(float x, float y)
 	
 	SetCursorPos(pt.x, pt.y);
 #endif // NL_OS_WINDOWS
+}
+
+// --------------------------------------------------
+
+bool CDriverGL::isActive()
+{
+#ifdef NL_OS_WINDOWS
+	return (IsWindow (_hWnd)!=0);
+#endif // NL_OS_WINDOWS
+	return true;
 }
 
 }

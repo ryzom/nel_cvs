@@ -1,7 +1,7 @@
 /** \file mesh_vertex_program.h
  * <File description>
  *
- * $Id: mesh_vertex_program.h,v 1.1 2002/02/26 14:17:55 berenguier Exp $
+ * $Id: mesh_vertex_program.h,v 1.2 2002/03/14 18:12:54 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -30,6 +30,13 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/smart_ptr.h"
 
+#include "3d/material.h"
+
+
+namespace NLMISC
+{
+	class CMatrix;
+}
 
 namespace NL3D 
 {
@@ -38,6 +45,9 @@ namespace NL3D
 class	IDriver;
 class	CScene;
 class	CMeshBaseInstance;
+class	CLight;
+class	CVertexBuffer;
+class	IVertexBufferHard;
 
 
 /**
@@ -57,23 +67,43 @@ public:
 	/** Called at creation of an instance, to setup some information directly in the CMeshBaseInstance
 	 */
 	virtual	void	initInstance(CMeshBaseInstance *mbi) =0;
+	
 
-
-	/** Called to setup constant / activate VertexProgram. (called before activate of the VB)
+	/** Called to setup constant / activate VertexProgram. (called before activate of the VB).
+	 *  The result tells wether the vertex program will be used in the given context.
+	 *  If this is the case, a call to setupMaterial must be done for each material being rendered with this V.P.
+	 *  After all primitive have been rendered, end() must be called.
 	 *	\param drv driver where to setup VP.
 	 *	\param scene retrieve some useFull scene info (windPower, time ...)
-	 *	\param mbi the mesh instance to retrieve some instance setup
+	 *	\param mbi the mesh instance to retrieve some instance setup.
+	 *  \param mat the matrix to use (may not be the one of mbi)
+	 *  \param viewerPos position of the viewer in world space.
 	 */
-	virtual	void	begin(IDriver *drv, CScene *scene, CMeshBaseInstance *mbi) =0;
+	virtual	bool	begin(IDriver *drv,
+						  CScene *scene,
+						  CMeshBaseInstance *mbi,
+						  const NLMISC::CMatrix &invertedModelMat,
+						  const NLMISC::CVector &viewerPos
+						 ) =0;
 	/** Typically disable the VertexProgram, or do some uninit.
 	 */
 	virtual	void	end(IDriver *drv) =0;
+	
+	/** Setup this shader for the given material. This may disable the shader if necessary.
+	  * This is why the vertex buffer is needed : when disabling the v.p we may need to reactivate it
+	  */
+	virtual void	setupForMaterial(const CMaterial &mat,
+									 IDriver *drv,
+									 CScene *scene,
+									 CVertexBuffer *vb) = 0;
+	/// The same as setupForMaterial, but with a hard vb
+	virtual void	setupForMaterial(const CMaterial &mat,
+									 IDriver *drv,
+									 CScene *scene,
+									 IVertexBufferHard *vb) = 0;
 
-	/** true if support VertexProgram Scene Lighting scheme.
-	 *	NB: it is user of IMeshVertexProgram which call 
-	 *	CRenderTrav::beginVPLightSetup() and CRenderTrav::changeVPLightSetupMaterial().
-	 */
-	virtual bool	useSceneVPLightSetup(bool &supportSpecular, uint &lightCteStart) const =0;
+	// Test wether this vertex program need tangent space informations (stored in the last texture coordinate of the mesh)
+	virtual	bool	needTangentSpace() const { return false; }
 };
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.26 2002/03/06 10:24:47 corvazier Exp $
+ * $Id: mesh_mrm.cpp,v 1.27 2002/03/14 18:12:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -227,6 +227,11 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 	nlassert(numMaxMaterial>0);
 
 
+	// SmartPtr Copy VertexProgram effect.
+	//================================================	
+	this->_MeshVertexProgram= m.MeshVertexProgram;
+
+
 	/// 0. First, make bbox.
 	//======================
 	// NB: this is equivalent as building BBox from MRM VBuffer, because CMRMBuilder create new vertices 
@@ -330,11 +335,7 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 	// Copy Blend Shapes
 	//================================================	
 	_MeshMorpher.BlendShapes = meshBuildMRM.BlendShapes;
-
-
-	// SmartPtr Copy VertexProgram effect.
-	//================================================	
-	this->_MeshVertexProgram= m.MeshVertexProgram;
+	
 
 	// Compact bone id and build a bone id names
 	//================================================	
@@ -418,6 +419,7 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 		}
 	}
 
+
 }
 
 
@@ -480,6 +482,7 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 	sint32		colorOff;
 	sint32		specularOff;
 	sint32		uvOff[CVertexBuffer::MaxStage];
+	bool		has3Coords[CVertexBuffer::MaxStage];
 
 
 	// Compute offset of each component of the VB.
@@ -495,12 +498,18 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 		specularOff= _VBufferFinal.getSpecularOff();
 	else
 		specularOff= 0;
+		
 	for(i= 0; i<CVertexBuffer::MaxStage;i++)
 	{
 		if(flags & (CVertexBuffer::TexCoord0Flag<<i))
-			uvOff[i]= _VBufferFinal.getTexCoordOff(i);
+		{
+			uvOff[i]= _VBufferFinal.getTexCoordOff(i);			
+			has3Coords[i] = (_VBufferFinal.getValueType(i + CVertexBuffer::TexCoord0) == CVertexBuffer::Float3);
+		}
 		else
+		{
 			uvOff[i]= 0;
+		}
 	}
 
 
@@ -512,86 +521,194 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 	   NB: this also is why we unroll the 4 1st Uv. The other (if any), are done in the other loop.
 	   NB: optimisation for AGP write cominers: the order of write (vertex, normal, uvs...) is important for good
 	   use of AGP write combiners.
+	   We have 2 version : one that tests for 3 coordinates texture coords, and one that doesn't
 	*/
-	for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
+
+	if (!has3Coords[0] && !has3Coords[1] && !has3Coords[2] && !has3Coords[3])
 	{
-		uint8			*startPtr=	vertexPtr + ptrGeom->Start*vertexSize;
-		uint8			*endPtr=	vertexPtr + ptrGeom->End*vertexSize;
+		// there are no texture coordinate of dimension 3
+		for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
+		{
+			uint8			*startPtr=	vertexPtr + ptrGeom->Start*vertexSize;
+			uint8			*endPtr=	vertexPtr + ptrGeom->End*vertexSize;
 
-		// Vertex.
-		{
-			CVector		*start=	(CVector*)startPtr;
-			CVector		*end=	(CVector*)endPtr;
-			CVector		*dst=	(CVector*)destPtr;
-			*dst= *start * a + *end * a1;
-		}
+			// Vertex.
+			{
+				CVector		*start=	(CVector*)startPtr;
+				CVector		*end=	(CVector*)endPtr;
+				CVector		*dst=	(CVector*)destPtr;
+				*dst= *start * a + *end * a1;
+			}
 
-		// Normal.
-		if(normalOff)
-		{
-			CVector		*start= (CVector*)(startPtr + normalOff);
-			CVector		*end=	(CVector*)(endPtr   + normalOff);
-			CVector		*dst=	(CVector*)(destPtr  + normalOff);
-			*dst= *start * a + *end * a1;
-		}
-
-
-		// Uvs.
-		// uv[0].
-		if(uvOff[0])
-		{
-			// Uv.
-			CUV			*start= (CUV*)(startPtr + uvOff[0]);
-			CUV			*end=	(CUV*)(endPtr   + uvOff[0]);
-			CUV			*dst=	(CUV*)(destPtr  + uvOff[0]);
-			*dst= *start * a + *end * a1;
-		}
-		// uv[1].
-		if(uvOff[1])
-		{
-			// Uv.
-			CUV			*start= (CUV*)(startPtr + uvOff[1]);
-			CUV			*end=	(CUV*)(endPtr   + uvOff[1]);
-			CUV			*dst=	(CUV*)(destPtr  + uvOff[1]);
-			*dst= *start * a + *end * a1;
-		}
-		// uv[2].
-		if(uvOff[2])
-		{
-			// Uv.
-			CUV			*start= (CUV*)(startPtr + uvOff[2]);
-			CUV			*end=	(CUV*)(endPtr   + uvOff[2]);
-			CUV			*dst=	(CUV*)(destPtr  + uvOff[2]);
-			*dst= *start * a + *end * a1;
-		}
-		// uv[3].
-		if(uvOff[3])
-		{
-			// Uv.
-			CUV			*start= (CUV*)(startPtr + uvOff[3]);
-			CUV			*end=	(CUV*)(endPtr   + uvOff[3]);
-			CUV			*dst=	(CUV*)(destPtr  + uvOff[3]);
-			*dst= *start * a + *end * a1;
-		}
+			// Normal.
+			if(normalOff)
+			{
+				CVector		*start= (CVector*)(startPtr + normalOff);
+				CVector		*end=	(CVector*)(endPtr   + normalOff);
+				CVector		*dst=	(CVector*)(destPtr  + normalOff);
+				*dst= *start * a + *end * a1;
+			}
 
 
-		// color.
-		if(colorOff)
-		{
-			CRGBA		*start= (CRGBA*)(startPtr + colorOff);
-			CRGBA		*end=	(CRGBA*)(endPtr   + colorOff);
-			CRGBA		*dst=	(CRGBA*)(destPtr  + colorOff);
-			dst->blendFromui(*start, *end,  ua1);
+			// Uvs.
+			// uv[0].
+			if(uvOff[0])
+			{				
+				// Uv.
+				CUV			*start= (CUV*)(startPtr + uvOff[0]);
+				CUV			*end=	(CUV*)(endPtr   + uvOff[0]);
+				CUV			*dst=	(CUV*)(destPtr  + uvOff[0]);
+				*dst= *start * a + *end * a1;				
+			}
+			// uv[1].
+			if(uvOff[1])
+			{				
+				// Uv.
+				CUV			*start= (CUV*)(startPtr + uvOff[1]);
+				CUV			*end=	(CUV*)(endPtr   + uvOff[1]);
+				CUV			*dst=	(CUV*)(destPtr  + uvOff[1]);
+				*dst= *start * a + *end * a1;				
+			}
+			// uv[2].
+			if(uvOff[2])
+			{				
+				CUV			*start= (CUV*)(startPtr + uvOff[2]);
+				CUV			*end=	(CUV*)(endPtr   + uvOff[2]);
+				CUV			*dst=	(CUV*)(destPtr  + uvOff[2]);
+				*dst= *start * a + *end * a1;				
+			}
+			// uv[3].
+			if(uvOff[3])
+			{				
+				// Uv.
+				CUV			*start= (CUV*)(startPtr + uvOff[3]);
+				CUV			*end=	(CUV*)(endPtr   + uvOff[3]);
+				CUV			*dst=	(CUV*)(destPtr  + uvOff[3]);
+				*dst= *start * a + *end * a1;				
+			}
 		}
-		// specular.
-		if(specularOff)
+	}
+	else // THERE ARE TEXTURE COORDINATES OF DIMENSION 3
+	{
+		for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
 		{
-			CRGBA		*start= (CRGBA*)(startPtr + specularOff);
-			CRGBA		*end=	(CRGBA*)(endPtr   + specularOff);
-			CRGBA		*dst=	(CRGBA*)(destPtr  + specularOff);
-			dst->blendFromui(*start, *end,  ua1);
-		}
+			uint8			*startPtr=	vertexPtr + ptrGeom->Start*vertexSize;
+			uint8			*endPtr=	vertexPtr + ptrGeom->End*vertexSize;
 
+			// Vertex.
+			{
+				CVector		*start=	(CVector*)startPtr;
+				CVector		*end=	(CVector*)endPtr;
+				CVector		*dst=	(CVector*)destPtr;
+				*dst= *start * a + *end * a1;
+			}
+
+			// Normal.
+			if(normalOff)
+			{
+				CVector		*start= (CVector*)(startPtr + normalOff);
+				CVector		*end=	(CVector*)(endPtr   + normalOff);
+				CVector		*dst=	(CVector*)(destPtr  + normalOff);
+				*dst= *start * a + *end * a1;
+			}
+			// Uvs.
+			// uv[0].
+			if(uvOff[0])
+			{
+				if (!has3Coords[0])
+				{
+					// Uv.
+					CUV			*start= (CUV*)(startPtr + uvOff[0]);
+					CUV			*end=	(CUV*)(endPtr   + uvOff[0]);
+					CUV			*dst=	(CUV*)(destPtr  + uvOff[0]);
+					*dst= *start * a + *end * a1;
+				}
+				else
+				{
+					// Uv.
+					CUVW		*start= (CUVW*)(startPtr + uvOff[0]);
+					CUVW		*end=	(CUVW*)(endPtr   + uvOff[0]);
+					CUVW		*dst=	(CUVW*)(destPtr  + uvOff[0]);
+					*dst= *start * a + *end * a1;
+				}
+			}
+			// uv[1].
+			if(uvOff[1])
+			{
+				if (!has3Coords[1])
+				{
+					// Uv.
+					CUV			*start= (CUV*)(startPtr + uvOff[1]);
+					CUV			*end=	(CUV*)(endPtr   + uvOff[1]);
+					CUV			*dst=	(CUV*)(destPtr  + uvOff[1]);
+					*dst= *start * a + *end * a1;
+				}
+				else
+				{
+					// Uv.
+					CUVW		*start= (CUVW*)(startPtr + uvOff[1]);
+					CUVW		*end=	(CUVW*)(endPtr   + uvOff[1]);
+					CUVW		*dst=	(CUVW*)(destPtr  + uvOff[1]);
+					*dst= *start * a + *end * a1;
+				}
+			}
+			// uv[2].
+			if(uvOff[2])
+			{
+				if (!has3Coords[2])
+				{
+					// Uv.
+					CUV			*start= (CUV*)(startPtr + uvOff[2]);
+					CUV			*end=	(CUV*)(endPtr   + uvOff[2]);
+					CUV			*dst=	(CUV*)(destPtr  + uvOff[2]);
+					*dst= *start * a + *end * a1;
+				}
+				else
+				{
+					// Uv.
+					CUVW		*start= (CUVW*)(startPtr + uvOff[2]);
+					CUVW		*end=	(CUVW*)(endPtr   + uvOff[2]);
+					CUVW		*dst=	(CUVW*)(destPtr  + uvOff[2]);
+					*dst= *start * a + *end * a1;
+				}
+			}
+			// uv[3].
+			if(uvOff[3])
+			{
+				if (!has3Coords[3])
+				{
+					// Uv.
+					CUV			*start= (CUV*)(startPtr + uvOff[3]);
+					CUV			*end=	(CUV*)(endPtr   + uvOff[3]);
+					CUV			*dst=	(CUV*)(destPtr  + uvOff[3]);
+					*dst= *start * a + *end * a1;
+				}
+				else
+				{
+					// Uv.
+					CUVW		*start= (CUVW*)(startPtr + uvOff[3]);
+					CUVW		*end=	(CUVW*)(endPtr   + uvOff[3]);
+					CUVW		*dst=	(CUVW*)(destPtr  + uvOff[3]);
+					*dst= *start * a + *end * a1;
+				}
+			}
+			// color.
+			if(colorOff)
+			{
+				CRGBA		*start= (CRGBA*)(startPtr + colorOff);
+				CRGBA		*end=	(CRGBA*)(endPtr   + colorOff);
+				CRGBA		*dst=	(CRGBA*)(destPtr  + colorOff);
+				dst->blendFromui(*start, *end,  ua1);
+			}
+			// specular.
+			if(specularOff)
+			{
+				CRGBA		*start= (CRGBA*)(startPtr + specularOff);
+				CRGBA		*end=	(CRGBA*)(endPtr   + specularOff);
+				CRGBA		*dst=	(CRGBA*)(destPtr  + specularOff);
+				dst->blendFromui(*start, *end,  ua1);
+			}
+		}
 	}
 
 
@@ -614,11 +731,20 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 
 			// uv[i].
 			// Uv.
-			CUV			*start= (CUV*)(startPtr + uvOff[i]);
-			CUV			*end=	(CUV*)(endPtr	+ uvOff[i]);
-			CUV			*dst=	(CUV*)(destPtr	+ uvOff[i]);
-			*dst= *start * a + *end * a1;
-
+			if (!has3Coords[i])
+			{
+				CUV			*start= (CUV*)(startPtr + uvOff[i]);
+				CUV			*end=	(CUV*)(endPtr	+ uvOff[i]);
+				CUV			*dst=	(CUV*)(destPtr	+ uvOff[i]);
+				*dst= *start * a + *end * a1;
+			}
+			else
+			{
+				CUVW		*start= (CUVW*)(startPtr + uvOff[i]);
+				CUVW		*end=	(CUVW*)(endPtr	+ uvOff[i]);
+				CUVW		*dst=	(CUVW*)(destPtr	+ uvOff[i]);
+				*dst= *start * a + *end * a1;
+			}
 		}
 	}
 
@@ -735,6 +861,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and isSkinApply().
 	bool bMorphApplied = _MeshMorpher.BlendShapes.size() > 0;
 	bool bSkinApplied = _Skinned && mi->isSkinApply() && skeleton;
+	bool useTangentSpace = _MeshVertexProgram || !_MeshVertexProgram->needTangentSpace();
 
 	if (bMorphApplied)
 	{
@@ -744,14 +871,26 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 		// are written in the preceding call to restoreOriginalSkinPart.
 		if (_Skinned)
 		{
-			_MeshMorpher.initMRM (	&_VBufferOriginal, &_VBufferFinal, _VBHard, 
-									&_OriginalSkinVertices, &_OriginalSkinNormals, bSkinApplied );
+			_MeshMorpher.initMRM(&_VBufferOriginal,
+								 &_VBufferFinal,
+								 _VBHard,
+								 &_OriginalSkinVertices,
+								 &_OriginalSkinNormals,
+								 _MeshVertexProgram->needTangentSpace() ? &_OriginalTGSpace : NULL,
+								 bSkinApplied 
+								);
 		}
 		else // Not even skinned so we have to do all the stuff
 		{
-			_MeshMorpher.initMRM (&_VBufferOriginal, &_VBufferFinal, _VBHard, NULL, NULL, false);
+			_MeshMorpher.initMRM(&_VBufferOriginal,
+								 &_VBufferFinal,
+								 _VBHard,
+								 NULL,
+								 NULL,
+								 NULL,
+								 false);
 		}
-		_MeshMorpher.updateMRM (mi->getBlendShapeFactors());
+		_MeshMorpher.updateMRM (mi->getBlendShapeFactors(), useTangentSpace);
 	}
 
 	// Skinning.
@@ -760,7 +899,15 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	if (bSkinApplied)
 	{
 		// apply skin for this Lod only.
-		applySkin (lod, skeleton->Bones);
+		if (!useTangentSpace)
+		{
+			applySkin (lod, skeleton->Bones); // skinning with no tangent space
+		}
+		else
+		{
+			// Tangent space stored in the last texture coordinate
+			applySkinWithTangentSpace(lod, skeleton->Bones, _VBufferFinal.getNumTexCoordUsed() - 1);
+		}
 	}
 	// if instance skin is invalid but mesh is skinned , we must copy vertices/normals from original vertices.
 	else if (!bSkinApplied && _Skinned)
@@ -793,47 +940,22 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 
 	// Setup meshVertexProgram
 	//===========
-	// use MeshVertexProgram effect?
-	bool	useMeshVP= _MeshVertexProgram != NULL && drv->isVertexProgramSupported() && !drv->isVertexProgramEmulated();
-	bool	useMeshVPLightSetup= false;
-	// Test if must setup VP Lighting fragment
-	if(useMeshVP)
-	{
-		bool	meshVPLightSpecular;
-		uint	meshVPLightCteStart;
-		useMeshVPLightSetup= _MeshVertexProgram->useSceneVPLightSetup(meshVPLightSpecular, meshVPLightCteStart);
-		// If use VPLightSetup
-		if(useMeshVPLightSetup)
-		{
-			// get the matrix to object space. depnd if skinned (software skinning here) or not.
-			CMatrix		objectMatrix;
-			if (bSkinApplied)
-				objectMatrix= skeleton->getWorldMatrix();
+	CMatrix		invertedObjectMatrix;
+	if (bSkinApplied)
+				invertedObjectMatrix = skeleton->getWorldMatrix().inverted();
 			else
-				objectMatrix= trans->getWorldMatrix();
+				invertedObjectMatrix = trans->getWorldMatrix().inverted();
 
-			// setup ctes for lighting
-			renderTrav->beginVPLightSetup(meshVPLightCteStart, meshVPLightSpecular, objectMatrix.inverted());
-		}
-	}
-
-
-	// Render the lod.
-	//===========
 
 	// force normalisation of normals..
 	bool	bkupNorm= drv->isForceNormalize();
-	drv->forceNormalize(true);
+	drv->forceNormalize(true);			
 
-
-	// If use MeshGeom special VertexProgram.
-	if(useMeshVP)
-	{
-		// Apply it.
-		_MeshVertexProgram->begin(drv, mi->getScene(), mi);
-	}
-
-
+	// use MeshVertexProgram effect?
+			bool	useMeshVP= _MeshVertexProgram != NULL ? _MeshVertexProgram->begin(drv, mi->getScene(), mi, invertedObjectMatrix, renderTrav->CamPos) : false;
+	
+	// Render the lod.
+	//===========
 	// active VB.
 	if(_VBHard)
 		drv->activeVertexBufferHard(_VBHard);
@@ -875,10 +997,16 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 				material.setZWrite (false);
 
 				// If use meshVertexProgram, and use VPLightSetup
-				if(useMeshVPLightSetup)
+				if (useMeshVP)
 				{
-					// setup ctes for Vertex Program lighting which depend on material
-					renderTrav->changeVPLightSetupMaterial(material);
+					if(_VBHard)
+					{
+						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, _VBHard);
+					}
+					else
+					{
+						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBufferFinal);
+					}
 				}
 
 				// Render
@@ -904,12 +1032,17 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 			if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (passOpaque == true) ) ||
 				 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (passOpaque == false) ) )
 			{
-				// If use meshVertexProgram, and use VPLightSetup
-				if(useMeshVPLightSetup)
+				if (useMeshVP)
 				{
-					// setup ctes for Vertex Program lighting which depend on material
-					renderTrav->changeVPLightSetupMaterial(mi->Materials[rdrPass.MaterialId]);
-				}
+					if(_VBHard)
+					{
+						_MeshVertexProgram->setupForMaterial(mi->Materials[rdrPass.MaterialId], drv, ownerScene, _VBHard);
+					}
+					else
+					{
+						_MeshVertexProgram->setupForMaterial(mi->Materials[rdrPass.MaterialId], drv, ownerScene, &_VBufferFinal);
+					}
+				}	
 
 				// Render with the Materials of the MeshInstance.
 				drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
@@ -1322,6 +1455,19 @@ void	CMeshMRMGeom::bkupOriginalSkinVerticesSubset(uint wedgeStart, uint wedgeEnd
 			_OriginalSkinNormals[i]= *(CVector*)_VBufferFinal.getNormalCoordPointer(i);
 		}
 	}
+
+	// is there tangent space added ?
+	if (_MeshVertexProgram && _MeshVertexProgram->needTangentSpace())
+	{
+		// yes, backup it
+		nlassert(_VBufferFinal.getNumTexCoordUsed() > 0);
+		uint tgSpaceStage = _VBufferFinal.getNumTexCoordUsed() - 1;
+		_OriginalTGSpace.resize(_VBufferFinal.getNumVertices());
+		for(uint i=wedgeStart; i<wedgeEnd;i++)
+		{
+			_OriginalTGSpace[i]= *(CVector*)_VBufferFinal.getTexCoordPointer(i, tgSpaceStage);
+		}
+	}
 }
 
 
@@ -1345,6 +1491,17 @@ void	CMeshMRMGeom::restoreOriginalSkinVertices()
 		for(uint i=0; i<_VBufferFinal.getNumVertices();i++)
 		{
 			*(CVector*)_VBufferFinal.getNormalCoordPointer(i)= _OriginalSkinNormals[i];
+		}
+	}
+	if (_MeshVertexProgram && _MeshVertexProgram->needTangentSpace())
+	{
+		uint numTexCoords = _VBufferFinal.getNumTexCoordUsed();
+		nlassert(numTexCoords >= 2);
+		nlassert(_OriginalTGSpace.size() == _VBufferFinal.getNumVertices());
+		// copy tangent space vectors
+		for(uint i = 0; i < _VBufferFinal.getNumVertices(); ++i)
+		{
+			*(CVector*)_VBufferFinal.getTexCoordPointer(i, numTexCoords - 1)= _OriginalTGSpace[i];
 		}
 	}
 }
@@ -1702,15 +1859,233 @@ void	CMeshMRMGeom::applySkin(CLod &lod, const std::vector<CBone> &bones)
 		}
 
 	}
-
-
 	// Fill the usefull AGP memory (if any one loaded).
 	fillAGPSkinPart(lod);
-
-
 	// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
 	lod.OriginalSkinRestored= false;
 }
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::applySkinWithTangentSpace(CLod &lod, const std::vector<CBone> &bones, uint tangentSpaceTexCoord)
+{
+	nlassert(_Skinned);
+	if(_SkinWeights.size()==0)
+		return;
+
+	// get vertexPtr / normalOff / tangent space offset.
+	//===========================
+	uint8		*destVertexPtr= (uint8*)_VBufferFinal.getVertexCoordPointer();
+	uint		flags= _VBufferFinal.getVertexFormat();
+	sint32		vertexSize= _VBufferFinal.getVertexSize();
+	// must have XYZ.
+	// if there's tangent space, there also must be a normal there.
+	nlassert((flags & CVertexBuffer::PositionFlag) 
+			 && (flags & CVertexBuffer::NormalFlag) 
+			);
+
+
+	// Compute offset of each component of the VB.
+	sint32		normalOff;	
+	normalOff= _VBufferFinal.getNormalOff();
+	
+	// tg space offset
+	sint32		tgSpaceOff = _VBufferFinal.getTexCoordOff((uint8) tangentSpaceTexCoord);
+
+	// compute src array.
+	CMesh::CSkinWeight	*srcSkinPtr;
+	CVector				*srcVertexPtr;
+	CVector				*srcNormalPtr;
+	CVector				*tgSpacePtr;
+	//
+	srcSkinPtr= &_SkinWeights[0];
+	srcVertexPtr= &_OriginalSkinVertices[0];	
+	srcNormalPtr= &(_OriginalSkinNormals[0]);
+	tgSpacePtr = &(_OriginalTGSpace[0]);
+
+
+
+	// Compute usefull Matrix for this lod.
+	//===========================
+	uint	i;
+	// Those arrays map the array of bones in skeleton.
+	static	vector<CMatrix3x4>			boneMat3x4;
+	static	vector<CMatrix3x4>			boneMatNormal3x4;
+	// For all matrix this lod use.
+	for(i= 0; i < lod.MatrixInfluences.size(); i++)
+	{
+		// Get Matrix info.
+		uint	matId= lod.MatrixInfluences[i];
+		const CMatrix		&boneMat= bones[matId].getBoneSkinMatrix();
+		CMatrix				boneMatNormal;
+
+		// build the good boneMatNormal (with good scale inf).
+		// copy only the rot matrix.
+		boneMatNormal.setRot(boneMat);
+		// If matrix has scale...
+		if(boneMatNormal.hasScalePart())
+		{
+			// Must compute the transpose of the invert matrix. (10 times slower if not uniform scale!!)
+			boneMatNormal.invert();
+			boneMatNormal.transpose3x3();
+		}
+
+		// compute "fast" matrix 3x4.
+		// resize Matrix3x4.
+		if(matId>=boneMat3x4.size())
+		{
+			boneMat3x4.resize(matId+1);
+			boneMatNormal3x4.resize(matId+1);
+		}
+		boneMat3x4[matId].set(boneMat);
+		boneMatNormal3x4[matId].set(boneMatNormal);
+	}
+
+
+	// apply skinning (with tangent space added)
+	//===========================
+	// assert, code below is written especially for 4 per vertex.
+	nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
+	for(i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)
+	{
+		uint		nInf= lod.InfluencedVertices[i].size();
+		if( nInf==0 )
+			continue;
+		uint32		*infPtr= &(lod.InfluencedVertices[i][0]);
+
+		switch(i)
+		{
+		//=========
+		case 0:
+			// Special case for Vertices influenced by one matrix. Just copy result of mul.
+			//  for all InfluencedVertices only.
+			for(;nInf>0;nInf--, infPtr++)
+			{
+				uint	index= *infPtr;
+				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
+				CVector				*srcVertex= srcVertexPtr + index;
+				CVector				*srcNormal= srcNormalPtr + index;
+				CVector				*srcTgSpace= tgSpacePtr + index;
+				//
+				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
+				CVector				*dstVertex= (CVector*)(dstVertexVB);
+				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
+				CVector				*dstTgSpace= (CVector*)(dstVertexVB + tgSpaceOff);
+
+
+
+				// Vertex.
+				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, *dstVertex);
+				// Normal.				
+				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, *dstNormal);
+				// Tg space
+				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcTgSpace, *dstTgSpace);
+
+			}
+			break;
+
+		//=========
+		case 1:
+			//  for all InfluencedVertices only.
+			for(;nInf>0;nInf--, infPtr++)
+			{
+				uint	index= *infPtr;
+				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
+				CVector				*srcVertex= srcVertexPtr + index;
+				CVector				*srcNormal= srcNormalPtr + index;
+				CVector				*srcTgSpace= tgSpacePtr + index;
+				//
+				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
+				CVector				*dstVertex= (CVector*)(dstVertexVB);
+				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
+				CVector				*dstTgSpace= (CVector*)(dstVertexVB + tgSpaceOff);
+
+				// Vertex.
+				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, srcSkin->Weights[0], *dstVertex);
+				boneMat3x4[ srcSkin->MatrixId[1] ].mulAddPoint( *srcVertex, srcSkin->Weights[1], *dstVertex);
+				// Normal.				
+				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, srcSkin->Weights[0], *dstNormal);
+				boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcNormal, srcSkin->Weights[1], *dstNormal);
+				// Tg space
+				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcTgSpace, srcSkin->Weights[0], *dstTgSpace);
+				boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcTgSpace, srcSkin->Weights[1], *dstTgSpace);
+			}
+			break;
+
+		//=========
+		case 2:
+			//  for all InfluencedVertices only.
+			for(;nInf>0;nInf--, infPtr++)
+			{
+				uint	index= *infPtr;
+				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
+				CVector				*srcVertex= srcVertexPtr + index;
+				CVector				*srcNormal= srcNormalPtr + index;
+				CVector				*srcTgSpace= tgSpacePtr + index;
+				//
+				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
+				CVector				*dstVertex= (CVector*)(dstVertexVB);
+				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
+				CVector				*dstTgSpace= (CVector*)(dstVertexVB + tgSpaceOff);
+
+				// Vertex.
+				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, srcSkin->Weights[0], *dstVertex);
+				boneMat3x4[ srcSkin->MatrixId[1] ].mulAddPoint( *srcVertex, srcSkin->Weights[1], *dstVertex);
+				boneMat3x4[ srcSkin->MatrixId[2] ].mulAddPoint( *srcVertex, srcSkin->Weights[2], *dstVertex);
+				// Normal.				
+				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, srcSkin->Weights[0], *dstNormal);
+				boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcNormal, srcSkin->Weights[1], *dstNormal);
+				boneMatNormal3x4[ srcSkin->MatrixId[2] ].mulAddVector( *srcNormal, srcSkin->Weights[2], *dstNormal);
+				// Tg space
+				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcTgSpace, srcSkin->Weights[0], *dstTgSpace);
+				boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcTgSpace, srcSkin->Weights[1], *dstTgSpace);				
+				boneMatNormal3x4[ srcSkin->MatrixId[2] ].mulAddVector( *srcTgSpace, srcSkin->Weights[2], *dstTgSpace);				
+			}
+			break;
+
+		//=========
+		case 3:
+			//  for all InfluencedVertices only.
+			for(;nInf>0;nInf--, infPtr++)
+			{
+				uint	index= *infPtr;
+				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
+				CVector				*srcVertex= srcVertexPtr + index;
+				CVector				*srcNormal= srcNormalPtr + index;
+				CVector				*srcTgSpace= tgSpacePtr + index;
+				//
+				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
+				CVector				*dstVertex= (CVector*)(dstVertexVB);
+				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
+				CVector				*dstTgSpace= (CVector*)(dstVertexVB + tgSpaceOff);
+
+				// Vertex.
+				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, srcSkin->Weights[0], *dstVertex);
+				boneMat3x4[ srcSkin->MatrixId[1] ].mulAddPoint( *srcVertex, srcSkin->Weights[1], *dstVertex);
+				boneMat3x4[ srcSkin->MatrixId[2] ].mulAddPoint( *srcVertex, srcSkin->Weights[2], *dstVertex);
+				boneMat3x4[ srcSkin->MatrixId[3] ].mulAddPoint( *srcVertex, srcSkin->Weights[3], *dstVertex);
+				// Normal.				
+				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, srcSkin->Weights[0], *dstNormal);
+				boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcNormal, srcSkin->Weights[1], *dstNormal);
+				boneMatNormal3x4[ srcSkin->MatrixId[2] ].mulAddVector( *srcNormal, srcSkin->Weights[2], *dstNormal);
+				boneMatNormal3x4[ srcSkin->MatrixId[3] ].mulAddVector( *srcNormal, srcSkin->Weights[3], *dstNormal);
+				// Tg space
+				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcTgSpace, srcSkin->Weights[0], *dstTgSpace);
+				boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcTgSpace, srcSkin->Weights[1], *dstTgSpace);				
+				boneMatNormal3x4[ srcSkin->MatrixId[2] ].mulAddVector( *srcTgSpace, srcSkin->Weights[2], *dstTgSpace);								
+				boneMatNormal3x4[ srcSkin->MatrixId[3] ].mulAddVector( *srcTgSpace, srcSkin->Weights[3], *dstTgSpace);								
+			}
+			break;
+
+		}
+
+	}
+	// Fill the usefull AGP memory (if any one loaded).
+	fillAGPSkinPart(lod);
+	// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
+	lod.OriginalSkinRestored= false;
+}
+
 
 
 // ***************************************************************************

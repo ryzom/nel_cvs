@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.21 2002/03/06 10:24:47 corvazier Exp $
+ * $Id: mesh_mrm.h,v 1.22 2002/03/14 18:12:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -284,7 +284,7 @@ private:
 		bool								Skinned;
 
 		// This is the array of SkinWeights, same size as the VB.
-		std::vector<CMesh::CSkinWeight>		SkinWeights;
+		std::vector<CMesh::CSkinWeight>		SkinWeights;		
 
 		// This VB is computed with CMRMBuilder and is ready to used
 		CVertexBuffer			VBuffer;
@@ -339,6 +339,7 @@ private:
 	/// Skinning: this is the list of vertices (mirror of VBuffer), at the bind Pos.
 	std::vector<CVector>		_OriginalSkinVertices;
 	std::vector<CVector>		_OriginalSkinNormals;
+	std::vector<CVector>		_OriginalTGSpace;
 
 	/// The Original VBuffer
 	CVertexBuffer				_VBufferOriginal;
@@ -423,8 +424,14 @@ private:
 	/// Skinning: restore Vertex/Normal from _OriginalSkin* to VBuffer.
 	void	restoreOriginalSkinVertices();
 
-	/// Skinning: Apply skinning to the _VBuffer (before geomorph).
+	/// Skinning: Apply skinning to the _VBuffer (before geomorph).	  	  
 	void	applySkin(CLod &lod, const std::vector<CBone> &bones);
+
+	/** The same as apply skin, but with a tangent space added (encoded in a texture coordinate).
+	  * The tangent space is modified, but not normalized (must be done in a vertex program).
+	  */
+	void	applySkinWithTangentSpace(CLod &lod, const std::vector<CBone> &bones, uint tangentSpaceTexCoord);
+
 	/// Skinning: same as restoreOriginalSkinVertices(), but for one Lod only.
 	void	restoreOriginalSkinPart(CLod &lod);
 

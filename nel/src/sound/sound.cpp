@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.15 2001/09/10 17:26:39 cado Exp $
+ * $Id: sound.cpp,v 1.16 2001/09/11 11:28:47 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,20 +136,33 @@ void				CSound::serial( NLMISC::IStream& s )
 		// Load file (input only)
 		if ( _SoundDriver != NULL )
 		{
-			nlassert ( _Filename != "" );
-			try
+			if ( _Filename != "" )
 			{
-				loadBuffer( _Filename );
+				try
+				{
+					loadBuffer( _Filename );
+				}
+				catch ( Exception& e )
+				{
+					if ( CSound::_AllowMissingWave )
+					{
+						nlwarning( "AM: %s", e.what() );
+					}
+					else
+					{
+						throw ESoundFileNotFound( _Filename );
+					}
+				}
 			}
-			catch ( Exception& e )
+			else
 			{
 				if ( CSound::_AllowMissingWave )
 				{
-					nlwarning( "AM: %s", e.what() );
+					nlwarning( "AM: Sound %s has no filename specified", _Name.c_str() );
 				}
 				else
 				{
-					throw ESoundFileNotFound( _Filename );
+					throw ESoundFileNotFound( "<NoFilename>" );
 				}
 			}
 		}
@@ -228,7 +241,6 @@ uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s, std::vector<st
 			{
 				sound = new CSound();
 				s.serial( *sound );
-				nlassert( ! sound->getName().empty() );
 				if ( ! container.insert( make_pair( sound->getName().c_str(), sound ) ).second )
 				{
 					nlwarning( "AM: Duplicate sound found while loading NSS sound bank" );

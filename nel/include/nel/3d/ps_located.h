@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.9 2001/05/23 15:18:00 vizerie Exp $
+ * $Id: ps_located.h,v 1.10 2001/05/28 15:30:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,12 @@ struct CPSCollisionInfo
 	float   dist ;	
 	// new pos and speed, valid if a collision occured
 	CVector newPos, newSpeed ;
+
+	/** the zone on which the bounce occured...
+	 *  can be useful to check the behaviour in case of collision
+	 */
+
+	CPSZone *collisionZone ;
 
 	CPSCollisionInfo()
 	{
@@ -352,7 +358,7 @@ public:
 	*  \index the index of instance that collided
 	*/
 
-	inline void collisionOccured(const CPSCollisionInfo &ci, uint32 index) ;
+	inline void collisionUpdate(const CPSCollisionInfo &ci, uint32 index) ;
 
 	/** get a matrix that helps to express located B coordinate in located A basis
 	*  A and B must belong to the same system
@@ -528,7 +534,7 @@ inline CVector CPSLocated::computeK(void) const
 }
 
 
-inline void CPSLocated::collisionOccured(const CPSCollisionInfo &ci, uint32 index)
+inline void CPSLocated::collisionUpdate(const CPSCollisionInfo &ci, uint32 index)
 {
 	nlassert(_CollisionInfo) ;
 	CPSCollisionInfo  &firstCi = (*_CollisionInfo)[index] ;
@@ -790,6 +796,13 @@ protected:
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
 	virtual void resize(uint32 size) = 0 ;
+
+
+
+	/** a bounce occured, so some action could be done. The default behaviour does nothing
+	 *  \param index the index of the element that bounced
+	 */
+	virtual void bounceOccured(uint32 index) {}
 
 
 	/// set the located that hold this located bindable

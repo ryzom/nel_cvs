@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.11 2001/05/23 15:18:01 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.12 2001/05/28 15:30:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1710,59 +1710,58 @@ void CPSTailDot::resizeVb(uint32 oldTailSize, uint32 size)
 
 void CPSTailDot::setupColor(void)
 {
-	// we setup the WHOLE vb so, we need to get the max number of particles
-	const uint32 size = _Owner->getMaxSize() ;	
-
-	// size of the vertices
-	const uint32 vSize = _Vb.getVertexSize() ;
-
-	// offset of the color in vertices
-	const uint32 colorOff = _Vb.getColorOff() ;
-
-	// first vertex
-	uint8 *firstVertex = (uint8 *) _Vb.getVertexCoordPointer() ;
-	
-	// point the current vertex color
-	uint8 *currVertex =  firstVertex + colorOff ;
-
-	// loop counters
-	uint k, l ;
-
-
-	if (_UseColorScheme || !_ColorFading)
+	if (_Owner)
 	{
-		// we can't precompute the colors, so at first, we fill all with black
-		const CRGBA &color = _UseColorScheme ? CRGBA::Black : _Color ;
-		for (k = 0 ; k < size * (_TailNbSeg + 1) ; ++k)
+		// we setup the WHOLE vb so, we need to get the max number of particles
+		const uint32 size = _Owner->getMaxSize() ;	
+
+		// size of the vertices
+		const uint32 vSize = _Vb.getVertexSize() ;
+
+		// offset of the color in vertices
+		const uint32 colorOff = _Vb.getColorOff() ;
+
+		// first vertex
+		uint8 *firstVertex = (uint8 *) _Vb.getVertexCoordPointer() ;
+		
+		// point the current vertex color
+		uint8 *currVertex =  firstVertex + colorOff ;
+
+		// loop counters
+		uint k, l ;
+
+
+		if (_UseColorScheme || !_ColorFading)
 		{
-				*(CRGBA *) currVertex = color ;
-				currVertex += vSize ;
-		}
-	}
-	else // constant color with color fading
-	{
-		const float lumiStep = 255.0f / _TailNbSeg ;
-		const  uint32 tailVSize = vSize * (_TailNbSeg + 1) ; // size of a whole tail in the vertex buffer
-		float lumi = 0.f ;
-		for (l = 0 ; l <= _TailNbSeg ; ++l)
-		{
-			currVertex = firstVertex + l * vSize + colorOff ;
-			CRGBA col ;
-			col.modulateFromui(_Color, (uint8) lumi) ;
-			lumi += lumiStep ;			
-			for (k = 0 ; k < size ; ++k)
-			{				
-				*(CRGBA *)currVertex = col ;				
-				currVertex += tailVSize  ;			
+			// we can't precompute the colors, so at first, we fill all with black
+			const CRGBA &color = _UseColorScheme ? CRGBA::Black : _Color ;
+			for (k = 0 ; k < size * (_TailNbSeg + 1) ; ++k)
+			{
+					*(CRGBA *) currVertex = color ;
+					currVertex += vSize ;
 			}
-			
 		}
+		else // constant color with color fading
+		{
+			const float lumiStep = 255.0f / _TailNbSeg ;
+			const  uint32 tailVSize = vSize * (_TailNbSeg + 1) ; // size of a whole tail in the vertex buffer
+			float lumi = 0.f ;
+			for (l = 0 ; l <= _TailNbSeg ; ++l)
+			{
+				currVertex = firstVertex + l * vSize + colorOff ;
+				CRGBA col ;
+				col.modulateFromui(_Color, (uint8) lumi) ;
+				lumi += lumiStep ;			
+				for (k = 0 ; k < size ; ++k)
+				{				
+					*(CRGBA *)currVertex = col ;				
+					currVertex += tailVSize  ;			
+				}
+				
+			}
 
-	}
-
-
-	
-
+		}
+	}	
 }
 
 
@@ -2993,7 +2992,7 @@ void CPSFace::draw(void)
 			
 		// rotate all precomputed basis
 
-		// TODO : mettre la bonne vlauer ici !!
+		// TODO : mettre la bonne valeur ici !!
 		const float ellapsedTime = 0.01f ;
 
 		for (std::vector< CPlaneBasisPair >::iterator it = _PrecompBasis.begin(); it != _PrecompBasis.end(); ++it)
@@ -3392,6 +3391,8 @@ void CPSShockWave::draw(void)
 	if (!size) return ;
 
 
+
+
 	const uint32 vSize = _Vb.getVertexSize() ;
 
 	IDriver *driver = getDriver() ;
@@ -3407,7 +3408,7 @@ void CPSShockWave::draw(void)
 	
 	uint leftToDo  = size, toProcess ;
 	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endIt  ;
-	uint8 *currVertex = (uint8 *) _Vb.getVertexCoordPointer() ;
+	uint8 *currVertex ;
 	uint k  ;
 
 	const float angleStep = 256.f / _NbSeg ;
@@ -3429,6 +3430,8 @@ void CPSShockWave::draw(void)
 
 	do
 	{
+		currVertex = (uint8 *) _Vb.getVertexCoordPointer() ;
+
 		toProcess = leftToDo > shockWaveBufSize ? shockWaveBufSize : leftToDo ;
 
 		endIt = posIt + toProcess ;
@@ -3493,10 +3496,16 @@ void CPSShockWave::draw(void)
 		}
 		while (posIt != endIt) ;
 
+	/*	printf("\n nb quad = %d \n", toProcess) ;
+		fflush(stdout) ;
+*/
+		
+
 		_Pb.setNumQuad(toProcess * _NbSeg) ;
 		driver->render(_Pb, _Mat) ;
 		leftToDo -= toProcess ;
 
+		
 	}
 	while (leftToDo) ;
 
@@ -3865,10 +3874,215 @@ CPSMesh::~CPSMesh()
 
 
 
+/** this is used to fin a vertex that was previously construct
+ * if NULL is returned, then the vertex must be built again
+ * This is slow, and thus not suited for large amount of vertices ...
+ * \param v : pointer to the vertex to find
+ * \param vSize : size of the vertex
+ * \param vTab : pointer to a table of vertices
+ * \param numVerts : the number of vertices to saerch in
+ * \return -1 if not found, or an index to the vertex
+ */
+
+static sint ConstraintMeshFindVert(const uint8 *v, uint vSize, const uint8 *vTab, uint numVerts)
+{
+	nlassert(v) ;
+	nlassert(vTab) ;
+	nlassert(vSize > 0) ;
+	const uint8 *currV = vTab ;
+	for (uint k = 0 ; k < numVerts ; ++k)
+	{
+		
+		if (memcmp((const char *)currV, (const char *) v, vSize) == 0)
+		{
+			return (currV -  vTab) / vSize ; 
+		}
+		currV += vSize ;
+	}
+	return -1 ;
+}
+
 
 void CPSConstraintMesh::build(const CMesh::CMeshBuild &mb)
 {
+	nlassert(mb.VertexFlags & IDRV_VF_XYZ) ; // need the position at least
 
+	nlassert(mb.Faces.size()) ;
+
+	nlassert(mb.Materials.size() == 1) ;
+
+	// copy first material
+	_Mat = mb.Materials[0] ;
+
+
+
+	// when constructing the mesh, we need to reuse vertices that have the same values 
+	// (because uv, normal ... are not encoded in the vertex list in the CMeshBuild struct)
+
+
+
+	// now we create our version of the mesh	
+	_ModelVb.setVertexFormat(mb.VertexFlags) ;
+	_ModelVb.setNumVertices(mb.Vertices.size()) ; // we may need to enlarge this later....
+	_ModelPb.setNumTri(mb.Faces.size()) ;
+
+	// size of vertices
+	uint vSize = _ModelVb.getVertexSize() ;
+
+	//  vertex used before being copied in the before (it is copied only if we can't find a similar vertex)
+	uint8 *myVert = new uint8[vSize] ;
+
+	uint k, l, m ;
+
+	sint vertIndex[3] ;
+
+	// the number of vertices we've created yet
+	uint32 numVertices = 0 ; 
+
+	for (k = 0 ; k < mb.Faces.size() ; ++k)
+	{
+		
+
+
+		for (m = 0 ; m < 3 ; ++m)
+		{
+
+			// copy the vertex position
+
+			*(CVector *) myVert = mb.Vertices[mb.Faces[k].Corner[m].Vertex] ;
+
+			// copy the vertices texture coordinates
+			for (l = 0 ; l < IDRV_VF_MAXSTAGES ; ++l)
+			{
+				if (mb.VertexFlags & IDRV_VF_UV[l])
+				{
+					*(CUV *) (myVert + _ModelVb.getTexCoordOff(l)) = mb.Faces[k].Corner[m].Uvs[l] ;
+				}
+			}
+
+			// normal 
+			if (mb.VertexFlags & IDRV_VF_NORMAL)
+			{
+				*(CVector *) (myVert + _ModelVb.getNormalOff()) = mb.Faces[k].Corner[m].Normal ;
+			}	
+
+			// color
+			if (mb.VertexFlags & IDRV_VF_COLOR)
+			{
+				*(CRGBA *) (myVert + _ModelVb.getColorOff()) = mb.Faces[k].Corner[m].Color ;
+			}	
+
+			// specular
+			if (mb.VertexFlags & IDRV_VF_SPECULAR)
+			{
+				*(CRGBA *) (myVert + _ModelVb.getSpecularOff()) = mb.Faces[k].Corner[m].Specular ;
+			}	
+
+
+			sint currVertIndex = ConstraintMeshFindVert(myVert, vSize, (uint8 *) _ModelVb.getVertexCoordPointer(), numVertices) ;
+
+			if (currVertIndex != -1)
+			{
+				vertIndex[m] = currVertIndex ;
+			}
+			else
+			{				
+				_ModelVb.setNumVertices(numVertices + 1) ;
+				memcpy((uint8 *) _ModelVb.getVertexCoordPointer() + vSize * numVertices, myVert, vSize) ;
+				vertIndex[m] = numVertices ;
+				++ numVertices ;
+			}
+		}
+
+
+		_ModelPb.setTri(k, vertIndex[0]
+						  , vertIndex[1]
+						  , vertIndex[2]) ;
+	}
+
+
+	delete[] myVert ;
+
+	setupPreRotatedVb(mb.VertexFlags) ;
+
+	setupVbAndPb(mb.VertexFlags) ;
+	
+}
+
+void CPSConstraintMesh::setupPreRotatedVb(sint vertexFlags)
+{
+	nlassert(vertexFlags & IDRV_VF_XYZ) ; // need the position at least
+	if (_PrecompBasis.size())
+	{
+		// we need only the position and the normal (when present ...)
+		_PreRotatedMeshVb.setVertexFormat(vertexFlags & (IDRV_VF_NORMAL | IDRV_VF_XYZ)) ;
+		_PreRotatedMeshVb.setNumVertices(_ModelVb.getNumVertices() * _PrecompBasis.size() ) ;
+
+
+		const uint vSize = _ModelVb.getVertexSize() ;
+
+		// duplicate position and normals
+		uint index = 0 ;
+
+
+		for (uint k = 0 ; k < _PrecompBasis.size() ; ++k)
+		{
+			for (uint l = 0 ; l < _ModelVb.getNumVertices() ; ++l)
+			{
+				_PreRotatedMeshVb.setVertexCoord(index
+												 , *(CVector *) ((uint8 *) _ModelVb.getVertexCoordPointer() + l * vSize) 
+												) ;
+
+				// duplicate the normal if present
+				if (vertexFlags  & IDRV_VF_NORMAL)
+				{
+					_PreRotatedMeshVb.setNormalCoord(index
+													 , *(CVector *) ((uint8 *) _ModelVb.getNormalCoordPointer() + l * vSize)
+													) ;	
+				}
+				++ index ;
+			}
+		}
+	}
+
+}
+
+	
+void CPSConstraintMesh::setupVbAndPb(sint vertexFlags)
+{
+	nlassert(vertexFlags & IDRV_VF_XYZ) ; // need the position at least
+
+	_MeshBatchVb.setVertexFormat(vertexFlags) ;
+	_MeshBatchVb.setNumVertices(_ModelVb.getNumVertices() * constraintMeshBufSize ) ;
+
+	_MeshBatchPb.setNumTri(_ModelPb.getNumTri() * constraintMeshBufSize) ;
+
+	// setup the primitive block
+	uint currTriIndex = 0 ;
+
+	uint k ;
+
+	for (k = 0 ; k < constraintMeshBufSize ; ++k)
+	{
+		for (uint l = 0 ; l < _ModelPb.getNumTri() ; ++l)
+		{
+			
+			uint32 *currTri = _ModelPb.getTriPointer() + 3 * l ;
+			uint offset = k * _ModelVb.getNumVertices() ;
+			_MeshBatchPb.setTri( currTriIndex, offset + currTri[0], offset + currTri[1], offset + currTri[2] ) ;
+			++currTriIndex ;
+		}
+	}
+
+	// duplicate the model mesh vertices data (even position and normal, though they will be updated each time a mesh is drawn)
+
+	const uint mSize = _MeshBatchVb.getVertexSize() * _ModelVb.getNumVertices() ;
+
+
+	for (k = 0 ; k < constraintMeshBufSize ; ++k)
+	{
+		memcpy((uint8 *) _MeshBatchVb.getVertexCoordPointer() + k * mSize, _ModelVb.getVertexCoordPointer(), mSize) ;
+	}
 }
 
 
@@ -3878,13 +4092,61 @@ void CPSConstraintMesh::hintRotateTheSame(uint32 nbConfiguration
 										)
 {
 
+	// TODO : avoid code duplication with CPSFace ...
+	_MinAngularVelocity = minAngularVelocity ;
+	_MaxAngularVelocity = maxAngularVelocity ;
+
+
+
+	_PrecompBasis.resize(nbConfiguration) ;
+
+	if (nbConfiguration)
+	{
+		// each precomp basis is created randomly ;
+		for (uint k = 0 ; k < nbConfiguration ; ++k)
+		{
+			 CVector v = MakeRandomUnitVect() ;
+			_PrecompBasis[k].Basis = CPlaneBasis(v) ;
+			_PrecompBasis[k].Axis = MakeRandomUnitVect() ;
+			_PrecompBasis[k].AngularVelocity = minAngularVelocity 
+											   + (rand() % 20000) / 20000.f * (maxAngularVelocity - minAngularVelocity) ;
+
+		}	
+
+		// we need to do this because nbConfs may have changed
+		fillIndexesInPrecompBasis() ;
+	}
+
+	/** make sure build() was called
+	 *  If this was'nt done, setupPreRotatedVb will be called during the build call
+	 */
+
+	if (_ModelVb.getNumVertices())
+	{
+		setupPreRotatedVb(_ModelVb.getVertexFormat()) ;
+	}
 }
 
+
+void CPSConstraintMesh::fillIndexesInPrecompBasis(void)
+{
+	// TODO : avoid code duplication with CPSFace ...
+	const uint32 nbConf = _PrecompBasis.size() ;
+	if (_Owner)
+	{
+		_IndexInPrecompBasis.resize( _Owner->getMaxSize() ) ;
+	}	
+	for (std::vector<uint32>::iterator it = _IndexInPrecompBasis.begin(); it != _IndexInPrecompBasis.end() ; ++it)
+	{
+		*it = rand() % nbConf ;
+	}
+}
 
 	
 /// serialisation. Derivers must override this, and call their parent version
 void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	
 
 }
 
@@ -3896,30 +4158,342 @@ CPSConstraintMesh::~CPSConstraintMesh()
 	
 	
 
-void CPSConstraintMesh::newElement(void)
+void CPSConstraintMesh::draw(void)
 {
+	nlassert(_Owner) ;
 
+
+	nlassert(_ModelVb.getNumVertices()) ; // the build method should have been called !!
+
+	const uint32 size = _Owner->getSize() ;
+
+	if (!size) return ;
+
+
+
+	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose	
+
+
+	// size for model vertices
+	const uint vSize = _ModelVb.getVertexSize() ;
+
+
+
+	const uint normalOff = _ModelVb.getNormalOff() ;
+
+	const uint nbVerticesInSource = _ModelVb.getNumVertices() ;
+
+	IDriver *driver = getDriver() ;
+
+	// a loop counter
+	uint k  ; 
+
+	uint8 *currVertex, *currSrcVertex ;
+
+	setupDriverModelMatrix() ;	
+
+
+	float sizes[constraintMeshBufSize] ;
+
+	float *ptCurrSize ;
+	uint ptCurrSizeIncrement = _UseSizeScheme ? 1 : 0 ;
+
+	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt ;
+	uint leftToDo = size, toProcess ;
+
+	driver->activeVertexBuffer(_MeshBatchVb) ;
+
+
+	// do we use pre-rotated meshs ?
+	if (_PrecompBasis.size() != 0)
+	{
+		// we do...
+
+		// size for vertices in prerotated model
+		const uint vpSize = _PreRotatedMeshVb.getVertexSize() ;
+
+		// size of a complete prerotated model
+		const prerotatedModelSize = vpSize * _ModelVb.getNumVertices() ;
+
+		// offset of normals in vertices of the prerotated model
+		const uint pNormalOff = _PreRotatedMeshVb.getVertexFormat() & IDRV_VF_NORMAL ? _PreRotatedMeshVb.getNormalOff() : 0 ;
+
+		// TODO : mettre la bonne valeur ici !!
+		const float ellapsedTime = 0.01f ;
+
+		// rotate basis
+		// and compute the set of prerotated meshs that will then duplicated (with scale and translation) to create the Vb of what must be drawn
+
+		currVertex = (uint8 *) _PreRotatedMeshVb.getVertexCoordPointer() ;
+
+		for (std::vector< CPlaneBasisPair >::iterator it = _PrecompBasis.begin(); it != _PrecompBasis.end(); ++it)
+		{
+			// not optimized at all, but this will apply to very few elements anyway...
+			CMatrix mat ;
+			mat.rotate(CQuat(it->Axis, ellapsedTime * it->AngularVelocity)) ;
+			CVector n = mat * it->Basis.getNormal() ;
+			it->Basis = CPlaneBasis(n) ;
+
+		
+			mat.identity() ;
+			mat.setRot(it->Basis.X, it->Basis.Y, it->Basis.X ^ it->Basis.Y) ;
+
+			currSrcVertex = (uint8 *) _ModelVb.getVertexCoordPointer() ;
+
+			k = nbVerticesInSource ;
+
+			// check wether we need to rotate normals as well...
+			if (_ModelVb.getVertexFormat() & IDRV_VF_NORMAL)
+			{
+				do
+				{
+					* (CVector *) currVertex =  mat.mulVector(* (CVector *) currSrcVertex) ;
+					* (CVector *) (currVertex + pNormalOff) =  mat.mulVector(* (CVector *) (currSrcVertex + normalOff) ) ;
+					currVertex += vpSize ;
+					currSrcVertex += vSize ;
+				}
+				while (--k) ;		
+			}
+			else
+			{
+				// no normal included
+				do
+				{					
+					* (CVector *) currVertex =  mat.mulVector(* (CVector *) currSrcVertex) ;
+					currVertex += vpSize ;
+					currSrcVertex += vSize ;
+				}
+				while (--k) ;	
+
+			}
+		}
+		
+
+	
+		std::vector<uint32>::const_iterator indexIt = _IndexInPrecompBasis.begin() ;
+		
+
+		do
+		{
+			currVertex = (uint8 *) _MeshBatchVb.getVertexCoordPointer() ;
+
+			toProcess = leftToDo  < constraintMeshBufSize ? leftToDo : constraintMeshBufSize ;
+
+			if (_UseSizeScheme)
+			{
+				_SizeScheme->make(_Owner, size -leftToDo, &sizes[0], sizeof(float), toProcess) ;
+				ptCurrSize = sizes ;
+			}
+			else
+			{
+				ptCurrSize = &_ParticleSize ;
+			}
+
+			endPosIt = posIt + toProcess ;
+
+			do
+			{
+	
+				currSrcVertex = (uint8 *) _PreRotatedMeshVb.getVertexCoordPointer() + prerotatedModelSize * *indexIt ;
+				k = nbVerticesInSource ;
+
+				// do we need a normal ?
+
+				if (_ModelVb.getVertexFormat() & IDRV_VF_NORMAL)
+				{
+					// offset of normals in the prerotated mesh				
+					do
+					{
+						// translate and resize the vertex (relatively to the mesh origin)
+						*(CVector *) currVertex = *posIt + *ptCurrSize * *(CVector *) currSrcVertex  ;										
+						// copy the normal
+						*(CVector *) (currVertex + normalOff) = *(CVector *) (currSrcVertex + pNormalOff) ;
+
+						currSrcVertex += vpSize ;
+						currVertex += vSize ;
+					}
+					while (--k) ;
+				}
+				else
+				{
+					// no normal ...
+
+					do
+					{
+						// translate and resize the vertex (relatively to the mesh origin)
+						*(CVector *) currVertex = *posIt + *ptCurrSize * *(CVector *) currSrcVertex  ;																
+
+						currSrcVertex += vpSize ;
+						currVertex += vSize ;
+					}
+					while (--k) ;
+				}
+
+				++indexIt ;
+				++posIt ;
+				ptCurrSize += ptCurrSizeIncrement ;
+			}
+			while (posIt != endPosIt) ;
+			
+			// render meshs
+
+			_MeshBatchPb.setNumTri(_ModelPb.getNumTri() * toProcess) ;
+			driver->render(_MeshBatchPb, _Mat) ;
+
+			leftToDo -= toProcess ;
+
+		}
+		while (leftToDo) ;
+	
+
+		
+
+	}
+	else
+	{
+		// we don't have precomputed mesh there ... so each mesh must be trnasformed, which is the worst case
+
+		
+	
+		CPlaneBasis planeBasis[constraintMeshBufSize] ;
+
+		CPlaneBasis *ptBasis ;
+
+		uint ptBasisIncrement = _UsePlaneBasisScheme ? 1 : 0 ;
+
+		CVector K ; // the K vector of the current basis
+		
+		do
+		{
+			currVertex = (uint8 *) _MeshBatchVb.getVertexCoordPointer() ;
+
+			toProcess = leftToDo  < constraintMeshBufSize ? leftToDo : constraintMeshBufSize ;
+
+			if (_UseSizeScheme)
+			{
+				_SizeScheme->make(_Owner, size -leftToDo, &sizes[0], sizeof(float), toProcess) ;
+				ptCurrSize = sizes ;
+			}
+			else
+			{
+				ptCurrSize = &_ParticleSize ;
+			}
+
+			if (_UsePlaneBasisScheme)
+			{
+				_PlaneBasisScheme->make(_Owner, size -leftToDo, &planeBasis[0], sizeof(CPlaneBasis), toProcess) ;
+				ptBasis = planeBasis ;
+			}
+			else
+			{
+				ptBasis = &_PlaneBasis ;
+			}
+
+			endPosIt = posIt + toProcess ;
+
+			// transfo matri & scaled transfo matrix ;
+
+			CMatrix  M, sM  ;
+
+			do
+			{
+	
+				currSrcVertex = (uint8 *) _ModelVb.getVertexCoordPointer() ;
+				k = nbVerticesInSource ;
+
+				
+
+
+				// do we need a normal ?
+
+				if (_ModelVb.getVertexFormat() & IDRV_VF_NORMAL)
+				{
+					M.identity() ;
+					M.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y) ;
+					sM = M ;
+					sM.scale(*ptCurrSize) ;
+
+					// offset of normals in the prerotated mesh				
+					do
+					{
+						// translate and resize the vertex (relatively to the mesh origin)
+						*(CVector *) currVertex = *posIt + sM * *(CVector *) currSrcVertex  ;										
+						// copy the normal
+						*(CVector *) (currVertex + normalOff) = M * *(CVector *) (currSrcVertex + normalOff) ;
+
+						currSrcVertex += vSize ;
+						currVertex += vSize ;
+					}
+					while (--k) ;
+				}
+				else
+				{
+					// no normal to transform
+					sM.identity() ;
+					sM.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y) ;
+					sM.scale(*ptCurrSize) ;
+
+					do
+					{
+						// translate and resize the vertex (relatively to the mesh origin)
+						*(CVector *) currVertex = *posIt + sM * *(CVector *) currSrcVertex  ;																
+
+						currSrcVertex += vSize ;
+						currVertex += vSize ;
+					}
+					while (--k) ;
+				}
+
+				
+				++posIt ;
+				ptCurrSize += ptCurrSizeIncrement ;
+				ptBasis += ptBasisIncrement ;
+			}
+			while (posIt != endPosIt) ;
+			
+			// render meshs
+
+			_MeshBatchPb.setNumTri(_ModelPb.getNumTri() * toProcess) ;
+			driver->render(_MeshBatchPb, _Mat) ;
+
+			leftToDo -= toProcess ;
+
+		}
+		while (leftToDo) ;
+
+	}
 }
 
 
+void CPSConstraintMesh::newElement(void)
+{
+	// TODO : avoid code cuplication with CPSFace ...
+	const uint32 nbConf = _PrecompBasis.size() ;
+	if (nbConf) // do we use precomputed basis ?
+	{
+		_IndexInPrecompBasis[_Owner->getNewElementIndex()] = rand() % nbConf ;
+	}
+}
+	
 	
 void CPSConstraintMesh::deleteElement(uint32 index)
 {
-
-}
-
-
-void CPSConstraintMesh::draw(void)
-{
-
-}
-
-
-void CPSConstraintMesh::resize(uint32 size)
-{
-
+	// TODO : avoid code cuplication with CPSFace ...
+	if (_PrecompBasis.size()) // do we use precomputed basis ?
+	{
+		// replace ourself by the last element...
+		_IndexInPrecompBasis[index] = _IndexInPrecompBasis[_Owner->getSize() - 1] ;
+	}
 }
 	
+void CPSConstraintMesh::resize(uint32 size)
+{
+	// TODO : avoid code cuplication with CPSFace ...
+	if (_PrecompBasis.size()) // do we use precomputed basis ?
+	{
+		_IndexInPrecompBasis.resize(size) ;
+	}
+}	
 
 
 

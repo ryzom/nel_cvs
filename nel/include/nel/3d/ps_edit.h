@@ -1,7 +1,7 @@
 /** \file ps_edit.h
  * <File description>
  *
- * $Id: ps_edit.h,v 1.2 2001/05/10 09:18:27 vizerie Exp $
+ * $Id: ps_edit.h,v 1.3 2001/05/28 15:30:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,17 @@ struct IPSMover
 	 *  If it sends false, the use of non isometric transformation leads to undefine results
 	 */
 	virtual bool supportNonOrthonormalBasis(void) const { return false ; }
+
+
+	/** Send back true if uniform scaling can be applied
+	 *  If it sends false, uniform scaling leads to undefine results
+	 */
+	virtual bool supportUniformScaling(void) const { return false ; }
+
+	/** Send back true if non-uniform scaling can be applied
+	 *  If it sends false, on-uniform scaling leads to undefine results
+	 */
+	virtual bool supportScaling(void) const { return false ; }
 	
 	// left multiply the current matrix by the given one. No valid index -> assert
 	virtual void applyMatrix(uint32 index, const CMatrix &m) = 0 ;
@@ -78,6 +89,7 @@ struct IPSMover
 		applyMatrix(index, m) ;
 	}
 };
+
 
 
 } // NL3D

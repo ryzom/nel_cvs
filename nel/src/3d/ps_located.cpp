@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.10 2001/05/23 15:18:01 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.11 2001/05/28 15:30:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "nel/3d/ps_located.h"
 #include "nel/misc/aabbox.h"
 #include "nel/3d/ps_util.h"
+#include "nel/3d/ps_zone.h"
+
 
 
 
@@ -421,16 +423,35 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 				nlassert(_CollisionInfo) ;
 				TPSAttribCollisionInfo::const_iterator itc = _CollisionInfo->begin() ;
 				TPSAttribVector::iterator itSpeed = _Speed.begin() ;		
-				for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed, ++itc)
+				for (uint k = 0 ; k < _Size ;)
 				{
 					if (itc->dist != -1)
 					{
 						(*itPos) = itc->newPos ;
 						(*itSpeed) = itc->newSpeed ;
+
+						// notify each located bindable that a bounce occured ...
+						for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+						{	
+							(*it)->bounceOccured(k) ;
+						}
+
+						switch(itc->collisionZone->getCollisionBehaviour())
+						{
+							case CPSZone::bounce:
+								++k, ++itPos, ++itSpeed, ++itc ;
+							break ;
+							case CPSZone::destroy:
+								deleteElement(k) ;
+							break ;
+						}
+
+
 					}
 					else
 					{
 						(*itPos) += ellapsedTime * (*itSpeed) ;
+						++k, ++itPos, ++itSpeed, ++itc ;
 					}
 				}
 

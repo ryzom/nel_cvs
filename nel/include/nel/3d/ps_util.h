@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.5 2001/05/23 15:18:00 vizerie Exp $
+ * $Id: ps_util.h,v 1.6 2001/05/28 15:30:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/vector.h"
-
+#include "nel/misc/rgba.h"
 
 
 
@@ -45,10 +45,12 @@ namespace NL3D
 
 	class CFontGenerator ;
 	class CFontManager ;
+	class IDriver ;
 
 
 	using NLMISC::CMatrix ;
 	using NLMISC::CVector ;
+	using NLMISC::CRGBA ;
 /**
  * This struct contains utility functions used by the particle system.
  * \author Nicolas Vizerie
@@ -64,6 +66,16 @@ struct CPSUtil
 	/// this draw a bounding box		
 
 	static void displayBBox(const NLMISC::CAABBox &box) ;
+
+	/// draw a sphere
+	static void displaySphere(IDriver &driver, float radius, const CVector &center, uint nbSubdiv = 4, CRGBA color = CRGBA::White) ;
+
+
+	/** draw a disc (not filled)
+	 *  \param mat : a matrix, whose K vector is normal to the plane containing the disc
+	 */
+	static void displayDisc(IDriver &driver, float radius, const CVector &center, const CMatrix &mat, uint nbSubdiv = 32, CRGBA color = CRGBA::White) ;
+
 	 
 
 	/// enlarge a bounding box by the specified radius	 

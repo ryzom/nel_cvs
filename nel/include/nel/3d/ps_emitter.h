@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.6 2001/05/17 10:03:58 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.7 2001/05/28 15:30:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,8 +39,8 @@ namespace NL3D {
  */
 struct CPSFrequency
 {
-	// the frequency for emission
-	enum TFreqType { regular = 0, onDeath = 1,  once = 2} _FreqType ;
+	// the frequency for emission.
+	enum TFreqType { regular = 0, onDeath = 1,  once = 2, onBounce = 3 } _FreqType ;
 	// the period of emission (fill that when needed)
 	float _Period ;	
 	// the number of located to generate each time an emission occurs
@@ -134,6 +134,18 @@ protected:
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
 	virtual void resize(uint32 size) ;
+
+
+	virtual void bounceOccured(uint32 index)
+	{
+		if (_Freq._FreqType == CPSFrequency::onBounce)
+		{
+			for (uint32 l = 0 ; l < _Freq._GenNb ; ++l) // emit one or several located
+			{
+				emit(index) ;
+			}
+		}
+	}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.11 2001/05/23 15:18:00 vizerie Exp $
+ * $Id: ps_particle.h,v 1.12 2001/05/28 15:30:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1238,7 +1238,8 @@ protected:
 } ; 
 
 
-/** This class is for mesh that have very simple geometry : solid mesh with one texture
+/** This class is for mesh that have very simple geometry. For now there must be only one material
+ *  for now. The texture is taken from the ifrst material.
  *  They got a hint for constant rotation scheme. With little meshs, this is the best to draw a maximum of them
  */
 
@@ -1317,6 +1318,11 @@ protected:
 	 */
 	virtual void resize(uint32 size)  ;	
 	
+
+	// material
+
+	CMaterial _Mat ;
+
 	// the primitive block for the model mesh. It consists of triangles lists
 	CPrimitiveBlock _ModelPb ;
 
@@ -1325,12 +1331,13 @@ protected:
 
 
 	// the vertex buffer for pre-rotated meshs (it is computed before each new mesh is shown)
+	// it does only contains position and normal when present
 	CVertexBuffer  _PreRotatedMeshVb ;
 
 
 	/** the vertex buffer for a batch of primitive
-	 *  If prerotation are used, then portion of the _PreRotatedMeshVb are duplicated thre, by just 
-	 *  performing translation and scaling
+	 *  If contains all vertices data, and only position and normal (when used)	 are uspdated
+	 *  By using datas from _PreRotatedMeshVb
 	 */
 
 	CVertexBuffer _MeshBatchVb ;
@@ -1361,6 +1368,13 @@ protected:
 
 	/// fill _IndexInPrecompBasis with index in the range [0.. nb configurations[
 	void fillIndexesInPrecompBasis(void) ;
+
+	/// when pre-rotated mesh are used, this setup the vb and ib used for copy
+	void setupPreRotatedVb(sint vertexFlags) ;
+
+	// when a new model mesh is set, this setup the Vb and Pb used for drawing
+	void setupVbAndPb(sint vertexFlags) ;
+
 
 
 } ; 

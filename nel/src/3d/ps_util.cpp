@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.9 2001/05/23 15:18:01 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.10 2001/05/28 15:30:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@
 
 #include "nel/misc/matrix.h"
 
+#include "nel/3d/dru.h"
 
 #include "nel/3d/ps_emitter.h"
 #include "nel/3d/ps_located.h"
@@ -106,6 +107,8 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSDot) ;
 		NLMISC_REGISTER_CLASS(CPSFaceLookAt) ;
 		NLMISC_REGISTER_CLASS(CPSZonePlane) ;
+		NLMISC_REGISTER_CLASS(CPSZoneSphere) ;
+		NLMISC_REGISTER_CLASS(CPSZoneDisc) ;
 		NLMISC_REGISTER_CLASS(CPSColorBlender) ;
 		NLMISC_REGISTER_CLASS(CPSColorBlenderExact) ;
 		NLMISC_REGISTER_CLASS(CPSColorGradient) ;
@@ -377,6 +380,70 @@ CMatrix CPSUtil::buildSchmidtBasis(const CVector &k_)
 }
 
 
+
+void CPSUtil::displaySphere(IDriver &driver, float radius, const CVector &center, uint nbSubdiv, CRGBA color)
+{
+	uint x, y, k ;
+	CVector p, p1, p2 ;
+	
+	static const CVector lK[] = { CVector::I, -CVector::I
+								,CVector::J, -CVector::J
+								,CVector::K, -CVector::K } ;
+
+/*	static const CVector lI = { CVector::J, -CVector::J
+								,CVector::K, -CVector::K
+								,CVector::I, -CVector::I } ;*/
+
+
+
+	for (k = 0 ; k < 6 ; ++k)
+	{
+		const CVector &I = lK[(k + 2) % 6] ;
+		const CVector &K = lK[k] ;
+		const CVector J = K ^ I ;
+
+		for (x = 0; x < nbSubdiv ; ++x)
+		{
+			for (y = 0; y < nbSubdiv ; ++y)
+			{
+				p = ((2.f * x / float(nbSubdiv) ) - 1.f) * I + ((2.f * y / float(nbSubdiv) ) - 1.f) * J + K ;
+				p1 = p + 2.f / float(nbSubdiv) * I ;
+				p2 = p + 2.f / float(nbSubdiv) * J ;
+
+				p.normalize() ; 
+				p1.normalize() ;
+				p2.normalize() ;
+
+				p = center + radius * p ;
+				p1 = center + radius * p1 ;
+				p2 = center + radius * p2 ;
+
+				CDRU::drawLine(p, p1, color, driver) ;
+				CDRU::drawLine(p, p2, color, driver) ;
+			}
+		}
+	}
+}
+
+
+
+void CPSUtil::displayDisc(IDriver &driver, float radius, const CVector &center, const CMatrix &mat, uint nbSubdiv, CRGBA color)
+{
+
+	float thetaDelta = (float) NLMISC::Pi * 2.f / nbSubdiv ;
+	float theta = 0.f ;
+	const CVector &I = mat.getI() ;
+	const CVector &J = mat.getJ() ;
+	for (uint k = 0 ; k < nbSubdiv ; ++k)
+	{
+		
+		CDRU::drawLine(center + radius * ((float) cos(theta) * I + (float) sin(theta) * J)
+					   , center + radius * ((float) cos(theta + thetaDelta) * I + (float) sin(theta + thetaDelta) * J)
+					   , color, driver) ;
+		theta += thetaDelta ;
+	}
+
+}
 
 
 

@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.6 2001/05/17 10:03:58 vizerie Exp $
+ * $Id: ps_zone.h,v 1.7 2001/05/28 15:30:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/3d/ps_force.h"
 #include "nel/3d/ps_edit.h"
-
+#include "nel/3d/ps_attrib.h"
 
 
 namespace NL3D {
@@ -54,6 +54,10 @@ const float PSCollideEpsilon = 10E-5f ;
 class CPSZone : public CPSTargetLocatedBindable
 {
 public:
+
+	/// behaviour when a collision occurs
+
+	enum TCollisionBehaviour { bounce = 0, destroy = 1 } ;
 
 	/// Constructor
 	CPSZone();
@@ -96,6 +100,9 @@ public:
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) 
 	{ 
 		CPSTargetLocatedBindable::serial(f) ; 
+		f.serialEnum(_CollisionBehaviour) ;
+		f.serial(_BounceFactor) ;
+		
 	}
 
 
@@ -106,7 +113,26 @@ public:
 	virtual void releaseTargetRsc(CPSLocated *target) ;
 
 
+	/// set the bounce factor. It has meaning only if the behaviour is set to bounce...	
+	void setBounceFactor(float bounceFactor) { _BounceFactor = bounceFactor ; }
+
+	/// get the bounce factor. It has meaning only if the behaviour is set to bounce...	
+	float getBounceFactor(void) const { return  _BounceFactor ; }
+
+
+	void setCollisionBehaviour(TCollisionBehaviour behaviour) { _CollisionBehaviour = behaviour ; }
+
+	TCollisionBehaviour getCollisionBehaviour(void) const { return _CollisionBehaviour ; }
+
+
 protected:
+
+
+	// the bounce factor. 1.f mean no energy loss
+	float _BounceFactor ;
+
+
+	TCollisionBehaviour _CollisionBehaviour ;
 
 	/**
 	 * This set speed of a located so that it looks like bouncing on a surface
@@ -156,6 +182,101 @@ class CPSZonePlane : public CPSZone, public IPSMover
 
 		virtual void deleteElement(uint32 index) ;
 } ;
+
+
+
+
+/// a radius and its suare in the same struct
+struct CRadiusPair
+{
+	// the adius, and the square radius
+	float R, R2 ;
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	{
+		f.serial(R, R2) ;
+	}
+} ;
+
+
+typedef CPSAttrib<CRadiusPair> TPSAttribRadiusPair ;
+
+/** A sphere
+ */
+
+
+class CPSZoneSphere : public CPSZone, public IPSMover
+{
+	public:
+		virtual void performMotion(CAnimationTime ellapsedTime) ;
+		virtual void show(CAnimationTime ellapsedTime)  ;
+	
+
+		NLMISC_DECLARE_CLASS(CPSZoneSphere) ;
+
+
+		/// left multiply the current matrix by the given one. No valid index -> assert		 		 
+		virtual void applyMatrix(uint32 index, const CMatrix &m) ;
+		// return a matrix of the system. No valid index -> assert
+		virtual CMatrix getMatrix(uint32 index) const ;
+
+		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+
+		// inherited from IPSMover
+		virtual bool supportUniformScaling(void) const { return true ; }
+
+	protected:		
+
+		
+	
+		TPSAttribRadiusPair _Radius ;	
+
+		CMatrix buildBasis(uint32 index) const ;
+
+		virtual void resize(uint32 size) ;
+
+		virtual void newElement(void) ;
+
+		virtual void deleteElement(uint32 index) ;
+} ;
+
+/// a disc
+
+class CPSZoneDisc : public CPSZone, public IPSMover
+{
+	public:
+		virtual void performMotion(CAnimationTime ellapsedTime) ;
+		virtual void show(CAnimationTime ellapsedTime)  ;
+	
+
+		NLMISC_DECLARE_CLASS(CPSZoneDisc) ;
+
+
+		// left multiply the current matrix by the given one. No valid index -> assert
+		virtual void applyMatrix(uint32 index, const CMatrix &m) ;
+		// return a matrix of the system. No valid index -> assert
+		virtual CMatrix getMatrix(uint32 index) const ;
+
+		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+		// inherited from IPSMover
+		virtual bool supportUniformScaling(void) const { return true ; }
+
+	protected:
+		TPSAttribVector _Normal ;
+		TPSAttribRadiusPair _Radius ;
+
+		CMatrix buildBasis(uint32 index) const ;
+
+		virtual void resize(uint32 size) ;
+
+		virtual void newElement(void) ;
+
+		virtual void deleteElement(uint32 index) ;
+
+} ;
+ 
+
 
 } // NL3D
 

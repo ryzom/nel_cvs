@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.9 2002/08/05 12:17:29 berenguier Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.10 2002/09/09 12:27:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,10 +143,17 @@ public:
 			// copy valid data from old to new.
 			memcpy(newData, _Data, size() * sizeof(CMatrix3x4SSE) );
 
+			// release old.
+			if(_AllocData)
+				free(_AllocData);
+
 			// change ptrs and capacity.
 			_Data= newData;
 			_AllocData= newAllocData;
 			_Capacity= n;
+
+			// TestYoyo
+			//nlwarning("YOYO Tst SSE P4: %X, %d", _Data, n);
 		}
 	}
 

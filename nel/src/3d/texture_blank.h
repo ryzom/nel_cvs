@@ -1,7 +1,7 @@
 /** \file texture_blank.h
  * <File description>
  *
- * $Id: texture_blank.h,v 1.1 2001/08/07 14:07:17 vizerie Exp $
+ * $Id: texture_blank.h,v 1.2 2002/02/21 17:37:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NL3D {
  * This texture does generate nothing, and it is releasable. There's no particular reason to use it,
  * unless you want to copy the frame buffer in a texture. You may use that texture so that the device memory
  * will only be allocated once, and the system memory (needed to create the texture, at least with open gl) will be released after that. 
- * A texture_mem could have been used, but it doesn't release memory by itself. 
+ * A texture_mem could have been used, but it doesn't release memory by itself (added : hmm, well it does since 2/2002 ...). 
  */
 class CTextureBlank : public ITexture
 {

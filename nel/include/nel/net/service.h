@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.77 2004/07/12 14:07:41 miller Exp $
+ * $Id: service.h,v 1.78 2004/12/17 14:30:48 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,7 @@
 #include "nel/misc/variable.h"
 #include "nel/misc/command.h"
 #include "nel/misc/entity_id.h"
+#include "nel/misc/cpu_time_stat.h"
 
 #include "nel/net/unified_network.h"
 
@@ -322,6 +323,8 @@ public:
 
 	uint32								getShardId() const { return _ShardId; }
 
+	const NLMISC::CCPUTimeStat&			getCPUUsageStats() const	{ return _CPUUsageStats; }
+
 	/**
 	 * If your service needs a delay when it is asked to quit, provide a callback here (optional).
 	 * Then, when the service will be asked to quit, this callback will be called. Then you can
@@ -407,6 +410,9 @@ private:
 
 	/// Shard Id
 	uint32								_ShardId;
+
+	/// CPU usage stats
+	NLMISC::CCPUTimeStat				_CPUUsageStats;
 
 	enum TClosureClearanceStatus { CCMustRequestClearance, CCWaitingForClearance, CCClearedForClosure, CCCallbackThenClose=256 };
 

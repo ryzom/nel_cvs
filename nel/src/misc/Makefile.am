@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.76 2004/12/03 10:47:56 distrib Exp $
+# $Id: Makefile.am,v 1.77 2004/12/17 14:32:32 legros Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -26,6 +26,7 @@ libnelmisc_la_SOURCES = \
 	common.cpp \
 	contiguous_block_allocator.cpp \
 	cpu_info.cpp \
+	cpu_time_stat.cpp \
 	debug.cpp \
 	device_manager.cpp \
 	di_event_emitter.cpp \

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.214 2004/10/21 11:48:03 lecroart Exp $
+ * $Id: service.cpp,v 1.215 2004/12/17 14:31:25 legros Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1072,6 +1072,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Call the user service update each loop and check files and network activity
 		//
 
+		TTime	checkCpuProcTime = 0;
+
 		do
 		{
 			MyTAT.activate();
@@ -1080,6 +1082,13 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 			// count the amount of time to manage internal system
 			TTime bbefore = CTime::getLocalTime ();
+
+			// every second, check for CPU usage
+			if (bbefore - checkCpuProcTime > 1000)
+			{
+				checkCpuProcTime = bbefore;
+				_CPUUsageStats.peekMeasures();
+			}
 
 			// call the user update and exit if the user update asks it
 			{
@@ -1619,6 +1628,164 @@ NLMISC_CATEGORISED_DYNVARIABLE(nel, uint32, ShardId, "Get value of shardId set f
 		*pointer = IService::getInstance()->getShardId();
 	}
 }
+
+
+
+
+
+
+
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, CPULoad, "Get instant CPU load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPULoad(); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, ProcessLoad, "Get instant CPU load of the process/service")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getProcessLoad(); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, CPUUserLoad, "Get instant CPU user load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPUUserLoad(); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, CPUSytemLoad, "Get instant CPU system load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPUSystemLoad(); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, CPUNiceLoad, "Get instant CPU nice processes load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPUNiceLoad(); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, CPUIOWaitLoad, "Get instant CPU IO wait load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPUIOWaitLoad(); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, ProcessUserLoad, "Get instant CPU user load of the process/service")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getProcessUserLoad(); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, ProcessSystemLoad, "Get instant CPU system load of the process/service")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getProcessSystemLoad(); }
+}
+
+
+
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, MeanCPULoad, "Get instant CPU load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPULoad(CCPUTimeStat::Mean); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, MeanProcessLoad, "Get instant CPU load of the process/service")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getProcessLoad(CCPUTimeStat::Mean); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, MeanCPUUserLoad, "Get instant CPU user load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPUUserLoad(CCPUTimeStat::Mean); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, MeanCPUSytemLoad, "Get instant CPU system load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPUSystemLoad(CCPUTimeStat::Mean); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, MeanCPUNiceLoad, "Get instant CPU nice processes load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPUNiceLoad(CCPUTimeStat::Mean); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, MeanCPUIOWaitLoad, "Get instant CPU IO wait load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPUIOWaitLoad(CCPUTimeStat::Mean); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, MeanProcessUserLoad, "Get instant CPU user load of the process/service")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getProcessUserLoad(CCPUTimeStat::Mean); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, MeanProcessSystemLoad, "Get instant CPU system load of the process/service")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getProcessSystemLoad(CCPUTimeStat::Mean); }
+}
+
+
+
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, PeakCPULoad, "Get instant CPU load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPULoad(CCPUTimeStat::Peak); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, PeakProcessLoad, "Get instant CPU load of the process/service")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getProcessLoad(CCPUTimeStat::Peak); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, PeakCPUUserLoad, "Get instant CPU user load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPUUserLoad(CCPUTimeStat::Peak); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, PeakCPUSytemLoad, "Get instant CPU system load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPUSystemLoad(CCPUTimeStat::Peak); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, PeakCPUNiceLoad, "Get instant CPU nice processes load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPUNiceLoad(CCPUTimeStat::Peak); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, PeakCPUIOWaitLoad, "Get instant CPU IO wait load of the server")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getCPUIOWaitLoad(CCPUTimeStat::Peak); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, PeakProcessUserLoad, "Get instant CPU user load of the process/service")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getProcessUserLoad(CCPUTimeStat::Peak); }
+}
+
+NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, PeakProcessSystemLoad, "Get instant CPU system load of the process/service")
+{
+	// read or write the variable
+	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getProcessSystemLoad(CCPUTimeStat::Peak); }
+}
+
 
 
 } //NLNET

@@ -970,6 +970,14 @@ SOURCE=..\include\nel\misc\command.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\cpu_time_stat.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\cpu_time_stat.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\progress_callback.cpp
 # End Source File
 # Begin Source File

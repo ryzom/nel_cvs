@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.17 2001/05/28 12:45:29 chafik Exp $
+ * $Id: displayer.cpp,v 1.18 2001/06/12 15:39:00 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -260,6 +260,13 @@ void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 	if (args.Date != 0)
 	{
 		ss << dateToHumanString(args.Date);
+		needSpace = true;
+	}
+
+	if (!args.ProcessName.empty())
+	{
+		if (needSpace) { ss << " "; needSpace = false; }
+		ss << args.ProcessName;
 		needSpace = true;
 	}
 

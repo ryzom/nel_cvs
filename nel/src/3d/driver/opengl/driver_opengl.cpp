@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.83 2001/04/03 15:20:47 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.84 2001/04/04 13:00:18 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -632,11 +632,33 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 			// setup identity
 			glLoadMatrixf(CMatrix::Identity.get());
 			
-			// NB: in software, no need to test Model View Matrixes flags (_ModelViewMatrixDirtyPaletteSkin).
+			// in software, we must test Model View Matrixes flags (_ModelViewMatrixDirtyPaletteSkin), to
+			// compute M-1t matrices fro normals.
+			for(sint i=0;i<IDriver::MaxModelMatrix;i++)
+			{
+				if(_ModelViewMatrixDirtyPaletteSkin[i])
+				{
+					_ModelViewMatrixDirtyPaletteSkin.clear(i);
+
+					CMatrix		&mview= _ModelViewMatrix[i];
+					CMatrix		&mviewNormal= _ModelViewMatrixNormal[i];
+					// copy only the rot matrix.
+					mviewNormal.setRot(mview);
+					// If matrix has scale...
+					if(mviewNormal.hasScalePart())
+					{
+						// Must compute the transpose of the invert matrix. (10 times slower if not uniform scale!!)
+						mviewNormal.invert();
+						mviewNormal.transpose3x3();
+					}
+					// else, no need to do it since transpose==inverse.
+				}
+			}
+
+
+			// Compute vertices/normales.
 			// NB: in software, we must compute skinning at each activeVB(), since we can't know simply 
 			// if some or all of vertices has changed.
-
-
 			uint8	*srcStart;
 			uint	srcStride= VB.getVertexSize();
 			srcStart= ((uint8*)VB.getVertexCoordPointer()) + first*srcStride;
@@ -1351,16 +1373,16 @@ void			CDriverGL::computeSoftwareNormalSkinning(uint8 *pSrc, uint normalOff, uin
 		pDst->set(0,0,0);
 
 		// 0th matrix influence.
-		pMat= _ModelViewMatrix + srcPal->MatrixId[0];
+		pMat= _ModelViewMatrixNormal + srcPal->MatrixId[0];
 		*pDst+= pMat->mulVector(*srcNormal) * srcWgt[0];
 		// 1th matrix influence.
-		pMat= _ModelViewMatrix + srcPal->MatrixId[1];
+		pMat= _ModelViewMatrixNormal + srcPal->MatrixId[1];
 		*pDst+= pMat->mulVector(*srcNormal) * srcWgt[1];
 		// 2th matrix influence.
-		pMat= _ModelViewMatrix + srcPal->MatrixId[2];
+		pMat= _ModelViewMatrixNormal + srcPal->MatrixId[2];
 		*pDst+= pMat->mulVector(*srcNormal) * srcWgt[2];
 		// 3th matrix influence.
-		pMat= _ModelViewMatrix + srcPal->MatrixId[3];
+		pMat= _ModelViewMatrixNormal + srcPal->MatrixId[3];
 		*pDst+= pMat->mulVector(*srcNormal) * srcWgt[3];
 
 		// Next vertex.

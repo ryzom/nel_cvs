@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.53 2001/04/03 15:20:47 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.54 2001/04/04 13:00:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -285,6 +285,8 @@ private:
 
 	// Current computed (OpenGL basis) ModelView matrix.
 	CMatrix					_ModelViewMatrix[MaxModelMatrix];
+	// For software skinning.
+	CMatrix					_ModelViewMatrixNormal[MaxModelMatrix];
 
 
 	// Fog.

@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.14 2004/02/19 09:51:04 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.15 2004/03/04 14:27:33 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/stream.h"
 #include "nel/3d/animation_time.h"
 #include "3d/texture.h"
+
 
 namespace NLMISC
 {
@@ -181,6 +182,8 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		// append all tex in the given vector
 		virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv) = 0;
 		
+		// Force z-bias for all material.
+		virtual void setZBias(float value) = 0;
 
 			
 	protected:

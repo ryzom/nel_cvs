@@ -1,7 +1,7 @@
 /** \file meshvp_per_pixel_light.cpp
  * <File description>
  *
- * $Id: meshvp_per_pixel_light.cpp,v 1.4 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: meshvp_per_pixel_light.cpp,v 1.5 2002/09/24 14:46:52 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -30,6 +30,10 @@
 #include "3d/driver.h"
 #include "3d/scene.h"
 #include "3d/render_trav.h"
+#include "3d/render_trav.h"
+#include "3d/vertex_program_parse.h"
+
+
 
 #include <string>
 
@@ -64,7 +68,6 @@ static const char*	PPLightingVPCodeBegin =
 MOV R6, v[2];																			\n\
 MUL R1, R6.yzxw, v[9].zxyw;																\n\
 MAD R1, v[9].yzxw, -R6.zxyw, R1;														\n\
-																						\n\
 #vector in tangent space = [ T B N ] * L												\n\
 ADD R2, c[4], -v[0];			   # compute L											\n\
 DP3 R3, R2, R2;					   # get L normalized									\n\
@@ -73,7 +76,6 @@ MUL R2, R3, R2;																			\n\
 DP3 o[TEX0].x, v[9], R2;		   # get x of light vector in tangent space             \n\
 DP3 o[TEX0].y, R1, R2;             # get y												\n\
 DP3 o[TEX0].z, R6, R2;			   # get z												\n\
-																						\n\
 #specular part																			\n\
 ADD R3, c[5], - v[0];			   # compute V (return to eye)							\n\
 #compute inverse norm of V																\n\
@@ -90,7 +92,8 @@ MUL R2, R3, R2;																			\n\
 DP3 o[TEX2].x, v[9], R2;																\n\
 DP3 o[TEX2].y, R1, R2;																	\n\
 DP3 o[TEX2].z, R6, R2;																	\n\
-																						\n\
+# Position in R5 for additionnal lighting                                               \n\
+MOV R5, v[0];																			\n\
 # Normal is in R6 for additionnal lighting												\n\
 ";
 
@@ -100,7 +103,7 @@ static const char*	PPLightingVPNormalizeCodeBegin =
 #normalize the normal																	\n\
 DP3 R1, v[2], v[2];																		\n\
 RSQ R1, R1.x;																			\n\
-MUL R6, R6, R1;																			\n\
+MUL R6, v[2], R1;																			\n\
 																						\n\
 #normalize the second vector															\n\
 DP3	R1, R6, v[9];																		\n\
@@ -137,6 +140,8 @@ MUL R2, R3, R2;																			\n\
 DP3 o[TEX2].x, R5, R2;																	\n\
 DP3 o[TEX2].y, R1, R2;																	\n\
 DP3 o[TEX2].z, R6, R2;																	\n\
+# Position in R5 for additionnal lighting                                               \n\
+MOV R5, v[0];																			\n\
 # Normal is in R6 for additionnal lighting												\n\
 ";
 
@@ -160,6 +165,8 @@ DP3 o[TEX0].z, R6, R2;			   # get z												\n\
 																						\n\
 																						\n\
 # Normal is in R6 for additionnal lighting												\n\
+# Position in R5 for additionnal lighting                                               \n\
+MOV R5, v[0];																			\n\
 ";
 
 /// Omni light with normalization and no specular
@@ -168,7 +175,7 @@ static const char*	PPLightingVPNormalizeNoSpecCodeBegin =
 #normalize the normal																	\n\
 DP3 R1, v[2], v[2];																		\n\
 RSQ R1, R1.x;																			\n\
-MUL R6, R6, R1;																			\n\
+MUL R6, v[2], R1;																			\n\
 																						\n\
 #normalize the second vector															\n\
 DP3	R1, R6, v[9];																		\n\
@@ -190,6 +197,8 @@ DP3 o[TEX0].y, R1, R2;             # get y												\n\
 DP3 o[TEX0].z, R6, R2;			   # get z												\n\
 																						\n\
 # Normal is in R6 for additionnal lighting												\n\
+# Position in R5 for additionnal lighting                                               \n\
+MOV R5, v[0];																			\n\
 ";
 
 
@@ -231,6 +240,8 @@ DP3 o[TEX2].y, R1, R2;																	\n\
 DP3 o[TEX2].z, R6, R2;																	\n\
 																						\n\
 # Normal is in R6 for additionnal lighting												\n\
+# Position in R5 for additionnal lighting                                               \n\
+MOV R5, v[0];																			\n\
 ";
 
 // directionnal + normalization
@@ -239,7 +250,7 @@ static const char*	PPLightingDirectionnalVPNormalizeCodeBegin =
 #normalize the normal																	\n\
 DP3 R1, v[2], v[2];																		\n\
 RSQ R1, R1.x;																			\n\
-MUL R6, R6, R1;																			\n\
+MUL R6, v[2], R1;																		\n\
 																						\n\
 #normalize the second vector															\n\
 DP3	R1, R6, v[9];																		\n\
@@ -273,6 +284,8 @@ DP3 o[TEX2].x, R5, R2;																	\n\
 DP3 o[TEX2].y, R1, R2;																	\n\
 DP3 o[TEX2].z, R6, R2;																	\n\
 # Normal is in R6 for additionnal lighting												\n\
+# Position in R5 for additionnal lighting                                               \n\
+MOV R5, v[0];																			\n\
 ";
 
 
@@ -289,6 +302,8 @@ DP3 o[TEX0].x, v[9], -c[4];		   # get x of light vector in tangent space        
 DP3 o[TEX0].y, R1, -c[4];           # get y												\n\
 DP3 o[TEX0].z, R6, -c[4];		   # get z												\n\
 # Normal is in R6 for additionnal lighting												\n\
+# Position in R5 for additionnal lighting                                               \n\
+MOV R5, v[0];																			\n\
 ";
 
 // directionnal + normalization, no specular
@@ -297,7 +312,7 @@ static const char*	PPLightingDirectionnalNoSpecVPNormalizeCodeBegin =
 #normalize the normal																	\n\
 DP3 R1, v[2], v[2];																		\n\
 RSQ R1, R1.x;																			\n\
-MUL R6, R6, R1;																			\n\
+MUL R6, v[2], R1;																		\n\
 																						\n\
 #normalize the second vector															\n\
 DP3	R1, R6, v[9];																		\n\
@@ -315,6 +330,8 @@ DP3 o[TEX0].y, R1, -c[4];               # get y											\n\
 DP3 o[TEX0].z, R6, -c[4];			   # get z											\n\
 																						\n\
 # Normal is in R6 for additionnal lighting												\n\
+# Position in R5 for additionnal lighting                                               \n\
+MOV R5, v[0];																			\n\
 ";
 
 
@@ -387,8 +404,25 @@ void	CMeshVPPerPixelLight::initInstance(CMeshBaseInstance *mbi)
 			// \todo yoyo TODO_OPTIM Manage different number of pointLights
 			// NB: never call getLightVPFragment() with normalize, because already done by PerPixel fragment before.
 			std::string vpCode	= std::string(vpName[vp])
+								  + std::string("# ***************") // temp for debug
 								  + CRenderTrav::getLightVPFragment(CRenderTrav::MaxVPLight-1, VPLightConstantStart, (vp & 2) != 0, false)
+								  + std::string("# ***************") // temp for debug
 								  + std::string(PPLightingVPCodeEnd);
+			#ifdef NL_DEBUG
+				/** For test : parse those programs before they are used.
+				  * As a matter of fact some program will works with the NV_VERTEX_PROGRAM extension,
+				  * but won't with EXT_vertex_shader, because there are some limitations (can't read a temp
+				  * register that hasn't been written before..)
+				  */
+				CVPParser			vpParser;
+				CVPParser::TProgram result;
+				std::string          parseOutput;
+				if (!vpParser.parse(vpCode.c_str(), result, parseOutput))
+				{					
+					nlwarning(parseOutput.c_str());
+					nlassert(0);
+				}
+			#endif
 			_VertexProgram[vp]= std::auto_ptr<CVertexProgram>(new CVertexProgram(vpCode.c_str()));
 		}
 				

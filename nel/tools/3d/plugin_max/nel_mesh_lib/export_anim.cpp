@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.9 2001/06/26 14:58:35 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.10 2001/07/11 08:28:04 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include <3d/animated_material.h>
 #include <3d/key.h>
 #include <3d/track.h>
+
+#include "calc_lm.h"
 
 using namespace NLMISC;
 using namespace NL3D;
@@ -330,31 +332,25 @@ void CExportNel::addLightTracks (NL3D::CAnimation& animation, INode& node, const
 		return;
 
 	// Get the Lightmap controller
-	Modifier *modifier = getModifier( &node, Class_ID(NEL_LIGHT_CLASS_ID_A,NEL_LIGHT_CLASS_ID_B) );
-	if( modifier != NULL )
+	int bDynamic = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_LM_DYNAMIC, 0);
+
+	if( bDynamic )
 	{
-		int bDynamic = 0; // false
-		getValueByNameUsingParamBlock2(node,"bDynamic", (ParamType2)TYPE_BOOL, &bDynamic, 0);
-		if( bDynamic )
+		// Create a track name
+
+		std::string name = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_LM_GROUPNAME, "Default");
+		name = "LightmapController." + name;
+
+		int bAnimated = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_LM_ANIMATED, 0);
+		if( bAnimated )
 		{
-			// Create a track name
-
-			std::string name;
-			CExportNel::getValueByNameUsingParamBlock2( node, "sGroup", (ParamType2)TYPE_STRING, &name, 0);
-			name = "LightmapController." + name;
-
-			int bAnimated = 0; // false
-			getValueByNameUsingParamBlock2(node,"bAnimated", (ParamType2)TYPE_BOOL, &bAnimated, 0);
-			if( bAnimated )
+			Control *c = getControlerByName(node,"Color");
+			if( c )
 			{
-				Control *c = getControlerByName(node,"Color");
-				if( c )
+				ITrack *pTrack=buildATrack (animation, *c, typeColor, node, desc, ip, NULL, NULL);
+				if (pTrack)
 				{
-					ITrack *pTrack=buildATrack (animation, *c, typeColor, node, desc, ip, NULL, NULL);
-					if (pTrack)
-					{
-						animation.addTrack (name.c_str(), pTrack);
-					}
+					animation.addTrack (name.c_str(), pTrack);
 				}
 			}
 		}

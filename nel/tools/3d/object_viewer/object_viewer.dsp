@@ -999,11 +999,11 @@ SOURCE=.\vegetable_dlg.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\tools\3d\object_viewer\vegetable_edit_tools.cpp
+SOURCE=.\vegetable_edit_tools.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\tools\3d\object_viewer\vegetable_edit_tools.h
+SOURCE=.\vegetable_edit_tools.h
 # End Source File
 # Begin Source File
 

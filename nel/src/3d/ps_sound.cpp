@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.9 2001/11/26 10:41:10 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.10 2001/11/29 14:34:05 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -159,7 +159,8 @@ void			CPSSound::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 			do
 			{
 				if (*it) // was this sound instanciated?
-				{					
+				{			
+					(*it)->play();
 					(*it)->setSoundParams(*currVol
 										  , *posIt
 										  , *speedIt

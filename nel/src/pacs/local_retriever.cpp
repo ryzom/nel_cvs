@@ -1,0 +1,287 @@
+/** \file local_retriever.cpp
+ *
+ *
+ * $Id: local_retriever.cpp,v 1.1 2001/05/04 14:51:21 legros Exp $
+ */
+
+/* Copyright, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#include <vector>
+
+#include "nel/misc/types_nl.h"
+#include "nel/misc/vector.h"
+
+#include "nel/misc/debug.h"
+
+#include "nel/pacs/local_retriever.h"
+
+using namespace std;
+using namespace NLMISC;
+
+
+
+sint32	NLPACS::CLocalRetriever::addSurface(uint8 normalq, uint8 orientationq,
+											uint8 mat, uint8 charact, uint8 level,
+											const NLPACS::CSurfaceQuadTree &quad)
+{
+	sint32	newId = _Surfaces.size();
+	_Surfaces.resize(newId+1);
+	CRetrievableSurface	&surf = _Surfaces.back();
+
+	surf._NormalQuanta = normalq;
+	surf._OrientationQuanta = orientationq;
+	surf._Material = mat;
+	surf._Character = charact;
+	surf._Level = level;
+	surf._Quad = quad;
+
+	return newId;
+}
+
+sint32	NLPACS::CLocalRetriever::addChain(const std::vector<NLMISC::CVector> &vertices,
+										  sint32 left, sint32 right)
+{
+	sint32		newId = _Chains.size();
+	_Chains.resize(newId+1);
+	CChain		&chain = _Chains.back();
+/*
+	if (left<-2 || left>(sint)_Surfaces.size())
+		nlerror ("left surface id MUST be -2<=id<%d (id=%d)", _Surfaces.size(), left);
+	if (right<-2 || right>(sint)_Surfaces.size())
+		nlerror ("right surface id MUST be -2<=id<%d (id=%d)", _Surfaces.size(), right);
+*/
+
+	if (left>(sint)_Surfaces.size())
+		nlerror ("left surface id MUST be id<%d (id=%d)", _Surfaces.size(), left);
+	if (right>(sint)_Surfaces.size())
+		nlerror ("right surface id MUST be id<%d (id=%d)", _Surfaces.size(), right);
+
+	chain.make(vertices, left, right, _OrderedChains);
+
+	CRetrievableSurface	*leftSurface = (left>=0) ? &(_Surfaces[left]) : NULL;
+	CRetrievableSurface	*rightSurface = (right>=0) ? &(_Surfaces[right]) : NULL;
+
+	if (leftSurface != NULL)
+		leftSurface->_Chains.push_back(CRetrievableSurface::CSurfaceLink(newId, right));
+	if (rightSurface != NULL)
+		rightSurface->_Chains.push_back(CRetrievableSurface::CSurfaceLink(newId, left));
+
+	// For each chain find closest start and stop tips
+	uint	j;
+
+	float	closestStartDistance = 1e10f;
+	sint	closestStart = -1;
+	for (j=0; j<_Tips.size(); ++j)
+	{
+		float	d = (vertices.front()-_Tips[j].Point).norm();
+		if (d < closestStartDistance)
+		{
+			closestStartDistance = d;
+			closestStart = j;
+		}
+	}
+
+	// if can't find a matching tip, create a new one
+	if (closestStart < 0 || closestStartDistance > 0.4f)
+	{
+		_Tips.resize(_Tips.size()+1);
+		_Tips.back().Point = vertices.front();
+		closestStart = _Tips.size()-1;
+	}
+
+	_Tips[closestStart].Chains.push_back(CTip::CChainTip(newId, true));
+	chain._StartTip = closestStart;
+
+	//
+	float	closestStopDistance = 1e10f;
+	sint	closestStop = -1;
+	for (j=0; j<_Tips.size(); ++j)
+	{
+		float	d = (vertices.back()-_Tips[j].Point).norm();
+		if (d < closestStopDistance)
+		{
+			closestStopDistance = d;
+			closestStop = j;
+		}
+	}
+
+	if (closestStop < 0 || closestStopDistance > 0.4f)
+	{
+		_Tips.resize(_Tips.size()+1);
+		_Tips.back().Point = vertices.back();
+		closestStop= _Tips.size()-1;
+	}
+
+	_Tips[closestStop].Chains.push_back(CTip::CChainTip(newId, false));
+	chain._StopTip = closestStop;
+
+	return newId;
+}
+
+void	NLPACS::CLocalRetriever::sortTips()
+{
+}
+
+void	NLPACS::CLocalRetriever::findEdgeTips()
+{
+	CVector	bmin = _BBox.getMin(),
+			bmax = _BBox.getMax();
+
+	uint	i;
+
+	for (i=0; i<_Tips.size(); ++i)
+	{
+		_Tips[i].Edges = 0;
+		CVector	&v = _Tips[i].Point;
+		if (v.x < bmin.x+0.05f)
+		{
+			_EdgeTips[0].push_back(i);
+			_Tips[i].Edges |= (1<<0);
+		}
+
+		if (v.y < bmin.y+0.05f)
+		{
+			_EdgeTips[1].push_back(i);
+			_Tips[i].Edges |= (1<<1);
+		}
+
+		if (v.x > bmax.x-0.05f)
+		{
+			_EdgeTips[2].push_back(i);
+			_Tips[i].Edges |= (1<<2);
+		}
+
+		if (v.y > bmax.y-0.05f)
+		{
+			_EdgeTips[3].push_back(i);
+			_Tips[i].Edges |= (1<<3);
+		}
+	}
+
+	sort(_EdgeTips[0].begin(), _EdgeTips[0].end(), CYPred(&_Tips, false));
+	sort(_EdgeTips[1].begin(), _EdgeTips[1].end(), CXPred(&_Tips, false));
+	sort(_EdgeTips[2].begin(), _EdgeTips[2].end(), CYPred(&_Tips, true));
+	sort(_EdgeTips[3].begin(), _EdgeTips[3].end(), CXPred(&_Tips, true));
+}
+
+void	NLPACS::CLocalRetriever::findEdgeChains()
+{
+	uint	chain;
+	uint	edges, i;
+
+	for (chain=0; chain<_Chains.size(); ++chain)
+	{
+		CTip	&start = _Tips[_Chains[chain]._StartTip],
+				&stop = _Tips[_Chains[chain]._StopTip];
+
+		if (_Chains[chain]._SubChains.size() == 1 &&
+			_OrderedChains[_Chains[chain]._SubChains[0]].getVertices().size() == 2 &&
+			(edges = start.Edges & stop.Edges) != 0)
+		{
+			for (i=0; i<4; ++i)
+			{
+				if (edges & 1)
+				{
+					_Chains[chain]._Edges |= (1<<i);
+					_EdgeChains[i].push_back(chain);
+				}
+
+				edges >>= 1;
+			}
+		}
+	}
+}
+
+void	NLPACS::CLocalRetriever::computeTopologies()
+{
+	nlinfo("compute topologies");
+
+	// Find topologies out...
+	uint		character;
+	for (character=0; character<NumCreatureModels; ++character)
+	{
+		// for each type of creature, flood fill surfaces...
+		sint32	surface;
+		uint	topology = 0;
+
+		for (surface=0; surface<(sint)_Surfaces.size(); ++surface)
+		{
+			if (_Surfaces[surface]._Topologies[character] == -1 &&
+				_Surfaces[surface]._Character == character)
+			{
+				vector<sint32>	surfacesStack;
+				surfacesStack.push_back(surface);
+
+				while (!surfacesStack.empty())
+				{
+					CRetrievableSurface	&current = _Surfaces[surfacesStack.back()];
+					surfacesStack.pop_back();
+					current._Topologies[character] = topology;
+
+					uint	i;
+					for (i=0; i<current._Chains.size(); ++i)
+					{
+						CChain	&chain = _Chains[current._Chains[i].Chain];
+						sint32	link = (chain.getLeft() == surface) ? chain.getRight() : chain.getLeft();
+						if (link>=0 && link<(sint)_Surfaces.size() &&
+							_Surfaces[link]._Topologies[character] == -1 &&
+							_Surfaces[link]._Character >= character)
+						{
+							surfacesStack.push_back(link);
+							_Surfaces[link]._Topologies[character] = topology;
+						}
+					}
+				}
+
+				++topology;
+			}
+		}
+
+		_Topologies[character].resize(topology);
+		nlinfo("generated %d topologies for character %d", topology, character);
+	}
+
+	uint		surface;
+	for (surface=0; surface<_Surfaces.size(); ++surface)
+	{
+		CRetrievableSurface	&current = _Surfaces[surface];
+
+		for (character=0; character<NumCreatureModels; ++character)
+			if (current._Topologies[character] >= 0)
+				_Topologies[character][current._Topologies[character]].push_back(surface);
+	}
+}
+
+void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
+{
+	uint	i;
+	f.serialCont(_Chains);
+	f.serialCont(_OrderedChains);
+	f.serialCont(_Surfaces);
+	f.serialCont(_Tips);
+	f.serial(_BBox);
+	f.serial(_ZoneId);
+	for (i=0; i<4; ++i)
+		f.serialCont(_EdgeTips[i]);
+	for (i=0; i<4; ++i)
+		f.serialCont(_EdgeChains[i]);
+	for (i=0; i<NumCreatureModels; ++i)
+		f.serialCont(_Topologies[i]);
+}

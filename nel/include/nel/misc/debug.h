@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.24 2001/02/13 16:49:45 lecroart Exp $
+ * $Id: debug.h,v 1.25 2001/02/16 11:36:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,8 +51,11 @@ void nlFatalError (const char *format, ...);
 /// Never use this function but call the nlerror macro
 void nlError (const char *format, ...);
 
-/// Add standard displayer in all log in debug mode
-void initDebug ();
+/* Add standard displayer in all log in debug mode
+ * If you want the function also adds displayers in release
+ * mode too, just put true in the first parameter.
+ */
+void initDebug (bool setDisplayerInReleaseModeToo = false);
 
 // Macros
 

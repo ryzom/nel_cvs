@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.28 2001/02/14 18:35:20 lecroart Exp $
+ * $Id: debug.cpp,v 1.29 2001/02/16 11:35:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@ CLog DebugLog (CLog::LOG_DEBUG);
 CLog AssertLog (CLog::LOG_ASSERT);
 
 CStdDisplayer sd;
+CMsgBoxDisplayer mbd;
 
 
 void nlFatalError (const char *format, ...)
@@ -75,19 +76,32 @@ void nlError (const char *format, ...)
 #endif
 }
 
-void initDebug ()
+void initDebug (bool setDisplayerInReleaseModeToo)
 {
 	static bool alreadyInit = false;
 
 	if (!alreadyInit)
 	{
 #ifdef NL_DEBUG
+
 		ErrorLog.addDisplayer (&sd);
 		WarningLog.addDisplayer (&sd);
 		InfoLog.addDisplayer (&sd);
 		DebugLog.addDisplayer (&sd);
 		AssertLog.addDisplayer (&sd);
-#endif
+
+#elif defined(NL_RELEASE)
+
+		if (setDisplayerInReleaseModeToo)
+		{
+			InfoLog.addDisplayer (&sd);
+			WarningLog.addDisplayer (&sd);
+			ErrorLog.addDisplayer (&sd);
+			ErrorLog.addDisplayer (&mbd);
+		}
+
+#endif // NL_RELEASE
+
 		alreadyInit = true;
 	}
 	else

@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.cpp,v 1.7 2002/08/23 12:17:40 lecroart Exp $
+ * $Id: window_displayer.cpp,v 1.8 2002/11/12 17:24:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,17 +46,20 @@ class CUpdateThread : public IRunnable
 	CWindowDisplayer *Disp;
 	string WindowNameEx;
 	sint X, Y, W, H, HS;
+	uint32 FS;
+	bool WW;
+	string FN;
 	bool Iconified;
 
 public:
-	CUpdateThread (CWindowDisplayer *disp, string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs) :
-	  Disp(disp), WindowNameEx(windowNameEx), X(x), Y(y), W(w), H(h), HS(hs), Iconified(iconified)
+	CUpdateThread (CWindowDisplayer *disp, string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww) :
+	  Disp(disp), WindowNameEx(windowNameEx), X(x), Y(y), W(w), H(h), HS(hs), Iconified(iconified), FS(fs), FN(fn), WW(ww)
 	{
 	}
 
 	void run()
 	{
-		Disp->open (WindowNameEx, Iconified, X, Y, W, H, HS);
+		Disp->open (WindowNameEx, Iconified, X, Y, W, H, HS, FS, FN, WW);
 		Disp->display_main ();
 	}
 };
@@ -112,10 +115,10 @@ void CWindowDisplayer::setLabel (uint label, const string &value)
 	}
 }
 
-void CWindowDisplayer::create (string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs)
+void CWindowDisplayer::create (string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww)
 {
 	nlassert (_Thread == NULL);
-	_Thread = IThread::create (new CUpdateThread(this, windowNameEx, iconified, x, y, w, h, hs));
+	_Thread = IThread::create (new CUpdateThread(this, windowNameEx, iconified, x, y, w, h, hs, fs, fn, ww));
 	
 	_Thread->start ();
 }
@@ -125,33 +128,41 @@ void CWindowDisplayer::doDisplay (const NLMISC::TDisplayInfo &args, const char *
 	bool needSpace = false;
 	stringstream ss;
 
+	uint32 color = 0xFF000000;
+
 	if (args.LogType != CLog::LOG_NO)
 	{
 		ss << logTypeToString(args.LogType);
+		if (args.LogType == CLog::LOG_ERROR || args.LogType == CLog::LOG_ASSERT) color = 0x00FF0000;
+		else if (args.LogType == CLog::LOG_WARNING) color = 0x00800000;
+		else if (args.LogType == CLog::LOG_DEBUG) color = 0x00808080;
+		else color = 0;
 		needSpace = true;
 	}
 
 	// Write thread identifier
 	if ( args.ThreadId != 0 )
 	{
-		ss << setw(5) << args.ThreadId;
+		if (needSpace) { ss << " "; needSpace = false; }
+		ss << setw(4) << args.ThreadId;
+		needSpace = true;
 	}
 
 	if (args.Filename != NULL)
 	{
 		if (needSpace) { ss << " "; needSpace = false; }
-		ss << CFile::getFilename(args.Filename);
+		ss << setw(20) << CFile::getFilename(args.Filename);
 		needSpace = true;
 	}
 
 	if (args.Line != -1)
 	{
 		if (needSpace) { ss << " "; needSpace = false; }
-		ss << args.Line;
+		ss << setw(4) << args.Line;
 		needSpace = true;
 	}
 
-	if (needSpace) { ss << " : "; needSpace = false; }
+	if (needSpace) { ss << ": "; needSpace = false; }
 
 	uint nbl = 1;
 
@@ -184,8 +195,8 @@ void CWindowDisplayer::doDisplay (const NLMISC::TDisplayInfo &args, const char *
 	ss << pos;
 
 	{
-		CSynchronized<std::string>::CAccessor access (&_Buffer);
-		access.value() += ss.str();
+		CSynchronized<std::vector<std::pair<uint32, std::string> > >::CAccessor access (&_Buffer);
+		access.value().push_back (make_pair (color, ss.str()));
 	}
 }
 

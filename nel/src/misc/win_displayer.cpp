@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.26 2002/11/08 13:29:26 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.27 2002/11/12 17:24:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -352,9 +352,16 @@ void CWinDisplayer::setTitleBar (const string &titleBar)
 	SetWindowText (_HWnd, wn.c_str());
 }
 
-void CWinDisplayer::open (string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs)
+void CWinDisplayer::open (string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww)
 {
 	_HistorySize = hs;
+
+	if (w == -1)
+		w = 700;
+	if (h == -1)
+		h = 300;
+	if (hs = -1)
+		hs = 10000;
 
 	WNDCLASS wc;
 	memset (&wc,0,sizeof(wc));
@@ -382,27 +389,43 @@ void CWinDisplayer::open (string titleBar, bool iconified, sint x, sint y, sint 
 	// create the window
 	_HWnd = CreateWindow ("NLDisplayerClass", "", WndFlags, CW_USEDEFAULT,CW_USEDEFAULT, WndRect.right,WndRect.bottom, NULL, NULL, GetModuleHandle(NULL), NULL);
 	SetWindowLong (_HWnd, GWL_USERDATA, (LONG)this);
-	
-	// create the font
-	_HFont = CreateFont (-13, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial");
 
-	// create the edit control
-	_HEdit = CreateWindow ("EDIT", NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL, 0, _ToolBarHeight, w, h-_ToolBarHeight-_InputEditHeight, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
-	SendMessage (_HEdit, WM_SETFONT, (LONG) _HFont, TRUE);
-
-	// set the edit to read only
-	SendMessage (_HEdit, EM_SETREADONLY, TRUE, 0);
-
-	// set the edit text limit to lot of :)
-	SendMessage (_HEdit, EM_LIMITTEXT, -1, 0);
-
-	// create the input edit control
 	_HLibModule = LoadLibrary("RICHED20.DLL");
 	if (_HLibModule == NULL)
 	{
 		nlerror ("RichEdit 2.0 library not found!");
 	}
 
+	string rfn;
+	if (fn.empty())
+		rfn = "courier";
+	else
+		rfn = fn;
+
+	sint rfs;
+	if (fs == 0)
+		rfs = 10;
+	else
+		rfs = fs;
+
+	_HFont = CreateFont (-MulDiv(rfs, GetDeviceCaps(GetDC(0),LOGPIXELSY), 72), 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, rfn.c_str());
+
+
+	// create the edit control
+	DWORD dwStyle = WS_HSCROLL | WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_READONLY | ES_LEFT | ES_MULTILINE /*| ES_AUTOVSCROLL*/;
+
+	if(ww)
+		dwStyle &= ~WS_HSCROLL;
+	else
+		dwStyle |= WS_HSCROLL;
+
+	_HEdit = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, RICHEDIT_CLASS, "", dwStyle, 0, _ToolBarHeight, w, h-_ToolBarHeight-_InputEditHeight, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
+	SendMessage (_HEdit, WM_SETFONT, (LONG) _HFont, TRUE);
+
+	// set the edit text limit to lot of :)
+	SendMessage (_HEdit, EM_LIMITTEXT, -1, 0);
+
+	// create the input edit control
 	_HInputEdit = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, RICHEDIT_CLASS, "", WS_CHILD | WS_VISIBLE
 		/*| ES_MULTILINE*/ | ES_WANTRETURN | ES_NOHIDESEL | ES_AUTOHSCROLL, 0, h-_InputEditHeight, w, _InputEditHeight,
 		_HWnd, NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
@@ -439,6 +462,13 @@ void CWinDisplayer::open (string titleBar, bool iconified, sint x, sint y, sint 
 
 void CWinDisplayer::clear ()
 {
+	bool focus = (GetFocus() == _HEdit);
+	if (focus)
+	{
+		SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_AND,(LPARAM)~ECO_AUTOVSCROLL);
+		SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_AND,(LPARAM)~ECO_AUTOHSCROLL);
+	}
+
 	// get number of line
 	sint nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
 
@@ -450,6 +480,14 @@ void CWinDisplayer::clear ()
 
 	// clear all the text
 	SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) "");
+
+	SendMessage(_HEdit,EM_SETMODIFY,(WPARAM)TRUE,(LPARAM)0);
+	
+	if ( focus )
+	{
+		SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_OR,(LPARAM)ECO_AUTOVSCROLL);
+		SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_OR,(LPARAM)ECO_AUTOHSCROLL);
+	}			
 }
 
 void CWinDisplayer::display_main ()
@@ -462,16 +500,35 @@ void CWinDisplayer::display_main ()
 		// Display the bufferized string
 		//
 
-		string str;
+		std::vector<std::pair<uint32, std::string> > vec;
 		{
-			CSynchronized<std::string>::CAccessor access (&_Buffer);
-			str = access.value();
-			access.value() = "";
+			CSynchronized<std::vector<std::pair<uint32, std::string> > >::CAccessor access (&_Buffer);
+			vec = access.value ();
+			access.value().clear ();
 		}
 
-		// nothing to do
-		if (!str.empty ())
+		// look if we are at the bottom of the edit
+		SCROLLINFO	info;
+		info.cbSize = sizeof(info);
+		info.fMask = SIF_ALL;
+		
+		bool bottom = true;
+		if (GetScrollInfo(_HEdit,SB_VERT,&info) != 0)
+			bottom = (info.nPage == 0) || (info.nMax<=(info.nPos+(int)info.nPage));
+		
+		// look if we have the focus
+		bool focus = (GetFocus() == _HEdit);
+		if (focus)
 		{
+			SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_AND,(LPARAM)~ECO_AUTOVSCROLL);
+			SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_AND,(LPARAM)~ECO_AUTOHSCROLL);
+		}
+
+		for (uint i = 0; i < vec.size(); i++)
+		{
+			string str = vec[i].second;
+			uint32 col = vec[i].first;
+
 			// store old selection
 			DWORD startSel, endSel;
 			SendMessage (_HEdit, EM_GETSEL, (LONG)&startSel, (LONG)&endSel);
@@ -490,6 +547,18 @@ void CWinDisplayer::display_main ()
 				SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) "");
 			}
 
+			if ((col>>24) == 0)
+			{
+				SendMessage(_HEdit,EM_SETSEL,-1,-1);
+				CHARFORMAT2 cf;
+				cf.cbSize = sizeof(cf);
+				cf.dwMask = CFM_COLOR;
+				SendMessage(_HEdit,EM_GETCHARFORMAT,(WPARAM)0,(LPARAM)&cf);
+				cf.crTextColor = RGB ((col>>16)&0xFF, (col>>8)&0xFF, col&0xFF);
+				cf.dwEffects &= ~CFE_AUTOCOLOR;
+				SendMessage((HWND) _HEdit, EM_SETCHARFORMAT, (WPARAM) SCF_SELECTION, (LPARAM) &cf);
+			}
+
 			// get number of line
 			nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
 			
@@ -505,6 +574,17 @@ void CWinDisplayer::display_main ()
 			// restore old selection
 			SendMessage (_HEdit, EM_SETSEL, startSel, endSel);
 		}
+
+		SendMessage(_HEdit,EM_SETMODIFY,(WPARAM)TRUE,(LPARAM)0);
+
+		if (bottom)
+			SendMessage(_HEdit,WM_VSCROLL,(WPARAM)SB_BOTTOM,(LPARAM)0L);
+		
+		if (focus)
+		{
+			SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_OR,(LPARAM)ECO_AUTOVSCROLL);
+			SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_OR,(LPARAM)ECO_AUTOHSCROLL);
+		}			
 
 		//
 		// Update labels

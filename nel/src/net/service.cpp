@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.149 2002/11/08 13:28:17 lecroart Exp $
+ * $Id: service.cpp,v 1.150 2002/11/12 17:24:25 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -604,21 +604,22 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// Init window param if necessary
 			//
 
-			sint x=-1, y=-1, w=-1, h=-1;
-			bool iconified = false;
+			sint x=-1, y=-1, w=-1, h=-1, fs=10;
+			bool iconified = false, ww = false;
+			string fn;
 
 			if ((var = ConfigFile.getVarPtr("XWinParam")) != NULL) x = var->asInt();
 			if ((var = ConfigFile.getVarPtr("YWinParam")) != NULL) y = var->asInt();
 			if ((var = ConfigFile.getVarPtr("WWinParam")) != NULL) w = var->asInt();
 			if ((var = ConfigFile.getVarPtr("HWinParam")) != NULL) h = var->asInt();
 			if ((var = ConfigFile.getVarPtr("HWinParam")) != NULL) iconified = var->asInt() == 1;
-
+			if ((var = ConfigFile.getVarPtr("FontSize")) != NULL) fs = var->asInt();
+			if ((var = ConfigFile.getVarPtr("FontName")) != NULL) fn = var->asString();
+			if ((var = ConfigFile.getVarPtr("WordWrap")) != NULL) ww = var->asInt() == 1;
+			
 			if (haveArg('I')) iconified = true;
 
-			if (w == -1 && h == -1)
-				WindowDisplayer->create (string("*INIT* ") + _ShortName + " " + _LongName, iconified, x, y);
-			else
-				WindowDisplayer->create (string("*INIT* ") + _ShortName + " " + _LongName, iconified, x, y, w, h);
+			WindowDisplayer->create (string("*INIT* ") + _ShortName + " " + _LongName, iconified, x, y, w, h, -1, fs, fn, ww);
 
 			DebugLog->addDisplayer (WindowDisplayer);
 			InfoLog->addDisplayer (WindowDisplayer);
@@ -1320,8 +1321,11 @@ std::string IService::getServiceUnifiedName () const
 		res = _AliasName+"/";
 	}
 	res += _ShortName;
-	res += "-";
-	res += toString (_SId);
+	if (_SId != 0)
+	{
+		res += "-";
+		res += toString (_SId);
+	}
 	return res;
 }
 
@@ -1514,9 +1518,9 @@ NLMISC_VARIABLE(uint32, bar, "test the get view system");
 // 2 = service is launching
 // 3 = service failed launching
 
-NLMISC_DYNVARIABLE(sint8, Running, "set this value to 0 to shutdown the service")
+NLMISC_DYNVARIABLE(string, State, "Set this value to 0 to shutdown the service and 1 to start the service")
 {
-	static sint8 running = true;
+	static string running = "Online";
 
 	// read or write the variable
 	if (get)
@@ -1527,14 +1531,18 @@ NLMISC_DYNVARIABLE(sint8, Running, "set this value to 0 to shutdown the service"
 	{
 		if (IService::getInstance()->getServiceShortName() == "AES" || IService::getInstance()->getServiceShortName() == "AS")
 		{
-			nlinfo ("I can't set Running=0 because I'm the admin and I should never quit");
+			nlinfo ("I can't set State=0 because I'm the admin and I should never quit");
 		}
-		else if (!*pointer)
+		else if (*pointer == "0")
 		{
 			// ok, we want to set the value to false, just quit
-			nlinfo ("User ask me with a command to quit using the Running variable");
+			nlinfo ("User ask me with a command to quit using the State variable");
 			ExitSignalAsked = 0xFFFE;
-			running = -1;
+			running = "Quitting";
+		}
+		else
+		{
+			nlwarning ("Unknown value for State '%s'", (*pointer).c_str());
 		}
 	}
 }

@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.1 2003/10/06 09:10:31 cado Exp $
+ * $Id: sstring.h,v 1.2 2003/11/12 17:51:25 cado Exp $
  */
 
 
@@ -16,6 +16,7 @@
 #include <vector>
 #include <stdio.h>
 
+#include "nel/misc/stream.h"
 
 namespace	NLMISC
 {
@@ -120,6 +121,16 @@ public:
 		if (count>=size())
 			return CSString();
 		return substr(count);
+	}
+
+	/// Return sub string up to but not including first instance of given character
+	CSString splitTo(char c) const
+	{
+		unsigned i;
+		CSString result;
+		for (i=0;i<size() && (*this)[i]!=c;++i)
+			result+=(*this)[i];
+		return result;
 	}
 
 	/// Return sub string up to but not including first instance of given character
@@ -480,7 +491,7 @@ public:
 		return result;
 	}
 
-	/// Find index at which a sub-string starts - if sub-string not found then returns string::npos
+	/// Find index at which a sub-string starts (case not sensitive) - if sub-string not found then returns string::npos
 	unsigned find(const char *toFind,unsigned startLocation=0) const
 	{
 		// just bypass the problems that can cause a crash...
@@ -491,9 +502,11 @@ public:
 		for (i=startLocation;i<size();++i)
 		{
 			// string compare toFind against (*this)+i ...
-			for (j=0;toFind[j];++j)
-				if ((*this)[i+j]!=toFind[j])
+			for (j=0;toFind[j] && i+j<size();++j)
+			{
+				if (tolower((*this)[i+j])!=tolower(toFind[j]))
 					break;
+			}
 			// if strings were identical then we're done
 			if (toFind[j]==0)
 				return i;
@@ -547,6 +560,11 @@ public:
 		return !(*this==other);
 	}
 	
+	/// Serial
+	void serial( NLMISC::IStream& s )
+	{
+		s.serial( reinterpret_cast<std::string&>( *this ) );
+	}
 };
 
 

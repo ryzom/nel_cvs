@@ -109,6 +109,7 @@ technique four_stages_4
 	}
 	pass p1
 	{
+		FogColor = 0x00000000; // don't accumulate fog several times
 		Lighting = false;
 		AlphaBlendEnable = true;
 		SrcBlend = one;
@@ -177,6 +178,7 @@ technique three_stages_3
 	}
 	pass p1
 	{
+		FogColor = 0x00000000; // don't accumulate fog several times
 		// second pass: shut down all lighting (lmc ambient term and dynamic lighting already added in first pass)
 		MaterialEmissive= <g_black>;
 		MaterialDiffuse= <g_black>;
@@ -225,6 +227,7 @@ technique two_stages_2
 	}
 	pass p1
 	{
+		FogColor = 0x00000000; // don't accumulate fog several times
 		Lighting = false;
 		AlphaBlendEnable = true;
 		SrcBlend = one;

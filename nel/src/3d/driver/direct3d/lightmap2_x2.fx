@@ -86,6 +86,7 @@ technique two_stages_2
 	}
 	pass p1
 	{
+		FogColor = 0x00000000; // don't accumulate fog several times
 		Lighting = false;
 		AlphaBlendEnable = true;
 		SrcBlend = one;

@@ -97,6 +97,7 @@ technique three_stages_3
 	}
 	pass p1
 	{
+		FogColor = 0x00000000; // don't accumulate fog several times
 		AlphaBlendEnable = true;
 		SrcBlend = one;
 		DestBlend = one;
@@ -159,6 +160,7 @@ technique two_stages_2
 	}
 	pass p1
 	{
+		FogColor = 0x00000000; // don't accumulate fog several times
 		Lighting = false;
 		AlphaBlendEnable = true;
 		SrcBlend = one;
@@ -168,7 +170,7 @@ technique two_stages_2
 		ColorOp[0] = MODULATE;
 	}
 	pass p2
-	{
+	{		
 		Texture[0] = <texture3>;
 		TextureFactor = <color3>;
 	}

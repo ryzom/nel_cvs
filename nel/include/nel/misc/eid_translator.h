@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.7 2003/09/01 12:22:24 lecroart Exp $
+ * $Id: eid_translator.h,v 1.8 2003/09/16 15:08:30 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -69,7 +69,8 @@ public:
 	// check if parameters are coherent with the content of the class, if not, set with the parameters and warn
 	void				checkEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const std::string &userName);
 	
-	void				load (const std::string &fileName);
+	// the first param is the file where are all entities information, the second is a text file (one line per pattern using * and ?) with invalid entity name
+	void				load (const std::string &fileName, const std::string &invalidEntityNamesFilename);
 
 	void				getEntityIdInfo (const CEntityId &eid, ucstring &entityName, sint8 &entitySlot, uint32 &uid, std::string &userName, bool &online);
 
@@ -120,9 +121,14 @@ private:
 
 	// Returns true if the username is valid.
 	// It means that there only alphabetic and numerical character and the name is at least 3 characters long.
-	bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName);
+	bool isValidEntityName (const ucstring &entityName, NLMISC::CLog *log = NLMISC::InfoLog);
 
 	std::string FileName;
+
+	std::vector<std::string> InvalidEntityNames;
+
+	friend void cbInvalidEntityNamesFilename(const std::string &filename);
+	friend struct entityNameValidClass;
 };
 
 }

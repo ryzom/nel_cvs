@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.13 2003/08/29 16:29:22 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.14 2003/09/16 15:08:30 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -33,10 +33,12 @@
 #include <vector>
 #include <map>
 
+#include "nel/misc/algo.h"
+#include "nel/misc/file.h"
+#include "nel/misc/path.h"
+#include "nel/misc/command.h"
 #include "nel/misc/types_nl.h"
 #include "nel/misc/entity_id.h"
-#include "nel/misc/file.h"
-#include "nel/misc/command.h"
 #include "nel/misc/eid_translator.h"
 
 using namespace std;
@@ -167,30 +169,43 @@ void CEntityIdTranslator::getByEntity (const ucstring &entityName, vector<CEntit
 	}
 }
 
-bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName)
+bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName, CLog *log)
 {
 	// 3 char at least
 	if (entityName.size() < 3)
+	{
+		log->displayNL("Bad entity name '%s' (less than 3 char)", entityName.toString().c_str());
 		return false;
-
+	}
 	for (uint i = 0; i < entityName.size(); i++)
 	{
 		// only accept name with alphabetic and numeric value [a-zA-Z0-9]
 		if (!isalnum (entityName[i]))
 		{
-			nlinfo ("Bad entity name '%s' (only char and num)", entityName.toString().c_str());
+			log->displayNL("Bad entity name '%s' (only char and num)", entityName.toString().c_str());
 			return false;
 		}
 	}
+
+	// now check with the invalid name list
+
+	string en = strlwr(entityName.toString());
+	for (uint i = 0; i < InvalidEntityNames.size(); i++)
+	{
+		if(testWildCard(en, InvalidEntityNames[i]))
+		{
+			log->displayNL("Bad entity name '%s' (match the invalid entity name pattern '%s')", entityName.toString().c_str(), InvalidEntityNames[i]);
+			return false;
+		}
+	}
+
 	return true;
 }
 
 bool CEntityIdTranslator::entityNameExists (const ucstring &entityName)
 {
-	bool ok = isValidEntityName (entityName);
-	
 	// if bad name, don't accept it
-	if (!ok) return true;
+	if (!isValidEntityName (entityName)) return true;
 
 	// Names are stored in case dependant, so we have to test them without case.
 	string lowerName = strlwr (entityName.toString());
@@ -292,7 +307,43 @@ void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &ent
 		save ();
 }
 
-void CEntityIdTranslator::load (const string &fileName)
+// this callback is call when the file is changed
+void cbInvalidEntityNamesFilename(const std::string &invalidEntityNamesFilename)
+{
+	CEntityIdTranslator::getInstance()->InvalidEntityNames.clear ();
+
+	string fn = CPath::lookup(invalidEntityNamesFilename, false);
+
+	if (fn.empty())
+	{
+		nlwarning ("Can't load filename '%s' for invalid entity names filename (not found)", invalidEntityNamesFilename.c_str());
+		return;
+	}
+
+	FILE *fp = fopen (fn.c_str(), "r");
+	if (fp == NULL)
+	{
+		nlwarning ("Can't load filename '%s' for invalid entity names filename", fn.c_str());
+		return;
+	}
+
+	while (true)
+	{
+		char str[512];
+		fgets(str, 511, fp);
+		if(feof(fp))
+			break;
+		if (strlen(str) > 0)
+		{
+			str[strlen(str)-1] = '\0';
+			CEntityIdTranslator::getInstance()->InvalidEntityNames.push_back(str);
+		}
+	}
+	
+	fclose (fp);
+}
+
+void CEntityIdTranslator::load (const string &fileName, const string &invalidEntityNamesFilename)
 {
 	if (fileName.empty())
 	{
@@ -322,6 +373,10 @@ void CEntityIdTranslator::load (const string &fileName)
 	{
 		nlwarning ("Can't load filename '%s' for EntityIdTranslator", FileName.c_str());
 	}
+
+	cbInvalidEntityNamesFilename (invalidEntityNamesFilename);
+
+	NLMISC::CFile::addFileChangeCallback (invalidEntityNamesFilename, cbInvalidEntityNamesFilename);
 }
 
 void CEntityIdTranslator::save ()
@@ -480,6 +535,29 @@ NLMISC_COMMAND(findEIdByEntity,"Find entity id using the entity name","<entityna
 
 	log.displayNL("UId %d UserName '%s' EId %s EntityName '%s' EntitySlot %hd %s", uid, userName.c_str(), eid.toString().c_str(), entityName.toString().c_str(), (sint16)entitySlot, (online?"Online":"Offline"));
 	
+	return true;
+}
+
+NLMISC_COMMAND(entityNameValid,"Tell if an entity name is valid or not using CEntityIdTranslator validation rulez","<entityname>")
+{
+	if (args.size () != 1) return false;
+
+	if(!CEntityIdTranslator::getInstance()->isValidEntityName(args[0], &log))
+	{
+		log.displayNL("Entity name '%s' is not valid", args[0]);
+	}
+	else
+	{
+		if (CEntityIdTranslator::getInstance()->entityNameExists(args[0]))
+		{
+			log.displayNL("Entity name '%s' is already used by another player", args[0]);
+		}
+		else
+		{
+			log.displayNL("Entity name '%s' is available", args[0]);
+		}
+	}
+
 	return true;
 }
 

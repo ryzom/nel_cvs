@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.25 2001/02/28 14:21:00 berenguier Exp $
+ * $Id: zone.h,v 1.26 2001/03/06 15:14:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,6 +117,10 @@ public:
 	float			ErrorSize;
 	/// The base corner vertices indices in the current zone. Used for patch connectivity.
 	uint16			BaseVertices[4];
+
+	/** "The don't smooth" flags. For each edge of the patch (0~3), the flag means that this patch mustn't be smoothed
+	with its neightbor. The n-th edge links the vertices "n" and "(n+1)%4". The flag for the n-th edge is (1<<n). */
+	uint8			Flags;
 	// @}
 
 
@@ -142,6 +146,28 @@ public:
 
 	// @}
 
+	/// \name Smooth flags methods
+
+	/**
+	  * Set the smooth flag for the n-th edge. flag is false if this edge must by smoothed, true else.
+	  */
+	void setSmoothFlag (uint edge, bool flag)
+	{
+		// Erase it
+		Flags&=~(1<<edge);
+		
+		// Set it
+		Flags|=(((uint)flag)<<edge);
+	}
+
+	/**
+	  * Get the smooth flag for the n-th edge. Return false if this edge must by smoothed, true else.
+	  */
+	bool getSmoothFlag (uint edge)
+	{
+		// Test it
+		return ((Flags&(1<<edge))!=0);
+	}
 
 	/// \name Patch Binding.
 	// @{

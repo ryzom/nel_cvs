@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.33 2001/02/28 14:28:57 berenguier Exp $
+ * $Id: zone.cpp,v 1.34 2001/03/06 15:14:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,10 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 		const CBezierPatch	&p= pi.Patch;
 		CPatch				&pa= Patchs[j];
 		CPatchConnect		&pc= PatchConnects[j];
+
+		// Smoothing flags
+		pa.Flags&=~NL_PATCH_SMOOTH_FLAG_MASK;
+		pa.Flags|=NL_PATCH_SMOOTH_FLAG_MASK&(pi.Flags<<NL_PATCH_SMOOTH_FLAG_SHIFT);
 
 		// Build the patch.
 		for(i=0;i<4;i++)

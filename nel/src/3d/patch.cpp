@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.46 2001/02/28 14:28:57 berenguier Exp $
+ * $Id: patch.cpp,v 1.47 2001/03/06 15:14:20 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -783,7 +783,7 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 		float oldFar0VScale=Far0VScale;
 		float oldFar0UBias=Far0UBias;
 		float oldFar0VBias=Far0VBias;
-		uint8 oldFlags=FarRotated;
+		uint8 oldFlags=Flags;
 
 		// Don't delete the pass0 if the new newFar1 will use it
 		if ((newFar1==Far0)&&(Far0>0))
@@ -816,9 +816,9 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 					Far0VBias=Far1VBias;
 
 					// Copy rotation flag
-					FarRotated&=~NL_PATCH_FAR0_ROTATED;			// erase it
-					if (FarRotated&NL_PATCH_FAR1_ROTATED)
-						FarRotated|=NL_PATCH_FAR0_ROTATED;			// copy it
+					Flags&=~NL_PATCH_FAR0_ROTATED;			// erase it
+					if (Flags&NL_PATCH_FAR1_ROTATED)
+						Flags|=NL_PATCH_FAR0_ROTATED;			// copy it
 				}
 				else	// get a new render pass
 				{
@@ -828,9 +828,9 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 
 					// Flags is set if the far texture is rotated of 90° to the left
 					if (bRot)
-						FarRotated|=NL_PATCH_FAR0_ROTATED;
+						Flags|=NL_PATCH_FAR0_ROTATED;
 					else
-						FarRotated&=~NL_PATCH_FAR0_ROTATED;
+						Flags&=~NL_PATCH_FAR0_ROTATED;
 				}
 			}
 			else	// no more far pass0
@@ -866,9 +866,9 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 					Far1VBias=oldFar0VBias;
 
 					// Copy rotation flag
-					FarRotated&=~NL_PATCH_FAR1_ROTATED;			// erase it
+					Flags&=~NL_PATCH_FAR1_ROTATED;			// erase it
 					if (oldFlags&NL_PATCH_FAR0_ROTATED)
-						FarRotated|=NL_PATCH_FAR1_ROTATED;			// copy it
+						Flags|=NL_PATCH_FAR1_ROTATED;			// copy it
 				}
 				else	// get a new render pass
 				{
@@ -878,9 +878,9 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 
 					// Flags is set if the far texture is rotated of 90° to the left
 					if (bRot)
-						FarRotated|=NL_PATCH_FAR1_ROTATED;
+						Flags|=NL_PATCH_FAR1_ROTATED;
 					else
-						FarRotated&=~NL_PATCH_FAR1_ROTATED;
+						Flags&=~NL_PATCH_FAR1_ROTATED;
 				}
 
 				// Compute info for transition.
@@ -1045,7 +1045,7 @@ void		CPatch::fillFar0VB(CTessList<CTessFarVertex>  &vertList)
 		// Set Uvs.
 		static CUV	uv;
 		CParamCoord	&pc= pVert->PCoord;
-		if (FarRotated&NL_PATCH_FAR0_ROTATED)
+		if (Flags&NL_PATCH_FAR0_ROTATED)
 		{
 			uv.U= pc.getT()* Far0UScale + Far0UBias;
 			uv.V= (1.f-pc.getS())* Far0VScale + Far0VBias;
@@ -1090,7 +1090,7 @@ void		CPatch::fillFar1VB(CTessList<CTessFarVertex>  &vertList)
 		// Set Uvs.
 		static CUV		uv;
 		CParamCoord	&pc= pVert->PCoord;
-		if (FarRotated&NL_PATCH_FAR1_ROTATED)
+		if (Flags&NL_PATCH_FAR1_ROTATED)
 		{
 			uv.U= pc.getT()* Far1UScale + Far1UBias;
 			uv.V= (1.f-pc.getS())* Far1VScale + Far1VBias;

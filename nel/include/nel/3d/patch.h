@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.33 2001/02/28 14:21:00 berenguier Exp $
+ * $Id: patch.h,v 1.34 2001/03/06 15:14:26 corvazier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -47,6 +47,8 @@ namespace NL3D {
 #define NL_MAX_TILES_BY_PATCH_EDGE (1<<NL_MAX_TILES_BY_PATCH_EDGE_SHIFT)		// max 16x16 tiles by patch
 #define NL_PATCH_FAR0_ROTATED 0x1												// Flags far0 rotated
 #define NL_PATCH_FAR1_ROTATED 0x2												// Flags far1 rotated
+#define NL_PATCH_SMOOTH_FLAG_SHIFT 0x3											// Smooth flags shift
+#define NL_PATCH_SMOOTH_FLAG_MASK 0x3c											// Smooth flags mask
 
 #define NL_LUMEL_BY_TILE_SHIFT 2												// 4 lumels by tile
 #define NL_LUMEL_BY_TILE (1<<NL_LUMEL_BY_TILE_SHIFT)							// 4 lumels by tile
@@ -296,6 +298,29 @@ public:
 	  *  \see expandShading(), packShadowMap(), unpackShadowMap()
 	  */
 	void			clearUncompressedLumels ();
+
+	/// \name Smooth flags methods
+
+	/**
+	  * Set the smooth flag for the n-th edge. flag is false if this edge must by smoothed, true else.
+	  */
+	void setSmoothFlag (uint edge, bool flag)
+	{
+		// Erase it
+		Flags&=~(1<<(edge+NL_PATCH_SMOOTH_FLAG_SHIFT));
+		
+		// Set it
+		Flags|=(((uint)flag)<<(edge+NL_PATCH_SMOOTH_FLAG_SHIFT));
+	}
+
+	/**
+	  * Get the smooth flag for the n-th edge. Return false if this edge must by smoothed, true else.
+	  */
+	bool getSmoothFlag (uint edge)
+	{
+		// Test it
+		return ((Flags&(1<<(edge+NL_PATCH_SMOOTH_FLAG_SHIFT)))!=0);
+	}
 public:
 
 	// only usefull for CZone refine.
@@ -338,12 +363,24 @@ private:
 
 	// Pack 4 bytes
 	// {
-	uint8			FarRotated;		// If the flag is set, the far texture of the patch is rotated of 1 (to the left of course)
-									// Flags: NL_PATCH_FAR0_ROTATED for Far0, NL_PATCH_FAR1_ROTATED for Far1
+	/**
+	  * Flags NL_PATCH_FAR0_ROTATED and NL_PATCH_FAR1_ROTATED
+	  *		NL_PATCH_FAR0_ROTATED for Far0, NL_PATCH_FAR1_ROTATED for Far1
+	  *		If the flag is set, the far texture of the patch is rotated of 1 
+	  *		(to the left of course)
+	  *
+	  * Flags NL_PATCH_SMOOTH_FLAG_MASK
+	  *		4 flag for smooth edge. Same as CPatchInfo::CBindInfo shifted by (<<NL_PATCH_SMOOTH_FLAG_SHIFT).
+	  *		See CPatchInfo::CBindInfo::Flags for details. 
+	  */
+	uint8			Flags;
+								
 	// are we cliped?
 	bool			Clipped;
+
 	// Do we must compute the Tile errormetric part??
 	bool			ComputeTileErrorMetric;
+	
 	// Are we in the Tile/Far transition. if ComputeTileErrorMetric==true, and TileFarTransition==false, we are 
 	// TOTALY IN the Tile zone sphere.
 	bool			TileFarTransition;

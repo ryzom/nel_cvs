@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.58 2003/10/23 16:15:34 distrib Exp $
+ * $Id: debug.h,v 1.59 2003/11/17 10:26:23 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -568,12 +568,16 @@ inline void _check(char a) { }
 inline void _check(unsigned char a) { }
 inline void _check(long a) { }
 inline void _check(unsigned long a) { }
+#ifndef NL_COMP_VC7
 inline void _check(uint8 a) { }
+#endif
 inline void _check(sint8 a) { }
 inline void _check(uint16 a) { }
 inline void _check(sint16 a) { }
+#ifndef NL_COMP_VC7
 inline void _check(uint32 a) { }
 inline void _check(sint32 a) { }
+#endif
 inline void _check(uint64 a) { }
 inline void _check(sint64 a) { }
 inline void _check(float a) { }

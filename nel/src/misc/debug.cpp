@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.81 2003/09/09 15:26:20 lecroart Exp $
+ * $Id: debug.cpp,v 1.82 2003/11/17 10:26:23 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -345,7 +345,9 @@ public:
 			case STATUS_SEGMENT_NOTIFICATION         : shortExc="Segment Notification"; longExc=""; break;
 			case STATUS_FLOAT_MULTIPLE_FAULTS        : shortExc="Float Multiple Faults"; longExc=""; break;
 			case STATUS_FLOAT_MULTIPLE_TRAPS         : shortExc="Float Multiple Traps"; longExc=""; break;
+#ifndef NL_COMP_VC7
 			case STATUS_ILLEGAL_VLM_REFERENCE        : shortExc="Illegal VLM Reference"; longExc=""; break;
+#endif
 			case 0xE06D7363                          : shortExc="Microsoft C++ Exception"; longExc="Microsoft C++ Exception"; break;	// cpp exception
 			case 0xACE0ACE                           : shortExc=""; longExc="";
 				if (m_pexp->ExceptionRecord->NumberParameters == 1)

@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.13 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: eid_translator.h,v 1.14 2004/08/13 18:54:53 brigand Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include <nel/misc/types_nl.h>
 #include <nel/misc/entity_id.h>
 #include <nel/misc/ucstring.h>
+#include <nel/misc/command.h>
 
 namespace	NLMISC
 {
@@ -43,23 +44,14 @@ public:
 
 	static CEntityIdTranslator *getInstance ();
 
-	// get all eid for a user using the user name or the user id
-	void				getByUser (uint32 uid, std::vector<NLMISC::CEntityId> &res);
-	void				getByUser (const std::string &userName, std::vector<NLMISC::CEntityId> &res, bool exact=true);
-	
-	// get entity name using the eid
-	ucstring			getByEntity (const NLMISC::CEntityId &eid);
-
-	// get eid using the entity name
-	CEntityId			getByEntity (const ucstring &entityName);
-	void				getByEntity (const ucstring &entityName, std::vector<NLMISC::CEntityId> &res, bool exact);
-	
-	// return true if an entity name already exists
-	bool				entityNameExists (const ucstring &entityName,bool acceptBlanks = false);
-		
+	// performs all check on a name ( name validity + uniqueness )
+	bool				checkEntityName (const ucstring &entityName);
+	/// return true if a name already exists
+	bool				entityNameExists(const ucstring &entityName);
+	// register an entity in this manager
 	void				registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName);
+	// unregister an entity from this manager
 	void				unregisterEntity (const CEntityId &eid);
-
 	// set an association entityName / entityStringId, return true if association has been set
 	bool				setEntityNameStringId(const ucstring &entityName, uint32 stringId);
 	// get string id for entityId
@@ -77,15 +69,21 @@ public:
 	// the first param is the file where are all entities information, the second is a text file (one line per pattern using * and ?) with invalid entity name
 	void				load (const std::string &fileName, const std::string &invalidEntityNamesFilename);
 
+	// get eid using the entity name
+	CEntityId			getByEntity (const ucstring &entityName);
+
+	// get entity name using the eid
+	ucstring			getByEntity (const NLMISC::CEntityId &eid);
+
 	void				getEntityIdInfo (const CEntityId &eid, ucstring &entityName, sint8 &entitySlot, uint32 &uid, std::string &userName, bool &online);
 
-	// return the user id and 0 if not found
-	uint32				getUId (const std::string &userName);
-	std::string			getUserName (uint32 uid);
+	// transform a username ucstring into a string that can be compared with registered string
+	std::string getRegisterableString( const ucstring & entityName);
 
-	// Returns true if the username is valid.
-	// It means that there only alphabetic and numerical character and the name is at least 3 characters long.
-	bool isValidEntityName (const ucstring &entityName, NLMISC::CLog *log = NLMISC::InfoLog, bool acceptBlanks = false);
+	
+
+	/// return a vector of invalid names
+	const std::vector<std::string> & getInvalidNames(){ return InvalidEntityNames; }
 	
 	struct CEntity
 	{
@@ -116,6 +114,19 @@ public:
 	uint FileVersion;
 
 private:
+	// get all eid for a user using the user name or the user id
+	void				getByUser (uint32 uid, std::vector<NLMISC::CEntityId> &res);
+	void				getByUser (const std::string &userName, std::vector<NLMISC::CEntityId> &res, bool exact=true);
+	
+	void				getByEntity (const ucstring &entityName, std::vector<NLMISC::CEntityId> &res, bool exact);
+
+	// return the user id and 0 if not found
+	uint32				getUId (const std::string &userName);
+	std::string			getUserName (uint32 uid);
+
+	// Returns true if the username is valid.
+	// It means that there only alphabetic and numerical character and the name is at least 3 characters long.
+	bool isValidEntityName (const ucstring &entityName, NLMISC::CLog *log = NLMISC::InfoLog );
 
 	typedef std::map<NLMISC::CEntityId, CEntity>::iterator reit;
 
@@ -129,16 +140,17 @@ private:
 
 	void save ();
 
-	// transform a username ucstring into a string that can be compared with registered string
-	// if removeBlanks is true, blanks are removed to built the registerable string.
-	std::string getRegisterableString( const ucstring & entityName,bool removeBlanks = false);
-
 	std::string FileName;
 
 	std::vector<std::string> InvalidEntityNames;
 
 	friend void cbInvalidEntityNamesFilename(const std::string &filename);
 	friend struct entityNameValidClass;
+	NLMISC_CATEGORISED_COMMAND_FRIEND(nel,findEIdByUser);
+	NLMISC_CATEGORISED_COMMAND_FRIEND(nel,findEIdByUser);
+	NLMISC_CATEGORISED_COMMAND_FRIEND(nel,findEIdByEntity);
+	NLMISC_CATEGORISED_COMMAND_FRIEND(nel,entityNameValid);
+	NLMISC_CATEGORISED_COMMAND_FRIEND(nel,playerInfo);
 };
 
 }

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.1 2001/05/04 14:50:49 legros Exp $
+ * $Id: local_retriever.h,v 1.2 2001/05/04 15:12:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -161,6 +161,7 @@ public:
 	const std::vector<CTip>				&getTips() const { return _Tips; }
 	const std::vector<uint16>			&getEdgeTips(sint edge) const { nlassert(0<=edge && edge<4); return _EdgeTips[edge]; }
 
+	const std::vector<COrderedChain>	&getOrderedChains() const { return _OrderedChains; }
 	const std::vector<CChain>			&getChains() const { return _Chains; }
 	const std::vector<uint16>			&getEdgeChains(sint edge) const { nlassert(0<=edge && edge<4); return _EdgeChains[edge]; }
 	const std::vector<CRetrievableSurface>	&getSurfaces() const { return _Surfaces; }

@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.2 2002/01/08 10:09:35 valignat Exp $
+dnl $Id: acinclude.m4,v 1.3 2002/01/10 14:33:19 valignat Exp $
 dnl 
 dnl =========================================================================
 
@@ -949,7 +949,9 @@ AC_SUBST(OPENAL_LIB)
 # AM_PATH_PYTHON : Python checking macros
 
 AC_DEFUN(AM_PATH_PYTHON,
-[ is_mandatory="$1"
+[ python_version_required="$1"
+
+is_mandatory="$2"
 
 AC_REQUIRE_CPP()
 
@@ -975,25 +977,31 @@ if test ! "$PYTHON_VERSION" = ""
 then
     PYTHON_EXEC="python$PYTHON_VERSION"
 else
-    PYTHON_EXEC="python python2.0 python1.5"
+    PYTHON_EXEC="python python2.1 python2.0 python1.5"
 fi
 
 AC_PATH_PROGS(PYTHON, $PYTHON_EXEC, no, $PATH)
 
-if test "$PYTHON" = "no"
+if test "$PYTHON" != "no"
+then
+    PYTHON_PREFIX=`$PYTHON -c 'import sys; print "%s" % (sys.prefix)'`
+    PYTHON_VERSION=`$PYTHON -c 'import sys; print "%s" % (sys.version[[:3]])'`
+
+    is_python_version_enough=`expr $python_version_required \<= $PYTHON_VERSION`
+fi
+
+
+if test "$PYTHON" = "no" || test "$is_python_version_enough" != "1"
 then
 
     if test "$is_mandatory" = "yes"
     then
-        AC_MSG_ERROR([Python must be installed (http://www.python.org)])
+        AC_MSG_ERROR([Python $python_version_required must be installed (http://www.python.org)])
     else
         have_python="no"
     fi
 
 else
-
-    PYTHON_PREFIX=`$PYTHON -c 'import sys; print "%s" % (sys.prefix)'`
-    PYTHON_VERSION=`$PYTHON -c 'import sys; print "%s" % (sys.version[[:3]])'`
 
     python_includes="$PYTHON_PREFIX/include/python$PYTHON_VERSION"
     python_libraries="$PYTHON_PREFIX/lib/python$PYTHON_VERSION/config"

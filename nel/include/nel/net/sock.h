@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.4 2001/05/30 08:52:07 cado Exp $
+ * $Id: sock.h,v 1.5 2001/05/31 14:07:32 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,9 +186,9 @@ public:
 
 	/** Receive a partial or an entire block of data, depending on nonblocking mode.
 	 *
-	 * In blocking mode : the method waits until 'len' bytes have been received.
+	 * In blocking mode: the method waits until 'len' bytes have been received.
 	 *
-	 * In nonblocking mode : the method reads the bytes that have already been received only, and
+	 * In nonblocking mode: the method reads the bytes that have already been received only, and
 	 * resets 'len' to the number of bytes read. The actual length may be smaller than the demanded
 	 * length. In no data is available, the return value is CSock::WouldBlock. If dataAvailable()
 	 * returns true, you are sure that receive() will not return CSock::WouldBlock.
@@ -210,10 +210,17 @@ public:
 	//@{
 
 	/** Sends a message.
-	 * \return CSock::Ok or CSock::WouldBlock (in nonblocking mode only) or CSock::Error (in case of failure).
+	 *
+	 * In blocking mode: the method waits until 'len' bytes have been sent.
+	 *
+	 * In nonblocking mode : the method resets len to the actual number of bytes sent.
+	 * Even if less bytes than expected have been sent, it returns CSock::Ok. The caller
+	 * is expected to test the actual len to check if the remaining data must be resent.
+	 *
+	 * \return CSock::Ok or CSock::Error (in case of failure).
 	 * When throw_exception is true, the method throws an ESocket exception in case of failure.
      */
-	CSock::TSockResult CSock::send( const uint8 *buffer, uint len, bool throw_exception=true );
+	CSock::TSockResult CSock::send( const uint8 *buffer, uint& len, bool throw_exception=true );
 
 	//@}
 

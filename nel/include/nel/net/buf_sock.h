@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.5 2001/05/24 14:17:35 cado Exp $
+ * $Id: buf_sock.h,v 1.6 2001/05/31 14:07:32 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/net/buf_net_base.h"
 #include "nel/net/tcp_sock.h"
 
+//#include <deque>
 
 namespace NLNET {
 
@@ -205,6 +206,7 @@ private:
 	sint32				_TriggerSize;
 
 	std::vector<uint8>	_ReadyToSendBuffer;
+	uint32				_RTSBIndex;
 
 	uint64				_AppId;
 

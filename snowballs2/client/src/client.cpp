@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.44 2001/07/27 15:50:40 corvazier Exp $
+ * $Id: client.cpp,v 1.45 2001/08/07 15:38:11 valignat Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -263,7 +263,7 @@ int main(int argc, char **argv)
 	displayLoadingState ("Ready !!!");
 
 	// Display the first line
-	nlinfo ("Welcome to Snowballs 1");
+	nlinfo ("Welcome to Snowballs");
 
 	// Get the current time
 	NewTime = CTime::getLocalTime();

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.cpp,v 1.21 2000/11/27 10:43:50 cado Exp $
+ * $Id: inet_address.cpp,v 1.22 2001/01/02 14:39:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,8 +61,8 @@ bool CInetAddress::RetrieveNames = true;
 /*
  * Constructor
  */
-CInetAddress::CInetAddress()
-: _Valid( false )
+CInetAddress::CInetAddress() :
+  _Valid( false )
 {
 	init();
 }
@@ -72,7 +72,8 @@ CInetAddress::CInetAddress()
 /*
  * Alternate constructor (calls setByName())
  */
-CInetAddress::CInetAddress( const std::string& hostName, uint16 port )
+CInetAddress::CInetAddress( const std::string& hostName, uint16 port ) :
+	_Valid( false )
 {
 	init();
 	setPort( port );
@@ -84,7 +85,8 @@ CInetAddress::CInetAddress( const std::string& hostName, uint16 port )
 /*
  * Copy constructor
  */
-CInetAddress::CInetAddress( const CInetAddress& other )
+CInetAddress::CInetAddress( const CInetAddress& other ) :
+	_Valid( false )
 {
 	init();
 	_HostName = other._HostName;

@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.30 2000/12/20 10:08:17 cado Exp $
+ * $Id: msg_socket.h,v 1.31 2001/01/02 14:39:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,6 @@ public:
  * Please refer to the documentation of update() to know how to use it.
  *
  * \sa network Network system overview
- * \todo Cado: Replace search for (TSenderId from) in the list by something faster ?
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

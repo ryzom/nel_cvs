@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.29 2000/12/08 17:22:26 cado Exp $
+ * $Id: base_socket.cpp,v 1.30 2001/01/02 14:39:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,7 +123,7 @@ CBaseSocket::CBaseSocket( bool reliable, bool logging ) :
 
 	if ( _Logging )
 	{
-		nldebug( "Socket %d open (%s)", _Sock, _Reliable?"TCP":"UDP" );
+		nldebug( "P1: Socket %d open (%s)", _Sock, _Reliable?"TCP":"UDP" );
 	}
 }
 
@@ -176,7 +176,7 @@ void CBaseSocket::close()
 #endif
 		if ( _Logging )
 		{
-			nldebug( "Socket %d closed at %s", _Sock, _LocalAddr.asString().c_str() );
+			nldebug( "P1: Socket %d closed at %s", _Sock, _LocalAddr.asString().c_str() );
 		}
 		_Sock = INVALID_SOCKET;
 		_Bound = false;
@@ -234,12 +234,12 @@ void CBaseSocket::connect( const CInetAddress& addr ) throw (ESocketConnectionFa
 	}
 	if ( _Logging )
 	{
-		nldebug( "Socket %d connected to %s", _Sock, addr.asString().c_str() );
+		nldebug( "P1: Socket %d connected to %s", _Sock, addr.asString().c_str() );
 	}
 	setLocalAddress();
 	if ( _Logging )
 	{
-		nldebug( "Socket %d is at %s", _Sock, _LocalAddr.asString().c_str() );
+		nldebug( "P1: Socket %d is at %s", _Sock, _LocalAddr.asString().c_str() );
 	}	
 	_RemoteAddr = addr;
 	_Connected = _Reliable;
@@ -316,7 +316,7 @@ void CBaseSocket::bind( uint16 port ) throw (ESocket)
 	_Bound = true;
 	if ( _Logging )
 	{
-		nldebug( "Socket %d bound at %s", _Sock, _LocalAddr.asString().c_str() );
+		nldebug( "P1: Socket %d bound at %s", _Sock, _LocalAddr.asString().c_str() );
 	}
 }
 
@@ -335,7 +335,7 @@ void CBaseSocket::sendTo( const uint8 *buffer, uint len, const CInetAddress& add
 
 	if ( _Logging )
 	{
-		nldebug( "Socket %d sent %d bytes to %s", _Sock, len, addr.asString().c_str() );
+		nldebug( "P1: Socket %d sent %d bytes to %s", _Sock, len, addr.asString().c_str() );
 	}
 
 	// If socket is unbound, retrieve local address
@@ -373,7 +373,7 @@ bool CBaseSocket::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr ) th
 	_BytesReceived += len;
 	if ( _Logging )
 	{
-		nldebug( "Socket %d received %d bytes from %s", _Sock, len, addr.asString().c_str() );
+		nldebug( "P1: Socket %d received %d bytes from %s", _Sock, len, addr.asString().c_str() );
 	}
 
 	return true;
@@ -393,7 +393,7 @@ void CBaseSocket::send( const uint8* buffer, uint len ) throw (ESocket)
 	
 	/*if ( _Logging )
 	{
-		nldebug( "Socket %d sent %d bytes", _Sock, len );
+		nldebug( "P0: Socket %d sent %d bytes", _Sock, len );
 	}*/
 }
 
@@ -453,7 +453,7 @@ void CBaseSocket::doReceive( uint8 *buffer, uint len )
 	}
 	/*if ( _Logging )
 	{
-		nldebug( "Socket %d received %d bytes", _Sock, len );
+		nldebug( "P0: Socket %d received %d bytes", _Sock, len );
 	}*/
 	_BytesReceived += len;
 }

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.h,v 1.15 2000/11/22 15:56:47 cado Exp $
+ * $Id: inet_address.h,v 1.16 2001/01/02 14:39:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,8 +55,7 @@ class ESocket;
 /**
  * Internet address (IP + port).
  * The structure sockaddr_in is internally in network byte order
- * \todo cado Allow to use addreses without hostname
- * \todo cado Test to check if byte ordering is ok.
+ * \todo cado Test big/little endian transfers to check if byte ordering is ok.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -98,7 +97,7 @@ public:
 	 
 	/// Returns if object (address and port) is valid
 	bool				isValid() const;
-
+	
 	/// Returns internal socket address (read only)
 	const sockaddr_in	 *sockAddr() const;
 
@@ -131,9 +130,9 @@ private:
 	// Called in all constructors. Calls CBaseSocket::init().
 	void				init();
 
-	std::string	_HostName;
-	sockaddr_in	*_SockAddr;
-	bool		_Valid;
+	std::string			_HostName;
+	sockaddr_in			*_SockAddr;
+	bool				_Valid;
 
 };
 

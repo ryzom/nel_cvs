@@ -1,7 +1,7 @@
 /** \file plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.h,v 1.5 2001/09/07 12:01:08 vizerie Exp $
+ * $Id: ps_plane_basis_maker.h,v 1.6 2001/09/12 13:19:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@
 
 namespace NL3D {
 
-
+const char *CPSAttribMaker<CPlaneBasis>::getType() { return "CPlaneBasis";}
 
 /** these are some attribute makers for plane_basis
  * This is a plane basis class. It just blend between 2 plane by linearly interpolating the normal
@@ -51,9 +51,7 @@ public:
 	{
 		_F.setValues(startBasis, endBasis);
 	}
-	
-	// F is serialized by base classes...
-
+	CPSAttribMakerBase *clone() const { return new CPSPlaneBasisBlender(*this); }
 };
 
 
@@ -74,10 +72,8 @@ public:
 	{
 		_F.setValues(basisTab, nbValues, nbStages);
 	}
-
-	static CPlaneBasis DefaultPlaneBasisTab[];
-		
-	// F is serialized by base classes...	
+	CPSAttribMakerBase *clone() const { return new CPSPlaneBasisGradient(*this); }
+	static CPlaneBasis DefaultPlaneBasisTab[];	
 };
 
 
@@ -121,7 +117,7 @@ class CPSPlaneBasisFollowSpeed : public CPSAttribMaker<CPlaneBasis>
 			// nothing to save here
 			f.serialVersion(1);
 		}
-
+		CPSAttribMakerBase *clone() const { return new CPSPlaneBasisFollowSpeed(*this); }
 };
 
 
@@ -136,6 +132,7 @@ class CPSPlaneBasisMemory : public CPSAttribMakerMemory<CPlaneBasis>
 public:
 	CPSPlaneBasisMemory() { setDefaultValue(CPlaneBasis(NLMISC::CVector::K)); }
 	NLMISC_DECLARE_CLASS(CPSPlaneBasisMemory);
+	CPSAttribMakerBase *clone() const { return new CPSPlaneBasisMemory(*this); }
 };
 
 
@@ -146,6 +143,7 @@ class CPSPlaneBasisBinOp : public CPSAttribMakerBinOp<CPlaneBasis>
 {
 public:
 	NLMISC_DECLARE_CLASS(CPSPlaneBasisBinOp);
+	CPSAttribMakerBase *clone() const { return new CPSPlaneBasisBinOp(*this); }
 };
 
 
@@ -181,6 +179,7 @@ class CPSBasisSpinner : public CPSAttribMakerT<CPlaneBasis, CSpinnerFunctor>
 public:
 	CPSBasisSpinner() : CPSAttribMakerT<CPlaneBasis, CSpinnerFunctor>(1) {}
 	NLMISC_DECLARE_CLASS(CPSBasisSpinner);
+	CPSAttribMakerBase *clone() const { return new CPSBasisSpinner(*this); }
 };
 
 

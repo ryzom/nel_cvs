@@ -1,7 +1,7 @@
 /** \file ps_int.h
  * <File description>
  *
- * $Id: ps_int.h,v 1.3 2001/07/12 15:45:56 vizerie Exp $
+ * $Id: ps_int.h,v 1.4 2001/09/12 13:19:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,8 @@
 namespace NL3D {
 
 
+const char *CPSAttribMaker<uint32>::getType() { return "int32"; }
+
 /// these are some attribute makers for int
 
 /// This is a int blender class. It just blend between 2 values
@@ -41,27 +43,24 @@ namespace NL3D {
 class CPSIntBlender : public CPSValueBlender<sint32>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSIntBlender) ;
+	NLMISC_DECLARE_CLASS(CPSIntBlender);
 	CPSIntBlender(sint32 startInt = 0 , sint32 endInt = 10, float nbCycles = 1.0f) : CPSValueBlender<sint32>(nbCycles)
 	{
-		_F.setValues(startInt, endInt) ;
-	}
-	
-	// F is serialized by base classes...
-
-} ;
+		_F.setValues(startInt, endInt);
+	}	
+	CPSAttribMakerBase *clone() const { return new CPSIntBlender(*this); }
+};
 
 class CPSUIntBlender : public CPSValueBlender<uint32>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSUIntBlender) ;
+	NLMISC_DECLARE_CLASS(CPSUIntBlender);
 	CPSUIntBlender(uint32 startInt = 0 , uint32 endInt = 10, float nbCycles = 1.0f) : CPSValueBlender<uint32>(nbCycles)
 	{
-		_F.setValues(startInt, endInt) ;
-	}	
-	// F is serialized by base classes...
-
-} ;
+		_F.setValues(startInt, endInt);
+	}
+	CPSAttribMakerBase *clone() const { return new CPSUIntBlender(*this); }
+};
 
 
 
@@ -73,7 +72,7 @@ public:
 class CPSIntGradient : public CPSValueGradient<sint32>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSIntGradient) ;
+	NLMISC_DECLARE_CLASS(CPSIntGradient);
 
 	/**	
 	 *	Construct the value gradient blender by passing a pointer to a float table.
@@ -82,18 +81,15 @@ public:
 	 */
 
 	CPSIntGradient(const sint32 *intTab = CPSIntGradient::_DefaultGradient
-						, uint32 nbValues = 2, uint32 nbStages = 10, float nbCycles = 1.0f) ;
-
-	static sint32 _DefaultGradient[] ;
-	
-	// F is serialized by base classes...	
-
-} ;
+						, uint32 nbValues = 2, uint32 nbStages = 10, float nbCycles = 1.0f);
+	CPSAttribMakerBase *clone() const { return new CPSIntGradient(*this); }
+	static sint32 _DefaultGradient[];
+};
 
 class CPSUIntGradient : public CPSValueGradient<uint32>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSUIntGradient) ;
+	NLMISC_DECLARE_CLASS(CPSUIntGradient);
 
 	/**	
 	 *	Construct the value gradient blender by passing a pointer to a float table.
@@ -102,13 +98,10 @@ public:
 	 */
 
 	CPSUIntGradient(const uint32 *intTab = CPSUIntGradient::_DefaultGradient
-						, uint32 nbValues = 2, uint32 nbStages = 10, float nbCycles = 1.0f) ;
-
-	static uint32 _DefaultGradient[] ;
-	
-	// F is serialized by base classes...	
-
-} ;
+						, uint32 nbValues = 2, uint32 nbStages = 10, float nbCycles = 1.0f);
+	CPSAttribMakerBase *clone() const { return new CPSUIntGradient(*this); }
+	static uint32 _DefaultGradient[];	
+};
 
 /** this memorize value by applying some function on the emitter. For a particle's attribute, each particle has its
   * own value memorized
@@ -117,9 +110,10 @@ public:
 class CPSIntMemory : public CPSAttribMakerMemory<sint32>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSIntMemory) ;
-	CPSIntMemory() { setDefaultValue(0) ; }
-} ;
+	NLMISC_DECLARE_CLASS(CPSIntMemory);
+	CPSIntMemory() { setDefaultValue(0); }
+	CPSAttribMakerBase *clone() const { return new CPSIntMemory(*this); }
+};
 
 
 /** this memorize value by applying some function on the emitter. For a particle's attribute, each particle has its
@@ -129,9 +123,10 @@ public:
 class CPSUIntMemory : public CPSAttribMakerMemory<uint32>
 {
 public:
-	CPSUIntMemory() { setDefaultValue(0) ; }
-	NLMISC_DECLARE_CLASS(CPSUIntMemory) ;
-} ;
+	CPSUIntMemory() { setDefaultValue(0); }
+	NLMISC_DECLARE_CLASS(CPSUIntMemory);
+	CPSAttribMakerBase *clone() const { return new CPSUIntMemory(*this); }
+};
 
 
 /** An attribute maker whose output if the result of a binary op on uint32
@@ -140,8 +135,9 @@ public:
 class CPSIntBinOp : public CPSAttribMakerBinOp<sint32>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSIntBinOp) ;
-} ;
+	NLMISC_DECLARE_CLASS(CPSIntBinOp);
+	CPSAttribMakerBase *clone() const { return new CPSIntBinOp(*this); }
+};
 
 
 /** An attribute maker whose output if the result of a binary op on uint32
@@ -150,8 +146,9 @@ public:
 class CPSUIntBinOp : public CPSAttribMakerBinOp<uint32>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSUIntBinOp) ;
-} ;
+	NLMISC_DECLARE_CLASS(CPSUIntBinOp);
+	CPSAttribMakerBase *clone() const { return new CPSUIntBinOp(*this); }
+};
 
 
 

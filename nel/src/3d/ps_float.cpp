@@ -1,7 +1,7 @@
 /** \file ps_size.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.4 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_float.cpp,v 1.5 2001/09/12 13:19:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@ namespace NL3D {
 
 
 
-float CPSFloatGradient::_DefaultGradient[] = { 0.0f, 1.0f } ;
+float CPSFloatGradient::_DefaultGradient[] = { 0.1f, 1.0f } ;
 
 
 

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.11 2001/08/06 10:07:44 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.12 2001/09/12 13:19:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ namespace NL3D {
 template <typename T>
 inline T PSValueBlend(const T &t1, const T &t2, float alpha)
 {
-	return T(alpha * t2 + (1.f - alpha) * t1) ;
+	return T(alpha * t2 + (1.f - alpha) * t1);
 }
 
 
@@ -58,9 +58,9 @@ inline T PSValueBlend(const T &t1, const T &t2, float alpha)
 template <>
 inline NLMISC::CRGBA PSValueBlend(const NLMISC::CRGBA &t1, const NLMISC::CRGBA &t2, float alpha)
 {
-	NLMISC::CRGBA result ;
-	result.blendFromui(t1, t2, OptFastFloor(255.0f * alpha)) ;
-	return result ;
+	NLMISC::CRGBA result;
+	result.blendFromui(t1, t2, OptFastFloor(255.0f * alpha));
+	return result;
 }
 
 
@@ -68,16 +68,16 @@ inline NLMISC::CRGBA PSValueBlend(const NLMISC::CRGBA &t1, const NLMISC::CRGBA &
 template <>
 inline CPlaneBasis PSValueBlend(const CPlaneBasis &t1, const CPlaneBasis &t2, float alpha)
 {	
-	return CPlaneBasis(PSValueBlend(t1.getNormal(), t2.getNormal(), alpha)) ;
+	return CPlaneBasis(PSValueBlend(t1.getNormal(), t2.getNormal(), alpha));
 }
 
 
 /// Base struct for blending function (exact or sampled)
 template <typename T> struct CPSValueBlendFuncBase
 {
-	virtual void getValues(T &startValue, T &endValue) const = 0 ;
-	virtual void setValues(T startValue, T endValue) = 0 ;
-} ;
+	virtual void getValues(T &startValue, T &endValue) const = 0;
+	virtual void setValues(T startValue, T endValue) = 0;
+};
 
 
 
@@ -101,8 +101,8 @@ public:
 		/// serialization
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
-			f.serialVersion(1) ;
-			f.serial(_StartValue, _EndValue) ;
+			f.serialVersion(1);
+			f.serial(_StartValue, _EndValue);
 		}
 	//@}
 
@@ -113,7 +113,7 @@ public:
 	T operator()(CAnimationTime time) const
 	{
 
-		return PSValueBlend(_StartValue, _EndValue, time) ;	// a cast to T is necessary, because 
+		return PSValueBlend(_StartValue, _EndValue, time);	// a cast to T is necessary, because 
 														// the specialization couls be done with integer
 	}
 
@@ -122,26 +122,26 @@ public:
 		/// Retrieve the start and end Value
 		virtual void getValues(T &startValue, T &endValue) const
 		{
-			startValue = (*this)(0) ;
-			endValue = (*this)(1) ;
+			startValue = (*this)(0);
+			endValue = (*this)(1);
 		}	
 
 		/// Set the Values between which to blend.
 		virtual void setValues(T startValue, T endValue)
 		{
-			_StartValue = startValue ;
-			_EndValue = endValue ;
+			_StartValue = startValue;
+			_EndValue = endValue;
 		}
 
 		/// 
 		T getMaxValue(void) const
 		{
-			return std::max((*this)(0), (*this)(1)) ;
+			return std::max((*this)(0), (*this)(1));
 		}
 	//@}
 
 protected:
-	T _StartValue, _EndValue ;	
+	T _StartValue, _EndValue;	
 };
 
 
@@ -166,12 +166,10 @@ public:
 	{	
 	}
 
-	virtual T getMaxValue(void) const { return _F.getMaxValue() ; }
+	virtual T getMaxValue(void) const { return _F.getMaxValue(); }
 
 	// serialization is done by CPSAttribMakerT
-
-
-} ;
+};
 
 
 
@@ -197,29 +195,29 @@ public:
 	T operator()(CAnimationTime time) const
 	{
 
-		return _Values[OptFastFloor(time * n)] ;	
+		return _Values[OptFastFloor(time * n)];	
 	}
 
 	/// restrieve the start and end Value
 
 	virtual void getValues(T &startValue, T &endValue) const
 	{
-		startValue = _Values[0] ;
-		endValue = _Values[n] ;
+		startValue = _Values[0];
+		endValue = _Values[n];
 	}	
 
 	/// set the Values
 
 	virtual void setValues(T startValue, T endValue)
 	{
-		float step = 1.f / n ;
-		float alpha = 0.0f ;
-		for (uint k = 0 ; k < n ; ++k)
+		float step = 1.f / n;
+		float alpha = 0.0f;
+		for (uint k = 0; k < n; ++k)
 		{
-			_Values[k] = PSValueBlend(startValue, endValue, alpha) ;
-			alpha += step ;
+			_Values[k] = PSValueBlend(startValue, endValue, alpha);
+			alpha += step;
 		}
-		_Values[n] = endValue ;
+		_Values[n] = endValue;
 	}
 
 	/// ctor
@@ -228,26 +226,26 @@ public:
 	/// serialization
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
-		f.serialVersion(1) ;
+		f.serialVersion(1);
 		if (f.isReading())
 		{
-			T t1, t2 ;
-			f.serial(t1, t2) ;
-			setValues(t1, t2) ;
+			T t1, t2;
+			f.serial(t1, t2);
+			setValues(t1, t2);
 		}
 		else
 		{
-			f.serial(_Values[0], _Values[n]) ;
+			f.serial(_Values[0], _Values[n]);
 		}
 	}
 
 	T getMaxValue(void) const
 	{
-		return std::max((*this)(0), (*this)(1)) ;
+		return std::max((*this)(0), (*this)(1));
 	}
 
 protected:
-	T  _Values[n + 1] ;
+	T  _Values[n + 1];
 };
 
 
@@ -266,14 +264,11 @@ public:
 	 *  With nbCycles, you can set the pattern frequency. It is usually one. See ps_attrib_maker.h
 	 *  For further details
 	 */
-
 	CPSValueBlenderSample(float nbCycles) : CPSAttribMakerT<T, CPSValueBlendSampleFunc<T, n> >(nbCycles)
 	{
 	}
-
-	virtual T getMaxValue(void) const { return _F.getMaxValue() ; }	
-
-} ;
+	virtual T getMaxValue(void) const { return _F.getMaxValue(); }	
+};
 
 
 
@@ -293,36 +288,33 @@ public:
 		__forceinline
 	#endif
 	T operator()(CAnimationTime time) const
-	{
-		nlassert(_Tab) ;
-		return _Tab[OptFastFloor(time * _NbValues)] ;
+	{		
+		return _Tab[OptFastFloor(time * _NbValues)];
 	}
 
 	/// copie the keys values in the specified table
 	void getValues(T *tab) const
 	{
-		nlassert(tab) ;
-		T *pt = tab ;
-		T *src = _Tab ;
-		for (uint32 k = 0 ; k <= ((_NbValues - 1) / _NbStages) ; ++k)
+		nlassert(tab);
+		T *pt = tab;
+		uint32 src = 0;
+		for (uint32 k = 0; k <= ((_NbValues - 1) / _NbStages); ++k, src = src + _NbStages)
 		{
-			*pt++ = *src ;
-			src += _NbStages ; // jump the interpolated values
+			*pt++ =_Tab[src];
 		}
 	}
 
 	/// get one value
 	T getValue(uint index)	const
 	{		
-		nlassert(index < getNumValues()) ;
-		nlassert(_Tab) ;
-		return _Tab[index * _NbStages] ;
+		nlassert(index < getNumValues());		
+		return _Tab[index * _NbStages];
 	}
 
 
 
 
-	uint32 getNumValues(void) const { return ((_NbValues - 1) / _NbStages) + 1 ; }
+	uint32 getNumValues(void) const { return ((_NbValues - 1) / _NbStages) + 1; }
 
 	/** set the colors
 	 *  \param numValue number of Values, must be >= 2
@@ -332,54 +324,50 @@ public:
 	 */
 
 
-	inline void setValues(const T *ValueTab, uint32 numValues, uint32 nbStages) ;
+	inline void setValues(const T *ValueTab, uint32 numValues, uint32 nbStages);
 	
 	/// get the number of stages between each value
-	uint32 getNumStages(void) const { return _NbStages ; }
+	uint32 getNumStages(void) const { return _NbStages; }
 
 	/// change the number of stages between each value
 	void setNumStages(uint32 numStages)
 	{
-		std::vector<T> v ;
-		v.resize(getNumValues()) ;
-		getValues(&v[0]) ;
-		setValues(&v[0], getNumValues(), numStages) ;
+		std::vector<T> v;
+		v.resize(getNumValues());
+		getValues(&v[0]);
+		setValues(&v[0], getNumValues(), numStages);
 	}
 
 	/// serialization
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 
 	T getMaxValue(void) const
 	{
-		return _MaxValue ;
+		return _MaxValue;
 	}
 
 	/// ctor
-	CPSValueGradientFunc() : _Tab(NULL), _NbValues(0), _NbStages(0)
+	CPSValueGradientFunc() : _NbValues(0), _NbStages(0)
 	{
 	}
 
-	/// dtor
-	~CPSValueGradientFunc()
-	{
-		delete[] _Tab ;
-	}
+
 	
 protected:
 	// a table of Values that interpolate the values given
-	T *_Tab ;
+	std::vector<T> _Tab;
 
 
 	// number of interpolated value between each 'key'
-	uint32 _NbStages ;
+	uint32 _NbStages;
 
 	// total number of value in the tab
-	uint32 _NbValues ;
+	uint32 _NbValues;
 
 
 	// the max value
-	T _MaxValue ;
+	T _MaxValue;
 };
 
 
@@ -398,15 +386,11 @@ public:
 	 *  With nbCycles, you can set the pattern frequency. It is usually one. See ps_attrib_maker.h
 	 *  For further details
 	 */
-
 	CPSValueGradient(float nbCycles) : CPSAttribMakerT<T, CPSValueGradientFunc<T> >(nbCycles)
 	{
 	}
-
-	virtual T getMaxValue(void) const { return _F.getMaxValue() ; }
-	
-
-} ;
+	virtual T getMaxValue(void) const { return _F.getMaxValue(); }
+};
 
 
 
@@ -421,49 +405,38 @@ public:
 template <typename T> 
 inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValues, uint32 nbStages)
 {
-	nlassert(numValues > 1) ;
-	nlassert(nbStages > 0) ;
+	nlassert(numValues > 1);
+	nlassert(nbStages > 0);
 
-	_NbStages = nbStages ;
-
-	_MaxValue = valueTab[0] ;
-
-	if (_Tab)
-	{
-		delete[] _Tab ;		
-	}
-
-	_NbValues = 1 + (numValues - 1) * nbStages ;
-
-	_Tab = new T[_NbValues] ;
+	_NbStages = nbStages;
+	_MaxValue = valueTab[0];
+	_NbValues = 1 + (numValues - 1) * nbStages;
+	_Tab.resize(_NbValues);
 
 
-	float step = 1.0f / float(nbStages) ;
-	float alpha ; 
-
+	float step = 1.0f / float(nbStages);
+	float alpha; 
 	
-
-	T *dest = _Tab ;
-
+	std::vector<T>::iterator dest = _Tab.begin();
 	// copy the tab performing linear interpolation between values given in parameter
-	for (uint32 k = 0 ; k  < (numValues - 1) ; ++k)
+	for (uint32 k = 0; k  < (numValues - 1); ++k)
 	{				
 		if (!(valueTab[k] < _MaxValue))
 		{
-			_MaxValue = valueTab[k] ;
+			_MaxValue = valueTab[k];
 		}
 
-		alpha = 0 ;
+		alpha = 0;
 
-		for(uint32 l = 0 ; l < nbStages ; ++l)
+		for(uint32 l = 0; l < nbStages; ++l)
 		{			
 			// use the right version of the template function PSValueBlend
 			// to do the job
-			*dest++ = PSValueBlend(valueTab[k], valueTab[k + 1], alpha) ;
-			alpha += step ;
+			*dest++ = PSValueBlend(valueTab[k], valueTab[k + 1], alpha);
+			alpha += step;
 		}
 	}
-	*dest++ = valueTab[numValues - 1] ;
+	*dest++ = valueTab[numValues - 1];
 }
 
 
@@ -473,51 +446,48 @@ inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValu
 template <typename T> 
 void CPSValueGradientFunc<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1) ;
-	f.serial(_NbStages) ;
+	f.serialVersion(1);
+	f.serial(_NbStages);
 	if (f.isReading())
 	{
 	
 		// reload the number of keys 
 
-		uint32 numVal ;
-		f.serial(numVal) ;		
-		_NbValues = 1 + (numVal - 1) * _NbStages ;
+		uint32 numVal;
+		f.serial(numVal);		
+		_NbValues = 1 + (numVal - 1) * _NbStages;
 
 		// create the table on the stack for small gradient
 		if (numVal < 256)
 		{
-			T tab[256] ;
-			for (uint32 k = 0 ; k < numVal ; ++k)
+			T tab[256];
+			for (uint32 k = 0; k < numVal; ++k)
 			{
-				f.serial(tab[k]) ;
+				f.serial(tab[k]);
 			}
-			setValues(tab, numVal, _NbStages) ;
+			setValues(tab, numVal, _NbStages);
 		}	
 		else
 		{
-			T *tab = new T[numVal] ;
-			for (uint32 k = 0 ; k < numVal ; ++k)
+			std::vector<T> tab(numVal);
+			for (uint32 k = 0; k < numVal; ++k)
 			{
-				f.serial(tab[k]) ;
+				f.serial(tab[k]);
 			}
-			setValues(tab, numVal, _NbStages) ;
-			delete[] tab ;
+			setValues(&tab[0], numVal, _NbStages);			
 		}
 	}
 	else
 	{
 		// saves the number of keys
-		uint32 numKeyValues = getNumValues() ;
-		f.serial(numKeyValues) ;
+		uint32 numKeyValues = getNumValues();
+		f.serial(numKeyValues);
 
 
-		// save each key
-		T *src = _Tab ;
-		for (uint32 k = 0 ; k < numKeyValues  ; ++k)
+		// save each key		
+		for (uint32 k = 0; k < numKeyValues; ++k)
 		{
-			f.serial(*src) ;
-			src += _NbStages ;
+			f.serial(_Tab[k * _NbStages]);			
 		}
 	}
 }

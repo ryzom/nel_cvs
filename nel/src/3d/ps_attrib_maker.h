@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.8 2001/08/06 10:12:44 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.9 2001/09/12 13:19:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,16 +94,31 @@ struct CPSInputType
 // The max value for inputs of an attribute maker.
 const float MaxInputValue = 0.9999f ;
 
+/**
+  * this is the base for attribute makers. It allows to duplicate an attribute maker, and to querry its type
+  */
+
+class CPSAttribMakerBase : public NLMISC::IStreamable
+{
+public:
+	// get the type of this attribute maker
+	virtual const char *getType() = 0;
+	// duplicate this attribute maker
+	virtual CPSAttribMakerBase *clone() const = 0;
+};
+
+
+
 
 /**
- * This is the base class for any attrib maker. It produce an attribute used in a particle system.
+ * This is a base class for any attrib maker. It produce an attribute used in a particle system.
  * It can be used to fill a vertex buffer, or a table.
  * \author Nicolas Vizerie
  * \author Nevrax France
  * \date 2001
  */
 
-template <typename T> class CPSAttribMaker : public NLMISC::IStreamable
+template <typename T> class CPSAttribMaker : public CPSAttribMakerBase
 {	
 public:
 	/// \name Object
@@ -121,6 +136,9 @@ public:
 			f.serialVersion(1) ;
 			f.serial(_NbCycles) ;	
 		}
+
+		/// inherited from CPSAttribMakerBase. Template specialization will do the job
+		virtual const char *getType() { return "UNKNOWN"; }
 
 		/// dtor
 		virtual ~CPSAttribMaker() {}

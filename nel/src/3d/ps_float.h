@@ -1,7 +1,7 @@
 /** \file ps_size.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.3 2001/07/12 15:47:50 vizerie Exp $
+ * $Id: ps_float.h,v 1.4 2001/09/12 13:19:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,29 +35,30 @@
 namespace NL3D {
 
 
-/// these are some attribute makers for float
+const char *CPSAttribMaker<float>::getType() { return "float"; }
 
+/// these are some attribute makers for float
 /// This is a float blender class. It just blend between 2 values
 
 class CPSFloatBlender : public CPSValueBlender<float>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSFloatBlender) ;
-	CPSFloatBlender(float startFloat = 0.1f , float endFloat = 0.0f, float nbCycles = 1.0f) : CPSValueBlender<float>(nbCycles)
+	NLMISC_DECLARE_CLASS(CPSFloatBlender);
+	CPSFloatBlender(float startFloat = 0.1f , float endFloat = 1.f, float nbCycles = 1.0f) : CPSValueBlender<float>(nbCycles)
 	{
-		_F.setValues(startFloat, endFloat) ;
+		_F.setValues(startFloat, endFloat);
 	}
-	
+	CPSAttribMakerBase *clone() const { return new CPSFloatBlender(*this); }
 	// F is serialized by base classes...
 
-} ;
+};
 
 
 /// This is a float gradient class
 class CPSFloatGradient : public CPSValueGradient<float>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSFloatGradient) ;
+	NLMISC_DECLARE_CLASS(CPSFloatGradient);
 
 	/**	
 	 *	Construct the value gradient blender by passing a pointer to a float table.
@@ -66,14 +67,13 @@ public:
 	 */
 
 	CPSFloatGradient(const float *floatTab = CPSFloatGradient::_DefaultGradient
-						, uint32 nbValues = 2, uint32 nbStages = 16, float nbCycles = 1.0f) ;
+						, uint32 nbValues = 2, uint32 nbStages = 16, float nbCycles = 1.0f);
 
-
-
-	static float _DefaultGradient[] ;
 	
+	static float _DefaultGradient[];
+	CPSAttribMakerBase *clone() const { return new CPSFloatGradient(*this); }
 	// F is serialized by base classes...	
-} ;
+};
 
 /** this memorize float by applying some function on the emitter. For a particle's attribute, each particle has its
   * own value memorized
@@ -82,9 +82,11 @@ public:
 class CPSFloatMemory : public CPSAttribMakerMemory<float>
 {
 public:
-	CPSFloatMemory() { setDefaultValue(0.f) ; }
-	NLMISC_DECLARE_CLASS(CPSFloatMemory) ;
-} ;
+	CPSFloatMemory() { setDefaultValue(0.f); }
+	NLMISC_DECLARE_CLASS(CPSFloatMemory);
+	CPSAttribMakerBase *clone() const { return new CPSFloatMemory(*this); }
+
+};
 
 /** An attribute maker whose output if the result of a binary op on floats
   *
@@ -92,8 +94,9 @@ public:
 class CPSFloatBinOp : public CPSAttribMakerBinOp<float>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSFloatBinOp) ;
-} ;
+	NLMISC_DECLARE_CLASS(CPSFloatBinOp);
+	CPSAttribMakerBase *clone() const { return new CPSFloatBinOp(*this); }
+};
 
 
 } // NL3D

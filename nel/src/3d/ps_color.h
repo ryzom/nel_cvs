@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * <File description>
  *
- * $Id: ps_color.h,v 1.4 2001/08/06 10:12:00 vizerie Exp $
+ * $Id: ps_color.h,v 1.5 2001/09/12 13:19:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,9 @@ namespace NL3D {
 
 
 
+const char *CPSAttribMaker<NLMISC::CRGBA>::getType() { return "CRGBA"; }
+
+
 /**
  * Here, we got color maker
  * \see ps_attrib_maker.h, ps_attrib_maker_template.h
@@ -55,15 +58,14 @@ namespace NL3D {
 class CPSColorBlenderExact : public CPSValueBlender<NLMISC::CRGBA>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSColorBlenderExact) ;
+	NLMISC_DECLARE_CLASS(CPSColorBlenderExact);
 	CPSColorBlenderExact(NLMISC::CRGBA startColor = NLMISC::CRGBA::White , NLMISC::CRGBA endColor = NLMISC::CRGBA::Black, float nbCycles = 1.0f) : CPSValueBlender<NLMISC::CRGBA>(nbCycles)
 	{
-		_F.setValues(startColor, endColor) ;
-	}
-	
-	// _F is serialized by base classes...
+		_F.setValues(startColor, endColor);
+	}		
+	CPSAttribMakerBase *clone() const { return new CPSColorBlenderExact(*this); }
 
-} ;
+};
 
 
 
@@ -71,15 +73,13 @@ public:
 class CPSColorBlender : public CPSValueBlenderSample<NLMISC::CRGBA, 64>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSColorBlender) ;
+	NLMISC_DECLARE_CLASS(CPSColorBlender);
 	CPSColorBlender(NLMISC::CRGBA startColor = NLMISC::CRGBA::White , NLMISC::CRGBA endColor = NLMISC::CRGBA::Black, float nbCycles = 1.0f) : CPSValueBlenderSample<NLMISC::CRGBA, 64>(nbCycles)
 	{
-		_F.setValues(startColor, endColor) ;
-	}
-	
-	// _F is serialized by base classes...
-
-} ;
+		_F.setValues(startColor, endColor);
+	}		
+	CPSAttribMakerBase *clone() const { return new CPSColorBlender(*this); }
+};
 
 
 
@@ -87,7 +87,7 @@ public:
 class CPSColorGradient : public CPSValueGradient<NLMISC::CRGBA>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSColorGradient) ;
+	NLMISC_DECLARE_CLASS(CPSColorGradient);
 
 	/**	
 	 *	Construct the value gradient blender by passing a pointer to a color table.
@@ -96,14 +96,10 @@ public:
 	 */
 
 	CPSColorGradient(const NLMISC::CRGBA *colorTab = CPSColorGradient::_DefaultGradient
-						, uint32 nbValues = 2, uint32 nbStages = 64, float nbCycles = 1.0f) ;
-
-
-	static NLMISC::CRGBA _DefaultGradient[] ;
-	
-	// F is serialized by base classes...	
-
-} ;
+						, uint32 nbValues = 2, uint32 nbStages = 64, float nbCycles = 1.0f);
+	static NLMISC::CRGBA _DefaultGradient[];	
+	CPSAttribMakerBase *clone() const { return new CPSColorGradient(*this); }
+};
 
 
 /** this memorize value by applying some function on the emitter. For a particle's attribute, each particle has its
@@ -113,9 +109,10 @@ public:
 class CPSColorMemory : public CPSAttribMakerMemory<NLMISC::CRGBA>
 {
 public:
-	CPSColorMemory() { setDefaultValue(NLMISC::CRGBA::White) ; }
-	NLMISC_DECLARE_CLASS(CPSColorMemory) ;
-} ;
+	CPSColorMemory() { setDefaultValue(NLMISC::CRGBA::White); }
+	NLMISC_DECLARE_CLASS(CPSColorMemory);
+	CPSAttribMakerBase *clone() const { return new CPSColorMemory(*this); }
+};
 
 
 /** An attribute maker whose output if the result of a binary op on colors
@@ -124,8 +121,9 @@ public:
 class CPSColorBinOp : public CPSAttribMakerBinOp<NLMISC::CRGBA>
 {
 	public:
-		NLMISC_DECLARE_CLASS(CPSColorBinOp) ;
-} ;
+	NLMISC_DECLARE_CLASS(CPSColorBinOp);
+	CPSAttribMakerBase *clone() const { return new CPSColorBinOp(*this); }
+};
 
 } // NL3D
 #endif // NL_PS_COLOR_H

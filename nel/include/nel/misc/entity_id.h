@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.21 2002/07/10 13:29:36 miller Exp $
+ * $Id: entity_id.h,v 1.22 2002/07/26 08:47:26 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,17 +41,8 @@ namespace NLMISC {
  */
 struct CEntityId
 {
-	// ---------------------------------------------------------------------------------
-	// static data
 
-	///The local num service id of the local machin.
-	static uint8 ServerId;
-	///The maximume of number that we could generate without generat an overtaking exception.
-	static const uint64 MaxEntityId;
-	/// Unknow CEntityId is similar as an NULL pointer.
-	static const CEntityId Unknown;
-
-
+private :
 	// ---------------------------------------------------------------------------------
 	// instantiated data
 
@@ -67,11 +58,22 @@ struct CEntityId
 		uint64	Type :  8;
 		/// Local agent number.
 		uint64	Id : 40;
-		};
+		} DetailedId;
 
 		uint64 FullId;
 	};
 
+public :
+
+	// ---------------------------------------------------------------------------------
+	// static data
+
+	///The local num service id of the local machin.
+	static uint8 ServerId;
+	///The maximume of number that we could generate without generat an overtaking exception.
+	static const uint64 MaxEntityId;
+	/// Unknow CEntityId is similar as an NULL pointer.
+	static const CEntityId Unknown;
 
 	// ---------------------------------------------------------------------------------
 	// constructors
@@ -82,7 +84,7 @@ struct CEntityId
 	CEntityId ()
 	{
 		FullId = 0;
-		Type = 127;
+		DetailedId.Type = 127;
 
 		/*
 		DynamicId = 0;
@@ -94,18 +96,18 @@ struct CEntityId
 
 	CEntityId (uint8 type, uint64 id, uint8 creator, uint8 dynamic)
 	{
-		DynamicId = dynamic;
-		CreatorId = creator;
-		Type = type;
-		Id = id;
+		DetailedId.DynamicId = dynamic;
+		DetailedId.CreatorId = creator;
+		DetailedId.Type = type;
+		DetailedId.Id = id;
 	}
 
 	CEntityId (uint8 type, uint64 id)
 	{
-		Type = type;
-		Id = id;
-		CreatorId = ServerId;
-		DynamicId = ServerId;
+		DetailedId.Type = type;
+		DetailedId.Id = id;
+		DetailedId.CreatorId = ServerId;
+		DetailedId.DynamicId = ServerId;
 	}
 
 	explicit CEntityId (uint64 p)
@@ -180,10 +182,10 @@ struct CEntityId
 		dyn = ident;	
 
 //Sameh conversion en fonction de la base.
-		DynamicId = atoiInt64(dyn, base);
-		CreatorId = atoiInt64(creator, base);
-		Type = atoiInt64(type, base);
-		Id = atoiInt64(id, base);
+		DetailedId.DynamicId = atoiInt64(dyn, base);
+		DetailedId.CreatorId = atoiInt64(creator, base);
+		DetailedId.Type = atoiInt64(type, base);
+		DetailedId.Id = atoiInt64(id, base);
 	}
 	//@}	
 	
@@ -199,22 +201,57 @@ struct CEntityId
 		*/
 	}
 
+	uint64 getShortId() const
+	{
+		return DetailedId.Id;
+	}
+
+	void setShortId( uint64 shortId )
+	{
+		DetailedId.Id = shortId;
+	}
+
+	uint8 getDynamicId() const
+	{
+		return DetailedId.DynamicId;
+	}
+
+	void setDynamicId( uint8 dynId )
+	{
+		DetailedId.DynamicId = dynId;
+	}
+
+	uint8 getCreatorId() const
+	{
+		return DetailedId.CreatorId;
+	}
+
+	void setCreatorId( uint8 creatorId )
+	{
+		DetailedId.CreatorId = creatorId;
+	}
+
 	uint8 getType() const
 	{
-		return (uint8)Type;
+		return (uint8)DetailedId.Type;
+	}
+
+	void setType( uint8 type )
+	{
+		DetailedId.Type = type;
 	}
 
 	uint64 getUniqueId() const
 	{
 		CEntityId id;
 		id.FullId = FullId;
-		id.DynamicId = 0;
+		id.DetailedId.DynamicId = 0;
 		return id.FullId;
 	}
 
 	bool isUnknownId() const
 	{
-		return Type == 127;
+		return DetailedId.Type == 127;
 	}
 
 
@@ -228,11 +265,11 @@ struct CEntityId
 	{
 
 		CEntityId testId ( FullId ^ a.FullId );
-		testId.DynamicId = 0;
+		testId.DetailedId.DynamicId = 0;
 		return testId.FullId == 0;
 
 		/*
-		return (Id == a.Id && CreatorId == a.CreatorId && Type == a.Type);
+		return (Id == a.DetailedId.Id && DetailedId.CreatorId == a.DetailedId.CreatorId && DetailedId.Type == a.DetailedId.Type);
 		*/
 	}
 
@@ -290,9 +327,9 @@ struct CEntityId
 
 	const CEntityId &operator ++(int)
 	{
-		if(Id < MaxEntityId)
+		if(DetailedId.Id < MaxEntityId)
 		{
-			Id ++;
+			DetailedId.Id ++;
 		}
 		else
 		{
@@ -358,8 +395,8 @@ struct CEntityId
 		
 		*/
 
-		DynamicId = sid;
-		CreatorId = sid;
+		DetailedId.DynamicId = sid;
+		DetailedId.CreatorId = sid;
 		ServerId = sid;
 	}
 
@@ -441,10 +478,10 @@ struct CEntityId
 		if (sscanf(str, "(%"NL_I64"x:%x:%x:%x)", &id, &type, &creatorId, &dynamicId) != 4)
 			return;
 
-		Id = id;
-		Type = type;
-		CreatorId = creatorId;
-		DynamicId = dynamicId;
+		DetailedId.Id = id;
+		DetailedId.Type = type;
+		DetailedId.CreatorId = creatorId;
+		DetailedId.DynamicId = dynamicId;
 	}
 	
 	/// Have a debug string.
@@ -456,7 +493,7 @@ struct CEntityId
 		memset(b,'0',19);
 		sint n;
 
-		uint64 x = Id;
+		uint64 x = DetailedId.Id;
 		char baseTable[] = "0123456789abcdef";
 		for(n = 10; n < 19; n ++)
 		{
@@ -465,7 +502,7 @@ struct CEntityId
 		}
 		b[19 - 9] = ':';
 
-		x = Type;
+		x = DetailedId.Type;
 		for(n = 7; n < 9; n ++)
 		{				
 			b[19 - n] = baseTable[(x & 15)];
@@ -473,7 +510,7 @@ struct CEntityId
 		}
 		b[19 - 6] = ':';
 
-		x = CreatorId;
+		x = DetailedId.CreatorId;
 		for(n = 4; n < 6; n ++)
 		{				
 			b[19 - n] = baseTable[(x & 15)];
@@ -481,7 +518,7 @@ struct CEntityId
 		}
 		b[19 - 3] = ':';
 
-		x = DynamicId;
+		x = DetailedId.DynamicId;
 		for(n = 1; n < 3; n ++)
 		{							
 			b[19 - n] = baseTable[(x & 15)];

@@ -1,7 +1,7 @@
 /** \file emitter_dlg.h
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.h,v 1.6 2001/09/06 10:14:50 vizerie Exp $
+ * $Id: emitter_dlg.h,v 1.7 2001/12/19 15:48:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@
 
 namespace NL3D
 {
-	class NL3D::CPSEmitter ;
+	class NL3D::CPSEmitter;
 }
 
 #include "attrib_dlg.h"
@@ -50,10 +50,10 @@ class CEmitterDlg : public CDialog, public CDialogStack
 public:
 	CEmitterDlg(NL3D::CPSEmitter *emitter);   // standard constructor
 
-	~CEmitterDlg() ;
+	~CEmitterDlg();
 
 
-	void init(CWnd* pParent = NULL) ;
+	void init(CWnd* pParent = NULL);
 
 
 // Dialog Data
@@ -76,20 +76,13 @@ public:
 // Implementation
 protected:
 	// the emitter being edited
-	NL3D::CPSEmitter *_Emitter ;
-
-	// the period for emission
-	CAttribDlgFloat  *_PeriodDlg ;
-
-	// the number of particles being emitted at a time
-	CAttribDlgUInt  *_GenNbDlg ;
-
-	// dlg for speed of emittee
-	CAttribDlgFloat  *_StrenghtModulateDlg ;
-
-	// dlg for speed inheritance factor
-	CEditableRangeFloat  *_SpeedInheritanceFactorDlg ;
-
+	NL3D::CPSEmitter	 *_Emitter;	
+	CAttribDlgFloat		 *_PeriodDlg;
+	CAttribDlgUInt		 *_GenNbDlg;
+	CAttribDlgFloat		 *_StrenghtModulateDlg;
+	CEditableRangeFloat  *_SpeedInheritanceFactorDlg;
+	CEditableRangeFloat  *_DelayedEmissionDlg;
+	CEditableRangeUInt   *_MaxEmissionCountDlg;
 
 	// Generated message map functions
 	//{{AFX_MSG(CEmitterDlg)
@@ -102,7 +95,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 	/// disable / enable the period edition dialog if it is needed
-	void updatePeriodDlg(void) ;
+	void updatePeriodDlg(void);
 
 	//////////////////////////////////////////////
 	//	WRAPPERS TO EDIT THE EMITTER PROPERTIES //
@@ -116,12 +109,12 @@ protected:
 
 			struct CPeriodWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat 
 			{
-			   NL3D::CPSEmitter *E ;
-			   float get(void) const { return E->getPeriod() ; }
-			   void set(const float &v) { E->setPeriod(v) ; }
-			   scheme_type *getScheme(void) const { return E->getPeriodScheme() ; }
-			   void setScheme(scheme_type *s) { E->setPeriodScheme(s) ; }
-			} _PeriodWrapper ;
+			   NL3D::CPSEmitter *E;
+			   float get(void) const { return E->getPeriod(); }
+			   void set(const float &v) { E->setPeriod(v); }
+			   scheme_type *getScheme(void) const { return E->getPeriodScheme(); }
+			   void setScheme(scheme_type *s) { E->setPeriodScheme(s); }
+			} _PeriodWrapper;
 
 		//////////////////////////////////////////////
 		// number of particle to generate each time //
@@ -129,12 +122,12 @@ protected:
 
 			struct CGenNbWrapper : public IPSWrapperUInt, IPSSchemeWrapperUInt 
 			{
-			   NL3D::CPSEmitter *E ;
-			   uint32 get(void) const { return E->getGenNb() ; }
-			   void set(const uint32 &v) { E->setGenNb(v) ; }
-			   scheme_type *getScheme(void) const { return E->getGenNbScheme() ; }
-			   void setScheme(scheme_type *s) { E->setGenNbScheme(s) ; }
-			} _GenNbWrapper ;
+			   NL3D::CPSEmitter *E;
+			   uint32 get(void) const { return E->getGenNb(); }
+			   void set(const uint32 &v) { E->setGenNb(v); }
+			   scheme_type *getScheme(void) const { return E->getGenNbScheme(); }
+			   void setScheme(scheme_type *s) { E->setGenNbScheme(s); }
+			} _GenNbWrapper;
 
 		////////////////////////////////////////////////////////
 		// wrappers to emitters that have strenght modulation //
@@ -142,12 +135,12 @@ protected:
 
 			struct CModulateStrenghtWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat 
 			{
-			   NL3D::CPSModulatedEmitter *E ;
-			   float get(void) const { return E->getEmitteeSpeed() ; }
-			   void set(const float &v) { E->setEmitteeSpeed(v) ; }
-			   scheme_type *getScheme(void) const { return E->getEmitteeSpeedScheme() ; }
-			   void setScheme(scheme_type *s) { E->setEmitteeSpeedScheme(s) ; }
-			} _ModulatedStrenghtWrapper ;
+			   NL3D::CPSModulatedEmitter *E;
+			   float get(void) const { return E->getEmitteeSpeed(); }
+			   void set(const float &v) { E->setEmitteeSpeed(v); }
+			   scheme_type *getScheme(void) const { return E->getEmitteeSpeedScheme(); }
+			   void setScheme(scheme_type *s) { E->setEmitteeSpeedScheme(s); }
+			} _ModulatedStrenghtWrapper;
 
 		//////////////////////////////////////////////////
 		// wrappers to set the speed inheritance factor //
@@ -155,10 +148,10 @@ protected:
 
 			struct CSpeedInheritanceFactorWrapper : public IPSWrapperFloat
 			{
-			   NL3D::CPSEmitter *E ;
-			   float get(void) const { return E->getSpeedInheritanceFactor() ; }
-			   void set(const float &f) { E->setSpeedInheritanceFactor(f) ; }	
-			} _SpeedInheritanceFactorWrapper ;
+			   NL3D::CPSEmitter *E;
+			   float get(void) const { return E->getSpeedInheritanceFactor(); }
+			   void set(const float &f) { E->setSpeedInheritanceFactor(f); }	
+			} _SpeedInheritanceFactorWrapper;
 
 		////////////////////////////////////////////////
 		// wrappers to tune the direction of emitters //
@@ -166,10 +159,10 @@ protected:
 
 			struct CDirectionWrapper : public IPSWrapper<NLMISC::CVector>
 			{
-			   NL3D::CPSDirection *E ;
-			   NLMISC::CVector get(void) const { return E->getDir() ; }
-			   void set(const NLMISC::CVector &d){ E->setDir(d) ; }	
-			} _DirectionWrapper ;
+			   NL3D::CPSDirection *E;
+			   NLMISC::CVector get(void) const { return E->getDir(); }
+			   void set(const NLMISC::CVector &d){ E->setDir(d); }	
+			} _DirectionWrapper;
 
 		//////////////////////////////////////////////
 		// wrapper to tune the radius of an emitter //
@@ -177,17 +170,38 @@ protected:
 		
 			struct CConicEmitterRadiusWrapper : public IPSWrapperFloat
 			{
-			   NL3D::CPSEmitterConic *E ;
-			   float get(void) const { return E->getRadius() ; }
-			   void set(const float &f) { E->setRadius(f) ; }	
-			} _ConicEmitterRadiusWrapper ;
+			   NL3D::CPSEmitterConic *E;
+			   float get(void) const { return E->getRadius(); }
+			   void set(const float &f) { E->setRadius(f); }	
+			} _ConicEmitterRadiusWrapper;
 
 
+		//////////////////////////////////////////////
+		// wrapper to tune delayed emission		    //
+		//////////////////////////////////////////////
+		
+			struct CDelayedEmissionWrapper : public IPSWrapperFloat
+			{
+			   NL3D::CPSEmitter *E;
+			   float get(void) const { return E->getEmitDelay(); }
+			   void set(const float &f) { E->setEmitDelay(f); }	
+			} _DelayedEmissionWrapper;
 
+
+		////////////////////////////////////////////////
+		// wrapper to tune max number of emissions	  //
+		////////////////////////////////////////////////
+		
+			struct CMaxEmissionCountWrapper : public IPSWrapperUInt
+			{
+			   NL3D::CPSEmitter *E;
+			   uint32 get(void) const { return E->getMaxEmissionCount(); }
+			   void set(const uint32 &count) { E->setMaxEmissionCount((uint8) count); }	
+			} _MaxEmissionCountWrapper;
 
 
 	// contains pointers to the located
-	std::vector<NL3D::CPSLocated *> _LocatedList ;
+	std::vector<NL3D::CPSLocated *> _LocatedList;
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.7 2001/09/06 10:14:50 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.8 2001/12/19 15:48:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,11 +60,15 @@ CEmitterDlg::~CEmitterDlg()
 	_GenNbDlg->DestroyWindow();
 	_StrenghtModulateDlg->DestroyWindow();
 	_SpeedInheritanceFactorDlg->DestroyWindow();
+	_DelayedEmissionDlg->DestroyWindow();
+	_MaxEmissionCountDlg->DestroyWindow();
 
 	delete _PeriodDlg;
 	delete _GenNbDlg;
 	delete _StrenghtModulateDlg;
 	delete _SpeedInheritanceFactorDlg;
+	delete _DelayedEmissionDlg;
+	delete _MaxEmissionCountDlg;
 }
 
 
@@ -97,11 +101,6 @@ void CEmitterDlg::init(CWnd* pParent)
 	}
 
 	m_EmissionTypeCtrl.SetCurSel((int) _Emitter->getEmissionType() );
-
-
-
-
-
 
 	ShowWindow(SW_SHOW); 
 	UpdateData(FALSE);
@@ -166,17 +165,35 @@ BOOL CEmitterDlg::OnInitDialog()
 	
 	RECT r;
 	
-	uint posX = 13;
-	uint posY = 60;
+	
 
 
-
+	 GetDlgItem(IDC_SPEED_INHERITANCE_FACTOR_FRAME)->GetWindowRect(&r);
+	 ScreenToClient(&r);
 	_SpeedInheritanceFactorDlg = new CEditableRangeFloat("SPEED_INHERITANCE_FACTOR", -1.f, 1.f);
 	_SpeedInheritanceFactorWrapper.E = _Emitter;
 	_SpeedInheritanceFactorDlg->setWrapper(&_SpeedInheritanceFactorWrapper);
-	_SpeedInheritanceFactorDlg->init(posX + 100, posY, this);
+	_SpeedInheritanceFactorDlg->init(r.left, r.top, this);
 
-	posY += 30; 
+	 GetDlgItem(IDC_DELAYED_EMISSION_FRAME)->GetWindowRect(&r);
+	 ScreenToClient(&r);
+	_DelayedEmissionDlg = new CEditableRangeFloat("DELAYED_EMISSION", 0.f, 10.f);
+	_DelayedEmissionDlg->enableLowerBound(0.f, false);
+	_DelayedEmissionWrapper.E = _Emitter;
+	_DelayedEmissionDlg->setWrapper(&_DelayedEmissionWrapper);
+	_DelayedEmissionDlg->init(r.left, r.top, this);
+
+	GetDlgItem(IDC_MAX_EMISSION_COUNT_FRAME)->GetWindowRect(&r);
+	 ScreenToClient(&r);
+	_MaxEmissionCountDlg = new CEditableRangeUInt("MAX_EMISSION_COUNT", 0, 100);	
+	_MaxEmissionCountDlg->enableUpperBound(256, false);
+	_MaxEmissionCountWrapper.E = _Emitter;
+	_MaxEmissionCountDlg->setWrapper(&_MaxEmissionCountWrapper);
+	_MaxEmissionCountDlg->init(r.left, r.top, this);
+
+
+	uint posX = 13;
+	uint posY = r.bottom + 5;	
 
 	// setup the dialog for the period of emission edition
 

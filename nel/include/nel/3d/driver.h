@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.53 2001/01/31 11:26:57 berenguier Exp $
+ * $Id: driver.h,v 1.54 2001/02/20 11:02:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,6 +180,9 @@ public:
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB)=0;
 
 	virtual bool			render(CPrimitiveBlock& PB, CMaterial& Mat)=0;
+
+	// Usefull for landscape....
+	virtual void			renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)=0;
 
 	virtual bool			swapBuffers(void)=0;
 

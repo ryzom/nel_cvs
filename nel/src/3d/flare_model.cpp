@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.18 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: flare_model.cpp,v 1.19 2003/04/15 15:56:57 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "3d/dru.h"
 #include "3d/scene.h"
 #include "3d/render_trav.h"
-
+#include "nel/3d/viewport.h"
 
 
 namespace NL3D {
@@ -108,9 +108,14 @@ void	CFlareModel::traverseRender()
 	const sint xPos = (width>>1) + (sint) (width * (((renderTrav.Near * pt.x) / pt.y) - middleX) / (renderTrav.Right - renderTrav.Left));
 	const sint yPos = (height>>1) - (sint) (height * (((renderTrav.Near * pt.z) / pt.y) - middleZ) / (renderTrav.Top - renderTrav.Bottom));	
 
+	// get current viewport
+	CViewport vp;
+	drv->getViewport(vp);
+
 	// read z-buffer value at the pos we are
 	static std::vector<float> v(1);
-	NLMISC::CRect rect(xPos, height - yPos, 1, 1);
+	NLMISC::CRect rect((sint32) (vp.getX() * width + vp.getWidth() * xPos),
+		               (sint32) (vp.getY() * height + vp.getHeight() * (height - yPos)), 1, 1);
 	drv->getZBufferPart(v, rect);
 
 	// project in screen space

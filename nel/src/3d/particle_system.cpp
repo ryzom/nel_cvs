@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.78 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: particle_system.cpp,v 1.79 2004/04/01 17:12:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -401,9 +401,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 				CPSUtil::displayBBox(getDriver(), box);
 			}
 		break;
-		case ToolRender:
-			// tmp
-			return;
+		case ToolRender:			
 			stepLocated(PSToolRender, ellapsedTime, ellapsedTime);
 		break;
 		case Anim:

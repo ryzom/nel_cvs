@@ -5,14 +5,14 @@
 \author Cyril Corvazier
 
 
-The rendering process is composed of several traversals. Each traversal acts on their models using an observer.
+The rendering process is composed of several traversals. Each traversal acts on their models using virtual methods
 The rendering process is done following this pipeline:
 
 	- Transform animation traversal 
 	- Transform traversal
-	- Load ballancing traversal
 	- View determination and culling traversal
 	- Detail animation traversal
+	- Load ballancing traversal
 	- Lighting traversal
 	- Render traversal
 
@@ -26,14 +26,14 @@ We must do this pass to know where each model is.
 This traversal composes each transform's matrix with the parent one to get the final world matrix.
 This pass is used to perform hierarchical animation of models.
 
+\subsection cull View determination and culling traversal
+
+This traversal clips models that are not visible. It uses clusters/portals for interiors and a frustrum clipping for exteriors.
+
 \subsection balance Load balancing traversal
 
 For each model traversed this traversal evaluates what rendering resources the model requires.
 It counts the number of primitives that it needs to have rendered and amount of vram used by their textures.
-
-\subsection cull View determination and culling traversal
-
-This traversal clips models that are not visible. It uses clusters/portals for interiors and a frustrum clipping for exteriors.
 
 \subsection detail_anim Detail animation traversal
 

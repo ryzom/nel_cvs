@@ -1,14 +1,14 @@
 #
-# $Id: Makefile.am,v 1.1 2001/07/19 15:26:41 valignat Exp $
+# $Id: Makefile.am,v 1.2 2001/07/23 13:18:52 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
 
-bin_PROGRAMS         = frontend
+bin_PROGRAMS         = sno_frontend
 
-frontend_SOURCES     = main.cpp
+sno_frontend_SOURCES = main.cpp
 
-frontend_LDADD       = -lnelmisc -lnelnet
+sno_frontend_LDADD   = -lnelmisc -lnelnet
 
 
 # End of Makefile.am

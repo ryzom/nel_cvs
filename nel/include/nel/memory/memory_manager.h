@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.2 2002/11/05 17:10:36 besson Exp $
+ * $Id: memory_manager.h,v 1.3 2002/11/08 16:59:12 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,11 +205,6 @@ inline void operator delete[](void* p, const char *filename, int line)
 	NLMEMORY::MemoryDeallocate (p);
 }
 
-#endif // NL_USE_DEFAULT_MEMORY_MANAGER
-
-
-#endif // __cplusplus
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -221,6 +216,11 @@ extern "C"
 
 #ifdef __cplusplus
 }
+#endif // __cplusplus
+
+#endif // NL_USE_DEFAULT_MEMORY_MANAGER
+
+
 #endif // __cplusplus
 
 #endif // NL_MEMORY_MANAGER_H

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.53 2002/08/27 08:32:30 lecroart Exp $
+ * $Id: path.cpp,v 1.54 2002/08/27 10:07:53 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -440,6 +440,7 @@ bool isdirectory (dirent *de)
 #ifdef NL_OS_WINDOWS
 	return ((de->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) && ((de->dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) == 0);
 #else
+	//nlinfo ("isdirectory filename %s -> 0x%08x", de->d_name, de->d_type);
 	// we can't use "de->d_type & DT_DIR" because it s always NULL on libc2.1
 	//return (de->d_type & DT_DIR) != 0;
 
@@ -504,7 +505,8 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 		if (fn == "." || fn == "..")
 			continue;
 
-		if (isdirectory(de))
+		//if (isdirectory(de))
+		if (CFile::isDirectory(fn))
 		{
 			// skip CVS directory
 			if (fn == "CVS")
@@ -955,6 +957,7 @@ bool CFile::isDirectory (const string &filename)
 	struct stat buf;
 	int result = stat (filename.c_str (), &buf);
 	nlassert (result == 0);
+	nlinfo ("CFILE::isDirectory filename %s -> 0x%08x", filename.c_str(), buf.st_mode);
 	return (buf.st_mode & S_IFDIR) != 0;
 #endif // NL_OS_WINDOWS
 }

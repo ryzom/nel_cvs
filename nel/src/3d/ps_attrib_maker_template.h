@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.9 2001/07/13 17:01:44 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.10 2001/07/24 08:40:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "3d/ps_attrib_maker_helper.h"
 #include "3d/ps_plane_basis.h"
-
+#include "3d/fast_floor.h"
 
 namespace NL3D {
 
@@ -59,7 +59,7 @@ template <>
 inline NLMISC::CRGBA PSValueBlend(const NLMISC::CRGBA &t1, const NLMISC::CRGBA &t2, float alpha)
 {
 	NLMISC::CRGBA result ;
-	result.blendFromui(t1, t2, (uint) (255.0f * alpha)) ;
+	result.blendFromui(t1, t2, OptFastFloor(255.0f * alpha)) ;
 	return result ;
 }
 
@@ -193,7 +193,7 @@ public:
 	T operator()(CAnimationTime time) const
 	{
 
-		return _Values[(uint) (time * n)] ;	
+		return _Values[OptFastFloor(time * n)] ;	
 	}
 
 	/// restrieve the start and end Value
@@ -291,7 +291,7 @@ public:
 	T operator()(CAnimationTime time) const
 	{
 		nlassert(_Tab) ;
-		return _Tab[(uint32) (time * _NbValues)] ;
+		return _Tab[OptFastFloor(time * _NbValues)] ;
 	}
 
 	/// copie the keys values in the specified table

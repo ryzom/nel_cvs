@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.28 2001/07/12 15:43:53 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.29 2001/07/24 08:39:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/shape_bank.h"
 #include "3d/transform_shape.h"
 #include "3d/texture_mem.h"
+#include "3d/fast_floor.h"
 
 #include "nel/misc/common.h"
 #include "nel/misc/quat.h"
@@ -635,6 +636,9 @@ CPSMaterial::CPSMaterial()
 }
 
 
+
+
+
 void CPSMaterial::serialMaterial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1) ;
@@ -716,6 +720,11 @@ void CPSDot::init(void)
 	updateMatAndVbForColor() ;
 }
 
+uint32 CPSDot::getMaxNumFaces(void) const
+{
+	nlassert(_Owner) ;
+	return _Owner->getMaxSize() ;
+}
 
 void CPSDot::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
@@ -865,6 +874,11 @@ CPSQuad::~CPSQuad()
 {
 }
 
+uint32 CPSQuad::getMaxNumFaces(void) const
+{
+	nlassert(_Owner) ;
+	return _Owner->getMaxSize() << 1 ;
+}
 
 bool CPSQuad::hasTransparentFaces(void)
 {
@@ -923,22 +937,10 @@ void CPSQuad::resize(uint32 aSize)
 		
 
 	
-	_Pb.reserveQuad(size) ;
-	
 
-
-	// TODO : fan optimisation
 
 	for (uint32 k = 0 ; k < size ; ++k)
-	{
-		/*_IndexBuffer[6 * k] = 4 * k + 2 ;
-		_IndexBuffer[6 * k + 1] = 4 * k + 1 ;
-		_IndexBuffer[6 * k + 2] = 4 * k ;		
-		_IndexBuffer[6 * k + 3] = 4 * k  ;
-		_IndexBuffer[6 * k + 4] = 4 * k + 3 ;
-		_IndexBuffer[6 * k + 5] = 4 * k + 2;*/
-
-		_Pb.setQuad(k, (k <<  2), (k << 2) + 1, (k << 2) + 2, (k << 2) + 3) ;
+	{		
 
 		_Vb.setTexCoord(k * 4, 0, CUV(0, 0)) ;
 		_Vb.setTexCoord(k * 4 + 1, 0, CUV(1, 0)) ;
@@ -1164,35 +1166,75 @@ void CPSFaceLookAt::draw(bool opaque)
 				
 				if (_MotionBlurCoeff == 0.f)
 				{
-					while (it != endIt)
+					if (currentSizeStep)
 					{
-						CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
-						((CVector *) ptPos)->x = it->x  + *currentSize * v1.x ;  			
-						((CVector *) ptPos)->y = it->y  + *currentSize * v1.y ;  			
-						((CVector *) ptPos)->z = it->z  + *currentSize * v1.z ;  			
-						ptPos += stride ;
+						while (it != endIt)
+						{
+							CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+							((CVector *) ptPos)->x = it->x  + *currentSize * v1.x ;  			
+							((CVector *) ptPos)->y = it->y  + *currentSize * v1.y ;  			
+							((CVector *) ptPos)->z = it->z  + *currentSize * v1.z ;  			
+							ptPos += stride ;
 
-						CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
-						((CVector *) ptPos)->x = it->x  + *currentSize * v2.x ;  			
-						((CVector *) ptPos)->y = it->y  + *currentSize * v2.y ;  			
-						((CVector *) ptPos)->z = it->z  + *currentSize * v2.z ;  			
-						ptPos += stride ;
+							CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+							((CVector *) ptPos)->x = it->x  + *currentSize * v2.x ;  			
+							((CVector *) ptPos)->y = it->y  + *currentSize * v2.y ;  			
+							((CVector *) ptPos)->z = it->z  + *currentSize * v2.z ;  			
+							ptPos += stride ;
 
-						CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
-						((CVector *) ptPos)->x = it->x  - *currentSize * v1.x ;  			
-						((CVector *) ptPos)->y = it->y  - *currentSize * v1.y ;  			
-						((CVector *) ptPos)->z = it->z  - *currentSize * v1.z ;  			
-						ptPos += stride ;
+							CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+							((CVector *) ptPos)->x = it->x  - *currentSize * v1.x ;  			
+							((CVector *) ptPos)->y = it->y  - *currentSize * v1.y ;  			
+							((CVector *) ptPos)->z = it->z  - *currentSize * v1.z ;  			
+							ptPos += stride ;
 
-						CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
-						((CVector *) ptPos)->x = it->x  - *currentSize * v2.x ;  			
-						((CVector *) ptPos)->y = it->y  - *currentSize * v2.y ;  			
-						((CVector *) ptPos)->z = it->z  - *currentSize * v2.z ;  			
-						ptPos += stride ;
-						
+							CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+							((CVector *) ptPos)->x = it->x  - *currentSize * v2.x ;  			
+							((CVector *) ptPos)->y = it->y  - *currentSize * v2.y ;  			
+							((CVector *) ptPos)->z = it->z  - *currentSize * v2.z ;  			
+							ptPos += stride ;
+							
 
-						++it ;
-						currentSize += currentSizeStep ;					
+							++it ;
+							currentSize += currentSizeStep ;					
+						}
+					}
+					else
+					{
+						// constant size
+						const CVector myV1 = *currentSize * v1 ;
+						const CVector myV2 = *currentSize * v2 ;
+
+						while (it != endIt)
+						{
+							CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+							((CVector *) ptPos)->x = it->x  + myV1.x ;  			
+							((CVector *) ptPos)->y = it->y  + myV1.y ;  			
+							((CVector *) ptPos)->z = it->z  + myV1.z ;  			
+							ptPos += stride ;
+
+							CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+							((CVector *) ptPos)->x = it->x  + myV2.x ;  			
+							((CVector *) ptPos)->y = it->y  + myV2.y ;  			
+							((CVector *) ptPos)->z = it->z  + myV2.z ;  			
+							ptPos += stride ;
+
+							CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+							((CVector *) ptPos)->x = it->x  - myV1.x ;  			
+							((CVector *) ptPos)->y = it->y  - myV1.y ;  			
+							((CVector *) ptPos)->z = it->z  - myV1.z ;  			
+							ptPos += stride ;
+
+							CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+							((CVector *) ptPos)->x = it->x  - myV2.x ;  			
+							((CVector *) ptPos)->y = it->y  - myV2.y ;  			
+							((CVector *) ptPos)->z = it->z  - myV2.z ;  			
+							ptPos += stride ;
+							
+
+							++it ;											
+						}
+
 					}
 				}
 				else
@@ -1263,6 +1305,7 @@ void CPSFaceLookAt::draw(bool opaque)
 																					
 							if (n > normEpsilon)												
 							{															
+									
 
 								mbv1n = mbv1 / n ;														
 								mbv2 = *currentSize * (J ^ mbv1n) ;
@@ -1271,28 +1314,88 @@ void CPSFaceLookAt::draw(bool opaque)
 
 						
 
-								CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
-								*(CVector *) ptPos = *it - mbv2 ;												
-								*(CVector *) (ptPos + stride) = *it  + mbv1 ;  			
-								*(CVector *) (ptPos + stride2) = *it + mbv2 ;	
-								*(CVector *) (ptPos + stride3) = *it + mbv12 ;
+								
+									*(CVector *) ptPos = *it - mbv2 ;												
+									*(CVector *) (ptPos + stride) = *it  + mbv1 ;  			
+									*(CVector *) (ptPos + stride2) = *it + mbv2 ;	
+									*(CVector *) (ptPos + stride3) = *it + mbv12 ;
+								
+								
+									CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+									((CVector *) ptPos)->x = it->x  - mbv2.x ;  			
+									((CVector *) ptPos)->y = it->y  - mbv2.y ;
+									((CVector *) ptPos)->z = it->z  - mbv2.z ;
+									
+									CHECK_VERTEX_BUFFER(_Vb, ptPos + stride) ;
+									((CVector *) (ptPos + stride))->x = it->x  + mbv1.x ;  			
+									((CVector *) (ptPos + stride))->y = it->y  + mbv1.y ;  			
+									((CVector *) (ptPos + stride))->z = it->z  + mbv1.z ;  			
+
+									CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2) ;
+									((CVector *) (ptPos + stride2))->x = it->x  + mbv2.x ;  			
+									((CVector *) (ptPos + stride2))->y = it->y  + mbv2.y ;  			
+									((CVector *) (ptPos + stride2))->z = it->z  + mbv2.z ;  			
+
+
+									CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3) ;
+									((CVector *) (ptPos + stride3))->x = it->x  + mbv12.x ;  			
+									((CVector *) (ptPos + stride3))->y = it->y  + mbv12.y ;  			
+									((CVector *) (ptPos + stride3))->z = it->z  + mbv12.z ;  												
 								
 							}
 							else // speed too small, we must avoid a zero divide
 							{
 								CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+								((CVector *) ptPos)->x = it->x  - *currentSize * v2.x ;  			
+								((CVector *) ptPos)->y = it->y  - *currentSize * v2.y ;  			
+								((CVector *) ptPos)->z = it->z  - *currentSize * v2.z ;  			
+								
 								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride) ;
-								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2) ;
-								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3) ;
+								((CVector *) (ptPos + stride))->x = it->x  + *currentSize * v1.x ;  			
+								((CVector *) (ptPos + stride))->y = it->y  + *currentSize * v1.y ;  			
+								((CVector *) (ptPos + stride))->z = it->z  + *currentSize * v1.z ;  			
 
-								*(CVector *) ptPos = *it - *currentSize * v2 ;
-								*(CVector *) (ptPos + stride) = *it  + *currentSize * v1 ;  			
-								*(CVector *) (ptPos + stride2) = *it + *currentSize * v2 ;	
-								*(CVector *) (ptPos + stride3) = *it - *currentSize * v1 ;						
+								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2) ;
+								((CVector *) (ptPos + stride2))->x = it->x  + *currentSize * v2.x ;  			
+								((CVector *) (ptPos + stride2))->y = it->y  + *currentSize * v2.y ;  			
+								((CVector *) (ptPos + stride2))->z = it->z  + *currentSize * v2.z ;  			
+
+
+								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3) ;
+								((CVector *) (ptPos + stride3))->x = it->x  - *currentSize * v1.x ;  			
+								((CVector *) (ptPos + stride3))->y = it->y  - *currentSize * v1.y ;  			
+								((CVector *) (ptPos + stride3))->z = it->z  - *currentSize * v1.z ;  							
 							}
 						}
 						else
 						{
+
+							CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+							((CVector *) ptPos)->x = it->x  - *currentSize * v2.x ;  			
+							((CVector *) ptPos)->y = it->y  - *currentSize * v2.y ;  			
+							((CVector *) ptPos)->z = it->z  - *currentSize * v2.z ;  			
+							
+							CHECK_VERTEX_BUFFER(_Vb, ptPos + stride) ;
+							((CVector *) (ptPos + stride))->x = it->x  + *currentSize * v1.x ;  			
+							((CVector *) (ptPos + stride))->y = it->y  + *currentSize * v1.y ;  			
+							((CVector *) (ptPos + stride))->z = it->z  + *currentSize * v1.z ;  			
+
+							CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2) ;
+							((CVector *) (ptPos + stride2))->x = it->x  + *currentSize * v2.x ;  			
+							((CVector *) (ptPos + stride2))->y = it->y  + *currentSize * v2.y ;  			
+							((CVector *) (ptPos + stride2))->z = it->z  + *currentSize * v2.z ;  			
+
+
+							CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3) ;
+							((CVector *) (ptPos + stride3))->x = it->x  - *currentSize * v1.x ;  			
+							((CVector *) (ptPos + stride3))->y = it->y  - *currentSize * v1.y ;  			
+							((CVector *) (ptPos + stride3))->z = it->z  - *currentSize * v1.z ;  			
+						
+							
+
+						
+							/*
+
 								CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
 								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride) ;
 								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2) ;
@@ -1302,6 +1405,7 @@ void CPSFaceLookAt::draw(bool opaque)
 								*(CVector *) (ptPos + stride) = *it  + *currentSize * v1 ;  			
 								*(CVector *) (ptPos + stride2) = *it + *currentSize * v2 ;	
 								*(CVector *) (ptPos + stride3) = *it - *currentSize * v1 ;	
+							*/
 						}
 						
 
@@ -1317,8 +1421,8 @@ void CPSFaceLookAt::draw(bool opaque)
 
 				}
 					
-				_Pb.setNumQuad(toProcess) ;
-				driver->render(_Pb, _Mat) ;
+				
+				driver->renderQuads(_Mat, 0, toProcess) ;
 				leftToDo -= toProcess ;				
 		}
 		while (leftToDo) ;
@@ -1359,32 +1463,74 @@ void CPSFaceLookAt::draw(bool opaque)
 
 				CVector v1, v2 ;
 
+				OptFastFloorBegin() ;
+
+
 				
 				while (it != endIt)
 				{
-					const uint32 tabIndex = (((uint32) *currentAngle) & 0xff) << 2 ;
-					v1 = *currentSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K) ;
-					v2 = *currentSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K) ;
+					const uint32 tabIndex = ((OptFastFloor(*currentAngle)) & 0xff) << 2 ;
+				/*	v1 = *currentSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K) ;
+					v2 = *currentSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K) ; */
+
+					// lets avoid some ctor calls
+					v1.x = *currentSize * (rotTable[tabIndex] * I.x + rotTable[tabIndex + 1] * K.x) ;
+					v1.y = *currentSize * (rotTable[tabIndex] * I.y + rotTable[tabIndex + 1] * K.y) ;
+					v1.z = *currentSize * (rotTable[tabIndex] * I.z + rotTable[tabIndex + 1] * K.z) ;
+
+					v2.x = *currentSize * (rotTable[tabIndex + 2] * I.x + rotTable[tabIndex + 3] * K.x) ;
+					v2.y = *currentSize * (rotTable[tabIndex + 2] * I.y + rotTable[tabIndex + 3] * K.y) ;
+					v2.z = *currentSize * (rotTable[tabIndex + 2] * I.z + rotTable[tabIndex + 3] * K.z) ;
 					
 					CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
 					CHECK_VERTEX_BUFFER(_Vb, ptPos + stride) ;
 					CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2) ;
 					CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3) ;
 
+					/*
 					*(CVector *) ptPos = *it  + v1 ;  			
 					*(CVector *) (ptPos + stride) = *it + v2 ;	
 					*(CVector *) (ptPos + stride2) = *it - v1 ;
-					*(CVector *) (ptPos + stride3) = *it - v2 ;	
+					*(CVector *) (ptPos + stride3) = *it - v2 ;	 */
 
+
+
+					((CVector *) ptPos)->x  = it->x  + v1.x ;		
+					((CVector *) ptPos)->y  = it->y  + v1.y ;
+					((CVector *) ptPos)->z = it->z  + v1.z ;  			
+
+					ptPos += stride ;
+
+					((CVector *) ptPos)->x  = it->x  + v2.x ;		
+					((CVector *) ptPos)->y  = it->y  + v2.y ;
+					((CVector *) ptPos)->z = it->z  + v2.z ;  			
+
+					ptPos += stride ;
+
+					((CVector *) ptPos)->x  = it->x  - v1.x ;		
+					((CVector *) ptPos)->y  = it->y  - v1.y ;
+					((CVector *) ptPos)->z = it->z  - v1.z ;  			
+
+					ptPos += stride ;
+
+					((CVector *) ptPos)->x  = it->x  - v2.x ;		
+					((CVector *) ptPos)->y  = it->y  - v2.y ;
+					((CVector *) ptPos)->z = it->z  - v2.z ;  			
+
+					ptPos += stride ;
+
+					
 					++it ;
 					currentSize += currentSizeStep ;
-					++currentAngle ;
-					ptPos += stride4 ;
+					++currentAngle ;					
 				}											
 				
+				OptFastFloorEnd() ;
 					
-				_Pb.setNumQuad(toProcess) ;
-				driver->render(_Pb, _Mat) ;
+			
+				
+				driver->renderQuads(_Mat, 0, toProcess) ;
+
 				leftToDo -= toProcess ;
 		}
 		while (leftToDo) ;
@@ -1442,6 +1588,13 @@ void CPSFanLight::initFanLightPrecalc(void)
 	#ifdef NL_DEBUG
 		_RandomPhaseTabInitialized = true ;
 	#endif
+}
+
+
+uint32 CPSFanLight::getMaxNumFaces(void) const
+{
+	nlassert(_Owner) ;
+	return _Owner->getMaxSize() * _NbFans ;
 }
 
 
@@ -1681,7 +1834,6 @@ CPSFanLight::CPSFanLight(uint32 nbFans) : _IndexBuffer(NULL), _NbFans(nbFans), _
 {
 	nlassert(nbFans >= 3) ;
 
-	// TODO : remove this later, as it will be useless
 
 	init() ;
 	_Name = std::string("FanLight") ;
@@ -1698,6 +1850,8 @@ void CPSFanLight::setNbFans(uint32 nbFans)
 	_NbFans = nbFans ;
 
 	resize(_Owner->getMaxSize()) ;
+
+	notifyOwnerMaxNumFacesChanged() ;
 }
 
 
@@ -1712,9 +1866,6 @@ void CPSFanLight::resize(uint32 size)
 
 	_IndexBuffer = new uint32[ size * _NbFans * 3] ;
 		
-
-	// TODO : adapt this for real fans
-	// we precompute the uv's and the index buffer because they won't change
 
 
 	// pointer on the current index to fill
@@ -1793,6 +1944,14 @@ CPSTailDot::CPSTailDot(uint32 nbSegmentInTail) : _TailNbSeg(nbSegmentInTail), _C
 	nlassert(_TailNbSeg <= 255) ;
 	init() ;
 	_Name = std::string("TailDot") ;
+}
+
+
+
+uint32 CPSTailDot::getMaxNumFaces(void) const
+{
+	nlassert(_Owner) ;
+	return _Owner->getMaxSize() * _TailNbSeg ;
 }
 
 
@@ -2225,6 +2384,8 @@ void CPSTailDot::setTailNbSeg(uint32 nbSeg)
 	{
 		resizeVb(nbSeg, _Owner->getMaxSize()) ;
 	}
+
+	notifyOwnerMaxNumFacesChanged() ;
 }
 
 	
@@ -2323,6 +2484,11 @@ CPSRibbon::CPSRibbon(uint32 nbSegmentInTail
 	_Name = std::string("Ribbon") ;
 }
 
+uint32 CPSRibbon::getMaxNumFaces(void) const
+{
+	nlassert(_Owner) ;
+	return (_Owner->getMaxSize() * _TailNbSeg * _ShapeNbSeg) << 1 ;
+}
 
 
 // dtor
@@ -2399,7 +2565,7 @@ void CPSRibbon::setTailNbSeg(uint32 nbSeg)
 		*it = radius / (radius + radiusStep) ;
 		radius += radiusStep ;
 	}
-	
+	notifyOwnerMaxNumFacesChanged() ;
 	
 }
 
@@ -2419,11 +2585,12 @@ void CPSRibbon::setShape(const CVector *shape, uint32 nbPointsInShape)
 		{
 			resizeVb(*_DyingRibbons) ;
 		}
+		notifyOwnerMaxNumFacesChanged() ;
 	}
 	else
 	{
 		std::copy(shape, shape + nbPointsInShape, _Shape.begin()) ;
-	}
+	}	
 	
 }
 
@@ -3507,8 +3674,8 @@ void CPSFace::draw(bool opaque)
 			
 				
 			
-			_Pb.setNumQuad(toProcess) ;
-			driver->render(_Pb, _Mat) ;
+
+			driver->renderQuads(_Mat, 0, toProcess) ;
 
 			leftFaces -= toProcess ;
 
@@ -3604,8 +3771,8 @@ void CPSFace::draw(bool opaque)
 			
 				
 			
-			_Pb.setNumQuad(toProcess) ;
-			driver->render(_Pb, _Mat) ;
+
+			driver->renderQuads(_Mat, 0, toProcess) ;
 
 			leftFaces -= toProcess ;
 
@@ -3767,6 +3934,13 @@ CPSShockWave::CPSShockWave(uint nbSeg, float radiusCut, CSmartPtr<ITexture> tex)
 }
 
 
+uint32 CPSShockWave::getMaxNumFaces(void) const
+{
+	nlassert(_Owner) ;
+	return (_Owner->getMaxSize() * _NbSeg) << 1  ;
+}
+
+
 
 bool CPSShockWave::hasTransparentFaces(void)
 {
@@ -3785,6 +3959,7 @@ void CPSShockWave::setNbSegs(uint nbSeg)
 	if (_Owner)
 	{
 		resize(_Owner->getMaxSize()) ;
+		notifyOwnerMaxNumFacesChanged() ;
 	}
 }
 
@@ -4118,7 +4293,7 @@ void CPSShockWave::resize(uint32 aSize)
 /** a private function that create a dummy mesh :a cube with dummy textures
  */ 
 
-CMesh *CreateDummyShape(void)
+static CMesh *CreateDummyShape(void)
 {
 	CMesh::CMeshBuild mb ;
 	CMeshBase::CMeshBaseBuild mbb;
@@ -4206,6 +4381,14 @@ void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		invalidate() ;
 	}
 }
+
+
+uint32 CPSMesh::getMaxNumFaces(void) const
+{
+	/// we don't draw any face ! (the meshs are drawn by the scene)
+	return 0 ;
+}
+
 
 
 bool CPSMesh::hasTransparentFaces(void)
@@ -4437,7 +4620,21 @@ CPSMesh::~CPSMesh()
 // CPSConstraintMesh implementation //
 //////////////////////////////////////
 
+/// private : eval the number of triangles in a mesh
+static uint getMeshNumTri(const CMesh &m)
+{	
+	uint numFaces = 0 ;
+	for (uint k = 0  ; k < m.getNbMatrixBlock() ; ++k)
+	{
+		for (uint l = 0 ; l  < m.getNbRdrPass(k) ; ++l)
+		{
+			const CPrimitiveBlock pb = m.getRdrPassPrimitiveBlock(k, l) ;
+			numFaces += (pb.getNumLine() << 1) + pb.getNumTri() + (pb.getNumQuad() << 1) ;
 
+		}
+	}
+	return numFaces ;
+}
 
 /** This duplicate a primitive block n time in the destination primitive block
  *  This is used to draw several mesh at once
@@ -4534,6 +4731,13 @@ static void DuplicatePrimitiveBlock(const CPrimitiveBlock &srcBlock, CPrimitiveB
 
 
 
+uint32 CPSConstraintMesh::getMaxNumFaces(void) const
+{
+	nlassert(_ModelVb) ;
+	return _NumFaces * _Owner->getMaxSize() ;
+	
+}
+
 
 
 bool CPSConstraintMesh::hasTransparentFaces(void)
@@ -4588,10 +4792,10 @@ void CPSConstraintMesh::update(void)
 	nlassert(dynamic_cast<CMesh *>(is)) ;
 	const CMesh &m  = * (CMesh *) is ;
 
-
-
+	/// update the number of faces
+	_NumFaces = getMeshNumTri(m) ;
+	notifyOwnerMaxNumFacesChanged() ;
 	
-
 	// we don't support skinning, so there must be only one matrix block
 	// duplicate rendering pass
 

@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * <File description>
  *
- * $Id: texture_grouped.cpp,v 1.13 2004/02/19 09:46:33 vizerie Exp $
+ * $Id: texture_grouped.cpp,v 1.14 2004/03/15 18:15:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -199,6 +199,7 @@ void CTextureGrouped::doGenerate(bool async)
 		
 		uint k;
 		sint32 currY =  0;
+		_TexUVs.resize(_NbTex);
 		for(k = 0; k < _NbTex; ++k)
 		{			
 			_Textures[k]->generate();
@@ -212,13 +213,12 @@ void CTextureGrouped::doGenerate(bool async)
 			this->blit(_Textures[k], 0, currY);
 			currY += height;			
 
-			TFourUV uvs;						
+			TFourUV &uvs = _TexUVs[k];	
 			uvs.uv0 = currentUV;
 			uvs.uv1 = currentUV + CUV(1, 0);
 			uvs.uv2 = currentUV + _DeltaUV;
 			uvs.uv3 = currentUV + CUV(0, deltaV);
-			currentUV.V += deltaV;
-			_TexUVs.push_back(uvs);
+			currentUV.V += deltaV;			
 		}
 
 		for(k = 0; k < _NbTex; ++k)

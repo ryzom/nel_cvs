@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.8 2004/04/01 20:37:57 boucher Exp $
+ * $Id: diff_tool.cpp,v 1.9 2004/08/18 13:54:00 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -282,39 +282,6 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 
 	CI18N::readTextFile(filename, doc, false, false, true);
 
-//	CI18N::writeTextFile("test.txt", doc, false);
-
-/*	uint8 *buffer = 0;
-	uint	size;
-*/
-
-/*	try
-	{
-		CIFile fp(filename);
-		size = fp.getFileSize();
-		buffer = new uint8[size];
-		fp.serialBuffer(buffer, size);
-	}
-	catch(Exception &e)
-	{
-		nlinfo("Can't open file [%s] (%s)\n", filename.c_str(), e.what());
-		return true;
-	}
-*/
-/*	FILE *fp = fopen(filename.c_str(), "rb");
-	if (fp == 0)
-	{
-		nlinfo("Could't not open %s\n", filename.c_str());
-		return true;
-	}
-	uint size = CFile::getFileSize(fp);
-	uint8 *buffer = new uint8[size];
-	fread(buffer, 1, size, fp);
-	fclose(fp);
-*/
-/*	CI18N::readTextBuffer(buffer, size, doc);
-	delete [] buffer;
-*/
 	std::string lastRead("nothing");
 
 	ucstring::const_iterator first(doc.begin()), last(doc.end());
@@ -450,7 +417,7 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 			it = unik.find(phrases[i].Identifier); 
 			if (it != unik.end())
 			{
-				nlwarning("DT: loadStringFile : identifier '%s' exist twice", phrases[i].Identifier.c_str() );
+				nlwarning("DT: readPhraseFile : identifier '%s' exist twice", phrases[i].Identifier.c_str() );
 				error = true;
 			}
 			else
@@ -747,7 +714,7 @@ bool readExcelSheet(const ucstring &str, TWorksheet &worksheet, bool checkUnique
 					it = unik.find(worksheet.getData(j, nameCol)); 
 					if (it != unik.end())
 					{
-						nlwarning("DT: loadStringFile : identifier '%s' exist twice", worksheet.getData(j, nameCol).toString().c_str() );
+						nlwarning("DT: readExcelSheet : identifier '%s' exist twice", worksheet.getData(j, nameCol).toString().c_str() );
 						error = true;
 					}
 					else

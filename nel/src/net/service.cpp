@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.34 2000/12/11 11:46:58 lecroart Exp $
+ * $Id: service.cpp,v 1.35 2001/01/05 15:31:15 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -224,6 +224,30 @@ sint IService::main (int argc, char **argv)
 		InitSignal();
 #endif
 
+#ifdef NL_OS_UNIX
+		// Ignore the SIGPIPE signal
+		sigset_t SigList;
+		bool IgnoredPipe = true;
+		if (sigemptyset (&SigList) == -1)
+		{
+			perror("sigemptyset()");
+			IgnorePipe = false;
+		}
+
+		if (sigaddset (&SigList, SIGPIPE) == -1)
+		{
+			perror("sigaddset()");
+			IgnorePipe = false;
+		}
+
+		if (sigprocmask (SIG_BLOCK, &SigList, NULL) == -1)
+		{
+			perror("sigprocmask()");
+			IgnorePipe = false;
+		}
+		nldebug ("SIGPIPE %s", IgnoredPipe?"Ignored":"Not Ignored");
+#endif // NL_OS_UNIX
+		
 		// Initialize server parameters
 		_Port = IService::_DefaultPort;
 		_Timeout = IService::_DefaultTimeout;

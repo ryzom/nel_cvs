@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.27 2002/04/23 14:38:12 berenguier Exp $
+ * $Id: patch.h,v 1.28 2002/04/23 15:15:22 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -996,6 +996,7 @@ private:
 
 
 	// get the current TLIColor given a TLI coordinate (in (0..OrderS/2+1, 0..OrderT/2+1) )
+	// NB: returned color is modulated by landscape material and precomputed diffuse factor
 	CRGBA		CPatch::getCurrentTLIColor(uint x, uint y) const;
 	// get the current TLIColors at the corners of the tile (according to pointLights current colors)
 	// corner order: 0,0; 1,0; 0,1; 1,1. NB: A undefined.

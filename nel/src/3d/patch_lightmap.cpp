@@ -1,7 +1,7 @@
 /** \file patch_lightmap.cpp
  * Patch implementation related to lightmaping (texture Near/Far)
  *
- * $Id: patch_lightmap.cpp,v 1.5 2002/04/18 13:06:52 berenguier Exp $
+ * $Id: patch_lightmap.cpp,v 1.6 2002/04/23 15:15:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1716,6 +1716,8 @@ CRGBA		CPatch::getCurrentTLIColor(uint x, uint y) const
 				break;
 			// Append the influence of this pointLight. 
 			CRGBA	lightCol= zonePointLights[tli.Light[lid]].getDiffuse();
+			// modulate with landscape Material.
+			lightCol.modulateFromColorRGBOnly(lightCol, getLandscape()->getPointLightDiffuseMaterial() );
 			// modulate with precomputed diffuse factor
 			lightCol.modulateFromuiRGBOnly(lightCol, tli.getDiffuseLightFactor(lid) );
 			// add to the corner

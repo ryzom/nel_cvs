@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.46 2003/01/27 13:31:17 boucher Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.47 2003/02/19 18:58:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1132,7 +1132,9 @@ int CALLBACK VegetableDialogCallback (
 
 			SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE), BM_SETCHECK, currentParam->Vegetable, 0);
 			
-			CheckRadioButton(hwndDlg, IDC_VEGETABLE_ALPHA_BLEND_ON, IDC_VEGETABLE_ALPHA_BLEND_OFF, IDC_VEGETABLE_ALPHA_BLEND_ON+currentParam->VegetableAlphaBlend);
+			// Yoyo: enable like this. Crappy CheckRadioButton method...
+			SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE_ALPHA_BLEND_ON), BM_SETCHECK, currentParam->VegetableAlphaBlend==0, 0 );
+			SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE_ALPHA_BLEND_OFF), BM_SETCHECK, currentParam->VegetableAlphaBlend==1, 0 );
 			
 			CheckRadioButton(hwndDlg, IDC_VEGETABLE_AB_ON_LIGHTED_PRECOMPUTED, IDC_VEGETABLE_AB_ON_UNLIGHTED, IDC_VEGETABLE_AB_ON_LIGHTED_PRECOMPUTED+currentParam->VegetableAlphaBlendOnLighted);
 			

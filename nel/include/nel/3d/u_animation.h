@@ -1,7 +1,7 @@
 /** \file u_animation.h
  * User interface to access animations fonctionnalities
  *
- * $Id: u_animation.h,v 1.2 2001/07/04 08:53:08 corvazier Exp $
+ * $Id: u_animation.h,v 1.3 2001/07/20 14:16:15 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,6 +89,20 @@ public:
 	  * \param track is a pointer on the track interface to release.
 	  */
 	virtual void		releaseTrack (UTrack* track) =0;
+
+	/**
+	  * Get begin time of the animation.
+	  *
+	  * \return the begin time.
+	  */
+	virtual CAnimationTime	getBeginTime () const =0;
+
+	/**
+	  * Get end time of the animation.
+	  *
+	  * \return the end time.
+	  */
+	virtual CAnimationTime	getEndTime () const =0;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.2 2001/07/03 09:46:22 corvazier Exp $
+ * $Id: animation.h,v 1.3 2001/07/20 14:16:15 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,20 +120,6 @@ public:
 	  */
 	void addTrack (const std::string& name, ITrack* pChannel);
 
-	/**
-	  * Get begin time of the track.
-	  *
-	  * \return the begin time.
-	  */
-	CAnimationTime getBeginTime () const;
-
-	/**
-	  * Get end time of the track.
-	  *
-	  * \return the end time.
-	  */
-	CAnimationTime getEndTime () const;
-
 	/// Serial the template
 	void serial (NLMISC::IStream& f);
 
@@ -142,6 +128,9 @@ public:
 
 	virtual UTrack*		getTrackByName (const char* name);
 	virtual void		releaseTrack (UTrack* track);
+	virtual CAnimationTime	getBeginTime () const;
+	virtual CAnimationTime	getEndTime () const;
+
 
 	// @}
 

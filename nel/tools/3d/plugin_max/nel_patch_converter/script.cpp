@@ -1,7 +1,7 @@
 /** \file script.cpp
  * <File description>
  *
- * $Id: script.cpp,v 1.6 2001/11/14 15:17:21 corvazier Exp $
+ * $Id: script.cpp,v 1.7 2002/06/20 17:17:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,6 +92,8 @@ def_visible_primitive( set_tile_noise_number,	"NelSetTileNoiseNumber");
 
 def_visible_primitive( load_bank,				"NelLoadBank");
 def_visible_primitive( get_tile_set,			"NelGetTileSet");
+
+def_visible_primitive( set_tile_bank,			"NelSetTileBank");
 
 def_visible_primitive( export_zone,				"ExportRykolZone");
 def_visible_primitive( import_zone,				"NeLImportZone");
@@ -1617,6 +1619,25 @@ get_tile_set_cf(Value** arg_list, int count)
 
 	// Error
 	return Integer::intern(nRet);
+}
+
+Value* set_tile_bank_cf (Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (4)
+	check_arg_count(get_tile_count, 1, count);
+
+	// Check to see if the arguments match up to what we expect
+	// We want to use 'TurnAllTexturesOn <object to use>'
+	type_check(arg_list[0], String, "NelSetTileBank [tile bank pathname]");
+
+	// ok ?
+	const char *pathname = arg_list[0]->to_string();
+
+	// Get tile number
+	SetBankPathName (pathname);
+
+	// Error
+	return &true_value;
 }
 
 

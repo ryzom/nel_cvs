@@ -349,6 +349,10 @@ MaxFilesList = getFiles (ligo_root_path + "*.max")
 
 try
 (
+	-- Set the bank pathname
+	bank_filename = "bankFilename"
+	NelSetTileBank bank_filename
+
 	for curFileName in MaxFilesList do
 	(		
 		-- Free memory and file handles

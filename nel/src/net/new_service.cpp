@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: new_service.cpp,v 1.2 2001/02/23 11:13:59 lecroart Exp $
+ * $Id: new_service.cpp,v 1.3 2001/02/23 13:09:27 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -69,6 +69,9 @@ using namespace NLMISC;
 
 namespace NLNET
 {
+
+string INewService::_Name = "";
+uint16 INewService::_DefaultPort = 0;
 
 const uint32 INewService::_DefaultTimeout = 1000;
 
@@ -191,6 +194,15 @@ void INewService::getCustomParams()
 
 }
 
+void INewService::setServiceName (const char *ServiceName)
+{
+	_Name = ServiceName;
+}
+
+void INewService::setPort (uint16 Port)
+{
+	_DefaultPort = Port;
+}
 
 // The main function of the service
 sint INewService::main (int argc, char **argv)
@@ -320,7 +332,7 @@ sint INewService::main (int argc, char **argv)
 		// Register the name to the NS (except for the NS itself)
 		//
 
-		if ( strcmp( INewService::_Name, "NS" ) != 0 )
+		if ( INewService::_Name != "NS" )
 		{
 			// Setup Net Displayer
 			CNetDisplayer *nd = new CNetDisplayer();
@@ -340,14 +352,14 @@ sint INewService::main (int argc, char **argv)
 
 
 			// Get the universal time (useful for debugging)
-			if ( strcmp( INewService::_Name, "TS" ) !=0 )
+			if ( INewService::_Name != "TS" )
 			{
 				// Don't call the sync if it's the Time Service and Naming Service
 				CUniTime::syncUniTimeFromService ();
 			}
 
 
-			if ( strcmp( INewService::_Name, "LS" ) != 0 ) // The Login Service must not register itself
+			if ( INewService::_Name != "LS" ) // The Login Service must not register itself
 			{
 				// Talk with the NS
 				bool registered = false;
@@ -482,7 +494,7 @@ sint INewService::main (int argc, char **argv)
 		// Unregister the service if needed
 		//
 
-		if ( (strcmp( INewService::_Name, "NS" ) != 0) && (strcmp( INewService::_Name, "LS" ) != 0)  )
+		if ( ( INewService::_Name != "NS") && ( INewService::_Name != "LS") )
 		{
 			CNamingClient::finalize();
 			CNamingClient::close(); // close connection to the NS

@@ -1,7 +1,7 @@
 /** \file new_service.h
  * Base class for all network services
  *
- * $Id: new_service.h,v 1.1 2001/02/23 10:59:49 lecroart Exp $
+ * $Id: new_service.h,v 1.2 2001/02/23 13:09:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,12 +63,12 @@ typedef uint8 TServiceId;
  * If you want the port to be auto-assigned by the naming service, set the port to 0. 
  */
 #define NLNET_NEW_SERVICE_MAIN(__ServiceClassName, __ServiceName, __ServicePort) \
-const char INewService::_Name[] = __ServiceName; \
-const uint16 INewService::_DefaultPort = __ServicePort; \
  \
 int main(int argc, char **argv) \
 { \
 	__ServiceClassName *scn = new __ServiceClassName; \
+	scn->setServiceName (__ServiceName); \
+	scn->setPort (__ServicePort); \
 	sint retval = scn->main (argc, argv); \
 	delete scn; \
 	return retval; \
@@ -127,6 +127,9 @@ public:
 	/// User must just have to call this function in his main C function
 	sint				main (int argc, char **argv);
 
+	static void			setServiceName (const char *ServiceName);
+	static void			setPort (uint16 Port);
+
 protected:
 
 	/// Array of arguments
@@ -148,10 +151,10 @@ protected:
 	//@{
 
 	/// Current service name. Is set by the actual service when declaring NLNET_SERVICE_MAIN
-	static const char			_Name [];
+	static std::string			_Name;
 
 	/// Current service default port. Must be set by the deriver class
-	static const uint16			_DefaultPort;
+	static uint16				_DefaultPort;
 
 	//@}
 

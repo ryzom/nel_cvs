@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.46 2003/12/08 18:39:28 corvazier Exp $
+ * $Id: i18n.cpp,v 1.47 2003/12/11 18:32:13 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -338,7 +338,10 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 					else if(*it == openMark)
 						result.push_back(openMark);
 					else
+					{
 						nlwarning("I18N: Ignoring unknown escape code \\%c (char value : %u)", char(*it), *it);
+						return false;
+					}
 				}
 				++it;
 			}

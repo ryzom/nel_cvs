@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.49 2001/10/29 09:37:45 corvazier Exp $
+ * $Id: stream.h,v 1.50 2001/11/27 15:59:55 urro Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1204,7 +1204,7 @@ private:
 		serialSTLContLenPolyPtr(cont, len);
 
 		// Close the node
-		xmlPushEnd ();
+		xmlPop ();
 	}
 
 

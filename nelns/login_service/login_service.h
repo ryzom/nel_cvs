@@ -1,7 +1,7 @@
 /** \file login_service.h
  * <File description>
  *
- * $Id: login_service.h,v 1.18 2004/09/08 12:47:41 legros Exp $
+ * $Id: login_service.h,v 1.19 2004/09/16 10:10:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,7 +73,6 @@ struct CShard
 
 // Variables
 
-extern CFileDisplayer		Fd;
 extern CLog*				Output;
 
 extern MYSQL*				DatabaseConnection;

@@ -1,7 +1,7 @@
 /** \file quaternion.h
  * CQuat class
  *
- * $Id: quat.h,v 1.3 2001/03/07 09:36:04 berenguier Exp $
+ * $Id: quat.h,v 1.4 2001/03/07 13:00:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -494,6 +494,7 @@ public:
 	/// \name Object
 	// @{
 	CQuat	&operator=(const CQuatT<float> &o) {x=o.x; y=o.y; z=o.z; w=o.w; return *this;}
+	CQuat(const CQuatT<float> &o) : CQuatT<float>(o) {}
 	CQuat() {}
 	CQuat(float X, float Y, float Z, float W) : CQuatT<float>(X,Y,Z,W) {}
 	/// ctor of a UNIT quaternion, from an angle axis.
@@ -520,6 +521,7 @@ public:
 	/// \name Object
 	// @{
 	CQuatD	&operator=(const CQuatT<double> &o) {x=o.x; y=o.y; z=o.z; w=o.w; return *this;}
+	CQuatD(const CQuatT<double> &o) : CQuatT<double>(o) {}
 	CQuatD() {}
 	CQuatD(double X, double Y, double Z, double W) : CQuatT<double>(X,Y,Z,W) {}
 	/// ctor of a UNIT quaternion, from an angle axis.

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.13 2004/08/09 14:35:08 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.14 2004/08/13 15:26:47 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -276,6 +276,14 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 	// if the shader has changed since last time
 	if(matShader != _CurrentMaterialSupportedShader)
 	{
+		// if current shader is normal shader, then must restore uv routing, because it may have been changed by a previous shader (such as lightmap)
+		if (matShader == CMaterial::Normal)
+		{
+			for(uint k = 0; k < MaxTexture; ++k)
+			{						
+				setTextureIndexUV (k, _CurrentUVRouting[k]);
+			}
+		}		
 		// if old was lightmap, restore standard lighting
 		if(_CurrentMaterialSupportedShader==CMaterial::LightMap)
 			setupLightMapDynamicLighting(false);
@@ -529,6 +537,7 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 				{
 					setTextureState (stage, D3DTSS_COLOROP, D3DTOP_DISABLE);
 					setTextureState (stage, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+					break; // stage after this one are ignored
 				}
 			}
 
@@ -567,7 +576,7 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 			D3DXMATRIX userMtx;
 			if (needUserMtx)	
 			{
-				// If tex gen mode is used, or a cube texture is used, then us the matrix 'as it'. 
+				// If tex gen mode is used, or a cube texture is used, then use the matrix 'as it'. 
 				// Must build a 3x3 matrix for 2D texture coordinates in D3D (which is kind of weird ...)
 				if (pShader->TexGen[stage] != D3DTSS_TCI_PASSTHRU || (mat.getTexture(stage) && mat.getTexture(stage)->isTextureCube()))
 				{
@@ -876,7 +885,7 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 						}
 						lightmapCount++;
 					}
-				}
+				}				
 			}
 			break;
 		case CMaterial::Specular:
@@ -1011,11 +1020,11 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 						if (mat.getTexture(1) && mat.getTexture(1)->isBumpMap())
 						{
 							float factor = NLMISC::safe_cast<CTextureBump *>(mat.getTexture(1))->getNormalizationFactor();
-							effect->SetFloat(shaderInfo->ScalarHandle[0], factor);
+							effect->SetFloat(shaderInfo->ScalarFloatHandle[0], factor);
 						}
 						else
 						{
-							effect->SetFloat(shaderInfo->ScalarHandle[0], 1.f);
+							effect->SetFloat(shaderInfo->ScalarFloatHandle[0], 1.f);
 						}						
 					}
 					else

@@ -1,7 +1,7 @@
 /** \file vector_2s.h
  * <File description>
  *
- * $Id: vector_2s.h,v 1.4 2001/08/16 16:59:30 legros Exp $
+ * $Id: vector_2s.h,v 1.5 2001/08/20 13:17:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,12 +46,6 @@ const float		Vector2sAccuracy = 128.0f;
 class CVector2s
 {
 private:
-	// unpack a fixed16 into a float
-	static float	unpack(sint16 s)
-	{
-		return (float)s/Vector2sAccuracy;
-	}
-
 	// safely cast a fixed64 into a fixed16
 	static sint16	safeCastSint16(sint64 s)
 	{
@@ -73,6 +67,18 @@ private:
 #else
 		return (sint16)f;
 #endif
+	}
+
+	// pack a float into a sint16
+	static sint16	pack(float f)
+	{
+		return safeCastSint16(f*Vector2sAccuracy);
+	}
+
+	// unpack a fixed16 into a float
+	static float	unpack(sint16 s)
+	{
+		return (float)s/Vector2sAccuracy;
 	}
 
 public:		// Attributes.
@@ -151,8 +157,8 @@ public:		// Methods.
 	void	serial(NLMISC::IStream &f)				{f.serial(x,y);}
 	//@}
 
-	void				pack(const NLMISC::CVector &v)		{ x = safeCastSint16(v.x); y = safeCastSint16(v.y); }
-	void				pack(const NLMISC::CVector2f &v)	{ x = safeCastSint16(v.x); y = safeCastSint16(v.y); }
+	void				pack(const NLMISC::CVector &v)		{ x = pack(v.x); y = pack(v.y); }
+	void				pack(const NLMISC::CVector2f &v)	{ x = pack(v.x); y = pack(v.y); }
 	NLMISC::CVector2f	unpack() const						{ return NLMISC::CVector2f(unpack(x), unpack(y)); }
 	NLMISC::CVector		unpack3f(float hintz=0.0f) const	{ return NLMISC::CVector(unpack(x), unpack(y), hintz); }
 };

@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.21 2004/01/29 10:37:29 besson Exp $
+ * $Id: nel_export_export.cpp,v 1.22 2004/05/24 16:36:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,29 +168,33 @@ bool CNelExport::exportAnim (const char *sPath, std::vector<INode*>& vectNode, T
 	// For each node to export
 	for (uint n=0; n<vectNode.size(); n++)
 	{
-		// Get name
-		std::string nodeName="";
+		int exportMaterials = CExportNel::getScriptAppData (vectNode[n], NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, 0);
+		if (exportMaterials)
+		{		
+			// Get name
+			std::string nodeName="";
 
-		// Get NEL3D_APPDATA_EXPORT_ANIMATION_PREFIXE_NAME
-		int prefixe = CExportNel::getScriptAppData (vectNode[n], NEL3D_APPDATA_EXPORT_ANIMATION_PREFIXE_NAME, 0);
-		
-		// Set the name only if it is a scene animation
-		if (scene || prefixe)
-		{
-			// try to get the prefix from the appData if present. If not, takes it from the node name
-			nodeName = CExportNel::getScriptAppData (vectNode[n], NEL3D_APPDATA_INSTANCE_NAME, "");
-			if (nodeName == "") // not found ?
+			// Get NEL3D_APPDATA_EXPORT_ANIMATION_PREFIXE_NAME
+			int prefixe = CExportNel::getScriptAppData (vectNode[n], NEL3D_APPDATA_EXPORT_ANIMATION_PREFIXE_NAME, 0);
+			
+			// Set the name only if it is a scene animation
+			if (scene || prefixe)
 			{
-				nodeName=CExportNel::getName (*vectNode[n]);
+				// try to get the prefix from the appData if present. If not, takes it from the node name
+				nodeName = CExportNel::getScriptAppData (vectNode[n], NEL3D_APPDATA_INSTANCE_NAME, "");
+				if (nodeName == "") // not found ?
+				{
+					nodeName=CExportNel::getName (*vectNode[n]);
+				}
+				nodeName+=".";
 			}
-			nodeName+=".";
+
+			// Is a root ?
+			bool root = vectNode[n]->GetParentNode () == _Ip->GetRootNode();
+
+			// Add animation
+			_ExportNel->addAnimation (animFile, *vectNode[n], nodeName.c_str(), root);
 		}
-
-		// Is a root ?
-		bool root = vectNode[n]->GetParentNode () == _Ip->GetRootNode();
-
-		// Add animation
-		_ExportNel->addAnimation (animFile, *vectNode[n], nodeName.c_str(), root);
 	}
 
 	if (vectNode.size())

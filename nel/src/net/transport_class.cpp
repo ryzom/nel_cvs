@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.4 2002/02/19 13:14:57 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.5 2002/03/14 13:48:12 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -70,7 +70,37 @@ vector<CTransportClass::CRegisteredBaseProp *> CTransportClass::DummyProp;
 // Functions
 //
 
-void CTransportClass::registerOtherSideClass (uint16 sid, TOtherSideRegisteredClass &osrc)
+string typeToString (CTransportClass::TProp type)
+{
+	string conv[] = {
+		"PropUInt8", "PropUInt16", "PropUInt32", "PropUInt64",
+		"PropSInt8", "PropSInt16", "PropSInt32", "PropSInt64",
+		"PropBool", "PropFloat", "PropDouble", "PropString", "PropEntityId", "PropUKN" };
+
+	if (type > CTransportClass::PropUKN)
+		return "<InvalidType>";
+	else
+		return conv[type];
+}
+
+void CTransportClass::displayDifferentClass (uint8 sid, const string &className, const vector<CRegisteredBaseProp> &otherClass, const vector<CRegisteredBaseProp *> &myClass)
+{
+	nlinfo ("Service with sid %u send me the TransportClass '%s' with differents properties:", sid, className);
+	uint i;
+	nlinfo ("  My local TransportClass is:");
+	for (i = 0; i < myClass.size(); i++)
+	{
+		nlinfo ("    Property: %d Name: '%s' type: '%s'", i, myClass[i]->Name.c_str(), typeToString(myClass[i]->Type).c_str());
+	}
+
+	nlinfo ("  The other side TransportClass is:");
+	for (i = 0; i < otherClass.size(); i++)
+	{
+		nlinfo ("    Property: %d Name: '%s' type: '%s'", i, otherClass[i].Name.c_str(), typeToString(otherClass[i].Type).c_str());
+	}
+}
+
+void CTransportClass::registerOtherSideClass (uint8 sid, TOtherSideRegisteredClass &osrc)
 {
 	for (TOtherSideRegisteredClass::iterator it = osrc.begin(); it != osrc.end (); it++)
 	{
@@ -80,7 +110,7 @@ void CTransportClass::registerOtherSideClass (uint16 sid, TOtherSideRegisteredCl
 		if (res == LocalRegisteredClass.end ())
 		{
 			// it s a class that the other side have but not me, can't send this class
-			nlwarning ("the class '%s' is not registered in my system", (*it).first.c_str());
+			nlwarning ("CTransportClass::registerOtherSideClass(): the other side class '%s' is not registered in my system, skip it", (*it).first.c_str());
 			continue;
 		}
 
@@ -101,7 +131,7 @@ void CTransportClass::registerOtherSideClass (uint16 sid, TOtherSideRegisteredCl
 				{
 					if ((*it).second[j].Type != (*res).second.Instance->Prop[k]->Type)
 					{
-						nlwarning ("Property '%s' of the class '%s' have not the same type in the 2 sides (%d %d)", (*it).second[j].Name.c_str(), (*it).first.c_str(), (*it).second[j].Type, (*res).second.Instance->Prop[k]->Type);
+						nlwarning ("Property '%s' of the class '%s' have not the same type in the 2 sides (%s %s)", (*it).second[j].Name.c_str(), (*it).first.c_str(), typeToString((*it).second[j].Type).c_str(), typeToString((*res).second.Instance->Prop[k]->Type).c_str());
 					}
 					break;
 				}
@@ -115,6 +145,32 @@ void CTransportClass::registerOtherSideClass (uint16 sid, TOtherSideRegisteredCl
 			{
 				// same, store the index
 				(*res).second.Instance->States[sid].push_back (make_pair (k, PropUKN));
+			}
+		}
+
+		// check if the version are the same
+		if ((*it).second.size () != (*res).second.Instance->Prop.size ())
+		{
+			// 2 class don't have the same number of prop => different class => display class
+			displayDifferentClass (sid, (*it).first.c_str(), (*it).second, (*res).second.Instance->Prop);
+		}
+		else
+		{
+			// check if the prop are same
+			for (uint i = 0; i < (*res).second.Instance->Prop.size (); i++)
+			{
+				if ((*res).second.Instance->Prop[i]->Name != (*it).second[i].Name)
+				{
+					// different name => different class => display class
+					displayDifferentClass (sid, (*it).first.c_str(), (*it).second, (*res).second.Instance->Prop);
+					break;
+				}
+				else if ((*res).second.Instance->Prop[i]->Type != (*it).second[i].Type)
+				{
+					// different type => different class => display class
+					displayDifferentClass (sid, (*it).first.c_str(), (*it).second, (*res).second.Instance->Prop);
+					break;
+				}
 			}
 		}
 	}
@@ -162,20 +218,20 @@ void CTransportClass::unregisterClass ()
 
 void CTransportClass::displayLocalRegisteredClass (CRegisteredClass &c)
 {
-	nlinfo ("  > %s", c.Instance->Name.c_str());
+	nldebug ("NETTC:  > %s", c.Instance->Name.c_str());
 	for (uint j = 0; j < c.Instance->Prop.size (); j++)
 	{
-		nlinfo ("    > %s %d", c.Instance->Prop[j]->Name.c_str(), c.Instance->Prop[j]->Type);
+		nldebug ("NETTC:    > %s %s", c.Instance->Prop[j]->Name.c_str(), typeToString(c.Instance->Prop[j]->Type).c_str());
 	}
 
 	for (uint l = 0; l < c.Instance->States.size (); l++)
 	{
 		if (c.Instance->States[l].size () != 0)
 		{
-			nlinfo ("      > sid: %d", l);
+			nldebug ("NETTC:      > sid: %u", l);
 			for (uint k = 0; k < c.Instance->States[l].size (); k++)
 			{
-				nlinfo ("      - %d type : %d", c.Instance->States[l][k].first, c.Instance->States[l][k].second);
+				nldebug ("NETTC:      - %d type : %s", c.Instance->States[l][k].first, typeToString(c.Instance->States[l][k].second).c_str());
 			}
 		}
 	}
@@ -183,7 +239,7 @@ void CTransportClass::displayLocalRegisteredClass (CRegisteredClass &c)
 
 void CTransportClass::displayLocalRegisteredClass ()
 {
-	nlinfo ("> LocalRegisteredClass:");
+	nldebug ("NETTC:> LocalRegisteredClass:");
 	for (TRegisteredClass::iterator it = LocalRegisteredClass.begin(); it != LocalRegisteredClass.end (); it++)
 	{
 		displayLocalRegisteredClass ((*it).second);
@@ -192,7 +248,7 @@ void CTransportClass::displayLocalRegisteredClass ()
 
 void cbTCReceiveMessage (CMessage &msgin, const string &name, uint16 sid)
 {
-	nlinfo ("cbReceiveMessage");
+	nldebug ("NETTC: cbReceiveMessage");
 
 	CTransportClass::TempMessage = msgin;
 
@@ -212,14 +268,14 @@ void cbTCReceiveMessage (CMessage &msgin, const string &name, uint16 sid)
 
 void cbTCReceiveOtherSideClass (CMessage &msgin, const string &name, uint16 sid)
 {
-	nlinfo ("cbReceiveOtherSideClass");
+	nldebug ("NETTC: cbReceiveOtherSideClass");
 
 	CTransportClass::TOtherSideRegisteredClass osrc;
 
 	uint32 nbClass;
 	msgin.serial (nbClass);
 
-	nlinfo ("%d class", nbClass);
+	nldebug ("NETTC: %d class", nbClass);
 
 	for (uint i = 0; i < nbClass; i++)
 	{
@@ -231,20 +287,20 @@ void cbTCReceiveOtherSideClass (CMessage &msgin, const string &name, uint16 sid)
 		uint32 nbProp;
 		msgin.serial (nbProp);
 
-		nlinfo ("  %s (%d prop)", className.c_str(), nbProp);
+		nldebug ("NETTC:   %s (%d prop)", className.c_str(), nbProp);
 
 		for (uint j = 0; j < nbProp; j++)
 		{
 			CTransportClass::CRegisteredBaseProp prop;
 			msgin.serial (prop.Name);
 			msgin.serialEnum (prop.Type);
-			nlinfo ("    %s %d", prop.Name.c_str(), prop.Type);
+			nldebug ("NETTC:     %s %s", prop.Name.c_str(), typeToString(prop.Type).c_str());
 			osrc[osrc.size()-1].second.push_back (prop);
 		}
 	}
 
 	// we have the good structure
-	CTransportClass::registerOtherSideClass (sid, osrc);
+	CTransportClass::registerOtherSideClass ((uint8)sid, osrc);
 }
 
 static TUnifiedCallbackItem CallbackArray[] =
@@ -255,32 +311,36 @@ static TUnifiedCallbackItem CallbackArray[] =
 
 void cbTCUpService (const std::string &serviceName, uint16 sid, void *arg)
 {
-	nlinfo("CTransportClass Service %s %d is up", serviceName.c_str(), sid);
+	nldebug ("NETTC: CTransportClass Service %s %d is up", serviceName.c_str(), sid);
 	nlassert (sid < 256);
 	CTransportClass::sendLocalRegisteredClass ((uint8)sid);
 }
 
 void CTransportClass::init ()
 {
+	// filter all my debug stuffs
+	DebugLog->addNegativeFilter ("NETTC");
+
+
 	CUnifiedNetwork::getInstance()->addCallbackArray (CallbackArray, sizeof (CallbackArray) / sizeof (CallbackArray[0]));
 
 	// create an instance of all d'ifferent prop types
 
 	DummyProp.resize (PropUKN);
 
-	DummyProp[PropUInt8] =  new CTransportClass::CRegisteredProp<uint8>;
-	DummyProp[PropUInt16] =  new CTransportClass::CRegisteredProp<uint16>;
-	DummyProp[PropUInt32] =  new CTransportClass::CRegisteredProp<uint32>;
-	DummyProp[PropUInt64] =  new CTransportClass::CRegisteredProp<uint64>;
-	DummyProp[PropSInt8] =  new CTransportClass::CRegisteredProp<sint8>;
-	DummyProp[PropSInt16] =  new CTransportClass::CRegisteredProp<sint16>;
-	DummyProp[PropSInt32] =  new CTransportClass::CRegisteredProp<sint32>;
-	DummyProp[PropSInt64] =  new CTransportClass::CRegisteredProp<sint64>;
-	DummyProp[PropBool] =  new CTransportClass::CRegisteredProp<bool>;
-	DummyProp[PropFloat] =  new CTransportClass::CRegisteredProp<float>;
-	DummyProp[PropDouble] =  new CTransportClass::CRegisteredProp<double>;
-	DummyProp[PropString] =  new CTransportClass::CRegisteredProp<string>;
-	DummyProp[PropEntityId] =  new CTransportClass::CRegisteredProp<CEntityId>;
+	nlassert (PropUInt8 < PropUKN); DummyProp[PropUInt8] = new CTransportClass::CRegisteredProp<uint8>;
+	nlassert (PropUInt16 < PropUKN); DummyProp[PropUInt16] = new CTransportClass::CRegisteredProp<uint16>;
+	nlassert (PropUInt32 < PropUKN); DummyProp[PropUInt32] = new CTransportClass::CRegisteredProp<uint32>;
+	nlassert (PropUInt64 < PropUKN); DummyProp[PropUInt64] = new CTransportClass::CRegisteredProp<uint64>;
+	nlassert (PropSInt8 < PropUKN); DummyProp[PropSInt8] = new CTransportClass::CRegisteredProp<sint8>;
+	nlassert (PropSInt16 < PropUKN); DummyProp[PropSInt16] = new CTransportClass::CRegisteredProp<sint16>;
+	nlassert (PropSInt32 < PropUKN); DummyProp[PropSInt32] = new CTransportClass::CRegisteredProp<sint32>;
+	nlassert (PropSInt64 < PropUKN); DummyProp[PropSInt64] = new CTransportClass::CRegisteredProp<sint64>;
+	nlassert (PropBool < PropUKN); DummyProp[PropBool] = new CTransportClass::CRegisteredProp<bool>;
+	nlassert (PropFloat < PropUKN); DummyProp[PropFloat] = new CTransportClass::CRegisteredProp<float>;
+	nlassert (PropDouble < PropUKN); DummyProp[PropDouble] = new CTransportClass::CRegisteredProp<double>;
+	nlassert (PropString < PropUKN); DummyProp[PropString] = new CTransportClass::CRegisteredProp<string>;
+	nlassert (PropEntityId < PropUKN); DummyProp[PropEntityId] = new CTransportClass::CRegisteredProp<CEntityId>;
 
 	// we have to know when a service comes, so add callback (put the callback before all other one because we have to send this message first)
 	CUnifiedNetwork::getInstance()->setServiceUpCallback("*", cbTCUpService, NULL, false);

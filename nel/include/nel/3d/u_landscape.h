@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.29 2004/03/22 17:38:15 berenguier Exp $
+ * $Id: u_landscape.h,v 1.30 2004/08/03 16:19:20 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -294,10 +294,12 @@ public:
 
 	/// \name Tile added/removed callback
 	// @{
-	// Set a new callback to know when a tile is added/removed. Calling with NULL removes the callback.
-	virtual	void					setTileCallback(ULandscapeTileCallback *cb) = 0;
-	// get the current tile callback callback
-	virtual	ULandscapeTileCallback *getTileCallback() const = 0;
+	// Add a new callback to know when a tile is added/removed.
+	virtual	void					addTileCallback(ULandscapeTileCallback *cb) = 0;
+	// Remove a tile callback
+	virtual	void					removeTileCallback(ULandscapeTileCallback *cb) = 0;
+	// Check cb is a tile callback
+	virtual	bool					isTileCallback(ULandscapeTileCallback *cb) = 0;
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.19 2002/06/06 13:13:03 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.20 2002/06/12 10:13:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,7 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	MSGFILTER *pmf;
 
-	switch (message) 
+	switch (message)
 	{
 	case WM_SIZE:
 		{
@@ -88,9 +88,41 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if (HIWORD(wParam) == BN_CLICKED)
 			{
-				// clear button clicked
 				CWinDisplayer *cwd=(CWinDisplayer *)GetWindowLong (hWnd, GWL_USERDATA);
-				cwd->clear ();
+				// find the button and execute the command
+				CSynchronized<std::vector<CWindowDisplayer::CLabelEntry> >::CAccessor access (&cwd->_Labels);
+				for (uint i = 0; i < access.value().size(); i++)
+				{
+					if (access.value()[i].Hwnd == (HWND)lParam)
+					{
+						if(access.value()[i].Value == "@Clear|CLEAR")
+						{
+							// special commands because the clear must be called by the display thread and not main thread
+							cwd->clear ();
+						}
+						else
+						{
+							// the button was found, add the command in the command stack
+							CSynchronized<std::vector<std::string> >::CAccessor accessCommands (&cwd->_CommandsToExecute);
+							string str;
+							nlassert (!access.value()[i].Value.empty());
+							nlassert (access.value()[i].Value[0] == '@');
+							
+							int pos = access.value()[i].Value.find ("|");
+							if (pos != string::npos)
+							{
+								str = access.value()[i].Value.substr(pos+1);
+							}
+							else
+							{
+								str = access.value()[i].Value.substr(1);
+							}
+							if (!str.empty())
+								accessCommands.value().push_back(str);
+						}
+						break;
+					}
+				}
 			}
 		}
 		break;
@@ -202,17 +234,38 @@ void CWinDisplayer::updateLabels ()
 			{
 				if (access.value()[i].Hwnd == NULL)
 				{
-					access.value()[i].Hwnd = CreateWindow ("STATIC", "", WS_CHILD | WS_VISIBLE | SS_SIMPLE, 0, 0, 0, 0, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
+					// create a button for command and label for variables
+					if (access.value()[i].Value[0] == '@')
+					{
+						access.value()[i].Hwnd = CreateWindow ("BUTTON", "", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 0, 0, 0, 0, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
+					}
+					else
+					{
+						access.value()[i].Hwnd = CreateWindow ("STATIC", "", WS_CHILD | WS_VISIBLE | SS_SIMPLE, 0, 0, 0, 0, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
+					}
 					SendMessage ((HWND)access.value()[i].Hwnd, WM_SETFONT, (LONG) _HFont, TRUE);
 					needResize = true;
 				}
 
+				string n;
+
 				// do this fucking tricks to be sure that windows will clear what is after the number
-				string n = access.value()[i].Value + "                                                 ";
+				if (access.value()[i].Value[0] != '@')
+					n = access.value()[i].Value + "                                                 ";
+				else
+				{
+					int pos = access.value()[i].Value.find ('|');
+					if (pos != string::npos)
+					{
+						n = access.value()[i].Value.substr (1, pos - 1);
+					}
+					else
+					{
+						n = access.value()[i].Value.substr (1);
+					}
+				}
 
 				SendMessage ((HWND)access.value()[i].Hwnd, WM_SETTEXT, 0, (LONG) n.c_str());
-
-				//access.value()[i].Value = "?";
 			}
 		}
 	}
@@ -243,18 +296,12 @@ void CWinDisplayer::resizeLabels ()
 			while (i+nb != access.value().size () && !access.value()[i+nb].Value.empty()) nb++;
 
 			sint delta;
-			if (y==0)
-				delta = Rect.right / (nb + 1);	// for the clear button
-			else
-				delta = Rect.right / nb;
+			delta = Rect.right / nb;
 
-			if (y==0)
-				SetWindowPos (_HClearBtn, NULL, 0, y*_ToolBarHeight, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
-		
 			for (uint j = 0; j< nb; j++)
 			{
 				if ((HWND)access.value()[i+j].Hwnd != NULL)
-					SetWindowPos ((HWND)access.value()[i+j].Hwnd, NULL, (y==0?j+1:j)*delta, y*_ToolBarHeight, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
+					SetWindowPos ((HWND)access.value()[i+j].Hwnd, NULL, j*delta, y*_ToolBarHeight, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
 			}
 			i += nb + 1;
 			y++;
@@ -312,10 +359,6 @@ void CWinDisplayer::open (string windowNameEx, bool iconified, sint x, sint y, s
 	_HEdit = CreateWindow ("EDIT", NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL, 0, _ToolBarHeight, w, h-_ToolBarHeight-_InputEditHeight, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
 	SendMessage (_HEdit, WM_SETFONT, (LONG) _HFont, TRUE);
 
-	// create the clear buttton control
-	_HClearBtn = CreateWindow ("BUTTON", "Clear", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 0, 0, 100, _ToolBarHeight, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
-	SendMessage (_HClearBtn, WM_SETFONT, (LONG) _HFont, TRUE);
-	
 	// set the edit to read only
 	SendMessage (_HEdit, EM_SETREADONLY, TRUE, 0);
 
@@ -355,7 +398,6 @@ void CWinDisplayer::open (string windowNameEx, bool iconified, sint x, sint y, s
 		ShowWindow(_HWnd,SW_MINIMIZE);
 	else
 		ShowWindow(_HWnd,SW_SHOW);
-
 	
 	SetFocus(_HInputEdit);
 

@@ -1,7 +1,7 @@
 /** \file win_displayer.h
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.h,v 1.10 2002/05/27 16:48:50 lecroart Exp $
+ * $Id: win_displayer.h,v 1.11 2002/06/12 10:13:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,6 +57,7 @@ public:
 	CWinDisplayer (const char *displayerName = "") : CWindowDisplayer(displayerName), Exit(false)
 	{
 		needSlashR = true;
+		createLabel ("@Clear|CLEAR");
 	}
 
 	virtual ~CWinDisplayer ();
@@ -82,8 +83,6 @@ private:
 	HWND _HEdit, _HWnd, _HInputEdit;
 	HFONT _HFont;
 	HMODULE _HLibModule;
-	HWND _HClearBtn;
-	HWND _HLabel1;
 
 	// the MT must set the value to true to exit the thread
 	bool Exit;

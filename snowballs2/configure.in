@@ -2,7 +2,7 @@ dnl ==========================================================================
 dnl Configuration script for Snowballs
 dnl ==========================================================================
 dnl
-dnl $Id: configure.in,v 1.2 2001/07/19 15:26:41 valignat Exp $
+dnl $Id: configure.in,v 1.3 2001/07/23 13:30:41 valignat Exp $
 dnl 
 
 
@@ -276,6 +276,8 @@ AC_OUTPUT( Makefile                                         \
            server/frontend/src/Makefile                     \
            server/chat/Makefile                             \
            server/chat/src/Makefile                         \
+           server/position/Makefile                         \
+           server/position/src/Makefile                     \
 )
 
 

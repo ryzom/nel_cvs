@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.17 2002/06/12 10:12:31 lecroart Exp $
+ * $Id: hierarchical_timer.cpp,v 1.18 2002/06/12 16:49:36 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -186,48 +186,64 @@ void CHTimer::walkTreeToCurrent()
 
 #ifdef	NL_CPU_INTEL
 //=================================================================
-uint64 CHTimer::getProcessorFrequency()
+uint64 CHTimer::getProcessorFrequency(bool quick)
 {
 	static uint64 freq;
 	static bool freqComputed = false;	
 	if (freqComputed) return freq;
 
-	TTicks bestNumTicks   = 0;
-	uint64 bestNumCycles;
-	uint64 numCycles;
-	const uint numSamples = 5;
-	const uint numLoops   = 50000000;
-	
-	volatile uint k; // prevent optimisation for the loop
-	volatile dummy = 0;
-	for(uint l = 0; l < numSamples; ++l)
-	{	
-		TTicks startTick = NLMISC::CTime::getPerformanceTime();
-		uint64 startCycle = rdtsc();
-		uint dummy = 0;
-		for(k = 0; k < numLoops; ++k)
-		{		
-			++ dummy;
-		}		
-		numCycles = rdtsc() - startCycle;
-		TTicks numTicks = NLMISC::CTime::getPerformanceTime() - startTick;
-		if (numTicks > bestNumTicks)
-		{		
-			bestNumTicks  = numTicks;
-			bestNumCycles = numCycles;
+	if (!quick)
+	{
+		TTicks bestNumTicks   = 0;
+		uint64 bestNumCycles;
+		uint64 numCycles;
+		const uint numSamples = 5;
+		const uint numLoops   = 50000000;
+
+		volatile uint k; // prevent optimisation for the loop
+		volatile dummy = 0;
+		for(uint l = 0; l < numSamples; ++l)
+		{	
+			TTicks startTick = NLMISC::CTime::getPerformanceTime();
+			uint64 startCycle = rdtsc();
+			uint dummy = 0;
+			for(k = 0; k < numLoops; ++k)
+			{		
+				++ dummy;
+			}		
+			numCycles = rdtsc() - startCycle;
+			TTicks numTicks = NLMISC::CTime::getPerformanceTime() - startTick;
+			if (numTicks > bestNumTicks)
+			{		
+				bestNumTicks  = numTicks;
+				bestNumCycles = numCycles;
+			}
 		}
+		freq = (uint64) ((double) bestNumCycles * 1 / CTime::ticksToSecond(bestNumTicks));
 	}
+	else
+	{
+		TTicks timeBefore = NLMISC::CTime::getPerformanceTime();
+		uint64 tickBefore = rdtsc();
+		nlSleep (100);
+		TTicks timeAfter = NLMISC::CTime::getPerformanceTime();
+		TTicks tickAfter = rdtsc();
+
+		double timeDelta = CTime::ticksToSecond(timeAfter - timeBefore);
+		TTicks tickDelta = tickAfter - tickBefore;
+
+		freq = (uint64) ((double)tickDelta / timeDelta);
+	}
+
+	nlinfo ("HTIMER: Processor frequency is %.0f MHz", (float)freq/1000000.0);
 	freqComputed = true;
-	freq = (uint64) ((double) bestNumCycles * 1 / CTime::ticksToSecond(bestNumTicks));
 	return freq;
-	nlassert(0);
-	return 0;
 }
 #endif
 
 
 //=================================================================
-void	CHTimer::startBench(bool wantStandardDeviation /*= false*/)
+void	CHTimer::startBench(bool wantStandardDeviation /*= false*/, bool quick)
 {
 	nlassert(!_Benching)
 	clear();
@@ -235,7 +251,7 @@ void	CHTimer::startBench(bool wantStandardDeviation /*= false*/)
 	_BenchStartedOnce = true;
 	_RootNode.Owner = &_RootTimer;
 #	ifdef NL_CPU_INTEL
-		double freq = (double) getProcessorFrequency();
+		double freq = (double) getProcessorFrequency(quick);
 		_MsPerTick = 1000 / (double) freq;
 #	else
 		_MsPerTick = CTime::ticksToSecond(1000);
@@ -249,7 +265,9 @@ void	CHTimer::startBench(bool wantStandardDeviation /*= false*/)
 //=================================================================
 void	CHTimer::endBench()
 {
-	nlassert(_Benching);
+	if (!_Benching)
+		return;
+
 	if (_CurrNode == &_RootNode)
 	{
 		_RootTimer.after();

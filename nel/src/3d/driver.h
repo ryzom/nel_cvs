@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.49 2003/03/13 13:40:58 corvazier Exp $
+ * $Id: driver.h,v 1.50 2003/03/31 10:25:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -269,6 +269,20 @@ public:
 
 
 	virtual bool			setupMaterial(CMaterial& mat)=0;
+
+	/// \name Material multipass.
+	/**	NB: setupMaterial() must be called before thoses methods.
+	 *  NB: This is intended to be use with the rendering of simple primitives.
+	 *  NB: Other render calls performs the needed setup automatically
+	 */
+	// @{
+		/// init multipass for _CurrentMaterial. return number of pass required to render this material.
+		virtual sint			beginMaterialMultiPass() = 0;
+		/// active the ith pass of this material.
+		virtual void			setupMaterialPass(uint pass) = 0;
+		/// end multipass for this material.
+		virtual void			endMaterialMultiPass() = 0;
+	// @}
 
 	// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
 	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective=true)=0;

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.2 2002/09/04 09:58:35 berenguier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.3 2002/09/24 14:41:19 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -476,7 +476,7 @@ IVertexBufferHardGL		*CVertexArrayRangeATI::createVBHardGL(uint16 vertexFormat, 
 	uint32	size= newVbHard->getVertexSize() * newVbHard->getNumVertices();
 
 	// try to allocate
-	void	*vertexPtr;
+	void	*vertexPtr =NULL;
 	if( _Allocated )
 	{
 		 vertexPtr= allocateVB(size);

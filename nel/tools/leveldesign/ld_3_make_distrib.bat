@@ -6,6 +6,10 @@ REM --- Directories
 
 mkdir \\server\code\tools
 mkdir \\server\code\tools\leveldesign
+mkdir \\server\code\tools\leveldesign\zoneBitmaps
+mkdir \\server\code\tools\leveldesign\zoneLigos
+mkdir \\server\code\tools\leveldesign\common
+mkdir \\server\code\tools\leveldesign\common\dfn
 del \\server\code\tools\leveldesign\*.* /Q
 
 REM --- Upload Binaries
@@ -29,10 +33,14 @@ xcopy "r:\code\nel\tools\leveldesign\logic_editor_exe\releasedebug\logic_editor_
 REM - Master
 
 xcopy "r:\code\nel\tools\leveldesign\master\releasedebug\master.exe" "\\server\code\tools\leveldesign" /D /Y
-
-
+xcopy "r:\code\nel\tools\leveldesign\master\n019003l.pfb" "\\server\code\tools\leveldesign" /D /Y
+xcopy "r:\code\nel\tools\leveldesign\test_root\common\dfn\*.*" "\\server\code\tools\leveldesign\common\dfn" /D /Y
+xcopy "r:\code\nel\tools\leveldesign\test_root\ligoscape.cfg" "\\server\code\tools\leveldesign" /D /Y
 
 REM --- Backup the build
 
 xcopy "\\server\code\tools\leveldesign\*.*" "\\server\code\tools\leveldesign backup\" /E
 ren_date "\\server\code\tools\leveldesign backup" "\\server\code\tools\leveldesign"
+
+pause
+cd \code\nel\tools\leveldesign

@@ -54,6 +54,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "export"=.\export\export.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "georges"=.\georges\georges.dsp - Package Owner=<4>
 
 Package=<5>
@@ -160,6 +172,18 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name WorldEditor_Exe
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name export
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name georges_lib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name 3d
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name lib
     End Project Dependency
 }}}
 

@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.9 2002/09/04 10:28:59 corvazier Exp $
+ * $Id: form.h,v 1.10 2002/09/05 14:12:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,7 @@ public:
 
 	// ** IO functions
 	// Set the filename before saving the form
-	void				write (xmlDocPtr doc, const char *filename);
+	void				write (xmlDocPtr doc, const char *filename, bool georges4CVS);
 
 	// ** Parent access
 

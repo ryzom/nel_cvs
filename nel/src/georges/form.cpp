@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.10 2002/09/04 10:28:59 corvazier Exp $
+ * $Id: form.cpp,v 1.11 2002/09/05 14:12:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -110,7 +110,7 @@ CForm::~CForm ()
 
 // ***************************************************************************
 
-void CForm::write (xmlDocPtr doc, const char *filename)
+void CForm::write (xmlDocPtr doc, const char *filename, bool georges4CVS)
 {
 	// Save the filename
 	_Filename = CFile::getFilename (filename);
@@ -142,7 +142,7 @@ void CForm::write (xmlDocPtr doc, const char *filename)
 	}
 
 	// Header
-	Header.write (node);
+	Header.write (node, georges4CVS);
 }
 
 // ***************************************************************************

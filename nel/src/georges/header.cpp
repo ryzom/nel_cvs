@@ -1,7 +1,7 @@
 /** \file header.cpp
  * Georges header file class
  *
- * $Id: header.cpp,v 1.4 2002/09/04 10:28:59 corvazier Exp $
+ * $Id: header.cpp,v 1.5 2002/09/05 14:12:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,13 +46,21 @@ CFileHeader::CFileHeader ()
 	MajorVersion = 0;
 	MinorVersion = 0;
 	State = Modified;
+	Revision = "$Revision: 1.5 $";
 }
 
 // ***************************************************************************
 
-void CFileHeader::write (xmlNodePtr node) const
+void CFileHeader::write (xmlNodePtr node, bool georges4CVS) const
 {
-	// Version
+	// Version for CVS ?
+	if (georges4CVS)
+	{
+		// Georges version system
+		xmlSetProp (node, (const xmlChar*)"Revision", (const xmlChar*)Revision.c_str ());
+	}
+
+	// Georges version system
 	char tmp[512];
 	smprintf (tmp, 512, "%d.%d", MajorVersion, MinorVersion);
 	xmlSetProp (node, (const xmlChar*)"Version", (const xmlChar*)tmp);
@@ -132,6 +140,22 @@ void CFileHeader::read (xmlNodePtr root)
 		// Set default
 		MajorVersion = 0;
 		MinorVersion = 0;
+	}
+
+	// Get the revision
+	value = (const char*)xmlGetProp (root, (xmlChar*)"Revision");
+	if (value)
+	{
+		// Set the value
+		Revision = value;
+
+		// Delete the value
+		xmlFree ((void*)value);
+	}
+	else
+	{
+		// Set default
+		Revision = "$Revision: 1.5 $";
 	}
 
 	// Get the version

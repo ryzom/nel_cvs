@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.11 2002/09/04 10:28:59 corvazier Exp $
+ * $Id: form_dfn.h,v 1.12 2002/09/05 14:12:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,7 +168,7 @@ public:
 	};
 
 	// ** IO functions
-	void							write (xmlDocPtr root, const char *filename);
+	void							write (xmlDocPtr root, const char *filename, bool georges4CVS);
 
 	// Count parent DFN
 	uint							countParentDfn (uint32 round=UFormElm::LastRound++) const;

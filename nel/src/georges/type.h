@@ -1,7 +1,7 @@
 /** \file type.h
  * Georges type class
  *
- * $Id: type.h,v 1.5 2002/09/04 10:28:59 corvazier Exp $
+ * $Id: type.h,v 1.6 2002/09/05 14:12:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,7 @@ public:
 	}
 
 	// ** IO functions
-	void				write (xmlDocPtr doc) const;
+	void				write (xmlDocPtr doc, bool georges4CVS) const;
 
 	// Header
 	CFileHeader			Header;

@@ -1,7 +1,7 @@
 /** \file header.h
  * Georges header file class
  *
- * $Id: header.h,v 1.2 2002/09/04 10:28:59 corvazier Exp $
+ * $Id: header.h,v 1.3 2002/09/05 14:12:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,9 @@ public:
 	/// State of the form
 	TState				State;
 
+	/// CVS Revision string
+	std::string			Revision;
+
 	/// Comments of the form
 	std::string			Comments;
 
@@ -68,7 +71,7 @@ public:
 
 	/// ** IO functions
 	void				read (xmlNodePtr root);
-	void				write (xmlNodePtr node) const;
+	void				write (xmlNodePtr node, bool georges4CVS) const;
 
 	// Get state string
 	static const char	*getStateString (TState state);

@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.12 2002/09/04 10:28:59 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.13 2002/09/05 14:12:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ void warning (bool exception, const char *format, ... );
 
 // ***************************************************************************
 
-void CFormDfn::write (xmlDocPtr doc, const char *filename)
+void CFormDfn::write (xmlDocPtr doc, const char *filename, bool georges4CVS)
 {
 	// Save filename
 	_Filename = CFile::getFilename (filename);
@@ -110,7 +110,7 @@ void CFormDfn::write (xmlDocPtr doc, const char *filename)
 	}
 
 	// Header
-	Header.write (node);
+	Header.write (node, georges4CVS);
 }
 
 // ***************************************************************************

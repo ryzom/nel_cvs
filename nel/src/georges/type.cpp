@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.8 2002/09/04 10:28:59 corvazier Exp $
+ * $Id: type.cpp,v 1.9 2002/09/05 14:12:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,7 +62,7 @@ CType::~CType ()
 
 // ***************************************************************************
 
-void CType::write (xmlDocPtr doc) const
+void CType::write (xmlDocPtr doc, bool georges4CVS) const
 {
 	// Create the first node
 	xmlNodePtr node = xmlNewDocNode (doc, NULL, (const xmlChar*)"TYPE", NULL);
@@ -106,7 +106,7 @@ void CType::write (xmlDocPtr doc) const
 	}
 
 	// Header
-	Header.write (node);
+	Header.write (node, georges4CVS);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.8 2003/09/16 15:08:30 lecroart Exp $
+ * $Id: eid_translator.h,v 1.9 2003/10/24 18:03:50 brigand Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -55,7 +55,7 @@ public:
 	void				getByEntity (const ucstring &entityName, std::vector<NLMISC::CEntityId> &res, bool exact);
 	
 	// return true if an entity name already exists
-	bool				entityNameExists (const ucstring &entityName);
+	bool				entityNameExists (const ucstring &entityName,bool acceptBlanks = false);
 		
 	void				registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName);
 	void				unregisterEntity (const CEntityId &eid);
@@ -121,7 +121,11 @@ private:
 
 	// Returns true if the username is valid.
 	// It means that there only alphabetic and numerical character and the name is at least 3 characters long.
-	bool isValidEntityName (const ucstring &entityName, NLMISC::CLog *log = NLMISC::InfoLog);
+	bool isValidEntityName (const ucstring &entityName, NLMISC::CLog *log = NLMISC::InfoLog, bool acceptBlanks = false);
+
+	// transform a username ucstring into a string that can be compared with registered string
+	// if removeBlanks is true, blanks are removed to built the registerable string.
+	std::string getRegisterableString( const ucstring & entityName,bool removeBlanks = false);
 
 	std::string FileName;
 

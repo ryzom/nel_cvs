@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.18 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.19 2003/10/24 18:03:39 brigand Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -174,7 +174,7 @@ void CEntityIdTranslator::getByEntity (const ucstring &entityName, vector<CEntit
 	}
 }
 
-bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName, CLog *log)
+bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *log, bool acceptBlanks)
 {
 	// 3 char at least
 	if (entityName.size() < 3)
@@ -182,7 +182,46 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName, CLog *l
 		log->displayNL("Bad entity name '%s' (less than 3 char)", entityName.toString().c_str());
 		return false;
 	}
-	for (uint i = 0; i < entityName.size(); i++)
+
+	if ( acceptBlanks )
+	{
+		// no blanks at the beginning or at the end
+		if ( entityName[0] ==(uint16)0x20 )
+		{
+			log->displayNL("Bad entity name '%s' : start with a blank", entityName.toString().c_str());
+			return false;
+		}
+		if ( entityName[entityName.size() - 1] ==(uint16)0x20 )
+		{
+			log->displayNL("Bad entity name '%s' : end with a blank", entityName.toString().c_str());
+			return false;
+		}
+		bool previousBlank = false;
+		for (uint i = 0; i < entityName.size(); i++)
+		{
+			if( entityName[i] == (uint16)0x20 )
+			{
+				// don't accept consecutive blanks
+				if ( previousBlank )
+				{
+					log->displayNL("Bad entity name '%s' consecutive blanks are not allowed", entityName.toString().c_str());
+					return false;
+				}
+				previousBlank = true;
+			}
+			else
+			{
+				// accept name with alphabetic and numeric value [a-zA-Z0-9]
+				if (!isalnum (entityName[i]))
+				{
+					log->displayNL("Bad entity name '%s' (only char and num)", entityName.toString().c_str());
+					return false;
+				}
+				previousBlank = false;
+			}
+		}
+	}
+	else for (uint i = 0; i < entityName.size(); i++)
 	{
 		// only accept name with alphabetic and numeric value [a-zA-Z0-9]
 		if (!isalnum (entityName[i]))
@@ -193,8 +232,8 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName, CLog *l
 	}
 
 	// now check with the invalid name list
+	string en = getRegisterableString( entityName, acceptBlanks);
 
-	string en = strlwr(entityName.toString());
 	for (uint i = 0; i < InvalidEntityNames.size(); i++)
 	{
 		if(testWildCard(en, InvalidEntityNames[i]))
@@ -207,17 +246,17 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName, CLog *l
 	return true;
 }
 
-bool CEntityIdTranslator::entityNameExists (const ucstring &entityName)
+bool CEntityIdTranslator::entityNameExists (const ucstring &entityName, bool acceptBlanks )
 {
 	// if bad name, don't accept it
-	if (!isValidEntityName (entityName)) return true;
+	if (!isValidEntityName (entityName,NLMISC::InfoLog,acceptBlanks)) return true;
 
 	// Names are stored in case dependant, so we have to test them without case.
-	string lowerName = strlwr (entityName.toString());
+	string registerable = getRegisterableString (entityName);
 
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
-		if (strlwr ((*it).second.EntityName.toString()) == lowerName)
+		if (getRegisterableString ((*it).second.EntityName) == registerable)
 		{
 			return true;
 		}
@@ -511,6 +550,18 @@ bool CEntityIdTranslator::isEntityOnline (const CEntityId &eid)
 	{
 		return (*it).second.Online;
 	}
+}
+
+std::string CEntityIdTranslator::getRegisterableString( const ucstring & entityName,bool removeBlanks )
+{
+	string ret = strlwr( entityName.toString() );
+	uint pos = ret.find( 0x20 );
+	while( pos != string::npos )
+	{
+		ret.erase( pos,1 );
+		pos = ret.find( 0x20 );
+	}
+	return ret;
 }
 
 NLMISC_COMMAND(findEIdByUser,"Find entity ids using the user name","<username>|<uid>")

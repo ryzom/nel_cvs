@@ -1,7 +1,7 @@
 /** \file cloud_scape.cpp
  * cloud_scape implementation
  *
- * $Id: cloud_scape.cpp,v 1.11 2004/04/27 13:23:16 vizerie Exp $
+ * $Id: cloud_scape.cpp,v 1.12 2004/08/13 15:22:48 vizerie Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -264,6 +264,7 @@ CCloudScape::CCloudScape (NL3D::IDriver *pDriver) : _Noise3D (pDriver)
 	// Misc purpose VB
 	_VertexBuffer.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::TexCoord1Flag);
 	_VertexBuffer.setNumVertices (4);
+	_VertexBuffer.setName("CloudScape");
 
 	// Material used for cleaning
 	_MatClear.initUnlit();

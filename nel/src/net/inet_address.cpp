@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.cpp,v 1.15 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: inet_address.cpp,v 1.16 2000/11/15 10:26:22 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -137,7 +137,7 @@ CInetAddress::~CInetAddress()
 /*
  * Resolves a name
  */
-CInetAddress& CInetAddress::setByName( const std::string& hostName ) throw (ESocket)
+CInetAddress& CInetAddress::setByName( const std::string& hostName )
 {
 	// Try to convert directly for addresses such as a.b.c.d
 	in_addr iaddr;
@@ -179,7 +179,7 @@ void CInetAddress::setPort( uint16 port )
 /* Sets internal socket address directly (contents is copied).
  * It also retrieves the host name if CInetAddress::RetrieveNames is true.
  */
-void CInetAddress::setSockAddr( const sockaddr_in* saddr ) throw (ESocket)
+void CInetAddress::setSockAddr( const sockaddr_in* saddr )
 {
 	memcpy( _SockAddr, saddr, sizeof(*saddr) );
 
@@ -281,7 +281,7 @@ void CInetAddress::serial( NLMISC::IStream& s )
 /*
  * Creates a CInetAddress object with local host address, port=0
  */
-CInetAddress CInetAddress::localHost() throw (ESocket)
+CInetAddress CInetAddress::localHost()
 {
 	const uint maxlength = 80;
 	char localhost [maxlength];

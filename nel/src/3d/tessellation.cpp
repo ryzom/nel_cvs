@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.37 2001/02/28 14:28:57 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.38 2001/03/05 09:12:25 corvazier Exp $
  *
  */
 
@@ -429,7 +429,7 @@ void		CTessFace::initTileUvRGBA(sint pass, bool alpha, CParamCoord pointCoord, C
 	CVector		uvScaleBias;
 	bool		is256;
 	uint8		uvOff;
-	Patch->getTileUvInfo(TileMaterial->TileId, pass, alpha, orient, uvScaleBias, is256, uvOff);
+	Patch->getTileUvInfo(TileId, pass, alpha, orient, uvScaleBias, is256, uvOff);
 
 	// Orient the UV.
 	float	u= uv.U;
@@ -529,7 +529,7 @@ void		CTessFace::computeTileMaterial()
 	CParamCoord	middle(PVLeft,PVRight);
 	sint ts= ((sint)middle.S * (sint)Patch->OrderS) / 0x8000;
 	sint tt= ((sint)middle.T * (sint)Patch->OrderT) / 0x8000;
-	sint tileId= tt*Patch->OrderS + ts;
+	TileId= tt*Patch->OrderS + ts;
 
 
 	// 1. Compute Tile Material.
@@ -543,13 +543,12 @@ void		CTessFace::computeTileMaterial()
 	if(copyFromBase)
 	{
 		TileMaterial= FBase->TileMaterial;
-		nlassert(TileMaterial->TileId== tileId);
+		nlassert(FBase->TileId== TileId);
 	}
 	else
 	{
 		sint	i;
 		TileMaterial= new CTileMaterial;
-		TileMaterial->TileId= tileId;
 		TileMaterial->TileS= ts;
 		TileMaterial->TileT= tt;
 
@@ -564,7 +563,7 @@ void		CTessFace::computeTileMaterial()
 		{
 			// Get the correct render pass, according to the tile number, and the pass.
 			if(i!=NL3D_TILE_PASS_LIGHTMAP)
-				TileMaterial->Pass[i]= Patch->getTileRenderPass(tileId, i);
+				TileMaterial->Pass[i]= Patch->getTileRenderPass(TileId, i);
 		}
 	}
 
@@ -2204,6 +2203,9 @@ void		CTessFace::deleteTileUvs()
 			// In all case, must delete the tilefaces of those face.
 			SonLeft->deleteTileFaces();
 			SonRight->deleteTileFaces();
+			// For createTileUvs, it is important to mark those faces as NO TileMaterial.
+			SonLeft->TileMaterial= NULL;
+			SonRight->TileMaterial= NULL;
 		}
 	}
 	else

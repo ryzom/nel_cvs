@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.28 2001/02/28 14:21:00 berenguier Exp $
+ * $Id: tessellation.h,v 1.29 2001/03/05 09:14:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,8 +164,6 @@ struct	CTileMaterial
 {
 	// The coordinates of the tile in the patch.
 	uint8			TileS, TileT;
-	// The number of the tile relatively to the patch TileMap.
-	uint8			TileId;
 	// The rendering passes materials.
 	CPatchRdrPass	*Pass[NL3D_MAX_TILE_PASS];
 	// Pass are:
@@ -222,6 +220,9 @@ public:
 
 	/// \name Tile Material Infos (uvs...).
 	// @{
+	// The number of the tile relatively to the patch TileMap.
+	// We CANNOT store this into CTileMaterial, because of sameTile() test.
+	uint8			TileId;
 	// The multi-pass tile Material.
 	CTileMaterial	*TileMaterial;
 	// The Tile Faces. There is no Face for lightmap, since use the one from RGB0.
@@ -350,7 +351,10 @@ public:
 private:
 	// Faces have the same tile???
 	static bool		sameTile(const CTessFace *a, const CTessFace *b) 
-		{return (a->Patch==b->Patch && a->TileMaterial==b->TileMaterial);}
+	{
+		// WE CANNOT do this test, testing TileMaterial, because this one may be releleased by releaseMaterial() !!
+		return (a->Patch==b->Patch && a->TileId==b->TileId);
+	}
 
 	/// \name UV mgt.
 	// @{

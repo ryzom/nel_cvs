@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.56 2003/03/24 16:39:49 legros Exp $
+ * $Id: local_retriever.cpp,v 1.57 2003/04/07 17:02:59 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1392,7 +1392,7 @@ float	NLPACS::CLocalRetriever::getHeight(const NLPACS::ULocalPosition &position)
 		}
 
 		// and computes the real position on this face
-		return (bestDist < 50.0f) ?	best.z : position.Estimation.z;
+		return (bestDist < 200.0f) ? best.z : position.Estimation.z;
 	}
 	else
 	{

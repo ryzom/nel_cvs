@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.75 2003/04/03 13:01:19 corvazier Exp $
+ * $Id: global_retriever.cpp,v 1.76 2003/04/07 17:02:59 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1391,7 +1391,12 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 						CVector2f		p = startCol + deltaCol*tMin;
 						CVector			ori = getInstance(startSurface.RetrieverInstanceId).getOrigin();
 						ori.z = 0.0f;
-						CVectorD		zp = CVectorD(p.x, p.y, getRetriever(getInstance(currentSurface.RetrieverInstanceId).getRetrieverId()).getSurface(currentSurface.SurfaceId).getMeanHeight()) + CVectorD(ori);
+						UGlobalPosition	rp;
+						rp.InstanceId = currentSurface.RetrieverInstanceId;
+						rp.LocalPosition.Surface = currentSurface.SurfaceId;
+						rp.LocalPosition.Estimation = p;
+						rp.LocalPosition.Estimation.z = getMeanHeight(rp);
+						CVectorD		zp = CVectorD(p.x, p.y, rp.LocalPosition.Estimation.z) + CVectorD(ori);
 						_ForbiddenInstances.clear();
 						_ForbiddenInstances.push_back(currentSurface.RetrieverInstanceId);
 						UGlobalPosition	gp = retrievePosition(zp);
@@ -1688,7 +1693,13 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 					CVector2f		p = startCol*(1.0f-ctime) + endCol*ctime;
 					CVector			ori = getInstance(startSurface.RetrieverInstanceId).getOrigin();
 					ori.z = 0.0f;
-					CVectorD		zp = CVectorD(p.x, p.y, getRetriever(getInstance(currentSurface.RetrieverInstanceId).getRetrieverId()).getSurface(currentSurface.SurfaceId).getMeanHeight()) + CVectorD(ori);
+					UGlobalPosition	rp;
+					rp.InstanceId = currentSurface.RetrieverInstanceId;
+					rp.LocalPosition.Surface = currentSurface.SurfaceId;
+					rp.LocalPosition.Estimation = p;
+					rp.LocalPosition.Estimation.z = getMeanHeight(rp);
+					CVectorD		zp = CVectorD(p.x, p.y, rp.LocalPosition.Estimation.z) + CVectorD(ori);
+					//CVectorD		zp = CVectorD(p.x, p.y, getMeanHeight()) + CVectorD(ori);
 					_ForbiddenInstances.clear();
 					_ForbiddenInstances.push_back(currentSurface.RetrieverInstanceId);
 

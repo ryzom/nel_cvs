@@ -1,7 +1,7 @@
 /** \file mrm_mesh.h
  * Internal mesh for CMRMBuilder.
  *
- * $Id: mrm_mesh.h,v 1.2 2001/06/19 10:22:33 berenguier Exp $
+ * $Id: mrm_mesh.h,v 1.3 2001/06/19 16:58:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,13 +153,11 @@ struct	CMRMWedgeGeom
 	uint32	Start;
 	/// The end wedge index of the geomorph.
 	uint32	End;
-	/// where to store the result in the Wedge array. (NB: always in beginning of array).
-	uint32	Dest;
 
 
 	void	serial(NLMISC::IStream &f)
 	{
-		f.serial(Start, End, Dest);
+		f.serial(Start, End);
 	}
 };
 

@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * A Builder of MRM.
  *
- * $Id: mrm_builder.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mrm_builder.h,v 1.2 2001/06/19 16:58:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,16 +130,15 @@ private:
 	{
 		bool	operator()(const CMRMWedgeGeom &a, const CMRMWedgeGeom &b) const
 		{
-			// compare just Start/End.
 			if(a.Start!=b.Start)
 				return a.Start<b.Start;
 			return a.End<b.End;
 		}
 	};
 
-	// The set of geomorph. for one LOD only;
-	typedef std::set<CMRMWedgeGeom, CGeomPred>		TGeomSet;
-	TGeomSet			_GeomSet;
+	// The map of geomorph. for one LOD only;
+	typedef std::map<CMRMWedgeGeom, sint, CGeomPred>		TGeomMap;
+	TGeomMap			_GeomMap;
 	// @}
 
 
@@ -168,14 +167,27 @@ private:
 
 
 	/// Temp map Attribute/AttributeId .
-	typedef std::map<CVectorH, sint>		TAttributeMap;
+	struct	CAttributeKey
+	{
+		sint		VertexId;
+		CVectorH	Attribute;
+
+		bool	operator<(const CAttributeKey &o) const
+		{
+			if(VertexId!=o.VertexId)
+				return VertexId<o.VertexId;
+			return Attribute<o.Attribute;
+		}
+	};
+	typedef std::map<CAttributeKey, sint>		TAttributeMap;
 	TAttributeMap		_AttributeMap[NL3D_MRM_MAX_ATTRIB];
-	sint			findInsertAttributeInBaseMesh(CMRMMesh &baseMesh, sint attId, const CVectorH &att);
-	sint			findInsertNormalInBaseMesh(CMRMMesh &baseMesh, sint attId, const CVector &normal);
-	sint			findInsertColorInBaseMesh(CMRMMesh &baseMesh, sint attId, CRGBA col);
-	sint			findInsertUvInBaseMesh(CMRMMesh &baseMesh, sint attId, const CUV &uv);
+	sint			findInsertAttributeInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, const CVectorH &att);
+	sint			findInsertNormalInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, const CVector &normal);
+	sint			findInsertColorInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, CRGBA col);
+	sint			findInsertUvInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, const CUV &uv);
 	CRGBA			attToColor(const CVectorH &att) const;
 	CUV				attToUv(const CVectorH &att) const;
+
 
 	/** from a meshBuild, compute a CMRMMesh. This is the first stage of the algo.
 	 *	\return the vertexFormat supported by CMRMBuilder.

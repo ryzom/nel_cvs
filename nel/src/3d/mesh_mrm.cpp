@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.3 2001/06/19 10:22:33 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.4 2001/06/19 16:58:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,10 @@
 #include "3d/mrm_parameters.h"
 #include "3d/mesh_mrm_instance.h"
 #include "3d/scene.h"
+#include "nel/misc/common.h"
 
+
+using namespace NLMISC;
 
 namespace NL3D 
 {
@@ -138,10 +141,72 @@ void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
 	CMeshMRMInstance	*mi= (CMeshMRMInstance*)trans;
 
 
+	// TempYoyo.
+	static	float	testTime= 0;
+	testTime+= 0.001f;
+	float	testAlpha= (1+(float)sin(testTime))/2;
 
-	CLod	&lod= _Lods[0];
+
+	// Choose what Lod to draw.
+	float	alpha= testAlpha;
+	clamp(alpha, 0, 1);
+	alpha*= _Lods.size()-1;
+	sint	numLod= (sint)ceil(alpha);
+	float	alphaLod;
+	if(numLod==0)
+	{
+		numLod= 0;
+		alphaLod= 0;
+	}
+	else
+	{
+		// Lerp beetween lod i-1 and lod i.
+		alphaLod= alpha-(numLod-1);
+	}
+
+
+	// Render the choosen Lod.
+	CLod	&lod= _Lods[numLod];
 	if(lod.RdrPass.size()==0)
 		return;
+
+	// Geomorph the choosen Lod (if not the coarser mesh).
+	if(numLod>0)
+	{
+		float	a= alphaLod;
+		float	a1= 1 - alphaLod;
+		for(uint i=0; i<lod.Geomorphs.size(); i++)
+		{
+			CMRMWedgeGeom	&geom= lod.Geomorphs[i];
+			// TODODO.
+			{
+				// Vertex.
+				CVector		*start=	(CVector*)_VBuffer.getVertexCoordPointer(geom.Start);
+				CVector		*end=	(CVector*)_VBuffer.getVertexCoordPointer(geom.End);
+				CVector		*dst=	(CVector*)_VBuffer.getVertexCoordPointer(i);
+				*dst= *start * a + *end * a1;
+			}
+			{
+				// Normal.
+				CVector		*start= (CVector*)_VBuffer.getNormalCoordPointer(geom.Start);
+				CVector		*end=	(CVector*)_VBuffer.getNormalCoordPointer(geom.End);
+				CVector		*dst=	(CVector*)_VBuffer.getNormalCoordPointer(i);
+				*dst= *start * a + *end * a1;
+			}
+			{
+				// Uv.
+				CUV		*start= (CUV*)_VBuffer.getTexCoordPointer(geom.Start, 0);
+				CUV		*end=	(CUV*)_VBuffer.getTexCoordPointer(geom.End, 0);
+				CUV		*dst=	(CUV*)_VBuffer.getTexCoordPointer(i, 0);
+				*dst= *start * a + *end * a1;
+			}
+		}
+	}
+
+
+	// force normalisation of normals..
+	bool	bkupNorm= drv->isForceNormalize();
+	drv->forceNormalize(true);
 
 	// active VB.
 	drv->activeVertexBuffer(_VBuffer);
@@ -153,6 +218,10 @@ void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
 		// Render with the Materials of the MeshInstance.
 		drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
 	}
+
+
+	// bkup force normalisation.
+	drv->forceNormalize(bkupNorm);
 
 }
 

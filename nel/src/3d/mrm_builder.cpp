@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.9 2001/06/19 10:22:33 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.10 2001/06/19 16:58:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -787,6 +787,16 @@ void	CMRMBuilder::saveCoarserMesh(CMRMMesh &coarserMesh)
 				coarserMesh.Attributes[attId].push_back(wedge.Current);
 				index++;
 			}
+			else if(wedge.CollapsedTo==-2)	// else if totaly destroyed.
+			{
+				// Insert this wedge in the coarser mesh.
+				// NB: the coarser mesh faces do not use it anymore, but FinerMesh use it
+				// for geomorph (LODMesh.CoarserFaces may point to it).
+				// NB: look at buildFinalMRM(), it works fine for all cases.
+				wedge.CoarserIndex=index;
+				coarserMesh.Attributes[attId].push_back(wedge.Current);
+				index++;
+			}
 			else
 				wedge.CoarserIndex=-1;	// indicate that this wedge no more exist and is to be geomorphed to an other.
 		}
@@ -1027,8 +1037,8 @@ void	CMRMBuilder::buildFinalMRM(std::vector<CMRMMeshGeom> &lodMeshs, CMRMMeshFin
 	{
 		CMRMMeshGeom	&lodMesh= lodMeshs[lodId];
 
-		// reset the GeomSet, the one which indicate if we have already inserted a geomorph.
-		_GeomSet.clear();
+		// reset the GeomMap, the one which indicate if we have already inserted a geomorph.
+		_GeomMap.clear();
 		sglmGeom= 0;
 
 		// for all face corner.
@@ -1048,19 +1058,19 @@ void	CMRMBuilder::buildFinalMRM(std::vector<CMRMMeshGeom> &lodMeshs, CMRMMeshFin
 					CMRMWedgeGeom	geom;
 					geom.Start= corner.WedgeStartId;
 					geom.End= corner.WedgeEndId;
-					geom.Dest= sglmGeom;
+					sint	geomDest= sglmGeom;
 					// if don't find this geom in the set, then it is a new one.
-					TGeomSet::const_iterator	it= _GeomSet.find(geom);
-					if(it == _GeomSet.end())
+					TGeomMap::const_iterator	it= _GeomMap.find(geom);
+					if(it == _GeomMap.end())
 					{
-						_GeomSet.insert(geom);
+						_GeomMap.insert( make_pair(geom, geomDest) );
 						sglmGeom++;
 					}
 					else
-						geom.Dest= it->Dest;
+						geomDest= it->second;
 
 					// store this Geom Id in the corner.
-					corner.WedgeGeomId= geom.Dest;
+					corner.WedgeGeomId= geomDest;
 				}
 			}
 		}
@@ -1112,8 +1122,8 @@ void	CMRMBuilder::buildFinalMRM(std::vector<CMRMMeshGeom> &lodMeshs, CMRMMeshFin
 		// alloc final faces of this LOD.
 		lodDest.Faces.resize(lodMesh.Faces.size());
 
-		// reset the GeomSet, the one which indicate if we have already inserted a geomorph.
-		_GeomSet.clear();
+		// reset the GeomMap, the one which indicate if we have already inserted a geomorph.
+		_GeomMap.clear();
 
 		// for all face corner.
 		for(i=0; i<(sint)lodMesh.Faces.size();i++)
@@ -1140,15 +1150,14 @@ void	CMRMBuilder::buildFinalMRM(std::vector<CMRMMeshGeom> &lodMeshs, CMRMMeshFin
 					CMRMWedgeGeom	geom;
 					geom.Start= corner.WedgeStartId;
 					geom.End=	corner.WedgeEndId;
-					geom.Dest=	corner.WedgeGeomId;
 					// if don't find this geom in the set, then it is a new one.
-					TGeomSet::const_iterator	it= _GeomSet.find(geom);
-					if(it == _GeomSet.end())
+					TGeomMap::const_iterator	it= _GeomMap.find(geom);
+					if(it == _GeomMap.end())
 					{
 						// mark it as inserted.
-						_GeomSet.insert(geom);
+						_GeomMap.insert( make_pair(geom, corner.WedgeGeomId) );
 						// and we must insert this geom in the array.
-						nlassert( geom.Dest==lodDest.Geomorphs.size() );
+						nlassert( corner.WedgeGeomId==(sint)lodDest.Geomorphs.size() );
 						lodDest.Geomorphs.push_back(geom);
 					}
 				}
@@ -1174,9 +1183,14 @@ void	CMRMBuilder::buildFinalMRM(std::vector<CMRMMeshGeom> &lodMeshs, CMRMMeshFin
 
 
 // ***************************************************************************
-sint			CMRMBuilder::findInsertAttributeInBaseMesh(CMRMMesh &baseMesh, sint attId, const CVectorH &att)
+sint			CMRMBuilder::findInsertAttributeInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, const CVectorH &att)
 {
-	TAttributeMap::iterator		it= _AttributeMap[attId].find(att);
+	// find this attribute in the map.
+	CAttributeKey	key;
+	key.VertexId= vertexId;
+	key.Attribute= att;
+	TAttributeMap::iterator		it= _AttributeMap[attId].find(key);
+
 	// if attribute not found in the map, then insert a new one.
 	if(it==_AttributeMap[attId].end())
 	{
@@ -1184,7 +1198,7 @@ sint			CMRMBuilder::findInsertAttributeInBaseMesh(CMRMMesh &baseMesh, sint attId
 		// insert into the array.
 		baseMesh.Attributes[attId].push_back(att);
 		// insert into the map.
-		_AttributeMap[attId].insert(make_pair(att, idx));
+		_AttributeMap[attId].insert(make_pair(key, idx));
 		return idx;
 	}
 	else
@@ -1196,36 +1210,36 @@ sint			CMRMBuilder::findInsertAttributeInBaseMesh(CMRMMesh &baseMesh, sint attId
 
 
 // ***************************************************************************
-sint			CMRMBuilder::findInsertNormalInBaseMesh(CMRMMesh &baseMesh, sint attId, const CVector &normal)
+sint			CMRMBuilder::findInsertNormalInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, const CVector &normal)
 {
 	CVectorH	att;
 	att= normal;
 	att.w= 0;
-	return findInsertAttributeInBaseMesh(baseMesh, attId, att);
+	return findInsertAttributeInBaseMesh(baseMesh, attId, vertexId, att);
 }
 
 
 // ***************************************************************************
-sint			CMRMBuilder::findInsertColorInBaseMesh(CMRMMesh &baseMesh, sint attId, CRGBA col)
+sint			CMRMBuilder::findInsertColorInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, CRGBA col)
 {
 	CVectorH	att;
 	att.x= col.R;
 	att.y= col.G;
 	att.z= col.B;
 	att.w= col.A;
-	return findInsertAttributeInBaseMesh(baseMesh, attId, att);
+	return findInsertAttributeInBaseMesh(baseMesh, attId, vertexId, att);
 }
 
 
 // ***************************************************************************
-sint			CMRMBuilder::findInsertUvInBaseMesh(CMRMMesh &baseMesh, sint attId, const CUV &uv)
+sint			CMRMBuilder::findInsertUvInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, const CUV &uv)
 {
 	CVectorH	att;
 	att.x= uv.U;
 	att.y= uv.V;
 	att.z= 0;
 	att.w= 0;
-	return findInsertAttributeInBaseMesh(baseMesh, attId, att);
+	return findInsertAttributeInBaseMesh(baseMesh, attId, vertexId, att);
 }
 
 
@@ -1330,26 +1344,28 @@ uint32			CMRMBuilder::buildMrmBaseMesh(const CMesh::CMeshBuild &mbuild, CMRMMesh
 			attId= 0;
 
 			// For all activated attributes in mbuild, find/insert the attribute in the baseMesh.
+			// NB: 2 attributes are said to be different if they have not the same value OR if they don't lie 
+			// on the same vertex. This is very important for MRM computing.
 			if(mbuild.VertexFlags & IDRV_VF_NORMAL)
 			{
-				destCorner.Attributes[attId]= findInsertNormalInBaseMesh(baseMesh, attId, srcCorner.Normal);
+				destCorner.Attributes[attId]= findInsertNormalInBaseMesh(baseMesh, attId, destCorner.Vertex, srcCorner.Normal);
 				attId++;
 			}
 			if(mbuild.VertexFlags & IDRV_VF_COLOR)
 			{
-				destCorner.Attributes[attId]= findInsertColorInBaseMesh(baseMesh, attId, srcCorner.Color);
+				destCorner.Attributes[attId]= findInsertColorInBaseMesh(baseMesh, attId, destCorner.Vertex, srcCorner.Color);
 				attId++;
 			}
 			if(mbuild.VertexFlags & IDRV_VF_SPECULAR)
 			{
-				destCorner.Attributes[attId]= findInsertColorInBaseMesh(baseMesh, attId, srcCorner.Specular);
+				destCorner.Attributes[attId]= findInsertColorInBaseMesh(baseMesh, attId, destCorner.Vertex, srcCorner.Specular);
 				attId++;
 			}
 			for(k=0; k<IDRV_VF_MAXSTAGES;k++)
 			{
 				if(mbuild.VertexFlags & IDRV_VF_UV[k])
 				{
-					destCorner.Attributes[attId]= findInsertUvInBaseMesh(baseMesh, attId, srcCorner.Uvs[k]);
+					destCorner.Attributes[attId]= findInsertUvInBaseMesh(baseMesh, attId, destCorner.Vertex, srcCorner.Uvs[k]);
 					attId++;
 				}
 			}

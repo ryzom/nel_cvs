@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.34 2002/02/28 13:42:32 berenguier Exp $
+ * $Id: export_mesh.cpp,v 1.35 2002/03/04 10:31:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -601,6 +601,20 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 
 	// Build materials in NeL format and get the number of materials exported in NeL format
 	buildMaterials (buildMesh.Materials, maxBaseBuild, node, time, absolutePath);
+
+	// Special: Add VertexColor If WindTree
+	// What Vertexprogram is used??
+	int	vpId= CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VERTEXPROGRAM_ID, 0);
+	// Setup vertexProgram
+	switch(vpId)
+	{
+		case 0: 
+			break;
+		case 1: 
+			// Force VertexColor
+			maxBaseBuild.NeedVertexColor= true;
+			break;
+	};
 
 	// Some check. should have one rempa vertMap channel table by material
 	nlassert (maxBaseBuild.MaterialInfo.size()==maxBaseBuild.NumMaterials);

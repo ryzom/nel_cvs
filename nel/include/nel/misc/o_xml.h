@@ -1,7 +1,7 @@
 /** \file o_xml.h
  * Output xml stream
  *
- * $Id: o_xml.h,v 1.3 2002/01/22 14:10:54 lecroart Exp $
+ * $Id: o_xml.h,v 1.4 2002/05/17 06:34:14 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -113,6 +113,10 @@ public:
 	  * You can only flush the stream when all xmlPushBegin - xmlPop have been closed.
 	  */
 	void flush ();
+
+	/** Get root XML document pointer
+	  */
+	xmlDocPtr getDocument ();
 
 private:
 

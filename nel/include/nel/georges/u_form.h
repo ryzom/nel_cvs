@@ -1,7 +1,7 @@
-/** \file mold_elt_define_list.h
- * Georges system files
+/** \file form.cpp
+ * Georges form interface class
  *
- * $Id: mold_elt_define_list.h,v 1.1 2002/02/14 10:39:35 corvazier Exp $
+ * $Id: u_form.h,v 1.1 2002/05/17 06:34:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,33 +23,38 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NLGEORGES_MOLD_ELT_DEFINE_LIST_H
-#define NLGEORGES_MOLD_ELT_DEFINE_LIST_H
+#ifndef _NLGEORGES_U_FORM_H
+#define _NLGEORGES_U_FORM_H
 
-#include "nel/georges/mold_elt_define.h"
+#include	"nel/misc/types_nl.h"
+#include	"nel/misc/smart_ptr.h"
 
 namespace NLGEORGES
 {
 
-class CLoader;
+class UFormElm;
 
-class CMoldEltDefineList : public CMoldEltDefine  
+/**
+  * This class provide an interface to access Georges form
+  */
+class UForm : public NLMISC::CRefCount
 {
-protected:
-	CMoldEltDefine* pmed;
-
 public:
-	CMoldEltDefineList( CLoader* const _pl, CMoldEltDefine* const _pmed );
-	virtual ~CMoldEltDefineList();
+	
+	virtual ~UForm ();
 
-	virtual CMoldElt* GetMold(); 
-	virtual void Load( const CStringEx _sxfullname );
-	virtual void Load( const CStringEx _sxfullname, const CStringEx _sxdate );
-	virtual CStringEx GetEltName( const unsigned int _index ) const;
-	virtual CMoldElt* GetEltPtr( const unsigned int _index ) const;
-	virtual unsigned int GetType() const; 
+	/**
+	  * Access form nodes
+	  */
+
+	/// Get a mutable pointer on the root element of the form. It is a struct node.
+	virtual UFormElm&		getRootElement () = 0;
+
+	/// Get a const pointer on the root element of the form. It is a struct node.
+	virtual const UFormElm& getRootElement () const = 0;
 };
+
 
 } // NLGEORGES
 
-#endif // NLGEORGES_MOLD_ELT_DEFINE_LIST_H
+#endif // _NLGEORGES_U_FORM_H

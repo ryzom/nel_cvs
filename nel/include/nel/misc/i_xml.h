@@ -1,7 +1,7 @@
 /** \file i_xml.h
  * Input xml stream
  *
- * $Id: i_xml.h,v 1.3 2002/01/22 14:10:54 lecroart Exp $
+ * $Id: i_xml.h,v 1.4 2002/05/17 06:34:14 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -108,6 +108,34 @@ public:
 	/** Release the resources used by the stream.
 	  */
 	void			release ();
+
+	/** Get the root node pointer 
+	  */
+	xmlNodePtr		getRootNode () const;
+
+	/** Get the first child node pointer named childName. NULL if no node named childName. 
+	  */
+	static xmlNodePtr getFirstChildNode (xmlNodePtr parent, const char *childName);
+
+	/** Get the next child node pointer name childName, brother of previous. NULL if no node named childName. 
+	  */
+	static xmlNodePtr getNextChildNode (xmlNodePtr last, const char *childName);
+
+	/** Get the first child node pointer of type. NULL if no node of type. 
+	  */
+	static xmlNodePtr getFirstChildNode (xmlNodePtr parent, xmlElementType type);
+
+	/** Get the next child node pointer of type. NULL if no node of type. 
+	  */
+	static xmlNodePtr getNextChildNode (xmlNodePtr last, xmlElementType type);
+
+	/** Count number of sub node named with a given name for a given node.
+	  */
+	static uint		countChildren (xmlNodePtr node, const char *childName);
+
+	/** Count number of sub node of type for a given node.
+	  */
+	static uint		countChildren (xmlNodePtr node, xmlElementType type);
 
 private:
 

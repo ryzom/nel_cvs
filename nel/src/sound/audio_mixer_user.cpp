@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.22 2002/06/04 10:06:01 hanappe Exp $
+ * $Id: audio_mixer_user.cpp,v 1.23 2002/06/19 08:34:02 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "bounding_box.h"
 #include "driver/buffer.h"
 #include "sample_bank.h"
+#include "sound_bank.h"
 
 
 #include "nel/misc/file.h"
@@ -115,6 +116,7 @@ CAudioMixerUser::~CAudioMixerUser()
 	}
 
 	// Sounds
+	/*
 	vector<CSound*> sndvec;
 	TSoundMap::iterator ipsnds;
 	for ( ipsnds=_Sounds.begin(); ipsnds!=_Sounds.end(); ++ipsnds )
@@ -127,6 +129,7 @@ CAudioMixerUser::~CAudioMixerUser()
 	{
 		delete (*ips);
 	}
+	*/
 
 	// Sounds allocated by ambiant sources
 	set<CSound*>::iterator ipss;
@@ -217,7 +220,10 @@ void				CAudioMixerUser::init( uint32 balance_period )
 	}
 
 
-	CSound::init( _SoundDriver );
+	//CSound::init( _SoundDriver );
+
+	// FIXME
+	//CPath::addSearchPath("r:\\code\\ryzom\\data\\sound\\DFN");
 
 	// Init registrable classes
 	static bool initialized = false;
@@ -520,6 +526,8 @@ void				CAudioMixerUser::update()
  */
 TSoundId			CAudioMixerUser::getSoundId( const char *name )
 {
+	return CSoundBank::get(name);
+	/*
 	// Find sound
 	TSoundMap::iterator ism = _Sounds.find(name);
 	if ( ism == _Sounds.end() )
@@ -530,6 +538,7 @@ TSoundId			CAudioMixerUser::getSoundId( const char *name )
 	{
 		return (*ism).second;
 	}
+	*/
 }
 
 // Add a source which was created by an EnvSound
@@ -712,12 +721,35 @@ void				CAudioMixerUser::loadEnvEffects( const char *filename )
 /*
  * Load buffers
  */
-uint32			CAudioMixerUser::loadSoundBuffers( const char *filename, std::vector<std::string> *notfoundfiles )
+uint32			CAudioMixerUser::loadSampleBank( const char *filename, std::vector<std::string> *notfoundfiles )
 {
 	nlassert( filename != NULL );
-	nlinfo( "Loading sound buffers from %s...", filename );
+
+	// FIXME
+	string path = _SamplePath;
+	path.append("/").append(filename);
+
+	nldebug( "Loading samples from %s...", path );
+
+	CSampleBank* bank = new CSampleBank(path, _SoundDriver);
+
+	try 
+	{
+		bank->load();
+	}
+	catch (Exception& e)
+	{
+		if (notfoundfiles) {
+			notfoundfiles->push_back(path);
+		}
+		string reason = e.what();
+		nlwarning( "AM: Failed to load the samples: %s", reason.c_str() );
+	}
 
 
+	return bank->countSamples();
+
+	/*
 	CIFile file;
 	if ( file.open( CPath::lookup( filename ) ) )
 	{
@@ -730,20 +762,47 @@ uint32			CAudioMixerUser::loadSoundBuffers( const char *filename, std::vector<st
 		nlwarning( "AM: Sound description file not found: %s", filename );
 		return 0;
 	}
+	*/
 }
 
+#include <crtdbg.h>
+/** 
+ * Load sounds. Returns the number of sounds successfully loaded.
+ */
+void			CAudioMixerUser::loadSoundBank( const char *directory )
+{
+	nlassert( directory != NULL );
+
+	nlinfo( "Loading sounds from %s...", directory );
+
+	CSoundBank* bank = new CSoundBank(directory);
+
+	try 
+	{
+		nlassert (_CrtCheckMemory ());
+		bank->load();
+	}
+	catch (Exception& e)
+	{
+		string reason = e.what();
+		nlwarning( "AM: Failed to load the samples: %s", reason.c_str() );
+	}
+}
 
 /*
  * Return the names of the sounds (call this method after loadSoundBuffers())
  */
 void			CAudioMixerUser::getSoundNames( std::vector<const char *>& names ) const
 {
+	CSoundBank::getSoundNames(names);
+	/*
 	names.clear();
 	TSoundMap::const_iterator ism;
 	for ( ism=_Sounds.begin(); ism!=_Sounds.end(); ++ism )
 	{
 		names.push_back( (*ism).first );
 	}
+	*/
 }
 
 
@@ -819,7 +878,7 @@ void			CAudioMixerUser::loadEnvSounds( const char *filename, UEnvSound **treeRoo
 	CIFile file;
 	if ( file.open( CPath::lookup( filename ) ) )
 	{
-		uint32 n = CEnvSoundUser::load( _EnvSounds, file );
+		uint32 n = 0; //CEnvSoundUser::load( _EnvSounds, file );
 		nldebug( "AM: Loaded %u environment sounds", n );
 	}
 	else

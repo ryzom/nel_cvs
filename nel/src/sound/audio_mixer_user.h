@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.21 2002/06/04 10:06:01 hanappe Exp $
+ * $Id: audio_mixer_user.h,v 1.22 2002/06/19 08:34:02 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,8 +110,13 @@ public:
 	 * If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
 	 * You can call this method several times, to load several sound banks.
 	 */
-	virtual uint32				loadSoundBuffers( const char *filename, std::vector<std::string> *notfoundfiles=NULL );
-	/// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
+	virtual uint32				loadSampleBank( const char *filename, std::vector<std::string> *notfoundfiles=NULL );
+
+	/// Load sounds. Returns the number of sounds successfully loaded.
+	virtual void				loadSoundBank( const char *path );
+
+	
+	// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
 	virtual	void				loadEnvSounds( const char *filename,
 											   UEnvSound **treeRoot=NULL );
 	/// Get a TSoundId from a name (returns NULL if not found)
@@ -149,7 +154,7 @@ public:
 	virtual void				update(); 
 
 
-	/// Return the names of the sounds (call this method after loadSoundBuffers())
+	/// Return the names of the sounds (call this method after loadSounds())
 	virtual void				getSoundNames( std::vector<const char *>& names ) const;
 	/// Return the number of mixing tracks (voices)
 	virtual uint				getPolyphony() const { return _NbTracks; }
@@ -179,6 +184,9 @@ public:
 	// Allow to load sound files (nss) when the corresponding wave file is missing (see CSound)
 	//static void					allowMissingWave( bool b )				{ CSound::allowMissingWave( b ); }	
 
+	/// Set the global path to the sample banks
+	virtual void				setSamplePath(std::string& path)		{ _SamplePath = path; }
+
 protected:
 
 	/// Redispatch the sources into tracks if needed
@@ -203,7 +211,7 @@ private:
 	ISoundDriver				*_SoundDriver;
 
 	/// Sound buffers and static properties
-	TSoundMap					_Sounds;
+	//TSoundMap					_Sounds;
 
 	/// Sound buffers used (and allocated but not deleted because shared) by ambiant sources
 	TSoundSet					_AmbSounds;
@@ -219,6 +227,9 @@ private:
 
 	/// Auto-Balance period
 	uint32						_BalancePeriod;
+
+	/// The path to the sample banks. This should be specified in the config file.
+	std::string					_SamplePath;
 
 public: // Temp (EDIT)
 

@@ -1,7 +1,7 @@
 /** \file texture_cube.cpp
  * Implementation of a texture cube
  *
- * $Id: texture_cube.cpp,v 1.9 2002/10/14 12:50:55 berenguier Exp $
+ * $Id: texture_cube.cpp,v 1.10 2002/10/15 08:26:49 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,7 +109,7 @@ void CTextureCube::doGenerate()
 		if( _Textures[i]->getUploadFormat()!=pRefTex->getUploadFormat() )
 		{
 			nlwarning("Bad TextureCube: different UpLoad format: %s and %s", 
-				_Textures[i]->getShareName(), pRefTex->getShareName() );
+				_Textures[i]->getShareName(), pRefTex->getShareName().c_str() );
 			// => replace the texture with the reference
 			_Textures[i] = pRefTex;
 		}
@@ -117,7 +117,7 @@ void CTextureCube::doGenerate()
 		else if( _Textures[i]->getUploadFormat()==ITexture::Auto && _Textures[i]->getPixelFormat()!=pRefTex->getPixelFormat() )
 		{
 			nlwarning("Bad TextureCube: different Pixel format: %s and %s", 
-				_Textures[i]->getShareName(), pRefTex->getShareName() );
+				_Textures[i]->getShareName(), pRefTex->getShareName().c_str() );
 			// => replace the texture with the reference
 			_Textures[i] = pRefTex;
 		}
@@ -130,7 +130,7 @@ void CTextureCube::doGenerate()
 			if( _Textures[i]->getPixelFormat()!=CBitmap::RGBA )
 			{
 				nlwarning("Bad TextureCube: different Size (not RGBA): %s and %s", 
-					_Textures[i]->getShareName(), pRefTex->getShareName() );
+					_Textures[i]->getShareName(), pRefTex->getShareName().c_str() );
 				// => replace the texture with the reference
 				_Textures[i] = pRefTex;
 			}

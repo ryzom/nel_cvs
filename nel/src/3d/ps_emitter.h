@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * TODO: File description
  *
- * $Id: ps_emitter.h,v 1.33 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_emitter.h,v 1.34 2005/03/01 09:13:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,7 +74,7 @@ public:
 
 	/**
 	* Process the emissions.
-	* The standard behaviuour will call "emit" each time is needed.
+	* The standard behaviour will call "emit" each time is needed.
 	* So you don't need to redefine this most of the time
 	*
 	*/
@@ -89,12 +89,12 @@ public:
 
 	/** Set the type of located to be emitted. The default is NULL which mean that no emission will occur
 	  * \return true if the operation could be performed. It can fail when this cause the system the system to last forever,
-	  *              which is incompatible with the 'BypassMaxNumIntegrationSteps' in CParticleSystem
+	  *              which is incompatible with the 'BypassMaxNumIntegrationSteps' flag in CParticleSystem
 	  */
 	bool							setEmittedType(CPSLocated *et);
 
 	/** Inherited from CPSLocatedBindable
-	 *  We register to the emitted type, so, this, this will be called when it is destroyed
+	 *  We register to the emitted type (when setEmittedType is called), so, this, this will be called when it is destroyed
 	 */
 	virtual void					notifyTargetRemoved(CPSLocated *ptr);
 
@@ -109,12 +109,12 @@ public:
 	 *  onDeath     : emit when the emitter is destroyed
 	 *  once        : emit when the emitter is created
 	 *  onBounce    : emit when the emitter bounce
-	 *  externEmit  : emitted explicitly by the system user. A 4 letter id must be used to identify this kind of emitters
+	 *  externEmit  : emitted explicitly by the system user. A 4 letters ID must be used to identify this kind of emitters
 	 *                the default ID is NONE
 	 */
 	enum TEmissionType { regular = 0, onDeath = 1,  once = 2, onBounce = 3, externEmit = 4, numEmissionType };
 
-	/** Set the frequency type. Please note that if the type is externEmit, this located need to have been attached to the system (the system is holding the ID-Located map)
+	/** Set the emission type. Please note that if the type is externEmit, this located need to have been attached to the system (the system is holding the ID-Located map)
 	  * \return true if the operation could be performed. It can fail when this cause the system the system to last forever,
 	  *              which is incompatible with the 'BypassMaxNumIntegrationSteps' in CParticleSystem
 	  */
@@ -192,7 +192,7 @@ public:
 			_SpeedInheritanceFactor = fact;
 		}
 
-		/// Get the speed Inheritance factor 
+		/// Get the Speed Inheritance factor 
 		float							getSpeedInheritanceFactor(void) const
 		{
 			return _SpeedInheritanceFactor;
@@ -233,9 +233,10 @@ public:
 
 	/** Enable consistent emission. The default is false. This try to keep the number of emitted particle constant, by allowing
 	  * more than one emission cycle per iteration. This is useful to deal with poor frmerate. This has several drawbacks though :
-	  * - collisions are not properly supported in this case (may be resolved later).
+	  * - collisions are not properly supported in this case (may be resolved later). RESOLVED
 	  * - The motion is in straight lines.
-	  * - It assumes that emitter has no motion (for now).
+	  * - It assumes that emitter has no motion (for now). RESOLVED
+	  * NB nico : this is the default now ...
 	  * In fact, this should be used when there can't be collisions with the emitted particles, and with main emitters only.	  
 	  * NB : this has no effect if the emission period is 0 (which mean emit at each frame)
 	  */
@@ -262,7 +263,7 @@ public:
 	static void				setBypassEmitOnDeath(bool bypass) { _BypassEmitOnDeath = bypass; }	
 	static bool				getBypassEmitOnDeath() { return _BypassEmitOnDeath; }
 
-	/** check if there's a loop with that e=mitter eg A emit B emit A
+	/** check if there's a loop with that emitter e.g. A emit B emit A
 	  * NB : the emitter should be inserted in a system, otherwise -> assert
 	  */
 	bool					checkLoop() const;

@@ -1,8 +1,8 @@
-************
-Master Tools
-************
+****************
+* Master Tools *
+****************
 
-This tools regroup the 3 other tools in a workspace way.
+This tools regroup the 3 other tools in a common workspace.
 - WorldEditor : Easily generates landscapes and primitives
 - LogicEditor : Condition and trigger tools
 - Georges : Edit the monsters, the primitives description and so on
@@ -33,6 +33,10 @@ WorldEditor
 WorldEditor needs some directories to functionnate :
 ZoneBitmaps	(contains the .TGA from the max plugin)
 ZoneLigos	(contains the .LIGOZONE from the max plugin)
+In the integrated mode (when launched from the master tool) you cannot paint zones.
+This functionnality is accessible when you execute the stand alone program which is just
+a DLL loader. You have access to the .prim edition of the zone and can link your primitives
+to contents (vegetable plants, construction, IA zones, etc.) with the georges tool.
 
 
 
@@ -46,8 +50,8 @@ This is a stand alone tool. It does not need any system data.
 Georges
 -------
 
-Georges needs a root directory which is :
-DFN (This directory regroups the .DFN definition of a type class)
+Georges needs a root directory with a subdirectory called "DFN" (This directory regroups
+the .DFN definition of a type class).
 
 
 

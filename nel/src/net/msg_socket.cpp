@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.34 2000/12/05 15:40:52 cado Exp $
+ * $Id: msg_socket.cpp,v 1.35 2000/12/05 16:36:56 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,6 +82,9 @@ CSearchSet				CMsgSocket::_SearchSet;
 
 uint32					CMsgSocket::_PrevBytesReceived = 0;
 uint32					CMsgSocket::_PrevBytesSent = 0;
+
+
+class EStreamOverflow;
 
   
 /*
@@ -445,10 +448,20 @@ void CMsgSocket::update()
 						// Reset flag
 						(*ilps)->setDataAvailableFlag( false );
 					}
-					catch ( ESocket& )
+					catch ( EStreamOverflow& )
 					{
-						// Handle a connection closure (gracefull (if ESocketConnectionClosed) or not), when
-						// receive() has thrown an exception.
+						nlwarning( "Callback tried to read more than received" );
+						handleConnectionClosure( ilps );
+					}
+					catch ( ESocketConnectionClosed& )
+					{
+						// Handle a graceful connection closure
+						handleConnectionClosure( ilps );
+					}
+					catch ( ESocket& e )
+					{
+						// Handle an error or a non-graceful connection closure (when receive() throws an exception)
+						nlwarning( "Closing connection: %s", e.what() );
 						handleConnectionClosure( ilps );
 					}
 				}

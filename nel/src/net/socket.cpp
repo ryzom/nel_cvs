@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.26 2000/11/27 10:07:07 cado Exp $
+ * $Id: socket.cpp,v 1.27 2000/12/05 16:36:56 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -254,7 +254,11 @@ CMessage CSocket::decode( CMessage& alldata ) throw (ESocket)
 	// Read buffer
 	if ( msgsize > 0 )
 	{
-		nlassert( msgsize < 100000 ); // debug check
+		if ( msgsize > 100000 ) // debug check
+		{
+			nlwarning( "Message size is %u", msgsize );
+			throw ESocket( "Invalid message size" );
+		}
 		alldata.serialBuffer( msg.bufferToFill(msgsize), msgsize );
 	}
 
@@ -343,7 +347,11 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 	// 4. Read all buffer and dismiss
 	if ( msgsize > 0 )
 	{
-		nlassert( msgsize < 100000 ); // debug check
+		if ( msgsize > 100000 ) // debug check
+		{
+			nlwarning( "Message size is %u !", msgsize );
+			throw ESocket( "Invalid message size" );
+		}
 		CBaseSocket::doReceive( message.bufferToFill(msgsize), msgsize );
 	}
 

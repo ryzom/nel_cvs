@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.23 2002/02/07 19:00:38 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.24 2002/02/07 19:32:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,14 @@
 
 
 #include <GL/gl.h>
+// if <GL/glext.h> not already included.
+#ifndef __glext_h_
+#ifdef GL_VERSION_1_2
+#define	NEL_GL_VERSION_1_2_IN_GL_H
+#else
+#undef NEL_GL_VERSION_1_2_IN_GL_H
+#endif
+#endif
 #include <GL/glext.h>	// Please download it from http://oss.sgi.com/projects/ogl-sample/ABI/"
 
 #ifndef GL_GLEXT_VERSION
@@ -153,7 +161,7 @@ void	registerGlExtensions(CGlExtensions &ext);
 
 // ARB_multitexture (only version < 1.2.1)
 //=================
-#ifndef GL_VERSION_1_2
+#ifndef NEL_GL_VERSION_1_2_IN_GL_H
 
 extern PFNGLACTIVETEXTUREARBPROC glActiveTextureARB;
 extern PFNGLCLIENTACTIVETEXTUREARBPROC glClientActiveTextureARB;
@@ -193,7 +201,7 @@ extern PFNGLMULTITEXCOORD4IVARBPROC glMultiTexCoord4ivARB;
 extern PFNGLMULTITEXCOORD4FVARBPROC glMultiTexCoord4fvARB;
 extern PFNGLMULTITEXCOORD4DVARBPROC glMultiTexCoord4dvARB;
 
-#endif // GL_VERSION_1_2
+#endif // NEL_GL_VERSION_1_2_IN_GL_H
 
 
 // ARB_TextureCompression.

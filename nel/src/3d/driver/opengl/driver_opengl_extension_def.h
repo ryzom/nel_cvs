@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension_def.h
  * External OpenGL extension definition.
  *
- * $Id: driver_opengl_extension_def.h,v 1.6 2001/12/05 09:54:38 corvazier Exp $
+ * $Id: driver_opengl_extension_def.h,v 1.7 2002/02/07 19:32:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,14 @@
 #include "nel/misc/types_nl.h"
 
 #include <GL/gl.h>
+// if <GL/glext.h> not already included.
+#ifndef __glext_h_
+#ifdef GL_VERSION_1_2
+#define	NEL_GL_VERSION_1_2_IN_GL_H
+#else
+#undef NEL_GL_VERSION_1_2_IN_GL_H
+#endif
+#endif
 #include <GL/glext.h>	// Please download it from http://oss.sgi.com/projects/ogl-sample/ABI/"
 
 #ifdef __cplusplus

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.27 2002/02/07 19:00:38 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.28 2002/02/07 19:32:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,6 @@
 #include "driver_opengl_extension.h"
 #include "3d/material.h"
 
-
 // ***************************************************************************
 #ifdef NL_OS_WINDOWS
 #define	nelglGetProcAddress wglGetProcAddress
@@ -43,7 +42,7 @@
 
 // ARB_multitexture
 //=================
-#ifndef GL_VERSION_1_2
+#ifndef NEL_GL_VERSION_1_2_IN_GL_H
 
 PFNGLACTIVETEXTUREARBPROC glActiveTextureARB;
 PFNGLCLIENTACTIVETEXTUREARBPROC glClientActiveTextureARB;
@@ -261,7 +260,7 @@ static bool setupARBMultiTexture(const char	*glext)
 	if(strstr(glext, "GL_ARB_multitexture")==NULL)
 		return false;
 
-#ifndef GL_VERSION_1_2
+#ifndef NEL_GL_VERSION_1_2_IN_GL_H
 	if(!(glActiveTextureARB=(PFNGLACTIVETEXTUREARBPROC)nelglGetProcAddress("glActiveTextureARB")))return false;
 	if(!(glClientActiveTextureARB=(PFNGLCLIENTACTIVETEXTUREARBPROC)nelglGetProcAddress("glClientActiveTextureARB")))return false;
 

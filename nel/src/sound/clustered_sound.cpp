@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.6 2003/03/03 12:58:08 boucher Exp $
+ * $Id: clustered_sound.cpp,v 1.7 2003/03/05 10:35:08 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -271,7 +271,12 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 	if (_Scene == 0)
 	{
 		// hum... what to do ?
-		nlwarning("CClusteredSound::update : no scene specified !");
+		static bool bDisplayOnce = false;
+		if (!bDisplayOnce)
+		{
+			nlwarning("CClusteredSound::update : no scene specified !");
+			bDisplayOnce = true;
+		}
 		return;
 	}
 	
@@ -280,7 +285,12 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 	if (pClipTrav == 0)
 	{
 		// hum... what to do ?
-		nlwarning("CClusteredSound::update : no clip traversal !");
+		static bool bDisplayOnce = false;
+		if (!bDisplayOnce)
+		{
+			nlwarning("CClusteredSound::update : no clip traversal !");
+			bDisplayOnce = true;
+		}
 		return;
 	}
 	

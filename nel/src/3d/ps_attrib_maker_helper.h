@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.17 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.18 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 
 		/// compute one value of the attribute for the given index
 		virtual T get(CPSLocated *loc, uint32 index);
+		virtual T get(const CPSEmitterInfo &info);
 
 		virtual T get(float input)
 		{
@@ -191,17 +192,18 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 													 void *tab,
 													 uint32 stride,
 													 uint32 numAttrib,
-													 bool canOverlapOne
+													 bool canOverlapOne,
+													 bool forceClampEntry
 													 ) const
 		 {						
 			uint8 *pt = (uint8 *) tab;
 
 			
-			if (_NbCycles > 1 || canOverlapOne)
+			if (_NbCycles > 1 || canOverlapOne || forceClampEntry)
 			{
 				// the value could cycle, so we need to clamp it to 0.0f 1.0f
 
-				if (!_Clamp)
+				if (!_Clamp && !forceClampEntry)
 				{
 					if (_NbCycles == 1)
 					{
@@ -226,14 +228,12 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 				else
 				{
 					// clamping is on
-
 					float value;
-
 					if (_NbCycles == 1)
 					{
 						while (numAttrib --)
 						{	
-							value = (it.get());
+							value = it.get();
 							if (value > MaxInputValue)
 							{
 								value = MaxInputValue;
@@ -590,6 +590,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 				}	
 			}
 
+		
 	
 			/* template <typename T, class F> */
 			void /*CPSAttribMakerT<T, F>::*/ *make(CPSLocated *loc,
@@ -598,7 +599,8 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 											  uint32 stride,
 											  uint32 numAttrib,
 											  bool allowNoCopy /* = false */,
-											  uint32 srcStep /*= (1 << 16)*/
+											  uint32 srcStep /*= (1 << 16)*/,
+											  bool	forceClampEntry /*= false*/
 											 ) const
 			{
 
@@ -613,21 +615,21 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						{
 							CPSBaseIterator<TIteratorFloatStep1> 
 								it(TIteratorFloatStep1(loc->getTime().begin(), startIndex));
-							makeByIterator(it, tab, stride, numAttrib, loc->getLastForever());
+							makeByIterator(it, tab, stride, numAttrib, loc->getLastForever(), forceClampEntry);
 						}
 						break;
 						case CPSInputType::attrInverseMass:	
 						{
 							CPSBaseIterator<TIteratorFloatStep1> 
 								it(TIteratorFloatStep1(loc->getInvMass().begin() , startIndex));
-							makeByIterator(it, tab, stride, numAttrib, true);
+							makeByIterator(it, tab, stride, numAttrib, true, forceClampEntry);
 						}
 						break;		
 						case CPSInputType::attrSpeed:	
 						{
 							CVectNormIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getSpeed().begin(), startIndex));
-							makeByIterator(it, tab, stride, numAttrib, true);
+							makeByIterator(it, tab, stride, numAttrib, true, forceClampEntry);
 						}
 						break;
 
@@ -635,20 +637,20 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						{
 							CVectNormIterator<TIteratorVectStep1> 
 								it( TIteratorVectStep1(loc->getPos().begin(), startIndex) );
-							makeByIterator(it, tab, stride, numAttrib, true);
+							makeByIterator(it, tab, stride, numAttrib, true, forceClampEntry);
 						}
 						break;
 						case CPSInputType::attrUniformRandom:	
 						{
 							CRandomIterator it;
-							makeByIterator(it, tab, stride, numAttrib, true);
+							makeByIterator(it, tab, stride, numAttrib, true, forceClampEntry);
 						}
 						break;
 						case CPSInputType::attrUserParam:
 						{			
 							CDecalIterator it;
 							it.Value = loc->getUserParam(_InputType.UserParamNum); 
-							makeByIterator(it, tab, stride, numAttrib, false);
+							makeByIterator(it, tab, stride, numAttrib, false, forceClampEntry);
 						}
 						break;
 						case CPSInputType::attrLOD:
@@ -657,7 +659,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							CFDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
 							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
-							makeByIterator(it, tab, stride, numAttrib, false);
+							makeByIterator(it, tab, stride, numAttrib, false, forceClampEntry);
 						}
 						break;	
 						case CPSInputType::attrSquareLOD:
@@ -666,7 +668,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							CFSquareDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
 							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
-							makeByIterator(it, tab, stride, numAttrib, false);
+							makeByIterator(it, tab, stride, numAttrib, false, forceClampEntry);
 						}
 						break;	
 						case CPSInputType::attrClampedLOD:
@@ -675,7 +677,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							CFClampDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
 							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
-							makeByIterator(it, tab, stride, numAttrib, false);
+							makeByIterator(it, tab, stride, numAttrib, false, forceClampEntry);
 						}
 						break;
 						case CPSInputType::attrClampedSquareLOD:
@@ -684,7 +686,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							CFClampSquareDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
 							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
-							makeByIterator(it, tab, stride, numAttrib, false);
+							makeByIterator(it, tab, stride, numAttrib, false, forceClampEntry);
 						}
 						break;
 					}
@@ -701,21 +703,21 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						{
 							CPSBaseIterator<TIteratorFloatStep1616> 
 								it(TIteratorFloatStep1616(loc->getTime().begin(), startIndex, srcStep));
-							makeByIterator(it, tab, stride, numAttrib, loc->getLastForever());
+							makeByIterator(it, tab, stride, numAttrib, loc->getLastForever(), forceClampEntry);
 						}
 						break;
 						case CPSInputType::attrInverseMass:	
 						{
 							CPSBaseIterator<TIteratorFloatStep1616> 
 								it( TIteratorFloatStep1616(loc->getInvMass().begin(), startIndex, srcStep));
-							makeByIterator(it, tab, stride, numAttrib, true);
+							makeByIterator(it, tab, stride, numAttrib, true, forceClampEntry);
 						}
 						break;		
 						case CPSInputType::attrSpeed:	
 						{
 							CVectNormIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getSpeed().begin(), startIndex, srcStep) );
-							makeByIterator(it, tab, stride, numAttrib, true);
+							makeByIterator(it, tab, stride, numAttrib, true, forceClampEntry);
 						}
 						break;
 
@@ -723,20 +725,20 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						{
 							CVectNormIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
-							makeByIterator(it, tab, stride, numAttrib, true);
+							makeByIterator(it, tab, stride, numAttrib, true, forceClampEntry);
 						}
 						break;
 						case CPSInputType::attrUniformRandom:	
 						{
 							CRandomIterator it;
-							makeByIterator(it, tab, stride, numAttrib, true);
+							makeByIterator(it, tab, stride, numAttrib, true, forceClampEntry);
 						}
 						break;
 						case CPSInputType::attrUserParam:
 						{			
 							CDecalIterator it;
 							it.Value = loc->getUserParam(_InputType.UserParamNum); 
-							makeByIterator(it, tab, stride, numAttrib, false);
+							makeByIterator(it, tab, stride, numAttrib, false, forceClampEntry);
 						}
 						break;
 						case CPSInputType::attrLOD:
@@ -745,7 +747,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							CFDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
 							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
-							makeByIterator(it, tab, stride, numAttrib, false);
+							makeByIterator(it, tab, stride, numAttrib, false, forceClampEntry);
 						}
 						break;	
 						case CPSInputType::attrSquareLOD:
@@ -754,7 +756,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							CFSquareDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
 							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
-							makeByIterator(it, tab, stride, numAttrib, false);
+							makeByIterator(it, tab, stride, numAttrib, false, forceClampEntry);
 						}
 						break;	
 						case CPSInputType::attrClampedLOD:
@@ -763,7 +765,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							CFClampDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
 							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
-							makeByIterator(it, tab, stride, numAttrib, false);
+							makeByIterator(it, tab, stride, numAttrib, false, forceClampEntry);
 						}
 						break;
 						case CPSInputType::attrClampedSquareLOD:
@@ -772,7 +774,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							CFClampSquareDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
 							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
-							makeByIterator(it, tab, stride, numAttrib, false);
+							makeByIterator(it, tab, stride, numAttrib, false, forceClampEntry);
 						}
 						break;
 					}
@@ -1165,8 +1167,6 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 ///////////////////////////////////////////////
 // implementation of CPSAttribMakerT methods //
 ///////////////////////////////////////////////
-
-
 template <typename T, class F> 
 T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 {	
@@ -1307,10 +1307,149 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 	}
 
 	NLMISC::OptFastFloorEnd();
-	return result;
-	
+	return result;	
 }
 
+template <typename T, class F> 
+T  CPSAttribMakerT<T, F>::get(const CPSEmitterInfo &infos)
+{	
+	NLMISC::OptFastFloorBegin();
+	T result;	
+	switch (_InputType.InputType)
+	{
+		case CPSInputType::attrDate:	
+		{
+			float v = _NbCycles * infos.Life;
+			if (_Clamp)
+			{
+				if (v > MaxInputValue) v = MaxInputValue;
+			}
+			result = _F(NLMISC::OptFastFractionnalPart(v));
+		}
+		break;
+		case CPSInputType::attrInverseMass:	
+		{
+			float v = _NbCycles * infos.InvMass;
+			if (_Clamp)
+			{
+				if (v > MaxInputValue) v = MaxInputValue;
+			}
+			result =  _F(NLMISC::OptFastFractionnalPart(v));
+		}
+		break;		
+		case CPSInputType::attrSpeed:	
+		{
+			float v = _NbCycles * infos.Speed.norm();
+			if (_Clamp)
+			{
+				if (v > MaxInputValue) v = MaxInputValue;
+			}
+			result = _F(NLMISC::OptFastFractionnalPart(v));
+		}
+		break;
+
+		case CPSInputType::attrPosition:	
+		{
+			float v = _NbCycles * infos.Pos.norm();
+			if (_Clamp)
+			{
+				if (v > MaxInputValue) v = MaxInputValue;
+			}
+			result = _F(NLMISC::OptFastFractionnalPart(v));
+		}
+		break;
+		case CPSInputType::attrUniformRandom:	
+		{
+			result =  _F(float(rand() * (1 / double(RAND_MAX))));
+		}
+		break;
+		case CPSInputType::attrUserParam:
+		{			
+			float v = _NbCycles * infos.Loc->getUserParam(_InputType.UserParamNum); 
+			if (_Clamp)
+			{
+				if (v > MaxInputValue) v = MaxInputValue;
+			}
+			result = _F(v);
+		}
+		break;
+		case CPSInputType::attrLOD:
+		{	
+			static NLMISC::CVector lodVect;
+			float lodOffset;			
+			infos.Loc->getLODVect(lodVect, lodOffset, infos.Loc->getMatrixMode());
+			float r = fabsf(infos.Pos * lodVect + lodOffset);
+			r = _NbCycles * r > MaxInputValue ? MaxInputValue : r;			
+			if (_Clamp)
+			{
+				result = _F(r > MaxInputValue ? MaxInputValue : r);
+			}
+			else result = _F(r - uint32(r));						
+		}
+		break;
+		case CPSInputType::attrSquareLOD:
+		{	
+			static NLMISC::CVector lodVect;
+			float lodOffset;			
+			infos.Loc->getLODVect(lodVect, lodOffset, infos.Loc->getMatrixMode());						
+			float r = infos.Pos * lodVect + lodOffset;
+			r = _NbCycles * (r > MaxInputValue ? MaxInputValue : r * r);
+
+			if (_Clamp)
+			{
+				result = _F(r > MaxInputValue ? MaxInputValue : r);
+			}
+			else result = _F(r - uint32(r));						
+		}
+		break;
+		case CPSInputType::attrClampedLOD:
+		{	
+			static NLMISC::CVector lodVect;
+			float lodOffset;			
+			infos.Loc->getLODVect(lodVect, lodOffset, infos.Loc->getMatrixMode());
+
+			float r = infos.Pos * lodVect + lodOffset;
+			if (r < 0) 
+			{
+				result = _F(MaxInputValue);
+				break;
+			}
+			r = _NbCycles * (r > MaxInputValue ? MaxInputValue : r);									
+			if (_Clamp)
+			{
+				result = _F(r > MaxInputValue ? MaxInputValue : r);
+			}
+			else result = _F(r - uint32(r));						
+		}
+		break;
+		case CPSInputType::attrClampedSquareLOD:
+		{	
+			static NLMISC::CVector lodVect;
+			float lodOffset;			
+			infos.Loc->getLODVect(lodVect, lodOffset, infos.Loc->getMatrixMode());
+
+			float r = infos.Pos * lodVect + lodOffset;
+			if (r < 0) 
+			{
+				result = _F(MaxInputValue);
+				break; 
+			}
+			r = _NbCycles * (r > MaxInputValue ? MaxInputValue : r * r);									
+			if (_Clamp)
+			{
+				result = _F(r > MaxInputValue ? MaxInputValue : r);
+			}
+			else result = _F(r - uint32(r));						
+		}
+		break;	
+		default:
+			result = T();
+		break;		
+	}
+
+	NLMISC::OptFastFloorEnd();
+	return result;	
+}
 
 /** this functor 
   *
@@ -1400,7 +1539,8 @@ public:
 		if (index < _T.getSize()) return _T[index];
 		else return _DefaultValue;
 	}
-
+	virtual T get(const CPSEmitterInfo &infos) { 	return _DefaultValue; }
+	
 	/// inherited from CPSAttribMaker
 	virtual void *make(CPSLocated *loc,
 					   uint32 startIndex,
@@ -1408,7 +1548,8 @@ public:
 					   uint32 stride,
 					   uint32 numAttrib,
 					   bool allowNoCopy = false,
-					   uint32 srcStep = (1 << 16)
+					   uint32 srcStep = (1 << 16),
+					   bool forceClampEntry = false
 					  ) const
 	{
 		if (!numAttrib) return output;
@@ -1564,19 +1705,19 @@ public:
 		}
 	}
 	/// inherited from CPSAttribMaker
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) 
+	virtual void newElement(const CPSEmitterInfo &info) 
 	{ 
 		nlassert(_Scheme); // you should have called setScheme !
 
 		// we should create the contained scheme before this one if it has memory...
 		if (_Scheme->hasMemory())
 		{
-			_Scheme->newElement(emitterLocated, emitterIndex);
+			_Scheme->newElement(info);
 		}
 
-		if (emitterLocated)
+		if (info.Loc)
 		{
-			_T.insert(_Scheme->get(emitterLocated, emitterIndex));
+			_T.insert(_Scheme->get(info));
 		}
 		else
 		{			
@@ -1662,7 +1803,7 @@ public:
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	virtual uint32 getMinValue(void) const { return _MinValue; }	
 	virtual uint32 getMaxValue(void) const { return _MaxValue; }
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);	
+	virtual void newElement(const CPSEmitterInfo &info);	
 private:
 	uint32 _MinValue;
 	uint32 _MaxValue;
@@ -1685,7 +1826,7 @@ public:
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	virtual sint32 getMinValue(void) const { return _MinValue; }	
 	virtual sint32 getMaxValue(void) const { return _MaxValue; }
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);	
+	virtual void newElement(const CPSEmitterInfo &info);
 private:
 	sint32 _MinValue;
 	sint32 _MaxValue;
@@ -1708,7 +1849,7 @@ public:
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	virtual float getMinValue(void) const { return _MinValue; }	
 	virtual float getMaxValue(void) const { return _MaxValue; }
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);	
+	virtual void newElement(const CPSEmitterInfo &info);
 private:
 	float _MinValue;
 	float _MaxValue;

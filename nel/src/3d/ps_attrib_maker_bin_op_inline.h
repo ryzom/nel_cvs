@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op_inline.h
  * implementation of binary operator in particle systems
  *
- * $Id: ps_attrib_maker_bin_op_inline.h,v 1.7 2003/11/13 08:56:29 corvazier Exp $
+ * $Id: ps_attrib_maker_bin_op_inline.h,v 1.8 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -353,6 +353,35 @@ inline T CPSAttribMakerBinOp<T>::get (CPSLocated *loc, uint32 index)
 	return T();
 }
 
+//=================================================================================================================
+template <class T>
+inline T CPSAttribMakerBinOp<T>::get(const CPSEmitterInfo &info)
+{
+	switch (_Op)
+	{
+	case CPSBinOp::selectArg1:
+		return _Arg[0]->get(info);
+		break;
+	case CPSBinOp::selectArg2:
+		return _Arg[1]->get(info);
+		break;
+	case CPSBinOp::modulate:
+		return PSBinOpModulate(_Arg[0]->get(info), _Arg[1]->get(info));
+		break;
+	case CPSBinOp::add:
+		return PSBinOpAdd(_Arg[0]->get(info), _Arg[1]->get(info));
+		break;
+	case CPSBinOp::subtract:
+		return PSBinOpSubtract(_Arg[0]->get(info), _Arg[1]->get(info));
+		break;
+	default: break;
+	}
+	
+	nlstop;
+	return T();
+}
+
+
 // for private use
 void MakePrivate(uint8 * dest, const NLMISC::CRGBA *src1, const NLMISC::CRGBA *src2, uint32 stride, uint32 numAttrib, CPSBinOp::BinOp op);
 // for private use
@@ -403,7 +432,8 @@ inline void   *CPSAttribMakerBinOp<T>::makePrivate(T *buf1,
 												   uint32 stride,
 												   uint32 numAttrib,
 												   bool allowNoCopy /* = false */,
-												   uint32 srcStep /* = (1 << 16)*/
+												   uint32 srcStep /* = (1 << 16)*/,
+												   bool	forceClampEntry /*= false*/
 												  ) const
 {
 	uint8 *dest = (uint8 *) tab;
@@ -412,10 +442,10 @@ inline void   *CPSAttribMakerBinOp<T>::makePrivate(T *buf1,
 	switch (_Op)
 	{
 		case CPSBinOp::selectArg1:
-			return _Arg[0]->make(loc, startIndex, tab, stride, numAttrib, allowNoCopy, srcStep);
+			return _Arg[0]->make(loc, startIndex, tab, stride, numAttrib, allowNoCopy, srcStep, forceClampEntry);
 			break;
 		case CPSBinOp::selectArg2:
-			return _Arg[1]->make(loc, startIndex, tab, stride, numAttrib, allowNoCopy, srcStep);
+			return _Arg[1]->make(loc, startIndex, tab, stride, numAttrib, allowNoCopy, srcStep, forceClampEntry);
 			break;		
 		default: break;
 	}
@@ -425,8 +455,8 @@ inline void   *CPSAttribMakerBinOp<T>::makePrivate(T *buf1,
 	while (leftToDo)
 	{
 		toProcess = leftToDo > PSBinOpBufSize ? PSBinOpBufSize : leftToDo;
-		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &buf1[0], sizeof(T), toProcess, true, srcStep);
-		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &buf2[0], sizeof(T), toProcess, true, srcStep);
+		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &buf1[0], sizeof(T), toProcess, true, srcStep, forceClampEntry);
+		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &buf2[0], sizeof(T), toProcess, true, srcStep, forceClampEntry);
 		MakePrivate(dest, src1, src2, stride, toProcess, _Op);		
 		leftToDo -= toProcess;
 	}
@@ -442,7 +472,8 @@ inline void   *CPSAttribMakerBinOp<T>::make	  (CPSLocated *loc,
 										   uint32 stride,
 										   uint32 numAttrib,
 										   bool allowNoCopy /* = false */,
-										   uint32 srcStep /* = (1 << 16)*/
+										   uint32 srcStep /* = (1 << 16)*/,
+										   bool forceClampEntry /* = false */
 										  ) const
 {
 	/** init the tab used for computations. we use a trick to avoid ctor calls,
@@ -451,7 +482,7 @@ inline void   *CPSAttribMakerBinOp<T>::make	  (CPSLocated *loc,
 	  */
 	uint8 tab1[PSBinOpBufSize * sizeof(T)];
 	uint8 tab2[PSBinOpBufSize * sizeof(T)];
-	return makePrivate((T *) &tab1[0], (T *) &tab2[0], loc, startIndex, tab, stride, numAttrib, allowNoCopy, srcStep);
+	return makePrivate((T *) &tab1[0], (T *) &tab2[0], loc, startIndex, tab, stride, numAttrib, allowNoCopy, srcStep, forceClampEntry);
 }
 
 
@@ -726,10 +757,10 @@ inline void    CPSAttribMakerBinOp<T>::deleteElement (uint32 index)
 
 //=================================================================================================================
 template <class T>
-inline void    CPSAttribMakerBinOp<T>::newElement	  (CPSLocated *emitterLocated, uint32 emitterIndex)
+inline void    CPSAttribMakerBinOp<T>::newElement	  (const CPSEmitterInfo &info)
 {
-	if (_Arg[0]->hasMemory())	_Arg[0]->newElement(emitterLocated, emitterIndex);
-	if (_Arg[1]->hasMemory())	_Arg[1]->newElement(emitterLocated, emitterIndex);
+	if (_Arg[0]->hasMemory())	_Arg[0]->newElement(info);
+	if (_Arg[1]->hasMemory())	_Arg[1]->newElement(info);
 	if (_Size != _MaxSize)
 	{
 		++_Size;

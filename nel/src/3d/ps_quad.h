@@ -1,7 +1,7 @@
 /** \file ps_quad.h
  * Base quads particles.
  *
- * $Id: ps_quad.h,v 1.7 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_quad.h,v 1.8 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ class IDriver;
  *  Material, and method to setup them 
  */
 
- class CPSQuad : public CPSParticle
+class CPSQuad : public CPSParticle
 	           , public CPSColoredParticle
 			   , public CPSTexturedParticle
 			   , public CPSMultiTexturedParticle
@@ -96,11 +96,11 @@ protected:
 	void updateMatBeforeRendering(IDriver *drv, CVertexBuffer &vb);
 
 	/// this is inlined to save cost of call by derived class
-	void newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+	void newElement(const CPSEmitterInfo &info)
 	{
-		newColorElement(emitterLocated, emitterIndex);
-		newSizeElement(emitterLocated, emitterIndex);
-		newTextureIndexElement(emitterLocated, emitterIndex);
+		newColorElement(info);
+		newSizeElement(info);
+		newTextureIndexElement(info);
 	}
 
 	/// this is inlined to save cost of call by derived class

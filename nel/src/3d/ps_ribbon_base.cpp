@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.cpp
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.cpp,v 1.11 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_ribbon_base.cpp,v 1.12 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,13 +136,13 @@ void	CPSRibbonBase::setSegDuration(TAnimationTime ellapsedTime)
 }
 
 //=======================================================	
-void	CPSRibbonBase::updateGlobals(float realET)
+void	CPSRibbonBase::updateGlobals()
 {
 	nlassert(!_Parametric);
 	nlassert(_Owner);
 	const uint size = _Owner->getSize();
 	if (!size) return;
-	const TAnimationTime currDate = _Owner->getOwner()->getSystemDate() + realET;
+	const TAnimationTime currDate = _Owner->getOwner()->getSystemDate() + CParticleSystem::RealEllapsedTime;
 	if (currDate  - _LastUpdateDate >= _SegDuration)
 	{
 		if (_RibbonIndex == 0) _RibbonIndex = _NbSegs + EndRibbonStorage;
@@ -496,7 +496,7 @@ void	CPSRibbonBase::dupRibbon(uint dest, uint src)
 }
 
 //=======================================================	
-void	CPSRibbonBase::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void	CPSRibbonBase::newElement(const CPSEmitterInfo &info)
 {
 	if (_Parametric) return;
 	/// dump the same pos for all pos of the ribbon

@@ -1,7 +1,7 @@
 /** \file ps_plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.h,v 1.12 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_plane_basis_maker.h,v 1.13 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,6 +92,7 @@ class CPSPlaneBasisFollowSpeed : public CPSAttribMaker<CPlaneBasis>
 
 		/// compute one value of the attribute for the given index
 		virtual CPlaneBasis get(CPSLocated *loc, uint32 index);
+		virtual CPlaneBasis get(const CPSEmitterInfo &infos);
 
 		/** Fill tab with an attribute by using the given stride. It fills numAttrib attributes.
 		 *  \param loc the 'located' that hold the 'located bindable' that need an attribute to be filled
@@ -104,7 +105,8 @@ class CPSPlaneBasisFollowSpeed : public CPSAttribMaker<CPlaneBasis>
 						   uint32 stride,
 						   uint32 numAttrib,
 						   bool enableNoCopy = false,
-						   uint32 srcStep = (1 << 16)
+						   uint32 srcStep = (1 << 16),
+						   bool forceClampEntry = false
 						  ) const;
 
 		/** The same as make, but it replicate each attribute 4 times, thus filling 4*numAttrib. Useful for facelookat and the like

@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.10 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_face_look_at.cpp,v 1.11 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -924,10 +924,10 @@ CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex),
 }
 
 ///===========================================================================================
-void CPSFaceLookAt::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSFaceLookAt::newElement(const CPSEmitterInfo &info)
 {
-	CPSQuad::newElement(emitterLocated, emitterIndex);
-	newAngle2DElement(emitterLocated, emitterIndex);
+	CPSQuad::newElement(info);
+	newAngle2DElement(info);
 }
 
 ///===========================================================================================

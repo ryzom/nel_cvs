@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.h
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.h,v 1.8 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_ribbon_base.h,v 1.9 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,7 @@ protected:
 
 	
 	/// inherited from CPSLocatedBindable
-	virtual void					newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+	virtual void					newElement(const CPSEmitterInfo &info);
 	/// inherited from CPSLocatedBindable
 	virtual void					deleteElement(uint32 index);
 	/// inherited from CPSLocatedBindable	
@@ -122,7 +122,7 @@ protected:
 												  );
 
 	/// Called each time the time of the system change in order to update the ribbons positions
-	void							updateGlobals(float realET);
+	void							updateGlobals();
 
 	/// must be called for the lod to apply (updates UsedNbSegs)
 	void                            updateLOD();

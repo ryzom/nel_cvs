@@ -1,7 +1,7 @@
 /** \file ps_shockwave.h
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.h,v 1.8 2004/04/27 11:57:27 vizerie Exp $
+ * $Id: ps_shockwave.h,v 1.9 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,7 +113,7 @@ protected:
 
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
-	virtual void	newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+	virtual void	newElement(const CPSEmitterInfo &info);
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for the index given

@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.19 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_force.h,v 1.20 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@
 
 namespace NL3D {
  
-
+class CPSEmitterInfo;
 
 /**
  * All forces in the system derive from this class
@@ -69,14 +69,14 @@ public:
 	/**
 	 * process one pass for the force 
 	 */
-	virtual void		step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEllapsedTime);
+	virtual void		step(TPSProcessPass pass);
 
 	
-	/// Compute the force on the targets
-	virtual void		performDynamic(TAnimationTime ellapsedTime) = 0;
+	/// Compute the force on the targets. To be called inside the sim loop
+	virtual void		computeForces(CPSLocated &target) = 0;
 
 	/// Show the force (edition mode)
-	virtual void		show(TAnimationTime ellapsedTime)  = 0;
+	virtual void		show() = 0;
 
 	/// Serial the force definition. MUST be called by deriver during their serialisation
 	virtual void		 serial(NLMISC::IStream &f) throw(NLMISC::EStream);
@@ -99,7 +99,7 @@ public:
 	 virtual void integrate(float date, CPSLocated *src, uint32 startIndex, uint32 numObjects, NLMISC::CVector *destPos = NULL, NLMISC::CVector *destSpeed = NULL,
 							bool accumulate = false,
 							uint posStride = sizeof(NLMISC::CVector), uint speedStride = sizeof(NLMISC::CVector)
-							)
+							) const
 	 { 
 		 nlassert(0); // not an integrable force
 	 }
@@ -110,13 +110,13 @@ public:
 	  * NB : works only with integrable forces
 	  */
 	virtual void integrateSingle(float startDate, float deltaT, uint numStep,								 
-								 CPSLocated *src, uint32 indexInLocated,
+								 const CPSLocated *src, uint32 indexInLocated,
 								 NLMISC::CVector *destPos,
 								 bool accumulate = false,
-								 uint posStride = sizeof(NLMISC::CVector))
+								 uint posStride = sizeof(NLMISC::CVector)) const
 	{ 
 		 nlassert(0); // not an integrable force
-	 }
+	}
 
 
 	 
@@ -141,7 +141,7 @@ protected:
 	  */
 	virtual void		 basisChanged(TPSMatrixMode systemBasis);
 
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) = 0;
+	virtual void newElement(const CPSEmitterInfo &info) = 0;
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for of the index given
@@ -196,9 +196,9 @@ protected:
 	float _K;
 	CPSAttribMaker<float> *_IntensityScheme;
 
-	void newForceIntensityElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+	void newForceIntensityElement(const CPSEmitterInfo &info)
 	{
-		if (_IntensityScheme && _IntensityScheme->hasMemory()) _IntensityScheme->newElement(emitterLocated, emitterIndex);
+		if (_IntensityScheme && _IntensityScheme->hasMemory()) _IntensityScheme->newElement(info);
 	}	
 	void deleteForceIntensityElement(uint32 index)
 	{
@@ -222,7 +222,7 @@ public:
 	
 protected:
 	virtual CPSLocated *getForceIntensityOwner(void) { return _Owner; }
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { newForceIntensityElement(emitterLocated, emitterIndex); }
+	virtual void newElement(const CPSEmitterInfo &info) { newForceIntensityElement(info); }
 	virtual void deleteElement(uint32 index) { deleteForceIntensityElement(index); }
 	virtual void resize(uint32 size) { resizeForceIntensity(size); }
 	
@@ -280,7 +280,7 @@ template <class T> class CIsotropicForceT : public CPSForce
 public: 
 
 	/// Compute the force on the targets
-	virtual void performDynamic(TAnimationTime ellapsedTime);
+	virtual void computeForces(CPSLocated &target);
 
 
 	/// serialization
@@ -296,7 +296,7 @@ public:
 	 *  TODO later
 	 */
 
-	 void show(TAnimationTime ellapsedTime)  {}
+	 void show()  {}
 
 
 	 /// setup the functor object. The default does nothing
@@ -310,7 +310,7 @@ protected:
 
 	
 		
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { };		
+	virtual void newElement(const CPSEmitterInfo &info) { };
 	virtual void deleteElement(uint32 index) {};	
 	virtual void resize(uint32 size) {};
 
@@ -322,23 +322,20 @@ protected:
 //////////////////////////////////////////////////////////////////////
 
 
-template <class T> void CIsotropicForceT<T>::performDynamic(TAnimationTime ellapsedTime)
+template <class T> void CIsotropicForceT<T>::computeForces(CPSLocated &target)
 {
+	nlassert(CParticleSystem::InsideSimLoop);
 	for (uint32 k = 0; k < _Owner->getSize(); ++k)
 	{	
-		setupFunctor(k);
-		for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
-		{			
-			
-			TPSAttribVector::iterator speedIt = (*it)->getSpeed().begin(), endSpeedIt = (*it)->getSpeed().end();
-			TPSAttribVector::const_iterator posIt = (*it)->getPos().begin();
-			TPSAttribFloat::const_iterator invMassIt = (*it)->getInvMass().begin();
-			
-			for (; speedIt != endSpeedIt; ++speedIt, ++posIt, ++invMassIt)
-			{
-				_F(*posIt, *speedIt, *invMassIt, ellapsedTime);				
-			}
-		}
+		setupFunctor(k);								
+		TPSAttribVector::iterator speedIt = target.getSpeed().begin(), endSpeedIt = target.getSpeed().end();
+		TPSAttribVector::const_iterator posIt = target.getPos().begin();
+		TPSAttribFloat::const_iterator invMassIt = target.getInvMass().begin();
+		
+		for (; speedIt != endSpeedIt; ++speedIt, ++posIt, ++invMassIt)
+		{
+			_F(*posIt, *speedIt, *invMassIt);				
+		}		
 	}
 }
 
@@ -351,10 +348,10 @@ class CPSDirectionnalForce : public CPSForceIntensityHelper, public CPSDirection
 {
 	public:
 	/// Compute the force on the targets
-	virtual void performDynamic(TAnimationTime ellapsedTime);
+	virtual void computeForces(CPSLocated &target);
 
 	/// Show the force (edition mode)
-	virtual void show(TAnimationTime ellapsedTime);
+	virtual void show();
 
 	
 
@@ -395,10 +392,10 @@ class CPSGravity : public CPSForceIntensityHelper
 {
 public:
 	/// Compute the force on the targets
-	virtual void performDynamic(TAnimationTime ellapsedTime);
+	virtual void computeForces(CPSLocated &target);
 
 	/// Show the force (edition mode)
-	virtual void show(TAnimationTime ellapsedTime);
+	virtual void show();
 
 	
 
@@ -420,13 +417,13 @@ public:
 	virtual void integrate(float date, CPSLocated *src, uint32 startIndex, uint32 numObjects, NLMISC::CVector *destPos = NULL, NLMISC::CVector *destSpeed = NULL,
 							bool accumulate = false,
 							uint posStride = sizeof(NLMISC::CVector), uint speedStride = sizeof(NLMISC::CVector)
-							);
+							) const;
 
 	virtual void integrateSingle(float startDate, float deltaT, uint numStep,								 
-								 CPSLocated *src, uint32 indexInLocated,
+								 const CPSLocated *src, uint32 indexInLocated,
 								 NLMISC::CVector *destPos,
 								 bool accumulate = false,
-								 uint posStride = sizeof(NLMISC::CVector));
+								 uint posStride = sizeof(NLMISC::CVector)) const;
 
 protected:
 	/// inherited from CPSForceIntensityHelper
@@ -441,10 +438,10 @@ class CPSCentralGravity : public CPSForceIntensityHelper
 {
 public:
 	/// Compute the force on the targets
-	virtual void performDynamic(TAnimationTime ellapsedTime);
+	virtual void computeForces(CPSLocated &target);
 
 	/// Show the force (edition mode)
-	virtual void show(TAnimationTime ellapsedTime);
+	virtual void show();
 
 	
 
@@ -480,10 +477,10 @@ public:
 
 
 	/// Compute the force on the targets
-	virtual void performDynamic(TAnimationTime ellapsedTime);
+	virtual void computeForces(CPSLocated &target);
 
 	/// Show the force (edition mode)
-	virtual void show(TAnimationTime ellapsedTime);
+	virtual void show();
 
 
 	NLMISC_DECLARE_CLASS(CPSSpring); 
@@ -503,9 +500,9 @@ public:
 	#ifdef NL_OS_WINDOWS
 		__forceinline
 	#endif
-	 void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , TAnimationTime ellapsedTime)
+	 void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass)
 	 {
-		speed -= (ellapsedTime * _K * invMass * speed);
+		speed -= (CParticleSystem::EllapsedTime * _K * invMass * speed);
 	 }
 
 	 virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
@@ -563,7 +560,7 @@ public:
 
 protected:
 	virtual CPSLocated *getForceIntensityOwner(void) { return _Owner; }
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { newForceIntensityElement(emitterLocated, emitterIndex); }
+	virtual void newElement(const CPSEmitterInfo &info) { newForceIntensityElement(info); }
 	virtual void deleteElement(uint32 index) { deleteForceIntensityElement(index); }
 	virtual void resize(uint32 size) { resizeForceIntensity(size); }
 };
@@ -589,13 +586,13 @@ public:
 	virtual void integrate(float date, CPSLocated *src, uint32 startIndex, uint32 numObjects, NLMISC::CVector *destPos = NULL, NLMISC::CVector *destSpeed = NULL,
 							bool accumulate = false,
 							uint posStride = sizeof(NLMISC::CVector), uint speedStride = sizeof(NLMISC::CVector)
-							);
+							) const;
 
 	virtual void integrateSingle(float startDate, float deltaT, uint numStep,								 
-								 CPSLocated *src, uint32 indexInLocated,
+								 const CPSLocated *src, uint32 indexInLocated,
 								 NLMISC::CVector *destPos,
 								 bool accumulate = false,
-								 uint posStride = sizeof(NLMISC::CVector));
+								 uint posStride = sizeof(NLMISC::CVector)) const;
 
 	/// perform initialisations
 	static void initPrecalc();
@@ -604,9 +601,9 @@ public:
 	void setIntensityScheme(CPSAttribMaker<float> *scheme);
 
 	/// Compute the force on the targets
-	virtual void performDynamic(TAnimationTime ellapsedTime);
+	virtual void computeForces(CPSLocated &target);
 
-	void show(TAnimationTime ellapsedTime)  {}
+	void show()  {}
 
 
 	/** When used with parametric integration, this tells factor tells how fast the force acts on particle 
@@ -617,7 +614,7 @@ public:
 
 protected:
 	virtual CPSLocated *getForceIntensityOwner(void) { return _Owner; }
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { newForceIntensityElement(emitterLocated, emitterIndex); }
+	virtual void newElement(const CPSEmitterInfo &info) { newForceIntensityElement(info); }
 	virtual void deleteElement(uint32 index) { deleteForceIntensityElement(index); }
 	virtual void resize(uint32 size) { resizeForceIntensity(size); }
 
@@ -638,7 +635,7 @@ struct CPSTurbulForceFunc
 	#ifdef NL_OS_WINDOWS
 		__forceinline
 	#endif
-	void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , TAnimationTime ellapsedTime)
+	void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass)
 	{
 		nlassert(0);
 
@@ -713,7 +710,7 @@ public:
 
 protected:
 	virtual CPSLocated *getForceIntensityOwner(void) { return _Owner; }
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { newForceIntensityElement(emitterLocated, emitterIndex); }
+	virtual void newElement(const CPSEmitterInfo &info) { newForceIntensityElement(info); }
 	virtual void deleteElement(uint32 index) { deleteForceIntensityElement(index); }
 	virtual void resize(uint32 size) { resizeForceIntensity(size); }
 };
@@ -730,10 +727,10 @@ class CPSCylindricVortex : public CPSForceIntensityHelper, public IPSMover
 {
 public:
 	/// Compute the force on the targets
-	virtual void performDynamic(TAnimationTime ellapsedTime);
+	virtual void computeForces(CPSLocated &target);
 
 	/// Show the force (edition mode)
-	virtual void show(TAnimationTime ellapsedTime);
+	virtual void show();
 
 	
 	CPSCylindricVortex(float intensity = 1.f) : _RadialViscosity(.1f), _TangentialViscosity(.1f) 
@@ -788,7 +785,7 @@ protected:
 	// tangential viscosity : when set to 1, the tangential speed immediatly reach what it would be in a real vortex (w = 1 / r2)
 	float _TangentialViscosity;
 	
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+	virtual void newElement(const CPSEmitterInfo &info);
 	virtual void deleteElement(uint32 index);
 	virtual void resize(uint32 size);
 
@@ -807,7 +804,7 @@ class CPSMagneticForce : public CPSDirectionnalForce
 	{ 
 		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("MagneticForce");	
 	}
-	virtual void performDynamic(TAnimationTime ellapsedTime);
+	virtual void computeForces(CPSLocated &target);
 	/// serialization
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CPSMagneticForce); 

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.22 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.23 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,6 +113,9 @@ public:
 	T operator()(TAnimationTime time) const
 	{
 
+		#ifdef NL_DEBUG
+			nlassert(time >= 0.f && time <= 1.f);
+		#endif
 		return PSValueBlend(_StartValue, _EndValue, time);	// a cast to T is necessary, because 
 														// the specialization couls be done with integer
 	}
@@ -199,7 +202,9 @@ public:
 	#endif
 	T operator()(TAnimationTime time) const
 	{
-
+		#ifdef NL_DEBUG
+			nlassert(time >= 0.f && time <= 1.f);
+		#endif
 		return _Values[NLMISC::OptFastFloor(time * n)];	
 	}
 
@@ -298,7 +303,10 @@ public:
 		__forceinline
 	#endif
 	T operator()(TAnimationTime time) const
-		{		 
+	{	
+		#ifdef NL_DEBUG
+			nlassert(time >= 0.f && time <= 1.f);
+		#endif
 		return _Tab[NLMISC::OptFastFloor(time * _NbValues)];
 	}
 

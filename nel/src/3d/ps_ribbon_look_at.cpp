@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.15 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.16 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,13 +121,13 @@ void CPSRibbonLookAt::setTexture(CSmartPtr<ITexture> tex)
 
 
 //=======================================================	
-void CPSRibbonLookAt::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realET)
+void CPSRibbonLookAt::step(TPSProcessPass pass)
 {	
 	if (pass == PSMotion)
 	{		
 		if (!_Parametric)
 		{
-			updateGlobals(realET);			
+			updateGlobals();
 		}
 	}
 	else
@@ -165,11 +165,11 @@ void CPSRibbonLookAt::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAn
 
 
 //=======================================================	
-void CPSRibbonLookAt::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSRibbonLookAt::newElement(const CPSEmitterInfo &info)
 {
-	CPSRibbonBase::newElement(emitterLocated, emitterIndex);
-	newColorElement(emitterLocated, emitterIndex);
-	newSizeElement(emitterLocated, emitterIndex);	
+	CPSRibbonBase::newElement(info);
+	newColorElement(info);
+	newSizeElement(info);
 }
 
 

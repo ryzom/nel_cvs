@@ -1,7 +1,7 @@
 /** \file ps_sound.h
  * <File description>
  *
- * $Id: ps_sound.h,v 1.11 2004/01/13 12:52:58 berenguier Exp $
+ * $Id: ps_sound.h,v 1.12 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ public:
 	/**
 	  * process one pass for the sound. This is usually done during the motion pass
 	  */
-	virtual void				step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
+	virtual void				step(TPSProcessPass pass);
 	
 	/// set the name of the sound
 	void						setSoundName(const NLMISC::TStringId &soundName)
@@ -164,7 +164,7 @@ public:
 	bool						getUseOriginalPitchFlag() const { return _UseOriginalPitch; }
 	
 protected:
-	virtual void			newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+	virtual void			newElement(const CPSEmitterInfo &info);
 	virtual void			deleteElement(uint32 index);
 	virtual void			resize(uint32 size);
 	void					removeAllSources();

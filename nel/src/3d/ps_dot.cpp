@@ -1,7 +1,7 @@
 /** \file ps_dot.cpp
  * Dot particles
  *
- * $Id: ps_dot.cpp,v 1.7 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_dot.cpp,v 1.8 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -238,9 +238,9 @@ uint32 CPSDot::getMaxNumFaces(void) const
 }
 
 ///===================================================================
-void CPSDot::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSDot::newElement(const CPSEmitterInfo &info)
 {
-	newColorElement(emitterLocated, emitterIndex);
+	newColorElement(info);
 }
 
 ///===================================================================

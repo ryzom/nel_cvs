@@ -1,6 +1,6 @@
 /** \file ps_light.h
  *
- * $Id: ps_light.h,v 1.1 2003/08/08 16:54:31 vizerie Exp $
+ * $Id: ps_light.h,v 1.2 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -57,7 +57,7 @@ public:
 	/** From CPSLocatedBindable.
 	  * For lights, this update their pos, colors and attenuation distances in the engine
 	  */
-	virtual void			step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);	
+	virtual void			step(TPSProcessPass pass);	
 	///\name Attributes
 	//@{
 		// Set a constant color, this removes any previous color scheme.
@@ -86,7 +86,7 @@ public:
 		CPSAttribMaker<float>  *getAttenEndScheme() const { return _AttenEndScheme; }
 	//@}	
 protected:
-	virtual void				newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+	virtual void				newElement(const CPSEmitterInfo &info);
 	virtual void				deleteElement(uint32 index);
 	virtual void				resize(uint32 size);
 	virtual void				releaseAllRef();

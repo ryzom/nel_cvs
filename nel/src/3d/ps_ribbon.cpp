@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.15 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.16 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -263,13 +263,13 @@ inline uint CPSRibbon::getNumVerticesInSlice() const
 
 
 //=======================================================	
-void CPSRibbon::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realET)
+void CPSRibbon::step(TPSProcessPass pass)
 {	
 	if (pass == PSMotion)
 	{	
 		if (!_Parametric)
 		{
-			updateGlobals(realET);
+			updateGlobals();
 		}
 	}
 	else
@@ -310,11 +310,11 @@ void CPSRibbon::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimatio
 
 
 //=======================================================	
-void CPSRibbon::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSRibbon::newElement(const CPSEmitterInfo &info)
 {
-	CPSRibbonBase::newElement(emitterLocated, emitterIndex);
-	newColorElement(emitterLocated, emitterIndex);
-	newSizeElement(emitterLocated, emitterIndex);
+	CPSRibbonBase::newElement(info);
+	newColorElement(info);
+	newSizeElement(info);
 }
 
 

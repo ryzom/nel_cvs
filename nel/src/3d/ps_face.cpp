@@ -1,7 +1,7 @@
 /** \file ps_face.cpp
  * Face particles.
  *
- * $Id: ps_face.cpp,v 1.9 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_face.cpp,v 1.10 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -220,7 +220,7 @@ CPSFace::CPSFace(CSmartPtr<ITexture> tex) : CPSQuad(tex)
 }
 
 ///======================================================================================
-void CPSFace::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime)
+void CPSFace::step(TPSProcessPass pass)
 {
 	if (pass == PSToolRender) // edition mode only
 	{			
@@ -237,7 +237,7 @@ void CPSFace::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationT
 			{
 				// not optimized at all, but this will apply to very few elements anyway...
 				CMatrix mat;
-				mat.rotate(CQuat(it->Axis, ellapsedTime * it->AngularVelocity));
+				mat.rotate(CQuat(it->Axis, CParticleSystem::EllapsedTime * it->AngularVelocity));
 				CVector n = mat * it->Basis.getNormal();
 				it->Basis = CPlaneBasis(n);
 			}
@@ -376,10 +376,10 @@ void CPSFace::fillIndexesInPrecompBasis(void)
 }
 
 ///======================================================================================
-void CPSFace::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSFace::newElement(const CPSEmitterInfo &info)
 {
-	CPSQuad::newElement(emitterLocated, emitterIndex);
-	newPlaneBasisElement(emitterLocated, emitterIndex);
+	CPSQuad::newElement(info);
+	newPlaneBasisElement(info);
 	const uint32 nbConf = _PrecompBasis.size();
 	if (nbConf) // do we use precomputed basis ?
 	{

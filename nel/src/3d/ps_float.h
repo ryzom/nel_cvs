@@ -1,7 +1,7 @@
 /** \file ps_float.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.14 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_float.h,v 1.15 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,6 +165,9 @@ class CPSFloatCurveFunctor
 		#endif
 		float operator()(TAnimationTime time) const
 		{
+			#ifdef NL_DEBUG
+				nlassert(time >= 0.f && time <= 1.f);
+			#endif
 			return _Tab[NLMISC::OptFastFloor(time * _NumSamples)];
 		}
 

@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.29 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.30 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,13 +69,19 @@ public:
 	/// Return true if this located bindable derived class holds alive emitters
 	virtual bool					hasEmitters(void) { nlassert(_Owner); return _Owner->getSize() != 0; }
 		
+	
+	virtual void					step(TPSProcessPass pass);
+
 	/**
 	* Process the emissions.
 	* The standard behaviuour will call "emit" each time is needed.
 	* So you don't need to redefine this most of the time
 	*
 	*/
-	virtual void					step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEllapsedTime);
+	void							computeSpawns(uint firstInstanceIndex);
+	/// This is called inside the sim step, and triggers emitter that where flagged as 'emit once'	  
+	void							doEmitOnce(uint firstInstanceIndex);
+
 	
 
 	/// Display the emitter in edition mode
@@ -269,32 +275,37 @@ public:
 	// from CPSLocated
 	virtual void setOwner(CPSLocated *psl);		
 
-
 	// from from CPSLocated
 	virtual bool			getUserMatrixUsageCount() const;
 
+	// Set the emit trigger. At the next sim step, all particles will emit at the start of the step.
+	void					setEmitTrigger() { _EmitTrigger = true; }	
+	// Update emit trigger. To Be called at the start of the sim step.
+	// If emit trigger is set, all emitter emit a single time, and then the falg is cleared
+	void					updateEmitTrigger();
+
 protected:	
+	friend class CPSLocated;
 
-	/// This will call emit, and will add additionnal features (speed addition and so on)
+	/// This will call emit, and will add additionnal features (speed addition and so on). This must be called inside the sim loop.
 	void						processEmit(uint32 index, sint nbToGenerate);
+	// The same than process emit, but can be called outside the sim loop.
+	void						processEmitOutsideSimLoop(uint32 index, sint nbToGenerate);
 
-	/// The same as processEmit, but can also add a time delta
+	/// The same as processEmit, but can also add a time delta. This must be called inside the sim loop.
 	void						processEmitConsistent(const NLMISC::CVector &emitterPos,
 													  uint32 emitterIndex,
 													  sint nbToGenerate,
-													  TAnimationTime deltaT,
-													  TAnimationTime ellapsedTime,
-													  float realEllapsedTimeRatio
-													 );
+													  TAnimationTime deltaT);
 
 	/// Regular emission processing
-	void							processRegularEmission(TAnimationTime ellapsedTime, float emitLOD);
-	void							processRegularEmissionWithNoLOD(TAnimationTime ellapsedTime);
+	void							processRegularEmission(uint firstInstanceIndex, float emitLOD);
+	void							processRegularEmissionWithNoLOD(uint firstInstanceIndex);
 
 	/** Regular emission processing, with low-framrate compensation
 	  */
-	void							processRegularEmissionConsistent(TAnimationTime ellapsedTime, float realEllapsedTimeRatio, float emitLOD, float inverseEmitLOD);
-	void							processRegularEmissionConsistentWithNoLOD(TAnimationTime ellapsedTime, float realEllapsedTimeRatio);
+	void							processRegularEmissionConsistent(uint firstInstanceIndex, float emitLOD, float inverseEmitLOD);
+	void							processRegularEmissionConsistentWithNoLOD(uint firstInstanceIndex);
 
 
 	// test if user matrix is needed to compute direction of emission
@@ -318,19 +329,21 @@ protected:
 
 	/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
 	 */
-	virtual void					newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+	virtual void					newElement(const CPSEmitterInfo &info);
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for of the index given
 	 *  index out of range -> nl_assert
 	 */
 	virtual void					deleteElement(uint32 index);
+	// version of delete element that is called by the sim loop
+	virtual void					deleteElement(uint32 index, TAnimationTime timeUntilNextSimStep);
 
 	/** Resize the bindable attributes containers. DERIVERS SHOULD CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
 	virtual void					resize(uint32 size);
-	virtual void					bounceOccured(uint32 index);	
+	virtual void					bounceOccured(uint32 index, TAnimationTime timeToNextSimStep);
 	void							updateMaxCountVect();
 
 
@@ -355,8 +368,12 @@ protected:
 	bool							_ConsistentEmission                 : 1; 
 	bool							_BypassAutoLOD                      : 1;
 	bool							_UserMatrixModeForEmissionDirection : 1; // true when the direction of emission is expressed in a user defined coordinate system (otherwise it is expressed in this object coordinate system, as specified by setMatrixMode)
+	bool							_EmitTrigger						: 1;
 	TPSMatrixMode					_UserDirectionMatrixMode;
 	static bool						_BypassEmitOnDeath; // for edition only
+private:
+	// common op of both versions of deleteElement
+	void							deleteElementBase(uint32 index);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -421,9 +438,9 @@ class CPSModulatedEmitter
 		// emitter must define this in order to allow this class to access the located owner
 		virtual CPSLocated *getModulatedEmitterOwner(void) = 0;
 
-		void newEmitteeSpeedElement(CPSLocated *emitter, uint32 emitterIndex)
+		void newEmitteeSpeedElement(const CPSEmitterInfo &info)
 		{
-			if (_EmitteeSpeedScheme && _EmitteeSpeedScheme->hasMemory()) _EmitteeSpeedScheme->newElement(emitter, emitterIndex);
+			if (_EmitteeSpeedScheme && _EmitteeSpeedScheme->hasMemory()) _EmitteeSpeedScheme->newElement(info);
 		}
 
 		void deleteEmitteeSpeedElement(uint32 index)
@@ -477,8 +494,10 @@ protected:
 	NLMISC::CVector _Dir;
 
 	virtual CPSLocated *getModulatedEmitterOwner(void) { return _Owner; }
-	virtual void newElement(CPSLocated *emitter, uint32 emitterIndex);
+	virtual void newElement(const CPSEmitterInfo &info);	
 	virtual void deleteElement(uint32 index);
+	void deleteElementBase(uint32 index);
+	virtual void deleteElement(uint32 index, TAnimationTime timeUntilNextSimStep);
 	virtual void resize(uint32 capacity);
 }; 
 
@@ -524,8 +543,10 @@ public:
 	virtual void emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
 protected:
 	virtual CPSLocated *getModulatedEmitterOwner(void) { return _Owner; }
-	virtual void newElement(CPSLocated *emitter, uint32 emitterIndex);
+	virtual void newElement(const CPSEmitterInfo &info);
 	virtual void deleteElement(uint32 index);
+	void deleteElementBase(uint32 index);
+	virtual void deleteElement(uint32 index, TAnimationTime timeUntilNextSimStep);
 	virtual void resize(uint32 capacity);
 
 
@@ -535,8 +556,7 @@ protected:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Emit directionnally in a rectangle (useful to produce snow, drop of water ...)
-class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, public IPSMover
-							, public CPSDirection
+class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, public IPSMover, public CPSDirection
 {
 	public:
 
@@ -592,13 +612,15 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 
 		/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
 		 */
-		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+		virtual void newElement(const CPSEmitterInfo &info);
 	
 		/** Delete an element given its index
 		 *  Attributes of the located that hold this bindable are still accessible for of the index given
 		 *  index out of range -> nl_assert
 		 */
 		virtual void deleteElement(uint32 index);
+		void deleteElementBase(uint32 index);
+		virtual void deleteElement(uint32 index, TAnimationTime timeUntilNextSimStep);
 
 		/** Resize the bindable attributes containers. DERIVERS SHOULD CALL THEIR PARENT VERSION
 		 * should not be called directly. Call CPSLocated::resize instead
@@ -686,8 +708,10 @@ public:
 protected:
 	virtual CPSLocated *getModulatedEmitterOwner(void) { return _Owner; }	
 	TPSAttribFloat _Radius;	
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);	
+	virtual void newElement(const CPSEmitterInfo &info);	
 	virtual void deleteElement(uint32 index);
+	void deleteElementBase(uint32 index);
+	virtual void deleteElement(uint32 index, TAnimationTime timeUntilNextSimStep);
 	virtual void resize(uint32 size);
 };
 

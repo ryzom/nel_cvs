@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.48 2004/03/08 11:21:36 vizerie Exp $
+ * $Id: particle_system.h,v 1.49 2004/05/14 15:38:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@
 #include "3d/particle_system_process.h"
 #include "3d/ps_lod.h"
 #include "3d/ps_attrib_maker.h"
-
+#include "3d/ps_spawn_info.h"
 
 #include <map>
 
@@ -48,6 +48,7 @@ namespace NL3D
 {
 
 class CParticleSystemShape;
+class CPSLocated;
 class CPSLocatedBindable;
 class CFontGenerator;
 class CFontManager;
@@ -61,13 +62,6 @@ struct UPSSoundServer;
 
 /// number user params for a particle system
 const uint MaxPSUserParam = 4;
-
-/** Particles system classes. They can be used as it. If you want to use a particle system in 
- *  a scene (M.O.T model), see particle_system_shape.h and particle_system_instance.h
- *  TODO : give example of use here...
- */
-
-
 
 
 /**
@@ -235,7 +229,7 @@ public:
 		* \param pass the pass to be executed
 		* \see setDriver
 		*/
-		virtual void step(TPass pass, TAnimationTime ellapsedTime);
+		virtual void step(TPass pass, TAnimationTime ellapsedTime, CParticleSystemShape &shape);
 		//@}
 
 		
@@ -269,7 +263,7 @@ public:
 		/** Given its pointer, return an index to a process.
 		  * The process must be part of the system, otherwise an assertion is raised
 		  */
-		uint						getIndexOf(const CParticleSystemProcess *process) const;
+		uint						getIndexOf(const CParticleSystemProcess &process) const;
 
 		/** Remove a process
 		 * It is deleted by the system
@@ -967,8 +961,8 @@ public:
 				/** return the nth locatedBindable associtaed with this ID. 
 				  * \return NULL if it doesn't exist
 				  */
-				CPSLocatedBindable *getLocatedBindableByExternID(uint32 id, uint index);
-				const CPSLocatedBindable *getLocatedBindableByExternID(uint32 id, uint index) const;
+				CPSLocatedBindable       *getLocatedBindableByExternID(uint32 id, uint index);
+				const CPSLocatedBindable *getLocatedBindableByExternID(uint32 id, uint index) const;				
 				/// Get the number of IDs in the system
 				uint   getNumID() const;
 				/// Get the nth ID, or 0 if index is invalid.			  
@@ -1033,7 +1027,11 @@ public:
 			// Change z-bias of all materials. The z-bias value is given in world coordinates
 			void setZBias(float value);
 			// debug : force to display bbox of all particle systems
-			static void forceDisplayBBox(bool on) { _ForceDisplayBBox = on; }			
+			static void forceDisplayBBox(bool on) { _ForceDisplayBBox = on; }
+			/** get sorting of the system emitter precedence (it is topological sort of the graph of emitters)
+			  * The result vector contains the index of each process (see getProcess) in order
+			  */
+			void		getSortingByEmitterPrecedence(std::vector<uint> &result) const;
 		// @}
 
 	
@@ -1044,9 +1042,11 @@ private:
 private:
 	friend class CParticleSystemModel;	
 	/// process a pass on the bound located
-	void					stepLocated(TPSProcessPass pass, TAnimationTime et, TAnimationTime realEt);
+	void					stepLocated(TPSProcessPass pass);
 	void					updateLODRatio();
 	void					updateColor();
+	// update index of all the process
+	void					updateProcessIndices();
 	// for debug only
 	void					checkIntegrity();
 	// map that contain global value that can be affected to user param
@@ -1195,9 +1195,7 @@ private:
 
 	static bool									_SerialIdentifiers;
 	static bool									_ForceDisplayBBox;
-
-	/// Inverse of the ellapsed time (call to step, valid only for motion pass)
-	float										_InverseEllapsedTime;	
+	
 
 	#ifdef NL_DEBUG
 		static uint									_NumInstances;
@@ -1215,11 +1213,33 @@ public:
 	void		addRefForUserSysCoordInfo(uint numRefs = 1);
 	// FOR PRIVATE USE : called when one less object of the system needs the _UserCoordSystemInfo field => deallocate it when there are no references left
 	void		releaseRefForUserSysCoordInfo(uint numRefs = 1);
+public:
+	// spawn info. They are shared by all PS ! This is because there can be only one PS processed at a time in the lib, so no need to store that per instance
+	typedef std::vector<CPSSpawnInfo> TSpawnInfoVect;
+	struct CSpawnVect : public NLMISC::CRefCount
+	{
+		TSpawnInfoVect SpawnInfos;
+		uint		   MaxNumSpawns;
+	};
+	static std::vector<NLMISC::CSmartPtr<CSpawnVect> > _Spawns; // for each process of the system (the array is ordered as CParticleSystem::_ProcessVect is) , store a list of particles to spawn. We can't spawn them directly, 
+															    // because ageing particle must be processed and removed first to make room
+															    // for new particles and thus avoid a 'pulse' effect when framerate is low or when spawning is fast  (see the update loop CParticleSystem::step for details)
+															    // NB : we use a smart pointer to avoid resize of a vector of vector, which is baaad...
+															    // This is public but intended to be used by CPSLocated only.
+	static std::vector<uint>						   _ParticleToRemove;			// used during the update step, contains the indices of the particles to remove	
+	static std::vector<sint>						   _ParticleRemoveListIndex; 	// for each particle, -1 if it hasn't been removed, or else give the insertion number in _ParticleToRemove
+	static std::vector<uint>						   _CollidingParticles; // index of particle that collided
+	static std::vector<NLMISC::CVector>				   _SpawnPos;			// spawn position of newly created particles		
+public:
+	// current sim steps infos
+	static TAnimationTime								EllapsedTime;
+	static TAnimationTime								InverseTotalEllapsedTime;
+	static TAnimationTime								RealEllapsedTime;
+	static float										RealEllapsedTimeRatio;	
+	static bool											InsideSimLoop;	
+	static bool											InsideRemoveLoop;
+	static bool											InsideNewElementsLoop;	
 };
-
-
-
-
 
 // NOT USED FOR NOW
 /**

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.21 2004/03/09 13:45:55 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.22 2004/05/14 15:38:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,7 +175,7 @@ protected:
 	bool				_Sharing;								// mirror the ps value
 
 	// keep smart pointer on textures for caching, so that when flushTextures is called, subsequent 
-	std::vector<NLMISC::CSmartPtr<ITexture> > _CachedTex;
+	std::vector<NLMISC::CSmartPtr<ITexture> > _CachedTex;	
 
 	// The amount of memory needed for instanciation or 0 if not known.
 	// If the amount is known, a big block can be allocated for fast contiguous allocations
@@ -190,6 +190,8 @@ public:
 		// 
 		NLMISC::CContiguousBlockAllocator		Allocator;
 	#endif
+	// Order in which the element of the particle system must be processed during the sim loop. 
+	std::vector<uint>	_ProcessOrder;
 };
 
 } // NL3D

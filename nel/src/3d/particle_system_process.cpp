@@ -1,7 +1,7 @@
 /** \file particle_system_process.cpp
  * <File description>
  *
- * $Id: particle_system_process.cpp,v 1.5 2003/12/08 17:28:32 vizerie Exp $
+ * $Id: particle_system_process.cpp,v 1.6 2004/05/14 15:38:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,7 +103,7 @@ void CParticleSystemProcess::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// version 2 : added matrix mode (just not fx world matrix or identity)
 	// version 1 : base version
 	sint ver = f.serialVersion(2);
-	f.serialPtr(_Owner);
+	f.serialPtr(_Owner);	
 	if (ver == 1)
 	{	
 		nlassert(f.isReading());

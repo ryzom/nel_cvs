@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * FanLight particles
  *
- * $Id: ps_fan_light.h,v 1.8 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: ps_fan_light.h,v 1.9 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,7 +142,7 @@ public:
 	virtual void			setZBias(float value) { CPSMaterial::setZBias(value); }	
 	
 protected:
-	void				newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+	void				newElement(const CPSEmitterInfo &info);
 	void				deleteElement(uint32);
 	virtual void resize(uint32 size); 
 	virtual CPSLocated *getColorOwner(void) { return _Owner; }

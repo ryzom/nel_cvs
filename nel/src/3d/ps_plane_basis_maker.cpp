@@ -1,7 +1,7 @@
 /** \file ps_plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.cpp,v 1.13 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_plane_basis_maker.cpp,v 1.14 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,10 @@ CPlaneBasis CPSPlaneBasisFollowSpeed::get(CPSLocated *loc, uint32 index)
 {
    return (CPlaneBasis(loc->getSpeed()[index]));
 }
+CPlaneBasis CPSPlaneBasisFollowSpeed::get(const CPSEmitterInfo &infos)
+{
+	return (CPlaneBasis(infos.Speed));
+}
 
 ///============================================================================
 void *CPSPlaneBasisFollowSpeed::make(CPSLocated *loc,
@@ -51,7 +55,8 @@ void *CPSPlaneBasisFollowSpeed::make(CPSLocated *loc,
 									 void *tab, uint32 stride,
 									 uint32 numAttrib,
 									 bool enableNoCopy /* = false*/,
-									 uint32 srcStep /*= (1 << 16)*/
+									 uint32 srcStep /*= (1 << 16)*/,
+									 bool forceClampEntry /* = false */
 									) const
 {
 	nlassert(numAttrib);

@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.18 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.19 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -129,7 +129,7 @@ public:
 protected:
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+	virtual void newElement(const CPSEmitterInfo &info);
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for the index given
@@ -137,7 +137,7 @@ protected:
 	 */
 	virtual void deleteElement(uint32 index);
 
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
+	virtual void step(TPSProcessPass pass);
 
 	/// in fact we don't draw the meshs, we just update their pos...
 	virtual void updatePos();
@@ -388,20 +388,20 @@ protected:
 
 	/**	Generate a new element.
 	 */
-	virtual void		newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+	virtual void		newElement(const CPSEmitterInfo &info);
 	
 	/** Delete an element by its index	 
 	 */
 	virtual void		deleteElement(uint32 index);
 
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
+	virtual void step(TPSProcessPass pass);
 	/** called by the system when particles must be drawn
 	  * \param opaque true if we are dealing with the opaque pass, false for transparent faces
 	  */
-	void		draw(bool opaque, TAnimationTime ellapsedTime);
+	void		draw(bool opaque);
 
 	/// draw for pre-rotated meshs
-	void				drawPreRotatedMeshs(bool opaque, TAnimationTime ellapsedTime);
+	void				drawPreRotatedMeshs(bool opaque);
 	
 
 	/// release the shapes used by this particle
@@ -428,7 +428,7 @@ protected:
 	bool				update(std::vector<sint> *numVerts = NULL);
 
 	/// make a vb for the prerotated mesh from a source vb
-	CVertexBuffer	    &makePrerotatedVb(const CVertexBuffer &inVB, TAnimationTime ellapsedTime);
+	CVertexBuffer	    &makePrerotatedVb(const CVertexBuffer &inVB);
 	
 	/** A rendering pass. The primitive block contains several duplication of the primitives of the original mesh, in order
       * to draw several of them at once

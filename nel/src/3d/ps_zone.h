@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.12 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_zone.h,v 1.13 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,14 +79,11 @@ public:
 	 * Process one pass for the zone
 	 * The default behaviour call performMotion or show depending on the pass being processed
 	 */
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
-
-	
-	/// This is usually called by the step method for the pass dedicated to zone
-	virtual void performMotion(TAnimationTime ellapsedTime) = 0;
+	virtual void step(TPSProcessPass pass);
+		
 
 	/// Show the zone (edition mode).
-	virtual void show(TAnimationTime ellapsedTime) = 0;
+	virtual void show() = 0;
 		
 
 	/// Add a new type of located for this zone to apply on. nlassert if already present	
@@ -115,6 +112,10 @@ public:
 
 	TCollisionBehaviour getCollisionBehaviour(void) const { return _CollisionBehaviour; }
 
+	/** Compute collisions for the given target. This will update the collisions infos.
+	  * The caller must provide pointer to arrays positions before and after time step.
+	  */
+	virtual	void computeCollisions(CPSLocated &target, uint firstInstanceIndex, const NLMISC::CVector *posBefore, const NLMISC::CVector *posAfter) = 0;
 
 protected:
 
@@ -149,8 +150,8 @@ protected:
 class CPSZonePlane : public CPSZone, public IPSMover
 {
 	public:
-		virtual void performMotion(TAnimationTime ellapsedTime);
-		virtual void show(TAnimationTime ellapsedTime);
+		virtual	void computeCollisions(CPSLocated &target, uint firstInstanceIndex, const NLMISC::CVector *posBefore, const NLMISC::CVector *posAfter);
+		virtual void show();
 	
 
 		NLMISC_DECLARE_CLASS(CPSZonePlane);
@@ -171,7 +172,7 @@ class CPSZonePlane : public CPSZone, public IPSMover
 
 		virtual void resize(uint32 size);
 
-		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+		virtual void newElement(const CPSEmitterInfo &info);
 
 		virtual void deleteElement(uint32 index);
 };
@@ -200,8 +201,8 @@ typedef CPSAttrib<CRadiusPair> TPSAttribRadiusPair;
 class CPSZoneSphere : public CPSZone, public IPSMover
 {
 	public:
-		virtual void performMotion(TAnimationTime ellapsedTime);
-		virtual void show(TAnimationTime ellapsedTime);
+		virtual	void computeCollisions(CPSLocated &target, uint firstInstanceIndex, const NLMISC::CVector *posBefore, const NLMISC::CVector *posAfter);
+		virtual void show();
 	
 
 		NLMISC_DECLARE_CLASS(CPSZoneSphere);
@@ -234,7 +235,7 @@ class CPSZoneSphere : public CPSZone, public IPSMover
 
 		virtual void resize(uint32 size);
 
-		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+		virtual void newElement(const CPSEmitterInfo &info);
 
 		virtual void deleteElement(uint32 index);
 };
@@ -244,8 +245,8 @@ class CPSZoneSphere : public CPSZone, public IPSMover
 class CPSZoneDisc : public CPSZone, public IPSMover
 {
 	public:
-		virtual void performMotion(TAnimationTime ellapsedTime);
-		virtual void show(TAnimationTime ellapsedTime);
+		virtual	void computeCollisions(CPSLocated &target, uint firstInstanceIndex, const NLMISC::CVector *posBefore, const NLMISC::CVector *posAfter);
+		virtual void show();
 	
 		CPSZoneDisc()
 		{
@@ -277,7 +278,7 @@ class CPSZoneDisc : public CPSZone, public IPSMover
 
 		virtual void resize(uint32 size);
 
-		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+		virtual void newElement(const CPSEmitterInfo &info);
 
 		virtual void deleteElement(uint32 index);
 
@@ -291,8 +292,8 @@ class CPSZoneDisc : public CPSZone, public IPSMover
 class CPSZoneCylinder : public CPSZone, public IPSMover
 {
 	public:
-		virtual void performMotion(TAnimationTime ellapsedTime);
-		virtual void show(TAnimationTime ellapsedTime);
+		virtual	void computeCollisions(CPSLocated &target, uint firstInstanceIndex, const NLMISC::CVector *posBefore, const NLMISC::CVector *posAfter);
+		virtual void show();
 	
 		CPSZoneCylinder()
 		{
@@ -329,7 +330,7 @@ class CPSZoneCylinder : public CPSZone, public IPSMover
 
 		virtual void resize(uint32 size);
 
-		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+		virtual void newElement(const CPSEmitterInfo &info);
 
 		virtual void deleteElement(uint32 index);
 };
@@ -343,8 +344,8 @@ class CPSZoneCylinder : public CPSZone, public IPSMover
 class CPSZoneRectangle : public CPSZone, public IPSMover
 {
 	public:
-		virtual void performMotion(TAnimationTime ellapsedTime);
-		virtual void show(TAnimationTime ellapsedTime);
+		virtual	void computeCollisions(CPSLocated &target, uint firstInstanceIndex, const NLMISC::CVector *posBefore, const NLMISC::CVector *posAfter);
+		virtual void show();
 	
 		CPSZoneRectangle()
 		{
@@ -385,7 +386,7 @@ class CPSZoneRectangle : public CPSZone, public IPSMover
 
 		virtual void resize(uint32 size);
 
-		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+		virtual void newElement(const CPSEmitterInfo &info);
 
 		virtual void deleteElement(uint32 index);
 

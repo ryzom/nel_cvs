@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.47 2004/04/08 19:48:20 berenguier Exp $
+ * $Id: particle_system_shape.cpp,v 1.48 2004/05/14 15:38:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -344,7 +344,7 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	{
 		PSLookAtRenderTime = 0;
 		//NLMISC::TTicks start = NLMISC::CTime::getPerformanceTime();					
-		ps->step(CParticleSystem::SolidRender, delay);
+		ps->step(CParticleSystem::SolidRender, delay, *this);
 		/*NLMISC::TTicks end = NLMISC::CTime::getPerformanceTime();
 		nlinfo("Solid render time time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(end - start)));	
 		nlinfo("LookAt Render time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(PSLookAtRenderTime)));	*/
@@ -353,7 +353,7 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	{
 		//PSLookAtRenderTime = 0;
 		//NLMISC::TTicks start = NLMISC::CTime::getPerformanceTime();
-		ps->step(CParticleSystem::BlendRender, delay);
+		ps->step(CParticleSystem::BlendRender, delay, *this);
 		/*NLMISC::TTicks end = NLMISC::CTime::getPerformanceTime();
 		nlinfo("Blend render time time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(end - start)));
 		nlinfo("LookAt Render time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(PSLookAtRenderTime)));	*/
@@ -361,7 +361,7 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	PARTICLES_CHECK_MEM;
 	if (psm->isToolDisplayEnabled())
 	{
-		ps->step(CParticleSystem::ToolRender, delay);
+		ps->step(CParticleSystem::ToolRender, delay, *this);
 		PARTICLES_CHECK_MEM;
 	}	
 }
@@ -392,14 +392,16 @@ void CParticleSystemShape::flushTextures(IDriver &driver, uint selectedTexture)
 		if (!_ParticleSystemProto.isReading()) // we must be sure that we are reading the stream
 		{
 			_ParticleSystemProto.invert();
-		}				
+		}						
 		_ParticleSystemProto.resetPtrTable();
 		_ParticleSystemProto.seek(0, NLMISC::IStream::begin);
-		_ParticleSystemProto.serialPtr(myInstance); // instanciate the system			
+		_ParticleSystemProto.serialPtr(myInstance); // instanciate the system					
 		#ifdef PS_FAST_ALLOC
 			_NumBytesWanted = blockAllocator.getNumAllocatedBytes(); // next allocation will be fast because we know how much memory to allocate
 		#endif
 		myInstance->enumTexs(_CachedTex, driver);
+		// sort the process inside the fx
+		myInstance->getSortingByEmitterPrecedence(_ProcessOrder);
 		delete myInstance;		
 		#ifdef PS_FAST_ALLOC
 			PSBlockAllocator = NULL;

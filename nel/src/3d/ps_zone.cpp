@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.26 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: ps_zone.cpp,v 1.27 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,16 +92,13 @@ void CPSZone::releaseTargetRsc(CPSLocated *target)
 
 
 
-void CPSZone::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
+void CPSZone::step(TPSProcessPass pass)
 {
 	// for zone, the PSCollision pass and the PSToolRenderPass are processed
 	switch(pass)
-	{
-		case PSCollision:
-			performMotion(ellapsedTime);
-			break;
+	{		
 		case PSToolRender:
-			show(ellapsedTime);
+			show();
 			break;
 		default: break;
 	}
@@ -137,56 +134,42 @@ CMatrix CPSZonePlane::buildBasis(uint32 index) const
 }*/
 
 
-void CPSZonePlane::show(TAnimationTime)
+void CPSZonePlane::show()
 {
 	const float planeSize = 2.0f;
 	setupDriverModelMatrix();
-
 	IDriver *driver = getDriver();
 	uint k  = 0;
-
 	setupDriverModelMatrix();
-
 	CPSLocated *loc;
 	uint32 index;
 	CPSLocatedBindable *lb;
-	_Owner->getOwner()->getCurrentEditedElement(loc, index, lb);
-	
-
-
-		
-
+	_Owner->getOwner()->getCurrentEditedElement(loc, index, lb);		
 	for (TPSAttribVector::const_iterator it = _Owner->getPos().begin(); it != _Owner->getPos().end(); ++it, ++k)
 	{	
 		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127));
 		CMatrix mat = buildBasis(k);
-
 		CPSUtil::displayBasis(getDriver(), getLocalToWorldMatrix(), mat, 1.f, *getFontGenerator(), *getFontManager());
+		setupDriverModelMatrix();	
+		CDRU::drawLine(*it + (planeSize  + 3) * mat.getI() + planeSize * mat.getJ(),
+					   *it - (planeSize + 3) * mat.getI() + planeSize * mat.getJ(),
+					   col,
+					   *driver);
 
+		CDRU::drawLine(*it + (planeSize  + 3) * mat.getI() - planeSize * mat.getJ(),
+					   *it - (planeSize + 3) * mat.getI() - planeSize * mat.getJ(),
+					   col,
+					   *driver);
 
-		setupDriverModelMatrix();
-	
-		CDRU::drawLine(*it + (planeSize  + 3) * mat.getI() + planeSize * mat.getJ() 
-						, *it - (planeSize + 3) * mat.getI() + planeSize * mat.getJ()
-						, col
-						, *driver);
-
-		CDRU::drawLine(*it + (planeSize  + 3) * mat.getI() - planeSize * mat.getJ() 
-						, *it - (planeSize + 3) * mat.getI() - planeSize * mat.getJ()
-						, col
-						, *driver);
-
-		CDRU::drawLine(*it + planeSize  * mat.getI() + (planeSize + 3) * mat.getJ() 
-						, *it + planeSize * mat.getI() - (planeSize + 3) * mat.getJ()
-						, col
-						, *driver);
-		CDRU::drawLine(*it - planeSize  * mat.getI() + (planeSize + 3) * mat.getJ() 
-						, *it - planeSize * mat.getI() - (planeSize + 3) * mat.getJ()
-						, col
-						, *driver);
-	}
-	
-
+		CDRU::drawLine(*it + planeSize  * mat.getI() + (planeSize + 3) * mat.getJ(),
+					   *it + planeSize * mat.getI() - (planeSize + 3) * mat.getJ(),
+					   col,
+					   *driver);
+		CDRU::drawLine(*it - planeSize  * mat.getI() + (planeSize + 3) * mat.getJ(),
+					   *it - planeSize * mat.getI() - (planeSize + 3) * mat.getJ(),
+					   col,
+					   *driver);
+	}	
 }
 
 
@@ -198,7 +181,7 @@ void CPSZonePlane::resize(uint32 size)
 }
 
 
-void CPSZonePlane::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSZonePlane::newElement(const CPSEmitterInfo &info)
 {
 	nlassert(_Normal.getSize() != _Normal.getMaxSize());
 	_Normal.insert(CVector(0, 0, 1));
@@ -211,78 +194,56 @@ void CPSZonePlane::deleteElement(uint32 index)
 }
 
 
-
-void CPSZonePlane::performMotion(TAnimationTime ellapsedTime)
-{
+void CPSZonePlane::computeCollisions(CPSLocated &target, uint firstInstanceIndex, const NLMISC::CVector *posBefore, const NLMISC::CVector *posAfter)
+{	
 	MINI_TIMER(PSStatsZonePlane)
 	// for each target, we must check wether they are going through the plane
 	// if so they must bounce
-	TPSAttribVector::const_iterator planePosIt, planePosEnd, normalIt, targetPosIt, targetPosEnd;
-	CVector dest;
-	CPSCollisionInfo ci;
-	CVector startEnd;
-	uint32 k;
-	const TPSAttribVector *speedAttr;
-	float posSide, negSide;
-
-	// alpha is the ratio that gives the percent of endPos - startPos that hit the plane
-	float alpha; 
-
-	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+	TPSAttribVector::const_iterator planePosIt, planePosEnd, normalIt;		
+	CPSCollisionInfo ci;	
+	// cycle through the planes
+	planePosEnd = _Owner->getPos().end();		
+	for (planePosIt = _Owner->getPos().begin(), normalIt = _Normal.begin(); planePosIt != planePosEnd; ++planePosIt, ++normalIt)
 	{
-
-		speedAttr = &((*it)->getSpeed());
-		// cycle through the planes
-
-		planePosEnd = _Owner->getPos().end();		
-		for (planePosIt = _Owner->getPos().begin(), normalIt = _Normal.begin(); planePosIt != planePosEnd
-				; ++planePosIt, ++normalIt)
-		{
-			
-			// we must setup the plane in the good basis
-
-			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner);
-			const float epsilon = 0.5f * PSCollideEpsilon;
-			
-
-			NLMISC::CPlane p;
-			p.make(m.mulVector(*normalIt), m * (*planePosIt));		
-			
-			// deals with each particle
-			
-			targetPosEnd = (*it)->getPos().end();
-			TPSAttribCollisionInfo::const_iterator ciIt = (*it)->getCollisionInfo().begin();
-			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k, ++ciIt)
-			{	
-				const CVector &speed = (*speedAttr)[k];
-				// check whether the located is going through the plane
-				dest = *targetPosIt + ellapsedTime *  speed * ciIt->TimeSliceRatio;
-
-
-				posSide = p * *targetPosIt;
-				negSide = p * dest;
-												
-				if (posSide >= - epsilon && negSide <= epsilon)
+		
+		// we must setup the plane in the good basis
+		const CMatrix &m = CPSLocated::getConversionMatrix(&target, this->_Owner);
+		const float epsilon = 0.5f * PSCollideEpsilon;		
+		NLMISC::CPlane p;
+		p.make(m.mulVector(*normalIt), m * (*planePosIt));				
+		// deals with each particle		
+		const NLMISC::CVector *itPosBefore = posBefore + firstInstanceIndex;
+		const NLMISC::CVector *itPosBeforeEnd = posBefore + target.getSize();			
+		const NLMISC::CVector *itPosAfter = posAfter + firstInstanceIndex;
+		while (itPosBefore != itPosBeforeEnd)
+		{				
+			float posSide = p * *itPosBefore;
+			float negSide = p * *itPosAfter;
+			if (posSide >= - epsilon && negSide <= epsilon)			
+			{
+				float alpha;
+				if (fabsf(posSide - negSide) > std::numeric_limits<float>::min())
 				{
-					if (fabsf(posSide - negSide) > std::numeric_limits<float>::min())
-					{
-						alpha = posSide / (posSide - negSide);
-					}
-					else
-					{
-						alpha = 0.f;
-					}
-					startEnd = alpha * (dest - *targetPosIt);					
-					ci.dist = startEnd.norm();
-					// we translate the particle from an epsilon so that it won't get hooked to the plane
-					ci.newPos = *targetPosIt  + startEnd + PSCollideEpsilon * p.getNormal();				
-					ci.newSpeed = _BounceFactor * (speed - 2.0f * (speed * p.getNormal()) * p.getNormal());
-					ci.collisionZone = this;						
-					(*it)->collisionUpdate(ci, k);										
+					alpha = posSide / (posSide - negSide);
 				}
+				else
+				{
+					alpha = 0.f;
+				}
+				CVector startEnd = alpha * (*itPosAfter - *itPosBefore);
+				ci.Dist = startEnd.norm();
+				// we translate the particle from an epsilon so that it won't get hooked to the plane
+				ci.NewPos = *itPosBefore  + startEnd + PSCollideEpsilon * p.getNormal();				
+				const CVector &speed = target.getSpeed()[itPosBefore - posBefore];
+				ci.NewSpeed = _BounceFactor * (speed - 2.0f * (speed * p.getNormal()) * p.getNormal());
+				ci.CollisionZone = this;						
+				CPSLocated::_Collisions[itPosBefore - posBefore].update(ci);
 			}
+			++ itPosBefore;
+			++ itPosAfter;
 		}
 	}
+	
 }
 
 void CPSZonePlane::setMatrix(uint32 index, const CMatrix &m)
@@ -325,127 +286,77 @@ void CPSZonePlane::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 
-
-void CPSZoneSphere::performMotion(TAnimationTime ellapsedTime)
+void CPSZoneSphere::computeCollisions(CPSLocated &target, uint firstInstanceIndex, const NLMISC::CVector *posBefore, const NLMISC::CVector *posAfter)
 {
 	MINI_TIMER(PSStatsZoneSphere)		
 	// for each target, we must check wether they are going through the plane
 	// if so they must bounce
-
 	TPSAttribRadiusPair::const_iterator radiusIt = _Radius.begin();
-	TPSAttribVector::const_iterator spherePosIt, spherePosEnd, targetPosIt, targetPosEnd;
-	CVector dest;
-	CPSCollisionInfo ci;
-	uint32 k;
-	const TPSAttribVector *speedAttr;
-
-
-	float rOut, rIn;
-
-
-	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
-	{
-
-		speedAttr = &((*it)->getSpeed());
-
-
-		// cycle through the spheres
-			
-		spherePosEnd = _Owner->getPos().end();
-		for (spherePosIt = _Owner->getPos().begin(), radiusIt = _Radius.begin(); spherePosIt != spherePosEnd
-				; ++spherePosIt, ++radiusIt)
-		{
-			
-			// we must setup the sphere in the good basis
-
-			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner);
-
-			
-
-			CVector center = m * *spherePosIt;
-						
-			// deals with each particle
-
-
-			targetPosEnd = (*it)->getPos().end();
-			TPSAttribCollisionInfo::const_iterator ciIt = (*it)->getCollisionInfo().begin();
-			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k, ++ciIt)
-			{	
-				const CVector &speed = (*speedAttr)[k];
-				const CVector &pos = *targetPosIt;
-				// check whether the located is going through the sphere
-
-				// we don't use raytracing for now because it is too slow ...
+	TPSAttribVector::const_iterator spherePosIt, spherePosEnd;	
+	CPSCollisionInfo ci;		
+	float rOut, rIn;		
+	// cycle through the spheres		
+	spherePosEnd = _Owner->getPos().end();
+	for (spherePosIt = _Owner->getPos().begin(), radiusIt = _Radius.begin(); spherePosIt != spherePosEnd; ++spherePosIt, ++radiusIt)
+	{		
+		// we must setup the sphere in the good basis
+		const CMatrix &m = CPSLocated::getConversionMatrix(&target, this->_Owner);	
+		CVector center = m * *spherePosIt;					
+		// deals with each particle
+		const NLMISC::CVector *itPosBefore = posBefore + firstInstanceIndex;
+		const NLMISC::CVector *itPosBeforeEnd = posBefore + target.getSize();			
+		const NLMISC::CVector *itPosAfter = posAfter + firstInstanceIndex;
+		while (itPosBefore != itPosBeforeEnd)
+		{			
+			// check whether the located is going through the sphere
+			// we don't use raytracing for now because it is too slow ...				
+			rOut = (*itPosBefore - center) * (*itPosBefore - center);
+			// initial position outside the sphere ?
+			if (rOut > radiusIt->R2)
+			{				
+				rIn = (*itPosAfter - center) * (*itPosAfter - center);
+				const CVector &pos = *itPosBefore;
+				const CVector &dest = *itPosAfter;
+				const CVector D = dest - pos;
+				// final position inside the sphere ?
+				if ( rIn <= radiusIt->R2)
+				{				
+					// discriminant of the intersection equation
+					const float b = 2.f * (pos * D - D * center), a = D * D
+								, c = (pos * pos) + (center * center) - 2.f * (pos * center) - radiusIt->R2;
+					float d = b * b - 4 * a * c;					
+					if (d <= 0.f) continue; // should never happen, but we never know ...					
+					d = sqrtf(d);
+					// roots of the equation, we take the smallest 
+					const float r1 = .5f * (-b + 2.f * d) * a,
+								r2 = .5f * (-b - 2.f * d) * a;
+					const float  r = std::min(r1, r2);
+					// collision point 
+					const CVector C = pos  + r * D;							
+					const float alpha = ((C - pos) * D) * a;
+					const CVector startEnd = alpha * (dest - pos);					
+					CVector normal = C - center;
+					normal = normal * (1.f / radiusIt->R);				
+					ci.Dist = startEnd.norm();
+					// we translate the particle from an epsilon so that it won't get hooked to the sphere
+					ci.NewPos = pos  + startEnd + PSCollideEpsilon * normal;				
+					const CVector &speed = target.getSpeed()[itPosBefore - posBefore];
+					ci.NewSpeed = _BounceFactor * (speed - 2.0f * (speed * normal) * normal);
+					ci.CollisionZone = this;						
+					CPSLocated::_Collisions[itPosBefore - posBefore].update(ci);
 					
-
-				rOut = (pos - center) * (pos - center);
-
-				// initial position outside the sphere ?
-				if (rOut > radiusIt->R2)
-				{
-					dest = pos + ellapsedTime *  speed * ciIt->TimeSliceRatio;
-					rIn = (dest - center) * (dest - center);
-
-					const CVector D = dest - pos;
-
-					// final position inside the sphere ?
-
-					if ( rIn <= radiusIt->R2)
-					{				
-						// discriminant of the intersection equation
-						const float b = 2.f * (pos * D - D * center), a = D * D
-									, c = (pos * pos) + (center * center) - 2.f * (pos * center) - radiusIt->R2;
-						float d = b * b - 4 * a * c;
-
-						
-						if (d <= 0.f) continue; // should never happen, but we never know ...
-						
-
-						d = sqrtf(d);
-
-						// roots of the equation, we take the smallest 
-
-
-						const float r1 = .5f * (-b + 2.f * d) * a
-									, r2 = .5f * (-b - 2.f * d) * a;
-
-						const float  r = std::min(r1, r2);
-
-						// collision point 
-
-						const CVector C = pos  + r * D;
-
-
-
-
-				
-				    
-						const float alpha = ((C - pos) * D) * a;
-
-						const CVector startEnd = alpha * (dest - pos);					
-
-						CVector normal = C - center;
-						normal = normal * (1.f / radiusIt->R);
-
-					
-						ci.dist = startEnd.norm();
-						// we translate the particle from an epsilon so that it won't get hooked to the sphere
-						ci.newPos = pos  + startEnd + PSCollideEpsilon * normal;				
-						ci.newSpeed = _BounceFactor * (speed - 2.0f * (speed * normal) * normal);
-
-						ci.collisionZone = this;						
-						(*it)->collisionUpdate(ci, k);
-						
-					}					
-				}
+				}					
 			}
+			++ itPosBefore;
+			++ itPosAfter;
 		}
 	}
+	
 }
 
 
 
-void CPSZoneSphere::show(TAnimationTime ellapsedTime)
+void CPSZoneSphere::show()
 {
 	
 	CPSLocated *loc;
@@ -512,7 +423,7 @@ void CPSZoneSphere::resize(uint32 size)
 	_Radius.resize(size);
 }
 
-void CPSZoneSphere::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSZoneSphere::newElement(const CPSEmitterInfo &info)
 {
 	CRadiusPair rp;
 	rp.R = rp.R2 = 1.f;
@@ -529,100 +440,72 @@ void CPSZoneSphere::deleteElement(uint32 index)
 ////////////////////////////////
 // CPSZoneDisc implementation //
 ////////////////////////////////
-
-void CPSZoneDisc::performMotion(TAnimationTime ellapsedTime)
+void CPSZoneDisc::computeCollisions(CPSLocated &target, uint firstInstanceIndex, const NLMISC::CVector *posBefore, const NLMISC::CVector *posAfter)
 {
 	MINI_TIMER(PSStatsZoneDisc)		
 	// for each target, we must check wether they are going through the disc
 	// if so they must bounce
-	TPSAttribVector::const_iterator discPosIt, discPosEnd, normalIt, targetPosIt, targetPosEnd;
-	TPSAttribRadiusPair::const_iterator radiusIt;
-	CVector dest;
-	CPSCollisionInfo ci;
-	CVector startEnd;
-	uint32 k;
-	const TPSAttribVector *speedAttr;
-	float posSide, negSide;
-
+	TPSAttribVector::const_iterator discPosIt, discPosEnd, normalIt;
+	TPSAttribRadiusPair::const_iterator radiusIt;	
+	CPSCollisionInfo ci;	
 	// the square of radius at the hit point
 	float hitRadius2; 
+	// alpha is the ratio that gives the percent of endPos - startPos that hit the disc	
+	CVector center;	
+	// cycle through the disc
+	discPosEnd = _Owner->getPos().end();
+	for (discPosIt = _Owner->getPos().begin(), radiusIt = _Radius.begin(), normalIt = _Normal.begin(); discPosIt != discPosEnd; ++discPosIt, ++normalIt, ++radiusIt)
+	{		
+		// we must setup the disc in the good basis
+		const CMatrix &m = CPSLocated::getConversionMatrix(&target, this->_Owner);		
+		NLMISC::CPlane p;
+		center = m * (*discPosIt);
+		p.make(m.mulVector(*normalIt), center);		
+		
+		// deals with each particle
+		const float epsilon = 0.5f * PSCollideEpsilon;
 
-	// alpha is the ratio that gives the percent of endPos - startPos that hit the disc
-	float alpha; 
-
-	CVector center;
-
-	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
-	{
-
-		speedAttr = &((*it)->getSpeed());
-		// cycle through the disc
-
-		discPosEnd = _Owner->getPos().end();
-		for (discPosIt = _Owner->getPos().begin(), radiusIt = _Radius.begin(), normalIt = _Normal.begin(); discPosIt != discPosEnd
-				; ++discPosIt, ++normalIt, ++radiusIt)
-		{
-			
-			// we must setup the disc in the good basis
-
-			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner);
-
-			
-
-			NLMISC::CPlane p;
-			center = m * (*discPosIt);
-			p.make(m.mulVector(*normalIt), center);		
-			
-			// deals with each particle
-
-			const float epsilon = 0.5f * PSCollideEpsilon;
-
-			targetPosEnd = (*it)->getPos().end();
-			TPSAttribCollisionInfo::const_iterator ciIt = (*it)->getCollisionInfo().begin();
-			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k, ++ciIt)
-			{	
-				const CVector &speed = (*speedAttr)[k];
-				// check whether the located is going through the disc
-				dest = *targetPosIt + ellapsedTime *  speed * ciIt->TimeSliceRatio;
-
-
-				posSide = p * *targetPosIt;
-				negSide = p * dest;
-								
-				if (posSide >= - epsilon && negSide <= epsilon)
-				{									
-						if (fabsf(posSide - negSide) > std::numeric_limits<float>::min())
-						{
-							alpha = posSide / (posSide - negSide);
-						}
-						else
-						{
-							alpha = 0.f;
-						}
-						startEnd = alpha * (dest - *targetPosIt);					
-						ci.dist = startEnd.norm();
-						// we translate the particle from an epsilon so that it won't get hooked to the disc
-						ci.newPos = *targetPosIt  + startEnd + PSCollideEpsilon * p.getNormal();				
-
-
-						// now, check the collision pos against radius
-
-						hitRadius2 = (ci.newPos - center) * (ci.newPos - center);
-
-						if (hitRadius2 < radiusIt->R2) // check collision against disc
-						{
-							ci.newSpeed = _BounceFactor * (speed - 2.0f * (speed * p.getNormal()) * p.getNormal());						
-							ci.collisionZone = this;						
-							(*it)->collisionUpdate(ci, k);
-						}
-					
+		// deals with each particle
+		const NLMISC::CVector *itPosBefore = posBefore + firstInstanceIndex;
+		const NLMISC::CVector *itPosBeforeEnd = posBefore + target.getSize();			
+		const NLMISC::CVector *itPosAfter = posAfter + firstInstanceIndex;
+		while (itPosBefore != itPosBeforeEnd)
+		{	
+			float posSide = p * *itPosBefore;
+			float negSide = p * *itPosAfter;				
+			if (posSide >= - epsilon && negSide <= epsilon)
+			{		
+				float alpha;
+				if (fabsf(posSide - negSide) > std::numeric_limits<float>::min())
+				{
+					alpha = posSide / (posSide - negSide);
 				}
+				else
+				{
+					alpha = 0.f;
+				}
+				CVector startEnd = alpha * (*itPosAfter - *itPosBefore);
+				ci.Dist = startEnd.norm();
+				// we translate the particle from an epsilon so that it won't get hooked to the disc
+				ci.NewPos = *itPosBefore  + startEnd + PSCollideEpsilon * p.getNormal();
+				// now, check the collision pos against radius
+				hitRadius2 = (ci.NewPos - center) * (ci.NewPos - center);
+				if (hitRadius2 < radiusIt->R2) // check collision against disc
+				{
+					const CVector &speed = target.getSpeed()[itPosBefore - posBefore];
+					ci.NewSpeed = _BounceFactor * (speed - 2.0f * (speed * p.getNormal()) * p.getNormal());						
+					ci.CollisionZone = this;						
+					CPSLocated::_Collisions[itPosBefore - posBefore].update(ci);
+				}
+				
 			}
+			++ itPosBefore;
+			++ itPosAfter;
 		}
-	}	
+	}
 }
 
-void CPSZoneDisc::show(TAnimationTime ellapsedTime)
+void CPSZoneDisc::show()
 {
 	TPSAttribRadiusPair::const_iterator radiusIt = _Radius.begin();
 	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt = _Owner->getPos().end()
@@ -710,7 +593,7 @@ void CPSZoneDisc::resize(uint32 size)
 	_Normal.resize(size);
 }
 
-void CPSZoneDisc::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSZoneDisc::newElement(const CPSEmitterInfo &info)
 {
 	CRadiusPair rp;
 	rp.R = rp.R2 = 1.f;
@@ -942,222 +825,161 @@ void CPSZoneCylinder::performMotion(TAnimationTime ellapsedTime)
 */
 
 
-
-void CPSZoneCylinder::performMotion(TAnimationTime ellapsedTime)
+void CPSZoneCylinder::computeCollisions(CPSLocated &target, uint firstInstanceIndex, const NLMISC::CVector *posBefore, const NLMISC::CVector *posAfter)
 {
 	MINI_TIMER(PSStatsZoneCylinder)
 	TPSAttribVector::const_iterator dimIt;
 	CPSAttrib<CPlaneBasis>::const_iterator basisIt;
-	TPSAttribVector::const_iterator cylinderPosIt, cylinderPosEnd, targetPosIt, targetPosEnd;
-	CVector dest;
-	CPSCollisionInfo ci;
-	uint32 k;
-	const TPSAttribVector *speedAttr;
-
-
-
-	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
-	{
-
-		speedAttr = &((*it)->getSpeed());
-
-
-		// cycle through the cylinders
-
-		cylinderPosEnd = _Owner->getPos().end();
-		for (cylinderPosIt = _Owner->getPos().begin(), basisIt = _Basis.begin(),  dimIt = _Dim.begin()
-				; cylinderPosIt != cylinderPosEnd
-				; ++cylinderPosIt, ++dimIt, ++basisIt)
-		{
-			
-			// we must setup the cylinder in the good basis
-
-			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner);
-
-			
-
-			// compute the new center pos
-			CVector center = m * *cylinderPosIt;
-
-			// compute a basis for the cylinder
-			CVector I = m.mulVector(basisIt->X);
-			CVector J = m.mulVector(basisIt->Y);
-			CVector K = m.mulVector(basisIt->X ^ basisIt->Y);
-
-						
-			// the pos projected (and scale) over the plane basis of the cylinder, the pos minus the center
-			CVector projectedPos, tPos;
-
-			// the same, but with the final position
-			CVector destProjectedPos, destTPos;
-
-
-			// deals with each particle
-			targetPosEnd = (*it)->getPos().end();
-			TPSAttribCollisionInfo::const_iterator ciIt = (*it)->getCollisionInfo().begin();
-			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k, ++ciIt)
-			{	
-				const CVector &speed = (*speedAttr)[k];
-				const CVector &pos = *targetPosIt;
-
-				
-				
-				// check wether current pos was outside the cylinder
-
-
-				tPos = pos - center;
-				projectedPos = (1 / dimIt->x) * (I * tPos) * I + (1 / dimIt->y)  * (J * tPos) * J;
-				
-				if (!
-					 (
-						((tPos * K) < dimIt->z)
-						&& ((tPos * K) > -dimIt->z)
-						&& (projectedPos * projectedPos < 1.f) 
-					 )
+	TPSAttribVector::const_iterator cylinderPosIt, cylinderPosEnd;	
+	CPSCollisionInfo ci;	
+	// cycle through the cylinders
+	cylinderPosEnd = _Owner->getPos().end();
+	for (cylinderPosIt = _Owner->getPos().begin(), basisIt = _Basis.begin(),  dimIt = _Dim.begin(); cylinderPosIt != cylinderPosEnd; ++cylinderPosIt, ++dimIt, ++basisIt)
+	{		
+		// we must setup the cylinder in the good basis
+		const CMatrix &m = CPSLocated::getConversionMatrix(&target, this->_Owner);
+		// compute the new center pos
+		CVector center = m * *cylinderPosIt;
+		// compute a basis for the cylinder
+		CVector I = m.mulVector(basisIt->X);
+		CVector J = m.mulVector(basisIt->Y);
+		CVector K = m.mulVector(basisIt->X ^ basisIt->Y);					
+		// the pos projected (and scale) over the plane basis of the cylinder, the pos minus the center
+		CVector projectedPos, tPos;
+		// the same, but with the final position
+		CVector destProjectedPos, destTPos;
+		// deals with each particle
+		// deals with each particle
+		const NLMISC::CVector *itPosBefore = posBefore + firstInstanceIndex;
+		const NLMISC::CVector *itPosBeforeEnd = posBefore + target.getSize();			
+		const NLMISC::CVector *itPosAfter = posAfter + firstInstanceIndex;
+		while (itPosBefore != itPosBeforeEnd)
+		{			
+			const CVector &pos = *itPosBefore;
+			// check wether current pos was outside the cylinder
+			tPos = pos - center;
+			projectedPos = (1 / dimIt->x) * (I * tPos) * I + (1 / dimIt->y)  * (J * tPos) * J;			
+			if (!
+				 (
+					((tPos * K) < dimIt->z)
+					&& ((tPos * K) > -dimIt->z)
+					&& (projectedPos * projectedPos < 1.f) 
+				 )
+			   )
+			{
+				const CVector &dest = *itPosAfter;
+				destTPos = dest - center;
+				destProjectedPos = (1.f / dimIt->x) * (I * destTPos) * I + (1.f / dimIt->y)  * (J * destTPos) * J;
+				// test wether the new position is inside the cylinder				
+				if (					 
+					((destTPos * K) < dimIt->z)
+					&& ((destTPos * K) > -dimIt->z)
+					&& (destProjectedPos * destProjectedPos < 1.f) 
 				   )
 				{
-					dest = pos + ellapsedTime *  speed * ciIt->TimeSliceRatio;
-					destTPos = dest - center;
-					destProjectedPos = (1.f / dimIt->x) * (I * destTPos) * I + (1.f / dimIt->y)  * (J * destTPos) * J;
-
-					// test wether the new position is inside the cylinder
-
-					
-					if (
-						 (
-							((destTPos * K) < dimIt->z)
-							&& ((destTPos * K) > -dimIt->z)
-							&& (destProjectedPos * destProjectedPos < 1.f) 
-						 )
-					   )
+					// now, detect the closest hit point (the smallest alpha, with alpha, the percent of the move vector
+					// to reach the hit point)
+					const float epsilon = 10E-3f;
+					float alphaTop, alphaBottom, alphaCyl;
+					const float denum = (dest - pos) * K;
+					// top plane
+					if (fabs(denum) < epsilon)
 					{
-						// now, detect the closest hit point (the smallest alpha, with alpha, the percent of the move vector
-						// to reach the hit point)
-
-						const float epsilon = 10E-3f;
-
-						float alphaTop, alphaBottom, alphaCyl;
-
-						const float denum = (dest - pos) * K;
-
-						// top plane
-
-						if (fabs(denum) < epsilon)
-						{
-							alphaTop = (dimIt->z - (tPos * K)) / denum;
-							if (alphaTop < 0.f) alphaTop = 1.f;
-						}
-						else
-						{
-							alphaTop = 1.f;
-						}
-
-						// bottom plane
-
-						if (fabs(denum) < epsilon)
-						{
-							alphaBottom = (- dimIt->z - (tPos * K)) / denum;
-							if (alphaBottom < 0.f) alphaBottom = 1.f;
-						}
-						else
-						{
-							alphaBottom = 1.f;
-						}
-
-						// cylinder
-
-						//expressed the src and dest positions in the cylinder basis
-
-						const float ox = tPos * I, oy = tPos * J, dx = (destTPos - tPos) * I, dy = (destTPos - tPos) * J;
-
-						// coefficients of the equation : a * alpha ^ 2 + b * alpha + c = 0
-						const float a = (dx * dx) / (dimIt->x * dimIt->x)
-								  + (dy * dy) / (dimIt->y * dimIt->y);
-						const float b = 2.f * ((ox * dx) / (dimIt->x * dimIt->x)
-								  + (oy * dy) / (dimIt->y * dimIt->y));
-						const float c = (ox * ox) / (dimIt->x * dimIt->x) + (oy * oy) / (dimIt->y * dimIt->y)  - 1;
-
-						// discriminant
-						const float delta = b * b - 4.f * a * c;
-
-						if (delta < epsilon)
-						{
-							alphaCyl = 1.f;
-						}
-						else
-						{
-							const float deltaRoot = sqrtf(delta);
-							const float r1 = (- b + 2.f * deltaRoot) / (2.f * a);
-							const float r2 = (- b - 2.f * deltaRoot) / (2.f * a);
-
-							if (r1 < 0.f) alphaCyl = r2;
-								else if (r2 < 0.f) alphaCyl = r1;
-									else alphaCyl = r1 < r2 ? r1 : r2;
-
-									if (alphaCyl < 0.f) alphaCyl = 1.f;
-						}
-
-
-						// now, choose the minimum positive dist
-
-					
-						
-						if (alphaTop < alphaBottom && alphaTop < alphaCyl)
-						{
-							// collision with the top plane
-							CVector startEnd = alphaTop * (dest - pos);
-							ci.newPos = pos + startEnd + PSCollideEpsilon * K;
-							ci.dist = startEnd.norm();
-							ci.newSpeed = (-2.f * (speed * K)) * K + speed;
-							ci.collisionZone = this;
-							
-							(*it)->collisionUpdate(ci, k);
-						}
-						else
-							if (alphaBottom < alphaCyl)
-							{	
-								// collision with the bottom plane
-								CVector startEnd = alphaBottom * (dest - pos);
-								ci.newPos = pos + startEnd - PSCollideEpsilon * K;
-								ci.dist = startEnd.norm();
-								ci.newSpeed = (-2.f * (speed * K)) * K + speed;
-								ci.collisionZone = this;
-						
-								
-								(*it)->collisionUpdate(ci, k);
-							}
-							else
-							{
-								// collision with the cylinder
-
-								CVector startEnd = alphaCyl * (dest - pos);
-
-								// normal at the hit point. It is the gradient of the implicit equation x^2 / a^2 + y^2 / b^2 - R^ 2=  0
-								// so we got unormalized n =  (2 x / a ^ 2, 2 y / b ^ 2, 0) in the basis of the cylinder
-								// As we'll normalize it, we don't need  the 2 factor
-								
-								float px = ox + alphaCyl * dx;
-								float py = oy + alphaCyl * dy;
-
-								CVector normal = px / (dimIt->x * dimIt->x) * I + py / (dimIt->y * dimIt->y) * J;
-								normal.normalize();
-
-								ci.newPos = pos + startEnd + PSCollideEpsilon * normal;
-								ci.dist = startEnd.norm();
-								ci.newSpeed = (-2.f * (speed * normal)) * normal + speed;
-								ci.collisionZone = this;
-
-								(*it)->collisionUpdate(ci, k);
-							}						
-
+						alphaTop = (dimIt->z - (tPos * K)) / denum;
+						if (alphaTop < 0.f) alphaTop = 1.f;
 					}
-				}									
+					else
+					{
+						alphaTop = 1.f;
+					}
+					// bottom plane
+					if (fabs(denum) < epsilon)
+					{
+						alphaBottom = (- dimIt->z - (tPos * K)) / denum;
+						if (alphaBottom < 0.f) alphaBottom = 1.f;
+					}
+					else
+					{
+						alphaBottom = 1.f;
+					}
+					// cylinder
+					//expressed the src and dest positions in the cylinder basis
+					const float ox = tPos * I, oy = tPos * J, dx = (destTPos - tPos) * I, dy = (destTPos - tPos) * J;
+					// coefficients of the equation : a * alpha ^ 2 + b * alpha + c = 0
+					const float a = (dx * dx) / (dimIt->x * dimIt->x)
+							  + (dy * dy) / (dimIt->y * dimIt->y);
+					const float b = 2.f * ((ox * dx) / (dimIt->x * dimIt->x)
+							  + (oy * dy) / (dimIt->y * dimIt->y));
+					const float c = (ox * ox) / (dimIt->x * dimIt->x) + (oy * oy) / (dimIt->y * dimIt->y)  - 1;
+					// discriminant
+					const float delta = b * b - 4.f * a * c;
+
+					if (delta < epsilon)
+					{
+						alphaCyl = 1.f;
+					}
+					else
+					{
+						const float deltaRoot = sqrtf(delta);
+						const float r1 = (- b + 2.f * deltaRoot) / (2.f * a);
+						const float r2 = (- b - 2.f * deltaRoot) / (2.f * a);
+
+						if (r1 < 0.f) alphaCyl = r2;
+							else if (r2 < 0.f) alphaCyl = r1;
+								else alphaCyl = r1 < r2 ? r1 : r2;
+
+								if (alphaCyl < 0.f) alphaCyl = 1.f;
+					}
+					const CVector &speed = target.getSpeed()[itPosBefore - posBefore];
+					// now, choose the minimum positive dist									
+					if (alphaTop < alphaBottom && alphaTop < alphaCyl)
+					{
+						// collision with the top plane
+						CVector startEnd = alphaTop * (dest - pos);
+						ci.NewPos = pos + startEnd + PSCollideEpsilon * K;
+						ci.Dist = startEnd.norm();
+						ci.NewSpeed = (-2.f * (speed * K)) * K + speed;
+						ci.CollisionZone = this;						
+						CPSLocated::_Collisions[itPosBefore - posBefore].update(ci);
+					}
+					else
+						if (alphaBottom < alphaCyl)
+						{	
+							// collision with the bottom plane
+							CVector startEnd = alphaBottom * (dest - pos);
+							ci.NewPos = pos + startEnd - PSCollideEpsilon * K;
+							ci.Dist = startEnd.norm();
+							ci.NewSpeed = (-2.f * (speed * K)) * K + speed;
+							ci.CollisionZone = this;											
+							CPSLocated::_Collisions[itPosBefore - posBefore].update(ci);
+						}
+						else
+						{
+							// collision with the cylinder
+							CVector startEnd = alphaCyl * (dest - pos);
+							// normal at the hit point. It is the gradient of the implicit equation x^2 / a^2 + y^2 / b^2 - R^ 2=  0
+							// so we got unormalized n =  (2 x / a ^ 2, 2 y / b ^ 2, 0) in the basis of the cylinder
+							// As we'll normalize it, we don't need  the 2 factor							
+							float px = ox + alphaCyl * dx;
+							float py = oy + alphaCyl * dy;
+							CVector normal = px / (dimIt->x * dimIt->x) * I + py / (dimIt->y * dimIt->y) * J;
+							normal.normalize();
+							ci.NewPos = pos + startEnd + PSCollideEpsilon * normal;
+							ci.Dist = startEnd.norm();
+							ci.NewSpeed = (-2.f * (speed * normal)) * normal + speed;
+							ci.CollisionZone = this;
+							CPSLocated::_Collisions[itPosBefore - posBefore].update(ci);
+						}						
+
+				}
 			}
+			++ itPosBefore;
+			++ itPosAfter;
 		}
-	}
+	}	
 }
 
-void CPSZoneCylinder::show(TAnimationTime ellapsedTime)
+void CPSZoneCylinder::show()
 {
 	TPSAttribVector::const_iterator dimIt = _Dim.begin()
 									,posIt = _Owner->getPos().begin()
@@ -1251,7 +1073,7 @@ void CPSZoneCylinder::resize(uint32 size)
 	_Dim.resize(size);
 }
 
-void CPSZoneCylinder::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSZoneCylinder::newElement(const CPSEmitterInfo &info)
 {
 	_Basis.insert(CPlaneBasis(CVector::K));
 	_Dim.insert(CVector(1, 1, 1));
@@ -1271,108 +1093,71 @@ void CPSZoneCylinder::deleteElement(uint32 index)
 
 
 
-
-void CPSZoneRectangle::performMotion(TAnimationTime ellapsedTime)
+void CPSZoneRectangle::computeCollisions(CPSLocated &target, uint firstInstanceIndex, const NLMISC::CVector *posBefore, const NLMISC::CVector *posAfter)
 {
 	MINI_TIMER(PSStatsZoneRectangle)
 	// for each target, we must check wether they are going through the rectangle
 	// if so they must bounce
-	TPSAttribVector::const_iterator rectanglePosIt, rectanglePosEnd, targetPosIt, targetPosEnd;
+	TPSAttribVector::const_iterator rectanglePosIt, rectanglePosEnd;
 	CPSAttrib<CPlaneBasis>::const_iterator basisIt;
-	TPSAttribFloat::const_iterator widthIt, heightIt;
-
-	CVector dest;
-	CPSCollisionInfo ci;
-	CVector startEnd;
-	uint32 k;
-	const TPSAttribVector *speedAttr;
-	float posSide, negSide;
-	
-	// alpha is the ratio that gives the percent of endPos - startPos that hit the rectangle
-	float alpha; 
-
-	CVector center;
-
-	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
-	{
-
-		basisIt = _Basis.begin();
-		heightIt = _Height.begin();
-		widthIt = _Width.begin();
-
-		speedAttr = &((*it)->getSpeed());
-		// cycle through the rectangle
-
-		rectanglePosEnd = _Owner->getPos().end();
-		for (rectanglePosIt = _Owner->getPos().begin(); rectanglePosIt != rectanglePosEnd
-				; ++rectanglePosIt, ++basisIt, ++widthIt, ++heightIt)
-		{
-			
-			// we must setup the rectangle in the good basis
-
-			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner);
-
-			
-
-			NLMISC::CPlane p;
-			center = m * (*rectanglePosIt);
-
-			const CVector X = m.mulVector(basisIt->X);
-			const CVector Y = m.mulVector(basisIt->Y);
-
-			p.make(X ^ Y, center);		
-			
-			// deals with each particle
-
-			const float epsilon = 0.5f * PSCollideEpsilon;
-
-			targetPosEnd = (*it)->getPos().end();
-			TPSAttribCollisionInfo::const_iterator ciIt = (*it)->getCollisionInfo().begin();
-			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k, ++ciIt)
-			{	
-				const CVector &pos = *targetPosIt;
-				const CVector &speed = (*speedAttr)[k];
-				// check whether the located is going through the rectangle
-				dest = pos + ellapsedTime *  speed * ciIt->TimeSliceRatio;
-
-
-				posSide = p * pos;
-				negSide = p * dest;
-								
-				if (posSide >= - epsilon && negSide <= epsilon)
-				{									
-						if (fabsf(posSide - negSide) > std::numeric_limits<float>::min())
-						{
-							alpha = posSide / (posSide - negSide);
-						}
-						else
-						{
-							alpha = 0.f;
-						}
-						startEnd = alpha * (dest - pos);					
-						ci.dist = startEnd.norm();
-						// we translate the particle from an epsilon so that it won't get hooked to the rectangle
-						ci.newPos = pos + startEnd;				
-					
-
-						
-
-						if ( fabs( (pos - center) * X ) < *widthIt && fabs( (pos - center) * Y ) < *heightIt) // check collision against rectangle
-						{
-							ci.newPos += PSCollideEpsilon * p.getNormal();
-							ci.newSpeed = _BounceFactor * (speed - 2.0f * (speed * p.getNormal()) * p.getNormal());						
-							ci.collisionZone = this;						
-							(*it)->collisionUpdate(ci, k);
-						}
-					
+	TPSAttribFloat::const_iterator widthIt, heightIt;	
+	CPSCollisionInfo ci;		
+	// alpha is the ratio that gives the percent of endPos - startPos that hit the rectangle		
+	basisIt = _Basis.begin();
+	heightIt = _Height.begin();
+	widthIt = _Width.begin();	
+	rectanglePosEnd = _Owner->getPos().end();
+	for (rectanglePosIt = _Owner->getPos().begin(); rectanglePosIt != rectanglePosEnd; ++rectanglePosIt, ++basisIt, ++widthIt, ++heightIt)
+	{		
+		// we must setup the rectangle in the good basis
+		const CMatrix &m = CPSLocated::getConversionMatrix(&target, this->_Owner);
+		NLMISC::CPlane p;
+		CVector center = m * (*rectanglePosIt);
+		const CVector X = m.mulVector(basisIt->X);
+		const CVector Y = m.mulVector(basisIt->Y);
+		p.make(X ^ Y, center);				
+		// deals with each particle
+		const float epsilon = 0.5f * PSCollideEpsilon;
+		const NLMISC::CVector *itPosBefore = posBefore + firstInstanceIndex;
+		const NLMISC::CVector *itPosBeforeEnd = posBefore + target.getSize();			
+		const NLMISC::CVector *itPosAfter = posAfter + firstInstanceIndex;
+		while (itPosBefore != itPosBeforeEnd)
+		{	
+			float posSide = p * *itPosBefore;
+			float negSide = p * *itPosAfter;
+			if (posSide >= - epsilon && negSide <= epsilon)
+			{		
+				float alpha;
+				if (fabsf(posSide - negSide) > std::numeric_limits<float>::min())
+				{
+					alpha = posSide / (posSide - negSide);
 				}
-			}	
-		}
+				else
+				{
+					alpha = 0.f;
+				}
+				CVector startEnd = alpha * (*itPosAfter - *itPosBefore);
+				ci.Dist = startEnd.norm();
+				// we translate the particle from an epsilon so that it won't get hooked to the rectangle
+				ci.NewPos = *itPosBefore + startEnd;
+				if ( fabs( (ci.NewPos - center) * X ) < *widthIt && fabs( (ci.NewPos - center) * Y ) < *heightIt) // check collision against rectangle
+				{
+					ci.NewPos += PSCollideEpsilon * p.getNormal();
+					const CVector &speed = target.getSpeed()[itPosBefore - posBefore];
+					ci.NewSpeed = _BounceFactor * (speed - 2.0f * (speed * p.getNormal()) * p.getNormal());						
+					ci.CollisionZone = this;						
+					CPSLocated::_Collisions[itPosBefore - posBefore].update(ci);
+				}				
+			}
+			++ itPosBefore;
+			++ itPosAfter;
+		}	
 	}
+	
 }
 
 
-void CPSZoneRectangle::show(TAnimationTime ellapsedTime)
+void CPSZoneRectangle::show()
 {
 	nlassert(_Owner);
 	const uint size = _Owner->getSize();
@@ -1460,7 +1245,7 @@ void CPSZoneRectangle::resize(uint32 size)
 	_Height.resize(size);
 }
 
-void CPSZoneRectangle::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSZoneRectangle::newElement(const CPSEmitterInfo &info)
 {
 	_Basis.insert(CPlaneBasis(CVector::K));
 	_Width.insert(1.f);

@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.10 2004/04/27 11:57:27 vizerie Exp $
+ * $Id: ps_shockwave.cpp,v 1.11 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -462,12 +462,12 @@ void CPSShockWave::updateMatAndVbForTexture(void)
 }
 
 ///=================================================================================
-void CPSShockWave::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSShockWave::newElement(const CPSEmitterInfo &info)
 {
-	newColorElement(emitterLocated, emitterIndex);
-	newTextureIndexElement(emitterLocated, emitterIndex);
-	newSizeElement(emitterLocated, emitterIndex);
-	newAngle2DElement(emitterLocated, emitterIndex);
+	newColorElement(info);
+	newTextureIndexElement(info);
+	newSizeElement(info);
+	newAngle2DElement(info);
 }
 
 ///=================================================================================

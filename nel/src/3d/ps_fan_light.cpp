@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.11 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_fan_light.cpp,v 1.12 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -272,11 +272,11 @@ bool CPSFanLight::hasOpaqueFaces(void)
 }
 
 ///====================================================================================
-void CPSFanLight::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSFanLight::newElement(const CPSEmitterInfo &info)
 {
-	newColorElement(emitterLocated, emitterIndex);
-	newSizeElement(emitterLocated, emitterIndex);
-	newAngle2DElement(emitterLocated, emitterIndex);
+	newColorElement(info);
+	newSizeElement(info);
+	newAngle2DElement(info);
 }
 
 ///====================================================================================

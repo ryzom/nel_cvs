@@ -1,6 +1,6 @@
 /** \file ps_light.cpp
  *
- * $Id: ps_light.cpp,v 1.7 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: ps_light.cpp,v 1.8 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -126,7 +126,9 @@ void CPSLight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			resize(_Owner->getMaxSize());		
 			for(uint k = 0; k < _Owner->getSize(); ++k)
 			{
-				newElement(NULL, 0);
+				CPSEmitterInfo ei;
+				ei.setDefaults();
+				newElement(ei);
 			}
 		}
 		else
@@ -143,7 +145,7 @@ uint32 CPSLight::getType(void) const
 }
 
 //***************************************************************************************************************
-void CPSLight::step(TPSProcessPass pass,TAnimationTime ellapsedTime,TAnimationTime realEt)
+void CPSLight::step(TPSProcessPass pass)
 {	
 	if (pass != PSMotion) 
 	{
@@ -311,11 +313,11 @@ void CPSLight::setAttenEndScheme(CPSAttribMaker<float> *scheme)
 }
 
 //***************************************************************************************************************
-void CPSLight::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSLight::newElement(const CPSEmitterInfo &info)
 {
-	if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->newElement(emitterLocated, emitterIndex);
-	if (_AttenStartScheme && _AttenStartScheme->hasMemory()) _AttenStartScheme->newElement(emitterLocated, emitterIndex);
-	if (_AttenEndScheme && _AttenEndScheme->hasMemory()) _AttenEndScheme->newElement(emitterLocated, emitterIndex);
+	if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->newElement(info);
+	if (_AttenStartScheme && _AttenStartScheme->hasMemory()) _AttenStartScheme->newElement(info);
+	if (_AttenEndScheme && _AttenEndScheme->hasMemory()) _AttenEndScheme->newElement(info);
 	_Lights.insert(NULL); // instance is created during step()
 }
 

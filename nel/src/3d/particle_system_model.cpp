@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.66 2004/05/11 16:19:44 berenguier Exp $
+ * $Id: particle_system_model.cpp,v 1.67 2004/05/14 15:38:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -673,7 +673,12 @@ void	CParticleSystemModel::doAnimate()
 		MINI_TIMER(PSStatsDoAnimatePart3)			
 		TAnimationTime delay = getEllapsedTime();
 		// animate particles				
-		ps->step(CParticleSystem::Anim, delay);
+		CParticleSystemShape		*pss= NLMISC::safe_cast<CParticleSystemShape *>((IShape *)Shape);
+		if (_EditionMode)
+		{
+			pss->_ProcessOrder.clear(); // force to eval each frame because ps could be modified
+		}
+		ps->step(CParticleSystem::Anim, delay, *pss);
 	}
 }
 

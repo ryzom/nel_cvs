@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.h
  * Face look at particles.
  *
- * $Id: ps_face_look_at.h,v 1.6 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_face_look_at.h,v 1.7 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -124,7 +124,7 @@ protected:
 	bool					_IndependantSizes;
 	bool                    _AlignOnMotion;
 	virtual void			draw(bool opaque);
-	void					newElement(CPSLocated *emitterLocated, uint32 emitterIndex);	
+	void					newElement(const CPSEmitterInfo &info);
 	void					deleteElement(uint32);
 	void					resize(uint32);
 	virtual CPSLocated		*getAngle2DOwner(void) { return _Owner; }

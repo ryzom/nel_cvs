@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.15 2004/03/04 14:27:33 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.16 2004/05/14 15:38:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,14 +46,13 @@ class CFontManager ;
 
 
 /** rendering and process passes for a particle system.
- *  PSCollision : collisions with collision zones (see CPSZone)
- *  PSMotion    : motion computation
+ *  PSMotion      : called after each simutlation step
  *  PSSolidRender : render particle that can modify z-buffer
  *  PSBlendRender : render transparency (no z-buffer write)
  *  PSToolRender  : for edition purpose, show representations for forces, emitters...
  */
 enum TPSProcessPass 
-{ PSEmit, PSCollision, PSMotion, PSSolidRender, PSBlendRender, PSToolRender } ;
+{ PSMotion, PSSolidRender, PSBlendRender, PSToolRender } ;
 
 
 /** Objects of particle systems can be local to various matrixs defined by the following enum  
@@ -78,7 +77,7 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		/// \name Object
 		/// @{
 			/// ctor
-			CParticleSystemProcess() : _Owner(NULL), _MatrixMode(PSFXWorldMatrix) {}
+			CParticleSystemProcess() : _Owner(NULL), _MatrixMode(PSFXWorldMatrix), _Index(0) {}
 			
 			/// dtor
 			virtual ~CParticleSystemProcess()  {}
@@ -95,7 +94,7 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		* execute this process, telling how much time ellapsed must be used for motion, and the real time ellapsed
 		* (for lifetime managment)
 		*/
-		virtual void			step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt) = 0 ;
+		virtual void			step(TPSProcessPass pass) = 0 ;
 
 
 		/** Compute the aabbox of this process, (expressed in world basis).
@@ -163,12 +162,8 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		virtual bool			isParametricMotionEnabled(void) const { return false;}
 
 		/// perform parametric motion if enabled
-		virtual void			performParametricMotion(TAnimationTime date,
-											 TAnimationTime ellapsedTime,
-											 TAnimationTime realEllapsedTime) { nlassert(0);}
-		
-		/// Update the life of objects..
-		virtual void			updateLife(TAnimationTime ellapsedTime) = 0;
+		virtual void			performParametricMotion(TAnimationTime date) { nlassert(0);}
+				
 
 		// Called by the system when its date has been manually changed
 		virtual void			systemDateChanged() {}
@@ -184,14 +179,21 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		
 		// Force z-bias for all material.
 		virtual void setZBias(float value) = 0;
-
 			
+		// get the index of the process in the system
+		uint		 getIndex() const { return _Index; }		
+
 	protected:
 		CParticleSystem *_Owner ;
 
 		// true if the system basis is used for display and motion
 		TPSMatrixMode	 _MatrixMode;
-	
+
+		// index of the process in the system, should be updated by the system
+		uint			_Index;
+	public:
+		// for use by CParticleSystem only
+		void	setIndex(uint32 index) { _Index = index; }	
 } ;
 
 

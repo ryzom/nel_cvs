@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.21 2004/03/16 10:46:19 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.22 2004/05/14 15:38:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -272,6 +272,9 @@ public:
 
 			/// Serialization method
 			void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+
+			// swap with another vector
+			void swap(CPSAttrib<T> &other);
 	//@}
 
 	/// \name Useful typedefs
@@ -560,6 +563,12 @@ void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	}
 }
 
+template <typename T> 
+void CPSAttrib<T>::swap(CPSAttrib<T> &other)
+{
+	std::swap(_MaxSize, other._MaxSize);
+	_Tab.swap(other._Tab);
+}
 
 
 

@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.h
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.h,v 1.9 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: ps_ribbon_look_at.h,v 1.10 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,7 +95,7 @@ public:
 	///@}
 
 	/// inherited from CPSParticle
-	virtual void			step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
+	virtual void			step(TPSProcessPass pass);
 
 	/// return true if there are transparent faces in the object
 	virtual bool			hasTransparentFaces(void);
@@ -123,7 +123,7 @@ protected:
 	// a counter to tell how much frame is left for each ribbon
 	//std::vector<uint32>				_DyingRibbonsLifeLeft;
 	/// inherited from CPSLocatedBindable
-	virtual void					newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+	virtual void					newElement(const CPSEmitterInfo &info);
 	/// inherited from CPSLocatedBindable
 	virtual void					deleteElement(uint32 index);
 	/// inherited from CPSLocatedBindable	

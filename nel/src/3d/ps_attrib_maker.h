@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.16 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.17 2004/05/14 15:38:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/ps_attrib.h"
 #include "3d/ps_located.h"
 #include "3d/vertex_buffer.h"
+#include "3d/ps_spawn_info.h"
 #include "nel/misc/stream.h"
 
 
@@ -60,26 +61,26 @@ struct CPSInputType
 		attrSquareLOD = 7,
 		attrClampedLOD = 8,
 		attrClampedSquareLOD = 9,
-	} InputType ;
+	} InputType;
 
 	union
 	{
 		/// The user param being used. Valid only when InputType has been set to attrUserParam.
-		uint32 UserParamNum ;
-	} ;
+		uint32 UserParamNum;
+	};
 
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
-		f.serialEnum(InputType) ;
+		f.serialEnum(InputType);
 		switch(InputType)
 		{
 			case attrUserParam:
-				f.serial(UserParamNum) ;
-				break ;
+				f.serial(UserParamNum);
+				break;
 			default: break;
 		}
 	}
-} ;
+};
 
 
 /**
@@ -91,7 +92,7 @@ struct CPSInputType
 
 
 // The max value for inputs of an attribute maker.
-const float MaxInputValue = 1.0f ;
+const float MaxInputValue = 1.0f;
 
 /**
   * this is the base for attribute makers. It allows to duplicate an attribute maker, and to querry its type
@@ -140,8 +141,8 @@ public:
 		/// serialisation of the object. Derivers MUST call this, (if they use the attribute of this class at least)
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
-			f.serialVersion(1) ;
-			f.serial(_NbCycles) ;	
+			f.serialVersion(1);
+			f.serial(_NbCycles);	
 		}
 
 		/// inherited from CPSAttribMakerBase. Template specialization will do the job
@@ -154,7 +155,8 @@ public:
 	/// \name Production of attribute
 	//@{
 		/// compute one value of the attribute from the given located at the given index
-		virtual T get(CPSLocated *loc, uint32 index) = 0 ;
+		virtual T get(CPSLocated *loc, uint32 index) = 0;
+		virtual T get(const CPSEmitterInfo &info) = 0;
 
 		/** Direct lookup of the result value from a float input (if it makes sense). This bypass what was set with setInput
 		  * The input must be in [0, 1[
@@ -183,8 +185,9 @@ public:
 							 uint32 stride,
 							 uint32 numAttrib,
 							 bool   allowNoCopy = false,
-							 uint32 srcStep = (1 << 16)
-							) const = 0 ;
+							 uint32 srcStep = (1 << 16),
+							 bool	forceClampEntry = false
+							) const = 0;
 
 		/** The same as make, but it replicate each attribute 4 times, thus filling 4*numAttrib. Useful for facelookat and the like
 		 *  \see make()
@@ -195,7 +198,7 @@ public:
 							 uint32 stride,
 							 uint32 numAttrib,
 							 uint32 srcStep = (1 << 16)
-							) const = 0 ;
+							) const = 0;
 
 		/** The same as make4, but with n replication instead of 4	 
 		 *  \see make4
@@ -207,15 +210,15 @@ public:
 							uint32 numAttrib,
 							uint32 nbReplicate,
 							uint32 srcStep = (1 << 16)
-						   ) const = 0 ;
+						   ) const = 0;
 	//@}
 
 	
 
 	/// get the max value, or an evalution that is guaranteed to be > to it (meaningful for ordered set only)
-	virtual T getMinValue(void) const { return T() ; /* no mean by default */ }
+	virtual T getMinValue(void) const { return T(); /* no mean by default */ }
 	/// get the min value, or an evalution that is guaranteed to be < to it (meaningful for ordered set only)
-	virtual T getMaxValue(void) const { return T() ; /* no mean by default */ }
+	virtual T getMaxValue(void) const { return T(); /* no mean by default */ }
 
 
 	/// \name Input properties of the attribute maker
@@ -227,17 +230,17 @@ public:
 		 */
 		void setNbCycles(float nbCycles) 
 		{ 
-			nlassert(nbCycles >= 0) ;
-			_NbCycles = nbCycles ; 
+			nlassert(nbCycles >= 0);
+			_NbCycles = nbCycles; 
 		}
 
 		/** Retrieve the number of cycles
 		 *  \see setNbCycles()
 		 */
-		float getNbCycles(void) const { return _NbCycles ; }
+		float getNbCycles(void) const { return _NbCycles; }
 
 		/// tells wether one may choose one attribute from a CPSLocated to use as an input. If false, the input(s) is fixed
-		virtual bool hasCustomInput(void) { return false ; }
+		virtual bool hasCustomInput(void) { return false; }
 			
 
 		/** set a new input type (if supported). The default does nothing
@@ -249,28 +252,28 @@ public:
 		/** get the type of input (if supported). The default return attrDate
 		 *  \see hasCustomInput()
 		 */
-		virtual CPSInputType getInput(void) const { return CPSInputType() ; }
+		virtual CPSInputType getInput(void) const { return CPSInputType(); }
 		
 
 
 		/** tells wether clamping is supported for the input (value can't go above MaxInputValue)
 		 *  The default is false
 		 */
-		virtual bool isClampingSupported(void) const { return false ; }
+		virtual bool isClampingSupported(void) const { return false; }
 
 
 		/** Enable, disable the clamping of input values.
 		 *  The default does nothing (clamping unsupported)
 		 *  \see isClampingSupported()
 		 */
-		virtual void setClamping(bool enable = true) {} ;
+		virtual void setClamping(bool enable = true) {};
 
 
 		/** Test if the clamping is enabled.
 		 *  The default is false (clamping unsupported)
 		 *  \see isClampingSupported()
 		 */
-		virtual bool getClamping(void) const  { return false  ; }
+		virtual bool getClamping(void) const  { return false; }
 	//@}
 
 
@@ -280,21 +283,21 @@ public:
 		  * mean that you must call newElement, deleteElement, and resize, when it is called for the owning object
 		  * (which is likely to be a CPSLocatedBindable)
 		  */
-		bool hasMemory(void) const { return _HasMemory ; }
+		bool hasMemory(void) const { return _HasMemory; }
 
 		/// delete an element, given its index. this must be called  only if memory management is used.
-		virtual void deleteElement(uint32 index) { nlassert(false) ; }
+		virtual void deleteElement(uint32 index) { nlassert(false); }
 
 		/** create a new element, and provides the emitter, 
 		  *	this must be called only if this attribute maker has its own memory
 		  */
-		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { nlassert(false) ; }
+		virtual void newElement(const CPSEmitterInfo &info) { nlassert(false); }
 
 		/** set a new capacity for the memorized attribute, and a number of used element. This usually is 0
 		  * , but during edition, this may not be ... so new element are created.
 		  * this must be called only if this attribute maker has its own memory
 		  */
-		virtual void resize(uint32 capacity, uint32 nbPresentElements) { nlassert(false) ; }
+		virtual void resize(uint32 capacity, uint32 nbPresentElements) { nlassert(false); }
 	//@}
 
 	// misc
@@ -303,10 +306,10 @@ public:
 	virtual void setColorType(CVertexBuffer::TVertexColorType type) {}
 protected:	
 
-	float _NbCycles ;
+	float _NbCycles;
 
 	// set to true if the attribute maker owns its own memory for each particle attribute
-	bool _HasMemory ;
+	bool _HasMemory;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.36 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.37 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -222,11 +222,11 @@ void CPSMesh::releaseAllRef()
 }
 
 //====================================================================================
-void CPSMesh::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSMesh::newElement(const CPSEmitterInfo &info)
 {
-	newPlaneBasisElement(emitterLocated, emitterIndex);
-	newAngle2DElement(emitterLocated, emitterIndex);
-	newSizeElement(emitterLocated, emitterIndex);
+	newPlaneBasisElement(info);
+	newAngle2DElement(info);
+	newSizeElement(info);
 
 	nlassert(_Owner);
 	nlassert(_Owner->getOwner());
@@ -277,7 +277,7 @@ void CPSMesh::deleteElement(uint32 index)
 }
 
 //====================================================================================
-void CPSMesh::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
+void CPSMesh::step(TPSProcessPass pass)
 {
 		if (pass == PSSolidRender)			
 		{
@@ -813,15 +813,14 @@ public:
 									CPSConstraintMesh &m,
 									uint size,
 									uint32 srcStep,
-									bool opaque,
-									TAnimationTime ellapsedTime)
+									bool opaque)
 	{
 		// get the vb from the original mesh
 		CMesh				  &mesh	= *m._Meshes[0];	
 		const CVertexBuffer	  &modelVb = mesh.getVertexBuffer();
 
 		/// precompute rotation in a VB from the src mesh
-		CVertexBuffer &prerotVb  = m.makePrerotatedVb(modelVb, ellapsedTime);	
+		CVertexBuffer &prerotVb  = m.makePrerotatedVb(modelVb);
 
 		// driver setup
 		IDriver *driver = m.getDriver();
@@ -1566,7 +1565,7 @@ void CPSConstraintMesh::clean(void)
 
 
 //====================================================================================
-CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb, TAnimationTime ellapsedTime)
+CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb)
 {
 	// get a VB that has positions and eventually normals
 	CVertexBuffer &prerotatedVb = inVb.getVertexFormat() & CVertexBuffer::NormalFlag ? _PreRotatedMeshVBWithNormal : _PreRotatedMeshVB;
@@ -1601,7 +1600,7 @@ CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb, TA
 	{
 		// not optimized at all, but this will apply to very few elements anyway...
 		CMatrix mat;
-		mat.rotate(CQuat(it->Axis, ellapsedTime * it->AngularVelocity));
+		mat.rotate(CQuat(it->Axis, CParticleSystem::EllapsedTime * it->AngularVelocity));
 		CVector n = mat * it->Basis.getNormal();
 		it->Basis = CPlaneBasis(n);
 	
@@ -1653,14 +1652,14 @@ CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb, TA
 
 
 //====================================================================================
-void CPSConstraintMesh::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
+void CPSConstraintMesh::step(TPSProcessPass pass)
 {
 		if (
 			(pass == PSBlendRender && hasTransparentFaces())
 			|| (pass == PSSolidRender && hasOpaqueFaces())
 			)
 		{
-			draw(pass == PSSolidRender, ellapsedTime);
+			draw(pass == PSSolidRender);
 		}
 		else 
 		if (pass == PSToolRender) // edition mode only
@@ -1670,7 +1669,7 @@ void CPSConstraintMesh::step(TPSProcessPass pass, TAnimationTime ellapsedTime, T
 }
 
 //====================================================================================
-void CPSConstraintMesh::draw(bool opaque, TAnimationTime ellapsedTime)
+void CPSConstraintMesh::draw(bool opaque)
 {
 	PARTICLES_CHECK_MEM;
 	nlassert(_Owner);	
@@ -1713,8 +1712,7 @@ void CPSConstraintMesh::draw(bool opaque, TAnimationTime ellapsedTime)
 														 *this,
 														 numToProcess,
 														 step,
-														 opaque,
-														 ellapsedTime
+														 opaque														 
 													    );
 		}
 		else
@@ -1725,8 +1723,7 @@ void CPSConstraintMesh::draw(bool opaque, TAnimationTime ellapsedTime)
 														 *this,
 														 numToProcess,
 														 step,
-														 opaque,
-														 ellapsedTime
+														 opaque														 
 													    );		
 		}
 	}
@@ -1901,22 +1898,22 @@ void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer 
 
 
 //====================================================================================
-void CPSConstraintMesh::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSConstraintMesh::newElement(const CPSEmitterInfo &info)
 {
-	newSizeElement(emitterLocated, emitterIndex);
-	newPlaneBasisElement(emitterLocated, emitterIndex);
+	newSizeElement(info);
+	newPlaneBasisElement(info);
 	// TODO : avoid code cuplication with CPSFace ...
 	const uint32 nbConf = _PrecompBasis.size();
 	if (nbConf) // do we use precomputed basis ?
 	{
 		_IndexInPrecompBasis[_Owner->getNewElementIndex()] = rand() % nbConf;
 	}
-	newColorElement(emitterLocated, emitterIndex);
+	newColorElement(info);
 	if (_GlobalAnimationEnabled && _ReinitGlobalAnimTimeOnNewElement)
 	{		
 		_GlobalAnimDate = _Owner->getOwner()->getSystemDate();
 	}
-	if (_MorphScheme && _MorphScheme->hasMemory()) _MorphScheme->newElement(emitterLocated, emitterIndex);
+	if (_MorphScheme && _MorphScheme->hasMemory()) _MorphScheme->newElement(info);
 }
 	
 //====================================================================================	

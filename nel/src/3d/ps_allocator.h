@@ -1,6 +1,6 @@
 /** \file ps_allocator.h
  *
- * $Id: ps_allocator.h,v 1.4 2004/04/09 14:26:58 vizerie Exp $
+ * $Id: ps_allocator.h,v 1.5 2004/05/14 15:38:53 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -96,7 +96,7 @@ namespace NL3D
 		pointer address(reference x) const { return &x; }    
 		const_pointer address(const_reference x) const { return &x; }
 		CPSAllocator() {}
-		CPSAllocator<T>& operator=(const CPSAllocator<T> &other) { *this = other; return *this; }
+		CPSAllocator<T>& operator=(const CPSAllocator<T> &other) { return *this; }
 	private:
 		typedef NLMISC::CContiguousBlockAllocator *TBlocAllocPtr;
 	public:

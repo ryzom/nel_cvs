@@ -1,6 +1,6 @@
 /** \file ps_attrib_maker_helper.cpp
  *
- * $Id: ps_attrib_maker_helper.cpp,v 1.1 2003/04/09 16:03:06 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.cpp,v 1.2 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -48,9 +48,9 @@ void CPSAttribMakerMemory<uint32>::serial(NLMISC::IStream &f) throw(NLMISC::EStr
 }
 
 //***********************************************************************************
-void CPSAttribMakerMemory<uint32>::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSAttribMakerMemory<uint32>::newElement(const CPSEmitterInfo &info)
 {
-	CPSAttribMakerMemoryBase<uint32>::newElement(emitterLocated, emitterIndex);
+	CPSAttribMakerMemoryBase<uint32>::newElement(info);
 	if (_T.getSize() > 1)
 	{	
 		_MinValue = std::min(_MinValue, _T.back());
@@ -81,9 +81,9 @@ void CPSAttribMakerMemory<sint32>::serial(NLMISC::IStream &f) throw(NLMISC::EStr
 }
 
 //***********************************************************************************
-void CPSAttribMakerMemory<sint32>::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSAttribMakerMemory<sint32>::newElement(const CPSEmitterInfo &info)
 {
-	CPSAttribMakerMemoryBase<sint32>::newElement(emitterLocated, emitterIndex);
+	CPSAttribMakerMemoryBase<sint32>::newElement(info);
 	if (_T.getSize() > 1)
 	{	
 		_MinValue = std::min(_MinValue, _T.back());
@@ -114,9 +114,9 @@ void CPSAttribMakerMemory<float>::serial(NLMISC::IStream &f) throw(NLMISC::EStre
 }
 
 //***********************************************************************************
-void CPSAttribMakerMemory<float>::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void CPSAttribMakerMemory<float>::newElement(const CPSEmitterInfo &info)
 {
-	CPSAttribMakerMemoryBase<float>::newElement(emitterLocated, emitterIndex);
+	CPSAttribMakerMemoryBase<float>::newElement(info);
 	if (_T.getSize() > 1)
 	{	
 		_MinValue = std::min(_MinValue, _T.back());

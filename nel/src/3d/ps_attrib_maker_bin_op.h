@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.h
  * <File description>
  *
- * $Id: ps_attrib_maker_bin_op.h,v 1.8 2003/04/09 16:03:06 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op.h,v 1.9 2004/05/14 15:38:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,14 +83,16 @@ public:
 
 	/// \name inherited from CPSAttribMaker
 	//@{
-		virtual T		get			  (CPSLocated *loc, uint32 index); 
+		virtual T		get			  (const CPSEmitterInfo &infos);
+		virtual T		get			  (CPSLocated *loc, uint32 index);
 		virtual void   *make		  (CPSLocated *loc,
 									   uint32 startIndex,
 									   void *tab,
 									   uint32 stride,
 									   uint32 numAttrib,
 									   bool allowNoCopy = false,
-									   uint32 srcStep = (1 << 16)
+									   uint32 srcStep = (1 << 16),
+									   bool	forceClampEntry = false
 									  ) const;
 		
 		virtual void    make4		  (CPSLocated *loc,
@@ -112,7 +114,7 @@ public:
 
 		virtual void    serial		  (NLMISC::IStream &f) throw(NLMISC::EStream);			
 		virtual void    deleteElement (uint32 index);	
-		virtual void    newElement	  (CPSLocated *emitterLocated, uint32 emitterIndex);	
+		virtual void    newElement	  (const CPSEmitterInfo &info);	
 		virtual void	resize		  (uint32 capacity, uint32 nbPresentElements);
 	//@}
 
@@ -183,7 +185,8 @@ protected:
 						 uint32 stride,
 						 uint32 numAttrib,
 						 bool allowNoCopy = false,
-						 uint32 srcStep = (1 << 16)
+						 uint32 srcStep = (1 << 16),
+						 bool	forceClampEntry = false
 						) const;
 	
 	void    make4Private	(T *buf1,

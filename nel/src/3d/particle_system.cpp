@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.80 2004/05/11 16:19:44 berenguier Exp $
+ * $Id: particle_system.cpp,v 1.81 2004/05/14 15:38:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@
 	#define CHECK_INTEGRITY
 #endif
 
+
 namespace NL3D 
 {
 
@@ -61,6 +62,19 @@ uint32										CParticleSystem::NbParticlesDrawn = 0;
 UPSSoundServer *							CParticleSystem::_SoundServer = NULL;
 CParticleSystem::TGlobalValuesMap			CParticleSystem::_GlobalValuesMap;
 CParticleSystem::TGlobalVectorValuesMap		CParticleSystem::_GlobalVectorValuesMap;
+
+// sim step infos
+TAnimationTime CParticleSystem::EllapsedTime = 0.f;
+TAnimationTime CParticleSystem::InverseTotalEllapsedTime = 0.f;
+TAnimationTime CParticleSystem::RealEllapsedTime = 0.f;
+float CParticleSystem::RealEllapsedTimeRatio = 1.f;
+bool CParticleSystem::InsideSimLoop = false;
+bool CParticleSystem::InsideRemoveLoop = false;
+bool CParticleSystem::InsideNewElementsLoop = false;;
+std::vector<NLMISC::CVector> CParticleSystem::_SpawnPos;
+
+
+
 
 
 #ifdef NL_DEBUG
@@ -71,6 +85,7 @@ uint	CParticleSystem::_NumInstances = 0;
 static const float PS_MIN_TIMEOUT = 1.f; // the test that check if there are no particles left 
 bool CParticleSystem::_SerialIdentifiers = false;
 bool CParticleSystem::_ForceDisplayBBox = false;
+
 
 
 
@@ -133,8 +148,7 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _BypassIntegrationStepLimit(false),
 									 _ForceGlobalColorLighting(false),
 									 _AutoComputeDelayBeforeDeathTest(true),
-									 _AutoCount(false),
-									 _InverseEllapsedTime(0.f),
+									 _AutoCount(false),									 
 									 _HiddenAtCurrentFrame(true),
 									 _HiddenAtPreviousFrame(true)
 
@@ -145,6 +159,13 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 	#endif
 
 }
+
+
+std::vector<NLMISC::CSmartPtr<CParticleSystem::CSpawnVect> > CParticleSystem::_Spawns; // spawns for the current system being processed
+std::vector<uint> CParticleSystem::_ParticleToRemove;
+std::vector<sint> CParticleSystem::_ParticleRemoveListIndex;
+
+
 
 
 ///=======================================================================================
@@ -161,7 +182,6 @@ void CParticleSystem::stopSound()
 				if (psl->getBoundObject(l)->getType() == PSSound)
 				{
 					static_cast<CPSSound *>(psl->getBoundObject(l))->stopSound();
-
 				}
 			}
 		}
@@ -311,11 +331,11 @@ bool CParticleSystem::hasTemporaryParticles() const
 }
 
 ///=======================================================================================
-void CParticleSystem::stepLocated(TPSProcessPass pass, TAnimationTime et, TAnimationTime realEt)
+void CParticleSystem::stepLocated(TPSProcessPass pass)
 {	
 	for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{
-		(*it)->step(pass, et, realEt);
+		(*it)->step(pass);
 	}	
 }
 
@@ -359,7 +379,7 @@ static void displaySysPos(IDriver *drv, const CVector &pos, CRGBA col)
 
 
 ///=======================================================================================
-void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
+void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime, CParticleSystemShape &shape)
 {	
 	CHECK_INTEGRITY
 	nlassert(_CoordSystemInfo.Matrix); // matrix not set for position of system
@@ -369,7 +389,9 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 	}
 	switch (pass)
 	{
-		case SolidRender:			
+		case SolidRender:
+			EllapsedTime = RealEllapsedTime = ellapsedTime;
+			RealEllapsedTimeRatio = 1.f;
 			/// When shared, the LOD ratio must be computed there
 			if (_Sharing)
 			{
@@ -379,10 +401,12 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			++_Date; 	
 			// update global color
 			updateColor();
-			stepLocated(PSSolidRender, ellapsedTime, ellapsedTime);
+			stepLocated(PSSolidRender);
 
 		break;
-		case BlendRender:					
+		case BlendRender:
+			EllapsedTime = RealEllapsedTime = ellapsedTime;
+			RealEllapsedTimeRatio = 1.f;
 			/// When shared, the LOD ratio must be computed there
 			if (_Sharing)
 			{
@@ -392,7 +416,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			++_Date; 
 			// update global color
 			updateColor();			
-			stepLocated(PSBlendRender, ellapsedTime, ellapsedTime);
+			stepLocated(PSBlendRender);
 			if (_ForceDisplayBBox)
 			{	
 				NLMISC::CAABBox box;
@@ -401,11 +425,14 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 				CPSUtil::displayBBox(getDriver(), box);
 			}
 		break;
-		case ToolRender:			
-			stepLocated(PSToolRender, ellapsedTime, ellapsedTime);
+		case ToolRender:
+			EllapsedTime = RealEllapsedTime = ellapsedTime;
+			RealEllapsedTimeRatio = 1.f;
+			stepLocated(PSToolRender);
 		break;
 		case Anim:
-		{													
+		{		
+			if (ellapsedTime <= 0.f) return;
 			// update user param from global value if needed, unless this behaviour is bypassed has indicated by a flag in _BypassGlobalUserParam
 			if (_UserParamGlobalValue)
 			{
@@ -422,42 +449,42 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			}			
 			//
 			uint nbPass = 1;
-			TAnimationTime et = ellapsedTime;						
+			EllapsedTime = ellapsedTime;
 			_BBoxTouched = true;
 			if (_AccurateIntegration)
 			{
-				if (et > _TimeThreshold)
+				if (EllapsedTime > _TimeThreshold)
 				{
-					nbPass = (uint32) ceilf(et / _TimeThreshold);
+					nbPass = (uint32) ceilf(EllapsedTime / _TimeThreshold);
 					if (!_BypassIntegrationStepLimit && nbPass > _MaxNbIntegrations)
 					{ 
 						nbPass = _MaxNbIntegrations;
 						if (_CanSlowDown)
 						{
-							et = _TimeThreshold;
+							EllapsedTime = _TimeThreshold;
 							nlassert(_TimeThreshold != 0);
-							_InverseEllapsedTime = 1.f / (_TimeThreshold * nbPass);
+							InverseTotalEllapsedTime = 1.f / (_TimeThreshold * nbPass);
 						}
 						else
 						{
-							et = ellapsedTime / nbPass;
-							_InverseEllapsedTime = ellapsedTime != 0 ? 1.f / ellapsedTime : 0.f;
+							EllapsedTime = ellapsedTime / nbPass;
+							InverseTotalEllapsedTime = ellapsedTime != 0 ? 1.f / ellapsedTime : 0.f;
 						}						
 					}
 					else
 					{
-						et = ellapsedTime / nbPass;
-						_InverseEllapsedTime = ellapsedTime != 0 ? 1.f / ellapsedTime : 0.f;
+						EllapsedTime = ellapsedTime / nbPass;
+						InverseTotalEllapsedTime = ellapsedTime != 0 ? 1.f / ellapsedTime : 0.f;
 					}
 				}
 				else
 				{
-					_InverseEllapsedTime = ellapsedTime != 0 ? 1.f / ellapsedTime : 0.f;
+					InverseTotalEllapsedTime = ellapsedTime != 0 ? 1.f / ellapsedTime : 0.f;
 				}
 			}
 			else
 			{
-				_InverseEllapsedTime = ellapsedTime != 0 ? 1.f / ellapsedTime : 0.f;
+				InverseTotalEllapsedTime = ellapsedTime != 0 ? 1.f / ellapsedTime : 0.f;
 			}
 			updateLODRatio();			
 			{
@@ -479,6 +506,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 							finalValue *= lodValue;
 						}
 						_AutoLODEmitRatio = (1.f - _MaxDistLODBias) * finalValue + _MaxDistLODBias;
+						if (_AutoLODEmitRatio < 0.f) _AutoLODEmitRatio = 0.f;
 					}
 				}						
 			}
@@ -508,67 +536,142 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 				//displaySysPos(_Driver, _CurrentDeltaPos + _OldSysMat.getPos(), CRGBA::Red);
 				// process passes				
 			}
-			float realEt = _KeepEllapsedTimeForLifeUpdate ? (ellapsedTime / nbPass)
-														  : et;
+			RealEllapsedTime = _KeepEllapsedTimeForLifeUpdate ? (ellapsedTime / nbPass)
+														  : EllapsedTime;			
+			RealEllapsedTimeRatio = RealEllapsedTime / EllapsedTime;
 			/*PSMaxET = std::max(PSMaxET, ellapsedTime);
 			PSMaxNBPass = std::max(PSMaxNBPass, nbPass);*/
+
+
+			
+			// Sort by emission depth. We assume that the ps is a directed acyclic graph (so no loop will be encountered)			
+			if (shape._ProcessOrder.empty())
+			{						
+				getSortingByEmitterPrecedence(shape._ProcessOrder);
+			}
+			// nodes sorted by degree							
+			InsideSimLoop = true;
+			// make enough room for spawns
+			uint numProcess = _ProcessVect.size();
+			if (numProcess > _Spawns.size())
+			{			
+				uint oldSize = _Spawns.size();
+				_Spawns.resize(numProcess);
+				for(uint k = oldSize; k < numProcess; ++k)
+				{
+					_Spawns[k] = new CSpawnVect;
+				}
+			}
+			for(uint k = 0; k < numProcess; ++k)
+			{
+				if (!_ProcessVect[k]->isLocated()) continue;
+				CPSLocated *loc = static_cast<CPSLocated *>(_ProcessVect[k]);
+				if (loc->hasLODDegradation())
+				{
+					loc->doLODDegradation();
+				}
+				_Spawns[k]->MaxNumSpawns = loc->getMaxSize();
+			}
 			do
-			{		
+			{					
 				{				
 					MINI_TIMER(PSAnim5)
 					// position of the system at the end of the integration
-					_CoordSystemInfo.CurrentDeltaPos += (_CoordSystemInfo.Matrix->getPos() - _CoordSystemInfo.OldPos) * (et * _InverseEllapsedTime);
+					_CoordSystemInfo.CurrentDeltaPos += (_CoordSystemInfo.Matrix->getPos() - _CoordSystemInfo.OldPos) * (EllapsedTime * InverseTotalEllapsedTime);
 					if (_UserCoordSystemInfo)
 					{
 						CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
-						csi.CurrentDeltaPos += (csi.Matrix->getPos() - csi.OldPos) * (et * _InverseEllapsedTime);
+						csi.CurrentDeltaPos += (csi.Matrix->getPos() - csi.OldPos) * (EllapsedTime * InverseTotalEllapsedTime);
 					}
 				}
-				{				
-					MINI_TIMER(PSAnim6)
-					//displaySysPos(_Driver, _CurrentDeltaPos + _OldSysMat.getPos(), CRGBA::Blue);
-					// the order of the following is important...
-					stepLocated(PSCollision, et,  realEt);
-				}								
-					
-				for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)					
+				for(uint k = 0; k < shape._ProcessOrder.size(); ++k)
 				{
+					if (!_ProcessVect[shape._ProcessOrder[k]]->isLocated()) continue;
+					CPSLocated *loc = static_cast<CPSLocated *>(_ProcessVect[shape._ProcessOrder[k]]);					
+					if (_ParticleRemoveListIndex.size() < loc->getMaxSize())
 					{						
-						MINI_TIMER(PSAnim1)
-						(*it)->updateLife(realEt);
-					}
-					{						
-						MINI_TIMER(PSAnim2)
-						(*it)->step(PSMotion, et, realEt);						
-					}
-				}
-				_SystemDate += realEt;				
-				{				
-					MINI_TIMER(PSAnim8)
-					stepLocated(PSEmit, et,  realEt);
-				}
-				{				
-					MINI_TIMER(PSAnim9)
-					if (_BypassIntegrationStepLimit)
+						_ParticleRemoveListIndex.resize(loc->getMaxSize(), -1);
+					}					
+					if (loc->getSize() != 0)
 					{
-						// check that system is finished to avoid unuseful processing
-						if (isDestroyConditionVerified())
+						#ifdef NL_DEBUG						
+							loc->checkLife();						
+						#endif
+						if (loc->hasCollisionInfos())
 						{
-							return;
+							loc->resetCollisions(loc->getSize());
+						}
+						// compute motion (including collisions)
+						if (!loc->isParametricMotionEnabled()) loc->computeMotion();
+						// Update life and mark particles that must be removed
+						loc->updateLife();
+						// Spawn particles. Emitters date is updated only after so we check in CPSLocated::postNewElement 
+						// if the emitter was still alive at this date, otherwise we discard the post					
+						loc->computeSpawns(0);					
+						if (loc->hasCollisionInfos()) loc->updateCollisions();		
+						// Remove too old particles, making room for new ones					
+						if (!_ParticleToRemove.empty())
+						{					
+							loc->removeOldParticles();						
+						}
+						#ifdef NL_DEBUG						
+							loc->checkLife();						
+						#endif
+					}
+					if (!_Spawns[shape._ProcessOrder[k]]->SpawnInfos.empty())
+					{					
+						uint insertionIndex = loc->getSize(); // index at which new particles will be inserted
+						// add new particles that where posted by ancestor emitters, and also mark those that must already be deleted
+						loc->addNewlySpawnedParticles();						
+						if (insertionIndex != loc->getSize())
+						{					
+							// Compute motion for spawned particles. This is useful only if particle can collide because 
+							if (loc->hasCollisionInfos())
+							{
+								loc->resetCollisions(loc->getSize());
+								loc->computeNewParticleMotion(insertionIndex);
+							}
+							loc->computeSpawns(insertionIndex);					
+							if (loc->hasCollisionInfos()) loc->updateCollisions();	
+							// Remove too old particles among the newly created ones.
+							if (!_ParticleToRemove.empty())
+							{
+								loc->removeOldParticles();
+							}
+							#ifdef NL_DEBUG						
+								loc->checkLife();						
+							#endif
 						}
 					}
+					if (!loc->isParametricMotionEnabled()) loc->computeForces();
 				}
+				_SystemDate += RealEllapsedTime;
+				for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)					
+				{	
+					#ifdef NL_DEBUG
+						if ((*it)->isLocated())
+						{						
+							CPSLocated *loc = static_cast<CPSLocated *>(*it);
+							loc->checkLife();
+						}
+					#endif
+					{						
+						MINI_TIMER(PSAnim2)
+						(*it)->step(PSMotion);
+					}
+				}				
 			}
-			while (--nbPass);
-			
+			while (--nbPass);						
 			{				
 				MINI_TIMER(PSAnim10)
 				// perform parametric motion if present
 				for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 				{
-					if ((*it)->isParametricMotionEnabled()) (*it)->performParametricMotion(_SystemDate, ellapsedTime, realEt);
+					if ((*it)->isParametricMotionEnabled()) (*it)->performParametricMotion(_SystemDate);
 				}	
 			}
+
+			InsideSimLoop = false;
 			
 			{				
 				MINI_TIMER(PSAnim11)
@@ -584,7 +687,8 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			}
 		}
 	}	
-	CHECK_INTEGRITY
+	RealEllapsedTimeRatio = 0.f;
+	CHECK_INTEGRITY	
 }
 
 
@@ -854,6 +958,7 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		notifyMaxNumFacesChanged();
 		activatePresetBehaviour(_PresetBehaviour); // apply behaviour changes
+		updateProcessIndices();
 	}
 	CHECK_INTEGRITY
 }
@@ -866,6 +971,7 @@ bool CParticleSystem::attach(CParticleSystemProcess *ptr)
 	//nlassert(ptr->getOwner() == NULL);
 	_ProcessVect.push_back(ptr);
 	ptr->setOwner(this);
+	ptr->setIndex(_ProcessVect.size() - 1);
 	notifyMaxNumFacesChanged();
 	if (getBypassMaxNumIntegrationSteps())
 	{
@@ -889,6 +995,7 @@ void CParticleSystem::remove(CParticleSystemProcess *ptr)
 	_ProcessVect.erase(it);
 	delete ptr;
 	systemDurationChanged();
+	updateProcessIndices();
 }
 
 ///=======================================================================================
@@ -1149,7 +1256,7 @@ bool CParticleSystem::merge(CParticleSystemShape *pss)
 		{
 			for (TProcessVect::iterator clearIt = duplicate->_ProcessVect.begin(); clearIt != it; ++it)
 			{
-				detach(getIndexOf(*it));
+				detach(getIndexOf(**it));
 			}
 			nlwarning("<CParticleSystem::merge> Can't do the merge : this causes the system to last forever, and it has been flagged with 'BypassMaxNumIntegrationSteps'. Merge is not done.");
 			return false;
@@ -1162,7 +1269,7 @@ bool CParticleSystem::merge(CParticleSystemShape *pss)
 		{
 			for (TProcessVect::iterator it = duplicate->_ProcessVect.begin(); it != duplicate->_ProcessVect.end(); ++it)
 			{		
-				detach(getIndexOf(*it));
+				detach(getIndexOf(**it));
 			}
 			nlwarning("<CParticleSystem::merge> Can't do the merge : this causes the system to last forever, and it has been flagged with 'BypassMaxNumIntegrationSteps'. Merge is not done.");
 			return false;
@@ -1171,7 +1278,7 @@ bool CParticleSystem::merge(CParticleSystemShape *pss)
 	//
 	duplicate->_ProcessVect.clear();	
 	delete duplicate;
-	systemDurationChanged();
+	systemDurationChanged();	
 	CHECK_INTEGRITY
 	return true;
 }
@@ -1291,14 +1398,12 @@ bool CParticleSystem::isProcess(const CParticleSystemProcess *process) const
 }
 
 ///=======================================================================================
-uint CParticleSystem::getIndexOf(const CParticleSystemProcess *process) const
+uint CParticleSystem::getIndexOf(const CParticleSystemProcess &process) const
 {
-	for(uint k = 0; k < _ProcessVect.size(); ++k)
-	{
-		if (_ProcessVect[k] == process) return k;
-	}
-	nlassert(0); // not a process of this system
-	return 0; // for warning
+	#ifdef NL_DEBUG
+		nlassert(isProcess(&process));
+	#endif
+		return process.getIndex();
 }
 
 ///=======================================================================================
@@ -1335,7 +1440,7 @@ void CParticleSystem::getIDs(std::vector<uint32> &dest) const
 void CParticleSystem::interpolateFXPosDelta(NLMISC::CVector &dest, TAnimationTime deltaT)
 {
 	nlassert(_CoordSystemInfo.Matrix);
-	dest = _CoordSystemInfo.CurrentDeltaPos - (deltaT * _InverseEllapsedTime) * (_CoordSystemInfo.Matrix->getPos() - _CoordSystemInfo.OldPos);
+	dest = _CoordSystemInfo.CurrentDeltaPos - (deltaT * InverseTotalEllapsedTime) * (_CoordSystemInfo.Matrix->getPos() - _CoordSystemInfo.OldPos);
 }
 
 ///=======================================================================================
@@ -1348,7 +1453,7 @@ void CParticleSystem::interpolateUserPosDelta(NLMISC::CVector &dest, TAnimationT
 	else
 	{
 		CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
-		dest = csi.CurrentDeltaPos - (deltaT * _InverseEllapsedTime) * (csi.Matrix->getPos() - csi.OldPos);
+		dest = csi.CurrentDeltaPos - (deltaT * InverseTotalEllapsedTime) * (csi.Matrix->getPos() - csi.OldPos);
 	}
 }
 
@@ -1954,7 +2059,108 @@ void CParticleSystem::setZBias(float value)
 	}
 }
 
+///=======================================================================================
+void CParticleSystem::getSortingByEmitterPrecedence(std::vector<uint> &result) const
+{
+	#ifdef NL_DEBUG
+		nlassert(!hasLoop()); // should be an acyclic graph, otherwise big problem....
+	#endif
+	typedef std::list<CParticleSystemProcess *> TProcessList;
+	std::vector<TProcessList> degreeToNodes;
+	std::vector<TProcessList::iterator> nodeToIterator(_ProcessVect.size());
+	//
+	std::vector<uint> inDegree(_ProcessVect.size(), 0); // degree for each node									
+	for(uint k = 0; k < _ProcessVect.size(); ++k)
+	{
+		if (_ProcessVect[k]->isLocated())
+		{	
+			CPSLocated *loc = static_cast<CPSLocated *>(_ProcessVect[k]);
+			for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+			{
+				if (loc->getBoundObject(l)->getType() == PSEmitter)
+				{							
+					CPSEmitter *pEmit = NLMISC::safe_cast<CPSEmitter *>(loc->getBoundObject(l));
+					if (pEmit->getEmittedType())
+					{							
+						++ inDegree[getIndexOf(*pEmit->getEmittedType())];
+					}
+				}						
+			}																	
+		}
+	}
+	// make enough room in degreeToNodes.
+	for(uint k = 0; k < inDegree.size(); ++k)
+	{
+		if (degreeToNodes.size() <= inDegree[k])
+		{		
+			degreeToNodes.resize(inDegree[k] + 1);
+		}		
+	}
+	// sort nodes by degree
+	for(uint k = 0; k < inDegree.size(); ++k)
+	{
+		// NB : could not do resize there because we keep iterators in the list, so it's done in the previous loop
+		degreeToNodes[inDegree[k]].push_front(_ProcessVect[k]);		
+		nodeToIterator[k] = degreeToNodes[inDegree[k]].begin();
+	}		
+	//
+	#ifdef  NL_DEBUG
+		#define DO_SBEP_CHECK  \
+		{  for(uint k = 0; k < degreeToNodes.size(); ++k)	                                                         \
+		{                                                                                                            \
+			for(TProcessList::const_iterator it = degreeToNodes[k].begin(); it != degreeToNodes[k].end(); ++it)      \
+			{                                                                                                        \
+				nlassert(inDegree[(*it)->getIndex()] == k);                                                          \
+			}			                                                                                             \
+		}}
+	#else
+		#define DO_SBEP_CHECK
+	#endif
+	//
+	DO_SBEP_CHECK
+	result.reserve(_ProcessVect.size());
+	result.clear();
+	if (degreeToNodes.empty()) return;
+	// now, do the sort -> add each node with a degree of 0, and removes arc to their son (and insert in new good list according to their degree)
+	while (!degreeToNodes[0].empty())
+	{	
+		DO_SBEP_CHECK
+		CParticleSystemProcess *pr = degreeToNodes[0].front();
+		degreeToNodes[0].pop_front();
+		result.push_back(getIndexOf(*pr));
+		if (pr->isLocated())
+		{
+			CPSLocated *loc = static_cast<CPSLocated *>(pr);
+			for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+			{
+				if (loc->getBoundObject(l)->getType() == PSEmitter)
+				{
+					CPSEmitter *pEmit = NLMISC::safe_cast<CPSEmitter *>(loc->getBoundObject(l));		
+					// update degree of node
+					if (pEmit->getEmittedType())
+					{
+						uint emittedLocIndex  = getIndexOf(*pEmit->getEmittedType());
+						uint degree = inDegree[emittedLocIndex];
+						nlassert(degree != 0);
+						degreeToNodes[degree - 1].splice(degreeToNodes[degree - 1].begin(), degreeToNodes[degree], nodeToIterator[emittedLocIndex]);
+						nodeToIterator[emittedLocIndex] = degreeToNodes[degree - 1].begin(); // update iterator
+						-- inDegree[emittedLocIndex];
+						DO_SBEP_CHECK
+					}
+				}						
+			}
+		}
+	}				
+}
 
+///=======================================================================================
+void CParticleSystem::updateProcessIndices()
+{
+	for(uint k = 0; k < _ProcessVect.size(); ++k)
+	{
+		_ProcessVect[k]->setIndex(k);
+	}
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.33 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_located.h,v 1.34 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "3d/particle_system_process.h"
 #include "3d/ps_attrib.h" // an attribute template container
 #include "3d/ps_lod.h"
+#include "3d/ps_spawn_info.h"		
 #include "nel/misc/stream.h"
 //
 #include "nel/misc/object_arena_allocator.h"
@@ -41,6 +42,7 @@ namespace NLMISC
 {
 	class CAABBox;
 	class CMatrix;	
+	class CVector;
 }
 
 
@@ -64,57 +66,31 @@ class IDriver;
 class CFontManager;
 class CFontGenerator;
 class CScene;
-
+class CParticleSystem;
 
 const uint32 DefaultMaxLocatedInstance = 1; // the default value for a located container
 
 
 
+
+
 /// This structure helps to perform the collision step, by telling which collisionner is the nearest if there are several candidate
 /// a distance of -1 indicates that no collisions occured
-
 struct CPSCollisionInfo
 {
-
-	float   TimeSliceRatio; /** Tells how mush of this time step is being used.
-							   * This is usually 1.0, unless. The object was just emitted.
-							   * In this case, this can range from 0 to 1 (When several emission
-							   * occured within the same time step)
-							   */
-	// distance to the collisionner along the speed vector
-	float   dist;	
-	// new pos and speed, valid if a collision occured
-	NLMISC::CVector newPos, newSpeed;
-
-	/** the zone on which the bounce occured...
-	 *  can be useful to check the behaviour in case of collision
-	 */
-
-	CPSZone *collisionZone;
-
+	CPSCollisionInfo *Next;
+	float			  Dist;			  // Distance to the nearest collider, or -1 if not collision occured	
+	NLMISC::CVector   NewPos;
+	NLMISC::CVector   NewSpeed;	      // The speed of particle after a collision occured. After the updated of collision it is swapped with the post-collision speed
+	CPSZone			  *CollisionZone; // The zone on which the bounce occured, can be useful to check the behaviour in case of collision	 
+	uint32			  Index;
 	CPSCollisionInfo()
 	{
-		reset();
+		Dist = -1.f;		
 	}
-	void reset(void)
-	{
-		dist			= -1;
-		TimeSliceRatio = 1.0f;
-	}
-
-	 void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-	 {
-		f.serialVersion(1);
-		f.serial(dist, newPos, newSpeed);
-	 }
+	// update the collision info, and eventually link it in the list of active collisions
+	void update(const CPSCollisionInfo &other);	
 };
-
-
-/// a container of collision infos
-typedef CPSAttrib<CPSCollisionInfo> TPSAttribCollisionInfo;
-
-
-
 
 
 /**
@@ -141,7 +117,6 @@ public:
 	CPSLocated();
 
 	/// dtor
-
 	virtual ~CPSLocated();
 
 	// from CParticleSystemProcess
@@ -213,36 +188,48 @@ public:
 	}
 
 
-	/**
+	/** Post a new Element to be created. This should be called by emitters only (r.g in the sim loop)
+	  * Calling this outside the sim loop will cause an assert.	  
+	  */
+	void postNewElement(const NLMISC::CVector &pos,
+						 const NLMISC::CVector &speed,
+						 CPSLocated &emitterLocated,
+						 uint32 indexInEmitter,
+						 TPSMatrixMode speedCoordSystem,
+						 TAnimationTime lifeTime);
+
+  /**
 	* Generate one more instance in a located.
-	* The coordinate are given in the chosen basis for the located.
+	* The coordinates are given in the chosen basis for the located.
 	* If the emitterLocated ptr is not null, then the coordinate are taken from the emitterLocated basis 
-	* and are expressed in this located basis. 
-	* other attributes are generated according to other properties of this class
+	* and are expressed in this located basis. 	
 	* Will succeed only if it hasn't reach the max number of allowed instances
 	* return will be -1 if call failed or an index to the created object.
 	* Index is only valid after creation. Any processing pass on the system will make it invalid.
 	* It can be used with any attribute modification method of located and located bindable
 	* \param indexInEmitter The index of the emitter (in the emitterLocated object)
 	* \param basisConversionForSpeed : if false, the speed vector is taken as if even if emitter and emittee basis are differents.
-	* \param ellapsedTime
-	*/
-
+	* \param lifeTime : for how much time particle has been alive
+	* \param ellapsedTime : time ellapsed since the beginning of the sim step. 
+	* \param doEmitOnce : When the element is created, all emitters flagged as 'EmitOnce' will be triggered
+	*/	
 	sint32 newElement(const NLMISC::CVector &pos,
 		              const NLMISC::CVector &speed,
 					  CPSLocated *emitterLocated,
 					  uint32 indexInEmitter,
-					  TPSMatrixMode speedCoordSystem,
-					  TAnimationTime ellapsedTime);
-
+					  TPSMatrixMode speedCoordSystem,					  
+					  bool doEmitOnce = false
+					 );
+	
 
 	/**
 	* Delete one located in the container
 	* not present -> nlassert
 	*/
+	void deleteElement(uint32 index);	
 
-	void deleteElement(uint32 index);
-
+	// get the age of an element in seconds
+	inline TAnimationTime getAgeInSeconds(uint elementIndex) const;
 
 	/// shortcut to get the scene
 	CScene *getScene(void);
@@ -353,9 +340,14 @@ public:
 	/**
 	* process the system
 	*/
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
+	virtual void step(TPSProcessPass pass);
 
-
+	// move and collides particles (with previously computed collisions)
+	void computeMotion();
+	//move and collide particles that have been newly spawned
+	void computeNewParticleMotion(uint firstInstanceIndex);
+	// Update position and speed of particles after collisions
+	void updateCollisions();
 
 	/// get the current number of instance in this located container
 	uint32 getSize(void) const 
@@ -370,17 +362,7 @@ public:
 	{ 
 		return _MaxSize; 
 	}
-
-	/** set the Refresh Rate of this located. Default is motion every frame (frameToSkip = 0)
-	 *  The drawing process will still occur every frame anyway...
-	 *  It's a speed / quality tradeof
-	 */
-
-	 void setFrameRate(uint32 nbFramesToSkip = 0) { _NbFramesToSkip = nbFramesToSkip; }
-
-	 // retrieve the frame rate
-	 uint32 getFrameRate(void) const { return _NbFramesToSkip; }
-
+	
 
 	/**
 	* Resize the located container, in order to accept more instances
@@ -432,29 +414,16 @@ public:
 	void releaseCollisionInfo(void);
 
 	/// test wether this located has collision infos
-	bool hasCollisionInfos() const { return _CollisionInfo != NULL; }
+	bool hasCollisionInfos() const { return _CollisionNextPos != NULL; }
 
-	/// get a ref to the collision infos
-	TPSAttribCollisionInfo &getCollisionInfo(void)
-	{
-		nlassert(_CollisionInfo);
-		return *_CollisionInfo;
-	}
+	// Compute spawns. Should be called only inside the sim loop.
+	void computeSpawns(uint firstInstanceIndex);
 
-	/// get a const ref to the collision infos
-	const TPSAttribCollisionInfo &getCollisionInfo(void) const
-	{
-		nlassert(_CollisionInfo);
-		return *_CollisionInfo;
-	}
+	// Compute forces that apply on that located. Should be called only inside the sim loop.
+	void computeForces();
 
-
-	/** A collider must call this when a collision occurs
-	*  If the collider was nearer that another one it will be taken in account
-	*  \index the index of instance that collided
-	*/
-
-	inline void collisionUpdate(const CPSCollisionInfo &ci, uint32 index);
+	// compute collisions
+	void computeCollisions(uint firstInstanceIndex, const NLMISC::CVector *posBefore, const NLMISC::CVector *posAfter);		
 
 	// get a conversion matrix between 2 matrix modes		
 	static const NLMISC::CMatrix &getConversionMatrix(const CParticleSystem &ps, TPSMatrixMode to, TPSMatrixMode from);
@@ -511,7 +480,7 @@ public:
 	/** Test whether LOD degradation was activated
 	  * \see forceLODDegradation()
 	  */
-	bool hasLODDegradation(void) const { return _LODDegradation; }
+	bool hasLODDegradation(void) const { return _LODDegradation; }	
 
 
 	/// for the CPSLocated to reevaluate the max number of faces it may need
@@ -535,10 +504,16 @@ public:
 	bool		 isParametricMotionEnabled(void) const { return _ParametricMotion;}
 
 	/// inherited from CParticlesystemProcess perform parametric motion for this located to reach the given date
-	virtual void performParametricMotion(TAnimationTime date, TAnimationTime ellapsedTime, TAnimationTime realEllapsedTime);
+	virtual void performParametricMotion(TAnimationTime date);
 
 	/// make the particle older of the given amount. Should not be called directly, as it is called by the system during its step method
-	virtual void updateLife(TAnimationTime ellapsedTime);
+	/// Dying particles are marked (removed in a later pass by called removeOldParticles)
+	void updateLife();
+	/// Remove old particles that were marked as 'dead'
+	void removeOldParticles();
+	/// Add newly spawned particles
+	void addNewlySpawnedParticles();
+	
 
 	/** Compute the trajectory of the given located.
 	  * NB : only works with object that have parametric trajectories
@@ -546,7 +521,12 @@ public:
 	void integrateSingle(float startDate, float deltaT, uint numStep,						 
 						 uint32 indexInLocated,
 						 NLMISC::CVector *destPos,						
-						uint posStride = sizeof(NLMISC::CVector));
+						 uint posStride = sizeof(NLMISC::CVector)) const;
+
+	// compute position for a single element at the given date 
+	// NB : only works with object that have parametric trajectories
+	inline void computeParametricPos(float date, uint indexInLocated, NLMISC::CVector &dest) const;
+
 
 	/// Enable a trigger on death. It is used to create emission on an emitter with a given ID
 	void				enableTriggerOnDeath(bool enable = true) { _TriggerOnDeath = enable; }
@@ -582,49 +562,58 @@ public:
 	 // from CParticleSystemProcess
 	 virtual void setZBias(float value);	 
 	
+	
+	// For debug only, check if particles life is in the range [0, 1]
+	 void	checkLife() const;
+
 protected:
 
 
 	friend class CPSForce; // this is intended only for integrable forces that want to use
 						   // registerIntegrableForce, and removeIntegrableForce
-
-	/// cache the max number of faces this located may want
-	uint32 _MaxNumFaces;
-
-	std::string _Name;
-	
-	// number of frame to skip between motion ...
-	uint32 _NbFramesToSkip;
-
-	// container of all object that are bound to a located
+	/// Cache the max number of faces this located may want
+	uint32					_MaxNumFaces;
+	// Current number of instances in the container
+	uint32					_Size;
+	// Max number of instance in the container
+	uint32					_MaxSize;
+	// Nb of collisions zones that reference that object
+	uint32					_CollisionInfoNbRef;		
+	// Keep vector of next positions during sim step (to avoid a copy after position have been computed). Used only if there are collisions
+	TPSAttribVector			*_CollisionNextPos;
+	// The life to use, or a scheme that generate it
+	// if the scheme if NULL, initial life is used instead
+	float					_InitialLife;
+	CPSAttribMaker<float>	*_LifeScheme;
+	// The mass to use, or a scheme that generate it
+	// if the scheme if null, initial mass is used instead
+	float					_InitialMass;
+	CPSAttribMaker<float>	*_MassScheme;
+	bool					 _LODDegradation   : 1;	// True when LOD degradation apply to this located	
+	bool					 _ParametricMotion : 1;	// When set to true, this tells the system to use parametric motion. Only parametric forces must have been applied.
+	bool					 _TriggerOnDeath   : 1;  // When set to true, then when any particle is destroyed, all particles with ID '_TriggerID' will be destroyed too	
+	bool					 _LastForever      : 1;  // True if the located can't die.
+	uint32					 _TriggerID;
+	/** Number of forces, (counts collision zones too). that are not integrable over time. If this is not 0, then the trajectory
+	  * cannot be computed at any time. A force that is integrable must be in the same basis than the located.
+	  */
+	uint16					_NonIntegrableForceNbRefs;
+	/// Number of forces that apply on that located that have the same basis that this one (required for parametric animation)
+	uint16					_NumIntegrableForceWithDifferentBasis;
+	// Name of located
+	std::string				_Name;	
+	// Container of all object that are bound to a located
 	typedef CPSVector<CPSLocatedBindable *>::V TLocatedBoundCont;
-
-
-	// the list of all located
-	TLocatedBoundCont _LocatedBoundCont;
-
-	// max number of instance in the container
-	uint32 _MaxSize;
-
-	// current number of instances in the container
-
-	uint32 _Size;
-
-	
-	//  = true if the located can't die (gravity for instance...)
-	bool _LastForever;
-
-	// needed atributes for a located
-
+	// The list of all located
+	TLocatedBoundCont		_LocatedBoundCont;				
+	// Needed atributes for a located
 	// a container of masses. the inverse for mass are used in order to speed up forces computation
-	TPSAttribFloat		_InvMass; 
-	TPSAttribVector		_Pos;
-	TPSAttribVector		_Speed;
-	TPSAttribTime		_Time;
-	TPSAttribTime		_TimeIncrement;
-
-
-	public:;
+	TPSAttribFloat			_InvMass; 
+	TPSAttribVector			_Pos;
+	TPSAttribVector			_Speed;
+	TPSAttribTime			_Time;
+	TPSAttribTime			_TimeIncrement;	
+public:
 
 	/** WARNING : private use by forces only. This struct is used for parametric trajectory. These kind of trajectory can only be computed in a few case,
 	  * but are useful in some cases.
@@ -649,108 +638,23 @@ protected:
 	  */
 	CPSAttrib<CParametricInfo>  _PInfo;
 
-	protected:
+protected:				 	
+	typedef CPSVector<CPSLocatedBindable *>::V			TDtorObserversVect;
+	TDtorObserversVect									_DtorObserversVect;	
+	// a vector of integrable forces that apply on this located
+	typedef CPSVector<CPSForce *>::V					TForceVect;
+	TForceVect											_IntegrableForces;	
+	/// allocate parametric infos
+	void allocateParametricInfos(void);
 
-	/** Used to solve collision detection
-	 *  it is not always instanciated
-	 */
-	TPSAttribCollisionInfo *_CollisionInfo;
+	/// release paametric infos
+	void releaseParametricInfos(void);
 
+	/// notify the attached object that we have switch between parametric / incremental motion
+	void notifyMotionTypeChanged(void);
 
-
-	// nb of users of the _CollisionInfo field
-	uint32 _CollisionInfoNbRef;
-
-		
-	// the life to use, or a scheme that generate it
-	// if the scheme if null, initial life is used instead
-	float _InitialLife;
-	CPSAttribMaker<float> *_LifeScheme;
-
-	// the mass to use, or a scheme that generate it
-	// if the scheme if null, initial mass is used instead
-	float _InitialMass;
-	CPSAttribMaker<float> *_MassScheme;
-
-	
-
-
-	/// used internally to record the request of creation of new posted located
-	struct CPostNewElementRequestInfo
-	{
-		NLMISC::CVector _Pos;
-		NLMISC::CVector _Speed;
-		void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-		{
-			f.serial(_Pos, _Speed);
-		}			
-		CPostNewElementRequestInfo(const NLMISC::CVector &pos = NLMISC::CVector::Null, const NLMISC::CVector &speed = NLMISC::CVector::Null) : _Pos(pos), _Speed(speed) {}		
-	};
-
-	typedef std::stack<CPostNewElementRequestInfo> TNewElementRequestStack;
-
-	/// this stack is used after each update to generate located
-	TNewElementRequestStack _RequestStack;
-
-	/// generate the located that were posted
-	void updateNewElementRequestStack(void);
-
-
-	/**
-	 * this is used to tell wether a newElement or a deleteElement if being performed
-	 * During these method, creation should use postNewElement to generate new elements
-	 * Because of the data structures (each located bindable are updated one after each other)
-	 * inconsistency can happen, when a located generated another located of the same type
-	 * when he's deleted.
-	 */
-
-	 bool _UpdateLock;	
-
-	 /**
-	 * Post a request for the generation of a new located.
-	 * it is called by newElement when _UpdateLock is set
-	 * (when called during newElement or deleteElement)
-	 */
-
-	 void postNewElement(const NLMISC::CVector &pos = NLMISC::CVector::Null					
-		, const NLMISC::CVector &speed = NLMISC::CVector::Null);
-
-
-	 /// this prepare the located ofr collision tests
-	 void resetCollisionInfo(void);
-	
-	 typedef CPSVector<CPSLocatedBindable *>::V			TDtorObserversVect;
-	 TDtorObserversVect									_DtorObserversVect;
-
-	 /// true when LOD degradation apply to this located
-	 bool												_LODDegradation;
-
-	 /** number of force, and zones etc. that are not integrable over time. If this is not 0, then the trajectory
-	   * cannot be computed at any time. A force that is integrable must be in the same basis than the located.
-	   */
-	 uint16												_NonIntegrableForceNbRefs;
-	 /// number of forces that apply on that located that have the same basis that this one (required for parametric animation)
-	 uint16												_NumIntegrableForceWithDifferentBasis;
-	 /// a vector of integrable forces that apply on this located
-	 typedef CPSVector<CPSForce *>::V					TForceVect;
-	 TForceVect											_IntegrableForces;
-	 bool												_TriggerOnDeath;
-	uint32												_TriggerID;
-
-	 /// When set to true, this tells the system to use parametric motion. Only parametric forces must have been applied.
-	 bool _ParametricMotion;
-
-	 /// allocate parametric infos
-	 void allocateParametricInfos(void);
-
-	 /// release paametric infos
-	 void releaseParametricInfos(void);
-
-	 /// notify the attached object that we have switch between parametric / incremental motion
-	 void notifyMotionTypeChanged(void);
-
-	 // for debug : check that system integrity is ok, otherwise -> assert
-	 void checkIntegrity() const;
+	// for debug : check that system integrity is ok, otherwise -> assert
+	void checkIntegrity() const;
 
 public:
 	 /// PRIVATE USE: register a force that is integrable on this located. It must have been registered only once
@@ -773,6 +677,28 @@ public:
 
 	 /// PRIVATE USE : called by the system when its date has been manually changed
 	 virtual void	systemDateChanged();
+
+	 // PRIVATE USE :reset collisions
+	void resetCollisions(uint numInstances);
+
+	/// PRIVATE USE :Should be only called by the sim loop when hasLODDegradation() returns true. /see forceLODDegradation
+	void doLODDegradation();
+
+private:
+	// Special version for deleteElement, should be only called during the update loop.
+	// If gives the amount of time that will ellapse until the end of the simulation step, so that,
+	// if a particle is emitted 'On death' of its emitter, it will have a correct pos at the next simultion step
+	void deleteElement(uint32 index, TAnimationTime timeUntilNextSimStep);
+	// Delete basic info for an element. Called by both versions of deleteElement
+	void deleteElementBase(uint32 index);
+	// compute time from the collision to the next sim step
+	TAnimationTime computeDateFromCollisionToNextSimStep(uint particleIndex, float particleAgeInSeconds);
+	// create a new element
+	sint32   newElement(const CPSSpawnInfo &si, bool doEmitOnce, TAnimationTime ellapsedTime);
+public:
+	static CPSCollisionInfo				 *_FirstCollision;	
+	// collisions infos, made public to access by collision zones
+	static std::vector<CPSCollisionInfo> _Collisions;
 };
 
 
@@ -780,18 +706,6 @@ public:
 ///////////////////////////////////////
 // IMPLEMENTATION OF INLINE METHODS  //
 ///////////////////////////////////////
-
-inline void CPSLocated::collisionUpdate(const CPSCollisionInfo &ci, uint32 index)
-{
-	nlassert(_CollisionInfo);
-	CPSCollisionInfo  &firstCi = (*_CollisionInfo)[index];
-	if (firstCi.dist == -1 || ci.dist < firstCi.dist)
-	{
-		firstCi = ci;
-	}
-}
-
-
 
 
 //******************************************************************************************
@@ -853,7 +767,7 @@ public:
 	*/
 	virtual uint32			getPriority(void) const = 0;			
 	/// process one pass for this bindable
-	virtual void			step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt) = 0;
+	virtual void			step(TPSProcessPass pass) = 0;
 	/** Can be used by located bindable that have located as targets (emitter, collision zone, forces)
      *	to be notified that one of their target has been removed.
 	 *  To do this :
@@ -987,28 +901,23 @@ protected:
 
 	/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
 	 */
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) = 0;
+	virtual void newElement(const CPSEmitterInfo &info) = 0;
 
 
-	/** Delete an element given its index
-	 *  Attributes of the located that hold this bindable (pos etc...) are still accessible 
-	 *  for the given index.
-	 *  index out of range -> nl_assert
-	 */
-
+	// Delete element at the given index
 	virtual void deleteElement(uint32 index) = 0;
+	// Delete element at the given index. Gives the remaining time until the next sim loop
+	virtual void deleteElement(uint32 index, TAnimationTime timeUntilNextSimStep) { deleteElement(index); }	
 
 	/** Resize the bindable attributes containers
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
 	virtual void resize(uint32 size) = 0;
 
-
-
 	/** a bounce occured, so some action could be done. The default behaviour does nothing
 	 *  \param index the index of the element that bounced
 	 */
-	virtual void bounceOccured(uint32 index) {}
+	virtual void bounceOccured(uint32 index, TAnimationTime timeToNextsimStep) {}
 
 	/** show an drawing to represent the object, and in red if it is selected
 	 *  \param tab : a table of 2 * nbSeg vector. only the x and y coordinates are used
@@ -1112,9 +1021,9 @@ public:
 	void				serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	/// Finalize this object : the default is to call releaseTargetRsc on targets
 	virtual void		finalize(void);
-	virtual				~CPSTargetLocatedBindable();	
-	
+	virtual				~CPSTargetLocatedBindable();			
 protected:
+	friend class CPSLocated;
 	/** Inherited from CPSLocatedBindable. A target has been remove If not present -> assert
 	 * This also call releaseTargetRsc for clean up
 	 */		
@@ -1141,12 +1050,27 @@ inline const NLMISC::CMatrix &CPSLocated::getConversionMatrix(const CPSLocated *
 }
 
 //*****************************************************************************************************
+inline TAnimationTime	CPSLocated::getAgeInSeconds(uint elementIndex) const
+{
+	nlassert(elementIndex < _Size);
+	if (_LastForever) return _Time[elementIndex];
+	if (_LifeScheme) return _Time[elementIndex] / _TimeIncrement[elementIndex];
+	return _Time[elementIndex] * _InitialLife;
+}
+
+//*****************************************************************************************************
+inline void	CPSLocated::computeParametricPos(float date, uint indexInLocated, NLMISC::CVector &dest) const
+{
+	integrateSingle(date, 1.f, 1, indexInLocated, &dest);
+}
+
+
+//*****************************************************************************************************
 inline const NLMISC::CMatrix &CPSLocatedBindable::getLocalToWorldMatrix() const
 {
 	nlassert(_Owner);
 	return _Owner->getLocalToWorldMatrix();
 }
-
 
 } // NL3D
 

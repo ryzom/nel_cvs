@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.12 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.13 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,26 @@ CVertexBuffer CPSQuad::_VBPosTex1Tex2Anim;
 CVertexBuffer CPSQuad::_VBPosTex1ColTex2Anim;	
 CVertexBuffer CPSQuad::_VBPosTex1AnimTex2Anim;
 CVertexBuffer CPSQuad::_VBPosTex1AnimColTex2Anim;
+
+// tmp
+/*
+CVertexBuffer _AGPVBPos;
+CVertexBuffer _AGPVBPosCol;
+CVertexBuffer _AGPVBPosTex1;
+CVertexBuffer _AGPVBPosTex1Col;				
+CVertexBuffer _AGPVBPosTex1Anim;
+CVertexBuffer _AGPVBPosTex1AnimCol;
+//==========
+CVertexBuffer _AGPVBPosTex1Tex2;
+CVertexBuffer _AGPVBPosTex1ColTex2;	
+CVertexBuffer _AGPVBPosTex1AnimTex2;
+CVertexBuffer _AGPVBPosTex1AnimColTex2;
+//==========
+CVertexBuffer _AGPVBPosTex1Tex2Anim;
+CVertexBuffer _AGPVBPosTex1ColTex2Anim;	
+CVertexBuffer _AGPVBPosTex1AnimTex2Anim;
+CVertexBuffer _AGPVBPosTex1AnimColTex2Anim;
+*/
 	
 CVertexBuffer    * const CPSQuad::_VbTab[] = 
 { 
@@ -84,7 +104,27 @@ CVertexBuffer    * const CPSQuad::_VbTab[] =
   NULL,   NULL,		 &_VBPosTex1AnimTex2Anim, &_VBPosTex1AnimColTex2Anim,
 };
 
+// tmp
+/*
+volatile bool PSAGP = false;
+CVertexBuffer    * const _AGPVbTab[] = 
+{ 
+	// tex1 only
+		&_AGPVBPos, &_AGPVBPosCol, &_AGPVBPosTex1,  &_AGPVBPosTex1Col,
+		NULL,   NULL,		 &_AGPVBPosTex1Anim, &_AGPVBPosTex1AnimCol,
+		// tex1 & tex2
+		NULL, NULL, &_AGPVBPosTex1Tex2, &_AGPVBPosTex1ColTex2,
+		NULL,   NULL,		 &_AGPVBPosTex1AnimTex2, &_AGPVBPosTex1AnimColTex2,
+		// tex2 & !tex1 (invalid)
+		NULL, NULL, NULL, NULL,
+		NULL, NULL, NULL, NULL,
+		// tex2 & !tex1 (invalid)
+		// tex1 & tex2
+		NULL, NULL, &_AGPVBPosTex1Tex2Anim, &_AGPVBPosTex1ColTex2Anim,
+		NULL,   NULL,		 &_AGPVBPosTex1AnimTex2Anim, &_AGPVBPosTex1AnimColTex2Anim,
+};
 
+*/
   
 
 
@@ -119,7 +159,7 @@ void CPSQuad::initVertexBuffers()
 	for (uint k = 0; k < 32; ++k)
 	{
 		CVertexBuffer *vb = _VbTab[k];
-		if (_VbTab[k]) // valid vb ?
+		if (vb) // valid vb ?
 		{
 			uint32 vf = CVertexBuffer::PositionFlag;
 			/// setup vertex format
@@ -141,6 +181,36 @@ void CPSQuad::initVertexBuffers()
 			
 		}
 	}
+
+	// tmp : agp buffer
+	/*
+	for (uint k = 0; k < 32; ++k)
+	{
+		CVertexBuffer *vb = _AGPVbTab[k];
+		if (vb) // valid vb ?
+		{
+			vb->setPreferredMemory(CVertexBuffer::AGPPreferred, false);
+			uint32 vf = CVertexBuffer::PositionFlag;
+			/// setup vertex format
+			if (k & (uint) VBCol) vf |= CVertexBuffer::PrimaryColorFlag;
+			if (k & (uint) VBTex  || k & (uint) VBTexAnimated) vf |= CVertexBuffer::TexCoord0Flag;
+			if (k & (uint) VBTex2 || k & (uint) VBTex2Animated) vf |= CVertexBuffer::TexCoord1Flag;
+			vb->setVertexFormat(vf);
+			vb->setNumVertices(quadBufSize << 2);
+			
+			if ((k & (uint) VBTex) && !(k & (uint) VBTexAnimated))
+			{
+				SetupQuadVBTexCoords(*vb, 0);
+			}
+			
+			if ((k & (uint) VBTex2) && !(k & (uint) VBTex2Animated))
+			{
+				SetupQuadVBTexCoords(*vb, 1);
+			}
+			
+		}
+	}
+	*/
 }
 
 ///==================================================================================
@@ -199,6 +269,13 @@ CVertexBuffer &CPSQuad::getNeededVB()
 
 	nlassert((flags & ~VBFullMask) == 0); // check for overflow
 	nlassert(_VbTab[flags] != NULL);
+	// tmp
+	/*
+	if (PSAGP)
+	{
+		return *(_AGPVbTab[flags]);
+	}
+	*/
 	return *(_VbTab[flags]); // get the vb
 }
 
@@ -525,7 +602,6 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 }
 
 
-
 ///==================================================================================
 void CPSQuad::updateMatBeforeRendering(IDriver *drv, CVertexBuffer &vb)
 {
@@ -583,7 +659,7 @@ void CPSQuad::updateMatBeforeRendering(IDriver *drv, CVertexBuffer &vb)
 			}			
 			_Mat.setColor(col);			
 		}		
-	}
+	}	
 }
 
 //*****************************************************************************************************

@@ -1,7 +1,7 @@
 /** \file ps_dot.h
  * Dot particles
  *
- * $Id: ps_dot.h,v 1.5 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_dot.h,v 1.6 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,7 +92,7 @@ protected:
 	void resize(uint32 size);
 
 	/// we don't save datas so it does nothing for now
-	void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
+	void newElement(const CPSEmitterInfo &info);
 
 	/// we don't save datas so it does nothing for now
 	void deleteElement(uint32);

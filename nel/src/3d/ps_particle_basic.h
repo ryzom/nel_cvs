@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.15 2004/04/27 11:57:45 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.16 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,7 +71,7 @@ public:
 	/**
 	* process one pass for the particles. The default behaviour shows the particles
 	*/
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
+	virtual void step(TPSProcessPass pass)
 	{
 		if (
 			(pass == PSBlendRender && hasTransparentFaces())
@@ -158,7 +158,7 @@ protected:
 
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) = 0;
+	virtual void newElement(const CPSEmitterInfo &info) = 0;
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for the index given
@@ -230,9 +230,9 @@ class CPSColoredParticle
 		/// Update the material and the vb and the like so that they match the color scheme
 		virtual void updateMatAndVbForColor(void) = 0;
 
-		void newColorElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+		void newColorElement(const CPSEmitterInfo &info)
 		{
-			if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->newElement(emitterLocated, emitterIndex);
+			if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->newElement(info);
 		}	
 		void deleteColorElement(uint32 index)
 		{
@@ -288,9 +288,9 @@ class CPSSizedParticle
 		virtual CPSLocated *getSizeOwner(void) = 0;		
 		float _ParticleSize;
 		CPSAttribMaker<float> *_SizeScheme;
-		void newSizeElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+		void newSizeElement(const CPSEmitterInfo &info)
 		{
-			if (_SizeScheme && _SizeScheme->hasMemory()) _SizeScheme->newElement(emitterLocated, emitterIndex);
+			if (_SizeScheme && _SizeScheme->hasMemory()) _SizeScheme->newElement(info);
 		}	
 		void deleteSizeElement(uint32 index)
 		{
@@ -373,9 +373,9 @@ class CPSRotated2DParticle
 			static bool _InitializedRotTab;
 		//#endif
 
-		void newAngle2DElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+		void newAngle2DElement(const CPSEmitterInfo &info)
 		{
-			if (_Angle2DScheme && _Angle2DScheme->hasMemory()) _Angle2DScheme->newElement(emitterLocated, emitterIndex);
+			if (_Angle2DScheme && _Angle2DScheme->hasMemory()) _Angle2DScheme->newElement(info);
 		}	
 		void deleteAngle2DElement(uint32 index)
 		{
@@ -482,9 +482,9 @@ class CPSTexturedParticle
 		/// Update the material so that it match the texture scheme
 		virtual void updateMatAndVbForTexture(void) = 0;
 
-		void newTextureIndexElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+		void newTextureIndexElement(const CPSEmitterInfo &info)
 		{
-			if (_TextureIndexScheme && _TextureIndexScheme->hasMemory()) _TextureIndexScheme->newElement(emitterLocated, emitterIndex);
+			if (_TextureIndexScheme && _TextureIndexScheme->hasMemory()) _TextureIndexScheme->newElement(info);
 		}	
 		void deleteTextureIndexElement(uint32 index)
 		{
@@ -697,9 +697,9 @@ class CPSRotated3DPlaneParticle
 		
 		CPlaneBasis _PlaneBasis; // constant basis..
 
-		void newPlaneBasisElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+		void newPlaneBasisElement(const CPSEmitterInfo &info)
 		{
-			if (_PlaneBasisScheme && _PlaneBasisScheme->hasMemory()) _PlaneBasisScheme->newElement(emitterLocated, emitterIndex);
+			if (_PlaneBasisScheme && _PlaneBasisScheme->hasMemory()) _PlaneBasisScheme->newElement(info);
 		}	
 		void deletePlaneBasisElement(uint32 index)
 		{

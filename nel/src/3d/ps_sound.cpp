@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.28 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.29 2004/05/14 15:38:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -106,7 +106,7 @@ uint32			CPSSound::getType(void) const
 }
 
 //***************************************************************************************************
-void			CPSSound::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
+void			CPSSound::step(TPSProcessPass pass)
 {
 	if (pass != PSMotion) return;
 	const uint32 size = _Owner->getSize();	
@@ -126,7 +126,9 @@ void			CPSSound::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 			removeAllSources();			
 			for (k = 0; k < (sint32) size; ++k)
 			{
-				newElement(NULL, 0);
+				CPSEmitterInfo ei;
+				ei.setDefaults();				
+				newElement(ei);
 			}			
 		}
 		// don't need to reupdate sound
@@ -343,7 +345,9 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		// insert blank sources
 		for (sint k = 0; k < nbSounds; ++k)
 		{
-			newElement(NULL, 0);			
+			CPSEmitterInfo ei;
+			ei.setDefaults();
+			newElement(ei);
 		}
 		_SoundStopped = false;
 		_SoundReactivated = true;
@@ -352,11 +356,11 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	
 
 //***************************************************************************************************
-void			CPSSound::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+void			CPSSound::newElement(const CPSEmitterInfo &info)
 {
 	nlassert(_Owner);
-	if (_GainScheme && _GainScheme->hasMemory()) _GainScheme->newElement(emitterLocated, emitterIndex);
-	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->newElement(emitterLocated, emitterIndex);
+	if (_GainScheme && _GainScheme->hasMemory()) _GainScheme->newElement(info);
+	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->newElement(info);
 	// if there's a sound server, we generate a new sound instance
 	if (!_Mute && !_SoundStopped && CParticleSystem::getSoundServer())
 	{

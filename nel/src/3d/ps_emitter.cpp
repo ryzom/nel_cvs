@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.24 2001/08/16 17:08:51 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.25 2001/09/04 16:14:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -296,8 +296,6 @@ void CPSEmitter::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 
 void CPSEmitter::deleteElement(uint32 index)
 {	
-	if (_PeriodScheme && _PeriodScheme->hasMemory()) _PeriodScheme->deleteElement(index);
-	if (_GenNbScheme && _GenNbScheme->hasMemory()) _GenNbScheme->deleteElement(index);
 
 	if (_EmissionType == CPSEmitter::onDeath)
 	{
@@ -305,6 +303,8 @@ void CPSEmitter::deleteElement(uint32 index)
 		processEmit(index, nbToGenerate);		
 	}		
 
+	if (_PeriodScheme && _PeriodScheme->hasMemory()) _PeriodScheme->deleteElement(index);
+	if (_GenNbScheme && _GenNbScheme->hasMemory()) _GenNbScheme->deleteElement(index);
 	_Phase.remove(index);
 }
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.103 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: service.cpp,v 1.104 2001/12/28 17:06:52 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -827,8 +827,8 @@ sint IService::main ()
 			}
 */
 
-			_NetSpeedLoop = (sint32) ((CTime::getLocalTime () - before) * 1000.0);
-			_UserSpeedLoop = (sint32) ((before - bbefore) * 1000.0);
+			_NetSpeedLoop = (sint32) (CTime::getLocalTime () - before);
+			_UserSpeedLoop = (sint32) (before - bbefore);
 
 			if (wd != NULL)
 			{

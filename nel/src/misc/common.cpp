@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.19 2002/03/21 13:53:25 corvazier Exp $
+ * $Id: common.cpp,v 1.20 2002/04/12 12:03:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,7 +118,7 @@ string stringFromVector( const vector<uint8>& v, bool limited )
 		for ( is=s.begin(); is!=s.end(); ++is )
 		{
 			// remplace non printable char and % with '?' chat
-			if ( ! isprint((*is)) || (*is) == '%')
+			if ( ! isprint((uint8)(*is)) || (*is) == '%')
 			{
 				(*is) = '?';
 			}

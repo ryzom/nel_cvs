@@ -384,7 +384,7 @@ try
 												try
 												(
 													-- Export the shape
-													if (NelExportShapeEx node output shape_export_opt_shadow shape_export_opt_export_lighting "shape_lightmap_path" shape_export_opt_lighting_limit shape_export_opt_lumel_size shape_export_opt_oversampling true	false) == true then
+													if (NelExportShapeEx node output shape_export_opt_shadow shape_export_opt_export_lighting "shape_lightmap_path" shape_export_opt_lighting_limit shape_export_opt_lumel_size shape_export_opt_oversampling true false shape_export_opt_8bits_lightmap) == true then
 													(
 														nlerror ("OK "+output)
 														exported = exported+1

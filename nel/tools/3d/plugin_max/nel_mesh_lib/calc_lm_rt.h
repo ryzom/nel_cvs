@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.h
  * Raytrace module
  *
- * $Id: calc_lm_rt.h,v 1.5 2004/01/20 09:33:13 besson Exp $
+ * $Id: calc_lm_rt.h,v 1.6 2004/06/08 15:08:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,26 +53,30 @@ public:
 };
 
 // ***********************************************************************************************
-// A ray is a cone coming from the point to evaluate and a cylinder joined to the cone at a given
-// distance. The beginnning of the cylinder is the light source.
+/** A ray is a cone/cylinder coming from the vertex to evaluate against a directional light
+ *	The cone start at vertex, and end at a certain distance, then start the cylinder. 
+ *	This is to allow fast grid lookup acceleration (a "cone only" shape may produce a to big radius for grid lookup with large scene)
+ */
 class CRTRay
 {
 
 public:
 
-	void init	(uint32 nNbSide, float rRadius, NLMISC::CVector vVertex, NLMISC::CVector vLightPos,
-				float rDistCyl);
-
-	void clip	(NLMISC::CTriangle& t); // Warning : t is transformed with the _InvMat matrix
+	void initDirectionnal	(uint32 nNbSide, const NLMISC::CVector &vVertex, const NLMISC::CVector &lightDir, float rRadius, float rDistCyl);
+	
+	void clip	(const NLMISC::CTriangle& t); // Warning : t is transformed with the _InvVertexMat matrix
 
 	float getArea ();
 
 private:
 
-	NLMISC::CMatrix _InvMat;
-	float _DistLightVertex, _DistCyl;
-	NLMISC::CVector _LightPos;
-
+	NLMISC::CMatrix			_InvVertexMat;
+	float					_DistCyl;
+	// Cone and Cylinder Clipping pyramids
+	enum	{NumConePlanes= 2, NumCylinderPlanes= 1};
+	NLMISC::CPlane			_ConePyramid[NumConePlanes];
+	NLMISC::CPlane			_CylinderPyramid[NumCylinderPlanes];
+	
 public:
 
 	// Representation of a convex shape
@@ -84,6 +88,8 @@ public:
 	std::vector<SConvexShape> Shapes;
 
 private:
+
+	void	clipProjected(const NLMISC::CVector &v0, const NLMISC::CVector &v1, const NLMISC::CVector &v2);
 
 	bool isShapeMustBeClippedByTriangle (SConvexShape&scs, NLMISC::CUV tri[3]);
 	void clipShape (SConvexShape& ShapeIn, NLMISC::CUV Tri[3], std::vector<SConvexShape> &ShapesOut);

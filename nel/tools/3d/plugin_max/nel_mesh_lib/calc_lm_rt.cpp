@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.cpp
  * Raytrace part of the lightmap calculation
  *
- * $Id: calc_lm_rt.cpp,v 1.10 2004/06/07 16:16:02 berenguier Exp $
+ * $Id: calc_lm_rt.cpp,v 1.11 2004/06/08 15:08:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 using namespace std;
 using namespace NL3D;
 using namespace NLMISC;
+
 
 // ***********************************************************************************************
 // CRTWorld
@@ -234,15 +235,13 @@ CRGBAF CRTWorld::raytrace (NLMISC::CVector &vVertex, sint32 nLightNb, uint8& rtV
 
 	float rSoftShadowRadius = rLight.rSoftShadowRadius;
 
+	// Work with the directionnal light only for now
 	if ((bSoftShadow) && (rLight.Type == SLightBuild::LightDir))
 	{
 		CRTRay RayOfLight;
 		float rAreaInit;
 
-		if (rLight.Type == SLightBuild::LightDir)
-			RayOfLight.init (8, rSoftShadowRadius, vVertex, vLightPos, rLight.rSoftShadowConeLength);
-		else // Point light or spot light
-			RayOfLight.init (8, rSoftShadowRadius, vVertex, vLightPos, (vLightPos-vVertex).norm());
+		RayOfLight.initDirectionnal(8, vVertex, rLight.Direction, rSoftShadowRadius, rLight.rSoftShadowConeLength);
 		rAreaInit = RayOfLight.getArea();
 		vLightAccel[nLightNb]->select (vSelect, rSoftShadowRadius);
 		while (!vLightAccel[nLightNb]->isEndSel())
@@ -595,15 +594,12 @@ bool CRTWorld::isInteractionLightMesh (SLightBuild &rSLB, NL3D::CMesh::CMeshBuil
 // Ray representation for soft shadow
 // ***********************************************************************************************
 
-// -----------------------------------------------------------------------------------------------
-void CRTRay::init (uint32 nNbSide, float rRadius, CVector vVertex, CVector vLightPos, float rDistCyl)
-{
-	Shapes.resize (1);
-	SConvexShape &rShp = Shapes[0];
 
-	// Construct the matrix with the K for direction (vLightPos -> vVertex)
-	CMatrix	Mat;
-	CVector vDirection = vVertex - vLightPos;
+// -----------------------------------------------------------------------------------------------
+void CRTRay::initDirectionnal	(uint32 nNbSide, const NLMISC::CVector &vVertex, const NLMISC::CVector &lightDir, float rRadius, float rDistCyl)
+{
+	// Construct the matrix with K= vertex to light direction
+	CVector vDirection = -lightDir;
 	vDirection.normalize();
 	CVector	I = (fabs(vDirection*CVector(1.f,0,0))>0.99)?CVector(0.f,1.f,0.f):CVector(1.f,0.f,0.f);
 	CVector	K = vDirection;
@@ -611,14 +607,38 @@ void CRTRay::init (uint32 nNbSide, float rRadius, CVector vVertex, CVector vLigh
 	J.normalize();
 	I=J^K;
 	I.normalize();
-	
-	Mat.identity();
-	Mat.setRot (I, J, K, true);
-	// Mat.setPos (vLightPos);
-	_InvMat = Mat;
-	_InvMat.invert();
-	_LightPos = vLightPos;
 
+	// Setup the Inv Vertex Basis
+	_InvVertexMat.identity();
+	_InvVertexMat.setRot (I, J, K, true);
+	_InvVertexMat.setPos (vVertex);
+	_InvVertexMat.invert();
+	
+	// Build the clipping pyramids, in vertex space
+	CVector		lb(-rRadius, -rRadius, rDistCyl);
+	CVector		lt(-rRadius, rRadius, rDistCyl);
+	CVector		rb(rRadius, -rRadius, rDistCyl);
+	CVector		rt(rRadius, rRadius, rDistCyl);
+	// Cone pyramid: perspective and capped at near (for precision and z division) and far (where start the cylinder)
+	_ConePyramid[0].make(-CVector::K, CVector(0,0,0.01f));		// near
+	_ConePyramid[1].make( CVector::K, CVector(0,0,rDistCyl));	// far
+	// NB: don't need the full clip (faster)
+	/*_ConePyramid[2].make(CVector::Null, lt, lb);	// left
+	_ConePyramid[3].make(CVector::Null, rt, lt);	// top
+	_ConePyramid[4].make(CVector::Null, rb, rt);	// right
+	_ConePyramid[5].make(CVector::Null, lb, rb);	// bottom*/
+	// Cylinder pyramid: orthogonal and capped at near (ie rDistCyl, where start the cylinder) only
+	_CylinderPyramid[0].make(-CVector::K, CVector(0,0,rDistCyl));	// near
+	// NB: don't need the full clip (faster)
+	/*_CylinderPyramid[1].make(-CVector::I, lb);	// left
+	_CylinderPyramid[2].make( CVector::I, rb);	// right
+	_CylinderPyramid[3].make(-CVector::J, lb);	// bottom
+	_CylinderPyramid[4].make( CVector::J, lt);	// top*/
+	
+
+	// Build the initial shape
+	Shapes.resize (1);
+	SConvexShape &rShp = Shapes[0];
 	rShp.Vertices.resize (nNbSide);
 	for (uint32 i = 0; i < rShp.Vertices.size(); ++i)
 	{
@@ -626,84 +646,117 @@ void CRTRay::init (uint32 nNbSide, float rRadius, CVector vVertex, CVector vLigh
 		rShp.Vertices[i].V = rRadius * sinf(i*2.0f*(float)Pi / rShp.Vertices.size());
 	}
 	_DistCyl = rDistCyl;
-	_DistLightVertex = (vLightPos - vVertex).norm();
 }
 
 // -----------------------------------------------------------------------------------------------
-void CRTRay::clip (CTriangle& t)
+void CRTRay::clip (const CTriangle& t)
 {
-	CUV tri[3];
+	sint	i;
 
-	t.V0 -= _LightPos;
-	t.V1 -= _LightPos;
-	t.V2 -= _LightPos;
+	CVector	tv0= _InvVertexMat.mulPoint (t.V0);
+	CVector	tv1= _InvVertexMat.mulPoint (t.V1);
+	CVector	tv2= _InvVertexMat.mulPoint (t.V2);
 
-	t.V0 = _InvMat.mulPoint (t.V0);
-	t.V1 = _InvMat.mulPoint (t.V1);
-	t.V2 = _InvMat.mulPoint (t.V2);
 
-	float rFactor = 1.0f;
-	// Get the distance to the triangle in zero 
+	// **** Contribution in the cone part
+	nlctassert(NumConePlanes>NumCylinderPlanes);
+	CVector		apolyIn[3+NumConePlanes];
+	CVector		apolyOut[3+NumConePlanes];
+	CVector		*polyIn= apolyIn;
+	CVector		*polyOut= apolyOut;
+	sint		numVerts;
+	polyIn[0]= tv0;
+	polyIn[1]= tv1;
+	polyIn[2]= tv2;
+	numVerts= 3;
+	for(i=0;i<NumConePlanes;i++)
+	{
+		numVerts= _ConePyramid[i].clipPolygonBack(polyIn, polyOut, numVerts);
+		swap(polyIn, polyOut);
+		// entirely out
+		if(!numVerts)
+			break;
+	}
+	// for all result triangles
+	for(i=0;i<numVerts-2;i++)
+	{
+		CVector	v0= polyIn[0];
+		CVector	v1= polyIn[i+1];
+		CVector	v2= polyIn[i+2];
+		// cone: project at z=distCyl
+		v0= v0 * _DistCyl / v0.z;
+		v1= v1 * _DistCyl / v1.z;
+		v2= v2 * _DistCyl / v2.z;
+		
+		clipProjected(v0,v1,v2);
+	}
 	
-	float GradDen = ( (t.V2.x-t.V0.x)*(t.V1.y-t.V0.y) - (t.V1.x-t.V0.x)*(t.V2.y-t.V0.y) );
-	if (fabs(GradDen) < 0.000001f)
-		GradDen = (GradDen < 0.0f) ? -0.000001f : 0.000001f;
-	GradDen = 1.0f / GradDen;
-	float GradxPz = ( (t.V2.z-t.V0.z)*(t.V1.y-t.V0.y)-(t.V1.z-t.V0.z)*(t.V2.y-t.V0.y) ) * GradDen;
-	float GradyPz = ( (t.V1.z-t.V0.z)*(t.V2.x-t.V0.x)-(t.V2.z-t.V0.z)*(t.V1.x-t.V0.x) ) * GradDen;
 
-	float zTri = GradxPz * (0.0f-t.V0.x) + GradyPz * (0.0f-t.V0.y) + t.V0.z;
+	// **** Contribution in the cylinder part
+	polyIn[0]= tv0;
+	polyIn[1]= tv1;
+	polyIn[2]= tv2;
+	numVerts= 3;
+	for(i=0;i<NumCylinderPlanes;i++)
+	{
+		numVerts= _CylinderPyramid[i].clipPolygonBack(polyIn, polyOut, numVerts);
+		swap(polyIn, polyOut);
+		// entirely out
+		if(!numVerts)
+			break;
+	}
+	// for all result triangles
+	for(i=0;i<numVerts-2;i++)
+	{
+		CVector	v0= polyIn[0];
+		CVector	v1= polyIn[i+1];
+		CVector	v2= polyIn[i+2];
+		// cylinder: no projection
+		
+		clipProjected(v0,v1,v2);
+	}
+	
+}
 
-	if (zTri < 0.0f)
-		return;
-	if (zTri > (_DistLightVertex - 0.01f))
-		return;
+// -----------------------------------------------------------------------------------------------
+void	CRTRay::clipProjected(const NLMISC::CVector &v0, const NLMISC::CVector &v1, const NLMISC::CVector &v2)
+{
+	CUV	tri[3];
 
-	tri[0].U = t.V0.x;	tri[0].V = t.V0.y;
-	tri[1].U = t.V2.x;	tri[1].V = t.V2.y;
-	tri[2].U = t.V1.x;	tri[2].V = t.V1.y;
-
-	// Backface clipping
-	/*if (((tri[1].U-tri[0].U) * (tri[2].V-tri[0].V) - (tri[1].V-tri[0].V) * (tri[2].U-tri[0].U)) < 0.0f)
-		return;	*/
+	tri[0].U = v0.x;	tri[0].V = v0.y;
+	tri[1].U = v2.x;	tri[1].V = v2.y;
+	tri[2].U = v1.x;	tri[2].V = v1.y;
+	
 	// Backface swapping
 	if (((tri[1].U-tri[0].U) * (tri[2].V-tri[0].V) - (tri[1].V-tri[0].V) * (tri[2].U-tri[0].U)) < 0.0f)
 	{
 		swap(tri[0],tri[1]);
 	}
 	
-	// Resize the triangle if we are in the conic part
-
-	if (zTri > (_DistLightVertex - _DistCyl))
-	{
-		rFactor = _DistCyl / (_DistLightVertex - zTri);
-		tri[0] *= rFactor; tri[1] *= rFactor; tri[2] *= rFactor;
-	}
-
-	// CLIP
-
-	std::vector<SConvexShape> ShapesOut;
+	
+	// **** Clip the convex shapes
+	std::vector<SConvexShape> shapesOut;
 	for (uint32 i = 0; i < Shapes.size(); ++i)
 	{
 		SConvexShape &rShp = Shapes[i];
-
+		
 		// Clip each shapes with the triangle
 		if (isShapeMustBeClippedByTriangle (rShp, tri))
 		{
-			std::vector<SConvexShape> ShapesTmp;
-			ShapesTmp.resize (0);
-			clipShape (rShp, tri, ShapesTmp);
-			for (uint32 j = 0; j < ShapesTmp.size(); ++j)
-				ShapesOut.push_back (ShapesTmp[j]);
+			std::vector<SConvexShape> shapesTmp;
+			shapesTmp.resize (0);
+			clipShape (rShp, tri, shapesTmp);
+			for (uint32 j = 0; j < shapesTmp.size(); ++j)
+				shapesOut.push_back (shapesTmp[j]);
 		}
 		else // The shape is not clipped by the triangle so must be add it directly
 		{
-			ShapesOut.push_back (rShp);
+			shapesOut.push_back (rShp);
 		}
 	}
-
-	// We are now like ShapesOut
-	Shapes = ShapesOut;
+	
+	// We are now like shapesOut
+	Shapes = shapesOut;
 }
 
 // -----------------------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.9 2001/01/31 14:36:46 chafik Exp $
+ * $Id: ident.h,v 1.10 2001/01/31 14:40:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,7 +90,7 @@ namespace NLAIAGENT
 
 
 		///Copy contructor
-		CIndexVariant(const CIndexVariant<T,indexMax> &a)
+		CIndexVariant(const CIndexVariant<T,indexMax,maxT> &a)
 		{
 			memcpy(_Id,a._Id,getMaxIndex()*sizeof(T));
 		}
@@ -137,7 +137,7 @@ namespace NLAIAGENT
 
 		///\name comparison of two CIndexVariant.
 		//@{
-		bool operator == (const CIndexVariant<T,indexMax> &a) const
+		bool operator == (const CIndexVariant<T,indexMax,maxT> &a) const
 		{			
 			for(sint32 i = 0; i < getMaxIndex(); i ++)
 			{
@@ -147,7 +147,7 @@ namespace NLAIAGENT
 			return true;
 		}
 				
-		bool operator < (const CIndexVariant<T,indexMax> &a) const
+		bool operator < (const CIndexVariant<T,indexMax,maxT> &a) const
 		{			
 			for(sint32 i = a.getMaxIndex()-1; i >= 0; i --)
 			{
@@ -156,7 +156,7 @@ namespace NLAIAGENT
 			return false;
 		}
 
-		bool operator > (const CIndexVariant<T,indexMax> &a) const
+		bool operator > (const CIndexVariant<T,indexMax,maxT> &a) const
 		{			
 			for(sint32 i = a.getMaxIndex()-1; i >= 0; i --)
 			{
@@ -169,7 +169,7 @@ namespace NLAIAGENT
 
 		///\name Binary method.
 		//@{
-		const CIndexVariant<T,indexMax,maxT> &operator |= (const CIndexVariant<T,indexMax> &a)
+		const CIndexVariant<T,indexMax,maxT> &operator |= (const CIndexVariant<T,indexMax,maxT> &a)
 		{
 			for(sint32 i = 0; i < getMaxIndex(); i ++)
 			{
@@ -177,7 +177,7 @@ namespace NLAIAGENT
 			}		
 			return *this;
 		}
-		const CIndexVariant<T,indexMax,maxT> &operator &= (const CIndexVariant<T,indexMax> &a)
+		const CIndexVariant<T,indexMax,maxT> &operator &= (const CIndexVariant<T,indexMax,maxT> &a)
 		{
 			for(sint32 i = 0; i < getMaxIndex(); i ++)
 			{
@@ -186,7 +186,7 @@ namespace NLAIAGENT
 			return *this;
 		}
 
-		const CIndexVariant<T,indexMax,maxT> &operator ^= (const CIndexVariant<T,indexMax> &a)
+		const CIndexVariant<T,indexMax,maxT> &operator ^= (const CIndexVariant<T,indexMax,maxT> &a)
 		{
 			for(sint32 i = 0; i < getMaxIndex(); i ++)
 			{
@@ -198,7 +198,7 @@ namespace NLAIAGENT
 
 		///\name Assignment method.
 		//@{
-		const CIndexVariant<T,indexMax,maxT> &operator = (const CIndexVariant<T,indexMax> &a)
+		const CIndexVariant<T,indexMax,maxT> &operator = (const CIndexVariant<T,indexMax,maxT> &a)
 		{
 			for(sint32 i = 0; i < getMaxIndex(); i ++)
 			{

@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.6 2001/01/31 14:02:06 chafik Exp $
+ * $Id: interpret_object.h,v 1.7 2001/01/31 14:44:12 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -217,7 +217,7 @@ namespace NLAISCRIPT
 			strcpy(_Text,text);
 		}
 
-		const char *what() const
+		const char *what() const throw()
 		{
 			return _Text;
 		}

@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.11 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: matrix.cpp,v 1.12 2000/11/17 11:10:16 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -953,6 +953,7 @@ CVector		CMatrix::mulVector(const CVector &v) const
 	else
 		return v;
 }
+
 // ======================================================================================================
 CVector		CMatrix::mulPoint(const CVector &v) const
 {
@@ -977,6 +978,16 @@ CVector		CMatrix::mulPoint(const CVector &v) const
 	}
 	else	// Identity!!
 		return v;
+}
+
+
+/*
+ * Multiply
+ */
+CVectorH	CMatrix::operator*(const CVectorH& v) const
+{
+	nlerror( "Not implemented" );
+	return CVectorH();
 }
 
 

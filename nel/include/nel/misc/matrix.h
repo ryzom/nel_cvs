@@ -1,7 +1,7 @@
 /** \file matrix.h
  * <description>
  *
- * $Id: matrix.h,v 1.6 2000/11/13 13:25:50 berenguier Exp $
+ * $Id: matrix.h,v 1.7 2000/11/17 11:10:38 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_MATRIX_H
 
 #include "nel/misc/vector.h"
+#include "nel/misc/vector_h.h"
 
 
 namespace	NLMISC
@@ -251,6 +252,9 @@ public:
 	{
 		return mulPoint(v);
 	}
+
+	/// Multiply
+	CVectorH	operator*(const CVectorH& v) const;
 	//@}
 
 	/// \name Misc

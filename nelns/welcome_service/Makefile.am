@@ -1,10 +1,10 @@
 #
-# $Id: Makefile.am,v 1.2 2001/05/03 13:19:13 lecroart Exp $
+# $Id: Makefile.am,v 1.3 2001/07/27 15:51:10 valignat Exp $
 #
 
-MAINTAINERCLEANFILES  = Makefile.in
+MAINTAINERCLEANFILES    = Makefile.in
 
-bin_PROGRAMS          = welcome_service
+bin_PROGRAMS            = welcome_service
 
 welcome_service_SOURCES = welcome_service.cpp
 

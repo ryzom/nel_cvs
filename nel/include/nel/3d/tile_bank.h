@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.8 2000/12/19 14:24:53 corvazier Exp $
+ * $Id: tile_bank.h,v 1.9 2000/12/19 15:13:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_Tile_BANK_H
 
 #include "nel/misc/debug.h"
-//#include "nel/misc/stream.h"
+#include "nel/misc/stream.h"
 #include "nel/misc/rgba.h"
 #include <vector>
 #include <set>

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.3 2001/01/10 09:52:29 valignat Exp $
+# $Id: Makefile.am,v 1.4 2001/01/11 14:25:34 valignat Exp $
 #
 
 install-exec-local:
@@ -23,11 +23,11 @@ install-exec-local:
 	$(INSTALL_DATA) -m a=r `echo nel/3d/*.h`          $(includedir)/nel/3d
 	$(INSTALL_DATA) -m a=r `echo nel/misc/*.h`        $(includedir)/nel/misc
 	$(INSTALL_DATA) -m a=r `echo nel/net/*.h`         $(includedir)/nel/net
+	$(INSTALL_DATA) -m a=r `echo nel/ai/*.h`          $(includedir)/nel/ai/
 	$(INSTALL_DATA) -m a=r `echo nel/ai/agent/*.h`    $(includedir)/nel/ai/agent
 	$(INSTALL_DATA) -m a=r `echo nel/ai/c/*.h`        $(includedir)/nel/ai/c
 	$(INSTALL_DATA) -m a=r `echo nel/ai/e/*.h`        $(includedir)/nel/ai/e
 	$(INSTALL_DATA) -m a=r `echo nel/ai/fuzzy/*.h`    $(includedir)/nel/aifuzzy
-	$(INSTALL_DATA) -m a=r `echo nel/ai/link/*.h`     $(includedir)/nel/ai/link
 	$(INSTALL_DATA) -m a=r `echo nel/ai/logic/*.h`    $(includedir)/nel/ai/logic
 	$(INSTALL_DATA) -m a=r `echo nel/ai/nimat/*.h`    $(includedir)/nel/ai/nimat
 	$(INSTALL_DATA) -m a=r `echo nel/ai/pyserver/*.h` $(includedir)/nel/ai/pyserver

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: new_service.cpp,v 1.6 2001/02/27 09:50:12 portier Exp $
+ * $Id: new_service.cpp,v 1.7 2001/03/15 15:09:18 coutelas Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -321,12 +321,13 @@ sint INewService::main (int argc, char **argv)
 		//
 
 		_Server = new CCallbackServer;
-
 		//
 		// Call the user service init
 		//
 
 		init ();
+
+		_Server->setTimeout(_Timeout);
 
 		//
 		// Register the name to the NS (except for the NS itself)

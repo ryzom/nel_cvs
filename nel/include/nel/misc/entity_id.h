@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.38 2004/02/18 19:24:48 brigand Exp $
+ * $Id: entity_id.h,v 1.39 2004/02/20 11:34:08 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -406,7 +406,7 @@ public:
 /*	operator uint64 () const
 	{
 		return FullId;
-		/*
+
 		uint64 p = Id;
 		p <<= 8;
 		p |= (uint64)Type;
@@ -416,8 +416,8 @@ public:
 		p |= (uint64)DynamicId;
 
 		return p;
-		*/
-//	}
+	}
+*/
 
 	// ---------------------------------------------------------------------------------
 	// loading, saving, serialising...

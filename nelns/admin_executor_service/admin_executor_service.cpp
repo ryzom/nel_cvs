@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.19 2002/11/12 17:21:58 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.20 2002/11/13 15:46:15 lecroart Exp $
  *
  */
 
@@ -1208,7 +1208,6 @@ public:
 	}
 };
 
-
 /// Naming Service
 NLNET_SERVICE_MAIN (CAdminExecutorService, "AES", "admin_executor_service", 49997, CallbackArray, NELNS_CONFIG, NELNS_LOGS);
 
@@ -1255,3 +1254,65 @@ NLMISC_COMMAND (displayRequests, "display all pending requests", "")
 
 	return true;
 }
+
+#ifdef NL_OS_LINUX
+
+static inline char *skipToken(const char *p)
+{
+    while (isspace(*p)) p++;
+    while (*p && !isspace(*p)) p++;
+    return (char *)p;
+}
+
+// col: 0        1       2    3    4    5     6          7         8        9       10   11   12   13    14      15
+//      receive                                                    sent
+//      bytes    packets errs drop fifo frame compressed multicast bytes    packets errs drop fifo colls carrier compressed
+uint64 getSystemNetwork (uint col)
+{
+	if (col > 15)
+		return 0;
+
+    char buffer[4096+1];
+    int fd, len;
+    char *p;
+	
+	fd = open("/proc/net/dev", O_RDONLY);
+	len = read(fd, buffer, sizeof(buffer)-1);
+	close(fd);
+	buffer[len] = '\0';
+	
+	p = strchr(buffer, '\n')+1;
+	p = strchr(buffer, '\n')+1;
+	
+	uint64 val = 0;
+	while (true)
+	{
+		p = strchr(buffer, ':');
+		if (p == NULL)
+			break;
+		p++;
+		for (uint i = 0; i < col; i++)
+		{
+			p = skipToken(p);
+		}
+		val += strtoul(p, &p, 10);
+	}
+	return val;
+}
+
+NLMISC_DYNVARIABLE(uint64, NetBytesSent, "Amount of bytes sent to all networks cards in bytes")
+{
+	if (get) *pointer = getSystemNetwork (8);
+}
+
+NLMISC_DYNVARIABLE(uint64, NetBytesReceived, "Amount of bytes received to all networks cards in bytes")
+{
+	if (get) *pointer = getSystemNetwork (0);
+}
+
+NLMISC_DYNVARIABLE(uint32, NetError, "Number of error on all networks cards")
+{
+	if (get) *pointer = getSystemNetwork (2) + getSystemNetwork (10);
+}
+
+#endif // NL_OS_LINUX

@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.38 2001/01/19 09:29:40 lecroart Exp $
+ * $Id: base_socket.cpp,v 1.39 2001/01/19 12:10:11 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,6 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
 
-using namespace NLMISC;
 
 #ifdef NL_OS_WINDOWS
 #include <winsock2.h>
@@ -53,6 +52,7 @@ typedef int SOCKET;
 
 #endif
 
+using namespace NLMISC;
 
 namespace NLNET {
 

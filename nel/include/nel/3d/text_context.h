@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.12 2001/01/15 15:18:40 lecroart Exp $
+ * $Id: text_context.h,v 1.13 2001/01/19 12:09:27 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,11 +78,14 @@ class CTextContext
 	/// Y axe rotation angle
 	float _RotateY;
 
-	/// computed strings stack
-	std::vector<CComputedString> _StringList;
-
+	/// computed strings map
+	std::map<uint32,CComputedString> _StringList;
+	
 	/// max x coordinate of last string printed
 	float _XBound;
+
+	/// maximum index reached
+	sint32 _MaxIndex;
 
 
 public:
@@ -103,10 +106,11 @@ public:
 		_RotateY = 0;
 
 		_XBound = 0;
+
+		_MaxIndex = -1;
 	}
 	
 	/**
-	 *	setFontGenerator
 	 * init the font generator. Must be called before any print
 	 * \param (cf CFontGenerator constructor parameters)
 	 */
@@ -129,7 +133,6 @@ public:
 	}
 
 	/**
-	 *	setColor
 	 * set the font color
 	 * \param color the font color
 	 */
@@ -139,7 +142,6 @@ public:
 	}
 
 	/**
-	 *	setFontSize
 	 * set the font size. Should be called before the first print
 	 * \param fonSize the font size
 	 */
@@ -149,7 +151,6 @@ public:
 	}
 
 	/**
-	 *	getFontSize
 	 * get the font size
 	 * \return the font size
 	 */
@@ -159,7 +160,6 @@ public:
 	}
 
 	/**
-	 *	setHotSpot
 	 * set the hot spot
 	 * \param fonSize the font size
 	 */
@@ -169,7 +169,6 @@ public:
 	}
 
 	/**
-	 *	setScaleX
 	 * set the X scale
 	 * \param scaleX the X scale
 	 */
@@ -179,7 +178,6 @@ public:
 	}
 
 	/**
-	 *	setScaleZ
 	 * set the Z scale
 	 * \param scaleZ the Z scale
 	 */
@@ -189,7 +187,6 @@ public:
 	}
 
 	/**
-	 *	getScaleX
 	 * \return the X scale
 	 */
 	float getScaleX() const
@@ -198,7 +195,6 @@ public:
 	}
 
 	/**
-	 *	getScaleZ
 	 * \return the Z scale
 	 */
 	float getScaleZ() const
@@ -208,7 +204,6 @@ public:
 
 
 	/**
-	 *	getHotSpot
 	 * get the hot spot
 	 * \return the hot spot
 	 */
@@ -218,7 +213,6 @@ public:
 	}
 
 	/**
-	 *	textPush
 	 * compute and add a string to the stack
 	 * \param a string
 	 * \return the index where string has been inserted
@@ -235,12 +229,12 @@ public:
 
 		NL3D::CComputedString cptdstr;
 		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
-		_StringList.push_back(cptdstr);
+		_MaxIndex++;
+		_StringList.insert(std::make_pair(_MaxIndex,cptdstr));
 		return _StringList.size()-1;
 	}
 
 	/**
-	 *	textPush
 	 * computes an ucstring and adds the result to the stack
 	 * \param an ucstring
 	 * \return the index where computed string has been inserted
@@ -251,27 +245,29 @@ public:
 
 		NL3D::CComputedString cptdstr;
 		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
-		_StringList.push_back(cptdstr);
+		_MaxIndex++;
+		_StringList.insert(std::make_pair(_MaxIndex,cptdstr));
 		return _StringList.size()-1;
 	}
 	
 	/**
-	 *	erase
 	 * remove a string from the list
 	 */
 	void erase(uint32 i) 
 	{ 
-		std::vector<CComputedString>::iterator it = _StringList.begin();
-		uint32 index = 0;
-		while(it!=_StringList.end() && index!=i)
-		{
-			it++;
-			index++;
-		};
+		_StringList.erase(i);
 	}
 
 	/**
-	 *	printAt
+	 * empty the map
+	 */
+	void clear() 
+	{ 
+		_StringList.clear();
+		_MaxIndex = -1;
+	}
+
+	/**
 	 * print a string of the list
 	 * (rq : it leaves the string in the stack)
 	 */
@@ -288,7 +284,6 @@ public:
 	}
 
 	/**
-	 *	printAt
 	 * compute and print a ucstring at the location
 	 */
 	void printAt(float x, float z, ucstring ucstr)
@@ -304,7 +299,6 @@ public:
 	}
 	
 	/**
-	 *	printfAt
 	 * compute and print a string at the location
 	 */
 	void printfAt(float x, float z, const char * format, ...)
@@ -324,32 +318,25 @@ public:
 		_XBound = x + cptdstr.StringWidth;
 	}
 	
-	/**
-	 *	getStringListSize
-	 * \return the size of the string list
-	 */
-	uint32 getStringListSize() const
-	{
-		return _StringList.size();
-	}
-
+	
 	/**
 	 *	operator[]
 	 * \return the computed string
 	 */
+	/*
 	const CComputedString operator[](uint32 i) const
 	{
-		nlassert(i<_StringList.size());
 		return _StringList[i];
 	}
+	*/
 	
+
 	/**
 	 *	operator[]
 	 * \return the computed string
 	 */
 	CComputedString& operator[](uint32 i)
 	{
-		nlassert(i<_StringList.size());
 		return _StringList[i];
 	}
 

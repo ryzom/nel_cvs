@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.179 2004/08/23 11:59:45 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.180 2004/09/02 16:59:53 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,7 @@
 #  ifdef max
 #    undef max
 #  endif
+
 
 #else // NL_OS_UNIX
 
@@ -385,6 +386,8 @@ public:
 
 
 	virtual	bool			supportVertexBufferHard() const;
+
+	virtual bool			supportVolatileVertexBuffer() const;
 
 	virtual	bool			supportCloudRenderSinglePass() const;
 	

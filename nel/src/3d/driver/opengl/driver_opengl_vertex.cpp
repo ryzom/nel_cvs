@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.53 2004/08/13 15:31:54 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.54 2004/09/02 17:00:23 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -693,6 +693,14 @@ bool			CDriverGL::supportVertexBufferHard() const
 	H_AUTO_OGL(CDriverGL_supportVertexBufferHard)
 	return _SupportVBHard;
 }
+
+// ***************************************************************************
+bool			CDriverGL::supportVolatileVertexBuffer() const
+{
+	H_AUTO_OGL(CDriverGL_supportVolatileVertexBuffer)
+		return false;
+}
+
 
 
 // ***************************************************************************

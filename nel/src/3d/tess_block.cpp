@@ -1,7 +1,7 @@
 /** \file tess_block.cpp
  * <File description>
  *
- * $Id: tess_block.cpp,v 1.12 2002/08/23 16:32:52 berenguier Exp $
+ * $Id: tess_block.cpp,v 1.13 2003/04/23 10:10:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,7 +183,7 @@ void			CTessBlock::refillFaceVectorFar0()
 
 		// Fill this faceVector, with FarFaceList
 		CTessFace	*pFace;
-		uint32		*dest= Far0FaceVector->TriPtr;
+		uint32		*dest= Far0FaceVector+1;
 		for(pFace= FarFaceList.begin(); pFace; pFace= (CTessFace*)pFace->Next)
 		{
 			*(dest++)= pFace->FVBase->Index0;
@@ -228,7 +228,7 @@ void			CTessBlock::refillFaceVectorFar1()
 		nlassert(Far1FaceVector!=NULL);
 		// Fill this faceVector, with FarFaceList
 		CTessFace	*pFace;
-		uint32		*dest= Far1FaceVector->TriPtr;
+		uint32		*dest= Far1FaceVector+1;
 		for(pFace= FarFaceList.begin(); pFace; pFace= (CTessFace*)pFace->Next)
 		{
 			*(dest++)= pFace->FVBase->Index1;
@@ -276,7 +276,7 @@ void			CTessBlock::refillFaceVectorTile()
 			for(uint facePass=0; facePass<NL3D_MAX_TILE_FACE; facePass++)
 			{
 				CTessList<CTileFace>	&faceList= RdrTileRoot[tileId]->TileFaceList[facePass];
-				CLandscapeFaceVector	*faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
+				uint32					*faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
 				// If some triangles create them.
 				if(faceList.size()>0)
 				{
@@ -284,7 +284,7 @@ void			CTessBlock::refillFaceVectorTile()
 
 					// Fill this faceVector, with the TileFaceList
 					CTileFace	*pFace;
-					uint32		*dest= faceVector->TriPtr;
+					uint32		*dest= faceVector+1;
 					for(pFace= faceList.begin(); pFace; pFace= (CTileFace*)pFace->Next)
 					{
 						*(dest++)= pFace->V[CTessFace::IdUvBase]->Index;
@@ -311,7 +311,7 @@ void			CTessBlock::createFaceVectorTile(CLandscapeFaceVectorManager &mgr)
 			for(uint facePass=0; facePass<NL3D_MAX_TILE_FACE; facePass++)
 			{
 				CTessList<CTileFace>	&faceList= RdrTileRoot[tileId]->TileFaceList[facePass];
-				CLandscapeFaceVector	*&faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
+				uint32		*&faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
 				// If some triangles create them.
 				if(faceList.size()>0)
 				{
@@ -337,7 +337,7 @@ void			CTessBlock::deleteFaceVectorTile(CLandscapeFaceVectorManager &mgr)
 			// For all Pass faces of the tile.
 			for(uint facePass=0; facePass<NL3D_MAX_TILE_FACE; facePass++)
 			{
-				CLandscapeFaceVector	*&faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
+				uint32		*&faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
 				// If the faceVector exist, delete it.
 				if(faceVector)
 				{

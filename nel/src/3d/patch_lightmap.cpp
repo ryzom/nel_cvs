@@ -1,7 +1,7 @@
 /** \file patch_lightmap.cpp
  * Patch implementation related to lightmaping (texture Near/Far)
  *
- * $Id: patch_lightmap.cpp,v 1.8 2002/08/21 17:14:47 berenguier Exp $
+ * $Id: patch_lightmap.cpp,v 1.9 2003/04/23 10:09:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1908,7 +1908,7 @@ void				CPatch::addRefDLMContext()
 
 		// If the patch is visible, it may have Far Vertices created, 
 		// hence, we must refill them with good DLM Uvs.
-		if(!RenderClipped)
+		if(!isRenderClipped())
 		{
 			// setup DLM Uv with new _DLMContext
 			fillVBFarsDLMUvOnly();
@@ -1938,7 +1938,7 @@ void				CPatch::decRefDLMContext(uint count)
 
 		// If the patch is visible, it may have Far Vertices created, 
 		// hence, we must reset their DLM Uvs (to point to black pixel)
-		if(!RenderClipped)
+		if(!isRenderClipped())
 		{
 			// setup DLM Uv with new _DLMContext
 			fillVBFarsDLMUvOnly();
@@ -1957,7 +1957,7 @@ void		CPatch::beginDLMLighting()
 	_DLMContext->CurPointLightCount= 0;
 
 	// clear lighting, only if patch is visible
-	if(!RenderClipped)
+	if(!isRenderClipped())
 		// NB: no-op if src is already full black.
 		_DLMContext->clearLighting();
 
@@ -1973,7 +1973,7 @@ void		CPatch::processDLMLight(CPatchDLMPointLight &pl)
 	_DLMContext->CurPointLightCount++;
 
 	// compute lighting, only if patch is visible
-	if(!RenderClipped)
+	if(!isRenderClipped())
 		_DLMContext->addPointLightInfluence(pl);
 }
 

@@ -1,7 +1,7 @@
 /** \file landscape_face_vector_manager.h
  * <File description>
  *
- * $Id: landscape_face_vector_manager.h,v 1.1 2001/09/14 09:44:26 berenguier Exp $
+ * $Id: landscape_face_vector_manager.h,v 1.2 2003/04/23 10:08:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,36 +33,6 @@
 namespace NL3D {
 
 
-class	CLandscapeFaceVectorManager;
-
-
-// ***************************************************************************
-/**
- * Fast Allocate blocks of faces, according to the size of the block.
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2001
- */
-class	CLandscapeFaceVector
-{
-public:
-	CLandscapeFaceVector();
-	// can't copy a faceVector (assert).
-	CLandscapeFaceVector(const CLandscapeFaceVector &o);
-	CLandscapeFaceVector &operator=(const CLandscapeFaceVector &o);
-	~CLandscapeFaceVector();
-
-	/// Array of triangles indices.
-	uint32		*TriPtr;
-	/// Number of triangles.
-	uint32		NumTri;
-
-private:
-	friend	class	CLandscapeFaceVectorManager;
-	sint					_BlockId;
-	CLandscapeFaceVector	*_Next;
-};
-
 
 // ***************************************************************************
 /**
@@ -82,14 +52,19 @@ public:
 
 	// Empty the Free List. All FaceVector must be deleted.
 	void					purge();
-	CLandscapeFaceVector	*createFaceVector(uint numTri);
-	void					deleteFaceVector(CLandscapeFaceVector	*fv);
+	/** return an Array of Tris with this Format: NumTris, index0, index1, index2....
+	 *	NB: NumTris really means number of triangles, not number of indexes (which is 3*)!
+	 */
+	uint32					*createFaceVector(uint numTri);
+	/// delete a faceVector. NB: no check.
+	void					deleteFaceVector(uint32	*fv);
 
 
 private:
-	// Array of List.
-	std::vector<CLandscapeFaceVector*>	_Blocks;
+	// Array of Free Blocks List. NB: actually, in place of a uint32, it is a uint32* we point here (for next!!)
+	std::vector<uint32*>	_Blocks;
 
+	uint		getBlockIdFromNumTri(uint numTris);
 
 };
 

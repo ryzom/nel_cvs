@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.9 2003/04/14 09:33:08 berenguier Exp $
+ * $Id: landscape_model.h,v 1.10 2003/04/23 10:08:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,9 @@ public:
 	virtual void	traverseAnimDetail();
 	/// special traverseRender()
 	virtual void	traverseRender();
+
+	/// Some prof infos
+	virtual	void	profileRender();
 
 
 protected:

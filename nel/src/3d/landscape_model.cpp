@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.33 2003/04/14 09:33:08 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.34 2003/04/23 10:08:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -211,6 +211,13 @@ void	CLandscapeModel::traverseRender()
 	H_BEFORE( NL3D_Landscape_Render );
 	Landscape.render(renderTrav.CamPos, renderTrav.CamLook, CurrentPyramid, isAdditive ());
 	H_AFTER( NL3D_Landscape_Render );
+}
+
+
+// ***************************************************************************
+void	CLandscapeModel::profileRender()
+{
+	Landscape.profileRender();
 }
 
 

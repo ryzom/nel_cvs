@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.h
  * <File description>
  *
- * $Id: landscapevb_allocator.h,v 1.4 2002/09/10 13:38:26 berenguier Exp $
+ * $Id: landscapevb_allocator.h,v 1.5 2003/04/23 10:08:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NL3D
 
 
 class	IDriver;
+class	CVertexProgram;
 
 
 // ***************************************************************************

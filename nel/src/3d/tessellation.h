@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.16 2002/08/26 13:01:42 berenguier Exp $
+ * $Id: tessellation.h,v 1.17 2003/04/23 10:09:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,10 +30,10 @@
 #include "nel/misc/matrix.h"
 #include "nel/misc/uv.h"
 #include "nel/misc/bsphere.h"
+#include "nel/misc/vector_2f.h"
 #include "3d/tess_list.h"
 #include "3d/tess_face_priority_list.h"
 #include "3d/landscape_def.h"
-#include "3d/patch_rdr_pass.h"
 
 
 namespace	NL3D
@@ -49,8 +49,9 @@ using NLMISC::CUV;
 class	CPatch;
 class	CTessFace;
 class	CLandscapeVBAllocator;
-class	CLandscapeFaceVector;
 class	CTessBlock;
+class	CPatchRdrPass;
+struct	CTileMaterial;
 
 // ***************************************************************************
 const	float	OO32768= 1.0f/0x8000;
@@ -150,6 +151,24 @@ public:
 
 
 // ***************************************************************************
+class	CRdrTileId
+{
+public:
+	CPatchRdrPass	*PatchRdrPass;
+	CTileMaterial	*TileMaterial;
+
+	CRdrTileId();
+
+	// For list reading.
+	CRdrTileId		*getNext() {return _Next;}
+
+private:
+	friend	class	CPatchRdrPass;
+	CRdrTileId		*_Next;
+};
+
+
+// ***************************************************************************
 /** A tileface. There is one TileFace per pass (BUT Lightmap PASS!! same used for RGB0 and LIGHTMAP).
  *
  */
@@ -181,7 +200,7 @@ struct	CTileMaterial
 	CTessList<CTileFace>	TileFaceList[NL3D_MAX_TILE_FACE];
 
 	// FaceVectors.
-	CLandscapeFaceVector	*TileFaceVectors[NL3D_MAX_TILE_FACE];
+	uint32			*TileFaceVectors[NL3D_MAX_TILE_FACE];
 
 
 	// The global id of the little lightmap part for this tile.
@@ -365,9 +384,9 @@ private:
 	// baseFace TileUvRight.
 	void	heritTileUv(CTessFace *baseFace);
 
-	// If patch !RenderClipped, and other state, create and fill VB for the vertex id of all faces of this tileFace.
+	// If patch !isRenderClipped(), and other state, create and fill VB for the vertex id of all faces of this tileFace.
 	void	checkCreateFillTileVB(TTileUvId id);
-	// If patch !RenderClipped, and other state, fill VB only for the vertex id of all faces of this tileFace.
+	// If patch !isRenderClipped(), and other state, fill VB only for the vertex id of all faces of this tileFace.
 	void	checkFillTileVB(TTileUvId id);
 
 

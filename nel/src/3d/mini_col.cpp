@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * <File description>
  *
- * $Id: mini_col.cpp,v 1.17 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: mini_col.cpp,v 1.18 2003/04/23 10:09:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,8 +130,7 @@ void			CMiniCol::addZone(uint16 zoneId)
 	newZone.Patchs.resize(zone->getNumPatchs());
 	for(sint i=0;i<zone->getNumPatchs();i++)
 	{
-		const	CPatch	&pa= *zone->getPatch(i);
-		newZone.Patchs[i].Sphere= pa.getBSphere();
+		newZone.Patchs[i].Sphere= zone->getPatchBSphere(i);
 	}
 
 	// Add it to the set (if not already done...).

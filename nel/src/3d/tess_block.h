@@ -1,7 +1,7 @@
 /** \file tess_block.h
  * <File description>
  *
- * $Id: tess_block.h,v 1.8 2002/08/23 16:32:52 berenguier Exp $
+ * $Id: tess_block.h,v 1.9 2003/04/23 10:10:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,16 @@ class	CLandscapeVegetableBlock;
  */
 class CTessBlock
 {
+public:
+	/*
+		Cache optim:
+		Important to store them here for better Cache access in CPatch::MasterBlock (near too TessBlocks)
+	*/
+	// FaceVectors.
+	uint32				*Far0FaceVector;
+	uint32				*Far1FaceVector;
+	// tiles one are stored in material.
+
 private:
 	// Clip info.
 	NLMISC::CAABBox		BBox;
@@ -82,11 +92,6 @@ public:
 	uint						FaceTileMaterialRefCount;
 	// contains only "RdrTileRoot.size()"
 	uint						TileMaterialRefCount;
-
-	// FaceVectors.
-	CLandscapeFaceVector		*Far0FaceVector;
-	CLandscapeFaceVector		*Far1FaceVector;
-	// tiles one are stored in material.
 
 
 	// For memory optimisation, Info for Lightmap per block of 2x2 tiles are stored here too.

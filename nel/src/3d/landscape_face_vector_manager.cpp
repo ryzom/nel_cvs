@@ -1,7 +1,7 @@
 /** \file landscape_face_vector_manager.cpp
  * <File description>
  *
- * $Id: landscape_face_vector_manager.cpp,v 1.3 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: landscape_face_vector_manager.cpp,v 1.4 2003/04/23 10:08:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,33 +42,6 @@ namespace NL3D
 
 
 // ***************************************************************************
-CLandscapeFaceVector::CLandscapeFaceVector()
-{
-	TriPtr= NULL;
-	NumTri= 0;
-	_BlockId= -1;
-	_Next= NULL;
-}
-// ***************************************************************************
-CLandscapeFaceVector::CLandscapeFaceVector(const CLandscapeFaceVector &o)
-{
-	nlstop;
-}
-// ***************************************************************************
-CLandscapeFaceVector &CLandscapeFaceVector::operator=(const CLandscapeFaceVector &o)
-{
-	nlstop;
-	return *this;
-}
-// ***************************************************************************
-CLandscapeFaceVector::~CLandscapeFaceVector()
-{
-	delete [] (TriPtr);
-}
-
-
-
-// ***************************************************************************
 CLandscapeFaceVectorManager::CLandscapeFaceVectorManager()
 {
 	// Allow 2^32 triangles at max. each list i has at max 2^i triangles.
@@ -86,12 +59,13 @@ void					CLandscapeFaceVectorManager::purge()
 {
 	for(uint i=0; i<NL3D_FACE_VECTOR_NUMBLOCK; i++)
 	{
-		CLandscapeFaceVector	*ptr= _Blocks[i];
+		uint32	*ptr= _Blocks[i];
 		// For each node in list, delete.
 		while(ptr)
 		{
-			CLandscapeFaceVector	*next= ptr->_Next;
-			delete ptr;
+			// Get the ptr on next free list.
+			uint32	*next= *(uint32**)ptr;
+			delete []  ptr;
 			ptr= next;
 		}
 		// list is empty.
@@ -100,46 +74,49 @@ void					CLandscapeFaceVectorManager::purge()
 }
 
 // ***************************************************************************
-CLandscapeFaceVector	*CLandscapeFaceVectorManager::createFaceVector(uint numTri)
+uint	CLandscapeFaceVectorManager::getBlockIdFromNumTri(uint numTris)
 {
-	uint	blockId= getPowerOf2(numTri);
+	return getPowerOf2(numTris);
+}
+
+// ***************************************************************************
+uint32	*CLandscapeFaceVectorManager::createFaceVector(uint numTri)
+{
+	// get the BlockId from the number of tri in this fv
+	uint	blockId= getBlockIdFromNumTri(numTri);
 
 	// If no more free FaceVector, allocate.
 	if(_Blocks[blockId]==NULL)
 	{
-		_Blocks[blockId]= new CLandscapeFaceVector;
-		// For debug, good filling only at creation.
-		_Blocks[blockId]->_BlockId= -1;
+		// Allocate a block of max tris. +1 is for the NumTris entry at index 0.
 		uint	numTriMax= 1<<blockId;
-		// allocate the index buffer.
-		_Blocks[blockId]->TriPtr = new uint32[numTriMax*3];
+		// allocate max of (sizeof(uint32*), (numTriMax*3+1)*sizeof(uint32));
+		uint	sizeInByteToAllocate= max(sizeof(uint32*), (numTriMax*3+1)*sizeof(uint32));
+		_Blocks[blockId]= new uint32[sizeInByteToAllocate/4];
+		// Init it as a free faceVector, with no Next.
+		*(uint32**)_Blocks[blockId]= NULL;
 	}
 
 	// Pop a FaceVector from the free list.
-	CLandscapeFaceVector	*ret= _Blocks[blockId];
-	_Blocks[blockId]= ret->_Next;
-	ret->_Next= NULL;
+	uint32		*ret= _Blocks[blockId];
+	// Make the head list point to next
+	_Blocks[blockId]= *(uint32**)ret;
 
 	// There is numTri triangles.
-	ret->NumTri= numTri;
-	// Mark as allcoated.
-	ret->_BlockId= blockId;
+	*ret= numTri;
 
 	return ret;
 }
 
 // ***************************************************************************
-void					CLandscapeFaceVectorManager::deleteFaceVector(CLandscapeFaceVector	*fv)
+void					CLandscapeFaceVectorManager::deleteFaceVector(uint32	*fv)
 {
-	// check if not deleted.
-	nlassert(fv->_BlockId>=0);
+	// get the BlockId from the number of tri in this fv (ie *fv)
+	uint	blockId= getBlockIdFromNumTri(*fv);
 
-	// Append this block to the free list.
-	fv->_Next= _Blocks[fv->_BlockId];
-	_Blocks[fv->_BlockId]= fv;
-
-	// Mark as deleted.
-	fv->_BlockId= -1;
+	// Append this block to the free list. Write the ptr directly on fv.
+	*(uint32**)fv= _Blocks[blockId];
+	_Blocks[blockId]= fv;
 }
 
 

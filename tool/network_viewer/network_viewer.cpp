@@ -1,7 +1,7 @@
 /** \file network_viewer.cpp
  * network_viewer prototype
  *
- * $Id: network_viewer.cpp,v 1.8 2001/01/09 18:00:00 lecroart Exp $
+ * $Id: network_viewer.cpp,v 1.9 2001/01/22 15:44:26 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/file.h"
+#include "nel/misc/path.h"
 
 #include "nel/net/msg_socket.h"
 #include "nel/net/unitime.h"
@@ -951,7 +953,7 @@ void main()
 		{
 			CNELU::EventServer.pump();
 		
-			scene->clearBuffers(CRGBA(0,0,0));
+			CNELU::clearBuffers(CRGBA(0,0,0));
 
 			switch(SelectedView)
 			{
@@ -969,7 +971,7 @@ void main()
 			render ();
 
 			scene->render();
-			scene->swapBuffers();
+			CNELU::swapBuffers();
 
 			client->update();
 		}

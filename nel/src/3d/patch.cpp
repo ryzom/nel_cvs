@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.41 2001/02/05 16:51:42 corvazier Exp $
+ * $Id: patch.cpp,v 1.42 2001/02/06 18:19:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -705,7 +705,6 @@ sint			CPatch::getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc)
 
 		// Compute color.
 		static CRGBA	col(255,255,255,255);
-		// TODO_CLOUD: use normal information, for cloud attenuation, in RGB fields.
 		// For Far0, alpha is un-usefull.
 		CTessFace::CurrentVB->setColor(vert->FarIndex, col);
 		// END!!
@@ -740,13 +739,12 @@ sint			CPatch::getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc)
 
 		// Compute color.
 		static CRGBA	col(255,255,255,255);
-		// TODO_CLOUD: use normal information, for cloud attenuation, in RGB fields.
 		// For Far1, use alpha fro transition.
 		float	f= (vert->Pos - CTessFace::RefineCenter).sqrnorm();
 		f= (f-TransitionSqrMin) * OOTransitionSqrDelta;
-
 		clamp(f,0,1);
 		col.A= (uint8)(f*255);
+
 		CTessFace::CurrentVB->setColor(vert->FarIndex, col);
 		// END!!
 	}

@@ -713,13 +713,14 @@
 #define ID_VIEW_RESET_SCENE_ROOT        32908
 #define ID_VIEW_SET_SCENE_ROTATION      32909
 #define IDC_RELOAD_TEXTURES             32910
+#define ID_SHOOT_SCENE                  32911
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1123
-#define _APS_NEXT_COMMAND_VALUE         32911
+#define _APS_NEXT_RESOURCE_VALUE        1124
+#define _APS_NEXT_COMMAND_VALUE         32912
 #define _APS_NEXT_CONTROL_VALUE         1364
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

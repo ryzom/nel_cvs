@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.85 2003/01/08 15:48:57 boucher Exp $
+ * $Id: object_viewer.cpp,v 1.86 2003/02/05 17:45:20 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 
 
 #include "std_afx.h"
-
+#define USE_JPEG
 #undef OBJECT_VIEWER_EXPORT
 #define OBJECT_VIEWER_EXPORT __declspec( dllexport ) 
 
@@ -3252,3 +3252,80 @@ float		CObjectViewer::getGlobalWindPower() const
 }
 
 
+void		CObjectViewer::shootScene() 
+{
+	static const char BASED_CODE szFilter[] = "Targa Files (*.tga)|*.tga|Jpeg Files (*.jpg)|*.jpg|All Files (*.*)|*.*||";
+	CFileDialog fileDlg ( FALSE, ".tga", "*.tga", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
+	if (fileDlg.DoModal ())
+	{
+		// The file name
+		string filename = NLMISC::CFile::getFilenameWithoutExtension ((const char*)fileDlg.GetPathName ());
+		string extension = NLMISC::CFile::getExtension ((const char*)fileDlg.GetPathName ());
+
+		// The file name without extension
+		bool jpeg = strlwr (extension) == "jpg";
+
+		// Activate the driver
+ 		CNELU::Driver->activate ();
+
+		// Bitmap for shoot
+		NLMISC::CBitmap shoot;
+
+		// For each frame
+		sint i;
+		for (i=(sint)_AnimationDlg->Start; i<=(sint)_AnimationDlg->End; i++)
+		{
+			// Set the time
+			_AnimationDlg->setCurrentFrame ((float)i);
+
+			// Setup the play list
+			setupPlaylist (_AnimationDlg->getTime());
+
+			// Animate the automatic animation in the scene
+			CNELU::Scene.animate ( 1.f / _AnimationDlg->Speed );
+
+			// Eval channel mixer for transform
+			for (uint j=0; j<_ListInstance.size(); j++)
+				_ListInstance[j]->ChannelMixer.eval (false);
+
+			// Clear the buffers
+			CNELU::clearBuffers (_BackGroundColor);
+
+			// Draw the scene		
+			CNELU::Scene.render ();
+
+			// Swap the buffers
+			CNELU::swapBuffers();
+
+			// Get the buffer
+			CNELU::Driver->getBuffer (shoot);
+			shoot.flipV ();
+
+			// Save it
+			char num[12];
+			smprintf (num, 12, "%04d", i);
+			string filenamefinal = filename+num+string (".")+extension;
+			try
+			{
+				NLMISC::COFile output;
+				if (output.open (filenamefinal))
+				{
+					if (jpeg)
+						shoot.writeJPG ( output, 255 );
+					else
+						shoot.writeTGA ( output, 32 );
+				}
+				else
+				{
+					theApp.m_pMainWnd->MessageBox (("Can't open the file "+filenamefinal+" for writing.").c_str (), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+					break;
+				}
+			}
+			catch (Exception &e)
+			{
+				theApp.m_pMainWnd->MessageBox (("Error during writing of the file "+filenamefinal+" : "+(string)e.what ()).c_str (), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+				break;
+			}
+		}
+	}
+}

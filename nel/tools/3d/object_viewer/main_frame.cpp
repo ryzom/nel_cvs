@@ -184,6 +184,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVESCENE, OnUpdateEditMovescene)
 	ON_COMMAND(ID_VIEW_RESET_SCENE_ROOT, OnViewResetSceneRoot)
 	ON_COMMAND(ID_VIEW_SET_SCENE_ROTATION, OnViewSetSceneRotation)
+	ON_COMMAND(ID_SHOOT_SCENE, OnShootScene)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -1106,8 +1107,8 @@ void CMainFrame::OnViewResetSceneRoot()
 	}
 }
 
-
 // ***************************************************************************
+
 void CMainFrame::OnViewSetSceneRotation() 
 {
 	CSceneRotDlg	sceneRotDlg(this);
@@ -1135,3 +1136,12 @@ void CMainFrame::OnViewSetSceneRotation()
 		}
 	}
 }
+
+// ***************************************************************************
+
+void CMainFrame::OnShootScene() 
+{
+	ObjView->shootScene ();
+}
+
+// ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.41 2002/09/05 17:59:55 corvazier Exp $
+ * $Id: object_viewer.h,v 1.42 2003/02/05 17:45:20 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -423,6 +423,9 @@ public:
 
 	/// Get the scene roor for manip.
 	NL3D::CTransform	*getSceneRoot() const {return _SceneRoot;}
+
+	// Shoot the scene
+	void		shootScene ();
 
 private:
 

@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.18 2003/01/08 15:42:01 boucher Exp $
+ * $Id: sound_system.cpp,v 1.19 2003/02/05 17:45:20 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,7 +66,7 @@ void CSoundSystem::setListenerMatrix(const NLMISC::CMatrix &m)
 
 void CSoundSystem::initSoundSystem ()
 {		
-
+/*
 	_AudioMixer = NLSOUND::UAudioMixer::createAudioMixer();
 	try
 	{
@@ -109,7 +109,7 @@ void CSoundSystem::initSoundSystem ()
 			nlwarning ("Init sound: %s", mess.c_str());
 		}
 	}					
-
+*/
 /*	for (set<string>::const_iterator it2 = _SoundBanksFileName.begin();
 		 it2 != _SoundBanksFileName.end();
 		 ++it2)

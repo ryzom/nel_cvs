@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * implementation file
  *
- * $Id: animation_dlg.cpp,v 1.11 2002/11/04 15:40:44 boucher Exp $
+ * $Id: animation_dlg.cpp,v 1.12 2003/02/05 17:45:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -403,4 +403,19 @@ void CAnimationDlg::OnDestroy()
 	setRegisterWindowState (this, REGKEY_OBJ_VIEW_ANIMATION_DLG);
 
 	CDialog::OnDestroy();
+}
+
+void CAnimationDlg::setCurrentFrame (float currentFrame)
+{
+	// Update values
+	UpdateData ();
+
+	// Setup current pos
+	CurrentFrame=currentFrame;
+	LastFrame=CurrentFrame;
+	UICurrentFrame=(int)CurrentFrame;
+
+	// Update values
+	UpdateData (FALSE);
+	updateBar ();
 }

@@ -151,6 +151,7 @@ public:
 	afx_msg void OnUpdateEditMovescene(CCmdUI* pCmdUI);
 	afx_msg void OnViewResetSceneRoot();
 	afx_msg void OnViewSetSceneRotation();
+	afx_msg void OnShootScene();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * <File description>
  *
- * $Id: animation_dlg.h,v 1.10 2002/06/20 08:44:34 hanappe Exp $
+ * $Id: animation_dlg.h,v 1.11 2003/02/05 17:45:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,7 @@ public:
 	float					CurrentFrame;
 	float					LastFrame;
 
+	void setCurrentFrame (float currentFrame);
 	void handle ();
 	void setAnimTime (float animStart, float animEnd);
 	void updateBar ();

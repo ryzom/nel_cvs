@@ -2258,6 +2258,7 @@ BEGIN
     BEGIN
         MENUITEM "&Clear scene",                ID_CLEAR
         MENUITEM "&Reload Textures",            IDC_RELOAD_TEXTURES
+        MENUITEM "&Shoot the scene",            ID_SHOOT_SCENE
     END
     POPUP "&Window"
     BEGIN
@@ -2518,6 +2519,11 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDR_MAINFRAME           "Toto"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SHOOT_SCENE          "Shoot the scene in a movie"
 END
 
 #endif    // French (France) resources

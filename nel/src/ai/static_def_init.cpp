@@ -36,7 +36,6 @@
 #include "nel/ai/agent/msg_setvalue.h"
 #include "nel/ai/script/param_container.h"
 #include "nel/ai/logic/goal_path.h"
-#include "nel/ai/script/goal_path_class.h"
 #include "nel/ai/agent/agent_3dvector.h"
 
 	using namespace NLAIAGENT;
@@ -665,12 +664,7 @@ namespace NLAISCRIPT
 	const NLAIC::CIdentType CActorClass::IdActorClass("Actor", CClassInterpretFactory((const IClassInterpret &)actorClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
-
-	static CGoalPathClass goalpathClass(NLAIAGENT::CStringVarName("XXX_GoalPath"));
-	const NLAIC::CIdentType CGoalPathClass::IdGoalPathClass("GoalPath", CClassInterpretFactory((const IClassInterpret &)goalpathClass),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tInterpret),
-													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
-
+	
 	static CFsmClass fsmClass(NLAIAGENT::CStringVarName("XXX_Fsm"));
 	const NLAIC::CIdentType CFsmClass::IdFsmClass("Fsm", CClassInterpretFactory((const IClassInterpret &)fsmClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tInterpret),

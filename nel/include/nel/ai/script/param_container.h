@@ -1,7 +1,7 @@
 /** \file param_container.h
  * Includes all for compiling a script.
  *
- * $Id: param_container.h,v 1.1 2002/01/30 16:51:49 chafik Exp $
+ * $Id: param_container.h,v 1.2 2003/02/05 14:47:23 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,9 @@
 
 namespace NLAISCRIPT
 {
+	/**
+	Class that define a list for stor parameter of function call.
+	*/
 	class CPramContainer: public NLAIAGENT::CGroupType
 	{
 	public:
@@ -48,7 +51,7 @@ namespace NLAISCRIPT
 		{
 			return IdPramContainer;
 		}
-
+		///redefinition of the += operator, that allow to stor reference of object rather then clone.
 		virtual NLAIAGENT::IObjetOp &operator += (const NLAIAGENT::IObjetOp &a);
 	};
 }

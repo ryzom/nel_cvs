@@ -1,7 +1,7 @@
 /** \file type_def.h
  * Sevral class for typing object.
  *
- * $Id: type_def.h,v 1.14 2002/08/21 13:58:17 lecroart Exp $
+ * $Id: type_def.h,v 1.15 2003/02/05 14:47:23 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,7 +69,7 @@ namespace NLAISCRIPT
 	/**
 	* Class COperandVoid.
 	* 
-	* This class define an void type, its use for the no return method type.
+	* This class define void type, its use for the no return method type.
 	*
 	* \author Chafik sameh	
 	* \author Nevrax France
@@ -144,7 +144,7 @@ namespace NLAISCRIPT
 	/**
 	* Class COperandAnyObject.
 	* 
-	* This class define an void type, its use for the no return method type.
+	* This class define an no define type, its use for the method that don't know return type.
 	*
 	* \author Chafik sameh	
 	* \author Nevrax France
@@ -303,13 +303,12 @@ namespace NLAISCRIPT
 		}
 	};
 
-
-	/**	
-	* 
+	/**
+	*
 	* This class define an know type under a list od type.
 	* Type = Typ_1 | Typ_2 ... | Type_n
 	*
-	* \author Chafik sameh	
+	* \author Chafik sameh
 	* \author Nevrax France
 	* \date 2000
 	*/
@@ -328,7 +327,7 @@ namespace NLAISCRIPT
 
 		COperandSimpleListOr(const std::list<NLAIC::CIdentType *> &l)
 		{
-			char txt[1028*8];		
+			char txt[1028*8];
 			sprintf(txt,"constraint<COperandSimpleListOr> for ...");
 			_TxtInfo = new char [strlen(txt) + 1];
 			strcpy(_TxtInfo,txt);
@@ -339,7 +338,6 @@ namespace NLAISCRIPT
 				_TypeListe.push_back(new NLAIC::CIdentType(*(*i++)));
 			}
 		}
-
 
 		COperandSimpleListOr(int count, ...);
 

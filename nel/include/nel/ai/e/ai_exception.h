@@ -1,7 +1,7 @@
 /** \file ai_exception.h
  * some ai exception class.
  *
- * $Id: ai_exception.h,v 1.20 2002/10/04 09:59:01 coutelas Exp $
+ * $Id: ai_exception.h,v 1.21 2003/02/05 14:47:23 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -43,6 +43,9 @@
 
 namespace NLAIE
 {		
+	/**
+	Class abstract to support several standard exception.
+	*/
 	class IException: public NLMISC::Exception
 	{	
 
@@ -64,6 +67,9 @@ namespace NLAIE
 		}
 	};
 
+	/**
+	Class allow to spread an ather exepton, it is used in multible block try/catch when user want to spread the original exeption.
+	*/
 	class CExceptionContainer: public IException
 	{
 	
@@ -77,6 +83,9 @@ namespace NLAIE
 		}
 	};
 
+	/**
+	This exception is emit when an index error is occure.
+	*/
 	class CExceptionIndexError: public IException
 	{		
 	public:
@@ -92,6 +101,9 @@ namespace NLAIE
 		}
 	};
 
+	/**
+	This exception is emit when an handel is'nt refered. For exemple with an ident of entity bad refered.
+	*/
 	class CExceptionIndexHandeledError: public IException
 	{
 	
@@ -108,6 +120,9 @@ namespace NLAIE
 		}
 	};
 
+	/**
+	This exception is emit when user want to access to a class not in the class factory.
+	*/
 	class CExceptionUnRegisterClassError: public IException
 	{
 	private:			
@@ -123,6 +138,9 @@ namespace NLAIE
 
 	};
 
+	/**	
+	This exception is emit when user want to access to an object not mounted in the class factory.	
+	*/
 	class CExceptionObjectNotFoundError: public IException
 	{	
 	public:
@@ -140,6 +158,9 @@ namespace NLAIE
 		}
 	};
 
+	/**	
+	This exception is emit when user call an undefined method.
+	*/
 	class CExceptionNotImplemented: public IException
 	{	
 	public:
@@ -155,6 +176,9 @@ namespace NLAIE
 		}
 	};
 
+	/**
+	This exception is emit when user made a bad reference, for exemple when user want to call a script method not defined.
+	*/
 	class CExceptionUnReference: public IException
 	{	
 	public:
@@ -170,6 +194,9 @@ namespace NLAIE
 		}
 	};	
 
+	/**	
+	This exception is emit when user want mount a class in the class factory but this call is all ready mounted.	
+	*/
 	class CExceptionAllReadyExist: public IException
 	{
 	

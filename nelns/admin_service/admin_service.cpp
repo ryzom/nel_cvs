@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.14 2002/03/19 17:42:48 valignat Exp $
+ * $Id: admin_service.cpp,v 1.15 2002/03/25 09:28:00 lecroart Exp $
  *
  */
 
@@ -36,14 +36,16 @@
 #define NELNS_LOGS ""
 #endif // NELNS_LOGS
 
+#include "nel/misc/types_nl.h"
+
 #include <string>
 #include <list>
 
-#include "nel/net/service.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/command.h"
 
+#include "nel/net/service.h"
 #include "nel/net/net_manager.h"
 
 using namespace std;
@@ -196,7 +198,7 @@ void doNextStartAllServicesStep ()
 	// get the script
 	try
 	{
-		CConfigFile::CVar &script = IService::ConfigFile.getVar("Services");
+		CConfigFile::CVar &script = IService::getInstance()->ConfigFile.getVar("Services");
 
 		// check the position
 
@@ -275,7 +277,7 @@ void initStartAllServices ()
 
 	try
 	{
-		CConfigFile::CVar &script = IService::ConfigFile.getVar("Services");
+		CConfigFile::CVar &script = IService::getInstance()->ConfigFile.getVar("Services");
 
 		for (sint i = 0 ; i < script.size (); i+=2)
 		{
@@ -690,7 +692,7 @@ static void cbAuthenticateClient (CMessage& msgin, TSockId from, CCallbackNetBas
 	{
 		msgin.serial (password);
 
-		if (password == IService::ConfigFile.getVar("Password").asString())
+		if (password == IService::getInstance()->ConfigFile.getVar("Password").asString())
 		{
 			// good authentification
 			ok = true;
@@ -982,4 +984,4 @@ public:
 // AESAS is a client connection to the admin executor
 
 /// Naming Service
-NLNET_SERVICE_MAIN (CAdminService, "AS", "admin_service", 49995, ClientCallbackArray, NELNS_CONFIG, NELNS_LOGS);
+NLNET_OLD_SERVICE_MAIN (CAdminService, "AS", "admin_service", 49995, ClientCallbackArray, NELNS_CONFIG, NELNS_LOGS);

@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.19 2002/03/19 17:42:49 valignat Exp $
+ * $Id: naming_service.cpp,v 1.20 2002/03/25 09:29:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,8 @@
 // Includes
 //
 
+#include "nel/misc/types_nl.h"
+
 #include <list>
 #include <string>
 
@@ -47,8 +49,6 @@
 #include "nel/misc/displayer.h"
 
 #include "nel/net/service.h"
-#include "nel/net/net_manager.h"
-
 
 //
 // Namespaces
@@ -620,7 +620,7 @@ public:
 //
 /// Naming Service
 //
-NLNET_SERVICE_MAIN (CNamingService, "NS", "naming_service", 50000, CallbackArray, NELNS_CONFIG, NELNS_LOGS)
+NLNET_OLD_SERVICE_MAIN (CNamingService, "NS", "naming_service", 50000, CallbackArray, NELNS_CONFIG, NELNS_LOGS)
 
 
 //

@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.7 2002/03/11 10:42:49 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.8 2002/03/25 09:29:24 lecroart Exp $
  *
  */
 
@@ -24,14 +24,14 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/misc/types_nl.h"
+
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
 
 #include <vector>
 #include <map>
-
-#include "nel/misc/types_nl.h"
 
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"

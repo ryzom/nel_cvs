@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.16 2002/03/19 17:42:49 valignat Exp $
+ * $Id: login_service.cpp,v 1.17 2002/03/25 09:29:24 lecroart Exp $
  *
  */
 
@@ -40,14 +40,14 @@
 #define NELNS_STATE ""
 #endif // NELNS_STATE
 
+#include "nel/misc/types_nl.h"
+
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
 
 #include <vector>
 #include <map>
-
-#include "nel/misc/types_nl.h"
 
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
@@ -57,7 +57,6 @@
 #include "nel/misc/window_displayer.h"
 
 #include "nel/net/service.h"
-#include "nel/net/net_manager.h"
 #include "nel/net/login_cookie.h"
 
 #include "login_service.h"
@@ -332,7 +331,7 @@ void readPlayerDatabase ()
 	for (i = 0; i < (sint)Shards.size (); i++)
 		Shards[i].Loaded = false;
 
-	const CConfigFile::CVar &v2 = IService::Instance->ConfigFile.getVar ("Shards");
+	const CConfigFile::CVar &v2 = IService::getInstance()->ConfigFile.getVar ("Shards");
 	for (i = 0; i < v2.size(); i+=2)
 	{
 		try
@@ -440,7 +439,7 @@ void cbVar (CConfigFile::CVar &var)
 	else nlstop;
 }
 
-class CLoginService : public NLNET::IService
+class CLoginService : public IService
 {
 	bool Init;
 
@@ -503,9 +502,8 @@ public:
 	}
 };
 
-
 // Service instanciation
-NLNET_SERVICE_MAIN (CLoginService, "LS", "login_service", 49999, EmptyCallbackArray, NELNS_CONFIG, NELNS_LOGS);
+NLNET_OLD_SERVICE_MAIN (CLoginService, "LS", "login_service", 49999, OldEmptyCallbackArray, NELNS_CONFIG, NELNS_LOGS);
 
 
 //

@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.12 2002/03/19 17:42:49 valignat Exp $
+ * $Id: welcome_service.cpp,v 1.13 2002/03/25 09:29:52 lecroart Exp $
  *
  */
 
@@ -50,7 +50,7 @@
 #include "nel/misc/command.h"
 #include "nel/misc/log.h"
 
-#include "nel/net/service_5.h"
+#include "nel/net/service.h"
 #include "nel/net/unified_network.h"
 #include "nel/net/login_cookie.h"
 
@@ -61,8 +61,6 @@ using namespace NLNET;
 /// Set the version of the shard. you have to increase it each time the client-server protocol changes.
 /// You have to increment the client too (the server and client version must be the same to run correctly)
 static const uint32 ServerVersion = 1;
-
-IService5 *ServiceInstance = NULL;
 
 /// Contains the correspondance between userid and the FES connection where the userid is connected.
 map<uint32, TServiceId> UserIdSockAssociations;
@@ -316,7 +314,7 @@ void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 	
 	try
 	{
-		shardName = ServiceInstance->ConfigFile.getVar ("ShardName").asString();
+		shardName = IService::getInstance()->ConfigFile.getVar ("ShardName").asString();
 	}
 	catch(Exception &)
 	{
@@ -330,6 +328,8 @@ void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 
 	msgout.serial (shardName);
 	CUnifiedNetwork::getInstance()->send (serviceName, msgout);
+
+	nlinfo ("Connected to LS and sent the shardName '%s'", shardName.c_str());
 }
 
 
@@ -343,7 +343,7 @@ TUnifiedCallbackItem LSCallbackArray[] =
 	{ "DC", cbLSDisconnectClient },
 };
 
-class CWelcomeService : public NLNET::IService5
+class CWelcomeService : public IService
 {
 
 public:
@@ -351,8 +351,6 @@ public:
 	/// Init the service, load the universal time.
 	void init ()
 	{
-		ServiceInstance = this;
-
 		string FrontendServiceName = ConfigFile.getVar ("FrontendServiceName").asString();
 
 		try { FrontEndAddress = ConfigFile.getVar ("FrontEndAddress").asString(); } catch(Exception &) { }
@@ -367,7 +365,7 @@ public:
 		
 		// add default port if not set by the config file
 		if (LSAddr.find (":") == string::npos)
-			LSAddr + ":49998";
+			LSAddr += ":49998";
 
 		CUnifiedNetwork::getInstance()->addCallbackArray(LSCallbackArray, sizeof(LSCallbackArray)/sizeof(LSCallbackArray[0]));
 		CUnifiedNetwork::getInstance()->setServiceUpCallback("LS", cbLSConnection, NULL);

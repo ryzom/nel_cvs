@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.35.4.1 2004/09/11 17:17:42 guignot Exp $
+ * $Id: login_server.cpp,v 1.35.4.2 2004/09/11 22:59:27 weeklyserver Exp $
  *
  */
 
@@ -115,7 +115,16 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	//
 
 	msgin.serial (cookie);
-	msgin.serial (userName, userPriv, userExtended);
+	msgin.serial (userName, userPriv);
+
+	try
+	{
+		msgin.serial(userExtended);
+	}
+	catch(Exception &)
+	{
+		nlwarning("Welcome didn't send me the userExtended");
+	}
 	
 	list<CPendingUser>::iterator it;
 	for (it = PendingUsers.begin(); it != PendingUsers.end (); it++)

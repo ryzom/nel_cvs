@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.193 2003/09/12 15:42:04 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.194 2003/10/08 14:45:24 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1349,11 +1349,8 @@ bool CDriverGL::setMode(const GfxMode& mode)
 		{
 			modifyStyle(_hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS, WS_POPUP);
 		}
-#endif
 	}
-	_FullScreen = !mode.Windowed;
 
-#ifdef NL_OS_WINDOWS
 	// Resize the window
 	RECT rc;
 	SetRect (&rc, 0, 0, _WindowWidth, _WindowHeight);
@@ -1370,6 +1367,8 @@ bool CDriverGL::setMode(const GfxMode& mode)
 	_WindowX = clientRect.left;
 	_WindowY = clientRect.top;	return true;
 #endif
+
+	_FullScreen = !mode.Windowed;
 }
 
 // --------------------------------------------------

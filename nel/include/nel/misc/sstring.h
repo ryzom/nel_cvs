@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.16 2004/06/25 15:24:03 boucher Exp $
+ * $Id: sstring.h,v 1.17 2004/07/08 16:44:12 boucher Exp $
  */
 
 
@@ -1541,17 +1541,17 @@ inline bool CSString::operator<(const char* other) const
 inline std::string::const_reference CSString::operator[](std::string::size_type idx) const
 {
 	static char zero=0;
-	if ((uint32)idx>size())
+	if (idx > size())
 		return zero;
-	return *(_M_start + idx);
+	return data()[idx];
 }
 
 inline std::string::reference CSString::operator[](std::string::size_type idx)
 {
 	static char zero=0;
-	if ((uint32)idx>size())
+	if (idx > size())
 		return zero;
-	return *(_M_start + idx);
+	return const_cast<std::string::value_type&>(data()[idx]);
 }
 
 inline bool CSString::icompare(const std::string &other) const

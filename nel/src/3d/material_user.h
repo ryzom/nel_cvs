@@ -1,7 +1,7 @@
 /** \file material_user.h
  * <File description>
  *
- * $Id: material_user.h,v 1.5 2002/07/18 17:41:13 vizerie Exp $
+ * $Id: material_user.h,v 1.6 2002/10/02 15:25:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -199,6 +199,13 @@ public:
 		_Material.initUnlit();
 	}
 	// @}
+
+
+
+public:
+
+	// Internal Use only.
+	CMaterial	&getMaterial() {return _Material;}
 
 };
 

@@ -1,7 +1,7 @@
 /** \file quaternion.h
  * CQuat class
  *
- * $Id: quat.h,v 1.2 2001/03/05 16:28:46 berenguier Exp $
+ * $Id: quat.h,v 1.3 2001/03/07 09:36:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "nel/misc/stream.h"
 #include <math.h>
 
 namespace	NLMISC
@@ -75,6 +76,10 @@ public:
 	// @{
 	CQuatT() : x((T)0.0),y((T)0.0),z((T)0.0),w((T)1.0) {}
 	CQuatT(T X, T Y, T Z, T W) : x(X), y(Y), z(Z), w(W) {}
+	/// ctor of a UNIT quaternion, from an angle axis.
+	CQuatT(const CVector &axis, float angle) {setAngleAxis(axis, angle);}
+	/// ctor of a UNIT quaternion, from an angle axis.
+	CQuatT(const CAngleAxis &aa) {setAngleAxis(aa);}
 	// @}
 
     
@@ -137,19 +142,26 @@ public:
 	/// Return the equivalent Unit  AngleAxis of this quaternion.
 	CAngleAxis	getAngleAxis() const {return CAngleAxis(getAxis(), getAngle());}
 
-	/// Build a quaternion from an AngleAxis.
+	/// Build a UNIT quaternion from an AngleAxis.
 	void	setAngleAxis(const CVector &axis, float angle);
-	/// Build a quaternion from an AngleAxis.
+	/// Build a UNIT quaternion from an AngleAxis.
 	void	setAngleAxis(const CAngleAxis &angAxis) {setAngleAxis(angAxis.Axis, angAxis.Angle);}
 	// @}
 
 
 	/// \name Misc.
 	// @{
-	// compute logn quaternion.
+	/// compute logn quaternion.
 	CQuatT	log();
-	// compute quaternion exponent.
+	/// compute quaternion exponent.
 	CQuatT	exp();
+	/// ensure that *this and q are on same side of hypersphere, ie dotProduct(*this,q) is >0, modifying this if necessary.
+	void	makeClosest(const CQuatT &o);
+	/// serial.
+	void	serial(IStream &f)
+	{
+		f.serial(x,y,z,w);
+	}
 	// @}
 
 
@@ -171,7 +183,7 @@ public:
 	 */
 	static	CQuatT	squadrev(const CAngleAxis &rot, const CQuatT<T>& q0, const CQuatT<T>& tgtQ0, const CQuatT<T>& tgtQ1, const CQuatT<T>& q1, float t);
 
-	// compute lnDiff of q0.inverted()*q1.
+	/// compute lnDiff of q0.inverted()*q1.
 	static	CQuatT	lnDif(const CQuatT &q0, const CQuatT &q1);
 
 	// @}
@@ -449,6 +461,15 @@ CQuatT<T>	CQuatT<T>::lnDif(const CQuatT<T> &q0, const CQuatT<T> &q1)
 }
 
 
+// ***************************************************************************
+template <class T> 
+void	CQuatT<T>::makeClosest(const CQuatT<T> &o)
+{
+	if( dotProduct(*this, o) < 0 )
+		*this= -(*this);
+}
+
+
 
 // ***************************************************************************
 // ***************************************************************************
@@ -475,6 +496,10 @@ public:
 	CQuat	&operator=(const CQuatT<float> &o) {x=o.x; y=o.y; z=o.z; w=o.w; return *this;}
 	CQuat() {}
 	CQuat(float X, float Y, float Z, float W) : CQuatT<float>(X,Y,Z,W) {}
+	/// ctor of a UNIT quaternion, from an angle axis.
+	CQuat(const CVector &axis, float angle) : CQuatT<float>(axis, angle) {}
+	/// ctor of a UNIT quaternion, from an angle axis.
+	CQuat(const CAngleAxis &aa) : CQuatT<float>(aa) {}
 	// @}
 
 };
@@ -497,6 +522,10 @@ public:
 	CQuatD	&operator=(const CQuatT<double> &o) {x=o.x; y=o.y; z=o.z; w=o.w; return *this;}
 	CQuatD() {}
 	CQuatD(double X, double Y, double Z, double W) : CQuatT<double>(X,Y,Z,W) {}
+	/// ctor of a UNIT quaternion, from an angle axis.
+	CQuatD(const CVector &axis, float angle) : CQuatT<double>(axis, angle) {}
+	/// ctor of a UNIT quaternion, from an angle axis.
+	CQuatD(const CAngleAxis &aa) : CQuatT<double>(aa) {}
 	// @}
 
 	

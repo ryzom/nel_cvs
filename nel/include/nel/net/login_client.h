@@ -2,7 +2,7 @@
  * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
  * connects to the shard.
  *
- * $Id: login_client.h,v 1.2 2001/05/02 12:54:13 lecroart Exp $
+ * $Id: login_client.h,v 1.3 2001/06/13 10:21:33 lecroart Exp $
  * 
  */
 
@@ -92,7 +92,7 @@ private:
 
 	static std::string _GfxInfos;
 
-	static CCallbackClient _CallbackClient;
+	static CCallbackClient *_CallbackClient;
 
 };
 

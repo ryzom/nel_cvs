@@ -1,6 +1,6 @@
 /** \file login_client.cpp
  *
- * $Id: login_client.cpp,v 1.4 2001/05/03 13:30:01 lecroart Exp $
+ * $Id: login_client.cpp,v 1.5 2001/06/13 10:21:33 lecroart Exp $
  *
  */
 
@@ -44,7 +44,7 @@ CLoginClient::TShardList CLoginClient::ShardList;
 
 string CLoginClient::_GfxInfos;
 
-CCallbackClient CLoginClient::_CallbackClient;
+CCallbackClient *CLoginClient::_CallbackClient = NULL;
 
 // Callback for answer of the login password.
 bool VerifyLoginPassword;
@@ -117,8 +117,10 @@ string CLoginClient::authenticate (const string &loginServiceAddr, const string 
 	//
 	try
 	{
-		_CallbackClient.addCallbackArray (CallbackArray, sizeof(CallbackArray)/sizeof(CallbackArray[0]));
-		_CallbackClient.connect (loginServiceAddr);
+		nlassert (_CallbackClient == NULL);
+		_CallbackClient = new CCallbackClient();
+		_CallbackClient->addCallbackArray (CallbackArray, sizeof(CallbackArray)/sizeof(CallbackArray[0]));
+		_CallbackClient->connect (loginServiceAddr);
 	}
 	catch (ESocket &e)
 	{
@@ -126,12 +128,12 @@ string CLoginClient::authenticate (const string &loginServiceAddr, const string 
 		return "Connection refused to LS";
 	}
 
-	_CallbackClient.displayAllMyAssociations ();
+	_CallbackClient->displayAllMyAssociations ();
 
 	//
 	// S02: create and send the "VLP" message
 	//
-	CMessage msgout (_CallbackClient.getSIDA (), "VLP");
+	CMessage msgout (_CallbackClient->getSIDA (), "VLP");
 	msgout.serial (const_cast<string&>(login));
 	msgout.serial (const_cast<string&>(password));
 	msgout.serial (clientVersion);
@@ -145,16 +147,27 @@ string CLoginClient::authenticate (const string &loginServiceAddr, const string 
 	msgout.serial (Mem);
 	msgout.serial (_GfxInfos);
 
-	_CallbackClient.send (msgout);
+	_CallbackClient->send (msgout);
 
 	// wait the answer from the LS
 	VerifyLoginPassword = false;
-	while (_CallbackClient.connected() && !VerifyLoginPassword)
+	while (_CallbackClient->connected() && !VerifyLoginPassword)
 	{
-		_CallbackClient.update ();
+		_CallbackClient->update ();
 	}
 
-	if (!_CallbackClient.connected()) return "LS disconnects me";
+	if (!_CallbackClient->connected())
+	{
+		delete _CallbackClient;
+		_CallbackClient = NULL;
+		return "CLoginClient::authenticate(): LS disconnects me";
+	}
+
+	if (!VerifyLoginPasswordReason.empty())
+	{
+		delete _CallbackClient;
+		_CallbackClient = NULL;
+	}
 
 	return VerifyLoginPasswordReason;
 }
@@ -183,7 +196,7 @@ static TCallbackItem FESCallbackArray[] =
 string CLoginClient::connectToShard (uint32 shardListIndex, CCallbackClient &cnx)
 {
 	nlassert (!cnx.connected());
-	nlassert (_CallbackClient.connected());
+	nlassert (_CallbackClient != NULL && _CallbackClient->connected());
 	nlassert (shardListIndex < ShardList.size());
 
 	//
@@ -191,21 +204,34 @@ string CLoginClient::connectToShard (uint32 shardListIndex, CCallbackClient &cnx
 	//
 
 	// send CS
-	CMessage msgout (_CallbackClient.getSIDA (), "CS");
+	CMessage msgout (_CallbackClient->getSIDA (), "CS");
 	msgout.serial (ShardList[shardListIndex].WSAddr);
-	_CallbackClient.send (msgout);
+	_CallbackClient->send (msgout);
 
 	// wait the answer
 	ShardChooseShard = false;
-	while (_CallbackClient.connected() && !ShardChooseShard)
+	while (_CallbackClient->connected() && !ShardChooseShard)
 	{
-		_CallbackClient.update ();
+		_CallbackClient->update ();
 	}
 
-	if (!_CallbackClient.connected()) return "LS disconnects me";
+	if (!_CallbackClient->connected())
+	{
+		delete _CallbackClient;
+		_CallbackClient = NULL;
+		return "CLoginClient::connectToShard(): LS disconnects me";
+	}
+	else
+	{
+		_CallbackClient->disconnect ();
+		delete _CallbackClient;
+		_CallbackClient = NULL;
+	}
 
-	if (ShardChooseShardReason != "")
+	if (!ShardChooseShardReason.empty())
+	{
 		return ShardChooseShardReason;
+	}
 
 	// ok, we can try to connect to the good front end
 
@@ -235,7 +261,6 @@ string CLoginClient::connectToShard (uint32 shardListIndex, CCallbackClient &cnx
 		}
 		
 		if (!cnx.connected()) return "FES disconnect me";
-
 	}
 	catch (ESocket &e)
 	{

@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.65 2004/03/04 14:35:15 vizerie Exp $
+ * $Id: stream.h,v 1.66 2004/05/14 10:13:12 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,6 +101,9 @@ struct EInvalidDataStream : public EStream
 {
 	EInvalidDataStream() : EStream("Invalid data format" ) {}
 	EInvalidDataStream(const IStream &f) : EStream(f, "Invalid data format" ) {}
+
+	// msg must contain "%u" for the position of 'size'
+	EInvalidDataStream(const char *msg, uint size);
 };
 
 struct ESeekNotSupported : public EStream
@@ -113,6 +116,9 @@ struct ESeekNotSupported : public EStream
 struct EStreamOverflow : public EStream
 {
 	EStreamOverflow() : EStream( "Stream Overflow Error" ) {}
+
+	// msg must contain "%u" for the position of 'size'
+	EStreamOverflow(const char *msg, uint size);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file string_stream.cpp
  * Class CStringStream (plain text memory streams)
  *
- * $Id: string_stream.cpp,v 1.9 2004/03/19 16:31:28 lecroart Exp $
+ * $Id: string_stream.cpp,v 1.10 2004/05/14 10:13:12 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -298,12 +298,15 @@ void		CStringStream::serial(std::string &b)
 	if(isReading())
 	{
 		serial(len);
-		nlassert( len<1000000 ); // limiting string size
+		if (len>1000000)
+			throw NLMISC::EInvalidDataStream( "CStringStream: Trying to read a string of %u bytes", len );
 		b.resize(len);
 	}
 	else
 	{
 		len= b.size();
+		if (len>1000000)
+			throw NLMISC::EInvalidDataStream( "CStringStream: Trying to write a string of %u bytes", len );
 		serial(len);
 	}
 	
@@ -324,11 +327,15 @@ void		CStringStream::serial(ucstring &b)
 	if(isReading())
 	{
 		serial(len);
+		if (len>1000000)
+			throw NLMISC::EInvalidDataStream( "CStringStream: Trying to read an ucstring of %u bytes", len );
 		b.resize(len);
 	}
 	else
 	{
 		len= b.size();
+		if (len>1000000)
+			throw NLMISC::EInvalidDataStream( "CStringStream: Trying to write an ucstring of %u bytes", len );
 		serial(len);
 	}
 	// Read/Write the string.

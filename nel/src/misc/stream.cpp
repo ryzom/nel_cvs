@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.28 2003/11/18 10:16:30 corvazier Exp $
+ * $Id: stream.cpp,v 1.29 2004/05/14 10:13:12 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +53,15 @@ EStream::EStream( const IStream &f, const std::string& str )
 {
 	StreamName= f.getStreamName();
 }
+
+EInvalidDataStream::EInvalidDataStream(const char *msg, uint size)
+: EStream( NLMISC::toString( msg, size ) )
+{}
+
+
+EStreamOverflow::EStreamOverflow( const char *msg, uint size )
+ : EStream( NLMISC::toString( msg, size ) )
+{}
 
 
 // ======================================================================================================

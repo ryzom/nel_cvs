@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.32 2004/04/19 09:45:49 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.33 2004/05/14 10:13:12 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -179,10 +179,12 @@ void	CBitMemStream::internalSerial( uint32& value, uint nbits, bool resetvalue )
 	if ( isReading() )
 	{
 		// Check that we don't read more than there is to read
-		if ( getPosInBit() + nbits > lengthR() * 8 )
+		uint32 pib = getPosInBit();
+		uint32 len = ((uint32)lengthR());
+		if ( pib + nbits > len * 8 )
 		{
 			//displayStream( "Stream Overflow" );
-			throw EStreamOverflow();
+			throw EStreamOverflow( "CBitMemStream overflow: Read past %u bytes", len );
 		}
 
 		if ( resetvalue )
@@ -488,15 +490,14 @@ void	CBitMemStream::serial(std::string &b)
 	{
 		serial( len );
 		if (len > length()-getPos())
-		{
-			nlwarning("BMS: string maximum length reached, perhaps invalid string size (%d)", len);
-			throw NLMISC::EInvalidDataStream();
-		}
+			throw NLMISC::EInvalidDataStream( "BMS: Trying to read a string of %u bytes, past stream size", len );
 		b.resize( len );
 	}
 	else
 	{
 		len = b.size();
+		if (len>1000000)
+			throw NLMISC::EInvalidDataStream( "BMS: Trying to write a string of %u bytes", len );
 		serial( len );
 	}
 
@@ -529,11 +530,15 @@ inline	void		CBitMemStream::serial(ucstring &b)
 		if(isReading())
 		{
 			serial(len);
+			if (len > length()-getPos())
+				throw NLMISC::EInvalidDataStream( "BMS: Trying to read an ucstring of %u bytes, past stream size", len );
 			b.resize(len);
 		}
 		else
 		{
 			len= b.size();
+			if (len>1000000)
+				throw NLMISC::EInvalidDataStream( "BMS: Trying to write an ucstring of %u bytes", len );
 			serial(len);
 		}
 		// Read/Write the string.
@@ -588,10 +593,7 @@ void	CBitMemStream::serialMemStream(CBitMemStream &b)
 		// fill b with data from this
 		serial (len);
 		if (len > length()-getPos())
-		{
-			nlwarning("BMS: bitmemstream maximum length reached, perhaps invalid bitmemstream size (%d)", len);
-			throw NLMISC::EInvalidDataStream();
-		}
+			throw NLMISC::EInvalidDataStream( "BMS: Trying to read a BMS of %u bytes, past stream size", len );
 
 		serialBuffer (b.bufferToFill (len), len);
 		b.resetBufPos ();
@@ -600,6 +602,7 @@ void	CBitMemStream::serialMemStream(CBitMemStream &b)
 	{
 		// fill this with data from b
 		len = b.length();
+		// Accept to write a big sized BMS
 
 		serial( len );
 		serialBuffer( (uint8*) b.buffer (), len );
@@ -626,10 +629,9 @@ void CBitMemStream::serialCont(std::vector<bool> &cont)
 		serial(len);
 		if (len/8 > (sint32)(length()-getPos()))
 		{
-			nlwarning("BMS: stl container maximum length reached, perhaps invalid container size (%d)", len);
-			throw NLMISC::EInvalidDataStream();
+			throw NLMISC::EInvalidDataStream( "BMS: Trying to read a vec<bool> of %u bytes, past stream size", len/8 );
 		}
-		// special version for vector: adjut good size.
+		// special version for vector: adjust good size.
 		contReset(cont);
 		cont.reserve(len);
 

@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.11 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: main.cpp,v 1.12 2003/12/10 10:27:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -589,7 +589,8 @@ int		main(int argc, const char *argv[])
 		CPath::getPathContent (fileName, false, false, true, listFile);
 
 		fprintf(stdout,		"Scanning Directory '%s' .........\n\n\n", fileName);
-		fprintf(logStream,	"Scanning Directory '%s' .........\n\n\n", fileName);
+		if(logStream)
+			fprintf(logStream,	"Scanning Directory '%s' .........\n\n\n", fileName);
 
 		// For all files.
 		for(uint i=0;i<listFile.size();i++)
@@ -599,7 +600,8 @@ int		main(int argc, const char *argv[])
 
 		// display info for lightmaps
 		fprintf(stdout,		"\n\n ************** \n I HAVE FOUND AT MAX %d LIGHTMAPS IN A SHAPE\n", MaxNumLightMap);
-		fprintf(logStream,	"\n\n ************** \n I HAVE FOUND AT MAX %d LIGHTMAPS IN A SHAPE\n", MaxNumLightMap);
+		if(logStream)
+			fprintf(logStream,	"\n\n ************** \n I HAVE FOUND AT MAX %d LIGHTMAPS IN A SHAPE\n", MaxNumLightMap);
 	}
 	else
 	{

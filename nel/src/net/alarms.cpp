@@ -1,7 +1,7 @@
 /** \file email.cpp
  * send email
  *
- * $Id: alarms.cpp,v 1.3 2003/01/10 16:10:45 lecroart Exp $
+ * $Id: alarms.cpp,v 1.4 2003/01/17 15:03:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -214,10 +214,10 @@ void setAlarms (const vector<string> &alarms)
 
 NLMISC_COMMAND (displayAlarms, "displays all alarms", "")
 {
-	log.displayNL("There's %d alarms", Alarms.size());
+	log.displayNL("There're %d alarms:", Alarms.size());
 	for (uint i = 0; i < Alarms.size(); i++)
 	{
-		log.displayNL("%s %d %s %s", Alarms[i].Name.c_str(), Alarms[i].Limit, (Alarms[i].GT?"gt":"lt"), (Alarms[i].Activated?"on":"off"));
+		log.displayNL(" %d %s %d %s %s", i, Alarms[i].Name.c_str(), Alarms[i].Limit, (Alarms[i].GT?"gt":"lt"), (Alarms[i].Activated?"on":"off"));
 	}
 	return true;
 }

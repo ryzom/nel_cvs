@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.41 2002/08/23 07:57:41 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.42 2003/01/17 15:03:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -213,7 +213,7 @@ void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, CSt
 		_OutputSIDA.addString (callbackarray[i].Key, ni);
 
 	}
-//	nldebug ("LNETL3NB_CB: Added %d callback Now, there's %d callback associated with message type", arraysize, _CallbackArray.size ());
+//	nldebug ("LNETL3NB_CB: Added %d callback Now, there're %d callback associated with message type", arraysize, _CallbackArray.size ());
 }
 
 

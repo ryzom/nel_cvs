@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.8 2002/11/28 16:41:45 corvazier Exp $
+ * $Id: primitive.h,v 1.9 2002/11/28 16:53:51 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,6 +109,11 @@ class CPrimVector : public NLMISC::CVector
 public:
 	CPrimVector ()
 	{
+		Selected = false;
+	}
+	CPrimVector (const NLMISC::CVector &v)
+	{
+		CVector::operator= (v);
 		Selected = false;
 	}
 

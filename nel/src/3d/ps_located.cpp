@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.29 2001/09/04 13:41:44 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.30 2001/09/04 16:15:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -645,7 +645,7 @@ static void IntegrateSpeed(uint count, float *src1, const float *src2 ,float ell
 
 			// compute first datas in order to align to 16 byte boudary
 
-			uint alignCount =  ((uint) src1 >> 2) & 3; // number of float to processed
+			uint alignCount =  ((uint) src1 >> 2) & 3; // number of float to process
 
 			while (alignCount --)
 			{
@@ -705,10 +705,36 @@ static void IntegrateSpeed(uint count, float *src1, const float *src2 ,float ell
 	{
 		// standard version	
 		
-		for (float *src1End = src1 + count; src1 != src1End; ++src1, ++src2)
+	/*	for (float *src1End = src1 + count; src1 != src1End; ++src1, ++src2)
 		{				
 			*src1 += ellapsedTime * *src2;			
-		} 
+		} */
+
+
+		// standard version	
+		uint countDiv8 = count>>3;
+		count &= 7; // takes count % 8
+
+		while (countDiv8 --)
+		{		
+			src1[0] += ellapsedTime * src2[0];
+			src1[1] += ellapsedTime * src2[1];
+			src1[2] += ellapsedTime * src2[2];
+			src1[3] += ellapsedTime * src2[3];
+
+			src1[4] += ellapsedTime * src2[4];
+			src1[5] += ellapsedTime * src2[5];
+			src1[6] += ellapsedTime * src2[6];
+			src1[7] += ellapsedTime * src2[7];
+
+			src2 += 8;
+			src1 += 8;
+		}
+		
+		while (count--)
+		{
+			*src1++ += ellapsedTime * *src2++;			
+		}
 
 
 	}

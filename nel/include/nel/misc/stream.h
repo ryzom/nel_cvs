@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.53 2002/07/05 14:01:56 fleury Exp $
+ * $Id: stream.h,v 1.54 2002/07/30 22:32:12 fleury Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -321,7 +321,7 @@ public:
 	template<class K, class T>
 	void			serialCont(std::map<K, T> &cont) 			{serialMap(cont);}
 	template<class K, class T>
-	void			serialCont(std::multimap<K, T> &cont) 	{serialMap(cont);}
+	void			serialCont(std::multimap<K, T> &cont) 	{serialMultimap(cont);}
 
 
 	/// Specialisation of serialCont() for vector<uint8>
@@ -1233,6 +1233,99 @@ private:
 	 *
 	 * Known Supported containers: map<>, multimap<>.
 	 * \param cont a STL map<> or multimap<> container.
+	 */
+	template<class T>
+	void			serialMultimap(T &cont) 
+	{
+		typedef typename T::value_type __value_type;
+		typedef typename T::key_type __key_type;
+		typedef typename T::iterator __iterator;
+
+		// Open a node header
+		xmlPushBegin ("MULTIMAP");
+
+		// Attrib size
+		xmlSetAttrib ("size");
+
+		sint32	len;
+		if(isReading())
+		{
+			cont.clear();
+			serial(len);
+
+			// Close the node header
+			xmlPushEnd ();
+
+			for(sint i=0;i<len;i++)
+			{
+				__value_type v;
+
+				xmlPush ("KEY");
+
+				serial ( const_cast<__key_type&>(v.first) );
+
+				xmlPop ();
+
+
+				xmlPush ("ELM");
+
+				serial (v.second);
+
+				xmlPop ();
+
+				cont.insert(cont.end(), v);
+			}
+		}
+		else
+		{
+			len= cont.size();
+			serial(len);
+			__iterator		it= cont.begin();
+
+			// Close the node header
+			xmlPushEnd ();
+
+			for(sint i=0;i<len;i++, it++)
+			{
+				xmlPush ("KEY");
+
+				serial( const_cast<__key_type&>((*it).first) );
+
+				xmlPop ();
+
+				xmlPush ("ELM");
+				
+				serial((*it).second);
+
+				xmlPop ();
+			}
+		}
+
+		// Close the node
+		xmlPop ();
+	}
+
+	// Mode XML
+	bool	_XML;
+};
+
+
+	/**
+	 * STL map<>
+	 * Support up to sint32 length containers.
+	 *
+	 * the object T must provide:
+	 *	\li typedef iterator;		(providing operator++() and operator*())
+	 *	\li typedef value_type;		(must be a std::pair<>)
+	 *	\li typedef key_type;		(must be the type of the key)
+	 *	\li void clear();
+	 *	\li size_type size() const;
+	 *	\li iterator begin();
+	 *	\li iterator end();
+	 *	\li iterator insert(iterator it, const value_type& x);
+	 *
+	 * Known Supported containers: map<>
+	 * \param cont a STL map<> container.
 	 */
 	template<class T>
 	void			serialMap(T &cont) 

@@ -109,3 +109,23 @@ If a slot hasn't been defined, the first slot is taken as a default.
 
 Note : you can also change the displayed set of texture in the object viewer, in the 'View' menu.
 
+----------------------------------------------------------
+-> How to use Per-Pixel-Lighting ?
+Per pixel lighting i available on GeForce 3 (and above) only for now. On other boards, gouraud shading is used instead. It is based on the blinn model.
+No bump is applied. Only the nearest light is rendered using p.p.l. Others are rendered using gouraud shading.
+(to keep single pass rendering). For now, only per instance attenuation is done.
+
+REQUIRED : You model must have one, and only one stage of texture used (but is can use several textures) 
+A continous mapping is needed to applied per pixel lighting techniques.
+
+YOU CAN'T 
+- You can't use a mesh vertex program when this shader is used. 
+- You can't mix shader that use a vertex program in a single model.
+
+
+HOW-TO
+- Create a NeL Material
+- Select the per pixel lighting shader (with or without specular)
+- Apply it to your model. 
+- Apply a mapping and a texture to your model
+

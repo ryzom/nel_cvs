@@ -1,7 +1,7 @@
 /** \file primitive_block.h
  * <File description>
  *
- * $Id: primitive_block.h,v 1.3 2001/01/08 17:58:29 corvazier Exp $
+ * $Id: primitive_block.h,v 1.4 2001/05/31 09:21:30 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,11 +79,11 @@ public:
 	/// reserve space for nLines Line. You are allowed to write your Line indices on this space.
 	void				reserveLine(uint32 n);
 	/// Return the number of Line reserved.
-	uint32				capacityLine() {return _LineCapacity;}
+	uint32				capacityLine() const {return _LineCapacity;}
 	/// Set the number of active Line. It enlarge Line capacity, if needed.
 	void				setNumLine(uint32 n);
 	/// Get the number of active Lineangles.
-	uint32				getNumLine(void) {return _NbLines;}
+	uint32				getNumLine(void) const {return _NbLines;}
 
 	/// Build a Lineangle.
 	void				setLine(uint lineIdx, uint32 vidx0, uint32 vidx1);
@@ -91,6 +91,7 @@ public:
 	void				addLine(uint32 vidx0, uint32 vidx1);
 
 	uint32*				getLinePointer(void);
+	const uint32*				getLinePointer(void) const ;
 
 
 
@@ -103,7 +104,7 @@ public:
 	/// Set the number of active triangles. It enlarge Tri capacity, if needed.
 	void				setNumTri(uint32 n);
 	/// Get the number of active triangles.
-	uint32				getNumTri(void) {return _NbTris;}
+	uint32				getNumTri(void) const {return _NbTris;}
 
 	/// Build a triangle.
 	void				setTri(uint triIdx, uint32 vidx0, uint32 vidx1, uint32 vidx2);
@@ -111,6 +112,8 @@ public:
 	void				addTri(uint32 vidx0, uint32 vidx1, uint32 vidx2);
 
 	uint32*				getTriPointer(void);
+	const uint32*				getTriPointer(void) const ;
+
 
 
 
@@ -134,7 +137,7 @@ public:
 	/**
 	 * Get the number of active quads.
 	 */
-	uint32 getNumQuad(void) { return _NbQuads; }
+	uint32 getNumQuad(void) const { return _NbQuads; }
 
 	/**
 	 * Build a quad.
@@ -148,6 +151,9 @@ public:
 	 * Return the Quad buffer
 	 */
 	uint32*	getQuadPointer(void);
+
+	/// return the quad buffer, const version
+	uint32*	getQuadPointer(void) const ;
 
 
 	void		serial(NLMISC::IStream &f);

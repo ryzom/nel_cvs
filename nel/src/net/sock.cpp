@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.14 2001/11/27 15:01:06 legros Exp $
+ * $Id: sock.cpp,v 1.15 2001/11/29 15:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -417,7 +417,10 @@ CSock::TSockResult CSock::send( const uint8 *buffer, uint32& len, bool throw_exc
 	len = ::send( _Sock, (const char*)buffer, len, 0 );
 	_MaxSendTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxSendTime );
 
-	nldebug ("L0: CSock::send(): Sent %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+	if ( _Logging )
+	{
+		nldebug ("L0: CSock::send(): Sent %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+	}
 	
 	if ( len == SOCKET_ERROR )
 	{
@@ -434,10 +437,6 @@ CSock::TSockResult CSock::send( const uint8 *buffer, uint32& len, bool throw_exc
 	}
 	_BytesSent += len;
 	
-	/*if ( _Logging )
-	{
-		nldebug( "L0: Socket %d sent %d bytes", _Sock, len );
-	}*/
 	return Ok;
 }
 
@@ -457,7 +456,10 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 		TTicks before = CTime::getPerformanceTime();
 		len = ::recv( _Sock, (char*)buffer, len, 0 );
 
-		nldebug ("L0: CSock::receive(): NBM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+		if ( _Logging )
+		{
+			nldebug ("L0: CSock::receive(): NBM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+		}
 
 		_MaxReceiveTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
 		switch ( len )

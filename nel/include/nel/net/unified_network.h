@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.11 2001/11/27 17:33:07 lecroart Exp $
+ * $Id: unified_network.h,v 1.12 2001/11/29 15:40:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -283,6 +283,8 @@ private:
 	/// Last time of retry
 	NLMISC::TTime												_LastRetry;
 
+	/// Time of the theorical next update
+	NLMISC::TTime												_NextUpdateTime;
 
 	/// internal stacks used for adding/removing connections in multithread
 	std::vector<CConnectionId>									_ConnectionStack;
@@ -301,16 +303,14 @@ private:
 
 
 	//
-	CUnifiedNetwork() : _ExtSId(256), _LastRetry(0)
+	CUnifiedNetwork() : _ExtSId(256), _LastRetry(0), _MThreadId(0xFFFFFFFF), _MutexCount(0), _CbServer(NULL), _NextUpdateTime(0)
 	{
 		_UpUniCallback.first = NULL;
 		_UpUniCallback.second = NULL;
 		_DownUniCallback.first = NULL;
 		_DownUniCallback.second = NULL;
-		_MThreadId = 0xFFFFFFFF;
-		_MutexCount = 0;
-		_CbServer = NULL;
 	}
+
 	~CUnifiedNetwork() { }
 
 	//

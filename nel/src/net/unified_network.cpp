@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.23 2001/11/28 11:12:08 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.24 2001/11/29 15:39:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -475,15 +475,41 @@ void	CUnifiedNetwork::update(sint32 timeout)
 //	nldebug("In CUnifiedNetwork::update()");
 	enterReentrant();
 	{
+
+		// Compute the real timeout based on the next update timeout
+		TTime t0 = CTime::getLocalTime ();
+
+		if (timeout > 0)
+		{
+			if (_NextUpdateTime == 0)
+			{
+				_NextUpdateTime = t0 + timeout;
+			}
+			else
+			{
+				sint32 err = (sint32)(t0 - _NextUpdateTime);
+				_NextUpdateTime += timeout;
+
+				// if we are too late, resync to the next value
+				while (err > timeout)
+				{
+					err -= timeout;
+					_NextUpdateTime += timeout;
+				}
+				
+				timeout -= err;
+				if (timeout < 0) timeout = 0;
+			}
+		}
+
 		// lock read access to the connections
 		CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
 		const vector<CUnifiedConnection>									&connections = idAccess.value();
 
 		//
-		TTime	newTime = CTime::getLocalTime();
 		bool	enableRetry;
-		if ((enableRetry = (newTime-_LastRetry > 5000)))
-			_LastRetry = newTime;
+		if ((enableRetry = (t0-_LastRetry > 5000)))
+			_LastRetry = t0;
 
 		_ConnectionRetriesStack.clear();
 		_ConnectionStack.clear();
@@ -491,12 +517,11 @@ void	CUnifiedNetwork::update(sint32 timeout)
 
 		while (true)
 		{
-
-			// update all connections
+			// update all server connections
 			_CbServer->update(0);
 
-			uint	i;
-			for (i=0; i<connections.size(); ++i)
+			// update all client connections
+			for (uint i = 0; i<connections.size(); ++i)
 			{
 				const CUnifiedConnection	&cnx = connections[i];
 				if (cnx.EntryUsed && !cnx.IsServerConnection)
@@ -518,10 +543,12 @@ void	CUnifiedNetwork::update(sint32 timeout)
 
 			enableRetry = false;
 
-			if (CTime::getLocalTime() - newTime > timeout)
+			// If it's the end, don't nlSleep()
+			if (CTime::getLocalTime() - t0 > timeout)
 				break;
-
-			nlSleep(0);
+			
+			// Enable windows multithreading before rescanning all connections
+			nlSleep (0);
 		}
 	}
 

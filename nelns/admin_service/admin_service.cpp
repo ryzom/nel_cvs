@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.10 2001/07/05 08:26:07 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.11 2001/07/10 16:49:53 lecroart Exp $
  *
  */
 
@@ -514,24 +514,28 @@ static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetB
 
 	nlinfo ("*:%d:%d disconnected", aes->Id, sid);
 
-	SIT sit = aes->findService(sid);
-
+	SIT sit = aes->findService(sid, false);
+	
 	// broadcast the message to all admin client
 	CMessage msgout (CNetManager::getSIDA ("AS"), "SD");
-	msgout.serial (aes->Id, (*sit).Id);
+	msgout.serial (aes->Id, sid);
 	CNetManager::send ("AS", msgout, 0);
 
-	if ((*sit).InConfig)
+	// the service could disconnect before it's identification, in this case, we don't have it in the service list
+	if (sit != aes->Services.end ())
 	{
-		(*sit).Ready = (*sit).Connected = false;
-		(*sit).Id = 0xFFFFFFFF;
-		(*sit).ShortName = (*sit).LongName = "";
-		(*sit).Commands.clear ();
-	}
-	else
-	{
-		// erase only if it's not a service in the config
-		aes->Services.erase (sit);
+		if ((*sit).InConfig)
+		{
+			(*sit).Ready = (*sit).Connected = false;
+			(*sit).Id = 0xFFFFFFFF;
+			(*sit).ShortName = (*sit).LongName = "";
+			(*sit).Commands.clear ();
+		}
+		else
+		{
+			// erase only if it's not a service in the config
+			aes->Services.erase (sit);
+		}
 	}
 
 	displayServices ();

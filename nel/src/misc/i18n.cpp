@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.30 2003/03/06 17:25:21 coutelas Exp $
+ * $Id: i18n.cpp,v 1.31 2003/03/06 17:26:45 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -304,6 +304,7 @@ void CI18N::load (const std::string &languageCode)
 		{
 			nlwarning("Error in %s, the label %s exist twice !", fileName.c_str(), label.c_str());
 		}
+		skipWhiteSpace(first, last);
 	}
 
 	// a little check to ensure that the lang name has been set.

@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.cpp,v 1.1 2004/06/11 12:20:09 boucher Exp $
+ * $Id: primitive_utils.cpp,v 1.2 2004/06/17 12:50:28 cardouat Exp $
  */
 
 #include <nel/ligo/primitive_utils.h>
@@ -59,6 +59,7 @@ void selectPrimByPath(IPrimitive *rootNode, const std::string &path, TPrimitiveS
 {
 	std::vector<std::string>	parts;
 	NLMISC::explode(path, ".", parts, false);
+	IPrimitive * tmpChild;
 
 	result.clear();
 
@@ -68,6 +69,7 @@ void selectPrimByPath(IPrimitive *rootNode, const std::string &path, TPrimitiveS
 	TPrimitiveSet	candidats, nextStep;
 	candidats.push_back(rootNode);
 
+
 	for (uint i=0; i<parts.size(); ++i)
 	{
 		for (uint j=0; j<candidats.size(); ++j)
@@ -75,10 +77,20 @@ void selectPrimByPath(IPrimitive *rootNode, const std::string &path, TPrimitiveS
 			std::string name;
 			candidats[j]->getPropertyByName("name", name);
 			if (name == parts[i])
-				nextStep.push_back(candidats[j]);
+			{
+				for(uint k=0;k<candidats[j]->getNumChildren();k++)
+				{
+					candidats[j]->getChild(tmpChild,k);
+					nextStep.push_back(tmpChild);
+				}
+				result.clear();
+				result.push_back(candidats[j]);
+				
+				break;
+			}
 		}
 		
-		nextStep.swap(candidats);
+		candidats.swap(nextStep);
 		nextStep.clear();
 
 		if (candidats.empty())
@@ -86,7 +98,7 @@ void selectPrimByPath(IPrimitive *rootNode, const std::string &path, TPrimitiveS
 	}
 
 	// store the result
-	result.swap(candidats);
+	//result.push_back(candidats.at(0)->getParent());
 }
 
 } // namespace NLLIGO

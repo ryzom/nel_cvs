@@ -1,7 +1,7 @@
 /** \file ps_shockwave.h
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.h,v 1.9 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_shockwave.h,v 1.10 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,7 +78,7 @@ public:
 	virtual bool hasOpaqueFaces(void);
 	
 	/// return the max number of faces needed for display. This is needed for LOD balancing
-	virtual uint32 getMaxNumFaces(void) const;
+	virtual uint32 getNumWantedTris() const;
 
 	/// set the U factor for textures
 	void			setUFactor(float value);

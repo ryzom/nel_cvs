@@ -1,7 +1,7 @@
 /** \file ps_dot.cpp
  * Dot particles
  *
- * $Id: ps_dot.cpp,v 1.8 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_dot.cpp,v 1.9 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -231,10 +231,11 @@ void CPSDot::init(void)
 }
 
 ///===================================================================
-uint32 CPSDot::getMaxNumFaces(void) const
+uint32 CPSDot::getNumWantedTris() const
 {
 	nlassert(_Owner);
-	return _Owner->getMaxSize();
+	//return _Owner->getMaxSize();
+	return _Owner->getSize();
 }
 
 ///===================================================================

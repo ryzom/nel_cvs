@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.12 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_fan_light.cpp,v 1.13 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -253,10 +253,11 @@ void CPSFanLight::initFanLightPrecalc(void)
 }
 
 ///====================================================================================
-uint32 CPSFanLight::getMaxNumFaces(void) const
+uint32 CPSFanLight::getNumWantedTris() const
 {
 	nlassert(_Owner);
-	return _Owner->getMaxSize() * _NbFans;
+	//return _Owner->getMaxSize() * _NbFans;
+	return _Owner->getSize() * _NbFans;
 }
 
 ///====================================================================================
@@ -436,7 +437,7 @@ void CPSFanLight::setNbFans(uint32 nbFans)
 
 	resize(_Owner->getMaxSize());
 
-	notifyOwnerMaxNumFacesChanged();
+	//notifyOwnerMaxNumFacesChanged();
 }
 
 ///====================================================================================

@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.11 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_shockwave.cpp,v 1.12 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -208,10 +208,11 @@ CPSShockWave::CPSShockWave(uint nbSeg, float radiusCut, CSmartPtr<ITexture> tex)
 }
 
 ///=================================================================================
-uint32 CPSShockWave::getMaxNumFaces(void) const
+uint32 CPSShockWave::getNumWantedTris() const
 {
 	nlassert(_Owner);
-	return (_Owner->getMaxSize() * _NbSeg) << 1 ;
+	//return (_Owner->getMaxSize() * _NbSeg) << 1 ;
+	return (_Owner->getSize() * _NbSeg) << 1 ;
 }
 
 ///=================================================================================
@@ -234,7 +235,7 @@ void CPSShockWave::setNbSegs(uint nbSeg)
 	if (_Owner)
 	{
 		resize(_Owner->getMaxSize());
-		notifyOwnerMaxNumFacesChanged();
+		//notifyOwnerMaxNumFacesChanged();
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.16 2004/05/14 15:38:53 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.17 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -154,7 +154,8 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 
 
 		/// max number of faces wanted by this process (for load balancing)
-		virtual uint			querryMaxWantedNumFaces(void) = 0 ;
+		//virtual uint			querryMaxWantedNumFaces(void) = 0 ;
+		virtual uint			getNumWantedTris() const = 0 ;
 
 
 		

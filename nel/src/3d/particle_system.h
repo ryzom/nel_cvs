@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.49 2004/05/14 15:38:53 vizerie Exp $
+ * $Id: particle_system.h,v 1.50 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -691,7 +691,7 @@ public:
 			/** Ask for the particle system to reevaluate the max number of faces it may need.
 			  * You don't usually need to call this
 			  */
-			void notifyMaxNumFacesChanged(void);
+			//void notifyMaxNumFacesChanged(void);
 
 			/// Test whether load balancing has been activated for that system
 			bool isLoadBalancingEnabled() const { return _EnableLoadBalancing; }
@@ -1043,8 +1043,11 @@ private:
 	friend class CParticleSystemModel;	
 	/// process a pass on the bound located
 	void					stepLocated(TPSProcessPass pass);
-	void					updateLODRatio();
-	void					updateColor();
+	// update the lod & return the distance from viewer
+	float					updateLODRatio();
+	float					getDistFromViewer() const;
+	void					updateColor(float distFromViewer);
+	void					updateNumWantedTris();
 	// update index of all the process
 	void					updateProcessIndices();
 	// for debug only
@@ -1149,7 +1152,7 @@ private:
 
 	TDieCondition								_DieCondition;
 	mutable TAnimationTime						_DelayBeforeDieTest;	
-	uint										_MaxNumFacesWanted;	
+	uint										_NumWantedTris;
 	TAnimType									_AnimType;
 
 	static UPSSoundServer                      *_SoundServer;

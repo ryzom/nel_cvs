@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.67 2004/05/14 15:38:53 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.68 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -487,6 +487,7 @@ float CParticleSystemModel::getNumTriangles (float distance)
 {
 	MINI_TIMER(PSStatsGetNumTriangles)
 	if (!_ParticleSystem) return 0;
+	if (!_InsertedInVisibleList) return 0;
 	return (float) _ParticleSystem->getWantedNumTris(distance);
 }
 

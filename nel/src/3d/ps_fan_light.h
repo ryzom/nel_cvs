@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * FanLight particles
  *
- * $Id: ps_fan_light.h,v 1.9 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_fan_light.h,v 1.10 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,7 +112,7 @@ public:
 
 
 	/// return the max number of faces needed for display. This is needed for LOD balancing
-	virtual uint32		getMaxNumFaces(void) const;
+	virtual uint32		getNumWantedTris() const;
 
 	/// Set a texture. NULL remove it
 	void setTexture(CSmartPtr<ITexture> tex)

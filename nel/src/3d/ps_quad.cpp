@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.13 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.14 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -295,10 +295,11 @@ CPSQuad::~CPSQuad()
 }
 
 ///==================================================================================
-uint32 CPSQuad::getMaxNumFaces(void) const
+uint32 CPSQuad::getNumWantedTris() const
 {
 	nlassert(_Owner);
-	return _Owner->getMaxSize() << 1;
+	//return _Owner->getMaxSize() << 1;
+	return _Owner->getSize() << 1;
 }
 
 ///==================================================================================

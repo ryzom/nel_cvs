@@ -1,7 +1,7 @@
 /** \file ps_ribbon.h
  * Ribbons particles.
  *
- * $Id: ps_ribbon.h,v 1.9 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_ribbon.h,v 1.10 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,7 +113,7 @@ public:
 	/// return true if there are Opaque faces in the object
 	virtual bool			hasOpaqueFaces(void);
 
-	virtual uint32			getMaxNumFaces(void) const;
+	virtual uint32			getNumWantedTris() const;
 
 
 	/// set a texture

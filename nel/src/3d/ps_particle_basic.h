@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.16 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.17 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,7 +113,7 @@ public:
 	virtual void showTool();
 
 	/// return the max number of faces needed for display. This is needed for LOD balancing
-	virtual uint32 getMaxNumFaces(void) const = 0;
+	virtual uint32 getNumWantedTris() const = 0;
 	
 	/// serialisation. Derivers must override this, and call their parent version
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
@@ -148,13 +148,14 @@ protected:
 	  * This must be called when a geometric property of the particle has been modified
 	  * This needn't to be called during CPSParticle::resize overrides
 	  */
+	/*
 	void notifyOwnerMaxNumFacesChanged(void) const
 	{
 		if (_Owner)
 		{
 			_Owner->notifyMaxNumFacesChanged();
 		}
-	}
+	}*/
 
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.56 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.57 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2719,7 +2719,7 @@ void CPSEmitter::doEmitOnce(uint firstInstanceIndex)
 	else
 	{
 		sint nbToGenerate = (sint) (emitLOD * _GenNb);		
-		if (nbToGenerate < 0)  nbToGenerate = 1;
+		if (nbToGenerate <= 0)  nbToGenerate = 1;
 		nbToGenerate = std::min(nbToGenerate, (sint) _EmittedType->getMaxSize());
 		for(uint k = firstInstanceIndex; k < _Owner->getSize(); ++k)
 		{		

@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.16 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.17 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -696,10 +696,11 @@ bool CPSRibbon::hasOpaqueFaces(void)
 }
 
 //==========================================================================	
-uint32 CPSRibbon::getMaxNumFaces(void) const
+uint32 CPSRibbon::getNumWantedTris() const
 {
 	nlassert(_Owner);
-	return _Owner->getMaxSize() * _NbSegs;	
+	//return _Owner->getMaxSize() * _NbSegs;
+	return _Owner->getSize() * _NbSegs;
 }
 
 //==========================================================================	

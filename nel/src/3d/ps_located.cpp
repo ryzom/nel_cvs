@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.67 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.68 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,7 +68,7 @@ CPSCollisionInfo *CPSLocated::_FirstCollision = NULL;
 /**
  * Constructor
  */
-CPSLocated::CPSLocated() : _MaxNumFaces(0),						   
+CPSLocated::CPSLocated() : /*_MaxNumFaces(0),*/
 						   _Size(0),
 						   _MaxSize(DefaultMaxLocatedInstance),
 						   _CollisionInfoNbRef(0),
@@ -417,6 +417,7 @@ void CPSLocated::setMatrixMode(TPSMatrixMode matrixMode)
 }
 
 ///***************************************************************************************
+/*
 void CPSLocated::notifyMaxNumFacesChanged(void)
 {
 	CHECK_PS_INTEGRITY
@@ -435,13 +436,32 @@ void CPSLocated::notifyMaxNumFacesChanged(void)
 	}
 	CHECK_PS_INTEGRITY
 }
+*/
 
+///***************************************************************************************
+uint CPSLocated::getNumWantedTris() const
+{
+	CHECK_PS_INTEGRITY
+	if (!_Owner) return 0;	
+	uint numWantedTris = 0;
+	for (TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+	{
+		if ((*it)->getType() == PSParticle)
+		{		
+			numWantedTris += NLMISC::safe_cast<CPSParticle *>(*it)->getNumWantedTris();
+		}
+	}
+	CHECK_PS_INTEGRITY
+	return numWantedTris;
+}
+
+/*
 ///***************************************************************************************
 uint CPSLocated::querryMaxWantedNumFaces(void)
 {
 	return _MaxNumFaces;
 }
-
+*/
 
 ///***************************************************************************************
 /// tells wether there are alive entities / particles in the system
@@ -777,7 +797,7 @@ bool CPSLocated::bind(CPSLocatedBindable *lb)
 	if (_ParametricMotion) lb->motionTypeChanged(true);
 
 	/// the max number of shapes may have changed
-	notifyMaxNumFacesChanged();
+	//notifyMaxNumFacesChanged();
 
 	if (_Owner)
 	{
@@ -1276,7 +1296,7 @@ void CPSLocated::resize(uint32 newSize)
 
 
 	/// compute the new max number of faces
-	notifyMaxNumFacesChanged();
+	//notifyMaxNumFacesChanged();
 	CHECK_PS_INTEGRITY
 }
 
@@ -1473,7 +1493,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if (f.isReading())
 	{
 		// evaluate our max number of faces
-		notifyMaxNumFacesChanged();
+		//notifyMaxNumFacesChanged();
 
 		if (_ParametricMotion)
 		{

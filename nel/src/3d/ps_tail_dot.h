@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.h
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.h,v 1.9 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_tail_dot.h,v 1.10 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,7 +99,7 @@ public:
 	/// return true if there are Opaque faces in the object
 	virtual bool			hasOpaqueFaces(void);
 
-	virtual uint32			getMaxNumFaces(void) const;
+	virtual uint32			getNumWantedTris() const;
 
 	/// from CPSParticle : return true if there are lightable faces in the object
 	virtual bool			hasLightableFaces() { 	return false; }

@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.34 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_located.h,v 1.35 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -484,10 +484,10 @@ public:
 
 
 	/// for the CPSLocated to reevaluate the max number of faces it may need
-	void notifyMaxNumFacesChanged(void);
+	//void notifyMaxNumFacesChanged(void);
 
 	/// ask for the max number of faces the located wants (for LOD balancing)
-	virtual uint querryMaxWantedNumFaces(void);
+	virtual uint getNumWantedTris() const;
 
 	// Inherited from CParticlesystemProcess. Change the coord system for thta system.
 	virtual void setMatrixMode(TPSMatrixMode matrixMode);	
@@ -572,7 +572,7 @@ protected:
 	friend class CPSForce; // this is intended only for integrable forces that want to use
 						   // registerIntegrableForce, and removeIntegrableForce
 	/// Cache the max number of faces this located may want
-	uint32					_MaxNumFaces;
+	//uint32					_MaxNumFaces;
 	// Current number of instances in the container
 	uint32					_Size;
 	// Max number of instance in the container

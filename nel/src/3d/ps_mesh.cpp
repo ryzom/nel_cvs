@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.37 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.38 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -179,7 +179,7 @@ void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 //====================================================================================
-uint32 CPSMesh::getMaxNumFaces(void) const
+uint32 CPSMesh::getNumWantedTris() const
 {
 	/// we don't draw any face ! (the meshs are drawn by the scene)
 	return 0;
@@ -984,11 +984,11 @@ CPSConstraintMesh::CPSConstraintMesh() : _NumFaces(0),
 }
 
 //====================================================================================
-uint32 CPSConstraintMesh::getMaxNumFaces(void) const
+uint32 CPSConstraintMesh::getNumWantedTris() const
 {
 //	nlassert(_ModelVb);
-	return _NumFaces * _Owner->getMaxSize();
-	
+	//return _NumFaces * _Owner->getMaxSize();
+	return _NumFaces * _Owner->getSize();	
 }
 
 
@@ -1314,11 +1314,12 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 
 	/// update the number of faces
 	_NumFaces = getMeshNumTri(m);
+	/*
 	notifyOwnerMaxNumFacesChanged();
 	if (_Owner && _Owner->getOwner())
 	{
 		_Owner->getOwner()->notifyMaxNumFacesChanged();
-	}
+	}*/
 	
 	/// update opacity / transparency state
 	bool hasTransparentFaces, hasOpaqueFaces;

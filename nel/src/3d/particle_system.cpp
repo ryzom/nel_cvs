@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.81 2004/05/14 15:38:53 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.82 2004/05/18 08:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,7 +121,7 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _AutoLODEmitRatio(0.f),
 									 _DieCondition(none),
 									 _DelayBeforeDieTest(-1.f),									 									
-									 _MaxNumFacesWanted(0),
+									 _NumWantedTris(0),
 									 _AnimType(AnimInCluster),
 									 _UserParamGlobalValue(NULL),
 									 _BypassGlobalUserParam(0),
@@ -213,12 +213,13 @@ void CParticleSystem::enableLoadBalancing(bool enabled /*=true*/)
 {
 	if (enabled)
 	{
-		notifyMaxNumFacesChanged();
+		//notifyMaxNumFacesChanged();
 	}
 	_EnableLoadBalancing = enabled;
 }
 
 ///=======================================================================================
+/*
 void CParticleSystem::notifyMaxNumFacesChanged(void)
 {
 	if (!_EnableLoadBalancing) return;
@@ -228,14 +229,24 @@ void CParticleSystem::notifyMaxNumFacesChanged(void)
 		_MaxNumFacesWanted += (*it)->querryMaxWantedNumFaces();
 	}
 }
+*/
 
+///=======================================================================================
+void CParticleSystem::updateNumWantedTris()
+{
+	_NumWantedTris = 0;	
+	for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
+	{				
+		_NumWantedTris += (*it)->getNumWantedTris();
+	}
+}
 
 ///=======================================================================================
 float CParticleSystem::getWantedNumTris(float dist)
 {
 	if (!_EnableLoadBalancing) return 0; // no contribution to the load balancing
 	if (dist > _MaxViewDist) return 0;
-	float retValue = ((1.f - dist * _InvMaxViewDist) * _MaxNumFacesWanted);	
+	float retValue = ((1.f - dist * _InvMaxViewDist) * _NumWantedTris);	
 	///nlassertex(retValue >= 0 && retValue < 10000, ("dist = %f, _MaxViewDist = %f, _MaxNumFacesWanted = %d, retValue = %f",  dist, _MaxViewDist, _MaxNumFacesWanted, retValue));
 	return retValue;
 }
@@ -253,14 +264,14 @@ void CParticleSystem::setNumTris(uint numFaces)
 
 
 		uint wantedNumTri = (uint) getWantedNumTris(modelDist);
-		if (numFaces >= wantedNumTri || wantedNumTri == 0 || _MaxNumFacesWanted == 0 || modelDist < epsilon)
+		if (numFaces >= wantedNumTri || wantedNumTri == 0 || _NumWantedTris == 0 || modelDist < epsilon)
 		{ 
 			_InvCurrentViewDist = _InvMaxViewDist;
 		}
 		else
 		{
 			
-			_InvCurrentViewDist = (_MaxNumFacesWanted - numFaces) / ( _MaxNumFacesWanted * modelDist);
+			_InvCurrentViewDist = (_NumWantedTris - numFaces) / (_NumWantedTris * modelDist);
 		}
 	}
 	else
@@ -339,25 +350,36 @@ void CParticleSystem::stepLocated(TPSProcessPass pass)
 	}	
 }
 
-
 ///=======================================================================================
-inline void CParticleSystem::updateLODRatio()
+#ifndef NL_DEBUG
+	inline 
+#endif
+float CParticleSystem::getDistFromViewer() const
 {
-	// temp
-	CVector sysPos = getSysMat().getPos();
-	CVector obsPos = _InvertedViewMat.getPos();
 	const CVector d = getSysMat().getPos() - _InvertedViewMat.getPos();		
-	_OneMinusCurrentLODRatio = 1.f - (d.norm() * _InvCurrentViewDist);
-	NLMISC::clamp(_OneMinusCurrentLODRatio, 0.f, 1.f);
+	return d.norm();
 }
 
 ///=======================================================================================
-inline void CParticleSystem::updateColor()
+#ifndef NL_DEBUG
+	inline 
+#endif
+float CParticleSystem::updateLODRatio()
+{		
+	float dist = getDistFromViewer();
+	_OneMinusCurrentLODRatio = 1.f - (dist * _InvCurrentViewDist);
+	NLMISC::clamp(_OneMinusCurrentLODRatio, 0.f, 1.f);
+	return dist;
+}
+
+///=======================================================================================
+inline void CParticleSystem::updateColor(float distFromViewer)
 {
 	if (_ColorAttenuationScheme)
 	{
-		float ratio = 1.00f - _OneMinusCurrentLODRatio;
-		_GlobalColor = 	_ColorAttenuationScheme->get(ratio > 0.f ? ratio : 0.f);
+		float ratio = distFromViewer * _InvMaxViewDist;
+		NLMISC::clamp(ratio, 0.f, 1.f);
+		_GlobalColor = 	_ColorAttenuationScheme->get(ratio);
 	}
 	else
 	{
@@ -395,12 +417,16 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime, CParticleSys
 			/// When shared, the LOD ratio must be computed there
 			if (_Sharing)
 			{
-				updateLODRatio();
+				float dist = updateLODRatio();
+				updateColor(dist);
+			}
+			else
+			{
+				updateColor(getDistFromViewer());
 			}
 			// update time
 			++_Date; 	
 			// update global color
-			updateColor();
 			stepLocated(PSSolidRender);
 
 		break;
@@ -408,14 +434,19 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime, CParticleSys
 			EllapsedTime = RealEllapsedTime = ellapsedTime;
 			RealEllapsedTimeRatio = 1.f;
 			/// When shared, the LOD ratio must be computed there
+			/// When shared, the LOD ratio must be computed there
 			if (_Sharing)
 			{
-				updateLODRatio();
+				float dist = updateLODRatio();
+				updateColor(dist);
+			}
+			else
+			{
+				updateColor(getDistFromViewer());
 			}
 			// update time
 			++_Date; 
-			// update global color
-			updateColor();			
+			// update global color			
 			stepLocated(PSBlendRender);
 			if (_ForceDisplayBBox)
 			{	
@@ -670,6 +701,8 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime, CParticleSys
 					if ((*it)->isParametricMotionEnabled()) (*it)->performParametricMotion(_SystemDate);
 				}	
 			}
+
+			updateNumWantedTris();
 
 			InsideSimLoop = false;
 			
@@ -956,7 +989,8 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if (f.isReading())
 	{
-		notifyMaxNumFacesChanged();
+		//notifyMaxNumFacesChanged();
+		updateNumWantedTris();
 		activatePresetBehaviour(_PresetBehaviour); // apply behaviour changes
 		updateProcessIndices();
 	}
@@ -972,7 +1006,7 @@ bool CParticleSystem::attach(CParticleSystemProcess *ptr)
 	_ProcessVect.push_back(ptr);
 	ptr->setOwner(this);
 	ptr->setIndex(_ProcessVect.size() - 1);
-	notifyMaxNumFacesChanged();
+	//notifyMaxNumFacesChanged();
 	if (getBypassMaxNumIntegrationSteps())
 	{
 		if (!canFinish())

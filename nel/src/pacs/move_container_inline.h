@@ -1,7 +1,7 @@
-/** \file collision_callback.h
- * Collision callback interface
+/** \file move_container_inline.h
+ * Inline functions for movable object
  *
- * $Id: collision_callback.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: move_container_inline.h,v 1.1 2001/06/08 15:10:18 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,38 +23,37 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_COLLISION_CALLBACK_H
-#define NL_COLLISION_CALLBACK_H
+#ifndef NL_MOVE_CONTAINER_INLINE_H
+#define NL_MOVE_CONTAINER_INLINE_H
 
 #include "nel/misc/types_nl.h"
-
 
 namespace NLPACS 
 {
 
-class CMovePrimitive;
-class CCollisionDesc;
+// ***************************************************************************
 
-/**
- * Collision callback interface
- *
- * \author Cyril 'Hulud' Corvazier
- * \author Nevrax France
- * \date 2001
- */
-class ICollisionCallback
+inline void CMoveContainer::changed (CMovePrimitive* primitive)
 {
-public:
+	// Not yet in the list ?
+	if (!primitive->isInModifiedListFlag ())
+	{
+		// Flag it
+		primitive->setInModifiedListFlag (true);
+		
+		// Link it
+		primitive->linkInModifiedList (_ChangedRoot);
 
-	/// Give a collision reaction
-	virtual	bool			reaction (CMovePrimitive& first, CMovePrimitive& second, const CCollisionDesc& desc)=0;
+		// Change root list
+		_ChangedRoot=primitive;
+	}
+}
 
-};
-
+// ***************************************************************************
 
 } // NLPACS
 
 
-#endif // NL_COLLISION_CALLBACK_H
+#endif // NL_MOVE_CONTAINER_INLINE_H
 
-/* End of collision_callback.h */
+/* End of move_container.h */

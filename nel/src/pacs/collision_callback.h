@@ -1,7 +1,7 @@
-/** \file move_element.h
- * Element to insert in sorted lists
+/** \file collision_callback.h
+ * Collision callback interface
  *
- * $Id: move_element.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: collision_callback.h,v 1.1 2001/06/08 15:10:18 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_MOVE_ELEMENT_H
-#define NL_MOVE_ELEMENT_H
+#ifndef NL_COLLISION_CALLBACK_H
+#define NL_COLLISION_CALLBACK_H
 
 #include "nel/misc/types_nl.h"
 
@@ -33,41 +33,28 @@ namespace NLPACS
 {
 
 class CMovePrimitive;
+class CCollisionDesc;
 
 /**
- * Move element linkable in sorted lists.
+ * Collision callback interface
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
  * \date 2001
  */
-class CMoveElement
+class ICollisionCallback
 {
 public:
-	/// Pointer on the primitive for this move element
-	CMovePrimitive	*Primitive;
 
-	/// Next move element in the X List
-	CMoveElement	*NextX;
+	/// Give a collision reaction
+	virtual	bool			reaction (CMovePrimitive& first, CMovePrimitive& second, const CCollisionDesc& desc)=0;
 
-	/// Previous move element in the X List
-	CMoveElement	*PreviousX;
-
-	/// Next move element in the Y List
-	CMoveElement	*NextY;
-
-	/// Previous move element in the Y List
-	CMoveElement	*PreviousY;
-
-	/// Cell coordinate
-	uint16			X;
-	uint16			Y;
 };
 
 
 } // NLPACS
 
 
-#endif // NL_MOVE_ELEMENT_H
+#endif // NL_COLLISION_CALLBACK_H
 
-/* End of move_element.h */
+/* End of collision_callback.h */

@@ -1,7 +1,7 @@
 /** \file collision_desc.h
  * Description of the contact of a collision
  *
- * $Id: collision_desc.h,v 1.3 2001/05/31 13:36:42 corvazier Exp $
+ * $Id: collision_desc.h,v 1.1 2001/06/08 15:10:18 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

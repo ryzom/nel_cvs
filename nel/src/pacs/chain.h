@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.6 2001/06/08 15:04:29 legros Exp $
+ * $Id: chain.h,v 1.1 2001/06/08 15:10:18 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

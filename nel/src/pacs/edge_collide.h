@@ -1,7 +1,7 @@
 /** \file edge_collide.h
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.h,v 1.4 2001/06/01 08:15:55 berenguier Exp $
+ * $Id: edge_collide.h,v 1.1 2001/06/08 15:10:18 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file collision_ot.h
  * Collision descriptor for time odered table
  *
- * $Id: collision_ot.h,v 1.3 2001/06/06 09:34:03 corvazier Exp $
+ * $Id: collision_ot.h,v 1.1 2001/06/08 15:10:18 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

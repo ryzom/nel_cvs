@@ -1,7 +1,7 @@
 /** \file move_cell.h
  * <File description>
  *
- * $Id: move_cell.h,v 1.2 2001/05/31 13:36:42 corvazier Exp $
+ * $Id: move_cell.h,v 1.1 2001/06/08 15:10:18 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

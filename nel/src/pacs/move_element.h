@@ -1,7 +1,7 @@
-/** \file move_container_inline.h
- * Inline functions for movable object
+/** \file move_element.h
+ * Element to insert in sorted lists
  *
- * $Id: move_container_inline.h,v 1.2 2001/05/31 13:36:42 corvazier Exp $
+ * $Id: move_element.h,v 1.1 2001/06/08 15:10:18 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,37 +23,51 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_MOVE_CONTAINER_INLINE_H
-#define NL_MOVE_CONTAINER_INLINE_H
+#ifndef NL_MOVE_ELEMENT_H
+#define NL_MOVE_ELEMENT_H
 
 #include "nel/misc/types_nl.h"
+
 
 namespace NLPACS 
 {
 
-// ***************************************************************************
+class CMovePrimitive;
 
-inline void CMoveContainer::changed (CMovePrimitive* primitive)
+/**
+ * Move element linkable in sorted lists.
+ *
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CMoveElement
 {
-	// Not yet in the list ?
-	if (!primitive->isInModifiedListFlag ())
-	{
-		// Flag it
-		primitive->setInModifiedListFlag (true);
-		
-		// Link it
-		primitive->linkInModifiedList (_ChangedRoot);
+public:
+	/// Pointer on the primitive for this move element
+	CMovePrimitive	*Primitive;
 
-		// Change root list
-		_ChangedRoot=primitive;
-	}
-}
+	/// Next move element in the X List
+	CMoveElement	*NextX;
 
-// ***************************************************************************
+	/// Previous move element in the X List
+	CMoveElement	*PreviousX;
+
+	/// Next move element in the Y List
+	CMoveElement	*NextY;
+
+	/// Previous move element in the Y List
+	CMoveElement	*PreviousY;
+
+	/// Cell coordinate
+	uint16			X;
+	uint16			Y;
+};
+
 
 } // NLPACS
 
 
-#endif // NL_MOVE_CONTAINER_INLINE_H
+#endif // NL_MOVE_ELEMENT_H
 
-/* End of move_container.h */
+/* End of move_element.h */

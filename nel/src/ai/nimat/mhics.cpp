@@ -1,7 +1,7 @@
 /** \file mhics.cpp
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.cpp,v 1.9 2003/08/01 09:50:01 robert Exp $
+ * $Id: mhics.cpp,v 1.10 2003/08/18 12:56:07 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -39,6 +39,7 @@ CMotivationEnergy::CMotivationEnergy()
 {
 	_SumValue = 0;
 	_MHiCSagent = NULL;
+	_WasPreviouslyActived = false;
 }
 
 CMotivationEnergy::~CMotivationEnergy()
@@ -85,6 +86,11 @@ void CMotivationEnergy::addProvider(TMotivation providerName, TClassifierNumber 
 //	_VirtualActionProviders[providerName] = providerMotivation._EnergyByMotivation ;
 //	computeMotivationValue();
 //}
+void CMotivationEnergy::setWasPreviouslyActived(bool yesOrNo)
+{
+	_WasPreviouslyActived = yesOrNo;
+}
+
 
 void CMotivationEnergy::computeMotivationValue()
 {
@@ -119,6 +125,12 @@ void CMotivationEnergy::computeMotivationValue()
 		sum += (*itEnergyByMotivation).second.Value * (*itEnergyByMotivation).second.PP;
 	}
 	sum += _MyMotivationValue.PP * _MyMotivationValue.Value;
+
+	if (_WasPreviouslyActived)
+	{
+		sum *=2;
+	}
+
 	_SumValue = sum;
 	nlassert(_SumValue >= 0);
 }
@@ -229,8 +241,10 @@ void CMHiCSbase::selectBehavior(TMotivation motivationName,
 								std::multimap<double, std::pair<TClassifierNumber, TTargetId> > &mapActivableCS)
 {
 	std::map<TMotivation, CClassifierSystem>::iterator itMotivationClassifierSystems = _MotivationClassifierSystems.find(motivationName);
-	nlassert(itMotivationClassifierSystems != _MotivationClassifierSystems.end());
-	(*itMotivationClassifierSystems).second.selectBehavior(psensorMap, mapActivableCS);
+	if (itMotivationClassifierSystems != _MotivationClassifierSystems.end())
+	{
+		(*itMotivationClassifierSystems).second.selectBehavior(psensorMap, mapActivableCS);
+	}
 }
 
 //void CMHiCSbase::selectBehavior(TAction VirtualActionName,
@@ -939,6 +953,15 @@ void CMHiCSagent::motivationCompute()
 				{
 //					if (_pMHiCSbase->isAnAction(behav))
 //					{
+					std::map<TTargetId, std::map<TAction, CMotivationEnergy> >::const_iterator itOldActionsExecutionIntensityByTarget = (*_pOldActionsExecutionIntensityByTarget).find(currentTargetId);
+						if (itOldActionsExecutionIntensityByTarget != (*_pOldActionsExecutionIntensityByTarget).end() )
+						{
+							std::map<TAction, CMotivationEnergy>::const_iterator itIntensityByTarget = (*itOldActionsExecutionIntensityByTarget).second.find(behav);
+							if (itIntensityByTarget != (*itOldActionsExecutionIntensityByTarget).second.end())
+							{
+								(*_pActionsExecutionIntensityByTarget)[currentTargetId][behav].setWasPreviouslyActived(true);
+							}
+						}
 						(*_pActionsExecutionIntensityByTarget)[currentTargetId][behav].setMHiCSagent(this);
 						(*_pActionsExecutionIntensityByTarget)[currentTargetId][behav].addProvider(selectionName, selectedClassifierNumber);
 //						_ActionsExecutionIntensity[behav].addProvider(selectionName, pCSselection->MotivationIntensity);
@@ -1086,13 +1109,10 @@ void CMHiCSagent::motivationCompute()
 
 void CMHiCSagent::run()
 {
-	if (_Learning)
-	{
-		std::map<TTargetId, std::map<TAction, CMotivationEnergy> >	*bibu = _pOldActionsExecutionIntensityByTarget;
-		_pOldActionsExecutionIntensityByTarget = _pActionsExecutionIntensityByTarget;
-		_pActionsExecutionIntensityByTarget = bibu;
-	}
-	_pActionsExecutionIntensityByTarget->clear();
+	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >	*bibu = _pOldActionsExecutionIntensityByTarget;
+	_pOldActionsExecutionIntensityByTarget = _pActionsExecutionIntensityByTarget;
+	_pActionsExecutionIntensityByTarget = bibu;
+//	_pActionsExecutionIntensityByTarget->clear(); //***G*** On ne fait pas un clear ici, parcontre il faut faire un clear à chaque fois qu'une action se termine
 	motivationCompute();
 //	virtualActionCompute();
 }
@@ -1131,7 +1151,7 @@ void CMHiCSagent::learningComputation()
 		itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.find(motivationName);
 		nlassert(itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end());
 		double newMV = (*itClassifiersAndMotivationIntensity).second.getMotivationValue(motivationName);
-		if (newMV < oldMV)
+		if (newMV != oldMV)
 		{
 			motivationProgressionByMotivation[motivationName] = oldMV - newMV;
 		}
@@ -1258,7 +1278,7 @@ const std::map<TTargetId, std::map<TAction, CMotivationEnergy> >* CMHiCSagent::s
 	std::multimap<double, std::pair<TTargetId,TAction> > actionsToRemove;
 
 	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >::iterator itActionsExecutionIntensityByTarget;
-	std::map<TAction, CMotivationEnergy>::iterator itMotiveByAction;
+	std::map<TAction, CMotivationEnergy>::const_iterator itMotiveByAction;
 	for (itActionsExecutionIntensityByTarget  = _pActionsExecutionIntensityByTarget->begin();
 		 itActionsExecutionIntensityByTarget != _pActionsExecutionIntensityByTarget->end();
 		 itActionsExecutionIntensityByTarget++)
@@ -1270,7 +1290,11 @@ const std::map<TTargetId, std::map<TAction, CMotivationEnergy> >* CMHiCSagent::s
 			priority = (*itMotiveByAction).second.getSumValue();
 			action = (*itMotiveByAction).first;
 			target = (*itActionsExecutionIntensityByTarget).first;
-				 
+
+			// on rajoute du bruit sur les priorité afin d'avoir une diversité si des priorités sont proches
+			double randomeNumber = ((rand()%10)*priority)/100.0;
+			priority += randomeNumber;
+			
 			actionsToRemove.insert(std::make_pair(priority, std::make_pair(target,action)));
 		}
 	}
@@ -1305,38 +1329,10 @@ const std::map<TTargetId, std::map<TAction, CMotivationEnergy> >* CMHiCSagent::s
 	return _pActionsExecutionIntensityByTarget;
 }
 
-/// Inform the MHiCSAgent that an action ended
-//void CMHiCSagent::behaviorTerminate(TBehaviorTerminate how_does_it_terminate)
+//// Inform the MHiCSAgent that an action ended
+//void CMHiCSagent::behaviorTerminate(TAction action, TTargetId target, TBehaviorTerminate how_does_it_terminate)
 //{
-//	// ***G*** Tant qu'il n'y a pas d'apprentissage, on se contente de retirer l'action de la liste.
-//	// Je pense qu'il faut aussi remettre en question toute les actions virtuel portant sur cette cible.
-//	// Remettre en question signifie qu'il faut gardr une trace pour favoriser la continuité d'action sur un perso.
-//	TTargetId maCibleRemiseEnQuestion = (*_ItCurrentAction).second;
-//	std::map<TAction, TTargetId>::iterator	itIdByActions;
-//	for (itIdByActions = _IdByActions.begin(); itIdByActions != _IdByActions.end(); itIdByActions++)
-//	{
-//		TTargetId scanedId = (*itIdByActions).second;
-//		if ( scanedId == maCibleRemiseEnQuestion ) 
-//		{
-//			TAction theAction = (*itIdByActions).first;
-//			if (theAction != Action_DoNothing) // Donothing is a never ending action
-//			{
-//				// Removing from action
-//				_IdByActions.erase(theAction);
-//
-//				// Removing the virtual_classifier that may be associate
-//				_ClassifiersAndVirtualActionIntensity.erase(theAction);
-//
-//				// Removing from the actionExecutionIntensity
-//				_ActionsExecutionIntensity.erase(theAction);
-//				_IdByActions.erase(theAction);
-//			}
-//		}
-//
-//		_ItCurrentAction = _IdByActions.find(Action_DoNothing);
-//		nlassert (_ItCurrentAction != _IdByActions.end());
-//	}
-//	run();
+//	(*_pActionsExecutionIntensityByTarget)[target].erase(action);
 //}
 
 } // NLAINIMAT

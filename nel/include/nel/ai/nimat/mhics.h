@@ -1,7 +1,7 @@
 /** \file mhics.h
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.h,v 1.8 2003/08/01 09:49:45 robert Exp $
+ * $Id: mhics.h,v 1.9 2003/08/18 12:56:38 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -95,6 +95,8 @@ public :
 	void setMHiCSagent(CMHiCSagent* pmhicsAgent) {_MHiCSagent = pmhicsAgent;}
 
 	const std::multimap<TMotivation, TClassifierNumber>* getProviders() const;
+
+	void setWasPreviouslyActived(bool yesOrNo);
 	
 private :
 	void computeMotivationValue();
@@ -106,6 +108,7 @@ private :
 	//	std::map<TAction, TEnergyByMotivation>		_VirtualActionProviders;
 	TEnergyByMotivation							_EnergyByMotivation;	// <MotivationSource, motivationValue>
 	CMotivationValue							_MyMotivationValue;
+	bool										_WasPreviouslyActived;
 };
 
 /**
@@ -219,7 +222,7 @@ public :
 	const std::map<TTargetId, std::map<TAction, CMotivationEnergy> >* selectBehavior();
 
 	/// Inform the MHiCSAgent that an action ended
-//	void behaviorTerminate(TBehaviorTerminate how_does_it_terminate);
+//	void behaviorTerminate(TAction action, TTargetId target, TBehaviorTerminate how_does_it_terminate);
 
 	/// Update the values in the NetCS
 	void run();

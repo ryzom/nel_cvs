@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.19 2003/08/01 09:50:01 robert Exp $
+ * $Id: classifier.cpp,v 1.20 2003/08/18 12:56:07 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -403,14 +403,16 @@ void CClassifierSystem::dividePriorityByTheMinPriorityPart()
 		TClassifierPriority prio = (*itClassifiers).second->Priority;
 		minPrio = std::min(minPrio, prio);
 	}
-	nlassert(minPrio != 10);
+	nlassert(minPrio < 1.0);
 
 	for(itClassifiers  = _Classifiers.begin();
 		itClassifiers != _Classifiers.end();
 		itClassifiers++)
 	{
 		TClassifierPriority prio = (*itClassifiers).second->Priority;
-		TClassifierPriority newPrio = prio - minPrio + 0.01;
+		TClassifierPriority newPrio = (prio - minPrio) / (1.0 - minPrio);
+
+		nlassert (newPrio <= 1.0);
 		(*itClassifiers).second->Priority = newPrio;
 	}
 }

@@ -1,6 +1,6 @@
 /** \file opcode_call_lib_method.cpp
  *
- * $Id: opcode_call_lib_method.cpp,v 1.11 2002/01/28 12:35:31 chafik Exp $
+ * $Id: opcode_call_lib_method.cpp,v 1.12 2002/01/28 12:37:13 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -327,7 +327,7 @@ namespace NLAISCRIPT
 			 obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
 		}		
 
-		str = NLAIC::stringGetBuild("methode %s",obj->getMethodeMemberDebugString(_H,_Id));
+		str = NLAIC::stringGetBuild("methode %s",obj->getMethodeMemberDebugString(_H,_Id).c_str());
 	}
 
 	NLAIAGENT::TProcessStatement CLibHeapMemberMethod::runOpCode(CCodeContext &context)

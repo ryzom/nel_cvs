@@ -1,7 +1,7 @@
 /** \file u_move_container.h
  * A container for movable objects
  *
- * $Id: u_move_container.h,v 1.10 2002/03/29 15:43:20 cado Exp $
+ * $Id: u_move_container.h,v 1.11 2002/05/23 09:55:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@ namespace NLPACS
 class UMovePrimitive;
 class UTriggerInfo;
 class UGlobalRetriever;
+class UPrimitiveBlock;
 
 #define NELPACS_DEFAULT_OT_SIZE 100
 #define NELPACS_DEFAULT_MAX_TEST_ITERATION 100
@@ -115,6 +116,11 @@ public:
 	  * \return true if the file is successfully loaded, else return false.
 	  */
 	virtual bool				loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position) =0;
+
+
+	/** The same as loadCollisionablePrimitiveBlock, but the primitive block is provided by the caller
+	  */
+	virtual void                addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position) = 0;
 
 	/**
 	  * Remove a primitive from the container.

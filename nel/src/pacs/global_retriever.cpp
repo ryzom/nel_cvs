@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.12 2001/05/25 14:27:30 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.13 2001/05/30 10:01:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -714,7 +714,6 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 {
 	// start currentSurface with surface start.
 	CSurfaceIdent	currentSurface= startSurface;
-	uint			nextCollisionSurfaceTested=0;
 	sint			i;
 
 	// reset result.
@@ -757,7 +756,6 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 				- stop on a edge (dist==0).
 				- run // on a edge (NB: dist==0 too).
 				- start on a edge (dist==0).
-				- good order of collision even with precision problems: edges too near, and movement nearly // to an edge.
 			*/
 			// For now, just return an error, so that movement is disabled.
 			if(t== -1)
@@ -825,7 +823,7 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 
 
 // ***************************************************************************
-const	std::vector<NLPACS::CCollisionSurfaceDesc>	
+const	NLPACS::TCollisionSurfaceDescVector	
 	&NLPACS::CGlobalRetriever::testCylinderMove(const CGlobalPosition &startPos, const NLMISC::CVector &delta, float radius, CCollisionSurfaceTemp &cst) const
 {
 	CSurfaceIdent	startSurface(startPos.InstanceId, startPos.LocalPosition.Surface);
@@ -882,7 +880,7 @@ const	std::vector<NLPACS::CCollisionSurfaceDesc>
 
 
 // ***************************************************************************
-const	std::vector<NLPACS::CCollisionSurfaceDesc>	
+const	NLPACS::TCollisionSurfaceDescVector	
 	&NLPACS::CGlobalRetriever::testBBoxMove(const CGlobalPosition &startPos, const NLMISC::CVector &delta, 
 	const NLMISC::CVector &locI, const NLMISC::CVector &locJ, CCollisionSurfaceTemp &cst) const
 {
@@ -915,10 +913,11 @@ const	std::vector<NLPACS::CCollisionSurfaceDesc>
 	CVector2f	locI2d(locI.x, locI.y);
 	CVector2f	locJ2d(locJ.x, locJ.y);
 
+	// build points in CCW.
 	obbStart[0]= obbCenter - locI2d - locJ2d;
-	obbStart[1]= obbCenter - locI2d + locJ2d;
+	obbStart[1]= obbCenter + locI2d - locJ2d;
 	obbStart[2]= obbCenter + locI2d + locJ2d;
-	obbStart[3]= obbCenter + locI2d - locJ2d;
+	obbStart[3]= obbCenter - locI2d + locJ2d;
 
 	// 3. compute bboxmove.
 	//===========
@@ -1036,6 +1035,150 @@ NLPACS::CGlobalRetriever::CGlobalPosition
 
 		// result.
 		return res;
+	}
+
+}
+
+
+// ***************************************************************************
+const NLPACS::TCollisionSurfaceDescVector	&NLPACS::CGlobalRetriever::testBBoxRot(const CGlobalPosition &startPos, 
+	const NLMISC::CVector &locI, const NLMISC::CVector &locJ, CCollisionSurfaceTemp &cst) const
+{
+	CSurfaceIdent	startSurface(startPos.InstanceId, startPos.LocalPosition.Surface);
+
+	// 0. reset.
+	//===========
+	// reset result.
+	cst.CollisionDescs.clear();
+
+	// store this request in cst.
+	cst.PrecStartSurface= startSurface;
+	cst.PrecStartPos= startPos.LocalPosition.Estimation;
+	cst.PrecDeltaPos= CVector::Null;
+
+
+	// 1. Choose a local basis.
+	//===========
+	// Take the retrieverInstance of startPos as a local basis.
+	CVector		origin;
+	origin= getInstance(startPos.InstanceId).getOrigin();
+
+
+	// 2. compute OBB.
+	//===========
+	CVector2f	obbStart[4];
+	// compute start, relative to the retriever instance.
+	CVector		start= startPos.LocalPosition.Estimation;
+	CVector2f	obbCenter(start.x, start.y);
+	CVector2f	locI2d(locI.x, locI.y);
+	CVector2f	locJ2d(locJ.x, locJ.y);
+
+	// build points in CCW.
+	obbStart[0]= obbCenter - locI2d - locJ2d;
+	obbStart[1]= obbCenter + locI2d - locJ2d;
+	obbStart[2]= obbCenter + locI2d + locJ2d;
+	obbStart[3]= obbCenter - locI2d + locJ2d;
+
+	// 3. compute bboxmove.
+	//===========
+	CAABBox		bboxMove;
+	// extend the bbox.
+	bboxMove.setCenter(CVector(obbStart[0].x, obbStart[0].y, 0));
+	bboxMove.extend(CVector(obbStart[1].x, obbStart[1].y, 0));
+	bboxMove.extend(CVector(obbStart[2].x, obbStart[2].y, 0));
+	bboxMove.extend(CVector(obbStart[3].x, obbStart[3].y, 0));
+
+
+
+	// 4. find possible collisions in bboxMove+origin. fill cst.CollisionChains.
+	//===========
+	findCollisionChains(cst, bboxMove, origin);
+
+
+
+	// 5. test Rotcollisions with CollisionChains.
+	//===========
+	CVector2f	startCol(start.x, start.y);
+	testRotCollisionWithCollisionChains(cst, startCol, startSurface, obbStart);
+
+
+	// result.
+	return cst.CollisionDescs;
+}
+
+
+// ***************************************************************************
+void	NLPACS::CGlobalRetriever::testRotCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, CSurfaceIdent startSurface, const CVector2f bbox[4]) const
+{
+	// start currentSurface with surface start.
+	CSurfaceIdent	currentSurface= startSurface;
+	sint			i;
+
+	// reset result.
+	cst.RotDescs.clear();
+	cst.CollisionDescs.clear();
+
+
+	/*
+		Test collisions with all collision chains. Then, to manage recovery, test the graph of surfaces.
+	*/
+	// run all collisionChain.
+	//========================
+	for(i=0; i<(sint)cst.CollisionChains.size(); i++)
+	{
+		CCollisionChain		&colChain= cst.CollisionChains[i];
+
+
+		// test all edges of this chain, and insert if necessary.
+		//========================
+		// run list of edge.
+		sint32		curEdge= colChain.FirstEdgeCollide;
+		while(curEdge!=0xFFFFFFFF)
+		{
+			// get the edge.
+			CEdgeCollideNode	&colEdge= cst.getEdgeCollideNode(curEdge);
+
+			// test collision with this edge.
+			if(colEdge.testBBoxCollide(bbox))
+			{
+				// yes we have a 2D collision with this chain.
+				cst.RotDescs.push_back(CRotSurfaceDesc(colChain.LeftSurface, colChain.RightSurface));
+				break;
+			}
+
+			// next edge.
+			curEdge= colEdge.Next;
+		}
+	}
+
+
+	// Traverse the array of collisions.
+	//========================
+	sint	indexCD=0;
+	while(true)
+	{
+		// What surfaces collided do we reach from this currentSurface??
+		for(i=0;i<(sint)cst.RotDescs.size();i++)
+		{
+			// Do we collide with this chain?? chain not tested??
+			if(cst.RotDescs[i].hasSurface(currentSurface) && !cst.RotDescs[i].Tested)
+			{
+				cst.RotDescs[i].Tested= true;
+
+				// insert the collision with the other surface.
+				CCollisionSurfaceDesc	col;
+				col.ContactTime= 0;
+				col.ContactNormal= CVector::Null;
+				col.ContactSurface= cst.RotDescs[i].getOtherSurface(currentSurface);
+				cst.CollisionDescs.push_back(col);
+			}
+		}
+
+		// get the next currentSurface from surface collided (traverse the graph of collisions).
+		if(indexCD<(sint)cst.CollisionDescs.size())
+			currentSurface= cst.CollisionDescs[indexCD++].ContactSurface;
+		else
+			break;
 	}
 
 }

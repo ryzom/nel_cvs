@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.2 2001/05/25 14:27:30 berenguier Exp $
+ * $Id: collision_surface_temp.h,v 1.3 2001/05/30 10:01:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,6 +170,44 @@ public:
 
 // ***************************************************************************
 /**
+ * Description of the contact of a rot collision against a chain.
+ *
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CRotSurfaceDesc
+{
+public:
+	/// This tells if this chain (arc of the graph) has been inserted.
+	bool				Tested;
+
+	/// To which chain we have collided.
+	CSurfaceIdent		LeftSurface, RightSurface;
+
+public:
+	CRotSurfaceDesc()  : Tested(false) {}
+	CRotSurfaceDesc(CSurfaceIdent left, CSurfaceIdent right) : Tested(false), LeftSurface(left), RightSurface(right) {}
+
+	/// test if Left or Right == surf.
+	bool		hasSurface(const CSurfaceIdent &surf)
+	{
+		return LeftSurface==surf || RightSurface==surf;
+	}
+
+	/// Return Left if surf==Right, else return Right.
+	const CSurfaceIdent		&getOtherSurface(const CSurfaceIdent &surf)
+	{
+		if(RightSurface==surf)
+			return LeftSurface;
+		else
+			return RightSurface;
+	}
+};
+
+
+// ***************************************************************************
+/**
  * Temp collision data used during resolution of collision within surfaces. There should be one CCollisionSurfaceTemp
  * per thread. This is a private class, in essence.
  * \author Lionel Berenguier
@@ -191,6 +229,10 @@ public:
 	/// result of testMovementWithCollisionChains().
 	std::vector<CMoveSurfaceDesc>	MoveDescs;
 
+
+	/// result of testRotWithCollisionChains().
+	std::vector<CRotSurfaceDesc>	RotDescs;
+	
 
 	/// Result of collision testMove().
 	TCollisionSurfaceDescVector		CollisionDescs;

@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.2 2001/05/25 14:27:30 berenguier Exp $
+ * $Id: global_retriever.h,v 1.3 2001/05/30 10:01:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -281,8 +281,8 @@ public:
 	/** Test a movement of a bbox against surface world.
 	 * \param start is the start position of the movement.
 	 * \param delta is the requested movement.
-	 * \param locI is the oriented I vector of the BBox.  I.norm()== Width.
-	 * \param locJ is the oriented J vector of the BBox.  J.norm()== Height.
+	 * \param locI is the oriented I vector of the BBox.  I.norm()== Width/2.
+	 * \param locJ is the oriented J vector of the BBox.  J.norm()== Height/2.
 	 * \param cst is the CCollisionSurfaceTemp object used as temp copmputing (one per thread).
 	 * \return list of collision against surface, ordered by increasing time. this is a synonym for
 	 * cst.CollisionDescs. NB: this array may be modified by CGlobalRetriever on any collision call.
@@ -303,6 +303,17 @@ public:
 	/** retrieve a surface by its Id. NULL if not found or if -1.
 	 */
 	const CRetrievableSurface	*getSurfaceById(const CSurfaceIdent &surfId);
+	/** Test a rotation of a BBox against the surfaces.
+	 * NB: this function is not perfect because a ContactSurface may appears 2+ times in the returned array.
+	 * \param start is the center of the bbox.
+	 * \param locI is the new oriented I vector of the BBox.  I.norm()== Width/2.
+	 * \param locJ is the new oriented J vector of the BBox.  J.norm()== Height/2.  NB : must have locI^locJ== aK (a>0)
+	 * \param cst is the CCollisionSurfaceTemp object used as temp copmputing (one per thread).
+	 * \return list of collision against surface (ContactTime and ContactNormal has no means). this is a synonym for
+	 * cst.CollisionDescs. NB: this array may be modified by CGlobalRetriever on any collision call.
+	 */
+	const TCollisionSurfaceDescVector	&testBBoxRot(const CGlobalPosition &start, 
+		const NLMISC::CVector &locI, const NLMISC::CVector &locJ, CCollisionSurfaceTemp &cst) const;
 	// @}
 
 
@@ -337,7 +348,6 @@ private:
 	void	findCollisionChains(CCollisionSurfaceTemp &cst, const NLMISC::CAABBox &bboxMove, const NLMISC::CVector &origin) const;
 	/** reset and fill cst.CollisionDescs with effective collisions against current cst.CollisionChains.
 	 * result: new collisionDescs in cst.
-	 * NB: with colType==Point, normal in cst.CollisionDescs are undefined.
 	 */
 	void	testCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &deltaCol,
 		CSurfaceIdent startSurface, float radius, const CVector2f bbox[4], TCollisionType colType) const;
@@ -347,6 +357,10 @@ private:
 	 */
 	CSurfaceIdent	testMovementWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &deltaCol,
 		CSurfaceIdent startSurface) const;
+	/** reset and fill cst.CollisionDescs with effective collisions against current cst.CollisionChains.
+	 * result: new collisionDescs in cst.
+	 */
+	void	testRotCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, CSurfaceIdent startSurface, const CVector2f bbox[4])  const;
 
 
 	/** Snap a vector at 1mm (1/1024). v must be a local position (ie range from -80 to +240).

@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.3 2001/07/12 15:58:13 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.4 2001/07/13 17:04:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,7 @@ void CParticleSystemModel::registerBasic()
 {
 	CMOT::registerModel(ParticleSystemModelId, TransformShapeId, CParticleSystemModel::creator);	
 	CMOT::registerObs(AnimDetailTravId, ParticleSystemModelId, CParticleSystemDetailObs::creator) ;
+	CMOT::registerObs(ClipTravId, ParticleSystemModelId, CParticleSystemClipObs::creator) ;
 }
 
 
@@ -135,6 +136,35 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 	// animate particles
 	ps->step(PSCollision, delay) ;
 	ps->step(PSMotion, delay) ;	 		
+}
+
+
+////////////////////////////////////////////
+// CParticleSystemClipObs implementation  //
+////////////////////////////////////////////
+	
+bool	CParticleSystemClipObs::clip(IBaseClipObs *caller)
+{
+	CClipTrav			*trav= (CClipTrav*)Trav;
+	CParticleSystemModel		*m= (CParticleSystemModel*)Model;
+
+
+	if(!m->_ParticleSystem) return false ;
+	
+
+	NLMISC::CAABBox bbox ;
+	m->_ParticleSystem->computeBBox(bbox) ;
+
+	std::vector<CPlane>	pyramid= trav->WorldPyramid;
+	// Transform the pyramid in Object space.
+	CMatrix		&mat= HrcObs->WorldMatrix;
+	for(sint i=0;i<(sint)pyramid.size();i++)
+	{
+		pyramid[i]= pyramid[i]*mat;
+		// test wether the bbox is entirely in the neg side of the plane
+		if (!bbox.clipBack(pyramid[i])) return false ;		
+	}
+	return true ;	
 }
 
 

@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.5 2001/07/12 15:58:13 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.6 2001/07/13 17:04:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NL3D {
 /////////////////////////////////////////////////////////
 
 class CParticleSystem ;
-
+class CParticleSystemClipObs ;
 
 /// A particle system model : it is build using a CParticleSystemShape
  
@@ -150,7 +150,19 @@ class CParticleSystemModel : public CTransformShape
 		/// edition purpose : touch the system to tell that the transparency state of the system has changed (added/removes opaque/tansparent faces )
 		void touchTransparencyState(void) { _TransparencyStateTouched = true ; }
 
+
+		/** force the edition mode : this will prevent the system from being removed when it is out of range
+		 * when there are no more particles in it etc. (this also mean that you can safely keep a pointer on it)
+		 * This flag is not saved.
+	     */
+		void setEditionMode(bool enable = true) { _EditionMode = true ; }
+
+		/// test if edition mode is activated
+		bool getEditionMode(void) const { return _EditionMode ; }
+
 	protected:
+
+		friend class CParticleSystemClipObs ;
 
 		bool _AutoGetEllapsedTime ;
 
@@ -163,6 +175,8 @@ class CParticleSystemModel : public CTransformShape
 
 		
 		bool _TransparencyStateTouched ;
+
+		bool _EditionMode ;
 } ;
 
 
@@ -183,6 +197,24 @@ public:
 	static IObs	*creator() {return new CParticleSystemDetailObs;}
 };
 
+
+/** a clip observer for a particle system
+  *
+  */
+
+class CParticleSystemClipObs : public CTransformClipObs
+{
+public:
+
+	
+	virtual	bool	isRenderable() const { return true; }
+
+	
+	virtual	bool	clip(IBaseClipObs *caller) ;
+
+	static IObs	*creator() {return new CParticleSystemClipObs ;}
+	
+};
 
 
 

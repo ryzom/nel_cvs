@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.6 2000/11/28 13:27:26 coutelas Exp $
+ * $Id: font_manager.cpp,v 1.7 2000/12/04 10:55:02 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,8 @@ NLMISC::CSmartPtr<CTextureFont> CFontManager::getFontTexture(CFontDescriptor des
 
 
 
-/* This function compute a basic_string
+/**
+ * This function compute a basic_string
  *
  */
 template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::basic_string<T, std::char_traits<T>, std::allocator<T> > &s,

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.22 2000/12/04 10:12:46 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.23 2000/12/04 10:54:51 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -476,5 +476,23 @@ void CDriverGL::setupViewport (const class CViewport& viewport)
 		glViewport (ix, iy, iwidth, iheight);
 	}
 }
+
+
+// --------------------------------------------------
+
+void CDriverGL::showCursor(bool b)
+{
+	ShowCursor(b);
+}
+
+
+// --------------------------------------------------
+
+void CDriverGL::setMousePos(uint32 x, uint32 y)
+{
+	SetCursorPos(x,y);
+}
+
+
 
 }

@@ -133,6 +133,10 @@ public:
 	{
 		return "Opengl 1.2 NeL Driver";
 	}
+
+	virtual void showCursor(bool b);
+
+	virtual void setMousePos(uint32 x, uint32 y);
 };
 
 // --------------------------------------------------

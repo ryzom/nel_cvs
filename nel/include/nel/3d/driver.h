@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.26 2000/12/04 10:13:09 corvazier Exp $
+ * $Id: driver.h,v 1.27 2000/12/04 10:55:17 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -426,6 +426,11 @@ public:
 	  *
 	  */
 	virtual const char*		getDriverInformation ()=0;
+
+	virtual void showCursor(bool b) = 0;
+
+	virtual void setMousePos(uint32 x, uint32 y) = 0;
+
 };
 
 // --------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file eval_num_expr.h
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.h,v 1.1 2002/06/04 10:03:56 corvazier Exp $
+ * $Id: eval_num_expr.h,v 1.2 2002/06/04 10:14:58 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -162,7 +162,6 @@ public:
 	  *
 	  */
 	TReturnState evalExpression (const char *expression, double &result, int *errorIndex);
-	TReturnState evalExpression (const char *expression, bool &result, int *errorIndex);
 
 	/// Get error string
 	const char* getErrorString (TReturnState state) const;

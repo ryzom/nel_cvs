@@ -1,7 +1,7 @@
 /** \file eval_num_expr.cpp
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.cpp,v 1.1 2002/06/04 10:03:56 corvazier Exp $
+ * $Id: eval_num_expr.cpp,v 1.2 2002/06/04 10:14:58 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -588,7 +588,9 @@ CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TT
 
 	// Read a token
 	TReturnState error = getNextToken (nextToken);
-	while (error == NoError)
+	if (error != NoError)
+		return error;
+	while (1)
 	{
 		// Unary opertor
 		uint unaryOpCount = 0;

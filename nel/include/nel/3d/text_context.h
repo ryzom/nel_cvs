@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.22 2001/04/23 13:16:04 berenguier Exp $
+ * $Id: text_context.h,v 1.23 2001/05/07 14:44:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,6 +87,11 @@ class CTextContext
 
 	/// resize fontSize???
 	bool	_Keep800x600Ratio;
+
+
+	/// for printAt() and printfAt(). This prevents from creating VBdrvinfos each time they are called (N*each frame!!).
+	CComputedString		_TempString;
+	CComputedString		_TempShadowString;
 
 
 public:
@@ -317,22 +322,19 @@ public:
 	 */
 	void printAt(float x, float z, ucstring ucstr)
 	{
-		NL3D::CComputedString cptdstr;
-
 		if(_Shaded)
 		{
-			NL3D::CComputedString cptdstr1;
-			_FontManager->computeString(ucstr,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,cptdstr1, _Keep800x600Ratio);
-			cptdstr1.render2D(*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
+			_FontManager->computeString(ucstr,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,_TempShadowString, _Keep800x600Ratio);
+			_TempShadowString.render2D(*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
 		}
 
-		_FontManager->computeString(ucstr,_FontGen,_Color,_FontSize,_Driver,cptdstr, _Keep800x600Ratio);
-		cptdstr.render2D(*_Driver,
+		_FontManager->computeString(ucstr,_FontGen,_Color,_FontSize,_Driver,_TempString, _Keep800x600Ratio);
+		_TempString.render2D(*_Driver,
 							x,z,
 							_HotSpot,
 							_ScaleX,_ScaleZ);
 
-		_XBound = x + cptdstr.StringWidth;
+		_XBound = x + _TempString.StringWidth;
 	}
 	
 	/**
@@ -347,16 +349,14 @@ public:
 
 		if(_Shaded)
 		{
-			NL3D::CComputedString cptdstr1;
-			_FontManager->computeString(str,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,cptdstr1, _Keep800x600Ratio);
-			cptdstr1.render2D(*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
+			_FontManager->computeString(str,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,_TempShadowString, _Keep800x600Ratio);
+			_TempShadowString.render2D(*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
 		}
 
-		NL3D::CComputedString cptdstr2;
-		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,cptdstr2, _Keep800x600Ratio);
-		cptdstr2.render2D(*_Driver,x,z,_HotSpot,_ScaleX,_ScaleZ);
+		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,_TempString, _Keep800x600Ratio);
+		_TempString.render2D(*_Driver,x,z,_HotSpot,_ScaleX,_ScaleZ);
 
-		_XBound = x + cptdstr2.StringWidth;
+		_XBound = x + _TempString.StringWidth;
 	}
 	
 	

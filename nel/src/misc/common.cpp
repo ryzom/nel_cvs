@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.32 2002/12/30 15:19:58 lecroart Exp $
+ * $Id: common.cpp,v 1.33 2003/01/07 17:10:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -644,5 +644,31 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 	return false;
 
 }
+
+void explode (const std::string &src, const std::string &sep, std::vector<std::string> &res, bool skipEmpty)
+{
+	string::size_type oldpos = 0, pos;
+
+	res.clear ();
+
+	do
+	{
+		pos = src.find (sep, oldpos);
+		string s = src.substr (oldpos, ((pos==string::npos)?(pos):(pos-oldpos)));
+		if (!skipEmpty || !s.empty())
+			res.push_back (s);
+		oldpos = pos+1;
+	}
+	while(pos != string::npos);
+
+/*	// debug
+	nlinfo ("Exploded '%s', with '%s', %d res", src.c_str(), sep.c_str(), res.size());
+	for (uint i = 0; i < res.size(); i++)
+	{
+		nlinfo (" > '%s'", res[i].c_str());
+	}
+*/
+}
+
 
 } // NLMISC

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.42 2001/08/30 08:30:19 chafik Exp $
+ * $Id: agents.cpp,v 1.43 2001/09/06 16:48:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,19 +56,30 @@ namespace NLAIAGENT
 
 	void IAgent::Kill()
 	{
-		while ( _AgentList.size() )
+//sint n = _SizeChild;
+
+#ifdef NL_DEBUG
+		if(_SizeChild != (sint)_AgentList.size())
+		{
+			sint i = (sint)_AgentList.size();
+			throw;
+		}
+#endif
+		sint n = _SizeChild ;
+		while ( /*_AgentList.begin() !=  _AgentList.end()*/ n--)
 		{					
 			IConnectIA *c = _AgentList.front();
 			_AgentList.pop_front();
 			c->onKill(this);
 			c->release();			
 		}
+		_SizeChild = 0;
 		IAgentComposite::Kill();
 	}
 
 	void IAgent::onKill(IConnectIA *a)
 	{
-		eraseFromList<IBasicAgent *>(&_AgentList,(IBasicAgent *)a);
+		if(eraseFromList<IBasicAgent *>(&_AgentList,(IBasicAgent *)a)) _SizeChild --;
 		removeConnection(a);
 		IConnectIA::onKill(a);
 		/*while(_Mail->getMessageCount())
@@ -149,7 +160,13 @@ namespace NLAIAGENT
 	void IAgent::runChildren()	// Se charge de l'activation des fils
 	{
 		std::list<IBasicAgent *>::iterator i_agl = _AgentList.begin();		
-		while ( i_agl != _AgentList.end() )
+		sint n = _SizeChild;
+
+#ifdef NL_DEBUG
+		if(n != (sint)_AgentList.size())
+								throw;
+#endif
+		while ( /*i_agl != _AgentList.end()*/n -- )
 		{					
 			IBasicAgent *c = *i_agl;
 			c->run();
@@ -166,9 +183,10 @@ namespace NLAIAGENT
 	void IAgent::processMessages()
 	{
 		IMailBox *mail = getMail();
-		const IMailBox::tListMessage &l = mail->getMesseageListe();
+		//const IMailBox::tListMessage &l = mail->getMesseageListe();
+		sint n = mail->size();
 
-		while(l.begin() != l.end())
+		while(/*l.begin() != l.end()*/ n --)
 		{
 			const IMessageBase &msg = getMail()->getMessage();
 #ifdef NL_DEBUG

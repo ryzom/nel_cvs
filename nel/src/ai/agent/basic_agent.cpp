@@ -1,6 +1,6 @@
 /** \file basic_agent.cpp
  *
- * $Id: basic_agent.cpp,v 1.10 2001/05/15 12:55:21 chafik Exp $
+ * $Id: basic_agent.cpp,v 1.11 2001/09/06 16:48:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,22 +27,22 @@ namespace NLAIAGENT
 {
 
 	
-	IAgentComposite::IAgentComposite(const IAgentComposite &a): IBasicAgent(a)
+	IAgentComposite::IAgentComposite(const IAgentComposite &a): IBasicAgent(a),_SizeChild(0)
 	{
 		std::list<IBasicAgent *>::const_iterator i = a._AgentList.begin();
 		while(i != a._AgentList.end())
 		{				
 			IBasicAgent *b = ( *i++ );
-			addChild( b );
+			addChild( b );			
 		}
 	}
 
-	IAgentComposite::IAgentComposite(IBasicAgent *parent): IBasicAgent(parent != NULL ? (const IWordNumRef *) *parent:NULL)
+	IAgentComposite::IAgentComposite(IBasicAgent *parent): IBasicAgent(parent != NULL ? (const IWordNumRef *) *parent:NULL),_SizeChild(0)
 	{
 		if(parent) parent->addChild(this);
 	}
 
-	IAgentComposite::IAgentComposite(IBasicAgent *parent,IMailBox	*m): IBasicAgent(parent != NULL ? (const IWordNumRef *) *parent:NULL,m)
+	IAgentComposite::IAgentComposite(IBasicAgent *parent,IMailBox	*m): IBasicAgent(parent != NULL ? (const IWordNumRef *) *parent:NULL,m),_SizeChild(0)
 	{
 		if(parent) parent->addChild(this);
 	}
@@ -64,17 +64,21 @@ namespace NLAIAGENT
 		_AgentList.push_front((IBasicAgent *)p);
 		// Donne au fils accès à la boite aux lettres du père
 		p->getMail()->addMailBox( this->getMail() );
+		_SizeChild ++;
+
 		return _AgentList.begin();
 	}
 
 	void IAgentComposite::cpyChild(const IBasicAgent &p)
 	{
 		_AgentList.push_front((IBasicAgent *)p.clone());
+		_SizeChild ++;
 	}
 	
 	void IAgentComposite::removeChild(std::list<IBasicAgent *>::iterator &iter)
 	{					
 		_AgentList.erase(iter);
+		_SizeChild --;
 	}
 
 	void IAgentComposite::removeChild(const IBasicAgent &p)
@@ -88,6 +92,7 @@ namespace NLAIAGENT
 				_AgentList.erase(i);
 				// Supprime chez l'ancien fils la boite au lettre du père
 				p.getMail()->removeMailBox( this->getMail() );
+				_SizeChild --;
 
 #ifdef NL_DEBUG
 
@@ -114,7 +119,7 @@ namespace NLAIAGENT
 				_AgentList.erase(i);				
 				p->getMail()->removeMailBox( this->getMail() );
 				c->release();
-				
+				_SizeChild --;
 				// Supprime chez l'ancien fils la boite au lettre du père				
 				break;
 			}
@@ -138,6 +143,7 @@ namespace NLAIAGENT
 			b->setParent(NULL);
 			b->release();				
 		}
+		_SizeChild = 0;
 	}
 
 	void IAgentComposite::save(NLMISC::IStream &os)
@@ -163,6 +169,7 @@ namespace NLAIAGENT
 		sint32 i;			
 		
 		is.serial(i);
+		_SizeChild = 0;
 		while(i--)
 		{
 			is.serial( id );

@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.18 2001/06/12 09:43:59 chafik Exp $
+ * $Id: agent.h,v 1.19 2001/09/06 16:47:58 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -345,6 +345,7 @@ namespace NLAIAGENT
 		protected:		
 			tBasicList	_AgentList;
 			IAgentComposite(const IAgentComposite &a);
+			sint _SizeChild;
 
 		public:
 			///Contruct agent with an parent.

@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.25 2001/08/30 17:11:56 chafik Exp $
+ * $Id: mailbox.cpp,v 1.26 2001/09/06 16:48:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,23 +43,24 @@ namespace NLAIAGENT
 	{
 	}
 
-	CSimpleLocalMailBox::CSimpleLocalMailBox(const IWordNumRef *parent) : IMailBox(parent)
+	CSimpleLocalMailBox::CSimpleLocalMailBox(const IWordNumRef *parent) : IMailBox(parent), _Size(0)
 	{
 	}
 
-	CSimpleLocalMailBox::CSimpleLocalMailBox(NLMISC::IStream &is) : IMailBox(is)
+	CSimpleLocalMailBox::CSimpleLocalMailBox(NLMISC::IStream &is) : IMailBox(is), _Size(0)
 	{
 		load(is);
 	}
 
 
-	CSimpleLocalMailBox::CSimpleLocalMailBox(const CSimpleLocalMailBox &a) : IMailBox(a)
+	CSimpleLocalMailBox::CSimpleLocalMailBox(const CSimpleLocalMailBox &a) : IMailBox(a), _Size(0)
 	{					
 		tListMessage::const_reverse_iterator i = a._ListMessage.rbegin();
 		while(i != a._ListMessage.rend())
 		{
 			_ListMessage.push_back(*i++);
 			((IMessageBase *)_ListMessage.back())->incRef();
+			_Size ++;
 		}
 		_RunState = a._RunState;
 	}
@@ -77,6 +78,7 @@ namespace NLAIAGENT
 	void CSimpleLocalMailBox::addMessage(IMessageBase *msg)
 	{
 		_ListMessage.push_front( msg );
+		_Size ++;
 	}
 
 	void CSimpleLocalMailBox::addMailBox(IMailBox *)
@@ -96,6 +98,7 @@ namespace NLAIAGENT
 	{
 		((IMessageBase *)_ListMessage.back())->release();		
 		_ListMessage.pop_back();
+		_Size --;
 	}
 
 	sint32 CSimpleLocalMailBox::getMessageCount() const
@@ -104,7 +107,7 @@ namespace NLAIAGENT
 	}
 	bool CSimpleLocalMailBox::isEmpty() const
 	{
-		return _ListMessage.begin() == _ListMessage.end();
+		return _Size == 0;//_ListMessage.begin() == _ListMessage.end();
 	}
 
 	std::list<const IMessageBase *> *CSimpleLocalMailBox::pumpMessages(/*IBasicMessageGroup &*/) const
@@ -207,6 +210,7 @@ namespace NLAIAGENT
 			((IMessageBase *)_ListMessage.back())->release();
 			_ListMessage.pop_back();				
 		}
+		_Size = 0;
 
 		NLAIC::CIdentTypeAlloc id;
 		sint32 i;
@@ -218,7 +222,8 @@ namespace NLAIAGENT
 				is.serial(id);
 				IMessageBase *m = (IMessageBase *)id.allocClass();
 				is.serial( *m );
-				_ListMessage.push_back(m);					
+				_ListMessage.push_back(m);
+				_Size ++;
 			}
 		}
 	}
@@ -239,17 +244,17 @@ namespace NLAIAGENT
 		return *this;
 	}			
 
-	CLocalMailBox::CLocalMailBox (const IWordNumRef *parent):IMailBox(parent)
+	CLocalMailBox::CLocalMailBox (const IWordNumRef *parent):IMailBox(parent),_Size(0)
 	{
 	}
 
-	CLocalMailBox::CLocalMailBox(NLMISC::IStream &is):IMailBox(is)
+	CLocalMailBox::CLocalMailBox(NLMISC::IStream &is):IMailBox(is),_Size(0)
 	{
 		load(is);
 	}
 
 
-	CLocalMailBox::CLocalMailBox (const CLocalMailBox &A):IMailBox(A),_RunState(A._RunState)
+	CLocalMailBox::CLocalMailBox (const CLocalMailBox &A):IMailBox(A),_RunState(A._RunState),_Size(0)
 	{						
 		/*tListMailBox::const_reverse_iterator i = A._ListMailBox.rbegin();
 		while(i != A._ListMailBox.rend())
@@ -304,16 +309,17 @@ namespace NLAIAGENT
 		}*/
 		((IMessageBase *)_ListMessageIn.back())->release();
 		_ListMessageIn.pop_back();
+		_Size --;
 	}
 
 	sint32 CLocalMailBox::getMessageCount() const
 	{
-		return _ListMessageIn.size();
+		return _Size;
 	}
 
 	bool CLocalMailBox::isEmpty() const
 	{
-		return _ListMessageIn.begin() == _ListMessageIn.end();
+		return _Size == 0;//_ListMessageIn.begin() == _ListMessageIn.end();
 	}
 	
 	/*void CLocalMailBox::sendMessage(const IBasicAgent &,const IBaseGroupType &)
@@ -330,6 +336,7 @@ namespace NLAIAGENT
 	void CLocalMailBox::addMessage(IMessageBase *msg)
 	{
 		_ListMessageIn.push_front(msg);
+		_Size ++;
 	}
 	
 	// Ajoute une boite aux lettre dans la liste des boites aux lettres "source" (les bals à consulter).
@@ -430,6 +437,7 @@ namespace NLAIAGENT
 		sint32 i;				
 		NLAIC::CIdentTypeAlloc id;			
 		is.serial(i);
+		_Size = 0;
 		if(i)
 		{
 			while(i --)
@@ -438,6 +446,7 @@ namespace NLAIAGENT
 				IWordNumRef *num = (IWordNumRef *)id.allocClass();
 				num->load(is);
 				_ListMailBox.push_back((IMailBox *)((const IRefrence *)*num));
+				_Size ++;
 				delete num;
 			}
 		}
@@ -596,7 +605,6 @@ namespace NLAIAGENT
 		return NULL;
 	}
 
-
 	const NLAIC::IBasicType *CScriptMailBox::clone() const
 	{
 		NLAIC::IBasicType *a = new CScriptMailBox(*this);
@@ -604,11 +612,11 @@ namespace NLAIAGENT
 	}
 
 	const NLAIC::IBasicType *CScriptMailBox::newInstance() const
-	{				
+	{
 		NLAIC::IBasicType *a;
-		if(getParent() != NULL) 
+		if(getParent() != NULL)
 			a = new	CScriptMailBox((const IWordNumRef *)getParent());
-		else 
+		else
 			a = new CScriptMailBox((const IWordNumRef *)NULL);
 		return a;
 	}

@@ -1,7 +1,7 @@
 /** \file mailbox.h
  * class for mailing box.
  *
- * $Id: mailbox.h,v 1.12 2001/08/30 08:30:08 chafik Exp $
+ * $Id: mailbox.h,v 1.13 2001/09/06 16:47:58 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,7 @@ namespace NLAIAGENT
 		virtual void popMessage() = 0;
 		virtual sint32	getMessageCount() const = 0;
 		virtual bool isEmpty() const = 0;
+		virtual sint size() const = 0;
 
 		virtual std::list<const IMessageBase *> *pumpMessages(/*IBasicMessageGroup &*/) const= 0;
 
@@ -84,6 +85,7 @@ namespace NLAIAGENT
 		IMailBox::tListMessage _ListMessage;
 		IObjectIA::CProcessResult	_RunState;
 		std::list<IBasicMessageGroup *> _Msg_grps;
+		sint _Size;
 
 	public:
 		static const NLAIC::CIdentType IdSimpleLocalMailBox;
@@ -118,6 +120,11 @@ namespace NLAIAGENT
 		{
 			return _ListMessage;
 		}
+
+		virtual sint size() const
+		{
+			return _Size;
+		}
 	private:
 			virtual IConnectIA &getConnection(IConnectIA &r);
 	};
@@ -139,7 +146,7 @@ namespace NLAIAGENT
 			tListMessage _ListMessageIn;
 			tListMessage _ListSharedMessage;
 			tListMailBox _ListMailBox;
-
+			sint _Size;
 			
 		public:
 	
@@ -175,6 +182,10 @@ namespace NLAIAGENT
 			virtual const tListMessage &getMesseageListe() const 
 			{
 				return _ListMessageIn;
+			}
+			virtual sint size() const
+			{
+				return _Size;
 			}
 			/*virtual void addGroup(IBasicMessageGroup &grp);
 			virtual std::list<IBasicMessageGroup *> &getGroups() ;

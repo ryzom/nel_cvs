@@ -1604,6 +1604,14 @@ SOURCE=.\3d\visual_collision_manager_user.cpp
 
 SOURCE=.\3d\visual_collision_manager_user.h
 # End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\water_env_map_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\water_env_map_user.h
+# End Source File
 # End Group
 # Begin Group "User"
 
@@ -1779,6 +1787,10 @@ SOURCE=..\include\nel\3d\u_visual_collision_mesh.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\u_water.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\include\nel\3d\u_water_env_map.h
 # End Source File
 # Begin Source File
 
@@ -2288,6 +2300,14 @@ SOURCE=.\3d\quad_grid_clip_manager.h
 # Begin Group "Water"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\water_env_map.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\water_env_map.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\3d\water_height_map.cpp

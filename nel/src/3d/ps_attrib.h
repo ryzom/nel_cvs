@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.18 2003/07/04 10:19:15 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.19 2003/07/07 09:54:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -501,6 +501,7 @@ void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			else
 			{
 				f.serial(size);
+				maxsize = _MaxSize;
 			}
 			if (ver > 4)
 			{			

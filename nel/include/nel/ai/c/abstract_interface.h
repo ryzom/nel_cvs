@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.8 2001/01/09 17:35:04 chafik Exp $
+ * $Id: abstract_interface.h,v 1.9 2001/01/09 17:41:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -295,7 +295,7 @@ namespace NLAIC //Gen pour general.
 		{
 		}
 
-		virtual void serial(NLMISC::IStream	&f)/// throw(NLMISC::EStream)
+		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
 		{
 			if ( f.isReading() )
 				load( f );
@@ -478,7 +478,7 @@ namespace NLAIC //Gen pour general.
 		}
 
 		///user can serial this object.
-		virtual void serial(NLMISC::IStream	&f);/// throw(NLMISC::EStream);		
+		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream);		
 	};
 	
 

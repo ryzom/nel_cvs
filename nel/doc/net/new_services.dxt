@@ -18,7 +18,7 @@ are located in /code/server.
 \subsection new_service How to create a user-defined service ?
 
 -# Create a class inherited from NLNET::IService (optional).
--# Create an array of callbacks. Example :
+-# Create an array of callbacks, called \e CallbackArray. Example :
 \code
 void cbProcessConnection( CMessage& message, TSenderId from )
 {

@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.24 2000/11/10 16:58:35 cado Exp $
+ * $Id: msg_socket.cpp,v 1.25 2000/11/14 15:58:34 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,7 +183,7 @@ void CMsgSocket::init( const TCallbackItem *callbackarray, TTypeNum arraysize )
 {
 	_Binded = false;
 	_SenderIdNb = 0;
-	_ReceiveAll = false;
+	_ReceiveAll = true;
 	_PrevBytesReceivedFromHost = 0;
 	_PrevBytesSentToHost = 0;
 	_CallbackArray = callbackarray;
@@ -381,6 +381,11 @@ void CMsgSocket::sendToAllExceptHost( CMessage& outmsg, TSenderId excluded )
  */
 void CMsgSocket::update()
 {
+#ifdef NL_DEBUG
+	uint nb_recvd = 0;
+	uint bytes_recvd = 0;
+#endif
+
 	// Check data available on all sockets, including the server socket
 	while ( getDataAvailableStatus() )
 	{
@@ -408,6 +413,10 @@ void CMsgSocket::update()
 						// Receive message from a connected client
 						CMessage msg( "", true );
 						(*ilps)->receive( msg );
+#ifdef NL_DEBUG
+						nb_recvd++;
+						bytes_recvd += msg.length();
+#endif
 						if ( msgIsBinding( msg ) )
 						{
 							(*ilps)->processBindMessage( msg );
@@ -446,6 +455,14 @@ void CMsgSocket::update()
 			_Connections.erase( *iilps );
 		}
 		_ConnectionsToDelete.clear();
+
+#ifdef NL_DEBUG
+		nldebug( "Nb: %u - Bytes: %u", nb_recvd, bytes_recvd );
+		/*if ( nb_recvd == 33 )
+		{
+			nlassert( false );
+		}*/
+#endif
 
 		// Receive only one message per update if not in "receive all" mode
 		if ( ! receiveAllMode() )
@@ -631,13 +648,17 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 
 		if ( ! ((s=="C") || (s=="D") ) )
 		{
-			// Send a binding message
-			CMessage bindmsg;
-			TTypeNum num = (*its).pt() - _CallbackArray;
-			bindmsg.setType( "B" );
-			bindmsg.serial( s );
-			bindmsg.serial( num );
-			sock.send( bindmsg );
+			// Send a binding message if it has not been sent before
+			if ( ! (*its).bindSent() )
+			{
+				CMessage bindmsg;
+				TTypeNum num = (*its).pt() - _CallbackArray;
+				bindmsg.setType( "B" );
+				bindmsg.serial( s );
+				bindmsg.serial( num );
+				sock.send( bindmsg );
+				const_cast<CPtCallbackItem&>((*its)).setBindSentFlag();
+			}
 		}
 
 		// Call the callback function

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.23 2000/11/10 16:58:35 cado Exp $
+ * $Id: socket.cpp,v 1.24 2000/11/14 15:58:34 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,22 +97,28 @@ void CSocket::close()
  */
 void CSocket::send( CMessage& message ) throw(ESocket)
 {
+#ifdef NL_DEBUG
+	uint len = message.length();
+#endif
 	CMessage alldata = encode( message );
 
+	nlassert( alldata.length() < 100000 ); // debug check
 	CBaseSocket::send( alldata.buffer(), alldata.length() );
+#ifdef NL_DEBUG
 	if ( _Logging )
 	{
 		if ( message.typeIsNumber() )
 		{
-			nldebug( "Socket %d sent message %hd (%s) (%d bytes)",
-				_Sock, message.typeAsNumber(), message.typeAsString().c_str(), alldata.length() );
+			nldebug( "Socket %d sent message %hd (%s) (%d bytes +%d)",
+				_Sock, message.typeAsNumber(), message.typeAsString().c_str(), len, alldata.length()-len  );
 		}
 		else
 		{
-			nldebug( "Socket %d sent message %s (%d bytes)",
-				_Sock, message.typeAsString().c_str(), alldata.length() );
+			nldebug( "Socket %d sent message %s (%d bytes +%d)",
+				_Sock, message.typeAsString().c_str(), len, alldata.length()-len );
 		}
 	}
+#endif
 }
 
 
@@ -179,6 +185,7 @@ CMessage CSocket::encode( CMessage& msg ) throw (ESocket)
 	{
 		// Message type number
 		code = msg.typeAsNumber();
+		nlassert( code < 60 );
 	}
 	else
 	{
@@ -245,7 +252,11 @@ CMessage CSocket::decode( CMessage& alldata ) throw (ESocket)
 		delete [] msgname;
 	}
 	// Read buffer
-	alldata.serialBuffer( msg.bufferToFill(msgsize), msgsize );
+	if ( msgsize > 0 )
+	{
+		nlassert( msgsize < 100000 ); // debug check
+		alldata.serialBuffer( msg.bufferToFill(msgsize), msgsize );
+	}
 
 	return msg;
 }
@@ -320,7 +331,7 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 	if ( msgtype < 0 )
 	{
 		message.setType( std::string(msgname) );
-	}
+	}	
 	else
 	{
 		message.setType( msgtype );
@@ -330,20 +341,23 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 		delete [] msgname;
 	}
 	// 4. Read all buffer and dismiss
-	if (msgsize > 0)
+	if ( msgsize > 0 )
+	{
+		nlassert( msgsize < 100000 ); // debug check
 		CBaseSocket::doReceive( message.bufferToFill(msgsize), msgsize );
+	}
 
 	if ( _Logging )
 	{
 		if ( message.typeIsNumber() )
 		{
-			nldebug( "Socket %d received message %hd (%d bytes)",
-				_Sock, message.typeAsNumber(), sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
+			nldebug( "Socket %d received message %hd (%d bytes +%d)",
+				_Sock, message.typeAsNumber(), message.length(), sizeof(msgtype)+msgnamelen+sizeof(msgsize) );
 		}
 		else
 		{
-			nldebug( "Socket %d received message %s (%d bytes)",
-				_Sock, message.typeAsString().c_str(), sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
+			nldebug( "Socket %d received message %s (%d bytes +%d)",
+				_Sock, message.typeAsString().c_str(), message.length(), sizeof(msgtype)+msgnamelen+sizeof(msgsize) );
 		}
 	}
 }

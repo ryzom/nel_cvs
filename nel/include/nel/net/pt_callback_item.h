@@ -1,7 +1,7 @@
 /** \file pt_callback_item.h
  * CPtCallbackItem class
  *
- * $Id: pt_callback_item.h,v 1.5 2000/10/24 16:39:42 cado Exp $
+ * $Id: pt_callback_item.h,v 1.6 2000/11/14 15:58:34 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,24 +59,38 @@ class CPtCallbackItem
 {
 public:
 
-	/// Constructor
+	/// Constructor for searching
 	CPtCallbackItem( const char *key )
 	{
-		_Key = (char*)key; // Not using strdup() at the moment
+		_Key = (char*)key; // no need for using strdup()
 		_Pt = NULL;
+		// Not modifying _BindSent
 	}
 
-	/// Constructor
+	/// Constructor for registering
 	CPtCallbackItem( const TCallbackItem *pt )
 	{
 		_Pt = (TCallbackItem*)pt;
 		_Key = NULL;
+		_BindSent = false;
 	}
 
 	/// Return pointer
 	TCallbackItem *pt() const
 	{
 		return _Pt;
+	}
+
+	/// Call this method when sending a binding message
+	void	setBindSentFlag()
+	{
+		_BindSent = true;
+	}
+
+	/// Returns true if a binding message has been sent
+	bool	bindSent() const
+	{
+		return _BindSent;
 	}
 
 	/// Return key (either internal or linked by pt())
@@ -102,6 +116,7 @@ private:
 
 	TCallbackItem	*_Pt;
 	char			*_Key;
+	bool			_BindSent;
 
 };
 

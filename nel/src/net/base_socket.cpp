@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.16 2000/11/10 10:06:24 cado Exp $
+ * $Id: base_socket.cpp,v 1.17 2000/11/14 15:58:34 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/tcp/h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
@@ -420,11 +420,17 @@ bool CBaseSocket::received( uint8 *buffer, uint len ) throw (ESocket)
  */
 void CBaseSocket::doReceive( uint8 *buffer, uint len )
 {
-	int brecvd = ::recv( _Sock, (char*)buffer, len, 0 );
-	switch ( brecvd )
+	uint total = 0;
+	uint brecvd;
+	while ( total < len )
 	{
-		case 0 :			throw ESocketConnectionClosed();
-		case SOCKET_ERROR :	throw ESocket( "Unable to receive data", ERROR_NUM );
+		brecvd = ::recv( _Sock, (char*)(buffer+total), len-total, 0 );
+		switch ( brecvd )
+		{
+			case 0 :			throw ESocketConnectionClosed();
+			case SOCKET_ERROR :	throw ESocket( "Unable to receive data", ERROR_NUM );
+		}
+		total += brecvd;
 	}
 	/*if ( _Logging )
 	{

@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.24 2004/03/12 16:27:52 berenguier Exp $
+ * $Id: transform_user.h,v 1.25 2004/03/23 10:12:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -267,6 +267,14 @@ public:
 		NL3D_MEM_TRANSFORM
 		return _Transform->getForceClipRoot();
 	}
+
+
+	void setTransparencyPriority(uint8 priority)
+	{
+		NL3D_MEM_TRANSFORM
+		_Transform->setTransparencyPriority(priority);
+	}
+
 
 public:
 	/// \name Accessor for CSceneUser / Other.

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.49 2003/11/26 13:44:00 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.50 2004/03/23 10:15:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,9 +62,9 @@ CRenderTrav::CRenderTrav()
 {
 	RenderList.resize(1024);
 	_CurrentNumVisibleModels= 0;
-
+	_MaxTransparencyPriority = 0;
 	OrderOpaqueList.init(1024);
-	OrderTransparentList.init(1024);
+	setupTransparencySorting();	
 	Driver = NULL;
 	_CurrentPassOpaque = true;
 
@@ -83,7 +83,7 @@ CRenderTrav::CRenderTrav()
 	_MeshSkinManager= NULL;
 	_ShadowMeshSkinManager= NULL;
 
-	_LayersRenderingOrder= true;
+	_LayersRenderingOrder= true;		
 }
 // ***************************************************************************
 void		CRenderTrav::traverse()
@@ -137,8 +137,12 @@ void		CRenderTrav::traverse()
 	// the transparency flag (multi lod for instance)
 
 	// clear the OTs, and prepare to allocate max element space
-	OrderOpaqueList.reset(_CurrentNumVisibleModels);
-	OrderTransparentList.reset(_CurrentNumVisibleModels);
+	OrderOpaqueList.reset(_CurrentNumVisibleModels);		
+	for(uint k = 0; k <= (uint) _MaxTransparencyPriority; ++k)
+	{	
+		_OrderTransparentListByPriority[k].reset(_CurrentNumVisibleModels);	// all table share the same allocator (CLayeredOrderingTable::shareAllocator has been called) 
+	                                                                    // and an object can be only inserted in one table, so we only need to init the main allocator
+	}
 
 	// fill the OTs.
 	CTransform			**itRdrModel= NULL;
@@ -151,8 +155,8 @@ void		CRenderTrav::traverse()
 	float	OOFar= 1.0f / this->Far;
 	uint32	opaqueOtSize= OrderOpaqueList.getSize();
 	uint32	opaqueOtMax= OrderOpaqueList.getSize()-1;
-	uint32	transparentOtSize= OrderTransparentList.getSize();
-	uint32	transparentOtMax= OrderTransparentList.getSize()-1;
+	uint32	transparentOtSize= _OrderTransparentListByPriority[0].getSize(); // there is at least one list, and all list have the same number of entries
+	uint32	transparentOtMax= _OrderTransparentListByPriority[0].getSize()-1;
 	uint32	otId;
 	// fast floor
 	NLMISC::OptFastFloorBegin();
@@ -181,8 +185,8 @@ void		CRenderTrav::traverse()
 			rPseudoZ2 = rPseudoZ * transparentOtSize;
 			otId= NLMISC::OptFastFloor(rPseudoZ2);
 			otId= min(otId, transparentOtMax);
-			// must invert id, because transparent, sort from back to front
-			OrderTransparentList.insert( pTransform->getOrderingLayer(), pTransform, transparentOtMax-otId );
+			// must invert id, because transparent, sort from back to front			
+			_OrderTransparentListByPriority[std::min(pTransform->getTransparencyPriority(), _MaxTransparencyPriority)].insert( pTransform->getOrderingLayer(), pTransform, transparentOtMax-otId );
 		}
 
 	}
@@ -272,23 +276,29 @@ void		CRenderTrav::traverse()
 	// Render Transparent stuff.
 	// =============================
 
-	 // Render transparent materials
+	 // Render transparent materials (draw higher priority first)
 	_CurrentPassOpaque = false;
-	OrderTransparentList.begin(_LayersRenderingOrder);	
-	while( OrderTransparentList.get() != NULL )
-	{				
-		OrderTransparentList.get()->traverseRender();
-		OrderTransparentList.next();
-	}
+	for(std::vector<CLayeredOrderingTable<CTransform> >::reverse_iterator it = _OrderTransparentListByPriority.rbegin(); it != _OrderTransparentListByPriority.rend(); ++it)
+	{		
+		it->begin(_LayersRenderingOrder);	
+		while( it->get() != NULL )
+		{				
+			it->get()->traverseRender();
+			it->next();
+		}
+	}	
 
 	// Profile this frame?
 	if(Scene->isNextRenderProfile())
 	{
-		OrderTransparentList.begin();
-		while( OrderTransparentList.get() != NULL )
+		for(std::vector<CLayeredOrderingTable<CTransform> >::reverse_iterator it = _OrderTransparentListByPriority.rbegin(); it != _OrderTransparentListByPriority.rend(); ++it)
 		{
-			OrderTransparentList.get()->profileRender();
-			OrderTransparentList.next();
+			it->begin();
+			while( it->get() != NULL )
+			{
+				it->get()->profileRender();
+				it->next();
+			}
 		}
 	}
 
@@ -1049,6 +1059,18 @@ void			CRenderTrav::renderLandscapes()
 	}
 }
 
+// ***************************************************************************
+void CRenderTrav::setupTransparencySorting(uint8 maxPriority /*=0*/,uint NbDistanceEntries /*=1024*/)
+{	
+	_OrderTransparentListByPriority.resize((uint) maxPriority + 1);
+	for(uint k = 0; k < _OrderTransparentListByPriority.size(); ++k)
+	{
+		_OrderTransparentListByPriority[k].init(NbDistanceEntries);
+		if (k != 0) _OrderTransparentListByPriority[k].shareAllocator(_OrderTransparentListByPriority[0]); // node allocator is shared between all layers
+	}
+	_MaxTransparencyPriority = maxPriority;	
+}
 
 
 }
+

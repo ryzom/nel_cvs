@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.49 2003/12/04 10:42:02 vizerie Exp $
+ * $Id: transform.h,v 1.50 2004/03/23 10:12:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -185,6 +185,13 @@ public:
 
 	/// Get the ordering layer
 	uint			getOrderingLayer() const { return _OrderingLayer; }
+
+	/// Set priority for transparent ordering. When sorting before drawing, priority is taken in account before distance, so
+	//  an object with distance 10 and priority 1 will be displayed before any object with distance 1 and priority 0.
+	// IMPORTANT : priority is clamped by the number of priorities defined in the scene. By default there's only one priority of 0
+	// that is possible, so priority ordering doesn't actually occurs.
+	void			setTransparencyPriority(uint8 priority) { _TransparencyPriority = priority; }	
+	uint8			getTransparencyPriority() const { return _TransparencyPriority; }	
 
 	/// Hide the object and his sons.
 	void			hide();
@@ -741,12 +748,13 @@ private:
 	TFreezeHRCState			_FreezeHRCState;
 
 	uint8				_OrderingLayer;
+	uint8				_TransparencyPriority;
 
 	// For stickObjectEx(). with forceCLod==true
-	bool				_ForceCLodSticked;
+	bool				_ForceCLodSticked : 1;
 
 	/// true if need to compute transform
-	bool				_TransformDirty;
+	bool				_TransformDirty   : 1;
 
 	/// See ILogicInfo. Used for lighting.	default is NULL.
 	ILogicInfo			*_LogicInfo;

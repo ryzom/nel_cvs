@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.56 2004/03/12 16:27:52 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.57 2004/03/23 10:14:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,7 +94,7 @@ UAnimationSet			*CSceneUser::createAnimationSet(const std::string &animationSetF
 	return _AnimationSets.insert(new CAnimationSetUser(f));
 }
 // ***************************************************************************
-void			CSceneUser::deleteAnimationSet(UAnimationSet	*animationSet) 
+void			CSceneUser::deleteAnimationSet(UAnimationSet *animationSet) 
 {
 	NL_ALLOC_CONTEXT( 3dAnmSt )
 	NL3D_HAUTO_ELT_SCENE;
@@ -1141,6 +1141,11 @@ IWaterSurfaceAddedCallback *CSceneUser::getWaterCallback() const
 	return _Scene.getWaterCallback();
 }
 
+// ***************************************************************************
+void CSceneUser::setupTransparencySorting(uint8 maxPriority /*=0*/,uint NbDistanceEntries /*=1024*/)
+{
+	_Scene.getRenderTrav().setupTransparencySorting(maxPriority, NbDistanceEntries);
+}
 
 
 } // NL3D

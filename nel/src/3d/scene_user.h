@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.51 2004/03/12 16:27:52 berenguier Exp $
+ * $Id: scene_user.h,v 1.52 2004/03/23 10:14:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -321,6 +321,9 @@ public:
 
 	void						setWaterCallback(IWaterSurfaceAddedCallback *wcb);
 	IWaterSurfaceAddedCallback *getWaterCallback() const;
+	//
+	virtual void setupTransparencySorting(uint8 maxPriority = 0, uint NbDistanceEntries = 1024);
+	
 
 public:
 	/// \name Accessor for CSceneUser.

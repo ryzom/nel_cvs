@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.22 2003/11/26 13:44:00 berenguier Exp $
+ * $Id: render_trav.h,v 1.23 2004/03/23 10:15:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,7 +121,7 @@ public:
 	void			addRenderModel(CTransform *m)
 	{
 		RenderList[_CurrentNumVisibleModels]= m;
-		_CurrentNumVisibleModels++;
+		_CurrentNumVisibleModels++;				
 	}
 	// for createModel().
 	void				reserveRenderList(uint numModels);
@@ -152,6 +152,16 @@ public:
 	  */
 	void  setLayersRenderingOrder(bool directOrder = true) { _LayersRenderingOrder = directOrder; }
 	bool  getLayersRenderingOrder() const { return _LayersRenderingOrder; }
+
+	/** Setup transparency sorting
+	  * \param maxPriority Defines the valid range for priority in the [0, n] interval. By default, there's no prioriy sorting (0 -> single priority, 255 -> 256 possible priorities)
+	  *                    Objects with highers priority are displayed before any other object with lower priority,
+	  *                    whatever their distance is.
+	  * \param NbDistanceEntries Defines the granularity for distance sorting. A value of N with a view distance of D meters means 
+	  *                          that the sorting accuracy will be of D / N meters at worst (when visible objects occupy the whole distance range)
+	  * NB : The memory allocated is a multiple of NumPriority * NbDistanceEntries * 2 (2 if because of water ordering)
+	  */
+	void setupTransparencySorting(uint8 maxPriority = 0, uint NbDistanceEntries = 1024);
 
 
 
@@ -314,15 +324,16 @@ public:
 	// ReSetup the Driver Frustum/Camera. Called internally and by ShadowMapManager only.
 	void			setupDriverCamera();
 
-private:
-	
+private:	
+
 	// A grow only list of models to be rendered.
 	std::vector<CTransform*>	RenderList;
-	uint32						_CurrentNumVisibleModels;
+	uint32						_CurrentNumVisibleModels;	
 
 	// Ordering Table to sort transparent objects
 	COrderingTable<CTransform>			OrderOpaqueList;
-	CLayeredOrderingTable<CTransform>	OrderTransparentList;
+	std::vector<CLayeredOrderingTable<CTransform> >	_OrderTransparentListByPriority;
+	uint8											_MaxTransparencyPriority;	
 
 	IDriver			*Driver;
 	CViewport		_Viewport;

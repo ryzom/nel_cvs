@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.5 2002/04/12 12:04:32 lecroart Exp $
+ * $Id: dru.h,v 1.6 2002/07/23 07:56:01 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,26 +38,26 @@
 #	if _MSC_VER >= 1300	// visual .NET, use different dll name
 // must test debug fast first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
 #		ifdef NL_DEBUG_FAST
-#			define NL3D_DLL_NAME "nldriver_opengl_DebugFast.dll"
+#			define NL3D_DLL_NAME "nldriver_opengl_df.dll"
 #		elif defined (NL_DEBUG)
-#			define NL3D_DLL_NAME "nldriver_opengl_Debug.dll"
+#			define NL3D_DLL_NAME "nldriver_opengl_d.dll"
 #		elif defined (NL_RELEASE_DEBUG)
-#			define NL3D_DLL_NAME "nldriver_opengl_ReleaseDebug.dll"
+#			define NL3D_DLL_NAME "nldriver_opengl_rd.dll"
 #		elif defined (NL_RELEASE)
-#			define NL3D_DLL_NAME "nldriver_opengl_Release.dll"
+#			define NL3D_DLL_NAME "nldriver_opengl_r.dll"
 #		else
 #			error "Unknown dll name"
 #		endif
 #	else // visual 6 or lesser
 // must test debug fast first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
 #		ifdef NL_DEBUG_FAST
-#			define NL3D_DLL_NAME "nel_drv_opengl_win_debug_fast.dll"
+#			define NL3D_DLL_NAME "nel_drv_opengl_win_df.dll"
 #		elif defined (NL_DEBUG)
-#			define NL3D_DLL_NAME "nel_drv_opengl_win_debug.dll"
+#			define NL3D_DLL_NAME "nel_drv_opengl_win_d.dll"
 #		elif defined (NL_RELEASE_DEBUG)
 #			define NL3D_DLL_NAME "nel_drv_opengl_win_rd.dll"
 #		elif defined (NL_RELEASE)
-#			define NL3D_DLL_NAME "nel_drv_opengl_win.dll"
+#			define NL3D_DLL_NAME "nel_drv_opengl_win_r.dll"
 #		else
 #			error "Unknown dll name"
 #		endif

@@ -927,7 +927,7 @@ SOURCE=..\include\nel\3d\tmp\height_map.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\u_3d_mouse_listener.h
+SOURCE=..\include\nel\3d\tmp\u_3d_mouse_listener.h
 # End Source File
 # Begin Source File
 

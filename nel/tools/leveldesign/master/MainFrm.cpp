@@ -44,8 +44,8 @@ SEnvironnement::SEnvironnement()
 	MasterTreeLocked	= true;
 
 	char tmp[MAX_PATH];
-	GetCurrentDirectory(MAX_PATH, tmp);
-	RootDir				= tmp;
+	GetCurrentDirectory (MAX_PATH, tmp);
+	RootDir	= tmp;
 	RootDir += "\\";
 
 	WorldEdOpened = false;
@@ -165,6 +165,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_WINDOWS_WORLDEDITOR, onWindowsWorldEditor)
 	ON_COMMAND(ID_WINDOWS_GEORGES, onWindowsGeorges)
 	ON_COMMAND(ID_WINDOWS_LOGICEDITOR, onWindowsLogicEditor)
+	ON_COMMAND(ID_WINDOWS_RESET, onWindowsReset)
 
 	ON_WM_CREATE()
 	ON_WM_ERASEBKGND()
@@ -340,10 +341,15 @@ void CMainFrame::closeWorldEditor()
 	RECT r;
 	CFrameWnd *pFW = (CFrameWnd*)_WorldEditor->getMainFrame();
 	pFW->GetWindowRect(&r);
-	_Environnement.WorldEdY = r.top;
-	_Environnement.WorldEdX = r.left;
-	_Environnement.WorldEdCY = r.bottom - r.top;
-	_Environnement.WorldEdCX = r.right - r.left;
+	WINDOWPLACEMENT wp;
+	pFW->GetWindowPlacement (&wp);
+	if (wp.showCmd == SW_SHOWNORMAL)
+	{
+		_Environnement.WorldEdY = r.top;
+		_Environnement.WorldEdX = r.left;
+		_Environnement.WorldEdCY = r.bottom - r.top;
+		_Environnement.WorldEdCX = r.right - r.left;
+	}
 	_WorldEditor->releaseUI ();
 	GetMenu()->CheckMenuItem (ID_WINDOWS_WORLDEDITOR, MF_UNCHECKED);
 }
@@ -365,7 +371,7 @@ void CMainFrame::openGeorges ()
 // ---------------------------------------------------------------------------
 void CMainFrame::openGeorgesFile (const char *fileName)
 {
-	_Georges->SetWorkDirectory (_Environnement.RootDir + _ActiveRegionPath + "\\" + _ActiveRegion);
+	_Georges->SetDirLevel (_Environnement.RootDir + _ActiveRegionPath + "\\" + _ActiveRegion);
 	_Georges->LoadDocument (fileName);
 }
 
@@ -378,10 +384,15 @@ void CMainFrame::closeGeorges ()
 	RECT r;
 	CFrameWnd *pFW = (CFrameWnd*)_Georges->getMainFrame();
 	pFW->GetWindowRect(&r);
-	_Environnement.GeorgesY = r.top;
-	_Environnement.GeorgesX = r.left;
-	_Environnement.GeorgesCY = r.bottom - r.top;
-	_Environnement.GeorgesCX = r.right - r.left;
+	WINDOWPLACEMENT wp;
+	pFW->GetWindowPlacement (&wp);
+	if (wp.showCmd == SW_SHOWNORMAL)
+	{
+		_Environnement.GeorgesY = r.top;
+		_Environnement.GeorgesX = r.left;
+		_Environnement.GeorgesCY = r.bottom - r.top;
+		_Environnement.GeorgesCX = r.right - r.left;
+	}
 	_Georges->releaseUI ();
 	GetMenu()->CheckMenuItem (ID_WINDOWS_GEORGES, MF_UNCHECKED);
 }
@@ -391,7 +402,7 @@ void CMainFrame::georgesUpdatePatatoid ()
 {
 	if (_Georges == NULL)
 		return;
-	_Georges->SetWorkDirectory (_Environnement.RootDir + _ActiveRegionPath + "\\" + _ActiveRegion);
+	_Georges->SetDirLevel (_Environnement.RootDir + _ActiveRegionPath + "\\" + _ActiveRegion);
 	_Georges->SetTypPredef ("patat_name.typ", _MasterCB.getAllPrimZoneNames());
 }
 
@@ -420,46 +431,52 @@ void CMainFrame::georgesCreatePlantName ()
 	char curdir[MAX_PATH];
 	GetCurrentDirectory (MAX_PATH, curdir);
 
-	string plantname = _Environnement.RootDir + "common\\dfn\\";
-	if (!SetCurrentDirectory(plantname.c_str()))
-		return;
-
-	plantname += "plant_name.typ";
-
-	// If plantname file do not already exists
-	HANDLE hFind = FindFirstFile(plantname.c_str(), &fdTmp);
-	if (hFind != INVALID_HANDLE_VALUE)
+	try
 	{
-		FindClose (hFind);
-		if (!DeleteFile (plantname.c_str()))
-		{
-			MessageBox (plantname.c_str(), "Cannot overwrite");
+		string plantname = _Environnement.RootDir + "common\\dfn\\";
+		if (!SetCurrentDirectory(plantname.c_str()))
 			return;
+
+		plantname += "plant_name.typ";
+
+		// If plantname file do not already exists
+		HANDLE hFind = FindFirstFile(plantname.c_str(), &fdTmp);
+		if (hFind != INVALID_HANDLE_VALUE)
+		{
+			FindClose (hFind);
+			if (!DeleteFile (plantname.c_str()))
+			{
+				MessageBox (plantname.c_str(), "Cannot overwrite");
+				return;
+			}
 		}
+		
+		vector< pair< string, string > > lpsx;
+		vector< pair< string, string > > lpsx2;
+		lpsx.push_back (std::make_pair(string("xxx.plant"),	string("xxx.plant")));
+		lpsx.push_back (std::make_pair(string("yyy.plant"), string("yyy.plant")));
+	 	_Georges->MakeTyp (plantname, "string", "PLANT", "true", "", "", "xxx.plant", &lpsx, &lpsx2);
+
+		// Parse the plant directory and add all these predef
+		string plantdir = _Environnement.RootDir + "common";
+		SetCurrentDirectory (plantdir.c_str());
+
+		vector<string> allPlants;
+		CExport::getAllFiles (".plant", allPlants);
+
+		for (uint32 i = 0; i < allPlants.size(); ++i)
+		{
+			char fName[_MAX_FNAME];
+			char ext[_MAX_FNAME];
+			::_splitpath((const char*)allPlants[i].c_str(), NULL, NULL, fName, ext);
+			allPlants[i] = string(fName) + string(ext);
+		}
+		_Georges->SetTypPredef ("plant_name.typ", allPlants);
 	}
-	
-	vector< pair< string, string > > lpsx;
-	vector< pair< string, string > > lpsx2;
-	lpsx.push_back (std::make_pair(string("xxx.plant"),	string("xxx.plant")));
-	lpsx.push_back (std::make_pair(string("yyy.plant"), string("yyy.plant")));
- 	_Georges->MakeTyp (plantname, "string", "PLANT", "true", "", "", "xxx.plant", &lpsx, &lpsx2);
-
-	// Parse the plant directory and add all these predef
-	string plantdir = _Environnement.RootDir + "common";
-	SetCurrentDirectory (plantdir.c_str());
-
-	vector<string> allPlants;
-	CExport::getAllFiles (".plant", allPlants);
-
-	for (uint32 i = 0; i < allPlants.size(); ++i)
+	catch(NLMISC::Exception &e)
 	{
-		char fName[_MAX_FNAME];
-		char ext[_MAX_FNAME];
-		::_splitpath((const char*)allPlants[i].c_str(), NULL, NULL, fName, ext) ;						
-		allPlants[i] = string(fName) + string(ext);
+		MessageBox (e.what(), "Warning", MB_ICONERROR|MB_OK);
 	}
-	_Georges->SetTypPredef ("plant_name.typ", allPlants);
-
 	SetCurrentDirectory (curdir);
 }
 
@@ -490,10 +507,15 @@ void CMainFrame::closeLogicEditor ()
 	RECT r;
 	CFrameWnd *pFW = (CFrameWnd*)_LogicEditor->getMainFrame();
 	pFW->GetWindowRect(&r);
-	_Environnement.LogicEditorY = r.top;
-	_Environnement.LogicEditorX = r.left;
-	_Environnement.LogicEditorCY = r.bottom - r.top;
-	_Environnement.LogicEditorCX = r.right - r.left;
+	WINDOWPLACEMENT wp;
+	pFW->GetWindowPlacement (&wp);
+	if (wp.showCmd == SW_SHOWNORMAL)
+	{
+		_Environnement.LogicEditorY = r.top;
+		_Environnement.LogicEditorX = r.left;
+		_Environnement.LogicEditorCY = r.bottom - r.top;
+		_Environnement.LogicEditorCX = r.right - r.left;
+	}
 	_LogicEditor->releaseUI ();
 	GetMenu()->CheckMenuItem (ID_WINDOWS_LOGICEDITOR, MF_UNCHECKED);
 }
@@ -967,7 +989,7 @@ void CMainFrame::regionNewGeorges (const char *str)
 		if (fd.DoModal() == IDOK)
 		{
 			string sTmp = _Environnement.RootDir + "Regions\\" + str + "\\" + (LPCSTR)dial.str;
-			_Georges->SetWorkDirectory (_Environnement.RootDir + "Regions\\" + str);
+			_Georges->SetDirLevel (_Environnement.RootDir + "Regions\\" + str);
 			_Georges->createInstanceFile (sTmp, (LPCSTR)fd.GetFileName());
 		}
 
@@ -982,7 +1004,7 @@ void CMainFrame::setActiveRegion (const std::string &Region, const std::string &
 	_ActiveRegion = Region;
 	_ActiveRegionPath = Dir;
 	if (_Georges != NULL)
-		_Georges->SetWorkDirectory (_Environnement.RootDir + _ActiveRegionPath + "\\" + _ActiveRegion);
+		_Georges->SetDirLevel (_Environnement.RootDir + _ActiveRegionPath + "\\" + _ActiveRegion);
 
 	if (_Environnement.WorldEdOpened)
 	{
@@ -1038,7 +1060,7 @@ int CMainFrame::OnCreate (LPCREATESTRUCT lpCreateStruct)
 	{
 		_MasterCB.setMainFrame (this);
 		_WorldEditor->setMasterCB (&_MasterCB);
-		_WorldEditor->setRootDir (_Environnement.RootDir.c_str());
+		_WorldEditor->setDataDir (_Environnement.RootDir.c_str());
 	}
 	if (_Environnement.WorldEdOpened)
 	{ 
@@ -1049,8 +1071,8 @@ int CMainFrame::OnCreate (LPCREATESTRUCT lpCreateStruct)
 	// GEORGES
 	if (_Georges != NULL)
 	{
-		_Georges->SetRootDirectory (_Environnement.RootDir + "common");
-		_Georges->SetWorkDirectory (_Environnement.RootDir + "common\\dfn");
+		//_Georges->SetRootDirectory (_Environnement.RootDir + "common");
+		//_Georges->SetWorkDirectory (_Environnement.RootDir + "common\\dfn");
 		georgesCreatePlantName ();		
 	}
 	if (_Environnement.GeorgesOpened)
@@ -1417,12 +1439,12 @@ void CMainFrame::onOptionsSetRoot ()
 	_Tree->update (_Environnement.RootDir);
 	// WORLDEDITOR
 	if (_WorldEditor != NULL)
-		_WorldEditor->setRootDir (_Environnement.RootDir.c_str());
+		_WorldEditor->setDataDir (_Environnement.RootDir.c_str());
 	// GEORGES
 	if (_Georges != NULL)
 	{
-		_Georges->SetRootDirectory (_Environnement.RootDir + "common");
-		_Georges->SetWorkDirectory (_Environnement.RootDir + "common\\dfn");
+		//_Georges->SetRootDirectory (_Environnement.RootDir + "common");
+		//_Georges->SetWorkDirectory (_Environnement.RootDir + "common\\dfn");
 		georgesCreatePlantName ();
 	}
 	// LOGICEDITOR
@@ -1455,6 +1477,39 @@ void CMainFrame::onWindowsLogicEditor ()
 		openLogicEditor ();
 	else
 		closeLogicEditor ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::onWindowsReset ()
+{
+	bool redo = false;
+
+	redo = (_Environnement.WorldEdOpened == true);
+	closeWorldEditor ();
+	_Environnement.WorldEdX = 50;
+	_Environnement.WorldEdY = 50;
+	_Environnement.WorldEdCX = 600;
+	_Environnement.WorldEdCY = 400;
+	if (redo)
+		openWorldEditor ();
+
+	redo = (_Environnement.GeorgesOpened == true);
+	closeGeorges ();
+	_Environnement.GeorgesX = 50;
+	_Environnement.GeorgesY = 50;
+	_Environnement.GeorgesCX = 300;
+	_Environnement.GeorgesCY = 300;
+	if (redo)
+		openGeorges ();
+
+	redo = (_Environnement.LogicEditorOpened == true);
+	closeLogicEditor ();
+	_Environnement.LogicEditorX = 50;
+	_Environnement.LogicEditorY = 50;
+	_Environnement.LogicEditorCX = 300;
+	_Environnement.LogicEditorCY = 300;
+	if (redo)
+		openLogicEditor ();
 }
 
 // ---------------------------------------------------------------------------

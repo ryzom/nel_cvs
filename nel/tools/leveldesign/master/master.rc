@@ -113,6 +113,8 @@ BEGIN
         MENUITEM "&WorldEditor",                ID_WINDOWS_WORLDEDITOR
         MENUITEM "&Georges",                    ID_WINDOWS_GEORGES
         MENUITEM "&LogicEditor",                ID_WINDOWS_LOGICEDITOR
+        MENUITEM SEPARATOR
+        MENUITEM "&Reset",                      ID_WINDOWS_RESET
     END
     POPUP "&Help"
     BEGIN

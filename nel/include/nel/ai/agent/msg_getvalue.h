@@ -1,7 +1,7 @@
 /** \file msg_getvalue.h
  * Message to ask an agent for its value
  *
- * $Id: msg_getvalue.h,v 1.1 2001/12/05 10:02:43 portier Exp $
+ * $Id: msg_getvalue.h,v 1.2 2002/04/04 10:15:16 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,3 +67,4 @@ namespace NLAIAGENT {
 } // NLAIAGENT
 
 #endif // NL_GETVALUEMSG_H
+

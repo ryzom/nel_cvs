@@ -1,6 +1,6 @@
 /** \file export_mesh_interface.cpp
  *
- * $Id: export_mesh_interface.cpp,v 1.6 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: export_mesh_interface.cpp,v 1.7 2002/11/20 10:21:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,22 +88,33 @@ struct CMeshInterface
 	// try to snap a vertex to one of this Interface vertex
 	bool	snapVert(NLMISC::CVector &vert, NLMISC::CVector &normal, const NLMISC::CMatrix &toWorldMat, float threshold)
 	{
-			for(uint k = 0; k < Verts.size(); ++k)
-			{
-				if (Verts[k].snapVert(vert, normal, toWorldMat, threshold)) return true;
-			}		
-			return false;
+		for(uint k = 0; k < Verts.size(); ++k)
+		{
+			if (Verts[k].snapVert(vert, normal, toWorldMat, threshold)) return true;
+		}		
+		return false;
 	}
 
-	// test wether a vertex can be welded to that interface
-	bool	canWeld(const NLMISC::CVector &pos, float threshold) const
+	// test wether a vertex can be welded to that interface. snapTo get the index of the interface vertex snapped to
+	bool	canWeld(const NLMISC::CVector &pos, float threshold, uint &snapTo) const
 	{
 		for(uint k = 0; k < Verts.size(); ++k)
 		{
-			if (Verts[k].canWeld(pos, threshold)) return true;
+			if (Verts[k].canWeld(pos, threshold))
+			{
+				snapTo= k;
+				return true;
+			}
 		}
 		return false;
 	}
+	// test wether a vertex can be welded to that interface
+	bool	canWeld(const NLMISC::CVector &pos, float threshold) const
+	{
+		uint	dummy;
+		return canWeld(pos, threshold, dummy);
+	}
+
 
 	// build a bbox from this interface
 	void	buildBBox(NLMISC::CAABBox &dest)
@@ -120,67 +131,128 @@ struct CMeshInterface
 	}
 
 	// build this Interface from a max mesh (usually a polygon converted to a mesh)
-	bool buildFromMaxMesh(INode &node, TimeValue tvTime)
-	{
-		// Get a pointer on the object's node
-		Object *obj = node.EvalWorldState(tvTime).obj;
-
-		// Check if there is an object
-		if (!obj) return false;
-		
-		if (obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0))) 
-		{ 
-			// Get a triobject from the node
-			TriObject *tri = (TriObject*)obj->ConvertToType(tvTime, Class_ID(TRIOBJ_CLASS_ID, 0));
-
-			// Note that the TriObject should only be deleted
-			// if the pointer to it is not equal to the object
-			// pointer that called ConvertToType()
-			bool deleteIt=false;
-			if (obj != tri) 
-				deleteIt = true;
-			Mesh &mesh = tri->GetMesh();
-			//
-			CPolygon poly;	
-			CVector polyNormal;
-			CExportNel::maxPolygonMeshToOrderedPoly(mesh, poly.Vertices, &polyNormal);
-			// build a local to world matrix
-			Matrix3 localToWorld = node.GetObjectTM(tvTime);
-			CMatrix nelMatLocalToWorld;
-			CExportNel::convertMatrix(nelMatLocalToWorld, localToWorld);
-			//			
-			uint numVerts = poly.Vertices.size();
-			Verts.resize(numVerts);
-			uint k;
-			for(k = 0; k < numVerts; ++k)
-			{
-				// puts vertex in world
-				Verts[k].Pos = nelMatLocalToWorld * poly.Vertices[k];
-			}
-			// compute normals
-			for(k = 0; k < numVerts; ++k)
-			{
-				CVector prevNorm = (poly.Vertices[k] - poly.Vertices[(k - 1) % numVerts]) ^ polyNormal;
-				CVector nextNorm = (poly.Vertices[(k + 1) % numVerts] - poly.Vertices[k]) ^ polyNormal;
-				Verts[k].Normal = (prevNorm + nextNorm).normed();				
-			}
-			//
-			if (deleteIt)
-			{
-				delete tri;
-			}
-			return true;						
-		}
-		return false;
-	}
+	bool buildFromMaxMesh(INode &node, TimeValue tvTime);
 };
+
+
+///////////////////////
+bool CMeshInterface::buildFromMaxMesh(INode &node, TimeValue tvTime)
+{
+	// Get a pointer on the object's node
+	Object *obj = node.EvalWorldState(tvTime).obj;
+
+	// Check if there is an object
+	if (!obj) return false;
+	
+	if (obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0))) 
+	{ 
+		// Get a triobject from the node
+		TriObject *tri = (TriObject*)obj->ConvertToType(tvTime, Class_ID(TRIOBJ_CLASS_ID, 0));
+
+		// Note that the TriObject should only be deleted
+		// if the pointer to it is not equal to the object
+		// pointer that called ConvertToType()
+		bool deleteIt=false;
+		if (obj != tri) 
+			deleteIt = true;
+		Mesh &mesh = tri->GetMesh();
+
+		// build a local to world matrix
+		Matrix3 localToWorld = node.GetObjectTM(tvTime);
+		CMatrix nelMatLocalToWorld;
+		CExportNel::convertMatrix(nelMatLocalToWorld, localToWorld);
+
+		// Build the vertices, setup in world
+		CPolygon	poly;
+		CVector		polyNormal;
+		CExportNel::maxPolygonMeshToOrderedPoly(mesh, poly.Vertices, nelMatLocalToWorld, polyNormal);
+
+		// copy to dst
+		uint numVerts = poly.Vertices.size();
+		Verts.resize(numVerts);
+		uint k;
+		for(k = 0; k < numVerts; ++k)
+		{
+			Verts[k].Pos= poly.Vertices[k];
+		}
+
+		// compute normals
+		for(k = 0; k < numVerts; ++k)
+		{
+			CVector prevNorm = (Verts[k].Pos - Verts[(k + numVerts - 1) % numVerts].Pos) ^ polyNormal;
+			CVector nextNorm = (Verts[(k + 1) % numVerts].Pos - Verts[k].Pos) ^ polyNormal;
+			Verts[k].Normal = (prevNorm + nextNorm).normed();				
+		}
+		//
+		if (deleteIt)
+		{
+			delete tri;
+		}
+		return true;						
+	}
+	return false;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // private func to apply a set of mesh Interface to a meshbuild
-static void ApplyMeshInterfaces(std::vector<CMeshInterface> &interfaces, CMesh::CMeshBuild &mbuild, const NLMISC::CMatrix &toWorldMat, float threshold)
+static void ApplyMeshInterfacesForMRM(std::vector<CMeshInterface> &interfaces, CMesh::CMeshBuild &mbuild, const NLMISC::CMatrix &toWorldMat, float threshold)
+{	
+	// get the mat from worldSpace to objectMat.
+	CMatrix	toObjectMat= toWorldMat;
+	toObjectMat.invert();
+	// get the correct mat to apply to normals
+	CMatrix	toObjectMatNormal= toObjectMat;
+	toObjectMatNormal.setPos(CVector::Null);
+	toObjectMatNormal.invert();
+	toObjectMatNormal.transpose();
+
+
+	// **** build Mesh Interfaces info in meshbuild
+	mbuild.Interfaces.resize(interfaces.size());
+	for(uint m = 0; m < interfaces.size(); ++m)
+	{
+		// Copy the polygon vertices/normals
+		mbuild.Interfaces[m].Vertices.resize( interfaces[m].Verts.size() );
+		for(uint k = 0; k < mbuild.Interfaces[m].Vertices.size(); ++k)
+		{
+			// back in object Space, because the CMeshInterface is in WorldSpace
+			mbuild.Interfaces[m].Vertices[k].Pos= toObjectMat * interfaces[m].Verts[k].Pos;
+			mbuild.Interfaces[m].Vertices[k].Normal= toObjectMatNormal * interfaces[m].Verts[k].Normal;
+			mbuild.Interfaces[m].Vertices[k].Normal.normalize();
+		}
+	}
+
+	// **** for every vertices, link to interfaces
+	mbuild.InterfaceLinks.resize(mbuild.Vertices.size());
+	for(uint k = 0; k < mbuild.Vertices.size(); ++k)
+	{
+		// reset
+		mbuild.InterfaceLinks[k].InterfaceId= -1;
+
+		// against each Interface
+		for(uint m = 0; m < interfaces.size(); ++m)
+		{
+			uint	snapTo;
+			if ( interfaces[m].canWeld(toWorldMat * mbuild.Vertices[k], threshold, snapTo) )
+			{
+				mbuild.InterfaceLinks[k].InterfaceId= m;
+				mbuild.InterfaceLinks[k].InterfaceVertexId= snapTo;
+				break;
+			}
+		}
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// private func to apply a set of mesh Interface to a meshbuild
+static void ApplyMeshInterfacesUsingInterfaceNormals(std::vector<CMeshInterface> &interfaces, CMesh::CMeshBuild &mbuild, const NLMISC::CMatrix &toWorldMat, float threshold)
 {	
 	// for every faces
 	for(uint k = 0; k < mbuild.Faces.size(); ++k)
@@ -195,7 +267,7 @@ static void ApplyMeshInterfaces(std::vector<CMeshInterface> &interfaces, CMesh::
 									  mbuild.Faces[k].Corner[l].Normal,
 									  toWorldMat,
 									  threshold
-									 );			
+									 );
 			}
 		}
 	}
@@ -629,12 +701,14 @@ void CExportNel::applyInterfaceToMeshBuild(INode &node, CMesh::CMeshBuild &mbuil
 		return;
 	}
 
+	// store interface info in mesh for MRM
+	::ApplyMeshInterfacesForMRM(meshInterface, mbuild, toWorldMat, threshold);
+
+	// process the mesh build to correct normal
 	bool useSceneNodeNormals = (CExportNel::getScriptAppData(&node, NEL3D_APPDATA_GET_INTERFACE_NORMAL_FROM_SCENE_OBJECTS, 0) != 0);
-		
-	// process the mesh build	
 	if (!useSceneNodeNormals)
 	{	
-		::ApplyMeshInterfaces(meshInterface, mbuild, toWorldMat, threshold);
+		::ApplyMeshInterfacesUsingInterfaceNormals(meshInterface, mbuild, toWorldMat, threshold);
 	}
 	else
 	{

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.63 2002/08/27 14:36:25 corvazier Exp $
+ * $Id: export_nel.h,v 1.64 2002/11/20 10:21:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -630,7 +630,7 @@ public:
 	/** private func : this convert a polygon expressed as a max mesh into a list of ordered vectors.
 	  * This also gives an average normal by averaging faces normals.
 	  */
-	static void						maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVector> &dest, NLMISC::CVector *avgNormal = NULL);
+	static void						maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVector> &dest, const NLMISC::CMatrix &basis, NLMISC::CVector &avgNormal);
 
 
 	// ********************

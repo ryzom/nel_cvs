@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.30 2002/10/10 12:59:17 vizerie Exp $
+ * $Id: export_misc.cpp,v 1.31 2002/11/20 10:21:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -936,16 +936,17 @@ struct CPredNextSegOf
 };
 
 /// Get normal of a max triangle in nel format
-static NLMISC::CVector getMaxFaceNormal(const Mesh &m, uint faceIndex)
+static NLMISC::CVector getMaxFaceNormal(const Mesh &m, const NLMISC::CMatrix &basis, uint faceIndex)
 {
-	Point3 corner[3];
+	CVector corner[3];
 	for(uint k = 0; k < 3; ++k)
-		corner[k] = m.verts[m.faces[faceIndex].v[k]];
-	Point3 normal = (corner[1] - corner[0]) ^ (corner[2] - corner[1]);
-	normal.Unify();
-	CVector result;
-	CExportNel::convertVector(result, normal);
-	return result;
+	{
+		CExportNel::convertVector(corner[k], m.verts[m.faces[faceIndex].v[k]]);
+		corner[k]= basis * corner[k];
+	}
+	CVector normal = (corner[1] - corner[0]) ^ (corner[2] - corner[1]);
+	normal.normalize();
+	return normal;
 }
   
 
@@ -953,17 +954,14 @@ static NLMISC::CVector getMaxFaceNormal(const Mesh &m, uint faceIndex)
 
 // --------------------------------------------------
 // This convert a polygon expressed as a max mesh into a list of ordered vectors
-void CExportNel::maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVector> &dest, NLMISC::CVector *avgNormal /*= NULL*/)
+void CExportNel::maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVector> &dest, const NLMISC::CMatrix &basis, NLMISC::CVector &avgNormal)
 {
 	/// We use a very simple (but slow) algo : examine for each segment how many tris share it. If it is one then it is a border seg	 
 	/// Then, just order segments
 	
 	typedef std::map<CMaxMeshSeg, uint> TSegMap;		
 		
-	if (avgNormal)
-	{
-		avgNormal->set(0, 0, 0);
-	}
+	avgNormal.set(0, 0, 0);
 
 	/////////////////////////////////////////////////////////////
 	// count the number of ref by a triangle for each segment  //
@@ -973,10 +971,7 @@ void CExportNel::maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVe
 	uint k;
 	for(k = 0; k < (uint) mesh.getNumFaces(); ++k)
 	{
-		if (avgNormal)
-		{
-			*avgNormal += getMaxFaceNormal(mesh, k);
-		}
+		avgNormal += getMaxFaceNormal(mesh, basis, k);
 		for(uint l = 0; l < 3; ++l)
 		{
 			CMaxMeshSeg seg(mesh.faces[k].v[l], mesh.faces[k].v[(l + 1) % 3]);
@@ -993,7 +988,7 @@ void CExportNel::maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVe
 		}
 	}
 
-	avgNormal->normalize();
+	avgNormal.normalize();
 
 
 	////////////////////////////////////////
@@ -1019,7 +1014,7 @@ void CExportNel::maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVe
 
 	NLMISC::CVector pos;
 	CExportNel::convertVector(pos, mesh.verts[borderSegs.begin()->V0]);
-	dest.push_back(pos);
+	dest.push_back(basis * pos);
 	uint nextToFind = borderSegs.begin()->V1;
 	borderSegs.pop_front();
 	for(;;)
@@ -1027,7 +1022,7 @@ void CExportNel::maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVe
 		TSegList::iterator nextSeg = std::find_if(borderSegs.begin(), borderSegs.end(), CPredNextSegOf(nextToFind));
 		if (nextSeg == borderSegs.end()) return;					
 		CExportNel::convertVector(pos, mesh.verts[nextSeg->V0 == nextToFind ? nextSeg->V0 : nextSeg->V1]);
-		dest.push_back(pos);	
+		dest.push_back(basis * pos);	
 		nextToFind = (nextSeg->V0 == nextToFind) ? nextSeg->V1 : nextSeg->V0;
 		borderSegs.erase(nextSeg);
 	}

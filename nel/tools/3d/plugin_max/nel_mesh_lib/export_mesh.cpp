@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.51 2002/11/13 17:03:53 berenguier Exp $
+ * $Id: export_mesh.cpp,v 1.52 2002/11/20 10:21:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1024,9 +1024,13 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	}
 
 	// *** ***********************************************************
-	// *** Correct normals at junction by using interface mesh      **
+	// *** interface mesh for Correct normals and MRM at junction   **
 	// *** ***********************************************************
-	
+
+	// clear for MRM info
+	buildMesh.Interfaces.clear();
+	buildMesh.InterfaceLinks.clear();
+
 	// Apply normal correction if there is a mesh interface
 	if (skined)
 	{	

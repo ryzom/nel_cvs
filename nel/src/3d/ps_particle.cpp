@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.55 2001/12/14 09:29:41 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.56 2001/12/18 18:32:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,8 +58,8 @@
 // this macro check the memory integrity (windows platform for now). It may be useful after violent vb access
 #if defined(NL_DEBUG) && defined(NL_OS_WINDOWS)
 	#include <crtdbg.h>
-	#define PARTICLES_CHECK_MEM 
-    //nlassert(_CrtCheckMemory());
+	#define PARTICLES_CHECK_MEM
+//  nlassert(_CrtCheckMemory());    
 #else
 	#define PARTICLES_CHECK_MEM
 #endif
@@ -1346,6 +1346,7 @@ void CPSFaceLookAt::draw(bool opaque)
 	PARTICLES_CHECK_MEM;	
 	nlassert(_Owner);
 
+	
 	const uint32 size = _Owner->getSize();
 	if (!size) return;
 
@@ -1419,22 +1420,7 @@ void CPSFaceLookAt::draw(bool opaque)
 						
 				TPSAttribVector::iterator endIt = it + toProcess;
 
-				/* version 1 : slow code because the CVector ctor can't be inlined !! */
-				/*
-				while (it != endIt)
-				{
-					*(CVector *) ptPos = *it  + *currentSize * v1;  			
-					*(CVector *) (ptPos + stride) = *it + *currentSize * v2;	
-					*(CVector *) (ptPos + stride2) = *it - *currentSize * v1;
-					*(CVector *) (ptPos + stride3) = *it - *currentSize * v2;	
-
-					++it;
-					currentSize += currentSizeStep;
-					ptPos += stride4;
-				}
-				*/
-
-				/* version 2 : here, we avoid ctor calls, but we must perform the op ourself  */																
+																				
 
 				if (_MotionBlurCoeff == 0.f)
 				{
@@ -1734,18 +1720,6 @@ void CPSFaceLookAt::draw(bool opaque)
 							
 
 						
-							/*
-
-								CHECK_VERTEX_BUFFER(vb, ptPos);
-								CHECK_VERTEX_BUFFER(vb, ptPos + stride);
-								CHECK_VERTEX_BUFFER(vb, ptPos + stride2);
-								CHECK_VERTEX_BUFFER(vb, ptPos + stride3);
-
-								*(CVector *) ptPos = *it - *currentSize * v2;
-								*(CVector *) (ptPos + stride) = *it  + *currentSize * v1;  			
-								*(CVector *) (ptPos + stride2) = *it + *currentSize * v2;	
-								*(CVector *) (ptPos + stride3) = *it - *currentSize * v1;	
-							*/
 						}
 						
 
@@ -1760,9 +1734,10 @@ void CPSFaceLookAt::draw(bool opaque)
 					}
 
 				}
-					
+				
 				
 				driver->renderQuads(_Mat, 0, toProcess);
+				
 				leftToDo -= toProcess;				
 		}
 		while (leftToDo);
@@ -1806,9 +1781,7 @@ void CPSFaceLookAt::draw(bool opaque)
 					while (it != endIt)
 					{
 						const uint32 tabIndex = ((OptFastFloor(*currentAngle)) & 0xff) << 2;
-					/*	v1 = *currentSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K);
-						v2 = *currentSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K); */
-
+				
 						// lets avoid some ctor calls
 						v1.x = *currentSize * (rotTable[tabIndex] * I.x + rotTable[tabIndex + 1] * K.x);
 						v1.y = *currentSize * (rotTable[tabIndex] * I.y + rotTable[tabIndex + 1] * K.y);
@@ -1821,16 +1794,10 @@ void CPSFaceLookAt::draw(bool opaque)
 						CHECK_VERTEX_BUFFER(vb, ptPos);
 						CHECK_VERTEX_BUFFER(vb, ptPos + stride);
 						CHECK_VERTEX_BUFFER(vb, ptPos + stride2);
-						CHECK_VERTEX_BUFFER(vb, ptPos + stride3);
+						CHECK_VERTEX_BUFFER(vb, ptPos + stride3);						
+					
 
-						/*
-						*(CVector *) ptPos = *it  + v1;  			
-						*(CVector *) (ptPos + stride) = *it + v2;	
-						*(CVector *) (ptPos + stride2) = *it - v1;
-						*(CVector *) (ptPos + stride3) = *it - v2;	 */
-
-
-
+					
 						((CVector *) ptPos)->x  = it->x  + v1.x;		
 						((CVector *) ptPos)->y  = it->y  + v1.y;
 						((CVector *) ptPos)->z = it->z  + v1.z;  			
@@ -1851,7 +1818,8 @@ void CPSFaceLookAt::draw(bool opaque)
 
 						((CVector *) ptPos)->x  = it->x  - v2.x;		
 						((CVector *) ptPos)->y  = it->y  - v2.y;
-						((CVector *) ptPos)->z = it->z  - v2.z;  			
+						((CVector *) ptPos)->z = it->z  - v2.z;  	
+					
 
 						ptPos += stride;
 
@@ -1922,6 +1890,7 @@ void CPSFaceLookAt::draw(bool opaque)
 			
 				
 				driver->renderQuads(_Mat, 0, toProcess);
+				
 
 				leftToDo -= toProcess;
 		}

@@ -1467,6 +1467,10 @@ SOURCE=.\3d\ps_lod.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\ps_misc.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\ps_particle.cpp
 
 !IF  "$(CFG)" == "3d - Win32 Release"

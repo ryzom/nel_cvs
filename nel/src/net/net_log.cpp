@@ -1,7 +1,7 @@
 /** \file net_log.cpp
  * Class CNetLog (logger for network transfers)
  *
- * $Id: net_log.cpp,v 1.11 2001/10/16 09:22:03 legros Exp $
+ * $Id: net_log.cpp,v 1.12 2001/12/28 10:17:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,11 +23,11 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/common.h"
+#include "stdnet.h"
+
 #include "nel/net/net_log.h"
 #include "nel/net/unitime.h"
-#include <stdio.h>
+
 
 
 using namespace std;

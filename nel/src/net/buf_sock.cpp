@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.18 2001/12/10 14:34:31 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.19 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,10 +23,10 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
+#include "stdnet.h"
+
 #include "nel/net/buf_sock.h"
 #include "nel/net/buf_server.h"
-#include "nel/misc/debug.h"
 
 #ifdef NL_OS_WINDOWS
 #include <winsock2.h>

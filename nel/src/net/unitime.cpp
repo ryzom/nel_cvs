@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * _CUniTime class
  *
- * $Id: unitime.cpp,v 1.30 2001/11/22 10:40:13 lecroart Exp $
+ * $Id: unitime.cpp,v 1.31 2001/12/28 10:17:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,11 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/debug.h"
-
-#include "nel/misc/common.h"
-#include "nel/misc/time_nl.h"
-#include "nel/misc/command.h"
+#include "stdnet.h"
 
 #include "nel/net/callback_client.h"
 #include "nel/net/callback_server.h"
@@ -52,7 +48,7 @@ bool _CUniTime::Sync = false;
 void _CUniTime::setUniTime (NLMISC::TTime uTime, NLMISC::TTime lTime)
 {
 	nlstop;
-	if (Sync)
+/*	if (Sync)
 	{
 		TTime lt = getLocalTime ();
 		TTime delta = uTime - lTime + _SyncLocalTime - _SyncUniTime;
@@ -66,12 +62,12 @@ void _CUniTime::setUniTime (NLMISC::TTime uTime, NLMISC::TTime lTime)
 	}
 	_SyncUniTime = uTime;
 	_SyncLocalTime = lTime;
-}
+*/}
 
 void _CUniTime::setUniTime (NLMISC::TTime uTime)
 {
 	nlstop;
-	setUniTime (uTime, getLocalTime ());
+//	setUniTime (uTime, getLocalTime ());
 }
 
 
@@ -79,11 +75,13 @@ void _CUniTime::setUniTime (NLMISC::TTime uTime)
 TTime _CUniTime::getUniTime ()
 {
 	nlstop;
-	if (!Sync)
+	return 0;
+/*	if (!Sync)
 	{
 		nlerror ("called getUniTime before calling syncUniTimeFromServer");
 	}
 	return getLocalTime () - (_SyncLocalTime - _SyncUniTime);
+*/
 }
 
 
@@ -154,6 +152,7 @@ static TCallbackItem UniTimeCallbackArray[] =
 void _CUniTime::syncUniTimeFromService (CCallbackNetBase::TRecordingState rec, const CInetAddress *addr)
 {
 	nlstop;
+	/*
 	TTime deltaAdjust, lt;
 	uint32 firstsecond, nextsecond;
 	TTime before, after, delta;
@@ -239,6 +238,7 @@ void _CUniTime::syncUniTimeFromService (CCallbackNetBase::TRecordingState rec, c
 
 error:
 	nlerror ("Time Service is not found, lost or can't synchronize universal time");
+*/
 }
 
 
@@ -302,7 +302,7 @@ static TCallbackItem ClientUniTimeCallbackArray[] =
 void _CUniTime::syncUniTimeFromServer (CCallbackClient *client)
 {
 	nlstop;
-	static bool alreadyAddedCallback = false;
+/*	static bool alreadyAddedCallback = false;
 	nlassert (client != NULL);
 
 	if (!alreadyAddedCallback)
@@ -354,6 +354,7 @@ void _CUniTime::syncUniTimeFromServer (CCallbackClient *client)
 	return;
 error:
 	nlwarning ("there's no connection or lost or can't synchronize universal time");
+*/
 }
 
 

@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.16 2001/11/13 10:04:41 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.17 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,13 +25,12 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
 
 #include <memory>
-#include <math.h>
 
 #include "nel/misc/bitmap.h"
 #include "nel/misc/stream.h"
-#include "nel/misc/common.h"
 #include "nel/misc/file.h"
 
 

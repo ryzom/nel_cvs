@@ -1,7 +1,7 @@
 /** \file block_memory.cpp
  * <File description>
  *
- * $Id: block_memory.cpp,v 1.1 2001/06/08 16:10:48 berenguier Exp $
+ * $Id: block_memory.cpp,v 1.2 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdmisc.h"
 
 #include "nel/misc/block_memory.h"
 

@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.16 2001/09/10 15:12:48 lecroart Exp $
+ * $Id: file.cpp,v 1.17 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,11 +23,12 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include "nel/misc/file.h"
 #include "nel/misc/debug.h"
-using namespace std;
 
-#include <stdio.h>
+using namespace std;
 
 namespace NLMISC
 {

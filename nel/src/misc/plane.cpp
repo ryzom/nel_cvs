@@ -1,7 +1,7 @@
 /** \file plane.cpp
  * class CPlane
  *
- * $Id: plane.cpp,v 1.5 2001/11/14 15:50:58 vizerie Exp $
+ * $Id: plane.cpp,v 1.6 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdmisc.h"
 
 #include "nel/misc/plane.h"
 

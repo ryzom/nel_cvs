@@ -1,7 +1,7 @@
 /** \file triangle_ext.cpp
  * Set of extension of triangles (triangle with uv, color, uvcolor etc...)
  *
- * $Id: geom_ext.cpp,v 1.1 2001/02/28 14:38:05 berenguier Exp $
+ * $Id: geom_ext.cpp,v 1.2 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdmisc.h"
 
 #include "nel/misc/geom_ext.h"
 

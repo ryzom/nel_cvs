@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * <File description>
  *
- * $Id: entity_id.cpp,v 1.1 2001/10/19 15:16:31 lecroart Exp $
+ * $Id: entity_id.cpp,v 1.2 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
+#include "stdmisc.h"
+
 #include "nel/misc/entity_id.h"
 
 using namespace std;

@@ -1,7 +1,7 @@
 /** \file dummy_tcp_sock.cpp
  * Dummy TCP socket, used ny the message recorder for playback
  *
- * $Id: dummy_tcp_sock.cpp,v 1.4 2001/12/10 14:34:31 lecroart Exp $
+ * $Id: dummy_tcp_sock.cpp,v 1.5 2001/12/28 10:17:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdnet.h"
+
 #include "nel/net/dummy_tcp_sock.h"
-#include "nel/misc/debug.h"
 
 using namespace NLMISC;
 

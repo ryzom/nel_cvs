@@ -1,7 +1,7 @@
 /** \file debug_displayer.cpp
  * <File description>
  *
- * $Id: debug_displayer.cpp,v 1.1 2001/12/12 15:34:39 legros Exp $
+ * $Id: debug_displayer.cpp,v 1.2 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -23,8 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include "nel/misc/debug_displayer.h"
-#include "nel/misc/debug.h"
 #include "nel/misc/path.h"
 
 #include <iostream>

@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.21 2001/11/27 14:13:27 lecroart Exp $
+ * $Id: callback_net_base.h,v 1.22 2001/12/28 10:17:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -210,8 +210,8 @@ protected:
 
 private:
 
-	NLMISC::TTime _LastUpdateTime;
-	NLMISC::TTime _LastMovedStringArray;
+	NLMISC::TTime		_LastUpdateTime;
+	NLMISC::TTime		_LastMovedStringArray;
 	
 	TNetCallback		 _DisconnectionCallback;
 	void				*_DisconnectionCbArg;

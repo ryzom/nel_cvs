@@ -1,7 +1,7 @@
 /** \file events.cpp
  * Events
  *
- * $Id: events.cpp,v 1.1 2000/11/09 16:17:43 coutelas Exp $
+ * $Id: events.cpp,v 1.2 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdmisc.h"
 
 #include "nel/misc/events.h"
 

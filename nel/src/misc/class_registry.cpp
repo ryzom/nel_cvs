@@ -1,7 +1,7 @@
 /** \file class_registry.cpp
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.cpp,v 1.5 2000/11/21 17:14:01 valignat Exp $
+ * $Id: class_registry.cpp,v 1.6 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,11 +23,13 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/class_registry.h"
-#include "nel/misc/debug.h"
-#include <typeinfo>
-using namespace std;
+#include "stdmisc.h"
 
+#include "nel/misc/class_registry.h"
+
+#include <typeinfo>
+
+using namespace std;
 
 namespace NLMISC
 {

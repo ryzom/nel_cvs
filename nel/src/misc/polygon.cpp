@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.7 2001/12/14 17:36:38 vizerie Exp $
+ * $Id: polygon.cpp,v 1.8 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,10 +23,10 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include "nel/misc/polygon.h"
 #include "nel/misc/plane.h"
-#include <list>
-#include <set>
 
 using namespace std;
 using namespace NLMISC;

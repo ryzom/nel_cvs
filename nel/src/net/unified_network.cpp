@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.25 2001/12/10 14:34:31 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.26 2001/12/28 10:17:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,12 +23,13 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdnet.h"
+
 #include "nel/net/unified_network.h"
-
-
 
 using namespace std;
 using namespace NLMISC;
+
 
 namespace NLNET {
 
@@ -472,7 +473,7 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 //
 
 
-void	CUnifiedNetwork::update(sint32 timeout)
+void	CUnifiedNetwork::update(TTime timeout)
 {
 //	nldebug("In CUnifiedNetwork::update()");
 	enterReentrant();
@@ -489,7 +490,7 @@ void	CUnifiedNetwork::update(sint32 timeout)
 			}
 			else
 			{
-				sint32 err = (sint32)(t0 - _NextUpdateTime);
+				TTime err = t0 - _NextUpdateTime;
 				_NextUpdateTime += timeout;
 
 				// if we are too late, resync to the next value

@@ -1,7 +1,7 @@
 /** \file aabbox.cpp
  * <File description>
  *
- * $Id: aabbox.cpp,v 1.2 2001/04/20 07:32:57 legros Exp $
+ * $Id: aabbox.cpp,v 1.3 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdmisc.h"
 
 #include "nel/misc/aabbox.h"
 #include "nel/misc/polygon.h"

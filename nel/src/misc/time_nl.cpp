@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.13 2001/11/27 14:11:55 lecroart Exp $
+ * $Id: time_nl.cpp,v 1.14 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,12 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include <time.h>
-
-#include "nel/misc/types_nl.h"
-
-#include "nel/misc/debug.h"
-
 
 #ifdef NL_OS_WINDOWS
 #	include <windows.h>

@@ -1,7 +1,7 @@
 /** \file login_cookie.cpp
  * <File description>
  *
- * $Id: login_cookie.cpp,v 1.2 2001/06/27 08:31:20 lecroart Exp $
+ * $Id: login_cookie.cpp,v 1.3 2001/12/28 10:17:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include <time.h>
+#include "stdnet.h"
 
 #include "nel/net/login_cookie.h"
 

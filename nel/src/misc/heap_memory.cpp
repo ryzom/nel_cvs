@@ -1,7 +1,7 @@
 /** \file heap_memory.cpp
  * A Heap manager
  *
- * $Id: heap_memory.cpp,v 1.3 2001/07/13 08:10:56 berenguier Exp $
+ * $Id: heap_memory.cpp,v 1.4 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,10 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include "nel/misc/heap_memory.h"
-#include "nel/misc/debug.h"
+
 using namespace std;
 
 

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.12 2001/11/29 15:40:41 lecroart Exp $
+ * $Id: unified_network.h,v 1.13 2001/12/28 10:17:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,12 +110,12 @@ public:
 	 */
 	void	addCallbackArray (const TUnifiedCallbackItem *callbackarray, NLMISC::CStringIdArray::TStringId arraysize);
 
-	/** Call it evenly. the parameter select the timeout value in milliseconds for each update. You are absolutely certain that this
+	/** Call it evenly. the parameter select the timeout value in seconds for each update. You are absolutely certain that this
 	 * function will not be returns before this amount of time you set.
 	 * If you set the update timeout value higher than 0, all messages in queues will be process until the time is greater than the timeout user update().
 	 * If you set the update timeout value to 0, all messages in queues will be process one time before calling the user update(). In this case, we don't nlSleep(1).
 	 */
-	void	update (sint32 timeout = 0);
+	void	update (NLMISC::TTime timeout = 0);
 
 	/** Sends a message to a specific serviceName. If there's more than one service with this name, all services of this name will receive the message.
 	 * \param serviceName name of the service you want to send the message (may not be unique.)

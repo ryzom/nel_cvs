@@ -1,7 +1,7 @@
 /** \file event_server.cpp
  * events server
  *
- * $Id: event_server.cpp,v 1.7 2000/11/17 14:57:43 coutelas Exp $
+ * $Id: event_server.cpp,v 1.8 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdmisc.h"
 
 #include "nel/misc/event_server.h"
 #include "nel/misc/event_listener.h"

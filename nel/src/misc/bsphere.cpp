@@ -1,7 +1,7 @@
 /** \file bsphere.cpp
  * <File description>
  *
- * $Id: bsphere.cpp,v 1.2 2001/08/01 15:42:41 berenguier Exp $
+ * $Id: bsphere.cpp,v 1.3 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include "nel/misc/bsphere.h"
-#include "nel/misc/common.h"
-#include <algorithm>
 
 using namespace	NLMISC;
 using namespace	std;

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service_5.h,v 1.7 2001/12/10 17:52:16 lecroart Exp $
+ * $Id: service_5.h,v 1.8 2001/12/28 10:17:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,14 +164,14 @@ public:
 
 	static void			setPort (uint16 Port) { _DefaultPort = Port; }
 
-	/** Select timeout value in milliseconds for each update. You are absolutely certain that your update()
+	/** Select timeout value in seconds for each update. You are absolutely certain that your update()
 	 * function will not be called before this amount of time you set.
 	 * If you set the update timeout value higher than 0, all messages in queues will be process until the time greater than the timeout user update().
 	 * If you set the update timeout value to 0, all messages in queues will be process one time before calling the user update().
 	 *
 	 * The default value is 100ms
 	 */
-	static void			setUpdateTimeout (sint32 timeout) { _UpdateTimeout = timeout; } 
+	static void			setUpdateTimeout (NLMISC::TTime  timeout) { /*if (timeout>1.0) nlerror ("IServer5::setUpdateTimeout is now a double in SECOND and not ms");*/ _UpdateTimeout = timeout; } 
 
 	/// Changes the recording state (use if you know what you are doing)
 	void				setRecordingState( CCallbackNetBase::TRecordingState rec ) { _RecordingState = rec; }
@@ -231,7 +231,7 @@ private:
 	sint				main ();
 
 	/// Select timeout value in milliseconds
-	static sint32				_UpdateTimeout;
+	static NLMISC::TTime		_UpdateTimeout;
 
 	TServiceId					_SId;
 

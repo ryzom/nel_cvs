@@ -1,7 +1,7 @@
 /** \file stream_server.cpp
  * Network engine, layer 2, server
  *
- * $Id: stream_server.cpp,v 1.4 2001/12/10 14:34:31 lecroart Exp $
+ * $Id: stream_server.cpp,v 1.5 2001/12/28 10:17:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/debug.h"
+#include "stdnet.h"
+
 #include "nel/misc/mem_stream.h"
 
 #include "nel/net/stream_server.h"

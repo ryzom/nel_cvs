@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.26 2001/11/19 14:07:25 lecroart Exp $
+ * $Id: config_file.cpp,v 1.27 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,19 +23,13 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/debug.h"
-
-#include <vector>
-#include <string>
-#include <algorithm>
+#include "../stdmisc.h"
 
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #include "nel/misc/config_file.h"
-#include "nel/misc/debug.h"
 
 using namespace std;
 

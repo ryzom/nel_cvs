@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.18 2001/09/10 13:42:09 cado Exp $
+ * $Id: buf_fifo.cpp,v 1.19 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,10 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include <vector>
-#include <math.h>
+#include "stdmisc.h"
 
-#include "nel/misc/debug.h"
 #include "nel/misc/time_nl.h"
 
 #include "nel/misc/buf_fifo.h"

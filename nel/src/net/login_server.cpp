@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.9 2001/10/29 18:33:54 lecroart Exp $
+ * $Id: login_server.cpp,v 1.10 2001/12/28 10:17:21 lecroart Exp $
  *
  */
 
@@ -24,12 +24,7 @@
  * MA 02111-1307, USA.
  */
 
-#include <string>
-#include <vector>
-
-#include "nel/misc/types_nl.h"
-#include "nel/misc/debug.h"
-#include "nel/misc/command.h"
+#include "stdnet.h"
 
 #include "nel/net/callback_client.h"
 #include "nel/net/unified_network.h"

@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "../obj/Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /Yu"stdmisc.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
@@ -67,7 +67,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "../obj/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /D "_MBCS" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /D "_MBCS" /Yu"stdmisc.h" /FD /GZ /c
 # SUBTRACT CPP /Gy /Fr
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
@@ -91,7 +91,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "../obj/ReleaseDebug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /Yu"stdmisc.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
@@ -116,7 +116,7 @@ LIB32=link.exe -lib
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /FD /GZ /c
 # SUBTRACT BASE CPP /Gy
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Yu"stdmisc.h" /FD /GZ /c
 # SUBTRACT CPP /Gy /Fr
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
@@ -349,6 +349,25 @@ SOURCE=..\include\nel\misc\vectord_inline.h
 # Begin Source File
 
 SOURCE=.\misc\config_file\config_file.cpp
+
+!IF  "$(CFG)" == "misc - Win32 Release"
+
+# ADD CPP /Yu"../stdmisc.h"
+
+!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
+
+# ADD CPP /D "NL_DONT_USE_EXTERNAL_CODE" /Yu"../stdmisc.h"
+
+!ELSEIF  "$(CFG)" == "misc - Win32 ReleaseDebug"
+
+# ADD CPP /Yu"../stdmisc.h"
+
+!ELSEIF  "$(CFG)" == "misc - Win32 DebugFast"
+
+# ADD CPP /Yu"../stdmisc.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -361,6 +380,7 @@ SOURCE=.\misc\config_file\config_file.lex
 # Begin Source File
 
 SOURCE=.\misc\config_file\config_file.lex.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -390,6 +410,7 @@ SOURCE=.\misc\config_file\config_file.yacc
 # Begin Source File
 
 SOURCE=.\misc\config_file\config_file.yacc.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -687,6 +708,15 @@ SOURCE=..\include\nel\misc\smart_ptr.h
 # Begin Source File
 
 SOURCE=..\include\nel\misc\smart_ptr_inline.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\stdmisc.cpp
+# ADD CPP /Yc"stdmisc.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\stdmisc.h
 # End Source File
 # Begin Source File
 

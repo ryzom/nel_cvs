@@ -1,7 +1,7 @@
 /** \file class_id.cpp
  * CClassId class
  *
- * $Id: class_id.cpp,v 1.5 2000/11/21 17:23:09 valignat Exp $
+ * $Id: class_id.cpp,v 1.6 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdmisc.h"
 
 #include "nel/misc/class_id.h"
 

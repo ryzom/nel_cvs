@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.29 2001/12/10 17:51:38 lecroart Exp $
+ * $Id: displayer.cpp,v 1.30 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,8 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include <time.h>
 
 #include <iostream>
@@ -30,9 +32,6 @@
 #include <sstream>
 #include <iomanip>
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/common.h"
-#include "nel/misc/debug.h"
 #include "nel/misc/path.h"
 #include "nel/misc/mutex.h"
 

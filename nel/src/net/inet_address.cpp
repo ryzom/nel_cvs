@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.37 2001/12/10 14:34:31 lecroart Exp $
+ * $Id: inet_address.cpp,v 1.38 2001/12/28 10:17:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,13 +23,10 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdnet.h"
+
 #include "nel/net/inet_address.h"
 #include "nel/net/sock.h"
-#include "nel/misc/stream.h"
-#include "nel/misc/mem_stream.h"
-#include "nel/misc/debug.h"
-#include <sstream>
-
 
 #ifdef NL_OS_WINDOWS
 

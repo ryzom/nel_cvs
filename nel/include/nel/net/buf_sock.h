@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.11 2001/12/10 14:37:18 lecroart Exp $
+ * $Id: buf_sock.h,v 1.12 2001/12/28 10:17:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -212,7 +212,7 @@ private:
 #endif
 
 	NLMISC::TTime		_LastFlushTime; // updated only if time trigger is enabled (TriggerTime!=-1)
-	sint32				_TriggerTime;
+	NLMISC::TTime		_TriggerTime;
 	sint32				_TriggerSize;
 
 	std::vector<uint8>	_ReadyToSendBuffer;

@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.11 2001/11/27 14:13:27 lecroart Exp $
+ * $Id: net_manager.h,v 1.12 2001/12/28 10:17:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,7 +121,7 @@ public:
 	 * If you set the update timeout value higher than 0, all messages in queues will be process until the time is greater than the timeout user update().
 	 * If you set the update timeout value to 0, all messages in queues will be process one time before calling the user update(). In this case, we don't nlSleep(1).
 	 */
-	static void	update (sint32 timeout = 0);
+	static void	update (NLMISC::TTime timeout = 0);
 
 	/// Sends a message to a specific serviceName
 	static void	send (const std::string &serviceName, const CMessage &buffer, TSockId hostid = 0);

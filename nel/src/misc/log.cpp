@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.32 2001/09/12 16:55:17 lecroart Exp $
+ * $Id: log.cpp,v 1.33 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
+#include "stdmisc.h"
 
 #ifdef NL_OS_WINDOWS
 #include <process.h>
@@ -31,18 +31,11 @@
 #include <unistd.h>
 #endif
 
-#include <stdio.h>
 #include <time.h>
 #include <stdarg.h>
 
-#include <algorithm>
-#include <vector>
-#include <string>
-#include <sstream>
-
 #include "nel/misc/displayer.h"
 #include "nel/misc/log.h"
-#include "nel/misc/debug.h"
 
 using namespace std;
 

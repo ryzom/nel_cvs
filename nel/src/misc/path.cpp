@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.16 2001/12/20 17:42:33 besson Exp $
+ * $Id: path.cpp,v 1.17 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -23,9 +23,10 @@
  * MA 02111-1307, USA.
  */
 
-#include <fstream>
 
-#include "nel/misc/debug.h"
+#include "stdmisc.h"
+
+#include <fstream>
 
 #include "nel/misc/path.h"
 

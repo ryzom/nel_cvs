@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.40 2001/12/10 14:34:31 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.41 2001/12/28 10:17:21 lecroart Exp $
  *
  */
 
@@ -24,14 +24,10 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdnet.h"
 
 #include "nel/net/naming_client.h"
 #include "nel/net/callback_client.h"
-
-#include "nel/misc/command.h"
-#include "nel/misc/debug.h"
-
-#include <sstream>
 
 
 using namespace std;

@@ -1,7 +1,7 @@
 /** \file value_smoother.cpp
  * <File description>
  *
- * $Id: value_smoother.cpp,v 1.2 2001/08/28 16:37:44 berenguier Exp $
+ * $Id: value_smoother.cpp,v 1.3 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include "nel/misc/value_smoother.h"
-#include "nel/misc/debug.h"
 
 
 using namespace std;

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.14 2001/10/25 15:39:58 lecroart Exp $
+ * $Id: common.cpp,v 1.15 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/debug.h"
-
-#include "nel/misc/common.h"
+#include "stdmisc.h"
 
 #ifdef NL_OS_WINDOWS
 #include <windows.h>

@@ -1,7 +1,7 @@
 /** \file rect.cpp
  * <File description>
  *
- * $Id: rect.cpp,v 1.2 2000/12/22 10:42:05 corvazier Exp $
+ * $Id: rect.cpp,v 1.3 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdmisc.h"
 
 #include "nel/misc/rect.h"
 

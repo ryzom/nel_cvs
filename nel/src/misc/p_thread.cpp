@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * class CPThread (Posix threads)
  *
- * $Id: p_thread.cpp,v 1.5 2001/06/21 07:47:28 cado Exp $
+ * $Id: p_thread.cpp,v 1.6 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 
-#include "nel/misc/types_nl.h"
+#include "stdmisc.h"
 
 #ifdef NL_OS_UNIX
 

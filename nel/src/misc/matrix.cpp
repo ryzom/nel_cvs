@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.28 2001/11/29 11:17:30 berenguier Exp $
+ * $Id: matrix.cpp,v 1.29 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,10 +23,12 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include "nel/misc/matrix.h"
 #include "nel/misc/plane.h"
 #include "nel/misc/debug.h"
-#include <algorithm>
+
 using namespace std;
 
 

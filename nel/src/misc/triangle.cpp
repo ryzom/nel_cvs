@@ -1,7 +1,7 @@
 /** \file triangle.cpp
  * <File description>
  *
- * $Id: triangle.cpp,v 1.4 2001/10/10 15:38:09 besson Exp $
+ * $Id: triangle.cpp,v 1.5 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdmisc.h"
 
 #include "nel/misc/triangle.h"
 #include "nel/misc/plane.h"

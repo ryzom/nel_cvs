@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.5 2001/11/27 14:12:19 lecroart Exp $
+ * $Id: win_event_emitter.cpp,v 1.6 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,11 +23,12 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include "nel/misc/events.h"
 #include "nel/misc/event_emitter.h"
 #include "nel/misc/win_event_emitter.h"
 #include "nel/misc/event_server.h"
-#include "nel/misc/types_nl.h"
 
 #ifdef NL_OS_WINDOWS
 #include <windows.h>

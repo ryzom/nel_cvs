@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.40 2001/09/10 16:09:19 lecroart Exp $
+ * $Id: debug.cpp,v 1.41 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/debug.h"
+#include "stdmisc.h"
 #include "nel/misc/log.h"
 #include "nel/misc/displayer.h"
 
@@ -34,10 +33,7 @@
 #endif
 
 #include <stdarg.h>
-#include <stdio.h>
  
-#include "nel/misc/debug.h"
-
 // If you don't want to add default displayer, put 0 instead of 1. In this case, you
 // have to manage yourself displayer (in final release for example, we have to put 0)
 #define DEFAULT_DISPLAYER 1

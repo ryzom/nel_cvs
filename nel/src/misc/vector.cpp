@@ -1,7 +1,7 @@
 /** \file vector.cpp
  * CVector class
  *
- * $Id: vector.cpp,v 1.4 2001/01/19 14:17:03 cado Exp $
+ * $Id: vector.cpp,v 1.5 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include	"nel/misc/vector.h"
-#include	<sstream>
 
 using namespace std;
 

@@ -1,7 +1,7 @@
 /** \file net_displayer.cpp
  * CNetDisplayer class
  *
- * $Id: net_displayer.cpp,v 1.20 2001/06/13 10:20:48 lecroart Exp $
+ * $Id: net_displayer.cpp,v 1.21 2001/12/28 10:17:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,18 +23,12 @@
  * MA 02111-1307, USA.
  */
 
-#include <sstream>
-
-#include "nel/misc/debug.h"
-#include "nel/misc/common.h"
-#include "nel/misc/log.h"
+#include "stdnet.h"
 
 #include "nel/net/net_displayer.h"
 #include "nel/net/message.h"
 #include "nel/net/naming_client.h"
 
-
-#include <string>
 
 using namespace std;
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file string_id_array.cpp
  * <File description>
  *
- * $Id: string_id_array.cpp,v 1.3 2001/05/10 08:17:08 lecroart Exp $
+ * $Id: string_id_array.cpp,v 1.4 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdmisc.h"
 
 #include "nel/misc/string_id_array.h"
 

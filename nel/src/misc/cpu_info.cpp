@@ -1,7 +1,7 @@
 /** \file cpu_info.cpp
  * <File description>
  *
- * $Id: cpu_info.cpp,v 1.2 2001/10/26 08:33:07 vizerie Exp $
+ * $Id: cpu_info.cpp,v 1.3 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/cpu_info.h"
+#include "stdmisc.h"
 
-#include <stdio.h>
+#include "nel/misc/cpu_info.h"
 
 
 namespace NLMISC 

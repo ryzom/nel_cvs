@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.16 2001/12/10 14:34:31 lecroart Exp $
+ * $Id: sock.cpp,v 1.17 2001/12/28 10:17:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,36 +23,36 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
-#include "nel/net/sock.h"
-#include "nel/misc/debug.h"
-#include "nel/misc/common.h"
+#include "stdnet.h"
 
+#include "nel/net/sock.h"
 #include "nel/misc/time_nl.h"
 
 #ifdef NL_OS_WINDOWS
-#include <winsock2.h>
-//#include <windows.h>
-#define socklen_t int
-#define ERROR_NUM WSAGetLastError()
-#define ERROR_WOULDBLOCK WSAEWOULDBLOCK
+
+#	include <winsock2.h>
+//#	include <windows.h>
+#	define socklen_t int
+#	define ERROR_NUM WSAGetLastError()
+#	define ERROR_WOULDBLOCK WSAEWOULDBLOCK
 
 #elif defined NL_OS_UNIX
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <fcntl.h>
-#include <errno.h>
-#define SOCKET_ERROR -1
-#define INVALID_SOCKET -1
-#define ERROR_NUM errno
-#define ERROR_WOULDBLOCK EWOULDBLOCK
-#define ERROR_MSG strerror(errno)
+
+#	include <unistd.h>
+#	include <sys/types.h>
+#	include <sys/time.h>
+#	include <sys/socket.h>
+#	include <netinet/in.h>
+#	include <netinet/tcp.h>
+#	include <arpa/inet.h>
+#	include <netdb.h>
+#	include <fcntl.h>
+#	include <errno.h>
+#	define SOCKET_ERROR -1
+#	define INVALID_SOCKET -1
+#	define ERROR_NUM errno
+#	define ERROR_WOULDBLOCK EWOULDBLOCK
+#	define ERROR_MSG strerror(errno)
 typedef int SOCKET;
 
 #endif

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.9 2001/11/22 09:50:54 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.10 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -23,8 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include "nel/misc/bit_mem_stream.h"
-#include <string>
 
 using namespace std;
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.102 2001/12/10 17:52:04 lecroart Exp $
+ * $Id: service.cpp,v 1.103 2001/12/28 10:17:21 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -26,7 +26,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
+#include "stdnet.h"
 
 #ifdef NL_OS_WINDOWS
 
@@ -42,14 +42,8 @@
 
 #endif
 
-#include <stdlib.h>
 #include <signal.h>
 
-#include <sstream>
-
-#include "nel/misc/common.h"
-#include "nel/misc/command.h"
-#include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/displayer.h"
 #include "nel/misc/mutex.h"
@@ -93,14 +87,14 @@ static sint ExitSignalAsked = 0;
 static CStdDisplayer sd;
 
 // services stat
-static sint32 _NetSpeedLoop, _UserSpeedLoop;
+static sint32  _NetSpeedLoop, _UserSpeedLoop;
 
 string IService::_ShortName = "";
 string IService::_LongName = "";
 string IService::_AliasName= "";
 uint16 IService::_DefaultPort = 0;
 
-sint32 IService::_UpdateTimeout = 100;
+TTime IService::_UpdateTimeout = 100;
 
 CConfigFile IService::ConfigFile;
 
@@ -832,8 +826,9 @@ sint IService::main ()
 				}
 			}
 */
-			_NetSpeedLoop = (sint32)(CTime::getLocalTime () - before);
-			_UserSpeedLoop = (sint32)(before - bbefore);
+
+			_NetSpeedLoop = (sint32) ((CTime::getLocalTime () - before) * 1000.0);
+			_UserSpeedLoop = (sint32) ((before - bbefore) * 1000.0);
 
 			if (wd != NULL)
 			{
@@ -858,10 +853,10 @@ sint IService::main ()
 				wd->setLabel (sndQLabel, str);
 
 				// display the scroll text
-				static string toto =	"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! "
-										"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! ";
+				static string foo =	"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! "
+									"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! ";
 				static int pos = 0;
-				wd->setLabel (scrollLabel, toto.substr (pos%(toto.size()/2), 10));
+				wd->setLabel (scrollLabel, foo.substr (pos%(foo.size()/2), 10));
 				pos++;
 			}
 
@@ -1025,7 +1020,7 @@ NLMISC_COMMAND (_mutex, "display mutex values", "")
 	for ( im=acquiretimes.begin(); im!=acquiretimes.end(); ++im )
 	{
 		nlinfo( "%d %p %s: %.0f %.0f, called %u times th(%d, %d wait)%s", (*im).second.MutexNum, (*im).first, (*im).second.MutexName.c_str(),
-			CTime::ticksToSecond((*im).second.TimeToEnter)*1000.0, CTime::ticksToSecond((*im).second.TimeInMutex)*1000.0,
+			CTime::cpuCycleToSecond((*im).second.TimeToEnter)*1000.0, CTime::cpuCycleToSecond((*im).second.TimeInMutex)*1000.0,
 			(*im).second.Nb, (*im).second.ThreadHavingTheMutex, (*im).second.WaitingMutex,
 			(*im).second.Dead?" DEAD":"");
 	}

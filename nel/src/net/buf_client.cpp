@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.11 2001/12/10 14:34:31 lecroart Exp $
+ * $Id: buf_client.cpp,v 1.12 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,10 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdnet.h"
+
 #include "nel/net/buf_client.h"
 #include "nel/misc/thread.h"
-#include "nel/misc/debug.h"
 #include "nel/net/dummy_tcp_sock.h"
 
 #ifdef NL_OS_WINDOWS

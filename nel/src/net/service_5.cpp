@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.13 2001/12/10 17:52:05 lecroart Exp $
+ * $Id: service_5.cpp,v 1.14 2001/12/28 10:17:21 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -26,7 +26,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
+#include "stdnet.h"
 
 #ifdef NL_OS_WINDOWS
 
@@ -45,11 +45,6 @@
 #include <stdlib.h>
 #include <signal.h>
 
-#include <sstream>
-
-#include "nel/misc/common.h"
-#include "nel/misc/command.h"
-#include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/displayer.h"
 #include "nel/misc/mutex.h"
@@ -94,15 +89,15 @@ static sint32 NetSpeedLoop, UserSpeedLoop;
 
 // class static member
 
-string				 IService5::_ShortName		= "";
-string				 IService5::_LongName		= "";
-string				 IService5::_AliasName		= "";
-uint16				 IService5::_DefaultPort	= 0;
-sint32				 IService5::_UpdateTimeout	= 100;
-NLMISC::CEntityId	 IService5::_NextEntityId;
+string		 IService5::_ShortName		= "";
+string		 IService5::_LongName		= "";
+string		 IService5::_AliasName		= "";
+uint16		 IService5::_DefaultPort	= 0;
+TTime	 IService5::_UpdateTimeout	= 0.1;
+CEntityId	 IService5::_NextEntityId;
 
-IService5			*IService5::Instance		= NULL;
-CConfigFile			 IService5::ConfigFile;
+IService5	*IService5::Instance		= NULL;
+CConfigFile	 IService5::ConfigFile;
 
 //
 // Prototypes
@@ -421,7 +416,7 @@ sint IService5::main ()
 			scrollLabel = wd->createLabel ("");
 		}
 
-		nlinfo ("Starting Service '%s' using NeL ("__DATE__" "__TIME__")", _ShortName.c_str());
+		nlinfo ("Starting Service 5 '%s' using NeL ("__DATE__" "__TIME__")", _ShortName.c_str());
 		DebugLog->addNegativeFilter ("LNETL3NB_ASSOC:");
 		DebugLog->addNegativeFilter ("LNETL3NB_CB:");
 
@@ -863,8 +858,8 @@ sint IService5::main ()
 */
 			}
 
-			NetSpeedLoop = (sint32)(CTime::getLocalTime () - before);
-			UserSpeedLoop = (sint32)(before - bbefore);
+			NetSpeedLoop = (sint32) (CTime::getLocalTime () - before);
+			UserSpeedLoop = (sint32) (before - bbefore);
 
 			if (wd != NULL)
 			{
@@ -1058,7 +1053,7 @@ NLMISC_COMMAND (mutex, "display mutex values", "")
 	for ( im=acquiretimes.begin(); im!=acquiretimes.end(); ++im )
 	{
 		nlinfo( "%d %p %s: %.0f %.0f, called %u times th(%d, %d wait)%s", (*im).second.MutexNum, (*im).first, (*im).second.MutexName.c_str(),
-			CTime::ticksToSecond((*im).second.TimeToEnter)*1000.0, CTime::ticksToSecond((*im).second.TimeInMutex)*1000.0,
+			CTime::cpuCycleToSecond((*im).second.TimeToEnter)*1000.0, CTime::cpuCycleToSecond((*im).second.TimeInMutex)*1000.0,
 			(*im).second.Nb, (*im).second.ThreadHavingTheMutex, (*im).second.WaitingMutex,
 			(*im).second.Dead?" DEAD":"");
 	}

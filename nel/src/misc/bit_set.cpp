@@ -1,7 +1,7 @@
 /** \file bit_set.cpp
  * CBitSet class
  *
- * $Id: bit_set.cpp,v 1.8 2001/08/01 09:41:12 berenguier Exp $
+ * $Id: bit_set.cpp,v 1.9 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,9 +23,10 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include "nel/misc/bit_set.h"
-#include "nel/misc/debug.h"
-#include <algorithm>
+
 using namespace std;
 
 

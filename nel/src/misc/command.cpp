@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.7 2001/10/05 14:53:11 lecroart Exp $
+ * $Id: command.cpp,v 1.8 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,11 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include <map>
-#include <string>
-
-#include "nel/misc/types_nl.h"
-#include "nel/misc/debug.h"
+#include "stdmisc.h"
 
 #include "nel/misc/command.h"
 

@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.17 2001/12/10 14:34:31 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.18 2001/12/28 10:17:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,10 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include <string>
-#include <map>
-#include <vector>
-#include <algorithm>
+#include "stdnet.h"
 
 #include "nel/misc/string_id_array.h"
 #include "nel/misc/time_nl.h"
@@ -339,7 +336,7 @@ void CNetManager::addCallbackArray (const std::string &serviceName, const TCallb
 	}
 }
 
-void CNetManager::update (sint32 timeout)
+void CNetManager::update (TTime timeout)
 {
 //	nldebug ("HNETL4: update()");
 
@@ -355,7 +352,7 @@ void CNetManager::update (sint32 timeout)
 		}
 		else
 		{
-			sint32 err = (sint32)(t0 - _NextUpdateTime);
+			TTime err = t0 - _NextUpdateTime;
 			_NextUpdateTime += timeout;
 
 			// if we are too late, resync to the next value

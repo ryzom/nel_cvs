@@ -1,7 +1,7 @@
 /** \file vector_h.cpp
  * <File description>
  *
- * $Id: vector_h.cpp,v 1.1 2000/11/17 11:10:17 cado Exp $
+ * $Id: vector_h.cpp,v 1.2 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdmisc.h"
 
 #include "nel/misc/vector_h.h"
 

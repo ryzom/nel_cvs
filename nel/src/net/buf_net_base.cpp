@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.cpp,v 1.4 2001/09/12 16:55:23 lecroart Exp $
+ * $Id: buf_net_base.cpp,v 1.5 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdnet.h"
+
 #include "nel/net/buf_net_base.h"
-#include "nel/misc/debug.h"
 
 using namespace NLMISC;
 using namespace std;

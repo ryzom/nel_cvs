@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.18 2001/08/23 14:31:54 lecroart Exp $
+ * $Id: i18n.cpp,v 1.19 2001/12/28 10:17:20 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -26,7 +26,7 @@
  */
 
 
-#include <sstream>
+#include "stdmisc.h"
 
 #include "nel/misc/i18n.h"
 

@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.20 2001/10/04 16:52:34 corvazier Exp $
+ * $Id: stream.cpp,v 1.21 2001/12/28 10:17:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,10 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #include "nel/misc/stream.h"
-#include "nel/misc/debug.h"
+
 using namespace std;
 
 

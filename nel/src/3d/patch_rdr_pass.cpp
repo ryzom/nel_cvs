@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.cpp
  * <File description>
  *
- * $Id: patch_rdr_pass.cpp,v 1.9 2001/09/24 12:22:48 berenguier Exp $
+ * $Id: patch_rdr_pass.cpp,v 1.10 2002/02/28 12:59:50 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/patch_rdr_pass.h"
 #include "3d/primitive_block.h"

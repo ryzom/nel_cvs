@@ -1,7 +1,7 @@
 /** \file texture_cube.cpp
  * Implementation of a texture cube
  *
- * $Id: texture_cube.cpp,v 1.5 2002/02/05 11:17:26 vizerie Exp $
+ * $Id: texture_cube.cpp,v 1.6 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/texture_cube.h"
 #include "nel/misc/file.h"

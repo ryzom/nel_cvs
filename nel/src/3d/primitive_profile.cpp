@@ -1,7 +1,7 @@
 /** \file primitive_profile.cpp
  * Primitive counter.
  *
- * $Id: primitive_profile.cpp,v 1.1 2001/07/06 17:05:27 berenguier Exp $
+ * $Id: primitive_profile.cpp,v 1.2 2002/02/28 12:59:50 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "nel/3d/primitive_profile.h"
 

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.31 2001/10/19 13:40:41 corvazier Exp $
+ * $Id: vertex_buffer.cpp,v 1.32 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/vertex_buffer.h"
 #include "nel/misc/vector.h"

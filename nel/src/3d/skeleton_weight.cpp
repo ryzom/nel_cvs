@@ -1,7 +1,7 @@
 /** \file skeleton_weight.cpp
  * <File description>
  *
- * $Id: skeleton_weight.cpp,v 1.5 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: skeleton_weight.cpp,v 1.6 2002/02/28 12:59:51 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/skeleton_weight.h"
 #include "nel/misc/stream.h"

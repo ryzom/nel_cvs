@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.7 2001/10/29 15:50:56 corvazier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.8 2002/02/28 12:59:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/coarse_mesh_manager.h"
 #include "3d/mesh.h"

@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.3 2002/02/27 13:59:26 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.4 2002/02/28 12:59:51 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/ps_ribbon.h"
 #include "3d/ps_macro.h"

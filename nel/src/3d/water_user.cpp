@@ -1,7 +1,7 @@
 /** \file water_user.cpp
  * implementation of the user interface for water
  *
- * $Id: water_user.cpp,v 1.2 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: water_user.cpp,v 1.3 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "nel/3d/u_water.h"
 #include "3d/water_pool_manager.h"

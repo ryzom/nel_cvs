@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.36 2002/02/27 15:27:00 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.37 2002/02/28 12:59:51 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 
 #include "nel/misc/aabbox.h"

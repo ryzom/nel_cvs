@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.35 2002/02/27 13:53:32 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.36 2002/02/28 12:59:50 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include <stdlib.h>
 #include "3d/ps_emitter.h"

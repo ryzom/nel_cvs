@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.23 2001/10/10 15:52:57 besson Exp $
+ * $Id: mrm_builder.cpp,v 1.24 2002/02/28 12:59:50 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/mrm_builder.h"
 #include "3d/mrm_parameters.h"

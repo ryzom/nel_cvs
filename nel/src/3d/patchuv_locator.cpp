@@ -1,7 +1,7 @@
 /** \file patchuv_locator.cpp
  * <File description>
  *
- * $Id: patchuv_locator.cpp,v 1.4 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: patchuv_locator.cpp,v 1.5 2002/02/28 12:59:50 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/patchuv_locator.h"
 

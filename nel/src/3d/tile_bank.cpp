@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.39 2002/01/21 10:11:33 besson Exp $
+ * $Id: tile_bank.cpp,v 1.40 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/tile_bank.h"
 #include "3d/texture_file.h"

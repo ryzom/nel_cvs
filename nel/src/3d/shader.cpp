@@ -1,7 +1,7 @@
 /** \file shader.cpp
  * <File description>
  *
- * $Id: shader.cpp,v 1.3 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: shader.cpp,v 1.4 2002/02/28 12:59:51 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/shader.h"
 #include "3d/driver.h"

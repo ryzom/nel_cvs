@@ -1,7 +1,7 @@
 /** \file cube_map_builder.cpp
  * a function that helps to build cube maps
  *
- * $Id: cube_map_builder.cpp,v 1.1 2002/02/04 10:42:31 vizerie Exp $
+ * $Id: cube_map_builder.cpp,v 1.2 2002/02/28 12:59:49 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 
 

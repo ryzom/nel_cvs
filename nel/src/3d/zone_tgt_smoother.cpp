@@ -1,7 +1,7 @@
 /** \file zone_tgt_smoother.cpp
  * <File description>
  *
- * $Id: zone_tgt_smoother.cpp,v 1.7 2001/11/26 15:23:33 corvazier Exp $
+ * $Id: zone_tgt_smoother.cpp,v 1.8 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/zone_tgt_smoother.h"
 #include "nel/misc/plane.h"

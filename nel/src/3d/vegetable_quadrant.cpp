@@ -1,7 +1,7 @@
 /** \file vegetable_quadrant.cpp
  * <File description>
  *
- * $Id: vegetable_quadrant.cpp,v 1.1 2001/11/30 13:17:54 berenguier Exp $
+ * $Id: vegetable_quadrant.cpp,v 1.2 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/vegetable_quadrant.h"
 #include "nel/misc/matrix.h"

@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.20 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.21 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/transform_shape.h"
 #include "3d/driver.h"

@@ -1,7 +1,7 @@
 /** \file motion_blur.cpp
  * <File description>
  *
- * $Id: motion_blur.cpp,v 1.2 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: motion_blur.cpp,v 1.3 2002/02/28 12:59:50 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "nel/misc/common.h"
 #include "3d/motion_blur.h"

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.24 2002/02/26 14:17:55 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.25 2002/02/28 12:59:50 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/mesh_mrm.h"
 #include "3d/mrm_builder.h"

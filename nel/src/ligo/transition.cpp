@@ -1,7 +1,7 @@
 /** \file transition.cpp
  * A transition template implementation
  *
- * $Id: transition.cpp,v 1.1 2002/02/14 11:16:43 besson Exp $
+ * $Id: transition.cpp,v 1.2 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 // Ligo include
 #include "zone_template.h"
 #include "ligo_error.h"
-#include "material.h"
+#include "ligo_material.h"
 
 namespace NLLIGO
 {

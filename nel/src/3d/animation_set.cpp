@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.13 2001/07/19 15:41:06 corvazier Exp $
+ * $Id: animation_set.cpp,v 1.14 2002/02/28 12:59:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/animation_set.h"
 #include "nel/misc/stream.h"

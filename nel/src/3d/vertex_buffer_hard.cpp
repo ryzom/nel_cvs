@@ -1,7 +1,7 @@
 /** \file vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: vertex_buffer_hard.cpp,v 1.3 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: vertex_buffer_hard.cpp,v 1.4 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/vertex_buffer_hard.h"
 

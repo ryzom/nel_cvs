@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.11 2002/02/18 18:11:55 berenguier Exp $
+ * $Id: vegetable.cpp,v 1.12 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/vegetable.h"
 #include "nel/misc/common.h"

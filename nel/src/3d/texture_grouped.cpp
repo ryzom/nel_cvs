@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * <File description>
  *
- * $Id: texture_grouped.cpp,v 1.8 2002/02/26 16:26:50 vizerie Exp $
+ * $Id: texture_grouped.cpp,v 1.9 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/texture_grouped.h"
 #include "3d/texture_file.h"

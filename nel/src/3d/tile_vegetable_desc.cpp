@@ -1,7 +1,7 @@
 /** \file tile_vegetable_desc.cpp
  * <File description>
  *
- * $Id: tile_vegetable_desc.cpp,v 1.2 2001/11/12 14:00:07 berenguier Exp $
+ * $Id: tile_vegetable_desc.cpp,v 1.3 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/tile_vegetable_desc.h"
 #include "nel/misc/common.h"

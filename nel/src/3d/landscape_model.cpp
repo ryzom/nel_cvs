@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.18 2001/12/11 11:23:14 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.19 2002/02/28 12:59:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/landscape_model.h"
 #include "3d/landscape.h"

@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.8 2001/09/03 15:26:42 lecroart Exp $
+ * $Id: shape_bank.cpp,v 1.9 2002/02/28 12:59:51 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/shape_bank.h"
 #include "3d/mesh.h"

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.43 2002/02/26 14:17:55 berenguier Exp $
+ * $Id: mesh.cpp,v 1.44 2002/02/28 12:59:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/mesh.h"
 #include "3d/mesh_instance.h"

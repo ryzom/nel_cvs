@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.57 2001/12/20 10:12:39 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.58 2002/02/28 12:59:51 besson Exp $
  *
  */
 
@@ -23,6 +23,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/tessellation.h"
 #include "3d/patch.h"

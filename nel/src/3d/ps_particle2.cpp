@@ -1,7 +1,7 @@
 /** \file ps_particle2.cpp
  * <File description>
  *
- * $Id: ps_particle2.cpp,v 1.8 2002/02/15 17:09:11 vizerie Exp $
+ * $Id: ps_particle2.cpp,v 1.9 2002/02/28 12:59:51 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/ps_particle2.h"
 

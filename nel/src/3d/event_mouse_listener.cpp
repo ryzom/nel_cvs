@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.11 2001/06/25 13:43:24 vizerie Exp $
+ * $Id: event_mouse_listener.cpp,v 1.12 2002/02/28 12:59:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/event_mouse_listener.h"
 #include "nel/misc/event_server.h"

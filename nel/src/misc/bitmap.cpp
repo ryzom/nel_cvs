@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.20 2002/01/28 17:28:36 besson Exp $
+ * $Id: bitmap.cpp,v 1.21 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1992,8 +1992,9 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 {
 	if(f.isReading()) return false;
-	if(d!=24 && d!=32 && d!=16) return false;
-	if(PixelFormat != RGBA) return false;
+	if(d!=24 && d!=32 && d!=16 && d!=8) return false;
+	if ((PixelFormat != RGBA)&&(PixelFormat != Alpha)) return false;
+	if ((PixelFormat == Alpha) && (d != 8)) return false;
 
 	sint32	i,j,x,y;
 	uint8	* scanline;
@@ -2013,7 +2014,10 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 	uint8	desc = 0;
 	if (upsideDown)
 		desc |= 1<<5;
-		
+
+	if (PixelFormat == Alpha)
+		imageType = 3; // Uncompressed grayscale
+
 	f.serial(lengthID);
 	f.serial(cMapType);
 	f.serial(imageType);
@@ -2027,8 +2031,10 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 	f.serial(imageDepth);
 	f.serial(desc);
 
-	
-	scanline = new uint8[width*4];
+	if (PixelFormat == Alpha)
+		scanline = new uint8[width];
+	else
+		scanline = new uint8[width*4];
 	if(!scanline)
 	{
 		throw EAllocationFailure();
@@ -2038,6 +2044,12 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 	{
 		
 		uint32 k=0;
+		if (PixelFormat == Alpha)
+		for(i=0; i<width; ++i) // Alpha
+		{
+			scanline[k++] = _Data[0][(height-y-1)*width + i];
+		}
+		else
 		for(i=0; i<width*4; i+=4) // 4:RGBA
 		{
 			if(d==16)

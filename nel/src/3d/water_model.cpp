@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.19 2002/02/15 17:14:02 vizerie Exp $
+ * $Id: water_model.cpp,v 1.20 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/water_model.h"
 #include "3d/water_shape.h"

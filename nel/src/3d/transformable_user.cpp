@@ -1,7 +1,7 @@
 /** \file transformable_user.cpp
  * <File description>
  *
- * $Id: transformable_user.cpp,v 1.3 2001/08/02 12:08:11 berenguier Exp $
+ * $Id: transformable_user.cpp,v 1.4 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/transformable_user.h"
 

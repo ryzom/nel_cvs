@@ -1,7 +1,7 @@
 /** \file stripifier.cpp
  * <File description>
  *
- * $Id: stripifier.cpp,v 1.2 2001/10/31 10:18:26 berenguier Exp $
+ * $Id: stripifier.cpp,v 1.3 2002/02/28 12:59:51 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/stripifier.h"
 // For now, don't use NVidia stripifier.

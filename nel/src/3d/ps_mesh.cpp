@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.16 2002/02/20 11:15:28 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.17 2002/02/28 12:59:51 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/ps_mesh.h"
 #include "3d/ps_macro.h"

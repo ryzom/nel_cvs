@@ -1,7 +1,7 @@
 /** \file scissor.cpp
  * A scissor, used for IDriver rendering
  *
- * $Id: scissor.cpp,v 1.1 2001/07/09 15:39:43 berenguier Exp $
+ * $Id: scissor.cpp,v 1.2 2002/02/28 12:59:51 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "nel/3d/scissor.h"
 

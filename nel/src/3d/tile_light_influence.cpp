@@ -1,7 +1,7 @@
 /** \file tile_light_influence.cpp
  * <File description>
  *
- * $Id: tile_light_influence.cpp,v 1.1 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: tile_light_influence.cpp,v 1.2 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/tile_light_influence.h"
 #include "nel/misc/debug.h"

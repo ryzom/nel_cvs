@@ -1,7 +1,7 @@
 /** \file particle_system_sound_user.cpp
  * <File description>
  *
- * $Id: particle_system_sound_user.cpp,v 1.2 2001/08/30 08:07:30 vizerie Exp $
+ * $Id: particle_system_sound_user.cpp,v 1.3 2002/02/28 12:59:50 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 
 

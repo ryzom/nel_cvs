@@ -1,7 +1,7 @@
 /** \file fast_floor.cpp
  * <File description>
  *
- * $Id: fast_floor.cpp,v 1.1 2001/07/24 08:46:24 vizerie Exp $
+ * $Id: fast_floor.cpp,v 1.2 2002/02/28 12:59:49 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/fast_floor.h"
 #include <math.h>

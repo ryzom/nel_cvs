@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.4 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: async_file_manager.cpp,v 1.5 2002/02/28 12:59:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/async_file_manager.h"
 #include "3d/shape.h"

@@ -1,7 +1,7 @@
 /** \file vegetable_sort_block.cpp
  * <File description>
  *
- * $Id: vegetable_sort_block.cpp,v 1.4 2002/02/18 18:11:55 berenguier Exp $
+ * $Id: vegetable_sort_block.cpp,v 1.5 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/vegetable_sort_block.h"
 #include "3d/radix_sort.h"

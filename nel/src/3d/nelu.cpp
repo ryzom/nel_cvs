@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.27 2001/12/05 09:54:38 corvazier Exp $
+ * $Id: nelu.cpp,v 1.28 2002/02/28 12:59:50 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"

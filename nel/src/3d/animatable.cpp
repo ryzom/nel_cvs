@@ -1,7 +1,7 @@
 /** \file animatable.cpp
  * Class IAnimatable
  *
- * $Id: animatable.cpp,v 1.7 2001/07/03 09:46:22 corvazier Exp $
+ * $Id: animatable.cpp,v 1.8 2002/02/28 12:59:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/animatable.h"
 #include "3d/channel_mixer.h"

@@ -1,7 +1,7 @@
 /** \file shape_bank_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: shape_bank_user.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: shape_bank_user.cpp,v 1.3 2002/02/28 12:59:51 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/shape_bank_user.h"
 #include "nel/misc/file.h"

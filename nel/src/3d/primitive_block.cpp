@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Primitive Block implementation
  *
- * $Id: primitive_block.cpp,v 1.13 2002/02/27 13:52:10 vizerie Exp $
+ * $Id: primitive_block.cpp,v 1.14 2002/02/28 12:59:50 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/primitive_block.h"
 #include "nel/misc/stream.h"

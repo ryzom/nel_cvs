@@ -1,7 +1,7 @@
 /** \file zone_corner_smoother.cpp
  * <File description>
  *
- * $Id: zone_corner_smoother.cpp,v 1.1 2001/08/20 14:56:11 berenguier Exp $
+ * $Id: zone_corner_smoother.cpp,v 1.2 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/zone_corner_smoother.h"
 #include "3d/patchuv_locator.h"

@@ -1,7 +1,7 @@
 /** \file vegetable_clip_block.cpp
  * <File description>
  *
- * $Id: vegetable_clip_block.cpp,v 1.2 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: vegetable_clip_block.cpp,v 1.3 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/vegetable_clip_block.h"
 

@@ -1,7 +1,7 @@
 /** \file heat_haze.cpp
  * <File description>
  *
- * $Id: heat_haze.cpp,v 1.1 2001/08/07 14:15:48 vizerie Exp $
+ * $Id: heat_haze.cpp,v 1.2 2002/02/28 12:59:49 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 
 #include "3d/heat_haze.h"

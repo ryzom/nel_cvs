@@ -1,7 +1,7 @@
 /** \file water_height_map.cpp
  * <File description>
  *
- * $Id: water_height_map.cpp,v 1.8 2002/02/28 09:55:20 vizerie Exp $
+ * $Id: water_height_map.cpp,v 1.9 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-
+#include "std3d.h"
 
 #include "water_height_map.h"
 #include "nel/misc/common.h"

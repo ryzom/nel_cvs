@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_cluster.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_cluster.cpp,v 1.1 2001/08/28 11:44:22 berenguier Exp $
+ * $Id: quad_grid_clip_cluster.cpp,v 1.2 2002/02/28 12:59:51 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/quad_grid_clip_cluster.h"
 

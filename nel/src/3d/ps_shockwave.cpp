@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.2 2002/02/28 09:53:20 vizerie Exp $
+ * $Id: ps_shockwave.cpp,v 1.3 2002/02/28 12:59:51 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,7 @@
  * MA 02111-1307, USA.
  */
 
+#include "std3d.h"
 
 #include "3d/ps_macro.h"
 #include "3d/ps_shockwave.h"
@@ -156,10 +157,10 @@ public:
 				{
 					radVect = *ptCurrSize * (CPSUtil::getCos((sint32) currAngle) * ptCurrBasis->X + CPSUtil::getSin((sint32) currAngle) * ptCurrBasis->Y);
 					innerVect = radiusRatio * radVect;
-					CHECK_VERTEX_BUFFER(vb, currVertex);
+					CHECK_VERTEX_BUFFER(*vb, currVertex);
 					* (CVector *) currVertex = *posIt + radVect;
 					currVertex += vSize;
-					CHECK_VERTEX_BUFFER(vb, currVertex);
+					CHECK_VERTEX_BUFFER(*vb, currVertex);
 					* (CVector *) currVertex = *posIt + innerVect;
 					currVertex += vSize;
 					currAngle += angleStep;				

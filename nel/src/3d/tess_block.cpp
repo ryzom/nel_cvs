@@ -1,7 +1,7 @@
 /** \file tess_block.cpp
  * <File description>
  *
- * $Id: tess_block.cpp,v 1.8 2001/11/05 16:26:45 berenguier Exp $
+ * $Id: tess_block.cpp,v 1.9 2002/02/28 12:59:51 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/tess_block.h"
 #include "3d/patch_rdr_pass.h"

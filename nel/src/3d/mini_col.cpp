@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * <File description>
  *
- * $Id: mini_col.cpp,v 1.15 2001/08/30 12:52:21 corvazier Exp $
+ * $Id: mini_col.cpp,v 1.16 2002/02/28 12:59:50 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/mini_col.h"
 #include "nel/misc/aabbox.h"

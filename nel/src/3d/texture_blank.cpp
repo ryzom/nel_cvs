@@ -1,7 +1,7 @@
 /** \file texture_blank.cpp
  * <File description>
  *
- * $Id: texture_blank.cpp,v 1.1 2001/08/07 14:07:17 vizerie Exp $
+ * $Id: texture_blank.cpp,v 1.2 2002/02/28 12:59:52 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "std3d.h"
 
 #include "3d/texture_blank.h"
 

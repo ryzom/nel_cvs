@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.15 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: lod_character_manager.cpp,v 1.16 2004/08/13 15:37:35 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -101,6 +101,7 @@ CLodCharacterManager::CLodCharacterManager()
 	// setup for lighting, Default for Ryzom setup
 	_LightCorrectionMatrix.rotateZ((float)Pi/2);
 	_LightCorrectionMatrix.invert();
+	NL_SET_IB_NAME(_Triangles, "CLodCharacterManager::_Triangles");
 }
 
 

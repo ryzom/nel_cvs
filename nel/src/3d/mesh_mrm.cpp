@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.72 2004/07/01 09:36:02 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.73 2004/08/13 15:38:33 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -3278,6 +3278,7 @@ void			CMeshMRMGeom::renderShadowSkinPrimitives(CMeshMRMInstance	*mi, CMaterial 
 
 	// TODO_SHADOW: optim: Special triangle cache for shadow!
 	static	CIndexBuffer shiftedTris;
+	NL_SET_IB_NAME(shiftedTris, "CMeshMRMGeom::renderShadowSkinPrimitives::shiftedTris");
 	if(shiftedTris.getNumIndexes()<_ShadowSkinTriangles.size())
 	{
 		shiftedTris.setNumIndexes(_ShadowSkinTriangles.size());

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.50 2004/07/01 09:36:02 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.51 2004/08/13 15:38:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -356,6 +356,11 @@ private:
 
 			f.serial(MaterialId);
 			f.serial(PBlock);
+		}
+		CRdrPass()
+		{
+			NL_SET_IB_NAME(PBlock, "CMeshMRM::CRdrPass::PBlock");
+			NL_SET_IB_NAME(VBHeapPBlock, "CMeshMRM::CRdrPass::VBHeapPBlock");
 		}
 	};
 

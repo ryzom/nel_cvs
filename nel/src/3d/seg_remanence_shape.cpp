@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.14 2004/06/02 08:59:36 vizerie Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.15 2004/08/13 15:41:42 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -49,6 +49,7 @@ CSegRemanenceShape::CSegRemanenceShape() : _GeomTouched(true),
 	_BBox.setCenter(NLMISC::CVector::Null);
 	_BBox.setHalfSize(NLMISC::CVector(3, 3, 3));
 	setNumCorners(2);
+	NL_SET_IB_NAME(_PB, "CSegRemanenceShape");
 }
 
 //===========================================================

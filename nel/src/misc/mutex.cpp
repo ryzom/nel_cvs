@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.22 2001/09/19 15:09:59 lecroart Exp $
+ * $Id: mutex.cpp,v 1.23 2001/09/20 13:32:51 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -146,6 +146,7 @@ CFairMutex::CFairMutex()
 	InitializeCriticalSection( (CRITICAL_SECTION*)&_Cs );
 #endif
 }
+
 
 CFairMutex::CFairMutex(const string &name)
 {
@@ -306,6 +307,12 @@ void CUnfairMutex::leave()
  * Unix version
  */
 CFairMutex::CFairMutex()
+{
+	sem_init( const_cast<sem_t*>(&_Sem), 0, 1 );
+}
+
+
+CFairMutex::CFairMutex(	CFairMutex(const std::string &name) )
 {
 	sem_init( const_cast<sem_t*>(&_Sem), 0, 1 );
 }

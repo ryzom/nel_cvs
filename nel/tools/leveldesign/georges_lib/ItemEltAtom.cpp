@@ -38,7 +38,6 @@ void CItemEltAtom::BuildItem( CMoldElt* const _pme )
 	sxcurrentresult = pmet->GetDefaultValue();
 	if( pmet->IsEnum() )
 		infos |= ITEM_ISENUM;
-
 }
 
 CStringEx CItemEltAtom::GetFormula() const 

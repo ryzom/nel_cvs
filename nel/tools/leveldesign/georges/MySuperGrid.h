@@ -75,6 +75,9 @@ public:
 	BOOL OnItemLButtonDown(LVHITTESTINFO& ht);
 	BOOL OnItemRButtonDown(LVHITTESTINFO& ht);
 	BOOL CanEdit( CTreeItem* const _pItem );
+	void GetExpandedList( std::vector< std::pair< bool, CString > >& _vexp );
+	void SetExpandedList( const std::vector< std::pair< bool, CString > >& _vexp );
+
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMySuperGrid)
 	//}}AFX_VIRTUAL

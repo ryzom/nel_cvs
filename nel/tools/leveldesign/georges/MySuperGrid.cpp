@@ -686,7 +686,11 @@ void CMySuperGrid::OnParentchildActivate()
 	if( lp == NULL )
 		return;
 	unsigned int currentitem = lp->GetItemIndex();
+
+std::vector< std::pair< bool, CString > > vexp;
+GetExpandedList( vexp );
 	pdoc->SetItemActivity( currentitem-0x80000001, CString( "true" ) );
+SetExpandedList( vexp );
 /*
 	lp->SetSubItemText( 2, pdoc->GetItemActivity( currentitem-0x80000001 ) );
 	InvalidateItemRect( GetCurIndex( currenttreeitem ) );
@@ -702,11 +706,151 @@ void CMySuperGrid::OnParentchildDesactivate()
 	if( lp == NULL )
 		return;
 	unsigned int currentitem = lp->GetItemIndex();
+std::vector< std::pair< bool, CString > > vexp;
+GetExpandedList( vexp );
 	pdoc->SetItemActivity( currentitem-0x80000001, CString( "false" ) );
+SetExpandedList( vexp );
 /*
 	lp->SetSubItemText( 2, pdoc->GetItemActivity( currentitem-0x80000001 ) );
 	InvalidateItemRect( GetCurIndex( currenttreeitem ) );
 	UpdateWindow();
+*/
+}
+
+void CMySuperGrid::GetExpandedList( std::vector< std::pair< bool, CString > >& _vexp )
+{
+/*
+	int iItem = GetNextItem( -1, LVNI_ALL ); 
+	while( iItem != -1 )
+	{
+		CTreeItem* pTItem = GetTreeItem(iItem);
+		if( !pTItem )
+			break;
+		CItemInfo *lp = GetData( pTItem );
+		if( !lp )
+			break;
+		unsigned int j = lp->GetItemIndex();
+		bool c = IsRoot( pTItem );
+		bool b = !IsCollapsed( pTItem );			
+		CString s = pdoc->GetItemName( j );
+		if( !c )
+		{
+			_vexp.push_back( std::make_pair( b, s ) ); 
+		}
+		iItem = GetNextItem( iItem, LVNI_ALL );
+	}
+*/
+/*
+	_vexp.clear();
+	unsigned int iItem = 1;
+	CTreeItem* pTItem = GetTreeItem(iItem);
+	while( !IsRoot(pTItem) )
+	{
+		CItemInfo *lp = GetData( pTItem );
+		if( !lp )
+		{
+			pTItem = GetTreeItem(++iItem);
+			continue;
+		}
+		unsigned int j = lp->GetItemIndex();
+		bool c = IsRoot( pTItem );
+		bool b = !IsCollapsed( pTItem );			
+		CString s = pdoc->GetItemName( j );
+		_vexp.push_back( std::make_pair( IsCollapsed( pTItem ), s ) ); 
+		pTItem = GetTreeItem(++iItem);
+	}
+*/
+/*
+	_vexp.clear();
+	unsigned int iTotal = GetCount();
+	for( unsigned int iItem = 0; iItem < iTotal; ++iItem )
+	{
+		CTreeItem* pTItem = GetTreeItem(iItem);
+		if( !pTItem )
+			break;
+		CItemInfo *lp = GetData( pTItem );
+		if( !lp )
+			break;
+		CString s = pdoc->GetItemName( lp->GetItemIndex() );
+		_vexp.push_back( std::make_pair( IsCollapsed( pTItem ), s ) ); 
+	}
+*/
+}
+
+void CMySuperGrid::SetExpandedList( const std::vector< std::pair< bool, CString > >& _vexp )
+{
+/*
+	int iItem = GetNextItem( -1, LVNI_ALL ); 
+	std::vector< std::pair< bool, CString > >::const_iterator it = _vexp.begin();
+
+	CTreeItem* pTItem;	
+	CItemInfo *lp;
+	CString s;
+	while( it != _vexp.end() )
+	{
+		s = "";
+		while( iItem != -1 )
+		{
+			pTItem = GetTreeItem(iItem);
+			if( !pTItem )
+				break;
+			lp = GetData( pTItem );
+			if( !lp )
+				break;
+			unsigned int j = lp->GetItemIndex();
+			bool c = IsRoot( pTItem );
+			if( !c )
+			{
+				s = pdoc->GetItemName( j );
+				if( s == it->second )
+					break;
+			}
+			iItem = GetNextItem( iItem, LVNI_ALL );
+		}
+		if( iItem == -1 )
+			break;
+		if( it->first )
+			Expand( pTItem, iItem );
+		++it;
+	}
+*/
+/*
+	unsigned int iItem = 0;
+	std::vector< std::pair< bool, CString > >::const_iterator it = _vexp.begin();
+	while( it != _vexp.end() )
+	{
+		CTreeItem* pTItem = GetTreeItem(iItem);
+		while( pTItem )
+		{
+			CItemInfo *lp = GetData( pTItem );
+			if( !lp )
+			{
+				CTreeItem* pTItem = GetTreeItem(++iItem);
+				continue;
+			}
+			unsigned int index = lp->GetItemIndex();
+			CString s = pdoc->GetItemName( index );
+			if( s == it->second )
+				break;
+			CTreeItem* pTItem = GetTreeItem(++iItem);
+		}
+		if( !pTItem )
+		{
+			++it;
+			continue;
+		}
+		CItemInfo *lp = GetData( pTItem );		
+		if( !lp )
+		{
+			++it;
+			continue;
+		}
+		if( it->first )
+		{
+			Expand( pTItem, iItem );
+		}
+		++it;
+	}
 */
 }
 
@@ -1543,7 +1687,4 @@ void CMySuperGrid::SetNewImage(int nItem)
 		SetItemState(0, uflag, uflag);
 	}
 */
-
-
-
 

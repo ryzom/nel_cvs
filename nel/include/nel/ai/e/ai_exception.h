@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ai_exception.h,v 1.13 2001/10/25 11:59:30 chafik Exp $
+ * $Id: ai_exception.h,v 1.14 2001/10/25 13:35:56 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -134,16 +134,8 @@ namespace NLAIE
 	private:	
 		char *_ClassName;
 	public:
-		CExceptionUnRegisterClassError(const CExceptionUnRegisterClassError &e)
-		{
-			_ClassName = new char [strlen(e._ClassName) + 1];
-			strcpy(_ClassName,e._ClassName);
-		}
-		CExceptionUnRegisterClassError(const char *name)
-		{
-			_ClassName = new char [strlen(name) + 1];
-			strcpy(_ClassName,name);
-		}
+		CExceptionUnRegisterClassError(const CExceptionUnRegisterClassError &e);		
+		CExceptionUnRegisterClassError(const char *name);
 
 		const char *what() const throw() 
 		{

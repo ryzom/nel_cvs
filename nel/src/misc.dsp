@@ -254,6 +254,14 @@ SOURCE=..\include\nel\misc\event_emitter.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\event_listener.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\event_listener.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\event_server.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.2 2001/05/04 15:12:47 legros Exp $
+ * $Id: local_retriever.h,v 1.3 2001/05/09 12:59:24 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,6 +96,23 @@ public:
 		void	serial(NLMISC::IStream &f)	{ f.serialCont(*this); }
 	};
 
+
+	/**
+	 * An estimation of the position of a point on a specified surface.
+	 * \author Benjamin Legros
+	 * \author Nevrax France
+	 * \date 2001
+	 */
+	class CPosition
+	{
+	public:
+		sint32							Surface;
+		NLMISC::CVector					Estimation;
+	public:
+		void							serial(NLMISC::IStream &f) { f.serial(Surface, Estimation); }
+	};
+
+
 protected:
 	friend class	CRetrieverInstance;
 	
@@ -181,6 +198,12 @@ public:
 	void								findEdgeChains();
 
 	void								serial(NLMISC::IStream &f);
+
+protected:
+	friend class	CRetrieverInstance;
+
+	void								retrievePosition(NLMISC::CVector estimated, std::vector<uint8> &retrieveTable) const;
+	
 };
 
 }; // NLPACS

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.1 2001/05/04 14:51:21 legros Exp $
+ * $Id: local_retriever.cpp,v 1.2 2001/05/09 12:59:06 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,13 +67,15 @@ sint32	NLPACS::CLocalRetriever::addChain(const std::vector<NLMISC::CVector> &ver
 	if (right<-2 || right>(sint)_Surfaces.size())
 		nlerror ("right surface id MUST be -2<=id<%d (id=%d)", _Surfaces.size(), right);
 */
-
 	if (left>(sint)_Surfaces.size())
 		nlerror ("left surface id MUST be id<%d (id=%d)", _Surfaces.size(), left);
 	if (right>(sint)_Surfaces.size())
 		nlerror ("right surface id MUST be id<%d (id=%d)", _Surfaces.size(), right);
 
-	chain.make(vertices, left, right, _OrderedChains);
+	if (newId > 65535)
+		nlerror("in NLPACS::CLocalRetriever::addChain(): reached the maximum number of chains");
+
+	chain.make(vertices, left, right, _OrderedChains, (uint16)newId);
 
 	CRetrievableSurface	*leftSurface = (left>=0) ? &(_Surfaces[left]) : NULL;
 	CRetrievableSurface	*rightSurface = (right>=0) ? &(_Surfaces[right]) : NULL;
@@ -284,4 +286,80 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 		f.serialCont(_EdgeChains[i]);
 	for (i=0; i<NumCreatureModels; ++i)
 		f.serialCont(_Topologies[i]);
+}
+
+
+void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<uint8> &retrieveTable) const
+{
+	uint	ochain;
+
+	for (ochain=0; ochain<_OrderedChains.size(); ++ochain)
+	{
+		const COrderedChain	&sub = _OrderedChains[ochain];
+
+		if (estimated.x < sub.getVertices().front().x || estimated.x > sub.getVertices().back().x)
+			continue;
+
+		const vector<CVector>	&vertices = sub.getVertices();
+		uint					start = 0, stop = vertices.size()-1;
+
+		while (stop-start > 1)
+		{
+			uint	mid = (start+stop)/2;
+
+			if (vertices[mid].x > estimated.x)
+				stop = mid;
+			else
+				start = mid;
+		}
+
+		bool	isUpper;
+		
+		if (estimated.y > vertices[start].y && estimated.y > vertices[stop].y)
+		{
+			isUpper = true;
+		}
+		else if (estimated.y < vertices[start].y && estimated.y < vertices[stop].y)
+		{
+			isUpper = false;
+		}
+		else
+		{
+			const CVector	&vstart = vertices[start],
+							&vstop = vertices[stop];
+			float	intersect = vstart.y + (vstop.y-vstart.y)*(estimated.x-vstart.x)/(vstop.y-vstart.y);
+
+			isUpper = estimated.y > intersect;
+		}
+
+		sint32	left = _Chains[sub.getParentId()].getLeft(),
+				right = _Chains[sub.getParentId()].getRight();
+
+		if (sub.isForward())
+		{
+			if (isUpper)
+			{
+				if (left >= 0)	++retrieveTable[left];
+				if (right >= 0)	--retrieveTable[right];
+			}
+			else
+			{
+				if (left >= 0)	--retrieveTable[left];
+				if (right >= 0)	++retrieveTable[right];
+			}
+		}
+		else
+		{
+			if (isUpper)
+			{
+				if (left >= 0)	--retrieveTable[left];
+				if (right >= 0)	++retrieveTable[right];
+			}
+			else
+			{
+				if (left >= 0)	++retrieveTable[left];
+				if (right >= 0)	--retrieveTable[right];
+			}
+		}
+	}
 }

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.1 2001/05/04 14:51:21 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.2 2001/05/09 12:59:06 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ NLPACS::CRetrieverInstance::CRetrieverInstance()
 		_Neighbors[i] = -1;
 }
 
-void	NLPACS::CRetrieverInstance::make(sint32 instanceId, sint32 retrieverId,
+void	NLPACS::CRetrieverInstance::make(sint32 instanceId, sint32 retrieverId, const CLocalRetriever &retriever,
 										 uint8 orientation, const CVector &origin)
 {
 	if (_InstanceId != -1 || _RetrieverId != -1)
@@ -63,6 +63,13 @@ void	NLPACS::CRetrieverInstance::make(sint32 instanceId, sint32 retrieverId,
 	_RetrieverId = retrieverId;
 	_Orientation = (orientation%4);
 	_Origin = origin;
+	_RetrieveTable.resize(retriever.getSurfaces().size());
+	uint	i;
+	for (i=0; i<_RetrieveTable.size(); ++i)
+		_RetrieveTable[i] = 0;
+
+	_BBox = retriever.getBBox();
+	_BBox.setCenter(getGlobalPosition(_BBox.getCenter()));
 }
 
 /* Links the current retriever instance to another instance
@@ -182,6 +189,86 @@ void	NLPACS::CRetrieverInstance::link(const CRetrieverInstance &neighbor, uint8 
 		_EdgeChainLinks[edge].push_back(j);
 	}
 }
+
+
+NLPACS::CLocalRetriever::CPosition	NLPACS::CRetrieverInstance::retrievePosition(NLMISC::CVector estimated, const CLocalRetriever &retriever)
+{
+	CVector						localEstimated;
+	CLocalRetriever::CPosition	retrieved;
+
+	// !!!!!! MODIFY THIS !!!!!!
+	localEstimated = estimated;
+
+	retriever.retrievePosition(localEstimated, _RetrieveTable);
+
+	uint	surf;
+	sint	bestSurf = -1;
+	float	bestDistance = 1.0e10f;
+	float	bestMeanHeight;
+
+	for (surf=0; surf<_RetrieveTable.size(); ++surf)
+	{
+		if (_RetrieveTable[surf] != 0)
+		{
+			const CQuadLeaf	*leaf = retriever.getSurfaces()[surf].getQuadTree().getLeaf(estimated);
+			if (leaf == NULL)
+				continue;
+
+			float	meanHeight = (leaf->getMinHeight()+leaf->getMaxHeight())*0.5f;
+			float	distance = (float)fabs(estimated.z-meanHeight);
+			if (distance < bestDistance)
+			{
+				bestDistance = distance;
+				bestMeanHeight = meanHeight;
+				bestSurf = surf;
+			}
+		}
+	}
+
+	if (bestSurf != -1)
+	{
+		retrieved.Surface = bestSurf;
+		retrieved.Estimation = CVector(estimated.x, estimated.y, bestMeanHeight);
+	}
+	else
+	{
+		retrieved.Surface = -1;
+		retrieved.Estimation = estimated;
+	}
+
+	return retrieved;
+}
+
+CVector	NLPACS::CRetrieverInstance::getLocalPosition(const CVector &globalPosition)
+{
+	static const float	sinTable[4] = { 0.0f, 1.0f, 0.0f, -1.0f };
+	static const float	cosTable[4] = { 1.0f, 0.0f, -1.0f, 0.0f };
+
+	float	s = sinTable[_Orientation],
+			c = cosTable[_Orientation];
+
+	return CVector(	+c*(globalPosition.x-_Origin.x)+s*(globalPosition.y-_Origin.y),
+					-s*(globalPosition.x-_Origin.x)+c*(globalPosition.y-_Origin.y),
+					+globalPosition.z-_Origin.z );
+}
+
+CVector	NLPACS::CRetrieverInstance::getGlobalPosition(const CVector &localPosition)
+{
+	static const float	sinTable[4] = { 0.0f, 1.0f, 0.0f, -1.0f };
+	static const float	cosTable[4] = { 1.0f, 0.0f, -1.0f, 0.0f };
+
+	float	s = sinTable[_Orientation],
+			c = cosTable[_Orientation];
+
+	return CVector(	+c*localPosition.x-s*localPosition.y+_Origin.x,
+					+s*localPosition.x+c*localPosition.y+_Origin.y,
+					localPosition.z+_Origin.z );
+}
+
+
+
+
+
 
 void	NLPACS::CRetrieverInstance::serial(NLMISC::IStream &f)
 {

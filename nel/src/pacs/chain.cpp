@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.2 2001/05/04 16:50:14 legros Exp $
+ * $Id: chain.cpp,v 1.3 2001/05/09 12:59:06 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,10 +66,11 @@ void	NLPACS::COrderedChain::serial(IStream &f)
 {
 	f.serialCont(_Vertices);
 	f.serial(_Forward);
+	f.serial(_ParentId);
 }
 
 
-void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 right, vector<COrderedChain> &chains)
+void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 right, vector<COrderedChain> &chains, uint16 thisId)
 {
 	sint		first = 0, last = 0, i;
 
@@ -99,6 +100,7 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 		COrderedChain	&subchain = chains.back();
 		subchain._Vertices.reserve(last-first+1);
 		subchain._Forward = forward;
+		subchain._ParentId = thisId;
 
 		if (forward)
 			for (i=first; i<=last; ++i)

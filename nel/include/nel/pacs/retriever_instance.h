@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.1 2001/05/04 14:50:49 legros Exp $
+ * $Id: retriever_instance.h,v 1.2 2001/05/09 12:59:24 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/file.h"
 
+#include "nel/misc/aabbox.h"
+
 #include "nel/pacs/local_retriever.h"
 
 namespace NLPACS
@@ -47,6 +49,10 @@ public:
 	public:
 		CSurfaceEdge(sint32 from=0, sint32 to=0) : From(from), To(to) {}
 	};
+
+private:
+	///
+	std::vector<uint8>					_RetrieveTable;
 
 protected:
 	/// The id of this instance.
@@ -70,16 +76,26 @@ protected:
 	/// The neighbor  chains on each edge (cf tips.)
 	std::vector<uint16>					_EdgeChainLinks[4];
 
+	/// The BBox.
+	NLMISC::CAABBox						_BBox;
+
 public:
 	CRetrieverInstance();
 
-	void								make(sint32 instanceId, sint32 retrieverId,
+	void								make(sint32 instanceId, sint32 retrieverId, const CLocalRetriever &retriever,
 											 uint8 orientation, const NLMISC::CVector &origin);
 
 	void								link(const CRetrieverInstance &neighbor, uint8 edge,
 											 const std::vector<CLocalRetriever> &retrievers);
 
+	CLocalRetriever::CPosition			retrievePosition(NLMISC::CVector estimated, const CLocalRetriever &retriever);
+	
 	void								serial(NLMISC::IStream &f);
+
+	NLMISC::CVector						getLocalPosition(const NLMISC::CVector &globalPosition);
+	NLMISC::CVector						getGlobalPosition(const NLMISC::CVector &localPosition);
+
+	NLMISC::CAABBox						getBBox() { return _BBox; }
 };
 
 }; // NLPACS

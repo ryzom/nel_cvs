@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.1 2001/05/04 14:50:49 legros Exp $
+ * $Id: chain.h,v 1.2 2001/05/09 12:59:24 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,6 +55,9 @@ protected:
 	/// Set if the chain should be read forward within the parent CChain (for sequential access to vertices.)
 	bool								_Forward;
 
+	/// The parent chain Id.
+	uint16								_ParentId;
+
 public:
 	/// Returns the vertices of the chain
 	const std::vector<NLMISC::CVector>	&getVertices() const { return _Vertices; }
@@ -62,6 +65,9 @@ public:
 	/// Returns true if the chain should be accessed forward within the parent CChain (see _Forward.)
 	bool								isForward() const { return _Forward; }
 
+	/// Returns the parent chain Id of this ordered chain.
+	uint16								getParentId() const { return _ParentId; }
+	
 	void								serial(NLMISC::IStream &f);
 };
 
@@ -99,7 +105,7 @@ protected:
 	friend class CLocalRetriever;
 
 	/// Build the whole surface from a vector of CVector and the left and right surfaces.
-	void								make(const std::vector<NLMISC::CVector> &vertices, sint32 left, sint32 right, std::vector<COrderedChain> &chains);
+	void								make(const std::vector<NLMISC::CVector> &vertices, sint32 left, sint32 right, std::vector<COrderedChain> &chains, uint16 thisId);
 
 public:
 	/// Returns a vector of ordered chains that compose the entire chain

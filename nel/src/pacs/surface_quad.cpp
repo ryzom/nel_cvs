@@ -1,7 +1,7 @@
 /** \file surface_quad.cpp
  *
  *
- * $Id: surface_quad.cpp,v 1.1 2001/05/04 14:51:21 legros Exp $
+ * $Id: surface_quad.cpp,v 1.2 2001/05/09 12:59:06 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -301,7 +301,7 @@ bool	NLPACS::CSurfaceQuadTree::check() const
 	return true;
 }
 
-const NLPACS::CQuadLeaf	*NLPACS::CSurfaceQuadTree::getLeaf(CVector &v)
+const NLPACS::CQuadLeaf	*NLPACS::CSurfaceQuadTree::getLeaf(CVector &v) const
 {
 	if (_Root == NULL || !_BBox.include(v))
 		return NULL;
@@ -328,6 +328,9 @@ const NLPACS::CQuadLeaf	*NLPACS::CSurfaceQuadTree::getLeaf(CVector &v)
 void	NLPACS::CSurfaceQuadTree::serial(NLMISC::IStream &f)
 {
 	uint8	childType = 0;
+	f.serial(_MaxThickness);
+	f.serial(_MaxLevel);
+	f.serial(_BBox);
 	if (f.isReading())
 	{
 		CQuadLeaf	*leaf; 

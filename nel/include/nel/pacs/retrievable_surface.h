@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.1 2001/05/04 14:50:49 legros Exp $
+ * $Id: retrievable_surface.h,v 1.2 2001/05/09 12:59:24 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,7 @@ public:
 		void							serial(NLMISC::IStream &f) { f.serial(Chain, Surface); }
 	};
 
+
 protected:
 	friend class CLocalRetriever;
 
@@ -98,7 +99,7 @@ protected:
 	/// The links to the neighbor surfaces.
 	std::vector<CSurfaceLink>			_Chains;
 
-	/// A Height QuadTree that allows to easyli find the height out for a given 2D point.
+	/// A Height QuadTree that allows to easily find the height out for a given 2D point.
 	CSurfaceQuadTree					_Quad;
 
 	/// The topologies associated with the surface, for each type of model.
@@ -111,7 +112,15 @@ public:
 		for (i=0; i<NumCreatureModels; ++i)
 			_Topologies[i] = -1;
 	}
-	
+
+	uint8								getNormalQuanta() const { return _NormalQuanta; }
+	uint8								getOrientationQuanta() const { return _OrientationQuanta; }
+	uint8								getMaterial() const { return _Material; }
+	uint8								getCharacter() const { return _Character; }
+	uint8								getLevel() const { return _Level; }
+	const CSurfaceQuadTree				&getQuadTree() const { return _Quad; }
+	sint32								getTopology(uint model) const { return _Topologies[model]; }
+
 	const std::vector<CSurfaceLink>		&getChains() const { return _Chains; }
 
 	void								serial(NLMISC::IStream &f);

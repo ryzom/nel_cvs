@@ -1,7 +1,7 @@
 /** \file surface_quad.h
  * 
  *
- * $Id: surface_quad.h,v 1.1 2001/05/04 14:50:49 legros Exp $
+ * $Id: surface_quad.h,v 1.2 2001/05/09 12:59:24 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,7 +143,7 @@ protected:
 
 	IQuadNode					*_Root;
 	float						_MaxThickness;
-	uint						_MaxLevel;
+	uint8						_MaxLevel;
 	NLMISC::CAABBox				_BBox;
 
 public:
@@ -160,7 +160,7 @@ public:
 	const IQuadNode				*getRoot() const { return _Root; }
 
 	bool						check() const;
-	const CQuadLeaf				*getLeaf(NLMISC::CVector &v);
+	const CQuadLeaf				*getLeaf(NLMISC::CVector &v) const;
 
 	void						serial(NLMISC::IStream &f);
 };

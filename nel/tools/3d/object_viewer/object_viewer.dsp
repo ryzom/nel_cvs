@@ -600,6 +600,10 @@ SOURCE=.\pick_sound.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\popup_notify.h
+# End Source File
+# Begin Source File
+
 SOURCE=R:\code\nel\tools\3d\object_viewer\precomputed_rotations_dlg.cpp
 # End Source File
 # Begin Source File

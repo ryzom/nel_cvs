@@ -1,7 +1,7 @@
 /** \file u_animation_set.h
  * <File description>
  *
- * $Id: u_animation_set.h,v 1.6 2004/04/07 09:52:26 berenguier Exp $
+ * $Id: u_animation_set.h,v 1.7 2004/11/15 09:49:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,9 +81,10 @@ public:
 	  *
 	  * \param fileName is the animation filename
 	  * \param animName is the name of the animation in the animation set.
+	  * \param displayMissingFileWarning A warning will be displayed in the log if the anim file is not found
 	  * \return the id of the new animation or NotFound if the file is not found.
 	  */
-	virtual	uint addAnimation (const char* fileName, const char* animName) =0;
+	virtual	uint addAnimation (const char* fileName, const char* animName, bool displayMissingFileWarning  = true) =0;
 
 	/**
 	  *  Build the animation set. Call build after adding all your animations.

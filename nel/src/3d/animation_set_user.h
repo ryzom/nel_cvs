@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
  * <File description>
  *
- * $Id: animation_set_user.h,v 1.13 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: animation_set_user.h,v 1.14 2004/11/15 09:53:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,7 @@ public:
 	  * \param animName is the name of the animation in the animation set.
 	  * \return NotFound if the file is not found.
 	  */
-	uint addAnimation (const char* fileName, const char* animName)
+	uint addAnimation (const char* fileName, const char* animName, bool displayMissingFileWarning  = true)
 	{
 		NL3D_MEM_ANIMATION_SET
 
@@ -113,7 +113,7 @@ public:
 
 		// Read it
 		NLMISC::CIFile file;
-		std::string path = NLMISC::CPath::lookup (fileName, false, true);
+		std::string path = NLMISC::CPath::lookup (fileName, false, displayMissingFileWarning);
 		if (path.empty())
 			path = fileName;
 		if ( file.open ( path ) )

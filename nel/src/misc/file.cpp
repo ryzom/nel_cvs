@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.21 2002/05/21 16:41:31 lecroart Exp $
+ * $Id: file.cpp,v 1.22 2002/05/22 13:30:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ CIFile::CIFile() : IStream(true)
 {
 	_F = NULL;
 	_Cache = NULL;
-	_ReadPos = NULL;
+	_ReadPos = 0;
 	_FileSize = 0;
 	_BigFileOffset = 0;
 	_IsInBigFile = false;
@@ -54,7 +54,7 @@ CIFile::CIFile(const std::string &path, bool text) : IStream(true)
 {
 	_F=NULL;
 	_Cache = NULL;
-	_ReadPos = NULL;
+	_ReadPos = 0;
 	_FileSize = 0;
 	_BigFileOffset = 0;
 	_IsInBigFile = false;

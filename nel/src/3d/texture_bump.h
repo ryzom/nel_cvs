@@ -1,7 +1,7 @@
 /** \file texture_bump.h
  * <File description>
  *
- * $Id: texture_bump.h,v 1.1 2001/10/26 08:20:36 vizerie Exp $
+ * $Id: texture_bump.h,v 1.2 2001/11/07 10:40:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -53,8 +53,16 @@ public:
 	/// get the height map used to generate this bumpmap (const version)
 	const ITexture		*getHeightMap() const { return _HeightMap; };
 
-	// serial this textrue datas
+	// serial this texture datas
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	
+	virtual bool			supportSharing() const;
+	
+	virtual std::string		getShareName() const;
+
+	void					enableSharing(bool enabled = true) { _DisableSharing = !enabled; }
+
+	bool					isSharingEnabled() const { return !_DisableSharing; }
 
 protected:
 	// inherited from ITexture. Generate this bumpmap pixels
@@ -62,6 +70,7 @@ protected:
 	// inherited from ITexture. release this texture, and its datas
 	virtual void release();	
 	NLMISC::CSmartPtr<ITexture> _HeightMap;
+	bool						_DisableSharing;
 };
 
 

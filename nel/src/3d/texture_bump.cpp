@@ -1,7 +1,7 @@
 /** \file texture_bump.cpp
  * <File description>
  *
- * $Id: texture_bump.cpp,v 1.1 2001/10/26 08:20:36 vizerie Exp $
+ * $Id: texture_bump.cpp,v 1.2 2001/11/07 10:40:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -49,6 +49,7 @@ static void BuildDsDt(uint32 *src, sint width, sint height, uint16 *dest)
 
 
 
+
 /*
  * Constructor
  */
@@ -83,6 +84,7 @@ void CTextureBump::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		tex = _HeightMap;
 		f.serialPolyPtr(tex);
 	}
+	f.serial(_DisableSharing);
 }
 
 
@@ -121,5 +123,19 @@ void CTextureBump::release()
 		}
 	}
 }
+
+
+bool	CTextureBump::supportSharing() const
+{
+	return !_DisableSharing && _HeightMap && _HeightMap->supportSharing();	
+}
+
+	
+std::string	CTextureBump::getShareName() const
+{
+	nlassert(supportSharing());
+	return "BumpDsDt:" + _HeightMap->getShareName();
+}
+
 
 } // NL3D

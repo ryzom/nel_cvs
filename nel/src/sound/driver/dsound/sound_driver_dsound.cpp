@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.1 2002/05/24 16:50:48 hanappe Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.2 2002/05/27 09:35:57 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,8 @@
 #include "listener_dsound.h"
 #include "source_dsound.h"
 #include "buffer_dsound.h"
+#include <math.h>
+
 
 using namespace std;
 using namespace NLMISC;
@@ -279,12 +281,12 @@ bool CSoundDriverDSound::init(HWND wnd)
     if (countHw3DBuffers() > 0) 
     {
 		nldebug("Primary buffer: Allocating 3D buffer in hardware");
-        desc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_LOCHARDWARE | DSBCAPS_CTRL3D;
+        desc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_LOCHARDWARE | DSBCAPS_CTRL3D | DSBCAPS_CTRLVOLUME;
     } 
     else
     {
  		nldebug("Primary buffer: Allocating 3D buffer in software");
-        desc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_LOCSOFTWARE | DSBCAPS_CTRL3D;
+        desc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_LOCSOFTWARE | DSBCAPS_CTRL3D | DSBCAPS_CTRLVOLUME;
         desc.guid3DAlgorithm = DS3DALG_NO_VIRTUALIZATION;
     }
 
@@ -300,12 +302,12 @@ bool CSoundDriverDSound::init(HWND wnd)
 		if (countHw2DBuffers() > 0) 
 		{
 			nldebug("Primary buffer: Allocating 2D buffer in hardware");
-			desc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_LOCHARDWARE;
+			desc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_LOCHARDWARE | DSBCAPS_CTRLVOLUME;
 		} 
 		else
 		{
  			nldebug("Primary buffer: Allocating 2D buffer in software");
-			desc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_LOCSOFTWARE;
+			desc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_LOCSOFTWARE | DSBCAPS_CTRLVOLUME;
 		}
 
 		if (_DirectSound->CreateSoundBuffer(&desc, &_PrimaryBuffer, NULL) != DS_OK) 
@@ -647,6 +649,65 @@ uint CSoundDriverDSound::countPlayingSources()
     return n;
 }
 
+
+/** Set the gain (volume value inside [0 , 1]). (default: 1)
+ * 0.0 -> silence
+ * 0.5 -> -6dB
+ * 1.0 -> no attenuation
+ * values > 1 (amplification) not supported by most drivers
+ */
+void CSoundDriverDSound::setGain( float gain )
+{
+	if (_PrimaryBuffer != 0)
+	{
+		if (gain < 0.00001f)
+		{
+			gain = 0.00001f;
+		}
+
+		/* convert from linear amplitude to hundredths of decibels */
+		LONG volume = (LONG)(100.0 * 20.0 * log10(gain));
+
+		if (volume < DSBVOLUME_MIN) 
+		{
+			volume = DSBVOLUME_MIN;
+		}
+		else if (volume > DSBVOLUME_MAX) 
+		{
+			volume = DSBVOLUME_MAX;
+		}
+
+		HRESULT hr = _PrimaryBuffer->SetVolume(volume);
+
+		if (hr != DS_OK)
+		{
+			nldebug("Failed to set the volume");
+		}
+	}
+}
+
+/*
+ * Get the gain
+ */
+float CSoundDriverDSound::getGain()
+{
+	if (_PrimaryBuffer != 0)
+	{
+		/* convert from hundredths of decibels to linear amplitude */
+		LONG volume;
+		HRESULT hr = _PrimaryBuffer->GetVolume(&volume);
+
+		if (hr != DS_OK)
+		{
+			nldebug("Failed to get the volume");
+			return 1.0;
+		}
+
+		return (float) pow(10, (double) volume / 20.0 / 100.0);
+	}
+
+	return 1.0;
+}
 
 
 

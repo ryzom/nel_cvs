@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.1 2002/05/24 16:50:48 hanappe Exp $
+ * $Id: source_dsound.cpp,v 1.2 2002/05/27 09:35:57 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -169,12 +169,14 @@ void CSourceDSound::init(LPDIRECTSOUND directSound)
 	if (driver->countHw3DBuffers() > 0)
 	{
 		nldebug("Source: Allocating 3D buffer in hardware");
-		desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCHARDWARE | DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRL3D;
+		desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCHARDWARE | DSBCAPS_GETCURRENTPOSITION2 
+						| DSBCAPS_CTRL3D | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_MUTE3DATMAXDISTANCE;
 	} 
 	else
 	{
  		nldebug("Source: Allocating 3D buffer in software");
-		desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCSOFTWARE | DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRL3D;
+		desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCSOFTWARE | DSBCAPS_GETCURRENTPOSITION2 
+						| DSBCAPS_CTRL3D | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_MUTE3DATMAXDISTANCE;
         desc.guid3DAlgorithm = DS3DALG_NO_VIRTUALIZATION;
 	}
 
@@ -194,12 +196,14 @@ void CSourceDSound::init(LPDIRECTSOUND directSound)
 		if (driver->countHw2DBuffers() > 0)
 		{
 			nldebug("Source: Allocating 2D buffer in hardware");
-			desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCHARDWARE | DSBCAPS_GETCURRENTPOSITION2;
+			desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCHARDWARE | DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLVOLUME 
+							| DSBCAPS_CTRLFREQUENCY | DSBCAPS_MUTE3DATMAXDISTANCE;
 		} 
 		else
 		{
  			nldebug("Source: Allocating 2D buffer in software");
-			desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCSOFTWARE | DSBCAPS_GETCURRENTPOSITION2;
+			desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCSOFTWARE | DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLVOLUME 
+							| DSBCAPS_CTRLFREQUENCY | DSBCAPS_MUTE3DATMAXDISTANCE;
 		}
 
 		if (FAILED(directSound->CreateSoundBuffer(&desc, &_SecondaryBuffer, NULL))) 
@@ -246,10 +250,6 @@ void CSourceDSound::init(LPDIRECTSOUND directSound)
 void CSourceDSound::setStaticBuffer( IBuffer *buffer )
 {
 	_SwapBuffer = buffer;
-
-	if (isPaused())
-	{
-	}
 }
 
 
@@ -495,9 +495,13 @@ bool CSourceDSound::update2()
  */
 void CSourceDSound::setPos( const NLMISC::CVector& pos )
 {
-    if (_3DBuffer)
+	// Coordinate system: conversion from NeL to OpenAL/GL:
+    if (_3DBuffer != NULL)
     {
-        _3DBuffer->SetPosition(pos.x, pos.y, pos.z, DS3D_IMMEDIATE);
+		if (_3DBuffer->SetPosition(pos.x, pos.z, -pos.y, DS3D_IMMEDIATE) != DS_OK)
+		{
+			nldebug("SetPosition failed");
+		}
     }
 }
 
@@ -507,6 +511,26 @@ void CSourceDSound::setPos( const NLMISC::CVector& pos )
  */
 void CSourceDSound::getPos( NLMISC::CVector& pos ) const
 {
+	// Coordinate system: conversion from NeL to OpenAL/GL:
+    if (_3DBuffer != NULL)
+	{
+		D3DVECTOR v;
+        HRESULT hr = _3DBuffer->GetPosition(&v);
+
+		if (hr != DS_OK)
+		{
+			nldebug("GetPosition failed");
+			pos.set(0, 0, 0);	
+		}
+		else
+		{
+			pos.set(v.x, -v.z, v.y);
+		}
+    }
+	else
+	{
+		pos.set(0, 0, 0);	
+	}
 }
 
 
@@ -515,6 +539,13 @@ void CSourceDSound::getPos( NLMISC::CVector& pos ) const
  */
 void CSourceDSound::setVelocity( const NLMISC::CVector& vel )
 {
+    if (_3DBuffer != NULL)
+    {
+		if (_3DBuffer->SetVelocity(vel.x, vel.z, -vel.y, DS3D_IMMEDIATE) != DS_OK)
+		{
+			nldebug("SetVelocity failed");
+		}
+    }
 }
 
 
@@ -523,6 +554,24 @@ void CSourceDSound::setVelocity( const NLMISC::CVector& vel )
  */
 void CSourceDSound::getVelocity( NLMISC::CVector& vel ) const
 {
+    if (_3DBuffer != NULL)
+	{
+		D3DVECTOR v;
+
+		if (_3DBuffer->GetVelocity(&v) != DS_OK)
+		{
+			nldebug("GetVelocity failed");
+			vel.set(0, 0, 0);	
+		}
+		else
+		{
+			vel.set(v.x, -v.z, v.y);
+		}
+    }
+	else
+	{
+		vel.set(0, 0, 0);	
+	}
 }
 
 
@@ -531,6 +580,13 @@ void CSourceDSound::getVelocity( NLMISC::CVector& vel ) const
  */
 void CSourceDSound::setDirection( const NLMISC::CVector& dir )
 {
+	if (_3DBuffer != 0)
+	{
+		if (_3DBuffer->SetConeOrientation(dir.x, dir.z, -dir.y, DS3D_IMMEDIATE) != DS_OK)
+		{
+			nldebug("SetConeOrientation failed");
+		}
+	}
 }
 
 
@@ -539,6 +595,24 @@ void CSourceDSound::setDirection( const NLMISC::CVector& dir )
  */
 void CSourceDSound::getDirection( NLMISC::CVector& dir ) const
 {
+    if (_3DBuffer != NULL)
+	{
+		D3DVECTOR v;
+
+		if (_3DBuffer->GetConeOrientation(&v) != DS_OK)
+		{
+			nldebug("GetConeOrientation failed");
+			dir.set(0, 1, 0);	
+		}
+		else
+		{
+			dir.set(v.x, -v.z, v.y);
+		}
+    }
+	else
+	{
+		dir.set(0, 1, 0);	
+	}
 }
 
 
@@ -550,6 +624,30 @@ void CSourceDSound::getDirection( NLMISC::CVector& dir ) const
  */
 void CSourceDSound::setGain( float gain )
 {
+	if (_SecondaryBuffer != 0)
+	{
+		if (gain < 0.00001f)
+		{
+			gain = 0.00001f;
+		}
+
+		/* convert from linear amplitude to hundredths of decibels */
+		LONG volume = (LONG)(100.0 * 20.0 * log10(gain));
+
+		if (volume < DSBVOLUME_MIN) 
+		{
+			volume = DSBVOLUME_MIN;
+		}
+		else if (volume > DSBVOLUME_MAX) 
+		{
+			volume = DSBVOLUME_MAX;
+		}
+
+		if (_SecondaryBuffer->SetVolume(volume) != DS_OK)
+		{
+			nldebug("SetVolume failed");
+		}
+	}
 }
 
 
@@ -558,15 +656,41 @@ void CSourceDSound::setGain( float gain )
  */
 float CSourceDSound::getGain() const
 {
-    return 1.0f;
+	if (_SecondaryBuffer != 0)
+	{
+		/* convert from hundredths of decibels to linear amplitude */
+		LONG volume;
+
+		if (_SecondaryBuffer->GetVolume(&volume) != DS_OK)
+		{
+			nldebug("GetVolume failed");
+			return 1.0;
+		}
+
+		return (float) pow(10, (double) volume / 20.0 / 100.0);
+	}
+
+	return 1.0;
 }
 
 
 /* Shift the frequency. 1.0f equals identity, each reduction of 50% equals a pitch shift
  * of one octave. 0 is not a legal value.
  */
-void CSourceDSound::setPitch( float pitch )
+void CSourceDSound::setPitch( float coeff )
 {
+	if ((_Buffer != 0) && (_SecondaryBuffer != 0))
+	{
+		TSampleFormat format;
+		uint freq;
+
+		_Buffer->getFormat(format, freq);
+
+		if (_SecondaryBuffer->SetFrequency((DWORD)(coeff * (float) freq)) != DS_OK)
+		{
+			nldebug("SetFrequency failed");
+		}
+	}
 }
 
 
@@ -575,7 +699,24 @@ void CSourceDSound::setPitch( float pitch )
  */
 float CSourceDSound::getPitch() const
 {
-    return 1.0f;
+	if ((_Buffer != 0) && (_SecondaryBuffer != 0))
+	{
+		TSampleFormat format;
+		uint freq0;
+		DWORD freq;
+
+		_Buffer->getFormat(format, freq0);
+
+		if (_SecondaryBuffer->GetFrequency(&freq) != DS_OK)
+		{
+			nldebug("GetFrequency failed");
+			return 1.0;
+		}
+
+		return ((float) freq / (float) freq0);
+	}
+
+	return 1.0;
 }
 
 
@@ -584,6 +725,28 @@ float CSourceDSound::getPitch() const
  */
 void CSourceDSound::setSourceRelativeMode( bool mode )
 {
+	if (_3DBuffer != 0)
+	{
+		HRESULT hr;
+
+		if (mode)
+		{
+			hr = _3DBuffer->SetMode(DS3DMODE_HEADRELATIVE, DS3D_IMMEDIATE);
+		}
+		else
+		{
+			hr = _3DBuffer->SetMode(DS3DMODE_NORMAL, DS3D_IMMEDIATE);
+		}
+
+		if (hr != DS_OK)
+		{
+			nldebug("SetMode failed");
+		}
+	}
+	else
+	{
+		nldebug("Requested setSourceRelativeMode on a non-3D source");
+	}
 }
 
 
@@ -592,7 +755,23 @@ void CSourceDSound::setSourceRelativeMode( bool mode )
  */
 bool CSourceDSound::getSourceRelativeMode() const
 {
-    return false;
+	if (_3DBuffer != 0)
+	{
+		DWORD mode;
+
+		if (_3DBuffer->GetMode(&mode) != DS_OK)
+		{
+			nldebug("GetMode failed");
+			return false;
+		}
+
+		return (mode == DS3DMODE_HEADRELATIVE);
+	}
+	else
+	{
+		nldebug("Requested setSourceRelativeMode on a non-3D source");
+		return false;
+	}
 }
 
 
@@ -601,6 +780,18 @@ bool CSourceDSound::getSourceRelativeMode() const
  */
 void CSourceDSound::setMinMaxDistances( float mindist, float maxdist )
 {
+	if (_3DBuffer != 0)
+	{
+		if ((_3DBuffer->SetMinDistance(mindist, DS3D_IMMEDIATE) != DS_OK)
+			|| (_3DBuffer->SetMaxDistance(maxdist, DS3D_IMMEDIATE) != DS_OK))
+		{
+			nldebug("SetMinDistance or SetMaxDistance failed");
+		}
+	}
+	else
+	{
+		nldebug("Requested setMinMaxDistances on a non-3D source");
+	}
 }
 
 
@@ -609,6 +800,29 @@ void CSourceDSound::setMinMaxDistances( float mindist, float maxdist )
  */
 void CSourceDSound::getMinMaxDistances( float& mindist, float& maxdist ) const
 {
+	if (_3DBuffer != 0)
+	{
+		D3DVALUE min, max;
+
+		if ((_3DBuffer->GetMinDistance(&min) != DS_OK)
+			|| (_3DBuffer->GetMaxDistance(&max) != DS_OK))
+		{
+			mindist = 0.0f;
+			maxdist = 0.0f;
+			nldebug("GetMinDistance or GetMaxDistance failed");
+		}
+		else
+		{
+			mindist = min;
+			maxdist = max;
+		}
+	}
+	else
+	{
+		mindist = 0.0f;
+		maxdist = 0.0f;
+		nldebug("Requested getMinMaxDistances on a non-3D source");
+	}
 }
 
 
@@ -617,6 +831,68 @@ void CSourceDSound::getMinMaxDistances( float& mindist, float& maxdist ) const
  */
 void CSourceDSound::setCone( float innerAngle, float outerAngle, float outerGain )
 {
+	if (_3DBuffer != 0)
+	{
+		// Set the cone angles
+
+		// Convert from radians to degrees
+		DWORD inner = (DWORD)(Pi * innerAngle / 180.0);
+		DWORD outer = (DWORD)(Pi * outerAngle / 180.0);
+
+		// Sanity check: wrap the angles in the [0,360] interval
+		while (inner < DS3D_MINCONEANGLE) 
+		{
+			inner += 360;
+		}
+
+		while (inner > DS3D_MAXCONEANGLE)
+		{
+			inner -= 360;
+		}
+
+		while (outer < DS3D_MINCONEANGLE) 
+		{
+			outer += 360;
+		}
+
+		while (outer > DS3D_MAXCONEANGLE)
+		{
+			outer -= 360;
+		}
+
+		if (_3DBuffer->SetConeAngles(inner, outer, DS3D_IMMEDIATE) != DS_OK)
+		{
+			nldebug("SetConeAngles failed");			
+		}
+
+		// Set the outside volume
+		if (outerGain < 0.00001f)
+		{
+			outerGain = 0.00001f;
+		}
+
+		// convert from linear amplitude to hundredths of decibels 
+		LONG volume = (LONG)(100.0 * 20.0 * log10(outerGain));
+
+		if (volume < DSBVOLUME_MIN) 
+		{
+			volume = DSBVOLUME_MIN;
+		}
+		else if (volume > DSBVOLUME_MAX) 
+		{
+			volume = DSBVOLUME_MAX;
+		}
+
+		if (_3DBuffer->SetConeOutsideVolume(volume, DS3D_IMMEDIATE) != DS_OK)
+		{
+			nldebug("SetConeOutsideVolume failed");			
+		}
+
+	}
+	else
+	{
+		nldebug("Requested setCone on a non-3D source");
+	}
 }
 
 
@@ -625,6 +901,36 @@ void CSourceDSound::setCone( float innerAngle, float outerAngle, float outerGain
  */
 void CSourceDSound::getCone( float& innerAngle, float& outerAngle, float& outerGain ) const
 {
+	if (_3DBuffer != 0)
+	{
+		DWORD inner, outer;
+		LONG volume;
+
+		if (_3DBuffer->GetConeAngles(&inner, &outer) != DS_OK)
+		{
+			nldebug("GetConeAngles failed");			
+			innerAngle = outerAngle = (float)(2.0 * Pi);
+		}
+		else
+		{
+			innerAngle = (float)(Pi * inner / 180.0);
+			outerAngle = (float)(Pi * outer / 180.0);
+		}
+
+		if (_3DBuffer->GetConeOutsideVolume(&volume) != DS_OK)
+		{
+			nldebug("GetConeOutsideVolume failed");			
+			outerGain = 0.0f;
+		}
+		else
+		{
+			outerGain = (float) pow(10, (double) volume / 20.0 / 100.0);
+		}
+	}
+	else
+	{
+		nldebug("Requested getCone on a non-3D source");
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file listener_dsound.cpp
  * DirectSound listener
  *
- * $Id: listener_dsound.cpp,v 1.1 2002/05/24 16:50:48 hanappe Exp $
+ * $Id: listener_dsound.cpp,v 1.2 2002/05/27 09:35:57 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stddsound.h"
 
 #include "listener_dsound.h"
+#include "sound_driver_dsound.h"
 
 
 using namespace NLMISC;
@@ -72,10 +73,9 @@ CListenerDSound::~CListenerDSound()
 void CListenerDSound::setPos( const NLMISC::CVector& pos )
 {
 	// Coordinate system: conversion from NeL to OpenAL/GL:
-
     if (_Listener != NULL)
     {
-        _Listener->SetPosition(pos.x, pos.y, pos.z, DS3D_IMMEDIATE);
+        _Listener->SetPosition(pos.x, pos.z, -pos.y, DS3D_IMMEDIATE);
     }
 }
 
@@ -85,6 +85,17 @@ void CListenerDSound::setPos( const NLMISC::CVector& pos )
  */
 void CListenerDSound::getPos( NLMISC::CVector& pos ) const
 {
+	// Coordinate system: conversion from NeL to OpenAL/GL:
+    if (_Listener != NULL)
+	{
+		D3DVECTOR v;
+        _Listener->GetPosition(&v);
+		pos.set(v.x, -v.z, v.y);
+    }
+	else
+	{
+		pos.set(0, 0, 0);
+	}
 }
 
 
@@ -93,6 +104,10 @@ void CListenerDSound::getPos( NLMISC::CVector& pos ) const
  */
 void CListenerDSound::setVelocity( const NLMISC::CVector& vel )
 {
+    if (_Listener != NULL)
+    {
+        _Listener->SetVelocity(vel.x, vel.z, -vel.y, DS3D_IMMEDIATE);
+    }
 }
 
 
@@ -101,6 +116,16 @@ void CListenerDSound::setVelocity( const NLMISC::CVector& vel )
  */
 void CListenerDSound::getVelocity( NLMISC::CVector& vel ) const
 {
+    if (_Listener != NULL)
+	{
+		D3DVECTOR v;
+        _Listener->GetVelocity(&v);
+		vel.set(v.x, -v.z, v.y);
+    }
+	else
+	{
+		vel.set(0, 0, 0);	
+	}
 }
 
 
@@ -109,6 +134,10 @@ void CListenerDSound::getVelocity( NLMISC::CVector& vel ) const
  */
 void CListenerDSound::setOrientation( const NLMISC::CVector& front, const NLMISC::CVector& up )
 {
+    if (_Listener != NULL)
+    {
+        _Listener->SetOrientation(front.x, front.z, -front.y, up.x, up.z, -up.y, DS3D_IMMEDIATE);
+    }
 }
 
 
@@ -117,6 +146,18 @@ void CListenerDSound::setOrientation( const NLMISC::CVector& front, const NLMISC
  */
 void CListenerDSound::getOrientation( NLMISC::CVector& front, NLMISC::CVector& up ) const
 {
+    if (_Listener != NULL)
+	{
+		D3DVECTOR vfront, vtop;
+        _Listener->GetOrientation(&vfront, &vtop);
+		front.set(vfront.x, -vfront.z, vfront.y);
+		up.set(vtop.x, -vtop.z, vtop.y);
+    }
+	else
+	{
+		front.set(0, -1, 0);	
+		up.set(0, 0, 1);	
+	}
 }
 
 
@@ -128,6 +169,7 @@ void CListenerDSound::getOrientation( NLMISC::CVector& front, NLMISC::CVector& u
  */
 void CListenerDSound::setGain( float gain )
 {
+	CSoundDriverDSound::instance()->setGain(gain);
 }
 
 
@@ -136,7 +178,7 @@ void CListenerDSound::setGain( float gain )
  */
 float CListenerDSound::getGain() const
 {
-    return 0.0f;
+    return CSoundDriverDSound::instance()->getGain();
 }
 
 
@@ -145,6 +187,10 @@ float CListenerDSound::getGain() const
  */
 void CListenerDSound::setDopplerFactor( float f )
 {
+    if (_Listener != NULL)
+    {
+        _Listener->SetDopplerFactor(f, DS3D_IMMEDIATE);
+    }
 }
 
 
@@ -153,6 +199,10 @@ void CListenerDSound::setDopplerFactor( float f )
  */
 void CListenerDSound::setRolloffFactor( float f )
 {
+    if (_Listener != NULL)
+    {
+        _Listener->SetRolloffFactor(f, DS3D_IMMEDIATE);
+    }
 }
 
 

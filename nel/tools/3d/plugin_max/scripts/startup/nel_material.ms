@@ -94,7 +94,7 @@ plugin material NelMaterial
     classID:#(0x64c75fec, 0x222b9eb9)
     extends:standard 
 	replaceUI:false 
-	version:7.0
+	version:6.0
 (
 	local loadShader
 	local globalUpdateUI
@@ -147,9 +147,6 @@ plugin material NelMaterial
 		
 		-- New in version 5		
 		bExportTextureMatrix    type:#boolean default:false	ui:cbExportTextureMatrix
-		
-		-- New in version 7
-		bCalcWaterLightmap		type:#boolean default:false	ui:cbCalcWaterLightmap
 	)
 
     parameters textures rollout:NelTexture
@@ -297,9 +294,6 @@ plugin material NelMaterial
 			Spinner   cfDisplaceMapUSpeed      ""  range:[-10,10,0.01] type:#float scale:0.001 align:#left width:70
 			Label	lbDisplaceMapVSpeed "DisplaceMap V Speed :" align:#left across:2
 			Spinner   cfDisplaceMapVSpeed      ""  range:[-10,10,0.01] type:#float scale:0.001 align:#left width:70
-
-			CheckBox cbCalcWaterLightmap "Replace / modulate diffuse map by lightmap during lighting"
-
 		)
 		group "Extended"
 		(
@@ -1182,6 +1176,15 @@ plugin material NelMaterial
 
 	on load do 
 	( 
+		-- Trap Patch
+		if version >= 4 then
+		(
+			if (delegate.DiffuseMap != undefined) and (tTexture_1 == undefined) then
+			(
+				tTexture_1 = delegate.DiffuseMap
+			)
+		)
+
 		-- Update to version 4 ?
 		if updateToVersion4 == true then
 		(

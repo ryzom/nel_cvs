@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.114 2004/03/19 10:11:37 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.115 2004/03/23 10:18:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,7 +99,6 @@
 #include "choose_sun_color_dlg.h"
 #include "choose_frame_delay.h"
 #include "graph.h"
-
 
 
 using namespace std;
@@ -466,7 +465,7 @@ void CObjectViewer::loadConfigFile()
 		// Load vegetable Landscape cfg.
 		loadVegetableLandscapeCfg(cf);
 
-		// load automatic animations
+		// load automatfic animations
 		try
 		{
 			CConfigFile::CVar &var = cf.getVar("automatic_animation_path");
@@ -624,10 +623,7 @@ bool CObjectViewer::initUI (HWND parent)
 
 	// Create the icon
 	HICON hIcon = (HICON)LoadImage(theApp.m_hInstance, MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON,
-		16, 16, 0);
-
-	// load the config file
-	loadConfigFile();
+		16, 16, 0);	
 
 	// Create a doomy driver
 	IDriver *driver= _Direct3d?CDRU::createD3DDriver():CDRU::createGlDriver();
@@ -685,8 +681,11 @@ bool CObjectViewer::initUI (HWND parent)
 	if (!CNELU::init (640, 480, viewport, 32, true, view->m_hWnd, false, _Direct3d))
 	{
 		return false;
-	}
+	}	
 	//CNELU::init (640, 480, viewport, 32, true, _MainFrame->m_hWnd);
+
+	// load the config file
+	loadConfigFile();
 
 	// Set the fog
 	CNELU::Driver->enableFog (_Fog);

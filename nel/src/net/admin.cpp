@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.7 2003/06/13 18:01:56 distrib Exp $
+ * $Id: admin.cpp,v 1.8 2003/06/30 09:35:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,7 +96,7 @@ void sendAdminEmail (char *format, ...)
 	else
 		CUnifiedNetwork::getInstance ()->send ("AES", msgout);
 
-	nlinfo ("Forwarded email to AS with '%s'", str.c_str());
+	nlinfo ("ADMIN: Forwarded email to AS with '%s'", str.c_str());
 }
 
 void initAdmin ()
@@ -136,9 +136,9 @@ void updateAdmin()
 				sint32 val;
 				if (strs.size() != 1)
 				  {
-					nlwarning ("the graph update command execution not return exactly 1 line but %d", strs.size());
+					nlwarning ("ADMIN: The graph update command execution not return exactly 1 line but %d", strs.size());
 					for (uint i = 0; i < strs.size(); i++)
-					  nlwarning ("line %d: '%s'", i, strs[i].c_str());
+					  nlwarning ("ADMIN: line %d: '%s'", i, strs[i].c_str());
 					val = 0;
 				  }
 				else
@@ -205,7 +205,7 @@ void updateAdmin()
 			if (str == "???")
 			{
 				// variable doesn't exist, remove it from alarms
-				nlwarning ("Alarm problem: variable '%s' returns ??? instead of a good value", Alarms[i].Name.c_str());
+				nlwarning ("ADMIN: Alarm problem: variable '%s' returns ??? instead of a good value", Alarms[i].Name.c_str());
 				Alarms.erase (Alarms.begin()+i);
 			}
 			else
@@ -217,7 +217,7 @@ void updateAdmin()
 				{
 					if (!Alarms[i].Activated)
 					{
-						nlinfo ("VARIABLE TOO BIG '%s' %u >= %u", Alarms[i].Name.c_str(), val, err);
+						nlinfo ("ADMIN: VARIABLE TOO BIG '%s' %u >= %u", Alarms[i].Name.c_str(), val, err);
 						Alarms[i].Activated = true;
 						sendAdminEmail ("Alarm: Variable %s is %u that is greater or equal than the limit %u", Alarms[i].Name.c_str(), val, err);
 					}
@@ -226,7 +226,7 @@ void updateAdmin()
 				{
 					if (!Alarms[i].Activated)
 					{
-						nlinfo ("VARIABLE TOO LOW '%s' %u <= %u", Alarms[i].Name.c_str(), val, err);
+						nlinfo ("ADMIN: VARIABLE TOO LOW '%s' %u <= %u", Alarms[i].Name.c_str(), val, err);
 						Alarms[i].Activated = true;
 						sendAdminEmail ("Alarm: Variable %s is %u that is lower or equal than the limit %u", Alarms[i].Name.c_str(), val, err);
 					}
@@ -235,7 +235,7 @@ void updateAdmin()
 				{
 					if (Alarms[i].Activated)
 					{
-						nlinfo ("variable is ok '%s' %u %s %u", Alarms[i].Name.c_str(), val, (Alarms[i].GT?"<":">"), err);
+						nlinfo ("ADMIN: variable is ok '%s' %u %s %u", Alarms[i].Name.c_str(), val, (Alarms[i].GT?"<":">"), err);
 						Alarms[i].Activated = false;
 					}
 				}
@@ -268,18 +268,18 @@ void setInformations (const vector<string> &alarms, const vector<string> &graphu
 
 		if (IService::getInstance()->getServiceUnifiedName().find(servicevarpath.Destination[0].first) != string::npos && ICommand::exists(name))
 		{
-			nlinfo ("Adding alarm '%s' limit %d order %s (varpath '%s')", name.c_str(), atoi(alarms[i+1].c_str()), alarms[i+2].c_str(), alarms[i].c_str());
+			nlinfo ("ADMIN: Adding alarm '%s' limit %d order %s (varpath '%s')", name.c_str(), atoi(alarms[i+1].c_str()), alarms[i+2].c_str(), alarms[i].c_str());
 			Alarms.push_back(CAlarm(name, atoi(alarms[i+1].c_str()), alarms[i+2]=="gt"));
 		}
 		else
 		{
 			if (IService::getInstance()->getServiceUnifiedName().find(servicevarpath.Destination[0].first) == string::npos)
 			{
-				nlinfo ("Skipping alarm '%s' limit %d order %s (varpath '%s') (not for my service, i'm '%s')", name.c_str(), atoi(alarms[i+1].c_str()), alarms[i+2].c_str(), alarms[i].c_str(), IService::getInstance()->getServiceUnifiedName().c_str());
+				nlinfo ("ADMIN: Skipping alarm '%s' limit %d order %s (varpath '%s') (not for my service, i'm '%s')", name.c_str(), atoi(alarms[i+1].c_str()), alarms[i+2].c_str(), alarms[i].c_str(), IService::getInstance()->getServiceUnifiedName().c_str());
 			}
 			else
 			{
-				nlinfo ("Skipping alarm '%s' limit %d order %s (varpath '%s') (var not exist)", name.c_str(), atoi(alarms[i+1].c_str()), alarms[i+2].c_str(), alarms[i].c_str());
+				nlinfo ("ADMIN: Skipping alarm '%s' limit %d order %s (varpath '%s') (var not exist)", name.c_str(), atoi(alarms[i+1].c_str()), alarms[i+2].c_str(), alarms[i].c_str());
 			}
 		}
 	}
@@ -303,18 +303,18 @@ void setInformations (const vector<string> &alarms, const vector<string> &graphu
 
 		if (ICommand::exists(VarName) && (ServiceName == "*" || IService::getInstance()->getServiceShortName() == ServiceName))
 		{
-			nlinfo ("Adding graphupdate '%s' update %d (varpath '%s')", VarName.c_str(), atoi(graphupdate[i+1].c_str()), graphupdate[i].c_str());
+			nlinfo ("ADMIN: Adding graphupdate '%s' update %d (varpath '%s')", VarName.c_str(), atoi(graphupdate[i+1].c_str()), graphupdate[i].c_str());
 			GraphUpdates.push_back(CGraphUpdate(VarName, atoi(graphupdate[i+1].c_str())));
 		}
 		else
 		{
 			if (IService::getInstance()->getServiceShortName() != ServiceName)
 			{
-				nlinfo ("Skipping graphupdate '%s' limit %d (varpath '%s') (not for my service, i'm '%s')", VarName.c_str(), atoi(graphupdate[i+1].c_str()), graphupdate[i].c_str(), IService::getInstance()->getServiceUnifiedName().c_str());
+				nlinfo ("ADMIN: Skipping graphupdate '%s' limit %d (varpath '%s') (not for my service, i'm '%s')", VarName.c_str(), atoi(graphupdate[i+1].c_str()), graphupdate[i].c_str(), IService::getInstance()->getServiceUnifiedName().c_str());
 			}
 			else
 			{
-				nlinfo ("Skipping graphupdate '%s' limit %d (varpath '%s') (var not exist)", VarName.c_str(), atoi(graphupdate[i+1].c_str()), graphupdate[i].c_str());
+				nlinfo ("ADMIN: Skipping graphupdate '%s' limit %d (varpath '%s') (var not exist)", VarName.c_str(), atoi(graphupdate[i+1].c_str()), graphupdate[i].c_str());
 			}
 		}
 	}

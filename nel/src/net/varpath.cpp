@@ -1,7 +1,7 @@
 /** \file varpath.cpp
  * use to manage variable path (ie: [serv1,serv2].*.*.var)
  *
- * $Id: varpath.cpp,v 1.5 2003/05/14 10:03:22 lecroart Exp $
+ * $Id: varpath.cpp,v 1.6 2003/06/30 09:36:17 lecroart Exp $
  *
  */
 
@@ -124,7 +124,7 @@ void CVarPath::decode ()
 				// end of token
 				if (val == "")
 				{
-					nlwarning ("bad VarPath '%s', suppose it s an empty varpath", RawVarPath.c_str());
+					nlwarning ("Bad VarPath '%s', suppose it s an empty varpath", RawVarPath.c_str());
 					Destination.clear ();
 					return;
 				}
@@ -195,7 +195,7 @@ void CVarPath::decode ()
 		Destination.push_back (make_pair(srv, var));
 	}
 
-	display ();
+	//display ();
 }
 
 bool CVarPath::isFinal ()

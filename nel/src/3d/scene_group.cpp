@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.61 2003/07/31 16:18:28 lecroart Exp $
+ * $Id: scene_group.cpp,v 1.62 2003/08/01 09:08:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -541,8 +541,8 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver, uint selectedTe
 
 void CInstanceGroup::getShapeName (uint instanceIndex, std::string &shapeName) const
 {
-	shapeName.clear ();
 	const CInstance &rInstanceInfo = _InstancesInfos[instanceIndex];
+	shapeName = rInstanceInfo.Name;
 	if (!rInstanceInfo.DontAddToScene)
 	{
 		// If there is a callback added to this instance group then transform
@@ -782,10 +782,10 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver, uint selec
 		CInstance &rInstanceInfo = *it;
 		if (!rInstanceInfo.DontAddToScene)
 		{
-			string shapeName;
+			string shapeName = rInstanceInfo.Name;
 			if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
 			{												
-				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName, rInstanceInfo.Name);		
+				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName, rInstanceInfo.Name);
 			}
 			
 			shapeName = strlwr (shapeName);

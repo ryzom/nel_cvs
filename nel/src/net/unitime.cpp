@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.18 2001/01/29 17:47:55 cado Exp $
+ * $Id: unitime.cpp,v 1.19 2001/02/23 10:58:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,8 +84,6 @@ void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
 
 			TTime after = CTime::getLocalTime (), delta = after - before;
 
-			nldebug ("*****  delta: %"NL_I64"dms (best is %"NL_I64"dms)", delta, bestdelta);
-
 			if (delta < 10 || delta < bestdelta)
 			{
 				bestdelta = delta;
@@ -99,6 +97,7 @@ void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
 			attempt++;
 		}
 		server.close();
+		nlinfo ("Universal time is %"NL_I64"dms with a mean error of %"NL_I64"dms", CUniTime::getUniTime(), bestdelta/2);
 	}
 	else
 	{

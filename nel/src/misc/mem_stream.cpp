@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.9 2001/05/28 15:36:02 cado Exp $
+ * $Id: mem_stream.cpp,v 1.10 2001/06/18 08:58:52 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,25 +67,29 @@ CMemStream& CMemStream::operator=( const CMemStream& other )
  */
 void CMemStream::serialBuffer(uint8 *buf, uint len)
 {
-	if ( isReading() )
+	if ( len != 0 )
 	{
-		// Check that we don't read more than there is to read
-		if ( lengthS()+len > lengthR() )
+		if ( isReading() )
 		{
-			//_asm int 3
-			throw EStreamOverflow();
+			// Check that we don't read more than there is to read
+			if ( lengthS()+len > lengthR() )
+			{
+				//_asm int 3
+				throw EStreamOverflow();
+			}
+			// Serialize in
+			memcpy( buf, &(*_BufPos), len );
+			_BufPos += len;
 		}
-		// Serialize in
-		memcpy( buf, &(*_BufPos), len );
-		_BufPos += len;
-	}
-	else
-	{
-		// Serialize out
-		_Buffer.resize( _Buffer.size() + len );
-		_BufPos = _Buffer.end() - len;
-		memcpy( &(*_BufPos), buf, len );
-		_BufPos = _Buffer.end();
+		else
+		{
+			// Serialize out
+			nlassert( buf != NULL );
+			_Buffer.resize( _Buffer.size() + len );
+			_BufPos = _Buffer.end() - len;
+			memcpy( &(*_BufPos), buf, len );
+			_BufPos = _Buffer.end();
+		}
 	}
 }
 

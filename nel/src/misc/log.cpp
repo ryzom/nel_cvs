@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.39 2002/06/11 09:34:13 berenguier Exp $
+ * $Id: log.cpp,v 1.40 2002/06/13 09:42:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -441,13 +441,13 @@ void CLog::removeFilter( const char *filterstr )
 	{
 		_PositiveFilter.clear();
 		_NegativeFilter.clear();
-		displayNL ("CLog::addNegativeFilter('%s')", filterstr);
+		//displayNL ("CLog::addNegativeFilter('%s')", filterstr);
 	}
 	else
 	{
 		_PositiveFilter.remove( filterstr );
 		_NegativeFilter.remove( filterstr );
-		displayNL ("CLog::removeFilter('%s')", filterstr);
+		//displayNL ("CLog::removeFilter('%s')", filterstr);
 	}
 }
 
@@ -468,19 +468,19 @@ void CLog::displayFilter( CLog &log )
 
 void CLog::addPositiveFilter( const char *filterstr )
 {
-	displayNL ("CLog::addPositiveFilter('%s')", filterstr);
+	//displayNL ("CLog::addPositiveFilter('%s')", filterstr);
 	_PositiveFilter.push_back( filterstr );
 }
 
 void CLog::addNegativeFilter( const char *filterstr )
 {
-	displayNL ("CLog::addNegativeFilter('%s')", filterstr);
+	//displayNL ("CLog::addNegativeFilter('%s')", filterstr);
 	_NegativeFilter.push_back( filterstr );
 }
 
 void CLog::resetFilters()
 {
-	displayNL ("CLog::resetFilter()");
+	//displayNL ("CLog::resetFilter()");
 	_PositiveFilter.clear(); _NegativeFilter.clear();
 }
 

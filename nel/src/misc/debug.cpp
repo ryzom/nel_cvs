@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.50 2002/04/17 16:46:29 cado Exp $
+ * $Id: debug.cpp,v 1.51 2002/06/13 09:42:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,7 @@ using namespace std;
 // Alternatively, you can use --without-logging when using configure to set
 // it to 0.
 #ifndef NEL_DEFAULT_DISPLAYER
-#define NEL_DEFAULT_DISPLAYER 1
+#define NEL_DEFAULT_DISPLAYER 0
 #endif // NEL_DEFAULT_DISPLAYER
 
 // Put 0 if you don't want to display in file "log.log"
@@ -168,7 +168,7 @@ void initDebug2 ()
 	}
 }
 
-void createDebug (const char *logPath)
+void createDebug (const char *logPath, bool logInFile)
 {
 	static bool alreadyCreate = false;
 	if (!alreadyCreate)
@@ -187,20 +187,23 @@ void createDebug (const char *logPath)
 		sd = new CStdDisplayer ("DEFAULT_SD");
 		mbd = new CMsgBoxDisplayer ("DEFAULT_MBD");
 #if LOG_IN_FILE
-		string fn;
-		if (logPath != NULL)
+		if (logInFile)
 		{
-			fn += logPath;
+			string fn;
+			if (logPath != NULL)
+			{
+				fn += logPath;
+			}
+			else
+			{
+				// log.log must always be accessed in creation current path directory
+				char	tmpPath[1024];
+				fn += getcwd(tmpPath, 1024);
+				fn += "/";
+			}
+			fn += "log.log";
+			fd = new CFileDisplayer (fn, false, "DEFAULT_FD");
 		}
-		else
-		{
-			// log.log must always be accessed in creation current path directory
-			char	tmpPath[1024];
-			fn += getcwd(tmpPath, 1024);
-			fn += "/";
-		}
-		fn += "log.log";
-		fd = new CFileDisplayer (fn, false, "DEFAULT_FD");
 #endif // LOG_IN_FILE
 		DefaultMemDisplayer = new CMemDisplayer ("DEFAULT_MD");
 		

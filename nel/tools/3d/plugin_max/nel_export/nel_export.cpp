@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.30 2002/05/13 16:49:21 berenguier Exp $
+ * $Id: nel_export.cpp,v 1.31 2002/06/12 09:19:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -467,12 +467,14 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			// ---
 			case ID_SAVECOLLISION:
 				{
-					// Get time
-					TimeValue time=theCNelExport._Ip->GetTime();
+					
 
 					// Init the exporter
 					nlassert (theIP);
 					theCNelExport.init (false, true, theIP);
+
+					// Get time
+					TimeValue time=theCNelExport._Ip->GetTime();
 					
 					// Get node count
 					int nNumSelNode=theCNelExport._Ip->GetSelNodeCount();

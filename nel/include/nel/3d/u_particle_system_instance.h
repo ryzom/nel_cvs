@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.8 2002/11/14 17:38:16 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.9 2003/08/18 14:30:35 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -176,8 +176,13 @@ public:
 
 			// Deactivate an object with the given ID
 			virtual bool   setActive(uint32 id, bool active) = 0;			
-			// special : Activate / Deactivate all emitters.
-			virtual bool   activateEmitters(bool active) = 0;			
+			/** special : Activate / Deactivate all emitters.
+			  * NB : the system do not need to be present for this to be called.
+			  * If the system isn't instanciated, then emitters will be deactivated the next time it is
+			  */
+			virtual void   activateEmitters(bool active) = 0;			
+			// test if there are active emitters in the system
+			virtual bool  hasActiveEmitters() const = 0;
 	 //@}
 
 	 //@{

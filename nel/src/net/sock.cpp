@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.6 2001/06/13 10:19:41 lecroart Exp $
+ * $Id: sock.cpp,v 1.7 2001/06/18 09:04:17 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,7 +209,7 @@ CSock::CSock( bool logging ) :
 
 
 /*
- * Construct a CSock object using an existing socket descriptor and its associated remote address
+ * Construct a CSock object using an existing connected socket descriptor and its associated remote address
  */
 CSock::CSock( SOCKET sock, const CInetAddress& remoteaddr ) :
 	_Sock( sock ),
@@ -285,11 +285,16 @@ CSock::~CSock()
 		{
 			nldebug( "L0: Socket %d closing for %s at %s", _Sock, _RemoteAddr.asString().c_str(), _LocalAddr.asString().c_str() );
 		}
+
+		if ( connected() )
+		{
 #ifdef NL_OS_WINDOWS
-		shutdown( _Sock, SD_BOTH );
+			shutdown( _Sock, SD_BOTH );
+		}
 		closesocket( _Sock );
 #elif defined NL_OS_UNIX
-		shutdown( _Sock, SHUT_RDWR );
+			shutdown( _Sock, SHUT_RDWR );
+		}
 		::close( _Sock );
 #endif
 		_Sock = INVALID_SOCKET;

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.167 2002/11/06 12:23:25 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.168 2002/11/12 09:54:45 coutelas Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -357,6 +357,9 @@ void CDriverGL::disableHardwareTextureShader()
 
 bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 {
+	uint width = mode.Width;
+	uint height = mode.Height;
+
 #ifdef NL_OS_WINDOWS
 	
 	// Driver caps.
@@ -372,9 +375,6 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	_WindowWidth = _WindowHeight = 0;
 	_hRC = NULL;
 	_hDC = NULL;
-
-	uint width = mode.Width;
-	uint height = mode.Height;
 
 	// Offscreen mode ?
 	if (_OffScreen)

@@ -1,6 +1,6 @@
 /** \file nel_launcher_dlg.cpp
  *
- * $Id: nel_launcher_dlg.cpp,v 1.5 2004/04/15 12:12:30 lecroart Exp $
+ * $Id: nel_launcher_dlg.cpp,v 1.6 2004/04/29 17:38:56 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -450,6 +450,13 @@ void CNeLLauncherDlg::LaunchClient(const string &cookie, const string &addr)
 		args[i+1] = vargs[i].c_str();
 	}
 	args[i+1] = NULL;
+
+	const char *SE_TRANSLATOR_IN_MAIN_MODULE = "NEL_SE_TRANS";
+	TCHAR envBuf [2];
+	if ( GetEnvironmentVariable( SE_TRANSLATOR_IN_MAIN_MODULE, envBuf, 2 ) != 0)
+	{
+		SetEnvironmentVariable( SE_TRANSLATOR_IN_MAIN_MODULE, NULL );
+	}
 
 	if(!dir.empty())
 		_chdir(dir.c_str());

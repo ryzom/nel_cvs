@@ -84,7 +84,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/DebugFast/misc"
 # PROP Intermediate_Dir "../obj/DebugFast/misc"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "NL_DEBUG_FAST" /D "LIBXML_STATIC" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "NL_RELEASE_DEBUG" /Yu"stdmisc.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "NL_DEBUG_FAST" /D "LIBXML_STATIC" /D "_DEBUG" /D "WIN32" /D "_MBCS" /Yu"stdmisc.h" /FD /GZ /c
 # SUBTRACT CPP /Gf /Gy /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"

@@ -1,7 +1,7 @@
 /** \file vertex_buffer_hard.h
  * <File description>
  *
- * $Id: vertex_buffer_hard.h,v 1.6 2003/03/17 17:32:36 berenguier Exp $
+ * $Id: vertex_buffer_hard.h,v 1.7 2003/08/07 08:29:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,6 +114,11 @@ public:
 
 	// @}
 
+	/// \name Profiling. Each VBHard has a name to profile its lock.
+	// @{
+	void					setName(const std::string &name);
+	const std::string		&getName() const {return _Name;}
+	// @}
 
 // *************************
 protected:
@@ -136,6 +141,9 @@ protected:
 
 	// Offset of each value
 	uint16					_Offset[CVertexBuffer::NumValue];
+
+	// Name
+	std::string				_Name;
 
 	/// Constructor: build good offfsets / size.
 	IVertexBufferHard() {}

@@ -1,7 +1,7 @@
 /** \file vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: vertex_buffer_hard.cpp,v 1.5 2003/03/13 13:40:59 corvazier Exp $
+ * $Id: vertex_buffer_hard.cpp,v 1.6 2003/08/07 08:29:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,5 +93,10 @@ uint8		IVertexBufferHard::getNumWeight () const
 }
 
 // ***************************************************************************
+void		IVertexBufferHard::setName(const std::string &name)
+{
+	_Name= name;
+}
+
 
 } // NL3D

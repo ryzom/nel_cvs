@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.47 2003/08/22 09:06:23 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.48 2003/10/07 12:33:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -820,7 +820,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				NLMISC::CPath::addSearchPath (path);
 													
 			
-			
+				_ParticleDlg->unstickPSFromSkeleton();
 				NL3D::IShape *sh = nt->PSModel->Shape;																			
 				NL3D::CNELU::Scene.deleteInstance(nt->PSModel);
 				NL3D::CNELU::Scene.getShapeBank()->reset();						

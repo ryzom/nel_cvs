@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.21 2003/08/22 09:05:30 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.22 2003/10/07 12:32:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "editable_range.h"
 #include "located_properties.h"
 #include "particle_system_edit.h"
+#include "main_frame.h"
 
 // TODO : remove these include when the test system will be removed
 #include "3d/particle_system.h"
@@ -63,7 +64,7 @@
 using namespace NL3D;
 
 //**************************************************************************************************************************
-CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame)
+CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame, CAnimationDlg *animDLG)
 	: CDialog(CParticleDlg::IDD, pParent), MainFrame(mainFrame), CurrentRightPane(NULL), _ObjView(main), _EmptyBBox(true), _AutoUpdateBBox(false)
 
 {
@@ -78,7 +79,7 @@ CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame*
 
 
 	ParticleTreeCtrl = new CParticleTreeCtrl(this);
-	StartStopDlg = new CStartStopParticleSystem(this);
+	StartStopDlg = new CStartStopParticleSystem(this, animDLG);
 
 
 	/** register us, so that our 'go' method will be called
@@ -389,7 +390,10 @@ void CParticleDlg::setPSWorldMatrix(const NLMISC::CMatrix &mat)
 {
 	nlassert(_CurrSystemModel);
 	CMatrix invParentMat =  _CurrSystemModel->getMatrix() * _CurrSystemModel->getWorldMatrix().inverted();
-	_CurrSystemModel->setMatrix(invParentMat * mat);
+	invParentMat.normalize(CMatrix::XYZ);
+	CMatrix newMat = invParentMat * mat;
+	newMat.normalize(CMatrix::XYZ);
+	_CurrSystemModel->setMatrix(newMat);
 }
 
 //**************************************************************************************************************************
@@ -398,4 +402,32 @@ void CParticleDlg::refreshRightPane()
 	CParticleSystemEdit *pse = dynamic_cast<CParticleSystemEdit *>(CurrentRightPane);
 	if (!pse) return;
 	
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::stickPSToSkeleton(NL3D::CSkeletonModel *skel, uint bone)
+{
+	unstickPSFromSkeleton();
+	if (skel)
+	{
+		skel->stickObject(_CurrSystemModel, bone);
+		_CurrSystemModel->setMatrix(CMatrix::Identity);
+		if (_ObjView->getMainFrame()->MouseMoveType == CMainFrame::MoveFX)
+		{
+			_ObjView->getMainFrame()->OnEditMovecamera();
+		}		
+		_ObjView->getMainFrame()->ToolBar.Invalidate();
+		_ParentSkel = skel;
+	}
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::unstickPSFromSkeleton()
+{
+	if (_ParentSkel)
+	{
+		_ParentSkel->detachSkeletonSon(_CurrSystemModel);
+		_ParentSkel = NULL;
+		_ObjView->getMainFrame()->ToolBar.Invalidate();		
+	}	
 }

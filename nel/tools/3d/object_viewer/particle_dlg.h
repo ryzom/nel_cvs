@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.h,v 1.12 2003/08/22 09:05:30 vizerie Exp $
+ * $Id: particle_dlg.h,v 1.13 2003/10/07 12:32:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,7 @@ class CStartStopParticleSystem;
 class CSceneDlg;
 class CParticleTreeCtrl;
 class CMainFrame;
+class CAnimationDlg;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -64,7 +65,7 @@ class CParticleDlg : public CDialog, public CObjectViewer::IMainLoopCallBack
 {
 // Construction
 public:
-	CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame);
+	CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame, CAnimationDlg *animDLG);
 	~CParticleDlg();
 
 	void setRightPane(CWnd *pane);	
@@ -143,11 +144,23 @@ public:
 	// auto bbox for fx
 	void  setAutoBBox(bool enable) { _AutoUpdateBBox = enable; }
 	bool  getAutoBBox() const { return 	_AutoUpdateBBox; }
+
 	// reset the auto bbox
 	void  resetAutoBBox() {	_EmptyBBox = true; }
+
 	// get the object viewer instance
 	CObjectViewer *getObjectViewer() const { return _ObjView; }
 
+	/** Stick the current edited fx to a skeleton.	  
+	  * This also reset the fx matrix, and prevent from changing it.
+	  */
+	void stickPSToSkeleton(NL3D::CSkeletonModel *skel, uint bone);
+
+	// unstick the current edited fx from its parent skeleton (if there's one)
+	void unstickPSFromSkeleton();
+
+	// return true is the current edited fx is sticked to a skeleton.
+	bool isPSStickedToSkeleton() const { return _ParentSkel != NULL; }
 
 	CStartStopParticleSystem *StartStopDlg;
 
@@ -159,6 +172,9 @@ protected:
 
 	// the current model that holds our system
 	NL3D::CParticleSystemModel *_CurrSystemModel;
+
+	// parent skeleton for the particle system
+	NLMISC::CRefPtr<NL3D::CSkeletonModel> _ParentSkel;
 
 	// the system bbox must be updated automatically
 	bool						_AutoUpdateBBox;

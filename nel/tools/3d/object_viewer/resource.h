@@ -613,6 +613,9 @@
 #define IDC_MAX_STEP_PLACE_HOLDER       1384
 #define IDC_LOCK_FRAME_DELAY            1385
 #define IDC_AUTOREPEAT                  1386
+#define IDC_LINK_TO_SKELETON            1387
+#define IDC_UNLINK_FROM_SKELETON        1388
+#define IDC_LINK_PLAY_TO_SCENE_PLAY     1389
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -748,7 +751,10 @@
 #define ID_WINDOW_VEGETABLE             32872
 #define IDS_PARTICLE_SYSTEM_EDITOR      32872
 #define ID_WINDOW_WATER_POOL            32873
+#define IDS_NO_SKELETON_IN_SCENE        32873
+#define IDS_CHOOSE_BONE_FOR_PS          32874
 #define IDM_ACTIVATE_TEXTURE_SET_1      32875
+#define IDS_NOT_STICKED_TO_SKELETON     32875
 #define IDM_ACTIVATE_TEXTURE_SET_4      32876
 #define IDM_ACTIVATE_TEXTURE_SET_2      32877
 #define IDM_ACTIVATE_TEXTURE_SET_3      32878
@@ -807,7 +813,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1132
 #define _APS_NEXT_COMMAND_VALUE         32962
-#define _APS_NEXT_CONTROL_VALUE         1387
+#define _APS_NEXT_CONTROL_VALUE         1390
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

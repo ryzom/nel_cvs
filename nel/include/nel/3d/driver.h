@@ -4,7 +4,7 @@
  *
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries.
  *
- * $Id: driver.h,v 1.38 2000/12/18 09:46:44 corvazier Exp $
+ * $Id: driver.h,v 1.39 2000/12/18 15:12:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -481,6 +481,8 @@ public:
 	/// Deriver should calls IDriver::release() first, to destroy all driver components (textures, shaders, VBuffers).
 	virtual bool			release(void);
 
+	/// Return true if driver is still active. Return false else. If he user close the window, must return false.
+	virtual bool			isActive()=0;
 
 	/** Output a system message box and print a message with an icon. This method can be call even if the driver is not initialized.
 	  * This method is used to return internal driver problem when string can't be displayed in the driver window.

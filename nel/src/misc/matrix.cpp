@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.14 2000/11/21 17:16:57 valignat Exp $
+ * $Id: matrix.cpp,v 1.15 2000/11/22 13:14:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,6 +157,7 @@ void		CMatrix::movePos(const CVector &v)
 // ======================================================================================================
 void		CMatrix::setProj(const float proj[4])
 {
+	CHECK_VALID();
 	a41= proj[0];
 	a42= proj[1];
 	a43= proj[2];
@@ -171,6 +172,7 @@ void		CMatrix::setProj(const float proj[4])
 // ======================================================================================================
 void		CMatrix::resetProj()
 {
+	CHECK_VALID();
 	a41= 0;
 	a42= 0;
 	a43= 0;

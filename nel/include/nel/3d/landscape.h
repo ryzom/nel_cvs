@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.6 2000/11/14 13:25:28 berenguier Exp $
+ * $Id: landscape.h,v 1.7 2000/11/22 13:14:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,8 @@ namespace NL3D
  *		- 65535 patchs max by zone.
  *		- patch order 2x2 minimum.
  *		- patch order 16x16 maximum.
- *		- conectivity on a edge: 1/1, 1/2, or 1/4.
+ *		- connectivity on a edge: 1/1, 1/2, or 1/4.
+ *		- connectivity on a edge of a zone: 1/1 only.
  *		- The value of Noise amplitude is global and cannot go over 10 meters.
  *
  * \author Lionel Berenguier

@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.22 2004/06/21 17:38:43 lecroart Exp $
+ * $Id: form_elm.h,v 1.23 2004/10/27 12:58:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,7 +207,7 @@ protected:
 	  * Then, else (*parentDfn / indexDfn ) or *node must be defined.
 	  * Others value are for result only.
 	  */
-	static bool	getIternalNodeByName (CForm *form, const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
+	static bool	getInternalNodeByName (CForm *form, const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
 										const CFormDfn **nodeDfn, const CType **nodeType, 
 										CFormElm **node, UFormDfn::TEntryType &type, 
 										bool &array, TNodeAction action, bool &created, bool &parentVDfnArray, bool verbose, uint32 round);

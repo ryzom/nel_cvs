@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.43 2003/10/14 09:30:46 ledorze Exp $
+ * $Id: form_elm.cpp,v 1.44 2004/10/27 12:58:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -604,7 +604,7 @@ bool CFormElm::createNodeByName (const char *name, const CFormDfn **parentDfn, u
 	*nodeType = NULL;
 	*node = this;
 	bool parentVDfnArray;
-	return getIternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Create, created, parentVDfnArray, true, NLGEORGES_FIRST_ROUND);
+	return getInternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Create, created, parentVDfnArray, true, NLGEORGES_FIRST_ROUND);
 }
 
 // ***************************************************************************
@@ -621,7 +621,7 @@ bool CFormElm::deleteNodeByName (const char *name, const CFormDfn **parentDfn, u
 	*node = this;
 	bool created;
 	bool parentVDfnArray;
-	return getIternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Delete, created, parentVDfnArray, true, NLGEORGES_FIRST_ROUND);
+	return getInternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Delete, created, parentVDfnArray, true, NLGEORGES_FIRST_ROUND);
 }
 
 // ***************************************************************************
@@ -637,7 +637,7 @@ bool CFormElm::getNodeByName (const char *name, const CFormDfn **parentDfn, uint
 	*nodeType = NULL;
 	*node = (CFormElm*)this;
 	bool created;
-	return getIternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Return, created, parentVDfnArray, verbose, round);
+	return getInternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Return, created, parentVDfnArray, verbose, round);
 }
 
 // ***************************************************************************
@@ -655,7 +655,7 @@ bool CFormElm::arrayInsertNodeByName (const char *name, const CFormDfn **parentD
 	*node = (CFormElm*)this;
 	bool created;
 	bool parentVDfnArray;
-	if (getIternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Create, created, parentVDfnArray, verbose, NLGEORGES_FIRST_ROUND))
+	if (getInternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Create, created, parentVDfnArray, verbose, NLGEORGES_FIRST_ROUND))
 	{
 		// Must be in the same form
 		nlassert ((*node) && ((*node)->Form == Form));
@@ -729,7 +729,7 @@ bool CFormElm::arrayDeleteNodeByName (const char *name, const CFormDfn **parentD
 	*node = (CFormElm*)this;
 	bool created;
 	bool parentVDfnArray;
-	if (getIternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Create, created, parentVDfnArray, verbose, NLGEORGES_FIRST_ROUND))
+	if (getInternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Create, created, parentVDfnArray, verbose, NLGEORGES_FIRST_ROUND))
 	{
 		// Must be in the same form
 		nlassert ((*node) && ((*node)->Form == Form));
@@ -761,7 +761,7 @@ bool CFormElm::arrayDeleteNodeByName (const char *name, const CFormDfn **parentD
 
 // ***************************************************************************
 
-bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormDfn **parentDfn, uint &indexDfn, const CFormDfn **nodeDfn, const CType **nodeType, CFormElm **node, UFormDfn::TEntryType &type, bool &array, TNodeAction action, bool &created, bool &parentVDfnArray, bool verbose, uint32 round)
+bool CFormElm::getInternalNodeByName (CForm *form, const char *name, const CFormDfn **parentDfn, uint &indexDfn, const CFormDfn **nodeDfn, const CType **nodeType, CFormElm **node, UFormDfn::TEntryType &type, bool &array, TNodeAction action, bool &created, bool &parentVDfnArray, bool verbose, uint32 round)
 {
 	// *** Init output variables
 	created = false;
@@ -1401,7 +1401,7 @@ exit:;
 			bool arrayParent;
 			bool createdParent;
 			bool parentVDfnArray;
-			if (getIternalNodeByName (parentPtr, formName.c_str (), &parentDfnParent, indexDfnParent, &nodeDfnParent, &nodeTypeParent, &nodeParent, typeParent, arrayParent, action, createdParent, parentVDfnArray, false, round+1))
+			if (getInternalNodeByName (parentPtr, formName.c_str (), &parentDfnParent, indexDfnParent, &nodeDfnParent, &nodeTypeParent, &nodeParent, typeParent, arrayParent, action, createdParent, parentVDfnArray, false, round+1))
 			{
 				// Node found ?
 				if (nodeParent)
@@ -1453,7 +1453,7 @@ exit:;
 		}
 	}
 
-	// Recurce warning !
+	// Recurse warning !
 	if (*node)
 	{
 		if (round > NLGEORGES_MAX_RECURSION)
@@ -1461,7 +1461,7 @@ exit:;
 			// Turn around..
 			string formName;
 			(*node)->getFormName (formName);
-			warning (false, formName.c_str (), form->getFilename ().c_str(), "getIternalNodeByName", "Recurcive call on the same node (%s), look for loop references or inheritances.", name);
+			warning (false, formName.c_str (), form->getFilename ().c_str(), "getInternalNodeByName", "Recursive call on the same node (%s), look for loop references or inheritances.", name);
 			return false;
 		}
 	}
@@ -1471,7 +1471,7 @@ exit:;
 		nlassert (*error);
 
 		// Get the best form name
-		warning (false, currentName.c_str (), form->getFilename ().c_str(), "getIternalNodeByName", "Getting the node (%s) : %s", name, error);
+		warning (false, currentName.c_str (), form->getFilename ().c_str(), "getInternalNodeByName", "Getting the node (%s) : %s", name, error);
 	}
 
 	return !errorAppend;
@@ -2344,7 +2344,11 @@ bool CFormElmArray::getArrayNode (UFormElm **result, uint arrayIndex)
 
 bool CFormElmArray::getArrayValue (std::string &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
-	if (Type)
+	if (arrayIndex >= Elements.size())
+	{
+		warning (false, "getArrayValue", "Access out of bound, trying to access array index %u, array size is %u.", arrayIndex, Elements.size());
+	}
+	else if (Type)
 	{
 		return (Type->getValue (result, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, NLGEORGES_FIRST_ROUND, NULL));
 	}

@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager_3d.cpp,v 1.8 2004/10/06 09:12:54 berenguier Exp $
+ * $Id: async_file_manager_3d.cpp,v 1.9 2004/10/25 11:53:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -423,7 +423,7 @@ void CAsyncFileManager3D::CIGLoadUser::run (void)
 	CInstanceGroupUser *pIG = new CInstanceGroupUser();
 	try
 	{
-		if (pIG->init (_IGName))
+		if (pIG->init (_IGName, true))
 		{		
 			*_ppIG = pIG;
 		}

@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.33 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: instance_group_user.h,v 1.34 2004/10/25 11:53:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,8 +66,7 @@ public:
 	//bool load (const std::string &instanceGroup);
 
 	// Init without a scene
-	bool init (const std::string &instanceGroup);
-	//bool init (const std::string &instanceGroup, CScene &scene, UDriver *driver);
+	bool init (const std::string &instanceGroup, bool async= false);
 
 private:
 	// From UInstanceGroup

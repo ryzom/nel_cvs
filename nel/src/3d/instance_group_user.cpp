@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.40 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: instance_group_user.cpp,v 1.41 2004/10/25 11:53:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,11 +116,16 @@ CInstanceGroupUser::~CInstanceGroupUser()
 }
 
 // ***************************************************************************
-bool CInstanceGroupUser::init (const std::string &instanceGroup)
+bool CInstanceGroupUser::init (const std::string &instanceGroup, bool async)
 {
 	NL3D_MEM_IG
 	// Create a file
 	CIFile file;
+	if(async)
+	{
+		file.setAsyncLoading(true);
+		file.setCacheFileOnOpen(true);
+	}
 	std::string path = CPath::lookup (instanceGroup, false);
 	if (!path.empty() && file.open (path))
 	{

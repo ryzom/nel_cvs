@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.19 2004/05/26 16:07:07 berenguier Exp $
+ * $Id: zone_manager.cpp,v 1.20 2004/10/25 11:53:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -253,6 +253,8 @@ void CZoneLoadingTask::run(void)
 
 	CZone *ZoneTmp = new CZone;
 	CIFile file;
+	file.setAsyncLoading(true);
+	file.setCacheFileOnOpen(true);
 	if(file.open(zonePathLookup))
 	{
 		ZoneTmp->serial(file);

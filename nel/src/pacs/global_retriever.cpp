@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.94 2004/07/12 14:10:13 miller Exp $
+ * $Id: global_retriever.cpp,v 1.95 2004/10/25 11:54:17 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2639,6 +2639,10 @@ void	NLPACS::CGlobalRetriever::refreshLrAroundNow(const CVector &position, float
 void	NLPACS::CGlobalRetriever::CLrLoader::run()
 {
 	CIFile		f;
+
+	// async
+	f.setAsyncLoading(true);
+	f.setCacheFileOnOpen(true);
 
 	Successful = false;
 

@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.22 2003/12/04 17:50:25 cado Exp $
+ * $Id: primitive.h,v 1.23 2004/01/13 18:32:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -464,6 +464,9 @@ public:
 
 	/// Returns the barycenter of the zone (warning, it may be outside of the zone if it is not convex). Returns CVector::Null if there is no vertex.
 	NLMISC::CVector		getBarycentre() const;
+
+	/// Returns the smallest axis-aligned box containing the zone
+	void				getAABox( NLMISC::CVector& cornerMin, NLMISC::CVector& cornerMax ) const;
 
 	// \name From IClassable
 	NLMISC_DECLARE_CLASS (CPrimZone);

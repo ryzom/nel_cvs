@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.24 2003/12/08 13:18:24 boucher Exp $
+ * $Id: primitive.cpp,v 1.25 2004/01/13 18:32:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -883,6 +883,27 @@ NLMISC::CVector CPrimZone::getBarycentre() const
 	}
 	else
 		return sum;
+}
+
+// ***************************************************************************
+void CPrimZone::getAABox( NLMISC::CVector& cornerMin, NLMISC::CVector& cornerMax ) const
+{
+	cornerMin.x = FLT_MAX;
+	cornerMin.y = FLT_MAX;
+	cornerMax.x = -FLT_MAX;
+	cornerMax.y = -FLT_MAX;
+	for ( uint i=0; i!=VPoints.size(); ++i )
+	{
+		const CVector& p = VPoints[i];
+		if ( p.x < cornerMin.x )
+			cornerMin.x = p.x;
+		if ( p.x > cornerMax.x )
+			cornerMax.x = p.x;
+		if ( p.y < cornerMin.y )
+			cornerMin.y = p.y;
+		if ( p.y > cornerMax.y )
+			cornerMax.y = p.y;
+	}
 }
 
 

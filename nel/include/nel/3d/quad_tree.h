@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.8 2000/12/07 16:32:19 coutelas Exp $
+ * $Id: quad_tree.h,v 1.9 2000/12/13 10:25:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,7 +113,7 @@ public:
 	~CQuadTree();
 
 	/// \name Initialization
-
+	//@{
 	/** Change the base matrix of the quad tree. For exemple this code init the quad tree in the plane XY:
 	  * \code
 	  * CQuadTree			quadTree;
@@ -138,10 +138,12 @@ public:
 	  * \param size is the width and the height of the initial quad tree.
 	  */
 	void		create(uint DepthMax, const NLMISC::CVector& center, float size);
+	//@}
+
 
 	/// \name Container operation
-
-	/// Clear the container
+	//@{
+	/// Clear the container. Elements are deleted, and the quadtree too (create() is undone)
 	void		clear();
 
 	/** Erase an interator from the container
@@ -157,9 +159,11 @@ public:
 	  * \param val is a reference on the value to insert
 	  */
 	CIterator	insert(const NLMISC::CVector &bboxmin, const NLMISC::CVector &bboxmax, const T &val);
+	//@}
+
 
 	/// \name Selection
-
+	//@{
 	/** Clear the selection list
 	  */
 	void		clearSelection();
@@ -196,6 +200,9 @@ public:
 	/** Return the end iterator of the selected element list. begin and end are valid till the next insert.
 	  */
 	CIterator	end();
+	//@}
+
+
 
 // =================
 // =================

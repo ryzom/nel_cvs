@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.4 2000/12/11 15:50:44 berenguier Exp $
+ * $Id: aabbox.h,v 1.5 2000/12/13 10:25:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,6 +99,16 @@ public:
 	bool			clipFront(const CPlane &p) const;
 	/// Is the bbox partially in back of the plane??
 	bool			clipBack(const CPlane &p) const;
+	/// Does the bbox include this point.
+	bool			include(const CVector &a) const;
+	/// Does the bbox intersect the triangle ABC.
+	bool			intersect(const CVector &a, const CVector &b, const CVector &c) const;
+	// @}
+
+	/// \name Misc
+	// @{
+	/// Build the equivalent polytope of planes.
+	void			makePyramid(CPlane	planes[6]) const;
 	// @}
 
 	void			serial(NLMISC::IStream &f);
@@ -166,6 +176,9 @@ public:
 	bool			clipFront(const CPlane &p) const;
 	/// Is the bbox partially in back of the plane?? p MUST be normalized.
 	bool			clipBack(const CPlane &p) const;
+	/// Does the bbox intersect the triangle ABC.
+	bool			intersect(const CVector &a, const CVector &b, const CVector &c) const
+		{return CAABBox::intersect(a,b,c);}
 	// @}
 
 	void			serial(NLMISC::IStream &f);

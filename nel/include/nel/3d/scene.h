@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.10 2000/12/11 15:50:20 berenguier Exp $
+ * $Id: scene.h,v 1.11 2000/12/13 10:25:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,13 +93,10 @@ class	IDriver;
  * The scene has an instance Managagement:
  *		- IShape  design the object that is instancied (a mesh as example).
  *		- ITransformShape is the instance, which smart_point to a IShape.
+ *		- user can add shape manually with addShape(), or remove them with delShape().
  *		- user create instance of a shape with CScene::createInstance(string shapeName);
- *			This create/load auto the shape if needed, and then create the instance, with help of IShape::createInstance().
- *		- user can add manually shape with addShape(), or remove them with delShape().
- *		- user can add an IShapeServer to the scene. When a CScene::createInstance() is done, if he do not find the shape, 
- *			he try to load it by testing every ShapeServer the scene has (until OK)...
- *
- * By default, the scene has a CShapeServerFile, which search the shape on the disk, given a path env and his name.
+ *			This create/load auto the shape if needed (searching in CPath, shapename must be a valid file name), 
+ *			and then create the instance, with help of IShape::createInstance().
  *
  * \author Lionel Berenguier
  * \author Nevrax France
@@ -113,7 +110,7 @@ public:
 	/// \name Basic registration.
 	//@{
 	/// Register Basic models and observers.
-	static void	registerBasics();
+	static void		registerBasics();
 	//@}
 
 
@@ -124,21 +121,21 @@ public:
 	/// Destructor. release().
 	~CScene();
 	/// Create / register the 4 basic traversals:CHrcTrav, CClipTrav, CLightTrav, CRenderTravInit.
-	void	initDefaultTravs();
+	void			initDefaultTravs();
 	/// Create/setRoot the defaults models roots: a CTransform and a CLightGroup.
-	void	initDefaultRoots();
+	void			initDefaultRoots();
 	/// Set the driver to render Traversal.
-	void	setDriver(IDriver *drv);
+	void			setDriver(IDriver *drv);
 	/// Get the driver of render Traversal.
-	IDriver *getDriver() const;
+	IDriver			*getDriver() const;
 	/** Add a ITrav or a ITravScene to the scene.
 	 * If not a ITravScene (tested with help of dynamic_cast) or if trav->getRenderOrder()==0, The traversal is not added 
 	 * to the "render traversal list", else it is. Such a traversal will be traverse() -ed in the order given.
 	 * The getRenderOrder() is called only in the addTrav() method (so this is a static information).
 	 */
-	void	addTrav(ITrav *v);
+	void			addTrav(ITrav *v);
 	/// Release all relative to the scene (Models, traversals...)... Destroy the Basic traversals too.
-	void	release();
+	void			release();
 	//@}
 
 
@@ -150,24 +147,24 @@ public:
 	 * \param doHrcPass set it to false to indicate that the CHrcTrav have not to be traversed. UseFull to optimize if 
 	 * you know that NONE of your models have moved (a good example is a shoot of the scene from different cameras).
 	 */
-	void	render(bool	doHrcPass=true);
+	void			render(bool	doHrcPass=true);
 	/// Clear all the buffer of the RenderTrav current driver window .
-	void	clearBuffers(NLMISC::CRGBA col= NLMISC::CRGBA(0,0,0,0));
+	void			clearBuffers(NLMISC::CRGBA col= NLMISC::CRGBA(0,0,0,0));
 	/// Swap the buffer of the RenderTrav current driver window .
-	void	swapBuffers();
+	void			swapBuffers();
 	//@}
 
 
 	/// \name Camera/Viewport.
 	//@{
 	/// Set/Get the current camera/Viewport.
-	void	setCam(CCamera *cam) {CurrentCamera= cam;}
-	CCamera *getCam() {return CurrentCamera;}
-	void	setViewport(const class CViewport& viewport)
+	void			setCam(CCamera *cam) {CurrentCamera= cam;}
+	CCamera			*getCam() {return CurrentCamera;}
+	void			setViewport(const class CViewport& viewport)
 	{
 		_Viewport=viewport;
 	}
-	CViewport	getViewport()
+	CViewport		getViewport()
 	{
 		return _Viewport;
 	}
@@ -177,10 +174,10 @@ public:
 	/// \name Instance Mgt.
 	//@{
 	/// Register manually a shape into the scene. If already here, remplaced.
-	void	addShape(const std::string &shapeName, CSmartPtr<IShape> shape);
+	void			addShape(const std::string &shapeName, CSmartPtr<IShape> shape);
 	/// delete a shape from the scene. It will be really deleted when all instances which points to it will be deleted.
 	///  no-op if not exist.
-	void	delShape(const std::string &shapeName);
+	void			delShape(const std::string &shapeName);
 	/// Create a model, instance of the shape "shapename". If not present, try to load it via the shapeServer.
 	/// If fails, return NULL.
 	virtual	CTransformShape	*createInstance(const std::string &shapeName);

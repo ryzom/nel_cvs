@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.18 2000/12/11 15:50:34 berenguier Exp $
+ * $Id: patch.h,v 1.19 2000/12/13 10:25:22 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -169,6 +169,9 @@ public:
 	/// Build the bbox of the patch, according to ctrl points, and displacement map max value.
 	CAABBox			buildBBox() const;
 
+	/// Return the bounding sphere. Work only when zone compiled.
+	const CBSphere	&getBSphere() const {return BSphere;}
+
 	/** Compute a vertex.
 	 * Compute a vertex according to:
 	 *	- s,t
@@ -176,7 +179,7 @@ public:
 	 *  - Patch UV geometric correction.
 	 *	- Patch noise (and noise of Patch neighbor).
 	 */
-	CVector			computeVertex(float s, float t);
+	CVector			computeVertex(float s, float t) const;
 
 
 	/** unbind the patch from All neighbors. neighbors patchs links are modified too. The tesselation is forcemerged.

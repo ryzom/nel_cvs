@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.2 2000/12/12 10:04:48 berenguier Exp $
+ * $Id: mesh.cpp,v 1.3 2000/12/13 10:26:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -217,7 +217,7 @@ void	CMesh::render(IDriver *drv)
 
 
 // ***************************************************************************
-void	CMesh::serial(NLMISC::IStream &f)
+void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	sint	ver= f.serialVersion(0);
 

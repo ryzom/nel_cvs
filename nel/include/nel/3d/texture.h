@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.13 2000/12/12 10:04:27 berenguier Exp $
+ * $Id: texture.h,v 1.14 2000/12/13 10:25:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -220,7 +220,7 @@ public:
 	void generate();
 
 	/// Save the texture file name.
-	virtual void	serial(NLMISC::IStream &f)
+	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		f.serial(_FileName);
 		if(f.isReading())
@@ -330,7 +330,7 @@ public:
 
 
 	/// Todo: serialize a mem texture.
-	virtual void	serial(NLMISC::IStream &f) {nlstop;}
+	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream) {nlstop;}
 	NLMISC_DECLARE_CLASS(CTextureMem);
 
 };
@@ -436,7 +436,7 @@ public:
 
 
 	/// Todo: serialize a font texture.
-	virtual void	serial(NLMISC::IStream &f) {nlstop;}
+	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream) {nlstop;}
 	NLMISC_DECLARE_CLASS(CTextureFont);
 
 };

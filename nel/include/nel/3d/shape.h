@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.2 2000/12/11 15:50:20 berenguier Exp $
+ * $Id: shape.h,v 1.3 2000/12/13 10:25:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/stream.h"
 
 
 namespace NL3D 
@@ -50,6 +51,8 @@ class	CScene;
  * define those methods, and let createInstance() as default. But other complex shapes may be defined, by implement 
  * a compatible model which will comunicate with them.
  *
+ * Serialisation of a shape MUST be done with ISTREAM::serialPolyPtr.
+ *
  * \b DERIVER \b RULES:
  *		- simple: just implement clip() and render(). The shape will be movable via CTransform.
  *		- complex: if special interaction is needed between the instance and the shape:
@@ -61,7 +64,7 @@ class	CScene;
  * \author Nevrax France
  * \date 2000
  */
-class IShape : public NLMISC::CRefCount
+class IShape : public NLMISC::CRefCount, public NLMISC::IStreamable
 {
 public:
 

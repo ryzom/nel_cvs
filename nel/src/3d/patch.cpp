@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.22 2000/12/11 15:52:33 berenguier Exp $
+ * $Id: patch.cpp,v 1.23 2000/12/13 10:26:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -302,7 +302,7 @@ void			CPatch::compile(CZone *z, uint8 orderS, uint8 orderT, CTessVertex *baseVe
 	makeRoots();
 }
 // ***************************************************************************
-CVector			CPatch::computeVertex(float s, float t)
+CVector			CPatch::computeVertex(float s, float t) const
 {
 	// First, unpack...
 	CBezierPatch	*patch= unpackIntoCache();

@@ -1,7 +1,7 @@
-/** \file register_3d.cpp
+/** \file triangle.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.2 2000/12/13 10:26:09 berenguier Exp $
+ * $Id: triangle.cpp,v 1.1 2000/12/13 10:26:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,29 +23,12 @@
  * MA 02111-1307, USA.
  */
 
-
-#include "nel/3d/register_3d.h"
-#include "nel/3d/texture.h"
-#include "nel/3d/mesh.h"
+#include "nel/3d/triangle.h"
 
 
 namespace NL3D 
 {
 
-
-//****************************************************************************
-void	registerSerial3d()
-{
-	// Textures.
-	NLMISC_REGISTER_CLASS(CTextureFile);
-	NLMISC_REGISTER_CLASS(CTextureMem);
-	NLMISC_REGISTER_CLASS(CTextureFont);
-	// Don't register CTextureCroos,, since local, and not designed to be serialised.
-
-	// Shapes.
-	NLMISC_REGISTER_CLASS(CMesh);
-
-}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.12 2000/12/11 15:52:33 berenguier Exp $
+ * $Id: scene.cpp,v 1.13 2000/12/13 10:26:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "nel/3d/landscape_model.h"
 #include "nel/3d/driver.h"
 #include "nel/3d/transform_shape.h"
+#include "nel/misc/file.h"
+#include "nel/misc/path.h"
 using namespace std;
 using namespace NLMISC;
 
@@ -220,10 +222,30 @@ CTransformShape	*CScene::createInstance(const std::string &shapeName)
 {
 	TShapeMap::iterator		it;
 	it= ShapeMap.find(shapeName);
-	if(it!=ShapeMap.end())
+	if(it==ShapeMap.end())
 	{
-		// TODO: shapeserver search...
-		return NULL;
+		string	path= CPath::lookup(shapeName);
+		if(path.empty())
+			return NULL;
+		else
+		{
+			IShape	*shape=NULL;
+			CIFile	file;
+
+			// Load the shape.
+			if(!file.open(path))
+				return NULL;
+			file.serialPolyPtr(shape);
+			file.close();
+			if(shape==NULL)
+				return NULL;
+
+			// Add the shape to the map.
+			CSmartPtr<IShape>	spShape= shape;
+			addShape(shapeName, spShape);
+			it= ShapeMap.find(shapeName);
+			nlassert(it==ShapeMap.end());
+		}
 	}
 
 	return (*it).second->createInstance(*this);

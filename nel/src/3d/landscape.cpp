@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.18 2000/12/12 10:04:48 berenguier Exp $
+ * $Id: landscape.cpp,v 1.19 2000/12/13 10:26:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 
 #include "nel/3d/landscape.h"
+#include "nel/3d/bsphere.h"
 using namespace NLMISC;
 using namespace std;
 
@@ -652,6 +653,13 @@ void			CLandscape::releaseTiles(uint16 tileStart, uint16 nbTiles)
 
 
 // ***************************************************************************
+// ***************************************************************************
+// Misc.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
 CZone*			CLandscape::getZone (sint zoneId)
 {
 	TZoneMap::iterator	it;
@@ -673,6 +681,82 @@ const CZone*	CLandscape::getZone (sint zoneId) const
 		return (*it).second;
 	else
 		return NULL;
+}
+
+
+// ***************************************************************************
+void			CLandscape::buildCollideFaces(const CAABBoxExt &bbox, vector<CTriangle>	&faces, bool faceClip)
+{
+	CBSphere	bsWanted(bbox.getCenter(), bbox.getRadius());
+
+	faces.clear();
+	// For all zones.
+	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+	{
+		const CAABBoxExt	&bb= (*it).second->getZoneBB();
+		CBSphere	bs(bb.getCenter(), bb.getRadius());
+		// If zone intersect the wanted area.
+		//===================================
+		if(bs.intersect(bsWanted))
+		{
+			// Then trace all patch.
+			sint	N= (*it).second->getNumPatchs();
+			for(sint i=0;i<N;i++)
+			{
+				const CPatch	*pa= const_cast<const CZone*>((*it).second)->getPatch(i);
+
+				// If patch in wanted area....
+				//============================
+				if(bsWanted.intersect(pa->getBSphere()))
+				{
+					// 0. Build the faces.
+					//====================
+					sint	ordS= pa->getOrderS();
+					sint	ordT= pa->getOrderT();
+					sint	x,y,j;
+					vector<CTriangle>	tmpFaces;
+					tmpFaces.reserve(ordS*ordT);
+					float	OOS= 1.0f/ordS;
+					float	OOT= 1.0f/ordT;
+					for(y=0;y<ordT;y++)
+					{
+						for(x=0;x<ordS;x++)
+						{
+							CTriangle	f;
+							f.V0= pa->computeVertex(x*OOS, y*OOT);
+							f.V1= pa->computeVertex(x*OOS, (y+1)*OOT);
+							f.V2= pa->computeVertex((x+1)*OOS, (y+1)*OOT);
+							tmpFaces.push_back(f);
+							f.V0= pa->computeVertex(x*OOS, y*OOT);
+							f.V1= pa->computeVertex((x+1)*OOS, (y+1)*OOT);
+							f.V2= pa->computeVertex((x+1)*OOS, y*OOT);
+							tmpFaces.push_back(f);
+						}
+					}
+
+					// 1. Clip the faces.
+					//===================
+					if(faceClip)
+					{
+						// Insert only faces which are In the area.
+						for(j=0;j<(sint)tmpFaces.size();j++)
+						{
+							CTriangle	&f= tmpFaces[j];
+							if(bbox.intersect(f.V0, f.V1, f.V2))
+							{
+								faces.push_back(f);
+							}
+						}
+					}
+					else
+					{
+						// Else insert ALL.
+						faces.insert(faces.end(), tmpFaces.begin(), tmpFaces.end());
+					}
+				}
+			}
+		}
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.2 2000/12/12 10:04:27 berenguier Exp $
+ * $Id: mesh.h,v 1.3 2000/12/13 10:25:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,8 @@ public:
 	virtual void	render(IDriver *drv);
 
 	/// serial this mesh.
-	void			serial(NLMISC::IStream &f);
+	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	NLMISC_DECLARE_CLASS(CMesh);
 
 
 // ************************

@@ -26,7 +26,7 @@ CFG=3d - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=cl.exe
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "3d - Win32 Release"
@@ -48,7 +48,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d.lib"
 
@@ -71,7 +71,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d_debug.lib"
 
@@ -94,7 +94,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo /out:"../lib/nl3d.lib"
 # ADD LIB32 /nologo /out:"../lib/nl3d_rd.lib"
 
@@ -330,6 +330,14 @@ SOURCE=..\include\nel\3d\polygon.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\triangle.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\triangle.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\uv.cpp
 # End Source File
 # Begin Source File
@@ -485,14 +493,6 @@ SOURCE=.\3d\scene.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\scene.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\triangle.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\triangle.h
 # End Source File
 # End Target
 # End Project

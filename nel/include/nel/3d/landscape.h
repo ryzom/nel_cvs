@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.16 2000/12/11 15:50:34 berenguier Exp $
+ * $Id: landscape.h,v 1.17 2000/12/13 10:25:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/3d/zone.h"
 #include "nel/3d/tile_bank.h"
 #include "nel/3d/patch_rdr_pass.h"
+#include "nel/3d/triangle.h"
 #include <map>
 
 
@@ -75,9 +76,10 @@ public:
 	~CLandscape();
 
 
+	/// \name Init/Build.
+	// @{
 	/// init the landscape VBuffers, texture cache etc...
 	void			init(bool bumpTiles=false);
-
 
 	/** Add a zone which should be builded (or loaded), but not compiled. CLandscape compile it.
 	 * The contents of newZone are copied into the landscape.
@@ -93,24 +95,24 @@ public:
 	bool			removeZone(uint16 zoneId);
 	/// Disconnect, and Delete all zones.
 	void			clear();
+	// @}
 
 	
+	/// \name Landscape Parameters.
+	// @{
 	/// Set tile near distance. Default 50.f.
-	void setTileNear (float tileNear)
-	{
-		_TileDistNear=tileNear;
-	}
+	void			setTileNear (float tileNear)	{_TileDistNear=tileNear;}
 	/// Get tile near distance.
-	float getTileNear () const
-	{
-		return _TileDistNear;
-	}
-	void	setRefineMode(bool enabled) {_RefineMode= enabled;}
-	bool	getRefineMode() const {return _RefineMode;}
+	float			getTileNear () const	{return _TileDistNear;}
+	void			setRefineMode(bool enabled) {_RefineMode= enabled;}
+	bool			getRefineMode() const {return _RefineMode;}
 	// TODO: other landscape param setup (Transition etc...).
 	// Store it by landscape, and not only globally in CTessFace statics.
+	// @}
 
 
+	/// \name Render methods.
+	// @{
 	/** Clip the landscape according to frustum. 
 	 * Planes must be normalized.
 	 */
@@ -119,33 +121,53 @@ public:
 	void			refine(const CVector &refineCenter);
 	/// Render the landscape.
 	void			render(IDriver *drv, const CVector &refineCenter, bool doTileAddPass=false);
+	// @}
 
 
+	/// \name Collision methods.
+	// @{
+	/** Build the set of faces of landscape, which are IN a bbox. Usefull for collisions.
+	 * The faces are builded at Tile level (2m*2m).
+	 * \param bbox the bbox where faces are searched.
+	 * \param faces the result of the build.
+	 * \param faceSplit if true, Only faces which are IN or partialy IN the bbox are returned. Else the clipping is done
+	 * on patch level. Worst, but faster.
+	 */
+	void			buildCollideFaces(const CAABBoxExt &bbox, std::vector<CTriangle> &faces, bool faceSplit);
+	// @}
+
+
+
+	/// \name Accessors.
+	// @{
 	/** Get a zone pointer.
 	 * 
 	 * \param zoneId the zone of the update.
 	 * \return Return a zone pointer. NULL if the zone doesn't exist or isn't loaded.
 	 */
 	CZone*			getZone (sint zoneId);
-
 	/** Get a zone pointer.
 	 * 
 	 * \param zoneId the zone of the update.
 	 * \return Return a zone pointer. NULL if the zone doesn't exist or isn't loaded.
 	 */
 	const CZone*	getZone (sint zoneId) const;
+	// @}
 
 
+	/// \name Tile mgt.
+	// @{
 	/// Force a range of tiles to be loaded in the driver...
 	void			flushTiles(IDriver *drv, uint16 tileStart, uint16 nbTiles);
 	/// Force a range of tiles to be loaded in the driver...
 	void			releaseTiles(uint16 tileStart, uint16 nbTiles);
 
-
 	/// Return the texture for a tile Id. UseFull for Tile edition.
 	NLMISC::CSmartPtr<ITexture>		getTileTexture(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias);
+	// @}
 
 
+// ********************************
 private:
 	// Private part used by CPatch.
 	friend class	CPatch;

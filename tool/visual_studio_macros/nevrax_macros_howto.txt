@@ -1,6 +1,6 @@
 Mode d'emploi des macros Nevrax
 02/08/00 cado@nevrax.com
-$Id: nevrax_macros_howto.txt,v 1.9 2001/05/22 12:04:32 cado Exp $
+$Id: nevrax_macros_howto.txt,v 1.10 2001/05/22 12:08:47 cado Exp $
 ----------
 
 Dernière mise à jour : 22/05/2001
@@ -8,10 +8,10 @@ Dernière mise à jour : 22/05/2001
 1. Nouveautés du 22/05/2001
 ---------------------------
 
-- Pour faire en sorte que le répertoire des fichiers include
-soit le même que celui des fichiers source, spécifier une
-chaîne vide pour le répertoire des fichiers include (boite
-de dialogue n°4)
+- NevraxNewClass: Pour faire en sorte que le répertoire des
+fichiers include soit le même que celui des fichiers source,
+spécifier une chaîne vide pour le répertoire des fichiers
+include (boite de dialogue n°4)
 
 - Il existe maintenant un fichier nevrax_macros_ryzom.dsm.
 La seule différence avec nevrax_macros.dsm est que le nom
@@ -19,7 +19,7 @@ du projet généré dans l'en-tête des fichiers n'est pas
 NEL mais RYZOM.
 
 - (Windows 2000 uniquement) La macro NevraxToggleHCPP
-recherche désormais le fichier .h dans les quatre
+recherche désormais le fichier .h dans les trois
 répertoires suivants si le fichier .cpp fait partie de NeL :
   R:\code\nel\include\nel\<module>
   R:\code\nel\include_private\nel\<module>

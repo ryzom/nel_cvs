@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.8 2003/06/04 15:09:26 vizerie Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.9 2003/06/04 17:16:31 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -161,6 +161,11 @@ CTransformShape *CSegRemanenceShape::createInstance(CScene &scene)
 	sr->setupFromShape();
 	// SegRemanence are added to the "Fx" Load Balancing Group.
 	sr->setLoadBalancingGroup("Fx");
+	
+	sr->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
+	sr->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );
+	sr->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
+
 	return sr;
 }
 

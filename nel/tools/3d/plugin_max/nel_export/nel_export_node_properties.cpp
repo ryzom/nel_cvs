@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.57 2004/06/01 15:57:39 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.58 2004/06/03 10:18:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3150,9 +3150,9 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				if (param.LightGroup != -1)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LM_LIGHT_GROUP, param.LightGroup);
 
-				// (param.DontExport != BST_INDETERMINATE)
 				{
-					CExportNel::setScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, param.DontExport);
+					if (param.DontExport != BST_INDETERMINATE)
+						CExportNel::setScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, param.DontExport);
 					if (param.ExportNoteTrack != BST_INDETERMINATE)
 						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, param.ExportNoteTrack);
 					if (param.ExportAnimatedMaterials != BST_INDETERMINATE)

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.39 2002/04/12 16:31:48 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.40 2002/04/23 16:29:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,10 @@
 
 
 #include <nel/misc/polygon.h>
+#include <nel/misc/path.h>
+
+
+
 
 using namespace NLMISC;
 using namespace NL3D;
@@ -112,6 +116,7 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, CM
 
 			buildBaseMeshInterface (*baseBuild, maxBaseBuild, node, tvTime, nodeMatrix);
 			buildMeshInterface (*tri, *pMeshBuild, *baseBuild, maxBaseBuild, node, tvTime, NULL, CMatrix::Identity, masterNodeMat);
+		
 
 			// Delete the triObject if we should...
 			if (deleteIt)
@@ -1109,6 +1114,26 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 		}
 	}
 
+	// *** ***********************************************************
+	// *** Correct normals at junction by using interface mesh      **
+	// *** ***********************************************************
+	
+	// Apply normal correction if there is a mesh interface
+	if (skined)
+	{	
+		applyInterfaceToMeshBuild(node, buildMesh, NLMISC::CMatrix::Identity, time);
+	}
+	else
+	{
+		// go from export space to local
+		// and then go to world space
+		Matrix3 toWorldMax = node.GetObjectTM(time);
+		NLMISC::CMatrix toWorld;
+		convertMatrix(toWorld, toWorldMax);		
+		applyInterfaceToMeshBuild(node, buildMesh, toWorld * FromExportSpace, time);
+	}
+
+
 	// *** ***************************
 	// *** Export VertexProgram.
 	// *** ***************************
@@ -1133,7 +1158,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			case 0: 
 				buildMesh.MeshVertexProgram= NULL;
 				break;
-			case 1: 
+			case 1:
 			{
 				// smartPtr set it.
 				buildMesh.MeshVertexProgram= new CMeshVPWindTree;
@@ -1168,7 +1193,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			default:
 				nlstop;
 		}
-	}
+	}	
 	// Ok, done.
 }
 
@@ -1976,3 +2001,7 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 		return NULL;
 	}
 }
+
+
+
+

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.50 2002/03/29 14:58:34 corvazier Exp $
+ * $Id: export_nel.h,v 1.51 2002/04/23 16:30:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -258,6 +258,32 @@ public:
 	  * This method does not care of the skeletonShape
 	  */
 	NL3D::CMesh::CMeshBuild*		createMeshBuild(INode& node, TimeValue tvTime, NL3D::CMesh::CMeshBaseBuild*& baseBuild, const NLMISC::CMatrix &finalSpace = NLMISC::CMatrix::Identity);
+
+	/** Test wether has app datas specifying interface meshs.
+	  * \see applyInterfaceToMeshBuild
+	  */ 
+	static bool						useInterfaceMesh(INode &node);
+
+
+	/** Use interface mesh from a max file to unify normal at extremities of a mesh
+	  * Example : a character is sliced in slots, each parts being stored in a file.
+	  * The normals at the junction part are incorrect.
+	  * An "interface" is a polygon that is used to unify normal between various meshs 
+	  * IMPORTANT : the meshbuild should have been exported in WORLD SPACE
+	  * Note : the name of the max file that contains the name of the interface is stored in an app data attached to this node
+	  * \param node the node from which datas must be retrieved (name of the .max file containing the interfaces)
+	  * \param meshBuildToModify The mesh build whose normal will be modified
+  	  * \param toWorldMat a matrix to put the meshbuild vertices into worldspace
+	  * \param tvTime time aty which evaluate the mesh
+	  */
+	void							applyInterfaceToMeshBuild(INode &node, NL3D::CMesh::CMeshBuild &meshBuildToModify, const NLMISC::CMatrix &toWorldMat, TimeValue tvTime);
+
+	/** This takes a max mesh, and select the vertices that match vertices of a mesh interface
+	  * This has no effect if the mesh has no app datas specifying a mesh interface
+	  * \see applyInterfaceToMeshBuild
+	  * \return true if the operation succeed
+	  */ 
+	bool							selectInterfaceVertices(INode &node, TimeValue time);	
 
 	/**
 	  * Build a NeL instance group
@@ -517,7 +543,7 @@ public:
 	// *** Script access
 
 	// Eval a scripted function
-	bool							scriptEvaluate (char *script, void *out, TNelScriptValueType type);
+	static bool						scriptEvaluate (const char *script, void *out, TNelScriptValueType type);
 
 	// *** Appdata access
 
@@ -549,6 +575,9 @@ public:
 	// Set an appData VertexProgram WindTree.
 	static void						setScriptAppDataVPWT (Animatable *node, const CVPWindTreeAppData &apd);
 
+	// private func : this convert a polygon expressed as a max mesh into a list of ordered vectors
+	static void						maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVector> &dest);
+
 
 	// ********************
 	// *** Export Vegetable
@@ -560,6 +589,14 @@ public:
 	 * mapBindPos is the pointer of the map of bind pos by bone. Can be NULL if the skeleton is already in the bind pos.
 	 */
 	bool							buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INode& node, TimeValue time);
+
+	// *************
+	// *** Misc  ***
+	// *************
+
+	// get a ptr to max interface
+	Interface					  *getInterface() const { return _Ip; }	
+
 
 private:
 

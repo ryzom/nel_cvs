@@ -203,6 +203,9 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name nel_3dsmax_shared
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name nel_mesh_lib
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -244,6 +247,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name nel_patch_lib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ligo
     End Project Dependency
 }}}
 

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.24 2002/05/15 16:55:55 berenguier Exp $
+ * $Id: mesh.h,v 1.25 2002/06/06 14:38:35 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,7 +97,7 @@ public:
 	{
 		CCorner		Corner[3];
 		sint32		MaterialId;
-
+		sint32      SmoothGroup;
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	};
 

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.54 2002/05/15 16:55:55 berenguier Exp $
+ * $Id: mesh.cpp,v 1.55 2002/06/06 14:38:35 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1439,6 +1439,7 @@ void CMesh::CFace::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	for(int i=0;i<3;++i) 
 		f.serial(Corner[i]);
 	f.serial(MaterialId);
+	f.serial(SmoothGroup);
 }
 
 // ***************************************************************************

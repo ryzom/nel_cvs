@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.23 2001/11/07 10:49:51 vizerie Exp $
+ * $Id: driver.h,v 1.24 2001/11/07 13:08:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -263,6 +263,11 @@ public:
 	/** return true if driver support VertexBufferHard.
 	 */
 	virtual	bool			supportVertexBufferHard() const =0;
+
+
+	/** return How many vertices VertexBufferHard support
+	 */
+	virtual	uint			getMaxVerticesByVertexBufferHard() const =0;
 
 
 	/** Allocate the initial VertexArray Memory. (no-op if !supportVertexBufferHard()).

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.17 2001/11/07 10:51:44 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.18 2001/11/07 13:08:51 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -699,6 +699,13 @@ void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 bool			CDriverGL::supportVertexBufferHard() const
 {
 	return _Extensions.NVVertexArrayRange;
+}
+
+
+// ***************************************************************************
+uint			CDriverGL::getMaxVerticesByVertexBufferHard() const
+{
+	return _Extensions.NVVertexArrayRangeMaxVertex;
 }
 
 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.8 2000/12/20 09:31:54 lecroart Exp $
+# $Id: Makefile.am,v 1.9 2000/12/20 15:20:01 valignat Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -12,12 +12,12 @@ libnelmisc_la_SOURCES = bit_set.cpp class_id.cpp class_registry.cpp \
                         debug.cpp displayer.cpp event_emitter.cpp \
                         event_listener.cpp event_server.cpp events.cpp \
                         file.cpp i18n.cpp log.cpp matrix.cpp mem_stream.cpp \
-                        plane.cpp quat.cpp rgba.cpp smart_ptr.cpp stream.cpp \
+                        mutex.cpp path.cpp plane.cpp quat.cpp rgba.cpp \
+                        smart_ptr.cpp stream.cpp task_manager.cpp \
                         time_nl.cpp vector.cpp vector_h.cpp vectord.cpp \
-                        path.cpp
+                        win_event_emitter.cpp win_thread.cpp 
 
 libnelmisc_la_LIBADD  = config_file/libconfig.la
-
 
 
 # End of Makefile.am

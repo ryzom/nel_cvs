@@ -9,6 +9,7 @@ Requirements
       - FreeType 2     <URL:http://freetype.sourceforge.net/>   (NeL 3D)
       - OpenAL         <URL:http://www.openal.org/>             (NeL Sound)
       - Python 1.5     <URL:http://www.python.org/>             (NeL AI)
+      - Direct Input 8 <URL:http://www.microsoft.com/directx>   (NeL MISC, Windows version)
 
    STLPort needs to be compiled. NeL is using the SGI iostreams and it require
    the STLPort compilation and a linking of NeL with the STLPort library.
@@ -46,6 +47,10 @@ Requirements
    using. We don't know if NeL will work with other (older or more recent)
    versions of these softwares or libraries. You are welcome to help us
    to define more precisely these informations ;-)
+
+   For windows users, note that you don't need to have the Direct Input (verion 8) dll 
+   on your system for NeL to run, but in this case, there will be no joystick support, and
+   no low level access to keyboard and mouse. Anyway, you need dinput.lib to compile
 
 
 Compilation
@@ -101,6 +106,15 @@ Compilation
 
          - Add the FreeType library directory to the "Library Files" category.
            ex: D:/freetype-2.0/obj
+
+	- For DirectX8 : install the SDK, then setup your directories as follow :
+		mssdkdir/include/dx8/
+		mssdkdir/lib
+          Add mssdkdir/include to the "Include Files" category.
+          Add mssdkdir/lib to the "Library Files" category.
+          Make sure these appear before visual includes, as an older version of directX
+	  may be present in Visual C++ headers.
+	
 
       Open the workspace file "nel.dsw" (in the menu [File -> Workspace]).
 

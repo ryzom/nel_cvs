@@ -1,7 +1,7 @@
 /** \file email.cpp
  * send email
  *
- * $Id: alarms.cpp,v 1.2 2003/01/09 17:07:45 lecroart Exp $
+ * $Id: alarms.cpp,v 1.3 2003/01/10 16:10:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,8 @@ namespace NLNET {
 
 vector<CAlarm> Alarms;
 
+// check alarms every 5 seconds
+const uint32 AlarmCheckDelay = 5;
 
 //
 // Callbacks
@@ -100,6 +102,13 @@ void updateAlarms ()
 	CLog logDisplayVars;
 	CLightMemDisplayer mdDisplayVars;
 	logDisplayVars.addDisplayer (&mdDisplayVars);
+	
+	static uint32 lastCheck = 0;
+
+	if (CTime::getSecondsSince1970()<lastCheck+AlarmCheckDelay)
+		return;
+
+	lastCheck = CTime::getSecondsSince1970();
 
 	for (uint i = 0; i < Alarms.size(); )
 	{
@@ -194,7 +203,7 @@ void setAlarms (const vector<string> &alarms)
 		nlinfo ("path %s name %s -> %s", alarms[i].c_str(), name.c_str(), alarms[i+1].c_str());
 		if (ICommand::exists(name))
 		{
-			Alarms.push_back(CAlarm(name, atoi(alarms[i+1].c_str()), alarms[i+2]=="lt"));
+			Alarms.push_back(CAlarm(name, atoi(alarms[i+1].c_str()), alarms[i+2]=="gt"));
 		}
 	}
 }

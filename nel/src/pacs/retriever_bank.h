@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.8 2003/03/13 15:02:05 corvazier Exp $
+ * $Id: retriever_bank.h,v 1.9 2003/03/24 16:38:54 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,6 +142,17 @@ public:
 			NLMISC::COFile	f(NLMISC::CPath::standardizePath(path) + bankPrefix + "_" + NLMISC::toString(i) + ".lr");
 			f.serial(_Retrievers[i]);
 		}
+	}
+
+	/// Write separate retrievers using dynamic filename convention
+	void								saveShortBank(const std::string &path, const std::string &bankPrefix)
+	{
+		NLMISC::COFile	f(NLMISC::CPath::standardizePath(path) + "short_" + bankPrefix + ".rbank");
+
+		f.serialVersion(0);
+
+		uint32	num = _Retrievers.size();
+		f.serial(num);
 	}
 
 	/// @name Dynamic retrieve loading

@@ -1,7 +1,7 @@
 /** \file direction_edit.cpp
  * a dialog to choose a direction (normalized vector).
  *
- * $Id: direction_edit.cpp,v 1.2 2001/09/17 14:01:59 vizerie Exp $
+ * $Id: direction_edit.cpp,v 1.3 2001/12/18 18:36:18 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,5 +227,5 @@ void CDirectionEdit::OnClose()
 {	
 	nlassert(_Parent);	
 	CDialog::OnClose();
-	_Parent->childPopupDestroyed(this);
+	_Parent->childPopupClosed(this);
 }

@@ -2,7 +2,7 @@
  * a dialog to choose a direction (normalized vector). It gives several choices, or allow 
  * to call a more complete dialog (CDirectionEdit)
  *
- * $Id: direction_attr.h,v 1.2 2001/09/17 14:01:59 vizerie Exp $
+ * $Id: direction_attr.h,v 1.3 2001/12/18 18:36:18 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,7 +78,7 @@ protected:
 	class CDirectionEdit *_DirectionDlg;
 
 	// inherited from IPopupNotify
-	void childPopupDestroyed(CWnd *);
+	void childPopupClosed(CWnd *);
 	
 
 	IPSWrapper<NLMISC::CVector> *_Wrapper;

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.30 2003/01/03 17:06:43 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.31 2003/01/03 17:42:47 coutelas Exp $
  *
  */
 
@@ -48,6 +48,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <signal.h>
+#include <errno.h>
 #endif
 
 #include <string>

@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.21 2003/03/03 12:58:57 boucher Exp $
+ * $Id: load_form.h,v 1.22 2003/03/20 15:41:14 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,11 +108,11 @@
  * \param container the map that will be filled by this function
  */
 template <class T>
-void loadForm (const std::string &sheetFilter, const std::string &packedFilename, std::map<NLMISC::CSheetId, T> &container, bool updatePackedSheet=true)
+void loadForm (const std::string &sheetFilter, const std::string &packedFilename, std::map<NLMISC::CSheetId, T> &container, bool updatePackedSheet=true, bool errorIfPackedSheetNotGood=true)
 {
 	std::vector<std::string> vs;
 	vs.push_back(sheetFilter);
-	loadForm(vs, packedFilename, container, updatePackedSheet);
+	loadForm(vs, packedFilename, container, updatePackedSheet, errorIfPackedSheetNotGood);
 }
 
 /** This function is used to load values from georges sheet in a quick way.
@@ -121,7 +121,7 @@ void loadForm (const std::string &sheetFilter, const std::string &packedFilename
  * \param container the map that will be filled by this function
  */
 template <class T>
-void loadForm (const std::vector<std::string> &sheetFilters, const std::string &packedFilename, std::map<NLMISC::CSheetId, T> &container, bool updatePackedSheet=true)
+void loadForm (const std::vector<std::string> &sheetFilters, const std::string &packedFilename, std::map<NLMISC::CSheetId, T> &container, bool updatePackedSheet=true, bool errorIfPackedSheetNotGood=true)
 {
 	// check the extension (i know that file like "foo.packed_sheetsbar" will be accepted but this check is enough...)
 	nlassert (packedFilename.find (".packed_sheets") != std::string::npos);
@@ -157,9 +157,21 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	}
 	catch (NLMISC::Exception &e)
 	{
-		nlinfo ("loadForm(): Exception during reading the packed file, I'll reconstruct it (%s)", e.what());
 		// clear the container because it can contains partially loaded sheet so we must clean it before continue
 		container.clear ();
+		if (!updatePackedSheet)
+		{
+			if (errorIfPackedSheetNotGood)
+				nlerror ("loadForm(): Exception during reading the packed file and can't reconstruct them (%s)", e.what());
+			else
+				nlwarning ("loadForm(): Exception during reading the packed file and can't reconstruct them (%s)", e.what());
+
+			return;
+		}
+		else
+		{
+			nlinfo ("loadForm(): Exception during reading the packed file, I'll reconstruct it (%s)", e.what());
+		}
 	}
 	NLMISC::CIFile::setVersionException(olde, newe);
 
@@ -309,11 +321,11 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
  * \param container the map that will be filled by this function
  */
 template <class T>
-void loadForm (const std::string &sheetFilter, const std::string &packedFilename, std::map<std::string, T> &container, bool updatePackedSheet=true)
+void loadForm (const std::string &sheetFilter, const std::string &packedFilename, std::map<std::string, T> &container, bool updatePackedSheet=true, bool errorIfPackedSheetNotGood=true)
 {
 	std::vector<std::string> vs;
 	vs.push_back(sheetFilter);
-	loadForm(vs, packedFilename, container, updatePackedSheet);
+	loadForm(vs, packedFilename, container, updatePackedSheet, errorIfPackedSheetNotGood);
 }
 
 
@@ -323,7 +335,7 @@ void loadForm (const std::string &sheetFilter, const std::string &packedFilename
  * \param container the map that will be filled by this function
  */
 template <class T>
-void loadForm (const std::vector<std::string> &sheetFilters, const std::string &packedFilename, std::map<std::string, T> &container, bool updatePackedSheet=true)
+void loadForm (const std::vector<std::string> &sheetFilters, const std::string &packedFilename, std::map<std::string, T> &container, bool updatePackedSheet=true, bool errorIfPackedSheetNotGood=true)
 {
 	// check the extension (i know that file like "foo.packed_sheetsbar" will be accepted but this check is enough...)
 	nlassert (packedFilename.find (".packed_sheets") != std::string::npos);
@@ -359,9 +371,21 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	}
 	catch (NLMISC::Exception &e)
 	{
-		nlinfo ("loadForm(): Exception during reading the packed file, I'll reconstruct it (%s)", e.what());
 		// clear the container because it can contains partially loaded sheet so we must clean it before continue
 		container.clear ();
+		if (!updatePackedSheet)
+		{
+			if (errorIfPackedSheetNotGood)
+				nlerror ("loadForm(): Exception during reading the packed file and can't reconstruct them (%s)", e.what());
+			else
+				nlwarning ("loadForm(): Exception during reading the packed file and can't reconstruct them (%s)", e.what());
+
+			return;
+		}
+		else
+		{
+			nlinfo ("loadForm(): Exception during reading the packed file, I'll reconstruct it (%s)", e.what());
+		}
 	}
 
 	NLMISC::CIFile::setVersionException(olde, newe);

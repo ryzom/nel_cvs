@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.25 2003/05/26 09:04:01 berenguier Exp $
+ * $Id: transform_shape.h,v 1.26 2003/08/08 16:55:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -151,6 +151,9 @@ public:
 
 	// Lighting: get the center of the AABBox of the model by default
 	virtual	void		getLightHotSpotInWorld(CVector &modelPos, float &modelRadius) const;
+	// return the contribution of lights (for traverseRender()).
+	CLightContribution	&getLightContribution() { return _LightContribution;}
+
 
 protected:
 	/// Constructor
@@ -171,9 +174,6 @@ private:
 
 	float			_NumTrianglesAfterLoadBalancing;
 
-
-	// return the contribution of lights (for traverseRender()).
-	CLightContribution	&getLightContribution() {return _LightContribution;}
 
 private:
 	/* The Activated lightContribution, and localAttenuation setup for this instance.

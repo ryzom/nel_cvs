@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.42 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: transform.h,v 1.43 2003/08/08 16:55:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -366,6 +366,11 @@ public:
 	/** return true if the current light contribution of this model use a MergedPointLight
 	 */
 	bool				useMergedPointLight() const {return _LightContribution.UseMergedPointLight;}
+
+	/** Return the current light contribution of this model
+	  */
+	const CLightContribution &getLightContribution() const { return _LightContribution; }	
+	
 
 	/** get the HotSpot of the model for Light computation. For models with global attenuation, this is
 	 *	the point taken for attenuation computes. NB: should return the current world position.

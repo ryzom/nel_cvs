@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.17 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: vegetable.cpp,v 1.18 2003/02/19 16:17:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -343,8 +343,16 @@ void	CVegetable::generateInstance(CVegetableInstanceGroup *ig, const NLMISC::CMa
 	Color.eval(seed, materialColor);
 	// modulate with user
 	CRGBAF		ambient, diffuse;
-	ambient= modulateAmbientColor * materialColor;
-	diffuse= modulateDiffuseColor * materialColor;
+	if(_VegetableShape && _VegetableShape->Lighted)
+	{
+		ambient= modulateAmbientColor * materialColor;
+		diffuse= modulateDiffuseColor * materialColor;
+	}
+	else
+	{
+		ambient= materialColor;
+		diffuse= materialColor;
+	}
 
 	// Generate a bendFactor
 	float	bendFactor= BendFactor.eval(seed);

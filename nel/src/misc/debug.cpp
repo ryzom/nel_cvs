@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.68 2003/04/16 13:44:27 lecroart Exp $
+ * $Id: debug.cpp,v 1.69 2003/04/16 13:52:55 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -177,7 +177,7 @@ void initDebug2 (bool logInFile)
 
 		// put the message box only in release for error
 
-		if (TrapCrashInDebugger || !IsDebuggerPresent ())
+		if (DefaultMsgBoxDisplayer)
 		{
 			AssertLog->addDisplayer (DefaultMsgBoxDisplayer);
 			ErrorLog->addDisplayer (DefaultMsgBoxDisplayer);

@@ -25,7 +25,7 @@
  *      implementation only works with messages with a length that is
  *      a multiple of the size of an 8-bit character.
  *
- * $Id: sha1.cpp,v 1.2 2003/02/19 18:09:15 lecroart Exp $
+ * $Id: sha1.cpp,v 1.3 2003/02/20 17:12:13 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -199,7 +199,7 @@ CHashKey getSHA1(const string &filename)
 	{
 		//bs = (int)fread (buffer, 1, bufferSize, fp);
 		n = std::min (bufferSize, fs-read);
-		nlinfo ("read %d bytes", n);
+		//nlinfo ("read %d bytes", n);
 		ifile.serialBuffer((uint8 *)buffer, n);
 
 		err = SHA1Input(&sha, buffer, n);

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.53 2002/05/17 13:46:24 chafik Exp $
+ * $Id: agent_script.h,v 1.54 2002/06/06 09:26:56 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,6 +157,9 @@ namespace NLAIAGENT
 	protected:			
 		///Table of static compoments.
 		IObjectIA **_Components;
+		void createComponents(std::list<IObjectIA *> &);
+
+
 		///Nomber of static compoment.
 		int _NbComponents;
 		///Vector for store agent operator.

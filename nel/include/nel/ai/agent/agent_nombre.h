@@ -1,7 +1,7 @@
 /** \file agent_nombre.h
  * template class for nomber manipulation.
  *
- * $Id: agent_nombre.h,v 1.15 2002/05/07 15:26:49 robert Exp $
+ * $Id: agent_nombre.h,v 1.16 2002/06/06 09:26:56 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #ifndef NL_AGENT_NOMBRE_H
 #define NL_AGENT_NOMBRE_H
 
-//#include "nel/ai/agent/agent_object.h"
+//#include "nel/ai/agent/agent_object.h" 
 #include "nel/ai/logic/boolval.h"
 #include "nel/misc/vector.h"
 

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.119 2002/06/06 09:12:14 chafik Exp $
+ * $Id: agent_script.cpp,v 1.120 2002/06/06 09:27:16 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -409,15 +409,16 @@ namespace NLAIAGENT
 
 		_iComponents = 0;
 
+		_AgentManager = manager;
 		// Creates the static components array
-		_NbComponents = components.size();
+//		_NbComponents = components.size();
+/*
 		if ( _NbComponents )
 		{
 			_Components = new IObjectIA *[ _NbComponents ];
 			std::list<IObjectIA *>::iterator it_c = components.begin();
 			int id_c = 0;
 			//sint32 nb_scripted = 0;
-			_AgentManager = manager;
 			while ( it_c != components.end() )
 			{
 				IObjectIA *o = (IObjectIA *)*it_c;
@@ -440,6 +441,8 @@ namespace NLAIAGENT
 			_Components =NULL;
 			_AgentManager = manager;
 		}
+		*/
+		createComponents( components );
 	}	
 
 	CAgentScript::~CAgentScript()
@@ -2258,5 +2261,34 @@ namespace NLAIAGENT
 			}
 		}		
 		return NLAIAGENT::tQueue();
+	}
+
+	void CAgentScript::createComponents(std::list<IObjectIA *> &components)
+	{
+		_NbComponents = components.size();
+		if ( _NbComponents )
+		{
+			_Components = new IObjectIA *[ _NbComponents ];
+			std::list<IObjectIA *>::iterator it_c = components.begin();
+			int id_c = 0;
+			while ( it_c != components.end() )
+			{
+				IObjectIA *o = (IObjectIA *)*it_c;
+				_Components[id_c] = o;
+
+				uint b = NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tAgent;
+				const NLAIC::CTypeOfObject &t = o->getType();
+
+				if((t.getValue() & b) == b)
+				{
+					((CAgentScript *)o)->setParent( (const IWordNumRef *) *this);
+				}
+
+				it_c++;
+				id_c++;
+			}		
+		}
+		else
+			_Components = NULL;
 	}
 }

@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.19 2001/01/17 10:16:03 lecroart Exp $
+ * $Id: log.cpp,v 1.20 2001/01/23 10:39:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,7 +136,7 @@ char *getFilename( char *lfilename )
 void CLog::displayNL( const char *format, ... )
 {
 	// Build the string
-	char cstring [1024]; // WARNING: buffer overflow hazard !
+	char cstring [NLMISC_DBG_MAXSTRING]; // WARNING: buffer overflow hazard !
 
 	va_list args;
 	va_start( args, format );
@@ -153,7 +153,7 @@ void CLog::displayNL( const char *format, ... )
 void CLog::display( const char *format, ... )
 {
 	// Build the string
-	char cstring [1024]; // WARNING: buffer overflow hazard !
+	char cstring [NLMISC_DBG_MAXSTRING]; // WARNING: buffer overflow hazard !
 
 	va_list args;
 	va_start( args, format );
@@ -201,7 +201,7 @@ void CLog::display( const char *format, ... )
 void CLog::displayRawNL( const char *format, ... )
 {
 	// Build the string
-	char cstring [1024]; // WARNING: buffer overflow hazard !
+	char cstring [NLMISC_DBG_MAXSTRING]; // WARNING: buffer overflow hazard !
 	va_list args;
 	va_start( args, format );
 	vsprintf( cstring, format, args );
@@ -222,7 +222,7 @@ void CLog::displayRawNL( const char *format, ... )
 void CLog::displayRaw( const char *format, ... )
 {
 	// Build the string
-	char cstring [1024]; // WARNING: buffer overflow hazard !
+	char cstring [NLMISC_DBG_MAXSTRING]; // WARNING: buffer overflow hazard !
 	va_list args;
 	va_start( args, format );
 	vsprintf( cstring, format, args );

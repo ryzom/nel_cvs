@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.24 2001/01/17 10:16:03 lecroart Exp $
+ * $Id: debug.cpp,v 1.25 2001/01/23 10:39:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,7 @@ CStdDisplayer sd;
 void nlFatalError (const char *format, ...)
 {
 	// Build the string
-	char cstring [1024];
+	char cstring [NLMISC_DBG_MAXSTRING];
 
 	va_list args;
 	va_start( args, format );
@@ -70,7 +70,7 @@ void nlFatalError (const char *format, ...)
 void nlError (const char *format, ...)
 {
 	// Build the string
-	char cstring [1024];
+	char cstring [NLMISC_DBG_MAXSTRING];
 
 	va_list args;
 	va_start( args, format );

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.20 2000/12/06 13:01:09 cado Exp $
+ * $Id: debug.h,v 1.21 2001/01/23 10:39:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,9 @@
 
 namespace NLMISC
 {
+
+
+#define	NLMISC_DBG_MAXSTRING	4096
 
 /* Enternals */
 

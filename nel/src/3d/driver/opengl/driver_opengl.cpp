@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.60 2001/01/23 09:26:06 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.61 2001/01/23 10:39:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,18 @@
 
 using namespace std;
 using namespace NLMISC;
+
+
+
+#ifdef NL_OS_WINDOWS
+// dllmain::
+BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
+{
+	InitDebug();
+	return true;
+}
+#endif
+
 
 namespace NL3D
 {

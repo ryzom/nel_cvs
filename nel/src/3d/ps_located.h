@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.16 2002/02/15 17:06:47 vizerie Exp $
+ * $Id: ps_located.h,v 1.17 2002/02/20 11:13:33 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,6 +73,12 @@ const uint32 DefaultMaxLocatedInstance = 1; // the default value for a located c
 
 struct CPSCollisionInfo
 {
+
+	float   TimeSliceRatio; /** Tells how mush of this time step is being used.
+							   * This is usually 1.0, unless. The object was just emitted.
+							   * In this case, this can range from 0 to 1 (When several emission
+							   * occured within the same time step)
+							   */
 	// distance to the collisionner along the speed vector
 	float   dist;	
 	// new pos and speed, valid if a collision occured
@@ -90,7 +96,8 @@ struct CPSCollisionInfo
 	}
 	void reset(void)
 	{
-		dist = -1;
+		dist			= -1;
+		TimeSliceRatio = 1.0f;
 	}
 
 	 void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
@@ -380,6 +387,8 @@ public:
 
 	void releaseCollisionInfo(void);
 
+	/// test wether this located has collision infos
+	bool hasCollisionInfos() const { return _CollisionInfo != NULL; }
 
 	/// get a ref to the collision infos
 	TPSAttribCollisionInfo &getCollisionInfo(void)
@@ -478,10 +487,10 @@ public:
 	bool		 isParametricMotionEnabled(void) const { return _ParametricMotion;}
 
 	/// inherited from CParticlesystemProcess perform parametric motion for this located to reach the given date
-	virtual void performParametricMotion(TAnimationTime date, TAnimationTime ellapsedTime);
+	virtual void performParametricMotion(TAnimationTime date, TAnimationTime ellapsedTime, TAnimationTime realEllapsedTime);
 
 	/// make the particle older of the given amount. Should not be called directly, as it is called by the system during its step method
-	void updateLife(TAnimationTime ellapsedTime);
+	virtual void updateLife(TAnimationTime ellapsedTime);
 
 	/** Compute the trajectory of the given located.
 	  * NB : only works with object that have parametric trajectories
@@ -773,7 +782,7 @@ public:
 
 
 	/// process one pass for this bindable
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime) = 0;
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt) = 0;
 
 
 	/** can be used by located bindable that have located as targets (emitter, collision zone, forces)

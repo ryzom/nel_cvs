@@ -1,7 +1,7 @@
 /** \file u_transformable.h
  * <File description>
  *
- * $Id: u_transformable.h,v 1.1 2001/04/13 16:39:55 berenguier Exp $
+ * $Id: u_transformable.h,v 1.2 2001/06/12 11:50:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,8 +82,12 @@ public:
 	virtual	void			setTransformMode(TTransformMode mode, CMatrix::TRotOrder ro= CMatrix::ZXY)=0;
 	/// Work only in Rot* mode(nlassert).
 	virtual	void			setPos(const CVector &pos)=0;
+	/// Work only in Rot* mode(nlassert).
+	void					setPos(float px, float py, float pz) {setPos(CVector(px, py, pz));}
 	/// Work only in RotEuler mode(nlassert).
 	virtual	void			setRotEuler(const CVector &rot)=0;
+	/// Work only in RotEuler mode(nlassert).
+	void					setRotEuler(float rx, float ry, float rz) {setRotEuler(CVector(rx, ry, rz));}
 	/// Work only in RotQuat mode (nlassert).
 	virtual	void			setRotQuat(const CQuat &quat)=0;
 	/** Work only in RotQuat mode (nlassert). 
@@ -97,7 +101,11 @@ public:
 	/// Work only in Rot* mode (nlassert).
 	virtual	void			setScale(const CVector &scale)=0;
 	/// Work only in Rot* mode (nlassert).
+	void					setScale(float sx, float sy, float sz) {setScale(CVector(sx, sy, sz));}
+	/// Work only in Rot* mode (nlassert).
 	virtual	void			setPivot(const CVector &pivot)=0;
+	/// Work only in Rot* mode (nlassert).
+	void					setPivot(float px, float py, float pz) {setPivot(CVector(px, py, pz));}
 
 	/// Work only in DirecTMatrix mode (nlassert).
 	virtual	void			setMatrix(const CMatrix &mat)=0;

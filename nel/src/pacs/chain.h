@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.3 2001/07/09 08:26:26 legros Exp $
+ * $Id: chain.h,v 1.4 2001/08/06 12:12:16 valignat Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -194,9 +194,6 @@ protected:
 	uint8								_RightLoop, _RightLoopIndex;
 
 protected:
-	friend class CRetrievableSurface;
-	friend class CLocalRetriever;
-
 	/// Build the whole surface from a vector of CVector and the left and right surfaces.
 	void								make(const std::vector<NLMISC::CVector> &vertices, sint32 left, sint32 right, std::vector<COrderedChain> &chains, uint16 thisId,
 											 std::vector<COrderedChain3f> &fullChains);

@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.11 2001/09/26 16:04:12 corvazier Exp $
+ * $Id: export_skinning.cpp,v 1.12 2001/11/05 09:30:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -151,7 +151,7 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 	Matrix3 localTM (TRUE);
 
 	// Root must be exported with Identity because path are setuped interactively in the root of the skeleton
-	if ((id!=0)||view)
+	if (id!=0)
 		getLocalMatrix (localTM, node, time);
 	else
 		int thisIsABodyControl=0;

@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.16 2001/09/18 14:41:24 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.17 2001/11/05 09:30:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -301,7 +301,6 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 				// Add tracks
 				CExportNel::addAnimation (*anim, *pNode, (CExportNel::getName (*pNode)+".").c_str(), &ip, true, true);
-				
 			}
 			ProgBar.updateProgressBar (nNbMesh);
 			if( ProgBar.isCanceledProgressBar() )

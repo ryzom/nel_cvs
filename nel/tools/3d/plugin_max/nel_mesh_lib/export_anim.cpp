@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.20 2001/10/16 14:57:07 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.21 2001/11/05 09:30:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -230,7 +230,7 @@ void CExportNel::addParticleSystemTracks(CAnimation& animation, INode& node, con
 // --------------------------------------------------
 
 void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* parentName, Interface *ip,
-								std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool root, bool view)
+								std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool root, bool view, bool bodyBiped)
 {
 	// Tmp track*
 	ITrack *pTrack;
@@ -255,7 +255,7 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 		if (c)
 		{
 			// Build the track
-			pTrack=buildATrack (animation, *c, typeScale, node, desc, ip, previousKeys, previousKeysSampled);
+			pTrack=buildATrack (animation, *c, typeScale, node, desc, ip, previousKeys, previousKeysSampled, bodyBiped);
 			if (pTrack)
 			{
 				name=parentName+std::string (ITransformable::getScaleValueName());
@@ -277,7 +277,7 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 		c=transform->GetRotationController ();
 		if (c)
 		{
-			pTrack=buildATrack (animation, *c, typeRotation, node, desc, ip, previousKeys, previousKeysSampled);
+			pTrack=buildATrack (animation, *c, typeRotation, node, desc, ip, previousKeys, previousKeysSampled, bodyBiped);
 			if (pTrack)
 			{
 				// Choose the good name for this track
@@ -300,7 +300,7 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 		c=transform->GetPositionController ();
 		if (c)
 		{
-			pTrack=buildATrack (animation, *c, typePos, node, desc, ip, previousKeys, previousKeysSampled);
+			pTrack=buildATrack (animation, *c, typePos, node, desc, ip, previousKeys, previousKeysSampled, bodyBiped);
 			if (pTrack)
 			{
 				// Choose the good name for this track
@@ -318,7 +318,7 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 		else
 		{
 			// try to find a biped controller for position
-			pTrack=buildATrack (animation, *transform, typePos, node, desc, ip, previousKeys, previousKeysSampled);
+			pTrack=buildATrack (animation, *transform, typePos, node, desc, ip, previousKeys, previousKeysSampled, bodyBiped);
 			if (pTrack)
 			{
 				// Choose the good name for this track
@@ -341,7 +341,7 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 		c=transform->GetRollController ();
 		if (c)
 		{
-			pTrack=buildATrack (animation, *c, typeFloat, node, desc, ip, previousKeys, previousKeysSampled);
+			pTrack=buildATrack (animation, *c, typeFloat, node, desc, ip, previousKeys, previousKeysSampled, bodyBiped);
 			if (pTrack)
 			{
 				name=parentName+std::string (CCamera::getRollValueName());
@@ -497,8 +497,11 @@ void CExportNel::addBipedNodeTrack (CAnimation& animation, INode& node, const ch
 		std::set<TimeValue> keysSampled=previousKeys;
 		std::set<TimeValue> keys;
 
+		// Body biped ?
+		bool bodyBiped = (transform->ClassID() == BIPBODY_CONTROL_CLASS_ID);
+
 		// Animation in subkeyframes ?
-		if (transform->ClassID() == BIPBODY_CONTROL_CLASS_ID)
+		if (bodyBiped)
 		{
 			addBipedKeyTime (*transform, keys, keysSampled, true, ip, getName (*(INode*)&node).c_str());
 		}
@@ -511,13 +514,13 @@ void CExportNel::addBipedNodeTrack (CAnimation& animation, INode& node, const ch
 		std::string name;
 		
 		// Choose the good name for this track
-		if ((!root)||view)
+		if (!root)
 			name=parentName + getName (node) + ".";
 		else
 			name=parentName;
 
 		// Export keyframes
-		addNodeTracks (animation, node, name.c_str(), ip, &keys, &keysSampled, root, view);
+		addNodeTracks (animation, node, name.c_str(), ip, &keys, &keysSampled, root, view, bodyBiped);
 
 		// Restaure the non uniform scale
 		BipIface->RemoveNonUniformScale(0);
@@ -1478,7 +1481,7 @@ NL3D::CAnimationTime	CExportNel::convertTime (TimeValue time)
 
 // Build a NeL track with a 3dsmax controler.
 ITrack* CExportNel::buildATrack (CAnimation& animation, Control& c, TNelValueType type, Animatable& node, const CExportDesc& desc, Interface *ip,
-								 std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled)
+								 std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool bodyBiped)
 {
 	// What kind of controler?
 
@@ -1692,7 +1695,7 @@ ITrack* CExportNel::buildATrack (CAnimation& animation, Control& c, TNelValueTyp
 
 	// No keyframer controler
 	if ((c.ClassID() == BIPSLAVE_CONTROL_CLASS_ID) ||
-		(c.ClassID() == BIPBODY_CONTROL_CLASS_ID))
+		bodyBiped)
 	{
 		NL3D::ITrack	*doomy;
 
@@ -1707,18 +1710,23 @@ ITrack* CExportNel::buildATrack (CAnimation& animation, Control& c, TNelValueTyp
 		}
 	}
 
-	if (c.ClassID() == BIPBODY_CONTROL_CLASS_ID)
+	if (bodyBiped)
 	{
 		NL3D::ITrack	*doomy;
 
 		// For position
 		if (type==typePos)
 		{
+			// 
 			// Create key set
 			if (previousKeys&&previousKeysSampled)
 			{
 				createBipedKeyFramer (doomy, pTrack, false, true, ticksPerSecond, range, oRT, desc, *(INode*)&node, ip,
 										previousKeys, previousKeysSampled);
+			}
+			else
+			{
+				MessageBox (NULL, "Warning: no pos track exported!", "Tmp NEL", MB_OK|MB_ICONEXCLAMATION);
 			}
 		}
 	}

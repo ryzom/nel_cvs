@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.43 2001/10/29 09:35:56 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.44 2001/11/05 09:30:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -443,7 +443,7 @@ void CObjectViewer::initUI (HWND parent)
 
 // ***************************************************************************
 
-void CObjectViewer::addTransformation (CMatrix &current, CAnimation *anim, float begin, float end, ITrack *posTrack, ITrack *rotquatTrack)
+void CObjectViewer::addTransformation (CMatrix &current, CAnimation *anim, float begin, float end, ITrack *posTrack, ITrack *rotquatTrack, bool removeLast)
 {
 	// In place ?
 	if (_AnimationDlg->Inplace)
@@ -454,6 +454,7 @@ void CObjectViewer::addTransformation (CMatrix &current, CAnimation *anim, float
 	else
 	{
 		// Normalize the mt
+		CMatrix normalized;
 		CVector I = current.getI ();
 		CVector J = current.getJ ();
 		I.z = 0;
@@ -463,7 +464,6 @@ void CObjectViewer::addTransformation (CMatrix &current, CAnimation *anim, float
 		K.normalize ();
 		I = J^K;
 		I.normalize ();
-		CMatrix normalized;
 		normalized.setRot (I, J, K);
 		normalized.setPos (current.getPos ());
 		current = normalized;
@@ -486,13 +486,8 @@ void CObjectViewer::addTransformation (CMatrix &current, CAnimation *anim, float
 			posTrack->interpolate (end, posEnd);
 		}
 
-		// Remove the init rotation and position
-		normalized.setRot (rotStart);
-		normalized.setPos (posStart);
-		normalized.invert ();
-		current *= normalized;
-
 		// Add the final rotation and position
+		normalized.identity ();
 		normalized.setRot (rotEnd);
 		normalized.setPos (posEnd);
 
@@ -501,6 +496,16 @@ void CObjectViewer::addTransformation (CMatrix &current, CAnimation *anim, float
 			current *= normalized;
 		else
 			current = normalized;
+
+		if (removeLast)
+		{
+			// Remove the init rotation and position
+			normalized.identity ();
+			normalized.setRot (rotStart);
+			normalized.setPos (posStart);
+			normalized.invert ();
+			current *= normalized;
+		}
 	}
 }
 
@@ -510,118 +515,122 @@ void CObjectViewer::setupPlaylist (float time)
 {
 	// Update animation dlg
 
-	// A playlist
-	CAnimationPlaylist playlist;
-
-	// Empty with playlist
-	for (uint i=0; i<CChannelMixer::NumAnimationSlot; i++)
-	{
-		// Empty slot
-		playlist.setAnimation (i, CAnimationPlaylist::empty);
-	}
-
-	// Index choosed
-	uint choosedIndex = 0xffffffff;
-
-	// Current matrix
-	CMatrix current;
-	current.identity ();
-
-	// Track here
-	bool there = false;
-
 	// Some animation in the list ?
 	if (_AnimationSetDlg->PlayList.GetCount()>0)
 	{
-		// Current animation
-		CAnimation *anim=_AnimationSet.getAnimation (_AnimationSetDlg->PlayList.GetItemData (0));
-		ITrack *posTrack = (ITrack *)anim->getTrackByName ("pos");
-		ITrack *rotquatTrack = (ITrack *)anim->getTrackByName ("rotquat");
-		there = posTrack || rotquatTrack;
-
-		// Accumul time
-		float startTime=0;
-		float endTime=anim->getEndTime()-anim->getBeginTime();
-
-		// Animation index
-		int index = 0;
-
-		// Get animation used in the list
-		while (time>=endTime)
+		// Gor each object
+		uint i;
+		for (i=0; i<_ChannelMixer.size(); i++)
 		{
-			// Add the transformation
-			addTransformation (current, anim, anim->getBeginTime(), anim->getEndTime(), posTrack, rotquatTrack);
+			// A playlist
+			CAnimationPlaylist playlist;
 
-			// Next animation
-			index++;
-			if (index<_AnimationSetDlg->PlayList.GetCount())
+			// Empty with playlist
+			uint j;
+			for (j=0; j<CChannelMixer::NumAnimationSlot; j++)
 			{
+				// Empty slot
+				playlist.setAnimation (j, CAnimationPlaylist::empty);
+			}
 
-				// Pointer on the animation
-				anim=_AnimationSet.getAnimation (_AnimationSetDlg->PlayList.GetItemData (index));
-				posTrack = (ITrack *)anim->getTrackByName ("pos");
-				rotquatTrack = (ITrack *)anim->getTrackByName ("rotquat");
+			// Index choosed
+			uint choosedIndex = 0xffffffff;
 
-				// Add start time
-				startTime = endTime;
-				endTime = startTime + anim->getEndTime()-anim->getBeginTime();
+			// Track here
+			bool there = false;
 
+			// Current matrix
+			CMatrix	current;
+			current.identity ();
+
+			// Current animation
+			CAnimation *anim=_AnimationSet.getAnimation (_AnimationSetDlg->PlayList.GetItemData (0));
+			ITrack *posTrack = (ITrack *)anim->getTrackByName ((_ListShapeBaseName[i]+"pos").c_str());
+			ITrack *rotquatTrack = (ITrack *)anim->getTrackByName ((_ListShapeBaseName[i]+"rotquat").c_str());
+			there = posTrack || rotquatTrack;
+
+			// Accumul time
+			float startTime=0;
+			float endTime=anim->getEndTime()-anim->getBeginTime();
+
+			// Animation index
+			int index = 0;
+
+			// Get animation used in the list
+			while (time>=endTime)
+			{
+				// Next animation
+				index++;
+				if (index<_AnimationSetDlg->PlayList.GetCount())
+				{
+					// Add the transformation
+					addTransformation (current, anim, anim->getBeginTime(), anim->getEndTime(), posTrack, rotquatTrack, true);
+
+					// Pointer on the animation
+					anim=_AnimationSet.getAnimation (_AnimationSetDlg->PlayList.GetItemData (index));
+					posTrack = (ITrack *)anim->getTrackByName ((_ListShapeBaseName[i]+"pos").c_str());
+					rotquatTrack = (ITrack *)anim->getTrackByName ((_ListShapeBaseName[i]+"rotquat").c_str());
+
+					// Add start time
+					startTime = endTime;
+					endTime = startTime + anim->getEndTime()-anim->getBeginTime();
+
+				}
+				else
+				{
+					// Add the transformation
+					addTransformation (current, anim, anim->getBeginTime(), anim->getEndTime(), posTrack, rotquatTrack, false);
+
+					break;
+				}
+			}
+
+			// Time cropped ?
+			if (index>=_AnimationSetDlg->PlayList.GetCount())
+			{
+				// Yes
+				index--;
+
+				// Good index
+				choosedIndex = _AnimationSetDlg->PlayList.GetItemData (index);
+				anim=_AnimationSet.getAnimation (choosedIndex);
+
+				// End time for last anim
+				startTime = anim->getEndTime () - time;
 			}
 			else
 			{
-				break;
+				// No
+
+				// Add the transformation
+				addTransformation (current, anim, anim->getBeginTime(), anim->getBeginTime() + time - startTime, posTrack, rotquatTrack, false);
+
+				// Good index
+				choosedIndex = _AnimationSetDlg->PlayList.GetItemData (index);
+
+				// Get the animation
+				anim=_AnimationSet.getAnimation (choosedIndex);
+
+				// Final time
+				startTime -= anim->getBeginTime ();
 			}
-		}
 
-		// Time cropped ?
-		if (index>=_AnimationSetDlg->PlayList.GetCount())
-		{
-			// Yes
-			index--;
+			// Set the slot		
+			playlist.setTimeOrigin (0, startTime);
+			playlist.setWrapMode (0, CAnimationPlaylist::Clamp);
+			playlist.setStartWeight (0, 1, 0);
+			playlist.setEndWeight (0, 1, 1);
+			playlist.setAnimation (0, choosedIndex);
 
-			// Good index
-			choosedIndex = _AnimationSetDlg->PlayList.GetItemData (index);
-			anim=_AnimationSet.getAnimation (choosedIndex);
+			// Setup the channel
+			playlist.setupMixer (_ChannelMixer[i], _AnimationDlg->getTime());
 
-			// End time for last anim
-			startTime = anim->getEndTime () - time;
-		}
-		else
-		{
-			// No
-
-			// Add the transformation
-			addTransformation (current, anim, anim->getBeginTime(), anim->getBeginTime() + time - startTime, posTrack, rotquatTrack);
-
-			// Good index
-			choosedIndex = _AnimationSetDlg->PlayList.GetItemData (index);
-
-			// Get the animation
-			anim=_AnimationSet.getAnimation (choosedIndex);
-
-			// Final time
-			startTime -= anim->getBeginTime ();
-		}
-
-		// Set the slot		
-		playlist.setTimeOrigin (0, startTime);
-		playlist.setWrapMode (0, CAnimationPlaylist::Clamp);
-		playlist.setStartWeight (0, 1, 0);
-		playlist.setEndWeight (0, 1, 1);
-		playlist.setAnimation (0, choosedIndex);
-	}
-
-	// Set the channel mixer
-	for (i=0; i<_ChannelMixer.size(); i++)
-	{
-		// Setup the channel
-		playlist.setupMixer (_ChannelMixer[i], _AnimationDlg->getTime());
-
-		// Setup the pos and rot for this shape
-		if (there)
-		{
-			_ListTransformShape[i]->setPos (current.getPos());
-			_ListTransformShape[i]->setRotQuat (current.getRot());
+			// Setup the pos and rot for this shape
+			if (there)
+			{
+				_ListTransformShape[i]->setPos (current.getPos());
+				_ListTransformShape[i]->setRotQuat (current.getRot());
+			}
 		}
 	}
 }
@@ -924,17 +933,23 @@ void CObjectViewer::enableChannels ()
 	_AnimationSetDlg->UpdateData ();
 	bool enable = (_AnimationSetDlg->UseMixer == 1);
 
-	// Get the pos and rot channel id
-	uint posId = _AnimationSet.getChannelIdByName ("pos");
-	uint rotQuatId = _AnimationSet.getChannelIdByName ("rotquat");
-	uint rotEulerId = _AnimationSet.getChannelIdByName ("roteuler");
-
 	// Add all the instance in the channel mixer
 	for (uint i=0; i<_ListTransformShape.size(); i++)
 	{
-		_ChannelMixer[i].enableChannel (posId, enable);
-		_ChannelMixer[i].enableChannel (rotQuatId, enable);
-		_ChannelMixer[i].enableChannel (rotEulerId, enable);
+		// Get the base name
+		std::string &baseName = _ListShapeBaseName[i];
+
+		// Get the pos and rot channel id
+		uint posId = _AnimationSet.getChannelIdByName (baseName+"pos");
+		uint rotQuatId = _AnimationSet.getChannelIdByName (baseName+"rotquat");
+		uint rotEulerId = _AnimationSet.getChannelIdByName (baseName+"roteuler");
+
+		if (posId != CAnimationSet::NotFound)
+			_ChannelMixer[i].enableChannel (posId, enable);
+		if (rotQuatId != CAnimationSet::NotFound)
+			_ChannelMixer[i].enableChannel (rotQuatId, enable);
+		if (rotEulerId != CAnimationSet::NotFound)
+			_ChannelMixer[i].enableChannel (rotEulerId, enable);
 	}
 }
 

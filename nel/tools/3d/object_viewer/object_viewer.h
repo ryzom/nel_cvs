@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.23 2001/10/29 09:35:56 corvazier Exp $
+ * $Id: object_viewer.h,v 1.24 2001/11/05 09:30:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -250,7 +250,7 @@ public:
 	void setupPositions ();
 
 	/// Manage matrix increment
-	void addTransformation (NLMISC::CMatrix &current, NL3D::CAnimation *anim, float begin, float end, NL3D::ITrack *posTrack, NL3D::ITrack *rotquatTrack);
+	void addTransformation (NLMISC::CMatrix &current, NL3D::CAnimation *anim, float begin, float end, NL3D::ITrack *posTrack, NL3D::ITrack *rotquatTrack, bool removeLast);
 
 
 private:

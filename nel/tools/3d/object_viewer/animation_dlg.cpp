@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * implementation file
  *
- * $Id: animation_dlg.cpp,v 1.7 2001/10/16 14:57:07 corvazier Exp $
+ * $Id: animation_dlg.cpp,v 1.8 2001/11/05 09:30:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ CAnimationDlg::CAnimationDlg(class CObjectViewer* main, CWnd* pParent /*=NULL*/)
 	UICurrentFrame = 0;
 	CurrentFrame = 0.0f;
 	Inplace = FALSE;
-	IncPos = FALSE;
+	IncPos = TRUE;
 	//}}AFX_DATA_INIT
 	LastFrame = 0;
 	Playing=false;

@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.14 2001/09/03 10:00:01 besson Exp $
+ * $Id: nel_export.cpp,v 1.15 2001/11/05 09:30:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 #include "../nel_mesh_lib/export_lod.h"
 #include "../nel_patch_lib/rpo.h"
 #include "nel_export_scene.h"
-
+ 
 using namespace NL3D;
 using namespace NLMISC;
 

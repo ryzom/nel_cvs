@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.26 2001/10/10 15:39:11 besson Exp $
+ * $Id: export_nel.h,v 1.27 2001/11/05 09:30:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -232,7 +232,7 @@ public:
 
 	// Build a NeL track with a 3dsmax node and a controller.
 	static NL3D::ITrack*			buildATrack (NL3D::CAnimation& animation, Control& c, TNelValueType type, Animatable& node, const CExportDesc& desc, 
-												Interface *ip, std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled);
+												Interface *ip, std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool bodyBiped=false);
 
 	// Build a Nel bool track from a On/Off max Controller (doesn't work with buildATRack, which require a keyframer interface
 	// , which isn't provided by an on / off controller)
@@ -540,7 +540,8 @@ private:
 
 	// Add tracks for the node
 	static void						addNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip,
-													std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool root, bool view);
+													std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool root, bool view, 
+													bool bodyBiped=false);
 
 	// Add tracks for the node's bones 
 	static void						addBonesTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);

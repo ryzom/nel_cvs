@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.21 2001/10/10 15:39:11 besson Exp $
+ * $Id: export_mesh.cpp,v 1.22 2001/11/05 09:30:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1186,7 +1186,7 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 	if (pMorphMod == NULL)
 		return;
 
-	uint32 i, j, k;
+	uint32 i, j;
 
 	uint32 nNbVertVB = 0;
 

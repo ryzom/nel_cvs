@@ -762,6 +762,10 @@ SOURCE=.\log.log
 
 SOURCE=.\sh\setup.sh
 # End Source File
+# Begin Source File
+
+SOURCE=.\update_tools.bat
+# End Source File
 # End Group
 # End Target
 # End Project

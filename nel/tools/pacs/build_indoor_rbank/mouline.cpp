@@ -1,7 +1,7 @@
 /** \file mouline.cpp
  * 
  *
- * $Id: mouline.cpp,v 1.4 2003/04/14 15:29:15 legros Exp $
+ * $Id: mouline.cpp,v 1.5 2003/06/27 14:14:54 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -193,6 +193,8 @@ void	buildExteriorMesh(CCollisionMeshBuild &cmb, CExteriorMesh &em)
 		uint		numLink = 0;
 		uint		firstEdge = edges.size();
 
+		vector<CExteriorMesh::CEdge>	loop;
+
 		while (true)
 		{
 			if (cmb.Faces[current].EdgeFlags[nextEdge])
@@ -206,7 +208,10 @@ void	buildExteriorMesh(CCollisionMeshBuild &cmb, CExteriorMesh &em)
 				cmb.Faces[current].EdgeFlags[nextEdge] = true;
 				/// \todo get the real edge link
 				sint	link = (cmb.Faces[current].Visibility[nextEdge]) ? -1 : 0;	//(numLink++);
-				edges.push_back(CExteriorMesh::CEdge(cmb.Vertices[cmb.Faces[current].V[pivot]], link));
+
+				//edges.push_back(CExteriorMesh::CEdge(cmb.Vertices[cmb.Faces[current].V[pivot]], link));
+				loop.push_back(CExteriorMesh::CEdge(cmb.Vertices[cmb.Faces[current].V[pivot]], link));
+
 				pivot = (pivot+1)%3;
 				nextEdge = (nextEdge+1)%3;
 				next = cmb.Faces[current].Edge[nextEdge];
@@ -226,15 +231,28 @@ void	buildExteriorMesh(CCollisionMeshBuild &cmb, CExteriorMesh &em)
 
 		// mark the end of a ext mesh block
 		// this way, collisions won't be checked in the pacs engine
-		edges.push_back(edges[firstEdge]);
-		edges.back().Link = -2;
+		if (loop.size() >= 3)
+		{
+			uint	n = loop.size();
+			while (loop.front().Link >= 0 && loop.back().Link >= 0 && n > 0)
+			{
+				loop.push_back(loop.front());
+				loop.erase(loop.begin());
+				--n;
+			}
+		}
+		loop.push_back(loop.front());
+		loop.back().Link = -2;
+		edges.insert(edges.end(), loop.begin(), loop.end());
+		//edges.push_back(edges[firstEdge]);
+		//edges.back().Link = -2;
 	}
 
 	bool	previousWasLink = false;
 	sint	previousLink = -1;
 	for (i=0; i<edges.size(); ++i)
 	{
-		//nldebug("border: vertex=%d (%.2f,%.2f,%.2f) link=%d", cmb.Faces[current].V[pivot], cmb.Vertices[cmb.Faces[current].V[pivot]].x, cmb.Vertices[cmb.Faces[current].V[pivot]].y, cmb.Vertices[cmb.Faces[current].V[pivot]].z, link);
+//		nldebug("ext-mesh: vertex=%d (%.2f,%.2f,%.2f) link=%d", i, edges[i].Start.x, edges[i].Start.y, edges[i].Start.z, edges[i].Link);
 		if (edges[i].Link >= 0)
 		{
 			if (!previousWasLink)
@@ -383,7 +401,7 @@ void	computeRetriever(CCollisionMeshBuild &cmb, CLocalRetriever &lr, CVector &tr
 		translation.y = (float)ceil(translation.y);
 		translation.z = 0.0f;
 	}
-	
+
 	// first link faces
 /*
 	linkMesh(cmb, false);

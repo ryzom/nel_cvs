@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.22 2004/09/02 17:05:24 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.23 2004/10/04 09:14:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -889,8 +889,12 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 				}			
 			}
 			// display the result
-			const uint numTri = (numVerticesInShape * _UsedNbSegs * toProcess) << 1;
-			PB.setNumIndexes(3 * numTri);
+			uint numTri = numVerticesInShape * _UsedNbSegs * toProcess;
+			if (!_BraceMode)
+			{
+				numTri <<= 1;
+			}			
+			PB.setNumIndexes(3 * numTri);			
 			drv->activeIndexBuffer(PB);
 			drv->activeVertexBuffer(VB);
 			drv->renderTriangles(_Mat, 0, numTri);
@@ -922,6 +926,16 @@ uint32 CPSRibbon::getNumWantedTris() const
 	nlassert(_Owner);
 	//return _Owner->getMaxSize() * _NbSegs;
 	return _Owner->getSize() * _NbSegs;
+}
+
+//==========================================================================	
+// Set a tri in ribbon with check added
+static inline void setTri(CIndexBufferReadWrite &ibrw, const CVertexBuffer &vb, uint32 triIndex, uint32 i0, uint32 i1, uint32 i2)
+{
+	nlassert(i0 < vb.getNumVertices());
+	nlassert(i1 < vb.getNumVertices());
+	nlassert(i2 < vb.getNumVertices());
+	ibrw.setTri(triIndex, i0, i1, i2);
 }
 
 //==========================================================================	
@@ -996,9 +1010,9 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 						uint vIndex = vbIndex;
 						for (l = 0; l < numVerticesInShape / 2; ++l) /// deals with segment
 						{																			
-							ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice, vIndex + numVerticesInSlice + 1);
+							setTri(ibaWrite, vb, pbIndex, vIndex, vIndex + numVerticesInSlice, vIndex + numVerticesInSlice + 1);
 							pbIndex+=3;
-							ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice + 1, vIndex + 1);
+							setTri(ibaWrite, vb, pbIndex, vIndex, vIndex + numVerticesInSlice + 1, vIndex + 1);
 							pbIndex+=3;
 							vIndex += 2;
 						}													
@@ -1008,9 +1022,9 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 						uint vIndex = vbIndex;
 						for (l = 0; l < (numVerticesInShape - 1); ++l) /// deals with each ribbon vertices
 						{																			
-							ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice, vIndex + numVerticesInSlice + 1);
+							setTri(ibaWrite, vb, pbIndex, vIndex, vIndex + numVerticesInSlice, vIndex + numVerticesInSlice + 1);
 							pbIndex+=3;
-							ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice + 1, vIndex + 1);
+							setTri(ibaWrite, vb, pbIndex, vIndex, vIndex + numVerticesInSlice + 1, vIndex + 1);
 							pbIndex+=3;
 							++ vIndex;
 						}	
@@ -1018,9 +1032,9 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 						/// the last 2 index don't loop if there's a texture
 						uint nextVertexIndex = (numVerticesInShape == numVerticesInSlice) ?	vIndex + 1 - numVerticesInShape // no texture -> we loop 
 											   : vIndex + 1; // a texture is used : use onemore vertex										
-						ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice, nextVertexIndex + numVerticesInSlice);
+						setTri(ibaWrite, vb, pbIndex, vIndex, vIndex + numVerticesInSlice, nextVertexIndex + numVerticesInSlice);
 						pbIndex+=3;
-						ibaWrite.setTri(pbIndex, vIndex, nextVertexIndex + numVerticesInSlice, nextVertexIndex);
+						setTri(ibaWrite, vb, pbIndex, vIndex, nextVertexIndex + numVerticesInSlice, nextVertexIndex);
 						pbIndex+=3;
 					}
 				}

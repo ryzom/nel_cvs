@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.67 2004/06/23 14:59:54 lecroart Exp $
+ * $Id: debug.h,v 1.68 2004/06/24 14:46:01 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -555,9 +555,9 @@ template<class T>
 class CMustConsume
 {
 public:
-	CMustConsume(const T &val) : Value(val), 
+	CMustConsume(const T &val) : Value(val)
 #if !FINAL_VERSION
-	Consumed(false)
+	, Consumed(false)
 #endif
 	{
 	}

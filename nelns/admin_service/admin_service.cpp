@@ -3,7 +3,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.17 2002/11/08 13:29:58 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.18 2002/11/12 17:21:42 lecroart Exp $
  *
  */
 
@@ -111,7 +111,7 @@ struct CRequest
 			for (uint j = 0; j < NbRow; j++)
 			{
 				nlassert (Array.size () == NbRow);
-				InfoLog->displayRaw ("%-10s", Array[j][i].c_str());
+				InfoLog->displayRaw ("%-20s", Array[j][i].c_str());
 			}
 			InfoLog->displayRawNL ("");
 		}

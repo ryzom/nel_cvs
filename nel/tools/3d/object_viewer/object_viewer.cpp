@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.46 2001/11/12 16:20:26 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.47 2001/11/12 18:13:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -463,7 +463,8 @@ void CObjectViewer::initUI (HWND parent)
 
 // ***************************************************************************
 
-void CObjectViewer::addTransformation (CMatrix &current, CAnimation *anim, float begin, float end, ITrack *posTrack, ITrack *rotquatTrack, bool removeLast)
+void CObjectViewer::addTransformation (CMatrix &current, CAnimation *anim, float begin, float end, ITrack *posTrack, ITrack *rotquatTrack, 
+									   ITrack *nextPosTrack, ITrack *nextRotquatTrack, bool removeLast)
 {
 	// In place ?
 	if (_AnimationDlg->Inplace)
@@ -473,58 +474,66 @@ void CObjectViewer::addTransformation (CMatrix &current, CAnimation *anim, float
 	}
 	else
 	{
-		// Normalize the mt
-		CMatrix normalized;
-		CVector I = current.getI ();
-		CVector J = current.getJ ();
-		I.z = 0;
-		J.z = 0;
-		J.normalize ();
-		CVector K = I^J;
-		K.normalize ();
-		I = J^K;
-		I.normalize ();
-		normalized.setRot (I, J, K);
-		normalized.setPos (current.getPos ());
-		current = normalized;
-
 		// Remove the start of the animation
-		CQuat rotStart (0,0,0,1);
-		CVector posStart (0,0,0);
 		CQuat rotEnd (0,0,0,1);
 		CVector posEnd (0,0,0);
 		if (rotquatTrack)
 		{
 			// Interpolate the rotation
-			rotquatTrack->interpolate (begin, rotStart);
 			rotquatTrack->interpolate (end, rotEnd);
 		}
 		if (posTrack)
 		{
 			// Interpolate the position
-			posTrack->interpolate (begin, posStart);
 			posTrack->interpolate (end, posEnd);
 		}
 
 		// Add the final rotation and position
-		normalized.identity ();
-		normalized.setRot (rotEnd);
-		normalized.setPos (posEnd);
+		CMatrix tmp;
+		tmp.identity ();
+		tmp.setRot (rotEnd);
+		tmp.setPos (posEnd);
 
 		// Incremental ?
 		if (_AnimationDlg->IncPos)
-			current *= normalized;
+			current *= tmp;
 		else
-			current = normalized;
+			current = tmp;
 
 		if (removeLast)
 		{
-			// Remove the init rotation and position
-			normalized.identity ();
-			normalized.setRot (rotStart);
-			normalized.setPos (posStart);
-			normalized.invert ();
-			current *= normalized;
+			CQuat rotStart (0,0,0,1);
+			CVector posStart (0,0,0);
+			if (nextRotquatTrack)
+			{
+				// Interpolate the rotation
+				nextRotquatTrack->interpolate (begin, rotStart);
+			}
+			if (nextPosTrack)
+			{
+				// Interpolate the position
+				nextPosTrack->interpolate (begin, posStart);
+			}
+			// Remove the init rotation and position of the next animation
+			tmp.identity ();
+			tmp.setRot (rotStart);
+			tmp.setPos (posStart);
+			tmp.invert ();
+			current *= tmp;
+
+			// Normalize the mt
+			CVector I = current.getI ();
+			CVector J = current.getJ ();
+			I.z = 0;
+			J.z = 0;
+			J.normalize ();
+			CVector K = I^J;
+			K.normalize ();
+			I = J^K;
+			I.normalize ();
+			tmp.setRot (I, J, K);
+			tmp.setPos (current.getPos ());
+			current = tmp;
 		}
 	}
 }
@@ -583,13 +592,18 @@ void CObjectViewer::setupPlaylist (float time)
 				index++;
 				if (index<_AnimationSetDlg->PlayList.GetCount())
 				{
+					// Pointer on the animation
+					CAnimation *newAnim=_AnimationSet.getAnimation (_AnimationSetDlg->PlayList.GetItemData (index));
+					ITrack *newPosTrack = (ITrack *)newAnim->getTrackByName ((_ListShapeBaseName[i]+"pos").c_str());
+					ITrack *newRotquatTrack = (ITrack *)newAnim->getTrackByName ((_ListShapeBaseName[i]+"rotquat").c_str());
+
 					// Add the transformation
-					addTransformation (current, anim, anim->getBeginTime(), anim->getEndTime(), posTrack, rotquatTrack, true);
+					addTransformation (current, anim, newAnim->getBeginTime(), anim->getEndTime(), posTrack, rotquatTrack, newPosTrack, newRotquatTrack, true);
 
 					// Pointer on the animation
-					anim=_AnimationSet.getAnimation (_AnimationSetDlg->PlayList.GetItemData (index));
-					posTrack = (ITrack *)anim->getTrackByName ((_ListShapeBaseName[i]+"pos").c_str());
-					rotquatTrack = (ITrack *)anim->getTrackByName ((_ListShapeBaseName[i]+"rotquat").c_str());
+					anim = newAnim;
+					posTrack = newPosTrack;
+					rotquatTrack = newRotquatTrack;
 
 					// Add start time
 					startTime = endTime;
@@ -599,7 +613,7 @@ void CObjectViewer::setupPlaylist (float time)
 				else
 				{
 					// Add the transformation
-					addTransformation (current, anim, anim->getBeginTime(), anim->getEndTime(), posTrack, rotquatTrack, false);
+					addTransformation (current, anim, 0, anim->getEndTime(), posTrack, rotquatTrack, NULL, NULL, false);
 
 					break;
 				}
@@ -623,7 +637,7 @@ void CObjectViewer::setupPlaylist (float time)
 				// No
 
 				// Add the transformation
-				addTransformation (current, anim, anim->getBeginTime(), anim->getBeginTime() + time - startTime, posTrack, rotquatTrack, false);
+				addTransformation (current, anim, 0, anim->getBeginTime() + time - startTime, posTrack, rotquatTrack, NULL, NULL, false);
 
 				// Good index
 				choosedIndex = _AnimationSetDlg->PlayList.GetItemData (index);

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.25 2001/11/07 17:14:17 vizerie Exp $
+ * $Id: object_viewer.h,v 1.26 2001/11/12 18:13:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -257,7 +257,8 @@ public:
 	void setupPositions ();
 
 	/// Manage matrix increment
-	void addTransformation (NLMISC::CMatrix &current, NL3D::CAnimation *anim, float begin, float end, NL3D::ITrack *posTrack, NL3D::ITrack *rotquatTrack, bool removeLast);
+	void addTransformation (NLMISC::CMatrix &current, NL3D::CAnimation *anim, float begin, float end, NL3D::ITrack *posTrack, NL3D::ITrack *rotquatTrack, 
+									   NL3D::ITrack *nextPosTrack, NL3D::ITrack *nextRotquatTrack, bool removeLast);
 
 	/// inherited from CObjectViewerInterface
 	void setWaterPoolManager(NL3D::CWaterPoolManager &wpm) { _Wpm = &wpm; }

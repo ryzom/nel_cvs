@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.160 2003/01/14 13:47:37 lecroart Exp $
+ * $Id: service.cpp,v 1.161 2003/01/16 09:16:08 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -211,6 +211,9 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 							pos2 = strs[0].size() - pos - 2 - 1;
 						
 						str = strs[0].substr (pos+2, pos2);
+						
+						// replace all spaces into udnerscore because space is a reserved char
+						for (uint i = 0; i < str.size(); i++) if (str[i] == ' ') str[i] = '_';
 					}
 					else
 					{

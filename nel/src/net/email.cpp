@@ -1,7 +1,7 @@
 /** \file email.cpp
  * send email
  *
- * $Id: email.cpp,v 1.3 2002/12/02 17:15:08 lecroart Exp $
+ * $Id: email.cpp,v 1.4 2003/01/16 09:16:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -233,9 +233,9 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 			formatedBody += " filename=\""+CFile::getFilename(attachedFile)+"\"\r\n";
 			formatedBody += "Content-Transfer-Encoding: base64\r\n\r\n";
 
-			static const int src_buf_size = 45;// This *MUST* be a multiple of 3
-			static const int dst_buf_size = 4 * ((src_buf_size + 2) / 3);
-			int write_size = dst_buf_size;
+			static const size_t src_buf_size = 45;// This *MUST* be a multiple of 3
+			static const size_t dst_buf_size = 4 * ((src_buf_size + 2) / 3);
+			size_t write_size = dst_buf_size;
 			char src_buf[src_buf_size + 1];
 			char dst_buf[dst_buf_size + 1];
 			size_t size;

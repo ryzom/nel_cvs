@@ -138,6 +138,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "pacs_service"=.\pacs_service\pacs_service.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "time_service"=.\time_service\time_service.dsp - Package Owner=<4>
 
 Package=<5>

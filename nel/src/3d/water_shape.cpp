@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.10 2001/11/28 09:54:23 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.11 2002/01/04 13:48:22 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -558,7 +558,7 @@ void CWaterShape::setEnvMap(uint index, ITexture *envMap)
 
 void CWaterShape::getShapeInWorldSpace(NLMISC::CPolygon &poly) const
 {
-	poly.Vertices.clear();
+	poly.Vertices.resize(_Poly.Vertices.size());
 	// compute the matrix of the object in world space, by using the default tracks
 	NLMISC::CMatrix objMat;
 	objMat.identity();
@@ -566,7 +566,7 @@ void CWaterShape::getShapeInWorldSpace(NLMISC::CPolygon &poly) const
 	objMat.scale(((CAnimatedValueVector *) &_DefaultScale.getValue())->Value);
 	objMat.scale(((CAnimatedValueVector *) &_DefaultScale.getValue())->Value);
 	objMat.translate(((CAnimatedValueVector *) &_DefaultPos.getValue())->Value);
-
+	
 	for (uint k = 0; k < _Poly.Vertices.size(); ++k)
 	{
 		poly.Vertices[k] = objMat * NLMISC::CVector(_Poly.Vertices[k].x, _Poly.Vertices[k].y, 0);

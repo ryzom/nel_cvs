@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.27 2000/12/04 10:55:17 coutelas Exp $
+ * $Id: driver.h,v 1.28 2000/12/04 11:52:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -170,7 +170,7 @@ public:
 
 // --------------------------------------------------
 
-class IVBDrvInfos
+class IVBDrvInfos : public CRefCount
 {
 private:
 public:
@@ -185,7 +185,7 @@ const uint32	IDRV_VF_RGBA		=	0x00000040;
 const uint32	IDRV_VF_SPECULAR	=	0x00000080;
 const uint32	IDRV_VF_UV[8]		= { 0x00000100,0x00000200,0x00000400,0x00000800,0x00001000,0x00002000,0x00004000,0x00008000 };
 
-class CVertexBuffer : public NLMISC::CRefCount
+class CVertexBuffer : public CRefCount
 {
 private:
 	uint32					_Flags;

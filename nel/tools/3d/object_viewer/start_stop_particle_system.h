@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.h
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.h,v 1.11 2003/08/22 09:07:10 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.12 2003/10/07 12:33:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #endif 
 
 #include "object_viewer.h"
-
+#include "animation_dlg.h"
 
 
 #include "nel/misc/vector.h"
@@ -49,6 +49,7 @@ namespace NL3D
 
 
 class CParticleDlg;
+class CAnimationDlg;
 
 
 /** this class helps to copy the position of initial instances in a particle
@@ -135,7 +136,7 @@ class CStartStopParticleSystem : public CDialog, public CObjectViewer::IMainLoop
 {
 // Construction
 public:
-	CStartStopParticleSystem(CParticleDlg *particleDlg);   // standard constructor
+	CStartStopParticleSystem(CParticleDlg *particleDlg, CAnimationDlg *animationDLG);   // standard constructor
 	// dtor
 	~CStartStopParticleSystem();	
 	/// return true if a system is being played
@@ -194,6 +195,7 @@ public:
 	BOOL	m_DisplayBBox;	
 	int		m_SpeedSliderPos;
 	BOOL	m_DisplayHelpers;
+	BOOL	m_LinkPlayToScenePlay;
 	//}}AFX_DATA
 
 
@@ -218,6 +220,9 @@ private:
 	afx_msg void OnEnableAutoCount();
 	afx_msg void OnResetCount();
 	afx_msg void OnAutoRepeat();
+	afx_msg void OnLinkPlayToScenePlay();
+	afx_msg void OnLinkToSkeleton();
+	afx_msg void OnUnlinkFromSkeleton();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -234,9 +239,12 @@ private:
 	float _LastSystemDate;
 	//
 	bool _AutoRepeat;
+	//
+	float _LastSceneAnimFrame;
 
 	// the dialog that own this dialog
-	CParticleDlg *_ParticleDlg;
+	CParticleDlg  *_ParticleDlg;
+	CAnimationDlg *_AnimationDLG;	
 
 	CPSInitialPos _SystemInitialPos;
 

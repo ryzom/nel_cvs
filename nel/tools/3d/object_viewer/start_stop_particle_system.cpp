@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.17 2003/08/22 09:07:10 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.18 2003/10/07 12:33:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,8 @@
 // CStartStopParticleSystem dialog
 
 //******************************************************************************************************
-CStartStopParticleSystem::CStartStopParticleSystem(CParticleDlg *particleDlg)
+CStartStopParticleSystem::CStartStopParticleSystem(CParticleDlg *particleDlg,
+												   CAnimationDlg *animationDLG)
 	: CDialog(CStartStopParticleSystem::IDD, particleDlg),
 	  _ParticleDlg(particleDlg),
 	  _Running(false),
@@ -60,7 +61,9 @@ CStartStopParticleSystem::CStartStopParticleSystem(CParticleDlg *particleDlg)
 	  _LastCurrNumParticles(-1),
 	  _LastMaxNumParticles(-1),
 	  _LastSystemDate(-1.f),
-	  _AutoRepeat(false)
+	  _AutoRepeat(false),
+	  _AnimationDLG(animationDLG),
+	  _LastSceneAnimFrame(0.f)
 {
 	nlassert(particleDlg && particleDlg->getObjectViewer());
 	particleDlg->getObjectViewer()->registerMainLoopCallBack(this);
@@ -68,6 +71,7 @@ CStartStopParticleSystem::CStartStopParticleSystem(CParticleDlg *particleDlg)
 	m_DisplayBBox = TRUE;
 	m_SpeedSliderPos = 100;	
 	m_DisplayHelpers = FALSE;
+	m_LinkPlayToScenePlay = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -96,6 +100,7 @@ void CStartStopParticleSystem::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_DISPLAY_BBOX, m_DisplayBBox);	
 	DDX_Slider(pDX, IDC_ANIM_SPEED, m_SpeedSliderPos);
 	DDX_Check(pDX, IDC_DISPLAY_HELPERS, m_DisplayHelpers);
+	DDX_Check(pDX, IDC_LINK_PLAY_TO_SCENE_PLAY, m_LinkPlayToScenePlay);
 	//}}AFX_DATA_MAP
 
 
@@ -112,6 +117,9 @@ BEGIN_MESSAGE_MAP(CStartStopParticleSystem, CDialog)
 	ON_BN_CLICKED(IDC_ENABLE_AUTO_COUNT, OnEnableAutoCount)
 	ON_BN_CLICKED(IDC_RESET_COUNT, OnResetCount)
 	ON_BN_CLICKED(IDC_AUTOREPEAT, OnAutoRepeat)
+	ON_BN_CLICKED(IDC_LINK_PLAY_TO_SCENE_PLAY, OnLinkPlayToScenePlay)
+	ON_BN_CLICKED(IDC_LINK_TO_SKELETON, OnLinkToSkeleton)
+	ON_BN_CLICKED(IDC_UNLINK_FROM_SKELETON, OnUnlinkFromSkeleton)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -162,6 +170,14 @@ void CStartStopParticleSystem::OnStartSystem()
 				_ResetAutoCount = false;
 				GetDlgItem(IDC_RESET_COUNT)->EnableWindow(TRUE);
 			}
+		}		
+	}
+	if (m_LinkPlayToScenePlay) // is scene animation subordinated to the fx animation
+	{
+		// start animation for the scene too
+		if (_AnimationDLG)
+		{
+			_AnimationDLG->Playing = true;
 		}
 	}
 	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(true);
@@ -177,11 +193,13 @@ void CStartStopParticleSystem::OnStartSystem()
 		ps->reactivateSound();		
 	}	
 	GetDlgItem(IDC_DISPLAY_HELPERS)->EnableWindow(TRUE);
+	
 }
 
 //******************************************************************************************************
 void CStartStopParticleSystem::OnStopSystem() 
-{	
+{		
+	UpdateData();
 	_Running = false;
 	_Paused = false;
 	_SystemInitialPos.restoreSystem();
@@ -203,8 +221,16 @@ void CStartStopParticleSystem::OnStopSystem()
 	{
 		ps->stopSound();
 	}
-
-	GetDlgItem(IDC_DISPLAY_HELPERS)->EnableWindow(FALSE);
+	GetDlgItem(IDC_DISPLAY_HELPERS)->EnableWindow(FALSE);	
+	if (m_LinkPlayToScenePlay) // is scene animation subordinated to the fx animation
+	{
+		// start animation for the scene too
+		if (_AnimationDLG)
+		{
+			_AnimationDLG->Playing = false;
+			_AnimationDLG->setCurrentFrame(_AnimationDLG->Start);			
+		}
+	}
 }
 
 //******************************************************************************************************
@@ -217,6 +243,14 @@ void CStartStopParticleSystem::OnPause()
 	m_StopPicture.EnableWindow(TRUE);
 	m_PausePicture.EnableWindow(FALSE);
 	_Paused = true;
+	if (m_LinkPlayToScenePlay) // is scene animation subordinated to the fx animation
+	{
+		// start animation for the scene too
+		if (_AnimationDLG)
+		{
+			_AnimationDLG->Playing = false;
+		}
+	}
 	UpdateData(FALSE);
 }
 
@@ -518,12 +552,28 @@ void CStartStopParticleSystem::enableAutoCount(bool enable)
 
 //******************************************************************************************************
 void CStartStopParticleSystem::go()
-{
+{	
 	NL3D::CParticleSystem *ps = _ParticleDlg->getCurrPS();
 	sint currNumParticles = (sint) ps->getCurrNumParticles();
 	sint maxNumParticles = (sint) ps->getMaxNumParticles();
-	// auto repeat feature
-	if (_AutoRepeat)
+	// if linked with scene animation, restart if animation ends
+	if (m_LinkPlayToScenePlay) // is scene animation subordinated to the fx animation
+	{		
+		// start animation for the scene too
+		if (_AnimationDLG && _Running)
+		{
+			if (_LastSceneAnimFrame > _AnimationDLG->CurrentFrame) // did animation restart ?
+			{			
+				// restart system
+				_SystemInitialPos.restoreSystem();
+				_SystemInitialPos.copySystemInitialPos(ps);
+				ps->setSystemDate(0.f);			
+			}
+			_LastSceneAnimFrame = _AnimationDLG->CurrentFrame;
+		}
+	}
+	else
+	if (_AutoRepeat) // auto repeat feature
 	{
 		if (_Running)
 		{		
@@ -534,11 +584,12 @@ void CStartStopParticleSystem::go()
 					// restart system
 					_SystemInitialPos.restoreSystem();
 					_SystemInitialPos.copySystemInitialPos(ps);			
-					ps->setSystemDate(0.f);
+					ps->setSystemDate(0.f);					
 				}
 			}
 		}
 	}
+	
 	// display number of particles		
 	if (currNumParticles != _LastCurrNumParticles || maxNumParticles != _LastMaxNumParticles)
 	{	
@@ -557,11 +608,73 @@ void CStartStopParticleSystem::go()
 		sysDate.LoadString(IDS_SYSTEM_DATE);
 		sysDate += CString(NLMISC::toString("%.2f s",_LastSystemDate).c_str());
 		GetDlgItem(IDC_SYSTEM_DATE)->SetWindowText((LPCTSTR) sysDate);
-	}
+	}	
 }
 
 //******************************************************************************************************
 void CStartStopParticleSystem::OnAutoRepeat() 
 {
 	_AutoRepeat = ((CButton *) GetDlgItem(IDC_AUTOREPEAT))->GetCheck() != 0;
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::OnLinkPlayToScenePlay() 
+{	
+	// There are 2 play buttons : - one to activate play for the scene animation.
+	//                            - one to activate play for the fxs.
+	//  When this method is called, the 'play' button of the scene is controlled by the 'play' button of the particle editor
+	//  and thus is not accessible.
+
+	UpdateData(TRUE);
+	stop();
+	_AnimationDLG->setCurrentFrame(_AnimationDLG->Start);
+	_LastSceneAnimFrame = _AnimationDLG->Start;
+	_AnimationDLG->Playing = false;
+	_AnimationDLG->Loop = TRUE;
+	_AnimationDLG->UpdateData(FALSE);
+	_AnimationDLG->EnableWindow(!m_LinkPlayToScenePlay);	
+	GetDlgItem(IDC_ANIM_SPEED)->EnableWindow(!m_LinkPlayToScenePlay);
+	if (m_LinkPlayToScenePlay) 
+	{
+		m_SpeedSliderPos = 100;
+		_ParticleDlg->getCurrPSModel()->setEllapsedTimeRatio(1.f);
+	}
+	UpdateData(FALSE);
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::OnLinkToSkeleton() 
+{
+	CObjectViewer *ov = _ParticleDlg->getObjectViewer();
+	if (!ov->isSkeletonPresent())
+	{
+		CString caption;
+		CString mess;
+		caption.LoadString(IDS_ERROR);
+		mess.LoadString(IDS_NO_SKELETON_IN_SCENE);
+		MessageBox((LPCTSTR) mess, (LPCTSTR) caption, MB_ICONEXCLAMATION);
+		return;
+	}
+	CString chooseBoneForPS;
+	chooseBoneForPS.LoadString(IDS_CHOOSE_BONE_FOR_PS);
+	NL3D::CSkeletonModel *skel;
+	uint boneIndex;
+	if (ov->chooseBone((LPCTSTR) chooseBoneForPS, skel, boneIndex))
+	{
+		_ParticleDlg->stickPSToSkeleton(skel, boneIndex);
+	}
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::OnUnlinkFromSkeleton() 
+{
+	if (!_ParticleDlg->isPSStickedToSkeleton())
+	{
+		CString caption;
+		CString mess;
+		caption.LoadString(IDS_WARNING);
+		mess.LoadString(IDS_NOT_STICKED_TO_SKELETON);
+		return;
+	}
+	_ParticleDlg->unstickPSFromSkeleton();
 }

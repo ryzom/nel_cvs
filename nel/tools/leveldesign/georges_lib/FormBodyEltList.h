@@ -18,7 +18,6 @@ protected:
 	std::vector< CFormBodyElt* > vpbodyelt;
 	std::vector< CFormBodyElt* >::iterator Find( const CStringEx _sxname );
 	std::vector< CFormBodyElt* >::const_iterator Find( const CStringEx _sxname ) const;
-	void Clear();
 
 public:
 	NLMISC_DECLARE_CLASS( CFormBodyEltList );
@@ -38,6 +37,7 @@ public:
 	virtual CFormBodyElt* GetElt( const CStringEx _sxname ) const;
 
 	void AddElt( CFormBodyElt* const pfbe );
+	void Clear();
 };
 
 #endif // !defined(AFX_FORMBODYELTLIST_H__48FB2EE8_0215_41F4_9591_7835BC6FA80A__INCLUDED_)

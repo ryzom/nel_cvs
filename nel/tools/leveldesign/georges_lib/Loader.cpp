@@ -98,7 +98,7 @@ CStringEx CLoader::WhereIsForm( const CStringEx _sxfilename )
 	return( NLMISC::CPath::lookup( _sxfilename, false ) );
 }
 
-void CLoader::MakeDfn( const CStringEx _sxfullname, const std::list< std::pair< CStringEx, CStringEx > >* const _plistdefine )
+void CLoader::MakeDfn( const CStringEx _sxfullname, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvdefine )
 {
 	CFormFile pff;
 	CForm f;
@@ -106,7 +106,7 @@ void CLoader::MakeDfn( const CStringEx _sxfullname, const std::list< std::pair< 
 	CFormBodyEltStruct* pbody = f.GetBody();
 	CFormBodyEltAtom* pfbea;
 
-	for( std::list< std::pair< CStringEx, CStringEx > >::const_iterator it = _plistdefine->begin(); it != _plistdefine->end(); ++it )
+	for( std::vector< std::pair< CStringEx, CStringEx > >::const_iterator it = _pvdefine->begin(); it != _pvdefine->end(); ++it )
 	{
 		pfbea = new CFormBodyEltAtom;
 		pfbea->SetName( it->first );
@@ -118,7 +118,7 @@ void CLoader::MakeDfn( const CStringEx _sxfullname, const std::list< std::pair< 
 	pff.Save( _sxfullname );
 }
 
-void CLoader::MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, const CStringEx _sxformula, const CStringEx _sxenum, const CStringEx _sxlow, const CStringEx _sxhigh, const CStringEx _sxdefault, const std::list< std::pair< CStringEx, CStringEx > >* const _plistpredef, const std::list< std::pair< CStringEx, CStringEx > >* const _plistparent )
+void CLoader::MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, const CStringEx _sxformula, const CStringEx _sxenum, const CStringEx _sxlow, const CStringEx _sxhigh, const CStringEx _sxdefault, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvpredef, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvparent )
 {
 	CFormFile pff;
 	CForm f;
@@ -162,8 +162,8 @@ void CLoader::MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, con
 	pfbel = new CFormBodyEltList;
 	pfbel->SetName( "Predef" );
 	int i = 0;
-	std::list< std::pair< CStringEx, CStringEx > >::const_iterator it;
-	for( it = _plistpredef->begin(); it != _plistpredef->end(); ++it )
+	std::vector< std::pair< CStringEx, CStringEx > >::const_iterator it;
+	for( it = _pvpredef->begin(); it != _pvpredef->end(); ++it )
 	{
 		pfbes = new CFormBodyEltStruct;
 		sx.format( "#%d", i++ );
@@ -185,7 +185,7 @@ void CLoader::MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, con
 	pfbel = new CFormBodyEltList;
 	pfbel->SetName( "Parent" );
 	i = 0;
-	for( it = _plistparent->begin(); it != _plistparent->end(); ++it )
+	for( it = _pvparent->begin(); it != _pvparent->end(); ++it )
 	{
 		pfbes = new CFormBodyEltStruct;
 		sx.format( "#%d", i++ );
@@ -207,6 +207,94 @@ void CLoader::MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, con
 	pff.SetForm( f );
 	pff.Save( _sxfullname );
 }
+
+void CLoader::SetTypPredef( const CStringEx _sxfilename, const std::vector< CStringEx >& _pvsx )
+{
+	CStringEx sxpathname = WhereIsDfnTyp( _sxfilename );
+	CForm f;
+	fl.LoadForm( f, sxpathname );
+	if( sxpathname.empty() )
+		return;
+
+	CFormBodyElt* pfbetype = f.GetElt("Type");
+	nlassert( pfbetype );
+	CFormBodyEltList* pfbepredef = dynamic_cast< CFormBodyEltList* >( f.GetElt("Predef") );      
+	if( !pfbepredef )
+	{
+		pfbepredef = new CFormBodyEltList;
+		f.GetBody()->AddElt( pfbepredef );
+	}	
+	pfbepredef->Clear();
+
+	int i = 0;
+	CFormBodyEltStruct* pfbes;
+	CFormBodyEltAtom* pfbea;
+	CStringEx sx;
+	CStringEx sxtype = pfbetype->GetValue();
+	if( sxtype == "string" )
+	{
+		for( std::vector< CStringEx >::const_iterator it = _pvsx.begin(); it != _pvsx.end(); ++it )
+		{
+			pfbes = new CFormBodyEltStruct;
+			sx.format( "#%d", i++ );
+			pfbes->SetName( sx );
+			pfbepredef->AddElt( pfbes );
+			
+			pfbea = new CFormBodyEltAtom;
+			pfbea->SetName( "Designation" );
+			pfbea->SetValue( *it );
+			pfbes->AddElt( pfbea );
+
+			pfbea = new CFormBodyEltAtom;
+			pfbea->SetName( "Substitute" );
+			pfbea->SetValue( *it );
+			pfbes->AddElt( pfbea );
+		}
+		pfbea = dynamic_cast< CFormBodyEltAtom* >( f.GetElt("DefaultValue") );
+		nlassert( pfbea );
+		pfbea->SetValue( _pvsx[0] );
+	}
+	else
+	{
+		if( ( sxtype == "uint" )||( sxtype == "sint" ) )
+		{
+			CStringEx sx2;			
+			for( std::vector< CStringEx >::const_iterator it = _pvsx.begin(); it != _pvsx.end(); ++it )
+			{
+				pfbes = new CFormBodyEltStruct;
+				sx.format( "#%d", i );
+				pfbes->SetName( sx );
+				pfbepredef->AddElt( pfbes );
+				
+				pfbea = new CFormBodyEltAtom;
+				pfbea->SetName( "Designation" );
+				pfbea->SetValue( *it );
+				pfbes->AddElt( pfbea );
+
+				pfbea = new CFormBodyEltAtom;
+				pfbea->SetName( "Substitute" );
+				sx.format( "%d", i++ );
+				pfbea->SetValue( sx2 );
+				pfbes->AddElt( pfbea );
+			}
+			CFormBodyElt* pfbeenum = f.GetElt("Enum");
+			nlassert( pfbeenum );
+			pfbea = dynamic_cast< CFormBodyEltAtom* >( f.GetElt("DefaultValue") );
+			nlassert( pfbea );
+			if( pfbeenum->GetValue() == "true" )
+				pfbea->SetValue( _pvsx[0] );
+			pfbea = dynamic_cast< CFormBodyEltAtom* >( f.GetElt("Lowlimit") );
+			nlassert( pfbea );
+			pfbea->SetValue( _pvsx[0] );
+			pfbea = dynamic_cast< CFormBodyEltAtom* >( f.GetElt("Highlimit") );
+			nlassert( pfbea );
+			pfbea->SetValue( _pvsx[_pvsx.size()-1] );
+		}
+	}
+		
+	fl.SaveForm( f, sxpathname );
+}
+
 
 /*
 CStringEx CLoader::WhereIs( const CStringEx _sxdirectory, const CStringEx _sxfilename )

@@ -599,17 +599,6 @@ SOURCE=..\include\nel\misc\gtk_displayer.h
 # Begin Source File
 
 SOURCE=.\misc\log.cpp
-
-!IF  "$(CFG)" == "misc - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "misc - Win32 ReleaseDebug"
-
-!ELSEIF  "$(CFG)" == "misc - Win32 DebugFast"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -823,6 +812,14 @@ SOURCE=.\misc\rgba.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\rgba.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\sha1.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\sha1.h
 # End Source File
 # Begin Source File
 

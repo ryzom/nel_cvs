@@ -1,6 +1,6 @@
 /** \file ps_light.cpp
  *
- * $Id: ps_light.cpp,v 1.5 2003/12/08 18:28:54 vizerie Exp $
+ * $Id: ps_light.cpp,v 1.6 2004/02/24 09:46:50 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -67,6 +67,9 @@ CPSLight::~CPSLight()
 			}
 		#endif
 	}
+	delete _ColorScheme;
+	delete _AttenStartScheme;
+	delete _AttenEndScheme;
 }
 
 //***************************************************************************************************************

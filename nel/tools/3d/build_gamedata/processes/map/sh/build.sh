@@ -60,7 +60,7 @@ fi
 for i in tga/*.[tT][gG][aA] ; do
 
 	# Destination file
-	dest=`echo $i | sed -e 's/.[tT][gG][aA]/.dds/g'`
+	dest=`echo $i | sed -e 's/[tT][gG][aA]/dds/' | sed -e 's/\.[tT][gG][aA]/.dds/g'`
 	dds=`echo $i | sed -e 's/.[tT][gG][aA]/.dds/g'`
 
 	# Convert the lightmap in 16 bits mode

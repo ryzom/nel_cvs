@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.155 2002/08/30 11:58:01 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.156 2002/09/03 09:46:14 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1187,6 +1187,25 @@ bool CDriverGL::swapBuffers()
 		}
 		itVBHard++;
 	}
+
+	/* Yoyo: must do this (GeForce bug ??) esle weird results if end render with a VBHard.
+		Setup a std vertex buffer to ensure NVidia synchronisation.
+	*/
+	static	CVertexBuffer	dummyVB;
+	static	bool			dummyVBinit= false;
+	if(!dummyVBinit)
+	{
+		// setup a full feature VB (maybe not usefull ... :( ).
+		dummyVB.setVertexFormat(CVertexBuffer::PositionFlag|CVertexBuffer::NormalFlag|
+			CVertexBuffer::PrimaryColorFlag|CVertexBuffer::SecondaryColorFlag|
+			CVertexBuffer::TexCoord0Flag|CVertexBuffer::TexCoord1Flag|
+			CVertexBuffer::TexCoord2Flag|CVertexBuffer::TexCoord3Flag
+			);
+		// some vertices.
+		dummyVB.setNumVertices(10);
+	}
+	// activate each frame to close VBHard rendering.
+	activeVertexBuffer(dummyVB);
 
 
 #ifdef NL_OS_WINDOWS

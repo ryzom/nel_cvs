@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.19 2001/10/18 11:51:28 berenguier Exp $
+ * $Id: driver.h,v 1.20 2001/10/18 13:12:00 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -630,7 +630,7 @@ public:
 
 	enum TMatrix
 	{
-		None=0,
+		NoMatrix=0,
 		ModelView,
 		Projection,
 		Texture,

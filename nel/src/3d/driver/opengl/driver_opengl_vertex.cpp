@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.23 2002/03/14 18:28:20 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.24 2002/04/12 16:05:10 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -673,6 +673,9 @@ void	CDriverGL::refreshSoftwareSkinning()
 // ***************************************************************************
 void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 {
+	// sould not be called with vertext program enabled
+	nlassert(!isVertexProgramEnabled());
+
 	_DriverGLStates.clientActiveTextureARB(stage);
 	if (VB.VertexFormat & (CVertexBuffer::TexCoord0Flag<<uvId))
 	{
@@ -689,6 +692,17 @@ void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 	}
 	else
 		_DriverGLStates.enableTexCoordArray(false);
+}
+
+
+// ***************************************************************************
+void		CDriverGL::mapTextureStageToUV(uint stage, uint uv)
+{
+	// sould not be called with vertex program enabled
+	nlassert(!isVertexProgramEnabled());
+
+	// Just call it for last VertexBuffer setuped.
+	setupUVPtr(stage, _LastVB, uv);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.116 2002/04/04 09:19:18 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.117 2002/04/12 16:05:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -447,6 +447,8 @@ public:
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB);
 
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB, uint first, uint end);
+
+	virtual	void			mapTextureStageToUV(uint stage, uint uv);
 
 	virtual bool			render(CPrimitiveBlock& PB, CMaterial& Mat);
 

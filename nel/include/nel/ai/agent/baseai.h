@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.10 2001/03/21 15:37:51 chafik Exp $
+ * $Id: baseai.h,v 1.11 2001/03/27 10:41:13 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -353,7 +353,7 @@ namespace NLAIAGENT
 		///to get a word num ref pointer of the agents.
 		operator const IWordNumRef *() const ;
 
-		const CIdent getIdentType() const;
+		virtual const CIdent getIdentType() const;
 
 		///to get the agent parents
 		IRefrence *getParent() const;

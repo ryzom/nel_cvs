@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.13 2004/09/21 06:33:02 boucher Exp $
+ * $Id: diff_tool.cpp,v 1.14 2004/09/29 14:16:02 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -873,7 +873,7 @@ ucstring prepareExcelSheet(const TWorksheet &worksheet)
 	{
 		for (uint j=0; j<worksheet.Data[i].size(); ++j)
 		{
-			if (i > 0 && hashValue[j])
+			if (i > 0 && hashValue[j] && (!worksheet.Data[i][j].empty() && worksheet.Data[i][j][0] != '_'))
 				text += "_";
 			text += worksheet.Data[i][j];
 			if (j != worksheet.Data[i].size()-1)

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.18 2001/08/07 14:29:25 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.19 2001/08/09 08:06:35 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -738,11 +738,11 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 						{																											
 						
 							nt->PSModel = newModel ;
+							nt->PSModel->setEditionMode(true) ;
 							nt->PS = nt->PSModel->getPS() ;									
 							nt->PSModel->enableAutoGetEllapsedTime(false) ;
 							nt->PSModel->setEllapsedTime(0.f) ; // system is paused
-							nt->PSModel->enableDisplayTools(true) ;
-							nt->PSModel->setEditionMode(true) ;
+							nt->PSModel->enableDisplayTools(true) ;							
 					
 							_ParticleDlg->setRightPane(NULL) ;
 							_ParticleDlg->setNewCurrPS(nt->PS, nt->PSModel) ;

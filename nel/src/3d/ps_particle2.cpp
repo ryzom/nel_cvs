@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle2.cpp,v 1.2 2001/10/02 16:36:03 vizerie Exp $
+ * $Id: ps_particle2.cpp,v 1.3 2001/10/03 09:12:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,21 +141,21 @@ void CPSRibbonLookAt::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 
 void CPSRibbonLookAt::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
-	if (_Parametric) return;
-	nlassert(_Owner);
 	newColorElement(emitterLocated, emitterIndex);
 	newSizeElement(emitterLocated, emitterIndex);
+	if (_Parametric) return;
+	nlassert(_Owner);	
 	const uint32 index =  _Owner->getNewElementIndex();
 	initRibbon(_Ribbons, index , _Owner->getPos()[index],  _Owner->getSpeed()[index]);
 }
 
 void CPSRibbonLookAt::deleteElement(uint32 index)
 {
+	deleteColorElement(index);
+	deleteSizeElement(index);
 	if (_Parametric) return;
 	nlassert(_Owner);
 	const uint32 size = _Owner->getSize();
-	deleteColorElement(index);
-	deleteSizeElement(index);
 	if(index == (size - 1)) return;
 	dup(_Ribbons, _Ribbons, size - 1, index);
 }
@@ -530,8 +530,7 @@ void CPSRibbonLookAt::displayRibbons(CRibbons &r, uint32 nbRibbons)
 	if (_ColorScheme)
 	{
 		colors.resize(nbRibbons);
-		_ColorScheme->make(this->_Owner, 0, &colors[0], sizeof(float), nbRibbons);
-		ptCurrColor = &colors[0];
+		ptCurrColor = (NLMISC::CRGBA *) _ColorScheme->make(this->_Owner, 0, &colors[0], sizeof(NLMISC::CRGBA), nbRibbons, true);
 		ptCurrColorIncrement = 1;
 	}
 	else

@@ -1,7 +1,7 @@
 /** \file shared_memory.cpp
  * Encapsulation of shared memory APIs
  *
- * $Id: shared_memory.cpp,v 1.1 2002/08/08 10:18:21 cado Exp $
+ * $Id: shared_memory.cpp,v 1.2 2002/08/08 12:44:22 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -66,13 +66,13 @@ void			*CSharedMemory::createSharedMemory( TSharedMemId sharedMemId, uint32 size
 #else
 
 	// Create a shared memory segment
-	int shmid = shmget( sharedMemId, size, IPC_CREATE | 0666 );
+	int shmid = shmget( sharedMemId, size, IPC_CREAT | 0666 );
 	if ( shmid == -1 )
 		return NULL;
 
 	// Map the segment into memory address space
-	char *accessAddress = shmat( shmid, 0, 0 );
-	if ( accessAddress == -1 )
+	void *accessAddress = (void*)shmat( shmid, 0, 0 );
+	if ( accessAddress == (void*)-1 )
 		return NULL;
 	else
 	{
@@ -105,13 +105,13 @@ void			*CSharedMemory::accessSharedMemory( TSharedMemId sharedMemId )
 #else
 
 	// Open an existing shared memory segment
-	int shmid = shmget( sharedMemId, size, 0666 );
+	int shmid = shmget( sharedMemId, 0, 0666 );
 	if ( shmid == -1 )
 		return NULL;
 
 	// Map the segment into memory address space
-	char *accessAddress = shmat( shmid, 0, 0 );
-	if ( accessAddress == -1 )
+	void *accessAddress = (void*)shmat( shmid, 0, 0 );
+	if ( accessAddress == (void*)-1 )
 		return NULL;
 	else
 		return accessAddress;

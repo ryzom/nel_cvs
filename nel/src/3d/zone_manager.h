@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.8 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: zone_manager.h,v 1.9 2003/10/09 15:44:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,10 +88,13 @@ public:
 
 	/// Is a work has been completed ? 
 	bool isWorkComplete (SZoneManagerWork &rWork);
-
+	
 	/// Does the manager is loading ?
 	bool isLoading () const {return _LoadingZones.size () != 0;}
-
+	
+	/// Does the manager is removing ?
+	bool isRemoving () const {return _RemovingZone;}
+	
 	/// Return the count of zone left to load
 	uint getNumZoneLeftToLoad ();
 

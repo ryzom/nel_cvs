@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.52 2001/01/11 13:56:47 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.53 2001/01/11 17:29:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -772,6 +772,28 @@ void CDriverGL::getBuffer (CBitmap &bitmap)
 	glReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, &(d[0]));
 }
 
+void CDriverGL::setPolygonMode (TPolygonMode mode)
+{
+	IDriver::setPolygonMode (mode);
+
+	// Retreive old values
+	GLenum value[2];
+	glGetIntegerv (GL_POLYGON_MODE, (GLint*)&value);
+
+	// Set the polygon mode
+	switch (_PolygonMode)
+	{
+	case Filled:
+		glPolygonMode (GL_FRONT /*value[0]*/, GL_FILL);
+		break;
+	case Line:
+		glPolygonMode (GL_FRONT /*value[0]*/, GL_LINE);
+		break;
+	case Point:
+		glPolygonMode (GL_FRONT /*value[0]*/, GL_POINT);
+		break;
+	}
+}
 
 
 } // NL3D

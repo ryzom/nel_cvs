@@ -1,7 +1,7 @@
 /** \file value_smoother.h
  * <File description>
  *
- * $Id: value_smoother.h,v 1.5 2003/03/20 17:52:58 lecroart Exp $
+ * $Id: value_smoother.h,v 1.6 2003/03/26 11:16:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,6 +126,11 @@ private:
 
 class CValueSmoother : public CValueSmootherTemplate<float>
 {
+public:
+	/// Constructor
+	explicit CValueSmoother(uint n=16) : CValueSmootherTemplate<float>(n)
+	{
+	}
 };
 
 } // NLMISC

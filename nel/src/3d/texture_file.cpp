@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.12 2001/12/14 16:48:31 corvazier Exp $
+ * $Id: texture_file.cpp,v 1.13 2002/02/04 10:37:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,32 +34,27 @@ using namespace NLMISC;
 namespace NL3D
 {
 
-/*==================================================================*\
-							CTEXTUREFILE
-\*==================================================================*/
 
-/*------------------------------------------------------------------*\
-							doGenerate()
-\*------------------------------------------------------------------*/
-void CTextureFile::doGenerate()
+///==================================================================
+void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName)
 {
 	NLMISC::CIFile f;
 	//nldebug(_FileName.c_str());
 	try
 	{
-		string	file= CPath::lookup(_FileName);
+		string	file= CPath::lookup(fileName);
 		if(f.open(file))
-			load(f);
-		else throw EPathNotFound(_FileName);
+			dest.load(f);
+		else throw EPathNotFound(fileName);
 
 		// *** Need usercolor computing ?
 
 		// Texture not compressed ?
-		if (PixelFormat == RGBA)
+		if (dest.PixelFormat == RGBA)
 		{
 			// Make a filename
-			string path = _FileName;
-			string ext = strrchr (_FileName.c_str(), '.');
+			string path = fileName;
+			string ext = strrchr (fileName.c_str(), '.');
 			path.resize (path.size () - ext.size());
 			path += "_usercolor" + ext;
 
@@ -78,17 +73,17 @@ void CTextureFile::doGenerate()
 				else throw EPathNotFound(file2);
 
 				// Texture are the same size ?
-				if ((getWidth() == bitmap.getWidth()) && (getHeight() == bitmap.getHeight()))
+				if ((dest.getWidth() == bitmap.getWidth()) && (dest.getHeight() == bitmap.getHeight()))
 				{
 					// Convert in Alpha
 					if (bitmap.convertToType (CBitmap::Alpha))
 					{
 						// Compute it
 						uint8 *userColor = (uint8 *)&(bitmap.getPixels ()[0]);
-						CRGBA *color = (CRGBA *)&(getPixels ()[0]);
+						CRGBA *color = (CRGBA *)&(dest.getPixels ()[0]);
 
 						// For each pixel
-						uint pixelCount = getWidth()*getHeight();
+						uint pixelCount = dest.getWidth()*dest.getHeight();
 						uint pixel;
 						for (pixel = 0; pixel<pixelCount; pixel++)
 						{
@@ -155,10 +150,22 @@ void CTextureFile::doGenerate()
 	catch(EPathNotFound &)
 	{
 		// Not found...
-		makeDummy();
-		nlwarning("Missing textureFile: %s", _FileName.c_str());
+		dest.makeDummy();
+		nlwarning("Missing textureFile: %s", fileName.c_str());
 	}
-	
+}
+
+
+/*==================================================================*\
+							CTEXTUREFILE
+\*==================================================================*/
+
+/*------------------------------------------------------------------*\
+							doGenerate()
+\*------------------------------------------------------------------*/
+void CTextureFile::doGenerate()
+{
+	buildBitmapFromFile(*this, _FileName);
 }
 
 

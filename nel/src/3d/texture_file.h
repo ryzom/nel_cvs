@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.3 2001/08/23 10:09:03 berenguier Exp $
+ * $Id: texture_file.h,v 1.4 2002/02/04 10:37:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,7 +108,15 @@ public:
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CTextureFile);
 
+
+	//// Used to fill a bitmap by reading a file, looking in CPath if necessary, and using user_color
+	static void buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName);
+
 };
+
+
+
+
 
 
 } // NL3D

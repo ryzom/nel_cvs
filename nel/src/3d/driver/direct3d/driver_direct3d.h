@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.30 2004/10/25 16:26:39 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.31 2004/10/25 16:29:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1317,8 +1317,7 @@ public:
 			renderVariable->Modified = true;
 		}
 	}
-// TMP
-//private:	
+
 
 
 	// Access render states	
@@ -1363,8 +1362,6 @@ public:
 		}		
 	}
 
-// TMP
-//private:
 	
 
 	// Access texture index states
@@ -1777,7 +1774,7 @@ public:
 		}
 	}
 
-// TMP
+
 public:
 	void setMaterialState(const D3DMATERIAL9 &material)
 	{

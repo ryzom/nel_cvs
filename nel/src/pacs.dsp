@@ -279,6 +279,10 @@ SOURCE=..\include\nel\pacs\u_collision_desc.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\pacs\u_global_position.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\pacs\u_global_retriever.h
 # End Source File
 # Begin Source File
@@ -289,15 +293,15 @@ SOURCE=..\include\nel\pacs\u_move_container.h
 
 SOURCE=..\include\nel\pacs\u_move_primitive.h
 # End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\u_retriever_bank.h
+# End Source File
 # End Group
 # Begin Group "UserImp"
 
 # PROP Default_Filter ""
 # End Group
-# Begin Source File
-
-SOURCE=..\include\nel\pacs\u_global_position.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\pacs\vector_2s.cpp

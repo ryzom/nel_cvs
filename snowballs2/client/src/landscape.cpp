@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape interface between the game and NeL
  *
- * $Id: landscape.cpp,v 1.18 2003/04/02 18:50:21 ledorze Exp $
+ * $Id: landscape.cpp,v 1.19 2003/04/04 17:00:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@
 
 #include "nel/misc/variable.h"
 #include "nel/misc/command.h"
+#include "nel/misc/variable.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/path.h"
 #include "nel/misc/i18n.h"

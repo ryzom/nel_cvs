@@ -1,7 +1,7 @@
 /** \file moving_entity.cpp
  * Interface for all moving entities
  *
- * $Id: moving_entity.cpp,v 1.8 2000/12/05 15:40:52 cado Exp $
+ * $Id: moving_entity.cpp,v 1.9 2000/12/15 16:59:28 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,6 +111,16 @@ TAngle IMovingEntity::angleAroundX()
 TAngle IMovingEntity::angleAroundY()
 {
 	return (TAngle)atan2( _BodyHdg.x, _BodyHdg.z );
+}
+
+
+/*
+ *Returns the rotations of the body around the three axes
+ */
+CVector IMovingEntity::bodyRot()
+{
+	// This works only because the norm of _BodyHdg is 1
+	return CVector( (float)asin( _BodyHdg.z ), (float)asin( _BodyHdg.x ), (float)asin( _BodyHdg.y ) );
 }
 
 

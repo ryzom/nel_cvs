@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.39 2000/12/14 15:30:05 cado Exp $
+ * $Id: msg_socket.cpp,v 1.40 2000/12/15 16:59:28 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -262,7 +262,7 @@ CMsgSocket::~CMsgSocket()
 	CConnections::iterator its;
 	for ( its=_Connections.begin(); its!=_Connections.end(); its++ )
 	{
-		delete (*its).second;
+		delete (*its).second; // BUG: crashes sometimes
 	}
 }
 
@@ -721,6 +721,19 @@ void printOutCallbacks( const CSearchSet& s )
 }
 
 
+void cbNullCallbackWarning( CMessage& msgin, TSenderId idfrom )
+{
+	if ( msgin.typeIsNumber() )
+	{
+		nlwarning( "NULL callback for message %d", msgin.typeAsNumber() );
+	}
+	else
+	{
+		nlwarning( "NULL callback for message %s", msgin.typeAsString().c_str() );
+	}
+}
+
+
 /* Calls the good callback, and send a binding message if needed
  * \param msg [in] An input message to pass to the callback
  * \param sock [in] The socket from which the message was received
@@ -753,7 +766,12 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 		if ( num < *the_cba_size )
 		{
 			// Call the callback by index
-			the_callback_array[num].Callback( msg, sock.senderId() );
+			TMsgCallback callback = the_callback_array[num].Callback;
+			if ( callback == NULL )
+			{
+				callback = cbNullCallbackWarning;
+			}
+			callback( msg, sock.senderId() );
 		}
 		else
 		{
@@ -772,6 +790,10 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 		if ( its != the_search_set->end() )
 		{
 			callback = (*its).pt()->Callback;
+			if ( callback == NULL )
+			{
+				callback = cbNullCallbackWarning;
+			}
 		}
 		else
 		{
@@ -804,8 +826,8 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 		// Call the callback function if the connection is authorized to
 		if ( sock.authorizedCallback() != NULL )
 		{
-			// The access is restricted: only _AccessMap[id] may be called
-			if ( sock.authorizedCallback() == callback )
+			// The access is restricted: only _AccessMap[id] may be called (or D for a disconnection)
+			if ( (sock.authorizedCallback() == callback) || (s=="D") )
 			{
 				callback( msg, sock.senderId() );
 			}
@@ -834,7 +856,12 @@ bool CMsgSocket::callCallbackForOthers( CMessage& msg, CSocket& sock )
 	if ( its != _SearchSet.end() )
 	{
 		// Call the callback function for O
-		(*its).pt()->Callback( msg, sock.senderId() );
+		TMsgCallback callback = (*its).pt()->Callback;
+		if ( callback == NULL )
+		{
+			callback = cbNullCallbackWarning;
+		}
+		callback( msg, sock.senderId() );
 		return true; // Callback found
 	}
 	else

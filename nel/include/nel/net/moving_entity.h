@@ -1,7 +1,7 @@
 /** \file moving_entity.h
  * Interface for all moving entities
  *
- * $Id: moving_entity.h,v 1.9 2000/12/05 15:40:52 cado Exp $
+ * $Id: moving_entity.h,v 1.10 2000/12/15 16:59:28 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,12 +123,22 @@ public:
 	//@}
 
 
-	/// Angle around z axis from x axis
+	/// Angle around z axis from x axis (deprecated)
 	TAngle					angleAroundZ();
-	/// Angle around x axis from y axis
+	/// Angle around x axis from y axis (deprecated)
 	TAngle					angleAroundX();
-	/// Angle around y axis from z axis
+	/// Angle around y axis from z axis (deprecated)
 	TAngle					angleAroundY();
+
+	// Angle around x axis from y axis
+	//TAngle					bodyRotX();
+	// Angle around y axis from z axis
+	//TAngle					bodyRotY();
+	// Angle around z axis from x axis
+	//TAngle					bodyRotZ();
+
+	// Returns the rotations of the body around the three axes
+	NLMISC::CVector			bodyRot();
 
 	/// Sets altitude (ground mode only)
 	void					setAltitude( TPosUnit z );

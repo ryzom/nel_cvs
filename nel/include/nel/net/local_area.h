@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.12 2000/12/14 10:52:20 cado Exp $
+ * $Id: local_area.h,v 1.13 2000/12/15 16:59:28 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,7 @@ public:
 	/// Initialization
 	void					init();
 
-	/// Update the entity states
+	/// Update the entity states (does not call CMsgSocket::update(), you must call it before)
 	void					update();
 
 	/// Adds a replica of a remote entity to the area. It will be automatically removed when it exists.
@@ -115,6 +115,9 @@ public:
 
 	/// The entity controlled by the player
 	CLocalEntity			User;
+
+	/// Pointer to the client msg socket
+	CMsgSocket				*ClientSocket;
 
 	// Friend helper functions
 	friend inline void createRemoteEntity( const IMovingEntity& es );

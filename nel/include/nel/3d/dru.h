@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.6 2000/12/15 14:51:53 lecroart Exp $
+ * $Id: dru.h,v 1.7 2000/12/15 16:59:28 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,15 +32,15 @@
 
 
 #ifdef NL_DEBUG
-#define NL3D_DLL_NAME "driver_opengl_debug.dll"
+#define NL3D_DLL_NAME "nel_drv_opengl_win_debug.dll"
+#elif defined (NL_RELEASE)
+#define NL3D_DLL_NAME "nel_drv_opengl_win.dll"
 #else
-#define NL3D_DLL_NAME "driver_opengl.dll"
+#error "Unknown dll name"
 #endif
 
 namespace NL3D 
 {
-
-extern const std::string DllName;
 
 /// Exception thrown by CDru::createGlDriver.
 class EDru : public Exception
@@ -49,7 +49,7 @@ class EDru : public Exception
 
 class EDruOpenglDriverNotFound : public EDru
 {
-	virtual const char	*what() const throw() {return NL3D_DLL_NAME " is missing found.";}
+	virtual const char	*what() const throw() {return NL3D_DLL_NAME " is not found.";}
 };
 
 class EDruOpenglDriverCorrupted : public EDru

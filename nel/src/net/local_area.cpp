@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.19 2000/12/14 10:52:21 cado Exp $
+ * $Id: local_area.cpp,v 1.20 2000/12/15 16:59:28 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,9 +37,6 @@ using namespace std;
 
 // Pointer to the local area singleton
 CLocalArea* CLocalArea::Instance = NULL;
-
-// Pointer to the client msg socket
-CMsgSocket *ClientSocket;
 
 
 // Creates a new remote entity
@@ -124,7 +121,7 @@ void NLNET::cbAssignId( CMessage& msgin, TSenderId idfrom )
 	CMessage msgout( "NAM" );
 	msgout.serial( CLocalArea::Instance->User );
 	msgout.serial( const_cast<string&>(CLocalArea::Instance->User.name()) );
-	ClientSocket->send( msgout );
+	CLocalArea::Instance->ClientSocket->send( msgout );
 
 	// Create other remote entities
 	uint32 number;
@@ -181,7 +178,7 @@ void NLNET::cbCreateNewEntity( CMessage& msgin, TSenderId idfrom )
 void NLNET::cbHandleDisconnection( CMessage& msgin, TSenderId idfrom )
 {
 	nlinfo( "Disconnection: entering off-line mode" );
-	// Now ClientSocket->connected() is false
+	// Now CLocalArea::Instance->ClientSocket->connected() is false
 }
 
 
@@ -263,11 +260,6 @@ void CLocalArea::init()
  */
 void CLocalArea::update()
 {
-	if ( ClientSocket->connected() )
-	{
-		ClientSocket->update();
-	}
-
 	// Compute time difference
 	TTime actualtime = CTime::getLocalTime();
 	TDuration deltatime = (TDuration)(sint64)(actualtime - _PreviousTime) / 1000.0f;

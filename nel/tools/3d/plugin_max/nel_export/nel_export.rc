@@ -266,13 +266,13 @@ BEGIN
     EDITTEXT        IDC_RADIAL_NORMAL_32,200,90,57,14,ES_AUTOHSCROLL
     LTEXT           "For the 4 last smoothing group, choose the node you want to use the position to compute radial normals from it.",
                     IDC_STATIC,140,15,120,25
-    GROUPBOX        "Mesh interfaces",IDC_STATIC,134,110,219,71
+    GROUPBOX        "Mesh interfaces",IDC_STATIC,134,110,219,56
     LTEXT           "Interface .max file",IDC_STATIC,141,120,61,15,
                     SS_CENTERIMAGE
     EDITTEXT        IDC_EDIT_INTERFACE_FILE,221,120,110,14,ES_AUTOHSCROLL
-    LTEXT           "Interface weld threshold",IDC_STATIC,141,140,77,15,
+    LTEXT           "Interface weld threshold",IDC_STATIC,141,137,77,15,
                     SS_CENTERIMAGE
-    EDITTEXT        IDC_EDIT_INTERFACE_THRESHOLD,221,140,110,14,
+    EDITTEXT        IDC_EDIT_INTERFACE_THRESHOLD,221,137,110,14,
                     ES_AUTOHSCROLL
     GROUPBOX        "Bone Scale",IDC_STATIC,5,150,120,60
     CONTROL         "Enable",IDC_EXPORT_BONE_SCALE,"Button",BS_AUTO3STATE | 
@@ -283,7 +283,19 @@ BEGIN
                     ES_AUTOHSCROLL
     CONTROL         "Get interface normals from scene objects",
                     IDC_GET_INTERFACE_NORMAL_FROM_SCENE_OBJECTS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,142,162,145,15
+                    BS_AUTOCHECKBOX | WS_TABSTOP,142,151,145,15
+    GROUPBOX        "Remanence",IDC_STATIC,134,169,219,45
+    CONTROL         "Use remanence",IDC_USE_REMANENCE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,137,178,66,9
+    LTEXT           "Slice number :",IDC_STATIC,138,191,47,10,SS_CENTERIMAGE
+    EDITTEXT        IDC_REMANENCE_SLICE_NUMBER,186,189,36,14,ES_AUTOHSCROLL
+    LTEXT           "Sampling period :",IDC_STATIC,237,192,56,10,
+                    SS_CENTERIMAGE
+    EDITTEXT        IDC_REMANENCE_SAMPLING_PERIOD,295,190,36,14,
+                    ES_AUTOHSCROLL
+    CONTROL         "Shift texture at start of animation",
+                    IDC_REMANENCE_SHIFTING_TEXTURE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,207,178,116,9
 END
 
 IDD_VEGETABLE DIALOG DISCARDABLE  0, 0, 360, 200

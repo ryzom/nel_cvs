@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * implementation file
  *
- * $Id: animation_set_dlg.cpp,v 1.9 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: animation_set_dlg.cpp,v 1.10 2001/12/05 09:54:03 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,23 +89,74 @@ END_MESSAGE_MAP()
 
 void CAnimationSetDlg::OnAddAnimation () 
 {
-	// TODO: Add your control notification handler code here
-	static char BASED_CODE szFilter[] = "NeL Animation Files (*.anim)|*.anim|All Files (*.*)|*.*||";
-	CFileDialog fileDlg( TRUE, ".anim", "*.anim", OFN_ALLOWMULTISELECT|OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
-	if (fileDlg.DoModal()==IDOK)
+	// Create a dialog
+	static char BASED_CODE szFilter[] = 
+		"NeL Animation Files (*.anim)\0*.anim\0"
+		"All Files (*.*)\0*.*\0\0";
+
+	// Filename buffer
+	char buffer[65535];
+	buffer[0]=0;
+
+	OPENFILENAME openFile;
+	memset (&openFile, 0, sizeof (OPENFILENAME));
+	openFile.lStructSize = sizeof (OPENFILENAME);
+	openFile.hwndOwner = this->m_hWnd;
+    openFile.lpstrFilter = szFilter;
+    openFile.nFilterIndex = 0;
+    openFile.lpstrFile = buffer;
+    openFile.nMaxFile = 65535;
+    openFile.Flags = OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_ALLOWMULTISELECT|OFN_ENABLESIZING|OFN_EXPLORER;
+    openFile.lpstrDefExt = "*.anim";
+	
+
+	if (GetOpenFileName(&openFile))
 	{
 		// Open the file
 		try
 		{
-			// Get first file
-			POSITION pos=fileDlg.GetStartPosition( );
-			while (pos)
+			// Filename pointer
+			char *c=buffer;
+
+			// Read the path
+			CString path = buffer;
+			if (path.GetLength()>openFile.nFileOffset)
 			{
-				// Get the name
-				CString filename=fileDlg.GetNextPathName(pos);
+				// Double zero at the end
+				c[path.GetLength()+1]=0;
+
+				// Path is empty
+				path = "";
+			}
+			else
+			{
+				// Adda slash
+				path += "\\";
+
+				// Look for the next string
+				while (*(c++)) {}
+			}
+
+			// For each file selected
+			while (*c)
+			{
+				// File name
+				char filename[256];
+				char *ptr=filename;
+
+				// Read a file name
+				while (*c)
+				{
+					*(ptr++)=*(c++);
+				}
+				*ptr=0;
+				c++;
+
+				// File name
+				CString name = path + filename;
 
 				// Load the animation
-				loadAnimation (filename);
+				loadAnimation (name);
 
 				// Touch the channel mixer
 				_ObjView->reinitChannels ();

@@ -15,6 +15,24 @@ Package=<4>
 
 ###############################################################################
 
+Project: "driver_opengl"=..\..\..\src\3d\driver\opengl\driver_opengl.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name 3d
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "lib"=.\lib\lib.dsp - Package Owner=<4>
 
 Package=<5>
@@ -52,6 +70,12 @@ Package=<4>
 {{{
     Begin Project Dependency
     Project_Dep_Name nel_patch_lib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name 3d
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name misc
     End Project Dependency
 }}}
 
@@ -118,6 +142,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name nel_patch_converter
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name driver_opengl
     End Project Dependency
 }}}
 

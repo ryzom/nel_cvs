@@ -1,5 +1,6 @@
 -- Some pathes to configure
 
+old_zone_path				= "w:\\database\\landscape\\zones\\"
 ligo_root_path				= "c:\\ligo\\"
 ligo_material_path			= "materials\\"
 ligo_transition_path		= "transitions\\"
@@ -1134,11 +1135,15 @@ group "Projects management"
 			zoneFilled = #()
 
 			-- Get the mask
+			resMinX = #()
+			resMinY = #()
 			resWidth = #()
 			resHeight = #()
-			if (NeLLigoGetZoneMask $ zoneUsed resWidth resHeight true) == true then
+			if (NeLLigoGetZoneMask $ zoneUsed resMinX resMinY resWidth resHeight true) == true then
 			(
 				-- Width and height
+				minx = resMinX[1]
+				miny = resMinY[1]
 				width = resWidth[1]
 				height = resHeight[1]
 
@@ -1672,6 +1677,7 @@ group "Ligo root directory"
 	(
 		EditText		LigoPath				""						width:140 align:#center
 		Button 			SetupDirectories		"Setup directories"		width:140 align:#center
+		Button 			ExportOldZonesTga		"Export old zones TGA"	width:140 align:#center
 	)
 
 	on SetupDirectories pressed do
@@ -1680,6 +1686,98 @@ group "Ligo root directory"
 		makedir (ligo_root_path+"\\materials")
 		makedir (ligo_root_path+"\\transitions")
 		makedir (ligo_root_path+"\\zones")
+	)
+
+	fn findID node =
+	(
+		local
+
+		-- Const
+		alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
+		NameTab = filterString node.name "_"
+		if (NameTab != undefined) and (NameTab.count == 2) then 
+		(
+			Z_ID = -1
+			alpha_letter1 = NameTab[2][1]
+			alpha_letter2 = NameTab[2][2]
+			alpha_letter1_value = findstring alphabet alpha_letter1 
+			alpha_letter2_value = findstring alphabet alpha_letter2 
+
+			-- Decompose theh name in an array array[1]=numeric string value  array[2]=alpha string value
+			-- The index of the engine start at 0 but the script one at 1 so we sub 1 each time
+			alpha_sub_id = (((alpha_letter1_value as integer - 1) * 26 + (alpha_letter2_value as integer)))-1
+			num_sub_id = (NameTab[1] as integer)-1
+
+				-- Array of 256 per 256
+				---------------------------
+				--	0	1	2	3	...	255
+				--	256	257	258	259	...	511 
+				--	512	513	514	515	...	767
+				--	...
+
+			Z_ID = num_sub_id*256 + alpha_sub_id
+
+			return Z_ID
+		)
+		else
+			return 0
+	)
+
+	fn idToCoord id coord =
+	(
+		coord[2] = - floor (id/256)
+		coord[1] = id + (coord[2]*256)
+		coord[2] = coord[2] - 1
+	)
+
+	on ExportOldZonesTga pressed do
+	(
+		makedir ligo_root_path
+		makedir (ligo_root_path+"\\old_zones_tga")
+
+		-- Get files in the zone_source_directory
+		files = getFiles (old_zone_path+"*.max")
+
+		-- Sort files
+		sort files
+
+		-- No file ?
+		if files.count != 0 then
+		(
+			-- For each files
+			for i = 1 to files.count do
+			(
+				-- Ok ?
+				ok = false
+
+				-- Output file
+				output = ligo_root_path+"old_zones_tga\\"+(getFilenameFile files[i])+".tga"
+
+				-- Compare file date
+				if (NeLTestFileDate output files[i]) == true then
+				(
+					-- Open the max project
+					if loadMaxFile files[i] == true then
+					(
+						-- Select none
+						max select none
+
+						-- For each object in the priject
+						for i in geometry do
+						(
+							-- Look for a NeL patch mesh
+							if (classof i)==RklPatch then
+							(
+								-- Get coord with the name
+								coord = #()
+								idToCoord (findID i) coord
+								NeLLigoMakeSnapShot i output (coord[1] as integer) ((coord[1] as integer) + 1) (coord[2] as integer) ((coord[2] as integer) + 1) true
+							)
+						)
+					)
+				)
+			)
+		)
 	)
 
 	on LigoPath changed newPath do

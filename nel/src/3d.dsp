@@ -999,6 +999,14 @@ SOURCE=.\3d\material_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\particle_system_instance_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\particle_system_instance_user.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\play_list_manager_user.cpp
 # End Source File
 # Begin Source File
@@ -1168,6 +1176,10 @@ SOURCE=..\include\nel\3d\u_light.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\u_material.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\u_particle_system_instance.h
 # End Source File
 # Begin Source File
 

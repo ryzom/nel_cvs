@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.62 2003/11/25 14:37:15 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.63 2004/02/12 16:55:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -610,14 +610,29 @@ const NLMISC::CMatrix &CPSLocated::getConversionMatrix(const CParticleSystem &ps
 NLMISC::CVector CPSLocated::computeI(void) const 
 {
 	CHECK_PS_INTEGRITY
+	const NLMISC::CMatrix &sysMat = _Owner->getSysMat();
 	if (getMatrixMode() == PSIdentityMatrix)
 	{
-		return _Owner->getInvertedViewMat().getI();
+		if (!sysMat.hasScalePart())
+		{
+			return _Owner->getInvertedViewMat().getI();
+		}
+		else
+		{		
+			return sysMat.getScaleUniform() * _Owner->getInvertedViewMat().getI();
+		}
 	}
 	else
 	{
-		// we must express the I vector in the system basis, so we need to multiply it by the inverted matrix of the system
-		return getWorldToLocalMatrix().mulVector(_Owner->getInvertedViewMat().getI());
+		if (!sysMat.hasScalePart())
+		{
+			// we must express the I vector in the system basis, so we need to multiply it by the inverted matrix of the system
+			return getWorldToLocalMatrix().mulVector(_Owner->getInvertedViewMat().getI());
+		}
+		else
+		{
+			return sysMat.getScaleUniform() * getWorldToLocalMatrix().mulVector(_Owner->getInvertedViewMat().getI());
+		}
 	}
 	CHECK_PS_INTEGRITY
 }
@@ -626,14 +641,29 @@ NLMISC::CVector CPSLocated::computeI(void) const
 NLMISC::CVector CPSLocated::computeJ(void) const 
 {
 	CHECK_PS_INTEGRITY
+	const NLMISC::CMatrix &sysMat = _Owner->getSysMat();
 	if (getMatrixMode() == PSIdentityMatrix)
 	{
-		return _Owner->getInvertedViewMat().getJ();
+		if (!sysMat.hasScalePart())
+		{
+			return _Owner->getInvertedViewMat().getJ();
+		}
+		else
+		{
+			return sysMat.getScaleUniform() * _Owner->getInvertedViewMat().getJ();
+		}
 	}
 	else
 	{
-		// we must express the J vector in the system basis, so we need to multiply it by the inverted matrix of the system
-		return getWorldToLocalMatrix().mulVector(_Owner->getInvertedViewMat().getJ());
+		if (!sysMat.hasScalePart())
+		{
+			// we must express the J vector in the system basis, so we need to multiply it by the inverted matrix of the system
+			return getWorldToLocalMatrix().mulVector(_Owner->getInvertedViewMat().getJ());
+		}
+		else
+		{
+			return sysMat.getScaleUniform() * getWorldToLocalMatrix().mulVector(_Owner->getInvertedViewMat().getJ());
+		}
 	}
 	CHECK_PS_INTEGRITY
 }
@@ -642,14 +672,29 @@ NLMISC::CVector CPSLocated::computeJ(void) const
 NLMISC::CVector CPSLocated::computeK(void) const
 {
 	CHECK_PS_INTEGRITY
+	const NLMISC::CMatrix &sysMat = _Owner->getSysMat();
 	if (getMatrixMode() == PSIdentityMatrix)
 	{
-		return _Owner->getInvertedViewMat().getK();
+		if (!sysMat.hasScalePart())
+		{
+			return _Owner->getInvertedViewMat().getK();
+		}
+		else
+		{
+			return sysMat.getScaleUniform() * _Owner->getInvertedViewMat().getK();
+		}
 	}
 	else
 	{
-		// we must express the K vector in the system basis, so we need to multiply it by the inverted matrix of the system
-		return getWorldToLocalMatrix().mulVector(_Owner->getInvertedViewMat().getK());
+		if (!sysMat.hasScalePart())
+		{
+			// we must express the K vector in the system basis, so we need to multiply it by the inverted matrix of the system
+			return getWorldToLocalMatrix().mulVector(_Owner->getInvertedViewMat().getK());
+		}
+		else
+		{
+			return sysMat.getScaleUniform() * getWorldToLocalMatrix().mulVector(_Owner->getInvertedViewMat().getK());
+		}
 	}
 	CHECK_PS_INTEGRITY
 }
@@ -2063,7 +2108,12 @@ void	CPSLocatedBindable::setExternID(uint32 id)
 	{
 		ps = _Owner->getOwner();
 	}	
-	if (ps) ps->unregisterLocatedBindableExternID(this);
+	if (ps) 
+	{
+		ps->unregisterLocatedBindableExternID(this);
+		_ExternID = 0;
+		return;
+	}
 	if (id != 0)
 	{	
 		if (ps) ps->registerLocatedBindableExternID(id, this);

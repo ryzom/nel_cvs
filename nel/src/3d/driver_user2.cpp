@@ -1,7 +1,7 @@
 /** \file driver_user2.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.12 2002/02/28 12:59:49 besson Exp $
+ * $Id: driver_user2.cpp,v 1.13 2002/08/14 12:39:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,7 +63,10 @@ namespace NL3D
 UScene			*CDriverUser::createScene() 
 {
 	CSceneUser *pSU = new CSceneUser(this);
+	// set the shape bank
 	pSU->getScene().setShapeBank( &_ShapeBank._ShapeBank );
+	// set the MeshSkinManager
+	pSU->getScene().getRenderTrav()->setMeshSkinManager(&_MeshSkinManager);
 	return _Scenes.insert(pSU);
 }
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.12 2002/08/14 08:49:32 berenguier Exp $
+ * $Id: driver_user.h,v 1.13 2002/08/14 12:39:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "3d/ptr_set.h"
 #include "3d/shape_bank_user.h"
 #include "3d/light_user.h"
+#include "3d/mesh_skin_manager.h"
 
 
 namespace NL3D 
@@ -85,7 +86,8 @@ protected:
 	TTextContextSet		_TextContexts;
 	TSceneSet			_Scenes;
 	CShapeBankUser		_ShapeBank;
-
+	// Ther be one MeshSkinManager per driver, and for all scenes.
+	CMeshSkinManager	_MeshSkinManager;
 
 	// For 2D/3D Interface.
 	CVertexBuffer		_VBFlat;

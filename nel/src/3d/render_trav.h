@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.14 2002/08/05 12:17:29 berenguier Exp $
+ * $Id: render_trav.h,v 1.15 2002/08/14 12:39:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,6 @@
 #include "3d/light_contribution.h"
 #include "3d/light.h"
 #include "3d/mesh_block_manager.h"
-#include "3d/mesh_skin_manager.h"
 #include <vector>
 
 
@@ -50,6 +49,8 @@ class	IDriver;
 class	CMaterial;
 
 class	CTransform;
+
+class	CMeshSkinManager;
 
 
 // ***************************************************************************
@@ -153,6 +154,16 @@ public:
 	const CVector				getSunDirection() const {return _SunDirection;}
 
 	// @}
+
+
+	/** Set/Replace the MeshSkinManager. NULL by default => skinning is slower.
+	 *	The ptr is handled but not deleted.
+	 *	There should be one MeshSkinManager per driver.
+	 */
+	void						setMeshSkinManager(CMeshSkinManager *msm);
+
+	/// get the MeshSkinManager
+	CMeshSkinManager			*getMeshSkinManager() const {return _MeshSkinManager;}
 
 
 // ******************
@@ -271,9 +282,6 @@ public:
 	/// The manager of meshBlock. Used to add instances.
 	CMeshBlockManager		MeshBlockManager;
 
-	/// The manager of skin
-	CMeshSkinManager		MeshSkinManager;
-
 	// @}
 
 private:
@@ -340,6 +348,10 @@ private:
 	float						_VPMaterialCacheShininess;
 
 	// @}
+
+
+	/// The manager of skin. NULL by default.
+	CMeshSkinManager			*_MeshSkinManager;
 
 };
 

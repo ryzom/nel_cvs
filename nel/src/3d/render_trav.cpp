@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.34 2002/08/05 12:17:29 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.35 2002/08/14 12:39:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@
 
 #include "3d/transform.h"
 #include "3d/fast_floor.h"
+#include "3d/mesh_skin_manager.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -75,6 +76,8 @@ CRenderTrav::CRenderTrav()
 	_SunDirection.normalize();
 
 	_StrongestLightTouched = true;
+
+	_MeshSkinManager= NULL;
 }
 // ***************************************************************************
 IObs		*CRenderTrav::createDefaultObs() const
@@ -99,10 +102,13 @@ void		CRenderTrav::traverse()
 
 
 	// reset the Skin manager, if needed
-	if(Driver!=MeshSkinManager.getDriver())
+	if(_MeshSkinManager)
 	{
-		MeshSkinManager.release();
-		MeshSkinManager.init(Driver, NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT, NL3D_MESH_SKIN_MANAGER_MAXVERTICES);
+		if(Driver!=_MeshSkinManager->getDriver())
+		{
+			_MeshSkinManager->release();
+			_MeshSkinManager->init(Driver, NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT, NL3D_MESH_SKIN_MANAGER_MAXVERTICES);
+		}
 	}
 
 
@@ -262,6 +268,12 @@ void		CRenderTrav::setSunDirection(const CVector &dir)
 	_SunDirection.normalize();
 }
 
+
+// ***************************************************************************
+void		CRenderTrav::setMeshSkinManager(CMeshSkinManager *msm)
+{
+	_MeshSkinManager= msm;
+}
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.32 2002/08/12 14:27:48 vizerie Exp $
+ * $Id: skeleton_model.cpp,v 1.33 2002/08/14 12:39:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "3d/skip_model.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/aabbox.h"
+#include "3d/mesh_skin_manager.h"
 
 
 
@@ -1150,11 +1151,9 @@ void			CSkeletonModelRenderObs::renderSkins()
 void			CSkeletonModelRenderObs::renderSkinList(NLMISC::CObjectVector<CTransform*, false> &skinList, float alphaMRM)
 {
 	CRenderTrav			*rdrTrav= (CRenderTrav*)Trav;
-	// get the meshSkinManager
-	CMeshSkinManager	&meshSkinManager= rdrTrav->MeshSkinManager;
 
 	// if the SkinManager is not possible at all, just rendered the std way
-	if( !meshSkinManager.enabled() )
+	if( !rdrTrav->getMeshSkinManager() || !rdrTrav->getMeshSkinManager()->enabled() )
 	{
 		for(uint i=0;i<skinList.size();i++)
 		{
@@ -1163,6 +1162,9 @@ void			CSkeletonModelRenderObs::renderSkinList(NLMISC::CObjectVector<CTransform*
 	}
 	else
 	{
+		// get the meshSkinManager
+		CMeshSkinManager	&meshSkinManager= *rdrTrav->getMeshSkinManager();
+
 		// array (rarely allocated) of skins with grouping support
 		static	std::vector<CTransform*>	skinsToGroup;
 		static	std::vector<uint>			baseVertices;

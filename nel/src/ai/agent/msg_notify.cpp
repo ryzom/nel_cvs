@@ -1,6 +1,6 @@
 /** \file msg_group.cpp
  *
- * $Id: msg_notify.cpp,v 1.1 2001/01/31 15:14:14 chafik Exp $
+ * $Id: msg_notify.cpp,v 1.2 2001/01/31 15:16:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.13 2001/01/31 14:01:09 chafik Exp $
+ * $Id: agents.cpp,v 1.14 2001/01/31 15:15:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -394,7 +394,7 @@ namespace NLAIAGENT
 				return msg;
 			}
 		}
-		return (IMessageBase *)m.clone();
+		return NULL;
 	}
 		
 	IMessageBase *IBasicAgent::runTell(const IMessageBase &m)
@@ -402,8 +402,13 @@ namespace NLAIAGENT
 		if(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass == m.getType())
 		{
 			const INombreDefine *n = (const INombreDefine *)m.getFront();
-			//if()
+			if(n->getNumber() != 0.0)
+			{
+
+				
+			}
+			return (IMessageBase *)m.clone();			
 		}
-		return (IMessageBase *)m.clone();
+		return NULL;
 	}
 }

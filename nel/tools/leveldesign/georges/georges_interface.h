@@ -39,35 +39,26 @@ public:
 	// Get the main frame
 	virtual void *getMainFrame ()=0;
 	
-	// Get instance
-	static GEORGES_EXPORT IGeorges * getInterface (int version = GEORGES_VERSION);
-
-	// Release instance
-	static GEORGES_EXPORT void releaseInterface (IGeorges* pGeorges);
-
-
-	virtual void SetDocumentWorkDirectory( const std::string& _sxworkdirectory ) = 0;
-
-	virtual void SetDocumentRootDirectory( const std::string& _sxrootdirectory ) = 0;
-
+	//virtual void SetDocumentWorkDirectory( const std::string& _sxworkdirectory ) = 0;
+	//virtual void SetDocumentRootDirectory( const std::string& _sxrootdirectory ) = 0;
 
 	virtual void NewDocument() = 0;
 
-	virtual void NewDocument( const std::string& _sxdfnname) = 0;
+	virtual void NewDocument (const std::string& _sxdfnname) = 0;
 
-	virtual void LoadDocument( const std::string& _sxfullname ) = 0;
+	virtual void LoadDocument (const std::string& _sxfullname) = 0;
 
-	virtual void SaveDocument( const std::string& _sxfullname ) = 0;
+	virtual void SaveDocument (const std::string& _sxfullname) = 0;
 
 	virtual void CloseDocument() = 0;
 
+	// Directories Management
+	virtual void SetDirDfnTyp		(const std::string &_sxDirectory) = 0;
+	virtual void SetDirPrototype	(const std::string &_sxDirectory) = 0;
+	virtual void SetDirLevel		(const std::string &_sxDirectory) = 0;
 
-	virtual void SetWorkDirectory( const std::string& _sxworkdirectory ) = 0;
-
-	virtual void SetRootDirectory( const std::string& _sxrootdirectory ) = 0;
 
 	virtual void SaveAllDocument() = 0;
-
 	virtual void CloseAllDocument() = 0;
 
 	virtual void SetTypPredef( const std::string& _sxfilename, const std::vector< std::string >& _pvsx ) = 0;
@@ -78,15 +69,23 @@ public:
 
 	virtual void createInstanceFile (const std::string &_sxFullnameWithoutExt, const std::string &_dfnname) = 0;
 
+	// -----------------------------------------------------------------------
+
+	// Get interface (autoconstruct like a factory)
+	static GEORGES_EXPORT IGeorges *getInterface (int version = GEORGES_VERSION);
+
+	// Release interface
+	static GEORGES_EXPORT void releaseInterface (IGeorges *pGeorges);
 };
 
 
 // To export the names in a good format that can be human readable and not with the heavy style
-// of the MFC we have to do it in 'old-school' mode
+// of the C++ we have to do it in 'old-school' mode (so in C). But this is just a bind to
+// the static factory constructor/destructor
 extern "C" 
 {
-	GEORGES_EXPORT IGeorges* IGeorgesGetInterface (int version = GEORGES_VERSION);
-	GEORGES_EXPORT void IGeorgesReleaseInterface (IGeorges * pG);
+	GEORGES_EXPORT IGeorges *IGeorgesGetInterface (int version = GEORGES_VERSION);
+	GEORGES_EXPORT void IGeorgesReleaseInterface (IGeorges *pG);
 }
 
 #endif LOGIC_EDITOR_INTERFACE

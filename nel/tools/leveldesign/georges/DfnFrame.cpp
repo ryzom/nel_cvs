@@ -1,10 +1,10 @@
-// ChildFrm.cpp : implementation of the CChildFrame class
+// ChildFrm.cpp : implementation of the CDfnFrame class
 //
 
 #include "stdafx.h"
 #include "georges.h"
 
-#include "ChildFrm.h"
+#include "DfnFrame.h"
 
 
 #ifdef _DEBUG
@@ -14,29 +14,32 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
-// CChildFrame
+// CDfnFrame
 
-IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWnd)
+IMPLEMENT_DYNCREATE(CDfnFrame, CMDIChildWnd)
 
-BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
-	//{{AFX_MSG_MAP(CChildFrame)
+BEGIN_MESSAGE_MAP(CDfnFrame, CMDIChildWnd)
+	//{{AFX_MSG_MAP(CDfnFrame)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CChildFrame construction/destruction
+// CDfnFrame construction/destruction
 
-CChildFrame::CChildFrame()
+// ---------------------------------------------------------------------------
+CDfnFrame::CDfnFrame()
 {
 	// TODO: add member initialization code here
 	
 }
 
-CChildFrame::~CChildFrame()
+// ---------------------------------------------------------------------------
+CDfnFrame::~CDfnFrame()
 {
 }
 
-BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
+// ---------------------------------------------------------------------------
+BOOL CDfnFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
@@ -47,17 +50,23 @@ BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 	return TRUE;
 }
 
+// ---------------------------------------------------------------------------
+BOOL CDfnFrame::PreTranslateMessage (MSG* pMsg)
+{
+	GetActiveView()->PreTranslateMessage (pMsg);
+	return CMDIChildWnd::PreTranslateMessage (pMsg);
+}
 
 /////////////////////////////////////////////////////////////////////////////
-// CChildFrame diagnostics
+// CDfnFrame diagnostics
 
 #ifdef _DEBUG
-void CChildFrame::AssertValid() const
+void CDfnFrame::AssertValid() const
 {
 	CMDIChildWnd::AssertValid();
 }
 
-void CChildFrame::Dump(CDumpContext& dc) const
+void CDfnFrame::Dump(CDumpContext& dc) const
 {
 	CMDIChildWnd::Dump(dc);
 }
@@ -65,9 +74,9 @@ void CChildFrame::Dump(CDumpContext& dc) const
 #endif //_DEBUG
 
 /////////////////////////////////////////////////////////////////////////////
-// CChildFrame message handlers
+// CDfnFrame message handlers
 
-BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) 
+BOOL CDfnFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) 
 {
 		// create static splitter view with two panes
 /*	VERIFY(m_wndSplitter.CreateStatic( this,1,2, WS_CHILD | WS_VISIBLE ));

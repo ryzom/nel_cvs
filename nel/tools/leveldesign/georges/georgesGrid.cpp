@@ -3,8 +3,10 @@
 
 #include "stdafx.h"
 #include "Georges.h"
-#include "GeorgesDoc.h"
-#include "MySuperGrid.h"
+
+#include "georgesDoc.h"
+#include "georgesGrid.h"
+
 #include "ComboInListView.h"
 #include "../georges_lib/Common.h"
 
@@ -15,11 +17,11 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
-// CMySuperGrid
+// CGeorgesGrid
 
 
 
-CMySuperGrid::CMySuperGrid()
+CGeorgesGrid::CGeorgesGrid()
 {
 	m_bDrag = TRUE;
 	pitemroot = 0;
@@ -27,13 +29,13 @@ CMySuperGrid::CMySuperGrid()
 	currenttreeitem = 0;
 }
 
-CMySuperGrid::~CMySuperGrid()
+CGeorgesGrid::~CGeorgesGrid()
 {
 }
 
 
-BEGIN_MESSAGE_MAP(CMySuperGrid, CSuperGridCtrl)
-	//{{AFX_MSG_MAP(CMySuperGrid)
+BEGIN_MESSAGE_MAP(CGeorgesGrid, CSuperGridCtrl)
+	//{{AFX_MSG_MAP(CGeorgesGrid)
 	ON_WM_CREATE()
 	ON_COMMAND(ID_LIST_NEWITEM, OnListNewitem)
 	ON_COMMAND(ID_LISTCHILD_DELITEM, OnListchildDelitem)
@@ -45,9 +47,9 @@ BEGIN_MESSAGE_MAP(CMySuperGrid, CSuperGridCtrl)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CMySuperGrid message handlers
+// CGeorgesGrid message handlers
 
-int CMySuperGrid::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+int CGeorgesGrid::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	if (CSuperGridCtrl::OnCreate(lpCreateStruct) == -1)
 		return -1;
@@ -84,7 +86,7 @@ int CMySuperGrid::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-void CMySuperGrid::InitializeGrid( CGeorgesDoc* const _pdoc )
+void CGeorgesGrid::InitializeGrid( CGeorgesDoc* const _pdoc )
 {
 	SetExtendedStyle(LVS_EX_GRIDLINES);
 	if( !pdoc )
@@ -106,7 +108,7 @@ void CMySuperGrid::InitializeGrid( CGeorgesDoc* const _pdoc )
 }
 
  
-void CMySuperGrid::InitializeSubItemNumber( CTreeItem* _itemparent, unsigned int& _index )
+void CGeorgesGrid::InitializeSubItemNumber( CTreeItem* _itemparent, unsigned int& _index )
 {
 /*
 	CItemInfo* lpiteminfo = GetData( _itemparent ); 
@@ -126,7 +128,7 @@ void CMySuperGrid::InitializeSubItemNumber( CTreeItem* _itemparent, unsigned int
 */
 }
 
-void CMySuperGrid::InitializeItemNumber()
+void CGeorgesGrid::InitializeItemNumber()
 {
 /*
 	int nb_elt = pdoc->GetItemNbElt();
@@ -208,7 +210,7 @@ int CSuperGridCtrl::Expand(CTreeItem* pSelItem, int nIndex)
 
   */
 
-void CMySuperGrid::LoadItem()
+void CGeorgesGrid::LoadItem()
 {
 	DeleteAll();
 	unsigned int index;
@@ -266,7 +268,7 @@ void CMySuperGrid::LoadItem()
 
 
 //helper function to copy CItemInfo used when drag/drop you must override this this function to suit your own CItemInfo class
-CItemInfo* CMySuperGrid::CopyData(CItemInfo* lpSrc)
+CItemInfo* CGeorgesGrid::CopyData(CItemInfo* lpSrc)
 {
 	ASSERT(lpSrc!=NULL);
 	CItemInfo* lpDest = new CItemInfo;
@@ -278,14 +280,14 @@ CItemInfo* CMySuperGrid::CopyData(CItemInfo* lpSrc)
 
 
 //override, like red!
-COLORREF CMySuperGrid::GetCellRGB()
+COLORREF CGeorgesGrid::GetCellRGB()
 {
 	return RGB(128,128,200);
 }
 
 
 //this is my override of GetIcon, override this to set what ever icon suits you
-int CMySuperGrid::GetIcon(const CTreeItem* pItem)
+int CGeorgesGrid::GetIcon(const CTreeItem* pItem)
 {
 	if(pItem!=NULL)
 	{
@@ -307,7 +309,7 @@ int CMySuperGrid::GetIcon(const CTreeItem* pItem)
 
 
 //override
-void CMySuperGrid::OnUpdateListViewItem(CTreeItem* lpItem, LV_ITEM *plvItem)
+void CGeorgesGrid::OnUpdateListViewItem(CTreeItem* lpItem, LV_ITEM *plvItem)
 {
 	CString str = (CString)plvItem->pszText;
 	CItemInfo *lp = GetData(lpItem);
@@ -320,24 +322,29 @@ void CMySuperGrid::OnUpdateListViewItem(CTreeItem* lpItem, LV_ITEM *plvItem)
 			{ //parents
 				lp->SetSubItemText(plvItem->iSubItem-1, str);
 				pdoc->SetItemParent( itemindex-0x80000001, str );
-				lp->SetSubItemText( plvItem->iSubItem-2, pdoc->GetItemParent( itemindex-0x80000001 ) );
+				//lp->SetSubItemText( plvItem->iSubItem-2, pdoc->GetItemParent( itemindex-0x80000001 ) );
 			}
 			else
 			{ //values
 				lp->SetSubItemText(plvItem->iSubItem-1, str);
 				pdoc->SetItemValue( itemindex-1, str );
 				lp->SetSubItemText( plvItem->iSubItem-2, pdoc->GetItemCurrentResult( itemindex-1 ) );
+				UpdateData (lpItem, lp); 
+				SetItemText (plvItem->iItem, plvItem->iSubItem, str.GetBuffer(1));
 			}
 		}
-		UpdateData(lpItem, lp); 
-		SetItemText(plvItem->iItem, plvItem->iSubItem, str.GetBuffer(1));
+		else
+		{
+			UpdateData(lpItem, lp); 
+			SetItemText(plvItem->iItem, plvItem->iSubItem, str.GetBuffer(1));
+		}
 	}
 }
 
 
 
 			
-BOOL CMySuperGrid::OnItemLButtonDown(LVHITTESTINFO& ht)
+BOOL CGeorgesGrid::OnItemLButtonDown(LVHITTESTINFO& ht)
 {
 	if(ht.iItem!=-1)
 	{
@@ -373,7 +380,7 @@ BOOL CMySuperGrid::OnItemLButtonDown(LVHITTESTINFO& ht)
 }
 
 //override called when OnLButtondown
-void CMySuperGrid::OnControlLButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO& ht)
+void CGeorgesGrid::OnControlLButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO& ht)
 {
 	//now I am sure I added a combobox some where, so check for this control
 	CTreeItem*pSelItem = GetTreeItem(ht.iItem);
@@ -404,14 +411,14 @@ void CMySuperGrid::OnControlLButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO
 	}
 }
 
-BOOL CMySuperGrid::OnItemRButtonDown(LVHITTESTINFO& ht)
+BOOL CGeorgesGrid::OnItemRButtonDown(LVHITTESTINFO& ht)
 {
 //	if( ht.iItem == -1 )
 //		return 0;
 	return 1; 
 }
 
-void CMySuperGrid::OnControlRButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO& ht)
+void CGeorgesGrid::OnControlRButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO& ht)
 {
 	currenttreeitem = GetTreeItem(ht.iItem);
 	if( !currenttreeitem )
@@ -469,7 +476,7 @@ void CMySuperGrid::OnControlRButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO
 }
 
 
-void CMySuperGrid::ExpandAllItems() 
+void CGeorgesGrid::ExpandAllItems() 
 {
 	CWaitCursor wait; 
 	SetRedraw(0);
@@ -484,13 +491,13 @@ void CMySuperGrid::ExpandAllItems()
 	EnsureVisible(nScroll, TRUE);
 }
 
-void CMySuperGrid::InsertItemEx(CTreeItem *pSelItem, int nItem)
+void CGeorgesGrid::InsertItemEx(CTreeItem *pSelItem, int nItem)
 {
 	currenttreeitem = pSelItem;
 	OnListNewitem();
 }
 
-void CMySuperGrid::UpdateItemIndex()
+void CGeorgesGrid::UpdateItemIndex()
 {
 	POSITION pos = GetRootHeadPosition();
 	unsigned int k = 0;
@@ -528,7 +535,7 @@ void CMySuperGrid::UpdateItemIndex()
 	}
 }
 
-unsigned int CMySuperGrid::LoadSubItem( CTreeItem* _itemparent, unsigned int& _index )
+unsigned int CGeorgesGrid::LoadSubItem( CTreeItem* _itemparent, unsigned int& _index )
 {
 	CItemInfo* lpiteminfo = new CItemInfo( _index+1 );
 	lpiteminfo->SetItemText( pdoc->GetItemName( _index ) );
@@ -554,12 +561,12 @@ unsigned int CMySuperGrid::LoadSubItem( CTreeItem* _itemparent, unsigned int& _i
 	return( n );
 }
 
-void CMySuperGrid::HowToInsertItemsAfterTheGridHasBeenInitialized(int nIndex, int indexxx )
+void CGeorgesGrid::HowToInsertItemsAfterTheGridHasBeenInitialized(int nIndex, int indexxx )
 {
 }
 
 
-void CMySuperGrid::OnListchildDelitem() 
+void CGeorgesGrid::OnListchildDelitem() 
 {
 	if( !currenttreeitem  )
 		return;	
@@ -582,7 +589,7 @@ void CMySuperGrid::OnListchildDelitem()
 	//todo: insérer / deleter les parents
 	//todo: MAJ de l'ensemble de la fiche!
 
-void CMySuperGrid::OnListNewitem() 
+void CGeorgesGrid::OnListNewitem() 
 {
 	if( !currenttreeitem  )
 		return;	
@@ -634,9 +641,11 @@ void CMySuperGrid::OnListNewitem()
 }
 
 
-void CMySuperGrid::OnParentNewchild() 
+void CGeorgesGrid::OnParentNewchild() 
 {
-	pdoc->AddParent( 0 );
+	pdoc->AddParent (0);
+
+	
 /*
 	SetRedraw(0);
 	BOOL bUpdate = FALSE;
@@ -660,7 +669,7 @@ void CMySuperGrid::OnParentNewchild()
 */
 }
 
-void CMySuperGrid::OnParchDelparent() 
+void CGeorgesGrid::OnParchDelparent() 
 {
 	if( !currenttreeitem  )
 		return;	
@@ -669,6 +678,8 @@ void CMySuperGrid::OnParchDelparent()
 		return;
 	unsigned int currentitem = lp->GetItemIndex() - 0x80000001;
 	pdoc->DelParent( currentitem );
+
+
 /*
 	unsigned int ui = GetCurIndex( currenttreeitem );
 	DeleteItemEx(currenttreeitem, ui);
@@ -678,7 +689,7 @@ void CMySuperGrid::OnParchDelparent()
 */
 }
 
-void CMySuperGrid::OnParentchildActivate() 
+void CGeorgesGrid::OnParentchildActivate() 
 {
 	if( !currenttreeitem  )
 		return;	
@@ -687,10 +698,14 @@ void CMySuperGrid::OnParentchildActivate()
 		return;
 	unsigned int currentitem = lp->GetItemIndex();
 
-std::vector< std::pair< bool, CString > > vexp;
-GetExpandedList( vexp );
+//	std::vector< std::pair< bool, CString > > vexp;
+//	GetExpandedList( vexp );
+
 	pdoc->SetItemActivity( currentitem-0x80000001, CString( "true" ) );
-SetExpandedList( vexp );
+
+//	SetExpandedList( vexp );
+
+
 /*
 	lp->SetSubItemText( 2, pdoc->GetItemActivity( currentitem-0x80000001 ) );
 	InvalidateItemRect( GetCurIndex( currenttreeitem ) );
@@ -698,7 +713,7 @@ SetExpandedList( vexp );
 */
 }
 
-void CMySuperGrid::OnParentchildDesactivate() 
+void CGeorgesGrid::OnParentchildDesactivate() 
 {
 	if( !currenttreeitem  )
 		return;	
@@ -706,10 +721,14 @@ void CMySuperGrid::OnParentchildDesactivate()
 	if( lp == NULL )
 		return;
 	unsigned int currentitem = lp->GetItemIndex();
-std::vector< std::pair< bool, CString > > vexp;
-GetExpandedList( vexp );
+
+//	std::vector< std::pair< bool, CString > > vexp;
+//	GetExpandedList( vexp );
+
 	pdoc->SetItemActivity( currentitem-0x80000001, CString( "false" ) );
-SetExpandedList( vexp );
+
+//	SetExpandedList( vexp );
+	
 /*
 	lp->SetSubItemText( 2, pdoc->GetItemActivity( currentitem-0x80000001 ) );
 	InvalidateItemRect( GetCurIndex( currenttreeitem ) );
@@ -717,7 +736,7 @@ SetExpandedList( vexp );
 */
 }
 
-void CMySuperGrid::GetExpandedList( std::vector< std::pair< bool, CString > >& _vexp )
+void CGeorgesGrid::GetExpandedList( std::vector< std::pair< bool, CString > >& _vexp )
 {
 /*
 	int iItem = GetNextItem( -1, LVNI_ALL ); 
@@ -777,7 +796,7 @@ void CMySuperGrid::GetExpandedList( std::vector< std::pair< bool, CString > >& _
 */
 }
 
-void CMySuperGrid::SetExpandedList( const std::vector< std::pair< bool, CString > >& _vexp )
+void CGeorgesGrid::SetExpandedList( const std::vector< std::pair< bool, CString > >& _vexp )
 {
 /*
 	int iItem = GetNextItem( -1, LVNI_ALL ); 
@@ -854,7 +873,7 @@ void CMySuperGrid::SetExpandedList( const std::vector< std::pair< bool, CString 
 */
 }
 
-BOOL CMySuperGrid::CanEdit( CTreeItem* const _pItem )
+BOOL CGeorgesGrid::CanEdit( CTreeItem* const _pItem )
 {
 	CItemInfo *lp = GetData( _pItem );
 	if( lp == NULL )
@@ -865,7 +884,7 @@ BOOL CMySuperGrid::CanEdit( CTreeItem* const _pItem )
 	return( pdoc->CanEditItem( index-1 ) );
 }
 
-BOOL CMySuperGrid::OnDeleteItem(CTreeItem* pItem, int nIndex)
+BOOL CGeorgesGrid::OnDeleteItem(CTreeItem* pItem, int nIndex)
 {
 	CItemInfo *lp = GetData( pItem );
 	if( lp == NULL )
@@ -875,7 +894,7 @@ BOOL CMySuperGrid::OnDeleteItem(CTreeItem* pItem, int nIndex)
 	return( infos & ITEM_ISLISTCHILD );
 }
 
-BOOL CMySuperGrid::OnInsertItem(CTreeItem* pItem, int nIndex)
+BOOL CGeorgesGrid::OnInsertItem(CTreeItem* pItem, int nIndex)
 {
 	CItemInfo *lp = GetData( pItem );
 	if( lp == NULL )
@@ -885,50 +904,58 @@ BOOL CMySuperGrid::OnInsertItem(CTreeItem* pItem, int nIndex)
 	return( infos & ITEM_ISLIST );
 }
 
-BOOL CMySuperGrid::OnVkReturn()
+BOOL CGeorgesGrid::OnVkReturn()
 {
-	BOOL bResult=FALSE;
+	BOOL bResult = TRUE; // Handled by our own function
+
 	int iItem = GetNextItem( -1, LVNI_ALL | LVNI_SELECTED);
 	if( GetCurSubItem() != -1 && iItem != -1)
 	{
 		CTreeItem*pSelItem = GetTreeItem(iItem);
-		if(pSelItem!=NULL)
+		if (pSelItem == NULL)
+			return TRUE;
+
+		CHeaderCtrl* pHeader = (CHeaderCtrl*)GetDlgItem(0);
+		int iSubItem = Header_OrderToIndex(pHeader->m_hWnd, GetCurSubItem());
+
+		if (iSubItem == 2) // Value Field
+			return FALSE; // Enter edit box
+		else
+			return TRUE; // Do not enter an edit box
+/*
+		CItemInfo* pInfo = GetData(pSelItem);
+
+		CItemInfo::CONTROLTYPE ctrlType;
+		if(pInfo->GetControlType(iSubItem-1, ctrlType))
 		{	
-			CHeaderCtrl* pHeader = (CHeaderCtrl*)GetDlgItem(0);
-			int iSubItem = Header_OrderToIndex(pHeader->m_hWnd, GetCurSubItem());
-			CItemInfo* pInfo = GetData(pSelItem);
-			CItemInfo::CONTROLTYPE ctrlType;
-			if(pInfo->GetControlType(iSubItem-1, ctrlType))
-			{	
-				switch(ctrlType)
-				{
-					case pInfo->CONTROLTYPE::datecontrol:break;
-					case pInfo->CONTROLTYPE::spinbutton:break;
-					case pInfo->CONTROLTYPE::dropdownlistviewwhatevercontrol:break;
-					case pInfo->CONTROLTYPE::combobox: 
-						{
+			switch(ctrlType)
+			{
+				case pInfo->CONTROLTYPE::datecontrol:break;
+				case pInfo->CONTROLTYPE::spinbutton:break;
+				case pInfo->CONTROLTYPE::dropdownlistviewwhatevercontrol:break;
+				case pInfo->CONTROLTYPE::combobox: 
+					{
 //							CStringList* list=NULL;
 //							pInfo->GetListData(iSubItem-1, list);
 //							CComboBox * pList = ShowList(iItem, iSubItem, list);
-							CStringList lst;
-							pdoc->GetItemListPredef( iItem-1, &lst );
-							pInfo->SetListData(1, &lst);
-							CStringList* list=NULL;
-							pInfo->GetListData(iSubItem-1, list);
-							CComboBox * pList = ShowList(iItem, iSubItem, list);
+						CStringList lst;
+						pdoc->GetItemListPredef( iItem-1, &lst );
+						pInfo->SetListData(1, &lst);
+						CStringList* list=NULL;
+						pInfo->GetListData(iSubItem-1, list);
+						CComboBox * pList = ShowList(iItem, iSubItem, list);
 
-							bResult=TRUE; //I'll handle it from here
-						}break;
-					default:break;
-				}
+						bResult=TRUE; //I'll handle it from here
+					}break;
+				default:break;
 			}
-		}
+		}*/
 	}
 	return( bResult );
 }
 
 #define IDC_COMBOBOXINLISTVIEW 0x1235
-CComboBox* CMySuperGrid::ShowList(int nItem, int nCol, CStringList *lstItems)
+CComboBox* CGeorgesGrid::ShowList(int nItem, int nCol, CStringList *lstItems)
 {
 	CString strFind = GetItemText(nItem, nCol);
 
@@ -972,7 +999,7 @@ CComboBox* CMySuperGrid::ShowList(int nItem, int nCol, CStringList *lstItems)
 
 
 
-int CMySuperGrid::CalcHorzExtent(CWnd* pWnd, CStringList *pList)
+int CGeorgesGrid::CalcHorzExtent(CWnd* pWnd, CStringList *pList)
 {
 	int nExtent=0;
 	if(pWnd!=NULL)
@@ -1003,7 +1030,7 @@ int CMySuperGrid::CalcHorzExtent(CWnd* pWnd, CStringList *pList)
 }
 
 
-void CMySuperGrid::HowToLoopThroughAllItems_if_we_wanted_to_print_them_or_what_ever(CDC *pDC)
+void CGeorgesGrid::HowToLoopThroughAllItems_if_we_wanted_to_print_them_or_what_ever(CDC *pDC)
 {
 	TEXTMETRIC tm;
 	pDC->GetTextMetrics(&tm);
@@ -1066,7 +1093,7 @@ void CMySuperGrid::HowToLoopThroughAllItems_if_we_wanted_to_print_them_or_what_e
 
 
 
-void CMySuperGrid::HowToLoopThroughAllItems_that_has_a_checkmark_and_print_them_or_what_ever(CDC *pDC)
+void CGeorgesGrid::HowToLoopThroughAllItems_that_has_a_checkmark_and_print_them_or_what_ever(CDC *pDC)
 {
 	TEXTMETRIC tm;
 	pDC->GetTextMetrics(&tm);
@@ -1138,7 +1165,7 @@ void CMySuperGrid::HowToLoopThroughAllItems_that_has_a_checkmark_and_print_them_
 
 
 //HOWTO: Search nodeptr that have a specific item and subitems also shows you how to select the node and delete it
-void CMySuperGrid::HowToSearch_I_am_using_hardcoded_values_here_cause_I_am_tired_now(void)
+void CGeorgesGrid::HowToSearch_I_am_using_hardcoded_values_here_cause_I_am_tired_now(void)
 {
 	//one Item and two Subitems
 	CTreeItem *pNode =	Search(__T("Hello World"),_T("Happy"),_T("Programming"),NULL);
@@ -1207,7 +1234,7 @@ void CMySuperGrid::HowToSearch_I_am_using_hardcoded_values_here_cause_I_am_tired
 //this is just one way to search items...strItem must match and then all subitems must be
 //a match before returning the node
 //the search function here search all nodes regardless if collapsed or expanded
-CMySuperGrid::CTreeItem* CMySuperGrid::Search(CString strItem,...)
+CGeorgesGrid::CTreeItem* CGeorgesGrid::Search(CString strItem,...)
 {
 	if(!GetItemCount())
 		return NULL;
@@ -1294,7 +1321,7 @@ CMySuperGrid::CTreeItem* CMySuperGrid::Search(CString strItem,...)
 
 
 
-void CMySuperGrid::SortData()
+void CGeorgesGrid::SortData()
 {
 	int nIndex = GetNextItem(-1, LVNI_ALL | LVNI_SELECTED); 
 	if(nIndex==-1)
@@ -1309,7 +1336,7 @@ void CMySuperGrid::SortData()
 
 
 //another search thing
-CMySuperGrid::CTreeItem* CMySuperGrid::SearchEx(CTreeItem *pStartPosition, CString strItem)
+CGeorgesGrid::CTreeItem* CGeorgesGrid::SearchEx(CTreeItem *pStartPosition, CString strItem)
 {
 	CItemInfo* lp = GetData(pStartPosition);
 	//if(lp->GetCheck()) another condition here maybe
@@ -1355,29 +1382,29 @@ CMySuperGrid::CTreeItem* CMySuperGrid::SearchEx(CTreeItem *pStartPosition, CStri
 
 
 
-BOOL CMySuperGrid::OnItemExpanding(CTreeItem *pItem, int iItem)
+BOOL CGeorgesGrid::OnItemExpanding(CTreeItem *pItem, int iItem)
 {
 	return 1;
 }
 
 
-BOOL CMySuperGrid::OnItemExpanded(CTreeItem* pItem, int iItem)
+BOOL CGeorgesGrid::OnItemExpanded(CTreeItem* pItem, int iItem)
 {
 	return 1;
 }
 
 
-BOOL CMySuperGrid::OnCollapsing(CTreeItem *pItem)
+BOOL CGeorgesGrid::OnCollapsing(CTreeItem *pItem)
 {
 	return 1;
 }
 
-BOOL CMySuperGrid::OnItemCollapsed(CTreeItem *pItem)
+BOOL CGeorgesGrid::OnItemCollapsed(CTreeItem *pItem)
 {
 	return 1;
 }
 
-CImageList *CMySuperGrid::CreateDragImageEx(int nItem)
+CImageList *CGeorgesGrid::CreateDragImageEx(int nItem)
 {
 	if(m_bDrag)
 		return CSuperGridCtrl::CreateDragImageEx(GetDragItem());
@@ -1385,7 +1412,7 @@ CImageList *CMySuperGrid::CreateDragImageEx(int nItem)
 		return NULL;
 }
 
-void CMySuperGrid::_DeleteAll()
+void CGeorgesGrid::_DeleteAll()
 {
 	DeleteAll();//call CSuperGridCtrl::DeleteAll();
 	//add some new data
@@ -1444,7 +1471,7 @@ void CMySuperGrid::_DeleteAll()
 	SetItemState(0, uflag, uflag);
 }
 
-void CMySuperGrid::DynamicUpdateSomeItems(int nItem)
+void CGeorgesGrid::DynamicUpdateSomeItems(int nItem)
 {
 	CTreeItem*pItem = GetTreeItem(nItem);
 	CItemInfo *lp = GetData(pItem);
@@ -1462,7 +1489,7 @@ void CMySuperGrid::DynamicUpdateSomeItems(int nItem)
 	}
 }
 
-void CMySuperGrid::SetNewImage(int nItem)
+void CGeorgesGrid::SetNewImage(int nItem)
 {
 	CTreeItem*pItem = GetTreeItem(nItem);
 	CItemInfo *lp = GetData(pItem);

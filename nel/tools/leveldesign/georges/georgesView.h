@@ -8,7 +8,7 @@
 //
 
 /////////////////////////////////////////////////////////////////////////////
-#include "MySuperGrid.h"
+#include "georgesGrid.h"
 
 class CGeorgesView : public CView
 {
@@ -18,7 +18,7 @@ protected:
 
 // Attributes
 public:
-	CMySuperGrid m_List;
+	CGeorgesGrid m_List;
 	BOOL m_bDrag;
 // Attributes
 public:
@@ -32,7 +32,9 @@ public:
 	public:
 	virtual void OnPrepareDC(CDC* pDC, CPrintInfo* pInfo = NULL);
 	protected:
-	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
+	virtual void OnDraw (CDC* pDC);      // overridden to draw this view
+	virtual BOOL PreTranslateMessage (MSG* pMsg);
+
 	virtual void OnPrint(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	//}}AFX_VIRTUAL

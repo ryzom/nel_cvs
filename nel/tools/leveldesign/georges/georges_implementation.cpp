@@ -53,11 +53,6 @@ public:
 	// Release instance
 	static GEORGES_EXPORT void releaseInterface (IGeorges* pGeorges);
 
-
-	virtual void SetDocumentWorkDirectory( const std::string& _sxworkdirectory );
-
-	virtual void SetDocumentRootDirectory( const std::string& _sxrootdirectory );
-
 	virtual void createInstanceFile (const std::string &_sxFullnameWithoutExt, const std::string &_dfnname);
 
 	virtual void NewDocument();
@@ -70,10 +65,10 @@ public:
 
 	virtual void CloseDocument();
 
-
-	virtual void SetWorkDirectory( const std::string& _sxworkdirectory );
-
-	virtual void SetRootDirectory( const std::string& _sxrootdirectory );
+	// Directories settings
+	virtual void SetDirDfnTyp		(const std::string& _sxworkdirectory);
+	virtual void SetDirPrototype	(const std::string& _sxrootdirectory);
+	virtual void SetDirLevel		(const std::string& _sxrootdirectory);
 
 	virtual void SaveAllDocument();
 
@@ -86,10 +81,7 @@ public:
 	virtual void MakeTyp( const std::string& _sxfullname, const std::string& _sxtype, const std::string& _sxformula, const std::string& _sxenum, const std::string& _sxlow, const std::string& _sxhigh, const std::string& _sxdefault, const std::vector< std::pair< std::string, std::string > >* const _pvpredef = 0, const std::vector< std::pair< std::string, std::string > >* const _pvparent = 0 );
 };
 
-//---------------------------------------------
-//	CGeorgesImpl
-//
-//---------------------------------------------
+// ---------------------------------------------------------------------------
 CGeorgesImpl::CGeorgesImpl()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());	
@@ -100,22 +92,14 @@ CGeorgesImpl::CGeorgesImpl()
 	NLMISC_REGISTER_CLASS( CFormBodyEltList );
 	NLMISC_REGISTER_CLASS( CFormBodyEltStruct );
 
-} // CGeorgesImpl //
+}
 
-
-//---------------------------------------------
-//	CGeorgesImpl
-//
-//---------------------------------------------
+// ---------------------------------------------------------------------------
 CGeorgesImpl::~CGeorgesImpl()
 {
 }
 
-
-//---------------------------------------------
-//	initUI
-//
-//---------------------------------------------
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::initUI( HWND parent )
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -124,14 +108,9 @@ void CGeorgesImpl::initUI( HWND parent )
 
 	_MainFrame = (CMainFrame*)theApp.m_pMainWnd;
 	
-} // initUI //
+}
 
-
-
-//---------------------------------------------
-//	initUILight
-//
-//---------------------------------------------
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::initUILight (int x, int y, int cx, int cy)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -140,14 +119,9 @@ void CGeorgesImpl::initUILight (int x, int y, int cx, int cy)
 	
 	_MainFrame = (CMainFrame*)theApp.m_pMainWnd;
 
-} // initUILight //
+}
 
-
-
-//---------------------------------------------
-//	Go
-//
-//---------------------------------------------
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::go()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -156,34 +130,29 @@ void CGeorgesImpl::go()
 		MSG	msg;
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			if (!_MainFrame->PreTranslateMessage(&msg))
+			{
+				::TranslateMessage(&msg);
+				::DispatchMessage(&msg);
+			}
 		}
 	}
 	while (!_MainFrame->Exit);
 
-} // go
+	_MainFrame->DoClose();
+	_MainFrame->m_hWnd = NULL;
+}
 
-
-
-//---------------------------------------------
-//	releaseUI
-//
-//---------------------------------------------
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::releaseUI()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	_MainFrame->DestroyWindow();
+	if (_MainFrame->m_hWnd != NULL)
+		_MainFrame->DestroyWindow();
 	_MainFrame = NULL;
-} // releaseUI
+}
 
-
-
-
-//---------------------------------------------
-//	getMainFrame
-//
-//---------------------------------------------
+// ---------------------------------------------------------------------------
 void * CGeorgesImpl::getMainFrame ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -193,23 +162,33 @@ void * CGeorgesImpl::getMainFrame ()
 	
 	return theApp.m_pMainWnd;
 
-} // getMainFrame //
+}
 
-void CGeorgesImpl::SetWorkDirectory( const std::string& _sxworkdirectory )
+// ---------------------------------------------------------------------------
+void CGeorgesImpl::SetDirDfnTyp		(const std::string& _sxDirectory)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
-	papp->SetWorkDirectory( _sxworkdirectory );
-} // SetWorkDirectory //
+	CGeorgesApp* pApp = dynamic_cast<CGeorgesApp*>(AfxGetApp());
+	pApp->SetDirDfnTyp (_sxDirectory);
+}
 
-void CGeorgesImpl::SetRootDirectory( const std::string& _sxrootdirectory )
+// ---------------------------------------------------------------------------
+void CGeorgesImpl::SetDirPrototype	(const std::string& _sxDirectory)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
-	papp->SetRootDirectory( _sxrootdirectory );
-	papp->UpdateAllDocument();
-} // SetRootDirectory //
+	CGeorgesApp* pApp = dynamic_cast<CGeorgesApp*>(AfxGetApp());
+	pApp->SetDirPrototype (_sxDirectory);
+}
 
+// ---------------------------------------------------------------------------
+void CGeorgesImpl::SetDirLevel		(const std::string& _sxDirectory)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	CGeorgesApp* pApp = dynamic_cast<CGeorgesApp*>(AfxGetApp());
+	pApp->SetDirLevel (_sxDirectory);
+}
+
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::SetTypPredef( const std::string& _sxfilename, const std::vector< std::string >& _pvs )
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -219,8 +198,9 @@ void CGeorgesImpl::SetTypPredef( const std::string& _sxfilename, const std::vect
 	for( std::vector< std::string >::const_iterator it = _pvs.begin(); it != _pvs.end(); ++it )
 		vsx.push_back( *it );
 	ploader->SetTypPredef( _sxfilename, vsx );
-} // SetTypPredef //
+}
 
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::MakeDfn( const std::string& _sxfullname, const std::vector< std::pair< std::string, std::string > >* const _pvdefine  )
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -235,8 +215,9 @@ void CGeorgesImpl::MakeDfn( const std::string& _sxfullname, const std::vector< s
 			vsx->push_back( std::make_pair( it->first , it->second  ) );
 	}
 	ploader->MakeDfn( _sxfullname, vsx );
-} // MakeDfn //
+}
 
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::MakeTyp( const std::string& _sxfullname, const std::string& _sxtype, const std::string& _sxformula, const std::string& _sxenum, const std::string& _sxlow, const std::string& _sxhigh, const std::string& _sxdefault, const std::vector< std::pair< std::string, std::string > >* const _pvpredef , const std::vector< std::pair< std::string, std::string > >* const _pvparent  )
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -259,8 +240,9 @@ void CGeorgesImpl::MakeTyp( const std::string& _sxfullname, const std::string& _
 			vsx2->push_back( std::make_pair( it->first, it->second ) );
 	}
 	ploader->MakeTyp( _sxfullname, _sxtype, _sxformula, _sxenum, _sxlow, _sxhigh, _sxdefault, vsx, vsx2 );
-} // MakeTyp //
+}
 
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::createInstanceFile (const std::string &_sxFullnameWithoutExt, const std::string &_dfnname)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -277,91 +259,86 @@ void CGeorgesImpl::createInstanceFile (const std::string &_sxFullnameWithoutExt,
 	item.SetLoader (ploader);
 	item.New (_dfnname);
 	item.Save (sFullname);
-} // createInstanceFile //
+}
 
-void CGeorgesImpl::SetDocumentWorkDirectory( const std::string& _sxworkdirectory )
-{
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
-	pgdoc->SetWorkDirectory( _sxworkdirectory );
-} // SetDocumentWorkDirectory //
-
-void CGeorgesImpl::SetDocumentRootDirectory( const std::string& _sxrootdirectory )
-{
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
-	pgdoc->SetRootDirectory( _sxrootdirectory );
-} // SetDocumentRootDirectory //
-
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::LoadDocument( const std::string& _sxfullname )
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
-	papp->OpenDocumentFile(_sxfullname.c_str());
-} // LoadDocument //
+	try
+	{
+		papp->OpenDocumentFile(_sxfullname.c_str());
+	}
+	catch (NLMISC::Exception &e)
+	{
+		std::string tmp = std::string(e.what()) + "(" + _sxfullname + ")";
+		papp->m_pMainWnd->MessageBox(tmp.c_str(), "Georges_Lib", MB_ICONERROR | MB_OK);
+	}
+}
 
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::SaveDocument( const std::string& _sxfullname )
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
 	pgdoc->OnSaveDocument( _sxfullname.c_str() );
-} // SaveDocument //
+}
 
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::SaveAllDocument()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
 	papp->SaveAllDocument();
-} // SetRootDirectory //
+}
 
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::NewDocument( const std::string& _sxdfnname)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
 	pgdoc->NewDocument( _sxdfnname );
-} // NewDocument //
+}
 
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::NewDocument()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
 	pgdoc->OnNewDocument();
-} // NewDocument //
+}
 
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::CloseDocument()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
 	pgdoc->OnCloseDocument();
-} // CloseDocument //
+}
 
+// ---------------------------------------------------------------------------
 void CGeorgesImpl::CloseAllDocument()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
 	papp->CloseAllDocument();
-} // CloseAllDocument //
+}
 
 // *******
 // STATICS
 // *******
 
-//---------------------------------------------
-//	releaseInterface
-//
-//---------------------------------------------
+// ---------------------------------------------------------------------------
 void IGeorges::releaseInterface (IGeorges* pGeorges)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	delete pGeorges;
 
-} // releaseInterface //
+}
 
-//---------------------------------------------
-//	getInterface
-//
-//---------------------------------------------
+// ---------------------------------------------------------------------------
 IGeorges* IGeorges::getInterface (int version)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -369,35 +346,24 @@ IGeorges* IGeorges::getInterface (int version)
 	// Check version number
 	if (version != GEORGES_VERSION)
 	{
-		MessageBox( NULL, "Bad version of georges.dll.", "Georges", MB_ICONEXCLAMATION|MB_OK);
+		MessageBox (NULL, "Bad version of georges.dll.", "Georges", MB_ICONEXCLAMATION|MB_OK);
 		return NULL;
 	}
 	else
 		return new CGeorgesImpl;
 
-} // getInterface //
+}
 
-
-
-//---------------------------------------------
-//	IGeorgesGetInterface (Helper name)
-//---------------------------------------------
+// ---------------------------------------------------------------------------
 IGeorges* IGeorgesGetInterface (int version)
 {
 	return IGeorges::getInterface (version);
 
-} // IGeorgesGetInterface //
+}
 
-
-//---------------------------------------------
-//	ILogicEditorReleaseInterface
-//---------------------------------------------
+// ---------------------------------------------------------------------------
 void IGeorgesReleaseInterface (IGeorges* pGeorges)
 {
 	IGeorges::releaseInterface (pGeorges);
 
-} // IGeorgesReleaseInterface //
-
-
-
-
+}

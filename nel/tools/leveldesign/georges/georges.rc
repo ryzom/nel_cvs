@@ -68,7 +68,8 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON    DISCARDABLE     "res\\Georges.ico"
-IDR_GEORGETYPE          ICON    DISCARDABLE     "res\\GeorgesDoc.ico"
+IDR_TYPE_INSTANCE       ICON    DISCARDABLE     "res\\GeorgesDoc.ico"
+IDR_TYPE_DFN            ICON    DISCARDABLE     "res\\idr_type.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -109,10 +110,17 @@ IDR_MAINFRAME MENU PRELOAD DISCARDABLE
 BEGIN
     POPUP "&Fichier"
     BEGIN
-        MENUITEM "&Nouveau\tCtrl+N",            ID_FILE_NEW
-        MENUITEM "&Ouvrir...\tCtrl+O",          ID_FILE_OPEN
+        MENUITEM "Nouveau Dfn/Typ",             ID_FILE_NEW_DFN
+        MENUITEM "Ouvrir Dfn/Typ",              ID_FILE_OPEN_DFN
+        MENUITEM SEPARATOR
+        MENUITEM "&Nouvelle Instance",          ID_FILE_NEW_INSTANCE
+        MENUITEM "Ouvrir Instance",             ID_FILE_OPEN_INSTANCE
+        MENUITEM SEPARATOR
         MENUITEM "&Enregistrer\tCtrl+S",        ID_FILE_SAVE
         MENUITEM "En&registrer sous...",        ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "Set Prototype Directory",     ID_FILE_DIR_PROTOTYPE
+        MENUITEM "Set Dfn/Typ Diretory",        ID_FILE_DIR_DFNTYP
         MENUITEM SEPARATOR
         MENUITEM "Fichier récent",              ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -190,6 +198,7 @@ END
 
 IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
 BEGIN
+    "A",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
@@ -202,7 +211,6 @@ BEGIN
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
     "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
-    "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
 END
 
@@ -294,6 +302,8 @@ END
 STRINGTABLE PRELOAD DISCARDABLE 
 BEGIN
     IDR_MAINFRAME           "Georges\n\nGeorge\n\n\nGeorges.Document\nGeorge Document"
+    IDR_TYPE_DFN            "\nDfn\nDfn\nDefinitions(*.dfn)\n.dfn\nGeorgesFile\nGeorgesDefintion"
+    IDR_TYPE_INSTANCE       "\nInstance\nInstance\nInstances(*.*)\n.*\nMyInstance\nMyInstanceWork"
 END
 
 STRINGTABLE PRELOAD DISCARDABLE 

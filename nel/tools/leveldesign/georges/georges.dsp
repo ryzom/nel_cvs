@@ -164,6 +164,18 @@ SOURCE=.\ComboInListView.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\DfnDoc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\DfnFrame.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\DfnView.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\georges.cpp
 # End Source File
 # Begin Source File
@@ -218,6 +230,18 @@ SOURCE=.\ChildFrm.h
 # Begin Source File
 
 SOURCE=.\ComboInListView.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\DfnDoc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\DfnFrame.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\DfnView.h
 # End Source File
 # Begin Source File
 
@@ -294,6 +318,10 @@ SOURCE=.\res\georges.rc2
 # Begin Source File
 
 SOURCE=.\res\georgesDoc.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\idr_type.ico
 # End Source File
 # Begin Source File
 

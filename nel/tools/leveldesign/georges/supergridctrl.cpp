@@ -569,7 +569,7 @@ void CSuperGridCtrl::OnKeydown(NMHDR* pNMHDR, LRESULT* pResult)
 	LV_KEYDOWN* pLVKeyDow = (LV_KEYDOWN*)pNMHDR;
 	switch(pLVKeyDow->wVKey)
 	{
-		case VK_RETURN: 
+		/*case VK_RETURN: 
 			{
 				int nIndex = GetSelectedItem();
 				if(nIndex !=-1)
@@ -581,7 +581,7 @@ void CSuperGridCtrl::OnKeydown(NMHDR* pNMHDR, LRESULT* pResult)
 							EditLabelEx( nIndex, 2 );	
 					}
 				}
-			}break;
+			}break;*/
 
 		case VK_SPACE: 
 			{
@@ -2542,7 +2542,7 @@ CItemInfo* CSuperGridCtrl::CopyData(CItemInfo* lpSrc)
 //default implementation for setting icons
 int CSuperGridCtrl::GetIcon(const CTreeItem* pItem)
 {
-	
+	return pItem->m_lpNodeInfo->GetImage();
 	return 0;//just take the first item in CImageList ..what ever that is
 }
 

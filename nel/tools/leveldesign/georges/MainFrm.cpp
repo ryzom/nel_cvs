@@ -1,9 +1,11 @@
+// ---------------------------------------------------------------------------
 // MainFrm.cpp : implementation of the CMainFrame class
-//
+// ---------------------------------------------------------------------------
 
 #include "stdafx.h"
 #include "Georges.h"
 #include "Georgesdoc.h"
+#include "DfnDoc.h"
 
 #include "MainFrm.h"
 
@@ -13,20 +15,19 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CMainFrame
+// ---------------------------------------------------------------------------
+IMPLEMENT_DYNCREATE (CMainFrame, CMDIFrameWnd)
 
-IMPLEMENT_DYNCREATE(CMainFrame, CMDIFrameWnd)
-
-BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
-	//{{AFX_MSG_MAP(CMainFrame)
-	ON_WM_CREATE()
-	ON_WM_CLOSE()
-	ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
-	ON_COMMAND(ID_EDIT_REDO, OnEditRedo)
-	//}}AFX_MSG_MAP
+BEGIN_MESSAGE_MAP (CMainFrame, CMDIFrameWnd)
+	ON_WM_CREATE ()
+	ON_WM_CLOSE ()
+	ON_COMMAND (ID_FILE_DIR_DFNTYP, OnFileDirDfnTyp)
+	ON_COMMAND (ID_FILE_DIR_PROTOTYPE, OnFileDirPrototype)
+	ON_COMMAND (ID_EDIT_UNDO, OnEditUndo)
+	ON_COMMAND (ID_EDIT_REDO, OnEditRedo)
 END_MESSAGE_MAP()
 
+// ---------------------------------------------------------------------------
 static UINT indicators[] =
 {
 	ID_SEPARATOR,           // status line indicator
@@ -35,21 +36,20 @@ static UINT indicators[] =
 	ID_INDICATOR_SCRL,
 };
 
-/////////////////////////////////////////////////////////////////////////////
-// CMainFrame construction/destruction
-
-CMainFrame::CMainFrame()
+// ---------------------------------------------------------------------------
+CMainFrame::CMainFrame ()
 {
-	// TODO: add member initialization code here
 	CreateX = CreateY = CreateCX = CreateCY = 0;
 	Exit = false;
 }
 
-CMainFrame::~CMainFrame()
+// ---------------------------------------------------------------------------
+CMainFrame::~CMainFrame ()
 {
 }
 
-int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
+// ---------------------------------------------------------------------------
+int CMainFrame::OnCreate (LPCREATESTRUCT lpCreateStruct)
 {
 	if (CMDIFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
@@ -70,8 +70,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
-	// TODO: Delete these three lines if you don't want the toolbar to
-	//  be dockable
 	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
 	EnableDocking(CBRS_ALIGN_ANY);
 	DockControlBar(&m_wndToolBar);
@@ -79,14 +77,23 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
+// ---------------------------------------------------------------------------
+void CMainFrame::DoClose()
+{
+	CMDIFrameWnd::OnClose (); // Parse all documents asking to save if changed
+}
+
+// ---------------------------------------------------------------------------
 void CMainFrame::OnClose()
 {
 	Exit = true;
 }
 
 
-BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
+// ---------------------------------------------------------------------------
+BOOL CMainFrame::PreCreateWindow (CREATESTRUCT& cs)
 {
+	// We are launched by the master tool with a predefined size and position
 	if ((CreateCX != 0)&&(CreateCY != 0))
 	{
 		cs.x = CreateX;
@@ -98,8 +105,6 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 
 	if( !CMDIFrameWnd::PreCreateWindow(cs) )
 		return FALSE;
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
 
 	return TRUE;
 }
@@ -123,24 +128,141 @@ void CMainFrame::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame message handlers
 
+// ---------------------------------------------------------------------------
+// Undo an action over a Georges or Dfn document
+// The accelerators do all the keyboard link stuff with a pretranslate msg
 void CMainFrame::OnEditUndo() 
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CMDIChildWnd *pChild = MDIGetActive();
 	if (pChild == NULL)
 		return;
-	CGeorgesDoc *pDoc = (CGeorgesDoc*)(pChild->GetActiveDocument());
-	if (pDoc == NULL)
+	CGeorgesDoc *pGeorgesDoc = dynamic_cast<CGeorgesDoc*>(pChild->GetActiveDocument());
+	if (pGeorgesDoc != NULL)
+	{
+		pGeorgesDoc->Undo();
 		return;
-	pDoc->Undo();
+	}
+
+	CDfnDoc *pDfnDoc = dynamic_cast<CDfnDoc*>(pChild->GetActiveDocument());
+	if (pDfnDoc != NULL)
+	{
+		pDfnDoc->Undo();
+		return;
+	}
 }
 
+// ---------------------------------------------------------------------------
 void CMainFrame::OnEditRedo() 
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CMDIChildWnd *pChild = MDIGetActive();
 	if (pChild == NULL)
 		return;
-	CGeorgesDoc *pDoc = (CGeorgesDoc*)(pChild->GetActiveDocument());
-	if (pDoc == NULL)
+	CGeorgesDoc *pGeorgesDoc = dynamic_cast<CGeorgesDoc*>(pChild->GetActiveDocument());
+	if (pGeorgesDoc != NULL)
+	{
+		pGeorgesDoc->Redo();
 		return;
-	pDoc->Redo();
+	}
+
+	CDfnDoc *pDfnDoc = dynamic_cast<CDfnDoc*>(pChild->GetActiveDocument());
+	if (pDfnDoc != NULL)
+	{
+		pDfnDoc->Redo();
+		return;
+	}
+}
+
+
+// ---------------------------------------------------------------------------
+// This is just a function to process the initialisation event of the directoryBrowser
+int CALLBACK dataDirBrowseCallbackProc (HWND hwnd,UINT uMsg,LPARAM lp, LPARAM pData) 
+{
+	switch (uMsg) 
+	{
+		case BFFM_INITIALIZED: 
+			SendMessage (hwnd, BFFM_SETSELECTION, TRUE, pData);
+		break;
+		default:
+		break;
+	}
+	return 0;
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnFileDirDfnTyp()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	BROWSEINFO	bi;
+	char		str[MAX_PATH];
+	ITEMIDLIST*	pidl;
+	char sTemp[1024];
+
+	bi.hwndOwner = this->m_hWnd;
+	bi.pidlRoot = NULL;
+	bi.pszDisplayName = sTemp;;
+	bi.lpszTitle = "Choose the path";
+	bi.ulFlags = 0;
+	bi.lpfn = dataDirBrowseCallbackProc;
+
+	// Keep an instance of the dfntyp directory locally
+	char sDir[512];
+	strcpy(sDir, ((CGeorgesApp*)AfxGetApp())->GetDirDfnTyp().c_str());
+	bi.lParam = (LPARAM)sDir;
+
+	bi.iImage = 0;
+	try 
+	{
+		pidl = SHBrowseForFolder (&bi);
+		if (!SHGetPathFromIDList(pidl, str)) 
+		{
+			return;
+		}
+	}
+	catch(exception &e)
+	{
+		MessageBox(e.what(),"Error",MB_ICONERROR|MB_OK);
+		return;
+	}
+	((CGeorgesApp*)AfxGetApp())->SetDirDfnTyp(str);
+	((CGeorgesApp*)AfxGetApp())->SaveCfg();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnFileDirPrototype()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	BROWSEINFO	bi;
+	char		str[MAX_PATH];
+	ITEMIDLIST*	pidl;
+	char sTemp[1024];
+
+	bi.hwndOwner = this->m_hWnd;
+	bi.pidlRoot = NULL;
+	bi.pszDisplayName = sTemp;;
+	bi.lpszTitle = "Choose the path";
+	bi.ulFlags = 0;
+	bi.lpfn = dataDirBrowseCallbackProc;
+	
+	char sDir[512];
+	strcpy(sDir, ((CGeorgesApp*)AfxGetApp())->GetDirDfnTyp().c_str());
+	bi.lParam = (LPARAM)sDir;
+	
+	bi.iImage = 0;
+	try
+	{
+		pidl = SHBrowseForFolder (&bi);
+		if (!SHGetPathFromIDList(pidl, str)) 
+		{
+			return;
+		}
+	}
+	catch(exception &e)
+	{
+		MessageBox(e.what(),"Error",MB_ICONERROR|MB_OK);
+		return;
+	}
+	((CGeorgesApp*)AfxGetApp())->SetDirPrototype(str);
+	((CGeorgesApp*)AfxGetApp())->SaveCfg();
 }

@@ -1,111 +1,155 @@
+// ---------------------------------------------------------------------------
+//
 // GeorgesDoc.h : interface of the CGeorgesDoc class
 //
-/////////////////////////////////////////////////////////////////////////////
+// ---------------------------------------------------------------------------
 
-#if !defined(AFX_GEORGESDOC_H__16A90258_8DA9_4F0C_873E_E0B4C98228A1__INCLUDED_)
-#define AFX_GEORGESDOC_H__16A90258_8DA9_4F0C_873E_E0B4C98228A1__INCLUDED_
+#ifndef __GEORGESDOC_H__
+#define __GEORGESDOC_H__
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
+// ---------------------------------------------------------------------------
 
 #include "../georges_lib/Item.h"
+
+// ---------------------------------------------------------------------------
 
 class CFormFile;
 class CStringList;
 
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 class CGeorgesDoc : public CDocument
 {
-protected: // create from serialization only
-	CGeorgesDoc();
-	DECLARE_DYNCREATE(CGeorgesDoc)
 
-	CItem		item;
+protected:
+
+	CGeorgesDoc ();
+	DECLARE_DYNCREATE (CGeorgesDoc)
+	DECLARE_MESSAGE_MAP ()
+
+protected:
+
+	CItem		CurItem;
+
+	FILE		*FileLock;
+
 	CStringEx	DocumentName;
-	CStringEx	sxrootdirectory;
-	CStringEx	sxworkdirectory;
+
+	CStringEx	DirDfnTyp;
+	CStringEx	DirPrototype;
+	CStringEx	DirLevel;
+
 	std::vector< CForm > UndoRedo;
 	std::vector< CForm >::iterator itur;
 
-// Attributes
 public:
 
-// Operations 
-public:
-
-	void Undo(); // Stack out
-	void Redo(); // Stack out
-	void Push(); // Stack in
-	void ResetUndoRedo(); // Stack RAZ
-
-	void SetItemValue( const unsigned int _index, const CString s );
-	unsigned int GetItemNbElt() const;
-	unsigned int GetItemNbParent() const;
-	unsigned int GetItemNbElt( const unsigned int _index ) const;
-	unsigned int GetItemInfos( const unsigned int _index ) const;
-	CString GetItemName( const unsigned int _index ) const;
-	CString GetItemCurrentResult( const unsigned int _index ) const;
-	CString GetItemCurrentValue( const unsigned int _index ) const;
-	CString GetItemFormula( const unsigned int _index ) const;
-	CString GetItemActivity( const unsigned int _index ) const;
-	void SetItemActivity( const unsigned int _index, const CString _s );
-	bool IsItemEnum( const unsigned int _index ) const;
-	bool IsItemPredef( const unsigned int _index ) const;
-	bool CanEditItem( const unsigned int _index ) const;
-	void GetItemListPredef( const unsigned int _index, CStringList* _slist ) const;
-	void NewDocument( const CStringEx& _sxdfnname ) const;
-	void NewDocument( const CStringEx _sxfilename );
-	void UpdateDocument();
-
-	void AddList( const unsigned int _index );
-	void DelListChild( const unsigned int _index );
-
-	CString GetItemParent( const unsigned int _index ) const;
-	void SetItemParent( const unsigned int _index, const CString _s );
-	void AddParent( const unsigned int _index );
-	void DelParent( const unsigned int _index );
-
-	CStringEx GetWorkDirectory() const;
-	CStringEx GetRootDirectory() const;
-	void SetWorkDirectory( const CStringEx _sxworkdirectory );
-	void SetRootDirectory( const CStringEx _sxrootdirectory );
-	
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CGeorgesDoc)
-	public:
-	virtual BOOL OnNewDocument();
-	virtual void Serialize(CArchive& ar);
-	virtual void DeleteContents();
-
-	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
-	virtual void OnCloseDocument();
-
-	//}}AFX_VIRTUAL
-
-// Implementation
-public:
 	virtual ~CGeorgesDoc();
+
+	// ----------------
+	// Stack operations
+	// ----------------
+
+	// Undo get previous version of the form, convert it to an item and update the view
+	void Undo();
+
+	// Redo is like undo but serve to navigate through the stack
+	void Redo();
+
+	// Push stack in the current item (called item)
+	void Push();
+
+	// Reset the stack (done when saving, loading and the like)
+	void ResetUndoRedo();
+
+	// ---------------
+	// Item operations
+	// ---------------
+
+	// * Add *
+	// *******
+
+	// Add a new item to a list
+	void AddList (uint32 nIndex);
+
+	// Add a new parent with activity=false (update the view)
+	void AddParent (uint32 nIndex);
+
+	// * Del *
+	// *******
+
+	void DelListChild (uint32 nIndex);
+	void DelParent (uint32 nIndex);
+
+	// * Set *
+	// *******
+
+	void SetItemValue (uint32 nIndex, const CString sValue);
+
+	// (update the view)
+	void SetItemParent (uint32 nIndex, const CString sString);
+
+	// Set the parent acitvity (sBool == "true" or "false") (update the view)
+	void SetItemActivity (uint32 nIndex, const CString sBool);
+
+	// * Get *
+	// *******
+	
+	uint32 GetItemNbElt () const;
+	uint32 GetItemNbElt (uint32 nIndex) const;
+	uint32 GetItemNbParent () const;
+	uint32 GetItemInfos (uint32 nIndex) const;
+	CString GetItemName (uint32 nIndex ) const;
+	CString GetItemCurrentResult (uint32 nIndex) const;
+	CString GetItemCurrentValue (uint32 nIndex) const;
+	CString GetItemFormula (uint32 nIndex) const;
+	CString GetItemActivity (uint32 nIndex) const;
+	CString GetItemParent (uint32 nIndex) const;
+	bool IsItemEnum (uint32 nIndex) const;
+	bool IsItemPredef (uint32 nIndex) const;
+	bool CanEditItem (uint32 nIndex) const;
+	void GetItemListPredef (uint32 nIndex, CStringList* _slist) const;
+
+	// ----------------------
+	// Directories management
+	// ----------------------
+
+	// * Get *
+	// *******
+	CStringEx GetDirLevel		() const;
+	CStringEx GetDirPrototype	() const;
+	CStringEx GetDirDfnTyp		() const;
+
+	// * Set *
+	// *******
+	void SetDirLevel		(const CStringEx &_sxDirectory);
+	void SetDirPrototype	(const CStringEx &_sxDirectory);
+	void SetDirDfnTyp		(const CStringEx &_sxDirectory);
+
+
+	// -----------------
+	// New / Load / Save
+	// -----------------
+	
+	virtual BOOL OnNewDocument ();
+	void NewDocument (const CStringEx _sxfilename);
+	virtual BOOL OnOpenDocument (LPCTSTR lpszPathName);
+	virtual BOOL OnSaveDocument (LPCTSTR lpszPathName);
+	virtual void OnCloseDocument();
+	virtual void DeleteContents();
+	void UpdateDocument ();
+
+
+
+	// -----
+	// Debug
+	// -----
+	
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-protected:
-
-// Generated message map functions
-protected:
-	//{{AFX_MSG(CGeorgesDoc)
-		// NOTE - the ClassWizard will add and remove member functions here.
-		//    DO NOT EDIT what you see in these blocks of generated code !
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
 };
 
-/////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_GEORGESDOC_H__16A90258_8DA9_4F0C_873E_E0B4C98228A1__INCLUDED_)
+#endif // __GEORGESDOC_H__

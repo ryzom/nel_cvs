@@ -9,6 +9,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+// ---------------------------------------------------------------------------
 class CMainFrame : public CMDIFrameWnd
 {
 protected: // create from serialization only	
@@ -33,6 +34,8 @@ public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	//}}AFX_VIRTUAL
 
+	void DoClose();
+
 // Implementation
 public:
 	virtual ~CMainFrame();
@@ -52,6 +55,8 @@ protected:
 	afx_msg void OnClose();
 	afx_msg void OnEditUndo();
 	afx_msg void OnEditRedo();
+	afx_msg void OnFileDirDfnTyp();
+	afx_msg void OnFileDirPrototype();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

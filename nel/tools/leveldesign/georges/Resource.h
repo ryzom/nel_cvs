@@ -5,7 +5,9 @@
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
 #define IDR_SUPERGTYPE                  129
+#define IDR_TYPE_DFN                    129
 #define IDD_DIALOG_SUPERGRID            130
+#define IDR_TYPE_INSTANCE               130
 #define IDB_HARDCORE                    131
 #define IDD_DIALOG1                     131
 #define IDB_FOLDERS                     131
@@ -39,6 +41,12 @@
 #define ID_PARENTCHILD_ACTIVATE         32796
 #define ID_PARCH_DELPARENT              32797
 #define ID_PARENT_NEWCHILD              32798
+#define ID_FILE_NEW_DFN                 32799
+#define ID_FILE_NEW_INSTANCE            32800
+#define ID_FILE_DIR_DFNTYP              32801
+#define ID_FILE_DIR_PROTOTYPE           32802
+#define ID_FILE_OPEN_DFN                32803
+#define ID_FILE_OPEN_INSTANCE           32804
 
 // Next default values for new objects
 // 
@@ -46,7 +54,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        157
-#define _APS_NEXT_COMMAND_VALUE         32799
+#define _APS_NEXT_COMMAND_VALUE         32805
 #define _APS_NEXT_CONTROL_VALUE         1013
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -9,12 +9,12 @@
 #include "SuperGridCtrl.h"
 #include "GeorgesDoc.h"
 /////////////////////////////////////////////////////////////////////////////
-// CMySuperGrid window
+// CGeorgesGrid window
 
 // an example of how to use the CSuperGridCtrl class.
 
 //class CGeorgesDoc;
-class CMySuperGrid : public CSuperGridCtrl
+class CGeorgesGrid : public CSuperGridCtrl
 {
 protected:
 	CTreeItem* pitemroot;
@@ -25,7 +25,7 @@ protected:
 	void UpdateItemIndex();
 	// Construction
 public:
-	CMySuperGrid();
+	CGeorgesGrid();
 	
 // Attributes
 public:
@@ -71,7 +71,7 @@ public:
 	BOOL OnItemCollapsed(CTreeItem *pItem);
 	BOOL OnDeleteItem(CTreeItem* pItem, int nIndex);
 	BOOL OnInsertItem(CTreeItem* pItem, int nIndex);
-	BOOL OnVkReturn(void);
+	virtual BOOL OnVkReturn(void);
 	BOOL OnItemLButtonDown(LVHITTESTINFO& ht);
 	BOOL OnItemRButtonDown(LVHITTESTINFO& ht);
 	BOOL CanEdit( CTreeItem* const _pItem );
@@ -79,12 +79,12 @@ public:
 	void SetExpandedList( const std::vector< std::pair< bool, CString > >& _vexp );
 
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CMySuperGrid)
+	//{{AFX_VIRTUAL(CGeorgesGrid)
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
-	virtual ~CMySuperGrid();
+	virtual ~CGeorgesGrid();
 
 protected:
 	CImageList m_image;//Must provide an imagelist
@@ -94,7 +94,7 @@ protected:
 	int CalcHorzExtent(CWnd* pWnd, CStringList *pList);
 	// Generated message map functions
 protected:
-	//{{AFX_MSG(CMySuperGrid)
+	//{{AFX_MSG(CGeorgesGrid)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnListNewitem();
 	afx_msg void OnListchildDelitem();

@@ -5,7 +5,6 @@
 #include "Georges.h"
 #include "GeorgesView.h"
 #include "GeorgesDoc.h"
-#include "TestTreeDlg.h"
 #include "NewItem.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -116,6 +115,12 @@ void CGeorgesView::OnDraw(CDC* pDC)
 	// TODO: add draw code here
 }
 
+// ---------------------------------------------------------------------------
+BOOL CGeorgesView::PreTranslateMessage (MSG *pMsg)
+{
+	return m_List.PreTranslateMessage (pMsg);
+}
+
 void CGeorgesView::OnPrepareDC(CDC* pDC, CPrintInfo* pInfo) 
 {
 	CView::OnPrepareDC(pDC, pInfo);
@@ -146,72 +151,3 @@ void CGeorgesView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 	
 	CView::OnPrint(pDC, pInfo);
 }
-
-
-
-
-/*
-void CGeorgesView::OnToolsDelete() 
-{
-	m_List.SendMessage(WM_KEYDOWN,(WPARAM)VK_DELETE,0);
-}
-
-void CGeorgesView::OnToolsSearch() 
-{
-	m_List.HowToSearch_I_am_using_hardcoded_values_here_cause_I_am_tired_now();	
-}
-
-void CGeorgesView::Ondialog() 
-{
-	
-	CTestTreeDlg dlg;
-	dlg.DoModal();
-}
-
-
-void CGeorgesView::OnDialog1() 
-{
-	if(m_List.GetSafeHwnd())
-	{
-		int nIndex = m_List.GetSelectedItem();
-		if(nIndex!=-1)
-		{
-			CNewItem dlg;
-			if(dlg.DoModal()==IDOK)
-				m_List.HowToInsertItemsAfterTheGridHasBeenInitialized(nIndex, dlg.m_strItem);
-		}
-	}
-}
-
-void CGeorgesView::OnToolsSort() 
-{
-	m_List.SortData();
-}
-
-
-void CGeorgesView::OnUpdateToolsDragdrop(CCmdUI* pCmdUI) 
-{
-	pCmdUI->SetCheck(m_bDrag);
-}
-
-
-void CGeorgesView::OnToolsDragdrop() 
-{
-	m_bDrag = !m_bDrag;	
-	m_List.m_bDrag=m_bDrag;
-}
-
-void CGeorgesView::OnToolsDynamicupdateitem() 
-{
-	int nItem = m_List.GetSelectedItem();
-	m_List.DynamicUpdateSomeItems(nItem);	
-}
-
-void CGeorgesView::OnToolsSetimage() 
-{
-	int nItem = m_List.GetSelectedItem();
-	m_List.SetNewImage(nItem);	
-}
-*/
-
-

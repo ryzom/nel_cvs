@@ -17,28 +17,45 @@
 #include "../georges_lib/StringEx.h"
 #include "../georges_lib/Loader.h"
 
-//////////////////////////²///////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // CGeorgesApp:
 // See Georges.cpp for the implementation of this class
 //
 
+struct SEnvironnement
+{
+	std::string DirDfnTyp;
+	std::string DirPrototype;
+	std::string DirLevel;
+
+	SEnvironnement();
+	void serial (NLMISC::IStream&f);
+};
+
 class CGeorgesApp : public CWinApp
 {
-	CStringEx	sxrootdirectory;
-	CStringEx	sxworkdirectory;
+	std::string		DirExe;
+	SEnvironnement	Env;
+
 	CLoader		loader;
 
 
 	CMultiDocTemplate *_MultiDocTemplate;
+	CMultiDocTemplate *_MultiDocTemplateDfn;
+	
 public:
 	CGeorgesApp();
 
+	
+	afx_msg void OpenDfn ();
+	afx_msg void OpenInstance ();
+
+	afx_msg void NewDfn ();
+	afx_msg void NewInstance ();
+
+
 	void SaveAllDocument();
 	void CloseAllDocument();
-	CStringEx GetWorkDirectory() const;
-	CStringEx GetRootDirectory() const;
-	void SetWorkDirectory( const CStringEx _sxworkdirectory );
-	void SetRootDirectory( const CStringEx _sxrootdirectory );
 	CLoader* GetLoader() { return &loader; }
 	void UpdateAllDocument();
 	// Overrides
@@ -47,6 +64,19 @@ public:
 	public:
 	BOOL initInstance (int x = 0, int y = 0, int cx = 0, int cy = 0);
 	//}}AFX_VIRTUAL
+
+	void LoadCfg ();
+	void SaveCfg ();
+
+	// Accessors
+	CStringEx GetDirDfnTyp () const;
+	CStringEx GetDirPrototype () const;
+	CStringEx GetDirLevel () const;
+
+	void SetDirDfnTyp (const CStringEx &_sxDirectory);
+	void SetDirPrototype (const CStringEx &_sxDirectory);
+	void SetDirLevel (const CStringEx &_sxDirectory);
+
 
 // Implementation
 	//{{AFX_MSG(CGeorgesApp)

@@ -1,19 +1,28 @@
+// ---------------------------------------------------------------------------
 // Georges.cpp : Defines the class behaviors for the application.
-//
+// ---------------------------------------------------------------------------
 
 #include "stdafx.h"
 #include "Georges.h"
 
 #include "MainFrm.h"
-#include "GeorgesDoc.h"
-#include "GeorgesView.h"
-#include "childfrm.h"
+
+#include "georgesView.h"
+#include "georgesFrame.h"
+#include "georgesDoc.h"
+
+#include "dfnView.h"
+#include "dfnFrame.h"
+#include "dfnDoc.h"
 
 #include "../georges_lib/formbodyelt.h"
 #include "../georges_lib/formbodyeltatom.h"
 #include "../georges_lib/formbodyeltlist.h"
 #include "../georges_lib/formbodyeltstruct.h"
 
+#include "nel/misc/file.h"
+
+// ---------------------------------------------------------------------------
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -21,58 +30,64 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CGeorgesApp
+// ---------------------------------------------------------------------------
+// SEnvironnement
+// ---------------------------------------------------------------------------
 
-BEGIN_MESSAGE_MAP(CGeorgesApp, CWinApp)
-	//{{AFX_MSG_MAP(CGeorgesApp)
-	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
-	//}}AFX_MSG_MAP
-	// Standard file based document commands
-	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
-	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CGeorgesApp construction
-
-CGeorgesApp::CGeorgesApp()
+// ---------------------------------------------------------------------------
+SEnvironnement::SEnvironnement()
 {
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
-	_MultiDocTemplate = NULL;
-	sxrootdirectory = "U:/";
-	sxworkdirectory = "U:/";
+	char sCurDir[MAX_PATH];
+	GetCurrentDirectory (MAX_PATH, sCurDir);
+	DirDfnTyp = sCurDir;
+	DirDfnTyp += "\\";
+	DirPrototype = DirDfnTyp;
+	DirLevel = DirDfnTyp;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// The one and only CGeorgesApp object
+// ---------------------------------------------------------------------------
+void SEnvironnement::serial (NLMISC::IStream&f)
+{
+	int version = f.serialVersion (0);
 
-/////////////////////////////////////////////////////////////////////////////
-// CGeorgesApp initialization
+	f.serial (DirDfnTyp);
+	f.serial (DirPrototype);
+	f.serial (DirLevel);
+}
 
+// ---------------------------------------------------------------------------
+// CGeorgesApp
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+BEGIN_MESSAGE_MAP (CGeorgesApp, CWinApp)
+	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
+	ON_COMMAND (ID_FILE_OPEN_DFN, OpenDfn)
+	ON_COMMAND (ID_FILE_NEW_DFN, NewDfn)
+	ON_COMMAND (ID_FILE_NEW_INSTANCE, NewInstance)
+	ON_COMMAND (ID_FILE_OPEN_INSTANCE, OpenInstance)
+END_MESSAGE_MAP ()
+
+// ---------------------------------------------------------------------------
+CGeorgesApp::CGeorgesApp()
+{
+	_MultiDocTemplate = NULL;
+	_MultiDocTemplateDfn = NULL;
+
+	char sCurDir[MAX_PATH];
+	GetCurrentDirectory (MAX_PATH, sCurDir);
+	DirExe = sCurDir;
+	DirExe += "\\";
+
+	// Load the .CFG
+	LoadCfg();
+}
+
+// ---------------------------------------------------------------------------
 BOOL CGeorgesApp::initInstance(int x, int y, int cx, int cy)
 {
-	// Standard initialization
-	// If you are not using these features and wish to reduce the size
-	//  of your final executable, you should remove from the following
-	//  the specific initialization routines you do not need.
-/*
-#ifdef _AFXDLL
-	Enable3dControls();			// Call this when using MFC in a shared DLL
-#else
-	Enable3dControlsStatic();	// Call this when linking to MFC statically
-#endif
-*/
-
 	if (_MultiDocTemplate == NULL)
 	{
-		/*NLMISC_REGISTER_CLASS( CFormBodyElt );
-		NLMISC_REGISTER_CLASS( CFormBodyEltAtom );
-		NLMISC_REGISTER_CLASS( CFormBodyEltList );
-		NLMISC_REGISTER_CLASS( CFormBodyEltStruct );*/
 		// Change the registry key under which our settings are stored.
 		// TODO: You should modify this string to be something appropriate
 		// such as the name of your company or organization.
@@ -82,17 +97,19 @@ BOOL CGeorgesApp::initInstance(int x, int y, int cx, int cy)
 
 		// Register the application's document templates.  Document templates
 		//  serve as the connection between documents, frame windows and views.
-
 		_MultiDocTemplate = new CMultiDocTemplate(
 			IDR_MAINFRAME,
 			RUNTIME_CLASS(CGeorgesDoc),
-			RUNTIME_CLASS(CChildFrame),
+			RUNTIME_CLASS(CGeorgesFrame),
 			RUNTIME_CLASS(CGeorgesView));
 		AddDocTemplate(_MultiDocTemplate);
 
-		// Enable DDE Execute open
-		EnableShellOpen();
-		RegisterShellFileTypes(TRUE);
+		_MultiDocTemplateDfn = new CMultiDocTemplate(
+			IDR_TYPE_DFN,
+			RUNTIME_CLASS(CDfnDoc),
+			RUNTIME_CLASS(CDfnFrame),
+			RUNTIME_CLASS(CDfnView));
+		AddDocTemplate(_MultiDocTemplateDfn);
 	}
 
 	m_pMainWnd = new CMainFrame();
@@ -102,112 +119,142 @@ BOOL CGeorgesApp::initInstance(int x, int y, int cx, int cy)
 	((CMainFrame*)m_pMainWnd)->CreateCY = cy;
 	((CMainFrame*)m_pMainWnd)->LoadFrame (IDR_MAINFRAME);
 
-/*
-	// Parse command line for standard shell commands, DDE, file open
-	CCommandLineInfo cmdInfo;
-	ParseCommandLine(cmdInfo);
+	// Enable DDE Execute open
+	EnableShellOpen ();
+	RegisterShellFileTypes (TRUE);
 
-	// Dispatch commands specified on the command line
-	if (!ProcessShellCommand(cmdInfo))
-		return FALSE;
-*/
 	// The one and only window has been initialized, so show and update it.
-	m_pMainWnd->ShowWindow(SW_SHOW);
-	m_pMainWnd->UpdateWindow();
+	m_pMainWnd->ShowWindow (SW_SHOW);
+	m_pMainWnd->UpdateWindow ();
 
-	NLMISC::CPath::removeAllAlternativeSearchPath();
-	NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
-    NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
+	NLMISC::CPath::removeAllAlternativeSearchPath ();
+	NLMISC::CPath::addSearchPath (Env.DirLevel, true, true);
+    NLMISC::CPath::addSearchPath (Env.DirPrototype, true, true);
+    NLMISC::CPath::addSearchPath (Env.DirLevel, true, true);
 
 	return TRUE;
 }
 
+// ---------------------------------------------------------------------------
+void CGeorgesApp::LoadCfg ()
+{
+	try
+	{
+		NLMISC::CIFile fileIn;
+		std::string sGeorgesCfg = DirExe;
+		sGeorgesCfg += "Georges.cfg";
+		fileIn.open (sGeorgesCfg.c_str());
+		fileIn.serial (Env);
+	}
+	catch (NLMISC::Exception& )
+	{
+		// Cannot display anything here so init with a default Environnement
+		SEnvironnement newEnv;
+		Env = newEnv;
+	}
+}
 
-/////////////////////////////////////////////////////////////////////////////
-// CAboutDlg dialog used for App About
+// ---------------------------------------------------------------------------
+void CGeorgesApp::SaveCfg ()
+{
+	try
+	{
+		NLMISC::COFile fileOut;
+		std::string sGeorgesCfg = DirExe;
+		sGeorgesCfg += "Georges.cfg";
+		fileOut.open (sGeorgesCfg.c_str());
+		fileOut.serial (Env);
+	}
+	catch (NLMISC::Exception& )
+	{
+		// Not succeeded ... But that's not a bug deal
+	}
+}
 
+
+// ---------------------------------------------------------------------------
+// CAboutDlg
+// ---------------------------------------------------------------------------
 class CAboutDlg : public CDialog
 {
 public:
-	CAboutDlg();
-
-// Dialog Data
-	//{{AFX_DATA(CAboutDlg)
 	enum { IDD = IDD_ABOUTBOX };
-	//}}AFX_DATA
 
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CAboutDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
+	CAboutDlg () : CDialog (CAboutDlg::IDD)
+	{
+	}
+
+
+protected:
+	virtual void DoDataExchange (CDataExchange* pDX)
+	{
+		CDialog::DoDataExchange(pDX);
+	}
 
 // Implementation
 protected:
-	//{{AFX_MSG(CAboutDlg)
-		// No message handlers
-	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
 
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
-{
-	//{{AFX_DATA_INIT(CAboutDlg)
-	//}}AFX_DATA_INIT
-}
-
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CAboutDlg)
-	//}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	//{{AFX_MSG_MAP(CAboutDlg)
-		// No message handlers
-	//}}AFX_MSG_MAP
+BEGIN_MESSAGE_MAP (CAboutDlg, CDialog)
 END_MESSAGE_MAP()
 
-// App command to run the dialog
+// ---------------------------------------------------------------------------
 void CGeorgesApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
 	aboutDlg.DoModal();
 }
 
-void CGeorgesApp::SetWorkDirectory( const CStringEx _sxworkdirectory )
+// ---------------------------------------------------------------------------
+CStringEx CGeorgesApp::GetDirDfnTyp () const
 {
-	if( sxworkdirectory != _sxworkdirectory )
-	{
-		sxworkdirectory = _sxworkdirectory;
-		NLMISC::CPath::removeAllAlternativeSearchPath();
-		NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
-		NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
-	}
+	return Env.DirDfnTyp;
 }
 
-void CGeorgesApp::SetRootDirectory( const CStringEx _sxrootdirectory )
+// ---------------------------------------------------------------------------
+CStringEx CGeorgesApp::GetDirPrototype () const
 {
-	if( sxrootdirectory != _sxrootdirectory )
-	{
-		sxrootdirectory = _sxrootdirectory;
-		NLMISC::CPath::removeAllAlternativeSearchPath();
-		NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
-		NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
-	}
+	return Env.DirPrototype;
 }
 
-CStringEx CGeorgesApp::GetWorkDirectory() const
+// ---------------------------------------------------------------------------
+CStringEx CGeorgesApp::GetDirLevel () const
 {
-	return( sxworkdirectory );
+	return Env.DirLevel;
 }
 
-CStringEx CGeorgesApp::GetRootDirectory() const
+// ---------------------------------------------------------------------------
+void CGeorgesApp::SetDirLevel (const CStringEx &_sxDirectory)
 {
-	return( sxrootdirectory );
+	Env.DirLevel = _sxDirectory;
+	NLMISC::CPath::removeAllAlternativeSearchPath ();
+	NLMISC::CPath::addSearchPath (Env.DirLevel, true, true);
+	NLMISC::CPath::addSearchPath (Env.DirPrototype, true, true);
+	NLMISC::CPath::addSearchPath (Env.DirLevel, true, true);
 }
 
+// ---------------------------------------------------------------------------
+void CGeorgesApp::SetDirPrototype (const CStringEx &_sxDirectory)
+{
+	Env.DirPrototype = _sxDirectory;
+	NLMISC::CPath::removeAllAlternativeSearchPath ();
+	NLMISC::CPath::addSearchPath (Env.DirLevel, true, true);
+	NLMISC::CPath::addSearchPath (Env.DirPrototype, true, true);
+	NLMISC::CPath::addSearchPath (Env.DirLevel, true, true);
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesApp::SetDirDfnTyp (const CStringEx &_sxDirectory)
+{
+	Env.DirDfnTyp = _sxDirectory;
+	NLMISC::CPath::removeAllAlternativeSearchPath ();
+	NLMISC::CPath::addSearchPath (Env.DirLevel, true, true);
+	NLMISC::CPath::addSearchPath (Env.DirPrototype, true, true);
+	NLMISC::CPath::addSearchPath (Env.DirDfnTyp, true, true);
+}
+
+// ---------------------------------------------------------------------------
 void CGeorgesApp::SaveAllDocument()
 {
 	if( !_MultiDocTemplate )
@@ -226,10 +273,12 @@ void CGeorgesApp::SaveAllDocument()
 	}
 }
 
+// ---------------------------------------------------------------------------
 void CGeorgesApp::CloseAllDocument()
 {
 }
 
+// ---------------------------------------------------------------------------
 void CGeorgesApp::UpdateAllDocument()
 {
 	if (_MultiDocTemplate == NULL)
@@ -249,6 +298,82 @@ void CGeorgesApp::UpdateAllDocument()
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CGeorgesApp message handlers
+// ---------------------------------------------------------------------------
+void CGeorgesApp::OpenDfn ()
+{
+	CFileDialog Dlg (true);
+	int s = Dlg.m_ofn.Flags;
+	Dlg.m_ofn.Flags |= OFN_NOCHANGEDIR | OFN_FILEMUSTEXIST | OFN_NONETWORKBUTTON;
+	Dlg.m_ofn.lpstrTitle  = "Opening a DFN file";
+	Dlg.m_ofn.lpstrFilter = "Define files (*.typ;*.dfn)|*.typ;*.dfn";
+	Dlg.m_ofn.lpstrInitialDir = Env.DirDfnTyp.c_str ();
+
+	if (Dlg.DoModal() != IDOK )
+		return;
+
+	CString fn = Dlg.GetPathName ();
+
+	try
+	{
+		if (Dlg.GetFileExt() == "typ")
+			_MultiDocTemplate->OpenDocumentFile (fn);
+		else
+			_MultiDocTemplateDfn->OpenDocumentFile (fn);
+	}
+	catch (NLMISC::Exception &e)
+	{
+		m_pMainWnd->MessageBox (e.what(), "Georges_Lib", MB_ICONERROR|MB_OK);
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesApp::OpenInstance ()
+{
+	CFileDialog Dlg (true);
+	int s = Dlg.m_ofn.Flags;
+	Dlg.m_ofn.Flags |= OFN_NOCHANGEDIR | OFN_FILEMUSTEXIST | OFN_NONETWORKBUTTON;
+	Dlg.m_ofn.lpstrTitle  = "Opening an Instance file";
+	Dlg.m_ofn.lpstrFilter = "Instances files (*.*)\0*.*";
+	Dlg.m_ofn.lpstrInitialDir = Env.DirPrototype.c_str ();
+
+	if (Dlg.DoModal() != IDOK )
+		return;
+
+	CString fn = Dlg.GetPathName ();
+
+	try
+	{
+		_MultiDocTemplate->OpenDocumentFile (fn);
+	}
+	catch (NLMISC::Exception &e)
+	{
+		m_pMainWnd->MessageBox (e.what(), "Georges_Lib", MB_ICONERROR|MB_OK);
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesApp::NewDfn ()
+{
+	try
+	{
+		_MultiDocTemplateDfn->OpenDocumentFile (NULL);
+	}
+	catch (NLMISC::Exception &e)
+	{
+		m_pMainWnd->MessageBox (e.what(), "Georges_Lib", MB_ICONERROR|MB_OK);
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesApp::NewInstance ()
+{
+	try
+	{
+		_MultiDocTemplate->OpenDocumentFile (NULL);
+	}
+	catch (NLMISC::Exception &e)
+	{
+		m_pMainWnd->MessageBox (e.what(), "Georges_Lib", MB_ICONERROR|MB_OK);
+	}
+}
 

@@ -1,4 +1,6 @@
-// ChildFrm.h : interface of the CChildFrame class
+/////////////////////////////////////////////////////////////////////////////
+//
+// GeorgesFrame.h : interface of the CGeorgesFrame class
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -10,11 +12,11 @@
 #endif // _MSC_VER > 1000
 
 
-class CChildFrame : public CMDIChildWnd
+class CGeorgesFrame : public CMDIChildWnd
 {
-	DECLARE_DYNCREATE(CChildFrame)
+	DECLARE_DYNCREATE(CGeorgesFrame)
 public:
-	CChildFrame();
+	CGeorgesFrame();
 
 // Attributes
 //protected:
@@ -27,16 +29,18 @@ public:
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CChildFrame)
+	//{{AFX_VIRTUAL(CGeorgesFrame)
 	public:
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual BOOL PreCreateWindow (CREATESTRUCT& cs);
+	virtual BOOL PreTranslateMessage (MSG* pMsg);
+
 	protected:
 	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
-	virtual ~CChildFrame();
+	virtual ~CGeorgesFrame();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
@@ -44,7 +48,7 @@ public:
 
 // Generated message map functions
 protected:
-	//{{AFX_MSG(CChildFrame)
+	//{{AFX_MSG(CGeorgesFrame)
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -1,5 +1,8 @@
+// ---------------------------------------------------------------------------
+//
 // GeorgesDoc.cpp : implementation of the CGeorgesDoc class
 //
+// ---------------------------------------------------------------------------
 
 #include "stdafx.h"
 #include "Georges.h"
@@ -14,150 +17,488 @@
 #include "../georges_lib/FormBodyEltStruct.h"
 #include "../georges_lib/Item.h"
 
+#include "share.h"
+
+// ---------------------------------------------------------------------------
+
+using namespace std;
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CGeorgesDoc
-
-IMPLEMENT_DYNCREATE(CGeorgesDoc, CDocument)
-
-BEGIN_MESSAGE_MAP(CGeorgesDoc, CDocument)
-	//{{AFX_MSG_MAP(CGeorgesDoc)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
-	//}}AFX_MSG_MAP
+// ---------------------------------------------------------------------------
+BEGIN_MESSAGE_MAP (CGeorgesDoc, CDocument)
 END_MESSAGE_MAP()
 
-/////////////////////////////////////////////////////////////////////////////
-// CGeorgesDoc construction/destruction
+IMPLEMENT_DYNCREATE (CGeorgesDoc, CDocument)
 
-CGeorgesDoc::CGeorgesDoc()
+// ---------------------------------------------------------------------------
+CGeorgesDoc::CGeorgesDoc ()
 {
-	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
-	SetRootDirectory( papp->GetRootDirectory() );
-	SetWorkDirectory( papp->GetWorkDirectory() );
-	CLoader* ploader = papp->GetLoader();
-	item.SetLoader( ploader );
+	CGeorgesApp* pApp = dynamic_cast<CGeorgesApp*>(AfxGetApp());
+	CLoader* ploader = pApp->GetLoader ();
+
+	SetDirLevel (pApp->GetDirLevel());
+	SetDirPrototype (pApp->GetDirPrototype());
+	SetDirDfnTyp (pApp->GetDirDfnTyp());
+
+	CurItem.SetLoader (ploader);
+	FileLock = NULL;
 }
 
-CGeorgesDoc::~CGeorgesDoc()
+// ---------------------------------------------------------------------------
+CGeorgesDoc::~CGeorgesDoc ()
 {
 }
 
-void CGeorgesDoc::Undo()
+// ----------------
+// Stack operations
+// ----------------
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::Undo ()
 {
-	if( itur != UndoRedo.begin() )
+	if (itur != UndoRedo.begin())
 		--itur;
-	item.MakeItem( *itur );
-	UpdateAllViews( 0 );
+	CurItem.MakeItem (*itur);
+	UpdateAllViews (0);
 }
 
-void CGeorgesDoc::Redo()
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::Redo ()
 {
-	if( itur != UndoRedo.end() )
+	if (itur != UndoRedo.end())
 		++itur;
-	if( itur != UndoRedo.end() )
+	if (itur != UndoRedo.end())
 	{
-		item.MakeItem( *itur );
-		UpdateAllViews( 0 );
+		CurItem.MakeItem (*itur);
+		UpdateAllViews (0);
 	}
 	else
 		--itur;
 }
 
-void CGeorgesDoc::Push()
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::Push ()
 {
 	++itur;
-	UndoRedo.erase( itur, UndoRedo.end() );
+	UndoRedo.erase (itur, UndoRedo.end());
 	CForm form;
-	item.MakeForm( form );
-	UndoRedo.push_back( form );
-	itur = UndoRedo.end();
+	CurItem.MakeForm (form);
+	UndoRedo.push_back (form);
+	itur = UndoRedo.end ();
 	--itur;
 }
 
+// ---------------------------------------------------------------------------
 void CGeorgesDoc::ResetUndoRedo()
 {
-	UndoRedo.clear();
+	UndoRedo.clear ();
 	CForm form;
-	item.MakeForm( form );
-	UndoRedo.push_back( form );
-	itur = UndoRedo.end();
+	CurItem.MakeForm (form);
+	UndoRedo.push_back (form);
+	itur = UndoRedo.end ();
 	--itur;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CGeorgesDoc serialization
+// ---------------
+// Item operations
+// ---------------
 
-void CGeorgesDoc::Serialize(CArchive& ar)
+// * Add *
+// *******
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::AddList (uint32 nIndex)
 {
-
-	BOOL Bstoring = ar.IsStoring();
-	CFile* file = ar.GetFile();
-	ASSERT( file );
-	CStringEx sxfilename = LPCTSTR( file->GetFileName() );
-	CStringEx sxfilepath = LPCTSTR( file->GetFilePath() );
-	ar.Abort();
-	file->Close();
-	delete file;
-
-	if( Bstoring )
-		item.Save( sxfilepath );
-	else
-		item.Load( sxfilepath );
-
-	ResetUndoRedo();
+	CurItem.AddList (nIndex);
+	SetModifiedFlag (TRUE);
+	Push ();
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CGeorgesDoc diagnostics
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::AddParent (uint32 nIndex)
+{
+	CurItem.AddParent (nIndex); 
+	CurItem.VirtualSaveLoad ();
+	UpdateAllViews (NULL);
+	SetModifiedFlag (TRUE);
+	Push ();
+}
 
+// * Del *
+// *******
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::DelListChild( uint32 nIndex )
+{
+	CurItem.DelListChild( nIndex ); 
+	SetModifiedFlag( TRUE );
+	Push();
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::DelParent( uint32 nIndex )
+{
+	CurItem.DelParent (nIndex);
+	CurItem.VirtualSaveLoad ();
+	UpdateAllViews (NULL);
+	SetModifiedFlag (TRUE);
+	Push ();
+}
+
+// * Set *
+// *******
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::SetItemValue (uint32 nIndex, const CString sName)
+{
+	CurItem.SetCurrentValue (nIndex+1, CStringEx(LPCTSTR(sName)));
+	SetModifiedFlag (TRUE);
+	Push ();
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::SetItemParent (uint32 nIndex, const CString sName)
+{
+	CurItem.SetParent (nIndex, CStringEx(LPCTSTR(sName)));
+	CurItem.VirtualSaveLoad();
+	UpdateAllViews (NULL);
+	SetModifiedFlag (TRUE);
+	Push ();
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::SetItemActivity (uint32 nIndex, const CString sBool)
+{
+	CurItem.SetActivity (nIndex, CStringEx(LPCTSTR(sBool)));
+	CurItem.VirtualSaveLoad ();
+	UpdateAllViews (NULL);
+	SetModifiedFlag (TRUE);
+	Push ();
+}
+
+// * Get *
+// *******
+
+// ---------------------------------------------------------------------------
+uint32 CGeorgesDoc::GetItemNbElt () const
+{
+	return CurItem.GetNbElt()-1;
+}
+
+// ---------------------------------------------------------------------------
+uint32 CGeorgesDoc::GetItemNbElt (uint32 nIndex) const
+{
+	return CurItem.GetNbElt (nIndex+1);
+}
+
+// ---------------------------------------------------------------------------
+uint32 CGeorgesDoc::GetItemNbParent () const
+{
+	return CurItem.GetNbParents ();
+}
+
+// ---------------------------------------------------------------------------
+uint32 CGeorgesDoc::GetItemInfos (uint32 nIndex) const
+{
+	return CurItem.GetInfos (nIndex+1);
+}
+
+// ---------------------------------------------------------------------------
+CString CGeorgesDoc::GetItemName (uint32 nIndex) const
+{
+	return CString(CurItem.GetName(nIndex+1).c_str());
+}
+
+// ---------------------------------------------------------------------------
+CString CGeorgesDoc::GetItemCurrentResult (uint32 nIndex) const
+{
+	return CString(CurItem.GetCurrentResult(nIndex+1).c_str());
+}
+
+// ---------------------------------------------------------------------------
+CString CGeorgesDoc::GetItemCurrentValue (uint32 nIndex) const
+{
+	return CString(CurItem.GetCurrentValue(nIndex+1).c_str());
+}
+
+// ---------------------------------------------------------------------------
+CString CGeorgesDoc::GetItemFormula (uint32 nIndex) const
+{
+	return CString(CurItem.GetFormula(nIndex+1).c_str());
+}
+
+// ---------------------------------------------------------------------------
+CString CGeorgesDoc::GetItemActivity (uint32 nIndex) const
+{
+	return CString(CurItem.GetActivity(nIndex).c_str());
+}
+
+// ---------------------------------------------------------------------------
+CString CGeorgesDoc::GetItemParent (uint32 nIndex) const
+{
+	return CString (CurItem.GetParent(nIndex).c_str());
+}
+
+// ---------------------------------------------------------------------------
+bool CGeorgesDoc::IsItemEnum (uint32 nIndex) const
+{
+	return CurItem.IsEnum (nIndex+1);
+}
+
+// ---------------------------------------------------------------------------
+bool CGeorgesDoc::IsItemPredef (uint32 nIndex) const
+{
+	return CurItem.IsPredef (nIndex+1);
+}
+
+// ---------------------------------------------------------------------------
+bool CGeorgesDoc::CanEditItem (uint32 nIndex) const
+{
+	return CurItem.CanEdit (nIndex+1);
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::GetItemListPredef (uint32 nIndex, CStringList* _slist) const
+{
+	if (!_slist)
+		return;
+	vector<CStringEx> vsx; 
+	vsx.push_back (CStringEx());
+	CurItem.GetListPredef (nIndex+1, vsx);
+	for (vector<CStringEx>::const_iterator it = vsx.begin(); it != vsx.end(); ++it)
+		_slist->AddTail (it->c_str());
+}
+
+// ---------------------------------------------------------------------------
 #ifdef _DEBUG
-void CGeorgesDoc::AssertValid() const
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::AssertValid () const
 {
-	CDocument::AssertValid();
+	CDocument::AssertValid ();
 }
 
-void CGeorgesDoc::Dump(CDumpContext& dc) const
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::Dump (CDumpContext& dc) const
 {
-	CDocument::Dump(dc);
+	CDocument::Dump (dc);
 }
+
 #endif //_DEBUG
+// ---------------------------------------------------------------------------
 
-/////////////////////////////////////////////////////////////////////////////
-// CGeorgesDoc commands
+// ----------------------
+// Directories management
+// ----------------------
 
+// * Get *
+// *******
 
-void CGeorgesDoc::OnCloseDocument() 
+// ---------------------------------------------------------------------------
+CStringEx CGeorgesDoc::GetDirLevel () const
 {
-	DeleteContents();
-	CDocument::OnCloseDocument();
+	return DirLevel;
 }
 
-BOOL CGeorgesDoc::OnOpenDocument(LPCTSTR lpszPathName) 
+// ---------------------------------------------------------------------------
+CStringEx CGeorgesDoc::GetDirPrototype () const
 {
-	DocumentName = CStringEx( lpszPathName );
+	return DirPrototype;
+}
+
+// ---------------------------------------------------------------------------
+CStringEx CGeorgesDoc::GetDirDfnTyp () const
+{
+	return DirDfnTyp;
+}
+
+// * Set *
+// *******
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::SetDirLevel (const CStringEx &_sxDirectory)
+{
+	DirLevel = _sxDirectory;
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::SetDirPrototype (const CStringEx &_sxDirectory)
+{
+	DirPrototype = _sxDirectory;
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::SetDirDfnTyp (const CStringEx &_sxDirectory)
+{
+	DirDfnTyp = _sxDirectory;
+}
+
+// -----------------
+// New / Load / Save
+// -----------------
+
+// ---------------------------------------------------------------------------
+BOOL CGeorgesDoc::OnNewDocument()
+{
+	DocumentName = CStringEx();
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
-	papp->SetRootDirectory( sxrootdirectory );
-	papp->SetWorkDirectory( sxworkdirectory );
-	DeleteContents();
-	item.Load( CStringEx( lpszPathName ) );		
-	SetModifiedFlag( FALSE );
+	if (!CDocument::OnNewDocument())
+		return FALSE;
+
+	CFileDialog Dlg( true );
+	int s = Dlg.m_ofn.Flags;
+	Dlg.m_ofn.Flags |= OFN_NOCHANGEDIR | OFN_FILEMUSTEXIST | OFN_NONETWORKBUTTON;
+	Dlg.m_ofn.lpstrTitle  = "Choosing a DFN file";
+	Dlg.m_ofn.lpstrFilter = "Define files\0*.dfn";
+	Dlg.m_ofn.lpstrInitialDir = DirDfnTyp.c_str ();
+	int nRet = -1;
+	nRet = Dlg.DoModal();
+
+	if( nRet != IDOK )
+		return FALSE;
+
+	CString fn = Dlg.GetFileName( );
+	LPTSTR p = fn.GetBuffer( 1024 );
+	CStringEx sxdfn( p );
+	fn.ReleaseBuffer();
+
+	NewDocument (sxdfn);
+	return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::NewDocument( const CStringEx _sxfilename )
+{
+	CGeorgesApp* pApp = dynamic_cast<CGeorgesApp*>(AfxGetApp());
+	pApp->SetDirLevel (GetDirLevel());
+	pApp->SetDirPrototype (GetDirPrototype());
+	pApp->SetDirDfnTyp (GetDirDfnTyp());
+	DeleteContents ();
+	CurItem.New (_sxfilename);
+	ResetUndoRedo ();
+	SetModifiedFlag (FALSE);
+}
+
+// ---------------------------------------------------------------------------
+BOOL CGeorgesDoc::OnOpenDocument (LPCTSTR lpszPathName) 
+{
+	DocumentName = CStringEx(lpszPathName);
+	CGeorgesApp* pApp = dynamic_cast<CGeorgesApp*>(AfxGetApp());
+	pApp->SetDirLevel (GetDirLevel());
+	pApp->SetDirPrototype (GetDirPrototype());
+	pApp->SetDirDfnTyp (GetDirDfnTyp());
+	DeleteContents ();
+
+	// Test if the file is already locked ?
+	if ((FileLock = _fsopen(lpszPathName, "r", _SH_DENYRW)) == NULL)
+	{
+		string msg = string("File ") + lpszPathName + string(" is already in use");
+		pApp->m_pMainWnd->MessageBox (msg.c_str(), "Error", MB_ICONERROR|MB_OK);
+		return FALSE;
+	}
+	else
+	{
+		fclose (FileLock);
+	}
+
+	try
+	{
+		CurItem.Load (CStringEx(lpszPathName));
+		SetModifiedFlag (FALSE);
+	}
+	catch (NLMISC::Exception &e)
+	{
+		pApp->m_pMainWnd->MessageBox (e.what(), "CGeorgesDoc::OnOpenDocument", MB_ICONERROR|MB_OK);
+		return FALSE;
+	}
+
 	ResetUndoRedo();
-	return( TRUE );
+
+	// Put a lock onto the file
+	FileLock = _fsopen (lpszPathName, "r", _SH_DENYRW);
+
+	return TRUE;
 }
 
-BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName) 
+// ---------------------------------------------------------------------------
+BOOL CGeorgesDoc::OnSaveDocument (LPCTSTR lpszPathName) 
 {
-	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
+	CGeorgesApp* pApp = dynamic_cast<CGeorgesApp*>(AfxGetApp());
+
+	pApp->SetDirLevel (GetDirLevel());
+	pApp->SetDirPrototype (GetDirPrototype());
+	pApp->SetDirDfnTyp (GetDirDfnTyp());
+
+	// Unlock
+	if (FileLock != NULL)
+		fclose (FileLock);
+
+	// Save
+	try
+	{
+		CurItem.Save (CStringEx(lpszPathName));
+		SetModifiedFlag (FALSE);
+		if (CStringEx(lpszPathName) != DocumentName)
+		{
+			DocumentName = CStringEx (lpszPathName);
+			DeleteContents ();
+			CurItem.Load (DocumentName);
+			UpdateAllViews (NULL);
+		}
+	}
+	catch(NLMISC::Exception &e)
+	{
+		pApp->m_pMainWnd->MessageBox (e.what(), "CGeorgesDoc::OnSaveDocument", MB_ICONERROR|MB_OK);
+		return FALSE;
+	}
+
+	ResetUndoRedo ();
+
+	// Relock file
+	FileLock = _fsopen (lpszPathName, "r", _SH_DENYRW);
+
+	return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::OnCloseDocument () 
+{
+	if (FileLock != NULL)
+		fclose (FileLock);
+	DeleteContents ();
+	CDocument::OnCloseDocument ();
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::DeleteContents() 
+{
+	CurItem.Clear();
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::UpdateDocument() 
+{
+	bool b = CurItem.Update();
+	SetModifiedFlag( IsModified() || b );
+	UpdateAllViews (NULL);
+}
+
+
+
+
+
+
+
+/* // Oldies : Create typ and dfn in the program itself
 #if 0
 	std::vector< std::pair< CStringEx, CStringEx > > lpsx;
 	std::vector< std::pair< CStringEx, CStringEx > > lpsx2;
-/*
+
 	lpsx.clear();
 	lpsx.push_back( std::make_pair( CStringEx( "true" ),							CStringEx( "true" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "false" ),							CStringEx( "false" ) ) );
@@ -185,7 +526,7 @@ BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName)
 	lpsx.push_back( std::make_pair( CStringEx( "Enum" ),						CStringEx( "ENUM_boolean.typ" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "Predef" ),						CStringEx( "list< predef.dfn >" ) ) );
 	papp->GetLoader()->MakeDfn( "U:/dfn/typ.dfn", &lpsx );
-*/
+
 
 	// Definition des proprietes d'un vegetable
 	lpsx.push_back( std::make_pair( CStringEx( "Include_patats" ),						CStringEx( "list< patat_name.typ >" ) ) );
@@ -199,7 +540,7 @@ BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName)
 	lpsx.push_back( std::make_pair( CStringEx( "Random_Seed" ),							CStringEx( "uint32.typ" ) ) );
 	papp->GetLoader()->MakeDfn( "c:/vegetable.dfn", &lpsx );
 
-/*
+
 	// définition des propriétés possibles d'une plante
 	lpsx.clear();
 	lpsx.push_back( std::make_pair( CStringEx( "File name" ),							CStringEx( "plant_name.typ" ) ) );
@@ -233,235 +574,9 @@ BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName)
 	lsx.push_back( "fPatateSautee" );
 	papp->GetLoader()->SetTypPredef( "U:/dfn/patat_name.typ", lsx );
 	papp->UpdateAllDocument();
-*/
-
-#else
-	papp->SetRootDirectory( sxrootdirectory );
-	papp->SetWorkDirectory( sxworkdirectory );
-	item.Save( CStringEx( lpszPathName ) );		
-	SetModifiedFlag( FALSE );
-	if( CStringEx( lpszPathName ) != DocumentName )
-	{
-		DocumentName = CStringEx( lpszPathName );
-		DeleteContents();
-		item.Load( DocumentName );		
-		UpdateAllViews( 0 );
-	}
-	ResetUndoRedo();
 #endif
-	return( TRUE );
-}
-
-
-BOOL CGeorgesDoc::OnNewDocument()
-{
-	DocumentName = CStringEx();
-	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
-	if (!CDocument::OnNewDocument())
-		return FALSE;
-
-	CFileDialog Dlg( true );
-	int s = Dlg.m_ofn.Flags;
-	Dlg.m_ofn.Flags |= OFN_NOCHANGEDIR | OFN_FILEMUSTEXIST | OFN_NONETWORKBUTTON;
-	Dlg.m_ofn.lpstrTitle  = "Choosing a DFN file";
-	Dlg.m_ofn.lpstrFilter = "Define files\0*.dfn";
-	Dlg.m_ofn.lpstrInitialDir = CStringEx( sxrootdirectory +"dfn/" ).c_str();
-	int nRet = -1;
-	nRet = Dlg.DoModal();
-
-	if( nRet != IDOK )
-		return( FALSE );
-
-	CString fn = Dlg.GetFileName( );
-	LPTSTR p = fn.GetBuffer( 1024 );
-	CStringEx sxdfn( p );
-	fn.ReleaseBuffer();
-
-	NewDocument( sxdfn );
-	return( TRUE );
-}
-
-void CGeorgesDoc::NewDocument( const CStringEx _sxfilename )
-{
-	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
-	papp->SetRootDirectory( sxrootdirectory );
-	papp->SetWorkDirectory( sxworkdirectory );
-	DeleteContents();
-	item.New( _sxfilename );
-	ResetUndoRedo();
-	SetModifiedFlag( FALSE );
-}
-
-void CGeorgesDoc::DeleteContents() 
-{
-	item.Clear();
-}
-
-void CGeorgesDoc::UpdateDocument() 
-{
-	bool b = item.Update();
-	SetModifiedFlag( IsModified() || b );
-	UpdateAllViews( 0 );
-}
-
-/////////////////////////////////////////////////////////////////////:
-unsigned int CGeorgesDoc::GetItemNbElt() const
-{
-	return( item.GetNbElt()-1 );
-}
-
-unsigned int CGeorgesDoc::GetItemNbParent() const
-{
-	return( item.GetNbParents() );
-}
-
-unsigned int CGeorgesDoc::GetItemInfos( const unsigned int _index ) const
-{
-	return( item.GetInfos( _index+1 ) );
-}
-
-void CGeorgesDoc::SetItemValue( const unsigned int _index, const CString s )
-{
-	item.SetCurrentValue( _index+1, CStringEx( LPCTSTR( s ) ) );
-	SetModifiedFlag( TRUE );
-	Push();
-}
-
-CString CGeorgesDoc::GetItemName( const unsigned int _index ) const
-{
-	return( CString( item.GetName( _index+1 ).c_str() ) );
-}
-
-CString CGeorgesDoc::GetItemCurrentResult( const unsigned int _index ) const
-{
-	return( CString( item.GetCurrentResult( _index+1 ).c_str() ) );
-}
-
-CString CGeorgesDoc::GetItemCurrentValue( const unsigned int _index ) const
-{
-	return( CString( item.GetCurrentValue( _index+1 ).c_str() ) );
-}
-
-CString CGeorgesDoc::GetItemFormula( const unsigned int _index ) const
-{
-	return( CString( item.GetFormula( _index+1 ).c_str() ) );
-}
-
-CString CGeorgesDoc::GetItemParent( const unsigned int _index ) const
-{
-	return( CString( item.GetParent( _index ).c_str() ) );
-}
-
-CString CGeorgesDoc::GetItemActivity( const unsigned int _index ) const
-{
-	return( CString( item.GetActivity( _index ).c_str() ) );
-}
-
-void CGeorgesDoc::SetItemParent( const unsigned int _index, const CString _s )
-{
-	item.SetParent( _index, CStringEx( LPCTSTR( _s ) ) );
-	item.VirtualSaveLoad();
-	UpdateAllViews( 0 );
-	SetModifiedFlag( TRUE );
-	Push();
-}
-
-void CGeorgesDoc::SetItemActivity( const unsigned int _index, const CString _s )
-{
-	item.SetActivity( _index, CStringEx( LPCTSTR( _s ) ) );
-	item.VirtualSaveLoad();
-	UpdateAllViews( 0 );
-	SetModifiedFlag( TRUE );
-	Push();
-}
-
-unsigned int CGeorgesDoc::GetItemNbElt( const unsigned int _index ) const
-{
-	return( item.GetNbElt( _index+1 ) );
-}
-
-bool CGeorgesDoc::IsItemEnum( const unsigned int _index ) const
-{
-	return( item.IsEnum( _index+1 ) ); 
-}
-
-bool CGeorgesDoc::IsItemPredef( const unsigned int _index ) const
-{
-	return( item.IsPredef( _index+1 ) ); 
-}
-
-bool CGeorgesDoc::CanEditItem( const unsigned int _index ) const
-{
-	return( item.CanEdit( _index+1 ) ); 
-}
-
-void CGeorgesDoc::GetItemListPredef( const unsigned int _index, CStringList* _slist ) const
-{
-	if( !_slist )
-		return;
-	std::vector< CStringEx > vsx; 
-	vsx.push_back( CStringEx() );
-	item.GetListPredef( _index+1, vsx );
-	for( std::vector< CStringEx >::const_iterator it = vsx.begin(); it != vsx.end(); ++it )
-		_slist->AddTail( (*it).c_str() );
-}
-
-void CGeorgesDoc::SetWorkDirectory( const CStringEx _sxworkdirectory )
-{
-	sxworkdirectory = _sxworkdirectory;
-}
-
-void CGeorgesDoc::SetRootDirectory( const CStringEx _sxrootdirectory )
-{
-	sxrootdirectory = _sxrootdirectory;
-}
-
-CStringEx CGeorgesDoc::GetWorkDirectory() const
-{
-	return( sxworkdirectory );
-}
-
-CStringEx CGeorgesDoc::GetRootDirectory() const
-{
-	return( sxrootdirectory );
-}
-
-void CGeorgesDoc::AddList( const unsigned int _index )
-{
-	item.AddList( _index ); 
-	Push();
-}
-/*
-void CGeorgesDoc::AddListChild( const unsigned int _index ) const
-{
-	item.AddListChild( _index ); 
-}
 */
-void CGeorgesDoc::DelListChild( const unsigned int _index )
-{
-	item.DelListChild( _index ); 
-	SetModifiedFlag( TRUE );
-	Push();
-}
-
-void CGeorgesDoc::AddParent( const unsigned int _index )
-{
-
-	item.AddParent( _index ); 
-	item.VirtualSaveLoad();
-	UpdateAllViews( 0 );
-	SetModifiedFlag( TRUE );
-	Push();
-}
-
-void CGeorgesDoc::DelParent( const unsigned int _index )
-{
-	item.DelParent( _index ); 
-	item.VirtualSaveLoad();
-	UpdateAllViews( 0 );
-	SetModifiedFlag( TRUE );
-	Push();
-}
+	
 
 /*
 	std::list< std::pair< CStringEx, CStringEx > > lpsx;
@@ -678,7 +793,7 @@ void CGeorgesDoc::DelParent( const unsigned int _index )
 	lpsx.push_back( std::make_pair( CStringEx( "Caravane" ),			CStringEx( "1" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "Kami" ),				CStringEx( "2" ) ) );
 	loader.MakeTyp( "U:/dfn/enum_pactesurvie.typ", "uint", "ENUM Pacte survie", "true", "0", "2", "Rien", &lpsx, &lpsx2 );
-	return( true );
+	return true );
 */
 
 /*
@@ -721,5 +836,5 @@ void CGeorgesDoc::DelParent( const unsigned int _index )
 	lpsx.push_back( std::make_pair( CStringEx( "Patat1" ),				CStringEx( "Patat1" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "Patat2" ),				CStringEx( "Patat2" ) ) );
 	loader.MakeTyp( "U:/dfn/patat_name.typ", "string", "PATAT", "true", "", "", "Patat1", &lpsx, &lpsx2 );
-	return( TRUE );
+	return TRUE );
 */

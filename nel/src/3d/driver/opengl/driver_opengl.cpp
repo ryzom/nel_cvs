@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.96 2001/04/24 14:36:54 besson Exp $
+ * $Id: driver_opengl.cpp,v 1.97 2001/04/24 14:42:35 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -709,12 +709,12 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 		// insert into driver list. (so it is deleted when driver is deleted).
 		_VBDrvInfos.push_back(VB.DrvInfos);
 	}
-	CVBDrvInfosGL	*vbInf= static_cast<CVBDrvInfosGL*>((IVBDrvInfos*)(VB.DrvInfos));
 
 	// 2. If necessary, do modifications.
 	//==================================
 	if( VB.getTouchFlags()!=0 )
 	{
+		CVBDrvInfosGL	*vbInf= static_cast<CVBDrvInfosGL*>((IVBDrvInfos*)(VB.DrvInfos));
 		// Software and Skinning: must allocate PostRender Vertices and normals.
 		if(!_PaletteSkinHard && (VB.getVertexFormat() & IDRV_VF_PALETTE_SKIN)==IDRV_VF_PALETTE_SKIN )
 		{
@@ -739,7 +739,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 {
 	uint32	flags;
 
-	if (VB.DrvInfos==NULL && !setupVertexBuffer(VB))
+	if (!setupVertexBuffer(VB))
 		return false;
 
 	// Just to inform render*() that Matrix mode is OK.

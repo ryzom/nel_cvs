@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.58 2001/12/06 17:03:03 vizerie Exp $
+# $Id: Makefile.am,v 1.59 2001/12/13 17:59:28 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -180,11 +180,14 @@ libnel3d_la_SOURCES  = anim_detail_trav.h \
                        transformable_user.h \
                        trav_scene.h \
                        vegetable.h \
+                       vegetable_blend_layer_model.h \
                        vegetable_clip_block.h \
                        vegetable_def.h \
                        vegetable_instance_group.h \
                        vegetable_manager.h \
+                       vegetable_quadrant.h \
                        vegetable_shape.h \
+                       vegetable_sort_block.h \
                        vegetablevb_allocator.h \
                        vertex_buffer.h \
                        vertex_buffer_hard.h \
@@ -369,11 +372,14 @@ libnel3d_la_SOURCES  = anim_detail_trav.h \
                        transformable.cpp \
                        transformable_user.cpp \
                        vegetable.cpp \
+                       vegetable_blend_layer_model.cpp \
                        vegetable_clip_block.cpp \
                        vegetable_def.cpp \
                        vegetable_instance_group.cpp \
                        vegetable_manager.cpp \
+                       vegetable_quadrant.cpp \
                        vegetable_shape.cpp \
+                       vegetable_sort_block.cpp \
                        vegetablevb_allocator.cpp \
                        vertex_buffer.cpp \
                        vertex_buffer_hard.cpp \

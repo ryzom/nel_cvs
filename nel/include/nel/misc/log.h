@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: log.h,v 1.7 2000/10/09 08:46:29 cado Exp $
+ * $Id: log.h,v 1.8 2000/10/09 15:21:46 cado Exp $
  *
  * Interface for CLog
  */
@@ -58,6 +58,12 @@ public:
 	/// Remove a displayer. If the displayer doesn't work, you could remove it.
 	void removeDisplayer (IDisplayer *displayer);
 
+	/// Sets the local host name, with has to be determined outside
+	void setLocalHostAndService( const std::string& hostname, const std::string& servicename )
+	{
+		_LocalHostAndService = hostname + " " + servicename + " ";
+	}
+
 	/// Sets longinfo (if true, display() will then write a bigger header)
 	void setLongInfo( bool longinfo )
 	{
@@ -90,7 +96,7 @@ protected:
 private:
 
 	TLogPriority				_Priority;
-	std::string					_LocalHost;
+	std::string					_LocalHostAndService;
 	bool						_Long;
 
 	uint						_Line;

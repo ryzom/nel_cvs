@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: log.cpp,v 1.5 2000/10/09 10:37:12 lecroart Exp $
+ * $Id: log.cpp,v 1.6 2000/10/09 15:21:39 cado Exp $
  *
  * Implementation for CLog
  */
@@ -21,9 +21,6 @@
 #include "nel/misc/displayer.h"
 #include "nel/misc/log.h"
 #include "nel/misc/debug.h"
-#include "nel/net/base_socket.h"
-#include "nel/net/service.h"
-#include "nel/net/inet_address.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -40,17 +37,9 @@ CLog::CLog( TLogPriority priority, bool longinfo ) :
 	_Priority( priority ),
 	_Line( 0 ),
 	_File( NULL ),
-	_Long( longinfo )
+	_Long( longinfo ),
+	_LocalHostAndService( "<unknown>" )
 {
-	try
-	{
-		NLNET::CBaseSocket::init();
-		_LocalHost = NLNET::CInetAddress::localHost().hostName();
-	}
-	catch ( NLNET::ESocket& )
-	{
-		_LocalHost = "<UnknownHost>";
-	}
 }
 
 
@@ -145,7 +134,7 @@ void CLog::display( const char *format, ... )
 	ss << priorityStr().c_str() << " ";
 	if ( _Long )
 	{
-		ss << _LocalHost.c_str() << " " << NLNET::IService::serviceName() << " ";
+		ss << _LocalHostAndService.c_str();
 	}
 	if ( _File != NULL )
 	{

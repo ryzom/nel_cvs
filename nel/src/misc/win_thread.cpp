@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.8 2002/02/27 15:38:48 corvazier Exp $
+ * $Id: win_thread.cpp,v 1.9 2002/02/28 13:35:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,13 +98,13 @@ CWinThread::~CWinThread ()
 	// If not the main thread
 	if (_MainThread)
 	{
-		if (ThreadHandle != NULL) terminate();
-	}
-	else
-	{
 		// Free TLS memory
 		nlassert (TLSThreadPointer!=0xffffffff);
 		TlsFree (TLSThreadPointer);
+	}
+	else
+	{
+		if (ThreadHandle != NULL) terminate();
 	}
 }
 

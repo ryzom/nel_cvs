@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.92 2001/12/04 12:53:21 chafik Exp $
+ * $Id: agent_script.cpp,v 1.93 2001/12/04 14:13:06 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1111,7 +1111,7 @@ namespace NLAIAGENT
 				catch(NLAIE::IException &e)
 				{
 					mail->popMessage();
-					throw throw NLAIE::CExceptionNotImplemented(e.what());
+					throw NLAIE::CExceptionNotImplemented(e.what());
 				}								
 			}			
 		}

@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.12 2001/09/06 08:53:33 legros Exp $
+ * $Id: u_global_retriever.h,v 1.13 2001/09/12 10:25:11 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@ namespace NLMISC
 class CVector;
 class CVectorD;
 class CAABBox;
+class CLine;
 }
 
 namespace NLPACS 
@@ -99,6 +100,11 @@ public:
 	  * Tests if the global position is a interior position
 	  */
 	virtual bool					isInterior(const UGlobalPosition &pos) const =0;
+
+	///
+	virtual float					distanceToBorder(const UGlobalPosition &pos) const =0;
+	///
+	virtual void					getBorders(const UGlobalPosition &pos, std::vector<NLMISC::CLine> &edges) =0;
 
 	/**
 	  * For interior position only, snap the position to the ground.

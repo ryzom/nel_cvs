@@ -1,7 +1,7 @@
 /** \file local_entity.h
  * Locally-controlled entities
  *
- * $Id: local_entity.h,v 1.3 2000/10/27 15:45:06 cado Exp $
+ * $Id: local_entity.h,v 1.4 2000/11/07 16:44:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,6 +68,15 @@ public:
 		setBodyHeading( hdg );
 	}
 
+	/** Corrects the entity position (and updates trajectory vector) using external information
+	 * such as collision detection.
+	 * Usage :
+	 * -# Update the entity
+	 * -# Submit the new pos to the landscape (for example)
+	 * -# Correct the position.
+	 */
+	void			correctPos( const NLMISC::CVector& p );
+
 	/// Sets dead reckoning threshold for position divergence test
 	void			setThresholdForPos( TPosUnit th )
 	{
@@ -105,7 +114,9 @@ public:
 	/// Rolls. Positive value for right rotation; negative value for left rotation.
 	void			roll( TAngle delta );
 
-	/// Pitches. Positive value for up rotation; negative value for down rotation.
+	/** Pitches. Positive value for up rotation; negative value for down rotation.
+	 * This is not just a head pitching.
+	 */
 	void			pitch( TAngle delta );
 
 	//@}
@@ -122,7 +133,7 @@ protected:
 	bool			drDivergeTest();
 
 	/// R/W Access to dead reckoning replica
-	CRemoteEntity	drReplica()
+	CRemoteEntity&	drReplica()
 	{
 		return _DRReplica;
 	}
@@ -137,6 +148,12 @@ private:
 
 	/// Vertical velocity;
 	TVelocity		_VertVel;
+
+	/// Previous position (that was valid before the latest update)
+	NLMISC::CVector	_PrevPos;
+
+	/// Delta time that was passed to update()
+	TDuration		_DeltaTime;
 
 ///@name Dead Reckoning properties
 //@{

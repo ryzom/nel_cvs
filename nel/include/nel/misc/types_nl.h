@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * base types
  *
- * $Id: types_nl.h,v 1.9 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: types_nl.h,v 1.10 2000/11/07 16:44:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,7 @@ typedef	uint16	wchar;
  * base class for all exceptions
  * possibility to add new functionnalities and behaviors.
  */
-class Exception : public exception
+class Exception : public std::exception
 {
 };
 

@@ -1,7 +1,7 @@
 /** \file moving_entity.h
  * Interface for all moving entities
  *
- * $Id: moving_entity.h,v 1.3 2000/10/27 15:45:06 cado Exp $
+ * $Id: moving_entity.h,v 1.4 2000/11/07 16:44:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,16 +66,24 @@ public:
 	IMovingEntity();
 
 	/// Alt. constructor
-	IMovingEntity( const NLMISC::CVector pos,
-				   const NLMISC::CVector hdg,
-				   const NLMISC::CVector vec,
-				   const TAngVelocity av );
+	IMovingEntity( const NLMISC::CVector& pos,
+				   const NLMISC::CVector& hdg,
+				   const TAngle rollangle,
+				   const NLMISC::CVector& vec,
+				   const TAngVelocity av,
+   				   bool groundmode );
 
 	/// Copy constructor
 	IMovingEntity( const IMovingEntity& other );
 
+	/// Sets ground mode on/off
+	void					setGroundMode( bool gm )	{ _GroundMode = gm; }
+
 	/// Update the entity state
-	void					update( TDuration deltatime ) {}
+	void					update( TDuration deltatime )
+	{
+		computePosAfterDuration( deltatime );
+	}
 
 
 	/// Entity state properties
@@ -90,12 +98,18 @@ public:
 	/// Returns heading
 	const NLMISC::CVector&	bodyHeading() const	{ return _BodyHdg; }
 
+	/// Returns left vector
+	const TAngle&			rollAngle() const	{ return _RollAngle; }
+
 	/// Returns trajectory vector
 	const NLMISC::CVector&	trajVector() const	{ return _Vector; }
 
 	/// Returns angular velocity
 	const TAngVelocity		angularVelocity() const	{ return _AngVel; }
 
+	/// Returns true if the entity is in ground mode
+	bool					groundMode() const	{ return _GroundMode; }
+	
 	//@}
 
 
@@ -106,27 +120,37 @@ public:
 	/// Angle around y axis from z axis
 	TAngle					angleAroundY();
 
+	/// Sets altitude (ground mode only)
+	void					setAltitude( TPosUnit z );
+
 	/// Assignment operator
 	IMovingEntity&			operator= ( const IMovingEntity& other )
 	{
 		_Id = other._Id;
 		_Pos = other._Pos;
 		_BodyHdg = other._BodyHdg;
+		_RollAngle = other._RollAngle;
 		_Vector = other._Vector;
 		_AngVel = other._AngVel;
+		_GroundMode = other._GroundMode;
 		return *this;
 	}
 
 	/// Comparison operator
 	friend bool				operator== ( const IMovingEntity& e1, const IMovingEntity& e2 )
 	{
-		return ( e1._Pos == e2._Pos
+		return ( e1._Pos == e2._Pos // what about _Id and _GroundMode ?
 			  && e1._BodyHdg == e2._BodyHdg
+			  && e1._RollAngle == e2._RollAngle
 			  && e1._Vector == e2._Vector
 			  && e1._AngVel == e2._AngVel );
 	}
 
-	/// Serialization
+	/** Serialization.
+	 * Notes: the serialization is different whether ground mode is on or off.
+	 * The receiver must know the ground mode by an external way.
+	 * The body heading is never transmitted.
+	 */
 	void					serial ( NLMISC::IStream &s );
 
 	/// Sets id from outside
@@ -163,6 +187,7 @@ protected:
 	void					setTrajVector ( TPosUnit x, TPosUnit y, TPosUnit z )	{ _Vector.set( x, y, z ); }
 	void					setBodyHeading ( const NLMISC::CVector& hdg )			{ _BodyHdg = hdg; }
 	void					setBodyHeading ( TPosUnit x, TPosUnit y, TPosUnit z )	{ _BodyHdg.set( x, y, z ); }
+	void					setRollAngle ( TAngle rollangle )						{ _RollAngle = rollangle; }
 	//@}
 
 	/// Sets angular velocity
@@ -190,11 +215,17 @@ private:
 	/// Body heading (always normalized)
 	NLMISC::CVector			_BodyHdg;
 
+	/// Roll angle
+	TAngle					_RollAngle;
+
 	/// Trajectory vector
 	NLMISC::CVector			_Vector;
 
 	/// Angular velocity
 	TAngVelocity			_AngVel;
+
+	/// If the entity follows the ground (then we transmit only 2 coordinates)
+	bool					_GroundMode;
 
 	// Highest Id
 	static TEntityId		_MaxId;

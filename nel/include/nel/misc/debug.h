@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.12 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: debug.h,v 1.13 2000/11/07 16:44:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,7 +113,7 @@ NLMISC::WarningLog.setParam( __LINE__, __FILE__ ); NLMISC::WarningLog.displayNL
 _asm int 3; //
 #else
 #define nlerror \
-NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); nlError
+NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlError
 #endif
 
 /**

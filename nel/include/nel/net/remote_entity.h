@@ -1,7 +1,7 @@
 /** \file remote_entity.h
  * Remote-controlled entities
  *
- * $Id: remote_entity.h,v 1.3 2000/10/27 15:45:06 cado Exp $
+ * $Id: remote_entity.h,v 1.4 2000/11/07 16:44:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,19 +48,15 @@ public:
 	CRemoteEntity() {};
 	
 	/// Alt. constructor
-	CRemoteEntity( const NLMISC::CVector pos,
-				   const NLMISC::CVector hdg,
-				   const NLMISC::CVector vec,
-				   const TAngVelocity av );
+	CRemoteEntity( const NLMISC::CVector& pos,
+				   const NLMISC::CVector& hdg,
+				   const TAngle rollangle,
+				   const NLMISC::CVector& vec,
+				   const TAngVelocity av,
+				   bool groundmode );
 
 	/// Alt. constructor with entity state
 	CRemoteEntity( const IMovingEntity& es );
-
-	/// Update the entity state
-	void	update( TDuration deltatime )
-	{
-		computePosAfterDuration( deltatime );
-	}
 
 	/// Change the current state
 	void	changeStateTo( const IMovingEntity& es );

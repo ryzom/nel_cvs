@@ -1,7 +1,7 @@
 /** \file moving_entity.cpp
  * Interface for all moving entities
  *
- * $Id: moving_entity.cpp,v 1.4 2000/10/27 15:45:07 cado Exp $
+ * $Id: moving_entity.cpp,v 1.5 2000/11/07 16:44:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "nel/net/moving_entity.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/debug.h"
 
 using namespace NLMISC;
 
@@ -39,25 +40,34 @@ TEntityId IMovingEntity::_MaxId = 1; //	avoid 0
  * Constructor
  */
 IMovingEntity::IMovingEntity() :
-	_AngVel( 0.0f )
+	_Id( 0 ),
+	_Pos( CVector(0,0,0) ),
+	_BodyHdg( CVector(0,1,0) ),
+	_RollAngle( 0.0f ),
+	_Vector( CVector(0,0,0) ),
+	_AngVel( 0.0f ),
+	_GroundMode( true )
 {
-	_Id = 0; //getNewId();
 }
 
 
 /*
  * Alt. constructor
  */
-IMovingEntity::IMovingEntity( const NLMISC::CVector pos,
-							  const NLMISC::CVector hdg,
-							  const NLMISC::CVector vec,
-							  const TAngVelocity av )
+IMovingEntity::IMovingEntity( const NLMISC::CVector& pos,
+							  const NLMISC::CVector& hdg,
+							  const TAngle rollangle,
+							  const NLMISC::CVector& vec,
+							  const TAngVelocity av,
+							  bool groundmode ) :
+	_Id( 0 ),
+	_Pos( pos ),
+	_BodyHdg( hdg ),
+	_RollAngle( rollangle ),
+	_Vector( vec ),
+	_AngVel( av ),
+	_GroundMode( groundmode )
 {
-	_Id = 0; //getNewId();
-	_Pos = pos;
-	_BodyHdg = hdg;
-	_Vector = vec;
-	_AngVel = av;
 }
 
 
@@ -100,6 +110,16 @@ TAngle IMovingEntity::angleAroundY()
 
 
 /*
+ * Sets altitude (ground mode only)
+ */
+void IMovingEntity::setAltitude( TPosUnit z )
+{
+	nlassert( _GroundMode );
+	_Pos.z = z;
+}
+
+
+/*
  * Computes position using heading and velocity
  */
 void IMovingEntity::computePosAfterDuration( TDuration d )
@@ -112,7 +132,14 @@ void IMovingEntity::computePosAfterDuration( TDuration d )
 	{
 		CMatrix m;
 		m.identity();
-		m.rotateZ( _AngVel * d ); // ? Y for the test, will be Z in NeL
+		if ( groundMode() )
+		{
+			m.rotateZ( _AngVel * d ); // horizontal rotation
+		}
+		else
+		{
+			nlerror( "Not implemented" );
+		}
 		setBodyHeading( m * bodyHeading() );
 	}
 }
@@ -125,10 +152,27 @@ void IMovingEntity::computePosAfterDuration( TDuration d )
  */
 void IMovingEntity::serial ( NLMISC::IStream &s )
 {
-	s.serial( _Id );
-	s.serial( _Pos );
-	s.serial( _BodyHdg );
-	s.serial( _Vector );
+	if ( groundMode() )
+	{
+		s.serial( _Id );
+		s.serial( _Pos.x );
+		s.serial( _Pos.y );
+		s.serial( _Vector.x );
+		s.serial( _Vector.y );
+		s.serial( _BodyHdg.x );
+		s.serial( _BodyHdg.y );
+		s.serial( _AngVel );
+		s.serial( _RollAngle );
+	}
+	else
+	{
+		s.serial( _Id );
+		s.serial( _Pos );
+		s.serial( _Vector );
+		s.serial( _BodyHdg );
+		s.serial( _AngVel );
+		s.serial( _RollAngle );
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.4 2000/10/27 15:45:06 cado Exp $
+ * $Id: local_entity.cpp,v 1.5 2000/11/07 16:44:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,11 +43,15 @@ namespace NLNET {
  */
 CLocalEntity::CLocalEntity() :
 	IMovingEntity(),
-	_DRThresholdPos( 0.05 ),
 	_FrontVel( 0.0 ),
 	_StrafeVel( 0.0 ),
 	_VertVel( 0.0 ),
-	_DRReplica( *this )
+	_PrevPos( 0,0,0 ),
+	_DeltaTime( 0 ),
+	_DRReplica( *this ),
+	_DRThresholdPos( 0.5 ),
+	_DRTestBodyHeading( true ),
+	_DRThresholdHeading( 0.5 )
 {
 }
 
@@ -57,13 +61,18 @@ CLocalEntity::CLocalEntity() :
  */
 void CLocalEntity::update( TDuration deltatime )
 {
-	computePosAfterDuration( deltatime );
+	// Local entity
+	_PrevPos = pos();
+	_DeltaTime = deltatime;
+	IMovingEntity::update( deltatime );
+
+	// Local replica
 	_DRReplica.update( deltatime );
 
 	// Compare the entity and its replica
 	if ( drDivergeTest() )
 	{
-		nlinfo( "Pos: %f", (pos()-_DRReplica.pos()).norm() );
+		//nlinfo( "Pos: %f", (pos()-_DRReplica.pos()).norm() );
 		propagateState();
 	}
 }
@@ -82,14 +91,22 @@ bool CLocalEntity::drDivergeTest()
 		// Because bodyHeading() is normed(), i.e. its norm is 1.0, if _DRThresholdHeading
 		// equals 1.0, the corresponding angle is PI/3.
 		// At the moment, the divergence test returns true if the orientation changes in
-		// any direction, not only horizontally (for avatars such as persons, which are
-		// always vertical, the appearance may not change when looking up/down).
+		// any direction, not only horizontally.
 
 		bh = ( (bodyHeading()-_DRReplica.bodyHeading()).norm() > _DRThresholdHeading );
 	}
 
 	// Position divergence test
 	return bh || ( (pos()-_DRReplica.pos()).norm() > _DRThresholdPos );
+	/*CVector p1 = pos();
+	CVector p2 = _DRReplica.pos();
+	TPosUnit diff = (p1-p2).norm();
+	bh = diff > _DRThresholdPos;
+	if ( bh )
+	{
+		return true;
+	}*/
+	return bh;
 }
 
 
@@ -118,22 +135,20 @@ void CLocalEntity::computeVector()
 	}
 	else
 	{
-		m.identity();
-		m.rotateY( SQUARE_ANGLE ); // Y for the test, will be Z in NeL
-		strafevect = (m * bodyHeading()) * _StrafeVel;
+		if ( groundMode() )
+		{
+			m.identity();
+			m.rotateZ( SQUARE_ANGLE ); // Strafe: rotate around the vertical axis
+			strafevect = (m * bodyHeading()) * _StrafeVel;
+		}
+		else
+		{
+			strafevect = (CVector(0,0,1) ^ bodyHeading()) * _StrafeVel;
+		}
 	}
 
 	// Vertical axis
-	if ( _VertVel == 0.0 )
-	{
-		vertvect = CVector(0,0,0);
-	}
-	else
-	{
-		m.identity();
-		m.rotateX( SQUARE_ANGLE );
-		vertvect = (m * bodyHeading()) * _VertVel;
-	}
+	vertvect = CVector(0,0,_VertVel);
 
 	// Add all three axis
 	setTrajVector( (bodyHeading() * _FrontVel) + strafevect + vertvect );
@@ -146,13 +161,37 @@ void CLocalEntity::computeVector()
 void CLocalEntity::propagateState()
 {
 	// Send
-	CMessage msgout( "ES" );
+	CMessage msgout;
+	if ( groundMode() )
+	{
+		msgout.setType( "GES" ); // Entity State, Ground mode
+	}
+	else
+	{
+		msgout.setType( "FES" ); // Full Entity State
+	}
 	msgout.serial( *this );
 	ClientSocket->send( msgout );
 	nlinfo( "Entity State sent, with id %u", id() );
 
 	// Update local replica
-	_DRReplica.changeStateTo( *this );
+	drReplica().changeStateTo( *this );
+}
+
+
+/* Corrects the entity position (and updates trajectory vector) using external information
+ * such as collision detection.
+ * Usage :
+ * -# Update the entity
+ * -# Submit the new pos to the landscape (for example)
+ * -# Correct the position.
+ */
+void  CLocalEntity::correctPos( const NLMISC::CVector& p )
+{
+	// Compute trajectory vector
+	//setTrajVector( (p-_PrevPos)/_DeltaTime );
+
+	setPos( p );
 }
 
 
@@ -191,7 +230,7 @@ void CLocalEntity::setVerticalVelocity( TVelocity v )
  */
 void CLocalEntity::setAngularVelocity( TAngVelocity v )
 {
-	setAngularVelocity( v );
+	IMovingEntity::setAngularVelocity( v );
 }
 
 
@@ -200,7 +239,14 @@ void CLocalEntity::yaw( TAngle delta )
 {
 	CMatrix m;
 	m.identity();
-	m.rotateZ( delta ); // ? Y for the test, will be Z in NeL
+	if ( groundMode() )
+	{
+		m.rotateZ( delta );
+	}
+	else
+	{
+		nlerror( "Not implemented" );
+	}
 	setBodyHeading( m * bodyHeading() );
 	computeVector();
 }
@@ -209,11 +255,7 @@ void CLocalEntity::yaw( TAngle delta )
 //
 void CLocalEntity::roll( TAngle delta )
 {
-	CMatrix m;
-	m.identity();
-	m.rotateY( delta ); // -Z for the test, will be Y in NeL
-	setBodyHeading( m * bodyHeading() );
-	computeVector();
+	setRollAngle( rollAngle() + delta );
 }
 
 
@@ -222,7 +264,10 @@ void CLocalEntity::pitch( TAngle delta )
 {
 	CMatrix m;
 	m.identity();
-	m.rotateX( delta );
+	m.rotateX( delta ); // TODO
+
+	//nlerror( "Not implemented" );
+
 	setBodyHeading( m * bodyHeading() );
 	computeVector();
 }

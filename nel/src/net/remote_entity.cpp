@@ -1,7 +1,7 @@
 /** \file remote_entity.cpp
  * Remote-controlled entities
  *
- * $Id: remote_entity.cpp,v 1.3 2000/10/27 15:45:07 cado Exp $
+ * $Id: remote_entity.cpp,v 1.4 2000/11/07 16:44:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,8 @@
  */
 
 #include "nel/net/remote_entity.h"
+#include "nel/misc/debug.h"
+
 
 namespace NLNET {
 
@@ -31,11 +33,13 @@ namespace NLNET {
 /*
  * Constructor
  */
-CRemoteEntity::CRemoteEntity( const NLMISC::CVector pos,
-							  const NLMISC::CVector hdg,
-							  const NLMISC::CVector vec,
-							  const TAngVelocity av ) :
-	IMovingEntity( pos, hdg, vec, av )
+CRemoteEntity::CRemoteEntity( const NLMISC::CVector& pos,
+							  const NLMISC::CVector& hdg,
+							  const TAngle rollangle,
+							  const NLMISC::CVector& vec,
+							  const TAngVelocity av,
+							  bool groundmode ) :
+	IMovingEntity( pos, hdg, rollangle, vec, av, groundmode )
 {
 }
 
@@ -54,7 +58,11 @@ CRemoteEntity::CRemoteEntity( const IMovingEntity& es ) :
  */
 void CRemoteEntity::changeStateTo( const IMovingEntity& es )
 {
-	IMovingEntity::operator=( es ); // at the moment, no particular convergence algorithm
+	setPos( es.pos() );
+	setTrajVector( es.trajVector() );
+	setBodyHeading( es.bodyHeading() );
+	setAngularVelocity( es.angularVelocity() );
+	setRollAngle( es.rollAngle() );
 }
 
 

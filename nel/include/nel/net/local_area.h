@@ -1,7 +1,7 @@
 /** \file local_area.h
  * Local Area
  *
- * $Id: local_area.h,v 1.3 2000/10/27 15:45:06 cado Exp $
+ * $Id: local_area.h,v 1.4 2000/11/07 16:44:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NLNET {
 
 
 typedef std::map<TEntityId,CRemoteEntity*> CRemoteEntities;
+typedef CRemoteEntities::iterator ItRemoteEntities;
 
 class CMessage;
 
@@ -79,8 +80,16 @@ public:
 	/// The entity controlled by the player
 	CLocalEntity	User;
 
-	friend void cbProcessEntityState( CMessage& msgin, TSenderId idfrom );
+	// Friend helper functions
+	friend inline void createRemoteEntity( const IMovingEntity& es );
+	friend inline bool findEntity( TEntityId id, ItRemoteEntities& ire );
+	friend void processEntityState( const IMovingEntity& es );
+
+	// Callbacks
+	friend void cbProcessEntityStateInGroundMode( CMessage& msgin, TSenderId idfrom );
+	friend void cbProcessEntityStateFull( CMessage& msgin, TSenderId idfrom );
 	friend void cbAssignId( CMessage& msgin, TSenderId idfrom );
+	friend void cbRemoveEntity( CMessage& msgin, TSenderId idfrom );
 
 	/// Singleton
 	static CLocalArea *Instance;

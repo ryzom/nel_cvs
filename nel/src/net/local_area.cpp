@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * <File description>
  *
- * $Id: local_area.cpp,v 1.3 2000/10/24 16:39:42 cado Exp $
+ * $Id: local_area.cpp,v 1.4 2000/11/07 16:44:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,32 +41,81 @@ using namespace std;
 CLocalArea* CLocalArea::Instance;
 
 
-// Callback (friend of CLocalArea)
-void NLNET::cbProcessEntityState( CMessage& msgin, TSenderId idfrom )
+// Creates a new remote entity
+inline void NLNET::createRemoteEntity( const IMovingEntity& es )
 {
-	IMovingEntity es;
-	msgin.serial( es );
-	nlinfo( "Entity state received, with id %u", es.id() );
+	CRemoteEntity *new_entity = new CRemoteEntity( es );
+	CLocalArea::Instance->addNeighbor( new_entity );
+	nlinfo( "New remote entity created at %f , %f", new_entity->pos().x, new_entity->pos().y );
+}
 
+
+// Returns true and a valid iterator if the entity is found
+inline bool NLNET::findEntity( TEntityId id, ItRemoteEntities& ire )
+{
+	ire = CLocalArea::Instance->_Neighbors.find( id );
+	return ( ire != CLocalArea::Instance->_Neighbors.end() );
+}
+
+
+// Processes the entity state
+void NLNET::processEntityState( const IMovingEntity& es )
+{
 	// Search id in the entity map
-	CRemoteEntities::iterator ire;
-	ire = CLocalArea::Instance->_Neighbors.find( es.id() );
-	if ( ire == CLocalArea::Instance->_Neighbors.end() )
-	{
-		// Not found => create a new remote entity
-		CRemoteEntity *new_entity = new CRemoteEntity( es );
-		CLocalArea::Instance->addNeighbor( new_entity );
-		nlinfo( "New remote entity created");
-	}
-	else
+	ItRemoteEntities ire;
+	if ( findEntity( es.id(), ire ) )
 	{
 		// Change state
 		(*ire).second->changeStateTo( es );
 	}
+	else
+	{	// Not found => create a new remote entity
+		createRemoteEntity( es );
+	}
 }
 
 
-// Callback (friend of CLocalArea)
+/*
+ * Callback cbProcessEntityStateInGroundMode (friend of CLocalArea)
+ */
+void NLNET::cbProcessEntityStateInGroundMode( CMessage& msgin, TSenderId idfrom )
+{
+	IMovingEntity es;
+	es.setGroundMode( true );
+	msgin.serial( es );
+	nldebug( "Entity state in ground mode received, with id %u", es.id() );
+
+	// Search id in the entity map
+	ItRemoteEntities ire;
+	if ( findEntity( es.id(), ire ) )
+	{
+		// Change state
+		(*ire).second->changeStateTo( es );
+	}
+	else
+	{	// Not found => create a new remote entity
+		createRemoteEntity( es );
+	}
+}
+
+
+/*
+ * Callback cbProcessEntityStateFull (friend of CLocalArea)
+ */
+void NLNET::cbProcessEntityStateFull( CMessage& msgin, TSenderId idfrom )
+{
+	IMovingEntity es;
+	es.setGroundMode( false );
+	msgin.serial( es );
+	nldebug( "Full entity state received, with id %u", es.id() );
+
+	processEntityState( es );
+}
+
+
+/*
+ * Callback cbAssignId (friend of CLocalArea)
+ */
 void NLNET::cbAssignId( CMessage& msgin, TSenderId idfrom )
 {
 	TEntityId id;
@@ -75,10 +124,26 @@ void NLNET::cbAssignId( CMessage& msgin, TSenderId idfrom )
 }
 
 
+/*
+ * Callback cbRemoveEntity (friend of CLocalArea)
+ */
+void NLNET::cbRemoveEntity( CMessage& msgin, TSenderId idfrom )
+{
+	TEntityId id;
+	msgin.serial( id );
+	CLocalArea::Instance->_Neighbors.erase( id );
+}
+
+
+/*
+ * Callback array
+ */
 TCallbackItem CbArray [] =
 {
-	{ "ES", cbProcessEntityState },
-	{ "ID", cbAssignId }
+	{ "GES", cbProcessEntityStateInGroundMode },
+	{ "FES", cbProcessEntityStateFull },
+	{ "ID", cbAssignId },
+	{ "RM", cbRemoveEntity }
 };
 
 
@@ -92,7 +157,7 @@ namespace NLNET {
  * Constructor
  */
 CLocalArea::CLocalArea() :
-	_Radius( 20 )
+	_Radius( 200 )
 {
 	CLocalArea::Instance = this;
 	ClientSocket = new CMsgSocket( CbArray, sizeof(CbArray)/sizeof(CbArray[0]), "DRServer" );
@@ -124,7 +189,7 @@ void CLocalArea::init()
 #ifdef NL_OS_WINDOWS
 	_PreviousTime = timeGetTime();
 #else
-	throw Exception(); // not implemented
+	nlerror( "Not implemented" );
 #endif
 }
 
@@ -142,7 +207,7 @@ void CLocalArea::update()
 	TDuration deltatime = (TDuration)(actualtime - _PreviousTime) / 1000.0;
 	_PreviousTime = actualtime;
 #else
-	throw Exception(); // not implemented
+	nlerror( "Not implemented" );
 #endif
 
 	// Update all entities

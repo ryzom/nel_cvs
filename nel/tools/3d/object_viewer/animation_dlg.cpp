@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * implementation file
  *
- * $Id: animation_dlg.cpp,v 1.9 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: animation_dlg.cpp,v 1.10 2002/07/03 12:22:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,6 +123,7 @@ void CAnimationDlg::OnPlay()
 	{
 		Playing=true;
 	}
+	Main->enableFXs(true);
 }
 
 void CAnimationDlg::OnStop() 
@@ -135,6 +136,7 @@ void CAnimationDlg::OnStop()
 	PlayCtrl.EnableWindow (TRUE);
 	StopCtrl.EnableWindow (FALSE);
 	UpdateData (FALSE);
+	Main->enableFXs(false);
 }
 
 void CAnimationDlg::OnChangeCurrentFrame() 
@@ -303,7 +305,11 @@ void CAnimationDlg::handle ()
 			float backup = CurrentFrame;
 			CurrentFrame=(float)fmod ((CurrentFrame-Start), End-Start)+Start;
 			if (backup!=CurrentFrame)
+			{			
 				LastFrame = CurrentFrame;
+				Main->enableFXs(false);
+				Main->enableFXs(true);
+			}
 		}
 
 		// Clamp time
@@ -315,6 +321,7 @@ void CAnimationDlg::handle ()
 
 			// Stop animation
 			OnStop ();
+			
 		}
 		if (CurrentFrame<Start)
 		{

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.38 2002/06/24 17:20:05 vizerie Exp $
+ * $Id: object_viewer.h,v 1.39 2002/07/03 12:22:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -229,7 +229,11 @@ public:
 	uint addSkel (NL3D::IShape* pSkelShape, const char* skelName);
 
 	// remove all instances from the scene
-	void					 removeAllInstancesFromScene();
+	void		 removeAllInstancesFromScene();
+
+	// Start / stop fxs (remanence for now..)
+	void		 enableFXs(bool enabled);	
+
 
 	/// Force all the instances of the scene to use the given texture set (if available)
 	void activateTextureSet(uint index);

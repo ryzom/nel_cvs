@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.70 2002/06/28 20:01:41 hanappe Exp $
+ * $Id: object_viewer.cpp,v 1.71 2002/07/03 12:22:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,8 @@
 #include <3d/track_keyframer.h>
 #include <3d/font_generator.h>
 #include <3d/register_3d.h>
+#include <3d/seg_remanence.h>
+
 
 
 
@@ -2044,6 +2046,34 @@ void CObjectViewer::removeAllInstancesFromScene()
 	}
 }
 
+
+// ***************************************************************************
+void CObjectViewer::enableFXs(bool enabled)
+{
+	// Stand alone fxs
+	for(uint instance=0; instance<_ListInstance.size(); instance++)
+	{
+		NL3D::CSegRemanence *sr = dynamic_cast<NL3D::CSegRemanence *>(_ListInstance[instance]->TransformShape);
+		if (sr)
+		{
+			if (enabled) sr->start();
+			else sr->stop();
+		}
+	}
+	// remanences in igs
+	for(uint igId = 0; igId < _ListIG.size(); ++igId)
+	{
+		for(uint k = 0; k < _ListIG[igId]->_Instances.size(); ++k)
+		{
+			NL3D::CSegRemanence *sr = dynamic_cast<NL3D::CSegRemanence *>(_ListIG[igId]->_Instances[k]);
+			if (sr)
+			{
+				if (enabled) sr->start();
+				else sr->stop();
+			}
+		}	
+	}	
+}
 
 // ***************************************************************************
 

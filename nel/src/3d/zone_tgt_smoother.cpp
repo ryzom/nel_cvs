@@ -1,7 +1,7 @@
 /** \file zone_tgt_smoother.cpp
  * <File description>
  *
- * $Id: zone_tgt_smoother.cpp,v 1.6 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: zone_tgt_smoother.cpp,v 1.7 2001/11/26 15:23:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,7 +200,11 @@ void		CZoneTgtSmoother::makeVerticesCoplanar(std::vector<CZoneInfo>  &zones)
 		}
 
 		// There should be 4 tangents.
-		nlassert(tangents.size()==4);
+		if (tangents.size()!=4)
+		{
+			nlinfo ("ERROR: vertex %d should have 4 tangents. It got %d. (MAXINDICES +1!!)", itVert->first, tangents.size());
+			continue;
+		}
 
 
 		// c. get the vertex.

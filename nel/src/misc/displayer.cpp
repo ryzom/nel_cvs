@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.12 2001/04/06 16:08:27 lecroart Exp $
+ * $Id: displayer.cpp,v 1.13 2001/04/11 10:37:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,8 +114,10 @@ void IDisplayer::display (time_t date, CLog::TLogType logType, const std::string
 	{
 		doDisplay( date, logType, processName, fileName, line, message );
 	}
-	catch ( ... )
-	{}
+	catch (Exception &)
+	{
+		// silence
+	}
 	_Mutex->leave();
 }
 
@@ -149,7 +151,7 @@ void CStdDisplayer::doDisplay (time_t date, CLog::TLogType logType, const string
 		needSpace = true;
 	}
 	
-	if (needSpace) { ss << ": "; needSpace = false; }
+	if (needSpace) { ss << " : "; needSpace = false; }
 
 	ss << message;
 
@@ -161,7 +163,33 @@ void CStdDisplayer::doDisplay (time_t date, CLog::TLogType logType, const string
 	// display the string in the debugger is the application is started with the debugger
 	// todo to the display like this "R:\code\nel\src\misc\displayer.cpp(168) : message"
 	if (IsDebuggerPresent ())
-		OutputDebugString(ss.str().c_str());
+	{
+		stringstream ss2;
+		needSpace = false;
+
+		if (filename != NULL) ss2 << filename;
+
+		if (line != -1)
+		{
+			ss2 << '(' << line << ')';
+			needSpace = true;
+		}
+
+		if (needSpace) { ss2 << " : "; needSpace = false; }
+
+		if (logType != CLog::LOG_NO)
+		{
+			ss2 << logTypeToString(logType);
+			needSpace = true;
+		}
+
+		// Write thread identifier
+		ss2 << setw(5) << getThreadId() << ": ";
+
+		ss2 << message;
+
+		OutputDebugString(ss2.str().c_str());
+	}
 #endif
 }
 

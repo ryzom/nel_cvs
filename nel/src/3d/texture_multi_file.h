@@ -1,7 +1,7 @@
 /** \file texture_multi_file.h
  * This texture helps to manage texture sets : it identify as one texture in a group of several other textures.
  *
- * $Id: texture_multi_file.h,v 1.2 2002/06/11 14:24:48 vizerie Exp $
+ * $Id: texture_multi_file.h,v 1.3 2002/06/24 17:11:13 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "nel/misc/types_nl.h"
 #include "3d/texture.h"
 
+#include <string>
+
 
 namespace NL3D {
 
@@ -51,39 +53,41 @@ public:
 	
 	/// set the number of textures that are encoded in that texture
 	void setNumTextures(uint numTexs);
-
 	/** 
 	 * Set the name of the file containing the i-th texture
 	 * \param name of the file	
 	 * \param index index of the texture
 	 */	
-	void setFileName(uint index, const char *);
+	void					setFileName(uint index, const char *);
 	//
-	uint getNumFileName() const { return _FileNames.size(); }
+	uint					getNumFileName() const { return _FileNames.size(); }
 	/** 
 	 * get the name of the file containing the texture for the given index
 	 * \return name of the file	 
 	 */	
-	const std::string &getFileName(uint index) const { return _FileNames[index]; } 
-
-	/// from ITexture
-	virtual bool			supportSharing() const { return true; }
-	/// from ITexture
-	virtual std::string		getShareName() const;
-	/// from ITexture
-	virtual void selectTexture(uint index);
+	const std::string		&getFileName(uint index) const { return _FileNames[index]; } 
 	
-	/// Generate the current selected texture, looking in CPath if necessary.	
-	virtual void doGenerate();	
 
+
+	virtual bool			supportSharing() const { return true; }	
+	virtual std::string		getShareName() const;	
+	virtual void			selectTexture(uint index);
+	virtual bool			isSelectable() const { return true; }
+	virtual ITexture		*buildNonSelectableVersion(uint index);
+
+
+	/// Generate the current selected texture, looking in CPath if necessary.	
+	virtual void			doGenerate();
 	/// Serial this object
-	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	virtual void			serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CTextureMultiFile);
 
 private:
 	uint32					 _CurrSelectedTexture;
 	std::vector<std::string> _FileNames;
-
+private:
+	sint					getTexIndex(uint index) const;
+	const std::string		&getTexNameByIndex(uint index) const;
 };
 
 

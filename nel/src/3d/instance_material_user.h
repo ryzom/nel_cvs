@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.6 2002/06/14 08:34:15 berenguier Exp $
+ * $Id: instance_material_user.h,v 1.7 2002/06/24 17:11:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,18 +163,41 @@ public:
 	// @{	
 	virtual bool				isTextureFile(uint stage = 0) const
 	{
+		if (stage >= IDRV_MAT_MAXTEXTURES)
+		{
+			nlwarning("UInstanceMaterialUser::isTextureFile : invalid stage");
+			return false;
+		}
 		return dynamic_cast<CTextureFile *>(_Material->getTexture(stage)) != NULL;
 	}
 	
 	virtual std::string getTextureFileName(uint stage = 0) const
-	{
-		
+	{		
+		if (stage >= IDRV_MAT_MAXTEXTURES)
+		{
+			nlwarning("UInstanceMaterialUser::getTextureFileName : invalid stage");
+			return "";
+		}
 		return NLMISC::safe_cast<CTextureFile *>(_Material->getTexture(stage))->getFileName();
 	}
 	
 	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0)
 	{
-		NLMISC::safe_cast<CTextureFile *>(_Material->getTexture(stage))->setFileName(fileName);
+		CTextureFile *otherTex = dynamic_cast<CTextureFile *>(_Material->getTexture(stage));
+		if (stage >= IDRV_MAT_MAXTEXTURES)
+		{
+			nlwarning("UInstanceMaterialUser::setTextureFileName : invalid stage");
+			return;
+		}
+		if (!otherTex)
+		{
+			nlwarning("UInstanceMaterialUser::setTextureFileName : the texture is not a texture file");
+			return;
+		}
+		CTextureFile *tf = new CTextureFile(*otherTex);
+		tf->setFileName(fileName);
+		_Material->setTexture(stage, tf);
+		
 	}
 
 	virtual sint				getLastTextureStage() const
@@ -188,58 +211,6 @@ public:
 			}
 		}
 		return lastStage;
-	}
-
-	
-	virtual bool				isTextureFileSet(uint stage = 0) const
-	{
-		return dynamic_cast<CTextureMultiFile *>(_Material->getTexture(stage)) != NULL;
-	}
-	
-	virtual	sint				getNumTexInTexturefileSet(uint stage = 0) const
-	{
-		if (!dynamic_cast<CTextureMultiFile *>(_Material->getTexture(stage))) return -1;
-		return static_cast<CTextureMultiFile *>(_Material->getTexture(stage))->getNumFileName();
-	}
-	virtual const std::string  getTexNameInTextureFileSet(uint stage, uint texNum) const
-	{		
-		if (!dynamic_cast<CTextureMultiFile *>(_Material->getTexture(stage)))
-		{		
-			nlwarning("setTexNameInTextureFileSet : texture is not a texture set");
-			return std::string();
-		}
-		CTextureMultiFile *tmf = static_cast<CTextureMultiFile *>(_Material->getTexture(stage));
-		if (texNum >= tmf->getNumFileName())
-		{	
-			nlwarning("getTexNameInTextureFileSet : wrong fileName index");			
-			return std::string();
-		}
-		return tmf->getFileName(texNum);
-	}
-
-	virtual void				setTexNameInTextureFileSet(uint stage, uint texNum, const char *fileName) const
-	{
-		if (!dynamic_cast<CTextureMultiFile *>(_Material->getTexture(stage)))
-		{
-			nlwarning("setTexNameInTextureFileSet : texture is not a texture set");
-			return;
-		}
-		CTextureMultiFile *tmf = static_cast<CTextureMultiFile *>(_Material->getTexture(stage));
-		if (texNum >= tmf->getNumFileName())
-		{
-			nlwarning("setTexNameInTextureFileSet : wrong fileName index");
-			return;
-		}
-		tmf->setFileName(texNum, fileName);
-	}
-
-
-	// @}
-
-	/// Multiple textures sets mgt
-	virtual void			selectTextureSet(uint id)
-	{
-		_Material->selectTextureSet(id);
 	}
 
 

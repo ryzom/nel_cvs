@@ -1,7 +1,7 @@
 /** \file texture_multi_file.cpp
  * <File description>
  *
- * $Id: texture_multi_file.cpp,v 1.4 2002/05/16 12:28:04 vizerie Exp $
+ * $Id: texture_multi_file.cpp,v 1.5 2002/06/24 17:11:13 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -32,6 +32,8 @@
 namespace NL3D 
 {
 
+static std::string DummyTexName("CTextureMultiFile:Dummy");
+
 ///===========================================================	
 CTextureMultiFile::CTextureMultiFile(uint numTexs /* = 0 */) : _FileNames(numTexs), _CurrSelectedTexture(0)
 {	
@@ -56,28 +58,33 @@ void CTextureMultiFile::setFileName(uint index, const char *fileName)
 
 
 ///===========================================================	
-void CTextureMultiFile::doGenerate()
+sint CTextureMultiFile::getTexIndex(uint index) const
 {
 	if (_FileNames.empty())
-	{
-		makeDummy();
-		return;
+	{		
+		return -1;
 	}
-	uint usedTexture = _CurrSelectedTexture >= _FileNames.size() ? 0 : _CurrSelectedTexture;
-	
+	sint usedTexture = index >= _FileNames.size() ? 0 : index;	
 	if (_FileNames[usedTexture].empty())
 	{
-		if (usedTexture != 0 && !_FileNames[0].empty())
-		{
-			usedTexture = 0;
-		}
-		else
-		{
-			makeDummy();
-			return;
-		}
-	}	
-	CTextureFile::buildBitmapFromFile(*this, _FileNames[usedTexture], false);	
+		return (usedTexture != 0 && !_FileNames[0].empty()) ? 0 : -1;		
+	}
+	return usedTexture;
+}
+
+
+///===========================================================	
+void CTextureMultiFile::doGenerate()
+{
+	sint usedTexture = getTexIndex(_CurrSelectedTexture);
+	if (usedTexture == -1)
+	{
+		makeDummy();
+	}
+	else
+	{	
+		CTextureFile::buildBitmapFromFile(*this, _FileNames[usedTexture], false);	
+	}
 }
 
 ///===========================================================	
@@ -96,18 +103,18 @@ void	CTextureMultiFile::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 
+///===========================================================	
+const std::string &CTextureMultiFile::getTexNameByIndex(uint index) const
+{
+	sint usedTexture = getTexIndex(index);
+	return usedTexture == -1 ? DummyTexName : _FileNames[usedTexture];	
+}
+
 
 ///===========================================================	
 std::string		CTextureMultiFile::getShareName() const
 { 
-	if (_CurrSelectedTexture >= _FileNames.size())
-	{
-		return "CTextureMultiFile:Dummy"; // invalid...
-	}
-	else
-	{
-		return _FileNames[_CurrSelectedTexture];
-	}
+	return getTexNameByIndex(_CurrSelectedTexture);
 }
 
 ///===========================================================	
@@ -118,6 +125,17 @@ void CTextureMultiFile::selectTexture(uint index)
 		_CurrSelectedTexture = index;
 		touch();
 	}
+}
+
+
+///===========================================================	
+ITexture *CTextureMultiFile::buildNonSelectableVersion(uint index)
+{
+	CTextureFile *tf = new CTextureFile(getTexNameByIndex(index));
+	// copy tex parameters
+	(ITexture &) *tf = (ITexture &) *this; // invoke ITexture = op for basics parameters
+	//
+	return tf;	
 }
 
 

@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.7 2002/02/04 10:35:54 vizerie Exp $
+ * $Id: texture.h,v 1.8 2002/06/24 17:11:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -337,6 +337,17 @@ public:
 	  * The default does nothing
 	  */
 	virtual void selectTexture(uint index) {}
+
+	/// Test wether this texture is selectable
+	virtual bool isSelectable() const { return false; }
+
+	/** If this texture is selectable, build a non selectable version of this texture that is setupped with the given slot.
+	  * NB : If this texture is selectable, you are ensured that the return pointer is not 'this'
+	  */
+	virtual ITexture *buildNonSelectableVersion(uint index) { return this; }
+
+
+
 	
 	/// Cubic textures.
 	// @{

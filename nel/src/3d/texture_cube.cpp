@@ -1,7 +1,7 @@
 /** \file texture_cube.cpp
  * Implementation of a texture cube
  *
- * $Id: texture_cube.cpp,v 1.7 2002/03/14 18:19:08 vizerie Exp $
+ * $Id: texture_cube.cpp,v 1.8 2002/06/24 17:11:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/debug.h"
+#include <memory>
+
 using namespace std;
 using namespace NLMISC;
 
@@ -145,7 +147,11 @@ void	CTextureCube::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	ITexture::serial(f);
 
 	for( uint i = 0; i < 6; ++i )
-		f.serialPolyPtr( _Textures[i] );
+	{
+		ITexture *tex = _Textures[i];
+		f.serialPolyPtr( tex );
+		_Textures[i] = tex;
+	}
 	if( f.isReading() )
 		touch();
 
@@ -159,12 +165,40 @@ void	CTextureCube::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 // ***************************************************************************
 void CTextureCube::selectTexture(uint index)
-{
+{	
 	for( uint i = 0; i < 6; ++i )
 	{
-		_Textures[i]->selectTexture(index);
+		if (_Textures[i]) _Textures[i]->selectTexture(index);
 	}
 	touch();
 }
+
+// ***************************************************************************
+bool CTextureCube::isSelectable() const
+{
+	for( uint i = 0; i < 6; ++i )
+	{
+		if (_Textures[i] && _Textures[i]->isSelectable()) return true;
+	}
+	return false;
+}
+
+// ***************************************************************************
+ITexture *CTextureCube::buildNonSelectableVersion(uint index)
+{
+	if (!isSelectable()) return this;
+	std::auto_ptr<CTextureCube> tc(new CTextureCube);
+
+	// copy basic texture parameters
+	(ITexture &) *tc.get() = (ITexture &) *this; // invoke ITexture = op for basics parameters
+	_NoFlip = tc->_NoFlip;
+
+	for( uint i = 0; i < 6; ++i )
+	{
+		tc->_Textures[i] = _Textures[i]->buildNonSelectableVersion(index);
+	}
+	return tc.release();
+}
+
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.6 2002/05/13 07:49:26 besson Exp $
+ * $Id: texture_file.h,v 1.7 2002/06/24 17:11:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,10 +43,6 @@ namespace NL3D
  */
 class CTextureFile : public ITexture
 {
-	std::string _FileName;
-	bool		_AllowDegradation;	// Default is true.
-	bool		_AsyncLoading;		// Default is false.
-
 public:
 
 	/** 
@@ -56,6 +52,11 @@ public:
 	 */	
 	CTextureFile() { _AllowDegradation=true; _AsyncLoading=false; }
 
+	// copy ctor
+	CTextureFile(const CTextureFile &other);
+
+	// assignment operator
+	CTextureFile &operator = (const CTextureFile &other);
 
 	/** 
 	 * constructor
@@ -116,6 +117,12 @@ public:
 	//// Used to fill a bitmap by reading a file, looking in CPath if necessary, and using user_color
 	static void buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload);
 
+private:
+	std::string _FileName;
+	bool		_AllowDegradation;	// Default is true.
+	bool		_AsyncLoading;		// Default is false.
+private:
+	void		dupInfo(const CTextureFile &other);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.15 2002/05/13 07:49:26 besson Exp $
+ * $Id: texture_file.cpp,v 1.16 2002/06/24 17:11:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -215,6 +215,30 @@ void	CTextureFile::setAllowDegradation(bool allow)
 {
 	_AllowDegradation= allow;
 }
+
+// ***************************************************************************
+CTextureFile::CTextureFile(const CTextureFile &other) : ITexture(other)
+{
+	dupInfo(other);
+}
+
+// ***************************************************************************
+CTextureFile &CTextureFile::operator = (const CTextureFile &other)
+{
+	// copy base infos
+	(ITexture &) *this = (ITexture &) other;
+	dupInfo(other);
+	return *this;
+}
+
+// ***************************************************************************
+void CTextureFile::dupInfo(const CTextureFile &other)
+{
+	_FileName         = other._FileName;
+	_AsyncLoading     =	other._AsyncLoading;
+	_AllowDegradation = other._AllowDegradation;
+}
+
 
 
 } // NL3D

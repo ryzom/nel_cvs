@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.26 2001/08/15 12:12:21 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.27 2001/08/23 14:15:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,8 @@
 #include "particle_dlg.h"
 #include "resource.h"
 #include "main_frame.h"
+#include "sound_system.h"
+
 
 
 #ifdef _DEBUG
@@ -198,10 +200,22 @@ CObjectViewer::CObjectViewer ()
 		CConfigFile::CVar &search_pathes = cf.getVar ("search_pathes");
 		for (uint i=0; i<(uint)search_pathes.size(); i++)
 			CPath::addSearchPath (search_pathes.asString(i));
+
+		// set the sound file name
+		try
+		{
+			CConfigFile::CVar &sound_file = cf.getVar("sound_file");
+			CSoundSystem::setSoundBank(sound_file.asString().c_str());
+		}
+		catch (EUnknownVar &)
+		{
+			::MessageBox(NULL, "warning : 'sound_file' variable not defined", "Objectviewer.cfg", MB_OK|MB_ICONEXCLAMATION);
+		}
+
 	}
 	catch (Exception& e)
 	{
-		MessageBox (NULL, e.what(), "Objectviewer.cfg", MB_OK|MB_ICONEXCLAMATION);
+		::MessageBox (NULL, e.what(), "Objectviewer.cfg", MB_OK|MB_ICONEXCLAMATION);
 	}
 }
 
@@ -241,6 +255,9 @@ void initCamera ()
 void CObjectViewer::initUI (HWND parent)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	// init sound
+	CSoundSystem::initSoundSystem();
 
 	// The fonts manager
 	_FontManager.setMaxMemory(2000000);
@@ -377,6 +394,8 @@ void CObjectViewer::go ()
 	{
 		CNELU::Driver->activate ();
 
+		
+
 		// Handle animation
 		_AnimationDlg->handle ();
 
@@ -494,6 +513,10 @@ void CObjectViewer::go ()
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
+		
+		CSoundSystem::setListenerMatrix(_MouseListener.getViewMatrix().inverted());
+		CSoundSystem::poll();
+
 	}
 	while (!CNELU::AsyncListener.isKeyPushed(KeyESCAPE)&&CNELU::Driver->isActive());
 }
@@ -503,6 +526,9 @@ void CObjectViewer::go ()
 void CObjectViewer::releaseUI ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	// release sound
+	CSoundSystem::releaseSoundSystem();
 
 	if (CNELU::Driver->isActive())
 	{

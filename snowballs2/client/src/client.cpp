@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.9 2001/07/11 16:57:09 legros Exp $
+ * $Id: client.cpp,v 1.10 2001/07/11 17:13:57 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,13 +118,14 @@ int main(int argc, char **argv)
 	Camera = Scene->getCam();
 	Camera->setTransformMode (UTransformable::DirectMatrix);
 	Camera->setPerspective ((float)Pi/2.f, 1.33f, 0.1f, 1000);
+	Camera->lookAt (CVector(1000.0f, -1000.0f, 0.0f), CVectorD (0,0,0));
 
 	// Create a 3D mouse listener
 	MouseListener = Driver->create3dMouseListener ();
 	MouseListener->setHotSpot (CVectorD (0,0,0));
 	MouseListener->setFrustrum (Camera->getFrustum());
 	MouseListener->setMatrix (Camera->getMatrix());
-	MouseListener->setMouseMode (U3dMouseListener::edit3d);
+	MouseListener->setMouseMode (U3dMouseListener::firstPerson);
 
 	// Init the landscape using the previously created UScene
 	initLandscape();
@@ -143,6 +144,9 @@ int main(int argc, char **argv)
 		// Update the commands panel
 		updateCommands ();
 
+		// set the matrix for this frame
+		Camera->setMatrix(MouseListener->getViewMatrix());
+		
 		// Render
 		Scene->render ();
 

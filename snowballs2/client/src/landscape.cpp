@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape management with user interface
  *
- * $Id: landscape.cpp,v 1.2 2001/07/11 16:57:09 legros Exp $
+ * $Id: landscape.cpp,v 1.3 2001/07/11 17:13:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,12 +64,12 @@ void	initLandscape()
 	Landscape->setZonePath (ConfigFile.getVar("DataPath").asString() + "zones/");
 
 	// and eventually, load the zones around the starting point.
-	Landscape->loadAllZonesAround (CVector(1000.0f, 1000.0f, 0.0f), 1000.f);
+	Landscape->loadAllZonesAround (CVector(1000.0f, -1000.0f, 0.0f), 1000.0f);
 }
 
 void	updateLandscape()
 {
-	Landscape->refreshZonesAround (CVector(1000.0f, 1000.0f, 0.0f), 1000);
+	Landscape->refreshZonesAround (CVector(1000.0f, -1000.0f, 0.0f), 1000.0f);
 }
 
 void	releaseLandscape()

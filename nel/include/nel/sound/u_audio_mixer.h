@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.26.2.1 2003/04/24 15:11:33 boucher Exp $
+ * $Id: u_audio_mixer.h,v 1.26.2.2 2003/06/02 11:23:05 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,8 +140,10 @@ public:
 	 * hardware accelerated audio tracks. 
 	 * If the total of available harware track is less than 10, then EAX is automaticaly 
 	 * deactivated.
+	 * autoLoadSample is used for tools like george or object viewer where you don't bother to
+	 * specifie each sample bank to load, you just want to ear the sound.
 	 */
-	virtual void		init(uint maxTrack = 32, bool useEax = true, bool useADPCM = true, NLMISC::IProgressCallback *progressCallBack = NULL) = 0;
+	virtual void		init(uint maxTrack = 32, bool useEax = true, bool useADPCM = true, NLMISC::IProgressCallback *progressCallBack = NULL, bool autoLoadSample = false) = 0;
 
 	/** Initialisation of the clustered sound system.
 	  */

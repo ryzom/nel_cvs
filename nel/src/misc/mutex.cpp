@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.31 2002/10/18 13:59:52 coutelas Exp $
+ * $Id: mutex.cpp,v 1.32 2002/10/18 17:32:28 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,39 +63,8 @@ using namespace std;
 namespace NLMISC {
 
 
-/*
- * Windows version
- */
 
-CUnfairMutex::CUnfairMutex()
-{
-	// Create a mutex with no initial owner.
-	Mutex = (void *) CreateMutex (NULL, FALSE, NULL);
-	nlassert (Mutex != NULL);
-}
-
-
-CUnfairMutex::CUnfairMutex(const std::string &name)
-{
-	// Create a mutex with no initial owner.
-	Mutex = (void *) CreateMutex (NULL, FALSE, NULL);
-	nlassert (Mutex != NULL);
-}
-
-
-/*
- * Windows version
- */
-CUnfairMutex::~CUnfairMutex()
-{
-	CloseHandle( Mutex );
-}
-
-
-/*
- * Windows version
- */
-void CUnfairMutex::enter()
+inline void EnterMutex( void *handle )
 {
 #ifdef NL_DEBUG
 	DWORD timeout;
@@ -105,10 +74,10 @@ void CUnfairMutex::enter()
 		timeout = 10000;
 
     // Request ownership of mutex
-	DWORD dwWaitResult = WaitForSingleObject (Mutex, timeout);
+	DWORD dwWaitResult = WaitForSingleObject (handle, timeout);
 #else
     // Request ownership of mutex during 10s
-	DWORD dwWaitResult = WaitForSingleObject (Mutex, 10000);
+	DWORD dwWaitResult = WaitForSingleObject (handle, 10000);
 #endif // NL_DEBUG
 	switch (dwWaitResult)
 	{
@@ -118,7 +87,64 @@ void CUnfairMutex::enter()
 	case WAIT_TIMEOUT:		nlerror ("Dead lock in a mutex (or more that 10s for the critical section");
 	// Got ownership of the abandoned mutex object.
 	case WAIT_ABANDONED:	nlerror ("A thread forgot to release the mutex");
+	default:				nlerror ("EnterMutex failed");
     }
+}
+
+
+inline void LeaveMutex( void *handle )
+{
+	if (ReleaseMutex(handle) == 0)
+	{
+		//LPVOID lpMsgBuf;
+		//FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		//				 NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf, 0, NULL );*/
+		nlerror ("error while releasing the mutex (0x%x %d), %p", GetLastError(), GetLastError(), handle);
+		//LocalFree( lpMsgBuf );
+	}
+}
+
+
+/////////////////////////// CUnfairMutex
+
+
+/*
+ * Windows version
+ */
+
+CUnfairMutex::CUnfairMutex()
+{
+	// Create a mutex with no initial owner.
+	_Mutex = (void *) CreateMutex( NULL, FALSE, NULL );
+	nlassert( _Mutex != NULL );
+}
+
+
+CUnfairMutex::CUnfairMutex( const std::string &name )
+{
+	// Create a mutex with no initial owner.
+	_Mutex = (void *) CreateMutex( NULL, FALSE, NULL );
+	nlassert( _Mutex != NULL );
+	
+	// (Does not use name, only provided for debug compatibility with CFairMutex)
+}
+
+
+/*
+ * Windows version
+ */
+CUnfairMutex::~CUnfairMutex()
+{
+	CloseHandle( _Mutex );
+}
+
+
+/*
+ * Windows version
+ */
+void CUnfairMutex::enter()
+{
+	EnterMutex( _Mutex );
 }
 
 
@@ -127,11 +153,65 @@ void CUnfairMutex::enter()
  */
 void CUnfairMutex::leave()
 {
-	if (ReleaseMutex(Mutex) == 0)
-	{
-		nlerror ("error while releasing the mutex (0x%x %d), %p", GetLastError(), GetLastError(), Mutex);
-	}
+	LeaveMutex( _Mutex );
 }
+
+
+/////////////////////////// CSharedMutexW
+
+
+/*
+ *
+ */
+CSharedMutex::CSharedMutex()
+{
+	_Mutex = NULL;
+}
+
+
+/*
+ * Create or use an existing mutex (created by another process) with a specific object name (createNow must be false in the constructor)
+ * Returns false if it failed.
+ */
+bool	CSharedMutex::createByName( const char *objectName )
+{
+#ifdef NL_DEBUG
+	nlassert( _Mutex == NULL );
+#endif
+	_Mutex = (void *) CreateMutex( NULL, FALSE, objectName );
+	//nldebug( "Creating mutex %s: handle %p", objectName, _Mutex );
+	return ( _Mutex != NULL );
+}
+
+
+/*
+ *
+ */
+void CSharedMutex::destroy()
+{
+	CloseHandle( _Mutex );
+	_Mutex = NULL;
+}
+
+/*
+ *
+ */
+void CSharedMutex::enter()
+{
+	EnterMutex( _Mutex );
+}
+
+
+/*
+ *
+ */
+void CSharedMutex::leave()
+{
+	LeaveMutex( _Mutex );
+}
+
+
+/////////////////////////// CFairMutex
 
 
 /*
@@ -139,7 +219,9 @@ void CUnfairMutex::leave()
  */
 CFairMutex::CFairMutex()
 {
+#ifdef STORE_MUTEX_NAME
 	Name = "unset mutex name";
+#endif
 
 	debugCreateMutex();
 
@@ -160,7 +242,9 @@ CFairMutex::CFairMutex()
 
 CFairMutex::CFairMutex(const string &name)
 {
+#ifdef STORE_MUTEX_NAME
 	Name = name;
+#endif
 
 #ifdef MUTEX_DEBUG
 	debugCreateMutex();
@@ -233,6 +317,11 @@ void CFairMutex::leave()
 #include <errno.h>
 #include <unistd.h>
 
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h> // System V semaphores
+
+
 
 /*
  * Clanlib authors say: "We need to do this because the posix threads library
@@ -245,6 +334,17 @@ extern "C"
 
 
 namespace NLMISC {
+
+
+CUnfairMutex::CUnfairMutex()
+{
+	pthread_mutexattr_t attr;
+	pthread_mutexattr_init( &attr );
+	// Fast mutex. Note: on Windows all mutexes are recursive
+	pthread_mutexattr_setkind_np( &attr, PTHREAD_MUTEX_RECURSIVE_NP ); //PTHREAD_MUTEX_ERRORCHECK_NP );//PTHREAD_MUTEX_ADAPTIVE_NP );
+	pthread_mutex_init( &mutex, &attr );
+	pthread_mutexattr_destroy( &attr );
+}
 
 
 /*
@@ -371,6 +471,96 @@ void CFairMutex::leave()
 }
 
 
+
+
+/*
+ *
+ */
+CSharedMutex::CSharedMutex() : _SemId(-1)
+{}
+
+
+
+#if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
+/* union semun is defined by including <sys/sem.h> */
+#else
+/* according to X/OPEN we have to define it ourselves */
+union semun {
+        int val;                    /* value for SETVAL */
+        struct semid_ds *buf;       /* buffer for IPC_STAT, IPC_SET */
+        unsigned short int *array;  /* array for GETALL, SETALL */
+        struct seminfo *__buf;      /* buffer for IPC_INFO */
+};
+#endif
+
+
+/*
+ *
+ */
+bool	CSharedMutex::createByKey( int key, bool createNew )
+{
+	// Create a semaphore set containing one semaphore
+    /*key_t mykey = ftok(".", 'n');
+	_SemId = semget( mykey, 1, IPC_CREAT | IPC_EXCL | 0666 );*/
+
+	if ( createNew )
+		_SemId = semget( key, 1, IPC_CREAT | IPC_EXCL | 0666 );
+	else
+		_SemId = semget( key, 1, 0666 );
+	nldebug( "Got semid %d", _SemId );
+	if( _SemId == -1 )
+		return false;
+
+	// Initialise the semaphore to 1
+	union semun arg;
+	arg.val = 1;
+	if ( semctl( _SemId, 0, SETVAL, arg ) == -1 )
+	{
+		nlwarning( "semid=%d, err=%s", _SemId, strerror(errno) );
+		return false;
+	}
+	return true;
+}
+
+
+/*
+ *
+ */
+void	CSharedMutex::destroy()
+{
+	// Destroy the semaphore
+	union semun arg;
+	nlverifyex( semctl( _SemId, 0, IPC_RMID, arg ) != -1, ("semid=%d, err=%s", _SemId, strerror(errno) ) );
+	_SemId = -1;
+}
+
+
+/*
+ *
+ */
+void	CSharedMutex::enter()
+{
+	// Decrement the semaphore
+	sembuf buf;
+	buf.sem_num = 0;
+	buf.sem_op = -1;
+	nlverify( semop( _SemId, &buf, 1 ) != -1);
+}
+
+
+/*
+ *
+ */
+void	CSharedMutex::leave()
+{
+	// Increment the semaphore
+	sembuf buf;
+	buf.sem_num = 0;
+	buf.sem_op = 1;
+	nlverify( semop( _SemId, &buf, 1 ) != -1);
+}
+
+
 #endif // NL_OS_WINDOWS/NL_OS_LINUX
 
 
@@ -438,7 +628,11 @@ void CFairMutex::debugCreateMutex()
 		NbMutexes++;
 		ATMutex->leave();
 		char dbgstr [256];
+#ifdef STORE_MUTEX_NAME
 		smprintf( dbgstr, 256, "MUTEX: Creating mutex %p %s (number %u)\n", this, Name.c_str(), NbMutexes-1 );
+#else
+		smprintf( dbgstr, 256, "MUTEX: Creating mutex %p (number %u)\n", this, NbMutexes-1 );
+#endif
 #ifdef NL_OS_WINDOWS
 		if ( IsDebuggerPresent() )
 			OutputDebugString( dbgstr );
@@ -469,14 +663,21 @@ void CFairMutex::debugBeginEnter()
 		{
 			AcquireTime->insert( make_pair( this, TMutexLocks(NbMutexes++) ) );
 			char dbgstr [256];
+#ifdef STORE_MUTEX_NAME
 			smprintf( dbgstr, 256, "MUTEX: Creating mutex %p %s (number %u)\n", this, Name.c_str(), NbMutexes-1 );
+#else
+			smprintf( dbgstr, 256, "MUTEX: Creating mutex %p (number %u)\n", this, NbMutexes-1 );
+#endif
+
 #ifdef NL_OS_WINDOWS
 			if ( IsDebuggerPresent() ) OutputDebugString( dbgstr );
 #endif
 			cout << dbgstr << endl;
 
 			it = (*AcquireTime).find (this);
+#ifdef STORE_MUTEX_NAME
 			(*it).second.MutexName = Name;
+#endif
 		}
 		(*it).second.WaitingMutex++;
 		(*it).second.BeginEnter = t;
@@ -489,8 +690,8 @@ void CFairMutex::debugEndEnter()
 {
 //	printf("1");
 /*	char str[1024];
-	sprintf(str, "enter %8p %8p %8p\n", this, Mutex, getThreadId ());
-	if (Mutex == (void*)0x88)
+	sprintf(str, "enter %8p %8p %8p\n", this, _Mutex, getThreadId ());
+	if (_Mutex == (void*)0x88)
 	{
 		OutputDebugString (str);
 		if (entered) __asm int 3;
@@ -516,8 +717,8 @@ void CFairMutex::debugLeave()
 {
 //	printf( "0" );
 /*	char str[1024];
-	sprintf(str, "leave %8p %8p %8p\n", this, Mutex, getThreadId ());
-	if (Mutex == (void*)0x88)
+	sprintf(str, "leave %8p %8p %8p\n", this, _Mutex, getThreadId ());
+	if (_Mutex == (void*)0x88)
 	{
 		OutputDebugString (str);
 		if (!entered) __asm int 3;

@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.15 2002/10/18 13:59:59 coutelas Exp $
+ * $Id: mutex.h,v 1.16 2002/10/18 17:32:37 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,14 +32,24 @@
 #include <map>
 
 #ifdef NL_OS_UNIX
-#include <pthread.h>
-#include <semaphore.h>
+#include <pthread.h> // PThread
+#include <semaphore.h> // PThread POSIX semaphores
+
 #endif
 
 #undef MUTEX_DEBUG
 
 
 namespace NLMISC {
+
+
+/*
+ * This define must be disabled when sharing a mutex between several processes that can
+ * have a different debug mode (because when __STL_DEBUG is on, sizeof(string) is twice
+ * the common string size).
+ */
+#define STORE_MUTEX_NAME
+
 
 // By default, all mutex use the CFairMutex class to avoid freeze problem.
 #ifdef NL_OS_WINDOWS
@@ -50,11 +60,14 @@ namespace NLMISC {
 
 
 /**
- * Classic mutex implementation (not fairly)
+ * Classic mutex implementation (not necessarly fair)
  * Don't assume the mutex are recursive (ie don't call enter() several times
  * on the same mutex from the same thread without having called leave()) ;
  * and don't assume either the threads are woken-up in the same order as they
  * were put to sleep !
+ *
+ * Windows: uses Mutex, cannot be shared among processes.
+ * Linux: uses PThread POSIX Mutex, cannot be shared among processes.
  *
  *\code
  CUnfairMutex m;
@@ -72,18 +85,21 @@ public:
 
 	/// Constructor
 	CUnfairMutex();
-	CUnfairMutex(const std::string &name);
+	CUnfairMutex( const std::string &name );
 
 	/// Destructor
 	~CUnfairMutex();
 
-	void enter ();
-	void leave ();
+	/// Enter the critical section
+	void	enter ();
+
+	/// Leave the critical section
+	void	leave ();
 
 private:
 
 #ifdef NL_OS_WINDOWS
-	void *Mutex;
+	void *_Mutex;
 #elif defined NL_OS_UNIX
 	pthread_mutex_t mutex;
 #else
@@ -91,6 +107,54 @@ private:
 #endif
 
 };
+
+
+
+/**
+ * Windows: uses Mutex, the handle can't be shared among processes, but
+ * the mutex still can be be shared by passing a common object name to
+ * createByName() / createByKey(). Note: the mutex must be explicitely
+ * destroyed by calling destroy().
+ *
+ * \author Olivier Cado
+ * \author Nevrax France
+ * \date 2002
+ */
+class CSharedMutex
+{
+public:
+
+	/// Constructor (does not create the mutex, see createByName()/createByKey())
+	CSharedMutex();
+
+#ifdef NL_OS_WINDOWS
+	/// Create or access an existing mutex (created by another process) with a specific object name. Returns false if it failed.
+	bool	createByName( const char *objectName );
+#else
+	/// Create (with createNew to true) or access an existing mutex (created by another process) with a specific key. Returns false if it failed.
+	bool	createByKey( int key, bool createNew );
+#endif
+
+	/// Destroy the mutex
+	void	destroy();
+
+	/// Enter the critical section
+	void	enter ();
+
+	/// Leave the critical section
+	void	leave ();
+
+private:
+
+#ifdef NL_OS_WINDOWS
+	/// The mutex handle
+	void	*_Mutex;
+#else
+	/// The semaphore id
+	int		_SemId;
+#endif
+};
+
 
 
 #ifdef NL_OS_WINDOWS
@@ -111,7 +175,10 @@ struct TNelRtlCriticalSection {
 
 
 /**
- * Kind of "fair" mutex (implemented by semaphore on Unix, critical section on Windows)
+ * Kind of "fair" mutex
+ *
+ * Windows: uses Critical Section, cannot be shared among processes
+ * Linux: uses PThread (POSIX) semaphore, cannot be shared among processes
  *
  *\code
  CUnfairMutex m;
@@ -147,7 +214,9 @@ public:
 	void enter ();
 	void leave ();
 
+#ifdef STORE_MUTEX_NAME
 	std::string Name;
+#endif
 
 private:
 
@@ -172,10 +241,6 @@ private:
 #endif // MUTEX_DEBUG
 
 };
-
-
-
-
 
 
 /*

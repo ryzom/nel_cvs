@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.50 2002/07/25 13:34:32 lecroart Exp $
+ * $Id: path.cpp,v 1.51 2002/08/14 08:51:52 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1108,5 +1108,17 @@ bool CFile::moveFile(const char *dest,const char *src)
 {
 	return CopyMoveFile(dest, src, false);
 }
+
+
+bool CFile::createDirectory(const std::string &filename)
+{
+#ifdef NL_OS_WINDOWS
+	return _mkdir(filename.c_str())==0;
+#else
+	// Set full permissions....
+	return mkdir(filename.c_str(), 0xFFFF)==0;
+#endif
+}
+
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.26 2002/07/16 14:15:21 vizerie Exp $
+ * $Id: path.h,v 1.27 2002/08/14 08:51:43 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -299,7 +299,13 @@ struct CFile
 	/** Move a file
 	  * NB this keeps file attributes
 	  */
-	static bool moveFile(const char *dest, const char *src);	  
+	static bool moveFile(const char *dest, const char *src);
+
+	/** create a directory
+	  *	\return true if succes
+	  */
+	static bool	createDirectory(const std::string &dirname);
+
 };
 
 

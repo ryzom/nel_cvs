@@ -14,7 +14,7 @@ Requirements
    The NeL library need the following libraries :
 
       - STLPort  4.0   <URL:http://www.stlport.org/>
-      - FreeType 2     <URL:http://www.freetype.org/>
+      - FreeType 2     <URL:http://freetype.sourceforge.net/>
       - Python   1.5   <URL:http://www.python.org/>
 
    On a GNU/Linux platform you will need the following libraries and

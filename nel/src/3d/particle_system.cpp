@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.12 2001/05/23 15:18:01 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.13 2001/05/23 16:58:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,7 +95,7 @@ void CParticleSystemProcess::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
  * Constructor
  */
 CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
-									, _Date(NULL), _Scene(NULL)
+									, _Date(0), _Scene(NULL)
 {
 }
 

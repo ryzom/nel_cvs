@@ -338,6 +338,8 @@ catch
 )
 
 -- Bye
+gc ()
+resetMAXFile #noprompt
 
 quitMAX #noPrompt
 quitMAX () #noPrompt

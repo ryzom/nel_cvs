@@ -1,7 +1,7 @@
 /** \file class_registry.cpp
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.cpp,v 1.9 2002/03/15 13:45:22 legros Exp $
+ * $Id: class_registry.cpp,v 1.10 2004/02/19 09:58:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,14 +36,14 @@ namespace NLMISC
 
 
 // ======================================================================================================
-set<CClassRegistry::CClassNode>		*CClassRegistry::RegistredClasses = NULL;
+CClassRegistry::TClassMap		*CClassRegistry::RegistredClasses = NULL;
 
 
 // ======================================================================================================
 void		CClassRegistry::init()
 {
 	if (RegistredClasses == NULL)
-		RegistredClasses = new set<CClassRegistry::CClassNode>();
+		RegistredClasses = new TClassMap;
 }
 
 	
@@ -52,18 +52,16 @@ IClassable	*CClassRegistry::create(const string &className)  throw(ERegistry)
 {
 	init();
 
-	set<CClassNode>::iterator	it;
-	CClassNode	node;
-
-	node.ClassName= className;
-	it=RegistredClasses->find(node);
+	TClassMap::iterator	it;	
+	
+	it=RegistredClasses->find(className);
 
 	if(it==RegistredClasses->end())
 		return NULL;
 	else
 	{
 		IClassable	*ptr;
-		ptr=it->Creator();
+		ptr=it->second.Creator();
 		#ifdef NL_DEBUG
 			nlassert(CClassRegistry::checkObject(ptr));
 		#endif
@@ -77,15 +75,16 @@ void		CClassRegistry::registerClass(const string &className, IClassable* (*creat
 {
 	init();
 
-	CClassNode	node;
-	node.ClassName= className;
+	CClassNode	node;	
 	node.Creator=creator;
 	node.TypeIdCheck= typeidCheck;
-	if(!RegistredClasses->insert(node).second)
+	std::pair<TClassMap::iterator, bool> result;
+	result = RegistredClasses->insert(TClassMap::value_type(className, node));
+	if(!result.second)
 	{
 		nlstop;
 		throw ERegisteredClass();
-	}
+	}	
 }
 
 // ======================================================================================================
@@ -93,16 +92,12 @@ bool		CClassRegistry::checkObject(IClassable* obj)
 {
 	init();
 
-	set<CClassNode>::iterator	it;
-	CClassNode	node;
-	node.ClassName= obj->getClassName();
-
-	it=RegistredClasses->find(node);
+	TClassMap::iterator	it;	
+	it=RegistredClasses->find(obj->getClassName());
 	if(it==RegistredClasses->end())
-		return false;
-	node= *it;
+		return false;	
 
-	if( node.TypeIdCheck != string(typeid(*obj).name()) )
+	if( it->second.TypeIdCheck != string(typeid(*obj).name()) )
 		return false;
 
 	return true;
@@ -111,4 +106,25 @@ bool		CClassRegistry::checkObject(IClassable* obj)
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

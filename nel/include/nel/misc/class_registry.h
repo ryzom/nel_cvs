@@ -1,7 +1,7 @@
 /** \file class_registry.h
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.h,v 1.11 2002/04/12 16:36:17 vizerie Exp $
+ * $Id: class_registry.h,v 1.12 2004/02/19 09:58:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include	<typeinfo>
 #include	<string>
 #include	<set>
+#include	<hash_map>
 
 
 namespace	NLMISC
@@ -100,16 +101,12 @@ public:
 
 private:
 	struct	CClassNode
-	{
-		std::string			ClassName;
+	{		
 		std::string			TypeIdCheck;
-		IClassable*	(*Creator)();
-		bool	operator<(const CClassNode &n) const
-		{
-			return ClassName<n.ClassName;
-		}
+		IClassable*	(*Creator)();		
 	};
-	static	std::set<CClassNode>		*RegistredClasses;
+	typedef std::hash_map<std::string, CClassNode> TClassMap;
+	static	TClassMap	*RegistredClasses;
 
 	/// Inits the ClassRegistry (especially RegistredClasses)
 	static void			init();

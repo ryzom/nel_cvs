@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.2 2001/01/09 15:59:16 corvazier Exp $
+ * $Id: driver_opengl_extension.h,v 1.3 2001/01/09 16:06:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,9 @@
 
 
 #include <GL/gl.h>
+#ifdef NL_OS_UNIX
+#define	GL_GLEXT_PROTOTYPES
+#endif
 #include <GL/glext.h>	// Please download it from http://oss.sgi.com/projects/ogl-sample/ABI/"
 
 #ifdef GL_GLEXT_VERSION_EXT			// Old glext.h define GL_GLEXT_VERSION_EXT not GL_GLEXT_VERSION

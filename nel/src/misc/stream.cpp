@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.cpp,v 1.3 2000/09/12 17:18:06 berenguier Exp $
+ * $Id: stream.cpp,v 1.4 2000/09/13 14:55:02 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -55,7 +55,7 @@ void	IStream::getVersionException(bool &throwOnOlder, bool &throwOnNewer)
 
 
 // ======================================================================================================
-void			IStream::serialPtr(IStreamable* &ptr) throw(ERegistry, EStream)
+void			IStream::serialIStreamable(IStreamable* &ptr) throw(ERegistry, EStream)
 {
 	uint64	node;
 
@@ -137,10 +137,11 @@ void			IStream::resetPtrTable()
 
 
 // ======================================================================================================
-void			IStream::serialVersion(uint &streamVersion, uint currentVersion) throw(EStream)
+uint IStream::serialVersion(uint currentVersion) throw(EStream)
 {
 	uint8	b;
 	uint32	v;
+	uint	streamVersion;
 
 	if(isReading())
 	{
@@ -172,6 +173,8 @@ void			IStream::serialVersion(uint &streamVersion, uint currentVersion) throw(ES
 			serial(b);
 		}
 	}
+
+	return streamVersion;
 }
 
 

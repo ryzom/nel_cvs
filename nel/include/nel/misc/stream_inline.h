@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream_inline.h,v 1.4 2000/09/13 09:08:58 cado Exp $
+ * $Id: stream_inline.h,v 1.5 2000/09/13 14:57:34 berenguier Exp $
  *
  * This File Declares inline for stream.h CRegistry and CBaseStream 
  */
@@ -28,7 +28,6 @@
 
 
 // For Big/little Endian.
-// NL_BIG_ENDIAN
 #  define BSWAP16(src)	(src) = (((src)>>8)&0xFF) | (((src)&0xFF)<<8)
 #  ifdef OS_WINDOWS
 #    define BSWAP32(src) _asm mov eax,(src) _asm bswap eax _asm mov (src),eax
@@ -47,6 +46,9 @@ inline	IStream::IStream(bool inputStream, bool needSwap)
 {
 	_InputStream= inputStream;
 	_NeedSwap= needSwap;
+#ifdef NL_BIG_ENDIAN
+	_NeedSwap=false;
+#endif
 }
 
 

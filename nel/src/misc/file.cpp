@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: file.cpp,v 1.3 2000/09/12 15:41:10 berenguier Exp $
+ * $Id: file.cpp,v 1.4 2000/09/13 14:55:02 berenguier Exp $
  *
  * Standard File Input/Output.
  */
@@ -47,6 +47,7 @@ void	CIFile::close()
 		fclose(_F);
 		_F=NULL;
 	}
+	resetPtrTable();
 }
 // ======================================================================================================
 void	CIFile::flush()
@@ -105,6 +106,7 @@ void	COFile::close()
 		fclose(_F);
 		_F=NULL;
 	}
+	resetPtrTable();
 }
 // ======================================================================================================
 void	COFile::flush()

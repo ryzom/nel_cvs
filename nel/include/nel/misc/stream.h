@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.7 2000/09/13 08:56:17 berenguier Exp $
+ * $Id: stream.h,v 1.8 2000/09/13 14:57:28 berenguier Exp $
  *
  * This File handles IStream 
  */
@@ -62,38 +62,64 @@ class	IStreamable;
 // ======================================================================================================
 /**
  * A IO stream interface.
+ * This is the base interface for stream objects. Differents kind of streams may be implemented,
+ * by specifying serialBuffer() methods. Sample of streams: COutMemoryStream, CInFileStream ...
  * \author Lionel Berenguier
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000
- * This is the base interface for stream objects. Differents kind of streams may be implemented,
- * by specifying serialBuffer(uint8*, len) methods. Sample of streams: COutMemoryStream, CInFileStream ...
  */
 class IStream
 {
 public:
-	/// Set the behavior of IStream regarding input stream that are older/newer than the class (see serialVersion()). 
-	/// If set to true, IStream throws a EStream::Older/Newer/Version when needed. By default, the behavior is
-	/// throwOnOlder=false, throwOnNewer=true.
+	/**
+	 * Set the behavior of IStream regarding input stream that are older/newer than the class. 
+	 * If throwOnOlder==true, IStream throws a EOlderStream when needed. 
+	 * If throwOnNewer==true, IStream throws a ENewerStream when needed. 
+	 *
+	 * By default, the behavior is throwOnOlder=false, throwOnNewer=true.
+	 * @see serialVersion() getVersionException()
+	 */
 	static	void	setVersionException(bool throwOnOlder, bool throwOnNewer);
+	/**
+	 * Get the behavior of IStream regarding input stream that are older/newer than the class. 
+	 * @see serialVersion() setVersionException()
+	 */
 	static	void	getVersionException(bool &throwOnOlder, bool &throwOnNewer);
 
 
 public:
-	/// Constructor. Notice that those setup MUST be set at contruction.
+
+	/**
+	 * Constructor.
+	 * You must set needSwap only if your stream need it (a CMemoryStream may not need it).
+	 * IStream::IStream() force needSwap=false if \c NL_BIG_ENDIAN defined!
+	 * Notice that those behavior can be set at construction only.
+	 * @param inputStream is the stream an Input (read) stream?
+	 * @param needSwap is the stream need endian swapping?
+	 */
 	IStream(bool inputStream, bool needSwap);
+
+	/// Destructor.
 	virtual ~IStream() {}
 
 	/// Is this stream a Read/Input stream?
 	bool			isReading();
 
 
-	/// template Object serialisation.
-	template<class T>
+	/**
+	 * Template Object serialisation.
+	 * @param obj any object providing a "void serial(IStream&)" method.
+	 */
+    template<class T>
 	void			serial(T &obj) throw(EStream)
 	{ obj.serial(*this);	}
 
-	/// Base type serialisation.
+
+	/** @name Base type serialisation.
+	 * Those method are a specialisation of template method "void serial(T&)".
+	 */
+	//@{
 	void			serial(uint8 &b) throw(EStream);
 	void			serial(sint8 &b) throw(EStream);
 	void			serial(uint16 &b) throw(EStream);
@@ -109,8 +135,12 @@ public:
 	void			serial(std::string &b) throw(EStream);
 	void			serial(wchar &b) throw(EStream);
 	void			serial(std::wstring &b) throw(EStream);
+	//@}
 
-	/// Template for easy multiple serialisation.
+	/** @name Multiple serialisation.
+	 * Template for easy multiple serialisation.
+	 */
+	//@{
 	template<class T0,class T1>
 	void			serial(T0 &a, T1 &b) throw(EStream)
 	{ serial(a); serial(b);}
@@ -126,16 +156,25 @@ public:
 	template<class T0,class T1,class T2,class T3,class T4,class T5>
 	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e, T5 &f) throw(EStream)
 	{ serial(a); serial(b); serial(c); serial(d); serial(e); serial(f);}
+	//@}
 
 
-	/// STL pair<> support.
-	template<class T0, class T1>
-	void			serial(std::pair<T0, T1> &p) throw(EStream)
-	{ serial(p.first); serial(p.second);}
-
-
-	/// Serialize standard STL containers.
-	/// Support up to sint32 length containers.
+	/**
+	 * standard STL containers serialisation. Don't work with map<> and multimap<>.
+	 * Support up to sint32 length containers.
+	 *
+	 * the object T must provide:
+	 *	\li typedef iterator;		(providing operator++() and operator*())
+	 *	\li typedef value_type;		(a base type (uint...), or an object providing "void serial(IStream&)" method.)
+	 *	\li void clear();
+	 *	\li size_type size() const;
+	 *	\li iterator begin();
+	 *	\li iterator end();
+	 *	\li iterator insert(iterator it, const value_type& x);
+	 *
+	 * Known Supported containers: vector<>, list<>, deque<>, set<>, multiset<>.
+	 * @param cont a STL container (vector<>, set<> ...).
+	 */
 	template<class T>
 	void			serialCont(T &cont) throw(EStream)
 	{
@@ -164,26 +203,92 @@ public:
 	}
 
 
-	/// Serialize Polymorphic Objet Ptr. Works with NULL pointers.
+	/**
+	 * STL map<> and multimap<> serialisation.
+	 * Support up to sint32 length containers.
+	 *
+	 * the object T must provide:
+	 *	\li typedef iterator;		(providing operator++() and operator*())
+	 *	\li typedef value_type;		(must be a std::pair<>)
+	 *	\li typedef key_type;		(must be the type of the key)
+	 *	\li void clear();
+	 *	\li size_type size() const;
+	 *	\li iterator begin();
+	 *	\li iterator end();
+	 *	\li iterator insert(iterator it, const value_type& x);
+	 *
+	 * Known Supported containers: map<>, multimap<>.
+	 * @param cont a STL map<> or multimap<> container.
+	 */
+	template<class T>
+	void			serialMap(T &cont) throw(EStream)
+	{
+		sint32	len;
+		if(isReading())
+		{
+			cont.clear();
+			serial(len);
+			for(sint i=0;i<len;i++)
+			{
+				T::value_type	v;
+				serial( const_cast<T::key_type&>(v.first) );
+				serial(v.second);
+				cont.insert(cont.end(), v);
+			}
+		}
+		else
+		{
+			len= cont.size();
+			serial(len);
+			T::iterator		it= cont.begin();
+			for(sint i=0;i<len;i++, it++)
+			{
+				serial( const_cast<T::key_type&>((*it).first) );
+				serial((*it).second);
+			}
+		}
+	}
+
+
+	/** 
+	 * Serialize Polymorphic Objet Ptr.
+	 * Works with NULL pointers. If the same object is found mutliple time in the stream, ONLY ONE instance is written!
+	 * NB: The ptr is serialised as a uint64 (64 bit compliant).
+	 * @param ptr a pointer on a IStreamable object.
+	 * @see resetPtrTable()
+	 */
 	template<class T>
 	void			serialPtr(T* &ptr) throw(ERegistry, EStream)
-	{ IStreamable *p=ptr; serialPtr(p); ptr= static_cast<T*>(p);}
-	void			serialPtr(IStreamable* &ptr) throw(ERegistry, EStream);
+	{ IStreamable *p=ptr; serialIStreamable(p); ptr= static_cast<T*>(p);}
 
 
-	/// Serialize a version number. NB: Version Number is read/store as a uint8, or uint32 if too bigger..
-	void			serialVersion(uint &streamVersion, uint currentVersion) throw(EStream);
-
+	/** 
+	 * Serialize a version number.
+	 * Each object should store/read first a version number, using this method.
+	 * Then he can use the streamVersion returned to see how he should serialise himself.
+	 *
+	 * NB: Version Number is read/store as a uint8, or uint32 if too bigger..
+	 * @param currentVersion the current version of the class, provided by user.
+	 * @return the version of the stream. If the stream is an Output stream, currentVersion is returned.
+	 * @see setVersionException() getVersionException()
+	 */
+	uint			serialVersion(uint currentVersion) throw(EStream);
 
 
 protected:
 
-	/// If Derived stream provide reset()-like methods, they must call this method in their reset() methods.
+	/** 
+	 * for Deriver: reset the PtrTable in the stream.
+	 * If Derived stream provide reset()-like methods, they must call this method in their reset() methods.
+	 * For example, CFile::close() must call it, so it will work correctly with next serialPtr()
+	 */
 	void				resetPtrTable();
 
-	/// Methods to specify.
+	//@{
+	/// Method to be specified by the Deriver.
 	virtual void		serialBuffer(uint8 *buf, uint len) throw(EStream)=0;
 	virtual void		serialBit(bool &bit) throw(EStream)=0;
+	//@}
 
 private:
 	bool	_InputStream;
@@ -195,6 +300,9 @@ private:
 	std::map<uint64, IStreamable*>				_IdMap;
 	typedef std::map<uint64, IStreamable*>::iterator	ItIdMap;
 	typedef std::map<uint64, IStreamable*>::value_type	ValueIdMap;
+
+	// Ptr serialisation.
+	void			serialIStreamable(IStreamable* &ptr) throw(ERegistry, EStream);
 };
 
 

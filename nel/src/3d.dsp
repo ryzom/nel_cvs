@@ -172,6 +172,14 @@ SOURCE=.\3d\transform.cpp
 
 SOURCE=..\include\nel\3d\transform.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\transform_shape.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\transform_shape.h
+# End Source File
 # End Group
 # Begin Group "Landscape"
 
@@ -359,6 +367,18 @@ SOURCE=.\3d\tile_bank.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\tile_bank.h
+# End Source File
+# End Group
+# Begin Group "Shapes"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\shape.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\shape.h
 # End Source File
 # End Group
 # Begin Source File

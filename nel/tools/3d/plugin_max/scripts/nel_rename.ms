@@ -4,7 +4,11 @@
 
 include "nel_utility.ms"
 
-NelRenameSample = "c:/dir/name.ext"
+NelRenameSampleFilename = "c:/dir/name.ext"
+NelRenameSample = "Bip01 toto"
+
+NelRenamePropertiesMaterial = 1
+NelRenamePropertiesNode = 2
 
 NelRenameSelectionAlways = 1
 NelRenameSelectionSearch = 2
@@ -24,6 +28,7 @@ rollout rename_rollout "Properties"
 (
 	group "Global settings"
 	(
+		RadioButtons	RenameWhat				"Properties to rename"			labels:#("Material", "Node") align:#left
 		RadioButtons	SelectionMode			"String selection"				labels:#("Apply to all the string", "Search pattern in the string") align:#left
 		RadioButtons	Action					"Action to perform"				labels:#("Replace", "Prefix", "Postfix") align:#left
 		Label			RemplaceWithLabel		"Remplace / Prefix / Postfix with:"			align:#left
@@ -110,6 +115,14 @@ rollout rename_rollout "Properties"
 		)
 	)
 
+	fn isFilename =
+	(
+		if RenameWhat.state == NelRenamePropertiesMaterial then
+			return true
+		else
+			return false
+	)
+
 	fn modifyString filename =
 	(
 		local dir, name, ext, find_what, prefix, name_to_modify, postfix
@@ -124,44 +137,52 @@ rollout rename_rollout "Properties"
 			find_what = lowercase find_what
 		)
 
-		-- Extract different part of the path string
-		dir = adjustPathStringForScript ((getFilenamePath filename)) + "/"
-		name = getFilenameFile filename
-		ext = getFilenameType filename
-
-		-- Build the final filename
+		-- Filename 
 		prefix = ""
 		name_to_modify = ""
 		postfix = ""
-		if PathNameFilter.state == NelRenameFilterDir then
+		if isFilename() then
 		(
-			name_to_modify = dir
-			postfix = name + ext
+			-- Extract different part of the path string
+			dir = adjustPathStringForScript ((getFilenamePath filename)) + "/"
+			name = getFilenameFile filename
+			ext = getFilenameType filename
+
+			-- Build the final filename
+			if PathNameFilter.state == NelRenameFilterDir then
+			(
+				name_to_modify = dir
+				postfix = name + ext
+			)
+			else if PathNameFilter.state == NelRenameFilterDirName then
+			(
+				name_to_modify = dir + name
+				postfix = ext
+			)
+			else if PathNameFilter.state == NelRenameFilterDirNameExt then
+			(
+				name_to_modify = dir + name + ext
+			)
+			else if PathNameFilter.state == NelRenameFilterName then
+			(
+				prefix = dir
+				name_to_modify = name
+				postfix = ext
+			)
+			else if PathNameFilter.state == NelRenameFilterNameExt then
+			(
+				prefix = dir
+				name_to_modify = name + ext
+			)
+			else -- if PathNameFilter.state == NelRenameFilterExt then
+			(
+				prefix = dir + name
+				name_to_modify = ext
+			)
 		)
-		else if PathNameFilter.state == NelRenameFilterDirName then
+		else
 		(
-			name_to_modify = dir + name
-			postfix = ext
-		)
-		else if PathNameFilter.state == NelRenameFilterDirNameExt then
-		(
-			name_to_modify = dir + name + ext
-		)
-		else if PathNameFilter.state == NelRenameFilterName then
-		(
-			prefix = dir
-			name_to_modify = name
-			postfix = ext
-		)
-		else if PathNameFilter.state == NelRenameFilterNameExt then
-		(
-			prefix = dir
-			name_to_modify = name + ext
-		)
-		else -- if PathNameFilter.state == NelRenameFilterExt then
-		(
-			prefix = dir + name
-			name_to_modify = ext
+			name_to_modify = filename
 		)
 
 		-- Replace
@@ -170,7 +191,10 @@ rollout rename_rollout "Properties"
 
 	fn updateSample =
 	(
-		Sample.text = "Sample: \"" + NelRenameSample + "\" -> \"" + (modifyString NelRenameSample) + "\""
+		if isFilename() then
+			Sample.text = "Sample: \"" + NelRenameSampleFilename + "\" -> \"" + (modifyString NelRenameSample) + "\""
+		else
+			Sample.text = "Sample: \"" + NelRenameSample + "\" -> \"" + (modifyString NelRenameSample) + "\""
 	)
 
 	fn updateSearchMode =
@@ -187,6 +211,11 @@ rollout rename_rollout "Properties"
 			FindWhat.enabled = false
 			MatchCase.enabled = false
 		)
+	)
+
+	fn updatePathNameFilter =
+	(
+		PathNameFilter.enabled = isFilename()
 	)
 
 	on FindWhat changed text do
@@ -222,6 +251,12 @@ rollout rename_rollout "Properties"
 
 	on MatchCase changed state do
 	(
+		updateSample ()
+	)
+
+	on RenameWhat changed state do
+	(
+		updatePathNameFilter ()
 		updateSample ()
 	)
 
@@ -280,11 +315,26 @@ rollout rename_rollout "Properties"
 		countRenamed = 0
 
 		-- For each node in the project
-		local mat
-		for mat in sceneMaterials do
+		if (RenameWhat.state == NelRenamePropertiesMaterial) then
 		(
-			-- Rename its material
-			renameMaterial mat
+			local mat
+			for mat in sceneMaterials do
+			(
+				-- Rename its material
+				renameMaterial mat
+			)
+		)
+		else
+		(
+			local node
+			for node in objects do
+			(
+				-- Rename its material
+				previousname = node.name
+				node.name = filename = modifyString node.name
+				if (node.name != previousname) then
+					countRenamed = countRenamed + 1
+			)
 		)
 
 		-- Add to total sum

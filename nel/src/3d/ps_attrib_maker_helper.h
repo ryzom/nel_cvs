@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.1 2001/07/12 15:53:06 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.2 2001/07/13 17:02:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -212,7 +212,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 			#ifdef NL_OS_WINDOWS
 				__forceinline
 			#endif
-			float operator*() const { return rand() * (1.f / RAND_MAX) ; }
+					float operator*() const { return float(rand() * (1 / double(RAND_MAX))) ; }
 
 			
 			// dummy post increment
@@ -227,7 +227,8 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 			}
 			// dummy post decrement
 			CRandomIterator &operator--(int)
-			{			
+			{	
+				return *this ;
 			}
 			// dummy pre-decrement
 			CRandomIterator &operator--()
@@ -261,7 +262,8 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 			}
 			// dummy post decrement
 			CDecalIterator &operator--(int)
-			{			
+			{	
+				return *this ;
 			}
 			// dummy pre-decrement
 			CDecalIterator &operator--()
@@ -860,7 +862,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 		break ;
 		case CPSInputType::attrUniformRandom:	
 		{
-			return _F(rand() * (1.f / RAND_MAX)) ;
+			return _F(float(rand() * (1 / double(RAND_MAX)))) ;
 		}
 		break ;
 		case CPSInputType::attrUserParam:

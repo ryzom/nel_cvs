@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.8 2001/07/12 15:52:02 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.9 2001/07/13 17:01:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,6 +95,9 @@ template <typename T> class CPSValueBlendFunc : public CPSValueBlendFuncBase<T>
 {
 public:
 	/// this produce Values
+	#ifdef NL_OS_WINDOWS
+		__forceinline
+	#endif
 	T operator()(CAnimationTime time) const
 	{
 
@@ -184,6 +187,9 @@ template <typename T, const uint n> class CPSValueBlendSampleFunc : public CPSVa
 {
 public:
 	/// this produce Values
+	#ifdef NL_OS_WINDOWS
+			__forceinline
+	#endif
 	T operator()(CAnimationTime time) const
 	{
 
@@ -279,6 +285,9 @@ template <typename T> class CPSValueGradientFunc
 {
 public:
 	/// this produce Values
+	#ifdef NL_OS_WINDOWS
+		__forceinline
+	#endif
 	T operator()(CAnimationTime time) const
 	{
 		nlassert(_Tab) ;

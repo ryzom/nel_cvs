@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.84 2003/06/26 15:36:29 legros Exp $
+ * $Id: global_retriever.cpp,v 1.85 2003/07/02 18:29:57 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/line.h"
 #include "nel/misc/async_file_manager.h"
 #include "nel/misc/common.h"
+#include "nel/misc/variable.h"
 
 #include "nel/misc/hierarchical_timer.h"
 
@@ -49,6 +50,8 @@ NLMISC::TTicks			ThisAStarTicks;
 NLMISC::TTicks			ThisPathTicks;
 NLMISC::TTicks			ThisChainTicks;
 NLMISC::TTicks			ThisSurfTicks;
+
+uint					PacsRetrieveVerbose = 0;
 
 using namespace std;
 using namespace NLMISC;
@@ -510,7 +513,7 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 			uint32						id = _InternalCST.SortedSurfaces[selInstance].Instance;
 			const CRetrieverInstance	&instance = _Instances[id];
 
-			if (instance.getType() == CLocalRetriever::Interior && _InternalCST.SortedSurfaces[selInstance].Distance < bestDist+3.0f)
+			if (instance.getType() == CLocalRetriever::Interior && _InternalCST.SortedSurfaces[selInstance].Distance < bestDist+5.0f)
 				break;
 
 			if (selInstance == 0)
@@ -559,6 +562,15 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 
 		// and after selecting the best surface (and some replacement) snap the point to the surface
 		instance.snap(result.LocalPosition, retriever);
+
+
+		if (PacsRetrieveVerbose)
+			nlinfo("DebugBen: retrievePosition(%f,%f,%f) -> %d/%d/(%f,%f,%f) - %s/%s",
+					estimated.x, estimated.y, estimated.z,
+					result.InstanceId, result.LocalPosition.Surface, 
+					result.LocalPosition.Estimation.x, result.LocalPosition.Estimation.y, result.LocalPosition.Estimation.z,
+					retriever.getIdentifier().c_str(),
+					retriever.getType() == CLocalRetriever::Interior ? "Interior" : "Landscape");
 	}
 	else
 	{
@@ -2603,5 +2615,9 @@ void	NLPACS::CGlobalRetriever::CLrLoader::getName (std::string &result) const
 {
 	result = "LoadLR(" + LoadFile + ")";
 }
+
+
+//
+NLMISC_VARIABLE(uint, PacsRetrieveVerbose, "Allow retrieve position to dump info");
 
 // end of CGlobalRetriever methods implementation

@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.48 2001/01/15 14:44:26 cado Exp $
+ * $Id: msg_socket.cpp,v 1.49 2001/01/15 14:51:28 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -304,10 +304,6 @@ void CMsgSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (
 	if ( _Binded )
 	{
 		return;
-	}
-	if ( ! addr.isValid() )
-	{
-		throw ESocket( "Invalid address for listening", false );
 	}
 
 	// We use the listensock, pointing to an already constructed socket

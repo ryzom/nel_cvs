@@ -29,6 +29,7 @@ protected:
 	CStringEx		sxparentvalue;	
 	CStringEx		sxoldparentvalue;	
 	CItemElt*		listparent;
+	bool			bmodified;
 
 public:
 	CItemElt( CLoader* const _pl );
@@ -58,6 +59,8 @@ public:
 	virtual unsigned int GetNbElt() const;
 	virtual CItemElt* GetElt( const unsigned int _index ) const;
 	virtual CItemElt* GetElt( const CStringEx sxname ) const;
+	virtual bool SetModified( const unsigned int _index );
+	virtual void SetModified( const bool _b );
 };
 
 #endif // !defined(AFX_ITEMELT_H__5AC5A067_71CC_4D98_904F_4877F99F4D9A__INCLUDED_)

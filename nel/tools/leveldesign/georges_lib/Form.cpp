@@ -53,9 +53,34 @@ CStringEx CForm::GetComment() const
 	return( body.GetComment() );
 }
 
+void CForm::SetDate( const CStringEx _sxdate )
+{
+	head.SetDate( _sxdate );
+}
+
+void CForm::SetVersion( const CStringEx _sxversion )
+{
+	head.SetVersion( _sxversion );
+}
+
+void CForm::SetUser( const CStringEx _sxuser )
+{
+	head.SetUser( _sxuser );
+}
+
+void CForm::SetComment( const CStringEx _sxcomment )
+{
+	body.SetComment( _sxcomment );
+}
+
 CStringEx CForm::GetParent( unsigned int _index ) const
 {
 	return( body.GetParent( _index ) );
+}
+
+CStringEx CForm::GetActivity( unsigned int _index ) const
+{
+	return( body.GetActivity( _index ) );
 }
 
 CFormBodyElt* CForm::GetElt( const CStringEx _sxname ) const

@@ -14,10 +14,23 @@ CItemElt::CItemElt( CLoader* const _pl )
 	nlassert( _pl );
 	pl = _pl;
 	listparent = 0;
+	bmodified = false;
 }
 
 CItemElt::~CItemElt()
 {
+}
+
+bool CItemElt::SetModified( const unsigned int _index )
+{
+	if( !_index )
+		bmodified = true;
+	return( !_index );
+}
+
+void CItemElt::SetModified( const bool _b )
+{
+	bmodified = _b;
 }
 
 unsigned int CItemElt::GetInfos() const

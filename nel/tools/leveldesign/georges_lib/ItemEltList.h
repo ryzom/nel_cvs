@@ -41,6 +41,9 @@ public:
 	void AddElt( const CItemElt* const _pie );
 	void DelElt( CItemElt* const _pie );
 	void VerifyName();
+	virtual bool SetModified( const unsigned int _index );
+	virtual void SetModified( const bool _b );
+
 };
 
 #endif // !defined(AFX_ITEMELTLIST_H__69BC62E0_FAC1_4D3E_90ED_B34BD22790DE__INCLUDED_)

@@ -12,6 +12,8 @@
 #include "nel/misc/stream.h"
 #include "FormBodyElt.h"
 
+// La classe CFormBodyEltList permet d'obtenir un ensemble de CFormBodyElt sous forme de liste. 
+// Dans l'opérateur +=, l'ensemble des anciens éléments sont éliminés. Les nouveaux les remplacent.
 class CFormBodyEltList : public CFormBodyElt  
 {
 protected:

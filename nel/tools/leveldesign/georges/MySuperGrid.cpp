@@ -37,6 +37,10 @@ BEGIN_MESSAGE_MAP(CMySuperGrid, CSuperGridCtrl)
 	ON_WM_CREATE()
 	ON_COMMAND(ID_LIST_NEWITEM, OnListNewitem)
 	ON_COMMAND(ID_LISTCHILD_DELITEM, OnListchildDelitem)
+	ON_COMMAND(ID_PARCH_DELPARENT, OnParchDelparent)
+	ON_COMMAND(ID_PARENT_NEWCHILD, OnParentNewchild)
+	ON_COMMAND(ID_PARENTCHILD_ACTIVATE, OnParentchildActivate)
+	ON_COMMAND(ID_PARENTCHILD_DESACTIVATE, OnParentchildDesactivate)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -207,20 +211,48 @@ int CSuperGridCtrl::Expand(CTreeItem* pSelItem, int nIndex)
 void CMySuperGrid::LoadItem()
 {
 	DeleteAll();
-	CItemInfo* lp = new CItemInfo( 0 );
+	unsigned int index;
+	CItemInfo* lp;
+
+	// items
+	index = 0;
+	lp = new CItemInfo( 0 );
 	lp->SetItemText( CString( "ROOT" ) );
 	lp->AddSubItemText( CString( "" ) );
 	lp->AddSubItemText( CString( "" ) );
 	lp->AddSubItemText( CString( "" ) );
 	lp->SetImage(4);
 	pitemroot = InsertRootItem(lp);
-
 	int nb_elt = pdoc->GetItemNbElt();
-	SetItemCount( nb_elt );
-
-	unsigned int index = 0;
 	while( nb_elt > 0 )
 		nb_elt -= LoadSubItem( pitemroot, index );
+
+	// parents
+	index = 0;
+	lp = new CItemInfo( 0x80000000 );
+	lp->SetItemText( CString( "PARENTS" ) );
+	lp->AddSubItemText( CString( "" ) );
+	lp->AddSubItemText( CString( "" ) );
+	lp->AddSubItemText( CString( "" ) );
+	lp->SetImage(4);
+	pitemparents = InsertRootItem(lp);
+	CString s = pdoc->GetItemParent( index );
+	CString a = pdoc->GetItemActivity( index );
+	while( !s.IsEmpty() )
+	{
+		CItemInfo* lpiteminfo = new CItemInfo( index +0x80000001 );
+		lpiteminfo->SetItemText( "Parent" );
+		lpiteminfo->AddSubItemText( s );
+		lpiteminfo->AddSubItemText( s );
+		lpiteminfo->AddSubItemText( a );
+		InsertItem( pitemparents, lpiteminfo );
+		s = pdoc->GetItemParent( ++index );
+		a = pdoc->GetItemActivity( index );
+	}
+
+	nb_elt = pdoc->GetItemNbElt();
+	SetItemCount( nb_elt+index+100 );
+
 
 	CWaitCursor wait;
 	int nScrollIndex = 0;
@@ -228,9 +260,6 @@ void CMySuperGrid::LoadItem()
 		 nScrollIndex = Expand(pitemroot, 0);
 	InvalidateItemRect(0);
 	EnsureVisible(nScrollIndex, 1);
-
-//	ExpandAllItems();
-
 	SetRedraw(1);
 	InvalidateRect(NULL);
 }
@@ -287,9 +316,18 @@ void CMySuperGrid::OnUpdateListViewItem(CTreeItem* lpItem, LV_ITEM *plvItem)
 		unsigned int itemindex = lp->GetItemIndex();
 		if( plvItem->iSubItem == 2 )
 		{
-			lp->SetSubItemText(plvItem->iSubItem-1, str);
-			pdoc->SetItemValue( itemindex-1, str );
-			lp->SetSubItemText( plvItem->iSubItem-2, pdoc->GetItemCurrentResult( itemindex-1 ) );
+			if( itemindex & 0x80000000 ) 
+			{ //parents
+				lp->SetSubItemText(plvItem->iSubItem-1, str);
+				pdoc->SetItemParent( itemindex-0x80000001, str );
+				lp->SetSubItemText( plvItem->iSubItem-2, pdoc->GetItemParent( itemindex-0x80000001 ) );
+			}
+			else
+			{ //values
+				lp->SetSubItemText(plvItem->iSubItem-1, str);
+				pdoc->SetItemValue( itemindex-1, str );
+				lp->SetSubItemText( plvItem->iSubItem-2, pdoc->GetItemCurrentResult( itemindex-1 ) );
+			}
 		}
 		UpdateData(lpItem, lp); 
 		SetItemText(plvItem->iItem, plvItem->iSubItem, str.GetBuffer(1));
@@ -381,24 +419,52 @@ void CMySuperGrid::OnControlRButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO
 	CItemInfo *lp = GetData( currenttreeitem );
 	if( !lp )
 		return;
-	unsigned int infos = pdoc->GetItemInfos( lp->GetItemIndex()-1 );
-	if( infos & ITEM_ISLISTCHILD )
+	unsigned int index = lp->GetItemIndex();
+	if ( index & 0x80000000 )
 	{
-		CMenu menu;
-		menu.LoadMenu( IDR_M_LISTCHILD );
-		CMenu* pPopup = menu.GetSubMenu( 0 );
-		CPoint pt = point; 
-		ClientToScreen( &pt ) ; 
-		pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, this);
+		if( index == 0x80000000 )
+		{
+			CMenu menu;
+			menu.LoadMenu( IDR_M_PARENT );
+			CMenu* pPopup = menu.GetSubMenu( 0 );
+			CPoint pt = point; 
+			ClientToScreen( &pt ) ; 
+			pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, this);
+		}
+		else
+		{
+			CMenu menu;
+			if( pdoc->GetItemActivity( index-0x80000001 ) == "true" )
+				menu.LoadMenu( IDR_M_PARENTCHILDACTIF );
+			else
+				menu.LoadMenu( IDR_M_PARENTCHILDINACTIF );
+			CMenu* pPopup = menu.GetSubMenu( 0 );
+			CPoint pt = point; 
+			ClientToScreen( &pt ) ; 
+			pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, this);
+		}
 	}
-	if( infos & ITEM_ISLIST )
+	else
 	{
-		CMenu menu;
-		menu.LoadMenu( IDR_M_LIST );
-		CMenu* pPopup = menu.GetSubMenu( 0 );
-		CPoint pt = point ; 
-		ClientToScreen( &pt ) ; 
-		pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, this);
+		unsigned int infos = pdoc->GetItemInfos( index-1 );
+		if( infos & ITEM_ISLISTCHILD )
+		{
+			CMenu menu;
+			menu.LoadMenu( IDR_M_LISTCHILD );
+			CMenu* pPopup = menu.GetSubMenu( 0 );
+			CPoint pt = point; 
+			ClientToScreen( &pt ) ; 
+			pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, this);
+		}
+		if( infos & ITEM_ISLIST )
+		{
+			CMenu menu;
+			menu.LoadMenu( IDR_M_LIST );
+			CMenu* pPopup = menu.GetSubMenu( 0 );
+			CPoint pt = point ; 
+			ClientToScreen( &pt ) ; 
+			pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, this);
+		}
 	}
 }
 
@@ -424,59 +490,6 @@ void CMySuperGrid::InsertItemEx(CTreeItem *pSelItem, int nItem)
 	OnListNewitem();
 }
 
-void CMySuperGrid::OnListNewitem() 
-{
-	if( !currenttreeitem  )
-		return;	
-	CItemInfo *lp = GetData( currenttreeitem );
-	if( lp == NULL )
-		return;
-
-	unsigned int currentlistindex = lp->GetItemIndex();
-	if( currentlistindex < 0 )
-		return;
-	
-	unsigned int curlistoldnbelt = pdoc->GetItemNbElt( currentlistindex-1 );
-	pdoc->AddListParent( currentlistindex );
-
-	SetRedraw(0);
-	BOOL bUpdate = FALSE;
-	if( !IsCollapsed( currenttreeitem ) )
-		bUpdate = TRUE;
-
-	unsigned int _index = currentlistindex+curlistoldnbelt-1;
-
-	CItemInfo* lpiteminfo = new CItemInfo( _index+1 );
-	lpiteminfo->SetItemText( pdoc->GetItemName( _index ) );
-	lpiteminfo->AddSubItemText( pdoc->GetItemCurrentResult( _index ) );
-	lpiteminfo->AddSubItemText( pdoc->GetItemCurrentValue( _index ) );
-	lpiteminfo->AddSubItemText( pdoc->GetItemFormula( _index ) );
-
-//	if( pdoc->IsItemEnum( _index ) )
-	if( pdoc->IsItemPredef( _index ) )
-	{
-		lpiteminfo->SetControlType(lpiteminfo->CONTROLTYPE::combobox, 1);
-		CStringList lst;
-		pdoc->GetItemListPredef( _index, &lst );
-		lpiteminfo->SetListData(1, &lst);
-	}
-
-	CTreeItem* pParent = InsertItem( currenttreeitem, lpiteminfo, bUpdate );
-	
-	int n = pdoc->GetItemNbElt( _index );
-	_index++;
-	int nn = n;
-	while( nn > 1 )
-		nn -= LoadSubItem( pParent, _index );
-	
-	UpdateItemIndex();
-
-	SetRedraw(1);
-	InvalidateRect(NULL);
-	UpdateWindow();
-}
-
-
 void CMySuperGrid::UpdateItemIndex()
 {
 	POSITION pos = GetRootHeadPosition();
@@ -486,7 +499,12 @@ void CMySuperGrid::UpdateItemIndex()
 		CTreeItem *pParent =(CTreeItem*)GetNextRoot(pos); 
 		CTreeItem *pItem = pParent;
 		CItemInfo* lp = GetData(pParent);
-		lp->SetItemIndex( k+1 );
+		unsigned int kk = 0;
+		unsigned int hh = lp->GetItemIndex();
+		if( hh & 0x80000000 )
+			lp->SetItemIndex( 0x80000000 );
+		else
+			lp->SetItemIndex( k+1 );
 		for(;;k++)
 		{
 			CTreeItem *pCur = GetNext(pParent,pItem, TRUE, FALSE);	  
@@ -498,9 +516,14 @@ void CMySuperGrid::UpdateItemIndex()
 				break;
 			
 			CItemInfo* lp = GetData(pCur);
-			lp->SetItemIndex( k+1 );
+			hh = lp->GetItemIndex();
+			if( hh & 0x80000000 )
+				lp->SetItemIndex( kk+0x80000001 );
+			else
+				lp->SetItemIndex( k+1 );
 			lp->SetItemText( pdoc->GetItemName( k ) );
 			pItem=pCur;
+			kk++;
 		}
 	}
 }
@@ -544,8 +567,6 @@ void CMySuperGrid::OnListchildDelitem()
 	if( lp == NULL )
 		return;
 	unsigned int currentitem = lp->GetItemIndex();
-	if( currentitem < 0 )
-		return;
 	pdoc->DelListChild( currentitem );
 
 //	LoadItem();
@@ -554,9 +575,139 @@ void CMySuperGrid::OnListchildDelitem()
 	unsigned int ui = GetCurIndex( currenttreeitem );
 	DeleteItemEx(currenttreeitem, ui);
 	UpdateItemIndex();
-
 	InvalidateRect(NULL);
 	UpdateWindow();
+}
+
+	//todo: insérer / deleter les parents
+	//todo: MAJ de l'ensemble de la fiche!
+
+void CMySuperGrid::OnListNewitem() 
+{
+	if( !currenttreeitem  )
+		return;	
+	CItemInfo *lp = GetData( currenttreeitem );
+	if( lp == NULL )
+		return;
+	unsigned int currentlistindex = lp->GetItemIndex();
+	if( currentlistindex < 0 )
+		return;
+	
+	unsigned int curlistoldnbelt = pdoc->GetItemNbElt( currentlistindex-1 );
+	pdoc->AddList( currentlistindex );
+
+	SetRedraw(0);
+	BOOL bUpdate = FALSE;
+	if( !IsCollapsed( currenttreeitem ) )
+		bUpdate = TRUE;
+
+	unsigned int _index = currentlistindex+curlistoldnbelt-1;
+
+	CItemInfo* lpiteminfo = new CItemInfo( _index+1 );
+	lpiteminfo->SetItemText( pdoc->GetItemName( _index ) );
+	lpiteminfo->AddSubItemText( pdoc->GetItemCurrentResult( _index ) );
+	lpiteminfo->AddSubItemText( pdoc->GetItemCurrentValue( _index ) );
+	lpiteminfo->AddSubItemText( pdoc->GetItemFormula( _index ) );
+
+//	if( pdoc->IsItemEnum( _index ) )
+	if( pdoc->IsItemPredef( _index ) )
+	{
+		lpiteminfo->SetControlType(lpiteminfo->CONTROLTYPE::combobox, 1);
+		CStringList lst;
+		pdoc->GetItemListPredef( _index, &lst );
+		lpiteminfo->SetListData(1, &lst);
+	}
+
+	CTreeItem* pParent = InsertItem( currenttreeitem, lpiteminfo, bUpdate );
+	
+	int n = pdoc->GetItemNbElt( _index );
+	_index++;
+	int nn = n;
+	while( nn > 1 )
+		nn -= LoadSubItem( pParent, _index );
+	
+	UpdateItemIndex();
+
+	SetRedraw(1);
+	InvalidateRect(NULL);
+	UpdateWindow();
+}
+
+
+void CMySuperGrid::OnParentNewchild() 
+{
+	pdoc->AddParent( 0 );
+/*
+	SetRedraw(0);
+	BOOL bUpdate = FALSE;
+	if( !IsCollapsed( pitemparents ) )
+		bUpdate = TRUE;
+
+	unsigned int _index = pdoc->GetItemNbParent()-1;
+	CString s = pdoc->GetItemParent( _index );
+	CString a = pdoc->GetItemActivity( _index );
+	CItemInfo* lpiteminfo = new CItemInfo( _index +0x80000001 );
+	lpiteminfo->SetItemText( "Parent" );
+	lpiteminfo->AddSubItemText( s );
+	lpiteminfo->AddSubItemText( s );
+	lpiteminfo->AddSubItemText( a );
+	InsertItem( pitemparents, lpiteminfo, bUpdate );
+	UpdateItemIndex();
+
+	SetRedraw(1);
+	InvalidateRect(NULL);
+	UpdateWindow();
+*/
+}
+
+void CMySuperGrid::OnParchDelparent() 
+{
+	if( !currenttreeitem  )
+		return;	
+	CItemInfo *lp = GetData( currenttreeitem );
+	if( lp == NULL )
+		return;
+	unsigned int currentitem = lp->GetItemIndex() - 0x80000001;
+	pdoc->DelParent( currentitem );
+/*
+	unsigned int ui = GetCurIndex( currenttreeitem );
+	DeleteItemEx(currenttreeitem, ui);
+	UpdateItemIndex();
+	InvalidateRect(NULL);
+	UpdateWindow();
+*/
+}
+
+void CMySuperGrid::OnParentchildActivate() 
+{
+	if( !currenttreeitem  )
+		return;	
+	CItemInfo *lp = GetData( currenttreeitem );
+	if( lp == NULL )
+		return;
+	unsigned int currentitem = lp->GetItemIndex();
+	pdoc->SetItemActivity( currentitem-0x80000001, CString( "true" ) );
+/*
+	lp->SetSubItemText( 2, pdoc->GetItemActivity( currentitem-0x80000001 ) );
+	InvalidateItemRect( GetCurIndex( currenttreeitem ) );
+	UpdateWindow();
+*/
+}
+
+void CMySuperGrid::OnParentchildDesactivate() 
+{
+	if( !currenttreeitem  )
+		return;	
+	CItemInfo *lp = GetData( currenttreeitem );
+	if( lp == NULL )
+		return;
+	unsigned int currentitem = lp->GetItemIndex();
+	pdoc->SetItemActivity( currentitem-0x80000001, CString( "false" ) );
+/*
+	lp->SetSubItemText( 2, pdoc->GetItemActivity( currentitem-0x80000001 ) );
+	InvalidateItemRect( GetCurIndex( currenttreeitem ) );
+	UpdateWindow();
+*/
 }
 
 BOOL CMySuperGrid::CanEdit( CTreeItem* const _pItem )
@@ -565,6 +716,8 @@ BOOL CMySuperGrid::CanEdit( CTreeItem* const _pItem )
 	if( lp == NULL )
 		return( false );
 	unsigned int index = lp->GetItemIndex();
+	if( index & 0x80000000 )
+		return( true );
 	return( pdoc->CanEditItem( index-1 ) );
 }
 
@@ -1390,6 +1543,7 @@ void CMySuperGrid::SetNewImage(int nItem)
 		SetItemState(0, uflag, uflag);
 	}
 */
+
 
 
 

@@ -9,7 +9,9 @@
 #include "MoldEltDefine.h"
 #include "MoldEltDefineList.h"
 #include "FormBodyElt.h"
+#include "FormBodyEltAtom.h"
 #include "FormBodyEltStruct.h"
+#include "FormBodyEltList.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -133,10 +135,44 @@ CFormBodyElt* CItemEltStruct::BuildForm()
 	return( 0 );
 }
 
-void CItemEltStruct::BuildForm( CFormBodyEltStruct* pfbes )
+void CItemEltStruct::BuildForm( CFormBodyEltStruct* const _pfbes )
 {
+	if( bmodified )
+		for( std::vector< CItemElt* >::iterator it = vpie.begin(); it != vpie.end(); ++it )
+			(*it)->SetModified( true );
 	for( std::vector< CItemElt* >::iterator it = vpie.begin(); it != vpie.end(); ++it )
-		pfbes->AddElt( (*it)->BuildForm() );
+		_pfbes->AddElt( (*it)->BuildForm() );
+}
+
+void CItemEltStruct::BuildForm( CFormBodyEltStruct* const _pfbes, const std::vector< std::pair< CStringEx, CStringEx > >& _vsxparents ) 
+{
+	BuildForm( _pfbes );
+
+	if( !_vsxparents.empty() )
+	{
+		CFormBodyEltList* pfbel = new CFormBodyEltList;
+		pfbel->SetName( "Parents" );
+		int i = 0;
+		CStringEx sx;
+		for( std::vector< std::pair< CStringEx, CStringEx > >::const_iterator it = _vsxparents.begin(); it != _vsxparents.end(); ++it )
+		{
+			CFormBodyEltStruct* pfbes = new CFormBodyEltStruct;
+			sx.format( "#%d", i++ );
+			pfbes->SetName( sx );
+			pfbel->AddElt( pfbes );
+
+			CFormBodyEltAtom* pfbea = new CFormBodyEltAtom;
+			pfbea->SetName( "Activity" );
+			pfbea->SetValue( it->first );
+			pfbes->AddElt( pfbea );
+
+			pfbea = new CFormBodyEltAtom;
+			pfbea->SetName( "Filename" );
+			pfbea->SetValue( it->second );
+			pfbes->AddElt( pfbea );
+		}
+		_pfbes->AddElt( pfbel );
+	}
 }
 
 unsigned int CItemEltStruct::GetNbElt() const
@@ -169,4 +205,29 @@ CItemElt* CItemEltStruct::GetElt( const CStringEx _sxname ) const
 			return( *it );
 	return( 0 );
 }
+
+bool CItemEltStruct::SetModified( const unsigned int _index )
+{
+//	SetModified( true );
+	if( !_index )
+		return( true );
+	unsigned int isum = 1;				
+	for( std::vector< CItemElt* >::const_iterator it = vpie.begin(); it != vpie.end(); ++it )
+	{
+		unsigned int nb = (*it)->GetNbElt();
+		if( isum+nb > _index )
+			return( (*it)->SetModified( _index-isum ) );
+		isum += nb;
+	}
+	return( false );
+}
+
+void CItemEltStruct::SetModified( const bool _b )
+{
+	bmodified = _b;
+	if( !_b )
+		for( std::vector< CItemElt* >::const_iterator it = vpie.begin(); it != vpie.end(); ++it )
+			(*it)->SetModified( _b );
+}
+
 

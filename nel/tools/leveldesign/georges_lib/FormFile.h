@@ -14,6 +14,7 @@
 #include "Form.h"
 #include <list>
 
+// La classe CFormFile représente un fichier composé d'un ensemble de fiches représentés par des fiches CForm.
 class CFormFile  
 {
 protected:

@@ -96,6 +96,7 @@ void CGeorgesDoc::OnCloseDocument()
 
 BOOL CGeorgesDoc::OnOpenDocument(LPCTSTR lpszPathName) 
 {
+	DocumentName = CStringEx( lpszPathName );
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
 	papp->SetRootDirectory( sxrootdirectory );
 	papp->SetWorkDirectory( sxworkdirectory );
@@ -108,9 +109,7 @@ BOOL CGeorgesDoc::OnOpenDocument(LPCTSTR lpszPathName)
 BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName) 
 {
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
-
 #if 0
-
 	std::vector< std::pair< CStringEx, CStringEx > > lpsx;
 	std::vector< std::pair< CStringEx, CStringEx > > lpsx2;
 /*
@@ -192,21 +191,41 @@ BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName)
 */
 
 #else
-
 	papp->SetRootDirectory( sxrootdirectory );
 	papp->SetWorkDirectory( sxworkdirectory );
 	item.Save( CStringEx( lpszPathName ) );		
 	SetModifiedFlag( FALSE );
-
-
-
+	if( CStringEx( lpszPathName ) != DocumentName )
+	{
+		DocumentName = CStringEx( lpszPathName );
+		DeleteContents();
+		item.Load( DocumentName );		
+		UpdateAllViews( 0 );
+	}
 #endif
 
 	return( TRUE );
 }
 
+void CGeorgesDoc::ReloadDocument()
+{
+/*
+	if( DocumentName.empty() )
+		return;
+	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
+	papp->SetRootDirectory( sxrootdirectory );
+	papp->SetWorkDirectory( sxworkdirectory );
+	DeleteContents();
+	item.Save( DocumentName );		
+	SetModifiedFlag( FALSE );
+	item.Load( DocumentName );		
+	UpdateAllViews( 0 );
+*/
+}
+
 BOOL CGeorgesDoc::OnNewDocument()
 {
+	DocumentName = CStringEx();
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
 	if (!CDocument::OnNewDocument())
 		return FALSE;
@@ -229,9 +248,7 @@ BOOL CGeorgesDoc::OnNewDocument()
 	fn.ReleaseBuffer();
 
 	NewDocument( sxdfn );
-
 	return( TRUE );
-
 }
 
 void CGeorgesDoc::NewDocument( const CStringEx _sxfilename )
@@ -260,6 +277,11 @@ void CGeorgesDoc::UpdateDocument()
 unsigned int CGeorgesDoc::GetItemNbElt() const
 {
 	return( item.GetNbElt()-1 );
+}
+
+unsigned int CGeorgesDoc::GetItemNbParent() const
+{
+	return( item.GetNbParents() );
 }
 
 unsigned int CGeorgesDoc::GetItemInfos( const unsigned int _index ) const
@@ -291,6 +313,30 @@ CString CGeorgesDoc::GetItemCurrentValue( const unsigned int _index ) const
 CString CGeorgesDoc::GetItemFormula( const unsigned int _index ) const
 {
 	return( CString( item.GetFormula( _index+1 ).c_str() ) );
+}
+
+CString CGeorgesDoc::GetItemParent( const unsigned int _index ) const
+{
+	return( CString( item.GetParent( _index ).c_str() ) );
+}
+
+CString CGeorgesDoc::GetItemActivity( const unsigned int _index ) const
+{
+	return( CString( item.GetActivity( _index ).c_str() ) );
+}
+
+void CGeorgesDoc::SetItemParent( const unsigned int _index, const CString _s )
+{
+	item.SetParent( _index, CStringEx( LPCTSTR( _s ) ) );
+	item.VirtualSaveLoad();
+	UpdateAllViews( 0 );
+}
+
+void CGeorgesDoc::SetItemActivity( const unsigned int _index, const CString _s )
+{
+	item.SetActivity( _index, CStringEx( LPCTSTR( _s ) ) );
+	item.VirtualSaveLoad();
+	UpdateAllViews( 0 );
 }
 
 unsigned int CGeorgesDoc::GetItemNbElt( const unsigned int _index ) const
@@ -344,26 +390,34 @@ CStringEx CGeorgesDoc::GetRootDirectory() const
 	return( sxrootdirectory );
 }
 
-void CGeorgesDoc::AddListParent( const unsigned int _index ) const
+void CGeorgesDoc::AddList( const unsigned int _index ) const
 {
-	item.AddListParent( _index ); 
-//	UpdateAllViews();
+	item.AddList( _index ); 
 }
-
+/*
 void CGeorgesDoc::AddListChild( const unsigned int _index ) const
 {
 	item.AddListChild( _index ); 
-//	UpdateAllViews();
 }
-
+*/
 void CGeorgesDoc::DelListChild( const unsigned int _index ) const
 {
 	item.DelListChild( _index ); 
-//	UpdateAllViews();
 }
 
+void CGeorgesDoc::AddParent( const unsigned int _index )
+{
+	item.AddParent( _index ); 
+	item.VirtualSaveLoad();
+	UpdateAllViews( 0 );
+}
 
-
+void CGeorgesDoc::DelParent( const unsigned int _index )
+{
+	item.DelParent( _index ); 
+	item.VirtualSaveLoad();
+	UpdateAllViews( 0 );
+}
 
 /*
 	std::list< std::pair< CStringEx, CStringEx > > lpsx;

@@ -15,6 +15,9 @@
 
 class CFormBodyElt;
 
+// La classe CForm représente une fiche. 
+// Elle comprend Head et Body.
+// Elle comporte des opérateurs qui permettent de l'additionner ou de la soustraire dans le cadre des historiques.
 class CForm  
 {
 protected:
@@ -33,7 +36,14 @@ public:
 	CStringEx GetVersion() const;
 	CStringEx GetUser() const;
 	CStringEx GetComment() const;
+	void SetDate( const CStringEx _sxdate );
+	void SetVersion( const CStringEx _sxversion );
+	void SetUser( const CStringEx _sxuser );
+	void SetComment( const CStringEx _sxcomment );
+	
+	
 	CStringEx GetParent( unsigned int _index ) const;
+	CStringEx GetActivity( unsigned int _index ) const;
 	CFormBodyElt* GetElt( const CStringEx _sxname ) const;
 	CFormBodyEltStruct* GetBody() const;
 	bool GetModified() const;
@@ -46,3 +56,4 @@ public:
 };
 
 #endif // !defined(AFX_FORM_H__2E1EC870_75E2_4FB6_AC69_513BC146D386__INCLUDED_)
+

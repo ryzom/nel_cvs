@@ -13,6 +13,9 @@
 #define IDB_SUBITEMS                    150
 #define IDR_M_LIST                      154
 #define IDR_M_LISTCHILD                 155
+#define IDR_M_PARENT                    156
+#define IDR_M_PARENTCHILDACTIF          157
+#define IDR_M_PARENTCHILDINACTIF        158
 #define IDC_EDIT1                       1000
 #define IDC_MONTHCALENDAR1              1003
 #define IDC_BUTTON_INSERT               1003
@@ -30,17 +33,20 @@
 #define ID_TOOLS_DELETEALL              32783
 #define ID_TOOLS_DYNAMICUPDATEITEM      32784
 #define ID_TOOLS_SETIMAGE               32785
-#define ID_LISTCHILD_ADDITEM            32788
 #define ID_LIST_NEWITEM                 32791
 #define ID_LISTCHILD_DELITEM            32792
+#define ID_PARENTCHILD_DESACTIVATE      32795
+#define ID_PARENTCHILD_ACTIVATE         32796
+#define ID_PARCH_DELPARENT              32797
+#define ID_PARENT_NEWCHILD              32798
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        156
-#define _APS_NEXT_COMMAND_VALUE         32793
+#define _APS_NEXT_RESOURCE_VALUE        157
+#define _APS_NEXT_COMMAND_VALUE         32799
 #define _APS_NEXT_CONTROL_VALUE         1013
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

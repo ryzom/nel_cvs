@@ -18,6 +18,7 @@ class CMySuperGrid : public CSuperGridCtrl
 {
 protected:
 	CTreeItem* pitemroot;
+	CTreeItem* pitemparents;
 	CGeorgesDoc* pdoc;
 	CTreeItem* currenttreeitem;
 	void ExpandAllItems() ;
@@ -94,6 +95,10 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnListNewitem();
 	afx_msg void OnListchildDelitem();
+	afx_msg void OnParchDelparent();
+	afx_msg void OnParentNewchild();
+	afx_msg void OnParentchildActivate();
+	afx_msg void OnParentchildDesactivate();
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

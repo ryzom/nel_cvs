@@ -21,6 +21,7 @@ protected: // create from serialization only
 	DECLARE_DYNCREATE(CGeorgesDoc)
 
 	CItem		item;
+	CStringEx	DocumentName;
 	CStringEx	sxrootdirectory;
 	CStringEx	sxworkdirectory;
 
@@ -31,12 +32,15 @@ public:
 public:
 	void SetItemValue( const unsigned int _index, const CString s );
 	unsigned int GetItemNbElt() const;
+	unsigned int GetItemNbParent() const;
 	unsigned int GetItemNbElt( const unsigned int _index ) const;
 	unsigned int GetItemInfos( const unsigned int _index ) const;
 	CString GetItemName( const unsigned int _index ) const;
 	CString GetItemCurrentResult( const unsigned int _index ) const;
 	CString GetItemCurrentValue( const unsigned int _index ) const;
 	CString GetItemFormula( const unsigned int _index ) const;
+	CString GetItemActivity( const unsigned int _index ) const;
+	void SetItemActivity( const unsigned int _index, const CString _s );
 	bool IsItemEnum( const unsigned int _index ) const;
 	bool IsItemPredef( const unsigned int _index ) const;
 	bool CanEditItem( const unsigned int _index ) const;
@@ -44,10 +48,16 @@ public:
 	void NewDocument( const CStringEx& _sxdfnname ) const;
 	void NewDocument( const CStringEx _sxfilename );
 	void UpdateDocument();
+	void ReloadDocument();
 
-	void AddListParent( const unsigned int _index ) const;
-	void AddListChild( const unsigned int _index ) const;
+	void AddList( const unsigned int _index ) const;
+//	void AddListChild( const unsigned int _index ) const;
 	void DelListChild( const unsigned int _index ) const;
+
+	CString GetItemParent( const unsigned int _index ) const;
+	void SetItemParent( const unsigned int _index, const CString _s );
+	void AddParent( const unsigned int _index );
+	void DelParent( const unsigned int _index );
 
 	CStringEx GetWorkDirectory() const;
 	CStringEx GetRootDirectory() const;

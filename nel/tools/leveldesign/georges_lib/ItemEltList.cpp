@@ -76,6 +76,8 @@ void CItemEltList::FillCurrent( const CFormBodyElt* const _pfbe )
 	CFormBodyElt* pfbe = _pfbe->GetElt(0);
 	if( pfbe )
 		Clear();	
+	if( !pfbe ) 
+		return;
 	while( pfbe )
 	{
 		CItemElt* pie = piemodel->Clone();
@@ -87,6 +89,7 @@ void CItemEltList::FillCurrent( const CFormBodyElt* const _pfbe )
 		vpie.push_back( pie );
 		pfbe = _pfbe->GetElt(++i);
 	}
+	SetModified( true );
 }
 
 CItemElt* CItemEltList::Clone()
@@ -98,6 +101,9 @@ CItemElt* CItemEltList::Clone()
 
 CFormBodyElt* CItemEltList::BuildForm()
 {
+	if( bmodified )
+		for( std::vector< CItemElt* >::iterator it = vpie.begin(); it != vpie.end(); ++it )
+			(*it)->SetModified( true );
 	CFormBodyEltList* pfbel = new CFormBodyEltList();
 	pfbel->SetName( sxname );
 	for( std::vector< CItemElt* >::iterator it = vpie.begin(); it != vpie.end(); ++it )
@@ -136,6 +142,29 @@ CItemElt* CItemEltList::GetElt( const CStringEx _sxname ) const
 	return( 0 );
 }
 
+bool CItemEltList::SetModified( const unsigned int _index )
+{
+	SetModified( true );
+	if( !_index )
+		return( true );
+	unsigned int isum = 1;				
+	for( std::vector< CItemElt* >::const_iterator it = vpie.begin(); it != vpie.end(); ++it )
+	{
+		unsigned int nb = (*it)->GetNbElt();
+		if( isum+nb > _index )
+			return( (*it)->SetModified( _index-isum ) );
+		isum += nb;
+	}
+	return( false );
+}
+
+void CItemEltList::SetModified( const bool _b )
+{
+	bmodified = _b;
+	for( std::vector< CItemElt* >::const_iterator it = vpie.begin(); it != vpie.end(); ++it )
+		(*it)->SetModified( _b );
+}
+
 void CItemEltList::NewElt()
 {
 	CItemElt* pie = piemodel->Clone();
@@ -145,6 +174,7 @@ void CItemEltList::NewElt()
 	sx.format( "#%d", vpie.size() );
 	pie->SetName( sx );
 	vpie.push_back( pie );
+	SetModified( true );
 }
 
 void CItemEltList::AddElt( const CItemElt* const _pie )

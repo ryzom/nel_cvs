@@ -12,9 +12,11 @@
 #include "nel/misc/stream.h"
 #include "FormBodyElt.h"
 
-#define SXCOMMENT "comment"
-#define SXPARENTS "parents"
+#define SXCOMMENT "Comment"
+#define SXPARENTS "Parents"
 
+// La classe CFormBodyEltStruct permet d'obtenir un ensemble de CFormBodyElt. 
+// Dans l'opérateur +=, les nouveaux élément remplacent les anciens, les anciens non-écrasés restent
 class CFormBodyEltStruct : public CFormBodyElt  
 {
 protected:
@@ -39,7 +41,9 @@ public:
 	virtual CFormBodyElt* Clone() const;
 	virtual bool Empty() const;
 	CStringEx GetComment() const;
+	void SetComment( const CStringEx _sxcomment );
 	CStringEx GetParent( unsigned int _index ) const;
+	CStringEx GetActivity( unsigned int _index ) const;
 
 	virtual CFormBodyElt* GetElt( const unsigned int _index ) const;
 	virtual CFormBodyElt* GetElt( const CStringEx _sxname ) const;

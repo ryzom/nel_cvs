@@ -88,7 +88,8 @@ CItemElt* CItemEltAtom::Clone()
 
 CFormBodyElt* CItemEltAtom::BuildForm()
 {
-	if( sxoldcurrentvalue.empty() && sxcurrentvalue.empty() )
+//	if( !ITEM_ISLISTCHILD && sxoldcurrentvalue.empty() && sxcurrentvalue.empty() )
+	if( !bmodified && sxoldcurrentvalue.empty() && sxcurrentvalue.empty() )
 		return( 0 );
 	CFormBodyEltAtom* pfbea = new CFormBodyEltAtom();
 	pfbea->SetName( sxname );

@@ -42,6 +42,21 @@ CStringEx CFormHead::GetDate() const
 	return( sxdate );
 }
 
+void CFormHead::SetUser( const CStringEx _sxuser )
+{
+	sxuser = _sxuser;
+}
+
+void CFormHead::SetVersion( const CStringEx _sxversion )
+{
+	sxversion = _sxversion;
+}
+
+void CFormHead::SetDate( const CStringEx _sxdate )
+{
+	sxdate = _sxdate;
+}
+
 void CFormHead::serial( NLMISC::IStream& s )
 {
 
@@ -63,3 +78,4 @@ CFormHead&	CFormHead::operator =( const CFormHead& _fh )
 	sxdate = _fh.sxdate;
 	return( *this );
 }
+

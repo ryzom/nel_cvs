@@ -13,10 +13,13 @@
 #include "FormFile.h"
 #include < map >
 
+// La classe CFormLoader est le point d'entrée des classes CForm pour charger une fiche.
+// Il y a deux fonctions load:
+//    Sans date: donne directement la dernière fiche historiquement parlant
+//    Avec date: donne une fiche composée de la dernière additionnés des historiques postérieurs ou égaux à la date.
 class CFormLoader  
 {
 protected:
-//	std::map< CStringEx, CFormFile* >;
 
 public:
 	CFormLoader();

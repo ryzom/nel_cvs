@@ -19,8 +19,8 @@
 CItem::	CItem()
 {
 	pitemes = 0;
-	pitemelparents = 0;      
-	pitemeacomments = 0;
+//	pitemelparents = 0;      
+//	pitemeacomments = 0;
 }
 
 CItem::~CItem()
@@ -33,12 +33,15 @@ void CItem::Clear()
 	if( pitemes )
 		delete( pitemes );
 	pitemes = 0;
+	vsxparents.clear();
+/*
 	if( pitemelparents )
 		delete( pitemelparents );
 	pitemes = 0;
 	if( pitemeacomments )
 		delete( pitemeacomments );
 	pitemes = 0;
+*/
 }
 
 void CItem::SetLoader( CLoader* const _pl )
@@ -58,19 +61,25 @@ void CItem::Load( const CStringEx& _sxfullname )
 	// Load Parents
 	unsigned int i = 0;
 	CStringEx sxparent = formcurrent.GetParent( 0 );
+	CStringEx sxactivity = formcurrent.GetActivity( 0 );
 	while( !sxparent.empty() )								
 	{
-		pl->LoadSearchForm( form, sxparent );			
-		formparent += form;
+		vsxparents.push_back( std::make_pair( sxactivity, sxparent ) );
+		if( sxactivity == "true" )
+		{
+			pl->LoadSearchForm( form, sxparent );			
+			formparent += form;
+		}
 		i++;
 		sxparent = formcurrent.GetParent( i );
+		sxactivity = formcurrent.GetActivity( i );
 	}
 
 	// Find the name of the dfn file
 	unsigned int ipos = _sxfullname.reverse_find('.');
 	if( ipos == -1 )
 		return;
-	CStringEx moldfilename = _sxfullname.get_right(_sxfullname.length()-ipos-1);
+	moldfilename = _sxfullname.get_right(_sxfullname.length()-ipos-1);
 	moldfilename += ".dfn";
 
 	// Load the mold and build the item's tree
@@ -84,6 +93,41 @@ void CItem::Load( const CStringEx& _sxfullname )
 	pitemes->FillParent( formparent.GetBody() );
 
 	// Fill the tree with current's form
+	pitemes->FillCurrent( formcurrent.GetBody() );
+}
+
+void CItem::VirtualSaveLoad()
+{
+//-------save
+	if( !pitemes )
+		return;
+	CForm form, formcurrent, formparent;
+	pitemes->BuildForm( formcurrent.GetBody(), vsxparents );
+//------load
+	Clear();
+	unsigned int i = 0;
+	CStringEx sxparent = formcurrent.GetParent( 0 );
+	CStringEx sxactivity = formcurrent.GetActivity( 0 );
+	while( !sxparent.empty() )								
+	{
+		vsxparents.push_back( std::make_pair( sxactivity, sxparent ) );
+		if( sxactivity == "true" )
+		{
+			pl->LoadSearchForm( form, sxparent );			
+			formparent += form;
+		}
+		i++;
+		sxparent = formcurrent.GetParent( i );
+		sxactivity = formcurrent.GetActivity( i );
+	}
+
+	CMoldElt* pme = pl->LoadMold( moldfilename );
+	CMoldEltDefine* pmed = dynamic_cast< CMoldEltDefine* >( pme );
+	nlassert( pmed );
+	pitemes = new CItemEltStruct( pl );
+	pitemes->BuildItem( pmed );
+
+	pitemes->FillParent( formparent.GetBody() );
 	pitemes->FillCurrent( formcurrent.GetBody() );
 }
 
@@ -106,7 +150,7 @@ void CItem::Save( const CStringEx& _sxfilename )
 	if( !pitemes )
 		return;
 	CForm form;
-	pitemes->BuildForm( form.GetBody() );
+	pitemes->BuildForm( form.GetBody(), vsxparents );
 	pl->SaveForm( form, _sxfilename );
 }
 
@@ -124,13 +168,13 @@ CItemElt* CItem::GetElt( const CStringEx _sxname ) const
 	return( 0 );
 }
 
-
 void CItem::SetCurrentValue( const unsigned int _index, const CStringEx s )
 {
 	CItemElt* pie = GetElt( _index );
 	if( !pie )
 		return;
 	pie->SetCurrentValue( s );
+	pitemes->SetModified( _index );
 }
 
 unsigned int CItem::GetNbElt() const
@@ -138,6 +182,11 @@ unsigned int CItem::GetNbElt() const
 	if( pitemes )
 		return( pitemes->GetNbElt() );
 	return( 0 );
+}
+
+unsigned int CItem::GetNbParents() const
+{
+	return( vsxparents.size() );
 }
 
 unsigned int CItem::GetNbElt( const unsigned int _index ) const
@@ -259,7 +308,35 @@ void CItem::GetListPredef( const unsigned int _index, std::vector< CStringEx >& 
 	}
 }
 
-void CItem::AddListParent( const unsigned int _index ) const
+CStringEx CItem::GetParent( const unsigned int _index ) const
+{
+	if( _index >= vsxparents.size() )
+		return( CStringEx() );
+	return( vsxparents[_index].second );
+}
+
+void CItem::SetParent( const unsigned int _index, const CStringEx _sx )
+{
+	if( _index >= vsxparents.size() )
+		return;
+	vsxparents[_index].second = _sx;
+}
+
+CStringEx CItem::GetActivity( const unsigned int _index ) const
+{
+	if( _index >= vsxparents.size() )
+		return( CStringEx() );
+	return( vsxparents[_index].first );
+}
+
+void CItem::SetActivity( const unsigned int _index, const CStringEx _sx )
+{
+	if( _index >= vsxparents.size() )
+		return;
+	vsxparents[_index].first = _sx;
+}
+
+void CItem::AddList( const unsigned int _index ) const
 {
 	CItemElt* pie = GetElt( _index );
 	if( !pie )
@@ -269,7 +346,7 @@ void CItem::AddListParent( const unsigned int _index ) const
 		return;
 	piel->NewElt();
 }
-
+/*
 void CItem::AddListChild( const unsigned int _index ) const
 {
 	CItemElt* pie = GetElt( _index );
@@ -283,7 +360,7 @@ void CItem::AddListChild( const unsigned int _index ) const
 		return;
 	piel->AddElt( pie );
 }
-
+*/
 void CItem::DelListChild( const unsigned int _index ) const
 {
 	CItemElt* pie = GetElt( _index );
@@ -296,4 +373,20 @@ void CItem::DelListChild( const unsigned int _index ) const
 	if( !piel )
 		return;
 	piel->DelElt( pie );
+}
+
+void CItem::AddParent( const unsigned int _index )
+{
+	vsxparents.push_back( std::make_pair( CStringEx("false"), CStringEx("filename.extension") ) );
+}
+
+void CItem::DelParent( const unsigned int _index )
+{
+	unsigned int i = 0;
+	for( std::vector< std::pair< CStringEx, CStringEx > >::iterator it = vsxparents.begin(); it != vsxparents.end(); ++it )
+		if( i++ == _index )
+		{
+			vsxparents.erase( it );
+			return;
+		}
 }

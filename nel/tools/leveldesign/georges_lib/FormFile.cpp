@@ -40,6 +40,7 @@ void CFormFile::Load( const CStringEx _sxfullname )
 
 void CFormFile::Save( const CStringEx _sxfullname )
 {
+	lform.front().SetDate( "Temporary out of date" );
 	NLMISC::COFile fileOut;
 	fileOut.open( CStringEx( _sxfullname ) );
 	NLMISC::COXml output;											

@@ -153,6 +153,34 @@ BEGIN
     END
 END
 
+IDR_M_PARENT MENU DISCARDABLE 
+BEGIN
+    POPUP "PARENT"
+    BEGIN
+        MENUITEM "&New Parent",                 ID_PARENT_NEWCHILD
+    END
+END
+
+IDR_M_PARENTCHILDACTIF MENU DISCARDABLE 
+BEGIN
+    POPUP "PARENTCHILDACTIF"
+    BEGIN
+        MENUITEM "&Delete Parent",              ID_PARCH_DELPARENT
+        MENUITEM SEPARATOR
+        MENUITEM "&Desactivate",                ID_PARENTCHILD_DESACTIVATE
+    END
+END
+
+IDR_M_PARENTCHILDINACTIF MENU DISCARDABLE 
+BEGIN
+    POPUP "PARENTCHILDINACTIF"
+    BEGIN
+        MENUITEM "&Delete Parent",              ID_PARCH_DELPARENT
+        MENUITEM SEPARATOR
+        MENUITEM "&Activate",                   ID_PARENTCHILD_ACTIVATE
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -22,8 +22,10 @@ class CItem
 protected:
 	CLoader* pl;
 	CItemEltStruct* pitemes;
-	CItemEltList* pitemelparents;
-	CItemEltAtom* pitemeacomments;
+//	CItemEltList* pitemelparents;
+//	CItemEltAtom* pitemeacomments;
+	std::vector< std::pair< CStringEx, CStringEx > > vsxparents;
+	CStringEx moldfilename;
 
 public:
 	CItem();
@@ -35,9 +37,11 @@ public:
 	void Load( const CStringEx& _sxfilename );
 	void Load( const CStringEx& _sxfilename, const CStringEx _sxdate ); 
 	void Save( const CStringEx& _sxfilename );
+	bool Update();
 
 	void SetCurrentValue( const unsigned int _index, const CStringEx s );
 	unsigned int GetNbElt() const;
+	unsigned int GetNbParents() const;
 	unsigned int GetNbElt( const unsigned int _index ) const;
 	unsigned int GetInfos( const unsigned int _index ) const;
 	CStringEx GetName( const unsigned int _index ) const;
@@ -52,10 +56,16 @@ public:
 	CItemElt* GetElt( const unsigned int _index ) const;
 	CItemElt* GetElt( const CStringEx _sxname ) const;
 
-	void AddListParent( const unsigned int _index ) const;
-	void AddListChild( const unsigned int _index ) const;
+	void AddList( const unsigned int _index ) const;
 	void DelListChild( const unsigned int _index ) const;
-	bool Update();
+	void VirtualSaveLoad();
+
+	void AddParent( const unsigned int _index );
+	void DelParent( const unsigned int _index );
+	CStringEx GetParent( const unsigned int _index ) const;
+	void SetParent( const unsigned int _index, const CStringEx _sx );
+	CStringEx GetActivity( const unsigned int _index ) const;
+	void SetActivity( const unsigned int _index, const CStringEx _sx );
 };
 
 #endif // !defined(AFX_ITEM_H__74DCC45F_FA98_4428_8C37_BA81F6B53601__INCLUDED_)

@@ -13,6 +13,8 @@
 #include "StringEx.h"
 #include "FormBodyElt.h"
 
+// La classe CFormBodyEltAtom représente l'élément terminal de l'arbre. 
+// Il est composé de deux string: sxname et sxvalue
 class CFormBodyEltAtom : public CFormBodyElt  
 {
 protected:

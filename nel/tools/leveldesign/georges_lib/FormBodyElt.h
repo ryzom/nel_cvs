@@ -12,6 +12,8 @@
 #include "nel/misc/stream.h"
 #include "StringEx.h"
 
+// La classe CFormBodyElt est la classe de base pour le polymorphisme des CFormBodyEltAtom, CFormBodyEltList, CFormBodyEltStruct
+// Elle comprend le nom de la branche ou de la feuille.
 class CFormBodyElt : public NLMISC::IStreamable  
 {
 protected:

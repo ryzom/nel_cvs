@@ -192,7 +192,7 @@ void CLoader::MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, con
 	if( ( _pvparent )&&( !_pvparent->empty() ) )
 	{
 		pfbel = new CFormBodyEltList;
-		pfbel->SetName( "Parent" );
+		pfbel->SetName( "Parents" );
 		int i = 0;
 		for( std::vector< std::pair< CStringEx, CStringEx > >::const_iterator it = _pvparent->begin(); it != _pvparent->end(); ++it )
 		{

@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.5 2003/09/03 14:12:44 lecroart Exp $
+ * $Id: variable.h,v 1.6 2003/09/09 14:29:45 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -398,7 +398,13 @@ public:
 	void set (const std::string &val)
 	{
 		_Value = val;
-		if (ChangeCallback) ChangeCallback(*this);
+		static bool RecurseSet = false;
+		if (ChangeCallback && !RecurseSet)
+		{
+			RecurseSet = true;
+			ChangeCallback(*this);
+			RecurseSet = false;
+		}
 	}
 
 	const std::string &get () const

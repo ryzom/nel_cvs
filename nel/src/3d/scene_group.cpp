@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.38 2002/06/25 14:26:19 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.39 2002/06/27 15:44:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -906,6 +906,7 @@ bool CInstanceGroup::removeFromScene (CScene& scene)
 			pTShape->unfreezeStaticLightSetup();
 			// delete the instance
 			scene.deleteInstance (pTShape);
+			*it = NULL;
 		}
 	}
 

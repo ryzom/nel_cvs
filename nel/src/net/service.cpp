@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.118 2002/04/25 10:28:21 cado Exp $
+ * $Id: service.cpp,v 1.119 2002/04/30 10:12:47 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -381,7 +381,49 @@ CCallbackServer *IService::getServer()
 
 
 
+void cbLogFilter (CConfigFile::CVar &var)
+{
+	CLog *log = NULL;
+	if (var.Name == "NegFiltersDebug")
+	{
+		log = DebugLog;
+		nlinfo ("Updating negative filter on debug from config file");
+	}
+	else if (var.Name == "NegFiltersInfo")
+	{
+		log = InfoLog;
+		nlinfo ("Updating negative filter on info from config file");
+	}
+	else
+	{
+		nlstop;
+	}
+
+	// remove all old filter from configfile
+	CConfigFile::CVar &oldvar = IService::getInstance()->ConfigFile.getVar (var.Name);
+	for (sint j = 0; j < oldvar.size(); j++)
+	{
+		log->removeFilter (oldvar.asString(j).c_str());
+	}
+
+	// add all new filter from configfile
+	for (sint i = 0; i < var.size(); i++)
+	{
+		log->addNegativeFilter (var.asString(i).c_str());
+	}
+}
+
+
+
+
+
+
+
+
+//
 // The main function of the service
+//
+
 sint IService::main (const char *serviceShortName, const char *serviceLongName, uint16 servicePort, const char *configDir, const char *logDir)
 {
 	bool userInitCalled = false;
@@ -401,7 +443,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		}
 
 		//
-		// init parameters
+		// Init parameters
 		//
 
 		_ConfigDir = CPath::standardizePath(configDir);
@@ -410,7 +452,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		_LongName = serviceLongName;
 
 		//
-		// init debug/log stuffs (must be first things otherwise we can't log if errors)
+		// Init debug/log stuffs (must be first things otherwise we can't log if errors)
 		//
 
 		// get the log dir if any in the command line
@@ -425,6 +467,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		DebugLog->addNegativeFilter ("NETL");
 
+
 		// we create the log with service name filename ("test_service.log" for example)
 		fd.setParam (_LogDir + _LongName + ".log", false);
 
@@ -434,11 +477,42 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		AssertLog->addDisplayer (&fd);
 		ErrorLog->addDisplayer (&fd);
 
+
+		//
+		// Init the hierarchical timer
+		//
+
+		CHTimer::bench();
+		CHTimer::clear();
+		
+		
 		//
 		// Load the config file
 		//
 
 		ConfigFile.load (_ConfigDir + _LongName + ".cfg");
+
+
+		//
+		// Set the negatif filter from the config file
+		//
+
+		try
+		{
+			ConfigFile.setCallback ("NegFiltersDebug", cbLogFilter);
+			CConfigFile::CVar &negdeb = ConfigFile.getVar ("NegFiltersDebug");
+			cbLogFilter (negdeb);
+		}
+		catch (EConfigFile&) { }
+
+		try
+		{
+			ConfigFile.setCallback ("NegFiltersInfo", cbLogFilter);
+			CConfigFile::CVar &neginf = ConfigFile.getVar ("NegFiltersInfo");
+			cbLogFilter (neginf);
+		}
+		catch (EConfigFile&) { }
+
 
 		//
 		// Create the window if neeeded
@@ -833,9 +907,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		userInitCalled = true; // the bool must be put *before* the call to init()
 		init ();
 
-		//
-		CHTimer::bench();
-		CHTimer::clear();
 
 		//
 		// Connects to the present services
@@ -1222,10 +1293,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 */
 #endif
 
-	nlinfo ("Service ends");
-
 	CHTimer::adjust();
 	CHTimer::display();
+
+	nlinfo ("Service ends");
 
 	return ExitSignalAsked?100+ExitSignalAsked:getStatus ();
 }

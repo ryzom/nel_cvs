@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.19 2003/06/04 08:26:19 lecroart Exp $
+ * $Id: cluster.cpp,v 1.19.4.1 2003/09/03 10:09:39 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -247,7 +247,7 @@ void CCluster::unlink (CPortal* portal)
 // ***************************************************************************
 void CCluster::serial (IStream&f)
 {
-	sint version = f.serialVersion (2);
+	sint version = f.serialVersion (3);
 
 	if (version >= 1)
 		f.serial (Name);
@@ -290,6 +290,13 @@ void CCluster::serial (IStream&f)
 		}
 		
 //		nldebug("Cluster %s, sound group [%s]", Name.c_str(), CStringMapper::unmap(_SoundGroupId).c_str());
+	}
+
+	if (version >= 3)
+	{
+		bool dummy;
+		serial(dummy);
+		serial(dummy);
 	}
 }
 

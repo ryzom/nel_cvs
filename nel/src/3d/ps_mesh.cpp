@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.25 2003/07/03 16:16:45 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.25.4.1 2003/09/03 10:09:39 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1431,7 +1431,8 @@ void CPSConstraintMesh::releaseShapes()
 	{
 		if (*it)
 		{
-			_ModelBank->release(*it);
+			if (_ModelBank)
+				_ModelBank->release(*it);
 		}
 	}
 	_Shapes.clear();

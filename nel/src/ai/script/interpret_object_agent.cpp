@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.12 2001/01/16 17:20:40 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.13 2001/01/16 17:25:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -129,7 +129,7 @@ namespace NLAISCRIPT
 				c->release();				
 			}
 
-			//clearIndirectMsgTable();
+			clearIndirectMsgTable();
 
 		}
 

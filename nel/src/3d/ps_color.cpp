@@ -1,7 +1,7 @@
 /** \file ps_color.cpp
  * <File description>
  *
- * $Id: ps_color.cpp,v 1.5 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: ps_color.cpp,v 1.6 2001/07/12 15:51:21 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 namespace NL3D {
 
-
+using NLMISC::CRGBA ;
 
 CRGBA CPSColorGradient::_DefaultGradient[] = { CRGBA::White, CRGBA::Black } ;
 

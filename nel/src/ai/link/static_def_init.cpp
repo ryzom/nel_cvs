@@ -42,11 +42,13 @@
 
 	static CNumericIndex staticId;
 	static const IAgent staticAgent(NULL);
-	const NLAIC::CIdentType CLocWordNumRef::IdLocWordNumRef("LocWordNumRef",NLAIC::CSelfClassCFactory((const IWordNumRef &)staticAgent),
+	const NLAIC::CIdentType CLocWordNumRef::IdLocWordNumRef("LocWordNumRef",NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)staticAgent),
 																		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
-																		NLAIC::CTypeOfOperator(NLAIC::NLAIC::CTypeOfOperator::opNone));
-	const NLAIC::CIdentType IAgent::IdAgent("GenericAgent",NLAIC::CSelfClassCFactory(staticAgent), NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
-																NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+																		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+
+	const NLAIC::CIdentType IAgent::IdAgent("GenericAgent", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)staticAgent), 
+															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
+															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	const NLAIC::CIdentType CSimpleLocalMailBox::IdSimpleLocalMailBox("SimpleLocalMailBox",NLAIC::CSelfClassCFactory(CSimpleLocalMailBox(NULL)),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
@@ -378,24 +380,24 @@ namespace NLAISCRIPT
 	const NLAIC::CIdentType IBlock::IdBlock("IBlock",NLAIC::CSelfClassCFactory(IBlock(false)),NLAIC::CTypeOfObject(0),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	static CAgentClass agentClass;	
-	const NLAIC::CIdentType CAgentClass::IdAgentClass("Agent", NLAIC::CSelfClassCFactory(agentClass),
+	const NLAIC::CIdentType CAgentClass::IdAgentClass("Agent", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)agentClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 
 
 	static CActorClass actorClass;
-	const NLAIC::CIdentType CActorClass::IdActorClass("Actor", NLAIC::CSelfClassCFactory(actorClass),
+	const NLAIC::CIdentType CActorClass::IdActorClass("Actor", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)actorClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 	
 
 	static CMessageClass messageClass;
-	const NLAIC::CIdentType CMessageClass::IdMessageClass("Message", NLAIC::CSelfClassCFactory(messageClass),
+	const NLAIC::CIdentType CMessageClass::IdMessageClass("Message", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)messageClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	static COperatorClass operatorClass;
-	const NLAIC::CIdentType COperatorClass::IdOperatorClass("Operator", NLAIC::CSelfClassCFactory(operatorClass),
+	const NLAIC::CIdentType COperatorClass::IdOperatorClass("Operator", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)operatorClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
@@ -405,7 +407,7 @@ namespace NLAISCRIPT
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	static CAgentClass managerClass;	
-	const NLAIC::CIdentType CManagerClass::IdManagerClass("AgentManager", NLAIC::CSelfClassCFactory(managerClass),
+	const NLAIC::CIdentType CManagerClass::IdManagerClass("AgentManager", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)managerClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 

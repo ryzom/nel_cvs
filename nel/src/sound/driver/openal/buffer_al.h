@@ -1,7 +1,7 @@
 /** \file buffer_al.h
  * OpenAL buffer
  *
- * $Id: buffer_al.h,v 1.4 2001/07/25 08:40:58 cado Exp $
+ * $Id: buffer_al.h,v 1.5 2002/06/14 12:21:26 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,13 +84,22 @@ public:
 	virtual bool		fillMore( void *src, uint32 srcsize )	{ throw ESoundDriverNotSupp(); }
 
 	
-	/// Return the buffer name
+	/// Return the buffer name (as an int)
 	ALuint				bufferName()							{ return _BufferName; }
 	
+	/// Return the name of the buffer (as a string)
+	virtual std::string&	getName()							{ return _Name; }
+
+	/// Set the name of the buffer
+	virtual void		setName(std::string& name)				{ _Name = name; }
+
 private:
 
 	// Buffer name
 	ALuint				_BufferName;
+
+	// Buffer name as string
+	std::string			_Name;
 
 	// Sample format
 	ALenum				_SampleFormat;

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.44 2001/08/21 09:50:41 legros Exp $
+ * $Id: global_retriever.cpp,v 1.45 2001/08/23 13:40:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,6 +122,105 @@ void	NLPACS::CGlobalRetriever::serial(NLMISC::IStream &f)
 	{
 		initQuadGrid();
 		initRetrieveTable();
+	}
+}
+
+//
+
+void	NLPACS::CGlobalRetriever::check() const
+{
+	uint	i, j, k;
+
+	for (i=0; i<_Instances.size(); ++i)
+	{
+		if (_Instances[i].getInstanceId() == -1)
+		{
+			nlwarning("Uninitialized instance %d", i);
+			continue;
+		}
+
+		if (_Instances[i].getInstanceId() != (sint)i)
+			nlwarning("InstanceId for instance %d is not correctly initialized", i);
+
+		if (_Instances[i].getRetrieverId() == -1)
+		{
+			nlwarning("No retriever at instance %d", i);
+			continue;
+		}
+
+		const CRetrieverInstance	&instance = _Instances[i];
+
+		if (instance.getRetrieverId()<0 || instance.getRetrieverId()>=(sint)_RetrieverBank->getRetrievers().size())
+		{
+			nlwarning("Instance %d has wrong retriever reference", i);
+			continue;
+		}
+
+		const CLocalRetriever		&retriever = _RetrieverBank->getRetriever(instance.getRetrieverId());
+
+		for (j=0; j<retriever.getChains().size(); ++j)
+		{
+			const CChain	&chain = retriever.getChain(j);
+			for (k=0; k<chain.getSubChains().size(); ++k)
+			{
+				if (chain.getSubChain(k) >= retriever.getOrderedChains().size())
+				{
+					nlwarning("retriever %d, chain %d: subchain %d reference is not valid", instance.getRetrieverId(), j, k);
+					continue;
+				}
+
+				if (retriever.getOrderedChain(chain.getSubChain(k)).getParentId() != j)
+				{
+					nlwarning("retriever %d, ochain %d: reference on parent is not valid", instance.getRetrieverId(), chain.getSubChain(k));
+					continue;
+				}
+
+				if (retriever.getOrderedChain(chain.getSubChain(k)).getIndexInParent() != k)
+				{
+					nlwarning("retriever %d, ochain %d: index on parent is not valid", instance.getRetrieverId(), chain.getSubChain(k));
+					continue;
+				}
+			}
+
+			if (chain.getLeft()<0 || chain.getLeft()>=(sint)retriever.getSurfaces().size())
+			{
+				nlwarning("retriever %d, chain %d: reference on left surface is not valid", instance.getRetrieverId(), j);
+			}
+
+			if (chain.getRight()>=(sint)retriever.getSurfaces().size() ||
+				chain.getRight()<=CChain::getDummyBorderChainId() && !CChain::isBorderChainId(chain.getRight()))
+			{
+				nlwarning("retriever %d, chain %d: reference on right surface is not valid", instance.getRetrieverId(), j);
+			}
+
+			if (CChain::isBorderChainId(chain.getRight()))
+			{
+				sint	link = chain.getBorderChainIndex();
+
+				if (link<0 || link>=(sint)instance.getBorderChainLinks().size())
+				{
+					nlwarning("retriever %d, instance %d, chain %d: reference on right link is not valid", instance.getRetrieverId(), instance.getInstanceId(), j);
+				}
+				else
+				{
+					CRetrieverInstance::CLink	lnk = instance.getBorderChainLink(link);
+
+					if (lnk.Instance != 0xFFFF || lnk.SurfaceId != 0xFFFF ||
+						lnk.ChainId != 0xFFFF || lnk.BorderChainId != 0xFFFF)
+					{
+						if (lnk.Instance >= _Instances.size() ||
+							_Instances[lnk.Instance].getRetrieverId()<0 ||
+							_Instances[lnk.Instance].getRetrieverId()>(sint)_RetrieverBank->getRetrievers().size() ||
+							lnk.SurfaceId >= getRetriever(_Instances[lnk.Instance].getRetrieverId()).getSurfaces().size() ||
+							lnk.ChainId >= getRetriever(_Instances[lnk.Instance].getRetrieverId()).getChains().size() ||
+							lnk.BorderChainId >= getRetriever(_Instances[lnk.Instance].getRetrieverId()).getBorderChains().size())
+						{
+							nlwarning("retriever %d, instance %d, link %d: reference on instance is not valid", instance.getRetrieverId(), instance.getInstanceId(), lnk);
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -305,6 +404,18 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 	}
 
 	return result;
+}
+
+//
+
+const string	&NLPACS::CGlobalRetriever::getIdentifier(const NLPACS::UGlobalPosition &position) const
+{
+	static const string		nullString = string("");
+
+	if (position.InstanceId == -1)
+		return nullString;
+
+	return getRetriever(_Instances[position.InstanceId].getRetrieverId()).getIdentifier();
 }
 
 //
@@ -750,7 +861,7 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 				link = retrieverInstance.getBorderChainLink(CChain::convertBorderChainId(cc.RightSurface.SurfaceId));
 
 				// get the neighbor instanceId.
-				sint	neighborInstanceId= link.Instance;
+				sint	neighborInstanceId= (sint16)link.Instance;
 				// store in the current collisionChain Right.
 				cc.RightSurface.RetrieverInstanceId= neighborInstanceId;
 
@@ -763,9 +874,12 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 				else
 				{
 					// Get the good neighbor surfaceId.
-					cc.RightSurface.SurfaceId= link.SurfaceId;
+					cc.RightSurface.SurfaceId= (sint16)link.SurfaceId;
 				}
 			}
+
+			nlassert(cc.LeftSurface.RetrieverInstanceId < (sint)_Instances.size());
+			nlassert(cc.RightSurface.RetrieverInstanceId < (sint)_Instances.size());
 		}
 
 
@@ -836,6 +950,11 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 		for(i=0; i<(sint)cst.CollisionChains.size(); i++)
 		{
 			CCollisionChain		&colChain= cst.CollisionChains[i];
+
+			/// TODO Tests Ben
+			nlassert(colChain.LeftSurface.RetrieverInstanceId < (sint)_Instances.size());
+			nlassert(colChain.RightSurface.RetrieverInstanceId < (sint)_Instances.size());
+
 			// test only currentSurface/X. And don't test chains already tested before.
 			if(colChain.hasSurface(currentSurface) && !colChain.Tested)
 			{
@@ -877,6 +996,9 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 				if(tMin<1)
 				{
 					CSurfaceIdent	collidedSurface= colChain.getOtherSurface(currentSurface);
+
+					/// TODO Tests Ben
+					nlassert(collidedSurface.RetrieverInstanceId < (sint)_Instances.size());
 
 					// insert or replace this collision in collisionDescs.
 					// NB: yes this looks like a N algorithm (so N²). But not so many collisions may arise, so don't bother.

@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.5 2001/08/21 09:50:41 legros Exp $
+ * $Id: chain.h,v 1.6 2001/08/23 13:40:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 
 namespace NLPACS
 {
+class COrderedChain;
 
 /**
  * A list of ordered vertices, partially delimiting 2 different surfaces.
@@ -78,6 +79,10 @@ public:
 	///
 	const NLMISC::CVector				&operator[] (uint n) const { return _Vertices[n]; }
 
+	///
+	void								unpack(const COrderedChain &ochain);
+
+	///
 	void								translate(const NLMISC::CVector &translation)
 	{
 		uint	i;
@@ -164,6 +169,23 @@ public:
 		for (i=0; i<vertices.size(); ++i)
 		{
 			_Vertices[i] = CVector2s(vertices[i]);
+			_Min.minof(_Min, _Vertices[i]);
+			_Max.maxof(_Max, _Vertices[i]);
+		}
+	}
+
+	///
+	void								computeMinMax()
+	{
+		_Min = _Max = CVector2s(0, 0);
+
+		if (_Vertices.empty())
+			return;
+
+		_Min = _Max = _Vertices[0];
+		uint	i;
+		for (i=1; i<_Vertices.size(); ++i)
+		{
 			_Min.minof(_Min, _Vertices[i]);
 			_Max.maxof(_Max, _Vertices[i]);
 		}
@@ -279,7 +301,45 @@ public:
 
 	/// Serialises the CChain object.
 	void								serial(NLMISC::IStream &f);
+
+protected:
+	friend class CLocalRetriever;
+
+	///
+	void								unify(std::vector<COrderedChain> &ochains);
+
+	///
+	void								setStartVector(const CVector2s &v, std::vector<COrderedChain> &ochains);
+
+	///
+	void								setStopVector(const CVector2s &v, std::vector<COrderedChain> &ochains);
+
+	///
+	CVector2s							getStartVector(std::vector<COrderedChain> &ochains);
+
+	//
+	CVector2s							getStopVector(std::vector<COrderedChain> &ochains);
 };
+
+
+
+
+
+//
+inline void								COrderedChain3f::unpack(const COrderedChain &chain)
+{
+	uint	i, mx;
+	const std::vector<CVector2s>	&vertices = chain.getVertices();
+	mx = _Vertices.size();
+	_Vertices.resize(vertices.size());
+	_Forward = chain.isForward();
+	_ParentId = chain.getParentId();
+	_IndexInParent = chain.getIndexInParent();
+	for (i=0; i<vertices.size(); ++i)
+	{
+		_Vertices[i] = vertices[i].unpack3f(i >= mx ? 0.0f : _Vertices[i].z);
+	}
+}
 
 }; // NLPACS
 

@@ -1,7 +1,7 @@
 /** \file chain_quad.cpp
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.cpp,v 1.9 2001/07/31 11:36:21 berenguier Exp $
+ * $Id: chain_quad.cpp,v 1.10 2001/08/23 13:40:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,6 +102,12 @@ void			CChainQuad::getGridBounds(sint32 &x0, sint32 &y0, sint32 &x1, sint32 &y1,
 	y0= (sint32)floor(minP.y / _QuadElementSize) - _Y;
 	x1= (sint32) ceil(maxP.x / _QuadElementSize) - _X;
 	y1= (sint32) ceil(maxP.y / _QuadElementSize) - _Y;
+	// Manage selection of a point exactly on a quad bound
+	if(x1-x0==0)
+		x0--, x1++;
+	if(y1-y0==0)
+		y0--, y1++;
+	// clamp
 	x0= max(x0, (sint32)0);
 	y0= max(y0, (sint32)0);
 	x1= min(x1, (sint32)_Width);

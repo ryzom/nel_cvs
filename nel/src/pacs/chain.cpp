@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.16 2001/08/21 09:50:41 legros Exp $
+ * $Id: chain.cpp,v 1.17 2001/08/23 13:40:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,6 +209,7 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 		chains.resize(chains.size()+1);
 		COrderedChain	&subchain = chains.back();
 		subchain.pack(subchain3f);
+		subchain.computeMinMax();
 
 		float	length = 0.0f;
 		for (i=0; i<(sint)subchain._Vertices.size()-1; ++i)
@@ -234,6 +235,72 @@ void	NLPACS::CChain::serial(IStream &f)
 	f.serial(_Length);
 	f.serial(_LeftLoop, _LeftLoopIndex);
 	f.serial(_RightLoop, _RightLoopIndex);
+}
+
+
+
+// unifiies the chain
+void	NLPACS::CChain::unify(vector<NLPACS::COrderedChain> &ochains)
+{
+	CVector2s	snap;
+	uint		i;
+
+	snap = (ochains[_SubChains[0]].isForward()) ? ochains[_SubChains[0]]._Vertices.back() : ochains[_SubChains[0]]._Vertices.front();
+
+	for (i=1; i<_SubChains.size(); ++i)
+	{
+		if (ochains[_SubChains[i]].isForward())
+		{
+			if (ochains[_SubChains[i]]._Vertices.front() != snap)
+				nlwarning("ochain %d and %d are not stuck together", _SubChains[i-1], _SubChains[i]);
+			ochains[_SubChains[i]]._Vertices.front() = snap;
+			snap = ochains[_SubChains[i]]._Vertices.back();
+		}
+		else
+		{
+			if (ochains[_SubChains[i]]._Vertices.back() != snap)
+				nlwarning("ochain %d and %d are not stuck together", _SubChains[i-1], _SubChains[i]);
+			ochains[_SubChains[i]]._Vertices.back() = snap;
+			snap = ochains[_SubChains[i]]._Vertices.front();
+		}
+	}
+
+}
+
+//
+void	NLPACS::CChain::setStartVector(const NLPACS::CVector2s &v, vector<NLPACS::COrderedChain> &ochains)
+{
+	if (ochains[_SubChains.front()].isForward())
+		ochains[_SubChains.front()]._Vertices.front() = v;
+	else
+		ochains[_SubChains.front()]._Vertices.back() = v;
+}
+
+//
+void	NLPACS::CChain::setStopVector(const NLPACS::CVector2s &v, vector<NLPACS::COrderedChain> &ochains)
+{
+	if (ochains[_SubChains.back()].isForward())
+		ochains[_SubChains.back()]._Vertices.back() = v;
+	else
+		ochains[_SubChains.back()]._Vertices.front() = v;
+}
+
+//
+NLPACS::CVector2s	NLPACS::CChain::getStartVector(vector<NLPACS::COrderedChain> &ochains)
+{
+	if (ochains[_SubChains.front()].isForward())
+		return ochains[_SubChains.front()]._Vertices.front();
+	else
+		return ochains[_SubChains.front()]._Vertices.back();
+}
+
+//
+NLPACS::CVector2s	NLPACS::CChain::getStopVector(vector<NLPACS::COrderedChain> &ochains)
+{
+	if (ochains[_SubChains.back()].isForward())
+		return ochains[_SubChains.back()]._Vertices.back();
+	else
+		return ochains[_SubChains.back()]._Vertices.front();
 }
 
 // end of CChain methods implementation

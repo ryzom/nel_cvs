@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.12 2001/08/14 13:59:58 legros Exp $
+ * $Id: global_retriever.h,v 1.13 2001/08/23 13:40:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -205,6 +205,9 @@ public:
 	/// Retrieves the position of an estimated point in the global retriever (double instead.)
 	UGlobalPosition					retrievePosition(const NLMISC::CVectorD &estimated) const;
 
+	/// Get the identifier of the global position.
+	const std::string				&getIdentifier(const UGlobalPosition &position) const;
+
 	/// Snaps to interior ground.
 	void							snapToInteriorGround(UGlobalPosition &position) const;
 
@@ -242,6 +245,9 @@ public:
 	void							makeLinks(uint n);
 	/// Links all the instances inside the global retriever.
 	void							makeAllLinks();
+
+	/// Checks the retriever for errors.
+	void							check() const;
 
 	/// Serialises the global retriever.
 	void							serial(NLMISC::IStream &f);

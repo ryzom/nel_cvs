@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.11 2001/08/21 09:50:41 legros Exp $
+ * $Id: local_retriever.h,v 1.12 2001/08/23 13:40:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,8 @@
 #define NL_LOCAL_RETRIEVER_H
 
 #include <vector>
+#include <string>
+
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/file.h"
@@ -227,6 +229,9 @@ protected:
 	/// The face selection grid
 	CFaceGrid							_FaceGrid;
 
+	/// An human readable identifier of the retriever.
+	std::string							_Id;
+
 	// @}
 
 
@@ -302,6 +307,9 @@ public:
 	/// Returns the interior faces
 	const std::vector<CInteriorFace>	&getInteriorFaces() const { return _InteriorFaces; }
 
+	/// Returns the identifier of the retriever.
+	const std::string					&getIdentifier() const { return _Id; }
+
 	// @}
 
 
@@ -336,6 +344,9 @@ public:
 
 	/// Returns the interior faces
 	std::vector<CInteriorFace>			&getInteriorFaces() { return _InteriorFaces; }
+
+	/// Returns the identifier of the retriever.
+	void								setIdentifier(const std::string &id) { _Id = id; }
 
 	/// Inits the face grid
 	void								initFaceGrid();
@@ -397,6 +408,10 @@ protected:
 	/// Finds a path in a given surface, from the point A to the point B.
 	void								findPath(const CLocalPosition &A, const CLocalPosition &B, std::vector<CVector2s> &path, NLPACS::CCollisionSurfaceTemp &cst) const;
 
+
+	///
+	void								unify();
+
 private:
 	const NLMISC::CVector				&getStartVector(uint32 chain) const;
 	const NLMISC::CVector				&getStopVector(uint32 chain) const;
@@ -414,7 +429,7 @@ private:
 	uint32								getNextChain(uint32 chain, sint32 surface) const;
 
 public:
-	void								dumpSurface(uint surf) const;
+	void								dumpSurface(uint surf, const NLMISC::CVector &vect = NLMISC::CVector::Null) const;
 };
 
 }; // NLPACS

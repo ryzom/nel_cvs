@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.27 2001/08/21 09:50:41 legros Exp $
+ * $Id: local_retriever.cpp,v 1.28 2001/08/23 13:40:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,13 +180,47 @@ uint32			NLPACS::CLocalRetriever::getNextChain(uint32 chain, sint32 surface) con
 
 
 
+void	NLPACS::CLocalRetriever::unify()
+{
+	uint	i, j;
+
+	for (i=0; i<_Chains.size(); ++i)
+		_Chains[i].unify(_OrderedChains);
+
+	for (i=0; i<_Tips.size(); ++i)
+	{
+		NLPACS::CLocalRetriever::CTip	&tip = _Tips[i];
+		CVector2s ptip = tip.Point;
+
+		for (j=0; j<tip.Chains.size(); ++j)
+		{
+			if (tip.Chains[j].Start)
+			{
+				if (_Chains[tip.Chains[j].Chain].getStartVector(_OrderedChains) != ptip)
+					nlwarning("chain %d is not stuck to tip %d", tip.Chains[j].Chain, i);
+				_Chains[tip.Chains[j].Chain].setStartVector(ptip, _OrderedChains);
+			}
+			else
+			{
+				if (_Chains[tip.Chains[j].Chain].getStopVector(_OrderedChains) != ptip)
+					nlwarning("chain %d is not stuck to tip %d", tip.Chains[j].Chain, i);
+				_Chains[tip.Chains[j].Chain].setStopVector(ptip, _OrderedChains);
+			}
+		}
+	}
+
+	_FullOrderedChains.resize(_OrderedChains.size());
+	for (i=0; i<_OrderedChains.size(); ++i)
+		_FullOrderedChains[i].unpack(_OrderedChains[i]);
+}
 
 
 
 
 
 
-void	NLPACS::CLocalRetriever::dumpSurface(uint surf) const
+
+void	NLPACS::CLocalRetriever::dumpSurface(uint surf, const CVector &vect) const
 {
 	const CRetrievableSurface	&surface = _Surfaces[surf];
 
@@ -206,7 +240,7 @@ void	NLPACS::CLocalRetriever::dumpSurface(uint surf) const
 			const COrderedChain3f	&ochain = _FullOrderedChains[chain.getSubChain(j)];
 			nlinfo("     subchain %d[%d]: fwd=%d parent=%d idx=%d", j, chain.getSubChain(j), ochain.isForward(), ochain.getParentId(), ochain.getIndexInParent());
 			for (k=0; k<ochain.getVertices().size(); ++k)
-				nlinfo("       v[%d]=(%.3f,%.3f,%.3f)", k, ochain.getVertices()[k].x, ochain.getVertices()[k].y, ochain.getVertices()[k].z);
+				nlinfo("       v[%d]=(%.3f,%.3f,%.3f)", k, ochain.getVertices()[k].x+vect.x, ochain.getVertices()[k].y+vect.y, ochain.getVertices()[k].z+vect.z);
 		}
 
 	}
@@ -279,30 +313,37 @@ sint32	NLPACS::CLocalRetriever::addChain(const vector<CVector> &verts,
 	for (i=0; i<vertices.size(); ++i)
 		converts.push_back(CVector2s(vertices[i]));
 
-	vector<CVector2s>::iterator	it2s = converts.begin();
-	vector<CVector>::iterator	it3f = vertices.begin();
+	vector<CVector2s>::iterator	next2s = converts.begin(), it2s, prev2s;
+	prev2s = next2s; ++next2s;
+	it2s = next2s; ++next2s;
 
-	CVector2s					prev = *it2s;
+	vector<CVector>::iterator	it3f = vertices.begin();
 	CVector						prev3f = *it3f;
-	++it2s;
 	++it3f;
 
-	for (; it2s!=converts.end(); )
+
+	for (; it2s != converts.end() && next2s != converts.end(); )
 	{
-		// it the next point is equal to the previous
-		if (*it2s == prev && fabs(it3f->z-prev3f.z)<1e-3f)
+		// if the next point is equal to the previous
+		if (*it2s == *prev2s || *it2s == *next2s)
 		{
 			// then remove the next point
 			it2s = converts.erase(it2s);
 			it3f = vertices.erase(it3f);
+
+			prev2s = it2s;
+			--prev2s;
+			next2s = it2s;
+			++next2s;
 		}
 		else
 		{
 			// else remember the next point, and step to the next...
-			prev = *it2s;
-			prev3f = *it3f;
+			++prev2s;
 			++it2s;
+			++next2s;
 			++it3f;
+			prev3f = *it3f;
 		}
 	}
 	
@@ -530,22 +571,9 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 			for (k=0; k<_Surfaces[i]._Loops[j].size(); ++k)
 				_Surfaces[i]._Loops[j].Length += _Chains[_Surfaces[i]._Chains[_Surfaces[i]._Loops[j][k]].Chain].getLength();
 		}
-
 	}
 
-/*
-	dumpSurface(80);
-	CRetrievableSurface	&surface = _Surfaces[80];
 
-	for (j=0; j<surface._Chains.size(); ++j)
-	{
-		CVector	start = getStartVector(surface._Chains[j].Chain, 80);
-		CVector	end = getStopVector(surface._Chains[j].Chain, 80);
-		nlinfo("surf=%d chain=%d", i, surface._Chains[j].Chain);
-		nlinfo("start=(%f,%f,%f)", start.x, start.y, start.z);
-		nlinfo("end=  (%f,%f,%f)", end.x, end.y, end.z);
-	}
-*/
 }
 
 
@@ -728,16 +756,17 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 	// WARNING!!
 	// retrieveTable is assumed to be 0 filled !!
 
-	/*
+/*
 	// for each ordered chain, checks if the estimated position is between the min and max.
 	for (ochain=0; ochain<_OrderedChains.size(); ++ochain)
 	{
 */
+
 	// for each ordered chain, checks if the estimated position is between the min and max.
 	for (i=0; i<numEdges; ++i)
 	{
 		ochain = cst.EdgeChainEntries[i].OChainId;
-		
+
 		const COrderedChain	&sub = _OrderedChains[ochain];
 		const CVector2s	&min = sub.getMin(),
 						&max = sub.getMax();
@@ -791,9 +820,18 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 			{
 				const CVector2s	&vstart = vertices[start],
 								&vstop = vertices[stop];
-				sint16	intersect = vstart.y + (vstop.y-vstart.y)*(estim.x-vstart.x)/(vstop.y-vstart.y);
 
-				isUpper = estim.y > intersect;
+				if (vstart.x == vstop.x)
+				{
+					// the very rare case the edge is vertical, and the
+					// retrieved position is exactly on the edge...
+					isUpper = true;
+				}
+				else
+				{
+					sint16	intersect = vstart.y + (vstop.y-vstart.y)*(estim.x-vstart.x)/(vstop.x-vstart.x);
+					isUpper = estim.y > intersect;
+				}
 			}
 		}
 

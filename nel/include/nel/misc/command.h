@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.9 2001/06/27 08:27:43 lecroart Exp $
+ * $Id: command.h,v 1.10 2001/06/28 12:22:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,24 +126,23 @@ CVariable<__type> __var##instance(#__var, __help " (" #__type ")", &__var)
 class __name##class : public NLMISC::ICommand \
 { \
 public: \
-	__name##class () : NLMISC::ICommand(#__name, __help " (" #__type ")", "[<value>]") { } \
+	__name##class () : NLMISC::ICommand(#__name, __help " (" #__type ")", "[<value>]") { Type = Variable; } \
 	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log) \
 	{ \
 		if (args.size() == 1) \
 		{ \
-			std::stringstream s (args[0]); \
+			std::stringstream ls (args[0]); \
 			__type p; \
-			s >> p; \
+			ls >> p; \
 			pointer (&p, false, log); \
 		} \
 		if (args.size() >= 0) \
 		{ \
-			std::stringstream s; \
 			__type p; \
 			pointer (&p, true, log); \
-			std::stringstream s; \
-			s << "Variable " << _CommandName << " = " << *_Pointer; \
-			log.displayNL(s.str().c_str()); \
+			std::stringstream ls; \
+			ls << "Variable " << _CommandName << " = " << p; \
+			log.displayNL(ls.str().c_str()); \
 		} \
 		if (args.size() > 1) \
 			return false; \

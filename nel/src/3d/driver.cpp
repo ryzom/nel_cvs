@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.cpp,v 1.82 2004/03/30 14:36:29 berenguier Exp $
+ * $Id: driver.cpp,v 1.83 2004/04/07 17:12:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -368,7 +368,7 @@ void IDriver::profileTextureUsage(std::vector<std::string> &result)
 			totalSize+= memCost;
 			string	typeStr= typeid(*text).name();
 			strFindReplace(typeStr, "class NL3D::", string());
-			tempInfo[upFmt].push_back();
+			tempInfo[upFmt].push_back(CTextureDebugInfo());
 			tempInfo[upFmt].back().Line= toString("Type: %15s. ShareName: %s. Size: %d Ko", 
 				typeStr.c_str(),
 				shareName.c_str(),

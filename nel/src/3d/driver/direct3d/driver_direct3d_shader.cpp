@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.6 2004/08/09 14:35:08 vizerie Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.7 2004/08/13 15:30:45 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -376,8 +376,8 @@ bool CDriverD3D::activeShader(CShader *shd)
 				shaderInfo->ColorHandle[i] = shaderInfo->Effect->GetParameterByName(NULL, name.c_str());
 				name = "factor" + toString (i);
 				shaderInfo->FactorHandle[i] = shaderInfo->Effect->GetParameterByName(NULL, name.c_str());
-				name = "scalar" + toString (i);
-				shaderInfo->ScalarHandle[i] = shaderInfo->Effect->GetParameterByName(NULL, name.c_str());
+				name = "scalarFloat" + toString (i);
+				shaderInfo->ScalarFloatHandle[i] = shaderInfo->Effect->GetParameterByName(NULL, name.c_str());				
 			}
 		}
 		else

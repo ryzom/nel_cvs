@@ -1,7 +1,7 @@
 /** \file buffer_fmod.cpp
  * DirectSound sound buffer
  *
- * $Id: buffer_fmod.cpp,v 1.1 2004/08/30 12:35:19 berenguier Exp $
+ * $Id: buffer_fmod.cpp,v 1.2 2004/09/16 16:42:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -484,7 +484,10 @@ void	CBufferFMod::loadDataToFMod(uint8 *data)
 		case Stereo16: type= FSOUND_16BITS|FSOUND_STEREO; break;
 		default: nlstop;
 		};
-		uint32	commonType= FSOUND_LOADRAW|FSOUND_LOOP_NORMAL|FSOUND_LOADMEMORY|FSOUND_HW3D;
+		uint32	commonType= FSOUND_LOADRAW|FSOUND_LOOP_NORMAL|FSOUND_LOADMEMORY;
+		// if can use hardware buffer
+		if(!CSoundDriverFMod::instance()->forceSofwareBuffer())
+			commonType|= FSOUND_HW3D;
 		// create FMod sample
 		_FModSample= FSOUND_Sample_Load(FSOUND_FREE, (const char*)uploadData, commonType|type, 0, _Size);
 

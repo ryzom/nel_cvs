@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.49 2004/09/01 08:28:04 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.50 2004/09/16 16:41:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -133,7 +133,7 @@ public:
 	 * The sources will be auto-balanced every "balance_period" calls to update()
 	 * (set 0 for "never auto-balance")
 	 */
-	virtual void		init(uint maxTrack, bool useEax, bool useADPCM, NLMISC::IProgressCallback *progressCallBack, bool autoLoadSample, TDriver driverType);
+	virtual void		init(uint maxTrack, bool useEax, bool useADPCM, NLMISC::IProgressCallback *progressCallBack, bool autoLoadSample, TDriver driverType, bool forceSoftwareBuffer);
 
 	virtual void		initClusteredSound(NL3D::UScene *uscene, float minGain, float maxDistance, float portalInterpolate);
 	virtual void		initClusteredSound(NL3D::CScene *scene, float minGain, float maxDistance, float portalInterpolate);

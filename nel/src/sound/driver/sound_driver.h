@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.20 2004/08/30 12:34:25 berenguier Exp $
+ * $Id: sound_driver.h,v 1.21 2004/09/16 16:42:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,8 +120,9 @@ public:
 	 * If the number of available hardware buffer is less than 10, then EAX is ignored.
 	 *
 	 *	\param driverType set DriverFMod if you want to use FMod driver (nel_drv_fmod_win_??.dll)
-	 */
-	static	ISoundDriver	*createDriver(bool useEax, IStringMapperProvider *stringMapper, TDriver driverType= DriverAuto);
+	 *	\param forceSoftwareBuffer (used only by FMod for now) force Buffer to be loaded in software (may be faster)
+	*/
+	static	ISoundDriver	*createDriver(bool useEax, IStringMapperProvider *stringMapper, TDriver driverType= DriverAuto, bool forceSoftwareBuffer= false);
 
 	/// Create a sound buffer
 	virtual	IBuffer			*createBuffer() = 0;

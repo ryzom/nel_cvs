@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.30 2004/07/27 17:46:13 berenguier Exp $
+ * $Id: shape_bank.cpp,v 1.31 2004/09/16 16:40:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -328,28 +328,38 @@ bool CShapeBank::processWSUploadTexture (CWaitingShape &rWS, uint32 &nTotalUploa
 		nMipMap = 1;
 	
 	// Upload all mipmaps
-	for (; rWS.UpTextMipMap < nMipMap; ++rWS.UpTextMipMap)
+	for (; rWS.UpTextMipMap < nMipMap;)
 	{
 		uint32 nMM = rWS.UpTextMipMap;
 		// What is left to upload ?
 		nWeight = pText->getSize (nMM) - rWS.UpTextLine*pText->getWidth(nMM);
-		nWeight *= CBitmap::bitPerPixels[pText->getPixelFormat()]/8;
+		// Yoyo: important: in case of DXTC1, must mul before div
+		nWeight= (nWeight*CBitmap::bitPerPixels[pText->getPixelFormat()]) / 8;
 		if (pText->isTextureCube())
 			nWeight *= 6;
+
+		// NB: nWeight can be 0 in case of 1x1 in DXTC1. Estimate 1 byte
+		if(nWeight==0)
+			nWeight= 1;
 
 		// Setup rectangle
 		if ((nTotalUploaded + nWeight) > _MaxUploadPerFrame)
 		{
 			// We cannot upload the whole mipmap -> we have to cut it
 			uint32 nSizeToUpload = _MaxUploadPerFrame - nTotalUploaded;
-			uint32 nLineWeight = pText->getWidth(nMM)*CBitmap::bitPerPixels[pText->getPixelFormat()]/8;
+			uint32 nLineWeight = (pText->getWidth(nMM)*CBitmap::bitPerPixels[pText->getPixelFormat()]) / 8;
+			// NB: nLineWeight can be 0 in case of 1x1 in DXTC1. Estimate 1 byte (avoid divide by zero)
+			if(nLineWeight==0)
+				nLineWeight= 1;
 			if (pText->isTextureCube())
 				nLineWeight *= 6;
+			// compute the number of lines we'll upload
 			uint32 nNbLineToUpload = nSizeToUpload / nLineWeight;
 			nNbLineToUpload = nNbLineToUpload / 4;
 			if (nNbLineToUpload == 0)
 				nNbLineToUpload = 1;
 			nNbLineToUpload *= 4; // Upload 4 line by 4 line
+			// setup the rect
 			uint32 nNewLine = rWS.UpTextLine + nNbLineToUpload;
 			if (nNewLine > pText->getHeight(nMM))
 				nNewLine = pText->getHeight(nMM);
@@ -366,6 +376,7 @@ bool CShapeBank::processWSUploadTexture (CWaitingShape &rWS, uint32 &nTotalUploa
 			// We can upload the whole mipmap (or the whole rest of the mipmap)
 			zeRect.set (0, rWS.UpTextLine, pText->getWidth(nMM), pText->getHeight(nMM));
 			rWS.UpTextLine = 0;
+			rWS.UpTextMipMap += 1;
 		}
 
 		// Upload !

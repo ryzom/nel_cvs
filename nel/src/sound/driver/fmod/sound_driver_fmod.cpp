@@ -1,7 +1,7 @@
 /** \file sound_driver_fmod.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_fmod.cpp,v 1.1 2004/08/30 12:35:19 berenguier Exp $
+ * $Id: sound_driver_fmod.cpp,v 1.2 2004/09/16 16:42:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,12 +59,12 @@ BOOL WINAPI DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 
 // ******************************************************************
 
-__declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance(bool useEax, ISoundDriver::IStringMapperProvider *stringMapper)
+__declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance(bool useEax, ISoundDriver::IStringMapperProvider *stringMapper, bool forceSoftwareBuffer)
 {
 	NL_ALLOC_CONTEXT(NLSOUND_ISoundDriver);
 
 	CSoundDriverFMod *driver = new CSoundDriverFMod();
-	driver->init(stringMapper);
+	driver->init(stringMapper, forceSoftwareBuffer);
 
 	return driver;
 }
@@ -94,6 +94,7 @@ CSoundDriverFMod::CSoundDriverFMod()
 		_Instance = this;
 		_FModOk= false;
 		_MasterGain= 1.f;
+		_ForceSoftwareBuffer= false;
     }
 	else
 	{
@@ -104,7 +105,7 @@ CSoundDriverFMod::CSoundDriverFMod()
 
 // ******************************************************************
 
-void	CSoundDriverFMod::init(IStringMapperProvider *stringMapper)
+void	CSoundDriverFMod::init(IStringMapperProvider *stringMapper, bool forceSoftwareBuffer)
 {
 	_StringMapper = stringMapper;
 
@@ -117,6 +118,9 @@ void	CSoundDriverFMod::init(IStringMapperProvider *stringMapper)
 	// succeed
 	_FModOk= true;
 	
+	// Allocate buffer in software?
+	_ForceSoftwareBuffer= forceSoftwareBuffer;
+
 	// Display Hardware Support
 	int		num2D, num3D, numTotal;
 	FSOUND_GetNumHWChannels(&num2D, &num3D, &numTotal);

@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSimpleSource: implementation of USource
  *
- * $Id: simple_source.cpp,v 1.7 2003/08/21 09:29:47 boucher Exp $
+ * $Id: simple_source.cpp,v 1.8 2004/09/16 16:41:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,9 @@ CSimpleSource::~CSimpleSource()
 {
 	if (_Playing)
 		stop();
+	// Yoyo: security. with prec stop(), should not be needed, but a crash still raise 
+	// in "currentEvent->onEvent();" in audio_mixer_user.cpp
+	CAudioMixerUser::instance()->removeEvents(this);
 }
 
 CSimpleSound	*CSimpleSource::getSimpleSound()

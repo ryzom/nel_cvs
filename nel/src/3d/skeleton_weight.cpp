@@ -1,7 +1,7 @@
 /** \file skeleton_weight.cpp
  * <File description>
  *
- * $Id: skeleton_weight.cpp,v 1.2 2001/03/07 17:41:43 corvazier Exp $
+ * $Id: skeleton_weight.cpp,v 1.3 2001/03/08 16:13:08 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ void CSkeletonWeight::build (const TNodeArray& array)
 
 // ***************************************************************************
 
-void CSkeletonWeight::serial (NLMISC::IStream& f) throw (NLMISC::EStream)
+void CSkeletonWeight::serial (NLMISC::IStream& f)
 {
 	// Serial a header
 	f.serialCheck ((uint32)"TWTS");
@@ -78,7 +78,7 @@ void CSkeletonWeight::serial (NLMISC::IStream& f) throw (NLMISC::EStream)
 
 // ***************************************************************************
 
-void CSkeletonWeight::CNode::serial (NLMISC::IStream& f) throw (NLMISC::EStream)
+void CSkeletonWeight::CNode::serial (NLMISC::IStream& f)
 {
 	// Serial a version number
 	sint version=f.serialVersion (0);

@@ -353,7 +353,6 @@ void CNel_launcherDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialog::OnSize(nType, cx, cy);
 	
-	// TODO: Add your message handler code here
 	if (m_explore.m_hWnd == NULL) return;
 	CRect rect;
 	GetClientRect (&rect);	

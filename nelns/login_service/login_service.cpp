@@ -1,11 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.28 2003/01/07 17:09:55 lecroart Exp $
- *
- * \todo check must say who are the master LS to know who set the shard online/offline etc... (USE an int instead of bool for Online)
- *
- *
+ * $Id: login_service.cpp,v 1.29 2003/03/20 16:17:51 lecroart Exp $
  *
  */
 

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.20 2000/11/30 10:54:58 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.21 2000/12/05 18:13:42 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -298,16 +298,16 @@ void		CTessFace::initTileUv(sint pass, CParamCoord pointCoord, CParamCoord middl
 			uv.V= v;
 			break;
 		case 1: 
-			uv.U= v;
-			uv.V= 1-u;
+			uv.U= 1-v;
+			uv.V= u;
 			break;
 		case 2: 
 			uv.U= 1-u;
 			uv.V= 1-v;
 			break;
 		case 3: 
-			uv.U= 1-v;
-			uv.V= u;
+			uv.U= v;
+			uv.V= 1-u;
 			break;
 	}
 

@@ -1,7 +1,7 @@
 /** \file tile_element.h
  * <File description>
  *
- * $Id: tile_element.h,v 1.2 2000/12/01 15:17:00 corvazier Exp $
+ * $Id: tile_element.h,v 1.3 2000/12/05 18:13:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,10 +36,14 @@ namespace NL3D
 #define NL_TILE_ELM_MASK_ROTATE				0x03
 #define NL_TILE_ELM_OFFSET_ROTATE			0
 #define NL_TILE_ELM_SIZE_ROTATE				2
+#define NL_TILE_ELM_MASK_UVINFO				0x07
+#define NL_TILE_ELM_OFFSET_UVINFO			6
+#define NL_TILE_ELM_SIZE_UVINFO				3
 
 // ***************************************************************************
 /**
  * An Element for CPatchTexture. Temporary! since CPatchTexture should be compressed...
+ * NB: no default ctor => must init all fields.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -47,23 +51,43 @@ namespace NL3D
 class	CTileElement
 {
 private:
-	uint16	Flags;	// Tile Orientation etc...
+	uint16	Flags;	// Tile Orientation, and Tile 256x256 UV offset.
 
 public:
-	/** The three tile ident. 0xFFFF means no Tile for this pass. Tile[0] must be !=0xFFFF.
-	 *
+	/** The three tile ident. 0xFFFF means no Tile for this pass. Tile[0] should be !=0xFFFF.
+	 * Else cross are drawn...
 	 */
 	uint16	Tile[3];
 	
-	/** Set the tile orientation of tile of pass i, to "orient".
+	/** Set the tile orientation of pass i, to "orient".
 	 * orient E [0,3]. The rotation is CCW.
 	 */
 	void	setTileOrient(sint i, uint8 orient);
 	
-	/** Get the tile orientation of tile of pass i.
+	/** Get the tile orientation of pass i.
 	 * orient E [0,3]. The rotation is CCW.
 	 */
 	uint8	getTileOrient(sint i) const;
+
+
+	/** Set the tile 256x256 information of pass 0.
+	 *
+	 * NB: During UV computing, orient is applied first, then tile256x256 uvOffset (only if the tile is 256x256).
+	 * \param is256x256 is this tile a part of a 256x256
+	 * \param uvOff the UV offset of tile 256x256. uvOff E [0,3]. Meanings:
+	 *	  ---------
+	 *	  | 0 | 3 |
+	 *	  |___|___|
+	 *	  |   |   |
+	 *	  | 1 | 2 |
+	 *	  ---------
+	 *
+	 */
+	void	setTileUvInfo(bool is256x256, uint8 uvOff=0);
+	
+	/** Get the tile 256x256 information.
+	 */
+	void	getTileUvInfo(bool &is256x256, uint8 &uvOff) const;
 
 
 	void	serial(NLMISC::IStream &f);

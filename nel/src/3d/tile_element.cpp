@@ -1,7 +1,7 @@
 /** \file tile_element.cpp
  * <File description>
  *
- * $Id: tile_element.cpp,v 1.2 2000/12/01 16:35:34 corvazier Exp $
+ * $Id: tile_element.cpp,v 1.3 2000/12/05 18:13:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,15 +35,36 @@ void	CTileElement::setTileOrient(sint i, uint8 orient)
 {
 	nlassert(i>=0 && i<=2);
 	nlassert(orient>=0 && orient<=3);
-	Flags&= ~(NL_TILE_ELM_MASK_ROTATE<<(NL_TILE_ELM_SIZE_ROTATE*i));
-	Flags|= orient<<(NL_TILE_ELM_SIZE_ROTATE*i+NL_TILE_ELM_OFFSET_ROTATE);
+	sint	where= NL_TILE_ELM_SIZE_ROTATE*i+NL_TILE_ELM_OFFSET_ROTATE;
+	Flags&= ~(NL_TILE_ELM_MASK_ROTATE<<where);
+	Flags|= orient<<where;
 }
 
 
 uint8	CTileElement::getTileOrient(sint i) const
 {
 	nlassert(i>=0 && i<=2);
-	return uint8((Flags>>(NL_TILE_ELM_SIZE_ROTATE*i+NL_TILE_ELM_OFFSET_ROTATE)) & ((1<<NL_TILE_ELM_SIZE_ROTATE)-1));
+	sint	where= NL_TILE_ELM_SIZE_ROTATE*i+NL_TILE_ELM_OFFSET_ROTATE;
+	return uint8 ((Flags>>where) & NL_TILE_ELM_MASK_ROTATE);
+}
+
+
+void	CTileElement::setTileUvInfo(bool is256x256, uint8 uvOff)
+{
+	nlassert(uvOff>=0 && uvOff<=3);
+	sint	where= NL_TILE_ELM_OFFSET_UVINFO;
+	sint	info= uvOff+(is256x256?4:0);
+	Flags&= ~(NL_TILE_ELM_MASK_UVINFO<<where);
+	Flags|= info<<where;
+}
+
+
+void	CTileElement::getTileUvInfo(bool &is256x256, uint8 &uvOff) const
+{
+	sint	where= NL_TILE_ELM_OFFSET_UVINFO;
+	sint	info= ((Flags>>where) & NL_TILE_ELM_MASK_UVINFO);
+	uvOff= info&3;
+	is256x256= (info&4)?true:false;
 }
 
 

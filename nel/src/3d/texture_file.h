@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.11 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: texture_file.h,v 1.12 2004/05/26 17:59:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	CTextureFile() { _AllowDegradation=true; _SupportSharing= true; _MipMapSkipAtLoad=0; }
+	CTextureFile() { _AllowDegradation=true; _SupportSharing= true; _DontStretchNonPOW2Tex = false; _MipMapSkipAtLoad=0; }
 
 	// copy ctor
 	CTextureFile(const CTextureFile &other);
@@ -67,7 +67,9 @@ public:
 	{ 
 		touch(); _FileName = s; 
 		_AllowDegradation=true;
-		_SupportSharing= true; _MipMapSkipAtLoad=0;
+		_SupportSharing= true; 
+		_DontStretchNonPOW2Tex = false;
+		_MipMapSkipAtLoad=0;
 	} 
 
 
@@ -124,18 +126,22 @@ public:
 
 
 	//// Used to fill a bitmap by reading a file, looking in CPath if necessary, and using user_color
-	static void buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload, uint8 mipMapSkip=0);
+	static void buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload, uint8 mipMapSkip=0, bool dontStretchNonPOW2Tex = false);
 
 
 	/// If the file is a DDS texture with mipmap, skip the first skipLod mipmaps (0 by default) at loading
 	void			setMipMapSkipAtLoad(uint8 level);
 	uint8			getMipMapSkipAtLoad() const {return _MipMapSkipAtLoad;}
 
+	// Flag that tell that textures that have dimension that are not power of 2 are snapped to the top-left corner of a power-of-2 sized texture
+	void			setDontStretchNonPOW2Tex(bool dontStretch) { _DontStretchNonPOW2Tex =  true; }
+	bool			getDontStretchNonPOW2Tex() const { return _DontStretchNonPOW2Tex; }
 
 private:
 	std::string _FileName;
 	bool		_AllowDegradation;	// Default is true.
 	bool		_SupportSharing;	// Default is true.
+	bool        _DontStretchNonPOW2Tex;    // Non power of 2 textures are cropped. Default is false
 	uint8		_MipMapSkipAtLoad;	// Default is 0.
 private:
 	void		dupInfo(const CTextureFile &other);

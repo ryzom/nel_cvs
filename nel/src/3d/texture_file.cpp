@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.22 2004/05/10 13:54:50 corvazier Exp $
+ * $Id: texture_file.cpp,v 1.23 2004/05/26 18:00:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NL3D
 
 
 ///==================================================================
-void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload, uint8 mipMapSkip)
+void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload, uint8 mipMapSkip, bool dontStretchNonPOW2Tex)
 {
 	NLMISC::CIFile f;
 	//nldebug(_FileName.c_str());
@@ -166,6 +166,22 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 				}
 			}
 		}
+		if (dontStretchNonPOW2Tex)
+		{
+			uint pow2w = NLMISC::raiseToNextPowerOf2(dest.getWidth());
+			uint pow2h = NLMISC::raiseToNextPowerOf2(dest.getHeight());
+			if (dest.getWidth() != pow2w ||
+				dest.getHeight() != pow2h
+			   )
+			{
+				CBitmap enlargedBitmap;
+				enlargedBitmap.resize(pow2w, pow2h, dest.PixelFormat);
+				// blit src bitmap
+				enlargedBitmap.blit(&dest, 0, 0);
+				// swap them
+				dest.swap(enlargedBitmap);
+			}
+		}
 	}
 	catch(EPathNotFound &e)
 	{
@@ -185,7 +201,7 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 \*------------------------------------------------------------------*/
 void CTextureFile::doGenerate(bool async)
 {
-	buildBitmapFromFile(*this, _FileName, async, _MipMapSkipAtLoad);
+	buildBitmapFromFile(*this, _FileName, async, _MipMapSkipAtLoad, _DontStretchNonPOW2Tex);
 }
 
 
@@ -242,6 +258,7 @@ void CTextureFile::dupInfo(const CTextureFile &other)
 	_AllowDegradation = other._AllowDegradation;
 	_SupportSharing	  = other._SupportSharing;
 	_MipMapSkipAtLoad = other._MipMapSkipAtLoad; 
+	_DontStretchNonPOW2Tex   = other._DontStretchNonPOW2Tex;
 }
 
 

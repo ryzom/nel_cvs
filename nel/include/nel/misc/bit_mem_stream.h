@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.3 2001/10/09 16:36:18 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.4 2001/10/25 12:17:49 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -77,6 +77,9 @@ public:
 
 	/// Transforms the message from input to output or from output to input
 	virtual void	invert();
+
+	/// Clears the message
+	virtual void	clear();
 
 	/// Serialize a buffer
 	virtual void	serialBuffer(uint8 *buf, uint len);
@@ -172,7 +175,7 @@ public:
 
 protected:
 
-	uint			_FreeBits; // 7-6-5-4-3-2-1-8
+	uint			_FreeBits; // From 8 downto 1
 
 };
 

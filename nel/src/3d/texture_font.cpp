@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * TODO: File description
  *
- * $Id: texture_font.cpp,v 1.24 2005/02/22 10:19:12 besson Exp $
+ * $Id: texture_font.cpp,v 1.25 2005/03/25 16:32:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,7 @@ CTextureFont::CTextureFont()
 			SLetterInfo &rLetter = Letters[i][j];
 			rLetter.Char = 0xffff;
 			rLetter.FontGenerator = NULL;
+			rLetter.Size= 0;
 
 			// The less recently used infos
 			if (j < Letters[i].size()-1)
@@ -282,8 +283,9 @@ CTextureFont::SLetterInfo* CTextureFont::getLetterInfo (SLetterKey& k)
 		cat = pLetterToMove->Cat;
 		if (pLetterToMove != Front[cat])
 		{
+			// unlink
+			nlassert(pLetterToMove->Prev);
 			pLetterToMove->Prev->Next = pLetterToMove->Next;
-
 			if (pLetterToMove == Back[cat])
 			{
 				Back[cat] = pLetterToMove->Prev;
@@ -292,6 +294,8 @@ CTextureFont::SLetterInfo* CTextureFont::getLetterInfo (SLetterKey& k)
 			{
 				pLetterToMove->Next->Prev = pLetterToMove->Prev;
 			}
+
+			// link to front
 			pLetterToMove->Prev = NULL;
 			pLetterToMove->Next = Front[cat];
 			Front[cat]->Prev = pLetterToMove;

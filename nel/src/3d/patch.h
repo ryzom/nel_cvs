@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.24 2002/04/03 17:00:40 berenguier Exp $
+ * $Id: patch.h,v 1.25 2002/04/12 15:59:57 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -78,6 +78,8 @@ class	CVegetableManager;
 class	CVegetableInstanceGroup;
 class	CLandscapeVegetableBlock;
 class	CLandscapeVegetableBlockCreateContext;
+class	CPatchDLMContext;
+class	CPatchDLMPointLight;
 
 
 // ***************************************************************************
@@ -752,6 +754,27 @@ public:
 	// @}
 
 
+	/// \name Dynamic Lighting Management
+	// @{
+
+	/** begin Dynamic light Process.
+	 *	reset texture To Black (if needed)
+	 *	Called by CLandscape. _DLMContext must exist
+	 */
+	void		beginDLMLighting();
+	/** Process a Dynamic light, creating the DLMContext if necessary. Increment RefCount. 
+	 *	Called by CLandscape.
+	 */
+	void		processDLMLight(CPatchDLMPointLight &pl);
+	/** end Dynamic light Process, deleting the DLMContext if necessary.
+	 *	compileLighting (if needed)
+	 *	Called by CLandscape. _DLMContext must exist
+	 */
+	void		endDLMLighting();
+
+	// @}
+
+
 // Private part.
 private:
 /*********************************/
@@ -1145,6 +1168,28 @@ private:
 	// @{
 	CPatch		*_ULNearPrec;
 	CPatch		*_ULNearNext;
+	// @}
+
+
+	/// \name Dynamic Lighting Management
+	// @{
+
+	/** The Dynamic LightMap context. 
+	 *	created only when compiled, AND (when in Near OR (when in Far AND touched by pointLight))
+	 *	else NULL.
+	 */
+	CPatchDLMContext	*_DLMContext;
+
+	/** The reference count for DLMContext. Each TileMaterial created add a reference. Each pointLight wich
+	 *	touch the patch too.
+	 */
+	sint				_DLMContextRefCount;
+
+	/// Add a ref count to the DLMContext, creating it if necessary.
+	void				addRefDLMContext();
+	/// Dec a ref count to the DLMContext, deleting it if refCount== 0.
+	void				decRefDLMContext(uint count= 1);
+
 	// @}
 
 

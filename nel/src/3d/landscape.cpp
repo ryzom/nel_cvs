@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.107 2002/04/09 15:32:10 berenguier Exp $
+ * $Id: landscape.cpp,v 1.108 2002/04/12 15:59:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,8 @@
 #include "3d/landscape_vegetable_block.h"
 #include "3d/fast_floor.h"
 #include "3d/tile_vegetable_desc.h"
+#include "3d/texture_dlm.h"
+#include "3d/patchdlm_context.h"
 
 
 #include "3d/vertex_program.h"
@@ -240,6 +242,12 @@ CLandscape::CLandscape() :
 	_ULRootNearPatch= NULL;
 	_ULNearCurrentTessBlockId= 0;
 
+
+	// Dynamic Lighting.
+	_TextureDLM= new CTextureDLM(NL3D_LANDSCAPE_DLM_WIDTH, NL3D_LANDSCAPE_DLM_HEIGHT);
+	_PatchDLMContextList= new CPatchDLMContextList;
+	_DLMMaxAttEnd= 30.f;
+
 }
 // ***************************************************************************
 CLandscape::~CLandscape()
@@ -249,6 +257,12 @@ CLandscape::~CLandscape()
 	// release the VegetableManager.
 	delete _VegetableManager;
 	_VegetableManager= NULL;
+
+	// Dynamic Lighting.
+	// smartPtr delete
+	_TextureDLM= NULL;
+	delete _PatchDLMContextList;
+	_PatchDLMContextList= NULL;
 }
 
 
@@ -1010,8 +1024,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	// Active VB.
 	// ==================
 
-	// Active the good VB, and maybe activate the VertexProgram.
-	_TileVB.activate();
+	// Active the good VB, and maybe activate the VertexProgram N°0.
+	_TileVB.activate(0);
 
 
 	// Render.
@@ -1029,6 +1043,23 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	for(i=0; i<NL3D_MAX_TILE_PASS; i++)
 	{
 		sint	passOrder= RenderOrder[i];
+
+
+		// If VertexShader enabled, and if lightmap or post Add pass, must setup good VertexProgram
+		if(_VertexShaderOk)
+		{
+			if(passOrder == NL3D_TILE_PASS_LIGHTMAP)
+			{
+				// Must activate the vertexProgram to take TexCoord2 to stage0
+				_TileVB.activate(1);
+			}
+			else if(passOrder == NL3D_TILE_PASS_ADD)
+			{
+				// Must re-activate the standard VertexProgram
+				_TileVB.activate(0);
+			}
+		}
+
 
 		// Do add pass???
 		if((passOrder==NL3D_TILE_PASS_ADD) && !doTileAddPass)
@@ -1099,6 +1130,7 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		// Reset the textures (so there is none in Addtive pass or in Lightmap).
 		TileMaterial.setTexture(0, NULL);
 		TileMaterial.setTexture(1, NULL);
+		TileMaterial.setTexture(2, NULL);
 
 
 		// Render All material RdrPass.
@@ -1132,7 +1164,24 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		else if(passOrder==NL3D_TILE_PASS_LIGHTMAP)
 		{
 			// Lightmap Pass.
-			// \todo yoyo: TODO_CLOUD: setup stage0, and setup texcoord generation.
+			/* \todo yoyo: TODO_CLOUD: setup stage2, and setup texcoord generation. COMPLEX because of interaction
+			 with Dynamic LightMap
+			*/
+
+			// Setup the Dynamic Lightmap into stage 0.
+			TileMaterial.setTexture(0, _TextureDLM);
+			// Setup the material envCombine so DynamicLightmap (stage 0) is added to static lightmap.
+			TileMaterial.texEnvOpRGB(1, CMaterial::Add);
+			TileMaterial.texEnvArg0RGB(1, CMaterial::Texture, CMaterial::SrcColor);
+			TileMaterial.texEnvArg1RGB(1, CMaterial::Previous, CMaterial::SrcColor);
+
+			// if vertex shader not used.
+			if(!_VertexShaderOk)
+			{
+				// special setup  such that stage0 takes Uv2.
+				driver->mapTextureStageToUV(0, 2);
+			}
+
 
 			// Render All the lightmaps.
 			for(sint lightRdrPass=0; lightRdrPass<(sint)_TextureNears.size(); lightRdrPass++)
@@ -1153,6 +1202,13 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 				}
 				// Render triangles.
 				drawPassTriArray(TileMaterial);
+			}
+
+			// if vertex shader not used.
+			if(!_VertexShaderOk)
+			{
+				// Reset special stage/UV setup to normal behavior
+				driver->mapTextureStageToUV(0, 0);
 			}
 		}
 		else
@@ -1202,8 +1258,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	// Active VB.
 	// ==================
 
-	// Active the good VB, and maybe activate the VertexProgram.
-	_Far0VB.activate();
+	// Active the good VB, and maybe activate the std VertexProgram.
+	_Far0VB.activate(0);
 
 
 	// Render.
@@ -1247,8 +1303,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	// Active VB.
 	// ==================
 
-	// Active the good VB, and maybe activate the VertexProgram.
-	_Far1VB.activate();
+	// Active the good VB, and maybe activate the std VertexProgram.
+	_Far1VB.activate(0);
 
 
 	// Render
@@ -3109,6 +3165,121 @@ void			CLandscape::updateLightingTextureNear(float ratio)
 
 }
 
+
+// ***************************************************************************
+void			CLandscape::computeDynamicLighting(const std::vector<CPointLight*>	&pls)
+{
+	uint	i;
+
+	// Run all DLM Context create, to init Lighting process.
+	//===============
+	CPatchDLMContext	*ctxPtr= _PatchDLMContextList->begin();
+	while(ctxPtr!=NULL)
+	{
+		// init lighting process, do differential from last computeDynamicLighting()
+		ctxPtr->getPatch()->beginDLMLighting();
+
+		// next
+		ctxPtr= (CPatchDLMContext*)ctxPtr->Next;
+	}
+
+
+	// compile all pointLights
+	//===============
+	static vector<CPatchDLMPointLight>	dlmPls;
+	dlmPls.resize(pls.size());
+	for(i=0;i<dlmPls.size();i++)
+	{
+		// compile the pl.
+		dlmPls[i].compile(*pls[i], _DLMMaxAttEnd);
+	}
+
+
+	// For all pointLight, intersect patch.
+	//===============
+	for(i=0;i<dlmPls.size();i++)
+	{
+		CPatchDLMPointLight	&pl= dlmPls[i];
+
+		// search patchs of interest: those which interssect the pointLight
+		_PatchQuadGrid.clearSelection();
+		_PatchQuadGrid.select(pl.BBox.getMin(), pl.BBox.getMax());
+		CQuadGrid<CPatchIdent>::CIterator	it;
+
+		// for each patch, light it with the light.
+		CZone	*lastZone= NULL;
+		sint	lastZoneId= -1;
+		for(it= _PatchQuadGrid.begin(); it!= _PatchQuadGrid.end(); it++)
+		{
+			uint	zoneId= (*it).ZoneId;
+			uint	patchId= (*it).PatchId;
+
+			// find zone, possibly look in lastZone cache
+			CZone	*zone;
+			if((sint)zoneId==lastZoneId)
+			{
+				// just get cache.
+				zone= lastZone;
+			}
+			else
+			{
+				// search in map
+				std::map<uint16, CZone*>::const_iterator	zoneit= Zones.find(zoneId);
+				if(zoneit!=Zones.end())
+					zone= (*zoneit).second;
+				else
+					zone= NULL;
+				// bkup cahche
+				lastZone= zone;
+				lastZoneId= zoneId;
+			}
+
+			// if the zone exist.
+			if(zone)
+			{
+				uint	N= zone->getNumPatchs();
+				// patch must exist in the zone.
+				nlassert(patchId>=0);
+				nlassert(patchId<N);
+				// get the patch
+				const CPatch	*pa= const_cast<const CZone*>(zone)->getPatch(patchId);
+
+				// More precise clipping: 
+				if( pa->getBSphere().intersect( pl.BSphere ) )
+				{
+					// Ok, light the patch with this spotLight
+					const_cast<CPatch*>(pa)->processDLMLight(pl);
+				}
+			}
+		}
+
+	}
+
+
+	// Run all DLM Context create, to end Lighting process.
+	//===============
+	ctxPtr= _PatchDLMContextList->begin();
+	while(ctxPtr!=NULL)
+	{
+		// get enxt now, because the DLM itself may be deleted in endDLMLighting()
+		CPatchDLMContext	*next= (CPatchDLMContext*)ctxPtr->Next;
+
+		// init lighting process, do differential from last computeDynamicLighting()
+		ctxPtr->getPatch()->endDLMLighting();
+
+		// next
+		ctxPtr= next;
+	}
+
+}
+
+
+// ***************************************************************************
+void			CLandscape::setDynamicLightingMaxAttEnd(float maxAttEnd)
+{
+	maxAttEnd= max(maxAttEnd, 1.f);
+	_DLMMaxAttEnd= maxAttEnd;
+}
 
 
 } // NL3D

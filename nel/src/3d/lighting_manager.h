@@ -1,7 +1,7 @@
 /** \file lighting_manager.h
  * <File description>
  *
- * $Id: lighting_manager.h,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: lighting_manager.h,v 1.2 2002/04/12 15:59:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,8 +117,13 @@ public:
 	void		clearDynamicLights();
 	/** temp add a dynamic light to the manager. light is added to the _LightQuadGrid.
 	 *	This method calls CTransform::resetLighting() for all models around the light.
+	 *
+	 *	Additionaly light are added to a list (a vector of pointer), see getDynamicLightList()
 	 */
 	void		addDynamicLight(CPointLight *light);
+	/** retrieve (for this pass only) list of all pointLights visible in scene
+	 */
+	const std::vector<CPointLight*>	&getAllDynamicLightList() const {return _DynamicLightList;}
 	// @}
 
 
@@ -172,7 +177,8 @@ private:
 	CQuadGrid<CPointLightInfo>	_LightQuadGrid[NL3D_QUADGRID_LIGHT_NUM_LEVEL];
 	// This is the radius a light can't override to fit in a quadGrid
 	float						_LightQuadGridRadiusLimit[NL3D_QUADGRID_LIGHT_NUM_LEVEL];
-
+	// List of dynamic lights for a render pass
+	std::vector<CPointLight*>	_DynamicLightList;
 
 	/// \name Parameters.
 	// @{

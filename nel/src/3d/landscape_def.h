@@ -1,7 +1,7 @@
 /** \file landscape_def.h
  * Global Definitions for Landscape
  *
- * $Id: landscape_def.h,v 1.7 2002/03/18 14:45:29 berenguier Exp $
+ * $Id: landscape_def.h,v 1.8 2002/04/12 15:59:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,12 @@ class	IDriver;
 #define	NL3D_PATCH_TILE_AREA	4.f
 // Suppose a constant size for a tile of 2m*2m. approx radius is 1m.
 #define	NL3D_PATCH_TILE_RADIUS	1.f
+
+
+// ***************************************************************************
+// For Landscape dynamic lighting, size of the dynamic lightmap.
+#define	NL3D_LANDSCAPE_DLM_WIDTH	512
+#define	NL3D_LANDSCAPE_DLM_HEIGHT	256
 
 
 // ***************************************************************************

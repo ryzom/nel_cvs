@@ -1,7 +1,7 @@
 /** \file lighting_manager.cpp
  * <File description>
  *
- * $Id: lighting_manager.cpp,v 1.6 2002/03/04 19:00:34 berenguier Exp $
+ * $Id: lighting_manager.cpp,v 1.7 2002/04/12 15:59:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,6 +135,9 @@ void		CLightingManager::clearDynamicLights()
 		// clear all the lights in the quadGrid.
 		_LightQuadGrid[i].clear();
 	}
+
+	// clear the list.
+	_DynamicLightList.clear();
 }
 
 // ***************************************************************************
@@ -195,6 +198,11 @@ void		CLightingManager::addDynamicLight(CPointLight *light)
 		// next.
 		itModel++;
 	}
+
+
+	// insert the light in the list.
+	//----------
+	_DynamicLightList.push_back(light);
 
 }
 

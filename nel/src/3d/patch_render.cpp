@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.10 2002/03/18 14:45:29 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.11 2002/04/12 15:59:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1095,6 +1095,7 @@ inline void		CPatch::fillTileVertexVB(CTessNearVertex *pVert)
 		// Set Uvs.
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff2)= pVert->PUv2;
 	}
 	else
 	{
@@ -1105,6 +1106,8 @@ inline void		CPatch::fillTileVertexVB(CTessNearVertex *pVert)
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
 		// v[9]== Tex1
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
+		// v[13]== Tex2
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff2)= pVert->PUv2;
 
 		// v[10]== GeomInfo.
 		static CUV	geomInfo;

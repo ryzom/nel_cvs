@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.h
  * <File description>
  *
- * $Id: landscapevb_allocator.h,v 1.2 2001/10/02 08:46:59 berenguier Exp $
+ * $Id: landscapevb_allocator.h,v 1.3 2002/04/12 15:59:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,7 @@ class	IDriver;
 #define	NL3D_LANDSCAPE_VPPOS_STARTPOS		(CVertexBuffer::Position)
 #define	NL3D_LANDSCAPE_VPPOS_TEX0			(CVertexBuffer::TexCoord0)
 #define	NL3D_LANDSCAPE_VPPOS_TEX1			(CVertexBuffer::TexCoord1)
+#define	NL3D_LANDSCAPE_VPPOS_TEX2			(CVertexBuffer::TexCoord5)
 #define	NL3D_LANDSCAPE_VPPOS_GEOMINFO		(CVertexBuffer::TexCoord2)
 #define	NL3D_LANDSCAPE_VPPOS_DELTAPOS		(CVertexBuffer::TexCoord3)
 #define	NL3D_LANDSCAPE_VPPOS_ALPHAINFO		(CVertexBuffer::TexCoord4)
@@ -109,9 +110,10 @@ public:
 	bool			bufferLocked() const {return _BufferLocked;}
 
 	/** activate the VB or the VBHard in Driver setuped. nlassert if driver is NULL or if buffer is locked.
-	 * If vertexProgram possible, activate the vertexProgram too.
+	 * If vertexProgram possible, activate the vertexProgram too. 
+	 * Give a vertexProgram Id to activate. Always 0, but 1 For tile Lightmap Pass.
 	 */
-	void			activate();
+	void			activate(uint vpId);
 	// @}
 
 
@@ -155,8 +157,9 @@ private:
 
 	/// \name Vertex Program mgt .
 	// @{
+	enum	{MaxVertexProgram= 2,};
 	// Vertex Program , NULL if not enabled.
-	CVertexProgram		*_VertexProgram;
+	CVertexProgram		*_VertexProgram[MaxVertexProgram];
 	void				deleteVertexProgram();
 	void				setupVBFormatAndVertexProgram(bool withVertexProgram);
 	// @}

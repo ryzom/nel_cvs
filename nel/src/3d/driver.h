@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.31 2002/03/28 10:48:40 vizerie Exp $
+ * $Id: driver.h,v 1.32 2002/04/12 15:59:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -391,6 +391,20 @@ public:
 	 * \see setupVertexMode, activeVertexProgram
 	 */
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)=0;
+
+
+	/** Say what Texture Stage use what UV coord. 
+	 *	by default activeVertexBuffer*() methods map all stage i to UV i. You can change this behavior, 
+	 *	after calling activeVertexBuffer*(), by using this method.
+	 *
+	 *	eg: mapTextureStageToUV(0,2) will force the 0th texture stage to use the 2th UV.
+	 *
+	 *	Warning! This DOESN'T work with VertexProgram enabled!! (assert)
+	 *
+	 *	Warning!: some CMaterial Shader may change automatically this behavior too when setupMaterial() 
+	 *	(and so render*()) is called. But Normal shader doesn't do it.
+	 */
+	virtual	void			mapTextureStageToUV(uint stage, uint uv)=0;
 
 
 	/** render a block of primitive with previously setuped VertexBuffer / Matrixes.

@@ -1,7 +1,7 @@
 /** \file patch_lightmap.cpp
  * Patch implementation related to lightmaping (texture Near/Far)
  *
- * $Id: patch_lightmap.cpp,v 1.3 2002/04/03 17:00:40 berenguier Exp $
+ * $Id: patch_lightmap.cpp,v 1.4 2002/04/12 15:59:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "3d/vegetable_manager.h"
 #include "3d/fast_floor.h"
 #include "3d/light_influence_interpolator.h"
+#include "3d/patchdlm_context.h"
 using	namespace	std;
 using	namespace	NLMISC;
 
@@ -2015,8 +2016,95 @@ uint CPatch::updateTessBlockLighting(uint numTb)
 }
 
 
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
 
 
+// ***************************************************************************
+void				CPatch::addRefDLMContext()
+{
+	// the patch must be compiled.
+	nlassert(Zone);
+
+	// if 0, create the context.
+	if(_DLMContextRefCount==0)
+	{
+		nlassert(_DLMContext==NULL);
+		_DLMContext= new CPatchDLMContext;
+		// init now the context.
+		_DLMContext->generate(this, getLandscape()->getTextureDLM(), getLandscape()->getPatchDLMContextList());
+	}
+
+	// incRef.
+	_DLMContextRefCount++;
+}
+
+// ***************************************************************************
+void				CPatch::decRefDLMContext(uint count)
+{
+	// the patch must be compiled.
+	nlassert(Zone);
+	nlassert(_DLMContextRefCount>0);
+
+	// dec Ref.
+	_DLMContextRefCount-= count;
+	nlassert(_DLMContextRefCount>=0);
+
+	// If 0, delete the context.
+	if(_DLMContextRefCount==0)
+	{
+		delete _DLMContext;
+		_DLMContext= NULL;
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::beginDLMLighting()
+{
+	nlassert(_DLMContext);
+
+	// Must bkup prec pointLightCount in OldPointLightCount, and reset CurPointLightCount
+	_DLMContext->OldPointLightCount= _DLMContext->CurPointLightCount;
+	_DLMContext->CurPointLightCount= 0;
+
+	// clear lighting, only if patch is visible
+	if(!RenderClipped)
+		// NB: no-op if src is already full black.
+		_DLMContext->clearLighting();
+
+}
+
+// ***************************************************************************
+void		CPatch::processDLMLight(CPatchDLMPointLight &pl)
+{
+	// add reference to currentLight, creating DLMContext if needed
+	addRefDLMContext();
+
+	// add curLight counter
+	_DLMContext->CurPointLightCount++;
+
+	// compute lighting, only if patch is visible
+	if(!RenderClipped)
+		_DLMContext->addPointLightInfluence(pl);
+}
+
+// ***************************************************************************
+void		CPatch::endDLMLighting()
+{
+	nlassert(_DLMContext);
+
+	// compile the lighting, only if patch is visible
+	if(!RenderClipped)
+		// NB: no-op if both src and dst are already full black.
+		_DLMContext->compileLighting();
+
+	// delete reference from old pointLight influences, at prec render() pass. _DLMContext may be deleted here,
+	// if no more lights use it, and if the patch is not in Near.
+	decRefDLMContext(_DLMContext->OldPointLightCount);
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.22 2002/04/03 17:00:39 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.23 2002/04/12 15:59:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,20 +119,30 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 	trav->getDriver()->setupModelMatrix(m);
 
 
-	// Time Mgt.
+	// Scene Time/Lighting Mgt.
 	CScene		*scene= dynamic_cast<CScene*>(landModel->_OwnerMot);
 	if(scene)
 	{
 		// For vegetable, set the animation Time.
 		landModel->Landscape.setVegetableTime(scene->getCurrentTime());
+
 		// updateLighting
 		landModel->Landscape.updateLighting(scene->getCurrentTime());
-	}
-	// For vegetable, set the lighting if SceneLighting enabled
-	if(scene->isLightingSystemEnabled())
-	{
-		landModel->Landscape.setupVegetableLighting(scene->getSunAmbient(), scene->getSunDiffuse(), 
-			scene->getSunDirection());
+
+		// if SceneLighting enabled
+		if(scene->isLightingSystemEnabled())
+		{
+			// For vegetable, set the lighting 
+			landModel->Landscape.setupVegetableLighting(scene->getSunAmbient(), scene->getSunDiffuse(), 
+				scene->getSunDirection());
+
+			// Landscape dynamic lighting: get all pointLights from scene and light landscape with them.
+			IBaseLightObs	*lightObs= static_cast<IBaseLightObs*>(landModel->_LightObs);
+			// current visible Dynamic light list are registered in LightTrav::LightingManager
+			CLightTrav		*lightTrav= (CLightTrav*)lightObs->Trav;
+			// Get all dynamic light list, and light landscape with it.
+			landModel->Landscape.computeDynamicLighting(lightTrav->LightingManager.getAllDynamicLightList());
+		}
 	}
 
 	// First, refine.

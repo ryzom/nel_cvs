@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.34 2002/04/03 17:00:39 berenguier Exp $
+ * $Id: landscape.h,v 1.35 2002/04/12 15:59:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,8 @@ class	CVegetable;
 class	CTileVegetableDesc;
 class	CScene;
 class	CTextureFar;
+class	CTextureDLM;
+class	CPatchDLMContextList;
 
 using NLMISC::Exception;
 using NLMISC::CTriangle;
@@ -517,6 +519,26 @@ public:
 	// @}
 
 
+	/// \name Dynamic Lighting management
+	// @{
+
+	/** Compute dynamic lightmaps
+	 *	\param pls list of pointLigths to influence landscape
+	 */
+	void			computeDynamicLighting(const std::vector<CPointLight*>	&pls);
+
+	/** Set PointLight Max Attenuation End landscape support. Every pointLight AttEnd is clamped to this value.
+	 *	Default is 30.f.
+	 */
+	void			setDynamicLightingMaxAttEnd(float maxAttEnd);
+
+	/** see setDynamicLightingMaxAttEnd()
+	 */
+	float			getDynamicLightingMaxAttEnd() const {return _DLMMaxAttEnd;}
+
+	// @}
+
+
 
 // ********************************
 private:
@@ -871,6 +893,21 @@ private:
 	void			updateLightingTextureNear(float ratio);
 
 
+	// @}
+
+
+	/// \name DynamicLighting management
+	// @{
+	/// The dynamic lightmap Texture.
+	NLMISC::CSmartPtr<ITexture>	_TextureDLM;
+	/// for CPatch.
+	CTextureDLM					*getTextureDLM() const {return (CTextureDLM*)(ITexture*)_TextureDLM;}
+	/// List of DLM Context.
+	CPatchDLMContextList		*_PatchDLMContextList;
+	/// for CPatch.
+	CPatchDLMContextList		*getPatchDLMContextList() const {return _PatchDLMContextList;}
+	/// Max AttEnd
+	float						_DLMMaxAttEnd;
 	// @}
 
 };

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.82 2002/04/09 15:32:10 berenguier Exp $
+ * $Id: patch.cpp,v 1.83 2002/04/12 15:59:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,8 @@
 #include "3d/vegetable_manager.h"
 #include "3d/fast_floor.h"
 #include "3d/light_influence_interpolator.h"
+#include "3d/patchdlm_context.h"
+
 using	namespace	std;
 using	namespace	NLMISC;
 
@@ -90,6 +92,10 @@ CPatch::CPatch()
 	// Init UL circular list to NULL (not compiled)
 	_ULNearPrec= NULL;
 	_ULNearNext= NULL;
+
+	// Dynamic LightMap
+	_DLMContext= NULL;
+	_DLMContextRefCount= 0;
 }
 // ***************************************************************************
 CPatch::~CPatch()
@@ -146,7 +152,7 @@ void			CPatch::release()
 	// for vegetable manager, and for updateLighting
 	Zone= NULL;
 
-	// uncompile: reset circular list ot NULL.
+	// uncompile: reset UpdateLighting circular list to NULL.
 	if(_ULNearPrec!= NULL)
 	{
 		// verify the patch is correctly unlinked from any ciruclar list.
@@ -155,6 +161,12 @@ void			CPatch::release()
 	_ULNearPrec= NULL;
 	_ULNearNext= NULL;
 
+	// DynamciLightMap: release the _DLMContext if still exist.
+	if(_DLMContext)
+		delete _DLMContext;
+	// reset
+	_DLMContext= NULL;
+	_DLMContextRefCount= 0;
 }
 
 
@@ -924,6 +936,11 @@ void			CPatch::appendTileMaterialToRenderList(CTileMaterial *tm)
 	{
 		createVegetableBlock(numtb, tm->TileS, tm->TileT);
 	}
+
+	// DynamicLighting. When in near, must compute the context, to have good UVs.
+	//==========
+	// inc ref to the context, creating it if needed.
+	addRefDLMContext();
 }
 // ***************************************************************************
 void			CPatch::removeTileMaterialFromRenderList(CTileMaterial *tm)
@@ -947,6 +964,11 @@ void			CPatch::removeTileMaterialFromRenderList(CTileMaterial *tm)
 
 	// Destroy if necessary the TessBlocks.
 	decRefTessBlocks();
+
+	// DynamicLighting. When in near, must compute the context, to have good UVs.
+	//==========
+	// dec ref the context, deleting it if needed.
+	decRefDLMContext();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.13 2002/03/07 15:39:08 berenguier Exp $
+ * $Id: tessellation.h,v 1.14 2002/04/12 15:59:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,6 +135,8 @@ struct	CTessNearVertex : public CTessNodeList
 	CTessVertex		*Src;		// The src vertex to copy Pos.
 	CUV				PUv0;
 	CUV				PUv1;
+	// Uv For dynamic lightmap
+	CUV				PUv2;
 
 public:
 	// Init this near vertex UVs, at middle of a and b.
@@ -142,6 +144,7 @@ public:
 	{
 		PUv0= (a.PUv0+b.PUv0)*0.5;
 		PUv1= (a.PUv1+b.PUv1)*0.5;
+		PUv2= (a.PUv2+b.PUv2)*0.5;
 	}
 };
 
@@ -389,6 +392,8 @@ private:
 	void	initTileUvRGBA(sint pass, bool alpha, CParamCoord pointCoord, CParamCoord middleCoord, CUV &uv);
 	// The same, but for the lightmap pass.
 	void	initTileUvLightmap(CParamCoord pointCoord, CParamCoord middleCoord, CUV &uv);
+	// The same, but for the dynamic lightmap (DLM) pass.
+	void	initTileUvDLM(CParamCoord pointCoord, CUV &uv);
 
 	// Far Vertices: update info (ptr, and PCoord).
 	void			updateNearFarVertices();

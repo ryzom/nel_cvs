@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.7 2002/03/18 14:45:29 berenguier Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.8 2002/04/12 15:59:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,7 +61,8 @@ CLandscapeVBAllocator::CLandscapeVBAllocator(TType type)
 	_VBHardOk= false;
 	_BufferLocked= false;
 
-	_VertexProgram= NULL;
+	for(uint i=0;i<MaxVertexProgram;i++)
+		_VertexProgram[i]= NULL;
 }
 
 // ***************************************************************************
@@ -206,11 +207,11 @@ void			CLandscapeVBAllocator::lockBuffer(CFarVertexBufferInfo &farVB)
 	if(_VBHard)
 	{
 		void	*data= _VBHard->lock();
-		farVB.setupVertexBufferHard(*_VBHard, data, _VertexProgram!=NULL );
+		farVB.setupVertexBufferHard(*_VBHard, data, _VertexProgram[0]!=NULL );
 	}
 	else
 	{
-		farVB.setupVertexBuffer(_VB, _VertexProgram!=NULL );
+		farVB.setupVertexBuffer(_VB, _VertexProgram[0]!=NULL );
 	}
 
 	_BufferLocked= true;
@@ -225,11 +226,11 @@ void			CLandscapeVBAllocator::lockBuffer(CNearVertexBufferInfo &tileVB)
 	if(_VBHard)
 	{
 		void	*data= _VBHard->lock();
-		tileVB.setupVertexBufferHard(*_VBHard, data, _VertexProgram!=NULL );
+		tileVB.setupVertexBufferHard(*_VBHard, data, _VertexProgram[0]!=NULL );
 	}
 	else
 	{
-		tileVB.setupVertexBuffer(_VB, _VertexProgram!=NULL );
+		tileVB.setupVertexBuffer(_VB, _VertexProgram[0]!=NULL );
 	}
 
 	_BufferLocked= true;
@@ -254,16 +255,16 @@ void			CLandscapeVBAllocator::unlockBuffer()
 
 
 // ***************************************************************************
-void			CLandscapeVBAllocator::activate()
+void			CLandscapeVBAllocator::activate(uint vpId)
 {
 	nlassert(_Driver);
 	nlassert(!_BufferLocked);
 
 	// If enabled, activate Vertex program first.
-	if(_VertexProgram)
+	if(_VertexProgram[vpId])
 	{
-		//nlinfo("\nSTARTVP\n%s\nENDVP\n", _VertexProgram->getProgram().c_str());
-		nlverify(_Driver->activeVertexProgram(_VertexProgram));
+		//nlinfo("\nSTARTVP\n%s\nENDVP\n", _VertexProgram[vpId]->getProgram().c_str());
+		nlverify(_Driver->activeVertexProgram(_VertexProgram[vpId]));
 	}
 
 	// Activate VB.
@@ -359,6 +360,7 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 	v[0] == StartPos.	Hence, It is the SplitPoint of the father face.
 	v[8] == Tex0 (xy) 
 	v[9] == Tex1 (xy) (just for Tile mode).
+	v[13] == Tex2 (xy) (just for Tile mode).
 
 	Geomorph:
 	v[10] == { GeomFactor, MaxNearLimit }
@@ -533,7 +535,7 @@ const char* NL3D_LandscapeFar1EndProgram=
 // ***********************
 /*
 	Tile:
-		just project, copy uv 0 and uv1, and set RGBA to white.
+		just project, copy uv0, uv1, and set RGBA to white.
 */
 // ***********************
 const char* NL3D_LandscapeTileEndProgram=
@@ -549,16 +551,31 @@ const char* NL3D_LandscapeTileEndProgram=
 	END																					\n\
 ";
 
-
+/// Same version but write Tex0 to take uv2, ie v[13], for lightmap pass
+const char* NL3D_LandscapeTileLightMapEndProgram=
+"	# compute in Projection space														\n\
+	DP4 o[HPOS].x, c[0], R1;															\n\
+	DP4 o[HPOS].y, c[1], R1;															\n\
+	DP4 o[HPOS].z, c[2], R1;															\n\
+	DP4 o[HPOS].w, c[3], R1;															\n\
+	MOV o[TEX0].xy, v[13];																\n\
+	MOV o[TEX1].xy, v[9];																\n\
+	MOV o[COL0].xyzw, c[4].yyyy;	# col.RGBA= (1,1,1,1)								\n\
+	DP4	o[FOGC].x, c[10], -R1;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
+	END																					\n\
+";
 
 
 // ***************************************************************************
 void			CLandscapeVBAllocator::deleteVertexProgram()
 {
-	if(_VertexProgram)
+	for(uint i=0;i<MaxVertexProgram;i++)
 	{
-		delete _VertexProgram;
-		_VertexProgram= NULL;
+		if(_VertexProgram[i])
+		{
+			delete _VertexProgram[i];
+			_VertexProgram[i]= NULL;
+		}
 	}
 }
 
@@ -577,8 +594,8 @@ void			CLandscapeVBAllocator::setupVBFormatAndVertexProgram(bool withVertexProgr
 			// v3f/t2f/c4ub
 			_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::PrimaryColorFlag );
 		else
-			// v3f/t2f0/t2f1
-			_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::TexCoord1Flag);
+			// v3f/t2f0/t2f1/t2f2
+			_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::TexCoord1Flag | CVertexBuffer::TexCoord2Flag);
 	}
 	else
 	{
@@ -597,7 +614,7 @@ void			CLandscapeVBAllocator::setupVBFormatAndVertexProgram(bool withVertexProgr
 			// Init the Vertex Program.
 			string	vpgram= string(NL3D_LandscapeCommonStartProgram) + 
 				string(NL3D_LandscapeFar0EndProgram);
-			_VertexProgram= new CVertexProgram(vpgram.c_str());
+			_VertexProgram[0]= new CVertexProgram(vpgram.c_str());
 		}
 		else if(_Type==Far1)
 		{
@@ -613,7 +630,7 @@ void			CLandscapeVBAllocator::setupVBFormatAndVertexProgram(bool withVertexProgr
 			// Init the Vertex Program.
 			string	vpgram= string(NL3D_LandscapeCommonStartProgram) + 
 				string(NL3D_LandscapeFar1EndProgram);
-			_VertexProgram= new CVertexProgram(vpgram.c_str());
+			_VertexProgram[0]= new CVertexProgram(vpgram.c_str());
 		}
 		else
 		{
@@ -622,6 +639,7 @@ void			CLandscapeVBAllocator::setupVBFormatAndVertexProgram(bool withVertexProgr
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_STARTPOS,	CVertexBuffer::Float3);	// v[0]= StartPos.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX0,		CVertexBuffer::Float2);	// v[8]= Tex0.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX1,		CVertexBuffer::Float2);	// v[9]= Tex1.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX2,		CVertexBuffer::Float2);	// v[13]= Tex2.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_GEOMINFO,	CVertexBuffer::Float2);	// v[10]= GeomInfos.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_DELTAPOS,	CVertexBuffer::Float3);	// v[11]= EndPos-StartPos.
 			_VB.initEx();
@@ -629,7 +647,12 @@ void			CLandscapeVBAllocator::setupVBFormatAndVertexProgram(bool withVertexProgr
 			// Init the Vertex Program.
 			string	vpgram= string(NL3D_LandscapeCommonStartProgram) + 
 				string(NL3D_LandscapeTileEndProgram);
-			_VertexProgram= new CVertexProgram(vpgram.c_str());
+			_VertexProgram[0]= new CVertexProgram(vpgram.c_str());
+
+			// Init the Vertex Program for lightmap pass
+			vpgram= string(NL3D_LandscapeCommonStartProgram) + 
+				string(NL3D_LandscapeTileLightMapEndProgram);
+			_VertexProgram[1]= new CVertexProgram(vpgram.c_str());
 		}
 	}
 

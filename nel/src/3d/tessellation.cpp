@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.60 2002/04/09 15:32:11 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.61 2002/04/12 15:59:57 berenguier Exp $
  *
  */
 
@@ -32,6 +32,7 @@
 #include "nel/misc/common.h"
 #include "3d/landscape_profile.h"
 #include "3d/landscape.h"
+#include "3d/patchdlm_context.h"
 using namespace NLMISC;
 using namespace std;
 
@@ -644,6 +645,26 @@ void		CTessFace::initTileUvLightmap(CParamCoord pointCoord, CParamCoord middle, 
 
 
 // ***************************************************************************
+void		CTessFace::initTileUvDLM(CParamCoord pointCoord, CUV &uv)
+{
+	// get the dlm context from the patch.
+	CPatchDLMContext	*dlmCtx= Patch->_DLMContext;
+	// mmust exist at creation of the tile.
+	nlassert(dlmCtx);
+
+	// get coord in 0..1 range, along the patch.
+	uv.U= pointCoord.getS();
+	uv.V= pointCoord.getT();
+
+	// ScaleBias according to the context.
+	uv.U*= dlmCtx->DLMUScale;
+	uv.V*= dlmCtx->DLMVScale;
+	uv.U+= dlmCtx->DLMUBias;
+	uv.V+= dlmCtx->DLMVBias;
+}
+
+
+// ***************************************************************************
 void		CTessFace::computeTileMaterial()
 {
 	// 0. Compute TileId.
@@ -727,6 +748,8 @@ void		CTessFace::computeTileMaterial()
 
 	// Init LightMap UV, in RGB0 pass, UV1..
 	initTileUvLightmap(PVBase, middle, TileFaces[NL3D_TILE_PASS_RGB0]->VBase->PUv1);
+	// Init DLM Uv, in RGB0 pass, UV2.
+	initTileUvDLM(PVBase, TileFaces[NL3D_TILE_PASS_RGB0]->VBase->PUv2);
 
 	// Init UV RGBA, for all pass (but lightmap).
 	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
@@ -769,6 +792,9 @@ void		CTessFace::computeTileMaterial()
 		// Init LightMap UV, in UvPass 0, UV1..
 		initTileUvLightmap(PVLeft, middle, TileFaces[NL3D_TILE_PASS_RGB0]->VLeft->PUv1);
 		initTileUvLightmap(PVRight, middle, TileFaces[NL3D_TILE_PASS_RGB0]->VRight->PUv1);
+		// Init DLM Uv, in RGB0 pass, UV2.
+		initTileUvDLM(PVLeft, TileFaces[NL3D_TILE_PASS_RGB0]->VLeft->PUv2);
+		initTileUvDLM(PVRight, TileFaces[NL3D_TILE_PASS_RGB0]->VRight->PUv2);
 
 		// Init UV RGBA!
 		for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)

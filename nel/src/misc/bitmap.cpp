@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.9 2001/08/15 12:19:21 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.10 2001/08/28 09:36:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2103,7 +2103,10 @@ bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
 
 	// check for dxtc use
 
-	const bool useDXTC =  PixelFormat == DXTC1 || PixelFormat == DXTC1Alpha || PixelFormat == DXTC3 || PixelFormat ==	DXTC5 ;
+	const bool useDXTC   =  PixelFormat == DXTC1 || PixelFormat == DXTC1Alpha || PixelFormat == DXTC3 || PixelFormat ==	DXTC5 ;
+
+	// number of bits for a 4x4 pix block
+	const uint dxtcNumBits  =  PixelFormat == DXTC1 || PixelFormat == DXTC1Alpha ? 16 : 64;
 	
 
 	if (useDXTC)
@@ -2182,7 +2185,7 @@ bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
 	
 
 	// bytes per pixs is for either one pixel or 16 (a 4x4 block in DXTC)
-	const uint bytePerPixs = (( useDXTC ? 16 : 1 ) *  bitPerPixels[PixelFormat]) >> 3 /* divide by 8 to get the number of bytes */ ;
+	const uint bytePerPixs = ( useDXTC ? dxtcNumBits : bitPerPixels[PixelFormat] ) >> 3 /* divide by 8 to get the number of bytes */ ;
 
 	// size to go to the next line in the destination
 	const uint destStride = _Width * bytePerPixs ;

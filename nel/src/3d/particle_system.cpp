@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.38 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: particle_system.cpp,v 1.39 2001/11/23 18:48:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/nelu.h"
 #include "3d/ps_util.h"
 #include "3d/ps_particle.h"
+#include "3d/ps_sound.h"
 #include "3d/particle_system_shape.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/file.h"
@@ -91,6 +92,46 @@ CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
 	for (uint k = 0; k < MaxPSUserParam; ++k) _UserParam[k] = 0;
 }
 
+
+
+/// immediatly shut down all the sound in this system
+void CParticleSystem::stopSound()
+{
+	for (uint k = 0; k < this->getNbProcess(); ++k)
+	{
+		CPSLocated *psl = dynamic_cast<NL3D::CPSLocated *>(this->getProcess(k));
+		if (psl)
+		{
+			for (uint l = 0; l < psl->getNbBoundObjects(); ++l)
+			{
+				if (psl->getBoundObject(l)->getType() == PSSound)
+				{
+					static_cast<CPSSound *>(psl->getBoundObject(l))->stopSound();
+
+				}
+			}
+		}
+	}	
+}
+
+
+void CParticleSystem::reactivateSound()
+{
+	for (uint k = 0; k < this->getNbProcess(); ++k)
+	{
+		CPSLocated *psl = dynamic_cast<NL3D::CPSLocated *>(this->getProcess(k));
+		if (psl)
+		{
+			for (uint l = 0; l < psl->getNbBoundObjects(); ++l)
+			{
+				if (psl->getBoundObject(l)->getType() == NL3D::PSSound)
+				{
+					static_cast<CPSSound *>(psl->getBoundObject(l))->reactivateSound();
+				}
+			}
+		}
+	}
+}
 
 
 void CParticleSystem::notifyMaxNumFacesChanged(void)

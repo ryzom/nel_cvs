@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.20 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: particle_system.h,v 1.21 2001/11/23 18:48:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -539,7 +539,13 @@ public:
 		static UPSSoundServer *		getSoundServer(void)
 		{
 			return _SoundServer;
-		}	
+		}
+
+		/// immediatly shut down all the sound in this system
+		void stopSound();
+
+		/// reactivate the sound in the system
+		void reactivateSound();
 
 		// @}
 	

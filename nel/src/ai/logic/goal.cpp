@@ -72,14 +72,29 @@ namespace NLAILOGIC
 		}
 	}
 
+
+	void IGoal::setSender(NLAIAGENT::IBasicAgent *s)
+	{
+		_Sender = s;
+	}
+
+	void IGoal::setReceiver(NLAIAGENT::IBasicAgent *r)
+	{
+		_Receiver = r;
+	}
+
+	NLAIAGENT::IBasicAgent *IGoal::getSender()
+	{
+		return _Sender;
+	}
+
+	NLAIAGENT::IBasicAgent *IGoal::getReceiver()
+	{
+		return _Receiver;
+	}
+
 	void IGoal::failure()
 	{
-		/*
-		for ( int i = 0; i < (int) _Successors.size(); i++ )
-		{
-			// TODO: Envoi de message "failed"
-		}
-		*/
 		if ( _Sender != NULL )
 		{
 			NLAIAGENT::IMessageBase *msg = new NLAIAGENT::CSuccessMsg((NLAIAGENT::IBasicAgent *)NULL);
@@ -92,18 +107,12 @@ namespace NLAILOGIC
 
 	void IGoal::success()
 	{
-		/*
-		for ( int i = 0; i < (int) _Successors.size(); i++ )
-		{
-			// TODO: Envoi de message "success"
-		}
-		*/
 		if ( _Sender != NULL )
 		{
 			NLAIAGENT::IMessageBase *msg = new NLAIAGENT::CSuccessMsg((NLAIAGENT::IBasicAgent *)NULL);
 			msg->setPerformatif(NLAIAGENT::IMessageBase::PTell);
 			msg->setSender( this );
-			msg->setReceiver( _Sender);
+			msg->setReceiver( _Sender );
 			_Sender->sendMessage(msg);
 		}
 	}
@@ -172,6 +181,20 @@ namespace NLAILOGIC
 			return false;
 		else
 			return ( (NLAIAGENT::COperatorScript *)_Successors.front())->isExclusive();
+	}
+
+	void IGoal::setPriority(float p)
+	{
+		_Priority = p;
+	}
+
+	void IGoal::calcPriority()
+	{
+	}
+
+	float IGoal::getPriority()
+	{
+		return _Priority;
 	}
 
 
@@ -369,6 +392,8 @@ namespace NLAILOGIC
 		static NLAIAGENT::CStringVarName constructor_name("Constructor");
 		static NLAIAGENT::CStringVarName mode_once_name("SetModeOnce");
 		static NLAIAGENT::CStringVarName mode_repeat_name("SetModeRepeat");
+		static NLAIAGENT::CStringVarName reply_to_name("ReplyTo");
+
 		NLAIAGENT::tQueue r;
 		if(className == NULL)
 		{
@@ -390,6 +415,11 @@ namespace NLAILOGIC
 				r.push( NLAIAGENT::CIdMethod( 2 + IObjetOp::getMethodIndexSize(), 0.0, NULL, c) );					
 			}
 
+			if( (*funcName) == reply_to_name )
+			{					
+				NLAIAGENT::CObjectType *c = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( CGoal::IdGoal ) );					
+				r.push( NLAIAGENT::CIdMethod( 3 + IObjetOp::getMethodIndexSize(), 0.0, NULL, c) );					
+			}
 		}
 
 		if ( r.empty() )
@@ -443,6 +473,13 @@ namespace NLAILOGIC
 			case 2:
 				_Mode = achieveForever;
 				break;
+
+			case 3:
+				{
+					_Sender = ( NLAIAGENT::IBasicAgent *) ( (NLAIAGENT::CLocalAgentMail *) ( (NLAIAGENT::IBasicAgent *) param->getFront()) )->getHost();
+					param->popFront();
+				}
+				break;
 		}
 
 		return IObjectIA::CProcessResult();
@@ -450,7 +487,7 @@ namespace NLAILOGIC
 
 	sint32 CGoal::getMethodIndexSize() const
 	{
-		return IBaseBoolType::getMethodIndexSize() + 3;
+		return IBaseBoolType::getMethodIndexSize() + 4;
 	}
 	//@}
 
@@ -473,26 +510,6 @@ namespace NLAILOGIC
 			return true;
 
 		return false;
-	}
-
-	void CGoal::setSender(NLAIAGENT::IBasicAgent *s)
-	{
-		_Sender = s;
-	}
-
-	void CGoal::setReceiver(NLAIAGENT::IBasicAgent *r)
-	{
-		_Receiver = r;
-	}
-
-	NLAIAGENT::IBasicAgent *CGoal::getSender()
-	{
-		return _Sender;
-	}
-
-	NLAIAGENT::IBasicAgent *CGoal::getReceiver()
-	{
-		return _Receiver;
 	}
 
 	void CGoal::cancel()

@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.18 2001/04/23 09:14:27 besson Exp $
+ * $Id: nelu.cpp,v 1.19 2001/04/25 13:49:56 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,6 +130,11 @@ void			CNELU::releaseDriver()
 		CNELU::Driver->release();
 		delete CNELU::Driver;
 		CNELU::Driver = NULL;
+	}
+	if( CNELU::ShapeBank != NULL )
+	{
+		delete CNELU::ShapeBank;
+		CNELU::ShapeBank = NULL;
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.16 2004/03/19 16:31:28 lecroart Exp $
+ * $Id: clustered_sound.cpp,v 1.17 2004/03/19 16:50:40 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -41,6 +41,14 @@
 # include <eax.h>
 #endif
 #include "clustered_sound.h"
+
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
 
 using namespace std;
 using namespace NLMISC;
@@ -407,7 +415,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 		}
 	}
 
-	// update the environnement effect (if any)
+	// update the environment effect (if any)
 	if (!vCluster.empty())
 	{
 		H_AUTO(NLSOUND_ClusteredSound_updateEnvFx)
@@ -433,7 +441,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 
 		uint newEnv;
 
-		// retreive the EAX environment number
+		// retrieve the EAX environment number
 		std::hash_map<NLMISC::TStringId, uint>::iterator it(_IdToEaxEnv.find(fxId));
 		if (it != _IdToEaxEnv.end())
 		{
@@ -447,7 +455,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 			newEnv = _IdToEaxEnv[plain];
 		}
 
-		// only update environement if there is some change.
+		// only update environment if there is some change.
 		if (newEnv != _LastEnv)
 		{
 			drvListener->setEnvironment(newEnv, size);

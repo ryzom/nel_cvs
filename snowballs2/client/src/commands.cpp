@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: commands.cpp,v 1.4 2001/07/11 17:39:40 lecroart Exp $
+ * $Id: commands.cpp,v 1.5 2001/07/12 10:03:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ using namespace NLMISC;
 using namespace NL3D;
 
 list <string> StoredLines;
-uint32 NbStoredLines = 100, NbDisplayedLines = 5;
+uint32 NbStoredLines = 100;
 
 void addLine (const string &line)
 {
@@ -105,7 +105,7 @@ bool commandLine (const string &str)
 		command = str.substr(1);
 
 		// add the string in to the chat
-		addLine (str);
+		addLine (string ("command> ") + str);
 
 		ICommand::execute (command, CommandExecutionLog);
 	}
@@ -133,7 +133,7 @@ class CCommandsListener : public IEventListener
 			if ( ! commandLine( _Line ) )
 			{
 				/// \todo ace: send the string to the server
-				addLine (_Line);
+				addLine (string ("you said> ") + _Line);
 			}
 			_Line = "";
 			_MaxWidthReached = false;
@@ -189,38 +189,64 @@ private:
 
 CCommandsListener CommandsListener;
 
-const float CommandsLineHeight = 0.025f;
-const float CommandsLineY = 0.019f;
+float CommandsBoxX, CommandsBoxY, CommandsBoxWidth;
+float CommandsBoxBorder;
+int CommandsNbLines;
+float CommandsLineHeight;
 
+void cbUpdateCommands (CConfigFile::CVar &var)
+{
+	if (var.Name == "CommandsBoxX") CommandsBoxX = var.asFloat ();
+	else if (var.Name == "CommandsBoxY") CommandsBoxY = var.asFloat ();
+	else if (var.Name == "CommandsBoxWidth") CommandsBoxWidth = var.asFloat ();
+	else if (var.Name == "CommandsBoxBorder") CommandsBoxBorder = var.asFloat ();
+	else if (var.Name == "CommandsNbLines") CommandsNbLines = var.asInt ();
+	else if (var.Name == "CommandsLineHeight") CommandsLineHeight = var.asFloat ();
+	else nlwarning ("Unknown variable update %s", var.Name.c_str());
+}
 
 void	initCommands()
 {
 	Driver->EventServer.addListener (EventCharId, &CommandsListener);
 
 	CommandExecutionLog.addDisplayer (&CommandsDisplayer);
+
+	ConfigFile.setCallback ("CommandsBoxX", cbUpdateCommands);
+	ConfigFile.setCallback ("CommandsBoxY", cbUpdateCommands);
+	ConfigFile.setCallback ("CommandsBoxWidth", cbUpdateCommands);
+	ConfigFile.setCallback ("CommandsBoxBorder", cbUpdateCommands);
+	ConfigFile.setCallback ("CommandsNbLines", cbUpdateCommands);
+	ConfigFile.setCallback ("CommandsLineHeight", cbUpdateCommands);
+
+	cbUpdateCommands (ConfigFile.getVar ("CommandsBoxX"));
+	cbUpdateCommands (ConfigFile.getVar ("CommandsBoxY"));
+	cbUpdateCommands (ConfigFile.getVar ("CommandsBoxWidth"));
+	cbUpdateCommands (ConfigFile.getVar ("CommandsBoxBorder"));
+	cbUpdateCommands (ConfigFile.getVar ("CommandsNbLines"));
+	cbUpdateCommands (ConfigFile.getVar ("CommandsLineHeight"));
 }
 
 void	updateCommands()
 {
 	// Display
 	Driver->setMatrixMode2D11 ();
-	Driver->drawQuad (0.01f, 0.01f, 0.99f, 0.3f, CRGBA (128, 255, 128, 128));
+	Driver->drawQuad (CommandsBoxX-CommandsBoxBorder, CommandsBoxY-CommandsBoxBorder, CommandsBoxX+CommandsBoxWidth+CommandsBoxBorder, CommandsBoxY + (CommandsNbLines+1) * CommandsLineHeight + CommandsBoxBorder, CRGBA (128, 255, 128, 128));
 
 	// Output text
 	TextContext->setHotSpot (UTextContext::BottomLeft);
 	string line = string("> ")+CommandsListener.line() + string ("_");
-	TextContext->printfAt (0.01f, CommandsLineY, line.c_str());
-	CommandsListener.setMaxWidthReached (TextContext->getLastXBound() > 1.28); // max is 1.33=4/3
+	TextContext->printfAt (CommandsBoxX, CommandsBoxY + CommandsBoxBorder, line.c_str());
+	CommandsListener.setMaxWidthReached (TextContext->getLastXBound() > CommandsBoxWidth*1.33f); // max is 1.33=4/3
 
-	float yPos = CommandsLineY;
+	float yPos = CommandsBoxY + CommandsBoxBorder;
 
 	// display stored lines
 	list<string>::reverse_iterator rit = StoredLines.rbegin();
-	for (uint i = 0; i < NbDisplayedLines; i++)
+	for (sint i = 0; i < CommandsNbLines; i++)
 	{
 		yPos += CommandsLineHeight;
 		if (rit == StoredLines.rend()) break;
-		TextContext->printfAt (0.01f, yPos, (*rit).c_str());
+		TextContext->printfAt (CommandsBoxX, yPos, (*rit).c_str());
 		rit++;
 	}
 }

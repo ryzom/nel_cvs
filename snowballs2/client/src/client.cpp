@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.11 2001/07/11 17:39:40 lecroart Exp $
+ * $Id: client.cpp,v 1.12 2001/07/12 10:03:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,14 +141,14 @@ int main(int argc, char **argv)
 		// Update the landscape
 		updateLandscape ();
 
-		// Update the commands panel
-		updateCommands ();
-
 		// set the matrix for this frame
 		Camera->setMatrix(MouseListener->getViewMatrix());
 		
 		// Render
 		Scene->render ();
+
+		// Update the commands panel
+		updateCommands ();
 
 		// Swap
 		Driver->swapBuffers ();
@@ -156,6 +156,7 @@ int main(int argc, char **argv)
 		// Pump messages
 		Driver->EventServer.pump();
 
+		CConfigFile::checkConfigFiles ();
 	}
 
 	releaseLandscape();

@@ -1,7 +1,7 @@
 /** \file log_report.h
  * <File description>
  *
- * $Id: log_report.h,v 1.2 2004/03/03 09:57:37 distrib Exp $
+ * $Id: log_report.h,v 1.3 2004/06/15 13:34:48 cado Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -41,7 +41,23 @@ class CMakeLogTask : public NLMISC::IRunnable
 {
 public:
 
+	/// Constructor
 	CMakeLogTask() : _Stopping(false), _Complete(false) {}
+
+	/// Destructor
+	~CMakeLogTask()
+	{
+		if ( _Thread )
+		{
+			if ( ! _Complete )
+			{
+				pleaseStop();
+				_Thread->wait();
+			}
+			delete _Thread;
+			_Thread = NULL;
+		}
+	}
 
 	/// Start (called in main thread)
 	void	start()
@@ -112,13 +128,13 @@ class ILogReport
 {
 public:
 
-	virtual void storeLine( const std::vector<std::string>& lineTokens ) = 0;
+	virtual void storeLine( const std::vector<std::string>& lineTokens, bool mainCountOnly ) = 0;
 
-	virtual void report( NLMISC::CLog *targetLog ) = 0;
+	virtual void report( NLMISC::CLog *targetLog, bool detailed ) = 0;
 
 	virtual uint getNbDistinctLines() const = 0;
 
-	virtual uint getNbTotalLines() const = 0;
+	virtual uint getNbTotalLines( NLMISC::CLog::TLogType logType ) = 0;
 
 	virtual ~ILogReport() {}
 };
@@ -138,11 +154,11 @@ public:
 
 	virtual uint	getNbDistinctLines() const { return _LogLineInfo.size(); }
 
-	virtual uint	getNbTotalLines() const { return _TotalLines; };
+	virtual uint	getNbTotalLines( NLMISC::CLog::TLogType logType );
 
-	virtual void	storeLine( const std::vector<std::string>& lineTokens );
+	virtual void	storeLine( const std::vector<std::string>& lineTokens, bool mainCountOnly );
 
-	virtual void	report( NLMISC::CLog *targetLog );
+	virtual void	report( NLMISC::CLog *targetLog, bool detailed );
 
 	uint			reportPart( uint beginIndex, uint maxNbLines, NLMISC::CLog *targetLog );
 
@@ -150,11 +166,13 @@ protected:
 
 	typedef std::map< std::string, CLogLineInfo > CLogLineInfoMap;
 
-	CLogLineInfoMap		_LogLineInfo;
+	std::string						_Service;
 
-	std::string			_Service;
+	CLogLineInfoMap					_LogLineInfo;
 
-	uint				_TotalLines;
+	std::map< std::string, uint >	_Counts; // indexed by log type string
+	
+	uint							_TotalLines;
 };
 
 
@@ -181,7 +199,7 @@ public:
 
 protected:
 
-	virtual void				storeLine( const std::vector<std::string>& lineTokens );
+	virtual void				storeLine( const std::vector<std::string>& lineTokens, bool mainCountOnly=false );
 
 	CLogReportLeaf*				getChild( const std::string& service )
 	{
@@ -200,7 +218,7 @@ protected:
 		return child;
 	}
 
-	virtual void	report( NLMISC::CLog *targetLog );
+	virtual void	report( NLMISC::CLog *targetLog, bool displayDetailsPerService );
 
 	virtual uint	getNbDistinctLines() const
 	{
@@ -210,11 +228,11 @@ protected:
 		return n;
 	}
 
-	virtual uint	getNbTotalLines() const
+	virtual uint	getNbTotalLines( NLMISC::CLog::TLogType logType=NLMISC::CLog::LOG_UNKNOWN )
 	{
 		uint n = 0;
 		for ( std::vector<CLogReportLeaf*>::const_iterator it=_Children.begin(); it!=_Children.end(); ++it )
-			n += (*it)->getNbTotalLines();
+			n += (*it)->getNbTotalLines( logType );
 		return n;
 	}
 
@@ -235,17 +253,25 @@ private:
 class CLogReport : public CLogReportNode
 {
 public:
-	///
-	CLogReport() {}
+
+	/// Constructor
+	CLogReport() : _CurrentFile(~0), _TotalFiles(~0) {}
 
 	/// Clear all
 	void	reset() { CLogReportNode::reset(); }
 
 	/**
 	 * Add a log line to the report tree.
-	 * \param only Type of log to retain. If LOG_UNKNOWN, retain all.
+	 * \param onlyType Type of log to study. If LOG_UNKNOWN, study all.
+	 * \param countOtherTypes If true and onlyType not LOG_UNKNOWN, count the number of lines of each other type found.
 	 */
-	void	pushLine( const std::string& line, NLMISC::CLog::TLogType only=NLMISC::CLog::LOG_WARNING );
+	void	pushLine( const std::string& line, NLMISC::CLog::TLogType onlyType=NLMISC::CLog::LOG_WARNING, bool countOtherTypes=true );
+
+	/// Set the current progress
+	void	setProgress( uint currentFile, uint totalFiles ) { _CurrentFile = currentFile; _TotalFiles = totalFiles; }
+
+	/// Get the current progress
+	void	getProgress( uint& currentFile, uint& totalFiles ) { currentFile = _CurrentFile; totalFiles = _TotalFiles; }
 
 	/// Get results for a service
 	void	reportByService( const std::string& service, NLMISC::CLog *targetLog );
@@ -254,8 +280,12 @@ public:
 	void	reportPage( uint pageNum, NLMISC::CLog *targetLog ) { CLogReportNode::reportPage( pageNum, targetLog ); }
 
 	/// Get summary of results
-	virtual void report( NLMISC::CLog *targetLog ) { CLogReportNode::report( targetLog ); }
+	virtual void report( NLMISC::CLog *targetLog, bool displayDetailsPerService=false ) { CLogReportNode::report( targetLog, displayDetailsPerService ); }
 
+private:
+
+	uint	_CurrentFile;
+	uint	_TotalFiles;
 };
 
 

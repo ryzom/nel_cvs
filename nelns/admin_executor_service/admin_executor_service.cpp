@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.62 2004/04/30 16:05:15 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.63 2004/06/15 13:34:48 cado Exp $
  *
  */
 
@@ -1710,7 +1710,10 @@ NLMISC_COMMAND( displayLogReport, "Display summary of a part of the log report b
 {
 	if ( MakingLogTask.isRunning() )
 	{
+		uint currentFile, totalFiles;
+		MainLogReport.getProgress( currentFile, totalFiles );
 		log.displayNL( "Please wait until the completion of the makeLogReport task, or stop it" );
+		log.displayNL( "Currently processing file %u of %u", currentFile, totalFiles );
 		return true;
 	}
 	log.displayNL( MakingLogTask.isComplete() ? "Full stats:" : "Temporary stats" );

@@ -1,7 +1,7 @@
 /** \file log_report.cpp
  * <File description>
  *
- * $Id: log_report.cpp,v 1.1 2004/03/01 19:38:50 cado Exp $
+ * $Id: log_report.cpp,v 1.2 2004/06/15 13:34:48 cado Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -126,6 +126,7 @@ void	CMakeLogTask::run()
 		CIFile logfile;
 		if ( logfile.open( *ilf, true ) )
 		{
+			MainLogReport.setProgress( ilf-filenames.begin(), filenames.size() );
 			while ( ! logfile.eof() )
 			{
 				logfile.getline( line, MAX_LOG_LINE_SIZE );
@@ -148,7 +149,7 @@ void	CMakeLogTask::run()
 /*
  * Add a log line to the report tree
  */
-void	CLogReport::pushLine( const std::string& line, NLMISC::CLog::TLogType only )
+void	CLogReport::pushLine( const std::string& line, NLMISC::CLog::TLogType onlyType, bool countOtherTypes )
 {
 	// Ignore session title
 	if ( (line.size() > 14) && (line.substr( 0, 14 ) == "Log Starting [") )
@@ -161,21 +162,25 @@ void	CLogReport::pushLine( const std::string& line, NLMISC::CLog::TLogType only 
 		return;
 
 	// Filter log type
-	if ( only != CLog::LOG_UNKNOWN )
+	if ( onlyType != CLog::LOG_UNKNOWN )
 	{
-		if ( lineTokens[LHType] != IDisplayer::logTypeToString( only ) )
+		if ( lineTokens[LHType] != IDisplayer::logTypeToString( onlyType ) )
+		{
+			if ( countOtherTypes )
+				storeLine( lineTokens, true );
 			return;
+		}
 	}
 
 	// Store
-	storeLine( lineTokens );
+	storeLine( lineTokens, false );
 }
 
 
 /*
  *
  */
-void	CLogReportNode::storeLine( const std::vector<std::string>& lineTokens )
+void	CLogReportNode::storeLine( const std::vector<std::string>& lineTokens, bool mainCountOnly )
 {
 	// Get service name from "[machine/]serviceName-serviceId"
 	string service = lineTokens[LHService];
@@ -190,18 +195,22 @@ void	CLogReportNode::storeLine( const std::vector<std::string>& lineTokens )
 	CLogReportLeaf *child = getChild( service );
 	if ( ! child )
 		child = addChild( service );
-	child->storeLine( lineTokens );
+	child->storeLine( lineTokens, mainCountOnly );
 }
 
 
 /*
  *
  */
-void	CLogReportLeaf::storeLine( const std::vector<std::string>& lineTokens )
+void	CLogReportLeaf::storeLine( const std::vector<std::string>& lineTokens, bool mainCountOnly )
 {
-	// Build key from "codeFile codeLine"
-	string key = lineTokens[LHCodeFile] + ":" + lineTokens[LHCodeLine];
-	_LogLineInfo[key].addAnOccurence( lineTokens );
+	if ( ! mainCountOnly )
+	{
+		// Build key from "codeFile codeLine"
+		string key = lineTokens[LHCodeFile] + ":" + lineTokens[LHCodeLine];
+		_LogLineInfo[key].addAnOccurence( lineTokens );
+	}
+	++_Counts[lineTokens[LHType]];
 	++_TotalLines;
 }
 
@@ -225,6 +234,15 @@ void	CLogLineInfo::addAnOccurence( const std::vector<std::string>& lineTokens )
 
 
 /*
+ *
+ */
+uint	CLogReportLeaf::getNbTotalLines( NLMISC::CLog::TLogType logType )
+{
+	return (logType==NLMISC::CLog::LOG_UNKNOWN) ? _TotalLines : _Counts[NLMISC::IDisplayer::logTypeToString( logType )];
+}
+
+
+/*
  * Get results for a service
  */
 void	CLogReport::reportByService( const std::string& service, NLMISC::CLog *targetLog )
@@ -232,7 +250,7 @@ void	CLogReport::reportByService( const std::string& service, NLMISC::CLog *targ
 	ILogReport *child = getChild( service );
 	if ( child )
 	{
-		child->report( targetLog );
+		child->report( targetLog, true );
 	}
 	else
 	{
@@ -244,7 +262,7 @@ void	CLogReport::reportByService( const std::string& service, NLMISC::CLog *targ
 /*
  * Get results for a service (all distinct lines, sorted by occurence)
  */
-void	CLogReportLeaf::report( NLMISC::CLog *targetLog )
+void	CLogReportLeaf::report( NLMISC::CLog *targetLog, bool )
 {
 	// Sort it
 	typedef multimap< uint, pair< string, const CLogLineInfo * >, greater<uint> > CSortedByOccurenceLogLineInfoMap;
@@ -267,7 +285,7 @@ void	CLogReportLeaf::report( NLMISC::CLog *targetLog )
 
 
 /*
- *
+ * Return the number of lines displayed
  */
 uint	CLogReportLeaf::reportPart( uint beginIndex, uint maxNbLines, NLMISC::CLog *targetLog )
 {
@@ -293,19 +311,44 @@ uint	CLogReportLeaf::reportPart( uint beginIndex, uint maxNbLines, NLMISC::CLog 
 /*
  * Get summary of results
  */
-void	CLogReportNode::report( NLMISC::CLog *targetLog )
+void	CLogReportNode::report( NLMISC::CLog *targetLog, bool displayDetailsPerService )
 {
 	uint nb1Sum=0, nb2Sum=0;
 	for ( std::vector<CLogReportLeaf*>::const_iterator it=_Children.begin(); it!=_Children.end(); ++it )
 	{
 		CLogReportLeaf *pt = (*it);
+
+		// Get distinct warnings
 		uint nb1 = pt->getNbDistinctLines();
 		nb1Sum += nb1;
-		uint nb2 = pt->getNbTotalLines();
-		targetLog->displayRawNL( "%s: %u distinct, %u total", pt->service().c_str(), nb1, nb2 );
-		nb2Sum += nb2;
+
+		// Get total warnings, info... but filter out lines with no header
+		uint sumTotalLinesNotUnknown = 0;
+		uint nbTotalLines [CLog::LOG_UNKNOWN];
+		for ( uint i=CLog::LOG_ERROR; i!=CLog::LOG_UNKNOWN; ++i )
+		{
+			nbTotalLines[i] = pt->getNbTotalLines( (CLog::TLogType)i );
+			sumTotalLinesNotUnknown += nbTotalLines[i];
+		}
+		if ( sumTotalLinesNotUnknown != 0 )
+		{
+			targetLog->displayRawNL( "%s: \t%u distinct WRN, %u total WRN, %u INF, %u DBG, %u STT, %u AST, %u ERR, %u TOTAL",
+				pt->service().c_str(), nb1, nbTotalLines[CLog::LOG_WARNING],
+				nbTotalLines[CLog::LOG_INFO], nbTotalLines[CLog::LOG_DEBUG],
+				nbTotalLines[CLog::LOG_STAT], nbTotalLines[CLog::LOG_ASSERT],
+				nbTotalLines[CLog::LOG_ERROR], pt->getNbTotalLines( CLog::LOG_UNKNOWN ) );
+			nb2Sum += nbTotalLines[CLog::LOG_WARNING];
+		}
 	}
-	targetLog->displayRawNL( "=> %u distinct, %u total (%u pages)", nb1Sum, nb2Sum, nb1Sum / NB_LINES_PER_PAGE + 1 );
+	targetLog->displayRawNL( "=> %u distinct, %u total WRN (%u pages)", nb1Sum, nb2Sum, nb1Sum / NB_LINES_PER_PAGE + 1 );
+	
+	if ( displayDetailsPerService )
+	{
+		for ( std::vector<CLogReportLeaf*>::const_iterator it=_Children.begin(); it!=_Children.end(); ++it )
+		{
+			(*it)->report( targetLog, true );
+		}
+	}
 }
 
 

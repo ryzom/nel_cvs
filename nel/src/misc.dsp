@@ -1029,6 +1029,10 @@ SOURCE=.\misc\stdmisc.cpp
 
 SOURCE=.\misc\stdmisc.h
 # End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\timeout_assertion_thread.h
+# End Source File
 # End Group
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.2 2002/03/29 17:04:15 berenguier Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.3 2002/04/10 15:57:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -443,7 +443,7 @@ public:
 
 #else // NL_OS_WINDOWS
 /// dummy CMatrix3x4SSE for non windows platform
-typedef CMatrix3x4	CMatrix3x4SSE;
+class CMatrix3x4SSE : public  CMatrix3x4 { };
 #endif
 
 

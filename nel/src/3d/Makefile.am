@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.75 2002/03/28 16:34:43 berenguier Exp $
+# $Id: Makefile.am,v 1.76 2002/04/10 15:57:01 berenguier Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -8,6 +8,7 @@ SUBDIRS              = driver
 
 lib_LTLIBRARIES      = libnel3d.la
 
+EXTRA_DIST           = mesh_mrm_skin_template.cpp
 
 libnel3d_la_SOURCES  = animatable.cpp                                  \
                        animatable.h                                    \

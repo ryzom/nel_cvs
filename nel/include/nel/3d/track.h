@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.12 2001/03/14 14:57:05 corvazier Exp $
+ * $Id: track.h,v 1.13 2001/03/14 15:21:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -500,12 +500,33 @@ class CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat> : public ITrackKeyFramer<CK
 public:
 
 	/// From ITrack
-	virtual const IAnimatedValue& getValue () const;
+	virtual const IAnimatedValue& getValue () const
+	{
+		return _Value;
+	}
 	
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyQuat* previous, const CKeyQuat* next, 
 							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date );
+							CAnimationTime date )
+	{
+		if(previous && next)
+		{
+			// slerp from previous to cur.
+			date-= datePrevious;
+			date/= (dateNext-datePrevious);
+			NLMISC::clamp(date, 0,1);
+			_Value.Value= NLMISC::CQuat::slerp(previous->Value, next->Value, date);
+		}
+		else
+		{
+			if (previous)
+				_Value.Value=previous->Value;
+			else
+				if (next)
+					_Value.Value=next->Value;
+		}
+	}
 
 private:
 	CAnimatedValueBlendable<NLMISC::CQuat>	_Value;
@@ -625,7 +646,27 @@ public:
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyInt* previous, const CKeyInt* next,
 							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date );
+							CAnimationTime date )
+	{
+		if(previous && next)
+		{
+			// lerp from previous to cur.
+			date-= datePrevious;
+			date/= (dateNext-datePrevious);
+			NLMISC::clamp(date, 0,1);
+			
+			// blend.
+			_Value.Value= (sint32) (0.5+floor (((float)previous->Value*(1.f-date) + (float)next->Value*date)));
+		}
+		else
+		{
+			if (previous)
+				_Value.Value=previous->Value;
+			else
+				if (next)
+					_Value.Value=next->Value;
+		}
+	}
 
 private:
 	CAnimatedValueBlendable<sint32>	_Value;

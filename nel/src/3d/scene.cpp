@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.22 2001/03/27 14:45:23 berenguier Exp $
+ * $Id: scene.cpp,v 1.23 2001/04/09 14:25:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "nel/3d/driver.h"
 #include "nel/3d/transform_shape.h"
 #include "nel/3d/mesh_instance.h"
+#include "nel/3d/skeleton_model.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 using namespace std;
@@ -56,6 +57,7 @@ void	CScene::registerBasics()
 	CMeshInstance::registerBasic();
 	CLandscapeModel::registerBasic();
 	CTransformShape::registerBasic();
+	CSkeletonModel::registerBasic();
 }
 
 	

@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.23 2004/01/26 10:34:37 vizerie Exp $
+ * $Id: u_landscape.h,v 1.24 2004/02/04 18:51:48 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -183,6 +183,8 @@ public:
 	virtual	void	setTileMaxSubdivision (uint tileDiv) =0;
 	/// Get Maximum Tile subdivision.
 	virtual	uint 	getTileMaxSubdivision () =0;
+	/// Set all zones monochromatic or colored
+	virtual	void 	setMonochrome (bool mono) =0;
 	// @}
 
 

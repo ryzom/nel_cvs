@@ -11,6 +11,7 @@ namespace NLAILOGIC
 		_Sender = NULL;
 		_Receiver = NULL;
 		_Selected = false;
+		_Mode = achieveOnce;
 	}
 		
 	CGoal::CGoal(const NLAIAGENT::IVarName &name, TTypeOfGoal mode) : IBaseBoolType()

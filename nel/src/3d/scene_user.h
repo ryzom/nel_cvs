@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.25 2002/04/30 09:48:02 vizerie Exp $
+ * $Id: scene_user.h,v 1.26 2002/05/07 16:03:26 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -282,7 +282,7 @@ public:
 
 
 	/// should be called at each render
-	virtual void	updateWaitingIG();
+	void	updateWaitingIG();
 
 
 	virtual	void createInstanceAsync(const std::string &shapeName, UInstance**ppInstance)

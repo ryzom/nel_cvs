@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.16 2001/05/22 16:08:01 chafik Exp $
+ * $Id: abstract_interface.h,v 1.17 2001/06/05 07:54:58 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -276,6 +276,13 @@ namespace NLAIC //Gen pour general.
 		This is a Debug function, text is an character pointer to receive the debug text output, the debug text containe all think sensible to interset user. 
 		*/		
 		virtual void getDebugString(std::string &) const = 0;
+
+		virtual const std::string getInfo()
+		{
+			std::string s;
+			getDebugString(s);
+			return s;
+		}
 
 		virtual ~IBasicType()
 		{

@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.5 2001/06/25 13:31:32 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.6 2001/06/26 09:21:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,32 +103,12 @@ CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
 
 	//////
 
+	NL3D::IModel *model = CNELU::Scene.createModel(NL3D::ParticleSystemModelId) ;
 
+	nlassert(dynamic_cast<CParticleSystemModel *>(model)) ;
+	_CurrSystemModel = (CParticleSystemModel *) model ;
+	_CurrSystemModel->setParticleSystem(new NL3D::CParticleSystem) ;
 	ParticleTreeCtrl = new CParticleTreeCtrl(this) ;
-
-
-	// for now, let's create a dummy system for test
-
-	CParticleSystem *ps = new CParticleSystem ;
-
-	// now, saves the system, and use a stream to instanciate it in the scene
-
-	CParticleSystemShape psc   ;
-	psc.buildFromPS(*ps) ;
-
-	{
-		CShapeStream st(&psc) ;
-		NLMISC::COFile oFile("dummy.ps") ;
-
-		oFile.serial(st) ;
-	}
-	delete ps ;
-
-
-	
-	_CurrSystemModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance("dummy.ps")) ;
-
-	nlverify(_CurrSystemModel) ;
 
 	_CurrSystemModel->enableDisplayTools() ;
 	_CurrSystemModel->setEllapsedTime(0.f) ;
@@ -136,10 +116,6 @@ CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
 
 	_CurrPS->setFontManager(FontManager) ;
 	_CurrPS->setFontGenerator(FontGenerator) ;
-
-
-
-
 
 	StartStopDlg = new CStartStopParticleSystem(this) ;
 	

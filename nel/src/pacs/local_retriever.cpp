@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.61 2003/05/07 09:11:53 legros Exp $
+ * $Id: local_retriever.cpp,v 1.62 2003/05/07 14:20:31 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1324,7 +1324,7 @@ void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &posit
 	}
 
 	// and computes the real position on this face
-	if (bestDist < 50.0f)
+	if (bestDist < 400.0f)
 	{
 		snapped = true;
 		position.Estimation = best;

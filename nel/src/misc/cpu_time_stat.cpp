@@ -1,7 +1,7 @@
 /** \file cpu_time_stat.cpp
  * Timing utilities (only support for unixes)
  *
- * $Id: cpu_time_stat.cpp,v 1.1 2004/12/17 14:31:13 legros Exp $
+ * $Id: cpu_time_stat.cpp,v 1.2 2004/12/27 10:06:37 guignot Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -40,6 +40,8 @@
 #else
 #include <process.h>
 #endif
+
+using namespace std;
 
 namespace NLMISC
 {

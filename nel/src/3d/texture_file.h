@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.7 2002/06/24 17:11:13 vizerie Exp $
+ * $Id: texture_file.h,v 1.8 2002/10/10 12:56:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	CTextureFile() { _AllowDegradation=true; _AsyncLoading=false; }
+	CTextureFile() { _AllowDegradation=true; _AsyncLoading=false; _SupportSharing= true; _MipMapSkipAtLoad=0; }
 
 	// copy ctor
 	CTextureFile(const CTextureFile &other);
@@ -63,7 +63,12 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	CTextureFile(const std::string &s) { touch(); _FileName = s; _AllowDegradation=true; _AsyncLoading=false; } 
+	CTextureFile(const std::string &s) 
+	{ 
+		touch(); _FileName = s; 
+		_AllowDegradation=true; _AsyncLoading=false; 
+		_SupportSharing= true; _MipMapSkipAtLoad=0;
+	} 
 
 
 	/** 
@@ -95,8 +100,10 @@ public:
 	 * \author Lionel Berenguier
 	 * \date 2000
 	 */	
-	virtual bool			supportSharing() const {return true;}
+	virtual bool			supportSharing() const {return _SupportSharing;}
 	virtual std::string		getShareName() const {return getFileName();}
+	// User can disable the sharing system. Default is to be enabled. Not serialized
+	void					enableSharing(bool enable);
 
 
 	/** 
@@ -115,12 +122,20 @@ public:
 
 
 	//// Used to fill a bitmap by reading a file, looking in CPath if necessary, and using user_color
-	static void buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload);
+	static void buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload, uint8 mipMapSkip=0);
+
+
+	/// If the file is a DDS texture with mipmap, skip the first skipLod mipmaps (0 by default) at loading
+	void			setMipMapSkipAtLoad(uint8 level);
+	uint8			getMipMapSkipAtLoad() const {return _MipMapSkipAtLoad;}
+
 
 private:
 	std::string _FileName;
 	bool		_AllowDegradation;	// Default is true.
 	bool		_AsyncLoading;		// Default is false.
+	bool		_SupportSharing;	// Default is true.
+	uint8		_MipMapSkipAtLoad;	// Default is 0.
 private:
 	void		dupInfo(const CTextureFile &other);
 };

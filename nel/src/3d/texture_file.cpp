@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.17 2002/07/16 14:49:20 lecroart Exp $
+ * $Id: texture_file.cpp,v 1.18 2002/10/10 12:56:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NL3D
 
 
 ///==================================================================
-void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload)
+void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload, uint8 mipMapSkip)
 {
 	NLMISC::CIFile f;
 	//nldebug(_FileName.c_str());
@@ -47,9 +47,19 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 		string file = CPath::lookup(fileName);
 		f.setAsyncLoading (asyncload);
 		f.setCacheFileOnOpen (asyncload);
+
+		// if mipmap skip, must not cache, because don't have to load all!!
+		if(asyncload && mipMapSkip>0)
+		{
+			f.setCacheFileOnOpen (false);
+			f.allowBNPCacheFileOnOpen(false);
+		}
+
+		// Load bitmap.
 		if (f.open(file))
 		{
-			dest.load (f);
+			// skip DDS mipmap if wanted
+			dest.load (f, mipMapSkip);
 		}
 		else throw EPathNotFound(fileName);
 
@@ -175,7 +185,7 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 \*------------------------------------------------------------------*/
 void CTextureFile::doGenerate()
 {
-	buildBitmapFromFile(*this, _FileName, _AsyncLoading);
+	buildBitmapFromFile(*this, _FileName, _AsyncLoading, _MipMapSkipAtLoad);
 }
 
 // ***************************************************************************
@@ -237,8 +247,22 @@ void CTextureFile::dupInfo(const CTextureFile &other)
 	_FileName         = other._FileName;
 	_AsyncLoading     =	other._AsyncLoading;
 	_AllowDegradation = other._AllowDegradation;
+	_SupportSharing	  = other._SupportSharing;
+	_MipMapSkipAtLoad = other._MipMapSkipAtLoad; 
 }
 
+
+// ***************************************************************************
+void			CTextureFile::enableSharing(bool enable)
+{
+	_SupportSharing = enable;
+}
+
+// ***************************************************************************
+void			CTextureFile::setMipMapSkipAtLoad(uint8 level)
+{
+	_MipMapSkipAtLoad= level;
+}
 
 
 } // NL3D

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.66 2001/05/07 14:41:57 berenguier Exp $
+ * $Id: driver.h,v 1.67 2001/05/31 10:04:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,7 +166,7 @@ public:
 	virtual bool			activate(void)=0;
 
 	/// Get the number of texture stage avaliable, for multitexturing (Normal material shaders). Valid only after setDisplay().
-	virtual	sint			getNbTextureStages()=0;
+	virtual	sint			getNbTextureStages() const =0;
 
 	/// is the texture is set up in the driver
 	virtual bool			isTextureExist(const ITexture&tex)=0;

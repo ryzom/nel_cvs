@@ -2340,7 +2340,8 @@ private:
 					if (_Eproc->HitATile(*_Viewport, *_Camera, mouse->X, mouse->Y, &tile1, &mesh1, _T, _VectMesh, hotSpot))
 					{
 						// Set hit as next hotspot
-						_3dMouseListener->setHotSpot (hotSpot);
+						if (modeSelect!=ModePick)
+							_3dMouseListener->setHotSpot (hotSpot);
 
 						// Patch number
 						int patch=tile1/NUM_TILE_SEL;

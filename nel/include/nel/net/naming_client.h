@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: naming_client.h,v 1.5 2000/10/12 16:15:31 cado Exp $
+ * $Id: naming_client.h,v 1.6 2000/10/13 14:26:09 cado Exp $
  *
  * Interface for CNamingClient
  */
@@ -53,8 +53,7 @@ typedef std::map<std::string,CInetAddress> CRegServices;
  * If you plan to call several times these methods in a block, set TransactionMode to false
  * and call open() at the beginning of the block and close() at the end.
  *
- * \todo cado: Manage validity time: a new request must be done when the time is out and
- * the caller must disconnect from its service provider and connect to the new one.
+ * \todo Cado: May be add CNamingClient::release() or something like that (see CNamingService Todo)
  * \test Test program is /code/test/network/log_service/main.cpp
  * \author Olivier Cado
  * \author Nevrax France
@@ -95,15 +94,19 @@ public:
 	/** Returns true and the address of the specified service if it is found, otherwise returns false
 	 * \param name [in] Name of the service to find
 	 * \param addr [out] Address of the service
+	 * \param validitytime [out] After this number of seconds are elapsed, another lookup will be necessary
+	 * before sending a message to the service
 	 */
-	static bool			lookup( const std::string& name, CInetAddress& addr );
+	static bool			lookup( const std::string& name, CInetAddress& addr, uint16& validitytime );
 
 	/** Tells the Naming Service the specified address does not respond for the specified service,
 	 * and returns true and another address for the service if available, otherwise returns false
 	 * \param name [in] Name of the service to find
 	 * \param addr [in/out] In: Address of the service that does not respond. Out: Alternative address
+	 * \param validitytime [out] After this number of seconds are elapsed, another lookup will be necessary
+	 * before sending a message to the service
 	 */
-	static bool			lookupAlternate( const std::string& name, CInetAddress& addr );
+	static bool			lookupAlternate( const std::string& name, CInetAddress& addr, uint16& validitytime  );
 
 	//@}
 

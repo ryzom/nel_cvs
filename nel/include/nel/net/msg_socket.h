@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.h,v 1.15 2000/10/12 16:15:31 cado Exp $
+ * $Id: msg_socket.h,v 1.16 2000/10/13 14:26:09 cado Exp $
  *
  * Interface for CMsgSocket
  */
@@ -156,8 +156,9 @@ protected:
 	/** Calls the good callback, and send a binding message if needed
 	 * \param msg [in] An input message to pass to the callback
 	 * \param sock [in] The socket from which the message was received
+	 * \return False if an error occurred (i.e. no callback defined for the message type)
 	 */
-	static void		processReceivedMessage( CMessage& msg, CSocket& sock );
+	static bool		processReceivedMessage( CMessage& msg, CSocket& sock );
 
 	/// Returns a pointer to the socket object having the specified sender id
 	static CSocket	*socketFromId( TSenderId id );
@@ -170,9 +171,21 @@ protected:
 		return sid;
 	}
 
+	/// Returns true if we have to find a new service provider (client mode only)
+	bool			serviceExpired();
+
+	/** Find a service provider and connect (client mode only)
+	 * If the msgsocket is already connected, it is disconnected first unless the new server found
+	 * is the same as the previous one.
+	 */
+	void			connectToService();
+
 private:
 
 	CSocket						*_ClientSock;
+	std::string					_ServiceName;
+	time_t						_ConnectTime;
+	uint16						_ValidityTime;
 
 	static bool					_Binded;
 	static CConnections			_Connections;

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: net_displayer.cpp,v 1.9 2000/10/13 08:57:37 cado Exp $
+ * $Id: net_displayer.cpp,v 1.10 2000/10/13 14:26:09 cado Exp $
  *
  * Implementation of CNetDisplayer
  */
@@ -55,7 +55,8 @@ CNetDisplayer::CNetDisplayer() :
 void CNetDisplayer::findAndConnect()
 {
 	CInetAddress servaddr;
-	if ( CNamingClient::lookup( "LOGS", servaddr ) )
+	uint16 validitytime; // unused for LOGS at the moment
+	if ( CNamingClient::lookup( "LOGS", servaddr, validitytime ) )
 	{
 		setLogServer( servaddr );
 	}

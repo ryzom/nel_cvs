@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.17 2000/10/12 16:15:31 cado Exp $
+ * $Id: msg_socket.cpp,v 1.18 2000/10/13 14:26:09 cado Exp $
  *
  * Implementation of CMsgSocket.
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
@@ -29,6 +29,7 @@
 #include "nel/net/msg_socket.h"
 #include "nel/net/message.h"
 #include "nel/net/naming_client.h"
+#include <time.h>
 
 using namespace std;
 
@@ -88,42 +89,12 @@ const char *service_not_found_cstr = "Service not found";
 /* Constructs a client object, that connects to a service. The address of the server provider
  * the service is retrieved using a Naming Service.
  */
-CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, const std::string& service )
+CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, const std::string& service ) :
+	_ClientSock( NULL ),
+	_ServiceName ( service )
 {
 	init( callbackarray, arraysize );
-
-	// Look up for service
-	CInetAddress servaddr;
-	if ( CNamingClient::lookup( service, servaddr ) )
-	{
-		bool service_ok = false;
-
-		// Try to connect to server
-		while ( ! service_ok )
-		{
-			_ClientSock = new CSocket();
-			_ClientSock->_OwnerClient = this;
-			_ClientSock->_IsListening = false;
-			try
-			{
-				_ClientSock->connect( servaddr );
-				service_ok = true;
-			}
-			catch ( ESocketConnectionFailed& )
-			{
-				// If the connection failed, inform the Naming Service and try another server
-				delete _ClientSock;
-				if ( ! CNamingClient::lookupAlternate( service, servaddr ) )
-				{
-					throw ESocket( service_not_found_cstr );
-				}
-			}
-		}
-	}
-	else
-	{
-		throw ESocket( service_not_found_cstr );
-	}
+	connectToService();
 	addNewConnection( _ClientSock );
 }
 
@@ -139,6 +110,60 @@ CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, 
 	_ClientSock->_IsListening = false;
 	_ClientSock->connect( servaddr );
 	addNewConnection( _ClientSock );
+}
+
+
+/* Find a service provider and connect (client mode only)
+ * If the msgsocket is already connected, it is disconnected first, unless the new server found
+ * is the same as the previous one.
+ */
+void CMsgSocket::connectToService()
+{
+	// Look up for service
+	CInetAddress servaddr;
+	if ( CNamingClient::lookup( _ServiceName, servaddr, _ValidityTime ) )
+	{
+		// Check if we are already connected
+		if ( _ClientSock != NULL )
+		{
+			// If the service provider hasn't change, we keep the same connection
+			if ( servaddr == _ClientSock->remoteAddr() )
+			{
+				time( &_ConnectTime );
+				return;
+			}
+			// Otherwise, disconnect from the previous one
+			delete _ClientSock;
+		}
+
+		// Try to connect to the new server
+		bool service_ok = false;
+		while ( ! service_ok )
+		{
+			_ClientSock = new CSocket();
+			_ClientSock->_OwnerClient = this;
+			_ClientSock->_IsListening = false;
+			try
+			{
+				_ClientSock->connect( servaddr );
+				time( &_ConnectTime );
+				service_ok = true;
+			}
+			catch ( ESocketConnectionFailed& )
+			{
+				// If the connection failed, inform the Naming Service and try another server
+				delete _ClientSock;
+				if ( ! CNamingClient::lookupAlternate( _ServiceName, servaddr, _ValidityTime ) )
+				{
+					throw ESocket( service_not_found_cstr );
+				}
+			}
+		}
+	}
+	else
+	{
+		throw ESocket( service_not_found_cstr );
+	}
 }
 
 
@@ -235,19 +260,33 @@ void CMsgSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (
 
 
 /*
- * Send a message (client mode only)
+ * Returns true if we have to find a new service provider (client mode only)
+ */
+bool CMsgSocket::serviceExpired()
+{
+	return ( difftime( time(NULL), _ConnectTime ) > _ValidityTime );
+}
+
+
+/*
+ * Sends a message (client mode only)
  */
 void CMsgSocket::send( CMessage& outmsg )
 {
 	if ( _ClientSock != NULL )
 	{
+		// Check if we must ask again for a service provider
+		if ( serviceExpired() )
+		{
+			connectToService();
+		}
 		_ClientSock->send( outmsg );
 	}
 }
 
 
 /*
- * Send a message to the specified host id
+ * Sends a message to the specified host id
  */
 void CMsgSocket::send( CMessage& outmsg, TSenderId id )
 {
@@ -302,7 +341,17 @@ void CMsgSocket::update()
 						}
 						else 
 						{
-							processReceivedMessage( msg, **ilps );
+							if ( ! processReceivedMessage( msg, **ilps ) )
+							{
+								if ( msg.typeIsNumber() )
+								{
+									nlwarning( "Received a message with invalid type code %hu", msg.typeAsNumber() );
+								}
+								else
+								{
+									nlwarning( "Received a message with invalid type string %s", msg.typeAsString() );
+								}
+							}
 						}
 						// Reset flag
 						(*ilps)->_DataAvailable = false;
@@ -439,8 +488,9 @@ bool CMsgSocket::msgIsBinding( const CMessage& msg )
 /* Calls the good callback, and send a binding message if needed
  * \param msg [in] An input message to pass to the callback
  * \param sock [in] The socket from which the message was received
+ * \return False if an error occurred (i.e. no callback defined for the message type)
  */
-void CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
+bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 {
 	if ( msg.typeIsNumber() )
 	{
@@ -452,7 +502,7 @@ void CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 		}
 		else
 		{
-			throw EMessageTypeNbr();
+			return false;
 		}
 	}
 	else
@@ -467,14 +517,7 @@ void CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 		}
 		else
 		{
-			if ( (s=="C") || (s=="D") ) // the user does not have to write callback for connection/disconnection
-			{
-				return;
-			}
-			else
-			{
-				throw EMessageTypeStr();
-			}
+			return ( (s=="C") || (s=="D") ); // the user does not have to write callback for connection/disconnection
 		}
 
 		if ( ! ((s=="C") || (s=="D") ) )
@@ -491,6 +534,7 @@ void CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 		// Call the callback funtion
 		callback( msg, sock._SenderId );
 	}
+	return true;
 }
 
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: message.h,v 1.11 2000/10/09 14:09:03 cado Exp $
+ * $Id: message.h,v 1.12 2000/10/13 14:26:09 cado Exp $
  *
  * Interface of CMessage
  */
@@ -36,7 +36,7 @@ namespace NLNET
 class EMessage : public NLMISC::EStream
 {};
 
-class EMessageTypeNbr : public EMessage
+/*class EMessageTypeNbr : public EMessage
 {
 	/// Returns the exception name
 	virtual const char	*what() const throw() {return "Bad message type code";}
@@ -46,7 +46,7 @@ class EMessageTypeStr : public EMessage
 {
 	/// Returns the exception name
 	virtual const char	*what() const throw() {return "Bad message type name";}
-};
+};*/
 
 /// This exception is raised when someone tries to serialize in more than there is.
 class EStreamOverflow : public EMessage

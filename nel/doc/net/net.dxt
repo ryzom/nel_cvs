@@ -17,9 +17,9 @@ Here is the implementation point of view :
 -# Layer 1 is implemented by NLNET::CBaseSocket.
 -# Layer 2 is implemented by NLNET::CSocket.
 -# Layer 3 is implemented by NLNET::CMsgSocket.
--# The addresses are implemented by NLNET::CInetAddress.
--# The NLNET::CMessage class inherits from NLMISC::IStream.
--# All services inherit from NLNET::IService.
+-# The class NLNET::CNamingClient allows using the Naming Service. It is used by NLNET::CMsgSocket for service lookup. The addresses are implemented by NLNET::CInetAddress. 
+-# The class NLNET::CMessage inherits from NLMISC::IStream.
+-# All services inherit from NLNET::IService. It provides the basic functionnalities such as registration to the Naming Service, server start-up and shutdown (see \ref new_service_howto).
 
 \subsection networkusing Using the network engine
 
@@ -33,7 +33,7 @@ Example : I want to send the string "toto" to the host "server.nevrax.net" on po
 
   // Send "toto"
   string toto = "toto";
-  CMessage msgout ( false );
+  CMessage msgout ( "MSGNAME", false ); // The remote host should have a callback for "MSGNAME"
   msgout.serial( toto );
   client.send( msgout );
 \endcode

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: naming_client.cpp,v 1.3 2000/10/13 08:57:37 cado Exp $
+ * $Id: naming_client.cpp,v 1.4 2000/10/13 14:26:09 cado Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -198,7 +198,7 @@ void CNamingClient::unregisterService( const std::string& name, const CInetAddre
 /*
  * Returns true and the address of the specified service if it is found, otherwise returns false
  */
-bool CNamingClient::lookup( const std::string& name, CInetAddress& addr )
+bool CNamingClient::lookup( const std::string& name, CInetAddress& addr, uint16& validitytime )
 {
 	CNamingClient::openT();
 
@@ -212,9 +212,8 @@ bool CNamingClient::lookup( const std::string& name, CInetAddress& addr )
 	// Wait for answer
 	CMessage msgin( "", true );
 	CNamingClient::_ClientSock->receive( msgin );
-	uint16 validtime;
-	msgin.serial( validtime );
-	if ( validtime == 0)
+	msgin.serial( validitytime );
+	if ( validitytime == 0 )
 	{
 		nldebug( "Service %s not found", name.c_str() );
 		CNamingClient::closeT();
@@ -233,7 +232,7 @@ bool CNamingClient::lookup( const std::string& name, CInetAddress& addr )
 /* Tells the Naming Service the specified address does not respond for the specified service
  * and returns true and another address for the service if available, otherwise returns false
  */
-bool CNamingClient::lookupAlternate( const std::string& name, CInetAddress& addr )
+bool CNamingClient::lookupAlternate( const std::string& name, CInetAddress& addr, uint16& validitytime )
 {
 	CNamingClient::openT();
 
@@ -248,9 +247,8 @@ bool CNamingClient::lookupAlternate( const std::string& name, CInetAddress& addr
 	// Wait for answer
 	CMessage msgin( "", true );
 	CNamingClient::_ClientSock->receive( msgin );
-	uint16 validtime;
-	msgin.serial( validtime );
-	if ( validtime == 0 )
+	msgin.serial( validitytime );
+	if ( validitytime == 0 )
 	{
 		nldebug( "Service %s not found", name.c_str() );
 		CNamingClient::closeT();

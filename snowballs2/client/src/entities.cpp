@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.10 2001/07/13 09:58:06 lecroart Exp $
+ * $Id: entities.cpp,v 1.11 2001/07/13 16:17:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include <nel/misc/event_listener.h>
 #include <nel/misc/command.h>
 #include <nel/misc/log.h>
+#include <nel/misc/time_nl.h>
 #include <nel/misc/displayer.h>
 #include <nel/misc/vector.h>
 #include <nel/misc/vectord.h>
@@ -73,8 +74,11 @@ enum
 	SnowballCollisionBit = 4
 };
 
-float WorldWidth = 20*160;
-float WorldHeight = 6*160;
+float			WorldWidth = 20*160;
+float			WorldHeight = 6*160;
+
+uint32			NextEID = 0;
+float			EntitySpeed = 3.0f;	// 6 km/h
 
 // these variables are set with the config file
 
@@ -97,7 +101,7 @@ EIT findEntity (uint32 eid, bool needAssert = true)
 }
 
 
-void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
+void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, const CVector &serverPosition)
 {
 	nlinfo ("adding entity %u", eid);
 
@@ -122,14 +126,15 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 	entity.Type = type;
 	entity.Name = "Entity"+toString(rand());
 	entity.Position = startPosition;
-//	entity.ServerPosition = startPosition;
-	entity.MovePrimitive = MoveContainer->addCollisionablePrimitive(0, 1);
+	entity.Angle = 0.0f;
+	entity.ServerPosition = serverPosition;
 	entity.VisualCollisionEntity = VisualCollisionManager->createEntity();
 
 	// setup the move primitive and the mesh instance depending on the type of entity
 	switch (type)
 	{
 	case CEntity::Self:
+		entity.MovePrimitive = MoveContainer->addCollisionablePrimitive(0, 1);
 		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
 		entity.MovePrimitive->setReactionType(UMovePrimitive::Slide);
 		entity.MovePrimitive->setTriggerType(UMovePrimitive::NotATrigger);
@@ -138,8 +143,13 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 		entity.MovePrimitive->setObstacle(true);
 		entity.MovePrimitive->setRadius(0.5f);
 		entity.MovePrimitive->setHeight(1.8f);
+		entity.MovePrimitive->insertInWorldImage(0);
+		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
+
 		entity.Instance = Scene->createInstance("barman.shape");
 		entity.Instance->hide ();
+		entity.Instance->setPos (startPosition);
+		entity.Speed = EntitySpeed;
 
 		entity.Particule = Scene->createInstance("appear.ps");
 		entity.Particule->setPos (startPosition);
@@ -148,16 +158,22 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 
 		break;
 	case CEntity::Other:
+		entity.MovePrimitive = MoveContainer->addCollisionablePrimitive(0, 1);
 		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
-		entity.MovePrimitive->setReactionType(UMovePrimitive::Slide);
+		entity.MovePrimitive->setReactionType(UMovePrimitive::DoNothing);
 		entity.MovePrimitive->setTriggerType(UMovePrimitive::NotATrigger);
-		entity.MovePrimitive->setCollisionMask(SelfCollisionBit+SnowballCollisionBit);
+		entity.MovePrimitive->setCollisionMask(OtherCollisionBit+SelfCollisionBit+SnowballCollisionBit);
 		entity.MovePrimitive->setOcclusionMask(OtherCollisionBit);
 		entity.MovePrimitive->setObstacle(true);
 		entity.MovePrimitive->setRadius(0.5f);
 		entity.MovePrimitive->setHeight(1.8f);
+		entity.MovePrimitive->insertInWorldImage(0);
+		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
+
 		entity.Instance = Scene->createInstance("barman.shape");
 		entity.Instance->hide ();
+		entity.Instance->setPos (startPosition);
+		entity.Speed = EntitySpeed;
 
 		entity.Particule = Scene->createInstance("appear.ps");
 		entity.Particule->setPos (startPosition);
@@ -166,6 +182,9 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 
 		break;
 	case CEntity::Snowball:
+		// snowballs don't use pacs right now
+/*
+		entity.MovePrimitive = MoveContainer->addCollisionablePrimitive(0, 1);
 		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
 		entity.MovePrimitive->setReactionType(UMovePrimitive::Slide);
 		entity.MovePrimitive->setTriggerType(UMovePrimitive::EnterTrigger);
@@ -174,17 +193,20 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 		entity.MovePrimitive->setObstacle(false);
 		entity.MovePrimitive->setRadius(0.2f);
 		entity.MovePrimitive->setHeight(0.4f);
-		entity.Instance = Scene->createInstance("barman.shape");
+		entity.MovePrimitive->insertInWorldImage(0);
+		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
+*/
+		entity.MovePrimitive = NULL;
+
+		entity.Instance = Scene->createInstance("box.shape");
+//		entity.Instance = Scene->createInstance("snowball.ps");
+		entity.Instance->setPos (startPosition);
+		entity.Speed = 10.0f;
 
 		entity.State = CEntity::Normal;
 		entity.StateStartTime = CTime::getLocalTime ();
 		break;
 	}
-	entity.MovePrimitive->insertInWorldImage(0);
-//	entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
-	entity.MovePrimitive->setGlobalPosition(GlobalRetriever->retrievePosition(CVectorD(startPosition.x, startPosition.y, startPosition.z)), 0);
-
-	entity.Instance->setPos (startPosition);
 }
 
 void removeEntity (uint32 eid)
@@ -192,7 +214,6 @@ void removeEntity (uint32 eid)
 	nlinfo ("removing entity %u", eid);
 
 	EIT eit = findEntity (eid);
-
 	CEntity	&entity = (*eit).second;
 
 	entity.Particule = Scene->createInstance("disappear.ps");
@@ -272,15 +293,22 @@ void stateNormal (CEntity &entity)
 	CVector	newPos;
 
 	oldPos = entity.Position;
+	CVector	pDelta = entity.Position - entity.ServerPosition;
+	CVector	pDeltaOri = pDelta;
+	pDelta.z = 0.0f;
 
 /// \todo remove when server entities will work
 	// find a new random server position
-	if (entity.AutoMove /*&& entity.ServerPosition == entity.Position*/)
+	if (entity.Type == CEntity::Other && entity.AutoMove && pDelta.norm() < 0.1f)
 	{
-		float EntityMaxSpeed = 1.0f;
-		entity.Position = entity.Position + CVector(frand (2.0f*EntityMaxSpeed) - EntityMaxSpeed,
-										   frand (2.0f*EntityMaxSpeed) - EntityMaxSpeed,
-										   0.0f);
+		float EntityMaxSpeed = 10.0f;
+		entity.Angle += frand(1.5f)-0.75f;
+		entity.ServerPosition += CVector((float)cos(entity.Angle),
+										 (float)sin(entity.Angle),
+										 0.0f)*EntityMaxSpeed;
+	}
+	else if (entity.Type == CEntity::Snowball && entity.AutoMove && pDelta.norm() < 0.1f)
+	{
 	}
 /// \todo end of the remove block when server entities will work
 
@@ -296,12 +324,31 @@ void stateNormal (CEntity &entity)
 		j.z = 0.0f;
 		j.normalize();
 		entity.Angle = (float)atan2(j.y, j.x);
+
+		entity.MovePrimitive->move((newPos-oldPos)/(float)dt, 0);
 	}
-	else if (entity.ServerPosition != entity.Position)
+	else if (entity.Type == CEntity::Other && pDelta.norm()>0.1f)
 	{
 		// go to the server position with linear interpolation
 		/// \todo compute the linear interpolation
-		newPos = oldPos;
+
+		pDelta.normalize();
+		entity.Angle = (float)atan2(pDelta.y, pDelta.x);
+		pDelta *= -entity.Speed;
+		entity.MovePrimitive->move(pDelta, 0);
+
+	}
+	else if (entity.Type == CEntity::Snowball && pDeltaOri.norm()>0.1f)
+	{
+		// go to the server position with linear interpolation
+		/// \todo compute the linear interpolation
+
+		pDelta.normalize();
+		pDeltaOri.normalize();
+		entity.Angle = (float)atan2(pDelta.y, pDelta.x);
+		pDeltaOri *= -entity.Speed;
+		entity.Position += pDeltaOri*(float)dt;
+
 	}
 	else
 	{
@@ -309,8 +356,6 @@ void stateNormal (CEntity &entity)
 		/// \todo compute new entity position
 		newPos = oldPos;
 	}
-
-	entity.MovePrimitive->move((newPos-oldPos)/(float)dt, 0);
 }
 
 void updateEntities ()
@@ -354,7 +399,7 @@ void updateEntities ()
 		CEntity	&entity = (*eit).second;
 		UGlobalPosition	gPos;
 
-		if (entity.Instance != NULL)
+		if (entity.MovePrimitive != NULL)
 		{
 			// get the global position in pacs coordinates system
 			entity.MovePrimitive->getGlobalPosition(gPos, 0);
@@ -363,20 +408,25 @@ void updateEntities ()
 			// get the good z position
 			gPos.LocalPosition.Estimation.z = 0.0f;
 			entity.Position.z = GlobalRetriever->getMeanHeight(gPos);
-			// snap to the ground
-			entity.VisualCollisionEntity->snapToGround(entity.Position);
 
 			// check position retrieving
+/*
 			UGlobalPosition gPosCheck;
 			gPosCheck = GlobalRetriever->retrievePosition(entity.Position);
 			if (gPos.InstanceId != gPosCheck.InstanceId ||
 				gPos.LocalPosition.Surface != gPosCheck.LocalPosition.Surface)
 			{
-	//			nlwarning("Checked UGlobalPosition differs from store");
-	//			gPos.InstanceId = gPosCheck.InstanceId;
-	//			gPos.LocalPosition.Surface = gPosCheck.LocalPosition.Surface;
+				nlwarning("Checked UGlobalPosition differs from store");
+//				gPos.InstanceId = gPosCheck.InstanceId;
+//				gPos.LocalPosition.Surface = gPosCheck.LocalPosition.Surface;
 			}
+*/
+			// snap to the ground
+			entity.VisualCollisionEntity->snapToGround(entity.Position);
+		}
 
+		if (entity.Instance != NULL)
+		{
 			entity.Instance->setPos(entity.Position);
 			CVector	jdir = CVector((float)cos(entity.Angle), (float)sin(entity.Angle), 0.0f);
 			entity.Instance->setRotQuat(jdir);
@@ -486,7 +536,51 @@ void updateRadar ()
 	}
 }
 
+//
+void	shotSnowball(uint32 eid, const CVector &target)
+{
+	uint32 sbid = NextEID++;
+	EIT eit = findEntity (eid);
 
+	CEntity	&launcher = (*eit).second;
+	CVector	start = launcher.Position;
+	start.z += 1.3f;
+	CVector direction = (target-start).normed();
+	start += direction*1.0f;
+
+	addEntity(sbid, CEntity::Snowball, start, target);
+	eit = findEntity (sbid);
+	CEntity	&snowball = (*eit).second;
+	snowball.AutoMove = 1;
+
+	if (launcher.Type == CEntity::Self)
+	{
+		const uint	numTestStep = 100;
+		CVector	testPos = start;
+		CVector	step = (target-start)/numTestStep;
+
+		uint	i;
+		for (i=0; i<numTestStep; ++i)
+		{
+			CVector	snapped = testPos;
+			CVector	normal;
+			// here use normal to check if we have collision
+			snowball.VisualCollisionEntity->snapToGround(snapped, normal);
+//			if ((testPos.z-snapped.z)*normal.z > 0.0f)
+			if ((testPos.z-snapped.z) < 0.0f)
+			{
+				testPos -= step*0.5f;
+				break;
+			}
+			testPos += step;
+		}
+
+		snowball.ServerPosition = testPos;
+	}
+}
+
+
+//
 NLMISC_COMMAND(remove_entity,"remove a local entity","<eid>")
 {
 	// check args, if there s not the right number of parameter, return bad
@@ -506,15 +600,13 @@ NLMISC_COMMAND(add_entity,"add a local entity","<nb_entities> <auto_update>")
 
 	uint nb = (uint)atoi(args[0].c_str());
 
-	static uint32 nextEID = 0;
-
 	for (uint i = 0; i < nb ; i++)
 	{
-		uint32 eid = nextEID++;
+		uint32 eid = NextEID++;
 		float x = 1000.0f; ///frand(1000.0f);
 		float y = -1000.0f; ///-frand(1000.0f);
 		float z = 2.0f;
-		addEntity (eid, CEntity::Other, CVector(x, y, z));
+		addEntity (eid, CEntity::Other, CVector(x, y, z), CVector(x, y, z));
 		EIT eit = findEntity (eid);
 		(*eit).second.AutoMove = atoi(args[1].c_str()) == 1;
 	}

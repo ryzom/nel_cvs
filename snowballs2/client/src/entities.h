@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.7 2001/07/13 09:58:06 lecroart Exp $
+ * $Id: entities.h,v 1.8 2001/07/13 16:17:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,14 +80,17 @@ public:
 
 extern CEntity	*Self;
 
-void addEntity (uint32 eid, CEntity::TType type, NLMISC::CVector startPosition);
-void removeEntity (uint32 eid);
+extern float	EntitySpeed;
 
-void updateEntities ();
+void	addEntity (uint32 eid, CEntity::TType type, const NLMISC::CVector &startPosition, const NLMISC::CVector &serverPosition);
+void	removeEntity (uint32 eid);
 
+void	updateEntities ();
 
-void initRadar ();
-void updateRadar ();
+void	shotSnowball(uint32 eid, const NLMISC::CVector &target);
+
+void	initRadar ();
+void	updateRadar ();
 
 
 #endif // ENTITIES_H

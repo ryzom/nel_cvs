@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.24 2001/07/13 09:58:06 lecroart Exp $
+ * $Id: client.cpp,v 1.25 2001/07/13 16:17:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,6 +141,7 @@ int main(int argc, char **argv)
 	MouseListener->setFrustrum (Camera->getFrustum());
 	MouseListener->setMatrix (Camera->getMatrix());
 	MouseListener->setMouseMode (U3dMouseListener::firstPerson);
+	MouseListener->setSpeed(EntitySpeed);
 
 	// Init the command control
 	initCommands ();
@@ -156,6 +157,9 @@ int main(int argc, char **argv)
 
 	// Creates a self entity
 	addEntity(0xFFFFFFFF, CEntity::Self, CVector(ConfigFile.getVar("StartPoint").asFloat(0),
+												 ConfigFile.getVar("StartPoint").asFloat(1),
+												 ConfigFile.getVar("StartPoint").asFloat(2)),
+										 CVector(ConfigFile.getVar("StartPoint").asFloat(0),
 												 ConfigFile.getVar("StartPoint").asFloat(1),
 												 ConfigFile.getVar("StartPoint").asFloat(2)));
 
@@ -225,6 +229,14 @@ int main(int argc, char **argv)
 		else if (Driver->AsyncListener.isKeyPushed (KeyF12))
 		{
 			clearCommands ();
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeySPACE))
+		{
+			if (Self != NULL)
+			{
+				CVector	Direction = CVector((float)cos(Self->Angle), (float)sin(Self->Angle), (2.0f-ViewHeight)/ViewLagBehind).normed();
+				shotSnowball(Self->Id, Self->Position+Direction*100.0f);
+			}
 		}
 
 		// Update network messages

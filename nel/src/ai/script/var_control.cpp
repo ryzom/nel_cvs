@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.21 2001/10/24 16:37:04 chafik Exp $
+ * $Id: var_control.cpp,v 1.22 2002/01/30 15:39:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/ai/script/constraint_stack_component.h"
 #include "nel/ai/script/object_unknown.h"
 #include "nel/ai/agent/performative.h"
+#include "nel/ai/script/param_container.h"
 
 namespace NLAISCRIPT
 {
@@ -375,6 +376,17 @@ namespace NLAISCRIPT
 		return true;
 		
 	}
+
+	void CCompilateur::addParamRuleCont()
+	{
+		_LastBloc->addCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
+	}
+
+	void CCompilateur::addParamCont()
+	{
+		_LastBloc->addCode(new CLdbOpCode (CPramContainer()));		
+	}
+
 	void CCompilateur::pushParamExpression()
 	{
 		_LastBloc->addCode((new CAddOpCode));

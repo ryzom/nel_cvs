@@ -1,7 +1,7 @@
 /** \file agent_nombre.h
  * template class for nomber manipulation.
  *
- * $Id: agent_nombre.h,v 1.12 2001/12/19 14:37:05 robert Exp $
+ * $Id: agent_nombre.h,v 1.13 2002/01/30 15:40:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -235,14 +235,14 @@ namespace NLAIAGENT
 			return o;
 		}
 
-		virtual const IObjetOp *operator * (const IObjetOp &a)  const
+		virtual IObjetOp *operator * (const IObjetOp &a)  const
 		{
 			IObjetOp *o = (IObjetOp *)clone();			
 			*o *= a;
 			return o;
 		}
 
-		virtual const IObjetOp *operator / (const IObjetOp &a)  const
+		virtual IObjetOp *operator / (const IObjetOp &a)  const
 		{
 			IObjetOp *o = (IObjetOp *)clone();			
 			*o /= a;

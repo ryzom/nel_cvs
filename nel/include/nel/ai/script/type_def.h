@@ -1,7 +1,7 @@
 /** \file type_def.h
  * Sevral class for typing object.
  *
- * $Id: type_def.h,v 1.11 2001/04/17 09:26:09 portier Exp $
+ * $Id: type_def.h,v 1.12 2002/01/30 15:40:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -154,28 +154,24 @@ namespace NLAISCRIPT
 	{
 	private:
 		NLAIC::CIdentType *_Ident;
-		char *_TxtInfo;
+		std::string _TxtInfo;
 
 	public:
 		COperandSimple(NLMISC::IStream	&f)
 		{
 			_Ident = new NLAIC::CIdentType(f);			
-			char txt[1028*8];		
-			sprintf(txt,"constraint<COperandSimple> for %s",(const char *)*_Ident);
-			_TxtInfo = new char [strlen(txt) + 1];
-			strcpy(_TxtInfo,txt);
 		}
 		COperandSimple(NLAIC::CIdentType *i) : _Ident(i)
 		{			
-			char txt[1028*8];		
-			sprintf(txt,"constraint<COperandSimple> for %s",(const char *)*_Ident);
-			_TxtInfo = new char [strlen(txt) + 1];
-			strcpy(_TxtInfo,txt);		
 		}
 
 		const char *getInfo()
 		{
-			return _TxtInfo;
+			if(_TxtInfo.begin() == _TxtInfo.end())
+			{
+				_TxtInfo = NLAIC::stringGetBuild("constraint<COperandSimple> for %s",(const char *)*_Ident);				
+			}
+			return _TxtInfo.c_str();
 		}
 
 		const NLAIC::CIdentType *getConstraintTypeOf()
@@ -217,13 +213,10 @@ namespace NLAISCRIPT
 		{
 			if ( f.isReading() )
 			{
-				if(_Ident) delete _Ident;
+				if(_Ident) _Ident->release();
 				_Ident = new NLAIC::CIdentType(f);
-				delete _TxtInfo;
-				char txt[1028*8];		
-				sprintf(txt,"constraint<COperandSimple> for %s",(const char *)*_Ident);
-				_TxtInfo = new char [strlen(txt) + 1];
-				strcpy(_TxtInfo,txt);
+				_TxtInfo.clear();
+				
 			}
 			else
 			{
@@ -235,8 +228,7 @@ namespace NLAISCRIPT
 
 		virtual ~COperandSimple()
 		{
-			delete _Ident;
-			delete _TxtInfo;
+			_Ident->release();			
 		}
 	};
 

@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.31 2001/12/05 09:54:38 chafik Exp $
+ * $Id: yacc.cpp,v 1.32 2002/01/30 15:39:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -805,6 +805,11 @@ namespace NLAISCRIPT
 	{
 
 		//IConstraint *c = getMethodConstraint(CConstraintMethode(CConstraintMethode::normalCall, 0 , _LastbaseClass,_LastStringParam.back(),_Param.back(),0,0));
+	}
+
+	bool CCompilateur::checkReturnMethod()
+	{
+		return true;
 	}
 
 	bool CCompilateur::callFunction()

@@ -854,7 +854,11 @@ using  namespace NLAIFUZZY;
 						|	Affectation POINT_VI
 						|	StaticCast POINT_VI
 						|	AppelleDeFonction POINT_VI
-							{
+							{								
+								if(!checkReturnMethod())
+								{
+									return 0;
+								}
 								_LastStringParam.back()->release();
 								_LastStringParam.pop_back();
 								_Param.back()->release();
@@ -934,16 +938,16 @@ using  namespace NLAIFUZZY;
 	
 
 	AppelleDeFoncDirect:	NonDeFonction PAR_G 
-							{
-								_LastBloc->addCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
+							{								
+								addParamCont();
 								_Param.push_back(new CParam);								
 								_ExpressionTypeTmp.push_back(_ExpressionType); 
 								_ExpressionType = NULL;
 							}
 							Prametre CallFunction
 						|	NonDeFonction PAR_G
-							{				
-								addOpCode(new CLdbOpCode (NLAIAGENT::CGroupType()));								
+							{	
+								addParamCont();							
 								_Param.push_back(new CParam);								
 								_ExpressionTypeTmp.push_back(_ExpressionType); 
 								_ExpressionType = NULL;
@@ -1465,7 +1469,8 @@ using  namespace NLAIFUZZY;
 							}
 							NewObjectName PAR_G
 							{
-								addOpCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
+								addParamCont();
+								//addOpCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
 							}
 							PrametreNew
 						;
@@ -1494,7 +1499,8 @@ using  namespace NLAIFUZZY;
 						}
 						THEN
 						{
-							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
+							//_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
+							addParamRuleCont();
 						}
 						Clause
 						{
@@ -1513,7 +1519,8 @@ using  namespace NLAIFUZZY;
 
 	RuleCondition	:	IF
 						{
-							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
+							//_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
+							addParamRuleCont();
 						}
 						Clause
 						{

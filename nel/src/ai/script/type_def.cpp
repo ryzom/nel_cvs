@@ -1,6 +1,6 @@
 /** \file type_def.cpp
  *
- * $Id: type_def.cpp,v 1.11 2002/01/03 15:06:38 chafik Exp $
+ * $Id: type_def.cpp,v 1.12 2002/01/30 15:39:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -149,9 +149,11 @@ namespace NLAISCRIPT
 		std::list<NLAIC::CIdentType *>::const_iterator i = getList().begin();
 		while(i != getList().end() )
 		{
-			COperandSimple *x =new COperandSimple (new NLAIC::CIdentType(*(*i++)));
-			double d = x->eval(e);
-			delete x;
+			//NLAIC::CIdentType id(*(*i++));
+			COperandSimple x(*i);
+			(*i)->incRef();
+			double d = x.eval(e);
+			i ++;
 			if(d >= 0.0) return d;					
 		}
 		return -1.0;

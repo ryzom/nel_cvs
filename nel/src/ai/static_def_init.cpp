@@ -34,6 +34,7 @@
 #include "nel/ai/agent/msg_action.h"
 #include "nel/ai/agent/msg_getvalue.h"
 #include "nel/ai/agent/msg_on_change.h"
+#include "nel/ai/script/param_container.h"
 
 	using namespace NLAIAGENT;
 	using namespace NLAILOGIC;
@@ -296,6 +297,7 @@
 
 	const NLAIC::CIdentType CIndexedVarName::IdIndexedVarName("IndexedVarName",NLAIC::CSelfClassFactory(CIndexedVarName("Inst")),
 																  NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+
 	const NLAIC::CIdentType CStringVarName::IdStringVarName("StringVarName",NLAIC::CSelfClassFactory(CStringVarName("Inst")),
 																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
@@ -564,6 +566,7 @@
 
 namespace NLAISCRIPT
 {
+
 	const NLAIC::CIdentType CMethodeName::IdMethodeName("MethodeName",NLAIC::CSelfClassFactory( CMethodeName() ),
 		NLAIC::CTypeOfObject::tObject,
 		NLAIC::CTypeOfOperator::opEq);
@@ -571,6 +574,14 @@ namespace NLAISCRIPT
 	const NLAIC::CIdentType CParam::IdParam("Param",NLAIC::CSelfClassFactory( CParam() ),
 		NLAIC::CTypeOfObject::tObject,
 		NLAIC::CTypeOfOperator::opEq);
+
+	const NLAIC::CIdentType CPramContainer::IdPramContainer("Container",NLAIC::CSelfClassFactory( CPramContainer() ),
+		NLAIC::CTypeOfObject::tObject,
+		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+		NLAIC::CTypeOfOperator::opSub | 
+		NLAIC::CTypeOfOperator::opNot));
+
+	
 
 
 	NLAIAGENT::IObjectIA **CVarPStack::_LocalTableRef = NULL;

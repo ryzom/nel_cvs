@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.12 2001/12/11 13:41:01 portier Exp $
+# $Id: Makefile.am,v 1.13 2002/01/30 15:39:59 chafik Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -44,6 +44,7 @@ libscript_la_SOURCES    = constraint.cpp \
                           codage.cpp \
                           code_branche_run_debug.cpp \
                           libcode.cpp \
+                          param_container.cpp \
                           interpret_message_getvalue.cpp
 
 # End of Makefile.am

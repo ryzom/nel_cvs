@@ -1,7 +1,7 @@
 
 /** \file varstack.h
  *
- * $Id: varstack.h,v 1.7 2001/05/22 16:08:01 chafik Exp $
+ * $Id: varstack.h,v 1.8 2002/01/30 15:40:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -178,12 +178,12 @@ namespace NLAISCRIPT
 			return *((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) - a;
 		}
 
-		const NLAIAGENT::IObjetOp *operator * (const NLAIAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator * (const NLAIAGENT::IObjetOp &a)  const
 		{
 			return *((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) * a;
 		}
 
-		const NLAIAGENT::IObjetOp *operator / (const NLAIAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator / (const NLAIAGENT::IObjetOp &a)  const
 		{
 			return *((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) / a;
 		}
@@ -406,12 +406,12 @@ namespace NLAISCRIPT
 			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) - a;
 		}
 
-		const NLAIAGENT::IObjetOp *operator * (const NLAIAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator * (const NLAIAGENT::IObjetOp &a)  const
 		{
 			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) * a;
 		}
 
-		const NLAIAGENT::IObjetOp *operator / (const NLAIAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator / (const NLAIAGENT::IObjetOp &a)  const
 		{
 			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) / a;
 		}

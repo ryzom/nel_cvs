@@ -1,7 +1,7 @@
 /** \file agent_operator.h
  * Includes class operator for IObjectIA objects.
  *
- * $Id: agent_operator.h,v 1.11 2001/10/24 16:37:16 chafik Exp $
+ * $Id: agent_operator.h,v 1.12 2002/01/30 15:40:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,6 +101,13 @@ namespace NLAIAGENT
 			return *this;
 		}
 
+		virtual IObjetOp *getNeg() const
+		{
+			IObjetOp *o = (IObjetOp *)clone();			
+			o->neg();
+			return o;
+		}
+
 		virtual IObjetOp &operator *= (const IObjetOp &)/// throw (NLAIE::CExceptionNotImplemented)
 		{
 			std::string text;
@@ -132,7 +139,7 @@ namespace NLAIAGENT
 			return (IObjetOp *)this;
 		}
 
-		virtual const IObjetOp *operator * (const IObjetOp &)  const ///throw (NLAIE::CExceptionNotImplemented)
+		virtual IObjetOp *operator * (const IObjetOp &)  const ///throw (NLAIE::CExceptionNotImplemented)
 		{
 			std::string text;
 			text = NLAIC::stringGetBuild("opertor <virtual IObjetOp *operator * (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
@@ -140,7 +147,7 @@ namespace NLAIAGENT
 			return (IObjetOp *)this;
 		}
 
-		virtual const IObjetOp *operator / (const IObjetOp &)  const ///throw (NLAIE::CExceptionNotImplemented)
+		virtual IObjetOp *operator / (const IObjetOp &)  const ///throw (NLAIE::CExceptionNotImplemented)
 		{
 			std::string text;
 			text = NLAIC::stringGetBuild("opertor <virtual IObjetOp *operator / (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());

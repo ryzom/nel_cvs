@@ -1,7 +1,7 @@
 /** \file opcode.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode.h,v 1.10 2001/08/28 15:34:13 chafik Exp $
+ * $Id: opcode.h,v 1.11 2002/01/30 15:40:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,19 +147,10 @@ namespace NLAISCRIPT
 		{
 		}
 		
-		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
-		{		
-			((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack])->neg();
-			return NLAIAGENT::IObjectIA::ProcessIdle;;
-		}	
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{
-			std::string X;
-			((NLAIAGENT::IObjectIA *)context.Stack)->getDebugString(X);
-			str +="-";
-			str += X;		
-		}
+		void getDebugResult(std::string &str,CCodeContext &context) const;
+		
 		const NLAIC::IBasicType *clone() const 
 		{			
 			NLAIC::IBasicType *x = new CNegOpCode();
@@ -211,23 +202,9 @@ namespace NLAISCRIPT
 		{
 		}
 		
-		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
-		{		
-			*((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) += *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			context.Stack--;
-			return NLAIAGENT::IObjectIA::ProcessIdle;;
-		}
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
-		void getDebugResult(std::string &str,CCodeContext &context) const 
-		{
-			std::string X,Y;
-			context.Stack[(int)context.Stack - 1]->getDebugString(X);
-			context.Stack[(int)context.Stack]->getDebugString(Y);
-
-			str = X;
-			str += " + ";
-			str += Y;		
-		}	
+		void getDebugResult(std::string &str,CCodeContext &context) const ;
 
 		const NLAIC::IBasicType *clone() const 
 		{			
@@ -280,23 +257,9 @@ namespace NLAISCRIPT
 		{
 		}
 		
-		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
-		{				
-			*((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) -= *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			context.Stack--;
-			return NLAIAGENT::IObjectIA::ProcessIdle;;
-		}
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 		
-		void getDebugResult(std::string &str,CCodeContext &context) const 
-		{
-			std::string X,Y;
-			context.Stack[(int)context.Stack - 1]->getDebugString(X);
-			context.Stack[(int)context.Stack]->getDebugString(Y);
-			
-			str = X;
-			str += " - ";
-			str += Y;
-		}
+		void getDebugResult(std::string &str,CCodeContext &context) const;
 
 		const NLAIC::IBasicType *clone() const
 		{
@@ -350,23 +313,9 @@ namespace NLAISCRIPT
 		{		
 		}
 		
-		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
-		{				
-			*((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) /= *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			context.Stack--;
-			return NLAIAGENT::IObjectIA::ProcessIdle;;
-		}
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		void getDebugResult(std::string &str,CCodeContext &context) const;
 
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{
-			std::string X,Y;
-			context.Stack[(int)context.Stack - 1]->getDebugString(X);
-			context.Stack[(int)context.Stack]->getDebugString(Y);
-			
-			str = X;
-			str += " / ";
-			str += Y;
-		}
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CDivOpCode();
@@ -420,23 +369,10 @@ namespace NLAISCRIPT
 		{
 		}	
 		
-		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
-		{				
-			*((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) *= *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			context.Stack--;
-			return NLAIAGENT::IObjectIA::ProcessIdle;;
-		}
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{
-			std::string X,Y;
-			context.Stack[(int)context.Stack - 1]->getDebugString(X);
-			context.Stack[(int)context.Stack]->getDebugString(Y);
-			
-			str = X;
-			str += " * ";
-			str += Y;
-		}
+		void getDebugResult(std::string &str,CCodeContext &context) const;
+
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CMulOpCode();
@@ -489,26 +425,10 @@ namespace NLAISCRIPT
 		{		
 		}
 		
-		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
-		{		
-			NLAIAGENT::IObjetOp *op = *((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) > *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			//if(context.Stack[(int)context.Stack - 1] != NULL) 
-			context.Stack[(int)context.Stack - 1]->release();
-			context.Stack[(int)context.Stack - 1] = op;
-			context.Stack--;
-			return NLAIAGENT::IObjectIA::ProcessIdle;;
-		}
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{
-			std::string X,Y;
-			context.Stack[(int)context.Stack - 1]->getDebugString(X);
-			context.Stack[(int)context.Stack]->getDebugString(Y);
-			
-			str = X;
-			str += " > ";
-			str += Y;
-		}
+		void getDebugResult(std::string &str,CCodeContext &context) const;
+		
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CSupOpCode();
@@ -561,26 +481,10 @@ namespace NLAISCRIPT
 		{
 		}
 		
-		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
-		{				
-			NLAIAGENT::IObjetOp *op = *((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) < *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			//if(context.Stack[(int)context.Stack - 1] != NULL) 
-			context.Stack[(int)context.Stack - 1]->release();
-			context.Stack[(int)context.Stack - 1] = op;
-			context.Stack--;
-			return NLAIAGENT::IObjectIA::ProcessIdle;;
-		}
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{
-			std::string X,Y;
-			context.Stack[(int)context.Stack - 1]->getDebugString(X);
-			context.Stack[(int)context.Stack]->getDebugString(Y);
-			
-			str = X;
-			str += " < ";
-			str += Y;
-		}
+		void getDebugResult(std::string &str,CCodeContext &context) const;
+
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CInfOpCode();
@@ -632,26 +536,9 @@ namespace NLAISCRIPT
 		{
 		}
 		
-		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
-		{				
-			NLAIAGENT::IObjetOp *op = *((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) == *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			//if(context.Stack[(int)context.Stack - 1] != NULL) 
-			context.Stack[(int)context.Stack - 1]->release();
-			context.Stack[(int)context.Stack - 1] = op;
-			context.Stack--;
-			return NLAIAGENT::IObjectIA::ProcessIdle;;
-		}
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{
-			std::string X,Y;
-			context.Stack[(int)context.Stack - 1]->getDebugString(X);
-			context.Stack[(int)context.Stack]->getDebugString(Y);
-			
-			str = X;
-			str += " = ";
-			str += Y;
-		}
+		void getDebugResult(std::string &str,CCodeContext &context) const;
 
 		const NLAIC::IBasicType *clone() const
 		{
@@ -705,25 +592,9 @@ namespace NLAISCRIPT
 		{
 		}
 		
-		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
-		{				
-			NLAIAGENT::IObjetOp *op = *((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) >= *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			//if(context.Stack[(int)context.Stack - 1] != NULL) 
-			context.Stack[(int)context.Stack - 1]->release();
-			context.Stack[(int)context.Stack - 1] = op;
-			context.Stack--;
-			return NLAIAGENT::IObjectIA::ProcessIdle;;
-		}
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{
-			std::string X,Y;
-			context.Stack[(int)context.Stack - 1]->getDebugString(X);
-			context.Stack[(int)context.Stack]->getDebugString(Y);
-			
-			str = X;
-			str += " >= ";
-			str += Y;
-		}
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		void getDebugResult(std::string &str,CCodeContext &context) const;
+
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CSupEqOpCode();
@@ -775,26 +646,9 @@ namespace NLAISCRIPT
 		{		
 		}
 		
-		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
-		{				
-			NLAIAGENT::IObjetOp *op = *((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) <= *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			//if(context.Stack[(int)context.Stack - 1] != NULL) 
-			context.Stack[(int)context.Stack - 1]->release();
-			context.Stack[(int)context.Stack - 1] = op;
-			context.Stack--;
-			return NLAIAGENT::IObjectIA::ProcessIdle;;
-		}
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{
-			std::string X,Y;
-			context.Stack[(int)context.Stack - 1]->getDebugString(X);
-			context.Stack[(int)context.Stack]->getDebugString(Y);
-			
-			str = X;
-			str += " <= ";
-			str += Y;
-		}
+		void getDebugResult(std::string &str,CCodeContext &context) const;		
 		
 		const NLAIC::IBasicType *clone() const
 		{
@@ -848,26 +702,10 @@ namespace NLAISCRIPT
 		{
 		}
 		
-		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
-		{				
-			NLAIAGENT::IObjetOp *op = *((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) != *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			//if(context.Stack[(int)context.Stack - 1] != NULL) 
-			context.Stack[(int)context.Stack - 1]->release();
-			context.Stack[(int)context.Stack - 1] = op;
-			context.Stack--;
-			return NLAIAGENT::IObjectIA::ProcessIdle;;
-		}
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{
-			std::string X,Y;
-			context.Stack[(int)context.Stack - 1]->getDebugString(X);
-			context.Stack[(int)context.Stack]->getDebugString(Y);
-			
-			str = X;
-			str += " != ";
-			str += Y;
-		}
+		void getDebugResult(std::string &str,CCodeContext &context) const;
+
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CDiffOpCode();
@@ -920,24 +758,10 @@ namespace NLAISCRIPT
 		{
 		}
 		
-		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
-		{		
-			
-			NLAIAGENT::IObjetOp *op = !*((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			//if(context.Stack[(int)context.Stack] != NULL) 
-			context.Stack[(int)context.Stack]->release();
-			context.Stack[(int)context.Stack] = op;
-			//context.Stack--;
-			return NLAIAGENT::IObjectIA::ProcessIdle;;
-		}
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{
-			std::string Y;
-			context.Stack[(int)context.Stack]->getDebugString(Y);
-			
-			str = "!";
-			str += Y;
-		}
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		
+		void getDebugResult(std::string &str,CCodeContext &context) const;
+		
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CNotOpCode();

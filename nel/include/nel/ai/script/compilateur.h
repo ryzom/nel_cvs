@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.28 2001/12/05 10:00:35 portier Exp $
+ * $Id: compilateur.h,v 1.29 2002/01/30 15:40:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -464,6 +464,8 @@ namespace NLAISCRIPT
 		bool setParamVarName();
 		//void setParamVarName(NLAIC::CIdentType &id);
 		void pushParamExpression();
+		void addParamCont();
+		void addParamRuleCont();
 		void setImediateVar();
 		void setImediateVarNill();
 		void setPerformative(NLAIAGENT::IMessageBase::TPerformatif p);
@@ -477,6 +479,7 @@ namespace NLAISCRIPT
 		void setTypeExpressionG();
 		void setTypeExpressionD(NLAIC::CTypeOfOperator::TTypeOp op,const char *txtOp);
 		bool callFunction();
+		bool checkReturnMethod();
 		void callSend();
 		void initMessageManager();
 		bool endMessageManager();

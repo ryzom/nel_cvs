@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.13 2001/12/11 09:27:05 chafik Exp $
+ * $Id: opcode_ldb.cpp,v 1.14 2002/01/30 15:39:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,8 @@ namespace NLAISCRIPT
 	{
 		context.Stack ++;
 
-		NLAIAGENT::IObjectIA *t = (NLAIAGENT::IObjectIA *)(context.Self)->getStaticMember(_B)->clone();
+		NLAIAGENT::IObjectIA *t = (NLAIAGENT::IObjectIA *)(context.Self)->getStaticMember(_B);//->clone();
+		t->incRef();
 		context.Stack[(int)context.Stack] = t;
 		return NLAIAGENT::IObjectIA::ProcessIdle;;
 	}
@@ -93,7 +94,10 @@ namespace NLAISCRIPT
 		{			
 			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
-		context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i)->clone();
+		//context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i)->clone();
+		a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i);
+		a->incRef();
+		context.Stack[(int)context.Stack] = a;
 		obj->release();
 		return NLAIAGENT::processIdle;
 	}
@@ -142,8 +146,9 @@ namespace NLAISCRIPT
 			
 			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
-		a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i)->clone();
+		a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i);//->clone();
 		context.Stack ++;
+		a->incRef();
 		context.Stack[(int)context.Stack] = a;
 		return NLAIAGENT::processIdle;
 	}
@@ -191,7 +196,8 @@ namespace NLAISCRIPT
 		{
 			obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*i++);
 		}
-		context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)obj->clone();
+		context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)obj;//->clone();
+		obj->incRef();
 		
 		return NLAIAGENT::IObjectIA::ProcessIdle;
 	}
@@ -227,9 +233,11 @@ namespace NLAISCRIPT
 
 	NLAIAGENT::TProcessStatement CLdbRefOpCode::runOpCode(CCodeContext &context)
 	{
+		NLAIAGENT::IObjectIA *o = (NLAIAGENT::IObjectIA *)context.Heap[_B];//->clone();
+		o->incRef();
 		context.Stack ++;
-		context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)context.Heap[_B]->clone();
-		return NLAIAGENT::IObjectIA::ProcessIdle;;
+		context.Stack[(int)context.Stack] = o;
+		return NLAIAGENT::IObjectIA::ProcessIdle;
 	}
 
 	void CLdbRefOpCode::getDebugResult(std::string &str,CCodeContext &context) const

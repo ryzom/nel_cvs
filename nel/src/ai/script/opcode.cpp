@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.16 2001/12/11 09:27:05 chafik Exp $
+ * $Id: opcode.cpp,v 1.17 2002/01/30 15:39:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,288 @@
 
 namespace NLAISCRIPT
 {	
+
+	NLAIAGENT::TProcessStatement CNegOpCode::runOpCode(CCodeContext &context)
+	{	
+		sint k = (int)context.Stack;
+		NLAIAGENT::IObjetOp *o = (NLAIAGENT::IObjetOp *)context.Stack[k];
+		context.Stack[k] = o->getNeg();
+		o->release();
+		return NLAIAGENT::IObjectIA::ProcessIdle;
+	}
+
+	void CNegOpCode::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		std::string X;
+		((NLAIAGENT::IObjectIA *)context.Stack)->getDebugString(X);
+		str +="-";
+		str += X;		
+	}
+
+
+	NLAIAGENT::TProcessStatement CAddOpCode::runOpCode(CCodeContext &context)
+	{		
+		sint k = (int)context.Stack;
+		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
+		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
+
+		context.Stack[k - 1] = (*a) + (*b);
+		
+		context.Stack--;
+		a->release();
+		return NLAIAGENT::IObjectIA::ProcessIdle;;
+	}
+
+	void CAddOpCode::getDebugResult(std::string &str,CCodeContext &context) const 
+	{
+		std::string X,Y;
+		context.Stack[(int)context.Stack - 1]->getDebugString(X);
+		context.Stack[(int)context.Stack]->getDebugString(Y);
+
+		str = X;
+		str += " + ";
+		str += Y;	
+	}
+
+	NLAIAGENT::TProcessStatement CSubOpCode::runOpCode(CCodeContext &context)
+	{				
+		sint k = (int)context.Stack;
+		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
+		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
+
+		context.Stack[k - 1] = (*a) - (*b);
+		
+		context.Stack--;
+		a->release();
+		return NLAIAGENT::IObjectIA::ProcessIdle;;
+	}
+	
+	void CSubOpCode::getDebugResult(std::string &str,CCodeContext &context) const 
+	{
+		std::string X,Y;
+		context.Stack[(int)context.Stack - 1]->getDebugString(X);
+		context.Stack[(int)context.Stack]->getDebugString(Y);
+		
+		str = X;
+		str += " - ";
+		str += Y;
+	}
+
+	NLAIAGENT::TProcessStatement CDivOpCode::runOpCode(CCodeContext &context)
+	{				
+		sint k = (int)context.Stack;
+		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
+		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
+
+		context.Stack[k - 1] = (*a) / (*b);
+		
+		context.Stack--;
+		a->release();
+		return NLAIAGENT::IObjectIA::ProcessIdle;;
+	}
+
+	void CDivOpCode::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		std::string X,Y;
+		context.Stack[(int)context.Stack - 1]->getDebugString(X);
+		context.Stack[(int)context.Stack]->getDebugString(Y);
+		
+		str = X;
+		str += " / ";
+		str += Y;
+	}
+
+
+	NLAIAGENT::TProcessStatement CMulOpCode::runOpCode(CCodeContext &context)
+	{				
+		sint k = (int)context.Stack;
+		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
+		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
+
+		context.Stack[k - 1] = (*a) * (*b);
+		
+		context.Stack--;
+		a->release();
+		return NLAIAGENT::IObjectIA::ProcessIdle;;
+	}
+
+	void CMulOpCode::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		std::string X,Y;
+		context.Stack[(int)context.Stack - 1]->getDebugString(X);
+		context.Stack[(int)context.Stack]->getDebugString(Y);
+		
+		str = X;
+		str += " * ";
+		str += Y;
+	}
+
+	NLAIAGENT::TProcessStatement CSupOpCode::runOpCode(CCodeContext &context)
+	{		
+		sint k = (int)context.Stack;
+		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
+		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
+
+		context.Stack[k - 1] = (*a) > (*b);
+		
+		context.Stack--;
+		a->release();
+
+		return NLAIAGENT::IObjectIA::ProcessIdle;;
+	}
+
+	void CSupOpCode::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		std::string X,Y;
+		context.Stack[(int)context.Stack - 1]->getDebugString(X);
+		context.Stack[(int)context.Stack]->getDebugString(Y);
+		
+		str = X;
+		str += " > ";
+		str += Y;
+	}
+
+	
+
+	NLAIAGENT::TProcessStatement CInfOpCode::runOpCode(CCodeContext &context)
+	{				
+		sint k = (int)context.Stack;
+		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
+		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
+
+		context.Stack[k - 1] = (*a) < (*b);
+		
+		context.Stack--;
+		a->release();
+
+		return NLAIAGENT::IObjectIA::ProcessIdle;;
+	}
+
+	void CInfOpCode::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		std::string X,Y;
+		context.Stack[(int)context.Stack - 1]->getDebugString(X);
+		context.Stack[(int)context.Stack]->getDebugString(Y);
+		
+		str = X;
+		str += " < ";
+		str += Y;
+	}
+
+	NLAIAGENT::TProcessStatement CEqOpCode::runOpCode(CCodeContext &context)
+	{				
+		sint k = (int)context.Stack;
+		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
+		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
+
+		context.Stack[k - 1] = (*a) == (*b);
+		
+		context.Stack--;
+		a->release();
+		return NLAIAGENT::IObjectIA::ProcessIdle;;
+	}
+
+	void CEqOpCode::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		std::string X,Y;
+		context.Stack[(int)context.Stack - 1]->getDebugString(X);
+		context.Stack[(int)context.Stack]->getDebugString(Y);
+		
+		str = X;
+		str += " = ";
+		str += Y;
+	}
+
+	NLAIAGENT::TProcessStatement CSupEqOpCode::runOpCode(CCodeContext &context)
+	{				
+		sint k = (int)context.Stack;
+		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
+		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
+
+		context.Stack[k - 1] = (*a) >= (*b);
+		
+		context.Stack--;
+		a->release();
+		return NLAIAGENT::IObjectIA::ProcessIdle;;
+	}
+
+	void CSupEqOpCode::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		std::string X,Y;
+		context.Stack[(int)context.Stack - 1]->getDebugString(X);
+		context.Stack[(int)context.Stack]->getDebugString(Y);
+		
+		str = X;
+		str += " >= ";
+		str += Y;
+	}
+
+	NLAIAGENT::TProcessStatement CInfEqOpCode::runOpCode(CCodeContext &context)
+	{				
+		sint k = (int)context.Stack;
+		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
+		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
+
+		context.Stack[k - 1] = (*a) <= (*b);
+		
+		context.Stack--;
+		a->release();
+		return NLAIAGENT::IObjectIA::ProcessIdle;;
+	}
+
+	void CInfEqOpCode::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		std::string X,Y;
+		context.Stack[(int)context.Stack - 1]->getDebugString(X);
+		context.Stack[(int)context.Stack]->getDebugString(Y);
+		
+		str = X;
+		str += " <= ";
+		str += Y;
+	}
+
+	NLAIAGENT::TProcessStatement CDiffOpCode::runOpCode(CCodeContext &context)
+	{				
+		sint k = (int)context.Stack;
+		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
+		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
+
+		context.Stack[k - 1] = (*a) != (*b);
+		
+		context.Stack--;
+		a->release();
+
+		return NLAIAGENT::IObjectIA::ProcessIdle;;
+	}
+
+	void CDiffOpCode::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		std::string X,Y;
+		context.Stack[(int)context.Stack - 1]->getDebugString(X);
+		context.Stack[(int)context.Stack]->getDebugString(Y);
+		
+		str = X;
+		str += " != ";
+		str += Y;
+	}
+
+	NLAIAGENT::TProcessStatement CNotOpCode::runOpCode(CCodeContext &context)
+	{		
+		
+		NLAIAGENT::IObjetOp *op = !*((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));		
+		context.Stack[(int)context.Stack]->release();
+		context.Stack[(int)context.Stack] = op;
+		
+		return NLAIAGENT::IObjectIA::ProcessIdle;
+	}
+	void CNotOpCode::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		std::string Y;
+		context.Stack[(int)context.Stack]->getDebugString(Y);
+		
+		str = "!";
+		str += Y;
+	}
 
 	NLAIAGENT::TProcessStatement CAffMemberiOpCode::runOpCode(CCodeContext &context)
 	{				

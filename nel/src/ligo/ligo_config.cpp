@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.13 2004/09/15 13:27:03 boucher Exp $
+ * $Id: ligo_config.cpp,v 1.14 2004/09/24 07:56:01 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -132,8 +132,7 @@ bool CLigoConfig::readPrimitiveClass (const char *_fileName)
 						reloadIndexFile(indexFileName);
 					}
 					else
-						return false;
-					
+						nlwarning("Can't find XML element <FILE_NAME>, no file index available for alias" );
 				}
 				else
 				{
@@ -247,7 +246,13 @@ bool CLigoConfig::reloadIndexFile(const std::string &indexFileName)
 
 	// load the configuration file
 	CConfigFile cf;
-	string pathName = CPath::lookup(_IndexFileName);
+	string pathName = CPath::lookup(_IndexFileName, false);
+
+	if (pathName.empty())
+	{
+		nlwarning("Can't find index file '%s' in search path, no file index available for alias", indexFileName.c_str());
+		return false;
+	}
 	cf.load(pathName);
 
 	// get the variable

@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.48 2001/10/04 16:52:34 corvazier Exp $
+ * $Id: stream.h,v 1.49 2001/10/29 09:37:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -608,6 +608,58 @@ public:
 	  * When a xml input stream will try to open a node, it will scan all currrent child nodes to find the good one.
 	  * So input xml stream can skip unknown node.
 	  */
+
+	/**
+	  * xmlSerial() serial a values into a node.
+	  */
+	template<class T> 
+	void xmlSerial (T& value0, const char *nodeName)
+	{
+		// Open the node
+		xmlPush (nodeName);
+		
+		// Serial the value
+		serial (value0);
+
+		// Close the node
+		xmlPop ();
+	}
+	template<class T> 
+	void xmlSerial (T& value0, T& value1, const char *nodeName)
+	{
+		// Open the node
+		xmlPush (nodeName);
+		
+		// Serial the values
+		serial (value0, value1);
+
+		// Close the node
+		xmlPop ();
+	}
+	template<class T> 
+	void xmlSerial (T& value0, T& value1, T& value2, const char *nodeName)
+	{
+		// Open the node
+		xmlPush (nodeName);
+		
+		// Serial the values
+		serial (value0, value1, value2);
+
+		// Close the node
+		xmlPop ();
+	}
+	template<class T> 
+	void xmlSerial (T& value0, T& value1, T& value2, T& value3, const char *nodeName)
+	{
+		// Open the node
+		xmlPush (nodeName);
+		
+		// Serial the values
+		serial (value0, value1, value2, value3);
+
+		// Close the node
+		xmlPop ();
+	}
 
 	/**
 	  * xmlPush() open recurcively a new node. You must call xmlPop to close this node.

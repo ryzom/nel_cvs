@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.23 2004/01/13 18:32:54 cado Exp $
+ * $Id: primitive.h,v 1.24 2004/04/28 18:48:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,7 @@ void Register ();
 /*
  * This class is a property class for ligo primitive.
  */
-class IProperty
+class IProperty : public NLMISC::IStreamable
 {
 public:
 	IProperty ()
@@ -87,6 +87,14 @@ public:
 	virtual ~CPropertyString () {};
 	std::string			String;
 
+	NLMISC_DECLARE_CLASS (CPropertyString)
+
+	virtual void serial(NLMISC::IStream &f)
+	{
+		f.serial(Default);
+		f.serial(String);
+	}
+
 	// Force class to be polymorphic
 	virtual void foo () const {};
 };
@@ -106,6 +114,13 @@ public:
 	CPropertyStringArray (const std::vector<std::string> &stringArray, bool _default);
 	std::vector<std::string>	StringArray;
 
+	NLMISC_DECLARE_CLASS (CPropertyStringArray)
+
+	virtual void serial(NLMISC::IStream &f)
+	{
+		f.serial(Default);
+		f.serialCont(StringArray);
+	}
 	// Force class to be polymorphic
 	virtual void foo () const {};
 };
@@ -121,6 +136,13 @@ class CPropertyColor : public IProperty
 public:
 	NLMISC::CRGBA		Color;
 
+	NLMISC_DECLARE_CLASS (CPropertyColor)
+
+	virtual void serial(NLMISC::IStream &f)
+	{
+		f.serial(Default);
+		f.serial(Color);
+	}
 	// Force class to be polymorphic
 	virtual void foo () const {};
 };
@@ -140,6 +162,12 @@ public:
 		Selected = false;
 	}
 
+	void serial(NLMISC::IStream &f)
+	{
+		CVector::serial(f);
+		f.serial(Selected);
+	}
+
 	bool	Selected;
 };
 
@@ -151,7 +179,7 @@ public:
  * Provide access to common properties.
  * Provide access to the primitive hierachy
  */
-class IPrimitive : public NLMISC::IClassable
+class IPrimitive : public NLMISC::IStreamable
 {
 public:
 
@@ -308,13 +336,16 @@ public:
 	// Make a copy
 	virtual IPrimitive *copy () const = 0;
 
+	// used for fast binary save/load (exploitation  mode)
+	void serial(NLMISC::IStream &f);	
+
 private:
 
 	// Update child Id
 	void updateChildId (uint index);
 
 	// Child id
-	uint									_ChildId;
+	uint32									_ChildId;
 
 	// Parent
 	IPrimitive								*_Parent;
@@ -370,7 +401,6 @@ public:
 
 public:
 
-	// Deprecated
 	void serial (NLMISC::IStream &f);
 
 	// void operator= (const CPrimPoint &node);
@@ -406,7 +436,6 @@ public:
 
 public:
 
-	// Deprecated
 	void serial (NLMISC::IStream &f);
 
 	// void operator= (const CPrimPath &node);
@@ -450,7 +479,6 @@ public:
 
 	// void operator= (const CPrimZone &node);
 
-	// Deprecated
 	void serial (NLMISC::IStream &f);
 
 	// Returns true if the vector v is inside of the patatoid
@@ -542,6 +570,10 @@ public:
 
 	// Write the primitive
 	void			write (xmlNodePtr root, const char *filename) const;
+
+	// serial the primitive. Used for binary files.
+	void			serial(NLMISC::IStream &f);
+
 
 private:
 	// Conversion internal methods

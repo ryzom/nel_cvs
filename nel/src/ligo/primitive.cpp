@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.25 2004/01/13 18:32:54 cado Exp $
+ * $Id: primitive.cpp,v 1.26 2004/04/28 18:48:42 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -231,38 +231,17 @@ CPropertyStringArray::CPropertyStringArray (const std::vector<std::string> &stri
 
 void CPrimPoint::serial (IStream &f)
 {
-	f.xmlPushBegin ("POINT");
-
-	f.xmlSetAttrib ("NAME");
-	f.serial (Name);
-	f.xmlSetAttrib ("LAYER");
-	f.serial (Layer);
-	f.xmlPushEnd ();
-
-	f.serial (Point);
-
-	if (f.isReading ())
-	{
-		Angle = 0;
-	}
-
-	f.xmlPop ();
+	// serial base info
+	IPrimitive::serial(f);
+	f.serial(Point);
+	f.serial(Angle);
 }
 
 // ***************************************************************************
 void CPrimPath::serial (IStream &f)
 {
-	f.xmlPushBegin ("PATH");
-	
-	f.xmlSetAttrib ("NAME");
-	f.serial (Name);
-	f.xmlSetAttrib ("LAYER");
-	f.serial (Layer);
-	f.xmlPushEnd ();
-
-	f.serialCont (VPoints);
-
-	f.xmlPop ();
+	IPrimitive::serial(f);
+	f.serialCont(VPoints);
 }
 
 // ***************************************************************************
@@ -911,17 +890,8 @@ void CPrimZone::getAABox( NLMISC::CVector& cornerMin, NLMISC::CVector& cornerMax
 // ***************************************************************************
 void CPrimZone::serial (IStream &f)
 {
-	f.xmlPushBegin ("ZONE");
-	
-	f.xmlSetAttrib ("NAME");
-	f.serial (Name);
-	f.xmlSetAttrib ("LAYER");
-	f.serial (Layer);
-	f.xmlPushEnd ();
-
-	f.serialCont (VPoints);
-
-	f.xmlPop ();
+	IPrimitive::serial(f);
+	f.serialCont(VPoints);
 }
 
 // ***************************************************************************
@@ -978,6 +948,58 @@ IPrimitive::IPrimitive (const IPrimitive &node)
 	_Parent = NULL;
 	IPrimitive::operator= (node);
 }
+
+// ***************************************************************************
+
+void IPrimitive::serial (NLMISC::IStream &f)
+{
+	// serialize the property container
+	if (f.isReading())
+	{
+		uint32 size;
+		f.serial(size);
+		for (uint i=0; i<size; ++i)
+		{
+			std::string s;
+			f.serial(s);
+			IProperty *&pp = _Properties[s];
+			f.serialPolyPtr(pp);
+		}
+	}
+	else
+	{
+		uint32 size = _Properties.size();
+		f.serial(size);
+		std::map<std::string, IProperty*>::iterator first(_Properties.begin()), last(_Properties.end());
+		for (; first != last; ++first)
+		{
+			std::string &s = const_cast<std::string&>(first->first);
+
+			f.serial(s);
+			f.serialPolyPtr(first->second);
+		}
+	}
+	f.serial(_ChildId);
+
+	f.serial(Layer);
+	f.serial(Name);
+	f.serial(Expanded);
+
+	// serial the childrens
+	f.serialContPolyPtr(_Children);
+
+	if (f.isReading())
+	{
+		// reloc child link
+		vector<IPrimitive*>::iterator first(_Children.begin()), last(_Children.end());
+		for (; first != last; ++first)
+		{
+			if (*first)
+				(*first)->_Parent = this;
+		}
+	}
+}
+
 
 // ***************************************************************************
 
@@ -1836,6 +1858,19 @@ void CPrimitives::write (xmlNodePtr root, const char *filename) const
 
 // ***************************************************************************
 
+void CPrimitives::serial(NLMISC::IStream &f)
+{
+	if (f.isReading())
+	{
+		RootNode->removeChildren ();
+		RootNode->removeProperties ();
+	}
+
+	f.serialPolyPtr(RootNode);
+}
+
+// ***************************************************************************
+
 void CPrimitives::convertAddPrimitive (IPrimitive *child, const IPrimitive *prim, bool hidden)
 {
 	// The primitve
@@ -1982,6 +2017,9 @@ void CPrimitives::convert (const CPrimRegion &region)
 
 void Register ()
 {
+	NLMISC_REGISTER_CLASS(CPropertyString);
+	NLMISC_REGISTER_CLASS(CPropertyStringArray);
+	NLMISC_REGISTER_CLASS(CPropertyColor);
 	NLMISC_REGISTER_CLASS(CPrimNode);
 	NLMISC_REGISTER_CLASS(CPrimPoint);
 	NLMISC_REGISTER_CLASS(CPrimPath);

@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.11 2001/11/21 18:12:24 vizerie Exp $
+ * $Id: water_model.cpp,v 1.12 2001/11/27 16:30:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/water_height_map.h"
 #include "3d/dru.h"
 #include "3d/scene.h"
+#include "nel/3d/animation_time.h"
 #include "nel/misc/vector_2d.h"
 #include "nel/misc/vector_h.h"
 
@@ -187,106 +188,124 @@ static void SetupWaterVertex(  sint  qLeft,
 	}
 	else
 	{
+		
+
 		// filter height and gradient at the given point
 		const sint stride = doubleWaterHeightMapSize;
 
-		float deltaU = wXf - wx;
-		float deltaV = wYf - wy;
-		nlassert(deltaU >= 0.f && deltaU <= 1.f  && deltaV >= 0.f && deltaV <= 1.f);
+		
 		const uint xm	  = (uint) (wx - qSubLeft);
 		const uint ym	  = (uint) (wy - qSubDown);
 		const sint offset = xm + stride * ym;
 		const float			  *ptWater     = whm.getPointer()	  + offset;
-		const float			  *ptWaterPrev = whm.getPrevPointer()  + offset;
+
+	/*	float epsilon = 10E-5f;
+		if (ptWater[0] > epsilon			 || ptWater[0] < epsilon 
+			|| ptWater[1] > epsilon			 || ptWater[1] < epsilon 
+			|| ptWater[stride] > epsilon	 || ptWater[stride] < epsilon
+			|| ptWater[stride + 1] > epsilon || ptWater[stride + 1] < epsilon
+			)
+		{*/
+
+			float deltaU = wXf - wx;
+			float deltaV = wYf - wy;
+			nlassert(deltaU >= 0.f && deltaU <= 1.f  && deltaV >= 0.f && deltaV <= 1.f);
+			const float			  *ptWaterPrev = whm.getPrevPointer()  + offset;
 
 
 
-		float g0x, g1x, g2x, g3x;  // x gradient for current 
-		float g0xp, g1xp, g2xp, g3xp;
+			float g0x, g1x, g2x, g3x;  // x gradient for current 
+			float g0xp, g1xp, g2xp, g3xp;
 
-		float gradCurrX, gradCurrY;
+			float gradCurrX, gradCurrY;
 
-		float g0y, g1y, g2y, g3y; // y gradient for previous map
-		float g0yp, g1yp, g2yp, g3yp;
+			float g0y, g1y, g2y, g3y; // y gradient for previous map
+			float g0yp, g1yp, g2yp, g3yp;
 
-		float gradPrevX, gradPrevY;
+			float gradPrevX, gradPrevY;
 
-		/// curr gradient
+			/// curr gradient
 
-		g0x = ptWater[ 1] - ptWater[ - 1];
-		g1x = ptWater[ 2] - ptWater[ 0 ];
-		g2x = ptWater[ 2 + stride] - ptWater[ stride];
-		g3x = ptWater[ 1 + stride] - ptWater[ - 1 + stride];
+			g0x = ptWater[ 1] - ptWater[ - 1];
+			g1x = ptWater[ 2] - ptWater[ 0 ];
+			g2x = ptWater[ 2 + stride] - ptWater[ stride];
+			g3x = ptWater[ 1 + stride] - ptWater[ - 1 + stride];
 
-		gradCurrX = BilinFilter(g0x, g1x, g2x, g3x, deltaU, deltaV);
-
-
-		g0y = ptWater[ stride] - ptWater[ - stride];
-		g1y = ptWater[ stride + 1] - ptWater[ - stride + 1];
-		g2y = ptWater[ (stride << 1) + 1] - ptWater[ 1];
-		g3y = ptWater[ (stride << 1)] - ptWater[0];
-
-		gradCurrY = BilinFilter(g0y, g1y, g2y, g3y, deltaU, deltaV);
-
-		/// prev gradient
-
-		g0xp = ptWaterPrev[ 1] - ptWaterPrev[ - 1];
-		g1xp = ptWaterPrev[ 2] - ptWaterPrev[ 0  ];
-		g2xp = ptWaterPrev[ 2 + stride] - ptWaterPrev[ + stride];
-		g3xp = ptWaterPrev[ 1 + stride] - ptWaterPrev[ - 1 + stride];
-
-		gradPrevX = BilinFilter(g0xp, g1xp, g2xp, g3xp, deltaU, deltaV);
+			gradCurrX = BilinFilter(g0x, g1x, g2x, g3x, deltaU, deltaV);
 
 
-		g0yp = ptWaterPrev[ stride] - ptWaterPrev[ - stride];
-		g1yp = ptWaterPrev[ stride + 1] - ptWaterPrev[ - stride + 1];
-		g2yp = ptWaterPrev[ (stride << 1) + 1] - ptWaterPrev[ 1 ];
-		g3yp = ptWaterPrev[ (stride << 1)] - ptWaterPrev[ 0 ];
+			g0y = ptWater[ stride] - ptWater[ - stride];
+			g1y = ptWater[ stride + 1] - ptWater[ - stride + 1];
+			g2y = ptWater[ (stride << 1) + 1] - ptWater[ 1];
+			g3y = ptWater[ (stride << 1)] - ptWater[0];
 
-		gradPrevY = BilinFilter(g0yp, g1yp, g2yp, g3yp, deltaU, deltaV);
+			gradCurrY = BilinFilter(g0y, g1y, g2y, g3y, deltaU, deltaV);
 
+			/// prev gradient
 
-		/// current height
-		float h = BilinFilter(ptWater[ 0 ], ptWater[ + 1], ptWater[ 1 + stride], ptWater[stride], deltaU, deltaV);
+			g0xp = ptWaterPrev[ 1] - ptWaterPrev[ - 1];
+			g1xp = ptWaterPrev[ 2] - ptWaterPrev[ 0  ];
+			g2xp = ptWaterPrev[ 2 + stride] - ptWaterPrev[ + stride];
+			g3xp = ptWaterPrev[ 1 + stride] - ptWaterPrev[ - 1 + stride];
 
-		/// previous height
-		float hPrev = BilinFilter(ptWaterPrev[ 0 ], ptWaterPrev[ 1], ptWaterPrev[ 1 + stride], ptWaterPrev[stride], deltaU, deltaV);
-		
-
-		float timeRatio = whm.getBufferRatio();
-
-
-		FillWaterVB(vbPointer, inter.x, inter.y, timeRatio * h + (1.f - timeRatio) * hPrev,
-					4.5f * (timeRatio * gradCurrX + (1.f - timeRatio) * gradPrevX),
-					4.5f * (timeRatio * gradCurrY + (1.f - timeRatio) * gradPrevY)
-				   );
+			gradPrevX = BilinFilter(g0xp, g1xp, g2xp, g3xp, deltaU, deltaV);
 
 
+			g0yp = ptWaterPrev[ stride] - ptWaterPrev[ - stride];
+			g1yp = ptWaterPrev[ stride + 1] - ptWaterPrev[ - stride + 1];
+			g2yp = ptWaterPrev[ (stride << 1) + 1] - ptWaterPrev[ 1 ];
+			g3yp = ptWaterPrev[ (stride << 1)] - ptWaterPrev[ 0 ];
 
-		//NLMISC::CVector2f *ptGrad  = whm.getGradPointer() + offset;
+			gradPrevY = BilinFilter(g0yp, g1yp, g2yp, g3yp, deltaU, deltaV);
+
+
+			/// current height
+			float h = BilinFilter(ptWater[ 0 ], ptWater[ + 1], ptWater[ 1 + stride], ptWater[stride], deltaU, deltaV);
+
+			/// previous height
+			float hPrev = BilinFilter(ptWaterPrev[ 0 ], ptWaterPrev[ 1], ptWaterPrev[ 1 + stride], ptWaterPrev[stride], deltaU, deltaV);
+			
+
+			float timeRatio = whm.getBufferRatio();
+
+
+			FillWaterVB(vbPointer, inter.x, inter.y, timeRatio * h + (1.f - timeRatio) * hPrev,
+						4.5f * (timeRatio * gradCurrX + (1.f - timeRatio) * gradPrevX),
+						4.5f * (timeRatio * gradCurrY + (1.f - timeRatio) * gradPrevY)
+					   );
 
 
 
+			//NLMISC::CVector2f *ptGrad  = whm.getGradPointer() + offset;
 
 
-	/*	float dh1 = deltaV * ptWater[stride] + (1.f - deltaV) *  ptWater[0];
-		float dh2 = deltaV * ptWater[stride + 1] + (1.f - deltaV) *  ptWater[1];
-		float h = deltaU * dh2 + (1.f - deltaU ) * dh1;
 
-		
-		float gR = deltaV * ptGrad[stride + 1].x + (1.f - deltaV) * ptGrad[1].x;
-		float gL = deltaV * ptGrad[stride].x + (1.f - deltaV) * ptGrad[0].x;
 
-		float grU = 4.5f * (deltaU *  gR + (1.f - deltaU) * gL);
 
-		gR = deltaV * ptGrad[stride + 1].y + (1.f - deltaV) * ptGrad[1].y;
-		gL = deltaV * ptGrad[stride].y + (1.f - deltaV) * ptGrad[0].y;
+		/*	float dh1 = deltaV * ptWater[stride] + (1.f - deltaV) *  ptWater[0];
+			float dh2 = deltaV * ptWater[stride + 1] + (1.f - deltaV) *  ptWater[1];
+			float h = deltaU * dh2 + (1.f - deltaU ) * dh1;
 
-		float grV = 4.5f * (deltaU *  gR + (1.f - deltaU) * gL);
+			
+			float gR = deltaV * ptGrad[stride + 1].x + (1.f - deltaV) * ptGrad[1].x;
+			float gL = deltaV * ptGrad[stride].x + (1.f - deltaV) * ptGrad[0].x;
 
-		vb.setValueFloat3Ex (Water_VB_POS, vbIndex, inter.x, inter.y, h);
-		vb.setValueFloat2Ex (Water_VB_DX, vbIndex, grU, grV);
-		*/
+			float grU = 4.5f * (deltaU *  gR + (1.f - deltaU) * gL);
+
+			gR = deltaV * ptGrad[stride + 1].y + (1.f - deltaV) * ptGrad[1].y;
+			gL = deltaV * ptGrad[stride].y + (1.f - deltaV) * ptGrad[0].y;
+
+			float grV = 4.5f * (deltaU *  gR + (1.f - deltaU) * gL);
+
+			vb.setValueFloat3Ex (Water_VB_POS, vbIndex, inter.x, inter.y, h);
+			vb.setValueFloat2Ex (Water_VB_DX, vbIndex, grU, grV);
+			*/
+		/*}
+		else
+		{
+			// no perturbation is visible
+			FillWaterVB(vbPointer, inter.x, inter.y, 0, 0, 0);		
+		}*/
 	}
 }
 
@@ -335,8 +354,7 @@ static void DrawPoly2D(CVertexBuffer &vb, IDriver *drv, const NLMISC::CMatrix &m
 //***************************************************************************************************************
 
 void	CWaterRenderObs::traverse(IObs *caller)
-{		
-
+{			
 	CRenderTrav					*trav			= NLMISC::safe_cast<CRenderTrav *>(Trav);
 	CWaterModel					*m				= NLMISC::safe_cast<CWaterModel *>(Model);
 	CWaterShape					*shape			= NLMISC::safe_cast<CWaterShape *>((IShape *) m->Shape);
@@ -927,6 +945,70 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 	}
 
 	drv->setupMaterial(WaterMat);
+}
+
+//=======================================================================================
+//							wave maker implementation
+//=======================================================================================
+
+
+CWaveMakerModel::CWaveMakerModel() : _Time(0), _Scene(NULL)
+{
+}
+
+//================================================
+
+void CWaveMakerModel::registerBasic()
+{
+	CMOT::registerModel(WaveMakerModelClassId, TransformShapeId, CWaveMakerModel::creator);
+	CMOT::registerObs(AnimDetailTravId, WaveMakerModelClassId, CWaveMakerDetailObs::creator);	
+}
+
+//================================================
+
+ITrack* CWaveMakerModel::getDefaultTrack (uint valueId)
+{
+	nlassert(Shape);
+	CWaveMakerShape *ws = NLMISC::safe_cast<CWaveMakerShape *>((IShape *) Shape);
+	switch (valueId)
+	{
+		case PosValue:			return ws->getDefaultPos(); break;	
+		default: // delegate to parent
+			return CTransformShape::getDefaultTrack(valueId);
+		break;
+	}
+}
+
+//================================================
+
+void	CWaveMakerDetailObs::traverse(IObs *caller)
+{
+	CTransformAnimDetailObs::traverse(caller);
+	/// get the model
+	CWaveMakerModel *wmm = NLMISC::safe_cast<CWaveMakerModel *>(Model);
+	nlassert(wmm->_Scene);
+	/// get the shape
+	CWaveMakerShape *wms = NLMISC::safe_cast<CWaveMakerShape *>((IShape *) wmm->Shape);
+	const NLMISC::CVector	worldPos = this->ClipObs->HrcObs->WorldMatrix.getPos();
+	const NLMISC::CVector2f pos2d(worldPos.x, worldPos.y);
+	/// get the water height map
+	CWaterHeightMap &whm = GetWaterPoolManager().getPoolByID(wms->_PoolID);
+	// get the time delta 
+	const TAnimationTime deltaT  = std::min(wmm->_Scene->getEllapsedTime(), (TAnimationTime) whm.getPropagationTime());
+	wmm->_Time += deltaT;
+	if (!wms->_ImpulsionMode)
+	{
+		whm.perturbate(pos2d, wms->_Intensity * cosf(2.f / wms->_Period * (float) NLMISC::Pi * wmm->_Time), wms->_Radius);
+	}
+	else
+	{
+		if (wmm->_Time > wms->_Period)
+		{
+			wmm->_Time -= wms->_Period;
+			whm.perturbate(pos2d, wms->_Intensity, wms->_Radius);
+		}
+	}
+	this->traverseSons();
 }
 
 

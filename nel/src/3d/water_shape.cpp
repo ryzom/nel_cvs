@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.8 2001/11/21 18:12:24 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.9 2001/11/27 16:30:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,7 +29,8 @@
 #include "3d/texture_bump.h"
 #include "3d/texture_blend.h"
 #include "3d/scene.h"
-	#include "3d/water_pool_manager.h"
+#include "3d/water_pool_manager.h"
+#include "3d/water_height_map.h"
 #include <memory>
 
 
@@ -216,6 +217,8 @@ CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeig
 	_ColorMapMatPos.set(0, 0);
 }
 
+//============================================
+
 CWaterShape::~CWaterShape()
 {
 	if (
@@ -227,6 +230,7 @@ CWaterShape::~CWaterShape()
 	}
 }
 
+//============================================
 
 void CWaterShape::initVertexProgram()
 {	
@@ -242,6 +246,7 @@ void CWaterShape::initVertexProgram()
 }
 
 
+//============================================
 
 void CWaterShape::setupVertexBuffer()
 {
@@ -294,6 +299,8 @@ void CWaterShape::setupVertexBuffer()
 	_GridSizeTouched = false;
 }
 
+//============================================
+
 CTransformShape		*CWaterShape::createInstance(CScene &scene)
 {
 	CWaterModel *wm = NLMISC::safe_cast<CWaterModel *>(scene.createModel(WaterModelClassId) );
@@ -306,14 +313,15 @@ CTransformShape		*CWaterShape::createInstance(CScene &scene)
 	return wm;
 }
 
-
-
+//============================================
 
 float CWaterShape::getNumTriangles (float distance)
 {
 	// TODO
 	return 0;
 }
+
+//============================================
 
 void CWaterShape::flushTextures (IDriver &driver)
 {
@@ -324,6 +332,8 @@ void CWaterShape::flushTextures (IDriver &driver)
 	}
 }
 
+//============================================
+
 void	CWaterShape::setScreenGridSize(uint32 x, uint32 y)
 {
 	nlassert(x > 0 && y > 0);
@@ -332,6 +342,8 @@ void	CWaterShape::setScreenGridSize(uint32 x, uint32 y)
 	_GridSizeTouched = true;
 }
 
+//============================================
+
 void		CWaterShape::setGridBorderSize(uint32 x, uint32 y)
 {
 	_XGridBorder = x;
@@ -339,7 +351,7 @@ void		CWaterShape::setGridBorderSize(uint32 x, uint32 y)
 	_GridSizeTouched = true;
 }
 
-
+//============================================
 
 void CWaterShape::setShape(const NLMISC::CPolygon2D &poly)
 {
@@ -347,6 +359,8 @@ void CWaterShape::setShape(const NLMISC::CPolygon2D &poly)
 	_Poly = poly;
 	computeBBox();
 }
+
+//============================================
 
 void CWaterShape::computeBBox()
 {
@@ -361,6 +375,7 @@ void CWaterShape::computeBBox()
 	_BBox.setMinMax(CVector(min.x, min.y, 0), CVector(max.x, max.y, 0));
 }
 
+//============================================
 
 void				CWaterShape::setHeightMap(uint k, ITexture *hm)
 {
@@ -372,17 +387,23 @@ void				CWaterShape::setHeightMap(uint k, ITexture *hm)
 	((CTextureBump *) (ITexture *) _BumpMap[k])->setHeightMap(hm);
 }
 
+//============================================
+
 ITexture			*CWaterShape::getHeightMap(uint k)
 {
 	nlassert(k < 2);
 	return ((CTextureBump *) (ITexture *) _BumpMap[k] )->getHeightMap();
 }
 
+//============================================
+
 const ITexture		*CWaterShape::getHeightMap(uint k) const
 {
 	nlassert(k < 2);
 	return ((CTextureBump *) (ITexture *) _BumpMap[k] )->getHeightMap();
 }
+
+//============================================
 
 void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
@@ -427,6 +448,7 @@ void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	
 }
 
+//============================================
 
 bool CWaterShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 {	
@@ -437,26 +459,39 @@ bool CWaterShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldM
 	return true;
 }
 
+//============================================
+
 void				CWaterShape::setHeightMapScale(uint k, const NLMISC::CVector2f &scale)
 {
 	nlassert(k < 2);
 	_HeightMapScale[k] = scale;
 }
+
+//============================================
+
 NLMISC::CVector2f	CWaterShape::getHeightMapScale(uint k) const
 {
 	nlassert(k < 2);
 	return _HeightMapScale[k];
 }
+
+//============================================
+
 void			    CWaterShape::setHeightMapSpeed(uint k, const NLMISC::CVector2f &speed)
 {
 	nlassert(k < 2);
 	_HeightMapSpeed[k] = speed;
 }
+
+//============================================
+
 NLMISC::CVector2f   CWaterShape::getHeightMapSpeed(uint k) const
 {
 	nlassert(k < 2);
 	return _HeightMapSpeed[k];
 }
+
+//============================================
 
 void	CWaterShape::setColorMapMat(const NLMISC::CVector2f &column0, const NLMISC::CVector2f &column1, const NLMISC::CVector2f &pos)
 {
@@ -465,12 +500,16 @@ void	CWaterShape::setColorMapMat(const NLMISC::CVector2f &column0, const NLMISC:
 	_ColorMapMatPos  = pos;
 }
 
+//============================================
+
 void	CWaterShape::getColorMapMat(NLMISC::CVector2f &column0, NLMISC::CVector2f &column1, NLMISC::CVector2f &pos)
 {
 	column0 = _ColorMapMatColumn0;
 	column1 = _ColorMapMatColumn1;
 	pos  = _ColorMapMatPos;
 }
+
+//============================================
 
 void CWaterShape::envMapUpdate()
 {
@@ -495,11 +534,15 @@ void CWaterShape::envMapUpdate()
 	}
 }
 
+//============================================
+
 void CWaterShape::setColorMap(ITexture *map)
 { 
 	_ColorMap = map; 
 	//colorMapUpdate();
 }
+
+//============================================
 
 void CWaterShape::setEnvMap(uint index, ITexture *envMap)
 {
@@ -507,6 +550,7 @@ void CWaterShape::setEnvMap(uint index, ITexture *envMap)
 	_EnvMap[index] = envMap;	
 }
 
+//============================================
 
 void CWaterShape::getShapeInWorldSpace(NLMISC::CPolygon &poly) const
 {
@@ -523,7 +567,69 @@ void CWaterShape::getShapeInWorldSpace(NLMISC::CPolygon &poly) const
 	{
 		poly.Vertices[k] = objMat * NLMISC::CVector(_Poly.Vertices[k].x, _Poly.Vertices[k].y, 0);
 	}
+}
 
+
+//======================================================//
+//						WaveMakerShape					//
+//======================================================//
+
+
+//============================================
+
+CWaveMakerShape::CWaveMakerShape() : _ImpulsionMode(true), _Period(1), _Radius(3), _PoolID(0), _Intensity(1)
+{
+}
+
+//============================================
+
+CWaveMakerShape::~CWaveMakerShape()
+{
+}
+
+//============================================
+
+void CWaveMakerShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(0);
+	f.serial(_Period, _Radius, _Intensity, _PoolID, _ImpulsionMode);
+}
+
+//============================================
+
+CTransformShape		*CWaveMakerShape::createInstance(CScene &scene)
+{
+	CWaveMakerModel *wmm = NLMISC::safe_cast<CWaveMakerModel *>(scene.createModel(WaveMakerModelClassId) );
+	wmm->Shape = this;
+	// set default pos & scale
+	wmm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );		
+	wmm->_Scene = &scene;
+	return wmm;
+}
+
+//============================================
+
+bool	CWaveMakerShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
+{
+	// we just test if not too far
+	const CWaterHeightMap &whm = GetWaterPoolManager().getPoolByID(_PoolID);
+	const float maxDist = 0.5f * whm.getUnitSize() * whm.getSize();	
+	const NLMISC::CVector pos = worldMatrix.getPos();
+	for (std::vector<NLMISC::CPlane>::const_iterator it = pyramid.begin(); it != pyramid.end(); ++it)
+	{
+		if ((*it) * pos > maxDist) return false;
+	}
+	return true;
+
+}
+
+//============================================
+	
+void	CWaveMakerShape::getAABBox(NLMISC::CAABBox &bbox) const
+{	
+	// its just a point
+	bbox.setCenter(NLMISC::CVector::Null);
+	bbox.setHalfSize(NLMISC::CVector::Null);
 }
 
 

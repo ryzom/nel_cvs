@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.6 2001/11/21 16:03:22 vizerie Exp $
+ * $Id: water_model.h,v 1.7 2001/11/27 16:30:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -73,16 +73,14 @@ public:
 
 	/// inherited from UWaterInstance	
 	virtual float   getAttenuatedHeight(const NLMISC::CVector2f &pos, const NLMISC::CVector &viewer);
-
-
-
-
 protected:
 	friend class CWaterRenderObs;
 	friend class CWaterShape;
 	CScene	*_Scene;
 
 };
+
+//=====================================================================================================================
 
 
 class	CWaterRenderObs : public CTransformShapeRenderObs
@@ -96,6 +94,46 @@ private:
 	//void setAttenuationFactor(IDriver *drv, bool reversed, const NLMISC::CVector &obsPos, const NLMISC::CVector &cameraJ, float farDist);
 	// disable attenuation with distance
 	//void disableAttenuation(IDriver *drv);
+};
+
+
+//=====================================================================================================================
+
+/// This model can create wave where it is located. It has no display...
+class CWaveMakerModel : public CTransformShape
+{
+	public:
+	
+	CWaveMakerModel();
+
+	// register this model and his observers
+	static void		registerBasic();
+	
+	static IModel *creator() { return new CWaveMakerModel; }
+
+	// get default tracks
+	virtual ITrack* getDefaultTrack (uint valueId);
+	
+protected:	
+
+	friend class	CWaveMakerDetailObs;
+	friend class	CWaveMakerShape;
+	TAnimationTime  _Time;
+	CScene	*_Scene;
+};
+
+//=====================================================================================================================
+class	CWaveMakerDetailObs : public CTransformAnimDetailObs
+{
+public:
+
+	/** this do :
+	 *  - call CTransformAnimDetailObs::traverse()
+	 *  - perform perturbation
+	 */
+	virtual	void	traverse(IObs *caller);	
+public:
+	static IObs	*creator() { return new CWaveMakerDetailObs; }
 };
 
 

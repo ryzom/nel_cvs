@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.6 2001/11/16 13:51:37 vizerie Exp $
+ * $Id: water_shape.h,v 1.7 2001/11/27 16:30:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/misc/vector_2f.h"
 #include "nel/misc/polygon.h"
 #include "3d/track.h"
+#include "nel/3d/animation_time.h"
 
 
 
@@ -56,6 +57,9 @@ const CVertexBuffer::TValue   WATER_VB_DX   = CVertexBuffer::TexCoord0;
 
 // class id for water
 const NLMISC::CClassId WaterModelClassId =  NLMISC::CClassId(0x41a0732e, 0x6c664506);
+
+// class id for wave maker
+const NLMISC::CClassId WaveMakerModelClassId =  NLMISC::CClassId(0x16da3356, 0x7dec65fd);
 
 /**
  * A water shape.
@@ -228,7 +232,76 @@ private:
 	static std::auto_ptr<CVertexProgram>	_VertexProgramAlpha;
 	static std::auto_ptr<CVertexProgram>	_VertexProgram2Stages;
 	static std::auto_ptr<CVertexProgram>	_VertexProgram2StagesAlpha;
+};
 
+
+/// A wave maker. It can generate waves where it is located
+class CWaveMakerShape : public IShape
+{
+public:	
+	NLMISC_DECLARE_CLASS(CWaveMakerShape);
+	///\name Object
+	//@{
+		/// ctor
+		CWaveMakerShape();
+
+		/// dtor
+		~CWaveMakerShape();
+
+
+		/// serial this shape
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	//@}
+
+
+	/// inherited from IShape
+	virtual	CTransformShape		*createInstance(CScene &scene);
+
+	/// inherited from IShape
+	virtual bool				clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix);
+
+	/// inherited from IShape. Does nothing. A new observer was set for that
+	virtual void				render(IDriver *drv, CTransformShape *trans, bool opaquePass) {}
+
+	/// inherited from IShape
+	virtual	void				getAABBox(NLMISC::CAABBox &bbox) const;
+
+	/// inherited from ishape
+	virtual float				getNumTriangles (float distance) { return 0; }
+
+	/// inherited from ishape
+	virtual void				flushTextures (IDriver &driver) {}
+
+
+	/// set the period for this wave maker
+	void			setPeriod(TAnimationTime period) { _Period = period; }
+	TAnimationTime  getPeriod() const { return _Period; }
+
+	/// set the intensity of the waves
+	void			setIntensity(float intensity) { _Intensity = intensity; }
+	float			getIntensity() const { return _Intensity; }
+
+	/// radius of the impulsion
+	void            setRadius(float radius) { _Radius = radius; }
+	float			getRadius() const { return _Radius; }
+
+	/// set the water pool that's being modified
+	void			setWaterPoolID(uint32 id) { _PoolID = id; }
+	uint32			getWaterPoolID() const	  { return _PoolID; }
+
+	/// use a periodic impulsion rather than a sinus
+	void			setImpulsionMode(bool on = true) { _ImpulsionMode = on; }
+	bool			getImpulsionMode() const { return _ImpulsionMode; }
+
+	CTrackDefaultVector*	getDefaultPos ()		{return &_DefaultPos;}
+private:
+	friend	class	CWaveMakerDetailObs;
+	TAnimationTime						_Period;
+	float								_Radius;
+	uint32								_PoolID;
+	float								_Intensity;
+	bool								_ImpulsionMode;
+	CTrackDefaultVector					_DefaultPos;
 };
 
 

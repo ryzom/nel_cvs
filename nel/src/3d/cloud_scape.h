@@ -1,7 +1,7 @@
 /** \file cloud.h
  * Cloud definition to work with the cloudscape
  *
- * $Id: cloud_scape.h,v 1.2 2002/11/05 12:55:28 coutelas Exp $
+ * $Id: cloud_scape.h,v 1.3 2002/11/06 16:58:45 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -144,14 +144,16 @@ private:
 	struct SCloudSchedulerAccel
 	{
 		bool	ValidPos;
-		std::deque<SCloudSchedulerEntry>::iterator Pos;
+		std::list<SCloudSchedulerEntry>::iterator Pos;
+//		uint32	Frame;
 
 		SCloudSchedulerAccel()
 		{
 			ValidPos = false;
 		}
 	};
-	std::deque<SCloudSchedulerEntry>	_CloudScheduler;
+//	std::deque<SCloudSchedulerEntry>	_CloudScheduler;
+	std::list<SCloudSchedulerEntry>	_CloudScheduler;
 	uint32 _CloudSchedulerSize;
 	std::vector<SCloudSchedulerAccel>	_CloudSchedulerLastAdded;
 	uint32 _FrameCounter;

@@ -1,7 +1,7 @@
 /** \file cloud_scape.cpp
  * cloud_scape implementation
  *
- * $Id: cloud_scape.cpp,v 1.4 2002/11/05 12:55:28 coutelas Exp $
+ * $Id: cloud_scape.cpp,v 1.5 2002/11/06 16:58:45 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -103,8 +103,8 @@ void SCloudTexture3D::init (uint32 nWidth, uint32 nHeight, uint32 nDepth)
 	else
 		NbH = 1 << (vdpo2 / 2);
 
-	Mem = new uint8[NbW*Width*NbH*Height];
-	Tex = new CTextureMem (Mem, NbW*Width*NbH*Height, true, false, NbW*Width, NbH*Height, CBitmap::RGBA);
+	Mem = new uint8[4*NbW*Width*NbH*Height];
+	Tex = new CTextureMem (Mem, 4*NbW*Width*NbH*Height, true, false, NbW*Width, NbH*Height, CBitmap::RGBA);
 
 	Tex->setWrapS (ITexture::Clamp);
 	Tex->setWrapT (ITexture::Clamp);
@@ -376,9 +376,9 @@ void CCloudScape::init (SCloudScapeSetup *pCSS, NL3D::CCamera *pCamera)
 		cse.Ambient = _CurrentCSS.Ambient;
 		cse.Diffuse = _CurrentCSS.Diffuse;
 		cse.Power = _CloudPower[cse.CloudIndex];
-		_CloudScheduler.push_back (cse);
+		_CloudSchedulerLastAdded[nCloudNb].Pos = _CloudScheduler.insert(_CloudScheduler.end(), cse);
 		_CloudSchedulerLastAdded[nCloudNb].ValidPos = true;
-		_CloudSchedulerLastAdded[nCloudNb].Pos = _CloudScheduler.end()-1;
+//		_CloudSchedulerLastAdded[nCloudNb].Pos = _CloudScheduler.end()-1;
 		++_FrameCounter;
 	}
 	_GlobalTime = 0.0f;
@@ -649,15 +649,15 @@ void CCloudScape::makeHalfCloud ()
 		if (_CloudSchedulerLastAdded[FrontCSE.CloudIndex].Pos == _CloudScheduler.begin())
 			_CloudSchedulerLastAdded[FrontCSE.CloudIndex].ValidPos = false;
 
-		_CloudScheduler.push_back (newCSE);
+		_CloudSchedulerLastAdded[CloudIndexToAdd].Pos = _CloudScheduler.insert(_CloudScheduler.end(), newCSE);
 		_CloudSchedulerLastAdded[CloudIndexToAdd].ValidPos = true;
-		_CloudSchedulerLastAdded[CloudIndexToAdd].Pos = _CloudScheduler.end()-1;
+//		_CloudSchedulerLastAdded[CloudIndexToAdd].Pos = _CloudScheduler.end()-1;
 		_CloudScheduler.pop_front ();
 		++_FrameCounter;
 		// End of scheduling
 
 		// Get the cloud to process (this must be the next occurence of front cloud)
-		std::deque<SCloudSchedulerEntry>::iterator it = _CloudScheduler.begin();
+		std::list<SCloudSchedulerEntry>::iterator it = _CloudScheduler.begin();
 		while (it != _CloudScheduler.end())
 		{
 			SCloudSchedulerEntry &rCSE = *it;

@@ -1,7 +1,7 @@
 /** \file u_water.h
  * User interface for water manipulation
  *
- * $Id: u_water.h,v 1.1 2001/11/21 16:06:35 vizerie Exp $
+ * $Id: u_water.h,v 1.2 2002/06/27 15:42:36 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NLMISC
 
 namespace NL3D {
 
+class UDriver;
 
 class UWaterHeightMap;
 
@@ -81,6 +82,11 @@ class UWaterHeightMapManager
 public:
 	/// Retrieve a water heightmap from its ID. An assertion is raised if a wrong ID is provided
 	static UWaterHeightMap &getWaterHeightMapFromID(uint32 ID);
+
+	/** Blend factor for water surfaces that use CTextureBlend (day / night mgt for example)
+	  * The blend factor if clamped to [0, 1]
+	  */
+	static void		setBlendFactor(UDriver *driver, float value);	
 };
 
 /// Interface to water height maps

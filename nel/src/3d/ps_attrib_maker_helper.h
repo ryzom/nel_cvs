@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.12 2002/08/07 08:37:40 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.13 2003/02/03 15:56:04 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1419,7 +1419,7 @@ public:
 			// we just copy what we have memorized
 			if (srcStep == (1 << 16))
 			{
-				CPSAttrib<T>::const_iterator it = _T.begin() + startIndex, endIt = _T.begin() + startIndex + numAttrib;
+				typename CPSAttrib<T>::const_iterator it = _T.begin() + startIndex, endIt = _T.begin() + startIndex + numAttrib;
 				do
 				{
 					*(T *) tab = *it;
@@ -1431,7 +1431,7 @@ public:
 			else // no constant step
 			{
 				uint32 fpIndex = startIndex * srcStep;
-				CPSAttrib<T>::const_iterator startIt = _T.begin();
+				typename CPSAttrib<T>::const_iterator startIt = _T.begin();
 				while (numAttrib --)
 				{
 					*(T *) tab = *(startIt + (fpIndex >> 16));					
@@ -1460,7 +1460,7 @@ public:
 		// we just copy what we have memorized
 		if (srcStep == (1 << 16))
 		{
-			CPSAttrib<T>::const_iterator it = _T.begin() + startIndex, endIt = _T.begin() + startIndex + numAttrib;
+			typename CPSAttrib<T>::const_iterator it = _T.begin() + startIndex, endIt = _T.begin() + startIndex + numAttrib;
 			while (it != endIt)
 			{
 				*(T *) tab = *it;
@@ -1477,7 +1477,7 @@ public:
 		else
 		{
 			uint32 fpIndex = startIndex * srcStep;
-			CPSAttrib<T>::const_iterator startIt = _T.begin();
+			typename CPSAttrib<T>::const_iterator startIt = _T.begin();
 			while (numAttrib --)
 			{
 				*(T *) tab = *(startIt + (fpIndex >> 16));					
@@ -1505,7 +1505,7 @@ public:
 	{
 		// we just copy what we have memorized
 		uint k;
-		CPSAttrib<T>::const_iterator it = _T.begin() + startIndex, endIt = _T.begin() + startIndex + numAttrib;
+		typename CPSAttrib<T>::const_iterator it = _T.begin() + startIndex, endIt = _T.begin() + startIndex + numAttrib;
 		if (srcStep == (1 << 16))
 		{
 			while (it != endIt)
@@ -1522,7 +1522,7 @@ public:
 		else
 		{
 			uint32 fpIndex = startIndex * srcStep;
-			CPSAttrib<T>::const_iterator startIt = _T.begin();	
+			typename CPSAttrib<T>::const_iterator startIt = _T.begin();	
 
 			while (numAttrib --)
 			{		

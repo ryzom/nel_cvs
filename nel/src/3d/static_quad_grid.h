@@ -1,7 +1,7 @@
 /** \file static_quad_grid.h
  * <File description>
  *
- * $Id: static_quad_grid.h,v 1.3 2002/03/14 18:35:11 vizerie Exp $
+ * $Id: static_quad_grid.h,v 1.4 2003/02/03 15:55:28 coutelas Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -210,7 +210,7 @@ void			CStaticQuadGrid<T>::build(CQuadGrid<T> &quadGrid)
 
 			// Count elements.
 			uint	n= 0;
-			CQuadGrid<T>::CIterator	it;
+			typename CQuadGrid<T>::CIterator	it;
 			for(it= quadGrid.begin(); it!=quadGrid.end(); it++)
 			{
 				n++;
@@ -246,7 +246,7 @@ void			CStaticQuadGrid<T>::build(CQuadGrid<T> &quadGrid)
 				_Grid[y*_Size + x].Nodes= &_Elements[curDupElt];
 
 			// For all elements.
-			CQuadGrid<T>::CIterator	it;
+			typename CQuadGrid<T>::CIterator	it;
 			for(it= quadGrid.begin(); it!=quadGrid.end(); it++)
 			{
 				// Copy elt in array.

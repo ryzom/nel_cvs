@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.12 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: track_keyframer.h,v 1.13 2003/02/03 15:54:35 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -172,7 +172,7 @@ public:
 
 
 		// Return upper key
-		TMapTimeCKey::iterator ite=_MapKey.upper_bound (date);
+		typename TMapTimeCKey::iterator ite=_MapKey.upper_bound (date);
 
 		// First next ?
 		if (ite!=_MapKey.end())
@@ -192,7 +192,7 @@ public:
 		else if (!_LoopMode && _MapKey.size()>=1 )
 		{
 			// clamp to the last
-			TMapTimeCKey::iterator iteLast= ite;
+			typename TMapTimeCKey::iterator iteLast= ite;
 			iteLast--;
 			next= &(iteLast->second);
 		}
@@ -307,7 +307,7 @@ protected:
 		// Compute time of first/last key.
 		if( !_MapKey.empty() )
 		{
-			TMapTimeCKey::const_iterator ite;
+			typename TMapTimeCKey::const_iterator ite;
 
 			// Get first key
 			ite=_MapKey.begin ();
@@ -353,10 +353,10 @@ protected:
 
 
 		// After _RangeDelta computed, compute OO delta times.
-		TMapTimeCKey::iterator	it= _MapKey.begin();
+		typename TMapTimeCKey::iterator	it= _MapKey.begin();
 		for(;it!=_MapKey.end();it++)
 		{
-			TMapTimeCKey::iterator	next= it;
+			typename TMapTimeCKey::iterator	next= it;
 			next++;
 			if(next!=_MapKey.end())
 				it->second.OODeltaTime= 1.0f/(next->first - it->first);

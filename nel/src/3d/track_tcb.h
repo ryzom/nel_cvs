@@ -1,7 +1,7 @@
 /** \file track_tcb.h
  * ITrack TCB implementation
  *
- * $Id: track_tcb.h,v 1.2 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: track_tcb.h,v 1.3 2003/02/03 15:54:20 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -262,9 +262,9 @@ protected:
 		if(nKeys<=1)
 			return;
 
-		TMapTimeCKey::iterator	it= _MapKey.begin();				// first key.
-		TMapTimeCKey::iterator	itNext= it; itNext++;				// second key.
-		TMapTimeCKey::iterator	itPrev= _MapKey.end(); itPrev--;	// last key.
+		typename TMapTimeCKey::iterator	it= _MapKey.begin();				// first key.
+		typename TMapTimeCKey::iterator	itNext= it; itNext++;				// second key.
+		typename TMapTimeCKey::iterator	itPrev= _MapKey.end(); itPrev--;	// last key.
 
 		if(nKeys==2 && !getLoopMode())
 		{
@@ -302,10 +302,10 @@ protected:
 			// In not loop mode, compute first and last key, AFTER middle keys computed.
 			if(!getLoopMode())
 			{
-				TMapTimeCKey::iterator	it0= _MapKey.begin();				// first key.
-				TMapTimeCKey::iterator	it1= it0; it1++;					// second key.
-				TMapTimeCKey::iterator	itLast= _MapKey.end();itLast--;		// last key.
-				TMapTimeCKey::iterator	itLastPrev= itLast;itLastPrev--;	// prev of last key.
+				typename TMapTimeCKey::iterator	it0= _MapKey.begin();				// first key.
+				typename TMapTimeCKey::iterator	it1= it0; it1++;					// second key.
+				typename TMapTimeCKey::iterator	itLast= _MapKey.end();itLast--;		// last key.
+				typename TMapTimeCKey::iterator	itLastPrev= itLast;itLastPrev--;	// prev of last key.
 
 				computeFirstKey(it0->second, it1->second);
 				computeLastKey(itLast->second, itLastPrev->second);

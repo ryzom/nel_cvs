@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.19 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: i18n.cpp,v 1.20 2002/06/21 13:02:15 miller Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -337,7 +337,7 @@ void CI18N::load (uint32 lid)
 			}
 		}
 	}
-	catch (EReadError)
+	catch (EReadError &)
 	{
 		// always comes here when it's the end of file
 		if (startstr)

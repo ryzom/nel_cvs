@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.6 2001/08/23 14:30:34 lecroart Exp $
+ * $Id: i18n.h,v 1.7 2002/06/21 13:02:15 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,7 @@ namespace NLMISC {
 	// display "Salut" that is the "hi" string in the selected language (french).
 	nlinfo (CI18N::get("hi").c_str ());
 	// display "rms est un master", the french version of the string
-	nlinfo (CI18N::get("%s is a master").c_str (), "rms");
+	nlinfo (CI18N::get("%s is a master").c_str (), "mrs");
  *\endcode
  *
  * If the string doesn't exist, it will be automatically added in all language files with a <Not Translated> mention.

@@ -20,7 +20,7 @@ expected:
   - .c for ANSI C code
   - .h for included declarations
   - .asm for assembly-level files
-  - .dtx for doxygen documentation source without code.
+  - .dxt for doxygen documentation source without code.
 - Significant, english, file names. Length is not capped, but should be kept within
   resonable bounds.
 - No spaces or uppercase letters. If the name is composed of separate, discrete words,

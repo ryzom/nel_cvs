@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.cpp,v 1.12 2003/02/07 17:44:00 cado Exp $
+ * $Id: window_displayer.cpp,v 1.13 2003/02/21 15:52:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,16 +50,17 @@ class CUpdateThread : public IRunnable
 	uint32 FS;
 	string FN;
 	bool WW;
+	CLog *Log;
 
 public:
-	CUpdateThread (CWindowDisplayer *disp, string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww) :
-	  Disp(disp), WindowNameEx(windowNameEx), X(x), Y(y), W(w), H(h), HS(hs), Iconified(iconified), FS(fs), FN(fn), WW(ww)
+	CUpdateThread (CWindowDisplayer *disp, string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww, CLog *log) :
+	  Disp(disp), WindowNameEx(windowNameEx), X(x), Y(y), W(w), H(h), HS(hs), Iconified(iconified), FS(fs), FN(fn), WW(ww), Log(log)
 	{
 	}
 
 	void run()
 	{
-		Disp->open (WindowNameEx, Iconified, X, Y, W, H, HS, FS, FN, WW);
+		Disp->open (WindowNameEx, Iconified, X, Y, W, H, HS, FS, FN, WW, Log);
 		Disp->display_main ();
 	}
 };
@@ -85,7 +86,8 @@ bool CWindowDisplayer::update ()
 	// execute all commands in the main thread
 	for (uint i = 0; i < copy.size(); i++)
 	{
-		ICommand::execute (copy[i], *InfoLog);
+		nlassert (Log != NULL);
+		ICommand::execute (copy[i], *Log);
 	}
 
 	return _Continue;
@@ -115,11 +117,13 @@ void CWindowDisplayer::setLabel (uint label, const string &value)
 	}
 }
 
-void CWindowDisplayer::create (string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww)
+void CWindowDisplayer::create (string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww, CLog *log)
 {
 	nlassert (_Thread == NULL);
-	_Thread = IThread::create (new CUpdateThread(this, windowNameEx, iconified, x, y, w, h, hs, fs, fn, ww));
-	
+	_Thread = IThread::create (new CUpdateThread(this, windowNameEx, iconified, x, y, w, h, hs, fs, fn, ww, log));
+
+	Log = log;
+
 	_Thread->start ();
 }
 

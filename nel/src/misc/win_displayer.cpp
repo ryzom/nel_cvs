@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.29 2003/01/17 14:13:13 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.30 2003/02/21 15:52:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -194,7 +194,8 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					TextSend[0] = TextSend[1] = (char)0xFF;
 					SendMessage (cwd->_HInputEdit, WM_GETTEXT, (WPARAM)20000-1, (LPARAM)TextSend);
 					string str = TextSend;
-					ICommand::expand (str, *InfoLog);
+					nlassert (cwd->Log != NULL);
+					ICommand::expand (str, *cwd->Log);
 					SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)str.c_str());
 
 					SendMessage (cwd->_HInputEdit, EM_SETSEL, str.size(), str.size());
@@ -355,7 +356,7 @@ void CWinDisplayer::setTitleBar (const string &titleBar)
 	SetWindowText (_HWnd, wn.c_str());
 }
 
-void CWinDisplayer::open (string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww)
+void CWinDisplayer::open (string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww, CLog *log)
 {
 	if (w == -1)
 		w = 700;
@@ -363,6 +364,8 @@ void CWinDisplayer::open (string titleBar, bool iconified, sint x, sint y, sint 
 		h = 300;
 	if (hs == -1)
 		hs = 1000;
+
+	Log = log;
 
 	_HistorySize = hs;
 	

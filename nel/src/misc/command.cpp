@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.22 2003/01/16 09:57:24 lecroart Exp $
+ * $Id: command.cpp,v 1.23 2003/02/21 15:52:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,10 +105,8 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 	if (!quiet) log.displayNL ("Executing command : '%s'", commandWithArgs.c_str());
 
 	// convert the buffer into string vector
-
-	vector<string> args;
-	string command;
-
+	vector<pair<string, vector<string> > > commands;
+	
 	bool firstArg = true;
 	uint i = 0;
 	while (true)
@@ -190,55 +188,80 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 						case '\\':	arg += '\\'; break; // double backslash
 						case 'n':	arg += '\n'; break; // new line
 						case '"':	arg += '"'; break; // "
+						case ';':	arg += ';'; break; // ;
 						default:
 							if (!quiet) log.displayNL ("Unknown escape code '\\%c'", commandWithArgs[i]);
 							return;
 					}
-					i++;
+				}
+				else if (commandWithArgs[i] == ';')
+				{
+					// command separator
+					break;
 				}
 				else
 				{
-					arg += commandWithArgs[i++];
+					arg += commandWithArgs[i];
 				}
+
+				i++;
+
 				if (i == commandWithArgs.size() || commandWithArgs[i] == ' ' || commandWithArgs[i] == '\t' || commandWithArgs[i] == '\n' || commandWithArgs[i] == '\r')
 				{
 					break;
 				}
 			}
 		}
-		if (firstArg)
+
+		if (!arg.empty())
 		{
-			command = arg;
-			firstArg = false;
+			if (firstArg)
+			{
+				commands.push_back (make_pair(arg, vector<string> () ));
+				firstArg = false;
+			}
+			else
+			{
+				commands[commands.size()-1].second.push_back (arg);
+			}
 		}
-		else
+
+		// separator
+		if (i < commandWithArgs.size() && commandWithArgs[i] == ';')
 		{
-			args.push_back (arg);
+			firstArg = true;
+			i++;
 		}
 	}
 end:
 
-/* displays args fordebug purpose
-	nlinfo ("c '%s'", command.c_str());
-	for (uint t = 0; t < args.size (); t++)
+// displays args for debug purpose
+/*	for (uint u = 0; u < commands.size (); u++)
 	{
-		nlinfo ("p%d '%s'", t, args[t].c_str());
+		nlinfo ("c '%s'", commands[u].first.c_str());
+		for (uint t = 0; t < commands[u].second.size (); t++)
+		{
+			nlinfo ("p%d '%s'", t, commands[u].second[t].c_str());
+		}
 	}
 */
-	
-	// find the command	
-	TCommand::iterator comm = (*Commands).find(command);
-	if (comm == (*Commands).end ())
+
+	for (uint u = 0; u < commands.size (); u++)
 	{
-		// the command doesn't exist
-		if (!quiet) log.displayNL("Command '%s' not found, try 'help'", command.c_str());
-	}
-	else
-	{
-		//printf("execute command\n");
-		if (!(*comm).second->execute (args, log))
+		// find the command	
+		TCommand::iterator comm = (*Commands).find(commands[u].first);
+		if (comm == (*Commands).end ())
 		{
-			if (!quiet) log.displayNL("Bad command usage, try 'help %s'", command.c_str());
+			// the command doesn't exist
+			if (!quiet) log.displayNL("Command '%s' not found, try 'help'", commands[u].first.c_str());
+		}
+		else
+		{
+			//printf("execute command\n");
+			if (!(*comm).second->execute (commands[u].second, log))
+			{
+				if (!quiet) log.displayNL("Bad command usage, try 'help %s'", commands[u].first.c_str());
+			}
 		}
 	}
 }

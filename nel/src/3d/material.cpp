@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.19 2001/06/01 11:56:58 berenguier Exp $
+ * $Id: material.cpp,v 1.20 2001/06/15 13:19:19 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ CMaterial::CMaterial()
 	_ZFunction= lessequal;
 	_ZBias= 0;
 	_Color.set(255,255,255,255);
-
+	_StainedGlassWindow = false;
 }
 
 // ***************************************************************************

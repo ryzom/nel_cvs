@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.3 2001/06/13 08:53:21 besson Exp $
+ * $Id: export_mesh.cpp,v 1.4 2001/06/15 13:19:20 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@ using namespace NLMISC;
 using namespace NL3D;
 
 
-CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime)
+CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath)
 {
 	CMesh::CMeshBuild *pMeshBuild = new CMesh::CMeshBuild();
 
@@ -62,7 +62,7 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime)
 
 			// Fill the build interface of CMesh
 
-			buildMeshInterface(*tri, *pMeshBuild, materialNames, node, tvTime, NULL, false);
+			buildMeshInterface(*tri, *pMeshBuild, materialNames, node, tvTime, NULL, bAbsPath);
 
 			// Delete the triObject if we should...
 			if (deleteIt)

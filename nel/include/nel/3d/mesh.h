@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.20 2001/06/15 09:25:43 berenguier Exp $
+ * $Id: mesh.h,v 1.21 2001/06/15 13:19:19 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,7 +74,7 @@ public:
 	{
 		sint32		Vertex;		/// The vertex Id.
 		CVector		Normal;
-		NLMISC::CUV			Uvs[IDRV_VF_MAXSTAGES];
+		NLMISC::CUV	Uvs[IDRV_VF_MAXSTAGES];
 		CRGBA		Color;
 		CRGBA		Specular;
 

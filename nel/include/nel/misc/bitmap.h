@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.4 2001/06/13 16:04:43 berenguier Exp $
+ * $Id: bitmap.h,v 1.5 2001/06/15 13:19:19 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -430,6 +430,13 @@ public:
 	 * \return true if the params were corrects and if the blit occures. In debug build there's an assertion
 	 */
 	bool blit(const CBitmap *src, sint32 x, sint32 y) ;
+
+	/**
+	 * Get the color in the bitmap given a pixel size
+	 * The mipmaps must be built. If not just return the bilinear at the given point.
+	 * The input x and y must be clamped between 0 and 1
+	 */
+	CRGBAF getColor(float x,float y);
 
 };
 

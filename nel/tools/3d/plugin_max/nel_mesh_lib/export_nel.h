@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.4 2001/06/13 08:53:21 besson Exp $
+ * $Id: export_nel.h,v 1.5 2001/06/15 13:19:20 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,7 +144,7 @@ public:
 	  * 
 	  * This method does not care of the skeletonShape
 	  */
-	static NL3D::CMesh::CMeshBuild*	createMeshBuild(INode& node, TimeValue tvTime);
+	static NL3D::CMesh::CMeshBuild*	createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath);
 
 	/**
 	  * Return true if it is a mesh.

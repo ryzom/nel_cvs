@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.18 2001/06/01 11:56:58 berenguier Exp $
+ * $Id: material.h,v 1.19 2001/06/15 13:19:19 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -312,6 +312,10 @@ public:
 	void					initLighted();
 	// @}
 
+	// TODO : Clean this flag
+	bool					getStainedGlassWindow() { return _StainedGlassWindow; }
+	void					setStainedGlassWindow(bool val) { _StainedGlassWindow = val; }
+
 
 	void		serial(NLMISC::IStream &f);
 
@@ -397,6 +401,8 @@ private:
 	CRGBA					_Emissive,_Ambient,_Diffuse,_Specular;
 	float					_Shininess;
 	uint32					_Touched;
+
+	bool					_StainedGlassWindow; // TODO ; clean this flag (add a CMaterialBuil class)
 
 	CSmartPtr<ITexture>		_Textures[IDRV_MAT_MAXTEXTURES];
 

@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.6 2001/06/13 16:04:43 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.7 2001/06/15 13:19:19 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2208,6 +2208,82 @@ bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
 	return true ;
 }
 
+CRGBAF CBitmap::getColor(float x,float y)
+{
+	CRGBAF ret;
+
+	if( x < 0.0f ) x = 0.0f;
+	if( x > 1.0f ) x = 1.0f;
+	if( y < 0.0f ) y = 0.0f;
+	if( y > 1.0f ) y = 1.0f;
+
+	sint32 nWidth = getWidth(0);
+	sint32 nHeight = getHeight(0);
+
+	std::vector<uint8> &rBitmap = getPixels(0);
+
+	sint32 nX[4], nY[4];
+	CRGBA rgba[4];
+
+	x *= nWidth;
+	y *= nHeight;
+	nX[0] = ((sint32)floor(x-0.5f));
+	nY[0] = ((sint32)floor(y-0.5f));
+	nX[1] = nX[0]+1;
+	nY[1] = nY[0];
+	nX[2] = nX[0];
+	nY[2] = nY[0]+1;
+	nX[3] = nX[0]+1;
+	nY[3] = nY[0]+1;
+
+	for( uint32 i = 0; i < 4; ++i )
+	{
+		if( nX[i] < 0 ) nX[i] = 0;
+		if( nY[i] < 0 ) nY[i] = 0;
+		if( nX[i] >= nWidth )  nX[i] = nWidth-1;
+		if( nY[i] >= nHeight ) nY[i] = nHeight-1;
+		rgba[i] = CRGBA(rBitmap[(nX[i]+nY[i]*nWidth)*4+0],
+						rBitmap[(nX[i]+nY[i]*nWidth)*4+1],
+						rBitmap[(nX[i]+nY[i]*nWidth)*4+2],
+						rBitmap[(nX[i]+nY[i]*nWidth)*4+3]);
+	}
+
+	x = x - (float)nX[0];
+	y = y - (float)nY[0];
+
+	float res;
+
+	res =	rgba[0].R*(1.0f-x)*(1.0f-y) +
+			rgba[1].R*(     x)*(1.0f-y) +
+			rgba[2].R*(1.0f-x)*(     y) +
+			rgba[3].R*(     x)*(     y);
+	if( res >= 255.0f ) res = 255.0f;
+	if( res < 0.0f ) res = 0.0f;
+	ret.R = res;
+	res =	rgba[0].G*(1.0f-x)*(1.0f-y) +
+			rgba[1].G*(     x)*(1.0f-y) +
+			rgba[2].G*(1.0f-x)*(     y) +
+			rgba[3].G*(     x)*(     y);
+	if( res >= 255.0f ) res = 255.0f;
+	if( res < 0.0f ) res = 0.0f;
+	ret.G = res;
+	res =	rgba[0].B*(1.0f-x)*(1.0f-y) +
+			rgba[1].B*(     x)*(1.0f-y) +
+			rgba[2].B*(1.0f-x)*(     y) +
+			rgba[3].B*(     x)*(     y);
+	if( res >= 255.0f ) res = 255.0f;
+	if( res < 0.0f ) res = 0.0f;
+	ret.B = res;
+	res =	rgba[0].A*(1.0f-x)*(1.0f-y) +
+			rgba[1].A*(     x)*(1.0f-y) +
+			rgba[2].A*(1.0f-x)*(     y) +
+			rgba[3].A*(     x)*(     y);
+	if( res >= 255.0f ) res = 255.0f;
+	if( res < 0.0f ) res = 0.0f;
+	ret.A = res;
+
+	return ret;
+}
 
 
 void	CBitmap::loadSize(NLMISC::IStream &f, uint32 &retWidth, uint32 &retHeight)
@@ -2308,7 +2384,6 @@ void	CBitmap::loadSize(const std::string &path, uint32 &retWidth, uint32 &retHei
 	if(f.open(path))
 		loadSize(f, retWidth, retHeight);
 }
-
 
 
 } // NLMISC

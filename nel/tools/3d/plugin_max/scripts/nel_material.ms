@@ -29,10 +29,12 @@ plugin material NelMaterial
 		-- 3d part of the material
 
 		bLightMap type:#boolean default:false ui:cbLightMap
+		bUnlighted type:#boolean default:false ui:cbUnlighted
+		bStainedGlassWindow type:#boolean default:false ui:cbStainedGlassWindow
 
 		-- Pacs part of the material
 
-		BaseColor type:#color default:(color 100 100 100) --ui:Base
+		--BaseColor type:#color default:(color 100 100 100) --ui:Base
 
 		CollisionType	 		type:#integer default:1 --ui:CollisionTypeList
 		FrictionType 			type:#integer default:1 --ui:FrictionType		
@@ -44,7 +46,6 @@ plugin material NelMaterial
 		SoundType		 		type:#integer default:1 --ui:SoundType		
 		FXType					type:#integer default:1 --ui:FXType			
 		TracksPersistanceType 	type:#integer default:1 --ui:TracksPersistanceType   
-
 	)
 
 
@@ -55,10 +56,12 @@ plugin material NelMaterial
 	group "3d"
 		(
 		CheckBox cbLightMap "LightMap"
+		CheckBox cbUnlighted "Unlighted"
+		CheckBox cbStainedGlassWindow "Stained glass window"
 		)
 	group "Pacs"
 		(
-		colorpicker Base "Base Color: "  
+		-- colorpicker Base "Base Color: "  
 		DropDownList PresetList "Presets :" 						width:145 items:PresetsArray align:#left across:2
 		Label labeltext01 "Presets  works only 'one way'"
 		DropDownList CollisionTypeList "Collision Type :" 			width:145 items:CollisionTypeArray 		 align:#left across:2
@@ -74,6 +77,10 @@ plugin material NelMaterial
 		)
 	------------------------------------------------
 
+		on cbLightMap changed bNewState do
+			if bNewState then cbUnlighted.enabled = false
+			else cbUnlighted.enabled = true
+
 		on CollisionTypeList			selected val do CollisionType 			= val
 		on FrictionTypeList				selected val do FrictionType 			= val
 		on SlowMotionTypeList			selected val do SlowMotionType			= val
@@ -85,12 +92,12 @@ plugin material NelMaterial
 		on FXTypeList					selected val do FXType			 		= val
 		on TracksPersistanceTypeList 	selected val do TracksPersistanceType 	= val
 
-		on Base changed col do 
-			(
-			basecolor = col 
-			try (delegate.diffuse = col) catch () 
-			try (this.standard.diffuse=col) catch ()
-			)
+--		on Base changed col do 
+--			(
+--			basecolor = col 
+--			try (delegate.diffuse = col) catch () 
+--			try (this.standard.diffuse=col) catch ()
+--			)
 
 		
 		Fn presetread =
@@ -120,10 +127,10 @@ plugin material NelMaterial
 			tempcolor.g				= presetparamsarray[12] as integer
 			tempcolor.b				= presetparamsarray[13] as integer
 		
-			basecolor = tempcolor
-			Base.color = basecolor
-			try (delegate.diffuse = basecolor) catch ()
-			try (this.standard.diffuse=basecolor) catch ()
+--			basecolor = tempcolor
+--			Base.color = basecolor
+--			try (delegate.diffuse = basecolor) catch ()
+--			try (this.standard.diffuse=basecolor) catch ()
 
 			)
 
@@ -141,7 +148,7 @@ plugin material NelMaterial
 			SoundTypeList.selection		= SoundType		
 			FXTypeList.selection		= FXType			
 			TracksPersistanceTypeList.selection   = TracksPersistanceType 
-			Base.color = BaseColor 
+			--Base.color = BaseColor 
 			)
 
 		on PresetList selected val do 
@@ -150,12 +157,14 @@ plugin material NelMaterial
 			updateparams()
 			)
 
-		on params reload do (print "reload" ; updateparams())
-		on params open do 
+		on NelParams reload do (print "reload" ; updateparams())
+		on NelParams open do 
 			(
 			print "open"
 			presetread()
-			updateparams() 
+			updateparams()
+			if cbLightMap.checked then cbUnlighted.enabled = false
+			else cbUnlighted.enabled = true
 			)
 	)
 
@@ -164,7 +173,7 @@ plugin material NelMaterial
 		print "create"
 		delegate.ambient = [0,0,0]
 		delegate.diffuse = [255,255,255]
-		delegate.diffuse = BaseColor
+--		delegate.diffuse = BaseColor
 		delegate.specular = [255,255,255]
 		delegate.specularlevel = 0
 		delegate.glossiness = 0

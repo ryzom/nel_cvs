@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.3 2001/06/13 08:53:21 besson Exp $
+ * $Id: export_material.cpp,v 1.4 2001/06/15 13:19:19 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,9 @@ using namespace NL3D;
 #define BMTEX_CROP_V_NAME "clipv"
 #define BMTEX_CROP_W_NAME "clipw"
 #define BMTEX_CROP_H_NAME "cliph"
+
+#define NEL_MTL_A 0x64c75fec
+#define NEL_MTL_B 0x222b9eb9
 
 // Build an array of NeL material corresponding with max material at this node. Return the number of material exported.
 // Fill an array to remap the 3ds vertexMap channels for each materials. remap3dsTexChannel.size() must be == to materials.size(). 
@@ -118,7 +121,7 @@ int CExportNel::buildMaterials (std::vector<CMaterial>& materials, std::vector<s
 }
 
 // Build a NeL material corresponding with a max material.
-std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMaterialDesc>& remap3dsTexChannel, Mtl& mtl, TimeValue time, bool absolutePath)
+std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMaterialDesc>& remap3dsTexChannel, Mtl& mtl, TimeValue tvTime, bool absolutePath)
 {
 	// Init the material lighted
 	material.initLighted ();
@@ -136,8 +139,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 	// Is there a lightmap handling wanted
 	int bLightMap = 0; // false
 
-	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, 0);
-	
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, tvTime);
 	
 	if (bLightMap)
 	{
@@ -147,7 +149,11 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 	{
 		material.setShader (CMaterial::Normal);
 	}
-	
+
+	int bStainedGlassWindow = 0;
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bStainedGlassWindow", (ParamType2)TYPE_BOOL, &bStainedGlassWindow, tvTime);
+	material.setStainedGlassWindow( bStainedGlassWindow );
+
 	// By default set blend to false
 	material.setBlend (false);
 
@@ -164,7 +170,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 			std::vector<CMaterialDesc> _3dsTexChannel;
 			
 			// Ok export the texture in NeL format
-			pTexture=buildATexture (*pDifTexmap, _3dsTexChannel, time, absolutePath);
+			pTexture=buildATexture (*pDifTexmap, _3dsTexChannel, tvTime, absolutePath);
 
 			// Check vertMap size
 			nlassert (_3dsTexChannel.size()==1);
@@ -214,67 +220,93 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 	// It can be the superClassId if the mtl is derived from StdMat or StdMat2.
     if (
 		isClassIdCompatible (mtl, Class_ID(DMTL_CLASS_ID, 0))	||
-		isClassIdCompatible (mtl, Class_ID(DMTL2_CLASS_ID, 0))
+		isClassIdCompatible (mtl, Class_ID(DMTL2_CLASS_ID, 0))	||
+		isClassIdCompatible (mtl, Class_ID(NEL_MTL_A,NEL_MTL_B))
 		)
 	{
 		// Get a pointer on a stdmat
-		StdMat2* stdmat=(StdMat2*)&mtl;
-		
+		//StdMat2* stdmat=(StdMat2*)&mtl;
+
 		// *****************************************
 		// *** Colors, self illumination and opacity
 		// *****************************************
 
 		// Get the diffuse color of the max material
-		Color color=stdmat->GetDiffuse (time);
+		//Color color=stdmat->GetDiffuse (tvTime);
+		Point3 maxDiffuse;
+		CRGBA  nelDiffuse;
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "diffuse", (ParamType2)TYPE_RGBA, &maxDiffuse, tvTime);
 
 		// Convert to NeL color
-		CRGBA nelColor;
-		convertColor (nelColor, color);
-
+		convertColor (nelDiffuse, maxDiffuse);
 		// Get the opacity value from the material
-		float fOp=stdmat->GetOpacity (time);
+		// float fOp=stdmat->GetOpacity (tvTime);
+		float fOp = 0.0f;
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "opacity", (ParamType2)TYPE_PCNT_FRAC, &fOp, tvTime);
 
 		// Add alpha to the value
 		float fA=(fOp*255.f+0.5f);
 		clamp (fA, 0.f, 255.f);
-		nelColor.A=(uint8)fA;
-
+		nelDiffuse.A=(uint8)fA;
 		// Set le NeL diffuse color material
-		material.setColor (nelColor);
+		material.setColor (nelDiffuse);
 
 		// Set the blend mode on if opacity is not 1.f
 		if (fOp<0.99f)
 			material.setBlend (true);
 
 		// Get colors of 3dsmax material
-		CRGBA emissiveColor;
-		CRGBA ambientColor;
-		CRGBA diffuseColor;
-		CRGBA specularColor;
-		if (stdmat->GetSelfIllumColorOn())
-			convertColor (emissiveColor, stdmat->GetSelfIllumColor (time));
+		CRGBA nelEmissive;
+		CRGBA nelAmbient;
+		CRGBA nelSpecular;
+		//if (stdmat->GetSelfIllumColorOn())
+		//	convertColor (emissiveColor, stdmat->GetSelfIllumColor (tvTime));
+		//else
+		//	convertColor (emissiveColor, stdmat->GetDiffuse (tvTime)*stdmat->GetSelfIllum (tvTime));
+		int bSelfIllumColorOn;
+		Point3 maxSelfIllum;
+		float fTemp;
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "useSelfIllumColor", (ParamType2)TYPE_BOOL, &bSelfIllumColorOn, tvTime);
+		if( bSelfIllumColorOn )
+		{
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "selfIllumColor", (ParamType2)TYPE_RGBA, &maxSelfIllum, tvTime);
+		}
 		else
-			convertColor (emissiveColor, stdmat->GetDiffuse (time)*stdmat->GetSelfIllum (time));
-		convertColor (ambientColor, stdmat->GetAmbient (time));
-		convertColor (diffuseColor, stdmat->GetDiffuse (time));
-		diffuseColor.A=(uint8)fA;
-		convertColor (specularColor, stdmat->GetSpecular (time));
+		{
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "selfIllumAmount", (ParamType2)TYPE_PCNT_FRAC, &fTemp, tvTime);
+			maxSelfIllum = maxDiffuse * fTemp;
+		}
+		convertColor( nelEmissive, maxSelfIllum );
+
+		Point3 maxAmbient;
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "ambient", (ParamType2)TYPE_RGBA, &maxAmbient, tvTime);
+		convertColor (nelAmbient, maxAmbient);
+
+		Point3 maxSpecular;
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "specular", (ParamType2)TYPE_RGBA, &maxSpecular, tvTime);
+		convertColor (nelSpecular, maxSpecular);
 
 		// Specular level
-		float shininess=stdmat->GetShinStr(time);
-		CRGBAF fColor=specularColor;
-		fColor*=shininess;
-		specularColor=fColor;
+		float shininess; //=stdmat->GetShinStr(tvTime);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "specularLevel", (ParamType2)TYPE_PCNT_FRAC, &shininess, tvTime);
+		CRGBAF fColor = nelSpecular;
+		fColor *= shininess;
+		nelSpecular = fColor;
 
 		// Shininess
-		shininess=stdmat->GetShader()->GetGlossiness(time);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "glossiness", (ParamType2)TYPE_PCNT_FRAC, &shininess, tvTime);
+		//shininess=stdmat->GetShader()->GetGlossiness(tvTime);
 		shininess=(float)pow(2.0, shininess * 10.0) * 4.f;
 
 		// Light parameters
-		material.setLighting (true, false, emissiveColor, ambientColor, diffuseColor, specularColor, shininess);
+		material.setLighting (true, false, nelEmissive, nelAmbient, nelDiffuse, nelSpecular, shininess);
 
 		// Double sided
-		material.setDoubleSided (stdmat->GetTwoSided()!=FALSE);
+		int bDoubleSided;
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "twoSided", (ParamType2)TYPE_BOOL, &bDoubleSided, tvTime);
+
+		//material.setDoubleSided (stdmat->GetTwoSided()!=FALSE);
+		material.setDoubleSided ((bool)bDoubleSided);
 	}
 
 	if( ! bLightMap )

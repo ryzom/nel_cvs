@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.2 2001/06/11 09:21:53 besson Exp $
+ * $Id: export_misc.cpp,v 1.3 2001/06/15 13:19:20 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -276,6 +276,7 @@ bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* s
 					BOOL bRes=FALSE;
 					switch (type)
 					{
+					case TYPE_PCNT_FRAC:
 					case TYPE_FLOAT:
 						bRes=param->GetValue(id, time, *(float*)pValue, ivalid);
 						break;
@@ -283,6 +284,7 @@ bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* s
 					case TYPE_INT:
 						bRes=param->GetValue(id, time, *(int*)pValue, ivalid);
 						break;
+					case TYPE_RGBA:
 					case TYPE_POINT3:
 						bRes=param->GetValue(id, time, *(Point3*)pValue, ivalid);
 						break;
@@ -299,6 +301,22 @@ bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* s
 			}
 		}
 	}
+
+		// Get num sub anim
+	uint numSubAnim=node.NumSubs();
+	// Visit sub anim
+	for (uint s=0; s<numSubAnim; s++)
+	{
+		// If a sub anim is here, go to visit it.
+		if (node.SubAnim(s))
+		{
+			// Get the ctrl for sub anim
+			if( getValueByNameUsingParamBlock2 (*node.SubAnim(s), sName, type, pValue, time) )
+				return true;
+		}
+	}
+
+
 	// not found
 	return false;
 }

@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.15 2004/02/05 09:48:57 besson Exp $
+ * $Id: zone_manager.cpp,v 1.16 2004/02/05 18:26:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -228,7 +228,7 @@ CZoneLoadingTask::CZoneLoadingTask(const std::string &sZoneName, TVolatileZonePt
 	_ZoneName = sZoneName;
 	Position = pos;
 	_Monochrome = monochrome;
-	_TileColorFactor = factor;
+	_TileColorFactor = max(1.f, factor);
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.8 2001/01/29 11:11:42 chafik Exp $
+ * $Id: libcode.cpp,v 1.9 2001/02/22 11:07:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -187,6 +187,10 @@ namespace NLAISCRIPT
 		NLAIC::CSelfClassCFactory &fi = (NLAIC::CSelfClassCFactory&)*((CMessageClass::IdMessageClass).getFactory());
 		fi = CMessageClass(CMessageClass::IdMessageClass);
 		((CMessageClass *)fi.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CMessageClass::IdMessageClass));
+
+		NLAIC::CSelfClassCFactory &fh = (NLAIC::CSelfClassCFactory&)*((CMsgNotifyParentClass::IdMsgNotifyParentClass).getFactory());
+		fh = CMsgNotifyParentClass(CMsgNotifyParentClass::IdMsgNotifyParentClass);
+		((CMsgNotifyParentClass *)fh.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CMsgNotifyParentClass::IdMsgNotifyParentClass));
 
 		NLAIC::CSelfClassCFactory &fa = (NLAIC::CSelfClassCFactory&)*((CManagerClass::IdManagerClass).getFactory());
 		fa = CManagerClass(CManagerClass::IdManagerClass);

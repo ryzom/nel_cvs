@@ -1,7 +1,7 @@
 /** \file interpret_object_list.h
  * Class for define an message class in the interpreter.
  *
- * $Id: interpret_object_message.h,v 1.8 2001/02/01 17:15:20 chafik Exp $
+ * $Id: interpret_object_message.h,v 1.9 2001/02/22 11:07:01 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -54,6 +54,7 @@ namespace NLAISCRIPT
 	public:
 		static const NLAIC::CIdentType IdMsgNotifyParentClass;
 	public:
+		CMsgNotifyParentClass(const NLAIC::CIdentType &);
 		CMsgNotifyParentClass();
 		~CMsgNotifyParentClass(){}
 

@@ -1,3 +1,3 @@
 @echo off
 
-bash \export.sh
+bash sh\export.sh

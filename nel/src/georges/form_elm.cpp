@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.29 2002/09/05 14:06:48 besson Exp $
+ * $Id: form_elm.cpp,v 1.30 2002/09/12 12:04:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -839,6 +839,9 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 	// Index in the array
 	uint arrayIndex;
 
+	// Bool next token must be an array index
+	bool wantArrayIndex = false;
+
 	// Last struct elm
 	CFormElmStruct *lastStructElm = ((*node)->ParentNode && (*node)->ParentNode->isStruct ()) ? safe_cast<CFormElmStruct*> ((*node)->ParentNode) : NULL;
 	uint lastStructIndex = 0;
@@ -867,6 +870,14 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 			{
 			case TokenString:
 				{
+					// Need an array index array ?
+					if (wantArrayIndex)
+					{
+						// Error message
+						smprintf (error, 512, "Token (%s) should be an array index.", token);
+						goto exit;
+					}
+
 					// Are we a struct ?
 					if ( ((type == UFormDfn::EntryDfn) || (type == UFormDfn::EntryVirtualDfn)) /*&& (!array)*/ )
 					{
@@ -971,6 +982,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 									*nodeType = dfn.Entries[element].Type;
 									type = dfn.Entries[element].TypeElement;
 									array = dfn.Entries[element].Array;
+									wantArrayIndex = array;
 
 									// Next node
 									if (*node)
@@ -1077,6 +1089,14 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 				break;
 			case TokenPoint:
 				{
+					// Need an array index array ?
+					if (wantArrayIndex)
+					{
+						// Error message
+						smprintf (error, 512, "Token (%s) should be an array index.", token);
+						goto exit;
+					}
+
 					// Are we a struct ?
 					if ((type != UFormDfn::EntryDfn) && (type != UFormDfn::EntryVirtualDfn))
 					{
@@ -1202,6 +1222,9 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 				break;
 			case TokenArrayEnd:
 				{
+					// No need of an array index any more
+					wantArrayIndex = false;
+
 					// Index found ?
 					if (arrayIndex == 0xffffffff)
 					{

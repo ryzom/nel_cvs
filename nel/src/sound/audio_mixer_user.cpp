@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.34 2002/11/25 14:11:40 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.35 2002/11/26 10:15:55 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -521,12 +521,18 @@ CTrack *CAudioMixerUser::getFreeTrack(CSimpleSource *source)
 					nldebug("Cutting source %p with source %p (%f > %f*%f)", src2, source, t1, tfactor, t2);
 					// on peut cuter cette voie !
 					src2->stop();
-					nlassert(!_FreeTracks.empty());
-					CTrack *ret = _FreeTracks.back();
-					_FreeTracks.pop_back();
-					ret->setSource(source);
-					nldebug("Track %p assign to source %p", ret, ret->getSource());
-					return ret;
+					if (_FreeTracks.empty())
+					{
+						nlwarning("No free track after cutting a playing sound source !");
+					}
+					else
+					{
+						CTrack *ret = _FreeTracks.back();
+						_FreeTracks.pop_back();
+						ret->setSource(source);
+						nldebug("Track %p assign to source %p", ret, ret->getSource());
+						return ret;
+					}
 				}
 			}
 		}
@@ -849,7 +855,8 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 	}
 	else
 	{
-		nlassertex(false, ("Unknown sound class !"));
+//		nlassertex(false, ("Unknown sound class !"));
+		nlwarning("Unknow sound class : %u", id->getSoundType());
 	}
 
 #if NL_PROFILE_MIXER

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.26 2002/06/13 14:38:47 legros Exp $
+ * $Id: move_container.cpp,v 1.27 2002/06/13 16:27:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -846,6 +846,28 @@ bool CMoveContainer::evalPrimAgainstPrimCollision (double beginTime, CMovePrimit
 			else
 			{
 				// TODO: make new collision when collision==false to raise triggers
+
+				/** 
+				  * Raise Trigger !
+				  * For collisionnable primitives, trigger are raised here (in reaction) because
+				  * this is the moment we are sure the collision happened.
+				  *
+				  * For non collisionable primitves, the trigger is raised at collision time because without OT,
+				  * we can't stop evaluating collision on triggers.
+				  */
+				if (primitive->isNonCollisionable ())
+				{
+					if (primitive->isTriggered (*otherPrimitive, enter, exit))
+					{
+						// Add a trigger
+						newTrigger (primitive, otherPrimitive, desc, enter ? UTriggerInfo::In : exit ? UTriggerInfo::Out : UTriggerInfo::Inside);
+					}
+
+					// If the other primitive is not an obstacle, skip it because it will re-generate collisions.
+					if (!otherPrimitive->isObstacle ())
+						return false;
+				}
+
 				// OK, collision
 				newCollision (primitive, otherPrimitive, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic,
 								dynamicColInfo);
@@ -1485,10 +1507,20 @@ void CMoveContainer::reaction (const CCollisionOTInfo& first)
 							*dynInfo->getFirstPrimitive (), *dynInfo->getSecondPrimitive (), this, dynInfo->getFirstWorldImage(),
 							dynInfo->getSecondWorldImage(), dynInfo->isSecondStatic());
 
-		// Trigger ?
-		if (dynInfo->getFirstPrimitive ()->isTriggered (*dynInfo->getSecondPrimitive (), dynInfo->isEnter(), dynInfo->isExit()))
-			newTrigger (dynInfo->getFirstPrimitive (), dynInfo->getSecondPrimitive (), dynInfo->getCollisionDesc (),
-						dynInfo->isEnter() ? UTriggerInfo::In : dynInfo->isExit() ? UTriggerInfo::Out : UTriggerInfo::Inside);
+		/** 
+		  * Raise Trigger !
+		  * For collisionnable primitives, trigger are raised here (in reaction) because
+		  * this is the moment we are sure the collision happened.
+		  *
+		  * For non collisionable primitves, the trigger is raised at collision time because without OT,
+		  * we can't stop evaluating collision on triggers.
+		  */
+		if (dynInfo->getFirstPrimitive ()->isCollisionable ())
+		{
+			if (dynInfo->getFirstPrimitive ()->isTriggered (*dynInfo->getSecondPrimitive (), dynInfo->isEnter(), dynInfo->isExit()))
+				newTrigger (dynInfo->getFirstPrimitive (), dynInfo->getSecondPrimitive (), dynInfo->getCollisionDesc (),
+							dynInfo->isEnter() ? UTriggerInfo::In : dynInfo->isExit() ? UTriggerInfo::Out : UTriggerInfo::Inside);
+		}
 	}
 }
 

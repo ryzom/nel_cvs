@@ -151,6 +151,10 @@ SOURCE=.\choose_lag.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\choose_name.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\main_dlg.cpp
 # ADD CPP /Yu"std_afx.h"
 # End Source File
@@ -213,6 +217,10 @@ SOURCE=.\blend_wnd.h
 # Begin Source File
 
 SOURCE=.\choose_lag.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\choose_name.h
 # End Source File
 # Begin Source File
 
@@ -352,6 +360,14 @@ SOURCE=.\bmp00021.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\bmp00022.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\bmp00023.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\icon1.ico
 # End Source File
 # Begin Source File
@@ -405,6 +421,10 @@ SOURCE=.\bin_op_dlg.cpp
 # Begin Source File
 
 SOURCE=.\bin_op_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\bound_checker.h
 # End Source File
 # Begin Source File
 
@@ -605,6 +625,22 @@ SOURCE=R:\code\nel\tools\3d\object_viewer\range_selector.cpp
 # Begin Source File
 
 SOURCE=R:\code\nel\tools\3d\object_viewer\range_selector.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\scheme_bank_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\scheme_bank_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\scheme_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\scheme_manager.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.cpp
  * <File description>
  *
- * $Id: unix_event_emitter.cpp,v 1.3 2001/02/23 09:10:58 corvazier Exp $
+ * $Id: unix_event_emitter.cpp,v 1.4 2001/04/11 13:45:30 derikson_at_montana.com Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -210,11 +210,54 @@ void CUnixEventEmitter::processMessage (XEvent &event, CEventServer &server)
     Case(VisibilityNotify)
       break;
     Case(ButtonPress)
-      //nlinfo("%d %d %d", event.xbutton.button, event.xbutton.x, event.xbutton.y);
-    break;
+      {
+        //nlinfo("%d %d %d", event.xbutton.button, event.xbutton.x, event.xbutton.y);
+ 	XWindowAttributes xwa;
+ 	XGetWindowAttributes (_dpy, _win, &xwa);
+ 	float fX = (float) event.xbutton.x / (float) xwa.width;
+ 	float fY = 1.0f - (float) event.xbutton.y / (float) xwa.height;
+ 	TMouseButton button=getMouseButton(event.xbutton.state);
+ 	switch(event.xbutton.button)
+ 	  {
+ 	  case Button1:
+ 	    server.postEvent(new CEventMouseDown(fX, fY, (TMouseButton)(leftButton|(button&~(leftButton|middleButton|rightButton))), this));
+ 	    break;
+ 	  case Button2:
+ 	    server.postEvent(new CEventMouseDown(fX, fY, (TMouseButton)(middleButton|(button&~(leftButton|middleButton|rightButton))), this));
+ 	    break;
+ 	  case Button3:
+ 	    server.postEvent(new CEventMouseDown(fX, fY, (TMouseButton)(rightButton|(button&~(leftButton|middleButton|rightButton))), this));
+ 	    break;
+ 	  case Button4:
+ 	    server.postEvent(new CEventMouseWheel(fX, fY, button, true, this));
+ 	    break;
+ 	  case Button5:
+ 	    server.postEvent(new CEventMouseWheel(fX, fY, button, false, this));
+ 	    break;
+ 	  }
+ 	break;
+      }
     Case(ButtonRelease)
-      //nlinfo("%d %d %d", event.xbutton.button, event.xbutton.x, event.xbutton.y);
-    break;
+      {
+        //nlinfo("%d %d %d", event.xbutton.button, event.xbutton.x, event.xbutton.y);
+  	XWindowAttributes xwa;
+  	XGetWindowAttributes (_dpy, _win, &xwa);
+  	float fX = (float) event.xbutton.x / (float) xwa.width;
+  	float fY = 1.0f - (float) event.xbutton.y / (float) xwa.height;
+  	switch(event.xbutton.button)
+  	  {
+  	  case Button1:
+  	    server.postEvent(new CEventMouseUp(fX, fY, leftButton, this));
+  	    break;
+  	  case Button2:
+  	    server.postEvent(new CEventMouseUp(fX, fY, middleButton, this));
+  	    break;
+  	  case Button3:
+  	    server.postEvent(new CEventMouseUp(fX, fY, rightButton, this));
+  	    break;
+  	  }
+  	break;
+      }
     Case(MotionNotify)
       {
 	XWindowAttributes xwa;

@@ -200,8 +200,9 @@ void CTextureAnimDlg::CGradientInterface::displayValue(CDC *dc, uint index, sint
 	// make copy of the texture
 	NLMISC::CBitmap cb(* ((NL3D::ITexture *) tex)) ;
 
-	cb.resample(tSize, tSize) ;
 	cb.convertToType(NLMISC::CBitmap::RGBA) ;
+	cb.resample(tSize, tSize) ;
+	
 
 	uint32 *dat  = (uint32 *) &(cb.getPixels()[0]) ;
 
@@ -261,6 +262,12 @@ void CTextureAnimDlg::CGradientInterface::CTextureWrapper::set(NL3D::ITexture *t
 		if (t->getWidth() != tex->getWidth() || t->getHeight() != tex->getHeight())
 		{
 			::MessageBox(NULL, "All textures must have the same size !", "error", MB_OK) ;
+			return ;
+		}
+
+		if (t->PixelFormat != tex->PixelFormat)
+		{
+			::MessageBox(NULL, "All textures must have the same pixel format !", "error", MB_OK) ;
 			return ;
 		}
 	}

@@ -1,6 +1,6 @@
 /** \file texture_chooser.cpp
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.cpp,v 1.5 2001/07/04 17:14:11 vizerie Exp $
+ * $Id: texture_chooser.cpp,v 1.6 2001/08/28 13:17:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // size of the bitmap that is displayed
-const uint tSize = 25 ;
+const uint tSize = 25;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTextureChooser dialog
@@ -51,7 +51,7 @@ CTextureChooser::CTextureChooser() : _CurrBitmap(0), _Wrapper(NULL), _Texture(NU
 CTextureChooser::~CTextureChooser()
 {
 	if (_CurrBitmap)
-		::DeleteObject(_CurrBitmap) ;
+		::DeleteObject(_CurrBitmap);
 }
 
 
@@ -65,16 +65,16 @@ void CTextureChooser::DoDataExchange(CDataExchange* pDX)
 
 void CTextureChooser::init(uint32 x, uint32 y, CWnd *pParent)
 {
-	Create(IDD_TEXTURE_CHOOSER, pParent) ;
-	RECT r ;
-	GetClientRect(&r) ;
-	MoveWindow(x, y, r.right, r.bottom) ;	
+	Create(IDD_TEXTURE_CHOOSER, pParent);
+	RECT r;
+	GetClientRect(&r);
+	MoveWindow(x, y, r.right, r.bottom);	
 
 	if (!_EnableRemoveButton)
 	{
-		GetDlgItem(IDC_REMOVE_TEXTURE)->ShowWindow(SW_HIDE) ;
+		GetDlgItem(IDC_REMOVE_TEXTURE)->ShowWindow(SW_HIDE);
 	}
-	ShowWindow(SW_SHOW) ;
+	ShowWindow(SW_SHOW);
 }
 
 
@@ -84,41 +84,41 @@ void CTextureChooser::textureToBitmap()
 	{
 		if (_CurrBitmap)
 		{
-			::DeleteObject(_CurrBitmap) ;
-			_CurrBitmap = NULL ;
+			::DeleteObject(_CurrBitmap);
+			_CurrBitmap = NULL;
 		}
 
-		return ;
+		return;
 	}
 	
 	if (_CurrBitmap)
 	{
-		::DeleteObject(_CurrBitmap) ;	
+		::DeleteObject(_CurrBitmap);	
 	}
 	
 
 
-	_Texture->generate() ;
+	_Texture->generate();
 
 
 	// make copy of the texture
-	NLMISC::CBitmap cb(* ((NL3D::ITexture *) _Texture)) ;
+	NLMISC::CBitmap cb(* ((NL3D::ITexture *) _Texture));
+	
+	cb.convertToType(NLMISC::CBitmap::RGBA);
+	cb.resample(tSize, tSize);
 
-	cb.resample(tSize, tSize) ;
-	cb.convertToType(NLMISC::CBitmap::RGBA) ;
+	uint32 *dat  = (uint32 *) &(cb.getPixels()[0]);
 
-	uint32 *dat  = (uint32 *) &(cb.getPixels()[0]) ;
-
-	_CurrBitmap = ::CreateBitmap(tSize, tSize, 1, 32, dat) ;
+	_CurrBitmap = ::CreateBitmap(tSize, tSize, 1, 32, dat);
 	
 
 	
-	_Texture->release() ;
+	_Texture->release();
 
 
-	Invalidate() ;
+	Invalidate();
 
-	UpdateData(TRUE) ;
+	UpdateData(TRUE);
 }
 
 
@@ -137,12 +137,12 @@ END_MESSAGE_MAP()
 BOOL CTextureChooser::OnInitDialog() 
 {
 	CDialog::OnInitDialog();	
-	nlassert(_Wrapper) ;	
-	_Texture = _Wrapper->get() ;
+	nlassert(_Wrapper);	
+	_Texture = _Wrapper->get();
 
 	// generate the bitmap
 	
-	textureToBitmap() ;
+	textureToBitmap();
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -150,7 +150,7 @@ BOOL CTextureChooser::OnInitDialog()
 
 void CTextureChooser::OnBrowseTexture() 
 {
-	CFileDialog fd(TRUE, ".tga", "*.tga", 0, NULL, this) ;
+	CFileDialog fd(TRUE, ".tga", "*.tga", 0, NULL, this);
 	if (fd.DoModal() == IDOK)
 	{
 		// Add to the path
@@ -165,14 +165,14 @@ void CTextureChooser::OnBrowseTexture()
 
 		try
 		{
-			NL3D::CTextureFile *tf = new NL3D::CTextureFile(std::string(fd.GetFileName())) ;
-			_Wrapper->set(tf) ;
-			_Texture = tf ;
-			textureToBitmap() ;
+			NL3D::CTextureFile *tf = new NL3D::CTextureFile(std::string(fd.GetFileName()));
+			_Wrapper->set(tf);
+			_Texture = tf;
+			textureToBitmap();
 		}
 		catch (NLMISC::Exception &e)
 		{
-			MessageBox(e.what(), "error loading texture") ;
+			MessageBox(e.what(), "error loading texture");
 		}		
 	
 	}
@@ -184,13 +184,13 @@ void CTextureChooser::OnPaint()
 	
 	if (_CurrBitmap)
 	{
-		HDC bitmapDc = ::CreateCompatibleDC(dc) ;
-		HGDIOBJ old = ::SelectObject(bitmapDc, _CurrBitmap) ;
+		HDC bitmapDc = ::CreateCompatibleDC(dc);
+		HGDIOBJ old = ::SelectObject(bitmapDc, _CurrBitmap);
 		
-		::BitBlt(dc, 10, 10, tSize, tSize, bitmapDc, 0, 0, SRCCOPY) ;
+		::BitBlt(dc, 10, 10, tSize, tSize, bitmapDc, 0, 0, SRCCOPY);
 
-		::SelectObject(bitmapDc, old) ;
-		::DeleteDC(bitmapDc) ;
+		::SelectObject(bitmapDc, old);
+		::DeleteDC(bitmapDc);
 	}
 }
 
@@ -198,10 +198,10 @@ void CTextureChooser::OnRemoveTexture()
 {
 	if (_Texture)
 	{
-		_Texture->release() ;
-		_Texture = NULL ;
+		_Texture->release();
+		_Texture = NULL;
 	}
-	_Wrapper->set(NULL) ;	
-	textureToBitmap() ;
-	Invalidate() ;
+	_Wrapper->set(NULL);	
+	textureToBitmap();
+	Invalidate();
 }

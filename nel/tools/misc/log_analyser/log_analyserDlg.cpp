@@ -1,7 +1,7 @@
 /** \file log_analyserDlg.cpp
  * implementation file
  *
- * $Id: log_analyserDlg.cpp,v 1.6 2003/08/06 14:05:57 cado Exp $
+ * $Id: log_analyserDlg.cpp,v 1.7 2004/01/13 18:36:04 cado Exp $
  */
 
 /* Copyright, 2002-2003 Nevrax Ltd.
@@ -46,6 +46,86 @@ extern CLog_analyserApp		theApp;
 CString						LogDateString;
 
 
+/*
+ * Keyboard handler (in edit box)
+ */
+afx_msg void CLAEdit::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags )
+{
+	switch( nChar )
+	{
+	// Ctrl+G: Go to selected line number
+	case 'G':
+		CViewDialog *view = ((CLog_analyserDlg*)(GetParent()))->getCurrentView();
+		if ( view )
+		{
+			if ( (GetKeyState(VK_CONTROL) & 0x8000) != 0 )
+			{
+				// Get the selected line number
+				CString str;
+				GetWindowText(str);
+				int start, end;
+				GetSel( start, end );
+				str = str.Mid( start, end-start );
+				int lineNum = atoi( str );
+				if ( ! ((lineNum != 0) || (str == "0")) )
+					break;
+
+				// GoTo line
+				view->scrollTo( lineNum );
+			}
+		}
+		break;
+	}
+
+	// Transmit to Edit Box AND to main window
+	CEdit::OnKeyDown( nChar, nRepCnt, nFlags );
+	((CLog_analyserDlg*)(GetParent()))->OnKeyDown( nChar, nRepCnt, nFlags );
+}
+
+
+/*
+ * Keyboard handler (everywhere)
+ */
+void CLog_analyserDlg::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 
+{
+	CViewDialog *view = getCurrentView();
+
+	switch ( nChar )
+	{
+	// Bookmarks handling (TODO)
+	case VK_F2:
+		if ( view )
+		{
+			if ( (GetKeyState(VK_CONTROL) & 0x8000) != 0 )
+				view->addBookmark();
+			else
+				view->recallNextBookmark();
+		}
+		break;
+
+	// Ctrl+F, F3: Find
+	case VK_F3:
+	case 'F':
+		if ( view )
+		{
+			if ( (nChar==VK_F3) || ((GetKeyState(VK_CONTROL) & 0x8000) != 0) )
+				view->OnButtonFind();
+		}
+		break;
+
+	// Ctrl+L: Display back the file list
+	case 'L':
+		if ( (GetKeyState(VK_CONTROL) & 0x8000) != 0 )
+		{
+			displayFileList();
+		}
+		break;
+	}
+	
+	CDialog::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CLog_analyserDlg dialog
 
@@ -84,8 +164,16 @@ BEGIN_MESSAGE_MAP(CLog_analyserDlg, CDialog)
 	ON_WM_DROPFILES()
 	ON_BN_CLICKED(IDC_DispLineHeaders, OnDispLineHeaders)
 	ON_BN_CLICKED(IDC_Analyse, OnAnalyse)
+	ON_WM_KEYDOWN()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+
+BEGIN_MESSAGE_MAP(CLAEdit, CEdit)
+	//{{AFX_MSG_MAP(CLAEdit)
+	ON_WM_KEYDOWN()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CLog_analyserDlg message handlers
@@ -94,10 +182,12 @@ BOOL CLog_analyserDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	CurrentView = NULL;
 	Trace = false;
 	ResizeViewInProgress = -1;
 	((CButton*)GetDlgItem( IDC_CheckSessions ))->SetCheck( 1 );
 	((CButton*)GetDlgItem( IDC_DispLineHeaders ))->SetCheck( 1 );
+	((CButton*)GetDlgItem( IDC_DetectCorruptedLines ))->SetCheck( 1 );
 
 	/*try
 	{
@@ -233,7 +323,7 @@ bool CLog_analyserDlg::addPlugIn( const std::string& dllName )
 		if ( string(pn) == dllName )
 			return false; // already registered
 		++i;
-		sprintf( pluginN, "Plugin%d", i );
+		smprintf( pluginN, 10, "Plugin%d", i );
 		pn = theApp.GetProfileString( _T(""), _T(pluginN) );
 	}
 	theApp.WriteProfileString( _T(""), _T(pluginN), dllName.c_str() );
@@ -258,16 +348,20 @@ void CLog_analyserDlg::loadPluginConfiguration()
 	{
 		Plugins.push_back( pn );
 		++i;
-		sprintf( pluginN, "Plugin%d", i );
+		smprintf( pluginN, 10, "Plugin%d", i );
 		pn = theApp.GetProfileString( _T(""), _T(pluginN) );
 	}
 }
 
 
+/*
+ *
+ */
 bool	isNumberChar( char c )
 {
 	return (c >= '0') && (c <= '9');
 }
+
 
 /*
  *
@@ -357,8 +451,7 @@ void CLog_analyserDlg::addView( std::vector<CString>& pathNames )
 	FilterDialog.Trace = false;
 	if ( FilterDialog.DoModal() == IDOK )
 	{
-		view->PosFilter = FilterDialog.getPosFilter();
-		view->NegFilter = FilterDialog.getNegFilter();
+		view->setFilters( FilterDialog.getPosFilter(), FilterDialog.getNegFilter() );
 
 		// Load file
 		view->reload();
@@ -382,7 +475,7 @@ void CLog_analyserDlg::OnAddtraceview()
 		FilterDialog.Trace = true;
 		if ( FilterDialog.DoModal() == IDOK )
 		{
-			view->PosFilter = FilterDialog.getPosFilter();
+			view->setFilters( FilterDialog.getPosFilter(), FilterDialog.getNegFilter() );
 		}
 
 		// Load file
@@ -456,16 +549,60 @@ CViewDialog *CLog_analyserDlg::onAddCommon( const vector<CString>& filenames )
 				}
 			}
 		}
-		if ( (nbsessions>1) && (LogSessionsDialog.DoModal() == IDOK) )
+
+		// Heuristic to bypass the session choice if not needed
+		bool needToChooseSession;
+		switch ( nbsessions )
+		{
+		case 0:
+			// No 'Log Starting' in the file(s) => no choice needed
+			needToChooseSession = false;
+			break;
+		case 1:
+			{
+			// 1 'Log Starting' => no choice if it's at the beginning (1st line, or 2nd line with blank 1st)
+			ifstream ifs( view->Filenames[0] ); // 1 session => ! Filename.empty()
+			char line [1024];
+			ifs.getline( line, 1024 );
+			if ( ! ifs.fail() )
+			{
+				if ( strstr( line, LogDateString ) != NULL )
+					needToChooseSession = false;
+				else if ( string(line).empty() )
+				{
+					if ( ! ifs.fail() )
+					{
+						ifs.getline( line, 1024 );
+						needToChooseSession = (strstr( line, LogDateString ) == NULL);
+					}
+					else
+						needToChooseSession = true;
+				}
+			}
+			else
+				needToChooseSession = true;
+			}
+			break;
+		default:
+			// Several 'Log Starting' => always choice
+			needToChooseSession = true;
+		}
+
+		// Let the user choose the session (if needed)
+		if ( (needToChooseSession) && (LogSessionsDialog.DoModal() == IDOK) )
 		{
 			view->LogSessionStartDate = LogSessionsDialog.getStartDate();
 		}
 	}
 
+	setCurrentView( view->Index );
 	return view;
 }
 
 
+/*
+ * Code from NeL misc
+ */
 int smprintf( char *buffer, size_t count, const char *format, ... )
 {
 	int ret;
@@ -538,6 +675,36 @@ void CLog_analyserDlg::displayCurrentLine( const CString& line )
 	m_Edit.SetSel( 0, -1 );
 	m_Edit.Clear();
 	m_Edit.ReplaceSel( line, true );
+}
+
+
+/*
+ *
+ */
+bool CLog_analyserDlg::selectText( int lineNum, int colNum, int length )
+{
+	int index = m_Edit.LineIndex( lineNum );
+	if ( index != -1 )
+	{
+		index += colNum;
+		m_Edit.SetSel( index, index + length );
+		m_Edit.SetFocus();
+		return true;
+	}
+	else
+		return false;
+}
+
+
+/*
+ *
+ */
+void CLog_analyserDlg::displayFileList()
+{
+	if ( ! MemorizedFileList.IsEmpty() )
+	{
+		displayCurrentLine( MemorizedFileList );
+	}
 }
 
 
@@ -625,6 +792,10 @@ void CLog_analyserDlg::OnComputeTraces()
 	m_ScrollBar.ShowWindow( SW_SHOW );
 }
 
+
+/*
+ *
+ */
 void CLog_analyserDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
 {
 	if ( Trace )
@@ -676,6 +847,7 @@ void CLog_analyserDlg::OnReset()
 		delete (*iv);
 	}
 	Views.clear();
+	CurrentView = NULL;
 
 	Trace = false;
 	TraceMap.clear();
@@ -803,21 +975,23 @@ void CLog_analyserDlg::OnDestroy()
  */
 void CLog_analyserDlg::OnHelpBtn()
 {
-	CString s = "NeL Log Analyser v1.4.0\n(c) 2002-2003 Nevrax\n\n";
+	CString s = "NeL Log Analyser v1.5.0\n(c) 2002-2003 Nevrax\n\n";
 	s += "Simple Mode: open one or more log files using the button 'Add View...'.\n";
 	s += "You can make a multiple selection, then the files will be sorted by log order.\n";
 	s += "If the file(s) being opened contain(s) several log sessions, you can choose one or\n";
 	s += "choose to display all sessions, if the checkbox 'Browse Log Sessions' is enabled. If the\n";
 	s += "checkbox 'Browse All File Series' is checked and you choose my_service.log, all log\n";
 	s += "files of the series beginning with my_service000.log up to the biggest number found,\n";
-	s += "and ending with my_service.log, will be opened in the same view.\n";
-	s += "You can add some filters. Finally, you may click a log line to display it in its\n";
-	s += "entirety in the top field.\n";
+	s += "and ending with my_service.log, will be opened in the same view. If 'Detect corrupted\n";
+	s += "files' is checked, the possibly malformed lines will be reported.\n";
+	s += "You can add some positive/negative filters. Finally, you may click a log line to display\n";
+	s += "it in its entirety in the top field.\n";
 	s += "Another way to open a file is to pass its filename as an argument. An alternative way to\n";
 	s += "open one or more files is to drag & drop them onto the main window!.\n";
 	s += "To actualize a file (which may have changed if a program is still writing into it), just\n";
 	s += "click 'Filter...' and OK.\n";
-	s += "Resizing a view is done by dragging its left border.\n\n";
+	s += "Resizing a view is done by dragging its left border.\n";
+	s += "Line bookmarks: set/remove = Ctrl+F2, recall = F2. They are kept when changing the filter.\n\n";
 	s += "Trace Mode: open several log files in Trace Format (see below) using the button\n";
 	s += "'Add Trace View...', you can limit the lines loaded to the ones containing a\n";
 	s += "specific service shortname (see below). Then click the button 'Compute Traces'\n";
@@ -827,7 +1001,7 @@ void CLog_analyserDlg::OnHelpBtn()
 	s += "The logs in Trace Format should contains some lines that have a substring sTRACE:n:\n";
 	s += "where s is an optional service name (e.g. FS) and n is the gamecycle of the action\n";
 	s += "(an integer).\n\n";
-	s += "Plug-in system: You can provide DLLs to perform some processing or analysis on the first\n";
+	s += "Plug-in system: You can provide DLLs to perform some processing or analysis on the current\n";
 	s += "view. To register a new plug-in, drag-n-drop the DLL on the main window of the Log Analyser.\n";
 	s += "To unregister a plug-in, see HKEY_CURRENT_USER\\Software\\Nevrax\\log_analyser.INI in the\n";
 	s += "registry.";
@@ -835,7 +1009,9 @@ void CLog_analyserDlg::OnHelpBtn()
 }
 
 
-
+/*
+ * Plug-in activation
+ */
 void CLog_analyserDlg::OnAnalyse() 
 {
 	PlugInSelectorDialog.setPluginList( Plugins );
@@ -853,8 +1029,9 @@ void CLog_analyserDlg::OnAnalyse()
 			return;
 		}
 
+		// Call the plug-in function and get results
 		string resstr, logstr;
-		PlugInSelectorDialog.AnalyseFunc( *(const std::vector<const char *>*)(void*)&(Views[0]->Buffer), resstr, logstr );
+		PlugInSelectorDialog.AnalyseFunc( *(const std::vector<const char *>*)(void*)&(getCurrentView()->Buffer), resstr, logstr );
 		if ( ! logstr.empty() )
 		{
 			vector<CString> pl;

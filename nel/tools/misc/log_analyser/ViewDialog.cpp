@@ -1,7 +1,7 @@
 /** \file ViewDialog.cpp
  * implementation file
  *
- * $Id: ViewDialog.cpp,v 1.6 2003/08/06 14:05:57 cado Exp $
+ * $Id: ViewDialog.cpp,v 1.7 2004/01/13 18:36:04 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "log_analyserDlg.h"
 
 #include <fstream>
+#include <algorithm>
 using namespace std;
 
 
@@ -43,6 +44,7 @@ static char THIS_FILE[] = __FILE__;
 
 extern CString						LogDateString;
 static UINT WM_FINDREPLACE = ::RegisterWindowMessage(FINDMSGSTRING);
+time_t CurrentTime;
 
 
 void CListCtrlEx::initIt()
@@ -50,6 +52,18 @@ void CListCtrlEx::initIt()
 	DWORD dwStyle = GetWindowLong(m_hWnd, GWL_STYLE); 
 	SetWindowLong( m_hWnd, GWL_STYLE, dwStyle | LVS_OWNERDRAWFIXED );
 }
+
+
+/*
+ * Keyboard handler in list box
+ */
+afx_msg void CListCtrlEx::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags )
+{
+	// Transmit to List Ctrl AND to main window
+	CListCtrl::OnKeyDown( nChar, nRepCnt, nFlags );
+	((CLog_analyserDlg*)(_ViewDialog->GetParent()))->OnKeyDown( nChar, nRepCnt, nFlags );
+}
+
 
 // Adapted from http://zeus.eed.usv.ro/misc/doc/prog/c/mfc/listview/sel_row.html
 void CListCtrlEx::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
@@ -101,14 +115,8 @@ void CListCtrlEx::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 	// Draw the background color
 	if( bHighlight )
-	{
-		pDC->SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
 		pDC->SetBkColor(::GetSysColor(COLOR_HIGHLIGHT));
-
-		pDC->FillRect(rcHighlight, &CBrush(::GetSysColor(COLOR_HIGHLIGHT)));
-	}
-	else
-		pDC->FillRect(rcHighlight, &CBrush(::GetSysColor(COLOR_WINDOW)));
+	pDC->FillRect( rcHighlight, &CBrush(_ViewDialog->getBkColorForLine( nItem, bHighlight!=0 )) );
 
 	// Set clip region
 	rcCol.right = rcCol.left + GetColumnWidth(0);
@@ -145,9 +153,9 @@ void CListCtrlEx::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	rcLabel.left += offset/2;
 	rcLabel.right -= offset;
 
-	pDC->SetTextColor( _ViewDialog->getColorForLine( nItem ) );
+	pDC->SetTextColor( _ViewDialog->getTextColorForLine( nItem, bHighlight!=0 ) );
 	pDC->DrawText(sLabel,-1,rcLabel,DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP 
-				| DT_VCENTER | DT_END_ELLIPSIS);
+				| DT_VCENTER /*| DT_END_ELLIPSIS*/);
 
 
 	// Draw labels for remaining columns
@@ -263,6 +271,13 @@ void CListCtrlEx::OnSetFocus(CWnd* pOldWnd)
 }*/
 
 
+BEGIN_MESSAGE_MAP(CListCtrlEx, CListCtrl)
+	//{{AFX_MSG_MAP(CListCtrlEx)
+	ON_WM_KEYDOWN()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CViewDialog dialog
 
@@ -305,8 +320,18 @@ void		CViewDialog::reload()
 	clear();
 	setRedraw( false );
 
-	loadFileOrSeries();
+	time( &CurrentTime );
 
+	// Translate bookmarks (phase 1)
+	CurrentBookmark = -1;
+	vector<int> bookmarksAbsoluteLines;
+	if ( ! Bookmarks.empty() )
+	{
+		getBookmarksAbsoluteLines( bookmarksAbsoluteLines );
+		Bookmarks.clear();
+	}
+
+	loadFileOrSeries( bookmarksAbsoluteLines );
 	commitAddedLines();
 
 	setRedraw( true );
@@ -314,16 +339,27 @@ void		CViewDialog::reload()
 
 
 /*
- * Load a log file or series
+ * Code from IDisplayer::dateToHumanString() (NeL misc)
  */
-void		CViewDialog::loadFileOrSeries()
+string timeToStr( const time_t& date )
 {
-	string actualFilenames = "Files loaded";
-	if ( LogSessionStartDate.IsEmpty() )
-		actualFilenames += ":\r\n";
+	static char cstime[25];
+	struct tm *tms = localtime(&date);
+	if (tms)
+		strftime (cstime, 25, "%Y/%m/%d %H:%M:%S", tms);
 	else
-		actualFilenames += " for Session of " + LogSessionStartDate + ":\r\n";
+		smprintf(cstime, 25, "bad date %d", (unsigned int)date);
+	return cstime;
+}
 
+
+/*
+ * Reload with old filter to get bookmarks absolute line numbers (not called if there's no bookmark)
+ */
+void		CViewDialog::getBookmarksAbsoluteLines( vector<int>& bookmarksAbsoluteLines )
+{
+	// Read the files
+	unsigned int currentAbsoluteLineNum = 0, currentLineNum = 0;
 	for ( unsigned int i=0; i!=Filenames.size(); ++i )
 	{
 		CString& filename = Filenames[i];
@@ -339,13 +375,172 @@ void		CViewDialog::loadFileOrSeries()
 					// Stop if the session is finished
 					if ( (! LogSessionStartDate.IsEmpty()) && (strstr( line, LogDateString )) )
 					{
-						actualFilenames += filename + "\r\n";
+						return;
+					}
+
+					// Test the filters
+					if ( passFilter( line, PreviousPosFilter, PreviousNegFilter ) )
+					{
+						// Translate bookmarks (phase 1: filtered -> absolute)
+						vector<int>::iterator ibl;
+						ibl = find( Bookmarks.begin(), Bookmarks.end(), currentLineNum );
+						if ( ibl != Bookmarks.end() )
+						{
+							bookmarksAbsoluteLines.push_back( currentAbsoluteLineNum );
+						}
+
+						++currentLineNum;
+					}
+
+					++currentAbsoluteLineNum;
+				}
+				else
+				{
+					// Look for the session beginning
+					if ( strstr( line, LogSessionStartDate ) != NULL )
+					{
+						SessionDatePassed = true;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+/*
+ * Auto-detect file corruption (version for any NeL log file)
+ */
+bool		detectLineCorruption( const char *cLine )
+{
+	string line = string(cLine);
+	if ( ! line.empty() )
+	{
+		bool corrupted = false;
+		string::size_type p;
+
+		// Some line may begin with no date, this is normal, we don't state them as corruption
+
+		// Search for year not at beginning. Ex: "2003/" (it does not work when the year is different from the current one!)
+		p = line.substr( 1 ).find( timeToStr( CurrentTime ).substr( 0, 5 ) );
+		if ( p != string::npos )
+		{
+			++p; // because searched from pos 1
+
+			// Search for date/time
+			if ( (line.size()>p+20) && (line[p+10]==' ') && (line[p+13]==':')
+				 && (line[p+16]==':') && (line[p+19]==' ') )
+			{
+				// Search for the five next blank characters. The fifth is followed by ": ".
+				// (Date Time LogType ThreadId Machine/Service SourceFile Line : User-defined log line)
+				unsigned int nbBlank = 0;
+				string::size_type sp;
+				for ( sp=p+20; sp!=line.size(); ++sp )
+				{
+					if ( line[sp]==' ')
+						++nbBlank;
+					if ( nbBlank==5 )
+						break;
+				}
+				if ( (nbBlank==5) && (line[sp+1]==':') && (line[sp+2]==' ') )
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+
+bool HasCorruptedLines;
+
+
+/*
+ *
+ */
+std::string		CViewDialog::corruptedLinesString( const std::vector<unsigned int>& corruptedLines )
+{
+	string res;
+	if ( ! corruptedLines.empty() )
+	{
+		CString s;
+		s.Format( "%u", corruptedLines.size() );
+		res = " -> " + string(s) + " corrupted lines:";
+
+		vector<unsigned int>::const_iterator ivc;
+		for ( ivc=corruptedLines.begin(); ivc!=corruptedLines.end(); ++ivc )
+		{
+			s.Format( "%u", *ivc );
+			res += "\r\n   line " + string(s) + " : " + string(Buffer[*ivc].Left(20)) + "...";
+		}
+		HasCorruptedLines = true;
+	}
+	return res;
+}
+
+
+/*
+ * Load a log file or series
+ */
+void		CViewDialog::loadFileOrSeries( const vector<int>& bookmarksAbsoluteLines )
+{
+	// Header for 'files loaded' display
+	string actualFilenames = "Files loaded";
+	if ( LogSessionStartDate.IsEmpty() )
+		actualFilenames += ":\r\n";
+	else
+		actualFilenames += " for Session of " + LogSessionStartDate + ":\r\n";
+	bool corruptionDetectionEnabled = (((CButton*)(((CLog_analyserDlg*)GetParent())->GetDlgItem( IDC_DetectCorruptedLines )))->GetCheck() == 1);
+	HasCorruptedLines = false;
+	vector<unsigned int> corruptedLines;
+
+	// Read the files
+	unsigned int currentAbsoluteLineNum = 0, currentLineNum = 0;
+	for ( unsigned int i=0; i!=Filenames.size(); ++i )
+	{
+		CString& filename = Filenames[i];
+		ifstream ifs( filename );
+		if ( ! ifs.fail() )
+		{
+			char line [1024];
+			while ( ! ifs.eof() )
+			{
+				ifs.getline( line, 1024 );
+				if ( SessionDatePassed )
+				{
+					// Stop if the session is finished
+					if ( (! LogSessionStartDate.IsEmpty()) && (strstr( line, LogDateString )) )
+					{
+						actualFilenames += string(filename) + corruptedLinesString( corruptedLines ) + "\r\n";
+						corruptedLines.clear();
 						goto endOfLoading;
 					}
 
-					// Apply the filters
-					if ( passFilter( line ) )
+					// Test the filters
+					if ( passFilter( line, PosFilter, NegFilter ) )
+					{
+						// Auto-detect line corruption
+						if ( corruptionDetectionEnabled && detectLineCorruption( line ) )
+							corruptedLines.push_back( currentLineNum );
+
+						// Translate bookmarks (phase 2: absolute -> filtered)
+						if ( ! bookmarksAbsoluteLines.empty() )
+						{
+							vector<int>::const_iterator ibal;
+							ibal = find( bookmarksAbsoluteLines.begin(), bookmarksAbsoluteLines.end(), currentAbsoluteLineNum );
+							if ( ibal != bookmarksAbsoluteLines.end() )
+							{
+								Bookmarks.push_back( currentLineNum );
+							}
+						}
+
+						// Add line to list box
 						addLine( line );
+						++currentLineNum;
+					}
+
+					++currentAbsoluteLineNum;
 				}
 				else
 				{
@@ -359,7 +554,8 @@ void		CViewDialog::loadFileOrSeries()
 
 			if ( SessionDatePassed )
 			{
-				actualFilenames += string(filename) + "\r\n";
+				actualFilenames += string(filename) + corruptedLinesString( corruptedLines ) + "\r\n";
+				corruptedLines.clear();
 			}
 		}
 		else
@@ -371,24 +567,43 @@ void		CViewDialog::loadFileOrSeries()
 	}
 
 endOfLoading:
+	if ( HasCorruptedLines )
+	{
+		actualFilenames += "(When corrupted lines are present, it is possible that some other lines are missing)\r\n\
+Select the line number and press Ctrl-G to scroll to the corrupted line.\r\n\
+At any time, press Ctrl-L in this edit box to return to this list of files and corrupted lines.";
+	}
 	((CLog_analyserDlg*)GetParent())->displayCurrentLine( actualFilenames.c_str() );
+	((CLog_analyserDlg*)GetParent())->memorizeFileList( actualFilenames.c_str() );
+}
+
+
+/*
+ * Set the filters (and backup the previous ones for bookmark translation)
+ */
+void		CViewDialog::setFilters( const std::vector<CString>& posFilter, const std::vector<CString>& negFilter )
+{
+	PreviousPosFilter = PosFilter;
+	PreviousNegFilter = NegFilter;
+	PosFilter = posFilter;
+	NegFilter = negFilter;
 }
 
 
 /*
  * Returns true if the string must be logged, according to the current filters
  */
-bool		CViewDialog::passFilter( const char *filter ) const
+bool		CViewDialog::passFilter( const char *text, const std::vector<CString>& posFilter, const std::vector<CString>& negFilter ) const
 {
-	bool yes = PosFilter.empty();
+	bool yes = posFilter.empty();
 
 	bool found;
 	vector<CString>::const_iterator ilf;
 
 	// 1. Positive filter
-	for ( ilf=PosFilter.begin(); ilf!=PosFilter.end(); ++ilf )
+	for ( ilf=posFilter.begin(); ilf!=posFilter.end(); ++ilf )
 	{
-		found = ( strstr( filter, *ilf ) != NULL );
+		found = ( strstr( text, *ilf ) != NULL );
 		if ( found )
 		{
 			yes = true; // positive filter passed (no need to check another one)
@@ -402,9 +617,9 @@ bool		CViewDialog::passFilter( const char *filter ) const
 	}
 
 	// 2. Negative filter
-	for ( ilf=NegFilter.begin(); ilf!=NegFilter.end(); ++ilf )
+	for ( ilf=negFilter.begin(); ilf!=negFilter.end(); ++ilf )
 	{
-		found = ( strstr( filter, *ilf ) != NULL );
+		found = ( strstr( text, *ilf ) != NULL );
 		if ( found )
 		{
 			return false; // negative filter not passed (no need to check another one)
@@ -513,8 +728,10 @@ END_MESSAGE_MAP()
 void CViewDialog::OnSetfocusList1(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	// Force to display the current item when the current view changes
-	if ( m_ListCtrl.GetSelectionMark() != -1 )
+	if ( getSelectionIndex() != -1 )
 		displayString();
+
+	((CLog_analyserDlg*)GetParent())->setCurrentView( Index );
 
 	m_ListCtrl.RepaintSelectedItems();
 	*pResult = 0;
@@ -530,6 +747,8 @@ void CViewDialog::OnItemchangedList1(NMHDR* pNMHDR, LRESULT* pResult)
 	// Display the current item when it changes
 	if ( pNMListView->iItem != -1 )
 		displayString();
+
+	((CLog_analyserDlg*)GetParent())->setCurrentView( Index );
 
 	m_ListCtrl.RepaintSelectedItems();
 	*pResult = 0;
@@ -557,7 +776,7 @@ void CViewDialog::resizeView( int nbViews, int top, int left )
 	lvc.mask = LVCF_WIDTH;
 	lvc.cx = width-24;
 	m_ListCtrl.SetColumn( 0, &lvc );
-	m_ListCtrl.SetColumnWidth( 0, LVSCW_AUTOSIZE );
+	//m_ListCtrl.SetColumnWidth( 0, LVSCW_AUTOSIZE ); // worse
 
 	GetDlgItem( IDC_DragBar )->MoveWindow( 0, 0, 32, viewRect.bottom-top );
 }
@@ -629,7 +848,7 @@ void CViewDialog::select( int index )
 	LVITEM itstate;
 	itstate.mask = LVIF_STATE;
 	itstate.state = 0;
-	int sm = m_ListCtrl.GetSelectionMark();
+	int sm = getSelectionIndex();
 	if ( sm != -1 )
 	{
 		m_ListCtrl.SetItemState( sm, &itstate );
@@ -637,7 +856,7 @@ void CViewDialog::select( int index )
 
 	if ( index != -1 )
 	{
-		itstate.state = LVIS_SELECTED | LVIS_DROPHILITED | LVIS_FOCUSED;
+		itstate.state = LVIS_SELECTED | /*LVIS_DROPHILITED |*/ LVIS_FOCUSED;
 		m_ListCtrl.SetItemState( index, &itstate );
 		m_ListCtrl.SetSelectionMark( index );
 	}
@@ -650,6 +869,62 @@ void CViewDialog::select( int index )
 int CViewDialog::getScrollIndex() const
 {
 	return m_ListCtrl.GetTopIndex();
+}
+
+
+/*
+ * Add the current scroll index to the bookmark list, or delete it if already inside the list
+ */
+void CViewDialog::addBookmark()
+{
+	int bkIndex = getSelectionIndex();
+	vector<int>::iterator ibk = find( Bookmarks.begin(), Bookmarks.end(), bkIndex );
+	if ( ibk == Bookmarks.end() )
+	{
+		// Add
+		Bookmarks.push_back( bkIndex );
+		std::sort( Bookmarks.begin(), Bookmarks.end() ); // not very fast but not many items
+		((CLog_analyserDlg*)(GetParent()))->displayCurrentLine( "Bookmark set" );
+	}
+	else
+	{
+		// Remove
+		Bookmarks.erase( ibk );
+	}
+
+	// Refresh the listbox view to display the right bookmark color
+	((CLog_analyserDlg*)(GetParent()))->SetFocus();
+	m_ListCtrl.SetFocus();
+}
+
+
+/*
+ * Scroll the listbox to the next stored bookmkark
+ */
+void CViewDialog::recallNextBookmark()
+{
+	if ( Bookmarks.empty() )
+		return;
+
+	// Precondition: the vector is sorted
+	int origIndex = (CurrentBookmark==-1) ? getScrollIndex() : CurrentBookmark, destIndex;
+	unsigned int i = 0;
+	while ( (i < Bookmarks.size()) && (Bookmarks[i] <= origIndex) )
+		++i;
+	if ( i == Bookmarks.size() )
+	{
+		// Origin index > all the bookmarks => go back to the first one
+		destIndex = Bookmarks[0];
+	}
+	else
+	{
+		// Go to the next bookmark
+		destIndex = Bookmarks[i];
+	}
+
+	CurrentBookmark = destIndex; // because scrollTo does not scroll if we are at the bottom of the list
+	scrollTo( destIndex );
+	//select( destIndex );
 }
 
 
@@ -690,8 +965,7 @@ void CViewDialog::OnButtonFilter()
 {
 	if ( ((CLog_analyserDlg*)GetParent())->FilterDialog.DoModal() == IDOK )
 	{
-		PosFilter = ((CLog_analyserDlg*)GetParent())->FilterDialog.getPosFilter();
-		NegFilter = ((CLog_analyserDlg*)GetParent())->FilterDialog.getNegFilter();
+		setFilters( ((CLog_analyserDlg*)GetParent())->FilterDialog.getPosFilter(), ((CLog_analyserDlg*)GetParent())->FilterDialog.getNegFilter() );
 
 		if ( ! ((CLog_analyserDlg*)GetParent())->Trace )
 		{
@@ -709,29 +983,62 @@ BOOL CViewDialog::OnInitDialog()
 	m_ListCtrl.setViewDialog( this );
 	m_ListCtrl.initIt();
 
+	Index = -1;
 	BeginFindIndex = -1;
 	FindDialog = NULL;
+	FindMatchCase = false;
+	FindDownwards = true;
 	WidthR = 0.0f;
+	CurrentBookmark = -1;
 	return TRUE;
 }
 
 
 /*
- * Return the color
+ * Return the text color
  */
-COLORREF CViewDialog::getColorForLine( int index )
+COLORREF CViewDialog::getTextColorForLine( int index, bool selected )
 {
-	if ( Buffer[index].Find( "DBG" ) != -1 )
-		return RGB(0x80,0x80,0x80);
-	else if ( Buffer[index].Find( "WRN" ) != -1 )
-		return RGB(0x80,0,0);
-	else if ( (Buffer[index].Find( "ERR" ) != -1) || (Buffer[index].Find( "AST" ) != -1) )
-		return RGB(0xFF,0,0);
-	else // INF and others
-		return RGB(0,0,0);
+	if ( selected )
+		return ::GetSysColor(COLOR_HIGHLIGHTTEXT);
+	else
+	{
+		if ( Buffer[index].Find( "DBG" ) != -1 )
+			return RGB(0x80,0x80,0x80);
+		else if ( Buffer[index].Find( "WRN" ) != -1 )
+			return RGB(0x80,0,0);
+		else if ( (Buffer[index].Find( "ERR" ) != -1) || (Buffer[index].Find( "AST" ) != -1) )
+			return RGB(0xFF,0,0);
+		else // INF and others
+			return RGB(0,0,0);
+	}
 }
 
 
+/*
+ * Return the background color
+ */
+COLORREF CViewDialog::getBkColorForLine( int index, bool selected )
+{
+	unsigned int i = 0;
+	while ( (i < Bookmarks.size()) && (Bookmarks[i]<index) )
+		++i;
+	if ( (i < Bookmarks.size()) && (index == Bookmarks[i]) )
+		if ( selected )
+			return (::GetSysColor(COLOR_HIGHLIGHT) + RGB(0xC0,0x90,0x90)) / 2; // selected bookmark
+		else
+			return RGB(0xC0,0x90,0x90); // bookmark
+	else
+		if ( selected )
+			return ::GetSysColor(COLOR_HIGHLIGHT); // selected
+		else
+			return GetSysColor(COLOR_WINDOW); // normal
+}
+
+
+/*
+ *
+ */
 void formatLogStr( CString& str, bool displayHeaders )
 {
 	if ( ! displayHeaders )
@@ -746,7 +1053,7 @@ void formatLogStr( CString& str, bool displayHeaders )
 
 
 /*
- *
+ * Process string before displaying it in the view
  */
 void CViewDialog::OnGetdispinfoList1(NMHDR* pNMHDR, LRESULT* pResult) 
 {
@@ -757,7 +1064,7 @@ void CViewDialog::OnGetdispinfoList1(NMHDR* pNMHDR, LRESULT* pResult)
 	if (pItem->mask & LVIF_TEXT) //valid text buffer?
 	{
 		CString str = Buffer[iItemIndx];
-		formatLogStr( str, ((CButton*)(((CLog_analyserDlg*)GetParent())->GetDlgItem( IDC_DispLineHeaders )))->GetCheck() );
+		formatLogStr( str, ((CButton*)(((CLog_analyserDlg*)GetParent())->GetDlgItem( IDC_DispLineHeaders )))->GetCheck() == 1 );
 		lstrcpy( pItem->pszText, str );
 	}
 	*pResult = 0;
@@ -776,7 +1083,7 @@ void CViewDialog::displayString()
 	{
 		int index = m_ListCtrl.GetNextSelectedItem( pos );
 		CString str = Buffer[index];
-		formatLogStr( str, ((CButton*)(((CLog_analyserDlg*)GetParent())->GetDlgItem( IDC_DispLineHeaders )))->GetCheck() );
+		formatLogStr( str, ((CButton*)(((CLog_analyserDlg*)GetParent())->GetDlgItem( IDC_DispLineHeaders )))->GetCheck() == 1 );
 		s += str + "\r\n";
 	}
 
@@ -790,26 +1097,32 @@ void CViewDialog::displayString()
  */
 void CViewDialog::OnButtonFind() 
 {
+	if ( FindDialog ) // spawn only 1 window
+		return;
+
 	m_ListCtrl.ModifyStyle( 0, LVS_SHOWSELALWAYS );
-	BeginFindIndex = m_ListCtrl.GetSelectionMark()+1;
 	select( -1 );
+	DWORD frDown = FindDownwards ? FR_DOWN : 0;
+	DWORD frMatchCase = FindMatchCase ? FR_MATCHCASE : 0;
 	FindDialog = new CFindReplaceDialog();
-	FindDialog->Create( true, FindStr, NULL, FR_DOWN | FR_HIDEWHOLEWORD, this );
+	FindDialog->Create( true, FindStr, NULL, frDown | frMatchCase | FR_HIDEWHOLEWORD, this );
 }
 
 
-bool matchString( const CString& str, const CString& substr, bool matchCase )
+bool matchString( const CString& str, const CString& substr, bool matchCase, int& matchPos )
 {
 	if ( matchCase )
 	{
-		return str.Find( substr ) != -1;
+		matchPos = str.Find( substr );
+		return matchPos != -1;
 	}
 	else
 	{
 		CString str2 = str, substr2 = substr;
 		str2.MakeUpper();
 		substr2.MakeUpper();
-		return str2.Find( substr2 ) != -1;
+		matchPos = str2.Find( substr2 );
+		return matchPos != -1;
 	}
 }
 
@@ -819,47 +1132,67 @@ bool matchString( const CString& str, const CString& substr, bool matchCase )
  */
 afx_msg LONG CViewDialog::OnFindReplace(WPARAM wParam, LPARAM lParam)
 {
+	// Test 'Cancel'
 	if ( FindDialog->IsTerminating() )
     {
+		FindDialog = NULL;
 		m_ListCtrl.ModifyStyle( LVS_SHOWSELALWAYS, 0 );
 		select( -1 );
         return 0;
 	}
 
+	// Test 'Find'
 	if ( FindDialog->FindNext() )
 	{
+		FindMatchCase = (FindDialog->MatchCase() != 0);
+		FindDownwards = (FindDialog->SearchDown() != 0);
 		FindStr = FindDialog->GetFindString();
-		int index;
+
+		int lineIndex, matchPos;
 		if ( FindDialog->SearchDown() )
 		{
-			for ( index=BeginFindIndex; index!=(int)Buffer.size(); ++index )
+			BeginFindIndex = (getSelectionIndex() == -1) ? 0 : getSelectionIndex() + 1;
+			for ( lineIndex=BeginFindIndex; lineIndex!=(int)Buffer.size(); ++lineIndex )
 			{
-				if ( matchString( Buffer[index], FindStr, FindDialog->MatchCase()!=0 ) )
+				if ( matchString( Buffer[lineIndex], FindStr, FindDialog->MatchCase()!=0, matchPos ) )
 				{
-					scrollTo( index );
-					select( index );
-					BeginFindIndex = m_ListCtrl.GetSelectionMark()+1;
-					displayString();
+					scrollTo( lineIndex );
+					select( lineIndex );
+					//BeginFindIndex = getSelectionIndex()+1;
+					//displayString();
+					CString s;
+					s.Format( "Found '%s' (downwards from line %d) at line %d:\r\n%s", FindStr, BeginFindIndex, lineIndex, Buffer[lineIndex] );
+					((CLog_analyserDlg*)GetParent())->displayCurrentLine( s );
+					((CLog_analyserDlg*)GetParent())->selectText( 1, matchPos, FindStr.GetLength() );
+					//BeginFindIndex = lineIndex+1;
 					return 1;
 				}
 			}
 		}
 		else
 		{
-			for ( index=BeginFindIndex; index>=0; --index )
+			BeginFindIndex = (getSelectionIndex() == -1) ? 0 : getSelectionIndex() - 1;
+			for ( lineIndex=BeginFindIndex; lineIndex>=0; --lineIndex )
 			{
-				if ( matchString( Buffer[index], FindStr, FindDialog->MatchCase()!=0 ) )
+				if ( matchString( Buffer[lineIndex], FindStr, FindDialog->MatchCase()!=0, matchPos ) )
 				{
-					scrollTo( index );
-					select( index );
-					BeginFindIndex = m_ListCtrl.GetSelectionMark()-1;
-					displayString();
+					scrollTo( lineIndex );
+					select( lineIndex );
+					//BeginFindIndex = getSelectionIndex()-1;
+					//displayString();
+					CString s;
+					s.Format( "Found '%s' (upwards from line %d) at line %d:\r\n%s", FindStr, BeginFindIndex, lineIndex, Buffer[lineIndex] );
+					((CLog_analyserDlg*)GetParent())->displayCurrentLine( s );
+					((CLog_analyserDlg*)GetParent())->selectText( 1, matchPos, FindStr.GetLength() );
+					//BeginFindIndex = lineIndex-1;
 					return 1;
 				}
 			}
 		}
-		AfxMessageBox( "Not found" );
-		BeginFindIndex = 0;
+		CString s;
+		s.Format( "Not found (%s from line %d)", FindDialog->SearchDown() ? "downwards" : "upwards", BeginFindIndex );
+		AfxMessageBox( s );
+		//BeginFindIndex = 0;
 		return 0;
 	}
 

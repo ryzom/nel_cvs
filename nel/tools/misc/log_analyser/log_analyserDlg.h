@@ -1,7 +1,7 @@
 /** \file Log_analyserDlg.h
  * header file
  *
- * $Id: log_analyserDlg.h,v 1.4 2003/08/06 14:05:57 cado Exp $
+ * $Id: log_analyserDlg.h,v 1.5 2004/01/13 18:36:04 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -47,6 +47,17 @@ struct TStampedLine
 };
 
 
+class CLAEdit : public CEdit
+{
+protected:
+
+	//{{AFX_MSG(CLAEdit)
+	afx_msg void OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags );
+	//}}AFX_MSG
+	DECLARE_MESSAGE_MAP()
+};
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CLog_analyserDlg dialog
 
@@ -72,6 +83,15 @@ public:
 	void						displayCurrentLine( const CString& line );
 
 	///
+	bool						selectText( int lineNum, int colNum, int length );
+
+	///
+	void						memorizeFileList( const CString& str ) { MemorizedFileList = str; }
+
+	///
+	void						displayFileList();
+
+	///
 	void						insertTraceLine( int index, char *traceLine );
 
 	///
@@ -86,6 +106,17 @@ public:
 	///
 	void						beginResizeView( int index );
 
+	///
+	CViewDialog					*getCurrentView() { return CurrentView; }
+
+	/// 
+	void						setCurrentView( int index ) { if ( index==-1 ) CurrentView=NULL; else CurrentView = Views[index]; }
+
+	//{{AFX_MSG(CLog_analyserDlg)
+	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	//}}AFX_MSG
+
+	
 	CFilterDialog						FilterDialog;
 	bool								Trace;
 	int									ResizeViewInProgress;
@@ -95,7 +126,7 @@ public:
 	//{{AFX_DATA(CLog_analyserDlg)
 	enum { IDD = IDD_LOG_ANALYSER_DIALOG };
 	CScrollBar	m_ScrollBar;
-	CEdit	m_Edit;
+	CLAEdit	m_Edit;
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
@@ -105,11 +136,14 @@ public:
 	//}}AFX_VIRTUAL
 
 	std::vector<CViewDialog*>			Views;
+	CViewDialog*						CurrentView;
 
 	CLogSessions						LogSessionsDialog;
 	CPlugInSelector						PlugInSelectorDialog;
 
 	std::multimap<int, TStampedLine>	TraceMap;
+
+	CString								MemorizedFileList;
 
 	TAnalyseFunc						AnalyseFunc;
 
@@ -138,6 +172,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 };
+
+
+/// Smart sprintf() (from NeL)
+int smprintf( char *buffer, size_t count, const char *format, ... );
 
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,7 +1,7 @@
 /** \file ViewDialog.h
  * header file
  *
- * $Id: ViewDialog.h,v 1.5 2003/08/06 14:05:57 cado Exp $
+ * $Id: ViewDialog.h,v 1.6 2004/01/13 18:36:04 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include <vector>
+#include <string>
 
 #if !defined(AFX_VIEWDIALOG_H__FDD49815_5955_4204_8D1C_2839AE39DDB3__INCLUDED_)
 #define AFX_VIEWDIALOG_H__FDD49815_5955_4204_8D1C_2839AE39DDB3__INCLUDED_
@@ -50,6 +51,13 @@ public:
 	//void	OnSetFocus(CWnd* pOldWnd);
 	
 	void	setViewDialog( CViewDialog *pt ) { _ViewDialog = pt; }
+
+protected:
+
+	//{{AFX_MSG(CListCtrlEx)
+	afx_msg void OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags );
+	//}}AFX_MSG
+	DECLARE_MESSAGE_MAP()
 
 private:
 
@@ -78,8 +86,11 @@ public:
 	/// Load trace
 	void		reloadTrace();
 
+	/// Set the filters (and backup the previous ones for bookmark translation)
+	void		setFilters( const std::vector<CString>& posFilter, const std::vector<CString>& negFilter );
+	
 	/// Returns true if the string must be logged, according to the current filters
-	bool		passFilter( const char *filter ) const;
+	bool		passFilter( const char *text, const std::vector<CString>& posFilter, const std::vector<CString>& negFilter ) const;
 
 	/// Resize
 	void		resizeView( int nbViews, int top, int left );
@@ -100,7 +111,7 @@ public:
 	void		fillGaps( int maxNbLines );
 
 	/// Load a log file or series
-	void		loadFileOrSeries();
+	void		loadFileOrSeries( const std::vector<int>& bookmarksAbsoluteLines );
 
 	/// Add one line
 	void		addLine( const CString& line ) { Buffer.push_back( line ); }
@@ -116,28 +127,52 @@ public:
 
 	/// Select
 	void		select( int index );
+
+	/// Get selected index
+	int			getSelectionIndex() { return m_ListCtrl.GetSelectionMark(); }
 	
 	/// Return the index of the top of the listbox
 	int			getScrollIndex() const;
 
+	/// Add the current scroll index to the bookmark list, or delete it if already inside the list
+	void		addBookmark();
+
+	/// Scroll the listbox to the next found stored bookmkark (downwards from the current scroll index)
+	void		recallNextBookmark();
+
 	/// Display string
 	void		displayString();
 
-	/// Return the color
-	COLORREF	getColorForLine( int index );
+	/// Return the textcolor
+	COLORREF	getTextColorForLine( int index, bool selected );
+
+	/// Return the background color
+	COLORREF	getBkColorForLine( int index, bool selected );
+
+	///
+	std::string	corruptedLinesString( const std::vector<unsigned int>& corruptedLines );
+
+	/// Reload with old filter to get bookmarks absolute line numbers (not called if there's no bookmark)
+	void		getBookmarksAbsoluteLines( std::vector<int>& bookmarksAbsoluteLines );
+
+	//{{AFX_MSG(CViewDialog)
+	afx_msg void OnButtonFind();
+	//}}AFX_MSG
 
 	int						Index;
 	CString					Seriesname;
 	std::vector<CString>	Filenames;
-	std::vector<CString>	PosFilter;
-	std::vector<CString>	NegFilter;
+	std::vector<CString>	PosFilter, NegFilter, PreviousPosFilter, PreviousNegFilter;
 	CString					LogSessionStartDate;
 	bool					SessionDatePassed;
 	std::vector<CString>	Buffer;
 	int						BeginFindIndex;
 	CFindReplaceDialog		*FindDialog;
 	CString					FindStr;
+	bool					FindMatchCase, FindDownwards;
 	float					WidthR; // ratio to the app's client window
+	std::vector<int>		Bookmarks;
+	int						CurrentBookmark;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -158,7 +193,6 @@ protected:
 	afx_msg void OnGetdispinfoList1(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnItemchangedList1(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSetfocusList1(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnButtonFind();
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

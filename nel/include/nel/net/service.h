@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.h,v 1.9 2000/10/11 08:31:07 lecroart Exp $
+ * $Id: service.h,v 1.10 2000/10/12 10:13:52 cado Exp $
  *
  * Base class for all network services
  */
@@ -23,6 +23,10 @@
 
 namespace NLNET
 {
+
+
+class CMsgSocket;
+
 
 /**
  * The goal of this macro is to simplify the creation of a service, it create the main body function.
@@ -46,7 +50,7 @@ namespace NLNET
 const char IService::_Name[] = ServiceName; \
 	int main(int argc, char **argv) { \
 	ServiceClassName *scn = new ServiceClassName; \
-	bool retval = scn->main (argc, argv); \
+	sint retval = scn->main (argc, argv); \
 	delete scn; \
 	return retval; \
 }
@@ -96,6 +100,10 @@ protected:
 
 	/// Array of arguments
 	std::vector<std::string>	_Args;
+
+	/// Server socket
+	NLNET::CMsgSocket			*_Server;
+
 
 private:
 

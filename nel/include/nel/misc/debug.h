@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.h,v 1.8 2000/10/11 08:31:07 lecroart Exp $
+ * $Id: debug.h,v 1.9 2000/10/12 10:13:52 cado Exp $
  *
  * This file contains all features that help us to debug applications/
  */
@@ -279,7 +279,7 @@ void InitDebug ();
 	_asm { int 3 } \
 }
 
-#define nlstoponce(exp) \
+#define nlstoponce \
 { \
 	static bool ignoreAlways = false; \
 	if (!ignoreAlways) { \
@@ -300,15 +300,15 @@ void InitDebug ();
 
 #else // NL_DEBUG
 
-#define nlassert(exp) ;
-#define nlassertonce(exp) ;
-#define nlassertex(exp, str) ;
+#define nlassert(exp) NULL
+#define nlassertonce(exp) NULL
+#define nlassertex(exp, str) NULL
 #define nlverify(exp) { exp; }
 #define nlverifyonce(exp) { exp; }
 #define nlverifyex(exp, str) {exp; }
-#define nlstop ;
-#define nlstoponce(exp) ;
-#define nlstopex(str) ;
+#define nlstop NULL
+#define nlstoponce NULL
+#define nlstopex(str) NULL
 
 #endif // NL_DEBUG
 

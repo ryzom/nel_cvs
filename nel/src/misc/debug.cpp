@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.cpp,v 1.13 2000/10/11 12:27:41 lecroart Exp $
+ * $Id: debug.cpp,v 1.14 2000/10/12 10:13:52 cado Exp $
  *
  * Debug
  */
@@ -120,8 +120,10 @@ void InitDebug ()
 		ErrorLog.addDisplayer (&sd);
 		WarningLog.addDisplayer (&sd);
 		InfoLog.addDisplayer (&sd);
+#ifdef NL_DEBUG
 		DebugLog.addDisplayer (&sd);
 		AssertLog.addDisplayer (&sd);
+#endif
 		alreadyInit = true;
 	}
 	else

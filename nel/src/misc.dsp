@@ -195,10 +195,6 @@ SOURCE=.\misc\config_file\config_file.yacc.cpp.h
 # End Group
 # Begin Source File
 
-SOURCE=..\include\nel\misc\assert.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\misc\bit_set.cpp
 # End Source File
 # Begin Source File

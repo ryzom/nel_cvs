@@ -8,13 +8,13 @@
  */
 
 /*
- * $Id: service.cpp,v 1.14 2000/10/11 12:27:42 lecroart Exp $
+ * $Id: service.cpp,v 1.15 2000/10/12 10:13:52 cado Exp $
  *
  * implementation of all debug functions
  *
  */
 
-/// \todo ACE test the signal redirection on unix
+/// \todo ACE: test the signal redirection on unix
 
 #include "nel/misc/types_nl.h"
 
@@ -28,8 +28,8 @@
 #include "nel/net/base_socket.h"
 #include "nel/net/service.h"
 #include "nel/net/inet_address.h"
-
-#include "nel/net/service.h"
+#include "nel/net/naming_client.h"
+#include "nel/net/msg_socket.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -126,6 +126,7 @@ sint IService::main (int argc, char **argv)
 {
 	try
 	{
+		_Server = NULL;
 		Service = this;
 		atexit (ExitFunc);
 
@@ -153,7 +154,7 @@ sint IService::main (int argc, char **argv)
 		}
 
 		// set the localhost name and service name to the logger
-		CLog::setLocalHostAndService (localhost, _Name);
+		CLog::setLocalHostAndService ( localhost, _Name );
 
 		// initialize debug stuffs, create displayers for rk* functions
 		InitDebug();
@@ -161,8 +162,25 @@ sint IService::main (int argc, char **argv)
 		// user service init
 		init ();
 
+		// Register the name to the NS (except for the NS itself)
+		if ( strcmp( IService::_Name, "NS" ) != 0 )
+		{
+			try
+			{
+				CNamingClient::registerService( IService::_Name, *(_Server->listenAddress()) );
+			}
+			catch ( ESocketConnectionFailed& )
+			{
+				nlwarning( "Could not connect to the Naming Service. The NS looks down" );
+			}
+			catch ( ESocket& )
+			{
+				nlwarning( "Could not register service into the Naming Service." );
+			}
+		}
+
 		// user service update call each loop
-		while (update())
+		while ( update() )
 		{
 			CConfigFile::checkConfigFiles ();
 		}

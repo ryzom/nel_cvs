@@ -1,7 +1,7 @@
 /** \file scene_dlg.cpp
  * <File description>
  *
- * $Id: scene_dlg.cpp,v 1.15 2001/06/27 16:39:08 vizerie Exp $
+ * $Id: scene_dlg.cpp,v 1.16 2001/07/04 17:14:35 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,6 +205,7 @@ BEGIN_MESSAGE_MAP(CSceneDlg, CDialog)
 	ON_COMMAND(ID_ENABLE_ELEMENT_YROTATE, OnEnableElementYrotate)
 	ON_COMMAND(ID_ENABLE_ELEMENT_ZROTATE, OnEnableElementZrotate)
 	ON_COMMAND(IDM_RESET_ROTATION, OnResetRotation)
+	ON_BN_CLICKED(IDC_BG_COLOR, OnBgColor)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -594,4 +595,26 @@ void CSceneDlg::OnResetRotation()
 	CMatrix m = ObjView->getMouseListener().getModelMatrix() ;
 	m.setRot(NLMISC::CVector::I, NLMISC::CVector::J, NLMISC::CVector::K) ;		
 	ObjView->getMouseListener().setModelMatrix(m) ;
+}
+
+void CSceneDlg::OnBgColor() 
+{
+	static COLORREF colTab[16] = { 0, 0xff0000, 0x00ff00, 0xffff00, 0x0000ff, 0xff00ff, 0x00ffff, 0xffffff
+								   , 0x7f7f7f, 0xff7f7f, 0x7fff7f, 0xffff7f, 0x7f7fff, 0xff7fff, 0x7fffff, 0xff7f00 } ;	
+	CRGBA col = ObjView->getBackGroundColor() ;
+	CHOOSECOLOR cc ;
+	cc.lStructSize = sizeof(CHOOSECOLOR) ;
+	cc.hwndOwner = this->m_hWnd ;
+	cc.Flags = CC_RGBINIT | CC_ANYCOLOR | CC_FULLOPEN  ;	
+	cc.rgbResult = RGB(col.R, col.G, col.B) ;
+	cc.lpCustColors = colTab ;
+
+	if (::ChooseColor(&cc) == IDOK)
+	{		
+		col.R = (uint8) (cc.rgbResult & 0xff) ;
+		col.G = (uint8) ((cc.rgbResult & 0xff00) >> 8) ;
+		col.B = (uint8) ((cc.rgbResult & 0xff0000) >> 16) ;
+	
+		ObjView->setBackGroundColor(col) ;
+	}	
 }

@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.24 2004/07/08 13:26:13 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.25 2004/08/03 16:27:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -56,9 +56,9 @@ CFlareModel::CFlareModel()
 	// RenderFilter: We are a flare
 	_RenderFilterType= UScene::FilterFlare;
 	resetOcclusionQuerries();
-	_LastRenderIntervalBegin =  (uint64) -2;
-	_LastRenderIntervalEnd = (uint64) -2;
-	_NumFrameForOcclusionQuery = 1;
+	std::fill(_LastRenderIntervalBegin, _LastRenderIntervalBegin + MaxNumContext, (uint64) -2);
+	std::fill(_LastRenderIntervalEnd, _LastRenderIntervalEnd + MaxNumContext, (uint64) -2);	
+	std::fill(_NumFrameForOcclusionQuery, _NumFrameForOcclusionQuery, 1);
 	Next = NULL;
 }
 
@@ -108,11 +108,11 @@ void CFlareModel::registerBasic()
 
 //********************************************************************************************************************
 void	CFlareModel::traverseRender()
-{		
+{			
 	CRenderTrav			&renderTrav = getOwnerScene()->getRenderTrav();
 	if (renderTrav.isCurrentPassOpaque()) return;	
 	IDriver				*drv  = renderTrav.getDriver();
-	nlassert(drv);
+	nlassert(drv);	
 	// For now, don't render flare if occlusion query is not supported (direct read of z-buffer is far too slow)
 	if (!drv->supportOcclusionQuery()) return;
 	if (drv != _LastDrv)
@@ -172,9 +172,9 @@ void	CFlareModel::traverseRender()
 		bool issueNewQuery = true;
 		IOcclusionQuery *lastOQ = _OcclusionQuery[flareContext][OcclusionTestFrameDelay - 1];
 		IOcclusionQuery *lastDQ = _DrawQuery[flareContext][OcclusionTestFrameDelay - 1];
-		if (_LastRenderIntervalEnd + 1 == currFrame)
+		if (_LastRenderIntervalEnd[flareContext] + 1 == currFrame)
 		{		
-			if (_LastRenderIntervalEnd - _LastRenderIntervalBegin >= OcclusionTestFrameDelay - 1)
+			if (_LastRenderIntervalEnd[flareContext] - _LastRenderIntervalBegin[flareContext] >= OcclusionTestFrameDelay - 1)
 			{			
 				// occlusion test are possibles if at least OcclusionTestFrameDelay frames have ellapsed				
 				if (lastOQ)
@@ -183,7 +183,7 @@ void	CFlareModel::traverseRender()
 					{
 						case IOcclusionQuery::NotAvailable:								
 							issueNewQuery = false;
-							++ _NumFrameForOcclusionQuery;
+							++ _NumFrameForOcclusionQuery[flareContext];
 						break;
 						case IOcclusionQuery::Occluded:
 							visibilityRetrieved = true;
@@ -244,7 +244,7 @@ void	CFlareModel::traverseRender()
 	}
 	else
 	{	
-		_NumFrameForOcclusionQuery = 1;
+		_NumFrameForOcclusionQuery[flareContext] = 1;
 		visibilityRetrieved = true;
 		// The device doesn't support asynchronous query -> must read the z-buffer directly in a slow fashion								
 		CViewport vp;
@@ -270,18 +270,20 @@ void	CFlareModel::traverseRender()
 		}
 	}		
 	// Update render interval
-	if (_LastRenderIntervalEnd + 1 != currFrame)
+//	nlwarning("frame = %d, last frame = %d", (int) currFrame, (int) _LastRenderIntervalEnd[flareContext]);
+	if (_LastRenderIntervalEnd[flareContext] + 1 != currFrame)
 	{
+		//nlwarning("*");
 		_Intensity[flareContext] = 0.f;
-		_LastRenderIntervalBegin = currFrame;
+		_LastRenderIntervalBegin[flareContext] = currFrame;
 	}
-	_LastRenderIntervalEnd = currFrame;
+	_LastRenderIntervalEnd[flareContext] = currFrame;
 	// Update intensity depending on visibility	
 	if (visibilityRetrieved)
 	{
 		nlassert(visibilityRatio >= 0.f);
 		nlassert(visibilityRatio <= 1.f);
-		_NumFrameForOcclusionQuery = 1; // reset number of frame needed to do the occlusion query
+		_NumFrameForOcclusionQuery[flareContext] = 1; // reset number of frame needed to do the occlusion query
 		if (visibilityRatio < _Intensity[flareContext])
 		{
 			float p = fs->getPersistence();
@@ -291,7 +293,7 @@ void	CFlareModel::traverseRender()
 			}
 			else
 			{
-				_Intensity[flareContext] -= 1.f / p * (float)_Scene->getEllapsedTime() * (float) _NumFrameForOcclusionQuery;
+				_Intensity[flareContext] -= 1.f / p * (float)_Scene->getEllapsedTime() * (float) _NumFrameForOcclusionQuery[flareContext];
 				if (_Intensity[flareContext] < visibilityRatio) 
 				{				
 					_Intensity[flareContext] = visibilityRatio;					
@@ -308,7 +310,8 @@ void	CFlareModel::traverseRender()
 			}
 			else
 			{
-				_Intensity[flareContext] += 1.f / p * (float)_Scene->getEllapsedTime() * (float) _NumFrameForOcclusionQuery;
+				//nlwarning("num frame = %d, currFrame = %d, ", (int) _NumFrameForOcclusionQuery[flareContext], (int) currFrame);
+				_Intensity[flareContext] += 1.f / p * (float)_Scene->getEllapsedTime() * (float) _NumFrameForOcclusionQuery[flareContext];
 				if (_Intensity[flareContext] > visibilityRatio) 
 				{				
 					_Intensity[flareContext] = visibilityRatio;					
@@ -413,7 +416,7 @@ void	CFlareModel::traverseRender()
 	const float dY = fs->getFlareSpacing() * ((sint) (height >> 1) - yPos);	
 	uint k = 0;
 	ITexture *tex;
-	// special case for fist flare	
+	// special case for first flare	
 	tex = fs->getTexture(0);
 	if (tex)
 	{		

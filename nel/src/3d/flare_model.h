@@ -1,7 +1,7 @@
 /** \file flare_model.h
  * <File description>
  *
- * $Id: flare_model.h,v 1.7 2004/06/29 13:42:26 vizerie Exp $
+ * $Id: flare_model.h,v 1.8 2004/08/03 16:27:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -69,9 +69,9 @@ private:
 	IOcclusionQuery			 *_OcclusionQuery[MaxNumContext][OcclusionTestFrameDelay]; // delay real test by a whole frame to avoid any stall
 	IOcclusionQuery			 *_DrawQuery[MaxNumContext][OcclusionTestFrameDelay]; // querries to retrieve the surface that would have been drawned if there were no occlusion
 	NLMISC::CRefPtr<IDriver> _LastDrv; // last driver used for render
-	uint64					 _LastRenderIntervalBegin; // Interval of frames during which this flare was traversed for render
-	uint64					 _LastRenderIntervalEnd;
-	uint64					 _NumFrameForOcclusionQuery; // number of frames that were necessary to get the occlusion query result
+	uint64					 _LastRenderIntervalBegin[MaxNumContext]; // Interval of frames during which this flare was traversed for render
+	uint64					 _LastRenderIntervalEnd[MaxNumContext];
+	uint64					 _NumFrameForOcclusionQuery[MaxNumContext]; // number of frames that were necessary to get the occlusion query result
 	static CMaterial		 _OcclusionQueryMaterial;
 	static CMaterial		 _DrawQueryMaterial;
 	static bool				 _OcclusionQuerySettuped;

@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.9 2002/03/19 17:42:48 valignat Exp $
+dnl $Id: acinclude.m4,v 1.10 2002/03/21 10:54:37 valignat Exp $
 dnl 
 dnl =========================================================================
 
@@ -251,6 +251,7 @@ nel3d_is_mandatory="$3"
 nelpacs_is_mandatory="$4"
 nelsound_is_mandatory="$5"
 nelai_is_mandatory="$6"
+nelgeorges_is_mandatory="$7"
 
 dnl Check for nel-config
 AC_PATH_PROG(NEL_CONFIG, nel-config, no)
@@ -325,6 +326,7 @@ MY_NEL_HEADER_CHK([NeL 3D], [nel/3d/u_camera.h], [NL_U_CAMERA_H], $nel3d_is_mand
 MY_NEL_HEADER_CHK([NeL PACS], [nel/pacs/u_global_position.h], [NL_U_GLOBAL_POSITION_H], $nelpacs_is_mandatory)
 MY_NEL_HEADER_CHK([NeL Sound], [nel/sound/u_source.h], [NL_U_SOURCE_H], $nelsound_is_mandatory)
 MY_NEL_HEADER_CHK([NeL AI], [nel/ai/nl_ai.h], [_IA_NEL_H], $nelai_is_mandatory)
+MY_NEL_HEADER_CHK([NeL Georges], [nel/georges/common.h], [NLGEORGES_COMMON_H], $nelgeorges_is_mandatory)
 
 dnl
 dnl Collect libraries information and bark if missing and
@@ -335,8 +337,9 @@ MY_NEL_LIB_CHK([NeL Misc], [nelmisc], $nelmisc_is_mandatory)
 MY_NEL_LIB_CHK([NeL Network], [nelnet], $nelnet_is_mandatory)
 MY_NEL_LIB_CHK([NeL 3D], [nel3d], $nel3d_is_mandatory)
 MY_NEL_LIB_CHK([NeL PACS], [nelpacs], $nelpacs_is_mandatory)
-MY_NEL_LIB_CHK([NeL AI], [nelai], $nelai_is_mandatory)
 MY_NEL_LIB_CHK([NeL Sound], [nelsnd], $nelsound_is_mandatory)
+MY_NEL_LIB_CHK([NeL AI], [nelai], $nelai_is_mandatory)
+MY_NEL_LIB_CHK([NeL Georges], [nelgeorges], $nelgeorges_is_mandatory)
 
 ])
 

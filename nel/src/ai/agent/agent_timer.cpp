@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.11 2001/06/12 09:44:11 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.12 2001/06/14 10:23:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -626,7 +626,7 @@ namespace NLAIAGENT
 	void CAgentClockTimer::setClock(uint c)
 	{	
 		_TimeCount = c;
-		CAgentWatchTimer::setClock(/*c +*/ (uint)(rand()%c));		
+		CAgentWatchTimer::setClock(c);		
 
 	}
 
@@ -718,7 +718,11 @@ namespace NLAIAGENT
 		{
 			return _Timer->sendMessage(m);
 		}
-		else return IObjectIA::CProcessResult();
+		else
+		{
+			m->release();
+			return IObjectIA::CProcessResult();
+		}
 	}
 
 	sint32 CAgentTimerHandle::getMethodIndexSize() const

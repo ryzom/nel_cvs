@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Base class for operators
  *
- * $Id: operator.h,v 1.5 2001/01/25 10:09:48 portier Exp $
+ * $Id: operator.h,v 1.6 2001/06/14 10:23:31 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,7 +62,7 @@ namespace NLAILOGIC
 
 			IBaseOperator();
 			IBaseOperator(const char *);
-			~IBaseOperator();
+			virtual ~IBaseOperator();
 			IBaseOperator(const IBaseOperator &);
 
 			/// Sets the comment for the operator

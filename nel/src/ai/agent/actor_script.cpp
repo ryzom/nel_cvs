@@ -196,6 +196,7 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CActorScript::sendMessage(IObjectIA *m)
 	{
+		m->release();
 		return CAgentScript::sendMessage(m);
 	}
 

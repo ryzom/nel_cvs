@@ -1,6 +1,6 @@
 /** \file volatil_memory.h
  *
- * $Id: volatil_memory.h,v 1.6 2001/06/01 14:48:32 portier Exp $
+ * $Id: volatil_memory.h,v 1.7 2001/06/14 10:23:31 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,6 +91,7 @@ namespace NLAIAGENT
 
 		virtual IObjectIA::CProcessResult sendMessage(IMessageBase *msg)
 		{
+			msg->release();
 			return IObjectIA::CProcessResult();
 		}
 

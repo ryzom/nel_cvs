@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.69 2001/06/12 09:44:11 chafik Exp $
+ * $Id: agent_script.cpp,v 1.70 2001/06/14 10:23:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -599,15 +599,15 @@ namespace NLAIAGENT
 			sint size = _DynamicAgentName.count(CKeyAgent(*s));
 			sint n = 0;
 			CVectorGroupManager *x;
+			x = new CVectorGroupManager(size);
 			while(p.first != p.second)
-			{
-				x = new CVectorGroupManager(size);
+			{				
+				(*p.first->Itr)->incRef();
 				x->set(n++, *p.first->Itr);
 				p.first++;
 			}
 
-			r.Result = x;
-			r.Result->incRef();
+			r.Result = x;			
 			return r;
 			
 		}

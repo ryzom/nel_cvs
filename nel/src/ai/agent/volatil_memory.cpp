@@ -1,6 +1,6 @@
 /** \file volatil_memory.cpp
  *
- * $Id: volatil_memory.cpp,v 1.3 2001/05/31 15:00:03 chafik Exp $
+ * $Id: volatil_memory.cpp,v 1.4 2001/06/14 10:23:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -206,6 +206,10 @@ namespace NLAIAGENT
 		{
 			runMessage((CAgentWatchTimer *)msg->getSender());
 		}
+		else
+		{
+			msg->release();
+		}
 
 		return IObjectIA::CProcessResult();
 	}
@@ -305,5 +309,6 @@ namespace NLAIAGENT
 	void CVolatilMemmory::releaseClass()
 	{
 		delete CVolatilMemmory::IdVolatilMemmory;
+		delete CVolatilMemmory::Timer;
 	}
 }

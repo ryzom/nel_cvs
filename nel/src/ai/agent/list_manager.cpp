@@ -1,6 +1,6 @@
 /** \file list_manager.cpp
  *
- * $Id: list_manager.cpp,v 1.9 2001/05/22 16:08:15 chafik Exp $
+ * $Id: list_manager.cpp,v 1.10 2001/06/14 10:23:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -230,11 +230,18 @@ namespace NLAIAGENT
 	{
 		CIteratorContener itr = _List->getIterator();
 
-		while(!itr.isInEnd())
+		if(itr.isInEnd())
 		{
-			IObjectIA *obj = (IObjectIA *)(itr++);
-			obj->sendMessage(msg);
-			if(!itr.isInEnd()) msg->incRef();
+			msg->release();
+		}
+		else
+		{
+			while(!itr.isInEnd())
+			{
+				IObjectIA *obj = (IObjectIA *)(itr++);
+				obj->sendMessage(msg);
+				if(!itr.isInEnd()) msg->incRef();
+			}
 		}
 		return IObjectIA::CProcessResult();
 	}

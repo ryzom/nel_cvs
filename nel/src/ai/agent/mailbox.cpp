@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.20 2001/05/22 16:08:15 chafik Exp $
+ * $Id: mailbox.cpp,v 1.21 2001/06/14 10:23:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,8 +224,9 @@ namespace NLAIAGENT
 	{							
 	}
 
-	IObjectIA::CProcessResult CSimpleLocalMailBox::sendMessage(IMessageBase *)
+	IObjectIA::CProcessResult CSimpleLocalMailBox::sendMessage(IMessageBase *m)
 	{
+		m->release();
 		return IObjectIA::ProcessRun;
 	}
 
@@ -256,6 +257,20 @@ namespace NLAIAGENT
 
 	CLocalMailBox::~CLocalMailBox()
 	{
+		while(_ListMessageIn.size())
+		{
+			IMessageBase *msg = (IMessageBase *)_ListMessageIn.back();
+			msg->release();
+			_ListMessageIn.pop_back();
+		}
+
+		while(_ListSharedMessage.size())
+		{
+			IMessageBase *msg = (IMessageBase *)_ListSharedMessage.back();
+			msg->release();
+			_ListSharedMessage.pop_back();
+		}
+
 	}
 				
 	void CLocalMailBox::shareMessage()
@@ -294,8 +309,9 @@ namespace NLAIAGENT
 	{					
 	}*/
 
-	IObjectIA::CProcessResult CLocalMailBox::sendMessage(IMessageBase *)
+	IObjectIA::CProcessResult CLocalMailBox::sendMessage(IMessageBase *m)
 	{
+		m->release();
 		//_listMessageOut.push_back((const IMessageBase *)msg.clone());
 		return IObjectIA::ProcessRun;
 	}

@@ -1,6 +1,6 @@
 /** \file opcode_call_lib_method.cpp
  *
- * $Id: opcode_call_lib_method.cpp,v 1.6 2001/04/03 10:05:04 portier Exp $
+ * $Id: opcode_call_lib_method.cpp,v 1.7 2001/06/14 10:23:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -282,7 +282,8 @@ namespace NLAISCRIPT
 		}
 
 #ifdef NL_DEBUG
-		db_size = context.Param.size();		
+		db_size = context.Param.size();
+		if(!db_size) throw;
 #endif
 		NLAIAGENT::IObjectIA *p = context.Param.back();
 		context.Param.pop_back();

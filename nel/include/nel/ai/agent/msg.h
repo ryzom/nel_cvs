@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: msg.h,v 1.12 2001/05/29 15:18:29 chafik Exp $
+ * $Id: msg.h,v 1.13 2001/06/14 10:23:31 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,7 +105,7 @@ namespace NLAIAGENT
 		///Is true if agent want to dispatch it to its child;
 		bool _Dispatch;
 
-	protected:
+	public:
 		void setMessageGroup(IBaseGroupType *g)
 		{
 			if(_List != NULL) _List->release();
@@ -188,6 +188,7 @@ namespace NLAIAGENT
 		///Set the IBasicMessageGroup whiche define the group of the message.
 		void setGroup(IBasicMessageGroup &grp)
 		{			
+			if(_MsgGroup != NULL) _MsgGroup->release();
 			_MsgGroup = (IBasicMessageGroup *)grp.clone();
 		}
 

@@ -1,10 +1,12 @@
 #! /bin/sh
 
 set -x
+
 rm -f config.cache
-aclocal
-libtoolize --force --copy
-autoheader
-automake --gnu --add-missing --copy
-autoconf
+
+aclocal \
+&& libtoolize --force --copy \
+&& autoheader \
+&& automake --gnu --add-missing --copy \
+&& autoconf
 

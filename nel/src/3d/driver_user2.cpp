@@ -1,7 +1,7 @@
 /** \file driver_user2.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.20 2003/11/25 16:16:20 berenguier Exp $
+ * $Id: driver_user2.cpp,v 1.21 2003/11/26 13:44:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,7 +68,7 @@ UScene			*CDriverUser::createScene(bool bSmallScene)
 
 	// set the shape bank
 	pSU->getScene().setShapeBank( &_ShapeBank._ShapeBank );
-	// set the MeshSkinManagers
+	// set the MeshSkin Vertex Streams
 	pSU->getScene().getRenderTrav().setMeshSkinManager(&_MeshSkinManager);
 	pSU->getScene().getRenderTrav().setShadowMeshSkinManager(&_ShadowMeshSkinManager);
 	// set the AsyncTextureManager

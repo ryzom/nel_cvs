@@ -889,14 +889,6 @@ SOURCE=.\3d\mesh_multi_lod.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\mesh_skin_manager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\mesh_skin_manager.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\mesh_vertex_program.cpp
 # End Source File
 # Begin Source File
@@ -990,6 +982,14 @@ SOURCE=.\3d\tangent_space_build.cpp
 # Begin Source File
 
 SOURCE=.\3d\tangent_space_build.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vertex_stream_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vertex_stream_manager.h
 # End Source File
 # Begin Source File
 

@@ -1,10 +1,10 @@
-/** \file mesh_skin_manager.cpp
+/** \file vertex_stream_manager.cpp
  * <File description>
  *
- * $Id: mesh_skin_manager.cpp,v 1.5 2003/11/21 16:19:55 berenguier Exp $
+ * $Id: vertex_stream_manager.cpp,v 1.1 2003/11/26 13:44:17 berenguier Exp $
  */
 
-/* Copyright, 2000-2002 Nevrax Ltd.
+/* Copyright, 2000-2003 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify
@@ -25,18 +25,21 @@
 
 #include "std3d.h"
 
-#include "3d/mesh_skin_manager.h"
+#include "3d/vertex_stream_manager.h"
 #include "nel/misc/hierarchical_timer.h"
 
+
+using namespace	NLMISC;
 
 namespace NL3D 
 {
 
 
 // ***************************************************************************
-CMeshSkinManager::CMeshSkinManager()
+CVertexStreamManager::CVertexStreamManager()
 {
-	_Enabled= false;
+	_InitOk= false;
+	_VBHardMode= false;
 	_VertexFormat= 0;
 	_VertexSize= 0;
 	_MaxVertices= 0;
@@ -44,20 +47,20 @@ CMeshSkinManager::CMeshSkinManager()
 	_NumVBHard= 0;
 }
 // ***************************************************************************
-CMeshSkinManager::~CMeshSkinManager()
+CVertexStreamManager::~CVertexStreamManager()
 {
 	release();
 }
 
 // ***************************************************************************
-void			CMeshSkinManager::init(IDriver *driver, uint vertexFormat, uint maxVertices, uint numVBHard, const std::string &vbName)
+void			CVertexStreamManager::init(IDriver *driver, uint vertexFormat, uint maxVertices, uint numVBHard, const std::string &vbName)
 {
 	nlassert(driver);
 	// clean before.
 	release();
 
 	// Create VBHard placeholder
-	if(numVBHard==0)
+	if(numVBHard==0 || maxVertices==0)
 		return;
 	_NumVBHard= numVBHard;
 	_VBHard.resize(_NumVBHard, NULL);
@@ -65,24 +68,24 @@ void			CMeshSkinManager::init(IDriver *driver, uint vertexFormat, uint maxVertic
 	// setup, => correct for possible release below
 	_Driver= driver;
 
-	// a dummy VB, for easy setup
-	CVertexBuffer	vb;
-	vb.setVertexFormat(vertexFormat);
+	// setup the VB soft, for easy setup
+	_VBSoft.setVertexFormat(vertexFormat);
 
 	// For the moment, all UV channel are routed to UV0
 	uint i;
 	for (i=0; i<CVertexBuffer::MaxStage; i++)
-		vb.setUVRouting (i, 0);
+		_VBSoft.setUVRouting (i, 0);
 
 	// create the VBHard, if possible
+	_VBHardMode= true;
 	for(i=0;i<_NumVBHard;i++)
 	{
-		_VBHard[i]= _Driver->createVertexBufferHard(vb.getVertexFormat(), vb.getValueTypePointer(), maxVertices, IDriver::VBHardAGP, vb.getUVRouting());
+		_VBHard[i]= _Driver->createVertexBufferHard(_VBSoft.getVertexFormat(), _VBSoft.getValueTypePointer(), maxVertices, IDriver::VBHardAGP, _VBSoft.getUVRouting());
 		// if filas, release all, and quit
 		if(_VBHard[i]==NULL)
 		{
-			release();
-			return;
+			_VBHardMode= false;
+			break;
 		}
 		// ok, set name for lock profiling
 		else
@@ -91,15 +94,36 @@ void			CMeshSkinManager::init(IDriver *driver, uint vertexFormat, uint maxVertic
 		}
 	}
 
+	// if fails to create vbHard, abort, and create only one vbSoft
+	if(!_VBHardMode)
+	{
+		// release all vbhard created
+		for(uint i=0;i<_NumVBHard;i++)
+		{
+			if(_VBHard[i])
+				_Driver->deleteVertexBufferHard(_VBHard[i]);
+		}
+		_VBHard.clear();
+
+		// create the Soft One
+		_VBSoft.setNumVertices(maxVertices);
+	}
+
 	// init misc
-	_Enabled= true;
-	_VertexFormat= vb.getVertexFormat();
-	_VertexSize= vb.getVertexSize();
+	_InitOk= true;
+	_VertexFormat= _VBSoft.getVertexFormat();
+	_VertexSize= _VBSoft.getVertexSize();
 	_MaxVertices= maxVertices;
 	_CurentVBHard= 0;
+
+	// release the VBsoft if in vbHardMode (no more used)
+	if(_VBHardMode)
+	{
+		contReset(_VBSoft);
+	}
 }
 // ***************************************************************************
-void			CMeshSkinManager::release()
+void			CVertexStreamManager::release()
 {
 	// release driver/VBHard
 	if(_Driver)
@@ -115,8 +139,12 @@ void			CMeshSkinManager::release()
 
 	_VBHard.clear();
 
+	// release VBSoft
+	contReset(_VBSoft);
+
 	// misc
-	_Enabled= false;
+	_InitOk= false;
+	_VBHardMode= false;
 	_VertexFormat= 0;
 	_VertexSize= 0;
 	_MaxVertices= 0;
@@ -124,32 +152,49 @@ void			CMeshSkinManager::release()
 	_NumVBHard= 0;
 }
 // ***************************************************************************
-uint8			*CMeshSkinManager::lock()
+uint8			*CVertexStreamManager::lock()
 {
-	H_AUTO( NL3D_MeshSkinManager_lock )
+	H_AUTO( NL3D_VertexStreamManager_lock )
+	nlassert(_InitOk);
 
-	return	(uint8*)_VBHard[_CurentVBHard]->lock();
+	if(_VBHardMode)
+		return	(uint8*)_VBHard[_CurentVBHard]->lock();
+	else
+		return 	(uint8*)_VBSoft.getVertexCoordPointer();
 }
 // ***************************************************************************
-void			CMeshSkinManager::unlock(uint numVertices)
+void			CVertexStreamManager::unlock(uint numVertices)
 {
-	H_AUTO( NL3D_MeshSkinManager_unlock )
-		
-	// ATI: release only vertices used.
-	_VBHard[_CurentVBHard]->unlock(0, numVertices);
+	H_AUTO( NL3D_VertexStreamManager_unlock )
+	nlassert(_InitOk);
+	
+	if(_VBHardMode)
+	{
+		// ATI: release only vertices used.
+		_VBHard[_CurentVBHard]->unlock(0, numVertices);
+	}
 }
 // ***************************************************************************
-void			CMeshSkinManager::activate()
+void			CVertexStreamManager::activate()
 {
-	H_AUTO( NL3D_MeshSkinManager_activate )
-		
-	_Driver->activeVertexBufferHard(_VBHard[_CurentVBHard]);
+	H_AUTO( NL3D_VertexStreamManager_activate )
+	nlassert(_InitOk);
+	
+	if(_VBHardMode)
+		_Driver->activeVertexBufferHard(_VBHard[_CurentVBHard]);
+	else
+		_Driver->activeVertexBuffer(_VBSoft);
 }
 // ***************************************************************************
-void			CMeshSkinManager::swapVBHard()
+void			CVertexStreamManager::swapVBHard()
 {
-	_CurentVBHard++;
-	_CurentVBHard= _CurentVBHard%_NumVBHard;
+	nlassert(_InitOk);
+	
+	if(_VBHardMode)
+	{
+		_CurentVBHard++;
+		_CurentVBHard= _CurentVBHard%_NumVBHard;
+	}
 }
 
 

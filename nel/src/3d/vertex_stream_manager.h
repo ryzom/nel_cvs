@@ -1,10 +1,10 @@
-/** \file mesh_skin_manager.h
+/** \file vertex_stream_manager.h
  * <File description>
  *
- * $Id: mesh_skin_manager.h,v 1.3 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: vertex_stream_manager.h,v 1.1 2003/11/26 13:44:17 berenguier Exp $
  */
 
-/* Copyright, 2000-2002 Nevrax Ltd.
+/* Copyright, 2000-2003 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify
@@ -23,8 +23,11 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_MESH_SKIN_MANAGER_H
-#define NL_MESH_SKIN_MANAGER_H
+#ifndef NL_VERTEX_STREAM_MANAGER_H
+#define NL_VERTEX_STREAM_MANAGER_H
+
+#include "nel/misc/types_nl.h"
+
 
 #include "nel/misc/types_nl.h"
 #include "3d/driver.h"
@@ -36,35 +39,39 @@ namespace NL3D
 
 // ***************************************************************************
 /**
- * A class used to render Skins in a VBHard, grouped by their skeleton
- *	This allow optimisation because less VBuffer swap is needed
- *	Also, only 2 Big VBHard is created for all the skins, which improves use of AGP space
+ * A class used to fill a virtual Vertexbuffer, while rendering it, avoiding Stalls during Locks. Actually multiple versions
+ *	of VertexBuffer are kept and the swapVBHard() method cycles around them.
+ *	NB: it is used for instance to render all skins of a CSkeletonModel, in just one CVertexStreamManager. 
+ *	This allow optimisation because less VBuffer activation is needed.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2002
  */
-class CMeshSkinManager
+class CVertexStreamManager
 {
 public:
 
 	/// Constructor
-	CMeshSkinManager();
-	~CMeshSkinManager();
+	CVertexStreamManager();
+	~CVertexStreamManager();
 
 	/// \name Init/Setup
 	// @{
 
 	/** init the manager with a driver, allocate the VBHards, and setup the vertexFormat. 
-	 *	Must call each time the drive changes
+	 *	Must call each time the drive changes.
+	 *	NB: if VBufferHard creation fail (not supported etc...), then a VBSoft is created instead (and just one since not usefull)
 	 *	\param numVBHard the number of VBHard to create. The max you set, the lower lock you'll have.
 	 *	\param vbName base, for Lock profiling
 	 */
-	void			init(IDriver *driver, uint vertexFormat, uint maxVertices, uint numVBHard=2, const std::string &vbName="MeshSkinVB");
+	void			init(IDriver *driver, uint vertexFormat, uint maxVertices, uint numVBHard, const std::string &vbName);
 	/// release the VBHard. init() can be called after this.
 	void			release();
 
-	/// false if error at init, eg if driver do no support VBHard, or if no more AGP memory
-	bool			enabled() const {return _Enabled;}
+	/// true if vbHard (fast) mode.
+	bool			vbHardMode() const {return _VBHardMode;}
+	/// get the numVBhard used (Nb: if !vbHardMode(), still returns the argument passed in init(), ie not 0 or 1)
+	uint			getNumVBHard() const {return _NumVBHard;}
 	/// return the driver used.
 	IDriver			*getDriver() const {return _Driver;}
 	/// get the vertexFormat
@@ -76,7 +83,7 @@ public:
 
 	// @}
 
-	/// \name Rendering. Those methods must be called only if enabled(), else crash
+	/// \name Rendering. Those method assert if init() not called with correct parameters.
 	// @{
 
 	/// lock the currently activated VBHard, for future filling
@@ -87,7 +94,9 @@ public:
 	/// activate the currentVBhard as the current VB in the driver, for future rendering
 	void			activate();
 
-	/// Swap to the next VBHard. This allow some parralelism, since CPU fill one VBHard while the other is rendered
+	/** Swap to the next VBHard. This allow some parralelism, since CPU fill one VBHard while the other is rendered
+	 *	NB: no-op if the vertex stream manager falls down to the VBSoft solution.
+	 */
 	void			swapVBHard();
 
 	// @}
@@ -98,7 +107,9 @@ private:
 
 	NLMISC::CRefPtr<IDriver>			_Driver;
 	std::vector<NLMISC::CRefPtr<IVertexBufferHard> >	_VBHard;
-	bool			_Enabled;
+	CVertexBuffer	_VBSoft;
+	bool			_VBHardMode;
+	bool			_InitOk;
 	uint			_VertexFormat;
 	uint			_VertexSize;
 	uint			_MaxVertices;
@@ -111,6 +122,6 @@ private:
 } // NL3D
 
 
-#endif // NL_MESH_SKIN_MANAGER_H
+#endif // NL_VERTEX_STREAM_MANAGER_H
 
-/* End of mesh_skin_manager.h */
+/* End of vertex_stream_manager.h */

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.52 2003/11/21 16:19:55 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.53 2003/11/26 13:44:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@
 #include "3d/lod_character_shape.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/aabbox.h"
-#include "3d/mesh_skin_manager.h"
+#include "3d/vertex_stream_manager.h"
 #include "3d/mesh_base_instance.h"
 #include "3d/async_texture_manager.h"
 
@@ -1448,8 +1448,8 @@ void			CSkeletonModel::renderSkinList(NLMISC::CObjectVector<CTransform*, false> 
 {
 	CRenderTrav			&rdrTrav= getOwnerScene()->getRenderTrav();
 
-	// if the SkinManager is not possible at all, just rendered the std way
-	if( !rdrTrav.getMeshSkinManager() || !rdrTrav.getMeshSkinManager()->enabled() )
+	// if the SkinManager is not possible at all, just rendered the std way.
+	if( !rdrTrav.getMeshSkinManager() )
 	{
 		for(uint i=0;i<skinList.size();i++)
 		{
@@ -1459,7 +1459,7 @@ void			CSkeletonModel::renderSkinList(NLMISC::CObjectVector<CTransform*, false> 
 	else
 	{
 		// get the meshSkinManager
-		CMeshSkinManager	&meshSkinManager= *rdrTrav.getMeshSkinManager();
+		CVertexStreamManager	&meshSkinManager= *rdrTrav.getMeshSkinManager();
 
 		// array (rarely allocated) of skins with grouping support
 		static	std::vector<CTransform*>	skinsToGroup;
@@ -1889,18 +1889,18 @@ void		CSkeletonModel::renderShadowSkins(CMaterial &castMat)
 	IDriver				*driver= rdrTrav.getAuxDriver();
 
 	// if the SkinManager is not possible at all, just rendered the std way
-	if( !rdrTrav.getShadowMeshSkinManager() || !rdrTrav.getShadowMeshSkinManager()->enabled() )
+	if( !rdrTrav.getShadowMeshSkinManager() )
 	{
-		// TODO_SHADOW
-		// ABORT!!  =>  means no AGP...  avoid Mesh Shadowing (free shadowMap)? Replace with a dummy Shadow?
-		// For now, no-op...
+		// can occurs?????
+		// ABORT!! ...  avoid Mesh Shadowing (free shadowMap)? Replace with a dummy Shadow?
+		// For now, no-op... 
 	}
 	else
 	{
 		uint	i;
 
 		// get the meshSkinManager
-		CMeshSkinManager	&meshSkinManager= *rdrTrav.getShadowMeshSkinManager();
+		CVertexStreamManager	&meshSkinManager= *rdrTrav.getShadowMeshSkinManager();
 
 		// array (rarely allocated) of skins with grouping support
 		static	std::vector<CTransform*>	skinsToGroup;

@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.21 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: render_trav.h,v 1.22 2003/11/26 13:44:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,22 +51,30 @@ class	CMaterial;
 class	CTransform;
 class	CLandscapeModel;
 
-class	CMeshSkinManager;
+class	CVertexStreamManager;
 
 
 // ***************************************************************************
 /* Skin Manager setup
  * For the moment, the skin manager vertex buffer routes all its UV channel to UV0.
- * See void	CMeshSkinManager::init(IDriver *driver, uint vertexFormat, uint maxVertices)
+ * See void	CVertexStreamManager::init(IDriver *driver, uint vertexFormat, uint maxVertices)
+ *	use 8 VBswap for minimal(=> no) lock() time. 2 is not enough (saw 7 ms lost because of this)
+ *	=> size of the manager is 1280 Ko
+ *	NB: 5000 vertices max for a model is a strong limitation, but it's OK for now... 
  */
 #define	NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT		(CVertexBuffer::PositionFlag | CVertexBuffer::NormalFlag | CVertexBuffer::TexCoord0Flag)
-#define	NL3D_MESH_SKIN_MANAGER_MAXVERTICES		10000
+#define	NL3D_MESH_SKIN_MANAGER_MAXVERTICES		5000
+#define	NL3D_MESH_SKIN_MANAGER_NUMVB			8
 
 /* Same for Shadow Generation.
  * NB: need much less Vertices because: 1/ foolish to do more. 2/ Only position=> no UV/Normal discontinuities.
+ *	=> size of the manager is 1.3 Mo
+ *	use 8 VBswap for minimal(=> no) lock() time. 2 is not enough (saw 7 ms lost because of this)
+ *	=> size of the manager is 280 Ko
  */
 #define	NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT		(CVertexBuffer::PositionFlag)
-#define	NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES		5000
+#define	NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES		3000
+#define	NL3D_SHADOW_MESH_SKIN_MANAGER_NUMVB				8
 
 
 
@@ -168,18 +176,18 @@ public:
 	 *	The ptr is handled but not deleted.
 	 *	There should be one MeshSkinManager per driver.
 	 */
-	void						setMeshSkinManager(CMeshSkinManager *msm);
+	void						setMeshSkinManager(CVertexStreamManager *msm);
 
 	/// get the MeshSkinManager
-	CMeshSkinManager			*getMeshSkinManager() const {return _MeshSkinManager;}
+	CVertexStreamManager		*getMeshSkinManager() const {return _MeshSkinManager;}
 
 	/// get the CShadowMapManager
 	CShadowMapManager			&getShadowMapManager() {return _ShadowMapManager;}
 	const CShadowMapManager		&getShadowMapManager() const {return _ShadowMapManager;}
 
 	/// the MeshSkinManager for Shadow. Same Behaviour than std MeshSkinManager. NB: the Shadow MSM is inited with AuxDriver.
-	void						setShadowMeshSkinManager(CMeshSkinManager *msm);
-	CMeshSkinManager			*getShadowMeshSkinManager() const {return _ShadowMeshSkinManager;}
+	void						setShadowMeshSkinManager(CVertexStreamManager *msm);
+	CVertexStreamManager		*getShadowMeshSkinManager() const {return _ShadowMeshSkinManager;}
 
 
 	// add a landscape. Special for CLandscapeModel::traverseRender();
@@ -375,13 +383,13 @@ private:
 
 
 	/// The manager of skin. NULL by default.
-	CMeshSkinManager			*_MeshSkinManager;
+	CVertexStreamManager		*_MeshSkinManager;
 
 
 	/// The ShadowMap Manager.
 	CShadowMapManager			_ShadowMapManager;
 	/// The SkinManager, but For Shadow rendering
-	CMeshSkinManager			*_ShadowMeshSkinManager;
+	CVertexStreamManager		*_ShadowMeshSkinManager;
 
 
 	/** \name Special Landscape RenderList.

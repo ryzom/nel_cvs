@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.48 2003/08/19 14:11:34 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.49 2003/11/26 13:44:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@
 
 #include "3d/transform.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/mesh_skin_manager.h"
+#include "3d/vertex_stream_manager.h"
 #include "3d/landscape_model.h"
 
 using namespace std;
@@ -109,7 +109,7 @@ void		CRenderTrav::traverse()
 			_MeshSkinManager->init(Driver, 
 				NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT, 
 				NL3D_MESH_SKIN_MANAGER_MAXVERTICES, 
-				2, 
+				NL3D_MESH_SKIN_MANAGER_NUMVB, 
 				"MRMSkinVB");
 		}
 	}
@@ -123,7 +123,7 @@ void		CRenderTrav::traverse()
 			_ShadowMeshSkinManager->init(getAuxDriver(), 
 				NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT, 
 				NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES,
-				2,
+				NL3D_SHADOW_MESH_SKIN_MANAGER_NUMVB,
 				"ShadowSkinVB");
 		}
 	}
@@ -324,13 +324,13 @@ void		CRenderTrav::setSunDirection(const CVector &dir)
 
 
 // ***************************************************************************
-void		CRenderTrav::setMeshSkinManager(CMeshSkinManager *msm)
+void		CRenderTrav::setMeshSkinManager(CVertexStreamManager *msm)
 {
 	_MeshSkinManager= msm;
 }
 
 // ***************************************************************************
-void		CRenderTrav::setShadowMeshSkinManager(CMeshSkinManager *msm)
+void		CRenderTrav::setShadowMeshSkinManager(CVertexStreamManager *msm)
 {
 	_ShadowMeshSkinManager= msm;
 }

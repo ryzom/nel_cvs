@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.38 2003/11/21 16:19:55 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.39 2003/11/26 13:44:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -497,7 +497,7 @@ private:
 	 */
 	void			renderSkins();
 
-	/** render a list of skin, no lighting setup etc..., but use where possible CMeshSkinManager
+	/** render a list of skin, no lighting setup etc..., but use where possible a CVertexStreamManager
 	 */
 	void			renderSkinList(NLMISC::CObjectVector<CTransform*, false>	&skinList, float alphaMRM);
 	// @}

@@ -1,7 +1,7 @@
 /** \file lod_character_manager.h
  * <File description>
  *
- * $Id: lod_character_manager.h,v 1.3 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: lod_character_manager.h,v 1.4 2003/11/26 13:44:00 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/vertex_buffer_hard.h"
 #include "3d/material.h"
 #include "3d/texture_blank.h"
+#include "3d/vertex_stream_manager.h"
 
 
 namespace NLMISC
@@ -161,6 +162,16 @@ public:
 	/// see setMaxVertex()
 	uint32			getMaxVertex() const {return _MaxNumVertices;}
 
+	/** set the number of vbhard to allocate for the vertexStream. The more, the better (no lock stall).
+	 *	Default is 8.
+	 *	With MaxVertices==3000 and numVBHard==8, this led us with 576 Ko in AGP. And this is sufficient cause it can
+	 *	handle 300 entities of approx 80 vertices each frame with no lock at all.
+	 */
+	void			setVertexStreamNumVBHard(uint32 numVBHard);
+
+	/// see setVertexStreamNumVBHard
+	uint32			getVertexStreamNumVBHard() const {return _NumVBHard;}
+
 	/** Start the rendering process, freeing VBuffer.
 	 *	nlassert if isRendering()
 	 *	NB: VBhard is locked here, so you must call endRender to unlock him (even if 0 meshes are rendered)
@@ -255,13 +266,12 @@ private:
 
 	uint							_CurrentVertexId;
 	uint							_MaxNumVertices;
-	CVertexBuffer					_VBuffer;
-	NLMISC::CRefPtr<IDriver>		_Driver;
-	NLMISC::CRefPtr<IVertexBufferHard>	_VBHard;
-	bool							_VBHardOk;
+	uint							_NumVBHard;
+	CVertexStreamManager			_VertexStream;
 	uint8							*_VertexData;
 	uint							_VertexSize;
 	bool							_Rendering;
+	bool							_LockDone;
 
 	// list of triangles
 	uint							_CurrentTriId;
@@ -269,8 +279,6 @@ private:
 	
 	// The inverse of the normal correction matrix.
 	CMatrix							_LightCorrectionMatrix;
-
-	void			deleteVertexBuffer();
 
 	// @}
 

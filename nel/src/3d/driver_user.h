@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.33 2003/11/25 16:16:20 berenguier Exp $
+ * $Id: driver_user.h,v 1.34 2003/11/26 13:44:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@
 #include "3d/ptr_set.h"
 #include "3d/shape_bank_user.h"
 #include "3d/light_user.h"
-#include "3d/mesh_skin_manager.h"
+#include "3d/vertex_stream_manager.h"
 #include "3d/async_texture_manager.h"
 #include "3d/lod_character_manager.h"
 
@@ -89,10 +89,10 @@ protected:
 	TTextContextSet			_TextContexts;
 	TSceneSet				_Scenes;
 	CShapeBankUser			_ShapeBank;
-	// There is one MeshSkinManager per driver, and for all scenes.
-	CMeshSkinManager		_MeshSkinManager;
-	// Special CMeshSkinManager for shadow generation
-	CMeshSkinManager		_ShadowMeshSkinManager;
+	// There is one MeshSkin Vertex Stream per driver, and for all scenes.
+	CVertexStreamManager	_MeshSkinManager;
+	// Special MeshSkin Vertex Stream for shadow generation
+	CVertexStreamManager	_ShadowMeshSkinManager;
 	// There is one AsyncTextureManager per driver, and for all scenes
 	CAsyncTextureManager	_AsyncTextureManager;
 	// There is one LodCharacterManager per driver, and for all scenes

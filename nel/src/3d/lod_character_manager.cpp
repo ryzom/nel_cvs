@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.13 2003/11/25 16:15:54 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.14 2003/11/26 13:44:00 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -67,16 +67,10 @@ namespace NL3D
 // ***************************************************************************
 CLodCharacterManager::CLodCharacterManager()
 {
-	_Driver= NULL;
 	_MaxNumVertices= 3000;
+	_NumVBHard= 8;
 	_Rendering= false;
-
-	// Setup the format of render
-	_VBuffer.setVertexFormat(NL3D_CLOD_VERTEX_FORMAT);
-
-	// NB: addRenderCharacterKey() loop hardCoded for Vertex+UV+Normal+Color only.
-	nlassert( NL3D_CLOD_UV_OFF == _VBuffer.getTexCoordOff());
-	nlassert( NL3D_CLOD_COLOR_OFF == _VBuffer.getColorOff());
+	_LockDone= false;
 
 	// setup the texture.
 	_BigTexture= new CTextureBlank;
@@ -119,6 +113,8 @@ CLodCharacterManager::~CLodCharacterManager()
 // ***************************************************************************
 void			CLodCharacterManager::reset()
 {
+	nlassert(!isRendering());
+
 	// delete shapeBanks.
 	for(uint i=0;i<_ShapeBankArray.size();i++)
 	{
@@ -131,8 +127,7 @@ void			CLodCharacterManager::reset()
 	contReset(_ShapeMap);
 
 	// reset render part.
-	deleteVertexBuffer();
-	_Driver= NULL;
+	_VertexStream.release();
 }
 
 // ***************************************************************************
@@ -270,26 +265,12 @@ void			CLodCharacterManager::setMaxVertex(uint32 maxVertex)
 }
 
 // ***************************************************************************
-void			CLodCharacterManager::deleteVertexBuffer()
+void			CLodCharacterManager::setVertexStreamNumVBHard(uint32 numVBHard)
 {
-	// test (refptr) if the object still exist in memory.
-	if(_VBHard!=NULL)
-	{
-		// A vbufferhard should still exist only if driver still exist.
-		nlassert(_Driver!=NULL);
-
-		// must unlock VBhard before. ATI: No need to update any vertices.
-		_VBHard->unlock(0,0);
-
-		// delete it from driver.
-		_Driver->deleteVertexBufferHard(_VBHard);
-		_VBHard= NULL;
-	}
-
-	// delete the soft one.
-	_VBuffer.deleteAllVertices();
+	// we must not be beewteen beginRender() and endRender()
+	nlassert(!isRendering());
+	_NumVBHard= numVBHard;
 }
-
 
 // ***************************************************************************
 void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &managerPos)
@@ -308,51 +289,34 @@ void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &manager
 	//=================
 	nlassert(driver);
 
-	// test change of driver.
-	nlassert(driver);
-	if( _Driver==NULL || driver!=_Driver )
+	// test change of vertexStream setup
+	bool	mustChangeVertexStream= _VertexStream.getDriver() != driver;
+	if(!mustChangeVertexStream)
 	{
-		// must restart build of VB.
-		deleteVertexBuffer();
-		_Driver= driver;
-		_VBHardOk= _Driver->supportVertexBufferHard();
+		mustChangeVertexStream= _MaxNumVertices != _VertexStream.getMaxVertices();
+		mustChangeVertexStream= mustChangeVertexStream || _NumVBHard != _VertexStream.getNumVBHard();
 	}
-
-	// If the vbhard exist, but size is different from cur max size, reset.
-	if(_VBHard && _VBHard->getNumVertices()!=_MaxNumVertices)
-		deleteVertexBuffer();
-
-	// If VBHard is possible, and if not already allocated, try to create it.
-	if(_VBHardOk && _VBHard==NULL)
+	// re-init?
+	if( mustChangeVertexStream )
 	{
-		_VBHard= driver->createVertexBufferHard(_VBuffer.getVertexFormat(), _VBuffer.getValueTypePointer(), 
-			_MaxNumVertices, IDriver::VBHardAGP, _VBuffer.getUVRouting());
-		// Set Name For Profiling
-		if(_VBHard)
-			_VBHard->setName("CLodManagerVB");
-	}
+		// chech offset
+		CVertexBuffer	vb;
+		vb.setVertexFormat(NL3D_CLOD_VERTEX_FORMAT);
+		// NB: addRenderCharacterKey() loop hardCoded for Vertex+UV+Normal+Color only.
+		nlassert( NL3D_CLOD_UV_OFF == vb.getTexCoordOff());
+		nlassert( NL3D_CLOD_COLOR_OFF == vb.getColorOff());
 
-	// Last try to create a std VertexBuffer if the VBHard does not exist.
-	if(_VBHard==NULL)
-	{
-		// just resize the std VB.
-		_VBuffer.setNumVertices(_MaxNumVertices);
+		// Setup the vertex stream
+		_VertexStream.release();
+		_VertexStream.init(driver, NL3D_CLOD_VERTEX_FORMAT, _MaxNumVertices, _NumVBHard, "CLodManagerVB");
 	}
-
+	
 	// prepare for render.
 	//=================
 
-	// Lock Buffer.
-	if(_VBHard)
-	{
-		_VertexData= (uint8*)_VBHard->lock();
-		_VertexSize= _VBHard->getVertexSize();
-	}
-	else
-	{
-		_VertexData= (uint8*)_VBuffer.getVertexCoordPointer();
-		_VertexSize= _VBuffer.getVertexSize();
-	}
+	// Do not Lock Buffer now (will be done at the first instance added)
+	nlassert(!_LockDone);
+	_VertexSize= _VertexStream.getVertexSize();
 	// NB: addRenderCharacterKey() loop hardCoded for Vertex+UV+Normal+Color only.
 	nlassert( _VertexSize == NL3D_CLOD_VERTEX_SIZE );	// Vector + Normal + UV + RGBA
 
@@ -397,7 +361,7 @@ bool			CLodCharacterManager::addRenderCharacterKey(CLodCharacterInstance &instan
 {
 	H_AUTO ( NL3D_CharacterLod_AddRenderKey )
 
-	nlassert(_Driver);
+	nlassert(_VertexStream.getDriver());
 	// we must be beewteen beginRender() and endRender()
 	nlassert(isRendering());
 
@@ -471,6 +435,15 @@ bool			CLodCharacterManager::addRenderCharacterKey(CLodCharacterInstance &instan
 		alphaPtr= &defaultAlphaArray[0];
 	}
 
+	// Lock Buffer if not done
+	//=============
+	
+	// Do this after code above because we are sure that we will fill something (numVertices>0)
+	if(!_LockDone)
+	{
+		_VertexData= _VertexStream.lock();
+		_LockDone= true;
+	}
 
 	// Prepare Transform
 	//=============
@@ -764,33 +737,35 @@ void			CLodCharacterManager::endRender()
 {
 	H_AUTO ( NL3D_CharacterLod_endRender );
 	
-	nlassert(_Driver);
+	IDriver		*driver= _VertexStream.getDriver();
+	nlassert(driver);
 	// we must be beewteen beginRender() and endRender()
 	nlassert(isRendering());
 
-	// UnLock Buffer.
-	if(_VBHard)
+	// if something rendered
+	if(_LockDone)
 	{
-		// ATI: copy only used vertices.
-		_VBHard->unlock(0, _CurrentVertexId);
-	}
-
-	// Render the VBuffer and the primitives.
-	if(_CurrentTriId>0)
-	{
-		// setup matrix.
-		CMatrix		managerMatrix; 
-		managerMatrix.setPos(_ManagerMatrixPos);
-		_Driver->setupModelMatrix(managerMatrix);
-
-		// active VB
-		if(_VBHard)
-			_Driver->activeVertexBufferHard(_VBHard);
-		else
-			_Driver->activeVertexBuffer(_VBuffer);
-
-		// render triangles
-		_Driver->renderTriangles(_Material, &_Triangles[0], _CurrentTriId/3);
+		// UnLock Buffer.
+		_VertexStream.unlock(_CurrentVertexId);
+		_LockDone= false;
+		
+		// Render the VBuffer and the primitives.
+		if(_CurrentTriId>0)
+		{
+			// setup matrix.
+			CMatrix		managerMatrix; 
+			managerMatrix.setPos(_ManagerMatrixPos);
+			driver->setupModelMatrix(managerMatrix);
+			
+			// active VB
+			_VertexStream.activate();
+			
+			// render triangles
+			driver->renderTriangles(_Material, &_Triangles[0], _CurrentTriId/3);
+		}
+		
+		// swap Stream VBHard
+		_VertexStream.swapVBHard();
 	}
 
 	// Ok, end rendering

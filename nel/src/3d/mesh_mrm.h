@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.44 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.45 2003/08/14 08:52:27 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -312,6 +312,9 @@ public:
 
 	/// Setup the ShadowMesh 
 	void			setShadowMesh(const std::vector<CShadowVertex> &shadowVertices, const std::vector<uint32> &triangles);
+
+	/// Get the num of shadow skin vertices
+	uint			getNumShadowSkinVertices() const;
 
 	/// Render the ShadowSkin (SkinGroup like)
 	bool			supportShadowSkinGrouping() const {return _SupportShadowSkinGrouping;}

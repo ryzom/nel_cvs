@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.9 2003/08/06 08:50:20 corvazier Exp $
+ * $Id: main.cpp,v 1.10 2003/08/14 08:52:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,7 @@ void	displayMRMGeom(FILE *logStream, const CMeshMRMGeom &geom)
 	fprintf(logStream, "  NumFaces(Max Lod): %d\n", numFacesLodMax );
 	fprintf(logStream, "  NumFaces(Sum all Lods): %d\n", numFaces );
 	fprintf(logStream, "  NumVertices(Sum all Lods): %d\n", geom.getVertexBuffer().getNumVertices() );
+	fprintf(logStream, "  NumShadowSkinVertices: %d\n", geom.getNumShadowSkinVertices() );
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.64 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.65 2003/08/14 08:52:27 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -3322,6 +3322,12 @@ void			CMeshMRMGeom::setShadowMesh(const std::vector<CShadowVertex> &shadowVerti
 	_SupportShadowSkinGrouping= !_ShadowSkinVertices.empty() &&
 		NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT==CVertexBuffer::PositionFlag &&
 		_ShadowSkinVertices.size() <= NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES;
+}
+
+// ***************************************************************************
+uint			CMeshMRMGeom::getNumShadowSkinVertices() const
+{
+	return _ShadowSkinVertices.size();
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * <File description>
  *
- * $Id: mutex.cpp,v 1.13 2001/05/24 14:18:31 cado Exp $
+ * $Id: mutex.cpp,v 1.14 2001/05/29 07:56:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -249,7 +249,10 @@ void CMutex::leave ()
 	//printf( "0" );
 #ifdef NL_OS_WINDOWS
 
-	nlverify (ReleaseMutex(Mutex));
+	if (ReleaseMutex(Mutex) == 0)
+	{
+		nlerror ("error while releasing the mutex (0x%x %d), %p", GetLastError(), GetLastError(), Mutex);
+	}
 
 #elif defined NL_OS_UNIX
 

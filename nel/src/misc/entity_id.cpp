@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * <File description>
  *
- * $Id: entity_id.cpp,v 1.7 2003/11/03 18:16:21 cado Exp $
+ * $Id: entity_id.cpp,v 1.8 2003/12/11 18:31:27 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,12 +31,12 @@ using namespace std;
 
 namespace NLMISC {
 
-const uint64 CEntityId::MaxEntityId = ((uint64)1 << (40 + 1)) - (uint64)1;
+	const uint64 CEntityId::MaxEntityId = ((uint64)1 << (CEntityId::ID_SIZE + 1)) - (uint64)1;
 
-CEntityId CEntityId::_NextEntityId;
+	CEntityId CEntityId::_NextEntityId;
 
-uint8 CEntityId::_ServerId = 0;
+	uint8 CEntityId::_ServerId = 0;
 
-const CEntityId CEntityId::Unknown (127, 0, 0, 0);
+	const CEntityId CEntityId::Unknown (CEntityId::UNKNOWN_TYPE, 0, 0, 0);
 
 } // NLMISC

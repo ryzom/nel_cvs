@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.32 2003/11/03 18:16:21 cado Exp $
+ * $Id: entity_id.h,v 1.33 2003/12/11 18:31:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,8 +41,18 @@ namespace NLMISC {
  */
 struct CEntityId
 {
+	// pseudo constante
+	enum
+	{
+		DYNAMIC_ID_SIZE = 8,
+		CREATOR_ID_SIZE = 8,
+		TYPE_SIZE = 8,
+		ID_SIZE = 40,
+		UNKNOWN_TYPE = (1 << TYPE_SIZE)-1
+	};
 
 private :
+
 	// ---------------------------------------------------------------------------------
 	// instantiated data
 
@@ -51,13 +61,13 @@ private :
 		struct
 		{
 		/// Id of the service where the entity is (variable routing info).
-		uint64	DynamicId   :  8;
+		uint64	DynamicId   :  DYNAMIC_ID_SIZE;
 		/// Id of the service who created the entity (persistent).
-		uint64	CreatorId   :  8;
+		uint64	CreatorId   :  CREATOR_ID_SIZE;
 		/// Type of the entity (persistent).
-		uint64	Type :  8;
+		uint64	Type :			TYPE_SIZE;
 		/// Local entity number (persistent).
-		uint64	Id : 40;
+		uint64	Id :			ID_SIZE;
 		} DetailedId;
 
 		uint64 FullId;
@@ -113,7 +123,7 @@ public :
 	CEntityId ()
 	{
 		FullId = 0;
-		DetailedId.Type = 127;
+		DetailedId.Type = UNKNOWN_TYPE;
 
 		/*
 		DynamicId = 0;
@@ -267,7 +277,7 @@ public :
 	/// Test if the entity id is Unknown
 	bool isUnknownId() const
 	{
-		return DetailedId.Type == 127;
+		return DetailedId.Type == UNKNOWN_TYPE;
 	}
 
 

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.26 2003/07/31 13:41:15 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.27 2003/07/31 14:56:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1645,7 +1645,8 @@ void CPSConstraintMesh::draw(bool opaque, TAnimationTime ellapsedTime)
 
 //====================================================================================
 void CPSConstraintMesh::setupMaterialColor(CMaterial &destMat, CMaterial &srcMat)
-{	
+{		
+	if (destMat.getShader() != CMaterial::Normal) return;
 	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
 	{		
 		if (_ModulatedStages & (1 << k))

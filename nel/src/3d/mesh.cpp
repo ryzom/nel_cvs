@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.15 2001/05/07 14:45:00 berenguier Exp $
+ * $Id: mesh.cpp,v 1.16 2001/05/09 17:08:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -471,7 +471,7 @@ void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	// _AnimatedMaterials
 	if(ver>=1)
-		f.serialMap(_AnimatedMaterials);
+		f.serialCont(_AnimatedMaterials);
 	else
 	{
 		if(f.isReading())

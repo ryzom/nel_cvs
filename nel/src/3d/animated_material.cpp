@@ -1,7 +1,7 @@
 /** \file animated_material.cpp
  * <File description>
  *
- * $Id: animated_material.cpp,v 1.7 2001/04/24 14:55:08 corvazier Exp $
+ * $Id: animated_material.cpp,v 1.8 2001/05/09 17:08:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,7 +79,7 @@ void	CMaterialBase::serial(NLMISC::IStream &f)
 	f.serial(DefaultAmbient, DefaultDiffuse, DefaultSpecular);
 	f.serial(DefaultShininess, DefaultEmissive, DefaultOpacity, DefaultTexture);
 
-	f.serialMap(_AnimatedTextures);
+	f.serialCont(_AnimatedTextures);
 }
 
 

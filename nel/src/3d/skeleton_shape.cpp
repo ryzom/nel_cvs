@@ -1,7 +1,7 @@
 /** \file skeleton_shape.cpp
  * <File description>
  *
- * $Id: skeleton_shape.cpp,v 1.2 2001/04/13 16:38:33 berenguier Exp $
+ * $Id: skeleton_shape.cpp,v 1.3 2001/05/09 17:08:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,7 +87,7 @@ void			CSkeletonShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	sint	ver= f.serialVersion(0);
 
 	f.serialCont(_Bones);
-	f.serialMap(_BoneMap);
+	f.serialCont(_BoneMap);
 }
 
 

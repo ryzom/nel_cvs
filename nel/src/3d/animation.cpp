@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * <File description>
  *
- * $Id: animation.cpp,v 1.6 2001/03/19 13:19:15 corvazier Exp $
+ * $Id: animation.cpp,v 1.7 2001/05/09 17:08:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,7 @@ void CAnimation::serial (NLMISC::IStream& f)
 	f.serial (_Name);
 
 	// Serial the name/id map
-	f.serialMap (_IdByName);
+	f.serialCont(_IdByName);
 
 	// Serial the vector
 	f.serialContPolyPtr (_TrackVector);

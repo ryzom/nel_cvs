@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.10 2001/12/14 16:48:19 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.11 2002/02/18 17:23:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,10 +55,12 @@ def_visible_primitive ( view_shape,			"NelViewShape");
 def_visible_primitive ( test_file_date,		"NeLTestFileDate");
 def_visible_primitive ( export_vegetable,	"NelExportVegetable");
 def_visible_primitive ( reload_texture,		"NelReloadTexture" );
+def_visible_primitive ( export_collision,	"NelExportCollision" );
 
 char *sExportShapeErrorMsg = "NeLExportShape [Object] [Filename.shape]";
 char *sExportShapeExErrorMsg = "NeLExportShapeEx [Object] [Filename.shape] [bShadow] [bExportLighting] [sLightmapPath] [nLightingLimit] [fLumelSize] [nOverSampling] [bExcludeNonSelected] [bShowLumel]";
 char *sExportAnimationErrorMsg = "NelExportAnimation [node array] [Filename.anim] [bool_scene_animation]";
+char *sExportCollisionErrorMsg = "NelExportCollision [node array] [output directory]";
 
 Value* export_shape_cf (Value** arg_list, int count)
 {
@@ -534,6 +536,57 @@ Value* reload_texture_cf (Value** arg_list, int count)
 
 	return &false_value;
 }
+
+Value* export_collision_cf (Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (2)
+	check_arg_count(export_shape, 2, count);
+
+	// Check to see if the arguments match up to what we expect
+	type_check (arg_list[0], Array, sExportCollisionErrorMsg);
+	type_check (arg_list[1], String, sExportCollisionErrorMsg);
+
+	// Export path 
+	string sPath = arg_list[1]->to_string();
+
+	// Get time
+	TimeValue time = MAXScript_interface->GetTime();
+	
+	// Get array
+	Array* array=(Array*)arg_list[0];
+
+	// Array of INode *
+	std::vector<INode *> nodes;
+	nodes.reserve (array->size);
+
+	// Check each value in the array
+	uint i;
+	for (i=0; i<(uint)array->size; i++)
+	{
+		type_check (array->get (i+1), MAXNode, sExportCollisionErrorMsg);
+
+		// Add to the array of nodes
+		nodes.push_back (array->get (i+1)->to_node());
+	}
+
+	// Ok ?
+	Boolean *ret = &false_value;
+
+	try
+	{
+		// Warning as the export options are not used, they are not loaded!
+
+		// Export
+		if (CNelExport::exportCollision (sPath.c_str(), nodes, *MAXScript_interface, time, *(CExportNelOptions*)NULL))
+			ret = &true_value;
+	}
+	catch (Exception &e)
+	{
+		nlwarning ("ERROR %s", e.what());
+	}
+	return ret;
+}
+
 
 /*===========================================================================*\
  |	MAXScript Plugin Initialization

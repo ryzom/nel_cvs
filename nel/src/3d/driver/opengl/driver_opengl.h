@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.49 2001/02/23 09:10:48 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.50 2001/02/23 09:24:51 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,13 +107,15 @@ class CDriverGL : public IDriver
 {
 public:
 
-#ifdef NL_OS_WINDOWS
 	// Acces
 	uint32					getHwnd ()
 	{
+#ifdef NL_OS_WINDOWS
 		return (uint32)_hWnd;
-	}
+#else // NL_OS_WINDOWS
+		return 0;
 #endif // NL_OS_WINDOWS
+	}
 
 							CDriverGL();
 	virtual					~CDriverGL() { release(); };

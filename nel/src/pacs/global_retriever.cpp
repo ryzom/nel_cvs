@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.89 2004/01/08 15:10:00 lecroart Exp $
+ * $Id: global_retriever.cpp,v 1.90 2004/01/14 09:40:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -295,6 +295,8 @@ void	NLPACS::CGlobalRetriever::getBorders(const CAABBox &sbox, std::vector<std::
 		chainquad.selectEdges(box, _InternalCST);
 
 		uint		ece;
+
+		CVector		dz(0.0f, 0.0f, 0.5f);
 		float		zp = (float)sbox.getCenter().z;
 		for (ece=0; ece<_InternalCST.EdgeChainEntries.size(); ++ece)
 		{
@@ -314,6 +316,14 @@ void	NLPACS::CGlobalRetriever::getBorders(const CAABBox &sbox, std::vector<std::
 					edges.push_back(make_pair(CLine(), chainType));
 					edges.back().first.V0 = ochain[edge] + origin;
 					edges.back().first.V1 = ochain[edge+1] + origin;
+
+					edges.push_back(make_pair(CLine(), chainType));
+					edges.back().first.V0 = ochain[edge] + origin;
+					edges.back().first.V1 = ochain[edge] + origin +dz;
+
+					edges.push_back(make_pair(CLine(), chainType));
+					edges.back().first.V0 = ochain[edge+1] + origin;
+					edges.back().first.V1 = ochain[edge+1] + origin +dz;
 				}
 			}
 			else

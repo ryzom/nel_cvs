@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.66 2003/11/17 14:26:38 distrib Exp $
+ * $Id: local_retriever.cpp,v 1.67 2004/01/14 09:40:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -818,7 +818,7 @@ void	NLPACS::CLocalRetriever::updateChainIds()
 
 void	NLPACS::CLocalRetriever::computeTopologies()
 {
-	nlinfo("compute topologies");
+	//nlinfo("compute topologies");
 
 	// Find topologies out...
 	uint		character;
@@ -862,7 +862,7 @@ void	NLPACS::CLocalRetriever::computeTopologies()
 		}
 
 		_Topologies[character].resize(topology);
-		nlinfo("generated %d topologies for character %d", topology, character);
+		//nlinfo("generated %d topologies for character %d", topology, character);
 	}
 
 	uint		surface;

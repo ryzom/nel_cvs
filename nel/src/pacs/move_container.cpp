@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.43 2003/10/10 10:08:49 corvazier Exp $
+ * $Id: move_container.cpp,v 1.44 2004/01/14 09:40:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1110,15 +1110,42 @@ void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfac
 */
 
 	// Check time interval
-	nlassertex (beginTime<=time, ("beginTime=%f, time=%f", beginTime, time));
-	nlassertex (time<_DeltaTime, ("time=%f, _DeltaTime=%f", time, _DeltaTime));
+
+	//nlassertex (beginTime<=time, ("beginTime=%f, time=%f", beginTime, time));
+	//nlassertex (time<_DeltaTime, ("time=%f, _DeltaTime=%f", time, _DeltaTime));
+
+	if (beginTime > time)
+	{
+		nlwarning("beginTime=%f > time=%f", beginTime, time);
+	}
+
+	if (time >= _DeltaTime)
+	{
+		nlwarning("time=%f >= _DeltaTime=%f", time, _DeltaTime);
+	}
+
 
 	// Time of the collision.
 	time-=NELPACS_DIST_BACK/wI->getSpeed().norm();
 	time=std::max(time, beginTime);
 	double ratio=(time-beginTime)/(_DeltaTime-beginTime);
+
+/*
 	nlassert (ratio>=0);
 	nlassert (ratio<=1);
+*/
+
+	if (ratio < 0.0)
+	{
+		nlwarning("ratio=%f < 0.0", ratio);
+		ratio = 0.0;
+	}
+
+	if (ratio > 1.0)
+	{
+		nlwarning("ratio=%f > 1.0", ratio);
+		ratio = 1.0;
+	}
 
 	if (staticColInfo)
 	{
@@ -1796,7 +1823,7 @@ void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 f
 			// Insert the primitive
 			primitive->insertInWorldImage (wI);
 
-			// Final position
+			// Final position&
 			float cosa = (float) cos (orientation);
 			float sina = (float) sin (orientation);
 			CVector finalPos;

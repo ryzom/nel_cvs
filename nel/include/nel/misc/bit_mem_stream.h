@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.17 2003/01/20 14:18:33 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.18 2003/01/24 17:52:49 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -297,7 +297,7 @@ public:
 	virtual void	serial(char &b) { serialAdapt( b, char ); }
 #endif
 	virtual void	serial(std::string &b);
-	//virtual void	serial(ucstring &b);
+	virtual void	serial(ucstring &b);
 
 	virtual void	serial(CBitMemStream &b);
 	

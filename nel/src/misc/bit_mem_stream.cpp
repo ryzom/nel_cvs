@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.24 2003/01/20 14:17:15 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.25 2003/01/24 17:52:49 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -452,6 +452,40 @@ void	CBitMemStream::serial(std::string &b)
 		serialBuffer( (uint8*)(&*b.begin()), len );
 	}
 }
+
+
+/*
+ * Serial string
+ */
+inline	void		CBitMemStream::serial(ucstring &b) 
+{
+	if ( _StringMode )
+	{
+		sint32	len=0;
+		// Read/Write the length.
+		if(isReading())
+		{
+			serial(len);
+			b.resize(len);
+		}
+		else
+		{
+			len= b.size();
+			serial(len);
+		}
+		// Read/Write the string.
+		for(sint i=0;i<len;i++)
+			serialBuffer( (uint8*)&b[i], sizeof( sizeof(b[i]) ) );
+
+		char sep = SEPARATOR;
+		serialBuffer( (uint8*)&sep, 1 );
+	}
+	else
+	{
+		IStream::serial( b );
+	}
+}
+
 
 /*
  * Serial string

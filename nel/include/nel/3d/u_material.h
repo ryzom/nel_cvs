@@ -1,7 +1,7 @@
 /** \file u_material.h
  * <File description>
  *
- * $Id: u_material.h,v 1.5 2004/03/23 10:10:41 vizerie Exp $
+ * $Id: u_material.h,v 1.6 2004/04/26 17:15:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,6 +147,17 @@ public:
 	virtual float			getZBias(void)  const  =0;
 	// @}
 
+	/// \name Alpha test.
+	// @{
+	virtual void			setAlphaTest(bool active) =0;
+	virtual bool			getAlphaTest() const =0;
+
+	/** change the threshold against alpha is tested. Default is 0.5f.
+	 *	\param thre threshold, should be in [0..1], not clamped.
+	 */
+	virtual void			setAlphaTestThreshold(float threshold) =0;
+	virtual float			getAlphaTestThreshold() const =0;
+	// @}
 
 	/// \name Color/Lighting..
 	// @{

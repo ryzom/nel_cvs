@@ -1,7 +1,7 @@
 /** \file material_user.h
  * <File description>
  *
- * $Id: material_user.h,v 1.9 2004/03/23 10:19:44 vizerie Exp $
+ * $Id: material_user.h,v 1.10 2004/04/26 17:15:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -242,6 +242,10 @@ public:
 	}
 	// @}
 
+	virtual void			setAlphaTest(bool active);
+	virtual bool			getAlphaTest() const;
+	virtual void			setAlphaTestThreshold(float threshold);
+	virtual float			getAlphaTestThreshold() const;
 
 	/// \name Color/Lighting..
 	// @{

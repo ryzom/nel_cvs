@@ -1,7 +1,7 @@
 /** \file material_user.cpp
  * <File description>
  *
- * $Id: material_user.cpp,v 1.4 2004/03/23 10:19:44 vizerie Exp $
+ * $Id: material_user.cpp,v 1.5 2004/04/26 17:15:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,5 +40,24 @@ bool CMaterialUser::isSupportedByDriver(UDriver &drv)
 	return _Material.isSupportedByDriver(*(NLMISC::safe_cast<CDriverUser *>(&drv)->getDriver()));
 }
 
+void CMaterialUser::setAlphaTest(bool active)
+{
+	_Material.setAlphaTest(active);
+}
+
+bool CMaterialUser::getAlphaTest() const
+{
+	return _Material.getAlphaTest();
+}
+
+void CMaterialUser::setAlphaTestThreshold(float threshold)
+{
+	_Material.setAlphaTestThreshold(threshold);
+}
+
+float CMaterialUser::getAlphaTestThreshold() const
+{
+	return _Material.getAlphaTestThreshold();
+}
 
 } // NL3D

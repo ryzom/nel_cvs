@@ -433,7 +433,7 @@ void CBranch_patcherDlg::OnDoPatch()
 
 	// Apply the patch
 	CString patchCmdLine, concatOutput, delPatchErrors;
-	patchCmdLine.Format( "%spatch.exe -c -p0 --verbose < %s > %s 2> %s", PatchExeDir, TEMP_DIFF_FILE, PATCH_RESULT, PATCH_ERRORS ); // needs patch.exe in the path
+	patchCmdLine.Format( "%spatch.exe -c -p%u --verbose < %s > %s 2> %s", PatchExeDir, CvsDiffDirLevel, TEMP_DIFF_FILE, PATCH_RESULT, PATCH_ERRORS ); // needs patch.exe in the path
 	concatOutput.Format( "copy %s+%s %s", PATCH_RESULT, PATCH_ERRORS, PATCH_RESULT );
 	delPatchErrors.Format( "del %s", PATCH_ERRORS );
 
@@ -609,7 +609,7 @@ void CBranch_patcherDlg::loadConfiguration()
 	CString savedSrcDir, savedTargetDir, token1, token2;
 	if ( m_SrcDir.IsEmpty() )
 	{
-		savedSrcDir = theApp.GetProfileString( _T( ""), _T("SourceDir") );
+		savedSrcDir = theApp.GetProfileString( _T(""), _T("SourceDir") );
 		if ( ! savedSrcDir.IsEmpty() )
 		{
 			setSrcDirectory( savedSrcDir );
@@ -620,9 +620,10 @@ void CBranch_patcherDlg::loadConfiguration()
 	{
 		setDestDirectory( savedTargetDir );
 	}
-	Token1 = theApp.GetProfileString( _T( ""), _T("Token1") );
-	Token2 = theApp.GetProfileString( _T( ""), _T("Token2") );
-	PatchExeDir = theApp.GetProfileString( _T( ""), _T("PatchExeDir") );
+	Token1 = theApp.GetProfileString( _T(""), _T("Token1") );
+	Token2 = theApp.GetProfileString( _T(""), _T("Token2") );
+	PatchExeDir = theApp.GetProfileString( _T(""), _T("PatchExeDir") );
+	CvsDiffDirLevel = theApp.GetProfileInt( _T(""), _T("CvsDiffDirLevel"), 1 ); // 0 for old version of CVS, 1 for new version of CVS
 }
 
 

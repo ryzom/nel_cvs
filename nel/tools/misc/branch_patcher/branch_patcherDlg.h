@@ -56,6 +56,7 @@ public:
 	CRichEditCtrl	*m_Display;
 	bool			SaveDiff, EnteringTokens;
 	CString			Token1, Token2, SrcDirBackup, TargetDirBackup, PatchExeDir;
+	int				CvsDiffDirLevel;
 
 	
 // Dialog Data

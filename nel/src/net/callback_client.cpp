@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.7 2001/06/13 10:22:26 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.8 2001/06/13 12:11:14 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,7 +77,6 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 void CCallbackClient::update ( sint32 timeout )
 {
 //	nldebug ("L3C: Client: update()");
-	nlassert (connected ());
 
 	checkThreadId ();
 	CStreamClient::update ();

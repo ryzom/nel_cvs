@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.32 2001/06/13 10:21:02 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.33 2001/06/13 12:11:02 lecroart Exp $
  *
  */
 
@@ -44,7 +44,7 @@ CNamingClient::TRegServices CNamingClient::_RegisteredServices;
 static TBroadcastCallback _RegistrationBroadcastCallback = NULL;
 static TBroadcastCallback _UnregistrationBroadcastCallback = NULL;
 
-uint	CNamingClient::_ThreadId;
+uint	CNamingClient::_ThreadId = 0xFFFFFFFF;
 
 std::list<CNamingClient::CServiceEntry>	CNamingClient::RegisteredServices;
 NLMISC::CMutex CNamingClient::RegisteredServicesMutex;
@@ -125,7 +125,7 @@ void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netba
 	
 //
 
-static void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	string name;
 	TServiceId sid;
@@ -175,6 +175,7 @@ static TCallbackItem NamingClientCallbackArray[] =
 void CNamingClient::connect (const CInetAddress &addr)
 {
 	nlassert (_Connection == NULL || _Connection != NULL && !_Connection->connected ());
+	_ThreadId = getThreadId ();
 
 	if (_Connection == NULL)
 	{
@@ -183,8 +184,6 @@ void CNamingClient::connect (const CInetAddress &addr)
 	}
 
 	_Connection->connect (addr);
-
-	_ThreadId = getThreadId ();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.16 2001/06/13 10:22:26 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.17 2001/06/13 12:11:14 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,6 +119,7 @@ void cbnbNewDisconnection (TSockId from, void *data)
 
 CCallbackNetBase::CCallbackNetBase () : _FirstUpdate (true), _DisconnectionCallback(NULL), _DisconnectionCbArg(NULL)
 {
+	_ThreadId = getThreadId ();
 	_NewDisconnectionCallback = cbnbNewDisconnection;
 
 	nldebug ("disable display layer 3 association message");
@@ -126,8 +127,6 @@ CCallbackNetBase::CCallbackNetBase () : _FirstUpdate (true), _DisconnectionCallb
 
 	// add the callback needed to associate messages with id
 	addCallbackArray (cbnbMessageAssociationArray, sizeof (cbnbMessageAssociationArray) / sizeof (cbnbMessageAssociationArray[0]));
-
-	_ThreadId = getThreadId ();
 }
 
 /*

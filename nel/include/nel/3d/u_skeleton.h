@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.13 2002/08/23 15:41:45 corvazier Exp $
+ * $Id: u_skeleton.h,v 1.14 2002/11/08 18:39:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -176,6 +176,13 @@ public:
 
 	/// see setLodCharacterDistance. 0 if disabled
 	virtual float		getLodCharacterDistance() const =0;
+
+	/** Call it when you want the system to recompute the Lod texture
+	 *	NB: Lod texturing is possible only in conjunction with AsyncTextureManager. Hence, instances skinned
+	 *	to the skeleton should be in AsyncTextureMode.
+	 *	For best result, you should wait that each of these instances are isAsyncTextureReady() (texture loaded)
+	 */
+	virtual void		computeLodTexture() =0;
 
 	// @}
 

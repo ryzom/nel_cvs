@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.13 2002/09/05 08:24:54 berenguier Exp $
+ * $Id: u_transform.h,v 1.14 2002/11/08 18:39:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -194,7 +194,7 @@ public:
 
 	/** set the Mean color of the transform. The mean color can be used for many purpose, such as drawing
 	 *	objects if the textures are not loaded. It is used also for Lod Character.
-	 *	Default color is (80,80,80)
+	 *	Default color is (255,255,255)
 	 */
 	virtual	void			setMeanColor(NLMISC::CRGBA color) =0;
 

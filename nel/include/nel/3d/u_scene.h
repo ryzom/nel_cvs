@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.27 2002/10/25 16:19:47 besson Exp $
+ * $Id: u_scene.h,v 1.28 2002/11/08 18:39:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -368,6 +368,8 @@ public:
 
 
 	/// \name CLod / Character Lod mgt
+	/** NB: for an historic reason, CLod interface is in UScene, BUT THERE IS ONLY ONE LOD MANAGER PER UDriver!
+	 */
 	//@{
 
 	/// reset the manager.

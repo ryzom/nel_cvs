@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.33 2002/01/07 14:35:09 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.34 2002/01/28 14:38:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -169,6 +169,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 		CPSDot::initVertexBuffers();
 		CPSQuad::initVertexBuffers();
 		CPSConstraintMesh::initPrerotVB();
+		CPSBrownianForce::initPrecalc();
 }
 
 //==========================================================================

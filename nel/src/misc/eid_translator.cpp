@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.3 2003/04/15 08:47:22 coutelas Exp $
+ * $Id: eid_translator.cpp,v 1.4 2003/04/15 08:54:16 coutelas Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -27,18 +27,21 @@
 // Includes
 //
 
-#include "stdpch.h"
+#include "stdmisc.h"
 
 #include <string>
 #include <vector>
 #include <map>
 
-#include <nel/misc/types_nl.h>
-#include <nel/misc/entity_id.h>
-#include <nel/misc/file.h>
-#include <nel/misc/command.h>
+#include "nel/misc/types_nl.h"
+#include "nel/misc/entity_id.h"
+#include "nel/misc/file.h"
+#include "nel/misc/command.h"
+#include "nel/misc/eid_translator.h"
 
-#include "eid_translator.h"
+using namespace std;
+
+namespace NLMISC {
 
 //
 // Variables
@@ -60,7 +63,7 @@ CEntityIdTranslator *CEntityIdTranslator::getInstance ()
 	return Instance;
 }
 
-void CEntityIdTranslator::getByUser (uint32 uid, std::vector<NLMISC::CEntityId> &res)
+void CEntityIdTranslator::getByUser (uint32 uid, vector<CEntityId> &res)
 {
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
@@ -71,7 +74,7 @@ void CEntityIdTranslator::getByUser (uint32 uid, std::vector<NLMISC::CEntityId> 
 	}
 }
 
-void CEntityIdTranslator::getByUser (const std::string &userName, std::vector<NLMISC::CEntityId> &res)
+void CEntityIdTranslator::getByUser (const string &userName, vector<CEntityId> &res)
 {
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
@@ -82,7 +85,7 @@ void CEntityIdTranslator::getByUser (const std::string &userName, std::vector<NL
 	}
 }
 
-std::string CEntityIdTranslator::getByEntity (const NLMISC::CEntityId &eid)
+ucstring CEntityIdTranslator::getByEntity (const CEntityId &eid)
 {
 	reit it = RegisteredEntities.find (eid);
 	if (it == RegisteredEntities.end ())
@@ -95,7 +98,7 @@ std::string CEntityIdTranslator::getByEntity (const NLMISC::CEntityId &eid)
 	}
 }
 
-NLMISC::CEntityId CEntityIdTranslator::getByEntity (const std::string &entityName)
+CEntityId CEntityIdTranslator::getByEntity (const ucstring &entityName)
 {
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
@@ -104,10 +107,10 @@ NLMISC::CEntityId CEntityIdTranslator::getByEntity (const std::string &entityNam
 			return (*it).first;
 		}
 	}
-	return NLMISC::CEntityId::Unknown;
+	return CEntityId::Unknown;
 }
 
-bool CEntityIdTranslator::entityNameExists (const std::string &entityName)
+bool CEntityIdTranslator::entityNameExists (const ucstring &entityName)
 {
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
@@ -119,26 +122,26 @@ bool CEntityIdTranslator::entityNameExists (const std::string &entityName)
 	return false;
 }
 
-void CEntityIdTranslator::registerEntity (const NLMISC::CEntityId &eid, const std::string &entityName, uint32 uid, const std::string &userName)
+void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const string &userName)
 {
 	reit it = RegisteredEntities.find (eid);
 
 	nlassert(it == RegisteredEntities.end ());
 
-	RegisteredEntities.insert (std::make_pair(eid, CEntityIdTranslator::CEntity(entityName, uid, userName)));
+	RegisteredEntities.insert (make_pair(eid, CEntityIdTranslator::CEntity(entityName, uid, userName)));
 	nlinfo ("Registered %s with %s %d %s", eid.toString().c_str(), entityName.c_str(), uid, userName.c_str());
 
 	save ();
 }
 
-void CEntityIdTranslator::load (const std::string &fileName)
+void CEntityIdTranslator::load (const string &fileName)
 {
 	nlassert (!fileName.empty());
 	nlassert (FileName.empty());
 
 	FileName = fileName;
 
-	NLMISC::CIFile ifile;
+	CIFile ifile;
 	if( ifile.open(FileName) )
 	{
 		ifile.serialCont (RegisteredEntities);
@@ -155,7 +158,7 @@ void CEntityIdTranslator::save ()
 		return;
 	}
 
-	NLMISC::COFile ofile;
+	COFile ofile;
 	if( ofile.open(FileName) )
 	{
 		ofile.serialCont (RegisteredEntities);
@@ -164,7 +167,7 @@ void CEntityIdTranslator::save ()
 	}
 }
 
-uint32 CEntityIdTranslator::getUId (const std::string &userName)
+uint32 CEntityIdTranslator::getUId (const string &userName)
 {
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
@@ -176,7 +179,7 @@ uint32 CEntityIdTranslator::getUId (const std::string &userName)
 	return 0;
 }
 
-std::string CEntityIdTranslator::getUserName (uint32 uid)
+string CEntityIdTranslator::getUserName (uint32 uid)
 {
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
@@ -188,7 +191,7 @@ std::string CEntityIdTranslator::getUserName (uint32 uid)
 	return 0;
 }
 
-void CEntityIdTranslator::getEntityIdInfo (const NLMISC::CEntityId &eid, std::string &entityName, uint32 &uid, std::string &userName)
+void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entityName, uint32 &uid, string &userName)
 {
 	reit it = RegisteredEntities.find (eid);
 	if (it == RegisteredEntities.end ())
@@ -211,9 +214,9 @@ NLMISC_COMMAND(findEIdByUser,"Find entity ids using the user name","<username>|<
 	if (args.size () != 1)
 		return false;
 
-	std::vector<NLMISC::CEntityId> res;
+	vector<CEntityId> res;
 
-	std::string userName = args[0];
+	string userName = args[0];
 	uint32 uid = atoi (userName.c_str());
 
 	if (uid != 0)
@@ -241,22 +244,22 @@ NLMISC_COMMAND(findEIdByEntity,"Find entity id using the entity name","<entityna
 	if (args.size () != 1)
 		return false;
 	
-	NLMISC::CEntityId eid (args[0].c_str());
+	CEntityId eid (args[0].c_str());
 
-	if (eid == NLMISC::CEntityId::Unknown)
+	if (eid == CEntityId::Unknown)
 	{
 		eid = CEntityIdTranslator::getInstance()->getByEntity(args[0]);
 	}
 
-	if (eid == NLMISC::CEntityId::Unknown)
+	if (eid == CEntityId::Unknown)
 	{
 		log.displayNL("'%s' is not an eid or an entity name", args[0].c_str());
 		return false;
 	}
 
-	std::string entityName;
+	ucstring entityName;
 	uint32 uid;
-	std::string userName;
+	string userName;
 
 	CEntityIdTranslator::getInstance()->getEntityIdInfo(eid, entityName, uid, userName);
 
@@ -265,3 +268,4 @@ NLMISC_COMMAND(findEIdByEntity,"Find entity id using the entity name","<entityna
 	return true;
 }
 
+}

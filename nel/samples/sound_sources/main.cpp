@@ -1,7 +1,7 @@
 /** \file sound_sources/main.cpp
  * Simple example of NeL sound engine usage
  *
- * $Id: main.cpp,v 1.8 2003/09/05 11:18:28 lecroart Exp $
+ * $Id: main.cpp,v 1.9 2004/10/15 14:34:50 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -56,22 +56,29 @@ void Init()
 	try
 	{
 
-		CPath::addSearchPath("DFN", true, false);
+		CPath::addSearchPath("data", true, false);
 
 		/*
 		 * 1. Create the audio mixer object and init it.
 		 * If the sound driver cannot be loaded, an exception is thrown.
 		 */
 		AudioMixer = UAudioMixer::createAudioMixer();
-		AudioMixer->init(50000);
 
-		/*
-		 * 2. Load a "sources sounds file" (.nss), its sound properties and
-		 * its attached wave data files (.wav)
-		 */
-		AudioMixer->setSamplePath(".");
-		AudioMixer->loadSampleBank("sounds");
-		AudioMixer->loadSoundBank("sounds");
+		// Set the sample path before init, this allow the mixer to build the sample banks
+		AudioMixer->setSamplePath("data/samplebank");
+		// Packed sheet option, this mean we want packed sheet generated in 'data' folder
+		AudioMixer->setPackedSheetOption("data", true);
+		// init with 32 tracks, EAX enabled, no ADPCM, and activate automatic sample bank loading
+		AudioMixer->init(32, true, false, NULL, true, UAudioMixer::DriverFMod);
+//		AudioMixer->init(32, true, false, NULL, true);
+
+//		/*
+//		 * 2. Load a "sources sounds file" (.nss), its sound properties and
+//		 * its attached wave data files (.wav)
+//		 */
+//		AudioMixer->setSamplePath(".");
+//		AudioMixer->loadSampleBank("sounds");
+//		AudioMixer->loadSoundBank("sounds");
 
 		/*
 		 * In this small example, we don't have any environmental effects or
@@ -109,7 +116,7 @@ USource *OnAddSource( const char *name, float x, float y, float z )
 	/*
 	 * Create a source with sound 'name', and set some of its initial properties, if successful
 	 */
-	USource *source = AudioMixer->createSource( name );
+	USource *source = AudioMixer->createSource( CStringMapper::map(name) );
 	if ( source != NULL )
 	{
 		source->setPos( CVector(x,y,z) );

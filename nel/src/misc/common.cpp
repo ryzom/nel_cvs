@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.52 2004/02/12 16:24:31 lecroart Exp $
+ * $Id: common.cpp,v 1.53 2004/02/12 17:10:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -695,6 +695,7 @@ bool killProgram(uint32 pid)
 */
 #else
 	nlwarning("kill not implemented on this OS");
+	return false;
 #endif
 }
 

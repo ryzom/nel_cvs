@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.14 2002/04/12 15:59:57 berenguier Exp $
+ * $Id: tessellation.h,v 1.15 2002/08/23 16:32:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -155,7 +155,7 @@ public:
  */
 struct	CTileFace : public CTessNodeList
 {
-	CTessNearVertex		*VBase, *VLeft, *VRight;
+	CTessNearVertex		*V[3];
 };
 
 
@@ -240,6 +240,10 @@ public:
 	CTileMaterial	*TileMaterial;
 	// The Tile Faces. There is no Face for lightmap, since use the one from RGB0.
 	CTileFace		*TileFaces[NL3D_MAX_TILE_FACE];
+
+	// Enum for UVs V[] array in TileFaces
+	enum	TTileUvId {IdUvBase=0, IdUvLeft, IdUvRight};
+
 	// @}
 
 
@@ -247,10 +251,11 @@ public:
 	// @{
 	// Size could be computed from TileSize: Size= Patch->BaseSize / (1<<(TileSize-Patch->BaseTileSize)). (or optimized)
 	// But used by updateErrorMetric(), and must be as fast as possible.
-	sint			ErrorMetricDate;	// The date of errormetric update.
-	float			Size;				// /2 at each split.
-	CVector			SplitPoint;			// Midle of VLeft/VRight. Used to compute the errorMetric.
-	float			ErrorMetric;		// equal to projected size of face, but greater for the transition Far-Near.
+	sint			ErrorMetricDate;		// The date of errormetric update.
+	float			Size;					// /2 at each split.
+	CVector			SplitPoint;				// Midle of VLeft/VRight. Used to compute the errorMetric.
+	float			ErrorMetric;			// equal to projected size of face, but greater for the transition Far-Near.
+	float			MaxDistToSplitPoint;	// Max Dist from SplitPoint to each of 3 vertices.
 	// @}
 
 
@@ -299,7 +304,9 @@ public:
 	void			updateRefineMerge();
 
 
-	// compute the SplitPoint. VBase / VLeft and VRight must be valid.
+	/** compute the SplitPoint. VBase / VLeft and VRight must be valid.
+	 *	Also compute MaxDistToSplitPoint.
+	 */
 	void	computeSplitPoint();
 
 	// Used by CPatch::unbind(). isolate the tesselation from other patchs.
@@ -345,7 +352,6 @@ private:
 
 	/// \name UV mgt.
 	// @{
-	enum	TTileUvId {IdUvBase=0, IdUvLeft, IdUvRight};
 	// Allocate a CTessNearVertex "id" (base, left or right) for each not NULL TileFace of "this" face.
 	// Init with good CTessVertex::Src, and then, insert it into Patch RenderList.
 	void	allocTileUv(TTileUvId id);

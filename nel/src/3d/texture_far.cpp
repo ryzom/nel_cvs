@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.20 2002/08/21 17:25:40 berenguier Exp $
+ * $Id: texture_far.cpp,v 1.21 2002/08/23 16:32:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -622,6 +622,10 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 // ***************************************************************************
 
 #ifdef NL_OS_WINDOWS
+
+
+// EMMS called not in __asm block.
+#  pragma warning (disable : 4799)
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file tess_face_priority_list.cpp
  * <File description>
  *
- * $Id: tess_face_priority_list.cpp,v 1.4 2002/08/22 16:33:48 berenguier Exp $
+ * $Id: tess_face_priority_list.cpp,v 1.5 2002/08/23 16:32:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/debug.h"
 #include <math.h>
 #include "3d/tessellation.h"
+#include "3d/fast_floor.h"
 
 
 using	namespace NLMISC;
@@ -45,83 +46,52 @@ namespace NL3D
 
 
 // ***************************************************************************
-CTessFacePListNode::CTessFacePListNode()
-{
-	_PrecTessFaceInPList= NULL;
-	_NextTessFaceInPList= NULL;
-}
-
-// ***************************************************************************
-CTessFacePListNode::~CTessFacePListNode()
-{
-	// if not done, unlink.
-	unlinkInPList();
-}
-
-// ***************************************************************************
 void		CTessFacePListNode::linkInPList(CTessFacePListNode	&root)
 {
-	unlinkInPList();
+	// unlink old list from me.
+	_PrecTessFaceInPList->_NextTessFaceInPList= _NextTessFaceInPList;
+	_NextTessFaceInPList->_PrecTessFaceInPList= _PrecTessFaceInPList;
 
-	// if empty list.
-	if( !root._NextTessFaceInPList )
-	{
-		// link me to the list.
-		_PrecTessFaceInPList= &root;
-		_NextTessFaceInPList= &root;
-		// link the list to me. NB: works even if root is empty, because root._NextTessFaceInPList==this.
-		root._PrecTessFaceInPList= this;
-		root._NextTessFaceInPList= this;
-	}
-	// else, list no empty.
-	else
-	{
-		// link me to the list.
-		_PrecTessFaceInPList= &root;
-		_NextTessFaceInPList= root._NextTessFaceInPList;
-		// link the list to me.
-		root._NextTessFaceInPList->_PrecTessFaceInPList= this;
-		root._NextTessFaceInPList= this;
-	}
+	// link me to the list.
+	_PrecTessFaceInPList= &root;
+	_NextTessFaceInPList= root._NextTessFaceInPList;
+	// link the list to me.
+	root._NextTessFaceInPList->_PrecTessFaceInPList= this;
+	root._NextTessFaceInPList= this;
+	/*
+		NB if list was empty (this, this), then
+			_PrecTessFaceInPList= &root
+			_NextTessFaceInPList= root._NextTessFaceInPList= &root !
+			root._NextTessFaceInPList->_PrecTessFaceInPList= this;	=> root._PrecTessFaceInPList= this
+			root._NextTessFaceInPList= this
+	*/
 }
 
 // ***************************************************************************
 void		CTessFacePListNode::unlinkInPList()
 {
-	// if linked to a list.
-	if( _NextTessFaceInPList )
-	{
-		// unlink the list from me.
-		// to work properly in all case, must bkup before
-		CTessFacePListNode		*next= _NextTessFaceInPList;
-		CTessFacePListNode		*prec= _PrecTessFaceInPList;
-		// test if last 2 elements of the list.
-		if(next==prec)
-		{
-			// prec should be the root. No more linked => empty!
-			prec->_NextTessFaceInPList= NULL;
-			prec->_PrecTessFaceInPList= NULL;
-		}
-		else
-		{
-			prec->_NextTessFaceInPList= _NextTessFaceInPList;
-			next->_PrecTessFaceInPList= _PrecTessFaceInPList;
-		}
-		
-		// unlink me from any list.
-		_PrecTessFaceInPList= NULL;
-		_NextTessFaceInPList= NULL;
-	}
+	/*
+		NB: if this node was empty (this, this), this is a No-Op.
+		If this node was the last of a list, then the root correctly get (&root, &root) after this.
+	*/
+	// unlink old list from me.
+	_PrecTessFaceInPList->_NextTessFaceInPList= _NextTessFaceInPList;
+	_NextTessFaceInPList->_PrecTessFaceInPList= _PrecTessFaceInPList;
+
+	// reset to empty node.
+	_PrecTessFaceInPList= this;
+	_NextTessFaceInPList= this;
 }
+
 
 // ***************************************************************************
 void		CTessFacePListNode::appendPList(CTessFacePListNode	&root)
 {
 	// If list to append is not empty.
-	if( root._NextTessFaceInPList )
+	if( root._NextTessFaceInPList != &root )
 	{
 		// If we are empty.
-		if( !_NextTessFaceInPList )
+		if( _NextTessFaceInPList==this )
 		{
 			// link the appendList to the root.
 			_PrecTessFaceInPList= root._PrecTessFaceInPList;
@@ -146,8 +116,8 @@ void		CTessFacePListNode::appendPList(CTessFacePListNode	&root)
 		}
 
 		// clear input list.
-		root._PrecTessFaceInPList= NULL;
-		root._NextTessFaceInPList= NULL;
+		root._PrecTessFaceInPList= &root;
+		root._NextTessFaceInPList= &root;
 	}
 }
 
@@ -165,6 +135,7 @@ CTessFacePriorityList::CTessFacePriorityList()
 {
 	_OODistStep= 1;
 	_NEntries= 0;
+	_MaskEntries= 0;
 	_EntryModStart= 0;
 	_NumQuadrant= 0;
 }
@@ -176,12 +147,12 @@ CTessFacePriorityList::~CTessFacePriorityList()
 }
 
 // ***************************************************************************
-void		CTessFacePriorityList::init(float distStep, float distMax, float distMaxMod, uint numQuadrant)
+void		CTessFacePriorityList::init(float distStep, uint numEntries, float distMaxMod, uint numQuadrant)
 {
 	uint i;
 	nlassert(distStep>0);
-	nlassert(distMax>0);
-	nlassert(distMaxMod<distMax);
+	nlassert(numEntries>0 && isPowerOf2(numEntries));
+	nlassert(distMaxMod<1);
 	nlassert(numQuadrant==0 || (numQuadrant>=4 && isPowerOf2(numQuadrant)) );
 
 	// clear the prioriy list before.
@@ -189,8 +160,9 @@ void		CTessFacePriorityList::init(float distStep, float distMax, float distMaxMo
 
 	// setup
 	_OODistStep= 1.0f / distStep;
-	_NEntries= (uint)ceil(distMax * _OODistStep);
-	_EntryModStart= (uint)ceil(distMaxMod * _OODistStep);
+	_NEntries= numEntries;
+	_MaskEntries= _NEntries-1;
+	_EntryModStart= (uint)ceil(distMaxMod * _NEntries);
 	NLMISC::clamp(_EntryModStart, 0U, _NEntries-1);
 	_NumQuadrant= numQuadrant;
 
@@ -314,19 +286,20 @@ void		CTessFacePriorityList::insert(uint quadrantId, float distance, CTessFace *
 	if(distance<=0)
 		idInsert= 0;
 	else
+	{
 		// Must insert so we can't miss it when a shift occurs (=> floor).
-		idInsert= (sint)floor(distance + rollTable.Remainder);
+		idInsert= OptFastFloor(distance + rollTable.Remainder);
+	}
 	idInsert= std::max(0, idInsert);
 
 	// Manage Mod.
 	// If the element to insert must be inserted at  distance > distMax.
-	if(idInsert>(sint)(_NEntries-1))
+	if(idInsert>(sint)_MaskEntries)
 	{
 		// Compute number of entries to apply the mod.
 		uint	nMod= _NEntries - _EntryModStart;
-		nlassert(nMod>=1);
 		// Of how many entries are we too far.
-		idInsert= idInsert - (_NEntries-1);
+		idInsert= idInsert - _MaskEntries;
 		// Then loop in the interval [_EntryModStart, _NEntries[.
 		idInsert= idInsert % nMod;
 		idInsert= _EntryModStart + idInsert;
@@ -423,6 +396,7 @@ CTessFacePriorityList::CRollingTable::CRollingTable()
 {
 	_EntryStart= 0;
 	_NEntries= 0;
+	_MaskEntries= 0;
 	Remainder= 0;
 }
 
@@ -438,6 +412,7 @@ void		CTessFacePriorityList::CRollingTable::init(uint numEntries)
 {
 	_EntryStart= 0;
 	_NEntries= numEntries;
+	_MaskEntries= _NEntries-1;
 	Remainder= 0;
 	_Entries.resize(numEntries);
 }
@@ -446,7 +421,7 @@ void		CTessFacePriorityList::CRollingTable::init(uint numEntries)
 // ***************************************************************************
 void		CTessFacePriorityList::CRollingTable::insertInRollTable(uint entry, CTessFace *value)
 {
-	CTessFacePListNode	&root= _Entries[ (entry + _EntryStart)%_NEntries ];
+	CTessFacePListNode	&root= _Entries[ (entry + _EntryStart) & _MaskEntries ];
 
 	// Insert into list.
 	value->linkInPList(root);
@@ -455,17 +430,17 @@ void		CTessFacePriorityList::CRollingTable::insertInRollTable(uint entry, CTessF
 // ***************************************************************************
 CTessFacePListNode	&CTessFacePriorityList::CRollingTable::getRollTableEntry(uint entry)
 {
-	CTessFacePListNode	&root= _Entries[ (entry + _EntryStart)%_NEntries ];
+	CTessFacePListNode	&root= _Entries[ (entry + _EntryStart) & _MaskEntries ];
 	return root;
 }
 
 // ***************************************************************************
 void		CTessFacePriorityList::CRollingTable::clearRollTableEntry(uint entry)
 {
-	CTessFacePListNode	&root= _Entries[ (entry + _EntryStart)%_NEntries ];
+	CTessFacePListNode	&root= _Entries[ (entry + _EntryStart) & _MaskEntries ];
 
 	// clear all the list.
-	while( root.nextInPList() )
+	while( root.nextInPList() != &root )
 	{
 		// unlink from list
 		CTessFacePListNode	*node= root.nextInPList();
@@ -483,7 +458,7 @@ void		CTessFacePriorityList::CRollingTable::shiftRollTable(uint shiftEntry)
 	}
 	// shift to right the ptr of entries.
 	_EntryStart+= shiftEntry;
-	_EntryStart= _EntryStart % _NEntries;
+	_EntryStart= _EntryStart & _MaskEntries;
 }
 
 // ***************************************************************************

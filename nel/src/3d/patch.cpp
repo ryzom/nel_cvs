@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.88 2002/07/23 12:20:31 corvazier Exp $
+ * $Id: patch.cpp,v 1.89 2002/08/23 16:32:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -752,9 +752,10 @@ void			CPatch::extendTessBlockWithEndPos(CTessFace *face)
 		uint	numtb= getNumTessBlock(face);
 
 		// Must enlarge the BSphere of the tesblock!!
-		TessBlocks[numtb].extendSphere(face->VBase->EndPos);
-		TessBlocks[numtb].extendSphere(face->VLeft->EndPos);
-		TessBlocks[numtb].extendSphere(face->VRight->EndPos);
+		TessBlocks[numtb].extendSphereFirst(face->VBase->EndPos);
+		TessBlocks[numtb].extendSphereAdd(face->VLeft->EndPos);
+		TessBlocks[numtb].extendSphereAdd(face->VRight->EndPos);
+		TessBlocks[numtb].extendSphereCompile();
 	}
 }
 
@@ -804,14 +805,15 @@ void			CPatch::appendFaceToRenderList(CTessFace *face)
 
 		// Must enlarge the BSphere of the tesblock!!
 		// We must do it on a per-face approach, because of tessblocks 's corners which are outside of tessblocks.
-		TessBlocks[numtb].extendSphere(face->VBase->EndPos);
-		TessBlocks[numtb].extendSphere(face->VLeft->EndPos);
-		TessBlocks[numtb].extendSphere(face->VRight->EndPos);
+		TessBlocks[numtb].extendSphereFirst(face->VBase->EndPos);
+		TessBlocks[numtb].extendSphereAdd(face->VLeft->EndPos);
+		TessBlocks[numtb].extendSphereAdd(face->VRight->EndPos);
 		// I think this should be done too on StartPos, for geomorph (rare??...) problems.
 		// \todo yoyo: is this necessary???
-		TessBlocks[numtb].extendSphere(face->VBase->StartPos);
-		TessBlocks[numtb].extendSphere(face->VLeft->StartPos);
-		TessBlocks[numtb].extendSphere(face->VRight->StartPos);
+		TessBlocks[numtb].extendSphereAdd(face->VBase->StartPos);
+		TessBlocks[numtb].extendSphereAdd(face->VLeft->StartPos);
+		TessBlocks[numtb].extendSphereAdd(face->VRight->StartPos);
+		TessBlocks[numtb].extendSphereCompile();
 
 
 		// Update Tile render (no need to do it if face not at least at tessblock level).

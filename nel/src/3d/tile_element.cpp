@@ -1,7 +1,7 @@
 /** \file tile_element.cpp
  * <File description>
  *
- * $Id: tile_element.cpp,v 1.10 2002/02/28 12:59:52 besson Exp $
+ * $Id: tile_element.cpp,v 1.11 2002/08/23 16:32:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,14 +76,6 @@ void	CTileElement::setTileSubNoise(uint8 subNoise)
 	sint	where= NL_TILE_ELM_OFFSET_SUBNOISE;
 	Flags&= ~(NL_TILE_ELM_MASK_SUBNOISE<<where);
 	Flags|= subNoise<<where;
-}
-
-
-uint8	CTileElement::getTileSubNoise() const
-{
-	sint	where= NL_TILE_ELM_OFFSET_SUBNOISE;
-	sint	info= ((Flags>>where) & NL_TILE_ELM_MASK_SUBNOISE);
-	return	info;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file tess_face_priority_list.h
  * <File description>
  *
- * $Id: tess_face_priority_list.h,v 1.4 2002/08/22 16:33:48 berenguier Exp $
+ * $Id: tess_face_priority_list.h,v 1.5 2002/08/23 16:32:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@ class	CTessFace;
 
 
 // ***************************************************************************
-/** A chain link node for PriorityList. NB: It is a circular list. But (NULL,NULL) if list is empty, or node is allone
+/** A chain link node for PriorityList. NB: It is a circular list <=> (this,this) if list is empty
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -49,8 +49,25 @@ class CTessFacePListNode
 public:
 
 	// init to empty list.
-	CTessFacePListNode();
-	~CTessFacePListNode();
+	CTessFacePListNode()
+	{
+		_PrecTessFaceInPList= this;
+		_NextTessFaceInPList= this;
+	}
+	~CTessFacePListNode()
+	{
+		// if not done, unlink.
+		unlinkInPList();
+	}
+
+	// Copy cons don't copy Link stuff
+	CTessFacePListNode(const CTessFacePListNode &)
+	{
+		_PrecTessFaceInPList= this;
+		_NextTessFaceInPList= this;
+	}
+	// Operator= don't copy Link stuff
+	CTessFacePListNode	&operator= (const CTessFacePListNode &) {return *this;}
 
 	/// unlinkInPList, then link this node to the root of a list.
 	void		linkInPList(CTessFacePListNode	&root);
@@ -100,18 +117,19 @@ public:
 	CTessFacePriorityList();
 	~CTessFacePriorityList();
 
-	/** Clear and Init the priority list. It reserve (numQuadrants+1) Rolling table of ceil(distMax/distStep) entries.
+	/** Clear and Init the priority list. It reserve (numQuadrants+1) Rolling table of numEntries entries.
 	 *
-	 *	\parm distMaxMod is important for performance and should be < distMax. eg: distMaxMod= 0.8*distMax.
-	 *	It is a trick to avoid the "Too Far Priority problem". Imagine you have set distMax= 1000,
+	 *	\param numEntries gives the number of entries and MUST be powerOf2. distMax= numEntries*distStep
+	 *	\parm distMaxMod is important for performance and MUST be < 1. eg: distMaxMod= 0.8.
+	 *	It is a trick to avoid the "Too Far Priority problem". Imagine you have a setup such distMax= 1000,
 	 *	and you insert(1100, an element). If we clamp to the max, it may be a bad thing, because ALL elements
 	 *	inserted after 1000 will be poped in one shift(), after 1000 shift(1) for example.
-	 *	To avoid this, if distMaxMod==800, then insert(1050) will really insert at 850, so elements will be poped
+	 *	To avoid this, if distMaxMod==0.8, then insert(1050) will really insert at 850, so elements will be poped
 	 *	not as the same time (for the extra cost of some elements get poped too early...).
 	 *
 	 *	\param numQuadrant set 0 if don't want to support quadrant notion. else set >=4 and a power of 2 (else nlassert)
 	 */
-	void			init(float distStep, float distMax, float distMaxMod, uint numQuadrant);
+	void			init(float distStep, uint numEntries, float distMaxMod, uint numQuadrant);
 	/** Clear the priority list. All elements are removed. NB: for convenience, the remainder is reset.
 	 */
 	void			clear();
@@ -130,6 +148,8 @@ public:
 	 *	Insert at the closest step. eg insert(1.2, elt) will insert elt at entry 1 (assuming distStep==1 here).
 	 *	Special case: if distance<=0, it is ensured that at each shift(), the element will be pulled.
 	 *	NB: manage correctly the entry where it is inserted, according to the Remainder system.
+	 *
+	 *	USE OptFastFloor if distance>0 => MUST be enclosed in OptFastFloorBegin/OptFastFloorEnd()
 	 *
 	 *	\param quadrantId set 0 if you want to insert in the "direction less" rolling table. else set the value
 	 *	returned by selectQuadrant()
@@ -163,6 +183,7 @@ private:
 	float			_Remainder;
 	float			_OODistStep;
 	uint			_NEntries;
+	uint			_MaskEntries;	// == _NEntries-1
 	uint			_EntryModStart;
 	uint			_NumQuadrant;
 	// For Fast Selection of Quadrant. Split the list of quadrant into 4. NB: ids start at 0. and must AND the Ids.
@@ -211,6 +232,7 @@ private:
 		std::vector<CTessFacePListNode>		_Entries;
 		uint					_EntryStart;
 		uint					_NEntries;
+		uint					_MaskEntries;	// == _NEntries-1
 
 		// clear all element of an entry of the roll table. entry is relative to _EntryStart.
 		void		clearRollTableEntry(uint entry);

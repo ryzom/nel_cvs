@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of Noise
  *
- * $Id: patch_noise.cpp,v 1.5 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: patch_noise.cpp,v 1.6 2002/08/23 16:32:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,7 +148,7 @@ float		CPatch::computeDisplaceRawInteger(sint ts, sint tt, sint ms, sint mt) con
 
 	// retrieve the wanted noiseMap.
 	CTileNoiseMap	*noiseMap;
-	noiseMap = getLandscape()->TileBank.getTileNoiseMap (tileNumber, tileSubNoise);
+	noiseMap = getZone()->getLandscape()->TileBank.getTileNoiseMap (tileNumber, tileSubNoise);
 
 
 	// Sample the noiseMap with (s,t).

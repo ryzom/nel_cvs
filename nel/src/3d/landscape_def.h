@@ -1,7 +1,7 @@
 /** \file landscape_def.h
  * Global Definitions for Landscape
  *
- * $Id: landscape_def.h,v 1.9 2002/04/16 12:36:27 berenguier Exp $
+ * $Id: landscape_def.h,v 1.10 2002/08/23 16:32:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,6 +120,11 @@ public:
 	static	NLMISC::CBSphere	TileNearSphere;
 	// The size of a 128x128 tile, in pixel. UseFull for HalfPixel Scale/Bias.
 	static	float		TilePixelSize;
+	// HalfPixel Scale/Bias.
+	static	float		TilePixelBias128;
+	static	float		TilePixelScale128;
+	static	float		TilePixelBias256;
+	static	float		TilePixelScale256;
 
 
 	// Render Global info. Used by Patch.

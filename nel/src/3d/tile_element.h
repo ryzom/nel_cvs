@@ -1,7 +1,7 @@
 /** \file tile_element.h
  * <File description>
  *
- * $Id: tile_element.h,v 1.3 2002/01/28 14:41:47 vizerie Exp $
+ * $Id: tile_element.h,v 1.4 2002/08/23 16:32:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,7 +113,10 @@ public:
 	
 	/** Get the tile SubNoise information.
 	 */
-	uint8	getTileSubNoise() const;
+	uint8	getTileSubNoise() const
+	{
+		return	((Flags>>NL_TILE_ELM_OFFSET_SUBNOISE) & NL_TILE_ELM_MASK_SUBNOISE);
+	}
 
 
 	void	serial(NLMISC::IStream &f);

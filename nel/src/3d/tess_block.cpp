@@ -1,7 +1,7 @@
 /** \file tess_block.cpp
  * <File description>
  *
- * $Id: tess_block.cpp,v 1.11 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: tess_block.cpp,v 1.12 2002/08/23 16:32:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,27 +99,33 @@ CPatch			*CTessBlock::getPatch()
 
 
 // ***************************************************************************
-void			CTessBlock::extendSphere(const CVector &vec)
+void			CTessBlock::extendSphereFirst(const CVector &vec)
 {
 	if(Empty)
 	{
 		Empty= false;
 		BBox.setCenter(vec);
 		BBox.setHalfSize(CVector::Null);
-		BSphere.Center= vec;
-		BSphere.Radius= 0;
 	}
 	else
-	{
-		if( !BBox.include(vec) )
-		{
-			BBox.extend(vec);
-			BSphere.Center= BBox.getCenter();
-			BSphere.Radius= BBox.getRadius();
-		}
-	}
-
+		extendSphereAdd(vec);
 }
+
+// ***************************************************************************
+void			CTessBlock::extendSphereAdd(const CVector &vec)
+{
+	if( !BBox.include(vec) )
+		BBox.extend(vec);
+}
+
+// ***************************************************************************
+void			CTessBlock::extendSphereCompile()
+{
+	BSphere.Center= BBox.getCenter();
+	BSphere.Radius= BBox.getRadius();
+}
+
+
 // ***************************************************************************
 void			CTessBlock::resetClip()
 {
@@ -281,9 +287,9 @@ void			CTessBlock::refillFaceVectorTile()
 					uint32		*dest= faceVector->TriPtr;
 					for(pFace= faceList.begin(); pFace; pFace= (CTileFace*)pFace->Next)
 					{
-						*(dest++)= pFace->VBase->Index;
-						*(dest++)= pFace->VLeft->Index;
-						*(dest++)= pFace->VRight->Index;
+						*(dest++)= pFace->V[CTessFace::IdUvBase]->Index;
+						*(dest++)= pFace->V[CTessFace::IdUvLeft]->Index;
+						*(dest++)= pFace->V[CTessFace::IdUvRight]->Index;
 					}
 				}
 			}

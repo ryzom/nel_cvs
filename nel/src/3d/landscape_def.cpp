@@ -1,7 +1,7 @@
 /** \file landscape_def.cpp
  * Definition for Landscape
  *
- * $Id: landscape_def.cpp,v 1.5 2002/03/18 14:45:29 berenguier Exp $
+ * $Id: landscape_def.cpp,v 1.6 2002/08/23 16:32:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,10 @@ sint		CLandscapeGlobals::TileMaxSubdivision=0;
 CBSphere	CLandscapeGlobals::TileFarSphere;
 CBSphere	CLandscapeGlobals::TileNearSphere;
 float		CLandscapeGlobals::TilePixelSize= 128;
+float		CLandscapeGlobals::TilePixelBias128= 0.5f/CLandscapeGlobals::TilePixelSize;
+float		CLandscapeGlobals::TilePixelScale128= 1-1/CLandscapeGlobals::TilePixelSize;
+float		CLandscapeGlobals::TilePixelBias256= 0.5f/(CLandscapeGlobals::TilePixelSize*2);
+float		CLandscapeGlobals::TilePixelScale256= 1-1/(CLandscapeGlobals::TilePixelSize*2);
 
 
 float		CLandscapeGlobals::Far0Dist= 200;		// 200m.

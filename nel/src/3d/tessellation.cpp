@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.63 2002/08/22 14:43:50 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.64 2002/08/23 16:32:52 berenguier Exp $
  *
  */
 
@@ -283,8 +283,10 @@ void		CTessFace::updateErrorMetric()
 
 	// TileMode Impact.
 	//-----------------
-	// TileMode Impact. We must split at least at TileLimitLevel.
-	if(Level<Patch->TileLimitLevel)
+	/* TileMode Impact. We must split at least at TileLimitLevel, but only if the triangle
+		has a chance to enter in the TileDistFar sphere.
+	*/
+	if( Level<Patch->TileLimitLevel && sqrdist < sqr(CLandscapeGlobals::TileDistFar+MaxDistToSplitPoint) )
 	{
 		computeTileErrorMetric();
 	}
@@ -342,6 +344,15 @@ void	CTessFace::computeSplitPoint()
 		// So for good geomorph compute per vertex, we must have this SplitPoint on this middle.
 		SplitPoint= (VLeft->EndPos + VRight->EndPos)/2;
 	}
+
+	// compute MaxDistToSplitPoint
+	float	d0= (VBase->EndPos - SplitPoint).sqrnorm();
+	float	d1= (VLeft->EndPos - SplitPoint).sqrnorm();
+	float	d2= (VRight->EndPos - SplitPoint).sqrnorm();
+	MaxDistToSplitPoint= max(d0, d1);
+	MaxDistToSplitPoint= max(MaxDistToSplitPoint, d2);
+	// Get the distance.
+	MaxDistToSplitPoint= sqrtf(MaxDistToSplitPoint);
 }
 
 // ***************************************************************************
@@ -350,18 +361,24 @@ void	CTessFace::allocTileUv(TTileUvId id)
 	// TileFaces must have been build.
 	nlassert(TileFaces[NL3D_TILE_PASS_RGB0]);
 
+	// what src??
+	CTessVertex		*vertexSrc;
+	switch(id)
+	{
+		case IdUvBase: vertexSrc= VBase; break;
+		case IdUvLeft: vertexSrc= VLeft; break;
+		case IdUvRight: vertexSrc= VRight; break;
+		default: nlstop;
+	};
+
+	// Do it for all possible pass
 	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
 	{
 		if(TileFaces[i])
 		{
 			CTessNearVertex		*newNear= Patch->getLandscape()->newTessNearVertex();
-			switch(id)
-			{
-				case IdUvBase: newNear->Src= VBase; TileFaces[i]->VBase= newNear; break;
-				case IdUvLeft: newNear->Src= VLeft; TileFaces[i]->VLeft= newNear; break;
-				case IdUvRight: newNear->Src= VRight; TileFaces[i]->VRight= newNear; break;
-				default: nlstop;
-			};
+			newNear->Src= vertexSrc;
+			TileFaces[i]->V[id]= newNear;
 			Patch->appendNearVertexToRenderList(TileMaterial, newNear);
 
 			// May Allocate/Fill VB. Do it after allocTileUv, because UVs are not comuted yet.
@@ -379,14 +396,8 @@ void	CTessFace::checkCreateFillTileVB(TTileUvId id)
 	{
 		if(TileFaces[i])
 		{
-			CTessNearVertex		*vertNear=0;
-			switch(id)
-			{
-				case IdUvBase: vertNear= TileFaces[i]->VBase; break;
-				case IdUvLeft: vertNear= TileFaces[i]->VLeft; break;
-				case IdUvRight: vertNear= TileFaces[i]->VRight; break;
-				default: nlstop;
-			};
+			CTessNearVertex		*vertNear;
+			vertNear= TileFaces[i]->V[id];
 
 			// May Allocate/Fill VB.
 			Patch->checkCreateVertexVBNear(vertNear);
@@ -406,14 +417,8 @@ void	CTessFace::checkFillTileVB(TTileUvId id)
 	{
 		if(TileFaces[i])
 		{
-			CTessNearVertex		*vertNear=0;
-			switch(id)
-			{
-				case IdUvBase: vertNear= TileFaces[i]->VBase; break;
-				case IdUvLeft: vertNear= TileFaces[i]->VLeft; break;
-				case IdUvRight: vertNear= TileFaces[i]->VRight; break;
-				default: nlstop;
-			};
+			CTessNearVertex		*vertNear;
+			vertNear= TileFaces[i]->V[id];
 
 			// May Fill VB.
 			Patch->checkFillVertexVBNear(vertNear);
@@ -432,14 +437,9 @@ void	CTessFace::deleteTileUv(TTileUvId id)
 	{
 		if(TileFaces[i])
 		{
-			CTessNearVertex		*oldNear=0;
-			switch(id)
-			{
-				case IdUvBase : oldNear= TileFaces[i]->VBase;  TileFaces[i]->VBase=NULL; break;
-				case IdUvLeft : oldNear= TileFaces[i]->VLeft;  TileFaces[i]->VLeft=NULL; break;
-				case IdUvRight: oldNear= TileFaces[i]->VRight; TileFaces[i]->VRight=NULL; break;
-				default: nlstop;
-			};
+			CTessNearVertex		*oldNear;
+			oldNear= TileFaces[i]->V[id];
+			TileFaces[i]->V[id]=NULL;
 
 			// May delete this vertex from VB.
 			Patch->checkDeleteVertexVBNear(oldNear);
@@ -465,23 +465,11 @@ void	CTessFace::copyTileUv(TTileUvId dstId, CTessFace *srcFace, TTileUvId srcId)
 			nlassert(srcFace->TileFaces[i]);
 
 			// copy from src.
-			CTessNearVertex		*copyNear=0;
-			switch(srcId)
-			{
-				case IdUvBase : copyNear= srcFace->TileFaces[i]->VBase; break;
-				case IdUvLeft : copyNear= srcFace->TileFaces[i]->VLeft; break;
-				case IdUvRight: copyNear= srcFace->TileFaces[i]->VRight; break;
-				default: nlstop;
-			};
+			CTessNearVertex		*copyNear;
+			copyNear= srcFace->TileFaces[i]->V[srcId];
 
 			// copy to dst.
-			switch(dstId)
-			{
-				case IdUvBase : TileFaces[i]->VBase=  copyNear; break;
-				case IdUvLeft : TileFaces[i]->VLeft=  copyNear; break;
-				case IdUvRight: TileFaces[i]->VRight= copyNear; break;
-				default: nlstop;
-			};
+			TileFaces[i]->V[dstId]=  copyNear;
 		}
 	}
 }
@@ -498,8 +486,9 @@ void	CTessFace::heritTileUv(CTessFace *baseFace)
 			// The baseface should have the same tileFaces enabled.
 			nlassert(baseFace->TileFaces[i]);
 			// VBase should be allocated.
-			nlassert(TileFaces[i]->VBase);
-			TileFaces[i]->VBase->initMiddleUv(*baseFace->TileFaces[i]->VLeft, *baseFace->TileFaces[i]->VRight);
+			nlassert(TileFaces[i]->V[IdUvBase]);
+			TileFaces[i]->V[IdUvBase]->initMiddleUv(
+				*baseFace->TileFaces[i]->V[IdUvLeft], *baseFace->TileFaces[i]->V[IdUvRight]);
 		}
 	}
 }
@@ -516,9 +505,9 @@ void		CTessFace::buildTileFaces()
 		if(TileMaterial->Pass[i].PatchRdrPass)
 		{
 			TileFaces[i]= Patch->getLandscape()->newTileFace();
-			TileFaces[i]->VBase= NULL;
-			TileFaces[i]->VLeft= NULL;
-			TileFaces[i]->VRight= NULL;
+			TileFaces[i]->V[IdUvBase]= NULL;
+			TileFaces[i]->V[IdUvLeft]= NULL;
+			TileFaces[i]->V[IdUvRight]= NULL;
 		}
 	}
 }
@@ -609,22 +598,24 @@ void		CTessFace::initTileUvRGBA(sint pass, bool alpha, CParamCoord pointCoord, C
 
 
 	// Do the HalfPixel scale bias.
-	CVector		hBias;
-	float		tsize;
+	float	hBiasXY, hBiasZ;
 	if(is256)
-		tsize= CLandscapeGlobals::TilePixelSize*2.0f;
+	{
+		hBiasXY= CLandscapeGlobals::TilePixelBias256;
+		hBiasZ = CLandscapeGlobals::TilePixelScale256;
+	}
 	else
-		tsize= CLandscapeGlobals::TilePixelSize;
-	hBias.x= 0.5f/tsize;
-	hBias.y= 0.5f/tsize;
-	hBias.z= 1-1/tsize;
+	{
+		hBiasXY= CLandscapeGlobals::TilePixelBias128;
+		hBiasZ = CLandscapeGlobals::TilePixelScale128;
+	}
 
 
 	// Scale the UV.
-	uv.U*= uvScaleBias.z*hBias.z;
-	uv.V*= uvScaleBias.z*hBias.z;
-	uv.U+= uvScaleBias.x+hBias.x;
-	uv.V+= uvScaleBias.y+hBias.y;
+	uv.U*= uvScaleBias.z*hBiasZ;
+	uv.V*= uvScaleBias.z*hBiasZ;
+	uv.U+= uvScaleBias.x+hBiasXY;
+	uv.V+= uvScaleBias.y+hBiasXY;
 }
 
 
@@ -750,9 +741,9 @@ void		CTessFace::computeTileMaterial()
 
 
 	// Init LightMap UV, in RGB0 pass, UV1..
-	initTileUvLightmap(PVBase, middle, TileFaces[NL3D_TILE_PASS_RGB0]->VBase->PUv1);
+	initTileUvLightmap(PVBase, middle, TileFaces[NL3D_TILE_PASS_RGB0]->V[IdUvBase]->PUv1);
 	// Init DLM Uv, in RGB0 pass, UV2.
-	initTileUvDLM(PVBase, TileFaces[NL3D_TILE_PASS_RGB0]->VBase->PUv2);
+	initTileUvDLM(PVBase, TileFaces[NL3D_TILE_PASS_RGB0]->V[IdUvBase]->PUv2);
 
 	// Init UV RGBA, for all pass (but lightmap).
 	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
@@ -764,11 +755,11 @@ void		CTessFace::computeTileMaterial()
 			// Face must exist.
 			nlassert(TileFaces[i]);
 			// Compute RGB UV in UV0.
-			initTileUvRGBA(i, false, PVBase, middle, TileFaces[i]->VBase->PUv0);
+			initTileUvRGBA(i, false, PVBase, middle, TileFaces[i]->V[IdUvBase]->PUv0);
 			// If transition tile, compute alpha UV in UV1. 
 			// Do it also for Additive, because may have Transition
 			if(i== NL3D_TILE_PASS_RGB1 || i==NL3D_TILE_PASS_RGB2 || i==NL3D_TILE_PASS_ADD)
-				initTileUvRGBA(i, true, PVBase, middle, TileFaces[i]->VBase->PUv1);
+				initTileUvRGBA(i, true, PVBase, middle, TileFaces[i]->V[IdUvBase]->PUv1);
 		}
 	}
 
@@ -793,11 +784,11 @@ void		CTessFace::computeTileMaterial()
 
 
 		// Init LightMap UV, in UvPass 0, UV1..
-		initTileUvLightmap(PVLeft, middle, TileFaces[NL3D_TILE_PASS_RGB0]->VLeft->PUv1);
-		initTileUvLightmap(PVRight, middle, TileFaces[NL3D_TILE_PASS_RGB0]->VRight->PUv1);
+		initTileUvLightmap(PVLeft, middle, TileFaces[NL3D_TILE_PASS_RGB0]->V[IdUvLeft]->PUv1);
+		initTileUvLightmap(PVRight, middle, TileFaces[NL3D_TILE_PASS_RGB0]->V[IdUvRight]->PUv1);
 		// Init DLM Uv, in RGB0 pass, UV2.
-		initTileUvDLM(PVLeft, TileFaces[NL3D_TILE_PASS_RGB0]->VLeft->PUv2);
-		initTileUvDLM(PVRight, TileFaces[NL3D_TILE_PASS_RGB0]->VRight->PUv2);
+		initTileUvDLM(PVLeft, TileFaces[NL3D_TILE_PASS_RGB0]->V[IdUvLeft]->PUv2);
+		initTileUvDLM(PVRight, TileFaces[NL3D_TILE_PASS_RGB0]->V[IdUvRight]->PUv2);
 
 		// Init UV RGBA!
 		for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
@@ -809,14 +800,14 @@ void		CTessFace::computeTileMaterial()
 				// Face must exist.
 				nlassert(TileFaces[i]);
 				// Compute RGB UV in UV0.
-				initTileUvRGBA(i, false, PVLeft, middle, TileFaces[i]->VLeft->PUv0);
-				initTileUvRGBA(i, false, PVRight, middle, TileFaces[i]->VRight->PUv0);
+				initTileUvRGBA(i, false, PVLeft, middle, TileFaces[i]->V[IdUvLeft]->PUv0);
+				initTileUvRGBA(i, false, PVRight, middle, TileFaces[i]->V[IdUvRight]->PUv0);
 				// If transition tile, compute alpha UV in UV1.
 				// Do it also for Additive, because may have Transition
 				if(i== NL3D_TILE_PASS_RGB1 || i==NL3D_TILE_PASS_RGB2 || i==NL3D_TILE_PASS_ADD)
 				{
-					initTileUvRGBA(i, true, PVLeft, middle, TileFaces[i]->VLeft->PUv1);
-					initTileUvRGBA(i, true, PVRight, middle, TileFaces[i]->VRight->PUv1);
+					initTileUvRGBA(i, true, PVLeft, middle, TileFaces[i]->V[IdUvLeft]->PUv1);
+					initTileUvRGBA(i, true, PVRight, middle, TileFaces[i]->V[IdUvRight]->PUv1);
 				}
 			}
 		}
@@ -889,14 +880,14 @@ void		CTessFace::updateNearFarVertices()
 	{
 		if(TileFaces[i])
 		{
-			TileFaces[i]->VBase->Src= VBase;
-			TileFaces[i]->VLeft->Src= VLeft;
-			TileFaces[i]->VRight->Src= VRight;
+			TileFaces[i]->V[IdUvBase]->Src= VBase;
+			TileFaces[i]->V[IdUvLeft]->Src= VLeft;
+			TileFaces[i]->V[IdUvRight]->Src= VRight;
 
 			// Update VB for near vertices (if needed)
-			Patch->checkFillVertexVBNear(TileFaces[i]->VBase);
-			Patch->checkFillVertexVBNear(TileFaces[i]->VLeft);
-			Patch->checkFillVertexVBNear(TileFaces[i]->VRight);
+			Patch->checkFillVertexVBNear(TileFaces[i]->V[IdUvBase]);
+			Patch->checkFillVertexVBNear(TileFaces[i]->V[IdUvLeft]);
+			Patch->checkFillVertexVBNear(TileFaces[i]->V[IdUvRight]);
 		}
 	}
 

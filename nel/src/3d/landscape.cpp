@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.121 2002/08/22 14:43:50 berenguier Exp $
+ * $Id: landscape.cpp,v 1.122 2002/08/23 16:32:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,18 +77,19 @@ namespace NL3D
 	If not so big (eg 50 meters), a big bunch of faces may be inserted in this entry, which may cause slow down
 	sometimes, when all this bunch comes to 0 in the priority list.
 	To avoid such a thing, see CTessFacePriorityList::init(), and use of NL3D_REFINE_PLIST_DIST_MAX_MOD.
+	Here, distMax= 2048*0.0625= 128
 */
-#define	NL3D_REFINE_PLIST_DIST_MAX				100
-#define	NL3D_REFINE_PLIST_DIST_MAX_MOD			0.7*NL3D_REFINE_PLIST_DIST_MAX
+#define	NL3D_REFINE_PLIST_NUM_ENTRIES			2048
+#define	NL3D_REFINE_PLIST_DIST_MAX_MOD			0.7f
 // For the Split priority list only, numbers of quadrants. MergeList has 0 quadrants.
 #define	NL3D_REFINE_PLIST_SPLIT_NUMQUADRANT		16
 
 
 /*
-	OverHead size of one RollingTable of priority list is 8 * (NL3D_REFINE_PLIST_DIST_MAX / NL3D_REFINE_PLIST_DIST_STEP).
-	So here, it is "only" 12.8K.
+	OverHead size of one RollingTable of priority list is 8 * (NL3D_REFINE_PLIST_NUM_ENTRIES)
+	So here, it is "only" 16K.
 
-	Since we have 2 Priority list and 16 quadrants for the split one, the total overhead is 18*12.8= 230K
+	Since we have 2 Priority list and 16 quadrants for the split one, the total overhead is 18*12.8= 288K
 */
 
 
@@ -224,9 +225,9 @@ CLandscape::CLandscape() :
 
 	// priority list.
 	_OldRefineCenterSetuped= false;
-	_SplitPriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX, NL3D_REFINE_PLIST_DIST_MAX_MOD, NL3D_REFINE_PLIST_SPLIT_NUMQUADRANT);
+	_SplitPriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_NUM_ENTRIES, NL3D_REFINE_PLIST_DIST_MAX_MOD, NL3D_REFINE_PLIST_SPLIT_NUMQUADRANT);
 	// See updateRefine* Doc in tesselation.cpp for why the merge list do not need quadrants.
-	_MergePriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX, NL3D_REFINE_PLIST_DIST_MAX_MOD, 0);
+	_MergePriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_NUM_ENTRIES, NL3D_REFINE_PLIST_DIST_MAX_MOD, 0);
 	// just for getTesselatedPos to work properly.
 	_OldRefineCenter= CVector::Null;
 
@@ -651,6 +652,9 @@ void			CLandscape::refine(const CVector &refineCenter)
 	// Increment the update date.
 	CLandscapeGlobals::CurrentDate++;
 
+	// Because CTessFacePriorityList::insert use it.
+	OptFastFloorBegin();
+
 	/* While there is still face in list, update them
 		NB: updateRefine() always insert the face in _***PriorityList, so face is removed from 
 		root***TessFaceToUpdate list.
@@ -662,7 +666,7 @@ void			CLandscape::refine(const CVector &refineCenter)
 		It is newTessFace() and deleteTessFace() which insert/remove the nodes in the list.
 	*/
 	// Update the Merge priority list.
-	while( rootMergeTessFaceToUpdate.nextInPList() )
+	while( rootMergeTessFaceToUpdate.nextInPList() != &rootMergeTessFaceToUpdate )
 	{
 		// Get the face.
 		CTessFace	*face= static_cast<CTessFace*>(rootMergeTessFaceToUpdate.nextInPList());
@@ -682,7 +686,7 @@ void			CLandscape::refine(const CVector &refineCenter)
 		rootSplitTessFaceToUpdate.appendPList(_RootNewLeaves);
 
 		// While triangle to test for split exists
-		while( rootSplitTessFaceToUpdate.nextInPList() )
+		while( rootSplitTessFaceToUpdate.nextInPList() != &rootSplitTessFaceToUpdate )
 		{
 			// Get the face.
 			CTessFace	*face= static_cast<CTessFace*>(rootSplitTessFaceToUpdate.nextInPList());
@@ -693,7 +697,10 @@ void			CLandscape::refine(const CVector &refineCenter)
 
 	}
 	// do it until we are sure no more split is needed, ie no more faces are created
-	while( _RootNewLeaves.nextInPList() );
+	while( _RootNewLeaves.nextInPList() != &_RootNewLeaves );
+
+	// Because CTessFacePriorityList::insert use it.
+	OptFastFloorEnd();
 
 
 	// Before unlockBuffers, test for vegetable IG creation.
@@ -808,6 +815,10 @@ void			CLandscape::updateGlobalsAndLockBuffers (const CVector &refineCenter)
 	// Tile Pixel size part.
 	// \todo yoyo: choose according to wanted tile pixel size.
 	CLandscapeGlobals::TilePixelSize= 128.0f;
+	CLandscapeGlobals::TilePixelBias128= 0.5f/CLandscapeGlobals::TilePixelSize;
+	CLandscapeGlobals::TilePixelScale128= 1-1/CLandscapeGlobals::TilePixelSize;
+	CLandscapeGlobals::TilePixelBias256= 0.5f/(CLandscapeGlobals::TilePixelSize*2);
+	CLandscapeGlobals::TilePixelScale256= 1-1/(CLandscapeGlobals::TilePixelSize*2);
 
 	// RefineThreshold.
 	CLandscapeGlobals::RefineThreshold= _Threshold;

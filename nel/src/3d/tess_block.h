@@ -1,7 +1,7 @@
 /** \file tess_block.h
  * <File description>
  *
- * $Id: tess_block.h,v 1.7 2001/11/05 16:26:45 berenguier Exp $
+ * $Id: tess_block.h,v 1.8 2002/08/23 16:32:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,7 +109,9 @@ public:
 	CPatch			*getPatch();
 
 	// BBox.
-	void			extendSphere(const CVector &vec);
+	void			extendSphereFirst(const CVector &vec);
+	void			extendSphereAdd(const CVector &vec);
+	void			extendSphereCompile();
 
 	// Reset clip to no clipped.
 	void			resetClip();

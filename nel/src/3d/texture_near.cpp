@@ -1,7 +1,7 @@
 /** \file texture_near.cpp
  * <File description>
  *
- * $Id: texture_near.cpp,v 1.4 2002/04/03 17:00:40 berenguier Exp $
+ * $Id: texture_near.cpp,v 1.5 2002/08/23 16:32:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,16 +84,17 @@ uint			CTextureNear::getTileAndFillRect(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE
 // ***************************************************************************
 void			CTextureNear::refillRect(uint id, CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE])
 {
+	uint	dstWidth= getWidth();
 	// Copy the map into the texture
-	uint	nbTilesByLine= getWidth()/NL_TILE_LIGHTMAP_SIZE;
+	uint	nbTilesByLine= dstWidth/NL_TILE_LIGHTMAP_SIZE;
 	uint	s= id% nbTilesByLine;
 	uint	t= id/ nbTilesByLine;
 	s*= NL_TILE_LIGHTMAP_SIZE;
 	t*= NL_TILE_LIGHTMAP_SIZE;
 	CRGBA	*src= map;
 	CRGBA	*dst= (CRGBA*)&(*getPixels().begin());
-	dst+= t*getWidth()+s;
-	for(sint n= NL_TILE_LIGHTMAP_SIZE;n>0;n--, src+= NL_TILE_LIGHTMAP_SIZE, dst+= getWidth())
+	dst+= t*dstWidth+s;
+	for(sint n= NL_TILE_LIGHTMAP_SIZE;n>0;n--, src+= NL_TILE_LIGHTMAP_SIZE, dst+= dstWidth)
 	{
 		memcpy(dst, src, NL_TILE_LIGHTMAP_SIZE*sizeof(CRGBA));
 	}

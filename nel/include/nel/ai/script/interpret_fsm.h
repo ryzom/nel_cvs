@@ -1,7 +1,7 @@
 /** \file interpret_fsm.h
  *	Interpret class for operators
  *
- * $Id: interpret_fsm.h,v 1.3 2001/05/22 16:08:01 chafik Exp $
+ * $Id: interpret_fsm.h,v 1.4 2001/06/26 15:53:24 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,8 +38,6 @@ namespace NLAISCRIPT
 	{
 	private:
 		char										*_Comment;			/// Description of the operator
-
-		// Conditions de classe: l'automate se termine quelque quelque soit l'état sur certains évenements extérieurs.
 
 	public:
 		static const NLAIC::CIdentType IdFsmClass;

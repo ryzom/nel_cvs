@@ -1,7 +1,7 @@
 /** \file remote_entity.h
  * Remote-controlled entities
  *
- * $Id: remote_entity.h,v 1.6 2000/11/23 16:53:29 cado Exp $
+ * $Id: remote_entity.h,v 1.7 2000/11/30 17:03:10 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,8 @@ public:
 	CRemoteEntity() : CReplica() {};
 	
 	/// Alt. constructor
-	CRemoteEntity( const NLMISC::CVector& pos,
+	CRemoteEntity( TEntityType t,
+				   const NLMISC::CVector& pos,
 				   const NLMISC::CVector& hdg,
 				   const TAngle rollangle,
 				   const NLMISC::CVector& vec,

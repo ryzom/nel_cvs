@@ -1,7 +1,7 @@
 /** \file replica.cpp
  * <File description>
  *
- * $Id: replica.cpp,v 1.1 2000/11/20 15:51:49 cado Exp $
+ * $Id: replica.cpp,v 1.2 2000/11/30 17:03:10 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,13 +36,14 @@ namespace NLNET {
 /*
  * Constructor
  */
-CReplica::CReplica( const NLMISC::CVector& pos,
-							  const NLMISC::CVector& hdg,
-							  const TAngle rollangle,
-							  const NLMISC::CVector& vec,
-							  const TAngVelocity av,
-							  bool groundmode ) :
-	IMovingEntity( pos, hdg, rollangle, vec, av, groundmode )
+CReplica::CReplica( TEntityType t,
+				    const NLMISC::CVector& pos,
+					const NLMISC::CVector& hdg,
+					const TAngle rollangle,
+					const NLMISC::CVector& vec,
+					const TAngVelocity av,
+					bool groundmode ) :
+	IMovingEntity( t, pos, hdg, rollangle, vec, av, groundmode )
 {
 }
 

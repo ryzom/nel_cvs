@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.9 2000/11/29 17:24:09 cado Exp $
+ * $Id: local_area.h,v 1.10 2000/11/30 17:03:10 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/net/remote_entity.h"
 #include "nel/net/socket.h"
 #include "nel/misc/time_nl.h"
+#include "nel/net/pt_callback_item.h"
 #include <map>
 
 
@@ -100,6 +101,12 @@ public:
 		_EntityRemovedCallback = cb;
 	}
 
+	/// Provides a callback function to be called when receiving unknown messages
+	void					setProcessUnknownMessagesCallback( TMsgCallback cb )
+	{
+		_UnknownMessagesCallback = cb;
+	}
+
 	/// The entity controlled by the player
 	CLocalEntity			User;
 
@@ -114,6 +121,7 @@ public:
 	friend void cbAssignId( CMessage& msgin, TSenderId idfrom );
 	friend void cbRemoveEntity( CMessage& msgin, TSenderId idfrom );
 	friend void cbHandleDisconnection( CMessage& msgin, TSenderId idfrom );
+	friend void cbHandleUnknownMessage( CMessage& msgin, TSenderId idfrom );
 	
 	/// Singleton
 	static CLocalArea	*Instance;
@@ -124,6 +132,7 @@ private:
 	CRemoteEntities		_Neighbors;
 	TNewEntityCallback	_NewEntityCallback;
 	TEntityIdCallback	_EntityRemovedCallback;
+	TMsgCallback		_UnknownMessagesCallback;
 
 	NLMISC::TTime		_PreviousTime;
 };

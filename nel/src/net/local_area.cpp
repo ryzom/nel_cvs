@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.12 2000/11/29 17:24:09 cado Exp $
+ * $Id: local_area.cpp,v 1.13 2000/11/30 17:03:10 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -154,6 +154,18 @@ void NLNET::cbHandleDisconnection( CMessage& msgin, TSenderId idfrom )
 
 
 /*
+ * Callback cbHandleUnknownMessage (friend of CLocalArea)
+ */
+void NLNET::cbHandleUnknownMessage( CMessage& msgin, TSenderId idfrom )
+{
+	if ( CLocalArea::Instance->_UnknownMessagesCallback != NULL )
+	{
+		CLocalArea::Instance->_UnknownMessagesCallback( msgin, idfrom );
+	}
+}
+
+
+/*
  * Callback array
  */
 TCallbackItem CbArray [] =
@@ -162,7 +174,8 @@ TCallbackItem CbArray [] =
 	{ "FES", cbProcessEntityStateFull },
 	{ "ID", cbAssignId },
 	{ "RM", cbRemoveEntity },
-	{ "D", cbHandleDisconnection }
+	{ "D", cbHandleDisconnection },
+	{ "O", cbHandleUnknownMessage }
 };
 
 
@@ -177,7 +190,9 @@ namespace NLNET {
  */
 CLocalArea::CLocalArea() :
 	_Radius( 400 ),
-	_NewEntityCallback( NULL )
+	_NewEntityCallback( NULL ),
+	_EntityRemovedCallback( NULL ),
+	_UnknownMessagesCallback( NULL )
 {
 	nlassert( CLocalArea::Instance == NULL );
 	CLocalArea::Instance = this;

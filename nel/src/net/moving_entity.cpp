@@ -1,7 +1,7 @@
 /** \file moving_entity.cpp
  * Interface for all moving entities
  *
- * $Id: moving_entity.cpp,v 1.6 2000/11/23 14:11:51 cado Exp $
+ * $Id: moving_entity.cpp,v 1.7 2000/11/30 17:03:10 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@ TEntityId IMovingEntity::_MaxId = 1; //	avoid 0
  */
 IMovingEntity::IMovingEntity() :
 	_Id( 0 ),
+	_EntityType( 0 ),
 	_Pos( CVector(0,0,0) ),
 	_BodyHdg( CVector(0,1,0) ),
 	_RollAngle( 0.0f ),
@@ -54,13 +55,15 @@ IMovingEntity::IMovingEntity() :
 /*
  * Alt. constructor
  */
-IMovingEntity::IMovingEntity( const NLMISC::CVector& pos,
+IMovingEntity::IMovingEntity( TEntityType t,
+							  const NLMISC::CVector& pos,
 							  const NLMISC::CVector& hdg,
 							  const TAngle rollangle,
 							  const NLMISC::CVector& vec,
 							  const TAngVelocity av,
 							  bool groundmode ) :
 	_Id( 0 ),
+	_EntityType( t ),
 	_Pos( pos ),
 	_BodyHdg( hdg ),
 	_RollAngle( rollangle ),
@@ -155,6 +158,7 @@ void IMovingEntity::serial ( NLMISC::IStream &s )
 	if ( groundMode() )
 	{
 		s.serial( _Id );
+		s.serial( _EntityType );
 		s.serial( _Pos.x );
 		s.serial( _Pos.y );
 		s.serial( _Vector.x );
@@ -167,6 +171,7 @@ void IMovingEntity::serial ( NLMISC::IStream &s )
 	else
 	{
 		s.serial( _Id );
+		s.serial( _EntityType );
 		s.serial( _Pos );
 		s.serial( _Vector );
 		s.serial( _BodyHdg );

@@ -1,7 +1,7 @@
 /** \file moving_entity.h
  * Interface for all moving entities
  *
- * $Id: moving_entity.h,v 1.6 2000/11/20 15:51:49 cado Exp $
+ * $Id: moving_entity.h,v 1.7 2000/11/30 17:03:10 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,22 +33,25 @@
 namespace NLNET {
 
 
-/// Entity identifier type.
+/// Entity identifiers.
 typedef uint32 TEntityId;
 
-/// Position type. Unit: meter
+/// Entity types.
+typedef uint32 TEntityType;
+
+/// Position. Unit: meter
 typedef float TPosUnit;
 
 /// Duration. Unit: second
 typedef float TDuration;
 
-/// Velocity type. Unit: TPosUnit per second
+/// Velocity. Unit: TPosUnit per second
 typedef TPosUnit TVelocity;
 
-/// Angle type. Unit: radian
+/// Angle. Unit: radian
 typedef float TAngle;
 
-/// Angular velocity type. Unit: radian per second
+/// Angular velocity. Unit: radian per second
 typedef TAngle TAngVelocity;
 
 
@@ -66,7 +69,8 @@ public:
 	IMovingEntity();
 
 	/// Alt. constructor
-	IMovingEntity( const NLMISC::CVector& pos,
+	IMovingEntity( TEntityType t,
+				   const NLMISC::CVector& pos,
 				   const NLMISC::CVector& hdg,
 				   const TAngle rollangle,
 				   const NLMISC::CVector& vec,
@@ -92,13 +96,16 @@ public:
 	/// Returns identifier
 	TEntityId				id() const			{ return _Id; }
 
+	/// Returns entity type
+	TEntityType				type() const		{ return _EntityType; }
+
 	/// Returns position
 	const NLMISC::CVector&	pos() const			{ return _Pos; }
 
 	/// Returns heading
 	const NLMISC::CVector&	bodyHeading() const	{ return _BodyHdg; }
 
-	/// Returns left vector
+	/// Returns roll angle
 	const TAngle&			rollAngle() const	{ return _RollAngle; }
 
 	/// Returns trajectory vector
@@ -127,6 +134,7 @@ public:
 	IMovingEntity&			operator= ( const IMovingEntity& other )
 	{
 		_Id = other._Id;
+		_EntityType = other._EntityType;
 		_Pos = other._Pos;
 		_BodyHdg = other._BodyHdg;
 		_RollAngle = other._RollAngle;
@@ -139,7 +147,9 @@ public:
 	/// Comparison operator
 	friend bool				operator== ( const IMovingEntity& e1, const IMovingEntity& e2 )
 	{
-		return ( e1._Pos == e2._Pos // what about _Id and _GroundMode ?
+		// Note: maybe this could be replaced by a comparison of _Id ?
+		return ( e1._EntityType == e2._EntityType
+			  && e1._Pos == e2._Pos // what about _Id and _GroundMode ?
 			  && e1._BodyHdg == e2._BodyHdg
 			  && e1._RollAngle == e2._RollAngle
 			  && e1._Vector == e2._Vector
@@ -174,6 +184,9 @@ public:
 	}
 
 // protected:
+
+	/// Set entity type
+	void					setType( TEntityType t )						{ _EntityType = t; }
 
 	///@name Set position
 	//@{
@@ -210,6 +223,9 @@ private:
 
 	// Entity identifier
 	TEntityId				_Id;
+
+	// Type of entity
+	TEntityType				_EntityType;
 
 	/// Position
 	NLMISC::CVector			_Pos;

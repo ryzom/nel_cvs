@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.13 2000/11/29 17:24:09 cado Exp $
+ * $Id: local_entity.cpp,v 1.14 2000/11/30 17:03:10 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,24 @@ namespace NLNET {
  */
 CLocalEntity::CLocalEntity() :
 	IMovingEntity(),
+	_FrontVel( 0.0 ),
+	_StrafeVel( 0.0 ),
+	_VertVel( 0.0 ),
+	_PrevPos( 0,0,0 ),
+	_DeltaTime( 0 ),
+	_DRThresholdPos( 0.5 ),
+	_DRTestBodyHeading( true ),
+	_DRThresholdHeading( 0.5 )
+{
+	_DRReplica = *this;
+}
+
+
+/*
+ * Alt. constructor with entity state
+ */
+CLocalEntity::CLocalEntity( const IMovingEntity& es ) :
+	IMovingEntity( es ),
 	_FrontVel( 0.0 ),
 	_StrafeVel( 0.0 ),
 	_VertVel( 0.0 ),

@@ -1,7 +1,7 @@
 /** \file remote_entity.cpp
  * Remote-controlled entities
  *
- * $Id: remote_entity.cpp,v 1.8 2000/11/27 16:26:45 cado Exp $
+ * $Id: remote_entity.cpp,v 1.9 2000/11/30 17:03:10 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,13 +40,14 @@ const TDuration CRemoteEntity::ConvergeDuration = 0.5;
 /*
  * Constructor
  */
-CRemoteEntity::CRemoteEntity( const NLMISC::CVector& pos,
+CRemoteEntity::CRemoteEntity( TEntityType t,
+							  const NLMISC::CVector& pos,
 							  const NLMISC::CVector& hdg,
 							  const TAngle rollangle,
 							  const NLMISC::CVector& vec,
 							  const TAngVelocity av,
 							  bool groundmode ) :
-	CReplica( pos, hdg, rollangle, vec, av, groundmode )
+	CReplica( t, pos, hdg, rollangle, vec, av, groundmode )
 {
 }
 

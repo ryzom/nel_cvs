@@ -1,7 +1,7 @@
 /** \file local_entity.h
  * Locally-controlled entities
  *
- * $Id: local_entity.h,v 1.9 2000/11/24 11:22:13 cado Exp $
+ * $Id: local_entity.h,v 1.10 2000/11/30 17:03:10 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,9 @@ public:
 
 	/// Constructor
 	CLocalEntity();
+
+	/// Alt. constructor with entity state
+	CLocalEntity( const IMovingEntity& es );
 
 	/** Update the entity state.
 	 * The heading vector multiplied by the velocity is added to the current position.

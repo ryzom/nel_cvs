@@ -1,7 +1,7 @@
 /** \file replica.h
  * A moving entity that is controlled from elsewhere
  *
- * $Id: replica.h,v 1.2 2000/11/23 16:53:29 cado Exp $
+ * $Id: replica.h,v 1.3 2000/11/30 17:03:10 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,8 @@ public:
 	CReplica() : IMovingEntity() {}
 
 	/// Alt. constructor
-	CReplica( const NLMISC::CVector& pos,
+	CReplica( TEntityType t,
+			  const NLMISC::CVector& pos,
 			  const NLMISC::CVector& hdg,
 			  const TAngle rollangle,
 			  const NLMISC::CVector& vec,

@@ -1,8 +1,10 @@
 #
-# $Id: Makefile.am,v 1.6 2000/12/12 15:21:32 valignat Exp $
+# $Id: Makefile.am,v 1.7 2000/12/18 15:27:41 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
+
+SUBDIRS              = driver .
 
 lib_LTLIBRARIES      = libnel3d.la
 
@@ -15,7 +17,10 @@ libnel3d_la_SOURCES  = aabbox.cpp bezier_patch.cpp bitmap.cpp bsphere.cpp \
                        primitive_block.cpp render_trav.cpp scene.cpp \
                        nelu.cpp tessellation.cpp texture.cpp \
                        tile_bank.cpp tile_element.cpp transform.cpp \
-                       vertex_buffer.cpp viewport.cpp zone.cpp frustum.cpp
+                       vertex_buffer.cpp viewport.cpp zone.cpp frustum.cpp \
+                       polygon.cpp texture_font.cpp texture_file.cpp \
+                       texture_mem.cpp register_3d.cpp transform_shape.cpp \
+                       mesh.cpp shape.cpp
 
 libnel3d_la_LIBADD    = @FREETYPE_LIBS@
 

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.30 2001/01/12 15:13:47 corvazier Exp $
+ * $Id: landscape.h,v 1.31 2001/01/19 14:25:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,8 +130,8 @@ public:
 	
 	/// \name Landscape Parameters.
 	// @{
-	/// Set tile near distance. Default 50.f.
-	void			setTileNear (float tileNear)	{_TileDistNear=tileNear;}
+	/// Set tile near distance. Default 50.f. maximized to length of Far alpha transition).
+	void			setTileNear (float tileNear);
 	/// Get tile near distance.
 	float			getTileNear () const	{return _TileDistNear;}
 	/// Set threshold for subdivsion quality. The lower is threshold, the more the landscape is subdivided. Default: 0.001.
@@ -240,6 +240,9 @@ private:
 	// Return the UvScaleBias for a tile Id. uv.z has the scale info. uv.x has the BiasU, and uv.y has the BiasV.
 	void			getTileUvScaleBias(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias);
 
+	// release Far render pass/reset Tile/Far render.
+	void			resetRenderFar();
+
 	// Update globals value to CTessFace
 	void updateGlobals (const CVector &refineCenter) const;
 
@@ -250,6 +253,7 @@ private:
 	float			_TileDistNear;
 	float			_Threshold;
 	bool			_RefineMode;
+	float			_FarTransition;
 
 	// The temp VB for tiles and far passes.
 	CVertexBuffer	FarVB;

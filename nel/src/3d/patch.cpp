@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.35 2001/01/12 18:15:36 berenguier Exp $
+ * $Id: patch.cpp,v 1.36 2001/01/19 14:26:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,6 +82,10 @@ void			CPatch::release()
 		nlassert(Son0->isLeaf() && Son1->isLeaf());
 		// Can't test if OK, since bind 2/1 or 4/1 are not unbound.
 
+		// Free renderPass of landscape, and maybe force computation of texture info on next preRender().
+		// Must do it here, before deletion of Zone, OrderS/T etc...
+		resetRenderFar();
+
 		delete Son0;
 		delete Son1;
 		// Vertices are smartptr/deleted in zone.
@@ -98,9 +102,6 @@ void			CPatch::release()
 	NCurrentFaces= 0;
 	Clipped=false;
 
-	// To force computation of texture info on next preRender().
-	Far0= -1;
-	Far1= -1;
 }
 
 
@@ -493,6 +494,22 @@ void			CPatch::resetFarIndices(CTessFace *pFace)
 	}
 }
 
+
+// ***************************************************************************
+void			CPatch::resetRenderFar()
+{
+	if (Pass0)
+		Zone->Landscape->freeFarRenderPass (this, Pass0, Far0);
+	if (Pass1)
+		Zone->Landscape->freeFarRenderPass (this, Pass1, Far1);
+
+	Pass0= NULL;
+	Pass1= NULL;
+	Far0= -1;
+	Far1= -1;
+}
+
+
 // ***************************************************************************
 void			CPatch::preRender()
 {
@@ -726,6 +743,7 @@ sint			CPatch::getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc)
 		// For Far1, use alpha fro transition.
 		float	f= (vert->Pos - CTessFace::RefineCenter).sqrnorm();
 		f= (f-TransitionSqrMin) * OOTransitionSqrDelta;
+
 		clamp(f,0,1);
 		col.A= (uint8)(f*255);
 		CTessFace::CurrentVB->setColor(vert->FarIndex, col);

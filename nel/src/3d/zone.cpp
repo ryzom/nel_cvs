@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.27 2001/01/18 14:14:17 berenguier Exp $
+ * $Id: zone.cpp,v 1.28 2001/01/19 14:26:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -830,6 +830,17 @@ void			CZone::renderTile(sint pass)
 	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 	{
 		pPatch->renderTile(pass);
+	}
+}
+
+
+// ***************************************************************************
+void			CZone::resetRenderFar()
+{
+	CPatch		*pPatch= &(*Patchs.begin());
+	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+	{
+		pPatch->resetRenderFar();
 	}
 }
 

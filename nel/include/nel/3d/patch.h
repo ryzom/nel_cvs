@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.27 2001/01/15 15:45:23 corvazier Exp $
+ * $Id: patch.h,v 1.28 2001/01/19 14:25:49 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -240,6 +240,9 @@ public:
 	void			renderFar0();
 	void			renderFar1();
 	void			renderTile(sint pass);
+	// release Far render pass/reset Tile/Far render.
+	void			resetRenderFar();
+
 
 
 	// For CZone changePatchTexture only.

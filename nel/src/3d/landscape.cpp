@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.36 2001/01/16 14:46:45 berenguier Exp $
+ * $Id: landscape.cpp,v 1.37 2001/01/19 14:26:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,11 +82,6 @@ public:
 	NLMISC_DECLARE_CLASS(CTextureCross);
 };
 
-// ***************************************************************************
-// TODO: may change this.
-// The size of a tile, in pixel. UseFull for HalfPixel Scale/Bias.
-const	float TileSize= 128;
-
 
 // ***************************************************************************
 CLandscape::CLandscape()
@@ -104,9 +99,11 @@ CLandscape::CLandscape()
 
 	fill(TileInfos.begin(), TileInfos.end(), (CTileInfo*)NULL);
 
+	_FarTransition= 10;		// 10 meters.
 	_TileDistNear=100.f;
 	_Threshold= 0.001f;
 	_RefineMode=true;
+
 	_NFreeLightMaps= 0;
 }
 // ***************************************************************************
@@ -139,6 +136,31 @@ void			CLandscape::init(bool bumpTiles)
 
 	// Init material for tile.
 	TileMaterial.initUnlit();
+}
+
+
+// ***************************************************************************
+void			CLandscape::setTileNear (float tileNear)
+{
+	tileNear= max(tileNear, _FarTransition);
+
+	if(tileNear!=_TileDistNear)
+	{
+		_TileDistNear= tileNear;
+		resetRenderFar();
+	}
+
+}
+
+
+// ***************************************************************************
+void			CLandscape::resetRenderFar()
+{
+	// For all patch of all zones.
+	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+	{
+		((*it).second)->resetRenderFar();
+	}
 }
 
 
@@ -225,11 +247,20 @@ void			CLandscape::refine(const CVector &refineCenter)
 void			CLandscape::updateGlobals (const CVector &refineCenter) const
 {
 	// Setup CTessFace static members...
+
+	// Far limits.
+	CTessFace::FarTransition= _FarTransition;
+
+	// Tile subdivsion part.
 	CTessFace::TileDistNear = _TileDistNear;
 	CTessFace::TileDistFar = CTessFace::TileDistNear+20;
 	CTessFace::TileDistNearSqr = sqr(CTessFace::TileDistNear);
 	CTessFace::TileDistFarSqr = sqr(CTessFace::TileDistFar);
 	CTessFace::OOTileDistDeltaSqr = 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);
+
+	// Tile Pixel size part.
+	// TODO: choose according to wanted tile pixel size.
+	CTessFace::TilePixelSize= 128.0f;
 
 	// RefineThreshold.
 	CTessFace::RefineThreshold= _Threshold;
@@ -515,9 +546,9 @@ void			CLandscape::loadTile(uint16 tileId)
 		tileInfo->AdditiveRdrPass= findTileRdrPass(pass);
 		// Fill UV Info.
 		// NB: for now, One Tile== One Texture, so UVScaleBias is simple.
-		tileInfo->AdditiveUvScaleBias.x= 1/(2*NL3D::TileSize);
-		tileInfo->AdditiveUvScaleBias.y= 1/(2*NL3D::TileSize);
-		tileInfo->AdditiveUvScaleBias.z= 1-1/NL3D::TileSize;
+		tileInfo->AdditiveUvScaleBias.x= 0;
+		tileInfo->AdditiveUvScaleBias.y= 0;
+		tileInfo->AdditiveUvScaleBias.z= 1;
 	}
 
 
@@ -549,12 +580,12 @@ void			CLandscape::loadTile(uint16 tileId)
 	tileInfo->DiffuseRdrPass= findTileRdrPass(pass);
 	// Fill UV Info.
 	// NB: for now, One Tile== One Texture, so UVScaleBias is simple.
-	tileInfo->DiffuseUvScaleBias.x= 1/(2*NL3D::TileSize);
-	tileInfo->DiffuseUvScaleBias.y= 1/(2*NL3D::TileSize);
-	tileInfo->DiffuseUvScaleBias.z= 1-1/NL3D::TileSize;
-	tileInfo->BumpUvScaleBias.x= 1/(2*NL3D::TileSize);
-	tileInfo->BumpUvScaleBias.y= 1/(2*NL3D::TileSize);
-	tileInfo->BumpUvScaleBias.z= 1-1/NL3D::TileSize;
+	tileInfo->DiffuseUvScaleBias.x= 0;
+	tileInfo->DiffuseUvScaleBias.y= 0;
+	tileInfo->DiffuseUvScaleBias.z= 1;
+	tileInfo->BumpUvScaleBias.x= 0;
+	tileInfo->BumpUvScaleBias.y= 0;
+	tileInfo->BumpUvScaleBias.z= 1;
 
 
 	// Increment RefCount of RenderPart.

@@ -1,9 +1,8 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.29 2001/01/11 15:29:28 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.30 2001/01/19 14:26:04 berenguier Exp $
  *
- * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +52,10 @@ const	uint8	TileUvFmtBump4= 16+3;
 const	uint8	TileUvFmtBump5= 16+4;
 const	uint8	TileUvFmtBump6= 16+5;
 
+
+// ***************************************************************************
+// TODO: may change this.
+const	float TileSize= 128;
 
 
 
@@ -108,6 +111,8 @@ float		CTessFace::OOTileDistDeltaSqr= 1.0f / (CTessFace::TileDistFarSqr - CTessF
 sint		CTessFace::TileMaxSubdivision=0;
 CBSphere	CTessFace::TileFarSphere;
 CBSphere	CTessFace::TileNearSphere;
+float		CTessFace::TilePixelSize= 128;
+
 
 float		CTessFace::Far0Dist= 200;		// 200m.
 float		CTessFace::Far1Dist= 400;		// 400m.
@@ -341,11 +346,23 @@ void		CTessFace::initTileUv0(sint pass, CParamCoord pointCoord, CParamCoord midd
 	}
 
 
+	// Do the HalfPixel scale bias.
+	CVector		hBias;
+	float		tsize;
+	if(is256)
+		tsize= CTessFace::TilePixelSize*2.0f;
+	else
+		tsize= CTessFace::TilePixelSize;
+	hBias.x= 0.5f/tsize;
+	hBias.y= 0.5f/tsize;
+	hBias.z= 1-1/tsize;
+
+
 	// Scale the UV.
-	uv.U*= uvScaleBias.z;
-	uv.V*= uvScaleBias.z;
-	uv.U+= uvScaleBias.x;
-	uv.V+= uvScaleBias.y;
+	uv.U*= uvScaleBias.z*hBias.z;
+	uv.V*= uvScaleBias.z*hBias.z;
+	uv.U+= uvScaleBias.x+hBias.x;
+	uv.V+= uvScaleBias.y+hBias.y;
 }
 
 
@@ -711,7 +728,6 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 
 	// 5. Propagate, or link sons of base.
 	//------------------------------------
-	// TODO : verify if work.
 	for(sint i=0;i<2;i++)
 	{
 		CTessFace	*f, *fl, *fr;
@@ -920,7 +936,6 @@ void		CTessFace::split(bool propagateSplit)
 
 	// 5. Propagate, or link sons of base.
 	//------------------------------------
-	// TODO : verify if work.
 	// If current face and FBase has sons, just links.
 	if(FBase==NULL)
 	{

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.22 2001/01/11 13:54:04 berenguier Exp $
+ * $Id: tessellation.h,v 1.23 2001/01/19 14:25:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -405,6 +405,8 @@ public:
 	static	CBSphere	TileFarSphere;
 	// The sphere for TileNear test.
 	static	CBSphere	TileNearSphere;
+	// The size of a 128x128 tile, in pixel. UseFull for HalfPixel Scale/Bias.
+	static	float		TilePixelSize;
 
 
 	// Render Global info. Used by Patch.

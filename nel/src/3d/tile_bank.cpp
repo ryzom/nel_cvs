@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.18 2001/01/18 16:13:22 berenguier Exp $
+ * $Id: tile_bank.cpp,v 1.19 2001/01/19 14:26:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,10 @@
 #include "nel/3d/tile_bank.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/common.h"
+#include <string>
 
 using namespace NLMISC;
+using namespace std;
 
 namespace	NL3D
 {
@@ -302,15 +304,32 @@ void CTileBank::makeAllPathRelative ()
 
 // ***************************************************************************
 // Moi aussi je le parie (Yoyo).
-void CTileBank::makeAllFileDDS ()
+void CTileBank::makeAllExtensionDDS ()
 {
 	// For all tiles
 	for (sint nTile=0; nTile<(sint)_TileVector.size(); nTile++)
 	{
-		// string
-		// TODODO.
-/*		TroncFileName (sTmpFileName, _TileVector[nTile].getFileName (CTile::diffuse).c_str());
-		_TileVector[nTile].setFileName (CTile::diffuse, sTmpFileName);*/
+		string		tmp;
+		sint		pos;
+
+		// Diffuse
+		tmp= _TileVector[nTile].getFileName (CTile::diffuse);
+		pos= tmp.rfind(".tga");
+		if(pos!= string::npos)
+		{
+			tmp.replace(pos, 4, ".dds");
+			_TileVector[nTile].setFileName (CTile::diffuse, tmp);
+		}
+
+		// Additive.
+		tmp= _TileVector[nTile].getFileName (CTile::additive);
+		pos= tmp.rfind(".tga");
+		if(pos!= string::npos)
+		{
+			tmp.replace(pos, 4, ".dds");
+			_TileVector[nTile].setFileName (CTile::additive, tmp);
+		}
+
 	}
 
 }

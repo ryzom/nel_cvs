@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.19 2001/01/16 08:35:14 berenguier Exp $
+ * $Id: zone.h,v 1.20 2001/01/19 14:25:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -316,6 +316,8 @@ public:
 	void			renderFar0();
 	void			renderFar1();
 	void			renderTile(sint pass);
+	// release Far render pass/reset Tile/Far render.
+	void			resetRenderFar();
 
 
 	// Accessors.
@@ -413,6 +415,7 @@ private:
 	static void		bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc);
 	// Is the patch on a border of this zone???
 	bool			patchOnBorder(const CPatchConnect &pc) const;
+
 };
 
 

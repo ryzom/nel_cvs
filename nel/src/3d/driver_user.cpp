@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.49 2004/08/13 15:32:39 vizerie Exp $
+ * $Id: driver_user.cpp,v 1.49.4.1 2004/09/14 17:19:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1641,6 +1641,13 @@ UDriver::TCullMode CDriverUser::getCullMode() const
 	return (TCullMode) _Driver->getCullMode();
 }
 
+// ***************************************************************************
+bool CDriverUser::isLost() const
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+	return _Driver->isLost();
+}
 
 
 // ***************************************************************************

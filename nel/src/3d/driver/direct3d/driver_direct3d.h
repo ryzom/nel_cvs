@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.22.4.2 2004/09/14 15:33:43 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.22.4.3 2004/09/14 17:21:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -538,6 +538,7 @@ public:
 							CDriverD3D();
 	virtual					~CDriverD3D();
 
+	virtual	bool			isLost() const { return _Lost; }
 	// ***************************************************************************
 	// Implementation
 	// see nel\src\3d\driver.h

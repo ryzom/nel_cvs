@@ -60,7 +60,12 @@ Compilation
    1. Windows compilation
    ----------------------
 
-      The compilation on Windows has been done only with Visual C++ 6.0 SP4.
+      The compilation on Windows has been done only with Visual C++ 6.0 SP5 + Processor Pack for SP5.
+
+	  SP5 and Processor Pack for SP5 can be found at:
+
+		<URL:http://msdn.microsoft.com/vstudio/downloads/ppack/download.asp>
+ 
 
       You first need to compile STLport and FreeType libraries. It's a quite
       long compilation process, and you should carefully read these libraries

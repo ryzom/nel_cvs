@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.7 2001/07/12 14:36:53 corvazier Exp $
+ * $Id: scene.h,v 1.8 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,8 @@ class	CTransformShape;
 class	IDriver;
 class	CShapeBank;
 class	CCoarseMeshManager;
+class	CInstanceGroup;
+
 
 // ***************************************************************************
 /**
@@ -136,6 +138,8 @@ public:
 	void			initDefaultTravs();
 	/// Create/setRoot the defaults models roots: a CTransform and a CLightGroup.
 	void			initDefaultRoots();
+	/// Create the world instance group (with only one cluster)
+	void			initGlobalnstanceGroup();
 	/// Create coarse meshes manager.
 	void			initCoarseMeshManager ();
 	/// Set the driver to render Traversal.
@@ -207,11 +211,13 @@ public:
 	void			deleteInstance(CTransformShape*model);
 	//@}
 
+	CInstanceGroup *getGlobalInstanceGroup() { return _GlobalInstanceGroup;	}
+
 	/// \name Light Mgt.
 	//@{
-	void			loadLightmapAutoAnim( const std::string & );
-	void			setAutoAnim( CAnimation *pAnim );
-	void			animate( CAnimationTime atTime );
+	void	loadLightmapAutoAnim (const std::string &);
+	void	setAutoAnim (CAnimation *pAnim);
+	void	animate (CAnimationTime atTime);
 	// TODO:
 	// TurnOff/TurnOn
 	// Animate
@@ -310,6 +316,8 @@ private:
 
 	typedef std::multimap<std::string,CTransformShape**> TWaitingInstancesMMap;
 	TWaitingInstancesMMap _WaitingInstances;
+
+	CInstanceGroup* _GlobalInstanceGroup;
 	//@}
 
 	/// \name Coarse meshes managers.

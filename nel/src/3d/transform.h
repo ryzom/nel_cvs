@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.4 2001/07/18 10:23:21 berenguier Exp $
+ * $Id: transform.h,v 1.5 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,7 @@ class	CTransformHrcObs;
 class	CTransformClipObs;
 class	CSkeletonModel;
 class	CSkeletonModelAnimDetailObs;
+class	CInstanceGroup;
 
 // ***************************************************************************
 // ClassIds.
@@ -114,6 +115,16 @@ public:
 	 *	- the "frozen" state of a father is not enabled (or disabled by a change in position of him :) ).
 	 */
 	void		freeze();
+	void		setDontUnfreezeChildren(bool val);
+
+	/**
+	 * Get the worldMatrix that is stored in the hrc observer
+	 */
+	const CMatrix& getWorldMatrix();
+
+
+	void					setClusterSystem (CInstanceGroup *pIG) { _ClusterSystem = pIG; }
+	CInstanceGroup*			getClusterSystem () { return _ClusterSystem; }
 
 
 // ********
@@ -183,6 +194,9 @@ private:
 	// Information of transparency
 	bool			_Opaque;
 	bool			_Transparent;
+
+	CInstanceGroup* _ClusterSystem;
+
 };
 
 
@@ -202,7 +216,8 @@ class	CTransformHrcObs : public IBaseHrcObs
 public:
 	CTransformHrcObs()
 	{
-		Frozen= false;
+		Frozen = false;
+		DontUnfreezeChildren = false;
 	}
 
 	virtual	void	update();
@@ -224,6 +239,7 @@ public:
 
 public:
 	bool	Frozen;
+	bool	DontUnfreezeChildren; // Usefull when cluster system move to not test instance again
 
 };
 
@@ -242,7 +258,14 @@ public:
  */
 class	CTransformClipObs : public IBaseClipObs
 {
+
 public:
+
+	sint64 Date;
+
+public:
+
+	CTransformClipObs() : Date(0) {}
 
 	/// don't render.
 	virtual	bool	isRenderable() const {return false;}

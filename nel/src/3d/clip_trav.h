@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: clip_trav.h,v 1.2 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_CLIP_TRAV_H
 
 #include "3d/trav_scene.h"
+#include "3d/quad_grid.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/plane.h"
 #include "nel/misc/matrix.h"
@@ -43,12 +44,14 @@ using NLMISC::CMatrix;
 class	IBaseHrcObs;
 class	IBaseRenderObs;
 class	CRenderTrav;
-
+class	CHrcTrav;
+class	CCluster;
+class	CInstanceGroup;
+class	CCamera;
 
 // ***************************************************************************
 // ClassIds.
 const NLMISC::CClassId		ClipTravId=NLMISC::CClassId(0x135208fe, 0x225334fc);
-
 
 // ***************************************************************************
 /**
@@ -75,18 +78,24 @@ public:
 
 	/// Constructor
 	CClipTrav();
+	~CClipTrav();
 
 	/// \name ITrav/ITravScene Implementation.
 	//@{
-	IObs				*createDefaultObs() const;
-	NLMISC::CClassId	getClassId() const {return ClipTravId;}
-	sint				getRenderOrder() const {return 2000;}
-	void				traverse();
+	IObs				*createDefaultObs () const;
+	NLMISC::CClassId	getClassId () const {return ClipTravId;}
+	sint				getRenderOrder () const {return 2000;}
+	void				traverse ();
 	//@}
 
+	void registerCluster (CCluster* pCluster);
+	void unregisterCluster (CCluster* pCluster);
 
 	/// Setup the render traversal (else traverse() won't work)
-	void		setRenderTrav(CRenderTrav	*trav);
+	void setRenderTrav (CRenderTrav* trav);
+	void setHrcTrav (CHrcTrav* trav);
+
+	bool fullSearch (std::vector<CCluster*>& result, CInstanceGroup *pIG, CVector& pos);
 
 public:
 
@@ -100,8 +109,14 @@ public:
 	std::vector<CPlane>	WorldPyramid;	
 	/// Shortcut to the Rdr Traversals (to add the models rdr observers).
 	CRenderTrav		*RenderTrav;
+	CHrcTrav		*HrcTrav;
 	//@}
+	sint64 CurrentDate;
 
+	CCluster *RootCluster;
+	CCamera *Camera;
+	
+	CQuadGrid<CCluster*> Accel;
 };
 
 
@@ -173,7 +188,10 @@ public:
 	 */
 	virtual	void	traverse(IObs *caller) =0;
 
-
+	/** 
+	 * Because the clip traversal is a graph of observer not a hierarchy
+	 */
+	virtual bool	isTreeNode() {return false;}
 };
 
 

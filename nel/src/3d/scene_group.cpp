@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.7 2001/07/05 09:37:07 besson Exp $
+ * $Id: scene_group.cpp,v 1.8 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,40 @@ using namespace std;
 namespace NL3D 
 {
 
+// ---------------------------------------------------------------------------
+// CInstance
+// ---------------------------------------------------------------------------
+
+// ***************************************************************************
+
+void CInstanceGroup::CInstance::serial (NLMISC::IStream& f)
+{
+	// Serial a version number
+	sint version=f.serialVersion (1);
+
+	// Serial the clusters
+	if( version >= 1 )
+		f.serialCont (Clusters);
+
+	// Serial the name
+	f.serial (Name);
+
+	// Serial the position vector
+	f.serial (Pos);
+
+	// Serial the rotation vector
+	f.serial (Rot);
+
+	// Serial the scale vector
+	f.serial (Scale);
+
+	// Serial the parent location in the vector (-1 if no parent)
+	f.serial (nParent);
+}
+
+// ---------------------------------------------------------------------------
+// CInstanceGroup
+// ---------------------------------------------------------------------------
 
 // ***************************************************************************
 
@@ -77,18 +111,79 @@ const CVector& CInstanceGroup::getInstanceScale (uint instanceNb) const
 
 // ***************************************************************************
 
-const int CInstanceGroup::getInstanceParent (uint instanceNb) const
+const sint32 CInstanceGroup::getInstanceParent (uint instanceNb) const
 {
 	// Return the scale vector of the n-th instance
 	return _InstancesInfos[instanceNb].nParent;
 }
 
 // ***************************************************************************
+CInstanceGroup::CInstanceGroup()
+{
+	_Root = NULL;
+	_ClusterSystem = NULL;
+}
 
-void CInstanceGroup::build (const TInstanceArray& array)
+// ***************************************************************************
+CInstanceGroup::~CInstanceGroup()
+{
+}
+
+// ***************************************************************************
+void CInstanceGroup::build (const TInstanceArray& array, const std::vector<CCluster>& Clusters, 
+							const std::vector<CPortal>& Portals)
+
 {
 	// Copy the array
-	_InstancesInfos=array;
+	_InstancesInfos = array;
+
+	_Portals = Portals;
+	_ClusterInfos = Clusters;
+
+	// Link portals and clusters
+	uint32 i, j, k;
+	for (i = 0; i < _Portals.size(); ++i)
+	{
+		for (j = 0; j < _ClusterInfos.size(); ++j)
+		{
+			bool bPortalInCluster = true;
+			for (k = 0; k < _Portals[i]._Poly.size(); ++k)
+				if (!_ClusterInfos[j].isIn (_Portals[i]._Poly[k]) )
+				{
+					bPortalInCluster = false;
+					break;
+				}
+			if (bPortalInCluster)
+			{				
+				_Portals[i].setCluster(&_ClusterInfos[j]);
+				_ClusterInfos[j].link (&_Portals[i]);
+			}
+		}
+	}
+
+	// Create Meta Cluster if needed
+	/*
+	CCluster clusterTemp;
+	bool mustAdd = false;
+	for (i = 0; i < _Portals.size(); ++i)
+	if (_Portals[i].getNbCluster() == 1)
+	{
+		mustAdd = true;
+		break;
+	}
+	if (mustAdd)
+	{
+		CCluster clusterTemp;
+		_ClusterInfos.push_back(clusterTemp);
+		CCluster *pMetaCluster = &_ClusterInfos[_ClusterInfos.size()-1];
+		pMetaCluster->setMetaCluster();
+		for (i = 0; i < _Portals.size(); ++i)
+		if (_Portals[i].getNbCluster() == 1)
+		{
+			_Portals[i].setCluster(pMetaCluster);
+			pMetaCluster->link(&_Portals[i]);
+		}
+	}*/
 }
 
 // ***************************************************************************
@@ -99,49 +194,73 @@ void CInstanceGroup::serial (NLMISC::IStream& f)
 	f.serialCheck ((uint32)'TPRG');
 
 	// Serial a version number
-	sint version=f.serialVersion (0);
+	sint version=f.serialVersion (1);
+
+	if (version >= 1)
+	{
+		f.serialCont (_ClusterInfos);
+		f.serialCont (_Portals);
+		// Links
+		if (f.isReading())
+		{
+			uint32 i, j;
+			for (i = 0; i < _ClusterInfos.size(); ++i)
+			{
+				uint32 nNbPortals;
+				f.serial (nNbPortals);
+				_ClusterInfos[i]._Portals.resize (nNbPortals);
+				// Recreate clusters to portals links
+				for (j = 0; j < nNbPortals; ++j)
+				{
+					sint32 nPortalNb;
+					f.serial (nPortalNb);
+					_ClusterInfos[i]._Portals[j] = &_Portals[nPortalNb];
+					_Portals[nPortalNb].setCluster (&_ClusterInfos[i]);
+				}
+			}
+		}
+		else // We are writing to the stream
+		{
+			uint32 i, j;
+			for (i = 0; i < _ClusterInfos.size(); ++i)
+			{
+				uint32 nNbPortals = _ClusterInfos[i]._Portals.size();
+				f.serial (nNbPortals);
+				for (j = 0; j < nNbPortals; ++j)
+				{
+					sint32 nPortalNb = (_ClusterInfos[i]._Portals[j] - &_Portals[0]);
+					f.serial (nPortalNb);
+				}
+			}
+		}
+	}
 
 	// Serial the array
 	f.serialCont (_InstancesInfos);
 }
 
 // ***************************************************************************
-
-void CInstanceGroup::CInstance::serial (NLMISC::IStream& f)
+void CInstanceGroup::createRoot (CScene& scene)
 {
-	// Serial a version number
-	sint version=f.serialVersion (0);
-
-	// Serial the name
-	f.serial (Name);
-
-	// Serial the position vector
-	f.serial (Pos);
-
-	// Serial the rotation vector
-	f.serial (Rot);
-
-	// Serial the scale vector
-	f.serial (Scale);
-
-	// Serial the parent location in the vector (-1 if no parent)
-	f.serial (nParent);
+	_Root = (CTransform*)scene.createModel (TransformId);
+	_Root->setDontUnfreezeChildren (true);
 }
 
 // ***************************************************************************
 bool CInstanceGroup::addToScene (CScene& scene)
 {
-	sint i;
+	uint32 i, j;
 
 	_Instances.resize( _InstancesInfos.size() );
 
+	// Creation and positionning of the new instance
+
 	vector<CInstance>::iterator it = _InstancesInfos.begin();
-	for( i=0; i<(sint)_InstancesInfos.size(); ++i,++it )
+	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
 	{
 		CInstance &rInstanceInfo = *it;
 
-		// Creation and positionning of the new instance
-		_Instances[i] = scene.createInstance ( rInstanceInfo.Name + ".shape" );
+		_Instances[i] = scene.createInstance (rInstanceInfo.Name + ".shape");
 
 		if( _Instances[i] == NULL )
 		{
@@ -151,40 +270,181 @@ bool CInstanceGroup::addToScene (CScene& scene)
 	
 		if (_Instances[i])
 		{
-			_Instances[i]->setPos( rInstanceInfo.Pos );
-			_Instances[i]->setRotQuat( rInstanceInfo.Rot );
-			_Instances[i]->setScale( rInstanceInfo.Scale );
-			_Instances[i]->setPivot( CVector::Null );
+			_Instances[i]->setPos (rInstanceInfo.Pos);
+			_Instances[i]->setRotQuat (rInstanceInfo.Rot);
+			_Instances[i]->setScale (rInstanceInfo.Scale);
+			_Instances[i]->setPivot (CVector::Null);
 		}
 	}
 
 	// Setup the hierarchy
 	// We just have to set the traversal HRC (Hierarchy)
+	ITrav *pHrcTrav = scene.getTrav (HrcTravId);
 
-	ITrav *pTrav = scene.getTrav( HrcTravId );
-
+	if (_Root == NULL)
+	{
+		createRoot (scene);
+	}
 	it = _InstancesInfos.begin();
-	for( i=0; i<(sint)_InstancesInfos.size(); ++i,++it )
+	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
 	{
 		CInstance &rInstanceInfo = *it;
 		if( rInstanceInfo.nParent != -1 ) // Is the instance get a parent
-			pTrav->link( _Instances[rInstanceInfo.nParent], _Instances[i] );
+			pHrcTrav->link (_Instances[rInstanceInfo.nParent], _Instances[i]);
+		else
+			pHrcTrav->link (_Root, _Instances[i]);
 	}
+	// Attach the root of the instance group to the root of the hierarchy traversal
+	pHrcTrav->link (NULL, _Root);
+
+	// Cluster / Portals
+	// -----------------
+
+	CClipTrav *pClipTrav = (CClipTrav*)(scene.getTrav (ClipTravId));
+	_ClipTrav = pClipTrav;
+
+	// Create the MOT links (create the physical clusters)
+	_ClusterInstances.resize (_ClusterInfos.size());
+	for (i = 0; i < _ClusterInstances.size(); ++i)
+	{
+		_ClusterInstances[i] = (CCluster*)scene.createModel (ClusterId);
+		_ClusterInstances[i]->Group = this;
+		_ClusterInstances[i]->_Portals = _ClusterInfos[i]._Portals;
+		_ClusterInstances[i]->_LocalVolume = _ClusterInfos[i]._LocalVolume;
+		_ClusterInstances[i]->_LocalBBox = _ClusterInfos[i]._LocalBBox;
+		_ClusterInstances[i]->_Volume = _ClusterInfos[i]._Volume;
+		_ClusterInstances[i]->_BBox = _ClusterInfos[i]._BBox;
+		_ClusterInstances[i]->FatherVisible = _ClusterInfos[i].FatherVisible;
+		_ClusterInstances[i]->VisibleFromFather = _ClusterInfos[i].VisibleFromFather;
+		pClipTrav->registerCluster (_ClusterInstances[i]);
+		pClipTrav->unlink (NULL, _ClusterInstances[i]);
+	}
+
+	// Relink portals with newly created clusters
+	for (i = 0; i < _Portals.size(); ++i)
+	for (j = 0; j < 2; ++j)
+	{
+		sint32 nClusterNb;
+		nClusterNb = (_Portals[i]._Clusters[j] - &_ClusterInfos[0]);
+		_Portals[i]._Clusters[j] = _ClusterInstances[nClusterNb];
+	}
+
+	// Link shapes to clusters
+	for (i = 0; i < _Instances.size(); ++i)
+		if (_InstancesInfos[i].Clusters.size() > 0)
+		{
+			pClipTrav->unlink (NULL, _Instances[i]);
+			for (j = 0; j < _InstancesInfos[i].Clusters.size(); ++j)
+				pClipTrav->link (_ClusterInstances[_InstancesInfos[i].Clusters[j]], _Instances[i]);
+			// For the first time we have to set all the instances to NOT move (and not be rebinded)
+			_Instances[i]->freeze();
+		}
+		else
+		{
+			// These instances are not attached to a cluster at this level so we cannot freeze them
+			// Moreover we must set their clustersystem they will be tested against
+			_Instances[i]->setClusterSystem (_ClusterSystem);
+		}
+	_Root->freeze();
+
+	// HRC OBS like
+	for (i = 0; i < _ClusterInstances.size(); ++i)
+	{
+		_ClusterInstances[i]->setWorldMatrix (_Root->getMatrix());
+
+		for (uint32 i = 0; i < _ClusterInstances[i]->getNbPortals(); ++i)
+		{
+			CPortal *pPortal = _ClusterInstances[i]->getPortal(i);
+			pPortal->setWorldMatrix (_Root->getMatrix());
+		}
+
+		// Re affect the cluster to the accelerator if not the root
+		if (!_ClusterInstances[i]->isRoot())
+		{
+			_ClipTrav->Accel.erase (_ClusterInstances[i]->AccelIt);
+			_ClipTrav->registerCluster (_ClusterInstances[i]);
+		}
+	}
+
+
+	// Link the instance group to the parent
+	linkToParent (scene.getGlobalInstanceGroup());
+
+	// Attach the clusters to the root of the instance group
+	for (i = 0; i < _ClusterInstances.size(); ++i)
+		pHrcTrav->link (_Root, _ClusterInstances[i]);
 
 	return true;
 }
 
 // ***************************************************************************
+// Search in the hierarchy of ig the most low level (child) ig that contains the clusters that
+// are flagged to be visible from father or which father is visible
+bool CInstanceGroup::linkToParent (CInstanceGroup *pFather)
+{
+	uint32 i, j;
 
+	for (i = 0; i < pFather->_ClusterInstances.size(); ++i)
+	{
+		for(j = 0; j < pFather->_ClusterInstances[i]->Children.size(); ++j)
+		{
+			if (linkToParent(pFather->_ClusterInstances[i]->Children[j]->Group))
+				return true;
+		}
+	}
+	for (j = 0; j < this->_ClusterInstances.size(); ++j)
+	{
+		if ((this->_ClusterInstances[j]->FatherVisible) ||
+			(this->_ClusterInstances[j]->VisibleFromFather))
+		{
+			for (i = 0; i < pFather->_ClusterInstances.size(); ++i)
+			{				
+				if (pFather->_ClusterInstances[i]->isIn(this->_ClusterInstances[j]->getBBox()))
+				{
+					pFather->_ClusterInstances[i]->Children.push_back(this->_ClusterInstances[j]);
+					this->_ClusterInstances[j]->Father = pFather->_ClusterInstances[i];
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+// ***************************************************************************
 bool CInstanceGroup::removeFromScene (CScene& scene)
 {
+	uint32 i, j, k;
+	// Remove shapes
 	vector<CTransformShape*>::iterator it = _Instances.begin();
-	for( int i=0; i<(sint)_InstancesInfos.size(); ++i,++it )
+	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
 	{
 		CTransformShape *pTShape = *it;
-
-		scene.deleteInstance( pTShape );
+		scene.deleteInstance (pTShape);
 	}
+
+	// Relink portals with old clusters
+	for (i = 0; i < _Portals.size(); ++i)
+	for (k = 0; k < 2; ++k)
+	{
+		for (j = 0; j < _ClusterInstances.size(); ++j)
+			if( _Portals[i]._Clusters[k] == _ClusterInstances[j] )
+				break;
+
+		nlassert (j!=_ClusterInstances.size());
+		_Portals[i]._Clusters[k] = &_ClusterInfos[j];
+	}
+
+	// Remove clusters
+	CClipTrav *pClipTrav = (CClipTrav*)(scene.getTrav (ClipTravId));
+	for (i = 0; i < _ClusterInstances.size(); ++i)
+	{
+		pClipTrav->unregisterCluster (_ClusterInstances[i]);
+		scene.deleteModel (_ClusterInstances[i]);
+	}
+
+	scene.deleteModel (_Root);
+
 	return true;
 }
 
@@ -224,7 +484,76 @@ void CInstanceGroup::setLightFactor( const string &LightName, CRGBA Factor )
 	}
 }
 
+// ***************************************************************************
+void CInstanceGroup::addCluster(CCluster *pCluster)
+{
+	_ClusterInstances.push_back(pCluster);
+}
 
+// ***************************************************************************
+void CInstanceGroup::setClusterSystem(CInstanceGroup *pIG)
+{
+	_ClusterSystem = pIG;
+	for (uint32 i = 0; i < _Instances.size(); ++i)
+		if (_InstancesInfos[i].Clusters.size() == 0)
+			_Instances[i]->setClusterSystem (_ClusterSystem);
+}
 
+// ***************************************************************************
+void CInstanceGroup::getDynamicPortals (std::vector<std::string> &names)
+{
+	for (uint32 i = 0; i < _Portals.size(); ++i)
+		if (_Portals[i].getName() != "")
+			names.push_back (_Portals[i].getName());
+}
+
+// ***************************************************************************
+void CInstanceGroup::setDynamicPortal (std::string& name, bool opened)
+{
+	for (uint32 i = 0; i < _Portals.size(); ++i)
+		if (_Portals[i].getName() == name)
+			_Portals[i].open (opened);
+}
+
+// ***************************************************************************
+bool CInstanceGroup::getDynamicPortal (std::string& name)
+{
+	for (uint32 i = 0; i < _Portals.size(); ++i)
+		if (_Portals[i].getName() == name)
+			return _Portals[i].isOpened ();
+	return false;
+}
+
+// ***************************************************************************
+void CInstanceGroup::setPos (const CVector &pos)
+{
+	if (_Root != NULL)
+		_Root->setPos (pos);
+}
+
+// ***************************************************************************
+void CInstanceGroup::setRotQuat (const CQuat &quat)
+{
+	if (_Root != NULL)
+		_Root->setRotQuat (quat);
+}
+
+// ***************************************************************************
+CVector CInstanceGroup::getPos ()
+{
+	if (_Root != NULL)
+		return _Root->getPos ();
+	else
+		return CVector(0.0f, 0.0f, 0.0f);
+}
+
+// ***************************************************************************
+CQuat CInstanceGroup::getRotQuat ()
+{
+	if (_Root != NULL)
+		return _Root->getRotQuat ();
+	else
+		return CQuat();
+}
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * <File description>
  *
- * $Id: hrc_trav.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: hrc_trav.h,v 1.2 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,6 +90,8 @@ public:
 	sint				getRenderOrder() const {return 1000;}
 	void				traverse()
 	{
+		_MovingObjects.clear();
+
 		// Traverse the graph.
 		if(Root)
 			Root->traverse(NULL);
@@ -103,6 +105,9 @@ public:
 
 
 public:
+
+	std::vector<IModel*> _MovingObjects;
+
 	// ONLY FOR OBSERVERS.
 
 	sint64		CurrentDate;	// The current date of the traversal, usefull for matrix update.

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.42 2001/07/24 08:36:50 vizerie Exp $
+ * $Id: scene.cpp,v 1.43 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,8 @@
 #include "3d/skeleton_model.h"
 #include "3d/particle_system_model.h"
 #include "3d/coarse_mesh_manager.h"
+#include "3d/cluster.h"
+#include "3d/scene_group.h"
 #include "3d/flare_model.h"
 
 #include "nel/misc/file.h"
@@ -75,7 +77,8 @@ void	CScene::registerBasics()
 	CParticleSystemModel::registerBasic() ;
 	CMeshMultiLodInstance::registerBasic();
 	CCoarseMeshManager::registerBasic();
-	CFlareModel::registerBasic() ;
+	CCluster::registerBasic();
+	CFlareModel::registerBasic();
 }
 
 	
@@ -100,7 +103,6 @@ CScene::CScene()
 
 	Root= NULL;
 
-
 	_CurrentTime = 0 ;
 	_EllapsedTime = 0 ;
 	_RealTime = 0 ;
@@ -108,7 +110,6 @@ CScene::CScene()
 	// TODO: init NULL ligthgroup root.
 
 	// \todo yoyo: init NULL ligthgroup root.
-
 }
 // ***************************************************************************
 void	CScene::release()
@@ -194,6 +195,11 @@ void	CScene::initDefaultRoots()
 	AnimDetailTrav->setRoot(Root);
 	LoadBalancingTrav->setRoot(Root);
 
+
+	// The root is always freezed (never move).
+	Root->freeze();
+
+
 	// \todo yoyo: create / setRoot the lightgroup.
 }
 
@@ -207,6 +213,19 @@ void	CScene::initCoarseMeshManager ()
 	_StaticCoarseMeshManager->setTextureFile (NL3D_SCENE_STATIC_COARSE_MANAGER_TEXTURE);
 	_DynamicCoarseMeshManager->setTextureFile (NL3D_SCENE_DYNAMIC_COARSE_MANAGER_TEXTURE);
 }
+
+// ***************************************************************************
+void	CScene::initGlobalnstanceGroup ()
+{
+	// Init the instance group that represent the world
+	_GlobalInstanceGroup = new CInstanceGroup;
+	CCluster *pCluster = (CCluster*)createModel (ClusterId);
+	CClipTrav *pClipTrav = (CClipTrav*)(getTrav (ClipTravId));
+	pClipTrav->unlink (NULL, pCluster);
+	pCluster->Group = _GlobalInstanceGroup;
+	_GlobalInstanceGroup->addCluster (pCluster);
+}
+
 // ***************************************************************************
 void	CScene::addTrav(ITrav *v)
 {
@@ -247,7 +266,10 @@ void	CScene::render(bool	doHrcPass)
 
 
 	// Set the renderTrav for cliptrav.
-	ClipTrav->setRenderTrav(RenderTrav);
+	ClipTrav->setRenderTrav (RenderTrav);
+	ClipTrav->setHrcTrav (HrcTrav);
+	ClipTrav->RootCluster = _GlobalInstanceGroup->_ClusterInstances[0];
+	ClipTrav->Camera = CurrentCamera;
 
 	// For all render traversals, traverse them (except the Hrc one), in ascending order.
 	TTravMap::iterator	it;
@@ -388,7 +410,6 @@ void CScene::createInstanceAsync(const string &shapeName, CTransformShape **pIns
 }
 
 // ***************************************************************************
-
 void CScene::deleteInstance(CTransformShape *pTrfmShp)
 {
 	IShape *pShp = NULL;
@@ -399,7 +420,7 @@ void CScene::deleteInstance(CTransformShape *pTrfmShp)
 	
 	deleteModel( pTrfmShp );
 
-	if(pShp)
+	if (pShp)
 	{
 		// Even if model already deleted by smarptr the release function works
 		_ShapeBank->release( pShp );
@@ -407,6 +428,7 @@ void CScene::deleteInstance(CTransformShape *pTrfmShp)
 	
 }
 
+// ***************************************************************************
 void CScene::setAutoAnim( CAnimation *pAnim )
 {
 	uint nAnimNb;

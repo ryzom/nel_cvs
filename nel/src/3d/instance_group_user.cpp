@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.4 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: instance_group_user.cpp,v 1.5 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -188,5 +188,57 @@ const NLMISC::CVector& CInstanceGroupUser::getInstanceScale (uint instanceNb) co
 }
 
 // ***************************************************************************
+void CInstanceGroupUser::createRoot (UScene &scene)
+{
+	_InstanceGroup.createRoot (((CSceneUser*)&scene)->getScene());
+}
+
+// ***************************************************************************
+void CInstanceGroupUser::setClusterSystem (UInstanceGroup *pClusterSystem)
+{
+	_InstanceGroup.setClusterSystem (&((CInstanceGroupUser*)pClusterSystem)->_InstanceGroup);
+}
+
+// ***************************************************************************
+void CInstanceGroupUser::getDynamicPortals (std::vector<std::string> &names)
+{
+	_InstanceGroup.getDynamicPortals (names);
+}
+
+// ***************************************************************************
+void CInstanceGroupUser::setDynamicPortal (std::string& name, bool opened)
+{
+	_InstanceGroup.setDynamicPortal (name, opened);
+}
+
+// ***************************************************************************
+bool CInstanceGroupUser::getDynamicPortal (std::string& name)
+{
+	return _InstanceGroup.getDynamicPortal (name);
+}
+
+// ***************************************************************************
+void CInstanceGroupUser::setPos (const NLMISC::CVector &pos)
+{
+	_InstanceGroup.setPos (pos);
+}
+
+// ***************************************************************************
+void CInstanceGroupUser::setRotQuat (const NLMISC::CQuat &q)
+{
+	_InstanceGroup.setRotQuat (q);
+}
+
+// ***************************************************************************
+CVector CInstanceGroupUser::getPos ()
+{
+	return _InstanceGroup.getPos ();
+}
+
+// ***************************************************************************
+CQuat CInstanceGroupUser::getRotQuat ()
+{
+	return _InstanceGroup.getRotQuat();
+}
 
 } // NL3D

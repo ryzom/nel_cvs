@@ -1,0 +1,183 @@
+/** \file portal.cpp
+ * Implementation of a portal
+ *
+ * $Id: portal.cpp,v 1.1 2001/07/30 14:40:14 besson Exp $
+ */
+
+/* Copyright, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#include "3d/portal.h"
+#include "nel/misc/matrix.h"
+#include "nel/misc/stream.h"
+#include "nel/misc/polygon.h"
+#include "3d/scene.h"
+#include "3d/transform_shape.h"
+#include "3d/mesh_instance.h"
+
+using namespace NLMISC;
+using namespace std;
+
+namespace NL3D 
+{
+
+// ***************************************************************************
+CPortal::CPortal()
+{
+	_Clusters[0] = _Clusters[1] = NULL;
+	_Opened = true;
+}
+
+// ***************************************************************************
+bool CPortal::clipPyramid (CVector &observer, std::vector<CPlane> &pyramid)
+{
+	if (!_Opened)
+		return false;
+	// Clip portal with pyramid
+	CPolygon p;
+	p.Vertices = _Poly;
+	p.clip( &pyramid[1], pyramid.size()-1 );
+
+	// Construct pyramid with clipped portal
+	if( p.Vertices.size() > 2 )
+	{
+		uint i;
+		// Found the right orientation
+		CVector n = (p.Vertices[1]-p.Vertices[0])^(p.Vertices[2]-p.Vertices[0]);
+		if( ((observer-p.Vertices[0])*n) < 0.0f )
+		{
+			// Invert vertices
+			for( i = 0; i < (p.Vertices.size()/2); ++i )
+			{
+				CVector tmp = p.Vertices[i];
+				p.Vertices[i] = p.Vertices[p.Vertices.size()-1-i];
+				p.Vertices[p.Vertices.size()-1-i] = tmp;
+			}
+		}
+		// Make pyramid : preserve 0 and 1 plane which are near and far plane
+		pyramid.resize (p.Vertices.size()+2);
+		for( i = 0; i < (p.Vertices.size()); ++i )
+		{
+			pyramid[i+2].make( observer, p.Vertices[i], p.Vertices[(i+1)%p.Vertices.size()] );
+		}
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+// ***************************************************************************
+bool CPortal::isInFront (CVector &v)
+{
+	CVector v1 = _Poly[1] - _Poly[0];
+	CVector v2 = _Poly[2] - _Poly[0];
+	CVector n = v1^v2;
+	CVector pv = v - _Poly[0];
+	return ((n*pv) > 0.0f);
+}
+
+// ***************************************************************************
+bool CPortal::setCluster(CCluster *cluster)
+{
+	if( _Clusters[0] == NULL )
+	{
+		_Clusters[0] = cluster;
+		return true;
+	}
+	if( _Clusters[1] == NULL )
+	{
+		_Clusters[1] = cluster;
+		return true;
+	}
+	return false;
+}
+
+// ***************************************************************************
+uint8 CPortal::getNbCluster()
+{
+	uint8 nRet = 0;
+	if( _Clusters[0] != NULL )
+		nRet++;
+	if( _Clusters[1] != NULL )
+		nRet++;
+	return nRet;
+}
+
+// ***************************************************************************
+bool CPortal::setPoly(std::vector<CVector> &poly)
+{
+	uint i;
+
+	if( poly.size() < 3 )
+		return false;
+
+	// Check if the polygon is a plane
+	CPlane p;
+	p.make( poly[0], poly[1], poly[2] );
+	p.normalize();
+	float dist;
+	for( i = 0; i < (poly.size()-3); ++i )
+	{
+		dist = fabsf(p*poly[i+3]);
+		if( dist > 0.0001 )
+			return false;
+	}
+
+	// Check if the polygon is convex
+	/// \todo check if the polygon has the good orientation
+	/*
+	CPlane p2;
+	for( i = 0; i < (poly.size()-1); ++i )
+	{
+		p2.make( poly[i], poly[i+1], poly[i]+p.getNormal() );
+		for( j = 0; j < poly.size(); ++j )
+		if( (j != i) && (j != i+1) )
+		{
+			if( p2*poly[j] < 0.0f )
+				return false;
+		}
+	}*/
+
+	// Set the value
+	_LocalPoly = poly;
+	_Poly = poly;
+
+	return true;
+}
+
+// ***************************************************************************
+void CPortal::serial (NLMISC::IStream& f)
+{
+	f.serialCont (_LocalPoly);
+	if (f.isReading())
+		_Poly = _LocalPoly;
+	f.serial (_Name);
+}
+
+// ***************************************************************************
+void CPortal::setWorldMatrix (const CMatrix &WM)
+{
+	for (uint32 i = 0; i < _LocalPoly.size(); ++i)
+		_Poly[i] = WM.mulPoint(_LocalPoly[i]);
+}
+
+
+} // NL3D

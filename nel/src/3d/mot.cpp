@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.13 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mot.cpp,v 1.14 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -382,41 +382,54 @@ void	ITrav::copyChildren(IModel *parentFrom, IModel *parentTo) const
 
 
 // ***************************************************************************
-sint	ITrav::getNumChildren(IModel *m) const
+sint ITrav::getNumChildren (IModel *m) const
 {
-	IObs	*o= m->getObs(getClassId());
+	IObs *o = m->getObs(getClassId());
 	return o->getNumChildren();
 }
 // ***************************************************************************
-IModel	*ITrav::getFirstChild(IModel *m) const
+IModel* ITrav::getFirstChild (IModel *m) const
 {
-	IObs	*o= m->getObs(getClassId());
-	return o->getFirstChild()->Model;
+	IObs *o = m->getObs(getClassId());
+	IObs *child = o->getFirstChild();
+	if (child != NULL)
+		return child->Model;
+	return NULL;
 }
 // ***************************************************************************
-IModel	*ITrav::getNextChild(IModel *m) const
+IModel* ITrav::getNextChild (IModel *m) const
 {
-	IObs	*o= m->getObs(getClassId());
-	return o->getNextChild()->Model;
+	IObs *o = m->getObs(getClassId());
+	IObs *child = o->getNextChild();
+	if (child != NULL)
+		return child->Model;
+	return NULL;
 }
 
 // ***************************************************************************
-sint	ITrav::getNumParents(IModel *m) const
+sint ITrav::getNumParents (IModel *m) const
 {
-	IObs	*o= m->getObs(getClassId());
+	IObs *o = m->getObs(getClassId());
 	return o->getNumParents();
 }
 // ***************************************************************************
-IModel	*ITrav::getFirstParent(IModel *m) const
+IModel* ITrav::getFirstParent (IModel *m) const
 {
-	IObs	*o= m->getObs(getClassId());
-	return o->getFirstParent()->Model;
+	IObs *o = m->getObs(getClassId());
+	IObs *father = o->getFirstParent();
+	if (father != NULL)
+		return father->Model;
+	return NULL;
+
 }
 // ***************************************************************************
-IModel	*ITrav::getNextParent(IModel *m) const
+IModel* ITrav::getNextParent (IModel *m) const
 {
-	IObs	*o= m->getObs(getClassId());
-	return o->getNextParent()->Model;
+	IObs *o = m->getObs(getClassId());
+	IObs *father = o->getNextParent();
+	if (father != NULL)
+		return father->Model;
+	return NULL;
 }
 
 

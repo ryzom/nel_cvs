@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.2 2001/07/25 10:17:33 vizerie Exp $
+ * $Id: transform_user.h,v 1.3 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,6 +106,8 @@ public:
 			_Scene->getTrav(HrcTravId)->link(NULL, _Transform);
 		}
 	}
+
+	virtual void			setClusterSystem (UInstanceGroup *pIG);
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: transform_user.cpp,v 1.3 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,11 +24,27 @@
  */
 
 #include "3d/transform_user.h"
+#include "3d/instance_group_user.h"
+#include "scene_group.h"
 
 
 namespace NL3D
 {
 
+// ***************************************************************************
+void CTransformUser::setClusterSystem (UInstanceGroup *pIG)
+{
+	nlassert(_Transform) ; // object invalid now ...
+	if ((pIG == NULL) || (pIG == (UInstanceGroup*)-1))
+	{
+		if (pIG == NULL)
+			_Transform->setClusterSystem (NULL);
+		else
+			_Transform->setClusterSystem ((CInstanceGroup*)-1);
+	}
+	else
+		_Transform->setClusterSystem (&((CInstanceGroupUser*)pIG)->_InstanceGroup);
+}
 
 
 

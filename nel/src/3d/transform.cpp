@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.21 2001/07/18 10:23:21 berenguier Exp $
+ * $Id: transform.cpp,v 1.22 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,8 @@ CTransform::CTransform()
 
 	_Transparent = false;
 	_Opaque = true;
+
+	_ClusterSystem = NULL;
 }
 
 // ***************************************************************************
@@ -172,6 +174,20 @@ void			CTransform::freeze()
 	hrcObs->Frozen= true;
 }
 
+// ***************************************************************************
+void			CTransform::setDontUnfreezeChildren(bool val)
+{
+	CTransformHrcObs	*hrcObs= (CTransformHrcObs*)getObs(HrcTravId);
+	hrcObs->DontUnfreezeChildren = val;
+}
+
+
+// ***************************************************************************
+const CMatrix& CTransform::getWorldMatrix()
+{
+	CTransformHrcObs *pObs = (CTransformHrcObs*)getObs(HrcTravId);
+	return pObs->WorldMatrix;
+}
 
 
 // ***************************************************************************
@@ -215,9 +231,11 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 
 		// If father is not Frozen, so do I.
 		CTransformHrcObs	*hrcTransCaller= dynamic_cast<CTransformHrcObs*>(caller);
-		// if caller is not a CTransformHrcObs (what is it??? :) ),
-		//  or if father is not frozen (for any reason), disable us!
-		if(!hrcTransCaller || !hrcTransCaller->Frozen)
+
+		// if caller is a CTransformHrcObs
+		//  and if it is not frozen (for any reason), disable us!
+
+		if (hrcTransCaller && !hrcTransCaller->Frozen && !hrcTransCaller->DontUnfreezeChildren)
 			Frozen= false;
 	}
 	// else, default!!
@@ -237,6 +255,10 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 		{
 			WorldMatrix=  *pFatherWM * LocalMatrix;
 			WorldDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
+
+			// Add the model to the moving object list
+			if (!Frozen)
+				static_cast<CHrcTrav*>(Trav)->_MovingObjects.push_back (Model);
 		}
 	}
 
@@ -264,6 +286,10 @@ void	CTransformHrcObs::traverse(IObs *caller)
 void	CTransformClipObs::traverse(IObs *caller)
 {
 	nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
+
+	if ((Date == static_cast<CClipTrav*>(Trav)->CurrentDate) && Visible)
+		return;
+	Date = static_cast<CClipTrav*>(Trav)->CurrentDate;
 
 	Visible= false;
 

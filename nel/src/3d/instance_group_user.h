@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: instance_group_user.h,v 1.2 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,8 @@ namespace NLMISC
 namespace NL3D 
 {
 
+class UScene;
+class UInstanceGroup;
 
 /**
  * Implementation of the user interface managing instance groups.
@@ -67,8 +69,23 @@ private:
 	const NLMISC::CQuat& getInstanceRot (uint instanceNb) const;
 	const NLMISC::CVector& getInstanceScale (uint instanceNb) const;
 
+	void createRoot (UScene &scene);
+	void setClusterSystem (UInstanceGroup *pClusterSystem);
+	void getDynamicPortals (std::vector<std::string> &names);
+	void setDynamicPortal (std::string& name, bool opened);
+	bool getDynamicPortal (std::string& name);
+
+
+	void setPos (const NLMISC::CVector &pos);
+	void setRotQuat (const NLMISC::CQuat &q);
+
+	NLMISC::CVector getPos ();
+	NLMISC::CQuat	getRotQuat ();
+
 	// The real instance group
 	CInstanceGroup	_InstanceGroup;
+
+	friend class CTransformUser;
 };
 
 

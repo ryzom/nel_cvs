@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.10 2001/07/05 09:38:49 besson Exp $
+ * $Id: transform_shape.cpp,v 1.11 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,13 +73,26 @@ bool	CTransformShapeClipObs::clip(IBaseClipObs *caller)
 
 	if(m->Shape)
 	{
-		std::vector<CPlane>	pyramid= trav->WorldPyramid;
+		static std::vector<CPlane>	pyramid;
+		pyramid= trav->WorldPyramid;
+
 		// Transform the pyramid in Object space.
 		CMatrix		&mat= HrcObs->WorldMatrix;
-		for(sint i=0;i<(sint)pyramid.size();i++)
+		sint	i;
+		for(i=0;i<(sint)pyramid.size();i++)
 		{
 			pyramid[i]= pyramid[i]*mat;
 		}
+		
+		// If the matrix has a scale, must normalize the planes, else, AABBoxExt sphere clips fails.
+		if(mat.hasScalePart())
+		{
+			for(i=0;i<(sint)pyramid.size();i++)
+			{
+				pyramid[i].normalize();
+			}
+		}
+
 		return m->Shape->clip(pyramid);
 	}
 	else

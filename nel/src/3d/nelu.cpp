@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.22 2001/07/18 13:42:34 corvazier Exp $
+ * $Id: nelu.cpp,v 1.23 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,6 +82,9 @@ void			CNELU::initScene(CViewport viewport)
 
 	// Set viewport
 	CNELU::Scene.setViewport (viewport);
+
+	// Init the world instance group
+	CNELU::Scene.initGlobalnstanceGroup();
 
 	// Create coarse mesh manager.
 	CNELU::Scene.initCoarseMeshManager ();

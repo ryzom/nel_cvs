@@ -1,7 +1,7 @@
 /** \file quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: quad_grid.h,v 1.2 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,6 +209,14 @@ private:// Methods.
 		x1= (sint)(ceil(bmax.x));
 		y0= (sint)(floor(bmin.y));
 		y1= (sint)(ceil(bmax.y));
+
+		// Very special case where the bbox.size==0 AND position is JUST on an edge of a case.
+		if(x0==x1)
+			x1++;
+		if(y0==y1)
+			y1++;
+
+		// Manage tiling.
 		if(x1-x0>=_Size)
 			x0=0, x1= _Size;
 		else

@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.11 2001/07/25 10:18:11 vizerie Exp $
+ * $Id: scene_user.h,v 1.12 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,6 +95,8 @@ public:
 		_Scene.setDriver(_DriverUser->getDriver());
 		// Set viewport
 		_Scene.setViewport (CViewport());
+		// Init the world instance group
+		_Scene.initGlobalnstanceGroup();
 		// Init coarse mesh manager
 		_Scene.initCoarseMeshManager ();
 

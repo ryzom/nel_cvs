@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: scene_group.h,v 1.2 2001/07/30 14:40:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,10 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/quat.h"
+#include "3d/portal.h"
+#include "3d/cluster.h"
+#include "3d/transform.h"
+
 #include <vector>
 
 namespace NLMISC
@@ -42,6 +46,8 @@ namespace NL3D {
 
 class CScene;
 class CTransformShape;
+
+
 /**
   * A CInstanceGroup is a group of mesh instance and so composed by
   *  - A reference to a mesh (refered by the name)
@@ -56,7 +62,13 @@ class CTransformShape;
   */
 class CInstanceGroup
 {
+
 public:
+
+	/**
+	 * Instance part
+	 */
+
 	/// An element of the group.
 	class CInstance
 	{
@@ -64,20 +76,25 @@ public:
 		/// Name of the instance
 		std::string Name;
 
-		// The parent instance (-1 if root)
+		/// The parent instance (-1 if root)
 		sint32 nParent;
 
-		// Transformations
+		/// The clusters the instance belongs to
+		std::vector<uint32> Clusters;
+
+		/// Transformations
 		NLMISC::CQuat Rot;
 		NLMISC::CVector Pos;
 		NLMISC::CVector Scale;
 
-		/// Serial the node
+		/// Serial the instance
 		void serial (NLMISC::IStream& f);
 	};
 
 	/// A vector of instance.
 	typedef std::vector<CInstance> TInstanceArray;
+
+	/// \todo remove all of these methods. For the moment DO NOT USE THEM !!!
 
 	/// Get number of instance in this group
 	uint getNumInstance () const;
@@ -95,13 +112,25 @@ public:
 	const NLMISC::CVector& getInstanceScale (uint instanceNb) const;
 
 	// Get the instance father (-1 if this is a root)
-	const int getInstanceParent (uint instanceNb) const;
+	const sint32 getInstanceParent (uint instanceNb) const;
+
+
+	/**
+	 * Construct, serialize and link to scene
+	 */
+
+	CInstanceGroup();
+	~CInstanceGroup();
 
 	/// Build the group
-	void build (const TInstanceArray& array);
+	void build (const TInstanceArray& array, const std::vector<CCluster>& Portals, 
+				const std::vector<CPortal>& Clusters);
 
 	/// Serial the group
 	void serial (NLMISC::IStream& f);
+
+	/// Add all the instances to the scene
+	void createRoot (CScene& scene);
 
 	/// Add all the instances to the scene
 	bool addToScene (CScene& scene);
@@ -109,15 +138,72 @@ public:
 	/// Remove all the instances from the scene
 	bool removeFromScene (CScene& scene);
 
-	void getLights( std::set<std::string> &LightNames );
-	void setLightFactor( const std::string &LightName, NLMISC::CRGBA nFactor );
+
+	/**
+	 * LightMap part
+	 */
+
+	/// Get all lights (lightmaps) from an instance group
+	void getLights (std::set<std::string> &LightNames);
+
+	/// Set the lightmap factor for the whole instance group
+	void setLightFactor (const std::string &LightName, NLMISC::CRGBA nFactor);
 
 
-// debug purpose : protected:
+	/**
+	 * Cluster/Portal system part
+	 */
+
+	/// To construct the cluster system by hand
+	void addCluster (CCluster *pCluster);
+
+	/// Set the cluster system to test for instances that are not in a cluster
+	void setClusterSystem (CInstanceGroup *pIG);
+
+	/// Get all dynamic portals of an instance group
+	void getDynamicPortals (std::vector<std::string> &names);
+
+	/// Set the state of a dynamic portal (true=opened, false=closed)
+	void setDynamicPortal (std::string& name, bool opened);
+
+	/// Get the state of a dynamic portal (true=opened, false=closed)
+	bool getDynamicPortal (std::string& name);
+
+
+	/**
+	 * Transformation part
+	 */
+
+	/// Set the position of the IG
+	void setPos (const CVector &pos);
+
+	/// Set the rotation of the IG
+	void setRotQuat (const CQuat &quat);
+
+	/// Get the position of the IG
+	CVector getPos ();
+	
+	/// Get the rotation of the IG
+	CQuat getRotQuat ();
+
+private:
+
+	/// Look through all hierarchy our clusters that must be linked to our parent
+	bool linkToParent (CInstanceGroup*pFather);
+
 public:
 
 	TInstanceArray					_InstancesInfos;
 	std::vector<CTransformShape*>	_Instances;
+
+	std::vector<CPortal>	_Portals;
+	std::vector<CCluster>	_ClusterInfos;
+	std::vector<CCluster*>	_ClusterInstances;
+
+	CTransform *_Root;
+
+	CClipTrav *_ClipTrav;
+	CInstanceGroup *_ClusterSystem;
 };
 
 

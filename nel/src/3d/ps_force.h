@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_force.h,v 1.2 2001/06/27 16:57:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,16 @@ protected:
 
 	
 };
+
+
+/// this is an interface to set force instensity (acceleration for gravity, k coefficient for springs)
+struct CPSForceIntensity
+{
+	virtual float getIntensity(void) const  = 0 ;
+	virtual void setIntensity(float value) = 0 ;
+
+} ;
+
 
 
 /** a helper class to create isotropic force : they are independant of the basis, and have no position 
@@ -206,7 +216,7 @@ template <class T> void CIsotropicForceT<T>::performMotion(CAnimationTime ellaps
 
 /// a gravity class
 
-class CPSGravity : public CPSForce
+class CPSGravity : public CPSForce, public CPSForceIntensity
 {
 public:
 	/// Compute the force on the targets
@@ -215,6 +225,9 @@ public:
 	/// Show the force (edition mode)
 	virtual void show(CAnimationTime ellapsedTime)  ;
 
+	// inherited from CPSForceIntensity
+	virtual float getIntensity(void) const  { return getG() ; }
+	virtual void setIntensity(float value) { setG(value) ; }
 
 	/// set the gravity strenght
 	void setG(float g) { _G = g ; }
@@ -251,10 +264,13 @@ protected:
 
 /// a spring class
 
-class CPSSpring : public CPSForce
+class CPSSpring : public CPSForce, public CPSForceIntensity
 {
 public:
 
+	// inherited from CPSForceIntensity
+	virtual float getIntensity(void) const  { return getK() ; }
+	virtual void setIntensity(float value) { setK(value) ; }
 
 	/// set the k coefficient of the spring
 	void setK(float k) { _K = k ; } 

@@ -1,7 +1,7 @@
 /** \file mrm_mesh.h
  * Internal mesh for CMRMBuilder.
  *
- * $Id: mrm_mesh.h,v 1.5 2001/06/22 16:26:46 berenguier Exp $
+ * $Id: mrm_mesh.h,v 1.6 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,6 +92,26 @@ public:
  * \date 2000
  * \see CMRMBuilder
  */
+class	CMRMBlendShape
+{
+public:
+	// The vertices of the MRMMesh.
+	std::vector<CVector>		Vertices;
+	// The attributes of the MRMMesh.
+	std::vector<CVectorH>		Attributes[NL3D_MRM_MAX_ATTRIB];
+	// The number of used attributes of the MRMMesh.
+	sint						NumAttributes;
+};
+
+
+// ***************************************************************************
+/**
+ * An internal mesh representation for MRM. USER DO NOT USE IT!!
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ * \see CMRMBuilder
+ */
 class CMRMMesh
 {
 public:
@@ -105,6 +125,10 @@ public:
 	sint						NumAttributes;
 	// The faces of the MRMMesh.
 	std::vector<CMRMFace>		Faces;
+
+
+	/// List of BlendShapes.
+	std::vector<CMRMBlendShape>		BlendShapes;
 
 
 public:
@@ -127,6 +151,7 @@ class CMRMMeshGeom : public CMRMMesh
 public:
 	/// Same size than Faces, but points onto coarser Mesh verices. NB: MaterialId means nothing here.
 	std::vector<CMRMFace>		CoarserFaces;
+
 
 	CMRMMeshGeom	&operator=(const CMRMMesh &o)
 	{
@@ -241,6 +266,11 @@ public:
 	};
 
 
+	struct	CMRMBlendShapeFinal
+	{
+		std::vector<CWedge>			Wedges;
+	};
+
 public:
 	/** The wedges of the final mesh. Contains all Wedges for all lods, sorted from LOD0 to LODN, 
 	 * with additional empty wedges, for geomorph.
@@ -254,6 +284,9 @@ public:
 	bool						Skinned;
 	/// the finals Lods of the MRM.
 	std::vector<CLod>			Lods;
+
+
+	std::vector<CMRMBlendShapeFinal>			MRMBlendShapesFinals;
 
 
 	CMRMMeshFinal()

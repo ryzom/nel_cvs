@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.7 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: scene_group.h,v 1.8 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -166,6 +166,17 @@ public:
 
 	/// Set the lightmap factor for the whole instance group
 	void setLightFactor (const std::string &LightName, NLMISC::CRGBA nFactor);
+
+
+	/**
+	 * BlendShape part
+	 */
+
+	/// Get all the blendshapes from an instance group
+	void getBlendShapes (std::set<std::string> &BlendShapeNames);
+
+	/// Set the blendshape factor for the whole instance group (0 -> 100)
+	void setBlendShapeFactor (const std::string &BlendShapeName, float rFactor);
 
 
 	/**

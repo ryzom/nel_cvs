@@ -67,8 +67,8 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "../obj/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /FD /GZ /Zm200 /c
-# SUBTRACT CPP /Gy /YX
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /FD /GZ /Zm200 /c
+# SUBTRACT CPP /Gy /Fr /YX
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -732,6 +732,14 @@ SOURCE=.\3d\mesh_geom.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mesh_morpher.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_morpher.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mesh_mrm.cpp
 # End Source File
 # Begin Source File
@@ -893,6 +901,14 @@ SOURCE=.\3d\animated_material.cpp
 # Begin Source File
 
 SOURCE=.\3d\animated_material.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\animated_morph.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\animated_morph.h
 # End Source File
 # Begin Source File
 

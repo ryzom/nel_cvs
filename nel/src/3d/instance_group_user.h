@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.9 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: instance_group_user.h,v 1.10 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,6 +76,7 @@ private:
 	const UInstance *getByName (std::string& name) const;
 
 	void setLightFactor (const std::string &LightName, NLMISC::CRGBA nFactor);
+	void setBlendShapeFactor (const std::string &bsName, float rFactor);
 
 	void createRoot (UScene &scene);
 	void setClusterSystem (UInstanceGroup *pClusterSystem);

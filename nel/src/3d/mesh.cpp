@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.40 2001/09/18 08:33:43 berenguier Exp $
+ * $Id: mesh.cpp,v 1.41 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "3d/mesh_instance.h"
 #include "3d/scene.h"
 #include "3d/skeleton_model.h"
+#include "3d/mesh_morpher.h"
 #include "nel/misc/bsphere.h"
 
 
@@ -115,6 +116,7 @@ CMeshGeom::CMeshGeom()
 {
 	_Skinned= false;
 	_VertexBufferHardDirty= true;
+	_MeshMorpher = new CMeshMorpher;
 }
 
 
@@ -131,6 +133,7 @@ CMeshGeom::~CMeshGeom()
 		_Driver->deleteVertexBufferHard(_VertexBufferHard);
 		_VertexBufferHard= NULL;
 	}
+	delete _MeshMorpher;
 }
 
 
@@ -211,8 +214,11 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 	// Setup locals.
 	TCornerSet	corners;
 	const CFaceTmp		*pFace= &(*tmpFaces.begin());
+	uint32		nFaceMB = 0;
 	sint		N= tmpFaces.size();
 	sint		currentVBIndex=0;
+
+	m.VertLink.clear ();
 
 	// process each face, building up the VB.
 	for(;N>0;N--, pFace++)
@@ -224,6 +230,13 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 		findVBId(corners, &pFace->Corner[0], currentVBIndex, m.Vertices[v0]);
 		findVBId(corners, &pFace->Corner[1], currentVBIndex, m.Vertices[v1]);
 		findVBId(corners, &pFace->Corner[2], currentVBIndex, m.Vertices[v2]);
+		CMesh::CVertLink vl1(nFaceMB, 0, pFace->Corner[0].VBId);
+		CMesh::CVertLink vl2(nFaceMB, 1, pFace->Corner[1].VBId);
+		CMesh::CVertLink vl3(nFaceMB, 2, pFace->Corner[2].VBId);
+		m.VertLink.push_back(vl1);
+		m.VertLink.push_back(vl2);
+		m.VertLink.push_back(vl3);
+		++nFaceMB;
 	}
 
 
@@ -274,11 +287,15 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 		}
 	}
 
-
+	this->_MeshMorpher->BlendShapes = m.BlendShapes;
 	// End!!
 }
 
-
+// ***************************************************************************
+void CMeshGeom::setBlendShapes(std::vector<CBlendShape>&bs)
+{
+	_MeshMorpher->BlendShapes = bs;
+}
 
 // ***************************************************************************
 bool	CMeshGeom::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
@@ -391,7 +408,9 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 
 
 	// update the VBufferHard (create/delete), to maybe render in AGP memory.
-	updateVertexBufferHard(drv);
+	updateVertexBufferHard (drv);
+	_MeshMorpher->init (&_VBufferOri, &_VBuffer, _VertexBufferHard);
+	_MeshMorpher->update (mi->getBlendShapeFactors());
 
 	// Global alpha used ?
 	bool globalAlphaUsed=globalAlpha!=1;
@@ -520,22 +539,27 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 1:
+		- added blend shapes
 	Version 0:
 		- separate serialisation CMesh / CMeshGeom.
 	*/
-	sint	ver= f.serialVersion(0);
+	sint ver = f.serialVersion (1);
+
+	if (ver >= 1)
+		f.serial (*_MeshMorpher);
 
 	// serial geometry.
-	f.serial(_VBuffer);
-	f.serialCont(_MatrixBlocks);
-	f.serial(_BBox);
+	f.serial (_VBuffer);
+	f.serialCont (_MatrixBlocks);
+	f.serial (_BBox);
 	f.serial (_Skinned);
 
 
 	// If _VertexBuffer changed, flag the VertexBufferHard.
 	if(f.isReading())
 	{
-		_VertexBufferHardDirty= true;
+		_VertexBufferHardDirty = true;
 	}
 
 }
@@ -1022,6 +1046,11 @@ void	CMesh::build (CMeshBase::CMeshBaseBuild &mbase, CMeshBuild &m)
 	_MeshGeom->build (m, mbase.Materials.size());
 }
 
+// ***************************************************************************
+void CMesh::setBlendShapes(std::vector<CBlendShape>&bs)
+{
+	_MeshGeom->setBlendShapes (bs);
+}
 
 // ***************************************************************************
 void	CMesh::build(CMeshBase::CMeshBaseBuild &mbuild, CMeshGeom &meshGeom)

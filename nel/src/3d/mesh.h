@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.14 2001/09/10 07:41:30 corvazier Exp $
+ * $Id: mesh.h,v 1.15 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "3d/animated_material.h"
 #include "3d/mesh_base.h"
 #include "3d/mesh_geom.h"
+#include "3d/mesh_morpher.h"
 #include <set>
 #include <vector>
 
@@ -123,6 +124,18 @@ public:
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	};
 
+	struct CVertLink
+	{
+		uint32 nFace, nCorner;
+		uint32 VertVB;
+
+		CVertLink (uint32 face, uint32 corner, uint32 iVB)
+		{
+			nFace = face;
+			nCorner = corner;
+			VertVB = iVB;
+		}
+	};
 
 	/// A mesh information.
 	struct	CMeshBuild
@@ -130,16 +143,22 @@ public:
 		/** the IDRV_VF* flags which tells what vertices data are used. See IDriver::setVertexFormat() for 
 		 * more information. NB: IDRV_VF_XYZ is always considered to true.
 		 */
-		sint32					VertexFlags;
+		sint32						VertexFlags;
 
 		// Vertices array
-		std::vector<CVector>	Vertices;
+		std::vector<CVector>		Vertices;
 
 		// Palette Skinning Vertices array (same size as Vertices). NULL if no skinning.
 		std::vector<CSkinWeight>	SkinWeights;
 
 		// Faces array
-		std::vector<CFace>		Faces;
+		std::vector<CFace>			Faces;
+
+		// Blend shapes if some
+		std::vector<CBlendShape>	BlendShapes;
+
+		// Link between VB and max vertex indices
+		std::vector<CVertLink>		VertLink; // Filled when called build
 
 		// Serialization
 		//void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
@@ -164,6 +183,7 @@ public:
 	/// Build a mesh from material info, and a builded MeshGeom. WARNING: This has a side effect of deleting AnimatedMaterials.
 	void			build(CMeshBase::CMeshBaseBuild &mbuild, CMeshGeom &meshGeom);
 
+	void			setBlendShapes(std::vector<CBlendShape>&bs);
 
 	/// \name From IShape
 	// @{
@@ -227,7 +247,6 @@ private:
 
 	// The geometry.
 	CMeshGeom		*_MeshGeom;
-
 };
 
 
@@ -252,6 +271,7 @@ public:
 	/// Build a meshGeom
 	void			build(CMesh::CMeshBuild &mbuild, uint numMaxMaterial);
 
+	void			setBlendShapes(std::vector<CBlendShape>&bs);
 
 	/// \name From IMeshGeom
 	// @{
@@ -476,8 +496,10 @@ private:
 
 
 private:
-	/// The only one VBuffer of the mesh.
+	/// VBuffer of the mesh (potentially modified by the mesh morpher)
 	CVertexBuffer				_VBuffer;
+	/// The original VBuffer of the mesh used only if there are blend shapes.
+	CVertexBuffer				_VBufferOri;
 	/// The matrix blocks.
 	std::vector<CMatrixBlock>	_MatrixBlocks;
 	/// For clipping.
@@ -499,6 +521,8 @@ private:
 	void							updateVertexBufferHard(IDriver *drv);
 	// @}
 
+	// The Mesh Morpher
+	CMeshMorpher	*_MeshMorpher; 
 
 private:
 	// Locals, for build.

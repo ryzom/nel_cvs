@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.21 2001/09/07 07:32:08 corvazier Exp $
+ * $Id: mrm_builder.cpp,v 1.22 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -486,6 +486,8 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 	// Collapse the Vertex.
 	//========================
 	Vertex1.Current= Vertex1.Current*(1-InterValue) + Vertex2.Current*InterValue;
+	for (i = 0; i < Vertex1.BSCurrent.size(); ++i)
+		Vertex1.BSCurrent[i] = Vertex1.BSCurrent[i]*(1-InterValue) + Vertex2.BSCurrent[i]*InterValue;
 	Vertex2.CollapsedTo= edgeV1;
 	if(_Skinned)
 		Vertex1.CurrentSW= collapseSkinWeight(Vertex1.CurrentSW, Vertex2.CurrentSW, InterValue);
@@ -548,11 +550,22 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 			CVectorH	&w0= TmpAttributes[attId][ face.getAssociatedWedge(attId, edgeV1) ].Current;
 			CVectorH	&w1= TmpAttributes[attId][ face.getAssociatedWedge(attId, edgeV2) ].Current;
 
-			CVectorH	&itp= face.InterpolatedAttributes[attId];
+			CVectorH	&itp= face.InterpolatedAttribute;
 			itp.x= w0.x*(1-InterValue) + w1.x*InterValue;
 			itp.y= w0.y*(1-InterValue) + w1.y*InterValue;
 			itp.z= w0.z*(1-InterValue) + w1.z*InterValue;
 			itp.w= w0.w*(1-InterValue) + w1.w*InterValue;
+
+			for (j = 0; j < face.BSInterpolated.size(); ++j)
+			{
+				CVectorH &w0 = TmpAttributes[attId][face.getAssociatedWedge(attId, edgeV1)].BSCurrent[j];
+				CVectorH &w1 = TmpAttributes[attId][face.getAssociatedWedge(attId, edgeV2)].BSCurrent[j];
+				CVectorH &itb = face.BSInterpolated[j];
+				itb.x = w0.x*(1-InterValue) + w1.x*InterValue;
+				itb.y = w0.y*(1-InterValue) + w1.y*InterValue;
+				itb.z = w0.z*(1-InterValue) + w1.z*InterValue;
+				itb.w = w0.w*(1-InterValue) + w1.w*InterValue;
+			}
 		}
 
 
@@ -634,8 +647,9 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 					CMRMFaceBuild	&face= TmpFaces[wedge.InterpolatedFace];
 
 					// Must interpolate it.
-					wedge.Current= face.InterpolatedAttributes[attId];
-
+					wedge.Current= face.InterpolatedAttribute;
+					wedge.BSCurrent = face.BSInterpolated;
+					
 					// Must merge the wedge of the second vertex on first
 					// ONLY IF 2 interpolated wedges are shared and NbSharedFaces!=0.
 					if(	numWedge==face.getAssociatedWedge(attId, edgeV2) && 
@@ -773,17 +787,28 @@ void	CMRMBuilder::init(const CMRMMesh &baseMesh)
 	for(i=0;i<(sint)baseMesh.Vertices.size();i++)
 	{
 		TmpVertices[i].Current= TmpVertices[i].Original= baseMesh.Vertices[i];
+		TmpVertices[i].BSCurrent.resize(baseMesh.BlendShapes.size());
+		for(uint32 j = 0; j <baseMesh.BlendShapes.size() ;++j)
+			TmpVertices[i].BSCurrent[j]= baseMesh.BlendShapes[j].Vertices[i];
 		if(_Skinned)
 			TmpVertices[i].CurrentSW= TmpVertices[i].OriginalSW= baseMesh.SkinWeights[i];
 	}
 	for(attId=0;attId<NumAttributes;attId++)
 	{
 		for(i=0;i<(sint)baseMesh.Attributes[attId].size();i++)
+		{
 			TmpAttributes[attId][i].Current= TmpAttributes[attId][i].Original= 
 			baseMesh.Attributes[attId][i];
+			TmpAttributes[attId][i].BSCurrent.resize(baseMesh.BlendShapes.size());
+			for(uint32 j = 0; j <baseMesh.BlendShapes.size() ;++j)
+				TmpAttributes[attId][i].BSCurrent[j]= baseMesh.BlendShapes[j].Attributes[attId][i];
+		}
 	}
 	for(i=0;i<(sint)baseMesh.Faces.size();i++)
+	{
 		TmpFaces[i]= baseMesh.Faces[i];
+		TmpFaces[i].BSInterpolated.resize(baseMesh.BlendShapes.size());
+	}
 
 
 	// Create vertices sharedFaces.
@@ -1016,6 +1041,105 @@ void	CMRMBuilder::makeLODMesh(CMRMMeshGeom &lodMesh)
 }
 
 // ***************************************************************************
+// Transform source blend shapes to source blend shapes modified (just calculate new vertex/attr position)
+/*void	CMRMBuilder::computeBsVerticesAttributes(vector<CMRMMesh> &srcBsMeshs, vector<CMRMMesh> &bsMeshsMod)
+{
+	sint	i, j, k, attId;
+
+	bsMeshsMod.resize (srcBsMeshs.size());
+	for (k = 0; k < (sint)srcBsMeshs.size(); ++k)
+	{
+		CMRMMesh &rBsMesh = srcBsMeshs[k];
+		CMRMMesh &rBsMeshMod = bsMeshsMod[k];
+
+		// Calculate modified vertices with the linear equation back tracking help
+		rBsMeshMod.Vertices.resize (rBsMesh.Vertices.size());
+		for (i = 0; i < (sint)rBsMesh.Vertices.size(); ++i)
+		{
+			CLinearEquation &LinEq = TmpVertices[i].CurrentLinEq;
+			rBsMeshMod.Vertices[i] = CVector(0.0f, 0.0f, 0.0f);
+			for (j = 0; j < (sint)LinEq.Elts.size(); ++j)
+			{
+				rBsMeshMod.Vertices[i] += LinEq.Elts[j].factor * rBsMesh.Vertices[LinEq.Elts[j].index];
+			}
+		}
+
+		// All attributes
+		rBsMeshMod.NumAttributes = NumAttributes;
+		for (attId = 0; attId < NumAttributes; attId++)
+		{
+			rBsMeshMod.Attributes[attId].resize (rBsMesh.Attributes[attId].size());
+			for (i = 0; i < (sint)rBsMesh.Attributes[attId].size(); ++i)
+			{
+				CLinearEquation &LinEq = TmpAttributes[attId][i].CurrentLinEq;
+				rBsMeshMod.Attributes[attId][i] = CVectorH(0.0f, 0.0f, 0.0f, 0.0f);
+				for (j = 0; j < (sint)LinEq.Elts.size(); ++j)
+				{
+					rBsMeshMod.Attributes[attId][i].x += LinEq.Elts[j].factor * rBsMesh.Attributes[attId][LinEq.Elts[j].index].x;
+					rBsMeshMod.Attributes[attId][i].y += LinEq.Elts[j].factor * rBsMesh.Attributes[attId][LinEq.Elts[j].index].y;
+					rBsMeshMod.Attributes[attId][i].z += LinEq.Elts[j].factor * rBsMesh.Attributes[attId][LinEq.Elts[j].index].z;
+					rBsMeshMod.Attributes[attId][i].w += LinEq.Elts[j].factor * rBsMesh.Attributes[attId][LinEq.Elts[j].index].w;
+				}
+			}
+		}
+	}
+}*/
+
+// ***************************************************************************
+// Transform source Blend Shape Meshes Modified into coarser blend shape mesh (compact vertices)
+void	CMRMBuilder::makeCoarserBS (vector<CMRMBlendShape> &csBsMeshs)
+{
+	uint32 i, k;
+	sint32 nSizeVert, nSizeAttr, attId;
+
+	// Calculate size of vertices array
+	nSizeVert = 0;
+	for (i = 0; i < (sint)TmpVertices.size(); ++i)
+		if(TmpVertices[i].CoarserIndex > nSizeVert)
+			nSizeVert = TmpVertices[i].CoarserIndex;
+	++nSizeVert;
+
+	for (k = 0; k < csBsMeshs.size(); ++k)
+	{
+		CMRMBlendShape &rBsCoarserMesh = csBsMeshs[k];
+
+		rBsCoarserMesh.Vertices.resize (nSizeVert);
+		rBsCoarserMesh.NumAttributes = NumAttributes;
+
+		// Vertices
+		for(i = 0; i < (sint)TmpVertices.size(); ++i)
+		{
+			CMRMVertex &vert = TmpVertices[i];
+			if (vert.CoarserIndex != -1)
+			{
+				rBsCoarserMesh.Vertices[vert.CoarserIndex] = vert.BSCurrent[k];
+			}
+		}
+
+		for (attId = 0; attId < NumAttributes; attId++)
+		{
+			// Calculate size of attribute attId array
+			nSizeAttr = 0;
+			for(i = 0; i < (sint)TmpAttributes[attId].size(); i++)
+				if (TmpAttributes[attId][i].CoarserIndex > nSizeAttr)
+					nSizeAttr = TmpAttributes[attId][i].CoarserIndex;
+			++nSizeAttr;
+
+			rBsCoarserMesh.Attributes[attId].resize (nSizeAttr);
+
+			for (i = 0; i < (sint)TmpAttributes[attId].size(); i++)
+			{
+				CMRMAttribute &wedge = TmpAttributes[attId][i];
+				if (wedge.CoarserIndex != -1)
+				{
+					rBsCoarserMesh.Attributes[attId][wedge.CoarserIndex] = wedge.BSCurrent[k];
+				}
+			}
+		}
+	}
+}
+
+// ***************************************************************************
 void	CMRMBuilder::makeFromMesh(const CMRMMesh &baseMesh, CMRMMeshGeom &lodMesh, CMRMMesh &coarserMesh, sint nWantedFaces)
 {
 	// Init Tmp values in MRM builder.
@@ -1026,6 +1150,9 @@ void	CMRMBuilder::makeFromMesh(const CMRMMesh &baseMesh, CMRMMeshGeom &lodMesh, 
 
 	// save the coarser mesh.
 	saveCoarserMesh(coarserMesh);
+	// Build coarser BlendShapes.
+	coarserMesh.BlendShapes.resize(baseMesh.BlendShapes.size());
+	makeCoarserBS(coarserMesh.BlendShapes);
 
 	// build the lodMesh (baseMesh, with vertex/Attributes collapse infos).
 	lodMesh= baseMesh;
@@ -1044,13 +1171,13 @@ void	CMRMBuilder::makeFromMesh(const CMRMMesh &baseMesh, CMRMMeshGeom &lodMesh, 
 
 
 // ***************************************************************************
-void	CMRMBuilder::buildAllLods(const CMRMMesh &baseMesh, std::vector<CMRMMeshGeom> &lodMeshs, uint nWantedLods, uint divisor)
+void	CMRMBuilder::buildAllLods(const CMRMMesh &baseMesh, std::vector<CMRMMeshGeom> &lodMeshs, 
+								  uint nWantedLods, uint divisor)
 {
 	sint	nFaces= baseMesh.Faces.size();
 	sint	nBaseFaces;
 	sint	i;
-	CMRMMesh	srcMesh= baseMesh;
-
+	CMRMMesh srcMesh = baseMesh;
 
 	// coarsest LOD will have those number of faces.
 	nBaseFaces=nFaces/divisor;
@@ -1069,15 +1196,16 @@ void	CMRMBuilder::buildAllLods(const CMRMMesh &baseMesh, std::vector<CMRMMeshGeo
 		nbWantedFaces= nBaseFaces + (nFaces-nBaseFaces) * (i-1)/(nWantedLods-1);
 		nbWantedFaces=max(nbWantedFaces,4);
 
-		// build this LOD.
+		// Build this LOD.
 		CMRMMesh	csMesh;
+		// The mesh
 		makeFromMesh(srcMesh, lodMeshs[i], csMesh, nbWantedFaces);
+
 		// next mesh to process is csMesh.
-		srcMesh= csMesh;
+		srcMesh = csMesh;
 	}
 	// the first lodMedsh gets the coarsest mesh.
 	lodMeshs[0]= srcMesh;
-
 }
 
 
@@ -1331,6 +1459,56 @@ void	CMRMBuilder::buildFinalMRM(std::vector<CMRMMeshGeom> &lodMeshs, CMRMMeshFin
 		}
 	}
 
+	// Blend Shape Stuff
+	finalMRM.MRMBlendShapesFinals.resize (lodMeshs[0].BlendShapes.size());
+	for (lodId = 0; lodId < nLods; ++lodId)
+	{
+		CMRMMeshGeom &lodMesh= lodMeshs[lodId];
+		CMRMMeshGeom &lodMeshPrec= lodMeshs[lodId==0?0:lodId-1];
+
+		// for all face corner.
+		for (i = 0; i < (sint)lodMesh.Faces.size(); ++i)
+		{
+			// The current face.
+			CMRMFace &face = lodMesh.Faces[i];
+			// the current face, but which points to the prec LOD vertices/attributes.
+			CMRMFace &faceCoarser = lodMesh.CoarserFaces[i];
+			// for 3 corners.
+			for (j = 0; j < 3; ++j)
+			{
+				CMRMCorner &corner = face.Corner[j];
+				CMRMCorner &cornerCoarser = faceCoarser.Corner[j];
+
+				sint startDestIndex = corner.WedgeStartId;
+
+				for (sint k = 0; k < (sint)finalMRM.MRMBlendShapesFinals.size(); ++k)
+				{
+					CMRMMeshFinal::CMRMBlendShapeFinal &rBSFinal = finalMRM.MRMBlendShapesFinals[k];
+
+					rBSFinal.Wedges.resize (finalMRM.Wedges.size());
+					// Fill WedgeStart used by this corner.
+					rBSFinal.Wedges[startDestIndex].Vertex = lodMesh.BlendShapes[k].Vertices[corner.Vertex];
+					for (attId = 0; attId < NumAttributes; ++attId)
+					{
+						rBSFinal.Wedges[startDestIndex].Attributes[attId] = lodMesh.BlendShapes[k].Attributes[attId][corner.Attributes[attId]];
+					}
+
+					// If geomorph, must fill the end too
+					if(lodId>0 && corner.WedgeStartId != corner.WedgeEndId)
+					{
+						sint endDestIndex = corner.WedgeEndId;
+
+						rBSFinal.Wedges[endDestIndex].Vertex = lodMeshPrec.BlendShapes[k].Vertices[cornerCoarser.Vertex];
+						for (attId = 0; attId < NumAttributes; ++attId)
+						{
+							rBSFinal.Wedges[endDestIndex].Attributes[attId] = lodMeshPrec.BlendShapes[k].Attributes[attId][cornerCoarser.Attributes[attId]];
+						}
+					}
+				}
+
+			}
+		}
+	}
 }
 
 
@@ -1849,21 +2027,238 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 
 	}
 
-
 	// Indicate Skinning.
 	mbuild.Skinned= _Skinned;
 
+	// Construct Blend Shapes
+	//// mbuild <- finalMRM
+	mbuild.BlendShapes.resize (finalMRM.MRMBlendShapesFinals.size());
+	for (k = 0; k < (sint)mbuild.BlendShapes.size(); ++k)
+	{
+		CBlendShape &rBS = mbuild.BlendShapes[k];
+		sint32 nNbVertVB = finalMRM.Wedges.size();
+		bool bIsDeltaPos = false;
+		rBS.deltaPos.resize (nNbVertVB, CVector(0.0f,0.0f,0.0f));
+		bool bIsDeltaNorm = false;
+		rBS.deltaNorm.resize (nNbVertVB, CVector(0.0f,0.0f,0.0f));
+		bool bIsDeltaUV = false;
+		rBS.deltaUV.resize (nNbVertVB, CUV(0.0f,0.0f));
+		bool bIsDeltaCol = false;
+		rBS.deltaCol.resize (nNbVertVB, CRGBAF(0.0f,0.0f,0.0f,0.0f));
+
+		rBS.VertRefs.resize (nNbVertVB, 0xffffffff);
+
+		for (i = 0; i < nNbVertVB; i++)
+		{
+			const CMRMMeshFinal::CWedge	&rWedgeRef = finalMRM.Wedges[i];
+			const CMRMMeshFinal::CWedge	&rWedgeTar = finalMRM.MRMBlendShapesFinals[k].Wedges[i];
+
+			CVector delta = rWedgeTar.Vertex - rWedgeRef.Vertex;
+			CVectorH attr;
+
+			if (delta.norm() > 0.001f)
+			{
+				rBS.deltaPos[i] = delta;
+				rBS.VertRefs[i] = i;
+				bIsDeltaPos = true;
+			}
+
+			attId = 0;
+			if (vbFlags & CVertexBuffer::NormalFlag)
+			{
+				attr = rWedgeRef.Attributes[attId];
+				CVector NormRef = CVector(attr.x, attr.y, attr.z);
+				attr = rWedgeTar.Attributes[attId];
+				CVector NormTar = CVector(attr.x, attr.y, attr.z);
+				delta = NormTar - NormRef;
+				if (delta.norm() > 0.001f)
+				{
+					rBS.deltaNorm[i] = delta;
+					rBS.VertRefs[i] = i;
+					bIsDeltaNorm = true;
+				}
+				attId++;
+			}
+
+			if (vbFlags & CVertexBuffer::PrimaryColorFlag)
+			{
+				attr = rWedgeRef.Attributes[attId];
+				CRGBAF RGBARef = CRGBAF(attr.x/255.0f, attr.y/255.0f, attr.z/255.0f, attr.w/255.0f);
+				attr = rWedgeTar.Attributes[attId];
+				CRGBAF RGBATar = CRGBAF(attr.x/255.0f, attr.y/255.0f, attr.z/255.0f, attr.w/255.0f);
+				CRGBAF deltaRGBA = RGBATar - RGBARef;
+				if ((deltaRGBA.R*deltaRGBA.R + deltaRGBA.G*deltaRGBA.G +
+					deltaRGBA.B*deltaRGBA.B + deltaRGBA.A*deltaRGBA.A) > 0.0001f)
+				{
+					rBS.deltaCol[i] = deltaRGBA;
+					rBS.VertRefs[i] = i;
+					bIsDeltaCol = true;
+				}
+				attId++;
+			}
+
+			if (vbFlags & CVertexBuffer::SecondaryColorFlag)
+			{	// Nothing to do !
+				attId++;
+			}
+
+			// Do that only for the UV0
+			if (vbFlags & CVertexBuffer::TexCoord0Flag)
+			{
+				attr = rWedgeRef.Attributes[attId];
+				CUV UVRef = CUV(attr.x, attr.y);
+				attr = rWedgeTar.Attributes[attId];
+				CUV UVTar = CUV(attr.x, attr.y);
+				CUV deltaUV = UVTar - UVRef;
+				if ((deltaUV.U*deltaUV.U + deltaUV.V*deltaUV.V) > 0.0001f)
+				{
+					rBS.deltaUV[i] = deltaUV;
+					rBS.VertRefs[i] = i;
+					bIsDeltaUV = true;
+				}
+				attId++;
+			}
+			
+		} // End of all vertices added in blend shape
+
+		// Delete unused items and calculate the number of vertex used (blended)
+
+		sint32 nNbVertUsed = nNbVertVB;
+		sint32 nDstPos = 0;
+		for (j = 0; j < nNbVertVB; ++j)
+		{
+			if (rBS.VertRefs[j] == 0xffffffff) // Is vertex UNused
+			{
+				--nNbVertUsed;
+			}
+			else // Vertex used
+			{
+				if (nDstPos != j)
+				{
+					rBS.VertRefs[nDstPos]	= rBS.VertRefs[j];
+					rBS.deltaPos[nDstPos]	= rBS.deltaPos[j];
+					rBS.deltaNorm[nDstPos]	= rBS.deltaNorm[j];
+					rBS.deltaUV[nDstPos]	= rBS.deltaUV[j];
+					rBS.deltaCol[nDstPos]	= rBS.deltaCol[j];
+				}
+				++nDstPos;
+			}
+		}
+
+		if (bIsDeltaPos)
+			rBS.deltaPos.resize (nNbVertUsed);
+		else
+			rBS.deltaPos.resize (0);
+
+		if (bIsDeltaNorm)
+			rBS.deltaNorm.resize (nNbVertUsed);
+		else
+			rBS.deltaNorm.resize (0);
+
+		if (bIsDeltaUV)
+			rBS.deltaUV.resize (nNbVertUsed);
+		else
+			rBS.deltaUV.resize (0);
+
+		if (bIsDeltaCol)
+			rBS.deltaCol.resize (nNbVertUsed);
+		else
+			rBS.deltaCol.resize (0);
+
+		rBS.VertRefs.resize (nNbVertUsed);
+
+	}
+}
+
+// ***************************************************************************
+void CMRMBuilder::buildBlendShapes (CMRMMesh& baseMesh, 
+									std::vector<CMesh::CMeshBuild*> &bsList, uint32 VertexFlags)
+{
+	uint32 i, j, k, m, destIndex;
+	uint32 attId;
+	CVectorH vh;
+	vector<CMRMBlendShape>	&bsMeshes= baseMesh.BlendShapes;
+
+	bsMeshes.resize (bsList.size());
+
+	for (i = 0; i < bsList.size(); ++i)
+	{
+		// Construct a blend shape like a mrm mesh
+		nlassert (baseMesh.Vertices.size() == bsList[i]->Vertices.size());
+		bsMeshes[i].Vertices.resize (baseMesh.Vertices.size());
+		bsMeshes[i].Vertices = bsList[i]->Vertices;
+
+		bsMeshes[i].NumAttributes = baseMesh.NumAttributes;
+		for (j = 0; j < (uint32)bsMeshes[i].NumAttributes; ++j)
+			bsMeshes[i].Attributes[j].resize(baseMesh.Attributes[j].size());
+
+		// For all corners parse the faces (given by the baseMesh) and construct blend shape mrm meshes
+		for (j = 0; j < baseMesh.Faces.size(); ++j)
+		for (k = 0; k < 3; ++k)
+		{
+			const CMesh::CCorner &srcCorner = bsList[i]->Faces[j].Corner[k];
+			CMRMCorner	&neutralCorner = baseMesh.Faces[j].Corner[k];
+			
+			attId= 0;
+
+			if (VertexFlags & CVertexBuffer::NormalFlag)
+			{
+				destIndex = neutralCorner.Attributes[attId];
+				vh.x = srcCorner.Normal.x;
+				vh.y = srcCorner.Normal.y;
+				vh.z = srcCorner.Normal.z;
+				vh.w = 0.0f;
+				bsMeshes[i].Attributes[attId].operator[](destIndex) = vh;
+				attId++;
+			}
+			if (VertexFlags & CVertexBuffer::PrimaryColorFlag)
+			{
+				destIndex = neutralCorner.Attributes[attId];
+				vh.x = srcCorner.Color.R;
+				vh.y = srcCorner.Color.G;
+				vh.z = srcCorner.Color.B;
+				vh.w = srcCorner.Color.A;
+				bsMeshes[i].Attributes[attId].operator[](destIndex) = vh;
+				attId++;
+			}
+			if (VertexFlags & CVertexBuffer::SecondaryColorFlag)
+			{
+				destIndex = neutralCorner.Attributes[attId];
+				vh.x = srcCorner.Specular.R;
+				vh.y = srcCorner.Specular.G;
+				vh.z = srcCorner.Specular.B;
+				vh.w = srcCorner.Specular.A;
+				bsMeshes[i].Attributes[attId].operator[](destIndex) = vh;
+				attId++;
+			}
+			for (m = 0; m < CVertexBuffer::MaxStage; ++m)
+			{
+				if (VertexFlags & (CVertexBuffer::TexCoord0Flag<<m))
+				{
+					destIndex = neutralCorner.Attributes[attId];
+					vh.x = srcCorner.Uvs[m].U;
+					vh.y = srcCorner.Uvs[m].V;
+					vh.z = 0.0f;
+					vh.w = 0.0f;
+					bsMeshes[i].Attributes[attId].operator[](destIndex) = vh;
+					attId++;
+				}
+			}
+		}
+	}
 }
 
 
 // ***************************************************************************
-void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParameters &params, CMeshMRMGeom::CMeshBuildMRM &mrmMesh, 
+void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, std::vector<CMesh::CMeshBuild*> &bsList,
+								const CMRMParameters &params, CMeshMRMGeom::CMeshBuildMRM &mrmMesh, 
 								uint numMaxMaterial)
 {
 	// Temp data.
-	CMRMMesh					baseMesh;
-	std::vector<CMRMMeshGeom>	lodMeshs;
-	CMRMMeshFinal				finalMRM;
+	CMRMMesh						baseMesh;
+	vector<CMRMMeshGeom>			lodMeshs;
+	CMRMMeshFinal					finalMRM;
+	vector<CMRMMeshFinal>			finalBsMRM;
 	uint32	vbFlags;
 
 
@@ -1886,6 +2281,9 @@ void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParamete
 	// NB: skinning is removed because skinning is made in software in CMeshMRMGeom.
 	vbFlags= buildMrmBaseMesh(mbuild, baseMesh);
 
+	// Construct all blend shapes in the same way we have constructed the basemesh mrm
+	buildBlendShapes (baseMesh, bsList, vbFlags);
+
 	// If skinned, must ensure that skin weights have weights in ascending order.
 	if(_Skinned)
 	{
@@ -1893,7 +2291,7 @@ void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParamete
 	}
 
 	// from this baseMesh, builds all LODs of the MRM, with geomorph info. NB: vertices/wedges are duplicated.
-	buildAllLods(baseMesh, lodMeshs, params.NLods, params.Divisor);
+	buildAllLods (	baseMesh, lodMeshs, params.NLods, params.Divisor );
 
 	// From this array of LOD, build a finalMRM, by regrouping identical vertices/wedges, and compute index geomorphs.
 	buildFinalMRM(lodMeshs, finalMRM);

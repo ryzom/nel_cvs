@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.12 2001/09/10 13:21:47 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.13 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,13 +126,20 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream
 void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 2:
+		- Added Blend Shapes factors
 	Version 1:
 		- Cut in version because of badly coded ITexture* serialisation. throw an exception if 
 			find a version < 1.
 	Version 0:
 		- 1st version.
 	*/
-	sint	ver= f.serialVersion(1);
+	sint ver = f.serialVersion(2);
+
+	if (ver >= 2)
+	{
+		f.serialCont (_AnimatedMorph);
+	}
 
 	if(ver<1)
 		throw NLMISC::EStream(f, "Mesh in Stream is too old (MeshBase version < 1)");
@@ -168,6 +175,12 @@ void	CMeshBase::buildMeshBase(CMeshBaseBuild &m)
 	_DefaultRotQuat.setValue (m.DefaultRotQuat);
 	_DefaultScale.setValue (m.DefaultScale);
 
+	_AnimatedMorph	.resize(m.DefaultBSFactors.size());
+	for (uint32 i = 0; i < m.DefaultBSFactors.size(); ++i)
+	{
+		_AnimatedMorph[i].DefaultFactor.setValue (m.DefaultBSFactors[i]);
+		_AnimatedMorph[i].Name = m.BSNames[i];
+	}
 }
 
 
@@ -175,6 +188,17 @@ void	CMeshBase::buildMeshBase(CMeshBaseBuild &m)
 // ***************************************************************************
 void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi)
 {
+	uint32 i;
+
+	// setup animated blendShapes
+	//===========================
+	mi->_AnimatedMorphFactor.reserve(_AnimatedMorph.size());
+	for(i = 0; i < _AnimatedMorph.size(); ++i)
+	{
+		CAnimatedMorph am(&_AnimatedMorph[i]);
+		mi->_AnimatedMorphFactor.push_back (am);
+	}
+	
 	// setup materials.
 	//=================
 	mi->Materials= _Materials;
@@ -205,8 +229,6 @@ void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi)
 	mi->ITransformable::setPivot( ((CAnimatedValueVector&)_DefaultPivot.getValue()).Value  );
 
 	// Check materials for transparency
-	uint32 i;
-
 	mi->setTransparency( false );
 	mi->setOpacity( false );
 	for( i = 0; i < mi->Materials.size(); ++i )

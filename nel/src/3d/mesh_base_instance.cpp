@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.3 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.4 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,13 +42,20 @@ void		CMeshBaseInstance::registerBasic()
 // ***************************************************************************
 void		CMeshBaseInstance::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix)
 {
+	uint32 i;
 	CTransformShape::registerToChannelMixer(chanMixer, prefix);
 
 	// Add any materials.
-	for(uint i=0;i<_AnimatedMaterials.size();i++)
+	for (i = 0; i < _AnimatedMaterials.size(); i++)
 	{
 		// append material  matname.*
 		_AnimatedMaterials[i].registerToChannelMixer(chanMixer, prefix + _AnimatedMaterials[i].getMaterialName() + ".");
+	}
+
+	// Add any morph
+	for (i = 0; i < _AnimatedMorphFactor.size(); i++)
+	{
+		_AnimatedMorphFactor[i].registerToChannelMixer(chanMixer, prefix + _AnimatedMorphFactor[i].getName());
 	}
 }
 
@@ -113,6 +120,31 @@ void CMeshBaseInstance::setLightMapFactor( const std::string &LightMapName, CRGB
 		++itList;
 	}
 }
+
+// ***************************************************************************
+uint32 CMeshBaseInstance::getNbBlendShape()
+{
+	return _AnimatedMorphFactor.size();
+}
+
+// ***************************************************************************
+void CMeshBaseInstance::getBlendShapeName (uint32 nBlendShapeNb, std::string &BlendShapeName )
+{
+	if (nBlendShapeNb >= _AnimatedMorphFactor.size())
+		return;
+	BlendShapeName = _AnimatedMorphFactor[nBlendShapeNb].getName();
+}
+
+// ***************************************************************************
+void CMeshBaseInstance::setBlendShapeFactor (const std::string &BlendShapeName, float rFactor)
+{
+	for (uint32 i = 0; i < _AnimatedMorphFactor.size(); ++i)
+		if (BlendShapeName == _AnimatedMorphFactor[i].getName())
+		{
+			_AnimatedMorphFactor[i].setFactor (rFactor);
+		}
+}
+
 
 // ***************************************************************************
 // ***************************************************************************

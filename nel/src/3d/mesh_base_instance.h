@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.5 2001/08/23 10:13:13 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.6 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/material.h"
 #include "3d/animated_material.h"
 #include "3d/animated_lightmap.h"
+#include "3d/animated_morph.h"
 
 
 namespace NL3D
@@ -100,10 +101,26 @@ public:
 	void setLightMapFactor( const std::string &LightMapName, CRGBA nFactor );
 	// @}
 
-	void setAnimatedLightmap( CAnimatedLightmap *alm )
+	// To build lightmap
+	void setAnimatedLightmap (CAnimatedLightmap *alm)
 	{
 		_AnimatedLightmap.push_back( alm );
 	}
+
+	/// \name BlendShape properties
+	// @{
+	// Interface
+	uint32 getNbBlendShape();
+	void getBlendShapeName (uint32 nBlendShapeNb, std::string &BlendShapeName );
+	void setBlendShapeFactor (const std::string &BlendShapeName, float rFactor);
+
+	// Internal
+	std::vector<CAnimatedMorph>* getBlendShapeFactors()
+	{
+		return &_AnimatedMorphFactor;
+	}
+	// @}
+
 
 	// Return true if this mesh is a skin apply on a skeleton else false.
 	bool isSkinApply () const
@@ -133,6 +150,8 @@ private:
 	std::vector<CAnimatedMaterial>	_AnimatedMaterials;
 
 	std::vector<CAnimatedLightmap*> _AnimatedLightmap;
+
+	std::vector<CAnimatedMorph> _AnimatedMorphFactor; 
 
 	/// Skinning. true if skinned to the _Skeleton.
 	bool		_ApplySkinOk;

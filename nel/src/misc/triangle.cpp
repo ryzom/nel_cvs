@@ -1,7 +1,7 @@
 /** \file triangle.cpp
  * <File description>
  *
- * $Id: triangle.cpp,v 1.3 2001/06/11 13:33:28 berenguier Exp $
+ * $Id: triangle.cpp,v 1.4 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,12 @@ bool CTriangle::intersect (const CVector& p0, const CVector& p1, CVector& hit, c
 	CVector	normal = plane.getNormal();
 
 	float	np1 = normal*p1;
-	float	lambda = (plane.d+np1)/(np1-normal*p0);
+	float	np2 = np1-normal*p0;
+
+	if (np2 == 0.0f)
+		return false;
+
+	float	lambda = (plane.d+np1)/np2;
 
 	// Checks the intersection belongs to the segment
 	if (lambda < -EPSILON || lambda > 1.0f+EPSILON)

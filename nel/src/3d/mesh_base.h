@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.6 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: mesh_base.h,v 1.7 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/driver.h"
 #include "3d/material.h"
 #include "3d/animated_material.h"
+#include "3d/animated_morph.h"
 #include <set>
 #include <vector>
 
@@ -93,6 +94,10 @@ public:
 		// Map of light information
 		TLightInfoMap			LightInfoMap;
 
+		// Default position of the blend shapes factors
+		std::vector<float>		DefaultBSFactors;
+		std::vector<std::string>BSNames;
+
 
 		CMeshBaseBuild();
 
@@ -151,7 +156,6 @@ protected:
 	/// The Materials.
 	std::vector<CMaterial>		_Materials;
 
-
 public:
 	// Map of light information ( LightName, list(MaterialNb, StageNb) )
 	TLightInfoMap				_LightInfos;
@@ -170,6 +174,8 @@ protected:
 	CTrackDefaultQuat			_DefaultRotQuat;
 	CTrackDefaultVector			_DefaultScale;
 	CTrackDefaultRGBA			_DefaultLMFactor;
+	
+	std::vector<CMorphBase>		_AnimatedMorph;
 
 protected:
 	/// Just copy informations from a CMeshBaseBuild.

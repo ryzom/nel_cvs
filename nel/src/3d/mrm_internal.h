@@ -1,7 +1,7 @@
 /** \file mrm_internal.h
  * Internal Classes for CMRMBuilder.
  *
- * $Id: mrm_internal.h,v 1.3 2001/07/02 11:40:32 berenguier Exp $
+ * $Id: mrm_internal.h,v 1.4 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,54 @@
 namespace NL3D
 {
 
+// ***************************************************************************
+struct CLinearEquation
+{
+	struct Element
+	{
+		uint32	index;
+		float	factor;
+
+		Element(uint32 i, float f)
+		{
+			index = i;
+			factor = f;
+		}
+	};
+
+	std::vector<Element> Elts;
+
+	void init(uint32 ii)
+	{
+		clear();
+		Elts.push_back (Element(ii, 1.0f));
+	}
+
+	// this = this + eq * factor
+	void add(CLinearEquation& eq, float factor)
+	{
+		Element tmp(0, 0.0f);
+
+		for (uint32 i = 0; i < eq.Elts.size(); ++i)
+		{
+			tmp.index = eq.Elts[i].index;
+			tmp.factor = factor * eq.Elts[i].factor;
+			Elts.push_back (tmp);
+		}
+	}
+
+	// this = this * factor
+	void mul (float factor)
+	{
+		for (uint32 i = 0; i < Elts.size(); ++i)
+			Elts[i].factor *= factor;
+	}
+
+	void clear()
+	{
+		NLMISC::contReset (Elts);
+	}
+};
 
 // ***************************************************************************
 /**
@@ -46,6 +94,7 @@ struct	CMRMVertex
 public:
 	// Original / Dest position.
 	CVector				Current,Original;
+	std::vector<CVector>		BSCurrent;
 	// For Skinning.
 	CMesh::CSkinWeight	CurrentSW, OriginalSW;
 	std::vector<sint>	SharedFaces;
@@ -69,6 +118,7 @@ struct	CMRMAttribute
 {
 public:
 	CVectorH		Current,Original;
+	std::vector<CVectorH>		BSCurrent;
 	sint			CollapsedTo;		// -2 <=> "must interpolate from Current to Original".
 	// Final index in the coarser mesh.
 	sint			CoarserIndex;
@@ -165,8 +215,10 @@ struct	CMRMFaceBuild : public CMRMFace
 {
 public:
 	// temporary data in construction:
-	// The interpolated attrbutes of the face.
-	CVectorH		InterpolatedAttributes[NL3D_MRM_MAX_ATTRIB];
+	// The interpolated attrbute of the face.
+	CVectorH		InterpolatedAttribute;
+	std::vector<CVectorH>	BSInterpolated;
+
 	// Is this face deleted in the current MRM collapse?
 	bool			Deleted;
 	// The iterator of the edges in the EdgeCollapse list.

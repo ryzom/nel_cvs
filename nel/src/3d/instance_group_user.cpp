@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.12 2001/08/31 14:39:15 besson Exp $
+ * $Id: instance_group_user.cpp,v 1.13 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -256,6 +256,12 @@ const UInstance *CInstanceGroupUser::getByName (std::string &name) const
 void CInstanceGroupUser::setLightFactor (const std::string &LightName, CRGBA nFactor)
 {
 	_InstanceGroup.setLightFactor (LightName, nFactor);
+}
+
+// ***************************************************************************
+void CInstanceGroupUser::setBlendShapeFactor (const std::string &bsName, float rFactor)
+{
+	_InstanceGroup.setBlendShapeFactor (bsName, rFactor);
 }
 
 // ***************************************************************************

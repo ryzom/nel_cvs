@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.21 2001/09/10 07:41:30 corvazier Exp $
+ * $Id: mesh_mrm.cpp,v 1.22 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,7 +148,8 @@ CMeshMRMGeom::~CMeshMRMGeom()
 
 
 // ***************************************************************************
-void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, uint numMaxMaterial, const CMRMParameters &params)
+void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*> &bsList,
+									uint numMaxMaterial, const CMRMParameters &params)
 {
 
 	// Dirt the VBuffer.
@@ -157,8 +158,8 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, uint numMaxMaterial, const CMRM
 	// Empty geometry?
 	if(m.Vertices.size()==0 || m.Faces.size()==0)
 	{
-		_VBuffer.setNumVertices(0);
-		_VBuffer.reserve(0);
+		_VBufferFinal.setNumVertices(0);
+		_VBufferFinal.reserve(0);
 		_Lods.clear();
 		_BBox.setCenter(CVector::Null);
 		_BBox.setSize(CVector::Null);
@@ -179,11 +180,11 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, uint numMaxMaterial, const CMRM
 	CMRMBuilder			mrmBuilder;
 	CMeshBuildMRM		meshBuildMRM;
 
-	mrmBuilder.compileMRM(m, params, meshBuildMRM, numMaxMaterial);
+	mrmBuilder.compileMRM(m, bsList, params, meshBuildMRM, numMaxMaterial);
 
 	// Then just copy result!
 	//================================================
-	_VBuffer= meshBuildMRM.VBuffer;
+	_VBufferFinal= meshBuildMRM.VBuffer;
 	_Lods= meshBuildMRM.Lods;
 	_Skinned= meshBuildMRM.Skinned;
 	_SkinWeights= meshBuildMRM.SkinWeights;
@@ -266,6 +267,9 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, uint numMaxMaterial, const CMRM
 		_Lods[i].buildSkinVertexBlocks();
 	}
 
+	// Copy Blend Shapes
+	//================================================	
+	_MeshMorpher.BlendShapes = meshBuildMRM.BlendShapes;
 
 }
 
@@ -300,9 +304,9 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 
 
 	// info from VBuffer.
-	uint8		*vertexPtr= (uint8*)_VBuffer.getVertexCoordPointer();
-	uint		flags= _VBuffer.getVertexFormat();
-	sint32		vertexSize= _VBuffer.getVertexSize();
+	uint8		*vertexPtr= (uint8*)_VBufferFinal.getVertexCoordPointer();
+	uint		flags= _VBufferFinal.getVertexFormat();
+	sint32		vertexSize= _VBufferFinal.getVertexSize();
 	// because of the unrolled code for 4 first UV, must assert this.
 	nlassert(CVertexBuffer::MaxStage>=4);
 	// must have XYZ.
@@ -333,21 +337,21 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 
 	// Compute offset of each component of the VB.
 	if(flags & CVertexBuffer::NormalFlag)
-		normalOff= _VBuffer.getNormalOff();
+		normalOff= _VBufferFinal.getNormalOff();
 	else
 		normalOff= 0;
 	if(flags & CVertexBuffer::PrimaryColorFlag)
-		colorOff= _VBuffer.getColorOff();
+		colorOff= _VBufferFinal.getColorOff();
 	else
 		colorOff= 0;
 	if(flags & CVertexBuffer::SecondaryColorFlag)
-		specularOff= _VBuffer.getSpecularOff();
+		specularOff= _VBufferFinal.getSpecularOff();
 	else
 		specularOff= 0;
 	for(i= 0; i<CVertexBuffer::MaxStage;i++)
 	{
 		if(flags & (CVertexBuffer::TexCoord0Flag<<i))
-			uvOff[i]= _VBuffer.getTexCoordOff(i);
+			uvOff[i]= _VBufferFinal.getTexCoordOff(i);
 		else
 			uvOff[i]= 0;
 	}
@@ -560,33 +564,53 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	// Update the vertexBufferHard (if possible).
 	// \toto yoyo: TODO_OPTIMIZE: allocate only what is needed for the current Lod (Max of all instances, like
 	// the loading....) (see loadHeader()).
-	updateVertexBufferHard(drv, _VBuffer.getNumVertices());
+	updateVertexBufferHard(drv, _VBufferFinal.getNumVertices());
 
+	// Morphing
+	// ========
+	// get the skeleton model to which I am binded (else NULL).
+	CSkeletonModel *skeleton;
+	skeleton = mi->getSkeletonModel();
+	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and isSkinApply().
+	bool bMorphApplied = _MeshMorpher.BlendShapes.size() > 0;
+	bool bSkinApplied = _Skinned && mi->isSkinApply() && skeleton;
+
+	if (bMorphApplied)
+	{
+		// If Skinned we must update original skin vertices and normals because skinning use it
+		// If Skinned and not bSkinApplied and lod.OriginalSkinRestored restoreOriginalSkinPart is
+		// not called but mush morpher write changed vertices into VBHard so its ok. The unchanged vertices
+		// are written in the preceding call to restoreOriginalSkinPart.
+		if (_Skinned)
+		{
+			_MeshMorpher.initMRM (	&_VBufferOriginal, &_VBufferFinal, _VBHard, 
+									&_OriginalSkinVertices, &_OriginalSkinNormals, bSkinApplied );
+		}
+		else // Not even skinned so we have to do all the stuff
+		{
+			_MeshMorpher.initMRM (&_VBufferOriginal, &_VBufferFinal, _VBHard, NULL, NULL, false);
+		}
+		_MeshMorpher.updateMRM (mi->getBlendShapeFactors());
+	}
 
 	// Skinning.
 	//===========
-	// get the skeleton model to which I am binded (else NULL).
-	CSkeletonModel		*skeleton;
-	skeleton= mi->getSkeletonModel();
-	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and isSkinApply().
-	bool	skinOk= _Skinned && mi->isSkinApply() && skeleton;
-
 	// if ready to skin.
-	if(skinOk)
+	if (bSkinApplied)
 	{
 		// apply skin for this Lod only.
-		applySkin(lod, skeleton->Bones);
+		applySkin (lod, skeleton->Bones);
 	}
 	// if instance skin is invalid but mesh is skinned , we must copy vertices/normals from original vertices.
-	else if(!skinOk && _Skinned)
+	else if (!bSkinApplied && _Skinned)
 	{
 		// do it for this Lod only, and if cache say it is necessary.
-		if(!lod.OriginalSkinRestored)
+		if (!lod.OriginalSkinRestored)
 			restoreOriginalSkinPart(lod);
 	}
 
 	// If skinning, Setup the skeleton matrix
-	if(skinOk)
+	if (bSkinApplied)
 	{
 		drv->setupModelMatrix(skeleton->getWorldMatrix());
 	}
@@ -618,7 +642,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	if(_VBHard)
 		drv->activeVertexBufferHard(_VBHard);
 	else
-		drv->activeVertexBuffer(_VBuffer);
+		drv->activeVertexBuffer(_VBufferFinal);
 
 
 	// Global alpha used ?
@@ -699,11 +723,15 @@ void	CMeshMRMGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 void	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 1:
+		- added blend shapes
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(0);
+	sint	ver= f.serialVersion(1);
 
+	if (ver >= 1)
+		f.serial (_MeshMorpher);
 
 	// serial Basic info.
 	// ==================
@@ -727,7 +755,7 @@ void	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 	uint32	nWedges;
 	f.serial(nWedges);
 	// Prepare the VBuffer.
-	_VBuffer.serialHeader(f);
+	_VBufferFinal.serialHeader(f);
 	// If skinned, must allocate skinWeights.
 	contReset(_SkinWeights);
 	if(_Skinned)
@@ -797,11 +825,16 @@ void	CMeshMRMGeom::load(NLMISC::IStream &f) throw(NLMISC::EStream)
 void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 1:
+		- added blend shapes
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(0);
+	sint	ver= f.serialVersion(1);
 	uint	i;
+
+	if (ver >= 1)
+		f.serial (_MeshMorpher);
 
 	// must have good original Skinned Vertex before writing.
 	if( _Skinned )
@@ -825,10 +858,10 @@ void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	// save number of wedges.
 	uint32	nWedges;
-	nWedges= _VBuffer.getNumVertices();
+	nWedges= _VBufferFinal.getNumVertices();
 	f.serial(nWedges);
 	// Save the VBuffer header.
-	_VBuffer.serialHeader(f);
+	_VBufferFinal.serialHeader(f);
 
 
 	// Serial lod offsets.
@@ -884,7 +917,7 @@ void	CMeshMRMGeom::serialLodVertexData(NLMISC::IStream &f, uint startWedge, uint
 	sint	ver= f.serialVersion(0);
 
 	// VBuffer part.
-	_VBuffer.serialSubset(f, startWedge, endWedge);
+	_VBufferFinal.serialSubset(f, startWedge, endWedge);
 
 	// SkinWeights.
 	if(_Skinned)
@@ -989,7 +1022,7 @@ void	CMeshMRMGeom::bkupOriginalSkinVertices()
 	nlassert(_Skinned);
 
 	// bkup the entire array.
-	bkupOriginalSkinVerticesSubset(0, _VBuffer.getNumVertices());
+	bkupOriginalSkinVerticesSubset(0, _VBufferFinal.getNumVertices());
 }
 
 
@@ -999,22 +1032,22 @@ void	CMeshMRMGeom::bkupOriginalSkinVerticesSubset(uint wedgeStart, uint wedgeEnd
 	nlassert(_Skinned);
 
 	// Copy VBuffer content into Original vertices normals.
-	if(_VBuffer.getVertexFormat() & CVertexBuffer::PositionFlag)
+	if(_VBufferFinal.getVertexFormat() & CVertexBuffer::PositionFlag)
 	{
 		// copy vertices from VBuffer. (NB: unusefull geomorphed vertices are still copied, but doesn't matter).
-		_OriginalSkinVertices.resize(_VBuffer.getNumVertices());
+		_OriginalSkinVertices.resize(_VBufferFinal.getNumVertices());
 		for(uint i=wedgeStart; i<wedgeEnd;i++)
 		{
-			_OriginalSkinVertices[i]= *(CVector*)_VBuffer.getVertexCoordPointer(i);
+			_OriginalSkinVertices[i]= *(CVector*)_VBufferFinal.getVertexCoordPointer(i);
 		}
 	}
-	if(_VBuffer.getVertexFormat() & CVertexBuffer::NormalFlag)
+	if(_VBufferFinal.getVertexFormat() & CVertexBuffer::NormalFlag)
 	{
 		// copy normals from VBuffer. (NB: unusefull geomorphed normals are still copied, but doesn't matter).
-		_OriginalSkinNormals.resize(_VBuffer.getNumVertices());
+		_OriginalSkinNormals.resize(_VBufferFinal.getNumVertices());
 		for(uint i=wedgeStart; i<wedgeEnd;i++)
 		{
-			_OriginalSkinNormals[i]= *(CVector*)_VBuffer.getNormalCoordPointer(i);
+			_OriginalSkinNormals[i]= *(CVector*)_VBufferFinal.getNormalCoordPointer(i);
 		}
 	}
 }
@@ -1026,20 +1059,20 @@ void	CMeshMRMGeom::restoreOriginalSkinVertices()
 	nlassert(_Skinned);
 
 	// Copy VBuffer content into Original vertices normals.
-	if(_VBuffer.getVertexFormat() & CVertexBuffer::PositionFlag)
+	if(_VBufferFinal.getVertexFormat() & CVertexBuffer::PositionFlag)
 	{
 		// copy vertices from VBuffer. (NB: unusefull geomorphed vertices are still copied, but doesn't matter).
-		for(uint i=0; i<_VBuffer.getNumVertices();i++)
+		for(uint i=0; i<_VBufferFinal.getNumVertices();i++)
 		{
-			*(CVector*)_VBuffer.getVertexCoordPointer(i)= _OriginalSkinVertices[i];
+			*(CVector*)_VBufferFinal.getVertexCoordPointer(i)= _OriginalSkinVertices[i];
 		}
 	}
-	if(_VBuffer.getVertexFormat() & CVertexBuffer::NormalFlag)
+	if(_VBufferFinal.getVertexFormat() & CVertexBuffer::NormalFlag)
 	{
 		// copy normals from VBuffer. (NB: unusefull geomorphed normals are still copied, but doesn't matter).
-		for(uint i=0; i<_VBuffer.getNumVertices();i++)
+		for(uint i=0; i<_VBufferFinal.getNumVertices();i++)
 		{
-			*(CVector*)_VBuffer.getNormalCoordPointer(i)= _OriginalSkinNormals[i];
+			*(CVector*)_VBufferFinal.getNormalCoordPointer(i)= _OriginalSkinNormals[i];
 		}
 	}
 }
@@ -1059,16 +1092,16 @@ void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod)
 
 	// get vertexPtr / normalOff.
 	//===========================
-	uint8		*destVertexPtr= (uint8*)_VBuffer.getVertexCoordPointer();
-	uint		flags= _VBuffer.getVertexFormat();
-	sint32		vertexSize= _VBuffer.getVertexSize();
+	uint8		*destVertexPtr= (uint8*)_VBufferFinal.getVertexCoordPointer();
+	uint		flags= _VBufferFinal.getVertexFormat();
+	sint32		vertexSize= _VBufferFinal.getVertexSize();
 	// must have XYZ.
 	nlassert(flags & CVertexBuffer::PositionFlag);
 
 	// Compute offset of each component of the VB.
 	sint32		normalOff;
 	if(flags & CVertexBuffer::NormalFlag)
-		normalOff= _VBuffer.getNormalOff();
+		normalOff= _VBufferFinal.getNormalOff();
 	else
 		normalOff= 0;
 
@@ -1211,9 +1244,9 @@ void	CMeshMRMGeom::applySkin(CLod &lod, const std::vector<CBone> &bones)
 
 	// get vertexPtr / normalOff.
 	//===========================
-	uint8		*destVertexPtr= (uint8*)_VBuffer.getVertexCoordPointer();
-	uint		flags= _VBuffer.getVertexFormat();
-	sint32		vertexSize= _VBuffer.getVertexSize();
+	uint8		*destVertexPtr= (uint8*)_VBufferFinal.getVertexCoordPointer();
+	uint		flags= _VBufferFinal.getVertexFormat();
+	sint32		vertexSize= _VBufferFinal.getVertexSize();
 	// must have XYZ.
 	nlassert(flags & CVertexBuffer::PositionFlag);
 
@@ -1221,7 +1254,7 @@ void	CMeshMRMGeom::applySkin(CLod &lod, const std::vector<CBone> &bones)
 	// Compute offset of each component of the VB.
 	sint32		normalOff;
 	if(flags & CVertexBuffer::NormalFlag)
-		normalOff= _VBuffer.getNormalOff();
+		normalOff= _VBufferFinal.getNormalOff();
 	else
 		normalOff= 0;
 
@@ -1415,9 +1448,9 @@ void				CMeshMRMGeom::fillAGPSkinPart(CLod &lod)
 	if(_VBHard && lod.SkinVertexBlocks.size()>0 )
 	{
 		// Get VB info, and lock buffers.
-		uint8		*vertexSrc= (uint8*)_VBuffer.getVertexCoordPointer();
+		uint8		*vertexSrc= (uint8*)_VBufferFinal.getVertexCoordPointer();
 		uint8		*vertexDst= (uint8*)_VBHard->lock();
-		uint32		vertexSize= _VBuffer.getVertexSize();
+		uint32		vertexSize= _VBufferFinal.getVertexSize();
 		nlassert(vertexSize == _VBHard->getVertexSize());
 
 
@@ -1480,7 +1513,7 @@ void				CMeshMRMGeom::updateVertexBufferHard(IDriver *drv, uint32 numVertices)
 		// bkup drv in a refptr. (so we know if the vbuffer hard has to be deleted).
 		_Driver= drv;
 		// try to create new one, in AGP Ram
-		_VBHard= _Driver->createVertexBufferHard(_VBuffer.getVertexFormat(), _VBuffer.getValueTypePointer (), numVertices, IDriver::VBHardAGP);
+		_VBHard= _Driver->createVertexBufferHard(_VBufferFinal.getVertexFormat(), _VBufferFinal.getValueTypePointer (), numVertices, IDriver::VBHardAGP);
 
 
 		// If KO, use normal VertexBuffer, else, Fill it with VertexBuffer.
@@ -1488,13 +1521,13 @@ void				CMeshMRMGeom::updateVertexBufferHard(IDriver *drv, uint32 numVertices)
 		{
 			void	*vertexPtr= _VBHard->lock();
 
-			nlassert(_VBuffer.getVertexFormat() == _VBHard->getVertexFormat());
-			nlassert(_VBuffer.getNumVertices() >= numVertices);
-			nlassert(_VBuffer.getVertexSize() == _VBHard->getVertexSize());
+			nlassert(_VBufferFinal.getVertexFormat() == _VBHard->getVertexFormat());
+			nlassert(_VBufferFinal.getNumVertices() >= numVertices);
+			nlassert(_VBufferFinal.getVertexSize() == _VBHard->getVertexSize());
 
 			// \todo yoyo: TODO_DX8 and DX8 ???
 			// Because same internal format, just copy all block.
-			memcpy(vertexPtr, _VBuffer.getVertexCoordPointer(), numVertices * _VBuffer.getVertexSize() );
+			memcpy(vertexPtr, _VBufferFinal.getVertexCoordPointer(), numVertices * _VBufferFinal.getVertexSize() );
 
 			_VBHard->unlock();
 		}
@@ -1518,13 +1551,15 @@ CMeshMRM::CMeshMRM()
 {
 }
 // ***************************************************************************
-void			CMeshMRM::build (CMeshBase::CMeshBaseBuild &mBase, CMesh::CMeshBuild &m, const CMRMParameters &params)
+void			CMeshMRM::build (CMeshBase::CMeshBaseBuild &mBase, CMesh::CMeshBuild &m, 
+								 std::vector<CMesh::CMeshBuild*> &listBS,
+								 const CMRMParameters &params)
 {
 	/// copy MeshBase info: materials ....
 	CMeshBase::buildMeshBase (mBase);
 
 	// Then build the geom.
-	_MeshMRMGeom.build (m, mBase.Materials.size(), params);
+	_MeshMRMGeom.build (m, listBS, mBase.Materials.size(), params);
 }
 // ***************************************************************************
 void			CMeshMRM::build (CMeshBase::CMeshBaseBuild &m, const CMeshMRMGeom &mgeom)

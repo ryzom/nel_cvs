@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.20 2001/09/20 13:45:43 besson Exp $
+ * $Id: scene_group.cpp,v 1.21 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -553,6 +553,41 @@ void CInstanceGroup::setLightFactor( const string &LightName, CRGBA Factor )
 		if( pMI != NULL )
 		{
 			pMI->setLightMapFactor( LightName, Factor );
+		}
+	}
+}
+
+// ***************************************************************************
+void CInstanceGroup::getBlendShapes( set<string> &BlendShapeNames )
+{
+	BlendShapeNames.clear();
+	for( uint32 i = 0; i < _Instances.size(); ++i )
+	{
+		CMeshBaseInstance *pMBI = dynamic_cast<CMeshBaseInstance*>(_Instances[i]);
+		if (pMBI != NULL)
+		{
+			uint32 nNbBS = pMBI->getNbBlendShape();
+			for( uint32 j = 0; j < nNbBS; ++j )
+			{
+				string sTmp;
+				pMBI->getBlendShapeName( j, sTmp );
+				set<string>::iterator itSet =  BlendShapeNames.find(sTmp);
+				if( itSet == BlendShapeNames.end() )
+					BlendShapeNames.insert( sTmp );
+			}
+		}
+	}
+}
+
+// ***************************************************************************
+void CInstanceGroup::setBlendShapeFactor( const string &BlendShapeName, float rFactor )
+{
+	for( uint32 i = 0; i < _Instances.size(); ++i )
+	{
+		CMeshBaseInstance *pMI = dynamic_cast<CMeshBaseInstance*>(_Instances[i]);
+		if( pMI != NULL )
+		{
+			pMI->setBlendShapeFactor( BlendShapeName, rFactor );
 		}
 	}
 }

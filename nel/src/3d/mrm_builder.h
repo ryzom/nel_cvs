@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * A Builder of MRM.
  *
- * $Id: mrm_builder.h,v 1.6 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: mrm_builder.h,v 1.7 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,8 @@ public:
 	 *	\param params the parameters of MRM process.
 	 *	\param mrmMesh the result MRM mesh.
 	 */
-	void	compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParameters &params, CMeshMRMGeom::CMeshBuildMRM &mrmMesh,
+	void	compileMRM( const CMesh::CMeshBuild &mbuild, std::vector<CMesh::CMeshBuild*> &bsList,
+						const CMRMParameters &params, CMeshMRMGeom::CMeshBuildMRM &mrmMesh,
 						uint numMaxMaterial);
 
 
@@ -127,6 +128,10 @@ private:
 	// @}
 
 
+	void	computeBsVerticesAttributes(std::vector<CMRMMesh> &srcBsMeshs, std::vector<CMRMMesh> &srcBsMeshsMod);
+	void	makeCoarserBS (std::vector<CMRMBlendShape> &csBsMeshs);
+
+
 private:
 // MRM Level Part.
 
@@ -151,19 +156,25 @@ private:
 
 	/// \name MRM Level Methods.
 	// @{
+	/** build the blend shapes in the same way we constructed the base mesh mrm
+	 */
+	void buildBlendShapes (CMRMMesh &baseMesh, std::vector<CMesh::CMeshBuild*> &bsList, uint32 VertexFlags);
+
 	/** build all LODs from a baseMesh. NB: the coarsestMesh is stored in lodMeshs[0], and has no geomorph info since it is
 	 * the coarsest mesh. nWantedLods are created (including the coarsestMesh).
 	 * \param lodMeshs array created by the function (size of nWantedlods).
 	 * \param nWantedLods number of LODs wanted.
 	 * \param divisor the coarsestMesh will have  baseMesh.Faces.size()/divisor  faces.
 	 */
-	void	buildAllLods(const CMRMMesh &baseMesh, std::vector<CMRMMeshGeom> &lodMeshs, uint nWantedLods= 10, uint divisor= 50);
+	void	buildAllLods(	const CMRMMesh &baseMesh, std::vector<CMRMMeshGeom> &lodMeshs, 
+							uint nWantedLods= 10, uint divisor= 50 );
 
 	/** given a list of LODs, compress/reorganize data, and store in finalMRM mesh.
 	 *
 	 */
 	void	buildFinalMRM(std::vector<CMRMMeshGeom> &lodMeshs, CMRMMeshFinal &finalMRM);
 	// @}
+
 
 
 private:

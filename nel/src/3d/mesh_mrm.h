@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.16 2001/09/10 07:41:30 corvazier Exp $
+ * $Id: mesh_mrm.h,v 1.17 2001/10/10 15:38:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,7 +80,7 @@ public:
 	 * this is much slower than CMeshGeom::build(), because it computes the MRM.
 	 * \param params parameters of the MRM build process.
 	 */
-	void			build(CMesh::CMeshBuild &m, uint numMaxMaterial, const CMRMParameters &params= CMRMParameters());
+	void			build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*> &bsList, uint numMaxMaterial, const CMRMParameters &params= CMRMParameters());
 
 
 	/// \name From IMeshGeom
@@ -143,7 +143,7 @@ public:
 	}
 
 	/// get the vertex buffer used by the mrm mesh. NB: this VB store all Vertices used by All LODs.
-	const CVertexBuffer &getVertexBuffer() const { return _VBuffer ; }
+	const CVertexBuffer &getVertexBuffer() const { return _VBufferFinal ; }
 
 
 	/** get the number of LOD.
@@ -308,6 +308,8 @@ private:
 		// Lod array, computed with CMRMBuilder and ready to used
 		std::vector<CLod>		Lods;
 
+		// The blend shapes
+		std::vector<CBlendShape>	BlendShapes;
 
 		/// \Degradation control.
 		// @{
@@ -353,8 +355,12 @@ private:
 	/// Skinning: this is the list of vertices (mirror of VBuffer), at the bind Pos.
 	std::vector<CVector>		_OriginalSkinVertices;
 	std::vector<CVector>		_OriginalSkinNormals;
-	/// The only one VBuffer of the mesh.
-	CVertexBuffer				_VBuffer;
+
+	/// The Original VBuffer
+	CVertexBuffer				_VBufferOriginal;
+	/// The Final VBuffer
+	CVertexBuffer				_VBufferFinal;
+	
 	/// This is the array of SkinWeights, same size as the VB.
 	std::vector<CMesh::CSkinWeight>		_SkinWeights;
 	/// List of Lods.
@@ -406,6 +412,8 @@ private:
 	void				fillAGPSkinPart(CLod &lod);
 	// @}
 
+	// The Mesh Morpher
+	CMeshMorpher				_MeshMorpher; 
 
 private:
 	/// serial a subset of the vertices.
@@ -464,7 +472,9 @@ public:
 	 * this is much slower than CMesh::build(), because it computes the MRM.
 	 * \param params parameters of the MRM build process.
 	 */
-	void			build (CMeshBase::CMeshBaseBuild &mBase, CMesh::CMeshBuild &m, const CMRMParameters &params= CMRMParameters());
+	void			build ( CMeshBase::CMeshBaseBuild &mBase, CMesh::CMeshBuild &m,
+							std::vector<CMesh::CMeshBuild*> &listBS,
+							const CMRMParameters &params= CMRMParameters() );
 
 
 	/** Build a mesh, replacing old. build from a CMeshBaseBuild (materials info) and a previously builded CMeshMRMGeom.

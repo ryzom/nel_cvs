@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.2 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: patch.h,v 1.3 2001/07/02 14:43:17 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -491,6 +491,12 @@ public:
 	/** From the current tesselation of this patch, and a UV in this patch, return tesselated position.
 	 */
 	CVector		getTesselatedPos(CUV uv) const;
+
+
+	/** From the current tesselation of this patch, append to the list of leaves faces.
+	 */
+	void		appendTessellationLeaves(std::vector<const CTessFace*>  &leaves) const;
+
 
 	// @}
 

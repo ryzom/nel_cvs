@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.42 2001/07/02 13:37:23 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.43 2001/07/02 14:43:17 berenguier Exp $
  *
  */
 
@@ -2382,6 +2382,19 @@ void			CTessFace::computeTesselatedPos(const CUV &uv, CVector &ret)
 	ret.y+= Gy*uvPos;
 	ret.z+= Gz*uvPos;
 
+}
+
+
+// ***************************************************************************
+void			CTessFace::appendTessellationLeaves(std::vector<const CTessFace*>  &leaves) const
+{
+	if(isLeaf())
+		leaves.push_back(this);
+	else
+	{
+		SonLeft->appendTessellationLeaves(leaves);
+		SonRight->appendTessellationLeaves(leaves);
+	}
 }
 
 

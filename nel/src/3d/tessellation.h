@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: tessellation.h,v 1.2 2001/07/02 14:43:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -298,6 +298,11 @@ public:
 
 	// Used by CPatch::getTesselatedPos(). recurs call.
 	void			getTesselatedPos(const CUV &uv, bool verifInclusion, CVector &ret);
+
+
+	// Used by CPatch::appendTessellationLeaves(). recurs call.
+	void			appendTessellationLeaves(std::vector<const CTessFace*>  &leaves) const;
+
 
 public:
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.61 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: landscape.cpp,v 1.62 2001/07/02 14:43:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,7 @@ const char	*EBadBind::what() const throw()
 	sint			numErr= 0;
 	const	sint	NErrByLines= 4;
 
-	_Output= _Reason;
+	_Output= "Landscape Bind Error in (3DSMax indices!! (+1) ): ";
 
 	std::list<CBindError>::const_iterator		it;
 	for(it= BindErrors.begin();it!=BindErrors.end(); it++, numErr++)
@@ -1900,6 +1900,27 @@ void		CLandscape::setHeightField(const CHeightMap &hf)
 		{
 			CBezierPatchZ	&paz= _HeightField.ZPatchs[y*w+x];
 			paz.makeInteriors();
+		}
+	}
+
+}
+
+
+// ***************************************************************************
+void		CLandscape::getTessellationLeaves(std::vector<const CTessFace*>  &leaves) const
+{
+	leaves.clear();
+
+	std::map<uint16, CZone*>::const_iterator	it;
+	for(it= Zones.begin();it!=Zones.end();it++)
+	{
+		// Then trace all patch.
+		sint	N= (*it).second->getNumPatchs();
+		for(sint i=0;i<N;i++)
+		{
+			const CPatch	*pa= const_cast<const CZone*>((*it).second)->getPatch(i);
+
+			pa->appendTessellationLeaves(leaves);
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.2 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: landscape.h,v 1.3 2001/07/02 14:43:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ public:
 	std::list<CBindError>	BindErrors;
 
 public:
-	EBadBind() : Exception( "Landscape Bind Error in (3DSMax indices!! (+1) ): " ) {}
+	EBadBind() {}
 	virtual const char	*what() const throw();
 
 };
@@ -247,6 +247,12 @@ public:
 	 * NB: return Null if patch not found.
 	 */
 	CVector			getTesselatedPos(const CPatchIdent &patchId, const CUV &uv) const;
+
+
+	/** From the current tesselation of landscape, build the list of leaves faces.
+	 *	Warning: ptrs are only valid between 2 tesselation (2 calls of Scene::render() or 2 calls of refine*() etc...)
+	 */
+	void			getTessellationLeaves(std::vector<const CTessFace*>  &leaves) const;
 
 	// @}
 

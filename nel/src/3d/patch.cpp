@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.52 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: patch.cpp,v 1.53 2001/07/02 14:43:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2487,6 +2487,17 @@ void	NL3D_bilinearShadingLightMap4x(uint8 *tex, uint lineSize)
 			((uint)b04*(4-s) + (uint)b44*s)*t)>>4);
 	}
 #endif // NL_OS_WINDOWS
+}
+
+
+
+// ***************************************************************************
+}
+
+// ***************************************************************************
+void		CPatch::appendTessellationLeaves(std::vector<const CTessFace*>  &leaves) const
+{
+	nlassert(Son0);
 	nlassert(Son1);
 	Son0->appendTessellationLeaves(leaves);
 		neighborEdge.MultipleBindNum= 0;

@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.5 2002/09/05 08:24:48 berenguier Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.6 2003/03/26 10:13:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -28,7 +28,8 @@
 #include "3d/seg_remanence.h"
 #include "3d/driver.h"
 #include "3d/scene.h"
-
+//
+#include "nel/misc/bsphere.h"
 
 
 
@@ -226,7 +227,7 @@ void CSegRemanenceShape::setupMaterial()
 {
 	if (!_MatTouched) return;	
 	_Mat.enableUserTexMat(0);
-	_Mat.getTexture(0)->setWrapS(ITexture::Clamp);	
+	if (_Mat.getTexture(0)) _Mat.getTexture(0)->setWrapS(ITexture::Clamp);	
 	_Mat.setDoubleSided(true);
 	_Mat.setLighting(false); // lighting not supported (the vb has no normals anyway..)
 	_MatTouched = false;
@@ -288,5 +289,28 @@ void CSegRemanenceShape::copyFromOther(const CSegRemanenceShape &other)
 	_RollUpRatio     = other._RollUpRatio;	
 }
 	
+
+
+//===========================================================
+bool CSegRemanenceShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
+{
+	// Speed Clip: clip just the sphere.
+	NLMISC::CBSphere	localSphere(_BBox.getCenter(), _BBox.getRadius());
+	NLMISC::CBSphere	worldSphere;
+
+	// transform the sphere in WorldMatrix (with nearly good scale info).
+	localSphere.applyTransform(worldMatrix, worldSphere);
+
+	// if out of only plane, entirely out.
+	for(sint i=0;i<(sint)pyramid.size();i++)
+	{
+		// We are sure that pyramid has normalized plane normals.
+		// if SpherMax OUT return false.
+		float	d= pyramid[i]*worldSphere.Center;
+		if(d>worldSphere.Radius)
+			return false;
+	}
+	return true;
 }
 
+}

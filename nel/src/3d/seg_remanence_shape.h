@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.h
  *
- * $Id: seg_remanence_shape.h,v 1.3 2002/07/04 14:50:17 vizerie Exp $
+ * $Id: seg_remanence_shape.h,v 1.4 2003/03/26 10:13:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -124,7 +124,7 @@ public:
 	bool				getTextureShifting() const { return _TextureShifting; }	  
 	
 	/// from IShape
-	virtual	void		getAABBox(NLMISC::CAABBox &bbox) const { bbox = _BBox; }
+	virtual	void		getAABBox(NLMISC::CAABBox &bbox) const { bbox = _BBox.getAABBox(); }
 
 	/// Force animated material. This can be called only once
 	void				setAnimatedMaterial(const std::string &name);
@@ -140,6 +140,8 @@ public:
 	void				setRollupRatio(float ratio);
 	float				getRollupRatio() const { return _RollUpRatio; }
 	
+	// from IShape
+	virtual bool		clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix);
 
 		
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,7 +170,8 @@ private:
 	CMaterial					_Mat;
 	CVertexBuffer				_VB;
 	CPrimitiveBlock				_PB;
-	NLMISC::CAABBox				_BBox;
+	/// For clipping.
+	NLMISC::CAABBoxExt			_BBox;
 	CMaterialBase				*_AnimatedMat;
 private:	
 	void	setupVBnPB();

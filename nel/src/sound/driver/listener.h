@@ -1,7 +1,7 @@
 /** \file listener.h
  * IListener: sound listener interface
  *
- * $Id: listener.h,v 1.1 2001/06/26 15:28:10 cado Exp $
+ * $Id: listener.h,v 1.2 2001/07/04 13:06:36 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,12 +33,20 @@
 namespace NLSOUND {
 
 
+/// Default environmental effect
+#define ENVFX_DEFAULT_NUM 2
+
+/// Default environmental effect size
+#define ENVFX_DEFAULT_SIZE 7.5f
+
+
 /**
  * Sound listener interface (implemented in sound driver dynamic library)
  *
- * - If the buffer is mono, the source is played in 3D mode. The coordinate
- * system is the same as OpenGl's : X points right, Y points up and Z points
- * toward the viewer/camera.
+ * The coordinate system is the same as OpenGl's : X points right,
+ * Y points up and Z points toward the viewer/camera.
+ *
+ * The listener is a singleton.
  *
  * \author Olivier Cado
  * \author Nevrax France
@@ -64,6 +72,15 @@ public:
 	virtual void			setOrientation( const NLMISC::CVector& front, const NLMISC::CVector& up ) = 0;
 	/// Get the orientation vectors
 	virtual void			getOrientation( NLMISC::CVector& front, NLMISC::CVector& up ) const = 0;
+	/** Set the gain (volume value inside [0 , 1]). (default: 1)
+	 * 0.0 -> silence
+	 * 0.5 -> -6dB
+	 * 1.0 -> no attenuation
+	 * values > 1 (amplification) not supported by most drivers
+	 */
+	virtual void			setGain( float gain ) = 0;
+	/// Get the gain
+	virtual float			getGain() const = 0;
 	//@}
 
 	/// \name Global properties
@@ -73,24 +90,20 @@ public:
 	/// Set the rolloff factor (default: 1) to scale the distance attenuation effect
 	virtual void			setRolloffFactor( float f ) = 0;
 	/// Set DSPROPERTY_EAXLISTENER_ENVIRONMENT and DSPROPERTY_EAXLISTENER_ENVIRONMENTSIZE if EAX available (see EAX listener properties)
-	virtual void			setEnvironment( uint env, float size=7.5f ) = 0;
+	virtual void			setEnvironment( uint env, float size=ENVFX_DEFAULT_SIZE ) = 0;
 	/// Set any EAX listener property if EAX available
 	virtual void			setEAXProperty( uint prop, void *value, uint valuesize ) = 0;
 	//@}
 
-	/// Get the instance of the singleton
-	static IListener		*instance()		{ return _Instance; }
-
-	/// Constructor
-							IListener();
 
 	/// Destructor
-	virtual					~IListener() { _Instance = NULL; }
+	virtual					~IListener() {}
 
 protected:
 
-	// The listener instance
-	static IListener		*_Instance;
+	/// Constructor
+	IListener() {}
+
 };
 
 

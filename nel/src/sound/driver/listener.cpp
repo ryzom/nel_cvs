@@ -1,7 +1,7 @@
 /** \file listener.cpp
  * <File description>
  *
- * $Id: listener.cpp,v 1.1 2001/06/26 15:28:10 cado Exp $
+ * $Id: listener.cpp,v 1.2 2001/07/04 13:06:36 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,26 +27,6 @@
 
 
 namespace NLSOUND {
-
-
-// The listener instance
-IListener *IListener::_Instance = NULL;
-
-
-/*
- * Constructor
- */
-IListener::IListener()
-{
-	if ( _Instance == NULL )
-	{
-		_Instance = this;
-	}
-	else
-	{
-		nlerror( "Listener singleton instanciated twice" );
-	}
-}
 
 
 } // NLSOUND

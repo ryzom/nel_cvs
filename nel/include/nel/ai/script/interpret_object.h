@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.14 2001/07/26 13:16:47 chafik Exp $
+ * $Id: interpret_object.h,v 1.15 2001/10/30 10:04:31 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,30 +224,24 @@ namespace NLAISCRIPT
 	* \date 2000
 	*/	
 	class CExceptionHaveNoType: public NLAIE::IException
-	{
-	private:
-		char *_Text;
+	{	
 	public:
-		
-		CExceptionHaveNoType(const char *text)
-		{
-			_Text = new char [strlen(text) + 1];
-			strcpy(_Text,text);
-		}
 
-		const char *what() const throw()
-		{
-			return _Text;
-		}
+		CExceptionHaveNoType(const CExceptionHaveNoType &e):NLAIE::IException(e)
+		{			
+		}		
+		
+		CExceptionHaveNoType(const std::string &text):NLAIE::IException(text)
+		{			
+		}		
 
 		virtual const NLAIE::IException *clone() const
 		{
-			return new CExceptionHaveNoType(_Text);
+			return new CExceptionHaveNoType(*this);
 		}
 
 		virtual ~CExceptionHaveNoType()
-		{
-			delete _Text;
+		{			
 		}
 	};
 }

@@ -17,8 +17,8 @@
 class CLogicState;
 
 /**
-* class CEvent
-*/
+ * class CEvent
+ */
 class CEvent
 {
 public:
@@ -71,8 +71,8 @@ typedef CList< CEvent *, CEvent *&> TPEventList;
 
 
 /**
-* class State
-*/
+ * class State
+ */
 class CState  
 {
 public:
@@ -105,5 +105,11 @@ public:
  * Set a CLogicState from a CState 
  */
 void cStateToCLogicState( CState& state, CLogicState& logicState );
+
+/**
+ * Set a CState from a CLogicState 
+ */
+void cLogicStateToCState( CLogicState& logicState, CState& state );
+
 
 #endif // !defined(AFX_STATE_H__8501C0A2_320A_42B9_BD7E_3D77F27301ED__INCLUDED_)

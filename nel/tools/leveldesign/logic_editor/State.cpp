@@ -72,7 +72,7 @@ void cEventToCLogicEvent( CEvent& event, CLogicEvent& logicEvent )
 	logicEvent.ConditionName = string( (LPCSTR)event.m_sConditionName );
 	
 	/// event action
-	logicEvent.EventAction.IsStateChange = event.m_bActionIsMessage;
+	logicEvent.EventAction.IsStateChange = !event.m_bActionIsMessage;
 
 	if( logicEvent.EventAction.IsStateChange )
 	{
@@ -189,3 +189,44 @@ void cStateToCLogicState( CState& state, CLogicState& logicState )
 	}
 
 } // cStateToCLogicState //
+
+
+
+//-----------------------------------------------
+//	cLogicStateToCState
+//
+//-----------------------------------------------
+void cLogicStateToCState( CLogicState& logicState, CState& state )
+{
+	state.m_sName = CString( logicState._StateName.c_str() );
+	
+	vector<CLogicEventMessage>::iterator itMsg;
+	for( itMsg = logicState._EntryMessages.begin(); itMsg != logicState._EntryMessages.end(); ++itMsg )
+	{
+		//TODO
+	}
+	for( itMsg = logicState._ExitMessages.begin(); itMsg != logicState._ExitMessages.end(); ++itMsg )
+	{
+		//TODO
+	}
+
+	
+	vector<CLogicEvent>::iterator itEvt;
+	for( itEvt = logicState._Events.begin(); itEvt != logicState._Events.end(); ++itEvt )
+	{
+		CEvent * event = new CEvent();
+		event->m_sConditionName = CString((*itEvt).ConditionName.c_str());
+		
+		event->m_bActionIsMessage = !(*itEvt).EventAction.IsStateChange;
+		
+		event->m_sMessageDestination = CString( (*itEvt).EventAction.EventMessage.MessageDestination.c_str() );
+		event->m_sMessageID = CString( (*itEvt).EventAction.EventMessage.MessageId.c_str() );
+		event->m_sArguments = CString( (*itEvt).EventAction.EventMessage.MessageArguments.c_str() );
+	
+		event->m_sStateChange = CString( (*itEvt).EventAction.StateChange.c_str() );
+		
+		state.addEvent( event );
+	}
+
+
+} // cLogicStateToCState //

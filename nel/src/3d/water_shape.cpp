@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.17 2002/06/19 17:24:59 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.18 2002/06/27 15:05:01 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -142,7 +142,7 @@ const char *WaterVpCode2Stages = "!!VP1.0\n\
 					  MUL R0, R0, R2.x;															\n\
 					  ADD R2, R0, R0;															\n\
 					  ADD R0, R2, -R1;				#compute reflection vector					\n\
-					  MUL o[TEX0].xy, R0, c[8], c[8];											\n\
+					  MAD o[TEX0].xy, R0, c[8], c[8];											\n\
 					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
 					  END\
 					  ";
@@ -174,7 +174,7 @@ const char *WaterVpCode2StagesAlpha = "!!VP1.0\n\
 					  MUL R0, R0, R2.x;															\n\
 					  ADD R2, R0, R0;															\n\
 					  ADD R0, R2, -R1;				#compute reflection vector					\n\
-					  MUL o[TEX0].xy, R0, c[8], c[8];											\n\
+					  MAD o[TEX0].xy, R0, c[8], c[8];											\n\
 					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
 					  END\
 					  ";

@@ -1,0 +1,166 @@
+/**
+
+\page codinghowto Coding and presentation conventions
+\author Vincent Archer <archer@nevrax.org>
+\author Vianney Lecroart <lecroart@nevrax.com>
+
+\section introd Introduction
+
+This document defines and formalises the presentation and redaction of all source
+files in the NeL platform. A strict adherence to these conventions is required
+to ensure a readable and understandable code.
+
+\section filename File naming
+
+There are very few restrictions on file names and locations. The following rules are
+expected:
+
+- Files must end with the appropriate suffix:
+  - .cpp for C++ code
+  - .c for ANSI C code
+  - .h for included declarations
+  - .asm for assembly-level files
+  - .dtx for doxygen documentation source without code.
+- Significant, english, file names. Length is not capped, but should be kept within
+  resonable bounds.
+- No spaces or uppercase letters. If the name is composed of separate, discrete words,
+  the underline character is used instead of space as the separator.
+
+\section fileloc File locations
+
+A quick check of the CVS source directory will show how files are organised within the
+source tree. The sources are organised in two levels. The first level specifies which
+part of the platform the source belongs to
+
+- nel
+- client
+- server
+
+The second level specifies which logical part the file belongs to:
+
+- network
+- ai
+- 3d
+- database
+- file
+- system
+- misc
+
+This applies to basic source as well as include files, who are in a separate include
+tree and never along their source code files. Thus, an include declaration would be
+
+#include "nel/misc/steam.h"
+
+\section filehdrs File header
+
+All code files must begin with a specific header. The model of that header is defined
+in Headers.txt in the documentation directory. It is recommended that people include
+that file immediately when starting a new file.
+
+\section basetype Base types
+
+- Integral types
+  - The first letter specifies 's' for signed integers or 'u' for unsigned integers.
+    It is not possible to specify a 'dont care sign' integer
+  - The next three letters are 'int'
+  - The type ends with the number of bits used to represent the integral type, or
+    nothing to specify an integer that is at least 32 bits wide
+  - Examples: uint8 (unisgned integer octet), sint64 (signed 64bits integer), sint
+    (signed integer of at least 32 bits)
+- Classic types
+  - float (32 bits floating point number, use is discouraged)
+  - double (64 bits floating point number)
+  - bool (an equivalent to the hypothetical uint1 type)
+  - void (empty type)
+  - char (ascii character, not to be confused with uint8/sint8)
+  - wchar ("wide" character, on 16 bits)
+  - string (ascii string)
+  - wstring ("wide" character string)
+
+As a general rule, the classic and sloppy use of short/int/long is proscribed, as is using
+a 'char' to represent a 8-bit number, unless this is required to call an external API.
+
+\section nameconv Naming convention
+
+All elements will be in their own namespace, which is short, in all uppercase, and consist of
+a two letter code (RK for NeL), followed by the directory name. Thus an element of the NeL
+3D library will be declared in the NL3D namespace.
+
+The following conventions are applied to names within these namespaces:
+
+- All names must include one or more english words which have relevance to the entity
+  being named. If multiple words are used for a more descriptive naming, all words begin
+  with an uppercase letter, the underscore character is not used to separate words (e.g.
+  word, FullWord, ComplexQualifiedWord)
+- Class methods start with a lowercase character, e.g. load(), store(), giveMoney()
+- Public attributes of a class start with an uppercase, e.g. Layer, Set, ResourceType
+- Private attributes of a class start with an underscore character, then an uppercase
+  letter, e.g. _State, _ResourceKind
+- Local variables and parameters start with a lowercase letter, e.g. size, x, i
+- Structures and Classes start with the uppercase C letter, then the name starting with
+  an uppercase letter as well, e.g. CTexture, CMyClass
+- Interfaces start with the uppercase I letter, then the name starting with an
+  uppercase letter as well
+- Iterators start with the prefix 'It' (uppercase I, lowercase t), then the name starting
+  with an uppercase letter, e.g. ItTexture
+- Other types, enums and the like are prefixed with an uppercase T, then the name.
+- Globals function and values are prefixed by their namespace values, then follow the
+  standard conventions, e.g. NLAI::createAttribut(), NLAI::ReactiveState
+- Preprocessor constants are in full uppercase, and consist of the namespace, an underscore
+  character, then a name, with underscores as separators, e.g. NLAI_MACRO, NL_OS_UNIX
+
+Note that there is no difference between variables and constants.
+
+\section codestyle Coding style
+
+\subsection indents Indentation
+
+A strong suggestion is to set your tabulation marks to 4 characters, rather than the usual 8.
+Indentation is always done using tabulations, never with spaces. Make sure your text editor
+does not replace tabulations with spaces.
+
+If possible, function, members and variable lists should align the first character of all
+their names.
+
+\subsection braces Braces
+
+Source code is written using a flat style. In this style, the opening and closing curly braces
+are placed on separate lines (never with code), and at the same indentation as the precedeing
+defining element, while the content of the block enclosed between the braces is indented once
+from the source. Your code source should look like this: 
+
+class AClass
+{
+	void aFunction (bool b)
+	{
+		if (b == true)
+		{
+			...
+		}
+	}
+};
+
+\subsection commenting Comments
+
+Comments may use either the C++ style comments //, or the more classic C commenting method. If
+possible, the source must be heavily commented, and as many comments as possible must conform
+to the Doxygen commenting methods, to be extracted and reused as software documentation.
+
+Comment "separators" will be made with a line of repeated star '*' characters. You should not
+use more than 50 stars to separate.
+
+The practice of comment blocks, i.e. comments where each line begins and end with a star
+character, to create a "text block" is proscribed.
+
+\section final Final coding recommendations
+
+Even if most of these are obvious recommendations, it is useful to restate these basic
+principles:
+
+- The use of #define must be restricted. Constants values and macro functions can be expressed
+  directly in C++ using constants and inline functions, and do not require pré-processor
+  definitions.
+- The 'using namespace' declaration is proscribed in includes, unless it is in a well
+  defined scope.
+- Include files paths, and all other file names should use the '/' character as the directory
+  separator, for portability purposes.

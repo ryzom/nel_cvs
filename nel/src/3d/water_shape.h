@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.5 2001/11/14 15:40:17 vizerie Exp $
+ * $Id: water_shape.h,v 1.6 2001/11/16 13:51:37 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -189,8 +189,7 @@ public:
 
 
 private:	
-	friend class	CWaterModel;
-	friend class	CWaterShape;
+	friend class	CWaterModel;	
 	friend class	CWaterRenderObs;
 	void								computeBBox();
 	void								envMapUpdate();

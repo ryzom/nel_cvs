@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.16 2002/03/29 14:58:34 corvazier Exp $
+ * $Id: export_scene.cpp,v 1.17 2002/05/13 12:45:25 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -221,7 +221,8 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 					// ERROR : The volume is not convex !!!
 					char tam[256];
 					sprintf(tam,"The cluster %s is not convex.",vectNode[i]->GetName());
-					MessageBox(NULL,tam,"Error",MB_OK|MB_ICONERROR);
+					//MessageBox(NULL,tam,"Error",MB_OK|MB_ICONERROR);
+					nlwarning(tam);
 				}
 			}
 
@@ -312,7 +313,8 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 				// ERROR : Poly not convex, or set of vertices not plane
 				char tam[256];
 				sprintf(tam,"The portal %s is not convex.",vectNode[i]->GetName());
-				MessageBox(NULL,tam,"Error",MB_OK|MB_ICONERROR);
+				//MessageBox(NULL,tam,"Error",MB_OK|MB_ICONERROR);
+				nlwarning(tam);
 			}
 
 			if (nAccelType&16) // is dynamic portal ?
@@ -337,7 +339,8 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 				// ERROR
 				char tam[256];
 				sprintf(tam,"The portal %s has not 2 clusters.",vectNode[i]->GetName());
-				MessageBox(NULL,tam,"Error",MB_OK|MB_ICONERROR);
+				//MessageBox(NULL,tam,"Error",MB_OK|MB_ICONERROR);
+				nlwarning(tam);
 			}
 
 
@@ -395,7 +398,8 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 				{
 					char tam[256];
 					sprintf(tam,"Object %s is not attached to any cluster\nbut his flag clusterize is set", pNode->GetName());
-					MessageBox(NULL, tam, "Warning", MB_OK);
+					//MessageBox(NULL, tam, "Warning", MB_OK);
+					nlwarning(tam);
 				}
 				// debug purpose : to remove
 

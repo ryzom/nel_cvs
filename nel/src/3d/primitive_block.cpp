@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Primitive Block implementation
  *
- * $Id: primitive_block.cpp,v 1.15 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: primitive_block.cpp,v 1.16 2003/06/30 18:59:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,7 +122,7 @@ void				CPrimitiveBlock::setNumTri(uint32 n)
 void				CPrimitiveBlock::setTri(uint triIdx, uint32 vidx0, uint32 vidx1, uint32 vidx2)
 {
 	#ifdef NL_DEBUG
-		nlassert((sint) triIdx <= ((sint) _Tri.size() - 3))
+		nlassert((sint) triIdx <= ((sint) _Tri.size() - 3));
 	#endif
 	uint32*	ptr;
 

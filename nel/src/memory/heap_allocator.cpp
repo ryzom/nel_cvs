@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.10 2003/11/17 10:43:34 besson Exp $
+ * $Id: heap_allocator.cpp,v 1.11 2003/11/17 10:51:35 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -633,7 +633,11 @@ const char * CHeapAllocator::getCategory (void *block)
 {
 	// Get the node pointer
 	CNodeBegin *node = (CNodeBegin*) ((uint)block - sizeof (CNodeBegin));
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
 	return node->Category;
+#else
+	return NULL;
+#endif
 }
 
 // *********************************************************

@@ -1,7 +1,7 @@
 /** \file ig_surface_light.cpp
  * <File description>
  *
- * $Id: ig_surface_light.cpp,v 1.3 2002/02/28 12:59:49 besson Exp $
+ * $Id: ig_surface_light.cpp,v 1.4 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -97,7 +97,7 @@ void			CIGSurfaceLight::clear()
 // ***************************************************************************
 void			CIGSurfaceLight::serial(NLMISC::IStream &f)
 {
-	uint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.serial(_CellSize);
 	f.serial(_OOCellSize);

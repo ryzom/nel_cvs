@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.21 2002/03/20 10:47:54 berenguier Exp $
+ * $Id: rgba.h,v 1.22 2002/08/21 09:36:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -431,12 +431,12 @@ public:
 	 */
 	void set(uint8 r, uint8 g, uint8 b, uint8 a);
 
-	/// Blue componant.
-	uint8	B;
-	/// Green componant.
-	uint8	G;
 	/// Red componant.
 	uint8	R;
+	/// Green componant.
+	uint8	G;
+	/// Blue componant.
+	uint8	B;
 	/// Alpha componant.
 	uint8	A;
 };

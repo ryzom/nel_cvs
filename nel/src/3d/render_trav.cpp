@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.35 2002/08/14 12:39:25 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.36 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -574,23 +574,22 @@ void		CRenderTrav::beginVPLightSetup(uint ctStart, bool supportSpecular, const C
 	if(supportSpecular)
 	{
 		// Setup lightDir.
-		Driver->setConstant(_VPCurrentCtStart+9, &lightDir);
+		Driver->setConstant(_VPCurrentCtStart+9, lightDir);
 	}
 	else
 	{
 		// Setup lightDir. NB: no specular color!
-		Driver->setConstant(_VPCurrentCtStart+5, &lightDir);
+		Driver->setConstant(_VPCurrentCtStart+5, lightDir);
 	}
 
 
 	// Setup PointLights
 	//================
-	CVector		lightPos;
 	uint		startPLPos;
 	if(supportSpecular)
 	{
 		// Setup eye in objectSpace for localViewer
-		Driver->setConstant(_VPCurrentCtStart+11, &eye);
+		Driver->setConstant(_VPCurrentCtStart+11, eye);
 		// Start at 12.
 		startPLPos= 12;
 	}
@@ -605,7 +604,7 @@ void		CRenderTrav::beginVPLightSetup(uint ctStart, bool supportSpecular, const C
 		// Setup position of light.
 		CVector		lightPos;
 		lightPos= invObjectWM * _DriverLight[i].getPosition();
-		Driver->setConstant(_VPCurrentCtStart+startPLPos+(i-1), &lightPos);
+		Driver->setConstant(_VPCurrentCtStart+startPLPos+(i-1), lightPos);
 	}
 
 
@@ -916,7 +915,7 @@ static const char*	LightingVPFragmentSpecular_End=
 // ***************************************************************************
 static	void	strReplaceAll(string &strInOut, const string &tokenSrc, const string &tokenDst)
 {
-	sint	pos;
+	uint32	pos;
 	sint	srcLen= tokenSrc.size();
 	while( (pos=strInOut.find(tokenSrc)) != string::npos)
 	{

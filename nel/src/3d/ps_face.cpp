@@ -1,7 +1,7 @@
 /** \file ps_face.cpp
  * Face particles.
  *
- * $Id: ps_face.cpp,v 1.4 2002/04/15 08:41:56 vizerie Exp $
+ * $Id: ps_face.cpp,v 1.5 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,6 @@ public:
 		f.updateMatBeforeRendering(driver);
 
 		CVertexBuffer &vb = f.getNeededVB();
-		const uint32 vSize = vb.getVertexSize();	
 		uint8 *currVertex; 	
 
 		// number of left faces to draw, number of faces to process at once
@@ -94,7 +93,7 @@ public:
 					ptSize = &f._ParticleSize;			
 				}					
 				f.updateVbColNUVForRender(vb, size - leftFaces, toProcess, srcStep);			
-				const uint32 stride = vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1;
+				const uint32 stride = vb.getVertexSize();
 				endPosIt = posIt + toProcess;							
 				do		
 				{			

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.20 2002/04/26 16:07:45 besson Exp $
+ * $Id: ps_mesh.cpp,v 1.21 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -165,7 +165,7 @@ static CMesh *CreateDummyShape(void)
 //====================================================================================
 void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
-	sint ver = f.serialVersion(3);	
+	(void)f.serialVersion(3);	
 	CPSParticle::serial(f);
 	CPSSizedParticle::serialSizeScheme(f);
 	CPSRotated3DPlaneParticle::serialPlaneBasisScheme(f);
@@ -515,10 +515,8 @@ public:
 
 		const uint nbVerticesInSource	= modelVb.getNumVertices();
 
-		CVector K; // the K vector of the current basis
-
-		sint inNormalOff;
-		sint outNormalOff;
+		sint inNormalOff=0;
+		sint outNormalOff=0;
 		if (modelVb.getVertexFormat() & CVertexBuffer::NormalFlag)
 		{	
 			inNormalOff  =  modelVb.getNormalOff();
@@ -807,8 +805,8 @@ public:
 		const uint outVSize = outVb.getVertexSize();
 
 		// offset of normals in vertices of the prerotated model, and source model		
-		uint normalOff;
-		uint pNormalOff;
+		uint normalOff=0;
+		uint pNormalOff=0;
 		if (prerotVb.getVertexFormat() & CVertexBuffer::NormalFlag) 
 		{
 			normalOff  =  outVb.getNormalOff();
@@ -894,15 +892,15 @@ public:
 	}
 };
 
-CPSConstraintMesh::CPSConstraintMesh() : _ModelBank(NULL),
-										 _Touched(1),
-										 _ReinitGlobalAnimTimeOnNewElement(0),
-										 _GlobalAnimationEnabled(0),
+CPSConstraintMesh::CPSConstraintMesh() : _NumFaces(0),
+										 _ModelBank(NULL),
 										 _ModulatedStages(0),
+										 _Touched(1),
 										 _VertexColorLightingForced(false),
-										 _MorphScheme(NULL),
+										 _GlobalAnimationEnabled(0),
+										 _ReinitGlobalAnimTimeOnNewElement(0),
 										 _MorphValue(0),
-										 _NumFaces(0)
+										 _MorphScheme(NULL)
 {		
 	_Name = std::string("ConstraintMesh");
 }
@@ -1057,8 +1055,8 @@ bool CPSConstraintMesh::update(void)
 	IShape *is;
 
 
-	uint32 vFormat;
-	uint   numVerts;	
+	uint32 vFormat=0;
+	uint   numVerts=0;	
 
 	if (_MeshShapeFileName.size() == 0)
 	{
@@ -1417,8 +1415,8 @@ CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb, TA
 	
 
 	// offset of normals in vertices of the prerotated model, and source model		
-	uint normalOff;
-	uint pNormalOff;
+	uint normalOff=0;
+	uint pNormalOff=0;
 	if (prerotatedVb.getVertexFormat() & CVertexBuffer::NormalFlag) 
 	{
 		normalOff  =  inVb.getNormalOff();
@@ -2086,6 +2084,7 @@ void  CPSConstraintMesh::setTexAnimType(TTexAnimType type)
 			_GlobalAnimationEnabled = 1;
 		}
 		break;
+		default: break;
 	}
 }
 

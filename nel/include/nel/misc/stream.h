@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.55 2002/07/31 00:30:32 fleury Exp $
+ * $Id: stream.h,v 1.56 2002/08/21 09:36:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -882,7 +882,7 @@ private:
 
 				__value_type v;
 				serial(v);
-				__iterator it = cont.insert(cont.end(), v);
+				(void)cont.insert(cont.end(), v);
 
 				xmlPop ();
 			}

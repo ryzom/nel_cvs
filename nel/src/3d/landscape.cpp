@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.119 2002/08/07 15:23:31 berenguier Exp $
+ * $Id: landscape.cpp,v 1.120 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -171,11 +171,13 @@ const char	*EBadBind::what() const throw()
 CLandscape::CLandscape() : 
 	TessFaceAllocator(NL3D_TESS_ALLOC_BLOCKSIZE), 
 	TessVertexAllocator(NL3D_TESS_ALLOC_BLOCKSIZE), 
-	TessFarVertexAllocator(NL3D_TESSRDR_ALLOC_BLOCKSIZE), 
 	TessNearVertexAllocator(NL3D_TESSRDR_ALLOC_BLOCKSIZE), 
+	TessFarVertexAllocator(NL3D_TESSRDR_ALLOC_BLOCKSIZE), 
 	TileMaterialAllocator(NL3D_TESSRDR_ALLOC_BLOCKSIZE), 
 	TileFaceAllocator(NL3D_TESSRDR_ALLOC_BLOCKSIZE),
-	_Far0VB(CLandscapeVBAllocator::Far0), _Far1VB(CLandscapeVBAllocator::Far1), _TileVB(CLandscapeVBAllocator::Tile)
+	_Far0VB(CLandscapeVBAllocator::Far0),
+	_Far1VB(CLandscapeVBAllocator::Far1),
+	_TileVB(CLandscapeVBAllocator::Tile)
 {
 	TileInfos.resize(NL3D::NbTilesMax);
 
@@ -1062,13 +1064,13 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		// c[4] take usefull constants.
 		driver->setConstant(4, 0, 1, 0.5f, 0);
 		// c[5] take RefineCenter
-		driver->setConstant(5, &refineCenter);
+		driver->setConstant(5, refineCenter);
 		// c[6] take info for Geomorph trnasition to TileNear.
 		driver->setConstant(6, CLandscapeGlobals::TileDistFarSqr, CLandscapeGlobals::OOTileDistDeltaSqr, 0, 0);
 		// c[8..11] take the ModelView Matrix.
 		driver->setConstantMatrix(8, IDriver::ModelView, IDriver::Identity);
 		// c[12] take the current landscape Center / delta Pos to apply
-		driver->setConstant(12, &_PZBModelPosition);
+		driver->setConstant(12, _PZBModelPosition);
 	}
 
 
@@ -1745,6 +1747,7 @@ void			CLandscape::getTileUvScaleBiasRot(uint16 tileId, CTile::TBitmap bitmapTyp
 			uvScaleBias= tile->AlphaUvScaleBias; 
 			rotAlpha= tile->RotAlpha;
 			break;
+		default: break;
 	}
 }
 

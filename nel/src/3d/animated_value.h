@@ -1,7 +1,7 @@
 /** \file animated_value.h
  * Class IAnimatedValue
  *
- * $Id: animated_value.h,v 1.2 2001/06/20 09:36:09 berenguier Exp $
+ * $Id: animated_value.h,v 1.3 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -218,6 +218,7 @@ template<class T>
 class CAnimatedValueNotBlendable : public IAnimatedValue
 {
 public:
+	virtual ~CAnimatedValueNotBlendable<T>() {}
 	/// A default blend method. Doesn't work for all type.
 	virtual void blend (const IAnimatedValue& value, float blendFactor)
 	{

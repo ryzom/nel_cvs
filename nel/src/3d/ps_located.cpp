@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.48 2002/05/21 16:42:23 lecroart Exp $
+ * $Id: ps_located.cpp,v 1.49 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,21 +54,25 @@ namespace NL3D {
 /**
  * Constructor
  */
-	CPSLocated::CPSLocated() : _LastForever(true),
-							   _InitialLife(1.f), _LifeScheme(NULL),
-							   _InitialMass(1.f), _MassScheme(NULL),
-							   _Size(0), _MaxSize(DefaultMaxLocatedInstance),
-							   _UpdateLock(false),
-							   _CollisionInfo(NULL), _CollisionInfoNbRef(0),
-							   _NbFramesToSkip(0),
+	CPSLocated::CPSLocated() : _MaxNumFaces(0),
 							   _Name(std::string("located")),
+							   _NbFramesToSkip(0),
+							   _MaxSize(DefaultMaxLocatedInstance),
+							   _Size(0),
+							   _LastForever(true),
+							   _CollisionInfo(NULL),
+							   _CollisionInfoNbRef(0),
+							   _InitialLife(1.f),
+							   _LifeScheme(NULL),
+							   _InitialMass(1.f),
+							   _MassScheme(NULL),
+							   _UpdateLock(false),
 							   _LODDegradation(false),
-							   _MaxNumFaces(0),
 							   _NonIntegrableForceNbRefs(0),
 							   _NumIntegrableForceWithDifferentBasis(0),
-							   _ParametricMotion(false),
 							   _TriggerOnDeath(false),
-							   _TriggerID((uint32) 'NONE')
+							   _TriggerID((uint32) 'NONE'),
+							   _ParametricMotion(false)
 {		
 }
 
@@ -166,12 +170,10 @@ void CPSLocated::integrateSingle(float startDate, float deltaT, uint numStep,
 			if (numStep != 0)
 			{			
 				float currDate = startDate - pi.Date;
-				const NLMISC::CVector &speed = pi.Speed;
-				const NLMISC::CVector &pos   = pi.Pos;
 				nlassert(currDate >= 0);
 				do
 				{
-					#ifdef NL_DEBUGNL_DEBUG
+					#ifdef NL_DEBUG
 						nlassert(destPos < endPos);
 					#endif					
 					destPos->x = pi.Pos.x + currDate * pi.Speed.x;
@@ -1469,7 +1471,7 @@ uint CPSLocated::getIndexOf(const CPSLocatedBindable *lb) const
 
 
 ///=============================================================================
-CPSLocatedBindable::CPSLocatedBindable() : _Owner(NULL), _LOD(PSLod1n2), _ExternID(0)
+CPSLocatedBindable::CPSLocatedBindable() : _LOD(PSLod1n2), _Owner(NULL), _ExternID(0)
 {
 	_Owner = NULL;
 }
@@ -1702,7 +1704,7 @@ void CPSLocatedBindable::releaseAllRef()
 ///=============================================================================
 void CPSTargetLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint32 ver = f.serialVersion(1);	
+	(void)f.serialVersion(1);	
 	f.serialPtr(_Owner);
 	f.serial(_Name);
 	if (f.isReading())

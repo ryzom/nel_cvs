@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.5 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_tail_dot.cpp,v 1.6 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -240,7 +240,7 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	CVertexBuffer				&VB = VBnPB.VB;
 	CPrimitiveBlock				&PB = VBnPB.PB;
 	const uint32				vertexSize  = VB.getVertexSize();
-	uint						colorOffset;	
+	uint						colorOffset=0;	
 	
 	IDriver *drv = this->getDriver();
 	setupDriverModelMatrix();
@@ -284,7 +284,6 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 			_ColorScheme->makeN(this->_Owner, ribbonIndex, currVert + colorOffset, vertexSize, toProcess, _UsedNbSegs + 1, srcStep);			
 		}			
 		uint k = toProcess;
-		const uint ribbonSize = vertexSize * (_UsedNbSegs + 1); // size of a ribbon in the vertex buffer											
 		//////////////////////////////////////////////////////////////////////////////////////
 		// interpolate and project points the result is directly setup in the vertex buffer //
 		//////////////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 /** \file texture_mem.h
  * <File description>
  *
- * $Id: texture_mem.h,v 1.6 2002/03/14 18:19:25 vizerie Exp $
+ * $Id: texture_mem.h,v 1.7 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,8 +58,8 @@ public:
 	 */	
 	CTextureMem() : _Data(NULL),
 					_Delete(false),
-					_TexType(CBitmap::RGBA),
-					_AllowDegradation(false)
+					_AllowDegradation(false),
+					_TexType(CBitmap::RGBA)
 	{ 		
 	}
 

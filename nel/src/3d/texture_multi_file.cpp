@@ -1,7 +1,7 @@
 /** \file texture_multi_file.cpp
  * <File description>
  *
- * $Id: texture_multi_file.cpp,v 1.5 2002/06/24 17:11:13 vizerie Exp $
+ * $Id: texture_multi_file.cpp,v 1.6 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NL3D
 static std::string DummyTexName("CTextureMultiFile:Dummy");
 
 ///===========================================================	
-CTextureMultiFile::CTextureMultiFile(uint numTexs /* = 0 */) : _FileNames(numTexs), _CurrSelectedTexture(0)
+CTextureMultiFile::CTextureMultiFile(uint numTexs /* = 0 */) : _CurrSelectedTexture(0), _FileNames(numTexs)
 {	
 }
 	
@@ -90,7 +90,7 @@ void CTextureMultiFile::doGenerate()
 ///===========================================================	
 void	CTextureMultiFile::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	// serial the base part of ITexture.
 	ITexture::serial(f);

@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.16 2002/06/27 13:44:50 corvazier Exp $
+ * $Id: vegetable.cpp,v 1.17 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -225,8 +225,8 @@ void	CVegetable::generateGroupBiLinear(const CVector &posInWorld, const CVector 
 	// If on a direction, both edges are 0 density, then must do a special formula
 	bool	middleX= edgeDensityCenterX<=1;
 	bool	middleY= edgeDensityCenterY<=1;
-	float	OOEdgeDCX;
-	float	OOEdgeDCY;
+	float	OOEdgeDCX=0.0;
+	float	OOEdgeDCY=0.0;
 	if(!middleX)	OOEdgeDCX= 1.0f / edgeDensityCenterX;
 	if(!middleY)	OOEdgeDCY= 1.0f / edgeDensityCenterY;
 	// for all instances

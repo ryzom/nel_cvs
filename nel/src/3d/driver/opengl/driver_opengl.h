@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.124 2002/08/19 09:51:38 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.125 2002/08/21 09:37:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -921,8 +921,8 @@ private:
 	bool			activeVertexProgram (CVertexProgram *program);
 	void			setConstant (uint index, float, float, float, float);
 	void			setConstant (uint index, double, double, double, double);
-	void			setConstant (uint indexStart, const NLMISC::CVector* value);
-	void			setConstant (uint indexStart, const NLMISC::CVectorD* value);	
+	void			setConstant (uint indexStart, const NLMISC::CVector& value);
+	void			setConstant (uint indexStart, const NLMISC::CVectorD& value);	
 	void			setConstant (uint index, uint num, const float *src);	
 	void			setConstant (uint index, uint num, const double *src);
 	void			setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform);	

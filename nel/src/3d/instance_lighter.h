@@ -1,7 +1,7 @@
 /** \file instance_lighter.h
  * <File description>
  *
- * $Id: instance_lighter.h,v 1.4 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: instance_lighter.h,v 1.5 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -127,6 +127,8 @@ public:
 
 	/// Constructor
 	CInstanceLighter();
+	/// Destructor
+	virtual ~CInstanceLighter() {}
 
 	// Init the system
 	void init ();

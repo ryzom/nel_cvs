@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.15 2002/02/20 11:12:05 vizerie Exp $
+ * $Id: ps_force.h,v 1.16 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,7 +165,7 @@ public:
 	{
 	}
 
-	~CPSForceIntensity();
+	virtual ~CPSForceIntensity();
 	
 
 	/// get the constant intensity that was set for the force

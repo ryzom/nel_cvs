@@ -1,7 +1,7 @@
 /** \file tile_far_bank.cpp
  * <File description>
  *
- * $Id: tile_far_bank.cpp,v 1.7 2002/02/28 12:59:52 besson Exp $
+ * $Id: tile_far_bank.cpp,v 1.8 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,7 @@ const sint CTileFarBank::CTileFar::_Version=0x0;
 void CTileFarBank::CTileFar::serial(IStream &f) throw(NLMISC::EStream)
 {
 	// Serial version
-	sint streamver = f.serialVersion(_Version);
+	(void)f.serialVersion(_Version);
 
 	// Serial pixels
 	f.serialCont (_Pixels[diffuse][order0]);
@@ -102,7 +102,7 @@ void CTileFarBank::serial(IStream &f) throw(NLMISC::EStream)
 	f.serialCheck ((uint32)'KNAB');
 
 	// Serial version
-	sint streamver = f.serialVersion(_Version);
+	(void)f.serialVersion(_Version);
 
 	// Serial tiles
 	f.serialCont (_TileVector);

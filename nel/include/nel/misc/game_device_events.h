@@ -1,7 +1,7 @@
 /** \file game_device_event.h
  * <File description>
  *
- * $Id: game_device_events.h,v 1.1 2002/03/28 10:36:37 vizerie Exp $
+ * $Id: game_device_events.h,v 1.2 2002/08/21 09:36:01 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -168,8 +168,8 @@ public:
 				  IEventEmitter *emitter
 				 ) 
 				 : CGameDeviceEvent(gameDevice, emitter, EventGDSliderMovedId),
-				   SliderPos(sliderPos),
-				   SliderIndex(sliderIndex)
+				   SliderIndex(sliderIndex),
+				   SliderPos(sliderPos)
 	{}
 };
 

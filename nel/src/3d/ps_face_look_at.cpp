@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.2 2002/02/28 12:59:50 besson Exp $
+ * $Id: ps_face_look_at.cpp,v 1.3 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -230,7 +230,7 @@ public:
 					// independant sizes and rotation not supported for now with motion blur				
 					const CVector v1 = I + K;
 					const CVector v2 = K - I;								
-					CVector startV, endV, mbv1, mbv1n, mbv12, mbv2, speed;
+					CVector startV, endV, mbv1, mbv1n, mbv12, mbv2;
 					// norme of the v1 vect
 					float n;
 					const float epsilon  = 10E-5f;

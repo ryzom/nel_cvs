@@ -1,7 +1,7 @@
 /** \file surface_light_grid.cpp
  * <File description>
  *
- * $Id: surface_light_grid.cpp,v 1.4 2002/02/28 12:59:51 besson Exp $
+ * $Id: surface_light_grid.cpp,v 1.5 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -50,7 +50,7 @@ CSurfaceLightGrid::CSurfaceLightGrid()
 // ***************************************************************************
 void		CSurfaceLightGrid::serial(NLMISC::IStream &f)
 {
-	uint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 	f.serial(Origin);
 	f.serial(Width);
 	f.serial(Height);

@@ -1,7 +1,7 @@
 /** \file skeleton_weight.cpp
  * <File description>
  *
- * $Id: skeleton_weight.cpp,v 1.6 2002/02/28 12:59:51 besson Exp $
+ * $Id: skeleton_weight.cpp,v 1.7 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,7 +72,7 @@ void CSkeletonWeight::serial (NLMISC::IStream& f)
 	f.serialCheck ((uint32)'TWKS');
 
 	// Serial a version number
-	sint version=f.serialVersion (0);
+	(void)f.serialVersion (0);
 
 	// Serial the array
 	f.serialCont (_Elements);
@@ -83,7 +83,7 @@ void CSkeletonWeight::serial (NLMISC::IStream& f)
 void CSkeletonWeight::CNode::serial (NLMISC::IStream& f)
 {
 	// Serial a version number
-	sint version=f.serialVersion (0);
+	(void)f.serialVersion (0);
 
 	// Serial the name
 	f.serial (Name);

@@ -1,7 +1,7 @@
 /** \file meshvp_per_pixel_light.cpp
  * <File description>
  *
- * $Id: meshvp_per_pixel_light.cpp,v 1.3 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: meshvp_per_pixel_light.cpp,v 1.4 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -330,6 +330,10 @@ static const char*	PPLightingVPCodeEnd=
 	END																					\n\
 ";
 
+/***************************************************************/
+/******************* THE FOLLOWING CODE IS COMMENTED OUT *******/
+/***************************************************************
+
 // Test code : map the tangent space vector as the diffuse color
 static const char*	PPLightingVPCodeTest =
 "!!VP1.0																			\n\
@@ -341,6 +345,7 @@ static const char*	PPLightingVPCodeTest =
  MOV o[COL0], v[9];																	\n\
  END																				\n\
 ";
+***************************************************************/
 
 
 
@@ -425,7 +430,7 @@ bool	CMeshVPPerPixelLight::begin(IDriver *drv,
 		{
 			// put light direction in object space
 			NLMISC::CVector lPos = invertedModelMat.mulVector(strongestLight.getDirection());
-			drv->setConstant(4, &lPos);
+			drv->setConstant(4, lPos);
 			_IsPointLight = false;
 		}
 		break;
@@ -433,7 +438,7 @@ bool	CMeshVPPerPixelLight::begin(IDriver *drv,
 		{
 			// put light in object space
 			NLMISC::CVector lPos = invertedModelMat * strongestLight.getPosition();
-			drv->setConstant(4, &lPos);
+			drv->setConstant(4, lPos);
 			_IsPointLight = true;
 		}
 		break;
@@ -447,7 +452,7 @@ bool	CMeshVPPerPixelLight::begin(IDriver *drv,
 	{
 		// viewer pos in object space
 		NLMISC::CVector vPos = invertedModelMat * viewerPos;
-		drv->setConstant(5, &vPos);
+		drv->setConstant(5, vPos);
 	}
 		
 	// c[0..3] take the ModelViewProjection Matrix. After setupModelMatrix();
@@ -469,7 +474,7 @@ void	CMeshVPPerPixelLight::end(IDriver *drv)
 //=================================================================================
 void	CMeshVPPerPixelLight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver  = f.serialVersion(0);
+	(void)f.serialVersion(0);
 	f.serial(SpecularLighting);	
 }	
 

@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.22 2002/08/05 15:29:11 berenguier Exp $
+ * $Id: channel_mixer.cpp,v 1.23 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,7 +115,7 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 		return;
 
 	// For each selected channel
-	CChannel	**channelArrayPtr;
+	CChannel	**channelArrayPtr = 0;
 	uint		numChans;
 	if(detail)
 	{
@@ -144,7 +144,7 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 		bool bFirst=true;
 
 		// Last blend factor
-		float lastBlend;
+		float lastBlend=0.0;
 
 		// Eval each slot
 		for (uint a=0; a<numActive; a++)

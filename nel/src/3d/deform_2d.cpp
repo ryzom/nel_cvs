@@ -1,7 +1,7 @@
 /** \file deform_2d.cpp
  * <File description>
  *
- * $Id: deform_2d.cpp,v 1.4 2002/02/28 12:59:49 besson Exp $
+ * $Id: deform_2d.cpp,v 1.5 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -118,9 +118,6 @@ void CDeform2d::doDeform(const TPoint2DVect &surf, IDriver *drv, IPerturbUV *uvp
 	
 
 	drv->setFrustum(0, (float) _Width, 0, (float) _Height, -1, 1, false);
-
-	uint size = dest.size();
-
 	drv->setupViewMatrix(CMatrix::Identity);
 	drv->setupModelMatrix(CMatrix::Identity);
 

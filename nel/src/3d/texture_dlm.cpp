@@ -1,7 +1,7 @@
 /** \file texture_dlm.cpp
  * <File description>
  *
- * $Id: texture_dlm.cpp,v 1.9 2002/05/21 16:42:23 lecroart Exp $
+ * $Id: texture_dlm.cpp,v 1.10 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -228,7 +228,7 @@ bool			CTextureDLM::createLightMap(uint w, uint h, uint &x, uint &y)
 	// if lightmap full
 	//===================
 	// if bitfield is full
-	if( block->FreeSpace == (1<<nLMapPerBlock)-1 )
+	if( block->FreeSpace == (uint)(1<<nLMapPerBlock)-1 )
 	{
 		// Must remove it from free list.
 		unlinkFreeBlock(lMapType, block);
@@ -372,7 +372,7 @@ void			CTextureDLM::releaseLightMap(uint x, uint y)
 	uint	nLMapOnY= NL_DLM_BLOCK_SIZE / block->Height;
 	uint	nLMapPerBlock= nLMapOnX * nLMapOnY;
 	// was Full (ie all bits set) before this release
-	bool	wasFull= (block->FreeSpace == (1<<nLMapPerBlock)-1);
+	bool	wasFull= (block->FreeSpace == (uint)(1<<nLMapPerBlock)-1);
 	// the type of lightmap.
 	uint	lMapType= getTypeForSize(block->Width, block->Height);
 

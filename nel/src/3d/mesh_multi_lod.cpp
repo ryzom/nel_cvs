@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.26 2002/07/02 12:30:03 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.27 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -345,7 +345,7 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 void CMeshMultiLod::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	// Serial a version number
-	sint ver=f.serialVersion (0);
+	(void)f.serialVersion (0);
 
 	// serial Materials infos contained in CMeshBase.
 	CMeshBase::serialMeshBase(f);
@@ -450,7 +450,7 @@ void CMeshMultiLod::clear ()
 void CMeshMultiLod::CMeshSlot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	// Check version
-	sint ver=f.serialVersion (0);
+	(void)f.serialVersion (0);
 
 	f.serialPolyPtr (MeshGeom);
 	f.serial (A);

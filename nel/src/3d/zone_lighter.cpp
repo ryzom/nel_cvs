@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.21 2002/04/30 08:26:39 besson Exp $
+ * $Id: zone_lighter.cpp,v 1.22 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ UDriver *drv=NULL;
 // ***************************************************************************
 
 
-CZoneLighter::CZoneLighter () : _TriangleListAllocateur(100000), _PatchComputed ("PatchComputed")
+CZoneLighter::CZoneLighter () : _PatchComputed ("PatchComputed"), _TriangleListAllocateur(100000)
 {
 	
 }
@@ -219,7 +219,7 @@ public:
 
 		if (mask != 0)
 		{
-			uint i;
+			uint i=0;
 			uint count = 0;
 			while (1)
 			{
@@ -256,12 +256,12 @@ public:
 								uint lastShape
 								)
 		: 
-		  _Process(process),
 		  _ZoneLighter(zoneLighter), 
 		  _Description(description),
 		  _ShapesToLit(shapeToLit),
 		  _FirstShape(firstShape),
-		  _LastShape(lastShape)
+		  _LastShape(lastShape),
+		  _Process(process)
 	{
 	}
 	void run()
@@ -819,16 +819,10 @@ void CZoneLighter::processCalc (uint process, const CLightDesc& description)
 
 		// *** Lighting
 		
-		// Get a patch pointer
-		const CPatch *pPatch=(const_cast<const CZone*>(pZone))->getPatch (patch);
-
 		// Get the patch info
 		CPatchInfo &patchInfo=_PatchInfo[patch];
 
 		// ** Pointer on arries
-		vector<bool> &binded=_Binded[zoneNumber][patch];
-		vector<bool> &oversampleEdges=_OversampleEdges[patch];
-		vector<CPatchUVLocator> &locator=_Locator[zoneNumber][patch];
 		std::vector<CLumelDescriptor> &lumels=_Lumels[patch];
 
 		// Go for light each lumel
@@ -1301,7 +1295,6 @@ void CZoneLighter::rayTraceTriangle (const NLMISC::CTriangle& toOverSample, CVec
 	else
 	{
 		// Subdivide the triangle
-		NLMISC::CTriangle subTri;
 		CVector v0V1=toOverSample.V0;
 		v0V1+=toOverSample.V1;
 		v0V1/=2;
@@ -1452,7 +1445,7 @@ void CZoneLighter::getNormal (const CPatch *pPatch, sint16 lumelS, sint16 lumelT
 							uint16 zoneId=_ZoneId[patchOut->getZone()->getZoneId ()];
 
 							// Get edge
-							uint newEdge;
+							uint newEdge=0;
 							uint i;
 							for (i=0; i<=(uint)bindInfo[edge].NPatchs; i++)
 							{
@@ -1908,11 +1901,6 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 			uint orderS=pPatch->getOrderS();
 			uint orderT=pPatch->getOrderT();
 
-			// *** Center coordinates
-			float centerS=(face->PVLeft.getS()+face->PVRight.getS())/2.f;
-			float centerT=(face->PVLeft.getT()+face->PVRight.getT())/2.f;
-			CVector centerPos=(face->VLeft->EndPos+face->VRight->EndPos)/2.f;
-
 			// *** Base Coordinates
 			CVector pos[14];
 			pos[0]=face->VBase->EndPos;		// p0
@@ -2091,7 +2079,6 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 
 		// Get lumel array
 		vector<CLumelDescriptor> &lumels=_Lumels[patch];
-		uint lumelCount=lumels.size();
 
 		// *** Compute an interpolated normal
 
@@ -2213,7 +2200,6 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 
 		// Get lumel array
 		vector<CLumelDescriptor> &lumels=_Lumels[patch];
-		uint lumelCount=lumels.size();
 
 		// *** Compute an interpolated normal
 
@@ -2760,7 +2746,6 @@ void CZoneLighter::makeQuadGridFromWaterShapes(NLMISC::CAABBox zoneBBox)
 	/// now, insert all water shapes
 	for (TShapeVect::iterator it = _WaterShapes.begin(); it != _WaterShapes.end(); ++it, ++count)
 	{
-		CWaterShape *ws = NLMISC::safe_cast<CWaterShape *>(it->Shape);
 		/// get the current shape bbox in the world
 		it->Shape->getAABBox(tmpBox);
 		NLMISC::CAABBox currBB = NLMISC::CAABBox::transformAABBox(it->MT, tmpBox);

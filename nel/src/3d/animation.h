@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.7 2002/07/23 17:09:59 corvazier Exp $
+ * $Id: animation.h,v 1.8 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,7 +61,7 @@ public:
 	/// ctor
 	CAnimation();
 	/// Destructor
-	~CAnimation ();
+	virtual ~CAnimation ();
 
 	/// \name Public interface.
 

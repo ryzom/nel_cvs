@@ -1,7 +1,7 @@
 /** \file point_light_named_array.cpp
  * <File description>
  *
- * $Id: point_light_named_array.cpp,v 1.3 2002/02/28 12:59:50 besson Exp $
+ * $Id: point_light_named_array.cpp,v 1.4 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,7 +144,7 @@ void			CPointLightNamedArray::setPointLightFactor(const std::string &lightGroupN
 // ***************************************************************************
 void			CPointLightNamedArray::serial(NLMISC::IStream &f)
 {
-	uint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.serialCont(_PointLights);
 	f.serialCont(_PointLightGroupMap);

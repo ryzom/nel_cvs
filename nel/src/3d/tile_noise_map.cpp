@@ -1,7 +1,7 @@
 /** \file tile_noise_map.cpp
  * A Noise Map for landscape.
  *
- * $Id: tile_noise_map.cpp,v 1.2 2002/02/28 12:59:52 besson Exp $
+ * $Id: tile_noise_map.cpp,v 1.3 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NL3D
 // ***************************************************************************
 void		CTileNoiseMap::serial(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.serialBuffer((uint8*)Pixels, NL3D_TILE_NOISE_MAP_SIZE * NL3D_TILE_NOISE_MAP_SIZE);
 }

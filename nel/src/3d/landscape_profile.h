@@ -1,7 +1,7 @@
 /** \file landscape_profile.h
  * Yoyo: for landscape profile only.
  *
- * $Id: landscape_profile.h,v 1.3 2001/10/11 13:29:05 berenguier Exp $
+ * $Id: landscape_profile.h,v 1.4 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,8 +41,8 @@
 #define	NL3D_PROFILE_LAND_SET(_x_, _y_)	_x_=_y_
 #define	NL3D_PROFILE_LAND_ADD(_x_, _y_)	_x_+=_y_
 #else
-#define	NL3D_PROFILE_LAND_SET(_x_, _y_)	NULL
-#define	NL3D_PROFILE_LAND_ADD(_x_, _y_)	NULL
+#define	NL3D_PROFILE_LAND_SET(_x_, _y_)
+#define	NL3D_PROFILE_LAND_ADD(_x_, _y_)
 #endif
 
 

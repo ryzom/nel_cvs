@@ -1,7 +1,7 @@
 /** \file coarse_mesh_build.cpp
  * <File description>
  *
- * $Id: coarse_mesh_build.cpp,v 1.3 2002/02/28 12:59:49 besson Exp $
+ * $Id: coarse_mesh_build.cpp,v 1.4 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -218,7 +218,7 @@ bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMe
 		uint heightMax=height-heightTex;
 
 		// Test against others..
-		bool enter;
+		bool enter=false;
 
 		// For each row and each column
 		for (uint v=0; v<heightMax; v++)

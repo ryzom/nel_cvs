@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.12 2002/04/18 13:06:52 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.13 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,7 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 	// Classify the patch.
 	//========================
 	float	r= (CLandscapeGlobals::RefineCenter-BSphere.Center).norm() - BSphere.Radius;
-	float	rr;
+	float	rr=0.0;
 	if(r<CLandscapeGlobals::TileDistNear)
 		rr= r-CLandscapeGlobals::TileDistNear, newFar0= 0;
 	else if(r<CLandscapeGlobals::Far0Dist)

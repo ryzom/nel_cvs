@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op_inline.h
  * implementation of binary operator in particle systems
  *
- * $Id: ps_attrib_maker_bin_op_inline.h,v 1.4 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: ps_attrib_maker_bin_op_inline.h,v 1.5 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,6 +180,7 @@ T		CPSAttribMakerBinOp<T>::get			  (CPSLocated *loc, uint32 index)
 		case CPSBinOp::subtract:
 			return PSBinOpSubtract(_Arg[0]->get(loc, index), _Arg[1]->get(loc, index));
 		break;
+		default: break;
 	}
 
 	nlstop;
@@ -221,6 +222,7 @@ void MakePrivate(uint8 * dest, const T *src1, const T *src2, uint32 stride, uint
 			dest += stride;
 		}
 		break;
+		default: break;
 	}
 }
 
@@ -245,10 +247,11 @@ inline void   *CPSAttribMakerBinOp<T>::makePrivate(T *buf1,
 	{
 		case CPSBinOp::selectArg1:
 			return _Arg[0]->make(loc, startIndex, tab, stride, numAttrib, allowNoCopy, srcStep);
-		break;
+			break;
 		case CPSBinOp::selectArg2:
 			return _Arg[1]->make(loc, startIndex, tab, stride, numAttrib, allowNoCopy, srcStep);
-		break;		
+			break;		
+		default: break;
 	}
 
 
@@ -334,6 +337,7 @@ void Make4Private(uint8 * dest, const T *src1, const T *src2, uint32 stride, uin
 				dest += stride4;
 			}
 		break;
+		default: break;
 	}
 }
 
@@ -357,11 +361,12 @@ inline void    CPSAttribMakerBinOp<T>::make4Private(T *buf1,
 		case CPSBinOp::selectArg1:
 			_Arg[0]->make4(loc, startIndex, tab, stride, numAttrib, srcStep);
 			return;
-		break;
+			break;
 		case CPSBinOp::selectArg2:
 			_Arg[1]->make4(loc, startIndex, tab, stride, numAttrib, srcStep);
 			return;
-		break;		
+			break;		
+		default: break;
 	}
 
 	while (leftToDo)
@@ -462,6 +467,7 @@ void MakeNPrivate(uint8 * dest,
 				dest += stride;
 			}
 		break;
+		default: break;
 	}
 }
 
@@ -486,11 +492,12 @@ inline void	CPSAttribMakerBinOp<T>::makeNPrivate(T *buf1,
 		case CPSBinOp::selectArg1:
 			_Arg[0]->makeN(loc, startIndex, tab, stride, numAttrib, nbReplicate, srcStep);
 			return;
-		break;
+			break;
 		case CPSBinOp::selectArg2:
 			_Arg[1]->makeN(loc, startIndex, tab, stride, numAttrib, nbReplicate, srcStep);
 			return;
-		break;		
+			break;		
+		default: break;
 	}
 	
 	while (leftToDo)

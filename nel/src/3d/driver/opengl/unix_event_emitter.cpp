@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.cpp
  * <File description>
  *
- * $Id: unix_event_emitter.cpp,v 1.6 2002/02/07 18:08:50 berenguier Exp $
+ * $Id: unix_event_emitter.cpp,v 1.7 2002/08/21 09:37:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -193,7 +193,7 @@ TKey getKey (KeySym keysym)
 	case XK_z: return KeyZ;
 	default: nldebug ("0x%x %d", keysym, keysym);
 	}
-///	return Key;
+	return KeyNUMLOCK;
 }
 
 
@@ -282,7 +282,7 @@ void CUnixEventEmitter::processMessage (XEvent &event, CEventServer &server)
 	Text[c] = '\0';
 	if(c>0)
 	  {
-	    for (uint32 i = 0; i < c; i++)
+	    for (int i = 0; i < c; i++)
 		server.postEvent (new CEventChar (Text[i], noKeyButton, this));
 	  }
 	break;

@@ -1,7 +1,7 @@
 /** \file track_sampled_common.cpp
  * <File description>
  *
- * $Id: track_sampled_common.cpp,v 1.1 2002/06/06 08:47:16 berenguier Exp $
+ * $Id: track_sampled_common.cpp,v 1.2 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -79,7 +79,7 @@ TAnimationTime			CTrackSampledCommon::getEndTime () const
 // ***************************************************************************
 void					CTrackSampledCommon::CTimeBlock::serial(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.serial(TimeOffset);
 	f.serial(KeyOffset);
@@ -89,7 +89,7 @@ void					CTrackSampledCommon::CTimeBlock::serial(NLMISC::IStream &f)
 // ***************************************************************************
 void					CTrackSampledCommon::serialCommon(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.serial(_LoopMode);
 	f.serial(_BeginTime);
@@ -320,11 +320,7 @@ CTrackSampledCommon::TEvalType	CTrackSampledCommon::evalTime (const TAnimationTi
 		return EvalInterpolate;
 	}
 	// else (last key of anim), just eval this key.
-	else
-	{
-		return EvalKey0;
-	}
-
+	return EvalKey0;
 }
 
 

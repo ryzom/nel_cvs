@@ -1,7 +1,7 @@
 /** \file tess_block.cpp
  * <File description>
  *
- * $Id: tess_block.cpp,v 1.10 2002/04/03 17:00:40 berenguier Exp $
+ * $Id: tess_block.cpp,v 1.11 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -331,7 +331,6 @@ void			CTessBlock::deleteFaceVectorTile(CLandscapeFaceVectorManager &mgr)
 			// For all Pass faces of the tile.
 			for(uint facePass=0; facePass<NL3D_MAX_TILE_FACE; facePass++)
 			{
-				CTessList<CTileFace>	&faceList= RdrTileRoot[tileId]->TileFaceList[facePass];
 				CLandscapeFaceVector	*&faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
 				// If the faceVector exist, delete it.
 				if(faceVector)

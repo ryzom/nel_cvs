@@ -1,7 +1,7 @@
 /** \file ps_float.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.14 2002/08/07 08:37:40 vizerie Exp $
+ * $Id: ps_float.cpp,v 1.15 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,7 +53,7 @@ CPSFloatGradient::CPSFloatGradient(const float *floatTab, uint32 nbValues, uint3
 // CPSFloatBezierCurve implementation     //
 ////////////////////////////////////////////
 
-CPSFloatCurveFunctor::CPSFloatCurveFunctor() : _Smoothing(true), _NumSamples(128)
+CPSFloatCurveFunctor::CPSFloatCurveFunctor() : _NumSamples(128), _Smoothing(true)
 {
 	_CtrlPoints.push_back(CCtrlPoint(0, 0.5f));
 	_CtrlPoints.push_back(CCtrlPoint(1, 0.5f));

@@ -1,7 +1,7 @@
 /** \file portal.cpp
  * Implementation of a portal
  *
- * $Id: portal.cpp,v 1.6 2002/06/04 14:49:48 vizerie Exp $
+ * $Id: portal.cpp,v 1.7 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,10 +83,8 @@ bool CPortal::clipPyramid (CVector &observer, std::vector<CPlane> &pyramid)
 		}
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+
+	return false;
 }
 
 // ***************************************************************************
@@ -185,7 +183,7 @@ void CPortal::getPoly(std::vector<NLMISC::CVector> &dest) const
 // ***************************************************************************
 void CPortal::serial (NLMISC::IStream& f)
 {
-	sint version=f.serialVersion (0);
+	(void)f.serialVersion (0);
 
 	f.serialCont (_LocalPoly);
 	if (f.isReading())

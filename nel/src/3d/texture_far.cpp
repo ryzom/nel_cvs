@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.17 2002/04/09 14:26:36 corvazier Exp $
+ * $Id: texture_far.cpp,v 1.18 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -330,8 +330,8 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 	}
 		
 	// Compute the order of the patch
-	CTileFarBank::TFarOrder orderX;
-	uint tileSize;
+	CTileFarBank::TFarOrder orderX=CTileFarBank::order0;
+	uint tileSize=0;
 	switch ((larger*NL_NUM_FAR_PATCHES_BY_EDGE*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)/_Width)
 	{
 	case 4:
@@ -641,12 +641,6 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 {
 	// Will be much more efficient with a MMX based code !
-
-	// Ptr on the shadow map
-	const uint8*				pLumelTile=pLightmap->LumelTile;
-
-	// Ptr on the begining of the dst line
-	CRGBA*	pDstPixels=pLightmap->DstPixels;
 
 	// Expanded width
 	uint dstWidth=(pLightmap->Width-1)*pLightmap->MulFactor;

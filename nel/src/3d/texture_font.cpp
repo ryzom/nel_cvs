@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.16 2002/02/28 12:59:52 besson Exp $
+ * $Id: texture_font.cpp,v 1.17 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,7 +147,6 @@ CTextureFont::CTextureFont()
 
 CTextureFont::~CTextureFont()
 {
-	sint posY = 0;
 }
 
 

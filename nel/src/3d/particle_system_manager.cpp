@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * <File description>
  *
- * $Id: particle_system_manager.cpp,v 1.3 2002/04/25 10:33:37 vizerie Exp $
+ * $Id: particle_system_manager.cpp,v 1.4 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -47,7 +47,6 @@ void	CParticleSystemManager::refreshModels(const std::vector<NLMISC::CPlane>	&wo
 	if (_NumModels == 0) return;
 	const uint toProcess = std::min(_NumModels, (uint) NumProcessToRefresh);	
 
-	TModelList::iterator endIt = _ModelList.end();
 	for (uint k = 0; k < toProcess; ++k)
 	{
 		if (_CurrListIterator == _ModelList.end())
@@ -172,6 +171,7 @@ void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 								return;
 							}
 						break;
+						default: break;
 					}
 				}
 			}

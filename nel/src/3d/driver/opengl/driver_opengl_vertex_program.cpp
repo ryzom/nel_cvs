@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.11 2002/06/20 09:45:04 berenguier Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.12 2002/08/21 09:37:12 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -203,26 +203,26 @@ void CDriverGL::setConstant (uint index, double d0, double d1, double d2, double
 
 // ***************************************************************************
 
-void CDriverGL::setConstant (uint index, const NLMISC::CVector* value)
+void CDriverGL::setConstant (uint index, const NLMISC::CVector& value)
 {
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
 		// Setup constant
-		nglProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, value->x, value->y, value->z, 0);
+		nglProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, value.x, value.y, value.z, 0);
 	}
 }
 
 
 // ***************************************************************************
 
-void CDriverGL::setConstant (uint index, const NLMISC::CVectorD* value)
+void CDriverGL::setConstant (uint index, const NLMISC::CVectorD& value)
 {
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
 		// Setup constant
-		nglProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, value->x, value->y, value->z, 0);
+		nglProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, value.x, value.y, value.z, 0);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file tangent_space_build.cpp
  * A function that add tangent space information to a vertex buffer
  *
- * $Id: tangent_space_build.cpp,v 1.1 2002/03/14 18:20:13 vizerie Exp $
+ * $Id: tangent_space_build.cpp,v 1.2 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -112,7 +112,7 @@ bool	BuildTangentSpace(CMesh::CMeshBuild &outMeshBuild, const CMesh::CMeshBuild 
 		{
 			uint vertIndex = outMeshBuild.Faces[l].Corner[m].Vertex;
 			bool found = false;
-			NLMISC::CUVW *tsv; // a previously computed tangent space vector
+			NLMISC::CUVW *tsv=0; // a previously computed tangent space vector
 			// Test wether it hasn't been built before, by looking in each corner of each face that share that vertex
 			for (n = 0; n < VertToFace[vertIndex].size() && !found; ++n)
 			{

@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.15 2002/04/12 16:17:25 vizerie Exp $
+ * $Id: animation_set.cpp,v 1.16 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,7 +139,7 @@ void CAnimationSet::serial (NLMISC::IStream& f)
 	f.serialCheck ((uint32)'TES_');
 
 	// Serial a version
-	sint version=f.serialVersion (0);
+	(void)f.serialVersion (0);
 
 	// Serial the class
 	f.serialContPtr (_Animation);

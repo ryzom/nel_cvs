@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * <File description>
  *
- * $Id: mini_col.cpp,v 1.16 2002/02/28 12:59:50 besson Exp $
+ * $Id: mini_col.cpp,v 1.17 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -343,7 +343,7 @@ bool			CMiniCol::getGroundNormal(const CVector &pos, CVector &normal, float hup,
 {
 	CVector	b1,b2;
 	bool	found=false;
-	float	height;
+	float	height=0.0;
 
 
 	// Select quad nodes which contains pos.

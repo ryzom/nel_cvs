@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.18 2002/04/25 08:27:08 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.19 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -317,12 +317,12 @@ class CPSModulatedEmitter
 	public:
 
 		/// ctor : the default doesn't alter speed
-		CPSModulatedEmitter() : _EmitteeSpeedScheme(NULL), _EmitteeSpeed(1.f)
+		CPSModulatedEmitter() : _EmitteeSpeed(1.f), _EmitteeSpeedScheme(NULL)
 		{
 		}
 
 		/// dtor
-		~CPSModulatedEmitter()
+		virtual ~CPSModulatedEmitter()
 		{
 			delete _EmitteeSpeedScheme;
 		}

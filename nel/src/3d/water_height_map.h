@@ -1,7 +1,7 @@
 /** \file water_height_map.h
  * <File description>
  *
- * $Id: water_height_map.h,v 1.7 2002/02/28 09:55:20 vizerie Exp $
+ * $Id: water_height_map.h,v 1.8 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -184,6 +184,8 @@ public:
 
 	// ctor (use the water pool manager instead)
 	CWaterHeightMap();
+	// dtor
+	virtual ~CWaterHeightMap() {}
 
 	/// Set the propagation time. This is the time needed to go from one unit to one other in the height map
 	void					setPropagationTime(float time);

@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.14 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: flare_model.cpp,v 1.15 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -252,7 +252,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 
 	float size; // size of the current flare
 
-	uint k;
+	uint k = 0;
 	ITexture *tex;
 
 	if (fs->getFirstFlareKeepSize())

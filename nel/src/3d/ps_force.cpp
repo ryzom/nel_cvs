@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.29 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_force.cpp,v 1.30 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,10 +81,11 @@ void CPSForce::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimation
 	{
 		case PSMotion:
 			performDynamic(ellapsedTime);
-		break;
+			break;
 		case PSToolRender:
 			show(ellapsedTime);
-		break;
+			break;
+		default: break;
 	}
 }
 
@@ -260,7 +261,6 @@ void CPSDirectionnalForce::performDynamic(TAnimationTime ellapsedTime)
 
 			toAdd = CPSLocated::getConversionMatrix(*it, this->_Owner).mulVector(toAddLocal); // express this in the target basis			
 
-			uint32 size = (*it)->getSize();	
 			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin(), it2end = (*it)->getSpeed().end();
 
 			// 1st case : non-constant mass
@@ -326,7 +326,6 @@ void CPSGravity::performDynamic(TAnimationTime ellapsedTime)
 		{
 
 			toAdd = CPSLocated::getConversionMatrix(*it, this->_Owner).mulVector(toAddLocal); // express this in the target basis			
-			uint32 size = (*it)->getSize();	
 
 			
 
@@ -582,7 +581,6 @@ void CPSGravity::integrateSingle(float startDate, float deltaT, uint numStep,
 			{
 				numStep -= numToSkip;
 				float currDate = startDate + deltaT * numToSkip - pi.Date;
-				const NLMISC::CVector &startSpeed = pi.Speed;								
 				do
 				{
 					#ifdef NL_DEBUG
@@ -940,7 +938,6 @@ void CPSMagneticForce::performDynamic(TAnimationTime ellapsedTime)
 
 			NLMISC::CVector toAdd = CPSLocated::getConversionMatrix(*it, this->_Owner).mulVector(_Dir); // express this in the target basis			
 
-			uint32 size = (*it)->getSize();	
 			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin(), it2end = (*it)->getSpeed().end();
 
 			// 1st case : non-constant mass
@@ -1159,8 +1156,6 @@ void CPSBrownianForce::integrateSingle(float startDate, float deltaT, uint numSt
 			{
 				numStep -= numToSkip;				
 				float currDate = startDate + deltaT * numToSkip - pi.Date;
-				const NLMISC::CVector &startSpeed = pi.Speed;				
-				
 				do
 				{
 					#ifdef NL_DEBUG

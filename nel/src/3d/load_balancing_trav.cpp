@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.10 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.11 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,7 @@ void			CLoadBalancingGroup::computeRatioAndSmooth(TPolygonBalancingMode polMode)
 			_FaceRatio= 1;
 		clamp(_FaceRatio, 0, 1);
 		break;
+		default: break;
 	};
 
 	// smooth the value.

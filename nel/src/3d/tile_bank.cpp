@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.41 2002/07/23 12:20:31 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.42 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ const sint CTileLand::_Version=0;
 // ***************************************************************************
 void CTileLand::serial(IStream &f) throw(EStream)
 {
-	sint streamver = f.serialVersion(_Version);
+	(void)f.serialVersion(_Version);
 
 	f.serial (_Name);
 	f.serialCont (_TileSet);
@@ -390,7 +390,7 @@ void CTileBank::makeAllExtensionDDS ()
 	for (sint nTile=0; nTile<(sint)_TileVector.size(); nTile++)
 	{
 		string		tmp;
-		sint		pos;
+		uint32		pos;
 
 		// Diffuse
 		tmp= _TileVector[nTile].getRelativeFileName (CTile::diffuse);
@@ -1534,7 +1534,7 @@ const sint CTileBorder::_Version=0;
 // ***************************************************************************
 void CTileBorder::serial(IStream &f) throw(EStream)
 {
-	sint streamver = f.serialVersion(_Version);
+	(void)f.serialVersion(_Version);
 
 	f.serial (_Set);
 	f.serial (_Width);

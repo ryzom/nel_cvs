@@ -1,7 +1,7 @@
 /** \file key.h
  * class CKey
  *
- * $Id: key.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: key.h,v 1.2 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,7 +59,7 @@ public:
 	void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
 	{
 		// Version number
-		sint version=f.serialVersion (0);
+		(void)f.serialVersion (0);
 
 		// Serial the value
 		f.serial (Value);
@@ -95,7 +95,7 @@ public:
 	void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
 	{
 		// Version number
-		sint version=f.serialVersion (0);
+		(void)f.serialVersion (0);
 
 		// Serial the value
 		f.serial (Value);
@@ -142,7 +142,7 @@ public:
 	void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
 	{
 		// Version number
-		sint version=f.serialVersion (0);
+		(void)f.serialVersion (0);
 
 		// Serial the value
 		f.serial (Value);
@@ -192,7 +192,7 @@ public:
 	void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
 	{
 		// Version number
-		sint version=f.serialVersion (0);
+		(void)f.serialVersion (0);
 
 		// Serial the value
 		f.serial (Value);
@@ -240,7 +240,7 @@ public:
 	void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
 	{
 		// Version number
-		sint version=f.serialVersion (0);
+		(void)f.serialVersion (0);
 
 		// Serial the value
 		f.serial (Value);

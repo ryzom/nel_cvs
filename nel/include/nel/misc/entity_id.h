@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.22 2002/07/26 08:47:26 coutelas Exp $
+ * $Id: entity_id.h,v 1.23 2002/08/21 09:36:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,7 +173,6 @@ public :
 		ident = (char*)str;
 		id = ident;
 
-		sint n = 0;
 		while(*(ident++) != ':');		
 		type = ident;
 		while(*(ident++) != ':');		

@@ -1,7 +1,7 @@
 /** \file animated_material.h
  * <File description>
  *
- * $Id: animated_material.h,v 1.2 2001/12/12 10:24:19 vizerie Exp $
+ * $Id: animated_material.h,v 1.3 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,7 +102,7 @@ public:
 
 		void			serial(NLMISC::IStream &f)
 		{
-			sint ver = f.serialVersion(0);
+			(void)f.serialVersion(0);
 			f.serial(DefaultUTrans, DefaultVTrans, DefaultUScale, DefaultVScale);
 		}
 	};

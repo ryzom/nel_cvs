@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.4 2002/04/12 12:04:58 lecroart Exp $
+ * $Id: ps_fan_light.cpp,v 1.5 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,7 +138,7 @@ public:
 				currentAnglePt = &f._Angle2D;
 			}			
 			//								
-			float fSize, firstSize, sizeStepBase, sizeStep;
+			float fSize, firstSize, sizeStepBase=0.0, sizeStep;
 			if (f._PhaseSmoothness)
 			{
 				sizeStepBase = 1.f / f._PhaseSmoothness;
@@ -406,10 +406,10 @@ bool CPSFanLight::completeBBox(NLMISC::CAABBox &box) const
 
 ///====================================================================================
 CPSFanLight::CPSFanLight(uint32 nbFans) : _NbFans(nbFans),
-										  _PhaseSpeed(256),
-										  _MoveIntensity(1.5f),
 										  _PhaseSmoothness(0),
+										  _MoveIntensity(1.5f),
 										  _Tex(NULL),
+										  _PhaseSpeed(256),
 										  _Touched(true),
 										  _UseGlobalColor(false)
 

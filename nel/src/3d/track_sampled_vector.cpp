@@ -1,7 +1,7 @@
 /** \file track_sampled_vector.cpp
  * <File description>
  *
- * $Id: track_sampled_vector.cpp,v 1.1 2002/06/06 08:47:16 berenguier Exp $
+ * $Id: track_sampled_vector.cpp,v 1.2 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -65,7 +65,7 @@ void					CTrackSampledVector::serial(NLMISC::IStream &f)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	// serial Time infos.
 	CTrackSampledCommon::serialCommon(f);

@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.h
  * <File description>
  *
- * $Id: event_mouse_listener.h,v 1.5 2002/08/06 15:47:53 berenguier Exp $
+ * $Id: event_mouse_listener.h,v 1.6 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,6 +85,7 @@ public:
 	  * and the viewport is fullscreen. The mouse mode is set to the NelStyle.
 	  */
 	CEvent3dMouseListener();
+	virtual ~CEvent3dMouseListener() {}
 
 	/// \name Setup
 

@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.50 2002/06/19 10:12:36 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.51 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,29 +67,31 @@ const float PSDefaultMaxViewDist = 300.f;
 /*
  * Constructor
  */
-CParticleSystem::CParticleSystem() : _FontGenerator(NULL),
+CParticleSystem::CParticleSystem() : _Driver(NULL),
+									 _FontGenerator(NULL),
 									 _FontManager(NULL),
 									 _Date(0),
-									 _Scene(NULL),
+									 _LastUpdateDate(-1),
 									 _CurrEditedElementLocated(NULL),
 									 _CurrEditedElementIndex(0),
-									 _Driver(NULL),
+									 _Scene(NULL),
 									 _TimeThreshold(0.15f),
+									 _SystemDate(0.f),
 									 _MaxNbIntegrations(2),									 
+									 _LODRatio(0.5f),									 
+									 _OneMinusCurrentLODRatio(0),
+									 _MaxViewDist(PSDefaultMaxViewDist),
 									 _InvMaxViewDist(1.f / PSDefaultMaxViewDist),
 									 _InvCurrentViewDist(1.f / PSDefaultMaxViewDist),
-									 _MaxViewDist(PSDefaultMaxViewDist),
-									 _LODRatio(0.5f),									 
 									 _DieCondition(none),
 									 _DelayBeforeDieTest(0.2f),									 									
-									 _SystemDate(0.f),
-									 _OneMinusCurrentLODRatio(0),
 									 _MaxNumFacesWanted(0),
 									 _AnimType(AnimInCluster),
 									 _PresetBehaviour(UserBehaviour),									 
-									 _LastUpdateDate(-1),
 									 _AutoLODStartDistPercent(0.3f),
 									 _AutoLODDegradationExponent(1),																		 
+									 _ColorAttenuationScheme(NULL),
+									 _GlobalColor(NLMISC::CRGBA::White),
 									 _ComputeBBox(true),
 									 _BBoxTouched(true),
 									 _AccurateIntegration(true),
@@ -99,11 +101,7 @@ CParticleSystem::CParticleSystem() : _FontGenerator(NULL),
 									 _Sharing(false),
 									 _AutoLOD(false),
 									 _KeepEllapsedTimeForLifeUpdate(false),
-									 _AutoLODSkipParticles(false),
-									 _ColorAttenuationScheme(NULL),
-									 _GlobalColor(NLMISC::CRGBA::White)
-
-									
+									 _AutoLODSkipParticles(false)
 {
 	for (uint k = 0; k < MaxPSUserParam; ++k) _UserParam[k] = 0;
 }
@@ -714,6 +712,7 @@ void CParticleSystem::activatePresetBehaviour(TPresetBehaviour behaviour)
 			destroyWhenOutOfFrustum(true);
 			setAnimType(AnimVisible);
 		break;		
+		default: break;
 	}
 	_PresetBehaviour = behaviour;
 }

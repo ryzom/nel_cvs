@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.34 2002/04/12 10:05:19 besson Exp $
+ * $Id: vertex_buffer.cpp,v 1.35 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -907,7 +907,7 @@ void		CVertexBuffer::serialSubset(NLMISC::IStream &f, uint vertexStart, uint ver
 	Version 0:
 		- base verison of a vbuffer subset serialisation.
 	*/
-	sint	ver= f.serialVersion(1);
+	(void)f.serialVersion(1);
 
 
 	// Serial VBuffers components.

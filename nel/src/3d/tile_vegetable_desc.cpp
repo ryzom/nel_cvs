@@ -1,7 +1,7 @@
 /** \file tile_vegetable_desc.cpp
  * <File description>
  *
- * $Id: tile_vegetable_desc.cpp,v 1.3 2002/02/28 12:59:52 besson Exp $
+ * $Id: tile_vegetable_desc.cpp,v 1.4 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,7 @@ void		CTileVegetableDesc::registerToManager(CVegetableManager *vegetableManager)
 // ***************************************************************************
 void		CTileVegetableDesc::serial(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	nlassert(NL3D_VEGETABLE_BLOCK_NUMDIST==5);
 	for(uint i=0; i<NL3D_VEGETABLE_BLOCK_NUMDIST; i++)

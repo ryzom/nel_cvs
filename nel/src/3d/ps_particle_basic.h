@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.8 2002/02/27 13:58:23 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.9 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -191,7 +191,7 @@ class CPSColoredParticle
 		CPSColoredParticle();
 
 		/// dtor
-		~CPSColoredParticle();
+		virtual ~CPSColoredParticle();
 
 		/// serialization. 
 		void serialColorScheme(NLMISC::IStream &f) throw(NLMISC::EStream);		
@@ -254,7 +254,7 @@ class CPSSizedParticle
 		CPSSizedParticle();
 
 		/// dtor
-		~CPSSizedParticle();
+		virtual ~CPSSizedParticle();
 
 		/// serialization. We choose a different name because of multiple-inheritance
 		void serialSizeScheme(NLMISC::IStream &f) throw(NLMISC::EStream);
@@ -316,7 +316,7 @@ class CPSRotated2DParticle
 		CPSRotated2DParticle();
 
 		/// dtor
-		~CPSRotated2DParticle();
+		virtual ~CPSRotated2DParticle();
 
 		/// serialization. We choose a different name because of multiple-inheritance
 		void serialAngle2DScheme(NLMISC::IStream &f) throw(NLMISC::EStream);
@@ -433,7 +433,7 @@ class CPSTexturedParticle
 		CPSTexturedParticle();
 
 		/// dtor
-		~CPSTexturedParticle();
+		virtual ~CPSTexturedParticle();
 
 		/// serialization. We choose a different name because of multiple-inheritance
 		void serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::EStream);		
@@ -652,7 +652,7 @@ class CPSRotated3DPlaneParticle
 		CPSRotated3DPlaneParticle();
 
 		/// dtor
-		~CPSRotated3DPlaneParticle();
+		virtual ~CPSRotated3DPlaneParticle();
 
 		/// serialization. We choose a different name because of multiple-inheritance
 		void serialPlaneBasisScheme(NLMISC::IStream &f) throw(NLMISC::EStream);

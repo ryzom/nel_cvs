@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.24 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: water_model.cpp,v 1.25 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -396,14 +396,6 @@ void	CWaterRenderObs::traverse(IObs *caller)
 
 	const NLMISC::CMatrix matViewUp = camMatUp.inverted();
 
-	// compute the y rot matrix needed to put the grid in the right orientation
-	const NLMISC::CMatrix rotYMat = camMat * matViewUp;
-
-
-	// compute right and top after the rotation around y
-
-
-
 	// plane z pos in world
 	const float zHeight =  HrcObs->WorldMatrix.getPos().z;
 
@@ -574,12 +566,11 @@ void	CWaterRenderObs::traverse(IObs *caller)
 					   (sint) (obsPos.y * invWaterRatio) - (WaterHeightMapSize >> 1)
 					  );
 				nlassert(m->_Scene); // this object should have been created from a CWaterShape!
-				float startDate = (float) (1000.f * NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime()));
 				whm.animate((float) (m->_Scene->getEllapsedTime()));												
 				whm.Date = idate;
 			}
 			
-			float startDate = (float) (1000.f * NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime()));
+			//float startDate = (float) (1000.f * NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime()));
 
 			//=====================================//
 			//	compute heightmap useful area      //

@@ -1,7 +1,7 @@
 /** \file transformable.h
  * <File description>
  *
- * $Id: transformable.h,v 1.2 2001/08/24 16:38:24 berenguier Exp $
+ * $Id: transformable.h,v 1.3 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,6 +69,7 @@ public:
 
 	/// Constructor. By default, RotQuat mode.
 	ITransformable();
+	virtual ~ITransformable() {}
 
 
 	/// Get the matrix, compute her if necessary (work in all modes).

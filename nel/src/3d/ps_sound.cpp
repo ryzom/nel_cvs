@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.16 2002/04/25 08:29:09 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.17 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -39,9 +39,15 @@ namespace NL3D
 static const uint SoundBufSize = 1024;
 
 
-CPSSound::CPSSound() : _GainScheme(NULL), _PitchScheme(NULL)
-					   ,_Gain(1.f)	  , _Pitch(1.f), _SoundStopped(false), _SoundReactivated(false), _EmissionPercent(1)
-					   ,_SpawnSounds(false), _Mute(false)
+CPSSound::CPSSound() : _Gain(1.f),
+					   _GainScheme(NULL),
+					   _Pitch(1.f),
+					   _PitchScheme(NULL),
+					   _EmissionPercent(1),
+					   _SpawnSounds(false),
+					   _Mute(false),
+					   _SoundStopped(false),
+					   _SoundReactivated(false)
 {
 	_Name = std::string("sound");
 }

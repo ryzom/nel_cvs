@@ -1,7 +1,7 @@
 /** \file ig_surface_light.h
  * <File description>
  *
- * $Id: ig_surface_light.h,v 1.2 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: ig_surface_light.h,v 1.3 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -55,7 +55,7 @@ public:
 
 		void	serial(NLMISC::IStream &f)
 		{
-			uint	ver= f.serialVersion(0);
+			(void)f.serialVersion(0);
 			f.serial(Grids);
 		}
 	};

@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.63 2002/05/15 14:36:16 berenguier Exp $
+ * $Id: zone.cpp,v 1.64 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -387,7 +387,7 @@ void			CZone::build(const CZone &zone)
 // ***************************************************************************
 void			CBorderVertex::serial(NLMISC::IStream &f)
 {
-	uint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.xmlSerial (CurrentVertex, "CURRENT_VERTEX");
 	f.xmlSerial (NeighborZoneId, "NEIGHTBOR_ZONE_ID");
@@ -406,7 +406,7 @@ void			CZone::CPatchConnect::serial(NLMISC::IStream &f)
 }
 void			CPatchInfo::CBindInfo::serial(NLMISC::IStream &f)
 {
-	uint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 	f.xmlSerial(NPatchs, "NPATCH");
 	nlassert ( (NPatchs==0) | (NPatchs==1) | (NPatchs==2) | (NPatchs==4) | (NPatchs==5) );
 	f.xmlSerial (ZoneId, "ZONE_ID");
@@ -1147,7 +1147,7 @@ void			CZone::preRender()
 // ***************************************************************************
 void			CZone::resetRenderFarAndDeleteVBFV()
 {
-	CPatch		*pPatch;
+	CPatch		*pPatch=0;
 	if(Patchs.size()>0)
 		pPatch= &(*Patchs.begin());
 	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
@@ -1169,7 +1169,7 @@ void			CZone::resetRenderFarAndDeleteVBFV()
 // ***************************************************************************
 void			CZone::forceMergeAtTileLevel()
 {
-	CPatch		*pPatch;
+	CPatch		*pPatch=0;
 	if(Patchs.size()>0)
 		pPatch= &(*Patchs.begin());
 	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)

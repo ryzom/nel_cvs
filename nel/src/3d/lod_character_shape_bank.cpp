@@ -1,7 +1,7 @@
 /** \file lod_character_shape_bank.cpp
  * <File description>
  *
- * $Id: lod_character_shape_bank.cpp,v 1.1 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: lod_character_shape_bank.cpp,v 1.2 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -120,7 +120,7 @@ uint						CLodCharacterShapeBank::getNumShapes() const
 // ***************************************************************************
 void			CLodCharacterShapeBank::serial(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.serialCont(_ShapeArray);
 	f.serialCont(_ShapeMap);

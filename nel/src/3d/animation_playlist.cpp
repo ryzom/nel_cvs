@@ -1,7 +1,7 @@
 /** \file animation_playlist.cpp
  * <File description>
  *
- * $Id: animation_playlist.cpp,v 1.10 2002/02/28 12:59:49 besson Exp $
+ * $Id: animation_playlist.cpp,v 1.11 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -289,7 +289,7 @@ CAnimationPlaylist::TWrapMode CAnimationPlaylist::getWrapMode (uint8 slot) const
 void CAnimationPlaylist::serial (NLMISC::IStream& f)
 {
 	// Serial a version
-	int ver=f.serialVersion (0);
+	(void)f.serialVersion (0);
 
 	// Serial all the values
 	for (uint i=0; i<CChannelMixer::NumAnimationSlot; i++)
@@ -337,6 +337,7 @@ TAnimationTime CAnimationPlaylist::getLocalTime (uint8 slot, TGlobalAnimationTim
 					wrappedTime=pAnimation->getBeginTime()+(float)fmod (wrappedTime-pAnimation->getBeginTime(), length)+length;
 			}
 			break;
+			default: break;
 		}
 
 		// Return localTime

@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.cpp
  * <File description>
  *
- * $Id: meshvp_wind_tree.cpp,v 1.6 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: meshvp_wind_tree.cpp,v 1.7 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -124,7 +124,7 @@ CMeshVPWindTree::~CMeshVPWindTree()
 // ***************************************************************************
 void	CMeshVPWindTree::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	nlassert(HrcDepth==3);
 	for(uint i=0; i<HrcDepth; i++)
@@ -248,7 +248,7 @@ bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 	float	f;
 	f= _CurrentTime[0] + instancePhase;
 	f= speedCos(f) + Bias[0];
-	driver->setConstant(15, &(maxDeltaPosOS[0]*f) );
+	driver->setConstant(15, maxDeltaPosOS[0]*f );
 
 
 	// c[16-19] take Wind of level 1.
@@ -256,16 +256,16 @@ bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 	float	instTime1= _CurrentTime[1] + instancePhase;
 	// phase 0.
 	f= speedCos( instTime1+0 ) + Bias[1];
-	driver->setConstant(16+0, &(maxDeltaPosOS[1]*f));
+	driver->setConstant(16+0, maxDeltaPosOS[1]*f);
 	// phase 1.
 	f= speedCos( instTime1+0.25f ) + Bias[1];
-	driver->setConstant(16+1, &(maxDeltaPosOS[1]*f));
+	driver->setConstant(16+1, maxDeltaPosOS[1]*f);
 	// phase 2.
 	f= speedCos( instTime1+0.50f ) + Bias[1];
-	driver->setConstant(16+2, &(maxDeltaPosOS[1]*f));
+	driver->setConstant(16+2, maxDeltaPosOS[1]*f);
 	// phase 3.
 	f= speedCos( instTime1+0.75f ) + Bias[1];
-	driver->setConstant(16+3, &(maxDeltaPosOS[1]*f));
+	driver->setConstant(16+3, maxDeltaPosOS[1]*f);
 
 
 	// c[20, 23] take Wind of level 2.
@@ -273,16 +273,16 @@ bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 	float	instTime2= _CurrentTime[2] + instancePhase;
 	// phase 0.
 	f= speedCos( instTime2+0 ) + Bias[2];
-	driver->setConstant(20+0, &(maxDeltaPosOS[2]*f));
+	driver->setConstant(20+0, maxDeltaPosOS[2]*f);
 	// phase 1.
 	f= speedCos( instTime2+0.25f ) + Bias[2];
-	driver->setConstant(20+1, &(maxDeltaPosOS[2]*f));
+	driver->setConstant(20+1, maxDeltaPosOS[2]*f);
 	// phase 2.
 	f= speedCos( instTime2+0.50f ) + Bias[2];
-	driver->setConstant(20+2, &(maxDeltaPosOS[2]*f));
+	driver->setConstant(20+2, maxDeltaPosOS[2]*f);
 	// phase 3.
 	f= speedCos( instTime2+0.75f ) + Bias[2];
-	driver->setConstant(20+3, &(maxDeltaPosOS[2]*f));
+	driver->setConstant(20+3, maxDeltaPosOS[2]*f);
 
 
 	// Activate the good VertexProgram

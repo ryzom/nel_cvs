@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.cpp
  * <File description>
  *
- * $Id: ps_attrib_maker_bin_op.cpp,v 1.5 2002/02/28 12:59:50 besson Exp $
+ * $Id: ps_attrib_maker_bin_op.cpp,v 1.6 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,7 @@ namespace NL3D
 				NLMISC::CRGBA::subtractColors((NLMISC::CRGBA *) dest, src1, src2, numAttrib, sizeof(NLMISC::CRGBA), stride);
 			}
 			break;
+			default: break;
 		}
 	}
 
@@ -78,6 +79,7 @@ namespace NL3D
 				NLMISC::CRGBA::subtractColors((NLMISC::CRGBA *) dest, src1, src2, numAttrib, sizeof(NLMISC::CRGBA), stride, 4);
 			}
 			break;
+			default: break;
 		}
 	}
 
@@ -104,6 +106,7 @@ namespace NL3D
 				NLMISC::CRGBA::subtractColors((NLMISC::CRGBA *) dest, src1, src2, numAttrib, sizeof(NLMISC::CRGBA), stride, nbReplicate);
 			}
 			break;
+			default: break;
 		}		
 	}
 

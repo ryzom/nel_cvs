@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.68 2002/08/14 12:43:35 berenguier Exp $
+ * $Id: mesh.cpp,v 1.69 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -305,7 +305,6 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 	// process each face, building up the VB.
 	for(;N>0;N--, pFace++)
 	{
-		ItCornerSet	it;
 		sint	v0= pFace->Corner[0].Vertex;
 		sint	v1= pFace->Corner[1].Vertex;
 		sint	v2= pFace->Corner[2].Vertex;
@@ -591,7 +590,6 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 	// The mesh must not be skinned for render()
 	nlassert(!(_Skinned && mi->isSkinned() && skeleton));
 	bool bMorphApplied = _MeshMorpher->BlendShapes.size() > 0;
-	bool useNormal= (_VBuffer.getVertexFormat() & CVertexBuffer::NormalFlag)!=0;
 	bool useTangentSpace = _MeshVertexProgram && _MeshVertexProgram->needTangentSpace();
 
 
@@ -785,7 +783,6 @@ void	CMeshGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 	// must be skinned for renderSkin()
 	nlassert(_Skinned && mi->isSkinned() && skeleton);
 	bool bMorphApplied = _MeshMorpher->BlendShapes.size() > 0;
-	bool useNormal= (_VBuffer.getVertexFormat() & CVertexBuffer::NormalFlag)!=0;
 	bool useTangentSpace = _MeshVertexProgram && _MeshVertexProgram->needTangentSpace();
 
 
@@ -1684,7 +1681,7 @@ void	CMeshGeom::applySkin(CSkeletonModel *skeleton)
 	uint	numVertices= _OriginalSkinVertices.size();
 	uint	dstStride= _VBuffer.getVertexSize();
 	// Get dst TgSpace.
-	uint	tgSpaceStage;
+	uint	tgSpaceStage = 0;
 	if( skinType>= SkinWithTgSpace)
 	{
 		nlassert(_VBuffer.getNumTexCoordUsed() > 0);

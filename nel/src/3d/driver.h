@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.36 2002/08/14 08:49:32 berenguier Exp $
+ * $Id: driver.h,v 1.37 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -736,8 +736,8 @@ public:
 	  */
 	virtual void			setConstant (uint index, float, float, float, float) =0;
 	virtual void			setConstant (uint index, double, double, double, double) =0;
-	virtual void			setConstant (uint index, const NLMISC::CVector* value) =0;
-	virtual void			setConstant (uint index, const NLMISC::CVectorD* value) =0;
+	virtual void			setConstant (uint index, const NLMISC::CVector& value) =0;
+	virtual void			setConstant (uint index, const NLMISC::CVectorD& value) =0;
 	/// setup several 4 float csts taken from the given tab
 	virtual void			setConstant (uint index, uint num, const float *src) =0;
 	/// setup several 4 double csts taken from the given tab

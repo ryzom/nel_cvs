@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.4 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_particle_basic.cpp,v 1.5 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,7 +140,7 @@ void CPSColoredParticle::setColor(NLMISC::CRGBA col)
 }
 
 //=======================================
-CPSColoredParticle::CPSColoredParticle() :  _ColorScheme(NULL), _Color(CRGBA(255, 255, 255))
+CPSColoredParticle::CPSColoredParticle() : _Color(CRGBA(255, 255, 255)), _ColorScheme(NULL)
 {	
 }
 
@@ -196,7 +196,7 @@ void CPSSizedParticle::setSize(float size)
 }
 
 //=======================================
-CPSSizedParticle::CPSSizedParticle() : _SizeScheme(NULL), _ParticleSize(0.3f)
+CPSSizedParticle::CPSSizedParticle() : _ParticleSize(0.3f), _SizeScheme(NULL)
 {
 }
 
@@ -354,8 +354,9 @@ void CPSTexturedParticle::setTexture(CSmartPtr<ITexture> tex)
 }
 
 ///===================================================================================
-CPSTexturedParticle::CPSTexturedParticle() : _TextureIndex(0)
-											 ,_TexGroup(NULL), _TextureIndexScheme(NULL)
+CPSTexturedParticle::CPSTexturedParticle() : _TexGroup(NULL),
+											 _TextureIndexScheme(NULL),
+											 _TextureIndex(0)
 {
 }
 
@@ -798,14 +799,14 @@ void	CPSMultiTexturedParticle::setupMultiTexEnv(TOperator op, ITexture *tex1, IT
 			mat.texEnvOpRGB(0, CMaterial::Modulate);
 			mat.texEnvOpRGB(1, CMaterial::Add);
 			mat.enableTexAddrMode(false);
-		break;
+			break;
 		case Modulate:
 			mat.setTexture(0, tex1);
 			mat.setTexture(1, tex2);
 			mat.texEnvOpRGB(0, CMaterial::Modulate);
 			mat.texEnvOpRGB(1, CMaterial::Modulate);
 			mat.enableTexAddrMode(false);
-		break;
+			break;
 		case EnvBumpMap:
 			mat.setTexture(0, tex2);
 			mat.setTexture(1, tex1);
@@ -814,13 +815,14 @@ void	CPSMultiTexturedParticle::setupMultiTexEnv(TOperator op, ITexture *tex1, IT
 			mat.enableTexAddrMode(true);
 			mat.setTexAddressingMode(0, CMaterial::FetchTexture);		
 			mat.setTexAddressingMode(1, CMaterial::OffsetTexture);
-		break;
+			break;
 		case Decal:
 			mat.setTexture(0, tex1);
 			mat.texEnvOpRGB(0, CMaterial::Replace);
 			mat.setTexture(1, NULL);
 			mat.enableTexAddrMode(false);
-		break;
+			break;
+		default: break;
 	}
 }
 

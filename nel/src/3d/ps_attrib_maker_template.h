@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.14 2002/08/07 08:37:40 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.15 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -348,9 +348,11 @@ public:
 	}
 
 	/// ctor
-	CPSValueGradientFunc() : _NbValues(0), _NbStages(0)
+	CPSValueGradientFunc() : _NbStages(0), _NbValues(0)
 	{
 	}
+	/// dtor
+	virtual ~CPSValueGradientFunc() {}
 
 
 	

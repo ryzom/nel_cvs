@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.61 2002/04/12 15:59:57 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.62 2002/08/21 09:39:54 lecroart Exp $
  *
  */
 
@@ -376,7 +376,7 @@ void	CTessFace::checkCreateFillTileVB(TTileUvId id)
 	{
 		if(TileFaces[i])
 		{
-			CTessNearVertex		*vertNear;
+			CTessNearVertex		*vertNear=0;
 			switch(id)
 			{
 				case IdUvBase: vertNear= TileFaces[i]->VBase; break;
@@ -403,7 +403,7 @@ void	CTessFace::checkFillTileVB(TTileUvId id)
 	{
 		if(TileFaces[i])
 		{
-			CTessNearVertex		*vertNear;
+			CTessNearVertex		*vertNear=0;
 			switch(id)
 			{
 				case IdUvBase: vertNear= TileFaces[i]->VBase; break;
@@ -429,7 +429,7 @@ void	CTessFace::deleteTileUv(TTileUvId id)
 	{
 		if(TileFaces[i])
 		{
-			CTessNearVertex		*oldNear;
+			CTessNearVertex		*oldNear=0;
 			switch(id)
 			{
 				case IdUvBase : oldNear= TileFaces[i]->VBase;  TileFaces[i]->VBase=NULL; break;
@@ -462,7 +462,7 @@ void	CTessFace::copyTileUv(TTileUvId dstId, CTessFace *srcFace, TTileUvId srcId)
 			nlassert(srcFace->TileFaces[i]);
 
 			// copy from src.
-			CTessNearVertex		*copyNear;
+			CTessNearVertex		*copyNear=0;
 			switch(srcId)
 			{
 				case IdUvBase : copyNear= srcFace->TileFaces[i]->VBase; break;

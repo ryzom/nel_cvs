@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.55 2002/08/19 09:39:18 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.56 2002/08/21 09:37:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,6 +115,7 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 			case ITexture::DXTC1Alpha:	return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 			case ITexture::DXTC3:		return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 			case ITexture::DXTC5:		return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+			default: break;
 		}
 	}
 
@@ -148,6 +149,7 @@ static GLint	getGlSrcTextureFormat(ITexture &tex, GLint glfmt)
 		case CBitmap::Alpha:	return GL_ALPHA;
 		case CBitmap::AlphaLuminance:	return GL_LUMINANCE_ALPHA;
 		case CBitmap::Luminance:	return GL_LUMINANCE;
+		default: break;
 		}
 	}
 
@@ -213,6 +215,7 @@ static inline GLenum	translateMagFilterToGl(ITexture::TMagFilter mode)
 	{
 		case ITexture::Linear: return GL_LINEAR;
 		case ITexture::Nearest: return GL_NEAREST;
+		default: break;
 	}
 
 	nlstop;
@@ -231,6 +234,7 @@ static inline GLenum	translateMinFilterToGl(ITexture::TMinFilter mode)
 		case ITexture::LinearMipMapOff: return GL_LINEAR;
 		case ITexture::LinearMipMapNearest: return GL_LINEAR_MIPMAP_NEAREST;
 		case ITexture::LinearMipMapLinear: return GL_LINEAR_MIPMAP_LINEAR;
+		default: break;
 	}
 
 	nlstop;

@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.26 2002/04/03 13:22:49 lecroart Exp $
+ * $Id: mrm_builder.cpp,v 1.27 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -170,7 +170,7 @@ bool	CMRMBuilder::edgeContinue(const CMRMEdge &edge)
 {
 	sint v0= edge.v0;
 	sint v1= edge.v1;
-	CMRMVertex	&Vertex1=TmpVertices[v0], &Vertex2=TmpVertices[v1];
+	CMRMVertex	&Vertex1=TmpVertices[v0];
 
 	// build list sharing edge.
 	vector<sint>	deletedFaces;
@@ -215,7 +215,7 @@ bool	CMRMBuilder::edgeNearUniqueMatFace(const CMRMEdge &edge)
 {
 	sint v0= edge.v0;
 	sint v1= edge.v1;
-	CMRMVertex	&Vertex1=TmpVertices[v0], &Vertex2=TmpVertices[v1];
+	CMRMVertex	&Vertex1=TmpVertices[v0];
 
 	// build list sharing edge.
 	vector<sint>	deletedFaces;
@@ -841,7 +841,7 @@ void	CMRMBuilder::collapseEdges(sint nWantedFaces)
 	ItEdgeMap		EdgeIt;
 
 	sint	nCurrentFaces=TmpFaces.size();
-	sint	bug0=0,bug1=0,bug2=0,bug3=0;
+	sint	bug0=0,bug2=0,bug3=0;
 
 	while(nCurrentFaces>nWantedFaces)
 	{
@@ -1096,7 +1096,7 @@ void	CMRMBuilder::makeCoarserBS (vector<CMRMBlendShape> &csBsMeshs)
 
 	// Calculate size of vertices array
 	nSizeVert = 0;
-	for (i = 0; i < (sint)TmpVertices.size(); ++i)
+	for (i = 0; i < TmpVertices.size(); ++i)
 		if(TmpVertices[i].CoarserIndex > nSizeVert)
 			nSizeVert = TmpVertices[i].CoarserIndex;
 	++nSizeVert;
@@ -1109,7 +1109,7 @@ void	CMRMBuilder::makeCoarserBS (vector<CMRMBlendShape> &csBsMeshs)
 		rBsCoarserMesh.NumAttributes = NumAttributes;
 
 		// Vertices
-		for(i = 0; i < (sint)TmpVertices.size(); ++i)
+		for(i = 0; i < TmpVertices.size(); ++i)
 		{
 			CMRMVertex &vert = TmpVertices[i];
 			if (vert.CoarserIndex != -1)
@@ -1122,14 +1122,14 @@ void	CMRMBuilder::makeCoarserBS (vector<CMRMBlendShape> &csBsMeshs)
 		{
 			// Calculate size of attribute attId array
 			nSizeAttr = 0;
-			for(i = 0; i < (sint)TmpAttributes[attId].size(); i++)
+			for(i = 0; i < TmpAttributes[attId].size(); i++)
 				if (TmpAttributes[attId][i].CoarserIndex > nSizeAttr)
 					nSizeAttr = TmpAttributes[attId][i].CoarserIndex;
 			++nSizeAttr;
 
 			rBsCoarserMesh.Attributes[attId].resize (nSizeAttr);
 
-			for (i = 0; i < (sint)TmpAttributes[attId].size(); i++)
+			for (i = 0; i < TmpAttributes[attId].size(); i++)
 			{
 				CMRMAttribute &wedge = TmpAttributes[attId][i];
 				if (wedge.CoarserIndex != -1)

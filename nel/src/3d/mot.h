@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.7 2002/04/12 16:20:08 vizerie Exp $
+ * $Id: mot.h,v 1.8 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,7 @@ public:
 	// Ctor.
 	CMOT();
 	// Dtor.
-	~CMOT();
+	virtual ~CMOT();
 
 	/// \name Models / Observers registration.
 	//@{

@@ -1,7 +1,7 @@
 /** \file event_server.h
  * events server
  *
- * $Id: event_server.h,v 1.5 2000/11/17 15:18:12 coutelas Exp $
+ * $Id: event_server.h,v 1.6 2002/08/21 09:36:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ class CEventServer
 	std::list<CEvent*> _Events;
 
 public:
+	virtual ~CEventServer() {}
 
 	/** 
 	 * add event to the list

@@ -1,7 +1,7 @@
 /** \file patchuv_locator.cpp
  * <File description>
  *
- * $Id: patchuv_locator.cpp,v 1.5 2002/02/28 12:59:50 besson Exp $
+ * $Id: patchuv_locator.cpp,v 1.6 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,7 +179,7 @@ uint	CPatchUVLocator::selectPatch(const CVector2f &uvIn)
 	else
 	{
 		// Choice before on which patch we must go.
-		float	selection;
+		float	selection=0.0;
 		uint	os= _CenterPatch->getOrderS();
 		uint	ot= _CenterPatch->getOrderT();
 		switch(_CenterPatchEdge)

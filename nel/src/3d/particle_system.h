@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.26 2002/08/07 08:37:40 vizerie Exp $
+ * $Id: particle_system.h,v 1.27 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,7 +94,7 @@ public:
 			/// ctor
 			CParticleSystem();
 			/// dtor
-			~CParticleSystem();	
+			virtual ~CParticleSystem();	
 			/// serialize this particle system
 			void serial(NLMISC::IStream &f)  throw(NLMISC::EStream);
 			/** Merge this system with a system instanciated from the given shape

@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.11 2002/02/27 15:40:19 corvazier Exp $
+ * $Id: zone_lighter.h,v 1.12 2002/08/21 09:39:55 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -59,6 +59,7 @@ class CZoneLighter
 	friend class NL3D::CCalcRunnable;
 public:
 	CZoneLighter ();
+	virtual ~CZoneLighter () {}
 
 	// Light decription structure
 	class CLightDesc

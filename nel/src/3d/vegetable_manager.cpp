@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.27 2002/06/27 13:44:50 corvazier Exp $
+ * $Id: vegetable_manager.cpp,v 1.28 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1276,13 +1276,11 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	uint	numNewIndices= shape->TriangleIndices.size();
 
 	// src info.
-	uint	srcVertexSize= shape->VB.getVertexSize();
 	uint	srcNormalOff= (instanceLighted? shape->VB.getNormalOff() : 0);
 	uint	srcTex0Off= shape->VB.getTexCoordOff(0);
 	uint	srcTex1Off= shape->VB.getTexCoordOff(1);
 
 	// dst info
-	uint	dstVertexSize= dstVBInfo.getVertexSize();
 	uint	dstNormalOff= (destLighted? dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_NORMAL) : 0);
 	// got 2nd color if really lighted (for ambient) or if 2Sided.
 	uint	dstColor1Off= ( (destLighted||instanceDoubleSided)? 
@@ -1295,7 +1293,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 	// Usefull For !destLighted only.
 	CVector		deltaPos;
-	float		deltaPosNorm;
+	float		deltaPosNorm=0.0;
 
 
 	// UseFull for ZSORT rdrPass, the worldVertices.
@@ -1749,9 +1747,9 @@ void			CVegetableManager::setupVertexProgramConstants(IDriver *driver)
 	// c[8] take usefull constants.
 	driver->setConstant(8, 0, 1, 0.5f, 2);
 	// c[9] take normalized directional light
-	driver->setConstant(9, &_DirectionalLight);
+	driver->setConstant(9, _DirectionalLight);
 	// c[10] take pos of camera
-	driver->setConstant(10, &_ViewCenter);
+	driver->setConstant(10, _ViewCenter);
 	// c[11] take factor for Blend formula
 	driver->setConstant(11, -1.f/NL3D_VEGETABLE_BLOCK_BLEND_TRANSITION_DIST, 0, 0, 0);
 
@@ -2501,12 +2499,8 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 	allocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPassId, vegetRdrPass.HardMode);
 	const CVertexBuffer	&dstVBInfo= allocator->getSoftwareVertexBuffer();
 
-	// src VBInfo (nb: usefull only if precomputeLighting => !destLighted)
-	uint	srcVertexSize= shape->VB.getVertexSize();
 	uint	srcNormalOff= (instanceLighted? shape->VB.getNormalOff() : 0);
 
-	// dst VBInfo
-	uint	dstVertexSize= dstVBInfo.getVertexSize();
 	// got 2nd color if really lighted (for ambient) or if 2Sided.
 	uint	dstColor1Off= ( (destLighted||instanceDoubleSided)? 
 		dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR1) : 0);

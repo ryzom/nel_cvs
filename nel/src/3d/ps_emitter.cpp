@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.41 2002/05/31 17:13:18 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.42 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,16 +42,17 @@ const uint emitterBuffSize = 512;
 ///////////////////////////////
 // CPSEmitter implementation //
 ///////////////////////////////
-CPSEmitter::CPSEmitter() : _EmissionType(regular),
-						   _Period(0.02f), _EmittedType(NULL),
+CPSEmitter::CPSEmitter() : _EmittedType(NULL),
+						   _SpeedInheritanceFactor(0.f),
+						   _EmissionType(regular),
+						   _Period(0.02f),
 						   _PeriodScheme(NULL), 
 						   _GenNb(1), 
 						   _GenNbScheme(NULL), 
-						   _SpeedInheritanceFactor(0.f),
-						   _SpeedBasisEmission(false),
-						   _EmitDirBasis(true),
 						   _EmitDelay(0),
 						   _MaxEmissionCount(0),
+						   _SpeedBasisEmission(false),
+						   _EmitDirBasis(true),
 						   _ConsistentEmission(true)
 {
 }
@@ -941,6 +942,7 @@ void CPSEmitter::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 			}
 		}
 		break;	
+		default: break;
 	}
 }
 

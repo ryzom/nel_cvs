@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.18 2002/06/12 16:50:35 lecroart Exp $
+ * $Id: hierarchical_timer.h,v 1.19 2002/08/21 09:36:01 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -302,7 +302,7 @@ private:
 		uint64					SonsPreambule; // preambule time for the sons		
 		CSimpleClock			Clock;         // a clock to do the measures at this node
 		// ctor 
-		CNode(CHTimer	*owner = NULL, CNode	*parent = NULL) : Owner(owner), Parent(parent)
+	  CNode(CHTimer	*owner = NULL, CNode	*parent = NULL) : Parent(parent), Owner(owner)
 		{
 			reset();
 		}

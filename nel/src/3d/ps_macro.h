@@ -1,7 +1,7 @@
 /** \file ps_macro.h
  * Some macros used by the particle systems for rendering.
  *
- * $Id: ps_macro.h,v 1.2 2002/02/28 13:06:02 vizerie Exp $
+ * $Id: ps_macro.h,v 1.3 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@
 	#define CHECK_VERTEX_BUFFER(vb, pt) nlassert((uint8 *) (pt) >= (uint8 *) (vb).getVertexCoordPointer()  \
 										&& (uint8 *) (pt) < ((uint8 *) (vb).getVertexCoordPointer() + (vb).getVertexSize() * (vb).getNumVertices()));
 #else
-	#define CHECK_VERTEX_BUFFER
+	#define CHECK_VERTEX_BUFFER(a,b)
 #endif
 
 // this macro check the memory integrity (windows platform for now). It may be useful after violent vb access

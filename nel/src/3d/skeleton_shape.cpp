@@ -1,7 +1,7 @@
 /** \file skeleton_shape.cpp
  * <File description>
  *
- * $Id: skeleton_shape.cpp,v 1.12 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: skeleton_shape.cpp,v 1.13 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NL3D
 // ***************************************************************************
 void	CSkeletonShape::CLod::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.serial(Distance);
 	f.serialCont(ActiveBones);

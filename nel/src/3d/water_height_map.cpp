@@ -1,7 +1,7 @@
 /** \file water_height_map.cpp
  * <File description>
  *
- * $Id: water_height_map.cpp,v 1.9 2002/02/28 12:59:52 besson Exp $
+ * $Id: water_height_map.cpp,v 1.10 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -39,16 +39,24 @@ namespace NL3D
 
 //===========================================================================================
 
-CWaterHeightMap::CWaterHeightMap() : _X(0), _Y(0), _NewX(0), _NewY(0), _Size(0),
-									 _CurrMap(0), Date(-1),
-									 _Damping(0.97f), _FilterWeight(4), _UnitSize(0.6f),
-									 _WaveIntensity(0), _WavePeriod(0),
+CWaterHeightMap::CWaterHeightMap() : Date(-1),
 									 _WavesEnabled(false),
+									 _Damping(0.97f),
+									 _FilterWeight(4),
+									 _UnitSize(0.6f),
+									 _WaveIntensity(0),
+									 _WavePeriod(0),
 									 _WaveImpulsionRadius(3),
 									 _BorderWaves(true),
 									 _EmitEllapsedTime(0),
 									 _PropagateEllapsedTime(0),
-									 _PropagationTime(0.10f)
+									 _PropagationTime(0.10f),
+									 _X(0),
+									 _Y(0),
+									 _NewX(0),
+									 _NewY(0),
+									 _CurrMap(0),
+									 _Size(0)
 {		
 }
 
@@ -122,7 +130,7 @@ void CWaterHeightMap::updateUserPos()
 
 			sint orgX = _Size * XDivSize;
 			sint orgY = _Size * YDivSize;
-			for (sint k = 0; k < NumWaterMap; ++k)
+			for (uint k = 0; k < NumWaterMap; ++k)
 			{
 				makeCpy(k, (uint) (left - orgX + offsetX) , (uint) (top - orgY + offsetY),
 						(uint) (left - orgX), (uint) (top - orgY),
@@ -674,7 +682,7 @@ void CWaterHeightMap::serial(NLMISC::IStream &f)  throw(NLMISC::EStream)
 		f.xmlSetAttrib ("NAME")					;
 		f.serial (_Name);
 	f.xmlPushEnd();
-	sint ver = f.serialVersion(0);
+	(void)f.serialVersion(0);
 	f.xmlSerial(_Size, "SIZE");
 	if (f.isReading())
 	{

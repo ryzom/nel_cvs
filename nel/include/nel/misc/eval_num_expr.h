@@ -1,7 +1,7 @@
 /** \file eval_num_expr.h
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.h,v 1.3 2002/06/04 14:14:15 corvazier Exp $
+ * $Id: eval_num_expr.h,v 1.4 2002/08/21 09:36:01 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NLMISC
 class CEvalNumExpr
 {
 public:
-
+	virtual ~CEvalNumExpr();
 	/// Eval return error.
 	enum TReturnState
 	{
@@ -293,18 +293,16 @@ private:
 	TReturnState	_State;		// Current state
 	const char		*_ExprPtr;	// Current pointer on the expression
 
-	/// Inlines functions
-
 	/// Read a decimal double
-	inline TReturnState readDecimal (double &value);
+	TReturnState readDecimal (double &value);
 
 	/// Read an integer
-	inline void readIntegerNumberDecimal (double &value);
+	void readIntegerNumberDecimal (double &value);
 
 	/// Internal functions
 
 	/// Get the next token
-	inline TReturnState	getNextToken (TToken &token);
+	TReturnState	getNextToken (TToken &token);
 
 	/// Evaluate an expression
 	TReturnState evalExpression (double &result, TToken &nextToken);

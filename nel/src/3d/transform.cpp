@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.49 2002/08/09 15:00:18 berenguier Exp $
+ * $Id: transform.cpp,v 1.50 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -563,8 +563,6 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 	const	CMatrix		*pFatherWM;
 	bool				visFather;
 	CTransform			*transModel= (CTransform*)Model;
-	CLightTrav			*lightTrav= (CLightTrav*)transModel->_LightObs->Trav;
-
 
 	// If not root case, link to caller.
 	if(caller)
@@ -634,6 +632,7 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 		case CHrcTrav::Herit: WorldVis= visFather; break;
 		case CHrcTrav::Hide: WorldVis= false; break;
 		case CHrcTrav::Show: WorldVis= true; break;
+		default: break;
 	}
 
 

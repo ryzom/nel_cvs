@@ -1,7 +1,7 @@
 /** \file event_listener.h
  * events listener
  *
- * $Id: event_listener.h,v 1.10 2000/12/13 15:00:46 corvazier Exp $
+ * $Id: event_listener.h,v 1.11 2002/08/21 09:36:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +69,7 @@ public:
 
 	/// Constructor
 	CEventListenerAsync();
+	virtual ~CEventListenerAsync() {}
 
 	/** 
 	  * Register the listener to the server.

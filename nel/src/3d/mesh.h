@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.31 2002/08/14 12:43:35 berenguier Exp $
+ * $Id: mesh.h,v 1.32 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -440,7 +440,7 @@ private:
 		// Serialize a rdrpass.
 		void	serial(NLMISC::IStream &f)
 		{
-			sint	ver= f.serialVersion(0);
+			(void)f.serialVersion(0);
 
 			f.serial(MaterialId);
 			f.serial(PBlock);
@@ -461,7 +461,7 @@ private:
 
 		void	serial(NLMISC::IStream &f)
 		{
-			sint	ver= f.serialVersion(0);
+			(void)f.serialVersion(0);
 
 			// Code written for IDriver::MaxModelMatrix==16 matrixs.
 			nlassert(IDriver::MaxModelMatrix == 16);

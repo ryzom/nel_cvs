@@ -1,7 +1,7 @@
 /** \file animated_lightmap.h
  * <File description>
  *
- * $Id: animated_lightmap.h,v 1.2 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: animated_lightmap.h,v 1.3 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,7 @@ public:
 	/** Constructor.
 	 */
 	CAnimatedLightmap();
+	virtual ~CAnimatedLightmap() {}
 	// @}
 
 

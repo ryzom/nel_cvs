@@ -1,7 +1,7 @@
 /** \file motion_blur.cpp
  * <File description>
  *
- * $Id: motion_blur.cpp,v 1.3 2002/02/28 12:59:50 besson Exp $
+ * $Id: motion_blur.cpp,v 1.4 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@
 namespace NL3D {
 
 
-CMotionBlur::CMotionBlur() : _X(0), _Y(0), _W(0), _H(0), _Tex(NULL)
+CMotionBlur::CMotionBlur() : _Tex(NULL), _X(0), _Y(0), _W(0), _H(0)
 {
 }
 

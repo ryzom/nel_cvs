@@ -1,7 +1,7 @@
 /** \file ig_surface_light_build.cpp
  * <File description>
  *
- * $Id: ig_surface_light_build.cpp,v 1.2 2002/02/28 12:59:49 besson Exp $
+ * $Id: ig_surface_light_build.cpp,v 1.3 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -95,7 +95,6 @@ void			CIGSurfaceLightBuild::buildSunDebugMesh(CMesh::CMeshBuild &meshBuild,
 			{
 				for(x=0;x<wCell; x++)
 				{
-					uint	cellId= y*wCell + x;
 					uint	v00= y*wVert + x;
 					uint	v10= y*wVert + x+1;
 					uint	v01= (y+1)*wVert + x;

@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.3 2002/07/04 14:50:17 vizerie Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.4 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -37,9 +37,13 @@ namespace NL3D
 
 
 //===========================================================
-CSegRemanenceShape::CSegRemanenceShape() : _NumSlices(8), _SliceTime(0.05f),
-										   _GeomTouched(true), _TextureShifting(true), _MatTouched(true),
-										   _AnimatedMat(NULL), _RollUpRatio(1.f)
+CSegRemanenceShape::CSegRemanenceShape() : _GeomTouched(true),
+										   _MatTouched(true),
+										   _TextureShifting(true),
+										   _NumSlices(8),
+										   _SliceTime(0.05f),
+										   _RollUpRatio(1.f),
+										   _AnimatedMat(NULL)
 {
 	_BBox.setCenter(NLMISC::CVector::Null);
 	_BBox.setHalfSize(NLMISC::CVector(3, 3, 3));

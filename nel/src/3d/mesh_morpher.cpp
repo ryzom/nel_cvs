@@ -1,7 +1,7 @@
 /** \file mesh_morpher.cpp
  * <File description>
  *
- * $Id: mesh_morpher.cpp,v 1.5 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: mesh_morpher.cpp,v 1.6 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,7 +138,7 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 			pDst[j+i*VBVertexSize] = pOri[j+i*VBVertexSize];
 	}
 
-	uint tgSpaceStage;
+	uint tgSpaceStage = 0;
 	if (_UseTgSpace)
 	{
 		tgSpaceStage = _VBDst->getNumTexCoordUsed() - 1;
@@ -256,7 +256,7 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 	nlassert(_VBOri->getVertexFormat() == _VBDst->getVertexFormat());
 
 	uint tgSpaceStage;
-	uint tgSpaceOff;
+	uint tgSpaceOff = 0;
 	if (_UseTgSpace && _TgSpace)
 	{
 		tgSpaceStage = _VBDst->getNumTexCoordUsed() - 1;
@@ -382,7 +382,7 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 // ***************************************************************************
 void CMeshMorpher::serial (NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion (0);
+	(void)f.serialVersion (0);
 
 	f.serialCont (BlendShapes);
 }

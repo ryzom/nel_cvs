@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.5 2002/03/01 16:36:55 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.6 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -227,12 +227,11 @@ void CPSRibbon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 //=======================================================	
-CPSRibbon::CPSRibbon() 
-  : _ColorFading(true),
-	_GlobalColor(false),
-	_Touch(true),
-	_UFactor(1.f),
-	_VFactor(1.f)
+CPSRibbon::CPSRibbon() : _UFactor(1.f),
+						 _VFactor(1.f),
+						 _ColorFading(true),
+						 _GlobalColor(false),
+						 _Touch(true)
 {
 	setInterpolationMode(Linear);
 	setSegDuration(0.06f);
@@ -458,7 +457,7 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	CVertexBuffer				&VB = VBnPB.VB;
 	CPrimitiveBlock				&PB = VBnPB.PB;
 	const uint32				vertexSize  = VB.getVertexSize();
-	uint						colorOffset;	
+	uint						colorOffset=0;	
 	
 	IDriver *drv = this->getDriver();
 	setupDriverModelMatrix();

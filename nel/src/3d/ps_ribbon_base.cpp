@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.cpp
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.cpp,v 1.5 2002/07/03 17:27:03 vizerie Exp $
+ * $Id: ps_ribbon_base.cpp,v 1.6 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,9 +78,9 @@ const uint EndRibbonStorage = 1;
 //=======================================================
 CPSRibbonBase::CPSRibbonBase() : _NbSegs(8),
 								 _SegDuration(0.02f),
+								 _Parametric(false),
 								 _RibbonIndex(0),
 								 _LastUpdateDate(0),
-								 _Parametric(false),
 								 _RibbonMode(VariableSize),
 								 _InterpolationMode(Hermitte),
 								 _RibbonLength(1),
@@ -526,7 +526,6 @@ void CPSRibbonBase::resetSingleRibbon(uint index, const NLMISC::CVector &pos)
 void CPSRibbonBase::resetFromOwner()
 {
 	nlassert(!_Parametric);
-	const uint32 size = _Owner->getSize();
 	TPSAttribVector::iterator posIt = _Owner->getPos().begin();
 	TPSAttribVector::iterator endPosIt = _Owner->getPos().end();
 	for (uint k = 0; posIt != endPosIt; ++posIt, ++k)

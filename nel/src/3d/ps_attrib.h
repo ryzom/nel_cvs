@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.13 2002/06/18 17:45:51 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.14 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -409,7 +409,7 @@ void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		}
 		else
 		{
-			uint32 size = _Tab.size(), maxSize = _Tab.capacity();
+			uint32 size = _Tab.size();
 			f.serial(size);
 			f.serial(_MaxSize);		
 			f.serial(size);

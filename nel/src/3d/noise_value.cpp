@@ -1,7 +1,7 @@
 /** \file noise_value.cpp
  * <File description>
  *
- * $Id: noise_value.cpp,v 1.5 2002/02/28 12:59:50 besson Exp $
+ * $Id: noise_value.cpp,v 1.6 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -293,7 +293,7 @@ float	CNoiseValue::evalOneLevelRandom(const CVector &posInWorld) const
 // ***************************************************************************
 void	CNoiseValue::serial(IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 	f.serial(Abs);
 	f.serial(Rand);
 	f.serial(Frequency);
@@ -336,7 +336,7 @@ void	CNoiseColorGradient::eval(const CVector &posInWorld, CRGBAF &result) const
 // ***************************************************************************
 void	CNoiseColorGradient::serial(IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 	f.serial(NoiseValue);
 	f.serialCont(Gradients);
 }

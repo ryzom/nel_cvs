@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.22 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_zone.cpp,v 1.23 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,10 +95,11 @@ void CPSZone::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationT
 	{
 		case PSCollision:
 			performMotion(ellapsedTime);
-		break;
+			break;
 		case PSToolRender:
 			show(ellapsedTime);
-		break;
+			break;
+		default: break;
 	}
 }
 
@@ -329,7 +330,6 @@ void CPSZoneSphere::performMotion(TAnimationTime ellapsedTime)
 	TPSAttribVector::const_iterator spherePosIt, spherePosEnd, targetPosIt, targetPosEnd;
 	CVector dest;
 	CPSCollisionInfo ci;
-	CVector startEnd;
 	uint32 k;
 	const TPSAttribVector *speedAttr;
 
@@ -399,8 +399,6 @@ void CPSZoneSphere::performMotion(TAnimationTime ellapsedTime)
 
 						// roots of the equation, we take the smallest 
 
-
-						const float invA = 1.f / a;
 
 						const float r1 = .5f * (-b + 2.f * d) * a
 									, r2 = .5f * (-b - 2.f * d) * a;
@@ -945,7 +943,6 @@ void CPSZoneCylinder::performMotion(TAnimationTime ellapsedTime)
 	TPSAttribVector::const_iterator cylinderPosIt, cylinderPosEnd, targetPosIt, targetPosEnd;
 	CVector dest;
 	CPSCollisionInfo ci;
-	CVector startEnd;
 	uint32 k;
 	const TPSAttribVector *speedAttr;
 
@@ -1287,8 +1284,6 @@ void CPSZoneRectangle::performMotion(TAnimationTime ellapsedTime)
 	float alpha; 
 
 	CVector center;
-
-	uint32 size = _Owner->getSize();
 
 	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
 	{

@@ -1,7 +1,7 @@
 /** \file patchdlm_context.cpp
  * <File description>
  *
- * $Id: patchdlm_context.cpp,v 1.12 2002/05/21 16:42:23 lecroart Exp $
+ * $Id: patchdlm_context.cpp,v 1.13 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -971,7 +971,6 @@ void			CPatchDLMContext::computeTextureFar()
 	// size of the texture.
 	uint	os= _Patch->getOrderS();
 	uint	ot= _Patch->getOrderT();
-	uint	nTiles= os*ot;
 	// resize tmp texture. keep a border of 1 pixel around this texture (for average with border)
 	uint	tfWidth= os*2+2;
 	uint	tfHeight= ot*2+2;

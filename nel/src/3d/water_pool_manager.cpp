@@ -1,7 +1,7 @@
 /** \file water_pool_manager.cpp
  * <File description>
  *
- * $Id: water_pool_manager.cpp,v 1.7 2002/02/28 12:59:52 besson Exp $
+ * $Id: water_pool_manager.cpp,v 1.8 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -204,7 +204,7 @@ void	CWaterPoolManager::removePool(uint32 ID)
 void CWaterPoolManager::serial(NLMISC::IStream &f)  throw(NLMISC::EStream)
 {	
 	f.xmlPush("WaterPoolManager");
-	sint ver = f.serialVersion(0);	
+	(void)f.serialVersion(0);	
 	uint32 size;
 	TPoolMap::iterator it;
 	if (!f.isReading())

@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.38 2002/08/19 09:34:32 berenguier Exp $
+ * $Id: material.cpp,v 1.39 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,7 +59,7 @@ void			CMaterial::initUnlit()
 	setShader(Normal);
 	setLighting(false);
 	setColor(CRGBA(255,255,255,255));
-	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
+	for(uint32 i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 		setTexture(i ,NULL);
 	setZBias(0);
 	setZFunc(lessequal);
@@ -94,7 +94,7 @@ CMaterial		&CMaterial::operator=(const CMaterial &mat)
 	_Shininess= mat._Shininess;
 	_AlphaTestThreshold= mat._AlphaTestThreshold;
 
-	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
+	for(uint32 i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 	{
 		_Textures[i]= mat._Textures[i];
 		_TexEnvs[i]= mat._TexEnvs[i];
@@ -174,7 +174,7 @@ void		CMaterial::serial(NLMISC::IStream &f)
 	}
 
 
-	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
+	for(uint32 i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 	{
 		// Serial texture descriptor.
 		ITexture*	text;
@@ -211,7 +211,7 @@ void		CMaterial::serial(NLMISC::IStream &f)
 	{
 		if (_Flags & IDRV_MAT_TEX_ADDR)
 		{
-			for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
+			for(uint32 i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 			{
 				f.serial(_TexAddrMode[i]);
 			}
@@ -421,7 +421,7 @@ void				CMaterial::enableTexAddrMode(bool enable /*= true*/)
 		if (!(_Flags & IDRV_MAT_TEX_ADDR))
 		{
 			_Flags |= IDRV_MAT_TEX_ADDR;
-			for (sint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+			for (uint32 k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
 			{
 				_TexAddrMode[k] = (uint8) FetchTexture;
 			}			

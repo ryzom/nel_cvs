@@ -1,7 +1,7 @@
 /** \file camera.h
  * <File description>
  *
- * $Id: camera.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: camera.h,v 1.2 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,6 +93,7 @@ public:
 		_FovAnimationEnabled= en;
 		if(en)
 			_FovAnimationAspectRatio= aspectRatio;
+		return true;
 	}
 	/** enable Target/Roll animation. (default is false). TTransform mode is forced to RotQuatMode. Roll is forced to 0.
 	 * The camera builds the rot matrix from the animated target/roll.
@@ -102,6 +103,7 @@ public:
 		setTransformMode(ITransformable::RotQuat);
 		_TargetAnimationEnabled= en;
 		_Roll.Value= 0;
+		return true;
 	}
 
 

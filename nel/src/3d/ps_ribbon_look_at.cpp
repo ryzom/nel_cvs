@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.5 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.6 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -329,7 +329,7 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	CPrimitiveBlock				&PB = VBnPB.PB;
 
 	const uint32				vertexSize  = VB.getVertexSize();
-	uint						colorOffset;
+	uint						colorOffset=0;
 	const uint32				vertexSizeX2  = vertexSize << 1;
 	const NLMISC::CVector       I = _Owner->computeI();
 	const NLMISC::CVector       K = _Owner->computeK();
@@ -403,7 +403,7 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 		}
 
 		/// setup colors
-		NLMISC::CRGBA	*ptCurrColor;		
+		NLMISC::CRGBA	*ptCurrColor=0;
 		if (_ColorScheme)
 		{
 			colors.resize(nbRibbons);

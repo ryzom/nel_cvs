@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of Noise
  *
- * $Id: patch_noise.cpp,v 1.4 2002/02/28 12:59:50 besson Exp $
+ * $Id: patch_noise.cpp,v 1.5 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -288,7 +288,7 @@ float		CPatch::computeDisplaceEdgeSmooth(float s, float t, sint8 smoothBorderX, 
 	float sTile= s;
 	float tTile= t;
 	CBindInfo	bindInfo;
-	uint		edge;
+	uint		edge=0;
 
 	// only one must be not null
 	nlassert( (smoothBorderX==0) != (smoothBorderY==0) );
@@ -476,8 +476,8 @@ float		CPatch::computeDisplaceCornerSmooth(float s, float t, sint8 smoothBorderX
 	float tTile= t;
 	CBindInfo	bindInfoX;
 	CBindInfo	bindInfoY;
-	uint		edgeX;
-	uint		edgeY;
+	uint		edgeX=0;
+	uint		edgeY=0;
 
 	// both must be not null
 	nlassert( (smoothBorderX!=0) && (smoothBorderY!=0) );
@@ -586,7 +586,7 @@ float		CPatch::computeDisplaceCornerSmooth(float s, float t, sint8 smoothBorderX
 CVector		CPatch::computeNormalEdgeSmooth(float s, float t, sint8 smoothBorderX, sint8 smoothBorderY) const
 {
 	CBindInfo	bindInfo;
-	uint		edge;
+	uint		edge=0;
 	CBezierPatch	*bpatch;
 	bpatch= unpackIntoCache();
 
@@ -620,7 +620,7 @@ CVector		CPatch::computeNormalEdgeSmooth(float s, float t, sint8 smoothBorderX, 
 			// Compute the coordinate on the border of the edge, and the coef of the blend.
 			float		se=s;
 			float		te=t;
-			float		coef;
+			float		coef=0.0;
 			if(smoothBorderX==-1)		se= noiseFloorF(se), coef=s-se;
 			else if(smoothBorderX==1)	se= noiseCeilF(se), coef=se-s;
 			else if(smoothBorderY==-1)	te= noiseFloorF(te), coef=t-te;
@@ -653,7 +653,7 @@ CVector		CPatch::computeNormalEdgeSmooth(float s, float t, sint8 smoothBorderX, 
 		// compute coef.
 		float		se=s;
 		float		te=t;
-		float		coef;
+		float		coef=0.0;
 		if(smoothBorderX==-1)		se= noiseFloorF(se), coef=s-se;
 		else if(smoothBorderX==1)	se= noiseCeilF(se), coef=se-s;
 		else if(smoothBorderY==-1)	te= noiseFloorF(te), coef=t-te;
@@ -727,8 +727,8 @@ CVector		CPatch::computeNormalCornerSmooth(float	s, float t, sint8 smoothBorderX
 {
 	CBindInfo	bindInfoX;
 	CBindInfo	bindInfoY;
-	uint		edgeX;
-	uint		edgeY;
+	uint		edgeX=0;
+	uint		edgeY=0;
 	uint		corner;
 	CBezierPatch	*bpatch;
 	bpatch= unpackIntoCache();

@@ -1,7 +1,7 @@
 /** \file meshvp_per_pixel_light.h
  * <File description>
  *
- * $Id: meshvp_per_pixel_light.h,v 1.1 2002/03/14 18:13:08 vizerie Exp $
+ * $Id: meshvp_per_pixel_light.h,v 1.2 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -61,7 +61,7 @@ public:
 	/// true if want Specular Lighting.
 	bool		SpecularLighting;
 public:
-	CMeshVPPerPixelLight() : _Enabled(false),  SpecularLighting(true) {}	
+	CMeshVPPerPixelLight() : SpecularLighting(true), _Enabled(false) {}	
 	/// \name IMeshVertexProgram implementation
 	// @{	
 		virtual	void	initInstance(CMeshBaseInstance *mbi);

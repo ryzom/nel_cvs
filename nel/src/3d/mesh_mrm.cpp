@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.50 2002/08/07 16:43:37 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.51 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -950,7 +950,6 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 	// The mesh must not be skinned for render()
 	nlassert(!(_Skinned && mi->isSkinned() && skeleton));
 	bool bMorphApplied = _MeshMorpher.BlendShapes.size() > 0;
-	bool useNormal= (_VBufferFinal.getVertexFormat() & CVertexBuffer::NormalFlag)!=0;
 	bool useTangentSpace = _MeshVertexProgram && _MeshVertexProgram->needTangentSpace();
 
 
@@ -2599,7 +2598,7 @@ void	CMeshMRM::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	// serial Materials infos contained in CMeshBase.
 	CMeshBase::serialMeshBase(f);

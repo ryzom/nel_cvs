@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.35 2002/08/05 12:17:29 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.36 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -272,7 +272,7 @@ private:
 		// Serialize a rdrpass.
 		void	serial(NLMISC::IStream &f)
 		{
-			sint	ver= f.serialVersion(0);
+			(void)f.serialVersion(0);
 
 			f.serial(MaterialId);
 			f.serial(PBlock);
@@ -385,7 +385,7 @@ private:
 
 		void	serial(NLMISC::IStream &f)
 		{
-			sint	ver= f.serialVersion(0);
+			(void)f.serialVersion(0);
 
 			f.serial(StartAddWedge);
 			f.serial(EndAddWedges);

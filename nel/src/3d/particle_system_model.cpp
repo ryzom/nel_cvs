@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.39 2002/08/01 19:05:07 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.40 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,10 +48,17 @@ namespace NL3D {
 
 ///=====================================================================================
 /// ctor
-CParticleSystemModel::CParticleSystemModel() : _ParticleSystem(NULL),_EllapsedTime(0.01f), _ToolDisplayEnabled(false)
-						, _AutoGetEllapsedTime(true), _TransparencyStateTouched(true), _Scene(NULL), _EditionMode(false)
-						, _Invalidated(false), _InsertedInVisibleList(false), _InClusterAndVisible(false),
-						_EllapsedTimeRatio(1.f)
+CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
+											   _ParticleSystem(NULL),
+											   _Scene(NULL),
+											   _EllapsedTime(0.01f),
+											   _EllapsedTimeRatio(1.f),
+											   _ToolDisplayEnabled(false),
+											   _TransparencyStateTouched(true),
+											   _EditionMode(false),
+											   _Invalidated(false),
+											   _InsertedInVisibleList(false),
+											   _InClusterAndVisible(false)
 {
 	setOpacity(false);
 	setTransparency(true);
@@ -736,14 +743,15 @@ bool CParticleSystemClipObs::checkDestroyCondition(CParticleSystem *ps, CParticl
 								m->releaseRscAndInvalidate();
 								return true;
 							}
-						break;
+							break;
 						case CParticleSystem::noMoreParticlesAndEmitters:
 							if (!ps->hasParticles() && !ps->hasEmitters())
 							{
 								m->releaseRscAndInvalidate();
 								return true;
 							}
-						break;
+							break;
+						default: break;
 					}
 				}
 			}

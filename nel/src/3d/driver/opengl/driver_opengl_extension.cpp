@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.35 2002/07/02 12:35:05 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.36 2002/08/21 09:37:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -548,20 +548,20 @@ static bool	setupWGLARBPBuffer(const char	*glext)
 	return true;
 }
 
+#ifdef NL_OS_WINDOWS
 // *********************************
 static bool	setupWGLARBPixelFormat (const char	*glext)
 {
 	if(strstr(glext, "WGL_ARB_pixel_format")==NULL)
 		return false;
 
-#ifdef NL_OS_WINDOWS
 	if(!(wglGetPixelFormatAttribivARB= (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)nelglGetProcAddress("wglGetPixelFormatAttribivARB"))) return false;
 	if(!(wglGetPixelFormatAttribfvARB= (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)nelglGetProcAddress("wglGetPixelFormatAttribfvARB"))) return false;
 	if(!(wglChoosePixelFormatARB= (PFNWGLCHOOSEPIXELFORMATARBPROC)nelglGetProcAddress("wglChoosePixelFormatARB"))) return false;
-#endif
 
 	return true;
 }
+#endif
 
 // *********************************
 static bool	setupNVTextureShader(const char	*glext)
@@ -621,7 +621,7 @@ void	registerGlExtensions(CGlExtensions &ext)
 		glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &ntext);
 		// We could have more than IDRV_MAT_MAXTEXTURES but the interface only 
 		// support IDRV_MAT_MAXTEXTURES texture stages so take min
-		ext.NbTextureStages= (ntext<IDRV_MAT_MAXTEXTURES?ntext:IDRV_MAT_MAXTEXTURES);
+		ext.NbTextureStages= (ntext<((GLint)IDRV_MAT_MAXTEXTURES)?ntext:IDRV_MAT_MAXTEXTURES);
 	}
 
 	// Check EXTTextureEnvCombine

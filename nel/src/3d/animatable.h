@@ -1,7 +1,7 @@
 /** \file animatable.h
  * Class IAnimatable
  *
- * $Id: animatable.h,v 1.2 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: animatable.h,v 1.3 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,7 @@ public:
 		_Father= NULL;
 	}
 
+	virtual ~IAnimatable() {}
 	/// \name Interface
 	// @{
 	/**

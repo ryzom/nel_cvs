@@ -1,7 +1,7 @@
 /** \file vectord_inline.h
  * CVectorD class inline definitions.
  *
- * $Id: vectord_inline.h,v 1.6 2000/11/29 17:24:08 cado Exp $
+ * $Id: vectord_inline.h,v 1.7 2002/08/21 09:36:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,11 +165,6 @@ inline	void	CVectorD::cartesianToSpheric(double &r, double &theta,double &phi) c
 }
 inline	void	CVectorD::sphericToCartesian(double r, double theta,double phi)
 {
-	double	ct= cos(theta);
-	double	st= sin(theta);
-	double	cp= cos(phi);
-	double	sp= sin(phi);
-
 	x= r*cos(theta)*cos(phi);
 	y= r*sin(theta)*cos(phi);
 	z= r*sin(phi);

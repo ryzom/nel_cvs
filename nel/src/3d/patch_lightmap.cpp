@@ -1,7 +1,7 @@
 /** \file patch_lightmap.cpp
  * Patch implementation related to lightmaping (texture Near/Far)
  *
- * $Id: patch_lightmap.cpp,v 1.6 2002/04/23 15:15:22 berenguier Exp $
+ * $Id: patch_lightmap.cpp,v 1.7 2002/08/21 09:39:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -474,7 +474,7 @@ void		CPatch::modulateTileLightmapEdgeWithTileColors(uint ts, uint tt, uint edge
 	getTileTileColors(ts, tt, corners);
 
 	// get coordinate according to edge.
-	uint	x,y;
+	uint	x=0,y=0;
 	switch(edge)
 	{
 	case 0: x= 0; break;
@@ -533,7 +533,7 @@ void		CPatch::computeTileLightmapAutomatic(uint ts, uint tt, CRGBA *dest, uint s
 void		CPatch::computeTileLightmapEdgeAutomatic(uint ts, uint tt, uint edge, CRGBA *dest, uint stride, bool inverse)
 {
 	// get coordinate according to edge.
-	uint	x,y;
+	uint	x=0,y=0;
 	switch(edge)
 	{
 	case 0: x= 0; break;
@@ -753,9 +753,8 @@ void		CPatch::computeTileLightmapEdgePrecomputed(uint ts, uint tt, uint edge, CR
 		uint offset=ts+tt*(OrderS<<NL_LUMEL_BY_TILE_SHIFT);
 
 		// Start and delta
-		uint delta;
 		uint lumelS=OrderS<<2;
-		uint lumelT=OrderT<<2;
+		uint delta=lumelS;
 		switch (edge)
 		{
 		case 0:
@@ -903,7 +902,7 @@ void		CPatch::computeTileLightmapPixelAroundCorner(const CVector2f &stIn, CRGBA 
 	else
 	{
 		// choose against which edge we must find the pixel.
-		uint	edge;
+		uint	edge=0;
 		if(u<0)					edge=0;
 		else if(v>=OrderT*NL_LUMEL_BY_TILE)	edge=1;
 		else if(u>=OrderS*NL_LUMEL_BY_TILE)	edge=2;
@@ -1051,7 +1050,7 @@ void		CPatch::computeNearBlockLightmap(uint uts, uint utt, CRGBA	*lightText)
 			// Fast reject: if no neighbor, or if not smoothed, or if edge order pb, just copy from my interior.
 			if(!bindInfo.Zone)
 			{
-				CRGBA	*src;
+				CRGBA	*src=0;
 				switch(edge)
 				{
 				case 0: src= dest + 1; break;
@@ -1155,7 +1154,7 @@ void		CPatch::computeNearBlockLightmap(uint uts, uint utt, CRGBA	*lightText)
 		else
 		{
 			// By default, fill the corner with our interior corner. Because other methods may fail.
-			CRGBA	*src;
+			CRGBA	*src=0;
 			switch(corner)
 			{
 			case 0: src= dest + 1 + NL_TILE_LIGHTMAP_SIZE; break;
@@ -1630,7 +1629,6 @@ void		CPatch::appendTileLightInfluences(const CUV &uv,
 	sint	w= (OrderS>>1);
 	sint	h= (OrderT>>1);
 	sint	wTLI= w+1;
-	sint	hTLI= h+1;
 	// fastFloor: use a precision of 256 to avoid doing OptFastFloorBegin.
 	x= OptFastFloor(uv.U * (w<<8));
 	y= OptFastFloor(uv.V * (h<<8));
@@ -1741,9 +1739,6 @@ void		CPatch::getCurrentTileTLIColors(uint ts, uint tt, NLMISC::CRGBA corners[4]
 		// get tile id local to tessBlock.
 		uint	tls= ts-(tbs<<1);
 		uint	tlt= tt-(tbt<<1);
-		// Size of TileLightInfluences
-		uint	wTLI= (OrderS>>1)+1;
-		uint	hTLI= (OrderT>>1)+1;
 
 		// For each corner of the tessBlock, compute lighting with pointLights.
 		CRGBA	tbCorners[4];
@@ -1843,7 +1838,7 @@ void		CPatch::addTileLightmapEdgeWithTLI(uint ts, uint tt, uint edge, NLMISC::CR
 	getCurrentTileTLIColors(ts, tt, corners);
 
 	// get coordinate according to edge.
-	uint	x,y;
+	uint	x=0,y=0;
 	switch(edge)
 	{
 	case 0: x= 0; break;

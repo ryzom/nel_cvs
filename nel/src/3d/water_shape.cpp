@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.21 2002/07/29 08:43:18 corvazier Exp $
+ * $Id: water_shape.cpp,v 1.22 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -618,7 +618,11 @@ void  CWaterShape::updateHeightMapNormalizationFactors()
 
 //============================================
 
-CWaveMakerShape::CWaveMakerShape() : _ImpulsionMode(true), _Period(1), _Radius(3), _PoolID(0), _Intensity(1)
+CWaveMakerShape::CWaveMakerShape() : _Period(1),
+				     _Radius(3),
+				     _PoolID(0),
+				     _Intensity(1),
+				     _ImpulsionMode(true)
 {
 }
 

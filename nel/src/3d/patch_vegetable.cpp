@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.16 2002/04/23 14:38:12 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.17 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,9 +51,6 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	CLandscapeVegetableBlockCreateContext &vbCreateCtx)
 {
 	uint	i;
-
-	// get the vegetableManager
-	CVegetableManager	*vegetableManager= getLandscape()->_VegetableManager;
 
 	// Get tile infos for vegetable
 	// =========================
@@ -139,7 +136,7 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	lightList.clear();
 	appendTileLightInfluences( CUV(tileU, tileV), lightList);
 	// for each light, modulate the factor of influence
-	for(i=0; i<(sint)lightList.size();i++)
+	for(i=0; i<lightList.size();i++)
 	{
 		CPointLight	*pl= lightList[i].PointLight;
 		// compute the attenuation to the pos of the tile

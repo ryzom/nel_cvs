@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.28 2002/08/19 09:39:18 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.29 2002/08/21 09:37:12 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -100,8 +100,6 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 
 	// Get VB flags, to setup matrixes and arrays.
 	flags=VB.getVertexFormat();
-	// Get VB drv infos.
-	CVBDrvInfosGL	*vbInf= static_cast<CVBDrvInfosGL*>((IVBDrvInfos*)(VB.DrvInfos));
 
 
 	// 2. Setup Arrays.
@@ -471,6 +469,7 @@ bool	CVertexBufferHardGL::init(CDriverGL *drv, uint16 vertexFormat, const uint8 
 	case IDriver::VBHardVRAM:
 		_VertexArrayRange= &_Driver->_VRAMVertexArrayRange;
 		break;
+	default: break;
 	};
 
 	// try to allocate

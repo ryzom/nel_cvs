@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.13 2002/06/24 14:02:38 vizerie Exp $
+ * $Id: bitmap.h,v 1.14 2002/08/21 09:36:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -250,7 +250,7 @@ public:
 		_LoadGrayscaleAsAlpha = true;
 	}
 
-
+	virtual ~CBitmap() { }
 
 	/** 
 	 * Read a bitmap(TGA or DDS) from an IStream. 
@@ -437,11 +437,11 @@ public:
 	/**
 	 * Tell if the bitmap loads grayscale bitmap as alpha or luminance format.
 	 *
-	 * \return true is the bitmap loads grayscale bitmaps as alpha, false if it loads grayscale bitmaps as luminance.
+	 * \return true if the bitmap loads grayscale bitmaps as alpha, false if it loads grayscale bitmaps as luminance.
 	 */
 	bool isGrayscaleAsAlpha () const
 	{
-		_LoadGrayscaleAsAlpha;
+		return _LoadGrayscaleAsAlpha;
 	}
 
 

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.11 2002/08/07 08:37:40 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.12 2002/08/21 09:39:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,7 +77,8 @@ struct CPSInputType
 		{
 			case attrUserParam:
 				f.serial(UserParamNum) ;
-			break ;
+				break ;
+			default: break;
 		}
 	}
 } ;

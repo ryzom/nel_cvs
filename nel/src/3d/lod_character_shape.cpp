@@ -1,7 +1,7 @@
 /** \file lod_character_shape.cpp
  * <File description>
  *
- * $Id: lod_character_shape.cpp,v 1.3 2002/05/15 16:55:55 berenguier Exp $
+ * $Id: lod_character_shape.cpp,v 1.4 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -46,7 +46,7 @@ void	CLodCharacterShapeBuild::serial(NLMISC::IStream &f)
 	f.serialCheck((uint32)'DOLC');
 	f.serialCheck((uint32)'DLUB');
 
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.serialCont(Vertices);
 	f.serialCont(SkinWeights);
@@ -199,7 +199,7 @@ bool			CLodCharacterShape::addAnim(const CAnimBuild &animBuild)
 // ***************************************************************************
 void			CLodCharacterShape::CAnim::serial(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.serial(Name);
 	f.serial(NumKeys);
@@ -213,7 +213,7 @@ void			CLodCharacterShape::CAnim::serial(NLMISC::IStream &f)
 // ***************************************************************************
 void			CLodCharacterShape::CBoneInfluence::serial(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.serial(Name);
 	f.serialCont(InfVertices);
@@ -228,7 +228,7 @@ void			CLodCharacterShape::serial(NLMISC::IStream &f)
 	f.serialCheck((uint32)'DOLC');
 	f.serialCheck((uint32)'PAHS');
 
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.serial(_Name);
 	f.serial(_NumVertices);

@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.11 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: track_keyframer.h,v 1.12 2002/08/21 09:39:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -241,7 +241,7 @@ public:
 	virtual void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
 	{
 		// Serial version
-		sint version=f.serialVersion (0);
+		(void)f.serialVersion (0);
 
 		f.serialCont(_MapKey);
 		f.serial(_RangeLock, _RangeBegin, _RangeEnd);

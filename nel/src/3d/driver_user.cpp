@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.19 2002/08/14 08:49:32 berenguier Exp $
+ * $Id: driver_user.cpp,v 1.20 2002/08/21 09:39:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -841,7 +841,7 @@ void			CDriverUser::setPolygonMode (TPolygonMode mode)
 {
 	NL3D_HAUTO_UI_DRIVER;
 
-	IDriver::TPolygonMode	dmode;
+	IDriver::TPolygonMode	dmode=IDriver::Filled;
 	switch(mode)
 	{
 		case Filled:	dmode= IDriver::Filled; break;
@@ -877,7 +877,7 @@ UDriver::TPolygonMode 	CDriverUser::getPolygonMode ()
 	NL3D_HAUTO_UI_DRIVER;
 
 	IDriver::TPolygonMode	dmode;
-	UDriver::TPolygonMode	umode;
+	UDriver::TPolygonMode	umode=UDriver::Filled;
 	dmode= _Driver->getPolygonMode();
 	switch(dmode)
 	{

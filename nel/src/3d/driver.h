@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.20 2001/10/18 13:12:00 corvazier Exp $
+ * $Id: driver.h,v 1.21 2001/10/26 08:14:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "3d/vertex_buffer.h"
 #include "3d/vertex_buffer_hard.h"
 #include "3d/vertex_program.h"
+#include "3d/material.h"
 #include "nel/misc/mutex.h"
 #include "nel/3d/primitive_profile.h"
 
@@ -695,6 +696,20 @@ public:
 	virtual void			setConstantMatrix (uint index, TMatrix matrix, TTransform transform) =0;
 
 	// @}
+
+	/// \name Texture addressing modes aka textures/pixels shaders
+	// @{
+		/// test wether the device supports some form of texture shader. (could be limited to DX6 EMBM for example)
+		virtual bool supportTextureShaders() const = 0;
+		/// test wether a texture addressing mode is supported
+		virtual bool isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) const = 0;
+		/** setup the 2D matrix for the OffsetTexture, OffsetTextureScale and OffsetTexture addressing mode
+		  * It should be stored as the following
+		  * [a0 a1]
+		  * [a2 a3]
+		  */
+		virtual void setMatrix2DForTextureOffsetAddrMode(const float mat[4]) = 0;		  	
+	//@}
 
 protected:
 	friend	class	IVBDrvInfos;

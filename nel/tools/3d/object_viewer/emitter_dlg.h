@@ -1,3 +1,28 @@
+/** \file emitter_dlg.h
+ * a dialog to tune emitter properties in a particle system
+ *
+ * $Id: emitter_dlg.h,v 1.3 2001/06/25 13:16:34 vizerie Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
 #if !defined(AFX_EMITTER_DLG_H__7D6DB229_8E72_4A60_BD03_8A3EF3F506CF__INCLUDED_)
 #define AFX_EMITTER_DLG_H__7D6DB229_8E72_4A60_BD03_8A3EF3F506CF__INCLUDED_
 
@@ -14,11 +39,12 @@ namespace NL3D
 }
 
 #include "attrib_dlg.h"
+#include "dialog_stack.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CEmitterDlg dialog
 
-class CEmitterDlg : public CDialog
+class CEmitterDlg : public CDialog, public CDialogStack
 {
 // Construction
 public:
@@ -130,9 +156,18 @@ protected:
 			   NL3D::CPSEmitter *E ;
 			   float get(void) const { return E->getSpeedInheritanceFactor() ; }
 			   void set(const float &f) { E->setSpeedInheritanceFactor(f) ; }	
-
 			} _SpeedInheritanceFactorWrapper ;
 
+		////////////////////////////////////////////////
+		// wrappers to tune the direction of emitters //
+		////////////////////////////////////////////////
+
+			struct tagDirectionWrapper : public IPSWrapper<NLMISC::CVector>
+			{
+			   NL3D::CPSEmitterDirection *E ;
+			   NLMISC::CVector get(void) const { return E->getDir() ; }
+			   void set(const NLMISC::CVector &d){ E->setDir(d) ; }	
+			} _DirectionWrapper ;
 
 
 

@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.1 2001/04/23 13:44:02 besson Exp $
+ * $Id: async_file_manager.cpp,v 1.2 2001/05/17 14:19:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,7 +126,7 @@ void CAsyncFileManager::CMeshLoad::run()
 						// add it
 						AlreadyPresentTextureSet.insert(pTextFile->getFileName());
 						// And load it
-						printf("chargement de %s\n", pTextFile->getFileName());
+						printf("chargement de %s\n", pTextFile->getFileName().c_str());
 						pTextFile->generate();
 					}
 				}

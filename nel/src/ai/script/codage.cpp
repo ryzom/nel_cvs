@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.20 2001/10/29 10:05:13 chafik Exp $
+ * $Id: codage.cpp,v 1.21 2002/01/03 15:06:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,7 +181,7 @@ namespace NLAISCRIPT
 			OutputDebugString(chaine.c_str());
 #endif
 		}
-#endif		
+#endif
 
 		return op.runOpCode(p);
 	}

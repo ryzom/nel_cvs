@@ -100,24 +100,6 @@ namespace NLAIAGENT
 	IObjectIA::CProcessResult CSeqFsmScript::runMethodBase(int index,int heritance, IObjectIA *params)
 	{
 		IBaseGroupType *param = (IBaseGroupType *) params;
-
-
-/*		switch(index - IMessageBase::getMethodIndexSize())
-		{
-		case 0:
-			{	
-				while ( param->size() )
-				{
-					const IVarName *state_name = (NLAIAGENT::IVarName *) param->get()->clone();
-					param->popFront();
-#ifdef NL_DEBUG
-					const char *dbg_state_name = state_name->getString();
-#endif
-					_Steps.push_back( state_name );
-				}
-			}
-			break;
-		}*/
 		return IObjectIA::CProcessResult();
 	}
 

@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.42 2001/12/11 13:41:01 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.43 2002/01/03 15:06:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,7 @@ namespace NLAISCRIPT
 		_RunIndex = -1;
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
+		_Base_class = NULL;
 	}
 
 	CAgentClass::CAgentClass(const NLAIAGENT::IVarName &name, const NLAIAGENT::IVarName &base_class_name) :
@@ -54,6 +55,7 @@ namespace NLAISCRIPT
 		_RunIndex = -1;
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
+		_Base_class = NULL;
 	}
 	
 	CAgentClass::CAgentClass( const CAgentClass &a):
@@ -64,6 +66,7 @@ namespace NLAISCRIPT
 		_RunIndex = -1;
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
+		_Base_class = a._Base_class;
 	}
 	
 	CAgentClass::CAgentClass(const NLAIC::CIdentType &ident):_Components(0),_Inheritance(NULL)
@@ -74,6 +77,7 @@ namespace NLAISCRIPT
 
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
+		_Base_class = NULL;
 	}
 
 	CAgentClass::CAgentClass():_Components(0),_Inheritance(NULL)
@@ -84,6 +88,7 @@ namespace NLAISCRIPT
 
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
+		_Base_class = NULL;
 	}
 
 	CAgentClass::~CAgentClass()
@@ -739,8 +744,9 @@ namespace NLAISCRIPT
 			CComponent *comp = _Components[i];
 			if ( !comp->Static )
 			{
-				sint32 class_index = NLAIC::getRegistry()->getNumIdent( comp->RegisterName->getString() );
-
+				//sint32 class_index = NLAIC::getRegistry()->getNumIdent( comp->RegisterName->getString() );
+				NLAIC::CIdentType id(comp->RegisterName->getString());
+				sint class_index = id.getIndex();
 				obj = (NLAIAGENT::IObjectIA *) NLAIC::getRegistry()->createInstance( class_index );
 			}
 			else
@@ -964,12 +970,36 @@ namespace NLAISCRIPT
 		
 	}
 
+	const IClassInterpret *CAgentClass::getComputeBaseClass()
+	{
+		if ( _Inheritance )
+		{
+			if(_Base_class == NULL)
+			{
+				_Base_class = (IClassInterpret *)( (CClassInterpretFactory *) NLAIC::getRegistry()->getFactory( _Inheritance->getString() ) )->getClass();				
+				return _Base_class;
+			}
+			else
+			{
+				return _Base_class;
+			}
+		}
+		else
+			return NULL;
+	}
+
 	const IClassInterpret *CAgentClass::getBaseClass() const
 	{
 		if ( _Inheritance )
 		{
-			const IClassInterpret *base_class = (const IClassInterpret *)( (CClassInterpretFactory *) NLAIC::getRegistry()->getFactory( _Inheritance->getString() ) )->getClass();
-			return base_class;
+			if(_Base_class == NULL)
+			{
+				return (const IClassInterpret *)( (CClassInterpretFactory *) NLAIC::getRegistry()->getFactory( _Inheritance->getString() ) )->getClass();				
+			}
+			else
+			{
+				return _Base_class;
+			}
 		}
 		else
 			return NULL;

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal_stack.h,v 1.4 2001/12/05 10:00:35 portier Exp $
+ * $Id: goal_stack.h,v 1.5 2002/01/03 15:05:40 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ namespace NLAILOGIC
 			virtual IObjectIA::CProcessResult runActivity();
 			virtual void addGoal(CGoal *);
 			virtual void removeGoal(CGoal *);
+			virtual void removeGoal();
 			virtual CGoal *getTopGoal();
 
 			virtual const std::vector<CGoal *> &getStack();

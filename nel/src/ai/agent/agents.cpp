@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.45 2001/12/05 09:59:20 portier Exp $
+ * $Id: agents.cpp,v 1.46 2002/01/03 15:06:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,8 +80,8 @@ namespace NLAIAGENT
 	void IAgent::onKill(IConnectIA *a)
 	{
 		if(eraseFromList<IBasicAgent *>(&_AgentList,(IBasicAgent *)a)) _SizeChild --;
-		removeConnection(a);
-		IConnectIA::onKill(a);
+		removeConnection(a);		
+		IAgentComposite::onKill(a);		
 		/*while(_Mail->getMessageCount())
 		{
 			_Mail->popMessage();			
@@ -321,6 +321,11 @@ namespace NLAIAGENT
 	{
 		getMail()->removeGroup( grp );
 	}*/
+
+	void IBasicAgent::onKill(IConnectIA *a)
+	{
+		_Mail->onKill(a);
+	}
 
 	IObjectIA *IBasicAgent::run(const IMessageBase &msg)
 	{

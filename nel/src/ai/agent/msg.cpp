@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.18 2001/12/11 15:45:29 chafik Exp $
+ * $Id: msg.cpp,v 1.19 2002/01/03 15:06:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,9 +37,7 @@ namespace NLAIAGENT
 		NLAIC::IBasicType *x = new CMessageGroup( *this );
 
 #ifdef NL_DEBUG
-	static sint kaka = 0;	
-	//kaka++;
-	//nlinfo ("UnTruc: %d at %0x",kaka ++, x);
+	static sint kaka = 0;
 #endif
 		return x;
 	}

@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.26 2001/09/06 16:48:18 chafik Exp $
+ * $Id: mailbox.cpp,v 1.27 2002/01/03 15:06:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -389,6 +389,22 @@ namespace NLAIAGENT
 	void CLocalMailBox::onKill(IConnectIA *a)
 	{				
 		eraseFromList<IMailBox *>(&_ListMailBox,(IMailBox *)a);
+
+		tListMessageIter msgItr = _ListMessageIn.begin();
+		while(msgItr != _ListMessageIn.end())
+		{
+			IMessageBase *msg = (IMessageBase *)*msgItr;
+
+			if(msg->getSender() == a || msg->getContinuation() == a)
+			{
+				tListMessageIter iTmp = msgItr++;
+				_ListMessageIn.erase(iTmp);
+				msg->release();
+				_Size --;
+			}
+			else msgItr++;			
+		}
+
 	}
 	
 	bool CLocalMailBox::isEqual(const IBasicObjectIA &a) const

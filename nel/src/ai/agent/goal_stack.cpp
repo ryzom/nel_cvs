@@ -17,17 +17,11 @@ namespace NLAILOGIC
 			_Goals.push_back( (CGoal *) g._Goals[i]->clone() );
 		}
 		_MaxGoals = g._MaxGoals;
-	}
+	}	
 
 	CGoalStack::~CGoalStack()
 	{
-		std::vector<CGoal *>::iterator it_g = _Goals.begin();
-		while ( it_g != _Goals.end() )
-		{
-			(*it_g)->cancel();
-			(*it_g)->release();
-			it_g++;
-		}
+		removeGoal();
 	}
 
 	NLAIAGENT::IObjectIA::CProcessResult CGoalStack::runActivity()
@@ -40,14 +34,14 @@ namespace NLAILOGIC
 		}
 
 #ifdef NL_DEBUG
-		std::string dbg_stack;
+		/*std::string dbg_stack;
 		for ( i = 0; i < (sint32) _Goals.size(); i++ )
 		{
 			std::string tmp;
 			 _Goals[i]->getDebugString( tmp );
 			dbg_stack += tmp;
 		}
-		const char *dbg_str = dbg_stack.c_str();
+		const char *dbg_str = dbg_stack.c_str();*/
 #endif
 
 		i = 0;
@@ -80,6 +74,18 @@ namespace NLAILOGIC
 	void CGoalStack::addGoal(CGoal *g) 
 	{
 		_Goals.push_back( g );
+	}
+
+	void CGoalStack::removeGoal()
+	{
+		std::vector<CGoal *>::iterator it_g = _Goals.begin();
+		while ( it_g != _Goals.end() )
+		{
+			(*it_g)->cancel();
+			(*it_g)->release();
+			it_g++;
+		}
+		_Goals.clear();
 	}
 
 	void CGoalStack::removeGoal(CGoal *g)

@@ -14,7 +14,13 @@ namespace NLAIAGENT
 
 	COperatorScript::COperatorScript(const COperatorScript &a) : CActorScript(a)
 	{
-		_CurrentGoal = a._CurrentGoal;
+		_CurrentGoal = a._CurrentGoal;		
+		/*if ( _CurrentGoal != NULL )
+			_CurrentGoal->incRef();*/
+		_FactBase = a._FactBase;
+		/*if ( _FactBase != NULL )
+			_FactBase->incRef();*/
+
 		_CyclesBeforeUpdate = a._CyclesBeforeUpdate;
 		_IsActivable = a._IsActivable;
 		_Maintain = a._Maintain;
@@ -55,11 +61,11 @@ namespace NLAIAGENT
 		//const char *className = (const char *)getType();
 #endif
 
-		if ( _CurrentGoal != NULL )
+		/*if ( _CurrentGoal != NULL )
 			_CurrentGoal->release();
 
 		if ( _FactBase != NULL )
-			_FactBase->release();
+			_FactBase->release();*/
 
 		std::vector<NLAIAGENT::IObjectIA *>::iterator it_val = _VarValues.begin();
 		while ( it_val != _VarValues.end() )
@@ -67,6 +73,11 @@ namespace NLAIAGENT
 			(*it_val)->release();
 			it_val++;
 		}
+	}
+
+	void COperatorScript::onKill(IConnectIA *a)
+	{
+		
 	}
 
 	const NLAIC::IBasicType *COperatorScript::clone() const
@@ -164,7 +175,7 @@ namespace NLAIAGENT
 				if ( _CurrentGoal == NULL && ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL )
 				{
 					_CurrentGoal = selectGoal();							// Select a goal among possible ones
-					_CurrentGoal->incRef();
+					//_CurrentGoal->incRef();
 					_CurrentGoal->addSuccessor( (IBasicAgent *) this );		// Adds the operator to the list of operators launched for this goal
 					linkGoalArgs( _CurrentGoal );							// Instanciates the goal's args values into the operator's components
 				}
@@ -615,13 +626,6 @@ namespace NLAIAGENT
 		IObjectIA::CProcessResult r;
 		std::vector<CStringType *> handles;
 
-#ifndef NL_DEBUG 
-		/*
-		char buf[1024];
-		getDebugString(buf);
-		*/
-
-#endif
 
 		switch( i )
 		{

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.99 2001/12/20 14:46:51 robert Exp $
+ * $Id: agent_script.cpp,v 1.100 2002/01/03 15:06:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -421,7 +421,7 @@ namespace NLAIAGENT
 
 	sint32 CAgentScript::getStaticMemberSize() const
 	{
-		return _AgentClass->getStaticMemberSize();
+		return _NbComponents;//_AgentClass->getStaticMemberSize();
 	}
 
 	
@@ -539,6 +539,35 @@ namespace NLAIAGENT
 
 	void CAgentScript::getDebugString(std::string &t) const
 	{		
+
+		if( _AgentManager != NULL)
+		{
+			const NLAISCRIPT::CParam p;
+			static CStringVarName debugStringF("GetDebugString");
+
+			tQueue r = isMember(NULL,&debugStringF,p);
+			if(r.size())
+			{
+				const IObjectIA *self = ((const NLAISCRIPT::CCodeContext *)_AgentManager->getAgentContext())->Self;
+				NLAISCRIPT::CCodeContext *c = (NLAISCRIPT::CCodeContext *)_AgentManager->getAgentContext()->clone();
+				NLAIAGENT::CIdMethod m = r.top();
+				//msg->setMethodIndex(0,m.Index);	
+				c->Self = this;
+
+				IBaseGroupType *param = new CGroupType();								
+				(*c).Stack ++;
+				(*c).Stack[(int)(*c).Stack] = param;
+				NLAISCRIPT::IMethodContext *methodContex = new NLAISCRIPT::CMethodContext();
+				NLAISCRIPT::CCallMethod opCall(methodContex,0,m.Index);
+				opCall.runOpCode(*c);												
+				const NLAIAGENT::CStringType *returnMsg = (const NLAIAGENT::CStringType *)c->Stack[(int)(*c).Stack];				
+				t += returnMsg->getStr().getString();
+				(*c).Stack--;
+				c->release();
+				return;
+			}
+		}
+		
 		t += NLAIC::stringGetBuild("class type <%s> ",(const char *)getType());
 		if ( _AgentClass )
 			t += NLAIC::stringGetBuild("<%s> (scripted)  -StaticComponents:\n",(const char *)_AgentClass->getType());
@@ -563,6 +592,7 @@ namespace NLAIAGENT
 			t += " ]";
 			if(i != (_NbComponents-1)) t += "\n";
 		}
+		
 	}
 
 	bool CAgentScript::isEqual(const IBasicObjectIA &a) const
@@ -648,9 +678,6 @@ namespace NLAIAGENT
 		CStringType *s = (CStringType *)g->get();
 		IObjectIA::CProcessResult r;
 		r.ResultState = IObjectIA::ProcessIdle;
-#ifdef NL_DEBUG
-	const char *tttttt = s->getStr().getString();
-#endif
 		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(*s));
 		
 		if(p.first != p.second)
@@ -758,11 +785,7 @@ namespace NLAIAGENT
 	}
 
 	IObjectIA::CProcessResult CAgentScript::getDynamicName(NLAIAGENT::IBaseGroupType *g)
-	{	
-#ifdef NL_DEBUG
-		std::string txt;
-	g->getDebugString(txt);
-#endif
+	{
 
 		IObjectIA::CProcessResult r;
 		const IObjectIA *o = ((CLocalAgentMail *)g->get())->getHost();
@@ -809,17 +832,11 @@ namespace NLAIAGENT
 
 		if(i != _DynamicAgentName.end()) 
 		{
-#ifdef NL_DEBUG	
-	const char *classBase = (const char *)((IObjectIA *)(*(*(i)).Itr))->getType();
-#endif
 			((IObjectIA *)(*(*(i)).Itr))->sendMessage(m);
 			i ++;
 
 			while(i != _DynamicAgentName.end())
 			{
-#ifdef NL_DEBUG	
-	const char *classBase = (const char *)((IObjectIA *)(*(*(i)).Itr))->getType();
-#endif
 				m->incRef();
 				((IObjectIA *)(*(*(i)).Itr))->sendMessage(m);
 				i++;
@@ -847,9 +864,6 @@ namespace NLAIAGENT
 			while(p.first != p.second)
 			{
 				CAgentScript *o = (CAgentScript *)*((*(p.first)).Itr);
-#ifdef NL_DEBUG	
-	const char *compNameDb = (const char *)o->getType();
-#endif
 				o->sendMessage(msg);
 				p.first ++;
 				if(p.first != p.second) msg = (IObjectIA *)msg->clone();
@@ -897,20 +911,12 @@ namespace NLAIAGENT
 		return IObjectIA::CProcessResult();
 	}
 
-#ifdef PROFILE
-	NLMISC::TTicks TimeSend = 0;
-	NLMISC::TTicks NbSend = 0;		
-#endif
 
 	IObjectIA::CProcessResult CAgentScript::sendMessage(IObjectIA *m)
 	{
 #ifdef NL_DEBUG
 	const char *txt = (const char *)m->getType();
 	const char *classBase = (const char *)getType();
-#endif
-
-#ifdef PROFILE
-		NLMISC::TTicks time = NLMISC::CTime::getPerformanceTime();
 #endif
 		IMessageBase *msg = (IMessageBase *)m;
 		//this->incRef();
@@ -973,11 +979,8 @@ namespace NLAIAGENT
 				{
 					NLAIAGENT::CIdMethod m = r.top();
 					msg->setMethodIndex(0,m.Index);
-					//_ScriptMail->addMessage(msg);
-				}
-				//else return IAgent::sendMessage(msg);
-			}
-			//else return IAgent::sendMessage(msg);			
+				}				
+			}			
 		}
 
 		IObjectIA::CProcessResult r = IAgent::sendMessage(msg);
@@ -1037,10 +1040,6 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG
 	const char *txt = (const char *)msg->getType();	
 	bool dbugB = false;	
-	if(std::string(txt) == "MsgClock")
-	{
-		dbugB = true;
-	}
 #endif
 		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*c;
 		IBaseGroupType *param = new CGroupType();
@@ -1060,7 +1059,7 @@ namespace NLAIAGENT
 			}
 		}
 
-		NLAISCRIPT::IMethodContext *methodContex;				
+		NLAISCRIPT::IMethodContext *methodContex;
 
 		if (context.ContextDebug.Active)
 		{
@@ -1618,20 +1617,7 @@ namespace NLAIAGENT
 	}
 
 	tQueue CAgentScript::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
-	{		
-#ifdef NL_DEBUG	
-		std::string nameM;
-		std::string nameP;
-		std::string name;
-		methodName->getDebugString(nameM);
-		param.getDebugString(nameP);
-		name = nameM;
-		name += nameP;
-
-		const char *dbg_class_name = (const char *) getType();
-		const char *dbg_base_class_name = NULL;
-		if(_AgentClass) dbg_base_class_name = (const char *) _AgentClass->getType();
-#endif
+	{
 		
 
  		if(className == NULL)
@@ -1687,57 +1673,14 @@ namespace NLAIAGENT
 		return _AgentClass->getInheritedStaticMemberIndex(name);
 	}
 
-///////////////////////////////////////////////////////////////////////////////////////
-/*
-	
-	IObjectIA::CProcessResult CAgentScript::runFactMsg(IBaseGroupType *g)
-	{
-		NLAILOGIC::CFact *fact = (NLAILOGIC::CFact *) g->get()->clone();
-#ifdef NL_DEBUG
-		char buffer[1024 * 2];
-		fact->getDebugString( buffer );
-#endif
-		//_FactBase->addFact( fact );
-
-		IObjectIA::CProcessResult r;
-		r.Result = NULL;
-
-		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*_AgentManager->getAgentContext();
-		context.Stack++;
-		context.Stack[(int)context.Stack] = new CFactMsg();
-		return IObjectIA::CProcessResult();
-	}
-
-	NLAILOGIC::CFactBase &CAgentScript::getFactBase()
-	{
-		return _FactBase;
-	}
-
-	*/
-	////////////////////////////////////////////////////////////////////////
-
-
-
 	NLAIAGENT::tQueue isTemplateMember(	CAgentScript::CMethodCall **StaticMethod,int count,int shift,
 												const NLAIAGENT::IVarName *className,
 												const NLAIAGENT::IVarName *methodName,
 												const NLAIAGENT::IObjectIA &param)
 	{
-
-#ifdef NL_DEBUG
-		if ( className != NULL )
-			const char *dbg_class = className->getString();
-		const char *dbg_method = methodName->getString();
-		std::string dbg_param;
-		param.getDebugString(dbg_param);
-#endif
-
 		int index = count;
 		int i;
-#ifdef NL_DEBUG
-		std::string kaka;
-		methodName->getDebugString(kaka);
-#endif
+
 		for(i = 0; i < count; i ++)
 		{
 			if(StaticMethod[i]->MethodName == *methodName)

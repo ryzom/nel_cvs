@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.21 2001/12/11 09:26:49 chafik Exp $
+ * $Id: interpret_object_agent.h,v 1.22 2002/01/03 15:06:00 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -160,6 +160,7 @@ namespace NLAISCRIPT
 		std::vector<sint32 *>				_MsgIndirectTable;
 		sint32 _lastRef;		
 		sint32 _RunIndex;
+		const IClassInterpret						*_Base_class;
 //		sint32 _NbScriptedComponents;		// Number of static components which are interpreted object (which means derived from CAgentScript)
 	private:			
 		NLAIAGENT::IVarName *_Inheritance;		
@@ -247,6 +248,7 @@ namespace NLAISCRIPT
 		const CAgentClass *getSuperClass() const;								/// Returns the highest class from which this class derives
 		const void getClassPath(std::vector<const CAgentClass *> &path) const;	/// Fills a vector with pointers to all base classes from superclass to this class
 		sint32 getNbBaseClass() const;											/// Returns the number of base classes
+		virtual const IClassInterpret *getComputeBaseClass();
 		//@}
 
 		/// Return a pointer represent the inheritance range n, the inheritance graph are represented by a vector.

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.22 2001/12/11 13:40:39 portier Exp $
+# $Id: Makefile.am,v 1.23 2002/01/03 15:10:22 chafik Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -41,6 +41,7 @@ libagent_la_SOURCES     = baseai.cpp \
                           msg_goal.cpp \
                           msg_fact.cpp \
                           message_script.cpp \
+                          msg_stream.cpp \
                           agent_object.cpp
 
 # End of Makefile.am

@@ -1,6 +1,6 @@
 /** \file agent_proxy_mailer.cpp
  *
- * $Id: agent_proxy_mailer.cpp,v 1.11 2001/08/28 15:34:24 chafik Exp $
+ * $Id: agent_proxy_mailer.cpp,v 1.12 2002/01/03 15:06:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,7 +103,18 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CProxyAgentMail::sendMessage(const IVarName &compName,IObjectIA *msg)
 	{
-		return MainAgent->sendMessage(*_AgentRef,compName,msg);
+		IObjectIA::CProcessResult r;
+		try
+		{
+			r = MainAgent->sendMessage(*_AgentRef,compName,msg);
+		}
+		catch(NLAIE::CExceptionNotImplemented &)
+		{
+#ifdef NL_DEBUG
+
+#endif
+		}
+		return r;
 	}
 
 	IObjectIA::CProcessResult CProxyAgentMail::sendMessage(IObjectIA *m)
@@ -128,71 +139,9 @@ namespace NLAIAGENT
 
 	tQueue CProxyAgentMail::isMember(const IVarName *h,const IVarName *m,const IObjectIA &param) const
 	{
-
-		/*tQueue a;
-		sint i;
-		CProxyAgentMail::TMethodNumDef index = CProxyAgentMail::TLastM;
-
-		if(h == NULL)
-		{
-			for( i = 0; i< CProxyAgentMail::TLastM; i++)
-			{
-				if(CProxyAgentMail::StaticMethod[i]->MethodName == *m)
-				{
-					index = (CProxyAgentMail::TMethodNumDef)CProxyAgentMail::StaticMethod[i]->Index;
-					switch(CProxyAgentMail::StaticMethod[i]->CheckArgType)
-					{
-						case CProxyAgentMail::CheckAll:
-							{
-								double d = ((NLAISCRIPT::CParam &)*CProxyAgentMail::StaticMethod[i]->ArgType).eval((NLAISCRIPT::CParam &)param);
-								if(d >= 0.0)
-								{								
-									tQueue r;
-									CProxyAgentMail::StaticMethod[i]->ReturnValue->incRef();
-									r.push(CIdMethod(	(getMethodIndexSize() + CProxyAgentMail::StaticMethod[i]->Index),
-														0.0,
-														NULL,
-														CProxyAgentMail::StaticMethod[i]->ReturnValue));
-									return r;
-								}
-							}
-							break;
-						case CProxyAgentMail::CheckCount:
-							{
-								if(((NLAISCRIPT::CParam &)param).size() == CProxyAgentMail::StaticMethod[i]->ArgCount)
-								{								
-									tQueue r;
-									CProxyAgentMail::StaticMethod[i]->ReturnValue->incRef();
-									r.push(CIdMethod(	(getMethodIndexSize() + CProxyAgentMail::StaticMethod[i]->Index),
-														0.0,
-														NULL,
-														CProxyAgentMail::StaticMethod[i]->ReturnValue ));
-									return r;
-								}
-							}
-							break;
-						case CProxyAgentMail::DoNotCheck:
-							{							
-								tQueue r;
-								CProxyAgentMail::StaticMethod[i]->ReturnValue->incRef();
-								r.push(CIdMethod(	(getMethodIndexSize() + CProxyAgentMail::StaticMethod[i]->Index),
-													0.0,
-													NULL,
-													CProxyAgentMail::StaticMethod[i]->ReturnValue));
-								return r;						
-							}					
-							break;
-				
-					}
-				}
-			}
-		}*/
-
 		NLAIAGENT::tQueue r = isTemplateMember(CProxyAgentMail::StaticMethod,CProxyAgentMail::TLastM,getMethodIndexSize(),h,m,param);
 		if(r.size()) return r;
 		else return IBasicAgent::isMember(h,m,param);
-
-		//return IBasicAgent::isMember(h,m,param);
 	}
 
 	IObjectIA::CProcessResult CProxyAgentMail::runMethodeMember(sint32 h, sint32 m, IObjectIA *p)

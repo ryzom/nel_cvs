@@ -1,6 +1,6 @@
 /** \file ident.cpp
  *
- * $Id: ident.cpp,v 1.16 2001/12/20 10:16:34 chafik Exp $
+ * $Id: ident.cpp,v 1.17 2002/01/03 15:06:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 namespace NLAIAGENT
 {	
 	const uint8 CAgentNumber::AgentType = 0xff;
+	const CAgentNumber CAgentNumber::Unknow(0,0,CAgentNumber::ServerId,CAgentNumber::ServerId);
 
 	uint64 atoiInt64(const char *ident)
 	{
@@ -142,10 +143,10 @@ namespace NLAIAGENT
 		{				
 			return (*Itr).second;
 		}
-		else
+		/*else
 		{
 			throw NLAIE::CExceptionIndexHandeledError();
-		}
+		}*/
 		return NULL;
 	}
 

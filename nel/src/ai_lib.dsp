@@ -270,6 +270,10 @@ SOURCE=.\ai\agent\msg_on_change.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\agent\msg_stream.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\agent\paire_type.cpp
 # End Source File
 # Begin Source File
@@ -415,6 +419,10 @@ SOURCE=..\include\nel\ai\agent\msg_group.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\agent\msg_notify.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\msg_stream.h
 # End Source File
 # Begin Source File
 

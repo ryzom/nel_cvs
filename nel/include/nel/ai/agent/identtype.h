@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.20 2001/12/17 16:43:45 chafik Exp $
+ * $Id: identtype.h,v 1.21 2002/01/03 15:05:40 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@ namespace NLAIAGENT
 	struct CAgentNumber: public NLMISC::CEntityId
 	{
 		static const uint8 AgentType;
+		static const CAgentNumber Unknow;
 
 		CAgentNumber()
 		{
@@ -55,6 +56,11 @@ namespace NLAIAGENT
 		CAgentNumber(uint64 id,uint8 creator,uint8 dyn):NLMISC::CEntityId(id,creator,dyn)
 		{
 			Type = CAgentNumber::AgentType;
+		}
+
+		CAgentNumber(uint64 id, uint8 t,uint8 creator,uint8 dyn):NLMISC::CEntityId(id,creator,dyn)
+		{
+			Type = t;
 		}
 
 		CAgentNumber(uint64 p):NLMISC::CEntityId(p)

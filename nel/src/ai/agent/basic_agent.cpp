@@ -1,6 +1,6 @@
 /** \file basic_agent.cpp
  *
- * $Id: basic_agent.cpp,v 1.11 2001/09/06 16:48:18 chafik Exp $
+ * $Id: basic_agent.cpp,v 1.12 2002/01/03 15:06:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,15 +93,6 @@ namespace NLAIAGENT
 				// Supprime chez l'ancien fils la boite au lettre du père
 				p.getMail()->removeMailBox( this->getMail() );
 				_SizeChild --;
-
-#ifdef NL_DEBUG
-
-				i = _AgentList.begin();
-				while(i != _AgentList.end())
-				{					
-					IBasicAgent *c = *i ++;
-				}
-#endif
 				return;
 			}
 			i++;
@@ -125,14 +116,6 @@ namespace NLAIAGENT
 			}
 			i++;
 		}
-#ifdef NL_DEBUG
-		int s = _AgentList.size();
-		i = _AgentList.begin();
-		while(i != _AgentList.end())
-		{					
-			IBasicAgent *c = *i ++;
-		}
-#endif
 	}
 	void IAgentComposite::deleteListe()
 	{

@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.19 2001/09/06 16:47:58 chafik Exp $
+ * $Id: agent.h,v 1.20 2002/01/03 15:05:40 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -174,6 +174,9 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return NULL;
 		}
+
+		/// Called by an agent who's destroyed te remove its references
+		virtual void onKill(IConnectIA *A);
 
 		/**
 		runKill is to processing reltative to PKill Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 

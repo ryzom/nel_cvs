@@ -90,10 +90,7 @@ namespace NLAIAGENT
 
 	/// Activates the actor
 	void CActorScript::activate()
-	{                              
-#ifndef NL_DEBUG
-	//	const char *
-#endif
+	{
 
 		if ( !_IsActivated )
 		{
@@ -145,7 +142,7 @@ namespace NLAIAGENT
 			{
 				( (CActorScript *) _Launched.front() )->cancel();
 				_Launched.front()->Kill();
-				delete _Launched.front();
+				_Launched.front()->release();
 				_Launched.pop_front();
 			}
 			onUnActivate();
@@ -156,10 +153,7 @@ namespace NLAIAGENT
 
 	/// Pauses the actor
 	void CActorScript::pause()
-	{                              
-#ifndef NL_DEBUG
-	//	const char *
-#endif
+	{
 
 		if ( !_IsPaused )
 		{
@@ -191,10 +185,7 @@ namespace NLAIAGENT
 
 	/// Restarts the actor
 	void CActorScript::restart()
-	{                              
-#ifndef NL_DEBUG
-	//	const char *
-#endif
+	{
 
 		if ( _IsPaused )
 		{
@@ -443,15 +434,7 @@ namespace NLAIAGENT
 			
 				if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 				{
-#ifdef NL_DEBUG
-					const char *dbg_param_type = (const char *) params->getType();
-					std::string dbg_param_string;
-					params->getDebugString(dbg_param_string);
-#endif
-					const IObjectIA *child = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();
-#ifdef NL_DEBUG
-					const char *dbg_param_front_type = (const char *) child->getType();
-#endif
+					IObjectIA *child = (IObjectIA *)((NLAIAGENT::IBaseGroupType *)params)->get();
 					addDynamicAgent( (NLAIAGENT::IBaseGroupType *) params);
 					if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
 					{
@@ -468,6 +451,8 @@ namespace NLAIAGENT
 						((CActorScript *)child)->activate();
 */
 					_Launched.push_back( (NLAIAGENT::IAgent *) child );
+					child->incRef();
+					
 
 				}
 				r.ResultState =  NLAIAGENT::processIdle;
@@ -546,13 +531,6 @@ namespace NLAIAGENT
 		IObjectIA::CProcessResult r;
 		std::vector<CStringType *> handles;
 
-#ifndef NL_DEBUG
-		/*
-		char buf[1024];
-		getDebugString(buf);
-		*/
-#endif
-
 		switch( i )
 		{
 		
@@ -584,15 +562,7 @@ namespace NLAIAGENT
 			case fid_switch:
 				if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 				{
-#ifdef NL_DEBUG
-					const char *dbg_param_type = (const char *) params->getType();
-					std::string dbg_param_string;
-					params->getDebugString(dbg_param_string);
-#endif
 					const IObjectIA *fw = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();
-#ifdef NL_DEBUG
-					const char *dbg_param_front_type = (const char *) fw->getType();
-#endif
 
 					//( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
 //					while ( fw->size() )
@@ -617,15 +587,7 @@ namespace NLAIAGENT
 			
 				if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 				{
-#ifdef NL_DEBUG
-					const char *dbg_param_type = (const char *) params->getType();
-					std::string dbg_param_string;
-					params->getDebugString(dbg_param_string);
-#endif
-					const IObjectIA *child = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();
-#ifdef NL_DEBUG
-					const char *dbg_param_front_type = (const char *) child->getType();
-#endif
+					IObjectIA *child = (IObjectIA *)((NLAIAGENT::IBaseGroupType *)params)->get();
 					addDynamicAgent( (NLAIAGENT::IBaseGroupType *) params);
 					if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
 					{
@@ -642,6 +604,7 @@ namespace NLAIAGENT
 						((CActorScript *)child)->activate();
 */
 					_Launched.push_back( (NLAIAGENT::IAgent *) child );
+					child->incRef();
 
 				}
 				r.ResultState =  NLAIAGENT::processIdle;
@@ -701,13 +664,7 @@ namespace NLAIAGENT
 	}
 
 	tQueue CActorScript::getPrivateMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
-	{		
-
-#ifdef NL_DEBUG
-		const char *dbg_func_name = name->getString();
-		std::string buffer;
-		param.getDebugString( buffer );
-#endif
+	{
 
 		tQueue result; 
 
@@ -839,9 +796,6 @@ namespace NLAIAGENT
 
 	void CActorScript::cancel()
 	{
-#ifdef NL_DEBUG
-		const char *dbg_this_type = (const char *) getType();
-#endif
 		unActivate();
 	}
 

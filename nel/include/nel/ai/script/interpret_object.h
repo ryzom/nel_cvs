@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.17 2001/12/11 09:26:49 chafik Exp $
+ * $Id: interpret_object.h,v 1.18 2002/01/03 15:06:00 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -158,6 +158,7 @@ namespace NLAISCRIPT
 
 		/// Return a pointer to the base IClassInterpret object
 		virtual const IClassInterpret *getBaseClass() const = 0;
+		virtual const IClassInterpret *getComputeBaseClass()  = 0;
 		///Return the name of the compoment given by an offset.
 		virtual const char *getComponentName(sint32 = 0) const = 0;
 

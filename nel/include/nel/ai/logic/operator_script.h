@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.25 2001/12/05 10:00:35 portier Exp $
+ * $Id: operator_script.h,v 1.26 2002/01/03 15:05:48 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,6 +109,8 @@ namespace NLAIAGENT
 			tQueue getPrivateMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 			virtual sint32 getMethodIndexSize() const;
 			virtual int getBaseMethodCount() const;
+
+			virtual void onKill(IConnectIA *a);
 
 			void getFatherComponent(IVarName &);
 

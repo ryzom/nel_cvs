@@ -1,6 +1,6 @@
 /** \file type_def.cpp
  *
- * $Id: type_def.cpp,v 1.10 2001/12/11 09:27:05 chafik Exp $
+ * $Id: type_def.cpp,v 1.11 2002/01/03 15:06:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ namespace NLAISCRIPT
 							type = true;
 							break;
 						}
-						o = (IClassInterpret *)o->getBaseClass();						
+						o = (IClassInterpret *)o->getComputeBaseClass();						
 					}
 					if(!type) return -1.0;
 					else return d;

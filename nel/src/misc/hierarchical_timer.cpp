@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.2 2002/05/28 12:55:42 vizerie Exp $
+ * $Id: hierarchical_timer.cpp,v 1.3 2002/05/28 14:46:03 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NLMISC
 
      
 bool   CSimpleClock::_InitDone = false;
-uint64 CSimpleClock::_StartStopNumTicks;
+uint64 CSimpleClock::_StartStopNumTicks = 0;
 
 
 // root node for all execution paths
@@ -48,6 +48,8 @@ bool			CHTimer::_Benching = false;
 bool			CHTimer::_BenchStartedOnce = false;
 double			CHTimer::_MsPerTick;
 bool			CHTimer::_WantStandardDeviation = false;
+CHTimer		   *CHTimer::_CurrTimer = &_RootTimer;
+
 
 
 
@@ -216,7 +218,7 @@ void	CHTimer::endBench()
 //=================================================================
 void	CHTimer::display(TSortCriterion criterion, bool displayInline /*= true*/, bool displayEx)
 {	
-	nlassert(!_Benching); // should have called endBench
+//	nlassert(!_Benching); // should have called endBench
 	nlassert(_BenchStartedOnce); // should have done at least one bench
 	typedef std::map<CHTimer *, TNodeVect> TNodeMap;
 	TNodeMap nodeMap;
@@ -287,7 +289,7 @@ void	CHTimer::display(TSortCriterion criterion, bool displayInline /*= true*/, b
 //================================================================================================
 void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInline, bool alignPaths, bool displayEx)
 {
-	nlassert(!_Benching); // should have called endBench
+//	nlassert(!_Benching); // should have called endBench
 	nlassert(_BenchStartedOnce); // should have done at least one bench	
 	//
 	typedef std::vector<CNodeStat>   TNodeStatVect;
@@ -368,7 +370,67 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 			nlinfo(out);
 		}
 	}
+}
 
+//=================================================================
+/*static*/ void CHTimer::displayHierarchical(bool displayEx /*=true*/,uint labelNumChar /*=32*/, uint indentationStep /*= 2*/)
+{
+	nlassert(_BenchStartedOnce); // should have done at least one bench
+	typedef std::map<CHTimer *, TNodeVect> TNodeMap;
+	TNodeMap nodeMap;
+	TNodeVect nodeLeft;	
+	nodeLeft.push_back(&_RootNode);
+	/// 1 ) walk the execution tree to build the node map (well, in a not very optimal way..)		  
+	while (!nodeLeft.empty())
+	{	
+		CNode *currNode = nodeLeft.back();
+		nodeMap[currNode->Owner].push_back(currNode);
+		nodeLeft.pop_back();
+		nodeLeft.insert(nodeLeft.end(), currNode->Sons.begin(), currNode->Sons.end());
+
+	}
+	/// 2 ) walk the timers tree and display infos (cumulate infos of nodes of each execution path)
+	CStats	currNodeStats;
+	std::vector<uint> sonsIndex;
+	uint depth = 0;
+	CHTimer *currTimer = &_RootTimer;
+	sonsIndex.push_back(0);
+	bool displayStat = true;
+	std::string resultName;
+	std::string resultStats;
+	while (!sonsIndex.empty())
+	{		
+		if (displayStat)
+		{
+			resultName.resize(labelNumChar);
+			std::fill(resultName.begin(), resultName.end(), '.');
+			uint startIndex = depth * indentationStep;
+			uint endIndex = std::min(startIndex + ::strlen(currTimer->_Name), labelNumChar);			
+			if ((sint) (endIndex - startIndex) >= 1)
+			{
+				std::copy(currTimer->_Name, currTimer->_Name + (endIndex - startIndex), resultName.begin() + startIndex);
+			}
+			TNodeVect &execNodes = nodeMap[currTimer];
+			currNodeStats.buildFromNodes(&execNodes[0], execNodes.size(), _MsPerTick);			
+			currNodeStats.getStats(resultStats, displayEx, _WantStandardDeviation);
+			nlinfo((resultName + resultStats).c_str());
+		}
+		if (sonsIndex.back() == currTimer->_Sons.size())
+		{
+			sonsIndex.pop_back();
+			currTimer = currTimer->_Parent;
+			displayStat = false;
+			-- depth;
+		}
+		else
+		{
+			currTimer = currTimer->_Sons[sonsIndex.back()];
+			++ sonsIndex.back();
+			sonsIndex.push_back(0);			
+			displayStat = true;
+			++ depth;
+		}
+	}	
 }
 
 //=================================================================
@@ -447,11 +509,11 @@ void CHTimer::CStats::getStats(std::string &dest, bool statEx, bool wantStandard
 	{	
 		if (!statEx)
 		{	
-			NLMISC::smprintf(buf, 1024, " | total  %12.3f  | local  %12.3f | visits  %12s ", (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str());
+			NLMISC::smprintf(buf, 1024, " | total  %5.3f  | local  %5.3f | visits  %12s ", (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str());
 		}
 		else
 		{
-			NLMISC::smprintf(buf, 1024, " | total  %12.3f  | local  %12.3f | visits  %12s | min %12.3f | max %12.3f | mean %12.3f",
+			NLMISC::smprintf(buf, 1024, " | total  %5.3f  | local  %5.3f | visits  %12s | min %5.3f | max %5.3f | mean %5.3f",
 					  (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), 
 					  (float) MinTime, (float) MaxTime, (float) MeanTime
 					 );
@@ -461,11 +523,11 @@ void CHTimer::CStats::getStats(std::string &dest, bool statEx, bool wantStandard
 	{
 		if (!statEx)
 		{	
-			NLMISC::smprintf(buf, 1024, " | total  %12.3f  | local  %12.3f | visits  %12s | std deviation %12.3f", (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), (float) TimeStandardDeviation);
+			NLMISC::smprintf(buf, 1024, " | total  %5.3f  | local  %5.3f | visits  %12s | std deviation %5.3f", (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), (float) TimeStandardDeviation);
 		}
 		else
 		{
-			NLMISC::smprintf(buf, 1024, " | total  %12.3f  | local  %12.3f | visits  %12s | min %12.3f | max %12.3f | mean %12.3f | std deviation %12.3f",
+			NLMISC::smprintf(buf, 1024, " | total  %5.3f  | local  %5.3f | visits  %12s | min %12.3f | max %5.3f | mean %5.3f | std deviation %5.3f",
 							  (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), 
 							  (float) MinTime, (float) MaxTime, (float) MeanTime,
 							  (float) TimeStandardDeviation

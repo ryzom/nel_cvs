@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.4 2002/05/28 13:42:31 lecroart Exp $
+ * $Id: hierarchical_timer.h,v 1.5 2002/05/28 14:45:33 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -40,7 +40,7 @@
 
 #ifdef ALLOW_TIMING_MEASURES
 	// Several macros to use
-	#define H_TIME(name, inst) \
+#	define H_TIME(name, inst) \
 	{ \
 		static NLMISC::CHTimer	nl_h_timer(name); \
 		nl_h_timer.before(); \
@@ -48,19 +48,19 @@
 		nl_h_timer.after(); \
 	}
 	//
-	#define H_BEFORE(__name)	static NLMISC::CHTimer	__name##_timer(#__name); __name##_timer.before();
-	#define H_AFTER(__name)		__name##_timer.after();
+#	define H_BEFORE(__name)	static NLMISC::CHTimer	__name##_timer(#__name); __name##_timer.before();
+#	define H_AFTER(__name)		__name##_timer.after();
 	//
-	#define H_AUTO(__name)		static NLMISC::CHTimer	__name##_timer(#__name); NLMISC::CAutoTimer	__name##_auto(&__name##_timer);
+#	define H_AUTO(__name)		static NLMISC::CHTimer	__name##_timer(#__name); NLMISC::CAutoTimer	__name##_auto(&__name##_timer);
 	// display the timer info after each loop call
-	#define H_AUTO_INST(__name)	static NLMISC::CHTimer	__name##_timer(#__name); NLMISC::CAutoTimer	__name##_auto(&__name##_timer, true);
+#	define H_AUTO_INST(__name)	static NLMISC::CHTimer	__name##_timer(#__name); NLMISC::CAutoTimer	__name##_auto(&__name##_timer, true);
 #else
 	// void macros
-	#define H_TIME(name, inst)	
-	#define H_BEFORE(__name)
-	#define H_AFTER(__name)	
-	#define H_AUTO(__name)	
-	#define H_AUTO_INST(__name)
+#	define H_TIME(name, inst)	
+#	define H_BEFORE(__name)
+#	define H_AFTER(__name)	
+#	define H_AUTO(__name)	
+#	define H_AUTO_INST(__name)
 #endif
 
 
@@ -71,15 +71,15 @@ namespace NLMISC
 inline uint64 rdtsc()
 {
 	uint64 ticks;
-	#ifndef NL_OS_WINDOWS		
+#	ifndef NL_OS_WINDOWS		
 		__asm__ volatile(".byte 0x0f, 0xa2"); // using 'cpuid' before calling this prevent out of order execution
 		__asm__ volatile(".byte 0x0f, 0x31" : "=a" (ticks.low), "=d" (ticks.high));		
-	#else 
+#	else 
 		__asm	cpuid
 		__asm	rdtsc
 		__asm	mov		DWORD PTR [ticks], eax
 		__asm	mov		DWORD PTR [ticks + 4], edx
-	#endif
+#	endif
 	return ticks;
 }
 
@@ -96,26 +96,26 @@ class CSimpleClock
 public:	
 	CSimpleClock() : _NumTicks(0)
 	{
-		#ifdef NL_DEBUG
+#		ifdef NL_DEBUG
 			_Started = false;
-		#endif
+#		endif
 	}
 	// start measure
 	void start()
 	{
-		#ifdef  NL_DEBUG
+#		ifdef  NL_DEBUG
 			nlassert(!_Started);
 			_Started = true;
-		#endif
+#		endif
 		_StartTick = rdtsc();
 	}
 	// end measure
 	void stop()
 	{
-		#ifdef  NL_DEBUG
+#		ifdef  NL_DEBUG
 			nlassert(_Started);
 			_Started = false;
-		#endif
+#		endif
 		_NumTicks = rdtsc() - _StartTick;
 	}	
 	// get measure
@@ -133,16 +133,15 @@ public:
 	  * Should have called init() before calling this.
 	  */
 	static uint64 getStartStopNumTicks() 
-	{ 
-		nlassert(_InitDone);
+	{ 		
 		return _StartStopNumTicks; 
 	}	
 private:
 	uint64  _StartTick;
 	uint64	_NumTicks;
-	#ifdef  NL_DEBUG
+#	ifdef  NL_DEBUG
 		bool	_Started;
-	#endif
+#	endif
 	static bool		_InitDone;
 	static uint64	_StartStopNumTicks;	
 };
@@ -205,20 +204,29 @@ public:
 	/** Display results
 	  * \param displayEx true to display more detailed infos
 	  */
-	static void		display(TSortCriterion criterion, bool displayInline, bool displayEx);
+	static void		display(TSortCriterion criterion = TotalTime, bool displayInline = true, bool displayEx = true);
 	/** Display results by execution paths	
 	  * \param displayInline true to display each result on a single line.
 	  * \param alignPaths    true to display all execution paths aligned.
 	  * \param displayEx	 true to display more detailed infos.
 	  */
-	static void		displayByExecutionPath(TSortCriterion criterion, bool displayInline, bool alignPaths, bool displayEx);
+	static void		displayByExecutionPath(TSortCriterion criterion = TotalTime, bool displayInline = true, bool alignPaths = true, bool displayEx = true);
+
+	/** Hierarchical display, no sorting is done
+	  * \param displayEx	 true to display more detailed infos.
+	  * \param labelNumChar  
+	  */
+	static void		displayHierarchical(bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2);
+
+
 	/// Clears stats, and reinits all timer structure
 	static void		clear();		
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 	struct CNode;
-	typedef std::vector<CNode *> TNodeVect;
+	typedef std::vector<CNode *>   TNodeVect;
+	typedef std::vector<CHTimer *> TTimerVect;
 	//
 	/// a node in an execution path
 	struct CNode
@@ -235,7 +243,7 @@ private:
 		uint64					NumVisits; // the number of time the execution has gone through this node		
 		//
 		uint64					SonsPreambule; // preambule time for the sons		
-		CSimpleClock			Clock; // a clock to do the measures at this node
+		CSimpleClock			Clock;         // a clock to do the measures at this node
 		// ctor 
 		CNode(CHTimer	*owner = NULL, CNode	*parent = NULL) : Owner(owner), Parent(parent)
 		{
@@ -319,6 +327,11 @@ private:
 private:
 	// node name
 	const  char						*_Name;
+	// the parent timer
+	CHTimer							*_Parent;
+	// the sons timers
+	TTimerVect						_Sons;
+private:
 	// root node of the hierarchy
 	static CNode					_RootNode;
 	// the current node of the execution
@@ -337,6 +350,8 @@ private:
 	static bool						_BenchStartedOnce;
 	//
 	static bool						_WantStandardDeviation;
+	//
+	static CHTimer				   *_CurrTimer;
 };
 
 
@@ -375,10 +390,18 @@ public:
 //===============================================
 inline void	CHTimer::before()
 {	
+	if (!_Benching) return;
 	_PreambuleClock.start();	
 	walkTreeToCurrent();		
 	++ _CurrNode->NumVisits;
 	_CurrNode->SonsPreambule = 0;
+	if (!_Parent && _CurrTimer != this)
+	{
+		_Parent = _CurrTimer;
+		// register as a son of the parent
+		_Parent->_Sons.push_back(this); 
+	}
+	_CurrTimer = this;
 	_PreambuleClock.stop();
 	if (_CurrNode->Parent)
 	{	
@@ -390,6 +413,7 @@ inline void	CHTimer::before()
 //===============================================
 inline void	CHTimer::after(bool displayAfter /*= false*/)
 {
+	if (!_Benching) return;
 	_PreambuleClock.start();
 	//	
 	_CurrNode->Clock.stop();		
@@ -405,6 +429,11 @@ inline void	CHTimer::after(bool displayAfter /*= false*/)
 	if (_WantStandardDeviation)
 	{
 		_CurrNode->Measures.push_back(numTicks * _MsPerTick);
+	}
+	//
+	if (_Parent)
+	{
+		_CurrTimer = _Parent;
 	}
 	//
 	if (_CurrNode->Parent)
@@ -424,3 +453,4 @@ inline void	CHTimer::after(bool displayAfter /*= false*/)
 #endif // NL_HIERARCHICAL_TIMER_H
 
 /* End of hierarchical_timer.h */
+

@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.10 2003/10/16 13:08:21 berenguier Exp $
+ * $Id: algo.h,v 1.11 2003/11/24 13:53:48 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -136,9 +136,8 @@ static inline	void fastClamp8(sint &v)
 		// clamp to 255.
 		add		eax, 0x7FFFFF00
 		sbb		ecx, ecx
-		and		ebx, 255
-		and		ecx, 255
 		or		ebx, ecx
+		and		ebx, 255
 		// store
 		mov		[esi], ebx
 	}

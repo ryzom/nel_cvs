@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.23 2001/09/06 07:25:38 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.24 2001/10/05 14:59:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -252,6 +252,8 @@ struct SLightBuild
 			}
 		}
 
+		/// \todo hulud: modify this code to work under max4
+#if (MAX_RELEASE < 4000)
 		// Convert exclusion list
 		NameTab& ntExclu = maxLight->GetExclusionList();
 		for( sint i = 0; i < ntExclu.Count(); ++i )
@@ -259,6 +261,7 @@ struct SLightBuild
 			string tmp = *ntExclu.Addr(i);
 			this->setExclusion.insert( tmp );
 		}
+#endif // (MAX_RELEASE < 4000)
 	
 		if( deleteIt )
 			delete maxLight;

@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.6 2001/09/18 14:41:24 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.7 2001/10/05 14:59:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,9 @@
 #include "stdafx.h"
 #include "rpo.h"
 #include "3d/zone.h"
+
+// For MAX_RELEASE
+#include <plugapi.h>
 
 using namespace NL3D;
 using namespace NLMISC;
@@ -359,6 +362,7 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 				patchinfo[i].BindEdges[e].NPatchs=1;
 				// 'coz i don't know wether edge.patch1 or edge.patch2 is
 				// the patch that i am parsing
+#if (MAX_RELEASE < 4000)
 				if (edge.patch2!=i)
 				{
 					patchinfo[i].BindEdges[e].Next[0]=edge.patch2;
@@ -369,6 +373,18 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 					patchinfo[i].BindEdges[e].Next[0]=edge.patch1;
 					patchinfo[i].BindEdges[e].Edge[0]=getCommonEdge(pPM, pPatch->edge[e], pPM->patches[edge.patch1]);
 				}				
+#else // (MAX_RELEASE < 4000)
+				if (edge.patches[1]!=i)
+				{
+					patchinfo[i].BindEdges[e].Next[0]=edge.patches[1];
+					patchinfo[i].BindEdges[e].Edge[0]=getCommonEdge(pPM, pPatch->edge[e], pPM->patches[edge.patches[1]]);
+				}
+				else
+				{
+					patchinfo[i].BindEdges[e].Next[0]=edge.patches[0];
+					patchinfo[i].BindEdges[e].Edge[0]=getCommonEdge(pPM, pPatch->edge[e], pPM->patches[edge.patches[0]]);
+				}				
+#endif // (MAX_RELEASE < 4000)
 			}
 		}
 	}

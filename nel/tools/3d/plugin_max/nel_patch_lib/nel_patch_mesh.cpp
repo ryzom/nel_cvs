@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.cpp
  * <File description>
  *
- * $Id: nel_patch_mesh.cpp,v 1.3 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: nel_patch_mesh.cpp,v 1.4 2001/10/05 14:59:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,9 @@
 #include "nel/misc/time_nl.h"
 #include "vertex_neighborhood.h"
 #include "../nel_3dsmax_shared/nel_3dsmax_shared.h"
+
+// For MAX_RELEASE
+#include <plugapi.h>
 
 using namespace NL3D;
 using namespace NLMISC;
@@ -352,11 +355,19 @@ int CheckBind (int nVert, int nSeg, int& v0, int& v1, int& v2, int& v3, const CV
 				if ((nSeg0!=-1)&&(nSeg1!=-1))
 				{
 					// additionnal check.
+#if (MAX_RELEASE < 4000)
 					if ((patch.edges[nSeg0].patch2==-1)&&(patch.edges[nSeg1].patch2==-1))
 					{
 						if (!IsVertexInPatch (nVert, patch.edges[nSeg].patch1, patch))
 							config=0;
 					}
+#else // (MAX_RELEASE < 4000)
+					if ((patch.edges[nSeg0].patches[1]==-1)&&(patch.edges[nSeg1].patches[1]==-1))
+					{
+						if (!IsVertexInPatch (nVert, patch.edges[nSeg].patches[0], patch))
+							config=0;
+					}
+#endif // (MAX_RELEASE < 4000)
 				}
 				
 				if (config==-1)
@@ -379,6 +390,7 @@ int CheckBind (int nVert, int nSeg, int& v0, int& v1, int& v2, int& v3, const CV
 							(nEdge1!=nEdge2)&&
 							(nEdge1!=nEdge3)&&
 							(nEdge2!=nEdge3)&&
+#if (MAX_RELEASE < 4000)
 							(patch.edges[nEdge0].patch2==-1)&&
 							(patch.edges[nEdge1].patch2==-1)&&
 							(patch.edges[nEdge2].patch2==-1)&&
@@ -386,6 +398,15 @@ int CheckBind (int nVert, int nSeg, int& v0, int& v1, int& v2, int& v3, const CV
 							(!IsVertexInPatch (nVert, patch.edges[nSeg].patch1, patch))&&
 							(!IsVertexInPatch (v2, patch.edges[nSeg].patch1, patch))&&
 							(!IsVertexInPatch (v3, patch.edges[nSeg].patch1, patch)))
+#else // (MAX_RELEASE < 4000)
+							(patch.edges[nEdge0].patches[1]==-1)&&
+							(patch.edges[nEdge1].patches[1]==-1)&&
+							(patch.edges[nEdge2].patches[1]==-1)&&
+							(patch.edges[nEdge3].patches[1]==-1)&&
+							(!IsVertexInPatch (nVert, patch.edges[nSeg].patches[0], patch))&&
+							(!IsVertexInPatch (v2, patch.edges[nSeg].patches[0], patch))&&
+							(!IsVertexInPatch (v3, patch.edges[nSeg].patches[0], patch)))
+#endif // (MAX_RELEASE < 4000)
 						{
 							config=1;
 						}
@@ -1255,6 +1276,7 @@ int WhereIsTheEdge (int nPatch, int nEdge, const PatchMesh& patch)
 // AddHook
 void RPatchMesh::AddHook (int nVert, int nSeg, PatchMesh& patch)
 {
+#if (MAX_RELEASE < 4000)
 	// Une side of the edge must be cleared
 	nlassert (patch.edges[nSeg].patch2==-1);
 
@@ -1262,6 +1284,15 @@ void RPatchMesh::AddHook (int nVert, int nSeg, PatchMesh& patch)
 	nlassert (patch.patches[patch.edges[nSeg].patch1].edge[nEdge]==nSeg);
 
 	BindingVertex (nVert, patch.edges[nSeg].patch1, nEdge, nVert, BIND_SINGLE);
+#else // (MAX_RELEASE < 4000)
+	// Une side of the edge must be cleared
+	nlassert (patch.edges[nSeg].patches[1]==-1);
+
+	int nEdge=WhereIsTheEdge (patch.edges[nSeg].patches[0], nSeg, patch);
+	nlassert (patch.patches[patch.edges[nSeg].patches[0]].edge[nEdge]==nSeg);
+
+	BindingVertex (nVert, patch.edges[nSeg].patches[0], nEdge, nVert, BIND_SINGLE);
+#endif // (MAX_RELEASE < 4000)
 
 	InvalidateBindingInfo ();
 }
@@ -1272,11 +1303,19 @@ void RPatchMesh::AddHook (int nVert0, int nVert1, int nVert2, int nSeg, PatchMes
 	// Une side of the edge must be cleared
 	nlassert (patch.edges[nSeg].patch2==-1);
 
+#if (MAX_RELEASE < 4000)
 	int nEdge=WhereIsTheEdge (patch.edges[nSeg].patch1, nSeg, patch);
 
 	BindingVertex (nVert0, patch.edges[nSeg].patch1, nEdge, nVert1, BIND_25);
 	BindingVertex (nVert1, patch.edges[nSeg].patch1, nEdge, nVert1, BIND_50);
 	BindingVertex (nVert2, patch.edges[nSeg].patch1, nEdge, nVert1, BIND_75);
+#else // (MAX_RELEASE < 4000)
+	int nEdge=WhereIsTheEdge (patch.edges[nSeg].patches[0], nSeg, patch);
+
+	BindingVertex (nVert0, patch.edges[nSeg].patches[0], nEdge, nVert1, BIND_25);
+	BindingVertex (nVert1, patch.edges[nSeg].patches[0], nEdge, nVert1, BIND_50);
+	BindingVertex (nVert2, patch.edges[nSeg].patches[0], nEdge, nVert1, BIND_75);
+#endif // (MAX_RELEASE < 4000)
 
 	InvalidateBindingInfo ();
 }
@@ -1325,6 +1364,7 @@ void RPatchMesh::Attach(RPatchMesh *rattPatch, PatchMesh& patch)
 int GetAdjacent (int nMe, int nedge, PatchMesh *pMesh)
 {
 	int nEdge=pMesh->patches[nMe].edge[nedge];
+#if (MAX_RELEASE < 4000)
 	if (pMesh->edges[nEdge].patch1==nMe)
 		return pMesh->edges[nEdge].patch2;
 	else
@@ -1332,6 +1372,15 @@ int GetAdjacent (int nMe, int nedge, PatchMesh *pMesh)
 		nlassert (pMesh->edges[nEdge].patch2==nMe);
 		return pMesh->edges[nEdge].patch1;
 	}
+#else // (MAX_RELEASE < 4000)
+	if (pMesh->edges[nEdge].patches[0]==nMe)
+		return pMesh->edges[nEdge].patches[1];
+	else
+	{
+		nlassert (pMesh->edges[nEdge].patches[1]==nMe);
+		return pMesh->edges[nEdge].patches[0];
+	}
+#endif // (MAX_RELEASE < 4000)
 }
 
 // return on which edge is 
@@ -2197,11 +2246,19 @@ BOOL RPatchMesh::SubObjectHitTest (GraphicsWindow *gw, Material *ma, HitRegion *
 int GetAdjacentPatch (int nPatch, int nEdge, PatchMesh *patch)
 {
 	PatchEdge *pEdge=patch->edges+patch->patches[nPatch].edge[nEdge];
+#if (MAX_RELEASE < 4000)
 	nlassert ((pEdge->patch1==nPatch)||(pEdge->patch2==nPatch));
 	if (pEdge->patch1==nPatch)
 		return (pEdge->patch2!=-1)?pEdge->patch2:nPatch;
 	else
 		return (pEdge->patch1!=-1)?pEdge->patch1:nPatch;
+#else // (MAX_RELEASE < 4000)
+	nlassert ((pEdge->patches[0]==nPatch)||(pEdge->patches[1]==nPatch));
+	if (pEdge->patches[0]==nPatch)
+		return (pEdge->patches[1]!=-1)?pEdge->patches[1]:nPatch;
+	else
+		return (pEdge->patches[0]!=-1)?pEdge->patches[0]:nPatch;
+#endif // (MAX_RELEASE < 4000)
 }
 
 // Build the mesh

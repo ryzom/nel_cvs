@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.40 2004/04/01 13:32:05 brigand Exp $
+ * $Id: entity_id.h,v 1.41 2004/04/28 18:49:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,9 +44,9 @@ struct CEntityId
 	// pseudo constante
 	enum
 	{
-		DYNAMIC_ID_SIZE = 11,
+		DYNAMIC_ID_SIZE = 8,
 		CREATOR_ID_SIZE = 8,
-		TYPE_SIZE = 5,
+		TYPE_SIZE = 8,
 		ID_SIZE = 40,
 		UNKNOWN_TYPE = (1 << TYPE_SIZE)-1
 	};

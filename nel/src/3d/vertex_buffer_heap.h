@@ -1,7 +1,7 @@
 /** \file vertex_buffer_heap.h
  * <File description>
  *
- * $Id: vertex_buffer_heap.h,v 1.1 2002/08/14 12:43:42 berenguier Exp $
+ * $Id: vertex_buffer_heap.h,v 1.2 2002/08/14 12:50:56 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -53,12 +53,12 @@ public:
 	/// \name Init/Setup
 	// @{
 
-	/// Create the vertex buffer heap
+	/// Create the vertex buffer heap. It use a VBHard if possible. else a std CVertexBuffer is used.
 	void			init(IDriver *driver, uint vertexFormat, uint maxVertices);
 	/// release the VB. init() can be called after this.
 	void			release();
 
-	/// false if error at init, eg if driver do no support VBHard, or if no more AGP memory
+	/// false if any error at init, or if init() not called
 	bool			enabled() const {return _Enabled;}
 	/// return the driver used.
 	IDriver			*getDriver() const {return _Driver;}

@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.23 2002/02/26 17:30:24 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.24 2002/02/28 14:24:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -263,8 +263,6 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		// SunColor.
 		NLMISC::CRGBA							igSunColor(255, 255, 255);
 		SLightBuild								sgLightBuild;
-		// Tells if at least one light is exported. If none, disable dynamic lighting.
-		bool									atLeastOneLight= false;
 
 
 		// Build Mesh Shapes.
@@ -369,10 +367,9 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				CExportNel::addAnimation (*anim, *pNode, (CExportNel::getName (*pNode)+".").c_str(), &ip, true, true);
 			}
 			// Try to export a light for Ig. Only if ExportLighting
-			else if( sgLightBuild.canConvertFromMaxLight(pNode, time) && opt.bExportLighting)
+			// Only if View only selected lights.
+			else if( sgLightBuild.canConvertFromMaxLight(pNode, time) && opt.bExportLighting && opt.bExcludeNonSelected)
 			{
-				atLeastOneLight= true;
-
 				// Convert it.
 				sgLightBuild.convertFromMaxLight(pNode, time);
 
@@ -405,6 +402,50 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				break;
 		}
 
+		// if ExportLighting and Export all lights in scene (not only selected ones).
+		if(opt.bExportLighting && !opt.bExcludeNonSelected)
+		{
+			// List all nodes in scene.
+			vector<INode*>	nodeList;
+			CExportNel::getObjectNodes(nodeList, time, ip);
+			
+			// For all of them.
+			for(uint i=0;i<nodeList.size();i++)
+			{
+				INode	*pNode= nodeList[i];
+
+				if( sgLightBuild.canConvertFromMaxLight(pNode, time) )
+				{
+					// Convert it.
+					sgLightBuild.convertFromMaxLight(pNode, time);
+
+					// PointLight/SpotLight/AmbientLight ??
+					if(sgLightBuild.Type != SLightBuild::LightDir)
+					{
+						// Add to list of node for IgExport.
+						igVectNode.push_back(pNode);
+					}
+					// "SunLight" ??
+					else if( sgLightBuild.Type == SLightBuild::LightDir )
+					{
+						// if this light is checked to export as Sun Light
+						int		nExportSun= CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT, BST_UNCHECKED);
+						if(nExportSun== BST_CHECKED)
+						{
+							// Add to list of node for IgExport (enabling SunLight in the ig)
+							igVectNode.push_back(pNode);
+
+							// Replace sun Direciton.
+							igSunDirection= sgLightBuild.Direction;
+							// Replace sun Color.
+							igSunColor= sgLightBuild.Diffuse;
+						}
+					}
+				}
+			}
+		}
+
+
 		ProgBar.uninitProgressBar();
 		opt.FeedBack = NULL;
 	
@@ -418,8 +459,8 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		NL3D::CInstanceGroup	*ig= CExportNel::buildInstanceGroup(igVectNode, time);
 		if(ig)
 		{
-			// If ExportLighting, and if at least one light viewed.
-			if( opt.bExportLighting && atLeastOneLight)
+			// If ExportLighting
+			if( opt.bExportLighting )
 			{
 				// Light the ig.
 				NL3D::CInstanceGroup	*igOut= new NL3D::CInstanceGroup;
@@ -475,7 +516,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 			view->setBackGroundColor(CExportNel::getBackGroundColor(ip, time));
 
 		// ExportLighting?
-		if ( opt.bExportLighting && atLeastOneLight)
+		if ( opt.bExportLighting )
 		{
 			// setup lighting and sun, if any light added. Else use std OpenGL front lighting
 			view->setupSceneLightingSystem(true, igSunDirection, CRGBA::Black, igSunColor, igSunColor);

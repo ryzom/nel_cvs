@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.14 2002/02/26 17:30:25 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.15 2002/02/28 14:24:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -730,4 +730,26 @@ void CExportNel::uvMatrix2NelUVMatrix (const Matrix3& uvMatrix, NLMISC::CMatrix 
 	convertMatrix(dest, uvMatrix);
 }
 
+
+// --------------------------------------------------
+void CExportNel::getObjectNodes (std::vector<INode*>& vectNode, TimeValue time, Interface& ip, INode* node)
+{
+	// Get the root node
+	if (node==NULL)
+		node=ip.GetRootNode();
+
+	// Get a pointer on the object's node
+    Object *obj = node->EvalWorldState(time).obj;
+
+	// Check if there is an object
+	if (obj)
+	{
+		// Append this node.
+		vectNode.push_back(node);
+	}
+
+	// Recurse sub node
+	for (int i=0; i<node->NumberOfChildren(); i++)
+		getObjectNodes (vectNode, time, ip, node->GetChildNode(i));
+}
 

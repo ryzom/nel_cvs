@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.42 2002/02/28 13:42:32 berenguier Exp $
+ * $Id: export_nel.h,v 1.43 2002/02/28 14:24:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -428,6 +428,9 @@ public:
 
 	// Get lights
 	static void						getLights (std::vector<NL3D::CLight>& vectLight, TimeValue time, Interface& ip, INode* node=NULL);
+
+	// Get All node (objects only) of a hierarchy. NULL => all the scene
+	static void						getObjectNodes (std::vector<INode*>& vectNode, TimeValue time, Interface& ip, INode* node=NULL);
 
 	// *** Paramblock2 access
 

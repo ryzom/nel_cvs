@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.4 2001/05/10 12:19:02 legros Exp $
+ * $Id: chain.cpp,v 1.5 2001/05/15 08:02:55 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,7 +75,7 @@ void	NLPACS::CChain::setIndexOnEdge(uint edge, sint32 index)
 	if (_Right != -2)
 	{
 		nlwarning("in NLPACS::CChain::setIndexOnEdge()");
-		nlwarning("Tried to set the right surface of a chain whereas previous value is different from -2");
+		nlwarning("Tried to set the right surface of a chain whereas previous value (%d) is different from -2", _Right);
 		return;
 	}
 
@@ -86,18 +86,18 @@ void	NLPACS::CChain::setIndexOnEdge(uint edge, sint32 index)
 		return;
 	}
 
-	_Edges = (1<<edge);
+	_Edge = edge;
 	_Right = -index-256;
 }
 
 
-void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 right, vector<COrderedChain> &chains, uint16 thisId)
+void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 right, vector<COrderedChain> &chains, uint16 thisId, sint edges)
 {
 	sint		first = 0, last = 0, i;
 
 	_Left = left;
 	_Right = right;
-	_Edges = 0;
+	_Edge = edges;
 
 	while (first < (sint)vertices.size()-1)
 	{
@@ -139,7 +139,7 @@ void	NLPACS::CChain::serial(IStream &f)
 	f.serialCont(_SubChains);
 	f.serial(_Left, _Right);
 	f.serial(_StartTip, _StopTip);
-	f.serial(_Edges);
+	f.serial(_Edge);
 }
 
 

@@ -93,6 +93,14 @@ SOURCE=..\include\nel\pacs\chain.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\pacs\global_retriever.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\global_retriever.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\pacs\local_retriever.cpp
 # End Source File
 # Begin Source File
@@ -106,6 +114,10 @@ SOURCE=.\pacs\retrievable_surface.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\pacs\retrievable_surface.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\retriever_bank.h
 # End Source File
 # Begin Source File
 

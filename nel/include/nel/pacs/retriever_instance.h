@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.3 2001/05/10 12:18:41 legros Exp $
+ * $Id: retriever_instance.h,v 1.4 2001/05/15 08:03:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/vectord.h"
+#include "nel/misc/vector_2f.h"
 #include "nel/misc/file.h"
 
 #include "nel/misc/aabbox.h"
@@ -39,6 +40,13 @@
 namespace NLPACS
 {
 
+/**
+ * An instance of a local retriever.
+ * It defines a physical/geographic zone of landscape.
+ * \author Benjamin Legros
+ * \author Nevrax France
+ * \date 2001
+ */
 class CRetrieverInstance
 {
 public:
@@ -51,8 +59,48 @@ public:
 		CSurfaceEdge(sint32 from=0, sint32 to=0) : From(from), To(to) {}
 	};
 
-private:
+//protected:
+public:
+	//friend class ...;
+
+	/**
+	 * The link to another node
+	 * \author Benjamin Legros
+	 * \author Nevrax France
+	 * \date 2001
+	 */
+	struct CAStarNodeAccess
+	{
+		sint32	InstanceId;
+		uint16	NodeId;
+
+		bool	operator == (const CAStarNodeAccess &node) { return InstanceId == node.InstanceId && NodeId == node.NodeId; }
+		bool	operator != (const CAStarNodeAccess &node) { return InstanceId != node.InstanceId || NodeId != node.NodeId; }
+	};
+
+	/**
+	 * The information bound to the surfaces nodes.
+	 * \author Benjamin Legros
+	 * \author Nevrax France
+	 * \date 2001
+	 */
+	struct CAStarNodeInfo
+	{
+		/// The position of this node.
+		NLMISC::CVector2f	Position;
+
+		/// The cost to this node.
+		float				Cost;
+		float				F;
+
+		/// The parent link.
+		CAStarNodeAccess	Parent;
+	};
+
 	///
+	std::vector<CAStarNodeInfo>			_NodesInformation;
+	
+	/// Used to retrieve the surface. Internal use only, to avoid large amount of new/delete
 	std::vector<uint8>					_RetrieveTable;
 
 protected:
@@ -83,12 +131,20 @@ protected:
 public:
 	CRetrieverInstance();
 
-	void								resetInstance();
+	void								reset();
 	void								resetLinks();
 	void								resetLinks(uint edge);
 
 	sint32								getInstanceId() const { return _InstanceId; }
 	sint32								getRetrieverId() const { return _RetrieverId; }
+	uint8								getOrientation() const { return _Orientation; }
+	NLMISC::CVector						getOrigin() const { return _Origin; }
+
+	sint32								getNeighbor(uint edge) const { return _Neighbors[edge]; }
+	const std::vector<uint16>			&getEdgeTipLinks(uint edge) const { return _EdgeTipLinks[edge]; }
+	uint16								getEdgeTipLink(uint edge, uint n) const { return _EdgeTipLinks[edge][n]; }
+	const std::vector<uint16>			&getEdgeChainLinks(uint edge) const { return _EdgeChainLinks[edge]; }
+	uint16								getEdgeChainLink(uint edge, uint n) const { return _EdgeChainLinks[edge][n]; }
 
 	void								make(sint32 instanceId, sint32 retrieverId, const CLocalRetriever &retriever,
 											 uint8 orientation, const NLMISC::CVector &origin);

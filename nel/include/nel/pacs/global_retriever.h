@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.1 2001/05/10 12:18:41 legros Exp $
+ * $Id: global_retriever.h,v 1.2 2001/05/15 08:03:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,7 +108,8 @@ public:
 	const CRetrieverBank			*getRetrieverBank() const { return _RetrieverBank; }
 
 	CGlobalPosition					retrievePosition(const NLMISC::CVector &estimated);
-	NLMISC::CVectorD				getGlobalPosition(const CGlobalPosition &global) const;
+	NLMISC::CVector					getGlobalPosition(const CGlobalPosition &global) const;
+	NLMISC::CVectorD				getDoubleGlobalPosition(const CGlobalPosition &global) const;
 
 	void							convertId(uint id, uint &x, uint &y) const
 	{
@@ -116,7 +117,15 @@ public:
 		y = id / _Width;
 		nlassert(y < _Height);
 	}
+	uint							convertId(uint x, uint y) const	{ return y*_Width+x; }
+
 	NLMISC::CVector					getInstanceCenter(uint x, uint y) const;
+	NLMISC::CVector					getInstanceCenter(uint id) const
+	{
+		uint	x, y;
+		convertId(id, x, y);
+		return getInstanceCenter(x, y);
+	}
 
 
 	// Mutators
@@ -126,12 +135,14 @@ public:
 
 	void							setBBox(const NLMISC::CAABBox &bbox) { _BBox = bbox; }
 
+	CRetrieverInstance				&makeInstance(uint x, uint y, uint32 retriever, uint8 orientation, const NLMISC::CVector &origin);
+
 	CRetrieverInstance				&getInstanceFullAccess(uint id) { return _Instances[id]; }
 	CRetrieverInstance				&getInstanceFullAccess(uint x, uint y)
 	{
 		nlassert(x < _Width);
 		nlassert(y < _Height);
-		return _Instances[x + _Width*y];
+		return _Instances[convertId(x, y)];
 	}
 	CRetrieverInstance				&getInstanceFullAccess(const NLMISC::CVector &position);
 
@@ -145,6 +156,21 @@ public:
 	// Others
 
 	void							serial(NLMISC::IStream &f);
+
+
+
+	// A* methods
+public:
+	/// Finds an A* path from a given global position to another.
+	void								findAStarPath(const CGlobalPosition &begin, const CGlobalPosition &end);
+
+private:
+	CRetrieverInstance::CAStarNodeInfo	&getNode(CRetrieverInstance::CAStarNodeAccess &access)
+	{
+		return _Instances[access.InstanceId]._NodesInformation[access.NodeId];
+	}
+
+
 };
 
 }; // NLPACS

@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.1 2001/05/10 12:18:41 legros Exp $
+ * $Id: retriever_bank.h,v 1.2 2001/05/15 08:03:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,12 @@
 namespace NLPACS
 {
 
+/**
+ * A bank of retrievers, shared by several global retrievers.
+ * \author Benjamin Legros
+ * \author Nevrax France
+ * \date 2001
+ */
 class CRetrieverBank
 {
 protected:

@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.3 2001/05/10 12:18:41 legros Exp $
+ * $Id: chain.h,v 1.4 2001/05/15 08:03:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,15 +96,15 @@ protected:
 	uint16								_StartTip;
 	uint16								_StopTip;
 
-	/// The edges on which the chain is stuck (there should only be one...)
-	uint8								_Edges;
+	/// The edge on which the chain is stuck (-1 if not stuck on any edge)
+	sint8								_Edge;
 
 protected:
 	friend class CRetrievableSurface;
 	friend class CLocalRetriever;
 
 	/// Build the whole surface from a vector of CVector and the left and right surfaces.
-	void								make(const std::vector<NLMISC::CVector> &vertices, sint32 left, sint32 right, std::vector<COrderedChain> &chains, uint16 thisId);
+	void								make(const std::vector<NLMISC::CVector> &vertices, sint32 left, sint32 right, std::vector<COrderedChain> &chains, uint16 thisId, sint edges);
 
 	void								setIndexOnEdge(uint edge, sint32 index);
 
@@ -119,16 +119,19 @@ public:
 	sint32								getRight() const { return _Right; }
 
 	/// Gets the index of the chain on the given edge (in the local retriever object.)
-	sint32								getIndexOnEdge(uint edge) const
+	sint32								getIndexOnEdge(sint edge) const
 	{
-		return (_Edges & (1<<edge) && _Right <= -256) ? -(_Right+256) : -1;
+		return (_Edge == edge && isEdgeId(_Right)) ? convertEdgeId(_Right) : -1;
 	}
+
+	static bool							isEdgeId(sint32 id) { return id <= -256; }
+	static sint32						convertEdgeId(sint32 id) { return -(id+256); }
 	
 	uint16								getStartTip() const { return _StartTip; }
 
 	uint16								getStopTip() const { return _StopTip; }
 
-	uint8								getEdges() const { return _Edges; }
+	uint8								getEdge() const { return _Edge; }
 
 	void								serial(NLMISC::IStream &f);
 };

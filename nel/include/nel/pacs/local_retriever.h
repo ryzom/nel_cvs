@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.5 2001/05/14 09:58:51 berenguier Exp $
+ * $Id: local_retriever.h,v 1.6 2001/05/15 08:03:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,8 +148,12 @@ protected:
 	/// The topologies within the zone.
 	std::vector<CTopology>				_Topologies[NumCreatureModels];
 
+	/// The tip recognition threshold
+	static const float					_TipThreshold;
+
 	/// For collisions, the chainquad.
 	CChainQuad							_ChainQuad;
+
 
 public:
 	struct CXPred
@@ -181,28 +185,38 @@ public:
 public:
 	void								setBBox(const NLMISC::CAABBox &box) { _BBox = box; }
 	void								setZoneId (sint32 id) { _ZoneId = id; }
+
 	const NLMISC::CAABBox				&getBBox() const { return _BBox; }
 	sint32								getZoneId() const { return _ZoneId; }
+
 	const std::vector<CTip>				&getTips() const { return _Tips; }
+	const CTip							&getTip(uint n) const { return _Tips[n]; }
 	const std::vector<uint16>			&getEdgeTips(sint edge) const { nlassert(0<=edge && edge<4); return _EdgeTips[edge]; }
+	uint16								getEdgeTip(sint edge, uint n) const { nlassert(0<=edge && edge<4); return _EdgeTips[edge][n]; }
 
 	const std::vector<COrderedChain>	&getOrderedChains() const { return _OrderedChains; }
+	const COrderedChain					&getOrderedChain(uint n) const { return _OrderedChains[n]; }
 	const std::vector<CChain>			&getChains() const { return _Chains; }
+	const CChain						&getChain(uint n) const { return _Chains[n]; }
 	const std::vector<uint16>			&getEdgeChains(sint edge) const { nlassert(0<=edge && edge<4); return _EdgeChains[edge]; }
+	uint16								getEdgeChain(sint edge, uint n) const { nlassert(0<=edge && edge<4); return _EdgeChains[edge][n]; }
 	const std::vector<CRetrievableSurface>	&getSurfaces() const { return _Surfaces; }
+	const CRetrievableSurface			&getSurface(uint n) const { return _Surfaces[n]; }
 
 	sint32								addSurface(uint8 normalq, uint8 orientationq,
 												   uint8 mat, uint8 charact, uint8 level,
+												   const NLMISC::CVector &center,
 												   const CSurfaceQuadTree &quad);
 
 	sint32								addChain(const std::vector<NLMISC::CVector> &vertices,
-												 sint32 left, sint32 right);
+												 sint32 left, sint32 right, sint edge);
 	void								computeTopologies();
 
 	void								sortTips();
 
 	void								findEdgeTips();
 	void								findEdgeChains();
+	void								updateChainIds();
 
 	void								serial(NLMISC::IStream &f);
 

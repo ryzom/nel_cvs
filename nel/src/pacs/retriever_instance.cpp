@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.3 2001/05/10 12:19:02 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.4 2001/05/15 08:02:55 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@ using namespace NLMISC;
 
 NLPACS::CRetrieverInstance::CRetrieverInstance()
 {
-	resetInstance();
+	reset();
 }
 
 void	NLPACS::CRetrieverInstance::resetLinks()
@@ -60,7 +60,7 @@ void	NLPACS::CRetrieverInstance::resetLinks(uint edge)
 	_EdgeChainLinks[edge].clear();
 }
 
-void	NLPACS::CRetrieverInstance::resetInstance()
+void	NLPACS::CRetrieverInstance::reset()
 {
 	_RetrieveTable.clear();
 	_InstanceId = -1;
@@ -88,9 +88,16 @@ void	NLPACS::CRetrieverInstance::make(sint32 instanceId, sint32 retrieverId, con
 	_Orientation = (orientation%4);
 	_Origin = origin;
 	_RetrieveTable.resize(retriever.getSurfaces().size());
+	_NodesInformation.resize(retriever.getSurfaces().size());
 	uint	i;
 	for (i=0; i<_RetrieveTable.size(); ++i)
 		_RetrieveTable[i] = 0;
+
+	for (i=0; i<_NodesInformation.size(); ++i)
+	{
+		CVector	pos = getGlobalPosition(retriever.getSurfaces()[i].getCenter());
+		_NodesInformation[i].Position = CVector2f(pos.x, pos.y);
+	}
 
 	_BBox = retriever.getBBox();
 	_BBox.setCenter(getGlobalPosition(_BBox.getCenter()));
@@ -333,5 +340,15 @@ void	NLPACS::CRetrieverInstance::serial(NLMISC::IStream &f)
 		f.serial(_Neighbors[i]);
 		f.serialCont(_EdgeTipLinks[i]);
 		f.serialCont(_EdgeChainLinks[i]);
+	}
+
+	uint16	totalNodes = _RetrieveTable.size();
+	f.serial(totalNodes);
+	if (f.isReading())
+	{
+		_RetrieveTable.resize(totalNodes);
+		_NodesInformation.resize(totalNodes);
+		for (i=0; i<_RetrieveTable.size(); ++i)
+			_RetrieveTable[i] = 0;
 	}
 }

@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.10 2001/07/26 17:16:12 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.11 2001/08/06 10:23:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -188,7 +188,7 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 
 		psm->updateOpacityInfos() ;
 
-		ps->setSysMat(psm->getWorldMatrix()) ;
+		//ps->setSysMat(psm->getWorldMatrix()) ;
 		nlassert(ps->getScene()) ;	
 
 
@@ -214,18 +214,16 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 	CClipTrav			*trav= (CClipTrav*)Trav;
 	CParticleSystemModel		*m= (CParticleSystemModel*)Model;
 
+
 	const std::vector<CPlane>	&pyramid= trav->WorldPyramid;
-	CMatrix		&mat= HrcObs->WorldMatrix;
-
 	
-
-
-
 	/** traverse the sons
 	  * we must do this before us, because this object may delete himself from the scene
 	  */
-
 	traverseSons() ;
+
+	// now the pyramid is directly expressed in the world
+	const CMatrix		&mat= HrcObs->WorldMatrix ;	 
 
 	if (m->_Invalidated) return ;
 
@@ -233,10 +231,6 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 	// Transform the pyramid in Object space.
 
 	
-
-	
-	
-
 	if(!ps)
 	{
 		// the system wasn't present the last time, we use its center to see if its back in the view frustrum.
@@ -248,7 +242,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 
 		for(sint i=0;i<(sint)pyramid.size();i++)
 		{					
-			if ( (pyramid[i] * mat) * pos > 0.f ) 
+			if ( (pyramid[i]   *  mat  ) * pos > 0.f ) 
 			{
 				Visible = false ;
 				return ;		
@@ -275,7 +269,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 
 	/// set the view matrix of the system
 	ps->setViewMat(trav->ViewMatrix) ;
-	
+	ps->setSysMat(mat) ;
 
 	if (!m->_EditionMode)
 	{
@@ -312,7 +306,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 	for(sint i=0;i<(sint)pyramid.size();i++)
 	{	
 		// test wether the bbox is entirely in the neg side of the plane
-		if (!bbox.clipBack(pyramid[i] * mat)) 
+		if (!bbox.clipBack(pyramid[i]  * mat  )) 
 		{
 			if (!m->_EditionMode)
 			{
@@ -344,7 +338,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 	/// test if object is not too far	  
     CPlane farPlane ;
 	farPlane.make(trav->CamLook, trav->CamPos + ps->getMaxViewDist() * trav->CamLook) ;
-	if (!bbox.clipBack(farPlane * mat))
+	if (!bbox.clipBack(farPlane  * mat  ))
 	{			
        	
 		if (!m->_EditionMode)

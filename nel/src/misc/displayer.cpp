@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.47 2003/01/02 13:10:59 lecroart Exp $
+ * $Id: displayer.cpp,v 1.48 2003/01/02 13:31:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #	include <fcntl.h>
 #	include <sys/types.h>
 #	include <sys/stat.h>
+#else
+#	include <errno.h>
 #endif // NL_OS_WINDOWS
 
 #include <stdio.h>

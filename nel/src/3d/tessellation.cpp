@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.4 2000/10/27 14:30:05 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.5 2000/11/02 13:48:50 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -37,19 +37,152 @@ namespace NL3D {
 
 
 // ***************************************************************************
-// maybe Same as an enum... but may be faster...
-const	uint8	TileUvFmt1Tf2= 0;
-const	uint8	TileUvFmt2Tf2= 1;
-const	uint8	TileUvFmt3Tf2= 2;
-const	uint8	TileUvFmt1Tf4= 3;
-const	uint8	TileUvFmt2Tf4= 4;
-const	uint8	TileUvFmt3Tf4= 5;
-// maybe Same as an enum... but may be faster...
-const	uint8	TileMatNormal= 0;
-const	uint8	TileMatAlpha= 1;
-const	uint8	TileMatSpec= 2;
-const	uint8	TileMatAlphaSpec= 3;
-const	uint8	TileMatSpecAlpha= 4;
+// The normal Uvs format.
+const	uint8	TileUvFmtNormal1= 0;
+const	uint8	TileUvFmtNormal2= 1;
+const	uint8	TileUvFmtNormal3= 2;
+const	uint8	TileUvFmtNormal4= 3;
+const	uint8	TileUvFmtNormal5= 4;
+const	uint8	TileUvFmtNormal6= 5;
+// The bumped ones.
+const	uint8	TileUvFmtBump1= 16+0;
+const	uint8	TileUvFmtBump2= 16+1;
+const	uint8	TileUvFmtBump3= 16+2;
+const	uint8	TileUvFmtBump4= 16+3;
+const	uint8	TileUvFmtBump5= 16+4;
+const	uint8	TileUvFmtBump6= 16+5;
+
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// CPatchRdrPass
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
+// Primitives Indices reallocation. must be >16 (see below..)
+static sint		GlobalTriListBlockRealloc= 1024;
+
+
+// ***************************************************************************
+sint			CPatchRdrPass::CurGlobalIndex=0;
+
+	
+// ***************************************************************************
+CPatchRdrPass::CPatchRdrPass()
+{
+	resetTriList();
+}
+
+// ***************************************************************************
+void			CPatchRdrPass::resetTriList()
+{
+	NTris=0;
+	StartIndex=0;
+	CurIndex=0;
+	BlockLenIndex=0;
+}
+
+// ***************************************************************************
+void			CPatchRdrPass::addTri(uint32 idx0, uint32 idx1, uint32 idx2)
+{
+	// An error may occurs if resetGlobalTriList() called, but not resetTriList().
+	nlassert(CurIndex<=CurGlobalIndex);
+
+	// Realloc if necessary.
+	// Keep a security of 16 spaces (think that 5/6 only is needed).
+	// Nb: 6, because we need one more space for the last JMP of the last block of the last material...
+	// Don't bother, 16 is cool....
+	if((sint)GlobalTriList.size() < CurGlobalIndex+16)
+	{
+		GlobalTriList.resize(GlobalTriList.size() + NL3D::GlobalTriListBlockRealloc);
+	}
+
+	// First, if current material interleaved, jump.
+	if(CurIndex!=CurGlobalIndex)
+	{
+		// Leave a "jump" space for old material.
+		CurGlobalIndex++;
+		// This material "jump" to current index.
+		if(NTris!=0)	// Only if the list is not empty.
+		{
+			// Old block (with CurIndex which points to the jump space) must point to cur.
+			// Mark this index so we know it is a Jump index.
+			GlobalTriList[CurIndex]= CurGlobalIndex | 0x80000000;
+			// Start of a new block!!
+			BlockLenIndex= CurGlobalIndex++;
+			GlobalTriList[BlockLenIndex]=0;
+		}
+	}
+
+	// insert!!
+	if(NTris==0)
+	{
+		// Start of a new block!!
+		StartIndex= BlockLenIndex= CurGlobalIndex++;
+		GlobalTriList[BlockLenIndex]=0;
+	}
+	GlobalTriList[CurGlobalIndex++]= idx0;
+	GlobalTriList[CurGlobalIndex++]= idx1;
+	GlobalTriList[CurGlobalIndex++]= idx2;
+
+	// CurIndex point to the next global index...
+	CurIndex= CurGlobalIndex;
+	NTris++;
+	GlobalTriList[BlockLenIndex]++;
+}
+
+// ***************************************************************************
+void			CPatchRdrPass::buildPBlock(CPrimitiveBlock &pb)
+{
+	sint	idx, n, blocklen;
+
+	pb.setNumTri(NTris);
+	uint32	*pi= (uint32	*)pb.getTriPointer();
+
+	// Run the list of block.
+	n= NTris;
+	idx= StartIndex;
+	while(n>0)
+	{
+		// size of block (in tris).
+		blocklen= GlobalTriList[idx];
+		// Copy the indices (jump the BlockLenIndex).
+		memcpy(pi, &GlobalTriList[idx+1], blocklen*3*sizeof(uint32));
+		// Jump to the next block!! (not valid if last block, but doesn't matter...)
+		idx= GlobalTriList[1+blocklen*3];
+		pi+= blocklen*3;
+		n-= blocklen;
+	}
+}
+
+// ***************************************************************************
+void			CPatchRdrPass::resetGlobalTriList()
+{
+	CurGlobalIndex= 0;
+}
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// CTileMaterial
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+CTileMaterial::CTileMaterial()
+{
+	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+	{
+		Pass[i]=NULL;
+	}
+}
 
 
 // ***************************************************************************
@@ -74,6 +207,13 @@ float		CTessFace::TileDistFar= 75;
 float		CTessFace::OOTileDistDelta= 1.0f / (CTessFace::TileDistFar - CTessFace::TileDistNear);
 sint		CTessFace::TileMaxSubdivision=4;
 
+float		CTessFace::Far0Dist= 200;		// 200m.
+float		CTessFace::Far1Dist= 400;		// 400m.
+float		CTessFace::FarTransition= 10;	// Alpha transition= 10m.
+CVertexBuffer	*CTessFace::CurrentVB=NULL;
+sint		CTessFace::CurrentVertexIndex=1;
+
+
 CTessFace	CTessFace::CantMergeFace;
 
 
@@ -82,12 +222,18 @@ ITileUv		*CTessFace::allocTileUv(uint8 fmt)
 {
 	switch (fmt)
 	{
-		case TileUvFmt1Tf2: return new CTileUv1Tf2; break;
-		case TileUvFmt2Tf2: return new CTileUv2Tf2; break;
-		case TileUvFmt3Tf2: return new CTileUv3Tf2; break;
-		case TileUvFmt1Tf4: return new CTileUv1Tf4; break;
-		case TileUvFmt2Tf4: return new CTileUv2Tf4; break;
-		case TileUvFmt3Tf4: return new CTileUv3Tf4; break;
+		case TileUvFmtNormal1: return new CTileUvNormal1; break;
+		case TileUvFmtNormal2: return new CTileUvNormal2; break;
+		case TileUvFmtNormal3: return new CTileUvNormal3; break;
+		case TileUvFmtNormal4: return new CTileUvNormal4; break;
+		case TileUvFmtNormal5: return new CTileUvNormal5; break;
+		case TileUvFmtNormal6: return new CTileUvNormal6; break;
+		case TileUvFmtBump1: return new CTileUvBump1; break;
+		case TileUvFmtBump2: return new CTileUvBump2; break;
+		case TileUvFmtBump3: return new CTileUvBump3; break;
+		case TileUvFmtBump4: return new CTileUvBump4; break;
+		case TileUvFmtBump5: return new CTileUvBump5; break;
+		case TileUvFmtBump6: return new CTileUvBump6; break;
 		default: nlassert(false);
 	}
 }
@@ -108,7 +254,7 @@ CTessFace::CTessFace()
 	// Exception: the root faces...
 	NeedCompute= false;	
 
-	TilePass0= TilePass1= TilePass2= NULL;
+	TileMaterial= NULL;
 	TileUvBase= TileUvLeft= TileUvRight= NULL;
 	// TileId and TileType undefined.
 }
@@ -236,20 +382,41 @@ void		CTessFace::computeTileMaterial()
 
 	// 1. Compute Tile Material.
 	//--------------------------
-	// TODOR: work with patch to create the good vertex format (TileFmt/TileMat), link Pass to the good materials etc...
-	// for test only here....
-	TileFmt= TileUvFmt1Tf2;
-	TileMat= TileMatNormal;
+	// if base neighbor is already at TileLimitLevel just ptr-copy, else create the TileMaterial...
+	nlassert(!FBase || FBase->Level<=Patch->TileLimitLevel);
+	if(FBase && FBase->Level==Patch->TileLimitLevel && FBase->TileUvLeft!=NULL)
+	{
+		TileMaterial= FBase->TileMaterial;
+	}
+	else
+	{
+		// TODOR: work with patch to create the good vertex format (TileMaterial), link Pass to the good materials etc...
+		// for test only here....
+		TileMaterial= new CTileMaterial;
+		TileMaterial->Pass[0]= Patch->getTileRenderPass(TileId, 0);
+		// Use NULL in TileMaterial->TilePass to know the format and bind PassToUv.
+		sint	uvcount=0;
+		for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+		{
+			if(TileMaterial->Pass[i])
+			{
+				TileMaterial->PassToUv[i]= uvcount;
+				uvcount++;
+			}
+		}
+		// TODO_BUMP: choose beetween bump and normal.
+		TileMaterial->TileUvFmt= TileUvFmtNormal1+(uvcount-1);
+	}
 
 
 	// 2. Compute Uvs.
 	//----------------
 	// Must allocate the base uv.
-	TileUvBase= allocTileUv(TileFmt);
+	TileUvBase= allocTileUv(TileMaterial->TileUvFmt);
 	// TODOR: work with Patch, to create the good texcoordinates.
 	// for test only here....
-	((CTileUv1Tf2*)TileUvLeft)->P0Uv0.U= PVLeft.S<=middle.S? 0.0f: 1.0f;
-	((CTileUv1Tf2*)TileUvLeft)->P0Uv0.V= PVLeft.T<=middle.T? 0.0f: 1.0f;
+	((CTileUvNormal1*)TileUvLeft)->UvPasses[0].PUv0.U= PVLeft.S<=middle.S? 0.0f: 1.0f;
+	((CTileUvNormal1*)TileUvLeft)->UvPasses[0].PUv0.V= PVLeft.T<=middle.T? 0.0f: 1.0f;
 
 	// if base neighbor is already at TileLimitLevel just ptr-copy, else create the left/right TileUvs...
 	nlassert(!FBase || FBase->Level<=Patch->TileLimitLevel);
@@ -261,14 +428,14 @@ void		CTessFace::computeTileMaterial()
 	}
 	else
 	{
-		TileUvLeft= allocTileUv(TileFmt);
-		TileUvRight= allocTileUv(TileFmt);
+		TileUvLeft= allocTileUv(TileMaterial->TileUvFmt);
+		TileUvRight= allocTileUv(TileMaterial->TileUvFmt);
 		// TODOR: work with Patch, to create the good texcoordinates.
 		// for test only here....
-		((CTileUv1Tf2*)TileUvLeft)->P0Uv0.U= PVLeft.S<=middle.S? 0.0f: 1.0f;
-		((CTileUv1Tf2*)TileUvLeft)->P0Uv0.V= PVLeft.T<=middle.T? 0.0f: 1.0f;
-		((CTileUv1Tf2*)TileUvRight)->P0Uv0.U= PVRight.S<=middle.S? 0.0f: 1.0f;
-		((CTileUv1Tf2*)TileUvRight)->P0Uv0.V= PVRight.T<=middle.T? 0.0f: 1.0f;
+		((CTileUvNormal1*)TileUvLeft)->UvPasses[0].PUv0.U= PVLeft.S<=middle.S? 0.0f: 1.0f;
+		((CTileUvNormal1*)TileUvLeft)->UvPasses[0].PUv0.V= PVLeft.T<=middle.T? 0.0f: 1.0f;
+		((CTileUvNormal1*)TileUvRight)->UvPasses[0].PUv0.U= PVRight.S<=middle.S? 0.0f: 1.0f;
+		((CTileUvNormal1*)TileUvRight)->UvPasses[0].PUv0.V= PVRight.T<=middle.T? 0.0f: 1.0f;
 	}
 
 }
@@ -285,6 +452,8 @@ void	CTessFace::releaseTileMaterial()
 		// Do not release Uvs, since neighbor need it...
 		TileUvLeft= NULL;
 		TileUvRight= NULL;
+		// idem for TileMaterial.
+		TileMaterial= NULL;
 	}
 	else
 	{
@@ -292,6 +461,8 @@ void	CTessFace::releaseTileMaterial()
 		delete TileUvRight;
 		TileUvLeft= NULL;
 		TileUvRight= NULL;
+		delete TileMaterial;
+		TileMaterial= NULL;
 	}
 }
 
@@ -371,20 +542,12 @@ void		CTessFace::split()
 	else if(SonLeft->Level > Patch->TileLimitLevel)
 	{
 		SonLeft->TileId= TileId;
-		SonLeft->TileFmt= TileFmt;
-		SonLeft->TileMat= TileMat;
-		SonLeft->TilePass0= TilePass0;
-		SonLeft->TilePass1= TilePass1;
-		SonLeft->TilePass2= TilePass2;
+		SonLeft->TileMaterial= TileMaterial;
 		SonLeft->TileUvLeft= TileUvBase;
 		SonLeft->TileUvRight= TileUvLeft;
 
 		SonRight->TileId= TileId;
-		SonRight->TileFmt= TileFmt;
-		SonRight->TileMat= TileMat;
-		SonRight->TilePass0= TilePass0;
-		SonRight->TilePass1= TilePass1;
-		SonRight->TilePass2= TilePass2;
+		SonRight->TileMaterial= TileMaterial;
 		SonRight->TileUvLeft= TileUvRight;
 		SonRight->TileUvRight= TileUvBase;
 
@@ -400,15 +563,21 @@ void		CTessFace::split()
 		}
 		else
 		{
-			switch (TileFmt)
+			switch (TileMaterial->TileUvFmt)
 			{
 				// Create at middle: (TileUvLeft+TileUvRight) /2
-				case TileUvFmt1Tf2: tuv= new CTileUv1Tf2( (CTileUv1Tf2*)TileUvLeft, (CTileUv1Tf2*)TileUvRight ); break;
-				case TileUvFmt2Tf2: tuv= new CTileUv2Tf2( (CTileUv2Tf2*)TileUvLeft, (CTileUv2Tf2*)TileUvRight ); break;
-				case TileUvFmt3Tf2: tuv= new CTileUv3Tf2( (CTileUv3Tf2*)TileUvLeft, (CTileUv3Tf2*)TileUvRight ); break;
-				case TileUvFmt1Tf4: tuv= new CTileUv1Tf4( (CTileUv1Tf4*)TileUvLeft, (CTileUv1Tf4*)TileUvRight ); break;
-				case TileUvFmt2Tf4: tuv= new CTileUv2Tf4( (CTileUv2Tf4*)TileUvLeft, (CTileUv2Tf4*)TileUvRight ); break;
-				case TileUvFmt3Tf4: tuv= new CTileUv3Tf4( (CTileUv3Tf4*)TileUvLeft, (CTileUv3Tf4*)TileUvRight ); break;
+				case TileUvFmtNormal1: tuv= new CTileUvNormal1((CTileUvNormal1*)TileUvLeft, (CTileUvNormal1*)TileUvRight); break;
+				case TileUvFmtNormal2: tuv= new CTileUvNormal2((CTileUvNormal2*)TileUvLeft, (CTileUvNormal2*)TileUvRight); break;
+				case TileUvFmtNormal3: tuv= new CTileUvNormal3((CTileUvNormal3*)TileUvLeft, (CTileUvNormal3*)TileUvRight); break;
+				case TileUvFmtNormal4: tuv= new CTileUvNormal4((CTileUvNormal4*)TileUvLeft, (CTileUvNormal4*)TileUvRight); break;
+				case TileUvFmtNormal5: tuv= new CTileUvNormal5((CTileUvNormal5*)TileUvLeft, (CTileUvNormal5*)TileUvRight); break;
+				case TileUvFmtNormal6: tuv= new CTileUvNormal6((CTileUvNormal6*)TileUvLeft, (CTileUvNormal6*)TileUvRight); break;
+				case TileUvFmtBump1: tuv= new CTileUvBump1((CTileUvBump1*)TileUvLeft, (CTileUvBump1*)TileUvRight); break;
+				case TileUvFmtBump2: tuv= new CTileUvBump2((CTileUvBump2*)TileUvLeft, (CTileUvBump2*)TileUvRight); break;
+				case TileUvFmtBump3: tuv= new CTileUvBump3((CTileUvBump3*)TileUvLeft, (CTileUvBump3*)TileUvRight); break;
+				case TileUvFmtBump4: tuv= new CTileUvBump4((CTileUvBump4*)TileUvLeft, (CTileUvBump4*)TileUvRight); break;
+				case TileUvFmtBump5: tuv= new CTileUvBump5((CTileUvBump5*)TileUvLeft, (CTileUvBump5*)TileUvRight); break;
+				case TileUvFmtBump6: tuv= new CTileUvBump6((CTileUvBump6*)TileUvLeft, (CTileUvBump6*)TileUvRight); break;
 				default: nlassert(false);
 			};
 		}
@@ -788,6 +957,21 @@ void		CTessFace::updateBind()
 	}
 }
 
+
+// ***************************************************************************
+void		CTessFace::appendToRenderList(CTessFace *&root)
+{
+	if(isLeaf())
+	{
+		RenderNext= root;
+		root= this;
+	}
+	else
+	{
+		SonLeft->appendToRenderList(root);
+		SonRight->appendToRenderList(root);
+	}
+}
 
 
 } // NL3D

@@ -1,10 +1,10 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.5 2000/10/27 14:29:42 berenguier Exp $
+ * $Id: patch.h,v 1.6 2000/11/02 13:48:14 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
-		- displacement map (ptr/index).
+		- NOISE, or displacement map (ptr/index).
 		- bind with multiple patchs.
 		- rectangular subdivsion.
  *
@@ -36,6 +36,7 @@
 #include "nel/misc/vector.h"
 #include "nel/3d/tessellation.h"
 #include "nel/3d/aabbox.h"
+#include "nel/3d/bsphere.h"
 
 
 namespace NL3D {
@@ -72,22 +73,22 @@ public:
 // ***************************************************************************
 /**
  * A landscape patch.
- * QuadPatch layout (same notations as Max).
+ * QuadPatch layout (same notations as 3ds Max SDK).
  * 
- *   A---> ad ----- da <---D
- *   |                     |
- *   |                     |
- *   v                     v
- *   ab    ia       id     dc
+ *   A---> ad ---- da <---D
+ *   |                    |
+ *   |                    |
+ *   v                    v
+ *   ab    ia      id     dc
  *
- *   |                     |
- *   |                     |
+ *   |                    |
+ *   |                    |
  *
- *   ba    ib       ic     cd
- *   ^                     ^
- *   |                     |
- *   |                     |
- *   B---> bc ----- cb <---C
+ *   ba    ib      ic     cd
+ *   ^                    ^
+ *   |                    |
+ *   |                    |
+ *   B---> bc ---- cb <---C
  *
  * NB: Patch 1x1 or 1xX are illegal: lot of problem: rectangular geomoprh, Son0 and Son1 must be setup as tile at beginning ...
  *
@@ -128,9 +129,9 @@ public:
 	CVector3s		Tangents[8];
 	CVector3s		Interiors[4];
 	/*
-		TODO:
-		- "UV correction" infos.
-		- displacement map (ptr/index).
+		TODO_NOISE: - displacement map (ptr/index).
+		TODO_UVCORRECT: - "UV correction" infos.
+		
 	*/
 
 
@@ -144,7 +145,6 @@ public:
 	/** compile a valid patch. (init)
 	 * Call this method before any other. Zone and Control points must be valid before calling compile(). \n
 	 * This is an \b ERROR to call compile() two times. \n
-	 * NB: zone loading must call compile() too, using the order and the errorSize saved.
 	 * \param z zone where the patch must be binded.
 	 * \param orderS the Tile order in S direction: 2,4,8,16.
 	 * \param orderT the Tile order in T direction: 2,4,8,16.
@@ -152,6 +152,8 @@ public:
 	 *  modulated by tangents and displacement map.
 	 */
 	void			compile(CZone *z, uint8 orderS, uint8 orderT, CTessVertex *baseVertices[4], float errorSize=0);
+	/// Un-compile a patch. Tesselation is deleted. if patch is not compiled, no - op.
+	void			release();
 
 
 	CZone			*getZone() const {return Zone;}
@@ -181,9 +183,15 @@ public:
 
 	/// Refine / geomorph this patch.
 	void			refine();
+	/// preRender this patch. Build RdrFace List ....
+	void			preRender();
 	/// Render this patch (append to VertexBuffers / materials primitive block).
-	void			render();
-
+	void			renderFar0();
+	void			renderFar1();
+	void			renderTile(sint pass);
+	// For CTessFace::computeMaterial(). Return the render pass for this material, given the number of the tile, and the
+	// desired pass. NULL may be returned if the pass is not present (eg: no alpha for this tile...).
+	CPatchRdrPass	*getTileRenderPass(sint tileId, sint pass);
 
 
 // Private part.
@@ -203,13 +211,23 @@ private:
 	CTessFace		*Son0, *Son1;
 	// The base vertices.
 	CTessVertex		*BaseVertices[4];
+	// BSphere.
+	CBSphere		BSphere;
 
 
 	// Local info for CTessFace tiles. CPatch must setup them at the begining at refine()/render().
 	// For Far Texture coordinates.
+	sint			Far0;			// The level of First Far: 0,1,2 or 3. 0 means Tile.
+	sint			Far1;			// The level of second Far, for transition: 1,2 or 3. 0 means none.
 	float			Far0UVScale, Far0UBias, Far0VBias;
 	float			Far1UVScale, Far1UBias, Far1VBias;
-	// TODOR: add the texture (material) pointers of texture fars.
+	// The render Pass of Far0 and Far1.
+	CPatchRdrPass	*Pass0, *Pass1;
+	// Info for alpha transition with Far1.
+	float			TransitionSqrMin;
+	float			OOTransitionSqrDelta;
+	// The root for render.
+	CTessFace		*RdrRoot;
 
 
 private:
@@ -221,8 +239,19 @@ private:
 	CTessFace		*getRootFaceForEdge(sint edge) const;
 	void			changeEdgeNeighbor(sint edge, CTessFace *to);
 
+	// For Render
+	CPatchRdrPass	*getFarRenderPass(sint FarLevel, float &Far0UVScale, float &Far0UBias, float &Far0VBias);
+	sint			getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc);
+	sint			getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc);
+	sint			getTileIndex(CTessVertex *vert, ITileUv *uv, sint idUv);
+
+	static sint		resetTileIndices(CTessFace *rdrRoot);
+	static sint		resetFarIndices(CTessFace *rdrRoot);
+
 
 private:
+	// NB: All global render info are stored in CTessFace class static members....
+
 	// The Patch cache (may be a short list/vector later...).
 	static	CBezierPatch	CachePatch;
 	// For cahcing.

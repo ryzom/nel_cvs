@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.4 2000/10/27 14:30:06 berenguier Exp $
+ * $Id: patch.cpp,v 1.5 2000/11/02 13:48:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,14 +51,37 @@ CPatch::CPatch()
 	OrderT=0;
 	Son0=NULL;
 	Son1=NULL;
+
+	// To froce computation on next render().
+	Far0= 0;
+	Far1= 0;
 }
 // ***************************************************************************
 CPatch::~CPatch()
 {
-	unbind();
-	delete Son0;
-	delete Son1;
-	// Vertices are smartptr/deleted.
+	release();
+}
+
+// ***************************************************************************
+void			CPatch::release()
+{
+	if(Zone)
+	{
+		unbind();
+		delete Son0;
+		delete Son1;
+		// Vertices are smartptr/deleted in zone.
+		Zone= NULL;
+	}
+
+	OrderS=0;
+	OrderT=0;
+	Son0=NULL;
+	Son1=NULL;
+
+	// To force computation on next render().
+	Far0= 0;
+	Far1= 0;
 }
 
 
@@ -76,7 +99,7 @@ CBezierPatch	*CPatch::unpackIntoCache() const
 void			CPatch::unpack(CBezierPatch	&p) const
 {
 	sint	i;
-	float	bias= Zone->PatchBias, scale= Zone->PatchScale;
+	float	bias= Zone->getPatchBias(), scale= Zone->getPatchScale();
 
 	for(i=0;i<4;i++)
 		Vertices[i].unpack(p.Vertices[i], bias, scale);
@@ -93,7 +116,7 @@ void			CPatch::computeDefaultErrorSize()
 	CVector			&v1= p.Vertices[1];
 	CVector			&v2= p.Vertices[2];
 
-	// TODO: modulate this value with tangents (roundiness of patch), and with the displacement map.
+	// TODO_NOISE: modulate this value with tangents (roundiness of patch), and with the displacement map.
 	ErrorSize= ((v1 - v0)^(v2 - v0)).norm();
 
 }
@@ -125,7 +148,7 @@ CAABBox			CPatch::buildBBox() const
 		bmin.minof(bmin, p.Interiors[i]);
 		bmax.maxof(bmin, p.Interiors[i]);
 	}
-	// TODO: modulate with the displacement map.
+	// TODO_NOISE: modulate with the displacement map.
 
 	CAABBox	ret;
 	ret.setMinMax(bmin, bmax);
@@ -227,6 +250,11 @@ void			CPatch::compile(CZone *z, uint8 orderS, uint8 orderT, CTessVertex *baseVe
 	// with rectangular UV geomorph.
 	TileLimitLevel= pmin*2 + pmax-pmin;
 
+	// Buil the BSPhere.
+	CAABBox	bb= buildBBox();
+	BSphere.Center= bb.getCenter();
+	BSphere.Radius= bb.getRadius();
+
 	// Bind vertices, to zone base vertices.
 	BaseVertices[0]= baseVertices[0];
 	BaseVertices[1]= baseVertices[1];
@@ -242,7 +270,7 @@ CVector			CPatch::computeVertex(float s, float t)
 	// First, unpack...
 	CBezierPatch	*patch= unpackIntoCache();
 
-	// TODO: use UV correction, and use displacement map, to disturb result.
+	// TODO_NOISE/TODO_UVCORRECT: use UV correction, and use displacement map, to disturb result.
 	return patch->eval(s,t);
 }
 // ***************************************************************************
@@ -253,10 +281,257 @@ void			CPatch::refine()
 	Son0->refine();
 	Son1->refine();
 }
+
 // ***************************************************************************
-void			CPatch::render()
+sint			CPatch::resetTileIndices(CTessFace *pFace)
 {
-	// TODOR.
+	sint	ret=0;
+	for(;pFace; pFace=pFace->RenderNext)
+	{
+		pFace->TileUvBase->TileIndex= 0;
+		pFace->TileUvLeft->TileIndex= 0;
+		pFace->TileUvRight->TileIndex= 0;
+		ret++;
+	}
+
+	return ret;
+}
+// ***************************************************************************
+sint			CPatch::resetFarIndices(CTessFace *pFace)
+{
+	sint	ret=0;
+	for(;pFace; pFace=pFace->RenderNext)
+	{
+		pFace->VBase->FarIndex= 0;
+		pFace->VLeft->FarIndex= 0;
+		pFace->VRight->FarIndex= 0;
+		ret++;
+	}
+	return ret;
+}
+
+// ***************************************************************************
+void			CPatch::preRender()
+{
+	// Classify the patch.
+	//====================
+	sint	far0,far1;
+	float	r= (CTessFace::RefineCenter-BSphere.Center).norm() - BSphere.Radius;
+	float	rr;
+	if(r<CTessFace::TileDistNear)
+		rr= r-CTessFace::TileDistNear, far0= 0;
+	else if(r<CTessFace::Far0Dist)
+		rr= r-CTessFace::Far0Dist, far0= 1;
+	else if(r<CTessFace::Far1Dist)
+		rr= r-CTessFace::Far1Dist, far0= 2;
+	else
+		far0= 3;
+	// Transition with the next level.
+	far1=0;
+	if(far0<3 && rr>-(CTessFace::FarTransition+2*BSphere.Radius))
+	{
+		far1= far0+1;
+	}
+
+
+	// Update Texture Info.
+	//=====================
+	if(far0!=Far0 || far1!=Far1)
+	{
+		Far0= far0;
+		Far1= far1;
+		// Compute / get the texture Far.
+		if(Far0>=1)
+			Pass0= getFarRenderPass(Far0, Far0UVScale, Far0UBias, Far0VBias);
+		else
+			Pass0= NULL;
+		if(Far1>=1)
+		{
+			Pass1= getFarRenderPass(Far1, Far1UVScale, Far1UBias, Far1VBias);
+			// Compute info for transition.
+			float	farDist;
+			switch(Far1)
+			{
+				case 1: farDist= CTessFace::TileDistNear; break;
+				case 2: farDist= CTessFace::Far0Dist; break;
+				case 3: farDist= CTessFace::Far1Dist; break;
+				default: nlassert(false);
+			};
+			TransitionSqrMin= sqr(farDist-CTessFace::FarTransition);
+			OOTransitionSqrDelta= 1.0f/(sqr(farDist)-TransitionSqrMin);
+		}
+		else
+			Pass1= NULL;
+	}
+
+
+	// Make render list.
+	//==================
+	RdrRoot= NULL;
+	Son0->appendToRenderList(RdrRoot);
+	Son1->appendToRenderList(RdrRoot);
+}
+
+
+// ***************************************************************************
+sint			CPatch::getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc)
+{
+	if(vert->FarIndex==0)
+	{
+		// Compute/build the new vertex.
+		vert->FarIndex= CTessFace::CurrentVertexIndex++;
+
+		// Set Pos.
+		CTessFace::CurrentVB->setVertexCoord(vert->FarIndex, vert->Pos.x, vert->Pos.y, vert->Pos.z);
+
+		// Set Uvs.
+		float	u,v;
+		u= pc.getS()* Far0UVScale + Far0UBias;
+		v= pc.getT()* Far0UVScale + Far0VBias;
+		CTessFace::CurrentVB->setTexCoord(vert->FarIndex, 0, u, v);
+
+		// Compute color.
+		CRGBA	col(255,255,255,255);
+		// TODO_CLOUD: use normal information, for cloud attenuation, in RGB fields.
+		// For Far0, alpha is un-usefull.
+		CTessFace::CurrentVB->setRGBA(vert->FarIndex, col);
+		// END!!
+	}
+	
+	return vert->FarIndex;
+}
+// ***************************************************************************
+sint			CPatch::getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc)
+{
+	if(vert->FarIndex==0)
+	{
+		// Compute/build the new vertex.
+		vert->FarIndex= CTessFace::CurrentVertexIndex++;
+
+		// Set Pos.
+		CTessFace::CurrentVB->setVertexCoord(vert->FarIndex, vert->Pos.x, vert->Pos.y, vert->Pos.z);
+
+		// Set Uvs.
+		float	u,v;
+		u= pc.getS()* Far1UVScale + Far1UBias;
+		v= pc.getT()* Far1UVScale + Far1VBias;
+		CTessFace::CurrentVB->setTexCoord(vert->FarIndex, 0, u, v);
+
+		// Compute color.
+		CRGBA	col(255,255,255,255);
+		// TODO_CLOUD: use normal information, for cloud attenuation, in RGB fields.
+		// For Far1, use alpha fro transition.
+		float	f= (vert->Pos - CTessFace::RefineCenter).sqrnorm();
+		f= (f-TransitionSqrMin) * OOTransitionSqrDelta;
+		clamp(f,0,1);
+		col.A= (uint8)(f*255);
+		CTessFace::CurrentVB->setRGBA(vert->FarIndex, col);
+		// END!!
+	}
+	
+	return vert->FarIndex;
+}
+
+
+// ***************************************************************************
+sint			CPatch::getTileIndex(CTessVertex *vert, ITileUv *uv, sint idUv)
+{
+	if(uv->TileIndex==0)
+	{
+		// Compute/build the new vertex.
+		uv->TileIndex= CTessFace::CurrentVertexIndex++;
+
+		// Set Pos.
+		CTessFace::CurrentVB->setVertexCoord(uv->TileIndex, vert->Pos.x, vert->Pos.y, vert->Pos.z);
+
+		// Set Uvs.
+		// TODO_BUMP: chose beetween bump and normal uvs. Always normal here.
+		ITileUvNormal	*uvn= (ITileUvNormal*)uv;
+		CPassUvNormal	&uvpass= uvn->UvPasses[idUv];
+		CTessFace::CurrentVB->setTexCoord(uv->TileIndex, 0, uvpass.PUv0.U, uvpass.PUv0.V);
+		CTessFace::CurrentVB->setTexCoord(uv->TileIndex, 1, uvpass.PUv1.U, uvpass.PUv1.V);
+
+		// Compute color.
+		CRGBA	col(255,255,255,255);
+		// TODO_CLOUD/TODO_ADDITIVE: use cloud color information for RGB. And use alpha global for global apparition of 
+		// additives tiles only.
+		CTessFace::CurrentVB->setRGBA(uv->TileIndex, col);
+		// END!!
+	}
+
+	return uv->TileIndex;
+}
+
+
+// ***************************************************************************
+void			CPatch::renderFar0()
+{
+	if(Pass0)
+	{
+		sint	nTris= resetFarIndices(RdrRoot);
+		// Realloc if necessary the VertexBuffer.
+		if(CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*nTris)
+			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*nTris);
+		// Add tris.
+		CTessFace	*pFace= RdrRoot;
+		for(;pFace; pFace=pFace->RenderNext)
+		{
+			Pass0->addTri(getFarIndex0(pFace->VBase, pFace->PVBase),
+						getFarIndex0(pFace->VLeft, pFace->PVLeft),
+						getFarIndex0(pFace->VRight, pFace->PVRight));
+		}
+	}
+}
+
+
+// ***************************************************************************
+void			CPatch::renderFar1()
+{
+	if(Pass1)
+	{
+		sint	nTris= resetFarIndices(RdrRoot);
+		// Realloc if necessary the VertexBuffer.
+		if(CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*nTris)
+			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*nTris);
+		// Add tris.
+		CTessFace	*pFace= RdrRoot;
+		for(;pFace; pFace=pFace->RenderNext)
+		{
+			Pass1->addTri(getFarIndex1(pFace->VBase, pFace->PVBase),
+						getFarIndex1(pFace->VLeft, pFace->PVLeft),
+						getFarIndex1(pFace->VRight, pFace->PVRight));
+		}
+	}
+}
+// ***************************************************************************
+void			CPatch::renderTile(sint pass)
+{
+	// If tile mode.
+	if(Far0==0)
+	{
+		sint	nTris= resetTileIndices(RdrRoot);
+		// Realloc if necessary the VertexBuffer (at max possible).
+		if(CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*nTris)
+			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*nTris);
+		// Add tris.
+		CTessFace	*pFace= RdrRoot;
+		for(;pFace; pFace=pFace->RenderNext)
+		{
+			// If tile level reached for this face.
+			if(pFace->TileMaterial)
+			{
+				CPatchRdrPass	*tilePass= pFace->TileMaterial->Pass[pass];
+				// If tile pass enabled.
+				if(tilePass)
+				{
+					sint	idUv=pFace->TileMaterial->PassToUv[pass];
+					tilePass->addTri(getTileIndex(pFace->VBase, pFace->TileUvBase, idUv),
+							getTileIndex(pFace->VLeft, pFace->TileUvLeft, idUv),
+							getTileIndex(pFace->VRight, pFace->TileUvRight, idUv));
+				}
+			}
+		}
+	}
 }
 
 
@@ -313,7 +588,7 @@ void			CPatch::bind(CBindInfo	Edges[4])
 	unbind();
 
 	// Just recompute base vertices.
-	// TODO. bind the noise info before.
+	// TODO_NOISE. bind the noise info before.
 	CTessVertex *a= BaseVertices[0];
 	CTessVertex *b= BaseVertices[1];
 	CTessVertex *c= BaseVertices[2];

@@ -1,7 +1,7 @@
 /** \file bezier_patch.h
  * <File description>
  *
- * $Id: bezier_patch.h,v 1.3 2000/10/27 14:29:42 berenguier Exp $
+ * $Id: bezier_patch.h,v 1.4 2000/11/02 13:48:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,22 +42,22 @@ using NLMISC::CVectorD;
 // ***************************************************************************
 /**
  * A standard bezier patch of float.  (quadpatch only).
- * QuadPatch layout (same notations as Max).
+ * QuadPatch layout (same notations as 3ds Max SDK).
  * 
- *   A---> ad ----- da <---D
- *   |                     |
- *   |                     |
- *   v                     v
- *   ab    ia       id     dc
+ *   A---> ad ---- da <---D
+ *   |                    |
+ *   |                    |
+ *   v                    v
+ *   ab    ia      id     dc
  *
- *   |                     |
- *   |                     |
+ *   |                    |
+ *   |                    |
  *
- *   ba    ib       ic     cd
- *   ^                     ^
- *   |                     |
- *   |                     |
- *   B---> bc ----- cb <---C
+ *   ba    ib      ic     cd
+ *   ^                    ^
+ *   |                    |
+ *   |                    |
+ *   B---> bc ---- cb <---C
  *
  * 
  * \author Lionel Berenguier
@@ -85,11 +85,11 @@ public:
 	void		makeInteriors();
 
 	/// Evaluate.
-	CVector		eval(float u, float v);			// u,v coordinates for quad.
+	CVector		eval(float s, float t);			// s,t coordinates for quad.
 	/// Evaluate, but return a vector double.
-	CVectorD	evalDouble(double u, double v);	// u,v coordinates for quad.
-	/// Evaluate the normal at (u,v).
-	CVector		evalNormal(float u, float v);			// u,v coordinates for quad.
+	CVectorD	evalDouble(double s, double t);	// s,t coordinates for quad.
+	/// Evaluate the normal at (s,t).
+	CVector		evalNormal(float s, float t);			// s,t coordinates for quad.
 
 };
 

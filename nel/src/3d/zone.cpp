@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.1 2000/10/27 14:30:18 berenguier Exp $
+ * $Id: zone.cpp,v 1.2 2000/11/02 13:48:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,13 +29,55 @@
 namespace NL3D {
 
 
-/*
- * Constructor
- */
+// ***************************************************************************
 CZone::CZone()
 {
 	ComputeTileErrorMetric= false;
+	ZoneId= 0;
+	Compiled= false;
 }
+// ***************************************************************************
+CZone::~CZone()
+{
+	// release() must have been called.
+	nlassert(!Compiled);
+}
+
+
+// ***************************************************************************
+void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const std::vector<CBorderVertex> &borderVertices)
+{
+	nlassert(!Compiled);
+
+	ZoneId= zoneId;
+	BorderVertices= borderVertices;
+
+	Patchs.resize(patchs.size());
+	PatchConnects.resize(patchs.size());
+
+	for(sint i=0;i<(sint)patchs.size();i++)
+	{
+	}
+}
+
+// ***************************************************************************
+void			CZone::compile(std::map<uint16, CZone*> &loadedZones)
+{
+
+
+
+	Compiled= true;
+}
+
+// ***************************************************************************
+void			CZone::release(std::map<uint16, CZone*> &loadedZones)
+{
+
+
+
+	Compiled= false;
+}
+
 
 
 } // RK3D

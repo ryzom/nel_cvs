@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.4 2000/10/27 14:29:42 berenguier Exp $
+ * $Id: tessellation.h,v 1.5 2000/11/02 13:48:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,10 +29,15 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/debug.h"
+#include "nel/3d/driver.h"
+#include <vector>
 
 
 namespace	NL3D
 {
+
+
+#define	NL3D_MAX_TILE_PASS 6
 
 
 using NLMISC::CVector;
@@ -41,7 +46,6 @@ using NLMISC::CMatrix;
 
 
 class	CPatch;
-class	CTileMaterial;
 
 
 // ***************************************************************************
@@ -50,25 +54,68 @@ const	float	OO32768= 1.0f/0x8000;
 
 // ***************************************************************************
 /**
- * A Landscape Vertex
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
+ * A render pass for a landscape material (tile or texture far).
+ * A Primitive Block is not used, for speed improvement: must not realloc at each face or at each patch...
+ *
+ * How does it work: class CPatchRdrPass maintain a GlobalTriList array, where tri indices are stored.
+ * Since Tris may be added in a interleaved fashion (33 tris indices for material 0, then 12 tris indices for material 1, 
+ * then 60 tris indices for material 0 etc...), this GlobalTriList is so interleaved (with some indices used for interleaving).
+ *
+ * NB: GlobalTriList is a "grow only" vector, even across frames.... So reallocation never happens, but at begin of program.
  */
-class	CTessVertex
+class	CPatchRdrPass
 {
 public:
-	// The current position, + geomorph.
-	CVector			Pos;
-	CVector			StartPos, EndPos;
-	// The index of current far vertex.
-	uint32			FarIndex;
+	CMaterial		*Mat;
+	// The current number of tris for this rdrpass.
+	sint			NTris;
+	// Where this RdrPass begin, in the GlobalTriList.
+	sint			StartIndex;
+	// The current/end index for this RdrPass GlobalTriList.
+	sint			CurIndex;
+	// The BlockLen index, to know what is the length of a block (in Triangles).
+	sint			BlockLenIndex;
 
-	CTessVertex()
-	{
-		// Must init to 0.
-		FarIndex= 0;
-	}
+	// Format of a single block:
+	// |LEN|ID0|ID1|ID2|ID0|ID1|ID2....|JMP|
+
+public:
+	CPatchRdrPass();
+	void			addTri(uint32 idx0, uint32 idx1, uint32 idx2);
+	void			resetTriList();
+	void			buildPBlock(CPrimitiveBlock &pb);
+
+
+public:
+	// Must resetTriList() of all material using the GlobalTriList, before calling resetGlobalTriList.
+	static void		resetGlobalTriList();
+
+private:
+	static sint					CurGlobalIndex;
+	static std::vector<uint32>	GlobalTriList;
+
+};
+
+
+// ***************************************************************************
+struct	CTileMaterial
+{
+	// The type of the tile.
+	uint8			TileUvFmt;		// 4 first bits to know the number of Uv needed.  5th bit: 0 -> no bump. 16 -> bump. 
+	// The LUT to know which Uv to be used, for which pass.
+	uint8			PassToUv[NL3D_MAX_TILE_PASS];
+	// The rendering passes materials.
+	CPatchRdrPass	*Pass[NL3D_MAX_TILE_PASS];
+	// Pass are:
+	//  0: general Tile.
+	//  1: additive pass for general Tile.
+	//  2: 1st alpha tile.
+	//  3: additive pass for 1st alpha tile.
+	//  4: 2nd alpha tile.
+	//  5: additive pass for 2nd alpha tile.
+
+	// ptrs are Null by default.
+	CTileMaterial();
 };
 
 
@@ -111,6 +158,9 @@ public:
 /**
  * A Landscape Base TileUv.
  * virtual inheritance would have be usefull, for automatic clone(), middle() etc... but too heavy (a vftable...).
+ *
+ * NB: why don't use a UvPasses ptr, and aloc it on demand??? For future allocation improvement, where we need to allocate
+ * fixed size element.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -125,113 +175,123 @@ public:
 };
 
 
-// TileUv format, without BumpMapping support.
-// Format; PXUvY: PassX / UvY.
+
+// Uv Passes.
 // **************************************
-class	CTileUv1Tf2 : public ITileUv
+struct	CPassUvNormal
 {
-public:
-	CUV		P0Uv0, P0Uv1;
-public:
-	CTileUv1Tf2() {}
-	// Create as the middle of two CTileUv1Tf2.
-	CTileUv1Tf2(const CTileUv1Tf2 *uv0, const CTileUv1Tf2 *uv1)
+	CUV		PUv0, PUv1;
+
+	void	makeMiddle(const CPassUvNormal &uv0, const CPassUvNormal &uv1)
 	{
-		P0Uv0= (uv0->P0Uv0 + uv1->P0Uv0)*0.5;
-		P0Uv1= (uv0->P0Uv1 + uv1->P0Uv1)*0.5;
+		PUv0= (uv0.PUv0 + uv1.PUv0)*0.5;
+		PUv1= (uv0.PUv1 + uv1.PUv1)*0.5;
 	}
 };
-// **************************************
-class	CTileUv2Tf2 : public CTileUv1Tf2
+struct	CPassUvBump : public CPassUvNormal
 {
-public:
-	// Herited: CUV		P0Uv0, P0Uv1;
-	CUV		P1Uv0, P1Uv1;
-public:
-	CTileUv2Tf2() {}
-	// Create as the middle of two CTileUv2Tf2.
-	CTileUv2Tf2(const CTileUv2Tf2 *uv0, const CTileUv2Tf2 *uv1) : CTileUv1Tf2(uv0,uv1)
+	// Herited: CUV	PUv0, PUv1;
+	CUV		PUv2;
+	CUVW	PUvw3;
+
+	void	makeMiddle(const CPassUvBump &uv0, const CPassUvBump &uv1)
 	{
-		P1Uv0= (uv0->P1Uv0 + uv1->P1Uv0)*0.5;
-		P1Uv1= (uv0->P1Uv1 + uv1->P1Uv1)*0.5;
-	}
-};
-// **************************************
-class	CTileUv3Tf2 : public CTileUv2Tf2
-{
-public:
-	// Herited: CUV		P0Uv0, P0Uv1;
-	// Herited: CUV		P1Uv0, P1Uv1;
-	CUV		P2Uv0, P2Uv1;
-public:
-	CTileUv3Tf2() {}
-	// Create as the middle of two CTileUv3Tf2.
-	CTileUv3Tf2(const CTileUv3Tf2 *uv0, const CTileUv3Tf2 *uv1) : CTileUv2Tf2(uv0,uv1)
-	{
-		P2Uv0= (uv0->P2Uv0 + uv1->P2Uv0)*0.5;
-		P2Uv1= (uv0->P2Uv1 + uv1->P2Uv1)*0.5;
+		PUv0= (uv0.PUv0 + uv1.PUv0)*0.5;
+		PUv1= (uv0.PUv1 + uv1.PUv1)*0.5;
+		PUv2= (uv0.PUv2 + uv1.PUv2)*0.5;
+		PUvw3= (uv0.PUvw3 + uv1.PUvw3)*0.5;
 	}
 };
 
+
+// TileUv format, without BumpMapping support.
+// **************************************
+class	ITileUvNormal : public ITileUv
+{
+public:
+	CPassUvNormal	*UvPasses;
+};
+// ******
+template<sint NPass>
+class	CTileUvNormalT : public ITileUvNormal
+{
+public:
+	CPassUvNormal	MyUvPasses[NPass];
+public:
+	CTileUvNormalT() {UvPasses= MyUvPasses;}
+	// Create as the middle.
+	CTileUvNormalT(const CTileUvNormalT *uva, const CTileUvNormalT *uvb)
+	{
+		UvPasses= MyUvPasses;
+		for(sint i=0;i<NPass;i++)
+			UvPasses[i].makeMiddle(uva->UvPasses[i], uvb->UvPasses[i]);
+	}
+};
+
+
+typedef	CTileUvNormalT<1>	CTileUvNormal1;
+typedef	CTileUvNormalT<2>	CTileUvNormal2;
+typedef	CTileUvNormalT<3>	CTileUvNormal3;
+typedef	CTileUvNormalT<4>	CTileUvNormal4;
+typedef	CTileUvNormalT<5>	CTileUvNormal5;
+typedef	CTileUvNormalT<6>	CTileUvNormal6;
 
 
 // TileUv format, with BumpMapping support.
-// Format; PXUvY: PassX / UvY.
 // **************************************
-class	CTileUv1Tf4 : public ITileUv
+class	ITileUvBump : public ITileUv
 {
 public:
-	CUV		P0Uv0, P0Uv1, P0Uv2;
-	CUVW	P0Uvw3;
+	CPassUvBump		*UvPasses;
+};
+// ******
+template<sint NPass>
+class	CTileUvBumpT : public ITileUvBump
+{
+private:
+	CPassUvBump		MyUvPasses[NPass];
+
 public:
-	CTileUv1Tf4() {}
-	// Create as the middle of two CTileUv1Tf4.
-	CTileUv1Tf4(const CTileUv1Tf4 *uv0, const CTileUv1Tf4 *uv1)
+	CTileUvBumpT() {UvPasses= MyUvPasses;}
+	// Create as the middle.
+	CTileUvBumpT(const CTileUvBumpT *uva, const CTileUvBumpT *uvb)
 	{
-		P0Uv0= (uv0->P0Uv0 + uv1->P0Uv0)*0.5;
-		P0Uv1= (uv0->P0Uv1 + uv1->P0Uv1)*0.5;
-		P0Uv2= (uv0->P0Uv2 + uv1->P0Uv2)*0.5;
-		P0Uvw3= (uv0->P0Uvw3 + uv1->P0Uvw3)*0.5;
+		UvPasses= MyUvPasses;
+		for(sint i=0;i<NPass;i++)
+			UvPasses[i].makeMiddle(uva->UvPasses[i], uvb->UvPasses[i]);
 	}
 };
-// **************************************
-class	CTileUv2Tf4 : public CTileUv1Tf4
+
+
+typedef	CTileUvBumpT<1>	CTileUvBump1;
+typedef	CTileUvBumpT<2>	CTileUvBump2;
+typedef	CTileUvBumpT<3>	CTileUvBump3;
+typedef	CTileUvBumpT<4>	CTileUvBump4;
+typedef	CTileUvBumpT<5>	CTileUvBump5;
+typedef	CTileUvBumpT<6>	CTileUvBump6;
+
+
+
+// ***************************************************************************
+/**
+ * A Landscape Vertex
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class	CTessVertex
 {
 public:
-	// Herited: CUV		P0Uv0, P0Uv1, P0Uv2;
-	// Herited: CUVW	P0Uvw3;
-	CUV		P1Uv0, P1Uv1, P1Uv2;
-	CUVW	P1Uvw3;
-public:
-	CTileUv2Tf4() {}
-	// Create as the middle of two CTileUv2Tf4.
-	CTileUv2Tf4(const CTileUv2Tf4 *uv0, const CTileUv2Tf4 *uv1) : CTileUv1Tf4(uv0, uv1)
+	// The current position, + geomorph.
+	CVector			Pos;
+	CVector			StartPos, EndPos;
+	// The index of current far vertex.
+	uint32			FarIndex;
+
+	CTessVertex()
 	{
-		P1Uv0= (uv0->P1Uv0 + uv1->P1Uv0)*0.5;
-		P1Uv1= (uv0->P1Uv1 + uv1->P1Uv1)*0.5;
-		P1Uv2= (uv0->P1Uv2 + uv1->P1Uv2)*0.5;
-		P1Uvw3= (uv0->P1Uvw3 + uv1->P1Uvw3)*0.5;
-	}
-};
-// **************************************
-class	CTileUv3Tf4 : public CTileUv2Tf4
-{
-public:
-	// Herited: CUV		P0Uv0, P0Uv1, P0Uv2;
-	// Herited: CUVW	P0Uvw3;
-	// Herited: CUV		P1Uv0, P1Uv1, P1Uv2;
-	// Herited: CUVW	P1Uvw3;
-	CUV		P2Uv0, P2Uv1, P2Uv2;
-	CUVW	P2Uvw3;
-public:
-	CTileUv3Tf4() {}
-	// Create as the middle of two CTileUv3Tf4.
-	CTileUv3Tf4(const CTileUv3Tf4 *uv0, const CTileUv3Tf4 *uv1) : CTileUv2Tf4(uv0, uv1)
-	{
-		P2Uv0= (uv0->P2Uv0 + uv1->P2Uv0)*0.5;
-		P2Uv1= (uv0->P2Uv1 + uv1->P2Uv1)*0.5;
-		P2Uv2= (uv0->P2Uv2 + uv1->P2Uv2)*0.5;
-		P2Uvw3= (uv0->P2Uvw3 + uv1->P2Uvw3)*0.5;
+		// Must init to 0.
+		FarIndex= 0;
 	}
 };
 
@@ -289,13 +349,8 @@ public:
 	// @{
 	// The number of the tile relatively to the patch TileMap.
 	uint8			TileId;
-	// The type of the tile.
-	uint8			TileFmt:5;		// (1,2 or 3 t2f0/t2f1,  1,2 or 3 t2f0/t2f1/t2f2/t3f3).
-	uint8			TileMat:3;		// Normal / Spec / Alpha / AlphaSpec / SpecAlpha
-	// The tile Materials. Each material=1 pass.
-	CTileMaterial	*TilePass0;				//  general Tile.
-	CTileMaterial	*TilePass1;				// (may be NULL) 2nd Tile Alpha. Or specular tile for TilePass0.
-	CTileMaterial	*TilePass2;				// (may be NULL) 2nd Tile Alpha. Or specular tile for TilePass1 (2nd tile alpha).
+	// The multi-pass tile Material.
+	CTileMaterial	*TileMaterial;
 	// Uv for tiles. ITileUv is either: 1,2 or 3 t2f0/t2f1,  either:  1,2 or 3 t2f0/t2f1/t2f2/t3f3.
 	// color4ub are computed each frame (alpha= global night alpha, RGB= clouds color).
 	ITileUv			*TileUvBase, *TileUvLeft, *TileUvRight;
@@ -312,6 +367,9 @@ public:
 	sint			ProjectedSizeDate;	// The date of errormetric update.
 	// @}
 
+
+	// For Render.
+	CTessFace		*RenderNext;
 
 public:
 	CTessFace();
@@ -342,6 +400,9 @@ public:
 	bool			merge();
 	// if NeedCompute, refine the node, and his sons.
 	void			refine();
+
+	// Build the render list. (insert leaves...).
+	void			appendToRenderList(CTessFace *&root);
 
 
 	// Used by CPatch::unbind(). isolate the tesselation from other patchs.
@@ -379,6 +440,15 @@ public:
 	static	sint	TileMaxSubdivision;
 
 
+	// Render Global info. Used by Patch.
+	// The distance transition for Far0 and Far1 (200m / 400m).
+	static	float	Far0Dist, Far1Dist;
+	// Distance for Alpha blend transition
+	static	float	FarTransition;
+	// The current VertexBuffer.
+	static	CVertexBuffer	*CurrentVB;
+	// The current Vertex Index for each pass of landscape render. Start at 1.
+	static	sint	CurrentVertexIndex;
 
 	// PATCH GLOBAL INTERFACE.  patch must setup them at the begining at refine()/render().
 	// NO!!! REMIND: can't have any patch global, since a propagated split()/updateErrorMetric()

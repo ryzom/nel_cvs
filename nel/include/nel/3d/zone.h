@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.1 2000/10/27 14:30:33 berenguier Exp $
+ * $Id: zone.h,v 1.2 2000/11/02 13:48:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,9 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/3d/tessellation.h"
+#include "nel/3d/patch.h"
 #include <vector>
+#include <map>
 
 
 namespace NL3D {
@@ -38,22 +40,118 @@ namespace NL3D {
 class CZone;
 
 
+/*
+TODO: à mettre dans zone.h ou dans landscape.h
+
+	Limitations:
+		- 65535	zones maxi dans le monde entier (ZoneId sur 16 bits).
+		- 65535 patchs maxi par zone.
+		- patch d'ordre 2x2 minimum.
+		- patch d'ordre 16x16 maximum.
+		- conectivité sur un edge à 1, 2, ou 4 patchs.
+
+*/
+
+
 // ***************************************************************************
+/**
+ * The struct for connectivity of zone vertices. 
+ */
 struct	CBorderVertex
 {
-	// The neighbor  zone.
-	CZone			*Other;
+	// The index of vertex in the current zone to bind.
+	uint16			CurrentVertex;
+	// The neighbor  zone. (un-usefull for build()).
+	CZone			*NeighborZone;
 	// The neighbor zone Id.
-	sint32			ZoneId;
-	// The index of vertex in the neighbor zone.
-	sint32			Vertex;
+	uint16			NeighborZoneId;
+	// The index of vertex in the neighbor zone to bind to CurrentVertex.
+	uint16			NeighborVertex;
 };
 
+
+// ***************************************************************************
+/**
+ * The struct for building a patch. 
+ * NB: Different from the one which is stored.
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+struct	CPatchInfo
+{
+public:
+
+	// A bind Info on a edge of a patch.
+	struct	CBindInfo
+	{
+		uint8			NPatchs;	// The number of patchs on this edge. 0,1, 2 or 4.  0 means no neigbor on this edge.
+
+		// only usefull for Bind One/One+
+		uint16			ZoneId0;	// The neighbor zone of neigbor patch 0. Often the same zone as the patch (but on border).
+		uint16			Next0;		// The neighbor patch 0.
+		// see Edge0.
+
+		// only usefull for Bind One/Two+
+		uint16			ZoneId1;	// same for patch 1.
+		uint16			Next1;		// ...
+		// see Edge1.
+
+		// only usefull for Bind One/Quad
+		uint16			ZoneId2;	// ...
+		uint16			Next2;		// ...
+		// see Edge2.
+		uint16			ZoneId3;	// ...
+		uint16			Next3;		// ...
+		// see Edge3.
+
+		uint8			Edge0;		// On which edge of Next0 we are binded.
+		uint8			Edge1;		// same for Next1.
+		uint8			Edge2;		// ...
+		uint8			Edge3;		// ...
+	};
+
+	
+public:
+	/// \name Patch geometry.
+	// @{
+	/// The patch coordinates.
+	CVector			Vertices[4];
+	CVector			Tangents[8];
+	CVector			Interiors[4];
+	/// Tile Order for the patch.
+	uint8			OrderS, OrderT;
+	/// The Base Size*bumpiness of the patch (/2 at each subdivide). Set to 0, if you want CZone to compute it for you.
+	float			ErrorSize;
+	/// The base corner vertices indices in the current zone. Used for patch connectivity.
+	uint16			BaseVertices[4];
+	// @}
+
+
+	/// \name Patch Binding.
+	// @{
+	CBindInfo		BindEdges[4];
+	// @}
+
+
+public:
+	CPatchInfo()
+	{
+		ErrorSize= 0;
+	}
+};
 
 
 // ***************************************************************************
 /**
  * A landscape zone.
+ * There is 2 ways for building a zone:
+ *	- use build(). (then you can use serial to save the zone, don't need to compile() the zone).
+ *	- use serial() for loading this zone.
+ *
+ * Before a zone may be rendered, it must be compile()-ed, to compile and bind patch, to make vertices etc...
+ *
+ * NB: you must call release() before deleting a compiled zone. (else assert in destruction).
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -61,21 +159,57 @@ struct	CBorderVertex
 class CZone
 {
 public:
-	float			PatchBias, PatchScale;
-
-
-	// A Zone has:
-	// The number of vertices she access (maybe on border).
-	sint			NumVertices;
-	// The list of border vetices. Patch vertex indices are sorted so that the border one are all at the begining.
-	std::vector<CBorderVertex>	BorderVertices;
-	// TODO: problem on corners ??? Have a special "World zone" for this??? :)
-
-
-public:
 
 	/// Constructor
 	CZone();
+	/// Destructor
+	~CZone();
+
+
+	/** Build a zone.
+	 * This method do:
+	 *	- compress the patchs coordinates.
+	 *	- build the patchs of the zone, but doesn't compile() them.
+	 *
+	 * NB: cannot build on a compiled zone. must release the zone before....
+	 *
+	 * \param zoneId the Unique ID of this zone.
+	 * \param patchs the PatchInfo of this zone.
+	 * \param borderVertices vertices connectivity for this zone. NB: borderVertices must contains the connectivity 
+	 *		across zones. It is VERY IMPORTANT to setup zone corner connectivity too. A "corner borderVertex" may appear 
+	 *		3 times here. One for each other zone of the corner.
+	 */
+	void			build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const std::vector<CBorderVertex> &borderVertices);
+
+
+	/** Compile a zone. Make it usable for clip()/refine()/render().
+	 * This method do:
+	 *	- attach this to loadedZones.
+	 *	- create/link the base vertices (internal..), according to present neigbor zones.
+	 *	- compile() the patchs.
+	 *	- bind() the patchs.
+	 *	- rebindBorder() on neighbor zones.
+	 *
+	 * NB: assert if already compiled.
+	 */
+	void			compile(std::map<uint16, CZone*> &loadedZones);
+
+	/** Release a zone.
+	 * This method do:
+	 *	- detach this zone to loadedZones.
+	 *	- destroy/unlink the base vertices (internal..), according to present neigbor zones.
+	 *	- unbind() the patchs.
+	 *	- release() the patchs.
+	 *	- rebindBorder() on neighbor zones.
+	 *
+	 * NB: no-op if not compiled.
+	 */
+	void			release(std::map<uint16, CZone*> &loadedZones);
+
+
+	// Accessors.
+	float			getPatchBias() const {return PatchBias;}
+	float			getPatchScale() const {return PatchScale;}
 
 
 // Private part.
@@ -87,12 +221,38 @@ private:
 		CTessVertex		Vert;
 	};
 
+	// The stored patch structure for compile() - ation.
+	struct	CPatchConnect
+	{
+		// NB: same meanings than in CPatchInfo.
+		uint8			OrderS, OrderT;
+		float			ErrorSize;
+		uint16			BaseVertices[4];
+		CPatchInfo::CBindInfo		BindEdges[4];
+	};
+
+	// Zone vertices.
+	typedef	NLMISC::CSmartPtr<CTessBaseVertex>	PBaseVertex;
+	typedef	std::vector<PBaseVertex>			TBaseVerticesVec;
+
 
 private:
+	// Misc.
+	uint16			ZoneId;
+	bool			Compiled;
+	float			PatchBias, PatchScale;
+
+	// The number of vertices she access (maybe on border).
+	sint				NumVertices;
 	// The smartptr on zone vertices.
-	typedef	NLMISC::CSmartPtr<CTessBaseVertex>	PBaseVertex;
-	typedef	std::vector<PBaseVertex>					TBaseVerticesVec;
 	TBaseVerticesVec	BaseVertices;
+	// The list of border vertices.
+	std::vector<CBorderVertex>	BorderVertices;
+	// NB: No problem on corners, since zones are compile()-ed with knowledge of neihbors.
+
+	// The patchs.
+	std::vector<CPatch>			Patchs;
+	std::vector<CPatchConnect>	PatchConnects;
 
 	
 private:
@@ -102,6 +262,16 @@ private:
 	// Should we compute the error metric part for tile?? Stored by Zone. By patch, it is Too slow, regarding
 	// the cost of computing this errormetric in CTessFace::updateErrorMetric().
 	bool			ComputeTileErrorMetric;
+	// REMIND: can't have any patch/zone global, since a propagated split()/updateErrorMetric() can arise.
+
+
+private:
+	/**
+	 * Force border patchs (those who don't bind to current zone) to re bind() them, using new neighborood.
+	 * no-op if zone is not compiled.
+	 */
+	void			rebindBorder(const std::map<uint16, CZone*> &loadedZones);
+
 };
 
 

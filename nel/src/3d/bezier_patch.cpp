@@ -1,7 +1,7 @@
 /** \file bezier_patch.cpp
  * <File description>
  *
- * $Id: bezier_patch.cpp,v 1.2 2000/10/24 14:18:28 lecroart Exp $
+ * $Id: bezier_patch.cpp,v 1.3 2000/11/02 13:48:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,157 +70,158 @@ void		CBezierPatch::makeInteriors()
 }
 
 // ***************************************************************************
-CVector		CBezierPatch::eval(float pu, float pv)
+CVector		CBezierPatch::eval(float ps, float pt)
 {
 	CVector	p;
 
-	float pu2 = pu * pu;
-	float pu1 = 1.0f - pu;
-	float pu12 = pu1 * pu1;
-	float u0 = pu12 * pu1;
-	float u1 = 3.0f * pu * pu12;
-	float u2 = 3.0f * pu2 * pu1;
-	float u3 = pu2 * pu;
-	float pv2 = pv * pv;
-	float pv1 = 1.0f - pv;
-	float pv12 = pv1 * pv1;
-	float v0 = pv12 * pv1;
-	float v1 = 3.0f * pv * pv12;
-	float v2 = 3.0f * pv2 * pv1;
-	float v3 = pv2 * pv;
+	float ps2 = ps * ps;
+	float ps1 = 1.0f - ps;
+	float ps12 = ps1 * ps1;
+	float s0 = ps12 * ps1;
+	float s1 = 3.0f * ps * ps12;
+	float s2 = 3.0f * ps2 * ps1;
+	float s3 = ps2 * ps;
+	float pt2 = pt * pt;
+	float pt1 = 1.0f - pt;
+	float pt12 = pt1 * pt1;
+	float t0 = pt12 * pt1;
+	float t1 = 3.0f * pt * pt12;
+	float t2 = 3.0f * pt2 * pt1;
+	float t3 = pt2 * pt;
 
-	p = Vertices[0]	* u0 * v0	+ 
-		Tangents[7] * u1 * v0	+ 
-		Tangents[6] * u2 * v0	+ 
-		Vertices[3] * u3 * v0;
-	p+= Tangents[0] * u0 * v1	+ 
-		Interiors[0]* u1 * v1	+ 
-		Interiors[3]* u2 * v1	+ 
-		Tangents[5] * u3 * v1;
-	p+=	Tangents[1] * u0 * v2	+ 
-		Interiors[1]* u1 * v2	+ 
-		Interiors[2]* u2 * v2	+ 
-		Tangents[4] * u3 * v2;
-	p+=	Vertices[1] * u0 * v3	+ 
-		Tangents[2] * u1 * v3	+ 
-		Tangents[3] * u2 * v3	+ 
-		Vertices[2] * u3 * v3;
+	p = Vertices[0]	* s0 * t0	+ 
+		Tangents[7] * s1 * t0	+ 
+		Tangents[6] * s2 * t0	+ 
+		Vertices[3] * s3 * t0;
+	p+= Tangents[0] * s0 * t1	+ 
+		Interiors[0]* s1 * t1	+ 
+		Interiors[3]* s2 * t1	+ 
+		Tangents[5] * s3 * t1;
+	p+=	Tangents[1] * s0 * t2	+ 
+		Interiors[1]* s1 * t2	+ 
+		Interiors[2]* s2 * t2	+ 
+		Tangents[4] * s3 * t2;
+	p+=	Vertices[1] * s0 * t3	+ 
+		Tangents[2] * s1 * t3	+ 
+		Tangents[3] * s2 * t3	+ 
+		Vertices[2] * s3 * t3;
 	
 	return p;
 }
 // ***************************************************************************
-CVectorD	CBezierPatch::evalDouble(double pu, double pv)
+CVectorD	CBezierPatch::evalDouble(double ps, double pt)
 {
 	CVectorD	p;
 
-	double pu2 = pu * pu;
-	double pu1 = 1.0f - pu;
-	double pu12 = pu1 * pu1;
-	double u0 = pu12 * pu1;
-	double u1 = 3.0f * pu * pu12;
-	double u2 = 3.0f * pu2 * pu1;
-	double u3 = pu2 * pu;
-	double pv2 = pv * pv;
-	double pv1 = 1.0f - pv;
-	double pv12 = pv1 * pv1;
-	double v0 = pv12 * pv1;
-	double v1 = 3.0f * pv * pv12;
-	double v2 = 3.0f * pv2 * pv1;
-	double v3 = pv2 * pv;
+	double ps2 = ps * ps;
+	double ps1 = 1.0f - ps;
+	double ps12 = ps1 * ps1;
+	double s0 = ps12 * ps1;
+	double s1 = 3.0f * ps * ps12;
+	double s2 = 3.0f * ps2 * ps1;
+	double s3 = ps2 * ps;
+	double pt2 = pt * pt;
+	double pt1 = 1.0f - pt;
+	double pt12 = pt1 * pt1;
+	double t0 = pt12 * pt1;
+	double t1 = 3.0f * pt * pt12;
+	double t2 = 3.0f * pt2 * pt1;
+	double t3 = pt2 * pt;
 
-	p = CVectorD(Vertices[0]) * u0 * v0	+ 
-		CVectorD(Tangents[7]) * u1 * v0	+ 
-		CVectorD(Tangents[6]) * u2 * v0	+ 
-		CVectorD(Vertices[3]) * u3 * v0;
-	p+= CVectorD(Tangents[0]) * u0 * v1	+ 
-		CVectorD(Interiors[0])* u1 * v1	+ 
-		CVectorD(Interiors[3])* u2 * v1	+ 
-		CVectorD(Tangents[5]) * u3 * v1;
-	p+=	CVectorD(Tangents[1]) * u0 * v2	+ 
-		CVectorD(Interiors[1])* u1 * v2	+ 
-		CVectorD(Interiors[2])* u2 * v2	+ 
-		CVectorD(Tangents[4]) * u3 * v2;
-	p+=	CVectorD(Vertices[1]) * u0 * v3	+ 
-		CVectorD(Tangents[2]) * u1 * v3	+ 
-		CVectorD(Tangents[3]) * u2 * v3	+ 
-		CVectorD(Vertices[2]) * u3 * v3;
+	p = CVectorD(Vertices[0]) * s0 * t0	+ 
+		CVectorD(Tangents[7]) * s1 * t0	+ 
+		CVectorD(Tangents[6]) * s2 * t0	+ 
+		CVectorD(Vertices[3]) * s3 * t0;
+	p+= CVectorD(Tangents[0]) * s0 * t1	+ 
+		CVectorD(Interiors[0])* s1 * t1	+ 
+		CVectorD(Interiors[3])* s2 * t1	+ 
+		CVectorD(Tangents[5]) * s3 * t1;
+	p+=	CVectorD(Tangents[1]) * s0 * t2	+ 
+		CVectorD(Interiors[1])* s1 * t2	+ 
+		CVectorD(Interiors[2])* s2 * t2	+ 
+		CVectorD(Tangents[4]) * s3 * t2;
+	p+=	CVectorD(Vertices[1]) * s0 * t3	+ 
+		CVectorD(Tangents[2]) * s1 * t3	+ 
+		CVectorD(Tangents[3]) * s2 * t3	+ 
+		CVectorD(Vertices[2]) * s3 * t3;
 
 	return p;
 }
 
 
 // ***************************************************************************
-CVector		CBezierPatch::evalNormal(float pu, float pv)
+CVector		CBezierPatch::evalNormal(float ps, float pt)
 {
 	CVector	tgtS, tgtT;
 
-	float u0,u1,u2,u3;
-	float v0,v1,v2,v3;
-	float pu2 = pu * pu;
-	float pu1 = 1.0f - pu;
-	float pu12 = pu1 * pu1;
-	float pv2 = pv * pv;
-	float pv1 = 1.0f - pv;
-	float pv12 = pv1 * pv1;
+	float s0,s1,s2,s3;
+	float t0,t1,t2,t3;
+	float ps2 = ps * ps;
+	float ps1 = 1.0f - ps;
+	float ps12 = ps1 * ps1;
+	float pt2 = pt * pt;
+	float pt1 = 1.0f - pt;
+	float pt12 = pt1 * pt1;
 
 	// Compute tangentS
 	//=================
-	// u/du.
-	u0 = -3* pu12;
-	u1 = 9*pu2 + 3 -12*pu;
-	u2 =-9*pu2 + 6*pu ;
-	u3 = 3* pu2;
-	v0 = pv12 * pv1;
-	v1 = 3.0f * pv * pv12;
-	v2 = 3.0f * pv2 * pv1;
-	v3 = pv2 * pv;
+	// s/ds.
+	s0 = -3* ps12;
+	s1 = 9*ps2 + 3 -12*ps;
+	s2 =-9*ps2 + 6*ps ;
+	s3 = 3* ps2;
+	// t/dt.
+	t0 = pt12 * pt1;
+	t1 = 3.0f * pt * pt12;
+	t2 = 3.0f * pt2 * pt1;
+	t3 = pt2 * pt;
 
-	tgtS =	Vertices[0]	* u0 * v0	+ 
-			Tangents[7] * u1 * v0	+ 
-			Tangents[6] * u2 * v0	+ 
-			Vertices[3] * u3 * v0;
-	tgtS+=	Tangents[0] * u0 * v1	+ 
-			Interiors[0]* u1 * v1	+ 
-			Interiors[3]* u2 * v1	+ 
-			Tangents[5] * u3 * v1;
-	tgtS+=	Tangents[1] * u0 * v2	+ 
-			Interiors[1]* u1 * v2	+ 
-			Interiors[2]* u2 * v2	+ 
-			Tangents[4] * u3 * v2;
-	tgtS+=	Vertices[1] * u0 * v3	+ 
-			Tangents[2] * u1 * v3	+ 
-			Tangents[3] * u2 * v3	+ 
-			Vertices[2] * u3 * v3;
+	tgtS =	Vertices[0]	* s0 * t0	+ 
+			Tangents[7] * s1 * t0	+ 
+			Tangents[6] * s2 * t0	+ 
+			Vertices[3] * s3 * t0;
+	tgtS+=	Tangents[0] * s0 * t1	+ 
+			Interiors[0]* s1 * t1	+ 
+			Interiors[3]* s2 * t1	+ 
+			Tangents[5] * s3 * t1;
+	tgtS+=	Tangents[1] * s0 * t2	+ 
+			Interiors[1]* s1 * t2	+ 
+			Interiors[2]* s2 * t2	+ 
+			Tangents[4] * s3 * t2;
+	tgtS+=	Vertices[1] * s0 * t3	+ 
+			Tangents[2] * s1 * t3	+ 
+			Tangents[3] * s2 * t3	+ 
+			Vertices[2] * s3 * t3;
 	
 	// Compute tangentT
 	//=================
-	// u/du.
-	u0 = pu12 * pu1;
-	u1 = 3.0f * pu * pu12;
-	u2 = 3.0f * pu2 * pu1;
-	u3 = pu2 * pu;
-	// v/dv.
-	v0 = -3* pv12;
-	v1 = 9*pv2 + 3 -12*pv;
-	v2 =-9*pv2 + 6*pv ;
-	v3 = 3* pv2;
+	// s/ds.
+	s0 = ps12 * ps1;
+	s1 = 3.0f * ps * ps12;
+	s2 = 3.0f * ps2 * ps1;
+	s3 = ps2 * ps;
+	// t/dt.
+	t0 = -3* pt12;
+	t1 = 9*pt2 + 3 -12*pt;
+	t2 =-9*pt2 + 6*pt ;
+	t3 = 3* pt2;
 
-	tgtT =	Vertices[0]	* u0 * v0	+ 
-			Tangents[7] * u1 * v0	+ 
-			Tangents[6] * u2 * v0	+ 
-			Vertices[3] * u3 * v0;
-	tgtT+=	Tangents[0] * u0 * v1	+ 
-			Interiors[0]* u1 * v1	+ 
-			Interiors[3]* u2 * v1	+ 
-			Tangents[5] * u3 * v1;
-	tgtT+=	Tangents[1] * u0 * v2	+ 
-			Interiors[1]* u1 * v2	+ 
-			Interiors[2]* u2 * v2	+ 
-			Tangents[4] * u3 * v2;
-	tgtT+=	Vertices[1] * u0 * v3	+ 
-			Tangents[2] * u1 * v3	+ 
-			Tangents[3] * u2 * v3	+ 
-			Vertices[2] * u3 * v3;
+	tgtT =	Vertices[0]	* s0 * t0	+ 
+			Tangents[7] * s1 * t0	+ 
+			Tangents[6] * s2 * t0	+ 
+			Vertices[3] * s3 * t0;
+	tgtT+=	Tangents[0] * s0 * t1	+ 
+			Interiors[0]* s1 * t1	+ 
+			Interiors[3]* s2 * t1	+ 
+			Tangents[5] * s3 * t1;
+	tgtT+=	Tangents[1] * s0 * t2	+ 
+			Interiors[1]* s1 * t2	+ 
+			Interiors[2]* s2 * t2	+ 
+			Tangents[4] * s3 * t2;
+	tgtT+=	Vertices[1] * s0 * t3	+ 
+			Tangents[2] * s1 * t3	+ 
+			Tangents[3] * s2 * t3	+ 
+			Vertices[2] * s3 * t3;
 	
 
 	// Return the normal.

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.65 2004/05/10 14:43:31 corvazier Exp $
+ * $Id: debug.h,v 1.66 2004/05/21 14:29:12 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -570,6 +570,15 @@ public:
 	{
 		return	_Value;
 	}
+
+	operator	const	T	&()	const
+	{
+#ifndef FINAL_VERSION
+		_consumed=true;
+#endif
+		return	_Value;
+	}
+	
 	//	Get the value and validat the access.
 	const	T	&consumeValue()	const
 	{

@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.7 2002/02/21 17:35:05 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.8 2002/02/27 13:58:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -808,6 +808,18 @@ protected:
 	CMaterial _Mat;		
 };
 
+
+//==========================================================================	
+/// setup a stage as modulate, by specifying the source and destination
+inline void SetupModulatedStage(CMaterial &m, uint stage, CMaterial::TTexSource src1, CMaterial::TTexSource src2)
+{
+	m.texEnvOpRGB(stage, CMaterial::Modulate);
+	m.texEnvOpAlpha(stage, CMaterial::Modulate);
+	m.texEnvArg0RGB(stage, src1, CMaterial::SrcColor);
+	m.texEnvArg1RGB(stage, src2, CMaterial::SrcColor);
+	m.texEnvArg0Alpha(stage, src1, CMaterial::SrcAlpha);
+	m.texEnvArg1Alpha(stage, src2, CMaterial::SrcAlpha);
+}
 
 
 

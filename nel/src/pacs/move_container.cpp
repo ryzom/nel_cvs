@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.48 2004/07/09 09:44:33 lecroart Exp $
+ * $Id: move_container.cpp,v 1.49 2004/08/16 16:48:22 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1139,7 +1139,7 @@ void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfac
 
 	if (time >= _DeltaTime)
 	{
-		nlwarning("PACS: time=%f >= _DeltaTime=%f", time, _DeltaTime);
+		nlinfo("PACS: time=%f >= _DeltaTime=%f", time, _DeltaTime);
 	}
 
 
@@ -2049,7 +2049,7 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 
 				if (collisionTime == 1)
 				{
-					nlwarning("PACS: evalNCPrimitiveCollision() failure, collisionTime [%f] == 1", collisionTime);
+					nlinfo("PACS: evalNCPrimitiveCollision() failure, collisionTime [%f] == 1", collisionTime);
 					return false;
 				}
 			}

@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.10 2003/11/20 14:05:58 corvazier Exp $
+ * $Id: big_file.cpp,v 1.11 2003/11/20 15:26:22 corvazier Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -122,6 +122,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 	uint32 nNbFile;
 	if (fread (&nNbFile, sizeof(uint32), 1, handle.File) != 1)
 		return false;
+	map<string,BNPFile> tempMap;
 	for (uint32 i = 0; i < nNbFile; ++i)
 	{
 		char FileName[256];

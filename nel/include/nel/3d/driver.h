@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.19 2000/11/17 14:58:12 coutelas Exp $
+ * $Id: driver.h,v 1.20 2000/11/17 15:57:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ public:
 	uint32					getFlags() const {return _Flags;}
 
 public:
-							CMaterial() {_Touched= 0;}
+							CMaterial() {_Touched= 0;_Flags=0;}
 
 	uint32					getTouched(void) { return(_Touched); }
 	void					clearTouched(uint32 flag) { _Touched&=~flag; }

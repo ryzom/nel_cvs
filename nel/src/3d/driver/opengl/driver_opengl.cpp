@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.82 2001/04/03 14:21:28 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.83 2001/04/03 15:20:47 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -575,7 +575,7 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 	return true;
 }
 
-bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
+bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 {
 	uint32	flags;
 
@@ -584,6 +584,9 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 	if (VB.getNumVertices()==0)
 		return true;
+
+	nlassert(end<=VB.getNumVertices());
+	nlassert(first<=end);
 
 	// Get VB flags, to setup matrixes and arrays.
 	flags=VB.getVertexFormat();
@@ -629,16 +632,24 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 			// setup identity
 			glLoadMatrixf(CMatrix::Identity.get());
 			
-			// NB: software: no need to test Model View Matrixes flags (_ModelViewMatrixDirtyPaletteSkin).
+			// NB: in software, no need to test Model View Matrixes flags (_ModelViewMatrixDirtyPaletteSkin).
+			// NB: in software, we must compute skinning at each activeVB(), since we can't know simply 
+			// if some or all of vertices has changed.
+
+
+			uint8	*srcStart;
+			uint	srcStride= VB.getVertexSize();
+			srcStart= ((uint8*)VB.getVertexCoordPointer()) + first*srcStride;
+
 
 			// compute skinning on vertices.
-			computeSoftwareVertexSkinning((uint8*)VB.getVertexCoordPointer(), VB.getPaletteSkinOff(), VB.getWeightOff(0), 
-				VB.getVertexSize(), &(*vbInf->SoftSkinVertices.begin()), VB.getNumVertices());
+			computeSoftwareVertexSkinning(srcStart, VB.getPaletteSkinOff(), VB.getWeightOff(0), 
+				srcStride, &(vbInf->SoftSkinVertices[first]), end-first);
 			// compute skinning on normals (if any).
 			if(flags & IDRV_VF_NORMAL)
 			{
-				computeSoftwareNormalSkinning((uint8*)VB.getVertexCoordPointer(), VB.getNormalOff(), VB.getPaletteSkinOff(), VB.getWeightOff(0), 
-					VB.getVertexSize(), &(*vbInf->SoftSkinNormals.begin()), VB.getNumVertices());
+				computeSoftwareNormalSkinning(srcStart, VB.getNormalOff(), VB.getPaletteSkinOff(), VB.getWeightOff(0), 
+					srcStride, &(vbInf->SoftSkinNormals[first]), end-first);
 			}
 		}
 	}
@@ -815,6 +826,14 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 	return true;
 }
+
+
+// --------------------------------------------------
+bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
+{
+	return activeVertexBuffer(VB, 0, VB.getNumVertices());
+}
+
 
 // --------------------------------------------------
 

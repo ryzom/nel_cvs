@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.58 2001/04/03 13:02:56 berenguier Exp $
+ * $Id: driver.h,v 1.59 2001/04/03 15:20:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -199,7 +199,28 @@ public:
 
 	virtual CMatrix			getViewMatrix(void)const=0;
 
+
+	/** active a current VB, for future render().
+	 * This method suppose that all vertices in the VB will be used.
+	 * NB: software skinning (if any) will be done in this function call.
+	 * So if you call 5 times this method, you will get 5 times the time to perform a software skin.
+	 */
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB)=0;
+
+
+	/** active a current VB, for future render().
+	 * This method suppose that only vertices in given range will be used in future render(). 
+	 * This could be usefull for DX or OpenGL driver, but it is usefull for software skinning too.
+	 *
+	 * NB: software skinning (if any) will be done in this function call, and ONLY on the given range!
+	 * So if you call 5 times this method, you will get 5 times the time to perform a software skin.
+	 *
+	 * \param VB the vertexBuffer to activate.
+	 * \param first the first vertex important for render (begin to 0). nlassert(first<=end);
+	 * \param end the last vertex important for render, +1. count==end-first. nlassert(end<=VB.getNumVertices);
+	 */
+	virtual bool			activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)=0;
+
 
 	/** render a block of primitive with previously setuped VertexBuffer / Matrixes.
 	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().

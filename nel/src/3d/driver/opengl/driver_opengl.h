@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.52 2001/04/03 13:02:56 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.53 2001/04/03 15:20:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,6 +173,8 @@ public:
 	virtual CMatrix			getViewMatrix() const;
 
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB);
+
+	virtual bool			activeVertexBuffer(CVertexBuffer& VB, uint first, uint end);
 
 	virtual bool			render(CPrimitiveBlock& PB, CMaterial& Mat);
 

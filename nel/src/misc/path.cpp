@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.99 2004/01/28 18:08:30 legros Exp $
+ * $Id: path.cpp,v 1.100 2004/02/05 11:02:18 legros Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1732,7 +1732,7 @@ bool CFile::setRWAccess(const std::string &filename)
 	}
 #else
 	// if the file exists and there's no write access
-	if (access (filename.c_str(), F_OK) == 0 && access (filename.c_str(), R_OK|W_OK|X_OK) == -1)
+	if (access (filename.c_str(), F_OK) == 0)
 	{
 		// try to set the read/write access
 		if (chmod (filename.c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH) == -1)
@@ -1740,6 +1740,10 @@ bool CFile::setRWAccess(const std::string &filename)
 			nlwarning ("PATH: Can't set RW access to file '%s': %d %s", filename.c_str(), errno, strerror(errno));
 			return false;
 		}
+	}
+	else
+	{
+		nlwarning("PATH: Can't access to file '%s'", filename.c_str());
 	}
 #endif
 	return true;

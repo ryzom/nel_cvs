@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.10 2001/10/04 09:56:10 chafik Exp $
+# $Id: Makefile.am,v 1.11 2002/02/19 11:20:57 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -12,8 +12,7 @@ SUBDIRS              = agent                               \
                        nimat                               \
                        pyserver                            \
                        script                              \
-                       tools                               \
-                       .
+                       tools
 
 lib_LTLIBRARIES      = libnelai.la
 

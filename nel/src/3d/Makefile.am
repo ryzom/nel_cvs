@@ -1,10 +1,10 @@
 #
-# $Id: Makefile.am,v 1.68 2002/02/18 12:55:55 lecroart Exp $
+# $Id: Makefile.am,v 1.69 2002/02/19 11:20:57 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS              = driver .
+SUBDIRS              = driver
 
 lib_LTLIBRARIES      = libnel3d.la
 

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.41 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: debug.cpp,v 1.42 2002/03/14 13:49:15 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,13 +26,17 @@
 #include "stdmisc.h"
 #include "nel/misc/log.h"
 #include "nel/misc/displayer.h"
-
+#include "nel/misc/mem_displayer.h"
+#include "nel/misc/command.h"
 
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
 #endif
 
 #include <stdarg.h>
+
+
+using namespace std;
  
 // If you don't want to add default displayer, put 0 instead of 1. In this case, you
 // have to manage yourself displayer (in final release for example, we have to put 0)
@@ -49,6 +53,8 @@ CLog *InfoLog = NULL;
 CLog *DebugLog = NULL;
 CLog *AssertLog = NULL;
 
+CMemDisplayer *DefaultMemDisplayer = NULL;
+
 static CStdDisplayer *sd = NULL;
 static CFileDisplayer *fd = NULL;
 static CMsgBoxDisplayer *mbd = NULL;
@@ -59,6 +65,9 @@ void nlFatalError (const char *format, ...)
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
 	NLMISC::ErrorLog->displayNL (str);
+
+	// write the memory displayer into file
+	DefaultMemDisplayer->write ();
 
 #if defined(NL_OS_WINDOWS) && defined (NL_DEBUG)
 	_asm int 3;
@@ -74,6 +83,9 @@ void nlError (const char *format, ...)
 
 	NLMISC::ErrorLog->displayNL (str);
 
+	// write the memory displayer into file
+	DefaultMemDisplayer->write ();
+
 #if defined(NL_OS_WINDOWS) && defined (NL_DEBUG)
 	_asm int 3;
 #endif
@@ -88,28 +100,39 @@ void initDebug2 ()
 	if (!alreadyInit)
 	{
 #if DEFAULT_DISPLAYER
-		InfoLog->addDisplayer (sd);
-		WarningLog->addDisplayer (sd);
-		ErrorLog->addDisplayer (sd);
-#if LOG_IN_FILE
-		InfoLog->addDisplayer (fd);
-		WarningLog->addDisplayer (fd);
-		ErrorLog->addDisplayer (fd);
-#endif // LOG_IN_FILE
+
+		// put the standard displayer everywhere
 
 #ifdef NL_DEBUG
 		DebugLog->addDisplayer (sd);
 #endif // NL_DEBUG
+		InfoLog->addDisplayer (sd);
+		WarningLog->addDisplayer (sd);
 		AssertLog->addDisplayer (sd);
+		ErrorLog->addDisplayer (sd);
+
+		// put the memory displayer everywhere
+
+		// use the memory displayer and bypass all filter (even for the debug mode)
+		DebugLog->addDisplayer (DefaultMemDisplayer, true);
+		InfoLog->addDisplayer (DefaultMemDisplayer, true);
+		WarningLog->addDisplayer (DefaultMemDisplayer, true);
+		AssertLog->addDisplayer (DefaultMemDisplayer, true);
+		ErrorLog->addDisplayer (DefaultMemDisplayer, true);
+
+		// put the file displayer only if wanted
 
 #if LOG_IN_FILE
-
 #ifdef NL_DEBUG
 		DebugLog->addDisplayer (fd);
 #endif // NL_DEBUG
+		InfoLog->addDisplayer (fd);
+		WarningLog->addDisplayer (fd);
 		AssertLog->addDisplayer (fd);
-
+		ErrorLog->addDisplayer (fd);
 #endif // LOG_IN_FILE
+
+		// put the message box only in release for error
 
 #ifdef NL_RELEASE
 		ErrorLog->addDisplayer (mbd);
@@ -143,11 +166,140 @@ void createDebug ()
 		sd = new CStdDisplayer ("DEFAULT_SD");
 		mbd = new CMsgBoxDisplayer ("DEFAULT_MBD");
 		fd = new CFileDisplayer ("log.log", false, "DEFAULT_FD");
+		DefaultMemDisplayer = new CMemDisplayer ("DEFAULT_MD");
 		
 		initDebug2();
 
 		alreadyCreate = true;
 	}
+}
+
+//
+// Commands
+//
+
+NLMISC_COMMAND (display_memlog, "displays the last N line of the log in memory", "[<NbLines>]")
+{
+	uint nbLines;
+
+	if (args.size() == 0) nbLines = 100;
+	else if (args.size() == 1) nbLines = atoi(args[0].c_str());
+	else return false;
+
+	if (DefaultMemDisplayer == NULL) return false;
+
+	deque<string>::const_iterator it;
+	
+	const deque<string> &str = DefaultMemDisplayer->lockStrings ();
+
+	if (nbLines >= str.size())
+		it = str.begin();
+	else
+		it = str.end() - nbLines;
+
+	DefaultMemDisplayer->write (&log);
+
+	DefaultMemDisplayer->unlockStrings ();
+
+	return true;
+}
+
+
+NLMISC_COMMAND(nofilter, "disable all filters on Nel loggers", "[debug|info|warning|error|assert]")
+{
+	if(args.size() == 0)
+	{
+		DebugLog->resetFilters();
+		InfoLog->resetFilters();
+		WarningLog->resetFilters();
+		ErrorLog->resetFilters();
+		AssertLog->resetFilters();
+	}
+	else if (args.size() == 1)
+	{
+		if (args[0] == "debug") DebugLog->resetFilters();
+		else if (args[0] == "info") InfoLog->resetFilters();
+		else if (args[0] == "warning") WarningLog->resetFilters();
+		else if (args[0] == "error") ErrorLog->resetFilters();
+		else if (args[0] == "assert") AssertLog->resetFilters();
+	}
+	else
+	{
+		return false;
+	}
+
+	return true;
+}
+
+
+NLMISC_COMMAND(addposfilter_debug, "add a positive filter on DebugLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	DebugLog->addPositiveFilter( args[0].c_str() );
+	return true;
+}
+
+NLMISC_COMMAND(addnegfilter_debug, "add a negative filter on DebugLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	DebugLog->addNegativeFilter( args[0].c_str() );
+	return true;
+}
+
+NLMISC_COMMAND(removefilter_debug, "remove a filter on DebugLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	DebugLog->removeFilter( args[0].c_str() );
+	return true;
+}
+
+NLMISC_COMMAND(addposfilter_info, "add a positive filter on InfoLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	InfoLog->addPositiveFilter( args[0].c_str() );
+	return true;
+}
+
+NLMISC_COMMAND(addnegfilter_info, "add a negative filter on InfoLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	InfoLog->addNegativeFilter( args[0].c_str() );
+	return true;
+}
+
+NLMISC_COMMAND(removefilter_info, "remove a filter on InfoLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	InfoLog->removeFilter( args[0].c_str() );
+	return true;
+}
+
+NLMISC_COMMAND(addnegfilter_warning, "add a negative filter on WarningLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	WarningLog->addNegativeFilter( args[0].c_str() );
+	return true;
+}
+
+NLMISC_COMMAND(removefilter_warning, "remove a filter on WarningLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	WarningLog->removeFilter( args[0].c_str() );
+	return true;
+}
+
+NLMISC_COMMAND(assert, "generate a failed assert", "")
+{
+	if(args.size() != 0) return false;
+	nlassertex (false, ("Assert generated by the assert command"));
+	return true;
+}
+
+NLMISC_COMMAND(stop, "generate a stop", "")
+{
+	if(args.size() != 0) return false;
+	nlstopex (("Stop generated by the stop command"));
+	return true;
 }
 
 } // NLMISC

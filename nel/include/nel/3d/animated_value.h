@@ -1,7 +1,7 @@
 /** \file animated_value.h
  * Class IAnimatedValue
  *
- * $Id: animated_value.h,v 1.6 2001/03/08 11:02:52 corvazier Exp $
+ * $Id: animated_value.h,v 1.7 2001/03/13 17:02:20 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/quat.h"
+#include "nel/misc/rgba.h"
 
 
 namespace NL3D 
@@ -162,6 +163,51 @@ public:
 
 
 /**
+ * A CRGBA implementation of IAnimatedValue.
+ *
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CAnimatedValueBlendable<NLMISC::CRGBA> : public IAnimatedValue
+{
+public:
+	/// A quat blend method.
+	virtual void blend (const IAnimatedValue& value, float blendFactor)
+	{
+		// Check types of value
+		nlassert (typeid (value)==typeid(*this));
+
+		// Cast.
+		CAnimatedValueBlendable<NLMISC::CRGBA>	*pValue=(CAnimatedValueBlendable<NLMISC::CRGBA>*)&value;
+
+		// blend.
+		Value.blendFromui (pValue->Value, this->Value, (uint)(255.f*blendFactor));
+	}
+
+	/** 
+	  * An assignation method. This method assign a values in the object. 
+	  *
+	  * \param value is the new value.
+	  */
+	virtual void affect (const IAnimatedValue& value)
+	{
+		// Check types of value
+		nlassert (typeid (value)==typeid(*this));
+
+		// Cast
+		CAnimatedValueBlendable<NLMISC::CRGBA>	*pValue=(CAnimatedValueBlendable<NLMISC::CRGBA>*)&value;
+
+		// Blend
+		Value=pValue->Value;
+	}
+
+	// The value
+	NLMISC::CRGBA	Value;
+};
+
+
+/**
  * A template implementation of IAnimatedValue not blendable.
  *
  * \author Cyril 'Hulud' Corvazier
@@ -214,6 +260,7 @@ typedef CAnimatedValueBlendable<float>				CAnimatedValueFloat;
 typedef CAnimatedValueBlendable<NLMISC::CVector>	CAnimatedValueVector;
 typedef CAnimatedValueNotBlendable<std::string>		CAnimatedValueString;
 typedef CAnimatedValueBlendable<NLMISC::CQuat>		CAnimatedValueQuat;
+typedef CAnimatedValueBlendable<NLMISC::CRGBA>		CAnimatedValueRGBA;
 
 
 } // NL3D

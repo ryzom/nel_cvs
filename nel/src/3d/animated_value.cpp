@@ -1,7 +1,7 @@
 /** \file animated_value.cpp
  * <File description>
  *
- * $Id: animated_value.cpp,v 1.3 2001/02/12 14:18:29 corvazier Exp $
+ * $Id: animated_value.cpp,v 1.4 2001/03/13 17:02:20 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,5 +35,6 @@ CAnimatedValueFloat	atoto3;
 CAnimatedValueVector	atoto4;
 CAnimatedValueString	atoto5;
 CAnimatedValueQuat	atoto6;
+CAnimatedValueRGBA	atoto7;
 
 } // NL3D

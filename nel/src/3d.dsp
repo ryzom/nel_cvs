@@ -895,6 +895,14 @@ SOURCE=.\3d\mesh_blender.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mesh_block_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_block_manager.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mesh_geom.cpp
 # End Source File
 # Begin Source File
@@ -933,6 +941,14 @@ SOURCE=.\3d\mesh_multi_lod.cpp
 # Begin Source File
 
 SOURCE=.\3d\mesh_multi_lod.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_skin_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_skin_manager.h
 # End Source File
 # Begin Source File
 
@@ -2502,14 +2518,6 @@ SOURCE=.\3d\init_3d.cpp
 # Begin Source File
 
 SOURCE=.\3d\init_3d.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\mesh_block_manager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\mesh_block_manager.h
 # End Source File
 # Begin Source File
 

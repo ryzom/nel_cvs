@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.32 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.33 2002/07/11 08:19:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,6 +96,14 @@ void		CRenderTrav::traverse()
 
 	// reset the light setup, and set global ambient.
 	resetLightSetup();
+
+
+	// reset the Skin manager, if needed
+	if(Driver!=MeshSkinManager.getDriver())
+	{
+		MeshSkinManager.release();
+		MeshSkinManager.init(Driver, NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT, NL3D_MESH_SKIN_MANAGER_MAXVERTICES);
+	}
 
 
 	// Fill OT with observers, for both Opaque and transparent pass

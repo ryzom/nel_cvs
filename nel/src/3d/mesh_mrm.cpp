@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.47 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.48 2002/07/11 08:19:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "3d/mesh_blender.h"
 #include "3d/render_trav.h"
 #include "3d/fast_floor.h"
+#include "nel/misc/fast_mem.h"
 
 
 using namespace NLMISC;
@@ -204,6 +205,7 @@ CMeshMRMGeom::CMeshMRMGeom()
 	_BoneIdExtended = false;
 	_NumLodRawSkin= 0;
 	_PreciseClipping= false;
+	_SupportSkinGrouping= false;
 }
 
 
@@ -452,6 +454,27 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 // ***************************************************************************
 void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod, IVertexBufferHard *currentVBHard)
 {
+	if(currentVBHard!=NULL)
+	{
+		// must write into it
+		uint8	*vertexDestPtr= (uint8*)currentVBHard->lock();
+		nlassert(_VBufferFinal.getVertexSize() == currentVBHard->getVertexSize());
+
+		// apply the geomorph
+		applyGeomorphWithVBHardPtr(geoms, alphaLod, vertexDestPtr);
+
+		// unlock
+		currentVBHard->unlock();
+	}
+	else
+		applyGeomorphWithVBHardPtr(geoms, alphaLod, NULL);
+
+}
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::applyGeomorphWithVBHardPtr(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod, uint8 *vertexDestPtr)
+{
 	// no geomorphs? quit.
 	if(geoms.size()==0)
 		return;
@@ -475,299 +498,324 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 	nlassert(flags & CVertexBuffer::PositionFlag);
 
 
-	// If VBuffer Hard present
-	uint8		*vertexDestPtr;
-	if(currentVBHard!=NULL)
+	// If VBuffer Hard disabled
+	if(vertexDestPtr==NULL)
 	{
-		// must write into it
-		vertexDestPtr= (uint8*)currentVBHard->lock();
-		nlassert(vertexSize == currentVBHard->getVertexSize());
-	}
-	else
-	{
-		// else write into vertexPtr.
+		// write into vertexPtr.
 		vertexDestPtr= vertexPtr;
 	}
 
 
-	// if an offset is 0, it means that the component is not in the VBuffer.
-	sint32		normalOff;
-	sint32		colorOff;
-	sint32		specularOff;
-	sint32		uvOff[CVertexBuffer::MaxStage];
-	bool		has3Coords[CVertexBuffer::MaxStage];
-
-
-	// Compute offset of each component of the VB.
-	if(flags & CVertexBuffer::NormalFlag)
-		normalOff= _VBufferFinal.getNormalOff();
-	else
-		normalOff= 0;
-	if(flags & CVertexBuffer::PrimaryColorFlag)
-		colorOff= _VBufferFinal.getColorOff();
-	else
-		colorOff= 0;
-	if(flags & CVertexBuffer::SecondaryColorFlag)
-		specularOff= _VBufferFinal.getSpecularOff();
-	else
-		specularOff= 0;
-		
-	for(i= 0; i<CVertexBuffer::MaxStage;i++)
+	// if it is a common format
+	if( flags== (CVertexBuffer::PositionFlag | CVertexBuffer::NormalFlag | CVertexBuffer::TexCoord0Flag) &&
+		_VBufferFinal.getValueType(CVertexBuffer::TexCoord0) == CVertexBuffer::Float2 )
 	{
-		if(flags & (CVertexBuffer::TexCoord0Flag<<i))
-		{
-			uvOff[i]= _VBufferFinal.getTexCoordOff(i);			
-			has3Coords[i] = (_VBufferFinal.getValueType(i + CVertexBuffer::TexCoord0) == CVertexBuffer::Float3);
-		}
+		// use a faster method
+		applyGeomorphPosNormalUV0(geoms, vertexPtr, vertexDestPtr, vertexSize, a, a1);
+	}
+	else
+	{
+		// if an offset is 0, it means that the component is not in the VBuffer.
+		sint32		normalOff;
+		sint32		colorOff;
+		sint32		specularOff;
+		sint32		uvOff[CVertexBuffer::MaxStage];
+		bool		has3Coords[CVertexBuffer::MaxStage];
+
+
+		// Compute offset of each component of the VB.
+		if(flags & CVertexBuffer::NormalFlag)
+			normalOff= _VBufferFinal.getNormalOff();
 		else
+			normalOff= 0;
+		if(flags & CVertexBuffer::PrimaryColorFlag)
+			colorOff= _VBufferFinal.getColorOff();
+		else
+			colorOff= 0;
+		if(flags & CVertexBuffer::SecondaryColorFlag)
+			specularOff= _VBufferFinal.getSpecularOff();
+		else
+			specularOff= 0;
+			
+		for(i= 0; i<CVertexBuffer::MaxStage;i++)
 		{
-			uvOff[i]= 0;
+			if(flags & (CVertexBuffer::TexCoord0Flag<<i))
+			{
+				uvOff[i]= _VBufferFinal.getTexCoordOff(i);			
+				has3Coords[i] = (_VBufferFinal.getValueType(i + CVertexBuffer::TexCoord0) == CVertexBuffer::Float3);
+			}
+			else
+			{
+				uvOff[i]= 0;
+			}
+		}
+
+
+		// For all geomorphs.
+		uint			nGeoms= geoms.size();
+		CMRMWedgeGeom	*ptrGeom= &(geoms[0]);
+		uint8			*destPtr= vertexDestPtr;
+		/* NB: optimisation: lot of "if" in this Loop, but because of BTB, they always cost nothing (prediction is good).
+		   NB: this also is why we unroll the 4 1st Uv. The other (if any), are done in the other loop.
+		   NB: optimisation for AGP write cominers: the order of write (vertex, normal, uvs...) is important for good
+		   use of AGP write combiners.
+		   We have 2 version : one that tests for 3 coordinates texture coords, and one that doesn't
+		*/
+
+		if (!has3Coords[0] && !has3Coords[1] && !has3Coords[2] && !has3Coords[3])
+		{
+			// there are no texture coordinate of dimension 3
+			for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
+			{
+				uint8			*startPtr=	vertexPtr + ptrGeom->Start*vertexSize;
+				uint8			*endPtr=	vertexPtr + ptrGeom->End*vertexSize;
+
+				// Vertex.
+				{
+					CVector		*start=	(CVector*)startPtr;
+					CVector		*end=	(CVector*)endPtr;
+					CVector		*dst=	(CVector*)destPtr;
+					*dst= *start * a + *end * a1;
+				}
+
+				// Normal.
+				if(normalOff)
+				{
+					CVector		*start= (CVector*)(startPtr + normalOff);
+					CVector		*end=	(CVector*)(endPtr   + normalOff);
+					CVector		*dst=	(CVector*)(destPtr  + normalOff);
+					*dst= *start * a + *end * a1;
+				}
+
+
+				// Uvs.
+				// uv[0].
+				if(uvOff[0])
+				{				
+					// Uv.
+					CUV			*start= (CUV*)(startPtr + uvOff[0]);
+					CUV			*end=	(CUV*)(endPtr   + uvOff[0]);
+					CUV			*dst=	(CUV*)(destPtr  + uvOff[0]);
+					*dst= *start * a + *end * a1;				
+				}
+				// uv[1].
+				if(uvOff[1])
+				{				
+					// Uv.
+					CUV			*start= (CUV*)(startPtr + uvOff[1]);
+					CUV			*end=	(CUV*)(endPtr   + uvOff[1]);
+					CUV			*dst=	(CUV*)(destPtr  + uvOff[1]);
+					*dst= *start * a + *end * a1;				
+				}
+				// uv[2].
+				if(uvOff[2])
+				{				
+					CUV			*start= (CUV*)(startPtr + uvOff[2]);
+					CUV			*end=	(CUV*)(endPtr   + uvOff[2]);
+					CUV			*dst=	(CUV*)(destPtr  + uvOff[2]);
+					*dst= *start * a + *end * a1;				
+				}
+				// uv[3].
+				if(uvOff[3])
+				{				
+					// Uv.
+					CUV			*start= (CUV*)(startPtr + uvOff[3]);
+					CUV			*end=	(CUV*)(endPtr   + uvOff[3]);
+					CUV			*dst=	(CUV*)(destPtr  + uvOff[3]);
+					*dst= *start * a + *end * a1;				
+				}
+			}
+		}
+		else // THERE ARE TEXTURE COORDINATES OF DIMENSION 3
+		{
+			for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
+			{
+				uint8			*startPtr=	vertexPtr + ptrGeom->Start*vertexSize;
+				uint8			*endPtr=	vertexPtr + ptrGeom->End*vertexSize;
+
+				// Vertex.
+				{
+					CVector		*start=	(CVector*)startPtr;
+					CVector		*end=	(CVector*)endPtr;
+					CVector		*dst=	(CVector*)destPtr;
+					*dst= *start * a + *end * a1;
+				}
+
+				// Normal.
+				if(normalOff)
+				{
+					CVector		*start= (CVector*)(startPtr + normalOff);
+					CVector		*end=	(CVector*)(endPtr   + normalOff);
+					CVector		*dst=	(CVector*)(destPtr  + normalOff);
+					*dst= *start * a + *end * a1;
+				}
+				// Uvs.
+				// uv[0].
+				if(uvOff[0])
+				{
+					if (!has3Coords[0])
+					{
+						// Uv.
+						CUV			*start= (CUV*)(startPtr + uvOff[0]);
+						CUV			*end=	(CUV*)(endPtr   + uvOff[0]);
+						CUV			*dst=	(CUV*)(destPtr  + uvOff[0]);
+						*dst= *start * a + *end * a1;
+					}
+					else
+					{
+						// Uv.
+						CUVW		*start= (CUVW*)(startPtr + uvOff[0]);
+						CUVW		*end=	(CUVW*)(endPtr   + uvOff[0]);
+						CUVW		*dst=	(CUVW*)(destPtr  + uvOff[0]);
+						*dst= *start * a + *end * a1;
+					}
+				}
+				// uv[1].
+				if(uvOff[1])
+				{
+					if (!has3Coords[1])
+					{
+						// Uv.
+						CUV			*start= (CUV*)(startPtr + uvOff[1]);
+						CUV			*end=	(CUV*)(endPtr   + uvOff[1]);
+						CUV			*dst=	(CUV*)(destPtr  + uvOff[1]);
+						*dst= *start * a + *end * a1;
+					}
+					else
+					{
+						// Uv.
+						CUVW		*start= (CUVW*)(startPtr + uvOff[1]);
+						CUVW		*end=	(CUVW*)(endPtr   + uvOff[1]);
+						CUVW		*dst=	(CUVW*)(destPtr  + uvOff[1]);
+						*dst= *start * a + *end * a1;
+					}
+				}
+				// uv[2].
+				if(uvOff[2])
+				{
+					if (!has3Coords[2])
+					{
+						// Uv.
+						CUV			*start= (CUV*)(startPtr + uvOff[2]);
+						CUV			*end=	(CUV*)(endPtr   + uvOff[2]);
+						CUV			*dst=	(CUV*)(destPtr  + uvOff[2]);
+						*dst= *start * a + *end * a1;
+					}
+					else
+					{
+						// Uv.
+						CUVW		*start= (CUVW*)(startPtr + uvOff[2]);
+						CUVW		*end=	(CUVW*)(endPtr   + uvOff[2]);
+						CUVW		*dst=	(CUVW*)(destPtr  + uvOff[2]);
+						*dst= *start * a + *end * a1;
+					}
+				}
+				// uv[3].
+				if(uvOff[3])
+				{
+					if (!has3Coords[3])
+					{
+						// Uv.
+						CUV			*start= (CUV*)(startPtr + uvOff[3]);
+						CUV			*end=	(CUV*)(endPtr   + uvOff[3]);
+						CUV			*dst=	(CUV*)(destPtr  + uvOff[3]);
+						*dst= *start * a + *end * a1;
+					}
+					else
+					{
+						// Uv.
+						CUVW		*start= (CUVW*)(startPtr + uvOff[3]);
+						CUVW		*end=	(CUVW*)(endPtr   + uvOff[3]);
+						CUVW		*dst=	(CUVW*)(destPtr  + uvOff[3]);
+						*dst= *start * a + *end * a1;
+					}
+				}
+				// color.
+				if(colorOff)
+				{
+					CRGBA		*start= (CRGBA*)(startPtr + colorOff);
+					CRGBA		*end=	(CRGBA*)(endPtr   + colorOff);
+					CRGBA		*dst=	(CRGBA*)(destPtr  + colorOff);
+					dst->blendFromui(*start, *end,  ua1);
+				}
+				// specular.
+				if(specularOff)
+				{
+					CRGBA		*start= (CRGBA*)(startPtr + specularOff);
+					CRGBA		*end=	(CRGBA*)(endPtr   + specularOff);
+					CRGBA		*dst=	(CRGBA*)(destPtr  + specularOff);
+					dst->blendFromui(*start, *end,  ua1);
+				}
+			}
+		}
+
+
+		// Process extra UVs (maybe never, so don't bother optims :)).
+		// For all stages after 4.
+		for(i=4;i<CVertexBuffer::MaxStage;i++)
+		{
+			uint			nGeoms= geoms.size();
+			CMRMWedgeGeom	*ptrGeom= &(geoms[0]);
+			uint8			*destPtr= vertexDestPtr;
+
+			if(uvOff[i]==0)
+				continue;
+
+			// For all geomorphs.
+			for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
+			{
+				uint8			*startPtr=	vertexPtr + ptrGeom->Start*vertexSize;
+				uint8			*endPtr=	vertexPtr + ptrGeom->End*vertexSize;
+
+				// uv[i].
+				// Uv.
+				if (!has3Coords[i])
+				{
+					CUV			*start= (CUV*)(startPtr + uvOff[i]);
+					CUV			*end=	(CUV*)(endPtr	+ uvOff[i]);
+					CUV			*dst=	(CUV*)(destPtr	+ uvOff[i]);
+					*dst= *start * a + *end * a1;
+				}
+				else
+				{
+					CUVW		*start= (CUVW*)(startPtr + uvOff[i]);
+					CUVW		*end=	(CUVW*)(endPtr	+ uvOff[i]);
+					CUVW		*dst=	(CUVW*)(destPtr	+ uvOff[i]);
+					*dst= *start * a + *end * a1;
+				}
+			}
 		}
 	}
+}
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::applyGeomorphPosNormalUV0(std::vector<CMRMWedgeGeom>  &geoms, uint8 *vertexPtr, uint8 *vertexDestPtr, sint32 vertexSize, float a, float a1)
+{
+	nlassert(vertexSize==32);
 
 
 	// For all geomorphs.
 	uint			nGeoms= geoms.size();
 	CMRMWedgeGeom	*ptrGeom= &(geoms[0]);
 	uint8			*destPtr= vertexDestPtr;
-	/* NB: optimisation: lot of "if" in this Loop, but because of BTB, they always cost nothing (prediction is good).
-	   NB: this also is why we unroll the 4 1st Uv. The other (if any), are done in the other loop.
-	   NB: optimisation for AGP write cominers: the order of write (vertex, normal, uvs...) is important for good
-	   use of AGP write combiners.
-	   We have 2 version : one that tests for 3 coordinates texture coords, and one that doesn't
-	*/
-
-	if (!has3Coords[0] && !has3Coords[1] && !has3Coords[2] && !has3Coords[3])
+	for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
 	{
-		// there are no texture coordinate of dimension 3
-		for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
-		{
-			uint8			*startPtr=	vertexPtr + ptrGeom->Start*vertexSize;
-			uint8			*endPtr=	vertexPtr + ptrGeom->End*vertexSize;
+		// Consider the Pos/Normal/UV as an array of 8 float to interpolate.
+		float			*start=	(float*)(vertexPtr + (ptrGeom->Start<<5));
+		float			*end=	(float*)(vertexPtr + (ptrGeom->End<<5));
+		float			*dst=	(float*)(destPtr);
 
-			// Vertex.
-			{
-				CVector		*start=	(CVector*)startPtr;
-				CVector		*end=	(CVector*)endPtr;
-				CVector		*dst=	(CVector*)destPtr;
-				*dst= *start * a + *end * a1;
-			}
-
-			// Normal.
-			if(normalOff)
-			{
-				CVector		*start= (CVector*)(startPtr + normalOff);
-				CVector		*end=	(CVector*)(endPtr   + normalOff);
-				CVector		*dst=	(CVector*)(destPtr  + normalOff);
-				*dst= *start * a + *end * a1;
-			}
-
-
-			// Uvs.
-			// uv[0].
-			if(uvOff[0])
-			{				
-				// Uv.
-				CUV			*start= (CUV*)(startPtr + uvOff[0]);
-				CUV			*end=	(CUV*)(endPtr   + uvOff[0]);
-				CUV			*dst=	(CUV*)(destPtr  + uvOff[0]);
-				*dst= *start * a + *end * a1;				
-			}
-			// uv[1].
-			if(uvOff[1])
-			{				
-				// Uv.
-				CUV			*start= (CUV*)(startPtr + uvOff[1]);
-				CUV			*end=	(CUV*)(endPtr   + uvOff[1]);
-				CUV			*dst=	(CUV*)(destPtr  + uvOff[1]);
-				*dst= *start * a + *end * a1;				
-			}
-			// uv[2].
-			if(uvOff[2])
-			{				
-				CUV			*start= (CUV*)(startPtr + uvOff[2]);
-				CUV			*end=	(CUV*)(endPtr   + uvOff[2]);
-				CUV			*dst=	(CUV*)(destPtr  + uvOff[2]);
-				*dst= *start * a + *end * a1;				
-			}
-			// uv[3].
-			if(uvOff[3])
-			{				
-				// Uv.
-				CUV			*start= (CUV*)(startPtr + uvOff[3]);
-				CUV			*end=	(CUV*)(endPtr   + uvOff[3]);
-				CUV			*dst=	(CUV*)(destPtr  + uvOff[3]);
-				*dst= *start * a + *end * a1;				
-			}
-		}
+		// unrolled
+		dst[0]= start[0] * a + end[0]* a1;
+		dst[1]= start[1] * a + end[1]* a1;
+		dst[2]= start[2] * a + end[2]* a1;
+		dst[3]= start[3] * a + end[3]* a1;
+		dst[4]= start[4] * a + end[4]* a1;
+		dst[5]= start[5] * a + end[5]* a1;
+		dst[6]= start[6] * a + end[6]* a1;
+		dst[7]= start[7] * a + end[7]* a1;
 	}
-	else // THERE ARE TEXTURE COORDINATES OF DIMENSION 3
-	{
-		for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
-		{
-			uint8			*startPtr=	vertexPtr + ptrGeom->Start*vertexSize;
-			uint8			*endPtr=	vertexPtr + ptrGeom->End*vertexSize;
-
-			// Vertex.
-			{
-				CVector		*start=	(CVector*)startPtr;
-				CVector		*end=	(CVector*)endPtr;
-				CVector		*dst=	(CVector*)destPtr;
-				*dst= *start * a + *end * a1;
-			}
-
-			// Normal.
-			if(normalOff)
-			{
-				CVector		*start= (CVector*)(startPtr + normalOff);
-				CVector		*end=	(CVector*)(endPtr   + normalOff);
-				CVector		*dst=	(CVector*)(destPtr  + normalOff);
-				*dst= *start * a + *end * a1;
-			}
-			// Uvs.
-			// uv[0].
-			if(uvOff[0])
-			{
-				if (!has3Coords[0])
-				{
-					// Uv.
-					CUV			*start= (CUV*)(startPtr + uvOff[0]);
-					CUV			*end=	(CUV*)(endPtr   + uvOff[0]);
-					CUV			*dst=	(CUV*)(destPtr  + uvOff[0]);
-					*dst= *start * a + *end * a1;
-				}
-				else
-				{
-					// Uv.
-					CUVW		*start= (CUVW*)(startPtr + uvOff[0]);
-					CUVW		*end=	(CUVW*)(endPtr   + uvOff[0]);
-					CUVW		*dst=	(CUVW*)(destPtr  + uvOff[0]);
-					*dst= *start * a + *end * a1;
-				}
-			}
-			// uv[1].
-			if(uvOff[1])
-			{
-				if (!has3Coords[1])
-				{
-					// Uv.
-					CUV			*start= (CUV*)(startPtr + uvOff[1]);
-					CUV			*end=	(CUV*)(endPtr   + uvOff[1]);
-					CUV			*dst=	(CUV*)(destPtr  + uvOff[1]);
-					*dst= *start * a + *end * a1;
-				}
-				else
-				{
-					// Uv.
-					CUVW		*start= (CUVW*)(startPtr + uvOff[1]);
-					CUVW		*end=	(CUVW*)(endPtr   + uvOff[1]);
-					CUVW		*dst=	(CUVW*)(destPtr  + uvOff[1]);
-					*dst= *start * a + *end * a1;
-				}
-			}
-			// uv[2].
-			if(uvOff[2])
-			{
-				if (!has3Coords[2])
-				{
-					// Uv.
-					CUV			*start= (CUV*)(startPtr + uvOff[2]);
-					CUV			*end=	(CUV*)(endPtr   + uvOff[2]);
-					CUV			*dst=	(CUV*)(destPtr  + uvOff[2]);
-					*dst= *start * a + *end * a1;
-				}
-				else
-				{
-					// Uv.
-					CUVW		*start= (CUVW*)(startPtr + uvOff[2]);
-					CUVW		*end=	(CUVW*)(endPtr   + uvOff[2]);
-					CUVW		*dst=	(CUVW*)(destPtr  + uvOff[2]);
-					*dst= *start * a + *end * a1;
-				}
-			}
-			// uv[3].
-			if(uvOff[3])
-			{
-				if (!has3Coords[3])
-				{
-					// Uv.
-					CUV			*start= (CUV*)(startPtr + uvOff[3]);
-					CUV			*end=	(CUV*)(endPtr   + uvOff[3]);
-					CUV			*dst=	(CUV*)(destPtr  + uvOff[3]);
-					*dst= *start * a + *end * a1;
-				}
-				else
-				{
-					// Uv.
-					CUVW		*start= (CUVW*)(startPtr + uvOff[3]);
-					CUVW		*end=	(CUVW*)(endPtr   + uvOff[3]);
-					CUVW		*dst=	(CUVW*)(destPtr  + uvOff[3]);
-					*dst= *start * a + *end * a1;
-				}
-			}
-			// color.
-			if(colorOff)
-			{
-				CRGBA		*start= (CRGBA*)(startPtr + colorOff);
-				CRGBA		*end=	(CRGBA*)(endPtr   + colorOff);
-				CRGBA		*dst=	(CRGBA*)(destPtr  + colorOff);
-				dst->blendFromui(*start, *end,  ua1);
-			}
-			// specular.
-			if(specularOff)
-			{
-				CRGBA		*start= (CRGBA*)(startPtr + specularOff);
-				CRGBA		*end=	(CRGBA*)(endPtr   + specularOff);
-				CRGBA		*dst=	(CRGBA*)(destPtr  + specularOff);
-				dst->blendFromui(*start, *end,  ua1);
-			}
-		}
-	}
-
-
-	// Process extra UVs (maybe never, so don't bother optims :)).
-	// For all stages after 4.
-	for(i=4;i<CVertexBuffer::MaxStage;i++)
-	{
-		uint			nGeoms= geoms.size();
-		CMRMWedgeGeom	*ptrGeom= &(geoms[0]);
-		uint8			*destPtr= vertexDestPtr;
-
-		if(uvOff[i]==0)
-			continue;
-
-		// For all geomorphs.
-		for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
-		{
-			uint8			*startPtr=	vertexPtr + ptrGeom->Start*vertexSize;
-			uint8			*endPtr=	vertexPtr + ptrGeom->End*vertexSize;
-
-			// uv[i].
-			// Uv.
-			if (!has3Coords[i])
-			{
-				CUV			*start= (CUV*)(startPtr + uvOff[i]);
-				CUV			*end=	(CUV*)(endPtr	+ uvOff[i]);
-				CUV			*dst=	(CUV*)(destPtr	+ uvOff[i]);
-				*dst= *start * a + *end * a1;
-			}
-			else
-			{
-				CUVW		*start= (CUVW*)(startPtr + uvOff[i]);
-				CUVW		*end=	(CUVW*)(endPtr	+ uvOff[i]);
-				CUVW		*dst=	(CUVW*)(destPtr	+ uvOff[i]);
-				*dst= *start * a + *end * a1;
-			}
-		}
-	}
-
-
-	// If currentVBHard here, unlock it.
-	if(currentVBHard)
-	{
-		currentVBHard->unlock();
-	}
-
 }
 
 
@@ -1098,15 +1146,12 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 		return;
 
 
-	// Update the vertexBufferHard (if possible).
-	// \toto yoyo: TODO_OPTIMIZE: allocate only what is needed for the current Lod (Max of all instances, like
-	// the loading....) (see loadHeader()).
-	updateVertexBufferHard(drv, _VBufferFinal.getNumVertices());
-	/* currentVBHard is NULL if must disable it temporarily
-		For now, never disable it, but switch of VBHard may be VERY EXPENSIVE if NV_vertex_array_range2 is not
-		supported (old drivers).
+	/*
+		YOYO: renderSkin() no more support vertexBufferHard()!!! for AGP Memory optimisation concern.
+		AGP Skin rendering is made when supportSkinGrouping() is true
+		Hence if a skin is to be rendered here, because it doesn't have a good vertex format, or it has
+		MeshVertexProgram etc..., it will be rendered WITHOUT VBHard => slower.
 	*/
-	IVertexBufferHard		*currentVBHard= _VBHard;
 
 
 	// get the skeleton model to which I am skinned
@@ -1131,7 +1176,7 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 		// Since Skinned we must update original skin vertices and normals because skinning use it
 		_MeshMorpher.initSkinned(&_VBufferOriginal,
 							 &_VBufferFinal,
-							 currentVBHard,
+							 NULL,
 							 useTangentSpace,
 							 &_OriginalSkinVertices,
 							 &_OriginalSkinNormals,
@@ -1216,8 +1261,6 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 
 	// endSkin.
 	//--------
-	// Fill the usefull AGP memory (if any one loaded/Used).
-	fillAGPSkinPart(lod, currentVBHard);
 	// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
 	lod.OriginalSkinRestored= false;
 
@@ -1231,7 +1274,7 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 	// Geomorph the choosen Lod (if not the coarser mesh).
 	if(numLod>0)
 	{
-		applyGeomorph(lod.Geomorphs, alphaLod, currentVBHard);
+		applyGeomorph(lod.Geomorphs, alphaLod, NULL);
 	}
 
 
@@ -1252,10 +1295,7 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 	// Render the lod.
 	//===========
 	// active VB.
-	if(currentVBHard)
-		drv->activeVertexBufferHard(currentVBHard);
-	else
-		drv->activeVertexBuffer(_VBufferFinal);
+	drv->activeVertexBuffer(_VBufferFinal);
 
 
 	// Render all pass.
@@ -1269,10 +1309,7 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 		// Setup VP material
 		if (useMeshVP)
 		{
-			if(currentVBHard)
-				_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, currentVBHard);
-			else
-				_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBufferFinal);
+			_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBufferFinal);
 		}
 
 		// Render with the Materials of the MeshInstance.
@@ -1286,6 +1323,215 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 		_MeshVertexProgram->end(drv);
 	}
 }
+
+
+// ***************************************************************************
+bool	CMeshMRMGeom::supportSkinGrouping() const
+{
+	return _SupportSkinGrouping;
+}
+
+// ***************************************************************************
+sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshBaseInstance	*mi, float alphaMRM, uint remainingVertices, uint8 *vbDest)
+{
+	// get a ptr on scene
+	CScene				*ownerScene= mi->getScene();
+	// get a ptr on renderTrav
+	CRenderTrav			*renderTrav= ownerScene->getRenderTrav();
+	// get a ptr on the driver
+	IDriver				*drv= renderTrav->getDriver();
+	nlassert(drv);
+
+
+	// choose the lod.
+	float	alphaLod;
+	sint	numLod= chooseLod(alphaMRM, alphaLod);
+	_LastLodComputed= numLod;
+
+
+	// Render the choosen Lod.
+	CLod	&lod= _Lods[numLod];
+	if(lod.RdrPass.size()==0)
+		// return no vertices added
+		return 0;
+
+	// If the Lod is too big to render in the VBufferHard
+	if(lod.NWedges>remainingVertices)
+		// return Failure
+		return -1;
+
+	// get the skeleton model to which I am skinned
+	CSkeletonModel *skeleton;
+	skeleton = mi->getSkeletonModel();
+	// must be skinned for renderSkin()
+	nlassert(_Skinned && mi->isSkinned() && skeleton);
+	bool bMorphApplied = _MeshMorpher.BlendShapes.size() > 0;
+	bool useNormal= (_VBufferFinal.getVertexFormat() & CVertexBuffer::NormalFlag)!=0;
+	nlassert(useNormal);
+
+
+	// Profiling
+	//===========
+	H_AUTO( NL3D_MeshMRMGeom_RenderSkinned );
+
+
+	// Morphing
+	// ========
+	if (bMorphApplied)
+	{
+		// Since Skinned we must update original skin vertices and normals because skinning use it
+		// NB: no need to setup vertexBufferHard, because not update in SkinningMode, but if the skin is not applied,
+		// which is not the case here
+		_MeshMorpher.initSkinned(&_VBufferOriginal,
+							 &_VBufferFinal,
+							 NULL,
+							 false,
+							 &_OriginalSkinVertices,
+							 &_OriginalSkinNormals,
+							 NULL,
+							 true );
+		_MeshMorpher.updateSkinned (mi->getBlendShapeFactors());
+	}
+
+	// Skinning.
+	//===========
+
+	// Use RawSkin if possible: only if no morph, and only Vertex/Normal
+	if ( !bMorphApplied )
+		updateRawSkinNormal();
+	// Use none
+	else
+		clearRawSkin();
+
+	// applySkin.
+	//--------
+
+	// Use SSE when possible
+	if( CSystemInfo::hasSSE() )
+	{
+		// skinning with normal, but no tangent space
+		if(_NumLodRawSkin>0)
+			// Use faster RawSkin if possible.
+			applyRawSkinWithNormalSSE(lod, _RawSkinNormalLods[numLod], skeleton);
+		else
+			applySkinWithNormalSSE (lod, skeleton);
+	}
+	// Standard FPU skinning
+	else
+	{
+		// skinning with normal, but no tangent space
+		if(_NumLodRawSkin>0)
+			// Use faster RawSkin if possible.
+			applyRawSkinWithNormal (lod, _RawSkinNormalLods[numLod], skeleton);
+		else
+			applySkinWithNormal (lod, skeleton);
+	}
+
+	// endSkin.
+	//--------
+	// Fill the usefull AGP memory (if any one loaded/Used).
+	fillAGPSkinPartWithVBHardPtr(lod, vbDest);
+	// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
+	lod.OriginalSkinRestored= false;
+
+
+	// NB: the skeleton matrix has already been setuped by CSkeletonModel
+	// NB: the normalize flag has already been setuped by CSkeletonModel
+
+
+	// Geomorph.
+	//===========
+	// Geomorph the choosen Lod (if not the coarser mesh).
+	if(numLod>0)
+	{
+		applyGeomorphWithVBHardPtr(lod.Geomorphs, alphaLod, vbDest);
+	}
+
+	// How many vertices are added to the VBuffer ???
+	return lod.NWedges;
+}
+
+// ***************************************************************************
+void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshBaseInstance	*mi, uint baseVertex)
+{
+	// get a ptr on scene
+	CScene				*ownerScene= mi->getScene();
+	// get a ptr on renderTrav
+	CRenderTrav			*renderTrav= ownerScene->getRenderTrav();
+	// get a ptr on the driver
+	IDriver				*drv= renderTrav->getDriver();
+	nlassert(drv);
+
+	// Get the lod choosen in renderSkinGroupGeom()
+	CLod	&lod= _Lods[_LastLodComputed];
+
+
+	// Profiling
+	//===========
+	H_AUTO( NL3D_MeshMRMGeom_RenderSkinned );
+
+
+	// Render all pass.
+	//===========
+	for(uint i=0;i<lod.RdrPass.size();i++)
+	{
+		CRdrPass	&rdrPass= lod.RdrPass[i];
+
+		// CMaterial Ref
+		CMaterial &material=mi->Materials[rdrPass.MaterialId];
+
+
+		// Compute a PBlock (static to avoid reallocation) shifted to baseVertex
+		static	CPrimitiveBlock		dstPBlock;
+		dstPBlock.setNumLine(0);
+		dstPBlock.setNumTri(0);
+		dstPBlock.setNumQuad(0);
+		// Lines.
+		uint	numLines= rdrPass.PBlock.getNumLine();
+		if(numLines)
+		{
+			uint	nIds= numLines*2;
+			// allocate, in the tmp buffer
+			dstPBlock.setNumLine(numLines);
+			// index, and fill
+			uint32	*pSrcLine= rdrPass.PBlock.getLinePointer();
+			uint32	*pDstLine= dstPBlock.getLinePointer();
+			for(;nIds>0;nIds--,pSrcLine++,pDstLine++)
+				*pDstLine= *pSrcLine + baseVertex;
+		}
+		// Tris
+		uint	numTris= rdrPass.PBlock.getNumTri();
+		if(numTris)
+		{
+			uint	nIds= numTris*3;
+			// allocate, in the tmp buffer
+			dstPBlock.setNumTri(numTris);
+			// index, and fill
+			uint32	*pSrcTri= rdrPass.PBlock.getTriPointer();
+			uint32	*pDstTri= dstPBlock.getTriPointer();
+			for(;nIds>0;nIds--,pSrcTri++,pDstTri++)
+				*pDstTri= *pSrcTri + baseVertex;
+		}
+		// Quads
+		uint	numQuads= rdrPass.PBlock.getNumQuad();
+		if(numQuads)
+		{
+			uint	nIds= numQuads*4;
+			// allocate, in the tmp buffer
+			dstPBlock.setNumQuad(numQuads);
+			// index, and fill
+			uint32	*pSrcQuad= rdrPass.PBlock.getQuadPointer();
+			uint32	*pDstQuad= dstPBlock.getQuadPointer();
+			for(;nIds>0;nIds--,pSrcQuad++,pDstQuad++)
+				*pDstQuad= *pSrcQuad + baseVertex;
+		}
+
+
+		// Render with the Materials of the MeshInstance.
+		drv->render(dstPBlock, material);
+	}
+}
+
 
 // ***************************************************************************
 void	CMeshMRMGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
@@ -1891,7 +2137,26 @@ void				CMeshMRMGeom::updateVertexBufferHard(IDriver *drv, uint32 numVertices)
 		return;
 
 
-	// If the vbufferhard is not here, or if diryt, or if do not have enough vertices.
+	/** If the mesh is skinned, still use normal CVertexBuffer.
+	 *	Doens't use VBuffer hard when Skinned, for AGP memory optimisation. See renderSkin() note.
+	 *	It's because most of the MRM skins are rendered through renderSkinGroup*() methods, which use a global VBHard
+	 *	NB: meshs which are skinned but not skin applied are not optimized too. But this case is not a "realtime" game
+	 *	situation
+	 */
+	if( _VertexBufferHardDirty && _Skinned )
+	{
+		// delete possible old VBHard.
+		if(_VBHard!=NULL)
+		{
+			// VertexBufferHard lifetime < Driver lifetime.
+			nlassert(_Driver!=NULL);
+			_Driver->deleteVertexBufferHard(_VBHard);
+		}
+		return;
+	}
+
+
+	// If the vbufferhard is not here, or if dirty, or if do not have enough vertices.
 	if(_VBHard==NULL || _VertexBufferHardDirty || _VBHard->getNumVertices() < numVertices)
 	{
 		_VertexBufferHardDirty= false;
@@ -2122,6 +2387,19 @@ void	CMeshMRMGeom::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
 void	CMeshMRMGeom::compileRunTime()
 {
 	_PreciseClipping= _BBox.getRadius() >= NL3D_MESH_PRECISE_CLIP_THRESHOLD;
+
+	// Compute if can support SkinGrouping rendering
+	if(_Lods.size()==0 || !_Skinned)
+		_SupportSkinGrouping= false;
+	else
+	{
+		// The Mesh must follow thos restrictions, to support group skinning
+		_SupportSkinGrouping=
+			_VBufferFinal.getVertexFormat() == NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT &&
+			_VBufferFinal.getNumVertices() < NL3D_MESH_SKIN_MANAGER_MAXVERTICES &&
+			!_MeshVertexProgram;
+	}
+
 }
 
 

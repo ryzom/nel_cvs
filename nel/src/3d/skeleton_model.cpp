@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.25 2002/07/09 13:16:14 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.26 2002/07/11 08:19:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1084,10 +1084,7 @@ void			CSkeletonModelRenderObs::renderSkins()
 
 
 		// Render all totaly opaque skins.
-		for(uint i=0;i<sm->_OpaqueSkins.size();i++)
-		{
-			sm->_OpaqueSkins[i]->renderSkin(alphaMRM);
-		}
+		renderSkinList(sm->_OpaqueSkins, alphaMRM);
 	}
 	else
 	{
@@ -1099,15 +1096,102 @@ void			CSkeletonModelRenderObs::renderSkins()
 
 
 		// render all opaque/transparent skins
-		for(uint i=0;i<sm->_TransparentSkins.size();i++)
-		{
-			sm->_TransparentSkins[i]->renderSkin(alphaMRM);
-		}
+		renderSkinList(sm->_TransparentSkins, alphaMRM);
 	}
 
 
 	// bkup force normalisation.
 	drv->forceNormalize(bkupNorm);
+}
+
+
+// ***************************************************************************
+void			CSkeletonModelRenderObs::renderSkinList(NLMISC::CObjectVector<CTransform*, false> &skinList, float alphaMRM)
+{
+	CRenderTrav			*rdrTrav= (CRenderTrav*)Trav;
+
+	// if the SkinManager is not possible at all, just rendered the std way
+	if( !rdrTrav->MeshSkinManager.enabled() )
+	{
+		for(uint i=0;i<skinList.size();i++)
+		{
+			skinList[i]->renderSkin(alphaMRM);
+		}
+	}
+	else
+	{
+		// array (rarely allocated) of skins with grouping support
+		static	std::vector<CTransform*>	skinsToGroup;
+		static	std::vector<uint>			baseVertices;
+		skinsToGroup.clear();
+		baseVertices.clear();
+		// get the maxVertices the manager support
+		uint	maxVertices= rdrTrav->MeshSkinManager.getMaxVertices();
+		uint	vertexSize= rdrTrav->MeshSkinManager.getVertexSize();
+
+		// render any skins which do not support SkinGrouping, and fill array of skins to group
+		for(uint i=0;i<skinList.size();i++)
+		{
+			// If don't support, or if too big to fit in the manager, just renderSkin()
+			if(!skinList[i]->supportSkinGrouping())
+				skinList[i]->renderSkin(alphaMRM);
+			else
+				skinsToGroup.push_back(skinList[i]);
+		}
+
+		// For each skin, have an index which gives the decal of the vertices in the buffer
+		baseVertices.resize(skinsToGroup.size());
+
+		// while there is skin to render in group
+		uint	skinId= 0;
+		while(skinId<skinsToGroup.size())
+		{
+			// space left in the manager
+			uint	remainingVertices= maxVertices;
+			uint	currentBaseVertex= 0;
+
+			// First pass, fill The VB.
+			//------------
+			// lock buffer
+			uint8	*vbDest= rdrTrav->MeshSkinManager.lock();
+
+			// For all skins until the buffer is full
+			uint	startSkinId= skinId;
+			while(skinId<skinsToGroup.size())
+			{
+				// if success to fill the AGP
+				sint	numVerticesAdded= skinsToGroup[skinId]->renderSkinGroupGeom(alphaMRM, remainingVertices, 
+					vbDest + vertexSize*currentBaseVertex );
+				// -1 means that this skin can't render because no space left for her. Then stop for this block
+				if(numVerticesAdded==-1)
+					break;
+				// Else ok, get the currentBaseVertex for this skin
+				baseVertices[skinId]= currentBaseVertex;
+				// and jump to the next place
+				currentBaseVertex+= numVerticesAdded;
+				remainingVertices-= numVerticesAdded;
+
+				// go to the next skin
+				skinId++;
+			}
+
+			// release buffer
+			rdrTrav->MeshSkinManager.unlock();
+
+			// Second pass, render the primitives.
+			//------------
+			rdrTrav->MeshSkinManager.activate();
+			for(uint i=startSkinId;i<skinId;i++)
+			{
+				// render the skin in the current buffer
+				skinsToGroup[i]->renderSkinGroupPrimitives(baseVertices[i]);
+			}
+
+
+			// End of this block, swap to the next buffer
+			rdrTrav->MeshSkinManager.swapVBHard();
+		}
+	}
 }
 
 

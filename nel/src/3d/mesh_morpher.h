@@ -1,7 +1,7 @@
 /** \file mesh_morpher.h
  * <File description>
  *
- * $Id: mesh_morpher.h,v 1.3 2002/06/20 09:44:54 berenguier Exp $
+ * $Id: mesh_morpher.h,v 1.4 2002/07/11 08:19:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,8 +67,7 @@ class CMeshMorpher
 	{
 		OriginalAll=0,		// The vertex is the same as original into VBDst and VBHard
 		OriginalVBDst,		// The vertex is the same as original into VBDst
-		ModifiedPosNorm,	// Vertex modified (pos, norm or pos/norm/tg space are modified, uv and col are not modified)
-		ModifiedUVCol		// Vertex modified (pos or norm can be modified, uv, col or uv/col are modified)
+		Modified,			// Vertex modified
 	} TState;
 
 public:

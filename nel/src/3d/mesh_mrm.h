@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.33 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.34 2002/07/11 08:19:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -240,6 +240,14 @@ public:
 	const	CMRMLevelDetail		&getLevelDetail() const {return _LevelDetail;}
 
 
+	/// \name Special SkinGrouping Rendering
+	// @{
+	bool			supportSkinGrouping() const;
+	sint			renderSkinGroupGeom(CMeshBaseInstance	*mi, float alphaMRM, uint remainingVertices, uint8 *vbDest);
+	void			renderSkinGroupPrimitives(CMeshBaseInstance	*mi, uint baseVertex);
+	// @}
+
+
 // ************************
 private:
 	friend class	CMRMBuilder;
@@ -405,6 +413,12 @@ private:
 	/// true if the _BonesIdExt have been computed (for bone Usage).
 	bool						_BoneIdExtended;
 
+	/// if true, then maybe use faster render
+	bool						_SupportSkinGrouping;
+
+	/// Last lod rendered. used with renderSkinGroup*() only
+	uint8						_LastLodComputed;
+
 	/// This array give the name of the local bones
 	std::vector<std::string>	_BonesName;
 	/// This array give the index in the skeleton of the local bones used. computed at first computeBoneId()
@@ -448,6 +462,10 @@ private:
 
 	// Fill skin in AGP, if VBhard exist/used
 	void				fillAGPSkinPart(CLod &lod, IVertexBufferHard *currentVBHard);
+
+	// Fill skin in AGP, with a direct ptr onto AGP
+	void				fillAGPSkinPartWithVBHardPtr(CLod &lod, uint8 *vertexDst);
+
 	// @}
 
 	// The Mesh Morpher
@@ -468,6 +486,12 @@ private:
 
 	/// Apply the geomorph to the _VBuffer, or the VBhard, if exist/used
 	void	applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod, IVertexBufferHard *currentVBHard);
+
+	/// Apply the geomorph to the VBhard ptr, if not NULL
+	void	applyGeomorphWithVBHardPtr(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod, uint8 *vertexDestPtr);
+
+	/// Faster, but common geomorph apply
+	void	applyGeomorphPosNormalUV0(std::vector<CMRMWedgeGeom>  &geoms, uint8 *vertexPtr, uint8 *vertexDestPtr, sint32 vertexSize, float a, float a1);
 
 	/// Skinning: bkup Vertex/Normal into _OriginalSkin* from VBuffer.
 	void	bkupOriginalSkinVertices();

@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.12 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: render_trav.h,v 1.13 2002/07/11 08:19:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/light_contribution.h"
 #include "3d/light.h"
 #include "3d/mesh_block_manager.h"
+#include "3d/mesh_skin_manager.h"
 #include <vector>
 
 
@@ -49,6 +50,13 @@ class	IDriver;
 class	CMaterial;
 
 class	CTransform;
+
+
+// ***************************************************************************
+// Skin Manager setup
+#define	NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT		(CVertexBuffer::PositionFlag | CVertexBuffer::NormalFlag | CVertexBuffer::TexCoord0Flag)
+#define	NL3D_MESH_SKIN_MANAGER_MAXVERTICES		10000
+
 
 // ***************************************************************************
 // ClassIds.
@@ -259,8 +267,13 @@ public:
 
 	/// \name MeshBlock Manager. FOR OBSERVERS AND MESHS ONLY.
 	// @{
+
 	/// The manager of meshBlock. Used to add instances.
 	CMeshBlockManager		MeshBlockManager;
+
+	/// The manager of skin
+	CMeshSkinManager		MeshSkinManager;
+
 	// @}
 
 private:

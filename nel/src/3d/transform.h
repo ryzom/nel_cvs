@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.25 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: transform.h,v 1.26 2002/07/11 08:19:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -378,6 +378,21 @@ protected:
 	 *	default is nop
 	 */
 	virtual void			renderSkin(float alphaMRM) {}
+
+
+	/** Deriver may support SkinGrouping if isSkinnable(). 
+	 *	It renders the skin with current ctx of the skeletonModel, but torn in 2 pass: fillVB,a nd renderPrimitives
+	 *	Deriver may check NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT and NL3D_MESH_SKIN_MANAGER_MAXVERTICES
+	 */
+	virtual	bool			supportSkinGrouping() const {return false;}
+	/** if supportSkinGrouping(), called to transform the VBuffer, and store it into dest. 
+	 *	\return number of vertices added to the VBuffer, or -1 if > reaminingVertices
+	 */
+	virtual	sint			renderSkinGroupGeom(float alphaMRM, uint remainingVertices, uint8 *dest) {return 0;}
+	/** if supportSkinGrouping(), called to render the primitives of the already skinned vertices (VB activated in the driver)
+	 *	\param baseVertex value to add to each PBlock index.
+	 */
+	virtual	void			renderSkinGroupPrimitives(uint baseVertex) {}
 
 
 	// The SkeletonModel, root of us (skinning or sticked object). NULL , if normal mode.

@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.8 2002/07/08 10:02:30 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.9 2002/07/11 08:19:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,6 +63,7 @@ public:
 	 * NB: nlerror() if mi is not a UInstance. (ie a mesh instance).
 	 * NB: an object can't be skinned and sticked at same time :)
 	 * NB: replaced if already here.
+	 * NB: when a skin is binded, the command hide(), show(), ... have no effect on it, until it is detachSkeletonSon()-ed
 	 * \return false if mi is NULL or not skinnable, true otherwise
 	 */
 	virtual	bool		bindSkin(UInstance *mi) =0;

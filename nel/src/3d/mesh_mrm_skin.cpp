@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.7 2002/07/02 12:27:19 berenguier Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.8 2002/07/11 08:19:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -362,18 +362,37 @@ uint	CMeshMRMGeom::NumCacheVertexTgSpace4= NL_BlockByteL1 / sizeof(CMeshMRMGeom:
 // ***************************************************************************
 void				CMeshMRMGeom::fillAGPSkinPart(CLod &lod, IVertexBufferHard *currentVBHard)
 {
+	// if VBHard OK
+	if(currentVBHard)
+	{
+		// lock buffer.
+		uint8		*vertexDst= (uint8*)currentVBHard->lock();
+
+		// do it.
+		fillAGPSkinPartWithVBHardPtr(lod, vertexDst);
+
+		// release
+		currentVBHard->unlock();
+	}
+}
+
+
+// ***************************************************************************
+void				CMeshMRMGeom::fillAGPSkinPartWithVBHardPtr(CLod &lod, uint8 *vertexDst)
+{
 	// Fill AGP vertices used by this lod from RAM. (not geomorphed ones).
-	if(currentVBHard && lod.SkinVertexBlocks.size()>0 )
+	if( lod.SkinVertexBlocks.size()>0 )
 	{
 		// Get VB info, and lock buffers.
 		uint8		*vertexSrc= (uint8*)_VBufferFinal.getVertexCoordPointer();
-		uint8		*vertexDst= (uint8*)currentVBHard->lock();
 		uint32		vertexSize= _VBufferFinal.getVertexSize();
-		nlassert(vertexSize == currentVBHard->getVertexSize());
 
 		// big copy of all vertices and their data.
 		// NB: this not help RAM bandwidth, but this help AGP write combiners.
 		// For the majority of mesh (vertex/normal/uv), this is better (6/10).
+
+		// Also, this is a requirement for MeshMorpher to work, because the MehsMorpher may modify
+		// UV and color
 
 
 		// For all block of vertices.
@@ -393,9 +412,6 @@ void				CMeshMRMGeom::fillAGPSkinPart(CLod &lod, IVertexBufferHard *currentVBHar
 
 			memcpy(dst, src, vBlock->NVertices * vertexSize);
 		}
-
-
-		currentVBHard->unlock();
 	}
 }
 

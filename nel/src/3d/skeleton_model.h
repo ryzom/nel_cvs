@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.19 2002/07/09 13:16:14 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.20 2002/07/11 08:19:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,6 +91,7 @@ public:
 	 * NB: nlassert() if there is too many skins/sticked objects on this skeleton (more than 255).
 	 * NB: an object can't be skinned and sticked at same time :)
 	 * NB: replaced if already here.
+	 * NB: when a skin is binded, the command hide(), show(), ... have no effect on it, until it is detachSkeletonSon()-ed
 	 * NB: For Skins, all Hrc/Clip/ValidateList link is done here
 	 * \return false if mi is not skinnable, true otherwise
 	 */
@@ -471,6 +472,10 @@ public:
 	 *  - render all the skins (according if passOpaque or not)
 	 */
 	void			renderSkins();
+
+	/** render a list of skin, no lighting setup etc..., but use where possible CMeshSkinManager
+	 */
+	void			renderSkinList(NLMISC::CObjectVector<CTransform*, false>	&skinList, float alphaMRM);
 
 public:
 	static IObs	*creator() {return new CSkeletonModelRenderObs;}

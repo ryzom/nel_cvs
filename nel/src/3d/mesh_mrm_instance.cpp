@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.8 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.9 2002/07/11 08:19:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,5 +146,34 @@ const	CMRMLevelDetail		*CMeshMRMInstance::getMRMLevelDetail() const
 		return NULL;
 }
 
+// ***************************************************************************
+bool			CMeshMRMInstance::supportSkinGrouping() const
+{
+	if(Shape)
+	{
+		CMeshMRM	*meshMrm= safe_cast<CMeshMRM*>((IShape*)Shape);
+		return	meshMrm->getMeshGeom().supportSkinGrouping();
+	}
+	else
+		return false;
+}
+// ***************************************************************************
+sint			CMeshMRMInstance::renderSkinGroupGeom(float alphaMRM, uint remainingVertices, uint8 *dest)
+{
+	// Get a pointer on the shape
+	CMeshMRM		*pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+	// render the meshGeom
+	CMeshMRMGeom	&meshGeom= const_cast<CMeshMRMGeom&>(pMesh->getMeshGeom ());
+	return meshGeom.renderSkinGroupGeom(this, alphaMRM, remainingVertices, dest);
+}
+// ***************************************************************************
+void			CMeshMRMInstance::renderSkinGroupPrimitives(uint baseVertex)
+{
+	// Get a pointer on the shape
+	CMeshMRM		*pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+	// render the meshGeom
+	CMeshMRMGeom	&meshGeom= const_cast<CMeshMRMGeom&>(pMesh->getMeshGeom ());
+	meshGeom.renderSkinGroupPrimitives(this, baseVertex);
+}
 
 } // NL3D

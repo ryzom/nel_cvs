@@ -1,7 +1,7 @@
 /** \file mesh_morpher.cpp
  * <File description>
  *
- * $Id: mesh_morpher.cpp,v 1.4 2002/06/20 09:44:54 berenguier Exp $
+ * $Id: mesh_morpher.cpp,v 1.5 2002/07/11 08:19:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,7 +119,7 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 	{
 		_Flags.resize (_VBOri->getNumVertices());
 		for (i = 0; i < _Flags.size(); ++i)
-			_Flags[i] = ModifiedUVCol; // Modified to update all
+			_Flags[i] = Modified; // Modified to update all
 	}
 
 	nlassert(_VBOri->getVertexFormat() == _VBDst->getVertexFormat());
@@ -130,7 +130,7 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 	uint8 *pDst = (uint8*)_VBDst->getVertexCoordPointer ();
 	
 	for (i= 0; i < _Flags.size(); ++i)
-	if (_Flags[i] >= ModifiedPosNorm)
+	if (_Flags[i] >= Modified)
 	{
 		_Flags[i] = OriginalVBDst;
 
@@ -204,7 +204,7 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 			}
 
 			// Modified
-			_Flags[vp] = ModifiedUVCol;
+			_Flags[vp] = Modified;
 		}
 	}
 
@@ -250,7 +250,7 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 	{
 		_Flags.resize (_VBOri->getNumVertices());
 		for (i = 0; i < _Flags.size(); ++i)
-			_Flags[i] = ModifiedUVCol; // Modified to update all
+			_Flags[i] = Modified; // Modified to update all
 	}
 
 	nlassert(_VBOri->getVertexFormat() == _VBDst->getVertexFormat());
@@ -269,7 +269,7 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 	uint8 *pDst = (uint8*)_VBDst->getVertexCoordPointer ();
 	
 	for (i= 0; i < _Flags.size(); ++i)
-	if (_Flags[i] >= ModifiedPosNorm)
+	if (_Flags[i] >= Modified)
 	{
 		for(j = 0; j < VBVertexSize; ++j)
 			pDst[j+i*VBVertexSize] = pOri[j+i*VBVertexSize];
@@ -304,7 +304,6 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 			{
 				CVector *pV = &(_Vertices->operator[](vp));
 				*pV += rBS.deltaPos[j] * rFactor;
-				_Flags[vp] = ModifiedPosNorm;
 			}
 
 			if (_Normals != NULL)
@@ -312,7 +311,6 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 			{
 				CVector *pV = &(_Normals->operator[](vp));
 				*pV += rBS.deltaNorm[j] * rFactor;
-				_Flags[vp] = ModifiedPosNorm;
 			}
 
 			if (_UseTgSpace && _TgSpace != NULL)
@@ -320,7 +318,6 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 			{
 				CVector *pV = &((*_TgSpace)[vp]);
 				*pV += rBS.deltaTgSpace[j] * rFactor;
-				_Flags[vp] = ModifiedPosNorm;
 			}
 
 			// Modify UV0 / Color
@@ -330,7 +327,6 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 			{
 				CUV *pUV = (CUV*)_VBDst->getTexCoordPointer (vp);
 				*pUV += rBS.deltaUV[j] * rFactor;
-				_Flags[vp] = ModifiedUVCol;
 			}
 
 			if (_VBDst->getVertexFormat() & CVertexBuffer::PrimaryColorFlag)
@@ -347,8 +343,10 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 				clamp(rgbf.B, 0.0f, 1.0f);
 				clamp(rgbf.A, 0.0f, 1.0f);
 				*pRGBA = rgbf;
-				_Flags[vp] = ModifiedUVCol;
 			}
+
+			// Modified
+			_Flags[vp] = Modified;
 		}
 	}
 
@@ -358,22 +356,9 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 		// lock.
 		uint8 *pDstHrd = (uint8*)_VBDstHrd->lock();
 
-		// If the skin is applied we have to transfert only vertices that have modified UV or Color
-		// Because the skinning will transfert vertices Pos and Norm.
-		if (_SkinApplied) 
-		{
-			for (i = 0; i < _Flags.size(); ++i)
-			{
-				if (_Flags[i] == ModifiedUVCol) // Modified UV or Color ?
-				{
-					// We must write the whole vertex because the skinning may not copy 
-					// vertex and normal changes into VBHard
-					for(j = 0; j < VBVertexSize; ++j)
-						pDstHrd[j+i*VBVertexSize] = pDst[j+i*VBVertexSize];
-				}
-			}
-		}
-		else
+		// If the skin is applied we have nothing to do 
+		// Because the skinning will transfert ALL the vertices of interest
+		if (!_SkinApplied) 
 		{
 			for (i = 0; i < _Flags.size(); ++i)
 			{

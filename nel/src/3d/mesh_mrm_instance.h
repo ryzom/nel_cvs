@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
  * <File description>
  *
- * $Id: mesh_mrm_instance.h,v 1.8 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: mesh_mrm_instance.h,v 1.9 2002/07/11 08:19:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,6 +80,11 @@ protected:
 
 	/// Implementation of the renderSkin
 	virtual void	renderSkin(float alphaMRM);
+
+	// Implementation of SkinGrouping
+	virtual	bool			supportSkinGrouping() const;
+	virtual	sint			renderSkinGroupGeom(float alphaMRM, uint remainingVertices, uint8 *dest);
+	virtual	void			renderSkinGroupPrimitives(uint baseVertex);
 
 	// @}
 

@@ -12,16 +12,19 @@ extends:Box
 		PSParam1 type:#float animatable:true ui:userParam2_s
 		PSParam2 type:#float animatable:true ui:userParam3_s
 		PSParam3 type:#float animatable:true ui:userParam4_s
+		PSTrigger type:#boolean animatable:true ui:trigger_s
 	)
 
 	rollout param "Parameters"
 	(
 		edittext ps_file_name_et "file:"
 		button browse "Browse..."
-		spinner userParam1_s "user param 1" range:[0,1,0] type:#float scale:0.01
-		spinner userParam2_s "user param 2" range:[0,1,0] type:#float scale:0.01
-		spinner userParam3_s "user param 3" range:[0,1,0] type:#float scale:0.01
-		spinner userParam4_s "user param 4" range:[0,1,0] type:#float scale:0.01
+		spinner  userParam1_s "user param 1" range:[0,1,0] type:#float scale:0.01
+		spinner  userParam2_s "user param 2" range:[0,1,0] type:#float scale:0.01
+		spinner  userParam3_s "user param 3" range:[0,1,0] type:#float scale:0.01
+		spinner  userParam4_s "user param 4" range:[0,1,0] type:#float scale:0.01
+		checkbox trigger_s     "trigger system" type:#boolean scale:0.01
+
 		on ps_file_name_et changed val do
 		(
 			ps_file_name = val
@@ -38,7 +41,8 @@ extends:Box
 			fname = getOpenFileName caption: "particle system file" types:"particle system file(*.ps)|" filename:"*.ps"
 			if not fname == undefined then
 			(
-			  ps_file_name = filenameFromPath fname 
+			  -- ps_file_name = filenameFromPath fname 
+			  ps_file_name = fname 
 	  		  setAppData this 1970 ps_file_name
 			  ps_file_name_et.text = ps_file_name
 			)			

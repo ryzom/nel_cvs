@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.27 2001/02/02 09:10:33 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.28 2001/04/12 14:15:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -905,8 +905,7 @@ namespace NLAISCRIPT
 		_Inheritance->load( is );
 		_Inheritance->incRef();
 	}
-
-	const NLAIAGENT::IObjectIA::CProcessResult &CAgentClass::run();
+	
 	
 	bool CAgentClass::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 	{

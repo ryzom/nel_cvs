@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.11 2004/01/23 13:39:13 corvazier Exp $
+ * $Id: primitive_class.cpp,v 1.12 2004/06/03 08:46:40 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -193,6 +193,32 @@ failed:
 bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, const char *className, std::set<std::string> &contextStrings, 
 							std::map<std::string, std::string> &contextFilesLookup, CLigoConfig &config)
 {
+	//	init default parameters
+	AutoInit = false;
+	Deletable = true;
+	FileExtension = "";
+	FileType = "";
+	Collision = false;
+	LinkBrothers = false;
+	ShowArrow = true;
+	Numberize = true;
+
+	// read parent class properties
+	string parentClass;
+	if (CIXml::getPropertyString (parentClass, primitiveNode, "PARENT_CLASS"))
+	{
+		const CPrimitiveClass *parent = config.getPrimitiveClass(parentClass.c_str());
+
+		if (parent == NULL)
+		{
+			config.syntaxError (filename, primitiveNode, "Can't find parent class (%s) for class (%s)", parentClass.c_str (), className);
+			return false;
+		}
+
+		// copy all the properties
+		*this = *parent;
+	}
+	
 	// The name
 	Name = className;
 
@@ -221,35 +247,27 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 		ReadColor (Color, primitiveNode);
 
 		// Autoinit
-		AutoInit = false;
 		ReadBool ("AUTO_INIT", AutoInit, primitiveNode, filename, config);
 		
 		// Deletable
-		Deletable = true;
 		ReadBool ("DELETABLE", Deletable, primitiveNode, filename, config);
 
 		// File extension
-		FileExtension = "";
 		CIXml::getPropertyString (FileExtension, primitiveNode, "FILE_EXTENSION");
 
 		// File type
-		FileType = "";
 		CIXml::getPropertyString (FileType, primitiveNode, "FILE_TYPE");
 
 		// Collision
-		Collision = false;
 		ReadBool ("COLLISION", Collision, primitiveNode, filename, config);
 
 		// LinkBrothers
-		LinkBrothers = false;
 		ReadBool ("LINK_BROTHERS", LinkBrothers, primitiveNode, filename, config);
 
 		// ShowArrow
-		ShowArrow = true;
 		ReadBool ("SHOW_ARROW", ShowArrow, primitiveNode, filename, config);
 		
 		// Numberize when copy the primitive
-		Numberize = true;
 		ReadBool ("NUMBERIZE", Numberize, primitiveNode, filename, config);
 
 		// Read the parameters
@@ -258,15 +276,28 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 		{
 			do
 			{
-				// Add a parameter
-				Parameters.push_back (CParameter ());
-
-				// The parameter ref
-				CParameter &parameter = Parameters.back ();
-
 				// Read the property name
 				if (config.getPropertyString (type, filename, paramNode, "NAME"))
 				{
+					// look if the parameter is not already defined by the parent class
+					uint i=0;
+					while (i<Parameters.size())
+					{
+						if (Parameters[i].Name == type)
+						{
+							// the param already exist, remove parent param
+							Parameters.erase(Parameters.begin() + i);
+							continue;
+						}
+						++i;
+					}
+
+					// Add a parameter
+					Parameters.push_back (CParameter ());
+
+					// The parameter ref
+					CParameter &parameter = Parameters.back ();
+
 					// Set the name
 					parameter.Name = type;
 
@@ -477,7 +508,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 
 		// Read static children
 		xmlNodePtr childrenNode = CIXml::getFirstChildNode (primitiveNode, "STATIC_CHILD");
-		StaticChildren.reserve (CIXml::countChildren (primitiveNode, "STATIC_CHILD"));
+		StaticChildren.reserve (StaticChildren.size() + CIXml::countChildren (primitiveNode, "STATIC_CHILD"));
 		if (childrenNode)
 		{
 			do
@@ -497,7 +528,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 
 		// Read dynamic children
 		childrenNode = CIXml::getFirstChildNode (primitiveNode, "DYNAMIC_CHILD");
-		DynamicChildren.reserve (CIXml::countChildren (primitiveNode, "DYNAMIC_CHILD"));
+		DynamicChildren.reserve (DynamicChildren.size() + CIXml::countChildren (primitiveNode, "DYNAMIC_CHILD"));
 		if (childrenNode)
 		{
 			do
@@ -517,7 +548,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 
 		// Read generated children
 		childrenNode = CIXml::getFirstChildNode (primitiveNode, "GENERATED_CHILD");
-		GeneratedChildren.reserve (CIXml::countChildren (primitiveNode, "GENERATED_CHILD"));
+		GeneratedChildren.reserve (GeneratedChildren.size() + CIXml::countChildren (primitiveNode, "GENERATED_CHILD"));
 		if (childrenNode)
 		{
 			do

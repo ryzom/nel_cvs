@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.8 2001/07/13 17:06:32 vizerie Exp $
+ * $Id: particle_system.h,v 1.9 2001/07/17 15:57:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,9 @@ class CParticleSystem /*: public IModel, NLMISC::IEventEmitter*/
 {
 
 public:
+	/// ctor
+	CParticleSystem();
+
 	/**
 	* execute all the process of the system. It uses the driver that was set by a call to setDriver
 	* \param ellapsedTime The ellapsed time since the last call
@@ -79,6 +82,10 @@ public:
 	* \see setDriver
 	*/
 	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
+
+
+	/// get the time ellapsed since the system was created
+	CAnimationTime getSystemDate(void) const { return _SystemDate ; }
 
 
 	/** Set the value of a user parameter. It must range from 0 to 1. The user value are not saved, and their default value is 0.f
@@ -120,9 +127,7 @@ public:
 	/// serialize this particle system
 	void serial(NLMISC::IStream &f)  throw(NLMISC::EStream) ;
 
-	/// ctor
-	CParticleSystem();
-
+	
 
 	/*** duplication method NOT SUPPORTED
 	 * \param ch for private use, set to null by default
@@ -190,9 +195,12 @@ public:
 
 	const NLMISC::CMatrix &getInvertedSysMat(void) const { return _InvSysMat ; } 
 
+	/** set the view matrix  
+	  * This must be called otherwise results can't be correct
+	  */
+	void setViewMat(const NLMISC::CMatrix &m) ;
 
-
-	/// get the view matrix . It is stored each time a new frame is processed	 
+	/// get the view matrix .
 	const NLMISC::CMatrix &getViewMat(void) const { return _ViewMat ; }
 
 	/// get the inverted view matrix . It is stored each time a new frame is processed	 
@@ -353,10 +361,10 @@ public:
 	/** tell the system to delete himself when its out of range (in fact, the Model holding it will destroy it when this
 	  * flag is set)  The default is false.
 	  */
-	void setDestroyWhenOutOfRange(bool enable = true) { _DestroyWhenOutOfRange ; }
+	void setDestroyModelWhenOutOfRange(bool enable = true) { _DestroyModelWhenOutOfRange  = enable ; }
 	
 	/// check whether the system must be destroyed when it's out of range.
-	bool getDestroyWhenOutOfRange(void) const { return _DestroyWhenOutOfRange ; }
+	bool getDestroyModelWhenOutOfRange(void) const { return _DestroyModelWhenOutOfRange ; }
 
 
 	/// this enum give consitions on which the system may be destroyed
@@ -377,6 +385,29 @@ public:
 
 	/// get the a delay before to apply the death condition test	  
 	CAnimationTime getDelayBeforeDeathConditionTest(void) const { return _DelayBeforeDieTest ; }
+
+	/** tells the model holding this system that he become invalid when its out of the view frustrum.
+	  * The system will be destroy, and then recreated when its back in frustrum, unless
+	  *  setDestroyWhenOutOfRange() has been called with true, in which case the model
+	  *  holding the system is destroyed too.
+	  * (otherwise, distance only is taken in account, which is the default)	  	  
+	  * \see setDestroyWhenOutOfRange()
+	  */
+	void destroyWhenOutOfFrustrum(bool enable = true) { _DestroyWhenOutOfFrustrum = enable ; }
+
+	/// check wether the system must be destroyed when it goes out of the frustrum
+	bool doesDestroyWhenOutOfFrustrum(void) const { return _DestroyWhenOutOfFrustrum ; }
+
+
+	/// return true when there are still emitters in the system
+	bool hasEmitters(void) const ;
+
+	/// return true when there are still partciels
+	bool hasParticles(void) const ;
+
+	/// get 1.f - the current lod ratio (it is updated at each motion pass)
+	float getOneMinusCurrentLODRatio(void) const { return _CurrentLODRatio ; }
+
 
 protected:
 
@@ -429,17 +460,20 @@ protected:
 
 	bool _AccurateIntegration ;	
 	CAnimationTime _TimeThreshold ;
+	CAnimationTime _SystemDate ;
 	uint32 _MaxNbIntegrations ;
 	bool _CanSlowDown ;
 
-	float _LODRatio ;
+	float _LODRatio, _CurrentLODRatio ;
 	float _InvMaxViewDist ;
 
 	bool _Touch ;
 
 	TDieCondition  _DieCondition ;
 	CAnimationTime _DelayBeforeDieTest ;
-	bool		   _DestroyWhenOutOfRange ;
+	bool		   _DestroyModelWhenOutOfRange ;
+	bool		   _DestroyWhenOutOfFrustrum ;
+	
 };
 
 

@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.22 2001/07/13 17:06:32 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.23 2001/07/17 15:57:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,7 +71,10 @@ CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
 									, _ComputeBBox(true)
 									, _DieCondition(none)
 									, _DelayBeforeDieTest(0.2f) 
-									, _DestroyWhenOutOfRange(false)
+									, _DestroyModelWhenOutOfRange(false)
+									, _DestroyWhenOutOfFrustrum(false)
+									, _SystemDate(0.f)
+									, _CurrentLODRatio(0)
 {
 	for (uint k = 0 ; k < MaxPSUserParam ; ++k) _UserParam[k].Value = 0 ;
 }
@@ -87,20 +90,42 @@ CParticleSystem::~CParticleSystem()
 }
 
 
-void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+void CParticleSystem::setViewMat(const NLMISC::CMatrix &m)
 {
+	_ViewMat = m ;
+	_InvertedViewMat = m.inverted() ;
+}				
+
+
+
+
+bool CParticleSystem::hasEmitters(void) const
+{
+	for (TProcessVect::const_iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+	{
+		if ((*it)->hasEmitters()) return true ;
+	}
+	return false ;
+}
 	
+bool CParticleSystem::hasParticles(void) const
+{
+	for (TProcessVect::const_iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+	{
+		if ((*it)->hasParticles()) return true ;
+	}
+	return false ;
+}
+
+
+void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+{	
 	CAnimationTime et = ellapsedTime ;
 	uint32 nbPass = 1 ;
 
 	if (pass == PSSolidRender ||pass == PSBlendRender)
 	{
-		++_Date ; // update time
-		 // store the view matrix for the rendring pass
-		 // it is needed for FaceLookat or the like
-		_ViewMat = _Driver->getViewMatrix() ;
-		_InvertedViewMat = _ViewMat.inverted() ;
-		//_ViewMat.transpose() ;
+		++_Date ; // update time		 
 	}
 	else if (_AccurateIntegration && pass != PSToolRender)
 	{
@@ -118,6 +143,23 @@ void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 			}
 		}
 	}
+
+	if (pass == PSMotion)
+	{
+		// store the view matrix for the rendring pass
+		 // it is needed for FaceLookat or the like		
+		// update current lod ratio
+
+		const CVector d = _SysMat.getPos() - _ViewMat.getPos() ;		
+		_CurrentLODRatio = 1.f - (d.norm() * _InvMaxViewDist) ; 
+		if (_CurrentLODRatio < 0) _CurrentLODRatio = 0.f ;
+		
+	
+		// update system date
+		_SystemDate += ellapsedTime ;
+
+	
+	}
 	
 	do
 	{
@@ -131,7 +173,7 @@ void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
-	sint version =  f.serialVersion(5) ;	
+	sint version =  f.serialVersion(6) ;	
 	//f.serial(_ViewMat) ;
 	f.serial(_SysMat) ;
 	f.serial(_Date) ;
@@ -179,13 +221,18 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if (version > 4) // lifetime informations
 	{
-		f.serial(_DestroyWhenOutOfRange) ;
+		f.serial(_DestroyModelWhenOutOfRange) ;
 		f.serialEnum(_DieCondition) ;
 		if (_DieCondition != none)
 		{
 			f.serial(_DelayBeforeDieTest) ;
 		}
 	}	
+
+	if (version > 5)
+	{
+		f.serial(_DestroyWhenOutOfFrustrum) ;
+	}
 
 
 }
@@ -233,7 +280,7 @@ void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
 			if ((*it)->isInSystemBasis())
 			{
 				// rotate the aabbox so that it is in the correct basis
-				tmpBox = CPSUtil::transformAABBox(_InvSysMat, tmpBox) ;
+				tmpBox = CPSUtil::transformAABBox(_SysMat, tmpBox) ;
 			}
 			if (foundOne)
 			{
@@ -249,7 +296,7 @@ void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
 
 	if (!foundOne)
 	{
-		aabbox.setCenter(_SysMat.getPos()) ;
+		aabbox.setCenter(NLMISC::CVector::Null) ;
 		aabbox.setHalfSize(NLMISC::CVector::Null) ;
 	}
 	

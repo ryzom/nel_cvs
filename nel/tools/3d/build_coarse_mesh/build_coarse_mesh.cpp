@@ -1,7 +1,7 @@
 /** \file build_coarse_mesh.cpp
  * Precalc coarse mesh objets to build a single texture
  *
- * $Id: build_coarse_mesh.cpp,v 1.3 2001/10/29 09:35:56 corvazier Exp $
+ * $Id: build_coarse_mesh.cpp,v 1.4 2002/03/19 16:56:08 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -244,7 +244,7 @@ int main(int argc, char* argv[])
 			}
 			else
 			{
-				nlwarning ("ERROR no coarse mesh to compute, abort.\n");
+				nlwarning ("WARNING no coarse mesh to compute, abort.\n");
 			}
 		}
 		catch (EConfigFile &e)

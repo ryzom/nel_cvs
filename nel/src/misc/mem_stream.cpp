@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.24 2004/05/24 16:10:16 berenguier Exp $
+ * $Id: mem_stream.cpp,v 1.25 2004/06/14 15:04:41 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -393,6 +393,29 @@ inline uint32 atoui( const char *ident)
 	return (uint32) strtoul (ident, NULL, 10);
 }
 */
+
+
+/* Returns a readable string to display it to the screen. It's only for debugging purpose!
+ * Don't use it for anything else than to debugging, the string format could change in the future.
+ * \param hexFormat If true, display all bytes in hexadecimal, else display as chars (above 31, otherwise '.')
+ */
+std::string		CMemStream::toString( bool hexFormat ) const
+{
+	std::string s;
+	uint32 len = length();
+	if ( hexFormat )
+	{
+		for ( uint i=0; i!=len; ++i )
+			s += NLMISC::toString( "%2X ", buffer()[i] );
+	}
+	else
+	{
+		for ( uint i=0; i!=len; ++i )
+			s += NLMISC::toString( "%c", (buffer()[i]>31) ? buffer()[i] : '.' );
+	}
+	return s;
+}
+
 
 // ***************************************************************************
 uint			CMemStream::getDbgStreamSize() const

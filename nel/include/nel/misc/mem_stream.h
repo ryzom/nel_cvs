@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.39 2004/05/24 16:10:47 berenguier Exp $
+ * $Id: mem_stream.h,v 1.40 2004/06/14 15:04:41 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,6 +114,12 @@ public:
 
 	/// Return string mode
 	bool			stringMode() const { return _StringMode; }
+
+	/** Returns a readable string to display it to the screen. It's only for debugging purpose!
+	 * Don't use it for anything else than to debugging, the string format could change in the future.
+	 * \param hexFormat If true, display all bytes in hexadecimal, else display as chars (above 31, otherwise '.')
+	 */
+	std::string		toString( bool hexFormat=false ) const;
 
 	/// Method inherited from IStream
 	virtual void	serialBuffer(uint8 *buf, uint len);

@@ -1,7 +1,7 @@
 /** \file mem_displayer.cpp
  * <File description>
  *
- * $Id: mem_displayer.cpp,v 1.12 2004/01/16 10:23:05 lecroart Exp $
+ * $Id: mem_displayer.cpp,v 1.13 2004/06/14 15:04:41 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -423,11 +423,19 @@ void CMemDisplayer::write (CLog *log, bool quiet)
 	}
 }
 
-void CMemDisplayer::write (string &str)
+void CMemDisplayer::write (string &str, bool crLf)
 {
 	for (deque<string>::iterator it = _Strings.begin(); it != _Strings.end(); it++)
 	{
 		str += (*it);
+		if ( crLf )
+		{
+			if ( (!str.empty()) && (str[str.size()-1] == '\n') )
+			{
+				str[str.size()-1] = '\r';
+				str += '\n';
+			}
+		}
 	}
 }
 

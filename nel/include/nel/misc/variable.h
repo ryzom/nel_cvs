@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.13 2004/06/03 17:17:48 lecroart Exp $
+ * $Id: variable.h,v 1.14 2004/06/14 15:04:41 cado Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -220,7 +220,12 @@ class CVariable : public IVariable
 {
 public:
 
-	CVariable (const char *commandName, const char *commandHelp, const T &defaultValue, uint nbMeanValue = 0, bool useConfigFile = false, void (*cc)(IVariable &var)=NULL) :
+	CVariable ( const char *commandName,
+				const char *commandHelp,
+				const T &defaultValue,
+				uint nbMeanValue = 0,
+				bool useConfigFile = false,
+				void (*cc)(IVariable &var)=NULL) :
 		IVariable (commandName, commandHelp, "[<value>|stat|mean|min|max]", useConfigFile, cc), _Mean(nbMeanValue), _First(true)
 	{
 		set (defaultValue, false);

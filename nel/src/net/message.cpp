@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.27 2004/05/27 17:41:10 boucher Exp $
+ * $Id: message.cpp,v 1.28 2004/06/14 15:04:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -327,12 +327,19 @@ std::string CMessage::getName () const
 }
 
 /* Returns a readable string to display it to the screen. It's only for debugging purpose!
- * Don't use it for anything else than to debugging, the string format could change in the futur
+ * Don't use it for anything else than to debugging, the string format could change in the future.
+ * \param hexFormat If true, display all bytes in hexadecimal
+ * \param textFormat If true, display all bytes as chars (above 31, otherwise '.')
  */
-std::string CMessage::toString () const
+std::string CMessage::toString( bool hexFormat, bool textFormat ) const
 {
-	nlassert (_TypeSet);
-	return "('" + _Name + ")";
+	//nlassert (_TypeSet);
+	std::string s = "('" + _Name + ")";
+	if ( hexFormat )
+		s += " " + CMemStream::toString( true );
+	if ( textFormat )
+		s += " " + CMemStream::toString( false );
+	return s;
 }
 
 

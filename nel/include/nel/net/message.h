@@ -1,7 +1,7 @@
 /** \file message.h
  * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.38 2004/05/07 12:56:21 cado Exp $
+ * $Id: message.h,v 1.39 2004/06/14 15:04:41 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -208,9 +208,11 @@ public:
 	std::string getName () const;
 	
 	/** Returns a readable string to display it to the screen. It's only for debugging purpose!
-	 * Don't use it for anything else than to debugging, the string format could change in the futur
+	 * Don't use it for anything else than to debugging, the string format could change in the future.
+	 * \param hexFormat If true, display all bytes in hexadecimal
+	 * \param textFormat If true, display all bytes as chars (above 31, otherwise '.')
 	 */
-	std::string toString () const;
+	std::string toString ( bool hexFormat=false, bool textFormat=false ) const;
 
 	/// Set default stream mode
 	static void	setDefaultStringMode( bool stringmode ) { _DefaultStringMode = stringmode; }

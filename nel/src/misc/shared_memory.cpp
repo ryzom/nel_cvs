@@ -1,7 +1,7 @@
 /** \file shared_memory.cpp
  * Encapsulation of shared memory APIs
  *
- * $Id: shared_memory.cpp,v 1.6 2003/07/01 10:12:43 cado Exp $
+ * $Id: shared_memory.cpp,v 1.7 2004/06/14 15:04:41 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -131,7 +131,7 @@ void			*CSharedMemory::accessSharedMemory( TSharedMemId sharedMemId )
 
 
 /*
- * Close a shared memory segment
+ * Close (detach) a shared memory segment
  */
 bool			CSharedMemory::closeSharedMemory( void *accessAddress )
 {
@@ -173,6 +173,14 @@ bool			CSharedMemory::closeSharedMemory( void *accessAddress )
 /*
  * Destroy a shared memory segment (to call only by the process that created the segment)
  * Note: does nothing under Windows, it is automatic.
+ * "Rescue feature": set "force" to true if a segment was created and left out of
+ * control (meaning a new createSharedMemory() with the same sharedMemId fails), but
+ * before, make sure the segment really belongs to you!
+ * 
+ * Note: this method does nothing under Windows, destroying is automatic.
+ * Under Unix, the segment will actually be destroyed after the last detach
+ * (quoting shmctl man page). It means after calling destroySharedMemory(), the
+ * segment is still accessible by another process until it calls closeSharedMemory().
  */
 void        CSharedMemory::destroySharedMemory( TSharedMemId sharedMemId, bool force )
 {

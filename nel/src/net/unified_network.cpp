@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.82 2004/05/11 18:33:23 distrib Exp $
+ * $Id: unified_network.cpp,v 1.83 2004/06/14 15:04:42 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1251,7 +1251,7 @@ uint8 CUnifiedNetwork::findConnectionId (uint16 sid, uint8 nid)
 //
 //
 
-bool	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout, bool warnIfNotFound, uint8 nid)
+uint	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout, bool warnIfNotFound, uint8 nid)
 {
 	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::send(const string&, const CMessage&) whereas it is not initialised yet"));
 
@@ -1261,7 +1261,7 @@ bool	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout, bo
 	pair<TNameMappedConnection::const_iterator,TNameMappedConnection::const_iterator>	range;
 	range = _NamedCnx.equal_range(serviceName);
 
-	bool found = false;
+	uint found = 0;
 	if (range.first != _NamedCnx.end())
 	{
 		for (it=range.first; it!=range.second; ++it)
@@ -1271,17 +1271,16 @@ bool	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout, bo
 			{
 				// It often happen when the service is down (connection broke and the naming not already say that it s down)
 				// In this case, just warn
-				nlwarning ("HNETL5: Can't send to the service '%s' because it was in the _NamedCnx but not in _IdCnx (means that the service is down)", serviceName.c_str ());
+				nlwarning ("HNETL5: Can't send %s to the service '%s' because it was in the _NamedCnx but not in _IdCnx (means that the service is down)", msgout.getName().c_str(), serviceName.c_str ());
 				return false;
 			}
 
-			found = true;
+			++found;
 
 			uint8 connectionId = findConnectionId (sid, nid);
 			if (connectionId == 0xff)	// failed
 			{
-				nlwarning ("HNETL5: Can't send message to %hu because no connection available", sid);
-				found = false;
+				nlwarning ("HNETL5: Can't send %s message to %hu because no connection available", msgout.getName().c_str(), sid);
 				continue;
 			}
 
@@ -1305,14 +1304,14 @@ bool	CUnifiedNetwork::send(uint16 sid, const CMessage &msgout, uint8 nid)
 	if (sid >= _IdCnx.size () || _IdCnx[sid].State != CUnifiedNetwork::CUnifiedConnection::Ready)
 	{
 		// Happens when trying to send a message to an unknown service id
-		nlwarning ("HNETL5: Can't send to the service '%hu' because not in _IdCnx", sid);
+		nlwarning ("HNETL5: Can't send %s to the service '%hu' because not in _IdCnx", msgout.getName().c_str(), sid);
 		return false;
 	}
 
 	uint8 connectionId = findConnectionId (sid, nid);
 	if (connectionId == 0xff)	// failed
 	{
-		nlwarning ("HNETL5: Can't send to the service '%hu' because no connection available", sid);
+		nlwarning ("HNETL5: Can't send %s to the service '%hu' because no connection available", msgout.getName().c_str(), sid);
 		return false;
 	}
 

@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.34 2001/09/28 12:39:44 cado Exp $
+ * $Id: inet_address.cpp,v 1.35 2001/09/28 12:53:48 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,7 @@
 #include <netdb.h>
 
 #define WSAGetLastError() 0
+#define SOCKET_ERROR -1
 
 #endif
 

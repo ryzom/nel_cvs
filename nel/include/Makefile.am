@@ -1,9 +1,10 @@
 #
-# $Id: Makefile.am,v 1.5 2001/02/06 09:27:05 valignat Exp $
+# $Id: Makefile.am,v 1.6 2001/03/05 17:31:08 valignat Exp $
 #
 
 install-exec-local:
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/3d
+	$(INSTALL_PROGRAM) -d $(includedir)/nel/tmp
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/misc
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/net
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai
@@ -21,6 +22,7 @@ install-exec-local:
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/sys
 	$(INSTALL_DATA) -m a=r `echo nel/*.h`             $(includedir)/nel
 	$(INSTALL_DATA) -m a=r `echo nel/3d/*.h`          $(includedir)/nel/3d
+	$(INSTALL_DATA) -m a=r `echo nel/3d/tmp/*.h`      $(includedir)/nel/3d
 	$(INSTALL_DATA) -m a=r `echo nel/misc/*.h`        $(includedir)/nel/misc
 	$(INSTALL_DATA) -m a=r `echo nel/net/*.h`         $(includedir)/nel/net
 	$(INSTALL_DATA) -m a=r `echo nel/ai/*.h`          $(includedir)/nel/ai/
@@ -45,6 +47,7 @@ dist-hook:
 	       $(distdir)/nel/misc/CVS          \
 	       $(distdir)/nel/net/CVS           \
 	       $(distdir)/nel/3d/CVS            \
+	       $(distdir)/nel/3d/tmp/CVS        \
 	       $(distdir)/nel/ai/CVS            \
 	       $(distdir)/nel/ai/agent/CVS      \
 	       $(distdir)/nel/ai/c/CVS          \

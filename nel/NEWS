@@ -1,4 +1,14 @@
 
+April 30 2002
+=============
+
+*  NLNET: Added 3 new variables "NegFiltersDebug" and "NegFiltersInfo" (array of string) that
+          call addNegativeFilter at the init of the service. You could change these variables
+          in realtime with a notepad.
+
+* NLMISC: CPath::addSeachPath() class now filter CVS directory and *.log files.
+
+
 April 23 2002
 =============
 

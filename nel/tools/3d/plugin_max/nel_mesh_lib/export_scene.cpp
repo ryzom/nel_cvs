@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.13 2002/02/18 13:27:53 berenguier Exp $
+ * $Id: export_scene.cpp,v 1.14 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ extern CVector vGlobalPos;
 
 // ***************************************************************************
 
-CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeValue tvTime)
+CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, vector<INode*>& resultInstanceNode, TimeValue tvTime)
 {
 	// Extract from the node the name, the transformations and the parent
 
@@ -57,7 +57,9 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 	uint32 j,k,m;
 
 	aIGArray.empty ();
+	resultInstanceNode.empty ();
 	aIGArray.resize (vectNode.size());
+	resultInstanceNode.resize (vectNode.size());
 
 	int nNbInstance = 0;
 	for (i = 0; i < vectNode.size(); ++i)
@@ -75,7 +77,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 	}
 
 	// Check integrity of the hierarchy and set the parents
-	std::vector<INode*>::iterator it = vectNode.begin();
+	std::vector<INode*>::const_iterator it = vectNode.begin();
 	nNumIG = 0;
 	for (i = 0; i < (sint)vectNode.size(); ++i, ++it)
 	{
@@ -89,6 +91,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 		{
 			aIGArray[nNumIG].DontAddToScene = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_DONT_ADD_TO_SCENE, 0)?true:false;
 			aIGArray[nNumIG].InstanceName = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_INSTANCE_NAME, "");
+			resultInstanceNode[nNumIG] = pNode;
 			if (aIGArray[nNumIG].InstanceName == "") // no instance name was set, takes the node name instead
 			{
 				aIGArray[nNumIG].InstanceName = pNode->GetName();
@@ -136,6 +139,8 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 		}
 	}
 	aIGArray.resize( nNumIG );
+	resultInstanceNode.resize( nNumIG );
+
 	// Build the array of node
 	vGlobalPos = CVector(0,0,0);
 	nNumIG = 0;

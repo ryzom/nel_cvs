@@ -1,7 +1,7 @@
 /** \file main_dlg.cpp
  * <File description>
  *
- * $Id: main_dlg.cpp,v 1.7 2001/09/05 15:41:51 vizerie Exp $
+ * $Id: main_dlg.cpp,v 1.8 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,10 +84,9 @@ BOOL CMainDlg::OnInitDialog()
 		BOOL initialized=Slots[s].Create (IDD_SLOT, this);
 
 		// Position
-		Slots[s].init (s, AnimationSet, Main);
+		Slots[s].init (s, Main);
 		Slots[s].GetClientRect (&rect);
 		Slots[s].SetWindowPos( NULL, 0, s*(rect.bottom-rect.top), 0, 0, SWP_NOSIZE|SWP_NOOWNERZORDER|SWP_NOZORDER|SWP_SHOWWINDOW);
-		Slots[s].setAnimation (0, NULL, NULL);
 	}
 
 	// Resize the main window
@@ -103,106 +102,11 @@ BOOL CMainDlg::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CMainDlg::init (NL3D::CAnimationSet* animationSet)
-{
-	AnimationSet=animationSet;
-}
-
 void CMainDlg::setAnimTime (float animStart, float animEnd)
 {
 	// Init Slots
 	for (uint s=0; s<CChannelMixer::NumAnimationSlot; s++)
 		Slots[s].setAnimTime (animStart, animEnd);
-}
-
-void CMainDlg::getSlot ()
-{
-	for (uint id=0; id<NL3D::CChannelMixer::NumAnimationSlot; id++)
-	{
-		// Update slots UI values
-		Slots[id].UpdateData();
-
-		// Set the animation
-		if (Slots[id].isEmpty ()||!Slots[id].enable)
-			Playlist.setAnimation (id, CAnimationPlaylist::empty);
-		else			
-			Playlist.setAnimation (id, Slots[id].AnimationId);
-
-		// Set the skeleton weight
-		if (Slots[id].SkeletonWeightTemplate)
-			Playlist.setSkeletonWeight (id, Slots[id].SkeletonWeightId, Slots[id].SkeletonWeightInverted!=0);
-		else
-			Playlist.setSkeletonWeight (id, CAnimationPlaylist::empty, false);
-
-		// Set others values
-		Playlist.setTimeOrigin (id, Slots[id].getTimeOffset());
-		Playlist.setSpeedFactor (id, Slots[id].SpeedFactor);
-		Playlist.setStartWeight (id, Slots[id].StartBlend, Slots[id].getStartTime());
-		Playlist.setEndWeight (id, Slots[id].EndBlend, Slots[id].getEndTime());
-		Playlist.setWeightSmoothness (id, Slots[id].Smoothness);
-
-		// Switch between wrap modes
-		switch (Slots[id].ClampMode)
-		{
-		case 0:
-			Playlist.setWrapMode (id, CAnimationPlaylist::Clamp);
-			break;
-		case 1:
-			Playlist.setWrapMode (id, CAnimationPlaylist::Repeat);
-			break;
-		case 2:
-			Playlist.setWrapMode (id, CAnimationPlaylist::Disable);
-			break;
-		}
-	}
-}
-
-
-void CMainDlg::setSlot ()
-{
-	for (uint id=0; id<NL3D::CChannelMixer::NumAnimationSlot; id++)
-	{
-		// Update slots UI values
-		Slots[id].UpdateData();
-
-		// Set the animation
-		uint animation=Playlist.getAnimation (id);
-		if (animation<AnimationSet->getNumAnimation())
-			Slots[id].setAnimation (animation, AnimationSet->getAnimation (animation), AnimationSet->getAnimationName (animation).c_str());
-
-		// Set the skeleton weight
-		bool inverted;
-		uint skeleton=Playlist.getSkeletonWeight (id, inverted);
-		Slots[id].SkeletonWeightInverted=inverted;
-		if (skeleton<AnimationSet->getNumSkeletonWeight())
-			Slots[id].setSkeletonTemplateWeight (skeleton, AnimationSet->getSkeletonWeight (skeleton), AnimationSet->getSkeletonWeightName (skeleton).c_str());
-
-		// Set others values
-		Slots[id].Offset=(int)(Playlist.getTimeOrigin (id)*Main->getFrameRate());
-		Slots[id].SpeedFactor=Playlist.getSpeedFactor (id);
-		double time;
-		Slots[id].StartBlend=Playlist.getStartWeight (id, time);
-		Slots[id].StartTime=(int)(time*Main->getFrameRate());
-		Slots[id].EndBlend=Playlist.getEndWeight (id, time);
-		Slots[id].EndTime=(int)(time*Main->getFrameRate());
-		Slots[id].Smoothness=Playlist.getWeightSmoothness (id);
-
-		// Switch between wrap modes
-		switch (Playlist.getWrapMode (id))
-		{
-		case CAnimationPlaylist::Clamp:
-			Slots[id].ClampMode=0;
-			break;
-		case CAnimationPlaylist::Repeat:
-			Slots[id].ClampMode=1;
-			break;
-		case CAnimationPlaylist::Disable:
-			Slots[id].ClampMode=2;
-			break;
-		}
-		Slots[id].UpdateData(FALSE);
-		Slots[id].updateScrollBar ();
-	}
 }
 
 void CMainDlg::OnDestroy() 
@@ -224,4 +128,10 @@ int CMainDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// TODO: Add your specialized creation code here
 	
 	return 0;
+}
+
+void CMainDlg::refresh (BOOL update)
+{
+	for (uint s=0; s<CChannelMixer::NumAnimationSlot; s++)
+		Slots[s].refresh (update);
 }

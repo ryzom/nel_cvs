@@ -1,7 +1,7 @@
 /** \file slot_dlg.h
  * <File description>
  *
- * $Id: slot_dlg.h,v 1.6 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: slot_dlg.h,v 1.7 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,42 +45,34 @@ class CSlotDlg : public CDialog
 public:
 	CSlotDlg(CWnd* pParent = NULL);   // standard constructor
 
-	void init (uint id, NL3D::CAnimationSet* animationSet, class CObjectViewer* mainDlg);
+	void init (uint id, class CObjectViewer* mainDlg);
 
-	void setAnimation (uint animationId, NL3D::CAnimation *animation, const char* name);
+	bool isEmpty();
 
-	void setSkeletonTemplateWeight (uint skeletonWeightId, NL3D::CSkeletonWeight *skeleton, const char* name)
-	{
-		SkeletonName=name;
-		SkeletonWeightTemplate=skeleton;
-		SkeletonWeightId=skeletonWeightId;
-	}
+	const NL3D::CAnimation *getAnimationPointer () const;
 
-	bool isEmpty ()
-	{
-		return Animation==NULL;
-	}
+	const NL3D::CSkeletonWeight *getSkeletonPointer () const;
+
+	const NL3D::CAnimationSet	*getAnimationSetPointer () const;
+
+	class CSlotInfo				*getSlotInformation () const;
+
+	class CInstanceInfo			*getInstanceInformation () const;
 
 	void setWindowName ();
 	void validateTime ();
 	void updateScrollBar ();
 	void setAnimTime (float animStart, float animEnd);
 	float getTimeIncrement ();
-	float getTimeOffset ();
 	float getStartTime ();
 	float getEndTime ();
 	void computeLength ();
 
+	void RefreshData ();
+
 	// A CBlendWnd
 	uint					Id;
-	uint					AnimationId;
-	uint					SkeletonWeightId;
 	CBlendWnd				Blend;
-	NL3D::CAnimationSet*	AnimationSet;
-	NL3D::CAnimation*		Animation;
-	std::string				AnimationName;
-	std::string				SkeletonName;
-	NL3D::CSkeletonWeight*	SkeletonWeightTemplate;
 	CObjectViewer*			MainDlg;
 
 // Dialog Data
@@ -120,6 +112,8 @@ public:
 	float	EndAnimTime;
 	float	AnimationLength;
 
+	void	refresh (BOOL update);
+
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSlotDlg)
@@ -158,6 +152,8 @@ protected:
 	afx_msg void OnDisable();
 	afx_msg void OnAlignBlend();
 	afx_msg void OnDestroy();
+	afx_msg void OnEnable();
+	afx_msg void OnInvertSkeletonWeight();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -1,7 +1,7 @@
 /** \file main_dlg.cpp
  * <File description>
  *
- * $Id: main_dlg.h,v 1.5 2001/07/18 13:42:34 corvazier Exp $
+ * $Id: main_dlg.h,v 1.6 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,10 +51,9 @@ public:
 		// NOTE: the ClassWizard will add data members here
 	//}}AFX_DATA
 
-	void	init (NL3D::CAnimationSet* animationSet);
 	void	setAnimTime (float animStart, float animEnd);
-	void	getSlot ();
-	void	setSlot ();
+
+	void	refresh (BOOL update);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -63,9 +62,7 @@ public:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
 public:
-	NL3D::CAnimationSet*		AnimationSet;
 	CSlotDlg					Slots[NL3D::CChannelMixer::NumAnimationSlot];
-	NL3D::CAnimationPlaylist	Playlist;
 	CObjectViewer*				Main;
 
 // Implementation

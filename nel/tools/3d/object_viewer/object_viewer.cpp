@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.57 2002/02/28 13:41:24 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.58 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,10 +27,10 @@
 
 
 
-#include "std_afx.h"
-
 #undef OBJECT_VIEWER_EXPORT
 #define OBJECT_VIEWER_EXPORT __declspec( dllexport ) 
+
+#include "std_afx.h"
 
 #include <vector>
 
@@ -79,6 +79,7 @@
 #include "water_pool_editor.h"
 #include "vegetable_dlg.h"
 #include "dialog_progress.h"
+#include "select_string.h"
 #include "global_wind_dlg.h"
 
 
@@ -197,6 +198,7 @@ CObjectViewer::CObjectViewer ()
 	_VegetableCollisionManager= NULL;
 	_VegetableCollisionEntity= NULL;
 	_CameraFocal = 75.f; // default value for the focal
+	_SelectedObject = 0xffffffff;
 
 	// no lag is the default
 	_Lag = 0;
@@ -483,7 +485,6 @@ void CObjectViewer::initUI (HWND parent)
 
 	// Create the main dialog
 	_SlotDlg=new CMainDlg (this, _MainFrame);
-	_SlotDlg->init (&_AnimationSet);
 	_SlotDlg->Create (IDD_MAIN_DLG);
 	getRegisterWindowState (_SlotDlg, REGKEY_OBJ_VIEW_SLOT_DLG, false);
 
@@ -647,126 +648,149 @@ void CObjectViewer::setupPlaylist (float time)
 {
 	// Update animation dlg
 
-	// Some animation in the list ?
-	if (_AnimationSetDlg->PlayList.GetCount()>0)
+	// Gor each object
+	uint i;
+	for (i=0; i<_ListInstance.size(); i++)
 	{
-		// Gor each object
-		uint i;
-		for (i=0; i<_ChannelMixer.size(); i++)
+		// Empty with playlist
+		uint j;
+		for (j=0; j<CChannelMixer::NumAnimationSlot; j++)
 		{
+			// Empty slot
+			_ListInstance[i]->Playlist.setAnimation (j, CAnimationPlaylist::empty);
+		}
+
+		// With channel mixer ?
+		if (_AnimationSetDlg->UseMixer)
+		{
+			// Setup from slots
+			_ListInstance[i]->setAnimationPlaylist (getFrameRate ());
+
 			// A playlist
-			CAnimationPlaylist playlist;
-
-			// Empty with playlist
-			uint j;
-			for (j=0; j<CChannelMixer::NumAnimationSlot; j++)
+			_ListInstance[i]->Playlist.setupMixer (_ListInstance[i]->ChannelMixer, _AnimationDlg->getTime());
+		}
+		else
+		{			
+			// Some animation in the list ?
+			if (_ListInstance[i]->Saved.PlayList.size()>0)
 			{
-				// Empty slot
-				playlist.setAnimation (j, CAnimationPlaylist::empty);
-			}
+				// Index choosed
+				uint choosedIndex = 0xffffffff;
 
-			// Index choosed
-			uint choosedIndex = 0xffffffff;
+				// Track here
+				bool there = false;
 
-			// Track here
-			bool there = false;
+				// Current matrix
+				CMatrix	current;
+				current.identity ();
 
-			// Current matrix
-			CMatrix	current;
-			current.identity ();
+				// Current animation
+				CAnimation *anim = NULL;
+				ITrack *posTrack = NULL;
+				ITrack *rotquatTrack = NULL;
 
-			// Current animation
-			CAnimation *anim=_AnimationSet.getAnimation (_AnimationSetDlg->PlayList.GetItemData (0));
-			ITrack *posTrack = (ITrack *)anim->getTrackByName ((_ListInstance[i].ShapeBaseName+"pos").c_str());
-			ITrack *rotquatTrack = (ITrack *)anim->getTrackByName ((_ListInstance[i].ShapeBaseName+"rotquat").c_str());
-			there = posTrack || rotquatTrack;
-
-			// Accumul time
-			float startTime=0;
-			float endTime=anim->getEndTime()-anim->getBeginTime();
-
-			// Animation index
-			int index = 0;
-
-			// Get animation used in the list
-			while (time>=endTime)
-			{
-				// Next animation
-				index++;
-				if (index<_AnimationSetDlg->PlayList.GetCount())
+				// Try channel animationset
+				anim = _ListInstance[i]->AnimationSet.getAnimation (_ListInstance[i]->AnimationSet.getAnimationIdByName (_ListInstance[i]->Saved.PlayList[0]));
+				if (anim)
 				{
-					// Pointer on the animation
-					CAnimation *newAnim=_AnimationSet.getAnimation (_AnimationSetDlg->PlayList.GetItemData (index));
-					ITrack *newPosTrack = (ITrack *)newAnim->getTrackByName ((_ListInstance[i].ShapeBaseName+"pos").c_str());
-					ITrack *newRotquatTrack = (ITrack *)newAnim->getTrackByName ((_ListInstance[i].ShapeBaseName+"rotquat").c_str());
+					posTrack = (ITrack *)anim->getTrackByName ("pos");
+					rotquatTrack = (ITrack *)anim->getTrackByName ("rotquat");
+				}
+				there = posTrack || rotquatTrack;
 
-					// Add the transformation
-					addTransformation (current, anim, newAnim->getBeginTime(), anim->getEndTime(), posTrack, rotquatTrack, newPosTrack, newRotquatTrack, true);
+				// Accumul time
+				float startTime=0;
+				float endTime=anim->getEndTime()-anim->getBeginTime();
 
-					// Pointer on the animation
-					anim = newAnim;
-					posTrack = newPosTrack;
-					rotquatTrack = newRotquatTrack;
+				// Animation index
+				uint index = 0;
 
-					// Add start time
-					startTime = endTime;
-					endTime = startTime + anim->getEndTime()-anim->getBeginTime();
+				// Get animation used in the list
+				while (time>=endTime)
+				{
+					// Next animation
+					index++;
+					if (index<_ListInstance[i]->Saved.PlayList.size())
+					{
+						// Pointer on the animation
+						CAnimation *newAnim=_ListInstance[i]->AnimationSet.getAnimation (_ListInstance[i]->AnimationSet.getAnimationIdByName(_ListInstance[i]->Saved.PlayList[index]));
+						ITrack *newPosTrack = (ITrack *)newAnim->getTrackByName ("pos");
+						ITrack *newRotquatTrack = (ITrack *)newAnim->getTrackByName ("rotquat");
 
+						// Add the transformation
+						addTransformation (current, anim, newAnim->getBeginTime(), anim->getEndTime(), posTrack, rotquatTrack, newPosTrack, newRotquatTrack, true);
+
+						// Pointer on the animation
+						anim = newAnim;
+						posTrack = newPosTrack;
+						rotquatTrack = newRotquatTrack;
+
+						// Add start time
+						startTime = endTime;
+						endTime = startTime + anim->getEndTime()-anim->getBeginTime();
+
+					}
+					else
+					{
+						// Add the transformation
+						addTransformation (current, anim, 0, anim->getEndTime(), posTrack, rotquatTrack, NULL, NULL, false);
+
+						break;
+					}
+				}
+
+				// Time cropped ?
+				if (index>=_ListInstance[i]->Saved.PlayList.size())
+				{
+					// Yes
+					index--;
+
+					// Good index
+					choosedIndex = _ListInstance[i]->AnimationSet.getAnimationIdByName (_ListInstance[i]->Saved.PlayList[index]);
+					anim=_ListInstance[i]->AnimationSet.getAnimation (choosedIndex);
+
+					// End time for last anim
+					startTime = anim->getEndTime () - time;
 				}
 				else
 				{
+					// No
+
 					// Add the transformation
-					addTransformation (current, anim, 0, anim->getEndTime(), posTrack, rotquatTrack, NULL, NULL, false);
+					addTransformation (current, anim, 0, anim->getBeginTime() + time - startTime, posTrack, rotquatTrack, NULL, NULL, false);
 
-					break;
+					// Good index
+					choosedIndex = _ListInstance[i]->AnimationSet.getAnimationIdByName (_ListInstance[i]->Saved.PlayList[index]);				
+
+					// Get the animation
+					anim=_ListInstance[i]->AnimationSet.getAnimation (choosedIndex);
+
+					// Final time
+					startTime -= anim->getBeginTime ();
 				}
-			}
 
-			// Time cropped ?
-			if (index>=_AnimationSetDlg->PlayList.GetCount())
-			{
-				// Yes
-				index--;
+				// Set the slot		
+				_ListInstance[i]->Playlist.setTimeOrigin (0, startTime);
+				_ListInstance[i]->Playlist.setWrapMode (0, CAnimationPlaylist::Clamp);
+				_ListInstance[i]->Playlist.setStartWeight (0, 1, 0);
+				_ListInstance[i]->Playlist.setEndWeight (0, 1, 1);
+				_ListInstance[i]->Playlist.setAnimation (0, choosedIndex);
 
-				// Good index
-				choosedIndex = _AnimationSetDlg->PlayList.GetItemData (index);
-				anim=_AnimationSet.getAnimation (choosedIndex);
+				// Setup the channel
+				_ListInstance[i]->Playlist.setupMixer (_ListInstance[i]->ChannelMixer, _AnimationDlg->getTime());
 
-				// End time for last anim
-				startTime = anim->getEndTime () - time;
+				// Setup the pos and rot for this shape
+				if (there)
+				{
+					_ListInstance[i]->TransformShape->setPos (current.getPos());
+					_ListInstance[i]->TransformShape->setRotQuat (current.getRot());
+				}
 			}
 			else
 			{
-				// No
-
-				// Add the transformation
-				addTransformation (current, anim, 0, anim->getBeginTime() + time - startTime, posTrack, rotquatTrack, NULL, NULL, false);
-
-				// Good index
-				choosedIndex = _AnimationSetDlg->PlayList.GetItemData (index);
-
-				// Get the animation
-				anim=_AnimationSet.getAnimation (choosedIndex);
-
-				// Final time
-				startTime -= anim->getBeginTime ();
-			}
-
-			// Set the slot		
-			playlist.setTimeOrigin (0, startTime);
-			playlist.setWrapMode (0, CAnimationPlaylist::Clamp);
-			playlist.setStartWeight (0, 1, 0);
-			playlist.setEndWeight (0, 1, 1);
-			playlist.setAnimation (0, choosedIndex);
-
-			// Setup the channel
-			playlist.setupMixer (_ChannelMixer[i], _AnimationDlg->getTime());
-
-			// Setup the pos and rot for this shape
-			if (there)
-			{
-				_ListInstance[i].TransformShape->setPos (current.getPos());
-				_ListInstance[i].TransformShape->setRotQuat (current.getRot());
+				_ListInstance[i]->TransformShape->setPos (CVector::Null);
+				_ListInstance[i]->TransformShape->setRotQuat (CQuat::Identity);
+				_ListInstance[i]->TransformShape->setScale (1, 1, 1);
 			}
 		}
 	}
@@ -787,21 +811,11 @@ void CObjectViewer::go ()
 		// Handle animation
 		_AnimationDlg->handle ();
 
-		// Update the playlist
-		_SlotDlg->getSlot ();
-
 		// Setup the channel mixer
 		_AnimationSetDlg->UpdateData ();
-		if (_AnimationSetDlg->UseMixer)
-		{
-			// For each channel mixer
-			for (uint i=0; i<_ChannelMixer.size(); i++)
-			{
-				_SlotDlg->Playlist.setupMixer (_ChannelMixer[i], _AnimationDlg->getTime());
-			}
-		}
-		else
-			setupPlaylist (_AnimationDlg->getTime());
+
+		// Setup the play list
+		setupPlaylist (_AnimationDlg->getTime());
 
 		// Eval sound tracks
 		evalSoundTrack (_AnimationDlg->getLastTime(), _AnimationDlg->getTime());
@@ -812,8 +826,8 @@ void CObjectViewer::go ()
 		CNELU::Scene.animate( (float) 0.001f * NLMISC::CTime::getLocalTime());
 
 		// Eval channel mixer for transform
-		for (uint i=0; i<_ChannelMixer.size(); i++)
-			_ChannelMixer[i].eval (false);
+		for (uint i=0; i<_ListInstance.size(); i++)
+			_ListInstance[i]->ChannelMixer.eval (false);
 
 		// Clear the buffers
 
@@ -1087,34 +1101,44 @@ void CObjectViewer::setAnimTime (float animStart, float animEnd)
 // ***************************************************************************
 
 
-void CObjectViewer::resetSlots ()
+void CObjectViewer::resetSlots (uint instance)
 {
 	// Reset the animation set
-	_AnimationSet.reset ();
+	_ListInstance[instance]->AnimationSet.reset ();
 
 	// Set no animation in slot UI
-	for (uint i=0; i<NL3D::CChannelMixer::NumAnimationSlot; i++)
-		_SlotDlg->Slots[i].setAnimation (0xffffffff, NULL, NULL);
+	for (uint j=0; j<NL3D::CChannelMixer::NumAnimationSlot; j++)
+		_ListInstance[instance]->Saved.SlotInfo[j].Animation = "";
+
+	// Reset the animation list
+	_ListInstance[instance]->Saved.AnimationFileName.clear ();
+
+	// Reset the play list
+	_ListInstance[instance]->Saved.PlayList.clear ();
+
+	// Reset the skeleton list
+	_ListInstance[instance]->Saved.SWTFileName.clear ();
+
+	// Update 
+	_AnimationSetDlg->refresh (TRUE);
+	_SlotDlg->refresh (TRUE);
 }
 
 // ***************************************************************************
 
 void CObjectViewer::reinitChannels ()
 {
-	// Reset the channel mixxer array
-	_ChannelMixer.resize (_ListInstance.size());
-
 	// Add all the instance in the channel mixer
 	for (uint i=0; i<_ListInstance.size(); i++)
 	{
 		// Reset the channels
-		_ChannelMixer[i].resetChannels ();
+		_ListInstance[i]->ChannelMixer.resetChannels ();
 
 		// Setup animation set
-		_ChannelMixer[i].setAnimationSet (&_AnimationSet);
+		_ListInstance[i]->ChannelMixer.setAnimationSet (&(_ListInstance[i]->AnimationSet));
 
 		// Register the transform
-		_ListInstance[i].TransformShape->registerToChannelMixer (&(_ChannelMixer[i]), _ListInstance[i].ShapeBaseName);
+		_ListInstance[i]->TransformShape->registerToChannelMixer (&(_ListInstance[i]->ChannelMixer), "");
 	}
 
 	// Enable / disable channels
@@ -1132,20 +1156,17 @@ void CObjectViewer::enableChannels ()
 	// Add all the instance in the channel mixer
 	for (uint i=0; i<_ListInstance.size(); i++)
 	{
-		// Get the base name
-		std::string &baseName = _ListInstance[i].ShapeBaseName;
-
 		// Get the pos and rot channel id
-		uint posId = _AnimationSet.getChannelIdByName (baseName+"pos");
-		uint rotQuatId = _AnimationSet.getChannelIdByName (baseName+"rotquat");
-		uint rotEulerId = _AnimationSet.getChannelIdByName (baseName+"roteuler");
+		uint posId = _ListInstance[i]->AnimationSet.getChannelIdByName ("pos");
+		uint rotQuatId = _ListInstance[i]->AnimationSet.getChannelIdByName ("rotquat");
+		uint rotEulerId = _ListInstance[i]->AnimationSet.getChannelIdByName ("roteuler");
 
 		if (posId != CAnimationSet::NotFound)
-			_ChannelMixer[i].enableChannel (posId, enable);
+			_ListInstance[i]->ChannelMixer.enableChannel (posId, enable);
 		if (rotQuatId != CAnimationSet::NotFound)
-			_ChannelMixer[i].enableChannel (rotQuatId, enable);
+			_ListInstance[i]->ChannelMixer.enableChannel (rotQuatId, enable);
 		if (rotEulerId != CAnimationSet::NotFound)
-			_ChannelMixer[i].enableChannel (rotEulerId, enable);
+			_ListInstance[i]->ChannelMixer.enableChannel (rotEulerId, enable);
 	}
 }
 
@@ -1165,130 +1186,119 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 	f.serialCheck ((uint32)'GFC_');
 
 	// serial the version
-	int ver=f.serialVersion (2);
-
-	// update data
-	_AnimationDlg->UpdateData ();
-	_MainFrame->UpdateData ();
-
-	// serial animation data
-	f.serial (_AnimationDlg->Start);
-	f.serial (_AnimationDlg->End);
-	f.serial (_AnimationDlg->Speed);
-	bool loop=_AnimationDlg->Loop!=0;
-	f.serial (loop);
-	_AnimationDlg->Loop=loop;
-	bool euler=_MainFrame->Euler!=0;
-	f.serial (euler);
-	_MainFrame->Euler=euler;
-	sint32 ui=_AnimationDlg->UICurrentFrame;
-	f.serial (ui);
-	_AnimationDlg->UICurrentFrame=ui;
-	f.serial (_AnimationDlg->CurrentFrame);
-
-	// update data
-	_AnimationDlg->UpdateData (FALSE);
-	_MainFrame->UpdateData (FALSE);
-
-	// For each slot
-	for (uint i=0; i<NL3D::CChannelMixer::NumAnimationSlot; i++)
+	int ver=f.serialVersion (3);
+	if (ver>=3)
 	{
-		// Update values
-		_SlotDlg->Slots[i].UpdateData();
-
-		// Serial the slot state
-		bool slotState=_SlotDlg->Slots[i].enable!=0;
-		f.serial (slotState);
-		_SlotDlg->Slots[i].enable=slotState;
-
-		// Update values
-		_SlotDlg->Slots[i].UpdateData(FALSE);
-	}
-		
-
-	// view matrix
-	CMatrix mt=_MouseListener.getViewMatrix();
-	f.serial (mt);
-	_MouseListener.setMatrix (mt);
-
-	// serial list of shape
-	std::vector<CMeshDesc> meshArray=_ListMeshes;
-
-	// serial list of shape
-	f.serialCont (meshArray);
-
-	// If reading, read shapes
-	if (f.isReading ())
-	{
-		// Load each shape
-		for (uint s=0; s<meshArray.size(); s++)
+		// Read the configuration file
+		if (f.isReading())
 		{
-			loadMesh (meshArray[s].MeshNames, meshArray[s].SkeletonName.c_str());
+			// First instance
+			uint firstInstance = _ListInstance.size();
+
+			// Read information
+			std::vector<CInstanceSave> readed;
+			f.serialCont (readed);
+
+			// Merge
+			for (uint i=0; i<readed.size(); i++)
+			{
+				// Load the shape
+				CIFile input;
+				if (input.open (readed[i].ShapeFilename))
+				{
+					try
+					{
+						// Serial a shape
+						CShapeStream serialShape;
+						serialShape.serial (input);
+
+						// Instance loaded
+						uint instance = 0xffffffff;
+
+						// Is a skeleton ?
+						if (readed[i].SkeletonId)
+						{
+							// Add the skel
+							instance = addSkel (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str());
+						}
+						else
+						{
+							// Add the mesh
+							instance = addMesh (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str(), readed[i].SkeletonId + firstInstance, (readed[i].BindBoneName=="")?NULL:readed[i].BindBoneName.c_str());
+						}
+
+						// Check instance number
+						nlassert (instance == (firstInstance+i));
+
+						// Load animations
+						for (uint anim=0; anim<readed[i].AnimationFileName.size(); anim++)
+							loadAnimation (readed[i].AnimationFileName[anim].c_str(), instance);
+
+						// Load SWT
+						for (uint swt=0; swt<readed[i].SWTFileName.size(); swt++)
+							loadSWT (readed[i].SWTFileName[swt].c_str(), instance);
+
+						// Set the playlist
+						_ListInstance[instance]->Saved.PlayList = readed[i].PlayList;
+
+						// Set the slot informations
+						for (uint slot=0; slot<NL3D::CChannelMixer::NumAnimationSlot; slot++)
+							_ListInstance[instance]->Saved.SlotInfo[slot] = readed[i].SlotInfo[slot];
+					}
+					catch (Exception &e)
+					{
+						// Error message
+						char message[512];
+						smprintf (message, 512, "Error loading shape %s: %s", readed[i].ShapeFilename.c_str(), e.what());
+						_MainFrame->MessageBox (message, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+
+						// Stop loading
+						break;
+					}
+				}
+				else
+				{
+					// Error message
+					char message[512];
+					smprintf (message, 512, "File not found %s", readed[i].ShapeFilename.c_str());
+					_MainFrame->MessageBox (message, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+
+					// Stop loading
+					break;
+				}
+			}
+
+			// Init channels
+			reinitChannels ();
+
+			// Read the selection
+			uint32 selection;
+			f.serial (selection);
+			if (selection+firstInstance < _ListInstance.size())
+			{
+				_SelectedObject = selection+firstInstance;
+			}
+
+			// Invalidate dialogs
+			_AnimationSetDlg->refresh (TRUE);
+			_SlotDlg->refresh (TRUE);
 		}
-	}
+		else
+		{
+			// Build informations
+			std::vector<CInstanceSave> readed (_ListInstance.size());
+			for (uint instance=0; instance<_ListInstance.size(); instance++)
+			{
+				// Copy the save insformation
+				readed[instance] = _ListInstance[instance]->Saved;
+			}
 
-	// List of animation
-	std::vector<std::string> stringArray=_AnimationSetDlg->_ListAnimation;
+			// Save the configuration
+			f.serialCont (readed);
 
-	// Serial the list
-	f.serialCont (stringArray);
-
-	// Serial the list of animation
-	if (f.isReading ())
-	{
-		// Load animation file
-		for (uint s=0; s<stringArray.size(); s++)
-			_AnimationSetDlg->loadAnimation (stringArray[s].c_str());
-	}
-
-	// List of skeleton
-	stringArray=_AnimationSetDlg->_ListSkeleton;
-
-	// Serial the list
-	f.serialCont (stringArray);
-
-	// Serial the list of animation
-	if (f.isReading ())
-	{
-		// Load animation file
-		for (uint s=0; s<stringArray.size(); s++)
-			_AnimationSetDlg->loadSkeleton (stringArray[s].c_str());
-	}
-
-	// Serial the play list
-	if (f.isReading ())
-	{
-		// Serial the play list
-		f.serial (_SlotDlg->Playlist);
-
-		// Set the play list
-		_SlotDlg->setSlot ();
-	}
-	else
-	{
-		// Set the play list
-		_SlotDlg->getSlot ();
-
-		// Serial the play list
-		f.serial (_SlotDlg->Playlist);
-	}
-
-	// Some init
-	if (f.isReading ())
-	{
-		// Init start and end time
-		setAnimTime (_AnimationDlg->Start, _AnimationDlg->End);
-
-		// Touch the channel mixer
-		reinitChannels ();
-	}
-
-	if (ver > 1)
-	{	
-		// serial the ranges for particles edition
-		CRangeManager<float>::serial(f);
-		CRangeManager<uint32>::serial(f);
-		CRangeManager<sint32>::serial(f);
+			// Write the selection
+			f.serial (_SelectedObject);
+		}
 	}
 }
 
@@ -1372,6 +1382,7 @@ bool CObjectViewer::loadMesh (std::vector<std::string> &meshFilename, const char
 
 	// Shape pointer
 	IShape *shapeSkel=NULL;
+	uint skelIndex = 0xffffffff;
 	NL3D::CSkeletonModel *transformSkel=NULL;
 
 	// Skel error ?
@@ -1421,6 +1432,9 @@ bool CObjectViewer::loadMesh (std::vector<std::string> &meshFilename, const char
 	// Skeleton used ?
 	bool skelUsed = false;
 
+	// Index of the shape
+	uint lastShape = 0xffffffff;
+
 	// For each meshes
 	for (uint i=0; i<meshFilename.size(); i++)
 	{
@@ -1466,13 +1480,21 @@ bool CObjectViewer::loadMesh (std::vector<std::string> &meshFilename, const char
 		if (shapeSkel&&(!skelUsed))
 		{
 			// Add the skel
-			transformSkel=addSkel (shapeSkel, skeleton, "");
-			skelUsed = true;
+			skelIndex = addSkel (shapeSkel, skeleton);
+			if (skelIndex != 0xffffffff)
+			{
+				skelUsed = true;
+				transformSkel = dynamic_cast<CSkeletonModel*>(_ListInstance[skelIndex]->TransformShape);
+				nlassert (transformSkel);
+			}
 		}
 
 		// Add the skel shape
 		if (shapeMesh)
-			addMesh (shapeMesh, fileName, "", transformSkel);
+		{
+			// Get the object name
+			lastShape = addMesh (shapeMesh, fileName, skelIndex);
+		}
 	}
 
 	// Skel not used ?
@@ -1482,8 +1504,15 @@ bool CObjectViewer::loadMesh (std::vector<std::string> &meshFilename, const char
 		delete shapeSkel;
 	}
 
-	// Add an entry for config
-	_ListMeshes.push_back (CMeshDesc (meshFilename, skeleton));
+	// Select the skeleton
+	if (skelIndex != 0xffffffff)
+		_SelectedObject = skelIndex;
+	else if (lastShape != 0xffffffff)
+		_SelectedObject = lastShape;
+
+	// Update windows
+	_AnimationSetDlg->refresh (TRUE);
+	_SlotDlg->refresh (TRUE);
 
 	return true;
 }
@@ -1499,7 +1528,7 @@ void CObjectViewer::resetCamera ()
 
 // ***************************************************************************
 
-CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, const char *meshBaseName, CSkeletonModel* pSkel, bool createInstance)
+uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uint skelIndex, const char* bindSkelName, bool createInstance)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -1522,13 +1551,14 @@ CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* m
 			pTrShape->setTransformMode (ITransformable::RotQuat);
 
 		// Store the transform shape pointer
-		CInstanceInfo	iInfo;
-		iInfo.TransformShape= pTrShape;
-		// Store the name of the shape
-		iInfo.ShapeBaseName= meshBaseName;
-		iInfo.MustDelete= true;
-		_ListInstance.push_back (iInfo);	
+		CInstanceInfo *iInfo = new CInstanceInfo;
+		iInfo->TransformShape= pTrShape;
 
+		// Store the name of the shape
+		iInfo->MustDelete = true;
+		iInfo->Saved.ShapeFilename = meshName;
+		iInfo->Saved.SkeletonId = skelIndex;
+		_ListInstance.push_back (iInfo);	
 
 		// *** Bind to the skeleton
 
@@ -1536,19 +1566,89 @@ CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* m
 		CMeshBaseInstance  *meshInstance=dynamic_cast<CMeshBaseInstance*>(pTrShape);
 
 		// Bind the mesh
-		if (pSkel)
-			pSkel->bindSkin (meshInstance);
+		if (skelIndex != 0xffffffff)
+		{
+			// Get the skeleton
+			NL3D::CSkeletonModel *transformSkel = dynamic_cast<CSkeletonModel*>(_ListInstance[skelIndex]->TransformShape);
+			nlassert (transformSkel);
 
-		// Return the instance
-		return pTrShape;
+			// It is a skinned mesh ?
+			CMesh *mesh = dynamic_cast<CMesh *>(pMeshShape);
+			if (mesh && mesh->getMeshGeom().isSkinned())
+			{
+				// Bind to skeleton
+				transformSkel->bindSkin (meshInstance);
+			}
+			else
+			{
+				// Bind bone name
+				uint bindBone = 0xffffffff;
+				std::string boneName = "";
+
+				// Name is passed, look for bone 
+				if (bindSkelName)
+				{
+					// Make a list of bones
+					uint bone;
+					for (bone=0; bone<transformSkel->Bones.size(); bone++)
+					{
+						if (transformSkel->Bones[bone].getBoneName() == bindSkelName)
+						{
+							bindBone = bone;
+							boneName = bindSkelName;
+							break;
+						}
+					}
+				}
+
+				// Found ? No, look for a bind bone
+				if (bindBone == 0xffffffff)
+				{
+					// Make a list of bones
+					vector<string> listBones;
+					uint bone;
+					for (bone=0; bone<transformSkel->Bones.size(); bone++)
+						listBones.push_back (transformSkel->Bones[bone].getBoneName());
+
+					// Get name of the mesh
+					char nameMesh[512];
+					_splitpath (meshName, NULL, NULL, nameMesh, NULL);
+
+					// Select a bones
+					std::string message = "Select a bone to stick " + string (nameMesh);
+					CSelectString dialogSelect (listBones, message.c_str(), _MainFrame, false);
+					if (dialogSelect.DoModal ()==IDOK)
+					{
+						// Select your bones
+						bindBone = dialogSelect.Selection;
+						boneName = listBones[dialogSelect.Selection];
+					}
+				}
+
+				// Selected ?
+				if (bindBone != 0xffffffff)
+				{
+					transformSkel->stickObject (meshInstance, bindBone);
+					meshInstance->setPos (CVector::Null);
+					meshInstance->setRotQuat (CQuat::Identity);
+					meshInstance->setScale (1, 1, 1);
+				}
+
+				// Set the bone name
+				iInfo->Saved.BindBoneName = boneName;
+			}
+		}
+
+		// Return the instance index
+		return _ListInstance.size()-1;
 	}
 	else
-		return NULL;
+		return 0xffffffff;
 }
 
 // ***************************************************************************
 
-CSkeletonModel *CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* skelName, const char *skelBaseName)
+uint CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* skelName)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -1574,16 +1674,19 @@ CSkeletonModel *CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* sk
 			pTrShape->setTransformMode (ITransformable::RotQuat);
 
 		// Store the transform shape pointer
-		CInstanceInfo	iInfo;
-		iInfo.TransformShape= skelModel;
-		// Store the name of the shape
-		iInfo.ShapeBaseName= skelBaseName;
-		iInfo.MustDelete= true;
-		_ListInstance.push_back (iInfo);	
-	}
+		CInstanceInfo *iInfo = new CInstanceInfo;
+		iInfo->TransformShape = skelModel;
 
-	// Return the instance
-	return skelModel;
+		// Store the name of the shape
+		iInfo->MustDelete = true;
+		iInfo->Saved.ShapeFilename = skelName;
+		iInfo->Saved.IsSkeleton = true;
+		_ListInstance.push_back (iInfo);	
+
+		// Return the instance
+		return _ListInstance.size()-1;
+	}
+	return 0xffffffff;
 }
 
 // ***************************************************************************
@@ -1613,30 +1716,42 @@ void IObjectViewer::releaseInterface (IObjectViewer* view)
 
 // ***************************************************************************
 
-void CObjectViewer::setSingleAnimation (NL3D::CAnimation* pAnim, const char* name)
+void CObjectViewer::setSingleAnimation (NL3D::CAnimation* pAnim, const char* name, uint instance)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	// Add the animation to the animationSet
-	_AnimationSetDlg->UpdateData (TRUE);
-	_AnimationSetDlg->addAnimation (pAnim, name);
-	_AnimationSetDlg->UseMixer = 1;
-	_AnimationSetDlg->UpdateData (FALSE);
+	if (instance < _ListInstance.size())
+	{
+		// Set active 
+		_SelectedObject = instance;
 
-	// Set time
-	setAnimTime (pAnim->getBeginTime()*_AnimationDlg->Speed, pAnim->getEndTime()*_AnimationDlg->Speed);
+		// Add the animation
+		addAnimation (pAnim, (name+std::string(".anim")).c_str(), name, instance);
 
-	// Set the animation in the first slot
-	_SlotDlg->UpdateData ();
-	_SlotDlg->Slots[0].setAnimation (_AnimationSet.getAnimationIdByName(name), pAnim, name);
-	_SlotDlg->Slots[0].StartBlend=1.f;
-	_SlotDlg->Slots[0].EndBlend=1.f;
-	_SlotDlg->Slots[0].Offset=0;
-	_SlotDlg->Slots[0].enable=TRUE;
-	_SlotDlg->UpdateData (FALSE);
+		// Add the animation to the animationSet
+		_AnimationSetDlg->UpdateData (TRUE);
+		_AnimationSetDlg->UseMixer = 1;
+		_AnimationSetDlg->UpdateData (FALSE);
 
-	// Reinit
-	reinitChannels ();
+		// Set the animation in the first slot
+		_ListInstance[instance]->Saved.SlotInfo[0].Animation = name;
+		_ListInstance[instance]->Saved.SlotInfo[0].Skeleton = "";
+		_ListInstance[instance]->Saved.SlotInfo[0].Offset = 0;
+		_ListInstance[instance]->Saved.SlotInfo[0].StartTime = (int)(pAnim->getBeginTime()*_AnimationDlg->Speed);
+		_ListInstance[instance]->Saved.SlotInfo[0].EndTime = (int)(pAnim->getEndTime()*_AnimationDlg->Speed);
+		_ListInstance[instance]->Saved.SlotInfo[0].StartBlend = 1.f;
+		_ListInstance[instance]->Saved.SlotInfo[0].EndBlend = 1.f;
+		_ListInstance[instance]->Saved.SlotInfo[0].Enable = true;
+		for (uint i=1; i<CChannelMixer::NumAnimationSlot; i++)
+			_ListInstance[instance]->Saved.SlotInfo[i].Enable = false;
+
+		// Update dialog box
+		_AnimationSetDlg->refresh (TRUE);
+		_SlotDlg->refresh (TRUE);
+
+		// Reinit
+		reinitChannels ();
+	}
 }
 
 // ***************************************************************************
@@ -1689,10 +1804,10 @@ void CObjectViewer::activateTextureSet(uint index)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	std::vector<CInstanceInfo>::iterator it;
+	std::vector<CInstanceInfo*>::iterator it;
 	for (it = _ListInstance.begin(); it != _ListInstance.end(); ++it)
 	{
-		NL3D::CTransformShape	*trShape= it->TransformShape;
+		NL3D::CTransformShape	*trShape= (*it)->TransformShape;
 		if (dynamic_cast<NL3D::CMeshBaseInstance *>(trShape))
 		{
 			static_cast<NL3D::CMeshBaseInstance *>(trShape)->selectTextureSet(index);
@@ -1707,13 +1822,14 @@ void CObjectViewer::removeAllInstancesFromScene()
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	// Remove all stand alone TransformShapes.
-	std::vector<CInstanceInfo>::iterator it;
-	for (it = _ListInstance.begin(); it != _ListInstance.end(); ++it)
+	for(uint instance=0; instance<_ListInstance.size(); instance++)
 	{
-		if(it->MustDelete)
-			CNELU::Scene.deleteInstance(it->TransformShape);
+		delete _ListInstance[instance];
 	}
+
+	// Remove all stand alone TransformShapes.
 	_ListInstance.clear();
+	_SelectedObject = 0xffffffff;
 
 	// Remove added/loaded igs and their instances.
 	for(uint igId=0; igId<_ListIG.size(); igId++)
@@ -1725,6 +1841,9 @@ void CObjectViewer::removeAllInstancesFromScene()
 	}
 	_ListIG.clear();
 
+	// Invalidate dialogs
+	_AnimationSetDlg->refresh (TRUE);
+	_SlotDlg->refresh (TRUE);
 }
 
 
@@ -1733,114 +1852,118 @@ void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
 {
 	if (lastTime!=currentTime)
 	{
-		// For each channel of the mixer
-		for (uint slot=0; slot<CChannelMixer::NumAnimationSlot; slot++)
+		// For each objects
+		for (uint instance=0; instance<_ListInstance.size(); instance++)
 		{
-			// Anim id
-			uint animId=_SlotDlg->Playlist.getAnimation (slot);
-
-			// Channel actif ?
-			if (_SlotDlg->Playlist.getAnimation (slot)!=CAnimationPlaylist::empty)
+			// For each channel of the mixer
+			for (uint slot=0; slot<CChannelMixer::NumAnimationSlot; slot++)
 			{
-				// Get the animation
-				CAnimation *anim=_AnimationSet.getAnimation (animId);
-				nlassert (anim);
+				// Anim id
+				uint animId=_ListInstance[instance]->Playlist.getAnimation (slot);
 
-				// Get the sound track
-				uint trackId=anim->getIdTrackByName ("NoteTrack");
-				if (trackId!=CAnimation::NotFound)
+				// Channel actif ?
+				if (animId!=CAnimationPlaylist::empty)
 				{
-					// Get the track
-					ITrack *track=anim->getTrack (trackId);
-					nlassert (track);
+					// Get the animation
+					CAnimation *anim=_ListInstance[instance]->AnimationSet.getAnimation (animId);
+					nlassert (anim);
 
-					// Dynamic cast
-					UTrackKeyframer *soundTrackKF = dynamic_cast<UTrackKeyframer *>(track);
-					if (soundTrackKF)
+					// Get the sound track
+					uint trackId=anim->getIdTrackByName ("NoteTrack");
+					if (trackId!=CAnimation::NotFound)
 					{
-						// Sound keys
-						std::vector<TAnimationTime> result;
+						// Get the track
+						ITrack *track=anim->getTrack (trackId);
+						nlassert (track);
 
-						// Get local begin and endTime
-						TAnimationTime localLastTime = _SlotDlg->Playlist.getLocalTime (slot, lastTime, _AnimationSet);
-						TAnimationTime localCurrentTime = _SlotDlg->Playlist.getLocalTime (slot, currentTime, _AnimationSet);
-
-						// Good interval
-						if (localLastTime<=localCurrentTime)
+						// Dynamic cast
+						UTrackKeyframer *soundTrackKF = dynamic_cast<UTrackKeyframer *>(track);
+						if (soundTrackKF)
 						{
-							// Get keys in this interval
-							soundTrackKF->getKeysInRange(localLastTime, localCurrentTime, result);
-						}
-						else
-						{
-							// Get begin and last time
-							TAnimationTime beginTime=track->getBeginTime ();
-							TAnimationTime endTime=track->getEndTime ();
+							// Sound keys
+							std::vector<TAnimationTime> result;
 
-							// Time must have been clamped
-							nlassert (localCurrentTime<=endTime);
-							nlassert (localLastTime>=beginTime);
+							// Get local begin and endTime
+							TAnimationTime localLastTime = _ListInstance[instance]->Playlist.getLocalTime (slot, lastTime, _ListInstance[instance]->AnimationSet);
+							TAnimationTime localCurrentTime = _ListInstance[instance]->Playlist.getLocalTime (slot, currentTime, _ListInstance[instance]->AnimationSet);
 
-							// Get keys to the end
-							soundTrackKF->getKeysInRange(localCurrentTime, endTime, result);
-
-							// Get keys at the beginning
-							soundTrackKF->getKeysInRange(beginTime, localLastTime, result);
-						}
-
-						// Process sounds
-						NLSOUND::UAudioMixer *audioMixer = CSoundSystem::getAudioMixer ();
-						if( audioMixer )
-						{	
-							vector<TAnimationTime>::iterator itResult;
-							for( itResult = result.begin(); itResult != result.end(); ++itResult ) 
+							// Good interval
+							if (localLastTime<=localCurrentTime)
 							{
-								string soundName;
-								double keyTime = *itResult;
-								nlinfo("keyTime = %f  result size : %d",*itResult,result.size());
-								
-								if( !track->interpolate( *itResult, soundName) )
+								// Get keys in this interval
+								soundTrackKF->getKeysInRange(localLastTime, localCurrentTime, result);
+							}
+							else
+							{
+								// Get begin and last time
+								TAnimationTime beginTime=track->getBeginTime ();
+								TAnimationTime endTime=track->getEndTime ();
+
+								// Time must have been clamped
+								nlassert (localCurrentTime<=endTime);
+								nlassert (localLastTime>=beginTime);
+
+								// Get keys to the end
+								soundTrackKF->getKeysInRange(localCurrentTime, endTime, result);
+
+								// Get keys at the beginning
+								soundTrackKF->getKeysInRange(beginTime, localLastTime, result);
+							}
+
+							// Process sounds
+							NLSOUND::UAudioMixer *audioMixer = CSoundSystem::getAudioMixer ();
+							if( audioMixer )
+							{	
+								vector<TAnimationTime>::iterator itResult;
+								for( itResult = result.begin(); itResult != result.end(); ++itResult ) 
 								{
-									nlwarning("The key at offset %f is not a string",*itResult);
-								}
-								else
-								{
-									// if there are step sounds
-									if( soundName == "step" )
+									string soundName;
+									double keyTime = *itResult;
+									nlinfo("keyTime = %f  result size : %d",*itResult,result.size());
+									
+									if( !track->interpolate( *itResult, soundName) )
 									{
- 										// need to spawn a sound linked to the anim
-										string dummySound = "PAShommecourseappartdur1a";
-										USource *source = audioMixer->createSource (dummySound.c_str() , true );
-										if (source)
-										{
-											source->setPos (CVector::Null);
-											source->play ();
- 											nlinfo ("launching dummy sound %s for the step event", dummySound.c_str());
-										}
-										else
-										{
-	 										nlwarning ("sound not found for the step event: '%s'", dummySound.c_str());
-										}
+										nlwarning("The key at offset %f is not a string",*itResult);
 									}
- 									else if (soundName.find ("snd_") != string::npos)
- 									{
- 										// need to spawn a sound linked to the anim
-										USource *source = audioMixer->createSource ( soundName.c_str(), true );
-										if (source)
+									else
+									{
+										// if there are step sounds
+										if( soundName == "step" )
 										{
-											source->setPos (CVector::Null);
-											source->play ();
- 											nlinfo ("launching sound for anim event from notetrack '%s'", soundName.c_str());
+ 											// need to spawn a sound linked to the anim
+											string dummySound = "PAShommecourseappartdur1a";
+											USource *source = audioMixer->createSource (dummySound.c_str() , true );
+											if (source)
+											{
+												source->setPos (CVector::Null);
+												source->play ();
+ 												nlinfo ("launching dummy sound %s for the step event", dummySound.c_str());
+											}
+											else
+											{
+	 											nlwarning ("sound not found for the step event: '%s'", dummySound.c_str());
+											}
 										}
-										else
-										{
-	 										nlwarning ("sound not found: '%s'", soundName.c_str());
-										}
- 									}
- 									else
- 									{
- 										nlwarning ("unknown notetrack event: '%s'", soundName.c_str());
- 									}
+ 										else if (soundName.find ("snd_") != string::npos)
+ 										{
+ 											// need to spawn a sound linked to the anim
+											USource *source = audioMixer->createSource ( soundName.c_str(), true );
+											if (source)
+											{
+												source->setPos (CVector::Null);
+												source->play ();
+ 												nlinfo ("launching sound for anim event from notetrack '%s'", soundName.c_str());
+											}
+											else
+											{
+	 											nlwarning ("sound not found: '%s'", soundName.c_str());
+											}
+ 										}
+ 										else
+ 										{
+ 											nlwarning ("unknown notetrack event: '%s'", soundName.c_str());
+ 										}
+									}
 								}
 							}
 						}
@@ -1854,8 +1977,11 @@ void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
 
 
 // ***************************************************************************
-void CObjectViewer::addInstanceGroup(NL3D::CInstanceGroup *ig)
+uint CObjectViewer::addInstanceGroup(NL3D::CInstanceGroup *ig)
 {
+	// First instance
+	uint first = _ListInstance.size();
+
 	// Add all models to the scene		
 	ig->addToScene(CNELU::Scene, CNELU::Driver);
 	// Unfreeze all objects from HRC.
@@ -1864,15 +1990,18 @@ void CObjectViewer::addInstanceGroup(NL3D::CInstanceGroup *ig)
 	// Keep a reference on them, but they'll be destroyed by IG.
 	for (uint k = 0; k < ig->getNumInstance(); ++k)
 	{
-		CInstanceInfo	iInfo;
-		iInfo.TransformShape= ig->_Instances[k];
-		iInfo.ShapeBaseName= ig->getInstanceName(k) + ".";
-		iInfo.MustDelete= false;
-		_ListInstance.push_back (iInfo);	
+		CInstanceInfo *iInfo = new CInstanceInfo;
+		iInfo->TransformShape = ig->_Instances[k];
+		iInfo->Saved.ShapeFilename = ig->_InstancesInfos[k].Name;
+		iInfo->MustDelete = false;
+		_ListInstance.push_back (iInfo);
 	}
 
 	// Add the ig to the list.
 	_ListIG.push_back(ig);
+
+	// Return first instance
+	return first;
 }
 
 // ***************************************************************************
@@ -2357,6 +2486,241 @@ void		CObjectViewer::snapToGroundVegetableLandscape(bool enable)
 {
 	// update
 	_VegetableSnapToGround= enable;
+}
+
+// ***************************************************************************
+CInstanceInfo::CInstanceInfo ()
+{
+	TransformShape = NULL;
+	MustDelete = false;
+}
+
+// ***************************************************************************
+CInstanceInfo::~CInstanceInfo ()
+{
+	if (MustDelete)
+		CNELU::Scene.deleteInstance (TransformShape);
+}
+
+// ***************************************************************************
+CSlotInfo::CSlotInfo ()
+{
+	StartTime = 0;
+	EndTime = 0;
+	Offset = 0;
+	StartBlend = 1;
+	EndBlend = 1;
+	Smoothness = 1;
+	SpeedFactor = 1;
+	ClampMode = 0;
+	SkeletonInverted = false;
+	Enable = true;
+}
+
+// ***************************************************************************
+void CSlotInfo::serial (NLMISC::IStream &f)
+{
+	f.serialVersion (0);
+	f.serial (Animation);
+	f.serial (Skeleton);
+	f.serial (Offset);
+	f.serial (StartTime);
+	f.serial (EndTime);
+	f.serial (StartBlend);
+	f.serial (EndBlend);
+	f.serial (Smoothness);
+	f.serial (SpeedFactor);
+	f.serial (ClampMode);
+	f.serial (SkeletonInverted);
+	f.serial (Enable);
+}
+
+// ***************************************************************************
+uint CObjectViewer::getEditedObject ()
+{
+	return _SelectedObject;
+}
+
+// ***************************************************************************
+void CObjectViewer::setEditedObject (uint selected)
+{
+	_SelectedObject=selected;
+}
+
+// ***************************************************************************
+CInstanceInfo *CObjectViewer::getInstance (uint instance)
+{
+	return _ListInstance[instance];
+}
+
+// ***************************************************************************
+uint CObjectViewer::getNumInstance () const
+{
+	return _ListInstance.size ();
+}
+
+// ***************************************************************************
+void CInstanceInfo::setAnimationPlaylist (float frameRate)
+{
+	for (uint id=0; id<NL3D::CChannelMixer::NumAnimationSlot; id++)
+	{
+		if (Saved.SlotInfo[id].Enable)
+		{
+			// Set the animation
+			uint animId = AnimationSet.getAnimationIdByName (Saved.SlotInfo[id].Animation);
+			if (animId == CAnimationSet::NotFound)
+				Playlist.setAnimation (id, CAnimationPlaylist::empty);
+			else			
+				Playlist.setAnimation (id, animId);
+
+			// Set the skeleton weight
+			uint skelId = AnimationSet.getSkeletonWeightIdByName (Saved.SlotInfo[id].Skeleton);
+			if (skelId == CAnimationSet::NotFound)
+				Playlist.setSkeletonWeight (id, CAnimationPlaylist::empty, false);
+			else
+				Playlist.setSkeletonWeight (id, skelId, Saved.SlotInfo[id].SkeletonInverted);
+
+			// Set others values
+			Playlist.setTimeOrigin (id, Saved.SlotInfo[id].Offset/frameRate);
+			Playlist.setSpeedFactor (id, Saved.SlotInfo[id].SpeedFactor);
+			Playlist.setStartWeight (id, Saved.SlotInfo[id].StartBlend, Saved.SlotInfo[id].StartTime/frameRate);
+			Playlist.setEndWeight (id, Saved.SlotInfo[id].EndBlend, Saved.SlotInfo[id].EndTime/frameRate);
+			Playlist.setWeightSmoothness (id, Saved.SlotInfo[id].Smoothness);
+
+			// Switch between wrap modes
+			switch (Saved.SlotInfo[id].ClampMode)
+			{
+			case 0:
+				Playlist.setWrapMode (id, CAnimationPlaylist::Clamp);
+				break;
+			case 1:
+				Playlist.setWrapMode (id, CAnimationPlaylist::Repeat);
+				break;
+			case 2:
+				Playlist.setWrapMode (id, CAnimationPlaylist::Disable);
+				break;
+			}
+		}
+	}
+}
+
+// ***************************************************************************
+CInstanceSave::CInstanceSave ()
+{
+	SkeletonId = 0xffffffff;
+	IsSkeleton = false;
+}
+
+// ***************************************************************************
+void CInstanceSave::serial (NLMISC::IStream &f)
+{
+	// Serial a version
+	f.serialVersion (0);
+
+	// Play list of this object
+	f.serialCont (PlayList);
+
+	// Slot info for this object
+	nlassert (NL3D::CChannelMixer::NumAnimationSlot == 8);
+	for (uint slot=0; slot<8; slot++)
+		// Serial the slot informations
+		f.serial (SlotInfo[slot]);
+
+	// Input file
+	f.serial (ShapeFilename);
+
+	// Skeleton id
+	f.serial (SkeletonId);
+
+	// Bind bone name
+	f.serial (BindBoneName);
+
+	// Is a skeleton
+	f.serial (IsSkeleton);
+
+	// Animation input file
+	f.serialCont (AnimationFileName);
+
+	// Skeleton weight input file
+	f.serialCont (SWTFileName);
+}
+
+// ***************************************************************************
+void CObjectViewer::addAnimation (NL3D::CAnimation* anim, const char* filename, const char* name, uint instance)
+{
+	// Add an animation
+	uint id = _ListInstance[instance]->AnimationSet.addAnimation (name, anim);
+	_ListInstance[instance]->Saved.AnimationFileName.push_back (filename);
+
+	// Rebuild the animationSet
+	_ListInstance[instance]->AnimationSet.build ();
+}
+
+// ***************************************************************************
+void CObjectViewer::loadAnimation (const char* fileName, uint instance)
+{
+	// Open the file
+	CIFile file;
+	if (file.open (fileName))
+	{
+		// Get the animation name
+		char name[256];
+		_splitpath (fileName, NULL, NULL, name, NULL);
+
+		// Make an animation
+		CAnimation *anim=new CAnimation;
+
+		// Serial it
+		anim->serial (file);
+
+		// Add the animation
+		addAnimation (anim, fileName, name, instance);
+	}
+	else
+	{
+		// Create a message
+		char msg[512];
+		_snprintf (msg, 512, "Can't open the file %s for reading.", fileName);
+		_MainFrame->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+	}
+}
+
+// ***************************************************************************
+void CObjectViewer::loadSWT (const char* fileName, uint instance)
+{
+	// Open the file
+	CIFile file;
+	if (file.open (fileName))
+	{
+		// Get the animation name
+		char name[256];
+		_splitpath (fileName, NULL, NULL, name, NULL);
+
+		// Get the skeleton pointer
+		CSkeletonWeight* skel=new CSkeletonWeight;
+
+		// Serial it
+		skel->serial (file);
+
+		// Add an animation
+		_ListInstance[instance]->AnimationSet.addSkeletonWeight (name, skel);
+
+		// Add the filename in the list
+		_ListInstance[instance]->Saved.SWTFileName.push_back (fileName);
+	}
+	else
+	{
+		// Create a message
+		char msg[512];
+		_snprintf (msg, 512, "Can't open the file %s for reading.", fileName);
+		_MainFrame->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+	}
+}
+
+// ***************************************************************************
+CMainDlg *CObjectViewer::getSlotDlg ()
+{
+	return _SlotDlg;
 }
 
 

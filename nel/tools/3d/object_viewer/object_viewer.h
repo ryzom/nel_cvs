@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.32 2002/02/28 13:41:24 berenguier Exp $
+ * $Id: object_viewer.h,v 1.33 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,9 +30,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#ifndef __AFXWIN_H__
-	#error include 'stdafx.h' before including this file for PCH
-#endif
 
 #define REGKEY_OBJ_VIEW "Software\\Nevrax\\nel\\object_viewer"
 #define REGKEY_OBJ_VIEW_OPENGL_WND "Software\\Nevrax\\nel\\object_viewer\\opengl_wnd"
@@ -107,40 +104,94 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CMeshDesc
+class CSlotInfo
 {
 public:
-	CMeshDesc () {};
-	CMeshDesc (std::vector<std::string> &meshNames, const char* skeletonName)
-	{
-		MeshNames=meshNames;
-		SkeletonName=skeletonName;
-	}
+	CSlotInfo ();
+	std::string		Animation;
+	std::string		Skeleton;
+	sint32			Offset;
+	sint32			StartTime;
+	sint32			EndTime;
+	float			StartBlend;
+	float			EndBlend;
+	float			Smoothness;
+	float			SpeedFactor;
+	sint32			ClampMode;
+	bool			SkeletonInverted;
+	bool			Enable;
 
-	std::vector<std::string>	MeshNames;
-	std::string					SkeletonName;
-	void			serial (NLMISC::IStream& s)
-	{
-		int ver=s.serialVersion (1);
-
-		if (ver<1)
-		{
-			// Readonly
-			nlassert (s.isReading());
-
-			// One name
-			std::string singleName;
-			s.serial (singleName);
-			MeshNames.clear ();
-			MeshNames.push_back (singleName);
-		}
-		else
-		{
-			s.serialCont (MeshNames);
-		}
-		s.serial (SkeletonName);
-	}
+	// Serial
+	void serial (NLMISC::IStream& s);
 };
+
+/////////////////////////////////////////////////////////////////////////////
+
+class CInstanceSave
+{
+public:
+	CInstanceSave ();
+
+	// Play list of this object
+	std::vector<std::string>	PlayList;
+
+	// Slot info for this object
+	CSlotInfo					SlotInfo[NL3D::CChannelMixer::NumAnimationSlot];
+
+	// Input file
+	std::string					ShapeFilename;
+
+	// Skeleton id
+	uint32						SkeletonId;
+
+	// Bin bone name
+	std::string					BindBoneName;
+
+	// Is a skeleton
+	bool						IsSkeleton;
+
+	// Animation input file
+	std::vector<std::string>	AnimationFileName;
+
+	// Skeleton weight input file
+	std::vector<std::string>	SWTFileName;
+
+	// Serial
+	void serial (NLMISC::IStream& s);
+};
+
+/////////////////////////////////////////////////////////////////////////////
+
+class CInstanceInfo
+{
+public:
+	CInstanceInfo ();
+	~CInstanceInfo ();
+
+	// Transform shape pointer
+	NL3D::CTransformShape		*TransformShape;
+
+	// Animation set of this instance
+	NL3D::CAnimationSet			AnimationSet;
+
+	// Channel mixer of this instance
+	NL3D::CChannelMixer			ChannelMixer;
+
+	// True, must delete this shape
+	bool						MustDelete;
+
+	// Save informations
+	CInstanceSave				Saved;
+
+	// The current playlist
+	NL3D::CAnimationPlaylist	Playlist;
+
+	// Set an animation playlist
+	void						setAnimationPlaylist (float frameRate);
+	
+};
+
+/////////////////////////////////////////////////////////////////////////////
 
 class CObjectViewer : public IObjectViewer
 {
@@ -160,16 +211,16 @@ public:
 	void releaseUI ();
 
 	// Set single animtion.
-	void setSingleAnimation (NL3D::CAnimation*	pAnim, const char* name);
+	void setSingleAnimation (NL3D::CAnimation*	pAnim, const char* name, uint instance);
 
 	// Set automatic animation
 	void setAutoAnimation (NL3D::CAnimation* pAnim);
 
 	// Add a mesh
-	NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, const char* meshName, const char *meshBaseName, NL3D::CSkeletonModel* pSkel, bool createInstance= true);
+	uint addMesh (NL3D::IShape* pMeshShape, const char* meshName, uint skelIndex, const char* bindSkelName = NULL, bool createInstance = true);
 
 	// Add a skel
-	NL3D::CSkeletonModel	*addSkel (NL3D::IShape* pSkelShape, const char* skelName, const char *skelBaseName);
+	uint addSkel (NL3D::IShape* pSkelShape, const char* skelName);
 
 	// remove all instances from the scene
 	void					 removeAllInstancesFromScene();
@@ -189,8 +240,23 @@ public:
 	// Set ambient color
 	void setLight (unsigned char id, const NL3D::CLight& light);
 
+	// Get edited object, 0xffffffff if no object edited
+	uint getEditedObject ();
 
+	// Set edited object, 0xffffffff if no object edited
+	void setEditedObject (uint selected);
+	
+	// Get an instance
+	CInstanceInfo *getInstance (uint instance);
 
+	// Get the slot dialog
+	CMainDlg *getSlotDlg ();
+
+	// Get number of instances
+	uint getNumInstance () const;
+
+	// Add an animation
+	void addAnimation (NL3D::CAnimation* anim, const char* filename, const char* name, uint instance);
 
 	// Load a shape
 	void resetCamera ();
@@ -203,7 +269,11 @@ public:
 	CParticleDlg *getParticleDialog(void) { return _ParticleDlg ; }
 	const CParticleDlg *getParticleDialog(void) const { return _ParticleDlg ; }
 
+	// Load animation
+	void loadAnimation (const char* fileName, uint instance);
 
+	// Load a skeleton template
+	void loadSWT (const char* fileName, uint instance);
 
 
 	/// Not exported
@@ -212,7 +282,7 @@ public:
 	void setAnimTime (float animStart, float animEnd);
 
 	// Reset the slots
-	void resetSlots ();
+	void resetSlots (uint instance);
 
 	// Reinit and refill the channel mixer channels
 	void reinitChannels ();
@@ -282,7 +352,7 @@ public:
 
 	/** inherited from CObjectViewerInterface
 	 */
-	virtual void addInstanceGroup(NL3D::CInstanceGroup *ig);
+	virtual uint addInstanceGroup(NL3D::CInstanceGroup *ig);
 
 	/** inherited from CObjectViewerInterface
 	 */
@@ -331,26 +401,20 @@ public:
 
 private:
 
-	struct	CInstanceInfo
-	{
-		NL3D::CTransformShape	*TransformShape;
-		std::string				ShapeBaseName;
-		bool					MustDelete;
-	};
-
 	CMainFrame									*_MainFrame;
 	CAnimationDlg								*_AnimationDlg;
 	CMainDlg									*_SlotDlg;
 	CAnimationSetDlg							*_AnimationSetDlg;
-	CParticleDlg								*_ParticleDlg ;
-	CDayNightDlg								*_DayNightDlg ;
-	CWaterPoolEditor							*_WaterPoolDlg ;
-	CVegetableDlg								*_VegetableDlg ;
+	CParticleDlg								*_ParticleDlg;
+	CDayNightDlg								*_DayNightDlg;
+	CWaterPoolEditor							*_WaterPoolDlg;
+	CVegetableDlg								*_VegetableDlg;
+	uint32										_SelectedObject;
+
+	// Vector of loaded instance
+	std::vector<CInstanceInfo*>					_ListInstance;
+
 	CGlobalWindDlg								*_GlobalWindDlg;
-	std::vector<CMeshDesc>						_ListMeshes;
-	std::vector<CInstanceInfo>					_ListInstance;
-	NL3D::CAnimationSet							_AnimationSet;
-	std::vector<NL3D::CChannelMixer>			_ChannelMixer;
 	NL3D::CEvent3dMouseListener					_MouseListener;
 	NLMISC::CRGBA								_HotSpotColor;
 	float										_HotSpotSize;

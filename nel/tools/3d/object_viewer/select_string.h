@@ -1,7 +1,7 @@
 /** \file select_string.cpp
  * <File description>
  *
- * $Id: select_string.h,v 1.2 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: select_string.h,v 1.3 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,17 +39,19 @@ class CSelectString : public CDialog
 {
 // Construction
 public:
-	CSelectString(const std::vector<std::string>& vectString, const char* title, CWnd* pParent = NULL);   // standard constructor
+	CSelectString(const std::vector<std::string>& vectString, const char* title, CWnd* pParent, bool empty);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CSelectString)
 	enum { IDD = IDD_SELECT_STRING };
+	CButton		EmptyCtrl;
 	CListBox	ListCtrl;
 	//}}AFX_DATA
 
 	std::string							Title;
 	std::vector<std::string>			Strings;
 	int									Selection;
+	bool								Empty;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx.h,v 1.8 2001/09/26 17:53:14 vizerie Exp $
+ * $Id: std_afx.h,v 1.9 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,7 +80,7 @@
 #include <3d/text_context.h>
 #include <3d/skeleton_model.h>
 
-
+#include "object_viewer.h"
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.14 2002/02/26 17:30:23 corvazier Exp $
+ * $Id: object_viewer_interface.h,v 1.15 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,10 +62,10 @@ public:
 	virtual void releaseUI ()=0;
 
 	// Add a mesh
-	virtual NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, const char* meshName, const char *meshBaseName, NL3D::CSkeletonModel* pSkel, bool createInstance= true) =0;
+	virtual uint addMesh (NL3D::IShape* pMeshShape, const char* meshName, uint skelIndex, const char* bindSkelName = NULL, bool createInstance= true) =0;
 
 	// Add a skel
-	virtual NL3D::CSkeletonModel	*addSkel (NL3D::IShape* pSkelShape, const char* skelName, const char *skelBaseName) =0;
+	virtual uint addSkel (NL3D::IShape* pSkelShape, const char* skelName) =0;
 
 	// remove all the instance from the scene
 	virtual void					 removeAllInstancesFromScene()=0;
@@ -77,7 +77,7 @@ public:
 	virtual void resetCamera ()=0;
 
 	// Set single animation
-	virtual void setSingleAnimation (NL3D::CAnimation* pAnim, const char* name)=0;
+	virtual void setSingleAnimation (NL3D::CAnimation* pAnim, const char* name, uint instance)=0;
 
 	// Set automatic animation
 	virtual void setAutoAnimation (NL3D::CAnimation* pAnim)=0;
@@ -98,7 +98,7 @@ public:
 
 	/** Add an InstanceGroup. ptr Will be deleted by objectViewer.
 	 */
-	virtual void addInstanceGroup(NL3D::CInstanceGroup *ig)=0;
+	virtual uint addInstanceGroup(NL3D::CInstanceGroup *ig)=0;
 
 	/** Setup Scene lighting System. Disabled by default
 	 */

@@ -273,7 +273,7 @@ void CMainFrame::OnResetCamera()
 	uint m;
 	for (m=0; m<ObjView->_ListInstance.size(); m++)
 	{
-		CTransformShape *pTransform=dynamic_cast<CTransformShape*>(ObjView->_ListInstance[m].TransformShape);
+		CTransformShape *pTransform=dynamic_cast<CTransformShape*>(ObjView->_ListInstance[m]->TransformShape);
 		if (pTransform)
 		{
 			IShape *pShape=pTransform->Shape;
@@ -318,7 +318,7 @@ void CMainFrame::OnResetCamera()
 	for (; m<ObjView->_ListInstance.size(); m++)
 	{
 		// Pointer on the CTransformShape;
-		CTransformShape *pTransform=dynamic_cast<CTransformShape*>(ObjView->_ListInstance[m].TransformShape);
+		CTransformShape *pTransform=dynamic_cast<CTransformShape*>(ObjView->_ListInstance[m]->TransformShape);
 		if (pTransform)
 		{
 			IShape *pShape=pTransform->Shape;
@@ -409,12 +409,6 @@ void CMainFrame::OnClear()
 
 	// Remove all the instance
 	ObjView->removeAllInstancesFromScene();
-
-	// Erase the channel mixer
-	ObjView->_ChannelMixer.clear ();
-
-	// Erase the entry of the viewer
-	ObjView->_ListMeshes.clear ();
 }
 
 void CMainFrame::OnEditMoveelement() 

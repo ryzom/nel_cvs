@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.25 2002/03/01 14:05:29 berenguier Exp $
+ * $Id: nel_export_view.cpp,v 1.26 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,12 +61,12 @@ typedef map<INode*, CExportNel::mapBoneBindPos > mapRootMapBoneBindPos;
 class CSkeletonDesc
 {
 public:
-	CSkeletonDesc (CSkeletonModel *skeletonShape, const TInodePtrInt& mapId)
+	CSkeletonDesc (uint skeletonInstance, const TInodePtrInt& mapId)
 	{
-		SkeletonShape=skeletonShape;
-		MapId=mapId;
+		SkeletonInstance = skeletonInstance;
+		MapId = mapId;
 	}
-	CSkeletonModel	*SkeletonShape;
+	uint			SkeletonInstance;
 	TInodePtrInt	MapId;
 };
 
@@ -123,7 +123,6 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		int nNumSelNode=ip.GetSelNodeCount();
 		int nNbMesh=0;
 		// Create an animation for the models
-		CAnimation *anim=new CAnimation;
 		CAnimation *autoAnim=new CAnimation;
 
 		// *******************
@@ -169,7 +168,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 							iteSkeleton=skeletonMap.find (skeletonRoot);
 
 							// Add tracks
-							CExportNel::addBoneTracks (*anim, *skeletonRoot, (CExportNel::getName (*skeletonRoot)+".").c_str(), &ip, true, true);
+							//CExportNel::addBoneTracks (*anim[skeletonRoot], *skeletonRoot, "", &ip, true, true);
 						}
 						
 						// Add the bind pos for the skin
@@ -227,11 +226,17 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 							CExportNel::buildSkeletonShape (*skelShape, *skeletonRoot, &(iteSkeleton->second), mapId, time, true);
 
 							// Add the shape in the view
-							CSkeletonModel *skelInstance=view->addSkel (skelShape, skeletonRoot->GetName(), 
-								(CExportNel::getName (*skeletonRoot)+".").c_str());
+							uint instance = view->addSkel (skelShape, skeletonRoot->GetName());
+
+							// Add tracks
+							CAnimation *anim=new CAnimation;
+							CExportNel::addAnimation (*anim, *skeletonRoot, "", &ip, true, true);
+
+							// Set the single animation
+							view->setSingleAnimation (anim, "3dsmax current animation", instance);
 
 							// Insert in the map
-							mapSkeletonShape.insert (std::map<INode*, CSkeletonDesc>::value_type ( skeletonRoot, CSkeletonDesc (skelInstance, mapId)));
+							mapSkeletonShape.insert (std::map<INode*, CSkeletonDesc>::value_type ( skeletonRoot, CSkeletonDesc (instance, mapId)));
 						}
 					}
 				}
@@ -270,6 +275,11 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		ProgBar.initProgressBar (nNbMesh, ip);
 		opt.FeedBack = &ProgBar;
 		nNbMesh = 0;
+
+		// Map for IG animations
+		typedef std::map<INode *, CAnimation *> TIGAnimation;
+		TIGAnimation igAnim;
+
 		// View all selected objects
 		for (nNode=0; nNode<nNumSelNode; nNode++)
 		{
@@ -316,21 +326,24 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 						// Export the shape
 						IShape *pShape;
-						CSkeletonShape *skeletonShape=dynamic_cast<CSkeletonShape*> ((IShape*)iteSkelShape->second.SkeletonShape->Shape);
 						pShape=CExportNel::buildShape (*pNode, ip, time, &iteSkelShape->second.MapId, true, opt, true, true);
 
 						// Build succesful ?
 						if (pShape)
 						{
 							// Add the shape in the view
-							CMeshInstance* meshInstance=(CMeshInstance*)view->addMesh (pShape, pNode->GetName(), 
-								(CExportNel::getName (*pNode)+".").c_str(), iteSkelShape->second.SkeletonShape);
+							uint instance = view->addMesh (pShape, pNode->GetName(), iteSkelShape->second.SkeletonInstance);
+
+							// Add tracks
+							CAnimation *anim=new CAnimation;
+							CExportNel::addAnimation (*anim, *pNode, "", &ip, true, true);
+
+							// Set the single animation
+							view->setSingleAnimation (anim, "3dsmax current animation", instance);
 
 							// ok
 							skined=true;
 						}
-						else
-							delete skeletonShape;
 					}
 				}
 				// Build skined ?
@@ -350,7 +363,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 						NLMISC::CRefPtr<IShape>		prefShape= pShape;
 
 						// Add to the view, but don't create the instance (created in ig).
-						view->addMesh (pShape, (nelObjectName + ".shape").c_str(), (nelObjectName + ".").c_str(), NULL, false);
+						view->addMesh (pShape, (nelObjectName + ".shape").c_str(), 0xffffffff, NULL, false);
 
 						// If the shape is not destroyed in addMesh() (with smarPtr), then add it to the shape map.
 						if(prefShape)
@@ -361,10 +374,11 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 						// Add to list of node for IgExport.
 						igVectNode.push_back(pNode);
 					}
-				}
 
-				// Add tracks
-				CExportNel::addAnimation (*anim, *pNode, (CExportNel::getName (*pNode)+".").c_str(), &ip, true, true);
+					// Add tracks
+					igAnim.insert (TIGAnimation::value_type (pNode, new CAnimation));
+					CExportNel::addAnimation (*igAnim[pNode], *pNode, "", &ip, true, true);
+				}
 			}
 
 			ProgBar.updateProgressBar (nNbMesh);
@@ -425,8 +439,11 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		// *******************
 
 
+		// Result instance group
+		vector<INode*> resultInstanceNode;
+
 		// Build the ig (with pointLights)
-		NL3D::CInstanceGroup	*ig= CExportNel::buildInstanceGroup(igVectNode, time);
+		NL3D::CInstanceGroup	*ig= CExportNel::buildInstanceGroup(igVectNode, resultInstanceNode, time);
 		if(ig)
 		{
 			// If ExportLighting
@@ -465,18 +482,34 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				delete igOut;
 			}
 
-
 			// Setup the ig in Viewer.
-			view->addInstanceGroup(ig);
+			uint firstInstance = view->addInstanceGroup(ig);
+
+			// Setup animations
+			for (uint instance = 0; instance<ig->getNumInstance(); instance++)
+			{
+				// Set the single animation
+				view->setSingleAnimation (igAnim[resultInstanceNode[instance]], "3dsmax current animation", firstInstance + instance);
+
+				// Remove the animation
+				igAnim.erase (resultInstanceNode[instance]);				
+			}
 		}
 
+		// Erase unused animations
+		TIGAnimation::iterator ite = igAnim.begin();
+		while (ite != igAnim.end())
+		{
+			// Delete it
+			delete ite->second;
+
+			// Next
+			ite++;
+		}
 
 		// *******************
 		// * Launch
 		// *******************
-
-		// Set the single animation
-		view->setSingleAnimation (anim, "3dsmax current animation");
 
 		// Setup ambient light
 		view->setAmbientColor (CExportNel::getAmbientColor (ip, time));

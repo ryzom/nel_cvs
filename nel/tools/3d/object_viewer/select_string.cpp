@@ -1,7 +1,7 @@
 /** \file select_string.cpp
  * <File description>
  *
- * $Id: select_string.cpp,v 1.2 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: select_string.cpp,v 1.3 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 // CSelectString dialog
 
 
-CSelectString::CSelectString(const std::vector<std::string>& vectString, const char* title, CWnd* pParent /*=NULL*/)
+CSelectString::CSelectString(const std::vector<std::string>& vectString, const char* title, CWnd* pParent, bool empty)
 	: CDialog(CSelectString::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CSelectString)
@@ -45,6 +45,7 @@ CSelectString::CSelectString(const std::vector<std::string>& vectString, const c
 	Title=title;
 	Strings=vectString;
 	Selection=-1;
+	Empty=empty;
 }
 
 
@@ -52,6 +53,7 @@ void CSelectString::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSelectString)
+	DDX_Control(pDX, IDEMPTY, EmptyCtrl);
 	DDX_Control(pDX, IDC_LIST, ListCtrl);
 	//}}AFX_DATA_MAP
 }
@@ -90,6 +92,9 @@ BOOL CSelectString::OnInitDialog()
 	
 	// Change title
 	SetWindowText (Title.c_str());
+
+	// Empty button ?
+	EmptyCtrl.ShowWindow (Empty?SW_SHOW:SW_HIDE);
 
 	// Add string
 	for (uint s=0; s<Strings.size(); s++)

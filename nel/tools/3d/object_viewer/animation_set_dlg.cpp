@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * implementation file
  *
- * $Id: animation_set_dlg.cpp,v 1.10 2001/12/05 09:54:03 corvazier Exp $
+ * $Id: animation_set_dlg.cpp,v 1.11 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,7 @@ void CAnimationSetDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CAnimationSetDlg)
+	DDX_Control(pDX, IDC_EDITED_OBJECT, EditedObject);
 	DDX_Control(pDX, IDC_PLAYLIST, PlayList);
 	DDX_Control(pDX, IDC_TREE2, SkelTree);
 	DDX_Control(pDX, IDC_TREE, Tree);
@@ -79,6 +80,7 @@ BEGIN_MESSAGE_MAP(CAnimationSetDlg, CDialog)
 	ON_BN_CLICKED(IDC_SET_ANIM_LENGTH, OnSetAnimLength)
 	ON_BN_CLICKED(IDC_USE_LIST, OnUseList)
 	ON_BN_CLICKED(IDC_USE_MIXER, OnUseMixer)
+	ON_CBN_SELCHANGE(IDC_EDITED_OBJECT, OnSelchangeEditedObject)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -89,82 +91,89 @@ END_MESSAGE_MAP()
 
 void CAnimationSetDlg::OnAddAnimation () 
 {
-	// Create a dialog
-	static char BASED_CODE szFilter[] = 
-		"NeL Animation Files (*.anim)\0*.anim\0"
-		"All Files (*.*)\0*.*\0\0";
-
-	// Filename buffer
-	char buffer[65535];
-	buffer[0]=0;
-
-	OPENFILENAME openFile;
-	memset (&openFile, 0, sizeof (OPENFILENAME));
-	openFile.lStructSize = sizeof (OPENFILENAME);
-	openFile.hwndOwner = this->m_hWnd;
-    openFile.lpstrFilter = szFilter;
-    openFile.nFilterIndex = 0;
-    openFile.lpstrFile = buffer;
-    openFile.nMaxFile = 65535;
-    openFile.Flags = OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_ALLOWMULTISELECT|OFN_ENABLESIZING|OFN_EXPLORER;
-    openFile.lpstrDefExt = "*.anim";
-	
-
-	if (GetOpenFileName(&openFile))
+	uint instance = _ObjView->getEditedObject ();
+	if (instance != 0xffffffff)
 	{
-		// Open the file
-		try
+		// Create a dialog
+		static char BASED_CODE szFilter[] = 
+			"NeL Animation Files (*.anim)\0*.anim\0"
+			"All Files (*.*)\0*.*\0\0";
+
+		// Filename buffer
+		char buffer[65535];
+		buffer[0]=0;
+
+		OPENFILENAME openFile;
+		memset (&openFile, 0, sizeof (OPENFILENAME));
+		openFile.lStructSize = sizeof (OPENFILENAME);
+		openFile.hwndOwner = this->m_hWnd;
+		openFile.lpstrFilter = szFilter;
+		openFile.nFilterIndex = 0;
+		openFile.lpstrFile = buffer;
+		openFile.nMaxFile = 65535;
+		openFile.Flags = OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_ALLOWMULTISELECT|OFN_ENABLESIZING|OFN_EXPLORER;
+		openFile.lpstrDefExt = "*.anim";
+		
+
+		if (GetOpenFileName(&openFile))
 		{
-			// Filename pointer
-			char *c=buffer;
-
-			// Read the path
-			CString path = buffer;
-			if (path.GetLength()>openFile.nFileOffset)
+			// Open the file
+			try
 			{
-				// Double zero at the end
-				c[path.GetLength()+1]=0;
+				// Filename pointer
+				char *c=buffer;
 
-				// Path is empty
-				path = "";
-			}
-			else
-			{
-				// Adda slash
-				path += "\\";
+				// Read the path
+				CString path = buffer;
+				if (path.GetLength()>openFile.nFileOffset)
+				{
+					// Double zero at the end
+					c[path.GetLength()+1]=0;
 
-				// Look for the next string
-				while (*(c++)) {}
-			}
+					// Path is empty
+					path = "";
+				}
+				else
+				{
+					// Adda slash
+					path += "\\";
 
-			// For each file selected
-			while (*c)
-			{
-				// File name
-				char filename[256];
-				char *ptr=filename;
+					// Look for the next string
+					while (*(c++)) {}
+				}
 
-				// Read a file name
+				// For each file selected
 				while (*c)
 				{
-					*(ptr++)=*(c++);
+					// File name
+					char filename[256];
+					char *ptr=filename;
+
+					// Read a file name
+					while (*c)
+					{
+						*(ptr++)=*(c++);
+					}
+					*ptr=0;
+					c++;
+
+					// File name
+					CString name = path + filename;
+
+					// Load the animation
+					_ObjView->loadAnimation (name, instance);
+
+					// Touch the channel mixer
+					_ObjView->reinitChannels ();
+
+					// Update 
+					refresh (TRUE);
 				}
-				*ptr=0;
-				c++;
-
-				// File name
-				CString name = path + filename;
-
-				// Load the animation
-				loadAnimation (name);
-
-				// Touch the channel mixer
-				_ObjView->reinitChannels ();
 			}
-		}
-		catch (Exception& e)
-		{
-			MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+			catch (Exception& e)
+			{
+				MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+			}
 		}
 	}
 }
@@ -173,31 +182,39 @@ void CAnimationSetDlg::OnAddAnimation ()
 
 void CAnimationSetDlg::OnAddSkelWt() 
 {
-	// TODO: Add your control notification handler code here
-	static char BASED_CODE szFilter[] = "NeL Skeleton Weight Template Files (*.swt)|*.swt|All Files (*.*)|*.*||";
-	CFileDialog fileDlg( TRUE, ".swt", "*.swt", OFN_ALLOWMULTISELECT|OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
-	if (fileDlg.DoModal()==IDOK)
+	// Instance number
+	int instance = _ObjView->getEditedObject ();
+	if (instance != CB_ERR)
 	{
-		// Open the file
-		try
+		// TODO: Add your control notification handler code here
+		static char BASED_CODE szFilter[] = "NeL Skeleton Weight Template Files (*.swt)|*.swt|All Files (*.*)|*.*||";
+		CFileDialog fileDlg( TRUE, ".swt", "*.swt", OFN_ALLOWMULTISELECT|OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
+		if (fileDlg.DoModal()==IDOK)
 		{
-			// Get first file
-			POSITION pos=fileDlg.GetStartPosition( );
-			while (pos)
+			// Open the file
+			try
 			{
-				// Get the name
-				CString filename=fileDlg.GetNextPathName(pos);
+				// Get first file
+				POSITION pos=fileDlg.GetStartPosition( );
+				while (pos)
+				{
+					// Get the name
+					CString filename=fileDlg.GetNextPathName(pos);
 
-				// Load the animation
-				loadSkeleton (filename);
+					// Load the animation
+					_ObjView->loadSWT (filename, instance);
 
-				// Touch the channel mixer
-				_ObjView->reinitChannels  ();
+					// Touch the channel mixer
+					_ObjView->reinitChannels  ();
+
+					// Update 
+					refresh (TRUE);
+				}
 			}
-		}
-		catch (Exception& e)
-		{
-			MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+			catch (Exception& e)
+			{
+				MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+			}
 		}
 	}
 }
@@ -206,176 +223,192 @@ void CAnimationSetDlg::OnAddSkelWt()
 
 void CAnimationSetDlg::OnReset () 
 {
-	// Reset the channel mixer slots
-	_ObjView->resetSlots ();
-
-	// Clear the filename array
-	_ListAnimation.clear();
-	_ListSkeleton.clear();
-
-	// Clear the list
-	PlayList.ResetContent ();
-
-	// Clear the TREE
-	Tree.DeleteAllItems ();
-
-	// Clear the TREE
-	SkelTree.DeleteAllItems ();
+	// Instance
+	uint instance = _ObjView->getEditedObject ();
+	if (instance!=0xffffffff)
+	{
+		// Reset the channel mixer slots
+		_ObjView->resetSlots (instance);
+	}
 }
 
 // ***************************************************************************
 
-void CAnimationSetDlg::loadAnimation (const char* fileName)
+void CAnimationSetDlg::refresh (BOOL update)
 {
-	// Open the file
-	CIFile file;
-	if (file.open (fileName))
+	if (update)
 	{
-		// Get the animation name
-		char name[256];
-		_splitpath (fileName, NULL, NULL, name, NULL);
+		CDialog::UpdateData (update);
 
-		// Make an animation
-		CAnimation *anim=new CAnimation;
+		// Clear the combo box
+		EditedObject.ResetContent ();
 
-		// Serial it
-		anim->serial (file);
+		// Set edited object list
+		uint i;
+		for (i=0; i<_ObjView->getNumInstance (); i++)
+		{
+			char name[512];
+			_splitpath (_ObjView->getInstance (i)->Saved.ShapeFilename.c_str(), NULL, NULL, name, NULL);
+			EditedObject.InsertString (-1, name);
+		}
 
-		// Add the animation
-		addAnimation (anim, name);
+		// Get edited object
+		uint instance = _ObjView->getEditedObject ();
 
-		// Add the filename in the list
-		_ListAnimation.push_back (fileName);
+		// Selection combo box
+		EditedObject.SetCurSel ((instance==0xffffffff)?-1:(int)instance);
+
+		// Clear the tree
+		Tree.DeleteAllItems ();
+
+		// Clear the tree
+		SkelTree.DeleteAllItems ();
+
+		// Clear the playlist
+		PlayList.ResetContent ();
+
+		if (instance != 0xffffffff)
+		{
+			// Get the instance
+			CInstanceInfo *object = _ObjView->getInstance (instance);
+
+			// For all tracks in the animation
+			uint i;
+			for (i=0; i<object->Saved.AnimationFileName.size(); i++)
+			{
+				// Get the animation name
+				char name[512];
+				_splitpath (object->Saved.AnimationFileName[i].c_str(), NULL, NULL, name, NULL);
+
+				// Get the animation pointer
+				CAnimation *anim = object->AnimationSet.getAnimation (object->AnimationSet.getAnimationIdByName (name));
+
+				// Insert an intem
+				HTREEITEM item=Tree.InsertItem (name);
+				Tree.SetItemData (item, i);
+				nlassert (item!=NULL);
+
+				// For all tracks in the animation
+				std::set<std::string> setString;
+				anim->getTrackNames (setString);
+				std::set<std::string>::iterator ite=setString.begin();
+				while (ite!=setString.end())
+				{
+					// Add this string
+					HTREEITEM newItem = Tree.InsertItem (ite->c_str(), item);
+					Tree.SetItemData (newItem, 0xffffffff);
+
+					// Get the track
+					ITrack *track=anim->getTrack (anim->getIdTrackByName (*ite));
+
+					// Keyframer ?
+					UTrackKeyframer *keyTrack=dynamic_cast<UTrackKeyframer *>(track);
+					if (keyTrack)
+					{
+						// Get number of keys
+						std::vector<TAnimationTime> keys;
+						keyTrack->getKeysInRange (track->getBeginTime ()-1, track->getEndTime ()+1, keys);
+
+						// Print track info
+						char name[512];
+						_snprintf (name, 512, "%s (%f - %f) %d keys", typeid(*track).name(), track->getBeginTime (), track->getEndTime (), keys.size());
+						HTREEITEM keyItem = Tree.InsertItem (name, newItem);
+						Tree.SetItemData (keyItem, 0xffffffff);
+					}
+					else
+					{
+						// Print track info
+						char name[512];
+						_snprintf (name, 512, "%s (%f - %f)", typeid(*track).name(), track->getBeginTime (), track->getEndTime ());
+						HTREEITEM keyItem = Tree.InsertItem (name, newItem);
+						Tree.SetItemData (keyItem, 0xffffffff);
+					}
+
+					ite++;
+				}
+			}
+
+			// For all tracks in the animation
+			for (i=0; i<object->Saved.SWTFileName.size(); i++)
+			{
+				// Get the animation name
+				char name[512];
+				_splitpath (object->Saved.SWTFileName[i].c_str(), NULL, NULL, name, NULL);
+
+				// Get the animation pointer
+				CSkeletonWeight *swt = object->AnimationSet.getSkeletonWeight (object->AnimationSet.getSkeletonWeightIdByName (name));
+
+				// Insert an intem
+				HTREEITEM item=SkelTree.InsertItem (name);
+				nlassert (item!=NULL);
+
+				// Get number of node in this skeleton weight
+				uint numNode=swt->getNumNode ();
+
+				// Add the nodein the tree
+				for (uint n=0; n<numNode; n++)
+				{
+					char percent[512];
+					sprintf (percent, "%s (%f%%)", swt->getNodeName (n).c_str(), swt->getNodeWeight(n)*100);
+
+					// Add this string
+					SkelTree.InsertItem (percent, item);
+				}
+			}
+
+			// For all tracks in the playlist
+			for (i=0; i<object->Saved.PlayList.size(); i++)
+			{
+				// Insert an intem
+				int item=PlayList.InsertString (-1, object->Saved.PlayList[i].c_str());
+				nlassert (item!=LB_ERR);
+			}
+		}
+
+		CDialog::UpdateData (FALSE);
 	}
 	else
 	{
-		// Create a message
-		char msg[512];
-		_snprintf (msg, 512, "Can't open the file %s for reading.", fileName);
-		MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
-	}
+		CDialog::UpdateData (TRUE);
 
-}
-
-// ***************************************************************************
-
-void CAnimationSetDlg::addAnimation (NL3D::CAnimation* anim, const char* name)
-{
-	// Add an animation
-	uint id = _ObjView->_AnimationSet.addAnimation (name, anim);
-
-	// Rebuild the animationSet
-	_ObjView->_AnimationSet.build ();
-
-	// Insert an intem
-	HTREEITEM item=Tree.InsertItem (name);
-	Tree.SetItemData (item, id);
-	nlassert (item!=NULL);
-
-	// For all tracks in the animation
-	std::set<std::string> setString;
-	anim->getTrackNames (setString);
-	std::set<std::string>::iterator ite=setString.begin();
-	while (ite!=setString.end())
-	{
-		// Add this string
-		HTREEITEM newItem = Tree.InsertItem (ite->c_str(), item);
-		Tree.SetItemData (newItem, 0xffffffff);
-
-		// Get the track
-		ITrack *track=anim->getTrack (anim->getIdTrackByName (*ite));
-
-		// Keyframer ?
-		UTrackKeyframer *keyTrack=dynamic_cast<UTrackKeyframer *>(track);
-		if (keyTrack)
+		// Get edited object
+		uint instance = _ObjView->getEditedObject ();
+		if (instance != 0xffffffff)
 		{
-			// Get number of keys
-			std::vector<TAnimationTime> keys;
-			keyTrack->getKeysInRange (track->getBeginTime ()-1, track->getEndTime ()+1, keys);
+			// Get the instance
+			CInstanceInfo *object = _ObjView->getInstance (instance);
 
-			// Print track info
-			char name[512];
-			_snprintf (name, 512, "%s (%f - %f) %d keys", typeid(*track).name(), track->getBeginTime (), track->getEndTime (), keys.size());
-			HTREEITEM keyItem = Tree.InsertItem (name, newItem);
-			Tree.SetItemData (keyItem, 0xffffffff);
-		}
-		else
-		{
-			// Print track info
-			char name[512];
-			_snprintf (name, 512, "%s (%f - %f)", typeid(*track).name(), track->getBeginTime (), track->getEndTime ());
-			HTREEITEM keyItem = Tree.InsertItem (name, newItem);
-			Tree.SetItemData (keyItem, 0xffffffff);
-		}
+			// Clear the playlist
+			object->Saved.PlayList.resize (PlayList.GetCount ());
 
-		ite++;
+			// For all tracks in the playlist
+			uint i;
+			for (i=0; i<object->Saved.PlayList.size(); i++)
+			{
+				// Insert an intem
+				char text[512];
+				PlayList.GetText( i, text);
+				object->Saved.PlayList[i] = text;
+			}
+
+			CDialog::UpdateData (update);
+		}
 	}
 }
 
 // ***************************************************************************
-
-void CAnimationSetDlg::loadSkeleton (const char* fileName)
-{
-	// Open the file
-	CIFile file;
-	if (file.open (fileName))
-	{
-		// Get the animation name
-		char name[256];
-		_splitpath (fileName, NULL, NULL, name, NULL);
-
-		// Get the skeleton pointer
-		CSkeletonWeight* skel=new CSkeletonWeight;
-
-		// Serial it
-		skel->serial (file);
-
-		// Add an animation
-		_ObjView->_AnimationSet.addSkeletonWeight (name, skel);
-
-		// Add the filename in the list
-		_ListSkeleton.push_back (fileName);
-
-		// Insert an intem
-		HTREEITEM item=SkelTree.InsertItem (name);
-		nlassert (item!=NULL);
-
-		// Get number of node in this skeleton weight
-		uint numNode=skel->getNumNode ();
-
-		// Add the nodein the tree
-		for (uint n=0; n<numNode; n++)
-		{
-			char percent[512];
-			sprintf (percent, "%s (%f%%)", skel->getNodeName (n).c_str(), skel->getNodeWeight(n)*100);
-			// Add this string
-			SkelTree.InsertItem (percent, item);
-		}
-	}
-	else
-	{
-		// Create a message
-		char msg[512];
-		_snprintf (msg, 512, "Can't open the file %s for reading.", fileName);
-		MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
-	}
-
-}
 
 void CAnimationSetDlg::OnDestroy() 
 {
 	setRegisterWindowState (this, REGKEY_OBJ_VIEW_ANIMATION_SET_DLG);
 
 	CDialog::OnDestroy();
-	
-	// TODO: Add your message handler code here	
 }
+
+// ***************************************************************************
 
 void CAnimationSetDlg::OnListInsert() 
 {
-	// Update
-	UpdateData ();
-
 	// Get selected animation
 	HTREEITEM item = Tree.GetSelectedItem ();
 	if (item && (Tree.GetItemData (item)!=0xffffffff))
@@ -389,14 +422,13 @@ void CAnimationSetDlg::OnListInsert()
 	}
 	
 	// Update back
-	UpdateData (FALSE);
+	refresh (FALSE);
 }
+
+// ***************************************************************************
 
 void CAnimationSetDlg::OnListUp() 
 {
-	// Update
-	UpdateData ();
-
 	// Get selected item
 	int sel = PlayList.GetCurSel ();
 	if ((sel != LB_ERR) && (sel>0))
@@ -416,14 +448,13 @@ void CAnimationSetDlg::OnListUp()
 	}
 	
 	// Update back
-	UpdateData (FALSE);
+	refresh (FALSE);
 }
+
+// ***************************************************************************
 
 void CAnimationSetDlg::OnListDown() 
 {
-	// Update
-	UpdateData ();
-
 	// Get selected item
 	int sel = PlayList.GetCurSel ();
 	if ((sel != LB_ERR) && (sel<PlayList.GetCount()-1))
@@ -443,14 +474,13 @@ void CAnimationSetDlg::OnListDown()
 	}
 	
 	// Update back
-	UpdateData (FALSE);
+	refresh (FALSE);
 }
+
+// ***************************************************************************
 
 void CAnimationSetDlg::OnListDelete() 
 {
-	// Update
-	UpdateData ();
-
 	// Get selected item
 	int sel = PlayList.GetCurSel ();
 	if (sel != LB_ERR)
@@ -465,31 +495,49 @@ void CAnimationSetDlg::OnListDelete()
 	}
 	
 	// Update back
-	UpdateData (FALSE);
+	refresh (FALSE);
 }
+
+// ***************************************************************************
 
 void CAnimationSetDlg::OnSetAnimLength() 
 {
-	// There is some anim ?
-	if (PlayList.GetCount())
+	// Longest animation
+	float longestLength = 0;
+
+	// For each instance
+	for (uint instance=0; instance<_ObjView->_ListInstance.size(); instance++)
 	{
-		// Calculate the length
-		float length = 0;
+		// Ref on the instance
+		CInstanceInfo &inst = *_ObjView->_ListInstance[instance];
 
-		// For each animation in the list
-		for (uint i=0; i<(uint)PlayList.GetCount(); i++)
+		// There is some anim ?
+		if (inst.Saved.PlayList.size())
 		{
-			// Get the animation
-			CAnimation *anim = anim=_ObjView->_AnimationSet.getAnimation (PlayList.GetItemData (i));
+			// Calculate the length
+			float length = 0;
 
-			// Add the length
-			length += anim->getEndTime () - anim->getBeginTime ();
+			// For each animation in the list
+			for (uint i=0; i<(uint)inst.Saved.PlayList.size(); i++)
+			{
+				// Get the animation
+				CAnimation *anim = inst.AnimationSet.getAnimation (inst.AnimationSet.getAnimationIdByName (inst.Saved.PlayList[i]));
+
+				// Add the length
+				length += anim->getEndTime () - anim->getBeginTime ();
+			}
+
+			if (length>longestLength)
+				longestLength=length;
 		}
-
-		// Adjuste length
-		_ObjView->setAnimTime (0, length * _ObjView->getFrameRate ());
 	}
+
+	// Adjuste length
+	if (longestLength>0)
+		_ObjView->setAnimTime (0, longestLength * _ObjView->getFrameRate ());
 }
+
+// ***************************************************************************
 
 void CAnimationSetDlg::OnUseList() 
 {
@@ -497,8 +545,25 @@ void CAnimationSetDlg::OnUseList()
 	_ObjView->enableChannels ();
 }
 
+// ***************************************************************************
+
 void CAnimationSetDlg::OnUseMixer() 
 {
 	// Enable channels
 	_ObjView->enableChannels ();
+}
+
+// ***************************************************************************
+
+
+void CAnimationSetDlg::OnSelchangeEditedObject() 
+{
+	UpdateData ();
+
+	// Selection combo box
+	int selection = EditedObject.GetCurSel ();
+	_ObjView->setEditedObject ((selection==CB_ERR)?0xffffffff:selection);
+
+	refresh (TRUE);
+	_ObjView->getSlotDlg ()->refresh (TRUE);
 }

@@ -1,7 +1,7 @@
 /** \file slot_dlg.cpp
  * <File description>
  *
- * $Id: slot_dlg.cpp,v 1.6 2001/04/30 16:58:31 corvazier Exp $
+ * $Id: slot_dlg.cpp,v 1.7 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,15 +63,11 @@ CSlotDlg::CSlotDlg(CWnd* pParent /*=NULL*/)
 	EndAnimTime=1.f;
 	enable = TRUE;
 	//}}AFX_DATA_INIT
-	AnimationSet=NULL;
-	Animation=NULL;
-	SkeletonWeightTemplate=NULL;
 	MainDlg=NULL;
 }
 
-void CSlotDlg::init (uint id, NL3D::CAnimationSet* animationSet, CObjectViewer* mainDlg)
+void CSlotDlg::init (uint id, CObjectViewer* mainDlg)
 {
-	AnimationSet=animationSet;
 	Id=id;
 	MainDlg=mainDlg;
 }
@@ -140,6 +136,8 @@ BEGIN_MESSAGE_MAP(CSlotDlg, CDialog)
 	ON_BN_CLICKED(IDC_DISABLE, OnDisable)
 	ON_BN_CLICKED(IDC_ALIGN_BLEND, OnAlignBlend)
 	ON_WM_DESTROY()
+	ON_BN_CLICKED(IDC_ENABLE, OnEnable)
+	ON_BN_CLICKED(IDC_INVERT_SKELETON_WEIGHT, OnInvertSkeletonWeight)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -194,12 +192,7 @@ void CSlotDlg::OnDeltaposEndBlendSpin(NMHDR* pNMHDR, LRESULT* pResult)
 		EndBlend-=DELTA_BLEND;
 	clamp (EndBlend, 0.f, 1.f);
 
-	UpdateData (FALSE);
-
-	RECT bar;
-	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
-	ScreenToClient (&bar);
-	InvalidateRect (&bar);
+	refresh  (FALSE);
 }
 
 // ***************************************************************************
@@ -221,12 +214,7 @@ void CSlotDlg::OnDeltaposEndTimeSpin(NMHDR* pNMHDR, LRESULT* pResult)
 	if (EndTime<StartTime)
 		StartTime=EndTime;
 
-	UpdateData (FALSE);
-
-	RECT bar;
-	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
-	ScreenToClient (&bar);
-	InvalidateRect (&bar);
+	refresh  (FALSE);
 }
 
 // ***************************************************************************
@@ -246,12 +234,7 @@ void CSlotDlg::OnDeltaposSmoothnessSpin(NMHDR* pNMHDR, LRESULT* pResult)
 		Smoothness-=DELTA_BLEND;
 	clamp (Smoothness, 0.f, 1.f);
 
-	UpdateData (FALSE);
-
-	RECT bar;
-	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
-	ScreenToClient (&bar);
-	InvalidateRect (&bar);
+	refresh (FALSE);
 }
 
 // ***************************************************************************
@@ -271,15 +254,10 @@ void CSlotDlg::OnDeltaposSpeedFactorSpin(NMHDR* pNMHDR, LRESULT* pResult)
 		SpeedFactor-=DELTA_MUL;
 	clamp (SpeedFactor, 0.01f, 100.f);
 
-	UpdateData (FALSE);
+	refresh (FALSE);
 
 	validateTime ();
 	updateScrollBar ();
-
-	RECT bar;
-	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
-	ScreenToClient (&bar);
-	InvalidateRect (&bar);
 }
 
 // ***************************************************************************
@@ -299,12 +277,7 @@ void CSlotDlg::OnDeltaposStartBlendSpin(NMHDR* pNMHDR, LRESULT* pResult)
 		StartBlend-=DELTA_BLEND;
 	clamp (StartBlend, 0.f, 1.f);
 
-	UpdateData (FALSE);
-	
-	RECT bar;
-	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
-	ScreenToClient (&bar);
-	InvalidateRect (&bar);
+	refresh (FALSE);
 }
 
 // ***************************************************************************
@@ -326,12 +299,7 @@ void CSlotDlg::OnDeltaposStartTimeSpin(NMHDR* pNMHDR, LRESULT* pResult)
 	if (EndTime<StartTime)
 		EndTime=StartTime;
 
-	UpdateData (FALSE);
-	
-	RECT bar;
-	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
-	ScreenToClient (&bar);
-	InvalidateRect (&bar);
+	refresh (FALSE);
 }
 
 // ***************************************************************************
@@ -348,12 +316,7 @@ void CSlotDlg::OnChangeEndBlend()
 
 	clamp (EndBlend, 0.f, 1.f);
 
-	UpdateData (FALSE);
-
-	RECT bar;
-	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
-	ScreenToClient (&bar);
-	InvalidateRect (&bar);
+	refresh (FALSE);
 }
 
 // ***************************************************************************
@@ -372,12 +335,7 @@ void CSlotDlg::OnChangeEndTime()
 	if (EndTime<StartTime)
 		StartTime=EndTime;
 
-	UpdateData (FALSE);
-
-	RECT bar;
-	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
-	ScreenToClient (&bar);
-	InvalidateRect (&bar);
+	refresh (FALSE);
 }
 
 // ***************************************************************************
@@ -394,12 +352,7 @@ void CSlotDlg::OnChangeSmoothness()
 
 	clamp (Smoothness, 0.f, 1.f);
 
-	UpdateData (FALSE);
-
-	RECT bar;
-	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
-	ScreenToClient (&bar);
-	InvalidateRect (&bar);
+	refresh (FALSE);
 }
 
 // ***************************************************************************
@@ -416,7 +369,7 @@ void CSlotDlg::OnChangeSpeedFactor()
 
 	clamp (SpeedFactor, 0.01f, 100.f);
 
-	UpdateData (FALSE);
+	refresh (FALSE);
 	validateTime ();
 	updateScrollBar ();
 }
@@ -435,12 +388,7 @@ void CSlotDlg::OnChangeStartBlend()
 
 	clamp (StartBlend, 0.f, 1.f);
 
-	UpdateData (FALSE);
-
-	RECT bar;
-	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
-	ScreenToClient (&bar);
-	InvalidateRect (&bar);
+	refresh (FALSE);
 }
 
 // ***************************************************************************
@@ -459,12 +407,7 @@ void CSlotDlg::OnChangeStartTime()
 	if (EndTime<StartTime)
 		EndTime=StartTime;
 
-	UpdateData (FALSE);
-
-	RECT bar;
-	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
-	ScreenToClient (&bar);
-	InvalidateRect (&bar);
+	refresh (FALSE);
 	
 }
 
@@ -476,26 +419,24 @@ void CSlotDlg::OnSetAnimation()
 	std::vector<std::string> vectString;
 
 	// Build a list of string
-	for (uint a=0; a<AnimationSet->getNumAnimation (); a++)
-		vectString.push_back (AnimationSet->getAnimationName (a));
+	for (uint a=0; a<getAnimationSetPointer()->getNumAnimation (); a++)
+		vectString.push_back (getAnimationSetPointer()->getAnimationName (a));
 
 	// Select a string
-	CSelectString select (vectString, "Select your animation", this);
+	CSelectString select (vectString, "Select your animation", this, true);
 	if (select.DoModal ()==IDOK)
 	{
 		// Set the animation
 		if (select.Selection!=-1)
 		{
-			setAnimation (select.Selection, AnimationSet->getAnimation (select.Selection), vectString[select.Selection].c_str());
+			getSlotInformation ()->Animation = vectString[select.Selection];
 			validateTime ();
 			updateScrollBar ();
 		}
 		else
-			setAnimation (0, NULL, NULL);
-
-		setWindowName ();
-		Invalidate ();
+			getSlotInformation ()->Animation = "";
 	}
+	refresh (TRUE);
 }
 
 // ***************************************************************************
@@ -506,18 +447,18 @@ void CSlotDlg::OnSetSkeleton()
 	std::vector<std::string> vectString;
 
 	// Build a list of string
-	for (uint s=0; s<AnimationSet->getNumSkeletonWeight (); s++)
-		vectString.push_back (AnimationSet->getSkeletonWeightName (s));
+	for (uint s=0; s<getAnimationSetPointer()->getNumSkeletonWeight (); s++)
+		vectString.push_back (getAnimationSetPointer()->getSkeletonWeightName (s));
 
 	// Select a string
-	CSelectString select (vectString, "Select your skeleton weight template", this);
+	CSelectString select (vectString, "Select your skeleton weight template", this, true);
 	if (select.DoModal ()==IDOK)
 	{
 		// Set the animation
 		if (select.Selection!=-1)
-			setSkeletonTemplateWeight (select.Selection, AnimationSet->getSkeletonWeight (select.Selection), vectString[select.Selection].c_str());
+			getSlotInformation ()->Skeleton = vectString[select.Selection].c_str();
 		else
-			setSkeletonTemplateWeight (0, NULL, "");
+			getSlotInformation ()->Skeleton = "";
 
 		setWindowName ();
 		Invalidate ();
@@ -533,13 +474,18 @@ void CSlotDlg::setWindowName ()
 	if (isEmpty())
 		strcat (tmp, "empty");
 	else
-		strcat (tmp, AnimationName.c_str());
+		strcat (tmp, getSlotInformation ()->Animation .c_str());
 
-	if (SkeletonWeightTemplate)	
+	CSlotInfo *information = getSlotInformation ();
+	if (information)
 	{
-		strcat (tmp, " (");
-		strcat (tmp, SkeletonName.c_str());
-		strcat (tmp, ")");
+		std::string SkeletonName = information->Skeleton;
+		if (SkeletonName != "")	
+		{
+			strcat (tmp, " (");
+			strcat (tmp, SkeletonName.c_str());
+			strcat (tmp, ")");
+		}
 	}
 
 	GetDlgItem (IDC_SLOT_NAME)->SetWindowText (tmp);
@@ -557,6 +503,8 @@ void CSlotDlg::OnChangeOffset()
 	// TODO: Add your control notification handler code here
 	validateTime ();
 	updateScrollBar ();
+
+	refresh (FALSE);
 }
 
 // ***************************************************************************
@@ -571,11 +519,12 @@ void CSlotDlg::OnDeltaposOffsetSpin(NMHDR* pNMHDR, LRESULT* pResult)
 		Offset++;
 	if (pNMUpDown->iDelta>0)
 		Offset--;
-	UpdateData (FALSE);
+
 	validateTime ();
 	updateScrollBar ();
 
 	*pResult = 0;
+	refresh (FALSE);
 }
 
 // ***************************************************************************
@@ -646,7 +595,7 @@ void CSlotDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			DeltaOffset=Offset-DeltaOffset;
 			StartTime+=DeltaOffset;
 			EndTime+=DeltaOffset;
-			UpdateData (FALSE);
+			refresh (FALSE);
 			updateScrollBar ();
 		}
 	}
@@ -674,24 +623,21 @@ float CSlotDlg::getTimeIncrement ()
 
 void CSlotDlg::OnClamp() 
 {
-	// TODO: Add your control notification handler code here
-	
+	refresh (FALSE);
 }
 
 // ***************************************************************************
 
 void CSlotDlg::OnRepeat() 
 {
-	// TODO: Add your control notification handler code here
-	
+	refresh (FALSE);
 }
 
 // ***************************************************************************
 
 void CSlotDlg::OnDisable() 
 {
-	// TODO: Add your control notification handler code here
-	
+	refresh (FALSE);
 }
 
 // ***************************************************************************
@@ -706,61 +652,13 @@ void CSlotDlg::OnAlignBlend()
 	EndTime=(int)((float)Offset+AnimationLength/SpeedFactor);
 
 	// Invalidate UI
-	UpdateData (FALSE);
+	refresh (FALSE);
 
 	// Invalidate blend bar
 	RECT bar;
 	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
 	ScreenToClient (&bar);
 	InvalidateRect (&bar);
-}
-
-// ***************************************************************************
-
-void CSlotDlg::setAnimation (uint animationId, NL3D::CAnimation *animation, const char* name)
-{
-	Animation=animation;
-	AnimationId=animationId;
-	if (animation)
-	{
-		nlassert (name);
-		AnimationName=name;
-		computeLength ();
-	}
-	OffsetCtrl.EnableWindow (Animation!=NULL);
-	StartTimeCtrl.EnableWindow (Animation!=NULL);
-	StartBlendCtrl.EnableWindow (Animation!=NULL);
-	SpeddFactorCtrl.EnableWindow (Animation!=NULL);
-	SmoothnessCtrl.EnableWindow (Animation!=NULL);
-	EndTimeCtrl.EnableWindow (Animation!=NULL);
-	EndBlendCtrl.EnableWindow (Animation!=NULL);
-	OffsetSpinCtrl.EnableWindow (Animation!=NULL);
-	StartTimeSpinCtrl.EnableWindow (Animation!=NULL);
-	StartBlendSpinCtrl.EnableWindow (Animation!=NULL);
-	SpeedFactorSpinCtrl.EnableWindow (Animation!=NULL);
-	SmoothnessSpinCtrl.EnableWindow (Animation!=NULL);
-	EndTimeSpinCtrl.EnableWindow (Animation!=NULL);
-	EndBlendSpinCtrl.EnableWindow (Animation!=NULL);
-	ScrollBarCtrl.EnableWindow (Animation!=NULL);
-	AlignBlendCtrl.EnableWindow (Animation!=NULL);
-	InvertSkeletonWeightCtrl.EnableWindow (Animation!=NULL);
-	GetDlgItem (IDC_CLAMP)->EnableWindow (Animation!=NULL);
-	GetDlgItem (IDC_REPEAT)->EnableWindow (Animation!=NULL);
-	GetDlgItem (IDC_DISABLE)->EnableWindow (Animation!=NULL);
-	setWindowName ();
-
-	// Invalidate blend bar
-	RECT bar;
-	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
-	ScreenToClient (&bar);
-	InvalidateRect (&bar);
-}
-
-// ***************************************************************************
-
-float CSlotDlg::getTimeOffset ()
-{
-	return (float)Offset/MainDlg->getFrameRate ();
 }
 
 // ***************************************************************************
@@ -781,15 +679,224 @@ float CSlotDlg::getEndTime ()
 
 void CSlotDlg::computeLength ()
 {
-	if (Animation)
-		AnimationLength=(Animation->getEndTime()-Animation->getBeginTime())*MainDlg->getFrameRate();
+	if (getAnimationPointer())
+		AnimationLength=(getAnimationPointer()->getEndTime()-getAnimationPointer()->getBeginTime())*MainDlg->getFrameRate();
 }
 
 // ***************************************************************************
-
 
 void CSlotDlg::OnDestroy() 
 {
 	// TODO: Add your message handler code here
 	CDialog::OnDestroy();
+}
+
+// ***************************************************************************
+
+void CSlotDlg::refresh (BOOL update)
+{
+	CSlotInfo *slotInfo = getSlotInformation ();
+
+	if (update)
+	{
+		CDialog::UpdateData (update);
+
+		// Update from slot information
+		if (slotInfo)
+		{
+			EndBlend = slotInfo->EndBlend;
+			Smoothness = slotInfo->Smoothness;
+			SpeedFactor = slotInfo->SpeedFactor;
+			StartBlend = slotInfo->StartBlend;
+			ClampMode = slotInfo->ClampMode;
+			SkeletonWeightInverted = slotInfo->SkeletonInverted?TRUE:FALSE;
+			StartTime = slotInfo->StartTime;
+			Offset = slotInfo->Offset;
+			EndTime = slotInfo->EndTime;
+			enable = slotInfo->Enable?TRUE:FALSE;
+		}
+		else
+		{
+			EndBlend = 1;
+			Smoothness = 1;
+			SpeedFactor = 1;
+			StartBlend = 1;
+			ClampMode = 0;
+			SkeletonWeightInverted = FALSE;
+			StartTime = 0;
+			Offset = 0;
+			EndTime = 0;
+			enable = TRUE;
+		}
+
+		// Compute length
+		computeLength ();
+
+		// Slot frozen
+		bool frozen = (slotInfo == NULL) || (getAnimationPointer () == NULL);
+
+		// Enable / disable windows
+		OffsetCtrl.EnableWindow (!frozen);
+		StartTimeCtrl.EnableWindow (!frozen);
+		StartBlendCtrl.EnableWindow (!frozen);
+		SpeddFactorCtrl.EnableWindow (!frozen);
+		SmoothnessCtrl.EnableWindow (!frozen);
+		EndTimeCtrl.EnableWindow (!frozen);
+		EndBlendCtrl.EnableWindow (!frozen);
+		OffsetSpinCtrl.EnableWindow (!frozen);
+		StartTimeSpinCtrl.EnableWindow (!frozen);
+		StartBlendSpinCtrl.EnableWindow (!frozen);
+		SpeedFactorSpinCtrl.EnableWindow (!frozen);
+		SmoothnessSpinCtrl.EnableWindow (!frozen);
+		EndTimeSpinCtrl.EnableWindow (!frozen);
+		EndBlendSpinCtrl.EnableWindow (!frozen);
+		ScrollBarCtrl.EnableWindow (!frozen);
+		AlignBlendCtrl.EnableWindow (!frozen);
+		InvertSkeletonWeightCtrl.EnableWindow (!frozen);
+		GetDlgItem (IDC_CLAMP)->EnableWindow (!frozen);
+		GetDlgItem (IDC_REPEAT)->EnableWindow (!frozen);
+		GetDlgItem (IDC_DISABLE)->EnableWindow (!frozen);
+		setWindowName ();
+		updateScrollBar ();
+
+		RECT bar;
+		GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
+		ScreenToClient (&bar);
+		InvalidateRect (&bar);
+
+		CDialog::UpdateData (FALSE);
+	}
+	else
+	{
+		CDialog::UpdateData (TRUE);
+
+		// Update from slot information
+		slotInfo->EndBlend = EndBlend;
+		slotInfo->Smoothness = Smoothness;
+		slotInfo->SpeedFactor = SpeedFactor;
+		slotInfo->StartBlend = StartBlend;
+		slotInfo->ClampMode = ClampMode;
+		slotInfo->SkeletonInverted = SkeletonWeightInverted?true:false;
+		slotInfo->StartTime = StartTime;
+		slotInfo->Offset = Offset;
+		slotInfo->EndTime = EndTime;
+		slotInfo->Enable = enable?true:false;
+
+		CDialog::UpdateData (update);
+
+		RECT bar;
+		GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
+		ScreenToClient (&bar);
+		InvalidateRect (&bar);
+	}
+}
+
+// ***************************************************************************
+
+const CAnimation *CSlotDlg::getAnimationPointer () const
+{
+	// The animation pointer
+	const CAnimation *pointer = NULL;
+
+	// Get an instance pointer
+	CInstanceInfo *instance = getInstanceInformation ();
+	if (instance)
+	{
+		// Get a slot pointer
+		CSlotInfo *slot = getSlotInformation ();
+		uint animId = instance->AnimationSet.getAnimationIdByName (slot->Animation);
+		if (animId != CAnimationSet::NotFound)
+		{
+			// Get the animation pointer
+			pointer = instance->AnimationSet.getAnimation (animId);
+		}
+	}
+
+	// Return the pointer
+	return pointer;
+}
+
+// ***************************************************************************
+
+const CSkeletonWeight *CSlotDlg::getSkeletonPointer () const
+{
+	// The skeleton pointer
+	const CSkeletonWeight *pointer = NULL;
+
+	// Get an instance pointer
+	CInstanceInfo *instance = getInstanceInformation ();
+	if (instance)
+	{
+		// Get a slot pointer
+		CSlotInfo *slot = getSlotInformation ();
+		uint animId = instance->AnimationSet.getSkeletonWeightIdByName (slot->Skeleton);
+		if (animId != CAnimationSet::NotFound)
+		{
+			// Get the skeleton pointer
+			pointer = instance->AnimationSet.getSkeletonWeight (animId);
+		}
+	}
+
+	// Return the pointer
+	return pointer;
+}
+
+// ***************************************************************************
+
+const NL3D::CAnimationSet *CSlotDlg::getAnimationSetPointer () const
+{
+	// Get an instance pointer
+	CInstanceInfo *instance = getInstanceInformation ();
+	if (instance)
+		return &instance->AnimationSet;
+	else
+		return NULL;
+}
+
+// ***************************************************************************
+
+CSlotInfo *CSlotDlg::getSlotInformation () const
+{
+	// Get the instance
+	CInstanceInfo *instance = getInstanceInformation ();
+	if (instance)
+	{
+		return &instance->Saved.SlotInfo[Id];
+	}
+	else
+		return NULL;
+}
+
+// ***************************************************************************
+
+CInstanceInfo *CSlotDlg::getInstanceInformation () const
+{
+	if (MainDlg)
+	{
+		uint instance = MainDlg->getEditedObject ();
+		if (instance != 0xffffffff)
+			return MainDlg->getInstance (instance);
+	}
+	return NULL;
+}
+
+// ***************************************************************************
+
+bool CSlotDlg::isEmpty()
+{
+	return (getInstanceInformation () == NULL) || (getAnimationPointer () == NULL);
+}
+
+// ***************************************************************************
+
+void CSlotDlg::OnEnable() 
+{
+	refresh (FALSE);
+}
+
+// ***************************************************************************
+
+void CSlotDlg::OnInvertSkeletonWeight() 
+{
+	refresh (FALSE);
 }

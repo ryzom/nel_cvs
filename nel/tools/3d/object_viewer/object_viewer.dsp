@@ -216,7 +216,7 @@ SOURCE=.\main_frame.cpp
 # Begin Source File
 
 SOURCE=.\object_viewer.cpp
-# ADD CPP /Yu"std_afx.h"
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 

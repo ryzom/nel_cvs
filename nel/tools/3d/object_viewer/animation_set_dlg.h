@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * <File description>
  *
- * $Id: animation_set_dlg.h,v 1.7 2001/10/16 14:57:07 corvazier Exp $
+ * $Id: animation_set_dlg.h,v 1.8 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CAnimationSetDlg)
 	enum { IDD = IDD_ANIMATION_SET };
+	CComboBox	EditedObject;
 	CListBox	PlayList;
 	CTreeCtrl	SkelTree;
 	CTreeCtrl	Tree;
@@ -65,14 +66,10 @@ public:
 protected:
 
 	// Load an animation
-	void loadAnimation (const char* fileName);
-	void addAnimation (NL3D::CAnimation* pAnim, const char* name);
-	void loadSkeleton (const char* fileName);
+	virtual void refresh (BOOL update);
 
 	// Pointer on an animation set
-	CObjectViewer*				_ObjView;
-	std::vector<std::string>	_ListAnimation;
-	std::vector<std::string>	_ListSkeleton;
+	CObjectViewer*		_ObjView;
 
 	// Generated message map functions
 	//{{AFX_MSG(CAnimationSetDlg)
@@ -87,6 +84,7 @@ protected:
 	afx_msg void OnSetAnimLength();
 	afx_msg void OnUseList();
 	afx_msg void OnUseMixer();
+	afx_msg void OnSelchangeEditedObject();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -178,6 +178,7 @@
 #define IDC_MAIN_OP                     1070
 #define IDC_CURRENT_STAGE               1070
 #define IDC_DEGRADATION_EXPONENT        1070
+#define IDC_EDITED_OBJECT               1070
 #define IDC_START_PICTURE               1071
 #define IDD_SET_VALUE                   1071
 #define IDC_ALTERNATE_OP                1071

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.44 2002/03/04 13:03:01 berenguier Exp $
+ * $Id: export_nel.h,v 1.45 2002/03/04 14:54:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,7 +238,7 @@ public:
 	  * Build a NeL instance group
 	  *
 	  */
-	static NL3D::CInstanceGroup*	buildInstanceGroup(std::vector<INode*>& nodes, TimeValue tvTime);
+	static NL3D::CInstanceGroup*	buildInstanceGroup(const std::vector<INode*>& vectNode, std::vector<INode*>& resultInstanceNode, TimeValue tvTime);
 
 	/**
 	  * Return true if it is a mesh.

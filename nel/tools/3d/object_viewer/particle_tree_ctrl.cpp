@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.45 2003/08/08 16:58:59 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.46 2003/08/19 12:53:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -923,6 +923,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			{
 				MessageBox(e.what(), "error merging particle system");						
 			}	
+			_ParticleDlg->refreshRightPane();
 		}
 		break;
 		case ID_MENU_SAVE_PS:
@@ -1102,6 +1103,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		_ParticleDlg->getCurrPSModel()->touchTransparencyState();		
 		_ParticleDlg->getCurrPSModel()->touchLightableState();
 		Invalidate();
+
+		_ParticleDlg->refreshRightPane();
 	}
 	return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.37 2003/08/18 14:31:42 vizerie Exp $
+ * $Id: particle_system.h,v 1.38 2003/08/19 12:52:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -727,6 +727,9 @@ public:
 		  * This may be necessary : the system could be destroyed because there are no particles, but no particles were emitted yet
 		  * 
 		  * This is an indication, and has no direct effect, and must be check by calling isDestroyConditionVerified()
+		  *
+		  * If -1 is set (or a negative value), then the system will compute that delay itself
+		  *
 		  * \see hasEmitters()
 		  * \see hasParticles()
 		  * \see getDelayBeforeDeathConditionTest()
@@ -737,8 +740,28 @@ public:
 			_DelayBeforeDieTest  = delay; 
 		}
 
-		/// get the a delay before to apply the death condition test	  
-		TAnimationTime		getDelayBeforeDeathConditionTest(void) const { return _DelayBeforeDieTest; }
+		/** Must be called by a sub component of the system to tell that the duration of the system may have changed.
+		  * This can happen typically if :
+		  * - The system structure is changed (located added, merge ..)
+		  * - The lifetime of a located is changed
+		  * - Emitter parameters are modified
+		  * In this case, if the system must stop when there are no particle left, the delay before that test must be recomputed
+		  */
+		void systemDurationChanged();
+
+		/** Get the a delay before to apply the death condition test	  
+		  * If the delay was set to -1 or a negative value, this will compute the delay.
+		  */
+		TAnimationTime		getDelayBeforeDeathConditionTest() const;
+
+		/** Tells that the system should recompute the delay before death test itself
+		  * This delay is updated when :
+		  * - The system structure is changed (located added, merge ..)
+		  * - The lifetime of a located is changed
+		  * - Emitter parameters are modified
+		  */
+		void				setAutoComputeDelayBeforeDeathConditionTest(bool computeAuto);
+		bool				getAutoComputeDelayBeforeDeathConditionTest() const { return _AutoComputeDelayBeforeDeathTest; }		
 
 		/** tells the model holding this system that he become invalid when its out of the view frustum.	  
 		  * This is only an indication flag and must be checked by third party (a model holding it for example)
@@ -893,7 +916,7 @@ public:
 		// @}
 
 	//*****************************************************************************************************
-	///\name Misc. options
+	///\name Misc. options / functions
 		// @{
 			/** When using an emitter, it is allowed to have a period of '0'. This special value means that the emitter
 			  * should emit at each frame. This is deprecated now (not framerate independent ..), but some previous systems may use it.
@@ -910,6 +933,13 @@ public:
 			bool hasActiveEmitters() const;
 			// test if there are emitters in the system (not actual instances of , but emitter, but derivers of CPSEmitter bound to the system)
 			bool hasEmittersTemplates() const;
+			/** Eval a duration of the system (duration after which there are no particle lefts).
+			  *It is meaningful only if the system can finish.
+			  * After the given duration particle will have been spawn, and will possibly have finished their life.
+			  * The system may last longer (case where an emitter is triggered when it bounce cannot be evaluated correclty without running the system)
+			  * NB : calling this is costly	
+			  */
+			float evalDuration() const;
 		// @}
 
 	
@@ -992,7 +1022,7 @@ private:
 	float										_AutoLODEmitRatio;
 
 	TDieCondition								_DieCondition;
-	TAnimationTime								_DelayBeforeDieTest;	
+	mutable TAnimationTime						_DelayBeforeDieTest;	
 	uint										_MaxNumFacesWanted;	
 	TAnimType									_AnimType;
 
@@ -1018,20 +1048,21 @@ private:
 	NLMISC::CRGBA								_LightingColor;
 
 	/// \TODO nico replace this with a bitfield (and change serialisation accordingly)	
-	bool										_ComputeBBox;	/// when set to true, the system will compute his BBox every time computeBBox is called
-	bool										_BBoxTouched;
-	bool										_AccurateIntegration;		
-	bool										_CanSlowDown;
-	bool										_DestroyModelWhenOutOfRange;
-	bool										_DestroyWhenOutOfFrustum;
-	bool										_Sharing;
-	bool										_AutoLOD;
-	bool										_KeepEllapsedTimeForLifeUpdate;
-	bool										_AutoLODSkipParticles;
-	bool										_EnableLoadBalancing;
-	bool										_EmitThreshold;	
-	bool										_BypassIntegrationStepLimit;
-	bool										_ForceGlobalColorLighting;
+	bool										_ComputeBBox                         : 1;	/// when set to true, the system will compute his BBox every time computeBBox is called
+	bool										_BBoxTouched                         : 1;
+	bool										_AccurateIntegration                 : 1;		
+	bool										_CanSlowDown                         : 1;
+	bool										_DestroyModelWhenOutOfRange          : 1;
+	bool										_DestroyWhenOutOfFrustum             : 1;
+	bool										_Sharing                             : 1;
+	bool										_AutoLOD                             : 1;
+	bool										_KeepEllapsedTimeForLifeUpdate       : 1;
+	bool										_AutoLODSkipParticles                : 1;
+	bool										_EnableLoadBalancing                 : 1;
+	bool										_EmitThreshold                       : 1;	
+	bool										_BypassIntegrationStepLimit          : 1;
+	bool										_ForceGlobalColorLighting            : 1;
+	bool										_AutoComputeDelayBeforeDeathTest     : 1;
 
 	/// Inverse of the ellapsed time (call to step, valid only for motion pass)
 	float										_InverseEllapsedTime;	

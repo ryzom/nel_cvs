@@ -824,11 +824,11 @@ BEGIN
                     IDC_DIE_WHEN_OUT_OF_RANGE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,9,327,124,11
     LTEXT           "Die on event :",IDC_STATIC,13,359,46,9
-    COMBOBOX        IDC_PS_DIE_ON_EVENT,61,357,106,45,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_PS_DIE_ON_EVENT,61,357,85,45,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Apply after delay :",IDC_STATIC,173,359,58,11
-    EDITTEXT        IDC_APPLY_AFTRE_DELAY,235,357,29,13,ES_AUTOHSCROLL
-    LTEXT           "s",IDC_STATIC,269,359,8,9
+    LTEXT           "Apply after delay :",IDC_STATIC,149,358,57,9
+    EDITTEXT        IDC_APPLY_AFTER_DELAY,207,356,24,13,ES_AUTOHSCROLL
+    LTEXT           "s",IDC_STATIC,233,358,8,9
     CONTROL         "PS resource removed when not visible",
                     IDC_DIE_WHEN_OUT_OF_FRUSTRUM,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,135,329,139,10
@@ -836,14 +836,14 @@ BEGIN
     COMBOBOX        IDC_ANIM_TYPE_CTRL,48,341,98,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "",IDC_STATIC,7,322,287,51
-    LTEXT           "Life mgt presets :",IDC_STATIC,7,312,56,10
-    COMBOBOX        IDC_LIFE_MGT_PRESETS,63,310,96,114,CBS_DROPDOWNLIST | 
+    LTEXT           "Life mgt presets :",IDC_STATIC,7,310,56,10
+    COMBOBOX        IDC_LIFE_MGT_PRESETS,63,307,96,114,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Sharable",IDC_SHARABLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,162,311,46,11
+                    WS_TABSTOP,168,308,41,11
     CONTROL         "Auto-LOD",IDC_ENABLE_AUTO_LOD,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,209,311,46,11
-    PUSHBUTTON      "Settings...",IDC_EDIT_AUTO_LOD,258,309,34,13
+                    WS_TABSTOP,215,308,43,11
+    PUSHBUTTON      "Settings...",IDC_EDIT_AUTO_LOD,262,307,34,13
     CONTROL         "Force lifetime update",IDC_FORCE_LIFE_TIME_UPDATE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,341,78,12
     CONTROL         "Enable global color",IDC_GLOBAL_COLOR,"Button",
@@ -862,6 +862,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,227,340,65,14
     CONTROL         "Force global lighting",IDC_FORCE_GLOBAL_LIGHITNG,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,186,10,94,13
+    CONTROL         "Auto delay",IDC_AUTO_DELAY,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,242,355,48,15
 END
 
 IDD_BIN_OP DIALOG DISCARDABLE  0, 0, 390, 174
@@ -1811,7 +1813,7 @@ BEGIN
     IDD_EDIT_PARTICLE_SYSTEM, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 300
+        RIGHTMARGIN, 302
         TOPMARGIN, 7
         BOTTOMMARGIN, 387
     END
@@ -2566,9 +2568,9 @@ BEGIN
     IDC_PS_DIE_ON_EVENT, 0x403, 18, 0
 0x6f4e, 0x6d20, 0x726f, 0x2065, 0x6170, 0x7472, 0x6369, 0x656c, 0x0073, 
 
-    IDC_PS_DIE_ON_EVENT, 0x403, 31, 0
-0x6f4e, 0x6d20, 0x726f, 0x2065, 0x6170, 0x7472, 0x6369, 0x656c, 0x2073, 
-0x6e61, 0x2064, 0x6d65, 0x7469, 0x6574, 0x7372, "\000" 
+    IDC_PS_DIE_ON_EVENT, 0x403, 27, 0
+0x6f4e, 0x6d20, 0x726f, 0x2065, 0x6170, 0x7472, 0x6369, 0x656c, 0x2f73, 
+0x6d65, 0x7469, 0x6574, 0x7372, "\000" 
     IDC_ANIM_TYPE_CTRL, 0x403, 13, 0
 0x6857, 0x6e65, 0x7620, 0x7369, 0x6269, 0x656c, "\000" 
     IDC_ANIM_TYPE_CTRL, 0x403, 25, 0

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.48 2003/04/14 15:26:44 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.49 2003/08/19 12:52:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -320,7 +320,7 @@ bool	CPSEmitter::setEmissionType(TEmissionType freqType)
 { 
 	if (_Owner && _Owner->getOwner())
 	{
-		const CParticleSystem *ps = _Owner->getOwner();
+		CParticleSystem *ps = _Owner->getOwner();
 		if (ps->getBypassMaxNumIntegrationSteps())
 		{
 			if (!_Owner)
@@ -344,6 +344,7 @@ bool	CPSEmitter::setEmissionType(TEmissionType freqType)
 
 			}			
 		}
+		ps->systemDurationChanged();
 	}
 	_EmissionType = freqType; 
 	return true;
@@ -364,7 +365,7 @@ bool CPSEmitter::setEmittedType(CPSLocated *et)
 	_EmittedType = et;
 	if (_Owner && _Owner->getOwner())
 	{
-		const CParticleSystem *ps = _Owner->getOwner();
+		CParticleSystem *ps = _Owner->getOwner();
 		if (_EmittedType)
 		{		
 			if (ps->getBypassMaxNumIntegrationSteps())
@@ -377,6 +378,7 @@ bool CPSEmitter::setEmittedType(CPSLocated *et)
 				}
 			}
 		}
+		ps->systemDurationChanged();
 	}
 	return true;
 }
@@ -397,6 +399,10 @@ void CPSEmitter::setPeriod(float period)
 		_PeriodScheme = NULL;
 	}
 	_Period = period;
+	if (_Owner && _Owner->getOwner())
+	{
+		_Owner->getOwner()->systemDurationChanged();
+	}
 }
 
 ///==========================================================================
@@ -405,6 +411,10 @@ void CPSEmitter::setPeriodScheme(CPSAttribMaker<float> *scheme)
 	delete _PeriodScheme;	
 	_PeriodScheme = scheme;
 	if (_Owner && scheme->hasMemory()) scheme->resize(_Owner->getMaxSize(), _Owner->getSize());
+	if (_Owner && _Owner->getOwner())
+	{
+		_Owner->getOwner()->systemDurationChanged();
+	}
 }
 
 ///==========================================================================
@@ -2027,11 +2037,21 @@ void	CPSEmitter::updateMaxCountVect()
 }
 
 ///==========================================================================
+void CPSEmitter::setEmitDelay(float delay)
+{
+	_EmitDelay = delay;
+	if (_Owner && _Owner->getOwner())
+	{
+		_Owner->getOwner()->systemDurationChanged();
+	}
+}
+
+///==========================================================================
 bool	CPSEmitter::setMaxEmissionCount(uint8 count)
 {
 	if (count == _MaxEmissionCount) return true;	
 	nlassert(_Owner && _Owner->getOwner());
-	const CParticleSystem *ps = _Owner->getOwner();
+	CParticleSystem *ps = _Owner->getOwner();
 	if (ps->getBypassMaxNumIntegrationSteps())
 	{
 		uint8 oldEmissiontCount = _MaxEmissionCount;
@@ -2047,6 +2067,7 @@ bool	CPSEmitter::setMaxEmissionCount(uint8 count)
 			return false;
 		}
 	}
+	ps->systemDurationChanged();
 	_MaxEmissionCount = count;
 	updateMaxCountVect();
 	return true;

@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.58 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.59 2003/08/19 12:52:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,7 @@ namespace NL3D {
 
 
 
+///***************************************************************************************
 /**
  * Constructor
  */
@@ -85,7 +86,15 @@ namespace NL3D {
 }
 
 
-///=============================================================================
+///***************************************************************************************
+float CPSLocated::evalMaxDuration() const
+{
+	if (_LastForever) return -1.f;
+	return _LifeScheme ? _LifeScheme->getMaxValue() : _InitialLife;
+}
+
+
+///***************************************************************************************
 void CPSLocated::checkIntegrity() const
 {
 	nlassert(_InvMass.getMaxSize() == _Pos.getMaxSize());
@@ -105,7 +114,7 @@ void CPSLocated::checkIntegrity() const
 	}
 }
 
-///=============================================================================
+///***************************************************************************************
 bool CPSLocated::setLastForever()
 {
 	CHECK_PS_INTEGRITY
@@ -125,7 +134,7 @@ bool CPSLocated::setLastForever()
 }
 
 
-///=============================================================================
+///***************************************************************************************
 void CPSLocated::systemDateChanged()
 {
 	CHECK_PS_INTEGRITY
@@ -137,7 +146,7 @@ void CPSLocated::systemDateChanged()
 }
 
 
-///=============================================================================
+///***************************************************************************************
 void CPSLocated::releaseRefTo(const CParticleSystemProcess *other)
 {
 	CHECK_PS_INTEGRITY
@@ -164,7 +173,7 @@ void CPSLocated::releaseRefTo(const CParticleSystemProcess *other)
 	CHECK_PS_INTEGRITY
 }
 
-///=============================================================================
+///***************************************************************************************
 void CPSLocated::releaseAllRef()
 {
 	CHECK_PS_INTEGRITY
@@ -196,7 +205,7 @@ void CPSLocated::releaseAllRef()
 }
 
 
-///=============================================================================
+///***************************************************************************************
 void CPSLocated::notifyMotionTypeChanged(void)
 {
 	CHECK_PS_INTEGRITY
@@ -208,7 +217,7 @@ void CPSLocated::notifyMotionTypeChanged(void)
 }
 
 
-///=============================================================================
+///***************************************************************************************
 void CPSLocated::integrateSingle(float startDate, float deltaT, uint numStep,								
 								uint32 indexInLocated,
 								NLMISC::CVector *destPos,						
@@ -254,6 +263,7 @@ void CPSLocated::integrateSingle(float startDate, float deltaT, uint numStep,
 	CHECK_PS_INTEGRITY
 }
 
+///***************************************************************************************
 void CPSLocated::performParametricMotion(TAnimationTime date, TAnimationTime ellapsedTime, TAnimationTime realEllapsedTime)
 {
 	CHECK_PS_INTEGRITY
@@ -291,6 +301,7 @@ void CPSLocated::performParametricMotion(TAnimationTime date, TAnimationTime ell
 	CHECK_PS_INTEGRITY
 }
 
+///***************************************************************************************
 /// allocate parametric infos
 void  CPSLocated::allocateParametricInfos(void)
 {
@@ -313,6 +324,7 @@ void  CPSLocated::allocateParametricInfos(void)
 	CHECK_PS_INTEGRITY
 }
 
+///***************************************************************************************
 /// release parametric infos
 void  CPSLocated::releaseParametricInfos(void)
 {
@@ -324,13 +336,14 @@ void  CPSLocated::releaseParametricInfos(void)
 	CHECK_PS_INTEGRITY
 }
 
-
+///***************************************************************************************
 /// Test wether this located support parametric motion
 bool      CPSLocated::supportParametricMotion(void) const
 {
 	return _NonIntegrableForceNbRefs == 0 && _NumIntegrableForceWithDifferentBasis == 0;
 }
 
+///***************************************************************************************
 /** When set to true, this tells the system to use parametric motion. This is needed in a few case only,
   * and can only work if all the forces that apply to the system are integrable
   */
@@ -349,7 +362,7 @@ void	CPSLocated::enableParametricMotion(bool enable /*= true*/)
 	CHECK_PS_INTEGRITY
 }
 
-
+///***************************************************************************************
 void CPSLocated::setSystemBasis(bool sysBasis)
 {			
 	CHECK_PS_INTEGRITY
@@ -370,6 +383,7 @@ void CPSLocated::setSystemBasis(bool sysBasis)
 	CHECK_PS_INTEGRITY
 }
 
+///***************************************************************************************
 void CPSLocated::notifyMaxNumFacesChanged(void)
 {
 	CHECK_PS_INTEGRITY
@@ -389,13 +403,14 @@ void CPSLocated::notifyMaxNumFacesChanged(void)
 	CHECK_PS_INTEGRITY
 }
 
-
+///***************************************************************************************
 uint CPSLocated::querryMaxWantedNumFaces(void)
 {
 	return _MaxNumFaces;
 }
 
 
+///***************************************************************************************
 /// tells wether there are alive entities / particles in the system
 bool CPSLocated::hasParticles(void) const
 {	
@@ -408,6 +423,7 @@ bool CPSLocated::hasParticles(void) const
 	return false;
 }
 
+///***************************************************************************************
 /// tells wether there are alive emitters
 bool CPSLocated::hasEmitters(void) const
 {
@@ -420,7 +436,7 @@ bool CPSLocated::hasEmitters(void) const
 	return false;
 }
 
-
+///***************************************************************************************
 void CPSLocated::getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis)
 {
 	nlassert(_Owner);
@@ -429,8 +445,7 @@ void CPSLocated::getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis)
 	CHECK_PS_INTEGRITY
 }
 
-
-
+///***************************************************************************************
 float CPSLocated::getUserParam(uint numParam) const
 {
 	nlassert(_Owner);
@@ -438,6 +453,7 @@ float CPSLocated::getUserParam(uint numParam) const
 	return _Owner->getUserParam(numParam);
 }
 
+///***************************************************************************************
 CScene *CPSLocated::getScene(void)
 {
 	nlassert(_Owner);
@@ -445,13 +461,14 @@ CScene *CPSLocated::getScene(void)
 	return _Owner->getScene();
 }
 
-
+///***************************************************************************************
 void CPSLocated::incrementNbDrawnParticles(uint num)
 {
 	CHECK_PS_INTEGRITY
 	CParticleSystem::NbParticlesDrawn += num; // for benchmark purpose	
 }
 
+///***************************************************************************************
 void CPSLocated::setInitialLife(TAnimationTime lifeTime)
 {
 	CHECK_PS_INTEGRITY
@@ -467,8 +484,15 @@ void CPSLocated::setInitialLife(TAnimationTime lifeTime)
 	{
 		_Time[k] = 0.f;
 	}
+	//
+	if (_Owner)
+	{
+		_Owner->systemDurationChanged();
+	}
 	CHECK_PS_INTEGRITY
 }
+
+///***************************************************************************************
 void CPSLocated::setLifeScheme(CPSAttribMaker<float> *scheme)
 {
 	CHECK_PS_INTEGRITY
@@ -477,8 +501,15 @@ void CPSLocated::setLifeScheme(CPSAttribMaker<float> *scheme)
 	_LastForever = false;
 	delete _LifeScheme;
 	_LifeScheme = scheme;
+	//
+	if (_Owner)
+	{
+		_Owner->systemDurationChanged();
+	}
 	CHECK_PS_INTEGRITY
 }
+
+///***************************************************************************************
 void CPSLocated::setInitialMass(float mass)
 {
 	CHECK_PS_INTEGRITY
@@ -487,6 +518,8 @@ void CPSLocated::setInitialMass(float mass)
 	_MassScheme = NULL;	
 	CHECK_PS_INTEGRITY
 }
+
+///***************************************************************************************
 void CPSLocated::setMassScheme(CPSAttribMaker<float> *scheme)
 {
 	CHECK_PS_INTEGRITY
@@ -497,8 +530,7 @@ void CPSLocated::setMassScheme(CPSAttribMaker<float> *scheme)
 	CHECK_PS_INTEGRITY
 }
 	
-
-
+///***************************************************************************************
 /// get a matrix that helps to express located B coordinate in located A basis
 const NLMISC::CMatrix &CPSLocated::getConversionMatrix(const CPSLocated *A, const CPSLocated *B)
 {
@@ -520,7 +552,7 @@ const NLMISC::CMatrix &CPSLocated::getConversionMatrix(const CPSLocated *A, cons
 	}	
 }
 
-
+///***************************************************************************************
 NLMISC::CVector CPSLocated::computeI(void) const 
 {
 	CHECK_PS_INTEGRITY
@@ -536,7 +568,7 @@ NLMISC::CVector CPSLocated::computeI(void) const
 	CHECK_PS_INTEGRITY
 }
 
-
+///***************************************************************************************
 NLMISC::CVector CPSLocated::computeJ(void) const 
 {
 	CHECK_PS_INTEGRITY
@@ -552,8 +584,7 @@ NLMISC::CVector CPSLocated::computeJ(void) const
 	CHECK_PS_INTEGRITY
 }
 
-
-
+///***************************************************************************************
 NLMISC::CVector CPSLocated::computeK(void) const
 {
 	CHECK_PS_INTEGRITY
@@ -569,8 +600,7 @@ NLMISC::CVector CPSLocated::computeK(void) const
 	CHECK_PS_INTEGRITY
 }
 
-
-
+///***************************************************************************************
 IDriver *CPSLocated::getDriver() const 
 { 
 	CHECK_PS_INTEGRITY
@@ -579,8 +609,8 @@ IDriver *CPSLocated::getDriver() const
 	return _Owner->getDriver();
 }
 
+///***************************************************************************************
 /// dtor
-
 CPSLocated::~CPSLocated()
 {
 	CHECK_PS_INTEGRITY
@@ -613,8 +643,7 @@ CPSLocated::~CPSLocated()
 	CHECK_PS_INTEGRITY
 }
 
-
-
+///***************************************************************************************
 /**
 * sorted insertion  (by decreasing priority order) of a bindable (particle e.g an aspect, emitter) in a located
 */
@@ -667,13 +696,14 @@ bool CPSLocated::bind(CPSLocatedBindable *lb)
 			// register in ID list
 			ps->registerLocatedBindableExternID(lb->getExternID(), lb);
 		}
+		_Owner->systemDurationChanged();
 	}
+
 	CHECK_PS_INTEGRITY
 	return true;
 }
 
-
-
+///***************************************************************************************
 void CPSLocated::remove(const CPSLocatedBindable *p)
 {
 	CHECK_PS_INTEGRITY
@@ -682,10 +712,14 @@ void CPSLocated::remove(const CPSLocatedBindable *p)
 	(*it)->finalize();
 	delete *it;
 	_LocatedBoundCont.erase(it);
+	if (_Owner)
+	{
+		_Owner->systemDurationChanged();
+	}
 	CHECK_PS_INTEGRITY
 }
 
-
+///***************************************************************************************
 void CPSLocated::registerDtorObserver(CPSLocatedBindable *anObserver)
 {
 	CHECK_PS_INTEGRITY
@@ -695,6 +729,7 @@ void CPSLocated::registerDtorObserver(CPSLocatedBindable *anObserver)
 	CHECK_PS_INTEGRITY
 }
 
+///***************************************************************************************
 void CPSLocated::unregisterDtorObserver(CPSLocatedBindable *anObserver)
 {
 	CHECK_PS_INTEGRITY
@@ -709,10 +744,10 @@ void CPSLocated::unregisterDtorObserver(CPSLocatedBindable *anObserver)
 
 
 
+///***************************************************************************************
 /**
  * new element generation
  */
-
 sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocated *emitter, uint32 indexInEmitter, bool basisConversionForSpeed, TAnimationTime ellapsedTime /* = 0.f */)
 {	
 	CHECK_PS_INTEGRITY
@@ -796,13 +831,13 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 	return creationIndex;
 }
 
+///***************************************************************************************
 void CPSLocated::postNewElement(const CVector &pos, const CVector &speed)
 {
 	_RequestStack.push(CPostNewElementRequestInfo(pos, speed));
 }
-
-
 		
+///***************************************************************************************
 static inline uint32 IDToLittleEndian(uint32 input)
 {
 	#ifdef NL_LITTLE_ENDIAN
@@ -819,6 +854,7 @@ static inline uint32 IDToLittleEndian(uint32 input)
  * delete an element
  */
 
+///***************************************************************************************
 void CPSLocated::deleteElement(uint32 index)
 {
 	CHECK_PS_INTEGRITY
@@ -884,7 +920,7 @@ void CPSLocated::deleteElement(uint32 index)
 
 
 /// Resize the located container
-
+///***************************************************************************************
 void CPSLocated::resize(uint32 newSize)
 {
 	CHECK_PS_INTEGRITY	
@@ -932,7 +968,7 @@ void CPSLocated::resize(uint32 newSize)
 	CHECK_PS_INTEGRITY
 }
 
-
+///***************************************************************************************
 void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	CHECK_PS_INTEGRITY	
@@ -1112,7 +1148,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	CHECK_PS_INTEGRITY
 }
 
-
+///***************************************************************************************
 // integrate speed of particles. Makes eventually use of SSE instructions when present
 static void IntegrateSpeed(uint count, float *src1, const float *src2 ,float ellapsedTime)
 {		
@@ -1223,7 +1259,7 @@ static void IntegrateSpeed(uint count, float *src1, const float *src2 ,float ell
 	}	
 }
 
-
+///***************************************************************************************
 void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
 {	
 	CHECK_PS_INTEGRITY
@@ -1357,6 +1393,7 @@ void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 	CHECK_PS_INTEGRITY
 }
 
+///***************************************************************************************
 void CPSLocated::updateLife(TAnimationTime ellapsedTime)
 {
 	CHECK_PS_INTEGRITY
@@ -1438,9 +1475,7 @@ void CPSLocated::updateLife(TAnimationTime ellapsedTime)
 	CHECK_PS_INTEGRITY
 }
 
-
-
-
+///***************************************************************************************
 void CPSLocated::updateNewElementRequestStack(void)
 {
 	CHECK_PS_INTEGRITY
@@ -1452,7 +1487,7 @@ void CPSLocated::updateNewElementRequestStack(void)
 	CHECK_PS_INTEGRITY
 }
 
-
+///***************************************************************************************
 bool CPSLocated::computeBBox(NLMISC::CAABBox &box) const
 {
 	CHECK_PS_INTEGRITY
@@ -1511,6 +1546,7 @@ bool CPSLocated::computeBBox(NLMISC::CAABBox &box) const
 
 
 /// Setup the driver model matrix. It is set accordingly to the basis used for rendering	
+///***************************************************************************************
 void CPSLocated::setupDriverModelMatrix(void) 
 {
 	CHECK_PS_INTEGRITY
@@ -1525,9 +1561,7 @@ void CPSLocated::setupDriverModelMatrix(void)
 	CHECK_PS_INTEGRITY
 }
 
-
-
-
+///***************************************************************************************
 void CPSLocated::queryCollisionInfo(void)
 {
 	CHECK_PS_INTEGRITY
@@ -1549,6 +1583,7 @@ void CPSLocated::queryCollisionInfo(void)
 	CHECK_PS_INTEGRITY
 }
 
+///***************************************************************************************
 void CPSLocated::releaseCollisionInfo(void)
 {
 	CHECK_PS_INTEGRITY
@@ -1564,6 +1599,7 @@ void CPSLocated::releaseCollisionInfo(void)
 }
 
 
+///***************************************************************************************
 void CPSLocated::resetCollisionInfo(void)
 {
 	CHECK_PS_INTEGRITY
@@ -1578,6 +1614,7 @@ void CPSLocated::resetCollisionInfo(void)
 	CHECK_PS_INTEGRITY
 }
 
+///***************************************************************************************
 void CPSLocated::registerIntegrableForce(CPSForce *f)
 {
 	CHECK_PS_INTEGRITY
@@ -1592,6 +1629,7 @@ void CPSLocated::registerIntegrableForce(CPSForce *f)
 }
 
 
+///***************************************************************************************
 void CPSLocated::unregisterIntegrableForce(CPSForce *f)
 {
 	CHECK_PS_INTEGRITY
@@ -1606,6 +1644,7 @@ void CPSLocated::unregisterIntegrableForce(CPSForce *f)
 	CHECK_PS_INTEGRITY
 }
 
+///***************************************************************************************
 void CPSLocated::addNonIntegrableForceRef(void)
 {
 	CHECK_PS_INTEGRITY
@@ -1614,6 +1653,7 @@ void CPSLocated::addNonIntegrableForceRef(void)
 	CHECK_PS_INTEGRITY
 }
 
+///***************************************************************************************
 void CPSLocated::releaseNonIntegrableForceRef(void)
 {
 	CHECK_PS_INTEGRITY
@@ -1623,6 +1663,7 @@ void CPSLocated::releaseNonIntegrableForceRef(void)
 }
 
 
+///***************************************************************************************
 void CPSLocated::integrableForceBasisChanged(bool basis)
 {	
 	CHECK_PS_INTEGRITY
@@ -1639,7 +1680,7 @@ void CPSLocated::integrableForceBasisChanged(bool basis)
 }
 
 
-///=============================================================================
+///***************************************************************************************
 CPSLocatedBindable *CPSLocated::unbind(uint index)
 {	
 	CHECK_PS_INTEGRITY
@@ -1651,7 +1692,7 @@ CPSLocatedBindable *CPSLocated::unbind(uint index)
 	CHECK_PS_INTEGRITY
 }
 
-///=============================================================================
+///***************************************************************************************
 bool CPSLocated::isBound(const CPSLocatedBindable *lb) const
 {
 	CHECK_PS_INTEGRITY
@@ -1660,7 +1701,7 @@ bool CPSLocated::isBound(const CPSLocatedBindable *lb) const
 	CHECK_PS_INTEGRITY
 }
 
-///=============================================================================
+///***************************************************************************************
 uint CPSLocated::getIndexOf(const CPSLocatedBindable *lb) const
 {
 	CHECK_PS_INTEGRITY
@@ -1679,7 +1720,7 @@ uint CPSLocated::getIndexOf(const CPSLocatedBindable *lb) const
 ///////////////////////////////////////
 
 
-///=============================================================================
+///***************************************************************************************
 CPSLocatedBindable::CPSLocatedBindable() : _LOD(PSLod1n2), _Owner(NULL), _ExternID(0), _Active(true)
 {
 	_Owner = NULL;
@@ -1702,7 +1743,7 @@ void CPSLocatedBindable::setOwner(CPSLocated *psl)
 	_Owner = psl; 
 }
 
-///=============================================================================
+///***************************************************************************************
 CPSLocatedBindable::~CPSLocatedBindable()
 {
 	if (_ExternID)
@@ -1714,7 +1755,7 @@ CPSLocatedBindable::~CPSLocatedBindable()
 	}
 }
 
-///=============================================================================
+///***************************************************************************************
 const NLMISC::CMatrix &CPSLocatedBindable::getLocatedMat(void) const
 {
 	nlassert(_Owner);
@@ -1729,13 +1770,13 @@ const NLMISC::CMatrix &CPSLocatedBindable::getLocatedMat(void) const
 }
 
 
-///=============================================================================
+///***************************************************************************************
 void CPSLocatedBindable::notifyTargetRemoved(CPSLocated *ptr)
 {
 	ptr->unregisterDtorObserver(this);
 }
 
-///=============================================================================
+///***************************************************************************************
 void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	sint ver = f.serialVersion(4);
@@ -1758,7 +1799,7 @@ void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	
 }
 
-///=============================================================================
+///***************************************************************************************
 void CPSLocatedBindable::displayIcon2d(const CVector tab[], uint nbSegs, float scale)
 {
 	uint32 size = _Owner->getSize();
@@ -1811,14 +1852,14 @@ void CPSLocatedBindable::displayIcon2d(const CVector tab[], uint nbSegs, float s
 
 }
 
-///=============================================================================
+///***************************************************************************************
 CFontManager *CPSLocatedBindable::getFontManager(void)
 {
 	nlassert(_Owner);
 	return _Owner->getFontManager();
 }
 
-///=============================================================================
+///***************************************************************************************
  /// Shortcut to get the font manager if one was set (const version)
 const CFontManager *CPSLocatedBindable::getFontManager(void) const
 {
@@ -1827,7 +1868,7 @@ const CFontManager *CPSLocatedBindable::getFontManager(void) const
 }
 
 
-///=============================================================================
+///***************************************************************************************
 // Shortcut to get the matrix of the system	
  const NLMISC::CMatrix &CPSLocatedBindable::getSysMat(void) const 
 {
@@ -1835,7 +1876,7 @@ const CFontManager *CPSLocatedBindable::getFontManager(void) const
 	return _Owner->getOwner()->getSysMat();
 }
 
- ///=============================================================================
+ ///***************************************************************************************
 /// shortcut to get the inverted matrix of the system
 const NLMISC::CMatrix &CPSLocatedBindable::getInvertedSysMat(void) const 
 {
@@ -1844,7 +1885,7 @@ const NLMISC::CMatrix &CPSLocatedBindable::getInvertedSysMat(void) const
 
 }
 
-///=============================================================================
+///***************************************************************************************
 const NLMISC::CMatrix &CPSLocatedBindable::getInvertedLocatedMat(void) const
 {
 	nlassert(_Owner);
@@ -1858,7 +1899,7 @@ const NLMISC::CMatrix &CPSLocatedBindable::getInvertedLocatedMat(void) const
 	}
 }
 
-///=============================================================================
+///***************************************************************************************
 /// shortcut to get the view matrix
 const NLMISC::CMatrix &CPSLocatedBindable::getViewMat(void) const 
 {
@@ -1867,7 +1908,7 @@ const NLMISC::CMatrix &CPSLocatedBindable::getViewMat(void) const
 }	
 
 
-///=============================================================================
+///***************************************************************************************
 /// shortcut to get the inverted view matrix
 const NLMISC::CMatrix &CPSLocatedBindable::getInvertedViewMat(void) const 
 {
@@ -1875,7 +1916,7 @@ const NLMISC::CMatrix &CPSLocatedBindable::getInvertedViewMat(void) const
 	return _Owner->getOwner()->getInvertedViewMat();	
 }	
 
-///=============================================================================
+///***************************************************************************************
 /// shortcut to setup the model matrix (system basis or world basis)
 void CPSLocatedBindable::setupDriverModelMatrix(void)  
 {
@@ -1883,7 +1924,7 @@ void CPSLocatedBindable::setupDriverModelMatrix(void)
 	_Owner->setupDriverModelMatrix();
 }
 
-///=============================================================================
+///***************************************************************************************
 void	CPSLocatedBindable::setExternID(uint32 id)
 {
 	if (id == _ExternID) return;
@@ -1900,7 +1941,7 @@ void	CPSLocatedBindable::setExternID(uint32 id)
 	}	
 }
 
-///=============================================================================
+///***************************************************************************************
 void CPSLocatedBindable::releaseAllRef()
 {
 }
@@ -1913,7 +1954,7 @@ void CPSLocatedBindable::releaseAllRef()
 // CPSTargetLocatedBindable implementation //
 /////////////////////////////////////////////
 
-///=============================================================================
+///***************************************************************************************
 void CPSTargetLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	(void)f.serialVersion(1);	
@@ -1932,7 +1973,7 @@ void CPSTargetLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 
-///=============================================================================
+///***************************************************************************************
 void CPSTargetLocatedBindable::attachTarget(CPSLocated *ptr)
 {
 
@@ -1953,7 +1994,7 @@ void CPSTargetLocatedBindable::attachTarget(CPSLocated *ptr)
 }
 
 
-///=============================================================================
+///***************************************************************************************
 void CPSTargetLocatedBindable::notifyTargetRemoved(CPSLocated *ptr) 
 {	
 	TTargetCont::iterator it = std::find(_Targets.begin(), _Targets.end(), ptr);
@@ -1968,7 +2009,7 @@ void CPSTargetLocatedBindable::notifyTargetRemoved(CPSLocated *ptr)
 
 // dtor
 
-///=============================================================================
+///***************************************************************************************
 void CPSTargetLocatedBindable::finalize(void)
 {	
 	/** Release the collisionInfos we've querried. We can't do it in the dtor, as calls to releaseTargetRsc wouldn't be polymorphics for derived class!
@@ -1980,7 +2021,7 @@ void CPSTargetLocatedBindable::finalize(void)
 	}
 }
 
-///=============================================================================
+///***************************************************************************************
 CPSTargetLocatedBindable::~CPSTargetLocatedBindable()
 {	
 	// we unregister to all the targets
@@ -1990,7 +2031,7 @@ CPSTargetLocatedBindable::~CPSTargetLocatedBindable()
 	}
 }
 
-///=============================================================================
+///***************************************************************************************
 void CPSTargetLocatedBindable::releaseRefTo(const CParticleSystemProcess *other)
 {
 	TTargetCont::iterator it = std::find(_Targets.begin(), _Targets.end(), other);
@@ -2001,7 +2042,7 @@ void CPSTargetLocatedBindable::releaseRefTo(const CParticleSystemProcess *other)
 	nlassert(std::find(_Targets.begin(), _Targets.end(), other) == _Targets.end());
 }
 
-///=============================================================================
+///***************************************************************************************
 void CPSTargetLocatedBindable::releaseAllRef()
 {
 	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)

@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.h,v 1.10 2003/08/08 16:58:59 vizerie Exp $
+ * $Id: particle_dlg.h,v 1.11 2003/08/19 12:53:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,7 +67,8 @@ public:
 	CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame);
 	~CParticleDlg();
 
-	void setRightPane(CWnd *pane);
+	void setRightPane(CWnd *pane);	
+	void refreshRightPane();	
 
 // Dialog Data
 	//{{AFX_DATA(CParticleDlg)
@@ -85,10 +86,9 @@ public:
 
 // Implementation
 
-	public:
+public:
 	// the tree for viewing the system
 	CParticleTreeCtrl *ParticleTreeCtrl;
-
 	// inherited from CObjectViewer::IMainLoopCallBack
 	void go(void);
 
@@ -157,7 +157,7 @@ protected:
 
 
 	// the current right pane of the editor
-	CWnd *CurrentRightPane;
+	CWnd   *CurrentRightPane;
 	sint32 CurrRightPaneWidth, CurrRightPaneHeight;
 
 	CRect getTreeRect(int cx, int cy) const;

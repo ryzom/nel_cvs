@@ -319,6 +319,7 @@
 #define IDC_BROWSE_SOUND                1159
 #define IDC_DIE_WHEN_OUT_OF_RANGE       1160
 #define IDC_APPLY_AFTRE_DELAY           1161
+#define IDC_APPLY_AFTER_DELAY           1161
 #define IDC_DIE_WHEN_OUT_OF_FRUSTRUM    1162
 #define IDC_DISGRADE_WITH_LOD           1163
 #define IDC_PERFORM_MOTION_WHEN_OUT_OF_FRUSTUM 1163
@@ -596,6 +597,7 @@
 #define ID_GLOBAL_COLOR_LIGHTING        1371
 #define IDC_SPECULAR                    1372
 #define IDC_DIFFUSE                     1373
+#define IDC_AUTO_DELAY                  1373
 #define IDC_AMBIENT                     1374
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
@@ -780,7 +782,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1132
 #define _APS_NEXT_COMMAND_VALUE         32962
-#define _APS_NEXT_CONTROL_VALUE         1373
+#define _APS_NEXT_CONTROL_VALUE         1374
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

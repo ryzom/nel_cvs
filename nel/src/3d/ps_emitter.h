@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.24 2003/04/14 15:26:44 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.25 2003/08/19 12:52:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,7 +138,7 @@ public:
 	const CPSAttribMaker<float>		*getPeriodScheme(void) const  { return _PeriodScheme; }
 
 	/// Set a delay in seconds before the first emission (regular emitter only)
-	void							setEmitDelay(float delay) { _EmitDelay = delay; }
+	void							setEmitDelay(float delay);
 
 	/// Get the delay in seconds before the first emission (regular emitter only)
 	float							getEmitDelay() const { return _EmitDelay; }

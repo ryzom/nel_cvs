@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.63 2003/08/18 14:31:42 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.64 2003/08/19 12:52:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,7 +85,7 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _InvCurrentViewDist(1.f / PSDefaultMaxViewDist),
 									 _AutoLODEmitRatio(0.f),
 									 _DieCondition(none),
-									 _DelayBeforeDieTest(0.2f),									 									
+									 _DelayBeforeDieTest(-1.f),									 									
 									 _MaxNumFacesWanted(0),
 									 _AnimType(AnimInCluster),
 									 _UserParamGlobalValue(NULL),
@@ -111,6 +111,7 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _EmitThreshold(true),
 									 _BypassIntegrationStepLimit(false),
 									 _ForceGlobalColorLighting(false),
+									 _AutoComputeDelayBeforeDeathTest(true),
 									 _InverseEllapsedTime(0.f),
 									 _CurrentDeltaPos(NLMISC::CVector::Null),
 									 _DeltaPos(NLMISC::CVector::Null)
@@ -475,9 +476,10 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 ///=======================================================================================
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {		
-	sint version =  f.serialVersion(17);
+	sint version =  f.serialVersion(18);
 
-	// version 17: _BypassIntegrationStepLimit flag
+	// version 18: _AutoComputeDelayBeforeDeathTest
+	// version 17: _ForceGlobalColorLighting flag
 	// version 16: _BypassIntegrationStepLimit flag
 	// version 14: emit threshold
 	// version 13: max dist lod bias for auto-LOD
@@ -527,8 +529,16 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if (version > 2) // infos about integration, and LOD
 	{
-		f.serial(_AccurateIntegration);
-		if (_AccurateIntegration) f.serial(_CanSlowDown, _TimeThreshold, _MaxNbIntegrations);
+		bool accurateIntegration = _AccurateIntegration; // read from bitfield
+		f.serial(accurateIntegration);
+		_AccurateIntegration = accurateIntegration;
+		if (_AccurateIntegration) 
+		{
+			bool canSlowDown = _CanSlowDown;
+			f.serial(canSlowDown);
+			_CanSlowDown = canSlowDown;
+			f.serial(_TimeThreshold, _MaxNbIntegrations);
+		}
 		f.serial(_InvMaxViewDist, _LODRatio);	
 		_MaxViewDist = 1.f / _InvMaxViewDist;
 		_InvCurrentViewDist = _InvMaxViewDist;
@@ -536,16 +546,20 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if (version > 3) // tell wether the system must compute his bbox, hold a precomputed bbox
 	{
-		f.serial(_ComputeBBox);
-		if (!_ComputeBBox)
+		bool computeBBox = _ComputeBBox;
+		f.serial(computeBBox);
+		_ComputeBBox = computeBBox;
+		if (!computeBBox)
 		{
 			f.serial(_PreComputedBBox);
-		}
+		}		
 	}
 
 	if (version > 4) // lifetime informations
 	{
-		f.serial(_DestroyModelWhenOutOfRange);
+		bool destroyModelWhenOutOfRange = _DestroyModelWhenOutOfRange; // read from bitfield
+		f.serial(destroyModelWhenOutOfRange);
+		_DestroyModelWhenOutOfRange = destroyModelWhenOutOfRange;
 		f.serialEnum(_DieCondition);
 		if (_DieCondition != none)
 		{
@@ -555,7 +569,9 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if (version > 5)
 	{
-		f.serial(_DestroyWhenOutOfFrustum);
+		bool destroyWhenOutOfFrustum = _DestroyWhenOutOfFrustum; // read from bitfield
+		f.serial(destroyWhenOutOfFrustum);
+		_DestroyWhenOutOfFrustum = destroyWhenOutOfFrustum;
 	}
 
 	if (version > 6 && version < 8)
@@ -581,20 +597,31 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if (version > 8)
 	{
-		f.serial(_Sharing);
-		f.serial(_AutoLOD);
+		bool sharing = _Sharing; // read from bitfield
+		f.serial(sharing);
+		_Sharing = sharing;
+		bool autoLOD = _AutoLOD; // read from bitfield
+		f.serial(autoLOD);
+		_AutoLOD = autoLOD;
+
 		if (_AutoLOD)
 		{
 			f.serial(_AutoLODStartDistPercent, _AutoLODDegradationExponent);
-			f.serial(_AutoLODSkipParticles);
+			bool autoLODSkipParticles = _AutoLODSkipParticles; // read from bitfield
+			f.serial(autoLODSkipParticles);
+			_AutoLODSkipParticles = autoLODSkipParticles;
 		}
-		f.serial(_KeepEllapsedTimeForLifeUpdate);
+		bool keepEllapsedTimeForLifeUpdate = _KeepEllapsedTimeForLifeUpdate;
+		f.serial(keepEllapsedTimeForLifeUpdate);
+		_KeepEllapsedTimeForLifeUpdate = keepEllapsedTimeForLifeUpdate;
 		f.serialPolyPtr(_ColorAttenuationScheme);
 	}
 
 	if (version >= 11)
 	{
-		f.serial(_EnableLoadBalancing);
+		bool enableLoadBalancing = _EnableLoadBalancing; // read from bitfield
+		f.serial(enableLoadBalancing);
+		_EnableLoadBalancing = enableLoadBalancing;
 	}
 
 	if (version >= 12)
@@ -653,25 +680,45 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	}
 	if (version >= 14)
 	{
-		f.serial(_EmitThreshold);
+		bool emitThreshold = _EmitThreshold; // read from bitfiled
+		f.serial(emitThreshold);
+		_EmitThreshold = emitThreshold;
 	}
 
 	if (version >= 15)
 	{
-		f.serial(_BypassIntegrationStepLimit);
+		bool bypassIntegrationStepLimit = _BypassIntegrationStepLimit; // read from bitfield
+		f.serial(bypassIntegrationStepLimit);
+		_BypassIntegrationStepLimit = bypassIntegrationStepLimit;
 	}
 
 	if (version >= 17)
 	{
-		f.serial(_ForceGlobalColorLighting);
+		bool forceGlobalColorLighting = _ForceGlobalColorLighting; // read from bitfield
+		f.serial(forceGlobalColorLighting);
+		_ForceGlobalColorLighting = forceGlobalColorLighting;
+	}
+
+	if (version >= 18)
+	{
+		bool autoComputeDelayBeforeDeathTest = _AutoComputeDelayBeforeDeathTest; // read from bitfield
+		f.serial(autoComputeDelayBeforeDeathTest);
+		_AutoComputeDelayBeforeDeathTest = autoComputeDelayBeforeDeathTest;
+	}
+	else
+	{
+		nlassert(f.isReading());				
+		// for all previously created system, force to eval the system duration in an automatyic way
+		setDelayBeforeDeathConditionTest(-1.f);
+		_AutoComputeDelayBeforeDeathTest = true;
 	}
 
 	if (f.isReading())
 	{
 		notifyMaxNumFacesChanged();
+		activatePresetBehaviour(_PresetBehaviour); // apply behaviour changes
 	}
 }
-
 
 ///=======================================================================================
 bool CParticleSystem::attach(CParticleSystemProcess *ptr)
@@ -691,6 +738,7 @@ bool CParticleSystem::attach(CParticleSystemProcess *ptr)
 			return false;
 		}
 	}
+	systemDurationChanged();
 	return true;
 }
 
@@ -701,6 +749,7 @@ void CParticleSystem::remove(CParticleSystemProcess *ptr)
 	nlassert(it != _ProcessVect.end() );	
 	_ProcessVect.erase(it);
 	delete ptr;
+	systemDurationChanged();
 }
 
 ///=======================================================================================
@@ -949,8 +998,9 @@ bool CParticleSystem::merge(CParticleSystemShape *pss)
 		}
 	}
 	//
-	duplicate->_ProcessVect.clear();
+	duplicate->_ProcessVect.clear();	
 	delete duplicate;
+	systemDurationChanged();
 	return true;
 }
 
@@ -1009,10 +1059,10 @@ void CParticleSystem::activatePresetBehaviour(TPresetBehaviour behaviour)
 			_KeepEllapsedTimeForLifeUpdate = true;
 		break;
 		case SpawnedEnvironmentFX:
-			setDestroyModelWhenOutOfRange(false);
+			setDestroyModelWhenOutOfRange(true);
 			setDestroyCondition(noMoreParticles);
 			destroyWhenOutOfFrustum(false);
-			setAnimType(AnimInCluster);
+			setAnimType(AnimAlways);
 			setBypassMaxNumIntegrationSteps(false);
 			_KeepEllapsedTimeForLifeUpdate = false;
 		break;
@@ -1043,6 +1093,8 @@ CParticleSystemProcess *CParticleSystem::detach(uint index)
 	// erase from the vector
 	_ProcessVect.erase(_ProcessVect.begin() + index);
 	proc->setOwner(NULL);
+	//
+	systemDurationChanged();
 	// not part of this system any more	
 	return proc;
 }
@@ -1268,6 +1320,154 @@ bool CParticleSystem::hasLoop(CPSLocatedBindable **loopingObj /*= NULL*/) const
 }
 
 ///=======================================================================================
+void CParticleSystem::systemDurationChanged()
+{
+	if (getAutoComputeDelayBeforeDeathConditionTest())
+	{
+		setDelayBeforeDeathConditionTest(-1.f);
+	}
+}
+
+///=======================================================================================
+void CParticleSystem::setAutoComputeDelayBeforeDeathConditionTest(bool computeAuto)
+{
+	if (computeAuto == _AutoComputeDelayBeforeDeathTest) return;
+	_AutoComputeDelayBeforeDeathTest = computeAuto;
+	if (computeAuto) setDelayBeforeDeathConditionTest(-1.f);
+}
+
+///=======================================================================================
+TAnimationTime CParticleSystem::getDelayBeforeDeathConditionTest() const
+{
+	if (_DelayBeforeDieTest < 0.f)
+	{
+		_DelayBeforeDieTest = evalDuration();
+	}
+	return _DelayBeforeDieTest;
+}
+
+///=======================================================================================
+// struct to eval duration of an emitter chain
+struct CToVisitEmitter
+{
+	float		Duration; // cumuled duration of thi emitter parent emitters
+	const CPSLocated *Located;
+};
+
+///=======================================================================================
+float CParticleSystem::evalDuration() const
+{
+	std::vector<const CPSLocated *> visitedEmitter;
+	std::vector<CToVisitEmitter> toVisitEmitter;
+	float maxDuration = 0.f;
+	for(uint k = 0; k < _ProcessVect.size(); ++k)
+	{
+		if (_ProcessVect[k]->isLocated())
+		{
+			bool emitterFound = false;
+			const CPSLocated *loc = static_cast<const CPSLocated *>(_ProcessVect[k]);
+			for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+			{
+				const CPSLocatedBindable *bind = loc->getBoundObject(l);
+				if (loc->getSize() > 0)
+				{
+					switch(bind->getType())
+					{
+						case  PSParticle:
+						{						
+							if (loc->getLastForever()) return -1.f;
+							maxDuration = std::max(maxDuration, loc->evalMaxDuration());
+						}
+						break;
+						case PSEmitter:
+						{
+							if (!emitterFound)
+							{				
+								CToVisitEmitter tve;
+								tve.Located = loc;
+								tve.Duration = 0.f;
+								toVisitEmitter.push_back(tve);
+								emitterFound = true;
+							}
+						}
+						break;
+					}
+				}
+			}
+			visitedEmitter.clear();
+			while (!toVisitEmitter.empty())
+			{
+				const CPSLocated *loc = toVisitEmitter.back().Located;
+				float duration = toVisitEmitter.back().Duration;
+				toVisitEmitter.pop_back();				
+				visitedEmitter.push_back(loc);
+				bool emitterFound = false;
+				for(uint m = 0; m < loc->getNbBoundObjects(); ++m)
+				{
+					const CPSLocatedBindable *bind = loc->getBoundObject(m);
+					if (bind->getType() == PSEmitter)
+					{					
+						const CPSEmitter *em = NLMISC::safe_cast<const CPSEmitter *>(loc->getBoundObject(m));
+						const CPSLocated *emittedType = em->getEmittedType();
+						// continue if there's no loop
+						if (std::find(visitedEmitter.begin(), visitedEmitter.end(), emittedType) == visitedEmitter.end())
+						{													
+							if (emittedType != NULL)
+							{	
+								emitterFound = true;
+								CToVisitEmitter tve;
+								tve.Located = emittedType;								
+								// if emitter has limited lifetime, use it
+								if (!loc->getLastForever())
+								{
+									tve.Duration = duration + loc->evalMaxDuration();
+								}
+								else
+								{						
+									// try to eval duration depending on type
+									switch(em->getEmissionType())
+									{
+										case CPSEmitter::regular:
+										{
+											if (em->getMaxEmissionCount() != 0)
+											{
+												float period = em->getPeriodScheme() ? em->getPeriodScheme()->getMaxValue() : em->getPeriod();
+												tve.Duration = duration + em->getEmitDelay() + 	period * em->getMaxEmissionCount();
+											}
+											else
+											{
+												tve.Duration = duration + em->getEmitDelay();
+											}	
+										}
+										break;
+										case CPSEmitter::onDeath:
+										case CPSEmitter::once:
+										case CPSEmitter::onBounce:
+										case CPSEmitter::externEmit:
+											tve.Duration = duration; // can't eval duration ..
+										break;
+									}
+								}
+								toVisitEmitter.push_back(tve);
+							}
+						}						
+					}
+				}				
+				if (!emitterFound)
+				{
+					if (!loc->getLastForever())
+					{
+						duration += loc->evalMaxDuration();
+					}
+					maxDuration = std::max(maxDuration, duration);
+				}
+			}
+		}
+	}
+	return maxDuration;
+}
+
+///=======================================================================================
 bool CParticleSystem::isDestroyConditionVerified() const
 {
 	if (getDestroyCondition() != CParticleSystem::none)
@@ -1380,3 +1580,24 @@ bool CParticleSystem::hasEmittersTemplates() const
 
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,7 +1,7 @@
  /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.18 2003/08/08 16:58:59 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.19 2003/08/19 12:53:26 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,7 +175,7 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 }
 
 //=====================================================
-void CParticleSystemEdit::updateIntegrationParams(void)
+void CParticleSystemEdit::updateIntegrationParams()
 {
 	BOOL ew = _PS->isAccurateIntegrationEnabled();
 	_TimeThresholdDlg->EnableWindow(ew);
@@ -185,13 +185,27 @@ void CParticleSystemEdit::updateIntegrationParams(void)
 
 
 //=====================================================
-void CParticleSystemEdit::updateDieOnEventParams(void)
+void CParticleSystemEdit::updateDieOnEventParams()
 {
 	BOOL ew = _PS->getDestroyCondition() == NL3D::CParticleSystem::none ? FALSE : TRUE;
-	GetDlgItem(IDC_APPLY_AFTRE_DELAY)->EnableWindow(ew);
+	GetDlgItem(IDC_AUTO_DELAY)->EnableWindow(ew);
+	bool autoDelay = _PS->getAutoComputeDelayBeforeDeathConditionTest();
+	if (autoDelay)
+	{
+		ew = FALSE;
+	}
+	GetDlgItem(IDC_APPLY_AFTER_DELAY)->EnableWindow(ew);
 	char out[128];
-	sprintf(out, "%.2g", _PS->getDelayBeforeDeathConditionTest());
-	GetDlgItem(IDC_APPLY_AFTRE_DELAY)->SetWindowText(out);
+	if (_PS->getDelayBeforeDeathConditionTest() >= 0)
+	{	
+		sprintf(out, "%.2g", _PS->getDelayBeforeDeathConditionTest());
+	}
+	else
+	{
+		sprintf(out, "???");
+	}
+	GetDlgItem(IDC_APPLY_AFTER_DELAY)->SetWindowText(out);
+	((CButton *) GetDlgItem(IDC_AUTO_DELAY))->SetCheck(autoDelay ? 1 : 0);
 }
 
 //=====================================================
@@ -203,7 +217,7 @@ void CParticleSystemEdit::OnPrecomputeBbox()
 }
 
 //=====================================================
-void CParticleSystemEdit::updatePrecomputedBBoxParams(void)
+void CParticleSystemEdit::updatePrecomputedBBoxParams()
 {
 	BOOL ew = !_PS->getAutoComputeBBox();
 	m_BBoxXCtrl.EnableWindow(ew);
@@ -292,6 +306,7 @@ BEGIN_MESSAGE_MAP(CParticleSystemEdit, CDialog)
 	ON_BN_CLICKED(IDC_GLOBAL_USER_PARAM_4, OnGlobalUserParam4)
 	ON_BN_CLICKED(IDC_BYPASS_MAX_NUM_STEPS, OnBypassMaxNumSteps)
 	ON_BN_CLICKED(IDC_FORCE_GLOBAL_LIGHITNG, OnForceGlobalLighitng)
+	ON_BN_CLICKED(IDC_AUTO_DELAY, OnAutoDelay)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -711,4 +726,22 @@ void CParticleSystemEdit::OnForceGlobalLighitng()
 	UpdateData(TRUE);
 	_PS->setForceGlobalColorLightingFlag(m_ForceLighting != 0);
 	_ParticleTreeCtrl->getParticleDlg()->getCurrPSModel()->touchLightableState();
+}
+
+//=====================================================
+void CParticleSystemEdit::OnAutoDelay() 
+{
+	UpdateData(TRUE);
+	bool autoDelay = ((CButton *) GetDlgItem(IDC_AUTO_DELAY))->GetCheck() != 0;
+	_PS->setAutoComputeDelayBeforeDeathConditionTest(autoDelay);
+	GetDlgItem(IDC_APPLY_AFTER_DELAY)->EnableWindow(autoDelay ? FALSE : TRUE);
+}
+
+//=====================================================
+void CParticleSystemEdit::refresh()
+{
+	updatePrecomputedBBoxParams();
+	updateIntegrationParams();
+	updateDieOnEventParams();
+	updateLifeMgtPresets();
 }

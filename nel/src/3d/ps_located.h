@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.26 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_located.h,v 1.27 2003/08/19 12:52:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -555,8 +555,11 @@ public:
 		return _TriggerID; 
 	}
 
+	/** eval max duration of the located (if no scheme is used, this is the lifetime)
+      * nb : return -1 if located last for ever
+	  */
+	float				evalMaxDuration() const;
 	
-
 protected:
 
 

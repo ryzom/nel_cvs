@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.19 2003/08/08 16:58:59 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.20 2003/08/19 12:53:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 #include "particle_dlg.h"
 #include "editable_range.h"
 #include "located_properties.h"
-
+#include "particle_system_edit.h"
 
 // TODO : remove these include when the test system will be removed
 #include "3d/particle_system.h"
@@ -366,3 +366,10 @@ void CParticleDlg::setPSWorldMatrix(const NLMISC::CMatrix &mat)
 	_CurrSystemModel->setMatrix(invParentMat * mat);
 }
 
+//**************************************************************************************************************************
+void CParticleDlg::refreshRightPane()
+{
+	CParticleSystemEdit *pse = dynamic_cast<CParticleSystemEdit *>(CurrentRightPane);
+	if (!pse) return;
+	
+}

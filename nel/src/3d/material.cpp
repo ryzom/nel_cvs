@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.29 2001/11/30 13:15:48 berenguier Exp $
+ * $Id: material.cpp,v 1.30 2001/12/12 10:25:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ CMaterial::CMaterial()
 	_ZBias= 0;
 	_Color.set(255,255,255,255);
 	_StainedGlassWindow = false;
-	_AlphaTestThreshold= 0.5f;
+	_AlphaTestThreshold= 0.5f;	
 }
 
 // ***************************************************************************
@@ -96,10 +96,22 @@ CMaterial		&CMaterial::operator=(const CMaterial &mat)
 	{
 		_Textures[i]= mat._Textures[i];
 		_TexEnvs[i]= mat._TexEnvs[i];
+		_TexAddrMode[i] = mat._TexAddrMode[i];
 	}
 
 	// copy lightmaps.
 	_LightMaps= mat._LightMaps;
+
+	// copy texture matrix if there.
+	if (mat._TexUserMat.get())
+	{
+		std::auto_ptr<CUserTexMat> texMatClone( new CUserTexMat(*(mat._TexUserMat))); // make cpy
+		std::swap(texMatClone, _TexUserMat); // swap with old
+	}
+	else
+	{
+		_TexUserMat.reset();	
+	}
 
 	// Must do not copy drv info.
 
@@ -114,7 +126,7 @@ CMaterial		&CMaterial::operator=(const CMaterial &mat)
 CMaterial::~CMaterial()
 {
 	// Must kill the drv mirror of this material.
-	pShader.kill();
+	pShader.kill();	
 }
 
 
@@ -122,6 +134,8 @@ CMaterial::~CMaterial()
 void		CMaterial::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 6:
+		- Texture matrix animation
 	Version 5:
 		- AlphaTest threshold
 	Version 4:
@@ -136,7 +150,7 @@ void		CMaterial::serial(NLMISC::IStream &f)
 		- base version.
 	*/
 
-	sint	ver= f.serialVersion(5);
+	sint	ver= f.serialVersion(6);
 	// For the version <=1:
 	nlassert(IDRV_MAT_MAXTEXTURES==4);
 
@@ -203,8 +217,27 @@ void		CMaterial::serial(NLMISC::IStream &f)
 	}
 
 	if(f.isReading())
+	{
 		// All states of material are modified.
 		_Touched= IDRV_TOUCHED_ALL;
+
+		if ((_Flags & IDRV_MAT_USER_TEX_MAT_ALL)) // are there user textrue coordinates matrix ?
+		{
+			/// get rsc for these infos
+			std::swap(_TexUserMat, std::auto_ptr<CUserTexMat>(new CUserTexMat));
+		}
+	}
+
+	if (ver >= 6)
+	{
+		for(uint i=0; i < IDRV_MAT_MAXTEXTURES; ++i)
+		{
+			if (isUserTexMatEnabled(i))
+			{				
+				f.serial(_TexUserMat->TexMat[i]);				
+			}			
+		}
+	}
 
 }
 
@@ -382,12 +415,13 @@ void				CMaterial::enableTexAddrMode(bool enable /*= true*/)
 	}
 }
 
+// ***************************************************************************
 bool			    CMaterial::texAddrEnabled() const
 {
 	return( _Flags & IDRV_MAT_TEX_ADDR) != 0;
 }
 
-
+// ***************************************************************************
 void				CMaterial::setTexAddressingMode(uint8 stage, TTexAddressingMode mode)
 {
 	nlassert(_Flags & IDRV_MAT_TEX_ADDR);
@@ -397,11 +431,37 @@ void				CMaterial::setTexAddressingMode(uint8 stage, TTexAddressingMode mode)
 }
 
 
+// ***************************************************************************
 CMaterial::TTexAddressingMode	CMaterial::getTexAddressingMode(uint8 stage)
 {
 	nlassert(_Flags & IDRV_MAT_TEX_ADDR);
 	nlassert(stage < IDRV_MAT_MAXTEXTURES);
 	return (TTexAddressingMode) _TexAddrMode[stage];
+}
+
+// ***************************************************************************
+void					CMaterial::decompUserTexMat(uint stage, float &uTrans, float &vTrans, float &wRot, float &uScale, float &vScale)
+{
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	nlassert(isUserTexMatEnabled(stage)); // must activate animated texture matrix for this stage
+	const NLMISC::CMatrix texMat = _TexUserMat->TexMat[stage];
+	uTrans = texMat.getPos().x;
+	vTrans = texMat.getPos().y;
+	/// find the rotation around w
+	NLMISC::CVector i = texMat.getI();
+	NLMISC::CVector j = texMat.getJ();
+	float  normI = i.norm();
+	float  normJ = i.norm();
+	i /= normI;
+	j /= normJ;	
+	float angle = ::acosf(i.x);
+	if (i.y < 0)
+	{
+		angle = 2.f * (float) NLMISC::Pi - angle;
+	}
+	wRot   = angle;	
+	uScale = normI;
+	vScale = normI;
 }
 
 }

@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.10 2001/12/06 16:47:54 vizerie Exp $
+ * $Id: material.h,v 1.11 2001/12/12 10:25:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,8 +29,11 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
+#include "nel/misc/matrix.h"
 #include "3d/texture.h"
 #include "3d/shader.h"
+
+#include <memory>
 
 namespace NL3D {
 
@@ -76,6 +79,7 @@ const uint32 IDRV_MAT_DOUBLE_SIDED	=	0x00000100;
 const uint32 IDRV_MAT_ALPHA_TEST	= 	0x00000200;
 const uint32 IDRV_MAT_TEX_ADDR	    = 	0x00000400;
 const uint32 IDRV_MAT_LIGHTED_VERTEX_COLOR	= 	0x00000800;
+///   automatic texture coordinate generation  
 const uint32 IDRV_MAT_GEN_TEX_0		= 	0x00001000;
 const uint32 IDRV_MAT_GEN_TEX_1		= 	0x00002000;
 const uint32 IDRV_MAT_GEN_TEX_2		= 	0x00004000;
@@ -84,6 +88,20 @@ const uint32 IDRV_MAT_GEN_TEX_4		= 	0x00010000;
 const uint32 IDRV_MAT_GEN_TEX_5		= 	0x00020000;
 const uint32 IDRV_MAT_GEN_TEX_6		= 	0x00040000;
 const uint32 IDRV_MAT_GEN_TEX_7		= 	0x00080000;
+///   user texture matrix
+const uint32 IDRV_MAT_USER_TEX_0_MAT	= 	0x00100000;
+const uint32 IDRV_MAT_USER_TEX_1_MAT	= 	0x00200000;
+const uint32 IDRV_MAT_USER_TEX_2_MAT	= 	0x00400000;
+const uint32 IDRV_MAT_USER_TEX_3_MAT	= 	0x00800000;
+const uint32 IDRV_MAT_USER_TEX_4_MAT	= 	0x01000000;
+const uint32 IDRV_MAT_USER_TEX_5_MAT	= 	0x02000000;
+const uint32 IDRV_MAT_USER_TEX_6_MAT	= 	0x04000000;
+const uint32 IDRV_MAT_USER_TEX_7_MAT	= 	0x08000000;
+const uint32 IDRV_MAT_USER_TEX_MAT_ALL  =   0x0FF00000;
+
+const uint32 IDRV_MAT_USER_TEX_FIRST_BIT = 20;
+
+
 
 // ***************************************************************************
 /**
@@ -356,6 +374,20 @@ public:
 
 	void					setTexCoordGen(uint stage, bool generate);
 	bool					getTexCoordGen(uint stage) const;
+
+	// Enable a user texture matrix for the n-th stage. The initial matrix is set to identity.
+	void                    enableUserTexMat(uint stage, bool enabled = true);
+	// Test wether a user texture is enabled for the n-th stage
+	bool                    isUserTexMatEnabled(uint stage) const;
+	/// Set a new texture matrix for the given stage.	
+	void					setUserTexMat(uint stage, const NLMISC::CMatrix &m);
+	/** Get a const ref. on the texture matrix of the n-th stage.
+	  * User texture matrix must be enabled for that stage, otherwise an assertion is raised.
+	  */
+	const NLMISC::CMatrix  &getUserTexMat(uint stage) const;
+	/// Decompose a user texture matrix, We assume that this is only a matrix for 2d texture.
+	void					decompUserTexMat(uint stage, float &uTrans, float &vTrans, float &wRot, float &uScale, float &vScale);
+	  
 	// @}
 
 
@@ -484,13 +516,16 @@ private:
 	ZFunc					_ZFunction;
 	float					_ZBias;
 	CRGBA					_Color;
-	CRGBA					_Emissive,_Ambient,_Diffuse,_Specular;
+	CRGBA					_Emissive, _Ambient, _Diffuse, _Specular;
 	float					_Shininess;
 	float					_AlphaTestThreshold;
 	uint32					_Touched;
-
 	bool					_StainedGlassWindow; // \todo mb : clean this flag (add a CMaterialBuil class)
-
+	struct	CUserTexMat
+	{
+		NLMISC::CMatrix		TexMat[IDRV_MAT_MAXTEXTURES];		
+	};
+	std::auto_ptr<CUserTexMat>	_TexUserMat;		 // user texture matrix
 	CSmartPtr<ITexture>		_Textures[IDRV_MAT_MAXTEXTURES];
 
 public:
@@ -518,6 +553,8 @@ public:
 	uint32					getFlags() const {return _Flags;}
 	uint32					getTouched(void)  const { return(_Touched); }
 	void					clearTouched(uint32 flag) { _Touched&=~flag; }
+
+
 
 };
 

@@ -1,28 +1,7 @@
-/** \file resource.h
- * <File description>
- *
- * $Id: resource.h,v 1.1 2001/04/26 16:37:31 corvazier Exp $
- */
-
-/* Copyright, 2000 Nevrax Ltd.
- *
- * This file is part of NEVRAX NEL.
- * NEVRAX NEL is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
-
- * NEVRAX NEL is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
-
- * You should have received a copy of the GNU General Public License
- * along with NEVRAX NEL; see the file COPYING. If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
- * MA 02111-1307, USA.
- */
-
+//{{NO_DEPENDENCIES}}
+// Microsoft Developer Studio generated include file.
+// Used by nel_export.rc
+//
 #define IDS_LIBDESCRIPTION              1
 #define IDS_CATEGORY                    2
 #define IDS_CLASS_NAME                  3
@@ -30,6 +9,8 @@
 #define IDS_SPIN                        5
 #define IDD_PANEL                       101
 #define IDD_SWT                         103
+#define IDD_EXPORTSCENE                 104
+#define IDD_CALCULATING                 106
 #define IDC_CLOSEBUTTON                 1000
 #define IDC_DOSTUFF                     1000
 #define ID_SAVEAS                       1001
@@ -47,6 +28,28 @@
 #define IDC_CHANNELROT                  1007
 #define ID_EXPORTINSTANCEGROUP          1007
 #define IDC_CHANNELSCA                  1008
+#define ID_EXPORTSCENE                  1008
+#define ID_OPTIONS                      1008
+#define IDC_CHECKEXPORTINSTANCEGROUP    1009
+#define IDC_CHECKEXPORTSHAPES           1010
+#define IDC_CHECKEXPORTLIGHTING         1011
+#define IDC_RADIONORMALEXPORTLIGHTING   1012
+#define IDC_RADIORADIOSITYEXPORTLIGHTING 1013
+#define IDC_EDITEXPORTINSTANCEGROUP     1014
+#define IDC_BUTTONEXPORTINSTANCEGROUP   1015
+#define IDC_EDITEXPORTSHAPES            1016
+#define IDC_BUTTONEXPORTSHAPES          1017
+#define IDC_EDITEXPORTLIGHTING          1018
+#define IDC_BUTTONEXPORTLIGHTING        1019
+#define IDC_EDITLUMELSIZE               1020
+#define IDC_RADIOSS1                    1021
+#define IDC_RADIOSS2                    1022
+#define IDC_RADIOSS3                    1023
+#define IDC_RADIOSS4                    1024
+#define IDC_PROGRESS1                   1025
+#define IDC_STATICTIMELEFT              1026
+#define IDC_BUTTONCANCEL                1027
+#define IDC_SHADOW                      1028
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -55,9 +58,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        104
+#define _APS_NEXT_RESOURCE_VALUE        107
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1009
+#define _APS_NEXT_CONTROL_VALUE         1029
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

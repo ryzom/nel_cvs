@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.2 2001/04/30 17:01:00 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.3 2001/06/11 09:21:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@ using namespace NLMISC;
 
 // --------------------------------------------------
 
-bool CNelExport::exportMesh (const char *sPath, INode& node, Interface& ip, TimeValue time)
+bool CNelExport::exportMesh (const char *sPath, INode& node, Interface& ip, TimeValue time, CExportNelOptions &opt)
 {
 	// Result to return
 	bool bRet=false;
@@ -72,7 +72,7 @@ bool CNelExport::exportMesh (const char *sPath, INode& node, Interface& ip, Time
 		}
 
 		// Export in mesh format
-		IShape*	pShape=CExportNel::buildShape (node, ip, time, skeletonShape, false);
+		IShape*	pShape=CExportNel::buildShape (node, ip, time, skeletonShape, false, opt);
 
 		// Erase the skeleton
 		if (skeletonShape)

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.2 2001/06/11 09:21:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,12 +26,61 @@
 #include "stdafx.h"
 #include "export_nel.h"
 #include <nel/3d/texture_file.h>
+#include "../nel_export/std_afx.h"
+#include "../nel_export/nel_export.h"
+#include "../nel_export/nel_export_scene.h"
 
 using namespace NLMISC;
 using namespace NL3D;
 
+
+CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime)
+{
+	CMesh::CMeshBuild *pMeshBuild = new CMesh::CMeshBuild();
+
+	// Get a pointer on the object's node
+    Object *obj = node.EvalWorldState(tvTime).obj;
+
+	// Check if there is an object
+	if (obj)
+	{
+		// Object can be converted in triObject ?
+		if (obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0))) 
+		{ 
+			// Get a triobject from the node
+			TriObject *tri = (TriObject*)obj->ConvertToType(tvTime, Class_ID(TRIOBJ_CLASS_ID, 0));
+
+			// Note that the TriObject should only be deleted
+			// if the pointer to it is not equal to the object
+			// pointer that called ConvertToType()
+			bool deleteIt=false;
+			if (obj != tri) 
+				deleteIt = true;
+
+			// Array of name for the material
+			std::vector<std::string> materialNames;
+
+			// Fill the build interface of CMesh
+
+			buildMeshInterface(*tri, *pMeshBuild, materialNames, node, tvTime, NULL, false);
+
+			// Delete the triObject if we should...
+			if (deleteIt)
+				delete tri;
+		}
+	}
+
+	// Return the shape pointer or NULL if an error occured.
+	return pMeshBuild;
+}
+
+
+
+
 // Export a mesh
-IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, const CSkeletonShape* skeletonShape, bool absolutePath)
+IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, 
+								const CSkeletonShape* skeletonShape, bool absolutePath,
+								CExportNelOptions &opt)
 {
 	// Here, we must check what kind of node we can build with this mesh.
 	// For the time, just Triobj is supported.
@@ -67,6 +116,8 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 			CMesh::CMeshBuild buildMesh;
 			buildMeshInterface (*tri, buildMesh, materialNames, node, time, skeletonShape, absolutePath);
 
+			if( hasLightMap( node, time ) && opt.bExportLighting )
+				calculateLM(&buildMesh, node, ip, time, absolutePath, opt);
 			// Make a CMesh object
 			CMesh* mesh=new CMesh;
 
@@ -255,6 +306,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	std::vector<std::vector<CMaterialDesc> > pRemapChannel;
 
 	// Build materials in NeL format and get the number of materials exported in NeL format
+
 	int nNumMaterials=buildMaterials (buildMesh.Materials, pRemapChannel, materialNames, node, time, absolutePath);
 
 	// Some check. should have one rempa vertMap channel table by material
@@ -385,6 +437,11 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			{
 				// Corresponding max channel
 				int nMaxChan=pRemapChannel[nMaterialID][uv]._IndexInMaxMaterial;
+
+				if( ! pMesh->mapSupport(nMaxChan) )
+				{
+					nMaxChan = pRemapChannel[nMaterialID][uv]._IndexInMaxMaterialAlternative;
+				}
 
 				// UVs matrix
 				Matrix3 &uvMatrix=pRemapChannel[nMaterialID][uv]._UVMatrix;

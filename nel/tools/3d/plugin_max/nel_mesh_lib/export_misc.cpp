@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.2 2001/06/11 09:21:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -286,6 +286,10 @@ bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* s
 					case TYPE_POINT3:
 						bRes=param->GetValue(id, time, *(Point3*)pValue, ivalid);
 						break;
+					case TYPE_STRING:
+						//bRes=param->GetValue(id, time, *(TCHAR**)pValue, ivalid);
+						*(std::string*)pValue = param->GetStr(id, time);
+						break;
 					}
 
 					// Get successful ?
@@ -310,7 +314,7 @@ Modifier* CExportNel::getModifier (INode* pNode, Class_ID modCID)
 		return NULL;
 
 	ObjectState os = pNode->EvalWorldState(0);
-	if (os.obj && os.obj->SuperClassID() != GEOMOBJECT_CLASS_ID) 
+	if (os.obj && (os.obj->SuperClassID() != GEOMOBJECT_CLASS_ID) && (os.obj->SuperClassID() != LIGHT_CLASS_ID) )
 	{
 		return NULL;
 	}
@@ -434,4 +438,53 @@ bool CExportNel::isMesh (INode& node, TimeValue time)
 
 	// Return result
 	return bRet;
+}
+
+// --------------------------------------------------
+
+bool CExportNel::hasLightMap (INode& node, TimeValue time)
+{
+	if( !isMesh(node,time) )
+		return false;
+
+	int nMaterialCount=0;
+
+	// Get primary material pointer of the node
+	Mtl* pNodeMat=node.GetMtl();
+
+	// If NULL, no material at all at this node
+	if (pNodeMat==NULL)
+		return false;
+
+	// Number of sub material at in this material
+	nMaterialCount=pNodeMat->NumSubMtls();
+
+	// If it is a multisub object, export all its sub materials
+	if (nMaterialCount>0)
+	{
+		// Check all the sub materials
+		for (int nSub=0; nSub<nMaterialCount; nSub++)
+		{
+			// Get a pointer on the sub material
+			Mtl* pSub=pNodeMat->GetSubMtl(nSub);
+
+			// Should not be NULL
+			nlassert (pSub);
+
+			// Is there a lightmap handling wanted
+			int bLightMap = 0; // false
+			CExportNel::getValueByNameUsingParamBlock2 (*pSub, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, 0);
+			if (bLightMap)
+				return true;
+		}
+	}
+	// Else check only this material
+	else
+	{
+		int bLightMap = 0; // false
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, 0);
+		if (bLightMap)
+			return true;
+	}
+	return false;
 }

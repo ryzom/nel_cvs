@@ -1,7 +1,7 @@
 /** \file nel_export.h
  * <File description>
  *
- * $Id: nel_export.h,v 1.2 2001/04/30 17:01:00 corvazier Exp $
+ * $Id: nel_export.h,v 1.3 2001/06/11 09:21:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,10 +27,11 @@
 #define __NEL_EXPORT__H
 
 #include "resource.h"
-/*#include "nel/3d/zone.h"
-#include "../nel_patch_lib/rpo.h"*/
+#include "../nel_mesh_lib/export_nel.h"
+#include "nel/3d/mesh.h"
 
 #include <vector>
+#include <string>
 
 extern TCHAR *GetString(int id);
 
@@ -69,25 +70,47 @@ public:
 	void getSelectedNode (std::vector<INode*>& vectNode);
 
 	static	bool	exportZone	(const char *sName, INode& node, TimeValue time);
-	static	bool	exportMesh	(const char *sPath, INode& node, Interface& ip, TimeValue time);
+	static	bool	exportMesh	(const char *sPath, INode& node, Interface& ip, TimeValue time, CExportNelOptions &opt);
 	static	bool	exportAnim	(const char *sPath, std::vector<INode*>& vectNode, Interface& ip, TimeValue time, bool scene);
 	static	bool	exportSWT	(const char *sPath, std::vector<INode*>& vectNode, Interface& ip);
-	static	bool	exportScene	(const char *sPath, std::vector<INode*>& vectNode, Interface& ip);
+	//static	bool	exportScene	(std::vector<INode*>& vectNode);
+	//static	bool	isMeshLM(INode& node);
+	//static	bool	exportMeshLM(const char *sPath, INode& node, Interface& ip, TimeValue time);
+	//static  bool	calculateLM(NL3D::CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode, Interface& ip, TimeValue tvTime, bool absolutePath);
+	static	bool	exportInstanceGroup	(std::string filename, std::vector<INode*>& vectNode, Interface& ip );
 	static	bool	exportSkeleton	(const char *sPath, INode* pNode, Interface& ip, TimeValue time);
 
-	static	void	viewMesh (Interface& ip, TimeValue time);
+	static	void	viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt);
+
+	static void initOptions(); // read the CNelExportSceneStruct from disk or init it
+	static void deleteLM(INode& ZeNode); // the export scene struct MUST be initialized before calling this fn
 
 	ULONG ExtractFileName(char* Path, char* Name);
 	ULONG ExtractPath(char* FullPath, char* Path);
 	ULONG SelectFileForLoad(HWND Parent, char* Title, const char* Mask, char* FileName);
 	ULONG SelectFileForSave(HWND Parent, char* Title, const char* Mask, char* FileName);
 	ULONG SelectDir(HWND Parent, char* Title, char* Path);
-	ULONG FileExists(char* FileName);
+	ULONG FileExists(const char* FileName);
 	ULONG GetFileSize(char* FileName);
 	ULONG ProcessDir(char* Dir, const char* Mask, unsigned long flag, ULONG Fnct(char* FileName) );
 	ULONG CleanFileName(char* FileName);
 	ULONG CreateBAKFile(char* FileName);
 };
+
+class CNelExportClassDesc:public ClassDesc2 
+{
+	public:
+	int 			IsPublic() {return 1;}
+	void *			Create(BOOL loading = FALSE);
+	const TCHAR *	ClassName() {return _T("NeL Export");}
+	SClass_ID		SuperClassID() {return UTILITY_CLASS_ID;}
+	Class_ID		ClassID() {return CNELEXPORT_CLASS_ID;}
+	const TCHAR* 	Category() {return _T("NeL Tools");}
+	const TCHAR*	InternalName() { return _T("NeL export and view"); }	// returns fixed parsable name (scripter-visible name)
+	HINSTANCE		HInstance() { return hInstance; }				// returns owning module handle
+};
+
+extern CNelExportClassDesc CNelExportDesc;
 
 extern CNelExport theCNelExport;
 

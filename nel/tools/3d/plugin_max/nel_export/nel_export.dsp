@@ -45,7 +45,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /G6 /MD /W3 /GR /GX /O2 /I "D:\3DSMAX3\Maxsdk\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Yu"std_afx.h" /FD /c
+# ADD CPP /nologo /G6 /MD /W3 /GR /GX /O2 /I "D:\3DSMAX3\Maxsdk\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Yu"std_afx.h" /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
@@ -55,7 +55,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /machine:I386 /out:"C:\3dsmax3_1\plugins\nelexport.dlu" /libpath:"D:\3DSMAX3\Maxsdk\lib" /release
+# ADD LINK32 freetype.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /machine:I386 /out:"C:\3dsmax3_1\plugins\nelexport.dlu" /libpath:"D:\3DSMAX3\Maxsdk\lib" /release
 
 !ELSEIF  "$(CFG)" == "nel_export - Win32 Debug"
 
@@ -71,7 +71,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "D:\3DSMAX3\Maxsdk\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "__STL_DEBUG" /FR /Yu"std_afx.h" /FD /Zm200 /c
+# ADD CPP /nologo /G6 /MDd /W3 /GR /GX /Zi /Od /I "D:\3DSMAX3\Maxsdk\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "__STL_DEBUG" /FR /Yu"std_afx.h" /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
@@ -81,8 +81,13 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"c:\3dsmax3_1 debug\exe\plugins\nelexport.dlu" /pdbtype:sept /libpath:"D:\3DSMAX3\Maxsdk\lib"
+# ADD LINK32 freetype.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"c:\3dsmax3_1 debug\exe\plugins\nelexport.dlu" /pdbtype:sept /libpath:"D:\3DSMAX3\Maxsdk\lib"
 # SUBTRACT LINK32 /incremental:no
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Desc=copy dans max normal
+PostBuild_Cmds=copy "c:\3dsmax3_1 debug\exe\plugins\nelexport.dlu" "c:\3dsmax3_1\plugins"
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "nel_export - Win32 Hybrid"
 
@@ -135,7 +140,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /machine:I386 /out:"D:\3DSMAX3\stdplugs\Nel_export.dlu" /libpath:"D:\3DSMAX3\Maxsdk\lib" /release
-# ADD LINK32 comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1\plugins\nelexport.dlu" /libpath:"D:\3DSMAX3\Maxsdk\lib" /release
+# ADD LINK32 freetype.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1\plugins\nelexport.dlu" /libpath:"D:\3DSMAX3\Maxsdk\lib" /release
 
 !ENDIF 
 
@@ -183,6 +188,25 @@ SOURCE=.\nel_export_filetools.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\nel_export_lightmap_v1.cpp
+
+!IF  "$(CFG)" == "nel_export - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "nel_export - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "nel_export - Win32 Hybrid"
+
+!ELSEIF  "$(CFG)" == "nel_export - Win32 ReleaseDebug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\nel_export_scene.cpp
 # End Source File
 # Begin Source File
@@ -220,6 +244,10 @@ SOURCE=.\checkversion.h
 # Begin Source File
 
 SOURCE=.\nel_export.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\nel_export_scene.h
 # End Source File
 # Begin Source File
 

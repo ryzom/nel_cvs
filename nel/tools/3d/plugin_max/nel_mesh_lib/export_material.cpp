@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: export_material.cpp,v 1.2 2001/06/11 09:21:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,8 +133,15 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 	Texmap* pDifTexmap=mtl.GetSubTexmap(ID_DI);
 	Texmap* pOpaTexmap=mtl.GetSubTexmap(ID_OP);
 
-	// Set a normal shader. TODO.
-	material.setShader (CMaterial::Normal);
+	// Is there a lightmap handling wanted
+	int bLightMap = 0; // false
+
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, 0);
+	
+	if (bLightMap)
+		material.setShader (CMaterial::LightMap);
+	else
+		material.setShader (CMaterial::Normal);
 
 	// By default set blend to false
 	material.setBlend (false);
@@ -175,6 +182,16 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 
 			// Active blend if texture in opacity
 			material.setBlend (pOpaTexmap!=NULL);
+
+			// Export mapping channel 2 if lightmap asked.
+			if( bLightMap ) // lightmap enabled ?
+			{
+				remap3dsTexChannel.resize( 2 );
+				// Copy information from channel 0
+				remap3dsTexChannel[1] = remap3dsTexChannel[0];
+				remap3dsTexChannel[1]._IndexInMaxMaterial = 2;
+				remap3dsTexChannel[1]._IndexInMaxMaterialAlternative = remap3dsTexChannel[0]._IndexInMaxMaterial;
+			}
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.2 2001/04/30 17:01:00 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.3 2001/06/11 09:21:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,37 +32,17 @@
 #include "checkversion.h"
 #include "../nel_mesh_lib/export_nel.h"
 #include "../nel_patch_lib/rpo.h"
+#include "nel_export_scene.h"
 
 using namespace NL3D;
 using namespace NLMISC;
 
 CNelExport theCNelExport;
+//CNelExportSceneStruct theExportSceneStruct;
+CExportNelOptions theExportSceneStruct;
 
-class CNelExportClassDesc:public ClassDesc2 
-{
-	public:
-	int 			IsPublic() {return 1;}
-	void *			Create(BOOL loading = FALSE) 
-	{
-		// Check only one time the version of the plugin on the server
-		static bool bPassed=false;
-		if (!bPassed)
-		{
-			bPassed=true;
-			CheckPluginVersion ("plugins max\\plugins\\nelexport.dlu");
-		}
 
-		return &theCNelExport;
-	}
-	const TCHAR *	ClassName() {return _T("NeL Export");}
-	SClass_ID		SuperClassID() {return UTILITY_CLASS_ID;}
-	Class_ID		ClassID() {return CNELEXPORT_CLASS_ID;}
-	const TCHAR* 	Category() {return _T("NeL Tools");}
-	const TCHAR*	InternalName() { return _T("NeL export and view"); }	// returns fixed parsable name (scripter-visible name)
-	HINSTANCE		HInstance() { return hInstance; }				// returns owning module handle
-};
-
-static CNelExportClassDesc CNelExportDesc;
+CNelExportClassDesc CNelExportDesc;
 ClassDesc2* GetCNelExportDesc() {return &CNelExportDesc;}
 
 static const char *zoneFilter="NeL zone file (*.zone)\0*.zone\0All files (*.*)\0*.*\0";
@@ -72,6 +52,179 @@ static const char *animSceneFilter="NeL scene animation file (*.sceneanim)\0*.sc
 static const char *SWTFilter="NeL Skeleton Weight Template file (*.swt)\0*.swt\0All files (*.*)\0*.*\0";
 static const char *InstanceGroupFilter="NeL Instance Group file (*.ig)\0*.ig\0All files (*.*)\0*.*\0";
 static const char *skeletonFilter="NeL Skeleton file (*.skel)\0*.skel\0All files (*.*)\0*.*\0";
+
+
+void *CNelExportClassDesc::Create(BOOL loading)
+{
+	// Check only one time the version of the plugin on the server
+	static bool bPassed=false;
+	if (!bPassed)
+	{
+		bPassed=true;
+		CheckPluginVersion ("plugins max\\plugins\\nelexport.dlu");
+	}
+
+	return &theCNelExport;
+}
+
+
+int CALLBACK OptionsDialogCallback (
+  HWND hwndDlg,  // handle to dialog box
+  UINT uMsg,     // message
+  WPARAM wParam, // first message parameter
+  LPARAM lParam  // second message parameter
+)
+{
+	switch (uMsg) 
+	{
+		case WM_INITDIALOG:
+		{
+			char tmp[1024];
+			CenterWindow( hwndDlg, theCNelExport.ip->GetMAXHWnd() );
+			ShowWindow( hwndDlg, TRUE );
+			// Initialize from theExportSceneStruct
+			//if( theExportSceneStruct.bExportInstanceGroup )
+			//	SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTINSTANCEGROUP), BM_SETCHECK, BST_CHECKED, 0 );
+			//else
+			//	SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTINSTANCEGROUP), BM_SETCHECK, BST_UNCHECKED, 0 );
+			//if( theExportSceneStruct.bExportShapes )
+			//	SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTSHAPES), BM_SETCHECK, BST_CHECKED, 0 );
+			//else
+			//	SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTSHAPES), BM_SETCHECK, BST_UNCHECKED, 0 );
+
+			if( theExportSceneStruct.bExportLighting )
+				SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTLIGHTING), BM_SETCHECK, BST_CHECKED, 0 );
+			else
+				SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTLIGHTING), BM_SETCHECK, BST_UNCHECKED, 0 );
+			if( theExportSceneStruct.bShadow)
+				SendMessage( GetDlgItem(hwndDlg,IDC_SHADOW), BM_SETCHECK, BST_CHECKED, 0 );
+			else
+				SendMessage( GetDlgItem(hwndDlg,IDC_SHADOW), BM_SETCHECK, BST_UNCHECKED, 0 );
+			//SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTINSTANCEGROUP), WM_SETTEXT, 0, (long)theExportSceneStruct.sExportInstanceGroup.c_str() );
+			//SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTSHAPES), WM_SETTEXT, 0, (long)theExportSceneStruct.sExportShapes.c_str() );
+			SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTLIGHTING), WM_SETTEXT, 0, (long)theExportSceneStruct.sExportLighting.c_str() );
+			if( theExportSceneStruct.nExportLighting == 0 )
+				SendMessage( GetDlgItem(hwndDlg,IDC_RADIONORMALEXPORTLIGHTING), BM_SETCHECK, BST_CHECKED, 0 );
+			if( theExportSceneStruct.nExportLighting == 1 )
+				SendMessage( GetDlgItem(hwndDlg,IDC_RADIORADIOSITYEXPORTLIGHTING), BM_SETCHECK, BST_CHECKED, 0 );
+			sprintf( tmp, "%f", theExportSceneStruct.rLumelSize );
+			SendMessage( GetDlgItem(hwndDlg,IDC_EDITLUMELSIZE), WM_SETTEXT, 0, (long)tmp );
+			if( theExportSceneStruct.nOverSampling == 1 )
+				SendMessage( GetDlgItem(hwndDlg,IDC_RADIOSS1), BM_SETCHECK, BST_CHECKED, 0 );
+			if( theExportSceneStruct.nOverSampling == 2 )
+				SendMessage( GetDlgItem(hwndDlg,IDC_RADIOSS2), BM_SETCHECK, BST_CHECKED, 0 );
+			if( theExportSceneStruct.nOverSampling == 4 )
+				SendMessage( GetDlgItem(hwndDlg,IDC_RADIOSS3), BM_SETCHECK, BST_CHECKED, 0 );
+			if( theExportSceneStruct.nOverSampling == 8 )
+				SendMessage( GetDlgItem(hwndDlg,IDC_RADIOSS4), BM_SETCHECK, BST_CHECKED, 0 );
+		}
+		break;
+
+		case WM_COMMAND:
+			if( HIWORD(wParam) == BN_CLICKED )
+			switch (LOWORD(wParam)) 
+			{
+				/*case IDC_BUTTONEXPORTINSTANCEGROUP:
+				{
+					char sTemp[1024];
+					strcpy(sTemp,theExportSceneStruct.sExportInstanceGroup.c_str());
+					if( theCNelExport.SelectFileForSave(hwndDlg, "Instance Group Directory", InstanceGroupFilter, sTemp ) )
+					{
+						theExportSceneStruct.sExportInstanceGroup = sTemp;
+						SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTINSTANCEGROUP), WM_SETTEXT, 0, (long)theExportSceneStruct.sExportInstanceGroup.c_str() );
+					}
+				}
+				break;
+				case IDC_BUTTONEXPORTSHAPES:
+				{
+					char sTemp[1024];
+					strcpy(sTemp,theExportSceneStruct.sExportShapes.c_str());
+					if( theCNelExport.SelectDir(hwndDlg, "Shapes Directory", sTemp ) )
+					{
+						theExportSceneStruct.sExportShapes = sTemp;
+						SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTSHAPES), WM_SETTEXT, 0, (long)theExportSceneStruct.sExportShapes.c_str() );
+					}
+				}
+				break;*/
+				case IDC_BUTTONEXPORTLIGHTING:
+				{
+					char sTemp[1024];
+					strcpy(sTemp,theExportSceneStruct.sExportLighting.c_str());
+					if( theCNelExport.SelectDir(hwndDlg, "LightMaps Directory", sTemp ) )
+					{
+						theExportSceneStruct.sExportLighting = sTemp;
+						SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTLIGHTING), WM_SETTEXT, 0, (long)theExportSceneStruct.sExportLighting.c_str() );
+					}
+				}
+				break;
+				case IDCANCEL:
+					EndDialog(hwndDlg, FALSE);
+				break;
+				case IDOK:
+				{
+					char tmp[1024];
+					// The result goes in theExportSceneStruct
+					//if( SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTINSTANCEGROUP), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
+					//	theExportSceneStruct.bExportInstanceGroup = true;
+					//else
+					//	theExportSceneStruct.bExportInstanceGroup = false;
+					//if( SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTSHAPES), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
+					//	theExportSceneStruct.bExportShapes = true;
+					//else
+					//	theExportSceneStruct.bExportShapes = false;
+					if( SendMessage( GetDlgItem(hwndDlg,IDC_SHADOW), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
+						theExportSceneStruct.bShadow = true;
+					else
+						theExportSceneStruct.bShadow = false;
+					if( SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTLIGHTING), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
+						theExportSceneStruct.bExportLighting = true;
+					else
+						theExportSceneStruct.bExportLighting = false;
+					//SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTINSTANCEGROUP), WM_GETTEXT, 1024, (long)tmp );
+					//theExportSceneStruct.sExportInstanceGroup = tmp;
+					//SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTSHAPES), WM_GETTEXT, 1024, (long)tmp );
+					//theExportSceneStruct.sExportShapes = tmp;
+					SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTLIGHTING), WM_GETTEXT, 1024, (long)tmp );
+					theExportSceneStruct.sExportLighting = tmp;
+					if( SendMessage( GetDlgItem(hwndDlg,IDC_RADIONORMALEXPORTLIGHTING), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
+						theExportSceneStruct.nExportLighting = 0;
+					if( SendMessage( GetDlgItem(hwndDlg,IDC_RADIORADIOSITYEXPORTLIGHTING), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
+						theExportSceneStruct.nExportLighting = 1;
+					SendMessage( GetDlgItem(hwndDlg,IDC_EDITLUMELSIZE), WM_GETTEXT, 1024, (long)tmp );
+					theExportSceneStruct.rLumelSize = (float)atof( tmp );
+
+					if( SendMessage( GetDlgItem(hwndDlg,IDC_RADIOSS1), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
+						theExportSceneStruct.nOverSampling = 1;
+					if( SendMessage( GetDlgItem(hwndDlg,IDC_RADIOSS2), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
+						theExportSceneStruct.nOverSampling = 2;
+					if( SendMessage( GetDlgItem(hwndDlg,IDC_RADIOSS3), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
+						theExportSceneStruct.nOverSampling = 4;
+					if( SendMessage( GetDlgItem(hwndDlg,IDC_RADIOSS4), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
+						theExportSceneStruct.nOverSampling = 8;
+
+					// End the dialog
+					EndDialog(hwndDlg, TRUE);
+				}
+				break;
+			}
+		break;
+
+		case WM_CLOSE:
+			EndDialog(hwndDlg,1);
+		break;
+
+		case WM_DESTROY:						
+		break;
+	
+		default:
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
+
+
 
 static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -91,6 +244,9 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			// ---
 			case ID_SAVEMODEL:
 				{
+					// Load the options
+					theCNelExport.initOptions();
+
 					// Register 3d models
 					registerSerial3d();
 
@@ -143,15 +299,15 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 								// Skin objects
 								CSkeletonShape *pSkinShape=NULL;
 
+								CExportNel::deleteLM( *pNode, theExportSceneStruct );
 								// Export the mesh
-								if (!theCNelExport.exportMesh (sSavePath, *pNode, *theCNelExport.ip, time))
+								if (!theCNelExport.exportMesh (sSavePath, *pNode, *theCNelExport.ip, time, theExportSceneStruct))
 								{
 									// Error message
 									char sErrorMsg[512];
 									sprintf (sErrorMsg, "Error exporting the mesh %s in the file\n%s", pNode->GetName(), sSavePath);
 									MessageBox (hWnd, sErrorMsg, "NeL export", MB_OK|MB_ICONEXCLAMATION);
 								}
-
 								// Delete the skeleton pointer
 								if (pSkinShape)
 									delete pSkinShape;
@@ -210,9 +366,9 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				{
 				// Get time
 				TimeValue time=theCNelExport.ip->GetTime();
-
+				theCNelExport.initOptions();
 				// View mesh
-				theCNelExport.viewMesh (*theCNelExport.ip, time);
+				theCNelExport.viewMesh (*theCNelExport.ip, time, theExportSceneStruct);
 				}
 				break;
 			// ---
@@ -236,7 +392,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
 						if (theCNelExport.SelectFileForSave (hWnd, sDialogMsg, SWTFilter, sSavePath))
 						{
-							// Export the zone
+							// Export the swt
 							if (!theCNelExport.exportSWT (sSavePath, vectNode, *theCNelExport.ip))
 							{
 								// Error message
@@ -249,32 +405,55 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				}
 				break;
 				// ---
+				case ID_OPTIONS:
+				{
+					char sConfigFileName[512];
+					strcpy( sConfigFileName, theCNelExport.ip->GetDir(APP_PLUGCFG_DIR) );
+					strcat( sConfigFileName, "\\NelExportScene.cfg" );
+
+					theCNelExport.initOptions();
+
+					// Do a modal dialog box to choose the scene export options
+					if( DialogBox(	hInstance,
+									MAKEINTRESOURCE(IDD_EXPORTSCENE),
+									theCNelExport.ip->GetMAXHWnd(),
+									OptionsDialogCallback		) )
+					{
+						// Write configuration file
+						{
+							COFile outputFile;
+							if( outputFile.open(sConfigFileName) )
+								theExportSceneStruct.serial( outputFile );
+						}							
+						// EXPORT THE SCENE
+						// theCNelExport.exportScene( vectNode );
+					}
+				}
+				break;
+				// ---
 				case ID_EXPORTINSTANCEGROUP:
 				{
 					uint nNumSelNode = theCNelExport.ip->GetSelNodeCount();
 
-					// Save all selected objects
-					if (nNumSelNode)
+					registerSerial3d();
+					// All the selected nodes are considered as a scene					
+					if( nNumSelNode > 0 )
 					{		
 						std::vector<INode*> vectNode;
 						theCNelExport.getSelectedNode (vectNode);
 						nlassert (vectNode.size()!=0);
 
-						char sDialogMsg[256];
-						sprintf (sDialogMsg, "Save SWT...");
-
-						// Save path
 						char sSavePath[256];
 						strcpy (sSavePath, (*vectNode.begin())->GetName());
 
-						if (theCNelExport.SelectFileForSave (hWnd, sDialogMsg, InstanceGroupFilter, sSavePath))
+						if (theCNelExport.SelectFileForSave (hWnd, "Save Instance group", InstanceGroupFilter, sSavePath))
 						{
-							// Export the zone
-							if (!theCNelExport.exportScene (sSavePath, vectNode, *theCNelExport.ip))
+							// Export the instance group
+							if (!theCNelExport.exportInstanceGroup( sSavePath, vectNode, *theCNelExport.ip))
 							{
 								// Error message
 								char sErrorMsg[512];
-								sprintf (sErrorMsg, "Error exporting scene %s in the file\n%s", (*vectNode.begin())->GetName(), sSavePath);
+								sprintf (sErrorMsg, "Error exporting instance group %s", sSavePath);
 								MessageBox (hWnd, sErrorMsg, "NeL export", MB_OK|MB_ICONEXCLAMATION);
 							}
 						}
@@ -381,5 +560,29 @@ void CNelExport::getSelectedNode (std::vector<INode*>& vectNode)
 	{
 		// Get the node
 		vectNode.push_back (theCNelExport.ip->GetSelNode (nNode));
+	}
+}
+
+void CNelExport::initOptions()
+{
+	// Initialization of theExportSceneStruct
+	char sConfigFileName[512];
+	strcpy( sConfigFileName, theCNelExport.ip->GetDir(APP_PLUGCFG_DIR) );
+	strcat( sConfigFileName, "\\NelExportScene.cfg" );
+	// MessageBox (hWnd, sConfigFileName, "sConfigFileName", MB_OK|MB_ICONEXCLAMATION);
+	if( theCNelExport.FileExists(sConfigFileName) )
+	{
+		// Serial the configuration
+		try {
+			CIFile inputFile;
+			if( inputFile.open(sConfigFileName) )
+			{
+				theExportSceneStruct.serial( inputFile );
+				return;
+			}
+		}
+		catch(...)
+		{
+		}
 	}
 }

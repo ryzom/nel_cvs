@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.2 2001/04/30 17:01:00 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.3 2001/06/11 09:21:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ using namespace NL3D;
 
 typedef std::map<INode*, CExportNel::mapBoneBindPos > mapRootMapBoneBindPos;
 
-void CNelExport::viewMesh (Interface& ip, TimeValue time)
+void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt)
 {
 	// Register classes
 	registerSerial3d ();
@@ -132,7 +132,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time)
 			{
 				// Build skined ?
 				bool skined=false;
-				
+
 				// Skinning ?
 				if (CExportNel::isSkin (*pNode))
 				{
@@ -154,7 +154,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time)
 
 						// Export the shape
 						IShape *pShape;
-						pShape=CExportNel::buildShape (*pNode, ip, time, skeletonShape, true);
+						pShape=CExportNel::buildShape (*pNode, ip, time, skeletonShape, true, opt);
 
 						// Build succesful ?
 						if (pShape)
@@ -175,7 +175,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time)
 				{
 					// Export the shape
 					IShape *pShape;
-					pShape=CExportNel::buildShape (*pNode, ip, time, NULL, true);
+					pShape=CExportNel::buildShape (*pNode, ip, time, NULL, true, opt);
 
 					// Export successful ?
 					if (pShape)

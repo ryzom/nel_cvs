@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: export_nel.h,v 1.2 2001/06/11 09:21:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,40 @@ namespace NL3D
 	class CSkeletonShape;
 };
 
+// -----------------------------------------------
+struct CExportNelOptions
+{
+	bool bShadow;
+	bool bExportLighting;
+	std::string sExportLighting;
+	sint32 nExportLighting;
+	float rLumelSize;
+	sint32 nOverSampling;
+
+	CExportNelOptions::CExportNelOptions()
+	{
+		// If no configuration file
+		bShadow = false;
+		bExportLighting = false;
+		sExportLighting = "c:\\mydir\\lightmap\\";
+		nExportLighting = 0; // Normal lighting
+		rLumelSize = 0.25f;
+		nOverSampling = 1;
+	}
+
+	void serial(NLMISC::IStream& stream)
+	{
+		stream.serial( bShadow );
+		stream.serial( bExportLighting );
+		stream.serial( sExportLighting );
+		stream.serial( nExportLighting );
+		stream.serial( rLumelSize );
+		stream.serial( nOverSampling );
+	}
+};
+// -----------------------------------------------
+
+
 class CExportDesc;
 
 /**
@@ -98,7 +132,16 @@ public:
 	  *
 	  * skeletonShape must be NULL if no bones.
 	  */
-	static NL3D::IShape*			buildShape (INode& node, Interface& ip, TimeValue time, const NL3D::CSkeletonShape* skeletonShape, bool absolutePath);
+	static NL3D::IShape*			buildShape (INode& node, Interface& ip, TimeValue tvTime, 
+												const NL3D::CSkeletonShape* skeletonShape, bool absolutePath,
+												CExportNelOptions &opt);
+
+	/**
+	  * Build a NeL meshBuild
+	  * 
+	  * This method does not care of the skeletonShape
+	  */
+	static NL3D::CMesh::CMeshBuild*	createMeshBuild(INode& node, TimeValue tvTime);
 
 	/**
 	  * Return true if it is a mesh.
@@ -106,6 +149,16 @@ public:
 	  * skeletonShape must be NULL if no bones.
 	  */
 	static bool						isMesh (INode& node, TimeValue time);
+
+	/**
+	  * Return true if the node is a mesh and has a Nel_Material attached to it
+	  */
+	static bool						hasLightMap (INode& node, TimeValue time);
+	static void						deleteLM (INode& node, CExportNelOptions& structExport);
+	static bool						calculateLM (NL3D::CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode, 
+												Interface& ip, TimeValue tvTime, bool absolutePath,
+												CExportNelOptions& structExport);
+
 
 	// *********************
 	// *** Export animation
@@ -284,6 +337,7 @@ private:
 		CMaterialDesc ()
 		{
 			_IndexInMaxMaterial=UVGEN_MISSING;
+			_IndexInMaxMaterialAlternative=UVGEN_MISSING;
 			_UVMatrix.IdentityMatrix();
 			_CropU=0.f;
 			_CropV=0.f;
@@ -295,6 +349,7 @@ private:
 
 		// Index in material
 		sint		_IndexInMaxMaterial;
+		sint		_IndexInMaxMaterialAlternative;
 
 		// Matrix for UVs
 		Matrix3		_UVMatrix;

@@ -1,7 +1,7 @@
 /** \file nel_export_filetools.cpp
  * <File description>
  *
- * $Id: nel_export_filetools.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: nel_export_filetools.cpp,v 1.2 2001/06/11 09:21:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,7 +169,7 @@ ULONG CNelExport::SelectDir(HWND Parent, char* Title, char* Path)
 
 //--------------------------------------------------------------------------------------------------------------
 
-ULONG CNelExport::FileExists(char* FileName)
+ULONG CNelExport::FileExists(const char* FileName)
 {
 	FILE	*file;
 	if ( !strcmp(FileName,"") ) return(0);

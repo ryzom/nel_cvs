@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.3 2001/05/04 15:08:50 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.4 2001/06/11 09:21:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "std_afx.h"
 #include "nel_export.h"
+#include "../nel_mesh_lib/export_nel.h"
 
 #define EXPORT_GET_ALLOCATOR
 
@@ -65,11 +66,15 @@ Value* export_shape_cf (Value** arg_list, int count)
 	Boolean *ret=&false_value;
 
 	// Export
-	if (CNelExport::exportMesh (sPath, *node, *ip, ip->GetTime()))
-		ret=&true_value;
+//	CExportNel::deleteLM( *node );
+	// TODO
+	CExportNelOptions opt; // TODO !!!
+	if (CNelExport::exportMesh (sPath, *node, *ip, ip->GetTime(), opt))
+		ret = &true_value;
 
 	return ret;
 }
+
 
 Value* export_ig_cf (Value** arg_list, int count)
 {
@@ -108,7 +113,7 @@ Value* export_ig_cf (Value** arg_list, int count)
 			Interface *ip = MAXScript_interface;
 
 			// Export
-			if (CNelExport::exportScene (sPath, vect, *ip))
+			if (CNelExport::exportInstanceGroup (sPath, vect, *ip))
 				ret=&true_value;
 		}
 	}
@@ -125,7 +130,9 @@ Value* view_shape_cf (Value** arg_list, int count)
 	Interface *ip = MAXScript_interface;
 
 	// View
-	CNelExport::viewMesh (*ip, ip->GetTime());
+	CExportNelOptions opt; // TODO !!!
+
+	CNelExport::viewMesh (*ip, ip->GetTime(), opt);
 
 	return &true_value;
 }

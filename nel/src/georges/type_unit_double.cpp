@@ -1,7 +1,7 @@
 /** \file type_unit_double.cpp
  * Georges system files
  *
- * $Id: type_unit_double.cpp,v 1.1 2002/02/14 10:40:40 corvazier Exp $
+ * $Id: type_unit_double.cpp,v 1.2 2002/02/15 16:57:20 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,9 @@ CStringEx CTypeUnitDouble::FormatDouble( const double dvalue ) const
 	buffer = _fcvt( dvalue, 5, &decimal, &sign );
 	CStringEx sx( buffer );
 	if( decimal <= 0 )
-		sx = CStringEx( "0." ) +CStringEx( '0', -decimal ) +sx;
+	{
+		sx = (std::string)(CStringEx( "0." ) + CStringEx( '0', -decimal ) + sx);
+	}
 	else
 		sx.insert(decimal,".");
 

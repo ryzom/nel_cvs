@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.5 2001/08/02 12:18:43 besson Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.6 2001/08/16 15:50:00 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,7 @@ public:
 										// 3rd bit -> Father visible
 										// 4th bit -> Visible from father
 										// 5th bit -> Dynamic Portal
+										// 6th bit -> Clusterize
 	std::string				InstanceName;
 	int						DontAddToScene;
 };
@@ -226,6 +227,14 @@ int CALLBACK LodDialogCallback (
 				else
 					EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), false);
 
+				if ((currentParam->AccelType&3) == 0) // Not an accelerator
+				{
+					EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), true);
+					SendMessage (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), BM_SETCHECK, currentParam->AccelType&32, 0);
+				}
+				else
+					EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), false);
+
 			}
 			else
 			{
@@ -235,6 +244,7 @@ int CALLBACK LodDialogCallback (
 				EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), false);
 				EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
 				EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), false);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), false);
 			}
 
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), currentParam->InstanceName.c_str());
@@ -330,6 +340,8 @@ int CALLBACK LodDialogCallback (
 								currentParam->AccelType |= 8;
 							if (IsDlgButtonChecked (hwndDlg, IDC_DYNAMIC_PORTAL) == BST_CHECKED)
 								currentParam->AccelType |= 16;
+							if (IsDlgButtonChecked (hwndDlg, IDC_CLUSTERIZE) == BST_CHECKED)
+								currentParam->AccelType |= 32;
 
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), tmp, 512);
 							currentParam->InstanceName=tmp;
@@ -443,16 +455,19 @@ int CALLBACK LodDialogCallback (
 						EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
 						EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
 						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
+						EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), true);
 						break;
 					case IDC_RADIOACCELPORTAL:
 						EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
 						EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
 						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), true);
+						EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
 						break;
 					case IDC_RADIOACCELCLUSTER:
 						EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), true);
 						EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), true);
 						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
+						EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
 						break;
 				}
 			}
@@ -546,7 +561,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.ListLodName.push_back (nameLod);
 			}
 		}
-		param.AccelType = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 0);
+		param.AccelType = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32);
 
 		param.InstanceName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "");
 		param.DontAddToScene=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, 0);
@@ -589,7 +604,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, NEL3D_APPDATA_LOD_DISTANCE_COARSEST_DEFAULT))!=param.DistanceCoarsest)
 				param.DistanceCoarsest="";
 
-			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 0)!=param.AccelType)
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32)!=param.AccelType)
 				param.AccelType = -1;
 
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, 0)!=param.DontAddToScene)

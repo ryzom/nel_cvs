@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.2 2001/08/02 12:52:06 besson Exp $
+ * $Id: u_transform.h,v 1.3 2001/08/16 15:49:59 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,6 +84,7 @@ public:
 
 
 	virtual void			setClusterSystem (UInstanceGroup *pIG)=0; 
+	virtual UInstanceGroup *getClusterSystem ()=0;
 // @}
 
 

@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.4 2001/07/31 08:09:22 besson Exp $
+ * $Id: transform_user.h,v 1.5 2001/08/16 15:50:00 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,7 +53,7 @@ protected:
 	CScene				*_Scene;
 	// The object.
 	CTransform			*_Transform;
-
+	UInstanceGroup		*_pIG;
 public:
 
 
@@ -67,7 +67,7 @@ public:
 		nlassert(dynamic_cast<CTransform*>(trans));
 		// NB: _Transform is "same" pointer as ITransformable, but correclty casted.
 		_Transform= (CTransform*)trans;
-
+		_pIG = NULL;
 		// Same enums!!
 		nlassert((uint)UTransform::VisibilityCount == (uint)CHrcTrav::VisibilityCount);
 	}
@@ -109,6 +109,7 @@ public:
 	}
 
 	virtual void			setClusterSystem (UInstanceGroup *pIG);
+	virtual UInstanceGroup *getClusterSystem ();
 	// @}
 
 

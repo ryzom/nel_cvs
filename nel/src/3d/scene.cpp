@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.43 2001/07/30 14:40:14 besson Exp $
+ * $Id: scene.cpp,v 1.44 2001/08/16 15:50:00 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -222,6 +222,7 @@ void	CScene::initGlobalnstanceGroup ()
 	CCluster *pCluster = (CCluster*)createModel (ClusterId);
 	CClipTrav *pClipTrav = (CClipTrav*)(getTrav (ClipTravId));
 	pClipTrav->unlink (NULL, pCluster);
+	pCluster->Name = "ClusterRoot";
 	pCluster->Group = _GlobalInstanceGroup;
 	_GlobalInstanceGroup->addCluster (pCluster);
 }

@@ -93,6 +93,8 @@ BEGIN
                     WS_TABSTOP,81,25,42,10
     CONTROL         "Exclude non selected nodes from lighting",IDC_EXCLUDE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,145,10
+    CONTROL         "Show Lumel",IDC_SHOWLUMEL,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,93,102,55,10
 END
 
 IDD_CALCULATING DIALOG DISCARDABLE  0, 0, 186, 181
@@ -186,7 +188,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1, 0, 0, 28
+ FILEVERSION 1,0,0,28
  PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -325,6 +327,8 @@ BEGIN
     EDITTEXT        IDC_EDIT_INSTANCE_NAME,37,355,132,14,ES_AUTOHSCROLL
     CONTROL         "Don't add to scene",IDC_DONT_ADD_TO_SCENE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,370,76,10
+    CONTROL         "Clusterize",IDC_CLUSTERIZE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,102,271,46,10
 END
 
 

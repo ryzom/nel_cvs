@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.3 2001/07/30 14:40:14 besson Exp $
+ * $Id: transform_user.cpp,v 1.4 2001/08/16 15:50:00 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,8 +44,14 @@ void CTransformUser::setClusterSystem (UInstanceGroup *pIG)
 	}
 	else
 		_Transform->setClusterSystem (&((CInstanceGroupUser*)pIG)->_InstanceGroup);
+	_pIG = pIG;
 }
 
+// ***************************************************************************
+UInstanceGroup *CTransformUser::getClusterSystem ()
+{
+	return _pIG;
+}
 
 
 } // NL3D

@@ -26,7 +26,7 @@ CFG=3d - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=cl.exe
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "3d - Win32 Release"
@@ -48,7 +48,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d.lib"
 
@@ -65,14 +65,14 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "../obj/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "_MBCS" /D "_LIB" /D "WIN32" /D "_DEBUG" /D "__STL_DEBUG" /FR /FD /GZ /Zm200 /c
+# ADD CPP /nologo /MDd /W3 /Gm- /GR /GX /Zi /Od /D "_MBCS" /D "_LIB" /D "WIN32" /D "_DEBUG" /D "__STL_DEBUG" /FR /FD /GZ /Zm200 /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d_debug.lib"
 
@@ -95,7 +95,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo /out:"../lib/nl3d.lib"
 # ADD LIB32 /nologo /out:"../lib/nl3d_rd.lib"
 

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.16 2001/08/10 14:27:13 besson Exp $
+ * $Id: calc_lm.cpp,v 1.17 2001/08/16 15:50:00 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,6 @@
 
 
 #include "stdafx.h"
-//#include "nel_export.h"
 #include "export_nel.h"
 #include "../nel_patch_lib/rpo.h"
 #include "nel/misc/time_nl.h"
@@ -37,19 +36,19 @@
 #include "3d/skeleton_shape.h"
 #include "3d/texture_file.h"
 #include "3d/light.h"
-
-//#include "nel_export_scene.h"
-
 #include "3d/bsp_tree.h"
 #include "3d/quad_grid.h"
-
-#include "calc_lm.h"
 
 #include <vector>
 
 using namespace std;
 using namespace NL3D;
 using namespace NLMISC;
+
+
+#include "calc_lm.h"
+#include "calc_lm_plane.h"
+
 
 
 // TOOLS
@@ -267,398 +266,6 @@ struct SLightBuild
 		return true;
 	}
 
-};
-
-// ***********************************************************************************************
-//struct SLMPixel
-//{
-//	CRGBAF p[8]; // 8 Layers of lightmap possible
-//};
-
-// ***********************************************************************************************
-struct SLMPlane
-{
-	sint32 x, y; // Pos in lightmap
-	uint32 w, h; // Size
-	vector<uint8> msk;	// 0 - No pixel
-						// 1 - Pixel must be calculated
-						// 2 - Pixel is interior and is calculated
-						// 3 - Pixel is exterior in this plane but interior in another of the same smooth group
-						// 4 - Pixel is exterior and is extrapolated
-	vector<CRGBAF> col; // 32 bits value for each pixel of each layer.The layers are contiguous.
-	vector<uint8> ray;	// Raytrace composante
-						// 0 - Ray passed
-						// 1 - 254 - Ray blocked for one or more light
-						// 255 - Ray passed through spot
-	uint32 nNbLayerUsed;
-	vector<CMesh::CFace*> faces;	
-
-	// -----------------------------------------------------------------------------------------------
-	SLMPlane()
-	{ 
-		nNbLayerUsed = 1;
-		x = y = 0; w = h = 1; msk.resize(1); msk[0] = 0; 
-		col.resize(1); 
-		col[0].R = col[0].G = col[0].B = col[0].A = 0.0f;
-		ray.resize(1);
-		ray[0] = 0;
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	void newLayer()
-	{
-		col.resize( w*h*(nNbLayerUsed+1), CRGBAF(0.0f,0.0f,0.0f,0.0f) );
-		nNbLayerUsed += 1;
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	bool isAllBlack (uint8 nLayerNb)
-	{
-		for( uint32 i = 0; i < w*h; ++i )
-			if( (col[i+w*h*nLayerNb].R > 0.06f) || // around 15/255
-				(col[i+w*h*nLayerNb].G > 0.06f) ||
-				(col[i+w*h*nLayerNb].B > 0.06f) )
-				return false; // Not all is black
-		return true;
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	void copyColToBitmap32( CBitmap* pImage, uint32 nLayerNb )
-	{
-		if( nLayerNb >= nNbLayerUsed )
-			return;
-		if( ( pImage->getWidth() != w ) ||
-			( pImage->getHeight() != h ) )
-		{
-			pImage->resize(w,h);
-		}
-
-		vector<uint8> &vBitmap = pImage->getPixels();
-
-		for( uint32 i = 0; i < w*h; ++i )
-		{
-			if( (127.0*col[i+w*h*nLayerNb].R) > 255.0 )
-				vBitmap[4*i+0] = 255;
-			else
-				vBitmap[4*i+0] = (uint8)(127.0*col[i+w*h*nLayerNb].R);
-			if( (127.0*col[i+w*h*nLayerNb].G) > 255.0 )
-				vBitmap[4*i+1] = 255;
-			else
-				vBitmap[4*i+1] = (uint8)(127.0*col[i+w*h*nLayerNb].G);
-			if( (127.0*col[i+w*h*nLayerNb].B) > 255.0 )
-				vBitmap[4*i+2] = 255;
-			else
-				vBitmap[4*i+2] = (uint8)(127.0*col[i+w*h*nLayerNb].B);
-			vBitmap[4*i+3] = 255;
-		}
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	// Put me in the plane Dst (copy the col and mask or mask only)
-	void putIn( SLMPlane &Dst, bool bMaskOnly = false )
-	{
-		uint32 a, b, c;
-
-		while( this->nNbLayerUsed > Dst.nNbLayerUsed )
-			Dst.newLayer();
-
-		if( ( (this->w + this->x) > Dst.w ) || ( (this->h + this->y) > Dst.h ) )
-		{
-			a = 0; b = 0;
-		}
-		for( b = 0; b < this->h; ++b )
-		for( a = 0; a < this->w; ++a )
-			if( this->msk[a+b*this->w] != 0 )
-			{
-				Dst.msk[(this->x+a)+(this->y+b)*Dst.w] = this->msk[a+b*this->w];
-				if( bMaskOnly == false )
-					for( c = 0; c < this->nNbLayerUsed; ++c )
-						Dst.col[(this->x+a)+(this->y+b)*Dst.w+Dst.w*Dst.h*c] = this->col[a+b*this->w+w*h*c];
-			}
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	// Test the mask between me and the plane dst (with my decalage)
-	bool testIn( SLMPlane &Dst )
-	{
-		uint32 a, b;
-		for( b = 0; b < this->h; ++b )
-		for( a = 0; a < this->w; ++a )
-			if( this->msk[a+b*this->w] != 0 )
-				if( Dst.msk[(this->x+a)+(this->y+b)*Dst.w] != 0 )
-					return false;
-		return true;
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	// Try all position to put me in the plane dst
-	bool tryAllPosToPutIn( SLMPlane &Dst )
-	{
-		uint32 i, j;
-
-		if( this->w > Dst.w ) return false;
-		if( this->h > Dst.h ) return false;
-
-		// For all position test if the Src plane can be put in
-		for( j = 0; j < (Dst.h-this->h); ++j )
-		for( i = 0; i < (Dst.w-this->w); ++i )
-		{
-			this->x = i; this->y = j;
-			if( testIn( Dst ) )
-				return true;
-		}
-		return false;
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	// Do not stretch the image inside the plane just enlarge and fill with black
-	void resize( uint32 nNewSizeX, uint32 nNewSizeY )
-	{
-		vector<uint8> vImgTemp;
-		vector<CRGBAF> vImgTemp2;
-		uint32 i, j, k;
-
-		// Resize the mask
-		vImgTemp.resize(nNewSizeX*nNewSizeY);
-		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-			vImgTemp[i] = 0;
-
-		for( j = 0; j < min(this->h,nNewSizeY); ++j )
-		for( i = 0; i < min(this->w,nNewSizeX); ++i )
-			vImgTemp[i+j*nNewSizeX] = this->msk[i+j*this->w];
-
-		this->msk.resize(nNewSizeX*nNewSizeY);
-		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-			this->msk[i] = vImgTemp[i];
-
-		// Resize the raytrace information
-		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-			vImgTemp[i] = 0;
-
-		for( j = 0; j < min(this->h,nNewSizeY); ++j )
-		for( i = 0; i < min(this->w,nNewSizeX); ++i )
-			vImgTemp[i+j*nNewSizeX] = this->ray[i+j*this->w];
-
-		this->ray.resize(nNewSizeX*nNewSizeY);
-		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-			this->ray[i] = vImgTemp[i];
-
-		// The same as the mask but for the bitmap
-		vImgTemp2.resize(nNewSizeX*nNewSizeY*nNbLayerUsed);
-		for( i = 0; i < nNewSizeX*nNewSizeY*nNbLayerUsed; ++i )
-		{ vImgTemp2[i].R = vImgTemp2[i].G = vImgTemp2[i].B = vImgTemp2[i].A = 0.0f; }
-
-		for( k = 0; k < nNbLayerUsed; ++k )
-			for( j = 0; j < min(this->h,nNewSizeY); ++j )
-			for( i = 0; i < min(this->w,nNewSizeX); ++i )
-				vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k] = this->col[i+j*this->w+w*h*k];
-
-		this->col.resize(nNewSizeX*nNewSizeY*nNbLayerUsed);
-		for( i = 0; i < nNewSizeX*nNewSizeY*nNbLayerUsed; ++i )
-			this->col[i] = vImgTemp2[i];
-
-		this->w = nNewSizeX;
-		this->h = nNewSizeY;
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	// Stretch a plane by a given factor 4.0 -> multiply its size by 4 and 0.5 -> halves its size
-	// Take care the decalage is affected by the scaling factor (like homothetie)
-	void stretch( double osFactor )
-	{
-		if( osFactor < 0.0 )
-			osFactor = 0.0;
-		uint32 nNewSizeX = (uint32)(this->w * osFactor);
-		uint32 nNewSizeY = (uint32)(this->h * osFactor);
-		vector<uint8> vImgTemp;
-		vector<uint8> vImgTempRay;
-		vector<CRGBAF> vImgTemp2;
-		uint32 i, j, k;
-
-		// Reduce the color
-		vImgTempRay.resize(nNewSizeX * nNewSizeY);
-		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-			vImgTempRay[i] = 0;	
-
-		vImgTemp2.resize( nNewSizeX * nNewSizeY * nNbLayerUsed );
-		for( i = 0; i < nNewSizeX*nNewSizeY*nNbLayerUsed; ++i )
-		{ vImgTemp2[i].R = vImgTemp2[i].G = vImgTemp2[i].B = vImgTemp2[i].A = 0.0f; }
-
-		vImgTemp.resize( nNewSizeX * nNewSizeY );
-		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-			vImgTemp[i] = 0;
-
-		double dx, dy, x, y;
-		if( osFactor > 1.0 ) // Enlarge the image
-		{
-			dx = 1.0/osFactor;
-			dy = 1.0/osFactor;
-			y = 0.0;
-			for( j = 0; j < nNewSizeY; ++j )
-			{
-				x = 0.0;
-				for( i = 0; i < nNewSizeX; ++i )
-				{
-					if( this->msk[((sint32)x)+((sint32)y)*this->w] != 0 )
-					{
-						vImgTemp[i+j*nNewSizeX] = 1;
-					}
-					for( k = 0; k < nNbLayerUsed; ++k )
-					{
-						vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].R += col[((sint32)x)+((sint32)y)*w+w*h*k].R;
-						vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].G += col[((sint32)x)+((sint32)y)*w+w*h*k].G;
-						vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].B += col[((sint32)x)+((sint32)y)*w+w*h*k].B;
-						vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].A += 1.0f;
-					}
-					vImgTempRay[i+j*nNewSizeX] = ray[((sint32)x)+((sint32)y)*w];
-					x += dx;
-				}
-				y += dy;
-			}
-		}
-		else // Reduce image
-		{
-			dx = osFactor;
-			dy = osFactor;
-			y = 0.0;
-			for( j = 0; j < this->h; ++j )
-			{
-				x = 0.0;
-				for( i = 0; i < this->w; ++i )
-				{
-					if( this->msk[i+j*this->w] != 0 )
-					{
-						vImgTemp[((sint32)x)+((sint32)y)*nNewSizeX] = 1;
-					}
-					for( k = 0; k < nNbLayerUsed; ++k )
-					{
-						vImgTemp2[((sint32)x)+((sint32)y)*nNewSizeX+nNewSizeX*nNewSizeY*k].R += col[i+j*w+w*h*k].R;
-						vImgTemp2[((sint32)x)+((sint32)y)*nNewSizeX+nNewSizeX*nNewSizeY*k].G += col[i+j*w+w*h*k].G;
-						vImgTemp2[((sint32)x)+((sint32)y)*nNewSizeX+nNewSizeX*nNewSizeY*k].B += col[i+j*w+w*h*k].B;
-						vImgTemp2[((sint32)x)+((sint32)y)*nNewSizeX+nNewSizeX*nNewSizeY*k].A += 1.0f;
-					}
-					vImgTempRay[((sint32)x)+((sint32)y)*nNewSizeX] = ray[i+j*w];
-					x += dx;
-				}
-				y += dy;
-			}
-		}
-
-		for( k = 0; k < nNbLayerUsed; ++k )
-		for( j = 0; j < nNewSizeY; ++j )
-		for( i = 0; i < nNewSizeX; ++i )
-		if( vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].A > 1.0f )
-		{
-			vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].R /= vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].A;
-			vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].G /= vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].A;
-			vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].B /= vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].A;
-			vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].A = 1.0f;
-		}
-
-		col.resize( nNewSizeX * nNewSizeY * nNbLayerUsed );
-		for( i = 0; i < nNewSizeX*nNewSizeY*nNbLayerUsed; ++i )
-			col[i] = vImgTemp2[i];
-
-		msk.resize( nNewSizeX * nNewSizeY );
-		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-			msk[i] = vImgTemp[i];
-
-		ray.resize( nNewSizeX * nNewSizeY );
-		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-			ray[i] = vImgTempRay[i];
-
-		this->w = nNewSizeX;
-		this->h = nNewSizeY;
-		this->x = (sint32)(this->x * osFactor);
-		this->y = (sint32)(this->y * osFactor);
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	void createFrom(SLMPlane &Src)
-	{
-		uint i;
-		// Resize to the same size
-		resize(Src.w,Src.h);
-		x = Src.x;
-		y = Src.y;
-		// Copy the mask
-		for( i = 0; i < Src.w*Src.h; ++i )
-			msk[i] = Src.msk[i];
-		// Copy the faces
-		faces.resize(Src.faces.size());
-		for( i = 0; i < Src.faces.size(); ++i )
-			faces[i] = Src.faces[i];
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	void copyFirstLayerTo(SLMPlane &Dst, uint8 nDstLayer)
-	{
-		uint i;
-
-		if( ( Dst.w != w ) || ( Dst.h != h ) )
-			Dst.resize( w, h );
-
-		while( nDstLayer >= Dst.nNbLayerUsed )
-			Dst.newLayer();
-
-		for( i = 0; i < w*h; ++i )
-			Dst.col[i+w*h*nDstLayer] = col[i];
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	void contourDetect()
-	{
-		uint i, j;
-		vector<uint8> vImgTemp;
-		vImgTemp.resize(w*h);
-		for( i = 0; i < w*h; ++i )
-			vImgTemp[i] = 0;
-
-		for( j = 0; j < h; ++j )
-		for( i = 0; i < w; ++i )
-		{
-			if( i > 0 )
-			if( ray[i+j*w] != ray[i-1+j*w] )
-				vImgTemp[i+j*w] = 1;
-			if( i < (w-1) )
-			if( ray[i+j*w] != ray[i+1+j*w] )
-				vImgTemp[i+j*w] = 1;
-			if( j > 0 )
-			if( ray[i+j*w] != ray[i+(j-1)*w] )
-				vImgTemp[i+j*w] = 1;
-			if( j < (h-1) )
-			if( ray[i+j*w] != ray[i+(j+1)*w] )
-				vImgTemp[i+j*w] = 1;
-
-			if( ray[i+j*w] == 255 )
-				vImgTemp[i+j*w] = 1;
-		}
-
-		for( i = 0; i < w*h; ++i )
-			ray[i] = vImgTemp[i];
-
-
-		/*{
-			CBitmap b;
-			COFile f( "c:\\temp\\gloup.tga" );
-			b.resize(w,h);
-			vector<uint8>&bits = b.getPixels();
-			for( i = 0; i < w*h; ++i )
-			{
-				bits[i*4+0] = bits[i*4+1] = bits[i*4+2] = bits[i*4+3] = ray[i]*255;
-			}
-
-			b.writeTGA( f, 32 );
-		}*/
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	void andRayWidthMask()
-	{
-		for( uint i = 0; i < w*h; ++i )
-		if( ray[i] == 0 ) 
-			msk[i] = 0;
-	}
 };
 
 // ***********************************************************************************************
@@ -1225,6 +832,7 @@ CExportNelOptions gOptions;
 
 // -----------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
+/*
 void SortFaceByTextureName(vector<CMesh::CFace*> &AllFaces, CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB)
 {
 	int i, j;
@@ -1283,7 +891,7 @@ void ComputeAreaOfTextureName(vector<sint32> &TextureNames, vector<CMesh::CFace*
 	TextureNames[nNbTexName-1] += 1;
 	TextureNames.resize( nNbTexName );
 }
-
+*/
 // -----------------------------------------------------------------------------------------------
 void ClearFaceWithNoLM( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB, vector<CMesh::CFace*> &ZeFaces )
 {
@@ -1410,7 +1018,7 @@ bool FaceContinuous( CMesh::CFace *pF1, CMesh::CFace *pF2, bool bTestUV = true, 
 struct FaceNext
 {
 	CMesh::CFace *face;
-	sint32 cont[3];
+	vector<sint32> cont;
 	uint8 nNbCont;
 	bool added;
 };
@@ -1436,8 +1044,7 @@ void SortFaceBySMoothGroup( vector<sint32> &FaceGroup, vector<CMesh::CFace*>::it
 	for (i = 0; i < nNbFace; ++i, ++ItParseI)
 	{
 		FacesNext[i].face = *ItParseI;
-		FacesNext[i].cont[0] = FacesNext[i].cont[1] = FacesNext[i].cont[2] = -1;
-		FacesNext[i].nNbCont = 0;
+		FacesNext[i].cont.reserve(3);
 		FacesNext[i].added = false;
 	}
 
@@ -1451,18 +1058,11 @@ void SortFaceBySMoothGroup( vector<sint32> &FaceGroup, vector<CMesh::CFace*>::it
 		{
 			if (FaceContinuous (*ItParseI, *ItParseJ, false))
 			{
-				nlassert(FacesNext[j].nNbCont != 3);
-				if (FacesNext[j].nNbCont != 3)
-				{
-					FacesNext[j].cont[FacesNext[j].nNbCont] = i;
-					++FacesNext[j].nNbCont;
-				}
-				nlassert(FacesNext[i].nNbCont != 3);
-				if (FacesNext[i].nNbCont != 3)
-				{
-					FacesNext[i].cont[FacesNext[i].nNbCont] = j;
-					++FacesNext[i].nNbCont;
-				}
+				FacesNext[j].cont.resize (FacesNext[j].cont.size()+1);
+				FacesNext[j].cont[FacesNext[j].cont.size()-1] = i;
+
+				FacesNext[i].cont.resize (FacesNext[i].cont.size()+1);
+				FacesNext[i].cont[FacesNext[i].cont.size()-1] = j;
 			}
 		}
 	}
@@ -1489,7 +1089,7 @@ void SortFaceBySMoothGroup( vector<sint32> &FaceGroup, vector<CMesh::CFace*>::it
 			nCurSG_NbFace = 1;
 			for (nCurSG_NbFaceLeft = 1; nCurSG_NbFaceLeft > 0; --nCurSG_NbFaceLeft)
 			{
-				for (k = 0; k < FacesFinal[i].nNbCont; ++k)
+				for (k = 0; k < FacesFinal[i].cont.size(); ++k)
 					if (FacesNext[FacesFinal[i].cont[k]].added == false)
 					{
 						FacesNext[FacesFinal[i].cont[k]].added = true;
@@ -1508,57 +1108,6 @@ void SortFaceBySMoothGroup( vector<sint32> &FaceGroup, vector<CMesh::CFace*>::it
 	ItParseI = ItFaces;
 	for (i = 0; i < nNbFace; ++i, ++ItParseI)
 		*ItParseI = FacesFinal[i].face;
-		
-	/*
-	sint32 j, k, nGroupNb = 0, nGroupOffset = 1;
-	bool bFaceAdded;
-
-	// Bubble sort face
-
-	FaceGroup.resize(nNbFace);
-	for( j = 0; j < nNbFace; ++j )
-		FaceGroup[j] = 1;
-	vector<CMesh::CFace*>::iterator CurGrpBeg = ItFaces;
-	vector<CMesh::CFace*>::iterator CurGrpEnd = ItFaces;
-
-	for( nGroupOffset = 1; nGroupOffset <= nNbFace; )
-	{
-		do 
-		{
-			bFaceAdded = false;
-			vector<CMesh::CFace*>::iterator ItParseJ = CurGrpEnd;
-			++ItParseJ;
-			for( j = nGroupOffset; j < nNbFace; ++j )
-			{
-				// Is the face is connected to one of the current group
-				vector<CMesh::CFace*>::iterator ItParseK = CurGrpBeg;
-				for( k = 0; k < FaceGroup[nGroupNb]; ++k )
-				{
-					if( FaceContinuous( *ItParseK, *ItParseJ, false ) )
-					{
-						// Yes the face must be added at the end of the group
-						++CurGrpEnd;
-						CMesh::CFace *pFaceTemp = *CurGrpEnd;
-						*CurGrpEnd = *ItParseJ;
-						*ItParseJ = pFaceTemp;
-						nGroupOffset += 1;
-						FaceGroup[nGroupNb] += 1;
-						bFaceAdded = true;
-						break;
-					}
-					++ItParseK;
-				}
-				++ItParseJ;
-			}
-		} while( bFaceAdded ); // In this pass have we added faces ?
-		// No -> Next smooth group
-		++CurGrpEnd;
-		CurGrpBeg = CurGrpEnd;
-		++nGroupNb;
-		nGroupOffset += 1;
-	}
-	FaceGroup.resize(nGroupNb);
-	*/
 }
 
 
@@ -1709,186 +1258,7 @@ bool intersectionSphereCylinder (CBSphere &s, CVector &cyCenter, CVector &cyDir,
 }
 
 // -----------------------------------------------------------------------------------------------
-void CreatePiece( vector<uint8>& Piece, sint32& nSizeX, sint32& nSizeY, sint32 &nPosX, sint32 &nPosY,
-				 float lumx1, float lumy1,
-				 float lumx2, float lumy2, 
-				 float lumx3, float lumy3, uint8 nCol )
-{
-	double minx, miny;
-	double maxx, maxy;
-	int j,k;
-
-	if( nCol == 0 )
-		nCol = 1;
-	minx = lumx1;
-	if( minx > lumx2 ) minx = lumx2;
-	if( minx > lumx3 ) minx = lumx3;
-	maxx = lumx1;
-	if( maxx < lumx2 ) maxx = lumx2;
-	if( maxx < lumx3 ) maxx = lumx3;
-	miny = lumy1;
-	if( miny > lumy2 ) miny = lumy2;
-	if( miny > lumy3 ) miny = lumy3;
-	maxy = lumy1;
-	if( maxy < lumy2 ) maxy = lumy2;
-	if( maxy < lumy3 ) maxy = lumy3;
-
-	// Put the piece in the new basis (nPosX,nPosY)
-	nPosX = ((sint32)floor(minx-0.5));
-	nPosY = ((sint32)floor(miny-0.5));
-
-	lumx1 -= nPosX; lumy1 -= nPosY;
-	lumx2 -= nPosX; lumy2 -= nPosY;
-	lumx3 -= nPosX;	lumy3 -= nPosY;
-
-	nSizeX = 1 + ((sint32)floor(maxx+0.5)) - ((sint32)floor(minx-0.5));
-	nSizeY = 1 + ((sint32)floor(maxy+0.5)) - ((sint32)floor(miny-0.5));
-	Piece.resize( nSizeX*nSizeY );
-	for( j = 0; j < nSizeX*nSizeY; ++j )
-		Piece[j] = 0;
-
-// The square interact with the triangle if an edge of the square is cut by an edge of the triangle
-// Or the square is in the triangle
-	
-	for( j = 0; j < nSizeY-1; ++j )
-	for( k = 0; k < nSizeX-1; ++k )
-	{
-		// Is the square (j,k) is interacting with the triangle
-		// This means : The square contains a point of the triangle (can be done for the 3 points)
-		//              The triangle contains a point of the square
-		// If so then we have to turn on all the 4 pixels of the square
-		if( isInTriangleOrEdge(k+0.5,j+0.5,lumx1,lumy1,lumx2,lumy2,lumx3,lumy3) ||
-			isInTriangleOrEdge(k+1.5,j+0.5,lumx1,lumy1,lumx2,lumy2,lumx3,lumy3) ||
-			isInTriangleOrEdge(k+0.5,j+1.5,lumx1,lumy1,lumx2,lumy2,lumx3,lumy3) ||
-			isInTriangleOrEdge(k+1.5,j+1.5,lumx1,lumy1,lumx2,lumy2,lumx3,lumy3) )
-		{
-			Piece[k   + j    *nSizeX] = nCol;
-			Piece[1+k + j    *nSizeX] = nCol;
-			Piece[k   + (1+j)*nSizeX] = nCol;
-			Piece[1+k + (1+j)*nSizeX] = nCol;
-		}
-
-		if( segmentIntersection(k+0.5, j+0.5, k+1.5, j+0.5, lumx1, lumy1, lumx2, lumy2) ||
-			segmentIntersection(k+0.5, j+0.5, k+1.5, j+0.5, lumx2, lumy2, lumx3, lumy3) ||
-			segmentIntersection(k+0.5, j+0.5, k+1.5, j+0.5, lumx3, lumy3, lumx1, lumy1) ||
-
-			segmentIntersection(k+0.5, j+0.5, k+0.5, j+1.5, lumx1, lumy1, lumx2, lumy2) ||
-			segmentIntersection(k+0.5, j+0.5, k+0.5, j+1.5, lumx2, lumy2, lumx3, lumy3) ||
-			segmentIntersection(k+0.5, j+0.5, k+0.5, j+1.5, lumx3, lumy3, lumx1, lumy1) ||
-
-			segmentIntersection(k+1.5, j+1.5, k+1.5, j+0.5, lumx1, lumy1, lumx2, lumy2) ||
-			segmentIntersection(k+1.5, j+1.5, k+1.5, j+0.5, lumx2, lumy2, lumx3, lumy3) ||
-			segmentIntersection(k+1.5, j+1.5, k+1.5, j+0.5, lumx3, lumy3, lumx1, lumy1) ||
-
-			segmentIntersection(k+1.5, j+1.5, k+0.5, j+1.5, lumx1, lumy1, lumx2, lumy2) ||
-			segmentIntersection(k+1.5, j+1.5, k+0.5, j+1.5, lumx2, lumy2, lumx3, lumy3) ||
-			segmentIntersection(k+1.5, j+1.5, k+0.5, j+1.5, lumx3, lumy3, lumx1, lumy1) )
-		{
-			Piece[k   + j    *nSizeX] = nCol;
-			Piece[1+k + j    *nSizeX] = nCol;
-			Piece[k   + (1+j)*nSizeX] = nCol;
-			Piece[1+k + (1+j)*nSizeX] = nCol;
-		}
-
-	}
-	// For all the points of the triangle update the square
-	Piece[((sint32)(lumx1-0.5)) + ((sint32)(lumy1-0.5))*nSizeX] = nCol;
-	Piece[1+((sint32)(lumx1-0.5)) + ((sint32)(lumy1-0.5))*nSizeX] = nCol;
-	Piece[((sint32)(lumx1-0.5)) + (1+((sint32)(lumy1-0.5)))*nSizeX] = nCol;
-	Piece[1+((sint32)(lumx1-0.5)) + (1+((sint32)(lumy1-0.5)))*nSizeX] = nCol;
-
-	Piece[((sint32)(lumx2-0.5)) + ((sint32)(lumy2-0.5))*nSizeX] = nCol;
-	Piece[1+((sint32)(lumx2-0.5)) + ((sint32)(lumy2-0.5))*nSizeX] = nCol;
-	Piece[((sint32)(lumx2-0.5)) + (1+((sint32)(lumy2-0.5)))*nSizeX] = nCol;
-	Piece[1+((sint32)(lumx2-0.5)) + (1+((sint32)(lumy2-0.5)))*nSizeX] = nCol;
-	
-	Piece[((sint32)(lumx3-0.5)) + ((sint32)(lumy3-0.5))*nSizeX] = nCol;
-	Piece[1+((sint32)(lumx3-0.5)) + ((sint32)(lumy3-0.5))*nSizeX] = nCol;
-	Piece[((sint32)(lumx3-0.5)) + (1+((sint32)(lumy3-0.5)))*nSizeX] = nCol;
-	Piece[1+((sint32)(lumx3-0.5)) + (1+((sint32)(lumy3-0.5)))*nSizeX] = nCol;
-}
-
-// -----------------------------------------------------------------------------------------------
-void ResizeBitmap( vector<uint8> &vBitmap, sint32 &nSizeX, sint32 &nSizeY, sint32 nNewSizeX, sint32 nNewSizeY )
-{
-	vector<uint8> vImgTemp;
-	int i, j;
-
-	vImgTemp.resize(nNewSizeX*nNewSizeY);
-	for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-		vImgTemp[i] = 0;
-
-	for( j = 0; j < min(nSizeY,nNewSizeY); ++j )
-	for( i = 0; i < min(nSizeX,nNewSizeX); ++i )
-	{
-		vImgTemp[i+j*nNewSizeX] = vBitmap[i+j*nSizeX];
-	}
-
-	vBitmap.resize(nNewSizeX*nNewSizeY);
-	for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-		vBitmap[i] = vImgTemp[i];
-
-	nSizeX = nNewSizeX;
-	nSizeY = nNewSizeY;
-}
-
-// -----------------------------------------------------------------------------------------------
-// Same as ResizeBitmap but for 32 bits image
-//void ResizeBitmap32( CBitmap *pImage, sint32 nNewSizeX, sint32 nNewSizeY )
-//{
-//}
-
-// -----------------------------------------------------------------------------------------------
-bool PutPieceInLightMap( vector<uint8>& Piece, sint32 nPieceSizeX, sint32 nPieceSizeY, 
-						 vector<uint8>& LightMap, sint32 nLightMapSizeX, sint32 nLightMapSizeY,
-						 sint32 &nNewPosX, sint32 &nNewPosY )
-{
-	sint32 i, j, a, b;
-	bool bGoodPosition;
-
-	if( nPieceSizeX > nLightMapSizeX ) return false;
-	if( nPieceSizeY > nLightMapSizeY ) return false;
-
-	// For all position test if the piece can be put in
-	for( j = 0; j < (nLightMapSizeY-nPieceSizeY); ++j )
-	for( i = 0; i < (nLightMapSizeX-nPieceSizeX); ++i )
-	{
-		bGoodPosition = true;
-		for( b = 0; b < nPieceSizeY; ++b )
-		{
-			for( a = 0; a < nPieceSizeX; ++a )
-			{
-				if( Piece[a+b*nPieceSizeX] != 0 )
-					if( LightMap[(i+a)+(j+b)*nLightMapSizeX] != 0 )
-					{
-						bGoodPosition = false;
-						break;
-					}
-			}
-			if( bGoodPosition == false )
-				break;
-		}
-		if( bGoodPosition )
-		{
-			// Write the piece in the lightmap !!!
-			for( b = 0; b < nPieceSizeY; ++b )
-			{
-				for( a = 0; a < nPieceSizeX; ++a )
-				{
-					if( Piece[a+b*nPieceSizeX] != 0 )
-						LightMap[(i+a)+(j+b)*nLightMapSizeX] = Piece[a+b*nPieceSizeX];
-				}
-			}
-			nNewPosX = i;
-			nNewPosY = j;
-			return true;
-		}
-	}
-
-	return false;
-}
-
-// -----------------------------------------------------------------------------------------------
+// Automatic mapping of a face (dont remove)
 void MapFace( CMesh::CFace *pFace, vector<CVector> &Vertices, float rRatio )
 {
 	CVector V01 = Vertices[pFace->Corner[1].Vertex] - Vertices[pFace->Corner[0].Vertex];
@@ -2196,247 +1566,6 @@ void SortPlanesBySurface( vector<SLMPlane*> &planes )
 		}
 	}
 }
-/* // To keep
-void SortPlanesBySurface( vector<sint32> &PlaneGroup, vector<CMesh::CFace*>::iterator ItFace, sint32 nNbFace )
-{
-	sint32 i, j, k;
-	double rMinU = 1000000.0, rMaxU = -1000000.0, rMinV = 1000000.0, rMaxV = -1000000.0;
-
-	CMesh::CFace *pF;
-	vector< pair < sint32, sint32 > > sizes;
-
-	sizes.resize( PlaneGroup.size() );
-	// Get the size of surface for each plane
-	vector<CMesh::CFace*>::iterator ItParseI = ItFace;
-	for( i = 0; i < sizes.size(); ++i )
-	{
-		rMinU = 1000000.0; rMaxU = -1000000.0;
-		rMinV = 1000000.0; rMaxV = -1000000.0;
-		for( j = 0; j < PlaneGroup[i]; ++j )
-		{
-			pF = *ItParseI;
-			for( k = 0; k < 3; ++k )
-			{
-				if( rMinU > pF->Corner[k].Uvs[1].U ) rMinU = pF->Corner[k].Uvs[1].U;
-				if( rMaxU < pF->Corner[k].Uvs[1].U ) rMaxU = pF->Corner[k].Uvs[1].U;
-				if( rMinV > pF->Corner[k].Uvs[1].V ) rMinV = pF->Corner[k].Uvs[1].V;
-				if( rMaxV < pF->Corner[k].Uvs[1].V ) rMaxV = pF->Corner[k].Uvs[1].V;
-			}
-			++ItParseI;
-		}
-		sizes[i].first = i;
-		sizes[i].second = (rMaxU - rMinU) * (rMaxV - rMinV);
-	}
-	// Sort surfaces to put the biggest first
-	for( i = 0; i < sizes.size()-1; ++i )
-	for( j = i+1; j < sizes.size(); ++j )
-	{
-		if( sizes[i].second < sizes[j].second )
-		{
-			pair< sint32, sint32 > tmp = sizes[i];
-			sizes[i] = sizes[j];
-			sizes[j] = tmp;
-		}
-	}
-
-	vector<CMesh::CFace*> TempGrp;
-	vector<CMesh::CFace*>::iterator ItParseOut;
-	TempGrp.resize( nNbFace );
-	
-	ItParseOut = TempGrp.begin();
-	for( i = 0; i < sizes.size(); ++i )
-	{
-		// Treating group 
-		j = sizes[i].first;
-		ItParseI = ItFace;
-		// Positionnement of the pointer to the first face of the j th group
-		for( k = 0; k < j; ++k ) 
-			ItParseI += PlaneGroup[k];
-		// Copy the group j at the end of TempGrp
-		for( k = 0; k < PlaneGroup[j]; ++k )
-		{
-			*ItParseOut = *ItParseI;
-			++ItParseOut;
-			++ItParseI;
-		}
-	}
-	// So now we just have to copy back the temporary group
-	ItParseOut = TempGrp.begin();
-	ItParseI = ItFace;
-	for( i = 0; i < nNbFace; ++i )
-	{
-		*ItParseI = *ItParseOut;
-		++ItParseOut;
-		++ItParseI;
-	}
-	// And the same with the group delimiter
-	for( i = 0; i < sizes.size(); ++i )
-	{
-		j = sizes[i].first;
-		sizes[i].first = PlaneGroup[j];
-	}
-	for( i = 0; i < sizes.size(); ++i )
-		PlaneGroup[i] = sizes[i].first;
-}
-*/
-
-// -----------------------------------------------------------------------------------------------
-void CreateLMPlaneFromFace( SLMPlane &Out, CMesh::CFace *pF )
-{
-	TTicks ttTemp = CTime::getPerformanceTime();
-	double	lumx1 = pF->Corner[0].Uvs[1].U, lumy1 = pF->Corner[0].Uvs[1].V, 
-			lumx2 = pF->Corner[1].Uvs[1].U, lumy2 = pF->Corner[1].Uvs[1].V, 
-			lumx3 = pF->Corner[2].Uvs[1].U, lumy3 = pF->Corner[2].Uvs[1].V;
-	double minx, miny;
-	double maxx, maxy;
-	sint32 j, k;
-
-	minx = lumx1;
-	if( minx > lumx2 ) minx = lumx2;
-	if( minx > lumx3 ) minx = lumx3;
-	maxx = lumx1;
-	if( maxx < lumx2 ) maxx = lumx2;
-	if( maxx < lumx3 ) maxx = lumx3;
-	miny = lumy1;
-	if( miny > lumy2 ) miny = lumy2;
-	if( miny > lumy3 ) miny = lumy3;
-	maxy = lumy1;
-	if( maxy < lumy2 ) maxy = lumy2;
-	if( maxy < lumy3 ) maxy = lumy3;
-
-	// Put the piece in the new basis (nPosX,nPosY)
-	//Out.x = ((sint32)floor(minx-0.5));
-	//Out.y = ((sint32)floor(miny-0.5));
-	sint32 decalX = ((sint32)floor(minx-0.5)) - Out.x;
-	sint32 decalY = ((sint32)floor(miny-0.5)) - Out.y;
-	sint32 sizeX = 1 + ((sint32)floor(maxx+0.5)) - ((sint32)floor(minx-0.5));
-	sint32 sizeY = 1 + ((sint32)floor(maxy+0.5)) - ((sint32)floor(miny-0.5));
-
-	lumx1 -= Out.x; lumy1 -= Out.y;
-	lumx2 -= Out.x; lumy2 -= Out.y;
-	lumx3 -= Out.x;	lumy3 -= Out.y;
-
-	//TTicks ttTemp2 = CTime::getPerformanceTime();
-	//Out.resize( 1 + ((sint32)floor(maxx+0.5)) - ((sint32)floor(minx-0.5)),
-	//			1 + ((sint32)floor(maxy+0.5)) - ((sint32)floor(miny-0.5)) );
-	//timerCreateResize += CTime::getPerformanceTime() - ttTemp2;
-	//for( j = 0; j < Out.w*Out.h; ++j )
-	//	Out.msk[j] = 0;
-
-// The square interact with the triangle if an edge of the square is cut by an edge of the triangle
-// Or the square is in the triangle
-	
-	for( j = decalY; j < (decalY+sizeY-1); ++j )
-	for( k = decalX; k < (decalX+sizeX-1); ++k )
-	{
-		// Is the square (j,k) is interacting with the triangle
-		// This means : The square contains a point of the triangle (can be done for the 3 points)
-		//              The triangle contains a point of the square
-		// If so then we have to turn on all the 4 pixels of the square
-		if( isInTriangleOrEdge(k+0.5,j+0.5,lumx1,lumy1,lumx2,lumy2,lumx3,lumy3) ||
-			isInTriangleOrEdge(k+1.5,j+0.5,lumx1,lumy1,lumx2,lumy2,lumx3,lumy3) ||
-			isInTriangleOrEdge(k+0.5,j+1.5,lumx1,lumy1,lumx2,lumy2,lumx3,lumy3) ||
-			isInTriangleOrEdge(k+1.5,j+1.5,lumx1,lumy1,lumx2,lumy2,lumx3,lumy3) )
-		{
-			Out.msk[k   + j    *Out.w] = 1;
-			Out.msk[1+k + j    *Out.w] = 1;
-			Out.msk[k   + (1+j)*Out.w] = 1;
-			Out.msk[1+k + (1+j)*Out.w] = 1;
-		}
-		else
-		if( segmentIntersection(k+0.5, j+0.5, k+1.5, j+0.5, lumx1, lumy1, lumx2, lumy2) ||
-			segmentIntersection(k+0.5, j+0.5, k+1.5, j+0.5, lumx2, lumy2, lumx3, lumy3) ||
-			segmentIntersection(k+0.5, j+0.5, k+1.5, j+0.5, lumx3, lumy3, lumx1, lumy1) ||
-
-			segmentIntersection(k+0.5, j+0.5, k+0.5, j+1.5, lumx1, lumy1, lumx2, lumy2) ||
-			segmentIntersection(k+0.5, j+0.5, k+0.5, j+1.5, lumx2, lumy2, lumx3, lumy3) ||
-			segmentIntersection(k+0.5, j+0.5, k+0.5, j+1.5, lumx3, lumy3, lumx1, lumy1) ||
-
-			segmentIntersection(k+1.5, j+1.5, k+1.5, j+0.5, lumx1, lumy1, lumx2, lumy2) ||
-			segmentIntersection(k+1.5, j+1.5, k+1.5, j+0.5, lumx2, lumy2, lumx3, lumy3) ||
-			segmentIntersection(k+1.5, j+1.5, k+1.5, j+0.5, lumx3, lumy3, lumx1, lumy1) ||
-
-			segmentIntersection(k+1.5, j+1.5, k+0.5, j+1.5, lumx1, lumy1, lumx2, lumy2) ||
-			segmentIntersection(k+1.5, j+1.5, k+0.5, j+1.5, lumx2, lumy2, lumx3, lumy3) ||
-			segmentIntersection(k+1.5, j+1.5, k+0.5, j+1.5, lumx3, lumy3, lumx1, lumy1) )
-		{
-			Out.msk[k   + j    *Out.w] = 1;
-			Out.msk[1+k + j    *Out.w] = 1;
-			Out.msk[k   + (1+j)*Out.w] = 1;
-			Out.msk[1+k + (1+j)*Out.w] = 1;
-		}
-
-	}
-	// For all the points of the triangle update the square
-
-// TODO : Test if we need it !
-
-	Out.msk[((sint32)(lumx1-0.5))   + ((sint32)(lumy1-0.5))    *Out.w] = 1;
-	Out.msk[1+((sint32)(lumx1-0.5)) + ((sint32)(lumy1-0.5))    *Out.w] = 1;
-	Out.msk[((sint32)(lumx1-0.5))   + (1+((sint32)(lumy1-0.5)))*Out.w] = 1;
-	Out.msk[1+((sint32)(lumx1-0.5)) + (1+((sint32)(lumy1-0.5)))*Out.w] = 1;
-
-	Out.msk[((sint32)(lumx2-0.5))   + ((sint32)(lumy2-0.5))    *Out.w] = 1;
-	Out.msk[1+((sint32)(lumx2-0.5)) + ((sint32)(lumy2-0.5))    *Out.w] = 1;
-	Out.msk[((sint32)(lumx2-0.5))   + (1+((sint32)(lumy2-0.5)))*Out.w] = 1;
-	Out.msk[1+((sint32)(lumx2-0.5)) + (1+((sint32)(lumy2-0.5)))*Out.w] = 1;
-	
-	Out.msk[((sint32)(lumx3-0.5))   + ((sint32)(lumy3-0.5))    *Out.w] = 1;
-	Out.msk[1+((sint32)(lumx3-0.5)) + ((sint32)(lumy3-0.5))    *Out.w] = 1;
-	Out.msk[((sint32)(lumx3-0.5))   + (1+((sint32)(lumy3-0.5)))*Out.w] = 1;
-	Out.msk[1+((sint32)(lumx3-0.5)) + (1+((sint32)(lumy3-0.5)))*Out.w] = 1;
-	timerCreate += CTime::getPerformanceTime() - ttTemp;
-}
-
-// -----------------------------------------------------------------------------------------------
-void CreateLMPlaneFromFaceGroup( SLMPlane &Plane, vector<CMesh::CFace*>::iterator ItFace, uint32 nNbFace )
-{
-	uint32 i, j;
-	double rMinU = 1000000.0, rMaxU = -1000000.0, rMinV = 1000000.0, rMaxV = -1000000.0;
-	vector<CMesh::CFace*>::iterator ItParseI = ItFace;
-	CMesh::CFace *pF;
-
-	Plane.faces.resize( nNbFace );
-
-	for( i = 0; i < nNbFace; ++i )
-	{
-		pF = *ItParseI;
-		for( j = 0; j < 3; ++j )
-		{
-			if( rMinU > pF->Corner[j].Uvs[1].U ) rMinU = pF->Corner[j].Uvs[1].U;
-			if( rMaxU < pF->Corner[j].Uvs[1].U ) rMaxU = pF->Corner[j].Uvs[1].U;
-			if( rMinV > pF->Corner[j].Uvs[1].V ) rMinV = pF->Corner[j].Uvs[1].V;
-			if( rMaxV < pF->Corner[j].Uvs[1].V ) rMaxV = pF->Corner[j].Uvs[1].V;
-		}
-		Plane.faces[i] = pF;
-		++ItParseI;
-	}
-
-	uint32 w = ( 1 + ((sint32)floor( rMaxU + 0.5 )) - ((sint32)floor( rMinU - 0.5 )) );
-	uint32 h = ( 1 + ((sint32)floor( rMaxV + 0.5 )) - ((sint32)floor( rMinV - 0.5 )) );
-	Plane.resize( w, h );
-	Plane.x = ( ((sint32)floor( rMinU - 0.5 )) );
-	Plane.y = ( ((sint32)floor( rMinV - 0.5 )) );
-	for( j = 0; j < Plane.w*Plane.h; ++j )
-		Plane.msk[j] = 0;
-
-	ItParseI = ItFace;
-	for( i = 0; i < nNbFace; ++i )
-	{
-		pF = *ItParseI;
-		// Create Mask
-		//SLMPlane Piece;
-		//CreateLMPlaneFromFace( Piece, pF );
-		// Because all is in absolute coordinate
-		//Piece.x -= Plane.x;
-		//Piece.y -= Plane.y;
-		//Piece.putIn( Plane );
-
-		CreateLMPlaneFromFace( Plane, pF );
-
-		++ItParseI;
-	}
-}
 
 // -----------------------------------------------------------------------------------------------
 void ModifyLMPlaneWithOverSampling( SLMPlane *pPlane, double rOverSampling, bool bCreateMask )
@@ -2463,18 +1592,9 @@ void ModifyLMPlaneWithOverSampling( SLMPlane *pPlane, double rOverSampling, bool
 		for( i = 0; i < nNbFace; ++i )
 		{
 			CMesh::CFace *pF = *ItFace;
-			//SLMPlane Piece;
-			//TTicks ttTemp3 = CTime::getPerformanceTime();
-			//CreateLMPlaneFromFace( Piece, pF );
-			//timerModifyCreate += CTime::getPerformanceTime() - ttTemp3;
-			//Piece.x -= pPlane->x;
-			//Piece.y -= pPlane->y;
-			//TTicks ttTemp4 = CTime::getPerformanceTime();
-			//Piece.putIn( *pPlane, true );
-			//timerModifyPutIn += CTime::getPerformanceTime() - ttTemp4;
 
 			TTicks ttTemp3 = CTime::getPerformanceTime();
-			CreateLMPlaneFromFace( *pPlane, pF );
+			pPlane->createFromFace (pF);
 			timerModifyCreate += CTime::getPerformanceTime() - ttTemp3;
 
 			++ItFace;
@@ -3658,6 +2778,80 @@ void CExportNel::deleteLM(INode& ZeNode, CExportNelOptions& opt)
 	}
 }
 
+// In : set of faces
+// Out : planes
+/*
+void computeSetOfFaces (vector<SLMPlane*>&planes, )
+*/
+
+// Object that touch the reference object
+struct SSurObj
+{
+	CMesh::CMeshBuild *pMB;
+	CMeshBase::CMeshBaseBuild *pMBB;
+	vector<CMesh::CFace*> faces;
+};
+
+// Get the objects next to one
+void sans_majuscule_au_debut_LinkToObjectAround (CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB, 
+												 vector<CVector>& vertices,
+												 SWorldRT& wrt)
+{
+	CAABBox ref = getMeshBBox (*pMB, *pMBB, true);
+	vector<SSurObj> objs;
+	uint32 i, k, l, m;
+
+	for( i = 0; wrt.vMB.size(); ++i)
+	{
+		if (ref.intersect (getMeshBBox (*wrt.vMB[i], *wrt.vMBB[i], false)))
+		{
+			SSurObj oTmp;
+			vector<sint32> ivert;
+			oTmp.pMB = wrt.vMB[i];
+			oTmp.pMBB = wrt.vMBB[i];
+			// check a vertex continuity (precision is 1 centimeter)
+			for (k = 0; k < vertices.size(); ++k)
+			for (l = 0; l < wrt.vMB[i]->Vertices.size(); ++l)
+			{
+				float dist = (vertices[k] - wrt.vMB[i]->Vertices[l]).norm();
+				if (dist < 0.01)
+				{
+					ivert.push_back (l);
+				}
+			}
+			
+			if (ivert.size() > 0)
+			{
+				// Get all faces that contains at least one shared vertex
+				for (k = 0; k < wrt.vMB[i]->Faces.size(); ++k)
+				for (l = 0; l < ivert.size(); ++l)
+				{
+					if ((wrt.vMB[i]->Faces[k].Corner[0].Vertex == ivert[l]) ||
+						(wrt.vMB[i]->Faces[k].Corner[1].Vertex == ivert[l]) ||
+						(wrt.vMB[i]->Faces[k].Corner[2].Vertex == ivert[l]))
+					{
+						bool bToAdd = true;
+						// Check if the face is not already added
+						for (m = 0; m < oTmp.faces.size(); ++m)
+						if (oTmp.faces[m] == &wrt.vMB[i]->Faces[k])
+						{
+							bToAdd = false;
+							break;
+						}
+						if (bToAdd)
+							oTmp.faces.push_back (&wrt.vMB[i]->Faces[k]);
+					}
+				}
+				// Add object
+				objs.push_back (oTmp);
+			}
+		}
+	}
+
+	// Here objs contains the objects of the worldRT structure that touch the reference mesh
+	// And it contains the pointer to the face that must be rendered to give continuity to our object
+}
+
 
 // -----------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
@@ -3761,21 +2955,21 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			gOptions.FeedBack->setLine (2, sTmp);
 			gOptions.FeedBack->update ();
 		}
-		SortFaceByMaterialId( FaceGroupByMat, AllFaces.begin(), AllFaces.size() );
-		if( ! isAllFaceMapped( AllFaces.begin(), AllFaces.size() ) )
+		SortFaceByMaterialId (FaceGroupByMat, AllFaces.begin(), AllFaces.size());
+		if( ! isAllFaceMapped (AllFaces.begin(), AllFaces.size() ) )
 		{
 			string thetext;
 			//thetext = "Object ";
 			thetext += ZeNode.GetName();
-			thetext = "have not all this faces mapped";
-			MessageBox( NULL, thetext.c_str(), "LightMap Warning", MB_OK|MB_ICONERROR );
+			thetext = "have all faces NOT mapped (UV2)";
+			MessageBox( NULL, thetext.c_str(), "LightMap ERROR", MB_OK|MB_ICONERROR );
 			unbuildWorldRT( WorldRT );
 			return false;
 		}
 
 		// PATCH
-		//FaceGroupByMat.resize(1);
-		//FaceGroupByMat[0] = AllFaces.size();
+		FaceGroupByMat.resize(1);
+		FaceGroupByMat[0] = AllFaces.size();
 
 		offsetMat = 0;
 		for( uint32 nMat = 0; nMat < FaceGroupByMat.size(); ++nMat )
@@ -3834,8 +3028,8 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 					for( nLight = 0; nLight < vvLights.size()-1; ++nLight )
 						AllPlanes[AllPlanesPrevSize+nPlaneNb]->newLayer();
 					// Fill planes (part of lightmap)
-					CreateLMPlaneFromFaceGroup( *AllPlanes[AllPlanesPrevSize+nPlaneNb], 
-												AllFaces.begin()+offsetPlane, FaceGroupByPlane[nPlaneNb] );
+					AllPlanes[AllPlanesPrevSize+nPlaneNb]->createFromFaceGroup( AllFaces.begin()+offsetPlane, 
+																				FaceGroupByPlane[nPlaneNb] );
 					// Next group of face with the same plane in the same smooth group of the same material
 					offsetPlane += FaceGroupByPlane[nPlaneNb];
 				}
@@ -3847,7 +3041,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
 					{
 						TempPlanes[nPlaneNb] = new SLMPlane;
-						TempPlanes[nPlaneNb]->createFrom(*AllPlanes[AllPlanesPrevSize+nPlaneNb]);
+						TempPlanes[nPlaneNb]->createFromPlane (*AllPlanes[AllPlanesPrevSize+nPlaneNb]);
 					}
 					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
 					{					
@@ -3963,7 +3157,8 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			for( i = 0; i < pMBB->Materials.size(); ++i )
 			if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
 			{
-				/// \todo add an export option to do that: pLightMap->setFilterMode(ITexture::Nearest,ITexture::NearestMipMapOff);
+				if (gOptions.bShowLumel)
+					pLightMap->setFilterMode (ITexture::Nearest, ITexture::NearestMipMapOff);
 				pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );				
 				addLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].GroupName, (uint8)i, (uint8)nLightMapNb );				
 			}

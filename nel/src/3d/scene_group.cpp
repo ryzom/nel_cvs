@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.13 2001/08/15 12:09:40 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.14 2001/08/16 15:50:00 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -359,6 +359,7 @@ bool CInstanceGroup::addToScene (CScene& scene)
 		_ClusterInstances[i]->_BBox = _ClusterInfos[i]._BBox;
 		_ClusterInstances[i]->FatherVisible = _ClusterInfos[i].FatherVisible;
 		_ClusterInstances[i]->VisibleFromFather = _ClusterInfos[i].VisibleFromFather;
+		_ClusterInstances[i]->Name = _ClusterInfos[i].Name;
 		pClipTrav->registerCluster (_ClusterInstances[i]);
 		pClipTrav->unlink (NULL, _ClusterInstances[i]);
 	}

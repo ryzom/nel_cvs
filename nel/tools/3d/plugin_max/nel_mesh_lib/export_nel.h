@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.21 2001/08/09 15:21:23 corvazier Exp $
+ * $Id: export_nel.h,v 1.22 2001/08/16 15:50:00 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,6 +102,7 @@ struct CExportNelOptions
 	sint32 nOverSampling;
 	bool bExcludeNonSelected;
 	IProgress *FeedBack;
+	bool bShowLumel;
 
 
 	CExportNelOptions::CExportNelOptions()
@@ -109,23 +110,26 @@ struct CExportNelOptions
 		// If no configuration file
 		bShadow = false;
 		bExportLighting = false;
-		sExportLighting = "c:\\mydir\\lightmap\\";
+		sExportLighting = "c:\\temp";
 		nExportLighting = 0; // Normal lighting
 		rLumelSize = 0.25f;
 		nOverSampling = 1;
 		bExcludeNonSelected = false;
 		FeedBack = NULL;
+		bShowLumel = false;
 	}
 
 	void serial(NLMISC::IStream& stream)
 	{
-		stream.serial( bShadow );
-		stream.serial( bExportLighting );
-		stream.serial( sExportLighting );
-		stream.serial( nExportLighting );
-		stream.serial( rLumelSize );
-		stream.serial( nOverSampling );
-		stream.serial( bExcludeNonSelected );
+		sint version = stream.serialVersion (1);
+		stream.serial (bShowLumel);
+		stream.serial (bShadow);
+		stream.serial (bExportLighting);
+		stream.serial (sExportLighting);
+		stream.serial (nExportLighting);
+		stream.serial (rLumelSize);
+		stream.serial (nOverSampling);
+		stream.serial (bExcludeNonSelected);
 	}
 };
 

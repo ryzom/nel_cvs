@@ -66,7 +66,7 @@ LIB32=xilink6.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I "D:\3DSMAX3\Maxsdk\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "__STL_DEBUG" /Yu"stdafx.h" /FD /GZ /Zm200 /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "D:\3DSMAX3\Maxsdk\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "__STL_DEBUG" /FR /Yu"stdafx.h" /FD /GZ /Zm200 /c
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -139,6 +139,10 @@ SOURCE=.\calc_lm.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\calc_lm_plane.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\export_anim.cpp
 # End Source File
 # Begin Source File
@@ -198,6 +202,10 @@ SOURCE=.\stdafx.cpp
 # Begin Source File
 
 SOURCE=.\calc_lm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\calc_lm_plane.h
 # End Source File
 # Begin Source File
 

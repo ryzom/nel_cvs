@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.10 2001/07/30 14:40:14 besson Exp $
+ * $Id: clip_trav.cpp,v 1.11 2001/08/16 15:50:00 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,6 +156,8 @@ void CClipTrav::traverse()
 			++itAcc;
 		}
 	}
+
+	/// \todo check if necessary ... I think not 
 	if (bInWorld)
 	{
 		link (NULL, RootCluster);

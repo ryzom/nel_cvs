@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.1 2001/07/30 14:40:14 besson Exp $
+ * $Id: cluster.h,v 1.2 2001/08/16 15:50:00 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,6 +114,7 @@ public:
 	CQuadGrid<CCluster*>::CIterator AccelIt;
 
 	// Additionnal properties
+	std::string Name;
 	bool FatherVisible;
 	bool VisibleFromFather;
 	CCluster *Father;

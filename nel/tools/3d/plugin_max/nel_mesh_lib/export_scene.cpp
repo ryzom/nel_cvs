@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.4 2001/08/15 16:50:14 vizerie Exp $
+ * $Id: export_scene.cpp,v 1.5 2001/08/16 15:50:00 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,9 +68,9 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 	{
 		INode *pNode = vectNode[i];
 
-		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 0);
+		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 32);
 
-		if (nAccelType == 0) // If not an accelerator
+		if ((nAccelType&3) == 0) // If not an accelerator
 		if (!RPO::isZone (*pNode, tvTime))
 		if (CExportNel::isMesh (*pNode, tvTime))
 		{
@@ -85,13 +85,13 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 	{
 		INode *pNode = *it;
 
-		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 0);
+		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 32);
 
-		if (nAccelType == 0) // If not an accelerator
+		if ((nAccelType&3) == 0) // If not an accelerator
 		if (!RPO::isZone( *pNode, tvTime ))
 		if (CExportNel::isMesh( *pNode, tvTime ))
 		{
-			aIGArray[nNumIG].DontAddToScene = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_DONT_ADD_TO_SCENE, 0);
+			aIGArray[nNumIG].DontAddToScene = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_DONT_ADD_TO_SCENE, 0)?true:false;
 			aIGArray[nNumIG].InstanceName = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_INSTANCE_NAME, "");
 
 			INode *pParent = pNode->GetParentNode();
@@ -105,8 +105,8 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 				{
 					INode *pNode2 = vectNode[j];
 
-					int nAccelType2 = CExportNel::getScriptAppData (pNode2, NEL3D_APPDATA_ACCEL, 0);
-					if (nAccelType2 == 0) // If not an accelerator
+					int nAccelType2 = CExportNel::getScriptAppData (pNode2, NEL3D_APPDATA_ACCEL, 32);
+					if ((nAccelType2&3) == 0) // If not an accelerator
 					if (!RPO::isZone( *pNode2, tvTime ))
 					if (CExportNel::isMesh( *pNode2, tvTime ))
 					{
@@ -141,9 +141,9 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 	{
 		INode *pNode = *it;
 
-		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 0);
+		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 32);
 
-		if (nAccelType == 0) // If not an accelerator
+		if ((nAccelType&3) == 0) // If not an accelerator
 		if (!RPO::isZone (*pNode, tvTime))
 		if (CExportNel::isMesh (*pNode, tvTime))
 		{
@@ -212,12 +212,11 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 	{
 		INode *pNode = *it;
 
-		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 0);
-		bool bFatherVisible = nAccelType&4;
-		bool bVisibleFromFather = nAccelType&8;
-		nAccelType = nAccelType&3;
+		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 32);
+		bool bFatherVisible = nAccelType&4?true:false;
+		bool bVisibleFromFather = nAccelType&8?true:false;
 
-		if (nAccelType == 2) // If cluster
+		if ((nAccelType&3) == 2) // If cluster
 		if (!RPO::isZone (*pNode, tvTime))
 		if (CExportNel::isMesh(*pNode, tvTime))
 		{
@@ -244,6 +243,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 
 			clusterTemp.FatherVisible = bFatherVisible;
 			clusterTemp.VisibleFromFather = bVisibleFromFather;
+			clusterTemp.Name = pNode->GetName();
 
 			vClusters.push_back (clusterTemp);
 			delete pMB;
@@ -258,7 +258,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 	{
 		INode *pNode = *it;
 
-		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 0);
+		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 32);
 
 		if ((nAccelType&3) == 1) // If Portal
 		if (!RPO::isZone (*pNode, tvTime))
@@ -272,7 +272,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 
 			convertToWorldCoordinate( pMB, pMBB );
 
-			vector<uint32> poly;
+			vector<sint32> poly;
 			vector<bool> facechecked;
 			facechecked.resize (pMB->Faces.size());
 			for (j = 0; j < pMB->Faces.size(); ++j)
@@ -311,7 +311,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 				{
 					// insert an empty space in poly between m and m+1
 					poly.resize (poly.size()+1);
-					for (int a = poly.size()-2; a > m; --a)
+					for (uint32 a = poly.size()-2; a > m; --a)
 						poly[a+1] = poly[a];
 					poly[m+1] = pMB->Faces[j].Corner[(k+2)%3].Vertex;
 					facechecked[j] = true;
@@ -363,16 +363,17 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 		}
 	}
 
-	// Link instance and clusters
+	// Link instance to clusters (an instance has a list of clusters)
 	nNumIG = 0;
 	it = vectNode.begin();
 	for (i = 0; i < (sint)vectNode.size(); ++i, ++it)
 	{
 		INode *pNode = *it;
 
-		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 0);
+		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 32);
 
-		if (nAccelType == 0) // If not an accelerator
+		if ((nAccelType&3) == 0) // If not an accelerator
+		if (nAccelType&32) // Is the flag clusterize set ?
 		if (!RPO::isZone (*pNode, tvTime))
 		if (CExportNel::isMesh (*pNode, tvTime))
 		{

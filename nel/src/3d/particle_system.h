@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.27 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: particle_system.h,v 1.28 2002/10/14 09:48:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -527,11 +527,16 @@ public:
 			/// set the number of tree the system may use. If not clled this will be the max
 			void setNumTris(uint numFaces);
 
-
 			/** Ask for the particle system to reevaluate the max number of faces it may need.
 			  * You don't usually need to call this
 			  */
 			void notifyMaxNumFacesChanged(void);
+
+			/// Test whether load balancing has been activated for that system
+			bool isLoadBalancingEnabled() const { return _EnableLoadBalancing; }
+
+			/// Enable / disable load balancing. By default its on
+			void enableLoadBalancing(bool enabled = true);
 		// @}
 
 	//*****************************************************************************************************
@@ -868,7 +873,7 @@ private:
 	bool										_AutoLOD;
 	bool										_KeepEllapsedTimeForLifeUpdate;
 	bool										_AutoLODSkipParticles;
-	
+	bool										_EnableLoadBalancing;	
 };
 
 

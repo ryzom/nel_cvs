@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.52 2002/10/10 13:28:01 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.53 2002/10/14 09:48:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,7 +101,8 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _Sharing(false),
 									 _AutoLOD(false),
 									 _KeepEllapsedTimeForLifeUpdate(false),
-									 _AutoLODSkipParticles(false)
+									 _AutoLODSkipParticles(false),
+									 _EnableLoadBalancing(true)
 {
 	for (uint k = 0; k < MaxPSUserParam; ++k) _UserParam[k] = 0;
 }
@@ -149,9 +150,19 @@ void CParticleSystem::reactivateSound()
 
 
 ///=======================================================================================
+void CParticleSystem::enableLoadBalancing(bool enabled /*=true*/)
+{
+	if (enabled)
+	{
+		notifyMaxNumFacesChanged();
+	}
+	_EnableLoadBalancing = enabled;
+}
+
+///=======================================================================================
 void CParticleSystem::notifyMaxNumFacesChanged(void)
 {
-	
+	if (!_EnableLoadBalancing) return;
 	_MaxNumFacesWanted = 0;	
 	for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{				
@@ -163,7 +174,7 @@ void CParticleSystem::notifyMaxNumFacesChanged(void)
 ///=======================================================================================
 float CParticleSystem::getWantedNumTris(float dist)
 {
-			 	 
+	if (!_EnableLoadBalancing) return 0; // no contribution to the load balancing
 	if (dist > _MaxViewDist) return 0;
 	float retValue = ((1.f - dist * _InvMaxViewDist) * _MaxNumFacesWanted);	
 	///nlassertex(retValue >= 0 && retValue < 10000, ("dist = %f, _MaxViewDist = %f, _MaxNumFacesWanted = %d, retValue = %f",  dist, _MaxViewDist, _MaxNumFacesWanted, retValue));
@@ -174,21 +185,29 @@ float CParticleSystem::getWantedNumTris(float dist)
 ///=======================================================================================
 void CParticleSystem::setNumTris(uint numFaces)
 {
-	float modelDist = (_SysMat.getPos() - _InvertedViewMat.getPos()).norm();
-	/*uint numFaceWanted = (uint) getWantedNumTris(modelDist);*/
+	if (_EnableLoadBalancing)
+	{	
+		float modelDist = (_SysMat.getPos() - _InvertedViewMat.getPos()).norm();
+		/*uint numFaceWanted = (uint) getWantedNumTris(modelDist);*/
 
-	const float epsilon = 10E-5f;
+		const float epsilon = 10E-5f;
 
 
-	uint wantedNumTri = (uint) getWantedNumTris(modelDist);
-	if (numFaces >= wantedNumTri || wantedNumTri == 0 || _MaxNumFacesWanted == 0 || modelDist < epsilon)
-	{ 
-		_InvCurrentViewDist = _InvMaxViewDist;
+		uint wantedNumTri = (uint) getWantedNumTris(modelDist);
+		if (numFaces >= wantedNumTri || wantedNumTri == 0 || _MaxNumFacesWanted == 0 || modelDist < epsilon)
+		{ 
+			_InvCurrentViewDist = _InvMaxViewDist;
+		}
+		else
+		{
+			
+			_InvCurrentViewDist = (_MaxNumFacesWanted - numFaces) / ( _MaxNumFacesWanted * modelDist);
+		}
 	}
 	else
 	{
-		
-		_InvCurrentViewDist = (_MaxNumFacesWanted - numFaces) / ( _MaxNumFacesWanted * modelDist);
+		// always take full detail when there's no load balancing
+		_InvCurrentViewDist = _InvMaxViewDist;
 	}
 }
 
@@ -197,7 +216,7 @@ void CParticleSystem::setNumTris(uint numFaces)
 /// dtor
 CParticleSystem::~CParticleSystem()
 {
-	for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
+ 	for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{
 		delete *it;
 	}
@@ -242,15 +261,18 @@ void CParticleSystem::stepLocated(TPSProcessPass pass, TAnimationTime et, TAnima
 
 
 ///=======================================================================================
-/* inline */ void CParticleSystem::updateLODRatio()
+inline void CParticleSystem::updateLODRatio()
 {
+	// temp
+	CVector sysPos = _SysMat.getPos();
+	CVector obsPos = _InvertedViewMat.getPos();
 	const CVector d = _SysMat.getPos() - _InvertedViewMat.getPos();		
 	_OneMinusCurrentLODRatio = 1.f - (d.norm() * _InvCurrentViewDist);
 	NLMISC::clamp(_OneMinusCurrentLODRatio, 0.f, 1.f);
 }
 
 ///=======================================================================================
-/* inline */ void CParticleSystem::updateColor()
+inline void CParticleSystem::updateColor()
 {
 	if (_ColorAttenuationScheme)
 	{
@@ -277,7 +299,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			stepLocated(PSSolidRender, ellapsedTime, ellapsedTime);
 
 		break;
-		case BlendRender:
+		case BlendRender:			
 			/// When shared, the LOD ratio must be computed there
 			if (_Sharing)
 			{
@@ -286,7 +308,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			// update time
 			++_Date; 
 			// update global color
-			updateColor();
+			updateColor();			
 			stepLocated(PSBlendRender, ellapsedTime, ellapsedTime);
 		break;
 		case ToolRender:
@@ -348,8 +370,8 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 ///=======================================================================================
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {		
-	sint version =  f.serialVersion(10);	
-		
+	sint version =  f.serialVersion(11);			
+	// version 11: enable load balancing flag 
 	// version 9: Sharing flag added
 	//            Auto-lod parameters
 	//            New integration flag
@@ -453,6 +475,11 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		}
 		f.serial(_KeepEllapsedTimeForLifeUpdate);
 		f.serialPolyPtr(_ColorAttenuationScheme);
+	}
+
+	if (version >= 11)
+	{
+		f.serial(_EnableLoadBalancing);
 	}
 	
 

@@ -1,7 +1,7 @@
 /** \file view_cs.cpp
  * viewer of cluster system
  *
- * $Id: view_cs.cpp,v 1.4 2004/03/12 17:55:07 berenguier Exp $
+ * $Id: view_cs.cpp,v 1.5 2004/05/19 08:41:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -288,7 +288,7 @@ int CALLBACK WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 			{
 				TextContext.printfAt (0, 1, "AutoDetect : ON");
 				
-				pClipTrav->fullSearch (vCluster, pClipTrav->RootCluster->Group, pClipTrav->CamPos);
+				pClipTrav->fullSearch (vCluster, pClipTrav->CamPos);
 
 				for (uint32 i = 0; i < DispCS.size(); ++i)
 				{

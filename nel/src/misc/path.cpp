@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.17 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: path.cpp,v 1.18 2002/02/07 13:44:04 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -32,6 +32,8 @@
 
 #ifdef NL_OS_WINDOWS
 #	include <windows.h>
+#	include <sys/types.h>
+#	include <sys/stat.h>
 #else
 #   include <sys/types.h>
 #   include <sys/stat.h>
@@ -753,5 +755,38 @@ string CFile::findNewFile (const string &filename)
 	while (num<999);
 	return npath;
 }
+
+
+uint32	CFile::getFileModificationDate(const std::string &filename)
+{
+#if defined (NL_OS_WINDOWS)
+	struct _stat buf;
+	int result = _stat (filename.c_str (), &buf);
+#elif defined (NL_OS_UNIX)
+	struct stat buf;
+	int result = stat (filename.c_str (), &buf);
+#endif
+
+	if (result != 0) return 0;
+	else return buf.st_mtime;
+}
+
+
+uint32	CFile::getFileCreationDate(const std::string &filename)
+{
+#if defined (NL_OS_WINDOWS)
+	struct _stat buf;
+	int result = _stat (filename.c_str (), &buf);
+#elif defined (NL_OS_UNIX)
+	struct stat buf;
+	int result = stat (filename.c_str (), &buf);
+#endif
+
+	if (result != 0) return 0;
+	else return buf.st_ctime;
+}
+
+
+
 
 } // NLMISC

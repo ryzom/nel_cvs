@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.14 2002/02/04 16:01:13 berenguier Exp $
+ * $Id: path.h,v 1.15 2002/02/07 13:43:48 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -211,6 +211,17 @@ struct CFile
 
 	static std::string getFilenameWithoutExtension (const std::string &filename);
 	static std::string getExtension (const std::string &filename);
+
+	/**
+	 *	Return Time of last modification of file. 0 if not found.
+	 */
+	static uint32	getFileModificationDate(const std::string &filename);
+
+	/**
+	 *	Return creation Time of the file. 0 if not found.
+	 */
+	static uint32	getFileCreationDate(const std::string &filename);
+
 
 };
 

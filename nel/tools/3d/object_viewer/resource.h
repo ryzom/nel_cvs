@@ -195,7 +195,6 @@
 #define IDD_ABOUT                       1079
 #define IDC_PUT_SCHEME                  1079
 #define IDD_LB_EXTERN_ID                1080
-#define IDD_LB_EXTERN_ID                1080
 #define IDC_ATTR_BITMAP                 1081
 #define IDD_PICK_SOUND                  1081
 #define IDC_CONSTANT_VALUE_POS          1082
@@ -323,6 +322,7 @@
 #define IDC_BUTTON_VEGETABLE_GETOTHER   1173
 #define IDC_BUTTON_VEGETABLE_SAVE_SET   1173
 #define IDC_BUTTON_VEGETABLE_APPEARANCE_NONE 1173
+#define IDC_INSERT                      1173
 #define IDC_REMOVE                      1174
 #define IDC_CENTER_CURVE                1174
 #define IDC_BUTTON_VEGETABLE_SAVE_DESC  1174
@@ -330,8 +330,10 @@
 #define IDC_SCHEME_LIST                 1175
 #define IDC_FIRST_EQUAL_LAST            1175
 #define IDC_BUTTON_VEGETABLE_POSITION_NONE 1175
+#define IDC_UP                          1175
 #define IDC_NAME_CHOSEN                 1176
 #define IDC_RENAME                      1176
+#define IDC_DOWN                        1176
 #define IDC_SAVE_BANK                   1177
 #define IDC_LOAD_BANK                   1178
 #define IDC_INDE_SIZES                  1179
@@ -477,10 +479,15 @@
 #define IDC_U_SCALE_ACCEL               1314
 #define IDC_MORPH_SCHEME                1314
 #define IDC_V_SCALE_ACCEL               1315
+#define IDC_DELAYED_EMISSION            1315
 #define IDC_U_SCALE_START_TEXT          1316
+#define IDC_MAX_EMISSION_COUNT          1316
 #define IDC_V_SCALE_START_TEXT          1317
+#define IDC_SPEED_INHERITANCE_FACTOR_FRAME 1317
 #define IDC_U_SCALE_START               1318
+#define IDC_DELAYED_EMISSION_FRAME      1318
 #define IDC_V_SCALE_START               1319
+#define IDC_MAX_EMISSION_COUNT_FRAME    1319
 #define IDC_WROT_SPEED_TEXT             1320
 #define IDC_WROT_ACCEL_TEXT             1321
 #define IDC_WROT_SPEED                  1322
@@ -606,7 +613,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1112
 #define _APS_NEXT_COMMAND_VALUE         32873
-#define _APS_NEXT_CONTROL_VALUE         1315
+#define _APS_NEXT_CONTROL_VALUE         1318
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

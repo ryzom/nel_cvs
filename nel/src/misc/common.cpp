@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.64 2004/09/24 12:38:47 lecroart Exp $
+ * $Id: common.cpp,v 1.65 2004/10/08 13:33:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,15 +50,23 @@ using namespace std;
 #    define STL_MODE "normal"
 #  endif // __STL_DEBUG
 #  if(__SGI_STL_PORT < 0x400)
-#    define STL_STR_VER "< 4.0"
+#    define STL_STR_VER "< 4.0.0"
 #  elif(__SGI_STL_PORT == 0x400)
-#    define STL_STR_VER "4.0"
+#    define STL_STR_VER "4.0.0"
 #  elif(__SGI_STL_PORT == 0x450)
-#    define STL_STR_VER "4.5"
+#    define STL_STR_VER "4.5.0"
+#  elif(__SGI_STL_PORT == 0x451)
+#    define STL_STR_VER "4.5.1"
 #  elif(__SGI_STL_PORT == 0x452)
 #    define STL_STR_VER "4.5.3"
-#  elif(__SGI_STL_PORT > 0x452)
-#    define STL_STR_VER "> 4.5.3"
+#  elif(__SGI_STL_PORT == 0x460)
+#    define STL_STR_VER "4.6.0"
+#  elif(__SGI_STL_PORT == 0x461)
+#    define STL_STR_VER "4.6.1 or 4.6.2"
+#  elif(__SGI_STL_PORT == 0x500)
+#    define STL_STR_VER "5.0.0"
+#  elif(__SGI_STL_PORT > 0x500)
+#    define STL_STR_VER "> 5.0.0"
 #  else
 #    define STL_STR_VER "Unknown"
 #  endif // __SGI_STL_PORT

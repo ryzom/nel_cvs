@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.17 2004/10/07 14:48:38 berenguier Exp $
+ * $Id: big_file.cpp,v 1.18 2005/03/01 09:10:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -427,6 +427,16 @@ char *CBigFile::getFileNamePtr(const std::string &sFileName, const std::string &
 	}
 
 	return NULL;
+}
+
+// ***************************************************************************
+void CBigFile::getBigFilePaths(std::vector<std::string> &bigFilePaths)
+{
+	bigFilePaths.clear();
+	for(std::map<std::string, BNP>::iterator it = _BNPs.begin(); it != _BNPs.end(); ++it)
+	{
+		bigFilePaths.push_back(it->second.BigFileName);
+	}
 }
 
 

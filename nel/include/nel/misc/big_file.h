@@ -1,7 +1,7 @@
 /** \file big_file.h
  * Big file management
  *
- * $Id: big_file.h,v 1.6 2005/02/22 10:14:12 besson Exp $
+ * $Id: big_file.h,v 1.7 2005/03/01 09:10:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -53,6 +53,9 @@ public:
 
 	// Add a big file to the manager
 	bool add (const std::string &sBigFileName, uint32 nOptions);
+
+	// get path of all added bigfiles
+	void getBigFilePaths(std::vector<std::string> &bigFilePaths);
 
 	// Remove a big file from the manager
 	void remove (const std::string &sBigFileName);

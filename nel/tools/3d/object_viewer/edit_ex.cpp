@@ -107,7 +107,7 @@ void CEditEx::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			MessageBox("Invalid value", "Error", MB_OK | MB_ICONEXCLAMATION);
 		}
 	}	
-//	CEdit::OnKeyDown(nChar, nRepCnt, nFlags);
+	CEdit::OnKeyDown(nChar, nRepCnt, nFlags);
 }
 
 

@@ -16,8 +16,10 @@ date >> log.log
 date
 
 
-
 #*** Build panoply files (.tga / .dds), and copy the result in the tga directory
+
+rmdir panoply
+mkdir panoply
 
 # Bin
 panoply_maker='../../bin/panoply_maker.exe'
@@ -42,6 +44,7 @@ if test "$panoply_file_list" ; then
 	for psource in $panoply_config_file ; do
 		cp $database_directory/$psource current_panoply.cfg
 		echo "output_path=\"panoply\";" >> current_panoply.cfg
+		echo "cache_path=\"cache\";" >> current_panoply.cfg
 		../../bin/panoply_maker current_panoply.cfg
 
 		# Idle

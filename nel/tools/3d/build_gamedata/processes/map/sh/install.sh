@@ -18,6 +18,14 @@ echo -------
 date >> log.log
 date
 
+
+# Put old panoply in cache
+rmdir cache 2>> log.log
+mkdir cache 2>> log.log
+mv panoply/* cache 2>> log.log
+mkdir panoply 2>> log.log
+
+
 for i in dds/*.[dD][dD][sS]; do
   cp -u -p $i $client_directory/$bitmap_install_directory  2>> log.log
 	# Idle

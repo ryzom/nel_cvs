@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.20 2000/12/15 15:10:35 berenguier Exp $
+ * $Id: tessellation.h,v 1.21 2000/12/18 11:05:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -386,9 +386,8 @@ public:
 	// Guess.
 	static	float	OORefineThreshold;
 	// Limits for merge/split propagation. See refine(). Defaults:  1.1, 1.9, 2.1.
-	static	float	FatherStartComputeLimit;
 	static	float	ChildrenStartComputeLimit;
-	static	float	SelfEndCompute;
+	static	float	SelfEndComputeLimit;
 
 
 	// Tile Global Info.
@@ -402,6 +401,8 @@ public:
 	static	sint	TileMaxSubdivision;
 	// The sphere for TileFar test.
 	static	CBSphere	TileFarSphere;
+	// The sphere for TileNear test.
+	static	CBSphere	TileNearSphere;
 
 
 	// Render Global info. Used by Patch.

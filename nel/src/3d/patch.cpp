@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.25 2000/12/15 15:10:56 berenguier Exp $
+ * $Id: patch.cpp,v 1.26 2000/12/18 11:06:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -442,6 +442,15 @@ void			CPatch::refine()
 			ComputeTileErrorMetric= true;
 		else
 			ComputeTileErrorMetric= false;
+		// If true, must test if we are in transition, or totaly IN.
+		if(ComputeTileErrorMetric)
+		{
+			// Do the zone include ALL the patch???
+			if(CTessFace::TileNearSphere.include(BSphere))
+				TileFarTransition= false;
+			else
+				TileFarTransition= true;
+		}
 	}
 	else
 		ComputeTileErrorMetric= false;

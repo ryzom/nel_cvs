@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.26 2000/12/15 15:10:56 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.27 2000/12/18 11:06:13 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -97,9 +97,8 @@ CVector		CTessFace::RefineCenter= CVector::Null;
 float		CTessFace::RefineThreshold= 0.005f;
 float		CTessFace::OORefineThreshold= 1.0f / CTessFace::RefineThreshold;
 
-float		CTessFace::FatherStartComputeLimit= 1.1f;
 float		CTessFace::ChildrenStartComputeLimit= 1.9f;
-float		CTessFace::SelfEndCompute= 2.1f;
+float		CTessFace::SelfEndComputeLimit= 2.1f;
 
 float		CTessFace::TileDistNear= 50;
 float		CTessFace::TileDistFar= CTessFace::TileDistNear+20;
@@ -108,6 +107,7 @@ float		CTessFace::TileDistFarSqr= sqr(CTessFace::TileDistFar);
 float		CTessFace::OOTileDistDeltaSqr= 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);
 sint		CTessFace::TileMaxSubdivision=0;
 CBSphere	CTessFace::TileFarSphere;
+CBSphere	CTessFace::TileNearSphere;
 
 float		CTessFace::Far0Dist= 200;		// 200m.
 float		CTessFace::Far1Dist= 400;		// 400m.
@@ -1110,6 +1110,9 @@ void		CTessFace::doMerge()
 			FLeft->doMerge();
 		}
 	}
+
+	// Since I am merged, I should compute myself.
+	NeedCompute= true;
 }
 
 
@@ -1144,7 +1147,7 @@ void		CTessFace::refine()
 	// In Tile/Far Transition zone, force the needCompute.
 	// This is important, since the rule "the error metric of the son is appoximately the half of 
 	// the father" is no more true, and then a son should be tested as soon as possible.
-	if(Patch->ComputeTileErrorMetric && Level<Patch->TileLimitLevel)
+	if(Patch->TileFarTransition && Level<Patch->TileLimitLevel)
 	{
 		NeedCompute= true;
 	}
@@ -1238,30 +1241,54 @@ void		CTessFace::refine()
 
 		// 2. Update NeedCompute.
 		//-----------------------
+
+		// If father should compute himself for geomoprh....
+		// NB: this is done BEFORE ps may be modified. ie, ps==ErrorMetric, not ProjectedSize.
+		if(Father && ps<SelfEndComputeLimit*0.5)			// 2.1/2
+		{
+			// Force him to do it. This is done too in doMerge().
+			Father->NeedCompute= true;
+		}
+
 		if(isLeaf())
 		{
-			// If below a merge(), I may not need to compute.
-			// Do this only if I am not a parent.
+			// If leaf and below a merge(), I may not need to compute.
 			if(Father && ps<ChildrenStartComputeLimit*0.5)	// 1.9/2
 			{
 				NeedCompute= false;
+				// Remark: see below, Father IS NeedComputed (because SelfEndComputeLimit>ChildrenStartComputeLimit).
 			}
 		}
 		else
 		{
+			// If SonLeft reach the tile level, we must test ps with ProjectedSize, not ErrorMetric...
+			// Why? because of computeTileErrorMetric() which makes a false (too big) value.
+			// Tiles faces ErrorMetric do NOT computeTileErrorMetric(), so this test.
+			if(SonLeft->Level>=Patch->TileLimitLevel)
+				ps= ProjectedSize*OORefineThreshold;
+
 			// We may force our sons to compute, only if they are not already at MaxSubdivision.
 			if(SonLeft->Level<Patch->TileLimitLevel+TileMaxSubdivision)
 			{
-				// If SonLeft reach the tile level, we must test ps with ProjectedSize, not ErrorMetric...
-				// Why? because of computeTileErrorMetric() which makes a false (too big) value.
-				// Tiles faces ErrorMetric do NOT computeTileErrorMetric, so this test.
-				if(SonLeft->Level>=Patch->TileLimitLevel)
-					ps= ProjectedSize*OORefineThreshold;
-				if(ps>ChildrenStartComputeLimit)	// 1.9
+				if(ps>ChildrenStartComputeLimit)			// 1.9
 				{
 					// The sons may split soon.
 					SonLeft->NeedCompute= true;
 					SonRight->NeedCompute= true;
+
+					// We may decide to stop compute us, because the geomorph is ended.
+					// Do this only if sons Compute themselves (because this is them which update NeedCompute of us.
+					if(ps>SelfEndComputeLimit)				// 2.1
+					{
+						NeedCompute=false;
+						// If patch clipped, we must ensure that Geomorph is correctly setuped.
+						if(Patch->Clipped)
+						{
+							CTessVertex		*morph=SonLeft->VBase;
+							morph->Pos= morph->EndPos;
+						}
+					}
+					// Remark: see below, Sons ARE NeedComputed (because SelfEndComputeLimit>ChildrenStartComputeLimit).
 				}
 			}
 			// NB: NeedCompute is automatically set to true in split().

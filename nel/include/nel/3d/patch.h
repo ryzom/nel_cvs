@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.21 2000/12/18 09:31:33 berenguier Exp $
+ * $Id: patch.h,v 1.22 2000/12/18 11:05:53 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -262,6 +262,9 @@ private:
 	bool			Clipped;
 	// Do we must compute the Tile errormetric part??
 	bool			ComputeTileErrorMetric;
+	// Are we in the Tile/Far transition. if ComputeTileErrorMetric==true, and TileFarTransition==false, we are 
+	// TOTALY IN the Tile zone sphere.
+	bool			TileFarTransition;
 	// The root for render.
 	CTessFace		*RdrRoot;
 	CTessFace		*RdrTileRoot[NL3D_MAX_TILE_PASS];

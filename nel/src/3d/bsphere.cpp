@@ -1,7 +1,7 @@
 /** \file bsphere.cpp
  * <File description>
  *
- * $Id: bsphere.cpp,v 1.5 2000/12/18 09:31:47 berenguier Exp $
+ * $Id: bsphere.cpp,v 1.6 2000/12/18 11:06:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,16 @@ bool	CBSphere::include(const CVector &p) const
 {
 	float	r2= (p-Center).sqrnorm();
 	return (r2<=sqr(Radius));
+}
+
+bool	CBSphere::include(const CBSphere &s) const
+{
+	// if smaller than s, how could we include it???
+	if(Radius<=s.Radius)
+		return false;
+	float	r2= (s.Center-Center).sqrnorm();
+	// Because of prec test, Radius-s.Radius>0.
+	return  r2<=sqr(Radius-s.Radius);
 }
 
 bool	CBSphere::intersect(const CBSphere &s) const

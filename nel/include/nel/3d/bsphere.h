@@ -1,7 +1,7 @@
 /** \file bsphere.h
  * <File description>
  *
- * $Id: bsphere.h,v 1.3 2000/12/11 15:50:44 berenguier Exp $
+ * $Id: bsphere.h,v 1.4 2000/12/18 11:05:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,8 @@ public:
 
 	/// Does the sphere include this point?
 	bool	include(const CVector &p) const;
+	/// Does the sphere include TOTALY this sphere?
+	bool	include(const CBSphere &s) const;
 	/// Does the sphere intersect the other?
 	bool	intersect(const CBSphere &s) const;
 

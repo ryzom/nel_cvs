@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.24 2000/12/15 18:20:22 berenguier Exp $
+ * $Id: landscape.cpp,v 1.25 2000/12/18 11:06:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,6 +226,8 @@ void			CLandscape::updateGlobals (const CVector &refineCenter) const
 	CTessFace::RefineCenter= refineCenter;
 	CTessFace::TileFarSphere.Center= CTessFace::RefineCenter;
 	CTessFace::TileFarSphere.Radius= CTessFace::TileDistFar;
+	CTessFace::TileNearSphere.Center= CTessFace::RefineCenter;
+	CTessFace::TileNearSphere.Radius= CTessFace::TileDistNear;
 }
 // ***************************************************************************
 void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doTileAddPass)

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.26 2001/12/05 09:54:38 corvazier Exp $
+ * $Id: driver.h,v 1.27 2002/01/10 10:03:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -592,6 +592,14 @@ public:
 	{
 		_PolygonMode=mode;
 	}
+
+
+	/** 
+	  * return the number of light supported by driver. typically 8.
+	  *
+	  * \see enableLight() setLight()
+	  */
+	virtual uint			getMaxLight () const = 0;
 
 	/** 
 	  * Setup a light.

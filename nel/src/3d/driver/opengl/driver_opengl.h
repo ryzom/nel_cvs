@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.106 2001/12/12 10:31:29 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.107 2002/01/10 10:02:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -498,6 +498,8 @@ public:
 														, uint32 width, uint32 height														
 													)  ;
 	virtual void			setPolygonMode (TPolygonMode mode);
+
+	virtual uint			getMaxLight () const;
 
 	virtual void			setLight (uint8 num, const CLight& light);
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_light.cpp
  * OpenGL driver implementation : light
  *
- * $Id: driver_opengl_light.cpp,v 1.5 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: driver_opengl_light.cpp,v 1.6 2002/01/10 10:02:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,14 @@
 
 namespace NL3D 
 {
+
+
+// ***************************************************************************
+uint	CDriverGL::getMaxLight () const
+{
+	// return min(maxLight supported by openGL, MaxLight=8).
+	return _MaxDriverLight;
+}
 
 // ***************************************************************************
 

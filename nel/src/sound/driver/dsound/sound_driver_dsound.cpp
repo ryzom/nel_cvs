@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.9 2002/11/04 15:40:44 boucher Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.10 2002/11/07 11:03:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,25 +69,31 @@ long FAR PASCAL CSoundDriverCreateWindowProc(HWND hWnd, unsigned message, WPARAM
 
 __declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance()
 {
+	static bool Registered = false;
 
-	// Don't ask me why we have to create a window to do sound!
-	// echo <your comment> | mail support@microsoft.com -s "F#%@cking window"
-	WNDCLASS myClass;
-	myClass.hCursor = LoadCursor( NULL, IDC_ARROW );
-	myClass.hIcon = NULL; 
-	myClass.lpszMenuName = (LPSTR) NULL;
-	myClass.lpszClassName = (LPSTR) "CSoundDriver";
-	myClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
-	myClass.hInstance = CSoundDriverDllHandle;
-	myClass.style = CS_GLOBALCLASS;
-	myClass.lpfnWndProc = CSoundDriverCreateWindowProc;
-	myClass.cbClsExtra = 0;
-	myClass.cbWndExtra = 0;
-
-	if (!RegisterClass(&myClass)) 
+	if (!Registered)
 	{
-		nlwarning("Failed to initialize the sound driver (RegisterClass)");
-		return 0;
+		// Don't ask me why we have to create a window to do sound!
+		// echo <your comment> | mail support@microsoft.com -s "F#%@cking window"
+		WNDCLASS myClass;
+		myClass.hCursor = LoadCursor( NULL, IDC_ARROW );
+		myClass.hIcon = NULL; 
+		myClass.lpszMenuName = (LPSTR) NULL;
+		myClass.lpszClassName = (LPSTR) "CSoundDriver";
+		myClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
+		myClass.hInstance = CSoundDriverDllHandle;
+		myClass.style = CS_GLOBALCLASS;
+		myClass.lpfnWndProc = CSoundDriverCreateWindowProc;
+		myClass.cbClsExtra = 0;
+		myClass.cbWndExtra = 0;
+
+		if (!RegisterClass(&myClass)) 
+		{
+			nlwarning("Failed to initialize the sound driver (RegisterClass)");
+			return 0;
+		}
+
+		Registered = true;
 	}
 
 	CSoundDriverWnd = CreateWindow((LPSTR) "CSoundDriver", (LPSTR) "CSoundDriver", WS_OVERLAPPEDWINDOW,
@@ -195,6 +201,8 @@ CSoundDriverDSound::~CSoundDriverDSound()
         _DirectSound->Release(); 
         _DirectSound = NULL;
     }
+
+	_Instance = 0;
 }
 
 // ******************************************************************

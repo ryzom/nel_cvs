@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.15 2002/11/04 15:40:45 boucher Exp $
+ * $Id: sound_system.cpp,v 1.16 2002/11/07 11:06:17 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,8 +78,16 @@ void CSoundSystem::initSoundSystem ()
 	{
 		string mess = string("Unable to init sound :") + e.what();
 		nlwarning ("Init sound: %s", mess.c_str());
-		_AudioMixer = NULL;
-		_AnimManager = NULL;
+		if (_AnimManager)
+		{
+			delete _AnimManager;
+			_AnimManager = NULL;
+		}
+		if (_AudioMixer)
+		{
+			delete _AudioMixer;
+			_AudioMixer = NULL;
+		}
 		return;
 	}
 	setPSSoundSystem(_AudioMixer);

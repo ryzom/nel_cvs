@@ -1,7 +1,7 @@
 /** \file connection_as.cpp
  * 
  *
- * $Id: connection_as.cpp,v 1.3 2001/05/31 16:41:59 lecroart Exp $
+ * $Id: connection_as.cpp,v 1.4 2001/06/07 16:18:17 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -80,14 +80,23 @@ static void cbAESList (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 			// new aes disconnection
 			if (!aes.Connected && (*aesit).Connected)
 			{
-				for (SIT sit = (*aesit).Services.begin (); sit != (*aesit).Services.end (); sit++)
+				for (SIT sit = (*aesit).Services.begin (); sit != (*aesit).Services.end ();)
 				{
-					(*sit).Unknown = true;
-					(*sit).Connected = false;
-					(*sit).Ready = false;
-					(*sit).Id = 0xFFFFFFFF;
-					(*sit).ShortName = (*sit).LongName = "";
-					interfUpdateS (&(*sit));
+					if ((*sit).InConfig)
+					{
+						(*sit).Unknown = true;
+						(*sit).Connected = false;
+						(*sit).Ready = false;
+						(*sit).Id = 0xFFFFFFFF;
+						(*sit).ShortName = (*sit).LongName = "";
+						interfUpdateS (&(*sit));
+						sit++;
+					}
+					else
+					{
+						interfRemoveS (&(*sit));
+						sit = (*aesit).Services.erase (sit);
+					}
 				}
 			}
 
@@ -125,21 +134,41 @@ static void cbServiceList (CMessage& msgin, TSockId from, CCallbackNetBase &netb
 			CService s;
 			msgin.serial (s.Id, s.AliasName, s.ShortName, s.LongName);
 			msgin.serial (s.Ready, s.Connected, s.InConfig);
+			msgin.serialCont (s.Commands);
 
-			s.Unknown = !(*aesit).Connected;
+			s.Unknown = !((*aesit).Connected);
 
-			SIT sit = (*aesit).findService (s.AliasName, false);
-			if (sit == (*aesit).Services.end ())
+			if (!s.AliasName.empty())
 			{
-				s.AES = &(*aesit);
-				(*aesit).Services.push_back (s);
-				interfAddS (&(*aesit), &((*aesit).Services.back()));
+				SIT sit = (*aesit).findService (s.AliasName, false);
+				if (sit == (*aesit).Services.end ())
+				{
+					s.AES = &(*aesit);
+					(*aesit).Services.push_back (s);
+					interfAddS (&(*aesit), &((*aesit).Services.back()));
+				}
+				else
+				{
+					nlassert ("the service already exists with alias, update it");
+					(*sit).setValues (s);
+					interfUpdateS (&(*sit));
+				}
 			}
 			else
 			{
-				nlassert ("the service already exists, update it");
-				(*sit).setValues (s);
-				interfUpdateS (&(*sit));
+				SIT sit = (*aesit).findService (s.Id, false);
+				if (sit == (*aesit).Services.end ())
+				{
+					s.AES = &(*aesit);
+					(*aesit).Services.push_back (s);
+					interfAddS (&(*aesit), &((*aesit).Services.back()));
+				}
+				else
+				{
+					nlassert ("the service already exists with id, update it");
+					(*sit).setValues (s);
+					interfUpdateS (&(*sit));
+				}
 			}
 		}
 	}
@@ -268,7 +297,7 @@ static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNet
 		if (sit == (*aesit).Services.end ())
 		{
 			// normal case for unknown services
-			nlwarning ("new service with alias (%s) but not in my list", alias.c_str());
+			nlwarning ("new service without alias but not in my list");
 		}
 		else
 		{
@@ -283,7 +312,9 @@ static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNet
 	(*sit).Id = sid;
 	(*sit).AliasName = alias;
 	(*sit).Connected = true;
+	(*sit).Unknown = false;
 	msgin.serial ((*sit).ShortName, (*sit).LongName);
+	msgin.serialCont ((*sit).Commands);
 
 	nlinfo ("%d:%d:%d is identified to be '%s' '%s' '%s'", as->Id, aesid, sid, (*sit).AliasName.c_str(), (*sit).ShortName.c_str(), (*sit).LongName.c_str());
 
@@ -384,13 +415,6 @@ static void cbAESDisconnection (CMessage& msgin, TSockId from, CCallbackNetBase 
 	as->AdminExecutorServices.erase (aesit);
 }
 
-static void cbError (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
-{
-	string error;
-	msgin.serial(error);
-	nlwarning("%s", error.c_str());
-}
-
 static void cbASConnection (const string &serviceName, TSockId from, void *arg)
 {
 	// i'm connected to a new admin service, add the new admin service in the list
@@ -435,11 +459,28 @@ static void cbLog (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 	InfoLog->displayRaw("%s",log.c_str());
 }
 
+static void cbMessage (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	uint8 type;
+	string log;
+	msgin.serial (type, log);
+
+	switch (type)
+	{
+	case 1:	// it's ok
+		nlinfo ("message from AS: %s",log.c_str());
+		break;
+	case 0: // not ok
+		nlwarning ("message from AS: %s",log.c_str());
+		break;
+	default:
+		nlstop;
+	}
+}
+
 
 TCallbackItem ASCallbackArray[] =
 {
-	{ "ERR", cbError },
-
 	{ "SL", cbServiceList_ },
 	{ "SAL", cbServiceAliasList },
 
@@ -452,6 +493,8 @@ TCallbackItem ASCallbackArray[] =
 	{ "AESD", cbAESDisconnection },
 
 	{ "LOG", cbLog },
+
+	{ "MESSAGE", cbMessage },
 
 
 	{ "AES_LIST", cbAESList },

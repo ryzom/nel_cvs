@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.2 2001/05/31 16:41:59 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.3 2001/06/07 16:18:17 lecroart Exp $
  *
  *
  */
@@ -31,6 +31,7 @@
 #include <conio.h>
 
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 #include "nel/misc/debug.h"
 #include "nel/misc/log.h"
@@ -101,13 +102,13 @@ void addServiceAliasPopup (CAdminExecutorService *aes)
 	{
 		string name = "/Services/";
 		name += aes->ServiceAliasList[i];
-		GtkItemFactoryEntry toto;
-		toto.path = const_cast<char *>(name.c_str());
-		toto.accelerator = NULL;
-		toto.callback = cbStartService;
-		toto.callback_action = 0;
-		toto.item_type = NULL;
-		gtk_item_factory_create_items (GTK_ITEM_FACTORY(aes->ItemFactory), 1, &toto, &(aes->ServiceAliasList[i]));
+		GtkItemFactoryEntry ife;
+		ife.path = const_cast<char *>(name.c_str());
+		ife.accelerator = NULL;
+		ife.callback = cbStartService;
+		ife.callback_action = 0;
+		ife.item_type = NULL;
+		gtk_item_factory_create_items (GTK_ITEM_FACTORY(aes->ItemFactory), 1, &ife, &(aes->ServiceAliasList[i]));
 	}
 }
 */
@@ -126,13 +127,19 @@ static GdkColor DisplayerColors[] =
 
 class CGtkDisplayer : virtual public IDisplayer
 {
-
-
+public:
+	CGtkDisplayer (uint threadid) : _ThreadId(threadid) { }
+private:
+	uint _ThreadId;
 protected:
 
 	/// Display the string to stdout and OutputDebugString on Windows
 	virtual void doDisplay ( const TDisplayInfo& args, const char *message )
 	{
+		// can't display stuffs of other thread
+		if (_ThreadId != getThreadId ())
+			return;
+
 		GtkAdjustment *Adj = (GTK_TEXT(OutputText))->vadj;
 		bool Bottom = (Adj->value >= Adj->upper - Adj->page_size);
 
@@ -145,7 +152,6 @@ protected:
 		default: colnum = 0; break;
 		}
 
-		gdk_threads_enter();
 		gtk_text_freeze (GTK_TEXT (OutputText));
 		gtk_text_insert (GTK_TEXT (OutputText), NULL, &DisplayerColors[colnum], NULL, message, -1);
 		gtk_text_thaw (GTK_TEXT (OutputText));
@@ -155,7 +161,6 @@ protected:
 			gtk_adjustment_set_value(Adj,Adj->upper-Adj->page_size);
 		}
 
-		gdk_threads_leave();
 	}
 };
 
@@ -246,14 +251,14 @@ gint cbPopupASMenu (GtkWidget *widget, GdkEvent *event, gpointer data)
 
 static void cbConnectToAS()
 {
-/*	GtkItemFactoryEntry toto;
-	toto.path = "/Services/oho";
-	toto.accelerator = NULL;
-	toto.callback = NULL;
-	toto.callback_action = 0;
-	toto.item_type = NULL;
+/*	GtkItemFactoryEntry ife;
+	ife.path = "/Services/oho";
+	ife.accelerator = NULL;
+	ife.callback = NULL;
+	ife.callback_action = 0;
+	ife.item_type = NULL;
 
-	gtk_item_factory_create_items (item_factory, 1, &toto, NULL);
+	gtk_item_factory_create_items (item_factory, 1, &ife, NULL);
 */
 	if (PopupAS->Connected)
 	{
@@ -325,7 +330,7 @@ static GtkItemFactoryEntry ASMenuItems[] = {
 CService *PopupS = NULL;
 
 // POPUP MENU
-GtkWidget *SMenu;
+//GtkWidget *SMenu;
 gint cbPopupSMenu (GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	if (event->type == GDK_BUTTON_PRESS && event->button.button == 3)
@@ -356,59 +361,6 @@ gint cbPopupSMenu (GtkWidget *widget, GdkEvent *event, gpointer data)
 	return TRUE;
 }
 
-
-static void cbStartService()
-{
-	if (PopupS->Connected)
-	{
-		nlwarning("already connected!!!");
-		return;
-	}
-
-	string cmd = "start";
-	cmd += " ";
-	cmd += toString (PopupS->AES->AS->Id);
-	cmd += " ";
-	cmd += toString (PopupS->AES->Id);
-	cmd += " ";
-	cmd += PopupS->AliasName;
-
-	ICommand::execute (cmd, logstdout);
-
-//	connectionASInit (PopupAS);
-
-	PopupS = NULL;
-}
-
-static void cbStopService()
-{
-	if (!PopupS->Connected)
-	{
-		nlwarning("not connected!!!");
-		return;
-	}
-
-	printf("disconnecting to...%p\n", PopupS);
-
-	string cmd = "stop";
-	cmd += " ";
-	cmd += toString (PopupS->AES->AS->Id);
-	cmd += " ";
-	cmd += toString (PopupS->AES->Id);
-	cmd += " ";
-	cmd += toString (PopupS->Id);
-
-	ICommand::execute (cmd, logstdout);
-
-//	connectionASRelease (PopupAS);
-
-	PopupS = NULL;
-}
-
-static GtkItemFactoryEntry SMenuItems[] = {
-	{ "/Start Service", NULL, cbStartService, 0, NULL },
-	{ "/Stop Service", NULL, cbStopService, 0, NULL },
-};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -555,6 +507,67 @@ void interfAddAES (CAdminService *as, CAdminExecutorService *aes)
 	}
 }
 
+
+static void cbStartService()
+{
+	if (PopupS->Connected)
+	{
+		nlwarning("already connected!!!");
+		return;
+	}
+
+	string cmd = "start";
+	cmd += " ";
+	cmd += toString (PopupS->AES->AS->Id);
+	cmd += " ";
+	cmd += toString (PopupS->AES->Id);
+	cmd += " ";
+	cmd += PopupS->AliasName;
+
+	ICommand::execute (cmd, logstdout);
+
+//	connectionASInit (PopupAS);
+
+	PopupS = NULL;
+}
+
+static void cbStopService()
+{
+	if (!PopupS->Connected)
+	{
+		nlwarning("not connected!!!");
+		return;
+	}
+
+	printf("disconnecting to...%p\n", PopupS);
+
+	string cmd = "stop";
+	cmd += " ";
+	cmd += toString (PopupS->AES->AS->Id);
+	cmd += " ";
+	cmd += toString (PopupS->AES->Id);
+	cmd += " ";
+	cmd += toString (PopupS->Id);
+
+	ICommand::execute (cmd, logstdout);
+
+//	connectionASRelease (PopupAS);
+
+	PopupS = NULL;
+}
+
+static GtkItemFactoryEntry SMenuItems[] = {
+	{ "/Start Service", NULL, cbStartService, 0, NULL },
+	{ "/Stop Service", NULL, cbStopService, 0, NULL },
+	{ "/Commands", NULL, NULL, 0, "<Branch>" },
+};
+
+void cbDoIt ()
+{
+	// todo connecter la bonne fonction, retrouver tout le bordel (bon courage...)
+	nlinfo("execute command...");
+}
+
 void interfUpdateS (CService *s)
 {
 	string name;
@@ -566,13 +579,13 @@ void interfUpdateS (CService *s)
 	name += s->ShortName;
 	name += "' '";
 	name += s->LongName;
-	name += "' (";
+	name += "' (U";
 	name += toString(s->Unknown);
-	name += ", ";
+	name += ", C";
 	name += toString(s->Connected);
-	name += ", ";
+	name += ", I";
 	name += toString(s->InConfig);
-	name += ", ";
+	name += ", R";
 	name += toString(s->Ready);
 	name += ")";
 
@@ -589,6 +602,36 @@ void interfUpdateS (CService *s)
 
 	setBitmap (icon, s->Bitmap);
 	setLabel (name, s->Label);
+
+	if (!s->Commands.empty() && !s->MenuCreated)
+	{
+		// add new commands on the menu
+		for (uint i = 0; i < s->Commands.size(); i++)
+		{
+			string name = "/Commands/";
+			name += s->Commands[i];
+			GtkItemFactoryEntry ife;
+			ife.path = const_cast<char *>(name.c_str());
+			ife.accelerator = NULL;
+			ife.callback = cbDoIt;
+			ife.callback_action = 0;
+			ife.item_type = NULL;
+			gtk_item_factory_create_items (GTK_ITEM_FACTORY(s->ItemFactory), 1, &ife, &(s->Commands[i]));
+		}
+		s->MenuCreated = true;
+	}
+	else if (!s->Connected && s->MenuCreated)
+	{
+		// delete all commands
+		for (uint i = 0; i < s->Commands.size(); i++)
+		{
+			string name = "/Commands/";
+			name += s->Commands[i];
+			gtk_item_factory_delete_item (GTK_ITEM_FACTORY(s->ItemFactory), name.c_str());
+		}
+		s->Commands.clear ();
+		s->MenuCreated = false;
+	}
 }
 
 void interfAddS (CAdminExecutorService *aes, CService *s)
@@ -599,11 +642,26 @@ void interfAddS (CAdminExecutorService *aes, CService *s)
 		aes->RootSubTree = gtk_tree_new();
 	}
 
-	// create the item
-	createTreeItem (GTK_WIDGET(aes->RootSubTree), s->RootTreeItem, s->Bitmap, s->Label);
-	interfUpdateS (s);
+	//
+	// Create the item
+	//
 
-	gtk_signal_connect (GTK_OBJECT (s->RootTreeItem), "button-press-event", GTK_SIGNAL_FUNC(cbPopupSMenu), SMenu);
+	createTreeItem (GTK_WIDGET(aes->RootSubTree), s->RootTreeItem, s->Bitmap, s->Label);
+
+	//
+	// Create the popupmenu
+	//
+
+	gint nmenu_items = sizeof (SMenuItems) / sizeof (SMenuItems[0]);
+	GtkAccelGroup *accel_group = gtk_accel_group_new ();
+	s->ItemFactory = gtk_item_factory_new (GTK_TYPE_MENU, "<main>", accel_group);
+	gtk_item_factory_create_items (GTK_ITEM_FACTORY(s->ItemFactory), nmenu_items, SMenuItems, NULL);
+	gtk_window_add_accel_group (GTK_WINDOW (RootWindow), accel_group);
+	GtkWidget *menu = gtk_item_factory_get_widget (GTK_ITEM_FACTORY(s->ItemFactory), "<main>");
+
+	gtk_signal_connect (GTK_OBJECT (s->RootTreeItem), "button-press-event", GTK_SIGNAL_FUNC(cbPopupSMenu), menu);
+
+	interfUpdateS (s);
 
 	if (aes->Services.size () == 1)
 	{
@@ -615,7 +673,13 @@ void interfAddS (CAdminExecutorService *aes, CService *s)
 
 void removeSubTree (CAdminService *as)
 {
-	// bug todo kan on kill un admin service ca plante dans le remove
+	// bug todo kan on kill un admin service et que on a selectionner un sous fils du subtree
+	GList *l = GTK_TREE_SELECTION(RootTree);
+	if (l != NULL)
+	{
+		GtkWidget *g = GTK_WIDGET (l->data);
+		gtk_tree_item_deselect (GTK_TREE_ITEM(g));
+	}
 	gtk_tree_item_remove_subtree (GTK_TREE_ITEM(as->RootTreeItem));
 }
 
@@ -643,15 +707,58 @@ gint delete_event (GtkWidget *widget, GdkEvent *event, gpointer data)
 }
 
 
+
+vector<string> CommandHistory;
+uint32 CommandHistoryPos = 0;
+
 gint cbValidateCommand (GtkWidget *widget, GdkEvent *event, gpointer data)
 {
+	string cmd = gtk_entry_get_text (GTK_ENTRY(widget));
+	CommandHistory.push_back (cmd);
 	// execute the command
-	ICommand::execute (gtk_entry_get_text (GTK_ENTRY(widget)), logstdout);
+	ICommand::execute (cmd, logstdout);
 	// clear the input text
 	gtk_entry_set_text (GTK_ENTRY(widget), "");
+	CommandHistoryPos = CommandHistory.size();
 	return TRUE;
 }
 
+void updateInput ()
+{
+	gtk_widget_grab_focus (InputText);
+}
+
+gint KeyIn(GtkWidget *Widget, GdkEventKey *Event, gpointer *Data)
+{
+	switch (Event->keyval)
+	{
+	case GDK_Escape : gtk_entry_set_text (GTK_ENTRY(Widget), ""); break;
+	case GDK_Up : if (CommandHistoryPos > 0) { CommandHistoryPos--; gtk_entry_set_text (GTK_ENTRY(Widget), CommandHistory[CommandHistoryPos].c_str()); } break;
+	case GDK_Down : if (CommandHistoryPos < CommandHistory.size() - 1) { CommandHistoryPos++; gtk_entry_set_text (GTK_ENTRY(Widget), CommandHistory[CommandHistoryPos].c_str()); } break;
+	case GDK_KP_Enter : gtk_signal_emit_by_name(GTK_OBJECT(Widget),"activate"); return FALSE; break;
+	default : return FALSE;
+	}
+	gtk_signal_emit_stop_by_name(GTK_OBJECT(Widget),"key_press_event");
+	return TRUE;
+}
+
+gint KeyOut(GtkWidget *Widget, GdkEventKey *Event, gpointer *Data)
+{
+	updateInput();
+	gtk_signal_emit_stop_by_name(GTK_OBJECT(Widget),"key_press_event");
+	return TRUE;
+}
+
+
+/* Interface is something like this
+	-------------------------
+	|          |            |
+	| RootTree | OutputText |
+	|          |            |
+	-------------------------
+	| InputText             |
+	-------------------------
+*/
 
 /*gint cbConnectToAS (GtkWidget *widget, gpointer data)
 {
@@ -659,19 +766,7 @@ gint cbValidateCommand (GtkWidget *widget, GdkEvent *event, gpointer data)
 	printf("connecting to %p\n", ASSelected);
 	return TRUE;
 }*/
-
-
-
-/* Interface is something like this
-	-----------
-	| toolbar |
-	-----------
-	|    |    |
-	|tree|    |
-	-----------
-*/
-/*
-void initToolbar (GtkWidget *container)
+/*void initToolbar (GtkWidget *container)
 {
 	GtkWidget *button;
 
@@ -701,7 +796,6 @@ void initToolbar (GtkWidget *container)
 
 void initInterf ()
 {
-	g_thread_init (NULL);
 	gtk_init (NULL, NULL);
 
 	RootWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -734,7 +828,7 @@ void initInterf ()
 	}
 
 	// S POPUP MENU (service menu)
-	{
+/*	{
 		GtkItemFactory *item_factory;
 		GtkAccelGroup *accel_group;
 		gint nmenu_items = sizeof (SMenuItems) / sizeof (SMenuItems[0]);
@@ -744,7 +838,7 @@ void initInterf ()
 		gtk_window_add_accel_group (GTK_WINDOW (RootWindow), accel_group);
 		SMenu = gtk_item_factory_get_widget (item_factory, "<main>");
 	}
-
+*/
 /////// TREE
 	GtkWidget *scrolled_win = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_win), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -781,12 +875,13 @@ void initInterf ()
 	gtk_widget_show (scrolled_win2);
 
 	OutputText = gtk_text_new (NULL, NULL);
+	gtk_signal_connect(GTK_OBJECT(OutputText),"key_press_event",GTK_SIGNAL_FUNC(KeyOut),NULL);
 	gtk_text_set_editable (GTK_TEXT (OutputText), FALSE);
 	gtk_container_add (GTK_CONTAINER (scrolled_win2), OutputText);
 //	gtk_widget_grab_focus (OutputText);
 	gtk_widget_show (OutputText);
 
-	GtkDisplayer = new CGtkDisplayer;
+	GtkDisplayer = new CGtkDisplayer(getThreadId());
 //	DebugLog->addDisplayer (GtkDisplayer);
 	WarningLog->addDisplayer (GtkDisplayer);
 	InfoLog->addDisplayer (GtkDisplayer);
@@ -798,6 +893,7 @@ void initInterf ()
 //	gtk_entry_set_text (GTK_ENTRY (InputText), "hello world");
 //	gtk_editable_select_region (GTK_EDITABLE (InputText), 0, 5);
 	gtk_signal_connect (GTK_OBJECT(InputText), "activate", GTK_SIGNAL_FUNC(cbValidateCommand), NULL);
+	gtk_signal_connect(GTK_OBJECT(InputText),"key_press_event",GTK_SIGNAL_FUNC(KeyIn),NULL);
 	gtk_box_pack_start (GTK_BOX (vrootbox), InputText, TRUE, TRUE, 0);
 	gtk_widget_show (InputText);
 
@@ -842,11 +938,11 @@ void runInterf ()
 	ICommand::execute ("connect 1", logstdout);
 	
     gtk_timeout_add (500, updateInterf, NULL);
-	gdk_threads_enter ();
+//	gdk_threads_enter ();
 	gtk_main ();
-	gdk_threads_leave ();
+//	gdk_threads_leave ();
 	
-	//	DebugLog->removeDisplayer (GtkDisplayer);
+//	DebugLog->removeDisplayer (GtkDisplayer);
 	WarningLog->removeDisplayer (GtkDisplayer);
 	InfoLog->removeDisplayer (GtkDisplayer);
 	ErrorLog->removeDisplayer (GtkDisplayer);

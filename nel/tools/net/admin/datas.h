@@ -1,7 +1,7 @@
 /** \file datas.h
  *
  *
- * $Id: datas.h,v 1.3 2001/05/31 16:41:59 lecroart Exp $
+ * $Id: datas.h,v 1.4 2001/06/07 16:18:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,16 +40,17 @@ struct CAdminExecutorService;
 
 struct CService
 {
-	CService () : Id(0xFFFFFFFF), Ready(false), Connected(false), InConfig(false), Unknown(true), RootTreeItem(NULL) { }
+	CService () : Id(0xFFFFFFFF), Ready(false), Connected(false), InConfig(false), Unknown(true), RootTreeItem(NULL), MenuCreated(false) { }
 
-	uint32		Id;				/// uint32 to identify the service
-	std::string	AliasName;		/// alias of the service used in the AES and AS to find him (unique per AES)
-	std::string	ShortName;		/// name of the service in short format ("NS" for example)
-	std::string	LongName;		/// name of the service in long format ("naming_service")
-	bool		Ready;			/// true if the service is ready
-	bool		Connected;		/// true if the service is connected to the AES
-	bool		InConfig;		/// true if the service is in the configuration
-	bool		Unknown;		/// true if the aes is not connected
+	uint32			Id;				/// uint32 to identify the service
+	std::string		AliasName;		/// alias of the service used in the AES and AS to find him (unique per AES)
+	std::string		ShortName;		/// name of the service in short format ("NS" for example)
+	std::string		LongName;		/// name of the service in long format ("naming_service")
+	bool			Ready;			/// true if the service is ready
+	bool			Connected;		/// true if the service is connected to the AES
+	bool			InConfig;		/// true if the service is in the configuration
+	bool			Unknown;		/// true if the aes is not connected
+	std::vector<std::string>	Commands;
 
 	CAdminExecutorService *AES;
 
@@ -70,6 +71,8 @@ struct CService
 	void	*RootTreeItem;
 	void	*RootSubTree;
 	void	*Bitmap, *Label;
+	void	*ItemFactory;
+	bool	MenuCreated;
 };
 
 typedef std::list<CService> TServices;
@@ -130,7 +133,7 @@ struct CAdminExecutorService
 	void	*RootTreeItem;
 	void	*RootSubTree;
 	void	*Bitmap, *Label;
-	void	*ItemFactory;
+//	void	*ItemFactory;
 };
 
 typedef std::list<CAdminExecutorService> TAdminExecutorServices;

@@ -15,6 +15,8 @@ TransitionNumBis		= #( 5,			4,			2,				3,				7,			6,			0,				1,				8)
 
 NEL3D_APPDATA_IGNAME = 1423062564			-- string : name of the Instance Group
 
+tagThisFile = true
+
 -- Lower case
 fn lowercase instring =
 (  
@@ -381,7 +383,7 @@ fn exportInstanceGroupFromZone inputFile outputPath igName transitionZone cellSi
 							selectmore node
 					)
 					-- Check export
-					try
+					--try
 					(
 						-- Export the ig
 						instancegroup2export = $selection as array
@@ -393,17 +395,20 @@ fn exportInstanceGroupFromZone inputFile outputPath igName transitionZone cellSi
 						(
 							-- Error
 							nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+inputFile)
+							tagThisFile = false
 						)
 					)
-					catch
+					--catch
 					(
 						-- Error
-						nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+inputFile)
+						-- nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+inputFile)
+						-- tagThisFile = false
 					)
 				)
 				else
 				(
 					nlerror ("SKIPPED ligo ig "+output)
+					tagThisFile = false
 				)
 			)
 		)
@@ -421,9 +426,10 @@ if ligopath != "" then ligo_export_path = ligopath
 
 MaxFilesList = getFiles (ligo_root_path + "*.max")
 
+
 -- EXPORT ZONES
 
-try
+--try
 (
 	-- Set the bank pathname
 	bank_filename = "bankFilename"
@@ -432,7 +438,7 @@ try
 	cellSize = NeLLigoGetCellSize ()
 
 	for curFileName in MaxFilesList do
-	(		
+	(	
 		-- Free memory and file handles
 		gc ()
 		resetMAXFile #noprompt
@@ -441,14 +447,16 @@ try
 		tokenArray = filterString (getFilenameFile curFileName) "-"
 		if (tokenArray.count == 3) and (tokenArray[1] == "zonematerial")  then
 		(			
-			nlerror ("Scanning file "+curFileName+" ...")
+			-- Get the tag file name
+			tag = ("output_directory_tag/"+(getFilenameFile curFileName)+(getFilenameType curFileName)+".tag")
 
-			-- INCREMENTAL : do we have to export ?
-			dstFileName = ligo_export_path + "zoneLigos\\" + tokenArray[2] + "-" + tokenArray[3] + ".ligozone"
+			-- Compare date with the tag file
+			if (NeLTestFileDate tag curFileName) == true then
+			(
+				-- Try to tag this file
+				tagThisFile = true
 
-			-- compare the date of curFileName and dstFileName files
-			if (nelTestFileDate dstFileName curFileName) == true then
-			(				
+				nlerror ("Scanning file "+curFileName+" ...")
 				loadMaxFile curFileName
 				DeleteDebugMarkersFn ()
 				selectAllPatch ()
@@ -459,6 +467,7 @@ try
 				if (selection as array).count > 1 then
 				(
 					nlerror ("ERROR In file "+(getFilenameFile curFileName)+", multiple NelPatchMesh. Can't export.");
+					tagThisFile = false
 				)
 				else 
 				(
@@ -473,7 +482,7 @@ try
 						dstFileName = ligo_export_path + tokenArray[2] + "-" + tokenArray[3] + ".ligozone"
 
 						-- Error catching
-						try
+						--try
 						(							
 							-- export ligo zone
 							if (NeLLigoExportZone $ dstFileName props false false) then
@@ -483,40 +492,60 @@ try
 							else
 							(
 								nlerror ("ERROR Error exporting ligo zone from file "+ (getFilenameFile curFileName))
+								tagThisFile = false
 							)							
 							
 						)
-						catch
+						--catch
 						(
 							-- Error
-							nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
+							-- nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
+							-- tagThisFile = false
 						)
 
+					)
+				)
+
+				-- export matching igs
+				--try
+				(
+					exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") "" 0 cellSize
+				)
+				--catch
+				(
+					-- nlerror("couldn't export ig for " + curFileName)
+					-- tagThisFile = false
+				)
+
+				-- export collisions
+				--try
+				(
+					exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
+				)
+				--catch
+				(
+					-- nlerror("couldn't export collision for " + curFileName)
+					-- tagThisFile = false
+				)
+
+				-- Write a tag file
+				if tagThisFile == true then
+				(
+					tagFile = createFile tag
+					if tagFile == undefined then
+					(
+						nlerror ("WARNING can't create tag file "+tag)
+					)
+					else
+					(
+						print "toto" to: tagFile
+						close tagFile
 					)
 				)
 			)
 			else
 			(
-				nlerror ("SKIPPED ligozone "+ (getFilenameFile curFileName))
-			)
-
-			-- export matching igs
-			try
-			(
-				exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") "" 0 cellSize
-			)
-			catch
-			(
-				nlerror("couldn't export ig for " + curFileName)
-			)
-			-- export collisions
-			try
-			(
-				exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
-			)
-			catch
-			(
-				nlerror("couldn't export collision for " + curFileName)
+				nlerror ("SKIPPED BY TAG ligozone "+ (getFilenameFile curFileName))
 			)
 		)
 	)
@@ -534,8 +563,6 @@ try
 		tokenArray = filterString (getFilenameFile curFileName) "-"
 		if (tokenArray.count == 4) and (tokenArray[1] == "zonetransition") then
 		(
-			nlerror ("Scanning file "+curFileName+" ...")
-
 			HaveToExport = #()
 			for zone = 1 to 9 do
 			(
@@ -552,160 +579,195 @@ try
 				)
 			)
 
-			loadMaxFile curFileName
-			DeleteDebugMarkersFn ()
-			selectAllPatch ()
-			-- nlerror ("EXPORT "+ (getFilenameFile curFileName))
+			-- Get the tag file name
+			tag = ("output_directory_tag/"+(getFilenameFile curFileName)+(getFilenameType curFileName)+".tag")
 
-			-- Array of selection
-			nodeArray = #()
-			if $ == $selection then
+			-- Compare date with the tag file
+			if (NeLTestFileDate tag curFileName) == true then
 			(
-				nodeArray = $selection as array
+				-- Try to tag this file
+				tagThisFile = true
+
+				nlerror ("Scanning file "+curFileName+" ...")
+				loadMaxFile curFileName
+				DeleteDebugMarkersFn ()
+				selectAllPatch ()
+				-- nlerror ("EXPORT "+ (getFilenameFile curFileName))
+
+				-- Array of selection
+				nodeArray = #()
+				if $ == $selection then
+				(
+					nodeArray = $selection as array
+				)
+				else
+				(
+					append nodeArray $
+				)
+
+				-- Ok flag
+				ok = true
+				findOne = false
+
+				-- Cell Size
+				if cellSize != undefined then
+				(
+					-- Array of transitions zones
+					transitionZone = #()
+					for zone = 1 to 9 do
+						append transitionZone undefined
+					for zone = 1 to nodeArray.count do
+					(
+						-- Find one
+						findOne = true;
+
+						-- Get the zone coordinates
+						x = #()
+						y = #()
+						ok = getTransitionZoneCoordinates nodeArray[zone] x y
+
+						-- No error ?
+						if ok == true then
+						(
+							-- Transition number
+							id = TransitionIds[y[1]+1][x[1]+1]
+
+							-- Store it
+							if (id == undefined) then
+							(
+								nlerror ("ERROR A zone is not at the right position in "+ (getFilenameFile curFileName))
+								tagThisFile = false
+								ok = false
+							)
+							else
+							(
+								transitionZone[id] = nodeArray[zone]
+							)
+						)
+					)
+
+					-- Continue ?
+					if (ok == true) and (findOne == true) then
+					(
+						-- For each zone selected
+						for zone = 1 to 9 do
+						(
+							-- Zone name
+							zoneBaseName = tokenArray[2] + "-" + tokenArray[3] + "-" + tokenArray[4] + "-" + ((zone-1) as string)
+
+							-- Get the destination filename for export
+							filename = ligo_export_path + zoneBaseName + ".ligozone"
+
+							if (HaveToExport[zone] == true) then
+							(
+								-- Defined ?
+								if (transitionZone[zone] != undefined) then
+								(
+									-- Make an array of properties
+									props = #( #("zone", zoneBaseName), #("transname", (tokenArray[2]+"-"+tokenArray[3]) ), #("transtype", TransitionType[zone] ), #("transtype", TransitionType[zone] ), #("transnum", (TransitionNumBis[zone] as string) ) ) 
+
+									-- Add the properties
+									addProperties transitionZone[zone] props
+
+									-- Transform the zone
+									c = instance transitionZone[zone]
+
+									-- Change the name
+									c.name = "[NELLIGO] tmp export"
+
+									-- The matrix
+									mt = buildTransitionMatrix transitionZone[zone].transform zone cellSize
+
+									-- Scale ?
+									if TransitionScale[zone] == true then
+									(
+										setappdata c ligo_scale_app "1"
+									)
+
+									-- Rotate
+									if TransitionRot[zone] != 0 then
+									(
+										setappdata c ligo_rotate_app (TransitionRot[zone] as string)
+									)
+
+									-- Transform the node
+									c.transform = mt
+
+									-- Export the zone
+
+									-- Error catching
+									--try
+									(
+										-- nlerror ("EXPORT "+ (getFilenameFile filename))
+										if (NeLLigoExportZone c filename props false false) then
+										(
+											nlerror ("OK "+ (getFilenameFile filename))
+										)
+										else
+										(
+											nlerror ("ERROR Error exporting ligo zone from file "+ (getFilenameFile filename))
+											tagThisFile = false
+										)
+									)
+									--catch
+									(
+										-- Error
+										-- nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
+										-- tagThisFile = false
+									)
+
+									-- Delete
+									delete c
+								)
+							)
+							else
+							(
+								nlerror ("SKIPPED ligozone transition "+ (getFilenameFile filename))
+							)
+
+							-- export igs
+							--try
+							(
+								exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") (lowercase (zoneBaseName)) zone cellSize
+							)
+							--catch
+							(
+								-- nlerror("couldn't export ig for " + curFileName)
+								-- tagThisFile = false
+							)
+
+							-- export collisions
+							--try
+							(
+								exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
+							)
+							--catch
+							(
+								-- nlerror("couldn't export collision for " + curFileName)
+								-- tagThisFile = false
+							)
+						)
+					)
+
+					-- Write a tag file
+					if tagThisFile == true then
+					(
+						tagFile = createFile tag
+						if tagFile == undefined then
+						(
+							nlerror ("WARNING can't create tag file "+tag)
+						)
+						else
+						(
+							print "toto" to: tagFile
+							close tagFile
+						)
+					)
+				)
 			)
 			else
 			(
-				append nodeArray $
-			)
-
-			-- Ok flag
-			ok = true
-			findOne = false
-
-			-- Cell Size
-			if cellSize != undefined then
-			(
-				-- Array of transitions zones
-				transitionZone = #()
-				for zone = 1 to 9 do
-					append transitionZone undefined
-				for zone = 1 to nodeArray.count do
-				(
-					-- Find one
-					findOne = true;
-
-					-- Get the zone coordinates
-					x = #()
-					y = #()
-					ok = getTransitionZoneCoordinates nodeArray[zone] x y
-
-					-- No error ?
-					if ok == true then
-					(
-						-- Transition number
-						id = TransitionIds[y[1]+1][x[1]+1]
-
-						-- Store it
-						if (id == undefined) then
-						(
-							nlerror ("ERROR A zone is not at the right position in "+ (getFilenameFile curFileName))
-							ok = false
-						)
-						else
-						(
-							transitionZone[id] = nodeArray[zone]
-						)
-					)
-				)
-
-				-- Continue ?
-				if (ok == true) and (findOne == true) then
-				(
-					-- For each zone selected
-					for zone = 1 to 9 do
-					(
-						-- Zone name
-						zoneBaseName = tokenArray[2] + "-" + tokenArray[3] + "-" + tokenArray[4] + "-" + ((zone-1) as string)
-
-						-- Get the destination filename for export
-						filename = ligo_export_path + zoneBaseName + ".ligozone"
-
-						if (HaveToExport[zone] == true) then
-						(
-							-- Defined ?
-							if (transitionZone[zone] != undefined) then
-							(
-								-- Make an array of properties
-								props = #( #("zone", zoneBaseName), #("transname", (tokenArray[2]+"-"+tokenArray[3]) ), #("transtype", TransitionType[zone] ), #("transtype", TransitionType[zone] ), #("transnum", (TransitionNumBis[zone] as string) ) ) 
-
-								-- Add the properties
-								addProperties transitionZone[zone] props
-
-								-- Transform the zone
-								c = instance transitionZone[zone]
-
-								-- Change the name
-								c.name = "[NELLIGO] tmp export"
-
-								-- The matrix
-								mt = buildTransitionMatrix transitionZone[zone].transform zone cellSize
-
-								-- Scale ?
-								if TransitionScale[zone] == true then
-								(
-									setappdata c ligo_scale_app "1"
-								)
-
-								-- Rotate
-								if TransitionRot[zone] != 0 then
-								(
-									setappdata c ligo_rotate_app (TransitionRot[zone] as string)
-								)
-
-								-- Transform the node
-								c.transform = mt
-
-								-- Export the zone
-
-								-- Error catching
-								try
-								(
-									-- nlerror ("EXPORT "+ (getFilenameFile filename))
-									if (NeLLigoExportZone c filename props false false) then
-									(
-										nlerror ("OK "+ (getFilenameFile filename))
-									)
-									else
-									(
-										nlerror ("ERROR Error exporting ligo zone from file "+ (getFilenameFile filename))
-									)
-								)
-								catch
-								(
-									-- Error
-									nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
-								)
-
-								-- Delete
-								delete c
-							)
-						)
-						else
-						(
-							nlerror ("SKIPPED ligozone transition "+ (getFilenameFile filename))
-						)
-
-						-- export igs
-						try
-						(
-							exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") (lowercase (zoneBaseName)) zone cellSize
-						)
-						catch
-						(
-							nlerror("couldn't export ig for " + curFileName)
-						)
-
-						-- export collisions
-						try
-						(
-							exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
-						)
-						catch
-						(
-							nlerror("couldn't export collision for " + curFileName)
-						)
-					)
-				)
+				nlerror ("SKIPPED BY TAG transition "+ (getFilenameFile curFileName))
 			)
 		)
 	)
@@ -721,14 +783,16 @@ try
 		tokenArray = filterString (getFilenameFile curFileName) "-"
 		if (tokenArray.count == 2) and (tokenArray[1] == "zonespecial")  then
 		(
-			nlerror ("Scanning file "+curFileName+" ...")
+			-- Get the tag file name
+			tag = ("output_directory_tag/"+(getFilenameFile curFileName)+(getFilenameType curFileName)+".tag")
 
-			-- INCREMENTAL : do we have to export ?
-			dstFileName = ligo_export_path + "zoneLigos\\" + tokenArray[2] + ".ligozone"
-
-			-- compare the date of curFileName and dstFileName files
-			if (nelTestFileDate dstFileName curFileName) == true then
+			-- Compare date with the tag file
+			if (NeLTestFileDate tag curFileName) == true then
 			(
+				-- Try to tag this file
+				tagThisFile = true
+
+				nlerror ("Scanning file "+curFileName+" ...")
 				loadMaxFile curFileName
 				DeleteDebugMarkersFn ()
 				selectAllPatch ()
@@ -739,6 +803,7 @@ try
 				if (selection as array).count > 1 then
 				(
 					nlerror ("ERROR In file "+(getFilenameFile curFileName)+", multiple NelPatchMesh. Can't export.");
+					tagThisFile = false
 				)
 				else 
 				(
@@ -753,7 +818,7 @@ try
 						dstFileName = ligo_export_path + tokenArray[2] + ".ligozone"
 
 						-- Error catching
-						try
+						--try
 						(
 							if (NeLLigoExportZone $ dstFileName props false false) then
 							(
@@ -762,47 +827,67 @@ try
 							else
 							(
 								nlerror ("ERROR Error exporting ligo zone from file "+ (getFilenameFile curFileName))
+								tagThisFile = false
 							)
 						)
-						catch
+						--catch
 						(
 							-- Error
-							nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
+							-- nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
+							-- tagThisFile = false
 						)
+					)
+				)
+
+				-- export matching igs
+				--try
+				(
+					exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") "" 0 cellSize
+				)
+				--catch
+				(
+					-- nlerror("couldn't export ig for " + curFileName)
+					-- tagThisFile = false
+				)
+
+				-- export collisions
+				--try
+				(
+					exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
+				)
+				--catch
+				(
+					-- nlerror("couldn't export collision for " + curFileName)
+					-- tagThisFile = false
+				)
+
+				-- Write a tag file
+				if tagThisFile == true then
+				(
+					tagFile = createFile tag
+					if tagFile == undefined then
+					(
+						nlerror ("WARNING can't create tag file "+tag)
+					)
+					else
+					(
+						print "toto" to: tagFile
+						close tagFile
 					)
 				)
 			)
 			else
 			(
-				nlerror ("SKIPPED ligozone special "+ (getFilenameFile curFileName))
-			)
-
-			-- export matching igs
-			try
-			(
-				exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") "" 0 cellSize
-			)
-			catch
-			(
-				nlerror("couldn't export ig for " + curFileName)
-			)
-
-			-- export collisions
-			try
-			(
-				exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
-			)
-			catch
-			(
-				nlerror("couldn't export collision for " + curFileName)
+				nlerror ("SKIPPED BY TAG ligozone special "+ (getFilenameFile curFileName))
 			)
 		)
 	)
 )
-catch 
+--catch 
 (
 	-- Error
-	nlerror ("ERROR fatal error exporting ligo zone in folder"+ligo_root_path)
+	-- nlerror ("ERROR fatal error exporting ligo zone in folder"+ligo_root_path)
+	-- tagThisFile = false
 )
 
 

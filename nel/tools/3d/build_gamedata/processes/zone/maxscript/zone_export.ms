@@ -63,8 +63,6 @@ try
 		-- For each files
 		for i = 1 to files.count do
 		(
-			nlerror ("Scanning file "+files[i]+" ...")
-
 			try
 			(
 				-- Ok ?
@@ -83,6 +81,7 @@ try
 					resetMAXFile #noprompt
 
 					-- Open the max project
+					nlerror ("Scanning file "+files[i]+" ...")
 					if loadMaxFile files[i] == true then
 					(
 						-- Select none

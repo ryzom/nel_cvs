@@ -33,8 +33,6 @@ try
 		-- For each files
 		for i = 1 to files.count do
 		(
-			nlerror ("Scanning file "+files[i]+" ...")
-
 			try
 			(
 				-- Output file
@@ -50,6 +48,7 @@ try
 					resetMAXFile #noprompt
 
 					-- Open the max project
+					nlerror ("Scanning file "+files[i]+" ...")
 					if loadMaxFile files[i] == true then
 					(
 						-- Select all the nodes

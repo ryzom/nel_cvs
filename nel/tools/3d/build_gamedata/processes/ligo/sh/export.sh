@@ -45,7 +45,7 @@ rm $max_directory/plugcfg/nelligo.ini
 echo "[LigoConfig]" > $max_directory/plugcfg/nelligo.ini
 
 # copy the ligo export script
-cat maxscript/nel_ligo_export.ms | sed -e "s&output_logfile&$dir_gamedata_maxscript/processes/ligo/log.log&g" | sed -e "s&bankFilename&$dir_gamedata_maxscript/processes/ligo/smallbank/ligo.smallbank&g" > $max_directory/scripts/nel_ligo_export.ms
+cat maxscript/nel_ligo_export.ms | sed -e "s&output_directory_tag&$dir_gamedata_maxscript/processes/ligo/tag&g" | sed -e "s&output_logfile&$dir_gamedata_maxscript/processes/ligo/log.log&g" | sed -e "s&bankFilename&$dir_gamedata_maxscript/processes/ligo/smallbank/ligo.smallbank&g" > $max_directory/scripts/nel_ligo_export.ms
 
 dir_database=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//' | sed -e 's/ //g' | sed -e 's/=//g' | sed -e 's&\/&\\\&g'`
 dir_ligosrc=`cat ../../cfg/directories.cfg | grep "ligo_source_directory" | sed -e 's/ligo_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g' | sed -e 's&\/&\\\&g'`

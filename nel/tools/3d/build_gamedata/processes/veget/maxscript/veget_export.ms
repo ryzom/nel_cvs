@@ -65,8 +65,6 @@ try
 		-- For each files
 		for i = 1 to files.count do
 		(
-			nlerror ("Scanning file "+files[i]+" ...")
-
 			try
 			(
 				-- Delete lod files
@@ -88,6 +86,7 @@ try
 				if (NeLTestFileDate tag files[i]) == true then
 				(
 					-- Open the max project
+					nlerror ("Scanning file "+files[i]+" ...")
 					if loadMaxFile files[i] == true then
 					(
 						tagThisFile = true

@@ -1,7 +1,7 @@
 /** \file layered_ordering_table.h
  * <File description>
  *
- * $Id: layered_ordering_table.h,v 1.2 2002/02/27 11:28:47 vizerie Exp $
+ * $Id: layered_ordering_table.h,v 1.3 2002/06/19 12:19:53 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -233,6 +233,7 @@ inline T* CLayeredOrderingTable<T>::get()
 			nlassert(0);
 		break;
 	}
+	return NULL; // avoid warning
 }
 
 //==================================================================

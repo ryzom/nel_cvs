@@ -5,6 +5,7 @@
 
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
+#include "nel/misc/vector.h"
 
 
 using namespace std;
@@ -138,18 +139,48 @@ struct CStatVal
 typedef	map<sint, CStatVal>			TStatMap;
 typedef	map<string, CStatVal>		TStatStrMap;
 
+class CCrashCont
+{
+public:
+	string	Name;
+	sint	X0,Y0,X1,Y1;
+	uint	NumCrash;
+	CCrashCont(const std::string &name, sint x0, sint y0, sint x1, sint y1)
+	{
+		Name= name;
+		X0= min(x0,x1);
+		Y0= min(y0,y1);
+		X1= max(x0,x1);
+		Y1= max(y0,y1);
+		NumCrash= 0;
+	}
+
+	bool	testPos(const CVector &pos)
+	{
+		if(pos.x>=X0 && pos.x<=X1 && pos.y>=Y0 && pos.y<=Y1)
+		{
+			NumCrash++;
+			return true;
+		}
+		return false;
+	}
+};
+
 void	statRyzomBug(const char *dirSrc)
 {
 	vector<string>	fileList;
 	CPath::getPathContent(dirSrc, false, false, true, fileList, NULL, true);
-	
 
-	TStatStrMap		senderMap;
-	TStatMap		shardMap;
-	TStatMap		timeInGameMap;
-	TStatMap		info3dMap;
-	uint			totalCrash= 0;
-	uint			totalCrashDuplicate= 0;
+	// delete the log.log
+	CFile::deleteFile("log.log");
+
+	TStatStrMap				senderMap;
+	TStatMap				shardMap;
+	TStatMap				timeInGameMap;
+	TStatMap				info3dMap;
+	std::vector<CVector>	userPosArray;
+	uint					totalCrash= 0;
+	uint					totalCrashDuplicate= 0;
 	
 
 	// **** parse all files
@@ -161,6 +192,7 @@ void	statRyzomBug(const char *dirSrc)
 		{
 			const	string	senderIdTok= "Sender: ";
 			const	string	shardIdTok= "ShardId: ";
+			const	string	userPosTok= "UserPosition: ";
 			const	string	timeInGameIdTok= "Time in game: ";
 			const	string	localTimeIdTok= "LocalTime: ";
 			const	string	nel3dIdTok= "NeL3D: ";
@@ -174,6 +206,7 @@ void	statRyzomBug(const char *dirSrc)
 			sint	precCard3D= -1;		// 0 NVidia, 1 ATI, 2 ????
 			sint64	precLocalTime= -1;	// local time in second
 			sint64	precLocalTime2= -1;	// local time in second
+			CVector	precUserPos;
 			while(!f.eof())
 			{
 				char	tmp[1000];
@@ -187,6 +220,11 @@ void	statRyzomBug(const char *dirSrc)
 				else if(str.compare(0, shardIdTok.size(), shardIdTok)==0)
 				{
 					precShardId= atoi(str.c_str()+shardIdTok.size());
+				}
+				else if(str.compare(0, userPosTok.size(), userPosTok)==0)
+				{
+					string	posStr= str.substr(userPosTok.size());
+					sscanf(posStr.c_str(), "%f%f%f", &precUserPos.x, &precUserPos.y, &precUserPos.z);
 				}
 				else if(str.compare(0, timeInGameIdTok.size(), timeInGameIdTok)==0)
 				{
@@ -245,7 +283,7 @@ void	statRyzomBug(const char *dirSrc)
 
 					// END a block, add info in map (only if not repetition)
 					if( precSenderId!=precSenderId2 ||
-						abs(precLocalTime-precLocalTime2)>(sint64)60 )
+						abs(precLocalTime-precLocalTime2)>sint64(60) )
 					{
 						senderMap[precSenderId].Val++;
 						shardMap[precShardId].Val++;
@@ -255,6 +293,7 @@ void	statRyzomBug(const char *dirSrc)
 						if(precCard3D!=0 && precCard3D!=1)
 							precCard3D= 2;
 						info3dMap[precNel3DMode*256+precCard3D].Val++;
+						userPosArray.push_back(precUserPos);
 						totalCrash++;
 					}
 					totalCrashDuplicate++;
@@ -309,6 +348,55 @@ void	statRyzomBug(const char *dirSrc)
 		myinfo("**** %d Crashs for %s / Card %s", it->second.Val, 
 				mode3d==0?"OpenGL":(mode3d==1?"Direct3D":"??? No Driver ???"),
 				card3d==0?"NVIDIA":(card3d==1?"RADEON":"Misc"));
+	}
+	// crash by continent
+	{
+		// init cont info
+		CCrashCont	crashCont[]=
+		{
+			// New First, because bbox may be included in Main bbox
+			CCrashCont("Matis Newb", 0,-5000,2800,-8500),
+			CCrashCont("Zorai Newb", 6500,-4000,9300,-6000),
+			CCrashCont("Trykr Newb", 20000,-32000,24000,-36000),
+			CCrashCont("Fyros Newb", 20500,-24500,24000,-27500),
+			CCrashCont("Matis Main", 0,0,6500,-8500),
+			CCrashCont("Zorai Main", 6500,0,13000,-6000),
+			CCrashCont("Trykr Main ", 13000,-29000,20000,-36000),
+			CCrashCont("Fyros Main ", 15000,-23000,20500,-27500)
+		};
+		uint	numCont= sizeof(crashCont)/sizeof(crashCont[0]);
+		uint	numNotFound= 0;
+		// count stats
+		uint	i;
+		for(i=0;i<userPosArray.size();i++)
+		{
+			bool	ok= false;
+			for(uint j=0;j<numCont;j++)
+			{
+				if(crashCont[j].testPos(userPosArray[i]))
+				{
+					ok= true;
+					break;
+				}
+			}
+			if(!ok)
+				numNotFound++;
+		}
+		myinfo("");
+		myinfo("**** Stat Per continent:");
+		// display stats
+		for(i=0;i<numCont;i++)
+		{
+			myinfo("   %s: %d", crashCont[i].Name.c_str(), crashCont[i].NumCrash);
+		}
+		myinfo("   NotFound: %d", numNotFound);
+	}
+	// RAW userPos
+	myinfo("");
+	myinfo("**** RAW Crashs Pos (copy in excel, and use insert/chart/(X/Y)Scatter):");
+	for(uint i=0;i<userPosArray.size();i++)
+	{
+		myinfo("%.2f\t%.2f\t%.2f", userPosArray[i].x, userPosArray[i].y, userPosArray[i].z);
 	}
 }
 

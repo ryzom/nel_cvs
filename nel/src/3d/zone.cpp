@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.48 2001/08/29 12:36:56 corvazier Exp $
+ * $Id: zone.cpp,v 1.49 2001/09/10 10:06:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,12 +36,8 @@ using namespace std;
 //#define	NL3D_DEBUG_DONT_BIND_PATCH
 
 
-namespace NL3D {
-
-
-const sint	ClipIn= 0;
-const sint	ClipOut= 1;
-const sint	ClipSide= 2;
+namespace NL3D 
+{
 
 
 
@@ -86,6 +82,7 @@ CZone::CZone()
 	ZoneId= 0;
 	Compiled= false;
 	Landscape= NULL;
+	ClipResult= ClipOut;
 }
 // ***************************************************************************
 CZone::~CZone()
@@ -566,6 +563,7 @@ void			CZone::release(TZoneMap &loadedZones)
 	// End!!
 	Compiled= false;
 	Landscape= NULL;
+	ClipResult= ClipOut;
 }
 
 
@@ -796,7 +794,11 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 	// Store current pyramid.
 	CurrentPyramid= pyramid;
 
-	// Fill ClipResult.
+	// bkup old ClipResult. NB: by default, it is ClipOut (no VB created).
+	sint	oldClipResult= ClipResult;
+
+	// Compute ClipResult.
+	//-------------------
 	ClipResult= ClipIn;
 	for(sint i=0;i<(sint)pyramid.size();i++)
 	{
@@ -836,7 +838,9 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 		CPatch		*pPatch= &(*Patchs.begin());
 		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 		{
+			// The patch is entirely clipped, and so on for Render.
 			pPatch->forceClip();
+			pPatch->forceRenderClip();
 		}
 	}
 	else if(ClipResult==ClipIn)
@@ -844,7 +848,9 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 		CPatch		*pPatch= &(*Patchs.begin());
 		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 		{
+			// The patch is entirely unclipped, and so on for Render.
 			pPatch->forceNoClip();
+			pPatch->forceNoRenderClip();
 		}
 	}
 	else
@@ -854,6 +860,22 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 		{
 			pPatch->clip(CurrentPyramid);
 		}
+	}
+
+
+	// delete / reallocate / fill VBuffers.
+	//-------------------
+	// If there is a change in the Clip of the zone, or if patchs may have change (ie ClipSide is undetermined).
+	if(oldClipResult!=ClipResult || oldClipResult==ClipSide)
+	{
+		// Then, we must test by patch.
+		CPatch		*pPatch= &(*Patchs.begin());
+		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+		{
+			// For all patchs, we may delete or allocate / Fill VBs.
+			pPatch->updateClipPatchVB();
+		}
+
 	}
 
 }
@@ -998,13 +1020,14 @@ void			CZone::refineAll()
 
 	// Do a dummy clip.
 	ComputeTileErrorMetric= true;
-	ClipResult= ClipIn;
 	CPatch		*pPatch= &(*Patchs.begin());
 	sint n;
 	for(n=(sint)Patchs.size();n>0;n--, pPatch++)
 	{
 		pPatch->forceNoClip();
+		// DO NOT do a forceNoRenderClip(), to avoid big allocation of Near/Far VB vertices in driver.
 	}
+	// DO NOT modify ClipResult, to avoid big allocation of Near/Far VB vertices in driver.
 
 
 	// refine ALL patchs (even those which may be invisible).
@@ -1049,22 +1072,6 @@ void			CZone::preRender(const std::vector<CPlane>	&pyramid)
 	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 	{
 		pPatch->preRender(pyramid);
-	}
-}
-
-
-// ***************************************************************************
-void			CZone::fillTileVertexBuffer()
-{
-	nlassert(Compiled);
-	if(ClipResult==ClipOut)
-		return;
-
-	// fillTileVertexBuffer Pass.
-	CPatch		*pPatch= &(*Patchs.begin());
-	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
-	{
-		pPatch->fillTileVertexBuffer();
 	}
 }
 
@@ -1169,8 +1176,17 @@ void			CZone::changePatchTextureAndColor (sint numPatch, const std::vector<CTile
 
 	if (Compiled)
 	{
+		// If the patch is visible, then we must LockBuffers, because new VertexVB may be created.
+		if(Patchs[numPatch].RenderClipped)
+			Landscape->updateGlobalsAndLockBuffers(CVector::Null);
+
+		// Recompute UVs for new setup of Tiles.
 		Patchs[numPatch].deleteTileUvs();
 		Patchs[numPatch].recreateTileUvs();
+
+		// unlockBuffers() if necessary.
+		if(Patchs[numPatch].RenderClipped)
+			Landscape->unlockBuffers();
 	}
 }
 
@@ -1180,6 +1196,10 @@ void			CZone::refreshTesselationGeometry(sint numPatch)
 {
 	nlassert(numPatch>=0);
 	nlassert(numPatch<getNumPatchs());
+	nlassert(Compiled);
+
+	// At next render, we must re-fill the entire unclipped VB, so change are taken into account.
+	Landscape->_RenderMustRefillVB= true;
 
 	Patchs[numPatch].refreshTesselationGeometry();
 }

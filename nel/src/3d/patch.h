@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.10 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: patch.h,v 1.11 2001/09/10 10:06:56 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -412,18 +412,22 @@ public:
 	void			forceNoClip() {Clipped= false;}
 	/// Classify this patch as Clipped.
 	void			forceClip() {Clipped= true;}
+	/// Classify this patch as Render UnClipped.
+	void			forceNoRenderClip() {RenderClipped= false;}
+	/// Classify this patch as RenderClipped.
+	void			forceRenderClip() {RenderClipped= true;}
 	/// Classify this patch.
 	void			clip(const std::vector<CPlane>	&pyramid);
 	/// Refine / geomorph this patch. Even if clipped.
 	void			refine();
-	/// preRender this patch, if not clipped. Build Max faces / pass etc... Build max vertices needed...
+	/// preRender this patch, if not clipped. Build Max faces / pass etc...
 	void			preRender(const std::vector<CPlane>	&pyramid);
-	/// if not clipped, fill VBuffer for Tiles.
-	void			fillTileVertexBuffer();
-	/// Render this patch, if not clipped (fill VBuffer / fill materials primitive block).
+	/// Render this patch, if not clipped (fill materials primitive block).
 	void			renderFar0();
 	void			renderFar1();
 	void			renderTile(sint pass);
+	// For All Far0/Far1/Tile etc..., compute Geomorph and Alpha in software (no VertexShader).
+	void			computeSoftwareGeomorphAndAlpha();
 	// release Far render pass/reset Tile/Far render.
 	void			resetRenderFar();
 
@@ -579,6 +583,48 @@ public:
 	}
 
 
+public:
+
+	/// \name VB Allocator mgt.
+	// @{
+
+	// delete all VB allocated in VertexBuffers, according to Far0 and Far1. Do not Test RenderClipped state.
+	void		deleteVB();
+
+	// allocate all VB, according to Far0 and Far1. Do not Test RenderClipped state.
+	void		allocateVB();
+
+	// fill all VB, according to Far0, Far1 and CTessFace VBInfos. Do not Test RenderClipped state.
+	// Do not fill a VB if reallocationOccurs().
+	void		fillVB();
+
+	// if RenderClipped==false, fillVB().
+	void		fillVBIfVisible();
+
+	// delete Far1 VB allocated in VertexBuffers. do it only if Far1==true. Do not Test RenderClipped state.
+	void		deleteVBFar1Only();
+
+	// allocate Far1 VB, . do it only if Far1==true. Do not Test RenderClipped state.
+	void		allocateVBFar1Only();
+
+	// fill Far0 VB according CTessFace VBInfos and Far0 (do not fill if !Far0). Do not Test RenderClipped state.
+	// Do not fill a VB if reallocationOccurs().
+	void		fillVBFar0Only();
+	// same for Far1
+	void		fillVBFar1Only();
+
+
+	// Test Old anc Current RenderClipped test, and VBuffer according to.
+	void		updateClipPatchVB();
+
+
+	// For Debug only.
+	void		debugAllocationMarkIndices(uint marker);
+
+
+	// @}
+
+
 // Private part.
 private:
 /*********************************/
@@ -637,6 +683,10 @@ private:
 								
 	// are we cliped?
 	bool			Clipped;
+	// are we cliped in Render? Yes by default.
+	bool			RenderClipped;
+	// are we cliped in prec Render? Yes by default. updated by updateClipPatchVB().
+	bool			OldRenderClipped;
 
 	// Do we must compute the Tile errormetric part??
 	bool			ComputeTileErrorMetric;
@@ -781,13 +831,38 @@ private:
 	// @}
 
 	// For Render. Those methods compute the vertices for Driver (in CTessFace::Current*VB).
-	void		fillFar0VB(CTessList<CTessFarVertex>  &vertList);
-	void		fillFar1VB(CTessList<CTessFarVertex>  &vertList);
-	void		fillTileVB(CTessList<CTessNearVertex> &vertList);
+	void		fillFar0VertexVB(CTessFarVertex *pVert);
+	void		fillFar1VertexVB(CTessFarVertex *pVert);
+	void		fillTileVertexVB(CTessNearVertex *pVert);
+	void		fillFar0VertexListVB(CTessList<CTessFarVertex>  &vertList);
+	void		fillFar1VertexListVB(CTessList<CTessFarVertex>  &vertList);
+	void		fillTileVertexListVB(CTessList<CTessNearVertex> &vertList);
+	// For Render. Those methods allocate/delete vertices in VB.
+	void		updateFar0VBAlloc(CTessList<CTessFarVertex>  &vertList, bool alloc);
+	void		updateFar1VBAlloc(CTessList<CTessFarVertex>  &vertList, bool alloc);
+	void		updateTileVBAlloc(CTessList<CTessNearVertex>  &vertList, bool alloc);
+	void		updateVBAlloc(bool alloc);
+	// For Debug Allcoation only.
+	void		debugAllocationMarkIndicesFarList(CTessList<CTessFarVertex>  &vertList, uint marker);
+	void		debugAllocationMarkIndicesNearList(CTessList<CTessNearVertex>  &vertList, uint marker);
+
+
+	// For Refine. Those methods do all the good job, and test if they can allocate / fill the VB.
+	void		checkCreateVertexVBFar(CTessFarVertex *pVert);
+	void		checkCreateVertexVBNear(CTessNearVertex	*pVert);
+	// For Refine. Those methods do all the good job, and test if they have to delete the VB.
+	void		checkDeleteVertexVBFar(CTessFarVertex *pVert);
+	void		checkDeleteVertexVBNear(CTessNearVertex	*pVert);
+
 	// For Render. Those methods compute the primitives for Driver (in pass).
 	void		addFar0TriList(CPatchRdrPass *pass, CTessList<CTessFace> &flist);
 	void		addFar1TriList(CPatchRdrPass *pass, CTessList<CTessFace> &flist);
 	void		addTileTriList(CPatchRdrPass *pass, CTessList<CTileFace> &flist);
+
+	// For Render, geomorph / Alpha in software.
+	void		computeGeomorphFar0VertexListVB(CTessList<CTessFarVertex>  &vertList);
+	void		computeGeomorphAlphaFar1VertexListVB(CTessList<CTessFarVertex>  &vertList);
+	void		computeGeomorphTileVertexListVB(CTessList<CTessNearVertex>  &vertList);
 
 
 	/// \name Subdivision private.

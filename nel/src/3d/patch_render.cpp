@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.1 2001/07/06 12:26:49 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.2 2001/09/10 10:06:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,10 +40,17 @@ namespace NL3D
 
 
 // ***************************************************************************
+// ***************************************************************************
+// Patch / Face rendering.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
 void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 {
 	// Don't do anything if clipped.
-	if(Clipped)
+	if(RenderClipped)
 		return;
 
 	// 0. Classify the patch.
@@ -200,11 +207,78 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 			}
 		}
 	}
+
+	// 2. Update vertices in VB
+	//========================
+	sint	oldFar0= Far0, oldFar1= Far1;
+
+	// Test if go in or go out tileMode.
+	bool	changeTileMode;
+	// this is true if a change is made, and if old or current is in TileMode.
+	changeTileMode= (newFar0!=oldFar0) && (newFar0==0 || oldFar0==0);
+	// Or this is true if Far0 / Far1 was invalid before.
+	changeTileMode= changeTileMode || oldFar0==-1 || oldFar1==-1;
+
+	// Pre VB change.
+	//------------------
+	// In this case, major change: delete all VB, then recreate after.
+	if(changeTileMode)
+	{
+		// delete the old VB (NB: RenderClipped==false here). 
+		// NB: Far0 and Far1 are still unmodified, so deleteVB() will do the good job.
+		deleteVB();
+	}
+	else
+	{
+		// minor change: Far0 UV, or Far1.
+		// Far0 UV: do nothing here.
+		// If change in Far1, must delete Far1
+		if(newFar1!=oldFar1)
+		{
+			// NB: Far1 is still unmodified, so deleteVB() will do the good job.
+			deleteVBFar1Only();
+		}
+	}
+
+	// Far change.
+	//------------------
 	// Set new far values
 	Far0= newFar0;
 	Far1= newFar1;
 
-	// 2. Clip tess blocks.
+
+	// Post VB change.
+	//------------------
+	if(changeTileMode)
+	{
+		// major change: recreate all the VB.
+		allocateVB();
+		// Then try to refill if possible.
+		fillVB();
+	}
+	else
+	{
+		// minor change: Far0 UV, or Far1.
+		// If change in Far0
+		if(newFar0!=oldFar0)
+		{
+			// Then must recompute VB with good UVs.
+			// An optimisation is to check if UVs had really change (see UScale ...)
+			// but the case they don't change is very rare: 1/16.
+			fillVBFar0Only();
+		}
+
+		// If change in Far1, must allcoate and recompute UVs.
+		if(newFar1!=oldFar1)
+		{
+			allocateVBFar1Only();
+			// try to fill if no reallocation problem
+			fillVBFar1Only();
+		}
+	}
+
+
+	// 3. Clip tess blocks.
 	//=====================
 	// MasterBlock never clipped.
 	MasterBlock.resetClip();
@@ -222,15 +296,13 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 
 
 
-	// 3. Count Vertex Buffer usage, and Triangles usage.
+	// 4. Count Triangles usage.
 	//======================================
 
 	// FAR0.
 	//=======
 	if(Pass0)
 	{
-		// Inc far vertices count.
-		CTessFace::MaxFar0Index+= MasterBlock.FarVertexList.size();
 		// Inc tri count.
 		Pass0->addMaxTris(MasterBlock.FarFaceList.size());
 
@@ -240,8 +312,6 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 			CTessBlock	&tblock= TessBlocks[i];
 			if(!tblock.Clipped && !tblock.FullFar1)
 			{
-				// Inc far vertices count.
-				CTessFace::MaxFar0Index+= tblock.FarVertexList.size();
 				// Inc tri count.
 				Pass0->addMaxTris(tblock.FarFaceList.size());
 			}
@@ -253,8 +323,6 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 	//=======
 	if(Pass1)
 	{
-		// Inc far vertices count.
-		CTessFace::MaxFar1Index+= MasterBlock.FarVertexList.size();
 		// Inc tri count.
 		Pass1->addMaxTris(MasterBlock.FarFaceList.size());
 		for(sint i=0; i<(sint)TessBlocks.size(); i++)
@@ -262,8 +330,6 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 			CTessBlock	&tblock= TessBlocks[i];
 			if(!tblock.Clipped && !tblock.EmptyFar1)
 			{
-				// Inc far vertices count.
-				CTessFace::MaxFar1Index+= tblock.FarVertexList.size();
 				// Inc tri count.
 				Pass1->addMaxTris(tblock.FarFaceList.size());
 			}
@@ -284,8 +350,6 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 			CTessBlock	&tblock= TessBlocks[i];
 			if(!tblock.Clipped && !tblock.FullFar1)
 			{
-				// Inc near vertices count.
-				CTessFace::MaxTileIndex+= tblock.NearVertexList.size();
 				// Inc tri count.
 				for(sint j=0; j<NL3D_TESSBLOCK_TILESIZE; j++)
 				{
@@ -317,167 +381,6 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 	}
 }
 
-
-
-// ***************************************************************************
-void		CPatch::fillFar0VB(CTessList<CTessFarVertex>  &vertList)
-{
-	// Point to start of vertices we fill now.
-	static	uint8	*CurVBPtr;
-	CurVBPtr= (uint8*)CTessFace::CurrentFar0VBInfo.VertexCoordPointer;
-	CurVBPtr+= CTessFace::CurrentFar0Index * CTessFace::CurrentFar0VBInfo.VertexSize;
-
-
-	// Traverse the vertList.
-	CTessFarVertex	*pVert;
-	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
-	{
-		// Compute/build the new vertex.
-		pVert->Index0= CTessFace::CurrentFar0Index++;
-
-
-		// NB: the filling order of data is important, for AGP write combiners.
-
-		// Set Pos.
-		*(CVector*)CurVBPtr= pVert->Src->Pos;
-
-
-		// compute Uvs.
-		static CUV	uv;
-		CParamCoord	&pc= pVert->PCoord;
-		if (Flags&NL_PATCH_FAR0_ROTATED)
-		{
-			uv.U= pc.getT()* Far0UScale + Far0UBias;
-			uv.V= (1.f-pc.getS())* Far0VScale + Far0VBias;
-		}
-		else
-		{
-			uv.U= pc.getS()* Far0UScale + Far0UBias;
-			uv.V= pc.getT()* Far0VScale + Far0VBias;
-		}
-		// Set Uvs.
-		*(CUV*)(CurVBPtr + CTessFace::CurrentFar0VBInfo.TexCoordOff0)= uv;
-
-
-		// Inc the ptr.
-		CurVBPtr+= CTessFace::CurrentFar0VBInfo.VertexSize;
-	}
-}
-
-
-// ***************************************************************************
-void		CPatch::fillFar1VB(CTessList<CTessFarVertex>  &vertList)
-{
-	// Point to start of vertices we fill now.
-	static	uint8	*CurVBPtr;
-	CurVBPtr= (uint8*)CTessFace::CurrentFar1VBInfo.VertexCoordPointer;
-	CurVBPtr+= CTessFace::CurrentFar1Index * CTessFace::CurrentFar1VBInfo.VertexSize;
-
-
-	// Traverse the vertList.
-	CTessFarVertex	*pVert;
-	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
-	{
-		// Compute/build the new vertex.
-		pVert->Index1= CTessFace::CurrentFar1Index++;
-
-
-		// NB: the filling order of data is important, for AGP write combiners.
-
-		// Set Pos.
-		*(CVector*)CurVBPtr= pVert->Src->Pos;
-
-
-		// compute Uvs.
-		static CUV		uv;
-		CParamCoord	&pc= pVert->PCoord;
-		if (Flags&NL_PATCH_FAR1_ROTATED)
-		{
-			uv.U= pc.getT()* Far1UScale + Far1UBias;
-			uv.V= (1.f-pc.getS())* Far1VScale + Far1VBias;
-		}
-		else
-		{
-			uv.U= pc.getS()* Far1UScale + Far1UBias;
-			uv.V= pc.getT()* Far1VScale + Far1VBias;
-		}
-		// Set Uvs.
-		*(CUV*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.TexCoordOff0)= uv;
-
-
-		// Compute color.
-		static CRGBA	col(255,255,255,255);
-		// For Far1, use alpha fro transition.
-		float	f= (pVert->Src->Pos - CTessFace::RefineCenter).sqrnorm();
-		f= (f-TransitionSqrMin) * OOTransitionSqrDelta;
-		clamp(f,0,1);
-		col.A= (uint8)(f*255);
-		// Set color.
-		*(CRGBA*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.ColorOff)= col;
-
-
-		// Inc the ptr.
-		CurVBPtr+= CTessFace::CurrentFar1VBInfo.VertexSize;
-	}
-}
-
-
-// ***************************************************************************
-void		CPatch::fillTileVB(CTessList<CTessNearVertex>  &vertList)
-{
-	// Point to start of vertices we fill now.
-	static	uint8	*CurVBPtr;
-	CurVBPtr= (uint8*)CTessFace::CurrentTileVBInfo.VertexCoordPointer;
-	CurVBPtr+= CTessFace::CurrentTileIndex * CTessFace::CurrentTileVBInfo.VertexSize;
-
-
-	// Traverse the vertList.
-	CTessNearVertex	*pVert;
-	for(pVert= vertList.begin(); pVert; pVert= (CTessNearVertex*)pVert->Next)
-	{
-		// Compute/build the new vertex.
-		pVert->Index= CTessFace::CurrentTileIndex++;
-
-
-		// NB: the filling order of data is important, for AGP write combiners.
-
-		// Set Pos.
-		*(CVector*)CurVBPtr= pVert->Src->Pos;
-
-		// Set Uvs.
-		*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
-		*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
-
-		// Inc the ptr.
-		CurVBPtr+= CTessFace::CurrentTileVBInfo.VertexSize;
-	}
-}
-
-
-
-// ***************************************************************************
-void			CPatch::fillTileVertexBuffer()
-{
-	// If tile mode and not clipped.
-	if(Far0==0 && !Clipped)
-	{
-		// Fill VBuffer.
-		//=======
-		// No Tiles in MasterBlock!!
-
-		// Traverse the TessBlocks to add vertices.
-		for(sint i=0; i<(sint)TessBlocks.size(); i++)
-		{
-			CTessBlock	&tblock= TessBlocks[i];
-			if(!tblock.Clipped && !tblock.FullFar1)
-			{
-				// Add the vertices.
-				fillTileVB(tblock.NearVertexList);
-			}
-		}
-	}
-
-}
 
 
 // ***************************************************************************
@@ -516,25 +419,8 @@ void			CPatch::addTileTriList(CPatchRdrPass *pass, CTessList<CTileFace> &flist)
 // ***************************************************************************
 void			CPatch::renderFar0()
 {
-	if(Pass0 && !Clipped)
+	if(Pass0 && !RenderClipped)
 	{
-
-		// Fill VBuffer.
-		//=======
-		{
-			// Fill VB.
-			fillFar0VB(MasterBlock.FarVertexList);
-			for(sint i=0; i<(sint)TessBlocks.size(); i++)
-			{
-				CTessBlock	&tblock= TessBlocks[i];
-				if(!tblock.Clipped && !tblock.FullFar1)
-				{
-					fillFar0VB(tblock.FarVertexList);
-				}
-			}
-		}
-		// \todo yoyo: TODO_OPTIMIZE: CTessBlockEdge gestion (add new vertices).
-
 
 		// Fill PBlock.
 		//=======
@@ -577,26 +463,8 @@ void			CPatch::renderFar0()
 // ***************************************************************************
 void			CPatch::renderFar1()
 {
-	if(Pass1 && !Clipped)
+	if(Pass1 && !RenderClipped)
 	{
-
-		// Fill VBuffer.
-		//=======
-		if(Pass1)
-		{
-			// Fill VB.
-			fillFar1VB(MasterBlock.FarVertexList);
-			for(sint i=0; i<(sint)TessBlocks.size(); i++)
-			{
-				CTessBlock	&tblock= TessBlocks[i];
-				if(!tblock.Clipped && !tblock.EmptyFar1)
-				{
-					fillFar1VB(tblock.FarVertexList);
-				}
-			}
-		}
-		// \todo yoyo: TODO_OPTIMIZE: CTessBlockEdge gestion (add new vertices).
-
 
 		// Fill PBlock.
 		//=======
@@ -638,7 +506,7 @@ void			CPatch::renderFar1()
 void			CPatch::renderTile(sint pass)
 {
 	// If tile mode.
-	if(Far0==0 && !Clipped)
+	if(Far0==0 && !RenderClipped)
 	{
 		// NB: VB is previously filled in fillVertexBuffer().
 
@@ -696,6 +564,659 @@ void			CPatch::renderTile(sint pass)
 				}
 			}
 		}
+	}
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// VB Allocation
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CPatch::updateFar0VBAlloc(CTessList<CTessFarVertex>  &vertList, bool alloc)
+{
+	// Traverse the vertList.
+	CTessFarVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
+	{
+		if(alloc)
+			pVert->Index0= CTessFace::CurrentFar0VBAllocator->allocateVertex();
+		else
+			CTessFace::CurrentFar0VBAllocator->deleteVertex(pVert->Index0);
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::updateFar1VBAlloc(CTessList<CTessFarVertex>  &vertList, bool alloc)
+{
+	// Traverse the vertList.
+	CTessFarVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
+	{
+		if(alloc)
+			pVert->Index1= CTessFace::CurrentFar1VBAllocator->allocateVertex();
+		else
+			CTessFace::CurrentFar1VBAllocator->deleteVertex(pVert->Index1);
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::updateTileVBAlloc(CTessList<CTessNearVertex>  &vertList, bool alloc)
+{
+	// Traverse the vertList.
+	CTessNearVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessNearVertex*)pVert->Next)
+	{
+		if(alloc)
+			pVert->Index= CTessFace::CurrentTileVBAllocator->allocateVertex();
+		else
+			CTessFace::CurrentTileVBAllocator->deleteVertex(pVert->Index);
+	}
+}
+
+
+// ***************************************************************************
+void			CPatch::updateVBAlloc(bool alloc)
+{
+	// update Far0.
+	//=======
+	if(Far0>0)
+	{
+		// alloc Far0 VB.
+		updateFar0VBAlloc(MasterBlock.FarVertexList, alloc);
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			updateFar0VBAlloc(tblock.FarVertexList, alloc);
+		}
+	}
+	else if (Far0==0)
+	{
+		// alloc Tile VB.
+		// No Tiles in MasterBlock!!
+		// Traverse the TessBlocks to add vertices.
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			// Add the vertices.
+			updateTileVBAlloc(tblock.NearVertexList, alloc);
+		}
+	}
+
+	// update Far1.
+	//=======
+	if(Far1>0)
+	{
+		// alloc VB.
+		updateFar1VBAlloc(MasterBlock.FarVertexList, alloc);
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			updateFar1VBAlloc(tblock.FarVertexList, alloc);
+		}
+	}
+}
+
+// ***************************************************************************
+void			CPatch::deleteVB()
+{
+	updateVBAlloc(false);
+}
+
+// ***************************************************************************
+void			CPatch::allocateVB()
+{
+	updateVBAlloc(true);
+}
+
+
+// ***************************************************************************
+void		CPatch::deleteVBFar1Only()
+{
+	if(Far1>0)
+	{
+		// alloc VB.
+		updateFar1VBAlloc(MasterBlock.FarVertexList, false);
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			updateFar1VBAlloc(tblock.FarVertexList, false);
+		}
+	}
+}
+
+// ***************************************************************************
+void		CPatch::allocateVBFar1Only()
+{
+	if(Far1>0)
+	{
+		// alloc VB.
+		updateFar1VBAlloc(MasterBlock.FarVertexList, true);
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			updateFar1VBAlloc(tblock.FarVertexList, true);
+		}
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::debugAllocationMarkIndicesFarList(CTessList<CTessFarVertex>  &vertList, uint marker)
+{
+	// Traverse the vertList.
+	CTessFarVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
+	{
+		pVert->Index0= marker;
+		pVert->Index1= marker;
+	}
+}
+
+void		CPatch::debugAllocationMarkIndicesNearList(CTessList<CTessNearVertex>  &vertList, uint marker)
+{
+	// Traverse the vertList.
+	CTessNearVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessNearVertex*)pVert->Next)
+	{
+		pVert->Index= marker;
+	}
+}
+
+void		CPatch::debugAllocationMarkIndices(uint marker)
+{
+	sint i;
+
+	// Do it For Far.
+	debugAllocationMarkIndicesFarList(MasterBlock.FarVertexList, marker);
+	for(i=0; i<(sint)TessBlocks.size(); i++)
+	{
+		CTessBlock	&tblock= TessBlocks[i];
+		debugAllocationMarkIndicesFarList(tblock.FarVertexList, marker);
+	}
+	// Do it For Near.
+	// No Tiles in MasterBlock!!
+	for(i=0; i<(sint)TessBlocks.size(); i++)
+	{
+		CTessBlock	&tblock= TessBlocks[i];
+		debugAllocationMarkIndicesNearList(tblock.NearVertexList, marker);
+	}
+
+}
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// VB Filling.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+// NB: need to be inlined only for fillFar0VB() in this file.
+inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
+{
+	// The Buffers must have been locked
+	nlassert(CTessFace::CurrentFar0VBAllocator);
+	nlassert(CTessFace::CurrentFar0VBAllocator->bufferLocked());
+	// VBInfo must be OK.
+	nlassert(!CTessFace::CurrentFar0VBAllocator->reallocationOccurs());
+
+	static	uint8	*CurVBPtr;
+	// Compute/build the new vertex.
+	CurVBPtr= (uint8*)CTessFace::CurrentFar0VBInfo.VertexCoordPointer;
+	CurVBPtr+= pVert->Index0 * CTessFace::CurrentFar0VBInfo.VertexSize;
+
+	// NB: the filling order of data is important, for AGP write combiners.
+
+	// Set Pos.
+	*(CVector*)CurVBPtr= pVert->Src->Pos;
+
+	// compute Uvs.
+	static CUV	uv;
+	CParamCoord	&pc= pVert->PCoord;
+	if (Flags&NL_PATCH_FAR0_ROTATED)
+	{
+		uv.U= pc.getT()* Far0UScale + Far0UBias;
+		uv.V= (1.f-pc.getS())* Far0VScale + Far0VBias;
+	}
+	else
+	{
+		uv.U= pc.getS()* Far0UScale + Far0UBias;
+		uv.V= pc.getT()* Far0VScale + Far0VBias;
+	}
+	// Set Uvs.
+	*(CUV*)(CurVBPtr + CTessFace::CurrentFar0VBInfo.TexCoordOff0)= uv;
+}
+// ***************************************************************************
+// NB: need to be inlined only for fillFar1VB() in this file.
+inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
+{
+	// The Buffers must have been locked
+	nlassert(CTessFace::CurrentFar1VBAllocator);
+	nlassert(CTessFace::CurrentFar1VBAllocator->bufferLocked());
+	// VBInfo must be OK.
+	nlassert(!CTessFace::CurrentFar1VBAllocator->reallocationOccurs());
+
+	static	uint8	*CurVBPtr;
+	// Compute/build the new vertex.
+	CurVBPtr= (uint8*)CTessFace::CurrentFar1VBInfo.VertexCoordPointer;
+	CurVBPtr+= pVert->Index1 * CTessFace::CurrentFar1VBInfo.VertexSize;
+
+	// NB: the filling order of data is important, for AGP write combiners.
+
+	// Set Pos.
+	*(CVector*)CurVBPtr= pVert->Src->Pos;
+
+	// compute Uvs.
+	static CUV		uv;
+	CParamCoord	&pc= pVert->PCoord;
+	if (Flags&NL_PATCH_FAR1_ROTATED)
+	{
+		uv.U= pc.getT()* Far1UScale + Far1UBias;
+		uv.V= (1.f-pc.getS())* Far1VScale + Far1VBias;
+	}
+	else
+	{
+		uv.U= pc.getS()* Far1UScale + Far1UBias;
+		uv.V= pc.getT()* Far1VScale + Far1VBias;
+	}
+	// Set Uvs.
+	*(CUV*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.TexCoordOff0)= uv;
+
+
+	// Set default color.
+	static CRGBA	col(255,255,255,255);
+	*(CRGBA*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.ColorOff)= col;
+}
+// ***************************************************************************
+// NB: need to be inlined only for fillTileVB() in this file.
+inline void		CPatch::fillTileVertexVB(CTessNearVertex *pVert)
+{
+	// The Buffers must have been locked
+	nlassert(CTessFace::CurrentTileVBAllocator);
+	nlassert(CTessFace::CurrentTileVBAllocator->bufferLocked());
+	// VBInfo must be OK.
+	nlassert(!CTessFace::CurrentTileVBAllocator->reallocationOccurs());
+
+	static	uint8	*CurVBPtr;
+	// Compute/build the new vertex.
+	CurVBPtr= (uint8*)CTessFace::CurrentTileVBInfo.VertexCoordPointer;
+	CurVBPtr+= pVert->Index * CTessFace::CurrentTileVBInfo.VertexSize;
+
+
+	// NB: the filling order of data is important, for AGP write combiners.
+
+	// Set Pos.
+	*(CVector*)CurVBPtr= pVert->Src->Pos;
+
+	// Set Uvs.
+	*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
+	*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
+}
+
+
+// ***************************************************************************
+void		CPatch::fillFar0VertexListVB(CTessList<CTessFarVertex>  &vertList)
+{
+	// Traverse the vertList.
+	CTessFarVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
+	{
+		fillFar0VertexVB(pVert);
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::fillFar1VertexListVB(CTessList<CTessFarVertex>  &vertList)
+{
+	// Traverse the vertList.
+	CTessFarVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
+	{
+		fillFar1VertexVB(pVert);
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::fillTileVertexListVB(CTessList<CTessNearVertex>  &vertList)
+{
+	// Traverse the vertList.
+	CTessNearVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessNearVertex*)pVert->Next)
+	{
+		fillTileVertexVB(pVert);
+	}
+}
+
+
+
+// ***************************************************************************
+void			CPatch::fillVB()
+{
+	// Fill Far0.
+	//=======
+	// fill only if no reallcoation occurs
+	if(Far0>0 && !CTessFace::CurrentFar0VBAllocator->reallocationOccurs() )
+	{
+		// Fill Far0 VB.
+		fillFar0VertexListVB(MasterBlock.FarVertexList);
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			fillFar0VertexListVB(tblock.FarVertexList);
+		}
+	}
+	else if(Far0==0 && !CTessFace::CurrentTileVBAllocator->reallocationOccurs() )
+	{
+		// Fill Tile VB.
+		// No Tiles in MasterBlock!!
+		// Traverse the TessBlocks to add vertices.
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			// Add the vertices.
+			fillTileVertexListVB(tblock.NearVertexList);
+		}
+	}
+
+	// Fill Far1.
+	//=======
+	if(Far1>0 && !CTessFace::CurrentFar1VBAllocator->reallocationOccurs() )
+	{
+		// Fill VB.
+		fillFar1VertexListVB(MasterBlock.FarVertexList);
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			fillFar1VertexListVB(tblock.FarVertexList);
+		}
+	}
+
+}
+
+
+// ***************************************************************************
+void		CPatch::fillVBIfVisible()
+{
+	if(RenderClipped==false)
+		fillVB();
+}
+
+
+// ***************************************************************************
+void		CPatch::fillVBFar0Only()
+{
+	if(Far0>0 && !CTessFace::CurrentFar0VBAllocator->reallocationOccurs() )
+	{
+		// Fill Far0 VB.
+		fillFar0VertexListVB(MasterBlock.FarVertexList);
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			fillFar0VertexListVB(tblock.FarVertexList);
+		}
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::fillVBFar1Only()
+{
+	if(Far1>0 && !CTessFace::CurrentFar1VBAllocator->reallocationOccurs() )
+	{
+		// Fill VB.
+		fillFar1VertexListVB(MasterBlock.FarVertexList);
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			fillFar1VertexListVB(tblock.FarVertexList);
+		}
+	}
+}
+
+// ***************************************************************************
+// ***************************************************************************
+// VB Software Geomorph / Alpha.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CPatch::computeGeomorphFar0VertexListVB(CTessList<CTessFarVertex>  &vertList)
+{
+	// Traverse the vertList.
+	CTessFarVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
+	{
+		static	uint8	*CurVBPtr;
+		// Compute/build the new vertex.
+		CurVBPtr= (uint8*)CTessFace::CurrentFar0VBInfo.VertexCoordPointer;
+		CurVBPtr+= pVert->Index0 * CTessFace::CurrentFar0VBInfo.VertexSize;
+
+		// Set Pos computed in refine().
+		*(CVector*)CurVBPtr= pVert->Src->Pos;
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::computeGeomorphAlphaFar1VertexListVB(CTessList<CTessFarVertex>  &vertList)
+{
+	// Traverse the vertList.
+	CTessFarVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
+	{
+		static	uint8	*CurVBPtr;
+		// Compute/build the new vertex.
+		CurVBPtr= (uint8*)CTessFace::CurrentFar1VBInfo.VertexCoordPointer;
+		CurVBPtr+= pVert->Index1 * CTessFace::CurrentFar1VBInfo.VertexSize;
+
+		// NB: the filling order of data is important, for AGP write combiners.
+
+		// Set Pos.
+		*(CVector*)CurVBPtr= pVert->Src->Pos;
+
+		// Set Alpha color.
+		static CRGBA	col(255,255,255,255);
+		// For Far1, use alpha fro transition.
+		float	f= (pVert->Src->Pos - CTessFace::RefineCenter).sqrnorm();
+		f= (f-TransitionSqrMin) * OOTransitionSqrDelta;
+		clamp(f,0,1);
+		col.A= (uint8)(f*255);
+		*(CRGBA*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.ColorOff)= col;
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::computeGeomorphTileVertexListVB(CTessList<CTessNearVertex>  &vertList)
+{
+	// Traverse the vertList.
+	CTessNearVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessNearVertex*)pVert->Next)
+	{
+		static	uint8	*CurVBPtr;
+		// Compute/build the new vertex.
+		CurVBPtr= (uint8*)CTessFace::CurrentTileVBInfo.VertexCoordPointer;
+		CurVBPtr+= pVert->Index * CTessFace::CurrentTileVBInfo.VertexSize;
+
+		// Set Pos.
+		*(CVector*)CurVBPtr= pVert->Src->Pos;
+	}
+}
+
+
+
+// ***************************************************************************
+void		CPatch::computeSoftwareGeomorphAndAlpha()
+{
+	if(RenderClipped)
+		return;
+
+	// Fill Far0.
+	//=======
+	if(Far0>0)
+	{
+		// Fill Far0 VB.
+		computeGeomorphFar0VertexListVB(MasterBlock.FarVertexList);
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			// Precise Clip.
+			if(!tblock.Clipped && !tblock.FullFar1)
+				computeGeomorphFar0VertexListVB(tblock.FarVertexList);
+		}
+	}
+	else if(Far0==0)
+	{
+		// Fill Tile VB.
+		// No Tiles in MasterBlock!!
+		// Traverse the TessBlocks to compute vertices.
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			// Precise Clip.
+			if(!tblock.Clipped && !tblock.FullFar1)
+				computeGeomorphTileVertexListVB(tblock.NearVertexList);
+		}
+	}
+
+	// Fill Far1.
+	//=======
+	if(Far1>0)
+	{
+		// Fill VB.
+		computeGeomorphAlphaFar1VertexListVB(MasterBlock.FarVertexList);
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			// Precise Clip.
+			if(!tblock.Clipped && !tblock.EmptyFar1)
+				computeGeomorphAlphaFar1VertexListVB(tblock.FarVertexList);
+		}
+	}
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// VB clip Allocate/Filling.
+// ***************************************************************************
+// ***************************************************************************
+		
+
+// ***************************************************************************
+void		CPatch::updateClipPatchVB()
+{
+	// If there is a change in the clip state of this patch.
+	if( OldRenderClipped != RenderClipped )
+	{
+		// bkup this state for next time.
+		OldRenderClipped = RenderClipped;
+
+		// If now the patch is invisible
+		if(RenderClipped)
+		{
+			// Then delete vertices.
+			deleteVB();
+		}
+		else
+		{
+			// else allocate / fill them.
+			allocateVB();
+			// NB: fillVB() test if any reallocation occurs.
+			fillVB();
+		}
+	}
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// VB refine Allocate/Filling.
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
+void		CPatch::checkCreateVertexVBFar(CTessFarVertex *pVert)
+{
+	nlassert(pVert);
+	// If visible, and Far0 in !Tile Mode, allocate and try to fill.
+	// NB: must test Far0>0 because vertices are reallocated in preRender() if a change of Far occurs.
+	if(!RenderClipped && Far0>0)
+	{
+		pVert->Index0= CTessFace::CurrentFar0VBAllocator->allocateVertex();
+		// try to fill.
+		if( !CTessFace::CurrentFar0VBAllocator->reallocationOccurs() )
+			fillFar0VertexVB(pVert);
+	}
+
+	// Idem for Far1
+	if(!RenderClipped && Far1>0)
+	{
+		pVert->Index1= CTessFace::CurrentFar1VBAllocator->allocateVertex();
+		// try to fill.
+		if( !CTessFace::CurrentFar1VBAllocator->reallocationOccurs() )
+			fillFar1VertexVB(pVert);
+	}
+
+}
+
+
+// ***************************************************************************
+void		CPatch::checkCreateVertexVBNear(CTessNearVertex	*pVert)
+{
+	nlassert(pVert);
+	// If visible, and Far0 in Tile Mode, allocate and try to fill.
+	// NB: must test Far0==0 because vertices are reallocated in preRender() if a change of Far occurs.
+	if(!RenderClipped && Far0==0)
+	{
+		pVert->Index= CTessFace::CurrentTileVBAllocator->allocateVertex();
+		// try to fill.
+		if( !CTessFace::CurrentTileVBAllocator->reallocationOccurs() )
+			fillTileVertexVB(pVert);
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::checkDeleteVertexVBFar(CTessFarVertex *pVert)
+{
+	nlassert(pVert);
+	// If visible, and Far0 in !Tile Mode, ok, the vertex exist in VB, so delete.
+	// NB: must test Far0>0 because vertices are deleted in preRender() if a change of Far occurs.
+	if(!RenderClipped && Far0>0)
+	{
+		CTessFace::CurrentFar0VBAllocator->deleteVertex(pVert->Index0);
+	}
+
+	// Idem for Far1
+	if(!RenderClipped && Far1>0)
+	{
+		CTessFace::CurrentFar1VBAllocator->deleteVertex(pVert->Index1);
+	}
+}
+
+// ***************************************************************************
+void		CPatch::checkDeleteVertexVBNear(CTessNearVertex	*pVert)
+{
+	nlassert(pVert);
+	// If visible, and Far0 in Tile Mode, ok, the vertex exist in VB, so delete.
+	// NB: must test Far0==0 because vertices are deleted in preRender() if a change of Far occurs.
+	if(!RenderClipped && Far0==0)
+	{
+		CTessFace::CurrentTileVBAllocator->deleteVertex(pVert->Index);
 	}
 }
 

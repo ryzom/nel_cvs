@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.10 2001/08/29 12:49:29 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.11 2001/09/10 10:06:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,6 +62,9 @@ bool	CLandscapeClipObs::clip(IBaseClipObs *caller)
 	CLandscapeModel		*landModel= (CLandscapeModel*)Model;
 	CClipTrav		*clipTrav= (CClipTrav*)Trav;
 
+	// Before Landscape clip, must setup Driver, for good VB allocation.
+	landModel->Landscape.setDriver(clipTrav->RenderTrav->getDriver());
+
 	// Use the unClipped pyramid (not changed by cluster System).
 	vector<CPlane>	&pyramid= clipTrav->WorldFrustumPyramid;
 
@@ -90,7 +93,7 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 	// First, refine.
 	landModel->Landscape.refine(trav->CamPos);
 	// then render.
-	landModel->Landscape.render(trav->getDriver(), trav->CamPos, landModel->CurrentPyramid, landModel->isAdditive ());
+	landModel->Landscape.render(trav->CamPos, landModel->CurrentPyramid, landModel->isAdditive ());
 }
 
 

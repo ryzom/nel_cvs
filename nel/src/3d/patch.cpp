@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.61 2001/08/24 16:32:38 berenguier Exp $
+ * $Id: patch.cpp,v 1.62 2001/09/10 10:06:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,8 @@ CPatch::CPatch()
 	Son1=NULL;
 	TessBlockRefCount=0;
 	Clipped=false;
+	RenderClipped= true;
+	OldRenderClipped= true;
 
 	// for Pacs process. By default, false.
 	ExcludeFromRefineAll= false;
@@ -88,6 +90,15 @@ void			CPatch::release()
 {
 	if(Zone)
 	{
+		// First, delete the VB if the zone was removed while the patch is visible.
+		if(!RenderClipped)
+		{
+			// release VertexBuffer.
+			deleteVB();
+			// Flag.
+			RenderClipped= true;
+		}
+
 		// THIS PATCH MSUT BE UNBOUND FIRST!!!!!
 		nlassert(Son0 && Son1);
 		nlassert(Son0->isLeaf() && Son1->isLeaf());
@@ -110,7 +121,8 @@ void			CPatch::release()
 	clearTessBlocks();
 	resetMasterBlock();
 	Clipped=false;
-
+	RenderClipped= true;
+	OldRenderClipped= true;
 }
 
 
@@ -882,6 +894,10 @@ void			CPatch::makeRoots()
 	fd->Src= d;
 	fd->PCoord.setST(1,0);
 
+	// We don't have to fill the Far vertices VB here, because this patch is still not visible.
+	// NB: we can't because we don't have any driver here.
+	nlassert(RenderClipped==true);
+
 
 	// Make Roots.
 	/*
@@ -943,7 +959,7 @@ void			CPatch::makeRoots()
 	Son0->FRight= NULL;
 	// No tile info.
 	Son0->Size= ErrorSize/2;
-	Son0->Center= (Son0->VBase->EndPos + Son0->VLeft->EndPos + Son0->VRight->EndPos)/3;
+	Son0->computeSplitPoint();
 
 	// Son1.
 	Son1->Patch= this;
@@ -979,7 +995,7 @@ void			CPatch::makeRoots()
 	Son1->FRight= NULL;
 	// No tile info.
 	Son1->Size= ErrorSize/2;
-	Son1->Center= (Son1->VBase->EndPos + Son1->VLeft->EndPos + Son1->VRight->EndPos)/3;
+	Son1->computeSplitPoint();
 
 
 	// Prepare the render list...
@@ -1162,6 +1178,8 @@ void			CPatch::clip(const std::vector<CPlane>	&pyramid)
 		}
 	}
 
+	// A patch clipped is clipped to render too.
+	RenderClipped= Clipped;
 }
 
 
@@ -1386,8 +1404,8 @@ void			CPatch::bind(CBindInfo	Edges[4])
 	d->Pos= d->StartPos= d->EndPos= computeVertex(1,0);
 	// NB: no propagation problem, since the patch has root only (since has to be unbound!!!)
 	// Recompute centers.
-	Son0->Center= (Son0->VBase->EndPos + Son0->VLeft->EndPos + Son0->VRight->EndPos)/3;
-	Son1->Center= (Son1->VBase->EndPos + Son1->VLeft->EndPos + Son1->VRight->EndPos)/3;
+	Son0->computeSplitPoint();
+	Son1->computeSplitPoint();
 
 
 	// Bind the roots.

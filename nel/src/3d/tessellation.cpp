@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.50 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: tessellation.cpp,v 1.51 2001/09/10 10:06:56 berenguier Exp $
  *
  */
 
@@ -223,16 +223,13 @@ float		CTessFace::Far0Dist= 200;		// 200m.
 float		CTessFace::Far1Dist= 400;		// 400m.
 float		CTessFace::FarTransition= 10;	// Alpha transition= 10m.
 
-sint		CTessFace::CurrentFar0Index=1;
-sint		CTessFace::CurrentFar1Index=1;
-sint		CTessFace::CurrentTileIndex=1;
-sint		CTessFace::MaxFar0Index= 0;
-sint		CTessFace::MaxFar1Index= 0;
-sint		CTessFace::MaxTileIndex= 0;
-
 CFarVertexBufferInfo	CTessFace::CurrentFar0VBInfo;
 CFarVertexBufferInfo	CTessFace::CurrentFar1VBInfo;
 CNearVertexBufferInfo	CTessFace::CurrentTileVBInfo;
+
+CLandscapeVBAllocator	*CTessFace::CurrentFar0VBAllocator= NULL;
+CLandscapeVBAllocator	*CTessFace::CurrentFar1VBAllocator= NULL;
+CLandscapeVBAllocator	*CTessFace::CurrentTileVBAllocator= NULL;
 
 
 CTessFace	CTessFace::CantMergeFace;
@@ -347,7 +344,7 @@ void		CTessFace::updateErrorMetric()
 	if(ProjectedSizeDate>= CurrentDate)
 		return;
 
-	CVector	viewdir= Center-RefineCenter;
+	CVector	viewdir= SplitPoint-RefineCenter;
 	float	sqrdist= viewdir.sqrnorm();
 
 	// trivial formula.
@@ -394,6 +391,24 @@ void		CTessFace::updateErrorMetric()
 
 
 // ***************************************************************************
+void	CTessFace::computeSplitPoint()
+{
+	if(isRectangular())
+	{
+		// If it is a rectangular triangle, it will be splitted on the middle of VBase/VLeft.
+		// see splitRectangular() conventions.
+		// So for good geomorph compute per vertex, we must have this SplitPoint on this middle.
+		SplitPoint= (VLeft->EndPos + VBase->EndPos)/2;
+	}
+	else
+	{
+		// If it is a square triangle, it will be splitted on middle of VLeft/VRight. 
+		// So for good geomorph compute per vertex, we must have this SplitPoint on this middle.
+		SplitPoint= (VLeft->EndPos + VRight->EndPos)/2;
+	}
+}
+
+// ***************************************************************************
 void	CTessFace::allocTileUv(TTileUvId id)
 {
 	// TileFaces must have been build.
@@ -412,9 +427,37 @@ void	CTessFace::allocTileUv(TTileUvId id)
 				default: nlstop;
 			};
 			Patch->appendNearVertexToRenderList(TileMaterial, newNear);
+
+			// May Allocate/Fill VB. Do it after allocTileUv, because UVs are not comuted yet.
 		}
 	}
 }
+
+// ***************************************************************************
+void	CTessFace::checkCreateFillTileVB(TTileUvId id)
+{
+	// TileFaces must have been build.
+	nlassert(TileFaces[NL3D_TILE_PASS_RGB0]);
+
+	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
+	{
+		if(TileFaces[i])
+		{
+			CTessNearVertex		*vertNear;
+			switch(id)
+			{
+				case IdUvBase: vertNear= TileFaces[i]->VBase; break;
+				case IdUvLeft: vertNear= TileFaces[i]->VLeft; break;
+				case IdUvRight: vertNear= TileFaces[i]->VRight; break;
+				default: nlstop;
+			};
+
+			// May Allocate/Fill VB.
+			Patch->checkCreateVertexVBNear(vertNear);
+		}
+	}
+}
+
 // ***************************************************************************
 void	CTessFace::deleteTileUv(TTileUvId id)
 {
@@ -433,6 +476,10 @@ void	CTessFace::deleteTileUv(TTileUvId id)
 				case IdUvRight: oldNear= TileFaces[i]->VRight; TileFaces[i]->VRight=NULL; break;
 				default: nlstop;
 			};
+
+			// May delete this vertex from VB.
+			Patch->checkDeleteVertexVBNear(oldNear);
+
 			Patch->removeNearVertexFromRenderList(TileMaterial, oldNear);
 			Patch->getLandscape()->deleteTessNearVertex(oldNear);
 		}
@@ -731,6 +778,10 @@ void		CTessFace::computeTileMaterial()
 		}
 	}
 
+	// UVs are computed, may create and fill VB.
+	checkCreateFillTileVB(IdUvBase);
+
+
 	// if base neighbor is already at TileLimitLevel just ptr-copy, else create the left/right TileUvs...
 	if(copyFromBase)
 	{
@@ -771,6 +822,10 @@ void		CTessFace::computeTileMaterial()
 				}
 			}
 		}
+
+		// UVs are computed, may create and fill VB.
+		checkCreateFillTileVB(IdUvLeft);
+		checkCreateFillTileVB(IdUvRight);
 	}
 
 }
@@ -938,6 +993,10 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	farvbot->PCoord= pcbot;
 	Patch->appendFarVertexToRenderList(farvtop);
 	Patch->appendFarVertexToRenderList(farvbot);
+	// May Allocate/Fill VB.
+	// NB: vtop / vbot are well computed  and ready for the fill in VB.
+	Patch->checkCreateVertexVBFar(farvtop);
+	Patch->checkCreateVertexVBFar(farvbot);
 
 	
 	// 2. Create sons, and update links.
@@ -1048,10 +1107,10 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 
 	// 4. Compute centers.
 	//--------------------
-	f0r->Center= (f0r->VBase->EndPos + f0r->VLeft->EndPos + f0r->VRight->EndPos)/3;
-	f0l->Center= (f0l->VBase->EndPos + f0l->VLeft->EndPos + f0l->VRight->EndPos)/3;
-	f1r->Center= (f1r->VBase->EndPos + f1r->VLeft->EndPos + f1r->VRight->EndPos)/3;
-	f1l->Center= (f1l->VBase->EndPos + f1l->VLeft->EndPos + f1l->VRight->EndPos)/3;
+	f0r->computeSplitPoint();
+	f0l->computeSplitPoint();
+	f1r->computeSplitPoint();
+	f1l->computeSplitPoint();
 
 
 	// 5. Propagate, or link sons of base.
@@ -1260,6 +1319,10 @@ void		CTessFace::split(bool propagateSplit)
 
 		// Append.
 		Patch->appendFarVertexToRenderList(newFar);
+
+		// May Allocate/Fill VB.
+		// NB: SonLeft->VBase->Pos is well computed and ready for the fill in VB.
+		Patch->checkCreateVertexVBFar(newFar);
 	}
 	else
 	{
@@ -1274,6 +1337,7 @@ void		CTessFace::split(bool propagateSplit)
 	// 3. Update Tile infos.
 	//----------------------
 	// NB: must do it before appendFaceToRenderList().
+	// NB: must do it after compute of SonLeft->VBase->Pos for good filling in VBuffer.
 	// There is no problem with rectangular patch, since tiles are always squares.
 	// If new tile ....
 	if(SonLeft->Level==Patch->TileLimitLevel)
@@ -1290,8 +1354,8 @@ void		CTessFace::split(bool propagateSplit)
 
 	// 4. Compute centers.
 	//--------------------
-	SonRight->Center= (SonRight->VBase->EndPos + SonRight->VLeft->EndPos + SonRight->VRight->EndPos)/3;
-	SonLeft->Center= (SonLeft->VBase->EndPos + SonLeft->VLeft->EndPos + SonLeft->VRight->EndPos)/3;
+	SonRight->computeSplitPoint();
+	SonLeft->computeSplitPoint();
 
 
 	// 5. Propagate, or link sons of base.
@@ -1429,6 +1493,9 @@ void		CTessFace::doMerge()
 		// Delete Far Vertex. Idem, but test too if != patch...
 		if(!FBase || !FBase->isLeaf() || FBase->Patch!=Patch)
 		{
+			// May delete this vertex from VB.
+			Patch->checkDeleteVertexVBFar(SonLeft->FVBase);
+
 			Patch->removeFarVertexFromRenderList(SonLeft->FVBase);
 			Patch->getLandscape()->deleteTessFarVertex(SonLeft->FVBase);
 		}
@@ -1506,6 +1573,9 @@ void		CTessFace::doMerge()
 
 		// Delete Far Vertex. Rect patch: neightb must be of a != pathc as me => must delete FarVertex.
 		nlassert(!FLeft || FLeft->Patch!=Patch);
+		// May delete this vertex from VB.
+		Patch->checkDeleteVertexVBFar(SonLeft->FVBase);
+
 		Patch->removeFarVertexFromRenderList(SonLeft->FVBase);
 		Patch->getLandscape()->deleteTessFarVertex(SonLeft->FVBase);
 
@@ -1631,8 +1701,9 @@ void		CTessFace::refine()
 		// at half rate on those vertices on border screen....
 		// If we don't use this trick, the geomorph would be done twice, one for the face and one for his FBase.
 		// NB: errorMetric are never computed twice.
-		// NB: do geomoprh only if patch is visible. (refine may be done on clipped patch, to have correct patchs)
-		if(!isLeaf() && ps>1.0f && !Patch->Clipped)
+		// NB: do geomoprh only if patch is visible. (refine still may be done on clipped patch, to have correct 
+		// splitted patchs)
+		if(!isLeaf() && ps>1.0f && !Patch->RenderClipped)
 		{
 			// NB: morph ptr is good even with rectangular patch. See splitRectangular().
 			CTessVertex		*morph=SonLeft->VBase;
@@ -1718,8 +1789,8 @@ void		CTessFace::refine()
 					if(ps>SelfEndComputeLimit)				// 2.1
 					{
 						NeedCompute=false;
-						// If patch clipped, we must ensure that Geomorph is correctly setuped.
-						if(Patch->Clipped)
+						// If patch clipped to render, we must ensure that Geomorph is correctly setuped.
+						if(Patch->RenderClipped)
 						{
 							CTessVertex		*morph=SonLeft->VBase;
 							morph->Pos= morph->EndPos;
@@ -2238,8 +2309,8 @@ void		CTessFace::updateBindAndSplit()
 		SonLeft->VBase= vert;
 		SonRight->VBase= vert;
 		// Compute correct centers.
-		SonRight->Center= (SonRight->VBase->EndPos + SonRight->VLeft->EndPos + SonRight->VRight->EndPos)/3;
-		SonLeft->Center= (SonLeft->VBase->EndPos + SonLeft->VLeft->EndPos + SonLeft->VRight->EndPos)/3;
+		SonRight->computeSplitPoint();
+		SonLeft->computeSplitPoint();
 
 
 		// Update good Far vertex pointer.
@@ -2314,8 +2385,8 @@ void		CTessFace::updateBindAndSplit()
 			else
 				f= f1;
 			// Compute correct centers.
-			f->SonRight->Center= (f->SonRight->VBase->EndPos + f->SonRight->VLeft->EndPos + f->SonRight->VRight->EndPos)/3;
-			f->SonLeft->Center= (f->SonLeft->VBase->EndPos + f->SonLeft->VLeft->EndPos + f->SonLeft->VRight->EndPos)/3;
+			f->SonRight->computeSplitPoint();
+			f->SonLeft->computeSplitPoint();
 
 			// Update good Far vertex pointer.
 			//================================
@@ -2498,6 +2569,9 @@ void		CTessFace::heritTileMaterial()
 
 		// Fill the new near vertex, with middle of Left/Right father.
 		SonLeft->heritTileUv(this);
+
+		// UVs are computed, may create and fill VB.
+		SonLeft->checkCreateFillTileVB(IdUvBase);
 	}
 
 }

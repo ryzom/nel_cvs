@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.12 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: landscape.h,v 1.13 2001/09/10 10:06:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #include "3d/texture_near.h"
 #include "3d/quad_grid.h"
 #include "nel/misc/block_memory.h"
+#include "3d/landscapevb_allocator.h"
 
 #include <map>
 
@@ -203,14 +204,21 @@ public:
 
 	/// \name Render methods.
 	// @{
+	/**
+	 *	A driver is needed for VB allocation. The VB will be allocated only the first time the landscape is clipped.
+	 *	Because no VB are created for invisible patchs.
+	 *	call setDriver() before any clip().
+	 */
+	void			setDriver(IDriver *drv);
 	/** Clip the landscape according to frustum. 
-	 * Planes must be normalized.
+	 *	Planes must be normalized.
 	 */
 	void			clip(const CVector &refineCenter, const std::vector<CPlane>	&pyramid);
-	/// Refine/Geomorph the tesselation of the landscape.
+	/** Refine/Geomorph the tesselation of the landscape.
+	 */
 	void			refine(const CVector &refineCenter);
 	/// Render the landscape. A more precise clip is made on TessBlocks. pyramid should be the same as one passed to clip().
-	void			render(IDriver *drv, const CVector &refineCenter, const std::vector<CPlane>	&pyramid, bool doTileAddPass=false);
+	void			render(const CVector &refineCenter, const std::vector<CPlane>	&pyramid, bool doTileAddPass=false);
 
 	/// Refine/Geomorph ALL the tesselation of the landscape, from the view point refineCenter. Even if !RefineMode.
 	void			refineAll(const CVector &refineCenter);
@@ -414,8 +422,12 @@ private:
 	/// For changing TileMaxSubdivision. force tesselation to be under tile.
 	void			forceMergeAtTileLevel();
 
-	// Update globals value to CTessFace
-	void updateGlobals (const CVector &refineCenter) const;
+	// Update globals value to CTessFace, and lock Buffers if possible.
+	void updateGlobalsAndLockBuffers (const CVector &refineCenter);
+	// lockBuffers(), called by updateGlobalsAndLockBuffers().
+	void lockBuffers ();
+	// unlockBuffers. This is the END call for updateGlobalsAndLockBuffers().
+	void unlockBuffers ();
 
 private:
 	TZoneMap		Zones;
@@ -427,26 +439,17 @@ private:
 	float			_FarTransition;
 	uint			_TileMaxSubdivision;
 
-	// The temp VB for tiles and far passes.
-	CVertexBuffer	Far0VB;
-	CVertexBuffer	Far1VB;
-	CVertexBuffer	TileVB;
 
-	/// \name temp Hard VB for tiles and far passes.
+	/// \name VertexBuffer mgt.
 	// @{
-
-	CRefPtr<IVertexBufferHard>	_Far0VBHard;
-	CRefPtr<IVertexBufferHard>	_Far1VBHard;
-	CRefPtr<IVertexBufferHard>	_TileVBHard;
-	// a refPtr on the driver, to delete VBuffer Hard at clear().
 	CRefPtr<IDriver>			_Driver;
-
-	/* try to create a vertexBufferHard. NB: enlarge capacity of the VBHard as necessary.
-		After this call, the vertexBufferHard may be NULL.
-	*/
-	void				updateVertexBufferHard(IDriver *drv, CRefPtr<IVertexBufferHard> &vbHard, uint16 format, const uint8 *typeArray, uint32 numVertices);
-	void				deleteVertexBufferHard(CRefPtr<IVertexBufferHard> &vbHard);
-	void				deleteAllVertexBufferHards();
+	CLandscapeVBAllocator		_Far0VB;
+	CLandscapeVBAllocator		_Far1VB;
+	CLandscapeVBAllocator		_TileVB;
+	// True if we can compute Geomorph and Alpha with VertexShader.
+	bool						_VertexShaderOk;
+	// For CZone::refreshTesselationGeometry().
+	bool						_RenderMustRefillVB;
 	// @}
 
 

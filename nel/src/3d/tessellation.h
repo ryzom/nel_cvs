@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.5 2001/08/20 14:56:11 berenguier Exp $
+ * $Id: tessellation.h,v 1.6 2001/09/10 10:06:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,7 @@ class	CPatchRdrPass;
 class	CVertexBuffer;
 class	IVertexBufferHard;
 class	CTessFace;
+class	CLandscapeVBAllocator;
 
 
 // ***************************************************************************
@@ -274,7 +275,7 @@ public:
 	// But used by computeErrorMetric(), and must be as fast as possible.
 	sint			ProjectedSizeDate;	// The date of errormetric update.
 	float			Size;				// /2 at each split.
-	CVector			Center;				// Center of the face.
+	CVector			SplitPoint;			// Midle of VLeft/VRight. Used to compute the errorMetric.
 	float			ProjectedSize;		// The result of errormetric: the projected size of face.
 	float			ErrorMetric;		// equal to ProjectedSize, but greater for the transition Far-Near.
 	// @}
@@ -316,6 +317,8 @@ public:
 	// if NeedCompute, refine the node, and his sons.
 	void			refine();
 
+	// compute the SplitPoint. VBase / VLeft and VRight must be valid.
+	void	computeSplitPoint();
 
 	// Used by CPatch::unbind(). isolate the tesselation from other patchs.
 	void			unbind(CPatch *except[4]);
@@ -387,25 +390,19 @@ public:
 	static	float	FarTransition;
 
 	
-	// The current VertexBuffer for Far0 (got no Color info)
+	// The current VertexBuffer for Far0
 	static	CFarVertexBufferInfo	CurrentFar0VBInfo;
 	// The current VertexBuffer for Far1.
 	static	CFarVertexBufferInfo	CurrentFar1VBInfo;
 	// The current VertexBuffer for Tile.
 	static	CNearVertexBufferInfo	CurrentTileVBInfo;
 
-	// The current Vertex Index for each pass of landscape render. Start at 0.
-	static	sint	CurrentFar0Index;
-	// The current Vertex Index for each pass of landscape render. Start at 0.
-	static	sint	CurrentFar1Index;
-	// The current Vertex Index for each pass of landscape render. Start at 0.
-	static	sint	CurrentTileIndex;
-	// The Max Vertex Index for each pass of landscape render. Start at 0.
-	static	sint	MaxFar0Index;
-	// The Max Vertex Index for each pass of landscape render. Start at 0.
-	static	sint	MaxFar1Index;
-	// The Max Vertex Index for each pass of landscape render. Start at 0.
-	static	sint	MaxTileIndex;
+	// The current VertexBuffer Allocator for Far0
+	static	CLandscapeVBAllocator	*CurrentFar0VBAllocator;
+	// The current VertexBuffer Allocator for Far1.
+	static	CLandscapeVBAllocator	*CurrentFar1VBAllocator;
+	// The current VertexBuffer Allocator for Tile.
+	static	CLandscapeVBAllocator	*CurrentTileVBAllocator;
 
 
 	// PATCH GLOBAL INTERFACE.  patch must setup them at the begining at refine()/render().
@@ -436,6 +433,9 @@ private:
 	// for each not NULL TileFace of "this" face, make the Base NearVertex the middle of baseFace TileUvLeft, and
 	// baseFace TileUvRight.
 	void	heritTileUv(CTessFace *baseFace);
+
+	// If path !RenderClipped, and other state, create and fill VB for the vertex id of all faces of this tileFace.
+	void	checkCreateFillTileVB(TTileUvId id);
 
 
 	// create The TileFaces, according to the TileMaterial passes. NO INSERTION IN RENDERLIST!!

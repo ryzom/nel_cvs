@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.8 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: zone.h,v 1.9 2001/09/10 10:06:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -391,8 +391,6 @@ public:
 	void			refine();
 	/// PreRender a zone (if needed).
 	void			preRender(const std::vector<CPlane>	&pyramid);
-	/// if not clipped, fill VBuffer for Tiles.
-	void			fillTileVertexBuffer();
 	/// Render pass (if needed).
 	void			renderFar0();
 	void			renderFar1();
@@ -486,6 +484,7 @@ private:
 
 	
 private:
+	friend	class CLandscape;
 	friend	class CTessFace;
 	// Should do this, for texture mgt.
 	friend	class CPatch;
@@ -497,6 +496,8 @@ private:
 
 	std::vector<CPlane>	CurrentPyramid;
 	sint			ClipResult;
+	enum	TClipResult {ClipIn= 0, ClipOut= 1, ClipSide= 2};
+
 
 private:
 	/**

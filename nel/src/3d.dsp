@@ -384,6 +384,25 @@ SOURCE=.\3d\landscape_profile.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\landscapevb_allocator.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\landscapevb_allocator.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\patch.cpp
 # End Source File
 # Begin Source File

@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.19 2001/10/24 16:37:04 chafik Exp $
+ * $Id: codage.cpp,v 1.20 2001/10/29 10:05:13 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,8 +88,9 @@ namespace NLAISCRIPT
 		return x;
 	}
 
-	void CCodeBrancheRun::getDebugString(std::string &) const
-	{		
+	void CCodeBrancheRun::getDebugString(std::string &t) const
+	{
+		t += NLAIC::stringGetBuild("<CCodeBrancheRun _count = %d>", _Count);
 	}
 
 	const NLAIAGENT::IObjectIA::CProcessResult &CCodeBrancheRun::run()

@@ -1,7 +1,7 @@
 /** \file ps_dot.h
  * Dot particles
  *
- * $Id: ps_dot.h,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_dot.h,v 1.2 2002/02/20 11:09:20 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,4 +90,4 @@ protected:
 
 #endif // NL_PS_DOT_H
 
-/* End of ps_particle.h */
+/* End of ps_dot.h */

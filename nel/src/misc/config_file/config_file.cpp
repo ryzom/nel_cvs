@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.30 2002/04/23 07:50:25 lecroart Exp $
+ * $Id: config_file.cpp,v 1.31 2002/04/23 15:54:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
+#include "nel/misc/path.h"
 
 using namespace std;
 
@@ -221,7 +222,15 @@ void CConfigFile::load (const string &fileName)
 	{
 		string RootConfigFilename = getVar ("RootConfigFilename").asString();
 		nlinfo ("RootConfigFilename variable found in the '%s' config file, parse it (%s)", fileName.c_str(), RootConfigFilename.c_str());
-		reparse (RootConfigFilename.c_str());
+
+		string path = CFile::getPath(fileName);
+
+		if (!path.empty())
+			path +=  "/";
+
+		path += RootConfigFilename;
+
+			reparse (path.c_str());
 	}
 	catch (EConfigFile &)
 	{

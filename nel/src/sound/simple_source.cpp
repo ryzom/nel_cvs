@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSimpleSource: implementation of USource
  *
- * $Id: simple_source.cpp,v 1.4 2003/03/03 12:58:08 boucher Exp $
+ * $Id: simple_source.cpp,v 1.5 2003/06/05 15:45:54 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,7 +142,7 @@ void					CSimpleSource::play()
 			if (_SpawnEndCb != 0)
 				_SpawnEndCb(this, _CbUserParam);
 
-			CAudioMixerUser::instance()->removeSource(this);
+			delete this;
 		}
 //		nldebug("CSimpleSource %p : play FAILED !", (CAudioMixerUser::IMixerEvent*)this);
 		return;

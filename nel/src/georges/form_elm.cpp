@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.37 2003/03/18 10:24:44 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.38 2003/06/05 15:42:34 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1929,6 +1929,7 @@ void CFormElmStruct::read (xmlNodePtr node, CFormLoader &loader, const CFormDfn 
 							)
 						{
 							// Ok keep it
+							xmlFree((void*) name);
 							break;
 						}
 						else

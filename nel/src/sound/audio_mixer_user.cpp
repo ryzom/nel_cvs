@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.52 2003/05/06 12:00:44 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.53 2003/06/05 15:44:31 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -409,6 +409,8 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgre
 	catch ( ESoundDriver & )
 	{
 		// If the source generation failed, keep only the generated number of sources
+		delete _Tracks[i];
+		_Tracks[i] = 0;
 		_NbTracks = i;
 	}
 

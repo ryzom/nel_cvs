@@ -907,7 +907,13 @@ void CMainFrame::OnRemoveAllInstancesFromScene()
 ///===========================================================================================
 void CMainFrame::OnActivateTextureSet(UINT nID)
 {	
-	ObjView->activateTextureSet(nID - IDM_ACTIVATE_TEXTURE_SET_1);	
+	/// convert ID to index
+	static const uint convIndex[] =
+	{ 
+		0, 3, 1, 2, 4, 5, 6, 7	
+	};
+
+	ObjView->activateTextureSet(convIndex[nID - IDM_ACTIVATE_TEXTURE_SET_1]);	
 }
 
 

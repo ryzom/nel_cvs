@@ -451,6 +451,10 @@ SOURCE=.\bmp00024.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\bmp00025.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\icon1.ico
 # End Source File
 # Begin Source File

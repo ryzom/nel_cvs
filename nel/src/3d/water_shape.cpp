@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.1 2001/10/26 08:21:57 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.2 2001/11/07 10:32:35 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,7 +27,9 @@
 #include "3d/water_model.h"
 #include "3d/vertex_buffer.h"
 #include "3d/texture_bump.h"
+#include "3d/texture_blend.h"
 #include "3d/scene.h"
+	#include "3d/water_pool_manager.h"
 #include <memory>
 
 
@@ -67,6 +69,37 @@ const char *WaterVpCode = "!!VP1.0\n\
 					  END\
 					  ";
 
+const char *WaterPlusAlphaVpCode = "!!VP1.0\n\
+					  ADD R1, c[7], -v[0];\n\
+					  DP3 R2, R1, R1;\n\
+					  RSQ R2, R2.x;\n\
+					  MUL R3, R2, c[4].y;\n\
+					  MIN R3, c[4].x, R3;\n\
+					  MUL R0,   R3, v[8];\n\
+					  MOV R0.z,  c[4].x;\n\
+					  DP3 R3.x, R0, R0;\n\
+					  RSQ R3.x,  R3.x;\n\
+					  MUL R0,  R0, R3.x;\n\
+					  DP3 o[COL0], R0, c[6];\n\
+					  DP4 o[HPOS].x, c[0], v[0];\n\
+					  DP4 o[HPOS].y, c[1], v[0];\n\
+					  DP4 o[HPOS].z, c[2], v[0];\n\
+					  DP4 o[HPOS].w, c[3], v[0];\n\
+					  MUL R3, v[0], c[12];\n\
+					  ADD o[TEX0].xy, R3, c[11];\n\
+					  MUL R3, v[0], c[14];\n\
+					  ADD o[TEX1].xy, R3, c[13];\n\
+					  DP4 o[TEX3].x, v[0], c[15];\n\
+					  DP4 o[TEX3].y, v[0], c[16];\n\
+					  MUL R1, R1, R2.x;\n\
+					  DP3 R2.x, R1, R0;\n\
+					  MUL R0, R0, R2.x;\n\
+					  ADD R2, R0, R0;\n\
+					  ADD R0, R2, -R1;\n\
+					  MAD o[TEX2].xy, R0, c[8], c[8];\n\
+					  END\
+					  ";
+
 
 
 // static members
@@ -74,10 +107,13 @@ const char *WaterVpCode = "!!VP1.0\n\
 uint32									CWaterShape::_XScreenGridSize = 55;
 uint32									CWaterShape::_YScreenGridSize = 55;
 CVertexBuffer							CWaterShape::_VB;
-std::vector<uint32>						CWaterShape::_IB;
+std::vector<uint32>						CWaterShape::_IBUpDown;
+std::vector<uint32>						CWaterShape::_IBDownUp;
 NLMISC::CSmartPtr<IDriver>				CWaterShape::_Driver;
 bool									CWaterShape::_GridSizeTouched = true;
-std::auto_ptr<CVertexProgram>	CWaterShape::_VertexProgram;
+std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgram;
+std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramAlpha;
+
 
 
 
@@ -88,49 +124,83 @@ std::auto_ptr<CVertexProgram>	CWaterShape::_VertexProgram;
  */
 CWaterShape::CWaterShape() :  _WaterPoolID(0)
 {
+	_DefaultPos.setValue(NLMISC::CVector::Null);
+	_DefaultScale.setValue(NLMISC::CVector(1, 1, 1));
+	_DefaultRotQuat.setValue(CQuat::Identity);
+
 	for (sint k = 0; k < 2; ++k)
 	{
 		_HeightMapScale[k].set(1, 1);
 		_HeightMapSpeed[k].set(0, 0);
 	}
-	_ColorMapOffset.set(0, 0);
-	_ColorMapScale.set(1, 1);
-
-
+	_ColorMapMatColumn0.set(1, 0);
+	_ColorMapMatColumn1.set(0, 1);
+	_ColorMapMatPos.set(0, 0);
 }
+
+CWaterShape::~CWaterShape()
+{
+	if (_EnvMap && dynamic_cast<CTextureBlend *>((ITexture *) _EnvMap))
+	{
+		GetWaterPoolManager().unRegisterWaterShape(this);		
+	}
+}
+
 
 void CWaterShape::initVertexProgram()
 {	
-	_VertexProgram = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode));	
+	_VertexProgram		= std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode));	
+	_VertexProgramAlpha = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterPlusAlphaVpCode));	
 }
 
 
 
 void CWaterShape::setupVertexBuffer()
 {
+	const uint w = _XScreenGridSize;
+
 	_VB.clearValueEx();
 	_VB.addValueEx (WATER_VB_POS, CVertexBuffer::Float3);
 	_VB.addValueEx (WATER_VB_DX, CVertexBuffer::Float2);	
 
 	_VB.initEx();
-	_VB.setNumVertices((_XScreenGridSize + 1) * (_YScreenGridSize + 1));
-	_IB.resize(_XScreenGridSize * _YScreenGridSize * 6);
+	_VB.setNumVertices((w + 1) * 2);
+	
 
-	// setup the IB
-	uint x, y;
-	for (y = 0; y < _YScreenGridSize; ++y)
+	
+	uint x;
+
+	// setup each index buffer
+	// We need 2 vb, because, each time 2 lines of the vertex buffer are filled, we start at the beginning again
+	// So we need 1 vb for triangle drawn up to down, and one other for triangle drawn down to top	
+
+	_IBUpDown.resize(6 * w);	
+	for (x = 0; x < w; ++x)
 	{
-		for (x = 0; x < _XScreenGridSize; ++x)
-		{
-			_IB [ 6 * (x + _XScreenGridSize * y)    ] = x + 1 + (_XScreenGridSize + 1) * y;
-			_IB [ 6 * (x + _XScreenGridSize * y) + 1] = x +   + (_XScreenGridSize + 1) * y;
-			_IB [ 6 * (x + _XScreenGridSize * y) + 2] = x     + (_XScreenGridSize + 1) * (y + 1);
+		_IBUpDown [ 6 * x      ] = x;
+		_IBUpDown [ 6 * x  + 1 ] = x + 1 + (w + 1);
+		_IBUpDown [ 6 * x  + 2 ] = x + 1;
 
-			_IB [ 6 * (x + _XScreenGridSize * y) + 3] = x + 1 + (_XScreenGridSize + 1) * (y + 1);
-			_IB [ 6 * (x + _XScreenGridSize * y) + 4] = x + 1 + (_XScreenGridSize + 1) * y;
-			_IB [ 6 * (x + _XScreenGridSize * y) + 5] = x     + (_XScreenGridSize + 1) * (y + 1);			
-		}
+		_IBUpDown [ 6 * x  + 3 ] = x;
+		_IBUpDown [ 6 * x  + 4 ] = x + 1 + (w + 1);
+		_IBUpDown [ 6 * x  + 5 ] = x     + (w + 1);
+
 	}
+
+	_IBDownUp.resize(6 * w);
+	for (x = 0; x < w; ++x)
+	{
+		_IBDownUp [ 6 * x      ] = x;
+		_IBDownUp [ 6 * x  + 1 ] = x + 1;
+		_IBDownUp [ 6 * x  + 2 ] = x + 1 + (w + 1);
+
+		_IBDownUp [ 6 * x  + 3 ] = x;
+		_IBDownUp [ 6 * x  + 4 ] = x     + (w + 1);
+		_IBDownUp [ 6 * x  + 5 ] = x + 1 + (w + 1);
+
+	}
+
+
 	_GridSizeTouched = false;
 }
 
@@ -138,6 +208,10 @@ CTransformShape		*CWaterShape::createInstance(CScene &scene)
 {
 	CWaterModel *wm = NLMISC::safe_cast<CWaterModel *>(scene.createModel(WaterModelClassId) );
 	wm->Shape = this;
+	// set default pos & scale
+	wm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
+	wm->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
+	wm->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );
 	return wm;
 }
 
@@ -168,7 +242,7 @@ void	CWaterShape::setScreenGridSize(uint32 x, uint32 y)
 
 
 
-void CWaterShape::setShape(const NLMISC::CPolygon &poly)
+void CWaterShape::setShape(const NLMISC::CPolygon2D &poly)
 {
 	nlassert(poly.Vertices.size() != 0); // empty poly not allowed
 	_Poly = poly;
@@ -178,14 +252,14 @@ void CWaterShape::setShape(const NLMISC::CPolygon &poly)
 void CWaterShape::computeBBox()
 {
 	nlassert(_Poly.Vertices.size() != 0);
-	NLMISC::CVector min, max;
+	NLMISC::CVector2f min, max;
 	min = max = _Poly.Vertices[0];
 	for (uint k = 1; k < _Poly.Vertices.size(); ++k)
 	{
 		min.minof(min, _Poly.Vertices[k]);
 		max.maxof(max, _Poly.Vertices[k]);
 	}
-	_BBox.setMinMax(min, max);
+	_BBox.setMinMax(CVector(min.x, min.y, 0), CVector(max.x, max.y, 0));
 }
 
 
@@ -214,7 +288,9 @@ const ITexture		*CWaterShape::getHeightMap(uint k) const
 void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	sint ver = f.serialVersion(0);
+	// serial 'shape' 
 	f.serial(_Poly);
+	// serial heightMap identifier
 	f.serial(_WaterPoolID);
 	//serial maps
 	ITexture *map = NULL;	
@@ -236,7 +312,14 @@ void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	f.serial(_HeightMapScale[0], _HeightMapScale[1],
 			 _HeightMapSpeed[0], _HeightMapSpeed[1]);
-	f.serial(_ColorMapOffset, _ColorMapScale);
+
+	f.serial(_ColorMapMatColumn0, _ColorMapMatColumn1, _ColorMapMatPos);	
+
+	// serial default tracks
+	f.serial(_DefaultPos);
+	f.serial(_DefaultScale);
+	f.serial(_DefaultRotQuat);
+	
 }
 
 
@@ -245,7 +328,7 @@ bool CWaterShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldM
 	for (uint k = 0; k < pyramid.size(); ++k)
 	{
 		if (! _BBox.clipBack(pyramid[k] * worldMatrix)) return false;
-	}	
+	}
 	return true;
 }
 
@@ -270,11 +353,69 @@ NLMISC::CVector2f   CWaterShape::getHeightMapSpeed(uint k) const
 	return _HeightMapSpeed[k];
 }
 
-void	CWaterShape::setColorMapPos(uint k, const NLMISC::CVector2f &scale, const NLMISC::CVector2f &offset)
+void	CWaterShape::setColorMapMat(const NLMISC::CVector2f &column0, const NLMISC::CVector2f &column1, const NLMISC::CVector2f &pos)
 {
-	_ColorMapScale = scale;
-	_ColorMapOffset = offset;
+	_ColorMapMatColumn0 = column0;
+	_ColorMapMatColumn1 = column1;
+	_ColorMapMatPos  = pos;
+}
+
+void	CWaterShape::getColorMapMat(NLMISC::CVector2f &column0, NLMISC::CVector2f &column1, NLMISC::CVector2f &pos)
+{
+	column0 = _ColorMapMatColumn0;
+	column1 = _ColorMapMatColumn1;
+	pos  = _ColorMapMatPos;
+}
+
+void CWaterShape::envMapUpdate()
+{
+	// if the color map is a blend texture, we MUST be registered to the water pool manager, so that, the
+	// setBlend message will be routed to this texture.
+	if (dynamic_cast<CTextureBlend *>((ITexture *) _EnvMap))
+	{
+		if (!GetWaterPoolManager().isWaterShapeObserver(this))
+		{
+			GetWaterPoolManager().registerWaterShape(this);
+		}
+	}
+	else
+	{
+		if (GetWaterPoolManager().isWaterShapeObserver(this))
+		{
+			GetWaterPoolManager().unRegisterWaterShape(this);
+		}
+	}
+}
+
+void CWaterShape::setColorMap(ITexture *map)
+{ 
+	_ColorMap = map; 
+	//colorMapUpdate();
+}
+
+void CWaterShape::setEnvMap(ITexture *envMap)
+{
+	_EnvMap = envMap;	
+}
+
+
+void CWaterShape::getShapeInWorldSpace(NLMISC::CPolygon &poly) const
+{
+	poly.Vertices.clear();
+	// compute the matrix of the object in world space, by using the default tracks
+	NLMISC::CMatrix objMat;
+	objMat.identity();
+	objMat.rotate(((CAnimatedValueQuat *) &_DefaultRotQuat.getValue())->Value);
+	objMat.scale(((CAnimatedValueVector *) &_DefaultScale.getValue())->Value);
+	objMat.scale(((CAnimatedValueVector *) &_DefaultScale.getValue())->Value);
+	objMat.translate(((CAnimatedValueVector *) &_DefaultPos.getValue())->Value);
+
+	for (uint k = 0; k < _Poly.Vertices.size(); ++k)
+	{
+		poly.Vertices[k] = objMat * NLMISC::CVector(_Poly.Vertices[k].x, _Poly.Vertices[k].y, 0);
+	}
 
 }
+
 
 } // NL3D

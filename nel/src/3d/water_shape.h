@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.1 2001/10/26 08:21:57 vizerie Exp $
+ * $Id: water_shape.h,v 1.2 2001/11/07 10:32:35 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -32,6 +32,8 @@
 #include "nel/misc/class_id.h"
 #include "nel/misc/vector_2f.h"
 #include "nel/misc/polygon.h"
+#include "3d/track.h"
+
 
 
 
@@ -61,8 +63,10 @@ const NLMISC::CClassId WaterModelClassId =  NLMISC::CClassId(0x41a0732e, 0x6c664
  * -A environment map computed from the hemisphere that is above the water.
  * -A bump map used to perturbate the envmap (bump map 1).
  * -A bump map used to perturbate the bump map 1 (bump map 0). This simulate local water motion
- * -A color map whose both alpaha and rgb are modulated with the previous to get transparency and color of the water.
- * These map can be scaled, but not rotated. The bump maps can scrolls at regular speed over time
+ * -A color map whose both alpha and rgb are modulated with the envmap to get transparency and color of the water.
+ * These maps can be scaled, but not rotated. The bump maps can scroll at regular speed over time
+ * The envmap, when set to a CTextureBlend, will automatically blend for all shape when CWaterPoolManager::setBlend is called.
+ * This may be used to simulate a night / day transition.
  * \author Nicolas Vizerie
  * \author Nevrax France
  * \date 2001
@@ -76,6 +80,10 @@ public:
 	//@{
 	/// ctor
 	CWaterShape();
+
+	/// dtor
+	~CWaterShape();
+
 
 	/// serial this shape
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
@@ -113,17 +121,21 @@ public:
 
 	
 		// set a polygon that represent this shape. It must be a 2d polygon, with z kzpt to 0 everywhere
-		void					setShape(const NLMISC::CPolygon &poly);
+		void					setShape(const NLMISC::CPolygon2D &poly);
 
-		/// get the polygon used with this shape
-		const NLMISC::CPolygon &getShape() const { return _Poly; }
+		/// get the polygon used by this shape, in the object space
+		const NLMISC::CPolygon2D &getShape() const { return _Poly; }
+
+		/// get the polygon this shape, in world space
+		void getShapeInWorldSpace(NLMISC::CPolygon &poly) const;
+
 	//@}
 
 
 	///\name Texture setup
 	//@{
 		 // set the environment reflected by water
-		void				setEnvMap(ITexture *envMap) { _EnvMap = envMap;}
+		void				setEnvMap(ITexture *envMap);
 		ITexture			*getEnvMap() { return (ITexture *) _EnvMap;}
 		const ITexture		*getEnvMap() const { return (const ITexture *) _EnvMap;}
 
@@ -141,17 +153,22 @@ public:
 
 
 		// set a color map
-		void				setColorMap(ITexture *map) { _ColorMap = map; }
-		ITexture			*getColorMap(ITexture *map) { return _ColorMap; }
-		const ITexture		*getColorMap(ITexture *map) const { return _ColorMap; }
-		void				setColorMapPos(uint k, const NLMISC::CVector2f &scale, const NLMISC::CVector2f &offset);
-		NLMISC::CVector2f	getColorMapScale() const { return _ColorMapScale; }
-		NLMISC::CVector2f	getColorMapOffset() const { return _ColorMapOffset; }
-
-		
+		void				setColorMap(ITexture *map);
+		ITexture			*getColorMap() { return _ColorMap; }
+		const ITexture		*getColorMap() const { return _ColorMap; }
+		// set A 2x3 matrix used to compute position in colormap, from the x and y coordinates in world space
+		void				setColorMapMat(const NLMISC::CVector2f &column0, const NLMISC::CVector2f &column1, const NLMISC::CVector2f &pos);
+		void				getColorMapMat(NLMISC::CVector2f &column0, NLMISC::CVector2f &column1, NLMISC::CVector2f &pos);
 
 	//@}
 
+	/// \name access default tracks.
+	// @{
+	CTrackDefaultVector*	getDefaultPos ()		{return &_DefaultPos;}
+	CTrackDefaultVector*	getDefaultScale ()		{return &_DefaultScale;}
+	CTrackDefaultQuat*		getDefaultRotQuat ()	{return &_DefaultRotQuat;}
+
+	// @}
 
 
 
@@ -159,8 +176,9 @@ private:
 	friend class	CWaterModel;
 	friend class	CWaterRenderObs;
 	void								computeBBox();
+	void								envMapUpdate();
 	NLMISC::CAABBox						_BBox;	// computed from the poly
-	NLMISC::CPolygon					_Poly;
+	NLMISC::CPolygon2D					_Poly;
 	uint32								_WaterPoolID;	
 	NLMISC::CSmartPtr<ITexture>			_EnvMap;	
 	NLMISC::CSmartPtr<ITexture>			_BumpMap[2];	
@@ -168,9 +186,11 @@ private:
 
 	NLMISC::CVector2f					_HeightMapScale[2];		
 	NLMISC::CVector2f					_HeightMapSpeed[2];		
-	NLMISC::CVector2f					_ColorMapOffset;		
-	NLMISC::CVector2f					_ColorMapScale;		
+	NLMISC::CVector2f					_ColorMapMatColumn0, _ColorMapMatColumn1, _ColorMapMatPos;	
 
+	CTrackDefaultVector					_DefaultPos;
+	CTrackDefaultVector					_DefaultScale;
+	CTrackDefaultQuat					_DefaultRotQuat;
 
 
 
@@ -179,10 +199,15 @@ private:
 	static uint32							_XScreenGridSize;
 	static uint32							_YScreenGridSize;
 	static CVertexBuffer					_VB;
-	static std::vector<uint32>				_IB;
+	static std::vector<uint32>				_IBUpDown;
+	static std::vector<uint32>				_IBDownUp;
 	static NLMISC::CSmartPtr<IDriver>		_Driver;
 	static bool								_GridSizeTouched;
 	static std::auto_ptr<CVertexProgram>	_VertexProgram;
+	static std::auto_ptr<CVertexProgram>	_VertexProgramAlpha;
+
+
+
 };
 
 

@@ -14,6 +14,7 @@
 #include "global_wind_dlg.h"
 #include "sound_anim_dlg.h"
 #include "fog_dlg.h"
+#include "scene_rot_dlg.h"
 #include <nel/misc/file.h>
 #include <3d/nelu.h>
 #include <3d/mesh.h>
@@ -112,6 +113,9 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	FogActive = false;
 	FogStart  = 0.f;
 	FogEnd    = 100.f;
+	_LastSceneRotX= 0.0f;
+	_LastSceneRotY= 0.0f;
+	_LastSceneRotZ= 0.0f;
 
 	_RightButtonMouseListener.ObjViewerDlg = ObjView ;
 	_RightButtonMouseListener.SceneDlg = this ;
@@ -184,6 +188,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_EDIT_MOVESCENE, OnEditMovescene)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVESCENE, OnUpdateEditMovescene)
 	ON_COMMAND(ID_VIEW_RESET_SCENE_ROOT, OnViewResetSceneRoot)
+	ON_COMMAND(ID_VIEW_SET_SCENE_ROTATION, OnViewSetSceneRotation)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -1097,5 +1102,35 @@ void CMainFrame::OnViewResetSceneRoot()
 	if(isMoveSceneRoot())
 	{
 		ObjView->_MouseListener.setModelMatrix (ident);
+	}
+}
+
+
+// ***************************************************************************
+void CMainFrame::OnViewSetSceneRotation() 
+{
+	CSceneRotDlg	sceneRotDlg(this);
+	sceneRotDlg.RotX= toString(_LastSceneRotX).c_str();
+	sceneRotDlg.RotY= toString(_LastSceneRotY).c_str();
+	sceneRotDlg.RotZ= toString(_LastSceneRotZ).c_str();
+	if (sceneRotDlg.DoModal() == IDOK)
+	{
+		// read value.
+		_LastSceneRotX= (float)atof(sceneRotDlg.RotX);
+		_LastSceneRotY= (float)atof(sceneRotDlg.RotY);
+		_LastSceneRotZ= (float)atof(sceneRotDlg.RotZ);
+		float	rotx= degToRad(_LastSceneRotX);
+		float	roty= degToRad(_LastSceneRotY);
+		float	rotz= degToRad(_LastSceneRotZ);
+
+		CMatrix	mat;
+		mat.rotate(CVector(rotx, roty, rotz), CMatrix::ZXY);
+		ObjView->_SceneRoot->setTransformMode(ITransformable::DirectMatrix);
+		ObjView->_SceneRoot->setMatrix(mat);
+
+		if(isMoveSceneRoot())
+		{
+			ObjView->_MouseListener.setModelMatrix (mat);
+		}
 	}
 }

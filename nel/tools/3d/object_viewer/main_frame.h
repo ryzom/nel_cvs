@@ -149,10 +149,16 @@ public:
 	afx_msg void OnEditMovescene();
 	afx_msg void OnUpdateEditMovescene(CCmdUI* pCmdUI);
 	afx_msg void OnViewResetSceneRoot();
+	afx_msg void OnViewSetSceneRotation();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 	CSceneDlgMouseListener _RightButtonMouseListener ;
+
+private:
+	float			_LastSceneRotX;
+	float			_LastSceneRotY;
+	float			_LastSceneRotZ;
 };
 
 /////////////////////////////////////////////////////////////////////////////

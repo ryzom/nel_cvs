@@ -269,6 +269,7 @@
 #define IDR_VEGETABLE_MENU              1121
 #define IDC_THETA_VALUE                 1122
 #define IDC_HINT_PRECOMPUTED_ROTATIONS  1122
+#define IDD_SCENE_ROT                   1122
 #define IDC_PHI_VALUE                   1123
 #define IDC_ROT_SPEED_MIN               1123
 #define IDC_UPDATE_MIN_ROT_SPEED        1124
@@ -539,8 +540,10 @@
 #define IDC_ANIM_SOUND_ADD              1344
 #define IDC_RMANIMSOUND                 1345
 #define IDC_ANIM_SOUND_REMOVE           1345
+#define IDC_ROTY                        1345
 #define IDC_ANIM_SOUND_SAVE             1346
 #define IDC_SOUNDANIMINFO               1347
+#define IDC_ROTZ                        1347
 #define IDC_SOUNDANIMSCROLL             1348
 #define IDC_ANIM_SOUND_DELETE           1348
 #define IDC_ANIM_SOUND_ZOOMIN           1349
@@ -553,6 +556,7 @@
 #define IDC_SOUND_ANIM_LIST             1357
 #define IDC_ARG0                        1358
 #define IDC_ARG1                        1359
+#define IDC_ROTX                        1359
 #define IDC_ARG2                        1360
 #define IDC_ARG3                        1361
 #define IDM_DOT_LOC                     2000
@@ -700,14 +704,15 @@
 #define ID_EDIT_MOVECAMERA              32905
 #define ID_EDIT_MOVESCENE               32906
 #define ID_VIEW_RESET_SCENE_ROOT        32908
+#define ID_VIEW_SET_SCENE_ROTATION      32909
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1122
-#define _APS_NEXT_COMMAND_VALUE         32909
-#define _APS_NEXT_CONTROL_VALUE         1359
+#define _APS_NEXT_RESOURCE_VALUE        1123
+#define _APS_NEXT_COMMAND_VALUE         32910
+#define _APS_NEXT_CONTROL_VALUE         1360
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

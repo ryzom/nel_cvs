@@ -1418,6 +1418,22 @@ BEGIN
     EDITTEXT        IDC_EDIT2,51,25,55,12,ES_AUTOHSCROLL
 END
 
+IDD_SCENE_ROT DIALOG DISCARDABLE  0, 0, 186, 71
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Rotate Scene"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
+    LTEXT           "RotateX",IDC_STATIC,5,10,35,10
+    LTEXT           "RotateY",IDC_STATIC,5,30,35,10
+    LTEXT           "RotateZ",IDC_STATIC,5,50,35,10
+    EDITTEXT        IDC_ROTX,50,10,55,10,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ROTY,50,30,55,10,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ROTZ,50,50,55,10,ES_AUTOHSCROLL
+    LTEXT           "NB: Rot Order is ZXY",IDC_STATIC,125,50,55,15
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1938,6 +1954,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 39
     END
+
+    IDD_SCENE_ROT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 64
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2208,6 +2232,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Reset camera",               ID_VIEW_RESET_CAMERA
         MENUITEM "Reset Scene &Matrix",         ID_VIEW_RESET_SCENE_ROOT
+        MENUITEM "Set Scene Rotation",          ID_VIEW_SET_SCENE_ROTATION
         MENUITEM SEPARATOR
         MENUITEM "Set lag",                     IDM_SET_LAG
         MENUITEM SEPARATOR

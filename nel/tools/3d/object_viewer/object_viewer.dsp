@@ -246,6 +246,10 @@ SOURCE=.\object_viewer.rc
 # End Source File
 # Begin Source File
 
+SOURCE=.\scene_rot_dlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\select_string.cpp
 # ADD CPP /Yu"std_afx.h"
 # End Source File
@@ -342,6 +346,10 @@ SOURCE=.\object_viewer_interface.h
 # Begin Source File
 
 SOURCE=.\Resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\scene_rot_dlg.h
 # End Source File
 # Begin Source File
 

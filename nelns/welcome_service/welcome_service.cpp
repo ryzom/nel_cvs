@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.6 2001/11/13 12:02:32 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.7 2001/11/20 11:11:59 lecroart Exp $
  *
  */
 
@@ -182,21 +182,24 @@ void cbFESConnection (const std::string &serviceName, uint16 sid, void *arg)
 // a front end closes the connection, deconnect him
 void cbFESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 {
+	nldebug("new FES disconnection: sid %u", sid);
+
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
 	{
 		if ((*it).SId == sid)
 		{
-			map<uint32, TServiceId>::iterator nitc;
 			// send a message to the LS to say that all players from this FES are offline
-			for (map<uint32, TServiceId>::iterator itc = UserIdSockAssociations.begin(); itc != UserIdSockAssociations.end(); itc++)
+			map<uint32, TServiceId>::iterator itc = UserIdSockAssociations.begin();
+			map<uint32, TServiceId>::iterator nitc = itc;
+			while (itc != UserIdSockAssociations.end())
 			{
-				nitc = itc;
 				nitc++;
 				if ((*itc).second == sid)
 				{
 					// bye bye little player
-					CMessage msgout ("CC");
 					uint32 userid = (*itc).first;
+					nldebug ("due to a frontend crash, removed the player %d", userid);
+					CMessage msgout ("CC");
 					msgout.serial (userid);
 					uint8 con = 0;
 					msgout.serial (con);
@@ -212,8 +215,6 @@ void cbFESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 			break;
 		}
 	}
-
-	nldebug("new FES disconnection: sid %u", sid);
 
 	displayFES ();
 }

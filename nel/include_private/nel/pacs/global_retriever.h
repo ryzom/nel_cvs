@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.5 2001/05/31 14:18:36 berenguier Exp $
+ * $Id: global_retriever.h,v 1.6 2001/06/01 09:56:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -353,6 +353,7 @@ private:
 	/** reset and fill cst.MoveDescs with effective collisions of a point movement against current cst.CollisionChains.
 	 * result: the surfaceIdent where we stop. -1 if we traverse a Wall, which should not happen because of collision test.
 	 * NB: for precision pb, startCol and deltaCol should be snapped on a grid of 1/1024 meters, using snapVector().
+	 * NB: for precision pb (stop on edge etc....), return a "Precision problem ident", ie (-2,-2).
 	 */
 	CSurfaceIdent	testMovementWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &deltaCol,
 		CSurfaceIdent startSurface) const;

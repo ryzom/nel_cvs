@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.17 2001/06/01 08:15:24 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.18 2001/06/01 09:56:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -751,20 +751,17 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 			// test collision with this edge.
 			CEdgeCollide::TPointMoveProblem		pmpb;
 			t= colEdge.testPointMove(startCol, endCol, pmpb);
-			/* TODO_PRECISION: manage multiple problems of precision:
-				- traverse on point.
-				- stop on a edge (dist==0).
-				- run // on a edge (NB: dist==0 too).
-				- start on a edge (dist==0).
-			*/
-			// For now, just return an error, so that movement is disabled.
+			// manage multiple problems of precision.
 			if(t== -1)
 			{
 				string	errs[CEdgeCollide::PointMoveProblemCount]= {
 					"ParallelEdges", "StartOnEdge", "StopOnEdge", "TraverseEndPoint"};
 				nlinfo("COL: Precision Problem: %s", errs[pmpb]);
-				// return a Wall ident. movement is invalid.
-				return	CSurfaceIdent(-1, -1);
+				// return a "Precision Problem" ident. movement is invalid. BUT if startOnEdge, which should never arrive.
+				if(pmpb==CEdgeCollide::StartOnEdge)
+					return CSurfaceIdent(-1, -1);	// so in this case, block....
+				else
+					return	CSurfaceIdent(-2, -2);
 			}
 
 			// collision??
@@ -1005,15 +1002,13 @@ NLPACS::CGlobalRetriever::CGlobalPosition
 	// compute end with real delta position.
 	CVector		end= start + delta*t;
 
-	// must snap the end position.
-	CRetrieverInstance::snapVector(end);
-
 	// If asked, we must rebuild array of collision chains.
 	if(rebuildChains)
 	{
 		// compute bboxmove.
 		CAABBox		bboxMove;
 		// must add some extent, to be sure to include snapped CLocalRetriever vertex (2.0f/256 should be sufficient).
+		// Nb: this include the precision problem just below (move a little).
 		float	radius= 4.0f/256;
 		bboxMove.setCenter(start-CVector(radius, radius, 0));
 		bboxMove.extend(start+CVector(radius, radius, 0));
@@ -1026,18 +1021,74 @@ NLPACS::CGlobalRetriever::CGlobalPosition
 
 
 	// look where we arrive.
-	CVector2f	startCol(start.x, start.y);
-	CVector2f	endCol(end.x, end.y);
-	// If same 2D position, just return startPos (suppose no movement)
-	if(endCol==startCol)
+	CSurfaceIdent	endSurface;
+	CVector			endRequest= end;
+	const sint		maxPbPrec= 32;	// move away from 4 mm at max, in each 8 direction.
+	sint			pbPrecNum= 0;
+
+	// must snap the end position.
+	CRetrieverInstance::snapVector(endRequest);
+	end= endRequest;
+
+	// Normally, just one iteration is made in this loop (but if precision problem (stopOnEdge, startOnEdge....).
+	while(true)
 	{
-		CGlobalPosition		res;
-		res= startPos;
-		// keep good z movement.
-		res.LocalPosition.Estimation.z= end.z;
-		return res;
+		// must snap the end position.
+		CRetrieverInstance::snapVector(end);
+
+		CVector2f	startCol(start.x, start.y);
+		CVector2f	endCol(end.x, end.y);
+
+		// If same 2D position, just return startPos (suppose no movement)
+		if(endCol==startCol)
+		{
+			CGlobalPosition		res;
+			res= startPos;
+			// keep good z movement.
+			res.LocalPosition.Estimation.z= end.z;
+			return res;
+		}
+
+		// search destination problem.
+		endSurface= testMovementWithCollisionChains(cst, startCol, endCol, startSurface);
+
+		// if no precision problem, Ok, we have found our destination surface (or anormal collide against a wall).
+		if(endSurface.SurfaceId!=-2)
+			break;
+		/* else we are in deep chit, for one on those reason:
+			- traverse on point.
+			- stop on a edge (dist==0).
+			- start on a edge (dist==0).
+			- run // on a edge (NB: dist==0 too).
+		*/
+		else
+		{
+			// For simplicty, just try to move a little the end position
+			if(pbPrecNum<maxPbPrec)
+			{
+				static struct	{sint x,y;}   dirs[8]= { {1,0}, {1,1}, {0,1}, {-1,1}, {-1,0}, {-1,-1}, {0,-1}, {1,-1}};
+				sint	dir= pbPrecNum%8;
+				sint	dist= pbPrecNum/8+1;
+				CVector		dta;
+
+				// compute small move.
+				dta.x= dirs[dir].x * dist * 1.0f/SnapPrecision;
+				dta.y= dirs[dir].y * dist * 1.0f/SnapPrecision;
+				dta.z= 0;
+
+				// add it to the original end pos requested.
+				end= endRequest + dta;
+
+				pbPrecNum++;
+			}
+			else
+			{
+				// do not move at all.
+				endSurface= CSurfaceIdent(-1,-1);
+				break;
+			}
+		}
 	}
-	CSurfaceIdent	endSurface= testMovementWithCollisionChains(cst, startCol, endCol, startSurface);
 
 	// 3. return result.
 	//===========

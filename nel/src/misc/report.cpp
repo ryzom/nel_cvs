@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.cpp,v 1.7 2003/02/14 14:13:01 lecroart Exp $
+ * $Id: report.cpp,v 1.8 2003/09/30 10:08:05 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -280,14 +280,14 @@ TReportResult report (const std::string &title, const std::string &header, const
 	HWND label = CreateWindow ("STATIC", formatedHeader.c_str(), WS_CHILD | WS_VISIBLE /*| SS_WHITERECT*/, 7, 7, 429, 51, dialog, (HMENU) NULL, (HINSTANCE) GetWindowLong(dialog, GWL_HINSTANCE), NULL);
 	SendMessage (label, WM_SETFONT, (LONG) font, TRUE);
 
-	
-	
+
 	DebugDefaultBehavior = debugButton==1;
 	QuitDefaultBehavior = quitButton==1;
 
 	IgnoreNextTime = ignoreNextTime;
 
-	ShowCursor (TRUE);
+	// show until the cursor really show :)
+	while (ShowCursor(TRUE) < 0) {};
 
 	SetWindowPos (dialog, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 

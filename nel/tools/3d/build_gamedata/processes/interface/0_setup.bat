@@ -1,4 +1,5 @@
 @echo off
 
-mkdir tga 2> null
+mkdir tga_tmp
+mkdir tga
 

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.97 2004/07/12 14:03:08 miller Exp $
+ * $Id: debug.cpp,v 1.97.4.1 2004/08/26 09:13:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1061,6 +1061,8 @@ void beep( uint freq, uint duration )
 // Commands
 //
 
+#ifndef FINAL_VERSION
+
 NLMISC_CATEGORISED_COMMAND(nel, displayMemlog, "displays the last N line of the log in memory", "[<NbLines>]")
 {
 	uint nbLines;
@@ -1284,6 +1286,6 @@ NLMISC_CATEGORISED_COMMAND(nel, readaccess, "read a uint8 value in an invalid ad
 	return true;
 }
 
-
+#endif // FINAL_VERSION
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.10 2001/04/19 12:49:28 puzin Exp $
+ * $Id: u_driver.h,v 1.11 2001/05/22 08:34:10 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,6 +63,7 @@ class UTextContext;
 class UAnimationSet;
 class UPlayListManager;
 class UShapeBank;
+class U3dMouseListener;
 
 
 // ***************************************************************************
@@ -443,6 +444,18 @@ public:
 	  * \see setPolygonMode(), TPolygonMode
 	  */
 	virtual TPolygonMode 	getPolygonMode () =0;
+
+	/** Create a 3d mouse listener
+	  * 
+	  * \return a 3d mouse listener.
+	  */
+	virtual U3dMouseListener*	create3dMouseListener () =0;
+
+	/** Delete a 3d mouse listener
+	  * 
+	  * \param listener a 3d mouse listener.
+	  */
+	virtual void delete3dMouseListener (U3dMouseListener *listener) =0;
 
 	// @}
 

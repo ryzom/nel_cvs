@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.6 2001/04/19 12:49:28 puzin Exp $
+ * $Id: driver_user.h,v 1.7 2001/05/22 08:34:10 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/tmp/u_driver.h"
+#include "nel/3d/event_mouse_listener.h"
 #include "nel/3d/driver.h"
 #include "nel/3d/register_3d.h"
 #include "nel/3d/vertex_buffer.h"
@@ -484,6 +485,34 @@ public:
 			default: nlstop;
 		};
 		_Driver->setPolygonMode (dmode);
+	}
+
+
+	/** Create a 3d mouse listener
+	  * 
+	  * \return a 3d mouse listener.
+	  */
+	virtual U3dMouseListener*	create3dMouseListener ()
+	{
+		// Alloc the listener
+		CEvent3dMouseListener *listener=new CEvent3dMouseListener();
+
+		// register it
+		listener->addToServer (EventServer);
+
+		return listener;
+	}
+
+	/** Delete a 3d mouse listener
+	  * 
+	  * \param listener a 3d mouse listener.
+	  */
+	virtual void delete3dMouseListener (U3dMouseListener *listener)
+	{
+		// Unregister
+		((CEvent3dMouseListener*)listener)->removeFromServer (EventServer);
+
+		delete (CEvent3dMouseListener*)listener;
 	}
 
 	/** Get the global polygon mode.

@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.42 2001/11/07 10:52:41 vizerie Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.43 2001/11/21 16:11:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@ CTextureDrvInfosGL::CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it, CDri
 {
 	// The id is auto created here.
 	glGenTextures(1,&ID);
+	
 	Compressed= false;
 	TextureMemory= 0;
 
@@ -130,7 +131,7 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 		case ITexture::Luminance: return GL_LUMINANCE8;
 		case ITexture::Alpha: return GL_ALPHA8;
 		case ITexture::AlphaLuminance: return GL_LUMINANCE8_ALPHA8;
-		case ITexture::DsDt: return GL_DSDT_NV;
+		case ITexture::DsDt: return GL_DSDT_NV; 
 		default: return GL_RGBA8;
 	}
 }
@@ -382,13 +383,13 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			{
 				_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
 				// Bind this texture, for reload...
-				glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, gltext->ID);
+				glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, gltext->ID);				
 			}
 			else
 			{
 				_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);
 				// Bind this texture, for reload...
-				glBindTexture(GL_TEXTURE_2D, gltext->ID);
+				glBindTexture(GL_TEXTURE_2D, gltext->ID);				
 			}
 
 
@@ -635,10 +636,10 @@ bool CDriverGL::setupTexture(ITexture& tex)
 
 // ***************************************************************************
 bool CDriverGL::activateTexture(uint stage, ITexture *tex)
-{
+{	
 	if (this->_CurrentTexture[stage]!=tex)
 	{
-		_DriverGLStates.activeTextureARB(stage);
+		_DriverGLStates.activeTextureARB(stage);		
 		if(tex)
 		{
 			if(tex->isTextureCube())
@@ -653,6 +654,7 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 					CTextureDrvInfosGL*	gltext;
 					gltext= getTextureGl(*tex);
 					glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, getTextureGl(*tex)->ID);
+					
 
 					// Change parameters of texture, if necessary.
 					//============================================
@@ -671,7 +673,7 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 			else
 			{
 				// setup texture mode, after activeTextureARB()
-				_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);
+				_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);								
 
 				// Activate texture...
 				//======================
@@ -679,7 +681,8 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 				gltext= getTextureGl(*tex);
 
 
-				glBindTexture(GL_TEXTURE_2D, getTextureGl(*tex)->ID);
+				
+				glBindTexture(GL_TEXTURE_2D, getTextureGl(*tex)->ID);								
 
 				// Change parameters of texture, if necessary.
 				//============================================
@@ -700,7 +703,7 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 				}
 				if(gltext->MinFilter!= tex->getMinFilter())
 				{
-					gltext->MinFilter= tex->getMinFilter();
+					gltext->MinFilter= tex->getMinFilter();					
 					glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
 				}
 			}
@@ -708,11 +711,12 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 		else
 		{
 			// setup texture mode, after activeTextureARB()
-			_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
+			_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);			
 		}
 
-		this->_CurrentTexture[stage]= tex;
-	}
+		this->_CurrentTexture[stage]= tex;	
+	}	
+
 	return true;
 }
 
@@ -824,7 +828,7 @@ void		CDriverGL::activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
 	// If a special Texture environnement is setuped, or if not the same normal texture environnement,
 	// must setup a new normal Texture environnement.
 	if( _CurrentTexEnvSpecial[stage] != TexEnvSpecialDisabled || _CurrentTexEnv[stage].EnvPacked!= env.EnvPacked)
-	{
+	{ 
 		forceActivateTexEnvMode(stage, env);
 	}
 }
@@ -834,7 +838,7 @@ void		CDriverGL::activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
 void		CDriverGL::activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env)
 {
 	if(_CurrentTexEnv[stage].ConstantColor!= env.ConstantColor)
-	{
+	{ 
 		forceActivateTexEnvColor(stage, env);
 	}
 }

@@ -939,5 +939,13 @@ SOURCE=.\3d\scene.cpp
 
 SOURCE=..\include\nel\3d\scene.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\scene_group.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\scene_group.h
+# End Source File
 # End Target
 # End Project

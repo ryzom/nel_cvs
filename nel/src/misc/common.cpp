@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.61 2004/06/28 11:55:38 lecroart Exp $
+ * $Id: common.cpp,v 1.62 2004/06/29 12:23:15 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -833,7 +833,7 @@ void explode (const std::string &src, const std::string &sep, std::vector<std::s
 		if (!skipEmpty || !s.empty())
 			res.push_back (s);
 
-			oldpos = pos+1;
+			oldpos = pos+sep.size();
 	}
 	while(pos != string::npos);
 

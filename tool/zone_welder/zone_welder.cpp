@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.3 2001/01/04 08:44:13 coutelas Exp $
+ * $Id: zone_welder.cpp,v 1.4 2001/01/11 16:02:21 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,8 +27,6 @@
 #include <iostream.h>
 #include "nel/misc/types_nl.h"
 #include "nel/misc/file.h"
-#include "nel/misc/config_file.h"
-#include "nel/misc/path.h"
 #include "nel/3d/quad_tree.h"
 #include "nel/3d/zone.h"
 #include <vector>
@@ -44,8 +42,10 @@ using namespace std;
 
 FILE *fdbg;
 
-std::string inputPath;
-std::string outputPath;
+std::string inputDir;
+std::string inputExt;
+std::string outputDir;
+std::string outputExt;
 
 
 /**
@@ -71,16 +71,64 @@ struct CWeldableVertexInfos
 	}
 };
 
+std::string getDir (const std::string& path)
+{
+	char tmpPath[512];
+	strcpy (tmpPath, path.c_str());
+	char* slash=strrchr (tmpPath, '/');
+	if (!slash)
+	{
+		slash=strrchr (tmpPath, '\\');
+	}
 
+	if (!slash)
+		return "";
+
+	slash++;
+	*slash=0;
+	return tmpPath;
+}
+
+std::string getName (const std::string& path)
+{
+	std::string dir=getDir (path);
+
+	char tmpPath[512];
+	strcpy (tmpPath, path.c_str());
+
+	char *name=tmpPath;
+	nlassert (dir.length()<=strlen(tmpPath));
+	name+=dir.length();
+
+	char* point=strrchr (name, '.');
+	if (point)
+		*point=0;
+
+	return name;
+}
+
+std::string getExt (const std::string& path)
+{
+	std::string dir=getDir (path);
+	std::string name=getName (path);
+
+	char tmpPath[512];
+	strcpy (tmpPath, path.c_str());
+
+	char *ext=tmpPath;
+	nlassert (dir.length()+name.length()<=strlen(tmpPath));
+	ext+=dir.length()+name.length();
+
+	return ext;
+}
 
 /*******************************************************************\
 						writeInstructions()
 \*******************************************************************/
 void writeInstructions()
 {
-	printf("\nZONE_WELDER\n");
-	printf("syntax : zone_welder <input.zon>\n");
-	printf("/? for this help\n\n");
+	printf("zone_welder [input.zone][output.zone]\n");
+	printf("\t/? for this help\n");
 }
 
 
@@ -159,12 +207,7 @@ void getZoneCoordByName(const char * name, uint16& x, uint16& y)
 
 	// x
 	x = 0;
-	uint ind2 = zoneName.find(".");
-	if(ind2>=zoneName.length())
-	{
-		nlwarning("bad file name");
-		return;
-	}
+	uint ind2 = zoneName.length();
 	if((ind2-ind1-1)!=2)
 	{
 		nlwarning("x code size is not a 2 characters code");
@@ -222,7 +265,6 @@ void getZoneNameByCoord(uint16 x, uint16 y, std::string& zoneName)
 	zoneName = ystrtmp;
 	zoneName +="_";
 	zoneName +=xstrtmp;
-	zoneName +=".zonew";
 }
 
 
@@ -230,8 +272,7 @@ void getZoneNameByCoord(uint16 x, uint16 y, std::string& zoneName)
 /*******************************************************************\
 						getAdjacentZonesName()
 \*******************************************************************/
-void getAdjacentZonesName(const std::string& zoneName,
-						  std::vector<std::string>& names)
+void getAdjacentZonesName(const std::string& zoneName, std::vector<std::string>& names)
 {
 	uint16 x,y;
 	int xtmp,ytmp;
@@ -321,16 +362,14 @@ uint16 createZoneId(std::string zoneName)
 /*******************************************************************\
 							weldZones()
 \*******************************************************************/
-void weldZones(char * centerZoneFileName)
+void weldZones(const char *center)
 {
 	uint i,j;
 
 	float weldRadius = 0.05f;//0.03f;
 
-	CPath::addSearchPath(inputPath);
-
 	// load zone in the center
-	CIFile zoneFile(CPath::lookup(centerZoneFileName));
+	CIFile zoneFile(inputDir+center+inputExt);
 	CZone zone;
 	zone.serial(zoneFile);
 	zoneFile.close();
@@ -347,7 +386,7 @@ void weldZones(char * centerZoneFileName)
 	// if no id yet, we add a correct id
 	if(centerZoneId==0) 
 	{
-		centerZoneId = createZoneId(centerZoneFileName);
+		centerZoneId = createZoneId(center);
 		
 		// edge neighbour : current zone
 		for(itptch = centerZonePatchs.begin(); itptch!=centerZonePatchs.end(); itptch++)
@@ -376,7 +415,7 @@ void weldZones(char * centerZoneFileName)
 	CZone adjZones[8];
 	uint16 adjZonesId[8];
 	std::vector<std::string> adjZonesName;
-	getAdjacentZonesName(centerZoneFileName, adjZonesName);
+	getAdjacentZonesName(center, adjZonesName);
 	for(i=0; i<8; i++)
 	{
 		if(adjZonesName[i]=="empty") continue;
@@ -385,29 +424,25 @@ void weldZones(char * centerZoneFileName)
 		CIFile f;
 		try
 		{
-			f.open(CPath::lookup(adjZonesName[i]));
-			printf("reading file %s\n",adjZonesName[i].c_str());
+			std::string ss(outputDir+adjZonesName[i]+outputExt);
+			if (f.open(ss))
+			{
+				printf("reading file %s\n", ss.c_str());
+				adjZones[i].serial(f);
+				adjZonesId[i] = adjZones[i].getZoneId();
+				f.close();
+			}
+			else
+			{
+				printf("File not found: %s\n", ss.c_str());
+				adjZonesName[i]="empty";
+			}
 		}
-		catch(EPathNotFound &e)
+		catch(exception &e)
 		{
-			try
-			{
-				//adjZonesName[i][]='\0';
-				adjZonesName[i].erase(adjZonesName[i].size()-1);
-				f.open(CPath::lookup(adjZonesName[i]));
-				printf("reading file %s\n",adjZonesName[i].c_str());
-			}
-			catch(EPathNotFound &e)
-			{
-
-				printf ("%s\n", e.what ());
-				adjZoneFileFound[i] = false;
-				continue;
-			}
+			printf ("%s\n", e.what ());
+			adjZoneFileFound[i] = false;
 		}
-		adjZones[i].serial(f);
-		adjZonesId[i] = adjZones[i].getZoneId();
-		f.close();
 	}
 	
 	// QuadTree for storing adjZones points
@@ -447,7 +482,7 @@ void weldZones(char * centerZoneFileName)
 		nlassert(adjZonesId[i]!=0);
 		if(adjZonesId[i]==0) 
 		{
-			adjZonesId[i] = createZoneId(adjZonesName[i]);
+			adjZonesId[i] = createZoneId(getName (adjZonesName[i]));
 			
 			// edge neighbour : current zone
 			for(itptch = adjZonePatchs.begin(); itptch!=adjZonePatchs.end(); itptch++)
@@ -728,101 +763,61 @@ void weldZones(char * centerZoneFileName)
 		adjZones[i].debugBinds(fdbg);
 #endif
 		std::string strtmp;
-		strtmp = outputPath;
-		strtmp += adjZonesName[i];
-		if(strtmp[strtmp.size()-1]!='w') 
-		{
-			strtmp += 'w';
-		}
+
+		//strtmp = outputPath;
+		strtmp = outputDir+adjZonesName[i]+outputExt;
 		COFile adjSave(strtmp);
 		printf("writing file %s\n",strtmp.c_str());
 		adjZones[i].serial(adjSave);
-
 	}
 
 	zone.build(centerZoneId, centerZonePatchs, centerZoneBorderVertices);
 	std::string strtmp;
-	strtmp = outputPath;
-	strtmp += centerZoneFileName;
-	if(strtmp[strtmp.size()-1]!='w')
-	{
-		strtmp += "w";
-	}
+	strtmp = outputDir+center+outputExt;
+
 	COFile centerSave(strtmp);
 	printf("writing file %s\n",strtmp.c_str());
 	zone.serial(centerSave);
 
 }
 
-
-
 /*******************************************************************\
 							main()
 \*******************************************************************/
-void main(sint argc, char **argv)
+int main(sint argc, char **argv)
 {
 	// no zone file in argument
-	if(argc<2)
+	if(argc<3)
 	{
 		writeInstructions();
-		return;
+		return 0;
 	}
 	
 	// help
 	if(strcmp(argv[1],"/?")==0)
 	{
 		writeInstructions();
-		return;
+		return 0;
 	}
 
 #if WELD_LOG
 	fdbg = fopen("log.txt","wt");
 	fprintf(fdbg,"Center zone : %s\n",argv[1]);
 #endif
-	
 
-	inputPath = "./";
-	outputPath = "./";
+	inputDir = getDir (argv[1]);
+	inputExt = getExt (argv[1]);
+	outputDir = getDir (argv[2]);
+	outputExt = getExt (argv[2]);
 
-	char * configFileName = "zwelder.cfg";
-	
-	FILE * f = fopen(configFileName,"rt");
-	if(f==NULL)
-	{
-		nlwarning("'%s' not found, default values used", configFileName);
-	}
-	else fclose (f);
-	
-	try
-	{
-		CConfigFile cf;
-	
-		cf.load(configFileName);
-	
-		CConfigFile::CVar &cvInputPath = cf.getVar("InputPath");
-		inputPath = cvInputPath.asString();
-
-		CConfigFile::CVar &cvOutputPath = cf.getVar("OutputPath");
-		outputPath = cvOutputPath.asString();
-		
-		try
-		{
-			weldZones(argv[1]);
-		}
-		catch(EPathNotFound &e)
-		{
-			printf ("%s\n", e.what ());
-		}
-	}
-	catch (EConfigFile &e)
-	{
-		printf ("%s\n", e.what ());
-	}
-
+	std::string center=getName(argv[1]).c_str();
+	weldZones(center.c_str());
 	
 #if WELD_LOG
 	fclose(fdbg);
 #endif
+
+	return 0;
 }
 
 

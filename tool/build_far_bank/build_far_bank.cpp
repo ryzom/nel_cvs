@@ -64,7 +64,7 @@ bool fillTileFar (uint tile, const char* sName, CTileFarBank::TFarType type, CTi
 			bitmap.load (inputBitmap);
 
 			// Convert to RGBA
-			bitmap.convertToType (CBitmap::rgba);
+			bitmap.convertToType (CBitmap::RGBA);
 
 			// Get bitmap size
 			uint width=bitmap.getWidth();

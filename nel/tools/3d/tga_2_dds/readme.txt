@@ -1,5 +1,8 @@
-To build this project, you need the s3tc SDK available on http://www.s3devrel.com
+This project build only on win32 plateform cause it uses
+a compiled library provided from S3.
 
-You need in this SDK the following files:
+To build this project, you need the s3tc SDK available on http://www.s3graphics.com/sdk/sdk4.zip
+
+You need this SDK for the following files:
 	* s3_intrf.h 
 	* s3tc.lib

@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * basic types, define and class
  *
- * $Id: types_nl.h,v 1.17 2000/11/23 16:41:33 lecroart Exp $
+ * $Id: types_nl.h,v 1.18 2000/12/01 14:15:24 lecroart Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -51,7 +51,8 @@
 #  endif
 #else
 #  define NL_OS_UNIX
-#  define NL_BIG_ENDIAN
+// *for now*, we suppose that all unix system are LITLLE_ENDIAN (because we only test on linux/x86 system
+#  define NL_LITTLE_ENDIAN
 #include <sys/types.h>
 #endif
 

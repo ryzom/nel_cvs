@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.40 2004/08/31 17:40:29 boucher Exp $
+ * $Id: config_file.h,v 1.41 2004/10/26 13:48:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -145,6 +145,10 @@ public:
 		float				asFloat		(int index=0) const;
 		/// Get the content of the variable as a STL string
 		std::string			asString	(int index=0) const;
+#ifndef NL_DONT_USE_EXTERNAL_CODE
+		/// Get the content of the variable as a boolean
+		bool				asBool		(int index=0) const;
+#endif // NL_DONT_USE_EXTERNAL_CODE
 		//@}
 
 		/// \name Set the variable content.
@@ -190,7 +194,11 @@ public:
 		//@{
 		static char *TypeName[];
 
+#ifndef NL_DONT_USE_EXTERNAL_CODE
+		enum TVarType { T_UNKNOWN, T_INT, T_STRING, T_REAL, T_BOOL };
+#else
 		enum TVarType { T_UNKNOWN, T_INT, T_STRING, T_REAL };
+#endif // NL_DONT_USE_EXTERNAL_CODE
 
 		std::string					Name;
 		TVarType					Type;

@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.60 2004/08/31 17:39:47 boucher Exp $
+ * $Id: config_file.cpp,v 1.61 2004/10/26 13:48:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,11 @@ bool LoadRoot = false;
 namespace NLMISC
 {
 
+#ifndef NL_DONT_USE_EXTERNAL_CODE
+char *CConfigFile::CVar::TypeName[] = { "Integer", "String", "Float", "Boolean" };
+#else
 char *CConfigFile::CVar::TypeName[] = { "Integer", "String", "Float" };
+#endif // NL_DONT_USE_EXTERNAL_CODE
 
 int CConfigFile::CVar::asInt (int index) const
 {
@@ -111,6 +115,44 @@ std::string CConfigFile::CVar::asString (int index) const
 	}
 }
 
+#ifndef NL_DONT_USE_EXTERNAL_CODE
+bool CConfigFile::CVar::asBool (int index) const
+{
+	switch (Type)
+	{
+	case T_STRING:
+		if (index >= (int)StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
+		if(StrValues[index] == "true")
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	case T_REAL:
+		if (index >= (int)RealValues.size () || index < 0) throw EBadSize (Name, RealValues.size (), index);
+		if ((int)RealValues[index] == 1)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	default:
+		if (index >= (int)IntValues.size () || index < 0) throw EBadSize (Name, IntValues.size (), index);
+		if (IntValues[index] == 1)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+}
+#endif // NL_DONT_USE_EXTERNAL_CODE
 
 
 void CConfigFile::CVar::setAsInt (int val, int index)

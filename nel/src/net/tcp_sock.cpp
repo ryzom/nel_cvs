@@ -1,7 +1,7 @@
 /** \file tcp_sock.cpp
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.cpp,v 1.3 2001/08/23 14:22:41 lecroart Exp $
+ * $Id: tcp_sock.cpp,v 1.4 2001/09/10 13:43:56 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,8 +108,9 @@ void CTcpSock::disconnect()
 #elif defined NL_OS_UNIX
 	::shutdown( _Sock, SHUT_RDWR );
 #endif
-	CSynchronized<bool>::CAccessor sync( &_SyncConnected );
-	sync.value() = false;
+	/*CSynchronized<bool>::CAccessor sync( &_SyncConnected );
+	sync.value() = false;*/
+	_Connected = false;
 }
 
 

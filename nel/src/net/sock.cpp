@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.7 2001/06/18 09:04:17 cado Exp $
+ * $Id: sock.cpp,v 1.8 2001/09/10 13:43:56 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 
 #ifdef NL_OS_WINDOWS
 #include <winsock2.h>
+//#include <windows.h>
 #define socklen_t int
 #define ERROR_NUM WSAGetLastError()
 #define ERROR_WOULDBLOCK WSAEWOULDBLOCK
@@ -201,10 +202,11 @@ CSock::CSock( bool logging ) :
 	_NonBlocking( false )
 {
 	nlassert( CSock::_Initialized );
-	{
+	/*{
 		CSynchronized<bool>::CAccessor sync( &_SyncConnected );
 		sync.value() = false;
-	}
+	}*/
+	_Connected = false;
 }
 
 
@@ -220,10 +222,11 @@ CSock::CSock( SOCKET sock, const CInetAddress& remoteaddr ) :
 	_NonBlocking( false )
 {
 	nlassert( CSock::_Initialized );
-	{
+	/*{
 		CSynchronized<bool>::CAccessor sync( &_SyncConnected );
 		sync.value() = true;
-	}
+	}*/
+	_Connected = true;
 
 	// Check remote address
 	if ( ! _RemoteAddr.isValid() )
@@ -352,8 +355,9 @@ void CSock::connect( const CInetAddress& addr )
 	_BytesReceived = 0;
 	_BytesSent = 0;
 
-	CSynchronized<bool>::CAccessor sync( &_SyncConnected );
-	sync.value() = true;
+	/*CSynchronized<bool>::CAccessor sync( &_SyncConnected );
+	sync.value() = true;*/
+	_Connected = true;
 }
 
 
@@ -439,10 +443,11 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 			// Graceful disconnection
 			case 0 :
 			{
-				{
+				/*{
 					CSynchronized<bool>::CAccessor sync( &_SyncConnected );
 					sync.value() = false;
-				}
+				}*/
+				_Connected = false;
 				if ( throw_exception )
 				{
 					throw ESocketConnectionClosed();
@@ -484,10 +489,11 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 				// Graceful disconnection
 				case 0 : 
 				{
-					{
+					/*{
 						CSynchronized<bool>::CAccessor sync( &_SyncConnected );
 						sync.value() = false;
-					}
+					}*/
+					_Connected = false;
 					if ( throw_exception )
 					{
 						throw ESocketConnectionClosed();
@@ -523,14 +529,15 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
  */
 bool CSock::connected()
 {
-  bool b;
+  /*bool b;
   {
     //nldebug( "L0: CSock::connected-BEGIN (socket %u)", descriptor() );
     CSynchronized<bool>::CAccessor sync( &_SyncConnected );
     b = sync.value();
   }
   //nldebug( "L0: CSock::connected-END" );
-  return b;
+  return b;*/
+	return _Connected;
 }
 
 

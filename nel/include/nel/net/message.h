@@ -1,7 +1,7 @@
 /** \file message.h
  * CMessage class
  *
- * $Id: message.h,v 1.20 2001/05/03 16:30:54 coutelas Exp $
+ * $Id: message.h,v 1.21 2001/05/07 09:32:11 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,20 +52,20 @@ class CMessage : public NLMISC::CMemStream
 public:
 
 	CMessage (NLMISC::CStringIdArray &sida, const std::string &name = "", bool inputStream = false, uint32 defaultCapacity = 0) :
-		CMemStream (inputStream, defaultCapacity), _TypeSet (false), _SIDA (&sida)
+		CMemStream (inputStream, defaultCapacity), _TypeSet (false), _SIDA (&sida), _HeaderSize(0xFFFFFFFF)
 	{
 		if (!name.empty())
 			setType (name);
 	}
 
 	CMessage (const std::string &name = "", bool inputStream = false, uint32 defaultCapacity = 0) :
-		CMemStream (inputStream, defaultCapacity), _TypeSet (false), _SIDA (NULL)
+		CMemStream (inputStream, defaultCapacity), _TypeSet (false), _SIDA (NULL), _HeaderSize(0xFFFFFFFF)
 	{
 		if (!name.empty())
 			setType (name);
 	}
 
-	CMessage (NLMISC::CMemStream &memstr)
+	CMessage (NLMISC::CMemStream &memstr) : _HeaderSize(0xFFFFFFFF)
 	{
 		fill (memstr.buffer (), memstr.length ());
 		uint8 LongFormat;
@@ -121,6 +121,7 @@ public:
 			uint8 LongFormat = false;
 			serial (LongFormat);
 			serial (id);
+			_HeaderSize = getPos ();
 		}
 		else
 		{
@@ -170,11 +171,20 @@ public:
 				_Id = id;
 				TypeHasAnId = true;
 			}
+			_HeaderSize = getPos ();
 		}
 
 		_TypeSet = true;
 	}
 
+	/// Returns the size, in byte of the header that contains the type name of the message or the type number
+	uint32 getHeaderSize ()
+	{
+		nlassert (!isReading ());
+		nlassert (_HeaderSize != 0xFFFFFFFF);
+		return _HeaderSize;
+	}
+	
 	// The message was filled with an CMemStream, Now, we'll get the message type on this buffer
 	void readType ()
 	{
@@ -239,7 +249,9 @@ private:
 	std::string	_Name;
 	NLMISC::CStringIdArray::TStringId _Id;
 	
-	
+	// Size of the header (that contains the name type or number type)
+	uint32 _HeaderSize;
+
 ///////////////////////////////////////
 /*
 	

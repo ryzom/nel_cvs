@@ -175,8 +175,10 @@
 #define IDC_PS_DIE_ON_EVENT             1070
 #define IDC_MAP_SIZE                    1070
 #define IDC_COMBO_DIST_TYPE             1070
+#define IDC_MAIN_OP                     1070
 #define IDC_START_PICTURE               1071
 #define IDD_SET_VALUE                   1071
+#define IDC_ALTERNATE_OP                1071
 #define IDC_STOP_PICTURE                1072
 #define IDC_SCHEME                      1073
 #define IDC_EDIT_SCHEME                 1074
@@ -208,7 +210,6 @@
 #define IDC_BROWSE_COLOR                1089
 #define IDD_DAYNIGHT                    1089
 #define IDC_VALUE1                      1090
-#define IDD_WATER_POOL                  3666
 #define IDD_VEGETABLE_DLG               1090
 #define IDC_VALUE2                      1091
 #define IDD_VEGETABLE_DENSITY_DLG       1091
@@ -229,8 +230,11 @@
 #define IDC_EMITTED_TYPE                1101
 #define IDD_DIALOG_PROGRESS             1101
 #define IDD_VEGETABLE_WIND              1102
+#define IDD_MULTITEX                    1103
 #define IDC_BROWSE_TEXTURE              1104
 #define IDC_REMOVE_TEXTURE              1105
+#define IDC_EDIT_MULTITEXTURING         1106
+#define IDD_CONSTRAINT_MESH_DLG         1106
 #define IDC_USE_SPEED_BASIS             1108
 #define IDC_ADD_TARGET                  1109
 #define IDC_REMOVE_TARGET               1110
@@ -301,6 +305,7 @@
 #define IDC_DELETE_POOL                 1171
 #define IDC_BUTTON_VEGETABLE_INSERT     1171
 #define IDC_BUTTON_VEGETABLE_GENERAL_NONE 1171
+#define IDC_UPDATE_SPEED_ALTERNATE      1171
 #define IDC_LAG                         1172
 #define IDC_GO_UP                       1172
 #define IDC_RENAME_POOL                 1172
@@ -340,7 +345,16 @@
 #define IDC_USE_LIST                    1195
 #define IDC_USE_MIXER                   1196
 #define IDC_PLAYLIST                    1197
+#define IDC_SLIDER1                     1198
+#define IDC_SLIDER_ANGLE_MIN            1198
+#define IDC_SLIDER_VEGETABLE_SCALE_NOISE 1198
+#define IDC_SLIDER_VEGETABLE_WIND_POWER 1198
+#define IDC_SLIDER_ANGLE_MAX            1199
+#define IDC_SLIDER_VEGETABLE_WIND_BENDSTART 1199
+#define IDC_LIST_VEGETABLE              1200
+#define IDC_SLIDER_VEGETABLE_WIND_FREQUENCY 1200
 #define IDC_AUTOMATIC_WAVES_GENERATION  1203
+#define IDC_VEGETABLE_NOISE_VALUE_NAME  1204
 #define IDC_LOAD_POOL                   1205
 #define IDC_SAVE_POOL                   1206
 #define IDC_POOL_LIST                   1211
@@ -354,15 +368,6 @@
 #define IDC_POOL_ID                     1219
 #define IDC_PROPAGATION_TIME            1219
 #define IDC_POOL_NAME                   1220
-#define IDC_SLIDER1                     1198
-#define IDC_SLIDER_ANGLE_MIN            1198
-#define IDC_SLIDER_VEGETABLE_SCALE_NOISE 1198
-#define IDC_SLIDER_VEGETABLE_WIND_POWER 1198
-#define IDC_SLIDER_ANGLE_MAX            1199
-#define IDC_SLIDER_VEGETABLE_WIND_BENDSTART 1199
-#define IDC_LIST_VEGETABLE              1200
-#define IDC_SLIDER_VEGETABLE_WIND_FREQUENCY 1200
-#define IDC_VEGETABLE_NOISE_VALUE_NAME  1204
 #define IDC_RADIO_ANGLE_FLOOR           1223
 #define IDC_RADIO_ANGLE_WALL            1224
 #define IDC_RADIO_ANGLE_CEILING         1225
@@ -407,6 +412,38 @@
 #define IDC_CHECK_VEGETABLE_SNAPTOGROUND 1265
 #define IDC_CHECK_VEGETABLE_ENABLE      1266
 #define IDC_STATIC_VEGETABLE_PERF       1267
+#define IDC_U_SPEED_1                   1269
+#define IDC_V_SPEED_1                   1270
+#define IDC_U_SPEED_2                   1271
+#define IDC_V_SPEED_2                   1272
+#define IDS_U_SPEED_1                   1273
+#define IDS_V_SPEED_1                   1274
+#define IDS_U_SPEED_2                   1275
+#define IDS_V_SPEED_2                   1276
+#define IDC_TEX_CHOOSER                 1277
+#define IDC_U_SPEED_1_ALTERNATE         1278
+#define IDC_V_SPEED_1_ALTERNATE         1279
+#define IDC_U_SPEED_2_ALTERNATE         1280
+#define IDC_V_SPEED_2_ALTERNATE         1281
+#define IDS_U_SPEED_1_ALTERNATE         1282
+#define IDS_V_SPEED_1_ALTERNATE         1283
+#define IDS_U_SPEED_2_ALTERNATE         1284
+#define IDS_V_SPEED_2_ALTERNATE         1285
+#define IDC_TEX_CHOOSER_ALTERNATE       1286
+#define IDC_UPDATE_SPEED                1287
+#define IDC_EDIT_MULTITEX               1288
+#define IDC_ENABLE_ALTERNATE_TEX        1289
+#define IDC_ENABLE_MULTITEXTURING       1290
+#define IDC_MULTITEX                    1291
+#define IDC_MULTITEX_BORDER             1292
+#define IDC_FORCE_BASIC_CAPS            1293
+#define IDC_USE_PARTICLE_DATE2          1294
+#define IDC_USE_PARTICLE_DATE           1295
+#define IDC_FORCE_STAGE_0_MODULATION    1295
+#define IDC_FORCE_STAGE_1_MODULATION    1296
+#define IDC_FORCE_STAGE_2_MODULATION    1297
+#define IDC_FORCE_STAGE_3_MODULATION    1298
+#define IDC_FORCE_VERTEX_COLOR_LIGHTING 1299
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -434,6 +471,7 @@
 #define IDM_CONIC_EMITTER_LOC           2024
 #define IDM_SPHERICAL_EMITTER_LOC       2025
 #define IDM_SOUND_LOC                   2026
+#define IDD_WATER_POOL                  3666
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -518,17 +556,16 @@
 #define IDM_RADIAL_EMITTER              32869
 #define IDM_RADIAL_EMITTER_LOC          32870
 #define ID_WINDOW_DAYNIGHT              32871
-#define ID_WINDOW_WATER_POOL            32873
 #define ID_WINDOW_VEGETABLE             32872
-
+#define ID_WINDOW_WATER_POOL            32873
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1103
+#define _APS_NEXT_RESOURCE_VALUE        1107
 #define _APS_NEXT_COMMAND_VALUE         32873
-#define _APS_NEXT_CONTROL_VALUE         1268
+#define _APS_NEXT_CONTROL_VALUE         1300
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

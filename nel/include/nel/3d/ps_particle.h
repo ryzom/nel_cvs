@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.12 2001/05/28 15:30:11 vizerie Exp $
+ * $Id: ps_particle.h,v 1.13 2001/05/30 10:04:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1075,7 +1075,7 @@ public:
 	 *  \param radiusCut : indicate how much to subtract to the outter radius to get the inner radius
 	 *  \param  tex : the texture that must be applied to the shockwave
 	 */
-	CPSShockWave(uint nbSeg = 9, float radiusRatio = 0.8f , CSmartPtr<ITexture> tex = NULL) ;
+	CPSShockWave(uint nbSeg = 9, float radiusCut = 0.8f , CSmartPtr<ITexture> tex = NULL) ;
 
 	/** set a new number of seg (mus be >= 3 and <= 64)
 	 *  \see CPSShockWave()

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.12 2001/05/28 15:30:12 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.13 2001/05/30 10:04:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -4179,7 +4179,7 @@ void CPSConstraintMesh::draw(void)
 
 
 
-	const uint normalOff = _ModelVb.getNormalOff() ;
+	const uint normalOff = _ModelVb.getVertexFormat() & IDRV_VF_NORMAL ? _ModelVb.getNormalOff() : 0 ;
 
 	const uint nbVerticesInSource = _ModelVb.getNumVertices() ;
 
@@ -4213,7 +4213,7 @@ void CPSConstraintMesh::draw(void)
 		const uint vpSize = _PreRotatedMeshVb.getVertexSize() ;
 
 		// size of a complete prerotated model
-		const prerotatedModelSize = vpSize * _ModelVb.getNumVertices() ;
+		const uint prerotatedModelSize = vpSize * _ModelVb.getNumVertices() ;
 
 		// offset of normals in vertices of the prerotated model
 		const uint pNormalOff = _PreRotatedMeshVb.getVertexFormat() & IDRV_VF_NORMAL ? _PreRotatedMeshVb.getNormalOff() : 0 ;

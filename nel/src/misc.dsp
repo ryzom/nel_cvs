@@ -776,6 +776,14 @@ SOURCE=..\include\nel\misc\quad.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\random.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\random.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\reader_writer.cpp
 # End Source File
 # Begin Source File

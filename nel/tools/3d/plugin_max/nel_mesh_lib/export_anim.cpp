@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.39 2004/07/08 16:12:42 berenguier Exp $
+ * $Id: export_anim.cpp,v 1.40 2004/07/12 09:16:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2312,8 +2312,11 @@ void				CSSSBuild::compile(NL3D::CAnimation &dest, const char* sBaseName)
 		commitSSSKey(precTime, objects, finalTrack);
 	}
 	else
+	{
 		// no keys added
 		delete finalTrack;
+		finalTrack= NULL;
+	}
 		
 
 	// **** Add to the animation

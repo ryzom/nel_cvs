@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.134 2002/07/02 15:57:15 lecroart Exp $
+ * $Id: service.cpp,v 1.135 2002/07/03 09:55:37 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -1043,6 +1043,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			}
 	
 			CConfigFile::checkConfigFiles ();
+
+			CFile::checkFileChange();
 
 			H_BEFORE(NLNETServiceManageMessages);
 			if (isService5())

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.45 2002/07/03 08:45:50 corvazier Exp $
+ * $Id: path.cpp,v 1.46 2002/07/03 09:55:30 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1047,7 +1047,8 @@ static vector <CFileEntry> FileToCheck;
 
 void CFile::addFileChangeCallback (const std::string &filename, void (*cb)(const string &filename))
 {
-	FileToCheck.push_back(CFileEntry(filename, cb));
+	nlinfo ("CFile::addFileChangeCallback: I'll check the modification date for this file '%s'", CPath::lookup(filename).c_str());
+	FileToCheck.push_back(CFileEntry(CPath::lookup(filename), cb));
 }
 
 void CFile::checkFileChange (TTime frequency)

@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.4 2002/01/09 18:08:56 berenguier Exp $
+ * $Id: aabbox.h,v 1.5 2002/01/28 14:20:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,8 +88,8 @@ public:
 	// @{
 	CVector			getMin() const {return Center-HalfSize;}
 	CVector			getMax() const {return Center+HalfSize;}
-	CVector			getCenter() const {return Center;}
-	CVector			getHalfSize() const {return HalfSize;}
+	const CVector	&getCenter() const {return Center;}
+	const CVector	&getHalfSize() const {return HalfSize;}
 	/// Return the size of the bbox.
 	CVector			getSize() const {return HalfSize*2;}
 	/// Return the radius of the bbox.
@@ -180,8 +180,8 @@ public:
 	// @{
 	CVector			getMin() const {return CAABBox::getMin();}
 	CVector			getMax() const {return CAABBox::getMax();}
-	CVector			getCenter() const {return Center;}
-	CVector			getHalfSize() const {return HalfSize;}
+	const CVector	&getCenter() const {return Center;}
+	const CVector	&getHalfSize() const {return HalfSize;}
 	/// Return the size of the bbox.
 	CVector			getSize() const {return HalfSize*2;}
 	/// Return the (stored!!) radius of the bbox.

@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.15 2000/12/05 10:39:05 corvazier Exp $
+ * $Id: events.h,v 1.16 2001/02/23 09:08:18 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -229,14 +229,35 @@ enum TMouseButton
 	altButton		=0x20
 };
 
+enum TKeyButton
+{
+	noKeyButton			=0x0,
+	ctrlKeyButton		=0x8,
+	shiftKeyButton		=0x10,
+	altKeyButton		=0x20
+};
+
+/**
+ * CEventKey
+ */
+class CEventKey : public CEvent
+{
+public:
+	CEventKey (TKeyButton button, IEventEmitter* emitter, const CClassId& classId) : CEvent (emitter, classId)
+	{
+		Button=button;
+	}
+	TKeyButton Button;
+};
+
 /**
  * CEventKeyDown
  * Send when a key is push down. The key type is Key and FirstTime is true if the previous key state wasn't pushed.
  */
-class CEventKeyDown : public CEvent
+class CEventKeyDown : public CEventKey
 {
 public:
-	CEventKeyDown (TKey key, bool bFirstTime, IEventEmitter* emitter) : CEvent (emitter, EventKeyDownId)
+	CEventKeyDown (TKey key, TKeyButton button, bool bFirstTime, IEventEmitter* emitter) : CEventKey (button, emitter, EventKeyDownId)
 	{
 		Key=key;
 		FirstTime=bFirstTime;
@@ -248,10 +269,10 @@ public:
 /**
  * CEventKeyUp
  */
-class CEventKeyUp : public CEvent
+class CEventKeyUp : public CEventKey
 {
 public:
-	CEventKeyUp (TKey key, IEventEmitter* emitter) : CEvent (emitter, EventKeyUpId)
+	CEventKeyUp (TKey key, TKeyButton button, IEventEmitter* emitter) : CEventKey (button, emitter, EventKeyUpId)
 	{
 		Key=key;
 	}
@@ -261,10 +282,10 @@ public:
 /**
  * CEventChar
  */
-class CEventChar : public CEvent
+class CEventChar : public CEventKey
 {
 public:
-	CEventChar (ucchar c, IEventEmitter* emitter) : CEvent (emitter, EventCharId)
+	CEventChar (ucchar c, TKeyButton button, IEventEmitter* emitter) : CEventKey (button, emitter, EventCharId)
 	{
 		Char=c;
 	}

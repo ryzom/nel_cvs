@@ -1,7 +1,7 @@
 /** \file u_instance_material.h
  * <File description>
  *
- * $Id: u_instance_material.h,v 1.3 2002/06/03 08:50:17 vizerie Exp $
+ * $Id: u_instance_material.h,v 1.4 2002/06/11 14:25:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,6 +113,16 @@ public:
 	virtual std::string			getTextureFileName(uint stage = 0) const = 0;
 	/// Set the fileName used by the n-th texture file. (must be a texture file or an assertion is raised)
 	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0) = 0;
+	/// Check wether the texture of the n-th stage is a texture file set.	  	  
+	virtual bool				isTextureFileSet(uint stage = 0) const = 0;
+	/** If a texture is a texture file set, get the number of texture in the set
+	  * \return the number of textures or -1 if it isn't a texture set.
+	  */
+	virtual	sint				getNumTexInTexturefileSet(uint stage = 0) const = 0;
+	/// If a texture is a texture file set, get the name of the nth texture in the set.
+	virtual const std::string   getTexNameInTextureFileSet(uint stage, uint texNum) const = 0;
+	/// If a texture is a texture file set, set the name of the nth texture in the set.
+	virtual void				setTexNameInTextureFileSet(uint stage, uint texNum, const char *fileName) const = 0;	  	  
 	// @}
 
 

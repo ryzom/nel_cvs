@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.48 2001/10/10 12:07:00 valignat Exp $
+# $Id: Makefile.am,v 1.49 2001/10/26 08:16:16 vizerie Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -74,6 +74,8 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        font_manager.cpp                    \
                        font_manager.h                      \
                        frustum.cpp                         \
+                       heat_haze.cpp                       \
+                       heat_haze.h                         \
                        height_map.cpp                      \
                        hrc_trav.cpp                        \
                        hrc_trav.h                          \
@@ -152,6 +154,7 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        particle_system_process.h           \
                        particle_system_shape.cpp           \
                        particle_system_shape.h             \
+                       particle_system_sound_user.cpp      \
                        patch.cpp                           \
                        patch.h                             \
                        patch_noise.cpp                     \
@@ -209,6 +212,8 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        ps_sound.h                          \
                        ps_sound.cpp                        \
                        quad_grid.h                         \
+                       quad_effect.h                       \
+                       quad_effect.cpp                     \
                        register_3d.cpp                     \
                        register_3d.h                       \
                        render_trav.cpp                     \
@@ -250,6 +255,8 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        texture.h                           \
                        texture_blank.h                     \
                        texture_blank.cpp                   \
+                       texture_bump.cpp                    \
+                       texture_bump.h                      \
                        texture_cube.cpp                    \
                        texture_cube.h                      \
                        texture_far.cpp                     \
@@ -308,6 +315,12 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        visual_collision_manager.h          \
                        visual_collision_manager_user.cpp   \
                        visual_collision_manager_user.h     \
+                       water_model.cpp                     \
+                       water_model.h                       \
+                       water_pool_manager.cpp              \
+                       water_pool_manager.h                \
+                       water_shape.cpp                     \
+                       wtaer_shape.h                       \                       
                        zone.cpp                            \
                        zone.h                              \
                        zone_manager.cpp                    \

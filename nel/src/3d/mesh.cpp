@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.50 2002/04/03 13:22:49 lecroart Exp $
+ * $Id: mesh.cpp,v 1.51 2002/04/25 15:25:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -533,7 +533,7 @@ void	CMeshGeom::updateVertexBufferHard(IDriver *drv)
 
 
 // ***************************************************************************
-void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, float polygonCount, float globalAlpha)
+void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, float polygonCount, float globalAlpha, bool gaDisableZWrite)
 {
 	nlassert(drv);
 	// get the mesh instance.
@@ -659,16 +659,38 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 					// New opacity
 					material.setOpacity (globalAlphaInt);
 
-					// Backup the zwrite
-					bool zwrite=material.getZWrite ();
-
-					// New zwrite
-					material.setZWrite (false);
+					// Disable ZWrite??
+					bool zwrite;
+					if(gaDisableZWrite)
+					{
+						// Backup and set new the zwrite
+						zwrite=material.getZWrite ();
+						material.setZWrite (false);
+					}
 
 					// Backup blend
 					bool blend=material.getBlend ();
 					material.setBlend (true);
 
+					// if material is opaque, must ensure Std Blend.
+					CMaterial::TBlend	srcBlend, dstBlend;
+					if(!blend)
+					{
+						srcBlend= material.getSrcBlend();
+						dstBlend= material.getDstBlend();
+						material.setSrcBlend(CMaterial::srcalpha);
+						material.setDstBlend(CMaterial::invsrcalpha);
+					}
+
+					// if material is Alpha Test, must modulate AlphaTest limit to avoid Pop effects
+					float	bkupAlphaTestThreshold;
+					if(material.getAlphaTest())
+					{
+						bkupAlphaTestThreshold= material.getAlphaTestThreshold();
+						material.setAlphaTestThreshold(bkupAlphaTestThreshold * globalAlpha);
+					}
+
+					// Setup VP material
 					if (useMeshVP)
 					{
 						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBuffer);
@@ -681,10 +703,27 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 					material.setOpacity (opacity);
 
 					// Resetup backuped zwrite
-					material.setZWrite (zwrite);
+					if(gaDisableZWrite)
+					{
+						material.setZWrite (zwrite);
+					}
 
 					// Resetup backuped blend
 					material.setBlend (blend);
+
+					// Resetup backuped blend factors
+					if(!blend)
+					{
+						material.setSrcBlend(srcBlend);
+						material.setDstBlend(dstBlend);
+					}
+
+					// Resetup backuped AlphaTest threshold
+					if(material.getAlphaTest())
+					{
+						material.setAlphaTestThreshold(bkupAlphaTestThreshold);
+					}
+
 				}
 			}
 		}
@@ -1511,7 +1550,7 @@ bool	CMesh::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 // ***************************************************************************
 void	CMesh::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
-	_MeshGeom->render(drv, trans, passOpaque, 0);
+	_MeshGeom->render(drv, trans, passOpaque, 0, 1, false);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_geom.h
  * <File description>
  *
- * $Id: mesh_geom.h,v 1.6 2002/02/26 14:17:55 berenguier Exp $
+ * $Id: mesh_geom.h,v 1.7 2002/04/25 15:25:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,8 +80,9 @@ public:
 	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) {return true;}
 
 	/** render() this meshGeom in a driver, with the specified TransformShape instance information.
+	 *	\param gaDisableZWrite if gloablAlpha is<1, say if ZWrite must be disabled (else no use)
 	 */
-	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha=1) =0;
+	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha, bool gaDisableZWrite) =0;
 
 	/// \name Load balancing methods
 	// @{

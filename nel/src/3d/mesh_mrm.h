@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.27 2002/04/04 08:22:09 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.28 2002/04/25 15:25:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,7 +111,7 @@ public:
 	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) ;
 
 	/// render() this mesh in a driver, given an instance and his materials.
-	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha=1);
+	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha, bool gaDisableZWrite);
 
 	/// get an approximation of the number of triangles this instance will render for a fixed distance.
 	virtual float	getNumTriangles (float distance);

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.18 2002/03/29 17:05:50 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.19 2002/04/25 15:25:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -240,27 +240,29 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 	// Second lod ?
 	if ( (instance->Lod1!=0xffffffff) && (passOpaque==false) )
 	{
-		// Render second lod in blend mode
-		render (instance->Lod1, drv, instance, instance->PolygonCountLod1, 1.f-instance->BlendFactor, _StaticLod, true);
-		render (instance->Lod1, drv, instance, instance->PolygonCountLod1, 1.f-instance->BlendFactor, _StaticLod, false);
+		// Render second lod in blend mode. Render and disable ZWrite for Lod1
+		// NB: very important to render Lod1 first, because Lod0 is still rendered with ZWrite enabled.
+		render (instance->Lod1, drv, instance, instance->PolygonCountLod1, 1.f-instance->BlendFactor, _StaticLod, true, true);
+		render (instance->Lod1, drv, instance, instance->PolygonCountLod1, 1.f-instance->BlendFactor, _StaticLod, false, true);
 	}
+
 
 	// Have an opaque pass ?
 	if ( (instance->Flags&CMeshMultiLodInstance::Lod0Blend) == 0)
 	{
 		// Only render the normal way the first lod
-		render (instance->Lod0, drv, instance, instance->PolygonCountLod0, 1, _StaticLod, passOpaque);
+		render (instance->Lod0, drv, instance, instance->PolygonCountLod0, 1, _StaticLod, passOpaque, false);
 	}
 	else
 	{
 		// Should not be in opaque
 		nlassert (passOpaque==false);
 
-		// Render first lod in blend mode
-		render (instance->Lod0, drv, instance, instance->PolygonCountLod0, instance->BlendFactor, _StaticLod, true);
+		// Render first lod in blend mode. Don't disable ZWrite for Lod0
+		render (instance->Lod0, drv, instance, instance->PolygonCountLod0, instance->BlendFactor, _StaticLod, true, false);
 
-		// Then render transparent 
-		render (instance->Lod0, drv, instance, instance->PolygonCountLod0, instance->BlendFactor, _StaticLod, false);
+		// Then render transparent. Don't disable ZWrite for Lod0
+		render (instance->Lod0, drv, instance, instance->PolygonCountLod0, instance->BlendFactor, _StaticLod, false, false);
 	}
 
 	// *** Remove unused coarse meshes
@@ -448,7 +450,7 @@ CMeshMultiLod::CMeshSlot::~CMeshSlot ()
 
 // ***************************************************************************
 
-void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool staticLod, bool passOpaque)
+void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool staticLod, bool passOpaque, bool gaDisableZWrite)
 {
 	// Ref
 	CMeshSlot &slotRef=_MeshVector[slot];
@@ -520,8 +522,9 @@ void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *tran
 		// Here
 		if (slotRef.MeshGeom)
 		{
-			/// Render the geom mesh
-			slotRef.MeshGeom->render (drv, trans, passOpaque, numPoylgons, alpha);
+			// Render the geom mesh
+			// Disable ZWrite only if in transition and for rendering Lod1
+			slotRef.MeshGeom->render (drv, trans, passOpaque, numPoylgons, alpha, gaDisableZWrite);
 		}
 	}
 }

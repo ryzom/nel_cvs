@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.33 2002/04/03 13:22:49 lecroart Exp $
+ * $Id: mesh_mrm.cpp,v 1.34 2002/04/25 15:25:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -821,7 +821,7 @@ bool	CMeshMRMGeom::clip(const std::vector<CPlane>	&pyramid, const CMatrix &world
 
 
 // ***************************************************************************
-void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha)
+void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha, bool gaDisableZWrite)
 {
 	nlassert(drv);
 	if(_Lods.size()==0)
@@ -1081,18 +1081,39 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 				// Backup opacity
 				uint8 opacity=material.getOpacity ();
 
+				// New opacity
+				material.setOpacity (globalAlphaInt);
+
+				// Disable ZWrite??
+				bool zwrite;
+				if(gaDisableZWrite)
+				{
+					// Backup and set new the zwrite
+					zwrite=material.getZWrite ();
+					material.setZWrite (false);
+				}
+
 				// Backup blend
 				bool blend=material.getBlend ();
 				material.setBlend (true);
 
-				// New opacity
-				material.setOpacity (globalAlphaInt);
+				// if material is opaque, must ensure Std Blend.
+				CMaterial::TBlend	srcBlend, dstBlend;
+				if(!blend)
+				{
+					srcBlend= material.getSrcBlend();
+					dstBlend= material.getDstBlend();
+					material.setSrcBlend(CMaterial::srcalpha);
+					material.setDstBlend(CMaterial::invsrcalpha);
+				}
 
-				// Backup the zwrite
-				bool zwrite=material.getZWrite ();
-
-				// New zwrite
-				material.setZWrite (false);
+				// if material is Alpha Test, must modulate AlphaTest limit to avoid Pop effects
+				float	bkupAlphaTestThreshold;
+				if(material.getAlphaTest())
+				{
+					bkupAlphaTestThreshold= material.getAlphaTestThreshold();
+					material.setAlphaTestThreshold(bkupAlphaTestThreshold * globalAlpha);
+				}
 
 				// If use meshVertexProgram, and use VPLightSetup
 				if (useMeshVP)
@@ -1114,10 +1135,26 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 				material.setOpacity (opacity);
 
 				// Resetup backuped zwrite
-				material.setZWrite (zwrite);
+				if(gaDisableZWrite)
+				{
+					material.setZWrite (zwrite);
+				}
 
 				// Resetup backuped blend
 				material.setBlend (blend);
+
+				// Resetup backuped blend factors
+				if(!blend)
+				{
+					material.setSrcBlend(srcBlend);
+					material.setDstBlend(dstBlend);
+				}
+
+				// Resetup backuped AlphaTest threshold
+				if(material.getAlphaTest())
+				{
+					material.setAlphaTestThreshold(bkupAlphaTestThreshold);
+				}
 			}
 		}
 	}
@@ -2068,7 +2105,7 @@ bool	CMeshMRM::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatr
 // ***************************************************************************
 void	CMeshMRM::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
-	_MeshMRMGeom.render(drv, trans, passOpaque, trans->getNumTrianglesAfterLoadBalancing());
+	_MeshMRMGeom.render(drv, trans, passOpaque, trans->getNumTrianglesAfterLoadBalancing(), 1, false);
 }
 
 

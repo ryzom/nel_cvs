@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.14 2002/03/29 17:05:50 berenguier Exp $
+ * $Id: mesh_multi_lod.h,v 1.15 2002/04/25 15:25:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -239,7 +239,7 @@ private:
 	void	clear ();
 
 	/// Render a slot
-	void	render (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool staticLod, bool passOpaque);
+	void	render (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool staticLod, bool passOpaque, bool gaDisableZWrite);
 
 	/// copileDistMax when builded/loaded.
 	void	compileDistMax();

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.7 2002/03/29 14:19:55 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.8 2002/04/25 15:25:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,112 +91,116 @@ void		CMeshMultiLodBalancingObs::traverse(IObs *caller)
 	// Call previous
 	CTransformShapeLoadBalancingObs::traverse (caller);
 
-	// Get a pointer on the model
-	CMeshMultiLodInstance *model=safe_cast<CMeshMultiLodInstance*> (Model);
-
-	// Get a pointer on the shape
-	CMeshMultiLod *shape=safe_cast<CMeshMultiLod*> ((IShape*)model->Shape);
-
-	// Reset render pass
-	model->setTransparency(false);
-	model->setOpacity(false);
-
-	// Get the wanted number of polygons
-	float polygonCount=model->getNumTrianglesAfterLoadBalancing ();
-
-	// Look for the good slot
-	uint meshCount=shape->_MeshVector.size();
-	model->Lod0=0;
-	if (meshCount>1)
+	// If this is the second pass of LoadBalancing, choose the Lods, according to getNumTrianglesAfterLoadBalancing()
+	CLoadBalancingTrav		*loadTrav= (CLoadBalancingTrav*)Trav;
+	if(loadTrav->getLoadPass()==1)
 	{
-		// Look for good i
-		while ( polygonCount < shape->_MeshVector[model->Lod0].EndPolygonCount )
+		// Get a pointer on the model
+		CMeshMultiLodInstance *model=safe_cast<CMeshMultiLodInstance*> (Model);
+
+		// Get a pointer on the shape
+		CMeshMultiLod *shape=safe_cast<CMeshMultiLod*> ((IShape*)model->Shape);
+
+		// Reset render pass
+		model->setTransparency(false);
+		model->setOpacity(false);
+
+		// Get the wanted number of polygons
+		float polygonCount=model->getNumTrianglesAfterLoadBalancing ();
+
+		// Look for the good slot
+		uint meshCount=shape->_MeshVector.size();
+		model->Lod0=0;
+		if (meshCount>1)
 		{
-			model->Lod0++;
-			if (model->Lod0==meshCount-1)
-				break;
-		}
-	}
-	
-	// The slot
-	CMeshMultiLod::CMeshSlot	&slot=shape->_MeshVector[model->Lod0];
-
-	// Get the distance with polygon count
-	float distance=(polygonCount-slot.B)/slot.A;
-
-	// Get the final polygon count
-	model->PolygonCountLod0;
-	if (slot.MeshGeom)
-		model->PolygonCountLod0=slot.MeshGeom->getNumTriangles (distance);
-
-	// Second slot in use ?
-	model->Lod1=0xffffffff;
-
-	// The next slot
-	CMeshMultiLod::CMeshSlot	*nextSlot=NULL;
-
-	// Next slot exist ?
-	if (model->Lod0!=meshCount-1)
-	{
-		nextSlot=&(shape->_MeshVector[model->Lod0+1]);
-	}
-
-	// Max dist before blend
-	float startBlend;
-	if (nextSlot)
-		startBlend=slot.DistMax-nextSlot->BlendLength;
-	else
-		startBlend=slot.DistMax-slot.BlendLength;
-
-	// In blend zone ?
-	if ( startBlend < distance )
-	{
-		// Alpha factor for main Lod
-		model->BlendFactor = (slot.DistMax-distance)/(slot.DistMax-startBlend);
-		if (model->BlendFactor<0)
-			model->BlendFactor=0;
-		nlassert (model->BlendFactor<=1);
-
-		// Render this mesh
-		if (slot.MeshGeom)
-		{
-			if (slot.Flags&CMeshMultiLod::CMeshSlot::BlendOut)
+			// Look for good i
+			while ( polygonCount < shape->_MeshVector[model->Lod0].EndPolygonCount )
 			{
-				// Render the geom mesh with alpha blending with goodPolyCount
-				model->setTransparency(true);
-				model->Flags|=CMeshMultiLodInstance::Lod0Blend;
+				model->Lod0++;
+				if (model->Lod0==meshCount-1)
+					break;
+			}
+		}
+		
+		// The slot
+		CMeshMultiLod::CMeshSlot	&slot=shape->_MeshVector[model->Lod0];
+
+		// Get the distance with polygon count
+		float distance=(polygonCount-slot.B)/slot.A;
+
+		// Get the final polygon count
+		if (slot.MeshGeom)
+			model->PolygonCountLod0=slot.MeshGeom->getNumTriangles (distance);
+
+		// Second slot in use ?
+		model->Lod1=0xffffffff;
+
+		// The next slot
+		CMeshMultiLod::CMeshSlot	*nextSlot=NULL;
+
+		// Next slot exist ?
+		if (model->Lod0!=meshCount-1)
+		{
+			nextSlot=&(shape->_MeshVector[model->Lod0+1]);
+		}
+
+		// Max dist before blend
+		float startBlend;
+		if (nextSlot)
+			startBlend=slot.DistMax-nextSlot->BlendLength;
+		else
+			startBlend=slot.DistMax-slot.BlendLength;
+
+		// In blend zone ?
+		if ( startBlend < distance )
+		{
+			// Alpha factor for main Lod
+			model->BlendFactor = (slot.DistMax-distance)/(slot.DistMax-startBlend);
+			if (model->BlendFactor<0)
+				model->BlendFactor=0;
+			nlassert (model->BlendFactor<=1);
+
+			// Render this mesh
+			if (slot.MeshGeom)
+			{
+				if (slot.Flags&CMeshMultiLod::CMeshSlot::BlendOut)
+				{
+					// Render the geom mesh with alpha blending with goodPolyCount
+					model->setTransparency(true);
+					model->Flags|=CMeshMultiLodInstance::Lod0Blend;
+				}
+				else
+				{
+					// Render the geom mesh without alpha blending with goodPolyCount
+					model->setTransparency (slot.isTransparent());
+					model->setOpacity (slot.isOpaque());
+					model->Flags&=~CMeshMultiLodInstance::Lod0Blend;
+				}
 			}
 			else
+				model->Lod0=0xffffffff;
+
+			// Next mesh, BlendIn actived ?
+			if (nextSlot && shape->_MeshVector[model->Lod0+1].MeshGeom && (nextSlot->Flags&CMeshMultiLod::CMeshSlot::BlendIn))
 			{
-				// Render the geom mesh without alpha blending with goodPolyCount
+				// Render the geom mesh with alpha blending with nextSlot->BeginPolygonCount
+				model->PolygonCountLod1=nextSlot->MeshGeom->getNumTriangles (distance);
+				model->Lod1=model->Lod0+1;
+				model->setTransparency(true);
+			}
+		}
+		else
+		{
+			if (slot.MeshGeom)
+			{
+				// Render without blend with goodPolyCount
 				model->setTransparency (slot.isTransparent());
 				model->setOpacity (slot.isOpaque());
 				model->Flags&=~CMeshMultiLodInstance::Lod0Blend;
 			}
+			else
+				model->Lod0=0xffffffff;
 		}
-		else
-			model->Lod0=0xffffffff;
-
-		// Next mesh, BlendIn actived ?
-		if (nextSlot && shape->_MeshVector[model->Lod0+1].MeshGeom && (nextSlot->Flags&CMeshMultiLod::CMeshSlot::BlendIn))
-		{
-			// Render the geom mesh with alpha blending with nextSlot->BeginPolygonCount
-			model->PolygonCountLod1=nextSlot->MeshGeom->getNumTriangles (distance);
-			model->Lod1=model->Lod0+1;
-			model->setTransparency(true);
-		}
-	}
-	else
-	{
-		if (slot.MeshGeom)
-		{
-			// Render without blend with goodPolyCount
-			model->setTransparency (slot.isTransparent());
-			model->setOpacity (slot.isOpaque());
-			model->Flags&=~CMeshMultiLodInstance::Lod0Blend;
-		}
-		else
-			model->Lod0=0xffffffff;
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.cpp
  * <File description>
  *
- * $Id: nel_patch_mesh.cpp,v 1.6 2001/11/14 15:17:21 corvazier Exp $
+ * $Id: nel_patch_mesh.cpp,v 1.7 2002/04/03 07:57:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3033,8 +3033,9 @@ void RPatchMesh::TurnPatch(PatchMesh *patch)
 			UI_PATCH				old=getUIPatch (p);
 
 			// Turn tile array
-			for (int v=0; v<nOldV; v++)
-			for (int u=0; u<nOldU; u++)
+			int u, v;
+			for (v=0; v<nOldV; v++)
+			for (u=0; u<nOldU; u++)
 			{
 				int newU=nOldV-v-1;
 				int newV=u;
@@ -3042,6 +3043,21 @@ void RPatchMesh::TurnPatch(PatchMesh *patch)
 
 				// Rotate each layer
 				getUIPatch (p).getTileDesc (newU+newV*nOldV).rotate (3);
+			}
+
+			// Turn vertex color
+
+			// Tessel U and V
+			nOldU++;
+			nOldV++;
+			
+			// Turn tile array
+			for (v=0; v<nOldV; v++)
+			for (u=0; u<nOldU; u++)
+			{
+				int newU=nOldV-v-1;
+				int newV=u;
+				getUIPatch (p).setColor (newU+newV*nOldV, old.getColor (u+v*nOldU));
 			}
 		}
 	}

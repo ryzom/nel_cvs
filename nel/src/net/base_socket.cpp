@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.30 2001/01/02 14:39:21 cado Exp $
+ * $Id: base_socket.cpp,v 1.31 2001/01/04 17:08:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -252,6 +252,8 @@ void CBaseSocket::connect( const CInetAddress& addr ) throw (ESocketConnectionFa
  */
 bool CBaseSocket::dataAvailable() throw (ESocket)
 {
+	if ( !_Connected )
+		return false;
 	fd_set fdset;
 	FD_ZERO( &fdset );
 	FD_SET( _Sock, &fdset );

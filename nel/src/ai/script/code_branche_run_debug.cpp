@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.12 2001/02/13 10:43:30 chafik Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.13 2001/02/14 17:00:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,9 @@
 #include "nel/ai/script/varstack.h"
 
 #ifdef NL_DEBUG
+#ifdef NL_OS_WINDOWS
 #include "windows.h"
+#endif
 #endif
 
 namespace NLAISCRIPT
@@ -167,9 +169,9 @@ namespace NLAISCRIPT
 		{
 			char chaine[1024*8];
 			op.getDebugResult(chaine,p);
+#ifdef NL_OS_WINDOWS
 			OutputDebugString(chaine);
-			//TRACE("Operation %s\n",chaine);
-			//InputOutput->Echo("Operation %s\n",chaine);
+#endif
 		}
 #endif
 		if (_LineInSourceCodeArray[_Ip-1] != 0)

@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.9 2001/02/13 10:43:30 chafik Exp $
+ * $Id: codage.cpp,v 1.10 2001/02/14 17:00:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,10 @@
  */
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/script/constraint.h"
-#ifdef NL_DEBUG
+#ifdef NL_DEBUG 
+#ifdef NL_OS_WINDOWS
 #include "windows.h"
+#endif
 #endif
 
 namespace NLAISCRIPT
@@ -145,7 +147,9 @@ namespace NLAISCRIPT
 			char chaine[1024*8];
 			op.getDebugResult(chaine,p);
 			strcat(chaine,"\n");
+#ifdef NL_OS_WINDOWS
 			OutputDebugString(chaine);
+#endif
 		}
 #endif
 

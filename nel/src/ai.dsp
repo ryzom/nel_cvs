@@ -96,7 +96,7 @@ SOURCE=.\ai\agent\actor_script.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ai\agent\agent_mailer.cpp
+SOURCE=.\ai\agent\agent_local_mailer.cpp
 # End Source File
 # Begin Source File
 
@@ -113,6 +113,10 @@ SOURCE=.\ai\agent\agent_operator.cpp
 # Begin Source File
 
 SOURCE=.\ai\agent\agent_script.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\agent\agent_server_mailer.cpp
 # End Source File
 # Begin Source File
 
@@ -196,7 +200,7 @@ SOURCE=..\include\nel\ai\agent\agent_digital.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\ai\agent\agent_mailer.h
+SOURCE=..\include\nel\ai\agent\agent_local_mailer.h
 # End Source File
 # Begin Source File
 
@@ -217,6 +221,10 @@ SOURCE=..\include\nel\ai\agent\agent_object.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\agent\agent_operator.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\agent_proxy_mailer.h
 # End Source File
 # Begin Source File
 
@@ -485,6 +493,10 @@ SOURCE=.\ai\logic\fo_assert.cpp
 # Begin Source File
 
 SOURCE=.\ai\logic\fo_operator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\logic\goal.cpp
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.13 2001/09/05 17:19:20 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.14 2001/09/20 08:53:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1245,6 +1245,18 @@ void CNamingService::init()
 	}
 */
 
+	// if a baseport is available in the config file, get it
+	try
+	{
+		uint16 newBasePort = ConfigFile.getVar ("BasePort").asInt ();
+		nlinfo ("Changing the BasePort number from %hu to %hu", BasePort, newBasePort);
+		BasePort = newBasePort;
+	}
+	catch (EUnknownVar &)
+	{
+	}
+
+
 	// we don't try to associate message from client
 	CNetManager::getNetBase ("NS")->ignoreAllUnknownId (true);
 
@@ -1275,7 +1287,7 @@ bool CNamingService::update ()
 const uint16		CNamingService::ValidTime = 120;
 
 /// Ports begin at 51000 (note: in this implementation there can be no more than 14536 services)
-const uint16		CNamingService::BasePort = 51000;
+uint16				CNamingService::BasePort = 51000;
 
 /// Allocated SIds begin at 128 (except for Agent Service)
 const TServiceId	CNamingService::BaseSId = 128;

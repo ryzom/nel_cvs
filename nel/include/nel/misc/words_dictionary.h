@@ -1,7 +1,7 @@
 /** \file words_dictionary.h
  * Words dictionary>
  *
- * $Id: words_dictionary.h,v 1.2 2004/01/13 18:34:01 cado Exp $
+ * $Id: words_dictionary.h,v 1.3 2004/03/15 16:34:33 cado Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -77,6 +77,9 @@ public:
 	const CVectorSString& getKeys() { return _Keys; }
 	const CVectorSString& getWords() { return _Words; }
 
+	/// Return the list of input file loaded at init
+	const std::vector<std::string>& getFileList() const { return _FileList; }
+
 protected:
 
 	/// Make a result string
@@ -85,10 +88,13 @@ protected:
 private:
 
 	/// Keys (same indices as in _Words)
-	CVectorSString	_Keys;
+	CVectorSString				_Keys;
 
 	/// Words (same indices as in _Keys)
-	CVectorSString	_Words;
+	CVectorSString				_Words;
+
+	/// Input file list
+	std::vector<std::string>	_FileList;
 };
 
 

@@ -53,6 +53,8 @@ BEGIN_MESSAGE_MAP(CWords_dicDlg, CDialog)
 	ON_LBN_DBLCLK(IDC_ResultList, OnDblclkResultList)
 	ON_LBN_SELCHANGE(IDC_ResultList, OnSelchangeResultList)
 	ON_WM_SIZE()
+	ON_BN_CLICKED(IDC_FileList, OnFileList)
+	ON_BN_CLICKED(IDC_ShowAll, OnShowAll)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -153,12 +155,13 @@ void CWords_dicDlg::lookUp( const CString& inputStr )
 	}
 	else
 	{
+		bool showAll = (((CButton*)(GetDlgItem( IDC_ShowAll )))->GetCheck() == 1);
 		bool lvlRemoved = false;
 		m_Results.SetRedraw( false );
 		for ( CVectorSString::const_iterator ivs=resultVec.begin(); ivs!=resultVec.end(); ++ivs )
 		{
 			const CSString& res = (*ivs);
-			if ( res.find( "lvl" ) == string::npos )
+			if ( showAll || (res.find( "lvl" ) == string::npos) )
 			{
 				m_Results.AddString( res.c_str() );
 			}
@@ -201,6 +204,26 @@ void CWords_dicDlg::OnBtnClear()
 	clear();
 }
 
+/*
+ *
+ */
+void CWords_dicDlg::OnShowAll() 
+{
+	OnBtnFind();
+}
+
+/*
+ *
+ */
+void CWords_dicDlg::OnFileList() 
+{
+	clear();
+	const vector<string>& fileList = Dico.getFileList();
+	for ( vector<string>::const_iterator ifl=fileList.begin(); ifl!=fileList.end(); ++ifl )
+	{
+		m_Results.AddString( (*ifl).c_str() );
+	}
+}
 
 /*
  *
@@ -208,7 +231,6 @@ void CWords_dicDlg::OnBtnClear()
 void CWords_dicDlg::OnDblclkResultList() 
 {
 }
-
 
 /*
  *

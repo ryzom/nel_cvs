@@ -1,6 +1,6 @@
 /** \file diff_tool.h
  *
- * $Id: diff_tool.h,v 1.3 2003/11/12 17:52:58 cado Exp $
+ * $Id: diff_tool.h,v 1.4 2004/03/15 16:34:33 cado Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -197,10 +197,15 @@ namespace STRING_MANAGER
 
 			for (TWorksheet::TRow::iterator it=Data[0].begin(); it!=Data[0].end(); ++it)
 			{
-				if ((*it).toString().find( "ID" ) != std::string::npos)
+				std::string columnTitle = (*it).toString();
+				if ( ! columnTitle.empty() )
 				{
-					colIndex = it - Data[0].begin();
-					return true;
+					// Return the first column for which the title does not begin with '*'
+					if ( columnTitle[0] != '*' )
+					{
+						colIndex = (it - Data[0].begin());
+						return true;
+					}
 				}
 			}
 			return false;

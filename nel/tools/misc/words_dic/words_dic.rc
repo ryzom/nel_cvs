@@ -42,6 +42,9 @@ BEGIN
     PUSHBUTTON      "Clear",IDC_BUTTON2,160,15,25,14
     CONTROL         "",IDC_Status,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,5,
                     240,395,8
+    PUSHBUTTON      "File List",IDC_FileList,370,15,30,14
+    CONTROL         "Show old-style ""lvl"" sheets",IDC_ShowAll,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,189,17,126,10
 END
 
 

@@ -1,7 +1,7 @@
 /** \file ps_size.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.2 2001/07/04 12:32:18 vizerie Exp $
+ * $Id: ps_float.h,v 1.3 2001/07/12 15:47:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/ps_attrib_maker_template.h"
+#include "3d/ps_attrib_maker_bin_op.h"
 #include "nel/3d/animation_time.h"
 #include <algorithm>
 
@@ -85,6 +86,14 @@ public:
 	NLMISC_DECLARE_CLASS(CPSFloatMemory) ;
 } ;
 
+/** An attribute maker whose output if the result of a binary op on floats
+  *
+  */
+class CPSFloatBinOp : public CPSAttribMakerBinOp<float>
+{
+public:
+	NLMISC_DECLARE_CLASS(CPSFloatBinOp) ;
+} ;
 
 
 } // NL3D

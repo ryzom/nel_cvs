@@ -1,7 +1,7 @@
 /** \file ps_int.h
  * <File description>
  *
- * $Id: ps_int.h,v 1.2 2001/07/04 12:30:59 vizerie Exp $
+ * $Id: ps_int.h,v 1.3 2001/07/12 15:45:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/ps_attrib_maker_template.h"
+#include "3d/ps_attrib_maker_bin_op.h"
 
 
 namespace NL3D {
@@ -131,6 +132,29 @@ public:
 	CPSUIntMemory() { setDefaultValue(0) ; }
 	NLMISC_DECLARE_CLASS(CPSUIntMemory) ;
 } ;
+
+
+/** An attribute maker whose output if the result of a binary op on uint32
+  *
+  */
+class CPSIntBinOp : public CPSAttribMakerBinOp<sint32>
+{
+public:
+	NLMISC_DECLARE_CLASS(CPSIntBinOp) ;
+} ;
+
+
+/** An attribute maker whose output if the result of a binary op on uint32
+  *
+  */
+class CPSUIntBinOp : public CPSAttribMakerBinOp<uint32>
+{
+public:
+	NLMISC_DECLARE_CLASS(CPSUIntBinOp) ;
+} ;
+
+
+
 
 
 

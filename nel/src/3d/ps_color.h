@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * <File description>
  *
- * $Id: ps_color.h,v 1.2 2001/07/04 12:33:54 vizerie Exp $
+ * $Id: ps_color.h,v 1.3 2001/07/12 15:50:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/ps_attrib_maker_template.h"
+#include "3d/ps_attrib_maker_bin_op.h"
 #include "nel/misc/rgba.h"
 #include "nel/3d/animation_time.h"
 
@@ -38,7 +39,7 @@
 
 namespace NL3D {
 
-using NLMISC::CRGBA ;
+
 
 /**
  * Here, we got color maker
@@ -51,11 +52,11 @@ using NLMISC::CRGBA ;
 /// these are some attribute makers for int
 
 /// This is a int blender class. It just blend between 2 values. The blending is exact, ands thus slow...
-class CPSColorBlenderExact : public CPSValueBlender<CRGBA>
+class CPSColorBlenderExact : public CPSValueBlender<NLMISC::CRGBA>
 {
 public:
 	NLMISC_DECLARE_CLASS(CPSColorBlenderExact) ;
-	CPSColorBlenderExact(CRGBA startColor = CRGBA::White , CRGBA endColor = CRGBA::Black, float nbCycles = 1.0f) : CPSValueBlender<CRGBA>(nbCycles)
+	CPSColorBlenderExact(NLMISC::CRGBA startColor = NLMISC::CRGBA::White , NLMISC::CRGBA endColor = NLMISC::CRGBA::Black, float nbCycles = 1.0f) : CPSValueBlender<NLMISC::CRGBA>(nbCycles)
 	{
 		_F.setValues(startColor, endColor) ;
 	}
@@ -67,11 +68,11 @@ public:
 
 
 // an int blender class that perform 64 color sample between colors, it is faster
-class CPSColorBlender : public CPSValueBlenderSample<CRGBA, 64>
+class CPSColorBlender : public CPSValueBlenderSample<NLMISC::CRGBA, 64>
 {
 public:
 	NLMISC_DECLARE_CLASS(CPSColorBlender) ;
-	CPSColorBlender(CRGBA startColor = CRGBA::White , CRGBA endColor = CRGBA::Black, float nbCycles = 1.0f) : CPSValueBlenderSample<CRGBA, 64>(nbCycles)
+	CPSColorBlender(NLMISC::CRGBA startColor = NLMISC::CRGBA::White , NLMISC::CRGBA endColor = NLMISC::CRGBA::Black, float nbCycles = 1.0f) : CPSValueBlenderSample<NLMISC::CRGBA, 64>(nbCycles)
 	{
 		_F.setValues(startColor, endColor) ;
 	}
@@ -83,7 +84,7 @@ public:
 
 
 /// This is a color gradient class
-class CPSColorGradient : public CPSValueGradient<CRGBA>
+class CPSColorGradient : public CPSValueGradient<NLMISC::CRGBA>
 {
 public:
 	NLMISC_DECLARE_CLASS(CPSColorGradient) ;
@@ -94,11 +95,11 @@ public:
 	 * \param nbCycles : The nb of time the pattern is repeated during particle life. see ps_attrib_maker.h
 	 */
 
-	CPSColorGradient(const CRGBA *colorTab = CPSColorGradient::_DefaultGradient
+	CPSColorGradient(const NLMISC::CRGBA *colorTab = CPSColorGradient::_DefaultGradient
 						, uint32 nbValues = 2, uint32 nbStages = 64, float nbCycles = 1.0f) ;
 
 
-	static CRGBA _DefaultGradient[] ;
+	static NLMISC::CRGBA _DefaultGradient[] ;
 	
 	// F is serialized by base classes...	
 
@@ -109,17 +110,24 @@ public:
   * own value memorized
   *  You MUST called setScheme (from CPSAttribMakerMemory) to tell how the value will be generted
   */
-class CPSColorMemory : public CPSAttribMakerMemory<CRGBA>
+class CPSColorMemory : public CPSAttribMakerMemory<NLMISC::CRGBA>
 {
 public:
-	CPSColorMemory() { setDefaultValue(CRGBA::White) ; }
+	CPSColorMemory() { setDefaultValue(NLMISC::CRGBA::White) ; }
 	NLMISC_DECLARE_CLASS(CPSColorMemory) ;
 } ;
 
 
+/** An attribute maker whose output if the result of a binary op on colors
+  *
+  */
+class CPSColorBinOp : public CPSAttribMakerBinOp<NLMISC::CRGBA>
+{
+	public:
+		NLMISC_DECLARE_CLASS(CPSColorBinOp) ;
+} ;
+
 } // NL3D
-
-
 #endif // NL_PS_COLOR_H
 
 /* End of ps_color.h */

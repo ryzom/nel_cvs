@@ -1,7 +1,7 @@
 /** \file interpret_methodes.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: interpret_methodes.h,v 1.6 2001/01/24 09:08:36 portier Exp $
+ * $Id: interpret_methodes.h,v 1.7 2001/04/04 10:06:41 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,8 @@ namespace NLAISCRIPT
 		typedef std::vector<IOpType *> tParam;
 	private:
 		///Vector that is contain a IOpType argument type.
-		tParam			_Param;
+		tParam						_Param;
+		NLAIAGENT::IBaseGroupType	*_ParamInfo;
 
 	public:
 		static const NLAIC::CIdentType IdParam;		
@@ -111,6 +112,13 @@ exemple:
 		void save(NLMISC::IStream &);		
 		virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
 		//@}
+
+		const NLAIAGENT::IBaseGroupType	*getInfo() const
+		{
+			return _ParamInfo;
+		}
+
+		void setInfo(NLAIAGENT::IBaseGroupType	*);
 
 		void getString(char *txt) const;		
 	};

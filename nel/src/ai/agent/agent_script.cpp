@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.47 2001/04/03 15:09:08 portier Exp $
+ * $Id: agent_script.cpp,v 1.48 2001/04/04 10:06:37 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@
 
 namespace NLAIAGENT
 {	
-	static CGroupType listBidon;
+	//static CGroupType listBidon;
 
 	static NLAISCRIPT::COperandSimpleListOr *msgType;
 	static NLAISCRIPT::COperandSimpleListOr *msgPerf;
@@ -847,8 +847,8 @@ namespace NLAIAGENT
 
 		if (context.ContextDebug.Active)
 		{
-			context.ContextDebug.Param.push_back(&listBidon);					
-			listBidon.incRef();
+			/*context.ContextDebug.Param.push_back(&listBidon);					
+			listBidon.incRef();*/
 			methodContex = new NLAISCRIPT::CMethodContextDebug();
 		}				
 		else
@@ -1225,11 +1225,11 @@ namespace NLAIAGENT
 		int i = index - getBaseMethodCount();
 		if(i < 0)
 		{			
-			if (context.ContextDebug.Active)
+			/*if (context.ContextDebug.Active)
 			{
 				context.ContextDebug.Param.push_back(&listBidon);
 				listBidon.incRef();
-			}
+			}*/
 		
 			IObjectIA::CProcessResult r = runMethodBase(index,(IObjectIA *)context.Param.back());
 			if(r.Result != NULL)
@@ -1279,11 +1279,11 @@ namespace NLAIAGENT
 		int i = index - getBaseMethodCount();
 		if(i < 0)
 		{
-			if (context.ContextDebug.Active)
+			/*if (context.ContextDebug.Active)
 			{
 				context.ContextDebug.Param.push_back(&listBidon);
 				listBidon.incRef();
-			}
+			}*/
 
 			IObjectIA::CProcessResult r = runMethodBase(index,(IObjectIA *)context.Param.back());
 			if(r.Result != NULL)

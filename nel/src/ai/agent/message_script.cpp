@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.12 2001/01/31 17:01:04 chafik Exp $
+ * $Id: message_script.cpp,v 1.13 2001/04/04 10:06:37 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,11 +124,11 @@ namespace NLAIAGENT
 		sint32 i = index - getBaseMethodCount();
 		if(i < 0)
 		{
-			if (context.ContextDebug.Active)
+			/*if (context.ContextDebug.Active)
 			{
 				context.ContextDebug.Param.push_back(&listBidon);
 				listBidon.incRef();
-			}
+			}*/
 
 			IObjectIA::CProcessResult r = IMessageBase::runMethodeMember(index,(IObjectIA *)context.Param.back());
 			if(r.Result != NULL)
@@ -195,11 +195,11 @@ namespace NLAIAGENT
 		sint32 i = index - getBaseMethodCount();
 		if(i < 0)
 		{
-			if (context.ContextDebug.Active)
+			/*if (context.ContextDebug.Active)
 			{
 				context.ContextDebug.Param.push_back(&listBidon);
 				listBidon.incRef();
-			}
+			}*/
 
 			IObjectIA::CProcessResult r = IMessageBase::runMethodeMember(index,(IObjectIA *)context.Param.back());
 			if(r.Result != NULL)

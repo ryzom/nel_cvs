@@ -36,9 +36,9 @@
 				if (mysql_num_rows ($result) == 1)
 				{
 					$reason = "Login '".$login."' was created because it was not found in database (error code 50)";
-					$row = mysql_fetch_row ($result);
-					$id = $row[0];
-					$priv = $row[5];
+					$row = mysql_fetch_array ($result);
+					$id = $row["UId"];
+					$priv = $row["Privilege"];
 					$extended = $row["ExtendedPrivilege"];
 
 					// add the default permission
@@ -61,13 +61,13 @@
 		}
 		else
 		{
-			$row = mysql_fetch_row ($result);
-			$salt = substr($row[2],0,2);
-			if (($cp && $row[2] == $password) || (!$cp && $row[2] == crypt($password, $salt)))
+			$row = mysql_fetch_array ($result);
+			$salt = substr($row["Password"],0,2);
+			if (($cp && $row["Password"] == $password) || (!$cp && $row["Password"] == crypt($password, $salt)))
 			{
 				// check if the user can use this application
 
-				$query = "SELECT * FROM permission WHERE UId='$row[0]' AND ClientApplication='$clientApplication'";
+				$query = "SELECT * FROM permission WHERE UId='".$row["UId"]."' AND ClientApplication='$clientApplication'";
 				$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
 				if (mysql_num_rows ($result) == 0)
 				{
@@ -79,18 +79,18 @@
 				{
 					// check if the user not already online
 
-					if ($row[4] != "Offline")
+					if ($row["State"] != "Offline")
 					{
 						$reason = "$login is already online and ";
 						// ask the LS to remove the client
-						if (disconnectClient ($row[3], $row[0], $tempres))
+						if (disconnectClient ($row["ShardId"], $row["UId"], $tempres))
 						{
 							$reason =  $reason."was just disconnected. Now you can retry the identification (error code 54)";
 
-							$query = "update shard set NbPlayers=NbPlayers-1 where ShardId=$row[3]";
+							$query = "update shard set NbPlayers=NbPlayers-1 where ShardId=".$row["ShardId"];
 							$result = mysql_query ($query) or die ("Can't execute the query: '$query' errno:".mysql_errno().": ".mysql_error());
 
-							$query = "update user set ShardId=-1, State='Offline' where UId=$row[0]";
+							$query = "update user set ShardId=-1, State='Offline' where UId=".$row["UId"];
 							$result = mysql_query ($query) or die ("Can't execute the query: '$query' errno:".mysql_errno().": ".mysql_error());
 						}
 						else
@@ -101,10 +101,19 @@
 					}
 					else
 					{
-						$id = $row[0];
-						$priv = $row[5];
+						$id = $row["UId"];
+						$priv = $row["Privilege"];
 						$extended = $row["ExtendedPrivilege"];
 						$res = true;
+
+if ($fh=fopen("/tmp/toto","w")) {
+  fputs($fh,$id . "*" . $priv . "*". $extended . "*\n");
+ foreach ($row as $v => $w)
+  	fputs($fh, $v.'='.$w."\n");
+  fclose($fh);
+} else {
+  echo "Failed to open port.";
+} 
 					}
 				}
 			}

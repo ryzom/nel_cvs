@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------------------------- 
 
 	// where we can find the mysql database
-	$DBHost		= "server";
+	$DBHost		= "compilo";
 	$DBUserName	= "nel";
 	$DBPassword	= "";
 	$DBName		= "nel";
@@ -19,7 +19,7 @@
 // Variables for service_connection.inc
 // ---------------------------------------------------------------------------------------- 
 
-	$LSHost = "server";
+	$LSHost = "compilo";
 	$LSPort = 49998;
 
 ?>

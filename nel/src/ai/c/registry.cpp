@@ -1,6 +1,6 @@
 /** \file registry.cpp
  *
- * $Id: registry.cpp,v 1.15 2002/10/15 15:03:34 portier Exp $
+ * $Id: registry.cpp,v 1.16 2002/10/21 09:52:59 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,7 +85,7 @@ namespace NLAIC
 		}
 		catch(NLAIE::IException &e)
 		{				
-			throw e;
+			throw NLAIE::CExceptionObjectNotFoundError(e.what());
 		}
 		delete _TableRegistry[i]->FactoryClass;
 		delete _TableRegistry[i];

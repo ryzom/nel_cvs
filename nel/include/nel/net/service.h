@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.59 2002/11/08 13:28:40 lecroart Exp $
+ * $Id: service.h,v 1.60 2003/01/13 14:07:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -110,7 +110,7 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setArgs (lpCmdLine); \
 	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
-    sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir); \
+    sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir, __DATE__" "__TIME__); \
 	delete scn; \
 	return retval; \
 }
@@ -123,7 +123,7 @@ int main(int argc, const char **argv) \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setArgs (argc, argv); \
 	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
-	sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir); \
+	sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir, __DATE__" "__TIME__); \
 	delete scn; \
 	return retval; \
 }
@@ -272,7 +272,7 @@ public:
 	// @{
 
 	/// This main is called by the macro (service5 says if we have to use layer5 or not)
-	sint main (const char *serviceShortName, const char *serviceLongName, uint16 servicePort, const char *configDir, const char *logDir);
+	sint main (const char *serviceShortName, const char *serviceLongName, uint16 servicePort, const char *configDir, const char *logDir, const char *compilationDate);
 
 	/// Sets the command line and init _Args variable. You must call this before calling main()
 	void setArgs (int argc, const char **argv);
@@ -301,6 +301,8 @@ public:
 	std::string							WriteFilesDirectory;
 
 	void								setVersion (const std::string &version) { _Version = version; }
+
+	uint32								getPort() { return _Port; }
 
 private:
 
@@ -376,6 +378,10 @@ private:
 	friend void AESConnection (const std::string &serviceName, uint16 sid, void *arg);
 	friend struct serviceInfoClass;
 	friend struct getWinDisplayerInfoClass;
+	friend class RunningDirectoryClass;
+	friend class LogDirectoryClass;
+	friend class ConfigDirectoryClass;
+	friend class VersionClass;
 };
 
 

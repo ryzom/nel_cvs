@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.32 2002/07/03 09:45:39 berenguier Exp $
+ * $Id: export_material.cpp,v 1.33 2002/07/08 17:23:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -409,6 +409,9 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 		if (bUnlighted)
 		{
 			material.setColor (nelDiffuse);
+
+			// For the lightmap
+			material.setDiffuse (nelDiffuse);
 		}
 		else
 		{

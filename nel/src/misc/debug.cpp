@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.86 2003/12/30 13:49:34 distrib Exp $
+ * $Id: debug.cpp,v 1.87 2004/01/15 17:39:59 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1180,7 +1180,12 @@ NLMISC_COMMAND(writeaccess, "write a uint8 value in an invalid address", "[<adr>
 {
 	uint8 val = 123;
 	uint8 *adr = (uint8*)0;
-	if(args.size() >= 1) adr = (uint8*)atoi(args[0].c_str());
+	if(args.size() >= 1)
+#ifdef HAVE_X86_64
+	  adr = (uint8*)(uint64)atoi(args[0].c_str());
+#else
+	  adr = (uint8*)atoi(args[0].c_str());
+#endif
 	if(args.size() >= 2) val = (uint8)atoi(args[1].c_str());
 	*adr = val;
 	return true;
@@ -1190,7 +1195,12 @@ NLMISC_COMMAND(readaccess, "read a uint8 value in an invalid address", "[<adr>]"
 {
 	uint8 val;
 	uint8 *adr = (uint8*)0;
-	if(args.size() == 1) adr = (uint8*)atoi(args[0].c_str());
+	if(args.size() == 1)
+#ifdef HAVE_X86_64
+	  adr = (uint8*)(uint64)atoi(args[0].c_str());
+#else
+	  adr = (uint8*)atoi(args[0].c_str());
+#endif
 	val = *adr;
 	log.displayNL("value is %hu", (uint16)val);
 	return true;

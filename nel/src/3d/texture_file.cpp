@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.3 2000/12/22 13:24:48 berenguier Exp $
+ * $Id: texture_file.cpp,v 1.4 2001/01/03 18:14:48 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ void CTextureFile::generate()
 	{
 		// Not found...
 		makeDummy();
+		nldebug("Missing textureFile: %s", _FileName.c_str());
 	}
 	
 }

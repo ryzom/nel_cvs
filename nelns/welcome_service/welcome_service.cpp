@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.30 2004/04/09 15:04:25 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.31 2004/04/22 15:28:47 cado Exp $
  *
  */
 
@@ -331,6 +331,12 @@ void cbFESConnection (const std::string &serviceName, uint16 sid, void *arg)
 	FESList.push_back (CFES ((TServiceId)sid));
 	nldebug("new FES connection: sid %u", sid);
 	displayFES ();
+
+	// Reset NbEstimatedUser to NbUser for all front-ends
+	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
+	{
+		(*it).NbEstimatedUser = (*it).NbUser;
+	}
 }
 
 

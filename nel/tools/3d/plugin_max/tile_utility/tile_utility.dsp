@@ -150,7 +150,8 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\nel_patch_edit\checkversion.cpp
+SOURCE=..\nel_export\checkversion.cpp
+# SUBTRACT CPP /YX
 # End Source File
 # Begin Source File
 
@@ -178,7 +179,7 @@ SOURCE=.\tile_utility.rc
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=..\nel_patch_edit\checkversion.h
+SOURCE=..\nel_export\checkversion.h
 # End Source File
 # Begin Source File
 

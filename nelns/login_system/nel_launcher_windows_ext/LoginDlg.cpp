@@ -2,15 +2,17 @@
 //
 
 #include "stdafx.h"
-#include "nel_launcher.h"
-#include "nel_launcherDlg.h"
-#include "LoginDlg.h"
-#include "MsgDlg.h"
-#include "Md5.h"
 
+#include "nel/misc/string_mapper.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/path.h"
+
+#include "nel_launcherDlg.h"
+#include "nel_launcher.h"
+#include "MsgDlg.h"
+#include "LoginDlg.h"
 #include "patch.h"
+#include "Md5.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CLoginDlg dialog

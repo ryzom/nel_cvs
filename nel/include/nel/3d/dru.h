@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.15 2001/01/31 08:53:45 coutelas Exp $
+ * $Id: dru.h,v 1.16 2001/02/07 09:01:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,7 +94,7 @@ public:
 	/// \name 2D render.
 	// @{
 	/// Draw a bitmap 2D. Warning: this is slow...
-	static void			drawBitmap (float x, float y, float width, float height, class ITexture& texture, IDriver& driver, CViewport viewport=CViewport());
+	static void			drawBitmap (float x, float y, float width, float height, class ITexture& texture, IDriver& driver, CViewport viewport=CViewport(), bool blend=true);
 	/// Draw a line in 2D. Warning: this is slow...
 	static void			drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col= CRGBA(255,255,255,255), CViewport viewport=CViewport());
 	/// Draw a Triangle in 2D. Warning: this is slow...

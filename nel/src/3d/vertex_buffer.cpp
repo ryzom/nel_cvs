@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.40 2004/03/23 16:32:27 corvazier Exp $
+ * $Id: vertex_buffer.cpp,v 1.41 2004/03/29 08:29:46 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1028,7 +1028,8 @@ void CVertexBuffer::setLocation (TLocation newLocation)
 
 			// Copy the old buffer data
 			const uint8 *src = DrvInfos->lock (0, 0, true);
-			memcpy (&(_NonResidentVertices[0]), src, std::min (size, (uint)_ResidentSize));
+			if (!_NonResidentVertices.empty())
+				memcpy (&(_NonResidentVertices[0]), src, std::min (size, (uint)_ResidentSize));
 			DrvInfos->unlock(0, 0);
 		}
 

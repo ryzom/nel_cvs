@@ -1,7 +1,7 @@
 /** \file quad_effect.cpp
  * <File description>
  *
- * $Id: quad_effect.cpp,v 1.2 2001/10/26 08:17:32 vizerie Exp $
+ * $Id: quad_effect.cpp,v 1.3 2001/11/07 17:08:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -37,23 +37,23 @@ struct CEdge
 	{
 		if (p1.y < p2.y)
 		{
-			P1 = p1 ;
-			P2 = p2 ;
+			P1 = p1;
+			P2 = p2;
 		}
 		else
 		{
-			P2 = p1 ;
-			P1 = p2 ;
+			P2 = p1;
+			P1 = p2;
 		}
 	}
 
-	NLMISC::CVector2f P1, P2 ;
-} ;
+	NLMISC::CVector2f P1, P2;
+};
 
 // compares 2 edge, and take the highest
-bool operator<(const CEdge &e1, const CEdge &e2) { return e1.P1.y < e2.P1.y ; }
+bool operator<(const CEdge &e1, const CEdge &e2) { return e1.P1.y < e2.P1.y; }
 
-typedef std::deque<CEdge> TEdgeList ;
+typedef std::deque<CEdge> TEdgeList;
 
 
 void CQuadEffect::makeRasters(const TPoint2DVect &poly
@@ -63,71 +63,71 @@ void CQuadEffect::makeRasters(const TPoint2DVect &poly
 {
 
 	dest.clear();
-    const float epsilon = 10E-5f ;
+    const float epsilon = 10E-5f;
 
-	sint size = poly.size() ;
-	uint aelSize = 0 ; // size of active edge list
+	sint size = poly.size();
+	uint aelSize = 0; // size of active edge list
 
-	sint k ; // loop counter
+	sint k; // loop counter
 
 
 
-	dest.clear() ;
+	dest.clear();
 
-	if (!size) return ;
+	if (!size) return;
 
-	static TEdgeList lel, ael ; // the left edge list, and the active edge list
-	float highest = poly[0].y ;
-	lel.clear() ;
-	ael.clear() ;
+	static TEdgeList lel, ael; // the left edge list, and the active edge list
+	float highest = poly[0].y;
+	lel.clear();
+	ael.clear();
 	
-	/// build a segment list, and go through it ;
+	/// build a segment list, and go through it;
 
-	for (k = 0 ; k < size ; ++k)
+	for (k = 0; k < size; ++k)
 	{
 
 		lel.push_front(
 						CEdge(poly[k], poly[k == (size - 1) ? 0 : k + 1])
-			          ) ;
-		if (poly[k].y < highest) { highest = poly[k].y ; }		
+			          );
+		if (poly[k].y < highest) { highest = poly[k].y; }		
 	}
 
 	/// sort the segs
-	std::sort(lel.begin(), lel.end()) ;
+	std::sort(lel.begin(), lel.end());
 
-	bool  borderFound ;
-	float left, right, inter, diff ;
-	float currY = highest ;
+	bool  borderFound;
+	float left, right, inter, diff;
+	float currY = highest;
 	startY = highest;
 	
-	TEdgeList::iterator elIt ; 
+	TEdgeList::iterator elIt; 
 
 	do
 	{		
-		/// fetch new poly into the ael
+		/// fetch new segment into the ael
 		while (size 
 			   && lel.begin()->P1.y < (currY +  quadHeight)
 			  )
 		{
-			ael.push_front(lel.front()) ;
-			lel.pop_front() ;
-			--size ;
-			++ aelSize ;
+			ael.push_front(lel.front());
+			lel.pop_front();
+			--size;
+			++ aelSize;
 		}
 
 		if (aelSize)
 		{
 
-			borderFound = false ;
+			borderFound = false;
 
-			for (elIt = ael.begin() ; elIt != ael.end() ;)
+			for (elIt = ael.begin(); elIt != ael.end();)
 			{
 				if (elIt->P2.y <= currY)
 				{
 					// edge has gone out of active edge list
-					elIt = ael.erase(elIt) ;
+					elIt = ael.erase(elIt);
 					if (! --aelSize) return;
-					continue ;
+					continue;
 				}
 				else
 				{
@@ -141,37 +141,37 @@ void CQuadEffect::makeRasters(const TPoint2DVect &poly
 					{						
 						if (!borderFound)
 						{
-							left = right = elIt->P1.x ;
-							borderFound = true ;
+							left = right = elIt->P1.x;
+							borderFound = true;
 						}
 						else
 						{
-							left = std::min(left, elIt->P1.x) ;
-							right = std::max(right, elIt->P1.x) ;
+							left = std::min(left, elIt->P1.x);
+							right = std::max(right, elIt->P1.x);
 						}
 					}
 					else
 					{
 						// compute intersection
-						diff = elIt->P2.y - elIt->P1.y ;
+						diff = elIt->P2.y - elIt->P1.y;
 						if (diff > epsilon)
 						{
-							inter = elIt->P1.x + (elIt->P2.x - elIt->P1.x) * (currY - elIt->P1.y) / diff ;
+							inter = elIt->P1.x + (elIt->P2.x - elIt->P1.x) * (currY - elIt->P1.y) / diff;
 						}
 						else
 						{
-							inter = elIt->P2.x ;
+							inter = elIt->P2.x;
 						}
 
 						if (!borderFound)
 						{
-							left = right = inter ;
-							borderFound = true ;
+							left = right = inter;
+							borderFound = true;
 						}
 						else
 						{
-							left = std::min(left, inter) ;
-							right = std::max(right, inter) ;
+							left = std::min(left, inter);
+							right = std::max(right, inter);
 						}
 					}
 
@@ -181,53 +181,53 @@ void CQuadEffect::makeRasters(const TPoint2DVect &poly
 					{						
 						if (!borderFound)
 						{
-							left = right = elIt->P2.x ;
-							borderFound = true ;
+							left = right = elIt->P2.x;
+							borderFound = true;
 						}
 						else
 						{
-							left = std::min(left, elIt->P2.x) ;
-							right = std::max(right, elIt->P2.x) ;
+							left = std::min(left, elIt->P2.x);
+							right = std::max(right, elIt->P2.x);
 						}
 					}
 					else
 					{
 						// compute intersection
-						diff = elIt->P2.y - elIt->P1.y ;
+						diff = elIt->P2.y - elIt->P1.y;
 						if (diff > epsilon)
 						{
-							inter = elIt->P1.x + (elIt->P2.x - elIt->P1.x) * (currY + quadHeight - elIt->P1.y) / diff ;
+							inter = elIt->P1.x + (elIt->P2.x - elIt->P1.x) * (currY + quadHeight - elIt->P1.y) / diff;
 						}
 						else
 						{
-							inter = elIt->P2.x ;
+							inter = elIt->P2.x;
 						}
 
 						if (!borderFound)
 						{
-							left = right = inter ;
-							borderFound = true ;
+							left = right = inter;
+							borderFound = true;
 						}
 						else
 						{
-							left = std::min(left, inter) ;
-							right = std::max(right, inter) ;
+							left = std::min(left, inter);
+							right = std::max(right, inter);
 						}
 					}
 					
 				}
-				++ elIt ;				
+				++ elIt;				
 			}		
 
 			dest.push_back(std::make_pair(left, right));
 		}
 
-		currY += quadHeight ;
+		currY += quadHeight;
 
-	} while (size || aelSize) ;	
+	} while (size || aelSize);	
 }
 
-
+//**
 
 void CQuadEffect::processPoly(const TPoint2DVect &poly
 							, float quadWidth, float quadHeight
@@ -242,12 +242,12 @@ void CQuadEffect::processPoly(const TPoint2DVect &poly
 		TRasters::const_iterator it, endIt = rDest.end();
 		for (it = rDest.begin(); it != endIt; ++it)
 		{
-			const sint nbQuad = (sint) ceilf( (it->second - it->first) / quadWidth) ;
+			const sint nbQuad = (sint) ceilf( (it->second - it->first) / quadWidth);
 			float currX = it->first;
-			for (sint k = 0 ; k < nbQuad ; ++k)
+			for (sint k = 0; k < nbQuad; ++k)
 			{
-				dest.push_back(NLMISC::CVector2f(currX, currY)) ;										  
-				currX += quadWidth ;
+				dest.push_back(NLMISC::CVector2f(currX, currY));										  
+				currX += quadWidth;
 			}
 			currY += quadHeight;
 		}

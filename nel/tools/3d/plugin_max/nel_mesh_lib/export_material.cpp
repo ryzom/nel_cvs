@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.27 2002/02/05 11:18:05 vizerie Exp $
+ * $Id: export_material.cpp,v 1.28 2002/02/07 14:36:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1050,11 +1050,16 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 		//  1°) build a texture that can either be a file texture or a multifile texture
 
 		ITexture  *srcTex;
-		const uint numNelTextureSlots = 4;
+		const uint numNelTextureSlots = 8;
 		static const char *fileNamesTab[] = { "bitmap1FileName",
 											 "bitmap2FileName",
 											 "bitmap3FileName",
-										     "bitmap4FileName" };
+										     "bitmap4FileName",
+											 "bitmap5FileName",
+											 "bitmap6FileName",
+											 "bitmap7FileName",
+											 "bitmap8FileName"		
+											};
 		
 
 		if (isClassIdCompatible(texmap, Class_ID(NEL_BITMAP_TEXTURE_CLASS_ID_A, NEL_BITMAP_TEXTURE_CLASS_ID_B))) // is it a set of textures ?
@@ -1070,18 +1075,23 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 				nlassert (bRes);
 			}
 
+			uint numUsedSlots = 0;
+
+			for (uint l = 0; l < numNelTextureSlots; ++l)
+			{
+				if (!fileName[l].empty()) numUsedSlots = l + 1;
+			}
+
 			// if only the first slot is used we create a CTextureFile...
-			if (fileName[1].empty()
-				&& fileName[2].empty()
-				&& fileName[3].empty())
+			if (l == 1 && !fileName[0].empty())
 			{
 				srcTex = new CTextureFile;
 				static_cast<CTextureFile *>(srcTex)->setFileName (ConvertTexFileName(fileName[0].c_str(), absolutePath));
 			}
 			else
 			{
-				srcTex = new CTextureMultiFile(numNelTextureSlots);
-				for (k = 0; k < numNelTextureSlots; ++k) // copy each texture of the set
+				srcTex = new CTextureMultiFile(numUsedSlots);
+				for (k = 0; k < numUsedSlots; ++k) // copy each texture of the set
 				{				
 					if (!fileName[k].empty())
 					{

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.11 2004/08/19 16:29:36 besson Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.11.4.1 2004/09/14 17:15:45 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -854,8 +854,7 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 	const uint pixelSize = CBitmap::bitPerPixels[tex.getPixelFormat()];
 
 	// The line width of that mipmap level
-	// \todo yoyo: why "pixelSize>>1", shouldn't be "4" whatever pixelSize==4 or 8 bits ????
-	uint lineWidth = max(d3dtext->Width>>destMipmap, d3dtext->SrcCompressed?pixelSize>>1:1);
+	uint lineWidth = max(d3dtext->Width>>destMipmap, uint(d3dtext->SrcCompressed?4:1));
 
 	sint	x0= rect.X;
 	sint	y0= rect.Y;

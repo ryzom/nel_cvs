@@ -1,7 +1,7 @@
 /** \file value_smoother.h
  * <File description>
  *
- * $Id: value_smoother.h,v 1.1 2001/08/24 16:31:18 berenguier Exp $
+ * $Id: value_smoother.h,v 1.2 2001/08/28 16:37:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,11 +50,11 @@ public:
 	/// reset the ValueSmoother, and set the number of frame to smooth.
 	void		init(uint n);
 
-	/// add a new frame to be smoothed.
-	void		addFrame(float dt);
+	/// add a new value to be smoothed.
+	void		addValue(float dt);
 
 	/// get the smoothed value.
-	float		getSmoothFrame();
+	float		getSmoothValue();
 
 private:
 	std::vector<float>		_LastFrames;

@@ -1,7 +1,7 @@
 /** \file value_smoother.cpp
  * <File description>
  *
- * $Id: value_smoother.cpp,v 1.1 2001/08/24 16:31:18 berenguier Exp $
+ * $Id: value_smoother.cpp,v 1.2 2001/08/28 16:37:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,7 +53,7 @@ void		CValueSmoother::init(uint n)
 	_FrameSum= 0;
 }
 
-void		CValueSmoother::addFrame(float dt)
+void		CValueSmoother::addValue(float dt)
 {
 	// update the frame sum. NB: see init(), at start, array is full of 0. so it works even for un-inited values.
 	_FrameSum-= _LastFrames[_CurFrame];
@@ -71,7 +71,7 @@ void		CValueSmoother::addFrame(float dt)
 	_NumFrame= min(_NumFrame, _LastFrames.size());
 }
 
-float		CValueSmoother::getSmoothFrame()
+float		CValueSmoother::getSmoothValue()
 {
 	if(_NumFrame)
 		return _FrameSum / _NumFrame;

@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.2 2001/08/23 10:13:13 berenguier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.3 2001/08/28 16:37:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,9 @@
 using namespace NLMISC;
 
 
+// ***************************************************************************
+#define	NL3D_DEFAULT_LOADBALANCING_VALUE_SMOOTHER	50
+
 namespace NL3D 
 {
 
@@ -47,6 +50,9 @@ CLoadBalancingTrav::CLoadBalancingTrav()
 {
 	_NbFaceWanted= 20000;
 	PolygonBalancingMode= PolygonBalancingOff;
+	_PrecPolygonBalancingMode= PolygonBalancingOff;
+
+	_ValueSmoother.init(NL3D_DEFAULT_LOADBALANCING_VALUE_SMOOTHER);
 }
 
 
@@ -91,6 +97,20 @@ void				CLoadBalancingTrav::traverse()
 		clamp(_FaceRatio, 0, 1);
 		break;
 	};
+
+	// smooth the value.
+	// if change of PolygonBalancingMode, reset the _ValueSmoother.
+	if(PolygonBalancingMode!=_PrecPolygonBalancingMode)
+	{
+		_ValueSmoother.init(NL3D_DEFAULT_LOADBALANCING_VALUE_SMOOTHER);
+		_PrecPolygonBalancingMode= PolygonBalancingMode;
+	}
+	// if not PolygonBalancingOff, smooth the ratio.
+	if(PolygonBalancingMode!=PolygonBalancingOff)
+	{
+		_ValueSmoother.addValue(_FaceRatio);
+		_FaceRatio= _ValueSmoother.getSmoothValue();
+	}
 
 
 	// 2nd pass, compute Faces that will be drawed.

@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.h
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.h,v 1.2 2001/08/23 10:13:13 berenguier Exp $
+ * $Id: load_balancing_trav.h,v 1.3 2001/08/28 16:37:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/matrix.h"
 #include "nel/misc/plane.h"
 #include "3d/trav_scene.h"
+#include "nel/misc/value_smoother.h"
 
 
 namespace NL3D 
@@ -128,6 +129,10 @@ private:
 	// The loadBalancing balance only visible objects.
 	CClipTrav			*_ClipTrav;
 	void				traverseVisibilityList();
+
+	// To smooth the faceRatio
+	NLMISC::CValueSmoother		_ValueSmoother;
+	TPolygonBalancingMode		_PrecPolygonBalancingMode;
 
 };
 

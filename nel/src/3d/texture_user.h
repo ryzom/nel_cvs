@@ -1,7 +1,7 @@
 /** \file texture_user.h
  * <File description>
  *
- * $Id: texture_user.h,v 1.7 2004/05/26 17:55:01 vizerie Exp $
+ * $Id: texture_user.h,v 1.8 2004/06/23 09:13:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/3d/u_texture.h"
 #include "3d/texture.h"
 #include "3d/texture_file.h"
+#include "3d/texture_mem.h"
 
 #define NL3D_MEM_TEXTURE						NL_ALLOC_CONTEXT( 3dTextu )
 
@@ -54,6 +55,10 @@ protected:
 	CSmartPtr<ITexture>		_Texture;
 
 public:
+
+	CTextureUser()
+	{
+	}
 
 	/// \name Object
 	// @{
@@ -212,19 +217,60 @@ public:
 
 // ***************************************************************************
 /**
- * UTextureRaw implementation.
+ * UTextureMem implementation.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
  */
-class	CTextureRawUser : virtual public UTextureRaw, public CTextureUser
+class	CTextureMemUser : virtual public UTextureMem, public CTextureUser
 {
 public:
 
-	/// \todo yoyo: TODO_TEXTURERAW
-	CTextureRawUser() : CTextureUser(NULL)
+	CTextureMemUser(uint w, uint h, CBitmap::TType t)
 	{
+		uint bpp = 0;
+		if (t == CBitmap::RGBA)					bpp = 32;
+		else if (t == CBitmap::Luminance)		bpp = 8;
+		else if (t == CBitmap::Alpha)			bpp = 8;
+		else if (t == CBitmap::AlphaLuminance)	bpp = 16;
+		else if (t == CBitmap::DXTC1)			bpp = 4;
+		else if (t == CBitmap::DXTC1Alpha)		bpp = 4;
+		else if (t == CBitmap::DXTC3)			bpp = 8;
+		else if (t == CBitmap::DXTC5)			bpp = 8;
+		else if (t == CBitmap::DsDt)			bpp = 16;
+
+		uint size = w*h*bpp/8;
+		uint8 *data = new uint8[size];
+
+		CTextureMem *pTxMem = new CTextureMem(data, size, true, false, w, h, t);
+		_Texture = pTxMem;
 	}
+
+	uint8* getPointer() const
+	{ 
+		return ((CTextureMem*)(ITexture*)_Texture)->getPointer();
+	}
+
+	void touch() 
+	{
+		((CTextureMem*)(ITexture*)_Texture)->touch();
+	}
+
+	void touchRect(const NLMISC::CRect& rect)
+	{
+		((CTextureMem*)(ITexture*)_Texture)->touchRect(rect);
+	}
+
+	uint32 getWidth() const
+	{
+		return ((CTextureMem*)(ITexture*)_Texture)->getWidth();
+	}
+
+	uint32 getHeight() const
+	{
+		return ((CTextureMem*)(ITexture*)_Texture)->getHeight();
+	}
+
 };
 
 

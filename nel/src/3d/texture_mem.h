@@ -1,7 +1,7 @@
 /** \file texture_mem.h
  * <File description>
  *
- * $Id: texture_mem.h,v 1.9 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_mem.h,v 1.10 2004/06/23 09:13:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,13 +124,35 @@ public:
 	/** 
 	 * Get the Pointer of the memory file containing the texture.
 	 */	
-	uint8* getPointer() const { return _Data; } 
+	uint8* getPointer() const { return _Data; }
 
 
 	/** 
 	 * Get length of the memory file containing the texture
 	 */	
-	uint32 getLength() const { return _Length; } 
+	uint32 getLength() const { return _Length; }
+
+	/** 
+	 * Get width of the texture
+	 */	
+	uint32 getWidth(uint32 nNumMipmap=0) const 
+	{ 
+		if (_IsFile)
+			return CBitmap::getWidth(nNumMipmap);
+		else
+			return _TexWidth;
+	}
+
+	/** 
+	 * Get height of the texture
+	 */	
+	uint32 getHeight(uint32 nNumMipmap=0) const 
+	{ 
+		if (_IsFile)
+			return CBitmap::getHeight(nNumMipmap);
+		else
+			return _TexHeight;
+	}
 
 
 	/** 

@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.41 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: driver_user.h,v 1.42 2004/06/23 09:13:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -234,9 +234,9 @@ public:
 	/// Delete a texture file. This one will be really deleted in memory when no material point to it.
 	virtual	void			deleteTextureFile(UTextureFile *textfile);
 	/// Create a new Raw texture, to be filled by user.
-	virtual	UTextureRaw		*createTextureRaw();
+	virtual	UTextureMem		*createTextureMem(uint width, uint height, CBitmap::TType texType = CBitmap::RGBA);
 	/// Delete a Raw texture. This one will be really deleted in memory when no material point to it.
-	virtual	void			deleteTextureRaw(UTextureRaw *textraw);
+	virtual	void			deleteTextureMem(UTextureMem *textraw);
 	/// Create a new Material, to be filled by user.
 	virtual	UMaterial		createMaterial();
 	/// Delete a Material.

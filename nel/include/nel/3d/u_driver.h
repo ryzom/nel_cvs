@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.44 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: u_driver.h,v 1.45 2004/06/23 09:13:26 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,7 @@ using NLMISC::CBitmap;
 class UScene;
 class UCamera;
 class UTextureFile;
-class UTextureRaw;
+class UTextureMem;
 class UMaterial;
 class UTextContext;
 class UShapeBank;
@@ -267,9 +267,9 @@ public:
 	/// Delete a texture file. This one will be really deleted in memory when no material point to it.
 	virtual	void			deleteTextureFile(UTextureFile *textfile) =0;
 	/// Create a new Raw texture, to be filled by user.
-	virtual	UTextureRaw		*createTextureRaw() =0;
+	virtual	UTextureMem		*createTextureMem(uint width, uint height, CBitmap::TType texType = CBitmap::RGBA) = 0;
 	/// Delete a Raw texture. This one will be really deleted in memory when no material point to it.
-	virtual	void			deleteTextureRaw(UTextureRaw *textraw) =0;
+	virtual	void			deleteTextureMem(UTextureMem *textraw) =0;
 	/// Create a new Material, to be filled by user.
 	virtual	UMaterial		createMaterial() =0;
 	/// Delete a Material.

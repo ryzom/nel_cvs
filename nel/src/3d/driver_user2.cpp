@@ -1,7 +1,7 @@
 /** \file driver_user2.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.24 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: driver_user2.cpp,v 1.25 2004/06/23 09:13:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,20 +131,20 @@ void			CDriverUser::deleteTextureFile(UTextureFile *textfile)
 	_Textures.erase(dynamic_cast<CTextureFileUser*>(textfile), "deleteTextureFile: Bad textfile");
 }
 // ***************************************************************************
-UTextureRaw		*CDriverUser::createTextureRaw() 
+UTextureMem		*CDriverUser::createTextureMem(uint width, uint height, CBitmap::TType texType)
 {
 	NL3D_MEM_DRIVER
-	nlstop; // Not implemented!!
 
-	return NULL;
+	CTextureMemUser	*pTx= new CTextureMemUser(width, height, texType);
+	_Textures.insert(pTx);
+	return pTx;
 }
 // ***************************************************************************
-void			CDriverUser::deleteTextureRaw(UTextureRaw *textraw) 
+void			CDriverUser::deleteTextureMem(UTextureMem *pTx) 
 {
 	NL3D_MEM_DRIVER
-	nlstop; // Not implemented!!
 
-	delete textraw;
+	_Textures.erase(dynamic_cast<CTextureMemUser*>(pTx), "deleteTextureMem: Bad pTx");
 }
 // ***************************************************************************
 UMaterial		CDriverUser::createMaterial() 

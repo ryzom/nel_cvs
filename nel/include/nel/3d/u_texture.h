@@ -1,7 +1,7 @@
 /** \file u_texture.h
  * <File description>
  *
- * $Id: u_texture.h,v 1.7 2004/05/26 17:54:42 vizerie Exp $
+ * $Id: u_texture.h,v 1.8 2004/06/23 09:13:26 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_U_TEXTURE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/rect.h"
 
 
 namespace NL3D {
@@ -202,16 +203,21 @@ public:
 
 // ***************************************************************************
 /**
- * Game interface for manipulating texture RAW.  \todo yoyo: TODO_TEXTURERAW!!
+ * Game interface for manipulating texture RAW.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
  */
-class	UTextureRaw : virtual public UTexture
+class	UTextureMem : virtual public UTexture
 {
 public:
 
-	/// \todo yoyo: TODO_TEXTURERAW!!
+	virtual uint8* getPointer() const = 0;
+	virtual void touch() = 0;
+	virtual void touchRect(const NLMISC::CRect& rect) = 0;
+	virtual uint32 getWidth() const = 0;
+	virtual uint32 getHeight() const = 0;
+
 };
 
 

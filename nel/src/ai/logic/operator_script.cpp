@@ -134,7 +134,7 @@ namespace NLAIAGENT
 				// Registers to the goal and gets the args
 				if ( _CurrentGoal == NULL && ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL )
 				{
-					_CurrentGoal = selectGoal();							//	Select a goal among possible ones
+					_CurrentGoal = selectGoal();							// Select a goal among possible ones
 					_CurrentGoal->addSuccessor( (IBasicAgent *) this );		// Adds the operator to the list of operators launched for this goal
 					linkGoalArgs( _CurrentGoal );							// Instanciates the goal's args values into the operator's components
 				}
@@ -150,7 +150,7 @@ namespace NLAIAGENT
 						{
 							NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
 							context->Self = this;
-							runMethodeMember( _OnActivateIndex ,context);
+							runMethodeMember( _OnActivateIndex , context);
 							_OnActivateIndex = -1;
 						}
 
@@ -159,6 +159,15 @@ namespace NLAIAGENT
 						onActivate();
 				}
 			}
+
+			if ( (_CurrentGoal != NULL) && (_IsActivated == true) )
+			{
+				if ( (_IsPaused == false) && _CurrentGoal->isSelected() )
+					pause();
+				if ( (_IsPaused == true)  && !_CurrentGoal->isSelected() )
+					restart();
+			}
+
 
 			if ( _CurrentGoal != NULL)
 			{

@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.25 2002/08/22 12:11:12 lecroart Exp $
+ * $Id: file.cpp,v 1.26 2002/10/10 12:43:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@ namespace NLMISC
 {
 
 uint32 CIFile::_NbBytesSerialized = 0;
+uint32 CIFile::_NbBytesLoaded = 0;
 
 // ======================================================================================================
 CIFile::CIFile() : IStream(true)
@@ -47,6 +48,7 @@ CIFile::CIFile() : IStream(true)
 	_IsInBigFile = false;
 	_CacheFileOnOpen = false;
 	_IsAsyncLoading = false;
+	_AllowBNPCacheFileOnOpen= true;
 }
 
 // ======================================================================================================
@@ -60,6 +62,7 @@ CIFile::CIFile(const std::string &path, bool text) : IStream(true)
 	_IsInBigFile = false;
 	_CacheFileOnOpen = false;
 	_IsAsyncLoading = false;
+	_AllowBNPCacheFileOnOpen= true;
 	open(path, text);
 }
 
@@ -69,11 +72,48 @@ CIFile::~CIFile()
 	close();
 }
 
+
 // ======================================================================================================
-bool		CIFile::open(const std::string &path, bool text)
+void		CIFile::loadIntoCache()
 {
 	const uint32 READPACKETSIZE = 64 * 1024;
 	const uint32 INTERPACKETSLEEP = 5;
+
+	_Cache = new uint8[_FileSize];
+	if(!_IsAsyncLoading)
+	{
+		fread (_Cache, _FileSize, 1, _F);
+	}
+	else
+	{
+		uint	index= 0;
+		while(index<_FileSize)
+		{
+			if( _NbBytesLoaded + (_FileSize-index) > READPACKETSIZE )
+			{
+				sint	n= READPACKETSIZE-_NbBytesLoaded;
+				n= max(n, 1);
+				fread (_Cache+index, n, 1, _F);
+				index+= n;
+
+				nlSleep (INTERPACKETSLEEP);
+				_NbBytesLoaded= 0;
+			}
+			else
+			{
+				uint	n= _FileSize-index;
+				fread (_Cache+index, n, 1, _F);
+				_NbBytesLoaded+= n;
+				index+= n;
+			}
+		}
+	}
+}
+
+
+// ======================================================================================================
+bool		CIFile::open(const std::string &path, bool text)
+{
 	close();
 
 	// can't open empty filename
@@ -92,29 +132,33 @@ bool		CIFile::open(const std::string &path, bool text)
 	if (path.find('@') != string::npos)
 	{
 		_IsInBigFile = true;
-		_F = CBigFile::getInstance().getFile (path, _FileSize, _BigFileOffset, _CacheFileOnOpen, _AlwaysOpened);
-		if ((_CacheFileOnOpen) && (_F != NULL))
+		if(_AllowBNPCacheFileOnOpen)
 		{
+			_F = CBigFile::getInstance().getFile (path, _FileSize, _BigFileOffset, _CacheFileOnOpen, _AlwaysOpened);
+		}
+		else
+		{
+			bool	dummy;
+			_F = CBigFile::getInstance().getFile (path, _FileSize, _BigFileOffset, dummy, _AlwaysOpened);
+		}
+		if(_F != NULL)
+		{
+			// Start to load the bigfile at the file offset.
 			fseek (_F, _BigFileOffset, SEEK_SET);
-			_Cache = new uint8[_FileSize];
-			for (uint32 i = 0; i < _FileSize; i += READPACKETSIZE)
-			{
-				if ((i+READPACKETSIZE) > _FileSize)
-					fread (_Cache+i, _FileSize-i, 1, _F);
-				else
-					fread (_Cache+i, READPACKETSIZE, 1, _F);
-				if (_IsAsyncLoading)
-					nlSleep (INTERPACKETSLEEP);
-			}
 
-			//fread (_Cache, _FileSize, 1, _F);
-
-			if (!_AlwaysOpened)
+			// Load into cache ?
+			if (_CacheFileOnOpen)
 			{
-				fclose (_F);
-				_F = NULL;
+				// load file in the cache
+				loadIntoCache();
+
+				if (!_AlwaysOpened)
+				{
+					fclose (_F);
+					_F = NULL;
+				}
+				return (_Cache != NULL);
 			}
-			return (_Cache != NULL);
 		}
 	}
 	else
@@ -136,16 +180,9 @@ bool		CIFile::open(const std::string &path, bool text)
 		
 		if ((_CacheFileOnOpen) && (_F != NULL))
 		{
-			_Cache = new uint8[_FileSize];
-			for (uint32 i = 0; i < _FileSize; i += READPACKETSIZE)
-			{
-				if ((i+READPACKETSIZE) > _FileSize)
-					fread (_Cache+i, _FileSize-i, 1, _F);
-				else
-					fread (_Cache+i, READPACKETSIZE, 1, _F);
-				if (_IsAsyncLoading)
-					nlSleep (INTERPACKETSLEEP);
-			}
+			// load file in the cache
+			loadIntoCache();
+
 			fclose (_F);
 			_F = NULL;
 			return (_Cache != NULL);
@@ -331,7 +368,8 @@ bool		CIFile::seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream)
 	if (_CacheFileOnOpen)
 		return true;
 
-	if (fseek(_F, offset, SEEK_SET) != 0)
+	// seek in the file. NB: if not in bigfile, _BigFileOffset==0.
+	if (fseek(_F, _BigFileOffset+_ReadPos, SEEK_SET) != 0)
 		return false;
 	return true;
 }
@@ -347,6 +385,13 @@ sint32		CIFile::getPos () throw(EStream)
 std::string	CIFile::getStreamName() const
 {
 	return _FileName;
+}
+
+
+// ======================================================================================================
+void	CIFile::allowBNPCacheFileOnOpen(bool newState)
+{
+	_AllowBNPCacheFileOnOpen= newState;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file file.h
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.20 2002/08/05 16:17:33 lecroart Exp $
+ * $Id: file.h,v 1.21 2002/10/10 12:43:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,11 @@ public:		// Basic Usage.
 	/// Set the cache file on open option (default behaviour is false (file is not cached at opening)
 	void	setCacheFileOnOpen (bool newState);
 
+	/** If the file is opened with a big file, CacheFileOnOpen is replaced with big file option. Except if
+	 *	allowBNPCacheFileOnOpen(false) is called. true is default.
+	 */
+	void	allowBNPCacheFileOnOpen(bool newState);
+
 	/// Set the async loading state (to go to sleep 5 ms after 100 Ko serialized)
 	void	setAsyncLoading (bool newState);
 
@@ -121,10 +126,12 @@ private:
 
 	// Async
 	static uint32 _NbBytesSerialized;
+	static uint32 _NbBytesLoaded;
 	bool _IsAsyncLoading;
 
 	// Cache 
 	bool	_CacheFileOnOpen;
+	bool	_AllowBNPCacheFileOnOpen;
 	uint8	*_Cache;
 	sint32	_ReadPos;
 	uint32	_FileSize;
@@ -133,6 +140,9 @@ private:
 	bool	_AlwaysOpened;
 	bool	_IsInBigFile;
 	uint32	_BigFileOffset;
+
+	// Load async if needed in the cache.
+	void	loadIntoCache();
 };
 
 

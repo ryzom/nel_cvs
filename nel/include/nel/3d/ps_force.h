@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.9 2001/05/23 17:07:21 vizerie Exp $
+ * $Id: ps_force.h,v 1.10 2001/05/23 17:09:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -354,7 +354,11 @@ struct CPSTurbulForceFunc
 {	
 	void operator() (const CVector &pos, CVector &speed, float invMass , CAnimationTime ellapsedTime)
 	{
-		static const CVector v1(1.235f, - 45.32f, 157.5f) ;
+		nlassert(0) ;
+
+		// TODO : complete that
+
+	/*	static const CVector v1(1.235f, - 45.32f, 157.5f) ;
 		static const CVector v2(-0.35f, 7.77f, 220.77f) ;
 
 
@@ -363,6 +367,7 @@ struct CPSTurbulForceFunc
 						 , 2.f * (-0.5f +  CPSUtil::buildPerlinNoise(_Scale * (pos +  v1) , _NumOctaves))
 						 , 2.f * (-0.5f +  CPSUtil::buildPerlinNoise(_Scale * (pos +  v2) , _NumOctaves))
 						 ) ;
+						 */
 	}
 
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)

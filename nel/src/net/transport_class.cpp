@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.13 2002/08/21 09:44:05 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.13.8.1 2003/05/14 10:24:02 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -262,12 +262,16 @@ void cbTCReceiveMessage (CMessage &msgin, const string &name, uint16 sid)
 	CTransportClass::TRegisteredClass::iterator it = CTransportClass::LocalRegisteredClass.find (className);
 	if (it == CTransportClass::LocalRegisteredClass.end ())
 	{
-		nlwarning ("receive unknown class '%s', skip it", className.c_str());
+		nlwarning ("cbTCReceiveMessage(): Receive unknown transport class '%s' received from %s-%hu", className.c_str(), name.c_str(), sid);
 		return;
 	}
 
 	nlassert ((*it).second.Instance != NULL);
-	(*it).second.Instance->read (name, (uint8)sid);
+	
+	if (!(*it).second.Instance->read (name, (uint8)sid))
+	{
+		nlwarning ("cbTCReceiveMessage(): Can't read the transportclass '%s' received from %s-%hu", className.c_str(), name.c_str(), sid);
+	}
 }
 
 void cbTCReceiveOtherSideClass (CMessage &msgin, const string &name, uint16 sid)

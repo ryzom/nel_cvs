@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.178 2003/06/25 10:19:50 cado Exp $
+ * $Id: service.cpp,v 1.179 2003/06/30 09:32:48 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -249,7 +249,7 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 					str = "???";
 				}
 				vala.push_back (str);
-				nlinfo ("Add to result view '%s' = '%s'", varpath.Destination[j].first.c_str(), str.c_str());
+				nlinfo ("ADMIN: Add to result view '%s' = '%s'", varpath.Destination[j].first.c_str(), str.c_str());
 			}
 			mdDisplayVars.unlockStrings();
 		}
@@ -318,19 +318,16 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 					const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
 					for (uint k = 0; k < strs.size(); k++)
 					{
-						uint32 pos, pos2;
-
 						const string &str = strs[k];
 
-						string entity = "???";
-						pos = str.find("Entity ");
-						if(pos != string::npos)
-						{
-							pos2 = str.find(" ", pos+7);
-							if(pos2 != string::npos)
-								entity = str.substr(pos+7, pos2-pos-7);
-						}
-
+						uint32 pos = str.find(" ");
+						if(pos == string::npos)
+							continue;
+						
+						string entity = str.substr(0, pos);
+						string value = str.substr(pos+1, str.size()-pos-2);
+						for (uint u = 0; u < value.size(); u++) if (value[u] == ' ') value[u] = '_';
+						
 						// look in the array if we already have something about this entity
 
 						uint y;
@@ -362,23 +359,10 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 							vala->push_back (entity);
 						}
 
-						vara->push_back(cmd.substr(0, cmd.find(" ")));
-
-						pos = str.find("=");
-						if(pos != string::npos && pos + 2 < str.size())
-						{
-							uint32 pos2 = string::npos;
-							if(str[str.size()-1] == '\n')
-								pos2 = str.size() - pos - 2 - 1;
-							
-							vala->push_back (strs[k].substr (pos+2, pos2));
-						}
-						else
-						{
-							vala->push_back ("???");
-						}
+						vara->push_back (cmd.substr(0, cmd.find(" ")));
+						vala->push_back (value);
 						
-						nlinfo ("Add to result view for entity '%s', '%s' = '%s'", varpath.Destination[i].first.c_str(), subvarpath.Destination[j].first.c_str(), str.c_str());
+						nlinfo ("ADMIN: Add to result view for entity '%s', '%s' = '%s'", varpath.Destination[i].first.c_str(), subvarpath.Destination[j].first.c_str(), str.c_str());
 					}
 					mdDisplayVars.unlockStrings();
 				}
@@ -409,7 +393,7 @@ void servcbGetView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 	}
 	
 	CUnifiedNetwork::getInstance ()->send (sid, msgout);
-	nlinfo ("Sent result view to service '%s-%hu'", serviceName.c_str(), sid);
+	nlinfo ("ADMIN: Sent result view to service '%s-%hu'", serviceName.c_str(), sid);
 }
 
 void AESConnection (const string &serviceName, uint16 sid, void *arg)
@@ -1211,11 +1195,20 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			WriteFilesDirectory = CPath::standardizePath(var->asString());
 		}
 
+
 		// if we can, try to setup where to save files
-		if ((var = ConfigFile.getVarPtr ("SaveFilesDirectory")) != NULL)
+		if (IService::getInstance()->haveArg('W'))
 		{
-			SaveFilesDirectory = CPath::standardizePath(var->asString());
+			// use the command line param if set
+			SaveFilesDirectory = IService::getInstance()->getArg('W');
 		}
+		else if (IService::getInstance()->ConfigFile.exists ("SaveFilesDirectory"))
+		{
+			// use the config file param if set
+			SaveFilesDirectory = IService::getInstance()->ConfigFile.getVar ("SaveFilesDirectory").asString();
+		}
+		if (!SaveFilesDirectory.empty())
+			SaveFilesDirectory = CPath::standardizePath(SaveFilesDirectory);
 		
 		//
 		// Call the user service init

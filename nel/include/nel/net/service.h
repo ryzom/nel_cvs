@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.62 2003/06/10 10:11:30 lecroart Exp $
+ * $Id: service.h,v 1.63 2003/06/30 09:32:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,12 +92,15 @@ class CCallbackServer;
  *
  * Args used by service are always in lower case:
  *
+ * -A followed by the path where to execute the service (it uses chdir())
  * -C followed by the directory where we can find the config file
+ * -D followed by the listend address for the login system
+ * -I to start the service iconified
  * -L followed by the directory where we have to log
  * -N followed by the alias name (used by the admin system)
- * -P followed by the listen port
- * -A followed by the path where to execute the service (it uses chdir())
- * -I to start the service iconified
+ * -P followed by the listen port (ListenAddress)
+ * -S followed by the shard Id (sint32) for WS only
+ * -W followed by the directory where to save all shard data (SaveFilesDirectory)
  *
  */
 

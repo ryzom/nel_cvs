@@ -1,7 +1,7 @@
 /** \file interpret_fuzzy_controler.cpp
  * Fuzzy controler class for the scripting language
  *
- * $Id: interpret_fuzzy_controler.cpp,v 1.7 2001/02/27 14:22:01 chafik Exp $
+ * $Id: interpret_fuzzy_controler.cpp,v 1.8 2001/02/28 10:05:06 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -129,5 +129,6 @@ namespace NLAISCRIPT
 		}
 		return _OutputNames[ id ];
 	}
-	*/
+
+  */
 }

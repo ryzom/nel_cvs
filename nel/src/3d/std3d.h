@@ -17,6 +17,12 @@
 #include <utility>
 #include <deque>
 
+
+
+
+
+
+
 #include "nel/misc/common.h"
 #include "nel/misc/debug.h"
 
@@ -28,3 +34,7 @@
 
 #include "3d/transform.h"
 #include "3d/quad_grid.h"
+
+#include "3d/debug_vb.h"
+
+

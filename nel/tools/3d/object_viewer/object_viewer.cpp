@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.16 2001/07/04 17:17:23 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.17 2001/07/05 16:04:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -546,9 +546,7 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 	}
 
 	if (ver > 1)
-	{
-		f.serial(_BackGroundColor) ;
-
+	{	
 		// serial the ranges for particles edition
 		CRangeManager<float>::serial(f) ;
 		CRangeManager<uint32>::serial(f) ;

@@ -1,7 +1,7 @@
 /** \file scene_dlg.cpp
  * <File description>
  *
- * $Id: scene_dlg.cpp,v 1.16 2001/07/04 17:14:35 vizerie Exp $
+ * $Id: scene_dlg.cpp,v 1.17 2001/07/05 16:00:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,6 +127,7 @@ CSceneDlg::CSceneDlg(CObjectViewer *objView, CWnd* pParent /*=NULL*/)
 	{
 		DWORD len=sizeof (BOOL);
 		DWORD type;
+		NLMISC::CRGBA bgCol ;
 		RegQueryValueEx (hKey, "ViewAnimation", 0, &type, (LPBYTE)&ViewAnimation, &len);
 		len=sizeof (BOOL);
 		RegQueryValueEx (hKey, "ViewAnimationSet", 0, &type, (LPBYTE)&ViewAnimationSet, &len);
@@ -136,6 +137,11 @@ CSceneDlg::CSceneDlg(CObjectViewer *objView, CWnd* pParent /*=NULL*/)
 		RegQueryValueEx (hKey, "MoveSpeed", 0, &type, (LPBYTE)&MoveSpeed, &len);
 		len=sizeof (BOOL);
 		RegQueryValueEx (hKey, "ObjectMode", 0, &type, (LPBYTE)&ObjectMode, &len);
+		len=sizeof(NLMISC::CRGBA) ;
+		if (RegQueryValueEx (hKey, "BackGroundColor", 0, &type, (LPBYTE)&bgCol, &len) == ERROR_SUCCESS)
+		{
+			ObjView->setBackGroundColor(bgCol) ;
+		}
 	}
 
 
@@ -150,11 +156,13 @@ CSceneDlg::~CSceneDlg()
 	HKEY hKey;
 	if (RegCreateKey(HKEY_CURRENT_USER, REGKEY_OBJ_VIEW_SCENE_DLG, &hKey)==ERROR_SUCCESS)
 	{
+		NLMISC::CRGBA bgCol = ObjView->getBackGroundColor() ;
 		RegSetValueEx(hKey, "ViewAnimation", 0, REG_BINARY, (LPBYTE)&ViewAnimation, sizeof(bool));
 		RegSetValueEx(hKey, "ViewAnimationSet", 0, REG_BINARY, (LPBYTE)&ViewAnimationSet, sizeof(bool));
 		RegSetValueEx(hKey, "ViewSlots", 0, REG_BINARY, (LPBYTE)&ViewSlots, sizeof(bool));
 		RegSetValueEx(hKey, "MoveSpeed", 0, REG_BINARY, (LPBYTE)&MoveSpeed, sizeof(float));
 		RegSetValueEx(hKey, "ObjectMode", 0, REG_BINARY, (LPBYTE)&ObjectMode, sizeof(BOOL));
+		RegSetValueEx(hKey, "BackGroundColor", 0, REG_BINARY, (LPBYTE)&bgCol , sizeof(NLMISC::CRGBA));
 	}
 
 	_RightButtonMouseListener.releaseFromServer (CNELU::EventServer);

@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.15 2004/08/14 10:17:37 brigand Exp $
+ * $Id: eid_translator.h,v 1.16 2004/09/23 15:18:43 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -68,6 +68,9 @@ public:
 	
 	// the first param is the file where are all entities information, the second is a text file (one line per pattern using * and ?) with invalid entity name
 	void				load (const std::string &fileName, const std::string &invalidEntityNamesFilename);
+
+	// you must call this function to save the data into the hard drive
+	void				save ();
 
 	// get eid using the entity name
 	CEntityId			getByEntity (const ucstring &entityName);
@@ -137,8 +140,6 @@ private:
 
 	// Singleton instance
 	static CEntityIdTranslator *Instance;
-
-	void save ();
 
 	std::string FileName;
 

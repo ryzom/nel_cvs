@@ -800,6 +800,18 @@ fn export_and_check_and_debug_zone checkOnly debug displayMB =
 	return false
 )
 
+-- Hide all zones
+fn hideAllZone =
+(
+	for node in geometry do
+	(
+		if (classof node) == RklPatch then
+		(
+			hide node
+		)
+	)
+)
+
 -- Export a ligo transition
 fn export_and_check_and_debug_transition_zone checkOnly debug displayMB = 
 ( 
@@ -906,6 +918,12 @@ fn export_and_check_and_debug_transition_zone checkOnly debug displayMB =
 
 										-- Transform the zone
 										c = instance transitionZone[zone]
+
+										-- Hide all zones
+										hideAllZone ()
+
+										-- Show the zone
+										unhide c
 
 										-- Change the name
 										c.name = "[NELLIGO] tmp export"

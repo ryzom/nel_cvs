@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.55 2004/08/13 15:41:15 vizerie Exp $
+ * $Id: render_trav.cpp,v 1.55.4.1 2004/09/14 17:16:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,7 @@ CRenderTrav::CRenderTrav()
 void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 {
 	H_AUTO( NL3D_TravRender );		
+	if (getDriver()->isLost()) return; // device is lost so no need to render anything	
 	CTravCameraScene::update();
 	// Bind to Driver.
 	setupDriverCamera();
@@ -130,7 +131,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 					NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT, 
 					NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES,
 					NL3D_SHADOW_MESH_SKIN_MANAGER_NUMVB,
-					"ShadowSkinVB");
+					"ShadowSkinVB", true);
 			}
 		}
 

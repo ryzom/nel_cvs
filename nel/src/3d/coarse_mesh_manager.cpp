@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.6 2001/07/12 14:36:53 corvazier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.7 2001/10/29 15:50:56 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -517,12 +517,13 @@ void CCoarseMeshManager::CRenderPass::CPrimitiveBlockInfo::removeMesh (uint16 ve
 			MeshIdList.erase (ite);
 
 			// Exit
-			break;
+			return;
 		}
 
 		// Next 
 		ite++;
 	}
+
 	// Check it has been found
 	nlassert (ite!=MeshIdList.end());
 }

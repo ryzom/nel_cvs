@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.38 2001/07/12 14:27:09 legros Exp $
+ * $Id: global_retriever.cpp,v 1.39 2001/07/27 14:09:59 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1191,7 +1191,7 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 				// BUT if startOnEdge, which should never arrive.
 				if(pmpb==CEdgeCollide::StartOnEdge)
 				{
-					nlinfo("COL: Precision Problem: %s", errs[pmpb]);
+					nlinfo("COL: Precision Problem: %s", errs[pmpb].c_str());
 					return CSurfaceIdent(-1, -1);	// so in this case, block....
 				}
 				else if(pmpb==CEdgeCollide::EdgeNull)

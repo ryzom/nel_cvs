@@ -278,7 +278,23 @@ SOURCE=.\3d\material.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\3d\material.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\primitive_block.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\primitive_block.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\shader.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\shader.h
 # End Source File
 # Begin Source File
 
@@ -291,6 +307,10 @@ SOURCE=..\include\nel\3d\texture.h
 # Begin Source File
 
 SOURCE=.\3d\vertex_buffer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\vertex_buffer.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.25 2002/06/06 15:29:20 legros Exp $
+ * $Id: move_container.cpp,v 1.26 2002/06/13 14:38:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -291,10 +291,9 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 	// Result
 	bool result=false;
 	bool testMoveValid;
-	double collisionTime;
 
 	// Eval first each static world images
-	result=evalOneTerrainCollision (0, prim, primitiveWorldImage, true, testMoveValid, collisionTime);
+	result=evalOneTerrainCollision (0, prim, primitiveWorldImage, true, testMoveValid, NULL);
 
 	// Eval first each static world images
 	if (!result)
@@ -304,7 +303,7 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 		{
 
 			// Eval in this world image
-			result=evalOnePrimitiveCollision (0, prim, *ite, primitiveWorldImage, true, true, testMoveValid, collisionTime);
+			result=evalOnePrimitiveCollision (0, prim, *ite, primitiveWorldImage, true, true, testMoveValid, NULL);
 
 			// If found, abort
 			if (result)
@@ -317,7 +316,7 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 
 	// Eval collisions if not found and not tested
 	if ((!result) && (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end()))
-		result=evalOnePrimitiveCollision (0, prim, worldImage, primitiveWorldImage, true, false, testMoveValid, collisionTime);
+		result=evalOnePrimitiveCollision (0, prim, worldImage, primitiveWorldImage, true, false, testMoveValid, NULL);
 
 	// Backup speed only if the primitive is inserted in the world image
 	if (prim->isInserted (primitiveWorldImage))
@@ -607,7 +606,7 @@ void CMoveContainer::checkSortedList ()
 // ***************************************************************************
 
 bool CMoveContainer::evalOneTerrainCollision (double beginTime, CMovePrimitive *primitive, uint8 primitiveWorldImage, 
-									   bool testMove, bool &testMoveValid, double &collisionTime)
+									   bool testMove, bool &testMoveValid, CCollisionOTStaticInfo *staticColInfo)
 {
 //	H_AUTO(PACS_MC_evalOneCollision);
 
@@ -659,17 +658,13 @@ bool CMoveContainer::evalOneTerrainCollision (double beginTime, CMovePrimitive *
 				// stop on a wall.
 				if(isWall)
 				{
-					// Return the collision time
-					collisionTime = desc.ContactTime;
-
 					// Test move ?
 					if (testMove)
 						return true;
 					else
 					{
 						// OK, collision if we are a collisionable primitive
-						if (primitive->isCollisionable ())
-							newCollision (primitive, desc, primitiveWorldImage, beginTime);
+						newCollision (primitive, desc, primitiveWorldImage, beginTime, staticColInfo);
 
 						// One collision found
 						found=true;
@@ -688,7 +683,7 @@ bool CMoveContainer::evalOneTerrainCollision (double beginTime, CMovePrimitive *
 // ***************************************************************************
 
 bool CMoveContainer::evalOnePrimitiveCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, uint8 primitiveWorldImage, 
-									   bool testMove, bool secondIsStatic, bool &testMoveValid, double &collisionTime)
+									   bool testMove, bool secondIsStatic, bool &testMoveValid, CCollisionOTDynamicInfo *dynamicColInfo)
 {
 //	H_AUTO(PACS_MC_evalOneCollision);
 
@@ -770,7 +765,7 @@ bool CMoveContainer::evalOnePrimitiveCollision (double beginTime, CMovePrimitive
 						if ( (wI->getBBYMin() < otherWI->getBBYMax()) && (otherWI->getBBYMin() < wI->getBBYMax()) )
 						{
 							if (evalPrimAgainstPrimCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
-								primitiveWorldImage, worldImage, secondIsStatic, collisionTime))
+								primitiveWorldImage, worldImage, secondIsStatic, dynamicColInfo))
 							{
 								if (testMove)
 									return true;
@@ -802,7 +797,7 @@ bool CMoveContainer::evalOnePrimitiveCollision (double beginTime, CMovePrimitive
 					if ( (wI->getBBYMin() < otherWI->getBBYMax()) && (otherWI->getBBYMin() < wI->getBBYMax()) )
 					{
 						if (evalPrimAgainstPrimCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
-							primitiveWorldImage, worldImage, secondIsStatic, collisionTime))
+							primitiveWorldImage, worldImage, secondIsStatic, dynamicColInfo))
 						{
 							if (testMove)
 								return true;
@@ -824,15 +819,15 @@ bool CMoveContainer::evalOnePrimitiveCollision (double beginTime, CMovePrimitive
 
 bool CMoveContainer::evalPrimAgainstPrimCollision (double beginTime, CMovePrimitive *primitive, CMovePrimitive *otherPrimitive, 
 											CPrimitiveWorldImage *wI, CPrimitiveWorldImage *otherWI, bool testMove,
-											uint8 firstWorldImage, uint8 secondWorldImage, bool secondIsStatic, double &collisionTime)
+											uint8 firstWorldImage, uint8 secondWorldImage, bool secondIsStatic, CCollisionOTDynamicInfo *dynamicColInfo)
 {
 //	H_AUTO(PACS_MC_evalPrimAgainstPrimCollision);
 
 	// Test the primitive
-	CCollisionDesc desc;
 	double firstTime, lastTime;
 
 	// Collision
+	CCollisionDesc desc;
 	if (wI->evalCollision (*otherWI, desc, beginTime, _DeltaTime, _TestTime, _MaxTestIteration, 
 								firstTime, lastTime, *primitive, *otherPrimitive))
 	{
@@ -845,7 +840,6 @@ bool CMoveContainer::evalPrimAgainstPrimCollision (double beginTime, CMovePrimit
 		if (collision)
 		{
 			// Return collision time
-			collisionTime = firstTime;
 
 			if (testMove) 
 				return true;
@@ -853,8 +847,8 @@ bool CMoveContainer::evalPrimAgainstPrimCollision (double beginTime, CMovePrimit
 			{
 				// TODO: make new collision when collision==false to raise triggers
 				// OK, collision
-				if (primitive->isCollisionable ())
-					newCollision (primitive, otherPrimitive, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic);
+				newCollision (primitive, otherPrimitive, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic,
+								dynamicColInfo);
 
 				// Collision
 				return true;
@@ -897,17 +891,16 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 		// Find a collision
 		bool found=false;
 		bool testMoveValid=false;
-		double collisionTime;
 
 		// Eval collision on the terrain
-		found|=evalOneTerrainCollision (beginTime, primitive, primitiveWorldImage, false, testMoveValid, collisionTime);
+		found|=evalOneTerrainCollision (beginTime, primitive, primitiveWorldImage, false, testMoveValid, NULL);
 
 		// Eval collision in each static world image
 		std::set<uint8>::iterator ite=_StaticWorldImage.begin();
 		while (ite!=_StaticWorldImage.end())
 		{
 			// Eval in this world image
-			found|=evalOnePrimitiveCollision (beginTime, primitive, *ite, primitiveWorldImage, false, true, testMoveValid, collisionTime);
+			found|=evalOnePrimitiveCollision (beginTime, primitive, *ite, primitiveWorldImage, false, true, testMoveValid, NULL);
 
 			// Next world image
 			ite++;
@@ -918,7 +911,7 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 
 		// Eval collision in the world image if not already tested
 		if (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end())
-			found|=evalOnePrimitiveCollision (beginTime, primitive, worldImage, primitiveWorldImage, false, false, testMoveValid, collisionTime);
+			found|=evalOnePrimitiveCollision (beginTime, primitive, worldImage, primitiveWorldImage, false, false, testMoveValid, NULL);
 
 		CVectorD d2=wI->getDeltaPosition();
 		CVector f2=_SurfaceTemp.PrecDeltaPos;
@@ -948,48 +941,55 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 // ***************************************************************************
 
 void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc, bool collision, bool enter, bool exit,
-								   uint firstWorldImage, uint secondWorldImage, bool secondIsStatic)
+								   uint firstWorldImage, uint secondWorldImage, bool secondIsStatic, CCollisionOTDynamicInfo *dynamicColInfo)
 {
 //	H_AUTO(PACS_MC_newCollision_short);
 
-	// Get an ordered time index. Always round to the future.
-	int index=(int)(ceil (desc.ContactTime*(double)_OtSize/_DeltaTime) );
+	nlassert ((dynamicColInfo && first->isNonCollisionable ()) || (!dynamicColInfo && first->isCollisionable ()));
 
-	// Clamp left.
-	if (index<0)
-		index=0;
-
-	// If in time
-	if (index<(int)_OtSize)
+	if (dynamicColInfo)
 	{
-		// Rounded time
-		double finalTime=(double)index * _DeltaTime / (double)_OtSize;
+		dynamicColInfo->init (first, second, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic);
+	}
+	else
+	{
+		// Get an ordered time index. Always round to the future.
+		int index=(int)(ceil (desc.ContactTime*(double)_OtSize/_DeltaTime) );
 
-		// Build info
-		CCollisionOTDynamicInfo *info = allocateOTDynamicInfo ();
-		info->init (first, second, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic);
+		// Clamp left.
+		if (index<0)
+			index=0;
 
-		// Add in the primitive list
-		first->addCollisionOTInfo (info);
-		second->addCollisionOTInfo (info);
+		// If in time
+		if (index<(int)_OtSize)
+		{
+			// Build info
+			CCollisionOTDynamicInfo *info = allocateOTDynamicInfo ();
+			info->init (first, second, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic);
 
-		// Insert in the time ordered table
-		nlassert (index<(int)_TimeOT.size());
-		_TimeOT[index].link (info);
+			// Add in the primitive list
+			first->addCollisionOTInfo (info);
+			second->addCollisionOTInfo (info);
 
-		// Check it is after the last hard collision
-		nlassert (_PreviousCollisionNode<=&_TimeOT[index]);
+			// Insert in the time ordered table
+			nlassert (index<(int)_TimeOT.size());
+			_TimeOT[index].link (info);
+
+			// Check it is after the last hard collision
+			nlassert (_PreviousCollisionNode<=&_TimeOT[index]);
+		}
 	}
 }
 
 // ***************************************************************************
 
-void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, uint8 worldImage, double beginTime)
+void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, uint8 worldImage, double beginTime, CCollisionOTStaticInfo *staticColInfo)
 {
 //	H_AUTO(PACS_MC_newCollision_long);
 
 	// Check
 	nlassert (_Retriever);
+	nlassert ((staticColInfo && first->isNonCollisionable ()) || (!staticColInfo && first->isCollisionable ()));
 
 	// Get the world image
 	CPrimitiveWorldImage *wI;
@@ -1012,44 +1012,53 @@ void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfac
 	nlassert (ratio>=0);
 	nlassert (ratio<=1);
 
-	// Get an ordered time index. Always round to the future.
-	int index=(int)(ceil (time*(double)_OtSize/_DeltaTime) );
-
-	// Clamp left.
-	if (index<0)
-		index=0;
-
-	// If in time
-	if (index<(int)_OtSize)
+	if (staticColInfo)
 	{
-		// Rounded time
-		double finalTime=(double)index * _DeltaTime / (double)_OtSize;
-
-		// Build info
-		CCollisionOTStaticInfo *info = allocateOTStaticInfo ();
-
 		// Make a new globalposition
 		UGlobalPosition endPosition=_Retriever->doMove (wI->getGlobalPosition(), wI->getDeltaPosition(), 
 			(float)ratio, _SurfaceTemp, false);
 
 		// Init the info descriptor
-		info->init (first, desc, endPosition, ratio, worldImage);
+		staticColInfo->init (first, desc, endPosition, ratio, worldImage);
+	}
+	else
+	{
+		// Get an ordered time index. Always round to the future.
+		int index=(int)(ceil (time*(double)_OtSize/_DeltaTime) );
 
-		// Add in the primitive list
-		first->addCollisionOTInfo (info);
+		// Clamp left.
+		if (index<0)
+			index=0;
 
-		// Insert in the time ordered table
-		nlassert (index<(int)_TimeOT.size());
-		_TimeOT[index].link (info);
+		// If in time
+		if (index<(int)_OtSize)
+		{
+			// Build info
+			CCollisionOTStaticInfo *info = allocateOTStaticInfo ();
 
-		// Check it is after the last hard collision
-		nlassert (_PreviousCollisionNode<=&_TimeOT[index]);
+			// Make a new globalposition
+			UGlobalPosition endPosition=_Retriever->doMove (wI->getGlobalPosition(), wI->getDeltaPosition(), 
+				(float)ratio, _SurfaceTemp, false);
+
+			// Init the info descriptor
+			info->init (first, desc, endPosition, ratio, worldImage);
+
+			// Add in the primitive list
+			first->addCollisionOTInfo (info);
+
+			// Insert in the time ordered table
+			nlassert (index<(int)_TimeOT.size());
+			_TimeOT[index].link (info);
+
+			// Check it is after the last hard collision
+			nlassert (_PreviousCollisionNode<=&_TimeOT[index]);
+		}
 	}
 }
 
 // ***************************************************************************
 
-void CMoveContainer::newTrigger (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc)
+void CMoveContainer::newTrigger (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc, uint triggerType)
 {
 	// Element index
 	uint index=_Triggers.size();
@@ -1061,6 +1070,7 @@ void CMoveContainer::newTrigger (CMovePrimitive* first, CMovePrimitive* second, 
 	_Triggers[index].Object0=first->UserData;
 	_Triggers[index].Object1=second->UserData;
 	_Triggers[index].CollisionDesc=desc;
+	_Triggers[index].CollisionType = triggerType;
 }
 
 // ***************************************************************************
@@ -1437,11 +1447,8 @@ void CMoveContainer::reaction (const CCollisionOTInfo& first)
 		// Check mode
 		nlassert (_Retriever);
 
-		// Check type
-		nlassert (dynamic_cast<const CCollisionOTStaticInfo*>(&first));
-
 		// Cast
-		const CCollisionOTStaticInfo *staticInfo=static_cast<const CCollisionOTStaticInfo*> (&first);
+		const CCollisionOTStaticInfo *staticInfo=safe_cast<const CCollisionOTStaticInfo*> (&first);
 
 		// Get the primitive world image
 		CMovePrimitive *movePrimitive=staticInfo->getPrimitive ();
@@ -1457,11 +1464,8 @@ void CMoveContainer::reaction (const CCollisionOTInfo& first)
 	}
 	else
 	{
-		// Check type
-		nlassert (dynamic_cast<const CCollisionOTDynamicInfo*>(&first));
-
 		// Cast
-		const CCollisionOTDynamicInfo *dynInfo=static_cast<const CCollisionOTDynamicInfo*> (&first);
+		const CCollisionOTDynamicInfo *dynInfo=safe_cast<const CCollisionOTDynamicInfo*> (&first);
 
 		// Get the primitives world image
 		CPrimitiveWorldImage *firstWI;
@@ -1483,7 +1487,8 @@ void CMoveContainer::reaction (const CCollisionOTInfo& first)
 
 		// Trigger ?
 		if (dynInfo->getFirstPrimitive ()->isTriggered (*dynInfo->getSecondPrimitive (), dynInfo->isEnter(), dynInfo->isExit()))
-			newTrigger (dynInfo->getFirstPrimitive (), dynInfo->getSecondPrimitive (), dynInfo->getCollisionDesc ());
+			newTrigger (dynInfo->getFirstPrimitive (), dynInfo->getSecondPrimitive (), dynInfo->getCollisionDesc (),
+						dynInfo->isEnter() ? UTriggerInfo::In : dynInfo->isExit() ? UTriggerInfo::Out : UTriggerInfo::Inside);
 	}
 }
 
@@ -1748,6 +1753,9 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 	// New test time
 	_TestTime++;
 
+	// Clear triggers
+	_Triggers.clear ();
+
 	// Only non-collisionable primitives
 	if (!primitive->isCollisionable())
 	{
@@ -1756,6 +1764,7 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 
 		// Begin of the time slice to compute
 		double beginTime = 0;
+		double collisionTime = deltaTime;
 
 		// Get the world image
 		CPrimitiveWorldImage *wI = ((CMovePrimitive*)primitive)->getWorldImage (0);
@@ -1772,24 +1781,29 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 
 			// Eval collision again the terrain
 			bool testMoveValid = false;
-			double collisionTime = deltaTime;
-			found = evalOneTerrainCollision (beginTime, (CMovePrimitive*)primitive, worldImage, false, testMoveValid, collisionTime);
+			CCollisionOTStaticInfo staticColInfo;
+			CCollisionOTDynamicInfo dynamicColInfoWI0;
+			CCollisionOTDynamicInfo dynamicColInfoWI;
+			CCollisionOTInfo *firstCollision = NULL;
+			found = evalOneTerrainCollision (beginTime, (CMovePrimitive*)primitive, worldImage, false, testMoveValid, &staticColInfo);
+
+			// If collision found, note it is on the landscape
+			if (found)
+			{
+				firstCollision = &staticColInfo;
+			}
 
 			// Eval collision again the static primitives
 			std::set<uint8>::iterator ite=_StaticWorldImage.begin();
 			while (ite!=_StaticWorldImage.end())
 			{
 				// Eval in this world image
-				double tmp;
-				if (evalOnePrimitiveCollision (beginTime, (CMovePrimitive*)primitive, *ite, worldImage, false, true, testMoveValid, tmp))
+				if (evalOnePrimitiveCollision (beginTime, (CMovePrimitive*)primitive, *ite, worldImage, false, true, testMoveValid, &dynamicColInfoWI0))
 				{
 					// First collision..
-					if (found)
-						collisionTime = std::min (collisionTime, tmp);
-					else
+					if (!firstCollision || (firstCollision->getCollisionTime () > dynamicColInfoWI0.getCollisionTime ()))
 					{
-						found = true;
-						collisionTime = tmp;
+						firstCollision = &dynamicColInfoWI0;
 					}
 				}
 
@@ -1802,18 +1816,14 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 			CVector f1=_SurfaceTemp.PrecDeltaPos;
 
 			// Eval collision again the world image
-			double tmp;
 			if (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end())
 			{
-				if (evalOnePrimitiveCollision (beginTime, (CMovePrimitive*)primitive, worldImage, worldImage, false, false, testMoveValid, tmp))
+				if (evalOnePrimitiveCollision (beginTime, (CMovePrimitive*)primitive, worldImage, worldImage, false, false, testMoveValid, &dynamicColInfoWI))
 				{
 					// First collision..
-					if (found)
-						collisionTime = std::min (collisionTime, tmp);
-					else
+					if (!firstCollision || (firstCollision->getCollisionTime () > dynamicColInfoWI.getCollisionTime ()))
 					{
-						found = true;
-						collisionTime = tmp;
+						firstCollision = &dynamicColInfoWI;
 					}
 				}
 			}
@@ -1825,17 +1835,26 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 
 //			if (found)
 //				nlstop;
-
-			// Retriever mode ?
-			if (_Retriever&&testMoveValid)
-			{								
-				// Do move
-				wI->doMove (*_Retriever, _SurfaceTemp, deltaTime, collisionTime, ((CMovePrimitive*)primitive)->getDontSnapToGround());
+			
+			// Reaction
+			if (firstCollision)
+			{
+				collisionTime = firstCollision->getCollisionTime ();
+				reaction (*firstCollision);
 			}
 			else
 			{
-				// Do move
-				wI->doMove (_DeltaTime);
+				// Retriever mode ?
+				if (_Retriever&&testMoveValid)
+				{								
+					// Do move
+					wI->doMove (*_Retriever, _SurfaceTemp, deltaTime, collisionTime, ((CMovePrimitive*)primitive)->getDontSnapToGround());
+				}
+				else
+				{
+					// Do move
+					wI->doMove (_DeltaTime);
+				}
 			}
 
 			beginTime = collisionTime;

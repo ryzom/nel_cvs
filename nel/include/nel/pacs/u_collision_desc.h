@@ -1,7 +1,7 @@
 /** \file u_collision_desc.h
  * Description of the contact of a collision
  *
- * $Id: u_collision_desc.h,v 1.4 2002/02/20 18:05:56 lecroart Exp $
+ * $Id: u_collision_desc.h,v 1.5 2002/06/13 14:39:03 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,9 +70,17 @@ public:
 class UTriggerInfo
 {
 public:
+	enum
+	{
+		In = 0,
+		Inside,
+		Out
+	};
+
 	UMovePrimitive::TUserData	Object0;
 	UMovePrimitive::TUserData	Object1;
 	UCollisionDesc				CollisionDesc;
+	uint8						CollisionType;
 
 	// Serial method
 	void serial (NLMISC::IStream& stream);

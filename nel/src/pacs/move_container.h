@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.13 2002/06/06 15:29:20 legros Exp $
+ * $Id: move_container.h,v 1.14 2002/06/13 14:38:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -222,18 +222,19 @@ private:
 	void						checkOT ();
 
 	// Eval one terrain collision
-	bool						evalOneTerrainCollision (double beginTime, CMovePrimitive *primitive, 
-													uint8 primitiveWorldImage, bool testMove, bool &testMoveValid, double &collisionTime);
+	bool						evalOneTerrainCollision (double beginTime, CMovePrimitive *primitive, uint8 primitiveWorldImage, 
+														bool testMove, bool &testMoveValid, CCollisionOTStaticInfo *staticColInfo);
 
 	// Eval one primitive collision
 	bool						evalOnePrimitiveCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, 
 													uint8 primitiveWorldImage, bool testMove, bool secondIsStatic, 
-													bool &testMoveValid, double &collisionTime);
+													bool &testMoveValid, CCollisionOTDynamicInfo *dynamicColInfo);
 
 	// Eval final step
 	bool						evalPrimAgainstPrimCollision (double beginTime, CMovePrimitive *primitive, CMovePrimitive *otherPrimitive, 
 													CPrimitiveWorldImage *wI, CPrimitiveWorldImage *otherWI, bool testMove,
-													uint8 firstWorldImage, uint8 secondWorldImage, bool secondIsStatic, double &collisionTime);
+													uint8 firstWorldImage, uint8 secondWorldImage, bool secondIsStatic, 
+													CCollisionOTDynamicInfo *dynamicColInfo);
 
 	// Eval all collision for modified primitives
 	void						evalAllCollisions (double beginTime, uint8 worldImage);
@@ -241,13 +242,14 @@ private:
 	// Add a collision in the time ordered table
 	void						newCollision (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc, 
 												bool collision, bool enter, bool exit, uint firstWorldImage, uint secondWorldImage, 
-												bool secondIsStatic);
+												bool secondIsStatic, CCollisionOTDynamicInfo *dynamicColInfo);
 
 	// Add a collision in the time ordered table
-	void						newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, uint8 worldImage, double beginTime);
+	void						newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, uint8 worldImage, double beginTime, 
+												CCollisionOTStaticInfo *staticColInfo);
 
 	// Add a trigger in the trigger array
-	void						newTrigger (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc);
+	void						newTrigger (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc, uint triggerType);
 
 	// Clear modified primitive list
 	void						clearModifiedList (uint8 worldImage);

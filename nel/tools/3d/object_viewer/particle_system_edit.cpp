@@ -24,7 +24,8 @@ CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps)
 	//{{AFX_DATA_INIT(CParticleSystemEdit)
 	m_AccurateIntegration = FALSE;
 	m_EnableSlowDown = FALSE;
-	m_PrecomputeBBox = FALSE;
+	m_DieWhenOutOfRange = FALSE;
+	m_DieWhenOutOfFrustrum = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -38,7 +39,7 @@ CParticleSystemEdit::~CParticleSystemEdit()
 	REMOVE_WND(_LODRatioDlg) ; 
 }
 
-CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
+void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 {
 	Create(CParticleSystemEdit::IDD, pParent) ;
 
@@ -95,10 +96,15 @@ CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	_PS->getAccurateIntegrationParams(t, max, csd) ;
 
 	m_AccurateIntegration = _PS->isAccurateIntegrationEnabled() ;
+	m_PrecomputeBBoxCtrl.SetCheck(!_PS->getAutoComputeBBox()) ;
 	m_EnableSlowDown = csd ;
+	m_DieWhenOutOfRange = _PS->getDestroyModelWhenOutOfRange() ;
+	m_DieWhenOutOfFrustrum = _PS->doesDestroyWhenOutOfFrustrum() ;
+	m_DieOnEvent.SetCurSel((int) _PS->getDestroyCondition()) ;
 
 	updateIntegrationParams() ;
-
+	updatePrecomputedBBoxParams() ;
+	updateDieOnEventParams() ;
 
 	UpdateData(FALSE) ;
 	ShowWindow(SW_SHOW) ;	
@@ -112,19 +118,74 @@ void CParticleSystemEdit::updateIntegrationParams(void)
 	m_EnableSlowDownCtrl.EnableWindow(ew) ;
 }
 
+
+void CParticleSystemEdit::updateDieOnEventParams(void)
+{
+	BOOL ew = _PS->getDestroyCondition() == NL3D::CParticleSystem::none ? FALSE : TRUE ;
+	GetDlgItem(IDC_APPLY_AFTRE_DELAY)->EnableWindow(ew) ;
+	char out[128] ;
+	sprintf(out, "%.2g", _PS->getDelayBeforeDeathConditionTest()) ;
+	GetDlgItem(IDC_APPLY_AFTRE_DELAY)->SetWindowText(out) ;
+}
+
+void CParticleSystemEdit::OnPrecomputeBbox() 
+{
+	UpdateData() ;
+	_PS->setAutoComputeBBox(!_PS->getAutoComputeBBox() ? true : false) ;
+	updatePrecomputedBBoxParams() ;	
+}
+
 void CParticleSystemEdit::updatePrecomputedBBoxParams(void)
 {
+	BOOL ew = !_PS->getAutoComputeBBox() ;
+	m_BBoxXCtrl.EnableWindow(ew) ;
+	m_BBoxYCtrl.EnableWindow(ew) ;
+	m_BBoxZCtrl.EnableWindow(ew) ;
 	
+	if (!ew)
+	{
+		m_BBoxXCtrl.SetWindowText("") ;
+		m_BBoxYCtrl.SetWindowText("") ;
+		m_BBoxZCtrl.SetWindowText("") ;
+	}
+	else
+	{
+		NLMISC::CAABBox b ;
+		_PS->computeBBox(b) ;
+		char out[128] ;
+		sprintf(out, "%.3g", b.getHalfSize().x) ; m_BBoxXCtrl.SetWindowText(out) ;
+		sprintf(out, "%.3g", b.getHalfSize().y) ; m_BBoxYCtrl.SetWindowText(out) ;
+		sprintf(out, "%.3g", b.getHalfSize().z) ; m_BBoxZCtrl.SetWindowText(out) ;
+	}
+
+	UpdateData(FALSE) ;
 }
+
+
+
+void CParticleSystemEdit::OnSelchangePsDieOnEvent() 
+{
+	UpdateData() ;
+	_PS->setDestroyCondition((NL3D::CParticleSystem::TDieCondition) m_DieOnEvent.GetCurSel()) ;
+	updateDieOnEventParams() ;
+}
+
+
 
 void CParticleSystemEdit::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CParticleSystemEdit)
+	DDX_Control(pDX, IDC_PS_DIE_ON_EVENT, m_DieOnEvent);
+	DDX_Control(pDX, IDC_PRECOMPUTE_BBOX, m_PrecomputeBBoxCtrl);
+	DDX_Control(pDX, IDC_BB_Z, m_BBoxZCtrl);
+	DDX_Control(pDX, IDC_BB_Y, m_BBoxYCtrl);
+	DDX_Control(pDX, IDC_BB_X, m_BBoxXCtrl);
 	DDX_Control(pDX, IDC_ENABLE_SLOW_DOWN, m_EnableSlowDownCtrl);
 	DDX_Check(pDX, IDC_ACCURATE_INTEGRATION, m_AccurateIntegration);
 	DDX_Check(pDX, IDC_ENABLE_SLOW_DOWN, m_EnableSlowDown);
-	DDX_Check(pDX, IDC_PRECOMPUTE_BBOX, m_PrecomputeBBox);
+	DDX_Check(pDX, IDC_DIE_WHEN_OUT_OF_RANGE, m_DieWhenOutOfRange);
+	DDX_Check(pDX, IDC_DIE_WHEN_OUT_OF_FRUSTRUM, m_DieWhenOutOfFrustrum);
 	//}}AFX_DATA_MAP
 }
 
@@ -134,6 +195,13 @@ BEGIN_MESSAGE_MAP(CParticleSystemEdit, CDialog)
 	ON_BN_CLICKED(IDC_ACCURATE_INTEGRATION, OnAccurateIntegration)
 	ON_BN_CLICKED(IDC_ENABLE_SLOW_DOWN, OnEnableSlowDown)
 	ON_BN_CLICKED(IDC_PRECOMPUTE_BBOX, OnPrecomputeBbox)
+	ON_BN_CLICKED(IDC_UPDATE_BBOX, OnUpdateBbox)
+	ON_BN_CLICKED(IDC_INC_BBOX, OnIncBbox)
+	ON_BN_CLICKED(IDC_DEC_BBOX, OnDecBbox)
+	ON_BN_CLICKED(IDC_DIE_WHEN_OUT_OF_RANGE, OnDieWhenOutOfRange)
+	ON_CBN_SELCHANGE(IDC_PS_DIE_ON_EVENT, OnSelchangePsDieOnEvent)
+	ON_EN_CHANGE(IDC_APPLY_AFTRE_DELAY, OnChangeApplyAfterDelay)
+	ON_BN_CLICKED(IDC_DIE_WHEN_OUT_OF_FRUSTRUM, OnDieWhenOutOfFrustrum)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -156,6 +224,78 @@ void CParticleSystemEdit::OnEnableSlowDown()
 	_PS->getAccurateIntegrationParams(t, max, csd) ;
 	_PS->setAccurateIntegrationParams(t, max, m_EnableSlowDown ? true : false) ;
 }
+
+void CParticleSystemEdit::OnUpdateBbox() 
+{
+	UpdateData() ;
+	NLMISC::CVector h ;
+	char inX[128], inY[128], inZ[128] ;
+	m_BBoxXCtrl.GetWindowText(inX, 128) ;
+	m_BBoxYCtrl.GetWindowText(inY, 128) ;
+	m_BBoxZCtrl.GetWindowText(inZ, 128) ;
+	if (sscanf(inX, "%f", &h.x) == 1
+		&& sscanf(inY, "%f", &h.y) == 1
+		&& sscanf(inZ, "%f", &h.z) == 1
+	   )
+	{
+		NLMISC::CAABBox b ;
+		b.setHalfSize(h) ;
+		_PS->setPrecomputedBBox(b) ;
+	}
+	else
+	{
+		MessageBox("Invalid entry","error", MB_OK) ;
+	}
+}
+
+
+void CParticleSystemEdit::OnIncBbox() 
+{
+	NLMISC::CAABBox b ;
+	_PS->computeBBox(b) ;
+	b.setHalfSize(1.1f * b.getHalfSize()) ;
+	_PS->setPrecomputedBBox(b) ;
+	updatePrecomputedBBoxParams() ;
+}
+
+void CParticleSystemEdit::OnDecBbox() 
+{
+	NLMISC::CAABBox b ;
+	_PS->computeBBox(b) ;	 
+	b.setHalfSize(0.9f * b.getHalfSize()) ;
+	_PS->setPrecomputedBBox(b) ;
+	updatePrecomputedBBoxParams() ;	
+}
+
+
+void CParticleSystemEdit::OnDieWhenOutOfRange() 
+{
+	UpdateData() ;
+	_PS->setDestroyModelWhenOutOfRange(m_DieWhenOutOfRange ? true : false) ;
+}
+
+
+
+void CParticleSystemEdit::OnDieWhenOutOfFrustrum() 
+{
+	UpdateData() ;
+	_PS->destroyWhenOutOfFrustrum(m_DieWhenOutOfFrustrum ? true : false) ;
+}
+
+
+
+void CParticleSystemEdit::OnChangeApplyAfterDelay() 
+{
+	char in[128] ;	
+	GetDlgItem(IDC_APPLY_AFTRE_DELAY)->GetWindowText(in, 128) ;		
+	float value ;
+	if (sscanf(in, "%f", &value) == 1)
+	{
+		_PS->setDelayBeforeDeathConditionTest(value) ;
+	}
+}
+
+
 
 /////////////////////////////
 // WRAPPERS IMPLEMENTATION //
@@ -225,14 +365,3 @@ void CParticleSystemEdit::CLODRatioWrapper::set(const float &v)
 	PS->setLODRatio(v) ;
 }
 
-
-
-
-
-
-
-void CParticleSystemEdit::OnPrecomputeBbox() 
-{
-	// TODO: Add your control notification handler code here
-	
-}

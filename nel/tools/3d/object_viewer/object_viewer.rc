@@ -154,90 +154,6 @@ IDB_FORCE_INTENSITY     BITMAP  DISCARDABLE     "bmp00016.bmp"
 IDB_LIFE_TIME           BITMAP  DISCARDABLE     "bmp00017.bmp"
 IDB_WEIGHT              BITMAP  DISCARDABLE     "bmp00018.bmp"
 
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE DISCARDABLE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE DISCARDABLE 
-BEGIN
-    "#include ""afxres.h""\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE DISCARDABLE 
-BEGIN
-    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
-    "#define _AFX_NO_OLE_RESOURCES\r\n"
-    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
-    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
-    "\r\n"
-    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)\r\n"
-    "#ifdef _WIN32\r\n"
-    "LANGUAGE 12, 1\r\n"
-    "#pragma code_page(1252)\r\n"
-    "#endif //_WIN32\r\n"
-    "#include ""res\\object_viewer.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
-    "#include ""l.fra\\afxres.rc""          // Standard components\r\n"
-    "#endif\r\n"
-    "\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
-
-#ifndef _MAC
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x2L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040c04b0"
-        BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "object_viewer DLL\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
-            VALUE "InternalName", "object_viewer\0"
-            VALUE "LegalCopyright", "Copyright (C) 2001\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "object_viewer.DLL\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Bibliothèque de liaison dynamique object_viewer\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
-            VALUE "SpecialBuild", "\0"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x40c, 1200
-    END
-END
-
-#endif    // !_MAC
-
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
@@ -438,6 +354,8 @@ BEGIN
     LTEXT           "Motion every n frames :",IDC_STATIC,2,209,51,18
     CONTROL         "",IDC_PARTICLE_NUMBER_POS,"Static",SS_BLACKFRAME,70,7,
                     225,21
+    CONTROL         "Disgrade with lod",IDC_DISGRADE_WITH_LOD,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,94,31,69,11
 END
 
 IDD_SELECT_RANGE DIALOG DISCARDABLE  0, 0, 119, 66
@@ -461,7 +379,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Button1",IDC_START_PICTURE,7,6,24,24,BS_BITMAP
     PUSHBUTTON      "Button1",IDC_STOP_PICTURE,37,6,24,24,BS_BITMAP
-    CONTROL         "Display bbox",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Display bbox",IDC_DISPLAY_BBOX,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,37,54,17
 END
 
@@ -729,7 +647,7 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_EDIT_PARTICLE_SYSTEM DIALOG DISCARDABLE  0, 0, 307, 300
+IDD_EDIT_PARTICLE_SYSTEM DIALOG DISCARDABLE  0, 0, 307, 356
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -750,14 +668,29 @@ BEGIN
     LTEXT           "LOD Ratio :",IDC_STATIC,10,226,56,11
     CONTROL         "Use Precomputed Bounding Box",IDC_PRECOMPUTE_BBOX,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,249,121,12
-    GROUPBOX        "",IDC_STATIC,4,258,198,38
-    EDITTEXT        IDC_EDIT1,8,266,47,16,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT2,57,266,47,16,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT3,106,266,47,16,ES_AUTOHSCROLL
+    GROUPBOX        "",IDC_STATIC,4,258,267,38
+    EDITTEXT        IDC_BB_X,8,266,47,16,ES_AUTOHSCROLL
+    EDITTEXT        IDC_BB_Y,57,266,47,16,ES_AUTOHSCROLL
+    EDITTEXT        IDC_BB_Z,106,266,47,16,ES_AUTOHSCROLL
     LTEXT           "X",IDC_STATIC,28,284,8,10
     LTEXT           "Y",IDC_STATIC,78,285,8,10
     LTEXT           "Z",IDC_STATIC,126,285,8,10
-    PUSHBUTTON      "Update",IDC_BUTTON2,156,266,43,16
+    PUSHBUTTON      "Update",IDC_UPDATE_BBOX,156,266,43,16
+    PUSHBUTTON      "+ 10 %",IDC_INC_BBOX,201,266,31,16
+    PUSHBUTTON      "- 10 %",IDC_DEC_BBOX,235,266,31,16
+    GROUPBOX        "System life",IDC_STATIC,4,299,295,45
+    CONTROL         "Model removed when out of range",
+                    IDC_DIE_WHEN_OUT_OF_RANGE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,307,124,11
+    LTEXT           "Die on event :",IDC_STATIC,7,321,46,9
+    COMBOBOX        IDC_PS_DIE_ON_EVENT,55,319,106,45,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Apply after delay :",IDC_STATIC,169,320,58,11
+    EDITTEXT        IDC_APPLY_AFTRE_DELAY,231,318,29,13,ES_AUTOHSCROLL
+    LTEXT           "s",IDC_STATIC,265,320,8,9
+    CONTROL         "PS removed when out of frustrum",
+                    IDC_DIE_WHEN_OUT_OF_FRUSTRUM,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,134,307,123,10
 END
 
 IDD_BIN_OP DIALOG DISCARDABLE  0, 0, 390, 174
@@ -1032,7 +965,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 300
         TOPMARGIN, 7
-        BOTTOMMARGIN, 293
+        BOTTOMMARGIN, 349
     END
 
     IDD_BIN_OP, DIALOG
@@ -1044,6 +977,90 @@ BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 12, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\object_viewer.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""l.fra\\afxres.rc""          // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040c04b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "object_viewer DLL\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "object_viewer\0"
+            VALUE "LegalCopyright", "Copyright (C) 2001\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "object_viewer.DLL\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "Bibliothèque de liaison dynamique object_viewer\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x40c, 1200
+    END
+END
+
+#endif    // !_MAC
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1173,7 +1190,7 @@ BEGIN
         MENUITEM "&Animation",                  ID_WINDOW_ANIMATION
         MENUITEM "Animation &set",              ID_WINDOW_ANIMATIONSET
         MENUITEM "&Mixer slots",                ID_WINDOW_MIXERSSLOTS
-        MENUITEM "&Paticles",                   ID_WINDOW_PATICLES
+        MENUITEM "&Particles",                  ID_WINDOW_PATICLES
     END
 END
 
@@ -1271,6 +1288,19 @@ BEGIN
 0x0033, 
     IDC_USER_PARAM_INDEX, 0x403, 2, 0
 0x0034, 
+    0
+END
+
+IDD_EDIT_PARTICLE_SYSTEM DLGINIT
+BEGIN
+    IDC_PS_DIE_ON_EVENT, 0x403, 9, 0
+0x6944, 0x6173, 0x6c62, 0x6465, "\000" 
+    IDC_PS_DIE_ON_EVENT, 0x403, 18, 0
+0x6f4e, 0x6d20, 0x726f, 0x2065, 0x6170, 0x7472, 0x6369, 0x656c, 0x0073, 
+
+    IDC_PS_DIE_ON_EVENT, 0x403, 31, 0
+0x6f4e, 0x6d20, 0x726f, 0x2065, 0x6170, 0x7472, 0x6369, 0x656c, 0x2073, 
+0x6e61, 0x2064, 0x6d65, 0x7469, 0x6574, 0x7372, "\000" 
     0
 END
 

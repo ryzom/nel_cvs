@@ -31,14 +31,20 @@ public:
 
 	~CParticleSystemEdit() ;
 
-	init(CWnd *pParent) ;
+	void init(CWnd *pParent) ;
 // Dialog Data
 	//{{AFX_DATA(CParticleSystemEdit)
 	enum { IDD = IDD_EDIT_PARTICLE_SYSTEM };
+	CComboBox	m_DieOnEvent;
+	CButton	m_PrecomputeBBoxCtrl;
+	CEdit	m_BBoxZCtrl;
+	CEdit	m_BBoxYCtrl;
+	CEdit	m_BBoxXCtrl;
 	CButton	m_EnableSlowDownCtrl;
 	BOOL	m_AccurateIntegration;
 	BOOL	m_EnableSlowDown;
-	BOOL	m_PrecomputeBBox;
+	BOOL	m_DieWhenOutOfRange;
+	BOOL	m_DieWhenOutOfFrustrum;
 	//}}AFX_DATA
 
 
@@ -63,12 +69,20 @@ protected:
 	afx_msg void OnAccurateIntegration();
 	afx_msg void OnEnableSlowDown();
 	afx_msg void OnPrecomputeBbox();
+	afx_msg void OnUpdateBbox();
+	afx_msg void OnIncBbox();
+	afx_msg void OnDecBbox();
+	afx_msg void OnDieWhenOutOfRange();
+	afx_msg void OnSelchangePsDieOnEvent();
+	afx_msg void OnChangeApplyAfterDelay();
+	afx_msg void OnDieWhenOutOfFrustrum();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 
 	void updatePrecomputedBBoxParams(void) ;
 	void updateIntegrationParams(void) ;
+	void updateDieOnEventParams(void) ;
 
     /// wrapper to tune user parameters
 	struct CUserParamWrapper : public IPSWrapperFloat

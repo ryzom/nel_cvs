@@ -1,7 +1,7 @@
 /** \file point_light_model.cpp
  * <File description>
  *
- * $Id: point_light_model.cpp,v 1.7 2003/08/07 08:49:44 berenguier Exp $
+ * $Id: point_light_model.cpp,v 1.8 2004/06/22 10:08:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,9 @@
 #include "3d/scene.h"
 
 
+using namespace NLMISC;
+	
+
 namespace NL3D {
 
 
@@ -46,6 +49,7 @@ CPointLightModel::CPointLightModel()
 {
 	_DeltaPosToSkeletonWhenOutOfFrustum.set(0, 0, 1.5f);
 	_TimeFromLastClippedSpotDirection= 0;
+	_InfluenceLightMap= false;
 }
 
 
@@ -151,6 +155,35 @@ void	CPointLightModel::traverseLight()
 		// now, insert this light in the quadGrid. NB: in CLightTrav::traverse(), the quadGrid is cleared before here.
 		// This light will touch (resetLighting()) any model it may influence.
 		lightTrav.LightingManager.addDynamicLight(&PointLight);
+
+
+		// if this light is the one that should influence the lightmapped objects
+		if(_InfluenceLightMap)
+		{
+			// setup a light with attenuation, for more accurate vertex lighting
+			CLight	vertexLight;
+
+			// setup position/type/direction/color
+			if(PointLight.getType()!=CPointLight::SpotLight)
+				vertexLight.setupPointLight(CRGBA::Black, PointLight.getDiffuse(), PointLight.getSpecular(), 
+					PointLight.getPosition(), CVector::K);
+			else
+				vertexLight.setupSpotLight(CRGBA::Black, PointLight.getDiffuse(), PointLight.getSpecular(), 
+					PointLight.getPosition(), PointLight.getSpotDirection(), 1, float(Pi)/2);
+
+			// setup attenuation
+			vertexLight.setupAttenuation(PointLight.getAttenuationBegin(), PointLight.getAttenuationEnd());
+
+			// setup hotspot for spotLight
+			if(PointLight.getType()==CPointLight::SpotLight)
+			{
+				// hotspot == where attenuation should be 0.9
+				vertexLight.setupSpotExponent(PointLight.getSpotAngleBegin()*0.9f + PointLight.getSpotAngleEnd()*0.1f);
+			}
+
+			// setup the driver
+			getOwnerScene()->getDriver()->setLightMapDynamicLight(true, vertexLight);
+		}
 	}
 
 }

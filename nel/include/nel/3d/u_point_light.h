@@ -1,7 +1,7 @@
 /** \file u_point_light.h
  * User interface for point lights.
  *
- * $Id: u_point_light.h,v 1.3 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: u_point_light.h,v 1.4 2004/06/22 10:08:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,6 +107,18 @@ public:
 	void			setDeltaPosToSkeletonWhenOutOfFrustum(const CVector &deltaPos);
 	/// see setDeltaPosToSkeletonWhenOutOfFrustum()
 	const CVector	&getDeltaPosToSkeletonWhenOutOfFrustum() const;
+
+
+	/** Special For Lightmap dynamic Lighting. if true, this light will influence lightmaped objects.
+	 *	Lightmaped objects can be lighted by ONLY ONE (preference big) dynamic light. 
+	 *	If you setup multiple CPointLightModel with this flag, then it will randomly choose between one 
+	 *	of those visible lights.
+	 *	NB: Lighting is made hardware per vertex.
+	 */
+	void			setInfluenceLightMap(bool enable);
+	bool			getInfluenceLightMap() const;
+
+
 
 	/// Proxy interface
 

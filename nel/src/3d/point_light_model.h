@@ -1,7 +1,7 @@
 /** \file point_light_model.h
  * <File description>
  *
- * $Id: point_light_model.h,v 1.5 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: point_light_model.h,v 1.6 2004/06/22 10:08:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,16 @@ public:
 	const CVector	&getDeltaPosToSkeletonWhenOutOfFrustum() const;
 
 
+	/** Special For Lightmap dynamic Lighting. if true, this light will influence lightmaped objects.
+	 *	Lightmaped objects can be lighted by ONLY ONE (preference big) dynamic light. 
+	 *	If you setup multiple CPointLightModel with this flag, then it will randomly choose between one 
+	 *	of those visible lights.
+	 *	NB: Lighting is made hardware per vertex.
+	 */
+	void			setInfluenceLightMap(bool enable) {_InfluenceLightMap= enable;}
+	bool			getInfluenceLightMap() const {return _InfluenceLightMap;}
+	
+
 	/** The traverse() method is called to update the worldPosition of the light, resetLightedModels(), and 
 	 *	re-insert the light in the lightingManager.
 	 */
@@ -135,6 +145,10 @@ private:
 	 */
 	CVector			_LastWorldSpotDirectionWhenOutOfFrustum;
 	float			_TimeFromLastClippedSpotDirection;
+
+
+	/// see setInfluenceLightMap()
+	bool			_InfluenceLightMap;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file point_light_user.cpp
  * User interface for point lights.
  *
- * $Id: u_point_light.cpp,v 1.2 2004/05/12 12:51:49 corvazier Exp $
+ * $Id: u_point_light.cpp,v 1.3 2004/06/22 10:08:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -193,5 +193,20 @@ const CVector &UPointLight::getDeltaPosToSkeletonWhenOutOfFrustum() const
 }
 
 // ***************************************************************************
+void			UPointLight::setInfluenceLightMap(bool enable)
+{
+	NL3D_MEM_POINTLIGHT
+	CPointLightModel	*object = getObjectPtr();
+	object->setInfluenceLightMap(enable);
+}
+
+// ***************************************************************************
+bool			UPointLight::getInfluenceLightMap() const
+{
+	NL3D_MEM_POINTLIGHT
+	CPointLightModel	*object = getObjectPtr();
+	return object->getInfluenceLightMap() ;
+}
+
 
 } // NL3D

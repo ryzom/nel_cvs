@@ -1,7 +1,7 @@
 /** \file light_trav.cpp
  * <File description>
  *
- * $Id: light_trav.cpp,v 1.14 2003/11/07 14:27:14 besson Exp $
+ * $Id: light_trav.cpp,v 1.15 2004/06/22 10:08:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/root_model.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "3d/point_light_model.h"
+#include "3d/scene.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -98,6 +99,9 @@ void		CLightTrav::traverse()
 		}
 	}
 
+
+	// By default, lightmaped objects are not lit by any light
+	Scene->getDriver()->setLightMapDynamicLight(false, CLight());
 
 	// clear the quadGrid of dynamicLights
 	LightingManager.clearDynamicLights();

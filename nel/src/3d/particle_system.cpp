@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.28 2001/08/09 08:00:42 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.29 2001/08/15 12:01:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -429,7 +429,7 @@ void CParticleSystem::getLODVect(NLMISC::CVector &v, float &offset,  bool system
 	else
 	{
 		const CVector tv = _InvSysMat.mulVector(_InvertedViewMat.getJ());
-		const CVector org = _InvSysMat.mulVector(_InvertedViewMat.getPos());
+		const CVector org = _InvSysMat * _InvertedViewMat.getPos();
 		v = _InvCurrentViewDist * tv;
 		offset = - org * v;
 	}

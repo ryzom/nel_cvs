@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.7 2002/07/03 09:56:15 lecroart Exp $
+ * $Id: sheet_id.h,v 1.8 2002/10/02 15:51:17 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -140,7 +140,7 @@ public :
 	/**
 	 *  Generate a vector of all the sheet ids of a given type 
 	 *  This operation is non-destructive, the new entries are appended to the result vector
-	 *  note: fileExtension include the '.' eg ".bla"
+	 *  note: fileExtension *not* include the '.' eg "bla" and *not* ".bla"
 	 **/
 	static void buildIdVector(std::vector <CSheetId> &result);
 	static void buildIdVector(std::vector <CSheetId> &result, uint8 type);
@@ -150,7 +150,7 @@ public :
 
 	/**
 	 *  Convert between file extensions and numeric sheet types
-	 *  note: fileExtension include the '.' eg ".bla"
+	 *  note: fileExtension *not* include the '.' eg "bla" and *not* ".bla"
 	 **/
 	static const std::string &fileExtensionFromType(uint8 type);
 	static uint32 typeFromFileExtension(const std::string &fileExtension);

@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.5 2002/07/04 14:50:46 vizerie Exp $
+ * $Id: seg_remanence.cpp,v 1.6 2002/08/06 13:55:36 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -127,7 +127,7 @@ void CSegRemanence::copyFromOther(CSegRemanence &other)
 void CSegRemanence::registerBasic()
 {
 	CMOT::registerModel(SegRemanenceShapeId, TransformShapeId, CSegRemanence::creator);	
-	CMOT::registerObs (HrcTravId, SegRemanenceShapeId, CSegRemanenceHrcObs::creator);
+//	CMOT::registerObs (HrcTravId, SegRemanenceShapeId, CSegRemanenceHrcObs::creator);
 	CMOT::registerObs(AnimDetailTravId, SegRemanenceShapeId, CSegRemanenceAnimDetailObs::creator);
 }
 
@@ -316,6 +316,7 @@ void CSegRemanence::samplePos(float date)
 }
 
 //===============================================================
+/*
 void CSegRemanenceHrcObs::traverse(IObs *caller)
 {
 	CTransformHrcObs::traverse (caller);
@@ -341,12 +342,14 @@ void CSegRemanenceHrcObs::traverse(IObs *caller)
 		sr->samplePos((float) scene->getCurrentTime());
 	}
 }
+*/
 
-
+/*
 //===============================================================
 CSegRemanenceHrcObs::CSegRemanenceHrcObs() : _LastSampleFrame(0)
 {	
 }
+*/
 
 //===============================================================
 void CSegRemanence::start()
@@ -417,9 +420,33 @@ void CSegRemanenceAnimDetailObs::traverse(IObs *caller)
 {
 	CTransformAnimDetailObs::traverse(caller);
 	CSegRemanence *sr = NLMISC::safe_cast<CSegRemanence *>(Model);
-	
 	if (sr->isStarted())
 	{	
+		/////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////
+
+		CScene *scene = NLMISC::safe_cast<ITravScene *>(Trav)->Scene;
+		if (scene->getNumRender() != (_LastSampleFrame + 1))
+		{
+			if (!sr->isStopping())
+			{			
+				// if wasn't visible at previous frame, must invalidate position
+				sr->restart();
+			}
+			else
+			{
+				// ribbon started unrolling when it disapperaed from screen so simply remove it
+				sr->stopNoUnroll();
+			}
+		}		
+		_LastSampleFrame = scene->getNumRender();
+		sr->setupFromShape();
+		sr->samplePos((float) scene->getCurrentTime());
+
+		/////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////
+
+	
 		// test if animated material must be updated.
 		if(sr->IAnimatable::isTouched(CSegRemanence::OwnerBit))
 		{
@@ -429,6 +456,11 @@ void CSegRemanenceAnimDetailObs::traverse(IObs *caller)
 		}
 	}
 }
+
+CSegRemanenceAnimDetailObs::CSegRemanenceAnimDetailObs() : _LastSampleFrame(0)
+{	
+}
+
 
 
 }

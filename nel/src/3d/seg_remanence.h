@@ -1,6 +1,6 @@
 /** \file seg_remanence.h
  * A segment that let a remanence on the screen (for sword trace)
- * $Id: seg_remanence.h,v 1.2 2002/07/04 10:35:39 vizerie Exp $
+ * $Id: seg_remanence.h,v 1.3 2002/08/06 13:55:36 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -163,7 +163,7 @@ public:
   * \author Nevrax France
   * \date 2002
   */
-class CSegRemanenceHrcObs : public CTransformHrcObs
+/* class CSegRemanenceHrcObs : public CTransformHrcObs
 {
 public:
 	CSegRemanenceHrcObs();
@@ -171,7 +171,7 @@ public:
 	static IObs	*creator () { return new CSegRemanenceHrcObs; }	
 private:
 	uint64				_LastSampleFrame;
-};
+}; */
 
 /** Detail ani observer (for texture animation)
   *
@@ -183,6 +183,7 @@ class CSegRemanenceAnimDetailObs : public CTransformAnimDetailObs
 {
 public:
 
+	CSegRemanenceAnimDetailObs();
 	/** this do :
 	 *  - call CTransformAnimDetailObs::traverse()
 	 *  - update animated material if any
@@ -192,6 +193,8 @@ public:
 
 public:
 	static IObs	*creator() {return new CSegRemanenceAnimDetailObs;}
+private:
+	uint64				_LastSampleFrame;
 };
 
 

@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=sound - Win32 Debug
+CFG=sound - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,13 +13,14 @@ CFG=sound - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "sound.mak" CFG="sound - Win32 Debug"
+!MESSAGE NMAKE /f "sound.mak" CFG="sound - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "sound - Win32 Release" (based on "Win32 (x86) Static Library")
 !MESSAGE "sound - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE "sound - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
+!MESSAGE "sound - Win32 DebugFast" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -36,13 +37,14 @@ RSC=rc.exe
 # PROP BASE Output_Dir "Release"
 # PROP BASE Intermediate_Dir "Release"
 # PROP BASE Target_Dir ""
-# PROP Use_MFC 1
+# PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../obj/Release"
 # PROP Intermediate_Dir "../obj/Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -65,7 +67,8 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "../obj/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /FD /GZ /c
+# SUBTRACT CPP /Gy /YX
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -89,6 +92,7 @@ LIB32=link.exe -lib
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -98,6 +102,31 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nlsound_rd.lib"
 
+!ELSEIF  "$(CFG)" == "sound - Win32 DebugFast"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "sound___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "sound___Win32_DebugFast"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "../obj/DebugFast"
+# PROP Intermediate_Dir "../obj/DebugFast"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /FD /GZ /c
+# SUBTRACT BASE CPP /Gy /YX
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /Fr /FD /GZ /c
+# SUBTRACT CPP /Gy /YX
+# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD RSC /l 0x40c /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"../lib/nlsound_debug.lib"
+# ADD LIB32 /nologo /out:"../lib/nlsound_debug.lib"
+
 !ENDIF 
 
 # Begin Target
@@ -105,6 +134,7 @@ LIB32=link.exe -lib
 # Name "sound - Win32 Release"
 # Name "sound - Win32 Debug"
 # Name "sound - Win32 ReleaseDebug"
+# Name "sound - Win32 DebugFast"
 # Begin Group "User"
 
 # PROP Default_Filter ""
@@ -215,10 +245,6 @@ SOURCE=.\sound\sound.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\sound\track.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\obj\Debug\nlsound_lowlevel_debug.lib
 
 !IF  "$(CFG)" == "sound - Win32 Release"
@@ -230,6 +256,8 @@ SOURCE=..\obj\Debug\nlsound_lowlevel_debug.lib
 !ELSEIF  "$(CFG)" == "sound - Win32 ReleaseDebug"
 
 # PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "sound - Win32 DebugFast"
 
 !ENDIF 
 
@@ -248,6 +276,11 @@ SOURCE=..\obj\Release\nlsound_lowlevel.lib
 
 # PROP Exclude_From_Build 1
 
+!ELSEIF  "$(CFG)" == "sound - Win32 DebugFast"
+
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+
 !ENDIF 
 
 # End Source File
@@ -264,6 +297,11 @@ SOURCE=..\obj\ReleaseDebug\nlsound_lowlevel_rd.lib
 # PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "sound - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "sound - Win32 DebugFast"
+
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
 
 !ENDIF 
 

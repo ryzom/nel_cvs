@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=misc - Win32 Debug
+CFG=misc - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,13 +13,14 @@ CFG=misc - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "misc.mak" CFG="misc - Win32 Debug"
+!MESSAGE NMAKE /f "misc.mak" CFG="misc - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "misc - Win32 Release" (based on "Win32 (x86) Static Library")
 !MESSAGE "misc - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE "misc - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
+!MESSAGE "misc - Win32 DebugFast" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -43,6 +44,7 @@ RSC=rc.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /FD /c
+# SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -65,7 +67,8 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "../obj/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /D "_MBCS" /FR /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /FD /GZ /c
+# SUBTRACT CPP /Gy
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -89,6 +92,7 @@ LIB32=link.exe -lib
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /FD /c
+# SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -98,6 +102,31 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"../lib/nlmisc.lib"
 # ADD LIB32 /nologo /out:"../lib/nlmisc_rd.lib"
 
+!ELSEIF  "$(CFG)" == "misc - Win32 DebugFast"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "misc___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "misc___Win32_DebugFast"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "../obj/DebugFast"
+# PROP Intermediate_Dir "../obj/DebugFast"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /FD /GZ /c
+# SUBTRACT BASE CPP /Gy
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /Fr /FD /GZ /c
+# SUBTRACT CPP /Gy
+# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD RSC /l 0x40c /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"../lib/nlmisc_debug.lib"
+# ADD LIB32 /nologo /out:"../lib/nlmisc_debug.lib"
+
 !ENDIF 
 
 # Begin Target
@@ -105,6 +134,7 @@ LIB32=link.exe -lib
 # Name "misc - Win32 Release"
 # Name "misc - Win32 Debug"
 # Name "misc - Win32 ReleaseDebug"
+# Name "misc - Win32 DebugFast"
 # Begin Group "Stream"
 
 # PROP Default_Filter ""
@@ -333,6 +363,11 @@ SOURCE=.\misc\config_file\config_file.yacc
 # PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 
+!ELSEIF  "$(CFG)" == "misc - Win32 DebugFast"
+
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+
 !ENDIF 
 
 # End Source File
@@ -471,11 +506,11 @@ SOURCE=..\include\nel\misc\common.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\misc\cpu_info.cpp
+SOURCE=.\misc\cpu_info.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\include\nel\misc\cpu_info.h
+SOURCE=..\include\nel\misc\cpu_info.h
 # End Source File
 # Begin Source File
 

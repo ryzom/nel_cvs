@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=3d - Win32 Debug
+CFG=3d - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,20 +13,21 @@ CFG=3d - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "3d.mak" CFG="3d - Win32 Debug"
+!MESSAGE NMAKE /f "3d.mak" CFG="3d - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "3d - Win32 Release" (based on "Win32 (x86) Static Library")
 !MESSAGE "3d - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE "3d - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
+!MESSAGE "3d - Win32 DebugFast" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "3d - Win32 Release"
@@ -43,12 +44,13 @@ RSC=rc.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /FD /c
+# SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d.lib"
 
@@ -65,14 +67,14 @@ LIB32=xilink6.exe -lib
 # PROP Intermediate_Dir "../obj/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm- /GR /GX /Zi /Od /D "_MBCS" /D "_LIB" /D "WIN32" /D "_DEBUG" /D "__STL_DEBUG" /FR /FD /GZ /Zm200 /c
-# SUBTRACT CPP /YX
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /FD /GZ /Zm200 /c
+# SUBTRACT CPP /Gy /YX
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d_debug.lib"
 
@@ -89,15 +91,41 @@ LIB32=xilink6.exe -lib
 # PROP Intermediate_Dir "../obj/ReleaseDebug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /FR /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /FD /c
+# SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"../lib/nl3d.lib"
 # ADD LIB32 /nologo /out:"../lib/nl3d_rd.lib"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "3d___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "3d___Win32_DebugFast"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "../obj/DebugFast"
+# PROP Intermediate_Dir "../obj/DebugFast"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /FD /GZ /Zm200 /c
+# SUBTRACT BASE CPP /Gy /YX
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /Fr /FD /GZ /Zm200 /c
+# SUBTRACT CPP /Gy /YX
+# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD RSC /l 0x40c /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"../lib/nl3d_debug.lib"
+# ADD LIB32 /nologo /out:"../lib/nl3d_debug.lib"
 
 !ENDIF 
 
@@ -106,6 +134,7 @@ LIB32=xilink6.exe -lib
 # Name "3d - Win32 Release"
 # Name "3d - Win32 Debug"
 # Name "3d - Win32 ReleaseDebug"
+# Name "3d - Win32 DebugFast"
 # Begin Group "Traversals"
 
 # PROP Default_Filter ""
@@ -288,22 +317,6 @@ SOURCE=.\3d\zone_search.h
 # Begin Group "Tools"
 
 # PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\3d\zone_lighter.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\zone_lighter.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\zone_corner_smoother.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\zone_corner_smoother.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\3d\zone_smoother.cpp
@@ -687,11 +700,11 @@ SOURCE=.\3d\shape.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\shape_bank.cpp
+SOURCE=.\3d\shape_bank.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\shape_bank.h
+SOURCE=.\3d\shape_bank.h
 # End Source File
 # Begin Source File
 
@@ -1282,11 +1295,11 @@ SOURCE=.\3d\particle_system.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\particle_system_process.cpp
+SOURCE=.\3d\particle_system_process.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\particle_system_process.h
+SOURCE=.\3d\particle_system_process.h
 # End Source File
 # Begin Source File
 
@@ -1298,15 +1311,15 @@ SOURCE=.\3d\ps_attrib_maker.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\ps_attrib_maker_bin_op.cpp
+SOURCE=.\3d\ps_attrib_maker_bin_op.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\ps_attrib_maker_bin_op.h
+SOURCE=.\3d\ps_attrib_maker_bin_op.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\ps_attrib_maker_helper.h
+SOURCE=.\3d\ps_attrib_maker_helper.h
 # End Source File
 # Begin Source File
 
@@ -1322,7 +1335,7 @@ SOURCE=.\3d\ps_color.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\ps_direction.h
+SOURCE=.\3d\ps_direction.h
 # End Source File
 # Begin Source File
 
@@ -1370,7 +1383,7 @@ SOURCE=.\3d\ps_located.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\ps_lod.h
+SOURCE=.\3d\ps_lod.h
 # End Source File
 # Begin Source File
 
@@ -1383,6 +1396,8 @@ SOURCE=.\3d\ps_particle.cpp
 !ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
 
 # ADD CPP /FAcs
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
 
 !ENDIF 
 
@@ -1539,11 +1554,11 @@ SOURCE=.\3d\event_mouse_listener.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\fast_floor.cpp
+SOURCE=.\3d\fast_floor.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\fast_floor.h
+SOURCE=.\3d\fast_floor.h
 # End Source File
 # Begin Source File
 
@@ -1567,6 +1582,8 @@ SOURCE=.\3d\mot.cpp
 
 # ADD BASE CPP /YX
 # ADD CPP /YX
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
 
 !ENDIF 
 

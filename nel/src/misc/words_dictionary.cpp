@@ -1,7 +1,7 @@
 /** \file words_dictionary.cpp
  * Words dictionary
  *
- * $Id: words_dictionary.cpp,v 1.1 2003/11/12 17:52:58 cado Exp $
+ * $Id: words_dictionary.cpp,v 1.2 2004/01/13 18:34:01 cado Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -43,8 +43,11 @@ CWordsDictionary::CWordsDictionary()
 }
 
 
-/*
- * Load the config file and the related words files. Return false in case of failure.
+/* Load the config file and the related words files. Return false in case of failure.
+ * Config file variables:
+ * - WordsPath: where to find *_words_<languageCode>.txt
+ * - LanguageCode: language code (ex: en for English)
+ * - Utf8: results are in UTF8, otherwise in ANSI string
  */
 bool CWordsDictionary::init( const string& configFileName )
 {
@@ -61,6 +64,7 @@ bool CWordsDictionary::init( const string& configFileName )
 		nlwarning( "WD: %s", e.what() );
 	}
 	string wordsPath, languageCode;
+	bool utf8;
 	if ( cfFound )
 	{
 		CConfigFile::CVar *v = cf.getVarPtr( "WordsPath" );
@@ -73,6 +77,9 @@ bool CWordsDictionary::init( const string& configFileName )
 		v = cf.getVarPtr( "LanguageCode" );
 		if ( v )
 			languageCode = v->asString();
+		v = cf.getVarPtr( "Utf8" );
+		if ( v )
+			utf8 = (v->asInt() == 1);
 	}
 	if ( languageCode.empty() )
 		languageCode = "en";
@@ -104,7 +111,8 @@ bool CWordsDictionary::init( const string& configFileName )
 						continue;
 					STRING_MANAGER::TWorksheet::TRow& row = *ip;
 					_Keys.push_back( row[ck].toString() );
-					_Words.push_back( row[cw].toUtf8() );
+					string& word = utf8 ? row[cw].toUtf8() : row[cw].toString();
+					_Words.push_back( word );
 				}
 			}
 			else
@@ -172,6 +180,20 @@ void CWordsDictionary::lookup( const CSString& inputStr, CVectorSString& resultV
 			if ( ((!findAtBeginning) || (p==0)) && ((!findAtEnd) || (p==word.size()-searchStr.size())) )
 				resultVec.push_back( makeResult( _Keys[ivs-_Words.begin()], word ) );
 		}
+	}
+}
+
+
+/*
+ * Set the result vector with the word(s) corresponding to the key
+ */
+void CWordsDictionary::exactLookupByKey( const CSString& key, CVectorSString& resultVec )
+{
+	// Search
+	for ( CVectorSString::const_iterator ivs=_Keys.begin(); ivs!=_Keys.end(); ++ivs )
+	{
+		if ( key == *ivs )
+			resultVec.push_back( _Words[ivs-_Keys.begin()] );
 	}
 }
 

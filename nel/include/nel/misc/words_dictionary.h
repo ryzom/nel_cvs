@@ -1,7 +1,7 @@
 /** \file words_dictionary.h
  * Words dictionary>
  *
- * $Id: words_dictionary.h,v 1.1 2003/11/12 17:52:58 cado Exp $
+ * $Id: words_dictionary.h,v 1.2 2004/01/13 18:34:01 cado Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NLMISC {
 
 /**
  * Words dictionary: allows to search for keys and words in <type>_words_<language>.txt
- * Unicode files.
+ * Unicode files. All searches are case not-sensitive.
  *
  * \author Olivier Cado
  * \author Nevrax France
@@ -48,7 +48,12 @@ public:
 	/// Constructor
 	CWordsDictionary();
 
-	/// Load the config file and the related words files. Return false in case of failure.
+	/** Load the config file and the related words files. Return false in case of failure.
+	 * Config file variables:
+	 * - WordsPath: where to find *_words_<languageCode>.txt
+	 * - LanguageCode: language code (ex: en for English)
+	 * - Utf8: results are in UTF8, otherwise in ANSI string
+	 */
 	bool			init( const std::string& configFileName="words_dic.cfg" );
 
 	/**
@@ -58,12 +63,19 @@ public:
 	 * The following tags can modify the behaviour of the search algorithm:
 	 * - ^mystring returns mystring only if it is at the beginning of a key or word
 	 * - mystring$ returns mystring only if it is at the end of a key or word
-	 * All returned words are in UTF8.
+	 * All returned words are in UTF8 string or ANSI string, depending of the config file.
 	 */
 	void			lookup( const CSString& inputStr, CVectorSString& resultVec );
 
+	/// Set the result vector with the word(s) corresponding to the key
+	void			exactLookupByKey( const CSString& key, CVectorSString& resultVec );
+
 	/// Return the key contained in the provided string returned by lookup() (without extension)
 	CSString		getWordsKey( const CSString& resultStr );
+
+	// Accessors
+	const CVectorSString& getKeys() { return _Keys; }
+	const CVectorSString& getWords() { return _Words; }
 
 protected:
 

@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.10 2002/01/02 12:34:33 berenguier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.11 2002/01/08 09:39:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ CVisualCollisionEntity::CVisualCollisionEntity(CVisualCollisionManager *owner) :
 	_Owner= owner;
 	_PatchQuadBlocks.reserve(_StartPatchQuadBlockSize);
 
-	_CurrentBBox.setHalfSize(CVector::Null);
+	_CurrentBBoxValidity.setHalfSize(CVector::Null);
 
 	_GroundMode= true;
 	_CeilMode= false;
@@ -305,7 +305,7 @@ bool		CVisualCollisionEntity::triangleIntersect(CTriangle &tri, const CVector &p
 void		CVisualCollisionEntity::testComputeLandscape(const CVector &pos)
 {
 	// if new position is out of the bbox surounding the entity.
-	if(_CurrentBBox.getHalfSize()==CVector::Null || !_CurrentBBox.include(pos))
+	if(_CurrentBBoxValidity.getHalfSize()==CVector::Null || !_CurrentBBoxValidity.include(pos))
 	{
 		// must recompute the data around the entity.
 		doComputeLandscape(pos);
@@ -319,12 +319,18 @@ void		CVisualCollisionEntity::doComputeLandscape(const CVector &pos)
 
 	// setup new bbox.
 	//==================
-	_CurrentBBox.setCenter(pos);
-	_CurrentBBox.setHalfSize(CVector(BBoxRadius, BBoxRadius, BBoxRadiusZ));
+	// compute the bbox which must includes the patchQuadBlocks
+	CAABBox		bboxToIncludePatchs;
+	bboxToIncludePatchs.setCenter(pos);
+	bboxToIncludePatchs.setHalfSize(CVector(BBoxRadius, BBoxRadius, BBoxRadiusZ));
+	// setup the _CurrentBBoxValidity with same values, but BBoxRadiusZ/2
+	_CurrentBBoxValidity.setCenter(pos);
+	_CurrentBBoxValidity.setHalfSize(CVector(BBoxRadius, BBoxRadius, BBoxRadiusZ/2));
+
 
 	// Search landscape blocks which are in the bbox.
 	//==================
-	_Owner->_Landscape->buildPatchBlocksInBBox(_CurrentBBox, _TmpBlockIds);
+	_Owner->_Landscape->buildPatchBlocksInBBox(bboxToIncludePatchs, _TmpBlockIds);
 
 
 

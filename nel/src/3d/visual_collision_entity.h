@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.h
  * <File description>
  *
- * $Id: visual_collision_entity.h,v 1.5 2002/01/02 12:34:33 berenguier Exp $
+ * $Id: visual_collision_entity.h,v 1.6 2002/01/08 09:39:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,14 +55,16 @@ public:
 
 
 	/** Snap the entity onto the ground. pos.z is modified so that it lies on the ground, according to rendered landscapes
-	 * and meshes. see setSnapToRenderedTesselation() option
+	 *	and meshes. see setSnapToRenderedTesselation() option.
+	 *	pos is checked with polygons that are at least (cache dependent) at +- 10m in altitude.
 	 * \return true if pos.z has been modified (sometimes it may not find a solution).
 	 */
 	bool	snapToGround(CVector &pos);
 
 
 	/** Snap the entity onto the ground. pos.z is modified so that it lies on the ground, according to rendered landscapes
-	 * and meshes.
+	 *	and meshes.
+	 *	pos is checked with polygons that are at least (cache dependent) at +- 10m in altitude.
 	 * \param normal the ret normal of where it is snapped. NB: if return false, not modified.
 	 * \return true if pos.z has been modified (sometimes it may not find a solution).
 	 */
@@ -98,7 +100,12 @@ public:
 	// @{
 	/// This is the radius of the bbox around the entity where we have correct collisions: 10m.
 	static const float					BBoxRadius;
-	/// Same as BBoxRadius, but for z value. This later should be greater because of NLPACS surface quadtree imprecision. 20m
+	/** Same as BBoxRadius, but for z value. This later should be greater because of NLPACS 
+	 *	surface quadtree imprecision. 20m
+	 *	NB: Because of caching, if the pos.z passed to snapToGround() is outside of the currentBBox 
+	 *	with BBoxRadiuZ/2 (=> 10m), then the bbox is recomputed.
+	 *	Hence, this actually means that a pos is checked with patchs that are at least at +- 10m in altitude.
+	 */
 	static const float					BBoxRadiusZ;
 	// @}
 
@@ -128,8 +135,8 @@ private:
 	std::vector<CPatchQuadBlock*>		_PatchQuadBlocks;
 	/// A quadgrid of chainlist of tileId (CVisualTileDescNode), which are around the entity.
 	CLandscapeCollisionGrid				_LandscapeQuadGrid;
-	/// The current BBox where the entity lies.
-	CAABBox								_CurrentBBox;
+	/// The current BBox where we don't need to recompute the patchQuadBlocks if the entity is in
+	CAABBox								_CurrentBBoxValidity;
 
 
 	/// Fast "2D" test of a triangle against ray P0 P1.

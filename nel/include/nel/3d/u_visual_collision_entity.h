@@ -1,7 +1,7 @@
 /** \file u_visual_collision_entity.h
  * <File description>
  *
- * $Id: u_visual_collision_entity.h,v 1.4 2001/12/27 11:18:00 berenguier Exp $
+ * $Id: u_visual_collision_entity.h,v 1.5 2002/01/08 09:40:06 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,14 +53,16 @@ public:
 
 
 	/** Snap the entity onto the ground. pos.z is modified so that it lies on the ground, according to rendered landscapes
-	 * and meshes setuped into the visual collision manager.
+	 *	and meshes setuped into the visual collision manager.
+	 *	pos is checked with polygons that are at least (cache dependent) at +- 10m in altitude.
 	 * \return true if pos.z has been modified (sometimes it may not find a solution).
 	 */
 	virtual bool	snapToGround(CVector &pos) =0;
 
 
 	/** Snap the entity onto the ground. pos.z is modified so that it lies on the ground, according to rendered landscapes
-	 * and meshes setuped into the visual collision manager.
+	 *	and meshes setuped into the visual collision manager.
+	 *	pos is checked with polygons that are at least (cache dependent) at +- 10m in altitude.
 	 * \param normal the ret normal of where it is snapped. NB: if return false, not modified.
 	 * \return true if pos.z has been modified (sometimes it may not find a solution).
 	 */

@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.16 2001/02/07 09:01:25 corvazier Exp $
+ * $Id: dru.h,v 1.17 2001/02/23 09:05:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ struct EDru : public NLMISC::Exception
 
 struct EDruOpenglDriverNotFound : public EDru
 {
-	virtual const char	*what() const throw() { return NL3D_DLL_NAME " is not found"; }
+	virtual const char	*what() const throw() { return NL3D_DLL_NAME " not found"; }
 };
 
 struct EDruOpenglDriverCorrupted : public EDru
@@ -101,6 +101,21 @@ public:
 	static void			drawTriangle (float x0, float y0, float x1, float y1, float x2, float y2, IDriver& driver, CRGBA col, CViewport viewport);
 	/// Draw a Quad in 2D. Warning: this is slow...
 	static void			drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col, CViewport viewport);
+	/**
+	  * Draw a color Quad in 2D. Warning: this is slow...
+	  *
+	  * \param x0 is the x coordinate of the lower left corner.
+	  * \param y0 is the y coordinate of the lower left corner.
+	  * \param x1 is the x coordinate of the upper right corner.
+	  * \param y1 is the y coordinate of the upper right corner.
+	  * \param col0 is the color of the lower left corner.
+	  * \param col0 is the color of the lower right corner.
+	  * \param col0 is the color of the upper right corner.
+	  * \param col0 is the color of the upper left corner.
+	  * \param driver is the driver to use to render the quad.
+	  * \param viewport is the viewport to use to render the quad.
+	  */
+	static void			drawQuad (float x0, float y0, float x1, float y1, CRGBA col0, CRGBA col1, CRGBA col2, CRGBA col3, IDriver& driver, CViewport viewport);
 	/// Draw a Quad in 2D. Warning: this is slow...
 	static void			drawQuad (float xcenter, float ycenter, float radius, IDriver& driver, CRGBA col, CViewport viewport);
 	/// Draw a Quad in 2D. Warning: this is slow...

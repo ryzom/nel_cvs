@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.29 2001/02/07 15:15:00 corvazier Exp $
+ * $Id: dru.cpp,v 1.30 2001/02/23 09:05:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,9 +77,8 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 	}
 
 	versionDriver = (IDRV_VERSION_PROC) GetProcAddress (hInst, IDRV_VERSION_PROC_NAME);
-	if (versionDriver == NULL)
+	if (versionDriver != NULL)
 	{
-		throw EDruOpenglDriverOldVersion();
 		if (versionDriver()<IDriver::InterfaceVersion)
 			throw EDruOpenglDriverOldVersion();
 		else if (versionDriver()>IDriver::InterfaceVersion)
@@ -105,9 +104,8 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 	}
 
 	versionDriver = (IDRV_VERSION_PROC) dlsym (handle, IDRV_VERSION_PROC_NAME);
-	if (versionDriver == NULL)
+	if (versionDriver != NULL)
 	{
-		throw EDruOpenglDriverOldVersion();
 		if (versionDriver()<IDriver::InterfaceVersion)
 			throw EDruOpenglDriverOldVersion();
 		else if (versionDriver()>IDriver::InterfaceVersion)
@@ -409,6 +407,42 @@ void			CDRU::drawLine(const CVector &a, const CVector &b, CRGBA color, IDriver& 
 	line.V0= a;
 	line.V1= b;
 	CDRU::drawLinesUnlit(&line, 1, mat, driver);
+}
+// ***************************************************************************
+void			CDRU::drawQuad (float x0, float y0, float x1, float y1, CRGBA col0, CRGBA col1, CRGBA col2, CRGBA col3, IDriver& driver, CViewport viewport)
+{
+	CMatrix mtx;
+	mtx.identity();
+	driver.setupViewport (viewport);
+	driver.setupViewMatrix (mtx);
+	driver.setupModelMatrix (mtx);
+	driver.setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
+
+	static CMaterial mat;
+	mat.initUnlit();
+	mat.setSrcBlend(CMaterial::srcalpha);
+	mat.setDstBlend(CMaterial::invsrcalpha);
+	mat.setBlend(true);
+	
+	static CVertexBuffer vb;
+	vb.setVertexFormat (IDRV_VF_XYZ|IDRV_VF_COLOR);
+	vb.setNumVertices (4);
+	vb.setVertexCoord (0, CVector (x0, 0, y0));
+	vb.setColor (0, col0);
+	vb.setVertexCoord (1, CVector (x1, 0, y0));
+	vb.setColor (1, col1);
+	vb.setVertexCoord (2, CVector (x1, 0, y1));
+	vb.setColor (2, col2);
+	vb.setVertexCoord (3, CVector (x0, 0, y1));
+	vb.setColor (3, col3);
+
+	driver.activeVertexBuffer(vb);
+
+	CPrimitiveBlock pb;
+	pb.setNumQuad (1);
+	pb.setQuad (0, 0, 1, 2, 3);
+
+	driver.render(pb, mat);
 }
 
 

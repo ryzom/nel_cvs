@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.44 2001/08/09 13:16:33 valignat Exp $
+# $Id: Makefile.am,v 1.45 2001/08/28 13:00:20 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -319,7 +319,7 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
 
 AM_CXXFLAGS          = -I$(top_srcdir)/src @FREETYPE_CFLAGS@
 
-libnel3d_la_LIBADD   = @FREETYPE_LIBS@ -ldl -lGL
+libnel3d_la_LIBADD   = @FREETYPE_LIBS@ -lc -ldl -lpthread -lGL
 
 libnel3d_la_LDFLAGS  = -version-info @LIBTOOL_VERSION@
 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.12 2001/07/27 17:25:40 valignat Exp $
+# $Id: Makefile.am,v 1.13 2001/08/28 13:00:20 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -35,7 +35,7 @@ libnelnet_la_SOURCES = buf_client.cpp                      \
 
 AM_CXXFLAGS          = -I$(top_srcdir)/src
 
-libnelnet_la_LIBADD  = -lc
+libnelnet_la_LIBADD  = -lc -lpthread
 
 libnelnet_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
 

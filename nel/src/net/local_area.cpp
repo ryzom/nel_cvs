@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.30 2001/01/10 13:54:47 cado Exp $
+ * $Id: local_area.cpp,v 1.31 2001/01/10 16:22:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,9 @@
 using namespace NLMISC;
 using namespace NLNET;
 using namespace std;
+
+
+//extern void DisplayClientDump(); // temp
 
 
 // Pointer to the local area singleton
@@ -136,14 +139,21 @@ void NLNET::cbRemoveEntity( CMessage& msgin, TSenderId idfrom )
 {
 	TEntityId id = 0;
 	msgin.serial( id );
+	/*nldebug( "Removing entity %u", id );
+	DisplayClientDump();*/
 	CRemoteEntities::iterator ire = CLocalArea::Instance->_Neighbors.find( id );
-	delete (*ire).second;
-	CLocalArea::Instance->_Neighbors.erase( ire );
-	if ( CLocalArea::Instance->_EntityRemovedCallback != NULL )
+	if ( ire != CLocalArea::Instance->_Neighbors.end() )
 	{
-		CLocalArea::Instance->_EntityRemovedCallback( id );
+		delete (*ire).second;
+		CLocalArea::Instance->_Neighbors.erase( ire );
+		if ( CLocalArea::Instance->_EntityRemovedCallback != NULL )
+		{
+			CLocalArea::Instance->_EntityRemovedCallback( id );
+		}
+		nldebug( "Removed entity %u", id );
 	}
-	nldebug( "Removed entity %u", id );
+	// else: it is the case when a shooter deletes his weapon (because blocked or too far)
+	//       and so does a shooted entity
 }
 
 

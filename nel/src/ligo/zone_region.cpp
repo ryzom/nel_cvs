@@ -1,7 +1,7 @@
 /** \file zone_region.cpp
  * <File description>
  *
- * $Id: zone_region.cpp,v 1.6 2003/11/17 14:26:38 distrib Exp $
+ * $Id: zone_region.cpp,v 1.7 2003/12/10 15:12:38 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,16 +56,16 @@ CZoneRegion::SZoneUnit::SZoneUnit()
 // ---------------------------------------------------------------------------
 void CZoneRegion::SZoneUnit::serial (NLMISC::IStream &f)
 {
-	f.serial (ZoneName);
-	f.serial (PosX);
-	f.serial (PosY);
-	f.serial (Rot);
-	f.serial (Flip);
+	f.xmlSerial (ZoneName, "NAME");
+	f.xmlSerial (PosX, "X");
+	f.xmlSerial (PosY, "Y");
+	f.xmlSerial (Rot, "ROT");
+	f.xmlSerial (Flip, "FLIP");
 
 	for (uint32 i = 0; i < 4; ++i)
 	{
-		f.serial (SharingMatNames[i]);
-		f.serial (SharingCutEdges[i]);
+		f.xmlSerial (SharingMatNames[i], "MAT_NAMES");
+		f.xmlSerial (SharingCutEdges[i], "CUR_EDGES");
 	}
 }
 
@@ -103,8 +103,8 @@ void CZoneRegion::SZoneUnit2::serial (NLMISC::IStream &f)
 	/*sint32 version =*/ f.serialVersion (0);
 
 	SZoneUnit::serial (f);
-	f.serial (DateLow);
-	f.serial (DateHigh);
+	f.xmlSerial (DateLow, "LOW");
+	f.xmlSerial (DateHigh, "HIGH");
 }
 
 // ---------------------------------------------------------------------------
@@ -158,27 +158,31 @@ CZoneRegion::CZoneRegion()
 // ---------------------------------------------------------------------------
 void CZoneRegion::serial (NLMISC::IStream &f)
 {
-	sint32 version = f.serialVersion (1);
-	f.serialCheck ((uint32)'DNAL');
-	f.serial (_MinX);
-	f.serial (_MinY);
-	f.serial (_MaxX);
-	f.serial (_MaxY);
+	f.xmlPush ("LAND");
+		
+		sint32 version = f.serialVersion (1);
+		f.serialCheck ((uint32)'DNAL');
+		
+		f.xmlSerial (_MinX, "MIN_X");
+		f.xmlSerial (_MinY, "MIN_Y");
+		f.xmlSerial (_MaxX, "MAX_X");
+		f.xmlSerial (_MaxY, "MAX_Y");
 
-	if (version == 1)
-	{
-		f.serialCont (_Zones);
-	}
+		if (version == 1)
+		{
+			f.serialCont (_Zones);
+		}
 
-	if (version == 0)
-	{
-		std::vector<SZoneUnit> vZonesTmp;
-		f.serialCont (vZonesTmp);
-		_Zones.resize (vZonesTmp.size());
-		for (uint32 i = 0; i < vZonesTmp.size(); ++i)
-			_Zones[i] = vZonesTmp[i];
-	}
+		if (version == 0)
+		{
+			std::vector<SZoneUnit> vZonesTmp;
+			f.serialCont (vZonesTmp);
+			_Zones.resize (vZonesTmp.size());
+			for (uint32 i = 0; i < vZonesTmp.size(); ++i)
+				_Zones[i] = vZonesTmp[i];
+		}
 
+	f.xmlPop ();
 }
 
 // ---------------------------------------------------------------------------

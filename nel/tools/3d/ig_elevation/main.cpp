@@ -1,6 +1,6 @@
 /** \file main.cpp
  *
- * $Id: main.cpp,v 1.8 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: main.cpp,v 1.9 2003/12/10 15:12:39 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "nel/misc/file.h"
 #include "nel/misc/bitmap.h"
 #include "nel/misc/block_memory.h"
+#include "nel/misc/i_xml.h"
 
 #include "ligo/zone_region.h"
 
@@ -159,19 +160,29 @@ void dir (const string &sFilter, vector<string> &sAllFiles, bool bFullPath)
 // ---------------------------------------------------------------------------
 CZoneRegion *loadLand (const string &filename)
 {
-	CZoneRegion *ZoneRegion;
+	CZoneRegion *ZoneRegion = NULL;
 	try
 	{
 		CIFile fileIn;
-		fileIn.open (filename);
-		ZoneRegion = new CZoneRegion;
-		ZoneRegion->serial (fileIn);
+		if (fileIn.open (filename))
+		{
+			// Xml
+			CIXml xml (true);
+			nlverify (xml.init (fileIn));
+
+			ZoneRegion = new CZoneRegion;
+			ZoneRegion->serial (xml);
+		}
+		else
+		{
+			string sTmp = string("Can't open the land file : ") + filename;
+			outString (sTmp);
+		}
 	}
 	catch (Exception& e)
 	{
 		string sTmp = string("Error in land file : ") + e.what();
 		outString (sTmp);
-		return NULL;
 	}
 	return ZoneRegion;
 }

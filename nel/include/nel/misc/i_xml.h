@@ -1,7 +1,7 @@
 /** \file i_xml.h
  * Input xml stream
  *
- * $Id: i_xml.h,v 1.7 2003/03/24 18:08:20 corvazier Exp $
+ * $Id: i_xml.h,v 1.8 2003/12/10 15:12:38 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -97,6 +97,10 @@ public:
 	/** Default ctor
 	  */
 	CIXml ();
+
+	// If tryBinaryMode is true, try to open the stream in both, XML and Binary if XML doesn't work.
+	// In tryBinaryMode, the stream keep a pointer on the input stream passed to init();
+	CIXml (bool tryBinaryMode);
 
 	/** Dtor. Call release().
 	  */
@@ -216,6 +220,12 @@ private:
 
 	// Error message
 	std::string		_ErrorString;
+
+	// Try binary mode
+	bool			_TryBinaryMode;
+
+	// If not NULL, binary mode detected, use this stream in serials
+	IStream			*_BinaryStream;
 };
 
 

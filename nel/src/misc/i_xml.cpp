@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.17 2003/11/18 10:16:30 corvazier Exp $
+ * $Id: i_xml.cpp,v 1.18 2003/12/10 15:12:38 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -72,6 +72,23 @@ CIXml::CIXml () : IStream (true /* Input mode */)
 	_PushBegin = false;
 	_AttribPresent = false;
 	_ErrorString = "";
+	_TryBinaryMode = false;
+	_BinaryStream = NULL;
+}
+
+// ***************************************************************************
+
+CIXml::CIXml (bool tryBinaryMode) : IStream (true /* Input mode */)
+{
+	// Not initialized
+	_Parser = NULL;
+	_CurrentElement = NULL;
+	_CurrentNode = NULL;
+	_PushBegin = false;
+	_AttribPresent = false;
+	_ErrorString = "";
+	_TryBinaryMode = tryBinaryMode;
+	_BinaryStream = NULL;
 }
 
 // ***************************************************************************
@@ -124,6 +141,9 @@ bool CIXml::init (IStream &stream)
 	// Release
 	release ();
 
+	// Default : XML mode
+	_BinaryStream = NULL;
+
 	// Input stream ?
 	if (stream.isReading())
 	{
@@ -149,6 +169,31 @@ bool CIXml::init (IStream &stream)
 		// Fill the buffer
 		stream.serialBuffer ((uint8*)buffer, 4);
 		length -= 4;
+
+		// Try binary mode
+		if (_TryBinaryMode)
+		{
+			string header;
+			header.resize(4);
+			header[0] = buffer[0];
+			header[1] = buffer[1];
+			header[2] = buffer[2];
+			header[3] = buffer[3];
+			header = strlwr (header);
+
+			// Does it a xml stream ?
+			if (header != "<?xm")
+			{
+				// NO ! Go in binary mode
+				_BinaryStream = &stream;
+
+				// Seek back to the start
+				stream.seek (pos, begin);
+
+				// Done
+				return true;
+			}
+		}
 
 		// Set error handler
 		_ErrorString = "";
@@ -378,29 +423,57 @@ void CIXml::serialSeparatedBufferIn ( string &value, bool checkSeparator )
 
 void CIXml::serial(uint8 &b)
 {
-	// Read the number
-	readnumber( b, uint8, 3, atoi );
+	if (_BinaryStream)
+	{
+		_BinaryStream->serial(b);
+	}
+	else
+	{
+		// Read the number
+		readnumber( b, uint8, 3, atoi );
+	}
 }
 
 // ***************************************************************************
 
 void CIXml::serial(sint8 &b)
 {
-	readnumber( b, sint8, 4, atoi );
+	if (_BinaryStream)
+	{
+		_BinaryStream->serial(b);
+	}
+	else
+	{
+		readnumber( b, sint8, 4, atoi );
+	}
 }
 
 // ***************************************************************************
 
 void CIXml::serial(uint16 &b)
 {
-	readnumber( b, uint16, 5, atoi );
+	if (_BinaryStream)
+	{
+		_BinaryStream->serial(b);
+	}
+	else
+	{
+		readnumber( b, uint16, 5, atoi );
+	}
 }
 
 // ***************************************************************************
 
 void CIXml::serial(sint16 &b)
 {
-	readnumber( b, sint16, 6, atoi );
+	if (_BinaryStream)
+	{
+		_BinaryStream->serial(b);
+	}
+	else
+	{
+		readnumber( b, sint16, 6, atoi );
+	}
 }
 
 // ***************************************************************************
@@ -412,58 +485,114 @@ inline uint32 atoui( const char *ident)
 
 void CIXml::serial(uint32 &b)
 {
-	readnumber( b, uint32, 10, atoui );
+	if (_BinaryStream)
+	{
+		_BinaryStream->serial(b);
+	}
+	else
+	{
+		readnumber( b, uint32, 10, atoui );
+	}
 }
 
 // ***************************************************************************
 
 void CIXml::serial(sint32 &b) 
 {
-	readnumber( b, sint32, 11, atoi );
+	if (_BinaryStream)
+	{
+		_BinaryStream->serial(b);
+	}
+	else
+	{
+		readnumber( b, sint32, 11, atoi );
+	}
 }
 
 // ***************************************************************************
 
 void CIXml::serial(uint64 &b) 
 {
-	readnumber( b, uint64, 20, atoiInt64 );
+	if (_BinaryStream)
+	{
+		_BinaryStream->serial(b);
+	}
+	else
+	{
+		readnumber( b, uint64, 20, atoiInt64 );
+	}
 }
 
 // ***************************************************************************
 
 void CIXml::serial(sint64 &b) 
 {
-	readnumber( b, sint64, 20, atoiInt64 );
+	if (_BinaryStream)
+	{
+		_BinaryStream->serial(b);
+	}
+	else
+	{
+		readnumber( b, sint64, 20, atoiInt64 );
+	}
 }
 
 // ***************************************************************************
 
 void CIXml::serial(float &b) 
 {
-	readnumber( b, float, 128, atof );
+	if (_BinaryStream)
+	{
+		_BinaryStream->serial(b);
+	}
+	else
+	{
+		readnumber( b, float, 128, atof );
+	}
 }
 
 // ***************************************************************************
 
 void CIXml::serial(double &b) 
 {
-	readnumber( b, double, 128, atof );
+	if (_BinaryStream)
+	{
+		_BinaryStream->serial(b);
+	}
+	else
+	{
+		readnumber( b, double, 128, atof );
+	}
 }
 
 // ***************************************************************************
 
 void CIXml::serial(bool &b)
 {
-	serialBit(b);
+	if (_BinaryStream)
+	{
+		_BinaryStream->serial(b);
+	}
+	else
+	{
+		serialBit(b);
+	}
 }
 
 // ***************************************************************************
 
 void CIXml::serialBit(bool &bit)
 {
-	uint8 u;
-	serial (u);
-	bit = (u!=0);
+	if (_BinaryStream)
+	{
+		_BinaryStream->serialBit(bit);
+	}
+	else
+	{
+		uint8 u;
+		serial (u);
+		bit = (u!=0);
+	}
 }
 
 // ***************************************************************************
@@ -471,31 +600,38 @@ void CIXml::serialBit(bool &bit)
 #ifndef NL_OS_CYGWIN
 void CIXml::serial(char &b) 
 {
-	string toto;
-	serialSeparatedBufferIn ( toto );
-
-	// Good value ?
-	if (toto.length()!=1)
+	if (_BinaryStream)
 	{
-		// Protect error
-		if (_Parser)
-		{
-			// Should have a name
-			nlassert (_CurrentElement->name);
-
-			// Make an error message
-			char tmp[512];
-			smprintf (tmp, 512, "NeL XML Syntax error in block line %d \nValue is not a char in the node named %s", 
-				(int)_CurrentElement->content, _CurrentElement->name);
-			throw EXmlParsingError (tmp);
-		}
-		else
-		{
-			nlerror ( "Output stream has not been initialized" );
-		}
+		_BinaryStream->serial(b);
 	}
 	else
-		b=toto[0];
+	{
+		string toto;
+		serialSeparatedBufferIn ( toto );
+
+		// Good value ?
+		if (toto.length()!=1)
+		{
+			// Protect error
+			if (_Parser)
+			{
+				// Should have a name
+				nlassert (_CurrentElement->name);
+
+				// Make an error message
+				char tmp[512];
+				smprintf (tmp, 512, "NeL XML Syntax error in block line %d \nValue is not a char in the node named %s", 
+					(int)_CurrentElement->content, _CurrentElement->name);
+				throw EXmlParsingError (tmp);
+			}
+			else
+			{
+				nlerror ( "Output stream has not been initialized" );
+			}
+		}
+		else
+			b=toto[0];
+	}
 }
 #endif // NL_OS_CYGWIN
 
@@ -505,22 +641,29 @@ void CIXml::serial(std::string &b)
 {
 	nlassert( isReading() );
 
-	// Attibute ?
-	if (_PushBegin)
+	if (_BinaryStream)
 	{
-		// Only serial the string
-		serialSeparatedBufferIn ( b, false );
+		_BinaryStream->serial(b);
 	}
 	else
 	{
-		// Open a string node
-		xmlPush ("S");
+		// Attibute ?
+		if (_PushBegin)
+		{
+			// Only serial the string
+			serialSeparatedBufferIn ( b, false );
+		}
+		else
+		{
+			// Open a string node
+			xmlPush ("S");
 
-		// Serial the string
-		serialSeparatedBufferIn ( b, false );
+			// Serial the string
+			serialSeparatedBufferIn ( b, false );
 
-		// Close the node
-		xmlPop ();
+			// Close the node
+			xmlPop ();
+		}
 	}
 }
 
@@ -532,35 +675,49 @@ void CIXml::serial(ucstring &b)
 
 	/// \todo hulud: handle ucstring to utf-8.
 
-	// Serial a simple string
-	string tmp;
+	if (_BinaryStream)
+	{
+		_BinaryStream->serial(b);
+	}
+	else
+	{
+		// Serial a simple string
+		string tmp;
 
-	// Serial this string
-	serial (tmp);
+		// Serial this string
+		serial (tmp);
 
-	// Return a ucstring
-	b = tmp;
+		// Return a ucstring
+		b = tmp;
+	}
 }
 
 // ***************************************************************************
 
 void CIXml::serialBuffer(uint8 *buf, uint len)
 {
-	// Open a node
-	xmlPush ("BUFFER");
-
-	// Serialize the buffer
-	for (uint i=0; i<len; i++)
+	if (_BinaryStream)
 	{
-		xmlPush ("ELM");
+		_BinaryStream->serialBuffer(buf, len);
+	}
+	else
+	{
+		// Open a node
+		xmlPush ("BUFFER");
 
-		serial (buf[i]);
+		// Serialize the buffer
+		for (uint i=0; i<len; i++)
+		{
+			xmlPush ("ELM");
 
+			serial (buf[i]);
+
+			xmlPop ();
+		}
+
+		// Close the node
 		xmlPop ();
 	}
-
-	// Close the node
-	xmlPop ();
 }
 
 // ***************************************************************************
@@ -569,97 +726,104 @@ bool CIXml::xmlPushBeginInternal (const char *nodeName)
 {
 	nlassert( isReading() );
 
-	// Check _Parser
-	if ( _Parser )
+	if (_BinaryStream)
 	{
-		// Can make a xmlPushBegin ?
-		if ( ! _PushBegin )
+		return true;
+	}
+	else
+	{
+		// Check _Parser
+		if ( _Parser )
 		{
-			// Current node exist ?
-			if (_CurrentNode==NULL)
+			// Can make a xmlPushBegin ?
+			if ( ! _PushBegin )
 			{
-				// Get the first node
-				_CurrentNode = xmlDocGetRootElement (_Parser->myDoc);
-				
-				// Has a root node ?
-				if (_CurrentNode)
+				// Current node exist ?
+				if (_CurrentNode==NULL)
+				{
+					// Get the first node
+					_CurrentNode = xmlDocGetRootElement (_Parser->myDoc);
+					
+					// Has a root node ?
+					if (_CurrentNode)
+					{
+						// Node name must not be NULL
+						nlassert (_CurrentNode->name);
+
+						// Node element with the good name ?
+						if ( (_CurrentNode->type != XML_ELEMENT_NODE) || ( (const char*)_CurrentNode->name != string(nodeName)) )
+						{
+							// Make an error message
+							char tmp[512];
+							smprintf (tmp, 512, "NeL XML Syntax error : root node has the wrong name : \"%s\" should have \"%s\"",
+								_CurrentNode->name, nodeName);
+							throw EXmlParsingError (tmp);
+						}
+					}
+					else
+					{
+						// Make an error message
+						char tmp[512];
+						smprintf (tmp, 512, "NeL XML Syntax error : no root node found.");
+						throw EXmlParsingError (tmp);
+					}
+				}
+
+				// Try to open the node
+				do
 				{
 					// Node name must not be NULL
 					nlassert (_CurrentNode->name);
 
-					// Node element with the good name ?
-					if ( (_CurrentNode->type != XML_ELEMENT_NODE) || ( (const char*)_CurrentNode->name != string(nodeName)) )
+					// Node with the good name
+					if ( (_CurrentNode->type == XML_ELEMENT_NODE) && ( (const char*)_CurrentNode->name == string(nodeName)) )
 					{
-						// Make an error message
-						char tmp[512];
-						smprintf (tmp, 512, "NeL XML Syntax error : root node has the wrong name : \"%s\" should have \"%s\"",
-							_CurrentNode->name, nodeName);
-						throw EXmlParsingError (tmp);
+						// Save current element
+						_CurrentElement = _CurrentNode;
+
+						// Stop searching
+						break;
 					}
+					else
+						// Get next
+						_CurrentNode = _CurrentNode->next;
 				}
-				else
+				while (_CurrentNode);
+
+				// Not found ?
+				if (_CurrentNode == NULL)
 				{
 					// Make an error message
 					char tmp[512];
-					smprintf (tmp, 512, "NeL XML Syntax error : no root node found.");
+					smprintf (tmp, 512, "NeL XML Syntax error in block line %d \nCan't open the node named %s in node named %s", 
+						(int)_CurrentElement->content, nodeName, _CurrentElement->name);
 					throw EXmlParsingError (tmp);
 				}
-			}
+				
+				// Get first child
+				_CurrentNode = _CurrentNode->children;
 
-			// Try to open the node
-			do
+				// Push begun
+				_PushBegin = true;
+
+				// Flush current string
+				flushContentString ();
+			}
+			else
 			{
-				// Node name must not be NULL
-				nlassert (_CurrentNode->name);
-
-				// Node with the good name
-				if ( (_CurrentNode->type == XML_ELEMENT_NODE) && ( (const char*)_CurrentNode->name == string(nodeName)) )
-				{
-					// Save current element
-					_CurrentElement = _CurrentNode;
-
-					// Stop searching
-					break;
-				}
-				else
-					// Get next
-					_CurrentNode = _CurrentNode->next;
+				nlerror ( "You must close your xmlPushBegin - xmlPushEnd before calling a new xmlPushBegin.");
+				return false;
 			}
-			while (_CurrentNode);
-
-			// Not found ?
-			if (_CurrentNode == NULL)
-			{
-				// Make an error message
-				char tmp[512];
-				smprintf (tmp, 512, "NeL XML Syntax error in block line %d \nCan't open the node named %s in node named %s", 
-					(int)_CurrentElement->content, nodeName, _CurrentElement->name);
-				throw EXmlParsingError (tmp);
-			}
-			
-			// Get first child
-			_CurrentNode = _CurrentNode->children;
-
-			// Push begun
-			_PushBegin = true;
-
-			// Flush current string
-			flushContentString ();
 		}
 		else
 		{
-			nlerror ( "You must close your xmlPushBegin - xmlPushEnd before calling a new xmlPushBegin.");
+			nlerror ( "Output stream has not been initialized.");
 			return false;
 		}
-	}
-	else
-	{
-		nlerror ( "Output stream has not been initialized.");
-		return false;
-	}
 
-	// Ok
-	return true;
+		// Ok
+		return true;
+	}
 }
 
 // ***************************************************************************
@@ -668,29 +832,36 @@ bool CIXml::xmlPushEndInternal ()
 {
 	nlassert( isReading() );
 
-	// Check _Parser
-	if ( _Parser )
+	if (_BinaryStream)
 	{
-		// Can make a xmlPushEnd ?
-		if ( _PushBegin )
-		{
-			// Push begun
-			_PushBegin = false;
-		}
-		else
-		{
-			nlerror ( "You must call xmlPushBegin before calling xmlPushEnd.");
-			return false;
-		}
+		return true;
 	}
 	else
 	{
-		nlerror ( "Output stream has not been initialized.");
-		return false;
-	}
+		// Check _Parser
+		if ( _Parser )
+		{
+			// Can make a xmlPushEnd ?
+			if ( _PushBegin )
+			{
+				// Push begun
+				_PushBegin = false;
+			}
+			else
+			{
+				nlerror ( "You must call xmlPushBegin before calling xmlPushEnd.");
+				return false;
+			}
+		}
+		else
+		{
+			nlerror ( "Output stream has not been initialized.");
+			return false;
+		}
 
-	// Ok
-	return true;
+		// Ok
+		return true;
+	}
 }
 
 // ***************************************************************************
@@ -699,34 +870,41 @@ bool CIXml::xmlPopInternal ()
 {
 	nlassert( isReading() );
 
-	// Check _Parser
-	if ( _Parser )
+	if (_BinaryStream)
 	{
-		// Not in the push mode ?
-		if ( ! _PushBegin )
-		{
-			// Some content to write ?
-			flushContentString ();
-
-			// Get parents
-			_CurrentNode = _CurrentElement;
-			_CurrentElement = _CurrentElement->parent;
-			_CurrentNode = _CurrentNode->next;
-		}
-		else
-		{
-			nlerror ( "You must call xmlPop after xmlPushEnd.");
-			return false;
-		}
+		return true;
 	}
 	else
 	{
-		nlerror ( "Output stream has not been initialized.");
-		return false;
-	}
+		// Check _Parser
+		if ( _Parser )
+		{
+			// Not in the push mode ?
+			if ( ! _PushBegin )
+			{
+				// Some content to write ?
+				flushContentString ();
 
-	// Ok
-	return true;
+				// Get parents
+				_CurrentNode = _CurrentElement;
+				_CurrentElement = _CurrentElement->parent;
+				_CurrentNode = _CurrentNode->next;
+			}
+			else
+			{
+				nlerror ( "You must call xmlPop after xmlPushEnd.");
+				return false;
+			}
+		}
+		else
+		{
+			nlerror ( "Output stream has not been initialized.");
+			return false;
+		}
+
+		// Ok
+		return true;
+	}
 }
 
 // ***************************************************************************
@@ -735,32 +913,39 @@ bool CIXml::xmlSetAttribInternal (const char *attribName)
 {
 	nlassert( isReading() );
 
-	// Check _Parser
-	if ( _Parser )
+	if (_BinaryStream)
 	{
-		// Can make a xmlPushEnd ?
-		if ( _PushBegin )
-		{
-			// Set attribute name
-			_AttribName = attribName;
-
-			// Attribute name is present
-			_AttribPresent = true;
-		}
-		else
-		{
-			nlerror ( "You must call xmlSetAttrib between xmlPushBegin and xmlPushEnd calls.");
-			return false;
-		}
+		return true;
 	}
 	else
 	{
-		nlerror ( "Output stream has not been initialized.");
-		return false;
-	}
+		// Check _Parser
+		if ( _Parser )
+		{
+			// Can make a xmlPushEnd ?
+			if ( _PushBegin )
+			{
+				// Set attribute name
+				_AttribName = attribName;
 
-	// Ok
-	return true;
+				// Attribute name is present
+				_AttribPresent = true;
+			}
+			else
+			{
+				nlerror ( "You must call xmlSetAttrib between xmlPushBegin and xmlPushEnd calls.");
+				return false;
+			}
+		}
+		else
+		{
+			nlerror ( "Output stream has not been initialized.");
+			return false;
+		}
+
+		// Ok
+		return true;
+	}
 }
 
 // ***************************************************************************

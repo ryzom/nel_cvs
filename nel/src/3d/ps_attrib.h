@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.4 2001/07/24 08:41:55 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.5 2001/07/24 15:14:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,9 +66,10 @@ public:
 	T &operator[](uint index) { nlassert(index < _Size && _Size) ; return _Tab[index]  ; }
 	const T &operator[](uint index) const { nlassert(index < _Size && _Size) ; return _Tab[index] ; }
 
-	/// set a new usable size (note : the real allocated size change, even if the new capacity is smaller...)
+	/// set a new usable size 
 	void reserve(uint capacity)
 	{	
+		if (capacity < _Capacity) return ;
 		uint8 *newStart = NULL ;
 		try
 		{			
@@ -137,12 +138,6 @@ public:
 
 	void push_back(const T &t)
 	{
-		if (_Size < _Capacity)
-		{
-			new ((void *) (_Tab + _Size)) T(t) ;
-			++_Size ;
-		}
-		else
 		if (!_Size)
 		{
 			reserve(2) ;
@@ -150,6 +145,12 @@ public:
 			_Size = 1 ;
 		}
 		else
+		if (_Size < _Capacity)
+		{
+			new ((void *) (_Tab + _Size)) T(t) ;
+			++_Size ;
+		}
+		else				
 		if (_Size == _Capacity) 
 		{ 
 			if (_Capacity == 1) 
@@ -283,7 +284,7 @@ public:
 	uint32 getSize(void) const { return _Tab.size() ; }
 
 	/// return the max number of instance in the container
-	uint32 getMaxSize(void) const { return _Tab.capacity() ; }
+	uint32 getMaxSize(void) const { return _MaxSize ; }
 
 
 	/// remove an object from the tab
@@ -300,7 +301,7 @@ public:
 
 protected:			
 	TContType _Tab ; 
-
+	uint32    _MaxSize ; // the max number of elements that can be stored
 } ;
 
 
@@ -314,12 +315,14 @@ protected:
 template <typename T> 
 CPSAttrib<T>::CPSAttrib()
 {
+	_MaxSize = DefaultMaxLocatedInstance ;
 }
 
 template <typename T> 
 void CPSAttrib<T>::resizeNFill(uint32 nbInstances)
 {	
-	_Tab.resize(nbInstances) ;	
+	_Tab.resize(nbInstances) ; // ensure the container can handle enoiugh intances	
+	_MaxSize = nbInstances ;
 }
 
 
@@ -327,13 +330,14 @@ template <typename T>
 void CPSAttrib<T>::resize(uint32 nbInstances)
 {	
 	_Tab.reserve(nbInstances) ;
+	_MaxSize = nbInstances ;
 }
 
 
 template <typename T> 
 sint32 CPSAttrib<T>::insert(const T &t)
 {	
-	if (_Tab.size() == _Tab.capacity() && _Tab.size() > DefaultMaxLocatedInstance) 
+	if (_Tab.size() == _MaxSize && _Tab.size() > DefaultMaxLocatedInstance) 
 	{
 		return -1 ;
 	}	
@@ -358,17 +362,17 @@ void CPSAttrib<T>::remove(uint32 index)
 template <typename T> 
 void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
-	sint ver = f.serialVersion(2) ;
-	// in the first version, size and capacity were duplicated, we were using a std::vector ...
+	sint ver = f.serialVersion(3) ;
 
+	// in the first version, size was duplicated, we were using a std::vector ...
 	if (ver == 1)
 	{		
 		if(f.isReading())
 		{	
-			uint32 size, maxSize ;
+			uint32 size ;
 			f.serial(size) ;
-			f.serial(maxSize) ;
-			_Tab.reserve(maxSize) ;
+			f.serial(_MaxSize) ;
+			_Tab.reserve(_MaxSize) ;
 			f.serial(size) ; // useless but, we were previously doing a serialCont... compatibility purpose only
 			T tmp ;
 			// Read the vector
@@ -383,7 +387,7 @@ void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
 			uint32 size = _Tab.size(), maxSize = _Tab.capacity() ;
 			f.serial(size) ;
-			f.serial(maxSize) ;		
+			f.serial(_MaxSize) ;		
 			f.serial(size) ;
 			// write the vector
 			for(uint i = 0 ; i < size ; i++)
@@ -393,10 +397,21 @@ void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		}
 	}
 
-	if (ver == 2)
+	if (ver == 2) // this version didn't work well, it relied on the capacity of the container to store the max number of instances
 	{
 		f.serial(_Tab) ;
+		if (f.isReading())
+		{
+			_MaxSize = _Tab.capacity() ;
+		}
 	}	
+
+	if (ver == 3)
+	{
+		f.serial(_MaxSize) ;
+		_Tab.reserve(_MaxSize) ;
+		f.serial(_Tab) ;
+	}
 }
 
 

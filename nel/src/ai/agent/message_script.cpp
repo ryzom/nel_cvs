@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: message_script.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "script/object_unknown.h"
 #include "agent/messagerie.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 
 	CMessageScript::CMessageScript(const CMessageScript &m):IMessageBase(m)
@@ -269,14 +269,14 @@ namespace NLIAAGENT
 		IMessageBase::load(is);
 	}
 
-	const NLIAC::IBasicType *CMessageScript::clone() const
+	const NLAIC::IBasicType *CMessageScript::clone() const
 	{		
 		CMessageScript *cl = new CMessageScript( *this );
 		cl->incRef();
 		return cl;
 	}
 
-	const NLIAC::IBasicType *CMessageScript::newInstance() const
+	const NLAIC::IBasicType *CMessageScript::newInstance() const
 	{
 		CMessageScript *instance;
 		if ( _MessageClass )
@@ -321,7 +321,7 @@ namespace NLIAAGENT
 		return IMessageBase::isEqual(a);
 	}
 
-	const NLIAC::CIdentType &CMessageScript::getType() const
+	const NLAIC::CIdentType &CMessageScript::getType() const
 	{
 		if ( _MessageClass ) 
 			return _MessageClass->getType();

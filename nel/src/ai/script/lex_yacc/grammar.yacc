@@ -11,8 +11,8 @@
 
 
 using  namespace NLIASCRIPT;
-using  namespace NLIALOGIC;
-using  namespace NLIAFUZZY;
+using  namespace NLAILOGIC;
+using  namespace NLAIFUZZY;
 %}
 %token	FIN
 %token	NOMBRE		IDENT
@@ -59,13 +59,13 @@ using  namespace NLIAFUZZY;
 							ACCOL_D
 							{						
 								if(!computContraint()) return false;
-								((NLIAAGENT::IObjectIA *)_SelfClass.pop())->release();
+								((NLAIAGENT::IObjectIA *)_SelfClass.pop())->release();
 							}								
 						|	CorpDeDefinition 
 							ACCOL_G 
 							ACCOL_D
 							{
-								((NLIAAGENT::IObjectIA *)_SelfClass.pop())->release();
+								((NLAIAGENT::IObjectIA *)_SelfClass.pop())->release();
 							}
 						|	MessageRun
 						;
@@ -101,10 +101,10 @@ using  namespace NLIAFUZZY;
 
 	HeritageDeType		:	FROM IDENT
 							{
-								NLIAAGENT::CStringVarName interfName(LastyyText[1]);																																
+								NLAIAGENT::CStringVarName interfName(LastyyText[1]);																																
 								try
 								{	
-									NLIAC::CIdentType id = getTypeOfClass(interfName);
+									NLAIC::CIdentType id = getTypeOfClass(interfName);
 									_SelfClass.push((IClassInterpret *)(((CClassInterpretFactory *)id.getFactory())->getClass()->newInstance()));
 									((IClassInterpret *)_SelfClass.get())->setInheritanceName(interfName);
 								}
@@ -122,7 +122,7 @@ using  namespace NLIAFUZZY;
 							{
 								try
 								{
-									NLIAC::CIdentType id(LastyyText[1]);
+									NLAIC::CIdentType id(LastyyText[1]);
 									char text[1024*4];
 									sprintf(text,"class '%s' all ready exist",LastyyText[1]);
 									yyerror(text);
@@ -130,7 +130,7 @@ using  namespace NLIAFUZZY;
 								}
 								catch(NLIAE::IException &)
 								{
-									((IClassInterpret *)_SelfClass.get())->setClassName(NLIAAGENT::CStringVarName(LastyyText[1]));
+									((IClassInterpret *)_SelfClass.get())->setClassName(NLAIAGENT::CStringVarName(LastyyText[1]));
 									((IClassInterpret *)_SelfClass.get())->buildVTable();
 									RegisterClass();
 								}
@@ -139,7 +139,7 @@ using  namespace NLIAFUZZY;
 
 	DefinitionDeGroup	:	GROUP INF Nom 
 							{
-								((IClassInterpret *)_SelfClass.get())->setClassName(NLIAAGENT::CStringVarName(LastyyText[1]));
+								((IClassInterpret *)_SelfClass.get())->setClassName(NLAIAGENT::CStringVarName(LastyyText[1]));
 							}	VIRGULE CParam SUP
 						;
 
@@ -282,16 +282,16 @@ using  namespace NLIAFUZZY;
 
 	Methode				:	IDENT
 							{				
-								NLIAAGENT::CStringVarName name(LastyyText[1]);
-								//name += NLIAAGENT::CStringVarName(LastyyText[1]);
+								NLAIAGENT::CStringVarName name(LastyyText[1]);
+								//name += NLAIAGENT::CStringVarName(LastyyText[1]);
 								//((IClassInterpret *)_SelfClass.get())->addBrancheCode(name);
 								_MethodName.push_back(name);
 								_IsVoid = true;
 							}						
 						|	DESTRUCTION
 							{
-								NLIAAGENT::CStringVarName name(LastyyText[1]);
-								//name += NLIAAGENT::CStringVarName(LastyyText[1]);
+								NLAIAGENT::CStringVarName name(LastyyText[1]);
+								//name += NLAIAGENT::CStringVarName(LastyyText[1]);
 								//((IClassInterpret *)_SelfClass.get())->addBrancheCode(name);
 								_MethodName.push_back(name);
 								_IsVoid = true;
@@ -339,17 +339,17 @@ using  namespace NLIAFUZZY;
 
 	TypeOfParam			:	IDENT
 							{
-								_LastString = NLIAAGENT::CStringVarName(LastyyText[0]);
+								_LastString = NLAIAGENT::CStringVarName(LastyyText[0]);
 								_BaseObjectDef = false;
 							}							
 						|	IDENT 
 							{
-								_LastString = NLIAAGENT::CStringVarName(LastyyText[1]);
+								_LastString = NLAIAGENT::CStringVarName(LastyyText[1]);
 							}							
 							INF
 							IDENT
 							{
-								_LastBaseObjectDef = NLIAAGENT::CStringVarName(LastyyText[1]);
+								_LastBaseObjectDef = NLAIAGENT::CStringVarName(LastyyText[1]);
 								_BaseObjectDef = true;
 
 							}
@@ -393,7 +393,7 @@ using  namespace NLIAFUZZY;
 
 	StaticCast			:	IDENT 
 							{
-								_LastString = NLIAAGENT::CStringVarName(LastyyText[1]);
+								_LastString = NLAIAGENT::CStringVarName(LastyyText[1]);
 							}
 							MOINS
 							SUP
@@ -401,7 +401,7 @@ using  namespace NLIAFUZZY;
 							PAR_G 
 							IDENT
 							{					
-								NLIAAGENT::CStringVarName x(LastyyText[1]);			
+								NLAIAGENT::CStringVarName x(LastyyText[1]);			
 								if(!castVariable(_LastString,x)) return false;
 							}
 							PAR_D;
@@ -434,7 +434,7 @@ using  namespace NLIAFUZZY;
 
 	AppelleDeFoncDirect:	NonDeFonction PAR_G 
 							{
-								_LastBloc->addCode(new CLdbOpCode (NLIAAGENT::CGroupType()));
+								_LastBloc->addCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
 								_Param.push_back(new CParam);
 								_Param.back()->incRef();
 								_ExpressionTypeTmp.push_back(_ExpressionType); 
@@ -443,7 +443,7 @@ using  namespace NLIAFUZZY;
 							Prametre CallFunction
 						|	NonDeFonction PAR_G
 							{								
-								_LastBloc->addCode(new CLdbOpCode (NLIAAGENT::CGroupType()));
+								_LastBloc->addCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
 								_Param.push_back(new CParam);
 								_Param.back()->incRef();
 								_ExpressionTypeTmp.push_back(_ExpressionType); 
@@ -544,16 +544,16 @@ using  namespace NLIAFUZZY;
 
 	TypeDeComp			:	IDENT
 							{								
-								_LastString = NLIAAGENT::CStringVarName(LastyyText[1]);
+								_LastString = NLAIAGENT::CStringVarName(LastyyText[1]);
 								_LastRegistered = ((IClassInterpret *)_SelfClass.get())->registerComponent(_LastString);
 							}
 							INF
 							CHAINE 
 							{
-								if(((IClassInterpret *)_SelfClass.get())->getComponent(NLIAAGENT::CStringVarName(LastyyText[1])) == NULL)
+								if(((IClassInterpret *)_SelfClass.get())->getComponent(NLAIAGENT::CStringVarName(LastyyText[1])) == NULL)
 								{
 									CComponent *c = ((IClassInterpret *)_SelfClass.get())->getComponent(_LastRegistered);
-									c->ObjectName = new NLIAAGENT::CStringVarName(LastyyText[1]);
+									c->ObjectName = new NLAIAGENT::CStringVarName(LastyyText[1]);
 									c->ObjectName->incRef();
 								}
 								else
@@ -592,12 +592,12 @@ using  namespace NLIAFUZZY;
 						|	MOINS Term
 							{								
 								allocExpression(new CNegOpCode);
-								setTypeExpression(NLIAC::CTypeOfOperator::opAdd,"(-)");
+								setTypeExpression(NLAIC::CTypeOfOperator::opAdd,"(-)");
 								
 							}		
 						|	Expression 
 							{	
-								/*if(!(_lastOperatorType & NLIAC::CTypeOfOperator::opAdd))
+								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opAdd))
 								{
 									yyerror("erreur sémantique l'operateur + n'est pas supporté par cette expression");
 									return 0;
@@ -609,11 +609,11 @@ using  namespace NLIAFUZZY;
 							PLUS Term
 							{									
 								allocExpression(new CAddOpCode,true);		
-								setTypeExpressionD(NLIAC::CTypeOfOperator::opAdd,"+");	
+								setTypeExpressionD(NLAIC::CTypeOfOperator::opAdd,"+");	
 							}
 						|	Expression 
 							{
-								/*if(!(_lastOperatorType & NLIAC::CTypeOfOperator::opSub))
+								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opSub))
 								{
 									yyerror("erreur sémantique l'operateur - n'est pas supporté par cette expression");
 									return 0;
@@ -625,22 +625,22 @@ using  namespace NLIAFUZZY;
 							MOINS Term
 							{								
 								allocExpression(new CSubOpCode,false);
-								setTypeExpressionD(NLIAC::CTypeOfOperator::opSub,"-");							
+								setTypeExpressionD(NLAIC::CTypeOfOperator::opSub,"-");							
 							}	
 						|	NON_BIN Term
 							{
-								/*if(!(_lastOperatorType & NLIAC::CTypeOfOperator::opNot))
+								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opNot))
 								{
 									yyerror("erreur sémantique l'operateur ! n'est pas supporté par cette expression");
 									return 0;
 								}*/								
 								allocExpression(new CNotOpCode);
-								setTypeExpression(NLIAC::CTypeOfOperator::opNot,"!");
+								setTypeExpression(NLAIC::CTypeOfOperator::opNot,"!");
 								
 							}	
 						|	Expression 
 							{
-								/*if(!(_lastOperatorType & NLIAC::CTypeOfOperator::opDiff))
+								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opDiff))
 								{
 									yyerror("erreur sémantique l'operateur != n'est pas supporté par cette expression");
 									return 0;
@@ -651,12 +651,12 @@ using  namespace NLIAFUZZY;
 							DIFF Term
 							{								
 								allocExpression(new CDiffOpCode,true);
-								setTypeExpressionD(NLIAC::CTypeOfOperator::opDiff,"!=");
+								setTypeExpressionD(NLAIC::CTypeOfOperator::opDiff,"!=");
 								
 							}	
 						|	Expression
 							{
-								/*if(!(_lastOperatorType & NLIAC::CTypeOfOperator::opInf))
+								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opInf))
 								{
 									yyerror("erreur sémantique l'operateur < n'est pas supporté par cette expression");
 									return 0;
@@ -668,11 +668,11 @@ using  namespace NLIAFUZZY;
 							INF Term
 							{								
 								allocExpression(new CInfOpCode,false);	
-								setTypeExpressionD(NLIAC::CTypeOfOperator::opInf,"<");							
+								setTypeExpressionD(NLAIC::CTypeOfOperator::opInf,"<");							
 							}	
 						|	Expression
 							{
-								/*if(!(_lastOperatorType & NLIAC::CTypeOfOperator::opSup))
+								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opSup))
 								{
 									yyerror("erreur sémantique l'operateur > n'est pas supporté par cette expression");
 									return 0;
@@ -683,11 +683,11 @@ using  namespace NLIAFUZZY;
 							SUP Term
 							{								
 								allocExpression(new CSupOpCode,false);
-								setTypeExpressionD(NLIAC::CTypeOfOperator::opSup,">");							
+								setTypeExpressionD(NLAIC::CTypeOfOperator::opSup,">");							
 							}	
 						|	Expression 
 							{
-								/*if(!(_lastOperatorType & NLIAC::CTypeOfOperator::opSupEq))
+								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opSupEq))
 								{
 									yyerror("erreur sémantique l'operateur >= n'est pas supporté par cette expression");
 									return 0;
@@ -698,11 +698,11 @@ using  namespace NLIAFUZZY;
 							SUP_EG Term
 							{								
 								allocExpression(new CSupEqOpCode,false);	
-								setTypeExpressionD(NLIAC::CTypeOfOperator::opSupEq,">=");
+								setTypeExpressionD(NLAIC::CTypeOfOperator::opSupEq,">=");
 							}	
 						|	Expression 
 							{
-								/*if(!(_lastOperatorType & NLIAC::CTypeOfOperator::opInfEq))
+								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opInfEq))
 								{
 									yyerror("erreur sémantique l'operateur <= n'est pas supporté par cette expression");
 									return 0;
@@ -713,7 +713,7 @@ using  namespace NLIAFUZZY;
 							INF_EG Term
 							{								
 								allocExpression(new CInfEqOpCode,false);
-								setTypeExpressionD(NLIAC::CTypeOfOperator::opInfEq,"<=");
+								setTypeExpressionD(NLAIC::CTypeOfOperator::opInfEq,"<=");
 							}	
 						|	Expression
 							{
@@ -723,7 +723,7 @@ using  namespace NLIAFUZZY;
 							EG_LOG Term
 							{								
 								allocExpression(new CEqOpCode,false);
-								setTypeExpressionD(NLIAC::CTypeOfOperator::opEq,"==");
+								setTypeExpressionD(NLAIC::CTypeOfOperator::opEq,"==");
 
 							}	
 						;
@@ -734,7 +734,7 @@ using  namespace NLIAFUZZY;
 							}
 						|	Term 
 							{
-								/*if(!(_lastOperatorType & NLIAC::CTypeOfOperator::opMul))
+								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opMul))
 								{
 									yyerror("erreur sémantique l'operateur * n'est pas supporté par cette expression");
 									return 0;
@@ -745,13 +745,13 @@ using  namespace NLIAFUZZY;
 							}
 							FOIS Facteur
 							{	
-								setTypeExpressionD(NLIAC::CTypeOfOperator::opMul,"+");
+								setTypeExpressionD(NLAIC::CTypeOfOperator::opMul,"+");
 								allocExpression(new CMulOpCode,false);
 								_FacteurEval = false;
 							}	
 						|	Term 
 							{
-								/*if(!(_lastOperatorType & NLIAC::CTypeOfOperator::opDiv))
+								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opDiv))
 								{
 									yyerror("erreur sémantique l'operateur / n'est pas supporté par cette expression");
 									return 0;
@@ -764,7 +764,7 @@ using  namespace NLIAFUZZY;
 							DIV Facteur
 							{								
 								allocExpression(new CDivOpCode,false);	
-								setTypeExpressionD(NLIAC::CTypeOfOperator::opDiv,"/");
+								setTypeExpressionD(NLAIC::CTypeOfOperator::opDiv,"/");
 								_FacteurEval = false;	
 							}	
 						;
@@ -893,13 +893,13 @@ using  namespace NLIAFUZZY;
 
 	NewObject			:	NEW 
 							{
-								_LastStringParam.push_back(new NLIAAGENT::CGroupType());
+								_LastStringParam.push_back(new NLAIAGENT::CGroupType());
 								_LastStringParam.back()->incRef();
 
 							}
 							NewObjectName PAR_G
 							{
-								_LastBloc->addCode(new CLdbOpCode (NLIAAGENT::CGroupType()));
+								_LastBloc->addCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
 							}
 							PrametreNew
 						;
@@ -916,7 +916,7 @@ using  namespace NLIAFUZZY;
 
 	NewObjectName		:	IDENT
 							{							
-								_LastStringParam.back()->cpy(NLIAAGENT::CStringType(NLIAAGENT::CStringVarName(LastyyText[1])));
+								_LastStringParam.back()->cpy(NLAIAGENT::CStringType(NLAIAGENT::CStringVarName(LastyyText[1])));
 								_Param.push_back(new CParam);
 								_Param.back()->incRef();
 							}
@@ -929,17 +929,17 @@ using  namespace NLIAFUZZY;
 						}
 						THEN
 						{
-							_LastBloc->addCode( new CLdbOpCode( NLIAAGENT::CGroupType() ) );
+							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 						}
 						Clause
 						{
 							_LastBloc->addCode( new CAddOpCode() );
 //							_LastBloc->addCode( new CLdbNewOpCode(CRule()) );		
 							setStackVar( CVar::IdVar );
-//							_lastObjectType = (uint)(_lastObjectType & NLIAC::CTypeOfObject::tUndef);
+//							_lastObjectType = (uint)(_lastObjectType & NLAIC::CTypeOfObject::tUndef);
 //							_LastFact.varType = varForFunc;
 //							_LastFact.isUsed = false;
-//							_lastIdentType = NLIAAGENT::Rule::idRule;
+//							_lastIdentType = NLAIAGENT::Rule::idRule;
 						}
 						;
 
@@ -948,16 +948,16 @@ using  namespace NLIAFUZZY;
 
 	RuleCondition	:	IF
 						{
-							_LastBloc->addCode( new CLdbOpCode( NLIAAGENT::CGroupType() ) );
+							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 						}
 						Clause
 						{
 							_LastBloc->addCode( new CLdbNewOpCode( CClause() ) );
 							//_LastBloc->addCode( new CAddOpCode() );
-//							_lastObjectType = (uint)(_lastObjectType & NLIAC::CTypeOfObject::tLogic);
+//							_lastObjectType = (uint)(_lastObjectType & NLAIC::CTypeOfObject::tLogic);
 //							_LastFact.varType = varForFunc;
 //							_LastFact.isUsed = false;
-//							_lastIdentType = NLIAAGENT::CClause::idCClause;
+//							_lastIdentType = NLAIAGENT::CClause::idCClause;
 						}
 						;
 
@@ -991,22 +991,22 @@ using  namespace NLIAFUZZY;
 						{
 							/*char buf[256];
 							strcpy(buf, LastyyText[1]);
-							_LastBloc->addCode( new CLdbOpCode( NLIAAGENT::CBoolType( NLIAAGENT::CStringVarName(LastyyText[1]) ) ) );
-							_lastObjectType = (uint)(_lastObjectType & NLIAC::CTypeOfObject::tLogic);
+							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CBoolType( NLAIAGENT::CStringVarName(LastyyText[1]) ) ) );
+							_lastObjectType = (uint)(_lastObjectType & NLAIC::CTypeOfObject::tLogic);
 							_LastFact.varType = varForFunc;
 							_LastFact.isUsed = false;
-							_lastIdentType = NLIAAGENT::CVar::idBoolType;
+							_lastIdentType = NLAIAGENT::CVar::idBoolType;
 							*/
 						}
 
 	FactPattern			: INTERROGATION PAR_G 
 						IDENT 
 						{
-							_LastBloc->addCode(new CLdbOpCode( NLIAAGENT::CGroupType()) );
+							_LastBloc->addCode(new CLdbOpCode( NLAIAGENT::CGroupType()) );
 							char *txt = LastyyText[1];
-							_LastBloc->addCode( new CLdbOpCode( (NLIAAGENT::IObjectIA &) NLIAAGENT::CStringVarName( LastyyText[1] ) ) );
+							_LastBloc->addCode( new CLdbOpCode( (NLAIAGENT::IObjectIA &) NLAIAGENT::CStringVarName( LastyyText[1] ) ) );
 							_LastBloc->addCode(new CAddOpCode() );
-							_LastAssert = NLIAAGENT::CStringVarName(LastyyText[1]);
+							_LastAssert = NLAIAGENT::CStringVarName(LastyyText[1]);
 						}
 						LogicVarSet PAR_D
 						{
@@ -1045,7 +1045,7 @@ using  namespace NLIAFUZZY;
 
 	FuzzyRuleSet	:	FUZZYRULESET ACCOL_G
 						{
-							_LastBloc->addCode(new CLdbOpCode( NLIAAGENT::CGroupType()) );
+							_LastBloc->addCode(new CLdbOpCode( NLAIAGENT::CGroupType()) );
 						}
 						ListFuzzyRule
 						;
@@ -1075,7 +1075,7 @@ using  namespace NLIAFUZZY;
 						}
 						THEN
 						{
-							_LastBloc->addCode( new CLdbOpCode( NLIAAGENT::CGroupType() ) );
+							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 						}
 						FuzzyClause
 						{
@@ -1087,7 +1087,7 @@ using  namespace NLIAFUZZY;
 
 	FuzzyCondition		: IF 
 						{
-							_LastBloc->addCode( new CLdbOpCode( NLIAAGENT::CGroupType() ) );
+							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 						}
 						FuzzyClause
 						{
@@ -1108,13 +1108,13 @@ using  namespace NLIAFUZZY;
 
 	FuzzyFactPattern    : PAR_G IDENT
 						{
-							_LastBloc->addCode( new CLdbOpCode( NLIAAGENT::CGroupType() ) );
+							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 							// Composant?
 							char *txt = LastyyText[0];
-/*							_lastFVarIndex = ((IClassInterpret *)_selfClass.get())->getComponentIndex(NLIAAGENT::CStringVarName(LastyyText[1]));
+/*							_lastFVarIndex = ((IClassInterpret *)_selfClass.get())->getComponentIndex(NLAIAGENT::CStringVarName(LastyyText[1]));
 							if (_lastFVarIndex != -1 )
 							{
-								_LastBloc->addCode( new CLdbOpCode( NLIAAGENT::CDigitalType(_lastFVarIndex) ) );
+								_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CDigitalType(_lastFVarIndex) ) );
 								_LastBloc->addCode( new CAddOpCode() );
 							}
 							else
@@ -1126,7 +1126,7 @@ using  namespace NLIAFUZZY;
 						}
 						FIS IDENT
 						{
-							_LastString = NLIAAGENT::CStringVarName( LastyyText[0] );
+							_LastString = NLAIAGENT::CStringVarName( LastyyText[0] );
 						}
 						PAR_D
 						{
@@ -1137,21 +1137,21 @@ using  namespace NLIAFUZZY;
 
 	FuzzyVar			:	FUZZYVAR 
 						{
-							_LastBloc->addCode( new CLdbOpCode( NLIAAGENT::CGroupType() ) );
+							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 						}	
 						IDENT
 						{
-							_LastBloc->addCode( new CLdbOpCode( (NLIAAGENT::IObjectIA &) NLIAAGENT::CStringVarName( LastyyText[1] ) ) );
+							_LastBloc->addCode( new CLdbOpCode( (NLAIAGENT::IObjectIA &) NLAIAGENT::CStringVarName( LastyyText[1] ) ) );
 							_LastBloc->addCode( new CAddOpCode() );
 						}
 						SETS
 						{
-							_LastBloc->addCode( new CLdbOpCode( NLIAAGENT::CGroupType() ) );
+							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 						}
 						FuzzySets
 						{
 							_LastBloc->addCode( new CAddOpCode() );
-							_LastBloc->addCode( new CLdbNewOpCode( CFuzzyVar(NLIAAGENT::CStringVarName("Inst"),0,1) ) );
+							_LastBloc->addCode( new CLdbNewOpCode( CFuzzyVar(NLAIAGENT::CStringVarName("Inst"),0,1) ) );
 						}
 						;
 

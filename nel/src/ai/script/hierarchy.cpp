@@ -1,6 +1,6 @@
 /** \file hierarchy.cpp
  *
- * $Id: hierarchy.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: hierarchy.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,15 +26,15 @@
 
 namespace NLIASCRIPT
 {	
-	const IClassInterpret *CCompilateur::getInheritanceRange(sint32 &h,const IClassInterpret *classType,NLIAAGENT::IBaseGroupType &listName) const
+	const IClassInterpret *CCompilateur::getInheritanceRange(sint32 &h,const IClassInterpret *classType,NLAIAGENT::IBaseGroupType &listName) const
 	{		
 
-		NLIAAGENT::CIteratorContener it = listName.getIterator();
+		NLAIAGENT::CIteratorContener it = listName.getIterator();
 		sint32 i = listName.size() - 1;
 		const IClassInterpret *bassClass = NULL;		
 		while(i --)
 		{
-			const NLIAAGENT::IVarName &className = ((const NLIAAGENT::CStringType *)it++)->getStr();			
+			const NLAIAGENT::IVarName &className = ((const NLAIAGENT::CStringType *)it++)->getStr();			
 			bool find = false;
 			for(sint32 k = classType->sizeVTable() - 1; k >= 0 ;k--)
 			{
@@ -58,7 +58,7 @@ namespace NLIASCRIPT
 		return bassClass;
 	}
 
-	const IClassInterpret *CCompilateur::getInheritanceRange(sint32 &h,const IClassInterpret *classType,const NLIAAGENT::IVarName &className ) const
+	const IClassInterpret *CCompilateur::getInheritanceRange(sint32 &h,const IClassInterpret *classType,const NLAIAGENT::IVarName &className ) const
 	{				
 		const IClassInterpret *bassClass = NULL;
 		bool find = false;
@@ -96,30 +96,30 @@ namespace NLIASCRIPT
 		return 0;
 	}*/
 
-	const NLIAAGENT::IObjectIA *CCompilateur::getValidateHierarchyBase(std::list<sint32> &ref,sint32 &h,std::list<NLIASCRIPT::CStringType> &listName)
+	const NLAIAGENT::IObjectIA *CCompilateur::getValidateHierarchyBase(std::list<sint32> &ref,sint32 &h,std::list<NLIASCRIPT::CStringType> &listName)
 	{
 		return getValidateHierarchyBase((IClassInterpret *)_SelfClass.get(),ref,h,listName);
 	}
 
-	const NLIAAGENT::IObjectIA *CCompilateur::getValidateHierarchyBase(const NLIAAGENT::IObjectIA *base,std::list<sint32> &ref,sint32 &h,std::list<NLIASCRIPT::CStringType> &listName)
+	const NLAIAGENT::IObjectIA *CCompilateur::getValidateHierarchyBase(const NLAIAGENT::IObjectIA *base,std::list<sint32> &ref,sint32 &h,std::list<NLIASCRIPT::CStringType> &listName)
 	{		
 		std::list<NLIASCRIPT::CStringType> classHName;
 		std::list<NLIASCRIPT::CStringType> varHName;
-		const NLIAAGENT::IObjectIA *baseClass = base;		
+		const NLAIAGENT::IObjectIA *baseClass = base;		
 
 		ref.clear();
 		
 		h = 0;
-		NLIAAGENT::CStringVarName baseClassName("");
+		NLAIAGENT::CStringVarName baseClassName("");
 		
 		while(listName.size())
 		{
-			NLIAAGENT::CStringVarName lastClassName(listName.back().data());
+			NLAIAGENT::CStringVarName lastClassName(listName.back().data());
 			listName.pop_back();			
 			try
 			{
-				NLIAC::CIdentType id = getTypeOfClass(lastClassName);				
-				if(baseClass->isClassInheritedFrom(NLIAAGENT::CStringVarName(lastClassName.getString()))>=0)
+				NLAIC::CIdentType id = getTypeOfClass(lastClassName);				
+				if(baseClass->isClassInheritedFrom(NLAIAGENT::CStringVarName(lastClassName.getString()))>=0)
 				{
 					classHName.push_front(lastClassName.getString());
 				}							
@@ -147,11 +147,11 @@ namespace NLIASCRIPT
 			std::list<NLIASCRIPT::CStringType>::iterator i = classHName.begin();			
 			while(i != classHName.end())
 			{
-				NLIAAGENT::CStringVarName str( NLIAAGENT::CStringVarName((*i++).data()));
+				NLAIAGENT::CStringVarName str( NLAIAGENT::CStringVarName((*i++).data()));
 				try
 				{
-					NLIAC::CIdentType id(str.getString());
-					const NLIAAGENT::IObjectIA *b = (const NLIAAGENT::IObjectIA *)(id.getFactory())->getClass();					
+					NLAIC::CIdentType id(str.getString());
+					const NLAIAGENT::IObjectIA *b = (const NLAIAGENT::IObjectIA *)(id.getFactory())->getClass();					
 					
 					if((h = baseClass->isClassInheritedFrom(str)) >= 0)
 					{						
@@ -171,21 +171,21 @@ namespace NLIASCRIPT
 		if(varHName.size())
 		{
 			sint32 i;
-			NLIAAGENT::CStringVarName oldLastClassName("");
+			NLAIAGENT::CStringVarName oldLastClassName("");
 			sint32 Dec = 0;
 
-			const NLIAAGENT::IObjectIA *classType = baseClass;
+			const NLAIAGENT::IObjectIA *classType = baseClass;
 			while(varHName.size())
 			{
 			
-				NLIAAGENT::CStringVarName lastClassName(varHName.front().data());
+				NLAIAGENT::CStringVarName lastClassName(varHName.front().data());
 				varHName.pop_front();
 				
 				i = baseClass->getStaticMemberIndex(lastClassName);
 				if(i>=0)
 				{														
-					const NLIAAGENT::IObjectIA *c = baseClass->getStaticMember(i);
-					/*if((const NLIAC::CTypeOfObject &)baseClass->getType() & NLIAC::CTypeOfObject::tAgentInterpret) 
+					const NLAIAGENT::IObjectIA *c = baseClass->getStaticMember(i);
+					/*if((const NLAIC::CTypeOfObject &)baseClass->getType() & NLAIC::CTypeOfObject::tAgentInterpret) 
 					{
 						i += getCompementShift((IClassInterpret *)baseClass);
 					}*/
@@ -207,7 +207,7 @@ namespace NLIASCRIPT
 				}
 				else
 				{
-					if((const NLIAC::CTypeOfObject &)baseClass->getType() & NLIAC::CTypeOfObject::tAgentInterpret) 
+					if((const NLAIC::CTypeOfObject &)baseClass->getType() & NLAIC::CTypeOfObject::tAgentInterpret) 
 					{
 						baseClass = getInheritanceRange(h,(const IClassInterpret *)baseClass,lastClassName);	
 					}

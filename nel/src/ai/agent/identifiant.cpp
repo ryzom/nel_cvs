@@ -1,6 +1,6 @@
 /** \file identifiant.cpp
  *
- * $Id: identifiant.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: identifiant.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,25 +23,25 @@
  */
 #include "agent/agent.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
-	const NLIAC::CIdentType &CLocWordNumRef::getType() const
+	const NLAIC::CIdentType &CLocWordNumRef::getType() const
 	{		
 		return IdLocWordNumRef;
 	}
 	
-	/*const NLIAC::CIdentType &CstStringVarName::getType() const
+	/*const NLAIC::CIdentType &CstStringVarName::getType() const
 	{
-		static const NLIAC::CIdentType idCstStringVarName("CstStringVarName",CstStringVarName("XX"));
+		static const NLAIC::CIdentType idCstStringVarName("CstStringVarName",CstStringVarName("XX"));
 		return idCstStringVarName;
 	}*/	
 	
-	const NLIAC::CIdentType &CStringVarName::getType() const
+	const NLAIC::CIdentType &CStringVarName::getType() const
 	{		
 		return IdStringVarName;
 	}
 
-	const NLIAC::CIdentType &CIndexedVarName::getType() const
+	const NLAIC::CIdentType &CIndexedVarName::getType() const
 	{
 		
 		return IdIndexedVarName;
@@ -284,16 +284,16 @@ namespace NLIAAGENT
 		insert(str);
 	}
 	
-	const NLIAC::IBasicType *CIndexedVarName::clone() const
+	const NLAIC::IBasicType *CIndexedVarName::clone() const
 	{
-		NLIAC::IBasicInterface *x = new CIndexedVarName(*this);
+		NLAIC::IBasicInterface *x = new CIndexedVarName(*this);
 		x->incRef();
 		return x;
 	}
 
-	const NLIAC::IBasicType *CIndexedVarName::newInstance() const
+	const NLAIC::IBasicType *CIndexedVarName::newInstance() const
 	{
-		NLIAC::IBasicInterface *x = new CIndexedVarName("Inst");
+		NLAIC::IBasicInterface *x = new CIndexedVarName("Inst");
 		x->incRef();
 		return x;
 	}

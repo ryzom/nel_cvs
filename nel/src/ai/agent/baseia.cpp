@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseia.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: baseia.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "agent/object_type.h"
 #include "agent/messagerie.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 	void IConnectIA::save(NLMISC::IStream &os)
 	{
@@ -39,7 +39,7 @@ namespace NLIAAGENT
 		while(i != _Connection.end())
 		{	
 			IWordNumRef &r = (IWordNumRef &)((const IWordNumRef&)*((const IConnectIA *)*i++));
-			os.serial( (NLIAC::CIdentType &) (r.getType()) );
+			os.serial( (NLAIC::CIdentType &) (r.getType()) );
 			r.save(os);
 		}
 
@@ -49,7 +49,7 @@ namespace NLIAAGENT
 		while(i != _Connected.end())
 		{						
 			IWordNumRef &r = (IWordNumRef &)((const IWordNumRef&)*((const IConnectIA *)*i++));
-			os.serial( (NLIAC::CIdentType &) (r.getType()) );
+			os.serial( (NLAIC::CIdentType &) (r.getType()) );
 			r.save(os);
 		}
 	}	
@@ -124,7 +124,7 @@ namespace NLIAAGENT
 	{
 	}
 
-	IBasicObjectIA::IBasicObjectIA(const IBasicObjectIA &a): NLIAC::IBasicInterface(a)
+	IBasicObjectIA::IBasicObjectIA(const IBasicObjectIA &a): NLAIC::IBasicInterface(a)
 	{
 	}
 		
@@ -197,7 +197,7 @@ namespace NLIAAGENT
 		if(*methodName == send)
 		{
 			tQueue r;			
-			CObjectType *c = new CObjectType(new NLIAC::CIdentType(NLIAC::CIdentType::VoidType));
+			CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
 			c->incRef();
 			r.push(CIdMethod(0,0.0,NULL,c));
 			return r;
@@ -314,13 +314,13 @@ namespace NLIAAGENT
 	void IRefrence::save(NLMISC::IStream &os)
 	{
 		IObjectIA::save(os);
-		os.serial( (NLIAC::CIdentType &) (_NumRef->getType()) );
+		os.serial( (NLAIC::CIdentType &) (_NumRef->getType()) );
 		_NumRef->save(os);
 		if(_Parent != NULL)
 		{
 			bool t = true;
 			os.serial( t );
-			os.serial( (NLIAC::CIdentType &) (_Parent->getType()) );
+			os.serial( (NLAIC::CIdentType &) (_Parent->getType()) );
 			_Parent->save(os);
 		}
 		else
@@ -334,7 +334,7 @@ namespace NLIAAGENT
 	{
 		IObjectIA::load(is);
 		_NumRef->release();
-		NLIAC::CIdentTypeAlloc id;
+		NLAIC::CIdentTypeAlloc id;
 		is >> id;
 		_NumRef = (IWordNumRef *)id.allocClass();
 		_NumRef->load(is);
@@ -403,7 +403,7 @@ namespace NLIAAGENT
 	void IConnectIA::connectLoadStream(NLMISC::IStream &is)
 	{
 		IRefrence::refLoadStream(is);
-		NLIAC::CIdentTypeAlloc id;
+		NLAIC::CIdentTypeAlloc id;
 		sint32 i;
 		is.serial( i );
 

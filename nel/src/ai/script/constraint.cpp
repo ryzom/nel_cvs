@@ -1,6 +1,6 @@
 /** \file constraint.cpp
  *
- * $Id: constraint.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: constraint.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,7 +59,7 @@ namespace NLIASCRIPT
 		_Param->getDebugString(ptxt);
 		sprintf(txt,"%s%s",mtxt,ptxt);
 #endif	
-		const NLIAAGENT::IObjectIA *cl = NULL;
+		const NLAIAGENT::IObjectIA *cl = NULL;
 		bool isMember = true;
 		
 		if(_BaseClass)
@@ -67,7 +67,7 @@ namespace NLIASCRIPT
 			if(!_BaseClass->satisfied()) _BaseClass->run(comp);
 			if(_BaseClass->satisfied())
 			{
-				cl = (const NLIAAGENT::IObjectIA *)(_BaseClass->getConstraintTypeOf()->getFactory())->getClass();
+				cl = (const NLAIAGENT::IObjectIA *)(_BaseClass->getConstraintTypeOf()->getFactory())->getClass();
 				_M = comp.findMethode(cl,*_MethodName,*_Param);
 			}
 			else
@@ -81,11 +81,11 @@ namespace NLIASCRIPT
 			if(_M.MethodName == NULL)
 			{
 				isMember = false;
-				NLIAAGENT::CStringType *lib = (NLIAAGENT::CStringType *)_MethodName->getFront();
+				NLAIAGENT::CStringType *lib = (NLAIAGENT::CStringType *)_MethodName->getFront();
 				try
 				{					
-					NLIAC::CIdentType id(lib->getStr().getString());
-					_M = comp.findMethode((NLIAAGENT::IObjectIA *)id.getFactory()->getClass() ,*_MethodName,*_Param);
+					NLAIC::CIdentType id(lib->getStr().getString());
+					_M = comp.findMethode((NLAIAGENT::IObjectIA *)id.getFactory()->getClass() ,*_MethodName,*_Param);
 
 				}
 				catch(NLIAE::IException &)
@@ -121,7 +121,7 @@ namespace NLIASCRIPT
 			_Satisfied = true;
 			IOpCode *x;
 
-			if(((const NLIAC::CTypeOfObject &)_M.Object->getType()) & NLIAC::CTypeOfObject::tAgentInterpret)
+			if(((const NLAIC::CTypeOfObject &)_M.Object->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 			{				
 				IMethodContext *methodContex;
 				if (comp.getDebugMode())
@@ -226,7 +226,7 @@ namespace NLIASCRIPT
 			}
 			else
 			{				
-				c = new COperandSimple (new NLIAC::CIdentType (_M.Object->getType()));
+				c = new COperandSimple (new NLAIC::CIdentType (_M.Object->getType()));
 				c->incRef();
 				setOpCode(comp,x,c,true);
 			}*/
@@ -247,15 +247,15 @@ namespace NLIASCRIPT
 				{
 					try
 					{
-						NLIAC::CIdentType type = _M.ReturnType->getType();
-						NLIAC::CIdentType *tmp = new NLIAC::CIdentType (type);
+						NLAIC::CIdentType type = _M.ReturnType->getType();
+						NLAIC::CIdentType *tmp = new NLAIC::CIdentType (type);
 						c = new COperandSimple ( tmp );
 						c->incRef();
 						setOpCode(comp,x,c,true);						
 					}
 					catch(NLIAE::IException &)
 					{	
-						c = new COperandSimple (new NLIAC::CIdentType (_M.Object->getType()));
+						c = new COperandSimple (new NLAIC::CIdentType (_M.Object->getType()));
 						c->incRef();
 						setOpCode(comp,x,c,true);
 					}
@@ -264,7 +264,7 @@ namespace NLIASCRIPT
 				}
 				else
 				{
-					c = new COperandSimple (new NLIAC::CIdentType (_M.Object->getType()));
+					c = new COperandSimple (new NLAIC::CIdentType (_M.Object->getType()));
 					c->incRef();
 					setOpCode(comp,x,c,true);
 				}				
@@ -305,9 +305,9 @@ namespace NLIASCRIPT
 		strcpy(txt,_Txt);
 	}
 
-	bool CConstraintMethode::isEqual (const NLIAAGENT::IBaseGroupType &g,const CParam &p) const
+	bool CConstraintMethode::isEqual (const NLAIAGENT::IBaseGroupType &g,const CParam &p) const
 	{
-		if(((const NLIAAGENT::IBasicObjectIA &)*_MethodName) == ((const NLIAAGENT::IBasicObjectIA &)g) && *_Param == p) return true;
+		if(((const NLAIAGENT::IBasicObjectIA &)*_MethodName) == ((const NLAIAGENT::IBasicObjectIA &)g) && *_Param == p) return true;
 		return false;
 	}
 

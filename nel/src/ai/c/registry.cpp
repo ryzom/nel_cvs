@@ -1,6 +1,6 @@
 /** \file registry.cpp
  *
- * $Id: registry.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: registry.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "c/registry_class.h"
 #include "c/registry_type.h"
 
-namespace NLIAC
+namespace NLAIC
 {
 	CRegistry::CRegistryClass::CRegistryClass(const CIdentType &id,const IClassCFactory &factory,sint32 i):NameClass(*(new CIdentType(id))),FactoryClass ((const IClassCFactory *)factory.clone()),Index(i)
 	{	

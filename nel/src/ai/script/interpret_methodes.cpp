@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: interpret_methodes.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,14 +28,14 @@
 
 namespace NLIASCRIPT
 {
-	//const NLIAAGENT::TProcessStatement CParam::_RunState = NLIAAGENT::processIdle;
+	//const NLAIAGENT::TProcessStatement CParam::_RunState = NLAIAGENT::processIdle;
 
 	CParam::CParam():_Param(0){}
-	CParam::CParam(const CParam &p):NLIAAGENT::IObjectIA(p),_Param(p._Param.size())
+	CParam::CParam(const CParam &p):NLAIAGENT::IObjectIA(p),_Param(p._Param.size())
 	{
 		for(sint32 i = 0; i<p.size(); i++)
 		{
-			_Param[i] = (IOpType *)p._Param[i]->clone();//new NLIAC::CIdentType(*p._Param[i]);
+			_Param[i] = (IOpType *)p._Param[i]->clone();//new NLAIC::CIdentType(*p._Param[i]);
 		}
 	}
 	
@@ -65,11 +65,11 @@ namespace NLIASCRIPT
 			IOpType &p1 = *_Param[i], &p2 = *p._Param[i];
 			if(p1.getConstraintTypeOf() != NULL && p2.getConstraintTypeOf() != NULL)
 			{
-				const NLIAC::CIdentType &idG = *p1.getConstraintTypeOf();
-				const NLIAC::CIdentType &idD = *p2.getConstraintTypeOf();
+				const NLAIC::CIdentType &idG = *p1.getConstraintTypeOf();
+				const NLAIC::CIdentType &idD = *p2.getConstraintTypeOf();
 				if(!(idG == idD))
 				{
-					if(((const NLIAC::CTypeOfObject &)idD) & NLIAC::CTypeOfObject::tAgentInterpret)
+					if(((const NLAIC::CTypeOfObject &)idD) & NLAIC::CTypeOfObject::tAgentInterpret)
 					{
 						const IClassInterpret *o = (const IClassInterpret *)((CClassInterpretFactory *)idD.getFactory())->getClass();						
 						bool type = false;
@@ -113,14 +113,14 @@ namespace NLIASCRIPT
 		}
 	}
 
-	const NLIAC::IBasicType *CParam::clone() const
+	const NLAIC::IBasicType *CParam::clone() const
 	{
 		CParam *cl = new CParam( *this );
 		cl->incRef();
 		return cl;
 	}
 
-	const NLIAC::IBasicType *CParam::newInstance() const
+	const NLAIC::IBasicType *CParam::newInstance() const
 	{
 		CParam *instance = new CParam();
 		instance->incRef();
@@ -133,14 +133,14 @@ namespace NLIASCRIPT
 		return _Param[i];
 	}
 
-	void CParam::push(const NLIAAGENT::IBaseGroupType &g)
+	void CParam::push(const NLAIAGENT::IBaseGroupType &g)
 	{
-		NLIAAGENT::CIteratorContener  i = g.getIterator();
+		NLAIAGENT::CIteratorContener  i = g.getIterator();
 
 		while( !i.isInEnd() )
 		{
-			const NLIAAGENT::IObjectIA *o = i++;
-			push(COperandSimple(new NLIAC::CIdentType(o->getType())));
+			const NLAIAGENT::IObjectIA *o = i++;
+			push(COperandSimple(new NLAIC::CIdentType(o->getType())));
 		}
 	}
 
@@ -179,9 +179,9 @@ namespace NLIASCRIPT
 		return _Param.size();
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CParam::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &CParam::run()
 	{
-		return NLIAAGENT::IObjectIA::ProcessRun;;
+		return NLAIAGENT::IObjectIA::ProcessRun;;
 	}
 
 	CParam::~CParam()
@@ -225,14 +225,14 @@ namespace NLIASCRIPT
 		}
 	}
 
-	bool CParam::isEqual(const NLIAAGENT::IBasicObjectIA &a) const
+	bool CParam::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 	{
 		// TODO
 		const CParam &p = (const CParam &)a;
 		return *this == p;
 	}
 
-	const NLIAC::CIdentType &CParam::getType() const
+	const NLAIC::CIdentType &CParam::getType() const
 	{
 		return IdParam;
 	}
@@ -244,12 +244,12 @@ namespace NLIASCRIPT
 		{							
 			for(sint32 i = 0; i < size() - 1; i++)
 			{
-				const NLIAC::CIdentType *id = _Param[i]->getConstraintTypeOf();
+				const NLAIC::CIdentType *id = _Param[i]->getConstraintTypeOf();
 				if(id) strcat(txt,(const char *)*id);
 				else strcat(txt,"UNDEF");
 				strcat(txt,",");
 			}
-			const NLIAC::CIdentType *id = _Param[i]->getConstraintTypeOf();
+			const NLAIC::CIdentType *id = _Param[i]->getConstraintTypeOf();
 			if(id) strcat(txt,(const char *)*id);
 			else strcat(txt,"UNDEF");
 		}
@@ -261,7 +261,7 @@ namespace NLIASCRIPT
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-	CMethodeName::CMethodeName(const NLIAAGENT::IVarName &name):_MethodeName((NLIAAGENT::IVarName *)name.clone()),_Code(NULL)
+	CMethodeName::CMethodeName(const NLAIAGENT::IVarName &name):_MethodeName((NLAIAGENT::IVarName *)name.clone()),_Code(NULL)
 	{
 		_TypeOfMethode = NULL;
 	}
@@ -283,19 +283,19 @@ namespace NLIASCRIPT
 
 	CMethodeName::CMethodeName(const CMethodeName &c)
 	{
-		_MethodeName = (NLIAAGENT::IVarName *)c._MethodeName->clone();
+		_MethodeName = (NLAIAGENT::IVarName *)c._MethodeName->clone();
 		_Code = c._Code;
 		_Code->incRef();
 	}
 
-	const NLIAC::IBasicType *CMethodeName::clone() const
+	const NLAIC::IBasicType *CMethodeName::clone() const
 	{
 		CMethodeName *cl = new CMethodeName( *this );
 		cl->incRef();
 		return cl;
 	}
 
-	const NLIAC::IBasicType *CMethodeName::newInstance() const
+	const NLAIC::IBasicType *CMethodeName::newInstance() const
 	{
 		CMethodeName *instance = new CMethodeName;
 		instance->incRef();
@@ -303,16 +303,16 @@ namespace NLIASCRIPT
 	}
 
 
-	void CMethodeName::setName(const NLIAAGENT::IVarName &name)
+	void CMethodeName::setName(const NLAIAGENT::IVarName &name)
 	{
 		if(_MethodeName != NULL)
 		{
 			_MethodeName->release();				
 		}
-		_MethodeName = (NLIAAGENT::IVarName *)name.clone();
+		_MethodeName = (NLAIAGENT::IVarName *)name.clone();
 	}
 
-	const NLIAAGENT::IVarName &CMethodeName::getName() const
+	const NLAIAGENT::IVarName &CMethodeName::getName() const
 	{
 		if(_MethodeName == NULL)
 			throw NLIAE::CExceptionUnReference("invalide reference for methodeName in class CMethodeName");
@@ -362,18 +362,18 @@ namespace NLIASCRIPT
 
 	void CMethodeName::save(NLMISC::IStream &os)
 	{	
-		os.serial( (NLIAC::CIdentType &) _MethodeName->getType() );
+		os.serial( (NLAIC::CIdentType &) _MethodeName->getType() );
 		_MethodeName->save( os );
 
-		os.serial( (NLIAC::CIdentType &) _Code->getType() );
+		os.serial( (NLAIC::CIdentType &) _Code->getType() );
 		_Code->save( os );
 	}
 
 	void CMethodeName::load(NLMISC::IStream &is)
 	{
-		NLIAC::CIdentTypeAlloc id;
+		NLAIC::CIdentTypeAlloc id;
 		is.serial( id );
-		_MethodeName = (NLIAAGENT::IVarName *) id.allocClass();
+		_MethodeName = (NLAIAGENT::IVarName *) id.allocClass();
 		_MethodeName->load( is );
 		_MethodeName->incRef();
 		
@@ -383,18 +383,18 @@ namespace NLIASCRIPT
 		_Code->incRef();
 	}	
 
-	bool CMethodeName::isEqual(const NLIAAGENT::IBasicObjectIA &) const
+	bool CMethodeName::isEqual(const NLAIAGENT::IBasicObjectIA &) const
 	{
 		// TODO
 		return false;
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CMethodeName::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &CMethodeName::run()
 	{
-		return NLIAAGENT::IObjectIA::ProcessRun;
+		return NLAIAGENT::IObjectIA::ProcessRun;
 	}
 
-	const NLIAC::CIdentType &CMethodeName::getType() const
+	const NLAIC::CIdentType &CMethodeName::getType() const
 	{
 		return IdMethodeName;
 	}

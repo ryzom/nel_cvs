@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: agent_script.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "script/interpret_object_message.h"
 #include "script/interpret_object_agent.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 	const int CAgentScript::sendTag = 0;
 	const int CAgentScript::getChildTag = 1;
@@ -59,7 +59,7 @@ namespace NLIAAGENT
 		_AgentManager = a._AgentManager;
 		if(_AgentManager) _AgentManager->incRef();
 
-		std::vector<NLIALOGIC::IBaseOperator *>::const_iterator it_o = a._Operators.begin();
+		std::vector<NLAILOGIC::IBaseOperator *>::const_iterator it_o = a._Operators.begin();
 		while ( it_o != a._Operators.end() )
 		{
 			addOperator( *it_o );
@@ -99,7 +99,7 @@ namespace NLIAAGENT
 			it_c++;
 			id_c++;
 
-			/*if(((const NLIAC::CTypeOfObject &)o->getType()) & NLIAC::CTypeOfObject::tAgentInterpret)
+			/*if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 			{
 				incRef();
 				((CAgentScript *)o)->setAgentManager(this);
@@ -129,7 +129,7 @@ namespace NLIAAGENT
 		_AgentManager = manager;
 		for ( int i = 0; i < _NbComponents; i++ )
 		{
-			if(((const NLIAC::CTypeOfObject &)_Components[i]->getType()) & NLIAC::CTypeOfObject::tAgentInterpret)
+			if(((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 			{
 				_AgentManager->incRef();
 				((CAgentScript *)_Components[i])->setAgentManager(_AgentManager);
@@ -201,7 +201,7 @@ namespace NLIAAGENT
 		os.serial( size );
 		for ( int i = 0; i < _NbComponents; i++ )
 		{
-			os.serial( (NLIAC::CIdentType &) _Components[i]->getType() );
+			os.serial( (NLAIC::CIdentType &) _Components[i]->getType() );
 			_Components[i]->save(os);
 		}		
 	}	
@@ -225,7 +225,7 @@ namespace NLIAAGENT
 
 		for ( int i = 0; i < _NbComponents; i++ )
 		{
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is.serial( id );
 			IObjectIA *tmp_c = (IObjectIA *)id.allocClass();
 			tmp_c->load(is);
@@ -238,7 +238,7 @@ namespace NLIAAGENT
 		return _AgentClass->getMethodIndexSize();
 	}
 
-	const NLIAC::IBasicType *CAgentScript::clone() const
+	const NLAIC::IBasicType *CAgentScript::clone() const
 	{		
 		CAgentScript *result = new CAgentScript(*this);
 		result->incRef();		
@@ -246,7 +246,7 @@ namespace NLIAAGENT
 		// TODO: copie des fonctions
 	}
 
-	const NLIAC::IBasicType *CAgentScript::newInstance() const
+	const NLAIC::IBasicType *CAgentScript::newInstance() const
 	{
 		CAgentScript *instance;
 		if ( _AgentClass )
@@ -432,14 +432,14 @@ namespace NLIAAGENT
 		return getState();
 	}
 
-	void CAgentScript::addOperator(NLIALOGIC::IBaseOperator *op)
+	void CAgentScript::addOperator(NLAILOGIC::IBaseOperator *op)
 	{
 		_Operators.push_back(op);
 	}
 
-	void CAgentScript::remOperator(NLIALOGIC::IBaseOperator *op)
+	void CAgentScript::remOperator(NLAILOGIC::IBaseOperator *op)
 	{
-		std::vector<NLIALOGIC::IBaseOperator *>::iterator it_o = _Operators.begin();
+		std::vector<NLAILOGIC::IBaseOperator *>::iterator it_o = _Operators.begin();
 		while ( it_o != _Operators.end() )
 		{
 			if ( op == *it_o )
@@ -454,7 +454,7 @@ namespace NLIAAGENT
 		throw NLIAE::CExceptionObjectNotFoundError(buf);
 	}	
 
-	const NLIAC::CIdentType &CAgentScript::getType() const
+	const NLAIC::CIdentType &CAgentScript::getType() const
 	{
 		if ( _AgentClass ) 
 			return _AgentClass->getType();
@@ -637,7 +637,7 @@ namespace NLIAAGENT
 		{
 			tQueue r;			
 			NLIASCRIPT::CParam p;
-			NLIASCRIPT::COperandSimple m(new NLIAC::CIdentType(NLIASCRIPT::CMessageClass::IdMessageClass));
+			NLIASCRIPT::COperandSimple m(new NLAIC::CIdentType(NLIASCRIPT::CMessageClass::IdMessageClass));
 			m.incRef();
 			m.incRef();
 			p.push(&m);
@@ -664,14 +664,14 @@ namespace NLIAAGENT
 			tQueue r;			
 
 			NLIASCRIPT::CParam p;
-			NLIASCRIPT::COperandSimple m(new NLIAC::CIdentType(CStringType::IdStringType));
+			NLIASCRIPT::COperandSimple m(new NLAIC::CIdentType(CStringType::IdStringType));
 			m.incRef();
 			m.incRef();
 			p.push(&m);		
 					
 			if(p.eval( (const NLIASCRIPT::CParam &)param ) >= 0.0)
 			{
-				NLIASCRIPT::COperandSimple typeR(new NLIAC::CIdentType(IAgent::IdAgent));
+				NLIASCRIPT::COperandSimple typeR(new NLAIC::CIdentType(IAgent::IdAgent));
 				NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
 				t->incRef();
 				
@@ -685,8 +685,8 @@ namespace NLIAAGENT
 		{
 			tQueue r;	
 			NLIASCRIPT::CParam p;
-			NLIASCRIPT::COperandSimple m(new NLIAC::CIdentType(CStringType::IdStringType));
-			NLIASCRIPT::COperandSimple n(new NLIAC::CIdentType("Agent"));
+			NLIASCRIPT::COperandSimple m(new NLAIC::CIdentType(CStringType::IdStringType));
+			NLIASCRIPT::COperandSimple n(new NLAIC::CIdentType("Agent"));
 
 			m.incRef();
 			m.incRef();
@@ -698,7 +698,7 @@ namespace NLIAAGENT
 
 			if(p.eval( (const NLIASCRIPT::CParam &)param ) >= 0.0)
 			{
-				NLIASCRIPT::COperandSimple typeR(new NLIAC::CIdentType(DigitalType::IdDigitalType));
+				NLIASCRIPT::COperandSimple typeR(new NLAIC::CIdentType(DigitalType::IdDigitalType));
 				NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
 				t->incRef();
 				r.push(CIdMethod((IAgent::getMethodIndexSize() + addChildTag),0.0,NULL,t));

@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.64 2004/09/30 16:16:18 vuarand Exp $
+ * $Id: displayer.cpp,v 1.64.2.1 2004/10/19 10:24:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -673,7 +673,7 @@ void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *m
 			}
 		}
 
-		subject += procname + " NeL " + toString(LogTypeToString[0][args.LogType]) + " " + string(args.FileName) + " " + toString(args.Line) + " " + string(args.FuncName);
+		subject += procname + " NeL " + toString(LogTypeToString[0][args.LogType]) + " " + (args.FileName?string(args.FileName):"") + " " + toString(args.Line) + " " + (args.FuncName?string(args.FuncName):"");
 
 		// Check the envvar NEL_IGNORE_ASSERT
 		if (getenv ("NEL_IGNORE_ASSERT") == NULL)

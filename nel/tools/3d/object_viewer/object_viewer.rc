@@ -739,8 +739,22 @@ FONT 8, "MS Sans Serif"
 BEGIN
     EDITTEXT        IDC_SOUND_NAME,51,10,122,14,ES_AUTOHSCROLL
     LTEXT           "Sound name:",IDC_STATIC,5,12,45,10
-    PUSHBUTTON      "Browse...",IDC_BROWSE_SOUND,178,9,64,16
+    PUSHBUTTON      "Browse...",IDC_BROWSE_SOUND,178,9,64,16,WS_DISABLED
     GROUPBOX        "",IDC_STATIC,3,1,245,29
+END
+
+IDD_LB_EXTERN_IB DIALOG DISCARDABLE  0, 0, 185, 52
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Extern ID"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,128,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,128,24,50,14
+    CONTROL         "Enable",IDC_ENABLE_EXTERN_ID,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,7,43,12
+    LTEXT           "ID :",IDC_STATIC,7,22,13,11
+    EDITTEXT        IDC_ID_VALUE,22,21,35,14,ES_AUTOHSCROLL
+    LTEXT           "(4 letters is the max)",IDC_STATIC,63,20,55,17
 END
 
 
@@ -1023,6 +1037,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 196
     END
+
+    IDD_LB_EXTERN_IB, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 178
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 45
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1177,6 +1199,8 @@ BEGIN
         MENUITEM "All LOD",                     IDM_LB_LOD1N2
         MENUITEM "Lod 1",                       IDM_LB_LOD1
         MENUITEM "Lod 2",                       IDM_LB_LOD2
+        MENUITEM SEPARATOR
+        MENUITEM "extern ID",                   IDM_LB_EXTERN_ID
     END
 END
 
@@ -1293,6 +1317,8 @@ BEGIN
 0x6e6f, 0x6563, "\000" 
     IDC_TYPE_OF_EMISSION, 0x403, 10, 0
 0x6e6f, 0x6220, 0x756f, 0x636e, 0x0065, 
+    IDC_TYPE_OF_EMISSION, 0x403, 14, 0
+0x7865, 0x6574, 0x6e72, 0x6c61, 0x6f20, 0x6c6e, 0x0079, 
     0
 END
 

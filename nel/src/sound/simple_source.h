@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSimpleSource: implementation of USource
  *
- * $Id: simple_source.h,v 1.2 2003/01/08 15:45:14 boucher Exp $
+ * $Id: simple_source.h,v 1.3 2003/02/06 09:22:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,10 @@ public:
 	 * If the source is stereo, return the position vector which reference was passed to set3DPositionVector()
 	 */
 //	virtual void					getPos( NLMISC::CVector& pos ) const;
+	/** Get the virtual source position.
+	 *	This method compute the virtual source position with cluster system.
+	 */
+	NLMISC::CVector					getVirtualPos() const;
 	/// Set the velocity vector (3D mode only, ignored in stereo mode) (default: (0,0,0))
 	virtual void					setVelocity( const NLMISC::CVector& vel );
 	/// Set the direction vector (3D mode only, ignored in stereo mode) (default: (0,0,0) as non-directional)

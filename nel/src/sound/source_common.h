@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_common.h,v 1.3 2003/01/08 15:41:10 boucher Exp $
+ * $Id: source_common.h,v 1.4 2003/02/06 09:23:02 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,7 +93,7 @@ public:
 
 	virtual uint32					getTime();
 
-	NL3D::CCluster					*getCluster() { return _Cluster; }
+	NL3D::CCluster					*getCluster() const { return _Cluster; } 
 
 
 protected:

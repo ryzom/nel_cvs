@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSimpleSource: implementation of USource
  *
- * $Id: simple_source.cpp,v 1.2 2003/01/08 15:45:14 boucher Exp $
+ * $Id: simple_source.cpp,v 1.3 2003/02/06 09:22:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "driver/source.h"
 #include "mixing_track.h"
 #include "simple_sound.h"
+#include "clustered_sound.h"
 
 using namespace NLMISC;
 
@@ -104,6 +105,26 @@ void					CSimpleSource::setLooping( bool l )
 }
 
 
+CVector		CSimpleSource::getVirtualPos() const
+{
+	if (getCluster() != 0)
+	{
+		// need to check the cluster status
+		const CClusteredSound::CClusterSoundStatus *css = CAudioMixerUser::instance()->getClusteredSound()->getClusterSoundStatus(getCluster());
+		if (css != 0)
+		{
+			// there is some data here, update the virtual position of the sound.
+			float dist = (css->Position - getPos()).norm();
+			CVector vpos(CAudioMixerUser::instance()->getListenPosVector() + css->Direction * (css->Dist + dist));
+			vpos = _Position * (1-css->PosAlpha) + vpos*(css->PosAlpha);
+			return vpos;
+		}
+	}
+
+	return _Position;
+}
+
+
 /*
  * Play
  */
@@ -142,7 +163,8 @@ void					CSimpleSource::play()
 		// ok, we have a track to realy play, fill the data into the track
 		_Track->DrvSource->setStaticBuffer(_Sound->getBuffer());
 
-		_Track->DrvSource->setPos( _Position, false);
+//		_Track->DrvSource->setPos( _Position, false);
+		_Track->DrvSource->setPos( getVirtualPos(), false);
 		if ( ! _Sound->getBuffer()->isStereo() )
 		{
 			_Track->DrvSource->setMinMaxDistances( _Sound->getMinDistance(), _Sound->getMaxDistance(), false );
@@ -195,7 +217,9 @@ void CSimpleSource::onEvent()
 void					CSimpleSource::stop()
 {
 //	nldebug("CSimpleSource %p : stop", (CAudioMixerUser::IMixerEvent*)this);
-	nlassert(_Playing);
+//	nlassert(_Playing);
+	if (!_Playing)
+		return;
 
 	if (_Track != 0)
 	{
@@ -237,7 +261,8 @@ void					CSimpleSource::setPos( const NLMISC::CVector& pos )
 	// Set the position
 	if ( _Track != NULL )
 	{
-		_Track->DrvSource->setPos( pos );
+//		_Track->DrvSource->setPos( pos );
+		_Track->DrvSource->setPos( getVirtualPos() );
 	}
 }
 

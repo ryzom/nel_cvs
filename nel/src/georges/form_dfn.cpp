@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.13 2002/09/05 14:12:12 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.14 2002/09/12 16:04:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -663,8 +663,13 @@ bool CFormDfn::getEntryFilename (uint entry, std::string& filename) const
 {
 	if (entry < Entries.size ())
 	{
-		filename = Entries[entry].Filename;
-		return true;
+		if (Entries[entry].TypeElement != EntryVirtualDfn)
+		{
+			filename = Entries[entry].Filename;
+			return true;
+		}
+		warning (false, "getEntryFilename", "The entry is a virtual DFN.");
+		return false;
 	}
 	warning (false, "getEntryFilename", "Wrong entry ID.");
 	return false;
@@ -676,13 +681,8 @@ bool CFormDfn::getEntryName (uint entry, std::string &name) const
 {
 	if (entry < Entries.size ())
 	{
-		if (Entries[entry].TypeElement != EntryVirtualDfn)
-		{
-			name = Entries[entry].Name;
-			return true;
-		}
-		warning (false, "getEntryName", "The entry is a virtual DFN.");
-		return false;
+		name = Entries[entry].Name;
+		return true;
 	}
 	warning (false, "getEntryName", "Wrong entry ID.");
 	return false;

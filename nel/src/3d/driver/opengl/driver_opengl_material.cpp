@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.67 2002/09/24 14:44:32 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.68 2002/10/14 15:51:29 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -346,6 +346,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	if(matShader != CMaterial::LightMap
 		&& matShader != CMaterial::PerPixelLighting
 		/* && matShader != CMaterial::Caustics	*/
+		&& matShader != CMaterial::Cloud
 	   )
 	{
 		for(stage=0 ; stage<inlGetNumTextStages() ; stage++)
@@ -499,6 +500,8 @@ sint			CDriverGL::beginMultiPass()
 		return  beginPPLNoSpecMultiPass();	
 	/* case CMaterial::Caustics:
 		return  beginCausticsMultiPass(); */
+	case CMaterial::Cloud:
+		return  beginCloudMultiPass();
 
 	// All others materials require just 1 pass.
 	default: return 1;
@@ -510,20 +513,23 @@ void			CDriverGL::setupPass(uint pass)
 	switch(_CurrentMaterialSupportedShader)
 	{
 	case CMaterial::LightMap: 
-		setupLightMapPass(pass);
+		setupLightMapPass (pass);
 		break;
 	case CMaterial::Specular: 
-		setupSpecularPass(pass);
+		setupSpecularPass (pass);
 		break;
 	case CMaterial::PerPixelLighting:
-		setupPPLPass(pass);
+		setupPPLPass (pass);
 		break;
 	case CMaterial::PerPixelLightingNoSpec:
-		setupPPLNoSpecPass(pass);
+		setupPPLNoSpecPass (pass);
 		break;	
 	/* case CMaterial::Caustics:
 		case CMaterial::Caustics:
 		break; */
+	case CMaterial::Cloud:
+		setupCloudPass (pass);
+		break;	
 
 	// All others materials do not require multi pass.
 	default: return;
@@ -551,6 +557,9 @@ void			CDriverGL::endMultiPass()
 	/* case CMaterial::Caustics:
 		endCausticsMultiPass();
 		break; */
+	case CMaterial::Cloud:
+		endCloudMultiPass();
+		break;	
 	// All others materials do not require multi pass.
 	default: return;
 	}
@@ -898,7 +907,7 @@ sint			CDriverGL::beginSpecularMultiPass()
 	glLoadMatrixf( _TexMtx.get() );
 	glMatrixMode(GL_MODELVIEW);
 
-	// Manage the rare case whe the SpecularMap is not provided (fault of graphist).
+	// Manage the rare case when the SpecularMap is not provided (fault of graphist).
 	if(mat.getTexture(1)==NULL)
 		return 1;
 
@@ -916,7 +925,7 @@ void			CDriverGL::setupSpecularPass(uint pass)
 {
 	const CMaterial &mat= *_CurrentMaterial;
 
-	// Manage the rare case whe the SpecularMap is not provided (fault of graphist).
+	// Manage the rare case when the SpecularMap is not provided (error of a graphist).
 	if(mat.getTexture(1)==NULL)
 	{
 		// Just display the texture forcing no blend (as in std case).
@@ -1618,5 +1627,135 @@ void		CDriverGL::endCausticsMultiPass(const CMaterial &mat)
 
 }
 */
+
+/// \todo Optimize the cloud multipass with register combiner
+
+// ***************************************************************************
+sint		CDriverGL::beginCloudMultiPass ()
+{
+	nlassert(_CurrentMaterial->getShader() == CMaterial::Cloud);
+	return 1;
+}
+
+// ***************************************************************************
+void		CDriverGL::setupCloudPass (uint pass)
+{
+	nlassert(_CurrentMaterial->getShader() == CMaterial::Cloud);
+
+	const CMaterial &mat= *_CurrentMaterial;
+	
+	activateTexture(0, mat.getTexture(0));
+	activateTexture(1, mat.getTexture(0));
+
+	if (_CurrentTexEnvSpecial[0] != TexEnvSpecialCloudStage0)
+	{
+		_CurrentTexEnvSpecial[0] = TexEnvSpecialCloudStage0;
+		_CurrentTexEnvSpecial[1] = TexEnvSpecialCloudStage1;
+
+		if (_Extensions.NVTextureEnvCombine4)
+		{
+			// Setup 1st Stage
+			_DriverGLStates.activeTextureARB(0);
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);		
+			//== colors ==
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD);
+			// Arg0 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+			// Arg1 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+			// Arg2 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+			// Arg3 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_SRC_COLOR);
+
+			//== alpha ==
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD);
+			// Arg0 = AT0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_TEXTURE0_ARB);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_ALPHA);
+			// Arg1 = AWPOS
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_PRIMARY_COLOR_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_SRC_ALPHA);
+			// Arg2 = AT1
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, GL_TEXTURE1_ARB);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_SRC_ALPHA);
+			// Arg3 = 1-AWPOS
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_ALPHA_NV, GL_PRIMARY_COLOR_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_ALPHA_NV, GL_ONE_MINUS_SRC_ALPHA);
+
+			// Setup 2nd Stage
+			_DriverGLStates.activeTextureARB(1);
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);		
+			//== colors ==
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD);
+			// Arg0 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+			// Arg1 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+			// Arg2 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+			// Arg3 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_SRC_COLOR);
+
+			//== alpha ==
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD);
+			// Arg0 = AT0*AWPOS+AT1*(1-AWPOS)
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_PREVIOUS_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_ALPHA);
+			// Arg1 = AINT
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_CONSTANT_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_SRC_ALPHA);
+			// Arg2 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_SRC_ALPHA);
+			// Arg3 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_ALPHA_NV, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_ALPHA_NV, GL_SRC_ALPHA);
+
+		}
+		else // ATI EnvCombine3
+		{
+			/*glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);		
+			//== colors ==
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX);			
+			// Arg0 = Specular read in cube map
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+			// Arg2 = Light color
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_CONSTANT_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+			// Arg1 = Primary color ( + other light diffuse)
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);			
+
+			//== alpha ==
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE_ADD_ATIX);			
+			// Arg0 = PREVIOUS ALPHA
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_PREVIOUS_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_COLOR);
+			// Arg2 = 1
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_ONE_MINUS_SRC_COLOR);
+			// Arg1 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_SRC_COLOR);*/
+		}
+	}
+	activateTexEnvColor (1, mat.getColor());
+}
+
+// ***************************************************************************
+void		CDriverGL::endCloudMultiPass()
+{
+	nlassert(_CurrentMaterial->getShader() == CMaterial::Cloud);
+}
 
 } // NL3D

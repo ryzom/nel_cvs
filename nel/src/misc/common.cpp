@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.69 2005/03/01 09:11:27 vizerie Exp $
+ * $Id: common.cpp,v 1.70 2005/03/22 14:40:34 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -330,7 +330,7 @@ bool isPowerOf2(sint32 v)
 
 string bytesToHumanReadable (const std::string &bytes)
 {
-	static char *divTable[]= { "B", "kB", "mB", "gB" };
+	static char *divTable[]= { "B", "KB", "MB", "GB" };
 	uint div = 0;
 	uint64 res = atoiInt64(bytes.c_str());
 	uint64 newres = res;
@@ -347,7 +347,7 @@ string bytesToHumanReadable (const std::string &bytes)
 
 string bytesToHumanReadable (uint32 bytes)
 {
-	static char *divTable[]= { "B", "kB", "mB", "gB" };
+	static char *divTable[]= { "B", "KB", "MB", "GB" };
 	uint div = 0;
 	uint32 res = bytes;
 	uint32 newres = res;
@@ -375,7 +375,7 @@ uint32 humanReadableToBytes (const string &str)
 
 	res = atoi (str.c_str());
 
-	if(str[str.size()-1] == 'b')
+	if(str[str.size()-1] == 'B')
 	{
 		if (str.size()<3)
 			return res;
@@ -383,9 +383,9 @@ uint32 humanReadableToBytes (const string &str)
 		// there s no break and it's **normal**
 		switch (str[str.size()-2])
 		{
-		case 'g': res *= 1024;
-		case 'm': res *= 1024;
-		case 'k': res *= 1024;
+		case 'G': res *= 1024;
+		case 'M': res *= 1024;
+		case 'K': res *= 1024;
 		default: ;
 		}
 	}

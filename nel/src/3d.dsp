@@ -1137,6 +1137,34 @@ SOURCE=.\3d\ps_zone.cpp
 SOURCE=..\include\nel\3d\ps_zone.h
 # End Source File
 # End Group
+# Begin Group "Collisions"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\landscape_collision_grid.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\landscape_collision_grid.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\visual_collision_entity.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\visual_collision_entity.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\visual_collision_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\visual_collision_manager.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\3d\async_file_manager.cpp

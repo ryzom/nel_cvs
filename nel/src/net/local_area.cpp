@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.26 2000/12/22 13:46:16 cado Exp $
+ * $Id: local_area.cpp,v 1.27 2001/01/03 16:38:20 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,13 +128,16 @@ void NLNET::cbAssignId( CMessage& msgin, TSenderId idfrom )
 	string name;
 	msgin.serial( number );
 	IMovingEntity es;
+	nldebug( "Retrieving %d player names:", number );
 	for ( uint i=0; i!=number; i++ )
 	{
 		msgin.serial( es );
 		msgin.serial( name );
+		DebugLog.displayRaw( " %s", name.c_str() );
 		es.setName( name );
 		createRemoteEntity( es );
 	}
+	DebugLog.displayRawNL( "." );
 }
 
 
@@ -166,6 +169,7 @@ void NLNET::cbCreateNewEntity( CMessage& msgin, TSenderId idfrom )
 	msgin.serial( name );
 	
 	// Create remote entity and set name
+	nldebug( "Retrieving new player name: %s", name.c_str() );
 	es.setName( name );
 	createRemoteEntity( es );
 	nldebug( "Entity %u is %s", es.id(), name.c_str() );

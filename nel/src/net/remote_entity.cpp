@@ -1,7 +1,7 @@
 /** \file remote_entity.cpp
  * Remote-controlled entities
  *
- * $Id: remote_entity.cpp,v 1.12 2000/12/20 17:05:33 cado Exp $
+ * $Id: remote_entity.cpp,v 1.13 2001/01/03 16:38:20 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,6 +68,7 @@ void CRemoteEntity::update( TDuration deltatime )
 {
 	if ( _Interpolator.active() )
 	{
+		setPreviousPos( pos() );
 		_Interpolator.getNextState( *this, deltatime );
 	}
 	else

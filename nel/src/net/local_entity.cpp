@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.19 2000/12/22 13:46:16 cado Exp $
+ * $Id: local_entity.cpp,v 1.20 2001/01/03 16:38:20 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,6 @@ CLocalEntity::CLocalEntity( const IMovingEntity& es ) :
 void CLocalEntity::update( TDuration deltatime )
 {
 	// Local entity
-	setPreviousPos( pos() );
 	_DeltaTime = deltatime;
 	IMovingEntity::update( deltatime );
 

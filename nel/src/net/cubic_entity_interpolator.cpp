@@ -1,7 +1,7 @@
 /** \file cubic_entity_interpolator.cpp
  * Cubic interpolation of entity
  *
- * $Id: cubic_entity_interpolator.cpp,v 1.6 2000/11/29 17:24:09 cado Exp $
+ * $Id: cubic_entity_interpolator.cpp,v 1.7 2001/01/03 16:38:19 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -145,6 +145,7 @@ void CCubicEntityInterpolator::getNextState( IMovingEntity& es, TDuration deltat
 	else
 	{
 		es = _Dest; // setting the right pos
+		es.setAltitude( 0.0f ); // assuming ground mode for now
 		_Active = false;
 	}
 

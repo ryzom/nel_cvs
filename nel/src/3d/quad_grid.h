@@ -1,7 +1,7 @@
 /** \file 3d/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.10 2004/12/08 10:36:13 berenguier Exp $
+ * $Id: quad_grid.h,v 1.11 2004/12/08 15:51:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/misc/object_vector.h"
 #include "nel/misc/common.h"
 #include <vector>
+#include <map>
 
 
 namespace NL3D 
@@ -85,22 +86,11 @@ public:
 	/// dtor.
 	~CQuadGrid();
 
-	// operator= is possible only if the quadgrid copied is empty (not init)
-	CQuadGrid<T>	&operator=(const CQuadGrid<T> &o)
-	{
-		// operator= is possible only if both quadgrid have not been init (dummy empty copy)
-		nlassert(o._Grid.empty() && _Grid.empty());
-		// then no-op
-		return *this;
-	}
-	// Copy ctor just init block memory setup (not data), but work only if the quadgrid copied is empty
-	CQuadGrid(const CQuadGrid<T> &o) : _NodeBlockMemory(o._NodeBlockMemory)
-	{
-		// opertaor= is possible only if the other quadgrid has not been create()-ed (dummy empty copy)
-		nlassert(o._Grid.empty());
-		// then no-op, but init default
-		initCons();
-	}
+	// operator= don't modify the block memory blocksize
+	CQuadGrid<T>	&operator=(const CQuadGrid<T> &o);
+
+	// Copy ctor
+	CQuadGrid(const CQuadGrid<T> &o);
 
 	/// \name Initialization
 	//@{
@@ -452,12 +442,99 @@ template<class T>	CQuadGrid<T>::CQuadGrid(uint memoryBlockSize) :
 	initCons();
 }
 // ***************************************************************************
+template<class T>	CQuadGrid<T>::CQuadGrid(const CQuadGrid<T> &o) : _NodeBlockMemory(o._NodeBlockMemory)
+{
+	// _NodeBlockMemory Copy ctor just init block memory setup (not data)
+	// init default
+	initCons();
+	// copy
+	operator=(o);
+}
+// ***************************************************************************
 template<class T>	void		CQuadGrid<T>::initCons()
 {
-	_SizePower=4;
-	_Size=1<<_SizePower;
-	_EltSize=1;
 	_ChangeBasis.identity();
+	// create a valid grid with default size
+	create(16, 1);
+}
+// ***************************************************************************
+template<class T>	CQuadGrid<T> &CQuadGrid<T>::operator=(const CQuadGrid<T> &o)
+{
+	// this==o test
+	if(this==&o)
+		return *this;
+
+	// recreate (full cleared first)
+	create(o._Size, o._EltSize);
+	nlassert(_Grid.size()==o._Grid.size());
+	nlassert(_SelectedList.Next==NULL);
+	nlassert(_UnSelectedList.Next==NULL);
+	
+	// copy basis
+	_ChangeBasis= o._ChangeBasis;
+
+	// Fill with copy of elements of other grid. Complex copy...
+	map<const CNode*, CNode *>	srcNodeToDestNode;
+	map<const CNode*, uint>		srcNodeToIndexInQuadNodes;
+	// NB: the order of nodes in CNode::QuadNodes is not important (may be different from src to dst)
+	for(uint i=0;i<_Grid.size();i++)
+	{
+		const CQuadNode		&quadSrcRoot= o._Grid[i];
+		CQuadNode			&quadDstRoot= _Grid[i];
+		const CQuadNode		*quadSrcCur= quadSrcRoot.Next;
+		// until we roll all the circular list
+		while(quadSrcCur!=&quadSrcRoot)
+		{
+			const CNode	*srcNode= quadSrcCur->Node;
+			nlassert(srcNode);
+
+			// get the dest node created for this src node
+			CNode	*dstNode= NULL;
+			map<const CNode*, CNode *>::iterator	it= srcNodeToDestNode.find(srcNode);
+			if(it!=srcNodeToDestNode.end())
+			{
+				dstNode= it->second;
+			}
+			// else this src node had not already been created
+			else
+			{
+				// create a new node, copy content, and resize place holder
+				dstNode=_NodeBlockMemory.allocate();
+				dstNode->Elt= srcNode->Elt;
+				dstNode->QuadNodes.resize(srcNode->QuadNodes.size());
+
+				// Link to _Unselected list.
+				linkToRoot(_UnSelectedList, dstNode);
+				// mark as not selected.
+				dstNode->Selected= false;
+
+				// insert in the map
+				srcNodeToDestNode[srcNode]= dstNode;
+
+				// insert in the map of "index in quad node array"
+				srcNodeToIndexInQuadNodes[srcNode]= 0;
+			}
+
+			// get the quadnode to insert in, and increment index
+			uint	index= srcNodeToIndexInQuadNodes[srcNode]++;
+			nlassert(index<dstNode->QuadNodes.size());
+			CQuadNode	&quadDstCur= dstNode->QuadNodes[index];
+
+			// link
+			quadDstCur.Node= dstNode;
+			// insert in back of list
+			quadDstCur.Next= &quadDstRoot;
+			quadDstCur.Prev= quadDstRoot.Prev;
+			quadDstRoot.Prev->Next= &quadDstCur;
+			quadDstRoot.Prev= &quadDstCur;
+			
+
+			// next
+			quadSrcCur= quadSrcCur->Next;
+		}
+	}
+
+	return *this;
 }
 // ***************************************************************************
 template<class T>	CQuadGrid<T>::~CQuadGrid()
@@ -473,8 +550,11 @@ template<class T>	void		CQuadGrid<T>::changeBase(const NLMISC::CMatrix& base)
 // ***************************************************************************
 template<class T>	void		CQuadGrid<T>::create(uint size, float eltSize)
 {
+	// full clear
 	clear();
-
+	_Grid.clear();
+	
+	// recreate
 	nlassert(NLMISC::isPowerOf2(size));
 	nlassert(size<=32768);
 	_SizePower= NLMISC::getPowerOf2(size);

@@ -560,6 +560,12 @@
 #define IDC_ARG2                        1360
 #define IDC_ENABLE_LOAD_BALANCING       1360
 #define IDC_ARG3                        1361
+#define IDC_GLOBAL_USER_PARAM_1         1361
+#define IDC_GLOBAL_USER_PARAM_2         1362
+#define IDC_GLOBAL_DIRECTION            1362
+#define IDC_GLOBAL_USER_PARAM_3         1363
+#define IDC_DIRECTION_TEXT              1363
+#define IDC_GLOBAL_USER_PARAM_4         1364
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -714,7 +720,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1123
 #define _APS_NEXT_COMMAND_VALUE         32911
-#define _APS_NEXT_CONTROL_VALUE         1361
+#define _APS_NEXT_CONTROL_VALUE         1364
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

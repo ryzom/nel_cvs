@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.8 2002/06/24 17:11:13 vizerie Exp $
+ * $Id: texture.h,v 1.9 2002/10/25 15:59:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -301,6 +301,11 @@ public:
 		}
 	}
 
+	/**	Advanced. erase the _GoodGenerate=true. Special if you want to setup directly the bitmap without
+	 *	using generate().
+	 *	USE IT WITH CARE!! (used by the CAsyncTextureManager)
+	 */
+	void validateGenerateFlag() {_GoodGenerate=true;}
 
 	/** 
 	 * Release the texure (free memory)
@@ -326,6 +331,8 @@ public:
 		return TextureDrvShare!=NULL;
 	}
 
+	/// Release the Driver info for this texture (if any). Call it with care.
+	void	releaseDriverSetup();
 
 	/// Does this texture allow the driver to degrade 
 	virtual bool allowDegradation() const { return false; }

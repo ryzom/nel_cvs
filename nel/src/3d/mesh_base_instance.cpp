@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.14 2002/10/10 12:59:00 berenguier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.15 2002/10/25 15:58:42 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,7 @@ CMeshBaseInstance::CMeshBaseInstance()
 	_AsyncTextureToLoadRefCount= 0;
 	_AsyncTextureMode= false;
 	_AsyncTextureReady= true;
+	_AsyncTextureDistance= 0;
 
 	// I am a CMeshBaseInstance!!
 	CTransform::setIsMeshBaseInstance(true);
@@ -403,8 +404,12 @@ void			CMeshBaseInstance::startAsyncTextureLoading()
 	if(!getAsyncTextureMode())
 		return;
 
+	// If the async texutre manager is not setuped in the scene, abort.
+	CAsyncTextureManager	*asyncTextMgr= _OwnerScene->getAsyncTextureManager();
+	if(!asyncTextMgr)
+		return;
+
 	uint	i;
-	CAsyncTextureManager	&asyncTextMgr= _OwnerScene->getAsyncTextureManager();
 
 
 	/* for all new texture names to load, add them to the manager
@@ -417,7 +422,7 @@ void			CMeshBaseInstance::startAsyncTextureLoading()
 			if(AsyncTextures[i].IsTextureFile[stage])
 			{
 				uint	id;
-				id= asyncTextMgr.addTextureRef(AsyncTextures[i].TextureNames[stage], this);
+				id= asyncTextMgr->addTextureRef(AsyncTextures[i].TextureNames[stage], this);
 				AsyncTextures[i].TextIds[stage]= id;
 			}
 		}
@@ -437,7 +442,10 @@ void			CMeshBaseInstance::startAsyncTextureLoading()
 // ***************************************************************************
 void			CMeshBaseInstance::releaseCurrentAsyncTextures()
 {
-	CAsyncTextureManager	&asyncTextMgr= _OwnerScene->getAsyncTextureManager();
+	// If the async texutre manager is not setuped in the scene, abort.
+	CAsyncTextureManager	*asyncTextMgr= _OwnerScene->getAsyncTextureManager();
+	if(!asyncTextMgr)
+		return;
 
 	// release all texture in the manager
 	for(uint i=0;i<_CurrentAsyncTextures.size();i++)
@@ -446,7 +454,7 @@ void			CMeshBaseInstance::releaseCurrentAsyncTextures()
 		{
 			if(_CurrentAsyncTextures[i].IsTextureFile[stage])
 			{
-				asyncTextMgr.releaseTexture(_CurrentAsyncTextures[i].TextIds[stage], this);
+				asyncTextMgr->releaseTexture(_CurrentAsyncTextures[i].TextIds[stage], this);
 			}
 		}
 	}
@@ -471,9 +479,14 @@ bool			CMeshBaseInstance::isAsyncTextureReady()
 				{
 					// copy the texture name into the texture file.
 					CTextureFile	*text= safe_cast<CTextureFile*>(Materials[i].getTexture(stage));
-					text->setFileName(_CurrentAsyncTextures[i].TextureNames[stage]);
 					// Since the texture is really uploaded in the driver, the true driver Texture Id will
 					// be bound to this texture.
+					text->setFileName(_CurrentAsyncTextures[i].TextureNames[stage]);
+					/* Since driver setup will only occurs when object become visible, it is a good idea to release
+					   Old driver info, because it may points to old driver texture data (eg: old shared textureFile).
+					   thus doing so release VRAM Texture Memory
+					*/
+					text->releaseDriverSetup();
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.20 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: texture.cpp,v 1.21 2002/10/25 15:59:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,8 @@ namespace NL3D
 							ITEXTURE
 \*==================================================================*/
 
+
+// ***************************************************************************
 ITexture::ITexture()
 {
 	_Touched= false;
@@ -50,13 +52,23 @@ ITexture::ITexture()
 }
 
 
+// ***************************************************************************
 ITexture::~ITexture()
+{
+	// Must kill the drv mirror of this texture.
+	releaseDriverSetup();
+}
+
+
+// ***************************************************************************
+void	ITexture::releaseDriverSetup()
 {
 	// Must kill the drv mirror of this texture.
 	TextureDrvShare.kill();
 }
 
 
+// ***************************************************************************
 ITexture &ITexture::operator=(const ITexture &tex)
 {
 	// The operator= do not copy drv info
@@ -72,6 +84,7 @@ ITexture &ITexture::operator=(const ITexture &tex)
 }
 
 
+// ***************************************************************************
 void		ITexture::setUploadFormat(TUploadFormat pf)
 {
 	if(pf!=_UploadFormat)
@@ -83,6 +96,7 @@ void		ITexture::setUploadFormat(TUploadFormat pf)
 }
 
 
+// ***************************************************************************
 void		ITexture::setFilterMode(TMagFilter magf, TMinFilter minf)
 {
 	_MagFilter= magf;

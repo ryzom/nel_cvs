@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.32 2002/10/10 13:03:28 berenguier Exp $
+ * $Id: scene.h,v 1.33 2002/10/25 16:00:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -448,8 +448,10 @@ public:
 	CAnimationSet		*getAutomaticAnimationSet() const { return _AutomaticAnimationSet; }	
 
 
-	/// Get the async texture manager
-	CAsyncTextureManager		&getAsyncTextureManager() const {return *_AsyncTextureManager;}
+	/// Get the async texture manager. NULL if was not setuped
+	CAsyncTextureManager		*getAsyncTextureManager() const {return _AsyncTextureManager;}
+	/// Set the async texture manager
+	void						setAsyncTextureManager(CAsyncTextureManager *mgr) {_AsyncTextureManager= mgr;}
 
 private:
 	typedef			std::map<sint, ITravScene*>	TTravMap;
@@ -552,7 +554,7 @@ private:
 	NLMISC::CSmartPtr<CAnimationSet>			_AutomaticAnimationSet;	
 
 
-	// The async texture manager.
+	// The async texture manager, setuped by the user.
 	CAsyncTextureManager		*_AsyncTextureManager;
 
 };

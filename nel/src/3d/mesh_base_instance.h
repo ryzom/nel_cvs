@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.17 2002/10/10 12:59:00 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.18 2002/10/25 15:58:42 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,6 +179,11 @@ public:
 	 *	since last enableAsyncTextureMode(true)
 	 */
 	bool			isAsyncTextureReady();
+
+	/** For Lod of texture, and load balancing, set the approximate distance of the instance to the camera.
+	 */
+	void			setAsyncTextureDistance(float dist) {_AsyncTextureDistance= dist;}
+	float			getAsyncTextureDistance() const {return _AsyncTextureDistance;}
 	// @}
 
 
@@ -215,6 +220,8 @@ private:
 	bool							_AsyncTextureReady;
 	// A copy of AsyncTextures done at each startAsyncTextureLoading().
 	std::vector<CAsyncTextureBlock>	_CurrentAsyncTextures;
+	// distance for texture load balancing
+	float							_AsyncTextureDistance;
 
 	void			releaseCurrentAsyncTextures();
 

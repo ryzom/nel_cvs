@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.16 2002/10/10 13:30:26 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.17 2002/10/25 15:58:59 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -349,6 +349,13 @@ void		CParticleSystemInstanceUser::startAsyncTextureLoading()
 bool		CParticleSystemInstanceUser::isAsyncTextureReady() 
 {
 	return true;
+}
+void		CParticleSystemInstanceUser::setAsyncTextureDistance(float dist)
+{
+}
+float		CParticleSystemInstanceUser::getAsyncTextureDistance() const
+{
+	return 0;
 }
 
 

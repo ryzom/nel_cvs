@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.43 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: displayer.cpp,v 1.44 2002/11/12 17:23:07 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,14 @@
  */
 
 #include "stdmisc.h"
+
+
+#ifdef NL_OS_WINDOWS
+#	include <io.h>
+#	include <fcntl.h>
+#	include <sys/types.h>
+#	include <sys/stat.h>
+#endif // NL_OS_WINDOWS
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -285,10 +293,12 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 CFileDisplayer::CFileDisplayer (const std::string &filename, bool eraseLastLog, const char *displayerName) : IDisplayer (displayerName), _NeedHeader(true)
 {
 	setParam (filename, eraseLastLog);
+	_FilePointer = (FILE*)1;
 }
 
 CFileDisplayer::CFileDisplayer () : IDisplayer (""), _NeedHeader(true)
 {
+	_FilePointer = (FILE*)1;
 }
 
 void CFileDisplayer::setParam (const std::string &filename, bool eraseLastLog)
@@ -312,6 +322,13 @@ void CFileDisplayer::setParam (const std::string &filename, bool eraseLastLog)
 }
 
 
+uint32	toto (FILE *fp)
+{
+	if (fp == NULL) return 0;
+	fseek (fp, 0, SEEK_END);
+	return ftell (fp);
+}
+
 // Log format: "2000/01/15 12:05:30 <ProcessName> <LogType> <ThreadId> <Filename> <Line> : <Msg>"
 void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 {
@@ -327,13 +344,6 @@ void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 		needSpace = true;
 	}
 
-	if (!args.ProcessName.empty())
-	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << args.ProcessName;
-		needSpace = true;
-	}
-
 	if (args.LogType != CLog::LOG_NO)
 	{
 		if (needSpace) { ss << " "; needSpace = false; }
@@ -344,7 +354,15 @@ void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 	// Write thread identifier
 	if ( args.ThreadId != 0 )
 	{
-		ss << setw(5) << args.ThreadId;
+		if (needSpace) { ss << " "; needSpace = false; }
+		ss << args.ThreadId;
+		needSpace = true;
+	}
+
+	if (!args.ProcessName.empty())
+	{
+		if (needSpace) { ss << " "; needSpace = false; }
+		ss << args.ProcessName;
 		needSpace = true;
 	}
 
@@ -366,29 +384,39 @@ void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 
 	ss << message;
 
-	// if the file is too big (>5mb), rename it and create another one
-	if (CFile::getFileSize(_FileName) > 5000000)
+	if (_FilePointer > (FILE*)1)
 	{
-		string name = CFile::findNewFile (_FileName);
-		rename (_FileName.c_str(), name.c_str());
+		// if the file is too big (>5mb), rename it and create another one
+		if (ftell (_FilePointer) > 5*1024*1024)
+		{
+			fclose (_FilePointer);
+			rename (_FileName.c_str(), CFile::findNewFile (_FileName).c_str());
+			fclose (_FilePointer);
+			_FilePointer = (FILE*) 1;
+		}
 	}
 
-	ofstream ofs (_FileName.c_str (), ios::out | ios::app);
-	if (ofs.is_open ())
+	if (_FilePointer == (FILE*)1)
+	{
+		_FilePointer = fopen (_FileName.c_str(), "at");
+		if (_FilePointer == NULL)
+			perror ("Can't open log file");
+	}
+	
+	if (_FilePointer != 0)
 	{
 		if (_NeedHeader)
 		{
-			ofs << HeaderString();
+			const char *hs = HeaderString();
+			fwrite (hs, strlen (hs), 1, _FilePointer);
 			_NeedHeader = false;
 		}
 		
-		ofs << ss.str();
-		ofs << args.CallstackAndLog;
-		ofs.close();
+		fwrite (ss.str().c_str(), ss.str().size (), 1, _FilePointer);
+		fwrite (args.CallstackAndLog.c_str(), args.CallstackAndLog.size (), 1, _FilePointer);
+		fflush (_FilePointer);
 	}
 }
-
-
 
 // Log format in clipboard: "2000/01/15 12:05:30 <LogType> <ProcessName> <FileName> <Line>: <Msg>"
 // Log format on the screen: in debug   "<ProcessName> <FileName> <Line>: <Msg>"

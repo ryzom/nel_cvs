@@ -149,8 +149,38 @@ void CItemEltList::NewElt()
 
 void CItemEltList::AddElt( const CItemElt* const _pie )
 {
+	for( std::vector< CItemElt* >::iterator it = vpie.begin(); it != vpie.end(); ++it )
+		if( (*it) == _pie )
+		{
+			CItemElt* pie = piemodel->Clone();
+			pie->AddInfos( ITEM_ISLISTCHILD );
+			pie->SetListParent( this );
+			vpie.insert( it, pie );
+			VerifyName();
+			return;
+		}
 }
 
-void CItemEltList::DelElt( const CItemElt* const _pie )
+void CItemEltList::DelElt( CItemElt* const _pie )
 {
+	for( std::vector< CItemElt* >::iterator it = vpie.begin(); it != vpie.end(); ++it )
+		if( (*it) == _pie )
+		{
+			delete( _pie );
+			vpie.erase( it );
+			VerifyName();
+			return;
+		}
 }
+
+void CItemEltList::VerifyName()
+{
+	unsigned int i = 0;
+	for( std::vector< CItemElt* >::iterator it = vpie.begin(); it != vpie.end(); ++it )
+	{
+			CStringEx sx;
+			sx.format( "#%d", i++ );
+			(*it)->SetName( sx );
+	}
+}
+

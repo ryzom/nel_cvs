@@ -39,7 +39,8 @@ public:
 
 	void NewElt();
 	void AddElt( const CItemElt* const _pie );
-	void DelElt( const CItemElt* const _pie );
+	void DelElt( CItemElt* const _pie );
+	void VerifyName();
 };
 
 #endif // !defined(AFX_ITEMELTLIST_H__69BC62E0_FAC1_4D3E_90ED_B34BD22790DE__INCLUDED_)

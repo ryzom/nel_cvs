@@ -1,7 +1,7 @@
 /** \file animated_value.h
  * Class IAnimatedValue
  *
- * $Id: animated_value.h,v 1.4 2001/02/12 14:20:24 corvazier Exp $
+ * $Id: animated_value.h,v 1.5 2001/03/07 16:51:20 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,7 +87,7 @@ public:
 		CAnimatedValueBlendable<T>	*pValue=(CAnimatedValueBlendable<T>*)&value;
 
 		// Blend
-		Value=Value*blendFactor+pValue->Value*(1.f-blendFactor);
+		Value=(T) (Value*blendFactor+pValue->Value*(1.f-blendFactor));
 	}
 	
 	/** 
@@ -112,51 +112,6 @@ public:
 };
 
 
-/**
- * A INT implementation of IAnimatedValue.
- *
- * \author Cyril 'Hulud' Corvazier
- * \author Nevrax France
- * \date 2001
- */
-class CAnimatedValueBlendable<int> : public IAnimatedValue
-{
-public:
-	// NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
-	/// A int blend method.
-	virtual void blend (const IAnimatedValue& value, float blendFactor)
-	{
-		// Check types of value
-		nlassert (typeid (value)==typeid(*this));
-
-		// Cast
-		CAnimatedValueBlendable<int>	*pValue=(CAnimatedValueBlendable<int>*)&value;
-
-		// Blend
-		Value=(int)(((float)Value)*blendFactor+((float)pValue->Value)*(1.f-blendFactor));
-	}
-	
-	/** 
-	  * An assignation method. This method assign a values in the object. 
-	  *
-	  * \param value is the new value.
-	  */
-	virtual void affect (const IAnimatedValue& value)
-	{
-		// Check types of value
-		nlassert (typeid (value)==typeid(*this));
-
-		// Cast
-		CAnimatedValueBlendable<int>	*pValue=(CAnimatedValueBlendable<int>*)&value;
-
-		// Blend
-		Value=pValue->Value;
-	}
-
-	/// The value
-	int		Value;
-};
-
 
 /**
  * A QUATERNION implementation of IAnimatedValue.
@@ -174,8 +129,14 @@ public:
 		// Check types of value
 		nlassert (typeid (value)==typeid(*this));
 
-		// TODO: Implemente a slerp here.. But CQuat is not good enought..
-		nlstop;
+		// Cast.
+		CAnimatedValueBlendable<NLMISC::CQuat>	*pValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&value;
+
+		// blend.
+		// Yoyo: no makeClosest is done, because the result seems to be better when done
+		// before: for all blend values, and not one after one.
+		Value= NLMISC::CQuat::slerp(Value, pValue->Value, 1-blendFactor);
+
 	}
 
 	/** 

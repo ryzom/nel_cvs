@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.21 2002/07/26 09:02:37 lecroart Exp $
+ * $Id: sound.cpp,v 1.22 2002/07/29 17:16:09 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,7 +105,7 @@ void		CSound::getBuffername(string &buffername, CSoundContext *context)
 					sint32 value = context->Args[_Buffername[i]-'0'];
 					if (value == -1)
 					{
-						nlwarning ("Can't find the buffer name '%s' because argument %d is not in the context", _Buffername.c_str(), value);
+						nlwarning ("Can't find the buffer name '%s' because argument %d is not in the context", _Buffername.c_str(), _Buffername[i]-'0');
 						buffername = "";
 						return;
 					}

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.37 2002/09/23 14:17:28 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.38 2002/09/24 14:47:44 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -773,7 +773,7 @@ static const char*	LightingVPFragmentNoSpecular_Begin=
 																						\n\
 	# Diffuse Sun																		\n\
 	DP3	R0.x, R6, c[CTS+5];			# R0.x= normal*-lightDir							\n\
-	LIT	R0, R0;						# R0.y= R0.x clamped								\n\
+	LIT	R0.y, R0.xxxx;				# R0.y= R0.x clamped								\n\
 	MAD	R2, R0.y, c[CTS+1], R2;		# R2= summed vertex color.							\n\
 ";
 
@@ -786,7 +786,7 @@ static const char*	LightingVPFragmentNoSpecular_PL[]=
 	RSQ	R0.w, R0.w;																		\n\
 	MUL	R0, R0, R0.w;																	\n\
 	DP3	R0.x, R6, R0;				# R0.x= normal*lightDir								\n\
-	LIT	R0, R0;						# R0.y= R0.x clamped								\n\
+	LIT	R0.y, R0.xxxx;				# R0.y= R0.x clamped								\n\
 	MAD	R2, R0.y, c[CTS+2], R2;		# R2= summed vertex color.							\n\
 ",
 "	# Diffuse PointLight 1.																\n\
@@ -795,7 +795,7 @@ static const char*	LightingVPFragmentNoSpecular_PL[]=
 	RSQ	R0.w, R0.w;																		\n\
 	MUL	R0, R0, R0.w;																	\n\
 	DP3	R0.x, R6, R0;				# R0.x= normal*lightDir								\n\
-	LIT	R0, R0;						# R0.y= R0.x clamped								\n\
+	LIT	R0.y, R0;					# R0.y= R0.x clamped								\n\
 	MAD	R2, R0.y, c[CTS+3], R2;		# R2= summed vertex color.							\n\
 ",
 "	# Diffuse PointLight 2.																\n\
@@ -804,7 +804,7 @@ static const char*	LightingVPFragmentNoSpecular_PL[]=
 	RSQ	R0.w, R0.w;																		\n\
 	MUL	R0, R0, R0.w;																	\n\
 	DP3	R0.x, R6, R0;				# R0.x= normal*lightDir								\n\
-	LIT	R0, R0;						# R0.y= R0.x clamped								\n\
+	LIT	R0.y, R0;					# R0.y= R0.x clamped								\n\
 	MAD	R2, R0.y, c[CTS+4], R2;		# R2= summed vertex color.							\n\
 "
 };

@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.10 2002/09/10 13:38:26 berenguier Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.11 2002/09/24 14:45:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -535,9 +535,11 @@ const char* NL3D_LandscapeCommonStartProgram=
 																						\n\
 	# NB: Can't use MAD R1.xyz, v[11], R0.x, v[0], because can't acces 2 inputs in one op.	\n\
 	# Hence, can use a MAD to Sub the Landscape Center _PZBModelPosition				\n\
-	MAD	R1.xyz, v[11], R0.x, -c[12];													\n\
-	# trick here: since R1.w= 0, and v[0].w= 1, final R1.w==1.							\n\
-	ADD	R1, R1, v[0];				# R1= geomBlend * (EndPos-StartPos) + StartPos		\n\
+	# write to R1.w is useless (but needed to avoid a read error when multiplied by 0)  \n\
+	# in the next instruction															\n\
+	MAD	R1.xyzw, v[11], R0.x, -c[12];													\n\
+	# set w to 1 by using c[4] = { 0, 1, 0.5, 0}										\n\
+	MAD	R1, R1, c[4].yyyx, v[0];	# R1= geomBlend * (EndPos-StartPos) + StartPos		\n\
 ";
 
 

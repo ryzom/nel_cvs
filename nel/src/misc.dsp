@@ -602,6 +602,14 @@ SOURCE=..\include\nel\misc\quad.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\reader_writer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\reader_writer.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\rgba.cpp
 # End Source File
 # Begin Source File

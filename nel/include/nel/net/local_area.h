@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.18 2001/01/12 10:52:47 cado Exp $
+ * $Id: local_area.h,v 1.19 2001/01/19 15:13:26 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,7 +163,6 @@ public:
 	friend void cbAssignId( CMessage& msgin, TSenderId idfrom );
 	friend void cbRemoveEntity( CMessage& msgin, TSenderId idfrom );
 	friend void cbCreateNewEntity( CMessage& msgin, TSenderId idfrom );
-	friend void cbHandleDisconnection( CMessage& msgin, TSenderId idfrom );
 	friend void cbHandleUnknownMessage( CMessage& msgin, TSenderId idfrom );
 	
 	/// Singleton

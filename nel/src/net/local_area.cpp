@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.37 2001/01/16 15:16:51 cado Exp $
+ * $Id: local_area.cpp,v 1.38 2001/01/19 15:13:26 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,16 +188,6 @@ void NLNET::cbCreateNewEntity( CMessage& msgin, TSenderId idfrom )
 
 
 /*
- * Callback cbHandleDisconnection (friend of CLocalArea)
- */
-void NLNET::cbHandleDisconnection( CMessage& msgin, TSenderId idfrom )
-{
-	nlinfo( "Disconnection: entering off-line mode" );
-	// Now CLocalArea::Instance->ClientSocket->connected() is false
-}
-
-
-/*
  * Callback cbHandleUnknownMessage (friend of CLocalArea)
  */
 void NLNET::cbHandleUnknownMessage( CMessage& msgin, TSenderId idfrom )
@@ -218,7 +208,6 @@ TCallbackItem CbArray [] =
 	{ "ID", cbAssignId },
 	{ "RM", cbRemoveEntity },
 	{ "CRE", cbCreateNewEntity },
-	{ "D", cbHandleDisconnection },
 	{ "O", cbHandleUnknownMessage }
 };
 

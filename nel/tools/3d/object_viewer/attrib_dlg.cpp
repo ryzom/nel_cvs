@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.25 2004/02/19 09:58:57 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.26 2004/03/04 14:38:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -824,8 +824,11 @@ END_MESSAGE_MAP()
 			case 0:
 				scheme = new NL3D::CPSFloatBlender(_MinRange, _MaxRange);
 			break;
-			case 1:
-				scheme = new NL3D::CPSFloatGradient;
+			case 1:	
+			{
+				static const float values[2] = { 0.1f, 1.f };
+				scheme = new NL3D::CPSFloatGradient(values, 2, 16, 1.f);	
+			}
 			break;
 			case 2:
 				scheme = new NL3D::CPSFloatCurve;

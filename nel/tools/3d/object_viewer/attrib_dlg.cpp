@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.20 2001/12/19 15:46:40 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.21 2002/02/15 17:16:44 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,8 +52,6 @@
 #include "3d/ps_color.h"
 #include "3d/ps_plane_basis.h"
 #include "3d/ps_plane_basis_maker.h"
-
-
 
 
 
@@ -253,13 +251,12 @@ protected:
 
 CAttribDlg::CAttribDlg(const std::string &valueID, bool enableConstantValue /* = true*/)
 	 : _CstValueDlg(NULL), _FirstDrawing(true), _EnableConstantValue(enableConstantValue), _DisableMemoryScheme(false)
-	   , _SchemeEditionDlg(NULL)
+	   , _SchemeEditionDlg(NULL), _NbCycleEnabled(true), _NbCyclesDlg(NULL), _ValueID(valueID), _SrcInputEnabled(true)
 {
 	//{{AFX_DATA_INIT(CAttribDlg)
 	m_AttribName = _T("");
 	m_Clamp = FALSE;
-	//}}AFX_DATA_INIT
-	_NbCyclesDlg = new CEditableRangeFloat(valueID + "%%NB_CYCLE_INFO", 0.1f, 10.1f);
+	//}}AFX_DATA_INIT	
 }
 
 
@@ -269,7 +266,11 @@ BOOL CAttribDlg::EnableWindow( BOOL bEnable)
 	{
 		_CstValueDlg->EnableWindow(bEnable);
 	}
-	_NbCyclesDlg->EnableWindow(bEnable);
+
+	if (_NbCyclesDlg)
+	{
+		_NbCyclesDlg->EnableWindow(bEnable);
+	}
 	m_UseScheme.EnableWindow(bEnable);
 	m_AttrBitmap.EnableWindow(bEnable);
 
@@ -294,8 +295,11 @@ BOOL CAttribDlg::EnableWindow( BOOL bEnable)
 
 CAttribDlg::~CAttribDlg()	
 {
-	_NbCyclesDlg->DestroyWindow();
-	delete _NbCyclesDlg;
+	if (_NbCyclesDlg)
+	{
+		_NbCyclesDlg->DestroyWindow();
+		delete _NbCyclesDlg;
+	}
 	if (_CstValueDlg)
 	{
 		_CstValueDlg->DestroyWindow();		
@@ -315,7 +319,12 @@ void CAttribDlg::init(HBITMAP bitmap, sint x, sint y, CWnd *pParent)
 
 	m_NbCyclePos.GetWindowRect(&r);
 	GetWindowRect(&ro);
-	_NbCyclesDlg->init(r.left - ro.left, r.top - ro.top, this);
+
+	if (_NbCycleEnabled)
+	{
+		_NbCyclesDlg = new CEditableRangeFloat(_ValueID + "%%NB_CYCLE_INFO", 0.1f, 10.1f);
+		_NbCyclesDlg->init(r.left - ro.left, r.top - ro.top, this);
+	}
 
 	// fill the combo box with the list of available scheme
 	m_Scheme.InitStorage(getNumScheme(), 32); // 32 char per string pre-allocated
@@ -344,6 +353,19 @@ void CAttribDlg::init(HBITMAP bitmap, sint x, sint y, CWnd *pParent)
 	if (!_EnableConstantValue)
 	{
 		m_UseScheme.ShowWindow(SW_HIDE);
+	}
+
+	if (!_NbCyclesDlg)
+	{
+		GetDlgItem(IDC_INPUT_MULTIPLIER_TXT)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_CLAMP_ATTRIB)->ShowWindow(SW_HIDE);		
+	}
+
+	if (!_SrcInputEnabled)
+	{
+		GetDlgItem(IDC_SRC_INPUT_TXT)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_EDIT_INPUT)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_SCHEME_INPUT)->ShowWindow(SW_HIDE);
 	}
 
 	inputValueUpdate();
@@ -390,8 +412,11 @@ void CAttribDlg::cstValueUpdate()
 	if (!_FirstDrawing && !useScheme()) return;	
 
 	m_ClampCtrl.EnableWindow(FALSE);
-	_NbCyclesDlg->EnableWindow(FALSE);
-	_NbCyclesDlg->emptyDialog();
+	if (_NbCyclesDlg)
+	{
+		_NbCyclesDlg->EnableWindow(FALSE);
+		_NbCyclesDlg->emptyDialog();
+	}
 	m_EditScheme.EnableWindow(FALSE);
 	m_PutScheme.EnableWindow(FALSE);
 	m_GetScheme.EnableWindow(FALSE);
@@ -429,7 +454,10 @@ void CAttribDlg::schemeValueUpdate()
 		delete _CstValueDlg;
 		_CstValueDlg = NULL;
 	}
-	_NbCyclesDlg->EnableWindow(TRUE);
+	if (_NbCyclesDlg)
+	{
+		_NbCyclesDlg->EnableWindow(TRUE);
+	}
 	m_EditScheme.EnableWindow(TRUE);
 	m_GetScheme.EnableWindow(TRUE);
 	m_PutScheme.EnableWindow(TRUE);
@@ -460,11 +488,14 @@ void CAttribDlg::schemeValueUpdate()
 		m_SchemeInput.EnableWindow(FALSE);
 		m_SchemeInput.SetCurSel(0);
 	}	
-	_NbCyclesDlg->setWrapper(&_NbCyclesWrapper);
-	_NbCyclesWrapper.Dlg = this;
-	
-	_NbCyclesDlg->updateRange();
-	_NbCyclesDlg->updateValueFromReader();
+
+	if (_NbCyclesDlg)
+	{
+		_NbCyclesDlg->setWrapper(&_NbCyclesWrapper);
+		_NbCyclesWrapper.Dlg = this;	
+		_NbCyclesDlg->updateRange();
+		_NbCyclesDlg->updateValueFromReader();
+	}
 	m_ClampCtrl.EnableWindow(isClampingSupported());
 	if (isClampingSupported())
 	{

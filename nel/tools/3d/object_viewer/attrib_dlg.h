@@ -1,7 +1,7 @@
 /** \file attrib_dlg.h
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.h,v 1.11 2001/12/18 18:33:19 vizerie Exp $
+ * $Id: attrib_dlg.h,v 1.12 2002/02/15 17:16:45 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,15 +98,25 @@ public:
 	//}}AFX_VIRTUAL
 
 public:
+
+	/// enable the srcInput
+	void enableSrcInput(bool enable = true) { _SrcInputEnabled = enable; }
+	bool isSrcInputEnabled() const { return _SrcInputEnabled; }
+	
+
 	/** Disable the possibility to choose a scheme that has memory. (for example, a scheme for lifetime of a located has no sense
 	  * because located have already some memory to store it)
 	  */
-	void enableMemoryScheme(bool enabled = false) { _DisableMemoryScheme = !enabled; }
+	void enableMemoryScheme(bool enabled = true) { _DisableMemoryScheme = !enabled; }
 
 	/** tells wether memory schemes are enables
 	  * \see enableMemoryScheme()
 	  */
-	bool isMemorySchemeEnabled(void) const { return !_DisableMemoryScheme; }
+	bool isMemorySchemeEnabled() const { return !_DisableMemoryScheme; }
+
+	/// enable Nb Cycle tuning
+	void	enableNbCycles(bool enabled = true) { _NbCycleEnabled = enabled; }
+	bool    isNbCycleEnabled() const { return _NbCycleEnabled; }
 
 
 public:
@@ -121,6 +131,9 @@ public:
 // Implementation
 protected:
 	
+	/// bool : true is src input are allowed
+	bool _SrcInputEnabled;
+
 	// true if constant values are allowed
 	bool _EnableConstantValue;
 
@@ -191,6 +204,9 @@ protected:
 	// this is equal to true when memory schemes are not permitted
 	bool _DisableMemoryScheme;
 
+	/// true to enable 'nb cycles' control
+	bool _NbCycleEnabled;
+
 	// wrapper to tune the number of cycles
 	struct CNbCyclesWrapper : public IPSWrapperFloat
 	{
@@ -210,6 +226,8 @@ protected:
 
 	// the current dialog for scheme edition
 	CWnd		   *_SchemeEditionDlg;
+
+	std::string		_ValueID;
 
 	// Generated message map functions
 	//{{AFX_MSG(CAttribDlg)

@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.21 2003/12/05 13:43:31 berenguier Exp $
+ * $Id: matrix.h,v 1.22 2004/06/29 08:17:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -355,7 +355,7 @@ private:
 	uint32	StateBit;	// BitVector. 0<=>identity.
 
 	// Methods For inversion.
-	void	fastInvert33(CMatrix &ret) const;
+	bool	fastInvert33(CMatrix &ret) const;
 	bool	slowInvert33(CMatrix &ret) const;
 	bool	slowInvert44(CMatrix &ret) const;
 	// access to M, in math conventions (mat(1,1) ... mat(4,4)). Indices from 0 to 3.

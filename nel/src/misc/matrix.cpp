@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.34 2003/12/05 13:45:36 berenguier Exp $
+ * $Id: matrix.cpp,v 1.35 2004/06/29 08:17:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -966,13 +966,14 @@ void		CMatrix::transpose()
 
 
 // ======================================================================================================
-void	CMatrix::fastInvert33(CMatrix &ret) const
+bool	CMatrix::fastInvert33(CMatrix &ret) const
 {
 	// Fast invert of 3x3 rot matrix.
 	// Work if no scale and if MAT_SCALEUNI. doesn't work if MAT_SCALEANY.
 
 	if(StateBit & MAT_SCALEUNI)
 	{
+		if (Scale33 == 0.f) return false;
 		double	s,S;	// important for precision.
 		// Must divide the matrix by 1/Scale 2 times, to set unit, and to have a Scale=1/Scale.
 		S=1.0/Scale33;
@@ -991,7 +992,7 @@ void	CMatrix::fastInvert33(CMatrix &ret) const
 		ret.a21= a12; ret.a22= a22; ret.a23=a32;
 		ret.a31= a13; ret.a32= a23; ret.a33=a33;
 	}
-
+	return true;
 	// 15 cycles if no scale.
 	// 35 cycles if scale.
 }
@@ -1136,7 +1137,13 @@ CMatrix		CMatrix::inverted() const
 			}
 		}
 		else
-			fastInvert33(ret);
+		{
+			if (!fastInvert33(ret))
+			{
+				ret.identity();
+				return ret;
+			}
+		}
 		// Scale33 is updated in fastInvert33().
 
 		// Invert the translation part.

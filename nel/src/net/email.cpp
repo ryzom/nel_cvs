@@ -1,7 +1,7 @@
 /** \file email.cpp
  * send email
  *
- * $Id: email.cpp,v 1.2 2002/11/29 09:10:53 lecroart Exp $
+ * $Id: email.cpp,v 1.3 2002/12/02 17:15:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,169 +135,178 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 	string formatedFrom;
 	string formatedTo;
 	string formatedSMTPServer;
-	
-	if (smtpServer.empty())
+
+	try
 	{
-		if(DefaultSMTPServer.empty())
+
+		if (smtpServer.empty())
 		{
-			nlwarning ("Can't send email because no SMTPServer was provided");
-			goto end;
-		}
-		else
-		{
-			formatedSMTPServer = DefaultSMTPServer;
-		}
-	}
-	else
-	{
-		formatedSMTPServer = smtpServer;
-	}
-
-	sock.connect(CInetAddress(formatedSMTPServer, 25));
-
-	if (!sock.connected())
-	{
-		nlwarning ("Can't connect to email server %s", formatedSMTPServer.c_str());
-		goto end;
-	}
-
-	if (to.empty())
-	{
-		if(DefaultTo.empty())
-		{
-			nlwarning ("Can't send email because no To was provided");
-			goto end;
-		}
-		else
-		{
-			formatedTo = DefaultTo;
-		}
-	}
-	else
-	{
-		formatedTo = to;
-	}
-
-	if(from.empty())
-	{
-		if (DefaultFrom.empty())
-		{
-			formatedFrom = CInetAddress::localHost().hostName();
-			formatedFrom += "@gnu.org";
-		}
-		else
-		{
-			formatedFrom = DefaultFrom;
-		}
-	}
-	else
-	{
-		formatedFrom = from;
-	}
-
-	// we must skip the first line
-	formatedBody = "\r\n";
-
-	// replace \n with \r\n
-	for (i = 0; i < body.size(); i++)
-	{
-		if (body[i] == '\n' && i > 0 && body[i-1] != '\r')
-		{
-			formatedBody += '\r';
-		}
-		formatedBody += body[i];
-	}
-
-	// add attachment if any
-	if (!attachedFile.empty())
-	{
-		
-		string mimepart;
-		mimepart += "Mime-Version: 1.0\r\n";
-		mimepart += "Content-Type: multipart/mixed;\r\n";
-		mimepart += " boundary=\"Multipart_nel\"\r\n";
-		mimepart += "\r\n";
-		mimepart += "This is a multi-part message in MIME format.\r\n";
-		mimepart += "\r\n";
-		mimepart += "--Multipart_nel\r\n";
-		mimepart += "Content-Type: text/plain; charset=US-ASCII\r\n";
-		mimepart += "Content-Transfer-Encoding: 7bit\r\n";
-			
-		formatedBody = mimepart + formatedBody;
-
-		formatedBody += "--Multipart_nel\r\n";
-		formatedBody += "Content-Disposition: attachment;\r\n";
-		formatedBody += " filename=\""+CFile::getFilename(attachedFile)+"\"\r\n";
-		formatedBody += "Content-Transfer-Encoding: base64\r\n\r\n";
-
-		static const int src_buf_size = 45;// This *MUST* be a multiple of 3
-		static const int dst_buf_size = 4 * ((src_buf_size + 2) / 3);
-		int write_size = dst_buf_size;
-		char src_buf[src_buf_size + 1];
-		char dst_buf[dst_buf_size + 1];
-		size_t size;
-
-		FILE *src_stream = fopen (attachedFile.c_str(), "rb");
-		if (src_stream == NULL)
-		{
-			nlwarning ("Can't attach file '%s' to the email because the file can't be open", attachedFile.c_str());
-		}
-		else
-		{
-			while ((size = fread(src_buf, 1, src_buf_size, src_stream)) > 0)
+			if(DefaultSMTPServer.empty())
 			{
-				if (size != src_buf_size)
-				{
-					/* write_size is always 60 until the last line */
-					write_size=(4 * ((size + 2) / 3));
-					/* pad with 0s so we can just encode extra bits */
-					memset(&src_buf[size], 0, src_buf_size - size);
-				}
-				/* Encode the buffer we just read in */
-				uuencode(src_buf, dst_buf, size);
-				
-				formatedBody += dst_buf;
-				formatedBody += "\r\n";
+				nlwarning ("Can't send email because no SMTPServer was provided");
+				goto end;
 			}
-			formatedBody += "--Multipart_nel--";
-
-			fclose (src_stream);
+			else
+			{
+				formatedSMTPServer = DefaultSMTPServer;
+			}
 		}
-	}	
+		else
+		{
+			formatedSMTPServer = smtpServer;
+		}
 
-	// debug, display what we send into a file
-	//	{	FILE *fp = fopen (CFile::findNewFile("mail.txt").c_str(), "wb");
-	//	fwrite (formatedBody.c_str(), 1, formatedBody.size(), fp);
-	//	fclose (fp); }
-	
-	if(!sendEMailCommand (sock, "", 220)) goto end;
+		sock.connect(CInetAddress(formatedSMTPServer, 25));
 
-	if(onlyCheck)
-	{
-		if(!sendEMailCommand (sock, "HELO localhost")) goto end;
-		if(!sendEMailCommand (sock, "MAIL FROM: " + formatedFrom)) goto end;
-		if(!sendEMailCommand (sock, "RCPT TO: " + formatedTo)) goto end;
-		if(!sendEMailCommand (sock, "QUIT", 221)) goto end;
+		if (!sock.connected())
+		{
+			nlwarning ("Can't connect to email server %s", formatedSMTPServer.c_str());
+			goto end;
+		}
 
-		ok = true;
+		if (to.empty())
+		{
+			if(DefaultTo.empty())
+			{
+				nlwarning ("Can't send email because no To was provided");
+				goto end;
+			}
+			else
+			{
+				formatedTo = DefaultTo;
+			}
+		}
+		else
+		{
+			formatedTo = to;
+		}
+
+		if(from.empty())
+		{
+			if (DefaultFrom.empty())
+			{
+				formatedFrom = CInetAddress::localHost().hostName();
+				formatedFrom += "@gnu.org";
+			}
+			else
+			{
+				formatedFrom = DefaultFrom;
+			}
+		}
+		else
+		{
+			formatedFrom = from;
+		}
+
+		// we must skip the first line
+		formatedBody = "\r\n";
+
+		// replace \n with \r\n
+		for (i = 0; i < body.size(); i++)
+		{
+			if (body[i] == '\n' && i > 0 && body[i-1] != '\r')
+			{
+				formatedBody += '\r';
+			}
+			formatedBody += body[i];
+		}
+
+		// add attachment if any
+		if (!attachedFile.empty())
+		{
+			
+			string mimepart;
+			mimepart += "Mime-Version: 1.0\r\n";
+			mimepart += "Content-Type: multipart/mixed;\r\n";
+			mimepart += " boundary=\"Multipart_nel\"\r\n";
+			mimepart += "\r\n";
+			mimepart += "This is a multi-part message in MIME format.\r\n";
+			mimepart += "\r\n";
+			mimepart += "--Multipart_nel\r\n";
+			mimepart += "Content-Type: text/plain; charset=US-ASCII\r\n";
+			mimepart += "Content-Transfer-Encoding: 7bit\r\n";
+				
+			formatedBody = mimepart + formatedBody;
+
+			formatedBody += "--Multipart_nel\r\n";
+			formatedBody += "Content-Disposition: attachment;\r\n";
+			formatedBody += " filename=\""+CFile::getFilename(attachedFile)+"\"\r\n";
+			formatedBody += "Content-Transfer-Encoding: base64\r\n\r\n";
+
+			static const int src_buf_size = 45;// This *MUST* be a multiple of 3
+			static const int dst_buf_size = 4 * ((src_buf_size + 2) / 3);
+			int write_size = dst_buf_size;
+			char src_buf[src_buf_size + 1];
+			char dst_buf[dst_buf_size + 1];
+			size_t size;
+
+			FILE *src_stream = fopen (attachedFile.c_str(), "rb");
+			if (src_stream == NULL)
+			{
+				nlwarning ("Can't attach file '%s' to the email because the file can't be open", attachedFile.c_str());
+			}
+			else
+			{
+				while ((size = fread(src_buf, 1, src_buf_size, src_stream)) > 0)
+				{
+					if (size != src_buf_size)
+					{
+						/* write_size is always 60 until the last line */
+						write_size=(4 * ((size + 2) / 3));
+						/* pad with 0s so we can just encode extra bits */
+						memset(&src_buf[size], 0, src_buf_size - size);
+					}
+					/* Encode the buffer we just read in */
+					uuencode(src_buf, dst_buf, size);
+					
+					formatedBody += dst_buf;
+					formatedBody += "\r\n";
+				}
+				formatedBody += "--Multipart_nel--";
+
+				fclose (src_stream);
+			}
+		}	
+
+		// debug, display what we send into a file
+		//	{	FILE *fp = fopen (CFile::findNewFile("mail.txt").c_str(), "wb");
+		//	fwrite (formatedBody.c_str(), 1, formatedBody.size(), fp);
+		//	fclose (fp); }
+		
+		if(!sendEMailCommand (sock, "", 220)) goto end;
+
+		if(onlyCheck)
+		{
+			if(!sendEMailCommand (sock, "HELO localhost")) goto end;
+			if(!sendEMailCommand (sock, "MAIL FROM: " + formatedFrom)) goto end;
+			if(!sendEMailCommand (sock, "RCPT TO: " + formatedTo)) goto end;
+			if(!sendEMailCommand (sock, "QUIT", 221)) goto end;
+
+			ok = true;
+		}
+		else
+		{
+			if(!sendEMailCommand (sock, "HELO localhost")) goto end;
+			if(!sendEMailCommand (sock, "MAIL FROM: " + formatedFrom)) goto end;
+			if(!sendEMailCommand (sock, "RCPT TO: " + formatedTo)) goto end;
+			if(!sendEMailCommand (sock, "DATA", 354)) goto end;
+			
+			string buffer =
+				"From: " + formatedFrom + "\r\n"
+				"To: " + formatedTo + "\r\n"
+				"Subject: " + subject + "\r\n"
+				+ formatedBody + "\r\n.";
+			
+			if(!sendEMailCommand (sock, buffer)) goto end;
+			if(!sendEMailCommand (sock, "QUIT", 221)) goto end;
+
+			ok = true;
+		}
 	}
-	else
+	catch (Exception &e)
 	{
-		if(!sendEMailCommand (sock, "HELO localhost")) goto end;
-		if(!sendEMailCommand (sock, "MAIL FROM: " + formatedFrom)) goto end;
-		if(!sendEMailCommand (sock, "RCPT TO: " + formatedTo)) goto end;
-		if(!sendEMailCommand (sock, "DATA", 354)) goto end;
-		
-		string buffer =
-			"From: " + formatedFrom + "\r\n"
-			"To: " + formatedTo + "\r\n"
-			"Subject: " + subject + "\r\n"
-			+ formatedBody + "\r\n.";
-		
-		if(!sendEMailCommand (sock, buffer)) goto end;
-		if(!sendEMailCommand (sock, "QUIT", 221)) goto end;
-
-		ok = true;
+		nlwarning ("Can't send email: %s", e.what());
+		goto end;
 	}
 
 end:
@@ -315,4 +324,3 @@ void setDefaultEmailParams (const std::string &smtpServer, const std::string &fr
 }
 
 } // NLNET
-

@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.22 2002/11/14 17:35:44 vizerie Exp $
+ * $Id: ps_located.h,v 1.23 2003/04/14 15:26:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,8 +138,10 @@ public:
 	/** attach a bindable object to this located, such as a force or a particle
 	  * a bindable must be attached only once (-> nlassert)
 	  * The bindable is then owned by the system and will be deleted by it.
+	  * \return true if the operation could be performed. It can fail when this cause the system the system to last forever,
+	  *              which is incompatible with the 'BypassMaxNumIntegrationSteps' in CParticleSystem
 	  */
-	void bind(CPSLocatedBindable *lb);
+	bool bind(CPSLocatedBindable *lb);
 
 	/** Detach a bindable object from this located. Ownership is transferred to the caller	 
 	  * Any reference the object may have in the system is lost (targets..)
@@ -302,11 +304,12 @@ public:
 
 	
 
-	/// set immortality for located
-	void setLastForever(void) 
-	{ 
-		_LastForever = true; 
-	}
+	/** set immortality for located
+	  * \see setInitialLife
+	  * \return true if the operation could be performed. It can fail when this cause the system the system to last forever,
+	  *              which is incompatible with the 'BypassMaxNumIntegrationSteps' in CParticleSystem 
+	  */
+	bool setLastForever(); 
 	/// retrieve immortality for locateds
 	bool getLastForever(void) const { return _LastForever; }
 
@@ -735,6 +738,9 @@ public:
 
 	 /// PRIVATE USE : access to parametric infos
 	 TPSAttribParametricInfo &getParametricInfos() { return _PInfo; }
+
+	 /// PRIVATE USE : called by the system when its date has been manually changed
+	 virtual void	systemDateChanged();
 };
 
 
@@ -931,6 +937,7 @@ public:
 
 	/// called when a located has switch between incrmental / parametric motion. The default does nothing
 	virtual	void			motionTypeChanged(bool parametric) {}
+	
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -984,6 +991,11 @@ protected:
 	std::string _Name;
 	//
 	bool        _Active; // Say if this bindable is active. If not active, the owning system won't try to call 'step' on that object. True by default
+public:
+	/** PRIVATE USE : called by the system when its date has been manually changed.
+	  * This his usually for object that expect time to be always increasing, so that they can reset their datas
+	  */
+	virtual void			systemDateChanged() {}
 };
 
 

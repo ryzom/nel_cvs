@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.47 2003/04/10 09:22:34 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.48 2003/04/14 15:26:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -316,24 +316,69 @@ inline void CPSEmitter::processEmitConsistent(const NLMISC::CVector &emitterPos,
 
 
 ///==========================================================================
-void	CPSEmitter::setEmissionType(TEmissionType freqType)
+bool	CPSEmitter::setEmissionType(TEmissionType freqType)
 { 
+	if (_Owner && _Owner->getOwner())
+	{
+		const CParticleSystem *ps = _Owner->getOwner();
+		if (ps->getBypassMaxNumIntegrationSteps())
+		{
+			if (!_Owner)
+			{
+				nlwarning("<CPSEmitter::setEmissionType> The emitter should be inserted in a CPSLocated instance");
+				nlassert(0);
+			}
+			// check if the new value is valid
+			TEmissionType oldType = _EmissionType;
+			_EmissionType = freqType;
+			if (testEmitForever() == true)
+			{
+				_EmissionType = oldType;
+				std::string mess = "<CPSEmitter::setEmissionType> can't set emission type to '" + 
+					               NLMISC::toString(freqType) +
+								  "' with the current configuration : the system has been flagged with \
+								   'BypassMaxNumIntegrationSteps', and should have a finite duration.  \
+								   The flag is not set";
+				nlwarning(mess.c_str());
+				return false;
+
+			}			
+		}
+	}
 	_EmissionType = freqType; 
+	return true;
 }
 
 ///==========================================================================
-void CPSEmitter::setEmittedType(CPSLocated *et) 
-{
+bool CPSEmitter::setEmittedType(CPSLocated *et) 
+{	
 	if (_EmittedType)
 	{
-		_EmittedType->unregisterDtorObserver(this);
+		_EmittedType->unregisterDtorObserver(this);		
 	}
 	if (et)
 	{
 		et->registerDtorObserver(this);
 	}	
-
+	CPSLocated *oldType = _EmittedType;
 	_EmittedType = et;
+	if (_Owner && _Owner->getOwner())
+	{
+		const CParticleSystem *ps = _Owner->getOwner();
+		if (_EmittedType)
+		{		
+			if (ps->getBypassMaxNumIntegrationSteps())
+			{
+				if (!ps->canFinish())
+				{
+					setEmittedType(oldType);
+					nlwarning("<CPSLocated::setEmittedType> Can't set new emitted type : this causes the system to last forever, and it has been flagged with 'BypassMaxNumIntegrationSteps'. New emitted type is not set");
+					return false;
+				}
+			}
+		}
+	}
+	return true;
 }
 
 ///==========================================================================
@@ -1755,6 +1800,7 @@ void CPSEmitter::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 					}
 					++timeIt;
 				}
+
 			}
 		}
 		break;
@@ -1981,13 +2027,89 @@ void	CPSEmitter::updateMaxCountVect()
 }
 
 ///==========================================================================
-void	CPSEmitter::setMaxEmissionCount(uint8 count)
+bool	CPSEmitter::setMaxEmissionCount(uint8 count)
 {
-	if (count == _MaxEmissionCount) return;
+	if (count == _MaxEmissionCount) return true;	
+	nlassert(_Owner && _Owner->getOwner());
+	const CParticleSystem *ps = _Owner->getOwner();
+	if (ps->getBypassMaxNumIntegrationSteps())
+	{
+		uint8 oldEmissiontCount = _MaxEmissionCount;
+		// should check that the new value is valid
+		_MaxEmissionCount = count;
+		if (testEmitForever())
+		{
+			_MaxEmissionCount = oldEmissiontCount;
+			nlwarning("<CPSEmitter::setMaxEmissionCount> can't set max emission count to %d  \
+					   with the current configuration : the system has been flagged with     \
+					   'BypassMaxNumIntegrationSteps', and should have a finite duration.    \
+					   The new value is not set", (int) count);		
+			return false;
+		}
+	}
 	_MaxEmissionCount = count;
-	updateMaxCountVect();	
+	updateMaxCountVect();
+	return true;
 }
 
+///==========================================================================
+bool CPSEmitter::checkLoop() const
+{
+	nlassert(_Owner);
+	nlassert(_Owner->getOwner());
+	if (!_EmittedType) return false;	
+	std::set<const CPSLocated *> seenLocated; // the located we've already seen
+	std::vector<const CPSLocated *> leftLoc(1);  // the located that are left to see
+	leftLoc[0] = _EmittedType;
+	do
+	{
+		const CPSLocated *curr = leftLoc.back();
+		if (curr == this->_Owner) return true;
+		leftLoc.pop_back();
+		seenLocated.insert(curr);
+		for(uint32 k = 0; k < curr->getNbBoundObjects(); ++k)
+		{
+			const CPSEmitter *emitter = dynamic_cast<const CPSEmitter *>(curr->getBoundObject(k));
+			if (emitter && emitter->_EmittedType)
+			{
+				if (seenLocated.find(emitter->_EmittedType) == seenLocated.end()) // not already seen this one ?
+				{
+					leftLoc.push_back(emitter->_EmittedType);
+				}
+			}			
+		}
+	}
+	while (!leftLoc.empty());
+	return false;
+}
+
+///==========================================================================
+bool CPSEmitter::testEmitForever() const
+{				
+	if (!_Owner)
+	{
+		nlwarning("<CPSEmitter::testEmitForever> The emitter should be inserted in a CPSLocated instance for this call to work.");
+		nlassert(0);
+		return true;
+	}	
+	if (!_Owner->getLastForever()) return false;
+	switch(getEmissionType())
+	{
+		case CPSEmitter::onBounce:
+		case CPSEmitter::externEmit:
+		case CPSEmitter::regular:
+			// it is ok only if a limited number of located is emitted
+			if (getMaxEmissionCount() == 0) return true;
+		break;
+		case CPSEmitter::onDeath: return true; // the emitter never dies, so ..
+		case CPSEmitter::once: return false;
+		break;
+		default:
+			nlassert(0); // not a known type
+		break;
+	}
+	return false;
+}
 
 
 ////////////////////////////////////////////
@@ -2394,9 +2516,9 @@ void CPSRadialEmitter::emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC:
 	nlassert(_EmittedType);	
 
 	static const double divRand = (2.0 / RAND_MAX);
-	CVector dir((float) (rand() * divRand - 1)
-				, (float) (rand() * divRand - 1)
-				, (float) (rand() * divRand - 1) );
+	CVector dir((float) (rand() * divRand - 1),
+		        (float) (rand() * divRand - 1),
+				(float) (rand() * divRand - 1) );
 	dir -= (dir * _Dir) * _Dir; //keep tangential direction
 	dir.normalize();
 	
@@ -2404,6 +2526,27 @@ void CPSRadialEmitter::emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC:
 	pos = srcPos;
 }
 
-
-
 } // NL3D
+
+namespace NLMISC
+{
+
+std::string toString(NL3D::CPSEmitter::TEmissionType type)
+{
+	nlctassert(NL3D::CPSEmitter::numEmissionType == 5); // If this ct assertion is raised, the content of TEmissionType has changed, so should change this function !
+	switch (type)
+	{
+		case NL3D::CPSEmitter::regular: return "regular";
+		case NL3D::CPSEmitter::onDeath: return "onDeath";
+		case NL3D::CPSEmitter::once: return "once";
+		case NL3D::CPSEmitter::onBounce: return "onBounce";
+		case NL3D::CPSEmitter::externEmit: return "externEmit";
+		default:
+			nlassert(0);
+			return "";
+		break;
+	}
+}
+
+} // NLMISC
+

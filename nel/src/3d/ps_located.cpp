@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.53 2003/04/09 16:02:18 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.54 2003/04/14 15:26:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,6 +77,33 @@ namespace NL3D {
 {		
 }
 
+
+///=============================================================================
+bool CPSLocated::setLastForever()
+{
+	_LastForever = true;
+	if (_Owner && _Owner->getBypassMaxNumIntegrationSteps())
+	{
+		// Should test that the system is still valid.
+		if (!_Owner->canFinish())
+		{
+			_LastForever = false;
+			nlwarning("<CPSLocated::setLastForever> Can't set flag : this causes the system to last forever, and it has been flagged with 'BypassMaxNumIntegrationSteps'. Flag is not set");
+			return false;
+		}
+	}
+	return true;
+}
+
+
+///=============================================================================
+void CPSLocated::systemDateChanged()
+{
+	for(TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+	{
+		(*it)->systemDateChanged();
+	}
+}
 
 
 ///=============================================================================
@@ -515,7 +542,7 @@ CPSLocated::~CPSLocated()
 /**
 * sorted insertion  (by decreasing priority order) of a bindable (particle e.g an aspect, emitter) in a located
 */
-void CPSLocated::bind(CPSLocatedBindable *lb)
+bool CPSLocated::bind(CPSLocatedBindable *lb)
 {
 	nlassert(std::find(_LocatedBoundCont.begin(), _LocatedBoundCont.end(), lb) == _LocatedBoundCont.end());	
 	TLocatedBoundCont::iterator it = _LocatedBoundCont.begin();
@@ -544,6 +571,21 @@ void CPSLocated::bind(CPSLocatedBindable *lb)
 
 	/// the max number of shapes may have changed
 	notifyMaxNumFacesChanged();
+
+	if (_Owner)
+	{
+		const CParticleSystem *ps = _Owner;
+		if (ps->getBypassMaxNumIntegrationSteps())
+		{
+			if (!ps->canFinish())
+			{
+				unbind(getIndexOf(lb));
+				nlwarning("<CPSLocated::bind> Can't bind the located : this causes the system to last forever, and it has been flagged with 'BypassMaxNumIntegrationSteps'. Located is not bound.");
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 
@@ -1857,6 +1899,7 @@ void CPSTargetLocatedBindable::releaseAllRef()
 	_Targets.clear();
 	CPSLocatedBindable::releaseAllRef();
 }
+
 
 
 

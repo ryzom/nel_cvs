@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.23 2003/04/10 09:22:34 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.24 2003/04/14 15:26:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,8 +81,11 @@ public:
 	/// Display the emitter in edition mode
 	virtual void					showTool(void);
 
-	/// Set the type of located to be emitted. The default is NULL which mean that no emission will occur
-	void							setEmittedType(CPSLocated *et);
+	/** Set the type of located to be emitted. The default is NULL which mean that no emission will occur
+	  * \return true if the operation could be performed. It can fail when this cause the system the system to last forever,
+	  *              which is incompatible with the 'BypassMaxNumIntegrationSteps' in CParticleSystem
+	  */
+	bool							setEmittedType(CPSLocated *et);
 
 	/** Inherited from CPSLocatedBindable
 	 *  We register to the emitted type, so, this, this will be called when it is destroyed
@@ -103,11 +106,13 @@ public:
 	 *  externEmit  : emitted explicitly by the system user. A 4 letter id must be used to identify this kind of emitters
 	 *                the default ID is NONE
 	 */
-	enum TEmissionType { regular = 0, onDeath = 1,  once = 2, onBounce = 3, externEmit = 4 };
+	enum TEmissionType { regular = 0, onDeath = 1,  once = 2, onBounce = 3, externEmit = 4, numEmissionType };
 
 	/** Set the frequency type. Please note that if the type is externEmit, this located need to have been attached to the system (the system is holding the ID-Located map)
+	  * \return true if the operation could be performed. It can fail when this cause the system the system to last forever,
+	  *              which is incompatible with the 'BypassMaxNumIntegrationSteps' in CParticleSystem
 	  */
-	void							setEmissionType(TEmissionType freqType);
+	bool							setEmissionType(TEmissionType freqType);
 
 	/// Get the frequency type
 	TEmissionType					getEmissionType(void) const { return _EmissionType; }
@@ -138,8 +143,12 @@ public:
 	/// Get the delay in seconds before the first emission (regular emitter only)
 	float							getEmitDelay() const { return _EmitDelay; }
 
-	/// Set a max. number of particle emission (0 means no limit and is the default). Applies with regular emitter only.
-	void							setMaxEmissionCount(uint8 count);
+	/** Set a max. number of particle emission (0 means no limit and is the default). Applies with regular emitter only.
+	  * NB : the emitter should be inserted in a system for this call to work
+	  * \return true if the operation could be performed. It can fail when this cause the system the system to last forever,
+	  *              which is incompatible with the 'BypassMaxNumIntegrationSteps' in CParticleSystem
+	  */
+	bool							setMaxEmissionCount(uint8 count);
 
 	/// Get the max. number of particle emission (0 means no limit and is the default). Applies with regular emitter only.
 	uint8							getMaxEmissionCount() const { return _MaxEmissionCount; }
@@ -238,7 +247,18 @@ public:
 
 	/** For edition only : avoid that a call to CPSLocated::deleteElement() causes emitters flagged with 'emitOnDeath' to emit
 	  */
-	static void					 setBypassEmitOnDeath(bool bypass) { _BypassEmitOnDeath = bypass; }	
+	static void				setBypassEmitOnDeath(bool bypass) { _BypassEmitOnDeath = bypass; }	
+
+	/** check if there's a loop with that e=mitter eg A emit B emit A
+	  * NB : the emitter should be inserted in a system, otherwise -> assert
+	  */
+	bool					checkLoop() const;
+
+
+	/** Test is the emitter will emit an infinite amount of particles (e.g it doesn't stop after a while)
+	  * NB : If the emitter isn't inserted in a CPSLocated instance, an assertion will be reaised
+	  */
+	bool					testEmitForever() const;
 
 protected:	
 
@@ -649,6 +669,12 @@ protected:
 
 } // NL3D
 
+
+namespace NLMISC
+{
+	// toString implementation for NL3D::CPSEmitter::TEmissionType
+	std::string toString(NL3D::CPSEmitter::TEmissionType type);
+}
 
 #endif // NL_PS_EMITTER_H
 

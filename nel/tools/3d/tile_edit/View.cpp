@@ -343,7 +343,10 @@ int TileList::setTileTransition (int tile, const std::string& name, NL3D::CTile:
 			CTileSet::TError error;
 			int pixel=-1;
 			int composante=4;
-			error=tileBank2.getTileSet(_tileSet)->checkTile128 (type, border, pixel, composante);
+			if (type == CTile::additive)
+				error=CTileSet::ok;
+			else
+				error=tileBank2.getTileSet(_tileSet)->checkTile128 (type, border, pixel, composante);
 			if ((error!=CTileSet::ok)&&(error!=CTileSet::addFirstA128128)&&!zouille ())
 			{
 				char sTmp[512];

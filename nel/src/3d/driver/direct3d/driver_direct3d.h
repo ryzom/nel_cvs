@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.16 2004/07/06 16:52:20 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.17 2004/07/09 13:02:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,6 +136,7 @@ public:
 
 	// Mipmap levels
 	uint8					Levels;
+	uint8					FirstMipMap;
 
 	// This is the computed size of what memory this texture take.
 	uint32					TextureMemory;
@@ -1323,7 +1324,7 @@ private:
 
 	D3DFORMAT getD3DDestTextureFormat (ITexture& tex);
 	// Generates the texture, degades it, creates / resizes the d3d surface. Don't fill the surface.
-	bool generateD3DTexture (ITexture& tex, bool textureDegradation, D3DFORMAT &destFormat, D3DFORMAT &srcFormat, uint &firstMipMap, bool &cube);
+	bool generateD3DTexture (ITexture& tex, bool textureDegradation, D3DFORMAT &destFormat, D3DFORMAT &srcFormat, bool &cube);
 	// Return the memory used by the surface described iwith the parameters
 	uint32 computeTextureMemoryUsage (uint width, uint height, uint levels, D3DFORMAT destFormat, bool cube);
 	// Upload a texture part

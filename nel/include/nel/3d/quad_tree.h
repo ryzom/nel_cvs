@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.4 2000/11/23 11:46:04 corvazier Exp $
+ * $Id: quad_tree.h,v 1.5 2000/11/23 12:07:18 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,21 +23,59 @@
  * MA 02111-1307, USA.
  */
 
-/*// ============================================================================================
-class:	CQuadTree.
-
-
-A template CQuadTree.
-
-
-This first implementation support real-time quad node split, but never merge the quad node.
-The possibility to merge (delete) empty quads, when an element erase occurs, will be added later.
-
-
-The quadtree is geometrically delimited. By default, his size is 1*1, centered on (0,0,0). If an element
-which is out this zone is inserted, then it will ALWAYS be considered selected in select*() methods.
-
-*/// ============================================================================================
+/** ============================================================================================
+  * class:	CQuadTree.
+  * 
+  * 
+  * A template CQuadTree.
+  * 
+  * 
+  * This first implementation support real-time quad node split, but never merge the quad node.
+  * The possibility to merge (delete) empty quads, when an element erase occurs, will be added later.
+  * 
+  * The quadtree is geometrically delimited. By default, his size is 1*1, centered on (0,0,0). If an element
+  * which is out this zone is inserted, then it will ALWAYS be considered selected in select*() methods.
+  * 
+  * Sample code using CQuadTree:
+  * \code
+  * // My quad tree
+  * CQuadTree<myType> quadTree;
+  *
+  * // My min and max BoundingBox corner of each element
+  * CVector minPoint[elementCount]=...;
+  * CVector maxPoint[elementCount]=...;
+  * 
+  * // My values
+  * myType value[elementCount]=...;
+  * 
+  * // Init the quadTree with recursions depth = 6 (so max 64*64 cells)
+  * // centered in (0,0,0) with a max size of 10 in the plane XZ
+  * quadTree.create (6, CVector (0.f, 0.f, 0.f), 10.f);
+  *
+  * // Insert element in the quadTree
+  * for (int i=0; i<elementCount; i++)
+  *		quadTree.insert (minPoint[i], maxPoint[i], value[i]);
+  *
+  * // [...]
+  * 
+  * // Clear the selection
+  * quadTree.clearSelection ();
+  * 
+  * // Select an element with the X axis as a 3d ray
+  * quadTree.selectRay (CVector (0,0,0), CVector (1,0,0));
+  * 
+  *	// Get first selected nodes..
+  * CQuadTree<myType>::CIterator it=quadTree.begin();
+  * while (it!=quadTree.end())
+  * {
+  * 	// Check what you want...
+  * 		
+  *		// Next selected element
+  * 	it++;
+  * }
+  * \endcode
+  * 
+  */ ============================================================================================
 
 
 
@@ -121,7 +159,7 @@ public:
 	  */
 	void		erase(CIterator it);
 
-	/** Insert a new element in the container
+	/** Insert a new element in the container. The bounding box of the element MUST be included in the bounding box of the quadtree.
 	  *
 	  * \param bboxmin is the corner of the bounding box of the element to insert with minimal coordinates.
 	  * \param bboxmax is the corner of the bounding box of the element to insert with maximal coordinates.

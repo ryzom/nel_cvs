@@ -1,7 +1,7 @@
-/** \file connection_client.h
+/** \file connection_web.h
  * <File description>
  *
- * $Id: connection_client.h,v 1.1 2001/05/02 12:36:39 lecroart Exp $
+ * $Id: connection_web.h,v 1.1 2002/09/16 14:50:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,15 +23,14 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_CONNECTION_CLIENT_H
-#define NL_CONNECTION_CLIENT_H
+#ifndef NL_CONNECTION_WEB_H
+#define NL_CONNECTION_WEB_H
 
 #include "nel/misc/types_nl.h"
 
-void connectionClientInit ();
+void connectionWebInit ();
+void connectionWebUpdate ();
 
-extern const TCallbackItem ClientCallbackArray[];
+#endif // NL_CONNECTION_WEB_H
 
-#endif // NL_CONNECTION_CLIENT_H
-
-/* End of connection_client.h */
+/* End of connection_web.h */

@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.8 2002/03/25 09:29:24 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.9 2002/09/16 14:50:07 lecroart Exp $
  *
  */
 
@@ -62,6 +62,19 @@ sint findShard (TSockId senderId)
 	return -1;
 }
 
+sint32 findShard (sint32 shardId)
+{
+	for (sint i = 0; i < (sint) Shards.size (); i++)
+	{
+		if (Shards[i].ShardId == shardId)
+		{
+			return i;
+		}
+	}
+	// shard not found
+	return -1;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,33 +88,31 @@ static void cbWSConnection (const string &serviceName, TSockId from, void *arg)
 
 	nldebug("new potential shard: %s", ia.asString ().c_str ());
 
-	// first, check if it an authorized shard
-	for (sint32 i = 0; i < (sint32) Shards.size (); i++)
+	// if we accept external shard, don't need to check if address is valid
+	if(IService::getInstance ()->ConfigFile.getVar("AcceptExternalShards").asInt () == 1)
+		return;
+
+	string query = "select * from shard where WSAddr='"+ia.ipAddress()+"'";
+	int ret = mysql_query (DatabaseConnection, query.c_str ());
+	if (ret != 0)
 	{
-		if (!Shards[i].Online && Shards[i].WSAddr == ia.ipAddress ())
-		{
-			// new shard connected
-			Shards[i].WSAddr = ia.asIPString (); // put addr+port to detect different shard on the same address
-			Shards[i].Online = true;
-			Shards[i].SockId = from;
-			nlinfo("Shard with ip '%s' is online!", Shards[i].WSAddr.c_str ());
-			return;
-		}
+		nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+		return;
 	}
-	if (AcceptExternalShard)
+
+	MYSQL_RES *res = mysql_store_result(DatabaseConnection);
+	if (res == NULL)
 	{
-		// New externam shard connected, add it in the file
-		Shards.push_back (CShard(ia));
-		sint32 pos = Shards.size()-1;
-		Shards[pos].WSAddr = ia.asIPString (); // put addr+port to detect different shard on the same address
-		Shards[pos].Online = true;
-		Shards[pos].SockId = from;
-		nlinfo("External shard with ip '%s' is online!", Shards[pos].WSAddr.c_str ());
-		writePlayerDatabase ();
+		nlwarning ("mysql_store_result () failed from query '%s': %s", query.c_str (),  mysql_error(DatabaseConnection));
+		return;
 	}
-	else
+
+	if (mysql_num_rows(res) == 0)
 	{
-		nlwarning("It's not a authorized shard, disconnect it");
+		// if we are here, it s that the shard have not a valid wsaddr in the database
+		// we can't accept unknown shard
+
+		nlwarning("The shard is not in the database (WSAddr %s is not in the base), disconnecting it", ia.ipAddress ().c_str ());
 		CNetManager::getNetBase("WSLS")->disconnect(from);
 	}
 }
@@ -113,86 +124,31 @@ static void cbWSDisconnection (const string &serviceName, TSockId from, void *ar
 
 	nldebug("shard disconnection: %s", ia.asString ().c_str ());
 
-	for (sint32 i = 0; i < (sint32) Shards.size (); i++)
+	for (uint32 i = 0; i < Shards.size (); i++)
 	{
 		if (Shards[i].SockId == from)
 		{
-			if (Shards[i].Online)
+			// shard disconnected
+			nlinfo("ShardId %d with ip '%s' is offline!", Shards[i].ShardId, ia.asString ().c_str());
+
+			string query = "update shard set Online=Online-1, NbPlayers=NbPlayers-"+toString(Shards[i].NbPlayer)+" where ShardId="+toString(Shards[i].ShardId);
+			int ret = mysql_query (DatabaseConnection, query.c_str ());
+			if (ret != 0)
 			{
-				// shard disconnected
-				nlinfo("Shard with ip '%s' is offline!", Shards[i].WSAddr.c_str());
-				Shards[i].Online = false;
-				Shards[i].SockId = NULL;
-				Shards[i].WSAddr = Shards[i].WSAddr.substr (0, Shards[i].WSAddr.find (":"));
-
-				// put users connected on this shard offline
-				for (sint32 u = 0; u < (sint32) Users.size (); u++)
-				{
-					if (Users[u].ShardId == from)
-					{
-						disconnectClient (Users[u], true, false);
-					}
-				}
+				nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
 			}
-			else
-			{
-				nlwarning("Shard with ip '%s' goes offline but wasn't online!", Shards[i].WSAddr.c_str ());
-			}
-			return;
-		}
-	}
-	nlwarning("Unknown Shard goes offline but wasn't online!");
-}
 
-static void cbWSShardChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
-{
-	CLoginCookie cookie;
-	string reason;
-	string addr;
+			// put users connected on this shard offline
+			
+			/// \todo ace: remove all users from this shard from the database
 
-	//
-	// S10: receive "SCS" message from WS
-	//
-
-	CMessage msgout (CNetManager::getNetBase("LS")->getSIDA (), "SCS");
-
-	msgin.serial (reason);
-	msgout.serial (reason);
-	
-	msgin.serial (cookie);
-	msgout.serial (cookie);
-
-	if (reason.empty())
-	{
-		msgin.serial (addr);
-		msgout.serial (addr);
-	}
-
-	// find the user
-	for (vector<CUser>::iterator it = Users.begin (); it != Users.end (); it++)
-	{
-		if ((*it).State == CUser::Authorized && (*it).Cookie == cookie)
-		{
-			CNetManager::send ("LS", msgout, (*it).SockId);
-
-			if (reason.empty())
-			{
-				// Now we wait the message from WS saying that the client is well connected to the shard
-				(*it).State = CUser::Awaiting;
-				(*it).Cookie.clear ();
-			}
-			else
-			{
-				// the WS haven't accepted the client
-				disconnectClient (*it, true, false);
-			}
+			Shards.erase (Shards.begin () + i);
 
 			return;
 		}
 	}
-	nlwarning ("The user is not connected");
+	nlwarning("Shard %s goes offline but wasn't online!", ia.asString ().c_str ());
 }
-
 
 /** Shard accepted the new user, so warn the user that he could connect to the shard now */
 /*void cbClientShardAcceptedTheUser (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
@@ -286,30 +242,102 @@ void cbShardComesIn (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 // 
 static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	const CInetAddress &ia = netbase.hostAddress (from);
+	const CInetAddress &ia = CNetManager::getNetBase("WSLS")->hostAddress (from);
 
-	string shardName;
-	msgin.serial(shardName);
-	nldebug("new potential identification: %s", shardName.c_str());
+	sint32 shardId;
+	msgin.serial(shardId);
+	nldebug("shard identification, It says to be ShardId %d, let's check that!", shardId);
 
-	// first, check if it an authorized shard
-	for (sint32 i = 0; i < (sint32) Shards.size (); i++)
+	string query = "select * from shard where ShardId="+toString(shardId);
+	int ret = mysql_query (DatabaseConnection, query.c_str ());
+	if (ret != 0)
 	{
-		if (Shards[i].WSAddr == ia.asIPString ())
+		nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+		return;
+	}
+
+	MYSQL_RES *res = mysql_store_result(DatabaseConnection);
+	if (res == NULL)
+	{
+		nlwarning ("mysql_store_result () failed from query '%s': %s", query.c_str (),  mysql_error(DatabaseConnection));
+		return;
+	}
+
+	int nbrow = mysql_num_rows(res);
+	if (nbrow == 0)
+	{
+		if(IService::getInstance ()->ConfigFile.getVar("AcceptExternalShards").asInt () == 1)
 		{
-			if (Shards[i].Online)
+			// we accept new shard, add it
+			query = "insert into shard (ShardId, WsAddr, Online) values ("+toString(shardId)+", '"+ia.ipAddress ()+"', 1)";
+			int ret = mysql_query (DatabaseConnection, query.c_str ());
+			if (ret != 0)
 			{
-				nlinfo("Shard with ip '%s' is identified to '%s'!", Shards[i].WSAddr.c_str (), shardName.c_str());
-				Shards[i].ShardName = shardName;
+				nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
 			}
 			else
 			{
-				nlwarning("Shard with ip '%s' is not online! Disconnect this intruder", ia.asString().c_str ());
-				netbase.disconnect(from);
+				nlinfo("The ShardId %d with ip '%s' was inserted in the database and is online!", shardId, ia.ipAddress ().c_str ());
 			}
 			return;
 		}
+		else
+		{
+			// can't accept new shard
+			nlwarning ("Bad shard identification, Can't accept new shard, disconnecting it");
+			CNetManager::getNetBase("WSLS")->disconnect(from);
+			return;
+		}
 	}
+	else if (nbrow == 1)
+	{
+		MYSQL_ROW row = mysql_fetch_row(res);
+		if (row == NULL)
+		{
+			nlwarning ("mysql_fetch_row (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+			return;
+		}
+
+		// check that the ip is ok
+		if (row[1] != ia.ipAddress ())
+		{
+			// good shard id but from a bad computer address
+			nlwarning ("Bad shard identification, ShardId %d should come from '%s' and come from '%s'", shardId, row[1], ia.ipAddress ().c_str ());
+			CNetManager::getNetBase("WSLS")->disconnect(from);
+			return;
+		}
+
+		sint32 s = findShard (shardId);
+		if (s != -1)
+		{
+			// the shard should be already online, bad!
+			nlwarning ("Bad shard identification, ShardId %d is already online", shardId);
+			CNetManager::getNetBase("WSLS")->disconnect(from);
+			return;
+		}
+
+		string query = "update shard set Online=Online+1 where ShardId="+toString(shardId);
+		int ret = mysql_query (DatabaseConnection, query.c_str ());
+		if (ret != 0)
+		{
+			nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+			return;
+		}
+
+		Shards.push_back (CShard (shardId, from));
+
+		// ok, the shard is identified correctly
+		nlinfo("ShardId %d with ip '%s' is online!", shardId, ia.ipAddress ().c_str ());
+		return;
+	}
+	else
+	{
+		nlwarning ("There's more than 1 shard with the shardId %d", shardId);
+	}
+
+	// bad shardId
+	nlwarning ("Bad shard identification, ShardId %d is not in the database", shardId);
+	CNetManager::getNetBase("WSLS")->disconnect(from);
 }
 
 static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
@@ -325,21 +353,48 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 	msgin.serial (Id);
 	msgin.serial (con);	// con=1 means a client is connected on the shard, 0 means a client disconnected
 
-	sint pos = findUser (Id);
-	if (pos == -1)
+
+	string query = "select * from user where UId="+toString(Id);
+	int ret = mysql_query (DatabaseConnection, query.c_str ());
+	if (ret != 0)
+	{
+		nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+		return;
+	}
+	MYSQL_RES *res = mysql_store_result(DatabaseConnection);
+	if (res == NULL)
+	{
+		nlwarning ("mysql_store_result () failed from query '%s': %s", query.c_str (),  mysql_error(DatabaseConnection));
+		return;
+	}
+	int nbrow = mysql_num_rows(res);
+	MYSQL_ROW row = mysql_fetch_row(res);
+	if (row == NULL)
+	{
+		nlwarning ("mysql_fetch_row (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+		return;
+	}
+
+	if(nbrow == 0)
 	{
 		nlwarning ("Id %d doesn't exist", Id);
 		Output.displayNL ("###: %3d UId doesn't exist", Id);
 		return;
 	}
+	else if (nbrow > 1)
+	{
+		nlerror ("Id %d have more than one entry!!!", Id);
+		return;
+	}
 
-	if (con == 1 && Users[pos].State != CUser::Awaiting)
+	// row[4] = State
+	if (con == 1 && row[4] != "Waiting")
 	{
 		nlwarning ("Id %d isn't waiting a connection to a shard", Id);
 		Output.displayNL ("###: %3d User isn't waiting a connection to a shard", Id);
 		return;
 	}
-	else if (con == 0 && Users[pos].State != CUser::Online)
+	else if (con == 0 && row[4] != "Online")
 	{
 		nlwarning ("Id %d wasn't connected on a shard", Id);
 		Output.displayNL ("###: %3d User wasn't connected on a shard", Id);
@@ -349,20 +404,38 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 	static uint recordNbPlayer = 0;
 	static uint nbPlayer = 0;
 
+	sint ShardPos = findShard(from);
+
 	if (con == 1)
 	{
 		// new client on the shard
-		Users[pos].State = CUser::Online;
-		Users[pos].ShardId = from;
 
-		sint ShardPos = findShard(from);
+
+		string query = "update user set State='Online', ShardId="+toString(Shards[ShardPos].ShardId)+" where UId="+toString(Id);
+		int ret = mysql_query (DatabaseConnection, query.c_str ());
+		if (ret != 0)
+		{
+			nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+			return;
+		}
+
 		if (ShardPos != -1)
-			Shards[ShardPos].NbPlayers++;
+		{
+			Shards[ShardPos].NbPlayer++;
+
+			string query = "update shard set NbPlayers=NbPlayers+1 where ShardId="+toString(Shards[ShardPos].ShardId);
+			int ret = mysql_query (DatabaseConnection, query.c_str ());
+			if (ret != 0)
+			{
+				nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+				return;
+			}
+		}
 		else
 			nlwarning ("user connected shard isn't in the shard list");
-		
+
 		nldebug ("Id %d is connected on the shard", Id);
-		Output.displayNL ("###: %3d User connected to the shard (%s)", Id, Shards[ShardPos].Name.c_str());
+		Output.displayNL ("###: %3d User connected to the shard (%d)", Id, Shards[ShardPos].ShardId);
 
 		nbPlayer++;
 		if (nbPlayer > recordNbPlayer)
@@ -375,16 +448,33 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 	else
 	{
 		// client removed from the shard (true is for potential other client with the same id that wait for a connection)
-		disconnectClient (Users[pos], true, false);
+	//		disconnectClient (Users[pos], true, false);
 
-		sint ShardPos = findShard(from);
+		string query = "update user set State='Offline', ShardId=-1 where UId="+toString(Id);
+		int ret = mysql_query (DatabaseConnection, query.c_str ());
+		if (ret != 0)
+		{
+			nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+			return;
+		}
+
 		if (ShardPos != -1)
-			Shards[ShardPos].NbPlayers--;
+		{
+			Shards[ShardPos].NbPlayer--;
+
+			string query = "update shard set NbPlayers=NbPlayers-1 where ShardId="+toString(Shards[ShardPos].ShardId);
+			int ret = mysql_query (DatabaseConnection, query.c_str ());
+			if (ret != 0)
+			{
+				nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+				return;
+			}
+		}
 		else
 			nlwarning ("user disconnected shard isn't in the shard list");
-		
+			
 		nldebug ("Id %d is disconnected from the shard", Id);
-		Output.displayNL ("###: %3d User disconnected from the shard (%s)", Id, Shards[ShardPos].Name.c_str());
+		Output.displayNL ("###: %3d User disconnected from the shard (%d)", Id, Shards[ShardPos].ShardId);
 
 		nbPlayer--;
 	}
@@ -393,8 +483,6 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 
 static const TCallbackItem WSCallbackArray[] =
 {
-	{ "SCS", cbWSShardChooseShard },
-
 	{ "CC", cbWSClientConnected },
 
 	{ "WS_IDENT", cbWSIdentification },
@@ -408,4 +496,18 @@ void connectionWSInit (uint16 port)
 	CNetManager::setDisconnectionCallback ("WSLS", cbWSDisconnection, NULL);
 
 	nlinfo ("Set the server connection for welcome service to port %hu", port);
+}
+
+void connectionWSRelease ()
+{
+	// remove all online and player because this LS going down
+	for (sint i = 0; i < (sint) Shards.size (); i++)
+	{
+		string query = "update shard set Online=Online-1, NbPlayers=NbPlayers-"+toString(Shards[i].NbPlayer)+" where ShardId="+toString(Shards[i].ShardId);
+		int ret = mysql_query (DatabaseConnection, query.c_str ());
+		if (ret != 0)
+		{
+			nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+		}
+	}
 }

@@ -1,7 +1,7 @@
 /** \file zone_tgt_smoother.cpp
  * <File description>
  *
- * $Id: zone_tgt_smoother.cpp,v 1.3 2001/01/18 14:14:17 berenguier Exp $
+ * $Id: zone_tgt_smoother.cpp,v 1.4 2001/01/25 17:29:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,13 +162,14 @@ void		CZoneTgtSmoother::makeVerticesCoplanar(std::vector<CZoneInfo>  &zones)
 			for(sint ed= 0; ed<2;ed++)
 			{
 				sint	patchId, zoneId, edgeId;
+				sint	tgt;
 
 				// get neighbor edge id.
 				zoneId= pa.BindEdges[ edgeNum[ed] ].ZoneId;
 				patchId= pa.BindEdges[ edgeNum[ed] ].Next[0];
 				edgeId= pa.BindEdges[ edgeNum[ed] ].Edge[0];
 				// Search if tangent already inserted, mapped to this "neighbor edge".
-				for(sint tgt= 0; tgt<(sint)tangents.size();tgt++)
+				for(tgt= 0; tgt<(sint)tangents.size();tgt++)
 				{
 					if(tangents[tgt].ZoneId==zoneId && tangents[tgt].PatchId==patchId && tangents[tgt].EdgeId==edgeId)
 						break;

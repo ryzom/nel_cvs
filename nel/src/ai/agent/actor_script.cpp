@@ -160,7 +160,9 @@ namespace NLAIAGENT
 	void CActorScript::save(NLMISC::IStream &os)
 	{
 		IAgent::save(os);
-		os.serial( (uint8 ) _IsActivated );
+		uint8 b = (uint8 ) _IsActivated;
+
+		os.serial( b );
 		
 	}
 

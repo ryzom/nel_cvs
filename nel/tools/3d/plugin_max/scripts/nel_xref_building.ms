@@ -218,149 +218,176 @@ group "Other Nodes"
 		-- Selected ?
 		if (IgName.text != "") and (BuildingFilenamePath != "") and (VillageFilenamePath != "") then
 		(
-			-- Load the scene
-			ProgressText.text  = "Loading village " + (getFilenameFile VillageFilenamePath)
-			Progress.value = 50
-			if (loadMaxFile VillageFilenamePath) == true then
+			-- Reset max file
+			resetMAXFile ()
+
+			-- Load the building
+
+			-- Look for an unique postfix
+			buildingName = IgName.text
+			postfix = "_" + buildingName
+
+			-- XRef the projects
+			nodesName = getMAXFileObjectNames BuildingFilenamePath
+			if nodesName != undefined then
 			(
-				-- Unhide all
-				max unhide all
-				max unfreeze all
+				-- The lod name array
+				lodNameArray = #()
 
-				-- Select all
-				max select all
-
-				-- Erase all
-				max delete
-
-				-- Look for an unique postfix
-				buildingName = IgName.text
-				postfix = "_" + buildingName
-
-				-- XRef the projects
-				nodesName = getMAXFileObjectNames BuildingFilenamePath
-				if nodesName != undefined then
+				-- For each node visible
+				for iCount = 1 to nodesName.count do
 				(
-					-- The lod name array
-					lodNameArray = #()
+					-- Garbage collector
+					gc ()
 
-					-- For each node visible
-					for iCount = 1 to nodesName.count do
+					-- Progress bar
+					ProgressText.text  = "XRef building " + (getFilenameFile BuildingFilenamePath)
+					Progress.value = iCount*100/nodesName.count
+
+					-- Node ref
+					nodeName = nodesName[iCount]
+
+					-- Make an xref
+					node = xrefs.addNewXRefObject BuildingFilenamePath (nodeName as string)
+					if node != undefined then
 					(
-						-- Garbage collector
-						gc ()
-
-						-- Progress bar
-						ProgressText.text  = "XRef building " + (getFilenameFile BuildingFilenamePath)
-						Progress.value = iCount*100/nodesName.count
-
-						-- Node ref
-						nodeName = nodesName[iCount]
-
-						-- Make an xref
-						node = xrefs.addNewXRefObject BuildingFilenamePath (nodeName as string)
-						if node != undefined then
+						-- Rename its lod
+						countString = getAppData node NEL3D_APPDATA_LOD_NAME_COUNT
+						if (countString != undefined) then
 						(
-							-- Rename its lod
-							countString = getAppData node NEL3D_APPDATA_LOD_NAME_COUNT
-							if (countString != undefined) then
+							count = countString as integer
+							for lod = 1 to count do
 							(
-								count = countString as integer
-								for lod = 1 to count do
+								lodName = getAppData node (NEL3D_APPDATA_LOD_NAME+lod-1)
+								if lodName != undefined then
 								(
-									lodName = getAppData node (NEL3D_APPDATA_LOD_NAME+lod-1)
-									if lodName != undefined then
-									(
-										setAppData node (NEL3D_APPDATA_LOD_NAME+lod-1) (lodName + postfix)
-										append lodNameArray (lodName + postfix)
-									)
+									setAppData node (NEL3D_APPDATA_LOD_NAME+lod-1) (lodName + postfix)
+									append lodNameArray (lodName + postfix)
 								)
 							)
+						)
 
-							-- Remove some node properties
-							deleteAppData node NEL3D_APPDATA_IGNAME
-							deleteAppData node NEL3D_APPDATA_DONTEXPORT
-							deleteAppData node NEL_OBJET_NAME_DATA
+						-- Remove some node properties
+						deleteAppData node NEL3D_APPDATA_IGNAME
+						deleteAppData node NEL3D_APPDATA_DONTEXPORT
+						deleteAppData node NEL_OBJET_NAME_DATA
 
-							-- Is it a light ?
-							if (superclassof node == light) then
+						-- Is it a light ?
+						if (superclassof node == light) then
+						(
+							-- Is it in the landscape ?
+							arrayToTest = LandscapeLight.items
+							if (isInArray arrayToTest node.name) == true then
 							(
-								-- Is it in the landscape ?
-								arrayToTest = LandscapeLight.items
-								if (isInArray arrayToTest node.name) == true then
-								(
-									if (ZoneName.text != "") then
-										setAppData node NEL3D_APPDATA_IGNAME ZoneName.text
-								)
-								else
-								(
-									if (IgName.text != "") then
-										setAppData node NEL3D_APPDATA_IGNAME IgName.text
-								)
+								if (ZoneName.text != "") then
+									setAppData node NEL3D_APPDATA_IGNAME ZoneName.text
 							)
 							else
 							(
-								-- Add ig name
 								if (IgName.text != "") then
 									setAppData node NEL3D_APPDATA_IGNAME IgName.text
+							)
+						)
+						else
+						(
+							-- Add ig name
+							if (IgName.text != "") then
+								setAppData node NEL3D_APPDATA_IGNAME IgName.text
 
-								-- Is a collision shape ?
-								col = getAppData node NEL3D_APPDATA_COLLISION
-								if col == undefined then
-									col = getAppData node NEL3D_APPDATA_COLLISION_EXTERIOR
+							-- Is a collision shape ?
+							col = getAppData node NEL3D_APPDATA_COLLISION
+							if col == undefined then
+								col = getAppData node NEL3D_APPDATA_COLLISION_EXTERIOR
 
-								-- not a collision
-								if (col == undefined) or (col == "0") then
+							-- not a collision
+							if (col == undefined) or (col == "0") then
+							(
+								-- Is it exterior ?
+								arrayToTest = ExteriorMesh.items
+								if (isInArray arrayToTest node.name) == false then
 								(
-									-- Is it exterior ?
-									arrayToTest = ExteriorMesh.items
-									if (isInArray arrayToTest node.name) == false then
-									(
-										-- Don't export this shape
-										setAppData node NEL3D_APPDATA_DONTEXPORT "1"
+									-- Don't export this shape
+									setAppData node NEL3D_APPDATA_DONTEXPORT "1"
 
-										-- This shape is a reference
-										setAppData node NEL_OBJET_NAME_DATA node.name
-									)
+									-- This shape is a reference
+									setAppData node NEL_OBJET_NAME_DATA node.name
 								)
 							)
-
-							-- Rename the node
-							node.name = node.name + postfix
 						)
-					)
 
-					-- Erase lod properties
-					for lod in lodNameArray do
+						-- Rename the node
+						node.name = node.name + postfix
+					)
+				)
+
+				-- Erase lod properties
+				for lod in lodNameArray do
+				(
+					-- Select the node by name
+					node = getnodebyname lod
+					if (node != undefined) then
 					(
-						-- Select the node by name
-						node = getnodebyname lod
-						if (node != undefined) then
-						(
-							deleteAppData node NEL3D_APPDATA_IGNAME
-							deleteAppData node NEL3D_APPDATA_DONTEXPORT
-							deleteAppData node NEL_OBJET_NAME_DATA
-						)
+						deleteAppData node NEL3D_APPDATA_IGNAME
+						deleteAppData node NEL3D_APPDATA_DONTEXPORT
+						deleteAppData node NEL_OBJET_NAME_DATA
 					)
+				)
 
-					-- Make a selection group
-					max select all
-					selectionSets[buildingName] = selection
+				-- Save a temp file
+				tempFile = getdir #scene + "\\nel_xref_building_temp.max"
+				ProgressText.text  = "Save temp file"
+				Progress.value = 50
 
-					-- Merge the destination project
-					ProgressText.text  = "Merge village " + (getFilenameFile VillageFilenamePath)
+				if saveMaxFile tempFile == true then
+				(
+					-- Load the destination project
+					ProgressText.text  = "Load village " + (getFilenameFile VillageFilenamePath)
 					Progress.value = 50
-					if (mergeMAXFile VillageFilenamePath #mergeDups) == true then
+
+					-- Load village file
+					if (loadMaxFile VillageFilenamePath) == true then
 					(
-						ProgressText.text  = "Finished - OK"
-						Progress.value = 100
+						-- Merge the temp file
+						ProgressText.text  = "Merge building"
+						Progress.value = 50
+
+						-- Hide all
+						max select all
+						hide selection
+
+						-- Merge the temp file
+						if (mergeMAXFile tempFile #mergeDups) == true then
+						(
+							ProgressText.text  = "Finished - OK"
+							Progress.value = 100
+
+							-- Make a selection group
+							max select all
+							selectionSets[buildingName] = selection
+
+							-- Unhide all
+							max unhide all
+						)
+						else
+						(
+							ProgressText.text  = "Error : can't merge the temp file nel_xref_building_temp.max"
+							Progress.value = 100
+						)
 					)
 					else
 					(
-						ProgressText.text  = "Finished - Error"
+						ProgressText.text  = ("Error : can't load the village file " + VillageFilenamePath)
 						Progress.value = 100
 					)
 				)
+				else
+				(
+					ProgressText.text  = "Error saving temp scene nel_xref_building_temp.max"
+					Progress.value = 100
+				)
+
+				-- Delete the temp file
+				deleteFile tempFile
 			)
 		)
 	)

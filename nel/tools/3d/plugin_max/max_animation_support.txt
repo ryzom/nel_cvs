@@ -41,9 +41,7 @@
 
 Watch out: the Bezier color controler is not supported! Use a point3 interpolation instead.
 
--> Biped controlers are simulated.
-
--> TCB values for biped are supported under Character Studio 3 only.
+-> Biped controlers are oversampled at export. They are compressed by a post process in build_gamedata
 
 -> All the bezier tang mode are supported:
 

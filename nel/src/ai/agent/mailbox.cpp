@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.27 2002/01/03 15:06:14 chafik Exp $
+ * $Id: mailbox.cpp,v 1.28 2002/01/15 09:25:27 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -269,6 +269,9 @@ namespace NLAIAGENT
 		while(_ListMessageIn.begin() != _ListMessageIn.end())
 		{
 			IMessageBase *msg = (IMessageBase *)_ListMessageIn.back();
+#ifdef NL_DEBUG
+			const char *mname = (const char *)msg->getType();
+#endif
 			msg->release();
 			_ListMessageIn.pop_back();
 		}

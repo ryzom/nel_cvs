@@ -109,8 +109,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "\bin\DebugFast"
-# PROP Intermediate_Dir "\bin\DebugFast"
+# PROP Output_Dir "DebugFast"
+# PROP Intermediate_Dir "DebugFast"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /YX /FD /GZ /c
@@ -132,8 +132,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "ai_lib___Win32_ReleaseProfile"
-# PROP Intermediate_Dir "ai_lib___Win32_ReleaseProfile"
+# PROP Output_Dir "ReleaseProfile"
+# PROP Intermediate_Dir "ReleaseProfile"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c

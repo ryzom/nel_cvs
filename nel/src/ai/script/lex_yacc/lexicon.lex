@@ -369,6 +369,56 @@ reel {entier10}"."{entier10}
 		yyColone ++;
 		return INTERROGATION;
 	}
+"\x22" {
+		yyColone ++;	
+		char c = 0;
+		int i = 0;
+		strcpy(LastyyText[0], LastyyText[1]);
+		while(c != 34)
+		{
+			c = yyinput();
+			yyColone ++;			
+			switch(c)
+			{
+			
+			case 34:	
+				c = yyinput();
+				if(c == 34)
+				{
+					LastyyText[1][i] = c;
+					i++;
+					c = 0;
+				}
+				else
+				{
+					LastyyText[1][i] = 0;
+					unput(c);
+					c = 34;
+				}				
+				break;
+
+			case '\n':
+			case '\r':
+				yyLine ++;
+				yyColone = 0;
+				break;
+
+			case '\t':
+				yyColone +=5;				
+				break;
+			case EOF:
+				return 0;
+
+			default:
+				LastyyText[1][i] = c;
+				i ++;		
+				break;
+			}
+			
+		}				
+		return CHAINE;
+	}
+	
 "'"	{
 		yyColone ++;		
 		char c = 0;
@@ -423,7 +473,7 @@ reel {entier10}"."{entier10}
 		return CROCHER_D;
 	}
 "["	{
-		yyColone ++;²
+		yyColone ++;
 		return CROCHER_G;
 	}
 

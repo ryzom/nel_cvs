@@ -150,11 +150,7 @@ namespace NLAIAGENT
 	{
 #ifdef NL_DEBUG
 		const char *dbg_class_name = (const char *) getType();
-		std::string dbg_goal;
-		if ( _CurrentGoal != NULL )
-		{
-			_CurrentGoal->getDebugString( dbg_goal );
-		}
+		std::string dbg_goal;		
 #endif
 
 		// Checks the goal and preconditions after a certain number of cycles (defined in the script using the UdpateEvery keyword)
@@ -298,12 +294,6 @@ namespace NLAIAGENT
 			NLAILOGIC::CGoal *av_goal = (*goals)[i];
 			const NLAILOGIC::CGoal *op_goal = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal();
 
-#ifdef NL_DEBUG
-			std::string buf_g1;
-			std::string buf_g2;
-			av_goal->getDebugString(buf_g1);
-			op_goal->getDebugString(buf_g2);
-#endif
 			if ( (*( (*goals)[i])) == *( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() )
 				_ActivatedGoals.push_back( (*goals)[i] );
 		}
@@ -341,11 +331,6 @@ namespace NLAIAGENT
 		double pri = 1.0;
 		for ( i = 0; i < (int) ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getFuzzyVars().size(); i++)
 		{
-#ifdef NL_DEBUG
-			const char *dbg_op_class = (const char *) ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getType();
-			const char *dbg_set_name = ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzySets() )[i]->getString();
-			const char *dbg_var_name = ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzyVars() )[i]->getString();			
-#endif
 			CComponentHandle var_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzySets() )[i],(IAgent *)getParent(), true );
 			CComponentHandle set_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzyVars() )[i],(IAgent *)getParent(), true );
 
@@ -402,18 +387,10 @@ namespace NLAIAGENT
 		{
 
 			NLAILOGIC::CValueSet *l = *it_l;
-#ifdef NL_DEBUG
-			std::string buf;
-			l->getDebugString( buf );
-#endif
 
 			NLAILOGIC::CValueSet *result = unifyLiaison( l, fact, pos_vals );
 			if ( result )
 			{
-#ifdef NL_DEBUG
-				std::string buf;
-				result->getDebugString( buf );
-#endif
 
 				if ( result->undefined() == 0 )
 				{
@@ -527,17 +504,6 @@ namespace NLAIAGENT
 	{
 #ifdef NL_DEBUG
 		const char *dbg_class = (const char *) getType();
-#endif
-
-#ifdef NL_DEBUG_UPDATE
-		std::string dbugId;
-		std::string opid;
-		NLAIAGENT::CAgentNumber &ids = (NLAIAGENT::CAgentNumber &)((const NLAIAGENT::IWordNumRef &)*(getParent()->getParent())).getNumIdent().getId();
-		ids.getDebugString(dbugId);
-		getDebugString(opid);
-
-		dbugId = "Creature " + dbugID + " operateur " + opid + " reçu MESSAGE SUCCESS ~~~~ ";
-		dataUpdateCreature << dbugStr << std::endl;
 #endif
 
 		if(_CurrentGoal == NULL) 
@@ -681,9 +647,7 @@ namespace NLAIAGENT
 	{		
 
 #ifdef NL_DEBUG
-		const char *dbg_func_name = name->getString();
-		std::string buffer;
-		param.getDebugString( buffer );
+		const char *dbg_func_name = name->getString();		
 #endif
 
 		tQueue result; 
@@ -775,9 +739,7 @@ namespace NLAIAGENT
 				{
 					IMessageBase *msg = (NLAIAGENT::IMessageBase *)*it_msg;
 #ifdef NL_DEBUG
-					const char *id = (const char *) msg->getType();
-					std::string buf;
-					msg->getDebugString( buf );
+					const char *id = (const char *) msg->getType();					
 #endif
 
 					sint32 msg_comp_pos = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->checkTriggerMsg( msg );

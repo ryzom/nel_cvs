@@ -13,6 +13,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Build shape : convert lightmaps in 16 bits 
 echo ------- 
+date >> log.log
+date
 
 # For each directoy
 
@@ -38,6 +40,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Build shape : build coarse meshes 
 echo ------- 
+date >> log.log
+date
 
 # Get the build gamedata directory
 build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -105,6 +109,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Build shape : convert coarse texture to dds without mipmaps 
 echo ------- 
+date >> log.log
+date
 
 if ( test -f shape_with_coarse_mesh/nel_coarse_texture.tga )
 then

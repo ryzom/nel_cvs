@@ -15,6 +15,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Export displace 
 echo ------- 
+date >> log.log
+date
 
 # For each displace directory
 for i in $displace_source_directories ; do

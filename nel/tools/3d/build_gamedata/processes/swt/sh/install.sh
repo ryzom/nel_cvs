@@ -15,5 +15,7 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install skeleton weight 
 echo ------- 
+date >> log.log
+date
 
 cp -u swt/*.swt $client_directory/$swt_install_directory  2>> log.log

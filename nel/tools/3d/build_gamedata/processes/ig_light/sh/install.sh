@@ -18,6 +18,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install Lighted Ig 
 echo ------- 
+date >> log.log
+date
 
 cp -u ig_other_lighted/*.ig $client_directory/$ig_install_directory  2>> log.log
 

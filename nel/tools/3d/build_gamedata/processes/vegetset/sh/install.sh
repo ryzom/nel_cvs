@@ -15,5 +15,7 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install vegetset 
 echo -------
+date >> log.log
+date
 
 cp -u vegetset/*.vegetset $client_directory/$vegetset_install_directory  2>> log.log

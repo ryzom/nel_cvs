@@ -15,6 +15,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Export bank 
 echo ------- 
+date >> log.log
+date
 
 # Copy the bank
 cp -u $database_directory/$bank_source_directory/*.bank bank 2>> log.log

@@ -15,5 +15,7 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install maps
 echo ------- 
+date >> log.log
+date
 
 cp -u dds/*.dds $client_directory/$map_install_directory  2>> log.log

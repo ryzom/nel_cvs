@@ -21,6 +21,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install Shape 
 echo ------- 
+date >> log.log
+date
 
 cp -u shape/*.shape $client_directory/$shape_install_directory  2>> log.log
 cp -u shape_with_coarse_mesh_builded/*.shape $client_directory/$shape_install_directory  2>> log.log

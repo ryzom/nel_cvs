@@ -15,6 +15,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Build farbank 
 echo ------- 
+date >> log.log
+date
 
 # list all the bank
 bank_list=`ls -1 ../smallbank/smallbank/*.smallbank`

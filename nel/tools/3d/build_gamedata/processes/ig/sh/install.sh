@@ -21,6 +21,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install Ig 
 echo ------- 
+date >> log.log
+date
 
 cp -u "$landscape_name"_ig.txt $client_directory/$ig_install_directory  2>> log.log
 

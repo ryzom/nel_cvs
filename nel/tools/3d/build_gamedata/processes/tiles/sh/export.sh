@@ -15,6 +15,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Export tiles 
 echo ------- 
+date >> log.log
+date
 
 # For each directoy
 for i in $tile_source_directories ; do

@@ -15,5 +15,7 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install smallbank 
 echo ------- 
+date >> log.log
+date
 
 cp -u smallbank/*.smallbank $client_directory/$bank_install_directory  2>> log.log

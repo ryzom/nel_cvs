@@ -26,6 +26,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Export cmb for rbank
 echo ------- 
+date >> log.log
+date
 
 # For each directoy
 

@@ -15,6 +15,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Build tiles 
 echo ------- 
+date >> log.log
+date
 
 # For each texture
 for i in maps_tga/*.tga ; do

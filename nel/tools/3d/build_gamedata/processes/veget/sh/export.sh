@@ -21,6 +21,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Export veget 
 echo ------- 
+date >> log.log
+date
 
 # For each directoy
 

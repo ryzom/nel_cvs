@@ -15,5 +15,7 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install ps 
 echo -------
+date >> log.log
+date
 
 cp -u ps/*.ps $client_directory/$ps_install_directory  2>> log.log

@@ -3,6 +3,15 @@
 # *** Export ligo zone files from Max ***
 # *** ******************************* ***
 
+echo ------- >> log.log
+echo --- Export ligo zone >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Export ligo zone
+echo ------- 
+date >> log.log
+date
+
 exec_timeout='../../bin/exec_timeout.exe'
 
 # Get the timeout

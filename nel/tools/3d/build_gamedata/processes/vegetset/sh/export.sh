@@ -15,6 +15,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Export vegetset 
 echo ------- 
+date >> log.log
+date
 
 # For each vegetset directory
 for i in $vegetset_source_directories ; do

@@ -19,6 +19,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Export map 
 echo ------- 
+date >> log.log
+date
 
 # For each directoy
 

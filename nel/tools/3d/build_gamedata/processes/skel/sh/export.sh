@@ -26,6 +26,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Export skeleton 
 echo ------- 
+date >> log.log
+date
 
 # For each directoy
 

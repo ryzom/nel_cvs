@@ -15,5 +15,7 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install displace 
 echo ------- 
+date >> log.log
+date
 
 cp -u tga/*.tga $client_directory/$displace_install_directory  2>> log.log

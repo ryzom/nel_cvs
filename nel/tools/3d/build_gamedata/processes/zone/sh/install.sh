@@ -15,6 +15,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install zone 
 echo ------- 
+date >> log.log
+date
 
 cp -u zone_lighted/*.* $client_directory/$zone_install_directory  2>> log.log
 
@@ -35,5 +37,7 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install Zone Ig 
 echo ------- 
+date >> log.log
+date
 
 cp -u ig_land_lighted/*.ig $client_directory/$ig_install_directory  2>> log.log

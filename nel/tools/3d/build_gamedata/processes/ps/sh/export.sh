@@ -15,6 +15,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Export ps 
 echo ------- 
+date >> log.log
+date
 
 # For each ps directory
 for i in $ps_source_directories ; do

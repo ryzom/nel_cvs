@@ -18,5 +18,7 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install veget 
 echo ------- 
+date >> log.log
+date
 
 cp -u veget/*.veget $client_directory/$veget_install_directory  2>> log.log

@@ -12,6 +12,8 @@ echo -------
 echo --- Clean rbank
 echo ------- 
 echo 
+date >> log.log
+date
 
 # Get arguments
 rbank_scratch_path=`cat ../../cfg/site.cfg | grep "scratch_directory" | sed -e 's/scratch_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`/

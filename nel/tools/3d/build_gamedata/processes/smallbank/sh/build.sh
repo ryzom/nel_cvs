@@ -21,6 +21,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Build bank 
 echo ------- 
+date >> log.log
+date
 
 # list all the bank
 bank_list=`ls -1 bank/*.bank`

@@ -32,6 +32,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Export ig 
 echo -------
+date >> log.log
+date
 
 # For each directoy
 

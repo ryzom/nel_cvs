@@ -26,6 +26,8 @@ echo ------- >> log.log
 echo -------
 echo --- Export skeleton weight
 echo -------
+date >> log.log
+date
 
 # For each directoy
 

@@ -28,6 +28,8 @@ echo -------
 echo --- Generate config script
 echo ------- 
 echo 
+date >> log.log
+date
 
 
 # Get arguments
@@ -71,6 +73,8 @@ echo -------
 echo --- Build the bbox file
 echo ------- 
 echo 
+date >> log.log
+date
 
 # ***** Build the bbox file
 
@@ -151,6 +155,8 @@ echo -------
 echo --- Tesselate
 echo ------- 
 echo 
+date >> log.log
+date
 
 # Tesselate
 for i in $list_zone ; do
@@ -184,7 +190,7 @@ for i in $list_zone ; do
 	# if ( test -f $zone_to_build )
 	if ( test "$zone_to_build" )
 	then
-		$exec_timeout $tessel_timeout $build_rbank -T -m -l -g $i
+		$build_rbank -T -m -l -g $i
 		echo
 		echo >> log.log
 	else
@@ -211,6 +217,8 @@ echo -------
 echo --- Compute
 echo ------- 
 echo 
+date >> log.log
+date
 
 # Compute
 for i in $list_zone ; do
@@ -247,6 +255,8 @@ echo -------
 echo --- Proclocal
 echo ------- 
 echo 
+date >> log.log
+date
 
 # Proclocal
 for i in $list_zone ; do
@@ -283,6 +293,8 @@ echo -------
 echo --- Procglobal
 echo ------- 
 echo 
+date >> log.log
+date
 
 # Procglobal
 $exec_timeout $procglobal_timeout $build_rbank -t -m -l -G
@@ -332,6 +344,8 @@ echo -------
 echo --- Merge cmb in rbank 
 echo ------- 
 echo 
+date >> log.log
+date
 
 $exec_timeout $indoor_timeout $build_indoor_rbank
 
@@ -350,6 +364,8 @@ echo -------
 echo --- Copy gr and rbank
 echo ------- 
 echo 
+date >> log.log
+date
 
 
 

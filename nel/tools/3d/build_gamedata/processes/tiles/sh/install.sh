@@ -15,5 +15,7 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install Tiles 
 echo ------- 
+date >> log.log
+date
 
 cp -u maps_final/*.dds $client_directory/$tile_install_directory  2>> log.log

@@ -40,6 +40,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Export zone 
 echo ------- 
+date >> log.log
+date
 
 # Try to export from Max zone if any
 

@@ -23,6 +23,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Build zone : dependencies 
 echo ------- 
+date >> log.log
+date
 
 # list all the dependencies regions
 zone_regions=`cat ../../cfg/config.cfg | grep "zone_region" | sed -e 's/zone_region//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -45,6 +47,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Build zone : weld 
 echo ------- 
+date >> log.log
+date
 
 # List the zones to weld
 list_zone=`ls -1 zone_exported/*.zone`
@@ -69,6 +73,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Build zone : light 
 echo ------- 
+date >> log.log
+date
 
 # List the zones to light
 list_zone_welded=`ls -1 zone_welded/*.zonew`
@@ -96,6 +102,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Build zone : IgLight 
 echo ------- 
+date >> log.log
+date
 
 # List the zones to light their ig
 list_zone_lighted=`ls -1 zone_lighted/*.zonel`

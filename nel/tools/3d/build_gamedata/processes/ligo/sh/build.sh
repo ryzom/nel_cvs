@@ -84,6 +84,15 @@ fi
 # launch the exporter
 # *******************
 
+echo ------- >> log.log
+echo --- Generate ligo zone >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Generate ligo zone
+echo ------- 
+date >> log.log
+date
+
 echo Exporting
 $exec_timeout $land_exporter_timeout ../../bin/land_export.exe land_exporter.cfg
 
@@ -159,6 +168,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Build zone : dependencies 
 echo ------- 
+date >> log.log
+date
 
 # list all the dependencies regions
 zone_regions=`cat ../../cfg/config.cfg | grep "zone_region" | sed -e 's/zone_region//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -181,6 +192,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Build zone : weld 
 echo ------- 
+date >> log.log
+date
 
 # List the zones to weld
 list_zone=`ls -1 zone_exported/*.zone`

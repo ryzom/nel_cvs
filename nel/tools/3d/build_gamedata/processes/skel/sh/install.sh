@@ -15,5 +15,7 @@ echo ------- >> log.log
 echo ------- 
 echo --- Install skeleton 
 echo ------- 
+date >> log.log
+date
 
 cp -u skel/*.skel $client_directory/$skel_install_directory  2>> log.log

@@ -15,6 +15,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Export interface 
 echo ------- 
+date >> log.log
+date
 
 # For each interface directory
 for i in $interface_source_directories ; do

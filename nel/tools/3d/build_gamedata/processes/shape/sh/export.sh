@@ -33,6 +33,8 @@ echo ------- >> log.log
 echo ------- 
 echo --- Export shape 
 echo ------- 
+date >> log.log
+date
 
 # For each directoy
 

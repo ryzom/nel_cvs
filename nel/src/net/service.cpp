@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.162 2003/01/16 09:57:16 lecroart Exp $
+ * $Id: service.cpp,v 1.163 2003/01/16 14:15:45 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -429,7 +429,7 @@ static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint
 	msgin.serial (command);
 
 	nlinfo ("Executing command from network : '%s'", command.c_str());
-	ICommand::execute (command, commandLog);
+	ICommand::execute (command, *InfoLog);
 }
 
 
@@ -1120,10 +1120,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		{
 			CUnifiedNetwork::getInstance()->setServiceUpCallback ("AES", AESConnection, NULL);
 			CUnifiedNetwork::getInstance()->setServiceDownCallback ("AES", AESDisconnection, NULL);
-			CUnifiedNetwork::getInstance()->addCallbackArray (AESCallbackArray, sizeof(AESCallbackArray)/sizeof(AESCallbackArray[0]));
 			CUnifiedNetwork::getInstance()->addService ("AES", CInetAddress("localhost:49997"));
 		}
-
+		CUnifiedNetwork::getInstance()->addCallbackArray (AESCallbackArray, sizeof(AESCallbackArray)/sizeof(AESCallbackArray[0]));
+		
 
 		//
 		// Add callback array

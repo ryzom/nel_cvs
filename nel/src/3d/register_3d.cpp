@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.11 2001/04/11 17:02:49 berenguier Exp $
+ * $Id: register_3d.cpp,v 1.12 2001/05/08 13:35:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,9 +28,11 @@
 #include "nel/3d/texture_font.h"
 #include "nel/3d/texture_file.h"
 #include "nel/3d/texture_mem.h"
+#include "nel/3d/texture_grouped.h"
 #include "nel/3d/mesh.h"
 #include "nel/3d/skeleton_shape.h"
 #include "nel/3d/track_keyframer.h"
+#include "nel/3d/ps_util.h"
 
 
 namespace NL3D 
@@ -47,6 +49,7 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CTextureFile);
 		NLMISC_REGISTER_CLASS(CTextureMem);
 		NLMISC_REGISTER_CLASS(CTextureFont);
+		NLMISC_REGISTER_CLASS(CTextureGrouped);
 
 		// Track
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerTCBFloat);
@@ -78,6 +81,10 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CTrackDefaultString);
 		NLMISC_REGISTER_CLASS(CTrackDefaultBool);
 		NLMISC_REGISTER_CLASS(CTrackDefaultRGBA);
+		
+		// Particle system
+		CPSUtil::registerSerialParticleSystem() ;
+
 
 
 		// Don't register CTextureCroos,, since local, and not designed to be serialised.

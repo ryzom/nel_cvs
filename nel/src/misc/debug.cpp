@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.76 2003/08/07 13:09:29 cado Exp $
+ * $Id: debug.cpp,v 1.77 2003/08/19 11:53:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,6 +77,7 @@ using namespace std;
 
 // If true, debug system will trap crashs even if the appli is in debugger
 static const bool TrapCrashInDebugger = false;
+
 
 namespace NLMISC 
 {
@@ -851,7 +852,7 @@ void createDebug (const char *logPath, bool logInFile)
 #endif
 
 #ifdef NL_OS_WINDOWS
-		if (!IsDebuggerPresent ())
+//		if (!IsDebuggerPresent ())
 		{
 			// Use an environment variable to share the value among the EXE and its child DLLs
 			// (otherwise there would be one distinct bool by module, and the last

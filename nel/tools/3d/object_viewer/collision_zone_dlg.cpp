@@ -1,7 +1,7 @@
 /** \file collision_zone_dlg.cpp
  * a dialog to edit collision zone properties in a particle system
  *
- * $Id: collision_zone_dlg.cpp,v 1.2 2002/11/04 15:40:44 boucher Exp $
+ * $Id: collision_zone_dlg.cpp,v 1.3 2003/08/22 09:00:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,14 +27,17 @@
 #include "object_viewer.h"
 #include "collision_zone_dlg.h"
 #include "editable_range.h"
+#include "particle_dlg.h"
+#include "start_stop_particle_system.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CCollisionZoneDlg dialog
 
 // standard constructor
-CCollisionZoneDlg::CCollisionZoneDlg(NL3D::CPSZone *zone)
-	: _Zone(zone)
+CCollisionZoneDlg::CCollisionZoneDlg(NL3D::CPSZone *zone, CParticleDlg *particleDlg)
+	: _Zone(zone), _ParticleDlg(particleDlg)
 {
+	nlassert(particleDlg);
 	//{{AFX_DATA_INIT(CCollisionZoneDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
@@ -43,29 +46,29 @@ CCollisionZoneDlg::CCollisionZoneDlg(NL3D::CPSZone *zone)
 
 void CCollisionZoneDlg::init(sint x, sint y, CWnd *pParent)
 {
-	RECT r ;
-	Create(IDD_ZONE, pParent) ;
-	GetClientRect(&r) ;
-	r.top += y; r.bottom += y ;
-	r.right += x ; r.left += x ;
-	MoveWindow(&r) ;
+	RECT r;
+	Create(IDD_ZONE, pParent);
+	GetClientRect(&r);
+	r.top += y; r.bottom += y;
+	r.right += x; r.left += x;
+	MoveWindow(&r);
 
-	_BounceFactorDlg = new CEditableRangeFloat(std::string("BOUNCE_FACTOR"), 0.f, 1.f) ;
-	pushWnd(_BounceFactorDlg) ;
-	_BounceFactorWrapper.Z = _Zone ;
-	_BounceFactorDlg->setWrapper(&_BounceFactorWrapper) ;
-	_BounceFactorDlg->init(60, 35, this) ;
+	_BounceFactorDlg = new CEditableRangeFloat(std::string("BOUNCE_FACTOR"), 0.f, 1.f);
+	pushWnd(_BounceFactorDlg);
+	_BounceFactorWrapper.Z = _Zone;
+	_BounceFactorDlg->setWrapper(&_BounceFactorWrapper);
+	_BounceFactorDlg->init(60, 35, this);
 	
-	m_CollisionBehaviour.SetCurSel((uint) _Zone->getCollisionBehaviour() ) ;
+	m_CollisionBehaviour.SetCurSel((uint) _Zone->getCollisionBehaviour() );
 
 	if (_Zone->getCollisionBehaviour() != NL3D::CPSZone::bounce)
 	{
-		_BounceFactorDlg->EnableWindow(FALSE) ;	
+		_BounceFactorDlg->EnableWindow(FALSE);	
 	}
 
-	UpdateData() ;
+	UpdateData();
 
-	ShowWindow(SW_SHOW) ;
+	ShowWindow(SW_SHOW);
 }
 
 
@@ -89,7 +92,8 @@ END_MESSAGE_MAP()
 
 void CCollisionZoneDlg::OnSelchangeCollisionBehaviour() 
 {
-	UpdateData() ;
-	_Zone->setCollisionBehaviour( (NL3D::CPSZone::TCollisionBehaviour) m_CollisionBehaviour.GetCurSel()) ;
-	_BounceFactorDlg->EnableWindow(_Zone->getCollisionBehaviour() == NL3D::CPSZone::bounce ? TRUE : FALSE) ;	
+	UpdateData();
+	_Zone->setCollisionBehaviour( (NL3D::CPSZone::TCollisionBehaviour) m_CollisionBehaviour.GetCurSel());
+	_BounceFactorDlg->EnableWindow(_Zone->getCollisionBehaviour() == NL3D::CPSZone::bounce ? TRUE : FALSE);	
+	_ParticleDlg->StartStopDlg->resetAutoCount();
 }

@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.14 2003/04/14 15:30:58 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.15 2003/08/22 09:01:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "emitter_dlg.h"
 #include "direction_attr.h"
 #include "particle_tree_ctrl.h"
+#include "particle_dlg.h"
 
 #include "3d/particle_system.h"
 
@@ -37,12 +38,16 @@
 // CEmitterDlg dialog
 
 
-CEmitterDlg::CEmitterDlg(NL3D::CPSEmitter *emitter)
-	: _Emitter(emitter), _PeriodDlg(NULL), _GenNbDlg(NULL)
-	  , _StrenghtModulateDlg(NULL)
-	  , _SpeedInheritanceFactorDlg(NULL)
+CEmitterDlg::CEmitterDlg(NL3D::CPSEmitter *emitter, CParticleDlg *particleDlg)
+	  : _Emitter(emitter),
+	    _PeriodDlg(NULL),
+		_GenNbDlg(NULL),
+	    _StrenghtModulateDlg(NULL),
+	    _SpeedInheritanceFactorDlg(NULL),
+	    _ParticleDlg(particleDlg)
 {
 	nlassert(_Emitter);
+	nlassert(_ParticleDlg);
 	//{{AFX_DATA_INIT(CEmitterDlg)
 	m_UseSpeedBasis = FALSE;
 	m_ConvertSpeedVectorFromEmitterBasis = FALSE;
@@ -137,6 +142,7 @@ void CEmitterDlg::OnSelchangeEmittedType()
 		MessageBox("Can't perform operation : the system is flagged with 'No max nb steps' or uses the preset 'Spell FX', and thus, should have a finite duration. This operation create a loop in the system, and so is forbidden.", "Error", MB_ICONEXCLAMATION);
 		initEmittedType();
 	}	
+	_ParticleDlg->StartStopDlg->resetAutoCount();
 }
 
 void CEmitterDlg::OnSelchangeTypeOfEmission() 
@@ -144,11 +150,16 @@ void CEmitterDlg::OnSelchangeTypeOfEmission()
 	UpdateData();
 	if (!_Emitter->setEmissionType((NL3D::CPSEmitter::TEmissionType) m_EmissionTypeCtrl.GetCurSel()))
 	{
-		MessageBox(PS_NO_FINITE_DURATION_ARROR_MSG, "Error", MB_ICONEXCLAMATION);
+		CString mess;
+		mess.LoadString(IDS_PS_NO_FINITE_DURATION);
+		CString errorStr;
+		errorStr.LoadString(IDS_ERROR);
+		MessageBox((LPCTSTR) mess, (LPCTSTR) errorStr, MB_ICONEXCLAMATION);
 		m_EmissionTypeCtrl.SetCurSel((int) _Emitter->getEmissionType());		
 	}
 
 	updatePeriodDlg();
+	_ParticleDlg->StartStopDlg->resetAutoCount();
 }
 
 
@@ -178,6 +189,7 @@ BOOL CEmitterDlg::OnInitDialog()
 	_DelayedEmissionDlg = new CEditableRangeFloat("DELAYED_EMISSION", 0.f, 10.f);
 	_DelayedEmissionDlg->enableLowerBound(0.f, false);
 	_DelayedEmissionWrapper.E = _Emitter;
+	_DelayedEmissionWrapper.SSPS = _ParticleDlg->StartStopDlg;
 	_DelayedEmissionDlg->setWrapper(&_DelayedEmissionWrapper);
 	_DelayedEmissionDlg->init(r.left, r.top, this);
 
@@ -186,6 +198,7 @@ BOOL CEmitterDlg::OnInitDialog()
 	_MaxEmissionCountDlg = new CEditableRangeUInt("MAX_EMISSION_COUNT", 0, 100);	
 	_MaxEmissionCountDlg->enableUpperBound(256, false);
 	_MaxEmissionCountWrapper.E = _Emitter;
+	_MaxEmissionCountWrapper.SSPS = _ParticleDlg->StartStopDlg;
 	_MaxEmissionCountWrapper.HWnd = (HWND) (*this);
 	_MaxEmissionCountDlg->setWrapper(&_MaxEmissionCountWrapper);
 	_MaxEmissionCountDlg->init(r.left, r.top, this);
@@ -200,6 +213,7 @@ BOOL CEmitterDlg::OnInitDialog()
 
 	_PeriodDlg = new CAttribDlgFloat("EMISSION_PERIOD", 0.f, 2.f);	
 	_PeriodWrapper.E = _Emitter;
+	_PeriodWrapper.SSPS = _ParticleDlg->StartStopDlg;
 	_PeriodDlg->setWrapper(&_PeriodWrapper);
 	_PeriodDlg->setSchemeWrapper(&_PeriodWrapper);
 	HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_EMISSION_PERIOD));
@@ -210,6 +224,7 @@ BOOL CEmitterDlg::OnInitDialog()
 
 	_GenNbDlg = new CAttribDlgUInt("EMISSION_GEN_NB",1,11);
 	_GenNbWrapper.E = _Emitter;
+	_GenNbWrapper.SSPS = _ParticleDlg->StartStopDlg;
 	_GenNbDlg->setWrapper(&_GenNbWrapper);
 	_GenNbDlg->setSchemeWrapper(&_GenNbWrapper);
 	bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_EMISSION_QUANTITY));
@@ -315,7 +330,12 @@ void CEmitterDlg::CMaxEmissionCountWrapper::set(const uint32 &count)
 {
    if (!E->setMaxEmissionCount((uint8) count))
    {
-	   ::MessageBox(HWnd, PS_NO_FINITE_DURATION_ARROR_MSG, "Error", MB_ICONEXCLAMATION);
+	   CString mess;
+	   mess.LoadString(IDS_PS_NO_FINITE_DURATION);
+	   CString errorStr;
+	   errorStr.LoadString(IDS_ERROR);
+	   ::MessageBox(HWnd, (LPCTSTR) mess, (LPCTSTR) errorStr, MB_ICONEXCLAMATION);	   
 	   MaxEmissionCountDlg->updateValueFromReader();
    }
+   SSPS->resetAutoCount();
 }

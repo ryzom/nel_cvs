@@ -1,7 +1,7 @@
 /** \file collision_zone_dlg.h
  * a dialog to edit collision zone properties in a particle system
  *
- * $Id: collision_zone_dlg.h,v 1.4 2002/08/08 11:00:45 lecroart Exp $
+ * $Id: collision_zone_dlg.h,v 1.5 2003/08/22 09:00:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,8 @@ namespace NL3D
 
 #include "3d/ps_zone.h"
 
+class CParticleDlg;
+
 /////////////////////////////////////////////////////////////////////////////
 // CCollisionZoneDlg dialog
 
@@ -47,7 +49,7 @@ class CCollisionZoneDlg : public CDialog, public CDialogStack
 {
 // Construction
 public:
-	CCollisionZoneDlg(NL3D::CPSZone *zone) ;   // standard constructor
+	CCollisionZoneDlg(NL3D::CPSZone *zone, CParticleDlg *particleDlg) ;   // standard constructor
 
 	void init(sint x, sint y, CWnd *pParent) ;
 // Dialog Data
@@ -66,6 +68,7 @@ public:
 
 // Implementation
 protected:
+	CParticleDlg *_ParticleDlg;
 
 	// the collision zone being edited
 	NL3D::CPSZone *_Zone ;

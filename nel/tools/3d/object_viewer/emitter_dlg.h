@@ -1,7 +1,7 @@
 /** \file emitter_dlg.h
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.h,v 1.10 2003/04/14 15:31:25 vizerie Exp $
+ * $Id: emitter_dlg.h,v 1.11 2003/08/22 09:01:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 
 #include "3d/ps_particle.h"
 #include "3d/ps_emitter.h"
+#include "start_stop_particle_system.h"
 
 namespace NL3D
 {
@@ -48,7 +49,7 @@ class CEmitterDlg : public CDialog, public CDialogStack
 {
 // Construction
 public:
-	CEmitterDlg(NL3D::CPSEmitter *emitter);   // standard constructor
+	CEmitterDlg(NL3D::CPSEmitter *emitter, CParticleDlg *particleDlg);   // standard constructor
 
 	~CEmitterDlg();
 
@@ -85,6 +86,8 @@ protected:
 	CEditableRangeFloat  *_SpeedInheritanceFactorDlg;
 	CEditableRangeFloat  *_DelayedEmissionDlg;
 	CEditableRangeUInt   *_MaxEmissionCountDlg;
+	//
+	CParticleDlg		 *_ParticleDlg;
 
 	// Generated message map functions
 	//{{AFX_MSG(CEmitterDlg)
@@ -116,10 +119,11 @@ protected:
 			struct CPeriodWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat 
 			{
 			   NL3D::CPSEmitter *E;
+			   CStartStopParticleSystem *SSPS;
 			   float get(void) const { return E->getPeriod(); }
-			   void set(const float &v) { E->setPeriod(v); }
+			   void set(const float &v) { E->setPeriod(v); SSPS->resetAutoCount(); }
 			   scheme_type *getScheme(void) const { return E->getPeriodScheme(); }
-			   void setScheme(scheme_type *s) { E->setPeriodScheme(s); }
+			   void setScheme(scheme_type *s) { E->setPeriodScheme(s); SSPS->resetAutoCount(); }
 			} _PeriodWrapper;
 
 		//////////////////////////////////////////////
@@ -129,10 +133,11 @@ protected:
 			struct CGenNbWrapper : public IPSWrapperUInt, IPSSchemeWrapperUInt 
 			{
 			   NL3D::CPSEmitter *E;
+			   CStartStopParticleSystem *SSPS;
 			   uint32 get(void) const { return E->getGenNb(); }
-			   void set(const uint32 &v) { E->setGenNb(v); }
+			   void set(const uint32 &v) { E->setGenNb(v); SSPS->resetAutoCount(); }
 			   scheme_type *getScheme(void) const { return E->getGenNbScheme(); }
-			   void setScheme(scheme_type *s) { E->setGenNbScheme(s); }
+			   void setScheme(scheme_type *s) { E->setGenNbScheme(s); SSPS->resetAutoCount(); }
 			} _GenNbWrapper;
 
 		////////////////////////////////////////////////////////
@@ -189,8 +194,9 @@ protected:
 			struct CDelayedEmissionWrapper : public IPSWrapperFloat
 			{
 			   NL3D::CPSEmitter *E;
+			   CStartStopParticleSystem *SSPS;
 			   float get(void) const { return E->getEmitDelay(); }
-			   void set(const float &f) { E->setEmitDelay(f); }	
+			   void set(const float &f) { E->setEmitDelay(f); SSPS->resetAutoCount(); }	
 			} _DelayedEmissionWrapper;
 
 
@@ -202,6 +208,7 @@ protected:
 			{
 			   CEditableRangeUInt   *MaxEmissionCountDlg;
 			   NL3D::CPSEmitter *E;
+			   CStartStopParticleSystem *SSPS;
 			   HWND	HWnd;
 			   uint32 get(void) const { return E->getMaxEmissionCount(); }
 			   void set(const uint32 &count);

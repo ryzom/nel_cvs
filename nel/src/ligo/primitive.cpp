@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * TODO: File description
  *
- * $Id: primitive.cpp,v 1.49 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: primitive.cpp,v 1.50 2005/02/17 17:15:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -887,22 +887,34 @@ float CPrimZone::getSegmentDist(const NLMISC::CVector v, const NLMISC::CVector &
 {
 	// too point, compute distance to the segment.
 	CVector V = (p2-p1).normed();
-	float t = ((v-p1)*V)/(p2-p1).norm();
+	double	length= (p2-p1).norm();
 	float distance;
-	if (t < 0.0f)
+	
+	// case where p1==p2
+	if(length==0.0)
 	{
-		nearPos = p1;
+		nearPos= p1;
 		distance = (p1-v).norm();
 	}
-	else if (t > 1.0f)
-	{
-		nearPos = p2;
-		distance = (p2-v).norm();
-	}
+	// standard case
 	else
 	{
-		nearPos = p1 + t*(p2-p1);
-		distance = (v-nearPos).norm();
+		float t = (float)((double)((v-p1)*V)/length);
+		if (t < 0.0f)
+		{
+			nearPos = p1;
+			distance = (p1-v).norm();
+		}
+		else if (t > 1.0f)
+		{
+			nearPos = p2;
+			distance = (p2-v).norm();
+		}
+		else
+		{
+			nearPos = p1 + t*(p2-p1);
+			distance = (v-nearPos).norm();
+		}
 	}
 
 	return distance;

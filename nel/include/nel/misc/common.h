@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.79 2005/01/31 13:50:53 lecroart Exp $
+ * $Id: common.h,v 1.80 2005/02/17 17:11:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -581,6 +581,26 @@ bool openURL (const char *url);
 
 // Open a document
 bool openDoc (const char *document);
+
+// AntiBug method that return an epsilon if x==0, else x
+inline float	favoid0(float x)
+{
+	if(x==0)	return 0.00001f;
+	return x;
+}
+inline double	davoid0(double x)
+{
+	if(x==0)	return 0.00001;
+	return x;
+}
+// AntiBug method that return 1 if x==0, else x
+template<class T>
+inline T		iavoid0(T x)
+{
+	if(x==0)	return 1;
+	return x;
+}
+
 
 } // NLMISC
 

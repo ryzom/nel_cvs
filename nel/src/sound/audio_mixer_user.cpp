@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.84 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: audio_mixer_user.cpp,v 1.85 2005/02/17 17:15:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -240,6 +240,7 @@ void CAudioMixerUser::setLowWaterMark(uint value)
 
 // ******************************************************************
 
+
 void				CAudioMixerUser::writeProfile(std::string& out)
 {
 	// compute number of muted source
@@ -279,8 +280,8 @@ void				CAudioMixerUser::writeProfile(std::string& out)
 	out += "\tMidPri:     " + toString ((int)_ReserveUsage[MidPri]) + " / " + toString ((int)_PriorityReserve[MidPri]) + " \n";
 	out += "\tLowPri:     " + toString ((int)_ReserveUsage[LowPri]) + " / " + toString ((int)_PriorityReserve[LowPri]) + " \n";
 	out += "\tFreeTracks: " + toString (_FreeTracks.size()) + " / " + toString (_NbTracks) + " \n";
-	out += "\tAverage update time: " + toString (1000.0 * _UpdateTime / _UpdateCount) + " msec\n";
-	out += "\tAverage create time: " + toString (1000.0 * _CreateTime / _CreateCount) + " msec\n";
+	out += "\tAverage update time: " + toString (1000.0 * _UpdateTime / iavoid0(_UpdateCount)) + " msec\n";
+	out += "\tAverage create time: " + toString (1000.0 * _CreateTime / iavoid0(_CreateCount)) + " msec\n";
 	out += "\tEstimated CPU: " + toString ((100.0 * 1000.0 * (_UpdateTime + _CreateTime) / curTime())) + "%%\n";
 
 	if (_SoundDriver)

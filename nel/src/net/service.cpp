@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.80 2001/09/05 08:54:23 lecroart Exp $
+ * $Id: service.cpp,v 1.81 2001/09/10 13:44:36 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -334,7 +334,6 @@ sint IService::main (void *wd)
 {
 	bool userInitCalled = false;
 	bool resyncEvenly = false;
-
 
 	try
 	{
@@ -820,6 +819,11 @@ sint IService::main (void *wd)
 		// so we don't have to to anything
 		setStatus (EXIT_FAILURE);
 	}
+	catch ( uint ) // SEH exceptions
+	{
+		ErrorLog->displayNL( "System exception" );
+	}
+
 #ifdef NL_RELEASE
 /*	// in release mode, we catch everything to handle clean release.
 	catch (Exception &e)
@@ -864,6 +868,7 @@ sint IService::main (void *wd)
 		// so we don't have to to anything
 		setStatus (EXIT_FAILURE);
 	}
+
 #ifdef NL_RELEASE
 /*	// in release mode, we catch everything to handle clean release.
 	catch (Exception &e)

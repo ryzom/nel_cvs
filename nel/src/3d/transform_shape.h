@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.5 2001/07/05 09:38:49 besson Exp $
+ * $Id: transform_shape.h,v 1.6 2001/08/16 17:16:02 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,7 @@ public:
 	CSmartPtr<IShape>		Shape;
 
 
-	/** Get the untransformed AABBox of the mesh. NULL (gtSize()==0) if no mesh.
+	/** Get the untransformed AABBox of the mesh. NULL (gtSize()==0) if no mesh.	 
 	 */
 	void					getShapeAABBox(NLMISC::CAABBox &bbox) const;
 

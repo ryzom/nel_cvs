@@ -25,7 +25,7 @@ static char THIS_FILE[]=__FILE__;
 CCounter::CCounter(const CString &name)
 {
 	m_sName = name;
-	m_sMode = "loop";
+	m_sMode = "Loop";
 	m_sWay = "up";
 
 	m_nUpperLimit = 0;
@@ -47,15 +47,28 @@ void cCounterToCLogicCounter( CCounter& counter, CLogicCounter& logicCounter )
 	logicCounter.setName( string((LPCSTR)counter.m_sName) );
 	
 	// running mode
-	if( counter.m_sMode == "shuttle" )
+	if( counter.m_sMode == "Shuttle" )
+	{
 		logicCounter.Mode.setValue( CLogicCounter::SHUTTLE );
-	if( counter.m_sMode == "loop" )
+	}
+	else
+	if( counter.m_sMode == "Loop" )
+	{
 		logicCounter.Mode.setValue( CLogicCounter::LOOP );
-	if( counter.m_sMode == "stop_on_arrival" )
+	}
+	else
+	if( counter.m_sMode == "Stop on arrival" )
+	{
 		logicCounter.Mode.setValue( CLogicCounter::STOP_AT_LIMIT );
+	}
+	else
+	{
+		// default value
+		logicCounter.Mode.setValue( CLogicCounter::STOP_AT_LIMIT );
+	}
 	
 	// running state
-	// TODO
+	logicCounter.Control.setValue( CLogicCounter::RUN );
 
 	/// lower limit for counter
 	logicCounter.LowLimit.setValue( counter.m_nLowerLimit );
@@ -80,9 +93,9 @@ void cLogicCounterToCCounter( CLogicCounter& logicCounter, CCounter& counter )
 	// running mode
 	switch( logicCounter.Mode.getValue() )
 	{
-		case CLogicCounter::SHUTTLE			: counter.m_sMode = "shuttle";			break;
-		case CLogicCounter::LOOP			: counter.m_sMode = "loop";				break;
-		case CLogicCounter::STOP_AT_LIMIT	: counter.m_sMode = "stop_on_arrival";	break;
+		case CLogicCounter::SHUTTLE			: counter.m_sMode = "Shuttle";			break;
+		case CLogicCounter::LOOP			: counter.m_sMode = "Loop";				break;
+		case CLogicCounter::STOP_AT_LIMIT	: counter.m_sMode = "Stop on arrival";	break;
 	}
 
 	// lower limit for counter

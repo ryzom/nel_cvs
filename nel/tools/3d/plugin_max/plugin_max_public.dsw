@@ -33,6 +33,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "georges"=..\..\..\src\georges.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "ig_lighter_lib"=..\ig_lighter_lib\ig_lighter_lib.dsp - Package Owner=<4>
 
 Package=<5>
@@ -220,6 +232,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name sound
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name georges
     End Project Dependency
 }}}
 

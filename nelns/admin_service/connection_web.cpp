@@ -1,7 +1,7 @@
 /** \file connection_web.cpp
  * 
  *
- * $Id: connection_web.cpp,v 1.1 2002/10/24 08:18:22 lecroart Exp $
+ * $Id: connection_web.cpp,v 1.2 2002/11/08 13:29:58 lecroart Exp $
  *
  */
 
@@ -69,7 +69,6 @@ void cbGetRequest (CMemStream &msgin, TSockId host)
 	msgin.serial (rawvarpath);
 	addRequest (rawvarpath, host);
 }
-
 
 typedef void (*WebCallback)(CMemStream &msgin, TSockId host);
 

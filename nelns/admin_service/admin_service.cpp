@@ -3,7 +3,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.16 2002/10/24 08:17:42 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.17 2002/11/08 13:29:58 lecroart Exp $
  *
  */
 
@@ -70,7 +70,7 @@ using namespace NLNET;
 
 struct CRequest
 {
-	CRequest (uint32 id, TSockId from) : Id(id), NbWaiting(0), NbReceived(0), NbRow(0), From(from) { }
+	CRequest (uint32 id, TSockId from) : Id(id), NbWaiting(0), NbReceived(0), NbRow(0), From(from), NbLines(1) { }
 
 	uint32			Id;
 	uint			NbWaiting;
@@ -78,7 +78,8 @@ struct CRequest
 	TSockId			From;
 	
 	uint32			NbRow;
-	vector<vector<string> > Array;	// it's the 2 dimensionnal array that will be send to the php
+	uint32			NbLines;
+	vector<vector<string> > Array;	// it's the 2 dimensional array that will be send to the php
 
 	uint32 getVariable(const string &variable)
 	{
@@ -88,21 +89,28 @@ struct CRequest
 
 		// need to add the variable
 		vector<string> NewRow;
-		NewRow.resize (NbWaiting+1);
+		NewRow.resize (NbLines);
 		NewRow[0] = variable;
 		Array.push_back (NewRow);
 		return NbRow++;
 	}
 
+	void addLine ()
+	{
+		for (uint32 i = 0; i < NbRow; i++)
+			Array[i].push_back("");
+
+		NbLines++;
+	}
+
 	void display ()
 	{
-		nlinfo ("Display answer array for request %d: %d row %d lines", Id, NbRow, NbWaiting);
-		for (uint i = 0; i < NbWaiting+1; i++)
+		nlinfo ("Display answer array for request %d: %d row %d lines", Id, NbRow, NbLines);
+		for (uint i = 0; i < NbLines; i++)
 		{
 			for (uint j = 0; j < NbRow; j++)
 			{
 				nlassert (Array.size () == NbRow);
-				nlassert (Array[j].size () == NbWaiting+1);
 				InfoLog->displayRaw ("%-10s", Array[j][i].c_str());
 			}
 			InfoLog->displayRawNL ("");
@@ -184,7 +192,7 @@ TAdminExecutorServices AdminExecutorServices;
 
 MYSQL *DatabaseConnection = NULL;
 
-string DatabaseHost = "net1";
+string DatabaseHost = "net2";
 string DatabaseLogin = "root";
 string DatabasePassword = "";
 string DatabaseName = "nel_tool";
@@ -197,7 +205,7 @@ vector<CRequest> Requests;
 
 uint32 newRequest (TSockId from)
 {
-	static uint32 NextId = 0;
+	static uint32 NextId = 5461231;
 
 	Requests.push_back (CRequest(NextId, from));
 
@@ -217,6 +225,18 @@ void addRequestWaitingNb (uint32 request)
 	nlstop;
 }
 
+void subRequestWaitingNb (uint32 request)
+{
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == request)
+		{
+			Requests[i].NbWaiting--;
+			return;
+		}
+	}
+	nlstop;
+}
 
 void addRequestReceived (uint32 rid)
 {
@@ -236,13 +256,14 @@ void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector
 {
 	for (uint i = 0 ; i < Requests.size (); i++)
 	{
+		Requests[i].addLine ();
 		if (Requests[i].Id == rid)
 		{
 			nlassert (variables.size() == values.size ())
 			for (uint j = 0; j < variables.size(); j++)
 			{
 				uint32 pos = Requests[i].getVariable (variables[j]);
-				Requests[i].Array[pos][Requests[i].NbReceived+1] = values[j];
+				Requests[i].Array[pos][Requests[i].NbLines-1] = values[j];
 			}
 			return;
 		}
@@ -271,12 +292,11 @@ void cleanRequest ()
 			// the request is over, send to the php
 			string str = toString(Requests[i].NbRow) + " ";
 		
-			for (uint k = 0; k < Requests[i].NbWaiting+1; k++)
+			for (uint k = 0; k < Requests[i].NbLines; k++)
 			{
 				for (uint j = 0; j < Requests[i].NbRow; j++)
 				{
 					nlassert (Requests[i].Array.size () == Requests[i].NbRow);
-					nlassert (Requests[i].Array[j].size () == Requests[i].NbWaiting+1);
 					if (Requests[i].Array[j][k].empty ())
 						str += "??? ";
 					else
@@ -392,6 +412,7 @@ AESIT findAES (const string &name, bool asrt = true)
 
 	if (asrt)
 		nlassert (aesit != AdminExecutorServices.end());
+	
 	return aesit;
 }
 
@@ -817,8 +838,26 @@ void cbAESConnection /*(const string &serviceName, TSockId from, void *arg)*/(co
 
 	AdminExecutorServices.push_back (CAdminExecutorService(row[0], sid));
 
-	nlinfo ("%s-%hu, shard name %s, connected and added in the list", serviceName.c_str(), sid, row[0]);
+	string server = row[0];
+
+	nlinfo ("%s-%hu, server name %s, connected and added in the list", serviceName.c_str(), sid, server.c_str());
 	
+	// send him services that should run on this server
+
+	vector<string> registeredServices;
+	row = sqlQuery ("select name from service where server='%s'", server.c_str());
+
+	while (row != NULL)
+	{
+		string service = row[0];
+		registeredServices.push_back (service);
+		row = sqlNextRow ();
+	}
+
+	CMessage msgout("REGISTERED_SERVICES");
+	msgout.serialCont (registeredServices);
+	CUnifiedNetwork::getInstance ()->send (sid, msgout);
+
 /*
 	// broadcast the message that an admin exec is connected to all admin client
 	CMessage msgout (CNetManager::getSIDA ("AS"), "AESC");
@@ -855,7 +894,7 @@ void cbAESDisconnection /*(const string &serviceName, TSockId from, void *arg)*/
 
 	for(uint i = 0; i < (*aesit).WaitingRequestId.size (); i++)
 	{
-		Requests[(*aesit).WaitingRequestId[i]].NbWaiting--;
+		subRequestWaitingNb ((*aesit).WaitingRequestId[i]);
 	}
 
 	AdminExecutorServices.erase (aesit);
@@ -930,13 +969,28 @@ static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 
 	AESIT aesit = findAES (sid);
 
-	remove ((*aesit).WaitingRequestId.begin (), (*aesit).WaitingRequestId.end (), rid);
+	for (uint i = 0; i < (*aesit).WaitingRequestId.size();)
+	{
+		if ((*aesit).WaitingRequestId[i] == rid)
+		{
+			(*aesit).WaitingRequestId.erase ((*aesit).WaitingRequestId.begin ()+i);
+		}
+		else
+		{
+			i++;
+		}
+	}
 
 	MYSQL_ROW row = sqlQuery ("select distinct shard from service where server='%s'", (*aesit).Name.c_str ());
 
+	// shard name is find using the "service" table, so, if there s no shard name in it, it returns ???
+	string shardName;
+	if (row != NULL) shardName = row[0];
+	else shardName = "???";
+
 	vector<string> vara, vala;
 
-	while (msgin.getPos() < msgin.length())
+	while ((uint32)msgin.getPos() < msgin.length())
 	{
 		vara.clear ();
 		vala.clear ();
@@ -945,7 +999,7 @@ static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 		vara.push_back ("shard");
 		vara.push_back ("server");
 
-		vala.push_back (row[0]);
+		vala.push_back (shardName);
 		vala.push_back ((*aesit).Name);
 
 		uint32 i, nb;
@@ -1273,7 +1327,7 @@ void addRequest (const string &rawvarpath, TSockId from)
 
 			if (shard == "*" && server == "*")
 			{
-				// send to everybody I can
+				// Send the request to all online servers of all online shards
 
 				AESIT aesit;
 				for (aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
@@ -1290,6 +1344,8 @@ void addRequest (const string &rawvarpath, TSockId from)
 			}
 			else if (server == "*")
 			{
+				// Send the request to all online server of a specific shard
+
 				MYSQL_ROW row = sqlQuery ("select distinct server from service where shard='%s'", shard.c_str ());
 
 				while (row != NULL)
@@ -1313,7 +1369,7 @@ void addRequest (const string &rawvarpath, TSockId from)
 			}
 			else
 			{
-				AESIT aesit = findAES (server);
+				AESIT aesit = findAES (server, false);
 
 				if (aesit != AdminExecutorServices.end())
 				{
@@ -1334,20 +1390,16 @@ void addRequest (const string &rawvarpath, TSockId from)
 		}
 	}
 
+/*	the send will be done automatically by cleanRequest()
+
+  
 	if (emptyRequest(rid))
 	{
 		// send an empty string to say to php that there's nothing
 		string str;
 		sendString (from, str);
-	}
+	}*/
 }
-
-
-
-
-
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////

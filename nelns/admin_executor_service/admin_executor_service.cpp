@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.17 2002/10/24 08:17:28 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.18 2002/11/08 13:29:51 lecroart Exp $
  *
  */
 
@@ -70,6 +70,13 @@ using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
 
+
+//
+namespace NLNET
+{
+	void serviceGetView (uint32 rid, const string &rawvarpath, vector<string> &vara, vector<string> &vala);
+}
+
 //
 // Structures
 //
@@ -86,20 +93,23 @@ struct CRequest
 	uint32			NbReceived;
 	uint16			SId;
 
-	uint32			Time;	// when the request was ask (timeout in 4 secondes)
+	uint32			Time;	// when the request was ask
 
 	vector<pair<vector<string>, vector<string> > > Answers;
 };
 
 struct CService
 {
-	CService() : Ready(false) { }
+	CService() { reset (); }
 
 	string			AliasName;		/// alias of the service used in the AES and AS to find him (unique per AES)
+									/// If alias name is not empty, it means that the service was registered
+
 	string			ShortName;		/// name of the service in short format ("NS" for example)
 	string			LongName;		/// name of the service in long format ("naming_service")
-	uint16			ServiceId;
+	uint16			ServiceId;		/// service id of the service.
 	bool			Ready;			/// true if the service is ready
+	bool			Connected;		/// true if the service is connected to the AES
 	vector<CSerialCommand>	Commands;
 
 	vector<uint32>	WaitingRequestId;		/// contains all request that the server hasn't reply yet
@@ -108,16 +118,17 @@ struct CService
 	{
 		ShortName = shortName;
 		ServiceId = serviceId;
+		Connected = true;
 	}
 
 	void reset ()
 	{
-		ServiceId = 0;
 		AliasName = "";
 		ShortName = "";
 		LongName = "";
 		ServiceId = 0;
 		Ready = false;
+		Connected = false;
 		Commands.clear ();
 	}
 };
@@ -131,9 +142,15 @@ typedef vector<CService>::iterator SIT;
 
 vector<CRequest> Requests;
 
+vector<string> RegisteredServices;
+
+const uint32 RequestTimeout = 5;
+
 //
 // Request functions
 //
+
+
 
 void addRequestWaitingNb (uint32 request)
 {
@@ -142,6 +159,21 @@ void addRequestWaitingNb (uint32 request)
 		if (Requests[i].Id == request)
 		{
 			Requests[i].NbWaiting++;
+			// if we add a waiting, reset the timer
+			Requests[i].Time = CTime::getSecondsSince1970 ();
+			return;
+		}
+	}
+	nlstop;
+}
+
+void subRequestWaitingNb (uint32 request)
+{
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == request)
+		{
+			Requests[i].NbWaiting--;
 			return;
 		}
 	}
@@ -150,6 +182,7 @@ void addRequestWaitingNb (uint32 request)
 
 void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector<string> &values)
 {
+	nlassert (variables.size() == values.size());
 	for (uint i = 0 ; i < Requests.size (); i++)
 	{
 		if (Requests[i].Id == rid)
@@ -183,11 +216,31 @@ void cleanRequest ()
 
 	for (uint i = 0 ; i < Requests.size ();)
 	{
-		// timeout after 4 seconds
-		if (currentTime >= Requests[i].Time+4)
+		// timeout
+		if (currentTime >= Requests[i].Time+RequestTimeout)
 		{
 			nlwarning ("Request %d timeouted, only %d on %d services has replied", Requests[i].Id, Requests[i].NbReceived, Requests[i].NbWaiting);
-			Requests[i].NbWaiting = Requests[i].NbReceived;
+
+			vector<string> vara;
+			vector<string> vala;
+			
+			vara.push_back ("service");
+			for (uint j = 0; j < Services.size(); j++)
+			{
+				for (uint k = 0; k < Services[j].WaitingRequestId.size(); k++)
+				{
+					if(Services[j].WaitingRequestId[k] == Requests[i].Id)
+					{
+						// this services didn't answer
+						string s = Services[j].AliasName+"<TIMEOUT>";
+						vala.clear ();
+						vala.push_back (s);
+						addRequestAnswer (Requests[i].Id, vara, vala);
+						break;
+					}
+				}
+			}
+			nlassert (Requests[i].NbWaiting == Requests[i].NbReceived);
 		}
 
 		if (Requests[i].NbWaiting <= Requests[i].NbReceived)
@@ -204,7 +257,24 @@ void cleanRequest ()
 			}
 
 			if (Requests[i].SId == 0)
-				nlinfo ("Receive a answer for the fake request %d", Requests[i].Id);
+			{
+				nlinfo ("Receive an answer for the fake request %d with %d answers", Requests[i].Id, Requests[i].Answers.size ());
+				for (uint j = 0; j < Requests[i].Answers.size (); j++)
+				{
+					uint k;
+					for (k = 0; k < Requests[i].Answers[j].first.size(); k++)
+					{
+						InfoLog->displayRaw ("%-10s", Requests[i].Answers[j].first[k].c_str());
+					}
+					InfoLog->displayRawNL("");
+					for (k = 0; k < Requests[i].Answers[j].second.size(); k++)
+					{
+						InfoLog->displayRaw ("%-10s", Requests[i].Answers[j].second[k].c_str());
+					}
+					InfoLog->displayRawNL("");
+					InfoLog->displayRawNL("-------------------------");
+				}	
+			}
 			else
 				CUnifiedNetwork::getInstance ()->send (Requests[i].SId, msgout);
 
@@ -227,6 +297,25 @@ void cleanRequest ()
 // Functions
 //
 
+SIT findService (const string &aliasName)
+{
+	SIT sit;
+	for (sit = Services.begin(); sit != Services.end(); sit++)
+	{
+		if ((*sit).AliasName == aliasName) break;
+	}
+	return sit;
+}
+
+bool isRegisteredService (const string &aliasName)
+{
+	for (uint i = 0; i != RegisteredServices.size(); i++)
+		if (RegisteredServices[i] == aliasName)
+			return true;
+	return false;
+}
+
+
 SIT findService (uint32 sid, bool asrt = true)
 {
 	SIT sit;
@@ -238,6 +327,84 @@ SIT findService (uint32 sid, bool asrt = true)
 		nlassert (sit != Services.end());
 	return sit;
 }
+
+
+
+
+
+
+class CExecuteServiceThread : public IRunnable
+{
+public:
+	string ServiceCommand;
+	
+	CExecuteServiceThread (string serviceCommand) :
+	ServiceCommand(serviceCommand) { }
+	
+	void run ()
+	{
+		nlinfo ("start service '%s'", ServiceCommand.c_str());
+		
+#ifdef NL_OS_WINDOWS
+		WinExec (ServiceCommand.c_str(), SW_MINIMIZE/*SW_SHOWNORMAL*/);
+#else
+		system (ServiceCommand.c_str());
+#endif
+		
+		nlinfo ("end service '%s'", ServiceCommand.c_str());
+	}
+};
+
+
+bool startService (const string &serviceAlias)
+{
+	string command, path, arg;
+
+	nlinfo ("Starting the service alias '%s'", serviceAlias.c_str());
+
+	try
+	{
+		path = IService::getInstance()->ConfigFile.getVar(serviceAlias).asString(0);
+		command = IService::getInstance()->ConfigFile.getVar(serviceAlias).asString(1);
+	}
+	catch(EConfigFile &e)
+	{
+		nlwarning ("Error in serviceAlias '%s' in config file (%s)", serviceAlias.c_str(), e.what());
+		return false;
+	}
+
+	// give the service alias to the service to forward it back when it will connected to the aes.
+	arg = " -N";
+	arg += serviceAlias;
+
+	// set the path for the config file
+	arg += " -C";
+	arg += path;
+
+	// set the path for log
+	arg += " -L";
+	arg += path;
+
+	// set the path for running
+	arg += " -A";
+	arg += path;
+
+#ifdef NL_OS_WINDOWS
+	arg += " >NUL:";
+#else
+	arg += " >/dev/null";
+#endif
+
+	return launchProgram (command, arg);
+}
+
+
+
+
+
+
+
+
 
 void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 {
@@ -259,9 +426,10 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 
 		if (service == "*")
 		{
+			// add services that I manage
 			for (uint j = 0; j < Services.size (); j++)
 			{
-				if (Services[j].ServiceId != 0)
+				if (Services[j].Connected)
 				{
 					addRequestWaitingNb (rid);
 
@@ -273,73 +441,132 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 					nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), Services[j].ShortName.c_str(), Services[j].ServiceId);
 				}
 			}
+
+			// add myself
+			addRequestWaitingNb (rid);
+			
+			vector<string> vara;
+			vector<string> vala;
+			
+			serviceGetView (rid, varpath.Destination[i].second, vara, vala);
+			
+			addRequestAnswer (rid, vara, vala);
+			nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
+		}
+		else if (service == "#")
+		{
+			uint j;
+			// add registered services
+			for (j = 0; j < RegisteredServices.size (); j++)
+			{
+				SIT sit = findService (RegisteredServices[j]);
+				if (sit == Services.end())
+				{
+					// we fake a return value because we want all services, even if they are offline
+					addRequestWaitingNb (rid);
+
+					CVarPath subvarpath(varpath.Destination[i].second);
+
+					vector<string> vara;
+					vector<string> vala;
+					
+					// add default row
+					vara.push_back ("service");
+					vala.push_back (RegisteredServices[j]);
+					
+					for (uint k = 0; k < subvarpath.Destination.size (); k++)
+					{
+						uint pos = subvarpath.Destination[k].first.find("=");
+						if (pos != string::npos)
+							vara.push_back(subvarpath.Destination[k].first.substr(0, pos));
+						else
+							vara.push_back(subvarpath.Destination[k].first);
+
+						string val = "???";
+						// handle special case of non running service
+						if (subvarpath.Destination[k].first == "Running")
+							val = "0";
+						else if (subvarpath.Destination[k].first == "Running=1")
+						{
+							// we want to start the service
+							if (startService (RegisteredServices[j]))
+								val = "2";
+							else
+								val = "3";
+						}
+
+						vala.push_back (val);
+					}
+
+					addRequestAnswer (rid, vara, vala);
+					nlinfo ("Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), RegisteredServices[j].c_str());
+				}
+				else
+				{
+					// send the request to the registered online service
+					addRequestWaitingNb (rid);
+
+					(*sit).WaitingRequestId.push_back (rid);
+					CMessage msgout("GET_VIEW");
+					msgout.serial(rid);
+					msgout.serial (varpath.Destination[i].second);
+					CUnifiedNetwork::getInstance ()->send ((*sit).ServiceId, msgout);
+					nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), (*sit).ShortName.c_str(), (*sit).ServiceId);
+				}
+			}
+
+			// add services that are online but not registered
+			for (j = 0; j < Services.size (); j++)
+			{
+				if (Services[j].Connected && Services[j].AliasName.empty())
+				{
+					addRequestWaitingNb (rid);
+					
+					Services[j].WaitingRequestId.push_back (rid);
+					CMessage msgout("GET_VIEW");
+					msgout.serial(rid);
+					msgout.serial (varpath.Destination[i].second);
+					CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
+					nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), Services[j].ShortName.c_str(), Services[j].ServiceId);
+				}
+			}
+
+			// add myself
+			addRequestWaitingNb (rid);
+
+			vector<string> vara;
+			vector<string> vala;
+
+			serviceGetView (rid, varpath.Destination[i].second, vara, vala);
+
+			addRequestAnswer (rid, vara, vala);
+			nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), "AES");
 		}
 		else
 		{
 			if (service.find ("AES") != string::npos)
 			{
-/*				// special case, the service is me!
-
-				CVarPath subvarpath(varpath.Destination[i].second);
-
-				CMessage msgout("VIEW");
-				msgout.serial(rid);
-
+				// it's for me, I don't send message to myself so i manage it right now
+				addRequestWaitingNb (rid);
+				
 				vector<string> vara;
 				vector<string> vala;
+				
+				serviceGetView (rid, varpath.Destination[i].second, vara, vala);
 
-				// add default row
-				vara.push_back ("service");
-				vala.push_back ("AES");
-
-				for (uint j = 0; j < subvarpath.Destination.size (); j++)
-				{
-					mdDisplayVars.clear ();
-					ICommand::execute(subvarpath.Destination[j].first, logDisplayVars, true);
-					const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
-					if (strs.size()>0)
-					{
-						string s_ = strs[0];
-
-						uint32 pos = strs[0].find("=");
-						if(pos != string::npos && pos + 2 < strs[0].size())
-						{
-							uint32 pos2 = string::npos;
-							if(strs[0][strs[0].size()-1] == '\n')
-								pos2 = strs[0].size() - pos - 2 - 1;
-
-							str = strs[0].substr (pos+2, pos2);
-						}
-						else
-						{
-							str = "???";
-						}
-					}
-					else
-					{
-						str = "???";
-					}
-					mdDisplayVars.unlockStrings();
-
-					vara.push_back(subvarpath.Destination[j].first);
-					vala.push_back (str);
-					nlinfo ("Add to result view '%s' = '%s'", subvarpath.Destination[j].first.c_str(), str.c_str());
-				}
-
-				msgout.serial (vara);
-				msgout.serial (vala);
-
-				CUnifiedNetwork::getInstance ()->send (sid, msgout);
-				nlinfo ("Sent result view to service '%s-%hu'", serviceName.c_str(), sid);*/
+				addRequestAnswer (rid, vara, vala);
+				nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
 			}
 			else
 			{
+/*				// send the request to the good service
 				uint pos = service.find ("-");
 				if (pos == string::npos)
 				{
+					bool found = false;
 					for (uint j = 0; j < Services.size (); j++)
 					{
-						if (Services[j].ServiceId != 0 && Services[j].ShortName == service)
+						if (Services[j].Connected && Services[j].ShortName == service)
 						{
 							addRequestWaitingNb (rid);
 
@@ -349,32 +576,81 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 							msgout.serial (varpath.Destination[i].second);
 							CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
 							nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), Services[j].ShortName.c_str(), Services[j].ServiceId);
+							found = true;
 						}
 					}
 				}
 				else
 				{
-					SIT sit = findService (atoi(service.substr(pos+1).c_str()), false);
-					if (sit == Services.end ())
+*/	
+				//SIT sit = findService (atoi(service.substr(pos+1).c_str()), false);
+				SIT sit = findService (service);
+				if (sit == Services.end ())
+				{
+					if (!isRegisteredService(service))
 					{
-						nlwarning ("Service %s is not found in the list", service.c_str ());
+						nlwarning ("Service %s is not online and not found in registered service list", service.c_str ());
 					}
 					else
 					{
 						addRequestWaitingNb (rid);
 						
-						(*sit).WaitingRequestId.push_back (rid);
-						CMessage msgout("GET_VIEW");
-						msgout.serial(rid);
-						msgout.serial (varpath.Destination[i].second);
-						CUnifiedNetwork::getInstance ()->send ((*sit).ServiceId, msgout);
-						nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), (*sit).ShortName.c_str(), (*sit).ServiceId);
+						CVarPath subvarpath(varpath.Destination[i].second);
+						
+						vector<string> vara;
+						vector<string> vala;
+						
+						// add default row
+						vara.push_back ("service");
+						vala.push_back (service);
+						
+						for (uint k = 0; k < subvarpath.Destination.size (); k++)
+						{
+							uint pos = subvarpath.Destination[k].first.find("=");
+							if (pos != string::npos)
+								vara.push_back(subvarpath.Destination[k].first.substr(0, pos));
+							else
+								vara.push_back(subvarpath.Destination[k].first);
+							
+							string val = "???";
+							// handle special case of non running service
+							if (subvarpath.Destination[k].first == "Running")
+								val = "0";
+							else if (subvarpath.Destination[k].first == "Running=1")
+							{
+								// we want to start the service
+								if (startService (service))
+									val = "2";
+								else
+									val = "3";
+							}
+							
+							vala.push_back (val);
+						}
+						
+						addRequestAnswer (rid, vara, vala);
+						nlinfo ("Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
 					}
 				}
+				else
+				{
+					addRequestWaitingNb (rid);
+					
+					(*sit).WaitingRequestId.push_back (rid);
+					CMessage msgout("GET_VIEW");
+					msgout.serial(rid);
+					msgout.serial (varpath.Destination[i].second);
+					CUnifiedNetwork::getInstance ()->send ((*sit).ServiceId, msgout);
+					nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), (*sit).ShortName.c_str(), (*sit).ServiceId);
+				}
+//				}
 			}			
 		}
 	}
 
+/*	the send will be done automatically by cleanRequest()
+	
+	  
 	if (emptyRequest(rid))
 	{
 		// send an empty string to say to php that there's nothing
@@ -382,6 +658,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 		msgout.serial(rid);
 		CUnifiedNetwork::getInstance ()->send (sid, msgout);
 	}
+	*/
 }
 
 
@@ -405,28 +682,6 @@ public:
 		system (Command.c_str());
 		
 		nlinfo ("end executing: %s", Command.c_str());
-	}
-};
-
-class CExecuteServiceThread : public IRunnable
-{
-public:
-	string ServiceCommand;
-
-	CExecuteServiceThread (string serviceCommand) :
-		ServiceCommand(serviceCommand) { }
-
-	void run ()
-	{
-		nlinfo ("start service '%s'", ServiceCommand.c_str());
-		
-#ifdef NL_OS_WINDOWS
-		WinExec (ServiceCommand.c_str(), SW_MINIMIZE/*SW_SHOWNORMAL*/);
-#else
-		system (ServiceCommand.c_str());
-#endif
-
-		nlinfo ("end service '%s'", ServiceCommand.c_str());
 	}
 };
 
@@ -531,20 +786,23 @@ void executeCommand (string command, TSockId from, CCallbackNetBase &netbase)
 
 static void cbServiceIdentification (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
-/*	if (sid >= Services.size ())
+	if (sid >= Services.size ())
 	{
 		nlwarning ("Identification of an unknown service %s-%hu", serviceName.c_str(), sid);
 		return;
 	}
 
-	if (Services[sid].Id == 0)
+	if (!Services[sid].Connected)
 	{
 		nlwarning ("Identification of an unknown service %s-%hu", serviceName.c_str(), sid);
 		return;
 	}
 
-	nlinfo ("*:*:%d is identified to be '%s' '%s-%hu' '%s'", Services[sid].Id, Services[sid].AliasName.c_str(), Services[sid].ShortName.c_str(), Services[sid].ServiceId, Services[sid].LongName.c_str());
-*/
+	msgin.serial (Services[sid].AliasName, Services[sid].LongName);
+	msgin.serialCont (Services[sid].Commands);
+
+	nlinfo ("*:*:%d is identified to be '%s' '%s-%hu' '%s'", Services[sid].ServiceId, Services[sid].AliasName.c_str(), Services[sid].ShortName.c_str(), Services[sid].ServiceId, Services[sid].LongName.c_str());
+
 /*	CService *s = (CService*) (uint) from->appId();
 
 	msgin.serial (s->AliasName, s->ShortName, s->LongName);
@@ -561,21 +819,21 @@ static void cbServiceIdentification (CMessage &msgin, const std::string &service
 
 static void cbServiceReady /*(CMessage& msgin, TSockId from, CCallbackNetBase &netbase)*/(CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
-/*	if (sid >= Services.size ())
+	if (sid >= Services.size ())
 	{
 		nlwarning ("Ready of an unknown service %s-%hu", serviceName.c_str(), sid);
 		return;
 	}
 
-	if (Services[sid].Id == 0)
+	if (!Services[sid].Connected)
 	{
 		nlwarning ("Ready of an unknown service %s-%hu", serviceName.c_str(), sid);
 		return;
 	}
 
-	nlinfo ("*:*:%d is ready (%s-%hu)", Services[sid].Id, Services[sid].ShortName.c_str (), Services[sid].ServiceId);
+	nlinfo ("*:*:%d is ready (%s-%hu)", Services[sid].ServiceId, Services[sid].ShortName.c_str (), Services[sid].ServiceId);
 	Services[sid].Ready = true;
-*/
+
 /*	CService *s = (CService*) (uint) from->appId();
 
 	nlinfo ("*:*:%d is ready", s->Id);
@@ -602,6 +860,12 @@ static void cbLog /*(CMessage& msgin, TSockId from, CCallbackNetBase &netbase)*/
 	CNetManager::send ("AESAS", msgout);*/
 }
 
+static void cbRegisteredServices (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	// receive the list of all registered services
+	msgin.serialCont (RegisteredServices);
+}
+
 static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// receive an view answer from the service
@@ -615,8 +879,20 @@ static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 	msgin.serialCont (vala);
 
 	SIT sit = findService (sid);
-	remove ((*sit).WaitingRequestId.begin (), (*sit).WaitingRequestId.end (), rid);
 
+	// remove the waiting request
+	for (uint i = 0; i < (*sit).WaitingRequestId.size();)
+	{
+		if ((*sit).WaitingRequestId[i] == rid)
+		{
+			(*sit).WaitingRequestId.erase ((*sit).WaitingRequestId.begin ()+i);
+		}
+		else
+		{
+			i++;
+		}
+	}
+	
 	addRequestAnswer (rid, vara, vala);
 }
 
@@ -671,7 +947,7 @@ void serviceDisconnection /*(const string &serviceName, TSockId from, void *arg)
 		return;
 	}
 
-	if (Services[sid].ServiceId == 0)
+	if (!Services[sid].Connected)
 	{
 		nlwarning ("Disconnection of an unknown service %s-%hu", serviceName.c_str(), sid);
 		return;
@@ -681,7 +957,7 @@ void serviceDisconnection /*(const string &serviceName, TSockId from, void *arg)
 
 	for(uint i = 0; i < Services[sid].WaitingRequestId.size (); i++)
 	{
-		Requests[Services[sid].WaitingRequestId[i]].NbWaiting--;
+		subRequestWaitingNb (Services[sid].WaitingRequestId[i]);
 	}
 
 	nlinfo ("%s-%hu disconnected", Services[sid].ShortName.c_str (), Services[sid].ServiceId);
@@ -711,6 +987,8 @@ TUnifiedCallbackItem CallbackArray[] =
 
 	{ "GET_VIEW", cbGetView },
 	{ "VIEW", cbView },
+
+	{ "REGISTERED_SERVICES", cbRegisteredServices },
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////

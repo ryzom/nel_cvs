@@ -1,7 +1,7 @@
 /** \file moving_entity.cpp
  * Interface for all moving entities
  *
- * $Id: moving_entity.cpp,v 1.1 2000/10/23 14:18:51 cado Exp $
+ * $Id: moving_entity.cpp,v 1.2 2000/10/23 14:57:08 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,18 @@ IMovingEntity::IMovingEntity( const NLMISC::CVector pos,
 	_Pos = pos;
 	_BodyHdg = hdg;
 	_Vector = vec;
+}
+
+
+/*
+ * Serialization
+ */
+void IMovingEntity::serial ( NLMISC::IStream &s )
+{
+	s.serial( _Id );
+	s.serial( _Pos );
+	s.serial( _BodyHdg );
+	s.serial( _Vector );
 }
 
 

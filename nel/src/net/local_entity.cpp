@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.1 2000/10/23 14:18:51 cado Exp $
+ * $Id: local_entity.cpp,v 1.2 2000/10/23 14:57:08 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,7 +75,7 @@ void CLocalEntity::computeVector()
 	{
 		CMatrix m;
 		m.identity();
-		m.rotateZ( PI/2.0 );
+		m.rotateY( PI/2.0 ); // Y for the test, should be Z for NeL
 		setTrajVector( (bodyHeading() * _FrontVel) + ((m * bodyHeading()) * _StrafeVel) );
 	}
 }

@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.16 2002/09/17 12:50:32 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.17 2002/09/17 14:12:31 coutelas Exp $
  *
  */
 
@@ -329,7 +329,7 @@ void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 	msgout.serial (shardId);
 	CUnifiedNetwork::getInstance()->send (sid, msgout);
 
-	nlinfo ("Connected to %s-%hu and sent identification with shardId '%d'", serviceName, sid, shardId);
+	nlinfo ("Connected to %s-%hu and sent identification with shardId '%d'", serviceName.c_str(), sid, shardId);
 }
 
 

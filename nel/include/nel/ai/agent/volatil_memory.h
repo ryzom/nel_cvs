@@ -1,6 +1,6 @@
 /** \file volatil_memory.h
  *
- * $Id: volatil_memory.h,v 1.2 2001/05/31 13:30:14 chafik Exp $
+ * $Id: volatil_memory.h,v 1.3 2001/05/31 13:34:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,7 +123,7 @@ namespace NLAIAGENT
 		std::list<IObjectIA *> _Connecter; 
 		const CPaireType *_PairToDelete;
 
-
+	
 	public:
 		CVolatilMemmory(IBaseGroupType *l = new CGroupType);
 		CVolatilMemmory(const CVolatilMemmory &);
@@ -145,10 +145,7 @@ namespace NLAIAGENT
 		void erase(CConstIteratorContener &);
 
 		void addAccount(IObjectIA *);
-		void releaseAccount(IObjectIA *);
-		
-		void runMessage(CAgentWatchTimer *);
-
+		void releaseAccount(IObjectIA *);				
 		void init();
 
 
@@ -210,6 +207,8 @@ namespace NLAIAGENT
 	private:
 		void searchBest();
 		void testIfBest(const CPaireType *);
+		void runMessage(CAgentWatchTimer *);
+
 	public:
 		static void initClass();
 		static void releaseClass();

@@ -1,7 +1,7 @@
 /** \file agent_timer.h
  * class for string manipulation.
  *
- * $Id: agent_timer.h,v 1.6 2001/05/29 15:18:29 chafik Exp $
+ * $Id: agent_timer.h,v 1.7 2001/05/31 13:30:14 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -184,7 +184,7 @@ namespace NLAIAGENT
 		virtual void getDebugString(std::string &t) const;
 		virtual void onKill(IConnectIA *A);
 
-		uint getClock() const
+		virtual uint getClock() const
 		{
 			return _Clock;
 		}
@@ -199,6 +199,10 @@ namespace NLAIAGENT
 		void detach();
 		bool detach(IConnectIA *,bool deleteFromConnection = true);
 		void tellBroker();
+		sint getSubscribedCount() const
+		{
+			return _Call.size();
+		}
 
 		virtual IObjectIA::CProcessResult runActivity();
 
@@ -245,8 +249,13 @@ namespace NLAIAGENT
 		virtual void setClock(uint c)
 		{	
 			CAgentWatchTimer::setClock(c);
-			_TimeCount = getClock();
+			_TimeCount = CAgentWatchTimer::getClock();
 
+		}
+
+		virtual uint getClock() const
+		{
+			return _TimeCount;
 		}
 
 		virtual const NLAIC::IBasicType *clone() const;

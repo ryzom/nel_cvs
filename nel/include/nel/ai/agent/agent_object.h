@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.14 2001/05/29 16:12:00 chafik Exp $
+ * $Id: agent_object.h,v 1.15 2001/05/31 13:30:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -191,7 +191,16 @@ namespace NLAIAGENT
 
 		virtual void getDebugString(std::string &text) const
 		{
-			
+			std::string f,s;
+
+			_First->getDebugString(f);
+			_Second->getDebugString(s);
+			text += "First:<";
+			text += f;
+			text += ">";
+			text += "Second:<";
+			text += s;
+			text += ">";
 		}
 
 		virtual bool isTrue() const
@@ -199,12 +208,12 @@ namespace NLAIAGENT
 			return IObjetOp::isTrue();
 		}
 		
-		IObjectIA *first()
+		IObjectIA *first() const
 		{
 			return _First;
 		}
 
-		IObjectIA *second()
+		IObjectIA *second() const
 		{
 			return _Second;
 		}
@@ -470,6 +479,10 @@ namespace NLAIAGENT
 	{	
 	public:
 		CIteratorContener(const CIteratorContener &i):CConstIteratorContener(i._I)
+		{
+		}
+
+		CIteratorContener(const CConstIteratorContener &i):CConstIteratorContener(i)
 		{
 		}
 

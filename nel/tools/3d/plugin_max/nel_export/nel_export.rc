@@ -113,6 +113,121 @@ BEGIN
     LTEXT           "Lightmaps Informations...",IDC_STATICINFO,7,60,172,114
 END
 
+IDD_LOD DIALOG DISCARDABLE  0, 0, 360, 200
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "LOD Root Properties",IDC_STATIC,5,5,172,95
+    LTEXT           "List of lod mesh (ungrowing order):",IDC_STATIC,15,15,
+                    108,10,SS_CENTERIMAGE
+    LISTBOX         IDC_LIST1,15,25,111,70,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | 
+                    WS_TABSTOP
+    PUSHBUTTON      "Add..",IDC_ADD,131,25,40,14
+    PUSHBUTTON      "Remove",IDC_REMOVE,131,39,40,14
+    PUSHBUTTON      "Up",IDC_UP,131,54,40,14
+    PUSHBUTTON      "Down",IDC_DOWN,131,68,40,14
+    GROUPBOX        "LOD Properties",IDC_STATIC,5,105,172,60
+    CONTROL         "Blend in",IDC_BLEND_IN,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,15,121,40,10
+    CONTROL         "Blend out",IDC_BLEND_OUT,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,15,130,45,10
+    CONTROL         "Coarse mesh",IDC_COARSE_MESH,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,15,140,55,10
+    CONTROL         "Dynamic mesh",IDC_DYNAMIC_MESH,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,15,151,60,10
+    LTEXT           "Dist Max:",IDC_STATIC,80,121,45,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_DIST_MAX,125,121,45,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Blend length:",IDC_STATIC,80,135,45,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_BLEND_LENGTH,125,135,45,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    GROUPBOX        "MRM properties",IDC_STATIC,185,5,172,95
+    CONTROL         "Active MRM",IDC_ACTIVE_MRM,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,195,20,60,10
+    LTEXT           "Skin reduction",IDC_STATIC,195,35,50,10,SS_CENTERIMAGE
+    CONTROL         "Min",IDC_SKIN_REDUCTION_MIN,"Button",BS_AUTORADIOBUTTON,
+                    195,45,45,8
+    CONTROL         "Max",IDC_SKIN_REDUCTION_MAX,"Button",BS_AUTORADIOBUTTON,
+                    195,55,45,8
+    CONTROL         "Best",IDC_SKIN_REDUCTION_BEST,"Button",
+                    BS_AUTORADIOBUTTON,195,65,45,8
+    LTEXT           "Steps count:",IDC_STATIC,260,20,45,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_NB_LOD,305,20,45,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Divisor poly:",IDC_STATIC,260,35,45,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_DIVISOR,305,35,45,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Dist Finest:",IDC_STATIC,260,50,45,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_DIST_FINEST,305,50,45,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Dist middle:",IDC_STATIC,260,65,45,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_DIST_MIDDLE,305,65,45,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Dist coarsest:",IDC_STATIC,260,80,45,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_DIST_COARSEST,305,80,45,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+END
+
+IDD_ACCEL DIALOG DISCARDABLE  0, 0, 360, 200
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Not an accelerator",IDC_RADIOACCELNO,"Button",
+                    BS_AUTORADIOBUTTON,5,5,75,10
+    CONTROL         "Portal",IDC_RADIOACCELPORTAL,"Button",
+                    BS_AUTORADIOBUTTON,5,17,34,10
+    CONTROL         "Cluster",IDC_RADIOACCELCLUSTER,"Button",
+                    BS_AUTORADIOBUTTON,5,39,37,10
+    CONTROL         "Father visible",IDC_FATHER_VISIBLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,27,50,57,10
+    CONTROL         "Visible from father",IDC_VISIBLE_FROM_FATHER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,27,61,71,10
+    CONTROL         "Dynamic Portal",IDC_DYNAMIC_PORTAL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,27,28,63,10
+    CONTROL         "Clusterize",IDC_CLUSTERIZE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,93,5,46,10
+END
+
+IDD_LIGHTMAP DIALOG DISCARDABLE  0, 0, 360, 200
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Lumel Size Multiplier",IDC_STATIC,5,10,64,8
+    EDITTEXT        IDC_EDIT_LUMELSIZEMUL,91,5,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_SOFTSHADOW_RADIUS,91,25,40,14,ES_AUTOHSCROLL
+    LTEXT           "Soft Shadow Radius",IDC_STATIC,5,30,66,8
+    LTEXT           "Soft Shadow Cone Length",IDC_STATIC,5,50,84,8
+    EDITTEXT        IDC_EDIT_SOFTSHADOW_CONELENGTH,91,45,40,14,
+                    ES_AUTOHSCROLL
+END
+
+IDD_MISC DIALOG DISCARDABLE  0, 0, 360, 200
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Export Note Track",IDC_EXPORT_NOTE_TRACK,"Button",
+                    BS_AUTO3STATE | WS_TABSTOP,5,20,95,9
+    CONTROL         "Floating Object",IDC_FLOATING_OBJECT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,5,65,12
+END
+
+IDD_VEGETABLE DIALOG DISCARDABLE  0, 0, 360, 200
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Vegetable",IDC_VEGETABLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,5,5,50,12
+END
+
+IDD_INSTANCE DIALOG DISCARDABLE  0, 0, 360, 200
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Instance Name",IDC_STATIC,5,10,49,8
+    EDITTEXT        IDC_EDIT_INSTANCE_NAME,81,5,110,14,ES_AUTOHSCROLL
+    CONTROL         "Don't add to instance group",IDC_DONT_ADD_TO_SCENE,
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,5,25,103,10
+    LTEXT           "Instance Group Name",IDC_STATIC,5,39,70,8
+    EDITTEXT        IDC_EDIT_INSTANCE_GROUP_NAME,81,39,79,14,ES_AUTOHSCROLL
+    CONTROL         "Don't Export The Shape",IDC_DONT_EXPORT,"Button",
+                    BS_AUTO3STATE | WS_TABSTOP,5,60,92,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -152,6 +267,54 @@ BEGIN
         RIGHTMARGIN, 179
         TOPMARGIN, 7
         BOTTOMMARGIN, 174
+    END
+
+    IDD_LOD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 353
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 193
+    END
+
+    IDD_ACCEL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 353
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 193
+    END
+
+    IDD_LIGHTMAP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 353
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 193
+    END
+
+    IDD_MISC, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 353
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 193
+    END
+
+    IDD_VEGETABLE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 353
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 193
+    END
+
+    IDD_INSTANCE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 353
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 193
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -260,96 +423,14 @@ LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 // Dialog
 //
 
-IDD_NODE_PROPERTIES DIALOG DISCARDABLE  0, 0, 361, 306
+IDD_NODE_PROPERTIES_PANEL DIALOG DISCARDABLE  0, 0, 384, 261
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Node properties"
 FONT 8, "MS Sans Serif"
 BEGIN
-
-    DEFPUSHBUTTON   "OK",IDOK,247,285,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,304,285,50,14
-    GROUPBOX        "LOD Root Properties",IDC_STATIC,5,5,172,85
-    LTEXT           "List of lod mesh (ungrowing order):",IDC_STATIC,15,15,
-                    108,10,SS_CENTERIMAGE
-    LISTBOX         IDC_LIST1,15,25,111,58,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | 
-                    WS_TABSTOP
-    PUSHBUTTON      "Add..",IDC_ADD,131,25,40,14
-    PUSHBUTTON      "Remove",IDC_REMOVE,131,39,40,14
-    PUSHBUTTON      "Up",IDC_UP,131,54,40,14
-    PUSHBUTTON      "Down",IDC_DOWN,131,68,40,14
-    GROUPBOX        "LOD Properties",IDC_STATIC,5,95,172,60
-    CONTROL         "Blend in",IDC_BLEND_IN,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,15,110,40,10
-    CONTROL         "Blend out",IDC_BLEND_OUT,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,15,120,45,10
-    CONTROL         "Coarse mesh",IDC_COARSE_MESH,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,15,130,55,10
-    CONTROL         "Dynamic mesh",IDC_DYNAMIC_MESH,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,15,140,60,10
-    LTEXT           "Dist Max:",IDC_STATIC,80,110,45,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_DIST_MAX,125,110,45,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Blend length:",IDC_STATIC,80,125,45,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_BLEND_LENGTH,125,125,45,12,ES_AUTOHSCROLL | 
-                    ES_NUMBER
-    GROUPBOX        "MRM properties",IDC_STATIC,5,160,172,95
-    CONTROL         "Active MRM",IDC_ACTIVE_MRM,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,15,175,60,10
-    LTEXT           "Skin reduction",IDC_STATIC,15,190,50,10,SS_CENTERIMAGE
-    CONTROL         "Min",IDC_SKIN_REDUCTION_MIN,"Button",BS_AUTORADIOBUTTON,
-                    15,200,45,8
-    CONTROL         "Max",IDC_SKIN_REDUCTION_MAX,"Button",BS_AUTORADIOBUTTON,
-                    15,210,45,8
-    CONTROL         "Best",IDC_SKIN_REDUCTION_BEST,"Button",
-                    BS_AUTORADIOBUTTON,15,220,45,8
-    LTEXT           "Steps count:",IDC_STATIC,80,175,45,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_NB_LOD,125,175,45,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Divisor poly:",IDC_STATIC,80,190,45,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_DIVISOR,125,190,45,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Dist Finest:",IDC_STATIC,80,205,45,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_DIST_FINEST,125,205,45,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Dist middle:",IDC_STATIC,80,220,45,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_DIST_MIDDLE,125,220,45,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Dist coarsest:",IDC_STATIC,80,235,45,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_DIST_COARSEST,125,235,45,12,ES_AUTOHSCROLL | 
-                    ES_NUMBER
-    GROUPBOX        "Accelerator Properties",IDC_STATIC,182,5,172,85
-    CONTROL         "Not an accelerator",IDC_RADIOACCELNO,"Button",
-                    BS_AUTORADIOBUTTON,192,18,75,10
-    CONTROL         "Portal",IDC_RADIOACCELPORTAL,"Button",
-                    BS_AUTORADIOBUTTON,192,30,34,10
-    CONTROL         "Cluster",IDC_RADIOACCELCLUSTER,"Button",
-                    BS_AUTORADIOBUTTON,192,52,37,10
-    CONTROL         "Father visible",IDC_FATHER_VISIBLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,214,63,57,10
-    CONTROL         "Visible from father",IDC_VISIBLE_FROM_FATHER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,214,74,71,10
-    CONTROL         "Dynamic Portal",IDC_DYNAMIC_PORTAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,214,41,63,10
-    GROUPBOX        "Instance Properties",IDC_STATIC,182,95,172,60
-    LTEXT           "Name",IDC_STATIC,190,108,20,8
-    EDITTEXT        IDC_EDIT_INSTANCE_NAME,216,106,130,14,ES_AUTOHSCROLL
-    CONTROL         "Don't add to scene",IDC_DONT_ADD_TO_SCENE,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,190,122,76,10
-    CONTROL         "Clusterize",IDC_CLUSTERIZE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,279,18,46,10
-    CONTROL         "Export Note Track",IDC_EXPORT_NOTE_TRACK,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,190,186,95,9
-    LTEXT           "Instance Group Name",IDC_STATIC,190,137,70,8
-    EDITTEXT        IDC_EDIT_INSTANCE_GROUP_NAME,267,135,79,14,
-                    ES_AUTOHSCROLL
-    GROUPBOX        "Export Properties",IDC_STATIC,182,160,172,42
-    CONTROL         "Don't Export Shape",IDC_DONT_EXPORT,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,190,172,77,10
-    LTEXT           "Lumel Size Multiplier",IDC_STATIC,183,214,64,8
-    EDITTEXT        IDC_EDIT_LUMELSIZEMUL,269,210,40,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_SOFTSHADOW_RADIUS,269,226,40,14,ES_AUTOHSCROLL
-    LTEXT           "Soft Shadow Radius",IDC_STATIC,183,230,66,8
-    LTEXT           "Soft Shadow Cone Length",IDC_STATIC,183,246,84,8
-    EDITTEXT        IDC_EDIT_SOFTSHADOW_CONELENGTH,269,242,40,14,
-                    ES_AUTOHSCROLL
-    GROUPBOX        "Misc.",IDC_MISC_PROPERTIES,7,259,170,27
-    CONTROL         "Floating Object",IDC_FLOATING_OBJECT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,13,269,111,12
+    CONTROL         "Tab1",IDC_TAB,"SysTabControl32",0x0,7,7,370,228
+    DEFPUSHBUTTON   "Ok",IDC_OK,270,240,50,15
+    PUSHBUTTON      "Cancel",IDC_CANCEL,327,240,50,15
 END
 
 
@@ -361,12 +442,12 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO DISCARDABLE 
 BEGIN
-    IDD_NODE_PROPERTIES, DIALOG
+    IDD_NODE_PROPERTIES_PANEL, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 354
+        RIGHTMARGIN, 377
         TOPMARGIN, 7
-        BOTTOMMARGIN, 299
+        BOTTOMMARGIN, 254
     END
 END
 #endif    // APSTUDIO_INVOKED

@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.17 2001/11/29 14:22:23 legros Exp $
+ * $Id: nel_export.cpp,v 1.18 2001/12/05 09:52:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,7 @@ static const char *animModelFilter="NeL model animation file (*.anim)\0*.anim\0A
 static const char *SWTFilter="NeL Skeleton Weight Template file (*.swt)\0*.swt\0All files (*.*)\0*.*\0";
 static const char *InstanceGroupFilter="NeL Instance Group file (*.ig)\0*.ig\0All files (*.*)\0*.*\0";
 static const char *skeletonFilter="NeL Skeleton file (*.skel)\0*.skel\0All files (*.*)\0*.*\0";
+static const char *vegetableFilter="NeL Vegetable file (*.skel)\0*.skel\0All files (*.*)\0*.*\0";
 
 
 void *CNelExportClassDesc::Create(BOOL loading)

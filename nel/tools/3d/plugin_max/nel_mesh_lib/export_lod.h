@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.9 2001/11/14 15:43:32 vizerie Exp $
+ * $Id: export_lod.h,v 1.10 2001/12/05 09:52:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,6 +64,8 @@
 #define NEL3D_APPDATA_SOFTSHADOW_CONELENGTH			(1423062569)
 
 #define NEL3D_APPDATA_FLOATING_OBJECT			    (1423062570)
+
+#define NEL3D_APPDATA_VEGETABLE						(1423062580)
 
 // ***************************************************************************
 

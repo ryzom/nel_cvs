@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.19 2001/11/27 16:43:16 corvazier Exp $
+ * $Id: export_material.cpp,v 1.20 2001/12/05 09:52:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -397,7 +397,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 
 					// Ok export the texture in NeL format
 					CMaterialDesc materialDesc;
-					pTexture=buildATexture (*pTexmap, materialDesc, time, absolutePath);
+					pTexture=buildATexture (*pTexmap, materialDesc, time, absolutePath, (i==1) && (iShaderType==SHADER_SPECULAR) );
 
 					// Get the gen texture coord flag
 					char texGenName[100];
@@ -946,7 +946,7 @@ int CExportNel::getVertMapChannel (Texmap& texmap, Matrix3& channelMatrix, TimeV
 // Build a NeL texture corresponding with a max Texmap.
 // Fill an array with the 3ds vertexMap used by this texture. 
 // Texture file uses only 1 channel.
-ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexChannel, TimeValue time, bool absolutePath)
+ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexChannel, TimeValue time, bool absolutePath, bool forceCubic)
 {
 	/// TODO: support other texmap than Bitmap
 
@@ -958,9 +958,6 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 	{
 		// Cast the pointer
 		BitmapTex* pBitmap=(BitmapTex*)&texmap;
-
-		// Alloc a texture
-		CTextureFile *pTextureFile=new CTextureFile ();
 
 		// File name, maxlen 256 under windows
 		char sFileName[512];
@@ -1003,11 +1000,44 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 			nlassert (bRes);
 		}
 
-		// Set the file name
-		pTextureFile->setFileName (sFileName);
+		// Force cubic
+		if (forceCubic)
+		{
+			// Cube side
+			const static CTextureCube::TFace tfNewOrder[6] = {	CTextureCube::positive_z, CTextureCube::negative_z,
+														CTextureCube::negative_x, CTextureCube::positive_x,
+														CTextureCube::negative_y, CTextureCube::positive_y	};
 
-		// Ok, good texture
-		pTexture=pTextureFile;
+			// Alloc a cube texture
+			CTextureCube* pTextureCube = new CTextureCube;
+
+			// For each side of the cube
+			for (uint side=0; side<6; side++)
+			{
+				// Alloc a file texture
+				CTextureFile *pTextureFile=new CTextureFile ();
+
+				// Set the file name
+				pTextureFile->setFileName (sFileName);
+
+				// Set the texture in the cube
+				pTextureCube->setTexture (tfNewOrder[side], pTextureFile);
+			}
+
+			// Ok, good texture
+			pTexture=pTextureCube;
+		}
+		else
+		{
+			// Alloc a texture
+			CTextureFile *pTextureFile=new CTextureFile ();
+
+			// Set the file name
+			pTextureFile->setFileName (sFileName);
+
+			// Ok, good texture
+			pTexture=pTextureFile;
+		}
 	}
 	else if( isClassIdCompatible(texmap, Class_ID (ACUBIC_CLASS_ID,0)) )
 	{
@@ -1019,7 +1049,7 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 		pTexture = pTextureCube;
 
 		// Face order
-		CTextureCube::TFace tfNewOrder[6] = {	CTextureCube::positive_z, CTextureCube::negative_z,
+		const static CTextureCube::TFace tfNewOrder[6] = {	CTextureCube::positive_z, CTextureCube::negative_z,
 													CTextureCube::negative_x, CTextureCube::positive_x,
 													CTextureCube::negative_y, CTextureCube::positive_y	};
 

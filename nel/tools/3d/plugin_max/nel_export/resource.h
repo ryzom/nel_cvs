@@ -16,7 +16,14 @@
 #define IDD_EXPORTSCENE                 104
 #define IDD_CALCULATING                 106
 #define IDD_NODE_PROPERTIES             110
+#define IDD_NODE_PROPERTIES_PANEL       110
 #define IDC_CURSOR1                     113
+#define IDD_LOD                         116
+#define IDD_ACCEL                       117
+#define IDD_LIGHTMAP                    118
+#define IDD_MISC                        119
+#define IDD_VEGETABLE                   120
+#define IDD_INSTANCE                    121
 #define IDC_CLOSEBUTTON                 1000
 #define IDC_DOSTUFF                     1000
 #define ID_SAVEAS                       1001
@@ -99,6 +106,10 @@
 #define IDC_MISC_PROPERTIES             1063
 #define IDC_EDIT_UV_CHANNEL_FOR_ALPHA   1064
 #define IDC_FLOATING_OBJECT             1065
+#define IDC_TAB                         1065
+#define IDC_VEGETABLE                   1066
+#define IDC_CANCEL                      1066
+#define IDC_OK                          1067
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -107,9 +118,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        116
+#define _APS_NEXT_RESOURCE_VALUE        122
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1065
+#define _APS_NEXT_CONTROL_VALUE         1067
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.33 2001/11/27 17:18:06 vizerie Exp $
+ * $Id: export_nel.h,v 1.34 2001/12/05 09:52:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -600,7 +600,7 @@ private:
 	static void						buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& materialInfo, Mtl& mtl, TimeValue time, bool absolutePath);
 
 	// Build a NeL texture corresponding with a max Texmap.
-	static NL3D::ITexture*			buildATexture (Texmap& texmap, CMaterialDesc& remap3dsTexChannel, TimeValue time, bool absolutePath);
+	static NL3D::ITexture*			buildATexture (Texmap& texmap, CMaterialDesc& remap3dsTexChannel, TimeValue time, bool absolutePath, bool forceCubic=false);
 
 	// *********************
 	// *** Export Animation

@@ -1,7 +1,7 @@
 /** \file hls_color_texture.h
  * <File description>
  *
- * $Id: hls_color_texture.h,v 1.1 2002/10/25 15:51:25 berenguier Exp $
+ * $Id: hls_color_texture.h,v 1.2 2003/02/28 13:24:56 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -133,14 +133,16 @@ private:
 private:
 	/// uncompress DXTC5 RGB only block, into a RGBA raw array. Alpha is setup with undefined values
 	static void			uncompressBlockRGB(const uint8* srcDXTC, CRGBA *dstRGBA);
-	/// compress DXTC5 RGB only block, from a RGBA raw array. dstDXTC Alpha part is not modified. srcRGBA->A are setup to 0!!
-	static void			compressBlockRGB(CRGBA *srcRGBA, uint8* dstDXTC);
 	
 	/// used by compressBlockRGB()
 	static void			computeMinMax(sint *diffBlock, CVectorInt &v, sint mean[3], sint rgb0[3], sint rgb1[3]);
 
 	/// apply colDelta to the block. Alpha part is not modified. MMX with no EMMS called here !!!
 	static void			colorizeDXTCBlockRGB(const uint8 *srcPtr, uint8 *dstPtr, uint8 dHue, uint dLum, uint dSat);
+
+public:
+	/// compress DXTC5 RGB only block, from a RGBA raw array. dstDXTC Alpha part is not modified. srcRGBA->A are setup to 0!!
+	static void			compressBlockRGB(CRGBA *srcRGBA, uint8* dstDXTC);
 
 };
 

@@ -1,7 +1,7 @@
 /** \file shape.cpp
  * <File description>
  *
- * $Id: shape.cpp,v 1.2 2000/12/18 09:45:49 corvazier Exp $
+ * $Id: shape.cpp,v 1.3 2000/12/18 15:12:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,13 +50,6 @@ CTransformShape		*IShape::createInstance(CScene &scene)
 
 
 // ***************************************************************************
-void	IShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-{
-	f.serialCheck (std::string ("Shape"));
-}
-
-
-// ***************************************************************************
 // ***************************************************************************
 // CShapeStream
 // ***************************************************************************
@@ -96,7 +89,7 @@ IShape*	CShapeStream::getShapePointer () const
 void CShapeStream::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	// First, serial an header or checking if it is correct
-	f.serialCheck (std::string("SHAPE"));
+	f.serialCheck ((uint32)'PAHS');
 
 	// Then, serial the shape
 	f.serialPolyPtr (_Shape);

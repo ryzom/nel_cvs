@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.20 2002/03/12 14:12:49 legros Exp $
+ * $Id: service_5.cpp,v 1.21 2002/03/14 13:48:28 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -1078,79 +1078,6 @@ NLMISC_COMMAND (mutex, "display mutex values", "")
 	return true;
 }
 #endif // MUTEX_DEBUG
-
-
-NLMISC_COMMAND(nofilter, "disable all filters on Nel loggers", "")
-{
-	if(args.size() != 0) return false;
-
-	DebugLog->resetFilters();
-	InfoLog->resetFilters();
-	WarningLog->resetFilters();
-	ErrorLog->resetFilters();
-	AssertLog->resetFilters();
-
-	return true;
-}
-
-
-NLMISC_COMMAND(addposfilter_debug, "add a positive filter on DebugLog", "<filterstr>")
-{
-	if(args.size() != 1) return false;
-	
-	DebugLog->addPositiveFilter( args[0].c_str() );
-
-	return true;
-}
-
-
-NLMISC_COMMAND(addnegfilter_debug, "add a negative filter on DebugLog", "<filterstr>")
-{
-	if(args.size() != 1) return false;
-	
-	DebugLog->addNegativeFilter( args[0].c_str() );
-
-	return true;
-}
-
-
-NLMISC_COMMAND(removefilter_debug, "remove a filter on DebugLog", "<filterstr>")
-{
-	if(args.size() != 1) return false;
-	
-	DebugLog->removeFilter( args[0].c_str() );
-
-	return true;
-}
-
-NLMISC_COMMAND(addposfilter_info, "add a positive filter on InfoLog", "<filterstr>")
-{
-	if(args.size() != 1) return false;
-	
-	InfoLog->addPositiveFilter( args[0].c_str() );
-
-	return true;
-}
-
-
-NLMISC_COMMAND(addnegfilter_info, "add a negative filter on InfoLog", "<filterstr>")
-{
-	if(args.size() != 1) return false;
-	
-	InfoLog->addNegativeFilter( args[0].c_str() );
-
-	return true;
-}
-
-
-NLMISC_COMMAND(removefilter_info, "remove a filter on InfoLog", "<filterstr>")
-{
-	if(args.size() != 1) return false;
-	
-	InfoLog->removeFilter( args[0].c_str() );
-
-	return true;
-}
 
 /*
 NLMISC_COMMAND (time_5, "displays the universal time", "")

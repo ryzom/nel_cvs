@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.107 2002/02/28 15:22:50 lecroart Exp $
+ * $Id: service.cpp,v 1.108 2002/03/14 13:48:28 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -1024,7 +1024,6 @@ NLMISC_COMMAND (_brutal_quit, "exit the service brutally", "")
 	return true;
 }
 
-
 #ifdef MUTEX_DEBUG
 NLMISC_COMMAND (_mutex, "display mutex values", "")
 {
@@ -1044,78 +1043,5 @@ NLMISC_COMMAND (_mutex, "display mutex values", "")
 	return true;
 }
 #endif // MUTEX_DEBUG
-
-
-NLMISC_COMMAND(_nofilter, "disable all filters on Nel loggers", "")
-{
-	if(args.size() != 0) return false;
-
-	DebugLog->resetFilters();
-	InfoLog->resetFilters();
-	WarningLog->resetFilters();
-	AssertLog->resetFilters();
-	ErrorLog->resetFilters();
-
-	return true;
-}
-
-
-NLMISC_COMMAND(_addposfilter_debug, "add a positive filter on DebugLog", "<filterstr>")
-{
-	if(args.size() != 1) return false;
-	
-	DebugLog->addPositiveFilter( args[0].c_str() );
-
-	return true;
-}
-
-
-NLMISC_COMMAND(_addnegfilter_debug, "add a negative filter on DebugLog", "<filterstr>")
-{
-	if(args.size() != 1) return false;
-	
-	DebugLog->addNegativeFilter( args[0].c_str() );
-
-	return true;
-}
-
-
-NLMISC_COMMAND(_removefilter_debug, "remove a filter on DebugLog", "<filterstr>")
-{
-	if(args.size() != 1) return false;
-	
-	DebugLog->removeFilter( args[0].c_str() );
-
-	return true;
-}
-
-NLMISC_COMMAND(_addposfilter_info, "add a positive filter on InfoLog", "<filterstr>")
-{
-	if(args.size() != 1) return false;
-	
-	InfoLog->addPositiveFilter( args[0].c_str() );
-
-	return true;
-}
-
-
-NLMISC_COMMAND(_addnegfilter_info, "add a negative filter on InfoLog", "<filterstr>")
-{
-	if(args.size() != 1) return false;
-	
-	InfoLog->addNegativeFilter( args[0].c_str() );
-
-	return true;
-}
-
-
-NLMISC_COMMAND(_removefilter_info, "remove a filter on InfoLog", "<filterstr>")
-{
-	if(args.size() != 1) return false;
-	
-	InfoLog->removeFilter( args[0].c_str() );
-
-	return true;
-}
 
 } //NLNET

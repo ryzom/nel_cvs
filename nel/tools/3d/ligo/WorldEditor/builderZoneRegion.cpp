@@ -1191,7 +1191,7 @@ void CBuilderZoneRegion::del (sint32 x, sint32 y, bool transition, void *pIntern
 // ---------------------------------------------------------------------------
 void CBuilderZoneRegion::serial (NLMISC::IStream &f)
 {
-	sint32 version = f.serialVersion (1);
+	sint32 version = f.serialVersion (0);
 	f.serialCheck ((uint32)'DNAL');
 	f.serial (_MinX);
 	f.serial (_MinY);

@@ -150,7 +150,7 @@ void CToolsLogic::OnRButtonDown (UINT nFlags, CPoint point)
 		}
 		else
 		{
-			// Display the contextual menu : properties
+			// Display the contextual menu for an element : properties
 			pMenu->AppendMenu (MF_STRING, ID_MENU_DELETE, "Delete");
 			pMenu->AppendMenu (MF_STRING, ID_MENU_PROPERTIES, "Properties");
 			pMenu->AppendMenu (MF_STRING, ID_MENU_HIDE, "Hide");

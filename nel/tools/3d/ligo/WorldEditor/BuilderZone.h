@@ -11,6 +11,10 @@
 #include "nel/misc/bitmap.h"
 #include "nel/misc/smart_ptr.h"
 
+#include "3d/vertex_buffer.h"
+#include "3d/primitive_block.h"
+#include "3d/material.h"
+
 #include "../lib/zone_bank.h"
 
 #include "builderZoneRegion.h"
@@ -35,6 +39,7 @@ namespace NL3D
 // ***************************************************************************
 // CDataBase contains the image database for Nel and Windows
 // A big texture (called CacheTexture) contains all zone (called SCacheZone)
+// There are 64 cache texture of 1024x1024 (it should be enough)
 // An element is composed of zones (the number of zones is equal to the number
 // of true in the mask (the mask is in the zone bank))
 class CDataBase
@@ -130,7 +135,9 @@ public:
 	CDataBase					_DataBase;
 
 	std::vector<CBuilderZoneRegion*>	_ZoneRegions;
-	std::vector<std::string>			_ZoneRegionsName;
+	std::vector<std::string>			_ZoneRegionNames;
+	std::vector<std::string>			_FullNames;
+
 	sint32								_ZoneRegionSelected;
 
 	sint32						_MinX, _MaxX, _MinY, _MaxY;
@@ -160,27 +167,30 @@ public:
 	uint8		_ApplyFlip;
 	bool		_ApplyFlipRan;
 
-
 	std::vector<NLLIGO::CZoneBankElement*> _CurrentSelection;
 
 private:
 
 	void				calcMask();
+	bool				initZoneBank (const std::string &Path);
 
 public:
 
 	CBuilderZone();
+
+	bool				init (const std::string &sPath, bool bMakeAZone);
+
 	void				setDisplay (CDisplay *pDisp);
 	void				setToolsZone (CToolsZone *pTool);
 	void				updateToolsZone ();
-	bool				load (const char *fileName);
+	bool				load (const char *fileName, const char *path);
 	bool				save (const char *fileName);
-	void				newZone ();
+	void				autoSaveAll ();
+	void				newZone (bool bDisplay=true);
 	void				unload (uint32 i);
 
 	void				add (const NLMISC::CVector &worldPos);
 	void				del (const NLMISC::CVector &worldPos);
-	bool				initZoneBank (const std::string &Path);
 
 	void				undo ();
 	void				redo ();
@@ -197,6 +207,23 @@ public:
 	uint32				getCurZoneRegion ();
 	void				setCurZoneRegion (uint32 i);
 	bool				getZoneMask (sint32 x, sint32 y);
+
+private:
+
+	// SCacheRender is a simple structure to store triangles for each texture in the scene
+	struct SCacheRender
+	{
+		bool					Used;
+		NL3D::CVertexBuffer		VB;
+		NL3D::CPrimitiveBlock	PB;
+		NL3D::CMaterial			Mat;
+
+		SCacheRender();
+	};
+
+	// There are one CacheRender per cacheTexture + texture unused and NULL (no texture)
+	SCacheRender _CacheRender[64+2];
+
 };
 
 // ***************************************************************************

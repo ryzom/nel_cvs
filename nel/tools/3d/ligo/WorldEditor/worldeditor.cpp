@@ -1,7 +1,7 @@
 /** \file WorldEditor.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: worldeditor.cpp,v 1.1 2001/10/24 14:35:54 besson Exp $
+ * $Id: worldeditor.cpp,v 1.2 2001/11/27 16:15:30 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,9 +41,14 @@
 #include "3d/init_3d.h"
 
 #include "nel/misc/vector.h"
+#include "nel/misc/stream.h"
+#include "nel/misc/o_xml.h"
+#include "nel/misc/file.h"
 
+#include "../lib/primitive.h"
 
 #include <vector>
+#include <string>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -60,6 +65,7 @@ static char SDir[256];
 using namespace std;
 using namespace NL3D;
 using namespace NLMISC;
+using namespace NLLIGO;
 
 //
 //	Note!
@@ -126,75 +132,13 @@ CWorldEditorApp::CWorldEditorApp()
 CWorldEditorApp theApp;
 
 // ***************************************************************************
-/*
-class CObjView : public CView
-{
-public:
-	CObjView() 
-	{
-		MainFrame=NULL;
-	};
-	virtual ~CObjView() {};
-	virtual void OnDraw (CDC *) {};
-	afx_msg BOOL OnEraseBkgnd(CDC* pDC) 
-	{ 
-		return FALSE; 
-	}
-	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
-	{
-		if ((CNELU::Driver) && MainFrame)
-			MainFrame->DriverWindowProc (CNELU::Driver, m_hWnd, message, wParam, lParam);
-			
-		return CView::WindowProc(message, wParam, lParam);
-	}
-	DECLARE_DYNCREATE(CObjView)
-	CMainFrame	*MainFrame;
-};
-
-// ***************************************************************************
-
-IMPLEMENT_DYNCREATE(CObjView, CView)
-*/
-// ***************************************************************************
-/*
-
-
-
-#include "afxdllx.h"
-
-static AFX_EXTENSION_MODULE extensionDLL;
-
-extern "C" int APIENTRY 
-DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID)
-{
-   if (dwReason == DLL_PROCESS_ATTACH)
-   {
-      // Extension DLL one-time initialization 
-      if (!AfxInitExtensionModule(
-             extensionDLL, hInstance))
-         return 0;
-
-      // TODO: perform other initialization tasks here
-   }
-   else if (dwReason == DLL_PROCESS_DETACH)
-   {
-      // Extension DLL per-process termination
-      AfxTermExtensionModule(extensionDLL);
-
-          // TODO: perform other cleanup tasks here
-   }
-   return 1;   // ok
-}
-
-*/
-
-
 
 CWorldEditor::CWorldEditor ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 //	init3d ();
 	_MainFrame = NULL;
+	_RootDir = "";
 }
 
 // ***************************************************************************
@@ -206,7 +150,6 @@ CWorldEditor::~CWorldEditor ()
 		delete (_MainFrame);
 }
 
-
 // ***************************************************************************
 
 void *CWorldEditor::getMainFrame ()
@@ -215,6 +158,80 @@ void *CWorldEditor::getMainFrame ()
 	if (_MainFrame == NULL)
 		initUI();
 	return _MainFrame;
+}
+
+// ***************************************************************************
+
+void CWorldEditor::setRootDir (const char *sPathName)
+{
+	_RootDir = sPathName;
+}
+
+// ***************************************************************************
+
+void CWorldEditor::createDefaultFiles (const char *fileBaseName)
+{
+	// The primitive region
+	CPrimRegion reg;
+	string fileName = fileBaseName;
+	fileName += ".prim";
+	reg.Name = fileName;
+	COFile file;
+	file.open (fileName);
+	COXml output;
+	output.init (&file, "1.0");
+	reg.serial (output);
+	output.flush ();
+	file.close ();
+
+	// The landscape region
+	CBuilderZoneRegion bzr;
+	fileName = fileBaseName;
+	fileName += ".land";
+	file.open (fileName);
+	bzr.serial (file);
+	file.close();
+}
+
+// ***************************************************************************
+
+void CWorldEditor::loadFile(const char *fileName)
+{
+	char sCurDir[MAX_PATH];
+	GetCurrentDirectory (MAX_PATH, sCurDir);
+
+	char drive[_MAX_DRIVE];
+	char dir[_MAX_DIR];
+	char fname[_MAX_FNAME];
+	char ext[_MAX_EXT];
+
+	_splitpath(fileName, drive, dir, fname, ext);
+
+	string sPath;
+	string sTemp;
+	sPath = drive;
+	sPath += dir;
+	SetCurrentDirectory (sPath.c_str());
+	if (stricmp(ext, ".prim") == 0)
+	{
+		sTemp = fname;
+		sTemp += ".prim";
+		_MainFrame->loadPrim (sTemp.c_str(), sPath.c_str());
+	}
+	if (stricmp(ext, ".land") == 0)
+	{
+		sTemp = fname;
+		sTemp += ".land";
+		_MainFrame->loadLand (sTemp.c_str(), sPath.c_str());
+	}
+	SetCurrentDirectory (sCurDir);
+}
+
+// ***************************************************************************
+
+void CWorldEditor::saveOpenedFiles()
+{
+	_MainFrame->saveAll ();
 }
 
 // ***************************************************************************
@@ -230,9 +247,41 @@ void CWorldEditor::initUI (HWND parent)
 
 	BOOL bRet = _MainFrame->LoadFrame (IDR_MAINFRAME, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL, NULL);
 
+	_MainFrame->setRootDir (_RootDir.c_str());
 	_MainFrame->ShowWindow (SW_SHOW);
 	_MainFrame->UpdateWindow ();
-	_MainFrame->loadConfig ();
+	_MainFrame->init ();
+	_MainFrame->initDisplay ();
+	_MainFrame->initTools ();
+}
+
+// ***************************************************************************
+
+void CWorldEditor::initUILight (int x, int y, int cx, int cy)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	if (_MainFrame != NULL)
+		return;
+
+	_MainFrame = new CMainFrame();
+
+	_MainFrame->createX = x;
+	_MainFrame->createY = y;
+	_MainFrame->createCX = cx;
+	_MainFrame->createCY = cy;
+	BOOL bRet = _MainFrame->LoadFrame (IDR_MAINFRAME, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL, NULL);
+	CMenu* pMenu = _MainFrame->GetMenu();
+
+	if (pMenu != NULL && pMenu->GetMenuItemCount() > 0)
+	{
+		pMenu->DeleteMenu(0, MF_BYPOSITION);
+		// force a redraw of the menu bar
+		_MainFrame->DrawMenuBar();
+	}
+	_MainFrame->setRootDir (_RootDir.c_str());
+	_MainFrame->ShowWindow (SW_SHOW);
+	_MainFrame->UpdateWindow ();
+	_MainFrame->init (false);
 	_MainFrame->initDisplay ();
 	_MainFrame->initTools ();
 }
@@ -267,7 +316,9 @@ void CWorldEditor::releaseUI ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	// exit
-	CNELU::release();	
+	delete _MainFrame;
+	_MainFrame = NULL;
+	CNELU::release();
 }
 
 // ***************************************************************************
@@ -336,3 +387,16 @@ void IWorldEditor::releaseInterface (IWorldEditor* wed)
 	delete wed;
 }
 
+// ***************************************************************************
+
+IWorldEditor* IWorldEditorGetInterface (int version)
+{
+	return IWorldEditor::getInterface (version);
+}
+
+// ***************************************************************************
+
+void IWorldEditorReleaseInterface (IWorldEditor* pWE)
+{
+	IWorldEditor::releaseInterface (pWE);
+}

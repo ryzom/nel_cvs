@@ -49,6 +49,7 @@ CDisplay::CDisplay ()
 	_DisplayZone = true;
 	_LastX = _LastY = -10000;
 	_CtrlKeyDown = false;
+	_MainFrame = NULL;
 }
 
 // ---------------------------------------------------------------------------
@@ -133,7 +134,7 @@ CVector CDisplay::convertToWorld (CPoint&p)
 // ---------------------------------------------------------------------------
 void CDisplay::OnDraw (CDC* pDC)
 {
-	if (CNELU::Driver == NULL)
+	if ((CNELU::Driver == NULL)||(_MainFrame == NULL))
 		return;
 
 	CNELU::clearBuffers ();
@@ -275,6 +276,9 @@ void CDisplay::OnRButtonUp (UINT nFlags, CPoint point)
 // ---------------------------------------------------------------------------
 void CDisplay::OnMouseMove (UINT nFlags, CPoint point)
 {
+	if (_MainFrame == NULL)
+		return;
+	
 	// Get the current position in world
 	_CurPos = convertToWorld (point);
 

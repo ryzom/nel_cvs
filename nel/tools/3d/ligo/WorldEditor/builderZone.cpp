@@ -10,9 +10,6 @@
 #include "nel/misc/file.h"
 
 #include "3d/nelu.h"
-#include "3d/vertex_buffer.h"
-#include "3d/primitive_block.h"
-#include "3d/material.h"
 #include "3d/texture_file.h"
 #include "3d/texture_mem.h"
 
@@ -122,12 +119,8 @@ bool CDataBase::initFromPath (const string &Path)
 bool CDataBase::init (const string &Path, CZoneBank &zb)
 {
 	char sDirBackup[512];
-	char sDirNew[512];
 	GetCurrentDirectory (512, sDirBackup);
-	strcpy (sDirNew, sDirBackup);
-	strcat (sDirNew, "\\");
-	strcat (sDirNew, Path.c_str());
-	SetCurrentDirectory (sDirNew);
+	SetCurrentDirectory (Path.c_str());
 	uint32 i, m, n, o, p;
 	uint8 k, l;
 
@@ -144,6 +137,9 @@ bool CDataBase::init (const string &Path, CZoneBank &zb)
 		const vector<bool> &rMask = pZBE->getMask();
 
 		NLMISC::CBitmap *pBitmap = loadBitmap (zdbTmpName + ".TGA");
+		if (pBitmap == NULL)
+			continue;
+
 		zdbTmp.WinBitmap = convertToWin (pBitmap);
 		pBitmap->flipV ();
 
@@ -308,9 +304,9 @@ NLMISC::CBitmap *CDataBase::loadBitmap (const std::string &fileName)
 		fileIn.open (fileName);
 		pBitmap->load (fileIn);
 	}
-	catch (Exception& e)
+	catch (Exception& /*e*/)
 	{
-		MessageBox (NULL, e.what(), "Warning", MB_OK);
+// cannot be done		MessageBox (NULL, e.what(), "Warning", MB_OK);
 		delete pBitmap;
 		return NULL;
 	}
@@ -453,17 +449,6 @@ void CBuilderZone::calcMask()
 // ---------------------------------------------------------------------------
 CBuilderZone::CBuilderZone ()
 {
-	// Init the ZoneBank
-	_ZoneBank.debugInit ();
-	initZoneBank ("ZoneLigos");
-
-
-	// Construct the DataBase (Parse the ZoneBitmaps directory)
-	//_DataBase.initFromPath ("ZoneBitmaps");
-	
-	// Construct the DataBase from the ZoneBank
-	_DataBase.init ("ZoneBitmaps", _ZoneBank);
-	
 	// Set Current Filter
 	_FilterType1 = STRING_UNUSED; _FilterValue1 = "";
 	_FilterType2 = STRING_UNUSED; _FilterValue2 = "";
@@ -479,9 +464,31 @@ CBuilderZone::CBuilderZone ()
 	_ApplyFlip = 0;
 	_ApplyFlipRan = false;
 
-	_ZoneRegions.push_back (new CBuilderZoneRegion());
-	_ZoneRegionsName.push_back ("__New_Region__");
-	_ZoneRegionSelected = 0;
+	_Display = NULL;
+	//_ZoneRegions.push_back (new CBuilderZoneRegion());
+	//_ZoneRegionsName.push_back ("__New_Region__");
+	//_ZoneRegionSelected = 0;
+}
+
+// ---------------------------------------------------------------------------
+bool CBuilderZone::init (const string &sPathName, bool makeAZone)
+{
+	string sZoneBankPath = sPathName;
+	sZoneBankPath += "ZoneLigos\\";
+	// Init the ZoneBank
+	_ZoneBank.reset ();
+	_ZoneBank.debugInit (sZoneBankPath.c_str());
+	initZoneBank (sZoneBankPath);
+	
+	// Construct the DataBase from the ZoneBank
+	string sZoneBitmapPath = sPathName;
+	sZoneBitmapPath += "ZoneBitmaps\\";
+	_DataBase.init (sZoneBitmapPath.c_str(), _ZoneBank);
+
+	if (makeAZone)
+		newZone();
+	
+	return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -558,15 +565,29 @@ void CBuilderZone::updateToolsZone ()
 }
 
 // ---------------------------------------------------------------------------
-bool CBuilderZone::load (const char *fileName)
+bool CBuilderZone::load (const char *fileName, const char *path)
 {
-	newZone ();	
+	string sTmp = fileName;
+	for (uint32 i = 0; i < _ZoneRegionNames.size(); ++i)
+	if (_ZoneRegionNames[i] == sTmp)
+	{
+		_ZoneRegionSelected = i;
+		calcMask ();
+		if (_Display)
+			_Display->OnDraw (NULL);
+		return true;
+	}
+
+	newZone (false);
 	try
 	{
 		CIFile fileIn;
 		fileIn.open (fileName);
 		_ZoneRegions[_ZoneRegionSelected]->serial (fileIn);
-		_ZoneRegionsName[_ZoneRegionSelected] = fileName;
+		_ZoneRegionNames[_ZoneRegionSelected] = fileName;
+		_FullNames[_ZoneRegionSelected] = path;
+		_FullNames[_ZoneRegionSelected] += "\\";
+		_FullNames[_ZoneRegionSelected] += fileName;
 	}
 	catch (Exception& e)
 	{
@@ -611,16 +632,30 @@ bool CBuilderZone::save(const char *fileName)
 	fileOut.open (fileName);
 	_ZoneRegions[_ZoneRegionSelected]->reduceMin ();
 	_ZoneRegions[_ZoneRegionSelected]->serial (fileOut);
-	_ZoneRegionsName[_ZoneRegionSelected] = fileName;
+	_ZoneRegionNames[_ZoneRegionSelected] = fileName;
 	fileOut.close ();
 	return true;
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderZone::newZone ()
+void CBuilderZone::autoSaveAll ()
+{
+	for (uint32 i = 0; i < _ZoneRegions.size(); ++i)
+	{
+		COFile fileOut;
+		fileOut.open (_FullNames[i]);
+		_ZoneRegions[i]->reduceMin ();
+		_ZoneRegions[i]->serial (fileOut);
+		fileOut.close ();
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::newZone (bool bDisplay)
 {
 	_ZoneRegions.push_back (new CBuilderZoneRegion);
-	_ZoneRegionsName.push_back ("__New_Region__");
+	_ZoneRegionNames.push_back ("__New_Region__");
+	_FullNames.push_back ("");
 	_ZoneRegionSelected = _ZoneRegions.size() - 1;
 	// Select starting point for the moment 0,0
 	sint32 i;
@@ -637,7 +672,7 @@ void CBuilderZone::newZone ()
 	}
 	_ZoneRegions[_ZoneRegionSelected]->setStart (x,y);
 	calcMask ();
-	if (_Display)
+	if ((_Display)&&(bDisplay))
 		_Display->OnDraw (NULL);
 }
 
@@ -649,8 +684,14 @@ void CBuilderZone::unload (uint32 pos)
 		return;
 	delete _ZoneRegions[pos];
 	for (i = pos; i < (_ZoneRegions.size()-1); ++i)
+	{
 		_ZoneRegions[i] = _ZoneRegions[i+1];
+		_ZoneRegionNames[i] = _ZoneRegionNames[i+1];
+		_FullNames[i] = _FullNames[i+1];
+	}
 	_ZoneRegions.resize (_ZoneRegions.size()-1);
+	_ZoneRegionNames.resize (_ZoneRegionNames.size()-1);
+	_FullNames.resize (_FullNames.size()-1);
 	if (_ZoneRegionSelected == (sint32)_ZoneRegions.size())
 		_ZoneRegionSelected = _ZoneRegions.size()-1;
 	calcMask ();
@@ -659,33 +700,24 @@ void CBuilderZone::unload (uint32 pos)
 }
 
 // ---------------------------------------------------------------------------
-// SCacheRender is a simple structure to store triangles for each texture in the scene
-struct SCacheRender
+CBuilderZone::SCacheRender::SCacheRender()
 {
-	bool			Used;
-	CVertexBuffer	VB;
-	CPrimitiveBlock PB;
-	CMaterial		Mat;
-
-	SCacheRender()
-	{
-		Used = false;
-		Mat.initUnlit ();
-		Mat.setBlend (false);
-		VB.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag|CVertexBuffer::PrimaryColorFlag);
-	}
-};
+	Used = false;
+	Mat.initUnlit ();
+	Mat.setBlend (false);
+	VB.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag|CVertexBuffer::PrimaryColorFlag);
+}
 
 // ---------------------------------------------------------------------------
 void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector &viewMax)
 {
-	static SCacheRender CacheRender[64+2]; // 64+2 (unused and NULL)
 	sint32 i, zoneSelected;
 
+	// Reset the cache
 	for (i = 0; i < (64+2); ++i)
 	{
-		CacheRender[i].VB.setNumVertices (0);
-		CacheRender[i].PB.setNumTri (0);
+		_CacheRender[i].VB.setNumVertices (0);
+		_CacheRender[i].PB.setNumTri (0);
 	}
 
 	// Select all blocks visible
@@ -733,19 +765,19 @@ void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector
 
 			// Look if already existing texture exists in the cache
 			for (i = 0; i < (64+2); ++i)
-			if (CacheRender[i].Used)
-				if (CacheRender[i].Mat.getTexture(0) == pTexture)
+			if (_CacheRender[i].Used)
+				if (_CacheRender[i].Mat.getTexture(0) == pTexture)
 					break;
 
 			if (i == (64+2))
 			{
 				// Use a new CacheRender slot
 				for (i = 0; i < (64+2); ++i)
-					if (!CacheRender[i].Used)
+					if (!_CacheRender[i].Used)
 						break;
 				nlassert(i<(64+2));
-				CacheRender[i].Used = true;
-				CacheRender[i].Mat.setTexture (0, pTexture);
+				_CacheRender[i].Used = true;
+				_CacheRender[i].Mat.setTexture (0, pTexture);
 			}
 
 			pos1.x = (minx-viewMin.x)/(viewMax.x-viewMin.x);
@@ -764,29 +796,40 @@ void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector
 			pos4.y = 0.0f;
 			pos4.z = (_Display->_CellSize+miny-viewMin.y)/(viewMax.y-viewMin.y);
 
-			uint32 nBasePt = CacheRender[i].VB.getNumVertices();
-			CacheRender[i].VB.setNumVertices (nBasePt+4);
-			CacheRender[i].VB.setVertexCoord (nBasePt+0, pos1);
-			CacheRender[i].VB.setVertexCoord (nBasePt+1, pos2);
-			CacheRender[i].VB.setVertexCoord (nBasePt+2, pos3);
-			CacheRender[i].VB.setVertexCoord (nBasePt+3, pos4);
+			uint32 nBasePt = _CacheRender[i].VB.getNumVertices();
+			_CacheRender[i].VB.setNumVertices (nBasePt+4);
+			_CacheRender[i].VB.setVertexCoord (nBasePt+0, pos1);
+			_CacheRender[i].VB.setVertexCoord (nBasePt+1, pos2);
+			_CacheRender[i].VB.setVertexCoord (nBasePt+2, pos3);
+			_CacheRender[i].VB.setVertexCoord (nBasePt+3, pos4);
 
-			uint32 nBaseTri = CacheRender[i].PB.getNumTri ();
-			CacheRender[i].PB.setNumTri (nBaseTri+2);
-			CacheRender[i].PB.setTri (nBaseTri+0, nBasePt+0, nBasePt+1, nBasePt+2);
-			CacheRender[i].PB.setTri (nBaseTri+1, nBasePt+0, nBasePt+2, nBasePt+3);
 
-			if (_ZoneRegions[zoneSelected]->getFlip (x, y) == 1)
+			uint32 nBaseTri = _CacheRender[i].PB.getNumTri ();
+			_CacheRender[i].PB.setNumTri (nBaseTri+2);
+			_CacheRender[i].PB.setTri (nBaseTri+0, nBasePt+0, nBasePt+1, nBasePt+2);
+			_CacheRender[i].PB.setTri (nBaseTri+1, nBasePt+0, nBasePt+2, nBasePt+3);
+
+			if ((zoneSelected>=0)&&(zoneSelected<_ZoneRegions.size()))
 			{
-				float rTmp = uvMin.U;
-				uvMin.U = uvMax.U;
-				uvMax.U = rTmp;
-			}
+				if (_ZoneRegions[zoneSelected]->getFlip (x, y) == 1)
+				{
+					float rTmp = uvMin.U;
+					uvMin.U = uvMax.U;
+					uvMax.U = rTmp;
+				}
 
-			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegions[zoneSelected]->getRot (x, y)+0)%4, 0, CUV(uvMin.U, uvMin.V));
-			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegions[zoneSelected]->getRot (x, y)+1)%4, 0, CUV(uvMax.U, uvMin.V));
-			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegions[zoneSelected]->getRot (x, y)+2)%4, 0, CUV(uvMax.U, uvMax.V));
-			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegions[zoneSelected]->getRot (x, y)+3)%4, 0, CUV(uvMin.U, uvMax.V));
+				_CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegions[zoneSelected]->getRot (x, y)+0)%4, 0, CUV(uvMin.U, uvMin.V));
+				_CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegions[zoneSelected]->getRot (x, y)+1)%4, 0, CUV(uvMax.U, uvMin.V));
+				_CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegions[zoneSelected]->getRot (x, y)+2)%4, 0, CUV(uvMax.U, uvMax.V));
+				_CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegions[zoneSelected]->getRot (x, y)+3)%4, 0, CUV(uvMin.U, uvMax.V));
+			}
+			else
+			{
+				_CacheRender[i].VB.setTexCoord (nBasePt+0, 0, CUV(uvMin.U, uvMin.V));
+				_CacheRender[i].VB.setTexCoord (nBasePt+1, 0, CUV(uvMax.U, uvMin.V));
+				_CacheRender[i].VB.setTexCoord (nBasePt+2, 0, CUV(uvMax.U, uvMax.V));
+				_CacheRender[i].VB.setTexCoord (nBasePt+3, 0, CUV(uvMin.U, uvMax.V));
+			}
 
 			NLMISC::CRGBA color;
 
@@ -795,17 +838,17 @@ void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector
 			else
 				color = NLMISC::CRGBA(127, 127, 127, 255);
 
-			CacheRender[i].VB.setColor (nBasePt+0, color);
-			CacheRender[i].VB.setColor (nBasePt+1, color);
-			CacheRender[i].VB.setColor (nBasePt+2, color);
-			CacheRender[i].VB.setColor (nBasePt+3, color);
+			_CacheRender[i].VB.setColor (nBasePt+0, color);
+			_CacheRender[i].VB.setColor (nBasePt+1, color);
+			_CacheRender[i].VB.setColor (nBasePt+2, color);
+			_CacheRender[i].VB.setColor (nBasePt+3, color);
 
 			miny += _Display->_CellSize;
 		}
 		minx += _Display->_CellSize;
 	}
 
-
+	// Flush the cache to the screen
 	CMatrix mtx;
 	mtx.identity();
 	CNELU::Driver->setupViewport (CViewport());
@@ -814,11 +857,11 @@ void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector
 	CNELU::Driver->setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
 
 	for (i = 0; i < (64+2); ++i)
-	if (CacheRender[i].Used)
+	if (_CacheRender[i].Used)
 	{
 		// Render with driver
-		CNELU::Driver->activeVertexBuffer (CacheRender[i].VB);
-		CNELU::Driver->render (CacheRender[i].PB, CacheRender[i].Mat);
+		CNELU::Driver->activeVertexBuffer (_CacheRender[i].VB);
+		CNELU::Driver->render (_CacheRender[i].PB, _CacheRender[i].Mat);
 	}
 }
 
@@ -1045,15 +1088,11 @@ void CBuilderZone::del (const CVector &worldPos)
 }
 
 // ---------------------------------------------------------------------------
-bool CBuilderZone::initZoneBank (const string &pathName)
+bool CBuilderZone::initZoneBank (const string &sPathName)
 {
 	char sDirBackup[512];
-	char sDirNew[512];
 	GetCurrentDirectory (512, sDirBackup);
-	strcpy (sDirNew, sDirBackup);
-	strcat (sDirNew, "\\");
-	strcat (sDirNew, pathName.c_str());
-	SetCurrentDirectory (sDirNew);
+	SetCurrentDirectory (sPathName.c_str());
 	WIN32_FIND_DATA findData;
 	HANDLE hFind;
 	hFind = FindFirstFile ("*.ligozone", &findData);
@@ -1103,7 +1142,7 @@ uint32 CBuilderZone::getNbZoneRegion ()
 // ---------------------------------------------------------------------------
 const string& CBuilderZone::getZoneRegionName (uint32 i)
 {
-	return _ZoneRegionsName[i];
+	return _ZoneRegionNames[i];
 }
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file zone_bank.h
  * Zone Bank
  *
- * $Id: zone_bank.h,v 1.6 2001/11/16 11:04:00 besson Exp $
+ * $Id: zone_bank.h,v 1.7 2001/11/27 16:15:30 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -95,11 +95,12 @@ public:
 
 	// Debug stuff beg
 	// ---------------
-	void debugInit(); // \todo trap see with hulud how we initialize this structure
+	void debugInit(const std::string &sPath); // \todo trap see with hulud how we initialize this structure
 	void debugSaveInit(CZoneBankElement &zbeTmp, const std::string &fileName);
 	// ---------------
 	// Debug stuff end
 
+	void reset ();
 	/// Initialize the zone bank with all files present in the path given (note pathName must not end with '\\')
 	void initFromPath (const std::string &pathName);
 	/// Load an element in the current directory

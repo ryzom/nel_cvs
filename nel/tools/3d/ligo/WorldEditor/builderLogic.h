@@ -26,11 +26,8 @@ namespace NL3D
 
 // ***************************************************************************
 
-class CPrimBuild
+struct SPrimBuild
 {
-
-public:
-	
 	NLLIGO::CPrimRegion	*PRegion;
 
 	sint32				Type;		// 0 (Point),1 (Path), 2 (Zone),-1 (Not Valid)
@@ -38,8 +35,7 @@ public:
 	sint32				Pos;
 	bool				hidden;
 	
-	CPrimBuild();
-
+	SPrimBuild();
 };
 
 // ***************************************************************************
@@ -49,19 +45,21 @@ class CBuilderLogic
 
 
 	//NLLIGO::CPrimRegion			PRegion;
-	std::vector<NLLIGO::CPrimRegion*>	PRegions;
-	sint32								RegionSelected;
+	std::vector<NLLIGO::CPrimRegion*>	_PRegions;
+	std::vector<std::string>			_FullNames;
+	sint32								_RegionSelected;
 
 	// Tools accelerator
-	std::map<HTREEITEM, CPrimBuild>		Primitives;
+	std::map<HTREEITEM, SPrimBuild>		_Primitives;
 
 	// Selection
-	HTREEITEM					ItemSelected;
-	sint32						VertexSelected;
-	NLMISC::CRGBA				SelectionCol;
+	HTREEITEM					_ItemSelected;
+	sint32						_VertexSelected;
+	NLMISC::CRGBA				_SelectionCol;
 
 	CDisplay					*_Display;
 	CToolsLogic					*_ToolsLogic;
+
 
 public:
 
@@ -69,12 +67,13 @@ public:
 	void setDisplay (CDisplay *pDisp);
 	void setToolsLogic	(CToolsLogic *pTool);
 	void updateToolsLogic ();
-	bool load (const char *fileName);
+	bool load (const char *fileName, const char *path);
 	bool save (uint32 nPos, const char *fileName);
+	void autoSaveAll ();
 	void newZone ();
 	void unload (uint32 pos);
 	uint32 getNbZoneRegion();
-	const std::string &getZoneRegionName(uint32 nPos);
+	const std::string &getZoneRegionName (uint32 nPos);
 
 	void insertPoint (uint32 nPos, HTREEITEM item, const char *Name, const char *LayerName);
 	void insertPath (uint32 nPos, HTREEITEM item, const char *Name, const char *LayerName);

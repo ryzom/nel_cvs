@@ -1,7 +1,7 @@
 /** \file zone_bank.cpp
  * Zone Bank
  *
- * $Id: zone_bank.cpp,v 1.6 2001/11/16 11:04:00 besson Exp $
+ * $Id: zone_bank.cpp,v 1.7 2001/11/27 16:15:30 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -153,7 +153,7 @@ void CZoneBank::debugSaveInit (CZoneBankElement &zbeTmp, const string &fileName)
 }
 
 // ---------------------------------------------------------------------------
-void CZoneBank::debugInit() // \ todo trap remove this
+void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 {
 	CZoneBankElement zbeTmp;
 	zbeTmp.addCategory ("Zone", "Zone001");
@@ -161,7 +161,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("Material", "titFleur");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\Zone001.ligozone");
+	debugSaveInit (zbeTmp, sPath + "Zone001.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	
@@ -171,7 +171,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("Material", "titFleur");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\Zone002.ligozone");
+	debugSaveInit (zbeTmp, sPath + "Zone002.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 
@@ -183,7 +183,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp._Mask.push_back (false);
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\Zone003.ligozone");
+	debugSaveInit (zbeTmp, sPath + "Zone003.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 
@@ -195,7 +195,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\Zone004.ligozone");
+	debugSaveInit (zbeTmp, sPath + "Zone004.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 
@@ -204,7 +204,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("Material", "grozFleur");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\Zone005.ligozone");
+	debugSaveInit (zbeTmp, sPath + "Zone005.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 
@@ -220,7 +220,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (false);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\Zone006.ligozone");
+	debugSaveInit (zbeTmp, sPath + "Zone006.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -230,7 +230,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("Material", "grozFleur");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\Zone007.ligozone");
+	debugSaveInit (zbeTmp, sPath + "Zone007.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -243,7 +243,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\Zone008.ligozone");
+	debugSaveInit (zbeTmp, sPath + "Zone008.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -256,7 +256,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\Zone009.ligozone");
+	debugSaveInit (zbeTmp, sPath + "Zone009.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -266,7 +266,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("Material", "prairie");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\Zone010.ligozone");
+	debugSaveInit (zbeTmp, sPath + "Zone010.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -278,7 +278,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "0");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\WT0.ligozone");
+	debugSaveInit (zbeTmp, sPath + "WT0.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -290,7 +290,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "1");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\WT1.ligozone");
+	debugSaveInit (zbeTmp, sPath + "WT1.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -302,7 +302,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "2");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\WT2.ligozone");
+	debugSaveInit (zbeTmp, sPath + "WT2.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -314,7 +314,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "3");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\WT3.ligozone");
+	debugSaveInit (zbeTmp, sPath + "WT3.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -326,7 +326,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "4");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\WT4.ligozone");
+	debugSaveInit (zbeTmp, sPath + "WT4.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -338,7 +338,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "5");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\WT5.ligozone");
+	debugSaveInit (zbeTmp, sPath + "WT5.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -350,7 +350,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "6");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\WT6.ligozone");
+	debugSaveInit (zbeTmp, sPath + "WT6.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -362,7 +362,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "7");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\WT7.ligozone");
+	debugSaveInit (zbeTmp, sPath + "WT7.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -374,7 +374,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "8");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\WT8.ligozone");
+	debugSaveInit (zbeTmp, sPath + "WT8.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -386,7 +386,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "0");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\ZT0.ligozone");
+	debugSaveInit (zbeTmp, sPath + "ZT0.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -398,7 +398,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "1");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\ZT1.ligozone");
+	debugSaveInit (zbeTmp, sPath + "ZT1.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -410,7 +410,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "2");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\ZT2.ligozone");
+	debugSaveInit (zbeTmp, sPath + "ZT2.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -422,7 +422,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "3");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\ZT3.ligozone");
+	debugSaveInit (zbeTmp, sPath + "ZT3.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -434,7 +434,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "4");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\ZT4.ligozone");
+	debugSaveInit (zbeTmp, sPath + "ZT4.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -446,7 +446,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "5");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\ZT5.ligozone");
+	debugSaveInit (zbeTmp, sPath + "ZT5.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -458,7 +458,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "6");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\ZT6.ligozone");
+	debugSaveInit (zbeTmp, sPath + "ZT6.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -470,7 +470,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "7");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\ZT7.ligozone");
+	debugSaveInit (zbeTmp, sPath + "ZT7.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
@@ -482,11 +482,18 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("TransNum", "8");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
-	debugSaveInit (zbeTmp, "ZoneLigos\\ZT8.ligozone");
+	debugSaveInit (zbeTmp, sPath + "ZT8.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
+}
+
+// ---------------------------------------------------------------------------
+void CZoneBank::reset ()
+{
+	_ElementsMap.clear ();
+	_Selection.clear ();
 }
 
 // ---------------------------------------------------------------------------

@@ -18,7 +18,7 @@
 
 class CMainFrame : public CFrameWnd
 {
-	
+
 public:
 	CMainFrame ();
 
@@ -27,18 +27,28 @@ protected:
 
 // Attributes
 public:
+	int					createX, createY, createCX, createCY;
+
 	bool				_Exit;
 	bool				_SplitterCreated;
 	NLLIGO::CLigoConfig _Config;
 	CBuilderLogic		_PRegionBuilder;
 	CBuilderZone		_ZoneBuilder;
 	sint32				_Mode;	// 0-Mode Zone, 1-Mode Logic
+	std::string			_RootDir;
 // Operations
 public:
+	void setRootDir (const char* str);
+	void loadLand (const char* str, const char* path);
+	void loadPrim (const char* str, const char* path);
+	void saveAll ();
 	void initDisplay();
 	void uninitTools();
 	void initTools();
-	bool loadConfig();
+
+	// Initialize the main frame (must be done before init of the tools)
+	bool init (bool bMakeAZone = true);
+
 	void displayCoordinates(NLMISC::CVector &v);
 	void adjustSplitter();
 // Overrides

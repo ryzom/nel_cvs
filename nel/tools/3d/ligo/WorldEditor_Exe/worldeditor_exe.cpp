@@ -83,6 +83,9 @@ BOOL CWorldEditorApp::InitInstance()
 
 #include "stdafx.h"
 #include "../worldeditor/worldeditor_interface.h"
+#include <string>
+
+using namespace std;
 
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -98,11 +101,37 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	if (commandLinePtr[strlen (commandLinePtr)-1]=='"')
 		commandLinePtr[strlen (commandLinePtr)-1]=0;
 
+
+	string _RootDir;
+	HMODULE hModule = GetModuleHandle ("WORLDEDITOR.EXE");
+	if (hModule)
+	{
+		// Get the path
+		char sModulePath[256];
+		int res = GetModuleFileName (hModule, sModulePath, 256);
+
+		// Success ?
+		if (res)
+		{
+			// Path
+			char sDrive[256];
+			char sDir[256];
+			_splitpath (sModulePath, sDrive, sDir, NULL, NULL);
+			_RootDir = sDrive;
+			_RootDir += sDir;
+		}
+	}
+
+
+
+
+
  	// Create a object viewer
 	IWorldEditor *pWorldEditor=IWorldEditor::getInterface();
 
 	if (pWorldEditor)
 	{
+		pWorldEditor->setRootDir (_RootDir.c_str());
 		// Init ui
 		pWorldEditor->initUI ();
 

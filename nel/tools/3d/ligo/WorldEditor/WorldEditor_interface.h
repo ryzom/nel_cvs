@@ -1,6 +1,6 @@
 /** \file WorldEditor_interface.h
  *
- * $Id: WorldEditor_interface.h,v 1.1 2001/10/24 14:35:53 besson Exp $
+ * $Id: WorldEditor_interface.h,v 1.2 2001/11/27 16:15:30 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,13 +40,29 @@ public:
 	// Init the UI
 	virtual void initUI (HWND parent=NULL)=0;
 
+	// Init the UI Light version
+	virtual void initUILight (int x, int y, int cx, int cy)=0;
+
 	// Go
 	virtual void go ()=0;
 
 	// Release the UI
 	virtual void releaseUI ()=0;
 
+	// Get the main frame
 	virtual void*getMainFrame ()=0;
+
+	// Set the root path directory
+	virtual void setRootDir (const char *sPathName)=0;
+
+	// Create the default files given the base name (add extension)
+	virtual void createDefaultFiles(const char *fileBaseName)=0;
+
+	// Load a specific file and make it by default
+	virtual void loadFile(const char *fileName)=0;
+
+	// Save all files opened
+	virtual void saveOpenedFiles()=0;
 
 	// Get instance
 	static WORLDEDITOR_EXPORT IWorldEditor* getInterface (int version=WORLDEDITOR_VERSION);
@@ -54,5 +70,13 @@ public:
 	// Release instance
 	static WORLDEDITOR_EXPORT void releaseInterface (IWorldEditor* view);
 };
+
+// To export the names in a good format that can be human readable and not with the heavy style
+// of the MFC we have to do it in 'old-school' mode
+extern "C" 
+{
+	WORLDEDITOR_EXPORT IWorldEditor* IWorldEditorGetInterface (int version=WORLDEDITOR_VERSION);
+	WORLDEDITOR_EXPORT void IWorldEditorReleaseInterface (IWorldEditor* pWE);
+} 
 
 #endif OBJECT_VIEWER_INTERFACE

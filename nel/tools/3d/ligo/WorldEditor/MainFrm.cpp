@@ -13,7 +13,10 @@
 #include "MainFrm.h"
 #include "resource.h"
 
+#include <string>
+
 using namespace NLLIGO;
+using namespace std;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,11 +73,43 @@ CMainFrame::CMainFrame()
 {
 	_Mode = 0;
 	_SplitterCreated = false;
+	createX = createY = createCX = createCY =0;
 }
 
 // ---------------------------------------------------------------------------
 CMainFrame::~CMainFrame()
 {
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::setRootDir (const char* str)
+{
+	_RootDir = str;
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::loadLand (const char* str, const char* path)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	_ZoneBuilder.load (str, path);
+	_ZoneBuilder.stackReset ();
+	OnMenuModeZone();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::loadPrim (const char* str, const char* path)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	_PRegionBuilder.load (str, path);
+	OnMenuModeLogic();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::saveAll ()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	_ZoneBuilder.autoSaveAll();
+	_PRegionBuilder.autoSaveAll();
 }
 
 // ---------------------------------------------------------------------------
@@ -113,6 +148,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	if ((createCX != 0)&&(createCY != 0))
+	{
+		cs.x = createX;
+		cs.y = createY;
+		cs.cx = createCX;
+		cs.cy = createCY;
+	}
+
 	if( !CFrameWnd::PreCreateWindow(cs) )
 		return FALSE;
 	return TRUE;
@@ -233,44 +277,35 @@ void CMainFrame::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 
 // ---------------------------------------------------------------------------
-bool CMainFrame::loadConfig ()
+bool CMainFrame::init (bool bMakeAZone)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	// Get the module path
-	HMODULE hModule = GetModuleHandle ("WORLDEDITOR.EXE");
-	if (hModule)
+
+	try
 	{
-		// Get the path
-		char sModulePath[256];
-		int res=GetModuleFileName (hModule, sModulePath, 256);
+		string sConfigFileName = _RootDir;
+		sConfigFileName += "ligoscape.cfg";
+		// Load the config file
+		_Config.read (sConfigFileName.c_str());
 
-		// Success ?
-		if (res)
-		{
-			// Path
-			char sDrive[256];
-			char sDir[256];
-			_splitpath (sModulePath, sDrive, sDir, NULL, NULL);
-			_makepath (sModulePath, sDrive, sDir, "ligoscape", ".cfg");
-
-			try
-			{
-				// Load the config file
-				_Config.read (sModulePath);
-
-				// ok
-				return true;
-			}
-			catch (NLMISC::Exception& e)
-			{
-				MessageBox (e.what(), "Warning");
-			}
-		}
+		_ZoneBuilder.init (_RootDir, bMakeAZone);
+		// ok
+		return true;
+	}
+	catch (NLMISC::Exception& e)
+	{
+		MessageBox (e.what(), "Warning");
 	}
 	// Can't found the module put some default values
 //	_Config.CellSize = 160.0f;
 	_Config.CellSize = 10.0f;
 	_Config.Snap = 1.0f;
+
+
+	_ZoneBuilder.init (_RootDir, bMakeAZone);
+
+
 	return false;
 }
 
@@ -301,10 +336,10 @@ void CMainFrame::OnMenuFileUnloadLogic ()
 // ---------------------------------------------------------------------------
 void CMainFrame::OnMenuFileOpenLogic ()
 {
-	CFileDialog dialog (true, "logic", NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, "Logic (*.logic)|*.logic", this);
+	CFileDialog dialog (true, "prim", NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, "Primitives (*.prim)|*.prim", this);
 	if (dialog.DoModal() == IDOK)
 	{
-		_PRegionBuilder.load ((LPCTSTR)dialog.GetFileName());
+		_PRegionBuilder.load ((LPCTSTR)dialog.GetFileName(), "");
 	}
 }
 
@@ -316,7 +351,7 @@ void CMainFrame::OnMenuFileSaveLogic ()
 	seldial.setLogic (&_PRegionBuilder);
 	if (seldial.DoModal () == IDOK)
 	{
-		CFileDialog dialog (false, "logic");
+		CFileDialog dialog (false, "prim");
 		if (dialog.DoModal() == IDOK)
 		{
 			_PRegionBuilder.save (seldial.getSel(), (LPCTSTR)dialog.GetFileName());
@@ -351,7 +386,7 @@ void CMainFrame::OnMenuFileOpenLandscape ()
 	CFileDialog dialog (true, "land", NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, "Landscape (*.land)|*.land", this);
 	if (dialog.DoModal() == IDOK)
 	{
-		_ZoneBuilder.load ((LPCTSTR)dialog.GetFileName());
+		_ZoneBuilder.load ((LPCTSTR)dialog.GetFileName(), "");
 		_ZoneBuilder.stackReset ();
 	}
 }

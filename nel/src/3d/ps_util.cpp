@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.30 2001/10/04 12:19:17 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.31 2001/12/06 16:52:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,7 @@
 #include "3d/ps_located.h"
 #include "3d/ps_particle.h"
 #include "3d/ps_particle2.h"
+#include "3d/ps_mesh.h"
 #include "3d/ps_force.h"
 #include "3d/ps_zone.h"
 #include "3d/ps_color.h"
@@ -68,11 +69,11 @@ using NLMISC::CVector;
 
 float CPSUtil::_CosTable[256];
 float CPSUtil::_SinTable[256];
-
-
 float CPSUtil::_PerlinNoiseTab[1024];
 
 
+
+//==========================================================================
 void CPSUtil::initPerlinNoiseTable(void)
 {
 	for (uint32 k = 0; k < 1024; ++k)
@@ -84,7 +85,7 @@ void CPSUtil::initPerlinNoiseTable(void)
 	//#endif
 }
 
-
+//==========================================================================
 void CPSUtil::initFastCosNSinTable(void)
 {
 	for (uint32 k = 0; k < 256; k++)
@@ -98,7 +99,7 @@ void CPSUtil::initFastCosNSinTable(void)
 	//#endif
 }
 
-
+//==========================================================================
 void CPSUtil::registerSerialParticleSystem(void)
 {
 		NLMISC_REGISTER_CLASS(CPSEmitterOmni);
@@ -165,10 +166,11 @@ void CPSUtil::registerSerialParticleSystem(void)
 		initFastCosNSinTable(); // init fast cosine lookup table
 		initPerlinNoiseTable(); // init perlin noise table
 		CPSFanLight::initFanLightPrecalc();
-
+		CPSQuad::initVertexBuffers();
+		CPSConstraintMesh::initPrerotVB();
 }
 
-
+//==========================================================================
 void CPSUtil::displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLMISC::CRGBA col /* = NLMISC::CRGBA::White */)
 {	
 	CVector max = box.getMax()
@@ -221,11 +223,10 @@ void CPSUtil::displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLM
 	driver->setupModelMatrix(mat);
 	driver->activeVertexBuffer(vb);
 	driver->render(pb, material);
-
 }
 
 
-
+//==========================================================================
 void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector &v, float size, CRGBA col1, CRGBA col2)
 {
 
@@ -265,10 +266,9 @@ void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector 
 
 	driver->activeVertexBuffer(vb, 0, 5);
 	driver->renderTriangles(material,  vTab, 6);
-
-
 }
 
+//==========================================================================
 void CPSUtil::displayBasis(IDriver *driver, const CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm)
 {
 	CMaterial material;
@@ -291,7 +291,7 @@ void CPSUtil::displayBasis(IDriver *driver, const CMatrix &modelMat, const NLMIS
 };
 
 
-
+//==========================================================================
 void CPSUtil::print(IDriver *driver, const std::string &text, CFontGenerator &fg, CFontManager &fm, const CVector &pos, float size)
 {
 	nlassert((&fg) && (&fm));	
@@ -309,18 +309,17 @@ void CPSUtil::print(IDriver *driver, const std::string &text, CFontGenerator &fg
 	mat.scale(CVector(size, size, size));		
 	mat.transpose();
 	mat.setPos(pos);	 
-
-
 	cptedString.render3D(*driver, mat);
 }
 
 
 
+
+//==========================================================================
 /**
 * Compute the union of 2 aabboxes, that is the  aabbox that contains the 2.
 * Should end up in NLMISC
 */
-
 
 NLMISC::CAABBox CPSUtil::computeAABBoxUnion(const NLMISC::CAABBox &b1, const NLMISC::CAABBox &b2)
 {	
@@ -337,6 +336,7 @@ NLMISC::CAABBox CPSUtil::computeAABBoxUnion(const NLMISC::CAABBox &b1, const NLM
 }
 
 
+//==========================================================================
 NLMISC::CAABBox CPSUtil::transformAABBox(const NLMISC::CMatrix &mat, const NLMISC::CAABBox &box)
 {
 	// TODO : optimize this a bit if possible
@@ -363,6 +363,7 @@ NLMISC::CAABBox CPSUtil::transformAABBox(const NLMISC::CMatrix &mat, const NLMIS
 }
 
 
+//==========================================================================
 CMatrix CPSUtil::buildSchmidtBasis(const CVector &k_)
 {
 	const float epsilon = 10E-4f;
@@ -394,7 +395,7 @@ CMatrix CPSUtil::buildSchmidtBasis(const CVector &k_)
 }
 
 
-
+//==========================================================================
 void CPSUtil::displaySphere(IDriver &driver, float radius, const CVector &center, uint nbSubdiv, CRGBA color)
 {
 	uint x, y, k;
@@ -440,7 +441,7 @@ void CPSUtil::displaySphere(IDriver &driver, float radius, const CVector &center
 }
 
 
-
+//==========================================================================
 void CPSUtil::displayDisc(IDriver &driver, float radius, const CVector &center, const CMatrix &mat, uint nbSubdiv, CRGBA color)
 {
 	// not optimized, but for edition only
@@ -459,7 +460,7 @@ void CPSUtil::displayDisc(IDriver &driver, float radius, const CVector &center, 
 
 }
 
-
+//==========================================================================
 void CPSUtil::displayCylinder(IDriver &driver, const CVector &center, const CMatrix &mat, const CVector &dim, uint nbSubdiv, CRGBA color)
 {
 	// not optimized, but for edition only
@@ -491,7 +492,7 @@ void CPSUtil::displayCylinder(IDriver &driver, const CVector &center, const CMat
 	}	
 }
 
-
+//==========================================================================
 void CPSUtil::display3DQuad(IDriver &driver, const CVector &c1, const CVector &c2
 								,const CVector &c3,  const CVector &c4, CRGBA color)
 {

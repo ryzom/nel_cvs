@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
  * <File description>
  *
- * $Id: animation_set_user.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: animation_set_user.h,v 1.2 2001/06/19 08:16:34 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,10 +28,13 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
-#include "3d/animation_set.h"
-#include "nel/3d/u_animation_set.h"
 #include "nel/misc/smart_ptr.h"
+#include "nel/misc/file.h"
+#include "nel/misc/path.h"
 
+#include "nel/3d/u_animation_set.h"
+
+#include "3d/animation_set.h"
 
 namespace NL3D 
 {
@@ -67,7 +70,41 @@ public:
 		_AnimationSet->serial(f);
 	}
 
+	/**
+	  *  Add an animation in the animation set. After adding all your animations, call build().
+	  *
+	  * \param fileName is the animation filename
+	  * \param animName is the name of the animation in the animation set.
+	  * \return NotFound if the file is not found.
+	  */
+	uint addAnimation (const char* fileName, const char* animName)
+	{
+		// Allocate an animation
+		CAnimation *anim=new CAnimation;
 
+		// Read it
+		NLMISC::CIFile file;
+		if (file.open ( NLMISC::CPath::lookup( fileName ) ) )
+		{
+			// Serial the animation
+			file.serial (*anim);
+
+			// Add the animation
+			uint id=_AnimationSet->addAnimation (animName, anim);
+
+			// Return id
+			return id;
+		}
+		else return UAnimationSet::NotFound;
+	}
+
+	/**
+	  *  Build the animation set. Call build after adding all your animations.
+	  */
+	virtual	void build ()
+	{
+		_AnimationSet->build ();
+	}
 
 	/// \name Animations mgt.
 	// @{

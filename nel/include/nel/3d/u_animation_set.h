@@ -1,7 +1,7 @@
 /** \file u_animation_set.h
  * <File description>
  *
- * $Id: u_animation_set.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_animation_set.h,v 1.2 2001/06/19 08:16:34 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,23 @@ public:
 
 public:
 
+	/// \name Set build.
+	// @{
+	/**
+	  *  Add an animation in the animation set. After adding all your animations, call build().
+	  *  This method use CPath to search the animation file.
+	  *
+	  * \param fileName is the animation filename
+	  * \param animName is the name of the animation in the animation set.
+	  * \return the id of the new animation or NotFound if the file is not found.
+	  */
+	virtual	uint addAnimation (const char* fileName, const char* animName) =0;
+
+	/**
+	  *  Build the animation set. Call build after adding all your animations.
+	  */
+	virtual	void build () =0;
+	// @}
 
 	/// \name Animations mgt.
 	// @{

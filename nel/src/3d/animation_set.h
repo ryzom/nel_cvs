@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: animation_set.h,v 1.2 2001/06/19 08:16:34 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -192,10 +192,7 @@ public:
 	/**
 	  * Final build of the animation set.
 	  *
-	  * First, for each animation you want to add to the set, you must:
-	  * 1) add an empty animation using the method addAnimation().
-	  * 2) get a writable animation pointer on it with getAnimation().
-	  * 3) build this animation.
+	  * First, for each animation you want to add to the set, you must add the animation in the set.
 	  *
 	  * When all animations are built, call this method to finlize the set.
 	  */

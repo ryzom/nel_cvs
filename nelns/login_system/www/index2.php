@@ -61,7 +61,8 @@
 		else
 		{
 			$row = mysql_fetch_row ($result);
-			if ($row[2] == $password)
+			$salt = substr($row[2],0,2);
+			if ($row[2] == crypt($password, $salt))
 			{
 				// check if the user can use this application
 

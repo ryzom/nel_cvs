@@ -377,11 +377,11 @@ SOURCE=..\include\nel\misc\buf_fifo.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\misc\contiguous_block_allocator.cpp
+SOURCE=.\misc\contiguous_block_allocator.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\include\nel\misc\contiguous_block_allocator.h
+SOURCE=..\include\nel\misc\contiguous_block_allocator.h
 # End Source File
 # Begin Source File
 
@@ -393,11 +393,11 @@ SOURCE=..\include\nel\misc\fast_mem.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\misc\fixed_size_allocator.cpp
+SOURCE=.\misc\fixed_size_allocator.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\include\nel\misc\fixed_size_allocator.h
+SOURCE=..\include\nel\misc\fixed_size_allocator.h
 # End Source File
 # Begin Source File
 
@@ -422,11 +422,11 @@ SOURCE=..\include\nel\misc\heap_memory.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\misc\object_arena_allocator.cpp
+SOURCE=.\misc\object_arena_allocator.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\include\nel\misc\object_arena_allocator.h
+SOURCE=..\include\nel\misc\object_arena_allocator.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.6 2001/06/19 08:16:07 corvazier Exp $
+ * $Id: scene_group.cpp,v 1.7 2001/07/05 09:37:07 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,31 +142,6 @@ bool CInstanceGroup::addToScene (CScene& scene)
 
 		// Creation and positionning of the new instance
 		_Instances[i] = scene.createInstance ( rInstanceInfo.Name + ".shape" );
-
-		// TempYoyo.
-		// --------	
-		sint	j;
-		CMeshInstance	*mi= (CMeshInstance	*)_Instances[i];
-		for(j=0;j<(sint)mi->Materials.size();j++)
-		{
-			//mi->Materials[j].setTexture(0, NULL);
-			//mi->Materials[j].getTexture(1)->setFilterMode(ITexture::Nearest, ITexture::NearestMipMapOff);
-			CMaterial &mat = mi->Materials[j]; 
-			mi->Materials[j].setColor(CRGBA(255,255,255,255));
-
-
-			// Put lightmap for all materials
-		/*	
-			mi->Materials[j].texEnvOpRGB( 0, CMaterial::Replace );
-			mi->Materials[j].texEnvArg0RGB( 0, CMaterial::&Texture, CMaterial::SrcColor );
-
-			mi->Materials[j].texEnvOpRGB( 1, CMaterial::Replace );
-			mi->Materials[j].texEnvArg0RGB( 1, CMaterial::Texture, CMaterial::SrcColor );
-		*/	
-		}
-		// --------	
-		// TempYoyo end
-	
 
 		if( _Instances[i] == NULL )
 		{

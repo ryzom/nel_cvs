@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.161 2004/03/23 16:32:27 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.162 2004/03/30 14:36:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,6 +127,8 @@ public:
 	CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it, CDriverGL *drvGl);
 	// The gl id is auto deleted here.
 	~CTextureDrvInfosGL();
+	// For Debug info. return the memory cost of this texture
+	virtual uint	getTextureMemoryUsed() const {return TextureMemory;}
 };
 
 

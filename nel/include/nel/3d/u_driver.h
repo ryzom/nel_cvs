@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.41 2004/03/24 16:36:12 berenguier Exp $
+ * $Id: u_driver.h,v 1.42 2004/03/30 14:35:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -638,6 +638,10 @@ public:
 	 */
 	virtual	void			profileVBHardAllocation(std::vector<std::string> &result) = 0;
 
+	/** For each texture setuped in the driver, "print" result: type, shareName, format and size (mipmap included)
+	 */
+	virtual	void			profileTextureUsage(std::vector<std::string> &result) =0;
+	
 	// @}
 
 

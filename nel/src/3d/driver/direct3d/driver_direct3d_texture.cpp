@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.1 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.2 2004/03/30 14:36:43 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -463,7 +463,7 @@ bool CDriverD3D::setupTextureInternal (ITexture& tex, bool bUpload, bool &bAllUp
 		// insert into driver list. (so it is deleted when driver is deleted).
 		ItTexDrvSharePtrList	it= _TexDrvShares.insert(_TexDrvShares.end());
 		// create and set iterator, for future deletion.
-		*it= tex.TextureDrvShare= new CTextureDrvShare(this, it);
+		*it= tex.TextureDrvShare= new CTextureDrvShare(this, it, &tex);
 
 		// Must (re)-create the texture.
 		mustCreate = true;

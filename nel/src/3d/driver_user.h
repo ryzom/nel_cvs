@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.38 2004/03/24 16:36:58 berenguier Exp $
+ * $Id: driver_user.h,v 1.39 2004/03/30 14:36:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -451,6 +451,8 @@ public:
 
 	virtual	void			profileVBHardAllocation(std::vector<std::string> &result);
 
+	virtual	void			profileTextureUsage(std::vector<std::string> &result);
+		
 	// @}
 
 

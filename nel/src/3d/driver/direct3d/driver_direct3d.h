@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.4 2004/03/23 16:32:27 corvazier Exp $
+ * $Id: driver_direct3d.h,v 1.5 2004/03/30 14:36:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,6 +125,7 @@ public:
 
 	CTextureDrvInfosD3D(IDriver *drv, ItTexDrvInfoPtrMap it, CDriverD3D *drvGl, bool renderTarget);
 	~CTextureDrvInfosD3D();
+	virtual uint	getTextureMemoryUsed() const {return TextureMemory;}
 };
 
 // ***************************************************************************

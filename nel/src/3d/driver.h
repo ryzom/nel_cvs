@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.67 2004/03/23 10:26:36 vizerie Exp $
+ * $Id: driver.h,v 1.68 2004/03/30 14:36:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -543,6 +543,10 @@ public:
 	 */
 	virtual	void			profileVBHardAllocation(std::vector<std::string> &result) = 0;
 
+	/** For each texture setuped in the driver, "print" result: type, shareName, format and size (mipmap included)
+	 */
+	void					profileTextureUsage(std::vector<std::string> &result);
+	
 	// @}
 
 

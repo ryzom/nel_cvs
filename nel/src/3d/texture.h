@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.16 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: texture.h,v 1.17 2004/03/30 14:36:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,6 +64,7 @@ typedef	TTexDrvSharePtrList::iterator		ItTexDrvSharePtrList;
 class ITextureDrvInfos : public NLMISC::CRefCount
 {
 private:
+	// _Driver==NULL if ITexture::supportSharing()==false
 	IDriver					*_Driver;
 	ItTexDrvInfoPtrMap		_DriverIterator;
 
@@ -71,6 +72,9 @@ public:
 	ITextureDrvInfos(IDriver *drv, ItTexDrvInfoPtrMap it) {_Driver= drv; _DriverIterator= it;}
 	ITextureDrvInfos(class IDriver& driver);
 	virtual ~ITextureDrvInfos(void);
+
+	// For Debug info. return the memory cost of this texture
+	virtual uint	getTextureMemoryUsed() const =0;
 };
 
 // Many ITexture may point to the same ITextureDrvInfos, through CTextureDrvShare.
@@ -79,13 +83,18 @@ class CTextureDrvShare : public NLMISC::CRefCount
 private:
 	IDriver					*_Driver;
 	ItTexDrvSharePtrList	_DriverIterator;
+	// The ITexture associated (for debug purpose)
+	class ITexture			*_OwnerTexture;
 
 public:
 	NLMISC::CSmartPtr<ITextureDrvInfos>		DrvTexture;
 
 public:
-	CTextureDrvShare(IDriver *drv, ItTexDrvSharePtrList it) {_Driver= drv; _DriverIterator= it;}
+	CTextureDrvShare(IDriver *drv, ItTexDrvSharePtrList it, ITexture *owner) {_Driver= drv; _DriverIterator= it; _OwnerTexture= owner;}
 	~CTextureDrvShare();
+
+	// get the ITexture that owns this DrvShare. for Dbg purpose
+	class ITexture			*getOwnerTexture() const {return _OwnerTexture;}
 };
 
 

@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.cpp,v 1.81 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: driver.cpp,v 1.82 2004/03/30 14:36:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/driver.h"
 #include "3d/shader.h"
 #include "3d/vertex_buffer.h"
+#include "nel/misc/algo.h"
 
 //#include <stdio.h>
 
@@ -43,7 +44,7 @@ namespace NL3D
 {
 
 // ***************************************************************************
-const uint32 IDriver::InterfaceVersion = 0x50;
+const uint32 IDriver::InterfaceVersion = 0x51;
 
 // ***************************************************************************
 IDriver::IDriver() : _SyncTexDrvInfos( "IDriver::_SyncTexDrvInfos" )
@@ -317,4 +318,119 @@ void			IDriver::getTextureShareName (const ITexture& tex, string &output)
 	else
 		output+= "@MMp:Off";
 }
+
+// ***************************************************************************
+class CTextureDebugInfo 
+{
+public:
+	uint	MemoryCost;
+	string	Line;
+	
+	bool	operator<(const CTextureDebugInfo &o) const {return Line<o.Line;}
+};
+
+// ***************************************************************************
+void IDriver::profileTextureUsage(std::vector<std::string> &result)
+{
+	std::set<ITextureDrvInfos	*>		texSet;
+	uint	i;
+	
+	// reserve result, sort by UploadFormat
+	vector<CTextureDebugInfo>	tempInfo[ITexture::UploadFormatCount];
+	for(i=0;i<ITexture::UploadFormatCount;i++)
+		tempInfo[i].reserve(_TexDrvShares.size());
+	
+	// Parse all the DrvShare list
+	uint	totalSize= 0;
+	ItTexDrvSharePtrList	it= _TexDrvShares.begin();
+	for(;it!=_TexDrvShares.end();it++)
+	{
+		// get TexDrvInfos and owner
+		ITextureDrvInfos	*gltext= (ITextureDrvInfos*)(ITextureDrvInfos*)(*it)->DrvTexture;
+		ITexture			*text= (*it)->getOwnerTexture();
+		nlassert(gltext && text);
+		
+		// sort by upload format
+		uint	upFmt= (uint32)text->getUploadFormat();
+		nlassert(upFmt<ITexture::UploadFormatCount);
+
+		// get the shareName
+		string	shareName;
+		if(text->supportSharing())
+			shareName= strlwr(text->getShareName());
+		else
+			shareName= "Not Shared";
+		
+		// only if not already append to the set
+		if(texSet.insert(gltext).second)
+		{
+			uint	memCost= gltext->getTextureMemoryUsed();
+			totalSize+= memCost;
+			string	typeStr= typeid(*text).name();
+			strFindReplace(typeStr, "class NL3D::", string());
+			tempInfo[upFmt].push_back();
+			tempInfo[upFmt].back().Line= toString("Type: %15s. ShareName: %s. Size: %d Ko", 
+				typeStr.c_str(),
+				shareName.c_str(),
+				memCost/1024);
+			tempInfo[upFmt].back().MemoryCost= memCost;
+		}
+	}
+	
+	// For convenience, sort
+	for(i=0;i<ITexture::UploadFormatCount;i++)
+		sort(tempInfo[i].begin(), tempInfo[i].end());
+	
+	// Store into result, appending Tag for each Mo reached. +10* is for extra lines and security
+	result.clear();
+	result.reserve(texSet.size() + 10*ITexture::UploadFormatCount + totalSize/(1024*1024));
+
+	// copy and add tags
+	for(i=0;i<ITexture::UploadFormatCount;i++)
+	{
+		switch(i)
+		{
+		case	ITexture::Auto: result.push_back("**** Format: Auto ****"); break;
+		case	ITexture::RGBA8888: result.push_back("**** Format: RGBA8888 ****"); break;
+		case	ITexture::RGBA4444: result.push_back("**** Format: RGBA4444 ****"); break;
+		case	ITexture::RGBA5551: result.push_back("**** Format: RGBA5551 ****"); break;
+		case	ITexture::RGB888: result.push_back("**** Format: RGB888 ****"); break;
+		case	ITexture::RGB565: result.push_back("**** Format: RGB565 ****"); break;
+		case	ITexture::DXTC1: result.push_back("**** Format: DXTC1 ****"); break;
+		case	ITexture::DXTC1Alpha: result.push_back("**** Format: DXTC1Alpha ****"); break;
+		case	ITexture::DXTC3: result.push_back("**** Format: DXTC3 ****"); break;
+		case	ITexture::DXTC5: result.push_back("**** Format: DXTC5 ****"); break;
+		case	ITexture::Luminance: result.push_back("**** Format: Luminance ****"); break;
+		case	ITexture::Alpha: result.push_back("**** Format: Alpha ****"); break;
+		case	ITexture::AlphaLuminance: result.push_back("**** Format: AlphaLuminance ****"); break;
+		case	ITexture::DsDt: result.push_back("**** Format: DsDt ****"); break;
+		default: result.push_back(toString("**** Format??: %d ****", i)); break;
+		}
+		
+		// display stats for this format
+		uint	tagTotal= 0;
+		uint	curTotal= 0;
+		for(uint j=0;j<tempInfo[i].size();j++)
+		{
+			result.push_back(tempInfo[i][j].Line);
+			tagTotal+= tempInfo[i][j].MemoryCost;
+			curTotal+= tempInfo[i][j].MemoryCost;
+			if(tagTotal>=1024*1024)
+			{
+				result.push_back(toString("---- %.1f Mo", float(curTotal)/(1024*1024)));
+				tagTotal= 0;
+			}
+		}
+		// append last line?
+		if(tagTotal!=0)
+			result.push_back(toString("---- %.1f Mo", float(curTotal)/(1024*1024)));
+	}
+	
+	// append the total
+	result.push_back(toString("**** Total ****"));
+	result.push_back(toString("Total: %d Ko", totalSize/1024));
 }
+
+
+}
+

@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.8 2001/11/22 08:48:11 corvazier Exp $
+ * $Id: material.h,v 1.9 2001/11/30 13:15:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,7 @@ const uint32 IDRV_TOUCHED_ZWRITE		=	0x00000100;
 const uint32 IDRV_TOUCHED_DOUBLE_SIDED	=	0x00000200;
 const uint32 IDRV_TOUCHED_LIGHTMAP		=	0x00000400;
 const uint32 IDRV_TOUCHED_ALPHA_TEST	=	0x00000800;
+const uint32 IDRV_TOUCHED_ALPHA_TEST_THRE	=	0x00001000;
 
 
 // Start texture touch at 0x10000.
@@ -254,6 +255,13 @@ public:
 	// @{
 	void					setAlphaTest(bool active);
 	bool					getAlphaTest() const { return (_Flags&IDRV_MAT_ALPHA_TEST)!=0; }
+
+	/** change the threshold against alpha is tested. Default is 0.5f.
+	 *	\param thre threshold, should be in [0..1], not clamped.
+	 */
+	void					setAlphaTestThreshold(float thre);
+	float					getAlphaTestThreshold() const { return _AlphaTestThreshold; }
+
 	// @}
 
 
@@ -476,6 +484,7 @@ private:
 	CRGBA					_Color;
 	CRGBA					_Emissive,_Ambient,_Diffuse,_Specular;
 	float					_Shininess;
+	float					_AlphaTestThreshold;
 	uint32					_Touched;
 
 	bool					_StainedGlassWindow; // \todo mb : clean this flag (add a CMaterialBuil class)

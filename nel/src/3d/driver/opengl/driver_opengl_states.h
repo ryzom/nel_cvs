@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.9 2001/11/22 08:48:11 corvazier Exp $
+ * $Id: driver_opengl_states.h,v 1.10 2001/11/30 13:15:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,6 +101,8 @@ public:
 	void			blendFunc(GLenum src, GLenum dst);
 	/// glDepthFunc.
 	void			depthFunc(GLenum zcomp);
+	/// glAlphaFunc
+	void			alphaFunc(float threshold);
 
 	/// \name Material setting.
 	/// Each f() get an uint32 for fast comparison, and OpenGL colors.
@@ -161,6 +163,7 @@ private:
 	GLenum			_CurBlendSrc;
 	GLenum			_CurBlendDst;
 	GLenum			_CurDepthFunc;
+	float			_CurAlphaTestThreshold;
 
 	uint32			_CurEmissive;
 	uint32			_CurAmbient;

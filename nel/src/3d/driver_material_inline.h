@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.4 2001/11/22 08:48:11 corvazier Exp $
+ * $Id: driver_material_inline.h,v 1.5 2001/11/30 13:15:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,12 @@ inline void CMaterial::setAlphaTest(bool active)
 	if (active)	_Flags|=IDRV_MAT_ALPHA_TEST;
 	else		_Flags&=~IDRV_MAT_ALPHA_TEST;
 	_Touched|=IDRV_TOUCHED_ALPHA_TEST;
+}
+
+inline void CMaterial::setAlphaTestThreshold(float thre)
+{
+	_AlphaTestThreshold= thre;
+	_Touched|=IDRV_TOUCHED_ALPHA_TEST_THRE;
 }
 
 inline void	CMaterial::setBlendFunc(TBlend src, TBlend dst)

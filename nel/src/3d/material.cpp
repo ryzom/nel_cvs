@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.28 2001/11/22 08:48:11 corvazier Exp $
+ * $Id: material.cpp,v 1.29 2001/11/30 13:15:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,7 @@ CMaterial::CMaterial()
 	_ZBias= 0;
 	_Color.set(255,255,255,255);
 	_StainedGlassWindow = false;
+	_AlphaTestThreshold= 0.5f;
 }
 
 // ***************************************************************************
@@ -62,6 +63,7 @@ void			CMaterial::initUnlit()
 	setZFunc(lessequal);
 	setZWrite(true);
 	setBlend(false);
+	setAlphaTestThreshold(0.5f);
 }
 
 // ***************************************************************************
@@ -88,6 +90,7 @@ CMaterial		&CMaterial::operator=(const CMaterial &mat)
 	_Diffuse= mat._Diffuse;
 	_Specular= mat._Specular;
 	_Shininess= mat._Shininess;
+	_AlphaTestThreshold= mat._AlphaTestThreshold;
 
 	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 	{
@@ -119,6 +122,8 @@ CMaterial::~CMaterial()
 void		CMaterial::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 5:
+		- AlphaTest threshold
 	Version 4:
 		- Texture Addressing modes
 	Version 3:
@@ -131,7 +136,7 @@ void		CMaterial::serial(NLMISC::IStream &f)
 		- base version.
 	*/
 
-	sint	ver= f.serialVersion(3);
+	sint	ver= f.serialVersion(5);
 	// For the version <=1:
 	nlassert(IDRV_MAT_MAXTEXTURES==4);
 
@@ -147,6 +152,11 @@ void		CMaterial::serial(NLMISC::IStream &f)
 	{
 		f.serial(_Shininess);
 	}
+	if(ver>=5)
+	{
+		f.serial(_AlphaTestThreshold);
+	}
+
 
 	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 	{

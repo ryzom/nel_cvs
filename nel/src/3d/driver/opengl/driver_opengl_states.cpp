@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.10 2001/11/22 08:48:11 corvazier Exp $
+ * $Id: driver_opengl_states.cpp,v 1.11 2001/11/30 13:15:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,9 +85,11 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 	_CurBlendSrc= GL_SRC_ALPHA;
 	_CurBlendDst= GL_ONE_MINUS_SRC_ALPHA;
 	_CurDepthFunc= GL_LEQUAL;
+	_CurAlphaTestThreshold= 0.5f;
 	// setup GLStates.
 	glBlendFunc(_CurBlendSrc, _CurBlendDst);
 	glDepthFunc(_CurDepthFunc);
+	glAlphaFunc(GL_GREATER, _CurAlphaTestThreshold);
 
 	// Materials.
 	uint32			packedOne= (CRGBA(255,255,255,255)).getPacked();
@@ -201,12 +203,10 @@ void			CDriverGLStates::enableAlphaTest(uint enable)
 		if(_CurAlphaTest)
 		{
 			glEnable(GL_ALPHA_TEST);
-			glAlphaFunc(GL_GREATER, 0.5f);
 		}
 		else
 		{
 			glDisable(GL_ALPHA_TEST);
-			glAlphaFunc(GL_ALWAYS, 0.0f);
 		}
 	}
 }
@@ -282,6 +282,20 @@ void			CDriverGLStates::depthFunc(GLenum zcomp)
 	}
 }
 
+
+// ***************************************************************************
+void			CDriverGLStates::alphaFunc(float threshold)
+{
+#ifndef NL3D_GLSTATE_DISABLE_CACHE
+	if(threshold != _CurAlphaTestThreshold)
+#endif
+	{
+		// new state
+		_CurAlphaTestThreshold= threshold;
+		// setup function.
+		glAlphaFunc(GL_GREATER, _CurAlphaTestThreshold);
+	}
+}
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.47 2001/11/22 08:48:11 corvazier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.48 2001/11/30 13:15:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -275,7 +275,13 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 
 		// Alpha Test Part.
 		//=================
-		_DriverGLStates.enableAlphaTest(mat.getFlags()&IDRV_MAT_ALPHA_TEST);
+		uint32	alphaTest= mat.getFlags()&IDRV_MAT_ALPHA_TEST;
+		_DriverGLStates.enableAlphaTest(alphaTest);
+		if(alphaTest)
+		{
+			// setup alphaTest threshold.
+			_DriverGLStates.alphaFunc(mat.getAlphaTestThreshold());
+		}
 
 
 		// Bind ZBuffer Part.

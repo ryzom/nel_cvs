@@ -31,14 +31,12 @@
 	using namespace NLAIFUZZY;
 
 	CLocWordNumRef::tMapRef *CLocWordNumRef::_LocRefence = new CLocWordNumRef::tMapRef;
-	CIndexVariant<uint64,maxIndex,maxResolutionNumer>	CNumericIndex::_I = CIndexVariant<uint64,maxIndex,maxResolutionNumer>((uint64)0);
-	CIndexVariant<uint64,maxIndex,maxResolutionNumer> CNumericIndex::LocalServerID = CIndexVariant<uint64,maxIndex,maxResolutionNumer>((uint64)0);
-	sint CNumericIndex::ShiftLocalServerMask = 16;
+	CAgentNumber CNumericIndex::_I = CAgentNumber();	
 
 	CIndexedVarName::CNameStruc *CIndexedVarName::_TableName = NULL;
 	const sint32 CIndexedVarName::_Bank = 256;
 	sint32 CIndexedVarName::_Count = 0;
-	//sint32 CIndexedVarName::_staticIndex = 1;
+	
 	CIndexedVarName::tMapName *CIndexedVarName::_Map = new CIndexedVarName::tMapName;
 	std::list<CIndexedVarName::CNameStruc *> *CIndexedVarName::_Empty = new std::list<CIndexedVarName::CNameStruc *>;
 

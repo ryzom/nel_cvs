@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.27 2001/11/05 09:30:15 corvazier Exp $
+ * $Id: export_nel.h,v 1.28 2001/11/07 17:19:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -343,6 +343,9 @@ public:
 	// Convert a 3dsmax matrix in NeL matrix
 	static void						convertMatrix (NLMISC::CMatrix& nelMatrix, const Matrix3& maxMatrix);
 
+	// Convert a 3dsmax vector in NeL vector
+	static void							convertVector (NLMISC::CVector& nelVector, const Point3& maxVector);
+
 	// Get local node matrix
 	static void						getLocalMatrix (Matrix3& localMatrix, INode& node, TimeValue time);
 
@@ -520,9 +523,17 @@ private:
 	// Get the normal of a face for a given corner in localSpace
 	static Point3					getLocalNormal (int face, int corner, Mesh& mesh);
 
+	// Build a water shape. The given node must have a water materiel, an assertion is raised otherwise
+	static NL3D::IShape				*buildWaterShape(INode& node, TimeValue time, bool absolutePath);
+
 	// *********************
 	// *** Ëxport material
 	// *********************
+
+	/** Test wether the given max node has a water material. A water object should only have one material, and must have planar, convex geometry.
+	* Morevover, the mapping should only have scale and offsets, no rotation
+	*/
+	static bool						hasWaterMaterial(INode& node, TimeValue time);
 
 	// Build an array of NeL material corresponding with max material at this node.
 	static void						buildMaterials (std::vector<NL3D::CMaterial>& Materials, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 

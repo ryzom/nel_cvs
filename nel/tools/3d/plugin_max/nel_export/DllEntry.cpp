@@ -1,7 +1,7 @@
 /** \file dllentry.cpp
  * <File description>
  *
- * $Id: DllEntry.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: DllEntry.cpp,v 1.2 2001/08/28 08:39:37 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #include "std_afx.h"
 #include "nel_export.h"
+#include "3d/register_3d.h"
+
 
 extern ClassDesc2* GetCNelExportDesc();
 
@@ -36,6 +38,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
 {
 	hInstance = hinstDLL;				// Hang on to this DLL's instance handle.
 
+	NL3D::registerSerial3d();
+	
 	if (!controlsInit) {
 		controlsInit = TRUE;
 		InitCustomControls(hInstance);	// Initialize MAX's custom controls

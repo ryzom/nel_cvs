@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.12 2001/08/16 15:50:00 besson Exp $
+ * $Id: nel_export.cpp,v 1.13 2001/08/28 08:39:37 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -265,7 +265,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					theCNelExport.initOptions();
 
 					// Register 3d models
-					registerSerial3d();
+					// done in dllentry registerSerial3d();
 
 					// Get time
 					TimeValue time=theCNelExport.ip->GetTime();
@@ -338,7 +338,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			case ID_SAVE_SCENE_ANIM:
 				{
 					// Register 3d models
-					registerSerial3d();
+					// done in dllentry registerSerial3d();
 
 					// Get time
 					TimeValue time=theCNelExport.ip->GetTime();
@@ -522,7 +522,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				{
 					uint nNumSelNode = theCNelExport.ip->GetSelNodeCount();
 
-					registerSerial3d();
+					// done in dllentry registerSerial3d();
 					// All the selected nodes are considered as a scene					
 					if( nNumSelNode > 0 )
 					{		

@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.33 2001/01/05 15:42:10 lecroart Exp $
+ * $Id: base_socket.cpp,v 1.34 2001/01/15 13:40:57 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,14 +28,11 @@
 
 
 #ifdef NL_OS_WINDOWS
-
 #include <winsock2.h>
-
-#define ERROR_NUM WSAGetLastError()
 #define socklen_t int
+#define ERROR_NUM WSAGetLastError()
 
 #elif defined NL_OS_UNIX
-
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -46,11 +43,10 @@
 #include <netdb.h>
 #include <errno.h>
 //#include <fcntl.h>
-
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
 #define ERROR_NUM errno
-
+#define ERROR_MSG strerror(errno)
 typedef int SOCKET;
 
 #endif
@@ -60,6 +56,25 @@ namespace NLNET {
 
 
 bool CBaseSocket::_Initialized = false;
+
+
+/*
+ * ESocket constructor
+ */
+ESocket::ESocket( const char *reason, bool systemerror )
+{
+	std::stringstream ss;
+	ss << "Socket error: " << reason;
+	if ( systemerror )
+	{
+		ss << " (" << ERROR_NUM;
+#ifdef NL_OS_UNIX
+		ss << ": " << ERROR_MSG;
+#endif
+		ss << ") " << std::endl;
+	}
+	_Reason = ss.str();
+}
 
 
 /* Initializes the network engine if it is not already done (under Windows, calls WSAStartup()).
@@ -75,7 +90,7 @@ void CBaseSocket::init() throw (ESocket)
 		int err = WSAStartup(winsock_version, &wsaData);
 		if ( err != 0 )
 		{
-			throw ESocket( "Winsock initialization failed", ERROR_NUM );
+			throw ESocket( "Winsock initialization failed" );
 		}
 #endif
 		CBaseSocket::_Initialized = true;
@@ -117,7 +132,7 @@ CBaseSocket::CBaseSocket( bool reliable, bool logging ) :
 	int value = true;
 	if ( setsockopt( _Sock, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value) ) == SOCKET_ERROR )
 	{
-		throw ESocket( "ReuseAddr failed. ", ERROR_NUM );
+		throw ESocket( "ReuseAddr failed" );
 	}
 #endif
 
@@ -145,7 +160,7 @@ CBaseSocket::CBaseSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (E
 	// Check remote address
 	if ( ! _RemoteAddr.isValid() )
 	{
-		throw ESocket( "Could not init a socket object with an invalid address" );
+		throw ESocket( "Could not init a socket object with an invalid address", false );
 	}
 	// Get local socket name
 	setLocalAddress();
@@ -202,12 +217,12 @@ void CBaseSocket::setNoDelay( bool value ) throw (ESocket)
 {
 	if ( ! _Reliable )
 	{
-		throw ESocket("Cannot setNoDelay on an unreliable socket");
+		throw ESocket( "Cannot setNoDelay on an unreliable socket", false );
 	}
 		
 	if ( setsockopt( _Sock, IPPROTO_TCP, TCP_NODELAY, (char*)&value, sizeof(value) ) != 0 )
 	{
-		throw ESocket( "setNoDelay failed. ", ERROR_NUM );
+		throw ESocket( "setNoDelay failed" );
 	}
 }
 
@@ -220,7 +235,7 @@ void CBaseSocket::connect( const CInetAddress& addr ) throw (ESocketConnectionFa
 	// Check address
 	if ( ! addr.isValid() )
 	{
-		throw ESocket( "Unable to connect to invalid address" );
+		throw ESocket( "Unable to connect to invalid address", false );
 	}
 
 	// Connection (when _Sock is a datagram socket, connect establishes a default destination address)
@@ -228,13 +243,13 @@ void CBaseSocket::connect( const CInetAddress& addr ) throw (ESocketConnectionFa
 	{
 		if ( _Logging )
 		{
-#ifdef NL_OS_WINDOWS
+/*#ifdef NL_OS_WINDOWS
 			nldebug( "Impossible to connect socket %d to %s %s (%d)", _Sock, addr.hostName().c_str(), addr.asIPString().c_str(), ERROR_NUM );
 #elif defined NL_OS_UNIX
 			nldebug( "Impossible to connect socket %d to %s %s (%d:%s)", _Sock, addr.hostName().c_str(), addr.asIPString().c_str(), ERROR_NUM, strerror(ERROR_NUM) );
-#endif
+#endif*/
 		}
-		throw ESocketConnectionFailed( ERROR_NUM );
+		throw ESocketConnectionFailed();
 	}
 	if ( _Logging )
 	{
@@ -270,7 +285,7 @@ bool CBaseSocket::dataAvailable() throw (ESocket)
 	switch ( res  )
 	{
 		case  0 : return false;
-		case -1 : throw ESocket( "dataAvailable(): select failed", ERROR_NUM ); return false;
+		case -1 : throw ESocket( "dataAvailable(): select failed" ); return false;
 	}
 	return true;
 }
@@ -285,7 +300,7 @@ void CBaseSocket::setLocalAddress()
 	socklen_t saddrlen = sizeof(saddr);
 	if ( getsockname( _Sock, &saddr, &saddrlen ) != 0 )
 	{
-		ESocket( "Unable to find local address", ERROR_NUM );
+		ESocket( "Unable to find local address" );
 	}
 	_LocalAddr.setSockAddr( (const sockaddr_in *)&saddr );
 }
@@ -301,7 +316,7 @@ void CBaseSocket::bind( uint16 port ) throw (ESocket)
 	char localhost [MAXLENGTH];
 	if ( gethostname( localhost, MAXLENGTH ) != 0 )
 	{
-		throw ESocket("Unabled to get local hostname");
+		throw ESocket( "Unabled to get local hostname" );
 	}
 	_LocalAddr.setByName( localhost );
 	_LocalAddr.setPort( port );
@@ -311,12 +326,12 @@ void CBaseSocket::bind( uint16 port ) throw (ESocket)
 	{
 #ifdef NL_OS_WINDOWS
 		switch ( WSAGetLastError() ) {
-			case WSAEADDRINUSE : throw ESocket("Bind failed : address in use");
-			case WSAEADDRNOTAVAIL : throw ESocket("Bind failed : address not available");
-			default : throw ESocket("Bind failed");
+			case WSAEADDRINUSE : throw ESocket( "Bind failed : address in use" );
+			case WSAEADDRNOTAVAIL : throw ESocket( "Bind failed : address not available" );
+			default : throw ESocket( "Bind failed" );
 		}
 #elif defined NL_OS_UNIX
-		throw ESocket(strerror(errno));
+		throw ESocket( "Bind failed" );
 #endif
 	}
 	_Bound = true;
@@ -335,7 +350,7 @@ void CBaseSocket::sendTo( const uint8 *buffer, uint len, const CInetAddress& add
 	//  Send
 	if ( ::sendto( _Sock, (const char*)buffer, len, 0, (sockaddr*)(addr.sockAddr()), sizeof(sockaddr) ) != (sint32)len )
 	{
-		throw ESocket( "Unable to send datagram", ERROR_NUM );
+		throw ESocket( "Unable to send datagram" );
 	}
 	_BytesSent += len;
 
@@ -370,7 +385,7 @@ bool CBaseSocket::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr ) th
 	int brecvd = ::recvfrom( _Sock, (char*)buffer, len , 0, (sockaddr*)&saddr, &saddrlen );
 	if ( brecvd == SOCKET_ERROR )
 	{
-		throw ESocket( "Cannot receive data", ERROR_NUM );
+		throw ESocket( "Cannot receive data" );
 	}
 
 	// Get sender's address
@@ -393,7 +408,7 @@ void CBaseSocket::send( const uint8* buffer, uint len ) throw (ESocket)
 {
 	if ( ::send( _Sock, (const char*)buffer, len, 0 ) == SOCKET_ERROR )
 	{
-		throw ESocket( "Unable to send data", ERROR_NUM );
+		throw ESocket( "Unable to send data" );
 	}
 	_BytesSent += len;
 	
@@ -453,7 +468,7 @@ void CBaseSocket::doReceive( uint8 *buffer, uint len )
 		switch ( brecvd )
 		{
 			case 0 :			throw ESocketConnectionClosed();
-			case SOCKET_ERROR :	throw ESocket( "Unable to receive data", ERROR_NUM );
+			case SOCKET_ERROR :	throw ESocket( "Unable to receive data" );
 		}
 		total += brecvd;
 	}

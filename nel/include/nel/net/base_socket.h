@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.h,v 1.22 2001/01/11 15:20:57 cado Exp $
+ * $Id: base_socket.h,v 1.23 2001/01/15 13:40:57 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/net/inet_address.h"
 #include <sstream>
 
+
 namespace NLNET {
 
 
@@ -43,13 +44,7 @@ class ESocket : public Exception
 public:
 
 	/// Constructor
-	ESocket( const char *reason="", uint errnum=0 )
-	{
-		std::stringstream ss;
-		ss << "Socket error: " << reason << " : Error " << _ErrNum;
-		_Reason = ss.str();
-		_ErrNum = errnum;
-	}
+	ESocket( const char *reason="", bool systemerror=true );
 
 	/// Returns the reason of the exception	
 	virtual const char	*what() const
@@ -57,16 +52,9 @@ public:
 		return _Reason.c_str();
 	}
 
-	/// Returns the error code
-	uint				errNum()
-	{
-		return _ErrNum;
-	}
-
 protected:
 
 	std::string	_Reason;
-	uint		_ErrNum;
 };
 
 
@@ -75,7 +63,7 @@ class ESocketConnectionFailed : public ESocket
 {
 public:
 	/// Constructor
-	ESocketConnectionFailed( uint errnum=0 ) : ESocket( "Connection failed", errnum )
+	ESocketConnectionFailed() : ESocket( "Connection failed" )
 	{}
 };
 
@@ -85,7 +73,7 @@ class ESocketConnectionClosed : public ESocket
 {
 public:
 	/// Constructor
-	ESocketConnectionClosed() : ESocket( "Connection closed", 0 )
+	ESocketConnectionClosed() : ESocket( "Connection closed" )
 	{}
 };
 
@@ -95,11 +83,8 @@ class EAccessDenied : public ESocket
 {
 public:
 	/// Constructor
-	EAccessDenied( std::string s )
-	{
-		_Reason = "Access denied: " + s;
-		_ErrNum = 0;
-	}
+	EAccessDenied( std::string s ): ESocket( (std::string("Access denied: ")+s).c_str(), false )
+	{}
 };
 
 

@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.46 2001/01/10 18:39:03 cado Exp $
+ * $Id: msg_socket.cpp,v 1.47 2001/01/15 13:40:57 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,16 +35,10 @@ using namespace std;
 
 
 #ifdef NL_OS_WINDOWS
-
 #include <winsock2.h>
-
-#define ERROR_NUM WSAGetLastError()
-
 typedef sint socklen_t;
 
-
 #elif defined NL_OS_UNIX
-
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -54,11 +48,8 @@ typedef sint socklen_t;
 #include <netdb.h>
 #include <errno.h>
 #include <fcntl.h>
-
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
-#define ERROR_NUM errno
-
 typedef int SOCKET;
 
 #endif
@@ -82,6 +73,8 @@ CSearchSet				CMsgSocket::_SearchSet;
 
 uint32					CMsgSocket::_PrevBytesReceived = 0;
 uint32					CMsgSocket::_PrevBytesSent = 0;
+uint32					CMsgSocket::_BytesReceivedByClosedConnections = 0;
+uint32					CMsgSocket::_BytesSentByClosedConnections = 0;
 
 
   
@@ -172,14 +165,14 @@ void CMsgSocket::connectToService()
 				delete _ClientSock;
 				if ( ! CNamingClient::lookupAlternate( _ServiceName, servaddr, _ValidityTime ) )
 				{
-					throw ESocket( service_not_found_cstr );
+					throw ESocket( service_not_found_cstr, false );
 				}
 			}
 		}
 	}
 	else
 	{
-		throw ESocket( service_not_found_cstr );
+		throw ESocket( service_not_found_cstr, false );
 	}
 }
 
@@ -314,7 +307,7 @@ void CMsgSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (
 	}
 	if ( ! addr.isValid() )
 	{
-		throw ESocket("Invalid address for listening");
+		throw ESocket( "Invalid address for listening", false );
 	}
 
 	// We use the listensock, pointing to an already constructed socket
@@ -322,7 +315,7 @@ void CMsgSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (
 	listensock->_Sock = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ); // IPPROTO_TCP or IPPROTO_IP (=0) ?
 	if ( listensock->_Sock == INVALID_SOCKET )
 	{
-		throw ESocket("Server socket creation failed");
+		throw ESocket( Server socket creation failed" );
 	}
 	nldebug( "Socket %d open as a server socket", listensock->_Sock );
 	*/
@@ -330,7 +323,15 @@ void CMsgSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (
 	// Bind socket to port	
 	if ( ::bind( listensock->_Sock, (const sockaddr *)addr.sockAddr(), sizeof(sockaddr_in) ) != 0 )
 	{
-		throw ESocket("Unable to bind server socket to port");
+#ifdef NL_OS_WINDOWS
+		switch ( WSAGetLastError() ) {
+			case WSAEADDRINUSE : throw ESocket( "Bind failed: address in use" );
+			case WSAEADDRNOTAVAIL : throw ESocket( "Bind failed: address not available" );
+			default : throw ESocket( "Unable to bind server socket to port" );
+		}
+#elif defined NL_OS_UNIX
+		throw ESocket( "Unable to bind server socket to port" );
+#endif
 	}
 	listensock->_LocalAddr = addr;
 	_Binded = true;
@@ -347,7 +348,7 @@ void CMsgSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (
 	// Listen
 	if ( ::listen( listensock->_Sock, SOMAXCONN ) != 0 ) // SOMAXCONN = maximum length of the queue of pending connections
 	{
-		throw ESocket("Unable to listen on specified port");
+		throw ESocket( "Unable to listen on specified port" );
 	}
 	nldebug( "Socket %d listening at %s", listensock->_Sock, addr.asString().c_str() );
 }
@@ -414,7 +415,7 @@ void CMsgSocket::send( CMessage& outmsg, TSenderId id )
 	}
 	else
 	{
-		throw ESocket("Invalid host id");
+		throw ESocket( "Invalid host id", false );
 	}
 }
 
@@ -650,6 +651,10 @@ void CMsgSocket::handleConnectionClosure( const CConnections::iterator& ilps )
 		(*ilps).second->close();
 		(*ilps).second->setDataAvailableFlag( false );
 		(*ilps).second->disable();
+
+		_BytesReceivedByClosedConnections += (*ilps).second->bytesReceived();
+		_BytesSentByClosedConnections += (*ilps).second->bytesSent();
+
 		CMessage msg( "D" );
 		processReceivedMessage( msg, *((*ilps).second) );
 		if ( (*ilps).second->ownerClient() != NULL )
@@ -701,8 +706,8 @@ bool CMsgSocket::getDataAvailableStatus()
 		switch ( res  )
 		{
 			case  0 : return false;
-			case -1 : //throw ESocket("getDataAvailableStatus(): select failed", ERROR_NUM ); return false;
-					  nlerror( "getDataAvailableStatus(): select failed: %d", ERROR_NUM ); return false;
+			case -1 : throw ESocket( "getDataAvailableStatus(): select failed" ); return false;
+					  //nlerror( "getDataAvailableStatus(): select failed: %d", ERROR_NUM ); return false;
 		}
 		
 		// Get results
@@ -1019,7 +1024,7 @@ uint32 CMsgSocket::bytesReceived()
 	{
 		sum += (*ic).second->bytesReceived();
 	}
-	return sum;
+	return sum + _BytesReceivedByClosedConnections;
 }
 
 
@@ -1032,9 +1037,9 @@ uint32 CMsgSocket::bytesSent()
 	CConnections::iterator ic;
 	for ( ic=_Connections.begin(); ic!=_Connections.end(); ++ic )
 	{
-		sum += (*ic).second->bytesReceived();
+		sum += (*ic).second->bytesSent();
 	}
-	return sum;
+	return sum + _BytesSentByClosedConnections;
 }
 
 

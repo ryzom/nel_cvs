@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.22 2000/10/19 12:47:03 corvazier Exp $
+ * $Id: stream.h,v 1.23 2000/10/19 12:55:41 corvazier Exp $
  *
  * This File handles IStream 
  */
@@ -538,7 +538,7 @@ public:
 	{
 		if (isReading()) 
 		{ 
-			T read; 
+			T read;
 			serial (read); 
 			if (read!=value) 
 				throw EInvalidDataStream(); 

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.2 2001/07/09 17:17:06 corvazier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.3 2001/07/12 14:36:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #include "3d/mesh_multi_lod_instance.h"
 #include "3d/mesh_multi_lod.h"
+#include "3d/coarse_mesh_manager.h"
+#include "3d/scene.h"
 
 #include "nel/misc/debug.h"
 
@@ -32,6 +34,45 @@ using namespace NLMISC;
 
 namespace NL3D 
 {
+
+// ***************************************************************************
+
+CMeshMultiLodInstance::CMeshMultiLodInstance ()
+{
+	// No flags
+	Flags=0;
+}
+
+// ***************************************************************************
+
+CMeshMultiLodInstance::~CMeshMultiLodInstance ()
+{
+	// Cast shape
+	CMeshMultiLod *shape=safe_cast<CMeshMultiLod*> ((IShape*)Shape);
+
+	// Manager pointer
+	CCoarseMeshManager *manager;
+
+	// Get the manager
+	if (shape->isStatic ())
+		manager=Scene->getStaticCoarseMeshManager ();
+	else
+		manager=Scene->getDynamicCoarseMeshManager ();
+
+	// Manager ok ?
+	if (manager)
+	{
+		// Coarse mesh loaded ?
+		if (Flags&Coarse0Loaded)
+		{
+			manager->removeMesh (CoarseMeshId[0]);
+		}
+		if (Flags&Coarse1Loaded)
+		{
+			manager->removeMesh (CoarseMeshId[1]);
+		}
+	}
+}
 
 // ***************************************************************************
 
@@ -122,14 +163,14 @@ void		CMeshMultiLodBalancingObs::traverse(IObs *caller)
 			{
 				// Render the geom mesh with alpha blending with goodPolyCount
 				model->setTransparency(true);
-				model->BlendLod0=true;
+				model->Flags|=CMeshMultiLodInstance::Lod0Blend;
 			}
 			else
 			{
 				// Render the geom mesh without alpha blending with goodPolyCount
 				model->setTransparency (slot.isTransparent());
 				model->setOpacity (slot.isOpaque());
-				model->BlendLod0=false;
+				model->Flags&=~CMeshMultiLodInstance::Lod0Blend;
 			}
 		}
 		else
@@ -151,7 +192,7 @@ void		CMeshMultiLodBalancingObs::traverse(IObs *caller)
 			// Render without blend with goodPolyCount
 			model->setTransparency (slot.isTransparent());
 			model->setOpacity (slot.isOpaque());
-			model->BlendLod0=false;
+			model->Flags&=~CMeshMultiLodInstance::Lod0Blend;
 		}
 		else
 			model->Lod0=0xffffffff;

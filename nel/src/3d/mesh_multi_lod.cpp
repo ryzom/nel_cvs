@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.7 2001/07/09 17:17:05 corvazier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.8 2001/07/12 14:36:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,9 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 	// Resize the array
 	_MeshVector.resize (mbuild.LodMeshes.size());
 
+	// Number of coarse meshes
+	uint coarse=0;
+
 	// For each slots
 	for (uint slot=0; slot<mbuild.LodMeshes.size(); slot++)
 	{
@@ -78,7 +81,20 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 
 		// Coarse mesh ?
 		if (mbuild.LodMeshes[slot].Flags & CMeshMultiLodBuild::CBuildSlot::CoarseMesh)
+		{
+			// Warning: no more than 2 coarse meshes in a lod mesh!
+			nlassert (coarse<=1);
+
+			// Flag
 			_MeshVector[slot].Flags|=CMeshSlot::CoarseMesh;
+
+			// Flag coarse ID
+			if (coarse==1)
+				_MeshVector[slot].Flags|=CMeshSlot::CoarseMeshId;
+
+			// One more
+			coarse++;
+		}
 
 		// Is opaque
 		if (mbuild.LodMeshes[slot].Flags & CMeshMultiLodBuild::CBuildSlot::IsOpaque)
@@ -213,7 +229,7 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 	}
 
 	// Have an opaque pass ?
-	if (!instance->BlendLod0)
+	if ( (instance->Flags&CMeshMultiLodInstance::Lod0Blend) == 0)
 	{
 		// Only render the normal way the first lod
 		render (instance->Lod0, drv, instance, instance->PolygonCountLod0, 1, _StaticLod, passOpaque);
@@ -235,31 +251,40 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 	for (uint j=0; j<meshCount; j++)
 	{
 		// Not a slot used and coarse mesh loaded ?
-		if ( (j!=instance->Lod0)&&(j!=instance->Lod1)&&( (_MeshVector[j].Flags&CMeshSlot::CoarseMeshLoaded) != 0) )
+		if ( (j!=instance->Lod0)&&(j!=instance->Lod1)&&(_MeshVector[j].Flags&CMeshSlot::CoarseMesh) )
 		{
-			// Yes, remove it..
-
-			// Static or dynamic coarse mesh ?
-			CCoarseMeshManager *manager;
-			if (_StaticLod)
+			// Get coarse id
+			uint coarseId=(_MeshVector[j].Flags&CMeshSlot::CoarseMeshId)?1:0;
+			uint flag=CMeshMultiLodInstance::Coarse0Loaded<<coarseId;
+			
+			// Coarse mesh loaded ?
+			if ( instance->Flags&flag )
 			{
-				// Get the static coarse mesh manager
-				manager=instance->Scene->getStaticCoarseMeshManager();
+				// Yes, remove it..
+
+				// Static or dynamic coarse mesh ?
+				CCoarseMeshManager *manager;
+				if (_StaticLod)
+				{
+					// Get the static coarse mesh manager
+					manager=instance->Scene->getStaticCoarseMeshManager();
+				}
+				else
+				{
+					// Get the dynamic coarse mesh manager
+					manager=instance->Scene->getDynamicCoarseMeshManager();
+				}
+
+				// Manager must exist beacuse a mesh has been loaded...
+				if (manager)
+				{
+					// Remove the lod
+					manager->removeMesh (instance->CoarseMeshId[coarseId]);
+
+					// Clear the flag
+					instance->Flags&=~flag;
+				}
 			}
-			else
-			{
-				// Get the dynamic coarse mesh manager
-				manager=instance->Scene->getDynamicCoarseMeshManager();
-			}
-
-			// Manager must exist beacuse a mesh has been loaded...
-			nlassert (manager);
-
-			// Remove the lod
-			manager->removeMesh (_MeshVector[j].CoarseMeshId);
-
-			// Clear the flag
-			_MeshVector[j].Flags&=~CMeshSlot::CoarseMeshLoaded;
 		}
 	}
 }
@@ -379,8 +404,6 @@ void CMeshMultiLod::CMeshSlot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if (f.isReading())
 	{
-		// Coarse mesh not loaded
-		Flags&=~CoarseMeshLoaded;
 	}
 }
 
@@ -409,6 +432,10 @@ void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *tran
 	// Coarse mesh ?
 	if (slotRef.Flags&CMeshSlot::CoarseMesh)
 	{
+		// Mask
+		uint coarseId=(slotRef.Flags&CMeshSlot::CoarseMeshId)?1:0;
+		uint maskFlag = CMeshMultiLodInstance::Coarse0Loaded<<coarseId;
+
 		// Only in opaque pass
 		if (passOpaque)
 		{
@@ -433,22 +460,23 @@ void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *tran
 				CMeshGeom *meshGeom=(CMeshGeom*)slotRef.MeshGeom;
 
 				// Added in the manager ?
-				if ( (slotRef.Flags&CMeshSlot::CoarseMeshLoaded) == 0)
+				
+				if ( (trans->Flags&maskFlag) == 0)
 				{
 					// Add to the manager
-					slotRef.CoarseMeshId=manager->addMesh (*meshGeom);
+					trans->CoarseMeshId[coarseId]=manager->addMesh (*meshGeom);
 						
 					// Added ?
-					if (slotRef.CoarseMeshId!=CCoarseMeshManager::CantAddCoarseMesh)
+					if (trans->CoarseMeshId[coarseId]!=CCoarseMeshManager::CantAddCoarseMesh)
 						// Flag it
-						slotRef.Flags|=CMeshSlot::CoarseMeshLoaded;
+						trans->Flags|=maskFlag;
 
 					// Dirt the matrix
 					trans->_LastLodMatrixDate=0;
 				}
 
 				// Finally loaded ?
-				if (slotRef.Flags&CMeshSlot::CoarseMeshLoaded)
+				if (trans->Flags&maskFlag)
 				{
 					// Matrix has changed ?
 					if ( trans->ITransformable::compareMatrixDate (trans->_LastLodMatrixDate) )
@@ -457,7 +485,7 @@ void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *tran
 						trans->_LastLodMatrixDate = trans->ITransformable::getMatrixDate();
 
 						// Set matrix
-						manager->setMatrixMesh ( slotRef.CoarseMeshId, *meshGeom, trans->getMatrix() );
+						manager->setMatrixMesh ( trans->CoarseMeshId[coarseId], *meshGeom, trans->getMatrix() );
 					}
 				}
 			}

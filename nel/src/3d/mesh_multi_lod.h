@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.7 2001/07/11 07:43:55 corvazier Exp $
+ * $Id: mesh_multi_lod.h,v 1.8 2001/07/12 14:36:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,6 +165,12 @@ public:
 		return _MeshVector[i].MeshGeom;
 	}
 
+	/// Is static mesh ?
+	bool isStatic () const
+	{
+		return _StaticLod;
+	}
+
 private:
 
 	/** 
@@ -185,7 +191,7 @@ private:
 			CoarseMesh			=	0x04,
 			IsOpaque			=	0x08,
 			IsTransparent		=	0x10,
-			CoarseMeshLoaded	=	0x20,
+			CoarseMeshId		=	0x20,
 		};
 
 		/// Ctor
@@ -207,23 +213,11 @@ private:
 		/// Polygon count at dist max for this slot
 		float		EndPolygonCount;
 
-		/*/// Polygon count at the begining of the slot interval
-		float		BeginPolygonCount;
-
-		/// Polygon count at the end of the slot interval
-		float		EndPolygonCount;
-
-		/// Length of the blend used to show this mesh
-		float		StartBlendPolygonCount;*/
-
 		/// Length of the blend used to show this mesh
 		float		BlendLength;
 
 		/// Blend On/Off, misc flags
 		uint8		Flags;
-
-		/// Coarse mesh id
-		uint64		CoarseMeshId;
 
 		/// Serial
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.4 2001/07/09 17:17:06 corvazier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.5 2001/07/12 14:36:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,6 +51,20 @@ const NLMISC::CClassId		MeshMultiLodInstanceId=NLMISC::CClassId(0x1ade6ef8, 0x75
 class CMeshMultiLodInstance : public CMeshInstance
 {
 public:
+	
+	/// Ctor
+	CMeshMultiLodInstance ();
+
+	/// Dstructor
+	~CMeshMultiLodInstance ();
+
+	enum
+	{
+		Lod0Blend		=	0x1,
+		Coarse0Loaded	=	0x2,
+		Coarse1Loaded	=	0x4,
+	};
+
 	/// Call at the begining of the program, to register the model, and the basic observers.
 	static	void	registerBasic();
 
@@ -67,7 +81,10 @@ private:
 	uint	Lod1;
 
 	/// Active blending on lod 0
-	bool	BlendLod0;
+	uint	Flags;
+
+	/// Coarse mesh id
+	uint64	CoarseMeshId[2];
 
 	/// Computed polygon count for the load balancing result
 	float	PolygonCountLod0;

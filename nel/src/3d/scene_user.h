@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.8 2001/07/12 14:31:57 berenguier Exp $
+ * $Id: scene_user.h,v 1.9 2001/07/12 14:36:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,8 @@ public:
 		_Scene.setDriver(_DriverUser->getDriver());
 		// Set viewport
 		_Scene.setViewport (CViewport());
+		// Init coarse mesh manager
+		_Scene.initCoarseMeshManager ();
 
 		// Create default camera, and active!!
 		setCam(createCamera());

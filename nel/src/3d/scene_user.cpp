@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.6 2001/07/11 16:11:28 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.7 2001/07/12 14:36:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,28 +94,60 @@ uint				CSceneUser::getLoadMaxPolygon() const
 
 void CSceneUser::setStaticCoarseMeshManagerTexture (const char *sPath)
 {
-	_Scene.getStaticCoarseMeshManager ()->setTextureFile (sPath);
+	// Get the manager
+	CCoarseMeshManager *manager=_Scene.getStaticCoarseMeshManager ();
+
+	// Does it exist ?
+	if (manager)
+	{
+		// Set the texture
+		manager->setTextureFile (sPath);
+	}
 }
 
 // ***************************************************************************
 
 void CSceneUser::setDynamicCoarseMeshManagerTexture (const char *sPath)
 {
-	_Scene.getDynamicCoarseMeshManager ()->setTextureFile (sPath);
+	// Get the manager
+	CCoarseMeshManager *manager=_Scene.getDynamicCoarseMeshManager ();
+
+	// Does it exist ?
+	if (manager)
+	{
+		// Set the texture
+		manager->setTextureFile (sPath);
+	}
 }
 
 // ***************************************************************************
 
 void CSceneUser::setStaticCoarseMeshManagerColor (const CRGBA& color)
 {
-	_Scene.getStaticCoarseMeshManager ()->setColor (color);
+	// Get the manager
+	CCoarseMeshManager *manager=_Scene.getStaticCoarseMeshManager ();
+
+	// Does it exist ?
+	if (manager)
+	{
+		// Set the texture
+		manager->setColor (color);
+	}
 }
 
 // ***************************************************************************
 
 void CSceneUser::setDynamicCoarseMeshManagerColor (const CRGBA& color)
 {
-	_Scene.getDynamicCoarseMeshManager ()->setColor (color);
+	// Get the manager
+	CCoarseMeshManager *manager=_Scene.getDynamicCoarseMeshManager ();
+
+	// Does it exist ?
+	if (manager)
+	{
+		// Set the texture
+		manager->setColor (color);
+	}
 }
 
 } // NL3D

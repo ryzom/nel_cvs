@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.4 2001/07/11 16:11:28 corvazier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.5 2001/07/12 14:36:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,6 +179,11 @@ private:
 		uint32 addMesh (const CMeshGeom& geom);
 
 		/**
+		  * Get a tri count of a mesh.
+		  */
+		uint	getTriCount (const CMeshGeom& geom);
+
+		/**
 		  * Remove a coarse mesh in the manager
 		  */
 		void removeMesh (uint32 id);
@@ -233,7 +238,7 @@ private:
 			/**
 			  * Add a coarse mesh in the primitive block. Return CPrimitiveBlockInfo::Failed is not enought space.
 			  */
-			uint	addMesh (uint16 vertexBufferId, const CMeshGeom& geom, uint32 firstVertexIndex);
+			uint	addMesh (uint16 vertexBufferId, const CMeshGeom& geom, uint32 firstVertexIndex, uint triCount);
 
 			/**
 			  * Add a coarse mesh from the primitive block.

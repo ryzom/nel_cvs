@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.6 2001/07/04 16:24:41 corvazier Exp $
+ * $Id: scene.h,v 1.7 2001/07/12 14:36:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -314,8 +314,8 @@ private:
 
 	/// \name Coarse meshes managers.
 	//@{
-	CCoarseMeshManager	*_StaticCoarseMeshManager;
-	CCoarseMeshManager	*_DynamicCoarseMeshManager;
+	CRefPtr<CCoarseMeshManager>	_StaticCoarseMeshManager;
+	CRefPtr<CCoarseMeshManager>	_DynamicCoarseMeshManager;
 	//@}
 
 };

@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.5 2001/07/11 16:11:28 corvazier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.6 2001/07/12 14:36:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -239,6 +239,9 @@ uint32 CCoarseMeshManager::CRenderPass::addMesh (const CMeshGeom& geom)
 
 	// *** Setup primitives indexes
 
+	// Get number of tri in this geom
+	uint triCount=getTriCount (geom);
+
 	// Try to add the primitive in a primitive blocks
 	bool added=false;
 	uint16 primitiveBlockId=0;
@@ -246,7 +249,7 @@ uint32 CCoarseMeshManager::CRenderPass::addMesh (const CMeshGeom& geom)
 	while (ite!=PrimitiveBlockInfoList.end())
 	{
 		// Add it
-		if ( (ite->addMesh (vertexBufferId, geom, firstVertex)) != CPrimitiveBlockInfo::Failed )
+		if ( (ite->addMesh (vertexBufferId, geom, firstVertex, triCount)) != CPrimitiveBlockInfo::Failed )
 		{
 			added=true;
 			break;
@@ -269,7 +272,7 @@ uint32 CCoarseMeshManager::CRenderPass::addMesh (const CMeshGeom& geom)
 		ite->init (NL3D_COARSEMESH_PRIMITIVE_BLOCK_SIZE);
 
 		// Add the mesh
-		if (ite->addMesh (vertexBufferId, geom, firstVertex)!=CPrimitiveBlockInfo::Failed)
+		if (ite->addMesh (vertexBufferId, geom, firstVertex, triCount)!=CPrimitiveBlockInfo::Failed)
 			added=true;
 	}
 
@@ -280,6 +283,36 @@ uint32 CCoarseMeshManager::CRenderPass::addMesh (const CMeshGeom& geom)
 
 	// Return an id
 	return buildId (primitiveBlockId, vertexBufferId);
+}
+
+// ***************************************************************************
+
+uint CCoarseMeshManager::CRenderPass::getTriCount (const CMeshGeom& geom)
+{
+	// Check count
+	uint count = 0;
+
+	// Count number of triangles
+	uint numMatrixBlock=geom.getNbMatrixBlock();
+	uint matrixBlock;
+	for (matrixBlock=0; matrixBlock<numMatrixBlock; matrixBlock++)
+	{
+		// One render pass
+		uint numRenderPass=geom.getNbRdrPass (matrixBlock);
+		uint renderPass;
+		for (renderPass=0; renderPass<numRenderPass; renderPass++)
+		{
+			// Get the render pass
+			const CPrimitiveBlock &pBlock=geom.getRdrPassPrimitiveBlock (matrixBlock, renderPass);
+
+			// Check there is enought room to insert this primitives
+			uint renderPassNumTri=pBlock.getNumTri ();
+			count+=renderPassNumTri;
+		}
+	}
+
+	// Return count
+	return count;
 }
 
 // ***************************************************************************
@@ -322,10 +355,10 @@ void CCoarseMeshManager::CRenderPass::setMatrixMesh (uint32 id, const CMeshGeom&
 	// Check the vertex format
 	nlassert (vbSrc.getVertexFormat() == NL3D_COARSEMESH_VERTEX_FORMAT);
 
-	// Number of source vertex
+	// Number of source vertices
 	uint32 nbVSrc = vbSrc.getNumVertices();
 	nlassert (nbVSrc<=VBlockSize);
-	sint normalOffset = vbSrc.getNormalOff();
+	//int normalOffset = vbSrc.getNormalOff();
 
 	// Vertex size
 	uint vtSize=vbSrc.getVertexSize ();
@@ -341,7 +374,7 @@ void CCoarseMeshManager::CRenderPass::setMatrixMesh (uint32 id, const CMeshGeom&
 		*(CVector*)vDest = matrix.mulPoint (*(const CVector*)vSrc);
 
 		// Transform normal
-		*(CVector*)(vDest+normalOffset) = matrix.mulVector (*(const CVector*)(vSrc+normalOffset));
+//		*(CVector*)(vDest+normalOffset) = matrix.mulVector (*(const CVector*)(vSrc+normalOffset));
 
 		// Next point
 		vSrc+=vtSize;
@@ -370,60 +403,72 @@ void CCoarseMeshManager::CRenderPass::render (IDriver *drv, CMaterial& mat)
 
 // ***************************************************************************
 
-uint CCoarseMeshManager::CRenderPass::CPrimitiveBlockInfo::addMesh (uint16 vertexBufferId, const CMeshGeom& geom, uint32 firstVertexIndex)
+uint CCoarseMeshManager::CRenderPass::CPrimitiveBlockInfo::addMesh (uint16 vertexBufferId, const CMeshGeom& geom, uint32 firstVertexIndex, uint triCount)
 {
 	// Get num tri in the primitive block
 	uint oldNumTri=PrimitiveBlock.getNumTri();
 
-	// Total new tri count
-	uint triCount=0;
-
-	// Count number of triangles
-	uint numMatrixBlock=geom.getNbMatrixBlock();
-	uint matrixBlock;
-	for (matrixBlock=0; matrixBlock<numMatrixBlock; matrixBlock++)
+	// Check capacity
+	if ( triCount <= (PrimitiveBlock.capacityTri()-oldNumTri) )
 	{
-		// One render pass
-		uint numRenderPass=geom.getNbRdrPass (matrixBlock);
-		uint renderPass;
-		for (renderPass=0; renderPass<numRenderPass; renderPass++)
+#ifdef NL_DEBUG
+		// Check count
+		uint checkCount = 0;
+#endif // NL_DEBUG
+
+		// Resize pblock
+		PrimitiveBlock.setNumTri (oldNumTri+triCount);
+
+		// Destination pointer 
+		uint32 *pTriDest=PrimitiveBlock.getTriPointer ()+3*oldNumTri;
+
+		// First index for the object
+		uint firstIndex=firstVertexIndex;
+
+		// Count number of triangles
+		uint numMatrixBlock=geom.getNbMatrixBlock();
+		uint matrixBlock;
+		for (matrixBlock=0; matrixBlock<numMatrixBlock; matrixBlock++)
 		{
-			// Get the render pass
-			const CPrimitiveBlock &pBlock=geom.getRdrPassPrimitiveBlock (matrixBlock, renderPass);
-
-			// Get num tri in the primitive block
-			uint numTri=PrimitiveBlock.getNumTri();
-
-			// Check there is enought room to insert this primitives
-			uint wantedNumTri=pBlock.getNumTri ();
-			if ( wantedNumTri <= (PrimitiveBlock.capacityTri()-numTri ) )
+			// One render pass
+			uint numRenderPass=geom.getNbRdrPass (matrixBlock);
+			uint renderPass;
+			for (renderPass=0; renderPass<numRenderPass; renderPass++)
 			{
-				triCount+=wantedNumTri;
+				// Get the render pass
+				const CPrimitiveBlock &pBlock=geom.getRdrPassPrimitiveBlock (matrixBlock, renderPass);
 
-				// Resize pblock
-				PrimitiveBlock.setNumTri (numTri+wantedNumTri);
+				// Check there is enought room to insert this primitives
+				uint renderPassNumIndex=3*pBlock.getNumTri ();
+#ifdef NL_DEBUG
+				checkCount+=pBlock.getNumTri ();
+#endif // NL_DEBUG
 
 				// Tri pointer
 				const uint32 *pTriSrc=pBlock.getTriPointer ();
-				uint32 *pTriDest=PrimitiveBlock.getTriPointer ()+3*numTri;
 
 				// Insert and remap indexes
-				uint indexCount=wantedNumTri*3;
-				for (uint index=0; index<indexCount; index++)
+				for (uint index=0; index<renderPassNumIndex; index++)
 				{
 					// Copy and remap the vertex indexes
-					pTriDest[index]=pTriSrc[index]+firstVertexIndex;
+					*pTriDest=pTriSrc[index]+firstIndex;
+					pTriDest++;
 				}
-
 			}
 		}
+
+#ifdef NL_DEBUG
+		// Checks
+		nlassert (checkCount==triCount);
+#endif // NL_DEBUG
+
+		// Add a mesh info in the list
+		MeshIdList.push_back (CMeshInfo (oldNumTri, triCount, vertexBufferId));
+
+		return Success;
 	}
-
-	// Add a mesh info in the list
-	MeshIdList.push_back (CMeshInfo (oldNumTri, triCount, vertexBufferId));
-
-	// Ok
-	return Success;
+	else
+		return Failed;
 }
 
 // ***************************************************************************

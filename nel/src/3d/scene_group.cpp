@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.65 2003/08/19 14:11:34 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.66 2003/09/29 13:22:37 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -878,9 +878,7 @@ bool CInstanceGroup::linkToParent (CInstanceGroup *pFather)
 {		
 	uint32 i, j;
 	bool ret;
-
-	
-
+/*
 	for (i = 0; i < pFather->_ClusterInstances.size(); ++i)
 	{
 		for(j = 0; j < pFather->_ClusterInstances[i]->Children.size(); ++j)
@@ -889,6 +887,7 @@ bool CInstanceGroup::linkToParent (CInstanceGroup *pFather)
 				return true;
 		}
 	}	
+*/
 	ret = false;
 	if (this != pFather)
 	{		

@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.59 2003/07/10 16:51:02 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.59.2.1 2003/09/03 14:58:00 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -465,8 +465,10 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 ///=======================================================================================
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {		
-	sint version =  f.serialVersion(16);
+	sint version =  f.serialVersion(18);
 
+	// version 18: _AutoComputeDelayBeforeDeathTest
+	// version 17: _ForceGlobalColorLighting flag
 	// version 16: _BypassIntegrationStepLimit flag
 	// version 14: emit threshold
 	// version 13: max dist lod bias for auto-LOD
@@ -647,6 +649,18 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if (version >= 15)
 	{
 		f.serial(_BypassIntegrationStepLimit);
+	}
+
+	if (version >= 17)
+	{
+		bool forceGlobalColorLighting; // read from bitfield
+		f.serial(forceGlobalColorLighting);
+	}
+	
+	if (version >= 18)
+	{
+		bool autoComputeDelayBeforeDeathTest; // read from bitfield
+		f.serial(autoComputeDelayBeforeDeathTest);
 	}
 
 	if (f.isReading())

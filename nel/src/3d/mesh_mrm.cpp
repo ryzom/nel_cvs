@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.63 2003/07/30 16:00:46 vizerie Exp $
+ * $Id: mesh_mrm.cpp,v 1.63.2.1 2003/09/03 14:58:00 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1690,6 +1690,8 @@ void	CMeshMRMGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 5:
+		- Shadow Skinning
 	Version 4:
 		- serial SkinWeights per MRM, not per Lod
 	Version 3:
@@ -1701,7 +1703,7 @@ sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(4);
+	sint	ver= f.serialVersion(5);
 
 	// if >= version 3, serial boens names
 	if(ver>=3)
@@ -1768,7 +1770,16 @@ sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serialCont(_SkinWeights);
 	}
 
-
+	// if >= version 5, serial Shadow Skin Information
+	if(ver>=5)
+	{
+		std::vector<CShadowVertex>		_ShadowSkinVertices;
+		f.serialCont (_ShadowSkinVertices);
+		
+		std::vector<uint32>	_ShadowSkinTriangles;
+		f.serialCont (_ShadowSkinTriangles);
+	}
+	
 	// Serial lod offsets.
 	// ==================
 	// This is the reference pos, to load / save relative offsets.
@@ -1855,7 +1866,7 @@ void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(4);
+	sint	ver= f.serialVersion(5);
 	uint	i;
 
 	// if >= version 3, serial bones names
@@ -1910,7 +1921,16 @@ void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serialCont(_SkinWeights);
 	}
 
-
+	// if >= version 5, serial Shadow Skin Information
+	if(ver>=5)
+	{
+		std::vector<CShadowVertex>		_ShadowSkinVertices;
+		f.serialCont (_ShadowSkinVertices);
+		
+		std::vector<uint32>	_ShadowSkinTriangles;
+		f.serialCont (_ShadowSkinTriangles);
+	}
+	
 	// Serial lod offsets.
 	// ==================
 	// This is the reference pos, to load / save relative offsets.

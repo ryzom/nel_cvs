@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.10 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.10.4.1 2003/09/03 14:58:00 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,8 +108,13 @@ public:
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{ 		
 		/// version 2 : auto-lod saved
-		sint ver = f.serialVersion(2);
+		sint ver = f.serialVersion(3);
 		CPSLocatedBindable::serial(f);
+		if (ver >= 3)
+		{
+			bool   _UsesGlobalColorLighting;
+			f.serial(_UsesGlobalColorLighting);
+		}
 		if (ver >= 2)
 		{
 			f.serial(_DisableAutoLOD);

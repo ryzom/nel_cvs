@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.4 2003/07/30 16:04:01 vizerie Exp $
+ * $Id: ps_face_look_at.cpp,v 1.4.2.1 2003/09/03 14:58:00 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -568,7 +568,7 @@ void CPSFaceLookAt::resize(uint32 capacity)
 ///===========================================================================================
 void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(2);
+	sint ver = f.serialVersion(3);
 	CPSQuad::serial(f);
 	CPSRotated2DParticle::serialAngle2DScheme(f);	
 	f.serial(_MotionBlurCoeff);
@@ -583,6 +583,11 @@ void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
 			_SecondSize.serialSizeScheme(f);
 		}
+	}
+	if (ver >= 3)
+	{
+		bool _AlignOnMotion;
+		f.serial(_AlignOnMotion);
 	}
 	if (f.isReading())
 	{

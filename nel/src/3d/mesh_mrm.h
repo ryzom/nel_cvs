@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.43 2003/05/13 15:35:28 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.43.4.1 2003/09/03 14:58:00 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -281,7 +281,20 @@ public:
 	// Is this mesh Geom has a VertexProgram bound?
 	virtual bool	hasMeshVertexProgram() const {return _MeshVertexProgram!=NULL;}
 
-
+	class		CShadowVertex
+	{
+	public:
+		CVector		Vertex;
+		uint32		MatrixId;
+		void		serial(NLMISC::IStream &f)
+		{
+			(void)f.serialVersion(0);
+			
+			f.serial(Vertex);
+			f.serial(MatrixId);
+		}
+	};
+		
 // ************************
 private:
 	friend class	CMRMBuilder;

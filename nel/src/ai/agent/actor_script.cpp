@@ -92,7 +92,7 @@ namespace NLAIAGENT
 		
 
 #ifndef NL_DEBUG
-		const char *
+	//	const char *
 #endif
 
 		if ( !_IsActivated )

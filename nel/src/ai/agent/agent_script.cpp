@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.76 2001/07/09 13:48:24 chafik Exp $
+ * $Id: agent_script.cpp,v 1.77 2001/07/10 08:22:05 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1230,12 +1230,12 @@ namespace NLAIAGENT
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
 
-		case TRunAskCompoment:
+/*		case TRunAskCompoment:
 		case TRunTellCompoment:
 			{				
 				return runTellCompoment((IBaseGroupType *)o);
 			}
-
+*/
 		/*case TGoal:
 			{				
 				return runGoalMsg((IBaseGroupType *)o);
@@ -1313,12 +1313,12 @@ namespace NLAIAGENT
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
 
-		case TRunAskCompoment:
+/*		case TRunAskCompoment:
 		case TRunTellCompoment:
 			{				
 				return runTellCompoment((IBaseGroupType *)o);
 			}
-
+*/
 		default:
 			return IAgent::runMethodeMember(index,o);
 		}

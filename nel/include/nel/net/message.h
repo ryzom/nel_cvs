@@ -1,7 +1,7 @@
 /** \file message.h
  * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.26 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: message.h,v 1.27 2001/07/10 08:22:23 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -134,7 +134,13 @@ public:
 		CMemStream::operator= (other);
 		_TypeSet = other._TypeSet;
 		_SIDA = other._SIDA;
+		TypeHasAnId = other.TypeHasAnId;
+		TypeHasAName = other.TypeHasAName;
+		_Name = other._Name;
+		_Id = other._Id;
+		_HeaderSize = other._HeaderSize;
 		return *this;
+
 	}
 	
 	/// Sets the message type as a number (in range 0..32767) and put it in the buffer if we are in writing mode

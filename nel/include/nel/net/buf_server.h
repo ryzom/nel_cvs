@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.8 2001/06/27 08:29:23 lecroart Exp $
+ * $Id: buf_server.h,v 1.9 2001/07/10 08:22:23 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -412,7 +412,7 @@ public:
 	/// Add a new connection into this thread (mutexed on _Connections)
 	void	addNewSocket( TSockId sockid )
 	{
-		nlnettrace( "CServerReceiveTask::addNewSocket" );
+		//nlnettrace( "CServerReceiveTask::addNewSocket" );
 		nlassert( sockid != NULL );
 		{
 			NLMISC::CSynchronized<CConnections>::CAccessor connectionssync( &_Connections );

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.86 2004/12/22 19:44:29 cado Exp $
+ * $Id: unified_network.cpp,v 1.86.4.1 2005/01/04 18:26:04 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -932,6 +932,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 
 	// Compute the real timeout based on the next update timeout
 	TTime t0 = CTime::getLocalTime ();
+	TTime maxTimeout = timeout;
 
 	if (timeout > 0)
 	{
@@ -1035,10 +1036,14 @@ void	CUnifiedNetwork::update(TTime timeout)
 			L5TotalBytesInLowLevelSendQueues = tryFlushAllQueues();
 		}
 
-		// If it's the end, don't nlSleep()
+		// If it's the end (or if the Unix system time was changed forwards), don't sleep
 		TTime remainingTime = t0 + timeout - CTime::getLocalTime();
 		if ( remainingTime <= 0 )
 			break;
+
+		// If the Unix system time was changed backwards, don't wait more than requested and don't provide an erroneous time to the sleep function that would fail
+		if ( remainingTime > maxTimeout )
+			remainingTime = maxTimeout;
 
 #ifdef NL_OS_UNIX
 		// Sleep until the time expires or we receive a message
@@ -1139,6 +1144,10 @@ void CUnifiedNetwork::autoReconnect( CUnifiedConnection &uc, uint connectionInde
  */
 void CUnifiedNetwork::sleepUntilDataAvailable( TTime msecMax )
 {
+	// Prevent looping infinitely if an erroneous time was provided
+	if ( msecMax > 999 ) // limit not told in Linux man but here: http://docs.hp.com/en/B9106-90009/select.2.html
+		msecMax = 999;
+
 	// Prepare for select()
 	//SOCKET descmax = 0;
 	fd_set readers;
@@ -1184,7 +1193,7 @@ void CUnifiedNetwork::sleepUntilDataAvailable( TTime msecMax )
 	tv.tv_sec = 0;
 	tv.tv_usec = msecMax * 1000;
 	//nldebug( "Select %u ms", (uint)msecMax );
-	TTime before = CTime::getLocalTime();
+	//TTime before = CTime::getLocalTime();
 	int res = ::select( descmax+1, &readers, NULL, NULL, &tv );
 	if ( res == -1 )
 		nlwarning( "HNETL5: Select failed in sleepUntilDataAvailable");

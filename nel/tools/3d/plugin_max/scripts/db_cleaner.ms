@@ -4,7 +4,7 @@ global  systempreferencefilename = "\\\Amiga\\3D\\Database\\system\\zs_sys_prefs
 		error_list_file = "\\\Amiga\\3D\\Database\\system\\zonefiles_error_list.ini"  -- pour faire fichier de report
 		error_array ; if error_array == undefined do error_array = #()
 
-rollout dbase_cleaner_rollout "Database Cleaner"
+rollout dbase_cleaner_rollout "Database Zone Project Cleaner"
 (
 
 ----------------------------------------------------------------
@@ -469,6 +469,334 @@ on dbase_cleaner_rollout open do
 
 )
 
+---------------------------------------------------
+
+-- Find and log doubling names
+
+
+fileType =			#(	"Shape",						"Animations",					"Skeleton",						"Swt" )
+keyWords =			#(	#("shape_source_directory"),	#("anim_source_directory"),		#("skel_source_directory"),		#("swt_source_directory") )
+checkMeshName =		#(	true,							false,							false,							false )
+checkProjectName =	#(	true,							true,							true,							true )
+objectDouble = #()
+objectDoubleProject = #()
+
+rollout dbase_cleaner_double_rollout "Database Double Detector"
+(
+	-- A button to select the config file
+	label ConfigFileLabel "Config files path:" align:#left
+	edittext ConfigFile "" width:348
+	button SelectConfigFile "Browse for config path" width:348
+	dropdownlist TypeCheck "Type of project to check:" items:fileType selection:0
+	listbox DirectoryList "List of directory to check:" width:348
+	button Check "Check for double" width:348
+	listbox DoubleObject "List of project with same object name:" width:348
+	listbox DoubleProject "List of project with the same name:" width:348
+
+	-- On select the config file
+	on SelectConfigFile pressed do
+	(
+		-- Open a file browser
+		result = getOpenFileName caption:"Select the build process config file" filename:"config.cfg" types:"Config Files (*.cfg)|*.cfg|All Files (*.*)|*.*||"
+
+		-- Ok ?
+		if (result != undefined) then
+		(
+			ConfigFile.text = getFilenamePath result
+		)
+	)
+
+	-- Get a list of options
+	fn getOptions filename keyword array =
+	(
+		-- Open a file stream
+		stream = openFile filename
+
+		-- Success ?
+		if (stream != undefined) then
+		(
+			-- Look for the keyword
+			while (skipToString stream keyword) != undefined do
+			(
+				-- Remove the '=' caracter
+				skipToString stream "="
+
+				-- Get the option
+				line = readLine stream
+
+				-- Remove spaces
+				while (line.count != 0) and (line[1] == " ") do
+				(
+					line = substring line 2 (line.count-1) 
+				)
+
+				-- Remove spaces
+				while (line.count != 0) and (line[line.count] == " ") do
+				(
+					line = substring line 1 (line.count-1) 
+				)
+
+				-- Add the options
+				append array line
+			)
+
+			-- Close the file
+			close stream
+
+			-- Ok
+			return true
+		) 
+		else
+		(
+			return false
+		)
+	)
+
+	fn convertString instring =
+	(
+		index = findString instring "/"
+		while index != undefined do
+		(
+			instring[index] = "\\"
+			index = findString instring "/"
+		)
+		return instring
+	)
+   
+	-- Add the object
+	fn addObjectToList name path =
+	(
+		append objectDouble (name + " - " + (filenameFromPath (convertString path)) + " - " + (getFilenamePath (convertString path)) )
+		append objectDoubleProject path
+	)
+
+	-- File type selected
+	on TypeCheck selected selection do
+	(
+		-- Config file path
+		configF = ConfigFile.text + "config.cfg"
+
+		-- Get the database directory
+		databaseDirectory = #()
+		if (getOptions configF "database_directory" databaseDirectory) == true then
+		(
+			-- Ok ?
+			if (databaseDirectory.count == 1) then
+			(
+				-- Clean the directory list
+				copyArray = #()
+				DirectoryList.items = copyArray
+
+				-- Look for the directories
+				if selection != 0 then
+				(
+					-- Directory file path
+					directoryFile = ConfigFile.text + "directories.cfg"
+
+					-- Array of keyword
+					directoriesArray = #()
+					for keyword in keyWords[selection] do
+					(
+						if (getOptions directoryFile keyword directoriesArray) == false then
+						(
+							-- Error message
+							Messagebox ("Can't read directory file " + directoryFile)
+							return undefined
+						)
+					)
+
+					-- Add the directory
+					for directory in directoriesArray do
+						append copyArray (databaseDirectory[1] + "/" + directory)
+					
+					-- Set the array
+					DirectoryList.items = copyArray
+				)
+			)
+			else
+			(
+				-- Error message
+				Messagebox ("Syntax error in config file " + configF)
+			)
+		)
+		else
+		(
+			-- Error message
+			Messagebox ("Can't read config file " + configF)
+		)
+	)
+
+	fn lowercase instring =                -- beginning of function definition 
+	(
+		local upper, lower, outstring       -- declare variables as local 
+		upper="ABCDEFGHIJKLMNOPQRSTUVWXYZ"  -- set variables to literals 
+		lower="abcdefghijklmnopqrstuvwxyz" 
+		outstring=instring
+		for i=1 to outstring.count do 
+		(  
+			j=findString upper outstring[i] 
+			if (j != undefined) do outstring[i]=lower[j] 
+		) 
+		return outstring     -- value of outstring will be returned as function result 
+	)
+
+	-- Check
+	on Check pressed do
+	(
+		-- Check double name in objects
+		if checkMeshName[TypeCheck.selection] == true then
+		(
+			-- Object array
+			objectArray = #()
+			objectDouble = #()
+			objectDoubleProject = #()
+
+			-- For each directory
+			for folder in DirectoryList.items do
+			(
+				-- Get the max files
+				files = getFiles (folder+"/*.max")
+				for file in files do
+				(
+					-- Get the object in the max file
+					objectsMax = getMAXFileObjectNames file
+
+					-- For each object
+					for object in objectsMax do
+					(
+						-- Insert a reference
+						append objectArray ( (lowercase (object as string) ) + ";" + file)
+					)
+				)
+			)
+
+			-- Sort the array
+			sort objectArray
+
+			-- Search for double
+			object = 1
+			while object <= objectArray.count-1 do
+			(				
+				-- First names
+				firstNames = filterString objectArray[object] ";"
+
+				-- Second names
+				secondNames = filterString objectArray[object+1] ";"
+
+				-- Same name ?
+				if firstNames[1] == secondNames[1] then
+				(
+					-- Add the first
+					addObjectToList firstNames[1] firstNames[2]
+
+					-- Add the other
+					while (firstNames[1] == secondNames[1]) do
+					(
+						-- Add the second
+						addObjectToList secondNames[1] secondNames[2]
+
+						-- Next
+						object = object + 1
+
+						-- Last one ?
+						if (object == objectArray.count) then
+							exit
+
+						-- Get the new second
+						secondNames = filterString objectArray[object+1] ";"
+					)
+				)
+
+				object = object + 1
+			)
+
+			-- Copy the array
+			DoubleObject.items = objectDouble
+		)
+		else
+			DoubleObject.items = #()
+
+		-- Check double name in prject name
+		if checkProjectName[TypeCheck.selection] == true then
+		(
+			-- Object array
+			objectArray = #()
+			projectDouble = #()
+
+			-- For each directory
+			for folder in DirectoryList.items do
+			(
+				-- Get the max files
+				files = getFiles (folder+"/*.max")
+				for file in files do
+				(
+					append objectArray ( (filenameFromPath (convertString (lowercase file))) + ";" + (lowercase file) )
+				)
+			)
+
+			-- Sort the array
+			sort objectArray
+
+			-- Search for double
+			object = 1
+			while object <= objectArray.count-1 do
+			(
+				-- First names
+				firstNames = filterString objectArray[object] ";"
+
+				-- Second names
+				secondNames = filterString objectArray[object+1] ";"
+
+				-- Same name ?
+				if firstNames[1] == secondNames[1] then
+				(
+					-- Add the first
+					append projectDouble firstNames[2]
+
+					-- Add the other
+					while (firstNames[1] == secondNames[1]) do
+					(
+						-- Add the second
+						append projectDouble secondNames[2]
+
+						-- Next
+						object = object + 1
+
+						-- Last one ?
+						if (object == objectArray.count) then
+							exit
+
+						-- Get the new second
+						secondNames = filterString objectArray[object+1] ";"
+					)
+				)
+
+				object = object + 1
+			)
+
+			-- Copy the array
+			DoubleProject.items = projectDouble
+		)
+		else
+			DoubleProject.items = #()
+	)
+
+	-- double click in the window
+	on DoubleObject doubleClicked index do
+	(
+		-- Check 
+		if (index>0) and (index<=objectDoubleProject.count) then
+			loadMaxFile objectDoubleProject[index]
+	)
+
+	-- double click in the window
+	on DoubleProject doubleClicked index do
+	(
+		-- Check 
+		if (index>0) and (index<=DoubleProject.items.count) then
+			loadMaxFile DoubleProject.items[index]
+	)
+)
 
 
 ----------------------------------------------------------------
@@ -481,8 +809,7 @@ if dbase_cleaner_floater != undefined do
 	(
 	closerolloutfloater dbase_cleaner_floater
 	)	
-dbase_cleaner_Floater = newRolloutFloater "temp" 400 815 800 200
-addrollout dbase_cleaner_rollout dbase_cleaner_Floater
-
-
+dbase_cleaner_Floater = newRolloutFloater "Database Cleaner" 400 815 800 200
+addrollout dbase_cleaner_rollout dbase_cleaner_Floater  rolledUp:true
+addrollout dbase_cleaner_double_rollout dbase_cleaner_Floater  rolledUp:true
 

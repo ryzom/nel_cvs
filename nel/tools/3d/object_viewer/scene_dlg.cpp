@@ -1,7 +1,7 @@
 /** \file scene_dlg.cpp
  * <File description>
  *
- * $Id: scene_dlg.cpp,v 1.14 2001/06/26 14:58:35 corvazier Exp $
+ * $Id: scene_dlg.cpp,v 1.15 2001/06/27 16:39:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,7 +156,9 @@ CSceneDlg::~CSceneDlg()
 		RegSetValueEx(hKey, "MoveSpeed", 0, REG_BINARY, (LPBYTE)&MoveSpeed, sizeof(float));
 		RegSetValueEx(hKey, "ObjectMode", 0, REG_BINARY, (LPBYTE)&ObjectMode, sizeof(BOOL));
 	}
+
 	_RightButtonMouseListener.releaseFromServer (CNELU::EventServer);
+
 }
 
 void CSceneDlg::DoDataExchange(CDataExchange* pDX)

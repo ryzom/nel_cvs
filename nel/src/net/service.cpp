@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.172 2003/03/26 14:29:03 lecroart Exp $
+ * $Id: service.cpp,v 1.173 2003/05/13 13:57:25 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -669,10 +669,13 @@ void cbLogFilter (CConfigFile::CVar &var)
 	}
 }
 
-
-
-
-
+void cbExecuteCommands (CConfigFile::CVar &var)
+{
+	for (sint i = 0; i < var.size(); i++)
+	{
+		ICommand::execute (var.asString(i), CommandLog);
+	}
+}
 
 
 
@@ -773,6 +776,12 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				ConfigFile.setCallback (*name, cbLogFilter);
 				cbLogFilter(*var);
 			}
+		}
+
+		ConfigFile.setCallback ("Commands", cbExecuteCommands);
+		if ((var = ConfigFile.getVarPtr ("Commands")) != NULL)
+		{
+			cbExecuteCommands(*var);
 		}
 		
 		
@@ -1243,6 +1252,11 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		CLog logDisplayVars;
 		CLightMemDisplayer mdDisplayVars;
 		logDisplayVars.addDisplayer (&mdDisplayVars);
+
+
+		//
+		// Set service ready
+		//
 
 		nlinfo ("Service ready");
 

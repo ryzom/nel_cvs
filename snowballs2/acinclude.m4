@@ -2,7 +2,7 @@
 #
 # Macros used by Nevrax in configure.in files.
 #
-# $Id: acinclude.m4,v 1.19 2005/04/04 09:45:05 cado Exp $
+# $Id: acinclude.m4,v 1.20 2005/04/04 10:07:29 cado Exp $
 # 
 # =========================================================================
 
@@ -376,6 +376,13 @@ else
  stlport_lib="stlport_gcc"
 fi
 
+if test "$with_debug" = "full"
+then
+ stlport_lib2="stlport_gcc_debug"
+else
+ stlport_lib2="stlport_gcc"
+fi
+
 if test "$with_stlport" = no
 then
     # The user explicitly disabled the use of the STLPorts
@@ -406,6 +413,7 @@ fi
 
 # Check for the 'pthread' library. SLTPort needs it.
 AC_CHECK_LIB(pthread, main, , [AC_MSG_ERROR([cannot find the pthread library.])])
+AC_CHECK_LIB(dl, dlopen, , [AC_MSG_ERROR([cannot find the dl library.])])
 
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
@@ -422,6 +430,14 @@ then
     LIBS="-L$stlport_libraries $LIBS"
 else
     stlport_libraries='default'
+fi
+
+# Put STLPort GCC libraries directory in LIBS
+if test "$stlport_libraries2"
+then
+    LIBS="-L$stlport_libraries2 $LIBS"
+else
+    stlport_libraries2='default'
 fi
 
 # Test the headers
@@ -450,8 +466,19 @@ else
     AC_MSG_RESULT(no)
 fi
 
+AC_CHECK_LIB($stlport_lib2, main,, have_stlport_libraries="no")
+
+AC_MSG_CHECKING(for STLPort GCC library)
+
+if test "$have_stlport_libraries2" != "no"
+then
+    AC_MSG_RESULT([$stlport_libraries2])
+else
+    AC_MSG_RESULT(no)
+fi
+
 if test "$have_stlport_headers" = "yes" &&
-    test "$have_stlport_libraries" != "no"
+    (test "$have_stlport_libraries" != "no" || test "$have_stlport_libraries2" != "no")
 then
     have_stlport="yes"
 else

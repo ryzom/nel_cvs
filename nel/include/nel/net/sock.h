@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.6 2001/06/01 13:36:41 cado Exp $
+ * $Id: sock.h,v 1.7 2001/06/18 09:04:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -155,7 +155,7 @@ public:
 	 * - If addr is not valid, an exception ESocket is thrown
 	 * - If connect() fails for another reason, an exception ESocketConnectionFailed is thrown
 	 */
-	void				connect( const CInetAddress& addr );
+	virtual void		connect( const CInetAddress& addr );
 
 	/** Sets the socket in nonblocking mode. Call this method *after* connect(), otherwise you will get
 	 * an "would block" error (10035 on Windows). In nonblocking mode, use received() and sent() instead of receive() and send()
@@ -170,7 +170,7 @@ public:
 	 * - close a listening socket (i.e. stop accepting connections), or
 	 * - stop a select() in progress in another thread (in this case, just calling the destructor is not enough)
 	 */
-	void				close();
+	virtual void		close();
 
 	/// Destructor (shutdown + close)
 	virtual ~CSock();
@@ -220,7 +220,7 @@ public:
 	 * \return CSock::Ok or CSock::Error (in case of failure).
 	 * When throw_exception is true, the method throws an ESocket exception in case of failure.
      */
-	CSock::TSockResult CSock::send( const uint8 *buffer, uint32& len, bool throw_exception=true );
+	CSock::TSockResult	send( const uint8 *buffer, uint32& len, bool throw_exception=true );
 
 	//@}
 
@@ -262,7 +262,7 @@ protected:
 	 */
 	CSock( bool logging = true );
 
-	/// Construct a CSock object using an existing socket descriptor and its associated remote address
+	/// Construct a CSock object using an existing connected socket descriptor and its associated remote address
 	CSock( SOCKET sock, const CInetAddress& remoteaddr );
 
 	/// Creates the socket and get a valid descriptor

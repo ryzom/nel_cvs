@@ -1,7 +1,7 @@
 /** \file tcp_sock.cpp
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.h,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: tcp_sock.h,v 1.2 2001/06/18 09:05:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,12 +70,12 @@ public:
 	 * - If addr is not valid, an exception ESocket is thrown
 	 * - If connect() fails for another reason, an exception ESocketConnectionFailed is thrown
 	 */
-	void				connect( const CInetAddress& addr );
+	virtual void		connect( const CInetAddress& addr );
 
 	/** Sets/unsets TCP_NODELAY (by default, it is off, i.e. the Nagle buffering algorithm is enabled).
 	 * You must call this method *after* connect().
 	 */
-	void				setNoDelay( bool value );
+	virtual void		setNoDelay( bool value );
 
 	/// Active disconnection for download way only (partial shutdown)
 	void				shutdownReceiving();
@@ -84,7 +84,7 @@ public:
 	void				shutdownSending();
 
 	/// Active disconnection (shutdown) (mutexed). connected() becomes false.
-	void				disconnect();
+	virtual void		disconnect();
 
 
 	//@}

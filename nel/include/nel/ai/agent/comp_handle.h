@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: comp_handle.h,v 1.3 2001/06/18 13:57:19 chafik Exp $
+ * $Id: comp_handle.h,v 1.4 2001/08/28 12:56:08 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,6 +109,11 @@ namespace NLAIAGENT
 				
 				getComponent();
 				return _Comp;
+			}
+
+			const IVarName *getCompName()
+			{
+				return _CompName;
 			}
 	};
 } // NLAIAGENT

@@ -239,6 +239,7 @@ namespace NLAIAGENT
 			( *it_act )->activate();
 			it_act++;
 		}
+
 		// TODO: Envoi de message "activate" 
 		if ( !stay_active )
 			unActivate();
@@ -252,7 +253,14 @@ namespace NLAIAGENT
 		std::vector<CComponentHandle *>::iterator it_handle = handles.begin();
 		while ( it_handle != handles.end() )
 		{
-			( (CActorScript *)( *it_handle )->getValue() )->activate();
+			CActorScript *actor = (CActorScript *)( *it_handle )->getValue();
+			if ( actor != NULL )
+				actor->activate();
+			else
+			{
+				const char *sw_name = (*it_handle)->getCompName()->getString();
+				nlwarning("SWITCH: component %s not found.", sw_name);
+			}
 			it_handle++;
 		}
 		// TODO: Envoi de message "activate" 
@@ -423,6 +431,7 @@ namespace NLAIAGENT
 					r.Result = NULL;
 				}
 				break;
+				
 			case fid_launch:
 			
 				if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
@@ -457,6 +466,21 @@ namespace NLAIAGENT
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
 				return r;
+				break;
+			
+			case fid_launched:
+				{
+					CVectorGroupType *result = new CVectorGroupType();
+					std::list<IBasicAgent *>::iterator it_l = _Launched.begin();
+					while ( it_l != _Launched.end() )
+					{
+						result->push( new CLocalMailBox( (const NLAIAGENT::IWordNumRef *) **it_l ) );
+						it_l++;
+					}
+					r.ResultState = NLAIAGENT::processIdle;
+					r.Result = result;
+					return r;
+				}
 				break;
 
 			case fid_pause:
@@ -660,7 +684,6 @@ namespace NLAIAGENT
 				r.Result = new NLAILOGIC::CBoolType( _IsActivated );
 				return r;
 				break;
-
 		}
 		return CAgentScript::runMethodBase(index, params);
 	}
@@ -687,6 +710,7 @@ namespace NLAIAGENT
 		static NLAIAGENT::CStringVarName onunactivate_name("onUnActivate");
 		static NLAIAGENT::CStringVarName switch_name("switch");
 		static NLAIAGENT::CStringVarName launch_name("Launch");
+		static NLAIAGENT::CStringVarName launched_name("Launched");
 		static NLAIAGENT::CStringVarName tell_name("RunTell");
 		static NLAIAGENT::CStringVarName toplevel_name("TopLevel");
 		static NLAIAGENT::CStringVarName owner_name("Owner");
@@ -730,6 +754,12 @@ namespace NLAIAGENT
 		{
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_launch, 0.0, NULL, r_type ) );
+		}
+
+		if ( *name == launched_name )
+		{
+			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIAGENT::CVectorGroupType::IdVectorGroupType ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_launched, 0.0, NULL, r_type ) );
 		}
 
 		// Processes succes and failure functions

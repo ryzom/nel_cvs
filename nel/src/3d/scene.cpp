@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.38 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: scene.cpp,v 1.39 2001/07/04 12:26:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,16 @@ CScene::CScene()
 	_ShapeBank = NULL;
 
 	Root= NULL;
+
+
+	_CurrentTime = 0 ;
+	_EllapsedTime = 0 ;
+	_RealTime = 0 ;
+	_FirstAnimateCall = true ;
+	// TODO: init NULL ligthgroup root.
+
 	// \todo yoyo: init NULL ligthgroup root.
+
 }
 // ***************************************************************************
 void	CScene::release()
@@ -456,6 +465,20 @@ void CScene::loadLightmapAutoAnim( const std::string &filename )
 
 void CScene::animate( CAnimationTime atTime )
 {
+	if (_FirstAnimateCall)
+	{
+		_RealTime = atTime ;
+		// dummy value for first frame
+		_EllapsedTime = 0.01f ;
+		_FirstAnimateCall = false ;
+	}
+	else
+	{
+		_EllapsedTime = atTime - _RealTime ;
+		_RealTime = atTime ;
+		_CurrentTime += _EllapsedTime ;
+	}
+	
 	_LMAnimsAuto.animate( atTime );
 }
 

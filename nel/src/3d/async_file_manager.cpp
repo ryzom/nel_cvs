@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.8 2002/04/23 09:18:19 besson Exp $
+ * $Id: async_file_manager.cpp,v 1.9 2002/04/26 16:07:45 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,6 +81,33 @@ void CAsyncFileManager::loadMesh(const std::string& meshName, IShape **ppShp, ID
 }
 
 // ***************************************************************************
+
+bool CAsyncFileManager::cancelLoadMesh(const std::string& sMeshName)
+{
+	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
+	list<IRunnable*> &rTaskQueue = acces.value ();
+	list<IRunnable*>::iterator it = rTaskQueue.begin();
+
+	while (it != rTaskQueue.end())
+	{
+		IRunnable *pR = *it;
+		CMeshLoad *pML = dynamic_cast<CMeshLoad*>(pR);
+		if (pML != NULL)
+		{
+			if (pML->MeshName == sMeshName)
+			{
+				// Delete mesh load task
+				delete pML;
+				rTaskQueue.erase (it);
+				return true;
+			}
+		}
+		++it;
+	}
+	return false;
+}
+
+// ***************************************************************************
 	
 void CAsyncFileManager::loadIG (const std::string& IGName, CInstanceGroup **ppIG)
 {
@@ -109,13 +136,50 @@ void CAsyncFileManager::loadFiles (const std::vector<std::string> &vFileNames, c
 }
 
 // ***************************************************************************
+
+void CAsyncFileManager::signal (bool *pSgn)
+{
+	addTask (new CSignal (pSgn));
+}
+
+// ***************************************************************************
+
+void CAsyncFileManager::cancelSignal (bool *pSgn)
+{
+	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
+	list<IRunnable*> &rTaskQueue = acces.value ();
+	list<IRunnable*>::iterator it = rTaskQueue.begin();
+
+	while (it != rTaskQueue.end())
+	{
+		IRunnable *pR = *it;
+		CSignal *pS = dynamic_cast<CSignal*>(pR);
+		if (pS != NULL)
+		{
+			if (pS->Sgn == pSgn)
+			{
+				// Delete signal task
+				delete pS;
+				rTaskQueue.erase (it);
+				return;
+			}
+		}
+		++it;
+	}
+}
+
+// ***************************************************************************
 // TASKS
 // ***************************************************************************
 
-CAsyncFileManager::CMeshLoad::CMeshLoad(const std::string& meshName, IShape** ppShp, IDriver *pDriver)
+// ***************************************************************************
+// MeshLoad
+// ***************************************************************************
+
+CAsyncFileManager::CMeshLoad::CMeshLoad(const std::string& sMeshName, IShape** ppShp, IDriver *pDriver)
 {
 	_pDriver = pDriver;
-	_meshName = meshName;
+	MeshName = sMeshName;
 	_ppShp = ppShp;
 }
 
@@ -149,7 +213,7 @@ void CAsyncFileManager::CMeshLoad::run()
 	{
 		// Load from file the mesh
 		CShapeStream mesh;
-		CIFile meshfile( CPath::lookup( _meshName ) );
+		CIFile meshfile( CPath::lookup( MeshName ) );
 		meshfile.serial( mesh );
 		meshfile.close();
 		
@@ -159,6 +223,8 @@ void CAsyncFileManager::CMeshLoad::run()
 		// If the driver is not given so do not try to load the textures
 		if ((pMesh == NULL) || (_pDriver == NULL))
 		{
+			nlwarning ("cant load %s", MeshName);
+			*_ppShp = (IShape*)-1;
 			delete this;
 			return;
 		}
@@ -227,15 +293,21 @@ void CAsyncFileManager::CMeshLoad::run()
 		
 		// Finally affect the pointer (Trans-Thread operation -> this operation must be atomic)
 		*_ppShp = mesh.getShapePointer();
+		//nlinfo ("good async loading of %s", MeshName);
 	}
 	catch(EPathNotFound &)
 	{
+		nlwarning ("can load %s but cant setup textures or lightmap", MeshName);
+		*_ppShp = (IShape*)-1;
 		delete this;
 		return;
 	}
 	delete this;
 }
 
+// ***************************************************************************
+// IGLoad
+// ***************************************************************************
 
 // ***************************************************************************
 CAsyncFileManager::CIGLoad::CIGLoad (const std::string &IGName, CInstanceGroup **ppIG)
@@ -273,12 +345,16 @@ void CAsyncFileManager::CIGLoad::run (void)
 	}
 	catch(EPathNotFound &)
 	{
+		*_ppIG = (CInstanceGroup*)-1;
 		delete this;
 		return;
 	}
 	delete this;
 }
 
+// ***************************************************************************
+// IGLoadUser
+// ***************************************************************************
 
 // ***************************************************************************
 CAsyncFileManager::CIGLoadUser::CIGLoadUser (const std::string &IGName, UInstanceGroup **ppIG)
@@ -314,11 +390,16 @@ void CAsyncFileManager::CIGLoadUser::run (void)
 	}
 	catch(EPathNotFound &)
 	{
+		*_ppIG = (UInstanceGroup*)-1;
 		delete this;
 		return;
 	}
 	delete this;
 }
+
+// ***************************************************************************
+// FileLoad
+// ***************************************************************************
 
 // ***************************************************************************
 CAsyncFileManager::CFileLoad::CFileLoad (const std::string& sFileName, uint8 **ppFile)
@@ -470,12 +551,19 @@ void CAsyncFileManager::CFileLoad::run (void)
 
 }
 
-CAsyncFileManager::CMultipleFileLoad::CMultipleFileLoad (const std::vector<std::string> &vFileNames, const std::vector<uint8**> &vPtrs)
+// ***************************************************************************
+// MultipleFileLoad
+// ***************************************************************************
+
+// ***************************************************************************
+CAsyncFileManager::CMultipleFileLoad::CMultipleFileLoad (const std::vector<std::string> &vFileNames, 
+														 const std::vector<uint8**> &vPtrs)
 {
 	_FileNames = vFileNames;
 	_Ptrs = vPtrs;
 }
 
+// ***************************************************************************
 void CAsyncFileManager::CMultipleFileLoad::run (void)
 {
 	for (uint32 i = 0; i < _FileNames.size(); ++i)
@@ -502,6 +590,23 @@ void CAsyncFileManager::CMultipleFileLoad::run (void)
 
 }
 
+// ***************************************************************************
+// Signal
+// ***************************************************************************
+
+// ***************************************************************************
+CAsyncFileManager::CSignal::CSignal (bool *pSgn)
+{
+	Sgn = pSgn;
+	*Sgn = false;
+}
+
+// ***************************************************************************
+void CAsyncFileManager::CSignal::run (void)
+{
+	*Sgn = true;
+	//nlinfo ("Signalling end of async loading process");
+}
 
 
 }

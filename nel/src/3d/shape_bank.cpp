@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.11 2002/04/24 13:47:21 besson Exp $
+ * $Id: shape_bank.cpp,v 1.12 2002/04/26 16:07:45 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,16 +125,28 @@ void CShapeBank::release(IShape* pShp)
 
 // ***************************************************************************
 
-bool CShapeBank::isPresent(const string &shapeName)
+CShapeBank::TShapeState CShapeBank::isPresent(const string &shapeName)
 {
+	bool bError = false;
 	// Process the waiting shapes
 	TWaitingShapesMMap::iterator wsmmIt = WaitingShapes.begin();
 	while( wsmmIt != WaitingShapes.end() )
 	{
-		IShape *pShp = wsmmIt->second;
+		IShape *pShp = wsmmIt->second.first;
 
 		if( pShp != NULL )
 		{
+			// Is an error during async loading ?
+			if (pShp == (IShape*)-1)
+			{
+				// Delete the waiting shape
+				TWaitingShapesMMap::iterator delIt = wsmmIt;
+				++wsmmIt;
+				WaitingShapes.erase (delIt);				
+				bError = true;
+				continue;
+			}
+
 			add(wsmmIt->first, pShp);
 
 			// Setup all textures of the shape
@@ -151,8 +163,6 @@ bool CShapeBank::isPresent(const string &shapeName)
 					for(j = 0; j < IDRV_MAT_MAXTEXTURES; ++j)
 					if( rMat.texturePresent(j) )
 					{
-						//--const_cast<CMaterial&>(rMat).setTexture(j,NULL);
-						//---rMat.getTexture(j)->setFilterMode(ITexture::Linear, ITexture::LinearMipMapOff);
 						_pDriver->setupTexture(*rMat.getTexture(j));
 					}
 
@@ -166,7 +176,6 @@ bool CShapeBank::isPresent(const string &shapeName)
 							++j; pText = rMat.getLightMap (j);
 						}
 					}
-
 				}
 			}
 			
@@ -180,12 +189,14 @@ bool CShapeBank::isPresent(const string &shapeName)
 			++wsmmIt;
 		}
 	}
-	// Is the shape is found so return true
+	if (bError)
+		return ErrorInAsyncLoading;
+	// Is the shape is found so return Present
 	TShapeMap::iterator smIt = ShapeMap.find( shapeName );
 	if( smIt == ShapeMap.end() )
-		return false;
+		return NotPresent;
 	else
-		return true;
+		return Present;
 }
 
 // ***************************************************************************
@@ -195,6 +206,10 @@ void CShapeBank::load(const string &shapeName)
 	TShapeMap::iterator smIt = ShapeMap.find(shapeName);
 	if( smIt == ShapeMap.end() )
 	{
+		// If we are loading it asynchronously so we do not have to try to load it in sync mode
+		TWaitingShapesMMap::iterator wsmmIt = WaitingShapes.find (shapeName);
+		if (wsmmIt != WaitingShapes.end())
+			return;
 		try
 		{
 			CShapeStream mesh;
@@ -216,10 +231,37 @@ void CShapeBank::load(const string &shapeName)
 
 void CShapeBank::loadAsync(const std::string &shapeName,IDriver *pDriver)
 {
+	TShapeMap::iterator smIt = ShapeMap.find(shapeName);
+	if (smIt != ShapeMap.end())
+		return;
 	_pDriver = pDriver; // Backup the pointer to the driver for later use
-	TWaitingShapesMMap::iterator wsmmIt;
-	wsmmIt = WaitingShapes.insert(TWaitingShapesMMap::value_type(shapeName,NULL));
-	CAsyncFileManager::getInstance().loadMesh(shapeName, &(wsmmIt->second), pDriver);
+	TWaitingShapesMMap::iterator wsmmIt = WaitingShapes.find(shapeName);
+	if (wsmmIt != WaitingShapes.end())
+	{
+		// Add a reference to it
+		wsmmIt->second.second += 1;
+		return; // Do not load 2 shapes with the same names
+	}
+	//	nlinfo("loadasync %s", shapeName);
+	wsmmIt = WaitingShapes.insert (TWaitingShapesMMap::value_type(shapeName,make_pair((IShape*)NULL, 1)));
+	CAsyncFileManager::getInstance().loadMesh (shapeName, &(wsmmIt->second.first), pDriver);
+}
+
+// ***************************************************************************
+
+void CShapeBank::cancelLoadAsync (const std::string &shapeName)
+{
+	TWaitingShapesMMap::iterator wsmmIt = WaitingShapes.find(shapeName);
+	if (wsmmIt != WaitingShapes.end())
+	{
+		wsmmIt->second.second -= 1;
+		if (wsmmIt->second.second == 0)
+		{
+			// nlinfo("unloadasync %s", shapeName);
+			if (CAsyncFileManager::getInstance().cancelLoadMesh (shapeName))
+				WaitingShapes.erase (wsmmIt); // Delete the waiting shape
+		}
+	}
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.27 2002/04/17 12:09:22 besson Exp $
+ * $Id: scene_group.cpp,v 1.28 2002/04/26 16:07:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -691,11 +691,11 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
 			{
 				shapeName  = rInstanceInfo.Name;
 			}
-
+			shapeName = strlwr (shapeName);
 			if (allShapesToLoad.find(shapeName) == allShapesToLoad.end())
 			{
 				allShapesToLoad.insert (shapeName);
-				if (!scene.getShapeBank()->isPresent(shapeName))
+				if (scene.getShapeBank()->isPresent(shapeName) != CShapeBank::Present)
 				{
 					// Load it from file asynchronously
 					scene.getShapeBank()->loadAsync (shapeName, scene.getDriver());
@@ -703,8 +703,34 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
 			}
 		}
 	}
-
+	_AddToSceneSignal = false;
+	CAsyncFileManager::getInstance().signal (&_AddToSceneSignal);
 	return true;
+}
+
+// ***************************************************************************
+void CInstanceGroup::stopAddToSceneAsync ()
+{
+	if (_AddToSceneState != StateAdding)
+		return;
+	vector<CInstance>::iterator it = _InstancesInfos.begin();
+	CAsyncFileManager::getInstance().cancelSignal (&_AddToSceneSignal);
+	for (uint32 i = 0; i < _InstancesInfos.size(); ++i, ++it)
+	{
+		CInstance &rInstanceInfo = *it;
+		if (!rInstanceInfo.DontAddToScene)
+		{
+			string shapeName;
+
+			if (rInstanceInfo.Name.find('.') == std::string::npos)
+				shapeName = rInstanceInfo.Name + ".shape";
+			else	// extension has already been added
+				shapeName  = rInstanceInfo.Name;
+			shapeName = strlwr (shapeName);
+			_AddToSceneTempScene->getShapeBank()->cancelLoadAsync (shapeName);
+		}
+	}
+	_AddToSceneState = StateNotAdded;
 }
 
 // ***************************************************************************
@@ -715,8 +741,14 @@ CInstanceGroup::TState CInstanceGroup::getAddToSceneState ()
 	{
 		// Just to schedule the textures
 		_AddToSceneTempScene->getShapeBank()->isPresent("");
-		if (_AddToSceneTempScene->getShapeBank()->isShapeWaiting() == false)
+		//TOREMOVE if (_AddToSceneTempScene->getShapeBank()->isShapeWaiting() == false)
+		if (_AddToSceneSignal)
+		{
+			// Do it another time because end of loading can have occur at the end or during
+			// the isPresent process (which upload textures and lightmaps)
+			_AddToSceneTempScene->getShapeBank()->isPresent("");
 			addToScene (*_AddToSceneTempScene, _AddToSceneTempDriver);
+		}
 	}
 	return _AddToSceneState;
 }

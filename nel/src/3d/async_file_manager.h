@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * <File description>
  *
- * $Id: async_file_manager.h,v 1.4 2002/04/23 09:18:19 besson Exp $
+ * $Id: async_file_manager.h,v 1.5 2002/04/26 16:07:45 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,13 +52,18 @@ public:
 	static CAsyncFileManager &getInstance (); // Must be called instead of constructing the object
 	static void terminate (); // End all tasks and terminate if any tasks
 
-	void loadMesh (const std::string &meshName, IShape **ppShp, IDriver *pDriver);
+	void loadMesh (const std::string &sMeshName, IShape **ppShp, IDriver *pDriver);
+	bool cancelLoadMesh (const std::string& sMeshName);
+
 	void loadIG (const std::string &igName, CInstanceGroup **ppIG);
 	void loadIGUser (const std::string &igName, UInstanceGroup **ppIG);
 
 	void loadFile (const std::string &fileName, uint8 **pPtr);
 	void loadFiles (const std::vector<std::string> &vFileNames, const std::vector<uint8**> &vPtrs);
 
+	void signal (bool *pSgn); // Signal a end of loading for a group of "mesh or file" added
+	void cancelSignal (bool *pSgn);
+	
 private:
 
 	CAsyncFileManager (); // Singleton mode -> access it with the getInstance function
@@ -71,9 +76,10 @@ private:
 	// Load a .shape
 	class CMeshLoad : public NLMISC::IRunnable
 	{
-		std::string _meshName;
 		IShape **_ppShp;
 		IDriver *_pDriver;
+	public:
+		std::string MeshName;
 	public:
 		CMeshLoad (const std::string &meshName, IShape **ppShp, IDriver *pDriver);
 		void run (void);
@@ -116,6 +122,16 @@ private:
 		std::vector<uint8**> _Ptrs;
 	public:
 		CMultipleFileLoad (const std::vector<std::string> &vFileNames, const std::vector<uint8**> &vPtrs);
+		void run (void);
+	};
+
+	// Signal
+	class CSignal  : public NLMISC::IRunnable
+	{
+	public:
+		bool *Sgn;
+	public:
+		CSignal (bool *pSgn);
 		void run (void);
 	};
 

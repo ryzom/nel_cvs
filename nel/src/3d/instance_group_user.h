@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.13 2002/04/17 12:09:22 besson Exp $
+ * $Id: instance_group_user.h,v 1.14 2002/04/26 16:07:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,6 +69,8 @@ private:
 
 	void addToSceneAsync (class UScene& scene, UDriver *driver);
 	TState getAddToSceneState ();
+	void stopAddToSceneAsync ();
+
 
 	void removeFromScene (class UScene& scene);
 	uint getNumInstance () const;

@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.12 2002/04/17 12:09:22 besson Exp $
+ * $Id: scene_group.h,v 1.13 2002/04/26 16:07:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -206,6 +206,7 @@ public:
 	  */
 	bool addToScene (CScene& scene, IDriver *driver=NULL);
 	bool addToSceneAsync (CScene& scene, IDriver *driver=NULL);
+	void stopAddToSceneAsync ();
 	TState getAddToSceneState ();
 
 private:
@@ -332,10 +333,10 @@ public:
 	std::vector<CCluster>	_ClusterInfos;
 	std::vector<CCluster*>	_ClusterInstances;
 
-	CTransform *_Root;
+	CTransform		*_Root;
 
-	CClipTrav *_ClipTrav;
-	CInstanceGroup *_ClusterSystem;
+	CClipTrav		*_ClipTrav;
+	CInstanceGroup	*_ClusterSystem;
 
 	NLMISC::CVector _GlobalPos;
 
@@ -352,16 +353,20 @@ private:
 
 	/// Build the list of light. NB: sort by LightGroupName the array, and return index remap.
 	void			buildPointLightList(const std::vector<CPointLightNamed> &pointLightList,
-		std::vector<uint>	&plRemap);
+										std::vector<uint>	&plRemap);
 
-	/**	The object used to light dynamic models in town and buildings
-	 */
-	CIGSurfaceLight		_IGSurfaceLight;
+	///	The object used to light dynamic models in town and buildings
+	CIGSurfaceLight					_IGSurfaceLight;
 
 	// @}
-	TState				_AddToSceneState;
-	CScene				*_AddToSceneTempScene;
-	IDriver				*_AddToSceneTempDriver;
+
+	/// \name Async loading part
+	// @{
+	bool		_AddToSceneSignal;
+	TState		_AddToSceneState;
+	CScene		*_AddToSceneTempScene;
+	IDriver		*_AddToSceneTempDriver;
+	// @}
 };
 
 

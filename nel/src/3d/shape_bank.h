@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.2 2002/04/17 12:09:22 besson Exp $
+ * $Id: shape_bank.h,v 1.3 2002/04/26 16:07:45 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,57 +56,60 @@ class CShapeBank
 {
 public:
 
+	enum TShapeState { NotPresent, Present, ErrorInAsyncLoading };
+
 	CShapeBank();
 	~CShapeBank();
 
 	/// \name Instance Management
 	//@{
 	/// Add a reference to a shape and return the instance created.
-	IShape*			addRef(const std::string &shapeName);
+	IShape*			addRef (const std::string &shapeName);
 
 	/** 
 	  * Release a reference to a shape by its instance. If the shape has no more reference it is added to
 	  * its own shape cache. When the shape cache is full the last entry is deleted.
 	  */
-	void			release(IShape* pShp);
+	void			release (IShape* pShp);
 
 	/// Return TRUE if the shape is present in the bank. Process the waiting shapes.
-	bool			isPresent(const std::string &shapeName);
+	TShapeState		isPresent (const std::string &shapeName);
 
 	/// Load the corresponding file from disk and add it to the bank.
-	void			load(const std::string &shapeName);
+	void			load (const std::string &shapeName);
 
 	/** Load the corresponding file from disk asynchronously and add it to the bank.
 	 * The driver passed to this function is used to know if we have to load the textures.
 	 */
-	void			loadAsync(const std::string &shapeName, IDriver *pDriver);
+	void			loadAsync (const std::string &shapeName, IDriver *pDriver);
+	void			cancelLoadAsync (const std::string &shapeName);
 	bool			isShapeWaiting ();
 
 	/// Add directly a shape to the bank. If the shape name is already used do nothing.
-	void			add(const std::string &shapeName, IShape* shape);
+	void			add (const std::string &shapeName, IShape* shape);
 	//@}
 
 	/// \name Shape cache management
 	//@{
 	/// Add a new ShapeCache. If already exist do nothing.
-	void			addShapeCache(const std::string &shapeCacheName);
+	void			addShapeCache (const std::string &shapeCacheName);
 
 	/** 
 	  * Remove a ShapeCache. All shapes in the shape cache are deleted. All links are redirected to 
 	  * the default ShapeCache
 	  */
-	void			removeShapeCache(const std::string &shapeCacheName);
+	void			removeShapeCache (const std::string &shapeCacheName);
 
 	/**
 	  * Remove all ShapeCache and suppress all links (even the link to the default cache are removed)
 	  */
-	void			reset();
+	void			reset ();
 	
 	/// Set the shapeCache shapeCacheName the new size.(delete shapes if maxsize<shapeCacheSize).
-	void			setShapeCacheSize(const std::string &shapeCacheName, sint32 maxSize);
+	void			setShapeCacheSize (const std::string &shapeCacheName, sint32 maxSize);
 
 	/// Link a shape to a ShapeCache. The ShapeCache must exist and must not contains the shape.
-	void			linkShapeToShapeCache(const std::string &shapeName, const std::string &shapeCacheName);
+	void			linkShapeToShapeCache (const std::string &shapeName, const std::string &shapeCacheName);
 	//@}
 
 private:
@@ -116,7 +119,7 @@ private:
 	typedef		std::map<std::string, PShape>	TShapeMap;
 	TShapeMap	ShapeMap;
 
-	typedef		std::multimap<std::string,IShape*> TWaitingShapesMMap;
+	typedef		std::multimap< std::string, std::pair<IShape*, uint32> > TWaitingShapesMMap;
 	TWaitingShapesMMap	WaitingShapes;
 
 	IDriver *_pDriver;

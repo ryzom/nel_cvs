@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.19 2002/04/25 08:28:18 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.20 2002/04/26 16:07:45 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1029,7 +1029,7 @@ const CPSAttribMaker<float>	*CPSConstraintMesh::getMorphScheme() const
 static IShape *GetDummyShapeFromBank(CShapeBank &sb)
 {	
 	static const std::string dummyMeshName("dummy constraint mesh shape");
-	if (sb.isPresent(dummyMeshName))
+	if (sb.isPresent(dummyMeshName) == CShapeBank::Present)
 	{				
 		return sb.addRef(dummyMeshName);
 	}
@@ -1070,7 +1070,7 @@ bool CPSConstraintMesh::update(void)
 	_Shapes.resize(_MeshShapeFileName.size());	
 	for (uint k = 0; k < _MeshShapeFileName.size(); ++k)
 	{
-		if (sb->isPresent(_MeshShapeFileName[k]))
+		if (sb->isPresent(_MeshShapeFileName[k]) == CShapeBank::Present)
 		{
 			_Shapes[k] = sb->addRef(_MeshShapeFileName[k]);
 
@@ -1102,7 +1102,7 @@ bool CPSConstraintMesh::update(void)
 				// shape not found, so not present in the shape bank -> we create a dummy shape
 			}
 
-			if (!sb->isPresent(_MeshShapeFileName[k]))
+			if (sb->isPresent(_MeshShapeFileName[k]) != CShapeBank::Present)
 			{					
 				ok = false;
 			}

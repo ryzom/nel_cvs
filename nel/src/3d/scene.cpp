@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.71 2002/04/23 09:19:01 besson Exp $
+ * $Id: scene.cpp,v 1.72 2002/04/26 16:07:45 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -415,7 +415,15 @@ void	CScene::render(bool	doHrcPass)
 	TWaitingInstancesMMap::iterator wimmIt = _WaitingInstances.begin();
 	while( wimmIt != _WaitingInstances.end() )
 	{
-		if( _ShapeBank->isPresent( wimmIt->first ) )
+		CShapeBank::TShapeState st = _ShapeBank->isPresent(wimmIt->first);
+		if (st == CShapeBank::ErrorInAsyncLoading)
+		{
+			// Delete the waiting instance - Nobody can be informed of that...
+			TWaitingInstancesMMap::iterator	itDel= wimmIt;
+			++wimmIt;
+			_WaitingInstances.erase(itDel);
+		}
+		else if (st == CShapeBank::Present)
 		{
 			// Then create a reference to the shape
 			*(wimmIt->second) = _ShapeBank->addRef( wimmIt->first )->createInstance(*this);
@@ -424,7 +432,7 @@ void	CScene::render(bool	doHrcPass)
 			++wimmIt;
 			_WaitingInstances.erase(itDel);
 		}
-		else
+		else // st == CShapeBank::NotPresent
 		{
 			++wimmIt;
 		}
@@ -472,11 +480,11 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 	nlassert( _ShapeBank != NULL );
 	
 	// If the shape is not present in the bank
-	if( !_ShapeBank->isPresent( shapeName ) )
+	if (_ShapeBank->isPresent( shapeName ) != CShapeBank::Present)
 	{
 		// Load it from file
 		_ShapeBank->load( shapeName );
-		if( !_ShapeBank->isPresent( shapeName ) )
+		if (_ShapeBank->isPresent( shapeName ) != CShapeBank::Present)
 		{
 			return NULL;
 		}
@@ -551,10 +559,10 @@ void CScene::createInstanceAsync(const string &shapeName, CTransformShape **pIns
 	// Add the instance request
 	_WaitingInstances.insert(TWaitingInstancesMMap::value_type(shapeName,pInstance));
 	// If the shape is not present in the bank
-	if( !_ShapeBank->isPresent( shapeName ) )
+	if (_ShapeBank->isPresent( shapeName ) != CShapeBank::Present)
 	{
 		// Load it from file asynchronously
-		_ShapeBank->loadAsync( shapeName, getDriver() );
+		_ShapeBank->loadAsync( strlwr(shapeName), getDriver() );
 	}
 }
 

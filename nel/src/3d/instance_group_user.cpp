@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.17 2002/04/17 12:09:22 besson Exp $
+ * $Id: instance_group_user.cpp,v 1.18 2002/04/26 16:07:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,49 +62,24 @@ UInstanceGroup	*UInstanceGroup::createInstanceGroup (const std::string &instance
 
 void UInstanceGroup::createInstanceGroupAsync (const std::string &instanceGroup, UInstanceGroup	**pIG)
 {
-	CAsyncFileManager::getInstance().loadIGUser(instanceGroup, pIG);
+	CAsyncFileManager::getInstance().loadIGUser (instanceGroup, pIG);
 }
 
 // ***************************************************************************
 
-/*bool CInstanceGroupUser::init (const std::string &instanceGroup, CScene& scene)
+void UInstanceGroup::stopCreateInstanceGroupAsync (UInstanceGroup **ppIG)
 {
-	// Create a file
-	CIFile file;
-	if (file.open (instanceGroup))
+	// Theorically should stop the async file manager but the async file manager can only be stopped
+	// between tasks (a file reading) so that is no sense to do anything here
+	while (*ppIG == NULL)
 	{
-		// Serialize this class
-		try
-		{
-			// Read the class
-			_InstanceGroup.serial (file);
-
-			// Driver pointer
-			CDriver *driver = ;
-
-			
-
-			// Add to the scene
-			addToScene (scene);
-		}
-		catch (EStream& e)
-		{
-			// Avoid visual warning
-			EStream ee=e;
-
-			// Serial problem
-			return false;
-		}
+		nlSleep (2);
 	}
-	else
+	if (*ppIG != (UInstanceGroup*)-1)
 	{
-		// Failed.
-		return false;
+		delete *ppIG;
 	}
-
-	// Ok
-	return true;
-}*/
+}
 
 // ***************************************************************************
 CInstanceGroupUser::CInstanceGroupUser()
@@ -181,6 +156,12 @@ void CInstanceGroupUser::addToSceneAsync (class UScene& scene, UDriver *driver)
 	_AddToSceneState = StateAdding;
 	_AddToSceneTempScene = &scene;
 	_AddToSceneTempDriver = driver;
+}
+
+// ***************************************************************************
+void CInstanceGroupUser::stopAddToSceneAsync ()
+{
+	_InstanceGroup.stopAddToSceneAsync ();
 }
 
 // ***************************************************************************

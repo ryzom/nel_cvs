@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.13 2002/04/16 12:01:39 valignat Exp $
+dnl $Id: acinclude.m4,v 1.14 2002/04/25 17:52:16 valignat Exp $
 dnl 
 dnl =========================================================================
 
@@ -403,6 +403,9 @@ if test "$with_stlport_lib"
 then
     stlport_libraries="$with_stlport_lib"
 fi
+
+dnl Check for the 'pthread' library. SLTPort needs it.
+AC_CHECK_LIB(pthread, main, , [AC_MSG_ERROR([cannot find the pthread library.])])
 
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS

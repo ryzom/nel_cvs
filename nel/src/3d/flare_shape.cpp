@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * <File description>
  *
- * $Id: flare_shape.cpp,v 1.10 2002/07/25 17:38:34 corvazier Exp $
+ * $Id: flare_shape.cpp,v 1.11 2002/11/20 16:59:23 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -36,25 +36,33 @@ namespace NL3D {
 /*
  * Constructor
  */
-CFlareShape::CFlareShape()  : _Color(NLMISC::CRGBA::White), _Persistence(1), _Spacing(1)
-							  ,_Attenuable(false), _AttenuationRange (1.0f), _FirstFlareKeepSize(false)
-							  ,_MaxViewDist(1000), _MaxViewDistRatio (0.9f), _InfiniteDist(false)
+CFlareShape::CFlareShape()  : _Color(NLMISC::CRGBA::White),
+							  _DazzleColor(NLMISC::CRGBA::Black),
+							  _Persistence(1),
+							  _Spacing(1),
+							  _Attenuable(false),
+							  _AttenuationRange (1.0f),							  
+							  _FirstFlareKeepSize(false),
+							  _DazzleEnabled(false),
+							  _DazzleAttenuationRange(0.f),							  
+							  _MaxViewDistRatio (0.9f),
+							  _InfiniteDist(false)
 {
 	// init default pos
 	for (uint k = 0; k < MaxFlareNum; ++k)
 	{
 		_Tex [k]  = NULL;
-		_Size[k] = 1.f;
-		_Pos[k]  = k * (1.f / MaxFlareNum);
+		_Size[k]  = 1.f;
+		_Pos[k]   = k * (1.f / MaxFlareNum);
 	}
-
 	_DefaultPos.setValue(CVector::Null);
+	setDistMax(1000);
 }
 
 
 void CFlareShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	int ver = f.serialVersion(2);
+	int ver = f.serialVersion(3);
 	f.serial(_Color, _Persistence, _Spacing);	
 	f.serial(_Attenuable);
 	if (_Attenuable)
@@ -85,7 +93,7 @@ void CFlareShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_InfiniteDist);
 
 	if (ver >= 2)
-		f.serial( _DistMax );
+		f.serial( _DistMax );	
 }
 
 	

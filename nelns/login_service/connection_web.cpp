@@ -1,7 +1,7 @@
 /** \file connection_web.cpp
  * 
  *
- * $Id: connection_web.cpp,v 1.5 2002/10/22 13:55:27 lecroart Exp $
+ * $Id: connection_web.cpp,v 1.6 2002/12/24 10:50:05 lecroart Exp $
  *
  */
 
@@ -119,8 +119,10 @@ void cbAskClientConnection (CMemStream &msgin, TSockId host)
 {
 	uint32 shardId;
 	uint32 userId;
+	string userName;
 	msgin.serial (shardId);
 	msgin.serial (userId);
+	msgin.serial (userName);
 
 	nlinfo ("Web wants to add userid %d to the shardid %d, send request to the shard", userId, shardId);
 
@@ -135,6 +137,7 @@ void cbAskClientConnection (CMemStream &msgin, TSockId host)
 			// send message to the welcome service to see if it s ok and know the front end ip
 			CMessage msgout ("CS");
 			msgout.serial (Cookie);
+			msgout.serial (userName);
 			//WSServer->send (msgout, Shards[i].SockId);
 			CUnifiedNetwork::getInstance ()->send (Shards[i].SId, msgout);
 			beep (1000, 1, 100, 100);

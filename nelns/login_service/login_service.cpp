@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.26 2002/11/05 11:11:39 lecroart Exp $
+ * $Id: login_service.cpp,v 1.27 2002/12/24 10:50:05 lecroart Exp $
  *
  * \todo check must say who are the master LS to know who set the shard online/offline etc... (USE an int instead of bool for Online)
  *
@@ -83,7 +83,7 @@ using namespace NLNET;
 // store specific user information
 NLMISC::CFileDisplayer Fd (NELNS_LOGS "login_service.stat");
 NLMISC::CStdDisplayer Sd;
-NLMISC::CLog Output;
+NLMISC::CLog *Output = NULL;
 
 //uint32 CUser::NextUserId = 1;	// 0 is reserved
 
@@ -317,9 +317,11 @@ public:
 
 		beep ();
 
-		Output.addDisplayer (&Fd);
+		Output = new CLog;
+
+		Output->addDisplayer (&Fd);
 		if (WindowDisplayer != NULL)
-			Output.addDisplayer (WindowDisplayer);
+			Output->addDisplayer (WindowDisplayer);
 
 		connectionWSInit ();
 
@@ -332,7 +334,7 @@ public:
 
 		Init = true;
 
-		Output.displayNL ("Login Service initialised");
+		Output->displayNL ("Login Service initialised");
 	}
 
 	bool update ()
@@ -354,7 +356,7 @@ public:
 		connectionWSRelease ();
 		connectionWebRelease ();
 		
-		Output.displayNL ("Login Service released");
+		Output->displayNL ("Login Service released");
 	}
 };
 

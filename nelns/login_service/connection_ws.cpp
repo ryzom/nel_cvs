@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.17 2002/11/05 11:11:39 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.18 2002/12/24 10:50:05 lecroart Exp $
  *
  */
 
@@ -315,7 +315,10 @@ static void cbWSIdentification (CMessage &msgin, const std::string &serviceName,
 		}
 
 		// check that the ip is ok
-		if (ia.ipAddress () != row[1])
+		CInetAddress iadb;
+		iadb.setNameAndPort (row[1]);
+		nlinfo ("check %s with %s (%s)", ia.ipAddress ().c_str(), iadb.ipAddress().c_str(), row[1]);
+		if (ia.ipAddress () != iadb.ipAddress())
 		{
 			// good shard id but from a bad computer address
 			refuseShard (sid, "Bad shard identification, ShardId %d should come from '%s' and come from '%s'", shardId, row[1], ia.ipAddress ().c_str ());
@@ -396,7 +399,7 @@ static void cbWSClientConnected (CMessage &msgin, const std::string &serviceName
 	if(nbrow == 0)
 	{
 		nlwarning ("Id %d doesn't exist", Id);
-		Output.displayNL ("###: %3d UId doesn't exist", Id);
+		Output->displayNL ("###: %3d UId doesn't exist", Id);
 		return;
 	}
 	else if (nbrow > 1)
@@ -409,13 +412,13 @@ static void cbWSClientConnected (CMessage &msgin, const std::string &serviceName
 	if (con == 1 && string(row[4]) != string("Offline"))
 	{
 		nlwarning ("Id %d is not offline", Id);
-		Output.displayNL ("###: %3d User isn't offline, his state is '%s'", Id, row[4]);
+		Output->displayNL ("###: %3d User isn't offline, his state is '%s'", Id, row[4]);
 		return;
 	}
 	else if (con == 0 && string(row[4]) != string ("Online"))
 	{
 		nlwarning ("Id %d wasn't connected on a shard", Id);
-		Output.displayNL ("###: %3d User wasn't connected on a shard, his state is '%s'", Id, row[4]);
+		Output->displayNL ("###: %3d User wasn't connected on a shard, his state is '%s'", Id, row[4]);
 		return;
 	}
 
@@ -453,7 +456,7 @@ static void cbWSClientConnected (CMessage &msgin, const std::string &serviceName
 			nlwarning ("user connected shard isn't in the shard list");
 
 		nldebug ("Id %d is connected on the shard", Id);
-		Output.displayNL ("###: %3d User connected to the shard (%d)", Id, Shards[ShardPos].ShardId);
+		Output->displayNL ("###: %3d User connected to the shard (%d)", Id, Shards[ShardPos].ShardId);
 
 		nbPlayer++;
 		if (nbPlayer > recordNbPlayer)
@@ -492,7 +495,7 @@ static void cbWSClientConnected (CMessage &msgin, const std::string &serviceName
 			nlwarning ("user disconnected shard isn't in the shard list");
 			
 		nldebug ("Id %d is disconnected from the shard", Id);
-		Output.displayNL ("###: %3d User disconnected from the shard (%d)", Id, Shards[ShardPos].ShardId);
+		Output->displayNL ("###: %3d User disconnected from the shard (%d)", Id, Shards[ShardPos].ShardId);
 
 		nbPlayer--;
 	}

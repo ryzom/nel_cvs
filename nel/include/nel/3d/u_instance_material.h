@@ -1,7 +1,7 @@
 /** \file u_instance_material.h
- * <File description>
+ * User interface for instance material
  *
- * $Id: u_instance_material.h,v 1.15 2004/04/09 14:15:28 vizerie Exp $
+ * $Id: u_instance_material.h,v 1.16 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,14 +48,6 @@ using NLMISC::CRGBA;
  */
 class UInstanceMaterial
 {
-protected:
-
-	/// \name Object
-	// @{
-	UInstanceMaterial() {}
-	virtual	~UInstanceMaterial() {}
-	// @}
-
 public:
 	enum TBlend				{ one=0, zero, srcalpha, invsrcalpha, srccolor, invsrccolor, blendCount };
 
@@ -70,22 +62,22 @@ public:
 
 	/// \name Modes.
 	// @{
-	virtual	bool				isLighted() const =0;
-	virtual	bool				isUserColor() const =0;
+	bool				isLighted() const;
+	bool				isUserColor() const;
 	// @}
 
 	/// \name Blending.
 	// @{
-	virtual void			setBlend(bool active) =0;
-	virtual void			setBlendFunc(TBlend src, TBlend dst) =0;
-	virtual void			setSrcBlend(TBlend val) =0;
-	virtual void			setDstBlend(TBlend val) =0;
-	virtual void			setAlphaTestThreshold(float at) =0;
-	virtual void			setZWrite(bool active) =0;
+	void			setBlend(bool active);
+	void			setBlendFunc(TBlend src, TBlend dst);
+	void			setSrcBlend(TBlend val);
+	void			setDstBlend(TBlend val);
+	void			setAlphaTestThreshold(float at);
+	void			setZWrite(bool active);
 
-	virtual bool			getBlend() const =0;
-	virtual TBlend			getSrcBlend(void)  const =0;
-	virtual TBlend			getDstBlend(void)  const =0;
+	bool			getBlend() const;
+	TBlend			getSrcBlend(void)  const;
+	TBlend			getDstBlend(void)  const;
 	// @}
 
 
@@ -93,63 +85,63 @@ public:
 	// @{
 
 	/// Set the emissive part ot material. Usefull only if isLighted()
-	virtual	void				setEmissive( CRGBA emissive=CRGBA(0,0,0) )=0;
+	void				setEmissive( CRGBA emissive=CRGBA(0,0,0) );
 	/// Set the Ambient part ot material. Usefull only if isLighted()
-	virtual	void				setAmbient( CRGBA ambient=CRGBA(0,0,0) )=0;
+	void				setAmbient( CRGBA ambient=CRGBA(0,0,0) );
 	/// Set the Diffuse part ot material. Usefull only if isLighted()
-	virtual	void				setDiffuse( CRGBA diffuse=CRGBA(0,0,0) )=0;
+	void				setDiffuse( CRGBA diffuse=CRGBA(0,0,0) );
 	/// Set the Opacity part ot material. Usefull only if isLighted()
-	virtual	void				setOpacity( uint8	opa )=0;
+	void				setOpacity( uint8	opa );
 	/// Set the specular part ot material. Usefull only if isLighted()
-	virtual	void				setSpecular( CRGBA specular=CRGBA(0,0,0) )=0;
+	void				setSpecular( CRGBA specular=CRGBA(0,0,0) );
 	/// Set the shininess part ot material. Usefull only if isLighted()
-	virtual	void				setShininess( float shininess )=0;
+	void				setShininess( float shininess );
 
-	virtual	CRGBA				getEmissive() const =0;
-	virtual	CRGBA				getAmbient() const =0;
+	CRGBA				getEmissive() const;
+	CRGBA				getAmbient() const;
 	/// return diffuse part. NB: A==opacity.
-	virtual	CRGBA				getDiffuse() const =0;
-	virtual	uint8				getOpacity() const =0;
-	virtual	CRGBA				getSpecular() const =0;
-	virtual	float				getShininess() const =0;
+	CRGBA				getDiffuse() const;
+	uint8				getOpacity() const;
+	CRGBA				getSpecular() const;
+	float				getShininess() const;
 
 	// @}
 
 
 	/// \name UnLighted material mgt. Has effect only if !isLighted().
 	// @{
-	virtual	void				setColor(CRGBA rgba) =0;
-	virtual	CRGBA				getColor(void) const =0;
+	void				setColor(CRGBA rgba);
+	CRGBA				getColor(void) const;
 	// @}
 
 	/// \name Per stage constant color
 	// @{
-	virtual void				setConstantColor(uint stage, NLMISC::CRGBA color) = 0;
-	virtual NLMISC::CRGBA		getConstantColor(uint stage) const = 0;
+	void				setConstantColor(uint stage, NLMISC::CRGBA color);
+	NLMISC::CRGBA		getConstantColor(uint stage) const;
 	// @}
 
 
 	/// \name Texture UserColor. No effect if !isUserColor(). (getUserColor() return CRGBA(0,0,0,0))
 	// @{
-	virtual	void				setUserColor(CRGBA userColor)=0;
-	virtual	CRGBA				getUserColor() const =0;
+	void				setUserColor(CRGBA userColor);
+	CRGBA				getUserColor() const;
 	// @}
 
 	/// \name Texture files specific
 	// @{
 	/// Get the last stage that got a texture. -1 means there is no textures.
-	virtual sint				getLastTextureStage() const = 0;
+	sint				getLastTextureStage() const;
 	/// Check wether the texture of the n-th stage is a texture file
-	virtual bool				isTextureFile(uint stage = 0) const = 0;
+	bool				isTextureFile(uint stage) const;
 	/// Get the fileName used by the n-th texture file. (must be a texture file or an assertion is raised)
-	virtual std::string			getTextureFileName(uint stage = 0) const = 0;
+	std::string			getTextureFileName(uint stage) const;
 	// Empty the texture at the given stage
-	virtual void				emptyTexture(uint stage = 0) = 0;
+	void				emptyTexture(uint stage = 0);
 	/** Set the fileName used by the n-th texture file. (must be a texture file or an assertion is raised)
 	 *	NB: if success and if instanceOwner->getAsyncTextureMode()==true, then instanceOwner->setAsyncTextureDirty(true) 
 	 *	is called
 	 */
-	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0) = 0;
+	void				setTextureFileName(const std::string &fileName, uint stage = 0);
 	/** Set the texture datas to be read from memory rather than from a file. This erases any previous texture at that slot.
 	  * The provided block can be a memory image of a file, however
 	  * \param stage The stage at which texture must be set
@@ -161,13 +153,13 @@ public:
 	  * \param _delete Is true if the texture has ownership on the texture datas
 	  * \param texType relevant only when isFile is set to false. Gives the format to expand the texture to when it is generated.
 	  */
-	virtual void				setTextureMem(uint stage, uint8 *data, uint32 length, bool _delete, bool isFile = true, uint width = 0, uint height = 0, NLMISC::CBitmap::TType texType = NLMISC::CBitmap::RGBA) = 0;
+	void				setTextureMem(uint stage, uint8 *data, uint32 length, bool _delete, bool isFile = true, uint width = 0, uint height = 0, NLMISC::CBitmap::TType texType = NLMISC::CBitmap::RGBA);
 
 	// Set wrapping mode for a texture
-	virtual	void				setWrapS(uint stage, TWrapMode mode) = 0;
-	virtual	void				setWrapT(uint stage, TWrapMode mode) = 0;
-	virtual	TWrapMode			getWrapS(uint stage) const = 0;
-	virtual	TWrapMode			getWrapT(uint stage) const = 0;
+	void				setWrapS(uint stage, TWrapMode mode);
+	void				setWrapT(uint stage, TWrapMode mode);
+	TWrapMode			getWrapS(uint stage) const;
+	TWrapMode			getWrapT(uint stage) const;
 	
 
 	// set 
@@ -175,15 +167,51 @@ public:
 	/// \name Texture matrix
 	// @{
 	// Enable a user texture matrix for the n-th stage. The initial matrix is set to identity.
-	virtual void                    enableUserTexMat(uint stage, bool enabled = true) = 0;
+	void                    enableUserTexMat(uint stage, bool enabled = true);
 	// Test wether a user texture is enabled for the n-th stage
-	virtual bool                    isUserTexMatEnabled(uint stage) const = 0;
+	bool                    isUserTexMatEnabled(uint stage) const;
 	/// Set a new texture matrix for the given stage.	
-	virtual void					setUserTexMat(uint stage, const NLMISC::CMatrix &m) = 0;
+	void					setUserTexMat(uint stage, const NLMISC::CMatrix &m);
 	/** Get a const ref. on the texture matrix of the n-th stage.	  
 	  */
-	virtual const NLMISC::CMatrix  &getUserTexMat(uint stage) const = 0;		
+	const NLMISC::CMatrix  &getUserTexMat(uint stage) const;
 	// @}
+
+	/// Proxy interface
+
+	/// Constructors
+	UInstanceMaterial() 
+	{ 
+		_Object = NULL; 
+	}
+	UInstanceMaterial(class CMeshBaseInstance	*mbi, class CMaterial *object, class CAsyncTextureBlock *asyncTextureBlock)
+	{ 
+		_MBI = mbi;
+		_Object = object;
+		_AsyncTextureBlock = asyncTextureBlock;
+	};
+	/// Attach an object to this proxy
+	void			attach(class CMeshBaseInstance	*mbi, class CMaterial *object, class CAsyncTextureBlock *asyncTextureBlock) 
+	{ 
+		_MBI = mbi;
+		_Object = object;
+		_AsyncTextureBlock = asyncTextureBlock;
+	}
+	/// Detach the object
+	void			detach() 
+	{ 
+		_MBI = NULL;
+		_Object = NULL;
+		_AsyncTextureBlock = NULL;
+	}
+	/// Return true if the proxy is empty() (not attached)
+	bool			empty() const {return _Object==NULL;}
+	/// For advanced usage, get the internal object ptr
+	class CMaterial	*getObjectPtr() const {return (CMaterial*)_Object;}
+private:
+	CMeshBaseInstance	*_MBI;
+	CMaterial			*_Object;
+	CAsyncTextureBlock	*_AsyncTextureBlock;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file u_material.h
- * <File description>
+ * User interface for material.
  *
- * $Id: u_material.h,v 1.7 2004/04/27 11:52:50 vizerie Exp $
+ * $Id: u_material.h,v 1.8 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,13 +49,6 @@ class   UDriver;
  */
 class UMaterial
 {
-protected:		
-	/// \name Object
-	// @{
-	UMaterial() {}
-	virtual ~UMaterial() {}
-	// @}
-
 public:
 	enum ZFunc				{ always=0,never,equal,notequal,less,lessequal,greater,greaterequal, zfuncCount };
 	enum TBlend				{ one=0, zero, srcalpha, invsrcalpha, srccolor, invsrccolor, blendCount };
@@ -99,80 +92,80 @@ public:
 	/// \name Texture.
 	// @{
 	// Set a texture in a stage
-	virtual void 			setTexture(uint stage, UTexture* ptex) =0;
+	void 			setTexture(uint stage, UTexture* ptex);
 	// Is a texture present in the stage ?
-	virtual bool			texturePresent (uint stage)=0;
+	bool			texturePresent (uint stage);
 	/// select from a texture set for this material (if available)
-	virtual void			selectTextureSet(uint id)=0;
+	void			selectTextureSet(uint id);
 
 	// Deprecated use setTexture(uint stage, UTexture* ptex)
-	virtual void 			setTexture(UTexture* ptex) =0;
+	void 			setTexture(UTexture* ptex);
 	// Deprecated use texturePresent (uint stage)
-	virtual bool			texturePresent() =0;
+	bool			texturePresent();
 	// @}
 
 
 	/// \name Blending.
 	// @{
-	virtual void			setBlend(bool active) =0;
-	virtual void			setBlendFunc(TBlend src, TBlend dst) =0;
-	virtual void			setSrcBlend(TBlend val) =0;
-	virtual void			setDstBlend(TBlend val) =0;
+	void			setBlend(bool active);
+	void			setBlendFunc(TBlend src, TBlend dst);
+	void			setSrcBlend(TBlend val);
+	void			setDstBlend(TBlend val);
 
-	virtual bool			getBlend() const =0;
-	virtual TBlend			getSrcBlend(void)  const =0;
-	virtual TBlend			getDstBlend(void)  const =0;
+	bool			getBlend() const;
+	TBlend			getSrcBlend(void)  const;
+	TBlend			getDstBlend(void)  const;
 	// @}
 
 	/// \name Texture environnement.
 	// @{
-	virtual void			texEnvOpRGB(uint stage, TTexOperator ope) =0;
-	virtual void			texEnvArg0RGB(uint stage, TTexSource src, TTexOperand oper) =0;
-	virtual void			texEnvArg1RGB(uint stage, TTexSource src, TTexOperand oper) =0;
-	virtual void			texEnvArg2RGB(uint stage, TTexSource src, TTexOperand oper) =0;
-	virtual void			texEnvOpAlpha(uint stage, TTexOperator ope) =0;
-	virtual void			texEnvArg0Alpha(uint stage, TTexSource src, TTexOperand oper) =0;
-	virtual void			texEnvArg1Alpha(uint stage, TTexSource src, TTexOperand oper) =0;
-	virtual void			texEnvArg2Alpha(uint stage, TTexSource src, TTexOperand oper) =0;
+	void			texEnvOpRGB(uint stage, TTexOperator ope);
+	void			texEnvArg0RGB(uint stage, TTexSource src, TTexOperand oper);
+	void			texEnvArg1RGB(uint stage, TTexSource src, TTexOperand oper);
+	void			texEnvArg2RGB(uint stage, TTexSource src, TTexOperand oper);
+	void			texEnvOpAlpha(uint stage, TTexOperator ope);
+	void			texEnvArg0Alpha(uint stage, TTexSource src, TTexOperand oper);
+	void			texEnvArg1Alpha(uint stage, TTexSource src, TTexOperand oper);
+	void			texEnvArg2Alpha(uint stage, TTexSource src, TTexOperand oper);
 	// @}
 
 	/// \name ZBuffer.
 	// @{
-	virtual void			setZFunc(ZFunc val) =0;
-	virtual void			setZWrite(bool active) =0;
-	virtual void			setZBias(float val) =0;
+	void			setZFunc(ZFunc val);
+	void			setZWrite(bool active);
+	void			setZBias(float val);
 
-	virtual ZFunc			getZFunc(void)  const  =0;
-	virtual bool			getZWrite(void)  const =0;
-	virtual float			getZBias(void)  const  =0;
+	ZFunc			getZFunc(void)  const ;
+	bool			getZWrite(void)  const;
+	float			getZBias(void)  const;
 	// @}
 
 	/// \name Alpha test.
 	// @{
-	virtual void			setAlphaTest(bool active) =0;
-	virtual bool			getAlphaTest() const =0;
+	void			setAlphaTest(bool active);
+	bool			getAlphaTest() const;
 
 	/** change the threshold against alpha is tested. Default is 0.5f.
 	 *	\param thre threshold, should be in [0..1], not clamped.
 	 */
-	virtual void			setAlphaTestThreshold(float threshold) =0;
-	virtual float			getAlphaTestThreshold() const =0;
+	void			setAlphaTestThreshold(float threshold);
+	float			getAlphaTestThreshold() const;
 	// @}
 
 	/// \name Color/Lighting..
 	// @{
 	/// The Color is used only if lighting is disabled. Also, color is replaced by per vertex color (if any).
-	virtual void			setColor(CRGBA rgba) =0;
+	void			setColor(CRGBA rgba);
 
-	virtual CRGBA			getColor(void) const =0;
+	CRGBA			getColor(void) const;
 	
 
 	// @}
 
 	/// \name Culling
 	// @{
-		virtual void			setDoubleSided(bool doubleSided = true)  = 0;
-		virtual bool			getDoubleSided() const = 0;
+		void			setDoubleSided(bool doubleSided = true);
+		bool			getDoubleSided() const;
 	// @}
 
 
@@ -182,14 +175,27 @@ public:
 	 * Default to: normal shader, no lighting, color to White(1,1,1,1), no texture, ZBias=0, ZFunc= lessequal, ZWrite==true, no blend.
 	 * All other states are undefined (such as blend function, since blend is disabled).
 	 */
-	virtual void			initUnlit() =0;
+	void			initUnlit();
 
 	// test if the given driver will support rendering of that material
-	virtual	bool			isSupportedByDriver(UDriver &drv, bool forceBaseCaps = false) = 0;
+	bool			isSupportedByDriver(UDriver &drv, bool forceBaseCaps = false);
 	// @}
 
+	/// Proxy interface
 
-
+	/// Constructors
+	UMaterial() { _Object = NULL; }
+	UMaterial(class CMaterial *object) { _Object = object; };
+	/// Attach an object to this proxy
+	void			attach(class CMaterial *object) { _Object = object; }
+	/// Detach the object
+	void			detach() { _Object = NULL; }
+	/// Return true if the proxy is empty() (not attached)
+	bool			empty() const {return _Object==NULL;}
+	/// For advanced usage, get the internal object ptr
+	class CMaterial	*getObjectPtr() const {return (CMaterial*)_Object;}
+private:
+	CMaterial	*_Object;
 };
 
 

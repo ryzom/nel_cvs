@@ -1,7 +1,7 @@
 /** \file u_camera.h
- * <File description>
+ * User interface for camera.
  *
- * $Id: u_camera.h,v 1.2 2003/11/06 09:17:26 berenguier Exp $
+ * $Id: u_camera.h,v 1.3 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,16 +42,8 @@ namespace NL3D
  * \author Nevrax France
  * \date 2001
  */
-class UCamera : virtual public UTransform
+class UCamera : public UTransform
 {
-protected:
-
-	/// \name Object
-	// @{
-	UCamera() {}
-	virtual	~UCamera() {}
-	// @}
-
 public:
 	/// \name Default Camera frustum (perspective).
 	//@{
@@ -68,34 +60,46 @@ public:
 	/// \name Frustum
 	// @{
 	/// Set the frustum of the camera.
-	virtual	void		setFrustum(const CFrustum &f)=0;
+	void		setFrustum(const CFrustum &f);
 	/// Get the frustum of the camera.
-	virtual	const CFrustum&	getFrustum() const =0;
+	const		CFrustum&	getFrustum() const;
 	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
-	virtual	void		setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective= true)=0;
+	void		setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective= true);
 	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
-	virtual	void		setFrustum(float width, float height, float znear, float zfar, bool perspective= true)=0;
+	void		setFrustum(float width, float height, float znear, float zfar, bool perspective= true);
 	/// Get the camera frustum.
-	virtual	void		getFrustum(float &left, float &right, float &bottom, float &top, float &znear, float &zfar) const =0;
+	void		getFrustum(float &left, float &right, float &bottom, float &top, float &znear, float &zfar) const ;
 	/// Is a ortho camera?
-	virtual	bool		isOrtho() const =0;
+	bool		isOrtho() const;
 	/// Is a perspective camera?
-	virtual	bool		isPerspective() const =0;
+	bool		isPerspective() const;
 	/** Setup a perspective camera, giving a fov in radians.
 	 * \param fov the horizontal angle of view, in radians. (Pi/2 as example)
 	 * \param aspectRatio the ratio horizontal/vertical (1.33 as example).
 	 * \param znear the front clipping plane distance.
 	 * \param zfar the back clipping plane distance.
 	 */
-	virtual	void		setPerspective(float fov, float aspectRatio, float znear, float zfar) =0;
+	void		setPerspective(float fov, float aspectRatio, float znear, float zfar);
 	// @}
 
 	/// \name Misc
 	// @{
-	virtual	void		buildCameraPyramid(std::vector<NLMISC::CPlane>	&pyramid, bool useWorldMatrix) =0;
+	void		buildCameraPyramid(std::vector<NLMISC::CPlane>	&pyramid, bool useWorldMatrix);
 	// @}
-	
 
+	/// Proxy interface
+
+	/// Constructors
+	UCamera() { _Object = NULL; }
+	UCamera(class CCamera *object) { _Object = (ITransformable*)object; };
+	/// Attach an object to this proxy
+	void			attach(class CCamera *object) { _Object = (ITransformable*)object; }
+	/// Detach the object
+	void			detach() { _Object = NULL; }
+	/// Return true if the proxy is empty() (not attached)
+	bool			empty() const {return _Object==NULL;}
+	/// For advanced usage, get the internal object ptr
+	class CCamera	*getObjectPtr() const {return (CCamera*)_Object;}
 };
 
 

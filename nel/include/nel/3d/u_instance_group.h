@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.32 2004/05/07 11:41:41 berenguier Exp $
+ * $Id: u_instance_group.h,v 1.33 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -208,19 +208,7 @@ public:
 	 *
 	 * \param instanceNb is the number of the instance.
 	 */
-	virtual const UInstance	*getInstance (uint instanceNb) const=0;
-
-	/**
-	 * Return an instance of the group. The instance lifeTime is the same of the instangeGroup lifeTime
-	 *
-	 * \param instanceNb is the number of the instance.
-	 */
-	virtual UInstance	*getInstance (uint instanceNb) =0;
-
-	/**
-	 * Return the instance at a given position
-	 */
-	virtual UInstance *getByName (const  std::string& name) =0;
+	virtual UInstance	getInstance (uint instanceNb) const=0;
 
 	/** get index of instance from its name, or -1 if not found
 	  * NB: lienar search so this is slow
@@ -230,7 +218,7 @@ public:
 	/**
 	 * Return the instance at a given position (const version)
 	 */
-	virtual const UInstance *getByName (const std::string& name) const=0;
+	virtual UInstance getByName (const std::string& name) const=0;
 
 	/**
 	 * Control a blendshape

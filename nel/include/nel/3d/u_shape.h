@@ -1,7 +1,7 @@
 /** \file u_shape.h
  * Game interface for managing shape.
  *
- * $Id: u_shape.h,v 1.2 2004/03/23 15:39:21 berenguier Exp $
+ * $Id: u_shape.h,v 1.3 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,16 +50,6 @@ class UShape
 {
 public:
 
-	/// Proxy interface
-	UShape();
-	/// Attach a IShape to this proxy
-	void			attach(class IShape *shape);
-	/// return true if the proxy is empty() (not attached)
-	bool			empty() const {return _Shape==NULL;}
-	/// For Advanced usage, get the Shape ptr
-	class IShape	*getShapePtr() const {return _Shape;}
-
-
 	/** Get the mesh under Triangle Form. 
 	 *	For now only CMesh and CMeshMultiLod (CMeshGeom only) are supported.
 	 *	Warning! return false if the Mesh has already been rendered!! (VertexBuffer resident)
@@ -74,9 +64,22 @@ public:
 	 */
 	void			getVisualCollisionMesh(UVisualCollisionMesh	&colMesh) const;
 
+	/// Proxy interface
+
+	/// Constructors
+	UShape() { _Object = NULL; }
+	UShape(class IShape *object) { _Object = object; }
+	/// Attach an object to this proxy
+	void			attach(class IShape *object) { _Object = object; }
+	/// Detach the object
+	void			detach() { _Object = NULL; }
+	/// Return true if the proxy is empty() (not attached)
+	bool			empty() const {return _Object==NULL;}
+	/// For advanced usage, get the internal object ptr
+	class IShape	*getObjectPtr() const {return _Object;}
 
 private:
-	class IShape	*_Shape;
+	class IShape	*_Object;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file u_water.h
  * User interface for water manipulation
  *
- * $Id: u_water.h,v 1.3 2004/02/20 14:39:11 vizerie Exp $
+ * $Id: u_water.h,v 1.4 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_U_WATER_INSTANCE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/3d/u_instance.h"
 
 
 namespace NLMISC
@@ -50,29 +51,42 @@ class UWaterHeightMap;
  * \author Nevrax France
  * \date 2001
  */
-class UWaterInstance
+class UWaterInstance : public UInstance
 {
 public:
 	/** Get the ID of the water height map attached with this surface of water.
 	  * Once you got it, you can get an interface on it from the water height map manager.
 	  * NB : a water height map is usually shared between several wtare instances
 	  */
-	virtual uint32	getWaterHeightMapID() const = 0;
+	uint32	getWaterHeightMapID() const;
 
 	/** When displaying the water height field, the value in the height field is actually multiplied
 	  * by a factor to get the height in world space. This returns this factor	  
 	  */
-	virtual float	getHeightFactor() const = 0;
+	float	getHeightFactor() const;
 
 	/// Get the height of the water in world space at the given location. 
-	virtual float   getHeight(const NLMISC::CVector2f &pos) = 0;
+	float   getHeight(const NLMISC::CVector2f &pos);
 
 	/** Get the attenuated height of the water in world space at the given location.
 	  * You must provide the viewer position
 	  * This is useful if you want to compute the position of a floating object
 	  */
-	virtual float   getAttenuatedHeight(const NLMISC::CVector2f &pos, const NLMISC::CVector &viewer) = 0;
+	float   getAttenuatedHeight(const NLMISC::CVector2f &pos, const NLMISC::CVector &viewer);
 
+	/// Proxy interface
+
+	/// Constructors
+	UWaterInstance() { _Object = NULL; }
+	UWaterInstance(class CWaterModel *object) { _Object = (ITransformable*)object; };
+	/// Attach an object to this proxy
+	void			attach(class CWaterModel *object) { _Object = (ITransformable*)object; };
+	/// Detach the object
+	void			detach() { _Object = NULL; }
+	/// Return true if the proxy is empty() (not attached)
+	bool			empty() const {return _Object==NULL;}
+	/// For advanced usage, get the internal object ptr
+	class CWaterModel	*getObjectPtr() const {return (CWaterModel*)_Object;}
 };
 
 
@@ -99,25 +113,25 @@ class UWaterHeightMap
 {
 public:
 	/// get the size in meter of a heightmap texel
-	virtual float	getUnitSize() const = 0;
+	virtual float	getUnitSize() const =0;
 
 	/** Apply a perturbation on this heightmap at the given location.	  
 	  * \param pos, The x and y coords of the perturbation.
 	  * \param strenght Strenght of the impulsion
 	  * \param radius   Radius of the impulsion
 	  */
-	virtual void	perturbate(const NLMISC::CVector2f &pos, float strenght, float radius) = 0;
+	virtual void	perturbate(const NLMISC::CVector2f &pos, float strenght, float radius) =0;
 
 	/** Apply a point perturbation on this heightmap at the given location.	  
 	  * \param pos, The x and y coords of the perturbation.
 	  * \param strenght Strenght of the impulsion	  
 	  */
-	virtual void	perturbatePoint(const NLMISC::CVector2f &pos, float strenght) = 0;
+	virtual void	perturbatePoint(const NLMISC::CVector2f &pos, float strenght) =0;
 
 	/** Get the value of the height map at the given location. To get the height in world coordinate,
 	  * You should use getHeight	  
 	  */
-	virtual float	getHeight(const NLMISC::CVector2f &pos) = 0;
+	virtual float	getHeight(const NLMISC::CVector2f &pos) =0;
 };
 
   

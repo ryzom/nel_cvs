@@ -1,7 +1,7 @@
 /** \file u_play_list.h
  * <File description>
  *
- * $Id: u_play_list.h,v 1.7 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: u_play_list.h,v 1.8 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,7 +94,7 @@ public:
 	 *
 	 * \param object is the object which will be affected by this animation playlist.
 	 */
-	virtual	void	registerTransform(UTransform *object, const char* prefix="") =0;
+	virtual	void	registerTransform(UTransform object, const char* prefix="") =0;
 
 	/** Reset all channels so that no more Animatable object (Transforms etc...) are linked to this PLayList.
 	 * Hence, the playlist has no effect on anything.

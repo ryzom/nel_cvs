@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.43 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: u_driver.h,v 1.44 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -271,9 +271,9 @@ public:
 	/// Delete a Raw texture. This one will be really deleted in memory when no material point to it.
 	virtual	void			deleteTextureRaw(UTextureRaw *textraw) =0;
 	/// Create a new Material, to be filled by user.
-	virtual	UMaterial		*createMaterial() =0;
+	virtual	UMaterial		createMaterial() =0;
 	/// Delete a Material.
-	virtual	void			deleteMaterial(UMaterial *mat) =0;
+	virtual	void			deleteMaterial(UMaterial &mat) =0;
 	// @}
 
 

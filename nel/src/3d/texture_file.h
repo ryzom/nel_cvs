@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.10 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_file.h,v 1.11 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,11 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void setFileName(const std::string &s) { touch(); _FileName = s; }
+	void setFileName(const std::string &s) 
+	{ 
+		touch(); 
+		_FileName = s; 
+	}
 
 
 	/** 

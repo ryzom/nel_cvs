@@ -1,7 +1,7 @@
 /** \file u_instance.h
- * <File description>
+ * Interface for instance objects.
  *
- * $Id: u_instance.h,v 1.16 2004/04/27 11:53:08 vizerie Exp $
+ * $Id: u_instance.h,v 1.17 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_transform.h"
+#include "nel/3d/u_instance_material.h"
 #include "nel/misc/aabbox.h"
 
 
@@ -45,22 +46,14 @@ class	UInstanceMaterial;
  * \author Nevrax France
  * \date 2001
  */
-class UInstance : virtual public UTransform
+class UInstance : public UTransform
 {
-protected:
-
-	/// \name Object
-	// @{
-	UInstance() {}
-	virtual	~UInstance() {}
-	// @}
-
 public:
 
 
 	/** Get the untransformed AABBox of the mesh. NULL (gtSize()==0) if no mesh.
 	 */
-	virtual void				getShapeAABBox(NLMISC::CAABBox &bbox) const =0;
+	void				getShapeAABBox(NLMISC::CAABBox &bbox) const;
 
 	/**
 	 * Set the blend shape factor for this instance
@@ -68,18 +61,18 @@ public:
 	 * factor the blendshape percentage from -100.0 to 100.0
 	 * dynamic tells the optimizer if the blendshape have to change in real time
 	 */
-	virtual void				setBlendShapeFactor (const std::string &blendShapeName, float factor, bool dynamic) { }
+	void				setBlendShapeFactor (const std::string &blendShapeName, float factor, bool dynamic);
 
 	/// \name Material access.
 	// @{
 	/// return number of materials this mesh instance use.
-	virtual	uint				getNumMaterials() const =0;
+	uint				getNumMaterials() const;
 	/// return a local access on a material, to change its values. (NB: overwrited, if animated).
-	virtual	UInstanceMaterial	&getMaterial(uint materialId)=0;
+	UInstanceMaterial	getMaterial(uint materialId);
 	/** Select textures of material among several sets (if available)
 	 *	NB: if success and if getAsyncTextureMode()==true, then setAsyncTextureDirty(true) is called
 	 */
-	virtual void selectTextureSet(uint id)=0;
+	void selectTextureSet(uint id);
 	// @}
 
 	/** Change MRM Distance setup. Only for mesh which support MRM. NB MeshMultiLod apply it only on Lod0 
@@ -90,7 +83,7 @@ public:
 	 *	\param distanceMiddle The MRM has 50% of its faces at dist==distanceMiddle.
 	 *	\param distanceCoarsest The MRM has faces/Divisor (ie near 0) when dist>=distanceCoarsest.
 	 */
-	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest) =0;
+	void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
 
 
 	/** Change Max Display distance. After this distance the shape won't be displayed.
@@ -107,28 +100,28 @@ public:
 	 *	with same value (or don't call setShapeDistMax() for subsequent instances).
 	 *	If you don't do this, QuadGridClipManager may clip such instances nearer than they should
 	 */
-	virtual void		setShapeDistMax(float distMax) =0;
+	void		setShapeDistMax(float distMax);
 
 	/// see setShapeDistMax()
-	virtual float		getShapeDistMax() const =0;
+	float		getShapeDistMax() const;
 
 	/// Test if there is a start/stop caps in the objects (some fxs such as remanence)
-	virtual bool		canStartStop() = 0;
+	bool		canStartStop();
 	// For instance that have a start/stop caps
-	virtual void		start() = 0;
+	void		start();
 	// For instance that have a start/stop caps
-	virtual void		stop()  = 0;
+	void		stop() ;
 	// For instance that have a start/stop caps
-	virtual bool		isStarted() const = 0;
+	bool		isStarted() const;
 	
 	// Get the model distmax.
-	virtual float               getDistMax() const = 0;	
+	float		getDistMax() const;	
 	// Set the model distmax.
-	virtual void                setDistMax(float distMax) = 0;
+	void		setDistMax(float distMax);
 	// If the model has a coarse mesh, it set its dist. Set to -1 to keep default
-	virtual void                setCoarseMeshDist(float dist) = 0;
+	void		setCoarseMeshDist(float dist);
 	// If the model has a coarse mesh, it returns its distance if it has been set, or -1 if default is used (or if no coarse mesh present)
-	virtual float               getCoarseMeshDist() const = 0;
+	float		getCoarseMeshDist() const;
 
 
 	/// \name Async Texture Loading
@@ -143,35 +136,35 @@ public:
 	 *	When it swap from true to false, the inverse is applied.
 	 *	NB: calling enableAsyncTextureMode(true) calls setAsyncTextureDirty(true)
 	 */
-	virtual	void		enableAsyncTextureMode(bool enable) =0;
-	virtual	bool		getAsyncTextureMode() const =0;
+	void		enableAsyncTextureMode(bool enable);
+	bool		getAsyncTextureMode() const;
 	/** Start to load all textures in AsyncTextures array (if needed)
 	 *	NB: old setup is kept in Material => instance is still rendered with "coherent" textures, until new textures
 	 *	are ready
 	 *	no op if not in async texture mode.
 	 */
-	virtual	void		startAsyncTextureLoading() =0;
+	void		startAsyncTextureLoading();
 	/**	return true if all the async textures of the instances are uploaded.
 	 *	if was not ready before, this swap the upload textures into the rendered ones so they are rendered
 	 *	return always true if not in async texture mode, or if startAsyncTextureLoading() has not been called
 	 *	since last enableAsyncTextureMode(true)
 	 */
-	virtual	bool		isAsyncTextureReady() =0;
+	bool		isAsyncTextureReady();
 
 	/** For Lod of texture, and load balancing, set the approximate distance of the instance to the camera.
 	 */
-	virtual	void		setAsyncTextureDistance(float dist) =0;
+	void		setAsyncTextureDistance(float dist);
 	/** \see setAsyncTextureDistance()
 	 */
-	virtual	float		getAsyncTextureDistance() const =0;
+	float		getAsyncTextureDistance() const;
 
 	/** User is free to flag this state, to know if startAsyncTextureLoading() should be called. 
 	 *	Internal system don't use this flag. 
 	 *	Default is false
 	 */
-	virtual	void		setAsyncTextureDirty(bool flag) =0;
+	void		setAsyncTextureDirty(bool flag);
 	/// see dirtAsyncTextureState()
-	virtual	bool		isAsyncTextureDirty() const =0;
+	bool		isAsyncTextureDirty() const;
 
 	// @}
 
@@ -179,15 +172,28 @@ public:
 	  * If the object is not a trail, this has no effect
 	  */
 	// @{
-	virtual void		setSliceTime(float duration) = 0;
-	virtual float		getSliceTime() const = 0;
+	void		setSliceTime(float duration);
+	float		getSliceTime() const;
 	// @}
 
 	/** Test if driver support rendering of all material of that shape.
 	  * \param  forceBaseCaps When true, the driver is considered to have the most basic required caps (2 stages hardwares, no pixelShader), so that any fancy material will fail the test.
 	  */
-	virtual	bool		supportMaterialRendering(UDriver &drv, bool forceBaseCaps) = 0;
+	bool		supportMaterialRendering(UDriver &drv, bool forceBaseCaps);
 
+	/// Proxy interface
+
+	/// Constructors
+	UInstance() { _Object = NULL; };
+	UInstance(class CTransformShape *object) { _Object = (ITransformable*)object; };
+	/// Attach an object to this proxy
+	void			attach(class CTransformShape *object) { _Object = (ITransformable*)object; }
+	/// Detach the object
+	void			detach() { _Object = NULL; }
+	/// Return true if the proxy is empty() (not attached)
+	bool			empty() const {return _Object==NULL;}
+	/// For advanced usage, get the internal object ptr
+	class CTransformShape	*getObjectPtr() const {return (CTransformShape*)_Object;}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.54 2004/04/13 17:01:15 berenguier Exp $
+ * $Id: scene_user.h,v 1.55 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,13 +29,9 @@
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_scene.h"
 #include "3d/driver_user.h"
-#include "3d/camera_user.h"
-#include "3d/instance_user.h"
-#include "3d/particle_system_instance_user.h"
 #include "3d/landscape_user.h"
 #include "3d/cloud_scape_user.h"
 #include "3d/instance_group_user.h"
-#include "3d/skeleton_user.h"
 #include "3d/visual_collision_manager_user.h"
 #include "3d/play_list_manager_user.h"
 
@@ -68,25 +64,21 @@ protected:
 	CDriverUser			*_DriverUser;
 	/// The Scene.
 	CScene				_Scene;
-	/// The Current camera.
-	CCameraUser			*_CurrentCamera;
 
 
 	// Components List.
-	typedef	CPtrSet<CTransformUser>		TTransformSet;
 	typedef	CPtrSet<CLandscapeUser>		TLandscapeSet;
 	typedef	CPtrSet<CCloudScapeUser>	TCloudScapeSet;
 	typedef	CPtrSet<CInstanceGroupUser>	TInstanceGroupSet;
 	typedef	CPtrSet<CVisualCollisionManagerUser>	TVisualCollisionManagerSet;
 	typedef	CPtrSet<CPlayListManagerUser>	TPlayListManagerSet;
-	TTransformSet				_Transforms;
 	TLandscapeSet				_Landscapes;
 	TCloudScapeSet				_CloudScapes;
 	TInstanceGroupSet			_InstanceGroups;
 	TVisualCollisionManagerSet	_VisualCollisionManagers;
 	TPlayListManagerSet			_PlayListManagers;
 
-	std::map<UInstance**,CTransformShape*> _WaitingInstances;
+	std::map<UInstance*,CTransformShape*> _WaitingInstances;
 
 	// IG that wait to be created and added to that scene
 	struct CWaitingIG
@@ -125,8 +117,8 @@ public:
 
 	/// \name Camera/Viewport.
 	//@{
-	virtual	void			setCam(UCamera *cam);
-	virtual	UCamera			*getCam();
+	virtual	void			setCam(UCamera cam);
+	virtual	UCamera			getCam();
 	virtual	void			setViewport(const class CViewport& viewport);
 	virtual	CViewport		getViewport();
 	virtual	UInstanceGroup	*findCameraClusterSystemFromRay(UInstanceGroup *startClusterSystem,
@@ -137,12 +129,12 @@ public:
 	/// \name Component Mgt.
 	//@{
 
-	virtual	UCamera			*createCamera();
-	virtual	void			deleteCamera(UCamera *cam);
+	virtual	UCamera			createCamera();
+	virtual	void			deleteCamera(UCamera &cam);
 
-	virtual	UInstance		*createInstance(const std::string &shapeName);
-	virtual	void			createInstanceAsync(const std::string &shapeName, UInstance**ppInstance, const NLMISC::CVector &position, uint selectedTexture);
-	virtual	void			deleteInstance(UInstance *inst);
+	virtual	UInstance		createInstance(const std::string &shapeName);
+	virtual	void			createInstanceAsync(const std::string &shapeName, UInstance *ppInstance, const NLMISC::CVector &position, uint selectedTexture);
+	virtual	void			deleteInstance(UInstance &inst);
 
 	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &pos, 
 														const NLMISC::CQuat &rot, uint selectedTexture, IAsyncLoadCallback *pCB = NULL);
@@ -154,11 +146,11 @@ public:
 	void	updateWaitingIG();
 
 
-	virtual UTransform		*createTransform();
-	virtual	void			deleteTransform(UTransform *tr);
+	virtual UTransform		createTransform();
+	virtual	void			deleteTransform(UTransform &tr);
 
-	virtual	USkeleton		*createSkeleton(const std::string &shapeName);
-	virtual	void			deleteSkeleton(USkeleton *skel);
+	virtual	USkeleton		createSkeleton(const std::string &shapeName);
+	virtual	void			deleteSkeleton(USkeleton &skel);
 
 	virtual	ULandscape		*createLandscape();
 	virtual	void			deleteLandscape(ULandscape *land);
@@ -173,8 +165,8 @@ public:
 
 	virtual void setToGlobalInstanceGroup(UInstanceGroup *pIG);
 
-	virtual	UPointLight		*createPointLight();
-	virtual	void			deletePointLight(UPointLight *light);
+	virtual	UPointLight		createPointLight();
+	virtual	void			deletePointLight(UPointLight &light);
 
 	//@}
 

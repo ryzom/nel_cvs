@@ -1,7 +1,7 @@
-/** \file transformable_user.cpp
- * <File description>
+/** \file bone_user.cpp
+ * User interface for bones.
  *
- * $Id: transformable_user.cpp,v 1.5 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: u_bone.cpp,v 1.1 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,37 +25,20 @@
 
 #include "std3d.h"
 
-#include "3d/transformable_user.h"
+#include "3d/bone.h"
+#include "nel/3d/u_bone.h"
 
+#define NL3D_MEM_BONES						NL_ALLOC_CONTEXT( 3dBones )
 
-namespace NL3D 
+namespace NL3D
 {
 
-
-const char *UTransformable::getPosValueName ()
+const CMatrix	&UBone::getLastWorldMatrixComputed() const
 {
-	NL3D_MEM_TRANSFORMABLE
-	return ITransformable::getPosValueName ();
-}
-const char *UTransformable::getRotEulerValueName()
-{
-	NL3D_MEM_TRANSFORMABLE
-	return ITransformable::getRotEulerValueName();
-}
-const char *UTransformable::getRotQuatValueName()
-{
-	NL3D_MEM_TRANSFORMABLE
-	return ITransformable::getRotQuatValueName();
-}
-const char *UTransformable::getScaleValueName()
-{
-	NL3D_MEM_TRANSFORMABLE
-	return ITransformable::getScaleValueName();
-}
-const char *UTransformable::getPivotValueName()
-{
-	NL3D_MEM_TRANSFORMABLE
-	return ITransformable::getPivotValueName();
+	NL3D_MEM_BONES
+	nlassert(_Object) ; // object invalid now ...
+	CBone *object = getObjectPtr();
+	return object->getWorldMatrix();
 }
 
 

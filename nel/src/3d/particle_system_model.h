@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.41 2004/04/09 14:28:10 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.42 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -287,9 +287,6 @@ public:
 
 	// Set z-bias. Value is in world coordinates. Value remains even if ps isn't present (rsc not allocated)
 	void setZBias(float value);
-
-	// from CTransformShape
-	virtual CInstanceUser       *buildMatchingUserInterfaceObject(bool deleteIt);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////

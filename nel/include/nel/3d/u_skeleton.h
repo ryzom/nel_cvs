@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.17 2003/11/06 14:55:57 vizerie Exp $
+ * $Id: u_skeleton.h,v 1.18 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,16 +47,8 @@ class	IAnimCtrl;
  * \author Nevrax France
  * \date 2001
  */
-class USkeleton : virtual public UTransform
+class USkeleton : public UTransform
 {
-protected:
-
-	/// \name Object
-	// @{
-	USkeleton() {}
-	virtual	~USkeleton() {}
-	// @}
-
 public:
 
 
@@ -69,37 +61,37 @@ public:
 	 * NB: when a skin is binded, the command hide(), show(), ... have no effect on it, until it is detachSkeletonSon()-ed
 	 * \return false if mi is NULL or not skinnable, true otherwise
 	 */
-	virtual	bool		bindSkin(UInstance *mi) =0;
+	bool		bindSkin(UInstance mi);
 	/** parent a CTransform to a bone of the skeleton. NB: ~CTransform() calls detachSkeletonSon().
 	 * This object will be visible only when the Skeleton is not clipped.
 	 * NB: an object can't be skinned and sticked at same time :)
 	 * NB: replaced if already here.
 	 */
-	virtual	void		stickObject(UTransform *mi, uint boneId) =0;
+	void		stickObject(UTransform mi, uint boneId);
 	/** same method as stickObject(), but if you set forceCLod as true, then this object will be visible
 	 *	even if the skeleton father is in CLod state (ie displayed with a CLodCharacterShape)
 	 *	NB: if "mi" is a skeleton model, forceCLod is considerer true, whatever the value passed in.
 	 */
-	virtual	void		stickObjectEx(UTransform *mi, uint boneId, bool forceCLod) =0;
+	void		stickObjectEx(UTransform mi, uint boneId, bool forceCLod);
 	/** unparent a CTransform from a bone of the skeleton, or unbind a skin. No-op if not here.
 	 * NB: mi is placed at root of hierarchy.
 	 */
-	virtual	void		detachSkeletonSon(UTransform *mi) =0;
+	void		detachSkeletonSon(UTransform mi);
 	// @}
 
 
 	/// \name Bone access.
 	// @{
 	/// retrieve the number of bones.
-	virtual	uint		getNumBones() const =0;
+	uint		getNumBones() const;
 	/// retrieve the bone. nlerror if not here. (>=getNumBones())
-	virtual	UBone		&getBone(uint boneId) =0;
+	UBone		getBone(uint boneId) const;
 	/// retrieve the bone Id, by his name. -1 if not found.
-	virtual	sint		getBoneIdByName(const std::string &boneName) const=0;
+	sint		getBoneIdByName(const std::string &boneName) const;
 	/// Tell if a bone has been computed in the last frame or not. false if boneId is invalid
-	virtual	bool		isBoneComputed(uint boneId) const=0;
+	bool		isBoneComputed(uint boneId) const;
 	/// Force to compute a bone, even if object clipped. false if boneId is invalid 
-	virtual bool		forceComputeBone(uint boneId) = 0;
+	bool		forceComputeBone(uint boneId);
 	// @}
 
 
@@ -107,14 +99,14 @@ public:
 	// @{
 
 	/// return the number of bones currently animated/computed (because of bindSkin()/stickObject() / Lod system).
-	virtual	uint		getNumBoneComputed() const =0;
+	uint		getNumBoneComputed() const;
 
 	/** change the Lod Bone interpolation distance (in meters). If 0, interpolation is disabled.
 	 *	The smaller this value is, the more Lod skeleton system will "pop". Default is 0.5 meters.
 	 */
-	virtual	void		setInterpolationDistance(float dist) =0;
+	void		setInterpolationDistance(float dist);
 	/// see setInterpolationDistance()
-	virtual	float		getInterpolationDistance() const =0;
+	float		getInterpolationDistance() const;
 
 
 	/** Change Max Display Skeleton distance. After this distance the shape won't be displayed.
@@ -128,10 +120,10 @@ public:
 	 *	Note (complex): same remark for QuadGridClipManager interaction with this function as in 
 	 *	UInstance::setShapeDistMax()
 	 */
-	virtual void		setShapeDistMax(float distMax) =0;
+	void		setShapeDistMax(float distMax);
 
 	/// see setShapeDistMax()
-	virtual float		getShapeDistMax() const =0;
+	float		getShapeDistMax() const;
 
 	/** Special version for skins. NB: skins never follow their original MRM distance setup, but follow
 	 *	this skeleton MRM setup. Default is 3-10-50. 
@@ -141,7 +133,7 @@ public:
 	 *	\param distanceMiddle The MRM has 50% of its faces at dist==distanceMiddle.
 	 *	\param distanceCoarsest The MRM has faces/Divisor (ie near 0) when dist>=distanceCoarsest.
 	 */
-	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest) =0;
+	void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
 
 	// @}
 
@@ -154,38 +146,38 @@ public:
 
 	/** Change the Character Lod shape Id. set -1 if want to disable the feature (default)
 	 */
-	virtual void		setLodCharacterShape(sint shapeId) =0;
+	void		setLodCharacterShape(sint shapeId);
 	/// see setLodCharacterShape
-	virtual sint		getLodCharacterShape() const =0;
+	sint		getLodCharacterShape() const;
 
 	/// Change/get the Character Lod anim setup.
-	virtual void		setLodCharacterAnimId(uint animId) =0;
-	virtual uint		getLodCharacterAnimId() const =0;
-	virtual void		setLodCharacterAnimTime(TGlobalAnimationTime time) =0;
-	virtual TGlobalAnimationTime	getLodCharacterAnimTime() const =0;
+	void		setLodCharacterAnimId(uint animId);
+	uint		getLodCharacterAnimId() const;
+	void		setLodCharacterAnimTime(TGlobalAnimationTime time);
+	TGlobalAnimationTime	getLodCharacterAnimTime() const;
 
 	/// tells if the animation must loop or clamp.
-	virtual void		setLodCharacterWrapMode(bool wrapMode) =0;
-	virtual bool		getLodCharacterWrapMode() const =0;
+	void		setLodCharacterWrapMode(bool wrapMode);
+	bool		getLodCharacterWrapMode() const;
 
 	/** True if the skeleton model and his skins have been displayed with a CLodCharacterShape at last scene render
 	 */
-	virtual bool		isDisplayedAsLodCharacter() const =0;
+	bool		isDisplayedAsLodCharacter() const;
 
 	/** This is the distance at which the skeleton use a CLodCharacterShape to display himself
 	 *	if 0, never display the skeleton as a CLodCharacterShape
 	 */
-	virtual void		setLodCharacterDistance(float dist) =0;
+	void		setLodCharacterDistance(float dist);
 
 	/// see setLodCharacterDistance. 0 if disabled
-	virtual float		getLodCharacterDistance() const =0;
+	float		getLodCharacterDistance() const;
 
 	/** Call it when you want the system to recompute the Lod texture
 	 *	NB: Lod texturing is possible only in conjunction with AsyncTextureManager. Hence, instances skinned
 	 *	to the skeleton should be in AsyncTextureMode.
 	 *	For best result, you should wait that each of these instances are isAsyncTextureReady() (texture loaded)
 	 */
-	virtual void		computeLodTexture() =0;
+	void		computeLodTexture();
 
 	// @}
 
@@ -199,7 +191,7 @@ public:
 	 *	\param computeInWorld true if want to get the bbox in world.
 	 *	\return true if the bbox is computed, false otherwise.
 	 */
-	virtual	bool		computeRenderedBBox(NLMISC::CAABBox &bbox, bool computeInWorld= false) =0;
+	bool		computeRenderedBBox(NLMISC::CAABBox &bbox, bool computeInWorld= false);
 
 	/** same as computeRenderedBBox() but force animation and compute of all bones => don't need render(), but slower.
 	 *	for all used bones, extend the bbox with their pos
@@ -210,7 +202,7 @@ public:
 	 *	\param computeInWorld true if want to get the bbox in world.
 	 *	\return true if the bbox is computed, false otherwise.
 	 */
-	virtual	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime=0, bool forceCompute = false, bool computeInWorld= false) =0;
+	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime=0, bool forceCompute = false, bool computeInWorld= false);
 
 	// @}
 
@@ -221,11 +213,24 @@ public:
 	 *	set to NULL if you want to reset this bone AnimCtrl.
 	 *	No-op if Bad BoneId.
 	 */
-		virtual	void		setBoneAnimCtrl(uint boneId, IAnimCtrl *ctrl) =0;
+	void		setBoneAnimCtrl(uint boneId, IAnimCtrl *ctrl);
 	/// return NULL if bad BoneId
-	virtual	IAnimCtrl	*getBoneAnimCtrl(uint boneId) const =0;
+	IAnimCtrl	*getBoneAnimCtrl(uint boneId) const;
 	// @}
 
+	/// Proxy interface
+
+	/// Constructors
+	USkeleton() { _Object = NULL; }
+	USkeleton(class CSkeletonModel *object) { _Object = (ITransformable*)object; };
+	/// Attach an object to this proxy
+	void			attach(class CSkeletonModel *object) { _Object = (ITransformable*)object; }
+	/// Detach the object
+	void			detach() { _Object = NULL; }
+	/// Return true if the proxy is empty() (not attached)
+	bool			empty() const {return _Object==NULL;}
+	/// For advanced usage, get the internal object ptr
+	class CSkeletonModel	*getObjectPtr() const {return (CSkeletonModel*)_Object;}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file texture_multi_file.cpp
  * <File description>
  *
- * $Id: texture_multi_file.cpp,v 1.7 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_multi_file.cpp,v 1.8 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -83,6 +83,11 @@ void CTextureMultiFile::doGenerate(bool async)
 	}
 	else
 	{	
+		// hulud todo remove
+		std::string toto = _FileNames[usedTexture];
+		toto = NLMISC::strlwr (toto);
+		if (toto == "fo_arbragrelot_branche_sp.tga")
+			nlstop;
 		CTextureFile::buildBitmapFromFile(*this, _FileNames[usedTexture], async);
 	}
 }

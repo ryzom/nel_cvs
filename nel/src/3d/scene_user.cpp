@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.60 2004/04/13 17:01:15 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.61 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,13 @@
 
 #include "std3d.h"
 
+#include "nel/3d/u_point_light.h"
+#include "nel/3d/u_instance.h"
+#include "nel/3d/u_camera.h"
+#include "nel/3d/u_skeleton.h"
 #include "3d/scene_user.h"
+#include "3d/skeleton_model.h"
 #include "3d/coarse_mesh_manager.h"
-#include "3d/point_light_user.h"
 #include "3d/point_light_model.h"
 #include "3d/lod_character_manager.h"
 #include "3d/lod_character_shape.h"
@@ -286,8 +290,8 @@ NLMISC::CVector		CSceneUser::getSunDirection() const
 	return _Scene.getSunDirection();
 }
 
-
 // ***************************************************************************
+
 void				CSceneUser::setMaxLightContribution(uint nlights)
 {
 	NL3D_MEM_LIGHT
@@ -295,6 +299,9 @@ void				CSceneUser::setMaxLightContribution(uint nlights)
 
 	_Scene.setMaxLightContribution(nlights);
 }
+
+// ***************************************************************************
+
 uint				CSceneUser::getMaxLightContribution() const
 {
 	NL3D_MEM_LIGHT
@@ -303,6 +310,8 @@ uint				CSceneUser::getMaxLightContribution() const
 	return _Scene.getMaxLightContribution();
 }
 
+// ***************************************************************************
+
 void				CSceneUser::setLightTransitionThreshold(float lightTransitionThreshold)
 {
 	NL3D_MEM_LIGHT
@@ -310,6 +319,9 @@ void				CSceneUser::setLightTransitionThreshold(float lightTransitionThreshold)
 
 	_Scene.setLightTransitionThreshold(lightTransitionThreshold);
 }
+
+// ***************************************************************************
+
 float				CSceneUser::getLightTransitionThreshold() const
 {
 	NL3D_MEM_LIGHT
@@ -318,29 +330,37 @@ float				CSceneUser::getLightTransitionThreshold() const
 	return _Scene.getLightTransitionThreshold();
 }
 
-
 // ***************************************************************************
-UPointLight		*CSceneUser::createPointLight()
+
+UPointLight			CSceneUser::createPointLight()
 {
 	NL3D_MEM_LIGHT
 	NL3D_HAUTO_ELT_SCENE;
 
 	CTransform	*model= _Scene.createModel(PointLightModelId);
-	// If not found, return NULL.
-	if(model==NULL)
-		return NULL;
+	if (model)
+	{
+		CPointLightModel *pointLightModel= safe_cast<CPointLightModel*> (model);
+		// If not found, return NULL.
+		if(pointLightModel==NULL)
+			return NULL;
 
-	// The component is auto added/deleted to _Scene in ctor/dtor.
-	return dynamic_cast<UPointLight*>( _Transforms.insert(new CPointLightUser(&_Scene, model)) );
+		// The component is auto added/deleted to _Scene in ctor/dtor.
+		return UPointLight (pointLightModel);
+	}
+	else
+		UPointLight ();
 }
+
 // ***************************************************************************
-void			CSceneUser::deletePointLight(UPointLight *light)
+void			CSceneUser::deletePointLight(UPointLight &light)
 {
 	NL3D_MEM_LIGHT
 	NL3D_HAUTO_ELT_SCENE;
 
 	// The component is auto added/deleted to _Scene in ctor/dtor.
-	_Transforms.erase(dynamic_cast<CTransformUser*>(light));
+	_Scene.deleteModel (light.getObjectPtr());
+	light.detach ();
 }
 
 
@@ -523,7 +543,7 @@ void			CSceneUser::render()
 	{
 		NL3D_HAUTO_RENDER_SCENE
 
-		if(_CurrentCamera==NULL)
+		if(_Scene.getCam() == NULL)
 			nlerror("render(): try to render with no camera linked (may have been deleted)");
 		_Scene.render();
 	}
@@ -553,13 +573,13 @@ void CSceneUser::updateWaitingInstances()
 		NL3D_HAUTO_ASYNC_IG
 
 		// Done after the _Scene.render because in this method the instance are checked for creation
-		std::map<UInstance**,CTransformShape*>::iterator it = _WaitingInstances.begin();
+		std::map<UInstance*,CTransformShape*>::iterator it = _WaitingInstances.begin();
 		while( it != _WaitingInstances.end() )
 		{
 			if( it->second != NULL )
 			{
-				*(it->first) = dynamic_cast<UInstance*>( _Transforms.insert(it->second->buildMatchingUserInterfaceObject(true)));
-				std::map<UInstance**,CTransformShape*>::iterator delIt = it;
+				it->first->attach (it->second);
+				std::map<UInstance*,CTransformShape*>::iterator delIt = it;
 				++it;
 				_WaitingInstances.erase(delIt);
 			}
@@ -587,29 +607,34 @@ void			CSceneUser::animate(TGlobalAnimationTime time)
 	_Scene.animate(time);
 }
 
-
 // ***************************************************************************
-void			CSceneUser::setCam(UCamera *cam)
+
+void			CSceneUser::setCam(UCamera cam)
 {
 	NL3D_MEM_SCENE
 	NL3D_HAUTO_UI_SCENE;
 
-	if(!cam)
+	if(cam.empty())
 		nlerror("setCam(): cannot set a NULL camera");
-	CCameraUser		*newCam= dynamic_cast<CCameraUser*>(cam);
-	if( newCam->getScene() != &_Scene)
+	CCamera *camera = cam.getObjectPtr();
+	if( camera->getOwnerScene() != &_Scene)
 		nlerror("setCam(): try to set a current camera not created from this scene");
 
-	_CurrentCamera= newCam;
-	_Scene.setCam(newCam->getCamera());
+	_Scene.setCam(camera);
 }
-UCamera			*CSceneUser::getCam()
+
+// ***************************************************************************
+
+UCamera			CSceneUser::getCam()
 {
 	NL3D_MEM_SCENE
 	NL3D_HAUTO_UI_SCENE;
 
-	return dynamic_cast<UCamera*>(_CurrentCamera);
+	return UCamera (_Scene.getCam());
 }
+
+// ***************************************************************************
+
 void			CSceneUser::setViewport(const class CViewport& viewport)
 {
 	NL3D_MEM_SCENE
@@ -644,46 +669,51 @@ UInstanceGroup	*CSceneUser::findCameraClusterSystemFromRay(UInstanceGroup *start
 }
 
 // ***************************************************************************
-UCamera			*CSceneUser::createCamera()
+
+UCamera			CSceneUser::createCamera()
 {
 	NL3D_MEM_SCENE
 	NL3D_HAUTO_ELT_SCENE;
 
-	// The component is auto added/deleted to _Scene in ctor/dtor.
-	return dynamic_cast<UCamera*>( _Transforms.insert(new CCameraUser(&_Scene)) );
+	CTransform	*model= _Scene.createModel(CameraId);
+	if (model)
+	{
+		CCamera *object = NLMISC::safe_cast<CCamera*>(model);
+		object->setFrustum(UCamera::DefLx, UCamera::DefLy, UCamera::DefLzNear, UCamera::DefLzFar);
+		return UCamera (object);
+	}
+	else
+		return UCamera ();
 }
-void			CSceneUser::deleteCamera(UCamera *cam)
+
+// ***************************************************************************
+
+void			CSceneUser::deleteCamera(UCamera &cam)
 {
 	NL3D_MEM_SCENE
 	NL3D_HAUTO_ELT_SCENE;
 
-	CCameraUser		*oldCam= dynamic_cast<CCameraUser*>(cam);
-	// Is this the current camera??
-	if(oldCam==_CurrentCamera)
-		_CurrentCamera=NULL;
+	CCamera		*object = cam.getObjectPtr();
 
 	// The component is auto added/deleted to _Scene in ctor/dtor.
-	_Transforms.erase(oldCam);
+	_Scene.deleteModel (object);
+	cam.detach ();
 }
 
-UInstance		*CSceneUser::createInstance(const std::string &shapeName)
+// ***************************************************************************
+
+UInstance		CSceneUser::createInstance(const std::string &shapeName)
 {
 	NL3D_MEM_INSTANCE
 	NL3D_HAUTO_CREATE_INSTANCE;
 
-	CTransform	*model= _Scene.createInstance(shapeName);
-	// If not found, return NULL.
-	if(model==NULL)
-		return NULL;
-
-	// The component is auto added/deleted to _Scene in ctor/dtor.			
-	CInstanceUser *iu = model->buildMatchingUserInterfaceObject(true);
-	_Transforms.insert(iu);	
-	return iu;
+	CTransformShape	*model= _Scene.createInstance(shapeName);
+	return UInstance (model);
 }
 
+// ***************************************************************************
 
-void CSceneUser::createInstanceAsync(const std::string &shapeName, UInstance**ppInstance, const NLMISC::CVector &position, uint selectedTexture)
+void CSceneUser::createInstanceAsync(const std::string &shapeName, UInstance *ppInstance, const NLMISC::CVector &position, uint selectedTexture)
 {
 	NL3D_MEM_INSTANCE
 	NL3D_HAUTO_CREATE_INSTANCE;
@@ -702,15 +732,18 @@ void CSceneUser::createInstanceAsync(const std::string &shapeName, UInstance**pp
 //		return dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, model)) );
 }
 
-void			CSceneUser::deleteInstance(UInstance *inst)
+// ***************************************************************************
+
+void			CSceneUser::deleteInstance(UInstance &inst)
 {
 	NL3D_MEM_INSTANCE
 	NL3D_HAUTO_ELT_SCENE;
 
-	// The component is auto added/deleted to _Scene in ctor/dtor.
-	_Transforms.erase(dynamic_cast<CTransformUser*>(inst));
+	_Scene.deleteInstance (inst.getObjectPtr());
+	inst.detach ();
 }
 
+// ***************************************************************************
 
 void CSceneUser::createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &pos, const NLMISC::CQuat &rot, 
 														uint selectedTexture, IAsyncLoadCallback *pCB)
@@ -765,55 +798,58 @@ void CSceneUser::deleteInstanceGroup(UInstanceGroup *pIG)
 	delete pIG;
 }
 
-UTransform *CSceneUser::createTransform()
+// ***************************************************************************
+
+UTransform CSceneUser::createTransform()
 {
 	NL3D_MEM_SCENE
 	NL3D_HAUTO_ELT_SCENE;
 
 	CTransform	*model= _Scene.createModel(TransformId);
-	// If not found, return NULL.
-	if(model==NULL)
-		return NULL;
-
-	// The component is auto added/deleted to _Scene in ctor/dtor.
-	return dynamic_cast<UTransform*>( _Transforms.insert(new CTransformUser(&_Scene, model, true)) );
+	return UTransform (model);
 }
 
-void			CSceneUser::deleteTransform(UTransform *tr)
+// ***************************************************************************
+
+void			CSceneUser::deleteTransform(UTransform &tr)
 {
 	NL3D_MEM_SCENE
 	NL3D_HAUTO_ELT_SCENE;
 
-	// The component is auto added/deleted to _Scene in ctor/dtor.
-	_Transforms.erase(dynamic_cast<CTransformUser*>(tr));
+	_Scene.deleteModel (tr.getObjectPtr());
+	tr.detach ();
 }
 
+// ***************************************************************************
 
-USkeleton		*CSceneUser::createSkeleton(const std::string &shapeName)
+USkeleton		CSceneUser::createSkeleton(const std::string &shapeName)
 {
-	NL3D_MEM_SKELETON
 	NL3D_HAUTO_CREATE_SKELETON;
 
-	CTransform	*model= _Scene.createInstance(shapeName);
-	// If not found, return NULL.
-	if(model==NULL)
-		return NULL;
-
-	if( dynamic_cast<CSkeletonModel*>(model)==NULL )
-		nlerror("UScene::createSkeleton(): shape is not a skeletonShape");
-
-	// The component is auto added/deleted to _Scene in ctor/dtor.
-	return dynamic_cast<USkeleton*>( _Transforms.insert(new CSkeletonUser(&_Scene, model)) );
+	CTransformShape *ts = _Scene.createInstance(shapeName);
+	if (ts)
+	{
+		CSkeletonModel	*model= safe_cast<CSkeletonModel*> (ts);
+		return USkeleton (model);
+	}
+	else
+	{
+		return USkeleton ();
+	}
 }
-void			CSceneUser::deleteSkeleton(USkeleton *skel)
+
+// ***************************************************************************
+
+void			CSceneUser::deleteSkeleton(USkeleton &skel)
 {
-	NL3D_MEM_SKELETON
 	NL3D_HAUTO_ELT_SCENE;
 
 	// The component is auto added/deleted to _Scene in ctor/dtor.
-	_Transforms.erase(dynamic_cast<CTransformUser*>(skel));
+	_Scene.deleteInstance (skel.getObjectPtr());
+	skel.detach ();
 }
 
+// ***************************************************************************
 
 ULandscape		*CSceneUser::createLandscape()
 {
@@ -910,7 +946,6 @@ CSceneUser::CSceneUser(CDriverUser *drv, bool bSmallScene) : _Scene(bSmallScene)
 	NL3D_MEM_SCENE_INIT
 	nlassert(drv);
 	_DriverUser= drv;
-	_CurrentCamera = NULL;
 
 	// init default Roots.
 	_Scene.initDefaultRoots();
@@ -932,13 +967,11 @@ CSceneUser::~CSceneUser()
 {
 	NL3D_MEM_SCENE
 	_VisualCollisionManagers.clear();
-	_Transforms.clear();
 	_Landscapes.clear();
 	_CloudScapes.clear();
 	_Scene.release();
 	_Scene.setDriver(NULL);
 	_Scene.setCam(NULL);
-	_CurrentCamera= NULL;
 	_DriverUser= NULL;
 }
 

@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.52 2004/05/05 17:05:14 berenguier Exp $
+ * $Id: u_scene.h,v 1.53 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,9 +129,9 @@ public:
 	/// \name Camera/Viewport.
 	//@{
 	/// Set the current camera for this scene. nlError if NULL, or if the camera was not created by this UScene.
-	virtual	void			setCam(UCamera *cam)=0;
+	virtual	void			setCam(UCamera cam)=0;
 	/// Get the current camera.
-	virtual	UCamera			*getCam()=0;
+	virtual	UCamera			getCam()=0;
 	/// Set the current Viewport.
 	virtual	void			setViewport(const class CViewport& viewport)=0;
 	/// Get the current Viewport.
@@ -155,22 +155,22 @@ public:
 	//@{
 
 	/// Create a camera. Usefull for this scene only.
-	virtual	UCamera			*createCamera()=0;
+	virtual	UCamera			createCamera()=0;
 	/// Delete a camera.
-	virtual	void			deleteCamera(UCamera *cam)=0;
+	virtual	void			deleteCamera(UCamera &cam)=0;
 
 	/** Create an instance of the shape "shapename". If not present, try to load "shapename" via CPath.
 	 * If fails (file not found), return NULL.
 	 * nlerror if the file is not a mesh file.
 	 */
-	virtual	UInstance		*createInstance(const std::string &shapeName)=0;
+	virtual	UInstance		createInstance(const std::string &shapeName)=0;
 	/** Same as createInstance but the instance is loaded asynchronously.
 	 * You must poll to know if the instance if created by calling render()
 	 */
-	virtual	void			createInstanceAsync(const std::string &shapeName,UInstance**ppInstance, const NLMISC::CVector &position, uint selectedTexture)=0;
+	virtual	void			createInstanceAsync(const std::string &shapeName,UInstance *ppInstance, const NLMISC::CVector &position, uint selectedTexture)=0;
 	/** Delete an instance via his pointer.
 	 */
-	virtual	void			deleteInstance(UInstance *inst)=0;
+	virtual	void			deleteInstance(UInstance &inst)=0;
 
 	/** create an instance group asynchronously, and add it to a scene asynchronously once it has been 
 	  * loaded. The instance groups that must be added to the scene are checked at each render.
@@ -195,19 +195,19 @@ public:
 
 	/** Create a dummy object
 	 */
-	virtual	UTransform		*createTransform()=0;
+	virtual	UTransform		createTransform()=0;
 	/** Delete a dummy object
 	 */
-	virtual	void			deleteTransform(UTransform *tr)=0;
+	virtual	void			deleteTransform(UTransform &tr)=0;
 
 	/** Create a skeleton instance of the skeleton shape "shapename". If not present, try to load "shapename" via CPath.
 	 * If fails (file not found), return NULL.
 	 * nlerror if the file is not a skeleton shape file.
 	 */
-	virtual	USkeleton		*createSkeleton(const std::string &shapeName)=0;
+	virtual	USkeleton		createSkeleton(const std::string &shapeName)=0;
 	/** Delete a skeleton instance via his pointer.
 	 */
-	virtual	void			deleteSkeleton(USkeleton *skel)=0;
+	virtual	void			deleteSkeleton(USkeleton &skel)=0;
 
 	/// Create a landscape. There could be many Landscape per Scene (Driver? :). But never tested :).
 	virtual	ULandscape		*createLandscape()=0;
@@ -229,9 +229,9 @@ public:
 
 
 	/// Create a dynamic PointLight. Usefull for this scene only.
-	virtual	UPointLight		*createPointLight()=0;
+	virtual	UPointLight		createPointLight()=0;
 	/// Delete a dynamic PointLight.
-	virtual	void			deletePointLight(UPointLight *light)=0;
+	virtual	void			deletePointLight(UPointLight &light)=0;
 
 
 	//@}

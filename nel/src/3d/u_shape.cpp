@@ -1,7 +1,7 @@
 /** \file u_shape.cpp
  * <File description>
  *
- * $Id: u_shape.cpp,v 1.3 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: u_shape.cpp,v 1.4 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -38,27 +38,15 @@ using namespace NLMISC;
 namespace NL3D 
 {
 
-
-// ***************************************************************************
-UShape::UShape() : _Shape(NULL)
-{
-}
-
-// ***************************************************************************
-void		UShape::attach(class IShape *shape)
-{
-	_Shape= shape;
-}
-
 // ***************************************************************************
 bool		UShape::getMeshTriangles(std::vector<NLMISC::CVector> &vertices, std::vector<uint32> &indices) const
 {
-	if(!_Shape)
+	if(!_Object)
 		return false;
 
 	// **** try to get a CMeshGeom
-	CMesh				*mesh= dynamic_cast<CMesh*>(_Shape);
-	CMeshMultiLod		*meshMulti= dynamic_cast<CMeshMultiLod*>(_Shape);
+	CMesh				*mesh= dynamic_cast<CMesh*>(_Object);
+	CMeshMultiLod		*meshMulti= dynamic_cast<CMeshMultiLod*>(_Object);
 	const CMeshGeom		*meshGeom= NULL;
 	if(mesh)
 	{
@@ -94,7 +82,7 @@ void		UShape::getVisualCollisionMesh(UVisualCollisionMesh	&colMesh) const
 {
 	colMesh.attach(NULL);
 
-	CMeshBase			*mesh= dynamic_cast<CMeshBase*>(_Shape);
+	CMeshBase			*mesh= dynamic_cast<CMeshBase*>(_Object);
 	if(mesh)
 	{
 		// attach the possible col mesh

@@ -1,7 +1,7 @@
 /** \file play_list_user.h
  * <File description>
  *
- * $Id: play_list_user.h,v 1.9 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: play_list_user.h,v 1.10 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,6 @@
 #include "3d/animation_set.h"
 #include "3d/channel_mixer.h"
 #include "3d/animation_playlist.h"
-#include "3d/transform_user.h"
 
 #define NL3D_MEM_PLAYLIST						NL_ALLOC_CONTEXT( 3dPL )
 
@@ -76,7 +75,7 @@ public:
 
 	/// \name Animatable Link.
 	// @{
-	virtual	void	registerTransform(UTransform *object, const char* prefix);
+	virtual	void	registerTransform(UTransform object, const char* prefix);
 	virtual	void	resetAllChannels();
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.13 2003/05/28 12:54:43 vizerie Exp $
+ * $Id: water_model.h,v 1.14 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -54,7 +54,7 @@ class IDriver;
  * \author Nevrax France
  * \date 2001
  */
-class CWaterModel : public CTransformShape, public UWaterInstance
+class CWaterModel : public CTransformShape
 {
 public:
 	/// ctor

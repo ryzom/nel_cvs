@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.37 2004/05/07 11:41:10 berenguier Exp $
+ * $Id: instance_group_user.cpp,v 1.38 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,6 @@
 
 #include "std3d.h"
 
-#include "3d/instance_user.h"
 #include "nel/misc/debug.h"
 #include "3d/instance_group_user.h"
 #include "3d/scene_user.h"
@@ -34,6 +33,7 @@
 #include "3d/particle_system_model.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
+#include "nel/3d/u_instance.h"
 
 using namespace NLMISC;
 using namespace std;
@@ -190,19 +190,14 @@ void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver, uint 
 	if (!_InstanceGroup.addToScene (scene, driver, selectedTexture))
 		return;
 	// Fill in the vector and the map accelerating search of instance by names
-	_Instances.resize(_InstanceGroup._Instances.size(), NULL);
 	for( uint32 i = 0; i < _InstanceGroup._Instances.size(); ++i)
 	{
-		CInstanceUser *pIU = NULL;
 		string stmp;
 		if (_InstanceGroup._Instances[i] != NULL)
 		{
-			// create but don't want to delete from scene, since added/removed with _InstanceGroup
-			pIU = _InstanceGroup._Instances[i]->buildMatchingUserInterfaceObject(false);
-			_Instances[i]= pIU;
 			// insert in map (may fail if double name)
 			stmp = _InstanceGroup.getInstanceName (i);
-			_InstanceMap.insert (map<string,CInstanceUser*>::value_type(stmp, pIU));
+			_InstanceMap.insert (map<string,CTransformShape*>::value_type(stmp, _InstanceGroup._Instances[i]));
 		}
 	}
 }
@@ -234,19 +229,15 @@ UInstanceGroup::TState CInstanceGroupUser::getAddToSceneState ()
 	if ((_AddToSceneState == StateAdding) && (newState == StateAdded))
 	{
 		// Fill in the vector and the map accelerating search of instance by names
-		_Instances.resize(_InstanceGroup._Instances.size(), NULL);
 		for( uint32 i = 0; i < _InstanceGroup._Instances.size(); ++i)
 		{
-			CInstanceUser *pIU = NULL;
 			string stmp;
 			if (_InstanceGroup._Instances[i] != NULL)
 			{
 				// create but don't want to delete from scene, since added/removed with _InstanceGroup
-				pIU = _InstanceGroup._Instances[i]->buildMatchingUserInterfaceObject(false);
-				_Instances[i]= pIU;
 				// insert in map (may fail if double name)
 				stmp = _InstanceGroup.getInstanceName (i);
-				_InstanceMap.insert (map<string,CInstanceUser*>::value_type(stmp, pIU));
+				_InstanceMap.insert (map<string,CTransformShape*>::value_type(stmp, _InstanceGroup._Instances[i]));
 			}
 		}
 		_AddToSceneState = StateAdded;
@@ -326,39 +317,27 @@ const NLMISC::CVector& CInstanceGroupUser::getInstanceScale (uint instanceNb) co
 	return _InstanceGroup.getInstanceScale (instanceNb);
 }
 
-
-
 // ***************************************************************************
-UInstance *CInstanceGroupUser::getByName (const std::string &name)
+
+UInstance CInstanceGroupUser::getByName (const std::string &name) const
 {
 	NL3D_MEM_IG
-	map<string,CInstanceUser*>::iterator it = _InstanceMap.find (name);
+	map<string,CTransformShape*>::const_iterator it = _InstanceMap.find (name);
 	if (it != _InstanceMap.end())
-		return it->second;
+		return UInstance (it->second);
 	else
-		return NULL;
-}
-
-// ***************************************************************************
-const UInstance *CInstanceGroupUser::getByName (const std::string &name) const
-{
-	NL3D_MEM_IG
-	map<string,CInstanceUser*>::const_iterator it = _InstanceMap.find (name);
-	if (it != _InstanceMap.end())
-		return it->second;
-	else
-		return NULL;
+		return UInstance ();
 }
 
 // ***************************************************************************
 sint CInstanceGroupUser::getIndexByName(const std::string &name) const
 {
 	NL3D_MEM_IG
-	map<string,CInstanceUser*>::const_iterator it = _InstanceMap.find (name);
+	map<string,CTransformShape*>::const_iterator it = _InstanceMap.find (name);
 	if (it == _InstanceMap.end()) return -1;
-	for(uint k = 0; k < _Instances.size(); ++k)
+	for(uint k = 0; k < _InstanceGroup._Instances.size(); ++k)
 	{
-		if (_Instances[k] == it->second) return (sint) k;
+		if (_InstanceGroup._Instances[k] == it->second) return (sint) k;
 	}
 	return -1;	
 }
@@ -530,35 +509,18 @@ bool			CInstanceGroupUser::getStaticLightSetup(
 }
 
 // ***************************************************************************
-const UInstance	*CInstanceGroupUser::getInstance (uint instanceNb) const
+UInstance	CInstanceGroupUser::getInstance (uint instanceNb) const
 {
-	if(instanceNb<_Instances.size())
-		return _Instances[instanceNb];
+	if(instanceNb<_InstanceGroup._Instances.size())
+		return UInstance (_InstanceGroup._Instances[instanceNb]);
 	else
-		return NULL;
-}
-
-// ***************************************************************************
-UInstance	*CInstanceGroupUser::getInstance (uint instanceNb)
-{
-	if(instanceNb<_Instances.size())
-		return _Instances[instanceNb];
-	else
-		return NULL;
+		return UInstance ();
 }
 
 // ***************************************************************************
 void		CInstanceGroupUser::removeInstancesUser()
 {
-	// delete all instances in the instance array
-	for(uint i=0;i<_Instances.size();i++)
-	{
-		if(_Instances[i])
-			delete _Instances[i];
-	}
-
 	// clear the array and the map
-	_Instances.clear();
 	_InstanceMap.clear();
 }
 

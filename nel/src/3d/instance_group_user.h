@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.30 2004/05/07 11:41:11 berenguier Exp $
+ * $Id: instance_group_user.h,v 1.31 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,8 +78,7 @@ private:
 	TState getAddToSceneState ();
 	void stopAddToSceneAsync ();
 
-	virtual const UInstance	*getInstance (uint instanceNb) const;
-	virtual UInstance		*getInstance (uint instanceNb);
+	virtual UInstance		getInstance (uint instanceNb) const;
 	virtual void			setDistMax(uint instance, float dist);	
 	virtual float			getDistMax(uint instance) const;	
 	virtual void		    setCoarseMeshDist(uint instance, float dist);
@@ -94,8 +93,7 @@ private:
 	const NLMISC::CVector& getInstancePos (uint instanceNb) const;
 	const NLMISC::CQuat& getInstanceRot (uint instanceNb) const;
 	const NLMISC::CVector& getInstanceScale (uint instanceNb) const;
-	UInstance *getByName (const std::string& name);
-	const UInstance *getByName (const std::string& name) const;
+	UInstance getByName (const std::string& name) const;
 	sint	  getIndexByName(const std::string &name) const;
 	
 
@@ -122,8 +120,7 @@ private:
 	// The real instance group
 	CInstanceGroup	_InstanceGroup;
 	// For access through getInstance() and getByName()
-	std::vector<CInstanceUser*>				_Instances;
-	std::map<std::string,CInstanceUser*>	_InstanceMap;
+	std::map<std::string,CTransformShape*>	_InstanceMap;
 	// Async stuff
 	TState _AddToSceneState;
 	UScene *_AddToSceneTempScene;

@@ -1402,22 +1402,6 @@ SOURCE=.\3d\animation_set_user.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\bone_user.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\bone_user.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\camera_user.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\camera_user.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\cloud_scape_user.cpp
 # End Source File
 # Begin Source File
@@ -1454,22 +1438,6 @@ SOURCE=.\3d\instance_group_user.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\instance_material_user.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\instance_material_user.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\instance_user.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\instance_user.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\landscape_user.cpp
 # End Source File
 # Begin Source File
@@ -1494,22 +1462,6 @@ SOURCE=.\3d\logic_info.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\material_user.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\material_user.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\particle_system_instance_user.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\particle_system_instance_user.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\particle_system_sound_user.cpp
 # End Source File
 # Begin Source File
@@ -1527,14 +1479,6 @@ SOURCE=.\3d\play_list_user.cpp
 # Begin Source File
 
 SOURCE=.\3d\play_list_user.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\point_light_user.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\point_light_user.h
 # End Source File
 # Begin Source File
 
@@ -1562,14 +1506,6 @@ SOURCE=.\3d\shape_bank_user.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\skeleton_user.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\skeleton_user.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\text_context_user.cpp
 # End Source File
 # Begin Source File
@@ -1586,19 +1522,31 @@ SOURCE=.\3d\texture_user.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\transform_user.cpp
+SOURCE=.\3d\u_bone.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\transform_user.h
+SOURCE=.\3d\u_camera.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\transformable_user.cpp
+SOURCE=.\3d\u_instance.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\transformable_user.h
+SOURCE=.\3d\u_instance_material.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\u_material.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\u_particle_system_instance.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\u_point_light.cpp
 # End Source File
 # Begin Source File
 
@@ -1606,7 +1554,23 @@ SOURCE=.\3d\u_shape.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\u_skeleton.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\u_transform.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\u_transformable.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\u_visual_collision_mesh.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\u_water.cpp
 # End Source File
 # Begin Source File
 
@@ -1627,14 +1591,6 @@ SOURCE=.\3d\visual_collision_manager_user.cpp
 # Begin Source File
 
 SOURCE=.\3d\visual_collision_manager_user.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\water_user.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\water_user.h
 # End Source File
 # End Group
 # Begin Group "User"

@@ -1,7 +1,7 @@
 /** \file u_bone.h
- * <File description>
+ * User interface for bones.
  *
- * $Id: u_bone.h,v 1.4 2002/03/28 15:06:40 berenguier Exp $
+ * $Id: u_bone.h,v 1.5 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,19 +41,9 @@ namespace NL3D
  * \author Nevrax France
  * \date 2001
  */
-class UBone : virtual public UTransformable
+class UBone : public UTransformable
 {
-protected:
-
-	/// \name Object
-	// @{
-	/// Constructor. By default, RotQuat mode.
-	UBone() {}
-	virtual	~UBone() {}
-	// @}
-
 public:
-
 
 	/// \name Special feature
 	// @{
@@ -67,11 +57,23 @@ public:
 	 *	in this case, this bone will always be computed.
 	 *	
 	 */
-	virtual	const CMatrix	&getLastWorldMatrixComputed() const =0;
+	const CMatrix	&getLastWorldMatrixComputed() const;
 
 	// @}
 
+	/// Proxy interface
 
+	/// Constructors
+	UBone() { _Object = NULL; }
+	UBone(class CBone *object) { _Object = (ITransformable*)object; };
+	/// Attach an object to this proxy
+	void			attach(class CBone *object) { _Object = (ITransformable*)object; }
+	/// Detach the object
+	void			detach() { _Object = NULL; }
+	/// Return true if the proxy is empty() (not attached)
+	bool			empty() const {return _Object==NULL;}
+	/// For advanced usage, get the internal object ptr
+	class CBone	*getObjectPtr() const {return (CBone*)_Object;}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.73 2004/05/03 16:42:28 corvazier Exp $
+ * $Id: transform.cpp,v 1.74 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "3d/skeleton_model.h"
 #include "3d/scene.h"
 #include "3d/root_model.h"
-#include "3d/instance_user.h"
+#include "nel/3d/u_transform.h"
 #include "nel/misc/fast_floor.h"
 #include "nel/misc/hierarchical_timer.h"
 
@@ -1397,9 +1397,9 @@ void CTransform::setForceClipRoot(bool forceClipRoot)
 }
 
 // ***************************************************************************
-CInstanceUser *CTransform::buildMatchingUserInterfaceObject(bool deleteIt)
+UTransform *CTransform::buildMatchingUserInterfaceObject()
 {
-	return new CInstanceUser(getOwnerScene(), this, deleteIt);
+	return new UTransform(this);
 }
 
 }

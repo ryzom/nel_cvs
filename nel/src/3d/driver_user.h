@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.40 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_user.h,v 1.41 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,13 +29,13 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
 #include "nel/3d/u_driver.h"
+#include "nel/3d/u_material.h"
 #include "3d/event_mouse_listener.h"
 #include "3d/driver.h"
 #include "3d/register_3d.h"
 #include "3d/vertex_buffer.h"
 #include "3d/index_buffer.h"
 #include "3d/font_manager.h"
-#include "3d/material_user.h"
 #include "3d/ptr_set.h"
 #include "3d/shape_bank_user.h"
 #include "3d/light_user.h"
@@ -82,12 +82,10 @@ protected:
 	CFontManager			_FontManager;
 	// Components List.
 	typedef	CPtrSet<CTextureUser>		TTextureSet;
-	typedef	CPtrSet<CMaterialUser>		TMaterialSet;
 	typedef	CPtrSet<CTextContextUser>	TTextContextSet;
 	typedef	CPtrSet<CSceneUser>			TSceneSet;
 	typedef	CPtrSet<CAnimationSetUser>	TAnimationSetSet;
 	TTextureSet				_Textures;
-	TMaterialSet			_Materials;
 	TTextContextSet			_TextContexts;
 	TSceneSet				_Scenes;
 	TAnimationSetSet		_AnimationSets;
@@ -111,8 +109,10 @@ protected:
 	CVertexBuffer			_VBQuadsColUv;
 	CVertexBuffer			_VBQuadsColUv2;
 	// For security, texture are initUnlit() at init()/release().
-	CMaterialUser			_MatFlat;
-	CMaterialUser			_MatText;
+	UMaterial				_MatFlat;
+	UMaterial				_MatText;
+	CMaterial				_MatFlatInternal;
+	CMaterial				_MatTextInternal;
 
 
 	// StaticInit
@@ -142,13 +142,13 @@ public:
 	virtual void			disableHardwareTextureShader();
 
 	/// create the window.
-	virtual	bool			setDisplay(const CMode &mode, bool show) ;
+	virtual	bool			setDisplay(const CMode &mode, bool show);
 	virtual bool			setMode(const CMode& mode);
 	virtual bool			getModes(std::vector<CMode> &modes);
 	virtual bool			getCurrentScreenMode(CMode &mode);
 
 	/// Release the window.
-	virtual	void			release() ;
+	virtual	void			release();
 
 	/// Before rendering via a driver in a thread, must activate() (per thread).
 	virtual bool			activate(void);
@@ -199,7 +199,7 @@ public:
 	/// Create a new scene.
 	virtual	UScene			*createScene(bool bSmallScene);
 	/// Delete a scene.
-	virtual	void			deleteScene(UScene	*scene) ;
+	virtual	void			deleteScene(UScene	*scene);
 	// @}
 
 
@@ -218,11 +218,11 @@ public:
 	// @{
 
 	/// create a new TextContext, for a given font.
-	virtual	UTextContext	*createTextContext(const std::string fontFileName, const std::string fontExFileName = "") ;
+	virtual	UTextContext	*createTextContext(const std::string fontFileName, const std::string fontExFileName = "");
 	/// delete a TextContext.
-	virtual	void			deleteTextContext(UTextContext	*textContext) ;
+	virtual	void			deleteTextContext(UTextContext	*textContext);
 	/// Set the maxMemory used for the FontManager
-	virtual	void			setFontManagerMaxMemory(uint maxMem) ;
+	virtual	void			setFontManagerMaxMemory(uint maxMem);
 	/// get cahce information.
 	virtual		std::string getFontManagerCacheInformation() const ;
 
@@ -230,17 +230,17 @@ public:
 	/** Create a new texture file, searching in CPath.
 	 * \param file filename, local to CPath paths.
 	 */
-	virtual	UTextureFile	*createTextureFile(const std::string &file) ;
+	virtual	UTextureFile	*createTextureFile(const std::string &file);
 	/// Delete a texture file. This one will be really deleted in memory when no material point to it.
-	virtual	void			deleteTextureFile(UTextureFile *textfile) ;
+	virtual	void			deleteTextureFile(UTextureFile *textfile);
 	/// Create a new Raw texture, to be filled by user.
-	virtual	UTextureRaw		*createTextureRaw() ;
+	virtual	UTextureRaw		*createTextureRaw();
 	/// Delete a Raw texture. This one will be really deleted in memory when no material point to it.
-	virtual	void			deleteTextureRaw(UTextureRaw *textraw) ;
+	virtual	void			deleteTextureRaw(UTextureRaw *textraw);
 	/// Create a new Material, to be filled by user.
-	virtual	UMaterial		*createMaterial() ;
+	virtual	UMaterial		createMaterial();
 	/// Delete a Material.
-	virtual	void			deleteMaterial(UMaterial *mat) ;
+	virtual	void			deleteMaterial(UMaterial &mat);
 	// @}
 
 
@@ -260,28 +260,28 @@ public:
 	virtual	CViewport		getViewport();
 	/** Set the active Frustum for rendering. 
 	 */
-	virtual	void			setFrustum(const CFrustum &frust) ;
-	virtual	CFrustum		getFrustum() ;
+	virtual	void			setFrustum(const CFrustum &frust);
+	virtual	CFrustum		getFrustum();
 	/** Set the active ViewMatrix for rendering.
 	 * NB: this is the view matrix, which is the inverse of camera matrix.
 	 */
-	virtual	void			setViewMatrix(const CMatrix &mat) ;
-	virtual	CMatrix			getViewMatrix() ;
+	virtual	void			setViewMatrix(const CMatrix &mat);
+	virtual	CMatrix			getViewMatrix();
 	/** Set the active ModelMatrix for rendering. NB: UScene ignore this function (use camera parameters instead).
 	 */
-	virtual	void			setModelMatrix(const CMatrix &mat) ;
-	virtual	CMatrix			getModelMatrix() ;
+	virtual	void			setModelMatrix(const CMatrix &mat);
+	virtual	CMatrix			getModelMatrix();
 
 
 	/** Tool function: Setup frustum/viewmatrix/modelmatrix for 2D.
 	 * ModelMatrix is setup to identity. ViewMatrix is setup so that (x,y) of vectors maps to x,y screen!!!
 	 */
-	virtual	void			setMatrixMode2D(const CFrustum &frust) ;
+	virtual	void			setMatrixMode2D(const CFrustum &frust);
 	/** Tool function: Setup frustum/viewmatrix/modelmatrix for 3D, using parameters of a UCamera.
 	 * ModelMatrix setuped to identity. ViewMatrix setuped to the inverse of camera 's LocalMatrix.
 	 * Frustum setuped to UCamera frustum.
 	 */
-	virtual	void			setMatrixMode3D(UCamera &camera) ;
+	virtual	void			setMatrixMode3D(UCamera &camera);
 
 	// @}
 
@@ -294,36 +294,36 @@ public:
 	// @{
 
 	/// Draw the Line, taking color from material.
-	virtual	void			drawLine(const NLMISC::CLine &tri, UMaterial &mat) ;
+	virtual	void			drawLine(const NLMISC::CLine &tri, UMaterial &mat);
 	/// Draw the Line, taking color from primitive.
-	virtual	void			drawLine(const NLMISC::CLineColor &tri, UMaterial &mat) ;
+	virtual	void			drawLine(const NLMISC::CLineColor &tri, UMaterial &mat);
 	/// Draw the Line, taking color from material. With UV for texture.
-	virtual	void			drawLine(const NLMISC::CLineUV &tri, UMaterial &mat) ;
+	virtual	void			drawLine(const NLMISC::CLineUV &tri, UMaterial &mat);
 	/// Draw the Line, taking color from primitive. With UV for texture.
-	virtual	void			drawLine(const NLMISC::CLineColorUV &tri, UMaterial &mat) ;
+	virtual	void			drawLine(const NLMISC::CLineColorUV &tri, UMaterial &mat);
 
 	/// Draw the Triangle, taking color from material.
-	virtual	void			drawTriangle(const NLMISC::CTriangle &tri, UMaterial &mat) ;
+	virtual	void			drawTriangle(const NLMISC::CTriangle &tri, UMaterial &mat);
 	/// Draw the Triangle, taking color from primitive.
-	virtual	void			drawTriangle(const NLMISC::CTriangleColor &tri, UMaterial &mat) ;
+	virtual	void			drawTriangle(const NLMISC::CTriangleColor &tri, UMaterial &mat);
 	/// Draw the Triangle, taking color from material. With UV for texture.
-	virtual	void			drawTriangle(const NLMISC::CTriangleUV &tri, UMaterial &mat) ;
+	virtual	void			drawTriangle(const NLMISC::CTriangleUV &tri, UMaterial &mat);
 	/// Draw the Triangle, taking color from primitive. With UV for texture.
-	virtual	void			drawTriangle(const NLMISC::CTriangleColorUV &tri, UMaterial &mat) ;
+	virtual	void			drawTriangle(const NLMISC::CTriangleColorUV &tri, UMaterial &mat);
 
 	/// Draw the Quad, taking color from material.
-	virtual	void			drawQuad(const NLMISC::CQuad &tri, UMaterial &mat) ;
+	virtual	void			drawQuad(const NLMISC::CQuad &tri, UMaterial &mat);
 	/// Draw the Quad, taking color from primitive.
-	virtual	void			drawQuad(const NLMISC::CQuadColor &tri, UMaterial &mat) ;
+	virtual	void			drawQuad(const NLMISC::CQuadColor &tri, UMaterial &mat);
 	/// Draw the Quad, taking color from material. With UV for texture.
-	virtual	void			drawQuad(const NLMISC::CQuadUV &tri, UMaterial &mat) ;
+	virtual	void			drawQuad(const NLMISC::CQuadUV &tri, UMaterial &mat);
 	/// Draw the Quad, taking color from primitive. With UV for texture.
-	virtual	void			drawQuad(const NLMISC::CQuadColorUV &tri, UMaterial &mat) ;
+	virtual	void			drawQuad(const NLMISC::CQuadColorUV &tri, UMaterial &mat);
 
-	virtual	void			drawQuads(const std::vector<NLMISC::CQuadColorUV> &quad, UMaterial &mat) ;
-	virtual	void			drawQuads(const std::vector<NLMISC::CQuadColorUV2> &quad, UMaterial &mat) ;
-	virtual	void			drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads, UMaterial &mat) ;
-	virtual	void			drawQuads(const NLMISC::CQuadColorUV2 *quads, uint32 nbQuads, UMaterial &mat) ;
+	virtual	void			drawQuads(const std::vector<NLMISC::CQuadColorUV> &quad, UMaterial &mat);
+	virtual	void			drawQuads(const std::vector<NLMISC::CQuadColorUV2> &quad, UMaterial &mat);
+	virtual	void			drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads, UMaterial &mat);
+	virtual	void			drawQuads(const NLMISC::CQuadColorUV2 *quads, uint32 nbQuads, UMaterial &mat);
 	
 	// @}
 
@@ -334,19 +334,19 @@ public:
 	// @{
 
 	/// Draw a bitmap 2D. Warning: this is slow...
-	virtual	void			drawBitmap (float x, float y, float width, float height, class UTexture& texture, bool blend=true, CRGBA col= CRGBA(255,255,255,255)) ;
+	virtual	void			drawBitmap (float x, float y, float width, float height, class UTexture& texture, bool blend=true, CRGBA col= CRGBA(255,255,255,255));
 	/// Draw a line in 2D. Warning: this is slow...
-	virtual	void			drawLine (float x0, float y0, float x1, float y1, CRGBA col= CRGBA(255,255,255,255)) ;
+	virtual	void			drawLine (float x0, float y0, float x1, float y1, CRGBA col= CRGBA(255,255,255,255));
 	/// Draw a Triangle in 2D. Warning: this is slow...
-	virtual	void			drawTriangle (float x0, float y0, float x1, float y1, float x2, float y2, CRGBA col) ;
+	virtual	void			drawTriangle (float x0, float y0, float x1, float y1, float x2, float y2, CRGBA col);
 	/// Draw a Quad in 2D. Warning: this is slow...
-	virtual	void			drawQuad (float x0, float y0, float x1, float y1, CRGBA col) ;
+	virtual	void			drawQuad (float x0, float y0, float x1, float y1, CRGBA col);
 	/// Draw a Quad in 2D. Warning: this is slow...
-	virtual	void			drawQuad (float xcenter, float ycenter, float radius, CRGBA col) ;
+	virtual	void			drawQuad (float xcenter, float ycenter, float radius, CRGBA col);
 	/// Draw a Quad in 2D. Warning: this is slow...
-	virtual	void			drawWiredQuad (float x0, float y0, float x1, float y1, CRGBA col) ;
+	virtual	void			drawWiredQuad (float x0, float y0, float x1, float y1, CRGBA col);
 	/// Draw a Quad in 2D. Warning: this is slow...
-	virtual	void			drawWiredQuad (float xcenter, float ycenter, float radius, CRGBA col) ;
+	virtual	void			drawWiredQuad (float xcenter, float ycenter, float radius, CRGBA col);
 
 	// @}
 
@@ -364,10 +364,10 @@ public:
 	virtual void			getWindowPos (uint32 &x, uint32 &y);
 	virtual uint32			getAvailableVertexAGPMemory ();
 	virtual uint32			getAvailableVertexVRAMMemory ();
-	virtual void			getBuffer (CBitmap &bitmap) ;
-	virtual void			getZBuffer (std::vector<float>  &zbuffer) ;
-	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect) ;
-	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect) ;
+	virtual void			getBuffer (CBitmap &bitmap);
+	virtual void			getZBuffer (std::vector<float>  &zbuffer);
+	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect);
+	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect);
 	virtual bool			fillBuffer (CBitmap &bitmap);
 	// @}
 
@@ -376,7 +376,7 @@ public:
 	// @{
 	virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable, bool exclusive);
 	//
-	virtual NLMISC::IKeyboardDevice			*enableLowLevelKeyboard(bool enable) ;
+	virtual NLMISC::IKeyboardDevice			*enableLowLevelKeyboard(bool enable);
 	virtual NLMISC::IInputDeviceManager		*getLowLevelInputDeviceManager();
 	virtual uint	getDoubleClickDelay(bool hardwareMouse);
 
@@ -413,7 +413,7 @@ public:
 	virtual void			setPolygonMode (TPolygonMode mode);
 	virtual U3dMouseListener*	create3dMouseListener ();
 	virtual void delete3dMouseListener (U3dMouseListener *listener);
-	virtual TPolygonMode 	getPolygonMode () ;
+	virtual TPolygonMode 	getPolygonMode ();
 	virtual void			forceDXTCCompression(bool dxtcComp);
 	virtual void			forceTextureResize(uint divisor);
 	virtual bool			setMonitorColorProperties (const CMonitorColorProperties &properties);

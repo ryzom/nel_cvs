@@ -1,7 +1,7 @@
 /** \file u_point_light.h
- * <File description>
+ * User interface for point lights.
  *
- * $Id: u_point_light.h,v 1.2 2002/02/18 13:23:34 berenguier Exp $
+ * $Id: u_point_light.h,v 1.3 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,34 +42,25 @@ namespace NL3D
  * \author Nevrax France
  * \date 2001
  */
-class UPointLight : virtual public UTransform
+class UPointLight : public UTransform
 {
-protected:
-
-	/// \name Object
-	// @{
-	UPointLight() {}
-	virtual	~UPointLight() {}
-	// @}
-
-
 public:
 
 	/// Set the ambient color of the light. Default to Black
-	virtual void			setAmbient (NLMISC::CRGBA ambient) =0;
+	void			setAmbient (NLMISC::CRGBA ambient);
 	/// Set the diffuse color of the light. Default to White
-	virtual void			setDiffuse (NLMISC::CRGBA diffuse) =0;
+	void			setDiffuse (NLMISC::CRGBA diffuse);
 	/// Set the specular color of the light. Default to White
-	virtual void			setSpecular (NLMISC::CRGBA specular) =0;
+	void			setSpecular (NLMISC::CRGBA specular);
 	/// Set the diffuse and specular color of the light to the same value. don't modify _Ambient.
-	virtual void			setColor (NLMISC::CRGBA color) =0;
+	void			setColor (NLMISC::CRGBA color);
 
 	/// Get the ambient color of the light.
-	virtual NLMISC::CRGBA	getAmbient () const =0;
+	NLMISC::CRGBA	getAmbient () const;
 	/// Get the diffuse color of the light.
-	virtual NLMISC::CRGBA	getDiffuse () const =0;
+	NLMISC::CRGBA	getDiffuse () const;
 	/// Get the specular color of the light.
-	virtual NLMISC::CRGBA	getSpecular () const =0;
+	NLMISC::CRGBA	getSpecular () const;
 
 
 	/** setup the attenuation of the light. if (0,0) attenuation is disabled.
@@ -78,27 +69,27 @@ public:
 	 *	PERFORMANCE WARNING: big lights (disabled attenuation and big attenuationEnd) slow down
 	 *	performances. (by experience, with a factor of 2).
 	 */
-	virtual void			setupAttenuation(float attenuationBegin, float attenuationEnd) =0;
+	void			setupAttenuation(float attenuationBegin, float attenuationEnd);
 	/// get the begin radius of the attenuation.
-	virtual float			getAttenuationBegin() const =0;
+	float			getAttenuationBegin() const;
 	/// get the end radius of the attenuation.
-	virtual float			getAttenuationEnd() const =0;
+	float			getAttenuationEnd() const;
 
 
 	/** Setup SpotLight. SpotLight is disabled by default. The direction of the spot is lead by the J vector of the 
 	 *	UPointLight WorldMatrix
 	 */
-	virtual void			enableSpotlight(bool enable) =0;
+	void			enableSpotlight(bool enable);
 	/// Is Spotlight enabled?
-	virtual bool			isSpotlight() const =0;
+	bool			isSpotlight() const;
 	/** setup the spot AngleBegin and AngleEnd that define spot attenuation of the light. Usefull only if SpotLight
 	 *	NB: clamp(angleBegin, 0, PI); clamp(angleEnd, angleBegin, PI); Default is PI/4, PI/2
 	 */
-	virtual void			setupSpotAngle(float spotAngleBegin, float spotAngleEnd) =0;
+	void			setupSpotAngle(float spotAngleBegin, float spotAngleEnd);
 	/// get the begin radius of the SpotAngles.
-	virtual float			getSpotAngleBegin() const =0;
+	float			getSpotAngleBegin() const;
 	/// get the end radius of the SpotAngles.
-	virtual float			getSpotAngleEnd() const =0;
+	float			getSpotAngleEnd() const;
 
 
 
@@ -113,11 +104,23 @@ public:
 	 *	You may change this according to the approximate size of the skeleton (dwarf or giant), and you must
 	 *	take into account any mount (horse etc...). eg for a man on a elephant, a good value would be (0,0,5) :)
 	 */
-	virtual void			setDeltaPosToSkeletonWhenOutOfFrustum(const CVector &deltaPos) =0;
+	void			setDeltaPosToSkeletonWhenOutOfFrustum(const CVector &deltaPos);
 	/// see setDeltaPosToSkeletonWhenOutOfFrustum()
-	virtual const CVector	&getDeltaPosToSkeletonWhenOutOfFrustum() const =0;
+	const CVector	&getDeltaPosToSkeletonWhenOutOfFrustum() const;
 
+	/// Proxy interface
 
+	/// Constructors
+	UPointLight() { _Object = NULL; }
+	UPointLight(class CPointLightModel *object) { _Object = (ITransformable*)object; };
+	/// Attach an object to this proxy
+	void			attach(class CPointLightModel *object) { _Object = (ITransformable*)object; }
+	/// Detach the object
+	void			detach() { _Object = NULL; }
+	/// Return true if the proxy is empty() (not attached)
+	bool			empty() const {return _Object==NULL;}
+	/// For advanced usage, get the internal object ptr
+	class CPointLightModel	*getObjectPtr() const {return (CPointLightModel*)_Object;}
 };
 
 

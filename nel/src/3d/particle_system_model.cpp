@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.64 2004/04/09 14:28:10 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.65 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,6 @@
 #include "3d/clip_trav.h"
 #include "3d/render_trav.h"
 #include "3d/skeleton_model.h"
-#include "3d/particle_system_instance_user.h"
 
 #include "cluster.h" // ask trap
 
@@ -1091,12 +1090,6 @@ void CParticleSystemModel::forceSetUserMatrix(const NLMISC::CMatrix &userMatrix)
 	{
 		getPS()->setUserMatrix(&_UserMatrix);
 	}
-}
-
-//===================================================================
-CInstanceUser *CParticleSystemModel::buildMatchingUserInterfaceObject(bool deleteIt)
-{
-	return new CParticleSystemInstanceUser(getOwnerScene(), this, deleteIt)	;
 }
 
  

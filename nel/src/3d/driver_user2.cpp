@@ -1,7 +1,7 @@
 /** \file driver_user2.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.23 2004/03/30 14:36:29 berenguier Exp $
+ * $Id: driver_user2.cpp,v 1.24 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,10 +37,10 @@
 #include "3d/dru.h"
 #include "3d/scene.h"
 #include "3d/texture_user.h"
-#include "3d/material_user.h"
 #include "nel/3d/u_camera.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 using namespace std;
@@ -147,18 +147,19 @@ void			CDriverUser::deleteTextureRaw(UTextureRaw *textraw)
 	delete textraw;
 }
 // ***************************************************************************
-UMaterial		*CDriverUser::createMaterial() 
+UMaterial		CDriverUser::createMaterial() 
 {
 	NL3D_MEM_DRIVER
 
-	return _Materials.insert(new CMaterialUser);
+	return UMaterial(new CMaterial);
 }
 // ***************************************************************************
-void			CDriverUser::deleteMaterial(UMaterial *umat) 
+void			CDriverUser::deleteMaterial(UMaterial &umat) 
 {
 	NL3D_MEM_DRIVER
 
-	_Materials.erase( (CMaterialUser*)umat, "deleteMaterial: Bad material");
+	delete umat.getObjectPtr();
+	umat.detach();
 }
 
 // ***************************************************************************

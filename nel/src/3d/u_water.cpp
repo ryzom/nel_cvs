@@ -1,7 +1,7 @@
 /** \file water_user.cpp
- * implementation of the user interface for water
+ * User interface for water manipulation
  *
- * $Id: water_user.cpp,v 1.6 2004/02/20 14:36:05 vizerie Exp $
+ * $Id: u_water.cpp,v 1.1 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,9 +29,9 @@
 #include "3d/water_pool_manager.h"
 #include "3d/water_height_map.h"
 #include "3d/water_model.h"
-#include "3d/water_user.h"
 #include "3d/driver_user.h"
 
+#define NL3D_MEM_WATER						NL_ALLOC_CONTEXT( 3dWater )
 
 namespace NL3D 
 {
@@ -60,36 +60,40 @@ void UWaterHeightMapManager::releaseBlendTextures()
 }
 
 //===========================================================================
-uint32	CWaterInstanceUser::getWaterHeightMapID() const
+uint32	UWaterInstance::getWaterHeightMapID() const
 {
 	NL3D_MEM_WATER
-	CWaterModel *wm = NLMISC::safe_cast<CWaterModel *>(_Instance);
-	return wm->getWaterHeightMapID();
+	nlassert(_Object) ; // object invalid now ...
+	CWaterModel	*object = getObjectPtr();
+	return object ->getWaterHeightMapID();
 }
 
 
 //===========================================================================
-float	CWaterInstanceUser::getHeightFactor() const
+float	UWaterInstance::getHeightFactor() const
 {
 	NL3D_MEM_WATER
-	CWaterModel *wm = NLMISC::safe_cast<CWaterModel *>(_Instance);
-	return wm->getHeightFactor();
+	nlassert(_Object) ; // object invalid now ...
+	CWaterModel	*object = getObjectPtr();
+	return object->getHeightFactor();
 }
 
 //===========================================================================
-float   CWaterInstanceUser::getHeight(const NLMISC::CVector2f &pos)
+float   UWaterInstance::getHeight(const NLMISC::CVector2f &pos)
 {
 	NL3D_MEM_WATER
-	CWaterModel *wm = NLMISC::safe_cast<CWaterModel *>(_Instance);
-	return wm->getHeight(pos);
+	nlassert(_Object) ; // object invalid now ...
+	CWaterModel	*object = getObjectPtr();
+	return object->getHeight(pos);
 }
 
 //===========================================================================
-float   CWaterInstanceUser::getAttenuatedHeight(const NLMISC::CVector2f &pos, const NLMISC::CVector &viewer)
+float   UWaterInstance::getAttenuatedHeight(const NLMISC::CVector2f &pos, const NLMISC::CVector &viewer)
 {
 	NL3D_MEM_WATER
-	CWaterModel *wm = NLMISC::safe_cast<CWaterModel *>(_Instance);
-	return wm->getAttenuatedHeight(pos, viewer);
+	nlassert(_Object) ; // object invalid now ...
+	CWaterModel	*object = getObjectPtr();
+	return object->getAttenuatedHeight(pos, viewer);
 }
 
 } // NL3D

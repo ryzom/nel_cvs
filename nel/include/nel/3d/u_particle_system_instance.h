@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.15 2004/04/13 13:05:50 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.16 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ namespace NL3D {
  * \author Nevrax France
  * \date 2001
  */
-class UParticleSystemInstance : virtual public UInstance
+class UParticleSystemInstance : public UInstance
 {
 public:
 	/** Tell wether the system is currently instanciated. This may not be the case when the system is not visible	  	  
@@ -58,7 +58,7 @@ public:
 	  *
 	  * \see isValid()	  
 	  */
-	virtual bool		isSystemPresent		(void) const = 0;
+	bool		isSystemPresent		(void) const;
 
 	/** Get the bounding box of the system, when it is present.
 	  * You should call this instead of UInstance::getShapeAABBox() because the bbox may change over time, and thusn its shape
@@ -67,7 +67,7 @@ public:
 	  * \return true if the bbox has been filled
 	  * \see isPresent()
 	  */
-	virtual	bool		getSystemBBox(NLMISC::CAABBox &bbox)   = 0;
+	bool		getSystemBBox(NLMISC::CAABBox &bbox);
 
 
 	
@@ -76,119 +76,78 @@ public:
 		/** Set the user color of the system. This color will be used to modulate the color of the whole system
 		  * NB : even if the system is not instanciated, this will be taken in account the next time it is , so no need to call isSystemPresent() before calling that method.
 		  */
-		virtual void			setUserColor(NLMISC::CRGBA userColor) = 0;
-		virtual NLMISC::CRGBA	getUserColor() const = 0;
+		void			setUserColor(NLMISC::CRGBA userColor);
+		NLMISC::CRGBA	getUserColor() const;
 		/** Set a user param of the system. Each user param must be >= 0 and <= 1		  
 		  * NB : even if the system is not instanciated, this will be taken in account the next time it is, so no need to call isSystemPresent() before calling that method.
 		  * \param index the index of the user param to modify. For now it ranges from 0 to 3
 		  * \value the new value of the parameter		  
 		  */
-		virtual void		setUserParam(uint index, float value) = 0;
+		void			setUserParam(uint index, float value);
 
 		/// Set a global user param value. User param in a system can mirror global values, which are identified by their name
-		static  void        setGlobalUserParamValue(const std::string &name, float value);
-		static  float       getGlobalUserParamValue(const std::string &name);
+		static  void    setGlobalUserParamValue(const std::string &name, float value);
+		static  float	getGlobalUserParamValue(const std::string &name);
 		/** Set a global vector value in the system.
 		  * Some object in the system can bind their parameters to such a global value
 		  * Example : direction of wind could be stored in the global variable 'WIND'
 		  */
-		static  void			 setGlobalVectorValue(const std::string &name, const NLMISC::CVector &v);
-		static  NLMISC::CVector  getGlobalVectorValue(const std::string &name);
+		static  void			setGlobalVectorValue(const std::string &name, const NLMISC::CVector &v);
+		static  NLMISC::CVector	getGlobalVectorValue(const std::string &name);
 
 		/** Get the value of a user param		  
 		  * \param index the index of the user param to get. For now it ranges from 0 to 3
 		  * \return the value of the user param (>= 0 and <= 1)		  
 		  */
-		virtual float		getUserParam(uint index) const = 0;
+		float		getUserParam(uint index) const;
 
 		// bypass the update of a user param from a global value if there is one
-		virtual void        bypassGlobalUserParamValue(uint userParamIndex, bool byPass = true) = 0;
-		virtual bool        isGlobalUserParamValueBypassed(uint userParamIndex) const = 0;
+		void        bypassGlobalUserParamValue(uint userParamIndex, bool byPass = true);
+		bool        isGlobalUserParamValueBypassed(uint userParamIndex) const;
 	//@}
-
-	///\name System validity
-	//@{
-		/** Test if the system is valid. A system is invalid when it should be destroyed.
-		  * It's then up to the system user to destroy it (thus avoiding invalid pointers...)
-		  * This usually happens when the system has been created with the flag 
-		  * 'destroy when no more particles' or 'destroy when no more emitter and no more particles'
-		  * , or when it is out of range.
-		  * Of course, an invalid system will always return false when isSystemPresent() is called...	  
-		  * \return true if the system has been invalidated. You can remove this object from the scene then...
-		  */
-		virtual bool		isValid				(void) const =  0;
-
-		/** This is a struct is used by observers that want to be notified of the invalidation of the system.
-		  * \see isValid()
-		  * \see registerPSObserver()	  
-		  */
-		  struct			IPSObserver
-		  {	 
-			/** called when the system has been destroyed
-			  * \param system the system that has been destroyed
-			  */
-	  		virtual void	systemDestroyed		(UParticleSystemInstance *system) = 0;	    
-		  };
-
-		/** Register an observer that will be notified when the system becomes invalid
-		  * nlassert(!isPSObserver(oberver));
-		  * \see isPSObserver()
-		  * \see removePSObserver()
-		  */
-		virtual void		registerPSObserver	(IPSObserver *observer) = 0;
-
-		/** test whether 'observer' is an observer of this system
-		  * \see removePSObserver()
-		  * \see registerPSObserver()
-		  */
-		virtual bool		isPSObserver		(IPSObserver *observer) = 0;
-
-		/** remove 'observer' from the observers of this system. Not an observer => nlassert
-		  * \see registerPSObserver()
-		  * \see isPSObserver()
-		  */
-		virtual void		removePSObserver	(IPSObserver *observer) = 0;
-	 //@}
 
 	 //@{
 			/** All the emitters that have the given ID emit their target.
 			  * \return false if the id is invalid, or if it isn't an emitter ID
 			  */
-			virtual bool	emit(uint32 id, uint quantity = 1) = 0;
+			bool	emit(uint32 id, uint quantity = 1);
 			/** All the object with the given id are removed.
 			  * \return false if the id is invalid.
 			  */
-			virtual bool   removeByID(uint32 id) = 0;
+			bool   removeByID(uint32 id);
 			/// Return the number of objects in the system that are flagged with an ID, or 0 if the system is not present			  
-			virtual uint   getNumID() const = 0;
+			uint   getNumID() const;
 			/// Get the nth ID, or 0 if index is invalid.			  
-			virtual uint32 getID(uint index) const = 0;
+			uint32 getID(uint index) const;
 			/** Get all the IDs in the system. 
 			  * \warning As IDs are not stored in a vector, it is faster than several calls to getID
 			  *
 			  */
-			virtual bool   getIDs(std::vector<uint32> &dest) const = 0;
+			bool   getIDs(std::vector<uint32> &dest) const;
 
 			// Deactivate an object with the given ID
-			virtual bool   setActive(uint32 id, bool active) = 0;			
+			bool   setActive(uint32 id, bool active);			
 			/** special : Activate / Deactivate all emitters.
 			  * NB : the system do not need to be present for this to be called.
 			  * If the system isn't instanciated, then emitters will be deactivated the next time it is
 			  */
-			virtual void   activateEmitters(bool active) = 0;			
+			void   activateEmitters(bool active);			
 			// test if there are active emitters in the system
-			virtual bool  hasActiveEmitters() const = 0;
+			bool	hasActiveEmitters() const;
 	 //@}
 
 	 //@{
 			// Test if there are particles left. Always return false if the system is not present.
-			virtual bool   hasParticles() const = 0;
+			bool   hasParticles() const;
 			// Test if there are emitters left. Always return false if the system is not present.
-			virtual bool   hasEmmiters() const = 0;
+			bool   hasEmmiters() const;
 	 //@}
 
 	 // Test if the system is shared
-	 virtual bool   isShared() const = 0;
+	 bool   isShared() const;
+
+	 // Test if the system is valid
+	 bool   isValid() const;
 
 	 /** Set user matrix of the system. Passing NULL causes this matrix to be the same than the particle system matrix
 	   *
@@ -199,9 +158,9 @@ public:
 	   *
 	   * NB : matrix is updated at next 'render'
 	   */
-	 virtual void	setUserMatrix(const NLMISC::CMatrix &userMat) = 0;
+	 void	setUserMatrix(const NLMISC::CMatrix &userMat);
 	 // set the user matrix with instant update (is system present)
-	 virtual void	forceSetUserMatrix(const NLMISC::CMatrix &userMat) = 0;
+	 void	forceSetUserMatrix(const NLMISC::CMatrix &userMat);
 
 	 /** Force to instanciate the system resource even if not visible. Useful for 'spell like' effects that need accurate timing.
 	   * If not used, the fx would only start when it enters the camera, and thus could be late.
@@ -209,16 +168,33 @@ public:
 	   * NB : no effect if the fx has been invalidated (because it is finished) or if it is already instanciated
 	   * \TODO : detect the 'SpellFX' flag of fx at loading to automate this ? (not useful for projectile, though, so it may be better to let the decision to the caller for now..)
 	   */
-	 virtual void   forceInstanciate() = 0;
+	 void   forceInstanciate();
 
 	 /** Set z-bias for all objects in the particle system (except for meshs). Works even is isPresent() returns false.
 	   * Value is in world coordinates.
 	   */
-	 virtual void	setZBias(float value) = 0;
+	 void	setZBias(float value);
 
 	 // debug : force to display all system bboxs
 	 static void forceDisplayBBox(bool on);
 
+	// Cast methods. If the cast fails, the object is empty.
+ 	void	cast(UInstance object);
+
+
+	/// Proxy interface
+
+	/// Constructors
+	UParticleSystemInstance() { _Object = NULL; }
+	UParticleSystemInstance(class CParticleSystemModel *object) { _Object = (ITransformable*)object; };
+	/// Attach an object to this proxy
+	void			attach(class CParticleSystemModel *object) { _Object = (ITransformable*)object; }
+	/// Detach the object
+	void			detach() { _Object = NULL; }
+	/// Return true if the proxy is empty() (not attached)
+	bool			empty() const {return _Object==NULL;}
+	/// For advanced usage, get the internal object ptr
+	class CParticleSystemModel	*getObjectPtr() const {return (CParticleSystemModel*)_Object;}
 };
 
 

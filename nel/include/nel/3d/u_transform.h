@@ -1,7 +1,7 @@
 /** \file u_transform.h
- * <File description>
+ * Interface for transform objects.
  *
- * $Id: u_transform.h,v 1.21 2004/03/23 10:09:52 vizerie Exp $
+ * $Id: u_transform.h,v 1.22 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,17 +50,8 @@ class	CCluster;
  * \author Nevrax France
  * \date 2001
  */
-class UTransform : virtual public UTransformable
+class UTransform : public UTransformable
 {
-protected:
-
-	/// \name Object
-	// @{
-	/// Constructor. By default, RotQuat mode.
-	UTransform() {}
-	virtual	~UTransform() {}
-	// @}
-
 public:
 	// Enum should be the same than in CHrcTrav.
 
@@ -84,31 +75,31 @@ public:
 	 * if this was already a son of newFather, no-op.
 	 * \param newFather the new Father. If NULL, the transform will be linked to the root of the hierarchy (Default!).
 	 */
-	virtual	void			parent(UTransform *newFather)=0;
+	void			parent(UTransform newFather);
 
 
-	virtual void			setClusterSystem (UInstanceGroup *pIG)=0; 
-	virtual UInstanceGroup *getClusterSystem ()=0;
+	void			setClusterSystem (UInstanceGroup *pIG); 
+	UInstanceGroup	*getClusterSystem () const;
 // @}
 
 
 	/// \name visibility
 	// @{
 	/// Hide the object and his sons.
-	virtual	void			hide()=0;
+	void			hide();
 	/// Show the objet and his sons.
-	virtual	void			show()=0;
+	void			show();
 	/*
 	 *	Enable / disable user clipping. If enable, the transform is not clipped into the engine. 
 	 *  The user has to use show / hide to clip or not the transform.
 	 */
-	virtual void			setUserClipping(bool enable)=0;
+	void			setUserClipping(bool enable);
 	/// Return the user clipping state
-	virtual bool			getUserClipping() const=0;
+	bool			getUserClipping() const;
 	/// herit the visibility from his father. (default behavior).
-	virtual	void			heritVisibility()=0;
+	void			heritVisibility();
 	/// Get the local visibility state.
-	virtual	TVisibility		getVisibility()=0;
+	TVisibility		getVisibility();
 	// @}
 
 
@@ -123,12 +114,12 @@ public:
 	 *	NB: if the hierarchy of this object must change, or if the object must moves, you must call unfreezeHRC() first,
 	 *	and you should do this for all the parents of this model.
 	 */
-	virtual	void			freezeHRC()=0;
+	void			freezeHRC();
 
 
 	/**	see freezeHRC().
 	 */
-	virtual	void			unfreezeHRC()=0;
+	void			unfreezeHRC();
 	// @}
 
 
@@ -139,11 +130,11 @@ public:
 	 *	NB: most of models don't need it. For example models with LightMaps are by default Lighing-disabled.
 	 *	Default behavior is UserLightable==true.
 	 */
-	virtual	void			setUserLightable(bool enable) =0;
+	void			setUserLightable(bool enable);
 
 	/** Get the UserLightable flag.
 	 */
-	virtual	bool			getUserLightable() const  =0;
+	bool			getUserLightable() const ;
 	// @}
 
 
@@ -154,32 +145,32 @@ public:
 	  * Layer 1 is for water surfaces
 	  * Layer 2 is for object above water
 	  */
-	virtual void			setOrderingLayer(uint layer) = 0;
+	void			setOrderingLayer(uint layer);
 
 	/// Get the ordering layer
-	virtual uint			getOrderingLayer() const = 0;
+	uint			getOrderingLayer() const;
 
 
 	/** Set the LogicInfo for this transfrom, eg to retrieve statc light information, see ILogicInfo.
 	 *	Ptr is kept in UTransfrom, so should call setLogicInfo(NULL) before to clean up.
 	 */
-	virtual void			setLogicInfo(ILogicInfo *logicInfo) =0;
+	void			setLogicInfo(ILogicInfo *logicInfo);
 
 
 	/// Return true if the object was determined as Visible in Hrc during the last Scene->rendere(). NB: interesting only if Herit. else can use getVisibility()
-	virtual bool			getLastWorldVisState() const = 0;
+	bool			getLastWorldVisState() const;
 
 	/// Return true if the object was rendered during the last Scene->rendere(). return false else (ie clipped)
-	virtual bool			getLastClippedState() const = 0;
+	bool			getLastClippedState() const;
 
 	/// Fill a list of cluster that contain this tranform. This is valid after the clip traversal
-	virtual void			getLastParentClusters(std::vector<CCluster*> &clusters) const = 0;
+	void			getLastParentClusters(std::vector<CCluster*> &clusters) const;
 
 	/** get the last world matrix computed in last render().
 	 *	NB: this WM is computed in last render() only if the object was not clipped. So use it wisely.
 	 *	use getLastClippedState() to konw if the object was visible in last render().
 	 */
-	virtual	const CMatrix	&getLastWorldMatrixComputed() const =0;
+	const CMatrix	&getLastWorldMatrixComputed() const ;
 
 
 	/// name Load Balancing Behavior.
@@ -194,11 +185,11 @@ public:
 	 *	The "Default" group is special because it is not balanced (ie models are only degraded from 
 	 *	their distance to camera)
 	 */
-	virtual void			setLoadBalancingGroup(const std::string &group) =0;
+	void			setLoadBalancingGroup(const std::string &group);
 
 	/** Get the load Balancing group of a model. see setLoadBalancingGroup().
 	 */
-	virtual const std::string	&getLoadBalancingGroup() const =0;
+	const std::string	&getLoadBalancingGroup() const ;
 
 	// @}
 
@@ -210,26 +201,26 @@ public:
 	 *	objects if the textures are not loaded. It is used also for Lod Character.
 	 *	Default color is (255,255,255)
 	 */
-	virtual	void			setMeanColor(NLMISC::CRGBA color) =0;
+	void			setMeanColor(NLMISC::CRGBA color);
 
 	/// see setMeanColor()
-	virtual	NLMISC::CRGBA	getMeanColor() const  =0;
+	NLMISC::CRGBA	getMeanColor() const ;
 
 	// @}
 
 	/// name Accessors for opacity/transparency
 	// @{	
-	virtual void			setTransparency(bool v) = 0;
-	virtual void			setOpacity(bool v) = 0;
+	void			setTransparency(bool v);
+	void			setOpacity(bool v);
 	// return a non-zero value if true
-	virtual uint32			isOpaque() = 0;
-	virtual uint32			isTransparent() = 0;
+	uint32			isOpaque();
+	uint32			isTransparent();
 	/** Set priority for transparency ordering
 	  * Transparent objects are sorted by priority, and then by distances
 	  * The priority is clamped by the priority range of the scene. By default this range is [0, 0] so there's no priority sorting
 	  * This range can be changed by calling UScene::setupTransparencySorting
 	  */
-	virtual	void			setTransparencyPriority(uint8 priority) = 0;
+	void			setTransparencyPriority(uint8 priority);
 	// @}
 
 	/// \name ShadowMapping
@@ -237,16 +228,16 @@ public:
 	/** By default, map shadow casting is disabled. This enabled shadow for this model. 
 	 *	Fails if the model don't support dynamic Map Shadow Casting (eg landscape)
 	 */
-	virtual void			enableCastShadowMap(bool state) =0;
+	void			enableCastShadowMap(bool state);
 	/// true if the instance cast shadow. By default false
-	virtual bool			canCastShadowMap() const =0;
+	bool			canCastShadowMap() const;
 
 	/** By default, map shadow receiving is disabled. This enabled shadow for this model. 
 	 *	Fails if the model don't support dynamic Map Shadow Receiving (eg Particle system)
 	 */
-	virtual void			enableReceiveShadowMap(bool state) =0;
+	void			enableReceiveShadowMap(bool state);
 	/// true if the instance receive shadow. By default false
-	virtual bool			canReceiveShadowMap() const =0;
+	bool			canReceiveShadowMap() const ;
 	// @}
 	
 	/** Force the transform to always be attached to the root
@@ -255,10 +246,22 @@ public:
 	  * NB : any call to setClusterSystem will be ignored (must remain unclesterized)
 	  * NB : any call to parent will be ignored (must remain linked to the root)
       */
-	virtual void		setForceClipRoot(bool forceClipRoot) = 0;
-	virtual bool		getForceClipRoot() const = 0;
-	
+	void			setForceClipRoot(bool forceClipRoot);
+	bool			getForceClipRoot() const;
 
+	/// Proxy interface
+
+	/// Constructors
+	UTransform() { _Object = NULL; }
+	UTransform(class CTransform *object) { _Object = (ITransformable*)object; };
+	/// Attach an object to this proxy
+	void			attach(class CTransform *object) { _Object = (ITransformable*)object; }
+	/// Detach the object
+	void			detach() { _Object = NULL; }
+	/// Return true if the proxy is empty() (not attached)
+	bool			empty() const {return _Object==NULL;}
+	/// For advanced usage, get the internal object ptr
+	class CTransform	*getObjectPtr() const {return (CTransform*)(_Object);}
 };
 
 

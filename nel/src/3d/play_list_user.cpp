@@ -1,7 +1,7 @@
 /** \file play_list_user.cpp
  * <File description>
  *
- * $Id: play_list_user.cpp,v 1.8 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: play_list_user.cpp,v 1.9 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "3d/play_list_user.h"
 #include "3d/animation_set_user.h"
+#include "nel/3d/u_transform.h"
 #include "nel/misc/hierarchical_timer.h"
 
 #include "nel/misc/debug.h"
@@ -70,16 +71,16 @@ float CPlayListUser::getLocalWeight (uint8 slot, TGlobalAnimationTime globalTime
 
 // ***************************************************************************
 
-void	CPlayListUser::registerTransform(UTransform *object, const char* prefix)
+void	CPlayListUser::registerTransform(UTransform object, const char* prefix)
 {
 	NL3D_MEM_PLAYLIST
 	NL3D_HAUTO_UI_PLAY_LIST;
 
-	CTransformUser	*obj= dynamic_cast<CTransformUser*>(object);
+	CTransform	*obj= object.getObjectPtr();
 	nlassert(obj);
 
 	// Register the transform to the channel mixer.
-	obj->getTransform()->registerToChannelMixer(&_ChannelMixer, prefix);
+	obj->registerToChannelMixer(&_ChannelMixer, prefix);
 }
 void	CPlayListUser::resetAllChannels()
 {

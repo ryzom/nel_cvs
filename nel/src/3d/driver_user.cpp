@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.44 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.45 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,6 @@
 #include "3d/scene.h"
 #include "3d/text_context_user.h"
 #include "3d/texture_user.h"
-#include "3d/material_user.h"
 #include "3d/scene_user.h"
 #include "3d/init_3d.h"
 #include "3d/water_pool_manager.h"
@@ -243,9 +242,11 @@ bool			CDriverUser::setDisplay(const CMode &mode, bool show)
 		setMatrixMode2D11();
 
 		// 2D Material.
+		_MatFlat.attach (&_MatFlatInternal);
 		_MatFlat.initUnlit();
 		_MatFlat.setZFunc(UMaterial::always);
 		_MatFlat.setZWrite(false);
+		_MatText.attach (&_MatFlatInternal);
 		_MatText.initUnlit();
 		_MatText.setZFunc(UMaterial::always);
 		_MatText.setZWrite(false);
@@ -301,7 +302,6 @@ void			CDriverUser::release()
 
 	// delete Texture, mat ... list.
 	_Textures.clear();
-	_Materials.clear();
 	_TextContexts.clear();
 	_Scenes.clear();
 
@@ -974,7 +974,7 @@ void			CDriverUser::drawBitmap (float x, float y, float width, float height, cla
 	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
-	_MatText.setTexture(&texture);
+	_MatText.setTexture(0, &texture);
 	_MatText.setColor(col);
 	_MatText.setBlend(blend);
 
@@ -1100,9 +1100,8 @@ UDriver::TMessageBoxId	CDriverUser::systemMessageBox (const char* message, const
 CMaterial		&CDriverUser::convMat(UMaterial &mat)
 {
 	NL3D_MEM_DRIVER
-
-	CMaterialUser	*pmat= (CMaterialUser*)&mat;
-	return pmat->_Material;
+	
+	return *mat.getObjectPtr();
 }
 
 

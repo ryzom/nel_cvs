@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.20 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_file.cpp,v 1.21 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -211,6 +211,12 @@ void	CTextureFile::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if(f.isReading())
 		touch();
+
+	// hulud todo remove
+	std::string toto = _FileName;
+	toto = NLMISC::strlwr (toto);
+	if (toto.find ("fo_arbragrelot_branche_sp") != string::npos)
+		nlstop;
 }
 
 
@@ -242,6 +248,13 @@ void CTextureFile::dupInfo(const CTextureFile &other)
 	_AllowDegradation = other._AllowDegradation;
 	_SupportSharing	  = other._SupportSharing;
 	_MipMapSkipAtLoad = other._MipMapSkipAtLoad; 
+
+
+	// hulud todo remove
+	std::string toto = _FileName;
+	toto = NLMISC::strlwr (toto);
+	if (toto.find ("fo_arbragrelot_branche_sp") != string::npos)
+		nlstop;
 }
 
 

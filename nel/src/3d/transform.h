@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.51 2004/04/09 14:22:01 vizerie Exp $
+ * $Id: transform.h,v 1.52 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,7 +165,7 @@ public:
 	// @}
 
 	// build matching user interface object (a class derived from CInstanceUser)
-	virtual CInstanceUser       *buildMatchingUserInterfaceObject(bool deleteIt);
+	virtual class UTransform *buildMatchingUserInterfaceObject ();
 
 public:
 

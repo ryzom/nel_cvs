@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.20 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: clip_trav.h,v 1.21 2004/05/07 14:41:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "3d/trav_scene.h"
 #include "3d/quad_grid.h"
+#include "3d/transform.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/plane.h"
 #include "nel/misc/matrix.h"

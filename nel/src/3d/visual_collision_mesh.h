@@ -1,7 +1,7 @@
 /** \file visual_collision_mesh.h
  * <File description>
  *
- * $Id: visual_collision_mesh.h,v 1.1 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: visual_collision_mesh.h,v 1.2 2004/05/07 14:41:42 corvazier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -28,7 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/object_vector.h"
-
+#include "nel/misc/smart_ptr.h"
+#include "nel/misc/aabbox.h"
 
 namespace NL3D 
 {
@@ -49,13 +50,13 @@ public:
 	CVisualCollisionMesh();
 
 	/// build. NB: fails if too much vertices/triangles (>=65536) or if 0 vertices / triangles
-	bool		build(const std::vector<CVector> &vertices, const std::vector<uint32> &triangles);
+	bool		build(const std::vector<NLMISC::CVector> &vertices, const std::vector<uint32> &triangles);
 
 	/// get collision with camera. [0,1] value
-	float		getCameraCollision(const CMatrix &instanceMatrix, class CCameraCol &camCol);
+	float		getCameraCollision(const NLMISC::CMatrix &instanceMatrix, class CCameraCol &camCol);
 
 	/// compute the world bbox of an instance
-	NLMISC::CAABBox	computeWorldBBox(const CMatrix &instanceMatrix);
+	NLMISC::CAABBox	computeWorldBBox(const NLMISC::CMatrix &instanceMatrix);
 
 // *********************
 private:
@@ -89,8 +90,8 @@ private:
 		};
 		uint32										_GridSizePower;
 		uint32										_GridSize;
-		CVector										_GridPos;
-		CVector										_GridScale;
+		NLMISC::CVector								_GridPos;
+		NLMISC::CVector								_GridScale;
 		// The Grid
 		NLMISC::CObjectVector<CCase, false>			_Grid;
 		// The raw elt data
@@ -108,7 +109,7 @@ private:
 private:
 
 	// Data
-	std::vector<CVector>	Vertices;
+	std::vector<NLMISC::CVector>	Vertices;
 	std::vector<uint16>		Triangles;
 	// The Local Triangle Quadgrid
 	CStaticGrid				QuadGrid;

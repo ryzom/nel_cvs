@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.33 2002/05/23 08:32:15 lecroart Exp $
+ * $Id: path.cpp,v 1.34 2002/06/06 15:48:29 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -919,6 +919,15 @@ string CFile::findNewFile (const string &filename)
 	return npath;
 }
 
+uint32	CFile::getFileSize (const std::string &filename)
+{
+	FILE *fp = fopen (filename.c_str(), "rb");
+	if (fp == NULL) return 0;
+	fseek (fp, 0, SEEK_END);
+	uint32 size = ftell (fp);
+	fclose (fp);
+	return size;
+}
 
 uint32	CFile::getFileModificationDate(const std::string &filename)
 {

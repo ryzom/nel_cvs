@@ -538,3 +538,4 @@ namespace NLAISCRIPT
 	const NLAIC::CIdentType CNotifyParentScript::IdNotifyParentScript("NotifyParentScript", NLAIC::CSelfClassCFactory( CNotifyParentScript(&NLAISCRIPT::msgNotifyParentClass) ),
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 			NLAIC::CTypeOfOperator::opEq );
+

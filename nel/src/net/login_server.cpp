@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.17 2002/09/16 14:58:42 lecroart Exp $
+ * $Id: login_server.cpp,v 1.18 2002/09/18 09:51:45 lecroart Exp $
  *
  */
 
@@ -345,6 +345,8 @@ string CLoginServer::isValidCookie (const CLoginCookie &lc)
 		{
 			// ok, it was validate, remove it
 			PendingUsers.erase (it);
+
+			nlinfo ("Cookie '%s' is valid and pending, send the client connection to the WS", lc.toString ().c_str ());
 
 			// warn the WS that the client effectively connected
 			uint8 con = 1;

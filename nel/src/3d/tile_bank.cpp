@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.32 2001/09/10 13:21:47 berenguier Exp $
+ * $Id: tile_bank.cpp,v 1.33 2001/10/18 12:47:03 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -364,6 +364,16 @@ void CTileBank::makeAllPathRelative ()
 		// Alpha
 		TroncFileName (sTmpFileName, _TileVector[nTile].getRelativeFileName (CTile::alpha).c_str());
 		_TileVector[nTile].setFileName (CTile::alpha, sTmpFileName);
+	}
+
+	// For all displaces
+	for (uint i=0; i<_DisplacementMap.size(); i++)
+	{
+		// Tronc filename
+		char sTmpFileName[512];
+
+		TroncFileName (sTmpFileName, _DisplacementMap[i]._FileName.c_str());
+		_DisplacementMap[i]._FileName = sTmpFileName;
 	}
 }
 

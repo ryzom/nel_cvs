@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.13 2003/01/20 10:05:52 corvazier Exp $
+ * $Id: primitive.cpp,v 1.14 2003/02/06 09:17:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -938,6 +938,10 @@ void IPrimitive::operator= (const IPrimitive &node)
 	// Clean dest
 	removeChildren ();
 	removeProperties ();
+
+	// copy deprecated param
+	Layer = node.Layer;
+	Name = node.Name;
 
 	// Copy the flags
 	Expanded = node.Expanded;

@@ -1,6 +1,6 @@
 /** \file tail_particle_dlg.cpp
  * A dailog that helps to tune propertie of particle that owns a tail 
- * $Id: tail_particle_dlg.cpp,v 1.2 2001/06/27 16:38:06 vizerie Exp $
+ * $Id: tail_particle_dlg.cpp,v 1.3 2002/02/27 15:45:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,7 +70,7 @@ void CTailParticleDlg::init(CWnd *pParent, sint x, sint y)
 	}
 	else
 	{
-		m_TailPersistAfterDeath = (dynamic_cast<NL3D::CPSRibbon *>(_TailParticle))->getPersistAfterDeath() ;		
+///		m_TailPersistAfterDeath = (dynamic_cast<NL3D::CPSRibbon *>(_TailParticle))->getPersistAfterDeath() ;		
 	}
 
 	UpdateData() ;
@@ -123,7 +123,7 @@ void CTailParticleDlg::OnTailPersistAfterDeath()
 {
 	UpdateData() ;
 	nlassert(dynamic_cast<NL3D::CPSRibbon *>(_TailParticle)) ;
-	(dynamic_cast<NL3D::CPSRibbon *>(_TailParticle))->setPersistAfterDeath(m_TailPersistAfterDeath ? true : false) ;
+///	(dynamic_cast<NL3D::CPSRibbon *>(_TailParticle))->setPersistAfterDeath(m_TailPersistAfterDeath ? true : false) ;
 	UpdateData(FALSE) ;
 }
 

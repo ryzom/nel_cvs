@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.5 2001/04/09 14:26:09 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.6 2001/04/24 14:57:58 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,6 +88,11 @@ public:
 	virtual ITrack* getDefaultTrack (uint valueId);
 	// @}
 
+	// Return true if this mesh is a skin apply on a skeleton else false.
+	bool isSkinApply () const
+	{
+		return _ApplySkinOk;
+	}
 
 
 protected:

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.41 2001/09/07 13:09:15 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.42 2001/09/10 15:25:32 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -299,9 +299,9 @@ void CPSSizedParticle::serialSizeScheme(NLMISC::IStream &f) throw(NLMISC::EStrea
 
 float CPSRotated2DParticle::_RotTable[256 * 4];
 
-#ifdef NL_DEBUG
+//#ifdef NL_DEBUG
 	bool CPSRotated2DParticle::_InitializedRotTab = false;
-#endif
+//#endif
 
 
 void CPSRotated2DParticle::setAngle2DScheme(CPSAttribMaker<float> *angle2DScheme)
@@ -1602,9 +1602,9 @@ void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 uint8 CPSFanLight::_RandomPhaseTab[32][128];
 
-#ifdef NL_DEBUG
+//#ifdef NL_DEBUG
 	bool CPSFanLight::_RandomPhaseTabInitialized = false;
-#endif
+//#endif
 
 	
 void CPSFanLight::initFanLightPrecalc(void)
@@ -1630,9 +1630,9 @@ void CPSFanLight::initFanLightPrecalc(void)
 			}
 		}
 	}	
-	#ifdef NL_DEBUG
+	//#ifdef NL_DEBUG
 		_RandomPhaseTabInitialized = true;
-	#endif
+	//#endif
 }
 
 

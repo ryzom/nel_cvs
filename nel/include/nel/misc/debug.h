@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.35 2001/07/05 08:27:46 berenguier Exp $
+ * $Id: debug.h,v 1.36 2001/09/10 15:25:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -228,13 +228,14 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
  * Same as nlassertex(false,exp);
  */
 
-#if defined (NL_OS_WINDOWS) && defined (NL_DEBUG)
+// removed because we always check assert (even in release mode) #if defined (NL_OS_WINDOWS) && defined (NL_DEBUG)
+#if defined (NL_OS_WINDOWS)
 #define NLMISC_BREAKPOINT _asm { int 3 }
 #else
 #define NLMISC_BREAKPOINT
 #endif
 
-#ifdef NL_DEBUG
+// removed because we always check assert (even in release mode) #if defined(NL_DEBUG)
 
 #define nlassert(exp) \
 { \
@@ -333,6 +334,7 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
 	NLMISC_BREAKPOINT \
 }
 
+/* removed because we always check assert (even in release mode) 
 #else // NL_DEBUG
 
 #define nlassert(exp) \
@@ -355,6 +357,7 @@ NULL
 NULL
 
 #endif // NL_DEBUG
+*/
 
 struct EFatalError : public Exception
 {

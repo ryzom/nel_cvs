@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.24 2001/09/07 12:01:41 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.25 2001/09/10 15:25:32 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,10 +60,10 @@ namespace NL3D {
 using NLMISC::CVector;
 
 
-#ifdef NL_DEBUG
+//#ifdef NL_DEBUG
 	bool CPSUtil::_CosTableInitialized = false;
 	bool CPSUtil::_PerlinNoiseTableInitialized = false;
-#endif
+//#endif
 
 float CPSUtil::_CosTable[256];
 float CPSUtil::_SinTable[256];
@@ -78,9 +78,9 @@ void CPSUtil::initPerlinNoiseTable(void)
 	{
 		_PerlinNoiseTab[k] = (rand() % 30000) / 30000.f; 
 	}
-	#ifdef NL_DEBUG
+	//#ifdef NL_DEBUG
 		_PerlinNoiseTableInitialized = true;
-	#endif
+	//#endif
 }
 
 
@@ -92,9 +92,9 @@ void CPSUtil::initFastCosNSinTable(void)
 		_CosTable[k] = (float) cos( angle );
 		_SinTable[k] = (float) sin( angle );
 	}
-	#ifdef NL_DEBUG
+	//#ifdef NL_DEBUG
 		_CosTableInitialized = true;
-	#endif
+	//#endif
 }
 
 

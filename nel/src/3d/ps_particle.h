@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.12 2001/09/07 12:00:15 vizerie Exp $
+ * $Id: ps_particle.h,v 1.13 2001/09/10 15:25:32 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -344,10 +344,10 @@ class CPSRotated2DParticle
 		CPSAttribMaker<float> *_Angle2DScheme; // used only if _UseSizeScheme is set to true				
 		static float _RotTable[4 * 256];
 
-		#ifdef NL_DEBUG
+		//#ifdef NL_DEBUG
 			/// it is true if the table has been initialized, for debug purposes
 			static bool _InitializedRotTab;
-		#endif
+		//#endif
 
 		void newAngle2DElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 		{
@@ -983,9 +983,9 @@ protected:
 	static uint8				_RandomPhaseTab[32][128];		
 	float						_PhaseSpeed;
 
-	#ifdef NL_DEBUG		
+	//#ifdef NL_DEBUG		
 		static bool _RandomPhaseTabInitialized;
-	#endif
+	//#endif
 		
 	void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
 	void deleteElement(uint32);

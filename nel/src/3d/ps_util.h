@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.5 2001/07/13 16:59:39 vizerie Exp $
+ * $Id: ps_util.h,v 1.6 2001/09/10 15:25:32 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,13 +167,13 @@ struct CPSUtil
 
 	protected:
 
-		#ifdef NL_DEBUG
+		//#ifdef NL_DEBUG
 			static bool _CosTableInitialized ;
-		#endif
+		//#endif
 
-		#ifdef NL_DEBUG
+		//#ifdef NL_DEBUG
 			static bool _PerlinNoiseTableInitialized ;
-		#endif
+		//#endif
 
 		// a table for fast cosine lookup
 		static float _CosTable[256] ;

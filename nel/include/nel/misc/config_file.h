@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.25 2001/11/19 14:08:26 lecroart Exp $
+ * $Id: config_file.h,v 1.26 2002/04/09 12:27:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -299,7 +299,7 @@ struct EParseError : public EConfigFile
 
 struct EFileNotFound : public EConfigFile
 {
-	EFileNotFound (const std::string &fileName, int currentLine)
+	EFileNotFound (const std::string &fileName)
 	{
 		static char str[NLMISC::MaxCStringSize];
 		smprintf (str, NLMISC::MaxCStringSize, "File \"%s\" not found", fileName.c_str ());

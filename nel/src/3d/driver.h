@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.51 2003/04/01 15:35:26 vizerie Exp $
+ * $Id: driver.h,v 1.52 2003/04/02 16:20:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -891,6 +891,11 @@ public:
 	/**	see supportBlendConstantColor(). Get the current Blend Constant Color.
 	 */
 	virtual	NLMISC::CRGBA	getBlendConstantColor() const =0;
+
+	/** force the driver to flush all command. glFinish() in opengl.
+	 *	Interesting only for debug and profiling purpose.
+	 */
+	virtual	void			finish() =0;
 
 	// @}
 

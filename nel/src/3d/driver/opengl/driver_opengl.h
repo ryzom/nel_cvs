@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.142 2003/04/01 15:45:38 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.143 2003/04/02 16:20:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -454,6 +454,7 @@ public:
 	virtual	void			setBlendConstantColor(NLMISC::CRGBA col);
 	virtual	NLMISC::CRGBA	getBlendConstantColor() const;
 	virtual bool			setMonitorColorProperties (const CMonitorColorProperties &properties);
+	virtual	void			finish();
 	// @}
 
 

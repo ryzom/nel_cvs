@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.180 2003/04/01 15:45:38 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.181 2003/04/02 16:20:29 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -2775,6 +2775,13 @@ void CDriverGL::deleteFragmentShaders()
 		nglDeleteFragmentShaderATI((GLuint) ATIWaterShaderHandle);		
 		ATIWaterShaderHandle = 0;
 	}
+}
+
+
+// ***************************************************************************
+void CDriverGL::finish()
+{
+	glFinish();
 }
 
 

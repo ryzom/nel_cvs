@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.8 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: ps_shockwave.cpp,v 1.9 2004/04/08 19:48:20 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -504,8 +504,6 @@ void CPSShockWave::getVBnPB(CVertexBuffer *&retVb, CIndexBuffer *&retPb)
 	{		
 		// create an entry (we setup the primitive block at the same time, this could be avoided, but doesn't make much difference)		
 		CVertexBuffer &vb = vbMap[_NbSeg]; // create a vb
-		CVertexBufferReadWrite vba;
-		vb.lock (vba);
 		CIndexBuffer &pb = _PBMap[_NbSeg]; // eventually create a pb
 		const uint32 size = getNumShockWavesInVB();
 		vb.setVertexFormat(CVertexBuffer::PositionFlag |
@@ -513,6 +511,8 @@ void CPSShockWave::getVBnPB(CVertexBuffer *&retVb, CIndexBuffer *&retPb)
 						   (_ColorScheme != NULL ?  CVertexBuffer::PrimaryColorFlag : 0) 
 						  );	
 		vb.setNumVertices((size * (_NbSeg + 1)) << 1 );		
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
 		pb.reserve(2 * 3 * size * _NbSeg);
 		CIndexBufferReadWrite ibaWrite;
 		pb.lock (ibaWrite);

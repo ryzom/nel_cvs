@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.56 2004/04/07 17:03:53 berenguier Exp $
+ * $Id: landscape.h,v 1.57 2004/04/08 19:48:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1011,6 +1011,13 @@ private:
 	void						removeFromShadowPolyReceiver(CTessFace *face);
 	// @}
 	
+	/// \name Texture Profiling
+	// @{
+	NLMISC::CSmartPtr<ITexture::CTextureCategory>	_TextureTileCategory;
+	NLMISC::CSmartPtr<ITexture::CTextureCategory>	_TextureFarCategory;
+	NLMISC::CSmartPtr<ITexture::CTextureCategory>	_TextureNearCategory;
+	// @}
+
 };
 
 

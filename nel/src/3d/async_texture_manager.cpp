@@ -1,7 +1,7 @@
 /** \file async_texture_manager.cpp
  * <File description>
  *
- * $Id: async_texture_manager.cpp,v 1.8 2004/01/30 13:51:28 besson Exp $
+ * $Id: async_texture_manager.cpp,v 1.9 2004/04/08 19:48:20 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -114,6 +114,9 @@ CAsyncTextureManager::CAsyncTextureManager()
 
 	// Do not share this texture, to force uploading of the lods.
 	_CurrentTextureLodLoaded= NULL;
+
+	// For Texture profiling
+	_TextureCategory= new ITexture::CTextureCategory("ASYNC ENTITY MANAGER");
 }
 
 
@@ -183,6 +186,8 @@ uint			CAsyncTextureManager::addTextureRef(const string &textNameNotLwr, CMeshBa
 		text->Texture= new CTextureFile;
 		// Do not allow degradation.
 		text->Texture->setAllowDegradation(false);
+		// For Profiling
+		text->Texture->setTextureCategory(_TextureCategory);
 
 		// add to map.
 		it= _TextureEntryMap.insert(make_pair(textName, i)).first;
@@ -778,6 +783,8 @@ void			CAsyncTextureManager::updateTextureLodSystem(IDriver *pDriver)
 		textLod->Lod->Texture->enableSharing(false);
 		textLod->Lod->Texture->setFileName(textLod->Lod->TextureEntry->Texture->getFileName());
 		textLod->Lod->Texture->setMipMapSkipAtLoad(textLod->Lod->Level);
+		// For Profiling
+		textLod->Lod->Texture->setTextureCategory(_TextureCategory);
 		// setup async loading
 		_CurrentTextureLodLoaded= textLod->Lod;
 		// load it async.

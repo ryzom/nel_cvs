@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.h
  * <File description>
  *
- * $Id: shadow_map_manager.h,v 1.5 2004/03/31 13:33:41 berenguier Exp $
+ * $Id: shadow_map_manager.h,v 1.6 2004/04/08 19:48:20 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -173,6 +173,9 @@ private:
 	std::vector<ItTextureMap>	_FreeShadowTextures;
 	// Called at each renderGenerate().
 	void						garbageShadowTextures(CScene *scene);
+
+	// For Texture profiling
+	NLMISC::CSmartPtr<ITexture::CTextureCategory>	_TextureCategory;
 };
 
 

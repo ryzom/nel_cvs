@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.15 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.16 2004/04/08 19:48:20 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,6 +130,9 @@ private:
 
 	// The unique material used by all the coarse object inserted in the container.
 	CMaterial							_Material;
+
+	// Texture category for profilings
+	NLMISC::CSmartPtr<ITexture::CTextureCategory>		_TextureCategory;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file async_texture_manager.h
  * <File description>
  *
- * $Id: async_texture_manager.h,v 1.5 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: async_texture_manager.h,v 1.6 2004/04/08 19:48:20 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -230,6 +230,9 @@ private:
 
 	// The current HDLod async loaded (NB: loaded / or upLoaded)
 	CTextureLod							*_CurrentTextureLodLoaded;
+
+	// For texture profiling
+	NLMISC::CSmartPtr<ITexture::CTextureCategory>	_TextureCategory;
 
 private:
 

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.46 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: particle_system_shape.cpp,v 1.47 2004/04/08 19:48:20 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,31 @@ using NLMISC::CIFile;
 #else
 	#define PARTICLES_CHECK_MEM
 #endif
+
+
+// ***************************************************************************
+// A singleton to define the TextureCategory of Particle system
+class CPSTextureCategory
+{
+public:
+	static NLMISC::CSmartPtr<ITexture::CTextureCategory>	&get()
+	{
+		if(!_Instance)
+			_Instance= new CPSTextureCategory();
+		return _Instance->_TextureCategory;
+	}
+
+private:
+	NLMISC::CSmartPtr<ITexture::CTextureCategory>	_TextureCategory;
+	CPSTextureCategory()
+	{
+		_TextureCategory= new ITexture::CTextureCategory("PARTICLE SYSTEM");
+	}
+	static CPSTextureCategory	*_Instance;
+};
+CPSTextureCategory	*CPSTextureCategory::_Instance= NULL;
+
+
 
 ///===========================================================================
 CParticleSystemShape::CParticleSystemShape() : _MaxViewDist(100.f),
@@ -225,7 +250,11 @@ CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene, NLMISC::CCon
 		myInstance->enumTexs(_CachedTex, *scene.getDriver());		
 		for(uint k = 0; k < _CachedTex.size(); ++k)
 		{		
-			if (_CachedTex[k]) scene.getDriver()->setupTexture (*(ITexture *)_CachedTex[k]);			
+			if (_CachedTex[k])
+			{
+				_CachedTex[k]->setTextureCategory(CPSTextureCategory::get());
+				scene.getDriver()->setupTexture (*(ITexture *)_CachedTex[k]);
+			}
 		}
 	}
 	else
@@ -380,7 +409,11 @@ void CParticleSystemShape::flushTextures(IDriver &driver, uint selectedTexture)
 	for(uint k = 0; k < _CachedTex.size(); ++k)
 	{				
 		//nlinfo(_CachedTex[k]->getShareName().c_str());
-		if (_CachedTex[k]) driver.setupTexture(*_CachedTex[k]);		
+		if (_CachedTex[k])
+		{
+			_CachedTex[k]->setTextureCategory(CPSTextureCategory::get());
+			driver.setupTexture(*_CachedTex[k]);		
+		}
 	}
 }
 

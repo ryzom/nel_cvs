@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.9 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: shadow_map_manager.cpp,v 1.10 2004/04/08 19:48:20 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -59,6 +59,9 @@ static inline float	easeInEaseOut(float x)
 CShadowMapManager::CShadowMapManager()
 {
 	uint	i;
+
+	// For Texture profiling
+	_TextureCategory= new ITexture::CTextureCategory("SHADOW MANAGER");
 
 	setQuadGridSize(NL3D_SMM_QUADGRID_SIZE, NL3D_SMM_QUADCELL_SIZE);
 	_ShadowCasters.reserve(256);
@@ -160,6 +163,8 @@ CShadowMapManager::CShadowMapManager()
 	_ClampTexture->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 	_ClampTexture->generate();
 	_ClampTexture->setReleasable (false);
+	// For Texture Profiling
+	_ClampTexture->setTextureCategory(_TextureCategory);
 
 	// init material
 	_ReceiveShadowMaterial.initUnlit();
@@ -920,6 +925,8 @@ void			CShadowMapManager::updateBlurTexture(uint w, uint h)
 		_BlurTexture[i]->generate();
 		_BlurTexture[i]->setReleasable (false);
 		_BlurTexture[i]->setRenderTarget (true);
+		// For Texture Profiling
+		_BlurTexture[i]->setTextureCategory(_TextureCategory);
 	}
 
 	// set to the material
@@ -1151,7 +1158,9 @@ ITexture		*CShadowMapManager::allocateTexture(uint textSize)
 	text->generate();
 	text->setReleasable (false);
 	text->setRenderTarget (true);
-
+	// For Texture Profiling
+	text->setTextureCategory(_TextureCategory);
+	
 	// Setup in the map.
 	_ShadowTextureMap[text]= text;
 

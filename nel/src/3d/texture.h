@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.18 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: texture.h,v 1.19 2004/04/08 19:48:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -177,6 +177,16 @@ public:
 		MinFilterCount
 	};
 
+	/** Category String
+	 */
+	class CTextureCategory : public NLMISC::CRefCount
+	{
+	public:
+		std::string		Name;
+
+		CTextureCategory() {}
+		CTextureCategory(const std::string &name) : Name(name) {}
+	};
 
 public:
 
@@ -390,6 +400,9 @@ public:
 
 	// is this texture a bumpmap ?
 	virtual bool isBumpMap() const { return false; }
+		
+	// For Texture profiling. The smartPtr is kept (NULL default)
+	void	setTextureCategory(NLMISC::CSmartPtr<CTextureCategory> &textCat) {_TextureCategory= textCat;}
 
 	/** Render target texture
 	 *  Active / disable render target abilities for this texture.
@@ -401,6 +414,9 @@ public:
 	 */
 	bool	getRenderTarget () const { return _RenderTarget; }
 
+	// get the texture category
+	CTextureCategory	*getTextureCategory() const {return _TextureCategory;}
+	
 //****************************
 // Private part.
 protected:
@@ -430,6 +446,7 @@ private:
 	TWrapMode		_WrapT;
 	TMinFilter		_MinFilter;
 	TMagFilter		_MagFilter;
+	NLMISC::CSmartPtr<CTextureCategory>		_TextureCategory;
 
 public:
 	// Private Part!!!. For Driver Only.

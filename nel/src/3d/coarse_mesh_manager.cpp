@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.16 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.17 2004/04/08 19:48:20 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,8 @@ CCoarseMeshManager::CCoarseMeshManager()
 	// ** Init texture
 
 	_Texture=new CTextureFile ();
+	_TextureCategory= new ITexture::CTextureCategory("COARSE MESH MANAGER");
+	_Texture->setTextureCategory(_TextureCategory);
 
 	// ** Init material
 

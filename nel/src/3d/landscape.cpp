@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.145 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: landscape.cpp,v 1.146 2004/04/08 19:48:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -267,7 +267,12 @@ CLandscape::CLandscape() :
 
 	_TileCallback =	NULL;
 	_LockCount = 0;
+
+	_TextureTileCategory= new ITexture::CTextureCategory("LANDSCAPE TILES");
+	_TextureFarCategory= new ITexture::CTextureCategory("LANDSCAPE FAR");
+	_TextureNearCategory= new ITexture::CTextureCategory("LANDSCAPE LIGHTMAP NEAR");
 }
+
 // ***************************************************************************
 CLandscape::~CLandscape()
 {
@@ -1667,6 +1672,7 @@ ITexture		*CLandscape::findTileTexture(const std::string &textName)
 		text->setWrapS(ITexture::Clamp);
 		text->setWrapT(ITexture::Clamp);
 		text->setUploadFormat(ITexture::DXTC5);
+		text->setTextureCategory(_TextureTileCategory);
 	}
 	return text;
 }
@@ -1992,6 +1998,7 @@ uint		CLandscape::getTileLightMap(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHT
 	{
 		CTextureNear	*text= new CTextureNear(TextureNearSize);
 		TSPRenderPass	newPass= new CPatchRdrPass;
+		text->setTextureCategory(_TextureNearCategory);
 
 		newPass->TextureDiffuse= text;
 
@@ -2153,6 +2160,7 @@ CPatchRdrPass*	CLandscape::getFarRenderPass(CPatch* pPatch, uint farIndex, float
 
 		// Fill the render pass
 		CTextureFar *pTextureFar=new CTextureFar;
+		pTextureFar->setTextureCategory(_TextureFarCategory);
 
 		// Append this textureFar to the list of TextureFar to updateLighting.
 		if(_ULRootTextureFar==NULL)

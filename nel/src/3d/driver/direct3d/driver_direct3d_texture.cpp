@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.16 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.17 2005/03/02 10:58:43 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -895,6 +895,8 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 			x1 = std::min ((x1 & ~0x3) + 4, std::max ((sint)1, (sint)(d3dtext->Width>>destMipmap)));
 		if (y1 & 0x3)
 			y1 = std::min ((y1 & ~0x3) + 4, std::max ((sint)1, (sint)(d3dtext->Height>>destMipmap)));
+		x1 = std::max(4, x1);
+		y1 = std::max(4, y1);
 	}
 
 	// Size of a line

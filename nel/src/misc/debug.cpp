@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.72 2003/06/30 18:46:51 lecroart Exp $
+ * $Id: debug.cpp,v 1.73 2003/07/09 15:18:27 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -860,6 +860,15 @@ void createDebug (const char *logPath, bool logInFile)
 }
 
 
+/*
+ * Beep (Windows only, no effect elsewhere)
+ */
+void beep( uint freq, uint duration )
+{
+#ifdef NL_OS_WINDOWS
+	Beep( freq, duration );
+#endif
+}
 
 
 //

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.53 2003/07/08 11:48:15 ledorze Exp $
+ * $Id: debug.h,v 1.54 2003/07/09 15:18:27 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -526,6 +526,11 @@ template<class T, class U>	inline T	type_cast(U o)
 /** Compile time assertion
   */
 #define nlctassert(cond) sizeof(uint[(cond) ? 1 : 0]);
+
+
+// Beep (Windows only, no effect elsewhere)
+void beep( uint freq, uint duration );
+
 
 } // NLMISC
 

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.100 2004/09/22 10:20:30 lecroart Exp $
+ * $Id: debug.cpp,v 1.101 2004/09/23 13:06:23 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1061,8 +1061,6 @@ void beep( uint freq, uint duration )
 // Commands
 //
 
-#if !FINAL_VERSION
-
 NLMISC_CATEGORISED_COMMAND(nel, displayMemlog, "displays the last N line of the log in memory", "[<NbLines>]")
 {
 	uint nbLines;
@@ -1224,6 +1222,9 @@ NLMISC_CATEGORISED_COMMAND(nel, displayFilterWarning, "display filter on Warning
 	WarningLog->displayFilter(log);
 	return true;
 }
+
+
+#if !FINAL_VERSION
 
 // commands to generate different "crash"
 

@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.17 2001/07/24 08:37:23 vizerie Exp $
+ * $Id: register_3d.cpp,v 1.18 2001/07/26 15:28:20 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/texture_file.h"
 #include "3d/texture_mem.h"
 #include "3d/texture_grouped.h"
+#include "3d/texture_cube.h"
 #include "3d/mesh.h"
 #include "3d/mesh_multi_lod.h"
 #include "3d/skeleton_shape.h"
@@ -53,6 +54,7 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CTextureMem);
 		NLMISC_REGISTER_CLASS(CTextureFont);
 		NLMISC_REGISTER_CLASS(CTextureGrouped);
+		NLMISC_REGISTER_CLASS(CTextureCube);
 
 		// Track
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerTCBFloat);

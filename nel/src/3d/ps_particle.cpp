@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.53 2001/12/06 16:50:40 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.54 2001/12/12 10:28:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -772,6 +772,20 @@ CPSMaterial::TBlendingMode CPSMaterial::getBlendingMode(void) const
 // CPSDot implementation //
 ///////////////////////////
 
+/// static members
+
+CVertexBuffer CPSDot::_DotVb;
+CVertexBuffer CPSDot::_DotVbColor;
+
+/// init the vertex buffers
+void CPSDot::initVertexBuffers()
+{
+	_DotVb.setVertexFormat(CVertexBuffer::PositionFlag);
+	_DotVbColor.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag);
+	_DotVb.setNumVertices(dotBufSize);
+	_DotVbColor.setNumVertices(dotBufSize);
+}
+
 void CPSDot::init(void)
 {		
 	_Mat.setLighting(false);	
@@ -800,18 +814,11 @@ void CPSDot::updateMatAndVbForColor(void)
 {
 	if (!_UseColorScheme)
 	{
-		_Vb.setVertexFormat(CVertexBuffer::PositionFlag);		
 		_Mat.setColor(_Color);
 	}
 	else
-	{
-		_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag);
+	{	
 		_Mat.setColor(CRGBA::White);
-	}
-
-	if (_Owner)
-	{
-		resize(_Owner->getMaxSize());
 	}
 }
 
@@ -828,38 +835,24 @@ bool CPSDot::hasOpaqueFaces(void)
 
 
 void CPSDot::resize(uint32 size)
-{
-	_Vb.setNumVertices(size < dotBufSize ? size : dotBufSize);
+{	
 	resizeColor(size);
 }
 
 void CPSDot::draw(bool opaque)
-{
-	
+{	
 	PARTICLES_CHECK_MEM;
 	// we create a vertex buffer that contains all the particles before to show them
 	uint32 size = _Owner->getSize();
-
-
 	if (!size) return;
-
-
-	_Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
-
-	
-	
-	setupDriverModelMatrix();
-	
+	_Owner->incrementNbDrawnParticles(size); // for benchmark purpose		
+	setupDriverModelMatrix();	
 	IDriver *driver = getDriver();
-	driver->activeVertexBuffer(_Vb);		
-
-
-
+	CVertexBuffer &vb = _UseColorScheme ? _DotVbColor : _DotVb;
+	driver->activeVertexBuffer(vb);
 	uint32 leftToDo = size, toProcess;
-
 	TPSAttribVector::iterator it = _Owner->getPos().begin();
 	TPSAttribVector::iterator itEnd;
-
 	do
 	{
 		
@@ -868,15 +861,15 @@ void CPSDot::draw(bool opaque)
 		if (_UseColorScheme)
 		{
 			// compute the colors
-			_ColorScheme->make(_Owner, 0, _Vb.getColorPointer(), _Vb.getVertexSize(), toProcess);
+			_ColorScheme->make(_Owner, 0, vb.getColorPointer(), vb.getVertexSize(), toProcess);
 			itEnd = it + toProcess;
 				
 		
-			uint8    *currPos = (uint8 *) _Vb.getVertexCoordPointer();	
-			uint32 stride = _Vb.getVertexSize();
+			uint8    *currPos = (uint8 *) vb.getVertexCoordPointer();	
+			uint32 stride = vb.getVertexSize();
 			do
 			{
-				CHECK_VERTEX_BUFFER(_Vb, currPos);
+				CHECK_VERTEX_BUFFER(vb, currPos);
 				*((CVector *) currPos) =  *it;	
 				++it ;
 				currPos += stride;
@@ -886,7 +879,7 @@ void CPSDot::draw(bool opaque)
 		else
 		{
 			// there's no color information in the buffer, so we can copy it directly
-			memcpy(_Vb.getVertexCoordPointer(), &(*it), sizeof(CVector) * toProcess);
+			::memcpy(vb.getVertexCoordPointer(), &(*it), sizeof(CVector) * toProcess);
 			it += toProcess;
 		}
 				

@@ -1,7 +1,7 @@
 /** \file cube_grid.h
  * <File description>
  *
- * $Id: cube_grid.h,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: cube_grid.h,v 1.2 2002/02/13 13:55:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -244,8 +244,8 @@ void CCubeGrid<TCell>::compile()
 
 	// Clear the Selection
 	_Selection= NULL;
-	_CurSel= NULL;
-	_NumSels= NULL;
+	_CurSel= 0;
+	_NumSels= 0;
 }
 
 // ***************************************************************************

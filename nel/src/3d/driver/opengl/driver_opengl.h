@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.180 2004/09/02 16:59:53 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.181 2004/09/17 15:05:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -288,6 +288,8 @@ public:
 
 							CDriverGL();
 	virtual					~CDriverGL();
+
+	virtual	bool			isLost() const { return false; } // there's no notion of 'lost device" in OpenGL
 
 	virtual bool			init (uint windowIcon = 0);
 

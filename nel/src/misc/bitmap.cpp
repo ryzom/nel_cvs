@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.34 2003/01/08 15:48:11 boucher Exp $
+ * $Id: bitmap.cpp,v 1.35 2003/01/22 18:27:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2547,8 +2547,8 @@ void	CBitmap::loadSize(NLMISC::IStream &f, uint32 &retWidth, uint32 &retHeight)
 		}
 		
 		//-------------- extracting and testing useful info
-		retWidth = _DDSSurfaceDesc[2];
-		retHeight  = _DDSSurfaceDesc[3];
+		retHeight  = _DDSSurfaceDesc[2];
+		retWidth = _DDSSurfaceDesc[3];
 	}
 	// assuming it's TGA
 	else 

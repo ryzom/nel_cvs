@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.2 2001/05/04 14:44:29 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.3 2001/05/10 08:13:44 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,7 +107,7 @@ void createConnection(CBaseStruct &Base, const CInetAddress &Addr)
 		cc->connect (Addr);
 
 		if (Base.ConnectionCallback != NULL)
-			Base.ConnectionCallback (Base.Name, 0, Base.ConnectionCbArg);
+			Base.ConnectionCallback (Base.Name, cc->getSockId(0), Base.ConnectionCbArg);
 	}
 	catch (ESocketConnectionFailed &e)
 	{
@@ -261,7 +261,7 @@ void CNetManager::addClient (const std::string &serviceName)
 	{
 		// call the user that we are connected
 		if ((*itbm).second.ConnectionCallback != NULL)
-			(*itbm).second.ConnectionCallback (serviceName, 0, (*itbm).second.ConnectionCbArg);
+			(*itbm).second.ConnectionCallback (serviceName, cc->getSockId(0), (*itbm).second.ConnectionCbArg);
 	}
 }
 
@@ -348,7 +348,7 @@ void CNetManager::update ()
 							cc->connect (CInetAddress((*itbm).second.ServiceNames[0]));
 
 							if ((*itbm).second.ConnectionCallback != NULL)
-								(*itbm).second.ConnectionCallback ((*itbm).second.Name, 0, (*itbm).second.ConnectionCbArg);
+								(*itbm).second.ConnectionCallback ((*itbm).second.Name, cc->getSockId(0), (*itbm).second.ConnectionCbArg);
 						}
 						catch (ESocketConnectionFailed &e)
 						{
@@ -357,7 +357,7 @@ void CNetManager::update ()
 						}
 					}
 				}
-			}
+			}	
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file make_fiche_id.cpp
  * 
  *
- * $Id: make_fiche_id.cpp,v 1.1 2002/02/07 16:30:35 coutelas Exp $
+ * $Id: make_fiche_id.cpp,v 1.2 2002/02/12 10:33:56 coutelas Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -40,20 +40,45 @@ using namespace std;
 
 
 
+/**
+ *	TFormId
+ */
+union TFormId
+{
+	uint32		Id;
+	
+	struct
+	{
+		uint32	Type	: 8;
+		uint32	Id		: 24;
+	} FormIDInfos;
+
+	void serial(NLMISC::IStream &f) { f.serial(Id); };
+};
+
+bool operator<(const TFormId& fid1, const TFormId& fid2) { return fid1.Id<fid2.Id; }
+
+
+map<string,TFormId> FormToId;
+map<TFormId,string> IdToForm;
+map<string,uint8> FileTypeToId;
+map<uint8,string> IdToFileType;
+map<uint8,uint32> TypeToLastId;
+sint32 lastFileTypeId = -1;
+
+
+
 //	getInputDirectoryList
 void getInputDirectoryList( int argc, char **argv, list<string>& dirs );
 
-//	getInputDirectoryList
-void readFicheId( string& outputFileName, map<string,uint32>& ficheIds, uint32& lastId );
-
-// makeId
-void makeId( list<string>& dirs, map<string,uint32>& ficheIds, uint32& lastId );
-
 //manageFile
-void manageFile( WIN32_FIND_DATA& findFileData, list<string>& dirs, string& currentDir, map<string,uint32>& ficheIds, uint32& lastId );
+void manageFile( WIN32_FIND_DATA& findFileData, list<string>& dirs, string& currentDir );
 
 // addId
-void addId( string fileName, map<string,uint32>& ficheIds, uint32& lastId );
+void addId( string fileName );
+
+// getFileType
+bool getFileType( string& fileName, string& fileType );
 
 // displayHelp
 void displayHelp();
@@ -102,23 +127,78 @@ void getInputDirectoryList( int argc, char **argv, list<string>& dirs )
 
 
 //-----------------------------------------------
-//	readFicheId
+//	readFormId
 //
 //-----------------------------------------------
-void readFicheId( string& outputFileName, map<string,uint32>& ficheIds, uint32& lastId )
+void readFormId( string& outputFileName )
 {
 	CIFile f;
 	if( f.open( outputFileName ) )
 	{
-		f.serial( lastId );
-		f.serialCont( ficheIds );
-	}
-	else
-	{
-		lastId = 0;
+		f.serialCont( IdToForm );
 	}
 
-} // readFicheId //
+	// init FormToId (associates the form name to its id )
+	map<TFormId,string>::iterator itIF;
+	for( itIF = IdToForm.begin(); itIF != IdToForm.end(); ++itIF )
+	{
+		FormToId.insert( make_pair((*itIF).second,(*itIF).first) );
+	}
+
+	// init FileTypeToId (associates the form type to the form type id)
+	for( itIF = IdToForm.begin(); itIF != IdToForm.end(); ++itIF )
+	{
+		// get the file type from form name
+		TFormId fid = (*itIF).first;
+		string fileType;
+		if( getFileType( (*itIF).second, fileType ) )
+		{
+			// insert the association (file type/file type id)
+			map<string,uint8>::iterator itFT = FileTypeToId.find(fileType);
+			if( itFT != FileTypeToId.end() )
+			{
+				FileTypeToId.insert( make_pair(fileType,fid.FormIDInfos.Type) );
+			}
+		}
+		else
+		{
+			nlinfo("Unknown file type for the file : %s",(*itIF).second.c_str());
+		}
+	}
+	
+	// init IdToFileType (associates the form type id to the form type name)
+	map<string,uint8>::iterator itIFT;
+	for( itIFT = FileTypeToId.begin(); itIFT != FileTypeToId.end(); ++itIFT )
+	{
+		IdToFileType.insert( make_pair((*itIFT).second,(*itIFT).first) );
+	}
+
+	// init TypeToLastId (associates the type id to the last index used for this type)
+	for( itIF = IdToForm.begin(); itIF != IdToForm.end(); ++itIF )
+	{
+		uint8 type = (*itIF).first.FormIDInfos.Type;
+		uint32 id = (*itIF).first.FormIDInfos.Id;
+		map<uint8,uint32>::iterator itTLI = TypeToLastId.find( type );
+		if( itTLI != TypeToLastId.end() )
+		{
+			if( (*itTLI).second < id )
+			{
+				(*itTLI).second = id;
+			}
+		}
+		else
+		{
+			TypeToLastId.insert( make_pair(type,id) );
+		}
+	}
+
+	// init lastFileTypeId
+	if( IdToFileType.begin() != IdToFileType.end() )
+	{
+		lastFileTypeId = (*IdToFileType.rbegin()).first;
+	}
+
+} // readFormId //
 
 
 
@@ -126,7 +206,7 @@ void readFicheId( string& outputFileName, map<string,uint32>& ficheIds, uint32& 
 //	makeId
 //
 //-----------------------------------------------
-void makeId( list<string>& dirs, map<string,uint32>& ficheIds, uint32& lastId )
+void makeId( list<string>& dirs )
 {
 	list<string>::const_iterator itDir;
 	for( itDir = dirs.begin(); itDir != dirs.end(); ++itDir )
@@ -145,7 +225,7 @@ void makeId( list<string>& dirs, map<string,uint32>& ficheIds, uint32& lastId )
 		{
 			do
 			{
-				manageFile( findFileData, dirs, currentDir, ficheIds, lastId );
+				manageFile( findFileData, dirs, currentDir );
 			}
     		while( FindNextFile( hFind, &findFileData ) );
 			FindClose( hFind );
@@ -160,7 +240,7 @@ void makeId( list<string>& dirs, map<string,uint32>& ficheIds, uint32& lastId )
 //	manageFile
 //
 //-----------------------------------------------
-void manageFile( WIN32_FIND_DATA& findFileData, list<string>& dirs, string& currentDir, map<string,uint32>& ficheIds, uint32& lastId )
+void manageFile( WIN32_FIND_DATA& findFileData, list<string>& dirs, string& currentDir )
 {
 	if( strcmp(".",findFileData.cFileName) && strcmp("..",findFileData.cFileName) )
 	{
@@ -172,7 +252,7 @@ void manageFile( WIN32_FIND_DATA& findFileData, list<string>& dirs, string& curr
 		else
 		{
 			cout<<"(F)"<<findFileData.cFileName<<endl;
-			addId( string(findFileData.cFileName), ficheIds, lastId );
+			addId( string(findFileData.cFileName) );
 		}
 	}
 
@@ -184,18 +264,98 @@ void manageFile( WIN32_FIND_DATA& findFileData, list<string>& dirs, string& curr
 //	addId
 //
 //-----------------------------------------------
-void addId( string fileName, map<string,uint32>& ficheIds, uint32& lastId )
+void addId( string fileName )
 {
-	map<string,uint32>::iterator itFch = ficheIds.find( fileName );
-	if( itFch == ficheIds.end() )
+	
+	// if the file is new
+	map<string,TFormId>::iterator itFI = FormToId.find( fileName );
+	if( itFI == FormToId.end() )
 	{
-		lastId++;
-		ficheIds.insert( make_pair(fileName,lastId) );
-	}
+		string fileType;
+		if( getFileType( fileName, fileType ) )
+		{
+			map<string,uint8>::iterator itFTI = FileTypeToId.find( fileType );
+			
+			// if the type of this file is a new type
+			if( itFTI == FileTypeToId.end() )
+			{
+				lastFileTypeId++;
+				FileTypeToId.insert( make_pair(fileType,lastFileTypeId) );
+				IdToFileType.insert( make_pair(lastFileTypeId,fileType) );
+				TypeToLastId.insert( make_pair(lastFileTypeId,0) );
 
+				TFormId fid;
+				fid.FormIDInfos.Type = lastFileTypeId;
+				fid.FormIDInfos.Id = 0;
+
+				FormToId.insert( make_pair(fileName,fid) );
+				IdToForm.insert( make_pair(fid,fileName) );
+			}
+			// else the file type already exist
+			else
+			{
+				// id of the file type
+				uint8 fileTypeId = (*itFTI).second;
+
+				// last id used for this file type
+				map<uint8,uint32>::iterator itTLI = TypeToLastId.find(fileTypeId);
+				nlassert(itTLI != TypeToLastId.end());
+				(*itTLI).second++;
+
+				// add the new association
+				TFormId fid;
+				fid.FormIDInfos.Type = fileTypeId;
+				fid.FormIDInfos.Id = (*itTLI).second;
+
+				FormToId.insert( make_pair(fileName,fid) );
+				IdToForm.insert( make_pair(fid,fileName) );
+			}
+		}
+		else
+		{
+			nlinfo("Unknown file type for the file : %s",fileName.c_str());
+		}
+	}
+	
 } // addId //
 
 
+
+//-----------------------------------------------
+//	getFileType
+//
+//-----------------------------------------------
+bool getFileType( string& fileName, string& fileType )
+{
+	sint idx = fileName.find_last_of(".");
+	if( idx != -1 ) 
+	{
+		fileType = fileName.substr(idx+1,fileName.size()-1);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+} // getFileType //
+
+
+
+//-----------------------------------------------
+//	display
+//
+//-----------------------------------------------
+void display()
+{
+	cout<<"Output :"<<endl;
+	map<TFormId,string>::iterator it1;
+	for( it1 = IdToForm.begin(); it1 != IdToForm.end(); ++it1 )
+	{
+		cout<<"type: "<<(*it1).first.FormIDInfos.Type<<" id: "<<(*it1).first.FormIDInfos.Id<<" file: "<<(*it1).second<<endl;
+	}
+
+} // display //
 
 
 
@@ -223,17 +383,17 @@ void main( int argc, char ** argv )
 	getInputDirectoryList( argc, argv, inputDirs);
 
 	// get the current associations
-	map<string,uint32> ficheIds;
-	uint32 lastId = 0;
-	readFicheId(outputFileName, ficheIds, lastId);
-	
+	readFormId( outputFileName );
+		
 	// make the ids
-	makeId( inputDirs, ficheIds, lastId );
+	makeId( inputDirs );
 
 	// save the new map
 	COFile f( outputFileName );
-	f.serial( lastId );
-	f.serialCont( ficheIds );
+	f.serialCont( IdToForm );
+
+	// display the map
+	display();
 
 } // main //
 

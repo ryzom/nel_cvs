@@ -4,6 +4,7 @@
 
 build_rbank='../../bin/build_rbank.exe'
 build_indoor_rbank='../../bin/build_indoor_rbank.exe'
+build_ig_boxes='../../bin/build_ig_boxes.exe'
 
 # **** Copy ig and shapes
 
@@ -15,8 +16,9 @@ echo -------
 echo --- Generate config script
 echo ------- 
 
+
 # Get arguments
-rbank_bank_name=`cat ../../cfg/config.cfg | grep "rbank_bank_name" | sed -e 's/rbank_bank_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
+rbank_bank_name=`cat ../../cfg/properties.cfg | grep "bank_name" | sed -e 's/bank_name//' | sed -e 's/ //g' | sed -e 's/=//g'  | sed -e 's/"//g'  | sed -e 's/;//g'`
 rbank_scratch_path=`cat ../../cfg/site.cfg | grep "scratch_directory" | sed -e 's/scratch_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`/
 rbank_reduce_surfaces=`cat ../../cfg/config.cfg | grep "rbank_reduce_surfaces" | sed -e 's/rbank_reduce_surfaces//' | sed -e 's/ //g' | sed -e 's/=//g'`
 rbank_smooth_borders=`cat ../../cfg/config.cfg | grep "rbank_smooth_borders" | sed -e 's/rbank_smooth_borders//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -28,6 +30,8 @@ rbank_use_zone_square=`cat ../../cfg/config.cfg | grep "rbank_use_zone_square" |
 rbank_zone_ul=`cat ../../cfg/config.cfg | grep "rbank_zone_ul" | sed -e 's/rbank_zone_ul//' | sed -e 's/ //g' | sed -e 's/=//g'`
 rbank_zone_dr=`cat ../../cfg/config.cfg | grep "rbank_zone_dr" | sed -e 's/rbank_zone_dr//' | sed -e 's/ //g' | sed -e 's/=//g'`
 rbank_rbank_name=`cat ../../cfg/config.cfg | grep "rbank_rbank_name" | sed -e 's/rbank_rbank_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
+rbank_ig_pathes=`cat ../../cfg/config.cfg | grep "rbank_ig_path" | sed -e 's/rbank_ig_path//' | sed -e 's/ //g' | sed -e 's/=//g'`
+rbank_shape_pathes=`cat ../../cfg/config.cfg | grep "rbank_shape_path" | sed -e 's/rbank_shape_path//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Make some directories
 mkdir $rbank_scratch_path"retrievers"
@@ -36,6 +40,43 @@ mkdir $rbank_scratch_path"smooth"
 mkdir $rbank_scratch_path"smooth/preproc"
 mkdir $rbank_scratch_path"raw"
 mkdir $rbank_scratch_path"raw/preproc"
+
+# Global options
+build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+
+# ***** Build the bbox file
+
+# Remove the config file
+rm build_ig_boxes.cfg
+
+# List ig pathes
+echo Pathes = \{ >> build_ig_boxes.cfg
+for i in $rbank_ig_pathes ; do
+	echo \"$i\"\, >> build_ig_boxes.cfg
+done
+for i in $rbank_shape_pathes ; do
+	echo \"$i\"\, >> build_ig_boxes.cfg
+done
+echo \}\; >> build_ig_boxes.cfg
+
+# List igs
+echo IGs = \{ >> build_ig_boxes.cfg
+for i in $rbank_ig_pathes ; do
+	cd $i
+	list_ig=`ls -1 *.ig`
+	cd $build_gamedata_directory"/processes/rbank"
+	for j in $list_ig ; do
+		n=`echo $j | sed -e 's/.ig//'`
+		echo \"$n\"\, >> build_ig_boxes.cfg
+	done
+done
+echo \}\; >> build_ig_boxes.cfg
+echo Output = \"bbox/temp.bbox\"\; >> build_ig_boxes.cfg
+
+$build_ig_boxes
+
+# ***** Build the rbank, gr files
 
 # Copy template
 `cat cfg/template.cfg | sed -e "s&rbank_bank_name&$rbank_bank_name&g" | sed -e "s&rbank_scratch_path&$rbank_scratch_path&g" | sed -e "s&rbank_reduce_surfaces&$rbank_reduce_surfaces&g" | sed -e "s&rbank_smooth_borders&$rbank_smooth_borders&g" | sed -e "s&rbank_compute_elevation&$rbank_compute_elevation&g" | sed -e "s&rbank_compute_levels&$rbank_compute_levels&g" | sed -e "s&rbank_link_elements&$rbank_link_elements&g" | sed -e "s&rbank_cut_edges&$rbank_cut_edges&g" | sed -e "s&rbank_use_zone_square&$rbank_use_zone_square&g" | sed -e "s&rbank_zone_ul&$rbank_zone_ul&g" | sed -e "s&rbank_zone_dr&$rbank_zone_dr&g" > moulinette.cfg`
@@ -52,6 +93,18 @@ done
 
 # Close the file
 echo "};" >> moulinette.cfg
+echo " " >> moulinette.cfg
+
+# List ig pathes
+echo Pathes = \{ >> moulinette.cfg
+for i in $rbank_ig_pathes ; do
+	echo \"$i\"\, >> moulinette.cfg
+done
+for i in $rbank_shape_pathes ; do
+	echo \"$i\"\, >> moulinette.cfg
+done
+echo \}\; >> moulinette.cfg
+
 echo " " >> moulinette.cfg
 
 # Log error
@@ -117,7 +170,7 @@ $build_rbank -t -m -l -G
 
 
 
-# *** Build the cfg for interiors
+# ***** Build the cfg for interiors
 
 rm build_indoor_rbank.cfg
 echo MeshPath = \"cmb/\"\; >> build_indoor_rbank.cfg

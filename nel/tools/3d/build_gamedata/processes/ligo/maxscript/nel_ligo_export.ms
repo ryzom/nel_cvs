@@ -17,6 +17,41 @@ NEL3D_APPDATA_IGNAME = 1423062564			-- string : name of the Instance Group
 
 tagThisFile = true
 
+-- Unhide category
+fn unhidecategory =
+(
+	if (geometry.count > 0) then
+	(
+		unhide geometry[1]
+		if (geometry[1].ishidden == true) then
+			max hide object toggle
+	)
+	if (shapes.count > 0) then
+	(
+		unhide shapes[1]
+		if (shapes[1].ishidden == true) then
+			max hide shape toggle
+	)
+	if (lights.count > 0) then
+	(
+		unhide lights[1]
+		if (lights[1].ishidden == true) then
+			max hide light toggle
+	)
+	if (cameras.count > 0) then
+	(
+		unhide cameras[1]
+		if (cameras[1].ishidden == true) then
+			max hide camera toggle
+	)
+	if (helpers.count > 0) then
+	(
+		unhide helpers[1]
+		if (helpers[1].ishidden == true) then
+			max hide helper toggle
+	)
+)
+
 -- Lower case
 fn lowercase instring =
 (  
@@ -458,6 +493,10 @@ try
 
 				nlerror ("Scanning file "+curFileName+" ...")
 				loadMaxFile curFileName
+
+				-- Unhide category
+				unhidecategory()
+
 				DeleteDebugMarkersFn ()
 				selectAllPatch ()
 				-- nlerror ("EXPORT "+ (getFilenameFile curFileName))
@@ -590,6 +629,10 @@ try
 
 				nlerror ("Scanning file "+curFileName+" ...")
 				loadMaxFile curFileName
+
+				-- Unhide category
+				unhidecategory()
+
 				DeleteDebugMarkersFn ()
 				selectAllPatch ()
 				-- nlerror ("EXPORT "+ (getFilenameFile curFileName))
@@ -794,6 +837,10 @@ try
 
 				nlerror ("Scanning file "+curFileName+" ...")
 				loadMaxFile curFileName
+
+				-- Unhide category
+				unhidecategory()
+
 				DeleteDebugMarkersFn ()
 				selectAllPatch ()
 				-- nlerror ("EXPORT "+ (getFilenameFile curFileName))

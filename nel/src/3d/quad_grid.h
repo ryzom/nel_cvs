@@ -1,7 +1,7 @@
 /** \file 3d/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.9 2004/10/21 17:36:08 distrib Exp $
+ * $Id: quad_grid.h,v 1.10 2004/12/08 10:36:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,15 +85,21 @@ public:
 	/// dtor.
 	~CQuadGrid();
 
-	// Copy ctor and operator= are not possible
+	// operator= is possible only if the quadgrid copied is empty (not init)
 	CQuadGrid<T>	&operator=(const CQuadGrid<T> &o)
 	{
-		nlstop;
+		// operator= is possible only if both quadgrid have not been init (dummy empty copy)
+		nlassert(o._Grid.empty() && _Grid.empty());
+		// then no-op
 		return *this;
 	}
-	CQuadGrid(const CQuadGrid<T> &o)
+	// Copy ctor just init block memory setup (not data), but work only if the quadgrid copied is empty
+	CQuadGrid(const CQuadGrid<T> &o) : _NodeBlockMemory(o._NodeBlockMemory)
 	{
-		nlstop;
+		// opertaor= is possible only if the other quadgrid has not been create()-ed (dummy empty copy)
+		nlassert(o._Grid.empty());
+		// then no-op, but init default
+		initCons();
 	}
 
 	/// \name Initialization
@@ -270,6 +276,9 @@ private:// Atttributes.
 
 private:// Methods.
 
+	// default constor imp
+	void		initCons();
+
 	// link a node to a root: Selected or UnSelected list
 	void		linkToRoot(CBaseNode &root, CBaseNode *ptr)
 	{
@@ -439,6 +448,11 @@ public:
 // ***************************************************************************
 template<class T>	CQuadGrid<T>::CQuadGrid(uint memoryBlockSize) : 
 	_NodeBlockMemory(memoryBlockSize)
+{
+	initCons();
+}
+// ***************************************************************************
+template<class T>	void		CQuadGrid<T>::initCons()
 {
 	_SizePower=4;
 	_Size=1<<_SizePower;

@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.3 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.4 2002/02/21 17:36:21 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,7 +118,10 @@ void CPSRibbonLookAt::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAn
 {	
 	if (pass == PSMotion)
 	{		
-		updateGlobals();		
+		if (!_Parametric)
+		{
+			updateGlobals();
+		}
 	}
 	else
 	if (

@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.h
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.h,v 1.2 2002/02/20 11:20:05 vizerie Exp $
+ * $Id: ps_ribbon_look_at.h,v 1.3 2002/02/21 17:36:21 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/ps_ribbon_base.h"
 #include "3d/vertex_buffer.h"
 #include "3d/primitive_block.h"
+#include <hash_map>
 
 
 namespace NL3D 
@@ -141,7 +142,7 @@ private:
 				CVertexBuffer		VB;
 				CPrimitiveBlock		PB;
 			};
-			typedef std::map<uint, CVBnPB> TVBMap;
+			typedef std::hash_map<uint, CVBnPB> TVBMap;
 
 			static TVBMap					_VBMap;			  // index buffers with no color
 			static TVBMap					_ColoredVBMap;    // index buffer + colors			

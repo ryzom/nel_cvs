@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: log.cpp,v 1.4 2000/10/09 08:46:29 cado Exp $
+ * $Id: log.cpp,v 1.5 2000/10/09 10:37:12 lecroart Exp $
  *
  * Implementation for CLog
  */
@@ -20,6 +20,7 @@
 
 #include "nel/misc/displayer.h"
 #include "nel/misc/log.h"
+#include "nel/misc/debug.h"
 #include "nel/net/base_socket.h"
 #include "nel/net/service.h"
 #include "nel/net/inet_address.h"
@@ -216,7 +217,7 @@ string CLog::priorityStr() const
 		case LOG_ERROR : return "ERR";
 		case LOG_STAT : return "STT";
 		case LOG_ASSERT : return "AST";
-//		default: nlstop;
+		default: nlstop; return "<Unknown>";
 	}
 }
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: config_file.cpp,v 1.6 2000/10/06 10:27:37 lecroart Exp $
+ * $Id: config_file.cpp,v 1.7 2000/10/09 10:37:12 lecroart Exp $
  *
  * Implementation of CConfigFile.
  */
@@ -106,6 +106,7 @@ int CConfigFile::CVar::size ()
 
 CConfigFile::~CConfigFile ()
 {
+	if (_ConfigFiles.size () == 0) return;
 	vector<CConfigFile *>::iterator it = find (_ConfigFiles.begin (), _ConfigFiles.end (), this);
 	if (it != _ConfigFiles.end ())
 	{

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.cpp,v 1.8 2000/10/06 15:44:13 cado Exp $
+ * $Id: debug.cpp,v 1.9 2000/10/09 10:37:12 lecroart Exp $
  *
  * Debug
  */
@@ -73,7 +73,7 @@ CLog ErrorLog( LOG_ERROR, true );
 CLog WarningLog( LOG_WARNING, true );
 CLog InfoLog( LOG_INFO, true );
 CLog DebugLog( LOG_DEBUG, false );
-CLog AssertLog( LOG_STAT, true );
+CLog AssertLog( LOG_ASSERT, true );
 
 CStdDisplayer sd;
 

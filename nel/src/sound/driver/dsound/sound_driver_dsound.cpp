@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.36 2004/12/13 17:51:41 berenguier Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.37 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@
 #include "stddsound.h"
 #include "../sound_driver.h"
 
-#include <math.h>
+#include <cmath>
 #include <eax.h>
 
 #include "nel/misc/hierarchical_timer.h"

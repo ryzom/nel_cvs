@@ -1,7 +1,7 @@
 /** \file misc/heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.13 2004/11/15 10:25:04 lecroart Exp $
+ * $Id: heap_allocator.cpp,v 1.14 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,7 @@
 #	include <sys/types.h>
 #	include <sys/stat.h>
 #	include <fcntl.h>
-#	include <errno.h>
+#	include <cerrno>
 #endif // NL_OS_WINDOWS
 
 #include <set>

@@ -1,7 +1,7 @@
 /** \file fast_floor.h
  * TODO: File description
  *
- * $Id: fast_floor.h,v 1.3 2004/11/15 10:24:24 lecroart Exp $
+ * $Id: fast_floor.h,v 1.4 2005/01/31 13:50:53 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_FAST_FLOOR_H
 
 #include "nel/misc/types_nl.h"
-#include <math.h>
+#include <cmath>
 
 namespace NLMISC
 {					  
@@ -37,7 +37,7 @@ namespace NLMISC
 // TODO: fix that
 #if defined(NL_OS_WINDOWS) && defined(NL_COMP_VC6)
 
-#include <float.h>
+#include <cfloat>
 
 // The magic constant value. support both positive and negative numbers.
 extern double	OptFastFloorMagicConst ; 

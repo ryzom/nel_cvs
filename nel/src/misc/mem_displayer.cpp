@@ -1,7 +1,7 @@
 /** \file mem_displayer.cpp
  * TODO: File description
  *
- * $Id: mem_displayer.cpp,v 1.15 2004/11/15 10:25:04 lecroart Exp $
+ * $Id: mem_displayer.cpp,v 1.16 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "nel/misc/types_nl.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include <iostream>
 #include <fstream>

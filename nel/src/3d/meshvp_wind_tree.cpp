@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.cpp
  * TODO: File description
  *
- * $Id: meshvp_wind_tree.cpp,v 1.13 2004/11/15 10:24:44 lecroart Exp $
+ * $Id: meshvp_wind_tree.cpp,v 1.14 2005/01/31 13:51:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "3d/mesh_base_instance.h"
 #include "3d/scene.h"
 #include "3d/driver.h"
-#include <math.h>
+#include <cmath>
 #include "nel/misc/common.h"
 #include "3d/render_trav.h"
 

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.76 2005/01/20 17:54:25 berenguier Exp $
+ * $Id: debug.h,v 1.77 2005/01/31 13:50:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_DEBUG_H
 #define NL_DEBUG_H
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "nel/misc/common.h"
 #include "nel/misc/log.h"

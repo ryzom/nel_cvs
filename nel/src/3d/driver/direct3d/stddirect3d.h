@@ -1,7 +1,7 @@
 /** \file stddirect3d.h
  * Direct 3d driver implementation
  *
- * $Id: stddirect3d.h,v 1.2 2004/09/17 15:03:35 vizerie Exp $
+ * $Id: stddirect3d.h,v 1.3 2005/01/31 13:52:39 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -27,10 +27,10 @@
 #include "nel/misc/types_nl.h"
 
 // System includes
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <time.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
+#include <ctime>
 #include <string>
 #include <vector>
 #include <list>

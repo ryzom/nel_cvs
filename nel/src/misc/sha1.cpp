@@ -25,7 +25,7 @@
  *      implementation only works with messages with a length that is
  *      a multiple of the size of an 8-bit character.
  *
- * $Id: sha1.cpp,v 1.4 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: sha1.cpp,v 1.5 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,8 +53,8 @@
 
 #include "stdmisc.h"
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include <string>
 #include <map>
 #include <vector>

@@ -1,7 +1,7 @@
 /** \file cpu_time_stat.cpp
  * Timing utilities (only support for unixes)
  *
- * $Id: cpu_time_stat.cpp,v 1.3 2004/12/28 12:46:07 lecroart Exp $
+ * $Id: cpu_time_stat.cpp,v 1.4 2005/01/31 13:52:39 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -33,7 +33,7 @@
 #include <string>
 #include <vector>
 
-#include <stdio.h>
+#include <cstdio>
 
 #ifdef NL_OS_UNIX
 #include <unistd.h>

@@ -1,7 +1,7 @@
 /** \file memory_common.h
  * Common definition for memory project
  *
- * $Id: memory_common.h,v 1.4 2004/11/15 10:25:00 lecroart Exp $
+ * $Id: memory_common.h,v 1.5 2005/01/31 13:52:39 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -39,7 +39,7 @@
 // Do not force MSVC library name
 #define _STLP_DONT_FORCE_MSVC_LIB_NAME
 
-#include <assert.h>
+#include <cassert>
 
 // Operating systems definition
 

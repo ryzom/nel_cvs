@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.39 2005/01/04 18:26:37 cado Exp $
+ * $Id: sock.cpp,v 1.40 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@
 #	include <arpa/inet.h>
 #	include <netdb.h>
 #	include <fcntl.h>
-#	include <errno.h>
+#	include <cerrno>
 
 #	define SOCKET_ERROR -1
 #	define INVALID_SOCKET -1

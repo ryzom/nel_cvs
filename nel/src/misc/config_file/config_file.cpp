@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.63 2004/11/05 15:10:31 berenguier Exp $
+ * $Id: config_file.cpp,v 1.64 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 //#include "../stdmisc.h"
 
-#include <time.h>
+#include <ctime>
 #include <sys/types.h>
 #include <sys/stat.h>
 

@@ -1,7 +1,7 @@
 /** \file water_height_map.cpp
  * TODO: File description
  *
- * $Id: water_height_map.cpp,v 1.12 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: water_height_map.cpp,v 1.13 2005/01/31 13:51:41 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/vector_2f.h"
 #include <algorithm>
-#include <math.h>
+#include <cmath>
 
 
 

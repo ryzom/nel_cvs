@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.67 2004/12/24 13:18:45 vuarand Exp $
+ * $Id: common.cpp,v 1.68 2005/01/31 13:52:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,9 +32,9 @@
 #  undef max
 #elif defined NL_OS_UNIX
 #  include <unistd.h>
-#  include <string.h>
-#  include <errno.h>
-#  include <signal.h>
+#  include <cstring>
+#  include <cerrno>
+#  include <csignal>
 #  include <pthread.h>
 #endif
 

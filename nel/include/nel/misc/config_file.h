@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.41 2004/10/26 13:48:56 lecroart Exp $
+ * $Id: config_file.h,v 1.42 2005/01/31 13:50:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 
 #include <vector>
 #include <string>
-#include <stdio.h>
+#include <cstdio>
 
 namespace NLMISC
 {

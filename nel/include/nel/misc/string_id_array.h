@@ -1,7 +1,7 @@
 /** \file string_id_array.h
  * Container that provides associations between string and integer
  *
- * $Id: string_id_array.h,v 1.14 2002/01/30 10:07:36 lecroart Exp $
+ * $Id: string_id_array.h,v 1.15 2005/01/31 13:50:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 
-#include <math.h>
+#include <cmath>
 #include <string>
 #include <vector>
 #include <set>

@@ -1,7 +1,7 @@
 /** \file 3d/zone.h
  * TODO: File description
  *
- * $Id: zone.h,v 1.24 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: zone.h,v 1.25 2005/01/31 13:51:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@
 #include "3d/bezier_patch.h"
 #include "3d/point_light_named.h"
 #include "3d/point_light_named_array.h"
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 #include <map>
 

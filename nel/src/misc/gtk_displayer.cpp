@@ -1,7 +1,7 @@
 /** \file gtk_displayer.cpp
  * Gtk Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: gtk_displayer.cpp,v 1.6 2003/05/13 16:27:54 lecroart Exp $
+ * $Id: gtk_displayer.cpp,v 1.7 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <signal.h>
+#include <csignal>
 
 #include "nel/misc/path.h"
 #include "nel/misc/command.h"

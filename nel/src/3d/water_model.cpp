@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * TODO: File description
  *
- * $Id: water_model.cpp,v 1.50 2005/01/20 14:17:10 berenguier Exp $
+ * $Id: water_model.cpp,v 1.51 2005/01/31 13:51:41 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1965,8 +1965,8 @@ void CWaterModel::updateDiffuseMapMatrix(bool force /* = false*/)
 // ***************************************************************************
 void CWaterModel::debugDumpMem(void* &clippedPolyBegin, void* &clippedPolyEnd)
 {
-	clippedPolyBegin= (void*)(_ClippedPoly.Vertices.begin());
-	clippedPolyEnd= (void*)(_ClippedPoly.Vertices.end());
+	clippedPolyBegin= (void*)(&*_ClippedPoly.Vertices.begin());
+	clippedPolyEnd= (void*)(&*_ClippedPoly.Vertices.end());
 }
 
 // ***************************************************************************

@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.22 2005/01/18 18:59:54 miller Exp $
+ * $Id: sstring.h,v 1.23 2005/01/31 13:50:53 lecroart Exp $
  */
 
 
@@ -14,7 +14,7 @@
 
 #include <string>
 #include <vector>
-#include <stdio.h>
+#include <cstdio>
 
 #include "nel/misc/stream.h"
 #include "nel/misc/path.h"

@@ -1,7 +1,7 @@
 /** \file sound_driver_fmod.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_fmod.cpp,v 1.8 2004/12/13 17:52:58 berenguier Exp $
+ * $Id: sound_driver_fmod.cpp,v 1.9 2005/01/31 13:52:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #include "stdfmod.h"
 #include "../sound_driver.h"
 
-#include <math.h>
+#include <cmath>
 #include <eax.h>
 
 #include "nel/misc/hierarchical_timer.h"

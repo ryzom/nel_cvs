@@ -1,7 +1,7 @@
 /** \file resource_ptr.h
  * CResourcePtr class.
  *
- * $Id: resource_ptr.h,v 1.3 2004/11/17 17:00:59 corvazier Exp $
+ * $Id: resource_ptr.h,v 1.4 2005/01/31 13:50:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/smart_ptr.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 namespace NLMISC
 {

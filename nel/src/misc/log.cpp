@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.58 2004/09/22 18:22:41 distrib Exp $
+ * $Id: log.cpp,v 1.59 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,8 +32,8 @@
 #include <unistd.h>
 #endif
 
-#include <time.h>
-#include <stdarg.h>
+#include <ctime>
+#include <cstdarg>
 
 #include "nel/misc/displayer.h"
 #include "nel/misc/log.h"

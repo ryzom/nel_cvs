@@ -1,7 +1,7 @@
 /** \file vectord.h
  * CVectorD class
  *
- * $Id: vectord.h,v 1.4 2003/10/24 13:27:40 vizerie Exp $
+ * $Id: vectord.h,v 1.5 2005/01/31 13:50:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_VECTORD_H
 #define NL_VECTORD_H
 
-#include	<math.h>
+#include	<cmath>
 #include	"nel/misc/vector.h"
 
 

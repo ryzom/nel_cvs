@@ -1,7 +1,7 @@
 /** \file tcp_sock.cpp
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.cpp,v 1.7 2002/02/28 15:22:50 lecroart Exp $
+ * $Id: tcp_sock.cpp,v 1.8 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <errno.h>
+#include <cerrno>
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
 #define ERROR_NUM errno

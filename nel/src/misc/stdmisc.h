@@ -1,9 +1,9 @@
 
 #include "nel/misc/types_nl.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
 
 #include <string>
 #include <vector>

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.83 2004/12/13 17:50:43 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.84 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,53 +24,54 @@
  */
 
 #include "stdsound.h"
+
+#include <iomanip>
+
 #include "nel/memory/memory_manager.h"
+
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/progress_callback.h"
 #include "nel/misc/big_file.h"
-
-#include "simple_sound.h"
-#include "complex_sound.h"
-#include "driver/buffer.h"
-#include "sample_bank.h"
-#include "sound_bank.h"
-#include "background_sound_manager.h"
-#include "simple_source.h"
-#include "complex_source.h"
-#include "background_source.h"
-#include "clustered_sound.h"
-#include "background_sound_manager.h"
-#include "music_sound_manager.h"
-#include "music_sound.h"
-#include "music_source.h"
-
-#include "nel/georges/u_form_loader.h"
-#include "nel/georges/u_form.h"
-#include "nel/georges/u_form_elm.h"
-#include "nel/georges/load_form.h"
-
-
-#include "nel/misc/file.h"
-#include "nel/misc/path.h"
 #include "nel/misc/time_nl.h"
 #include "nel/misc/command.h"
-#include "nel/misc/progress_callback.h"
-#include "3d/scene_user.h"
-#include "driver/sound_driver.h"
+#include "nel/misc/file.h"
+#include "nel/misc/path.h"
 
+#include "nel/georges/u_form_loader.h"
+#include "nel/georges/u_form_elm.h"
+#include "nel/georges/load_form.h"
+#include "nel/georges/u_form.h"
+
+#include "3d/scene_user.h"
+
+#include "driver/sound_driver.h"
+#include "driver/buffer.h"
+
+#include "background_sound_manager.h"
+#include "background_sound_manager.h"
+#include "music_sound_manager.h"
+#include "background_source.h"
+#include "clustered_sound.h"
+#include "complex_source.h"
+#include "simple_source.h"
+#include "complex_sound.h"
 #include "context_sound.h"
-#include <iomanip.h>
+#include "music_source.h"
+#include "simple_sound.h"
+#include "music_sound.h"
+#include "sample_bank.h"
+#include "sound_bank.h"
 
 #if EAX_AVAILABLE == 1
 # include <eax.h>
 #endif
 
-
+using namespace std;
 
 
 
 using namespace NLMISC;
 
-using namespace std;
 
 
 namespace NLSOUND {

@@ -6,7 +6,7 @@
  * Pkoi? : pour optimiser la lecture/ecriture (plus de if du tout). Plus rapide pour olivier de faire des copies
  * de messages (brut) que de se taper un if dans le CMessage.
  *
- * $Id: stream_inline.h,v 1.27 2004/11/15 11:18:54 legros Exp $
+ * $Id: stream_inline.h,v 1.28 2005/01/31 13:50:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #ifndef NL_STREAM_INLINE_H
 #define NL_STREAM_INLINE_H
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "nel/misc/debug.h"
 

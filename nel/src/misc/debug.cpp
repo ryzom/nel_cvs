@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.107 2005/01/20 17:56:10 berenguier Exp $
+ * $Id: debug.cpp,v 1.108 2005/01/31 13:52:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,12 +46,12 @@
 #	define getcwd(_a, _b) (_getcwd(_a,_b))
 #elif defined NL_OS_UNIX
 #	include <unistd.h>
-#	include <stdio.h>
-#	include <stdlib.h>
+#	include <cstdio>
+#	include <cstdlib>
 #	define IsDebuggerPresent() false
 #endif
 
-#include <stdarg.h>
+#include <cstdarg>
 #include <iostream>
 
 using namespace std;

@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.cpp,v 1.94 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: driver.cpp,v 1.95 2005/01/31 13:51:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@
 #include "3d/vertex_buffer.h"
 #include "nel/misc/algo.h"
 
-//#include <stdio.h>
+//#include <cstdio>
 
 using namespace NLMISC;
 using namespace std;

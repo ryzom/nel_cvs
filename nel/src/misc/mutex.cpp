@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.39 2003/03/31 14:04:12 cado Exp $
+ * $Id: mutex.cpp,v 1.40 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -307,7 +307,7 @@ void CFairMutex::leave()
 #elif defined NL_OS_UNIX
 
 #include <pthread.h>
-#include <errno.h>
+#include <cerrno>
 #include <unistd.h>
 
 #include <sys/types.h>

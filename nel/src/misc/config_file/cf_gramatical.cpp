@@ -37,7 +37,7 @@
 #pragma warning (disable : 4786)
 #endif // NL_OS_WINDOWS
 
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 #include <string>
 
@@ -113,7 +113,7 @@ int yyerror (const char *);
 typedef union	{
 			cf_value Val;
 		} YYSTYPE;
-#include <stdio.h>
+#include <cstdio>
 
 #ifndef __cplusplus
 #ifndef __STDC__

@@ -1,7 +1,7 @@
 /** \file bitmap_png.cpp
  * Class managing bitmaps (complementary file in order to keep bitmap.cpp as clean as possible
  *
- * $Id: bitmap_png.cpp,v 1.3 2004/08/31 17:39:47 boucher Exp $
+ * $Id: bitmap_png.cpp,v 1.4 2005/01/31 13:52:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "nel/misc/file.h"
 #include "nel/misc/dynloadlib.h"
 #include "nel/misc/bitmap.h"
-#include <setjmp.h>
+#include <csetjmp>
 
 using namespace std;
 

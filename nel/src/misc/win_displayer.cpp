@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.33 2004/04/05 07:52:19 corvazier Exp $
+ * $Id: win_displayer.cpp,v 1.34 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,17 +31,17 @@
 #include <fstream>
 //#include <sstream>
 #include <iomanip>
-#include <signal.h>
-#include <string.h>
+#include <csignal>
+#include <cstring>
 
 #include <windows.h>
 #include <windowsx.h>
 #include <winuser.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #include <richedit.h>
 #include <commctrl.h>
-#include <time.h>
+#include <ctime>
 
 #include "nel/misc/path.h"
 #include "nel/misc/command.h"

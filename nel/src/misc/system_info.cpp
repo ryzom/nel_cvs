@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * TODO: File description
  *
- * $Id: system_info.cpp,v 1.31 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: system_info.cpp,v 1.32 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 #	include <sys/stat.h>
 #	include <fcntl.h>
 #	include <unistd.h>
-#	include <errno.h>
+#	include <cerrno>
 #endif
 
 #include "nel/misc/system_info.h"

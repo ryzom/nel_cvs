@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.16 2005/01/27 15:23:22 vuarand Exp $
+ * $Id: ligo_config.cpp,v 1.17 2005/01/31 13:52:39 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include <nel/misc/path.h>
 #include <nel/misc/file.h>
 
-#include <stdlib.h>
+#include <cstdlib>
 
 using namespace std;
 using namespace NLMISC;

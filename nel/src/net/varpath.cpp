@@ -1,7 +1,7 @@
 /** \file varpath.cpp
  * use to manage variable path (ie: [serv1,serv2].*.*.var)
  *
- * $Id: varpath.cpp,v 1.8 2004/07/12 13:58:34 miller Exp $
+ * $Id: varpath.cpp,v 1.9 2005/01/31 13:52:40 lecroart Exp $
  *
  */
 
@@ -28,9 +28,9 @@
 
 #include "nel/misc/types_nl.h"
 
-#include <stdio.h>
-#include <ctype.h>
-#include <math.h>
+#include <cstdio>
+#include <cctype>
+#include <cmath>
 
 #include <vector>
 #include <map>

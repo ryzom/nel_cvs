@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * TODO: File description
  *
- * $Id: ps_emitter.cpp,v 1.62 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_emitter.cpp,v 1.63 2005/01/31 13:51:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 #include "3d/ps_emitter.h"
 #include "3d/material.h"
 #include "nel/misc/line.h"

@@ -1,7 +1,7 @@
 /** \file fast_floor.cpp
  * TODO: File description
  *
- * $Id: fast_floor.cpp,v 1.2 2004/11/15 10:25:04 lecroart Exp $
+ * $Id: fast_floor.cpp,v 1.3 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "stdmisc.h"
 
 #include "nel/misc/fast_floor.h"
-#include <math.h>
+#include <cmath>
 
 namespace NLMISC {
 

@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * TODO: File description
  *
- * $Id: ps_zone.cpp,v 1.30 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_zone.cpp,v 1.31 2005/01/31 13:51:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@
 
 #include "3d/particle_system_model.h"
 
-#include <math.h>
+#include <cmath>
 #include <limits>
 
 namespace NL3D {

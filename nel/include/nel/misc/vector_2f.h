@@ -1,7 +1,7 @@
 /** \file vector_2f.h
  * TODO: File description
  *
- * $Id: vector_2f.h,v 1.6 2004/11/15 10:24:28 lecroart Exp $
+ * $Id: vector_2f.h,v 1.7 2005/01/31 13:50:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
-#include <math.h>
+#include <cmath>
 #include "nel/misc/stream.h"
 #include <string>
 

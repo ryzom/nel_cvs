@@ -1,7 +1,7 @@
 /** \file frustum.cpp
  * TODO: File description
  *
- * $Id: frustum.cpp,v 1.15 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: frustum.cpp,v 1.16 2005/01/31 13:51:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "nel/3d/frustum.h"
 #include "nel/misc/matrix.h"
-#include <math.h>
+#include <cmath>
 
 
 using namespace NLMISC;

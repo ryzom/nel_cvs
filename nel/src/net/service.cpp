@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.220 2005/01/27 05:43:59 boucher Exp $
+ * $Id: service.cpp,v 1.221 2005/01/31 13:52:40 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -42,9 +42,9 @@
 #	include <unistd.h>
 #endif
 
-#include <stdlib.h>
-#include <signal.h>
-#include <time.h>
+#include <cstdlib>
+#include <csignal>
+#include <ctime>
 
 #include "nel/misc/config_file.h"
 #include "nel/misc/displayer.h"

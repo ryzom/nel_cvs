@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.78 2005/01/19 08:52:17 vizerie Exp $
+ * $Id: common.h,v 1.79 2005/01/31 13:50:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,20 +28,20 @@
 
 #include "nel/misc/types_nl.h"
 
-#include <ctype.h>
-#include <stdio.h>
-#include <math.h>
+#include <cctype>
+#include <cstdio>
+#include <cmath>
 #include <string>
 #include <vector>
-#include <float.h>
-#include <stdarg.h>
-#include <stdlib.h>
+#include <cfloat>
+#include <cstdarg>
+#include <cstdlib>
 #include <algorithm>
 
 #ifdef NL_OS_WINDOWS
 #	include <process.h>
 #else
-#	include <math.h>
+#	include <cmath>
 #	include <unistd.h>
 #	include <sys/types.h>
 #endif

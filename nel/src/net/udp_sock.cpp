@@ -1,7 +1,7 @@
 /** \file udp_sock.cpp
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.cpp,v 1.14 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: udp_sock.cpp,v 1.15 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <errno.h>
+#include <cerrno>
 //#include <fcntl.h>
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1

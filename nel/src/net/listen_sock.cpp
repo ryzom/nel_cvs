@@ -1,7 +1,7 @@
 /** \file listen_sock.cpp
  * Network engine, layer 0, listening tcp socket
  *
- * $Id: listen_sock.cpp,v 1.9 2003/05/13 16:26:41 lecroart Exp $
+ * $Id: listen_sock.cpp,v 1.10 2005/01/31 13:52:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ typedef sint socklen_t;
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <errno.h>
+#include <cerrno>
 #include <fcntl.h>
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1

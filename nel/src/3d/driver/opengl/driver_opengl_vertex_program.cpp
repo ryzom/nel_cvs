@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.12 2002/08/21 09:37:12 lecroart Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.13 2002/09/04 12:41:36 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -85,6 +85,7 @@ bool CDriverGL::activeVertexProgram (CVertexProgram *program)
 		{
 			// Enable vertex program
 			glEnable (GL_VERTEX_PROGRAM_NV);
+			_VertexProgramEnabled= true;
 
 			// Driver info
 			CVertexProgamDrvInfosGL *drvInfo;
@@ -140,6 +141,7 @@ bool CDriverGL::activeVertexProgram (CVertexProgram *program)
 
 					// Disable vertex program
 					glDisable (GL_VERTEX_PROGRAM_NV);
+					_VertexProgramEnabled= false;
 
 					// Setup not ok
 					return false;
@@ -164,6 +166,7 @@ bool CDriverGL::activeVertexProgram (CVertexProgram *program)
 		{
 			// Disable vertex program
 			glDisable (GL_VERTEX_PROGRAM_NV);
+			_VertexProgramEnabled= false;
 
 			// Ok
 			return true;

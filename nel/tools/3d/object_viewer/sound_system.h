@@ -1,7 +1,7 @@
 /** \file sound_system.h
  * This initilize the sound system
  *
- * $Id: sound_system.h,v 1.9 2003/03/26 10:45:03 boucher Exp $
+ * $Id: sound_system.h,v 1.10 2003/07/30 17:37:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@
 namespace NLSOUND
 {
 	class UAudioMixer;
+	class USource;
 }
 
 namespace NLMISC
@@ -80,6 +81,8 @@ public:
 
 	// spawn a sound at the user position
 	static void play(const std::string &soundName);
+	// create a sound at the user position (don't spawn it)
+	static NLSOUND::USource *create(const std::string &soundName);
 
 	// get the audio mixer, or null if init failed
 	static NLSOUND::UAudioMixer *getAudioMixer(void)	{ return _AudioMixer; }	

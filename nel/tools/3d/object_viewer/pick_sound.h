@@ -1,7 +1,7 @@
 /** \file pick_sound.h
  * Dialog used to select a sound in the sound bank.
  *
- * $Id: pick_sound.h,v 1.6 2003/03/03 13:05:37 boucher Exp $
+ * $Id: pick_sound.h,v 1.7 2003/07/30 17:37:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,12 @@
 #include "nel/misc/string_mapper.h"
 #include <vector>
 #include <string>
+
+
+namespace NLSOUND
+{
+	class USource;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CPickSound dialog
@@ -72,6 +78,7 @@ protected:
 
 	NLMISC::CVector _BackupVel;
 	float _BackupGain;
+	NLSOUND::USource *_CurrSource;
 
 	// Generated message map functions
 	//{{AFX_MSG(CPickSound)
@@ -80,8 +87,11 @@ protected:
 	afx_msg void OnPlaySound();
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnDestroy();
+	afx_msg void OnDblclkList();
+	afx_msg void OnClose();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+	void stopCurrSource();
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.23 2003/07/30 11:19:20 boucher Exp $
+ * $Id: sound_system.cpp,v 1.24 2003/07/30 17:37:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -187,10 +187,32 @@ void CSoundSystem::play(const string &soundName)
 		}
 		else
 		{
-			MessageBox(NULL, "Can't play the sound (perhaps it's contextual sound)", "warning", MB_OK|MB_ICONWARNING );
+			MessageBox(NULL, "Can't play the sound (perhaps it's contextual sound)", "warning", MB_OK|MB_ICONWARNING );			
 		}
-	}
+	}	
 }
+
+USource *CSoundSystem::create(const std::string &soundName)
+{
+	if (_AudioMixer)
+	{
+		NLSOUND::USource *src = _AudioMixer->createSource(CStringMapper::map(soundName), false);
+		if (src)
+		{
+			src->setLooping(false);
+			const CVector &pos = _AudioMixer->getListener()->getPos();
+			src->setPos(pos);
+			src->play();
+			return src;
+		}	
+		else
+		{
+			MessageBox(NULL, "Can't play the sound (perhaps it's contextual sound)", "warning", MB_OK|MB_ICONWARNING );			
+		}	return NULL;
+	}
+	return NULL;
+}	
+
 
 void CSoundSystem::playAnimation(string& name, float lastTime, float curTime, CSoundContext &context)
 {

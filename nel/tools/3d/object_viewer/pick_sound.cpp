@@ -1,7 +1,7 @@
 /** \file pick_sound.cpp
  * Dialog used to select a sound in the sound bank.
  *
- * $Id: pick_sound.cpp,v 1.6 2003/03/03 13:05:37 boucher Exp $
+ * $Id: pick_sound.cpp,v 1.7 2003/07/30 17:37:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,8 +40,9 @@ using namespace std;
 // CPickSound dialog
 
 
+//========================================================================================
 CPickSound::CPickSound(const CPickSound::TNameVect &names, CWnd* pParent /*=NULL*/)
-	: CDialog(CPickSound::IDD, pParent), _Names(names)
+	: CDialog(CPickSound::IDD, pParent), _Names(names), _CurrSource(NULL)
 {
 	
 	//{{AFX_DATA_INIT(CPickSound)
@@ -49,6 +50,7 @@ CPickSound::CPickSound(const CPickSound::TNameVect &names, CWnd* pParent /*=NULL
 }
 
 
+//========================================================================================
 void CPickSound::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -63,14 +65,17 @@ BEGIN_MESSAGE_MAP(CPickSound, CDialog)
 	ON_LBN_SELCHANGE(IDC_LIST1, OnSelchange)
 	ON_BN_CLICKED(IDC_BUTTON1, OnPlaySound)
 	ON_WM_TIMER()
-	ON_BN_CLICKED(IDC_PLAY_SOUND, OnPlaySound)
 	ON_WM_DESTROY()
+	ON_LBN_DBLCLK(IDC_LIST1, OnDblclkList)
+	ON_BN_CLICKED(IDC_PLAY_SOUND, OnPlaySound)
+	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CPickSound message handlers
 
+//========================================================================================
 BOOL CPickSound::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
@@ -107,6 +112,7 @@ BOOL CPickSound::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
+//========================================================================================
 void CPickSound::OnSelchange() 
 {
 	UpdateData();
@@ -118,24 +124,29 @@ void CPickSound::OnSelchange()
 	
 }
 
+//========================================================================================
 void CPickSound::OnPlaySound() 
 {
 	int curSel = m_NameList.GetCurSel();
 	if (curSel == LB_ERR) return;
+	stopCurrSource();
 	CString sName;
 	m_NameList.GetText(curSel, sName);
-	CSoundSystem::play(std::string( (LPCTSTR) sName));	
+	CSoundSystem::create(std::string( (LPCTSTR) sName));
 }
 
+//========================================================================================
 void CPickSound::OnTimer(UINT nIDEvent) 
 {
-	CSoundSystem::poll ();
+	CSoundSystem::poll();
 
 	CDialog::OnTimer(nIDEvent);
 }
 
+//========================================================================================
 void CPickSound::OnDestroy() 
 {
+	stopCurrSource();
 	CDialog::OnDestroy();
 
 	if(_Timer != 0)
@@ -147,4 +158,30 @@ void CPickSound::OnDestroy()
 		CSoundSystem::getAudioMixer()->getListener ()->setGain(_BackupGain);
 		CSoundSystem::getAudioMixer()->getListener ()->setVelocity(_BackupVel);
 	}
+}
+
+//========================================================================================
+void CPickSound::OnDblclkList() 
+{
+	int curSel = m_NameList.GetCurSel();
+	if (curSel == LB_ERR) return;
+	stopCurrSource();
+	CString sName;
+	m_NameList.GetText(curSel, sName);
+	_CurrSource = CSoundSystem::create(std::string( (LPCTSTR) sName));	
+}
+
+//========================================================================================
+void CPickSound::OnClose() 
+{
+	// TODO: Add your message handler code here and/or call default
+	stopCurrSource();
+	CDialog::OnClose();
+}
+
+//========================================================================================
+void CPickSound::stopCurrSource()
+{
+	delete _CurrSource;
+	_CurrSource = NULL;
 }

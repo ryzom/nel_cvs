@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.h,v 1.7 2004/01/07 18:31:48 lecroart Exp $
+ * $Id: clustered_sound.h,v 1.8 2004/06/09 14:09:08 berenguier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -258,15 +258,15 @@ private:
 	std::vector<std::pair<NLMISC::CVector, NLMISC::CVector> >	_AudioPath;
 
 	/// The current cluster playing source indexed with sound group id
-	std::hash_map<NLMISC::TStringId, CClusterSound>		_Sources;
+	std::hash_map<NLMISC::TStringId, CClusterSound, NLMISC::CStringIdHasher>		_Sources;
 
 	/// The sound_group to sound assoc
-	std::hash_map<NLMISC::TStringId, NLMISC::TStringId>	_SoundGroupToSound;
+	std::hash_map<NLMISC::TStringId, NLMISC::TStringId, NLMISC::CStringIdHasher>	_SoundGroupToSound;
 
 	/// The mapping for env name Id to EAX environement number
-	std::hash_map<NLMISC::TStringId, uint>	_IdToEaxEnv;
+	std::hash_map<NLMISC::TStringId, uint, NLMISC::CStringIdHasher>	_IdToEaxEnv;
 	/// The mapping for occlusion material name to material number
-	std::hash_map<NLMISC::TStringId, uint>	_IdToMaterial;
+	std::hash_map<NLMISC::TStringId, uint, NLMISC::CStringIdHasher>	_IdToMaterial;
 	/// The environment name table for init.
 	static char								*_EnvironmentNames[];
 	/// The material name table for init.

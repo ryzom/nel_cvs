@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.18 2003/07/03 15:16:12 boucher Exp $
+ * $Id: sound.h,v 1.19 2004/06/09 14:09:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,7 +44,7 @@ class CSound;
 
 /// Sound names hash map
 //typedef std::hash_map<std::string, CSound*> TSoundMap;
-typedef std::hash_map<NLMISC::TStringId, CSound*> TSoundMap;
+typedef std::hash_map<NLMISC::TStringId, CSound*, NLMISC::CStringIdHasher> TSoundMap;
 
 /// Sound names set (for ambiant sounds)
 typedef std::set<CSound*> TSoundSet;

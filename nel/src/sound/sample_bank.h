@@ -1,7 +1,7 @@
 /** \file sample_bank.h
  * CSampleBank: a set of samples
  *
- * $Id: sample_bank.h,v 1.8 2003/07/03 15:16:12 boucher Exp $
+ * $Id: sample_bank.h,v 1.9 2004/06/09 14:09:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,7 @@ struct eqname
 
 /// Sample names hash map
 //typedef std::hash_map<std::string, IBuffer*> TSampleTable;
-typedef std::hash_map<NLMISC::TStringId, IBuffer*> TSampleTable;
+typedef std::hash_map<NLMISC::TStringId, IBuffer*, NLMISC::CStringIdHasher> TSampleTable;
 
 
 /**
@@ -137,7 +137,7 @@ private:
 	void onUpdate();
 
 //	typedef std::hash_map<std::string, CSampleBank*>				TSampleBankContainer;
-	typedef std::hash_map<NLMISC::TStringId, CSampleBank*>			TSampleBankContainer;
+	typedef std::hash_map<NLMISC::TStringId, CSampleBank*, NLMISC::CStringIdHasher>			TSampleBankContainer;
 
 	// The map off all loaded sample banks
 	static TSampleBankContainer			_Banks;
@@ -174,7 +174,7 @@ private:
 	};
 
 	/// List of virtual sample bank.
-	typedef std::hash_map<NLMISC::TStringId, std::vector<TFilteredBank> >	TVirtualBankCont;
+	typedef std::hash_map<NLMISC::TStringId, std::vector<TFilteredBank>, NLMISC::CStringIdHasher >	TVirtualBankCont;
 	static TVirtualBankCont		_VirtualBanks;
 
 };

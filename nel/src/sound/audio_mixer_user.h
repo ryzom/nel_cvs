@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.46 2004/05/10 14:43:09 corvazier Exp $
+ * $Id: audio_mixer_user.h,v 1.47 2004/06/09 14:09:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -431,7 +431,7 @@ protected:
 	/// Fill a vector of position and mute flag for all playing sound source.
 	virtual void				getPlayingSoundsPos(bool virtualPos, std::vector<std::pair<bool, NLMISC::CVector> > &pos);
 
-	typedef std::hash_map<NLMISC::TStringId, CControledSources>	TUserVarControlsContainer;
+	typedef std::hash_map<NLMISC::TStringId, CControledSources, NLMISC::CStringIdHasher>	TUserVarControlsContainer;
 	/// Container for all user controler and currently controled playing source
 	TUserVarControlsContainer	_UserVarControls;
 

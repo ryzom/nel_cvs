@@ -1,7 +1,7 @@
 /** \file portal.cpp
  * Implementation of a portal
  *
- * $Id: portal.cpp,v 1.10 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: portal.cpp,v 1.11 2004/06/09 14:05:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,7 +61,7 @@ const std::string	&CPortal::getOcclusionModel()
 {
 	return CStringMapper::unmap(_OcclusionModelId);
 }
-uint CPortal::getOcclusionModelId()
+TStringId CPortal::getOcclusionModelId()
 {
 	return _OcclusionModelId;
 }
@@ -73,7 +73,7 @@ const std::string	&CPortal::getOpenOcclusionModel()
 {
 	return CStringMapper::unmap(_OpenOcclusionModelId);
 }
-uint CPortal::getOpenOcclusionModelId()
+TStringId CPortal::getOpenOcclusionModelId()
 {
 	return _OpenOcclusionModelId;
 }

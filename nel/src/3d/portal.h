@@ -1,7 +1,7 @@
 /** \file portal.h
  * Definition of a cluster/portal visibility
  *
- * $Id: portal.h,v 1.6 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: portal.h,v 1.7 2004/06/09 14:05:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,10 +107,10 @@ public:
 	//@{
 	void				setOcclusionModel(const std::string &occlusionModel);
 	const std::string	&getOcclusionModel();
-	uint				getOcclusionModelId();
+	NLMISC::TStringId	getOcclusionModelId();
 	void				setOpenOcclusionModel(const std::string &occlusionModel);
 	const std::string	&getOpenOcclusionModel();
-	uint				getOpenOcclusionModelId();
+	NLMISC::TStringId	getOpenOcclusionModelId();
 	//@}
 
 	/// return true if the portal clip the segment

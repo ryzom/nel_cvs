@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.68 2004/05/14 17:19:15 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.69 2004/06/09 14:09:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2004,7 +2004,7 @@ NLMISC_COMMAND (displaySoundInfo, "Display information about the audio mixer", "
 				const CVector &pos = CAudioMixerUser::instance()->_Tracks[i]->getSource()->getPos();
 				string bufname;
 				if (CAudioMixerUser::instance()->_Tracks[i]->getSource()->getBuffer())
-					bufname = CAudioMixerUser::instance()->_Tracks[i]->getSource()->getBuffer()->getName();
+					bufname = CStringMapper::unmap(CAudioMixerUser::instance()->_Tracks[i]->getSource()->getBuffer()->getName());
 				log.displayNL ("    CUserSource is id %d buffer name '%s' pos %f %f %f", CAudioMixerUser::instance()->_Tracks[i]->getSource()->getSound(), bufname.c_str(), pos.x, pos.y, pos.z);
 			}
 		}

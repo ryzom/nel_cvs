@@ -1,7 +1,7 @@
 /** \file sound_bank.h
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.h,v 1.8 2003/07/03 15:16:12 boucher Exp $
+ * $Id: sound_bank.h,v 1.9 2004/06/09 14:09:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,10 +104,10 @@ private:
 
 	typedef std::hash_set<class CSimpleSound*, THashPtr<CSimpleSound*> >	TSimpleSoundContainer;
 //	typedef std::hash_map<std::string, TSimpleSoundContainer >				TBufferAssocContainer;
-	typedef std::hash_map<NLMISC::TStringId, TSimpleSoundContainer >		TBufferAssocContainer;
+	typedef std::hash_map<NLMISC::TStringId, TSimpleSoundContainer, NLMISC::CStringIdHasher >		TBufferAssocContainer;
 	/// Sound names hash map
 //	typedef std::hash_map<std::string, CSound*>								TSoundTable;
-	typedef std::hash_map<NLMISC::TStringId, CSound*>						TSoundTable;
+	typedef std::hash_map<NLMISC::TStringId, CSound*, NLMISC::CStringIdHasher>						TSoundTable;
 
 	/// Assoc from buffer to sound. Used for sound unloading.
 	TBufferAssocContainer		_BufferAssoc;

@@ -1,0 +1,92 @@
+/**
+
+\page present NeL General Presentation
+\author Vincent Archer <archer@nevrax.org>
+
+\section introd What is NeL?
+
+NeL is a complete gaming platform aimed at running massively multiuser
+entertainment in a 3D environment over the Internet.
+
+\section oss Open Source
+
+NeL is also an Open Source project under the GNU Public License, which means
+all its code is available for everyone to download, examine, use, and modify,
+subject to the usual use restriction attached to any GPL sofware.
+
+\section dev Development
+
+NeL is a commercially funded project which is used to create a massively
+multiplayer role-playing game in a 3D world, Ryzom. This means that there is
+a core of developpers who are already paid to work on NeL, build upon it,
+and use it.
+
+However this doesn't stop there. The words "Open Source" not only mean anyone
+can have a peek at the innards of the platform, but can also build on it, and
+contribute to its development. Any improvement, bug fix, added functionality,
+optimisation is not only possible, but welcome, and will be integrated into
+the original platform.
+
+And should a fork occur, and a variant of NeL appear over there, the
+original platform will integrate the best of what appear in its variants.
+
+NeL is developped and tested under Windows and Linux environments primarily.
+
+\section structure NeL Structure
+
+The platform is actually built upon 4 different components.
+
+\subsection subnel The NeL Library
+
+The NeL library provides the core functionality required to build a
+multiuser platform. It provides everything from 3D representation to AI to
+network services. It is the true heart of the project, and something that
+makes use of the most of the available technologies out there. There is a
+lot of room for additions in NeL, from 3D stuff to database to networking.
+
+\subsection subclient The client
+
+The client uses the NeL library to provide a user interface to a
+multiplayer 3D role-playing game environment. The client is a place of
+high opportunity to modify, improve or port to different environments.
+
+\subsection subserver The server
+
+The server uses the NeL library to provide a multiplayer 3D role-playing
+game environment. The term "server" is misleading, as it represents a server
+in logical terms, i.e. something that provides a service. Actual game servers
+will be referred to as "clusters", since they typically consist of several
+networked systems, acting in close cooperation to run the world simulation
+for the players.
+
+A cluster will scale from a single high-end system that runs the server and
+client at the same time to a handful of basic Linux PCs for mid-size worlds
+and to large high-end multiprocessor racked systems for professional level
+service.
+
+The server architecture offers lots of opportunities for tweaking, ranging
+from the administrative interfaces, the automated monitoring, backups, to
+the physics of the universe simulation, improvements in distributed model and
+other enhancement directly visible by the users of the system.
+
+\subsection subdata The game world
+
+These 3 pieces of software are completed by game data, which describes a
+working world and game system, Ryzom.
+
+Please note that the game data is not software, and thus not offered under the
+GPL, but covered by the more classical copyright laws, and thus fall under the
+umbrella of intellectual property.
+
+As the platform would be useless without a game world, a sample game world
+data is provided, which is enough to run the gaming plaform and enjoy a minimum
+game experience and let the amateur see exactly what he his doing while
+working with NeL.
+
+The game data is produced using a set of tools, notably 3D Studio's Max for all
+3D environment and models, painting programs for textures, spreadsheets for
+datas, and so on. When possible, conversion tools for these software are
+provided to allow people to produce painlessly their own environment and game
+experience.
+
+ */

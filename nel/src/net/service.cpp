@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.19 2000/11/08 14:58:39 lecroart Exp $
+ * $Id: service.cpp,v 1.20 2000/11/09 17:59:47 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -90,9 +90,16 @@ static void SigHandler (int Sig);
 void InitSignal()
 {
 
-	// redirect all signals
+#ifdef NL_DEBUG
+	// in debug mode, we only trap the SIGINT signal
+	signal(Signal[3], SigHandler);
+#else
+	// in release, redirect all signals
 	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
+	{
 		signal(Signal[i], SigHandler);
+	}
+#endif
 }
 
 // This function is called when a signal comes
@@ -190,6 +197,9 @@ sint IService::main (int argc, char **argv)
 		CLog::setLocalHostAndService ( localhost, _Name );
 
 #ifdef NL_OS_WINDOWS
+#ifdef NL_RELEASE
+		InitSignal();
+#else
 		// don't install signal is the application is started in debug mode
 		if (IsDebuggerPresent ())
 		{
@@ -200,6 +210,7 @@ sint IService::main (int argc, char **argv)
 			nlinfo("Running without the debugger");
 			InitSignal();
 		}
+#endif
 #endif
 
 		// Initialize server parameters

@@ -1,7 +1,7 @@
 /** \file i_xml.h
  * Input xml stream
  *
- * $Id: i_xml.h,v 1.1 2001/10/04 16:52:34 corvazier Exp $
+ * $Id: i_xml.h,v 1.2 2001/12/27 10:18:44 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #ifndef NL_I_XML_H
 #define NL_I_XML_H
+
+#ifndef NL_DONT_USE_EXTERNAL_CODE
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
@@ -152,14 +154,14 @@ private:
 	// Current libxml header node opened
 	xmlNodePtr		_CurrentElement;
 
+	// Parser pointer
+	xmlParserCtxtPtr	_Parser;
+
 	// Current node text
 	std::string		_ContentString;
 
 	// Current index in the node string
 	uint			_ContentStringIndex;
-
-	// Parser pointer
-	xmlParserCtxtPtr	_Parser;
 
 	// Error message
 	std::string		_ErrorString;
@@ -168,6 +170,7 @@ private:
 
 } // NLMISC
 
+#endif // NL_DONT_USE_EXTERNAL_CODE
 
 #endif // NL_I_XML_H
 

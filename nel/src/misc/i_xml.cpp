@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.4 2001/11/27 15:58:39 urro Exp $
+ * $Id: i_xml.cpp,v 1.5 2001/12/27 10:18:35 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#ifndef NL_DONT_USE_EXTERNAL_CODE
 
 #include "nel/misc/i_xml.h"
 
@@ -764,3 +766,5 @@ bool CIXml::xmlCommentInternal (const char *comment)
 // ***************************************************************************
 
 } // NLMISC
+
+#endif // NL_DONT_USE_EXTERNAL_CODE

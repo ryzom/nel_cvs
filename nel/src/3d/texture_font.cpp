@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.13 2001/12/06 15:10:48 corvazier Exp $
+ * $Id: texture_font.cpp,v 1.14 2001/12/27 10:19:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,13 +22,15 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-
-#include "3d/texture_font.h"
-#include "nel/misc/common.h"
-#include "nel/misc/rect.h"
 #include <map>
 
+#include "3d/texture_font.h"
+#include "3d/font_generator.h"
+
+#include "nel/misc/common.h"
+#include "nel/misc/rect.h"
 #include "nel/misc/file.h"
+
 
 using namespace std;
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file texture_font.h
  * <File description>
  *
- * $Id: texture_font.h,v 1.6 2001/09/17 14:25:12 besson Exp $
+ * $Id: texture_font.h,v 1.7 2001/12/27 10:19:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,11 +28,11 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/texture.h"
-#include "3d/font_generator.h"
-
 
 namespace NL3D
 {
+
+class CFontGenerator;
 
 #define TEXTUREFONT_NBCATEGORY	5 // Config 1
 //#define TEXTUREFONT_NBCATEGORY	4

@@ -1,7 +1,7 @@
 /** \file font_generator.h
  * CFontGenerator class
  *
- * $Id: font_generator.h,v 1.2 2001/09/04 13:25:03 lecroart Exp $
+ * $Id: font_generator.h,v 1.3 2001/12/27 10:19:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,15 +26,14 @@
 #ifndef NL_FONT_GENERATOR_H
 #define NL_FONT_GENERATOR_H
 
-#include <freetype/freetype.h>
+#ifndef NL_DONT_USE_EXTERNAL_CODE
+#	include <freetype/freetype.h>
+#else // NL_DONT_USE_EXTERNAL_CODE
+
+#endif // NL_DONT_USE_EXTERNAL_CODE
 
 #include "nel/misc/types_nl.h"
 #include <string>
-
-#ifdef NL_OS_WINDOWS
-// automatically add the freetype library if you use CFontGenerator class
-#pragma comment(lib, "freetype.lib")
-#endif
 
 
 namespace NL3D {
@@ -54,6 +53,8 @@ public:
 	 * \param fontFileName path+filename (ex: "c:\winnt\fonts\arial.ttf")
 	 */
 	CFontGenerator (const std::string &fontFileName, const std::string &fontExFileName = "");
+
+	virtual ~CFontGenerator ();
 
 	/** generate and return a bitmap
 	 * \param c the unicode char
@@ -77,12 +78,16 @@ public:
 	std::string	FontFileName;
 private:
 
+#ifndef NL_DONT_USE_EXTERNAL_CODE
 	const char			*getFT2Error(FT_Error fte);
 
 	static FT_Library	_Library;
 	static bool			_LibraryInit;
 
 	FT_Face				_Face;
+#else // NL_DONT_USE_EXTERNAL_CODE
+
+#endif // NL_DONT_USE_EXTERNAL_CODE
 };
 
 

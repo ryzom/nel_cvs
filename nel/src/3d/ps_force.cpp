@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.23 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_force.cpp,v 1.24 2001/12/27 10:19:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,6 @@
 #include "3d/material.h"
 #include "3d/vertex_buffer.h"
 #include "3d/computed_string.h"
-#include "3d/font_generator.h"
 #include "3d/font_manager.h"
 #include "3d/particle_system.h"
 #include "nel/misc/common.h"

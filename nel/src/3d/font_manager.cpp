@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.31 2001/09/07 11:46:03 besson Exp $
+ * $Id: font_manager.cpp,v 1.32 2001/12/27 10:19:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,20 +226,22 @@ static void NL3DcomputeStringChar (CFontManager *fm, const std::basic_string<cha
 		CTextureFont::SLetterInfo *pLI = pTexFont->getLetterInfo (k);
 		if(pLI != NULL)
 		{
+			sint32 width = pLI->CharWidth - 1;
+			sint32 height = pLI->CharHeight - 1;
 			if ((pLI->CharWidth > 0) && (pLI->CharHeight > 0))
 			{
 				// Creating vertices
 				dx = pLI->Left;
-				dz = -((sint32)pLI->CharHeight-(sint32)(pLI->Top));
+				dz = -(height-(sint32)(pLI->Top));
 				u1 = pLI->U - hlfW;
 				v1 = pLI->V - hlfH;
-				u2 = pLI->U + ((float)pLI->CharWidth) / pTexFont->getWidth() + hlfW;
-				v2 = pLI->V + ((float)pLI->CharHeight) / pTexFont->getHeight() + hlfH;
+				u2 = pLI->U + ((float)width) / pTexFont->getWidth() + hlfW;
+				v2 = pLI->V + ((float)height) / pTexFont->getHeight() + hlfH;
 
 				x1 = (penx + dx) * FontRatio - hlfPix;
 				z1 = (penz + dz) * FontRatio - hlfPix;
-				x2 = (penx + dx + (sint32)pLI->CharWidth)  * FontRatio + hlfPix;
-				z2 = (penz + dz + (sint32)pLI->CharHeight) * FontRatio + hlfPix;
+				x2 = (penx + dx + width)  * FontRatio + hlfPix;
+				z2 = (penz + dz + height) * FontRatio + hlfPix;
 
 				output.Vertices.setVertexCoord	(j, x1, 0, z1);
 				output.Vertices.setTexCoord		(j, 0, u1, v2);

@@ -1,7 +1,7 @@
 /** \file text_context.cpp
  * <File description>
  *
- * $Id: text_context.cpp,v 1.3 2001/09/21 14:24:14 berenguier Exp $
+ * $Id: text_context.cpp,v 1.4 2001/12/27 10:19:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 #include "3d/text_context.h"
-
+#include "3d/font_generator.h"
 
 namespace NL3D {
 
@@ -74,6 +74,20 @@ uint32 CTextContext::textPush(const ucstring &str)
 }
 
 
+/**
+ * init the font generator. Must be called before any print
+ * \param (cf CFontGenerator constructor parameters)
+ */
+void CTextContext::setFontGenerator(const std::string fontFileName, const std::string fontExFileName)
+{
+	_FontGen = new NL3D::CFontGenerator(fontFileName, fontExFileName);
+}
+
+/// destructor
+CTextContext::~CTextContext()
+{
+	if(_FontGen) delete _FontGen;
+}
 
 
 } // NL3D

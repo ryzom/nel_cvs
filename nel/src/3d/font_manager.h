@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.3 2001/09/17 14:25:12 besson Exp $
+ * $Id: font_manager.h,v 1.4 2001/12/27 10:19:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@
 
 namespace NL3D {
 
-class CFontGenerator;
+class  CFontGenerator;
 struct CComputedString;
 struct CFontDescriptor;
 

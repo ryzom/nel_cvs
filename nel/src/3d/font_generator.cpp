@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.14 2001/09/04 13:25:03 lecroart Exp $
+ * $Id: font_generator.cpp,v 1.15 2001/12/27 10:19:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,17 @@
  * MA 02111-1307, USA.
  */
 
+#include <string>
+
+#include "nel/misc/types_nl.h"
+#include "nel/misc/debug.h"
+#include "nel/misc/common.h"
+
+#include "3d/font_generator.h"
+
+using namespace std;
+
+#ifndef NL_DONT_USE_EXTERNAL_CODE
 
 #include <freetype/freetype.h>
 
@@ -48,20 +59,12 @@ const char*  err_msg;
 
 #include <freetype/fterrors.h>
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/debug.h"
-#include "nel/misc/common.h"
-
-#include "3d/font_generator.h"
-
 using namespace NLMISC;
 
 namespace NL3D {
 
 FT_Library	CFontGenerator::_Library;
 bool		CFontGenerator::_LibraryInit = false;
-
-
 
 
 const char *CFontGenerator::getFT2Error(FT_Error fte)
@@ -110,6 +113,10 @@ CFontGenerator::CFontGenerator (const std::string &fontFileName, const std::stri
 			nlwarning ("FT_Attach_File() failed with file '%s': %s", fontExFileName.c_str(), getFT2Error(error));
 		}
 	}
+}
+
+CFontGenerator::~CFontGenerator ()
+{
 }
 
 void CFontGenerator::getSizes (ucchar c, uint32 size, uint32 &width, uint32 &height)
@@ -217,5 +224,359 @@ uint32	 CFontGenerator::getCharIndex (ucchar c)
 	return FT_Get_Char_Index (_Face, c);
 }
 
+} // NL3D
+
+#else // NL_DONT_USE_EXTERNAL_CODE
+
+#include <windows.h>
+
+using namespace NLMISC;
+
+namespace NL3D {
+ 
+HBITMAP Dib;
+uint32 *Buffer;
+HDC hdcDib;
+int Width = 100;
+int Height = 100;
+
+/*
+ * Constructor
+ */
+CFontGenerator::CFontGenerator (const std::string &fontFileName, const std::string &fontExFileName)
+{
+
+//	HWND win=(HWND)winHack;
+//	WindowHandle = win;
+//	Format = format;
+//	RECT rect;
+//	BOOL ret = GetClientRect( WindowHandle, &rect);
+//	assert (ret);
+
+//	uint f = AddFontResource ("");
+//	nlassert (f);
+
+	BITMAPINFO info;
+	info.bmiHeader.biWidth = Width;
+	info.bmiHeader.biHeight= -Height;
+	info.bmiHeader.biSize = sizeof (BITMAPINFOHEADER);
+	info.bmiHeader.biPlanes = 1; 
+	info.bmiHeader.biBitCount = 32;
+	info.bmiHeader.biCompression = BI_RGB;
+	info.bmiHeader.biSizeImage = 4*Width*Height;
+	info.bmiHeader.biXPelsPerMeter = 1;
+	info.bmiHeader.biYPelsPerMeter = 1;
+	info.bmiHeader.biClrUsed = 0;
+	info.bmiHeader.biClrImportant = 0;
+
+	HDC hdc = GetDC (NULL);
+	nlassert (hdc);
+	Dib = CreateDIBSection (hdc, &info, DIB_RGB_COLORS, (void**)&Buffer, NULL, NULL);
+
+	hdcDib = CreateCompatibleDC (hdc);
+	nlassert (hdcDib);
+
+
+	ReleaseDC (NULL, hdc);
+
+	SetTextAlign (hdcDib, TA_TOP | TA_LEFT | TA_NOUPDATECP);
+	SetBkColor (hdcDib, RGB (0,0,0));
+	SetTextColor (hdcDib, RGB (255, 255, 255));
+	
+	/*FT_Error error;
+
+	if (!_LibraryInit)
+	{
+		error = FT_Init_FreeType (&_Library);
+		if (error)
+		{
+			nlerror ("FT_Init_FreeType() failed: %s", getFT2Error(error));
+		}
+		_LibraryInit = true;
+	}
+
+	error = FT_New_Face (_Library, fontFileName.c_str (), 0, &_Face);
+	if (error)
+	{
+		nlerror ("FT_New_Face() failed with file 's%': %s", fontFileName.c_str(), getFT2Error(error));
+	}
+
+	if (fontExFileName != "")
+	{
+		error = FT_Attach_File (_Face, fontExFileName.c_str ());
+		if (error)
+		{
+			nlwarning ("FT_Attach_File() failed with file '%s': %s", fontExFileName.c_str(), getFT2Error(error));
+		}
+	}*/
+}
+
+CFontGenerator::~CFontGenerator ()
+{
+	DeleteObject (Dib);
+
+	DeleteDC (hdcDib);
+}
+
+void CFontGenerator::getSizes (ucchar c, uint32 size, uint32 &width, uint32 &height)
+{
+/*	FT_Error error;
+
+	error = FT_Set_Pixel_Sizes (_Face, size, size);
+	if (error)
+	{
+		nlerror ("FT_Set_Pixel_Sizes() failed: %s", getFT2Error(error));
+	}
+
+	// retrieve glyph index from character code
+	FT_UInt glyph_index = FT_Get_Char_Index (_Face, c);
+
+	// load glyph image into the slot (erase previous one)
+	error = FT_Load_Glyph (_Face, glyph_index, FT_LOAD_DEFAULT);
+	if (error)
+	{
+		nlerror ("FT_Load_Glyph() failed: %s", getFT2Error(error));
+	}
+
+	// convert 24.6 fixed point into integer
+	width = _Face->glyph->metrics.width >> 6;
+	height = _Face->glyph->metrics.height >> 6;
+	*/
+}
+
+HFONT hFont = NULL;
+uint32 CurrentFontSize = 0;
+
+uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &height, uint32 &pitch, sint32 &left, sint32 &top, sint32 &advx, uint32 &glyphIndex)
+{
+/*	FT_Error error;
+
+	error = FT_Set_Pixel_Sizes (_Face, size, size);
+	if (error)
+	{
+		nlerror ("FT_Set_Pixel_Sizes() failed: %s", getFT2Error(error));
+	}
+
+	// retrieve glyph index from character code
+	FT_UInt glyph_index = FT_Get_Char_Index (_Face, c);
+
+	// load glyph image into the slot (erase previous one)
+	error = FT_Load_Glyph (_Face, glyph_index, FT_LOAD_DEFAULT);
+	if (error)
+	{
+		nlerror ("FT_Load_Glyph() failed: %s", getFT2Error(error));
+	}
+
+	if (size == 0)
+	{
+		width = 0;
+		height = 0;
+		pitch = 0;
+		left = 0;
+		top = 0;
+		advx = 0;
+		glyphIndex = glyph_index;
+		return NULL;
+	}
+
+	// convert to an anti-aliased bitmap
+	error = FT_Render_Glyph (_Face->glyph, ft_render_mode_normal);
+	if (error)
+	{
+		nlerror ("FT_Render_Glyph() failed: %s", getFT2Error(error));
+	}
+
+	width = _Face->glyph->bitmap.width;
+	height = _Face->glyph->bitmap.rows;
+	pitch = _Face->glyph->bitmap.pitch;
+
+	left = _Face->glyph->bitmap_left;
+	top = _Face->glyph->bitmap_top;
+
+	advx = _Face->glyph->advance.x >> 6;
+
+	glyphIndex = glyph_index;
+
+	return (uint8 *) _Face->glyph->bitmap.buffer;
+*/
+
+	if (size == 0)
+	{
+		width = 0;
+		height = 0;
+		pitch = 0;
+		left = 0;
+		top = 0;
+		advx = 0;
+		glyphIndex = 0;
+		return NULL;
+	}
+
+	// Create the font
+	if (hFont ==  NULL || CurrentFontSize != size)
+	{
+		if (hFont !=  NULL)
+		{
+			DeleteObject (hFont);
+		}
+
+		hFont=CreateFont
+		(
+			size,					// logical height of font
+			0,					// logical average character width
+			0,					// angle of escapement
+			0,					// base-line orientation angle
+			FW_DONTCARE, //FW_NORMAL,			// font weight
+			FALSE,				// italic attribute flag
+			FALSE,				// underline attribute flag
+			FALSE,				// strikeout attribute flag
+			DEFAULT_CHARSET,	// character set identifier
+			OUT_DEVICE_PRECIS,  // output precision
+			CLIP_DEFAULT_PRECIS,	// clipping precision
+			DEFAULT_QUALITY,        // output quality
+			DEFAULT_PITCH|FF_DONTCARE,  // pitch and family
+			"Arial Unicode MS Normal"         // pointer to typeface name string
+		);
+		nlassert (hFont);
+
+		CurrentFontSize = size;
+	}
+
+	SelectObject (hdcDib, hFont);
+	SelectObject (hdcDib, Dib);
+	
+	const char cc = (char) c;
+
+	RECT rect;
+	rect.bottom = Height;
+	rect.top = 0;
+	rect.left = 0;
+	rect.right = Width;
+
+	int res = DrawText (hdcDib, &cc, 1, &rect, DT_LEFT | DT_TOP);
+
+	POINT point;
+	point.y = res;
+
+	int w = res;
+	BOOL rey = GetCharWidth32 (hdcDib, (uint8) cc,  (uint8) cc, &w);
+	nlassert (rey);
+	point.x = w;
+
+//	ABC abc;
+//	BOOL rey = GetCharABCWidths (hdcDib, (uint8) cc, (uint8) cc, &abc);
+//	nlassert (rey);
+//	point.x = abc.abcA;
+
+	SIZE s;
+	GetTextExtentPoint32 (hdcDib, &cc, 1, &s);
+	
+	BOOL ret = LPtoDP (hdcDib, &point, 1);
+	nlassert (ret);
+
+	static uint8 buf[100*100];
+
+	sint32 _top = 0, _left = point.x;
+	sint32 right = 0, bottom = point.y;
+	bool emptyLine;
+	for (sint y = 0; y < point.y; y++)
+	{
+		emptyLine = true;
+		for (sint x = 0; x < point.x; x++)
+		{
+			buf[y*100+x] = (uint8) Buffer[y*100+x];
+			if (buf[y*100+x])
+			{
+				emptyLine = false;
+				if (x < _left)
+					_left = x;
+				if (x > right)
+					right = x;
+			}
+
+//			printf (buf[y*100+x]?"*":".");
+		}
+		if (!emptyLine)
+		{
+			if (_top == 0)
+				_top = y;
+
+			bottom = y;
+		}
+
+//		printf ("\n");
+	}
+	width = right - _left + 1;
+	if (right - _left + 1 < 0) width = 0;
+	height = bottom - _top + 1;
+	if (bottom - _top + 1 < 0) height = 0;
+	pitch = 100;
+	advx = point.x;
+	
+	WORD ag = 0;
+	/*uint t = GetGlyphIndices (hdcDib, &cc, 1, &ag, 0);
+	if (t == GDI_ERROR)
+	{
+		nlstop;
+	}
+*/
+	glyphIndex = ag;
+
+	top = -_top;
+	left = -_left;
+
+/*	{
+		for (sint y = _top; y < _top + height; y++)
+		{
+			for (sint x = _left; x < _left + width; x++)
+			{
+				printf (buf[y*100+x]?"*":".");
+			}
+			printf ("\n");
+		}
+		printf ("w: %d h: %d s: %d a: %d l: %d t: %d", width, height, size, advx, left, top);
+		getchar();
+	}
+*/
+	_top = _left = top = left = 0;
+	top = s.cy;
+	width = s.cx;
+	height = s.cy;
+
+	return buf + _top * 100 + _left;
+}
+
+
+
+
+void CFontGenerator::getKerning (ucchar left, ucchar right, sint32 &kernx)
+{
+/*	if (!FT_HAS_KERNING(_Face))
+	{
+		kernx = 0;
+	}
+	else
+	{
+		FT_Vector  kerning;
+		FT_Error error = FT_Get_Kerning (_Face, left, right, ft_kerning_default, &kerning);
+		if (error)
+		{
+			nlerror ("FT_Get_Kerning() failed: %s", getFT2Error(error));
+		}
+		kernx = kerning.x;
+	}*/
+}
+
+
+
+uint32	 CFontGenerator::getCharIndex (ucchar c)
+{
+//	return FT_Get_Char_Index (_Face, c);
+	return 0;
+}
+
 
 } // NL3D
+
+#endif // NL_DONT_USE_EXTERNAL_CODE
+

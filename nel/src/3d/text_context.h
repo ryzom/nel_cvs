@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.4 2001/09/21 14:24:14 berenguier Exp $
+ * $Id: text_context.h,v 1.5 2001/12/27 10:19:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,12 +27,12 @@
 #define NL_TEXT_CONTEXT_H
 
 #include "3d/font_manager.h"
-#include "3d/font_generator.h"
 #include "3d/computed_string.h"
 
 
 namespace NL3D {
 
+class CFontGenerator;
 
 /**
  * CTextContext
@@ -136,11 +136,7 @@ public:
 	 * init the font generator. Must be called before any print
 	 * \param (cf CFontGenerator constructor parameters)
 	 */
-	void setFontGenerator(const std::string fontFileName, const std::string fontExFileName = "")
-	{
-		_FontGen = new NL3D::CFontGenerator(fontFileName, fontExFileName);
-	}
-
+	void setFontGenerator(const std::string fontFileName, const std::string fontExFileName = "");
 
 	/**
 	 * set the font color
@@ -246,6 +242,8 @@ public:
 	{
 		return _HotSpot;
 	}
+
+	NL3D::CFontGenerator *getFontGenerator () { return _FontGen; }
 
 	/**
 	 * compute and add a string to the stack
@@ -417,10 +415,7 @@ public:
 	}
 
 	/// destructor
-	~CTextContext()
-	{
-		if(_FontGen) delete _FontGen;
-	}
+	~CTextContext();
 };
 
 

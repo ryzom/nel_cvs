@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.12 2001/10/25 14:58:43 lecroart Exp $
+ * $Id: sock.cpp,v 1.13 2001/10/25 15:58:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,7 @@ typedef int SOCKET;
 
 #endif
 
+using namespace std;
 using namespace NLMISC;
 
 namespace NLNET {

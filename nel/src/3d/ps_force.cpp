@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.16 2001/09/04 16:14:50 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.17 2001/09/05 15:40:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -527,20 +527,23 @@ void CPSCylindricVortex::performMotion(CAnimationTime ellapsedTime)
 
 				if (d2 < radius2) // not out of range ?
 				{
-					d = sqrtf(d2);
+					if (d2 > 10E-6)
+					{
+						d = sqrtf(d2);
 
-					p *= 1.f / d;
-					// compute the speed vect that we should have (normalized) 
-					realTangentialSpeed = n ^ p;
+						p *= 1.f / d;
+						// compute the speed vect that we should have (normalized) 
+						realTangentialSpeed = n ^ p;
 
-					tangentialSpeed = (*speedIt * realTangentialSpeed) * realTangentialSpeed;
-					radialSpeed =  (p * *speedIt) * p;
-					
-					// update radial speed;
-					*speedIt -= _RadialViscosity * ellapsedTime * radialSpeed;
-					
-					// update tangential speed					
-					*speedIt -= _TangentialViscosity * intensity * ellapsedTime * (tangentialSpeed - (1.f - d * invR) * realTangentialSpeed);
+						tangentialSpeed = (*speedIt * realTangentialSpeed) * realTangentialSpeed;
+						radialSpeed =  (p * *speedIt) * p;
+						
+						// update radial speed;
+						*speedIt -= _RadialViscosity * ellapsedTime * radialSpeed;
+						
+						// update tangential speed					
+						*speedIt -= _TangentialViscosity * intensity * ellapsedTime * (tangentialSpeed - (1.f - d * invR) * realTangentialSpeed);
+					}
 				}				
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.37 2001/09/04 16:16:05 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.38 2001/09/05 15:40:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ namespace NL3D {
 // this macro check the memory integrity (windows platform for now). It may be useful after violent vb access
 #if defined(NL_DEBUG) && defined(NL_OS_WINDOWS)
 	#include <crtdbg.h>
-	#define PARTICLES_CHECK_MEM nlassert(_CrtCheckMemory());
+	#define PARTICLES_CHECK_MEM //nlassert(_CrtCheckMemory());
 #else
 	#define PARTICLES_CHECK_MEM
 #endif
@@ -1268,8 +1268,8 @@ void CPSFaceLookAt::draw(bool opaque)
 					// norme of the v1 vect
 					float n;
 
-					const float epsilon  = 10E-6f;
-					const float normEpsilon  = 10E-7f;
+					const float epsilon  = 10E-5f;
+					const float normEpsilon  = 10E-6f;
 
 
 
@@ -1295,13 +1295,21 @@ void CPSFaceLookAt::draw(bool opaque)
 						{	
 							if (startV.y < epsilon)
 							{
-								startV = endV + (endV.y - epsilon) / (endV.y - startV.y) * (startV - endV);
+								if (fabsf(endV.y - startV.y) > normEpsilon)
+								{
+									startV = endV + (endV.y - epsilon) / (endV.y - startV.y) * (startV - endV);
+								}
+								startV.y = epsilon;
 							}
 							else if (endV.y < epsilon)
-							{
-								endV = startV + (startV.y - epsilon) / (startV.y - endV.y) * (endV - startV);
-							}
-							
+							{	
+								if (fabsf(endV.y - startV.y) > normEpsilon)
+								{
+									endV = startV + (startV.y - epsilon) / (startV.y - endV.y) * (endV - startV);
+								}
+								endV.y = epsilon;
+							}														
+
 							mbv1 = (startV.x / startV.y - endV.x / endV.y) * I
 											+ (startV.z / startV.y - endV.z / endV.y) * K ;
 

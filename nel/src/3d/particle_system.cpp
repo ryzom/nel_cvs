@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.33 2001/08/29 14:25:23 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.34 2001/09/05 15:38:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,7 +119,7 @@ void CParticleSystem::setNumTris(uint numFaces)
 
 
 	uint wantedNumTri = (uint) getWantedNumTris(modelDist);
-	if (numFaces >= wantedNumTri || wantedNumTri == 0 || modelDist < epsilon)
+	if (numFaces >= wantedNumTri || wantedNumTri == 0 || _MaxNumFacesWanted == 0 || modelDist < epsilon)
 	{ 
 		_InvCurrentViewDist = _InvMaxViewDist;
 	}

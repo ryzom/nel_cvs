@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.15 2001/08/29 12:33:39 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.16 2001/09/05 15:40:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -226,7 +226,7 @@ void CPSZonePlane::performMotion(CAnimationTime ellapsedTime)
 			// we must setup the plane in the good basis
 
 			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner);
-
+			const float epsilon = 10E-5f;
 			
 
 			NLMISC::CPlane p;
@@ -249,7 +249,15 @@ void CPSZonePlane::performMotion(CAnimationTime ellapsedTime)
 				if ((posSide * negSide) < 0.0f)
 				{
 				
-						alpha = posSide / (posSide - negSide);
+
+						if (fabsf(posSide - negSide) > epsilon)
+						{
+							alpha = posSide / (posSide - negSide);
+						}
+						else
+						{
+							alpha = 0.f;
+						}
 						startEnd = alpha * (dest - *targetPosIt);					
 						ci.dist = startEnd.norm();
 						// we translate the particle from an epsilon so that it won't get hooked to the plane
@@ -568,8 +576,16 @@ void CPSZoneDisc::performMotion(CAnimationTime ellapsedTime)
 				negSide = p * dest;
 								
 				if ((posSide * negSide) < 0.0f)
-				{									
-						alpha = posSide / (posSide - negSide);
+				{			
+						const float epsilon = 10E-5f;
+						if (fabsf(posSide - negSide) > epsilon)
+						{
+							alpha = posSide / (posSide - negSide);
+						}
+						else
+						{
+							alpha = 0.f;
+						}
 						startEnd = alpha * (dest - *targetPosIt);					
 						ci.dist = startEnd.norm();
 						// we translate the particle from an epsilon so that it won't get hooked to the disc

@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.4 2001/05/31 12:30:18 berenguier Exp $
+ * $Id: global_retriever.h,v 1.5 2001/05/31 14:18:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -285,17 +285,20 @@ public:
 	 */
 	const TCollisionSurfaceDescVector	&testBBoxMove(const CGlobalPosition &start, const NLMISC::CVector &delta, 
 		const NLMISC::CVector &locI, const NLMISC::CVector &locJ, CCollisionSurfaceTemp &cst) const;
-	/** apply a movement of a point against surface world. This must be called after test???Move().
+	/** apply a movement of a point against surface world. This should be called after test???Move().
 	 * NB: It's up to you to give good t, relative to result of test???Move(). Else, undefined results...
-	 * NB: if you don't give same start/delta as in preceding call to testMove(), start is returned.
+	 * NB: if you don't give same start/delta as in preceding call to testMove(), and rebuildChains==false,
+	 *	start is returned (nlstop in debug).
 	 *
 	 * \param start is the start position of the movement. (must be same as passed in test???Move()).
 	 * \param delta is the requested movement (must be same as passed in test???Move()).
 	 * \param t must be in [0,1]. t*delta is the actual requested movement.
 	 * \param cst is the CCollisionSurfaceTemp object used as temp computing (one per thread). (must be same as passed in test???Move()).
+	 * \param rebuildChains true if doMove() is not called just after the testMove(). Then CGlobalRetriever must recompute some part
+	 *	of the data needed to performing his task.
 	 * \return new position of the entity.
 	 */
-	CGlobalPosition		doMove(const CGlobalPosition &start, const NLMISC::CVector &delta, float t, CCollisionSurfaceTemp &cst) const;
+	CGlobalPosition		doMove(const CGlobalPosition &start, const NLMISC::CVector &delta, float t, CCollisionSurfaceTemp &cst, bool rebuildChains=false) const;
 	/** retrieve a surface by its Id. NULL if not found or if -1.
 	 */
 	const CRetrievableSurface	*getSurfaceById(const CSurfaceIdent &surfId);

@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.3 2001/05/30 10:01:10 berenguier Exp $
+ * $Id: collision_surface_temp.h,v 1.4 2001/05/31 14:18:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -246,6 +246,7 @@ public:
 	CSurfaceIdent					PrecStartSurface;
 	NLMISC::CVector					PrecStartPos;
 	NLMISC::CVector					PrecDeltaPos;
+	bool							PrecValid;
 
 public:
 

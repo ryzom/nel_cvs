@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.15 2001/05/31 13:36:42 corvazier Exp $
+ * $Id: global_retriever.cpp,v 1.16 2001/05/31 14:18:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -837,7 +837,7 @@ const	NLPACS::TCollisionSurfaceDescVector
 	cst.PrecStartSurface= startSurface;
 	cst.PrecStartPos= startPos.LocalPosition.Estimation;
 	cst.PrecDeltaPos= delta;
-
+	cst.PrecValid= true;
 
 	// 1. Choose a local basis.
 	//===========
@@ -895,6 +895,7 @@ const	NLPACS::TCollisionSurfaceDescVector
 	cst.PrecStartSurface= startSurface;
 	cst.PrecStartPos= startPos.LocalPosition.Estimation;
 	cst.PrecDeltaPos= delta;
+	cst.PrecValid= true;
 
 
 	// 1. Choose a local basis.
@@ -955,7 +956,7 @@ const	NLPACS::TCollisionSurfaceDescVector
 
 // ***************************************************************************
 NLPACS::CGlobalRetriever::CGlobalPosition		
-	NLPACS::CGlobalRetriever::doMove(const NLPACS::CGlobalRetriever::CGlobalPosition &startPos, const NLMISC::CVector &delta, float t, NLPACS::CCollisionSurfaceTemp &cst) const
+	NLPACS::CGlobalRetriever::doMove(const NLPACS::CGlobalRetriever::CGlobalPosition &startPos, const NLMISC::CVector &delta, float t, NLPACS::CCollisionSurfaceTemp &cst, bool rebuildChains) const
 {
 	CSurfaceIdent	startSurface(startPos.InstanceId, startPos.LocalPosition.Surface);
 
@@ -967,15 +968,28 @@ NLPACS::CGlobalRetriever::CGlobalPosition
 	// reset CollisionDescs.
 	cst.CollisionDescs.clear();
 
-	// same move request than prec testMove() ??.
-	if( cst.PrecStartSurface != startSurface || 
-		cst.PrecStartPos!=startPos.LocalPosition.Estimation || 
-		cst.PrecDeltaPos!=delta)
-		// if not, just return start.
-		return startPos;
-	
+	if(!rebuildChains)
+	{
+		// same move request than prec testMove() ??.
+		if( cst.PrecStartSurface != startSurface || 
+			cst.PrecStartPos!=startPos.LocalPosition.Estimation || 
+			cst.PrecDeltaPos!=delta ||
+			!cst.PrecValid)
+		{
+			// if not, just return start.
+			nlstop;
+			return startPos;
+		}
+		// Since we are sure we have same movement than prec testMove(), no need to rebuild cst.CollisionChains.
+	}
+	else
+	{
+		// we don't have same movement than prec testMove(), we must rebuild cst.CollisionChains.
+		// Prec settings no more valids.
+		cst.PrecValid= false;
+	}
 
-	// Since we are sure we have same movement than prec testMove(), no need to rebuild cst.CollisionChains.
+
 
 
 	// 1. Choose a local basis (same than in testMove()).
@@ -993,6 +1007,23 @@ NLPACS::CGlobalRetriever::CGlobalPosition
 
 	// must snap the end position.
 	CRetrieverInstance::snapVector(end);
+
+	// If asked, we must rebuild array of collision chains.
+	if(rebuildChains)
+	{
+		// compute bboxmove.
+		CAABBox		bboxMove;
+		// must add some extent, to be sure to include snapped CLocalRetriever vertex (2.0f/256 should be sufficient).
+		float	radius= 4.0f/256;;
+		bboxMove.setCenter(start-CVector(radius, radius, 0));
+		bboxMove.extend(start+CVector(radius, radius, 0));
+		bboxMove.extend(end-CVector(radius, radius, 0));
+		bboxMove.extend(end+CVector(radius, radius, 0));
+
+		// find possible collisions in bboxMove+origin. fill cst.CollisionChains.
+		findCollisionChains(cst, bboxMove, origin);
+	}
+
 
 	// look where we arrive.
 	CVector2f	startCol(start.x, start.y);
@@ -1050,10 +1081,8 @@ const NLPACS::TCollisionSurfaceDescVector	&NLPACS::CGlobalRetriever::testBBoxRot
 	// reset result.
 	cst.CollisionDescs.clear();
 
-	// store this request in cst.
-	cst.PrecStartSurface= startSurface;
-	cst.PrecStartPos= startPos.LocalPosition.Estimation;
-	cst.PrecDeltaPos= CVector::Null;
+	// should not doMove() after a testBBoxRot.
+	cst.PrecValid= false;
 
 
 	// 1. Choose a local basis.

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.10 2000/11/15 17:23:24 berenguier Exp $
+ * $Id: patch.h,v 1.11 2000/11/20 13:40:27 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -177,8 +177,10 @@ public:
 	CVector			computeVertex(float s, float t);
 
 
-	/// unbind the patch from neighbors.
-	void			unbind();
+	/// unbind the patch from All neighbors. Don't modify others links. The tesselation is forcemerged.
+	void			unbindFromAll();
+	/// unbind the patch from One neighbor only. Don't modify other link. The tesselation is NOT forcemerged.
+	void			unbindFrom(CPatch *other);
 
 	/** bind the patch to 4 neighbors, given in this patch edge order (0,1,2,3). Tesselation is reseted (patch unbound first).
 	 * NB: this patch and his neighborood must be compiled...

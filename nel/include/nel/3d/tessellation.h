@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.11 2000/11/15 17:23:24 berenguier Exp $
+ * $Id: tessellation.h,v 1.12 2000/11/20 13:40:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -410,7 +410,8 @@ public:
 
 
 	// Used by CPatch::unbind(). isolate the tesselation from other patchs.
-	void			unbind();
+	void			unbindFrom(CPatch *other);
+	void			unbindFromAll();
 	// Used by CPatch::unbind(). force the merging of face.
 	void			forceMerge();
 	// Used by CPatch::bind(). Split if necessary, according to neighbors.
@@ -439,11 +440,11 @@ public:
 
 	// Tile Global Info.
 	// What are the limit distances for Tile tesselation transition.
-	static	float	TileDistEndGeom, TileDistNear, TileDistFar;
+	static	float	TileDistNear, TileDistFar;
 	// System, computed from prec.
-	static	float	TileDistEndGeomSqr , TileDistNearSqr, TileDistFarSqr;
+	static	float	TileDistNearSqr, TileDistFarSqr;
 	// System, computed from prec.
-	static	float	OOTileDistDeltaGeomSqr, OOTileDistDeltaSqr;
+	static	float	OOTileDistDeltaSqr;
 	// The tiles are not subdivided above this limit (but because of enforced splits). Default: 4 => 50cm.
 	static	sint	TileMaxSubdivision;
 

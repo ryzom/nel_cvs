@@ -1,7 +1,7 @@
 /** \file vector_inline.h
  * CVector class inline definitions
  *
- * $Id: vector_inline.h,v 1.7 2000/10/25 10:09:57 berenguier Exp $
+ * $Id: vector_inline.h,v 1.8 2000/11/20 13:42:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,9 @@
 
 #ifndef NL_VECTOR_INLINE_H
 #define NL_VECTOR_INLINE_H
+
+
+#include "nel/misc/common.h"
 
 
 namespace	NLMISC
@@ -154,6 +157,7 @@ inline	void	CVector::cartesianToSpheric(float &r, float &theta,float &phi) const
 	v= normed();
 
 	// phi E [-PI/2 et PI/2]
+	clamp(v.z, -1.0f, 1.0f);
 	phi= (float)asin(v.z);
 
 	// theta [-PI,PI]

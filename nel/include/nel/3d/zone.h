@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.6 2000/11/15 17:23:24 berenguier Exp $
+ * $Id: zone.h,v 1.7 2000/11/20 13:40:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ public:
 		// Entry 1 is only usefull for Bind One/Two+
 		// Entry 2/3 is only usefull for Bind One/Four.
 		
-		uint16			ZoneId[4];	// The neighbor zone of neigbor patch i. Often the same zone as the patch (but on zone border).
+		uint16			ZoneId;		// The neighbor zone of all neigbor patch. Often the same zone as the patch (but on zone border).
 		uint16			Next[4];	// The neighbor patch i.
 		uint8			Edge[4];	// On which edge of Nexti we are binded.
 
@@ -305,6 +305,8 @@ private:
 	CPatch			*getPatch(sint patch) {nlassert(patch>=0 && patch<(sint)Patchs.size()); return &(Patchs[patch]);}
 	static CPatch	*getZonePatch(TZoneMap &loadedZones, sint zoneId, sint patch);
 	// Bind the patch with ones which are loaded...
+	static void		unbindAndMakeBindInfo(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc, CPatch::CBindInfo	edges[4]);
+	static void		unbindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc);
 	static void		bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc);
 	// Is the patch on a border of this zone???
 	bool			patchOnBorder(const CPatchConnect &pc) const;

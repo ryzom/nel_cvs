@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.12 2000/11/14 13:24:18 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.13 2000/11/20 13:41:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -329,8 +329,8 @@ bool CDriverGL::swapBuffers(void)
 bool CDriverGL::release(void)
 {
 	wglMakeCurrent(NULL,NULL);
-	ReleaseDC(_hWnd,_hDC);
 	wglDeleteContext(_hRC);
+	ReleaseDC(_hWnd,_hDC);
 	return(true);
 }
 

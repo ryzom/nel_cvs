@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.5 2000/12/18 15:13:05 corvazier Exp $
+ * $Id: mesh.h,v 1.6 2000/12/19 13:09:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,6 +175,8 @@ private:
 			corn->VBId= (*it)->VBId;
 		else
 		{
+			// Add corner to the set to not insert same corner two times.
+			corners.insert (const_cast<CCorner *>(corn));
 			sint	i;
 			corn->VBId= currentVBIndex++;
 			// Fill the VBuffer.

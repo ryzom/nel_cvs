@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.20 2001/07/16 15:34:46 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.21 2001/07/16 15:36:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -662,6 +662,7 @@ void CPSSphericalEmitter::emit(uint32 index, CVector &pos, CVector &speed)
 	pos = _Radius[index] * dir ;
 	speed = (_EmitteeSpeedScheme ? _EmitteeSpeedScheme->get(_Owner, index) : _EmitteeSpeed)  * dir ;	
 }
+
 
 		
 	

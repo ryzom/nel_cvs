@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.8 2002/02/15 17:11:35 vizerie Exp $
+ * $Id: ps_util.h,v 1.9 2002/02/27 15:27:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,9 +109,10 @@ public:
 
 
 	/** build a basis from a vector using Schmidt orthogonalization method
-	 *  \param v : K axis in the resulting basis
+	 *  \param v K axis in the resulting basis
+	 *  \param dest The matrix containing the result. Only the rotation part is modified
 	 */
-	static NLMISC::CMatrix buildSchmidtBasis(const NLMISC::CVector &v);	 
+	static void buildSchmidtBasis(const NLMISC::CVector &v, NLMISC::CMatrix &dest);	 
 
 
 	/** get a cosine from the fast cosine table (which must be have initialised with initFastCosNSinTable).

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.35 2002/02/15 17:11:35 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.36 2002/02/27 15:27:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,7 +180,8 @@ void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector 
 
 	CVector end = start + size * v;
 	CDRU::drawLine(start, end, col1, *driver);
-	CMatrix m = buildSchmidtBasis(v);
+	CMatrix m;
+	buildSchmidtBasis(v, m);
 
 	CVertexBuffer vb;
 	vb.setVertexFormat(CVertexBuffer::PositionFlag);
@@ -253,7 +254,7 @@ void CPSUtil::print(IDriver *driver, const std::string &text, CFontGenerator &fg
 
 
 //==========================================================================
-CMatrix CPSUtil::buildSchmidtBasis(const CVector &k_)
+void CPSUtil::buildSchmidtBasis(const CVector &k_, NLMISC::CMatrix &result)
 {
 	const float epsilon = 10E-4f;
 
@@ -277,10 +278,7 @@ CMatrix CPSUtil::buildSchmidtBasis(const CVector &k_)
 
 	i = i - (k * i) * k;
 	i.normalize();
-
-	CMatrix result;
-	result.setRot(i, k ^ i, k, true);
-	return result;
+	result.setRot(i, k ^ i, k, true);	
 }
 
 

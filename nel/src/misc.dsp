@@ -26,7 +26,7 @@ CFG=misc - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "misc - Win32 Release"
@@ -49,7 +49,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nlmisc.lib"
 
@@ -72,7 +72,7 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nlmisc_debug.lib"
 
@@ -95,7 +95,7 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"../lib/nlmisc.lib"
 # ADD LIB32 /nologo /out:"../lib/nlmisc_rd.lib"
 
@@ -472,6 +472,14 @@ SOURCE=..\include\nel\misc\path.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\quad.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\quad.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\rgba.cpp
 # End Source File
 # Begin Source File
@@ -481,14 +489,6 @@ SOURCE=..\include\nel\misc\rgba.h
 # Begin Source File
 
 SOURCE=.\misc\smart_ptr.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\quad.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\quad.h
 # End Source File
 # Begin Source File
 

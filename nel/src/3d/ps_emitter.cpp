@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.22 2001/07/17 15:54:52 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.23 2001/08/15 12:04:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -311,8 +311,10 @@ void CPSEmitter::bounceOccured(uint32 index)
 
 void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+
 	f.serialVersion(1) ;	
 	CPSLocatedBindable::serial(f) ;
+	
 	f.serialPolyPtr(_EmittedType) ;
 	f.serial(_Phase) ;
 	f.serial(_SpeedInheritanceFactor) ;
@@ -387,6 +389,8 @@ void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			 f.serial(_GenNb) ;
 		}
 	}
+
+
 }
 
 

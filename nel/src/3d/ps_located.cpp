@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.26 2001/08/07 14:10:26 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.27 2001/08/15 12:05:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@
 
 #include "nel/misc/line.h"
 #include "nel/misc/cpu_info.h"
+#include "nel/misc/mem_stream.h"
 
 namespace NL3D {
 
@@ -507,7 +508,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialPtr(_CollisionInfo) ;
 	f.serial(_CollisionInfoNbRef) ;
 
-
+	
 	if (f.isReading())
 	{
 		delete _LifeScheme ;
@@ -561,6 +562,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		}
 	}
 
+
 	f.serial(_NbFramesToSkip) ;
 
 	f.serialContPolyPtr(_DtorObserversVect) ;
@@ -604,9 +606,12 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	}
 
 	
-	f.serial(_UpdateLock) ;	
-	f.serialContPolyPtr(_LocatedBoundCont) ;	
 
+
+	f.serial(_UpdateLock) ;	
+
+	f.serialContPolyPtr(_LocatedBoundCont) ;
+	
 	if (ver > 1)
 	{
 		f.serial(_LODDegradation) ;
@@ -1012,6 +1017,7 @@ void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialPtr(_Owner) ;
 	if (ver > 1) f.serialEnum(_LOD) ;
 	if (ver > 2) f.serial(_Name);
+	
 }
 
 void CPSLocatedBindable::displayIcon2d(const CVector tab[], uint nbSegs, float scale)

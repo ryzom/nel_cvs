@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.14 2001/07/12 15:47:13 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.15 2001/08/15 12:05:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,9 +47,10 @@ CPSForce::CPSForce()
 
 void CPSForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1) ;	
-	CPSTargetLocatedBindable::serial(f) ;	
-	CPSLocatedBindable::serial(f) ;		
+	
+		f.serialVersion(1) ;	
+		CPSTargetLocatedBindable::serial(f) ;	
+		CPSLocatedBindable::serial(f) ;			
 }
 
 

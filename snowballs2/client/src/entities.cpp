@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.38 2001/07/24 17:29:23 lecroart Exp $
+ * $Id: entities.cpp,v 1.39 2001/07/27 09:06:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,8 +92,8 @@ float					WorldHeight = 6*160;
 uint32					NextEID = 1000000;
 
 // The speed settings
-float					PlayerSpeed = 1.8f;		// 6.5 km/h
-float					SnowballSpeed = 10.0f;	// 36 km/h
+float					PlayerSpeed = 10.0f;	// 6.5 km/h
+float					SnowballSpeed = 15.0f;	// 36 km/h
 
 // these variables are set with the config file
 
@@ -123,7 +123,7 @@ EIT findEntity (uint32 eid, bool needAssert)
 
 
 // Creates an entity, given its id, its type (Self, Other, Snowball), its start and server positions.
-void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, const CVector &serverPosition)
+void addEntity (uint32 eid, std::string name, CEntity::TType type, const CVector &startPosition, const CVector &serverPosition)
 {
 	nlinfo ("adding entity %u", eid);
 
@@ -150,7 +150,7 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 	// Set the entity up
 	entity.Id = eid;
 	entity.Type = type;
-	entity.Name = "Entity"+toString(eid);
+	entity.Name = name;
 	entity.Position = startPosition;
 	entity.Angle = 0.0f;
 	entity.ServerPosition = serverPosition;
@@ -165,7 +165,7 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		// it's a cylinder
 		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
 		// the entity should slide against obstacles
-		entity.MovePrimitive->setReactionType(UMovePrimitive::Reflexion);
+		entity.MovePrimitive->setReactionType(UMovePrimitive::Slide);
 		// do not generate event if there is a collision
 		entity.MovePrimitive->setTriggerType(UMovePrimitive::NotATrigger);
 		// which entity should collide against me
@@ -175,7 +175,7 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		// the self is an obstacle
 		entity.MovePrimitive->setObstacle(true);
 		// the size of the cylinder
-		entity.MovePrimitive->setRadius(2.0f);
+		entity.MovePrimitive->setRadius(1.0f);
 		entity.MovePrimitive->setHeight(1.8f);
 		// only use one world image, so use insert in world image 0
 		entity.MovePrimitive->insertInWorldImage(0);
@@ -203,12 +203,12 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 	case CEntity::Other:
 		entity.MovePrimitive = MoveContainer->addCollisionablePrimitive(0, 1);
 		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
-		entity.MovePrimitive->setReactionType(UMovePrimitive::Slide);
+		entity.MovePrimitive->setReactionType(UMovePrimitive::DoNothing);
 		entity.MovePrimitive->setTriggerType(UMovePrimitive::NotATrigger);
 		entity.MovePrimitive->setCollisionMask(OtherCollisionBit+SelfCollisionBit+SnowballCollisionBit);
 		entity.MovePrimitive->setOcclusionMask(OtherCollisionBit);
 		entity.MovePrimitive->setObstacle(true);
-		entity.MovePrimitive->setRadius(2.0f);
+		entity.MovePrimitive->setRadius(1.0f);
 		entity.MovePrimitive->setHeight(1.8f);
 		entity.MovePrimitive->insertInWorldImage(0);
 		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
@@ -231,7 +231,8 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		// allows collision snapping to the ceiling
 		entity.VisualCollisionEntity->setCeilMode(true);
 
-		entity.Instance = Scene->createInstance ("snowball.ps");
+//		entity.Instance = Scene->createInstance ("snowball.ps");
+		entity.Instance = Scene->createInstance ("boule.shape");
 		entity.Skeleton = NULL;
 		entity.Speed = SnowballSpeed;
 
@@ -254,6 +255,50 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.Particule->setPos (startPosition);
 
 }
+
+// effectively remove the entity (don't play animation)
+void deleteEntity (CEntity &entity)
+{
+	if (entity.Particule != NULL)
+	{
+		Scene->deleteInstance (entity.Particule);
+		entity.Particule = NULL;
+	}
+
+	deleteAnimation (entity);
+
+	if (entity.Skeleton != NULL)
+	{
+		entity.Skeleton->detachSkeletonSon (entity.Instance);
+		Scene->deleteSkeleton (entity.Skeleton);
+		entity.Skeleton = NULL;
+	}
+
+	if (entity.Instance != NULL)
+	{
+		Scene->deleteInstance (entity.Instance);
+		entity.Instance = NULL;
+	}
+
+	if (entity.VisualCollisionEntity != NULL)
+	{
+		VisualCollisionManager->deleteEntity (entity.VisualCollisionEntity);
+		entity.VisualCollisionEntity = NULL;
+	}
+
+	if (entity.MovePrimitive != NULL)
+	{
+		MoveContainer->removePrimitive(entity.MovePrimitive);
+		entity.MovePrimitive = NULL;
+	}
+
+	deleteSound (entity);
+
+	nlinfo ("Remove the entity %u from the Entities list", entity.Id);
+	EIT eit = findEntity (entity.Id);
+	Entities.erase (eit);
+}
+
 
 // Remove an entity specified by its id
 // The entity passes into the Disappear state
@@ -283,7 +328,26 @@ void removeEntity (uint32 eid)
 	entity.setState (CEntity::Disappear);
 }
 
+void	removeAllEntitiesExceptUs ()
+{
+	EIT		eit, nexteit;
 
+	// move entities
+	for (eit = Entities.begin (); eit != Entities.end (); )
+	{
+		nexteit = eit; nexteit++;
+
+		CEntity	&entity = (*eit).second;
+
+		if (entity.Type != CEntity::Self)
+		{
+			// effectively remove the entity (don't play animation)
+			deleteEntity (entity);
+		}
+
+		eit = nexteit;
+	}
+}
 
 
 
@@ -301,7 +365,7 @@ void stateAppear (CEntity &entity)
 
 	// after 5 seconds, delete the particle system (if any)
 	// and passe the entity into the Normal state
-	if (CTime::getLocalTime () > entity.StateStartTime + 5000)
+	if (CTime::getLocalTime () > entity.StateStartTime + 3000)
 	{
 		if (entity.Particule != NULL)
 		{
@@ -315,8 +379,6 @@ void stateAppear (CEntity &entity)
 	if (entity.MovePrimitive != NULL)
 		entity.MovePrimitive->move(CVector(0,0,0), 0);
 }
-
-
 
 // What to do when the entity disappears
 void stateDisappear (CEntity &entity)
@@ -338,46 +400,9 @@ void stateDisappear (CEntity &entity)
 	}
 
 	// after 5 seconds, remove the particule system and the entity entry
-	if (CTime::getLocalTime () > entity.StateStartTime + 5000)
+	if (CTime::getLocalTime () > entity.StateStartTime + 3000)
 	{
-		if (entity.Particule != NULL)
-		{
-			Scene->deleteInstance (entity.Particule);
-			entity.Particule = NULL;
-		}
-
-		deleteAnimation (entity);
-
-		if (entity.Skeleton != NULL)
-		{
-			entity.Skeleton->detachSkeletonSon (entity.Instance);
-			Scene->deleteSkeleton (entity.Skeleton);
-			entity.Skeleton = NULL;
-		}
-
-		if (entity.Instance != NULL)
-		{
-			Scene->deleteInstance (entity.Instance);
-			entity.Instance = NULL;
-		}
-
-		if (entity.VisualCollisionEntity != NULL)
-		{
-			VisualCollisionManager->deleteEntity (entity.VisualCollisionEntity);
-			entity.VisualCollisionEntity = NULL;
-		}
-
-		if (entity.MovePrimitive != NULL)
-		{
-			MoveContainer->removePrimitive(entity.MovePrimitive);
-			entity.MovePrimitive = NULL;
-		}
-
-		deleteSound (entity);
-
-		nlinfo ("Remove the entity %u from the Entities list", entity.Id);
-		EIT eit = findEntity (entity.Id);
-		Entities.erase (eit);
+		deleteEntity (entity);
 	}
 	else
 	{
@@ -423,8 +448,8 @@ void stateNormal (CEntity &entity)
 			}
 			else
 			{
-				entity.IsWalking = true;
-				entity.IsAiming = false;
+//				entity.IsWalking = true;
+//				entity.IsAiming = false;
 			}
 			break;
 		case 2:
@@ -447,7 +472,7 @@ void stateNormal (CEntity &entity)
 				CVector	AimedTarget = getTarget(AimingPosition,
 												direction,
 												100);
-				shotSnowball(entity.Id, AimingPosition, AimedTarget, SnowballSpeed, CTime::getLocalTime ());
+				shotSnowball(rand(), entity.Id, AimingPosition, AimedTarget, SnowballSpeed, 3.0f);
 			}
 			break;
 		case 4:
@@ -474,7 +499,7 @@ void stateNormal (CEntity &entity)
 	}
 
 
-	if (entity.Type == CEntity::Snowball && entity.AutoMove && NewTime >= entity.Trajectory.getStopTime())
+	if (entity.Type == CEntity::Snowball && NewTime >= entity.Trajectory.getStopTime())
 	{
 /*
 		CVector	tp(1140,-833,30);
@@ -510,14 +535,14 @@ void stateNormal (CEntity &entity)
 		}
 		else if (entity.WasAiming && !entity.IsAiming)
 		{
-			// end aiming
+/*			// end aiming
 			playAnimation (entity, ThrowSnowball, true);
 
 			if (entity.IsWalking)
 				playAnimation (entity, WalkAnim);
 			else
 				playAnimation (entity, IdleAnim);
-		}
+*/		}
 		else if (entity.WasAiming && entity.IsAiming)
 		{
 			// currently aiming => do northing
@@ -535,6 +560,8 @@ void stateNormal (CEntity &entity)
 		entity.WasWalking = entity.IsWalking;
 	}
 
+
+	entity.ImmediateSpeed = CVector::Null;
 
 	if (entity.Type == CEntity::Self)
 	{
@@ -563,9 +590,13 @@ void stateNormal (CEntity &entity)
 		entity.Angle += entity.InterpolatedAuxiliaryAngle;
 
 		// tell the move container how much the entity should move
-		entity.MovePrimitive->move((newPos-oldPos)/(float)dt, 0);
+		if (entity.IsWalking)
+		{
+			entity.ImmediateSpeed = (newPos-oldPos)/(float)dt;
+			entity.MovePrimitive->move(entity.ImmediateSpeed, 0);
+		}
 	}
-	else if (entity.Type == CEntity::Other && pDelta.norm()>0.1f)
+	else if (entity.Type == CEntity::Other)
 	{
 		// go to the server position with linear interpolation
 
@@ -590,17 +621,28 @@ void stateNormal (CEntity &entity)
 
 		entity.Angle = entity.InterpolatedAuxiliaryAngle;
 
-		if (entity.IsWalking)
+//		if (entity.IsWalking)
+		if (pDelta.norm() > 0.1f)
 		{
 			pDelta.normalize();
-			pDelta *= -entity.Speed;
-			entity.MovePrimitive->move(pDelta, 0);
+			entity.ImmediateSpeed = pDelta*(-entity.Speed);
+			entity.MovePrimitive->move(entity.ImmediateSpeed, 0);
+			entity.IsWalking = true;
+		}
+		else
+		{
+			entity.IsWalking = false;
 		}
 	}
 	else if (entity.Type == CEntity::Snowball)
 	{
 		// go to the server position using trajectory interpolation
-		entity.Position = entity.Trajectory.eval(NewTime);
+		CVector newPos = entity.Trajectory.eval(NewTime);
+		if (newPos != entity.Position)
+		{
+			entity.Position = entity.Trajectory.eval(NewTime);
+			entity.Instance->show ();
+		}
 	}
 	else
 	{
@@ -678,6 +720,17 @@ void updateEntities ()
 */
 			// snap to the ground
 			entity.VisualCollisionEntity->snapToGround(entity.Position);
+
+			if (entity.Type == CEntity::Other &&
+				(entity.ServerPosition-entity.Position)*entity.ImmediateSpeed < 0.0f)
+			{
+				nlinfo("detected over entity %d", entity.Id);
+				entity.ServerPosition.z = entity.Position.z;
+				entity.Position = entity.ServerPosition;
+				entity.VisualCollisionEntity->snapToGround(entity.Position);
+				entity.MovePrimitive->setGlobalPosition(CVectorD(entity.Position.x, entity.Position.y, entity.Position.z), 0);
+			}
+
 		}
 
 		if (entity.Instance != NULL)
@@ -796,23 +849,31 @@ void	resetEntityPosition(uint32 eid)
 }
 
 
-void	shotSnowball(uint32 eid, const CVector &start, const CVector &target, float speed, NLMISC::TTime startTime)
+void	shotSnowball(uint32 sid, uint32 eid, const CVector &start, const CVector &target, float speed, float deflagRadius)
 {
-	uint32 sbid = NextEID++;
-	EIT eit = findEntity (eid);
-
-	CEntity	&launcher = (*eit).second;
-
 	// get direction
 	CVector direction = (target-start).normed();
 
 	// create a new snowball entity
-	addEntity(sbid, CEntity::Snowball, start, target);
-	eit = findEntity (sbid);
-	CEntity	&snowball = (*eit).second;
-	snowball.AutoMove = 1;
+	addEntity(sid, "", CEntity::Snowball, start, target);
+	EIT sit = findEntity (sid);
+	CEntity	&snowball = (*sit).second;
 
-	snowball.Trajectory.init(start, target, speed, startTime);
+	snowball.AutoMove = 1;
+	snowball.Trajectory.init(start, target, speed, CTime::getLocalTime ()+1000);
+	snowball.Instance->hide();
+
+	EIT eit = findEntity (eid);
+	CEntity	&entity = (*eit).second;
+
+	// end aiming
+	playAnimation (entity, ThrowSnowball, true);
+
+	if (entity.IsWalking)
+		playAnimation (entity, WalkAnim);
+	else
+		playAnimation (entity, IdleAnim);
+
 }
 
 
@@ -840,7 +901,7 @@ NLMISC_COMMAND(add_entity,"add a local entity","<nb_entities> <auto_update>")
 	{
 		uint32 eid = NextEID++;
 		CVector start(ConfigFile.getVar("StartPoint").asFloat(0), ConfigFile.getVar("StartPoint").asFloat(1), ConfigFile.getVar("StartPoint").asFloat(2));
-		addEntity (eid, CEntity::Other, start, start);
+		addEntity (eid, "Entity"+toString(eid), CEntity::Other, start, start);
 		EIT eit = findEntity (eid);
 		(*eit).second.AutoMove = atoi(args[1].c_str()) == 1;
 	}
@@ -912,5 +973,18 @@ NLMISC_COMMAND(goto, "go to a given position", "<x> <y>")
 		}
 	}
 
+	return true;
+}
+
+NLMISC_COMMAND(entities, "display all entities info", "")
+{
+	// check args, if there s not the right number of parameter, return bad
+	if(args.size() != 0) return false;
+
+	for (EIT eit = Entities.begin (); eit != Entities.end (); eit++)
+	{
+		CEntity	&e = (*eit).second;
+		log.displayNL("%s %u (k%u) %s %d", (Self==&e)?"*":" ", e.Id, (*eit).first, e.Name.c_str(), e.Type);
+	}
 	return true;
 }

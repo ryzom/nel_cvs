@@ -1,7 +1,7 @@
 /** \file entities.h
  * Snowballs 2 specific code for managing the entities
  *
- * $Id: entities.h,v 1.24 2001/07/24 17:29:23 lecroart Exp $
+ * $Id: entities.h,v 1.25 2001/07/27 09:06:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,10 @@ public:
 
 	// Contain the current position of the entity
 	NLMISC::CVector					Position;
+
+	// The immediate speed of the entity
+	NLMISC::CVector					ImmediateSpeed;
+
 	// The maximum speed of the entity
 	float							Speed, 
 	// The angle of the entity
@@ -191,8 +195,11 @@ typedef std::map<uint32, CEntity>::iterator	EIT;
 
 EIT findEntity (uint32 eid, bool needAssert = true);
 
-void	addEntity (uint32 eid, CEntity::TType type, const NLMISC::CVector &startPosition, const NLMISC::CVector &serverPosition);
+void	addEntity (uint32 eid, std::string name, CEntity::TType type, const NLMISC::CVector &startPosition, const NLMISC::CVector &serverPosition);
 void	removeEntity (uint32 eid);
+
+// when we turn online, we need to clear all offline entities
+void	removeAllEntitiesExceptUs ();
 
 void	initEntities();
 void	updateEntities ();
@@ -200,7 +207,7 @@ void	updateEntities ();
 // Reset the pacs position of an entity (in case pacs went wrong)
 void	resetEntityPosition(uint32 eid);
 // Process the event when an entity shoots a snowball
-void	shotSnowball(uint32 eid, const NLMISC::CVector &start, const NLMISC::CVector &target, float speed, NLMISC::TTime startTime);
+void	shotSnowball(uint32 sid, uint32 eid, const NLMISC::CVector &start, const NLMISC::CVector &target, float speed, float deflagRadius);
 
 void	renderEntitiesNames ();
 

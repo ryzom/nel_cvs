@@ -87,8 +87,8 @@ for i in $list_zone_lighted ; do
 	else
 		if ( ! test -e $dest ) || ( test $igsrc -nt $dest )
 		then
-			echo -- IgLight $i (not lighted copy)
-			echo -- IgLight $i (not lighted copy) >> log.log
+			echo "-- IgLight" $i "(not lighted copy)"
+			echo "-- IgLight" $i "(not lighted copy)" >> log.log
 			cp $igsrc $dest
 			echo 
 			echo 

@@ -221,7 +221,7 @@
 															NLAIC::CTypeOfOperator::opNot |
 															NLAIC::CTypeOfOperator::opDiff));
 
-		const NLAIC::CIdentType UInt16Type::IdUInt16Type("uint16",	NLAIC::CSelfClassFactory(UInt8Type(0)),
+		const NLAIC::CIdentType UInt16Type::IdUInt16Type("uint16",	NLAIC::CSelfClassFactory(UInt16Type(0)),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 															NLAIC::CTypeOfOperator::opSub | 

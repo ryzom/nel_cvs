@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.27 2003/02/17 16:27:12 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.28 2003/05/22 15:56:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,11 +99,16 @@ class CMyZoneLighter : public CZoneLighter
 	}
 };
 
+struct CInstanceGroupRef
+{
+	CInstanceGroup	*IG;
+	bool			AddLight;
+};
 
 //=======================================================================================
 // load additionnal ig from a village (ryzom specific)
 static void loadIGFromVillage(const NLGEORGES::UFormElm *villageItem, const std::string &continentName,
-							  uint villageIndex, std::list<CInstanceGroup *> &instanceGroups)
+							  uint villageIndex, std::list<CInstanceGroupRef> &instanceGroups)
 {	
 	const NLGEORGES::UFormElm *igNamesItem;
 	if (! (villageItem->getNodeByName (&igNamesItem, "IgList") && igNamesItem) )
@@ -158,7 +163,10 @@ static void loadIGFromVillage(const NLGEORGES::UFormElm *villageItem, const std:
 				}								
 				inputFile.close();
 				// Add to the list
-				instanceGroups.push_back (group.release());
+				CInstanceGroupRef iref;
+				iref.IG = group.release();
+				iref.AddLight = false;
+				instanceGroups.push_back (iref);
 			}
 			else
 			{
@@ -172,7 +180,7 @@ static void loadIGFromVillage(const NLGEORGES::UFormElm *villageItem, const std:
 
 //=======================================================================================
 // load additionnal ig from a continent (ryzom specific)
-static void loadIGFromContinent(NLMISC::CConfigFile &parameter, std::list<CInstanceGroup *> &instanceGroups,
+static void loadIGFromContinent(NLMISC::CConfigFile &parameter, std::list<CInstanceGroupRef> &instanceGroups,
 								const std::vector<std::string> &zoneNameArray
 							   )
 {
@@ -451,7 +459,7 @@ int main(int argc, char* argv[])
 				CZone zone;
 
 				// List of ig
-				std::list<CInstanceGroup*> instanceGroup;
+				std::list<CInstanceGroupRef> instanceGroup;
 
 				// Load
 				zone.serial (inputFile);
@@ -475,7 +483,10 @@ int main(int argc, char* argv[])
 					inputFile.close();
 
 					// Add to the list
-					instanceGroup.push_back (group);
+					CInstanceGroupRef iref;
+					iref.IG = group;
+					iref.AddLight = true;
+					instanceGroup.push_back (iref);
 					zoneIgLoaded = true;
 				}
 				else
@@ -546,7 +557,10 @@ int main(int argc, char* argv[])
 								inputFile.close();
 
 								// Add to the list
-								instanceGroup.push_back (group);
+								CInstanceGroupRef iref;
+								iref.IG = group;
+								iref.AddLight = false;
+								instanceGroup.push_back (iref);
 							}
 							else
 							{
@@ -617,7 +631,10 @@ int main(int argc, char* argv[])
 								inputFile.close();
 
 								// Add to the list
-								instanceGroup.push_back (group);
+								CInstanceGroupRef iref;
+								iref.IG = group;
+								iref.AddLight = true;
+								instanceGroup.push_back (iref);
 							}
 							else
 							{
@@ -651,11 +668,11 @@ int main(int argc, char* argv[])
 				std::map<string, IShape*> shapeMap;
 
 				// For each instance group
-				std::list<CInstanceGroup*>::iterator ite=instanceGroup.begin();
+				std::list<CInstanceGroupRef>::iterator ite=instanceGroup.begin();
 				while (ite!=instanceGroup.end())
 				{
 					// Instance group
-					CInstanceGroup *group=*ite;
+					CInstanceGroup *group=ite->IG;
 
 					// Load and add shapes
 					if (lighterDesc.Shadow)
@@ -749,11 +766,14 @@ int main(int argc, char* argv[])
 					}
 
 					// For each point light of the ig
-					const std::vector<CPointLightNamed>	&pointLightList= group->getPointLightList();
-					for (uint plId=0; plId<pointLightList.size(); plId++)
+					if (ite->AddLight)
 					{
-						// Add it to the Ig.
-						lighter.addStaticPointLight(pointLightList[plId]);
+						const std::vector<CPointLightNamed>	&pointLightList= group->getPointLightList();
+						for (uint plId=0; plId<pointLightList.size(); plId++)
+						{
+							// Add it to the Ig.
+							lighter.addStaticPointLight(pointLightList[plId]);
+						}
 					}
 
 					// Next instance group

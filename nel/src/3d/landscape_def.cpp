@@ -1,7 +1,7 @@
 /** \file landscape_def.cpp
  * Definition for Landscape
  *
- * $Id: landscape_def.cpp,v 1.9 2004/08/13 15:36:39 vizerie Exp $
+ * $Id: landscape_def.cpp,v 1.10 2004/10/19 12:49:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,7 +80,8 @@ IDriver					*CLandscapeGlobals::PatchCurrentDriver= NULL;
 CIndexBuffer			CLandscapeGlobals::PassTriArray("CLandscapeGlobals::PassTriArray");
 CIndexBufferReadWrite	CLandscapeGlobals::PassTriArrayIBA;
 uint					NL3D_LandscapeGlobals_PassNTri= 0;
-uint32					*NL3D_LandscapeGlobals_PassTriCurPtr= NULL;
+void					*NL3D_LandscapeGlobals_PassTriCurPtr= NULL;
+CIndexBuffer::TFormat	NL3D_LandscapeGlobals_PassTriFormat= CIndexBuffer::IndicesUnknownFormat;
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.20 2004/09/17 15:19:39 vizerie Exp $
+ * $Id: patch_render.cpp,v 1.21 2004/10/19 12:53:28 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -457,7 +457,7 @@ void			CPatch::preRender(const NLMISC::CBSphere &patchSphere)
 
 
 // ***************************************************************************
-static	inline	void	renderFaceVector(uint32 *fv)
+static	inline	void	renderFaceVector(TLandscapeIndexType *fv)
 {
 	/*
 		Remind that structure of fv is:
@@ -490,33 +490,76 @@ static	inline	void	renderFaceVector(uint32 *fv)
 		//CLandscapeGlobals::PatchCurrentDriver->renderSimpleTriangles(fv+1, *fv);
 		CHECK_IBA_RANGE(CLandscapeGlobals::PassTriArrayIBA, NL3D_LandscapeGlobals_PassTriCurPtr,  *fv*3 * sizeof(uint32));
 #ifdef NL_OS_WINDOWS
-		__asm
-		{
-			mov		ebx, fv
-			mov		edi, NL3D_LandscapeGlobals_PassTriCurPtr
+		#ifndef NL_LANDSCAPE_INDEX16
+			__asm
+			{
+				mov		ebx, fv
+				mov		edi, NL3D_LandscapeGlobals_PassTriCurPtr
 
-			mov		edx, NL3D_LandscapeGlobals_PassNTri
-			xor		eax, eax		// Avoid AGI stall.
+				mov		edx, NL3D_LandscapeGlobals_PassNTri
+				xor		eax, eax		// Avoid AGI stall.
 
-			mov		ecx, [ebx]
-			lea		esi, [ebx+4]
+				mov		ecx, [ebx]
+				lea		esi, [ebx+4]
 
-			mov		eax, ecx				// eax= bkup NumTris
-			lea		ecx, [ecx + ecx*2]		// ecx= nTriIndex= NumTris*3
+				mov		eax, ecx				// eax= bkup NumTris
+				lea		ecx, [ecx + ecx*2]		// ecx= nTriIndex= NumTris*3
 
-			// copy tri indices
-			rep		movsd
+				// copy tri indices
+				rep		movsd
 
-			add		edx, eax				// edx= NL3D_LandscapeGlobals_PassNTri + NumTri;
+				add		edx, eax				// edx= NL3D_LandscapeGlobals_PassNTri + NumTri;
 
-			// NL3D_LandscapeGlobals_PassTriCurPtr= edi= new ptr after copy
-			mov		NL3D_LandscapeGlobals_PassTriCurPtr, edi
-			mov		NL3D_LandscapeGlobals_PassNTri, edx
-		}
+				// NL3D_LandscapeGlobals_PassTriCurPtr= edi= new ptr after copy
+				mov		NL3D_LandscapeGlobals_PassTriCurPtr, edi
+				mov		NL3D_LandscapeGlobals_PassNTri, edx
+			}
+		#else		
+			__asm
+			{
+				mov		ebx, fv
+				mov		edi, NL3D_LandscapeGlobals_PassTriCurPtr
+
+				mov		edx, NL3D_LandscapeGlobals_PassNTri
+				xor		eax, eax		// Avoid AGI stall.
+
+				movzx	ecx,  word ptr [ebx]
+				lea		esi, [ebx+2]
+
+				mov		eax, ecx				// eax= bkup NumTris
+				lea		ecx, [ecx + ecx*2]		// ecx= nTriIndex= NumTris*3
+				
+				test	ecx, 1
+				jne		odd_number				
+				shr     ecx, 1
+				// for alignment, first copy a single word
+				movsw
+				dec	ecx				
+				rep movsd
+				movsw							
+				jmp		even_number_done
+	odd_number:
+				shr ecx, 1
+				// for alignment, first copy a single word
+				movsw
+				rep movsd
+	even_number_done:
+
+				add		edx, eax				// edx= NL3D_LandscapeGlobals_PassNTri + NumTri;
+
+				// NL3D_LandscapeGlobals_PassTriCurPtr= edi= new ptr after copy
+				mov		NL3D_LandscapeGlobals_PassTriCurPtr, edi
+				mov		NL3D_LandscapeGlobals_PassNTri, edx
+			}
+	#endif
 #else
 		uint	nTriIndex= *fv*3;
 		// Fill and increment the array.
-		memcpy( NL3D_LandscapeGlobals_PassTriCurPtr, fv+1, nTriIndex * sizeof(uint32) );
+		#ifndef NL_LANDSCAPE_INDEX16
+			memcpy( NL3D_LandscapeGlobals_PassTriCurPtr, fv+1, nTriIndex * sizeof(uint32) );
+		#else		
+			memcpy( NL3D_LandscapeGlobals_PassTriCurPtr, fv+1, nTriIndex * sizeof(uint16) );
+		#endif
 		NL3D_LandscapeGlobals_PassTriCurPtr+= nTriIndex;
 		NL3D_LandscapeGlobals_PassNTri+= *fv;
 #endif

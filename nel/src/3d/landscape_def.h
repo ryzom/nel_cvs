@@ -1,7 +1,7 @@
 /** \file landscape_def.h
  * Global Definitions for Landscape
  *
- * $Id: landscape_def.h,v 1.13 2004/03/31 14:30:06 berenguier Exp $
+ * $Id: landscape_def.h,v 1.14 2004/10/19 12:49:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -168,8 +168,9 @@ public:
 
 // ***************************************************************************
 // Out of CLandscapeGlobals, because myabe used in __asm{}
-extern	uint		NL3D_LandscapeGlobals_PassNTri;
-extern	uint32		*NL3D_LandscapeGlobals_PassTriCurPtr;
+extern	uint					NL3D_LandscapeGlobals_PassNTri;
+extern	void					*NL3D_LandscapeGlobals_PassTriCurPtr;
+extern  CIndexBuffer::TFormat	NL3D_LandscapeGlobals_PassTriFormat;
 
 
 

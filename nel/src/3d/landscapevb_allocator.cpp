@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.17 2004/04/22 16:43:09 vizerie Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.18 2004/10/19 12:49:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -150,6 +150,9 @@ uint			CLandscapeVBAllocator::allocateVertex()
 			newResize= NL3D_LANDSCAPE_VERTEX_ALLOCATE_SECURITY;
 		_NumVerticesAllocated+= newResize;
 		// re-allocate VB.
+		#ifdef NL_LANDSCAPE_INDEX16
+			nlassert(_NumVerticesAllocated <= 65535);
+		#endif
 		allocateVertexBuffer(_NumVerticesAllocated);
 		// resize infos on vertices.
 		_VertexInfos.resize(_NumVerticesAllocated);
@@ -175,6 +178,9 @@ uint			CLandscapeVBAllocator::allocateVertex()
 	nlassert(id<_NumVerticesAllocated);
 	nlassert(_VertexInfos[id].Free);
 	_VertexInfos[id].Free= false;
+
+	
+		
 
 	return id;
 }

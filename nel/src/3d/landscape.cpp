@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.150 2004/09/02 17:01:43 vizerie Exp $
+ * $Id: landscape.cpp,v 1.151 2004/10/19 12:49:58 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -260,7 +260,8 @@ CLandscape::CLandscape() :
 	_TextureDLM= new CTextureDLM(NL3D_LANDSCAPE_DLM_WIDTH, NL3D_LANDSCAPE_DLM_HEIGHT);
 	_PatchDLMContextList= new CPatchDLMContextList;
 	_DLMMaxAttEnd= 30.f;
-
+	
+	CLandscapeGlobals::PassTriArray.setFormat(NL_LANDSCAPE_INDEX_FORMAT);	
 
 	// Alloc some global space for tri rendering.
 	if( CLandscapeGlobals::PassTriArray.getNumIndexes() < 1000 )
@@ -940,11 +941,14 @@ static inline void	initPassTriArray(CPatchRdrPass &pass, uint32 numIndex)
 	// We use 	
 	/*if( CLandscapeGlobals::PassTriArray.getNumIndexes() < numIndices )
 		CLandscapeGlobals::PassTriArray.setNumIndexes( numIndices );*/			
-	CLandscapeGlobals::PassTriArray.setNumIndexes(numIndex);	
+	CLandscapeGlobals::PassTriArray.setFormat(NL_LANDSCAPE_INDEX_FORMAT);
+	CLandscapeGlobals::PassTriArray.setNumIndexes(numIndex);
 	// reset ptr.
 	nlassert (!CLandscapeGlobals::PassTriArray.isLocked());
 	CLandscapeGlobals::PassTriArray.lock (CLandscapeGlobals::PassTriArrayIBA);
 	NL3D_LandscapeGlobals_PassTriCurPtr= CLandscapeGlobals::PassTriArrayIBA.getPtr();	
+	NL3D_LandscapeGlobals_PassTriFormat = CLandscapeGlobals::PassTriArrayIBA.getFormat();
+
 }
 
 

@@ -1,7 +1,7 @@
 /** \file landscape_face_vector_manager.h
  * <File description>
  *
- * $Id: landscape_face_vector_manager.h,v 1.2 2003/04/23 10:08:48 berenguier Exp $
+ * $Id: landscape_face_vector_manager.h,v 1.3 2004/10/19 12:49:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,11 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 #include <vector>
+#include "3d/index_buffer.h"
 
 
 namespace NL3D {
-
-
 
 // ***************************************************************************
 /**
@@ -55,14 +54,14 @@ public:
 	/** return an Array of Tris with this Format: NumTris, index0, index1, index2....
 	 *	NB: NumTris really means number of triangles, not number of indexes (which is 3*)!
 	 */
-	uint32					*createFaceVector(uint numTri);
+	TLandscapeIndexType					*createFaceVector(uint numTri);
 	/// delete a faceVector. NB: no check.
-	void					deleteFaceVector(uint32	*fv);
+	void					deleteFaceVector(TLandscapeIndexType *fv);
 
 
 private:
-	// Array of Free Blocks List. NB: actually, in place of a uint32, it is a uint32* we point here (for next!!)
-	std::vector<uint32*>	_Blocks;
+	// Array of Free Blocks List. NB: actually, in place of a TLandscapeIndexType, it is a TLandscapeIndexType* we point here (for next!!)
+	std::vector<TLandscapeIndexType*>	_Blocks;
 
 	uint		getBlockIdFromNumTri(uint numTris);
 

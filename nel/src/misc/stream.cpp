@@ -8,73 +8,163 @@
  */
 
 /*
- * $Id: stream.cpp,v 1.1 2000/09/08 13:06:49 berenguier Exp $
+ * $Id: stream.cpp,v 1.2 2000/09/12 08:16:20 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
 
 #include "nel/misc/stream.h"
 #include "nel/misc/assert.h"
+using namespace std;
 
 
-namespace MISC
+namespace NLMISC
 {
 
 
 // ======================================================================================================
-set<CClassRegistry::CClassNode>		CClassRegistry::RegistredClasses;
-
-	
 // ======================================================================================================
-IStreamable	*CClassRegistry::create(const string &className)  throw(EStream)
-{
-	set<CClassNode>::iterator	it;
-	CClassNode	node;
+// IStream.
+// ======================================================================================================
+// ======================================================================================================
 
-	node.ClassName= className;
-	it=RegistredClasses.find(node);
-	if(it==RegistredClasses.end())
-		return NULL;
+
+// ======================================================================================================
+bool	IStream::_ThrowOnOlder=false;
+bool	IStream::_ThrowOnNewer=true;
+
+
+// ======================================================================================================
+void	IStream::setVersionException(bool throwOnOlder, bool throwOnNewer)
+{
+	_ThrowOnOlder=throwOnOlder;
+	_ThrowOnNewer=throwOnNewer;
+}
+
+// ======================================================================================================
+void	IStream::getVersionException(bool &throwOnOlder, bool &throwOnNewer)
+{
+	throwOnOlder=_ThrowOnOlder;
+	throwOnNewer=_ThrowOnNewer;
+}
+
+
+// ======================================================================================================
+// ======================================================================================================
+// ======================================================================================================
+
+
+// ======================================================================================================
+void			IStream::serialPtr(IStreamable* &ptr) throw(ERegistry, EStream)
+{
+	uint64	node;
+
+	if(isReading())
+	{
+		serial(node);
+		if(node==0)
+			ptr=NULL;
+		else
+		{
+			ptr= (IStreamable*)(void*)node;
+
+			// Test if object already created/read.
+			// If the Id was not yet registered (ie insert works).
+			if( _IdSet.insert(node).second==true )
+			{
+				// Read the class name.
+				string	className;
+				serial(className);
+
+				// Construct object.
+				ptr= dynamic_cast<IStreamable*> (CClassRegistry::create(className));
+				if(ptr==NULL)
+					throw EUnregisteredClass();
+
+				assert(CClassRegistry::checkObject(ptr));
+
+				// Read the object!
+				ptr->serial(*this);
+			}
+		}
+	}
 	else
 	{
-		IStreamable	*ptr;
-		ptr=it->Creator();
-		assert(CClassRegistry::checkObject(ptr));
-		return ptr;
+		if(ptr==NULL)
+		{
+			node= 0;
+			serial(node);
+		}
+		else
+		{
+			node= (uint64)ptr;
+			serial(node);
+
+			// Test if object already written.
+			// If the Id was not yet registered (ie insert works).
+			if( _IdSet.insert(node).second==true )
+			{
+				assert(CClassRegistry::checkObject(ptr));
+
+				// Write the class name.
+				string	className=ptr->getClassName();
+				serial(className);
+
+				// Write the object!
+				ptr->serial(*this);
+			}
+		}
 	}
 
 }
+// ======================================================================================================
+void			IStream::resetPtrTable()
+{
+	_IdSet.clear();
+}
+
 
 // ======================================================================================================
-void		CClassRegistry::registerClass(const string &className, IStreamable* (*creator)(), const string &typeidCheck)  throw(EStream)
+// ======================================================================================================
+// ======================================================================================================
+
+
+// ======================================================================================================
+void			IStream::serialVersion(uint &streamVersion, uint currentVersion) throw(EStream)
 {
-	CClassNode	node;
-	node.ClassName= className;
-	node.Creator=creator;
-	node.TypeIdCheck= typeidCheck;
-	if(!RegistredClasses.insert(node).second)
+	uint8	b;
+	uint32	v;
+
+	if(isReading())
 	{
-		assert(false);
-		throw EStream(EStream::RegisteredClass);
+		serial(b);
+		if(b==0xFF)
+			serial(v);
+		else
+			v=b;
+		streamVersion=v;
+
+		// Exception test.
+		if(_ThrowOnOlder && streamVersion < currentVersion)
+			throw EOlderStream();
+		if(_ThrowOnNewer && streamVersion > currentVersion)
+			throw ENewerStream();
 	}
-}
-
-// ======================================================================================================
-bool		CClassRegistry::checkObject(IStreamable* obj)
-{
-	set<CClassNode>::iterator	it;
-	CClassNode	node;
-	node.ClassName= obj->getClassName();
-
-	it=RegistredClasses.find(node);
-	if(it==RegistredClasses.end())
-		return false;
-	node= *it;
-
-	if( node.TypeIdCheck != string(typeid(*obj).name()) )
-		return false;
-
-	return true;
+	else
+	{
+		v= streamVersion=currentVersion;
+		if(v>=0xFF)
+		{
+			b=0xFF;
+			serial(b);
+			serial(v);
+		}
+		else
+		{
+			b=v;
+			serial(b);
+		}
+	}
 }
 
 

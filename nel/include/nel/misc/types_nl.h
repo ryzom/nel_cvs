@@ -18,6 +18,9 @@
 #ifndef NL_TYPES_H
 #define NL_TYPES_H
 
+
+#include	<exception>
+
 // Operating systems
 
 #ifdef WIN32
@@ -57,14 +60,14 @@ typedef	unsigned	__int64		uint64;
 typedef	signed		__int32		sint;			// at least 32bits (depend of processor)
 typedef	unsigned	__int32		uint;			// at least 32bits (depend of processor)
 
-#elif NL_OS_LINUX
+#elif defined (NL_OS_LINUX)
 
 typedef	signed		char		sint8;
 typedef	unsigned	char		uint8;
 typedef	signed		short		sint16;
 typedef	unsigned	short		uint16;
-typedef	signed		int			sint32;			// 32 bits exclusively!	(a discuter...)
-typedef	unsigned	int			uint32;			// 32 bits exclusively!	(a discuter...)
+typedef	signed		int			sint32;
+typedef	unsigned	int			uint32;
 typedef	signed		long long	sint64;
 typedef	unsigned	long long	uint64;
 
@@ -78,10 +81,10 @@ typedef	unsigned	short		wchar;
 // TODO: wstring
 
 /*
- * classe de base a toutes les exceptions
- * permet d'ajouter de nouveaux comportements aux exceptions
+ * base class for all exceptions
+ * possibility to add new functionnalities and behaviors.
  */
-class Exception
+class Exception : public exception
 {
 };
 

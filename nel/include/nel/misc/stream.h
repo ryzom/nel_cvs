@@ -8,9 +8,9 @@
  */
 
 /*
- * $Id: stream.h,v 1.3 2000/09/08 13:05:30 berenguier Exp $
+ * $Id: stream.h,v 1.4 2000/09/12 08:15:38 berenguier Exp $
  *
- * This File handles CRegistry and CBaseStream 
+ * This File handles IStream 
  */
 
 #ifndef NL_STREAM_H
@@ -18,12 +18,13 @@
 
 
 #include	"nel/misc/types_nl.h"
+#include	"nel/misc/class_registry.h"
+#include	<utility>
 #include	<string>
 #include	<set>
-using namespace std;
 
 
-namespace	MISC
+namespace	NLMISC
 {
 
 
@@ -35,41 +36,24 @@ namespace	MISC
 
 
 // ======================================================================================================
-class EStream : public Exception
+/**
+ * Stream Exception.
+ * \author Lionel Berenguier
+ * \author Vianney Lecroart
+ * \author Nevrax France
+ * \date 2000
+ */
+class EStream
 {
-public:
-	enum	TError
-	{
-		Eof,
-		OlderVersion,
-		NewerVersion,
-		RegisteredClass,
-		UnregisteredClass
-	};
-
-public:
-	TError	Error;
-
-public:
-	EStream(const TError &e) {Error=e;}
-	const	char	*errorString() const
-	{
-		switch(Error)
-		{
-			case Eof: 
-				return "End of file"; break;
-			case OlderVersion: 
-				return "Too Older Version"; break;
-			case NewerVersion: 
-				return "The version read is newer than the reader"; break;
-			case RegisteredClass: 
-				return "Class already registered"; break;
-			case UnregisteredClass: 
-				return "Class not registered"; break;
-			default:
-				return "Unknown Stream Exception"; break;
-		};
-	}
+	virtual const char	*what() const throw() {return "Stream Error";}
+};
+class EOlderStream : public EStream
+{
+	virtual const char	*what() const throw() {return "The version in stream is older than the class";}
+};
+class ENewerStream : public EStream
+{
+	virtual const char	*what() const throw() {return "The version in stream is newer than the class";}
 };
 
 
@@ -83,17 +67,26 @@ class	IStreamable;
  * \author Nevrax France
  * \date 2000
  * This is the base interface for stream objects. Differents kind of streams may be implemented,
- * by specifying write() / read() methods. Sample of streams: CMemoryStream, CFileStream ...
+ * by specifying serial(uint8*, len) methods. Sample of streams: COutMemoryStream, CInFileStream ...
  */
 class IStream
 {
 public:
-	/// Constructor.
+	/// Set the behavior of IStream regarding input stream that are older/newer than the class (see serialVersion()). 
+	/// If set to true, IStream throws a EStream::Older/Newer/Version when needed. By default, the behavior is
+	/// throwOnOlder=false, throwOnNewer=true.
+	static	void	setVersionException(bool throwOnOlder, bool throwOnNewer);
+	static	void	getVersionException(bool &throwOnOlder, bool &throwOnNewer);
+
+
+public:
+	/// Constructor. Notice that those setup MUST be set at contruction.
 	IStream(bool inputStream, bool needSwap);
 	virtual ~IStream() {}
 
-	///
+	/// Is this stream a Read/Input stream?
 	bool			isReading();
+
 
 	/// template Object serialisation.
 	template<class T>
@@ -112,9 +105,9 @@ public:
 	void			serial(double &b) throw(EStream);
 	void			serial(bool &b) throw(EStream);
 	void			serial(char &b) throw(EStream);
-	void			serial(string &b) throw(EStream);
+	void			serial(std::string &b) throw(EStream);
 	void			serial(wchar &b) throw(EStream);
-	void			serial(wstring &b) throw(EStream);
+	void			serial(std::wstring &b) throw(EStream);
 
 	/// Template for easy multiple serialisation.
 	template<class T0,class T1>
@@ -128,28 +121,44 @@ public:
 	template<class T0,class T1,class T2,class T3,class T4,class T5>
 	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e, T5 &f) throw(EStream);
 
+
+	/// STL pair<> support.
+	template<class T0, class T1>
+		void			serial(std::pair<T0, T1> &p) throw(EStream);
+
+	/// Serialize standard STL containers.
+	/// Support up to uint64 length containers, but store the length as uint32 if less than 4G.
+	template<class T>
+	void			serialCont(T &container) throw(EStream);
+
+
 	/// Serialize Polymorphic Objet Ptr. Works with NULL pointers.
-	void			serialPtr(IStreamable* &ptr);
+	void			serialPtr(IStreamable* &ptr) throw(ERegistry, EStream);
+
+
+	/// Serialize a version number. NB: Version Number is read/store as a uint8, or uint32 if too bigger..
+	void			serialVersion(uint &streamVersion, uint currentVersion) throw(EStream);
+
+
 
 protected:
 
-	/// Derived stream must call this method if they provide reset()-like methods.
-	void			resetPtrTable();
+	/// If Derived stream provide reset()-like methods, they must call this method in their reset() methods.
+	void				resetPtrTable();
 
 	/// Methods to specify.
-	virtual void		write(const uint8 *buf, uint len) throw(EStream)=0;
-	virtual void		write(const bool &bit) throw(EStream)=0;
-
-	virtual void		read(uint8 *buf, uint len) throw(EStream)=0;
-	virtual void		read(bool &bit) throw(EStream)=0;
+	virtual void		serial(uint8 *buf, uint len) throw(EStream)=0;
+	virtual void		serialBit(bool &bit) throw(EStream)=0;
 
 private:
 	bool	_InputStream;
 	bool	_NeedSwap;
+	static	bool	_ThrowOnOlder;
+	static	bool	_ThrowOnNewer;
 
 	// Ptr registry. We store 64 bit Id, to be compatible with futur 64+ bits pointers.
-	set<uint64>	_IdSet;
-	set<uint64>::iterator	ItIdSet;
+	std::set<uint64>	_IdSet;
+	std::set<uint64>::iterator	ItIdSet;
 };
 
 
@@ -168,65 +177,19 @@ private:
  * \author Nevrax France
  * \date 2000
  */
-class IStreamable
+class IStreamable : public IClassable
 {
 public:
 	virtual void		serial(IStream	&f) throw(EStream)=0;
-	virtual string		getClassName() =0;
 };
 
 
-// ======================================================================================================
-/**
- * The Class registry where we can instanciate IStreamable objects from their name.
- * \author Lionel Berenguier
- * \author Vianney Lecroart
- * \author Nevrax France
- * \date 2000
- */
-class CClassRegistry
-{
-public:
-	static	IStreamable	*create(const string &className) throw(EStream);
-	static	void		registerClass(const string &className, IStreamable* (*creator)(), const string &typeidCheck) throw(EStream);
 
-
-private:
-	static	bool		checkObject(IStreamable* obj);
-	friend	class		IStream;
-
-	struct	CClassNode
-	{
-		string			ClassName;
-		string			TypeIdCheck;
-		IStreamable*	(*Creator)();
-		bool	operator<(const CClassNode &n) const
-		{
-			return ClassName<n.ClassName;
-		}
-	};
-	static	set<CClassNode>		RegistredClasses;
-};
-
-
-// Usefull Macros.
-#define	MISC_DECLARE_STREAMABLE(_class_)					\
-	virtual string	getClassName() {return #_class_;}		\
-	static	void IStreamable	*creator() {return new _class_;}
-#define	MISC_REGISTER_CLASS(_class_) MISC::CRegistry::registerClass(#_class_, _class_::creator, typeid(_class_).name());
-
-
-
-// ======================================================================================================
 // Inline Implementation.
-// ======================================================================================================
-
-
 #include "nel/misc/stream_inline.h"
 
 
-
-}	// namespace MISC.
+}	// namespace NLMISC.
 
 
 #endif // NL_STREAM_H

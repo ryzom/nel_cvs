@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.21 2002/12/30 13:57:18 corvazier Exp $
+ * $Id: mutex.h,v 1.22 2003/03/25 14:00:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,12 +139,20 @@ public:
 		uint32 result;
 		__asm 
 		{ 
-			mov eax,1
+/*			mov eax,1
 			mov ebx,l
 
 			// Lock is implicit with xchg
 			xchg [ebx],eax
 
+			mov [result],eax*/
+			mov edx,1
+			mov ecx,l
+			mov eax,[ecx]
+test_again:
+			nop
+			cmpxchg     dword ptr [ecx],edx
+			jne         test_again
 			mov [result],eax
 		}
 		return result != 0;
@@ -200,11 +208,11 @@ private:
 
 /**
  * Fast mutex for multiprocessor implementation (not fairly).
- * Used for multiprocessor critical section synchronisation (no sleep).
+ * Used for multiprocessor critical section synchronisation.
  * The mutex ARE NOT recursive (ie don't call enter() several times
  * on the same mutex from the same thread without having called leave()) ;
- * The threads ARE NOT put to sleep. They are waiting using CPU time.
- * This mutex works but is not optimal for multithread because the thread is not put to sleep.
+ * The threads use a spin system to wait a little time before be put to sleep. 
+ * It waits using CPU time.
  *
  * Implementation notes:
  *  - Implementated under WIN32
@@ -233,12 +241,20 @@ public:
 		uint32 result;
 		__asm 
 		{ 
-			mov eax,1
+/*			mov eax,1
 			mov ebx,l
 
 			// Lock is implicit with xchg
 			xchg [ebx],eax
 
+			mov [result],eax*/
+			mov edx,1
+			mov ecx,l
+			mov eax,[ecx]
+test_again:
+			nop
+			cmpxchg     dword ptr [ecx],edx
+			jne         test_again
 			mov [result],eax
 		}
 		return result != 0;
@@ -248,6 +264,54 @@ public:
 	{
 		while (atomic_swap (&_Lock))
 		{
+			static uint last = 0;
+			static uint _max = 30;
+			uint spinMax = _max;
+			uint lastSpins = last;
+			volatile uint temp = 17;
+			uint i;			
+			for (i = 0; i < spinMax; ++i) 
+			{
+				if (i < lastSpins/2 || _Lock) 
+				{
+					temp *= temp; 
+					temp *= temp;
+					temp *= temp; 
+					temp *= temp;
+				}
+				else 
+				{
+					if (!atomic_swap(&_Lock)) 
+					{
+						last = i;
+						_max = 1000;
+						return;
+					}
+				}
+			}
+
+			_max = 30;
+			
+			// First test
+			for (i = 0 ;; ++i)
+			{
+				uint wait_time = i + 6;
+				
+				// Increment wait time with a log function
+				if (wait_time > 27) 
+					wait_time = 27;
+				
+				// Sleep
+				if (wait_time <= 20) 
+					wait_time = 0;
+				else
+					wait_time = 1 << (wait_time - 20);
+				
+				if (!atomic_swap (&_Lock))
+					break;
+				
+				Sleep (wait_time);
+			}
 		}
 	}
 

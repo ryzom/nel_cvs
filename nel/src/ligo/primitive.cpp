@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.10 2002/12/19 14:33:07 corvazier Exp $
+ * $Id: primitive.cpp,v 1.11 2002/12/30 13:59:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -455,7 +455,7 @@ bool CPrimPoint::read (xmlNodePtr xmlNode, const char *filename, uint version)
 		if (!ReadVector (Point, filename, ptNode))
 			return false;
 
-		ptNode = GetFirstChildNode (xmlNode, filename, "ANGLE");
+		ptNode = CIXml::getFirstChildNode (xmlNode, "ANGLE");
 		if (ptNode)
 		{
 			// Read a float
@@ -1324,7 +1324,7 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version)
 	// Read the expanded flag
 	string expanded;
 	Expanded = true;
-	if (GetPropertyString (expanded, filename, xmlNode, "EXPANDED"))
+	if (CIXml::getPropertyString (expanded, xmlNode, "EXPANDED"))
 		Expanded = (expanded != "false");
 
 	// Read the properties

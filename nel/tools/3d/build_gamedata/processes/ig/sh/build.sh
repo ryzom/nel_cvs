@@ -24,8 +24,11 @@ date
 # Build the IG_LAND made with the LevelDesign Tool
 # ************************************************
 
-# Get the ligo value
+# Get the primitive directory
 continentdir=`cat ../../cfg/config.cfg | grep "leveldesign_igexport_continent_dir" | sed -e 's/leveldesign_igexport_continent_dir//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+# Get the form directory
+form_dir=`cat ../../cfg/site.cfg | grep "level_design_directory" | sed -e 's/level_design_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 if ( test "$continentdir" )
 then
@@ -41,23 +44,25 @@ then
 		rm prim_export.cfg
 		echo "// prim_export.cfg" > prim_export.cfg
 
-		echo "EXP_OutIGDir = \"ig_land_ld\";" >> prim_export.cfg
-		echo "EXP_ZoneWDir = \"..\\zone\\zone_welded\";" >> prim_export.cfg
+		echo "OutIGDir = \"ig_land_ld\";" >> prim_export.cfg
+		echo "ZoneWDir = \"..\\zone\\zone_welded\";" >> prim_export.cfg
 
 		name_bank=`cat ../../cfg/properties.cfg | grep "bank_name" | sed -e 's/bank_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
-		echo "EXP_SmallBank = $name_bank" >> prim_export.cfg
+		echo "SmallBank = $name_bank" >> prim_export.cfg
 		name_farbank=`cat ../../cfg/properties.cfg | grep "bankfar_name" | sed -e 's/bankfar_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
-		echo "EXP_FarBank = $name_farbank" >> prim_export.cfg
+		echo "FarBank = $name_farbank" >> prim_export.cfg
 
 		displacedir=`cat ../../cfg/directories.cfg | grep "displace_source_directory" | sed -e 's/displace_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 		dir_database=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-		echo "EXP_DisplaceDir = \"$dir_database/$displacedir\";" >> prim_export.cfg
+		echo "DisplaceDir = \"$dir_database/$displacedir\";" >> prim_export.cfg
 
-		echo "EXP_CellSize = 160.0;" >> prim_export.cfg
+		echo "CellSize = 160.0;" >> prim_export.cfg
 
 		# Set the continent directory to export
-		echo "EXP_PrimFloraDir = $continentdir" >> prim_export.cfg
+		echo "PrimDir = $continentdir" >> prim_export.cfg
 
+		# Set the dfn directory to export
+		echo "FormDir = \"$form_dir\";" >> prim_export.cfg
 
 		# *******************
 		# Launch the exporter

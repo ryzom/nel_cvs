@@ -1,7 +1,7 @@
 /** \file max_to_ligo.cpp
  * Convert a 3dsmax nel patch mesh in ligo data
  *
- * $Id: max_to_ligo.cpp,v 1.3 2002/02/18 15:22:12 corvazier Exp $
+ * $Id: max_to_ligo.cpp,v 1.4 2002/12/30 13:59:52 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -168,6 +168,9 @@ void CMaxToLigo::errorMessage (const char *msg, const char *title, Interface& it
 		// Text message
 		mprintf ((string(msg) + "\n").c_str());
 	}
+
+	// Output in log
+	nlwarning ("LIGO ERROR : %s", msg);
 }
 
 // ***************************************************************************

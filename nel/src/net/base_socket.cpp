@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.20 2000/11/21 17:27:07 valignat Exp $
+ * $Id: base_socket.cpp,v 1.21 2000/11/22 15:17:20 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,7 +114,7 @@ CBaseSocket::CBaseSocket( bool reliable, bool logging ) :
 
 	// Set Reuse Address On
 	bool value = true;
-	if ( setsockopt( _Sock, SOL_SOCKET, SO_REUSEADDR, (char*)value, sizeof(value) ) != 0 )
+	if ( setsockopt( _Sock, SOL_SOCKET, SO_REUSEADDR, (char*)&value, sizeof(value) ) != 0 )
 	{
 		throw ESocket( "ReuseAddr failed. ", ERROR_NUM );
 	}

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.94 2001/10/25 12:12:03 cado Exp $
+ * $Id: service.cpp,v 1.95 2001/10/25 12:28:12 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -524,7 +524,7 @@ sint IService::main (void *wd)
 		// Load the default stream format
 		try
 		{
-			CMessage::setDefaultStringMode( ConfigFile.getVar("StringFormat").asInt() == 1 );
+			CMessage::setDefaultStringMode( ConfigFile.getVar("StringMsgFormat").asInt() == 1 );
 		}
 		catch ( EUnknownVar& )
 		{

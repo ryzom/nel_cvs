@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.61 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.62 2004/05/11 16:20:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -349,7 +349,7 @@ UPointLight			CSceneUser::createPointLight()
 		return UPointLight (pointLightModel);
 	}
 	else
-		UPointLight ();
+		return UPointLight ();
 }
 
 // ***************************************************************************

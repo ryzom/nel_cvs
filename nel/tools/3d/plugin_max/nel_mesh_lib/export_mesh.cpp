@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.40 2002/04/23 16:29:23 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.41 2002/05/07 09:28:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1388,7 +1388,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, TimeValue time, const TInodeP
 				if (coarseMesh)
 				{
 					// Force vertex format
-					buildMesh.VertexFlags=NL3D_COARSEMESH_VERTEX_FORMAT;
+					buildMesh.VertexFlags=NL3D_COARSEMESH_VERTEX_FORMAT_EXPORT;
 				}
 
 				// Build the mesh with the build interface

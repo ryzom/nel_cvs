@@ -24,16 +24,17 @@ public:
 	CSliderCtrl	TimeLineCtrl;
 	CButton	PlayCtrl;
 	CButton	StopCtrl;
-	float	CurrentFrame;
 	float	End;
 	float	Speed;
 	float	Start;
 	BOOL	Loop;
+	int		UICurrentFrame;
 	//}}AFX_DATA
 
 	bool					Playing;
 	uint64					LastTime;
 	CObjectViewer*			Main;
+	float					CurrentFrame;
 
 	void handle ();
 	void setAnimTime (float animStart, float animEnd);

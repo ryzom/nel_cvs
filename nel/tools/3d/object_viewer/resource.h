@@ -51,6 +51,7 @@
 #define IDC_INVERT_SKELETON_WEIGHT      1035
 #define IDC_SPEED                       1036
 #define IDC_LOAD_MESH                   1036
+#define IDC_ENABLE                      1036
 #define IDC_LOAD_PLAYLIST               1037
 #define IDC_CLEAR_SCENE                 1038
 #define IDC_SAVE_PLAYLIST               1039
@@ -62,6 +63,7 @@
 #define IDC_PLAY                        1043
 #define IDC_LOOP                        1044
 #define IDC_RESET_CAMERA                1044
+#define IDC_EULER                       1045
 
 // Next default values for new objects
 // 

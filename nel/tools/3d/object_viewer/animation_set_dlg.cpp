@@ -19,14 +19,14 @@ using namespace NL3D;
 // CAnimationSetDlg dialog
 
 
-CAnimationSetDlg::CAnimationSetDlg(CAnimationSet* animationSet, CWnd* pParent /*=NULL*/)
+CAnimationSetDlg::CAnimationSetDlg(CObjectViewer* objView, CWnd* pParent /*=NULL*/)
 	: CDialog(CAnimationSetDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CAnimationSetDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 
-	_AnimationSet=animationSet;
+	_ObjView=objView;
 }
 
 
@@ -71,6 +71,9 @@ void CAnimationSetDlg::OnAddAnimation ()
 
 				// Load the animation
 				loadAnimation (filename);
+
+				// Touch the channel mixer
+				_ObjView->reinitChannels ();
 			}
 		}
 		catch (Exception& e)
@@ -101,6 +104,9 @@ void CAnimationSetDlg::OnAddSkelWt()
 
 				// Load the animation
 				loadSkeleton (filename);
+
+				// Touch the channel mixer
+				_ObjView->reinitChannels  ();
 			}
 		}
 		catch (Exception& e)
@@ -114,8 +120,12 @@ void CAnimationSetDlg::OnAddSkelWt()
 
 void CAnimationSetDlg::OnReset () 
 {
-	// TODO: Add your control notification handler code here
-	_AnimationSet->reset ();
+	// Reset the channel mixer slots
+	_ObjView->resetSlots ();
+
+	// Clear the filename array
+	_ListAnimation.clear();
+	_ListSkeleton.clear();
 
 	// Clear the TREE
 	Tree.DeleteAllItems ();
@@ -136,27 +146,14 @@ void CAnimationSetDlg::loadAnimation (const char* fileName)
 		// Make an animation
 		CAnimation *anim=new CAnimation;
 
-		// Add an animation
-		_AnimationSet->addAnimation (name, anim);
-
 		// Serial it
 		anim->serial (file);
 
-		// Insert an intem
-		HTREEITEM item=Tree.InsertItem (name);
-		nlassert (item!=NULL);
+		// Add the animation
+		addAnimation (anim, name);
 
-		// For all tracks in the animation
-		std::set<std::string> setString;
-		anim->getTrackNames (setString);
-		std::set<std::string>::iterator ite=setString.begin();
-		while (ite!=setString.end())
-		{
-			// Add this string
-			Tree.InsertItem (ite->c_str(), item);
-
-			ite++;
-		}
+		// Add the filename in the list
+		_ListAnimation.push_back (fileName);
 	}
 	else
 	{
@@ -166,6 +163,33 @@ void CAnimationSetDlg::loadAnimation (const char* fileName)
 		MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
 	}
 
+}
+
+// ***************************************************************************
+
+void CAnimationSetDlg::addAnimation (NL3D::CAnimation* anim, const char* name)
+{
+	// Add an animation
+	_ObjView->_AnimationSet.addAnimation (name, anim);
+
+	// Rebuild the animationSet
+	_ObjView->_AnimationSet.build ();
+
+	// Insert an intem
+	HTREEITEM item=Tree.InsertItem (name);
+	nlassert (item!=NULL);
+
+	// For all tracks in the animation
+	std::set<std::string> setString;
+	anim->getTrackNames (setString);
+	std::set<std::string>::iterator ite=setString.begin();
+	while (ite!=setString.end())
+	{
+		// Add this string
+		Tree.InsertItem (ite->c_str(), item);
+
+		ite++;
+	}
 }
 
 // ***************************************************************************
@@ -184,13 +208,16 @@ void CAnimationSetDlg::loadSkeleton (const char* fileName)
 		CAnimation *anim=new CAnimation;
 
 		// Add an animation
-		uint id=_AnimationSet->addSkeletonWeight (name);
+		uint id=_ObjView->_AnimationSet.addSkeletonWeight (name);
 
 		// Get the skeleton pointer
-		CSkeletonWeight* skel=_AnimationSet->getSkeletonWeight (id);
+		CSkeletonWeight* skel=_ObjView->_AnimationSet.getSkeletonWeight (id);
 
 		// Serial it
 		skel->serial (file);
+
+		// Add the filename in the list
+		_ListSkeleton.push_back (fileName);
 
 		// Insert an intem
 		HTREEITEM item=Tree.InsertItem (name);

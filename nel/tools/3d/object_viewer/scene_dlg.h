@@ -13,6 +13,7 @@
 class CSceneDlg : public CDialog
 {
 // Construction
+	friend class CObjectViewer;
 public:
 	CSceneDlg(class CObjectViewer *objView, CWnd* pParent = NULL);   // standard constructor
 	~CSceneDlg();
@@ -23,6 +24,7 @@ public:
 	BOOL	ViewAnimation;
 	BOOL	ViewAnimationSet;
 	BOOL	ViewSlots;
+	BOOL	Euler;
 	//}}AFX_DATA
 
 	class CObjectViewer	*ObjView;

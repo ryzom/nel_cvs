@@ -14,9 +14,10 @@
 
 class CAnimationSetDlg : public CDialog
 {
+	friend class CObjectViewer;
 // Construction
 public:
-	CAnimationSetDlg (NL3D::CAnimationSet* animationSet, CWnd* pParent = NULL);   // standard constructor
+	CAnimationSetDlg (class CObjectViewer* objView, CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CAnimationSetDlg)
@@ -37,10 +38,13 @@ protected:
 
 	// Load an animation
 	void loadAnimation (const char* fileName);
+	void addAnimation (NL3D::CAnimation* pAnim, const char* name);
 	void loadSkeleton (const char* fileName);
 
 	// Pointer on an animation set
-	NL3D::CAnimationSet*		_AnimationSet;
+	CObjectViewer*				_ObjView;
+	std::vector<std::string>	_ListAnimation;
+	std::vector<std::string>	_ListSkeleton;
 
 	// Generated message map functions
 	//{{AFX_MSG(CAnimationSetDlg)

@@ -40,9 +40,10 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"std_afx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
@@ -52,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 /nologo /subsystem:windows /dll /machine:I386
+# ADD LINK32 /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
 
@@ -78,7 +79,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
+# ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
 
@@ -92,18 +94,54 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=.\animation_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\animation_set_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\blend_wnd.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\main_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -117,14 +155,41 @@ SOURCE=.\object_viewer.rc
 # Begin Source File
 
 SOURCE=.\scene_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\select_string.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\slot_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -154,6 +219,10 @@ SOURCE=.\main_dlg.h
 # Begin Source File
 
 SOURCE=.\object_viewer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\object_viewer_interface.h
 # End Source File
 # Begin Source File
 

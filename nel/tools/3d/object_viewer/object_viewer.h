@@ -20,6 +20,7 @@
 #define REGKEY_OBJ_VIEW_SLOT_DLG "Software\\Nevrax\\nel\\object_viewer\\slot_dlg"
 
 #include "resource.h"
+#include "object_viewer_interface.h"
 #include "main_dlg.h"
 #include "animation_set_dlg.h"
 #include "animation_dlg.h"
@@ -55,25 +56,34 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef OBJECT_VIEWER_EXPORT
-#define OBJECT_VIEWER_EXPORT __declspec( dllimport ) 
-#endif // OBJECT_VIEWER_EXPORT
-
-class CObjectViewer : public NLMISC::IEventListener
+class CObjectViewer : public IObjectViewer, public NLMISC::IEventListener
 {
 	friend class CSceneDlg;
+	friend class CAnimationSetDlg;
 public:
-	OBJECT_VIEWER_EXPORT CObjectViewer ();
-	OBJECT_VIEWER_EXPORT ~CObjectViewer ();
+	CObjectViewer ();
+	~CObjectViewer ();
 
 	// Init the UI
-	OBJECT_VIEWER_EXPORT void initUI ();
+	void initUI ();
 
 	// Go
-	OBJECT_VIEWER_EXPORT void go ();
+	void go ();
 
 	// Release the UI
-	OBJECT_VIEWER_EXPORT void releaseUI ();
+	void releaseUI ();
+
+	// Add a shape
+	void setSingleAnimation (NL3D::CAnimation*	pAnim, const char* name);
+
+	// Add a shape
+	void addShape (NL3D::IShape*	pShape, const char* name);
+
+	// Load a shape
+	bool loadShape (const char* filename);
+
+	// Load a shape
+	void resetCamera ();
 
 	// Listener
 	virtual void operator ()(const NLMISC::CEvent& event);
@@ -81,12 +91,24 @@ public:
 	// Not exported
 	void setAnimTime (float animStart, float animEnd);
 
+	// Reset the slots
+	void resetSlots ();
+
+	// Reinit and refill the channel mixer channels
+	void reinitChannels ();
+
+	// Return the frame rate
+	float getFrameRate ();
+
+	// Serial the config
+	void serial (NLMISC::IStream& f);
+
 private:
 	CAnimationDlg								*_AnimationDlg;
 	CMainDlg									*_SlotDlg;
 	CAnimationSetDlg							*_AnimationSetDlg;
 	CSceneDlg									*_SceneDlg;
-	std::vector<class NL3D::IShape*>			_ListShape;
+	std::vector<std::string>					_ListShape;
 	std::vector<class NL3D::CTransformShape*>	_ListTransformShape;
 	NL3D::CAnimationSet							_AnimationSet;
 	NL3D::CChannelMixer							_ChannelMixer;

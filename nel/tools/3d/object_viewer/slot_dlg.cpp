@@ -28,17 +28,18 @@ CSlotDlg::CSlotDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CSlotDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CSlotDlg)
-	EndBlend = 0.0f;
-	EndTime = 0.0f;
+	EndBlend = 1.0f;
 	Smoothness = 0.0f;
 	SpeedFactor = 1.0f;
-	StartBlend = 0.0f;
-	StartTime = 0.0f;
-	Offset = 0.0f;
+	StartBlend = 1.0f;
 	ClampMode = 0;
+	SkeletonWeightInverted = FALSE;
+	Offset = 0;
+	StartTime = 0;
+	EndTime = 0;
 	StartAnimTime=0.f;
 	EndAnimTime=1.f;
-	SkeletonWeightInverted = FALSE;
+	enable = TRUE;
 	//}}AFX_DATA_INIT
 	AnimationSet=NULL;
 	Animation=NULL;
@@ -76,17 +77,18 @@ void CSlotDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_END_TIME, EndTimeCtrl);
 	DDX_Control(pDX, IDC_END_BLEND, EndBlendCtrl);
 	DDX_Text(pDX, IDC_END_BLEND, EndBlend);
-	DDX_Text(pDX, IDC_END_TIME, EndTime);
 	DDX_Text(pDX, IDC_SMOOTHNESS, Smoothness);
 	DDV_MinMaxFloat(pDX, Smoothness, 0.f, 1.f);
 	DDX_Text(pDX, IDC_SPEED_FACTOR, SpeedFactor);
 	DDV_MinMaxFloat(pDX, SpeedFactor, 1.e-002f, 100.f);
 	DDX_Text(pDX, IDC_START_BLEND, StartBlend);
 	DDV_MinMaxFloat(pDX, StartBlend, 0.f, 1.f);
-	DDX_Text(pDX, IDC_START_TIME, StartTime);
-	DDX_Text(pDX, IDC_OFFSET, Offset);
 	DDX_Radio(pDX, IDC_CLAMP, ClampMode);
 	DDX_Check(pDX, IDC_INVERT_SKELETON_WEIGHT, SkeletonWeightInverted);
+	DDX_Text(pDX, IDC_OFFSET, Offset);
+	DDX_Text(pDX, IDC_START_TIME, StartTime);
+	DDX_Text(pDX, IDC_END_TIME, EndTime);
+	DDX_Check(pDX, IDC_ENABLE, enable);
 	//}}AFX_DATA_MAP
 }
 
@@ -145,7 +147,7 @@ void CSlotDlg::OnPaint()
 	RECT rect;
 	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&rect);
 	ScreenToClient (&rect);
-	Blend.OnPaint (rect, pDc, StartBlend, EndBlend, StartTime, EndTime, 
+	Blend.OnPaint (rect, pDc, StartBlend, EndBlend, (float)StartTime, (float)EndTime, 
 		Smoothness, StartAnimTime, EndAnimTime, !isEmpty());
 	
 	// Do not call CDialog::OnPaint() for painting messages
@@ -189,10 +191,10 @@ void CSlotDlg::OnDeltaposEndTimeSpin(NMHDR* pNMHDR, LRESULT* pResult)
 	UpdateData ();
 
 	if (pNMUpDown->iDelta<0)
-		EndTime+=DELTA_TIME;
+		EndTime++;
 	if (pNMUpDown->iDelta>0)
-		EndTime-=DELTA_TIME;
-	clamp (EndTime, StartAnimTime, EndAnimTime);
+		EndTime--;
+	clamp (EndTime, (int)StartAnimTime, (int)EndAnimTime);
 	if (EndTime<StartTime)
 		StartTime=EndTime;
 
@@ -294,10 +296,10 @@ void CSlotDlg::OnDeltaposStartTimeSpin(NMHDR* pNMHDR, LRESULT* pResult)
 	UpdateData ();
 
 	if (pNMUpDown->iDelta<0)
-		StartTime+=DELTA_TIME;
+		StartTime++;
 	if (pNMUpDown->iDelta>0)
-		StartTime-=DELTA_TIME;
-	clamp (StartTime, StartAnimTime, EndAnimTime);
+		StartTime--;
+	clamp (StartTime, (int)StartAnimTime, (int)EndAnimTime);
 	if (EndTime<StartTime)
 		EndTime=StartTime;
 
@@ -343,7 +345,7 @@ void CSlotDlg::OnChangeEndTime()
 	// TODO: Add your control notification handler code here
 	UpdateData ();
 
-	clamp (EndTime, StartAnimTime, EndAnimTime);
+	clamp (EndTime, (int)StartAnimTime, (int)EndAnimTime);
 	if (EndTime<StartTime)
 		StartTime=EndTime;
 
@@ -430,7 +432,7 @@ void CSlotDlg::OnChangeStartTime()
 	// TODO: Add your control notification handler code here
 	UpdateData ();
 
-	clamp (StartTime, StartAnimTime, EndAnimTime);
+	clamp (StartTime, (int)StartAnimTime, (int)EndAnimTime);
 	if (EndTime<StartTime)
 		EndTime=StartTime;
 
@@ -535,9 +537,9 @@ void CSlotDlg::OnDeltaposOffsetSpin(NMHDR* pNMHDR, LRESULT* pResult)
 
 	UpdateData ();
 	if (pNMUpDown->iDelta<0)
-		Offset+=getTimeIncrement ();
+		Offset++;
 	if (pNMUpDown->iDelta>0)
-		Offset-=getTimeIncrement ();
+		Offset--;
 	UpdateData (FALSE);
 	validateTime ();
 	updateScrollBar ();
@@ -550,14 +552,14 @@ void CSlotDlg::OnDeltaposOffsetSpin(NMHDR* pNMHDR, LRESULT* pResult)
 void CSlotDlg::validateTime ()
 {
 	bool reinit=false;
-	if (Offset<StartAnimTime)
+	if ((float)Offset<StartAnimTime)
 	{
-		StartAnimTime=Offset;
+		StartAnimTime=(float)Offset;
 		reinit=true;
 	}
-	if (Offset+AnimationLength/SpeedFactor>EndAnimTime)
+	if ((float)Offset+AnimationLength/SpeedFactor>EndAnimTime)
 	{
-		EndAnimTime=Offset+AnimationLength/SpeedFactor;
+		EndAnimTime=(float)Offset+AnimationLength/SpeedFactor;
 		reinit=true;
 	}
 	if (reinit)
@@ -577,7 +579,7 @@ void CSlotDlg::updateScrollBar ()
 	info.nMin=0;
 	info.nMax=10000;
 	info.nPage=(int)(10000.f*(AnimationLength/SpeedFactor)/(EndAnimTime-StartAnimTime));
-	info.nPos=(int)(10000.f*(Offset-StartAnimTime)/(EndAnimTime-StartAnimTime));
+	info.nPos=(int)(10000.f*((float)Offset-StartAnimTime)/(EndAnimTime-StartAnimTime));
 
 	// Set scrollbar infos
 	ScrollBarCtrl.SetScrollInfo (&info, TRUE);
@@ -599,8 +601,12 @@ void CSlotDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		// Only drag and drop
 		if (nSBCode==SB_THUMBTRACK)
 		{
+			int DeltaOffset=Offset;
 			UpdateData ();
-			Offset=(EndAnimTime-StartAnimTime)*(float)nPos/10000.f+StartAnimTime;
+			Offset=(int)((EndAnimTime-StartAnimTime)*(float)nPos/10000.f+StartAnimTime);
+			DeltaOffset=Offset-DeltaOffset;
+			StartTime+=DeltaOffset;
+			EndTime+=DeltaOffset;
 			UpdateData (FALSE);
 			updateScrollBar ();
 		}
@@ -615,6 +621,7 @@ void CSlotDlg::setAnimTime (float animStart, float animEnd)
 	StartAnimTime=animStart;
 	EndAnimTime=animEnd;
 	updateScrollBar ();
+	computeLength ();
 }
 
 // ***************************************************************************
@@ -657,7 +664,7 @@ void CSlotDlg::OnAlignBlend()
 
 	// Change some of them
 	StartTime=Offset;
-	EndTime=Offset+AnimationLength/SpeedFactor;
+	EndTime=(int)((float)Offset+AnimationLength/SpeedFactor);
 
 	// Invalidate UI
 	UpdateData (FALSE);
@@ -667,6 +674,76 @@ void CSlotDlg::OnAlignBlend()
 	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
 	ScreenToClient (&bar);
 	InvalidateRect (&bar);
+}
+
+// ***************************************************************************
+
+void CSlotDlg::setAnimation (uint animationId, NL3D::CAnimation *animation, const char* name)
+{
+	Animation=animation;
+	AnimationId=animationId;
+	if (animation)
+	{
+		nlassert (name);
+		AnimationName=name;
+		computeLength ();
+	}
+	OffsetCtrl.EnableWindow (Animation!=NULL);
+	StartTimeCtrl.EnableWindow (Animation!=NULL);
+	StartBlendCtrl.EnableWindow (Animation!=NULL);
+	SpeddFactorCtrl.EnableWindow (Animation!=NULL);
+	SmoothnessCtrl.EnableWindow (Animation!=NULL);
+	EndTimeCtrl.EnableWindow (Animation!=NULL);
+	EndBlendCtrl.EnableWindow (Animation!=NULL);
+	OffsetSpinCtrl.EnableWindow (Animation!=NULL);
+	StartTimeSpinCtrl.EnableWindow (Animation!=NULL);
+	StartBlendSpinCtrl.EnableWindow (Animation!=NULL);
+	SpeedFactorSpinCtrl.EnableWindow (Animation!=NULL);
+	SmoothnessSpinCtrl.EnableWindow (Animation!=NULL);
+	EndTimeSpinCtrl.EnableWindow (Animation!=NULL);
+	EndBlendSpinCtrl.EnableWindow (Animation!=NULL);
+	ScrollBarCtrl.EnableWindow (Animation!=NULL);
+	AlignBlendCtrl.EnableWindow (Animation!=NULL);
+	InvertSkeletonWeightCtrl.EnableWindow (Animation!=NULL);
+	GetDlgItem (IDC_CLAMP)->EnableWindow (Animation!=NULL);
+	GetDlgItem (IDC_REPEAT)->EnableWindow (Animation!=NULL);
+	GetDlgItem (IDC_DISABLE)->EnableWindow (Animation!=NULL);
+	setWindowName ();
+
+	// Invalidate blend bar
+	RECT bar;
+	GetDlgItem (IDC_DOOMY_BLEND)->GetWindowRect (&bar);
+	ScreenToClient (&bar);
+	InvalidateRect (&bar);
+}
+
+// ***************************************************************************
+
+float CSlotDlg::getTimeOffset ()
+{
+	return (float)Offset/MainDlg->getFrameRate ();
+}
+
+// ***************************************************************************
+
+float CSlotDlg::getStartTime ()
+{
+	return (float)StartTime/MainDlg->getFrameRate ();
+}
+
+// ***************************************************************************
+
+float CSlotDlg::getEndTime ()
+{
+	return (float)EndTime/MainDlg->getFrameRate ();
+}
+
+// ***************************************************************************
+
+void CSlotDlg::computeLength ()
+{
+	if (Animation)
+		AnimationLength=(Animation->getEndTime()-Animation->getBeginTime())*MainDlg->getFrameRate();
 }
 
 // ***************************************************************************

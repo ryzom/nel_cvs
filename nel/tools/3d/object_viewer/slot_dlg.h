@@ -22,38 +22,7 @@ public:
 
 	void init (uint id, NL3D::CAnimationSet* animationSet, class CObjectViewer* mainDlg);
 
-	void setAnimation (uint animationId, NL3D::CAnimation *animation, const char* name)
-	{
-		Animation=animation;
-		AnimationId=animationId;
-		if (animation)
-		{
-			nlassert (name);
-			AnimationName=name;
-			AnimationLength=animation->getEndTime()-animation->getBeginTime();
-		}
-		OffsetCtrl.EnableWindow (Animation!=NULL);
-		StartTimeCtrl.EnableWindow (Animation!=NULL);
-		StartBlendCtrl.EnableWindow (Animation!=NULL);
-		SpeddFactorCtrl.EnableWindow (Animation!=NULL);
-		SmoothnessCtrl.EnableWindow (Animation!=NULL);
-		EndTimeCtrl.EnableWindow (Animation!=NULL);
-		EndBlendCtrl.EnableWindow (Animation!=NULL);
-		OffsetSpinCtrl.EnableWindow (Animation!=NULL);
-		StartTimeSpinCtrl.EnableWindow (Animation!=NULL);
-		StartBlendSpinCtrl.EnableWindow (Animation!=NULL);
-		SpeedFactorSpinCtrl.EnableWindow (Animation!=NULL);
-		SmoothnessSpinCtrl.EnableWindow (Animation!=NULL);
-		EndTimeSpinCtrl.EnableWindow (Animation!=NULL);
-		EndBlendSpinCtrl.EnableWindow (Animation!=NULL);
-		ScrollBarCtrl.EnableWindow (Animation!=NULL);
-		AlignBlendCtrl.EnableWindow (Animation!=NULL);
-		InvertSkeletonWeightCtrl.EnableWindow (Animation!=NULL);
-		GetDlgItem (IDC_CLAMP)->EnableWindow (Animation!=NULL);
-		GetDlgItem (IDC_REPEAT)->EnableWindow (Animation!=NULL);
-		GetDlgItem (IDC_DISABLE)->EnableWindow (Animation!=NULL);
-		setWindowName ();
-	}
+	void setAnimation (uint animationId, NL3D::CAnimation *animation, const char* name);
 
 	void setSkeletonTemplateWeight (uint skeletonWeightId, NL3D::CSkeletonWeight *skeleton)
 	{
@@ -71,6 +40,10 @@ public:
 	void updateScrollBar ();
 	void setAnimTime (float animStart, float animEnd);
 	float getTimeIncrement ();
+	float getTimeOffset ();
+	float getStartTime ();
+	float getEndTime ();
+	void computeLength ();
 
 	// A CBlendWnd
 	uint					Id;
@@ -105,14 +78,15 @@ public:
 	CEdit	EndTimeCtrl;
 	CEdit	EndBlendCtrl;
 	float	EndBlend;
-	float	EndTime;
 	float	Smoothness;
 	float	SpeedFactor;
 	float	StartBlend;
-	float	StartTime;
-	float	Offset;
 	int		ClampMode;
 	BOOL	SkeletonWeightInverted;
+	int		Offset;
+	int		StartTime;
+	int		EndTime;
+	BOOL	enable;
 	//}}AFX_DATA
 
 	float	StartAnimTime;

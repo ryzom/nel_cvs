@@ -99,7 +99,7 @@ void CMainDlg::getSlot ()
 		Slots[id].UpdateData();
 
 		// Set the animation
-		if (Slots[id].isEmpty ())
+		if (Slots[id].isEmpty ()||!Slots[id].enable)
 			Playlist.setAnimation (id, CAnimationPlaylist::empty);
 		else			
 			Playlist.setAnimation (id, Slots[id].AnimationId);
@@ -111,23 +111,23 @@ void CMainDlg::getSlot ()
 			Playlist.setSkeletonWeight (id, CAnimationPlaylist::empty, false);
 
 		// Set others values
-		Playlist.setTimeOrigin (id, Slots[id].Offset);
+		Playlist.setTimeOrigin (id, Slots[id].getTimeOffset());
 		Playlist.setSpeedFactor (id, Slots[id].SpeedFactor);
-		Playlist.setStartWeight (id, Slots[id].StartBlend, Slots[id].StartTime);
-		Playlist.setEndWeight (id, Slots[id].EndBlend, Slots[id].EndTime);
+		Playlist.setStartWeight (id, Slots[id].StartBlend, Slots[id].getStartTime());
+		Playlist.setEndWeight (id, Slots[id].EndBlend, Slots[id].getEndTime());
 		Playlist.setWeightSmoothness (id, Slots[id].Smoothness);
 
 		// Switch between wrap modes
 		switch (Slots[id].ClampMode)
 		{
 		case 0:
-			Playlist.setWrapMode (CAnimationPlaylist::Clamp);
+			Playlist.setWrapMode (id, CAnimationPlaylist::Clamp);
 			break;
 		case 1:
-			Playlist.setWrapMode (CAnimationPlaylist::Repeat);
+			Playlist.setWrapMode (id, CAnimationPlaylist::Repeat);
 			break;
 		case 2:
-			Playlist.setWrapMode (CAnimationPlaylist::Disable);
+			Playlist.setWrapMode (id, CAnimationPlaylist::Disable);
 			break;
 		}
 	}
@@ -154,14 +154,17 @@ void CMainDlg::setSlot ()
 			Slots[id].setSkeletonTemplateWeight (skeleton, AnimationSet->getSkeletonWeight (skeleton));
 
 		// Set others values
-		Slots[id].Offset=Playlist.getTimeOrigin (id);
+		Slots[id].Offset=(int)(Playlist.getTimeOrigin (id)*Main->getFrameRate());
 		Slots[id].SpeedFactor=Playlist.getSpeedFactor (id);
-		Slots[id].StartBlend=Playlist.getStartWeight (id, Slots[id].StartTime);
-		Slots[id].EndBlend=Playlist.getEndWeight (id, Slots[id].EndTime);
+		float time;
+		Slots[id].StartBlend=Playlist.getStartWeight (id, time);
+		Slots[id].StartTime=(int)(time*Main->getFrameRate());
+		Slots[id].EndBlend=Playlist.getEndWeight (id, time);
+		Slots[id].EndTime=(int)(time*Main->getFrameRate());
 		Slots[id].Smoothness=Playlist.getWeightSmoothness (id);
 
 		// Switch between wrap modes
-		switch (Playlist.getWrapMode ())
+		switch (Playlist.getWrapMode (id))
 		{
 		case CAnimationPlaylist::Clamp:
 			Slots[id].ClampMode=0;
@@ -174,5 +177,6 @@ void CMainDlg::setSlot ()
 			break;
 		}
 		Slots[id].UpdateData(FALSE);
+		Slots[id].updateScrollBar ();
 	}
 }

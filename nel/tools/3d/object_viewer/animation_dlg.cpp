@@ -26,11 +26,12 @@ CAnimationDlg::CAnimationDlg(class CObjectViewer* main, CWnd* pParent /*=NULL*/)
 	: CDialog(CAnimationDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CAnimationDlg)
-	CurrentFrame = 0.0f;
 	End = 0.0f;
 	Speed = 30.0f;
 	Start = 0.0f;
 	Loop = TRUE;
+	UICurrentFrame = 0;
+	CurrentFrame = 0.0f;
 	//}}AFX_DATA_INIT
 	Playing=false;
 	Main=main;
@@ -46,11 +47,11 @@ void CAnimationDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_TIME_LINE, TimeLineCtrl);
 	DDX_Control(pDX, IDC_PLAY, PlayCtrl);
 	DDX_Control(pDX, IDC_STOP, StopCtrl);
-	DDX_Text(pDX, IDC_CURRENT_FRAME, CurrentFrame);
 	DDX_Text(pDX, IDC_END_EDIT, End);
 	DDX_Text(pDX, IDC_SPEED, Speed);
 	DDX_Text(pDX, IDC_START_EDIT, Start);
 	DDX_Check(pDX, IDC_LOOP, Loop);
+	DDX_Text(pDX, IDC_CURRENT_FRAME, UICurrentFrame);
 	//}}AFX_DATA_MAP
 }
 
@@ -76,6 +77,7 @@ void CAnimationDlg::OnEnd()
 {
 	UpdateData ();
 	CurrentFrame=End;
+	UICurrentFrame=(int)CurrentFrame;
 	UpdateData (FALSE);
 	updateBar ();
 }
@@ -118,7 +120,8 @@ void CAnimationDlg::OnChangeCurrentFrame()
 	UpdateData ();
 	
 	// Clamp current frame
-	clamp (CurrentFrame, Start, End);
+	clamp (UICurrentFrame, (int)Start, (int)End);
+	CurrentFrame=(float)UICurrentFrame;
 
 	// Update
 	updateBar ();
@@ -142,10 +145,11 @@ void CAnimationDlg::OnChangeEndEdit()
 		Start=End;
 	if (End<CurrentFrame)
 		CurrentFrame=End;
+	UICurrentFrame=(int)CurrentFrame;
 
 	// Update
 	UpdateData (FALSE);	
-	Main->setAnimTime (Start/Speed, End/Speed);
+	Main->setAnimTime (Start, End);
 }
 
 void CAnimationDlg::OnChangeSpeed() 
@@ -161,13 +165,14 @@ void CAnimationDlg::OnChangeSpeed()
 	Start=Speed*Start;
 	End=Speed*End;
 	UpdateData(FALSE);
-	Main->setAnimTime (Start/Speed, End/Speed);
+	Main->setAnimTime (Start, End);
 }
 
 void CAnimationDlg::OnStart() 
 {
 	UpdateData ();
 	CurrentFrame=Start;
+	UICurrentFrame=(int)CurrentFrame;
 	UpdateData (FALSE);
 	updateBar ();
 }
@@ -187,10 +192,11 @@ void CAnimationDlg::OnChangeStartEdit()
 		End=Start;
 	if (CurrentFrame<Start)
 		CurrentFrame=Start;
+	UICurrentFrame=(int)CurrentFrame;
 
 	// Update
 	UpdateData (FALSE);	
-	Main->setAnimTime (Start/Speed, End/Speed);
+	Main->setAnimTime (Start, End);
 }
 
 void CAnimationDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
@@ -205,6 +211,8 @@ void CAnimationDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 
 		// Setup current pos
 		CurrentFrame=(float)TimeLineCtrl.GetPos()*(End-Start)/65535.f+Start;
+		CurrentFrame=(float)floor(CurrentFrame+0.5f);
+		UICurrentFrame=(int)CurrentFrame;
 
 		// Update values
 		UpdateData (FALSE);
@@ -264,6 +272,7 @@ void CAnimationDlg::handle ()
 			OnStop ();
 		}
 
+		UICurrentFrame=(int)CurrentFrame;
 		UpdateData (FALSE);
 		updateBar ();
 	}
@@ -294,8 +303,8 @@ BOOL CAnimationDlg::OnInitDialog()
 void CAnimationDlg::setAnimTime (float animStart, float animEnd)
 {
 	UpdateData();
-	Start=Speed*animStart;
-	End=Speed*animEnd;
+	Start=animStart;
+	End=animEnd;
 	UpdateData(FALSE);
 	updateBar ();
 }

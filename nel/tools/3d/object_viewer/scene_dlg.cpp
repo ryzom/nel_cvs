@@ -29,6 +29,7 @@ CSceneDlg::CSceneDlg(CObjectViewer *objView, CWnd* pParent /*=NULL*/)
 	ViewAnimation = FALSE;
 	ViewAnimationSet = FALSE;
 	ViewSlots = FALSE;
+	Euler = FALSE;
 	//}}AFX_DATA_INIT
 	ObjView=objView;
 
@@ -62,6 +63,7 @@ void CSceneDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_VIEW_ANIMATION, ViewAnimation);
 	DDX_Check(pDX, IDC_VIEW_ANIMATIONSET, ViewAnimationSet);
 	DDX_Check(pDX, IDC_VIEW_SLOTS, ViewSlots);
+	DDX_Check(pDX, IDC_EULER, Euler);
 	//}}AFX_DATA_MAP
 }
 
@@ -85,40 +87,63 @@ END_MESSAGE_MAP()
 
 void CSceneDlg::OnClearScene() 
 {
-	// TODO: Add your control notification handler code here
-	
+	// *** Clear the scene.
+
+	// Remove all the instance
+	uint i;
+	for (i=0; i<ObjView->_ListTransformShape.size(); i++)
+		CNELU::Scene.deleteInstance (ObjView->_ListTransformShape[i]);
+
+	// Clear the pointer array
+	ObjView->_ListTransformShape.clear ();
+
+	// Remove all shape
+	for (i=0; i<ObjView->_ListShape.size(); i++)
+		CNELU::Scene.delShape (ObjView->_ListShape[i]);
+
+	// Erase the channel mixer
+	ObjView->_ChannelMixer.resetChannels ();
 }
 
 void CSceneDlg::OnLoadMesh() 
 {
+	// Update UI
+	UpdateData ();
+
 	// Create a dialog
 	static char BASED_CODE szFilter[] = "NeL Shape Files (*.shape)|*.shape|All Files (*.*)|*.*||";
 	CFileDialog fileDlg( TRUE, ".shape", "*.shape", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
 	if (fileDlg.DoModal()==IDOK)
 	{
-		// Open a file
-		CIFile file;
-		CString fileName=fileDlg.GetPathName();
-		if (file.open ((const char*)fileName))
+		// Load the shape
+		if (ObjView->loadShape (fileDlg.GetPathName()))
 		{
-			// Sream a shape
-			CShapeStream streamShape;
+			// Reset the camera
+			OnResetCamera();
+
+			// Touch the channel mixer
+			ObjView->reinitChannels ();
+		}
+	}
+}
+
+void CSceneDlg::OnLoadPlaylist() 
+{
+	// Update UI
+	UpdateData ();
+
+	// Create a dialog
+	static char BASED_CODE szFilter[] = "NeL Object viewer config (*.ovcgf)|*.ovcgf|All Files (*.*)|*.*||";
+	CFileDialog fileDlg( TRUE, ".ovcgf", "*.ovcgf", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
+	if (fileDlg.DoModal()==IDOK)
+	{
+		// Open the file
+		CIFile file;
+		if (file.open ((const char*)fileDlg.GetPathName()))
+		{
 			try
 			{
-				// Stream it
-				streamShape.serial (file);
-
-				// Store the shape pointer
-				ObjView->_ListShape.push_back (streamShape.getShapePointer());
-
-				// Create a model and add it to the scene
-				CTransformShape	*pTrShape=streamShape.getShapePointer()->createInstance(CNELU::Scene);
-
-				// Store the transform shape pointer
-				ObjView->_ListTransformShape.push_back (pTrShape);
-
-				// Reset the camera
-				OnResetCamera();
+				ObjView->serial (file);
 			}
 			catch (Exception& e)
 			{
@@ -129,16 +154,10 @@ void CSceneDlg::OnLoadMesh()
 		{
 			// Create a message
 			char msg[512];
-			_snprintf (msg, 512, "Can't open the file %s for reading.", fileDlg.GetPathName());
+			_snprintf (msg, 512, "Can't open the file %s for reading.", (const char*)fileDlg.GetPathName());
 			MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
 		}
 	}
-}
-
-void CSceneDlg::OnLoadPlaylist() 
-{
-	// TODO: Add your control notification handler code here
-	
 }
 
 void CSceneDlg::OnLoadScene() 
@@ -149,8 +168,35 @@ void CSceneDlg::OnLoadScene()
 
 void CSceneDlg::OnSavePlaylist() 
 {
-	// TODO: Add your control notification handler code here
-	
+	// Update UI
+	UpdateData ();
+
+	// Create a dialog
+	static char BASED_CODE szFilter[] = "NeL Object viewer config (*.ovcgf)|*.ovcgf|All Files (*.*)|*.*||";
+	CFileDialog fileDlg( FALSE, ".ovcgf", "*.ovcgf", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
+	if (fileDlg.DoModal()==IDOK)
+	{
+		// Open the file
+		COFile file;
+		if (file.open ((const char*)fileDlg.GetPathName()))
+		{
+			try
+			{
+				ObjView->serial (file);
+			}
+			catch (Exception& e)
+			{
+				MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+			}
+		}
+		else
+		{
+			// Create a message
+			char msg[512];
+			_snprintf (msg, 512, "Can't open the file %s for writing", (const char*)fileDlg.GetPathName());
+			MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+		}
+	}
 }
 
 void CSceneDlg::OnViewAnimation() 

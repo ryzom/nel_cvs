@@ -62,7 +62,7 @@
  }
  \endcode
 
- \subsection Analysing network transfers
+ \subsection network_transfers Analysing network transfers
 
  NLNET::NetLog (declared in "nel/net/nel_log.h") is a special logger that allows to send output and input logs to a logging server.
  These logs are produced by the network subsystem and have a special syntax so that an analyser can process them and display the transfers

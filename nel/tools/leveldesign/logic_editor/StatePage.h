@@ -10,6 +10,7 @@
 #include "ResizablePage.h"
 #include "State.h"
 
+class CLogic_editorDoc;
 
 /////////////////////////////////////////////////////////////////////////////
 // CStatePage dialog
@@ -25,6 +26,8 @@ public:
 
 
 	void Update();
+
+	void addState( CLogic_editorDoc *pDoc, CState * state);
 
 public:
 	CState	*	m_pSelectedState;

@@ -9,6 +9,7 @@
 #include "MainFrm.h"
 #include "LogicTreeView.h"
 #include "StatesView.h"
+#include "EditorFormView.h"
 
 
 #ifdef _DEBUG
@@ -207,6 +208,43 @@ void CStatePage::OnRadioStateEventMsg()
 	GetDlgItem(IDC_EDIT_STATE_MSG_DEST)->EnableWindow(TRUE);
 }
 
+
+
+
+//---------------------------------------------------------
+//	addState
+//
+//---------------------------------------------------------
+void CStatePage::addState( CLogic_editorDoc *pDoc, CState * state)
+{
+	// check whether this state is already in the combo box
+	CComboBox *comboBox = static_cast<CComboBox *> (GetDlgItem(IDC_COMBO_STATE_CHANGE) );
+	if( comboBox->FindStringExact(0, state->m_sName) == LB_ERR )
+	{
+		// add the state in the combo box
+		comboBox->AddString( state->m_sName );
+	}
+
+	// check whether this state already exists
+	void *pState;
+	if( pDoc->m_states.Lookup(state->m_sName, pState) == FALSE )
+	{	
+		// add the new state to the states tree, and to the vector of states in the document
+		pDoc->m_states.SetAt( state->m_sName, state );
+	}
+	
+	// update views
+	pDoc->UpdateAllViews( (CView*)this->GetParent() );
+	UpdateData(FALSE);
+
+} // addState //
+
+
+
+//---------------------------------------------------------
+//	OnButtonAddState
+//
+//---------------------------------------------------------
 void CStatePage::OnButtonAddState() 
 {
 	UpdateData();
@@ -226,21 +264,14 @@ void CStatePage::OnButtonAddState()
 	CLogic_editorDoc *pDoc = static_cast<CLogic_editorDoc *> (pChild->GetActiveDocument());
 	ASSERT_VALID(pDoc);	
 
-	void *pState;
-	if ( pDoc->m_states.Lookup( m_sStateName, pState ) == TRUE)
-		return;
-
-	// add the new state to the states tree, and to the vector of states in the document
+	// create the new state
 	CState *state = new CState(m_sStateName);
-	pDoc->m_states.SetAt( m_sStateName, state );
 
-	CComboBox *comboBox = static_cast<CComboBox *> (GetDlgItem(IDC_COMBO_STATE_CHANGE) );
-	comboBox->AddString( m_sStateName );
+	// add the state
+	addState( pDoc, state );
+	
 
-	pDoc->UpdateAllViews( (CView*)this->GetParent() );
-
-	UpdateData(FALSE);
-}
+} // OnButtonAddState //
 
 
 
@@ -287,12 +318,44 @@ void CStatePage::OnButtonAddEvent()
 
 
 
+//---------------------------------------------------------
+//	OnSetActive
+//
+//---------------------------------------------------------
 BOOL CStatePage::OnSetActive() 
 {
+	/*
+	// get the child frame
+	CMainFrame *pFrame = (CMainFrame*)AfxGetApp()->m_pMainWnd;
+	CChildFrame *pChild = (CChildFrame *) pFrame->MDIGetActive();
+
+	// get the form view
+	CEditorFormView *pFormView = static_cast<CEditorFormView *> ( pChild->m_wndSplitter.GetPane(0,1) );
+	ASSERT_VALID(pFormView);	
+	
+	// get the document
+	CLogic_editorDoc * pDoc = (CLogic_editorDoc*)pFormView->GetDocument();
+
+	if( pDoc->InitStatePage )
+	{
+		// init the states
+		POSITION pos;
+		CString eltName;
+		for( pos = pDoc->m_states.GetStartPosition(); pos != NULL; )
+		{
+			CState * pState = new CState();
+			pDoc->m_states.GetNextAssoc( pos, eltName, (void*&)pState );
+			addState( pDoc, pState );
+		}
+	}
+	pDoc->InitStatePage = FALSE;
+	*/
+	
 	Update();
 	
 	return CPropertyPage::OnSetActive();
-}
+
+} // OnSetActive //
 
 
 

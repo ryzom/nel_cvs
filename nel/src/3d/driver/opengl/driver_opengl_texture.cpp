@@ -1,7 +1,7 @@
 /** \file driver_opengl_texture.cpp
  * OpenGL driver implementation : setupTexture
  *
- * $Id: driver_opengl_texture.cpp,v 1.4 2000/12/04 16:58:59 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.5 2000/12/06 10:31:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,7 +76,8 @@ bool CDriverGL::setupTexture(ITexture& tex)
 		{
 			tex.convertToType(CBitmap::RGBA);
 			void	*ptr= &(*tex.getPixels().begin());
-			glTexImage2D(GL_TEXTURE_2D,0,4,tex.getWidth(),tex.getHeight(),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+			GLint	texfmt=GL_RGBA8;
+			glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,tex.getWidth(),tex.getHeight(),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
 		}
 
 		tex.clearTouched();

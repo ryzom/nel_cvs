@@ -6,6 +6,13 @@ rm ./output/*.zone
 # Make the config file
 # ********************
 
+exec_timeout='../../bin/exec_timeout.exe'
+
+# Get the timeout
+land_exporter_timeout=`cat ../../cfg/config.cfg | grep "ligo_build_timeout" | sed -e 's/ligo_build_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+depend_timeout=`cat ../../cfg/config.cfg | grep "zone_build_depend_timeout" | sed -e 's/zone_build_depend_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+weld_timeout=`cat ../../cfg/config.cfg | grep "zone_build_weld_timeout" | sed -e 's/zone_build_weld_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
 rm land_exporter.cfg
 echo "// land_exporter.cfg" > land_exporter.cfg
 
@@ -79,7 +86,7 @@ fi
 # *******************
 
 echo Exporting
-../../bin/land_export.exe land_exporter.cfg
+$exec_timeout $land_exporter_timeout ../../bin/land_export.exe land_exporter.cfg
 
 # rename *.zonel *.zone
 # script is just too slow to do renaming... And we can't call directly dos command
@@ -163,7 +170,7 @@ for i in $zone_regions ; do
 	arg=`echo zone_exported/$zone_regions | sed -e 's&,&.zone zone_exported/&g'`
 
 	# Make the dependencies
-	$zone_dependencies ../../cfg/properties.cfg $arg.zone zone_depend/doomy.depend
+	$exec_timeout $depend_timeout $zone_dependencies ../../cfg/properties.cfg $arg.zone zone_depend/doomy.depend
 done
 
 # **** Weld
@@ -185,7 +192,7 @@ for i in $list_zone ; do
   if ( ! test -e $dest ) || ( test $i -nt $dest )
   then
     echo -- Weld $i
-    $zone_welder $i $dest
+    $exec_timeout $weld_timeout $zone_welder $i $dest
 	echo 
   fi
 done

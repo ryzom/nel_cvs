@@ -2,6 +2,11 @@
 
 # *** Export ig files (.ig) from Max
 
+exec_timeout='../../bin/exec_timeout.exe'
+
+# Get the timeout
+timeout=`cat ../../cfg/config.cfg | grep "ig_export_timeout" | sed -e 's/ig_export_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
 # Get the max directory
 max_directory=`cat ../../cfg/site.cfg | grep "max_directory" | sed -e 's/max_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
@@ -31,14 +36,17 @@ echo -------
 # For each directoy
 
 # List landscape ig
-rm "$landscape_name"_ig.txt
+if ( test -f "$landscape_name"_ig.txt )
+then
+	rm "$landscape_name"_ig.txt
+fi
 
 for i in $ig_land_source_directories ; do
 	# Copy the script
 	cat maxscript/ig_export.ms | sed -e "s&ig_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/ig/ig_land&g" > $max_directory/scripts/ig_export.ms
 
 	# Start max
-	$max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log
@@ -49,6 +57,8 @@ for i in *.ig ; do
 	if ( test -f $i )
 	then
 		echo $i >> ../"$landscape_name"_ig.txt
+	else
+		echo >> ../"$landscape_name"_ig.txt
 	fi
 done
 cd ..
@@ -58,7 +68,7 @@ for i in $ig_other_source_directories ; do
 	cat maxscript/ig_export.ms | sed -e "s&ig_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/ig/ig_other&g" > $max_directory/scripts/ig_export.ms
 
 	# Start max
-	$max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log

@@ -3,6 +3,10 @@
 # Build the farbank
 
 build_farbank='../../bin/build_far_bank.exe'
+exec_timeout='../../bin/exec_timeout.exe'
+
+# Get the timeout
+timeout=`cat ../../cfg/config.cfg | grep "farbank_build_timeout" | sed -e 's/farbank_build_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Log error
 echo ------- > log.log
@@ -25,7 +29,7 @@ for i in $bank_list ; do
 	# Make the dependencies
 	if ( ! test -e $dest ) || ( test $i -nt $dest ) 
 	then
-		$build_farbank $i $dest
+		$exec_timeout $timeout $build_farbank $i $dest
 		if ( test -e $dest )
 		then
 			echo OK $dest >> log.log
@@ -36,4 +40,3 @@ for i in $bank_list ; do
 		echo SKIPPED $dest >> log.log
 	fi
 done
-

@@ -2,6 +2,11 @@
 
 # *** Export cmb files (.cmb) from Max
 
+exec_timeout='../../bin/exec_timeout.exe'
+
+# Get the timeout
+timeout=`cat ../../cfg/config.cfg | grep "cmb_export_timeout" | sed -e 's/cmb_export_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
 # Get the max directory
 max_directory=`cat ../../cfg/site.cfg | grep "max_directory" | sed -e 's/max_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
@@ -29,7 +34,7 @@ for i in $collision_source_directories ; do
 	cat maxscript/rbank_export.ms | sed -e "s&collision_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/rbank/cmb&g" > $max_directory/scripts/rbank_export.ms
 
 	# Start max
-	$max_directory/3dsmax.exe -U MAXScript rbank_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript rbank_export.ms -q -mi -vn
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log

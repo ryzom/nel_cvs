@@ -6,6 +6,14 @@ build_rbank='../../bin/build_rbank.exe'
 build_indoor_rbank='../../bin/build_indoor_rbank.exe'
 build_ig_boxes='../../bin/build_ig_boxes.exe'
 get_neighbors='../../bin/get_neighbors.exe'
+exec_timeout='../../bin/exec_timeout.exe'
+
+# Get the timeout
+tessel_timeout=`cat ../../cfg/config.cfg | grep "rbank_build_tessel_timeout" | sed -e 's/rbank_build_tessel_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+smooth_timeout=`cat ../../cfg/config.cfg | grep "rbank_build_smooth_timeout" | sed -e 's/rbank_build_smooth_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+proclocal_timeout=`cat ../../cfg/config.cfg | grep "rbank_build_proclocal_timeout" | sed -e 's/rbank_build_proclocal_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+procglobal_timeout=`cat ../../cfg/config.cfg | grep "rbank_build_procglobal_timeout" | sed -e 's/rbank_build_procglobal_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+indoor_timeout=`cat ../../cfg/config.cfg | grep "rbank_build_indoor_timeout" | sed -e 's/rbank_build_indoor_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # **** Copy ig and shapes
 
@@ -176,13 +184,13 @@ for i in $list_zone ; do
 	# if ( test -f $zone_to_build )
 	if ( test "$zone_to_build" )
 	then
-		$build_rbank -T -m -l -g $i
+		$exec_timeout $tessel_timeout $build_rbank -T -m -l -g $i
 		echo
 		echo >> log.log
 	else
-		echo SKIP $dest 
+		echo SKIPPED $dest 
 		echo
-		echo SKIP $dest >> log.log
+		echo SKIPPED $dest >> log.log
 		echo >> log.log
 	fi
 done
@@ -219,10 +227,10 @@ for i in $list_zone ; do
 	# Check dates
 	if ( ! test -e $dest ) || ( test $src -nt $dest )
 	then
-		$build_rbank -t -M -l -g $i
+		$exec_timeout $smooth_timeout $build_rbank -t -M -l -g $i
 	else
-		echo SKIP $dest
-		echo SKIP $dest >> log.log
+		echo SKIPPED $dest
+		echo SKIPPED $dest >> log.log
 	fi
 	echo
 	echo >> log.log
@@ -255,10 +263,10 @@ for i in $list_zone ; do
 	# Check dates
 	if ( ! test -e $dest ) || ( test $src -nt $dest )
 	then
-		$build_rbank -t -m -L -g $i
+		$exec_timeout $proclocal_timeout $build_rbank -t -m -L -g $i
 	else
-		echo SKIP $dest
-		echo SKIP $dest >> log.log
+		echo SKIPPED $dest
+		echo SKIPPED $dest >> log.log
 	fi
 	echo
 	echo >> log.log
@@ -277,7 +285,7 @@ echo -------
 echo 
 
 # Procglobal
-$build_rbank -t -m -l -G
+$exec_timeout $procglobal_timeout $build_rbank -t -m -l -G
 
 
 
@@ -325,7 +333,7 @@ echo --- Merge cmb in rbank
 echo ------- 
 echo 
 
-$build_indoor_rbank
+$exec_timeout $indoor_timeout $build_indoor_rbank
 
 
 

@@ -3,6 +3,10 @@
 # Build the small bank
 
 build_smallbank='../../bin/build_smallbank.exe'
+exec_timeout='../../bin/exec_timeout.exe'
+
+# Get the timeout
+timeout=`cat ../../cfg/config.cfg | grep "smallbank_build_timeout" | sed -e 's/smallbank_build_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the database directory
 database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -29,7 +33,7 @@ for i in $bank_list ; do
 	# Make the dependencies
 	if ( ! test -e $dest ) || ( test $i -nt $dest ) 
 	then
-		$build_smallbank $i $dest $database_directory/$tile_root_source_directory/
+		$exec_timeout $timeout $build_smallbank $i $dest $database_directory/$tile_root_source_directory/
 		if ( test -e $dest )
 		then
 			echo OK $dest >> log.log

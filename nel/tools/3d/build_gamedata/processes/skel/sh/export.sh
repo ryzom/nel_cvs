@@ -2,6 +2,11 @@
 
 # *** Export skeleton files (.skel) from Max
 
+exec_timeout='../../bin/exec_timeout.exe'
+
+# Get the timeout
+timeout=`cat ../../cfg/config.cfg | grep "skel_export_timeout" | sed -e 's/skel_export_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
 # Get the max directory
 max_directory=`cat ../../cfg/site.cfg | grep "max_directory" | sed -e 's/max_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
@@ -29,7 +34,7 @@ for i in $skel_source_directories ; do
 	cat maxscript/skel_export.ms | sed -e "s&skel_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/skel/skel&g" > $max_directory/scripts/skel_export.ms
 
 	# Start max
-	$max_directory/3dsmax.exe -U MAXScript skel_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript skel_export.ms -q -mi -vn
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log

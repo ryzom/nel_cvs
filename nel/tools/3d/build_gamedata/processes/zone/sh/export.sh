@@ -2,6 +2,11 @@
 
 # *** Export zone files (.zone) from Max
 
+exec_timeout='../../bin/exec_timeout.exe'
+
+# Get the timeout
+timeout=`cat ../../cfg/config.cfg | grep "zone_export_timeout" | sed -e 's/zone_export_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
 # Get the max directory
 max_directory=`cat ../../cfg/site.cfg | grep "max_directory" | sed -e 's/max_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
@@ -43,7 +48,7 @@ for i in $zone_source_directories ; do
 	cat maxscript/zone_export.ms | sed -e "s&zone_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/zone/zone_exported&g" > $max_directory/scripts/zone_export.ms
 
 	# Start max
-	$max_directory/3dsmax.exe -U MAXScript zone_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript zone_export.ms -q -mi -vn
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log

@@ -6,6 +6,13 @@ zone_dependencies='../../bin/zone_dependencies.exe'
 zone_welder='../../bin/zone_welder.exe'
 zone_lighter='../../bin/zone_lighter.exe'
 zone_ig_lighter='../../bin/zone_ig_lighter.exe'
+exec_timeout='../../bin/exec_timeout.exe'
+
+# Get the timeout
+depend_timeout=`cat ../../cfg/config.cfg | grep "zone_build_depend_timeout" | sed -e 's/zone_build_depend_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+weld_timeout=`cat ../../cfg/config.cfg | grep "zone_build_weld_timeout" | sed -e 's/zone_build_weld_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+light_timeout=`cat ../../cfg/config.cfg | grep "zone_build_light_timeout" | sed -e 's/zone_build_light_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+ig_light_timeout=`cat ../../cfg/config.cfg | grep "zone_build_ig_light_timeout" | sed -e 's/zone_build_ig_light_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # **** Build dependencies
 
@@ -26,7 +33,7 @@ for i in $zone_regions ; do
 	arg=`echo zone_exported/$zone_regions | sed -e 's&,&.zone zone_exported/&g'`
 
 	# Make the dependencies
-	$zone_dependencies ../../cfg/properties.cfg $arg.zone zone_depend/doomy.depend
+	$exec_timeout $depend_timeout $zone_dependencies ../../cfg/properties.cfg $arg.zone zone_depend/doomy.depend
 done
 
 # **** Weld
@@ -48,7 +55,7 @@ for i in $list_zone ; do
   if ( ! test -e $dest ) || ( test $i -nt $dest )
   then
     echo -- Weld $i
-    $zone_welder $i $dest
+    $exec_timeout $weld_timeout $zone_welder $i $dest
 	echo 
   fi
 done
@@ -73,7 +80,7 @@ for i in $list_zone_welded ; do
   if ( ! test -e $dest ) || ( test $i -nt $dest )
   then
     echo -- Light $i
-    $zone_lighter $i $dest ../../cfg/properties.cfg $depend
+    $exec_timeout $light_timeout $zone_lighter $i $dest ../../cfg/properties.cfg $depend
 	echo 
 	echo 
   fi
@@ -100,7 +107,7 @@ for i in $list_zone_lighted ; do
   if ( ! test -e $dest ) || ( test $i -nt $dest )
   then
     echo -- IgLight $i
-    $zone_ig_lighter $i $dest ../../cfg/properties.cfg $depend
+    $exec_timeout $ig_light_timeout $zone_ig_lighter $i $dest ../../cfg/properties.cfg $depend
 	echo 
 	echo 
   fi

@@ -74,7 +74,7 @@ fn isAccelerator node =
 -- Get the ig name of this object
 fn getIg node =
 (
-	return getappdata node NEL3D_APPDATA_IGNAME
+	return (getappdata node NEL3D_APPDATA_IGNAME)
 )
 
 try
@@ -127,10 +127,16 @@ try
 							for j = 1 to ig_array.count do
 							(
 								if (ig_array[j]==ig) then
-								(
+								(								
 									found = true
 									exit
 								)
+							)
+
+							-- Found ?
+							if (found == false) then
+							(
+								append ig_array ig
 							)
 						)
 					)
@@ -194,66 +200,8 @@ try
 					)
 					else
 					(
-						-- Select none
-						max select none
-
-						-- Select all node with instance information or accelerators
-						for node in geometry do
-						(
-							-- Some instance ref ?
-							if ( ((getAppData node NEL_OBJECT_NAME_DATA) != undefined) or (isAccelerator node) ) then
-								selectmore node
-						)
-						-- Select all lights in this ig
-						for node in lights do
-						(
-							-- Select it 
-							selectmore node
-						)
-
-						-- To export
-						instancegroup2export = $selection as array
-
-						-- Output filename
-						output = ("output_directory/"+(getFilenameFile files[i])+".ig")
-
-
-						-- Check date
-						if (NeLTestFileDate output files[i]) == true then
-						(
-							-- Check not empty
-							if (instancegroup2export.count != 0) then
-							(
-								-- Check export
-								try
-								(
-									-- Export the ig
-									if (NelExportInstanceGroup instancegroup2export output) == true then
-									(
-										nlerror ("OK "+output)
-									)
-									else
-									(
-										-- Error
-										nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+files[i])
-									)
-								)
-								catch
-								(
-									-- Error
-									nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+files[i])
-								)
-							)
-							else
-							(
-								-- Error
-								nlerror ("WARNING no object exported in the ig in file  "+files[i])
-							)
-						)
-						else
-						(
-							nlerror ("SKIPPED "+output)
-						)
+						-- Error
+						nlerror ("WARNING nothing exported from ig max file "+files[i])
 					)
 				)
 				else

@@ -1,7 +1,7 @@
 /** \file fasthls_modifier.cpp
  * <File description>
  *
- * $Id: fasthls_modifier.cpp,v 1.1 2002/10/25 15:51:25 berenguier Exp $
+ * $Id: fasthls_modifier.cpp,v 1.2 2003/06/16 16:23:40 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -110,9 +110,9 @@ CRGBA		CFastHLSModifier::convert(uint H, uint L, uint S)
 uint16		CFastHLSModifier::applyHLSMod(uint16 colorIn, uint8 dHue, uint dLum, uint dSat)
 {
 	static	uint64	mmBlank	= 0;
-	static	uint64	mmOne	= 0x00FF00FF00FF00FF;
-	static	uint64	mmGray	= 0x0080008000800080;
-	static	uint64	mmInterpBufer[4]= {0,0,0,0x00FF00FF00FF00FF};
+	static	uint64	mmOne	= INT64_CONSTANT(0x00FF00FF00FF00FF);
+	static	uint64	mmGray	= INT64_CONSTANT(0x0080008000800080);
+	static	uint64	mmInterpBufer[4]= {0,0,0,INT64_CONSTANT(0x00FF00FF00FF00FF)};
 
 	/*
 		dLum is actually 0xFFFFFF00 + realDLum

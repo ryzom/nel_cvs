@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.25 2003/06/11 15:22:14 lecroart Exp $
+ * $Id: command.cpp,v 1.26 2003/06/16 16:23:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -269,7 +269,7 @@ end:
 		}
 		else
 		{
-			//printf("execute command\n");
+			//nlinfo("execute command '%s'", commands[u].first.c_str());
 			if (!(*comm).second->execute (commands[u].second, log, quiet, human))
 			{
 				if (!quiet) log.displayNL("Bad command usage, try 'help %s'", commands[u].first.c_str());

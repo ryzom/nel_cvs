@@ -1,7 +1,7 @@
 /** \file surface_splitter.h
  * <File description>
  *
- * $Id: surface_splitter.h,v 1.1 2002/12/17 16:23:04 legros Exp $
+ * $Id: surface_splitter.h,v 1.2 2003/06/16 16:23:40 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -94,7 +94,7 @@ public:
 			if ((sint64)b < 0)
 				b = -(sint64)b, sign ^= 1;
 
-			uint64	lb = 0x8000000000000000;
+			uint64	lb = INT64_CONSTANT (0x8000000000000000);
 			uint64	q = 0;
 			uint64	nh = a>>32;
 			uint64	nl = a<<32;

@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.23 2003/04/25 13:44:37 berenguier Exp $
+ * $Id: texture_far.cpp,v 1.24 2003/06/16 16:23:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -812,12 +812,12 @@ inline	void	NL3D_asmEndMMX()
 inline	void	NL3D_asmExpandLineColor565(const uint16 *src, CRGBA *dst, uint du, uint len)
 {
 	static	uint64 blank = 0;
-	static	uint64 cF800 = 0x0000F8000000F800;
-	static	uint64 cE000 = 0x0000E0000000E000;
-	static	uint64 c07E0 = 0x000007E0000007E0;
-	static	uint64 c0600 = 0x0000060000000600;
-	static	uint64 c001F = 0x0000001F0000001F;
-	static	uint64 c001C = 0x0000001C0000001C;
+	static	uint64 cF800 = INT64_CONSTANT (0x0000F8000000F800);
+	static	uint64 cE000 = INT64_CONSTANT (0x0000E0000000E000);
+	static	uint64 c07E0 = INT64_CONSTANT (0x000007E0000007E0);
+	static	uint64 c0600 = INT64_CONSTANT (0x0000060000000600);
+	static	uint64 c001F = INT64_CONSTANT (0x0000001F0000001F);
+	static	uint64 c001C = INT64_CONSTANT (0x0000001C0000001C);
 	if(len==0)
 		return;
 
@@ -1760,7 +1760,7 @@ inline	void	NL3D_asmModulateAndBlendLineColors(CRGBA *dst, const CRGBA *src0, co
 	uint len, uint	src0DeltaX, uint dstDeltaX)
 {
 	static	uint64	blank= 0;
-	static	uint64	one= 0x0100010001000100;
+	static	uint64	one= INT64_CONSTANT (0x0100010001000100);
 	if(len==0)
 		return;
 

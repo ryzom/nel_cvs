@@ -40,48 +40,53 @@ try
 		-- For each files
 		for i = 1 to files.count do
 		(
-			-- Ok ?
-			ok = false
-
-			-- Output file
-			output = ("output_directory/"+(getFilenameFile files[i])+".anim")
-
-			-- Compare file date
-			if (NeLTestFileDate output files[i]) == true then
+			try
 			(
-				-- Open the max project
-				if loadMaxFile files[i] == true then
-				(
-					-- Select Bip01
-					select $Bip01
+				-- Output file
+				output = ("output_directory/"+(getFilenameFile files[i])+".anim")
 
-					if ($ != undefined) then
+				-- Compare file date
+				if (NeLTestFileDate output files[i]) == true then
+				(
+					-- Open the max project
+					if loadMaxFile files[i] == true then
 					(
-						-- Export the animation
-						if (NelExportAnimation #($) output false) == false then
+						-- Select Bip01
+						select $Bip01
+
+						if ($ != undefined) then
 						(
-							nlerror ("ERROR exporting animation "+files[i])
+							-- Export the animation
+							if (NelExportAnimation #($) output false) == false then
+							(
+								nlerror ("ERROR exporting animation "+files[i])
+							)
+							else
+							(
+								nlerror ("OK "+output)
+							)
 						)
 						else
 						(
-							nlerror ("OK "+output)
+							-- Error
+							nlerror ("ERROR exporting animation: no Bip01 node in file "+files[i])
 						)
 					)
 					else
 					(
 						-- Error
-						nlerror ("ERROR exporting animation: no Bip01 node in file "+files[i])
+						nlerror ("ERROR exporting animation: can't open the file "+files[i])
 					)
 				)
 				else
 				(
-					-- Error
-					nlerror ("ERROR exporting animation: can't open the file "+files[i])
+					nlerror ("SKIPPED "+files[i])
 				)
 			)
-			else
+			catch 
 			(
-				nlerror ("SKIPPED "+files[i])
+				-- Error
+				nlerror ("ERROR error exporting animation in files " + files[i])
 			)
 		)
 	)

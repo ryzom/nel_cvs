@@ -87,87 +87,144 @@ try
 		-- For each files
 		for i = 1 to files.count do
 		(
-			-- Ok ?
-			ok = false
-
-			-- Open the max project
-			if loadMaxFile files[i] == true then
+			try
 			(
-				-- Unhide
-				max unhide all
-
-				-- unselect
-				max select none
-
-				-- Exported object count
-				exported = 0
-
-				-- Ig array
-				ig_array = #()
-
-				-- Scan all the ig in this project
-				for node in geometry do
+				-- Open the max project
+				if loadMaxFile files[i] == true then
 				(
-					ig = getIg node
-					if (ig != undefined) then
-					(
-						-- Found ?
-						found = false
+					-- Unhide
+					max unhide all
 
-						-- Already found ?
-						for j = 1 to ig_array.count do
+					-- unselect
+					max select none
+
+					-- Exported object count
+					exported = 0
+
+					-- Ig array
+					ig_array = #()
+
+					-- Scan all the ig in this project
+					for node in geometry do
+					(
+						ig = getIg node
+						if (ig != undefined) then
 						(
-							if (ig_array[j]==ig) then
+							-- Found ?
+							found = false
+
+							-- Already found ?
+							for j = 1 to ig_array.count do
 							(
-								found = true
-								exit
+								if (ig_array[j]==ig) then
+								(
+									found = true
+									exit
+								)
 							)
 						)
 					)
-				)
-	
-				-- Have some ig ?
-				if (ig_array.count != 0) then
-				(
-					-- For each ig
-					for ig = 1 to ig_array.count do
+		
+					-- Have some ig ?
+					if (ig_array.count != 0) then
 					(
+						-- For each ig
+						for ig = 1 to ig_array.count do
+						(
+							-- Output filename
+							output = ("output_directory/"+ig_array[ig]+".ig")
+
+							-- Check date
+							if (NeLTestFileDate output files[i]) == true then
+							(
+								-- Select none
+								max select none
+
+								-- Select all node in this ig
+								for node in geometry do
+								(
+									-- Select it if in the ig
+									if ( (getIg node) == ig_array[ig]) then
+										selectmore node
+								)
+
+								-- Check export
+								try
+								(
+									-- Export the ig
+									instancegroup2export = $selection as array
+									if (NelExportInstanceGroup instancegroup2export output) == true then
+									(
+										nlerror ("OK "+output)
+									)
+									else
+									(
+										-- Error
+										nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+files[i])
+									)
+								)
+								catch
+								(
+									-- Error
+									nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+files[i])
+								)
+							)
+							else
+							(
+								nlerror ("SKIPPED "+output)
+							)
+						)
+					)
+					else
+					(
+						-- Select none
+						max select none
+
+						-- Select all node with instance information or accelerators
+						for node in geometry do
+						(
+							-- Some instance ref ?
+							if ( ((getAppData node NEL_OBJECT_NAME_DATA) != undefined) or (isAccelerator node) ) then
+								selectmore node
+						)
+
+						-- To export
+						instancegroup2export = $selection as array
+
 						-- Output filename
-						output = ("output_directory/"+ig_array[ig]+".ig")
+						output = ("output_directory/"+(getFilenameFile files[i])+".ig")
+
 
 						-- Check date
 						if (NeLTestFileDate output files[i]) == true then
 						(
-							-- Select none
-							max select none
-
-							-- Select all node in this ig
-							for node in geometry do
+							-- Check not empty
+							if (instancegroup2export.count != 0) then
 							(
-								-- Select it if in the ig
-								if ( (getIg node) == ig_array[ig]) then
-									selectmore node
-							)
-
-							-- Check export
-							try
-							(
-								-- Export the ig
-								instancegroup2export = $selection as array
-								if (NelExportInstanceGroup instancegroup2export output) == true then
+								-- Check export
+								try
 								(
-									nlerror ("OK "+output)
+									-- Export the ig
+									if (NelExportInstanceGroup instancegroup2export output) == true then
+									(
+										nlerror ("OK "+output)
+									)
+									else
+									(
+										-- Error
+										nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+files[i])
+									)
 								)
-								else
+								catch
 								(
 									-- Error
-									nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+files[i])
+									nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+files[i])
 								)
 							)
-							catch
+							else
 							(
 								-- Error
-								nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+files[i])
+								nlerror ("WARNING no object exported in the ig in file  "+files[i])
 							)
 						)
 						else
@@ -178,66 +235,14 @@ try
 				)
 				else
 				(
-					-- Select none
-					max select none
-
-					-- Select all node with instance information or accelerators
-					for node in geometry do
-					(
-						-- Some instance ref ?
-						if ( ((getAppData node NEL_OBJECT_NAME_DATA) != undefined) or (isAccelerator node) ) then
-							selectmore node
-					)
-
-					-- To export
-					instancegroup2export = $selection as array
-
-					-- Output filename
-					output = ("output_directory/"+(getFilenameFile files[i])+".ig")
-
-
-					-- Check date
-					if (NeLTestFileDate output files[i]) == true then
-					(
-						-- Check not empty
-						if (instancegroup2export.count != 0) then
-						(
-							-- Check export
-							try
-							(
-								-- Export the ig
-								if (NelExportInstanceGroup instancegroup2export output) == true then
-								(
-									nlerror ("OK "+output)
-								)
-								else
-								(
-									-- Error
-									nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+files[i])
-								)
-							)
-							catch
-							(
-								-- Error
-								nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+files[i])
-							)
-						)
-						else
-						(
-							-- Error
-							nlerror ("WARNING no object exported in the ig in file  "+files[i])
-						)
-					)
-					else
-					(
-						nlerror ("SKIPPED "+output)
-					)
+					-- Error
+					nlerror ("ERROR exporting ig: can't open the file "+files[i])
 				)
 			)
-			else
+			catch 
 			(
 				-- Error
-				nlerror ("ERROR exporting ig: can't open the file "+files[i])
+				nlerror ("ERROR error exporting ig in files " + files[i])
 			)
 		)
 	)

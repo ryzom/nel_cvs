@@ -159,134 +159,142 @@ try
 		-- For each files
 		for i = 1 to files.count do
 		(
-			-- Delete lod files
-			lod_array = #()
-
-			-- Ok ?
-			ok = false
-
-			-- Open the max project
-			if loadMaxFile files[i] == true then
+			try
 			(
-				-- Unhide
-				max unhide all
+				-- Delete lod files
+				lod_array = #()
 
-				-- unselect
-				max select none
+				-- Ok ?
+				ok = false
 
-				-- Exported object count
-				exported = 0
-
-				-- Add the lod
-				for node in geometry do
+				-- Open the max project
+				if loadMaxFile files[i] == true then
 				(
-					-- Get lod count
-					nodeCount = getappdata node NEL3D_APPDATA_LOD_NAME_COUNT
-					if (nodeCount != undefined) then
+					-- Unhide
+					max unhide all
+
+					-- unselect
+					max select none
+
+					-- Exported object count
+					exported = 0
+
+					-- Add the lod
+					for node in geometry do
 					(
-						-- For each lod
-						for lod = 1 to nodeCount.count do
+						-- Get lod count
+						nodeCount = getappdata node NEL3D_APPDATA_LOD_NAME_COUNT
+						if (nodeCount != undefined) then
 						(
-							-- Get the lod
-							lod = getappdata node (NEL3D_APPDATA_LOD_NAME+lod-1)
-
-							-- Exist ?
-							if (lod != undefined) then
+							-- For each lod
+							for lod = 1 to nodeCount.count do
 							(
-								-- Select a node
-								nd = execute ("$"+lod)
+								-- Get the lod
+								lod = getappdata node (NEL3D_APPDATA_LOD_NAME+lod-1)
 
-								-- Node exist ?
-								if (nd != undefined) then 
+								-- Exist ?
+								if (lod != undefined) then
 								(
-									append lod_array nd
+									-- Select a node
+									nd = execute ("$"+lod)
+
+									-- Node exist ?
+									if (nd != undefined) then 
+									(
+										append lod_array nd
+									)
 								)
 							)
-						)
-					)							
-				)
+						)							
+					)
 
-				-- Select objects for shadows
-				for node in geometry do
-				(
-					if (node.parent == undefined) then
+					-- Select objects for shadows
+					for node in geometry do
 					(
-						-- Cast shadow ?
-						if (isCastShadow node == true) then
+						if (node.parent == undefined) then
 						(
-							-- Select this node
-							selectmore node
-						)
-					)							
-				)
-
-				-- For each node
-				for node in geometry do
-				(
-					-- It is root ?
-					if (node.parent == undefined) then
-					(
-						-- Is not a skeleton ?
-						if (node.name != "Bip01") then
-						(
-							-- Can be exported ?
-							if (isToBeExported node == true) then
+							-- Cast shadow ?
+							if (isCastShadow node == true) then
 							(
-								-- Not a lod ?
-								if ((isLod node) == false) then
-								(
-									-- Output directory
-									if (haveCoarseMesh node) == true then
-										output = ("output_directory_with_coarse_mesh/"+(node.name)+".shape")
-									else
-										output = ("output_directory_without_coarse_mesh/"+(node.name)+".shape")
+								-- Select this node
+								selectmore node
+							)
+						)							
+					)
 
-									-- Compare file date
-									if (NeLTestFileDate output files[i]) == true then
+					-- For each node
+					for node in geometry do
+					(
+						-- It is root ?
+						if (node.parent == undefined) then
+						(
+							-- Is not a skeleton ?
+							if (node.name != "Bip01") then
+							(
+								-- Can be exported ?
+								if (isToBeExported node == true) then
+								(
+									-- Not a lod ?
+									if ((isLod node) == false) then
 									(
-										try
+										-- Output directory
+										if (haveCoarseMesh node) == true then
+											output = ("output_directory_with_coarse_mesh/"+(node.name)+".shape")
+										else
+											output = ("output_directory_without_coarse_mesh/"+(node.name)+".shape")
+
+										-- Compare file date
+										if (NeLTestFileDate output files[i]) == true then
 										(
-											-- Export the shape
-											if (NelExportShapeEx node output shape_export_opt_shadow shape_export_opt_export_lighting "shape_lightmap_path" shape_export_opt_lighting_limit shape_export_opt_lumel_size shape_export_opt_oversampling true	false) == true then
+											try
 											(
-												nlerror ("OK "+output)
-												exported = exported+1
+												-- Export the shape
+												if (NelExportShapeEx node output shape_export_opt_shadow shape_export_opt_export_lighting "shape_lightmap_path" shape_export_opt_lighting_limit shape_export_opt_lumel_size shape_export_opt_oversampling true	false) == true then
+												(
+													nlerror ("OK "+output)
+													exported = exported+1
+												)
+												else
+												(
+													-- Error
+													nlerror ("ERROR exporting shape "+node.name+" in file "+files[i])
+												)
 											)
-											else
+											catch 
 											(
 												-- Error
-												nlerror ("ERROR exporting shape "+node.name+" in file "+files[i])
+												nlerror ("ERROR fata error exporting shape "+node.name+" in file "+files[i])
 											)
 										)
-										catch 
+										else
 										(
 											-- Error
-											nlerror ("ERROR fata error exporting shape "+node.name+" in file "+files[i])
+											nlerror ("SKIPPED "+output)
+											exported = exported+1
 										)
-									)
-									else
-									(
-										-- Error
-										nlerror ("SKIPPED "+output)
-										exported = exported+1
 									)
 								)
 							)
 						)
 					)
-				)
 
-				-- Something exported
-				if exported == 0 then
+					-- Something exported
+					if exported == 0 then
+					(
+						-- Error
+						nlerror ("WARNING no shape exported from the file "+files[i])
+					)
+				)
+				else
 				(
 					-- Error
-					nlerror ("WARNING no shape exported from the file "+files[i])
+					nlerror ("ERROR exporting shape: can't open the file "+files[i])
 				)
 			)
-			else
+			catch 
 			(
 				-- Error
-				nlerror ("ERROR exporting shape: can't open the file "+files[i])
+				nlerror ("ERROR error exporting shape in files " + files[i])
 			)
 		)
 	)

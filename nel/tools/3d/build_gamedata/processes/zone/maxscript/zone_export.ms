@@ -70,68 +70,76 @@ try
 		-- For each files
 		for i = 1 to files.count do
 		(
-			-- Ok ?
-			ok = false
-
-			-- Output file
-			output = ("output_directory/"+(getFilenameFile files[i])+".zone")
-
-			-- Compare file date
-			if (NeLTestFileDate output files[i]) == true then
+			try
 			(
-				-- Open the max project
-				if loadMaxFile files[i] == true then
+				-- Ok ?
+				ok = false
+
+				-- Output file
+				output = ("output_directory/"+(getFilenameFile files[i])+".zone")
+
+				-- Compare file date
+				if (NeLTestFileDate output files[i]) == true then
 				(
-					-- Select none
-					max select none
-
-					-- Found it ?
-					find = false
-
-					-- For each object in the priject
-					for i in geometry do
+					-- Open the max project
+					if loadMaxFile files[i] == true then
 					(
-						-- Look for a NeL patch mesh
-						if (classof i)==RklPatch then
+						-- Select none
+						max select none
+
+						-- Found it ?
+						find = false
+
+						-- For each object in the priject
+						for i in geometry do
 						(
-							-- Error catching
-							try
+							-- Look for a NeL patch mesh
+							if (classof i)==RklPatch then
 							(
-								if (ExportRykolZone i output (findID i)) == false then
+								-- Error catching
+								try
 								(
-									nlerror ("ERROR exporting zone "+i.name+" in file "+files[i])
+									if (ExportRykolZone i output (findID i)) == false then
+									(
+										nlerror ("ERROR exporting zone "+i.name+" in file "+files[i])
+									)
+									else
+									(
+										nlerror ("OK "+output)
+										find = true
+										exit
+									)
 								)
-								else
+								catch
 								(
-									nlerror ("OK "+output)
-									find = true
-									exit
+									-- Error
+									nlerror ("ERROR fata error exporting zone "+i.name+" in file "+files[i])
 								)
-							)
-							catch
-							(
-								-- Error
-								nlerror ("ERROR fata error exporting zone "+i.name+" in file "+files[i])
 							)
 						)
-					)
 
-					-- Not found ?
-					if (find == false) then
+						-- Not found ?
+						if (find == false) then
+						(
+							-- Error
+							nlerror ("WARNING no zone found in project "+files[i])
+						)
+					)
+					else
 					(
 						-- Error
-						nlerror ("WARNING no zone found in project "+files[i])
+						nlerror ("ERROR exporting zone: can't open the file "+files[i])
 					)
 				)
 				else
 				(
-					-- Error
-					nlerror ("ERROR exporting zone: can't open the file "+files[i])
+					nlerror ("SKIPPED "+files[i])
 				)
 			)
-			else
+			catch 
 			(
-				nlerror ("SKIPPED "+files[i])
+				-- Error
+				nlerror ("ERROR error exporting zone in files " + files[i])
 			)
 		)
 	)

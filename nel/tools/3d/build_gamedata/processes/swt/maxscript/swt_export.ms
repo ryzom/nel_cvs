@@ -40,40 +40,45 @@ try
 		-- For each files
 		for i = 1 to files.count do
 		(
-			-- Ok ?
-			ok = false
-
-			-- Output file
-			output = ("output_directory/"+(getFilenameFile files[i])+".swt")
-
-			-- Compare file date
-			if (NeLTestFileDate output files[i]) == true then
+			try
 			(
-				-- Open the max project
-				if loadMaxFile files[i] == true then
-				(
-					-- Select all the nodes
-					max select all
+				-- Output file
+				output = ("output_directory/"+(getFilenameFile files[i])+".swt")
 
-					-- Export the skeleton template
-					if NelExportSkeletonWeight ($selection as array) output == false then
+				-- Compare file date
+				if (NeLTestFileDate output files[i]) == true then
+				(
+					-- Open the max project
+					if loadMaxFile files[i] == true then
 					(
-						nlerror ("ERROR exporting skeleton weight "+files[i])
+						-- Select all the nodes
+						max select all
+
+						-- Export the skeleton template
+						if NelExportSkeletonWeight ($selection as array) output == false then
+						(
+							nlerror ("ERROR exporting skeleton weight "+files[i])
+						)
+						else
+						(
+							nlerror ("OK "+output)
+						)
 					)
 					else
 					(
-						nlerror ("OK "+output)
+						-- Error
+						nlerror ("ERROR exporting skeleton weight: can't open the file "+files[i])
 					)
 				)
 				else
 				(
-					-- Error
-					nlerror ("ERROR exporting skeleton weight: can't open the file "+files[i])
+					nlerror ("SKIPPED "+files[i])
 				)
 			)
-			else
+			catch 
 			(
-				nlerror ("SKIPPED "+files[i])
+				-- Error
+				nlerror ("ERROR error exporting skeleton weight in files " + files[i])
 			)
 		)
 	)

@@ -40,51 +40,56 @@ try
 		-- For each files
 		for i = 1 to files.count do
 		(
-			-- Ok ?
-			ok = false
-
-			-- Output file
-			output = ("output_directory/"+(getFilenameFile files[i])+".skel")
-
-			-- Compare file date
-			if (NeLTestFileDate output files[i]) == true then
+			try
 			(
-				-- Open the max project
-				if loadMaxFile files[i] == true then
+				-- Output file
+				output = ("output_directory/"+(getFilenameFile files[i])+".skel")
+
+				-- Compare file date
+				if (NeLTestFileDate output files[i]) == true then
 				(
-					-- Select Bip01
-					select $Bip01
-
-					if ($ != undefined) then
+					-- Open the max project
+					if loadMaxFile files[i] == true then
 					(
-						-- Set figure mode on
-						$.controller.figureMode = true
+						-- Select Bip01
+						select $Bip01
 
-						-- Export the skeleton template
-						if (NelExportSkeleton $ output) == false then
+						if ($ != undefined) then
 						(
-							nlerror ("ERROR exporting skeleton "+files[i])
+							-- Set figure mode on
+							$.controller.figureMode = true
+
+							-- Export the skeleton template
+							if (NelExportSkeleton $ output) == false then
+							(
+								nlerror ("ERROR exporting skeleton "+files[i])
+							)
+							else
+							(
+								nlerror ("OK "+output)
+							)
 						)
 						else
 						(
-							nlerror ("OK "+output)
+							-- Error
+							nlerror ("ERROR exporting skeleton: no Bip01 node in file "+files[i])
 						)
 					)
 					else
 					(
 						-- Error
-						nlerror ("ERROR exporting skeleton: no Bip01 node in file "+files[i])
+						nlerror ("ERROR exporting skeleton: can't open the file "+files[i])
 					)
 				)
 				else
 				(
-					-- Error
-					nlerror ("ERROR exporting skeleton: can't open the file "+files[i])
+					nlerror ("SKIPPED "+files[i])
 				)
 			)
-			else
+			catch 
 			(
-				nlerror ("SKIPPED "+files[i])
+				-- Error
+				nlerror ("ERROR error exporting skeleton in files " + files[i])
 			)
 		)
 	)

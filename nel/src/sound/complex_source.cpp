@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: complex_source.cpp,v 1.8.4.1 2003/08/07 17:43:31 boucher Exp $
+ * $Id: complex_source.cpp,v 1.8.4.2 2003/08/14 08:02:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -239,7 +239,11 @@ void CComplexSource::playStuf()
 				}
 			}
 
-			mixer->addEvent(this, NLMISC::CTime::getLocalTime() + _PatternSound->getDuration());
+			if (!_Looping)
+			{
+				// event to stop the sound
+				mixer->addEvent(this, NLMISC::CTime::getLocalTime() + _PatternSound->getDuration());
+			}
 		}
 		break;
 	default:
@@ -273,7 +277,9 @@ void CComplexSource::stop()
 	{
 		if ((*first)->isPlaying())
 			(*first)->stop();
+		delete *first;
 	}
+	_AllSources.clear();
 
 	switch (_PatternSound->getPatternMode())
 	{
@@ -377,7 +383,7 @@ void CComplexSource::setGain( float gain )
 		(*first)->setGain(_Gain);
 	}
 
-	if (_Muted)
+	if (_Muted && _Playing)
 		playStuf();
 }
 
@@ -409,7 +415,7 @@ void CComplexSource::setRelativeGain( float gain )
 		(*first)->setRelativeGain(_Gain);
 	}
 
-	if (_Muted)
+	if (_Muted && _Playing)
 		playStuf();
 }
 

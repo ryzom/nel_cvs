@@ -1,7 +1,7 @@
 /** \file background_sound_manager.h
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.h,v 1.7.6.1 2003/08/07 17:43:32 boucher Exp $
+ * $Id: background_sound_manager.h,v 1.7.6.2 2003/08/14 08:02:20 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -102,7 +102,7 @@ public:
 	 * With the new primitive file, this method will try to load the .primitive file before
 	 * attempting to load any .prim file. If the .primitive is found, then no .prim are loaded.
 	 */
-	void		load (const std::string &continent);
+	void		load (const std::string &continent/*, NLLIGO::CLigoConfig &config*/);
 
 	/** Remove all data about the current continents
 	 */
@@ -272,6 +272,7 @@ private:
 		float				Gain;
 		/// The distance beween listener and source.
 		float				Distance;
+		/// flag if inside a sound zone
 		bool				Inside;
 		/// Constructor.
 		TSoundStatus(TSoundData &sd, NLMISC::CVector position, float gain, float distance, bool inside)

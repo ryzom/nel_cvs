@@ -1,7 +1,7 @@
 /** \file u_source.h
  * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.15 2003/02/06 09:09:46 boucher Exp $
+ * $Id: u_source.h,v 1.15.8.1 2003/08/14 08:02:10 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -154,6 +154,7 @@ public:
 	virtual void					setGain( float gain ) = 0;
 	/// Get the gain
 	virtual float					getGain() const = 0;
+	
 	/** Set the gain amount (value inside [0, 1]) to map between 0 and the nominal gain
 	 * (which is getSource()->getGain()). Does nothing if getSource() is null.
 	 */

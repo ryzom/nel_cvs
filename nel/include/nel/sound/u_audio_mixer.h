@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.28.4.1 2003/08/07 17:42:03 boucher Exp $
+ * $Id: u_audio_mixer.h,v 1.28.4.2 2003/08/14 08:02:10 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -287,7 +287,7 @@ public:
 	virtual const TBackgroundFilterFades &getBackgroundFilterFades() = 0;
 
 	virtual void		loadBackgroundAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot) =0;
-	virtual void		loadBackgroundSound (const std::string &continent) = 0;
+	virtual void		loadBackgroundSound (const std::string &continent /*, NLLIGO::CLigoConfig &config*/) = 0;
 	virtual void		playBackgroundSound () = 0;
 	virtual void		stopBackgroundSound () = 0;
 

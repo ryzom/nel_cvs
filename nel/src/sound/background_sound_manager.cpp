@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.19.2.1 2003/08/07 17:43:32 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.19.2.2 2003/08/14 08:02:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -614,7 +614,7 @@ void CBackgroundSoundManager::loadSoundsFromRegion(const CPrimRegion &region)
 		play();
 }
 
-void CBackgroundSoundManager::load (const string &continent)
+void CBackgroundSoundManager::load (const string &continent/*, NLLIGO::CLigoConfig &config*/)
 {
 	NL_ALLOC_CONTEXT(NLSOUND_CBackgroundSoundManager);
 	// First, try to load from a .primitive file (contain everythink)
@@ -634,7 +634,7 @@ void CBackgroundSoundManager::load (const string &continent)
 			CIXml xml;
 			xml.init (file);
 
-			primitives.read(xml.getRootNode(), fn.c_str());
+			primitives.read(xml.getRootNode(), fn.c_str()/*, config*/);
 //			region.serial(xml);
 			file.close ();
 
@@ -1073,9 +1073,9 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 					
 					if(CPrimZone::contains(listener, sd.Points, distance, pos, sd.IsPath))
 					{
+						inside = true;
 						pos = _LastPosition;	// use the real listener position, not the 0 z centered
 						gain = 1.0f;
-						inside = true;
 //						nlinfo ("inside patate %d name '%s' ", *first, sd.SoundName.c_str());
 					}
 					else

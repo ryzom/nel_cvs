@@ -1,7 +1,7 @@
 /** \file complex_sound.h
  *
  *
- * $Id: complex_sound.h,v 1.3.6.1 2003/08/07 17:43:32 boucher Exp $
+ * $Id: complex_sound.h,v 1.3.6.2 2003/08/14 08:02:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

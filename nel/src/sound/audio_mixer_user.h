@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.39.4.1 2003/08/07 17:43:32 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.39.4.2 2003/08/14 08:02:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -288,7 +288,7 @@ public:
 	virtual void				loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region);
 	virtual void				loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region);
 	virtual void				loadBackgroundAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot);
-	virtual void				loadBackgroundSound (const std::string &continent);
+	virtual void				loadBackgroundSound (const std::string &continent/*, NLLIGO::CLigoConfig &config*/);
 	virtual void				playBackgroundSound ();
 	virtual void				stopBackgroundSound ();
 

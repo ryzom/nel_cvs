@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.24 2001/07/27 15:40:25 valignat Exp $
+# $Id: Makefile.am,v 1.25 2001/08/07 12:38:43 valignat Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -61,7 +61,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         win_thread.cpp
 
 
-libnelmisc_la_LIBADD  = config_file/libconfig.la -lpthread
+libnelmisc_la_LIBADD  = config_file/libconfig.la -lc -lpthread
 
 libnelmisc_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
 

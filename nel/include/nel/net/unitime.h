@@ -1,7 +1,7 @@
 /** \file unitime.h
  * CUniTime class
  *
- * $Id: unitime.h,v 1.2 2000/11/10 16:58:35 cado Exp $
+ * $Id: unitime.h,v 1.3 2000/11/24 10:13:58 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,10 +45,16 @@ public:
 	/// Return the time in millisecond. This time is the same on all computers at the \b same moment.
 	static NLMISC::TTime	getUniTime ();
 
+	/// Return the time in a string format to be display
+	static const char		*getStringUniTime ();
+
 	/** You need to call this function before calling getUniTime or an assert will occured.
 	 * This function will connect to the time service and synchronize your computer.
 	 */
 	static void				syncUniTimeFromService ();
+
+
+
 
 	/// \internal used by the time service to set the universal time the first time
 	static void				setUniTime (NLMISC::TTime uTime, NLMISC::TTime lTime) { Sync = true; _SyncUniTime = uTime; _SyncLocalTime = lTime; }

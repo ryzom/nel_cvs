@@ -284,6 +284,10 @@ SOURCE=..\include\nel\ai\agent\msg_notify.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ai\agent\object_ident.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\ai\agent\object_type.h
 # End Source File
 # Begin Source File

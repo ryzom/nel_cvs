@@ -2,7 +2,7 @@ dnl ====================================================================
 dnl Configuration script for Snowballs 2
 dnl ====================================================================
 dnl
-dnl $Id: configure.in,v 1.14 2002/04/15 12:04:25 lecroart Exp $
+dnl $Id: configure.in,v 1.15 2002/04/16 12:01:39 valignat Exp $
 dnl 
 
 
@@ -63,11 +63,8 @@ AM_SANITY_CHECK
 
 AC_PROG_INSTALL
 
-AC_PATH_PROG(CCACHE, ccache)
-if test "$CCACHE"
-then
- CXX="ccache $CXX"
-fi
+AM_PATH_CCACHE
+
 
 dnl ====================================================================
 dnl Configure Settings

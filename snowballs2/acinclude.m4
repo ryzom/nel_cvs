@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.12 2002/03/29 10:19:10 valignat Exp $
+dnl $Id: acinclude.m4,v 1.13 2002/04/16 12:01:39 valignat Exp $
 dnl 
 dnl =========================================================================
 
@@ -72,6 +72,11 @@ dnl
 dnl    Option:      "yes" if the use of the Python library is mandatory.
 dnl    Description: check the instalation of the OpenGL library and set the
 dnl                 PYTHON_CFLAGS and PYTHON_LIBS variables to use it.
+dnl
+dnl AM_PATH_CCACHE
+dnl
+dnl    Option:      none.
+dnl    Description: check the instalation of the Ccache utility.
 dnl
 dnl =========================================================================
 
@@ -1045,5 +1050,27 @@ fi
 ])
 
 
+# =========================================================================
+# AM_PATH_CCACHE : Ccache checking macros
+
+AC_DEFUN(AM_PATH_CCACHE,
+[
+
+AC_ARG_WITH( ccache,
+    [  --with-ccache           use ccache for compiling.],
+    [ using_ccache=$with_ccache ]
+)
+
+AC_PATH_PROG(CCACHE, ccache)
+if test "$CCACHE" -a "$using_ccache" = "yes"
+then
+    CC="ccache $CC"
+    CXX="ccache $CXX"
+fi
+
+])
+
+
 dnl =========================================================================
 dnl End of file
+

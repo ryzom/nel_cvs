@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.13 2001/12/06 09:28:02 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.14 2001/12/11 14:06:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,10 @@
 #include "../nel_mesh_lib/export_lod.h"
 
 using namespace NLMISC;
+
+// ***************************************************************************
+
+#define TAB_COUNT 6
 
 // ***************************************************************************
 
@@ -83,6 +87,12 @@ private:
 class CLodDialogBoxParam
 {
 public:
+	CLodDialogBoxParam ()
+	{
+		for (uint i=0; i<TAB_COUNT; i++)
+			SubDlg[i] = NULL;
+	}
+
 	bool					ListActived;
 	std::list<std::string>	ListLodName;
 	int						BlendIn;
@@ -128,7 +138,21 @@ public:
 	int						VegetableAlphaBlendOffDoubleSided;
 	int						VegetableBendCenter;
 	std::string				VegetableBendFactor;
+
+	// Dialog
+	HWND					SubDlg[TAB_COUNT];
 };
+
+int CALLBACK MRMDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int CALLBACK AccelDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int CALLBACK InstanceDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int CALLBACK LightmapDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int CALLBACK VegetableDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int CALLBACK MiscDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+const char				*SubText[TAB_COUNT]	= {"LOD & MRM", "Accelerator", "Instance", "Lightmap", "Vegetable", "Misc"};
+const int				SubTab[TAB_COUNT]	= {IDD_LOD, IDD_ACCEL, IDD_INSTANCE, IDD_LIGHTMAP, IDD_VEGETABLE, IDD_MISC};
+DLGPROC					SubProc[TAB_COUNT]	= {MRMDialogCallback, AccelDialogCallback, InstanceDialogCallback, LightmapDialogCallback, VegetableDialogCallback, MiscDialogCallback};
 
 // ***************************************************************************
 
@@ -908,11 +932,6 @@ int CALLBACK MiscDialogCallback (
 
 
 
-#define TAB_COUNT 6
-HWND		subDlg[TAB_COUNT]	= {NULL, NULL, NULL, NULL, NULL, NULL};
-const char *subText[TAB_COUNT]	= {"LOD & MRM", "Accelerator", "Instance", "Lightmap", "Vegetable", "Misc"};
-const int	subTab[TAB_COUNT]	= {IDD_LOD, IDD_ACCEL, IDD_INSTANCE, IDD_LIGHTMAP, IDD_VEGETABLE, IDD_MISC};
-DLGPROC		subProc[TAB_COUNT]	= {MRMDialogCallback, AccelDialogCallback, InstanceDialogCallback, LightmapDialogCallback, VegetableDialogCallback, MiscDialogCallback};
 
 int CALLBACK LodDialogCallback (
   HWND hwndDlg,  // handle to dialog box
@@ -962,23 +981,23 @@ int CALLBACK LodDialogCallback (
 				// Insert a tab
 				TCITEM tabItem;
 				tabItem.mask = TCIF_TEXT;
-				tabItem.pszText = (char*)subText[tab];
+				tabItem.pszText = (char*)SubText[tab];
 				SendMessage (GetDlgItem (hwndDlg, IDC_TAB), TCM_INSERTITEM, SendMessage (GetDlgItem (hwndDlg, IDC_TAB), TCM_GETITEMCOUNT, 0, 0), (LPARAM)&tabItem);
 
 				// Create the dialog
-				subDlg[tab] = CreateDialogParam (hInstance, MAKEINTRESOURCE(subTab[tab]), GetDlgItem (hwndDlg, IDC_TAB), subProc[tab], (LONG)lParam);
+				currentParam->SubDlg[tab] = CreateDialogParam (hInstance, MAKEINTRESOURCE(SubTab[tab]), GetDlgItem (hwndDlg, IDC_TAB), SubProc[tab], (LONG)lParam);
 
 				// To client coord
 				RECT client = tabRect;
-				ScreenToClient (subDlg[tab], (POINT*)&client.left);
-				ScreenToClient (subDlg[tab], (POINT*)&client.right);
+				ScreenToClient (currentParam->SubDlg[tab], (POINT*)&client.left);
+				ScreenToClient (currentParam->SubDlg[tab], (POINT*)&client.right);
 
 				// Resize and pos it
-				SetWindowPos (subDlg[tab], NULL, client.left, client.top, client.right-client.left, client.bottom-client.top, SWP_NOOWNERZORDER|SWP_NOZORDER);
+				SetWindowPos (currentParam->SubDlg[tab], NULL, client.left, client.top, client.right-client.left, client.bottom-client.top, SWP_NOOWNERZORDER|SWP_NOZORDER);
 			}
 
 			// Show the first dialog
-			ShowWindow (subDlg[0], SW_SHOW);
+			ShowWindow (currentParam->SubDlg[0], SW_SHOW);
 		}
 		break;
 
@@ -993,7 +1012,7 @@ int CALLBACK LodDialogCallback (
 						uint curSel=SendMessage (pnmh->hwndFrom, TCM_GETCURSEL, 0, 0);
 						for (uint tab=0; tab<TAB_COUNT; tab++)
 						{
-							ShowWindow (subDlg[tab], (tab == curSel)?SW_SHOW:SW_HIDE);
+							ShowWindow (currentParam->SubDlg[tab], (tab == curSel)?SW_SHOW:SW_HIDE);
 						}
 						break;
 					}
@@ -1015,7 +1034,7 @@ int CALLBACK LodDialogCallback (
 							for (uint tab=0; tab<TAB_COUNT; tab++)
 							{
 								// Send back an ok message
-								SendMessage (subDlg[tab], uMsg, wParam, lParam);
+								SendMessage (currentParam->SubDlg[tab], uMsg, wParam, lParam);
 							}
 							// Quit
 							EndDialog(hwndDlg, IDOK);

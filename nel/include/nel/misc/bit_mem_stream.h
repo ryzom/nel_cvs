@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.25 2003/07/09 15:16:36 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.26 2003/07/10 16:23:55 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -247,18 +247,17 @@ public:
 		TBMSSerialInfoList::iterator itl;
 		for ( itl=_DbgData->List.begin(); itl!=_DbgData->List.end(); ++itl )
 		{
-			if ( (*itl).BitPos < bitpos )
+			if ( (*itl).BitPos == bitpos )
 			{
-				// Found, insert
-				_DbgData->List.insert( itl, serialItem );
+				// Found, replace reserved by poked
+				(*itl) = serialItem;
 				found = true;
 				break;
 			}
 		}
 		if ( ! found )
 		{
-			// Not found, add at end
-			_DbgData->List.push_back( serialItem );
+			nlwarning( "Missing reserve() corresponding to poke()" );
 		}
 		_DbgData->NextSymbol = NULL;
 #endif
@@ -376,6 +375,9 @@ public:
 	/**
 	 * Set the position at the beginning. In output mode, the method ensures the buffer
 	 * contains at least one blank byte to write to.
+	 *
+	 * If you are using the stream only in output mode, you can use this method as a faster version
+	 * of clear() *if you don't serialize pointers*.
 	 */
 	void			resetBufPos()
 	{
@@ -445,6 +447,22 @@ public:
 
 	/// Returns the stream as a string with 0 and 1.
 	void			displayStream( const char *title="", CLog *log = NLMISC::DebugLog );
+
+	/// See doc in CMemStream::fill()
+	void			fill( const uint8 *srcbuf, uint32 len )
+	{
+		_FreeBits = 8;
+		_DbgInfo.clear();
+		CMemStream::fill( srcbuf, len );
+	}
+
+	/// See doc in CMemStream::bufferToFill()
+	uint8			*bufferToFill( uint32 msgsize )
+	{
+		_FreeBits = 8;
+		_DbgInfo.clear();
+		return CMemStream::bufferToFill( msgsize );
+	}
 
 	/// Serialize a buffer
 	virtual void	serialBuffer(uint8 *buf, uint len);

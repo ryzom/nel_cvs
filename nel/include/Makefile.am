@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.4 2001/01/11 14:25:34 valignat Exp $
+# $Id: Makefile.am,v 1.5 2001/02/06 09:27:05 valignat Exp $
 #
 
 install-exec-local:
@@ -27,7 +27,7 @@ install-exec-local:
 	$(INSTALL_DATA) -m a=r `echo nel/ai/agent/*.h`    $(includedir)/nel/ai/agent
 	$(INSTALL_DATA) -m a=r `echo nel/ai/c/*.h`        $(includedir)/nel/ai/c
 	$(INSTALL_DATA) -m a=r `echo nel/ai/e/*.h`        $(includedir)/nel/ai/e
-	$(INSTALL_DATA) -m a=r `echo nel/ai/fuzzy/*.h`    $(includedir)/nel/aifuzzy
+	$(INSTALL_DATA) -m a=r `echo nel/ai/fuzzy/*.h`    $(includedir)/nel/ai/fuzzy
 	$(INSTALL_DATA) -m a=r `echo nel/ai/logic/*.h`    $(includedir)/nel/ai/logic
 	$(INSTALL_DATA) -m a=r `echo nel/ai/nimat/*.h`    $(includedir)/nel/ai/nimat
 	$(INSTALL_DATA) -m a=r `echo nel/ai/pyserver/*.h` $(includedir)/nel/ai/pyserver

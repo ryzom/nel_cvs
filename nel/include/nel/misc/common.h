@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.14 2000/11/21 10:49:36 valignat Exp $
+ * $Id: common.h,v 1.15 2000/12/13 14:38:36 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,8 @@
 #include "nel/misc/types_nl.h"
 
 #include <ctype.h>
+#include <stdio.h>
+#include <stdarg.h>
 
 #include <stdlib.h>
 #include <algorithm>
@@ -37,6 +39,24 @@
 
 namespace	NLMISC
 {
+
+
+#ifdef NL_OS_WINDOWS
+	#define vsnprintf _vsnprintf
+#endif
+
+
+// Smart snprintf =============================================================================
+inline void smprintf( char *buffer, size_t count, const char *format, ... )
+{
+	va_list args;
+	va_start( args, format );
+	if ( vsnprintf( buffer, count, format, args ) == -1 )
+	{
+		buffer[count-1] = '\0';
+	}
+	va_end( args );
+}
 
 
 // ============================================================================================

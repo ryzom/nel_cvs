@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.7 2000/12/11 15:12:17 lecroart Exp $
+ * $Id: font_generator.cpp,v 1.8 2000/12/13 14:38:36 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,7 @@ const char*  err_msg;
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/common.h"
 
 #include "nel/3d/font_generator.h"
 
@@ -72,7 +73,7 @@ const char *CFontGenerator::getFT2Error(FT_Error fte)
 		if (ft_errors[i].err_code == fte)
 			return ft_errors[i].err_msg;
 	}
-	sprintf (ukn, "Unknown freetype2 error, errcode: 0x%x", fte);
+	smprintf (ukn, 1024, "Unknown freetype2 error, errcode: 0x%x", fte);
 	return ukn;
 }
 

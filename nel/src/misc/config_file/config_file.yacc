@@ -8,9 +8,11 @@
 #include <vector>
 #include <string>
 
+
 using namespace std;
 
 #include "nel/misc/config_file.h"
+#include "nel/misc/common.h"
 
 /* Constantes */
 
@@ -285,8 +287,8 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 		case NLMISC::CConfigFile::CVar::T_STRING:
 			switch (b.Type)
 			{
-			case NLMISC::CConfigFile::CVar::T_INT:	{ char str2[60]; sprintf(str2, "%d", b.Int); strcat(a.String, str2); break; }
-			case NLMISC::CConfigFile::CVar::T_REAL:	{ char str2[60]; sprintf(str2, "%f", b.Real); strcat(a.String, str2); break; }
+			case NLMISC::CConfigFile::CVar::T_INT:	{ char str2[60]; smprintf(str2, 60, "%d", b.Int); strcat(a.String, str2); break; }
+			case NLMISC::CConfigFile::CVar::T_REAL:	{ char str2[60]; smprintf(str2, 60, "%f", b.Real); strcat(a.String, str2); break; }
 			case NLMISC::CConfigFile::CVar::T_STRING:	strcat (a.String, b.String); break;
 			}
 			break;

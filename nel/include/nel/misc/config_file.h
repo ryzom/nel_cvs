@@ -1,7 +1,7 @@
 /** \file config_file.h
  * CConfigFile class
  *
- * $Id: config_file.h,v 1.13 2000/12/05 16:12:08 lecroart Exp $
+ * $Id: config_file.h,v 1.14 2000/12/13 14:38:36 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_CONFIG_FILE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
 
 #include <vector>
 #include <string>
@@ -228,7 +229,7 @@ private:
 
 struct EConfigFile : public Exception
 {
-	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Unknown Config File Exception"); return str; }
+	virtual const char	*what () const throw () { static char str[1024]; smprintf (str, 1024, "Unknown Config File Exception"); return str; }
 };
 
 struct EBadType : public EConfigFile
@@ -237,7 +238,7 @@ struct EBadType : public EConfigFile
 	int WantedType;
 	std::string VarName;
 	EBadType (const std::string &varName, int varType, int wantedType) : VarName(varName), VarType (varType), WantedType (wantedType) {}
-	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Bad variable type, variable \"%s\" is a %s and not a %s", VarName.c_str (), CConfigFile::CVar::TypeName[VarType], CConfigFile::CVar::TypeName[WantedType]); return str; }
+	virtual const char	*what () const throw () { static char str[1024]; smprintf (str, 1024, "Bad variable type, variable \"%s\" is a %s and not a %s", VarName.c_str (), CConfigFile::CVar::TypeName[VarType], CConfigFile::CVar::TypeName[WantedType]); return str; }
 };
 
 struct EBadSize : public EConfigFile
@@ -246,14 +247,14 @@ struct EBadSize : public EConfigFile
 	int VarIndex;
 	std::string VarName;
 	EBadSize (const std::string &varName, int varSize, int varIndex) : VarName(varName), VarSize (varSize), VarIndex (varIndex) {}
-	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Trying to access to the index %d but the variable \"%s\" size is %d", VarIndex, VarName.c_str (), VarSize); return str; }
+	virtual const char	*what () const throw () { static char str[1024]; smprintf (str, 1024, "Trying to access to the index %d but the variable \"%s\" size is %d", VarIndex, VarName.c_str (), VarSize); return str; }
 };
 
 struct EUnknownVar : public EConfigFile
 {
 	std::string VarName;
 	EUnknownVar (const std::string &varName) : VarName(varName) {}
-	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Unknown variable \"%s\"", VarName.c_str ()); return str; }
+	virtual const char	*what () const throw () { static char str[1024]; smprintf (str, 1024, "Unknown variable \"%s\"", VarName.c_str ()); return str; }
 };
 
 struct EParseError : public EConfigFile
@@ -261,14 +262,14 @@ struct EParseError : public EConfigFile
 	std::string FileName;
 	int CurrentLine;
 	EParseError (const std::string &fileName, int currentLine) : FileName(fileName), CurrentLine (currentLine) {}
-	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Parse error on the \"%s\" file, line %d", FileName.c_str (), CurrentLine); return str; }
+	virtual const char	*what () const throw () { static char str[1024]; smprintf (str, 1024, "Parse error on the \"%s\" file, line %d", FileName.c_str (), CurrentLine); return str; }
 };
 
 struct EFileNotFound : public EConfigFile
 {
 	std::string FileName;
 	EFileNotFound (const std::string &fileName, int currentLine) : FileName(fileName) {}
-	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "File \"%s\" not found", FileName.c_str ()); return str; }
+	virtual const char	*what () const throw () { static char str[1024]; smprintf (str, 1024, "File \"%s\" not found", FileName.c_str ()); return str; }
 };
 
 } // NLMISC

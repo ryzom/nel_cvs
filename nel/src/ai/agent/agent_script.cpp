@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.31 2001/02/28 09:46:14 portier Exp $
+ * $Id: agent_script.cpp,v 1.32 2001/02/28 17:01:30 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -195,6 +195,9 @@ namespace NLAIAGENT
 	{		
 		SendParamMessageScript->release();
 		//IdMsgNotifyParentClass->release();		
+		IdGoalMsgClass->release();
+		IdGoalMsg->release();
+		ParamGoalMsg->release();
 		ParamRunParentNotify->release();
 		SendCompParamMessageScript->release();
 		sint i;
@@ -477,7 +480,6 @@ namespace NLAIAGENT
 	{		
 		CAgentScript *result = new CAgentScript(*this);
 		return result;
-		// TODO: copie des fonctions
 	}
 
 	const NLAIC::IBasicType *CAgentScript::newInstance() const
@@ -1357,5 +1359,4 @@ namespace NLAIAGENT
 	{
 		return _AgentClass->getInheritedStaticMemberIndex(name);
 	}
-
 }

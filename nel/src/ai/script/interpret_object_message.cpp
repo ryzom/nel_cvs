@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.10 2001/02/22 11:07:18 chafik Exp $
+ * $Id: interpret_object_message.cpp,v 1.11 2001/02/28 17:01:30 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/agent/msg_notify.h"
+#include "nel/ai/agent/msg_goal.h"
 
 namespace NLAISCRIPT
 {
@@ -134,4 +135,47 @@ namespace NLAISCRIPT
 		return new NLAIAGENT::CNotifyParentScript( components,  (CMessageClass *) this );		
 	}	
 	
+
+
+//#########################################
+//		CGoalMsgClass
+//#########################################
+
+	CGoalMsgClass::CGoalMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
+	{
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
+
+	CGoalMsgClass::CGoalMsgClass() : CMessageClass()
+	{		
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
+	
+	const NLAIC::IBasicType *CGoalMsgClass::clone() const
+	{
+		return new CGoalMsgClass();
+	}
+
+	const NLAIC::IBasicType *CGoalMsgClass::newInstance() const
+	{
+		return new CGoalMsgClass();
+	}
+
+	NLAIAGENT::IObjectIA *CGoalMsgClass::buildNewInstance() const
+	{
+//		return new NLAIAGENT::CGoalMsg( (CMessageClass *) this );
+		std::list<NLAIAGENT::IObjectIA *> components;
+		createBaseClassComponents( components );
+
+		// Création du message
+		NLAIAGENT::IObjectIA *x = new NLAIAGENT::CGoalMsg( components,  (CMessageClass *) this );		
+		return x;
+	}	
+
 }

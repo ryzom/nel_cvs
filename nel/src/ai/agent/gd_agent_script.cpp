@@ -1,6 +1,6 @@
 /** \file gd_agent_script.cpp
  *
- * $Id: gd_agent_script.cpp,v 1.1 2001/02/28 09:46:08 portier Exp $
+ * $Id: gd_agent_script.cpp,v 1.2 2001/02/28 17:01:30 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,30 +71,31 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CGDAgentScript::newInstance() const
 	{	
 		CGDAgentScript *instance;
-/*		if ( _AgentClass )
+		if ( _AgentClass )
 		{
 			instance = (CGDAgentScript *) _AgentClass->buildNewInstance();
 		}
 		else 
-		{	*/		
+		{	
 			instance = new CGDAgentScript(NULL);
-//		}
+		}
 		return instance;
 	}
 	
-/*	void CGDAgentScript::getDebugString(char *t) const
+	void CGDAgentScript::getDebugString(char *t) const
 	{
 		if ( _AgentClass )
 		{
 			char buf[1024 * 4];
 			_AgentClass->getDebugString(buf);
-			strcpy(t,buf);
+			strcpy(t,"<GDAGentScript>");
+			strcat(t,buf);
 		}
 		else
 			strcpy(t,"<CGDAgentScript>");
 	}
 
- */
+
 
 	bool CGDAgentScript::isEqual(const IBasicObjectIA &a) const
 	{
@@ -205,10 +206,9 @@ namespace NLAIAGENT
 		// Checks the operators
 	}
 
-/*	NLAILOGIC::CFactBase *CGDAgentScript::getFactBase()
+
+	NLAILOGIC::CFactBase &CGDAgentScript::getFactBase()
 	{
 		return _FactBase;
 	}
-	*/
-
 } // NLAIAGENT

@@ -1,6 +1,6 @@
 /** \file msg_goal.cpp
  *
- * $Id: msg_goal.cpp,v 1.1 2001/02/28 09:46:08 portier Exp $
+ * $Id: msg_goal.cpp,v 1.2 2001/02/28 17:01:30 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,38 +25,36 @@
 #include "nel/ai/agent/msg_goal.h"
 #include "nel/ai/agent/agent_digital.h"
 #include "nel/ai/script/interpret_object_message.h"
+#include "nel/ai/logic/goal.h"
 
 namespace NLAIAGENT
 {
 	CGoalMsg::CGoalMsg( std::list<IObjectIA *> &l, NLAISCRIPT::CMessageClass *b):CMessageScript(l,b)
 	{
-		set(0,new DigitalType(0.0));
-		set(1,new CLocalAgentMail(NULL));
+		set(0, new NLAILOGIC::CGoal());
 	}
+
 	CGoalMsg::CGoalMsg(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
 	{		
-		CVectorGroupType *x = new CVectorGroupType(2);		
+		CVectorGroupType *x = new CVectorGroupType(1);		
 		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);		
-		set(0,new DigitalType(0.0));
-		set(1,new CLocalAgentMail(NULL));
+		set(0, new NLAILOGIC::CGoal());
 	}
 
 	CGoalMsg::CGoalMsg(IBasicAgent *agent):
 			CMessageScript((NLAISCRIPT::CMessageClass *)NLAISCRIPT::CGoalMsgClass::IdGoalMsgClass.getFactory()->getClass())
 	{		
-		CVectorGroupType *x = new CVectorGroupType(2);
+		CVectorGroupType *x = new CVectorGroupType(1);
 		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);
 		if(agent == NULL)
 		{
-			set(0,new DigitalType(0.0));
-			set(1,new CLocalAgentMail(NULL));
+			set(0, new NLAILOGIC::CGoal());
 		}
 		else
 		{
-			set(0,new DigitalType(1.0));
-			set(1,new CLocalAgentMail(agent));
+			set(0, new NLAILOGIC::CGoal());
 		}
  	}
 
@@ -78,7 +76,6 @@ namespace NLAIAGENT
 		}
 
 		return x;
-
 	}
 
 	const NLAIC::CIdentType &CGoalMsg::getType() const

@@ -8,7 +8,7 @@
 #include "nel/ai/script/object_unknown.h"
 #include "nel/ai/logic/logic.h"
 #include "nel/ai/fuzzy/fuzzy.h"
-
+#include "nel/ai/logic/interpret_object_operator.h"
 
 using  namespace NLAISCRIPT;
 using  namespace NLAILOGIC;
@@ -37,7 +37,7 @@ using  namespace NLAIFUZZY;
 %token	END IF THEN BEGINING
 %token	END_GRAMMAR
 %token	LOGICVAR RULE IA_ASSERT
-%token	FUZZYRULE FUZZYRULESET SETS FUZZYVAR FIS OR
+%token	FUZZYRULE FUZZYRULESET SETS FUZZYVAR FIS OR COMMENT
 %token	NEW AND	LOCAL 
 
 %left	NON_BIN		OR_BIN		AND_BIN		XOR_BIN
@@ -78,7 +78,7 @@ using  namespace NLAIFUZZY;
 						|	MessageManager 							
 							PAR_G PAR_D	
 							{
-									initMessageManager();
+								initMessageManager();
 							}			
 							DuCode
 							END
@@ -131,8 +131,8 @@ using  namespace NLAIFUZZY;
 								}
 								catch(NLAIE::IException &)
 								{
-									((IClassInterpret *)_SelfClass.get())->setClassName(NLAIAGENT::CStringVarName(LastyyText[1]));
-									((IClassInterpret *)_SelfClass.get())->buildVTable();
+									( (IClassInterpret *) _SelfClass.get() )->setClassName(NLAIAGENT::CStringVarName(LastyyText[1]));
+									( (IClassInterpret *) _SelfClass.get() )->buildVTable();
 									RegisterClass();
 								}
 							}
@@ -151,55 +151,264 @@ using  namespace NLAIFUZZY;
 						|	DefinitionDeProgram
 						;
 	
-	
+	BlocDeDefinition	:	UnBloc
+						|	UnBloc BlocDeDefinition;
+							
 
-	BlocDeDefinition	:	Register
-						|	Register BlocPourLesCode
+	UnBloc				:	Register
 						|	BlocPourLesCode
+						|	RegisterOperator
+							{
+								if ( classIsAnOperator() )
+								{
+									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
+									op_class->buildLogicTables();
+								}
+							}
 						;
 
 	Register			:	RegistDesAttributs
-						|	RegistDesAttributs RegisterOperator
 						;
 
 	RegistDesAttributs	:	COMPONENT POINT_DEUX TypeDeDeclaration END;
 						|	COMPONENT POINT_DEUX END
 						;
 
-	RegisterOperator	:	PostCondition 
-							PreCondition
-							Goal
+	RegisterOperator	:	OpBloc
+						|	OpBloc RegisterOperator
 						;
 
-	PostCondition		:	POSTCONDITION
-							{
-								if(!classIsAnOperator()) return 0;
-							}
-							POINT_DEUX
-							END
-						;
 
-	PreCondition		:	PRECONDITION
-							{
-								if(!classIsAnOperator()) return 0;
-							}
+	OpBloc				:	OpComment
+						|	PreCondition
+						|	PostCondition 
+						|	Goal
+						;	
+	
+
+	OpComment			:	COMMENT
 							POINT_DEUX
+							CHAINE
+							{
+								char *txt1 = LastyyText[0];
+								char *txt2 = LastyyText[1];
+							}
+							;
+
+	
+	PreCondition		:	PRECONDITION POINT_DEUX 
+							{
+								initParam()
+							}
+							OperatorCond
+							{
+								// Adds the conds to the operator class
+								if ( classIsAnOperator() )
+								{
+									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
+									while ( _LastAsserts.size() )
+									{
+										op_class->addFirstOrderCond( _LastAsserts.front(), _LastLogicParams.front() );
+										_LastAsserts.pop_front();
+										_LastLogicParams.pop_front();
+									}
+
+									while ( _LastCodeBranche.size() )
+									{
+										op_class->addCodeCond( _LastCodeBranche.front() );
+										_LastCodeBranche.pop_front();
+									}
+								}
+							}
 							END
-						;
+							;
+
 
 	Goal				:	GOAL
 							{
-								if(!classIsAnOperator()) return 0;
+								if ( !classIsAnOperator() )
+								 	return 0;
 							} 
 							POINT_DEUX
+							IDENT
+							{
+								if ( _Goal ) 
+								{
+									_Goal->release();
+									_Goal = NULL;
+								}
+								
+								if ( classIsAnOperator() )
+								{
+									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
+									op_class->setGoal( NLAIAGENT::CStringVarName( LastyyText[1] ) );
+								}
+							}
+							POINT_VI
 							END
 						;
+
+
+	PostCondition		:	POSTCONDITION POINT_DEUX 
+							{
+								initParam()
+							}
+							OperatorCond
+							{
+								// Adds the conds to the operator class
+								if ( classIsAnOperator() )
+								{
+
+									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
+									while ( _LastAsserts.size() )
+									{
+										op_class->addFirstOrderConc( _LastAsserts.front(), _LastLogicParams.front() );
+										_LastAsserts.pop_front();
+										_LastLogicParams.pop_front();
+									}
+
+									while ( _LastCodeBranche.size() )
+									{
+										op_class->addCodeCond( _LastCodeBranche.front() );
+										_LastCodeBranche.pop_front();
+									}
+								}
+							}
+							END
+							;
+
+	OperatorCond		:	SingleOpCond 
+							{
+								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
+							}
+						|	SingleOpCond 
+							{
+								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
+							}
+						OperatorCond
+							{
+								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
+							}
+
+						;
+
+	SingleOpCond		:	BooleanCond
+							{
+								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
+							}
+							POINT_VI
+						|	FirstOrderPattern
+							{
+								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
+							}
+							POINT_VI
+						|	DuCode
+							{
+								if(_LastBloc != NULL && !_LastBloc->isCodeMonted())
+								{
+									_VarState.popMark();
+
+									IOpCode *x;
+									if(!_InLineParse)
+									{										
+										if (_Debug)
+										{
+											x = new CFreeAllocDebug();
+										}
+										else
+										{
+											x = new CFreeAlloc();
+										}
+										_LastBloc->addCode(x);
+									}
+									x = new CHaltOpCode();									
+									_LastBloc->addCode(x);
+
+									CCodeBrancheRun* listCode;
+									if (_Debug)
+									{
+										listCode = _LastBloc->getCodeDebug(_SourceFileName);
+									}
+									else
+									{
+										listCode = _LastBloc->getCode();
+									}
+
+									if(listCode != NULL)
+									{
+//										((IClassInterpret *)_SelfClass.get())->getBrancheCode().setCode((IOpCode *)listCode);										
+										_LastCodeBranche.push_back( (IOpCode *) listCode );
+										_Heap -= (sint32)_Heap;
+										if(_Heap.restoreStackState()) _Heap.restoreStack();
+										if(_Heap.restoreShiftState()) _Heap.restoreShift();
+										_Heap -= (sint32)_Heap;									
+										//listCode->release();
+									}
+												
+									_DecalageHeap = 0;
+									CVarPStackParam::_Shift = 0;
+								}							
+
+/*								if(_IsVoid)
+								{
+									IOpType *x = new COperandVoid();									
+									((IClassInterpret *)_SelfClass.get())->getBrancheCode().setTypeOfMethode(x);
+								}
+								else
+								{
+									_IsVoid = true;
+								}				
+*/				
+
+							}
+							;
+
+	BooleanCond			:	INTERROGATION IDENT
+						{
+							char *param_name = LastyyText[1];
+							_LastBooleanConds.push_back( new NLAIAGENT::CStringVarName( param_name ) );
+						}
+						;
+
+
+	FirstOrderPattern	: INTERROGATION PAR_G 
+						IDENT 
+						{
+							const char *assert_name = LastyyText[1];
+							_LastAsserts.push_back( new NLAIAGENT::CStringVarName( LastyyText[1] ) );
+							_LastLogicParams.push_back( std::list<const NLAIAGENT::IVarName *>() );
+						}
+						OpLogicVarSet PAR_D
+						{
+								for (int i = 0; i < 20; i++); // To put breakpoints for debugging...
+						} 
+						;
+
+
+	OpLogicVarSet		:	OpLogicVar
+							{
+								for (int i = 0; i < 20; i++);  // To put breakpoints for debugging...
+							}
+						|	OpLogicVar
+							{
+								for (int i = 0; i < 20; i++);  // To put breakpoints for debugging...
+							}
+							OpLogicVarSet
+						;
+
+	OpLogicVar			:	INTERROGATION IDENT
+						{
+							char *var_name = LastyyText[1];
+							_LastLogicParams.back().push_back( new NLAIAGENT::CStringVarName( var_name ) );
+						}
+						;
+
 
 	BlocPourLesCode		:	BlocAvecCode
 						|	BlocPourLesCode BlocAvecCode
 						;
 
-	BlocAvecCode		:	Methode							
+	BlocAvecCode		:	Methode
 							Argument DuCode
 							{
 								if(_LastBloc != NULL && !_LastBloc->isCodeMonted())
@@ -335,10 +544,7 @@ using  namespace NLAIFUZZY;
 								_MethodName.push_back(name);
 								_IsVoid = true;
 							}
-						;
-
-
-										
+						;				
 										
 	Argument			:	ArgumentVide
 						|	ArgumentListe
@@ -903,6 +1109,10 @@ using  namespace NLAIFUZZY;
 							{
 								_IsFacteurIsExpression = false;
 							}
+						|	FactPattern
+							{
+								_IsFacteurIsExpression = false;
+							}
 						|	Rule
 							{
 								_IsFacteurIsExpression = false;
@@ -1064,7 +1274,7 @@ using  namespace NLAIFUZZY;
 						}
 						| FactPattern
 						{
-							_LastBloc->addCode( new CAddOpCode() );							
+							_LastBloc->addCode( new CAddOpCode() );
 						} 
 						AND Clause
 						{
@@ -1102,15 +1312,22 @@ using  namespace NLAIFUZZY;
 							char *txt = LastyyText[1];
 							_LastBloc->addCode( new CLdbOpCode( (NLAIAGENT::IObjectIA &) NLAIAGENT::CStringVarName( LastyyText[1] ) ) );
 							_LastBloc->addCode(new CAddOpCode() );
-							_LastAssert = NLAIAGENT::CStringVarName(LastyyText[1]);
+							//_LastAssert = NLAIAGENT::CStringVarName(LastyyText[1]);
 						}
 						LogicVarSet PAR_D
 						{
-							setStackVar( CFactPattern::IdFactPattern );
-							IBaseAssert *my_assert = _FactBase.addAssert( _LastAssert, _NbLogicParams );
+/*							setStackVar( CFactPattern::IdFactPattern );
+							IBaseAssert *my_assert = _FactBase->addAssert( _LastAssert, _NbLogicParams );
 							_NbLogicParams = 0;
 							_LastBloc->addCode(new CLdbNewOpCode( CFactPattern( my_assert ) ) );
+							*/
 						} 
+
+
+						| INTERROGATION IDENT
+						{
+						}
+							
 						;
 
 

@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.9 2001/02/22 11:07:18 chafik Exp $
+ * $Id: libcode.cpp,v 1.10 2001/02/28 17:01:30 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,10 +25,12 @@
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/script/interpret_object_manager.h"
 #include "nel/ai/script/interpret_actor.h"
+#include "nel/ai/logic/interpret_object_operator.h"
 #include "nel/ai/script/libcode.h"
 #include "nel/ai/script/test_method.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
+#include "nel/ai/script/gd_agent_class.h"
 
 namespace NLAISCRIPT
 {
@@ -180,6 +182,14 @@ namespace NLAISCRIPT
 		f = NLAISCRIPT::CAgentClass(CAgentClass::IdAgentClass);
 		((CAgentClass *)f.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CAgentClass::IdAgentClass));
 
+		NLAIC::CSelfClassCFactory &fgda = (NLAIC::CSelfClassCFactory&)*((CGDAgentClass::IdGDAgentClass).getFactory());
+		fgda = NLAISCRIPT::CGDAgentClass(CGDAgentClass::IdGDAgentClass);
+		((CGDAgentClass *)f.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CGDAgentClass::IdGDAgentClass));
+
+		NLAIC::CSelfClassCFactory &fop = (NLAIC::CSelfClassCFactory&)*((COperatorClass::IdOperatorClass).getFactory());
+		fop = NLAISCRIPT::COperatorClass(COperatorClass::IdOperatorClass);
+		((COperatorClass *)f.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)COperatorClass::IdOperatorClass));
+
 		NLAIC::CSelfClassCFactory &fc = (NLAIC::CSelfClassCFactory&)*((CActorClass::IdActorClass).getFactory());
 		fc = NLAISCRIPT::CActorClass(CActorClass::IdActorClass);
 		((CActorClass *)fc.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CActorClass::IdActorClass));
@@ -191,6 +201,10 @@ namespace NLAISCRIPT
 		NLAIC::CSelfClassCFactory &fh = (NLAIC::CSelfClassCFactory&)*((CMsgNotifyParentClass::IdMsgNotifyParentClass).getFactory());
 		fh = CMsgNotifyParentClass(CMsgNotifyParentClass::IdMsgNotifyParentClass);
 		((CMsgNotifyParentClass *)fh.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CMsgNotifyParentClass::IdMsgNotifyParentClass));
+
+		NLAIC::CSelfClassCFactory &fg = (NLAIC::CSelfClassCFactory&)*((CGoalMsgClass::IdGoalMsgClass).getFactory());
+		fg = CGoalMsgClass(CGoalMsgClass::IdGoalMsgClass);
+		((CGoalMsgClass *)fh.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CGoalMsgClass::IdGoalMsgClass));
 
 		NLAIC::CSelfClassCFactory &fa = (NLAIC::CSelfClassCFactory&)*((CManagerClass::IdManagerClass).getFactory());
 		fa = CManagerClass(CManagerClass::IdManagerClass);

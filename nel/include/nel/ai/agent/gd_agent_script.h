@@ -1,7 +1,7 @@
 /** \file gd_agent_script.h
- * goal drivent scripted agents with a FactBase and a goal stack
+ * goal driven scripted agents with a FactBase and a goal stack
  *
- * $Id: gd_agent_script.h,v 1.1 2001/02/28 09:42:37 portier Exp $
+ * $Id: gd_agent_script.h,v 1.2 2001/02/28 17:01:14 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ namespace NLAIAGENT
 			/// Inherited functions
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;
-//			virtual void getDebugString(char *t) const;
+			virtual void getDebugString(char *t) const;
 			virtual bool isEqual(const IBasicObjectIA &a) const;
 //			virtual void processMessages();
 			virtual const CProcessResult &run();
@@ -79,13 +79,10 @@ namespace NLAIAGENT
 
 			//////////////////////////////////////////////////////////////////////////
 //			NLAILOGIC::CFactBase *getFactBase();
-			void addGoal(NLAILOGIC::CGoal *);
+			virtual void addGoal(NLAILOGIC::CGoal *);
 
-/*			virtual NLAILOGIC::CFactBase &getFactBase()
-			{
-//				return _FactBase;
-			}
-*/
+			virtual NLAILOGIC::CFactBase &getFactBase();
+
 	};
 
 }	// NLAIAGENT

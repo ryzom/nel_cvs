@@ -1,6 +1,6 @@
 /** \file msg_goal.h
  *
- * $Id: msg_goal.h,v 1.1 2001/02/28 09:42:37 portier Exp $
+ * $Id: msg_goal.h,v 1.2 2001/02/28 17:01:14 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,9 @@ namespace NLAIAGENT
 		CGoalMsg( std::list<IObjectIA *> &, NLAISCRIPT::CMessageClass *);
 		CGoalMsg(NLAISCRIPT::CMessageClass *b = NULL);
 		CGoalMsg(IBasicAgent *);
+		~CGoalMsg()
+		{
+		}
 
 		/// \name NLAIC::IBasicInterface member class. 
 		//@{		

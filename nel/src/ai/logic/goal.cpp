@@ -1,19 +1,24 @@
 #include "nel/ai/logic/goal.h"
+#include "nel/ai/logic/var.h"
 
 namespace NLAILOGIC
 {
 
-	CGoal::CGoal(const NLAIAGENT::IVarName &name)
+	CGoal::CGoal() : IBaseBoolType()
+	{
+		_Name = NULL;
+	}
+		
+	CGoal::CGoal(const NLAIAGENT::IVarName &name) : IBaseBoolType()
 	{
 		_Name = (NLAIAGENT::IVarName *) name.clone();
 	}
 
-	CGoal::CGoal(const CGoal &c)
+	CGoal::CGoal(const CGoal &c) : IBaseBoolType()
 	{
 		if ( c._Name )
 			_Name = (NLAIAGENT::IVarName *) c._Name->clone();
 	}
-
 
 	CGoal::~CGoal()
 	{
@@ -47,7 +52,6 @@ namespace NLAILOGIC
 
 	}
 
-
 	const NLAIC::IBasicType *CGoal::clone() const
 	{
 		NLAIC::IBasicInterface *m = new CGoal( *this );
@@ -67,7 +71,6 @@ namespace NLAILOGIC
 	void CGoal::load(NLMISC::IStream &is)
 	{
 		IObjectIA::load( is );
-//		is >> _Value;	
 	}
 
 	void CGoal::getDebugString(char *text) const
@@ -108,5 +111,15 @@ namespace NLAILOGIC
 	const NLAIC::CIdentType &CGoal::getType() const
 	{
 		return IdGoal;
+	}
+
+	void CGoal::setVars(std::list<IBaseVar *> &vars)
+	{
+		std::list<IBaseVar *>::iterator it_var = vars.begin();
+		while ( it_var != vars.end() )
+		{
+			_Vars.push_back( (IBaseVar *) (*it_var)->clone() );
+			it_var++;
+		}
 	}
 }

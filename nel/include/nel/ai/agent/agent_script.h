@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.16 2001/02/28 09:42:02 portier Exp $
+ * $Id: agent_script.h,v 1.17 2001/02/28 17:01:13 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,6 @@
 #include "nel/ai/logic/factbase.h"
 #include "nel/ai/logic/goal.h"
 ////////////////////////////////////////
-
 
 
 namespace NLAISCRIPT 
@@ -292,7 +291,7 @@ namespace NLAIAGENT
 		{
 			return _FactBase;
 		}
-
+	////////////////////////////////////////////////////////////////////////
 	};
 }
 #endif

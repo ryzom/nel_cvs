@@ -10,6 +10,7 @@ namespace NLAIAGENT
 	CActorScript::CActorScript(const CActorScript &a) : CAgentScript(a)
 	{
 		_IsActivated = a._IsActivated;
+		_OnActivateIndex = -1;
 	}
 
 	CActorScript::CActorScript(IAgentManager *manager, 
@@ -59,7 +60,7 @@ namespace NLAIAGENT
 	/** Transfers activity to another actor.
 		The second arg bool must be set to true for this agent to stay active, false otherwise.
 	**/
-	void CActorScript::forwardActivity(CActorScript *receiver, bool stay_active)
+	void CActorScript::switchActor(CActorScript *receiver, bool stay_active)
 	{
 		receiver->activate();
 
@@ -70,7 +71,7 @@ namespace NLAIAGENT
 	/** Transfers activity to another actor.
 		The second arg bool must be set to true for this agent to stay active, false otherwise.
 	**/
-	void CActorScript::forwardActivity(std::vector<CActorScript *> &actors, bool stay_active)
+	void CActorScript::switchActor(std::vector<CActorScript *> &actors, bool stay_active)
 	{
 		std::vector<CActorScript *>::iterator it_act = actors.begin();
 		while ( it_act != actors.end() )
@@ -86,7 +87,7 @@ namespace NLAIAGENT
 	/** Transfers activity to another actor.
 		The second arg bool must be set to true for this agent to stay active, false otherwise.
 	**/
-	void CActorScript::forwardActivity(std::vector<CComponentHandle *> &handles, bool stay_active)
+	void CActorScript::switchActor(std::vector<CComponentHandle *> &handles, bool stay_active)
 	{
 		std::vector<CComponentHandle *>::iterator it_handle = handles.begin();
 		while ( it_handle != handles.end() )
@@ -252,7 +253,7 @@ namespace NLAIAGENT
 				for ( int i = 0; i < (int) handles.size(); i++)
 					switched.push_back( new CComponentHandle(  handles[ i ]->getStr() , (IAgent *) getParent() ) );
 
-				forwardActivity( switched, false );
+				switchActor( switched, false );
 			}
 			IObjectIA::CProcessResult r;
 			r.ResultState =  NLAIAGENT::processIdle;
@@ -336,7 +337,7 @@ namespace NLAIAGENT
 				std::vector<CComponentHandle *> switched;
 				for ( int i = 0; i < (int) handles.size(); i++)
 					switched.push_back( new CComponentHandle( handles[ i ]->getStr(), (IAgent *) getParent() ) );
-				forwardActivity( switched, false );
+				switchActor( switched, false );
 			}
 			IObjectIA::CProcessResult r;
 			r.ResultState =  NLAIAGENT::processIdle;
@@ -347,7 +348,7 @@ namespace NLAIAGENT
 
 	int CActorScript::getBaseMethodCount() const
 	{
-		return CAgentScript::getBaseMethodCount() + baseMethodIn + fid_switch;
+		return CAgentScript::getBaseMethodCount() + fid_switch +1;
 	}
 
 

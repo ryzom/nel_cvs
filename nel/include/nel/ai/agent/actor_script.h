@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.7 2001/01/17 10:28:33 portier Exp $
+ * $Id: actor_script.h,v 1.8 2001/01/18 15:04:46 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,20 +136,22 @@ namespace NLAIAGENT
 			};
 
 			bool _IsActivated;
+			sint32	_OnActivateIndex;
+			sint32	_OnUnActivateIndex;
 			std::vector<CComponentHandle *> _Actors;
 			
 			/** Transfers activity to another actor.
 				The second arg bool must be set to true for this agent to stay active, false otherwise.
 			**/
-			virtual void forwardActivity(CActorScript *, bool stay_active = false);
+			virtual void switchActor(CActorScript *, bool stay_active = false);
 			/** Transfers activity to another actor.
 				The second arg bool must be set to true for this agent to stay active, false otherwise.
 			**/
-			virtual void forwardActivity(std::vector<CActorScript *> &, bool stay_active = false);
+			virtual void switchActor(std::vector<CActorScript *> &, bool stay_active = false);
 			/** Transfers activity to another actor.
 				The second arg bool must be set to true for this agent to stay active, false otherwise.
 			**/
-			virtual void forwardActivity(std::vector<CComponentHandle *> &, bool stay_active = false);
+			virtual void switchActor(std::vector<CComponentHandle *> &, bool stay_active = false);
 
 
 		public:

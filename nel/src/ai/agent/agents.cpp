@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.5 2001/01/17 10:42:55 chafik Exp $
+ * $Id: agents.cpp,v 1.6 2001/01/18 15:04:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,11 +226,13 @@ namespace NLAIAGENT
 	
 
 	const static sint32 _GetMailer = 0;
-	const static sint32 _LastM = 1;
+	const static sint32 _Father = 1;
+	const static sint32 _LastM = 2;
 
 	IBasicAgent::CMethodCall IBasicAgent::_Method[] = 
 	{
-		IBasicAgent::CMethodCall("GetMailer",_GetMailer)		
+		IBasicAgent::CMethodCall("GetMailer",_GetMailer),
+		IBasicAgent::CMethodCall("father",_Father)
 	};
 
 	sint32 IBasicAgent::getMethodIndexSize() const
@@ -276,6 +278,18 @@ namespace NLAIAGENT
 				a.Result = new CLocalAgentMail(this);				
 				return a;
 			}			
+
+		case _Father:
+			{
+				IObjectIA::CProcessResult a;				
+				IRefrence *father = getParent();
+				if ( father )
+					a.Result = new CLocalAgentMail( (IBasicAgent *) father );				
+				else
+					a.Result = NULL;
+				return a;
+			}			
+
 		}
 		return IConnectIA::runMethodeMember(index,p);
 	}

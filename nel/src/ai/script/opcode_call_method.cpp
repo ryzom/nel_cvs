@@ -1,6 +1,6 @@
 /** \file opcode_call_method.cpp
  *
- * $Id: opcode_call_method.cpp,v 1.4 2001/01/08 14:42:12 valignat Exp $
+ * $Id: opcode_call_method.cpp,v 1.5 2001/01/18 15:04:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,6 +21,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/agent/agent_script.h"
 
@@ -167,8 +168,10 @@ namespace NLAISCRIPT
 		saveConstext(context);
 		
 		NLAIAGENT::IObjectIA::CProcessResult i;
-		if(_Inheritance) i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_Inheritance,_I,&context);
-		else i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_I,&context);
+		if ( _Inheritance ) 
+			i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_Inheritance,_I,&context);
+		else 
+			i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_I,&context);
 
 		context.Self = selfTmp;
 		loadConstext(context);

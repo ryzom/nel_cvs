@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.16 2001/01/17 10:47:40 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.17 2001/01/18 15:04:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,7 +175,7 @@ namespace NLAISCRIPT
 		sint32 i, child_index, father_index;
 
 		std::vector< std::vector<sint32> > l_index;
-#ifdef _DEBUG
+#ifdef _NL_DEBUG_
 		const char *dbg_this_class_name = getClassName()->getString();
 #endif
 
@@ -191,7 +191,7 @@ namespace NLAISCRIPT
 		for (i =0; i < (int) _Components.size() ; i++ ) // ... for each of its components ...
 		{
 			NLAIC::CIdentType c_type( _Components[ i ]->RegisterName->getString() );
-#ifdef _DEBUG
+#ifdef _NL_DEBUG_
 			const char *dbg_class_name = _Components[ i ]->RegisterName->getString();
 #endif
 				if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ...if it's a scripted agent...
@@ -199,17 +199,17 @@ namespace NLAISCRIPT
 					_NbScriptedComponents ++;
 					CAgentClass *child_class = (CAgentClass *) c_type.getFactory()->getClass();
 					// ... for each of its methods...
-#ifdef _DEBUG
+#ifdef _NL_DEBUG_
 				sint32 dbg_nb_funcs = child_class->getBrancheCodeSize();
 #endif
 				for (child_index =0; child_index < child_class->getBrancheCodeSize(); child_index++ )
 				{
 					CMethodeName &method = child_class->getBrancheCode( (int) child_index );
-#ifdef _DEBUG
+#ifdef _NL_DEBUG_
 					const char *dbg_meth_name = method.getName().getString();
 #endif
 
-#ifdef _DEBUG
+#ifdef _NL_DEBUG_
 					int dbg_param_size = method.getParam().size();
 					char dbg_param_name [1024*8];
 					method.getParam().getDebugString(dbg_param_name);

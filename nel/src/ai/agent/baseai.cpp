@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.4 2001/01/17 10:42:55 chafik Exp $
+ * $Id: baseai.cpp,v 1.5 2001/01/18 15:04:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/ai/agent/agent_method_def.h"
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/agent/messagerie.h"
+#include "nel/ai/agent/agent_mailer.h"
 
 namespace NLAIAGENT
 {
@@ -367,6 +368,8 @@ namespace NLAIAGENT
 		_NumRef = new CLocWordNumRef(*this);
 	}		
 
+
+
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
@@ -485,11 +488,9 @@ namespace NLAIAGENT
 			i++;
 		}
 	}
-	
 
 	void IConnectIA::Kill()
 	{
-
 		IConnectIA *parent = getParent();
 		if ( parent != NULL )
 		{
@@ -504,7 +505,6 @@ namespace NLAIAGENT
 			{
 				a->removeInConnectionList(this);
 			}
-			
 		}
 
 		while(_Connected.size())
@@ -514,9 +514,7 @@ namespace NLAIAGENT
 			if(a != NULL)
 			{
 				a->onKill(this);
-			}			
+			}
 		}
 	}
-
-
 }

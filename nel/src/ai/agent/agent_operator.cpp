@@ -1,6 +1,6 @@
 /** \file agent_operator.cpp
  *
- * $Id: agent_operator.cpp,v 1.6 2001/01/17 16:53:23 chafik Exp $
+ * $Id: agent_operator.cpp,v 1.7 2001/01/18 15:04:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,10 @@ namespace NLAIAGENT
 			{
 				result.push( NLAIAGENT::CIdMethod(op_mul,0.0,NULL,NULL) );
 			}
-
+			if ( *name == CStringVarName(_OPEQ_) )
+			{
+				result.push( CIdMethod(NLAIC::CTypeOfOperator::opEq,0.0,NULL,NULL) );
+			}
 			if ( *name == CStringVarName(_OPDIV_) )
 			{
 				result.push( NLAIAGENT::CIdMethod(op_div,0.0,NULL,NULL) );
@@ -129,6 +132,18 @@ namespace NLAIAGENT
 
 			case op_eq:
 				r.Result = (IObjectIA *) ( (*this) == ( * (IObjetOp *) x ) );
+				break;
+
+			case NLAIC::CTypeOfOperator::opInfEq	:
+				r.Result = (IObjectIA *) ( (*this) <= ( * (IObjetOp *) x ) );
+				break;
+
+			case NLAIC::CTypeOfOperator::opSupEq	:
+				r.Result = (IObjectIA *) ( (*this) >= ( * (IObjetOp *) x ) );
+				break;
+
+			case NLAIC::CTypeOfOperator::opDiff	:
+				r.Result = (IObjectIA *) ( (*this) != ( * (IObjetOp *) x ) );
 				break;
 		}
 		return r;

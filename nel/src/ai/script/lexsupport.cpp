@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.6 2001/01/17 16:53:23 chafik Exp $
+ * $Id: lexsupport.cpp,v 1.7 2001/01/18 15:04:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,6 +207,5 @@ namespace NLAISCRIPT
 		}
 
 		return V;
-	}
-	
+	}	
 }

@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.2 2001/01/11 17:02:18 chafik Exp $
+ * $Id: baseai.h,v 1.3 2001/01/18 15:04:46 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -339,6 +339,7 @@ namespace NLAIAGENT
 		virtual void save(NLMISC::IStream &os) = 0;
 		virtual void load(NLMISC::IStream &is) = 0;
 		//@}
+
 		virtual ~IRefrence();
 	};
 

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.14 2002/04/12 16:22:09 vizerie Exp $
+ * $Id: scene_user.cpp,v 1.15 2002/04/29 13:12:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,35 +156,16 @@ void CSceneUser::setDynamicCoarseMeshManagerTexture (const char *sPath)
 }
 
 // ***************************************************************************
-
-void CSceneUser::setStaticCoarseMeshManagerColor (const CRGBA& color)
+void				CSceneUser::setCoarseMeshLightingUpdate(uint8 period)
 {
-	// Get the manager
-	CCoarseMeshManager *manager=_Scene.getStaticCoarseMeshManager ();
-
-	// Does it exist ?
-	if (manager)
-	{
-		// Set the texture
-		manager->setColor (color);
-	}
+	_Scene.setCoarseMeshLightingUpdate(period);
 }
 
 // ***************************************************************************
-
-void CSceneUser::setDynamicCoarseMeshManagerColor (const CRGBA& color)
+uint8				CSceneUser::getCoarseMeshLightingUpdate() const
 {
-	// Get the manager
-	CCoarseMeshManager *manager=_Scene.getDynamicCoarseMeshManager ();
-
-	// Does it exist ?
-	if (manager)
-	{
-		// Set the texture
-		manager->setColor (color);
-	}
+	return _Scene.getCoarseMeshLightingUpdate();
 }
-
 
 // ***************************************************************************
 void				CSceneUser::enableLightingSystem(bool enable)

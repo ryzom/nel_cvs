@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.9 2002/04/26 15:06:50 berenguier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.10 2002/04/29 13:12:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ namespace NL3D
 #define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_MASK	(NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY-1)
 #define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY		(1<<NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_SHIFT)
 #define NL3D_COARSEMESH_VERTEXBUFFER_RESERVE			10
-#define NL3D_COARSEMESH_VERTEX_FORMAT					(CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag)
+#define NL3D_COARSEMESH_VERTEX_FORMAT					(CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag|CVertexBuffer::PrimaryColorFlag)
 #define NL3D_COARSEMESH_PRIMITIVE_BLOCK_SIZE			100
 
 // ***************************************************************************
@@ -71,6 +71,8 @@ const NLMISC::CClassId		CoarseMeshManagerId=NLMISC::CClassId(0x77554f87, 0x5bb37
  * Then, meshes with 8 to 15 vertices will be rendered at the same time. etc..
  *
  * Vertices are softly transformed in world space at the "setMatrixMesh" call.
+ *
+ * Vertices get a uniform color per instance at the "setColorMesh" call.
  *
  * All coarse meshes must use a common vertex format. It is a pos + normal + UV + vertex color vertex format.
  * (NL3D_COARSEMESH_VERTEX_FORMAT)
@@ -121,9 +123,9 @@ public:
 	void setMatrixMesh (uint64 id, const CMeshGeom& geom, const CMatrix& matrix);
 
 	/**
-	  * Set the global color of the coarse meshes
+	  * Set color of a mesh
 	  */
-	void setColor (NLMISC::CRGBA color);
+	void setColorMesh (uint64 id, const CMeshGeom& geom, NLMISC::CRGBA color);
 
 	/**
 	  * Render the container
@@ -198,6 +200,11 @@ private:
 		  * Set the matrix of a mesh
 		  */
 		void setMatrixMesh (uint32 id, const CMeshGeom& geom, const CMatrix& matrix);
+
+		/**
+		  * Set the color of a mesh
+		  */
+		void setColorMesh (uint32 id, uint nVertices, NLMISC::CRGBA color);
 
 		/**
 		  * Render the container

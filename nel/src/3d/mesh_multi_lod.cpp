@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.20 2002/04/26 15:06:50 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.21 2002/04/29 13:12:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -193,7 +193,8 @@ CTransformShape	*CMeshMultiLod::createInstance(CScene &scene)
 	// Create a CMeshInstance, an instance of a multi lod mesh.
 	CMeshMultiLodInstance *mi=(CMeshMultiLodInstance*)scene.createModel(NL3D::MeshMultiLodInstanceId);
 	mi->Shape= this;
-	mi->_LastLodMatrixDate=0;
+	mi->_LastLodMatrixDate[0]=0;
+	mi->_LastLodMatrixDate[1]=0;
 
 	// instanciate the material part of the Mesh, ie the CMeshBase.
 	CMeshBase::instanciateMeshBase(mi, &scene);
@@ -488,10 +489,12 @@ void CMeshMultiLod::renderMeshGeom (uint slot, IDriver *drv, CMeshMultiLodInstan
 
 				// modulate material for alphaBlend transition
 				// ----------
-				// New opacity (in color becausematerial is unlit)
-				CRGBA	bkupColor= material.getColor();
-				CRGBA	newCol= bkupColor;
+				// get average sun color for this coarseMesh
+				CRGBA	newCol= trans->getCoarseMeshLighting();
+				// Set current Alpha blend transparency (in color becausematerial is unlit)
 				newCol.A= (uint8)OptFastFloor(255 * alpha);
+				// bkup and change color
+				CRGBA	bkupColor= material.getColor();
 				material.setColor ( newCol );
 				// Disable ZWrite??
 				if(gaDisableZWrite)
@@ -561,20 +564,40 @@ void CMeshMultiLod::renderCoarseMesh (uint slot, IDriver *drv, CMeshMultiLodInst
 			trans->Flags|=maskFlag;
 
 		// Dirt the matrix
-		trans->_LastLodMatrixDate=0;
+		trans->_LastLodMatrixDate[coarseId]=0;
+		// Dirt the lighting. NB: period maximum is 255. Hence the -256, to ensure lighting compute now
+		trans->_LastLodLightingDate[coarseId]= -0x100;
 	}
 
 	// Finally loaded ?
 	if (trans->Flags&maskFlag)
 	{
 		// Matrix has changed ?
-		if ( trans->ITransformable::compareMatrixDate (trans->_LastLodMatrixDate) )
+		if ( trans->ITransformable::compareMatrixDate (trans->_LastLodMatrixDate[coarseId]) )
 		{
 			// Get date
-			trans->_LastLodMatrixDate = trans->ITransformable::getMatrixDate();
+			trans->_LastLodMatrixDate[coarseId] = trans->ITransformable::getMatrixDate();
 
 			// Set matrix
 			manager->setMatrixMesh ( trans->CoarseMeshId[coarseId], *meshGeom, trans->getMatrix() );
+		}
+
+		// Lighting: test if must update lighting, according to date of HrcTrav (num of CScene::render() call).
+		CScene	*scene= trans->getScene();
+		if(scene)
+		{
+			sint64	currentDate= scene->getHrcTrav()->CurrentDate;
+			if( trans->_LastLodLightingDate[coarseId] < currentDate - scene->getCoarseMeshLightingUpdate() )
+			{
+				// reset the date.
+				trans->_LastLodLightingDate[coarseId]= currentDate;
+
+				// get average sun color
+				CRGBA	sunContrib= trans->getCoarseMeshLighting();
+
+				// Set color
+				manager->setColorMesh ( trans->CoarseMeshId[coarseId], *meshGeom, sunContrib );
+			}
 		}
 	}
 }

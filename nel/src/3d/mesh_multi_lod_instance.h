@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.10 2002/04/26 15:06:50 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.11 2002/04/29 13:12:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/class_id.h"
 
-#include "3d/mesh_instance.h"
+#include "3d/mesh_base_instance.h"
 
 
 namespace NL3D 
@@ -78,8 +78,15 @@ public:
 	/// Call at the begining of the program, to register the model, and the basic observers.
 	static	void	registerBasic();
 
-	/// Last Matrix date
-	uint64			_LastLodMatrixDate;
+	/// Last Matrix date for Lods
+	uint64			_LastLodMatrixDate[2];
+
+	/// Last Lighting date for Lods
+	sint64			_LastLodLightingDate[2];
+
+
+	// return the contribution of lights (for Coarse Mesh render).
+	const CLightContribution	&getLightContribution() {return _LightContribution;}
 
 private:
 
@@ -103,6 +110,9 @@ private:
 	static IModel	*creator() {return new CMeshMultiLodInstance;}
 	friend	class CMeshMultiLod;
 	friend	class CMeshMultiLodBalancingObs;
+
+	/// get average color for Sun lighting. Get result from _LightContribution
+	CRGBA			getCoarseMeshLighting();
 };
 
 

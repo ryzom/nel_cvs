@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.23 2002/04/17 12:09:22 besson Exp $
+ * $Id: scene_user.h,v 1.24 2002/04/29 13:12:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -382,10 +382,10 @@ public:
 
 	/// \name Coarse meshes mgt.
 	//@{
-	virtual void setStaticCoarseMeshManagerTexture (const char *sPath);
-	virtual void setDynamicCoarseMeshManagerTexture (const char *sPath);
-	virtual void setStaticCoarseMeshManagerColor (const CRGBA& color);
-	virtual void setDynamicCoarseMeshManagerColor (const CRGBA& color);
+	virtual void				setStaticCoarseMeshManagerTexture (const char *sPath);
+	virtual void				setDynamicCoarseMeshManagerTexture (const char *sPath);
+	virtual void				setCoarseMeshLightingUpdate(uint8 period);
+	virtual uint8				getCoarseMeshLightingUpdate() const;
 	//@}
 
 	/// \name transparent Layers mgt

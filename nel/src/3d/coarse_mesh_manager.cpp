@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.9 2002/04/26 15:06:50 berenguier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.10 2002/04/29 13:12:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,10 +146,19 @@ void CCoarseMeshManager::setMatrixMesh (uint64 id, const CMeshGeom& geom, const 
 
 // ***************************************************************************
 
-void CCoarseMeshManager::setColor (NLMISC::CRGBA color)
+void CCoarseMeshManager::setColorMesh (uint64 id, const CMeshGeom& geom, NLMISC::CRGBA color)
 {
-	// Set the color
-	_Material.setColor (color);
+	// Get the render pass id
+	uint32 renderPass = getRenderPassId (id);
+
+	// Find the render pass
+	TRenderingPassMap::iterator ite=_RenderPass.find (renderPass);
+
+	// Not found ?
+	nlassert ( ite!=_RenderPass.end() );
+
+	// remove it
+	ite->second.setColorMesh (getRenderPassMeshId (id), geom.getVertexBuffer().getNumVertices(), color);
 }
 
 // ***************************************************************************
@@ -225,7 +234,7 @@ uint32 CCoarseMeshManager::CRenderPass::addMesh (const CMeshGeom& geom)
 	const CVertexBuffer &vbSrc=geom.getVertexBuffer();
 
 	// Check the vertex format
-	nlassert (vbSrc.getVertexFormat() == NL3D_COARSEMESH_VERTEX_FORMAT);
+	nlassert (vbSrc.getVertexFormat() & (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag) );
 
 	// Number of source vertex
 	uint32 nbVSrc = vbSrc.getNumVertices();
@@ -239,7 +248,24 @@ uint32 CCoarseMeshManager::CRenderPass::addMesh (const CMeshGeom& geom)
 	void *vDest = VBuffer.getVertexCoordPointer (firstVertex);
 	
 	// Copy it
-	memcpy (vDest, vSrc, nbVSrc*VBuffer.getVertexSize());
+	for(uint i=0; i<nbVSrc;i++)
+	{
+		CVector	&dstPos= *(CVector*)vDest;
+		CUV		&dstUV= *(CUV*) ((uint8*)vDest + VBuffer.getTexCoordOff() );
+		CRGBA	&dstRGBA= *(CRGBA*) ((uint8*)vDest + VBuffer.getColorOff() );
+		CVector	&srcPos= *(CVector*)vSrc;
+		CUV		&srcUV= *(CUV*) ((uint8*)vSrc + VBuffer.getTexCoordOff() );
+
+		// copy color/uv
+		dstPos= srcPos;
+		dstUV= srcUV;
+		// init color to full white
+		dstRGBA= CRGBA::White;
+
+		// next
+		vSrc= (uint8*)vSrc + vbSrc.getVertexSize();
+		vDest= (uint8*)vDest + VBuffer.getVertexSize();
+	}
 
 	// *** Setup primitives indexes
 
@@ -357,7 +383,7 @@ void CCoarseMeshManager::CRenderPass::setMatrixMesh (uint32 id, const CMeshGeom&
 	const CVertexBuffer &vbSrc=geom.getVertexBuffer();
 
 	// Check the vertex format
-	nlassert (vbSrc.getVertexFormat() == NL3D_COARSEMESH_VERTEX_FORMAT);
+	nlassert (vbSrc.getVertexFormat() & (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag) );
 
 	// Number of source vertices
 	uint32 nbVSrc = vbSrc.getNumVertices();
@@ -365,7 +391,8 @@ void CCoarseMeshManager::CRenderPass::setMatrixMesh (uint32 id, const CMeshGeom&
 	//int normalOffset = vbSrc.getNormalOff();
 
 	// Vertex size
-	uint vtSize=vbSrc.getVertexSize ();
+	uint vtSrcSize=vbSrc.getVertexSize ();
+	uint vtDstSize=VBuffer.getVertexSize ();
 
 	// Copy vector
 	const uint8 *vSrc = (const uint8 *)vbSrc.getVertexCoordPointer (0);
@@ -381,8 +408,39 @@ void CCoarseMeshManager::CRenderPass::setMatrixMesh (uint32 id, const CMeshGeom&
 //		*(CVector*)(vDest+normalOffset) = matrix.mulVector (*(const CVector*)(vSrc+normalOffset));
 
 		// Next point
-		vSrc+=vtSize;
-		vDest+=vtSize;
+		vSrc+=vtSrcSize;
+		vDest+=vtDstSize;
+	}
+}
+
+// ***************************************************************************
+
+void CCoarseMeshManager::CRenderPass::setColorMesh (uint32 id, uint nVertices, CRGBA color)
+{
+	// Is there a free vertex buffer ?
+	uint16 vertexBufferId=getVertexBufferId (id);
+
+	// *** Copy color to vertices
+
+	// Number of source vertices
+	uint32 nbVSrc = nVertices;
+	nlassert (nbVSrc<=VBlockSize);
+
+	// Vertex size
+	uint vtDstSize=VBuffer.getVertexSize ();
+
+	// Copy vector
+	uint8 *vDest = (uint8 *)VBuffer.getVertexCoordPointer (vertexBufferId*VBlockSize);
+	vDest+= VBuffer.getColorOff();
+	
+	// Transform it
+	for (uint i=0; i<nbVSrc; i++)
+	{
+		// Transform position
+		*(CRGBA*)vDest = color;
+
+		// Next point
+		vDest+=vtDstSize;
 	}
 }
 

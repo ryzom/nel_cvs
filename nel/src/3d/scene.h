@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.23 2002/04/12 16:20:43 vizerie Exp $
+ * $Id: scene.h,v 1.24 2002/04/29 13:12:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -304,6 +304,15 @@ public:
 	{
 		return _DynamicCoarseMeshManager;
 	}
+
+	/**
+	 *	Each coarseMesh lighting will be updated every "period" frame. clamped to 1,255
+	 */
+	void					setCoarseMeshLightingUpdate(uint8 period);
+
+	/// see setCoarseMeshLightingUpdate()
+	uint8					getCoarseMeshLightingUpdate() const {return _CoarseMeshLightingUpdate;}
+
 	//@}
 
 
@@ -489,6 +498,9 @@ private:
 
 	// Lighting.
 	bool						_LightingSystemEnabled;
+
+	/// set setCoarseMeshLightingUpdate
+	uint8						_CoarseMeshLightingUpdate;
 
 	/// \name Particle systems specific
 	//@{		

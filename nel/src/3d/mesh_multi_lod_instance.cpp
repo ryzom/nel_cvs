@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.9 2002/04/26 15:06:50 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.10 2002/04/29 13:12:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,24 @@ void		CMeshMultiLodInstance::deleteCoarseInstances()
 			}
 		}
 	}
+}
+
+
+// ***************************************************************************
+CRGBA		CMeshMultiLodInstance::getCoarseMeshLighting()
+{
+	CScene	*scene= getScene();
+	nlassert(scene);
+
+	// compute his sun contribution result, and update
+	CRGBA	sunContrib= scene->getSunDiffuse();
+	// simulate/average diffuse lighting over the mesh by dividing diffuse by 2.
+	sunContrib.modulateFromuiRGBOnly(sunContrib, getLightContribution().SunContribution/2 );
+	// Add Ambient
+	sunContrib.addRGBOnly(sunContrib, scene->getSunAmbient());
+	sunContrib.A= 255;
+
+	return sunContrib;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.72 2002/04/26 16:07:45 besson Exp $
+ * $Id: scene.cpp,v 1.73 2002/04/29 13:12:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,6 +140,7 @@ CScene::CScene()
 	_FirstAnimateCall = true ;
 
 	_LightingSystemEnabled= false;
+	_CoarseMeshLightingUpdate= 50;
 
 	_GlobalWindDirection.set(1,0,0);
 	// Default as Sithikt wants.
@@ -901,6 +902,13 @@ void		CScene::removeInstanceGroupForLightAnimation(CInstanceGroup *ig)
 	ItAnimatedIgSet		itIg= _AnimatedIgSet.find(ig);
 	nlassert( itIg != _AnimatedIgSet.end() );
 	_AnimatedIgSet.erase(itIg);
+}
+
+
+// ***************************************************************************
+void		CScene::setCoarseMeshLightingUpdate(uint8 period)
+{
+	_CoarseMeshLightingUpdate= max((uint8)1, period);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.17 2002/04/12 16:15:03 vizerie Exp $
+ * $Id: u_scene.h,v 1.18 2002/04/29 13:13:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -242,19 +242,19 @@ public:
 
 	/** Set the static coarse meshes's common texture.
 	*/
-	virtual void setStaticCoarseMeshManagerTexture (const char *sPath) =0;
+	virtual void				setStaticCoarseMeshManagerTexture (const char *sPath) =0;
 
 	/** Set the dynamic coarse meshes's common texture.
 	*/
-	virtual void setDynamicCoarseMeshManagerTexture (const char *sPath) =0;
+	virtual void				setDynamicCoarseMeshManagerTexture (const char *sPath) =0;
 
-	/** Set the static coarse meshes global color.
-	*/
-	virtual void setStaticCoarseMeshManagerColor (const NLMISC::CRGBA& color) =0;
+	/**
+	 *	Each coarseMesh lighting will be updated every "period" frame. clamped to 1,255
+	 */
+	virtual void				setCoarseMeshLightingUpdate(uint8 period) =0;
 
-	/** Set the dynamic coarse meshes's common texture.
-	*/
-	virtual void setDynamicCoarseMeshManagerColor (const NLMISC::CRGBA& color) =0;
+	/// see setCoarseMeshLightingUpdate()
+	virtual uint8				getCoarseMeshLightingUpdate() const  =0;
 
 	//@}
 

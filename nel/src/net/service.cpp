@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.155 2002/12/23 14:45:33 lecroart Exp $
+ * $Id: service.cpp,v 1.156 2003/01/03 16:45:09 coutelas Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -58,6 +58,7 @@
 #include "nel/misc/path.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/report.h"
+#include "nel/misc/system_info.h"
 
 #include "nel/net/naming_client.h"
 #include "nel/net/service.h"
@@ -817,6 +818,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		}
 
 		nlinfo ("Starting Service '%s' using NeL ("__DATE__" "__TIME__")", _ShortName.c_str());
+		nlinfo ("On OS: %s", CSystemInfo::getOS().c_str());
 
 		setStatus (EXIT_SUCCESS);
 

@@ -126,8 +126,8 @@
 				// it s ok, let's connect
 				$msgin->serialstring($cookie);
 				$msgin->serialstring($addr);
-
-				$res = '<!--nel="launch" nelArgs="'.$cookie.' '.$addr.'"-->';
+//////// faut remettre launch et commiter mon nel_launcher
+				$res = '<!--nel="login" nelArgs="'.$cookie.' '.$addr.'"-->';
 				$ok = true;
 			}
 			else

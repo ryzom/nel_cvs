@@ -9,7 +9,7 @@
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
 ' when Scripting.FileSystemObject cannot be instanciated
-' $Id: nevrax_macros_98.dsm,v 1.6 2000/10/16 10:27:12 cado Exp $
+' $Id: nevrax_macros_98.dsm,v 1.7 2000/10/24 15:26:37 cado Exp $
 '------------------------------------------------------------------------------
 
 
@@ -25,7 +25,7 @@ Sub NevraxInsertFileHeader( filename, productname )
 		"/** \file " + filename + vbLf + _
 		" * <File description>" + vbLf + _
 		" *" + vbLf + _
-		" * $Id: nevrax_macros_98.dsm,v 1.6 2000/10/16 10:27:12 cado Exp $" + vbLf + _
+		" * $Id: nevrax_macros_98.dsm,v 1.7 2000/10/24 15:26:37 cado Exp $" + vbLf + _
 		" */" + vbLf + vbLf
 	ActiveDocument.Selection = _
 		"/* Copyright, 2000 Nevrax Ltd." + vbLf + _
@@ -158,7 +158,7 @@ Sub NevraxNewClass()
 		ProdName = "NEL"
 		ShortIncDir = "nel/" + CurrentDirectoryName + "/"
 	else
-		ProdName = "RYZOM"
+		ProdName = "D.T.C. SYSTEM" ' Distributed Toolkit Components
 	end if
 
 	FinalCPPdir = SrcDirectory + CurrentDirectoryDir

@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs main file
  *
- * $Id: client.cpp,v 1.52 2002/02/11 10:24:15 lecroart Exp $
+ * $Id: client.cpp,v 1.53 2002/02/20 09:43:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,15 +152,15 @@ int main(int argc, char **argv)
 
 	// Add different path for automatic file lookup
 	string dataPath = ConfigFile.getVar("DataPath").asString ();
-	if (dataPath[dataPath.size()-1] != '/') dataPath += '/';
-	CPath::addSearchPath (dataPath);
-	CPath::addSearchPath (dataPath + "zones/");
+//	if (dataPath[dataPath.size()-1] != '/') dataPath += '/';
+	CPath::addSearchPath (dataPath, true, false);
+/*	CPath::addSearchPath (dataPath + "zones/");
 	CPath::addSearchPath (dataPath + "tiles/");
 	CPath::addSearchPath (dataPath + "shapes/");
 	CPath::addSearchPath (dataPath + "maps/");
 	CPath::addSearchPath (dataPath + "pacs/");
 	CPath::addSearchPath (dataPath + "anims/");
-
+*/
 	// Create a driver
 	Driver = UDriver::createDriver();
 

@@ -2,7 +2,7 @@
 # Configuration script for NeL
 # ====================================================================
 #
-# $Id: configure.ac,v 1.4 2004/02/16 11:18:12 lecroart Exp $
+# $Id: configure.ac,v 1.5 2004/08/04 08:56:51 weeklyserver Exp $
 # 
 
 # ====================================================================
@@ -346,8 +346,8 @@ AC_LANG([C])
 
 AM_PATH_XML2([2.0.0], [], [AC_MSG_ERROR([libxml2 must be installed])])
 
-CFLAGS="$CFLAGS $XML_CFLAGS"
-CXXFLAGS="$CXXFLAGS $XML_CFLAGS"
+CFLAGS="$CFLAGS $XML_CFLAGS $XML_CPPFLAGS"
+CXXFLAGS="$CXXFLAGS $XML_CFLAGS $XML_CPPFLAGS"
 
 LIBS="$LIBS $XML_LIBS"
 

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.25 2002/08/22 13:16:05 lecroart Exp $
+ * $Id: unified_network.h,v 1.26 2002/08/22 13:17:51 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -367,7 +367,7 @@ private:
 			uint j;
 			for (j = 0; j < defaultNetwork.size (); j++)
 			{
-				sint32 pos = defaultNetwork[j].find(ServiceName);
+				uint32 pos = defaultNetwork[j].find(ServiceName);
 				if (pos != std::string::npos && pos == 0 && ServiceName.size() == defaultNetwork[j].size ()-1)
 				{
 					uint8 nid = defaultNetwork[j][defaultNetwork[j].size ()-1] - '0';

@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.9 2002/05/28 14:06:57 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.10 2002/05/29 14:52:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -602,7 +602,15 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 		// Get the type
 		type = theEntry.getType ();
 		*nodeType = theEntry.getTypePtr ();
-		*nodeDfn = theEntry.getDfnPtr ();
+		if (type == UFormDfn::EntryVirtualDfn)
+		{
+			if (*node)
+				*nodeDfn = safe_cast <CFormElmVirtualStruct*> (*node)->FormDfn;
+			else
+				*nodeDfn = NULL;
+		}
+		else
+			*nodeDfn = theEntry.getDfnPtr ();
 		array = theEntry.getArrayFlag ();
 	}
 	else if (*node)

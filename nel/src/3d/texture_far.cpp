@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.10 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: texture_far.cpp,v 1.11 2001/07/20 14:10:26 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -711,8 +711,8 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 							{
 								uint shade=pLumelLine[s].Shaded;
 								pDstLine[s].R=((uint)pLightmap->StaticLightColor[shade].R*((uint)startR*(4-s)+(uint)endR*s))>>12;		// 8:12
-								pDstLine[s].G=((uint)pLightmap->StaticLightColor[shade].G*((uint)startR*(4-s)+(uint)endG*s))>>12;		// 8:12
-								pDstLine[s].B=((uint)pLightmap->StaticLightColor[shade].B*((uint)startR*(4-s)+(uint)endB*s))>>12;		// 8:12
+								pDstLine[s].G=((uint)pLightmap->StaticLightColor[shade].G*((uint)startG*(4-s)+(uint)endG*s))>>12;		// 8:12
+								pDstLine[s].B=((uint)pLightmap->StaticLightColor[shade].B*((uint)startB*(4-s)+(uint)endB*s))>>12;		// 8:12
 							}
 
 							// Next line

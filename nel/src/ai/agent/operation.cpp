@@ -1,7 +1,7 @@
 /** \file operation.cpp
  * <File description>
  *
- * $Id: operation.cpp,v 1.1 2002/05/27 13:34:39 chafik Exp $
+ * $Id: operation.cpp,v 1.2 2002/05/27 15:47:21 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -215,13 +215,53 @@ namespace NLAIAGENT
 		return runMethodBase(index,o);
 	}
 
-	NLAIAGENT::IObjectIA::CProcessResult CAgentOperation::runMethodBase(int index,NLAIAGENT::IObjectIA *o)
+	NLAIAGENT::IObjectIA::CProcessResult CAgentOperation::runMethodBase(int index, IObjectIA *o)
 	{
 		NLAIAGENT::IObjectIA::CProcessResult r;
+		NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)o;
 		switch(index - CAgentScript::getMethodIndexSize())
 		{		
-		case TSetValue:
+		case CAgentOperation::TSetValue:
+			{
+				IObjetOp *obj = (NLAIAGENT::IObjetOp *)param->get();
+				setValue(obj);
+				obj->incRef();
+			}
 			return r;
+
+		case CAgentOperation::TGetValue:
+			r.Result = _Op;
+			_Op->incRef();
+			return r;
+
+		case CAgentOperation::TSetName:
+			{
+				NLAIAGENT::CStringType s(*(NLAIAGENT::CStringType *)param->get());
+				setName(s);			
+			}
+			return r;
+
+		case CAgentOperation::TGetName:
+			r.Result = _Name;
+			_Name->release();
+			return r;
+
+		case CAgentOperation::TUpdate:
+			update();
+			return r;
+
+		case CAgentOperation::TIsChange:		
+			r.Result = new NLAIAGENT::DDigitalType(changed() ? 1.0 : 0.0);
+			return r;
+
+		case CAgentOperation::TConnect:
+			{
+				IConnectIA *c = (IConnectIA *)param->get();
+				connectOnChange(c);
+			}
+			return r;
+		
+
 		default:
 			return CAgentScript::runMethodBase(index,o);
 		}
@@ -251,6 +291,17 @@ namespace NLAIAGENT
 														CAgentOperation::TGetValue,
 														NULL,CAgentScript::CheckCount, 0, new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandAnyObject));
 
+		CAgentOperation::StaticMethod[CAgentOperation::TSetName] = 
+						new CAgentScript::CMethodCall(	"SetName",
+														CAgentOperation::TSetName,
+														NULL,CAgentScript::CheckCount, 1, new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid));
+
+		CAgentOperation::StaticMethod[CAgentOperation::TGetName] = 
+						new CAgentScript::CMethodCall(	"GetName",
+														CAgentOperation::TGetName,
+														NULL,CAgentScript::CheckCount, 0, new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandAnyObject));
+
+
 		CAgentOperation::StaticMethod[CAgentOperation::TUpdate] = 
 						new CAgentScript::CMethodCall(	"Update",
 														CAgentOperation::TUpdate,
@@ -261,7 +312,7 @@ namespace NLAIAGENT
 														CAgentOperation::TIsChange,
 														NULL,CAgentScript::CheckCount, 0, new NLAISCRIPT::CObjectUnknown(	
 																								new NLAISCRIPT::COperandSimple(
-																								new NLAIC::CIdentType(NLAIAGENT::DigitalType::IdDigitalType))));
+																								new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType))));
 		CAgentOperation::StaticMethod[CAgentOperation::TConnect] = 
 						new CAgentScript::CMethodCall(	"Connect",
 														CAgentOperation::TConnect,

@@ -1,7 +1,7 @@
 /** \file operation.h
  * <File description>
  *
- * $Id: operation.h,v 1.1 2002/05/27 13:33:57 chafik Exp $
+ * $Id: operation.h,v 1.2 2002/05/27 15:47:10 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,8 @@ namespace NLAIAGENT
 		enum{
 			TSetValue,
 			TGetValue,
+			TSetName,
+			TGetName,
 			TUpdate,
 			TIsChange,
 			TConnect,
@@ -58,15 +60,12 @@ namespace NLAIAGENT
 		std::list < IConnectIA * >_Connection;
 		bool _Change;
 
-
 	public:
-
 		CAgentOperation();
 		CAgentOperation(IObjetOp *o);
 		CAgentOperation(const CAgentOperation &);
 
 		virtual ~CAgentOperation();
-
 
 		virtual void setValue(IObjetOp *o)
 		{
@@ -100,7 +99,6 @@ namespace NLAIAGENT
 		virtual IObjetOp &operator *= (const IObjetOp &);
 		virtual IObjetOp &operator /= (const IObjetOp &);
 
-
 		virtual IObjectIA &operator = (const IObjectIA &a)
 		{
 			std::string text;
@@ -114,7 +112,6 @@ namespace NLAIAGENT
 			return true;
 		}
 
-
 		virtual void onKill(IConnectIA *A);
 		virtual const CProcessResult &run();
 		virtual bool isEqual(const IBasicObjectIA &a) const;
@@ -123,7 +120,6 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *clone() const;
 		virtual const NLAIC::IBasicType *newInstance() const;
 		virtual void getDebugString(std::string &t) const;
-
 
 		virtual const NLAIC::CIdentType &getType() const
 		{
@@ -150,13 +146,11 @@ namespace NLAIAGENT
 			_Change = false;
 		}
 
-
 		virtual int getBaseMethodCount() const;
 		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
 		virtual sint32 getMethodIndexSize() const;
 		virtual CProcessResult runMethodBase(int, int, IObjectIA *);
 		virtual CProcessResult runMethodBase(int, IObjectIA *);
-		
 
 	public:
 		static void initClass();

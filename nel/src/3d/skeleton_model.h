@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: skeleton_model.h,v 1.2 2001/06/21 12:57:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NL3D
 
 
 class CSkeletonShape;
-class CMeshInstance;
+class CMeshBaseInstance;
 
 
 // ***************************************************************************
@@ -91,7 +91,7 @@ public:
 	 * NB: replaced if already here.
 	 * NB: mi is made son of skeleton model in Traversals Hrc and Clip.
 	 */
-	void		bindSkin(CMeshInstance *mi);
+	void		bindSkin(CMeshBaseInstance *mi);
 	/** parent a CTransform to a bone of the skeleton. NB: ~CTransform() calls detachSkeletonSon().
 	 * NB: an object can't be skinned and sticked at same time :)
 	 * NB: replaced if already here.
@@ -145,8 +145,8 @@ private:
 	};
 
 	/// The skins.
-	typedef	std::set<CMeshInstance*>	TMeshInstanceSet;
-	typedef	TMeshInstanceSet::iterator	ItMeshInstanceSet;
+	typedef	std::set<CMeshBaseInstance*>	TMeshInstanceSet;
+	typedef	TMeshInstanceSet::iterator		ItMeshInstanceSet;
 	TMeshInstanceSet			_Skins;
 	/// The StickedObjects.
 	typedef	std::set<CStickObject>		TStickObjectSet;

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.1 2001/06/19 10:22:33 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.2 2001/06/21 12:57:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@ class CMeshBase;
 class CMesh;
 class CMeshMRM;
 class CMeshBaseInstanceAnimDetailObs;
+class CSkeletonModel;
 
 
 // ***************************************************************************
@@ -98,11 +99,19 @@ public:
 	// @}
 
 
+	// Return true if this mesh is a skin apply on a skeleton else false.
+	bool isSkinApply () const
+	{
+		return _ApplySkinOk;
+	}
+
+
 protected:
 	/// Constructor
 	CMeshBaseInstance()
 	{
 		IAnimatable::resize(AnimValueLast);
+		_ApplySkinOk= false;
 	}
 	/// Destructor
 	virtual ~CMeshBaseInstance() {}
@@ -111,12 +120,16 @@ private:
 	static IModel	*creator() {return new CMeshBaseInstance;}
 	friend	class CMeshBase;
 	friend	class CMeshBaseInstanceAnimDetailObs;
+	friend	class CSkeletonModel;
 
 
 	/** The list of animated materials, instanciated from the mesh.
 	 */
 	std::vector<CAnimatedMaterial>	_AnimatedMaterials;
 
+
+	/// Skinning. true if skinned to the _Skeleton.
+	bool		_ApplySkinOk;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.2 2001/06/19 10:22:33 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.3 2001/06/21 12:57:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,18 +60,12 @@ public:
 
 public:
 
-	// Return true if this mesh is a skin apply on a skeleton else false.
-	bool isSkinApply () const
-	{
-		return _ApplySkinOk;
-	}
 
 
 protected:
 	/// Constructor
 	CMeshInstance()
 	{
-		_ApplySkinOk= false;
 	}
 	/// Destructor
 	virtual ~CMeshInstance() {}
@@ -80,11 +74,6 @@ protected:
 private:
 	static IModel	*creator() {return new CMeshInstance;}
 	friend	class CMesh;
-	friend	class CSkeletonModel;
-
-
-	/// Skinning. true if skinned to the _Skeleton.
-	bool		_ApplySkinOk;
 
 };
 

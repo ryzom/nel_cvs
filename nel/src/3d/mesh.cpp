@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.22 2001/06/19 10:22:33 berenguier Exp $
+ * $Id: mesh.cpp,v 1.23 2001/06/21 12:57:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -362,8 +362,8 @@ void	CMesh::render(IDriver *drv, CTransformShape *trans)
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel		*skeleton;
 	skeleton= mi->_FatherSkeletonModel;
-	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and _ApplySkinOk.
-	bool	skinOk= _Skinned && mi->_ApplySkinOk && skeleton;
+	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and isSkinApply().
+	bool	skinOk= _Skinned && mi->isSkinApply() && skeleton;
 
 
 	// enable driver skinning.

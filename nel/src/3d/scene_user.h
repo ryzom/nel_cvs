@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.2 2001/06/19 14:28:52 berenguier Exp $
+ * $Id: scene_user.h,v 1.3 2001/06/21 12:57:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,7 +122,7 @@ public:
 		{
 			if( it->second != NULL )
 			{
-				if( dynamic_cast<CMeshInstance*>(it->second)==NULL )
+				if( dynamic_cast<CMeshBaseInstance*>(it->second)==NULL )
 					nlerror("UScene::createInstance(): shape is not a mesh");
 
 				*(it->first) = dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, it->second)) );

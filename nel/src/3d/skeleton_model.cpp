@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.3 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: skeleton_model.cpp,v 1.4 2001/06/21 12:57:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 #include "3d/skeleton_model.h"
-#include "3d/mesh_instance.h"
+#include "3d/mesh_base_instance.h"
 #include "3d/hrc_trav.h"
 #include "3d/clip_trav.h"
 #include "3d/skeleton_shape.h"
@@ -78,7 +78,7 @@ CSkeletonModel::~CSkeletonModel()
 
 
 // ***************************************************************************
-void		CSkeletonModel::bindSkin(CMeshInstance *mi)
+void		CSkeletonModel::bindSkin(CMeshBaseInstance *mi)
 {
 	nlassert(mi);
 
@@ -132,13 +132,13 @@ void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
 	node.Transform= tr;
 	_StickedObjects.erase(node);
 	// try to erase from Skins.
-	_Skins.erase((CMeshInstance*)tr);
+	_Skins.erase((CMeshBaseInstance*)tr);
 
 	// advert transform it is no more sticked/skinned.
 	tr->_FatherSkeletonModel= NULL;
 
 	// If it is a skin, advert him the skinning is no more OK.
-	CMeshInstance	*mi= dynamic_cast<CMeshInstance*>(tr);
+	CMeshBaseInstance	*mi= dynamic_cast<CMeshBaseInstance*>(tr);
 	if(mi)
 		mi->_ApplySkinOk= false;
 

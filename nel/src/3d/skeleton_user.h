@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: skeleton_user.h,v 1.2 2001/06/21 12:57:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "nel/3d/u_instance.h"
 #include "3d/transform_user.h"
 #include "3d/skeleton_model.h"
-#include "3d/mesh_instance.h"
+#include "3d/mesh_base_instance.h"
 #include "3d/bone_user.h"
 
 
@@ -90,10 +90,10 @@ public:
 	{
 		if(mi==NULL)
 			nlerror("USkeleton::bindSkin(): mi is NULL");
-		CTransform		*trans= dynamic_cast<CTransformUser*>(mi)->getTransform();
-		CMeshInstance	*meshi= dynamic_cast<CMeshInstance*>(trans);
+		CTransform			*trans= dynamic_cast<CTransformUser*>(mi)->getTransform();
+		CMeshBaseInstance	*meshi= dynamic_cast<CMeshBaseInstance*>(trans);
 		if(meshi==NULL)
-			nlerror("USkeleton::bindSkin(): mi is not a MeshInstance");
+			nlerror("USkeleton::bindSkin(): mi is not a MeshInstance or MeshMRMInstance");
 		_Skeleton->bindSkin(meshi);
 	}
 	virtual	void		stickObject(UTransform *mi, uint boneId)

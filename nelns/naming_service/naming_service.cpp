@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.22 2002/06/10 10:15:20 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.23 2002/06/13 09:41:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -336,7 +336,7 @@ bool doRegister (const string &name, const CInetAddress &addr, TServiceId sid, T
 				msgout.serial (sid);
 				msgout.serial (const_cast<CInetAddress &>(addr));
 				CNetManager::send ("NS", msgout, 0);
-				nlinfo ("Broadcast the Registration to everybody");
+				nlinfo ("The service is %s-%d, broadcast the Registration to everybody", name.c_str(), sid);
 			}
 		}
 	}
@@ -353,7 +353,7 @@ bool doRegister (const string &name, const CInetAddress &addr, TServiceId sid, T
 
 	from->setAppId (sid);
 
-	displayRegisteredServices ();
+	//displayRegisteredServices ();
 
 	return ok!=0;
 }
@@ -466,7 +466,7 @@ static void cbUnregisterSId (CMessage& msgin, TSockId from, CCallbackNetBase &ne
 	msgin.serial( sid );
 
 	doUnregisterService (sid);
-	displayRegisteredServices ();
+	//displayRegisteredServices ();
 }
 
 
@@ -526,7 +526,7 @@ static void cbQueryPort (CMessage& msgin, TSockId from, CCallbackNetBase &netbas
 	msgout.serial (port);
 	netbase.send (msgout, from);
 
-	nlinfo ("A service got port %hu", port);
+	nlinfo ("The service got port %hu", port);
 }
 
 
@@ -538,7 +538,7 @@ static void cbQueryPort (CMessage& msgin, TSockId from, CCallbackNetBase &netbas
 static void cbDisconnect (const string &serviceName, TSockId from, void *arg)
 {
 	doUnregisterService (from);
-	displayRegisteredServices ();
+	//displayRegisteredServices ();
 }
 
 /*
@@ -563,8 +563,8 @@ static void cbConnect (const string &serviceName, TSockId from, void *arg)
 	}
 	CNetManager::send ("NS", msgout, from);
 
-	nlinfo ("Sending all services available to the new client");
-	displayRegisteredServices ();
+	nlinfo ("New service connection, sending him all services available");
+	//displayRegisteredServices ();
 
 	// set the appid with a bad id (-1)
 	from->setAppId (~1);
@@ -596,19 +596,16 @@ public:
 	void init()
 	{
 		// if a baseport is available in the config file, get it
-		try
+		CConfigFile::CVar *var;
+		if ((var = ConfigFile.getVarPtr ("BasePort")) != NULL)
 		{
-			uint16 newBasePort = ConfigFile.getVar ("BasePort").asInt ();
+			uint16 newBasePort = var->asInt ();
 			nlinfo ("Changing the MinBasePort number from %hu to %hu", MinBasePort, newBasePort);
 			sint32 delta = MaxBasePort - MinBasePort;
 			nlassert (delta > 0);
 			MinBasePort = newBasePort;
 			MaxBasePort = MinBasePort + uint16 (delta);
 		}
-		catch (EUnknownVar &)
-		{
-		}
-
 
 		// we don't try to associate message from client
 		CNetManager::getNetBase ("NS")->ignoreAllUnknownId (true);

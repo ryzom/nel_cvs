@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.24 2001/03/19 10:11:51 puzin Exp $
+ * $Id: tile_bank.cpp,v 1.25 2001/04/24 15:00:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -651,7 +651,6 @@ CTileSet::TError CTileSet::checkTile128 (CTile::TBitmap type, const CTileBorder&
 	// Check
 	if (_Border128[type].isSet())
 	{
-
 		// Other check
 		if (!CTileBorder::compare (border, _Border128[type], CTileBorder::top, CTileBorder::top, pixel, composante))
 			return topInterfaceProblem;
@@ -691,10 +690,18 @@ CTileSet::TError CTileSet::checkTile256 (CTile::TBitmap type, const CTileBorder&
 		return topBottomNotTheSame;
 	if (!CTileBorder::compare (border, border, CTileBorder::left, CTileBorder::right, pixel, composante))
 		return rightLeftNotTheSame;
+	
+	// Check if prb
+	if ((!_Border256[type].isSet())&&(_Border128[type].isSet()))
+	{
+		_Border256[type]=_Border128[type];
+		_Border256[type].doubleSize ();
+	}
 
 	// Check
 	if (_Border256[type].isSet())
 	{
+
 		// Other check
 		if (!CTileBorder::compare (border, _Border256[type], CTileBorder::top, CTileBorder::top, pixel, composante))
 			return topInterfaceProblem;

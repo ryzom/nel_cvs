@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.59 2003/07/30 16:05:26 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.60 2003/07/31 13:31:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -860,7 +860,7 @@ void CInstanceGroup::stopAddToSceneAsync ()
 			if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
 			{												
 				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName, rInstanceInfo.Name);
-				if (!shapeName.empty())
+				if (shapeName != rInstanceInfo.Name)
 					getShapeName = false;
 			}
 

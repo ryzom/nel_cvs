@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.50 2002/04/25 10:28:43 cado Exp $
+ * $Id: service.h,v 1.51 2002/05/27 16:49:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,6 +100,7 @@ class CCallbackServer;
  * -N followed by the alias name (used by the admin system)
  * -P followed by the listen port
  * -A followed by the path where to execute the service (it uses chdir())
+ * -I to start the service iconified
  *
  */
 
@@ -399,6 +400,7 @@ private:
 	friend void AESConnection (const std::string &serviceName, TSockId from, void *arg);
 	friend void AESConnection5 (const std::string &serviceName, uint16 sid, void *arg);
 	friend struct serviceInfoClass;
+	friend struct getWinDisplayerInfoClass;
 };
 
 

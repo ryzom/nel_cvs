@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.89 2001/04/11 15:12:26 cado Exp $
+ * $Id: driver_opengl.cpp,v 1.90 2001/04/12 12:41:49 dayta_at_ucc.gu.uwa.edu.au Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -148,12 +148,22 @@ static Bool WndProc(Display *d, XEvent *e, char *arg)
 
 CDriverGL::CDriverGL()
 {
+
 #ifdef NL_OS_WINDOWS
-	_FullScreen= false;
 	_hWnd = NULL;
 	_hRC = NULL;
 	_hDC = NULL;
-#endif // NL_OS_WINDOWS
+
+#elif defined (NL_OS_UNIX) // NL_OS_WINDOWS
+
+#ifdef XF86VIDMODE
+	// zero the old screen mode
+	memset(&_OldScreenMode, 0, sizeof(_OldScreenMode));
+#endif //XF86VIDMODE
+
+#endif // NL_OS_UNIX
+
+	_FullScreen= false;
 
 	_CurrentMaterial=NULL;
 	_Initialized = false;
@@ -321,7 +331,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
     wglMakeCurrent(_hDC,_hRC);
 
 
-#elif defined(NL_OS_UNIX)
+#elif defined(NL_OS_UNIX) // NL_OS_WINDOWS
 
 	dpy = XOpenDisplay(NULL);
 	if (dpy == NULL)
@@ -386,7 +396,23 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	XSetWindowAttributes attr;
 	attr.colormap = cmap;
 	attr.background_pixel = BlackPixel(dpy, DefaultScreen(dpy));
+	
+#ifdef XF86VIDMODE
+	// If we're going to attempt fullscreen, we need to set redirect to True,
+	// This basically places the window with no borders in the top left 
+	// corner of the screen.
+	if (mode.Windowed)
+	{
+		attr.override_redirect = False;
+	}
+	else
+	{
+		attr.override_redirect = True;
+	}
+#else
 	attr.override_redirect = False;
+#endif
+
 	int attr_flags = CWOverrideRedirect | CWColormap | CWBackPixel;
 
 	win = XCreateWindow (dpy, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, mode.Width, mode.Height, 0, visual_info->depth, InputOutput, visual_info->visual, attr_flags, &attr);	
@@ -434,7 +460,87 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 //	XEvent event;
 //	XIfEvent(dpy, &event, WaitForNotify, (char *)this);
 
-#endif // NL_OS_WINDOWS
+#ifdef XF86VIDMODE
+	if (!mode.Windowed)
+	{
+
+		// Set window to the right size, map it to the display, and raise it
+		// to the front
+		XResizeWindow(dpy,win,mode.Width,mode.Height);
+		XMapRaised(dpy,win);
+		XRaiseWindow(dpy, win);
+
+		// grab the mouse and keyboard on the fullscreen window 
+		if ((XGrabPointer(dpy, win, True, 0,
+						  GrabModeAsync, GrabModeAsync,
+						  win, None, CurrentTime) != GrabSuccess) ||
+			(XGrabKeyboard(dpy, win, True,
+						   GrabModeAsync, GrabModeAsync, CurrentTime) != 0) )
+		{
+			// Until I work out how to deal with this nicely, it just gives
+			// an error and exits the prorgam.
+			nlerror("Unable to grab keyboard and mouse\n");
+		}
+		else
+		{
+			// Save the old screen mode and dotclock
+			memset(&_OldScreenMode, 0, sizeof(_OldScreenMode));
+			XF86VidModeGetModeLine(dpy, 
+								   DefaultScreen(dpy),
+								   &_OldDotClock,
+								   &_OldScreenMode);
+			// Save the old viewport
+			XF86VidModeGetViewPort(dpy, 
+								   DefaultScreen(dpy),
+								   &_OldX,
+								   &_OldY);
+    
+			// get a list of modes, search for an appropriate one.
+			XF86VidModeModeInfo **modes;
+			int nmodes;
+			if (XF86VidModeGetAllModeLines(dpy,
+										   DefaultScreen(dpy),
+										   &nmodes,&modes))
+			{
+				int mode_index = -1; // Gah, magic numbers all bad. 
+				for (int i = 0; i < nmodes; i++)
+				{
+					nldebug("Available mode - %dx%d\n",mode.Width,mode.Height);
+					if( (modes[i]->hdisplay == mode.Width) &&
+						(modes[i]->vdisplay == mode.Height))
+					{
+						mode_index = i;
+					}
+				}
+				// Switch to the mode
+				if (mode_index != -1)
+				{
+					if(XF86VidModeSwitchToMode(dpy,
+											   DefaultScreen(dpy), 
+											   modes[mode_index]))
+					{
+						nlinfo("Switching to mode %dx%d,\n",mode.Width, 
+							   mode.Height);
+						XF86VidModeSetViewPort(dpy,DefaultScreen(dpy),0, 0);
+						_FullScreen = true;
+					}
+				}
+				else
+				{
+					// This is a problem, since we've nuked the border from 
+					// window in the setup stage, until I work out how
+					// to get it back (recreate window? seems excessive)
+					nlerror("Couldn't find an appropriate mode %dx%d\n",
+							mode.Width,
+							mode.Height);
+				}
+			}
+		}
+	}
+
+#endif // XF86VIDMODE
+
+#endif // NL_OS_UNIX
 
 
 	// Driver caps.
@@ -1093,7 +1199,30 @@ bool CDriverGL::release()
 	_hRC=NULL;
 	_hDC=NULL;
 	_hWnd=NULL;
-#endif // NL_OS_WINDOWS
+
+#elif defined (NL_OS_UNIX)// NL_OS_WINDOWS
+ 
+#ifdef XF86VIDMODE
+	if(_FullScreen)
+	{
+		XF86VidModeModeInfo info;
+		nlinfo("Switching back to original mode \n");
+ 
+		// This is a bit ugly - a quick hack to copy the ModeLine structure 
+		// into the modeInfo structure.
+		memcpy((XF86VidModeModeLine *)((char *)&info + sizeof(info.dotclock)),&_OldScreenMode, sizeof(XF86VidModeModeLine));
+		info.dotclock = _OldDotClock;
+ 
+		nlinfo("Mode is %dx%d,\n",info.hdisplay,info.vdisplay);
+		XF86VidModeSwitchToMode(dpy,DefaultScreen(dpy),&info);
+		nlinfo("Switching viewporr to %d,%d,\n",_OldX, _OldY);
+		XF86VidModeSetViewPort(dpy,DefaultScreen(dpy),_OldX,_OldY);
+		// Ungrab the keyboard (probably not necessary);
+		XUngrabKeyboard(dpy, CurrentTime);
+	}
+#endif // XF86VIDMODE
+
+#endif // NL_OS_UNIX
 
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.57 2001/04/11 13:03:22 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.58 2001/04/12 12:41:49 dayta_at_ucc.gu.uwa.edu.au Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,10 @@
 #define	GL_GLEXT_PROTOTYPES
 #include <GL/glx.h>
 
+#ifdef XF86VIDMODE
+#include <X11/extensions/xf86vmode.h>
+#endif //XF86VIDMODE
+
 #endif // NL_OS_UNIX
 
 #include <GL/gl.h>
@@ -59,6 +63,7 @@
 #elif defined (NL_OS_UNIX)
 #include "unix_event_emitter.h"
 #endif // NL_OS_UNIX
+
 
 namespace NL3D {
 
@@ -278,6 +283,8 @@ private:
 	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.
 	static const uint32		ReleaseVersion;
 
+	bool					_FullScreen;
+
 #ifdef NL_OS_WINDOWS
 
 	friend static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -288,7 +295,6 @@ private:
     HGLRC						_hRC;
 	static uint					_Registered;
 	DEVMODE						_OldScreenMode;
-	bool						_FullScreen;
 	NLMISC::CWinEventEmitter	_EventEmitter;
 
 #elif defined (NL_OS_UNIX)
@@ -298,6 +304,12 @@ private:
 	Window						win;
 	Cursor						cursor;
 	NLMISC::CUnixEventEmitter	_EventEmitter;
+
+#ifdef XF86VIDMODE
+	int						_OldDotClock;   // old dotclock
+	XF86VidModeModeLine		_OldScreenMode;	// old modeline
+	int						_OldX, _OldY;   //Viewport settings
+#endif //XF86VIDMODE
 
 #endif // NL_OS_UNIX
 

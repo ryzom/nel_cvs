@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.9 2002/02/27 15:27:00 vizerie Exp $
+ * $Id: ps_util.h,v 1.10 2003/11/25 14:36:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,8 +104,9 @@ public:
 
 	static void displayArrow(NL3D::IDriver *driver, const NLMISC::CVector &start, const NLMISC::CVector &v, float size, NLMISC::CRGBA col1, NLMISC::CRGBA col2);
 
-	/// display a string at the given position. The model matrix must be restored after this call
-	static void print(NL3D::IDriver *driver, const std::string &text, CFontGenerator &fg, CFontManager &fm, const NLMISC::CVector &pos, float size);
+	/// display a string at the given world position. The The model matrix must be restored after this call
+	  
+	static void print(NL3D::IDriver *driver, const std::string &text, CFontGenerator &fg, CFontManager &fm, const NLMISC::CVector &pos, float size, NLMISC::CRGBA col = NLMISC::CRGBA::White);
 
 
 	/** build a basis from a vector using Schmidt orthogonalization method

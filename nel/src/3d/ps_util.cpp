@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.39 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.40 2003/11/25 14:36:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -232,13 +232,13 @@ void CPSUtil::displayBasis(IDriver *driver, const CMatrix &modelMat, const NLMIS
 
 
 //==========================================================================
-void CPSUtil::print(IDriver *driver, const std::string &text, CFontGenerator &fg, CFontManager &fm, const CVector &pos, float size)
+void CPSUtil::print(IDriver *driver, const std::string &text, CFontGenerator &fg, CFontManager &fm, const CVector &pos, float size, NLMISC::CRGBA col /*= NLMISC::CRGBA::White*/)
 {
 	nlassert((&fg) && (&fm));	
 	CComputedString cptedString;	
 	fm.computeString ( text,
 						&fg, 
-						CRGBA(255,255,255),
+						col,
 						16, 
 						driver,
 						cptedString);

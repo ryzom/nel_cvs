@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.5 2002/05/29 17:31:14 vizerie Exp $
+ * $Id: hierarchical_timer.cpp,v 1.6 2002/05/30 16:17:33 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -120,17 +120,6 @@ void CHTimer::CNode::releaseSons()
 	for(uint k = 0; k < Sons.size(); ++k)
 		delete Sons[k];
 	Sons.clear();
-}
-
-//=================================================================
-uint64 CHTimer::CNode::getSonsTime() const
-{
-	uint64 sonsTime = 0;
-	for(uint k = 0; k < Sons.size(); ++k)
-	{
-		sonsTime += Sons[k]->TotalTime;
-	}
-	return sonsTime;
 }
 
 //=================================================================
@@ -273,6 +262,8 @@ void	CHTimer::display(TSortCriterion criterion, bool displayInline /*= true*/, b
 {	
 	CSimpleClock	benchClock;
 	benchClock.start();
+	nlinfo("=========================================================================");
+	nlinfo("Bench cumuled results");
 	nlassert(_BenchStartedOnce); // should have done at least one bench	
 	typedef std::map<CHTimer *, TNodeVect> TNodeMap;
 	TNodeMap nodeMap;
@@ -346,6 +337,8 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 {	
 	CSimpleClock	benchClock;
 	benchClock.start();
+	nlinfo("=========================================================================");
+	nlinfo("Bench by execution path");
 	nlassert(_BenchStartedOnce); // should have done at least one bench	
 	bool wasBenching = _Benching;	
 	//
@@ -436,6 +429,8 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 {
 	CSimpleClock	benchClock;
 	benchClock.start();
+	nlinfo("=========================================================================");
+	nlinfo("Hierarchical display of bench");
 	nlassert(_BenchStartedOnce); // should have done at least one bench
 	bool wasBenching = _Benching;	
 	typedef std::map<CHTimer *, TNodeVect> TNodeMap;
@@ -521,7 +516,7 @@ void CHTimer::CStats::buildFromNodes(CNode **nodes, uint numNodes, double msPerT
 	for(k = 0; k < numNodes; ++k)
 	{		
 		TotalTime += nodes[k]->TotalTime * msPerTick;
-		TotalTimeWithoutSons += nodes[k]->TotalTimeWithoutSons * msPerTick;
+		TotalTimeWithoutSons += (nodes[k]->TotalTime -  nodes[k]->LastSonsTotalTime) * msPerTick;
 		NumVisits += nodes[k]->NumVisits;
 		minTime = std::min(minTime, nodes[k]->MinTime);
 		maxTime = std::max(maxTime, nodes[k]->MaxTime);				

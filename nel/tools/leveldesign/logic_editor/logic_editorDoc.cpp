@@ -455,6 +455,12 @@ void CLogic_editorDoc::deleteState( CString name)
 //------------------------------------------------------
 BOOL CLogic_editorDoc::OnSaveDocument( LPCTSTR fileName )
 {
+	// we don't save a stae machine with no state
+	if( m_states.GetCount() == 0 )
+	{
+		return false;
+	}
+		
 	POSITION pos;
 	CString eltName;
 
@@ -468,6 +474,7 @@ BOOL CLogic_editorDoc::OnSaveDocument( LPCTSTR fileName )
 	COFile xmlfileOut;
 	xmlfileOut.open( fileName );//TEMP!!!
 		
+			
 	CLogicStateMachine logicStateMachine;
 		
 	/// convert and store the variables
@@ -529,6 +536,10 @@ BOOL CLogic_editorDoc::OnSaveDocument( LPCTSTR fileName )
 	pos = m_states.GetStartPosition();
 	m_states.GetNextAssoc( pos, eltName, (void*&)pState );
 	logicStateMachine.setCurrentState( string((LPCSTR)eltName) );
+
+	// set the name of the state machine
+	logicStateMachine.setName( string(fileName) );
+
 
 	// save the logic state machine
 	logicStateMachine.serial( xmlfileOut );
@@ -640,7 +651,6 @@ BOOL CLogic_editorDoc::load( LPCTSTR fileName )
 //------------------------------------------------------
 BOOL CLogic_editorDoc::OnOpenDocument(LPCTSTR lpszPathName) 
 {
-	OutputDebugString("Yoooooooooooozzzzaaa");
 	return load(lpszPathName);
 
 } // OnOpenDocument //

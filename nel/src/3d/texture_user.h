@@ -1,7 +1,7 @@
 /** \file texture_user.h
  * <File description>
  *
- * $Id: texture_user.h,v 1.3 2001/08/30 09:22:03 berenguier Exp $
+ * $Id: texture_user.h,v 1.4 2002/01/23 18:27:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,6 +146,7 @@ public:
 	}
 	CTextureFileUser(std::string s) : CTextureUser(new CTextureFile(s))
 	{
+		((CTextureFile*)(ITexture*)_Texture)->setAllowDegradation(false);
 	}
 	virtual ~CTextureFileUser()
 	{

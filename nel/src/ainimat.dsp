@@ -168,6 +168,10 @@ SOURCE=.\ai\nimat\classifier.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\nimat\mhics.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\nimat\sensors_motivations_actions_def.cpp
 # End Source File
 # End Group
@@ -177,6 +181,10 @@ SOURCE=.\ai\nimat\sensors_motivations_actions_def.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\ai\nimat\classifier.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\nimat\mhics.h
 # End Source File
 # Begin Source File
 

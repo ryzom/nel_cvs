@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.12 2002/04/11 09:22:49 corvazier Exp $
+ * $Id: polygon.cpp,v 1.13 2002/04/11 15:46:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -146,7 +146,11 @@ bool CPolygon::toConvexPolygonsEdgeIntersect (const CVector2f& a0, const CVector
 class CBSPNode2v
 {
 public:
-	CBSPNode2v () {}
+	CBSPNode2v () 
+	{
+		Back = NULL;
+		Front = NULL;
+	}
 	CBSPNode2v ( const CPlane &plane, CVector p0, CVector p1, uint v0, uint v1 ) : Plane (plane), P0 (p0), P1 (p1)
 	{
 		Back = NULL;
@@ -568,7 +572,7 @@ again:;
 
 // ***************************************************************************
 
-bool CPolygon::chain (const CPolygon &other, const CMatrix& basis)
+bool CPolygon::chain (const std::vector<CPolygon> &other, const CMatrix& basis)
 {
 	// Local vertices
 	std::vector<CVector>	localVertices;
@@ -580,52 +584,144 @@ bool CPolygon::chain (const CPolygon &other, const CMatrix& basis)
 	toConvexPolygonsLocalAndBSP (localVertices, root, basis);
 
 	// Local vertices
-	std::vector<CVector>	localVerticesOther;
+	std::vector<std::vector<CVector> >	localVerticesOther (other.size());
 
 	// Build the BSP root
-	CBSPNode2v rootOther;
+	std::vector<CBSPNode2v> rootOther (other.size());
 
-	// Build the local array and the BSP
-	other.toConvexPolygonsLocalAndBSP (localVerticesOther, rootOther, basis);
+	// Build a copy of the polygons
+	std::vector<CPolygon> copy = other;
+
+	// Main copy
+	CPolygon mainCopy = *this;
+
+	// For each other polygons
+	uint o;
+	for (o=0; o<other.size(); o++)
+	{
+		// Build the local array and the BSP
+		other[o].toConvexPolygonsLocalAndBSP (localVerticesOther[o], rootOther[o], basis);
+	}
 
 	// Look for a couple..
 	uint thisCount = Vertices.size();
-	uint otherCount = other.Vertices.size();
-	for (uint i=0; i<thisCount; i++)
-	for (uint j=0; j<otherCount; j++)
+	uint i, j;
+	for (o=0; o<other.size(); o++)
 	{
-		// Test this segement
-		if (
-			(!root.intersect (localVertices[i], localVerticesOther[j], i, 0xffffffff)) &&
-			(!rootOther.intersect (localVertices[i], localVerticesOther[j], 0xffffffff, j)) 
-			)
+		uint otherCount = other[o].Vertices.size();
+
+		// Try to link in the main polygon
+		for (i=0; i<thisCount; i++)
 		{
-			// Insert new vertices
-			Vertices.insert (Vertices.begin()+i, 2+otherCount, CVector());
-
-			// Copy the first vertex
-			Vertices[i] = Vertices[i+otherCount+2];
-
-			// Copy the new vertices
-			uint k;
-			for (k=0; k<otherCount; k++)
+			for (j=0; j<otherCount; j++)
 			{
-				uint index = j+k;
-				if (index>=otherCount)
-					index -= otherCount;
-				Vertices[i+k+1] = other.Vertices[index];
+				// Test this segement
+				if (!root.intersect (localVertices[i], localVerticesOther[o][j], i, 0xffffffff))
+				{
+					// Test each other polygons
+					uint otherO;
+					for (otherO=0; otherO<other.size(); otherO++)
+					{
+						// Intersect ?
+						if (rootOther[otherO].intersect (localVertices[i], localVerticesOther[o][j], 0xffffffff, (otherO == o)?j:0xffffffff))
+							break;
+					}
+
+					// Continue ?
+					if (otherO==other.size())
+					{
+						// Insert new vertices
+						mainCopy.Vertices.insert (mainCopy.Vertices.begin()+i, 2+otherCount, CVector());
+
+						// Copy the first vertex
+						mainCopy.Vertices[i] = mainCopy.Vertices[i+otherCount+2];
+
+						// Copy the new vertices
+						uint k;
+						for (k=0; k<otherCount; k++)
+						{
+							uint index = j+k;
+							if (index>=otherCount)
+								index -= otherCount;
+							mainCopy.Vertices[i+k+1] = copy[o].Vertices[index];
+						}
+
+						// Copy the last one
+						mainCopy.Vertices[i+otherCount+1] = copy[o].Vertices[j];
+						break;
+					}
+				}
 			}
+			if (j!=otherCount)
+				break;
+		}
 
-			// Copy the last one
-			Vertices[i+otherCount+1] = other.Vertices[j];
+		// Not found ?
+		if (i==thisCount)
+		{
+			// Try to link in the sub polygons
+			uint otherToCheck;
+			for (otherToCheck=o+1; otherToCheck<other.size(); otherToCheck++)
+			{
+				uint otherToCheckCount = other[otherToCheck].Vertices.size();
+				for (i=0; i<otherToCheckCount; i++)
+				{
+					for (j=0; j<otherCount; j++)
+					{
+						// Test this segement
+						if (!rootOther[otherToCheck].intersect (localVerticesOther[otherToCheck][i], localVerticesOther[o][j], i, 0xffffffff))
+						{
+							// Test each other polygons
+							uint otherO;
+							for (otherO=0; otherO<other.size(); otherO++)
+							{
+								// Intersect ?
+								if (rootOther[otherO].intersect (localVerticesOther[otherToCheck][i], localVerticesOther[o][j],  (otherToCheck == otherO)?i:0xffffffff,  (otherO == o)?j:0xffffffff))
+									break;
+							}
 
-			// Ok
-			return true;
+							// Continue ?
+							if (otherO==other.size())
+							{
+								// Insert new vertices
+								copy[otherToCheck].Vertices.insert (copy[otherToCheck].Vertices.begin()+i, 2+otherCount, CVector());
+
+								// Copy the first vertex
+								copy[otherToCheck].Vertices[i] = copy[otherToCheck].Vertices[i+otherCount+2];
+
+								// Copy the new vertices
+								uint k;
+								for (k=0; k<otherCount; k++)
+								{
+									uint index = j+k;
+									if (index>=otherCount)
+										index -= otherCount;
+									copy[otherToCheck].Vertices[i+k+1] = copy[otherO].Vertices[index];
+								}
+
+								// Copy the last one
+								copy[otherToCheck].Vertices[i+otherCount+1] = copy[otherO].Vertices[j];
+								break;
+							}
+						}
+					}
+					if (j!=otherCount)
+						break;
+				}
+				if (i!=otherToCheckCount)
+					break;
+			}
+			if (otherToCheck==other.size())
+			{
+				// Not ok
+				return false;
+			}
 		}
 	}
 
-	// Can't link the 2 polygons
-	return false;
+	// Ok
+	*this = mainCopy;
+	return true;
 }
 
 // ***************************************************************************

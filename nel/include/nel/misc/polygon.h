@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.7 2002/04/11 09:22:49 corvazier Exp $
+ * $Id: polygon.h,v 1.8 2002/04/11 15:46:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,7 +100,7 @@ public:
 	  * \param basis is the basis of the polygon projection.
 	  * \return false if chain failed. else true.
 	  */
-	bool			chain (const CPolygon &other, const CMatrix& basis);
+	bool			chain (const std::vector<CPolygon> &other, const CMatrix& basis);
 
 	// Used by the method toConvexPolygons and chain
 	void			toConvexPolygonsLocalAndBSP (std::vector<CVector> &localVertices, CBSPNode2v &root, const CMatrix &basis) const;

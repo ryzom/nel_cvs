@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.19 2002/01/28 14:18:53 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.20 2002/01/28 17:28:36 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2284,81 +2284,105 @@ bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
 	return true;
 }
 
-CRGBAF CBitmap::getColor(float x,float y)
+// Private :
+float CBitmap::getColorInterp (float x, float y, float colorInXY00, float colorInXY10, float colorInXY01, float colorInXY11)
 {
-	CRGBAF ret;
+	float res =	colorInXY00*(1.0f-x)*(1.0f-y) +
+				colorInXY10*(     x)*(1.0f-y) +
+				colorInXY01*(1.0f-x)*(     y) +
+				colorInXY11*(     x)*(     y);
+	clamp (res, 0.0f, 255.0f);
+	return res;
+}
 
-	if( x < 0.0f ) x = 0.0f;
-	if( x > 1.0f ) x = 1.0f;
-	if( y < 0.0f ) y = 0.0f;
-	if( y > 1.0f ) y = 1.0f;
+// Public:
+CRGBAF CBitmap::getColor (float x, float y)
+{
+	if (x < 0.0f) x = 0.0f;
+	if (x > 1.0f) x = 1.0f;
+	if (y < 0.0f) y = 0.0f;
+	if (y > 1.0f) y = 1.0f;
 
 	sint32 nWidth = getWidth(0);
 	sint32 nHeight = getHeight(0);
 
 	std::vector<uint8> &rBitmap = getPixels(0);
-
 	sint32 nX[4], nY[4];
-	CRGBA rgba[4];
 
-	x *= nWidth;
-	y *= nHeight;
-	nX[0] = ((sint32)floor(x-0.5f));
-	nY[0] = ((sint32)floor(y-0.5f));
-	nX[1] = nX[0]+1;
+	x *= nWidth-1;
+	y *= nHeight-1;
+
+	// Integer part of (x,y)
+	//nX[0] = ((sint32)floor(x-0.5f));
+	//nY[0] = ((sint32)floor(y-0.5f));
+	nX[0] = ((sint32)floor(x));
+	nY[0] = ((sint32)floor(y));
+
+	nX[1] = (nX[0] < (nWidth-1) ? nX[0]+1 : nX[0]);
 	nY[1] = nY[0];
-	nX[2] = nX[0];
-	nY[2] = nY[0]+1;
-	nX[3] = nX[0]+1;
-	nY[3] = nY[0]+1;
 
-	for( uint32 i = 0; i < 4; ++i )
+	nX[2] = nX[0];
+	nY[2] = (nY[0] < (nHeight-1) ? nY[0]+1 : nY[0]);
+
+	nX[3] = nX[1];
+	nY[3] = nY[2];
+
+	uint32 i;
+
+	for (i = 0; i < 4; ++i)
 	{
-		if( nX[i] < 0 ) nX[i] = 0;
-		if( nY[i] < 0 ) nY[i] = 0;
-		if( nX[i] >= nWidth )  nX[i] = nWidth-1;
-		if( nY[i] >= nHeight ) nY[i] = nHeight-1;
-		rgba[i] = CRGBA(rBitmap[(nX[i]+nY[i]*nWidth)*4+0],
-						rBitmap[(nX[i]+nY[i]*nWidth)*4+1],
-						rBitmap[(nX[i]+nY[i]*nWidth)*4+2],
-						rBitmap[(nX[i]+nY[i]*nWidth)*4+3]);
+		nlassert (nX[i] >= 0);
+		nlassert (nY[i] >= 0 );
+		nlassert (nX[i] < nWidth);
+		nlassert (nY[i] < nHeight);
 	}
 
-	x = x - (float)nX[0];
+	// Decimal part of (x,y)
+	x = x - (float)nX[0]; 
 	y = y - (float)nY[0];
 
-	float res;
+	// RGBA
+	// ****
+	if (this->PixelFormat == RGBA)
+	{
+		CRGBAF finalVal;
+		CRGBA val[4];
 
-	res =	rgba[0].R*(1.0f-x)*(1.0f-y) +
-			rgba[1].R*(     x)*(1.0f-y) +
-			rgba[2].R*(1.0f-x)*(     y) +
-			rgba[3].R*(     x)*(     y);
-	if( res >= 255.0f ) res = 255.0f;
-	if( res < 0.0f ) res = 0.0f;
-	ret.R = res;
-	res =	rgba[0].G*(1.0f-x)*(1.0f-y) +
-			rgba[1].G*(     x)*(1.0f-y) +
-			rgba[2].G*(1.0f-x)*(     y) +
-			rgba[3].G*(     x)*(     y);
-	if( res >= 255.0f ) res = 255.0f;
-	if( res < 0.0f ) res = 0.0f;
-	ret.G = res;
-	res =	rgba[0].B*(1.0f-x)*(1.0f-y) +
-			rgba[1].B*(     x)*(1.0f-y) +
-			rgba[2].B*(1.0f-x)*(     y) +
-			rgba[3].B*(     x)*(     y);
-	if( res >= 255.0f ) res = 255.0f;
-	if( res < 0.0f ) res = 0.0f;
-	ret.B = res;
-	res =	rgba[0].A*(1.0f-x)*(1.0f-y) +
-			rgba[1].A*(     x)*(1.0f-y) +
-			rgba[2].A*(1.0f-x)*(     y) +
-			rgba[3].A*(     x)*(     y);
-	if( res >= 255.0f ) res = 255.0f;
-	if( res < 0.0f ) res = 0.0f;
-	ret.A = res;
+		for (i = 0; i < 4; ++i)
+		{
+			val[i] = CRGBA (rBitmap[(nX[i]+nY[i]*nWidth)*4+0],
+							rBitmap[(nX[i]+nY[i]*nWidth)*4+1],
+							rBitmap[(nX[i]+nY[i]*nWidth)*4+2],
+							rBitmap[(nX[i]+nY[i]*nWidth)*4+3]);
+		}
 
-	return ret;
+		finalVal.R = getColorInterp (x, y, val[0].R, val[1].R, val[2].R, val[3].R);
+		finalVal.G = getColorInterp (x, y, val[0].G, val[1].G, val[2].G, val[3].G);
+		finalVal.B = getColorInterp (x, y, val[0].B, val[1].B, val[2].B, val[3].B);
+		finalVal.A = getColorInterp (x, y, val[0].A, val[1].A, val[2].A, val[3].A);
+
+		return finalVal;
+	}
+
+	// Alpha or Luminance
+	// ******************
+	if ((this->PixelFormat == Alpha) || (this->PixelFormat == Luminance))
+	{
+		float finalVal;
+		float val[4];
+
+		for (i = 0; i < 4; ++i)
+			val[i] = rBitmap[(nX[i]+nY[i]*nWidth)];
+
+		finalVal = getColorInterp (x, y, val[0], val[1], val[2], val[3]);
+
+		if (this->PixelFormat == Alpha)
+			return CRGBAF (255.0f, 255.0f, 255.0f, finalVal);
+		else // Luminance
+			return CRGBAF (finalVal, finalVal, finalVal, 255.0f);
+	}
+
+	return CRGBAF (0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 

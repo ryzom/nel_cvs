@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.7 2000/12/18 14:25:02 lecroart Exp $
+ * $Id: font_manager.h,v 1.8 2000/12/18 14:39:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/3d/texture.h"
+#include "nel/3d/texture_font.h"
 
 #include <map>
 #include <list>
@@ -39,7 +40,6 @@
 
 namespace NL3D {
 
-class CTextureFont;
 class CFontGenerator;
 struct CDisplayDescriptor;
 struct CComputedString;

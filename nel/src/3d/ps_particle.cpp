@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.42 2001/09/10 15:25:32 lecroart Exp $
+ * $Id: ps_particle.cpp,v 1.43 2001/09/12 13:20:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ namespace NL3D {
 // this macro check the memory integrity (windows platform for now). It may be useful after violent vb access
 #if defined(NL_DEBUG) && defined(NL_OS_WINDOWS)
 	#include <crtdbg.h>
-	#define PARTICLES_CHECK_MEM //nlassert(_CrtCheckMemory());
+	#define PARTICLES_CHECK_MEM nlassert(_CrtCheckMemory());
 #else
 	#define PARTICLES_CHECK_MEM
 #endif
@@ -1052,8 +1052,9 @@ if (_TexGroup) // if it has a constant texture we are sure it has been setupped 
 
 /// create the face look at by giving a texture and an optionnal color
 CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex), _MotionBlurCoeff(0.f)
-														, _Threshold(0.5f)
+														, _Threshold(0.5f), _IndependantSizes(false)
 {	
+	_SecondSize.Owner = this;
 	_Name = std::string("LookAt");
 }
 
@@ -1101,27 +1102,19 @@ void CPSFaceLookAt::draw(bool opaque)
 
 	
 	TPSAttribVector::iterator it = _Owner->getPos().begin();
-
-
-
-
-	const float *rotTable = CPSRotated2DParticle::getRotTable();
-
-	
+	const float *rotTable = CPSRotated2DParticle::getRotTable();	
 	// for each the particle can be constantly rotated or have an independant rotation for each particle
-	
-	
-	
-	
+		
 
 	// number of face left, and number of face to process at once
 	uint32 leftToDo = size, toProcess;
 
-	float pSizes[quadBufSize]; // the sizes to use
+	float pSizes[quadBufSize]; // the sizes to use	
+	float pSecondSizes[quadBufSize]; // the second sizes to use
+
 	float *currentSize; 
 	uint32 currentSizeStep = _UseSizeScheme ? 1 : 0;
-
-
+	
 	
 
 	// point the vector part in the current vertex
@@ -1133,17 +1126,12 @@ void CPSFaceLookAt::draw(bool opaque)
 	if (!_UseAngle2DScheme)
 	{
 		// constant rotation case
-
-		const uint32 tabIndex = (((uint32) _Angle2D) & 0xff) << 2;
-		const CVector v1 = rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K;
-		const CVector v2 = rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K;
+		
 
 		do
-		{
-			
+		{			
 				// restart at the beginning of the vertex buffer
 				ptPos = (uint8 *) _Vb.getVertexCoordPointer();
-
 				toProcess = leftToDo <= quadBufSize ? leftToDo : quadBufSize;
 
 				if (_UseSizeScheme)
@@ -1176,84 +1164,144 @@ void CPSFaceLookAt::draw(bool opaque)
 				}
 				*/
 
-				/* version 2 : here, we avoid ctor calls, but we must perform the op ourself  */
-				
+				/* version 2 : here, we avoid ctor calls, but we must perform the op ourself  */																
+
 				if (_MotionBlurCoeff == 0.f)
 				{
-					if (currentSizeStep)
-					{
-						while (it != endIt)
+					if (!_IndependantSizes)
+					{						
+						const uint32 tabIndex = (((uint32) _Angle2D) & 0xff) << 2;
+						const CVector v1 = rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K;
+						const CVector v2 = rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K;
+
+						if (currentSizeStep)
 						{
-							CHECK_VERTEX_BUFFER(_Vb, ptPos);
-							((CVector *) ptPos)->x = it->x  + *currentSize * v1.x;  			
-							((CVector *) ptPos)->y = it->y  + *currentSize * v1.y;  			
-							((CVector *) ptPos)->z = it->z  + *currentSize * v1.z;  			
-							ptPos += stride;
+							while (it != endIt)
+							{
+								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								((CVector *) ptPos)->x = it->x  + *currentSize * v1.x;  			
+								((CVector *) ptPos)->y = it->y  + *currentSize * v1.y;  			
+								((CVector *) ptPos)->z = it->z  + *currentSize * v1.z;  			
+								ptPos += stride;
 
-							CHECK_VERTEX_BUFFER(_Vb, ptPos);
-							((CVector *) ptPos)->x = it->x  + *currentSize * v2.x;  			
-							((CVector *) ptPos)->y = it->y  + *currentSize * v2.y;  			
-							((CVector *) ptPos)->z = it->z  + *currentSize * v2.z;  			
-							ptPos += stride;
+								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								((CVector *) ptPos)->x = it->x  + *currentSize * v2.x;  			
+								((CVector *) ptPos)->y = it->y  + *currentSize * v2.y;  			
+								((CVector *) ptPos)->z = it->z  + *currentSize * v2.z;  			
+								ptPos += stride;
 
-							CHECK_VERTEX_BUFFER(_Vb, ptPos);
-							((CVector *) ptPos)->x = it->x  - *currentSize * v1.x;  			
-							((CVector *) ptPos)->y = it->y  - *currentSize * v1.y;  			
-							((CVector *) ptPos)->z = it->z  - *currentSize * v1.z;  			
-							ptPos += stride;
+								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								((CVector *) ptPos)->x = it->x  - *currentSize * v1.x;  			
+								((CVector *) ptPos)->y = it->y  - *currentSize * v1.y;  			
+								((CVector *) ptPos)->z = it->z  - *currentSize * v1.z;  			
+								ptPos += stride;
 
-							CHECK_VERTEX_BUFFER(_Vb, ptPos);
-							((CVector *) ptPos)->x = it->x  - *currentSize * v2.x;  			
-							((CVector *) ptPos)->y = it->y  - *currentSize * v2.y;  			
-							((CVector *) ptPos)->z = it->z  - *currentSize * v2.z;  			
-							ptPos += stride;
-							
+								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								((CVector *) ptPos)->x = it->x  - *currentSize * v2.x;  			
+								((CVector *) ptPos)->y = it->y  - *currentSize * v2.y;  			
+								((CVector *) ptPos)->z = it->z  - *currentSize * v2.z;  			
+								ptPos += stride;
+								
 
-							++it;
-							currentSize += currentSizeStep;					
+								++it;
+								currentSize += currentSizeStep;					
+							}
+						}
+						else
+						{
+							// constant size
+							const CVector myV1 = *currentSize * v1;
+							const CVector myV2 = *currentSize * v2;
+
+							while (it != endIt)
+							{
+								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								((CVector *) ptPos)->x = it->x  + myV1.x;  			
+								((CVector *) ptPos)->y = it->y  + myV1.y;  			
+								((CVector *) ptPos)->z = it->z  + myV1.z;  			
+								ptPos += stride;
+
+								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								((CVector *) ptPos)->x = it->x  + myV2.x;  			
+								((CVector *) ptPos)->y = it->y  + myV2.y;  			
+								((CVector *) ptPos)->z = it->z  + myV2.z;  			
+								ptPos += stride;
+
+								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								((CVector *) ptPos)->x = it->x  - myV1.x;  			
+								((CVector *) ptPos)->y = it->y  - myV1.y;  			
+								((CVector *) ptPos)->z = it->z  - myV1.z;  			
+								ptPos += stride;
+
+								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								((CVector *) ptPos)->x = it->x  - myV2.x;  			
+								((CVector *) ptPos)->y = it->y  - myV2.y;  			
+								((CVector *) ptPos)->z = it->z  - myV2.z;  			
+								ptPos += stride;
+								
+
+								++it;											
+							}
+
 						}
 					}
-					else
-					{
-						// constant size
-						const CVector myV1 = *currentSize * v1;
-						const CVector myV2 = *currentSize * v2;
+					else // independant sizes
+					{			
+						const CVector v1 = CPSUtil::getCos((sint32) _Angle2D) * I  + CPSUtil::getSin((sint32) _Angle2D) * K;
+						const CVector v2 = - CPSUtil::getSin((sint32) _Angle2D) * I + CPSUtil::getCos((sint32) _Angle2D) * K;
+
+						float *currentSize2;
+						float secondSize;
+						uint32 currentSizeStep2;
+						if (_SecondSize.getSizeScheme())
+						{
+							currentSize2 = (float *) _SecondSize.getSizeScheme()->make(_Owner, size- leftToDo, pSecondSizes, sizeof(float), toProcess, true);
+							currentSizeStep2 = 1;
+						}
+						else
+						{	
+							secondSize = _SecondSize.getSize();
+							currentSize2 = &secondSize;
+							currentSizeStep2 = 0;
+						}
+						 
 
 						while (it != endIt)
 						{
 							CHECK_VERTEX_BUFFER(_Vb, ptPos);
-							((CVector *) ptPos)->x = it->x  + myV1.x;  			
-							((CVector *) ptPos)->y = it->y  + myV1.y;  			
-							((CVector *) ptPos)->z = it->z  + myV1.z;  			
+							((CVector *) ptPos)->x = it->x  - *currentSize * v1.x + *currentSize2 * v2.x;  			
+							((CVector *) ptPos)->y = it->y  - *currentSize * v1.y + *currentSize2 * v2.y;  			
+							((CVector *) ptPos)->z = it->z  - *currentSize * v1.z + *currentSize2 * v2.z;
 							ptPos += stride;
 
 							CHECK_VERTEX_BUFFER(_Vb, ptPos);
-							((CVector *) ptPos)->x = it->x  + myV2.x;  			
-							((CVector *) ptPos)->y = it->y  + myV2.y;  			
-							((CVector *) ptPos)->z = it->z  + myV2.z;  			
+							((CVector *) ptPos)->x = it->x  + *currentSize * v1.x + *currentSize2 * v2.x;  			
+							((CVector *) ptPos)->y = it->y  + *currentSize * v1.y + *currentSize2 * v2.y;  			
+							((CVector *) ptPos)->z = it->z  + *currentSize * v1.z + *currentSize2 * v2.z;
 							ptPos += stride;
 
 							CHECK_VERTEX_BUFFER(_Vb, ptPos);
-							((CVector *) ptPos)->x = it->x  - myV1.x;  			
-							((CVector *) ptPos)->y = it->y  - myV1.y;  			
-							((CVector *) ptPos)->z = it->z  - myV1.z;  			
+							((CVector *) ptPos)->x = it->x  + *currentSize * v1.x - *currentSize2 * v2.x;  			
+							((CVector *) ptPos)->y = it->y  + *currentSize * v1.y - *currentSize2 * v2.y;  			
+							((CVector *) ptPos)->z = it->z  + *currentSize * v1.z - *currentSize2 * v2.z;
 							ptPos += stride;
 
 							CHECK_VERTEX_BUFFER(_Vb, ptPos);
-							((CVector *) ptPos)->x = it->x  - myV2.x;  			
-							((CVector *) ptPos)->y = it->y  - myV2.y;  			
-							((CVector *) ptPos)->z = it->z  - myV2.z;  			
+							((CVector *) ptPos)->x = it->x  - *currentSize * v1.x - *currentSize2 * v2.x;  			
+							((CVector *) ptPos)->y = it->y  - *currentSize * v1.y - *currentSize2 * v2.y;  			
+							((CVector *) ptPos)->z = it->z  - *currentSize * v1.z - *currentSize2 * v2.z;
 							ptPos += stride;
-							
-
-							++it;											
+							++it;
+							currentSize += currentSizeStep;
+							currentSize2 += currentSizeStep2;
 						}
-
+						
 					}
 				}
 				else
 				{
 					// perform motion, blur, we need an iterator on speed
+					// independant sizes and rotation not supported for now with motion blur
 					TPSAttribVector::const_iterator speedIt = _Owner->getSpeed().begin() + (size - leftToDo);
 
 					
@@ -1461,8 +1509,6 @@ void CPSFaceLookAt::draw(bool opaque)
 			
 				// restart at the beginning of the vertex buffer
 				ptPos = (uint8 *) _Vb.getVertexCoordPointer();
-
-
 				toProcess = leftToDo <= quadBufSize ? leftToDo : quadBufSize;
 
 				if (_UseSizeScheme)
@@ -1473,8 +1519,6 @@ void CPSFaceLookAt::draw(bool opaque)
 				{
 					currentSize = &_ParticleSize;
 				}
-
-
 				currentAngle = (float *) _Angle2DScheme->make(_Owner, size - leftToDo, pAngles, sizeof(float), toProcess, true);					
 
 				//
@@ -1487,66 +1531,122 @@ void CPSFaceLookAt::draw(bool opaque)
 
 				OptFastFloorBegin();
 
+				if (!_IndependantSizes)
+				{				
+					while (it != endIt)
+					{
+						const uint32 tabIndex = ((OptFastFloor(*currentAngle)) & 0xff) << 2;
+					/*	v1 = *currentSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K);
+						v2 = *currentSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K); */
 
-				
-				while (it != endIt)
+						// lets avoid some ctor calls
+						v1.x = *currentSize * (rotTable[tabIndex] * I.x + rotTable[tabIndex + 1] * K.x);
+						v1.y = *currentSize * (rotTable[tabIndex] * I.y + rotTable[tabIndex + 1] * K.y);
+						v1.z = *currentSize * (rotTable[tabIndex] * I.z + rotTable[tabIndex + 1] * K.z);
+
+						v2.x = *currentSize * (rotTable[tabIndex + 2] * I.x + rotTable[tabIndex + 3] * K.x);
+						v2.y = *currentSize * (rotTable[tabIndex + 2] * I.y + rotTable[tabIndex + 3] * K.y);
+						v2.z = *currentSize * (rotTable[tabIndex + 2] * I.z + rotTable[tabIndex + 3] * K.z);
+						
+						CHECK_VERTEX_BUFFER(_Vb, ptPos);
+						CHECK_VERTEX_BUFFER(_Vb, ptPos + stride);
+						CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2);
+						CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3);
+
+						/*
+						*(CVector *) ptPos = *it  + v1;  			
+						*(CVector *) (ptPos + stride) = *it + v2;	
+						*(CVector *) (ptPos + stride2) = *it - v1;
+						*(CVector *) (ptPos + stride3) = *it - v2;	 */
+
+
+
+						((CVector *) ptPos)->x  = it->x  + v1.x;		
+						((CVector *) ptPos)->y  = it->y  + v1.y;
+						((CVector *) ptPos)->z = it->z  + v1.z;  			
+
+						ptPos += stride;
+
+						((CVector *) ptPos)->x  = it->x  + v2.x;		
+						((CVector *) ptPos)->y  = it->y  + v2.y;
+						((CVector *) ptPos)->z = it->z  + v2.z;  			
+
+						ptPos += stride;
+
+						((CVector *) ptPos)->x  = it->x  - v1.x;		
+						((CVector *) ptPos)->y  = it->y  - v1.y;
+						((CVector *) ptPos)->z = it->z  - v1.z;  			
+
+						ptPos += stride;
+
+						((CVector *) ptPos)->x  = it->x  - v2.x;		
+						((CVector *) ptPos)->y  = it->y  - v2.y;
+						((CVector *) ptPos)->z = it->z  - v2.z;  			
+
+						ptPos += stride;
+
+						
+						++it;
+						currentSize += currentSizeStep;
+						++currentAngle;					
+					}
+				}
+				else // independant size, and non-constant rotation
 				{
-					const uint32 tabIndex = ((OptFastFloor(*currentAngle)) & 0xff) << 2;
-				/*	v1 = *currentSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K);
-					v2 = *currentSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K); */
-
-					// lets avoid some ctor calls
-					v1.x = *currentSize * (rotTable[tabIndex] * I.x + rotTable[tabIndex + 1] * K.x);
-					v1.y = *currentSize * (rotTable[tabIndex] * I.y + rotTable[tabIndex + 1] * K.y);
-					v1.z = *currentSize * (rotTable[tabIndex] * I.z + rotTable[tabIndex + 1] * K.z);
-
-					v2.x = *currentSize * (rotTable[tabIndex + 2] * I.x + rotTable[tabIndex + 3] * K.x);
-					v2.y = *currentSize * (rotTable[tabIndex + 2] * I.y + rotTable[tabIndex + 3] * K.y);
-					v2.z = *currentSize * (rotTable[tabIndex + 2] * I.z + rotTable[tabIndex + 3] * K.z);
 					
-					CHECK_VERTEX_BUFFER(_Vb, ptPos);
-					CHECK_VERTEX_BUFFER(_Vb, ptPos + stride);
-					CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2);
-					CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3);
+					float *currentSize2;
+					float secondSize;
+					uint32 currentSizeStep2;
+					if (_SecondSize.getSizeScheme())
+					{
+						currentSize2 = (float *) _SecondSize.getSizeScheme()->make(_Owner, size- leftToDo, pSecondSizes, sizeof(float), toProcess, true);
+						currentSizeStep2 = 1;
+					}
+					else
+					{	
+						secondSize = _SecondSize.getSize();
+						currentSize2 = &secondSize;
+						currentSizeStep2 = 0;
+					}
 
-					/*
-					*(CVector *) ptPos = *it  + v1;  			
-					*(CVector *) (ptPos + stride) = *it + v2;	
-					*(CVector *) (ptPos + stride2) = *it - v1;
-					*(CVector *) (ptPos + stride3) = *it - v2;	 */
+					float cosAngle, sinAngle;
 
+					while (it != endIt)
+					{
+						cosAngle = CPSUtil::getCos((sint32) *currentAngle);
+						sinAngle = CPSUtil::getSin((sint32) *currentAngle);
+						v1 = cosAngle * I  + sinAngle * K;
+						v2 = - sinAngle * I + cosAngle * K;
 
+						CHECK_VERTEX_BUFFER(_Vb, ptPos);
+						((CVector *) ptPos)->x = it->x  - *currentSize * v1.x + *currentSize2 * v2.x;  			
+						((CVector *) ptPos)->y = it->y  - *currentSize * v1.y + *currentSize2 * v2.y;  			
+						((CVector *) ptPos)->z = it->z  - *currentSize * v1.z + *currentSize2 * v2.z;
+						ptPos += stride;
 
-					((CVector *) ptPos)->x  = it->x  + v1.x;		
-					((CVector *) ptPos)->y  = it->y  + v1.y;
-					((CVector *) ptPos)->z = it->z  + v1.z;  			
+						CHECK_VERTEX_BUFFER(_Vb, ptPos);
+						((CVector *) ptPos)->x = it->x  + *currentSize * v1.x + *currentSize2 * v2.x;  			
+						((CVector *) ptPos)->y = it->y  + *currentSize * v1.y + *currentSize2 * v2.y;  			
+						((CVector *) ptPos)->z = it->z  + *currentSize * v1.z + *currentSize2 * v2.z;
+						ptPos += stride;
 
-					ptPos += stride;
+						CHECK_VERTEX_BUFFER(_Vb, ptPos);
+						((CVector *) ptPos)->x = it->x  + *currentSize * v1.x - *currentSize2 * v2.x;  			
+						((CVector *) ptPos)->y = it->y  + *currentSize * v1.y - *currentSize2 * v2.y;  			
+						((CVector *) ptPos)->z = it->z  + *currentSize * v1.z - *currentSize2 * v2.z;
+						ptPos += stride;
 
-					((CVector *) ptPos)->x  = it->x  + v2.x;		
-					((CVector *) ptPos)->y  = it->y  + v2.y;
-					((CVector *) ptPos)->z = it->z  + v2.z;  			
-
-					ptPos += stride;
-
-					((CVector *) ptPos)->x  = it->x  - v1.x;		
-					((CVector *) ptPos)->y  = it->y  - v1.y;
-					((CVector *) ptPos)->z = it->z  - v1.z;  			
-
-					ptPos += stride;
-
-					((CVector *) ptPos)->x  = it->x  - v2.x;		
-					((CVector *) ptPos)->y  = it->y  - v2.y;
-					((CVector *) ptPos)->z = it->z  - v2.z;  			
-
-					ptPos += stride;
-
-					
-					++it;
-					currentSize += currentSizeStep;
-					++currentAngle;					
-				}											
-				
+						CHECK_VERTEX_BUFFER(_Vb, ptPos);
+						((CVector *) ptPos)->x = it->x  - *currentSize * v1.x - *currentSize2 * v2.x;  			
+						((CVector *) ptPos)->y = it->y  - *currentSize * v1.y - *currentSize2 * v2.y;  			
+						((CVector *) ptPos)->z = it->z  - *currentSize * v1.z - *currentSize2 * v2.z;
+						ptPos += stride;
+						++it;
+						++currentAngle;
+						currentSize  += currentSizeStep;
+						currentSize2 += currentSizeStep2;			
+					}
+				}				
 				OptFastFloorEnd();
 					
 			
@@ -1569,7 +1669,7 @@ void CPSFaceLookAt::draw(bool opaque)
 
 void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1);		
+	sint ver = f.serialVersion(2);
 
 	CPSQuad::serial(f);
 	CPSRotated2DParticle::serialAngle2DScheme(f);
@@ -1582,15 +1682,19 @@ void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_Threshold);
 	}
 
+	if (ver > 1)
+	{
+		f.serial(_IndependantSizes);
+		if (_IndependantSizes)
+		{
+			_SecondSize.serialSizeScheme(f);
+		}
+	}
+
 	if (f.isReading())
 	{
 		init();		
 	}
-
-
-
-
-
 }
 
 
@@ -1607,6 +1711,18 @@ uint8 CPSFanLight::_RandomPhaseTab[32][128];
 //#endif
 
 	
+
+// this blur a tab of bytes once
+static void BlurBytesTab(const uint8 *src, uint8 *dest, uint size)
+{
+	std::vector<uint8> b(src, src + size);
+	for (sint k = 1 ; k < (sint) (size - 1); ++k)
+	{
+		dest[k] = (uint8) (((uint16) b[k - 1] + (uint16) b[k + 1])>>1);
+	}
+}
+
+
 void CPSFanLight::initFanLightPrecalc(void)
 {
 	// build several random tab, and linearly interpolate between l values
@@ -1629,6 +1745,8 @@ void CPSFanLight::initFanLightPrecalc(void)
 				if (k >= 128) break;
 			}
 		}
+		for (uint m = 0; m < 2 * l; ++m)
+			BlurBytesTab(&_RandomPhaseTab[l][0], &_RandomPhaseTab[l][0], 128);
 	}	
 	//#ifdef NL_DEBUG
 		_RandomPhaseTabInitialized = true;
@@ -1824,7 +1942,7 @@ void CPSFanLight::draw(bool opaque)
 			currentSizePt += currentSizePtIncrement;
 			currentAnglePt += currentAnglePtIncrement;
 
-			for (k = 0; k < _NbFans; ++k)
+			for (k = 0; k <= _NbFans; ++k)
 			{
 				const float fSize  = fanSize + (moveIntensity * CPSUtil::getCos(randomPhaseTab[k] + phaseAdd));
 				*(CVector *) ptVect = (*posIt) + I * fSize * (CPSUtil::getCos((sint32) currentAngle))
@@ -1915,11 +2033,11 @@ void CPSFanLight::resize(uint32 size)
 	resizeColor(size);
 	resizeAngle2D(size);
 	resizeSize(size);
-	_Vb.setNumVertices(size * (1 + _NbFans));
+	_Vb.setNumVertices(size * (2 + _NbFans));
 		
 	delete _IndexBuffer;		
 
-	_IndexBuffer = new uint32[ size * _NbFans * 3];
+	_IndexBuffer = new uint32[ size * (_NbFans + 1) * 3];
 		
 
 
@@ -1934,7 +2052,7 @@ void CPSFanLight::resize(uint32 size)
 
 	for (k = 0; k < size; ++k)
 	{
-		for (l = 0; l < (_NbFans - 1); ++l)
+		for (l = 0; l < _NbFans; ++l)
 		{
 			*ptIndex++ = currVertFan;
 			*ptIndex++ = currVertFan + (l + 1);
@@ -1947,34 +2065,33 @@ void CPSFanLight::resize(uint32 size)
 
 
 		
-		currVertFan += (1 + _NbFans);
+		currVertFan += 2 + _NbFans;
 	}
 
 		
 	for (k = 0; k < size; ++k)
 	{			
-		if (!_UseColorScheme)
-		{
-			_Vb.setColor(k * (_NbFans + 1), _Color);
-			_Vb.setTexCoord(k * (_NbFans + 1), 0, NLMISC::CUV(0, 0));
-		}
 		if (_Tex)
 		{
-			
+			_Vb.setTexCoord(k * _NbFans + 2, 0, NLMISC::CUV(0, 0));
 		}
+		if (!_UseColorScheme)
+		{
+			_Vb.setColor(k * _NbFans + 2, _Color);			
+		}		
 		if (!_Tex)
 		{
-			for(l = 1; l <= _NbFans; ++l)
+			for(l = 1; l <= _NbFans + 1; ++l)
 			{
-				_Vb.setColor(l + k * (_NbFans + 1), CRGBA(0, 0, 0));
+				_Vb.setColor(l + k * (_NbFans + 2), CRGBA(0, 0, 0));
 			}
 		}
 		else
 		{
 			for(l = 1; l <= _NbFans; ++l)
 			{
-				_Vb.setColor(l + k * (_NbFans + 1), CRGBA(0, 0, 0));
-				_Vb.setTexCoord(l + k * (_NbFans + 1), 0, NLMISC::CUV((l - 1) / (float) _NbFans, 1));
+				_Vb.setColor(l + k * (_NbFans + 2), CRGBA(0, 0, 0));
+				_Vb.setTexCoord(l + k * (_NbFans + 2), 0, NLMISC::CUV((l - 1) / (float) _NbFans, 1));
 			}
 		}
 	}
@@ -1996,7 +2113,7 @@ void CPSFanLight::init(void)
 void CPSFanLight::updateMatAndVbForColor(void)
 {
 	_Mat.setTexture(0, _Tex);
-	_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | (_Tex ? CVertexBuffer::TexCoord0 : 0) );		
+	_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | (_Tex ? CVertexBuffer::TexCoord0Flag : 0) );		
 	if (_Owner)
 	{
 		resize(_Owner->getMaxSize());

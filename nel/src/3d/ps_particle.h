@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.13 2001/09/10 15:25:32 lecroart Exp $
+ * $Id: ps_particle.h,v 1.14 2001/09/12 13:20:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -245,7 +245,7 @@ class CPSSizedParticle
 		/// get the constant size
 		float getSize(void) const { return _ParticleSize; }
 
-		/// ctor : default are 0.1f particles
+		/// ctor : default are 0.1f sized particles
 		CPSSizedParticle();
 
 		/// dtor
@@ -714,7 +714,7 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 
 /** This abstract class holds what is needed with quad particles (CPSFaceLookAt, CPSFace) e.g 
  *  Index and vertex buffer and method to setup them
- *  Material, and method to setup them
+ *  Material, and method to setup them 
  */
 
  class CPSQuad : public CPSParticle
@@ -735,8 +735,7 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 		virtual bool hasTransparentFaces(void);
 
 		/// return true if there are Opaque faces in the object
-		virtual bool hasOpaqueFaces(void);
-
+		virtual bool hasOpaqueFaces(void);		
 
 		/// return the max number of faces needed for display. This is needed for LOD balancing
 		virtual uint32 getMaxNumFaces(void) const;
@@ -781,20 +780,13 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 		 */
 		void updateVbColNUVForRender(uint32 startIndex, uint32 numQuad)	;	
 
-		
-		CVertexBuffer _Vb;
-
-
-
-		/// DERIVER MUST CALL this		 
+		/// DERIVERS MUST CALL this		 
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
-
-
 		virtual CPSLocated *getColorOwner(void) { return _Owner; }
 		virtual CPSLocated *getSizeOwner(void) { return _Owner; }
 		virtual CPSLocated *getTextureIndexOwner(void) { return _Owner; }
-
-	
+		
+		CVertexBuffer	 _Vb;	
  };
 
 
@@ -805,6 +797,7 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 
 /**
  * A FaceLookAt particle
+ *  These particles can have 2 different size (width and height) when activated
  */
 
 
@@ -850,15 +843,42 @@ public:
 
 	/// get the motion blur threshold
 	float getMotionBlurThreshold(void) const { return _Threshold; }
+
+	/** Setting this to true allows to have independant height and width for these particles.
+	  * The interface to manage the second size can be obtained from getSecondSize(), which correspond to the height of particles.
+	  * The default is to not have independant sizes
+	  */
+	void setIndependantSizes(bool enable  = true) { _IndependantSizes = enable; }
+
+	/// test wether independant sizes are activated
+	bool hasIndependantSizes(void) const { return _IndependantSizes; }
+
+	/// retrieve an interface to set the second size
+	CPSSizedParticle &getSecondSize(void) 
+	{ 
+		nlassert(_IndependantSizes);
+		return _SecondSize;
+	}
+
+	/// retrieve an interface to set the second size const version
+	const CPSSizedParticle &getSecondSize(void) const
+	{ 
+		nlassert(_IndependantSizes);
+		return _SecondSize;
+	}
 	
 
 protected:
 
-	float _MotionBlurCoeff;
-
-	// threshold for the motion blur
-	float _Threshold;
-
+	float					_MotionBlurCoeff;	
+	float					_Threshold; // motion blur theshold
+	// in this struct we defines the getSizeOwner method, which is abstract in the CPSSizedParticle clas
+	struct					CSecondSize : public CPSSizedParticle
+	{
+		CPSFaceLookAt *Owner;
+		virtual CPSLocated *getSizeOwner(void) { return Owner->getOwner(); }
+	} _SecondSize;
+	bool					_IndependantSizes;
 		
 	void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);	
 	void deleteElement(uint32);

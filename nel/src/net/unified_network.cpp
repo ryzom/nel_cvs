@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.70 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.71 2003/11/03 10:09:56 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -749,7 +749,7 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 		{
 			uc->Connection[i] = CUnifiedNetwork::CUnifiedConnection::TConnection(cbc);
 
-			nlinfo ("HNETL5: %s", allstuffs.c_str ());
+//			nlinfo ("HNETL5: %s", allstuffs.c_str ());
 		}
 
 		if (connectSuccess && sendId)

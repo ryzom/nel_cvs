@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.25 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: sheet_id.cpp,v 1.26 2003/11/03 10:12:10 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -231,7 +231,7 @@ void CSheetId::loadSheetAlias ()
 	}
 	else
 	{
-		nlwarning("SHEETID: Can't open the file alias.packed_sheets");
+		nlinfo("SHEETID: Can't open the file alias.packed_sheets");
 	}
 }
 

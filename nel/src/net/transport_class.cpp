@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.19 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.20 2003/11/03 10:10:14 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -331,10 +331,6 @@ void CTransportClass::init ()
 {
 	// this isn't an error!
 	if (Init) return;
-
-	// filter all my debug stuffs
-	DebugLog->addNegativeFilter ("NETTC");
-
 
 	CUnifiedNetwork::getInstance()->addCallbackArray (CallbackArray, sizeof (CallbackArray) / sizeof (CallbackArray[0]));
 

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.40 2003/06/25 10:19:23 cado Exp $
+ * $Id: unified_network.h,v 1.41 2003/11/03 10:10:40 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -413,7 +413,9 @@ private:
 					DefaultNetwork = NetworkConnectionAssociations[0];
 				else
 					DefaultNetwork = 0;
-				nlwarning ("HNETL5: default network not found in the array, will use connection id %hu", (uint16)DefaultNetwork);
+
+				if (defaultNetwork.size () > 0)
+					nlwarning ("HNETL5: default network not found in the array, will use connection id %hu", (uint16)DefaultNetwork);
 			}
 		}
 	};

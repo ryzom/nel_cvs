@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.29 2003/10/23 13:06:45 berenguier Exp $
+ * $Id: load_form.h,v 1.30 2003/11/03 10:11:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,7 +152,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	// check the extension (i know that file like "foo.packed_sheetsbar" will be accepted but this check is enough...)
 	nlassert (packedFilename.find (".packed_sheets") != std::string::npos);
 
-	std::string packedFilenamePath = NLMISC::CPath::lookup(NLMISC::CFile::getFilename(packedFilename), false);
+	std::string packedFilenamePath = NLMISC::CPath::lookup(NLMISC::CFile::getFilename(packedFilename), false, false);
 	if (packedFilenamePath.empty())
 	{
 		packedFilenamePath = packedFilename;
@@ -231,7 +231,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 			if (errorIfPackedSheetNotGood)
 				nlerror ("loadForm(): Exception during reading the packed file and can't reconstruct them (%s)", e.what());
 			else
-				nlwarning ("loadForm(): Exception during reading the packed file and can't reconstruct them (%s)", e.what());
+				nlinfo ("loadForm(): Exception during reading the packed file and can't reconstruct them (%s)", e.what());
 
 			return;
 		}
@@ -417,7 +417,8 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		}
 	}
 
-	nlinfo ("%d seconds to recompute %d sheets", (uint32)(NLMISC::CTime::getLocalTime()-start)/1000, NeededToRecompute.size());
+	if(NeededToRecompute.size() > 0)
+		nlinfo ("%d seconds to recompute %d sheets", (uint32)(NLMISC::CTime::getLocalTime()-start)/1000, NeededToRecompute.size());
 
 	// free the georges loader if necessary
 	if (formLoader != NULL)
@@ -528,7 +529,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	// check the extension (i know that file like "foo.packed_sheetsbar" will be accepted but this check is enough...)
 	nlassert (packedFilename.find (".packed_sheets") != std::string::npos);
 
-	std::string packedFilenamePath = NLMISC::CPath::lookup(packedFilename, false);
+	std::string packedFilenamePath = NLMISC::CPath::lookup(packedFilename, false, false);
 	if (packedFilenamePath.empty())
 	{
 		packedFilenamePath = packedFilename;
@@ -604,7 +605,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 			if (errorIfPackedSheetNotGood)
 				nlerror ("loadForm(): Exception during reading the packed file and can't reconstruct them (%s)", e.what());
 			else
-				nlwarning ("loadForm(): Exception during reading the packed file and can't reconstruct them (%s)", e.what());
+				nlinfo ("loadForm(): Exception during reading the packed file and can't reconstruct them (%s)", e.what());
 
 			return;
 		}

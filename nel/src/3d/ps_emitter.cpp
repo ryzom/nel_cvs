@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.21 2001/07/16 15:36:55 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.22 2001/07/17 15:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -631,9 +631,11 @@ void CPSEmitterConic::emit(uint32 index, CVector &pos, CVector &speed)
 	// then we force the direction vect to have the unit size
 
 	static double divRand = (2.f / RAND_MAX) ;
+
 	CVector dir((float) (rand() * divRand - 1)
 				, (float) (rand() * divRand - 1)
 				, (float) (rand() * divRand - 1) ) ;
+
 	const float n =dir.norm() ;
 
 	dir *= _Radius / n ;

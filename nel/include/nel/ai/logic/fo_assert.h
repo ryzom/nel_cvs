@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Frst order logic assertions
  *
- * $Id: fo_assert.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
+ * $Id: fo_assert.h,v 1.6 2001/06/01 14:49:45 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_FO_ASSERT_H
 
 #include "nel/ai/logic/ai_assert.h"
+#include "nel/ai/agent/volatil_memory.h"
 
 namespace NLAILOGIC
 {
@@ -34,7 +35,7 @@ namespace NLAILOGIC
 	{
 		private:
 			std::vector< std::vector<sint32> >	_PosVars;		// Position des variables de l'assertion dans ces clauses
-			std::list<CValueSet *> _Facts;			// Faits pour l'assertion
+			NLAIAGENT::CVolatilMemmory			_Facts;						// Faits pour l'assertion
 			sint32 _NbVars;
 
 			std::vector<CClause *>			_Clauses;

@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.14 2001/05/22 16:08:01 chafik Exp $
+ * $Id: operator_script.h,v 1.15 2001/06/01 14:49:45 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,12 @@
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/logic/interpret_object_operator.h"
 #include "nel/ai/agent/actor_script.h"
+
+/*
+namespace NLAILOGIC {
+	class CValueSet;
+}
+*/
 
 namespace NLAIAGENT
 {
@@ -88,6 +94,12 @@ namespace NLAIAGENT
 
 			virtual void cancel();
 //			virtual bool isActive();
+
+			// Tries to unify the facts
+			NLAILOGIC::CFact *buildFromVars(NLAILOGIC::IBaseAssert *, std::vector<sint32> &, NLAILOGIC::CValueSet *);
+			std::list<NLAILOGIC::CValueSet *> *propagate(std::list<NLAILOGIC::CValueSet *> &, NLAILOGIC::CValueSet *, std::vector<sint32> &);
+			std::list<NLAILOGIC::CFact *> *propagate(std::list<NLAILOGIC::CFact *> &);
+			NLAILOGIC::CValueSet *unifyLiaison( const NLAILOGIC::CValueSet *, NLAILOGIC::CValueSet *, std::vector<sint32> &);
 	};
 }
 #endif

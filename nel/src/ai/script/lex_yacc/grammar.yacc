@@ -245,9 +245,9 @@ using  namespace NLAIFUZZY;
 							}
 							;
 
-	
 	PreCondition		:	PRECONDITION POINT_DEUX 
 							{
+								is_cond = true;
 								initParam()
 							}
 							OperatorCond
@@ -256,13 +256,13 @@ using  namespace NLAIFUZZY;
 								if ( classIsAnOperator() )
 								{
 									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
-									while ( _LastAsserts.size() )
+/*									while ( _LastAsserts.size() )
 									{
-										op_class->addFirstOrderCond( _LastAsserts.front(), _LastLogicParams.front() );
-										_LastAsserts.pop_front();
-										_LastLogicParams.pop_front();
+										op_class->addFirstOrderCond( _LastAsserts.back(), _LastLogicParams.back() );
+										_LastAsserts.pop_back();
+										_LastLogicParams.pop_back();
 									}
-
+*/
 									while ( _LastCodeBranche.size() )
 									{
 										op_class->addCodeCond( _LastCodeBranche.front() );
@@ -298,6 +298,8 @@ using  namespace NLAIFUZZY;
 									// Adds it as goal to the operator class
 									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
 									op_class->setGoal( _LastAsserts.back(), _LastLogicParams.back() );
+										_LastAsserts.pop_back();
+										_LastLogicParams.pop_back();
 								}
 							}
 /*							IDENT
@@ -324,6 +326,7 @@ using  namespace NLAIFUZZY;
 
 	PostCondition		:	POSTCONDITION POINT_DEUX 
 							{
+								is_cond = false;
 								initParam()
 							}
 							OperatorCond
@@ -333,17 +336,18 @@ using  namespace NLAIFUZZY;
 								{
 
 									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
-									while ( _LastAsserts.size() )
+/*									while ( _LastAsserts.size() )
 									{
-										op_class->addFirstOrderConc( _LastAsserts.front(), _LastLogicParams.front() );
-										_LastAsserts.pop_front();
-										_LastLogicParams.pop_front();
+										op_class->addFirstOrderConc( _LastAsserts.back(), _LastLogicParams.back() );
+										_LastAsserts.pop_back();
+										_LastLogicParams.pop_back();
 									}
+									*/
 
 									while ( _LastCodeBranche.size() )
 									{
-										op_class->addCodeConc( _LastCodeBranche.front() );
-										_LastCodeBranche.pop_front();
+										op_class->addCodeConc( _LastCodeBranche.back() );
+										_LastCodeBranche.pop_back();
 									}
 								}
 							}
@@ -388,6 +392,19 @@ using  namespace NLAIFUZZY;
 							}
 						|	FirstOrderPattern
 							POINT_VI
+							{									
+								COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
+								while ( _LastAsserts.size() )
+								{
+									if ( is_cond )
+										op_class->addFirstOrderCond( _LastAsserts.back(), _LastLogicParams.back() );
+									else
+										op_class->addFirstOrderConc( _LastAsserts.back(), _LastLogicParams.back() );
+
+									_LastAsserts.pop_back();
+									_LastLogicParams.pop_back();
+								}
+							}
 						|	DuCode
 							{
 								if(_LastBloc != NULL && !_LastBloc->isCodeMonted())
@@ -896,7 +913,7 @@ using  namespace NLAIFUZZY;
 						|	TypeDeComp VIRGULE STATIC 
 							{
 								CComponent *c = ((IClassInterpret *)_SelfClass.get())->getComponent(_LastRegistered);								
-								if(c != NULL) c->Static = true;								
+								if(c != NULL) c->Static = true;
 							}
 							SUP
 						;

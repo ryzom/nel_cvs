@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.16 2001/05/22 16:08:01 chafik Exp $
+ * $Id: interpret_object_agent.h,v 1.17 2001/06/01 14:51:36 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -151,6 +151,7 @@ namespace NLAISCRIPT
 		static const NLAIC::CIdentType IdAgentClass;
 	private:
 		std::vector<CComponent *> _Components;
+		std::vector<NLAIAGENT::IObjectIA *> _StaticComponents;
 
 		typedef std::vector<CMethodType>	tVectorMethode;
 		tVectorMethode						_Methode;

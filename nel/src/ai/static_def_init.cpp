@@ -338,6 +338,12 @@
 		NLAIC::CTypeOfOperator::opNeg | 
 		NLAIC::CTypeOfOperator::opNot ); 
 
+	const NLAIC::CIdentType CFact::IdFact = NLAIC::CIdentType( "FactObject", NLAIC::CSelfClassFactory( CFact( CStringVarName("Inst") )),
+		NLAIC::CTypeOfObject::tLogic,
+		NLAIC::CTypeOfOperator::opEq |
+		NLAIC::CTypeOfOperator::opNeg | 
+		NLAIC::CTypeOfOperator::opNot ); 
+
 	const NLAIC::CIdentType CFactBase::IdFactBase = NLAIC::CIdentType( "FactBase", NLAIC::CSelfClassFactory(CFactBase()), 
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opAdd );
@@ -604,11 +610,10 @@ namespace NLAISCRIPT
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	static CFactMsgClass factMsgClass(NLAIAGENT::CStringVarName("XXX_MsgFact"));
+	static CFactMsgClass factMsgClass(NLAIAGENT::CStringVarName("XXX_FactMsg"));
 	const NLAIC::CIdentType CFactMsgClass::IdFactMsgClass("FactMsg", CClassInterpretFactory((const IClassInterpret &)factMsgClass),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),	
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
-
 
 	static CSuccessMsgClass successMsgClass(NLAIAGENT::CStringVarName("XXX_SuccessMsg"));
 	const NLAIC::CIdentType CSuccessMsgClass::IdSuccessMsgClass("SuccessMsg", CClassInterpretFactory((const IClassInterpret &)successMsgClass),
@@ -678,8 +683,8 @@ namespace NLAISCRIPT
 		NLAIC::CTypeOfOperator::opEq );	
 
 	const NLAIC::CIdentType CFactMsg::IdFactMsg("FactMsgScript", NLAIC::CSelfClassFactory( CFactMsg(&NLAISCRIPT::factMsgClass) ),
-			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
-			NLAIC::CTypeOfOperator::opEq );
+																NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+																NLAIC::CTypeOfOperator::opEq );
 
 	const NLAIC::CIdentType CMsgDebug::IdMsgDebug("MsgDebugScript", NLAIC::CSelfClassFactory( CMsgDebug(&NLAISCRIPT::msgDebugMsgClass) ),
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
@@ -689,4 +694,3 @@ namespace NLAISCRIPT
 	const NLAIC::CIdentType COnChangeMsg::IdOnChangeMsg("OnChangeMsg", NLAIC::CSelfClassFactory( COnChangeMsg(&NLAISCRIPT::onChangeMsgClass) ),
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 			NLAIC::CTypeOfOperator::opEq );
-

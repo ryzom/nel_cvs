@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.21 2001/05/22 16:08:16 chafik Exp $
+ * $Id: interpret_object_message.cpp,v 1.22 2001/06/01 14:51:00 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -202,6 +202,7 @@ namespace NLAISCRIPT
 		registerComponent(NLAIAGENT::CStringVarName("GoalObject"),NLAIAGENT::CStringVarName("Goal"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
+
 	CCancelGoalMsgClass::CCancelGoalMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CCancelGoalMsg::IdCancelGoalMsg.getFactory()->getClass());		
@@ -244,21 +245,21 @@ namespace NLAISCRIPT
 	CFactMsgClass::CFactMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFactMsg::IdFactMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("CFact"),NLAIAGENT::CStringVarName("Fact"));
+		registerComponent(NLAIAGENT::CStringVarName("CFact"),NLAIAGENT::CStringVarName("FactObject"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
 
 	CFactMsgClass::CFactMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFactMsg::IdFactMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("CFact"),NLAIAGENT::CStringVarName("Fact"));
+		registerComponent(NLAIAGENT::CStringVarName("CFact"),NLAIAGENT::CStringVarName("FactObject"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
 
 	CFactMsgClass::CFactMsgClass() : CMessageClass()
 	{		
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("CFact"),NLAIAGENT::CStringVarName("Fact"));
+		registerComponent(NLAIAGENT::CStringVarName("CFact"),NLAIAGENT::CStringVarName("FactObject"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
 	

@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.29 2001/05/22 16:08:16 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.30 2001/06/01 14:51:00 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -719,13 +719,23 @@ namespace NLAISCRIPT
 
 	void CAgentClass::createComponents( std::list<NLAIAGENT::IObjectIA *> &comps) const
 	{
+		NLAIAGENT::IObjectIA *obj;
+		int st_comp_nb = 0;
 		for (sint32 i = 0; i < (sint32) _Components.size(); i++)
 		{
 			CComponent *comp = _Components[i];
-			sint32 class_index = NLAIC::getRegistry()->getNumIdent( comp->RegisterName->getString() );
+			if ( !comp->Static )
+			{
+				sint32 class_index = NLAIC::getRegistry()->getNumIdent( comp->RegisterName->getString() );
 
-			NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *) NLAIC::getRegistry()->createInstance( class_index );
-			comps.push_back( obj );
+				obj = (NLAIAGENT::IObjectIA *) NLAIC::getRegistry()->createInstance( class_index );
+				comps.push_back( obj );
+			}
+			else
+			{
+				obj = _StaticComponents[st_comp_nb];
+				obj->incRef();
+			}
 		}
 	}
 
@@ -816,9 +826,6 @@ namespace NLAISCRIPT
 
 		// Composants des classes de base
 		createBaseClassComponents( components );
-
-		// Composants propres
-		//createComponents( components );		
 
 		// Création de l'agent
 		NLAIAGENT::CAgentScript *instance = new NLAIAGENT::CAgentScript(NULL, NULL, components,  (CAgentClass *) this );
@@ -940,7 +947,7 @@ namespace NLAISCRIPT
 			return NULL;
 	}
 
-	// Returns the highest class in the class hiérarchie (SuperClass)
+	// Returns the highest class in the class hiérarchy (SuperClass)
 	const CAgentClass *CAgentClass::getSuperClass() const
 	{
 		const CAgentClass *base_class = this;

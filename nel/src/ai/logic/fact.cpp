@@ -20,29 +20,33 @@
 #include "nel/ai/logic/fact.h"
 #include "nel/ai/logic/ai_assert.h"
 #include "nel/ai/logic/varset.h"
+#include "nel/ai/agent/object_type.h"
 
 namespace NLAILOGIC
 {
 	using namespace NLAIAGENT;
 
-
 	CFact::CFact() : CValueSet()
 	{
+		_AssertName = NULL;
 	}
 
 	CFact::CFact(IBaseAssert *a) : CValueSet(a->nbVars() )
 	{
 		_Assert = a;
+		_AssertName = NULL;
 	}
 
 	CFact::CFact(IBaseAssert *a, CValueSet *vals) : CValueSet( *vals )
 	{
 		_Assert = a;
+		_AssertName = NULL;
 	}
 
 	CFact::CFact(IBaseAssert *a, bool v) : CValueSet(1)
 	{
 		_Values[0] = new CBoolType(v);
+		_AssertName = NULL;
 	}
 
 	CFact::CFact(IBaseAssert *a, CVarSet *vars) : CValueSet( vars->size() )
@@ -56,6 +60,36 @@ namespace NLAILOGIC
 		}
 		delete vals;
 		_Assert = a;
+		_AssertName = NULL;
+	}
+
+
+	CFact::CFact(NLAIAGENT::IVarName &name)
+	{
+		_AssertName = (NLAIAGENT::IVarName *) name.clone();
+	}
+
+	CFact::CFact(NLAIAGENT::IVarName &a, CValueSet *vals) : CValueSet( *vals )
+	{
+		_AssertName = (NLAIAGENT::IVarName *) a.clone();
+	}
+
+	CFact::CFact(NLAIAGENT::IVarName &a, bool v) : CValueSet(1)
+	{
+		_Values[0] = new CBoolType(v);
+	}
+
+	CFact::CFact(NLAIAGENT::IVarName &a, CVarSet *vars) : CValueSet( vars->size() )
+	{
+		std::list<IObjetOp *> *vals = vars->getValues();
+		std::list<IObjetOp *>::iterator it_v = vals->begin();
+		while ( it_v != vals->end() )
+		{
+			vals->push_back( *it_v );
+			it_v++;
+		}
+		delete vals;
+		_AssertName = (NLAIAGENT::IVarName *) a.clone();
 	}
 
 	IBaseAssert *CFact::getAssert() 
@@ -123,5 +157,104 @@ namespace NLAILOGIC
 			_Values[i]->incRef();
 		}
 		return result;
+	}
+
+	NLAIAGENT::tQueue CFact::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
+	{
+
+#ifdef NL_DEBUG	
+		std::string nameP;
+		std::string nameM;
+	funcName->getDebugString(nameM);
+	params.getDebugString(nameP);
+
+	const char *dbg_class_name = (const char *) getType();
+#endif
+		NLAIAGENT::tQueue r;
+		if(className == NULL)
+		{
+			if( (*funcName) == NLAIAGENT::CStringVarName( "Constructor" ) )
+			{					
+				NLAIAGENT::CObjectType *c = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( CFact::IdFact ) );					
+				r.push( NLAIAGENT::CIdMethod( 0 + CValueSet::getMethodIndexSize(), 0.0, NULL, c) );					
+			}
+		}
+
+		if ( r.empty() )
+			return CValueSet::isMember(className, funcName, params);
+		else
+			return r;
+	}
+
+	///\name Some IObjectIA method definition.
+	//@{		
+	NLAIAGENT::IObjectIA::CProcessResult CFact::runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *)
+	{
+		return IObjectIA::CProcessResult();
+	}
+
+	NLAIAGENT::IObjectIA::CProcessResult CFact::runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *p)
+	{
+		NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)p;
+
+		switch(index - CValueSet::getMethodIndexSize())
+		{
+		case 0:
+			{					
+
+				NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *) param->getFront()->clone();
+				param->popFront();
+#ifdef NL_DEBUG
+				const char *dbg_name = name->getStr().getString();
+#endif
+				// If the constructor() function is explicitely called and the object has already been initialised
+				if ( _AssertName )
+					_AssertName->release();
+//				_Args.clear();
+
+				_AssertName = (NLAIAGENT::IVarName *) name->getStr().clone();
+/*				std::list<const NLAIAGENT::IObjectIA *> args;
+				while ( param->size() )
+				{
+					_Args.push_back( (NLAIAGENT::IObjectIA *) param->getFront() );
+					param->popFront();
+				}
+				*/
+				return IObjectIA::CProcessResult();		
+			}
+			break;
+		}
+
+		return IObjectIA::CProcessResult();
+	}
+
+	sint32 CFact::getMethodIndexSize() const
+	{
+		return CValueSet::getMethodIndexSize() + 1;
+	}
+
+	const NLAIC::CIdentType &CFact::getType() const
+	{
+		return IdFact;
+	}
+
+	//@}
+
+	CFact::CFact(const CFact &fact) : CValueSet(fact)
+	{
+		if ( fact._AssertName != NULL )
+			_AssertName = (NLAIAGENT::IVarName *) fact._AssertName->clone();
+		else
+			_AssertName = NULL;
+	}
+
+	const NLAIC::IBasicType *CFact::clone() const
+	{
+		return new CFact( *this );
+	}
+
+	const NLAIC::IBasicType *CFact::newInstance() const
+	{
+		return new CFact();
 	}
 }

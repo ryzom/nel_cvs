@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.22 2001/04/24 08:28:21 portier Exp $
+ * $Id: compilateur.h,v 1.23 2001/06/01 14:51:36 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,6 +180,7 @@ namespace NLAISCRIPT
 		std::list<NLAIAGENT::CStringVarName *> _LastFuzzyConds;
 		std::list<const NLAIAGENT::CStringVarName *> _LastAsserts;
 		std::list<IOpCode *>	_LastCodeBranche;
+		bool is_cond;
 
 		NLAILOGIC::CFactBase *_FactBase;
 		NLAILOGIC::CFactPattern *_LastFactPattern;

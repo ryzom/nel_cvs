@@ -6,8 +6,7 @@
 #include "nel/ai/logic/interpret_object_operator.h"
 #include "nel/ai/agent/comp_handle.h"
 #include "nel/ai/fuzzy/fuzzyset.h"
-
-//#include "agent_service/creature/creature.h"
+#include "nel/ai/logic/valueset.h"
 
 namespace NLAIAGENT
 {
@@ -58,24 +57,21 @@ namespace NLAIAGENT
 	
 	void COperatorScript::getDebugString(std::string &t) const
 	{
-		/*
 		if ( _AgentClass )
-		{
-			char buf[1024 * 4];
-			_AgentClass->getDebugString(buf);
-			strcpy(t,buf);
-		}
+			_AgentClass->getDebugString(t);
 		else
-			strcpy(t,"<COperatorScript>");
-		strcat(t,"<");
+			t += "<COperatorScript>";
+		t += "<";
+
 		if ( _IsActivated )
-			strcat(t,"activated>");
+			t += "activated>";
 		else
-			strcat(t,"idle>");
-		char pri_buf[1024];
-		sprintf(pri_buf," <P %f>", priority() );
-		strcat(t, pri_buf);
-		*/
+			t += "idle>";
+		t += " <P ";
+		char pri_buf[128];
+		sprintf(pri_buf, "%f", priority() );
+		t += pri_buf;
+
 		CAgentScript::getDebugString(t);
 	}
 
@@ -103,108 +99,6 @@ namespace NLAIAGENT
 		CAgentScript::load(is);
 		// TODO
 	}
-/*
-	sint32 COperatorScript::getMethodIndexSize() const
-	{
-		return CAgentScript::getBaseMethodCount();
-	}
-
-	IObjectIA::CProcessResult COperatorScript::runMethodBase(int index,int heritance, IObjectIA *params)
-	{		
-		IObjectIA::CProcessResult r;
-
-		if ( index == 1 )
-		{
-			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
-			{
-#ifdef _DEBUG
-				const char *dbg_param_type = (const char *) params->getType();
-				char dbg_param_string[1024 * 8];
-				params->getDebugString(dbg_param_string);
-#endif
-				const IObjectIA *child = ( ((NLAIAGENT::IBaseGroupType *)params) )->getFront();
-				( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
-#ifdef _DEBUG
-				const char *dbg_param_front_type = (const char *) child->getType();
-#endif
-				IAgent *new_child = (IAgent *) child->newInstance();
-				_Launched.push_back( new_child );
-				addChild(new_child);
-			}
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-			return r;
-		}
-		return CAgentScript::runMethodBase(index, heritance, params);
-	}
-*/
-
-/*
-	IObjectIA::CProcessResult COperatorScript::runMethodBase(int index,IObjectIA *params)
-	{	
-
-#ifdef NL_DEBUG
-		char buf[1024];
-		getDebugString(buf);
-#endif
-		int i = index - IAgent::getMethodIndexSize();
-
-		if ( i == 1 )
-		{
-			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
-			{
-#ifdef _DEBUG
-				const char *dbg_param_type = (const char *) params->getType();
-				char dbg_param_string[1024 * 8];
-				params->getDebugString(dbg_param_string);
-#endif
-				IAgent *new_child = (IAgent *) ((NLAIAGENT::IBaseGroupType *) params)->get();
-				_Launched.push_back( new_child );
-				addDynamicAgent( (IBaseGroupType *) params);
-			}
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-			return r;
-		}
-		return CAgentScript::runMethodBase(index, params);
-	}
-
-	int COperatorScript::getBaseMethodCount() const
-	{
-		return CAgentScript::getBaseMethodCount();
-	}
-
-*/
-/*
-	tQueue COperatorScript::isMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
-	{		
-#ifdef NL_DEBUG
-		const char *dbg_func_name = name->getString();
-#endif
-
-		tQueue result = CAgentScript::isMember( className, name, param);
-
-		if ( result.size() )
-			return result;
-
-		// Processes succes and failure functions
-		if ( *name == CStringVarName("Launch") )
-		{
-		*/
-/*			double d;
-			d = ((NLAISCRIPT::CParam &)*ParamSuccessMsg).eval((NLAISCRIPT::CParam &)param);
-			
-			if ( d >= 0.0 )
-			{*/
-/*			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod(  IAgent::getMethodIndexSize() + 1, 0.0,NULL, r_type ) );
-			//}
-		}
-		return result;
-	}
-*/
 
 	void COperatorScript::instanciateGoalArgs(NLAILOGIC::CGoal *goal)
 	{
@@ -228,29 +122,28 @@ namespace NLAIAGENT
 
 		bool is_activated = false;
 
-		/*CAgentScript *father = (CAgentScript *) getParent();
-		std::vector<NLAILOGIC::CGoal *> &goals = father->getGoalStack();
+		CAgentScript *father = (CAgentScript *) getParent();
+		const std::vector<NLAILOGIC::CGoal *> *goals = father->getGoalStack();
 		std::vector<NLAILOGIC::CGoal *> activated_goals;
 
-		if ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL )
+		if ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL && goals != NULL)
 		{
 
 			// Looks for the goal
 			int i;
-			for ( i = 0; i < (int) goals.size(); i++ )
+			for ( i = 0; i < (int) goals->size(); i++ )
 			{
-				NLAILOGIC::CGoal *av_goal = goals[i];
+				NLAILOGIC::CGoal *av_goal = (*goals)[i];
 				const NLAILOGIC::CGoal *op_goal = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal();
 
 	#ifdef NL_DEBUG
-				char buf_g1[1024 * 2];
-				char buf_g2[1024 * 2];
-
+				std::string buf_g1;
+				std::string buf_g2;
 				av_goal->getDebugString(buf_g1);
 				op_goal->getDebugString(buf_g2);
 	#endif
-				if ( (*(goals[i])) == *( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() )
-					activated_goals.push_back( goals[i] );
+				if ( (*( (*goals)[i])) == *( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() )
+					activated_goals.push_back( (*goals)[i] );
 			}
 		
 			// If a goal is posted corresponding to this operator's one
@@ -307,7 +200,7 @@ namespace NLAIAGENT
 			if ( _IsActivated == true )
 				unActivate();			
 			return IObjectIA::ProcessRun;
-		}*/
+		}
 		return IObjectIA::ProcessRun;
 	}
 
@@ -342,5 +235,133 @@ namespace NLAIAGENT
 			}
 		}
 		return (float) pri;
+	}
+
+	NLAILOGIC::CFact *COperatorScript::buildFromVars(NLAILOGIC::IBaseAssert *assert, std::vector<sint32> &pl, NLAILOGIC::CValueSet *vars)
+	{
+		NLAILOGIC::CFact *result = new NLAILOGIC::CFact( assert);	// TODO:: pas besoin du nombre dans ce constructeur puisqu'on a l'assert
+		for (sint32 i = 0; i < (sint32) pl.size() ; i++ )
+		{
+			sint32 p = pl[i];
+			result->setValue( i, (*vars)[ pl[i] ] );
+		}
+		return result;
+	}
+
+	std::list<NLAILOGIC::CValueSet *> *COperatorScript::propagate(std::list<NLAILOGIC::CValueSet *> &liaisons, NLAILOGIC::CValueSet *fact, std::vector<sint32> &pos_vals) 
+	{
+		std::list<NLAILOGIC::CValueSet *> *conflits = new std::list<NLAILOGIC::CValueSet *>;
+		std::list<NLAILOGIC::CValueSet *> buf_liaisons;
+		// Pour chaque liaison...
+		std::list< NLAILOGIC::CValueSet *>::iterator it_l = liaisons.begin();
+		
+		while ( it_l != liaisons.end() )
+		{
+
+			NLAILOGIC::CValueSet *l = *it_l;
+#ifdef NL_DEBUG
+			std::string buf;
+			l->getDebugString( buf );
+#endif
+
+			NLAILOGIC::CValueSet *result = unifyLiaison( l, fact, pos_vals );
+			if ( result )
+			{
+#ifdef NL_DEBUG
+				std::string buf;
+				result->getDebugString( buf );
+#endif
+
+				if ( result->undefined() == 0 )
+				{
+					conflits->push_back( result );
+				}
+				else 
+					buf_liaisons.push_back( result );
+			}
+			it_l++;
+		}
+
+		while ( buf_liaisons.size() )
+		{
+			liaisons.push_back( buf_liaisons.front() );
+			buf_liaisons.pop_front();
+		}
+
+		return conflits;
+	}	
+
+
+
+	std::list<NLAILOGIC::CFact *> *COperatorScript::propagate(std::list<NLAILOGIC::CFact *> &facts)
+	{
+		std::list<NLAILOGIC::CFact *> *conflicts = new std::list<NLAILOGIC::CFact *>;
+		std::list< NLAILOGIC::CValueSet *>	liaisons;
+		NLAILOGIC::CValueSet *empty = new NLAILOGIC::CValueSet( ( (NLAISCRIPT::COperatorClass *)_AgentClass)->getVars().size() );
+		liaisons.push_back( empty );
+		
+		NLAISCRIPT::COperatorClass *op_class = (NLAISCRIPT::COperatorClass *) _AgentClass;
+
+		std::list<NLAILOGIC::CFact *>::iterator it_f = facts.begin();
+		while ( it_f != facts.end() )
+		{
+			std::vector<sint32> pos_asserts;
+			op_class->getAssertPos( (*it_f)->getAssert() , op_class->getConds(), pos_asserts);
+			for (sint32 i = 0; i < (sint32) pos_asserts.size(); i++ )
+			{
+				std::list<NLAILOGIC::CValueSet *> *links = propagate( liaisons, *it_f, op_class->getPosVarsConds()[ pos_asserts[i] ] );
+				if ( links )
+				{
+					while ( links->size() )
+					{
+						for (sint32 i = 0; i < (sint32) op_class->getConcs().size(); i++ )
+						{
+							NLAILOGIC::CFact *r = buildFromVars( op_class->getConcs()[i], op_class->getPosVarsConcs()[i], links->front() );
+							std::string buf;
+							r->getDebugString( buf );
+							// Tests if the fact is already in the conflicts list
+							bool found = false;
+							std::list<NLAILOGIC::CFact *>::iterator it_c = conflicts->begin();
+							while ( ! found && it_c != conflicts->end() )
+							{
+								found = (**it_c) == *r;
+								it_c++;
+							}
+							if ( !found )
+							{
+								std::string buf;
+								r->getDebugString( buf );
+								conflicts->push_back( r );
+							}
+						}
+						links->front()->release();
+						links->pop_front();
+					}
+					delete links;
+				}
+			}
+			it_f++;
+		}
+
+		while ( liaisons.size() )
+		{
+			liaisons.front()->release();
+			liaisons.pop_front();
+		}
+
+		return conflicts;
+	}
+
+	NLAILOGIC::CValueSet *COperatorScript::unifyLiaison( const NLAILOGIC::CValueSet *fp, NLAILOGIC::CValueSet *vals, std::vector<sint32> &pos_vals)
+	{
+		NLAILOGIC::CValueSet *result;
+
+		if ( result = fp->unify( vals, pos_vals ) )
+			return result;
+		else
+		{
+			delete result;
+			return NULL;
+		}
 	}
 }

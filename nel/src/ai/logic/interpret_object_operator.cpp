@@ -16,7 +16,7 @@ namespace NLAISCRIPT
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
 		_Goal = NULL;
 		_Comment = NULL;
-		_FactBase = NULL;
+		_FactBase = new NLAILOGIC::CFactBase();
 	}
 	
 	COperatorClass::COperatorClass(const NLAIC::CIdentType &id): CAgentClass(id)
@@ -25,7 +25,7 @@ namespace NLAISCRIPT
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
 		_Goal = NULL;
 		_Comment = NULL;
-		_FactBase = NULL;
+		_FactBase = new NLAILOGIC::CFactBase();
 	}
 
 	COperatorClass::COperatorClass(const NLAIAGENT::IVarName &n, const NLAIAGENT::IVarName &inheritance) : CAgentClass( inheritance )
@@ -34,7 +34,7 @@ namespace NLAISCRIPT
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
 		_Goal = NULL;
 		_Comment = NULL;
-		_FactBase = NULL;
+		_FactBase = new NLAILOGIC::CFactBase();
 	}
 
 	COperatorClass::COperatorClass(const COperatorClass &c) : CAgentClass( c )
@@ -57,7 +57,7 @@ namespace NLAISCRIPT
 		if ( c._FactBase != NULL)
 			_FactBase = (NLAILOGIC::CFactBase *) c._FactBase->clone();
 		else
-			_FactBase = NULL;
+			_FactBase = new NLAILOGIC::CFactBase();
 
 	}	
 
@@ -67,7 +67,7 @@ namespace NLAISCRIPT
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));
 		_Goal = NULL;
 		_Comment = NULL;
-		_FactBase = NULL;
+		_FactBase = new NLAILOGIC::CFactBase();
 	}
 
 	COperatorClass::~COperatorClass()
@@ -511,6 +511,8 @@ namespace NLAISCRIPT
 					NLAIAGENT::CStringVarName var_name("Var");
 					registerComponent( var_name , (const NLAIAGENT::CStringVarName &) (*it_cond)->getName() );
 
+					// TODO: contrôle de type
+
 					_Vars.push_back( (NLAILOGIC::IBaseVar *)(*it_cond)->clone() );
 					pos_Vars.push_back( _Vars.size() - 1);
 				}
@@ -545,8 +547,7 @@ namespace NLAISCRIPT
 	/// Add first order patterns as preconditions or postconditions
 	void COperatorClass::addFirstOrderCond(const NLAIAGENT::IVarName *assert_name, std::list<const NLAIAGENT::IVarName *> &params_list)
 	{
-
-		_CondAsserts.push_back( assert_name );
+	/*	_CondAsserts.push_back( assert_name );
 		std::list<const NLAIAGENT::IVarName *> *tmp_list = new std::list<const NLAIAGENT::IVarName *>;
 		while ( !params_list.empty() )
 		{
@@ -555,6 +556,20 @@ namespace NLAISCRIPT
 			params_list.pop_front();
 		}		
 		_ClassCondVars.push_back( tmp_list );
+		*/
+
+			NLAIAGENT::CStringVarName name = *(NLAIAGENT::CStringVarName *)assert_name->clone();
+			NLAILOGIC::IBaseAssert *assert = _FactBase->addAssert( name, params_list.size() ); 
+			NLAILOGIC::CFactPattern *pattern = new NLAILOGIC::CFactPattern( assert );
+			std::list<const NLAIAGENT::IVarName *>::iterator it_var = params_list.begin();
+			while ( it_var != params_list.end() )
+			{
+				NLAIAGENT::CStringVarName var_name = *(NLAIAGENT::CStringVarName *)(*it_var);
+				const char *txt = var_name.getString();
+				pattern->addVar(  new NLAILOGIC::CVar( var_name ) );
+				it_var++;
+			}
+			addPrecondition( pattern );
 	}
 
 	void  COperatorClass::addFirstOrderConc(const NLAIAGENT::IVarName *assert_name, std::list<const NLAIAGENT::IVarName *> &params_list)
@@ -678,7 +693,6 @@ namespace NLAISCRIPT
 				else ip =0;
 				context.Code = (NLAISCRIPT::CCodeBrancheRun *)&op;		
 				*context.Code = 0;
-
 
 				r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
 

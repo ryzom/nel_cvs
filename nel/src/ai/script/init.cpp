@@ -1,6 +1,6 @@
 /** \file init.cpp
  *
- * $Id: init.cpp,v 1.5 2001/05/10 15:15:57 portier Exp $
+ * $Id: init.cpp,v 1.6 2001/06/01 14:51:00 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,7 @@ namespace NLAISCRIPT
 		reinitClass(CMessageClass(CMessageClass::IdMessageClass),CMessageClass::IdMessageClass);
 		reinitClass(CMsgNotifyParentClass(CMsgNotifyParentClass::IdMsgNotifyParentClass),CMsgNotifyParentClass::IdMsgNotifyParentClass);
 		reinitClass(CGoalMsgClass(CGoalMsgClass::IdGoalMsgClass),CGoalMsgClass::IdGoalMsgClass);
+		reinitClass(CFactMsgClass(CFactMsgClass::IdFactMsgClass),CFactMsgClass::IdFactMsgClass);
 		reinitClass(CCancelGoalMsgClass(CCancelGoalMsgClass::IdCancelGoalMsgClass),CCancelGoalMsgClass::IdCancelGoalMsgClass);
 		reinitClass(CSuccessMsgClass(CSuccessMsgClass::IdSuccessMsgClass),CSuccessMsgClass::IdSuccessMsgClass);
 		reinitClass(CFailureMsgClass(CFailureMsgClass::IdFailureMsgClass),CFailureMsgClass::IdFailureMsgClass);

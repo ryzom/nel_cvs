@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.12 2001/05/22 16:08:01 chafik Exp $
+ * $Id: interpret_object_operator.h,v 1.13 2001/06/01 14:49:45 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NLAISCRIPT
 		NLAILOGIC::CGoal							*_Goal;				/// Goal the operator tris to validate
 
 		const NLAIAGENT::IVarName					*_GoalAssert;		/// Name of the goal's assert
-		std::list<const NLAIAGENT::IVarName *>			_GoalVars;			/// Name of the goal's vars
+		std::list<const NLAIAGENT::IVarName *>		_GoalVars;		/// Name of the goal's vars
 
 		std::vector<NLAILOGIC::IBaseVar *>			_Vars;				/// Variables of the operator
 
@@ -175,10 +175,7 @@ public:
 		// Adds a fuzzy cond of the form <attrib> is <filter>
 		void addFuzzyCond(NLAIAGENT::IVarName *, NLAIAGENT::IVarName *);
 
-		// Calculates the truth of fuzzy conds
-//		virtual float truthValue() const;
-
-		/// Initialises the tables
+		/// Initialises the logic conditions compiled tables
 		void buildLogicTables();
 
 		bool isValidFonc(NLAIAGENT::IObjectIA *);
@@ -194,6 +191,31 @@ public:
 		std::vector<NLAIAGENT::IVarName *> &getFuzzySets()
 		{
 			return _FuzzySets;
+		}
+
+		std::vector<NLAILOGIC::IBaseVar *>	&getVars()
+		{
+			return _Vars;
+		}
+
+		std::vector< NLAILOGIC::IBaseAssert *>	&getConds()
+		{
+			return _Conds;
+		}
+
+		std::vector< NLAILOGIC::IBaseAssert *>	&getConcs()
+		{
+			return _Concs;
+		}
+
+		std::vector< std::vector<sint32> >	&getPosVarsConds()
+		{
+			return _PosVarsCond;
+		}
+
+		std::vector< std::vector<sint32> >	&getPosVarsConcs()
+		{
+			return _PosVarsConc;
 		}
 	};
 }

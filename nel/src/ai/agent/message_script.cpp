@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.15 2001/05/22 16:08:15 chafik Exp $
+ * $Id: message_script.cpp,v 1.16 2001/06/01 14:50:38 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -366,6 +366,7 @@ namespace NLAIAGENT
 			(*this)[i]->getDebugString(buf);
 			t += buf;
 			t += "\n";
+
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic facts
  *
- * $Id: fact.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
+ * $Id: fact.h,v 1.6 2001/06/01 14:49:45 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,17 +37,39 @@ namespace NLAILOGIC {
 	{
 		private:
 			IBaseAssert *_Assert;
+			NLAIAGENT::IVarName *_AssertName;
 		public:
+
 			CFact();
 			CFact(IBaseAssert *);
 			CFact(IBaseAssert *, bool);
 			CFact(IBaseAssert *, CValueSet *);
 			CFact(IBaseAssert *, CVarSet *);
+
+			CFact(NLAIAGENT::IVarName &);
+			CFact(NLAIAGENT::IVarName &, bool);
+			CFact(NLAIAGENT::IVarName &, CValueSet *);
+			CFact(NLAIAGENT::IVarName &, CVarSet *);
+
+			CFact(const CFact &);
+
+			const NLAIC::IBasicType *clone() const;
+			const NLAIC::IBasicType *newInstance() const;
+
+			static const NLAIC::CIdentType IdFact;
+
 			IBaseAssert *getAssert();
 			virtual void getDebugString(std::string &) const;
 			virtual void propagate();
 			virtual bool operator == (const NLAIAGENT::IBasicObjectIA &a) const;
 			CValueSet *asValueSet();
+
+			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
+			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *p);
+			sint32 getMethodIndexSize() const;
+
+			virtual const NLAIC::CIdentType &getType() const;
 	};
 }
 

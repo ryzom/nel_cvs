@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Factbase, a container for 0 or first order logic asserts and facts of an agent
  *
- * $Id: factbase.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
+ * $Id: factbase.h,v 1.6 2001/06/01 14:49:45 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@ namespace NLAILOGIC
 {
 	class IBaseAssert;
 	class CVarSet;
-	class CFactPattern  ;
+	class CFactPattern;
 	class CValueSet;
 	class CFact;
 	

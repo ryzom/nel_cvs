@@ -35,17 +35,17 @@ namespace NLAILOGIC
 		_NbVars = nb_vars;
 /*		std::vector<IBaseVar *> *lv = new std::vector<IBaseVar *>;
 		for (sint32 i = 0; i < _NbVars; i++)
-			lv->push_back(NULL);*/
+			lv->pushBack(NULL);*/
 	}
 
 
 	CFirstOrderAssert::CFirstOrderAssert(const CFirstOrderAssert &cp) : IBaseAssert( *cp._Name )
 	{
-		std::list<CValueSet *>::const_iterator it_f = cp._Facts.begin();
-		while ( it_f != cp._Facts.end() )
+
+		CConstIteratorContener r = _Facts.getConstIterator();
+		while( !r.isInEnd() )
 		{
-			_Facts.push_back( (CValueSet *) (*it_f)->clone() );
-			it_f++;
+			_Facts.pushBack( 50, (CValueSet *) (*r).clone() );
 		}
 	}
 
@@ -53,8 +53,8 @@ namespace NLAILOGIC
 	{
 		while ( _Facts.size() )
 		{
-			_Facts.front()->release();
-			_Facts.pop_front();
+			_Facts.Front()->release();
+			_Facts.popFront();
 		}
 	}
 
@@ -75,7 +75,7 @@ namespace NLAILOGIC
 			delete values;
 		}
 		
-		_Facts.push_back( f->asCValueSet() );
+		_Facts.pushBack( 50, f->asCValueSet() );
 	}
 
 	void CFirstOrderAssert::addFact(CValueSet *f)
@@ -89,7 +89,7 @@ namespace NLAILOGIC
 //			_Outputs[i]->propagate(values, _PosVars[i] );
 		}
 
-		_Facts.push_back( (CValueSet *) f->clone() );
+		_Facts.pushBack( 50, (CValueSet *) f->clone() );
 	}
 
 	void CFirstOrderAssert::removeFact(CFact *f)
@@ -102,10 +102,11 @@ namespace NLAILOGIC
 		}
 
 		CValueSet *tmp = f->asValueSet();
-		std::list<CValueSet *>::iterator it_f = _Facts.begin();
-		while ( it_f != _Facts.end() )
+
+		CConstIteratorContener it_f = _Facts.getConstIterator();
+		while( !it_f.isInEnd() )
 		{
-			if ( *f == **it_f )
+			if ( *f == *(CValueSet *)((const IObjetOp*)it_f) )
 			{
 				_Facts.erase( it_f );
 				tmp->release();
@@ -225,7 +226,7 @@ namespace NLAILOGIC
 			{
 				char buf[1024 * 2];
 				l->getDebugString( buf );
-				bindings.push_back( l );
+				bindings.pushBack( l );
 			}
 			it_cl++;
 		}*/
@@ -236,26 +237,40 @@ namespace NLAILOGIC
 		// Recherche dans l'assertion...
 		std::list<CFact *> *result = new std::list<CFact *>;
 		CValueSet *liaison;
-		std::list<CValueSet *>::iterator it_l = _Facts.begin();
-		while ( it_l != _Facts.end() )
+/*
+		CConstIteratorContener it_f = _Facts.getConstIterator();
+		while( !it_f.isInEnd() )
+		{
+			if ( *f == *(CFact *)((const IObjetOp*)it_f) )
+			{
+				_Facts.erase( it_f );
+				tmp->release();
+				return;
+			}
+			it_f++;
+		}
+*/
+
+		CConstIteratorContener it_l = _Facts.getConstIterator();
+		while ( !it_l.isInEnd() )
 		{
 #ifdef NL_DEBUG
 			std::string buffer;
-			(*it_l)->getDebugString(buffer);
+
+			((CValueSet *)((const IObjetOp*)it_l))->getDebugString(buffer);
 			std::string buffer2;
 			fact->getDebugString(buffer2);
 #endif
 
-			liaison = (*it_l)->unify( (CValueSet *) fact );
+			liaison = ((CValueSet *)((const IObjetOp*)it_l))->unify( (CValueSet *) fact );
 			if ( liaison )
 			{
 				if ( liaison->undefined() == 0 )
 				{
-					result->push_back( (CFact *) (*it_l)->clone());
+					result->push_back( (CFact *) ((CValueSet *)((const IObjetOp*)it_l))->clone());
 				}
 				liaison->release();
 			}
-
 			it_l++;
 		}
 
@@ -276,10 +291,10 @@ namespace NLAILOGIC
 	std::list<CFact *> *CFirstOrderAssert::getFacts() const
 	{
 		std::list<CFact *> *result = new std::list<CFact *>;
-		std::list<CValueSet *>::const_iterator it_f = _Facts.begin();
-		while ( it_f != _Facts.end() )
+		CConstIteratorContener it_f = _Facts.getConstIterator();
+		while ( !it_f.isInEnd() )
 		{
-			CFact *tmp = new CFact( (IBaseAssert *) this, *it_f );
+			CFact *tmp = new CFact( (IBaseAssert *) this, ((CValueSet *)((const IObjetOp*)it_f)) );
 			result->push_back( tmp );
 			it_f++;
 		}

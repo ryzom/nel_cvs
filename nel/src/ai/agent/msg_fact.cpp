@@ -1,6 +1,6 @@
 /** \file msg_fact.cpp
  *
- * $Id: msg_fact.cpp,v 1.2 2001/05/22 16:08:15 chafik Exp $
+ * $Id: msg_fact.cpp,v 1.3 2001/06/01 14:50:38 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,13 +127,13 @@ namespace NLAIAGENT
 		{
 		case 0:
 			{					
-				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->get();
+				NLAILOGIC::CFact *fact = (NLAILOGIC::CFact *) param->get();
 				param->popFront();
 #ifdef NL_DEBUG
 				std::string buffer;
-				goal->getDebugString( buffer );
+				fact->getDebugString( buffer );
 #endif
-				set(0, goal);
+				set(0, fact);
 			}
 			break;
 		}

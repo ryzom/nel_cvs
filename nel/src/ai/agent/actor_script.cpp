@@ -327,8 +327,10 @@ namespace NLAIAGENT
 		IObjectIA::CProcessResult r;
 
 #ifndef NL_DEBUG
+		/*
 		char buf[1024];
 		getDebugString(buf);
+		*/
 #endif
 
 		
@@ -370,13 +372,13 @@ namespace NLAIAGENT
 			std::vector<CStringType *> handles;
 			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 			{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 				const char *dbg_param_type = (const char *) params->getType();
 				std::string dbg_param_string;
 				params->getDebugString(dbg_param_string);
 #endif
 				const IObjectIA *fw = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 				const char *dbg_param_front_type = (const char *) fw->getType();
 #endif
 
@@ -404,13 +406,13 @@ namespace NLAIAGENT
 		{
 			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 			{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 				const char *dbg_param_type = (const char *) params->getType();
 				std::string dbg_param_string;
 				params->getDebugString(dbg_param_string);
 #endif
 				const IObjectIA *child = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 				const char *dbg_param_front_type = (const char *) child->getType();
 #endif
 				_Launched.push_back( (NLAIAGENT::IAgent *) child );

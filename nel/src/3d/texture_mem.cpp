@@ -1,7 +1,7 @@
 /** \file texture_mem.cpp
  * <File description>
  *
- * $Id: texture_mem.cpp,v 1.9 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_mem.cpp,v 1.10 2004/02/19 09:45:58 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,14 +71,17 @@ static NLMISC::CRGBA WhitePix(255, 255, 255, 255); // the texture datas ... :)
 ///===========================================================================
 ITexture *CTextureMem::Create1x1WhiteTex()
 {
-	std::auto_ptr<CTextureMem> tex(new CTextureMem((uint8 *) &WhitePix,
-												   sizeof(WhitePix),
-												   false, /* dont delete */
-												   false, /* not a file */
-												   1, 1)
-								  );
-	tex->setShareName("#WhitePix1x1");	
-	return tex.release();
+	static NLMISC::CSmartPtr<ITexture> tex  = NULL;
+	if (!tex)
+	{
+		tex = new CTextureMem((uint8 *) &WhitePix,
+							   sizeof(WhitePix),
+							   false, /* dont delete */
+							   false, /* not a file */
+							   1, 1);
+		static_cast<CTextureMem *>((ITexture *)tex)->setShareName("#WhitePix1x1");
+	}
+	return (ITexture *) tex;
 }
 
 ///===========================================================================

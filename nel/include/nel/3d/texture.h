@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.5 2000/11/14 14:55:17 lecroart Exp $
+ * $Id: texture.h,v 1.6 2000/11/17 15:21:03 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,8 +192,10 @@ class CTextureFont : public ITexture
 	CFontGenerator *_FontGen;
 public:
 
-	// Default constructor
-	CTextureFont(CFontDescriptor desc) 
+	/** Default constructor
+	 * 
+	 */	
+	CTextureFont(const CFontDescriptor& desc) 
 	{ 
 		Char = desc.C;
 		_Size = desc.Size;
@@ -201,6 +203,21 @@ public:
 		_CharHeight = 0;
 		_FontGen = desc.FontGen;
 	}
+
+	/** constructor
+	 * 
+	 */	
+	CTextureFont(CFontGenerator *fg, ucchar c, uint32 size) 
+	{ 
+		Char = c;
+		_Size = size;
+		_CharWidth = 0;
+		_CharHeight = 0;
+		_FontGen = fg;
+	}
+
+	uint32	getCharWidth() const {return _CharWidth;}
+	uint32	getCharHeight() const {return _CharHeight;}
 
 	/** return the descriptor of this letter
 	 * /return CFontDescriptor letter descriptor

@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.12 2000/11/13 14:30:47 lecroart Exp $
+ * $Id: common.h,v 1.13 2000/11/17 15:18:02 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,6 +115,26 @@ inline uint	getPowerOf2(uint v)
 	
 	return ret;
 }
+
+
+/// return true if the value is a power of 2, false else
+inline bool isPowerOf2(sint32 v)
+{
+	while(v)
+	{
+		if(v&1)
+		{
+			v>>=1;
+			if(v)
+				return false;
+		}
+		else
+			v>>=1;
+	}
+
+	return true;
+}
+
 
 }	// NLMISC
 

@@ -1,7 +1,7 @@
 /** \file event_listener.h
- * <File description>
+ * events listener
  *
- * $Id: event_listener.h,v 1.4 2000/11/10 13:28:44 corvazier Exp $
+ * $Id: event_listener.h,v 1.5 2000/11/17 15:18:08 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@ class CEvent;
 class CEventServer;
 
 /**
- * <Class description>
+ * Interface for event listener. A listener provides a callback.
  * \author Stephane Coutelas
  * \author Nevrax France
  * \date 2000
@@ -58,7 +58,7 @@ public:
 
 
 /**
- * <Class description>
+ * CEventListenerAsync
  * \author Stephane Coutelas
  * \author Nevrax France
  * \date 2000

@@ -1,7 +1,7 @@
 /** \file event_server.h
- * <File description>
+ * events server
  *
- * $Id: event_server.h,v 1.4 2000/11/13 11:25:35 corvazier Exp $
+ * $Id: event_server.h,v 1.5 2000/11/17 15:18:12 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,16 +60,12 @@ public:
 	/** 
 	 * add event to the list
 	 * \param event
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	void postEvent(CEvent * event);
 
 	/** 
 	 * get call every callbacks associated with event id
 	 * \param event
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	void pump();
 		
@@ -77,8 +73,6 @@ public:
 	 * Add a callback (associated with an id)
 	 * \param id of the CEvent class to hook
 	 * \param listener to use with this event
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	void addListener(CClassId id, IEventListener* listener );
 	
@@ -86,33 +80,26 @@ public:
 	 * Remove a callback
 	 * \param id of event's callback
 	 * \param listener to be removed
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	void removeListener(CClassId id, IEventListener* listener );
 
 	/** 
 	 * Add an Emitter to the server 
 	 * \param emitter
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	void addEmitter(IEventEmitter * emitter);
 	
 	/** 
 	 * Remove an Emitter from the server 
 	 * \param emitter
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	void removeEmitter(IEventEmitter * emitter);
+
 protected:
 	/** 
 	 * call every callbacks associated with event id
 	 * \param event
 	 * \return true if the pointer must be delete, false if it not. (post to another message queue...)
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	virtual bool pumpEvent(CEvent* event);
 };

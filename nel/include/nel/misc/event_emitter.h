@@ -1,7 +1,7 @@
 /** \file event_emitter.h
- * <File description>
+ * Event server
  *
- * $Id: event_emitter.h,v 1.5 2000/11/13 11:30:17 corvazier Exp $
+ * $Id: event_emitter.h,v 1.6 2000/11/17 15:18:05 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,8 +50,6 @@ public:
 	 * sends all events to server
 	 * (should call CEventServer method postEvent() ) 
 	 * \param server
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	virtual void submitEvents(CEventServer & server) = 0;
 		
@@ -61,9 +59,6 @@ public:
 /**
  * CEventEmitterWin32
  * CEventEmitter Win32 implementation
- * \author Stephane Coutelas
- * \author Nevrax France
- * \date 2000
  */
 class CEventEmitterWin32 : public IEventEmitter
 {

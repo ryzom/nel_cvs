@@ -1,6 +1,6 @@
 /** \file main.cpp
  *
- * $Id: main.cpp,v 1.3 2002/06/06 08:16:36 vizerie Exp $
+ * $Id: main.cpp,v 1.4 2002/06/06 08:21:23 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -205,7 +205,7 @@ CInstanceGroup* LoadInstanceGroup (const char* sFilename)
 }
 
 // ***************************************************************************
-bool SaveInstanceGroup (const char* sFilename, CInstanceGroup *pIG)
+void SaveInstanceGroup (const char* sFilename, CInstanceGroup *pIG)
 {
 	COFile file;
 
@@ -215,16 +215,15 @@ bool SaveInstanceGroup (const char* sFilename, CInstanceGroup *pIG)
 		{
 			pIG->serial (file);
 		}
-		catch (Exception &)
+		catch (Exception &e)
 		{
-			return false;
+			outString(string(e.what()));
 		}
 	}
 	else
 	{
-		return false;
+		outString(string("Couldn't create ") + sFilename);
 	}
-	return true;
 }
 
 /** Get the Z of the height map at the given position

@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.62 2002/03/07 15:39:08 berenguier Exp $
+ * $Id: zone.cpp,v 1.63 2002/05/15 14:36:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -903,6 +903,8 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 	if(Patchs.size()==0)
 	{
 		ClipResult= ClipOut;
+		// don't need to go below...
+		return;
 	}
 
 

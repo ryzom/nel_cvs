@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.39 2002/05/29 09:24:38 vizerie Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.40 2002/06/06 14:41:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,37 +28,12 @@
 #include "../nel_mesh_lib/export_lod.h"
 #include "../nel_mesh_lib/calc_lm.h"
 #include "../nel_patch_lib/nel_patch_mesh.h"
-#include <locale.h>
 
 using namespace NLMISC;
 
 #define NEL_OBJET_NAME_DATA 1970
 
 
-static std::string OldDecimalSeparatorLocale;
-static uint  DecimalSeparatorAsPoint = 0;
-
-static void setDecimalSeparatorAsPoint()
-{			
-	if (DecimalSeparatorAsPoint == 0)
-	{	
-		OldDecimalSeparatorLocale = ::setlocale(LC_NUMERIC, NULL);
-		const char *result = ::setlocale(LC_NUMERIC, "English");
-		nlassert(result);
-	}
-	++ DecimalSeparatorAsPoint;
-}
-
-static void restoreDecimalSeparator()
-{
-	nlassert(DecimalSeparatorAsPoint != 0);
-	if (DecimalSeparatorAsPoint == 1)
-	{	
-		const char *result = ::setlocale(LC_NUMERIC, OldDecimalSeparatorLocale.c_str());	
-		nlassert(result);
-	}
-	-- DecimalSeparatorAsPoint;
-}
 
 
 // ***************************************************************************
@@ -130,7 +105,8 @@ public:
 			SubDlg[i] = NULL;
 		for (i=0; i<VP_COUNT; i++)
 			SubVPDlg[i] = NULL;
-		InterfaceThreshold = 0.1f;
+		InterfaceThreshold = 0.1f;		
+		GetInterfaceNormalsFromSceneObjects = 0;
 	}
 
 	// Lod.
@@ -166,6 +142,7 @@ public:
 	std::string				InstanceName;
 	std::string				InstanceGroupName;
 	std::string				InterfaceFileName;
+	int					    GetInterfaceNormalsFromSceneObjects;
 	float					InterfaceThreshold;
 	int						DontAddToScene;	
 	int						DontExport;
@@ -1261,39 +1238,37 @@ void	updateVPWTStatic(HWND hwndDlg, uint type, uint depth, const CVPWindTreeAppD
 	// case 4: special code from -2 to 2 ...
 	}
 
-	setDecimalSeparatorAsPoint();
 	// update static according to type.
 	switch(type)
 	{
 	case 0:	
 		sliderValue= SendDlgItemMessage(hwndDlg, VPWTFreqSliderId[depth], TBM_GETPOS, 0, 0);
-		sprintf(stmp, "%.2f", scale * float(sliderValue)/nticks);
+		_stprintf(stmp, "%.2f", scale * float(sliderValue)/nticks);
 		SetWindowText( GetDlgItem(hwndDlg, VPWTFreqStaticId[depth]), stmp );
 		break;
 	case 1:	
 		sliderValue= SendDlgItemMessage(hwndDlg, VPWTFreqWDSliderId[depth], TBM_GETPOS, 0, 0);
-		sprintf(stmp, "%.2f", scale * float(sliderValue)/nticks);
+		_stprintf(stmp, "%.2f", scale * float(sliderValue)/nticks);
 		SetWindowText( GetDlgItem(hwndDlg, VPWTFreqWDStaticId[depth]), stmp );
 		break;
 	case 2:	
 		sliderValue= SendDlgItemMessage(hwndDlg, VPWTDistXYSliderId[depth], TBM_GETPOS, 0, 0);
-		sprintf(stmp, "%.2f", scale * float(sliderValue)/nticks);
+		_stprintf(stmp, "%.2f", scale * float(sliderValue)/nticks);
 		SetWindowText( GetDlgItem(hwndDlg, VPWTDistXYStaticId[depth]), stmp );
 		break;
 	case 3:	
 		sliderValue= SendDlgItemMessage(hwndDlg, VPWTDistZSliderId[depth], TBM_GETPOS, 0, 0);
-		sprintf(stmp, "%.2f", scale * float(sliderValue)/nticks);
+		_stprintf(stmp, "%.2f", scale * float(sliderValue)/nticks);
 		SetWindowText( GetDlgItem(hwndDlg, VPWTDistZStaticId[depth]), stmp );
 		break;
 	case 4:	
 		sliderValue= SendDlgItemMessage(hwndDlg, VPWTBiasSliderId[depth], TBM_GETPOS, 0, 0);
 		// expand to -2 to 2.
 		float	biasVal= 4 * float(sliderValue)/nticks - 2;
-		sprintf(stmp, "%.2f", biasVal);
+		_stprintf(stmp, "%.2f", biasVal);
 		SetWindowText( GetDlgItem(hwndDlg, VPWTBiasStaticId[depth]), stmp );
 		break;
 	}
-	restoreDecimalSeparator();
 }
 
 
@@ -1368,15 +1343,15 @@ int CALLBACK VPWindTreeCallback (
 			CVPWindTreeAppData		&vpwt= currentParam->VertexProgramWindTree;
 			int	nticks= CVPWindTreeAppData::NumTicks;
 
-			setDecimalSeparatorAsPoint();
+
 			// Init Global. editBox
 			char		stmp[256];
-			sprintf(stmp, "%.2f", vpwt.FreqScale);
+			_stprintf(stmp, "%.2f", vpwt.FreqScale);
 			SetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_FREQ_SCALE), stmp );
-			sprintf(stmp, "%.2f", vpwt.DistScale);
+			_stprintf(stmp, "%.2f", vpwt.DistScale);
 			SetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_DIST_SCALE), stmp );
 			SendDlgItemMessage(hwndDlg, IDC_CHECK_VP_SPECLIGHT, BM_SETCHECK, vpwt.SpecularLighting, 0);
-			restoreDecimalSeparator();
+
 
 			// Init sliders for each level.
 			nlassert(CVPWindTreeAppData::HrcDepth==3);
@@ -1432,12 +1407,12 @@ int CALLBACK VPWindTreeCallback (
 					{
 						// Read FreqScale
 						GetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_FREQ_SCALE), stmp, 256 );
-						val= float(atof(stmp));
+						val= toFloatMax(stmp);
 						if(val>0)
 							vpwt.FreqScale= val;
 						// Read DistScale
 						GetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_DIST_SCALE), stmp, 256 );
-						val= float(atof(stmp));
+						val= toFloatMax(stmp);
 						if(val>0)
 							vpwt.DistScale= val;
 						// Read SpecularLighting.
@@ -1490,15 +1465,14 @@ int CALLBACK VPWindTreeCallback (
 
 			// EditBox change: ...
 			if( HIWORD(wParam) == EN_KILLFOCUS || EnChangeReturn)
-			{
-				setDecimalSeparatorAsPoint();
+			{				
 				switch (LOWORD(wParam)) 
 				{					
 					case IDC_EDIT_VPWT_FREQ_SCALE:
 					{
 						// Read FreqScale
 						GetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_FREQ_SCALE), stmp, 256 );
-						val= float(atof(stmp));
+						val= toFloatMax(stmp);
 						if(val>0)
 						{
 							// update
@@ -1511,7 +1485,7 @@ int CALLBACK VPWindTreeCallback (
 							}
 						}
 						// Update Scale Edit text.
-						sprintf(stmp, "%.2f", vpwt.FreqScale);
+						_stprintf(stmp, "%.2f", vpwt.FreqScale);
 						SetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_FREQ_SCALE), stmp );
 					}
 					break;
@@ -1519,7 +1493,7 @@ int CALLBACK VPWindTreeCallback (
 					{
 						// Read DistScale
 						GetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_DIST_SCALE), stmp, 256 );
-						val= float(atof(stmp));
+						val= toFloatMax(stmp);
 						if(val>0)
 						{
 							// update
@@ -1532,12 +1506,11 @@ int CALLBACK VPWindTreeCallback (
 							}
 						}
 						// Update Scale Edit text.
-						sprintf(stmp, "%.2f", vpwt.DistScale);
+						_stprintf(stmp, "%.2f", vpwt.DistScale);
 						SetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_DIST_SCALE), stmp );
 					}
 					break;
-				}
-				restoreDecimalSeparator();
+				}				
 			}
 		}
 		break;
@@ -1599,8 +1572,7 @@ int CALLBACK MiscDialogCallback (
 	switch (uMsg) 
 	{
 		case WM_INITDIALOG:
-		{ 
-			setDecimalSeparatorAsPoint();
+		{ 			
 			// Param pointers
 			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -1621,17 +1593,16 @@ int CALLBACK MiscDialogCallback (
 				SetWindowText (GetDlgItem (hwndDlg, IDC_RADIAL_NORMAL_29+smoothGroup), currentParam->RadialNormals[smoothGroup].c_str());
 
 			// Mesh interfaces
-			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_FILE), currentParam->InterfaceFileName.c_str());
-			
-
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_FILE), currentParam->InterfaceFileName.c_str());			
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_THRESHOLD), 
-							currentParam->InterfaceThreshold != -1.f ? toString(currentParam->InterfaceThreshold).c_str()
+							currentParam->InterfaceThreshold != -1.f ? toStringMax(currentParam->InterfaceThreshold).c_str()
 																	 : ""
 						  );
+			SendMessage(GetDlgItem(hwndDlg, IDC_GET_INTERFACE_NORMAL_FROM_SCENE_OBJECTS), BM_SETCHECK, currentParam->GetInterfaceNormalsFromSceneObjects, 0);
+			
 			// Skeleton Scale
 			SendMessage( GetDlgItem(hwndDlg, IDC_EXPORT_BONE_SCALE), BM_SETCHECK, currentParam->ExportBoneScale, 0);
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_BONE_SCALE_NAME_EXT), currentParam->ExportBoneScaleNameExt.c_str());
-			restoreDecimalSeparator();
 		}
 		break;
 
@@ -1673,15 +1644,13 @@ int CALLBACK MiscDialogCallback (
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_FILE), tmp, 512);
 							currentParam->InterfaceFileName=tmp;
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_THRESHOLD), tmp, 512);
-							// hack to have '.' as a decimal value separator
+							if (strlen(tmp) != 0)
+								currentParam->InterfaceThreshold = toFloatMax(tmp);							
+							currentParam->GetInterfaceNormalsFromSceneObjects = SendMessage (GetDlgItem (hwndDlg, IDC_GET_INTERFACE_NORMAL_FROM_SCENE_OBJECTS), BM_GETCHECK, 0, 0);
+
 							
-							float threshold;
-							setDecimalSeparatorAsPoint();
-							if (::sscanf(tmp, "%g", &threshold) == 1)
-							{
-								currentParam->InterfaceThreshold = threshold;
-							}
-							restoreDecimalSeparator();
+							
+							
 							// Skeleton Scale
 							currentParam->ExportBoneScale= SendMessage( GetDlgItem(hwndDlg, IDC_EXPORT_BONE_SCALE), BM_GETCHECK, 0, 0);
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_BONE_SCALE_NAME_EXT), tmp, 512);
@@ -2249,7 +2218,6 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 
 	if (nNumSelNode)
 	{
-		setDecimalSeparatorAsPoint();
 		// Get the selected node
 		INode* node=*listNode.begin();
 
@@ -2264,24 +2232,24 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.CoarseMesh=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_COARSE_MESH, BST_UNCHECKED);
 		param.DynamicMesh=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DYNAMIC_MESH, BST_UNCHECKED);
 		float floatTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
-		param.DistMax=toString (floatTmp);
+		param.DistMax=toStringMax (floatTmp);
 		floatTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT);
-		param.BlendLength=toString (floatTmp);
+		param.BlendLength=toStringMax (floatTmp);
 		param.MRM=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_MRM, BST_UNCHECKED);
 		param.SkinReduction=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_SKIN_REDUCTION, NEL3D_APPDATA_LOD_SKIN_REDUCTION_DEFAULT);
 
 		int intTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_NB_LOD, NEL3D_APPDATA_LOD_NB_LOD_DEFAULT);
-		param.NbLod=toString (intTmp);
+		param.NbLod=toStringMax (intTmp);
 		intTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DIVISOR, NEL3D_APPDATA_LOD_DIVISOR_DEFAULT);
-		param.Divisor=toString(intTmp);
+		param.Divisor=toStringMax(intTmp);
 		floatTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_FINEST, NEL3D_APPDATA_LOD_DISTANCE_FINEST_DEFAULT);
-		param.DistanceFinest=toString(floatTmp);
+		param.DistanceFinest=toStringMax(floatTmp);
 		floatTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE_DEFAULT);
-		param.DistanceMiddle=toString(floatTmp);
+		param.DistanceMiddle=toStringMax(floatTmp);
 		floatTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, NEL3D_APPDATA_LOD_DISTANCE_COARSEST_DEFAULT);
-		param.DistanceCoarsest=toString(floatTmp);
+		param.DistanceCoarsest=toStringMax(floatTmp);
 		floatTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_BONE_LOD_DISTANCE, 0.f);
-		param.BoneLodDistance=toString(floatTmp);
+		param.BoneLodDistance=toStringMax(floatTmp);
 
 		// Lod names
 		int nameCount=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_NAME_COUNT, 0);
@@ -2304,13 +2272,14 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.InstanceGroupName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_IGNAME, "");
 		param.InterfaceFileName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INTERFACE_FILE, "");
 		param.InterfaceThreshold=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INTERFACE_THRESHOLD, 0.1f);
+		param.GetInterfaceNormalsFromSceneObjects = CExportNel::getScriptAppData (node, NEL3D_APPDATA_GET_INTERFACE_NORMAL_FROM_SCENE_OBJECTS, 0);
 		param.DontExport=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED);
 		param.ExportNoteTrack=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED);
 		param.ExportAnimatedMaterials=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, BST_UNCHECKED);
 		param.FloatingObject=CExportNel::getScriptAppData (node, NEL3D_APPDATA_FLOATING_OBJECT, BST_UNCHECKED);
 		param.LumelSizeMul=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, "1.0");
-		param.SoftShadowRadius=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toString(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT));
-		param.SoftShadowConeLength=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, toString(NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT));
+		param.SoftShadowRadius=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toStringMax(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT));
+		param.SoftShadowConeLength=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, toStringMax(NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT));
 
 		// Radial normals
 		for (uint smoothGroup=0; smoothGroup<NEL3D_RADIAL_NORMAL_COUNT; smoothGroup++)
@@ -2323,18 +2292,18 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.VegetableAlphaBlendOffLighted = CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_LIGHTED, BST_UNCHECKED);
 		param.VegetableAlphaBlendOffDoubleSided = CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_DOUBLE_SIDED, BST_UNCHECKED);
 		param.VegetableBendCenter = CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_CENTER, 0);
-		param.VegetableBendFactor = toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, NEL3D_APPDATA_BEND_FACTOR_DEFAULT));
+		param.VegetableBendFactor = toStringMax (CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, NEL3D_APPDATA_BEND_FACTOR_DEFAULT));
 		param.VegetableForceBestSidedLighting= CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_FORCE_BEST_SIDED_LIGHTING, BST_UNCHECKED);
 
 		param.ExportLightMapName = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, NEL3D_LM_GROUPNAME_DEFAULT);
 
 		// Ligoscape
 		param.LigoSymmetry = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_SYMMETRY, BST_UNCHECKED);
-		param.LigoRotate = toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, 0));
+		param.LigoRotate = toStringMax (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, 0));
 
 		// Ligoscape
 		param.SWT = CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT, BST_UNCHECKED);
-		param.SWTWeight = toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT_WEIGHT, 0.f));
+		param.SWTWeight = toStringMax (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT_WEIGHT, 0.f));
 
 		// RealTimeLigt.
 		param.ExportRealTimeLight= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_CHECKED);
@@ -2396,26 +2365,26 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.CoarseMesh=BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DYNAMIC_MESH, BST_UNCHECKED)!=param.DynamicMesh)
 				param.DynamicMesh=BST_INDETERMINATE;
-			if (param.DistMax!=toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT)))
+			if (param.DistMax!=toStringMax (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT)))
 				param.DistMax="";
-			if (param.BlendLength!=toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT)))
+			if (param.BlendLength!=toStringMax (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT)))
 				param.BlendLength="";
 
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_MRM, BST_UNCHECKED)!=param.MRM)
 				param.MRM=BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_SKIN_REDUCTION, NEL3D_APPDATA_LOD_SKIN_REDUCTION_DEFAULT)!=param.SkinReduction)
 				param.SkinReduction=-1;
-			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_NB_LOD, NEL3D_APPDATA_LOD_NB_LOD_DEFAULT))!=param.NbLod)
+			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_NB_LOD, NEL3D_APPDATA_LOD_NB_LOD_DEFAULT))!=param.NbLod)
 				param.NbLod="";
-			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DIVISOR, NEL3D_APPDATA_LOD_DIVISOR_DEFAULT))!=param.Divisor)
+			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DIVISOR, NEL3D_APPDATA_LOD_DIVISOR_DEFAULT))!=param.Divisor)
 				param.Divisor="";
-			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_FINEST, NEL3D_APPDATA_LOD_DISTANCE_FINEST_DEFAULT))!=param.DistanceFinest)
+			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_FINEST, NEL3D_APPDATA_LOD_DISTANCE_FINEST_DEFAULT))!=param.DistanceFinest)
 				param.DistanceFinest="";
-			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE_DEFAULT))!=param.DistanceMiddle)
+			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE_DEFAULT))!=param.DistanceMiddle)
 				param.DistanceMiddle="";
-			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, NEL3D_APPDATA_LOD_DISTANCE_COARSEST_DEFAULT))!=param.DistanceCoarsest)
+			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, NEL3D_APPDATA_LOD_DISTANCE_COARSEST_DEFAULT))!=param.DistanceCoarsest)
 				param.DistanceCoarsest="";
-			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_BONE_LOD_DISTANCE, 0.f))!=param.BoneLodDistance)
+			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_BONE_LOD_DISTANCE, 0.f))!=param.BoneLodDistance)
 				param.BoneLodDistance="";
 
 
@@ -2436,6 +2405,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.InterfaceFileName = "";
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INTERFACE_THRESHOLD, 0.1f)!=param.InterfaceThreshold)
 				param.InterfaceThreshold = -1;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_GET_INTERFACE_NORMAL_FROM_SCENE_OBJECTS, 0)!=param.GetInterfaceNormalsFromSceneObjects)
+				param.GetInterfaceNormalsFromSceneObjects = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED)!=param.DontExport)
 				param.DontExport= BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED)!=param.ExportNoteTrack)
@@ -2465,7 +2436,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.VegetableAlphaBlendOffDoubleSided = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_CENTER, BST_UNCHECKED)!=param.VegetableBendCenter)
 				param.VegetableBendCenter = -1;
-			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, NEL3D_APPDATA_BEND_FACTOR_DEFAULT))!=param.VegetableBendFactor)
+			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, NEL3D_APPDATA_BEND_FACTOR_DEFAULT))!=param.VegetableBendFactor)
 				param.VegetableBendFactor = "";
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_FORCE_BEST_SIDED_LIGHTING, BST_UNCHECKED)!=param.VegetableForceBestSidedLighting)
 				param.VegetableForceBestSidedLighting = BST_INDETERMINATE;
@@ -2473,9 +2444,9 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			// Lightmap
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, "1.0")!=param.LumelSizeMul)
 				param.LumelSizeMul = "";
-			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toString(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT))!=param.SoftShadowRadius)
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toStringMax(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT))!=param.SoftShadowRadius)
 				param.SoftShadowRadius = "";
-			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, toString(NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT))!=param.SoftShadowConeLength)
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, toStringMax(NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT))!=param.SoftShadowConeLength)
 				param.SoftShadowConeLength = "";
 
 			// Get name count for this node
@@ -2502,13 +2473,13 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			// Ligoscape
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_SYMMETRY, BST_UNCHECKED) != param.LigoSymmetry)
 				param.LigoSymmetry = BST_INDETERMINATE;
-			if (toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, 0)) != param.LigoRotate)
+			if (toStringMax (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, 0)) != param.LigoRotate)
 				param.LigoRotate = "";
 
 			// SWT
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT, BST_UNCHECKED) != param.SWT)
 				param.SWT = BST_INDETERMINATE;
-			if (toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT_WEIGHT, 0.f)) != param.SWTWeight)
+			if (toStringMax (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT_WEIGHT, 0.f)) != param.SWTWeight)
 				param.SWTWeight = "";
 
 			// RealTimeLight
@@ -2603,7 +2574,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, param.DistanceCoarsest);
 				if (param.BoneLodDistance!="")
 				{
-					float	f= (float)atof(param.BoneLodDistance.c_str());
+					float	f= toFloatMax(param.BoneLodDistance.c_str());
 					f= std::max(0.f, f);
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_BONE_LOD_DISTANCE, f);
 				}
@@ -2624,7 +2595,11 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				if (param.InterfaceFileName != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INTERFACE_FILE, param.InterfaceFileName);
 				if (param.InterfaceThreshold != -1)
-					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INTERFACE_THRESHOLD, param.InterfaceThreshold);								
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INTERFACE_THRESHOLD, param.InterfaceThreshold);
+				if (param.GetInterfaceNormalsFromSceneObjects != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_GET_INTERFACE_NORMAL_FROM_SCENE_OBJECTS, param.GetInterfaceNormalsFromSceneObjects);
+		
+
 
 				if (param.DontExport != BST_INDETERMINATE)
 				{
@@ -2756,7 +2731,6 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				ite++;
 			}
 		}
-		restoreDecimalSeparator();
 	}
 }
 

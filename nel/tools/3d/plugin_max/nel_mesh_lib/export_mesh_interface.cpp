@@ -1,6 +1,6 @@
 /** \file export_mesh_interface.cpp
  *
- * $Id: export_mesh_interface.cpp,v 1.2 2002/05/07 09:03:50 vizerie Exp $
+ * $Id: export_mesh_interface.cpp,v 1.3 2002/06/06 14:44:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/misc/line.h"
 #include "nel/misc/polygon.h"
 #include "nel/misc/path.h"
+#include "3d/quad_grid.h"
 #include "export_lod.h"
 
 
@@ -103,6 +104,18 @@ struct CMeshInterface
 		return false;
 	}
 
+	// build a bbox from this interface
+	void	buildBBox(NLMISC::CAABBox &dest)
+	{
+		nlassert(!Verts.empty());
+		dest.setCenter(Verts[0].Pos);
+		dest.setHalfSize(NLMISC::CVector::Null);
+		for(uint k = 1; k < Verts.size(); ++k)
+		{
+			dest.extend(Verts[k].Pos);
+		}
+	}
+
 	// build this Interface from a max mesh (usually a polygon converted to a mesh)
 	bool buildFromMaxMesh(INode &node, TimeValue tvTime)
 	{
@@ -125,8 +138,9 @@ struct CMeshInterface
 				deleteIt = true;
 			Mesh &mesh = tri->GetMesh();
 			//
-			CPolygon poly;			
-			CExportNel::maxPolygonMeshToOrderedPoly(mesh, poly.Vertices);
+			CPolygon poly;	
+			CVector polyNormal;
+			CExportNel::maxPolygonMeshToOrderedPoly(mesh, poly.Vertices, &polyNormal);
 			// build a local to world matrix
 			Matrix3 localToWorld = node.GetObjectTM(tvTime);
 			CMatrix nelMatLocalToWorld;
@@ -143,10 +157,9 @@ struct CMeshInterface
 			// compute normals
 			for(k = 0; k < numVerts; ++k)
 			{
-				CLine line(Verts[k == 0 ? (numVerts - 1) : k - 1].Pos, Verts[(k == numVerts - 1) ? 0 : k + 1].Pos);
-				CVector proj;
-				line.project(Verts[k].Pos, proj);
-				Verts[k].Normal = (Verts[k].Pos - proj).normed();
+				CVector prevNorm = (poly.Vertices[k] - poly.Vertices[(k - 1) % numVerts]) ^ polyNormal;
+				CVector nextNorm = (poly.Vertices[(k + 1) % numVerts] - poly.Vertices[k]) ^ polyNormal;
+				Verts[k].Normal = (prevNorm + nextNorm).normed();				
 			}
 			//
 			if (deleteIt)
@@ -182,6 +195,195 @@ static void ApplyMeshInterfaces(std::vector<CMeshInterface> &interfaces, CMesh::
 									 );			
 			}
 		}
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// a face of a node, used in a quad tree
+struct CNodeFace
+{
+	CVector P[3];			// vertices;
+	uint32  SmoothGroup;    // smoothgroup;
+	void	buildBBox(NLMISC::CAABBox &dest)
+	{
+		dest.setCenter(P[0]);
+		dest.setHalfSize(NLMISC::CVector::Null);
+		dest.extend(P[1]);
+		dest.extend(P[2]);
+	}
+	CVector getNormal() const
+	{
+		return ((P[1] - P[0]) ^ (P[2] - P[1])).normed();
+	}
+
+	float getArea() const
+	{
+		return 0.5f * ((P[1] - P[0]) ^ (P[2] - P[0])).norm();
+	}
+};
+
+typedef NL3D::CQuadGrid<CNodeFace> TNodeFaceQG;
+
+/** Append faces from a node tree to the given quadgrid
+  */ 
+static void AddNodeToQuadGrid(const NLMISC::CAABBox &delimiter, TNodeFaceQG &destQuadGrid, INode &node, TimeValue time)
+{	 
+	CAABBox nodeBBox;
+	if (CExportNel::buildMeshAABBox(node, nodeBBox, time))
+	{
+		if (delimiter.intersect(nodeBBox))
+		{
+			// add this node tris
+			Object *obj = node.EvalWorldState(time).obj;		
+			if (obj)
+			{			
+				if (obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0)))
+				{				
+					 // Get a triobject from the node
+					TriObject *tri = (TriObject*)obj->ConvertToType(time, Class_ID(TRIOBJ_CLASS_ID, 0));
+					// Note that the TriObject should only be deleted
+					// if the pointer to it is not equal to the object
+					// pointer that called ConvertToType()
+					bool deleteIt = false;
+					if (obj != tri) 
+						deleteIt = true;
+					Mesh &mesh = tri->GetMesh();
+
+					Matrix3   nodeMat = node.GetObjectTM(time);
+					CNodeFace nodeFace;
+
+					NLMISC::CAABBox faceBBox;
+
+					for(sint l = 0; l < mesh.getNumFaces(); ++l)
+					{
+						for(uint m = 0; m < 3; ++m)
+						{
+							Point3 pos = nodeMat * mesh.getVert(mesh.faces[l].v[m]);
+							CExportNel::convertVector(nodeFace.P[m], pos);
+						}
+						// test if we must insert in quadgrid
+						nodeFace.buildBBox(faceBBox);
+						if (faceBBox.intersect(delimiter))
+						{
+							nodeFace.SmoothGroup = mesh.faces[l].smGroup;
+							destQuadGrid.insert(faceBBox.getMin(), faceBBox.getMax(), nodeFace);
+						}
+						
+					}					
+					//
+					if (deleteIt)
+					{
+						delete tri;
+					}
+					return;
+				}
+			}
+		}
+	}
+
+	// deals with sons
+	for(sint k = 0; k < node.NumberOfChildren(); ++k)
+	{
+		::AddNodeToQuadGrid(delimiter, destQuadGrid, *node.GetChildNode(k), time);
+	}
+}
+
+
+/** Build a quadgrid of all the faces in a node and its sons that are inside the given BBox    
+  * The quad grid is arbitrarily oriented in the X-Z plane (has this will mainly be used with characters)
+  */ 
+static void BuildNodeFacesQuadGrid(const NLMISC::CAABBox &delimiter, TNodeFaceQG &destQuadGrid, INode &baseNode, TimeValue time)
+{	 
+	const uint numQuads = 16;
+	NLMISC::CMatrix	qgBasis;	
+	qgBasis.identity();
+	qgBasis.setRot(NLMISC::CVector::I, NLMISC::CVector::K, - NLMISC::CVector::J, true);
+	destQuadGrid.changeBase (qgBasis);
+	NLMISC::CVector halfSize = delimiter.getHalfSize();
+	float width = 2.f * NLMISC::maxof(halfSize.x, halfSize.y, halfSize.z);
+	if (width == 0.f) width = 0.1f;
+	destQuadGrid.create(numQuads, width / numQuads);
+	::AddNodeToQuadGrid(delimiter, destQuadGrid, baseNode, time);
+}
+
+
+/// Build a normal from a list of node faces. It is assumes that all faces share at least one smoothing group
+static void BuildNormalFromNodeFaces(const std::vector<const CNodeFace *> &faces, NLMISC::CVector &dest)
+{
+	nlassert(!faces.empty());
+	dest = CVector::Null;
+	for(uint k = 0; k < faces.size(); ++k)
+	{
+		dest += faces[k]->getArea() * faces[k]->getNormal();
+	}	
+	dest.normalize();
+}
+ 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static void ApplyMeshInterfacesUsingSceneNormals(INode &sceneBaseNode, std::vector<CMeshInterface> &interfaces, CMesh::CMeshBuild &mbuild, const NLMISC::CMatrix &toWorldMat, float threshold, TimeValue time)
+{
+	NLMISC::CMatrix toWorldMatInv = toWorldMat.inverted();
+	std::vector<const CNodeFace *> candidateFaces;
+	TNodeFaceQG sceneQG;
+    // for each interface
+	for(uint k = 0; k < interfaces.size(); ++k)
+	{
+		NLMISC::CAABBox iBBox;
+		interfaces[k].buildBBox(iBBox);
+		// extend bbox from threshold
+		iBBox.extend(iBBox.getMax() + NLMISC::CVector(threshold, threshold, threshold));
+		sceneQG.clear();
+		::BuildNodeFacesQuadGrid(iBBox, sceneQG, sceneBaseNode, time);
+
+		// test each corner of the meshbuild faces
+		for(uint l = 0; l < mbuild.Faces.size(); ++l)
+		{
+			for(uint m = 0; m < 3; ++m)
+			{
+				candidateFaces.clear();
+				const CVector &vert = toWorldMat * mbuild.Vertices[mbuild.Faces[l].Corner[m].Vertex];
+				if (interfaces[k].canWeld(vert, threshold))
+				{
+					// find all candidate faces
+					sceneQG.select(vert - NLMISC::CVector(threshold, threshold, threshold),
+								   vert + NLMISC::CVector(threshold, threshold, threshold)
+								  );
+					TNodeFaceQG::CIterator faceIt = sceneQG.begin();
+					while (faceIt != sceneQG.end())
+					{
+						uint32 sg = (*faceIt).SmoothGroup;
+						// the face must have at least a smoothing group in common with this one
+						if (((*faceIt).SmoothGroup & mbuild.Faces[l].SmoothGroup) != 0)
+						{						
+							// test each vertex to see if it can weld with the current corner
+							for(uint n = 0; n < 3; ++n)
+							{
+								if (((*faceIt).P[n] - vert).norm() <= threshold)
+								{
+									candidateFaces.push_back(&(*faceIt));
+									break;
+								}
+							}							
+						}
+						++faceIt;
+					}
+					if (!candidateFaces.empty()) 
+					{
+						::BuildNormalFromNodeFaces(candidateFaces, mbuild.Faces[l].Corner[m].Normal);
+						 mbuild.Faces[l].Corner[m].Normal = toWorldMatInv.mulVector(mbuild.Faces[l].Corner[m].Normal);						
+					}
+				}
+			}			
+		}
+	
+		
 	}
 }
 
@@ -321,6 +523,7 @@ static bool BuildMeshInterfaces(const char *cMaxFileName, std::vector<CMeshInter
 
 void CExportNel::applyInterfaceToMeshBuild(INode &node, CMesh::CMeshBuild &mbuild, const NLMISC::CMatrix &toWorldMat, TimeValue time)
 {
+	nldebug("Applying interface on : %s", node.GetName());
 	std::string interfaceFile = CExportNel::getScriptAppData(&node, NEL3D_APPDATA_INTERFACE_FILE, "");
 	if (interfaceFile.empty()) return;
 
@@ -338,12 +541,20 @@ void CExportNel::applyInterfaceToMeshBuild(INode &node, CMesh::CMeshBuild &mbuil
 	{
 		return;
 	}
-	
-	
+
+	bool useSceneNodeNormals = (CExportNel::getScriptAppData(&node, NEL3D_APPDATA_GET_INTERFACE_NORMAL_FROM_SCENE_OBJECTS, 0) != 0);
+		
 	// process the mesh build	
-	::ApplyMeshInterfaces(meshInterface, mbuild, toWorldMat, threshold);
-	
+	if (!useSceneNodeNormals)
+	{	
+		::ApplyMeshInterfaces(meshInterface, mbuild, toWorldMat, threshold);
+	}
+	else
+	{
+		::ApplyMeshInterfacesUsingSceneNormals(*CExportNel::getRootNode(), meshInterface, mbuild, toWorldMat, threshold, time);
+	}	
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -266,7 +266,7 @@ BEGIN
     EDITTEXT        IDC_RADIAL_NORMAL_32,200,90,57,14,ES_AUTOHSCROLL
     LTEXT           "For the 4 last smoothing group, choose the node you want to use the position to compute radial normals from it.",
                     IDC_STATIC,140,15,120,25
-    GROUPBOX        "Mesh interfaces",IDC_STATIC,134,110,219,55
+    GROUPBOX        "Mesh interfaces",IDC_STATIC,134,110,219,71
     LTEXT           "Interface .max file",IDC_STATIC,141,120,61,15,
                     SS_CENTERIMAGE
     EDITTEXT        IDC_EDIT_INTERFACE_FILE,221,120,110,14,ES_AUTOHSCROLL
@@ -281,6 +281,9 @@ BEGIN
                     13,SS_CENTERIMAGE
     EDITTEXT        IDC_EXPORT_BONE_SCALE_NAME_EXT,10,190,75,14,
                     ES_AUTOHSCROLL
+    CONTROL         "Get interface normals from scene objects",
+                    IDC_GET_INTERFACE_NORMAL_FROM_SCENE_OBJECTS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,142,162,145,15
 END
 
 IDD_VEGETABLE DIALOG DISCARDABLE  0, 0, 360, 200
@@ -481,7 +484,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,116
+ FILEVERSION 1,0,0,117
  PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -499,7 +502,7 @@ BEGIN
         BEGIN
             VALUE "Comments", "TECH: \0"
             VALUE "CompanyName", "\0"
-            VALUE "FileVersion", "1, 0, 0, 116\0"
+            VALUE "FileVersion", "1, 0, 0, 117\0"
             VALUE "InternalName", "CNelExport\0"
             VALUE "LegalCopyright", "\0"
             VALUE "LegalTrademarks", "\0"

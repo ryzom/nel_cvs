@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.71 2004/03/30 14:36:57 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.72 2004/04/01 09:24:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1613,8 +1613,8 @@ uint CDriverGL::getTextureHandle(const ITexture &tex)
 	Under opengl, "render to texture" uses the frame buffer. The scene is rendered into the current frame buffer and the result
 	is copied into the texture.
 
-	setRenderTarget (tex) does nothing but backup the framebuffer area used and updates the viewport and the frustum.
-	setRenderTarget (NULL) copies the modified framebuffer area into "tex" and then, updates the viewport and the frustum.
+	setRenderTarget (tex) does nothing but backup the framebuffer area used and updates the viewport and scissor
+	setRenderTarget (NULL) copies the modified framebuffer area into "tex" and then, updates the viewport and scissor
  */
 
 bool CDriverGL::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, uint32 mipmapLevel, uint32 cubeFace)
@@ -1644,6 +1644,9 @@ bool CDriverGL::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width
 
 	// Update the viewport
 	setupViewport (_CurrViewport);		
+
+	// Update the scissor
+	setupScissor (_CurrScissor);		
 
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.162 2004/03/30 14:36:57 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.163 2004/04/01 09:24:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,6 +71,7 @@
 #include "3d/texture_cube.h"
 #include "3d/vertex_program_parse.h"
 #include "nel/3d/viewport.h"
+#include "nel/3d/scissor.h"
 #include "nel/misc/time_nl.h"
 
 
@@ -629,8 +630,9 @@ private:
 	float					_FogEnd, _FogStart;
 	GLfloat					_CurrentFogColor[4];
 
-	// current viewport
+	// current viewport and scissor
 	CViewport				_CurrViewport;
+	CScissor				_CurrScissor;
 
 
 	// Num lights return by GL_MAX_LIGHTS

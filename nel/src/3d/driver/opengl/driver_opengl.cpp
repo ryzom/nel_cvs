@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.207 2004/03/29 11:34:45 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.208 2004/04/01 09:24:49 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1088,6 +1088,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	glDisable(GL_NORMALIZE);
 	glDisable(GL_COLOR_SUM_EXT);
 	_CurrViewport.init(0.f, 0.f, 1.f, 1.f);
+	_CurrScissor.initFullScreen();
 	_CurrentGlNormalize= false;
 	_ForceNormalize= false;
 	// Setup defaults for blend, lighting ...
@@ -1511,19 +1512,8 @@ bool CDriverGL::isTextureExist(const ITexture&tex)
 
 bool CDriverGL::clear2D(CRGBA rgba)
 {
-	// A texture is setuped ?
-	int scissor[4];
-	if (_TextureTarget)
-	{
-		glGetIntegerv (GL_SCISSOR_BOX, scissor);
-		glScissor(0, 0, _TextureTargetWidth, _TextureTargetHeight);
-	}
-
 	glClearColor((float)rgba.R/255.0f,(float)rgba.G/255.0f,(float)rgba.B/255.0f,(float)rgba.A/255.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-
-	if (_TextureTarget)
-		glScissor(scissor[0], scissor[1], scissor[2], scissor[3]);
 
 	return true;
 }
@@ -1532,20 +1522,9 @@ bool CDriverGL::clear2D(CRGBA rgba)
 
 bool CDriverGL::clearZBuffer(float zval)
 {
-	// A texture is setuped ?
-	int scissor[4];
-	if (_TextureTarget)
-	{
-		glGetIntegerv (GL_SCISSOR_BOX, scissor);
-		glScissor(0, 0, _TextureTargetWidth, _TextureTargetHeight);
-	}
-
 	glClearDepth(zval);
 	_DriverGLStates.enableZWrite(true);
 	glClear(GL_DEPTH_BUFFER_BIT);
-
-	if (_TextureTarget)
-		glScissor(scissor[0], scissor[1], scissor[2], scissor[3]);
 
 	return true;
 }
@@ -1909,48 +1888,71 @@ void CDriverGL::getViewport(CViewport &viewport)
 // --------------------------------------------------
 void	CDriverGL::setupScissor (const class CScissor& scissor)
 {
-	// Get viewport
+#ifdef NL_OS_WINDOWS
+	if (_hWnd == NULL) return;
+	
+	// Setup gl viewport
+	int clientWidth = _WindowWidth;
+	int clientHeight = _WindowHeight;
+	
+#else // NL_OS_WINDOWS
+	
+	XWindowAttributes win_attributes;
+	if (!XGetWindowAttributes(dpy, win, &win_attributes))
+		throw EBadDisplay("Can't get window attributes.");
+	
+	// Setup gl viewport
+	int clientWidth=win_attributes.width;
+	int clientHeight=win_attributes.height;
+	
+#endif // NL_OS_WINDOWS
+	
+	// Backup the scissor
+	_CurrScissor= scissor;
+	
+	// Get scissor
 	float x= scissor.X;
+	float y= scissor.Y;
 	float width= scissor.Width;
 	float height= scissor.Height;
 
-	if(x==0 && x==0 && width==1 && height==1)
+	// Render to texture : adjuste the scissor
+	if (_TextureTarget)
+	{
+		float factorX = (float)_TextureTarget->getWidth() / (float)clientWidth;
+		float factorY = (float)_TextureTarget->getHeight() / (float)clientHeight;
+		x *= factorX;
+		y *= factorY;
+		width *= factorX;
+		height *= factorY;
+	}
+	
+	// enable or disable Scissor, but AFTER textureTarget adjust
+	if(x==0 && x==0 && width>=1 && height>=1)
 	{
 		glDisable(GL_SCISSOR_TEST);
 	}
 	else
 	{
-#ifdef NL_OS_WINDOWS
+		// Setup gl scissor
+		int ix0=(int)floor((float)clientWidth * x + 0.5f);
+		clamp (ix0, 0, clientWidth);
+		int iy0=(int)floor((float)clientHeight* y + 0.5f);
+		clamp (iy0, 0, clientHeight);
 
-		float y= scissor.Y;
-
-		if (_hWnd)
-		{
-			// Get window rect
-			int clientWidth = _WindowWidth;
-			int clientHeight = _WindowHeight;
-
-			// Setup gl scissor
-			int ix0=(int)floor((float)clientWidth * x + 0.5f);
-			clamp (ix0, 0, clientWidth);
-			int iy0=(int)floor((float)clientHeight* y + 0.5f);
-			clamp (iy0, 0, clientHeight);
-
-			int ix1=(int)floor((float)clientWidth * (x+width) + 0.5f );
-			clamp (ix1, 0, clientWidth);
-			int iy1=(int)floor((float)clientHeight* (y+height) + 0.5f );
-			clamp (iy1, 0, clientHeight);
+		int ix1=(int)floor((float)clientWidth * (x+width) + 0.5f );
+		clamp (ix1, 0, clientWidth);
+		int iy1=(int)floor((float)clientHeight* (y+height) + 0.5f );
+		clamp (iy1, 0, clientHeight);
 
 
-			int iwidth= ix1 - ix0;
-			clamp (iwidth, 0, clientWidth);
-			int iheight= iy1 - iy0;
-			clamp (iheight, 0, clientHeight);
+		int iwidth= ix1 - ix0;
+		clamp (iwidth, 0, clientWidth);
+		int iheight= iy1 - iy0;
+		clamp (iheight, 0, clientHeight);
 
-			glScissor (ix0, iy0, iwidth, iheight);
-			glEnable(GL_SCISSOR_TEST);
-		}
-#endif // NL_OS_WINDOWS
+		glScissor (ix0, iy0, iwidth, iheight);
+		glEnable(GL_SCISSOR_TEST);
 	}
 }
 

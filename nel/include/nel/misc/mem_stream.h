@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.36 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: mem_stream.h,v 1.37 2004/03/23 14:55:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -290,7 +290,10 @@ public:
 		}
 	}
 
-	/// Resize the buffer
+	/**
+	 * Resize the buffer.
+	 * Warning: the position is unchanged, only the size is changed.
+	 */
 	void			resize (uint32 size);
 
 	/**

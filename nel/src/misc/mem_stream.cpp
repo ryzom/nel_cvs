@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.21 2003/09/24 10:45:36 cado Exp $
+ * $Id: mem_stream.cpp,v 1.22 2004/03/23 14:55:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -230,7 +230,8 @@ bool CMemStream::seek (sint32 offset, TSeekOrigin origin) throw(EStream)
 */
 
 /*
- *
+ * Resize the buffer.
+ * Warning: the position is unchanged, only the size is changed.
  */
 void CMemStream::resize (uint32 size)
 {

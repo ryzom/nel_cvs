@@ -1,7 +1,7 @@
 /** \file object_vector.h
  * <File description>
  *
- * $Id: object_vector.h,v 1.11 2004/03/23 10:18:39 vizerie Exp $
+ * $Id: object_vector.h,v 1.12 2004/03/23 14:55:50 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -359,8 +359,7 @@ private:
 		// if realloc failure
 		if(newPtr==NULL)
 		{
-			// leave the array in a clean state.
-			clear();
+			// leave the array unchanged.
 			// exception.
 			throw EReallocationFailed();
 		}

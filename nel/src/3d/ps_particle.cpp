@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.40 2001/09/07 12:00:15 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.41 2001/09/07 13:09:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -4916,7 +4916,7 @@ void CPSConstraintMesh::update(void)
 	
 	try
 	{
-		sb->load(NLMISC::CPath::lookup(_MeshShapeFileName));
+		sb->load(_MeshShapeFileName);
 	}	
 	catch (NLMISC::EPathNotFound &)
 	{
@@ -5293,10 +5293,10 @@ void CPSConstraintMesh::draw(bool opaque)
 			
 				do
 				{
-					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currSrcVertex);
-					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currSrcVertex + normalOff);
-					CHECK_VERTEX_BUFFER(*_ModelVb, currVertex);
-					CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex + pNormalOff);
+					CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex);
+					CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex + normalOff);
+					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currVertex);
+					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currVertex + pNormalOff);
 
 					* (CVector *) currVertex =  mat.mulVector(* (CVector *) currSrcVertex);
 					* (CVector *) (currVertex + pNormalOff) =  mat.mulVector(* (CVector *) (currSrcVertex + normalOff) );

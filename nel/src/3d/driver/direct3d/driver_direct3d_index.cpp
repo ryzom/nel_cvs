@@ -1,7 +1,7 @@
 /** \file driver_direct3d_index.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_index.cpp,v 1.9 2004/09/02 16:55:49 vizerie Exp $
+ * $Id: driver_direct3d_index.cpp,v 1.10 2004/09/07 15:23:59 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -46,9 +46,10 @@ namespace NL3D
 
 // ***************************************************************************
 
-CIBDrvInfosD3D::CIBDrvInfosD3D(IDriver *drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib) : IIBDrvInfos(drv, it, ib)
+CIBDrvInfosD3D::CIBDrvInfosD3D(CDriverD3D *drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib) : IIBDrvInfos(drv, it, ib)
 {
 	H_AUTO_D3D(CIBDrvInfosD3D_CIBDrvInfosD3D)
+	Driver = drv;
 	IndexBuffer = NULL;
 	VolatileIndexBuffer = NULL;	
 }
@@ -71,6 +72,14 @@ CIBDrvInfosD3D::~CIBDrvInfosD3D()
 	// release index buffer
 	if (IndexBuffer && !Volatile)
 	{
+		if (Driver)
+		{
+			if (Driver->_IndexBufferCache.IndexBuffer == IndexBuffer)
+			{
+				Driver->_IndexBufferCache.IndexBuffer = NULL;
+				Driver->touchRenderVariable(&Driver->_IndexBufferCache);
+			}
+		}
 		indexCount--;
 		IndexBuffer->Release();
 	}

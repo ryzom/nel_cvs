@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.5 2000/12/19 14:35:31 lecroart Exp $
+ * $Id: time_nl.cpp,v 1.6 2001/05/25 08:52:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,23 +23,29 @@
  * MA 02111-1307, USA.
  */
 
+#include <time.h>
+
 #include "nel/misc/types_nl.h"
+
 #include "nel/misc/debug.h"
 
+
 #ifdef NL_OS_WINDOWS
-#include <windows.h>
-
+#	include <windows.h>
 #elif defined (NL_OS_UNIX)
-
-#include <sys/time.h>
-#include <unistd.h>
-
+#	include <sys/time.h>
+#	include <unistd.h>
 #endif
 
 #include "nel/misc/time_nl.h"
 
 namespace NLMISC
 {
+
+uint32 CTime::getSecondsSince1970 ()
+{
+	return (uint32) time (NULL);
+}
 
 TTime CTime::getLocalTime ()
 {

@@ -1,7 +1,7 @@
 /** \file time_nl.h
  * CTime class
  *
- * $Id: time_nl.h,v 1.4 2000/12/13 15:01:09 corvazier Exp $
+ * $Id: time_nl.h,v 1.5 2001/05/25 08:52:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,15 +30,15 @@
 
 #ifdef NL_OS_WINDOWS
 // automatically add the win multimedia library if you use CTime class
-#pragma comment(lib, "winmm.lib")
+#	pragma comment(lib, "winmm.lib")
 #endif
 
 namespace NLMISC
 {
 
 /// Time type
-typedef uint64 TTime;
-typedef uint64 TTicks;
+typedef sint64 TTime;
+typedef sint64 TTicks;
 
 
 /**
@@ -50,6 +50,12 @@ typedef uint64 TTicks;
 class CTime
 {
 public:
+
+	/** returns the number of second since midnight (00:00:00), January 1, 1970,
+	 * coordinated universal time, according to the system clock.
+	 * This values is the same on all computer if computers are synchronized (with NTP for example).
+	 */
+	static uint32	getSecondsSince1970 ();
 
 	/** get the time in millisecond. It's a \b local time, it means that the value
 	 * is \b different on 2 differents computers. Use the CUniTime to get a universal

@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.2 2001/05/16 15:17:12 berenguier Exp $
+ * $Id: edge_collide.cpp,v 1.3 2001/05/17 17:00:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ void		CEdgeCollide::make(const CVector2f &p0, const CVector2f &p1)
 float		CEdgeCollide::testPoint(const CVector2f &start, const CVector2f &delta, float borderEpsilon)
 {
 	// distance from point to line.
-	float	dist= start*Norm - C;
+	float	dist= start*Norm + C;
 	// projection of speed on normal.
 	float	speed= delta*Norm;
 
@@ -148,7 +148,7 @@ static	inline float		testCirclePoint(const CVector2f &start, const CVector2f &de
 float		CEdgeCollide::testCircle(const CVector2f &start, const CVector2f &delta, float radius, CVector2f &normal)
 {
 	// distance from point to line.
-	float	dist= start*Norm - C;
+	float	dist= start*Norm + C;
 	// projection of speed on normal.
 	float	speed= delta*Norm;
 

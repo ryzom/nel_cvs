@@ -1,7 +1,7 @@
 /** \file chain_quad.cpp
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.cpp,v 1.2 2001/05/15 13:36:58 berenguier Exp $
+ * $Id: chain_quad.cpp,v 1.3 2001/05/17 17:00:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,11 +78,15 @@ CChainQuad	&CChainQuad::operator=(const CChainQuad &o)
 	_Y= o._Y;
 
 	// copy good pointers.
-	_Quad.resize(o._Quad.size());;
+	_Quad.clear();
+	_Quad.resize(o._Quad.size(), NULL);
 	for(sint i=0; i<(sint)_Quad.size(); i++)
 	{
-		uint32	off= (uint32)(o._Quad[i]-o._QuadData);
-		_Quad[i]= _QuadData+off;
+		if(o._Quad[i])
+		{
+			uint32	off= (uint32)(o._Quad[i]-o._QuadData);
+			_Quad[i]= _QuadData+off;
+		}
 	}
 
 
@@ -165,6 +169,12 @@ void			CChainQuad::build(const std::vector<COrderedChain> &ochains)
 			CVector		minP,maxP;
 			minP.minof(p0, p1);
 			maxP.maxof(p0, p1);
+			// PrecisionPb: extend a little this edge. This is important for special case like borders on zones.
+			if(minP.x-maxP.x==0)
+				minP.x-=0.001f, maxP.x+=0.001f;
+			if(minP.y-maxP.y==0)
+				minP.y-=0.001f, maxP.y+=0.001f;
+
 
 			// get bounding coordinate of this edge in the quadgrid.
 			sint32	x0, y0, x1, y1;

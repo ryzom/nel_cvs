@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.6 2001/05/17 09:05:09 legros Exp $
+ * $Id: global_retriever.cpp,v 1.7 2001/05/17 17:00:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,9 +42,10 @@ using namespace NLMISC;
 
 NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::getInstanceFullAccess(const CVector &position)
 {
-	CVector				offset = position-_BBox.getMin();
+	float				offsetX = position.x - _BBox.getMin().x;
+	float				offsetY = _BBox.getMax().y - position.y ;
 	static const float	zdim = 160.0f;
-	return getInstanceFullAccess((uint)(offset.x/zdim), (uint)(offset.y/zdim));
+	return getInstanceFullAccess((uint)(offsetX/zdim), (uint)(offsetY/zdim));
 }
 
 void	NLPACS::CGlobalRetriever::serial(NLMISC::IStream &f)
@@ -239,12 +240,16 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 				nlassert(nodeId >= 0);
 				nextNode.NodeId = (uint16)nodeId;
 			}
-			else
+			else if (nextNodeId >= 0)
 			{
 				nextNode.InstanceId = node.InstanceId;
 				nextNode.NodeId = (uint16) nextNodeId;
 				nextInstance = &inst;
 				nextRetriever = &retriever;
+			}
+			else
+			{
+				continue;
 			}
 
 			nextSurface = &(nextRetriever->getSurface(nextNode.NodeId));
@@ -303,6 +308,12 @@ void	NLPACS::CGlobalRetriever::getInstanceBounds(sint32 &x0, sint32 &y0, sint32 
 	y0= max(y0, (sint32)0);
 	x1= min(x1, (sint32)_Width);
 	y1= min(y1, (sint32)_Height);
+
+	// invert y.
+	y0= _Height-y0;
+	y1= _Height-y1;
+	// y0<=y1.
+	swap(y0, y1);
 }
 
 
@@ -354,7 +365,7 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 	// 2. Fill CollisionChains.
 	//===========
 	// For each possible surface mesh, test collision.
-	for(i=0 ; cst.CollisionInstances.size(); i++)
+	for(i=0 ; i<(sint)cst.CollisionInstances.size(); i++)
 	{
 		// get retrieverInstance.
 		sint32	curInstance= cst.CollisionInstances[i];
@@ -602,6 +613,7 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 			currentSurface= cst.CollisionDescs[nextCollisionSurfaceTested].ContactSurface;
 
 			// If we touch a wall, this is the end of search.
+			// TODODO: mgt real walls too (ie those who are walkables walls).
 			if(currentSurface.SurfaceId<0)
 			{
 				// There can be no more collision after this one.

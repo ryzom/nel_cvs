@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.3 2001/01/16 14:46:56 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.4 2001/01/22 17:30:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,8 @@
  * MA 02111-1307, USA.
  */
 
+
+#include "nel/misc/debug.h"
 
 #include "driver_opengl_extension.h"
 
@@ -219,6 +221,8 @@ void	registerGlExtensions(CGlExtensions &ext)
 {
 	const char	*glext= (const char*)glGetString(GL_EXTENSIONS);
 	GLint	ntext;
+
+	nldebug("GLExt: %s", glext);
 
 	ext.ARBMultiTexture= setupARBMultiTexture(glext);
 	glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &ntext);

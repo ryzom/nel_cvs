@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.58 2001/01/17 16:14:44 coutelas Exp $
+ * $Id: driver_opengl.cpp,v 1.59 2001/01/22 17:30:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -280,8 +280,15 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 #elif defined(NL_OS_UNIX)
 
 	dpy = XOpenDisplay(NULL);
-	if (dpy == NULL) nlerror ("XOpenDisplay failed on '%s'",getenv("DISPLAY"));
-	/*
+	if (dpy == NULL)
+        {
+	  nlerror ("XOpenDisplay failed on '%s'",getenv("DISPLAY"));
+	}
+	else
+	  {
+	    nldebug("XOpenDisplay on '%s' OK", getenv("DISPLAY"));
+	  }
+	
 	int sAttribList[] =
 	{
 	  GLX_RGBA,
@@ -294,7 +301,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	  //GLX_ALPHA_SIZE, 8,
 	  None
 	};
-	*/
+	/*
 	int sAttribList[] =
 	{
 	  GLX_RGBA,
@@ -306,14 +313,28 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	  GLX_BLUE_SIZE, 8,
 	  // GLX_ALPHA_SIZE, 8,
 	  None
-	};
+	  };*/
 	XVisualInfo *visual_info = glXChooseVisual (dpy, DefaultScreen(dpy), sAttribList);
 
-	nlassert(visual_info != NULL);
+	if(visual_info == NULL)
+	  {
+	    nlerror("glXChooseVisual() failed");
+	  }
+	else
+	  {
+	    nldebug("glXChooseVisual OK");
+	  }
 
 	ctx = glXCreateContext (dpy, visual_info, None, GL_TRUE);
 
-	nlassert(ctx != NULL);
+	if(ctx == NULL)
+	  {
+	    nlerror("glXCreateContext() failed");
+	  }
+	else
+	  {
+	    nldebug("glXCreateContext() OK");
+	  }
 
 	Colormap cmap = XCreateColormap (dpy, RootWindow(dpy, DefaultScreen(dpy)), visual_info->visual, AllocNone);
 
@@ -325,7 +346,14 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	win = XCreateWindow (dpy, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, mode.Width, mode.Height, 0, visual_info->depth, InputOutput, visual_info->visual, attr_flags, &attr);	
 
-	nlassert(win);
+	if(!win)
+	  {
+	    nlerror("XCreateWindow() failed");
+	  }
+	else
+	  {
+	    nldebug("XCreateWindow() OK");
+	  }
 
 	XSizeHints size_hints;
 	size_hints.x = 0;
@@ -368,11 +396,25 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	NL3D::registerGlExtensions(_Extensions);
 	// Check required extensions!!
 	if(!_Extensions.ARBMultiTexture)
+	  {
+	    //TEMP
+	    nldebug("missing multitex");
 		throw EBadDisplay("Missing Required GL extension: GL_ARB_multitexture");
+	  }
+
 	if(!_Extensions.EXTTextureEnvCombine)
+	  {
+	    //TEMP
+	    nldebug("missing env comvine");
 		throw EBadDisplay("Missing Required GL extension: GL_EXT_texture_env_combine");
+	  }
+
 	if(getNbTextureStages()<2)
+	  {
+	    //TEMP
+	    nldebug("missing 2tex unit");
 		throw EBadDisplay("Missing Required GL feature: at least 2 texture untis.");
+	  }
 
 	// Init OpenGL/Driver defaults.
 	//=============================

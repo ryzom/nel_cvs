@@ -1,7 +1,7 @@
 /** \file network_viewer.cpp
  * network_viewer prototype
  *
- * $Id: network_viewer.cpp,v 1.9 2001/01/22 15:44:26 lecroart Exp $
+ * $Id: network_viewer.cpp,v 1.10 2001/01/22 17:29:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -898,6 +898,8 @@ void main()
 {
   	try
 	{
+	  InitDebug();
+
 		// init scene
 		uint w = 800;
 		uint h = 600;
@@ -990,6 +992,12 @@ void main()
 	}
 	catch(Exception &e)
 	{
+	  try
+	    {
 		nlerror ("main(): Exception trapped: %s", e.what ());
+	    }
+	  catch (Exception &)
+	    {
+	    }
 	}
 }

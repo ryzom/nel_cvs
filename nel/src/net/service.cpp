@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.152 2002/11/15 17:30:25 lecroart Exp $
+ * $Id: service.cpp,v 1.153 2002/12/11 08:36:28 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -122,7 +122,8 @@ static CLog commandLog;
 // Callback managing
 //
 
-void serviceGetView (uint32 rid, const string &rawvarpath, vector<string> &vara, vector<string> &vala)
+// this callback is used to create a view for the admin system
+void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<string>, vector<string> > > &answer)
 {
 	string str;
 	CLog logDisplayVars;
@@ -130,57 +131,166 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<string> &vara,
 	logDisplayVars.addDisplayer (&mdDisplayVars);
 	
 	CVarPath varpath(rawvarpath);
-	
-	// add default row
-	vara.push_back ("service");
 
-	vala.push_back (IService::getInstance ()->getServiceUnifiedName());
-	
-	for (uint j = 0; j < varpath.Destination.size (); j++)
+	if (varpath.empty())
+		return;
+
+	if (varpath.isFinal())
 	{
-		string cmd = varpath.Destination[j].first;
+		vector<string> vara, vala;
 
-		// replace = with space to execute the command
-		uint pos = cmd.find("=");
-		if (pos != string::npos)
-			cmd[pos] = ' ';
-
-		mdDisplayVars.clear ();
-		ICommand::execute(cmd, logDisplayVars, true);
-		const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
-		if (strs.size()>0)
+		// add default row
+		vara.push_back ("service");
+		vala.push_back (IService::getInstance ()->getServiceUnifiedName());
+		
+		for (uint j = 0; j < varpath.Destination.size (); j++)
 		{
-			string s_ = strs[0];
-			
-			uint32 pos = strs[0].find("=");
-			if(pos != string::npos && pos + 2 < strs[0].size())
+			string cmd = varpath.Destination[j].first;
+
+			// replace = with space to execute the command
+			uint eqpos = cmd.find("=");
+			if (eqpos != string::npos)
 			{
-				uint32 pos2 = string::npos;
-				if(strs[0][strs[0].size()-1] == '\n')
-					pos2 = strs[0].size() - pos - 2 - 1;
-				
-				str = strs[0].substr (pos+2, pos2);
+				cmd[eqpos] = ' ';
+				vara.push_back(cmd.substr(0, eqpos));
+			}
+			else
+				vara.push_back(cmd);
+			
+			mdDisplayVars.clear ();
+			ICommand::execute(cmd, logDisplayVars, true);
+			const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
+			if (strs.size()>0)
+			{
+				uint32 pos = strs[0].find("=");
+				if(pos != string::npos && pos + 2 < strs[0].size())
+				{
+					uint32 pos2 = string::npos;
+					if(strs[0][strs[0].size()-1] == '\n')
+						pos2 = strs[0].size() - pos - 2 - 1;
+					
+					str = strs[0].substr (pos+2, pos2);
+				}
+				else
+				{
+					str = "???";
+				}
 			}
 			else
 			{
 				str = "???";
 			}
-		}
-		else
-		{
-			str = "???";
-		}
-		mdDisplayVars.unlockStrings();
-		
-		if (pos != string::npos)
-			vara.push_back(cmd.substr(0, pos));
-		else
-			vara.push_back(cmd);
+			mdDisplayVars.unlockStrings();
 
-		vala.push_back (str);
-		nlinfo ("Add to result view '%s' = '%s'", varpath.Destination[j].first.c_str(), str.c_str());
+			vala.push_back (str);
+			nlinfo ("Add to result view '%s' = '%s'", varpath.Destination[j].first.c_str(), str.c_str());
+		}
+
+		answer.push_back (make_pair(vara, vala));
 	}
-	
+	else
+	{
+		// there s an entity in the varpath, manage this case
+
+		vector<string> *vara, *vala;
+		
+		// varpath.Destination		contains the entity number
+		// subvarpath.Destination	contains the command name
+		
+		for (uint i = 0; i < varpath.Destination.size (); i++)
+		{
+			CVarPath subvarpath(varpath.Destination[i].second);
+			
+			for (uint j = 0; j < subvarpath.Destination.size (); j++)
+			{
+				// set the variable name
+				string cmd = subvarpath.Destination[j].first;
+
+				// replace = with space to execute the command
+				uint eqpos = cmd.find("=");
+				if (eqpos != string::npos)
+				{
+					cmd[eqpos] = ' ';
+					// add the entity
+					cmd.insert(eqpos, " "+varpath.Destination[i].first);
+				}
+				else
+				{
+					// add the entity
+					cmd += " "+varpath.Destination[i].first;
+				}
+				
+				mdDisplayVars.clear ();
+				ICommand::execute(cmd, logDisplayVars, true);
+				const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
+				for (uint k = 0; k < strs.size(); k++)
+				{
+					uint32 pos, pos2;
+
+					const string &str = strs[k];
+
+					string entity = "???";
+					pos = str.find("Entity ");
+					if(pos != string::npos)
+					{
+						pos2 = str.find(" ", pos+7);
+						if(pos2 != string::npos)
+							entity = str.substr(pos+7, pos2-pos-7);
+					}
+
+					// look in the array if we already have something about his entity
+
+					uint y;
+					for (y = 0; y < answer.size(); y++)
+					{
+						if (answer[y].second[1] == entity)
+						{
+							// ok we found it, just push_back new stuff
+							vara = &(answer[y].first);
+							vala = &(answer[y].second);
+							break;
+						}
+					}
+					if (y == answer.size ())
+					{
+						answer.push_back (make_pair(vector<string>(), vector<string>()));
+
+						vara = &(answer[answer.size()-1].first);
+						vala = &(answer[answer.size()-1].second);
+						
+						// don't add service if we want an entity
+// todo when we work on entity, we don't need service name and server so we should remove them and collapse all var for the same entity
+						vara->push_back ("service");
+						string name = IService::getInstance ()->getServiceUnifiedName();
+						vala->push_back (name);
+						
+						// add default row
+						vara->push_back ("entity");
+						vala->push_back (entity);
+					}
+
+					vara->push_back(cmd.substr(0, cmd.find(" ")));
+
+					pos = str.find("=");
+					if(pos != string::npos && pos + 2 < str.size())
+					{
+						uint32 pos2 = string::npos;
+						if(str[str.size()-1] == '\n')
+							pos2 = str.size() - pos - 2 - 1;
+						
+						vala->push_back (strs[k].substr (pos+2, pos2));
+					}
+					else
+					{
+						vala->push_back ("???");
+					}
+					
+					nlinfo ("Add to result view for entity '%s', '%s' = '%s'", varpath.Destination[i].first.c_str(), subvarpath.Destination[j].first.c_str(), str.c_str());
+				}
+				mdDisplayVars.unlockStrings();
+			}
+		}
+	}
 }
 
 void servcbGetView (CMessage &msgin, const std::string &serviceName, uint16 sid)
@@ -191,17 +301,19 @@ void servcbGetView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 	msgin.serial (rid);
 	msgin.serial (rawvarpath);
 
-	vector<string> vara;
-	vector<string> vala;
+	vector<pair<vector<string>, vector<string> > > answer;
 
-	serviceGetView (rid, rawvarpath, vara, vala);
+	serviceGetView (rid, rawvarpath, answer);
 
 	CMessage msgout("VIEW");
 	msgout.serial(rid);
 	
-	msgout.serialCont (vara);
-	msgout.serialCont (vala);
-
+	for (uint i = 0; i < answer.size(); i++)
+	{
+		msgout.serialCont (answer[i].first);
+		msgout.serialCont (answer[i].second);
+	}
+	
 	CUnifiedNetwork::getInstance ()->send (sid, msgout);
 	nlinfo ("Sent result view to service '%s-%hu'", serviceName.c_str(), sid);
 }
@@ -1512,6 +1624,102 @@ uint32 foo = 7777, bar = 6666;
 NLMISC_VARIABLE(uint32, foo, "test the get view system");
 NLMISC_VARIABLE(uint32, bar, "test the get view system");
 
+vector<pair<uint32,uint32> > Entities;
+
+void selectEntities (const string entityName, vector <uint32> &entities)
+{
+	if (entityName.empty ())
+		return;
+
+	uint32 entity = atoi (entityName.c_str());
+
+	if (entityName == "*")
+	{
+		// we want all entities
+		for (uint i = 0; i < Entities.size(); i++)
+			entities.push_back (i);
+	}
+	else if (entityName.find ("-") != string::npos)
+	{
+		// it's a range
+		uint ent2 = atoi(entityName.substr(entityName.find ("-")+1).c_str());
+		for (uint i = entity; i <= ent2; i++)
+			entities.push_back (i);
+	}
+	else
+	{
+		// we want a specific entity
+		entities.push_back (entity);
+	}
+}
+
+
+
+#define ENTITY_VARIABLE(__name,__help) \
+struct __name##Class : public NLMISC::ICommand \
+{ \
+__name##Class () : NLMISC::ICommand(#__name, __help, "<entity> [<value>]") { Type = Variable; } \
+	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log) \
+	{ \
+		if (args.size () != 1 && args.size () != 2) \
+			return false; \
+ \
+		vector <uint32> entities; \
+		selectEntities	(args[0], entities); \
+ \
+		for (uint i = 0; i < entities.size(); i++) \
+		{ \
+			string value; \
+			if (args.size()==2) \
+				value = args[1]; \
+			else \
+				value = "???"; \
+			pointer (entities[i], (args.size()==1), value); \
+			log.displayNL ("Entity %d Variable %s = %s", entities[i], _CommandName.c_str(), value.c_str()); \
+		} \
+		return true; \
+	} \
+	void pointer(uint32 entity, bool get, std::string &value); \
+}; \
+__name##Class __name##Instance; \
+void __name##Class::pointer(uint32 entity, bool get, std::string &value)
+
+ENTITY_VARIABLE(test, "test")
+{
+	if (get)
+	{
+		// get the value if available
+		if(entity < Entities.size())
+			value = toString(Entities[entity].first);
+	}
+	else
+	{
+		// set the variable with the new value
+		if(entity >= Entities.size())
+			Entities.resize(entity+1);
+
+		Entities[entity].first = atoi(value.c_str());
+	}
+}
+
+ENTITY_VARIABLE(test2, "test2")
+{
+	if (get)
+	{
+		// get the value if available
+		if(entity < Entities.size())
+			value = toString(Entities[entity].second);
+	}
+	else
+	{
+		// set the variable with the new value
+		if(entity >= Entities.size())
+			Entities.resize(entity+1);
+		
+		Entities[entity].second = atoi(value.c_str());
+	}
+}
+
 
 // -1 = service is quitting
 // 0 = service is not connected
@@ -1547,6 +1755,31 @@ NLMISC_DYNVARIABLE(string, State, "Set this value to 0 to shutdown the service a
 		}
 	}
 }
+
+
+NLMISC_COMMAND (getView, "send a view and receive an array as result", "<varpath>")
+{
+	if(args.size() != 1) return false;
+	
+	vector<pair<vector<string>, vector<string> > > answer;
+	serviceGetView (0, args[0], answer);
+
+	log.displayNL("have %d answer", answer.size());
+	for (uint i = 0; i < answer.size(); i++)
+	{
+		log.displayNL("  have %d value", answer[i].first.size());
+
+		nlassert (answer[i].first.size() == answer[i].second.size());
+
+		for (uint j = 0; j < answer[i].first.size(); j++)
+		{
+			log.displayNL("    %s -> %s", answer[i].first[j].c_str(), answer[i].second[j].c_str());
+		}
+	}
+
+	return true;
+}
+
 
 
 } //NLNET

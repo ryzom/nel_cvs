@@ -1,7 +1,7 @@
 /** \file varpath.cpp
  * use to manage variable path (ie: [serv1,serv2].*.*.var)
  *
- * $Id: varpath.cpp,v 1.2 2002/11/08 13:28:21 lecroart Exp $
+ * $Id: varpath.cpp,v 1.3 2002/12/11 08:36:28 lecroart Exp $
  *
  */
 
@@ -107,6 +107,9 @@ void CVarPath::decode ()
 
 	string val = getToken ();
 
+	if (val == "")
+		return;
+		
 	if (val == "[" )
 	{
 		do
@@ -119,6 +122,14 @@ void CVarPath::decode ()
 				if (val == "[")
 					osbnb++;
 
+				// end of token
+				if (val == "")
+				{
+					nlwarning ("bad VarPath '%s', suppose it s an empty varpath", RawVarPath.c_str());
+					Destination.clear ();
+					return;
+				}
+					
 				if (osbnb == 0 && (val == "," || val == "]"))
 					break;
 
@@ -180,6 +191,13 @@ void CVarPath::decode ()
 	}
 
 	display ();
+}
+
+bool CVarPath::isFinal ()
+{
+	if(Destination.size() == 0) return true;
+	if(Destination[0].second.size() == 0) return true;
+	return false;
 }
 
 void CVarPath::display ()

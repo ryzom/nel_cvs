@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.21 2002/11/15 16:42:20 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.22 2002/12/11 08:36:09 lecroart Exp $
  *
  */
 
@@ -76,7 +76,7 @@ using namespace NLNET;
 //
 namespace NLNET
 {
-	void serviceGetView (uint32 rid, const string &rawvarpath, vector<string> &vara, vector<string> &vala);
+	void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<string>, vector<string> > > &answer);
 }
 
 //
@@ -146,6 +146,7 @@ struct CService
 		Commands.clear ();
 		AutoReconnect = false;
 		PId = 0;
+		WaitingRequestId.clear ();
 	}
 };
 
@@ -161,7 +162,7 @@ vector<CRequest> Requests;
 
 vector<string> RegisteredServices;
 
-const uint32 RequestTimeout = 5;
+const uint32 RequestTimeout = 5;	// in second
 
 vector<pair<uint32, string> > WaitingToLaunchServices;	// date and alias name
 
@@ -267,11 +268,11 @@ void checkWaitingServices ()
 
 
 
-void addRequestWaitingNb (uint32 request)
+void addRequestWaitingNb (uint32 rid)
 {
 	for (uint i = 0 ; i < Requests.size (); i++)
 	{
-		if (Requests[i].Id == request)
+		if (Requests[i].Id == rid)
 		{
 			Requests[i].NbWaiting++;
 			// if we add a waiting, reset the timer
@@ -282,11 +283,11 @@ void addRequestWaitingNb (uint32 request)
 	nlstop;
 }
 
-void subRequestWaitingNb (uint32 request)
+void subRequestWaitingNb (uint32 rid)
 {
 	for (uint i = 0 ; i < Requests.size (); i++)
 	{
-		if (Requests[i].Id == request)
+		if (Requests[i].Id == rid)
 		{
 			Requests[i].NbWaiting--;
 			return;
@@ -294,6 +295,26 @@ void subRequestWaitingNb (uint32 request)
 	}
 	nlstop;
 }
+
+void addRequestAnswer (uint32 rid, const vector <pair<vector<string>, vector<string> > >&answer)
+{
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == rid)
+		{
+			for (uint t = 0; t < answer.size(); t++)
+			{
+				nlassert (answer[t].first.size() == answer[t].second.size());
+				Requests[i].Answers.push_back (make_pair(answer[t].first, answer[t].second));
+			}
+			Requests[i].NbReceived++;
+			return;
+		}
+	}
+	// we received an unknown request, forget it
+	nlwarning ("Receive an answer for unknown request %d", rid);
+}
+
 
 void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector<string> &values)
 {
@@ -329,12 +350,36 @@ void cleanRequest ()
 {
 	uint32 currentTime = CTime::getSecondsSince1970 ();
 
+	// just a debug check
+	for (uint t = 0 ; t < Requests.size (); t++)
+	{
+		uint32 NbWaiting = Requests[t].NbWaiting;
+		uint32 NbReceived = Requests[t].NbReceived;
+
+		uint32 NbRef = 0;
+		for (uint j = 0; j < Services.size(); j++)
+		{
+			if (Services[j].Connected)
+			{
+				for (uint k = 0; k < Services[j].WaitingRequestId.size(); k++)
+				{
+					if(Services[j].WaitingRequestId[k] == Requests[t].Id)
+					{
+						NbRef++;
+					}
+				}
+			}
+		}
+		nlinfo ("Waiting request %d: NbRef %d NbWaiting %d NbReceived %d", Requests[t].Id, NbRef, NbWaiting, NbReceived);
+		nlassert (NbRef == NbWaiting - NbReceived);
+	}
+
 	for (uint i = 0 ; i < Requests.size ();)
 	{
 		// timeout
 		if (currentTime >= Requests[i].Time+RequestTimeout)
 		{
-			nlwarning ("Request %d timeouted, only %d on %d services has replied", Requests[i].Id, Requests[i].NbReceived, Requests[i].NbWaiting);
+			nlwarning ("Request %d timeouted, only %d on %d services have replied", Requests[i].Id, Requests[i].NbReceived, Requests[i].NbWaiting);
 
 			vector<string> vara;
 			vector<string> vala;
@@ -342,16 +387,25 @@ void cleanRequest ()
 			vara.push_back ("service");
 			for (uint j = 0; j < Services.size(); j++)
 			{
-				for (uint k = 0; k < Services[j].WaitingRequestId.size(); k++)
+				if (Services[j].Connected)
 				{
-					if(Services[j].WaitingRequestId[k] == Requests[i].Id)
+					for (uint k = 0; k < Services[j].WaitingRequestId.size(); k++)
 					{
-						// this services didn't answer
-						string s = Services[j].AliasName+"<TIMEOUT>";
-						vala.clear ();
-						vala.push_back (s);
-						addRequestAnswer (Requests[i].Id, vara, vala);
-						break;
+						if(Services[j].WaitingRequestId[k] == Requests[i].Id)
+						{
+							// this services didn't answer
+							string s;
+							if(Services[j].AliasName.empty())
+								s = Services[j].ShortName;
+							else
+								s = Services[j].AliasName;
+							s += "-"+toString(Services[j].ServiceId);
+							s += "<TIMEOUT>";
+							vala.clear ();
+							vala.push_back (s);
+							addRequestAnswer (Requests[i].Id, vara, vala);
+							break;
+						}
 					}
 				}
 			}
@@ -419,6 +473,16 @@ SIT findService (const string &aliasName)
 	{
 		if ((*sit).AliasName == aliasName) break;
 	}
+
+	// not found in alias, try with short name
+	if (sit == Services.end())
+	{
+		for (sit = Services.begin(); sit != Services.end(); sit++)
+		{
+			if ((*sit).ShortName == aliasName) break;
+		}
+	}
+
 	return sit;
 }
 
@@ -515,12 +579,11 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 			// add myself
 			addRequestWaitingNb (rid);
 			
-			vector<string> vara;
-			vector<string> vala;
+			vector<pair<vector<string>, vector<string> > > answer;
 			
-			serviceGetView (rid, varpath.Destination[i].second, vara, vala);
+			serviceGetView (rid, varpath.Destination[i].second, answer);
 			
-			addRequestAnswer (rid, vara, vala);
+			addRequestAnswer (rid, answer);
 			nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
 		}
 		else if (service == "#")
@@ -604,12 +667,10 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 			// add myself
 			addRequestWaitingNb (rid);
 
-			vector<string> vara;
-			vector<string> vala;
-
-			serviceGetView (rid, varpath.Destination[i].second, vara, vala);
-
-			addRequestAnswer (rid, vara, vala);
+			vector<pair<vector<string>, vector<string> > > answer;
+			
+			serviceGetView (rid, varpath.Destination[i].second, answer);
+			addRequestAnswer (rid, answer);
 			nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), "AES");
 		}
 		else
@@ -619,12 +680,10 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 				// it's for me, I don't send message to myself so i manage it right now
 				addRequestWaitingNb (rid);
 				
-				vector<string> vara;
-				vector<string> vala;
+				vector<pair<vector<string>, vector<string> > > answer;
 				
-				serviceGetView (rid, varpath.Destination[i].second, vara, vala);
-
-				addRequestAnswer (rid, vara, vala);
+				serviceGetView (rid, varpath.Destination[i].second, answer);
+				addRequestAnswer (rid, answer);
 				nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
 			}
 			else
@@ -941,17 +1000,41 @@ static void cbRegisteredServices (CMessage &msgin, const std::string &serviceNam
 static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// receive an view answer from the service
+	SIT sit = findService (sid);
+	
 	uint32 rid;
-	vector<string> vara;
-	vector<string> vala;
-
 	msgin.serial (rid);
 
-	msgin.serialCont (vara);
-	msgin.serialCont (vala);
+	vector<pair<vector<string>, vector<string> >  > answer;
+	vector<string> vara, vala;
 
-	SIT sit = findService (sid);
-
+	while ((uint32)msgin.getPos() < msgin.length())
+	{
+		vara.clear ();
+		vala.clear ();
+		
+		// adding default row
+		
+		uint32 i, nb;
+		string var, val;
+		
+		msgin.serial (nb);
+		for (i = 0; i < nb; i++)
+		{
+			msgin.serial (var);
+			vara.push_back (var);
+		}
+		
+		msgin.serial (nb);
+		for (i = 0; i < nb; i++)
+		{
+			msgin.serial (val);
+			vala.push_back (val);
+		}
+		answer.push_back (make_pair(vara,vala));
+	}
+	addRequestAnswer (rid, answer);
+	
 	// remove the waiting request
 	for (uint i = 0; i < (*sit).WaitingRequestId.size();)
 	{
@@ -964,8 +1047,6 @@ static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 			i++;
 		}
 	}
-	
-	addRequestAnswer (rid, vara, vala);
 }
 
 
@@ -1244,7 +1325,7 @@ uint32 toto = 123, tata = 5456;
 NLMISC_VARIABLE(uint32, toto, "test the get view system");
 NLMISC_VARIABLE(uint32, tata, "test the get view system");
 
-NLMISC_COMMAND (getView, "send a view and receive an array as result", "<varpath>")
+NLMISC_COMMAND (getViewAES, "send a view and receive an array as result", "<varpath>")
 {
 	if(args.size() != 1) return false;
 

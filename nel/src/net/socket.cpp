@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.38 2001/01/02 14:39:21 cado Exp $
+ * $Id: socket.cpp,v 1.39 2001/01/10 13:54:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,15 +101,15 @@ void CSocket::close()
  */
 void CSocket::send( CMessage& message ) throw(ESocket)
 {
-//#ifdef NL_DEBUG
 	uint len = message.length();
-	//std::string name = message.typeAsString();
-//#endif
+/*#ifdef NL_DEBUG
+	std::string name = message.typeAsString();
+#endif*/
 	CMessage alldata = encode( message );
 
 	nlassert( alldata.length() < 100000 ); // debug check
 	CBaseSocket::send( alldata.buffer(), alldata.length() );
-//#ifdef NL_DEBUG
+
 	if ( _Logging )
 	{
 		if ( message.typeIsNumber() )
@@ -133,7 +133,6 @@ void CSocket::send( CMessage& message ) throw(ESocket)
 		}
 		nlnetoutput( localAddr().asIPString().c_str(), _CurrentMsgNumberSend-1, remoteAddr().asIPString().c_str(), buf, message.length() );
 	}
-//#endif
 }
 
 

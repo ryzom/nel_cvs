@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.29 2001/01/09 16:54:03 cado Exp $
+ * $Id: local_area.cpp,v 1.30 2001/01/10 13:54:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,7 +209,7 @@ namespace NLNET {
  * Constructor
  */
 CLocalArea::CLocalArea( const CMsgSocket *clientsocket, const CVector& userpos, const CVector& userhdg ) :
-	_Radius( 200 ),
+	_Radius( 20000 ),
 	_NewEntityCallback( NULL ),
 	_EntityRemovedCallback( NULL ),
 	_UnknownMessagesCallback( NULL )

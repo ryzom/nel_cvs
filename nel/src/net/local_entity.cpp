@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.21 2001/01/09 16:54:03 cado Exp $
+ * $Id: local_entity.cpp,v 1.22 2001/01/10 13:54:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -214,7 +214,7 @@ void CLocalEntity::propagateState()
 			IMovingEntity::SerialFull3d = true;
 		}
 		// Serialize out the entity state
-		CMessage msgout;
+		CMessage msgout( "ES" );
 		msgout.serial( *this );
 		CLocalArea::Instance->ClientSocket->send( msgout );
 		nlinfo( "Entity State sent, with id %u", id() );

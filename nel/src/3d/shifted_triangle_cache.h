@@ -1,7 +1,7 @@
 /** \file shifted_triangle_cache.h
  * <File description>
  *
- * $Id: shifted_triangle_cache.h,v 1.3 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: shifted_triangle_cache.h,v 1.4 2004/08/13 15:43:37 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -68,6 +68,13 @@ public:
 
 	// free up the memory
 	void				clearArrays();
+	
+	// ctor
+	CShiftedTriangleCache()
+	{
+		NL_SET_IB_NAME(RawIndices, "CShiftedTriangleCache");
+	}
+
 };
 
 

@@ -1,6 +1,6 @@
 /** \file water_env_map.cpp
  *
- * $Id: water_env_map.cpp,v 1.1 2004/08/03 16:15:52 vizerie Exp $
+ * $Id: water_env_map.cpp,v 1.2 2004/08/13 15:48:31 vizerie Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -38,12 +38,12 @@ namespace NL3D
 
 
 CVertexBuffer CWaterEnvMap::_FlattenVB; // vb to map cube map top hemisphere to a 2D map
-CIndexBuffer CWaterEnvMap::_FlattenIB;
+CIndexBuffer CWaterEnvMap::_FlattenIB("CWaterEnvMap::_FlattenIB");
 bool CWaterEnvMap::_FlattenVBInitialized;
 CMaterial CWaterEnvMap::_MaterialPassThru;
 CMaterial CWaterEnvMap::_MaterialPassThruZTest;
 CVertexBuffer CWaterEnvMap::_TestVB;
-CIndexBuffer CWaterEnvMap::_TestIB;
+CIndexBuffer CWaterEnvMap::_TestIB("CWaterEnvMap::_TestIB");
 
 // flatten vb params
 static const uint FVB_NUM_SIDES = 32;
@@ -282,6 +282,7 @@ void CWaterEnvMap::renderTestMesh(IDriver &driver)
 void CWaterEnvMap::initFlattenVB()
 {	
 	_FlattenVB.setPreferredMemory(CVertexBuffer::AGPPreferred, true);	
+	_FlattenVB.setName("Flatten VB");
 	_FlattenVB.clearValueEx();
 	_FlattenVB.addValueEx (CVertexBuffer::Position, CVertexBuffer::Float3);
 	_FlattenVB.addValueEx (CVertexBuffer::TexCoord0, CVertexBuffer::Float3);
@@ -363,6 +364,7 @@ void CWaterEnvMap::invalidate()
 void CWaterEnvMap::initTestVB()
 {	
 	_TestVB.setPreferredMemory(CVertexBuffer::AGPPreferred, true);
+	_TestVB.setName("TestVB");
 	_TestVB.clearValueEx();
 	_TestVB.addValueEx (CVertexBuffer::Position, CVertexBuffer::Float3);
 	_TestVB.addValueEx (CVertexBuffer::TexCoord0, CVertexBuffer::Float3);

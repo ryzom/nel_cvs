@@ -1,7 +1,7 @@
 /** \file vegetable_sort_block.cpp
  * <File description>
  *
- * $Id: vegetable_sort_block.cpp,v 1.8 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: vegetable_sort_block.cpp,v 1.9 2004/08/13 15:45:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,7 @@ CVegetableSortBlock::CVegetableSortBlock()
 	_NIndices= 0;
 	_Dirty= false;
 	_UnderWater= false;
+	NL_SET_IB_NAME(_SortedTriangleArray, "CVegetableSortBlock");
 }
 
 

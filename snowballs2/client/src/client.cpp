@@ -1,7 +1,11 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.5 2001/07/11 16:09:03 legros Exp $
+<<<<<<< client.cpp
+ * $Id: client.cpp,v 1.6 2001/07/11 16:11:36 lecroart Exp $
+=======
+ * $Id: client.cpp,v 1.6 2001/07/11 16:11:36 lecroart Exp $
+>>>>>>> 1.5
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,12 +41,17 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/path.h"
 #include "nel/misc/i18n.h"
+<<<<<<< client.cpp
+#include "nel/misc/config_file.h"
+
+=======
 
 #include "nel/misc/config_file.h"
 
 #include <string>
 #include <deque>
 
+>>>>>>> 1.5
 #include <nel/3d/u_camera.h>
 #include <nel/3d/u_driver.h>
 #include <nel/3d/u_text_context.h>
@@ -65,8 +74,8 @@ using namespace NL3D;
 
 CConfigFile ConfigFile;
 
-UDriver		*Driver;
-UScene		*Scene;
+UDriver		*Driver = NULL;
+UScene		*Scene = NULL;
 
 //
 // Main
@@ -109,6 +118,8 @@ int main(int argc, char **argv)
 	// Init the landscape using the previously created UScene
 	initLandscape();
 
+	pDriver->setMatrixMode2D11 ();
+	pDriver->drawQuad (0.1, 0.1, 0.9, 0.3, CRGBA (128, 255, 128, 128));
 
 	while (Driver->isActive() && (!Driver->AsyncListener.isKeyPushed (KeyESCAPE)))
 	{

@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.7 2000/12/18 09:46:21 corvazier Exp $
+ * $Id: tile_bank.h,v 1.8 2000/12/19 14:24:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_TILE_BANK_H
-#define NL_TILE_BANK_H
+#ifndef NL_Tile_BANK_H
+#define NL_Tile_BANK_H
 
 #include "nel/misc/debug.h"
 //#include "nel/misc/stream.h"
@@ -36,6 +36,7 @@
 namespace	NLMISC
 {
 	class	IStream;
+	struct	EStream;
 }
 
 
@@ -57,43 +58,43 @@ public:
 public:
 	CTile ()
 	{
-		_free=true;
-		_invert=false;
+		_Free=true;
+		_Invert=false;
 	}
 	const std::string& getFileName (TBitmap bitmapType) const 
 	{ 
-		return _bitmapName[bitmapType]; 
+		return _BitmapName[bitmapType]; 
 	}
 	void setFileName (TBitmap bitmapType, const std::string& name)
 	{ 
-		_free=false;
-		_bitmapName[bitmapType]=name;
+		_Free=false;
+		_BitmapName[bitmapType]=name;
 	}
 	bool isFree () const
 	{
-		return _free;
+		return _Free;
 	}
 	void Free ()
 	{
-		nlassert (!_free);
-		_free=true;
+		nlassert (!_Free);
+		_Free=true;
 	}
 	bool isInvert () const
 	{
-		return _invert;
+		return _Invert;
 	}
 	void setInvert (bool invert)
 	{
-		_invert=invert;
+		_Invert=invert;
 	}
-	void    serial(class NLMISC::IStream &f);
+	void    serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
 	void	clearTile (CTile::TBitmap type);
 
 private:
-	bool _free;
-	bool _invert;
-	std::string	_bitmapName[bitmapCount];
-	static const sint _version;
+	bool						_Free;
+	bool						_Invert;
+	std::string					_BitmapName[bitmapCount];
+	static const sint			_Version;
 };
 
 /**
@@ -109,25 +110,25 @@ private:
 public:
 	const std::string& getName () const 
 	{ 
-		return _name; 
+		return _Name; 
 	};
 	void setName (const std::string& name);
 	void addTileSet (const std::string& name);
 	void removeTileSet (const std::string& name);
 	bool isTileSet (const std::string& name)
 	{
-		return _tileSet.find (name)!=_tileSet.end();
+		return _TileSet.find (name)!=_TileSet.end();
 	}
 
-	void    serial(class NLMISC::IStream &f);
+	void    serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
 private:
 
 	// internal use
 	static void intersect (const std::set<sint32>& setSrc1, const std::set<sint32>& setSrc2, std::set<sint32>& setDst);
 
-	std::string	_name;
-	std::set<std::string>	_tileSet;
-	static const sint _version;
+	std::string	_Name;
+	std::set<std::string>	_TileSet;
+	static const sint _Version;
 };
 
 /**
@@ -143,17 +144,17 @@ class CTileSetTransition
 public:
 	CTileSetTransition ()
 	{
-		_tile=-1;
+		_Tile=-1;
 	}
 	sint32 getTile () const
 	{
-		return _tile;
+		return _Tile;
 	}
-	void    serial(class NLMISC::IStream &f);
+	void    serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
 
 private:
-	sint32	_tile;
-	static const sint _version;
+	sint32	_Tile;
+	static const sint _Version;
 };
 
 /**
@@ -174,33 +175,33 @@ public:
 	void doubleSize ();
 	bool operator== (const CTileBorder& border) const;
 	void operator= (const CTileBorder& border);
-	void serial(NLMISC::IStream &f);
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	bool isSet() const
 	{
-		return _set;
+		return _Set;
 	}
 	void reset()
 	{
-		_set=false;
+		_Set=false;
 	}
 	sint32 getWidth() const
 	{
-		return _width;
+		return _Width;
 	}
 	sint32 getHeight() const
 	{
-		return _height;
+		return _Height;
 	}
 	void	invertAlpha();
 
 	static bool compare (const CTileBorder& border1, const CTileBorder& border2, TBorder where1, TBorder where2, int& pixel, int& composante, bool bInvertFirst=false, bool bInvertSecond=false);
 
 private:
-	bool _set;
-	sint32 _width;
-	sint32 _height;
-	std::vector<NLMISC::CBGRA> _borders[borderCount];
-	static const sint _version;
+	bool _Set;
+	sint32 _Width;
+	sint32 _Height;
+	std::vector<NLMISC::CBGRA> _Borders[borderCount];
+	static const sint _Version;
 };
 
 /**
@@ -248,31 +249,31 @@ public:
 	const std::string& getName () const;
 	sint getNumTile128 () const
 	{
-		return (sint)_tile128.size();
+		return (sint)_Tile128.size();
 	}
 	sint getNumTile256 () const
 	{
-		return _tile256.size();
+		return _Tile256.size();
 	}
 	sint32 getTile128 (sint index) const
 	{
-		return _tile128[index];
+		return _Tile128[index];
 	}
 	sint32 getTile256 (sint index) const
 	{
-		return _tile256[index];
+		return _Tile256[index];
 	}
 	CTileSetTransition* getTransition (sint index)
 	{
-		return _tileTransition+index;
+		return _TileTransition+index;
 	}
 	const CTileSetTransition* getTransition (sint index) const
 	{
-		return _tileTransition+index;
+		return _TileTransition+index;
 	}
 	static const char* getErrorMessage (TError error)
 	{
-		return _errorMessage[error];
+		return _ErrorMessage[error];
 	}
 	static TTransition getTransitionTile (TFlagBorder top, TFlagBorder bottom, TFlagBorder left, TFlagBorder right);
 	TTransition getExistingTransitionTile (TFlagBorder _top, TFlagBorder _bottom, TFlagBorder _left, 
@@ -282,7 +283,7 @@ public:
 	static TFlagBorder getOrientedBorder (TBorder where, TFlagBorder border);
 	static TFlagBorder getEdgeType (TTransition _what, TBorder _where)
 	{
-		return _transitionFlags[_what][_where];
+		return _TransitionFlags[_what][_where];
 	}
 
 	// other
@@ -290,25 +291,25 @@ public:
 	void removeChild (const std::string& name);
 	bool isChild (const std::string& name)
 	{
-		return _childName.find(name)!=_childName.end();
+		return _ChildName.find(name)!=_ChildName.end();
 	}
-	void serial(NLMISC::IStream &f);
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 private:
 	static TFlagBorder getComplementaryBorder (TFlagBorder border);
 
 
 private:
-	std::string	_name;
-	std::vector<sint32>	_tile128;
-	std::vector<sint32>	_tile256;
-	CTileSetTransition _tileTransition[count];
-	std::set<std::string> _childName;
-	CTileBorder _border128[CTile::bitmapCount];
-	CTileBorder _border256[CTile::bitmapCount];
-	CTileBorder _borderTransition[count][CTile::bitmapCount];
-	static const sint _version;
-	static const char* _errorMessage[CTileSet::errorCount];
-	static const TFlagBorder _transitionFlags[count][4];
+	std::string	_Name;
+	std::vector<sint32>	_Tile128;
+	std::vector<sint32>	_Tile256;
+	CTileSetTransition _TileTransition[count];
+	std::set<std::string> _ChildName;
+	CTileBorder _Border128[CTile::bitmapCount];
+	CTileBorder _Border256[CTile::bitmapCount];
+	CTileBorder _BorderTransition[count][CTile::bitmapCount];
+	static const sint _Version;
+	static const char* _ErrorMessage[CTileSet::errorCount];
+	static const TFlagBorder _TransitionFlags[count][4];
 };
 
 /**
@@ -326,39 +327,39 @@ public:
 	// Get
 	sint getLandCount () const 
 	{ 
-		return _landVector.size(); 
+		return _LandVector.size(); 
 	};
 	const CTileLand* getLand (int landIndex) const
 	{ 
-		return &_landVector[landIndex]; 
+		return &_LandVector[landIndex]; 
 	};
 	CTileLand* getLand (int landIndex) 
 	{ 
-		return &_landVector[landIndex]; 
+		return &_LandVector[landIndex]; 
 	};
 	sint getTileSetCount () const 
 	{ 
-		return _tileSetVector.size(); 
+		return _TileSetVector.size(); 
 	};
 	const CTileSet* getTileSet (int tileIndex) const
 	{ 
-		return &_tileSetVector[tileIndex]; 
+		return &_TileSetVector[tileIndex]; 
 	};
 	CTileSet* getTileSet (int tileIndex)
 	{ 
-		return &_tileSetVector[tileIndex]; 
+		return &_TileSetVector[tileIndex]; 
 	};
 	sint getTileCount () const 
 	{ 
-		return _tileVector.size(); 
+		return _TileVector.size(); 
 	};
 	const CTile* getTile (int tileIndex) const
 	{ 
-		return &_tileVector[tileIndex]; 
+		return &_TileVector[tileIndex]; 
 	};
 	CTile* getTile (int tileIndex)
 	{ 
-		return &_tileVector[tileIndex]; 
+		return &_TileVector[tileIndex]; 
 	};
 	sint addLand (const std::string& name);
 	void removeLand (sint landIndex);
@@ -370,7 +371,7 @@ public:
 	void computeXRef ();
 	void getTileXRef (int tile, int &tileSet, int &number, TTileType& type) const;
 
-	void    serial(class NLMISC::IStream &f);
+	void    serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
 private:
 	sint	createTile ();
 	void	freeTile (int tileIndex);
@@ -379,29 +380,29 @@ private:
 	{
 		CTileXRef ()
 		{
-			_xRefTileType=undefined;
+			_XRefTileType=undefined;
 		}
 		CTileXRef (int tileSet, int number, TTileType type)
 		{
-			_xRefTileSet=tileSet;
-			_xRefTileNumber=number;
-			_xRefTileType=type;
+			_XRefTileSet=tileSet;
+			_XRefTileNumber=number;
+			_XRefTileType=type;
 		}
-		int	_xRefTileSet;
-		int	_xRefTileNumber;
-		TTileType	_xRefTileType;
+		int	_XRefTileSet;
+		int	_XRefTileNumber;
+		TTileType	_XRefTileType;
 	};
-	std::vector<CTileLand>	_landVector;
-	std::vector<CTileSet>	_tileSetVector;
-	std::vector<CTile>	_tileVector;
-	std::vector<CTileXRef>	_tileXRef;
-	static const sint	_version;
+	std::vector<CTileLand>	_LandVector;
+	std::vector<CTileSet>	_TileSetVector;
+	std::vector<CTile>	_TileVector;
+	std::vector<CTileXRef>	_TileXRef;
+	static const sint	_Version;
 };
 
 
 
 }
 
-#endif // NL_TILE_BANK_H
+#endif // NL_Tile_BANK_H
 
 /* End of tile_bank.h */

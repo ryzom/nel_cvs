@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.30 2003/08/19 11:54:22 lecroart Exp $
+ * $Id: entity_id.h,v 1.31 2003/10/23 20:04:57 saffray Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -274,6 +274,7 @@ public :
 
 		CEntityId testId ( FullId ^ a.FullId );
 		testId.DetailedId.DynamicId = 0;
+		testId.DetailedId.CreatorId = 0;
 		return testId.FullId == 0;
 
 		/*

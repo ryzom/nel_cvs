@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.26 2002/04/05 13:30:01 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.27 2002/04/05 13:32:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -697,7 +697,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 CNelExport::CNelExport()
 {
 	_Ip = NULL;	
-	hPanel = NULL;
+	theHPanel = NULL;
 }
 
 CNelExport::~CNelExport()
@@ -707,7 +707,6 @@ CNelExport::~CNelExport()
 
 void CNelExport::BeginEditParams(Interface *_Ip,IUtil *iu) 
 {
-	this->iu = iu;
 	theIP = _Ip;
 	if (_ExportNel)
 	{
@@ -715,21 +714,20 @@ void CNelExport::BeginEditParams(Interface *_Ip,IUtil *iu)
 		_ExportNel = NULL;
 	}
 	theHPanel	= _Ip->AddRollupPage(hInstance,MAKEINTRESOURCE(IDD_PANEL),CNelExportDlgProc,GetString(IDS_PARAMS),0);
-	theHBar		= GetDlgItem(hPanel,ID_BAR);
+	theHBar		= GetDlgItem(theHPanel,ID_BAR);
 	SendMessage(theHBar,PBM_SETPOS,0,0);
 }
 	
 void CNelExport::EndEditParams(Interface *_Ip,IUtil *iu) 
 {
-	this->iu = NULL;
 	this->_Ip = NULL;
 	if (_ExportNel)
 	{
 		delete (_ExportNel);
 		_ExportNel = NULL;
 	}
-	_Ip->DeleteRollupPage(hPanel);
-	hPanel = NULL;
+	_Ip->DeleteRollupPage(theHPanel);
+	theHPanel = NULL;
 }
 
 void CNelExport::Init(HWND hWnd)

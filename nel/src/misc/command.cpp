@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.9 2002/03/14 09:48:39 lecroart Exp $
+ * $Id: command.cpp,v 1.10 2002/03/15 15:19:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,7 +120,6 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log)
 			if (i == commandWithArgs.size())
 			{
 				goto end;
-				return;
 			}
 			if (commandWithArgs[i] != ' ' && commandWithArgs[i] != '\t' && commandWithArgs[i] != '\n' && commandWithArgs[i] != '\r')
 			{
@@ -229,18 +228,18 @@ end:
 */
 	
 	// find the command	
-	TCommand::iterator comm = (*Commands).find(commandWithArgs.c_str());
+	TCommand::iterator comm = (*Commands).find(command.c_str());
 	if (comm == (*Commands).end ())
 	{
 		// the command doesn't exist
-		log.displayNL("Command '%s' not found, try 'help'", commandWithArgs.c_str());
+		log.displayNL("Command '%s' not found, try 'help'", command.c_str());
 	}
 	else
 	{
 		//printf("execute command\n");
 		if (!(*comm).second->execute (args, log))
 		{
-			log.displayNL("Bad command usage, try 'help %s'", commandWithArgs.c_str());
+			log.displayNL("Bad command usage, try 'help %s'", command.c_str());
 		}
 	}
 }

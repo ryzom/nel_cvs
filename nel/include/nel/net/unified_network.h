@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.23 2002/08/22 12:10:04 lecroart Exp $
+ * $Id: unified_network.h,v 1.24 2002/08/22 13:12:44 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -325,7 +325,6 @@ private:
 
 		void reset()
 		{
-			nlinfo ("reseting unified connection %s-%hu '%s'", ServiceName.c_str(), ServiceId, vectorCInetAddressToString(ExtAddress).c_str());
 			ServiceName = "DEAD";
 			ServiceId = 0xDEAD;
 			State = NotUsed;
@@ -348,7 +347,6 @@ private:
 				uint8 j;
 				for (j = 0; j < ExtAddress.size (); j++)
 				{
-					nlinfo ("HNETL5: comparing %08x %08x", ExtAddress[j].internalNetAddress(), networkAssociations[i]);
 					if (ExtAddress[j].internalNetAddress() == networkAssociations[i])
 					{
 						// we found an association, add it
@@ -380,8 +378,11 @@ private:
 			}
 			if (j == defaultNetwork.size ())
 			{
-				DefaultNetwork = 0;
-				nlwarning ("HNETL5: default network not found in the array, will use connection id 0");
+				if (NetworkConnectionAssociations.size ()>0)
+					DefaultNetwork = NetworkConnectionAssociations[0];
+				else
+					DefaultNetwork = 0;
+				nlwarning ("HNETL5: default network not found in the array, will use connection id %hu", (uint16)DefaultNetwork);
 			}
 		}
 	};

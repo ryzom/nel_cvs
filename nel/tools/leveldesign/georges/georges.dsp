@@ -221,6 +221,10 @@ SOURCE=.\ComboInListView.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\edit_stack.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\georges.h
 # End Source File
 # Begin Source File

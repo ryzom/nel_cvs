@@ -96,6 +96,46 @@ void CItem::Load( const CStringEx& _sxfullname )
 	pitemes->FillCurrent( formcurrent.GetBody() );
 }
 
+// Convert CItem to a CForm (in is this)
+void CItem::MakeForm (CForm &out)
+{
+	if( !pitemes )
+		return;
+	pitemes->BuildForm( out.GetBody(), vsxparents );
+}
+
+// Convert CForm to CItem (out is this)
+void CItem::MakeItem (CForm &in)
+{
+	CForm form, formparent;
+
+	Clear();
+	unsigned int i = 0;
+	CStringEx sxparent = in.GetParent( 0 );
+	CStringEx sxactivity = in.GetActivity( 0 );
+	while( !sxparent.empty() )								
+	{
+		vsxparents.push_back( std::make_pair( sxactivity, sxparent ) );
+		if( sxactivity == "true" )
+		{
+			pl->LoadSearchForm( form, sxparent );			
+			formparent += form;
+		}
+		i++;
+		sxparent = in.GetParent( i );
+		sxactivity = in.GetActivity( i );
+	}
+
+	CMoldElt* pme = pl->LoadMold( moldfilename );
+	CMoldEltDefine* pmed = dynamic_cast< CMoldEltDefine* >( pme );
+	nlassert( pmed );
+	pitemes = new CItemEltStruct( pl );
+	pitemes->BuildItem( pmed );
+
+	pitemes->FillParent( formparent.GetBody() );
+	pitemes->FillCurrent( in.GetBody() );
+}
+
 void CItem::VirtualSaveLoad()
 {
 //-------save

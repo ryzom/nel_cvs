@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "TypeUnitIntSigned.h"
+#include <math.h>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -98,7 +99,9 @@ CStringEx CTypeUnitIntSigned::CalculateResult( const CStringEx _sxbasevalue, con
 				else if( it->first == "-" )
 						ir -= ivalue;
 					else if( it->first == "/" )
-							ir /= ivalue;
+							ir /= ivalue;   
+						else if( it->first == "^" )
+								ir = (__int64)( pow( (double)(ir), (double)(ivalue) ) );   
 		}
 		if( ir < ilowlimit )
 			ir = ilowlimit;

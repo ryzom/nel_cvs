@@ -10,6 +10,7 @@
 #endif // _MSC_VER > 1000
 
 #include "StringEx.h"
+#include "form.h"
 
 class CLoader;
 class CItemElt;
@@ -38,6 +39,11 @@ public:
 	void Load( const CStringEx& _sxfilename, const CStringEx _sxdate ); 
 	void Save( const CStringEx& _sxfilename );
 	bool Update();
+
+	// Convert CItem to a CForm (in is this)
+	void MakeForm (CForm &out);
+	// Convert CForm to CItem (out is this)
+	void MakeItem (CForm &in);
 
 	void SetCurrentValue( const unsigned int _index, const CStringEx s );
 	unsigned int GetNbElt() const;

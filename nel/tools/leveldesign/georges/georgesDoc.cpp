@@ -48,6 +48,48 @@ CGeorgesDoc::~CGeorgesDoc()
 {
 }
 
+void CGeorgesDoc::Undo()
+{
+	if( itur != UndoRedo.begin() )
+		--itur;
+	item.MakeItem( *itur );
+	UpdateAllViews( 0 );
+}
+
+void CGeorgesDoc::Redo()
+{
+	if( itur != UndoRedo.end() )
+		++itur;
+	if( itur != UndoRedo.end() )
+	{
+		item.MakeItem( *itur );
+		UpdateAllViews( 0 );
+	}
+	else
+		--itur;
+}
+
+void CGeorgesDoc::Push()
+{
+	++itur;
+	UndoRedo.erase( itur, UndoRedo.end() );
+	CForm form;
+	item.MakeForm( form );
+	UndoRedo.push_back( form );
+	itur = UndoRedo.end();
+	--itur;
+}
+
+void CGeorgesDoc::ResetUndoRedo()
+{
+	UndoRedo.clear();
+	CForm form;
+	item.MakeForm( form );
+	UndoRedo.push_back( form );
+	itur = UndoRedo.end();
+	--itur;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CGeorgesDoc serialization
 
@@ -64,9 +106,11 @@ void CGeorgesDoc::Serialize(CArchive& ar)
 	delete file;
 
 	if( Bstoring )
-		item.Save( sxfilepath );		
+		item.Save( sxfilepath );
 	else
-		item.Load( sxfilepath );		
+		item.Load( sxfilepath );
+
+	ResetUndoRedo();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -103,6 +147,7 @@ BOOL CGeorgesDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	DeleteContents();
 	item.Load( CStringEx( lpszPathName ) );		
 	SetModifiedFlag( FALSE );
+	ResetUndoRedo();
 	return( TRUE );
 }
 
@@ -202,26 +247,11 @@ BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName)
 		item.Load( DocumentName );		
 		UpdateAllViews( 0 );
 	}
+	ResetUndoRedo();
 #endif
-
 	return( TRUE );
 }
 
-void CGeorgesDoc::ReloadDocument()
-{
-/*
-	if( DocumentName.empty() )
-		return;
-	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
-	papp->SetRootDirectory( sxrootdirectory );
-	papp->SetWorkDirectory( sxworkdirectory );
-	DeleteContents();
-	item.Save( DocumentName );		
-	SetModifiedFlag( FALSE );
-	item.Load( DocumentName );		
-	UpdateAllViews( 0 );
-*/
-}
 
 BOOL CGeorgesDoc::OnNewDocument()
 {
@@ -258,6 +288,7 @@ void CGeorgesDoc::NewDocument( const CStringEx _sxfilename )
 	papp->SetWorkDirectory( sxworkdirectory );
 	DeleteContents();
 	item.New( _sxfilename );
+	ResetUndoRedo();
 	SetModifiedFlag( FALSE );
 }
 
@@ -293,6 +324,7 @@ void CGeorgesDoc::SetItemValue( const unsigned int _index, const CString s )
 {
 	item.SetCurrentValue( _index+1, CStringEx( LPCTSTR( s ) ) );
 	SetModifiedFlag( TRUE );
+	Push();
 }
 
 CString CGeorgesDoc::GetItemName( const unsigned int _index ) const
@@ -330,6 +362,7 @@ void CGeorgesDoc::SetItemParent( const unsigned int _index, const CString _s )
 	item.SetParent( _index, CStringEx( LPCTSTR( _s ) ) );
 	item.VirtualSaveLoad();
 	UpdateAllViews( 0 );
+	Push();
 }
 
 void CGeorgesDoc::SetItemActivity( const unsigned int _index, const CString _s )
@@ -337,6 +370,7 @@ void CGeorgesDoc::SetItemActivity( const unsigned int _index, const CString _s )
 	item.SetActivity( _index, CStringEx( LPCTSTR( _s ) ) );
 	item.VirtualSaveLoad();
 	UpdateAllViews( 0 );
+	Push();
 }
 
 unsigned int CGeorgesDoc::GetItemNbElt( const unsigned int _index ) const
@@ -390,9 +424,10 @@ CStringEx CGeorgesDoc::GetRootDirectory() const
 	return( sxrootdirectory );
 }
 
-void CGeorgesDoc::AddList( const unsigned int _index ) const
+void CGeorgesDoc::AddList( const unsigned int _index )
 {
 	item.AddList( _index ); 
+	Push();
 }
 /*
 void CGeorgesDoc::AddListChild( const unsigned int _index ) const
@@ -400,16 +435,19 @@ void CGeorgesDoc::AddListChild( const unsigned int _index ) const
 	item.AddListChild( _index ); 
 }
 */
-void CGeorgesDoc::DelListChild( const unsigned int _index ) const
+void CGeorgesDoc::DelListChild( const unsigned int _index )
 {
 	item.DelListChild( _index ); 
+	Push();
 }
 
 void CGeorgesDoc::AddParent( const unsigned int _index )
 {
+
 	item.AddParent( _index ); 
 	item.VirtualSaveLoad();
 	UpdateAllViews( 0 );
+	Push();
 }
 
 void CGeorgesDoc::DelParent( const unsigned int _index )
@@ -417,6 +455,7 @@ void CGeorgesDoc::DelParent( const unsigned int _index )
 	item.DelParent( _index ); 
 	item.VirtualSaveLoad();
 	UpdateAllViews( 0 );
+	Push();
 }
 
 /*

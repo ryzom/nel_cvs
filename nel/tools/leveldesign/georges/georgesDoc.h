@@ -24,12 +24,20 @@ protected: // create from serialization only
 	CStringEx	DocumentName;
 	CStringEx	sxrootdirectory;
 	CStringEx	sxworkdirectory;
+	std::vector< CForm > UndoRedo;
+	std::vector< CForm >::iterator itur;
 
 // Attributes
 public:
 
 // Operations 
 public:
+
+	void Undo(); // Stack out
+	void Redo(); // Stack out
+	void Push(); // Stack in
+	void ResetUndoRedo(); // Stack RAZ
+
 	void SetItemValue( const unsigned int _index, const CString s );
 	unsigned int GetItemNbElt() const;
 	unsigned int GetItemNbParent() const;
@@ -48,11 +56,9 @@ public:
 	void NewDocument( const CStringEx& _sxdfnname ) const;
 	void NewDocument( const CStringEx _sxfilename );
 	void UpdateDocument();
-	void ReloadDocument();
 
-	void AddList( const unsigned int _index ) const;
-//	void AddListChild( const unsigned int _index ) const;
-	void DelListChild( const unsigned int _index ) const;
+	void AddList( const unsigned int _index );
+	void DelListChild( const unsigned int _index );
 
 	CString GetItemParent( const unsigned int _index ) const;
 	void SetItemParent( const unsigned int _index, const CString _s );

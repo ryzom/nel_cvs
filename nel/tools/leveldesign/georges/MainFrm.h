@@ -50,8 +50,8 @@ protected:
 	//{{AFX_MSG(CMainFrame)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnClose();
-		// NOTE - the ClassWizard will add and remove member functions here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
+	afx_msg void OnEditUndo();
+	afx_msg void OnEditRedo();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

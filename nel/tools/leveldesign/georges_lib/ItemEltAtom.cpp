@@ -70,6 +70,7 @@ void CItemEltAtom::FillParent( const CFormBodyElt* const _pfbe )
 {
 	SetParentValue( _pfbe->GetValue() );
 	sxoldparentvalue = sxparentvalue;
+	SetCurrentValue( sxparentvalue );
 }
 
 void CItemEltAtom::FillCurrent( const CFormBodyElt* const _pfbe )
@@ -87,8 +88,7 @@ CItemElt* CItemEltAtom::Clone()
 
 CFormBodyElt* CItemEltAtom::BuildForm()
 {
-//	if( !ITEM_ISLISTCHILD && sxoldcurrentvalue.empty() && sxcurrentvalue.empty() )
-	if( !bmodified && sxoldcurrentvalue.empty() && sxcurrentvalue.empty() )
+	if( !bmodified && sxoldcurrentvalue.empty() ) /* && sxcurrentvalue.empty() ??? */
 		return( 0 );
 	CFormBodyEltAtom* pfbea = new CFormBodyEltAtom();
 	pfbea->SetName( sxname );

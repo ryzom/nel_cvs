@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "Georges.h"
+#include "Georgesdoc.h"
 
 #include "MainFrm.h"
 
@@ -19,10 +20,10 @@ IMPLEMENT_DYNCREATE(CMainFrame, CMDIFrameWnd)
 
 BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	//{{AFX_MSG_MAP(CMainFrame)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code !
 	ON_WM_CREATE()
 	ON_WM_CLOSE()
+	ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
+	ON_COMMAND(ID_EDIT_REDO, OnEditRedo)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -122,3 +123,24 @@ void CMainFrame::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame message handlers
 
+void CMainFrame::OnEditUndo() 
+{
+	CMDIChildWnd *pChild = MDIGetActive();
+	if (pChild == NULL)
+		return;
+	CGeorgesDoc *pDoc = (CGeorgesDoc*)(pChild->GetActiveDocument());
+	if (pDoc == NULL)
+		return;
+	pDoc->Undo();
+}
+
+void CMainFrame::OnEditRedo() 
+{
+	CMDIChildWnd *pChild = MDIGetActive();
+	if (pChild == NULL)
+		return;
+	CGeorgesDoc *pDoc = (CGeorgesDoc*)(pChild->GetActiveDocument());
+	if (pDoc == NULL)
+		return;
+	pDoc->Redo();
+}

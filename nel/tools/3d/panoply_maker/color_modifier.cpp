@@ -1,7 +1,7 @@
 /** \file color_modifier.cpp
  * A class describing color modifications
  *
- * $Id: color_modifier.cpp,v 1.3 2002/05/15 09:17:50 vizerie Exp $
+ * $Id: color_modifier.cpp,v 1.4 2002/05/27 08:16:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -119,7 +119,7 @@ void CColorModifier::evalBitmapStats(const NLMISC::CBitmap &srcBitmap,
 		{
 			float h, l, s;
 		
-			float intensity = mask->A * (1.f / 255.f);			
+			float intensity = mask->R * (1.f / 255.f);			
 			bool achromatic = src->convertToHLS(h, l, s);
 
 			float grey = 0.299f * src->R + 0.587f * src->G + 0.114f * src->B;

@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.23 2001/04/17 15:32:54 lecroart Exp $
+ * $Id: common.h,v 1.24 2001/04/25 16:53:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <sstream>
 
 
 namespace	NLMISC

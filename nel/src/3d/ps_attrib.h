@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.8 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_attrib.h,v 1.9 2001/12/19 15:44:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -479,6 +479,7 @@ typedef CPSAttrib<NLMISC::CVector> TPSAttribVector;
 typedef CPSAttrib<NLMISC::CRGBA>   TPSAttribRGBA;
 typedef CPSAttrib<float>		   TPSAttribFloat;	
 typedef CPSAttrib<uint32>		   TPSAttribUInt;	
+typedef CPSAttrib<uint8>		   TPSAttribUInt8;	
 typedef CPSAttrib<TAnimationTime>  TPSAttribTime;
 
 

@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.21 2003/02/06 09:09:25 boucher Exp $
+ * $Id: u_audio_mixer.h,v 1.22 2003/03/03 13:03:46 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_U_AUDIO_MIXER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/string_mapper.h"
 #include "nel/sound/u_source.h"
 #include "nel/ligo/primitive.h"
 #include <vector>
@@ -81,7 +82,7 @@ public:
 	/** Structure that contain the background flags.*/
 	struct TBackgroundFlags
 	{
-		// speudo enum
+		// speudo enum to build constante in class def :)
 		enum 
 		{
 			/// Number of filter flags in the background.
@@ -97,7 +98,7 @@ public:
 		}
 	};
 
-	/** Structure that contain the background filter fadein and fade out
+	/** Structure that contain the background filter fadein and fade out delay
 	 *  This are configuration data.
 	 */
 	struct TBackgroundFilterFades
@@ -115,8 +116,21 @@ public:
 		}
 	};
 
+	//@{
+	//@name Init methods
 	/// Create the audio mixer singleton and return a pointer to its instance
 	static UAudioMixer	*createAudioMixer();
+	/** Set the global path to the sample banks
+	 *	If you have specified some sample bank to load in the 
+	 *	mixer comfig file, you MUST set the sample path
+	 *	BEFORE calling init.
+	 */
+	virtual void		setSamplePath(const std::string& path) = 0;
+	/** Set the global path to the packeck sheet files.
+	 *	This must be set BEFORE calling init.
+	 *	Default is to store packed sheet in the current directory.
+	 */
+	virtual void		setPackedSheetPath(const std::string &path) =0;
 	/** Initialization
 	 *
 	 * In case of failure, can throw one of these ESoundDriver (Exception) objects:
@@ -162,16 +176,16 @@ public:
 	 */
 	virtual void		setLowWaterMark(uint value) = 0;
 
+	//@}
+
 
 	 /// Resets the audio system (deletes all the sources, include envsounds)
 	virtual void		reset() = 0;
 	/// Disables or reenables the sound
 	virtual void		enable( bool b ) = 0;
 
-	/** Load environment effects
-	 *	\deprecated
-	 */
-//	virtual void		loadEnvEffects( const char *filename ) = 0;
+	//@{
+	//@name Sample banks related methods
 	/** Load buffers. Returns the number of buffers successfully loaded.
 	 *  If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
 	 *	\param async If true, the sample are loaded in a background thread.
@@ -190,9 +204,10 @@ public:
 	/** Return the total size in byte of loaded samples.
 	 */
 	virtual uint32		getLoadedSampleSize() =0;
+	//@}
 
 	/// Get a TSoundId from a name (returns NULL if not found)
-	virtual TSoundId	getSoundId( const std::string &name ) = 0;
+	virtual TSoundId	getSoundId( const NLMISC::TStringId &name ) = 0;
 
 	/** Add a logical sound source (returns NULL if name not found).
 	 * If spawn is true, the source will auto-delete after playing. If so, the return USource* pointer
@@ -200,7 +215,7 @@ public:
 	 * pass a callback function that will be called (if not NULL) just before deleting the spawned
 	 * source.
 	 */
-	virtual USource		*createSource( const std::string &name, bool spawn=false, TSpawnEndCallback cb=NULL, void *callbackUserParam = NULL, NL3D::CCluster *cluster = 0, CSoundContext *context=0) = 0;
+	virtual USource		*createSource( const NLMISC::TStringId &name, bool spawn=false, TSpawnEndCallback cb=NULL, void *callbackUserParam = NULL, NL3D::CCluster *cluster = 0, CSoundContext *context=0) = 0;
 	/// Add a logical sound source (by sound id). To remove a source, just delete it. See createSource(const char*)
 	virtual USource		*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL, void *callbackUserParam  = NULL, NL3D::CCluster *cluster = 0, CSoundContext *context=0 ) = 0;
 
@@ -221,8 +236,10 @@ public:
 	virtual void		update() = 0;
 
 
-	/// Return the names of the sounds (call this method after loadSounds())
-	virtual void		getSoundNames( std::vector<std::string>& names ) const = 0;
+	//@{
+	//@name Statictic and utility methods
+	/// Fill a vector with the names of all loaded sounds.
+	virtual void		getSoundNames( std::vector<NLMISC::TStringId> &names ) const = 0;
 	/// Return the number of mixing tracks (voices)
 	virtual uint		getPolyphony() const = 0;
 	/// Return the number of sources
@@ -233,15 +250,18 @@ public:
 	virtual uint		getNumberAvailableTracks() const = 0;
 	/// Return a string showing the playing sources
 	virtual std::string	getSourcesStats() const = 0;
-
-	/// Set the global path to the sample banks
-	virtual void		setSamplePath(const std::string& path) = 0;
-
+	virtual void		getPlayingSoundsPos(bool virtualPos, std::vector<std::pair<bool, NLMISC::CVector> > &pos) =0;
 	/** Write profiling information about the mixer to the output stream.
 	 *  \param out The output stream to which to write the information
 	 */
 	virtual void		writeProfile(std::ostream& out) = 0;
+	//@}
 
+
+
+
+	//@{
+	//@name Background sounds
 	virtual void		setBackgroundFlagName(uint flagIndex, const std::string &flagName) = 0;
 	virtual void		setBackgroundFlagShortName(uint flagIndex, const std::string &flagShortName) = 0;
 	virtual const std::string &getBackgroundFlagName(uint flagIndex) =0;
@@ -251,27 +271,38 @@ public:
 	virtual void		setBackgroundFilterFades(const TBackgroundFilterFades &backgroundFilterFades) = 0;
 	virtual const TBackgroundFilterFades &getBackgroundFilterFades() = 0;
 
+	virtual void		loadBackgroundAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot) =0;
+	virtual void		loadBackgroundSound (const std::string &continent) = 0;
+	virtual void		playBackgroundSound () = 0;
+	virtual void		stopBackgroundSound () = 0;
+
 	/// Deprecated
 	virtual void		loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region) = 0;
 	/// Deprecated
 	virtual void		loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region) = 0;
 	/// Deprecated
 	virtual void		loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region) = 0;
-	virtual void		loadBackgroundAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot) =0;
-	virtual void		loadBackgroundSound (const std::string &continent) = 0;
-	virtual void		playBackgroundSound () = 0;
-	virtual void		stopBackgroundSound () = 0;
+	//@}
 
-	virtual void		getPlayingSoundsPos(bool virtualPos, std::vector<std::pair<bool, NLMISC::CVector> > &pos) =0;
+	//@{
+	//@name User controled variable
+	/** Set the value of a user variable.
+	 *	User variable are variable that can be used to control
+	 *	the gain or tranpose of all the instance (source) of a 
+	 *	given sound.
+	 *	This has been initialy design to control the gain of any
+	 *	source playing some atmospheric sound (like rain) according
+	 *	to the intensity of the effect (ie small rain or big rain).
+	 *	Binding from user var to sound parameter is done in
+	 *	one or more george sheet .user_var_binding.
+	 */
+	virtual void		setUserVar(NLMISC::TStringId varName, float value) =0;
+	/// Return the current value of a user var.
+	virtual float		getUserVar(NLMISC::TStringId varName) =0;
+	//@}
 
 	/// Destructor
 	virtual				~UAudioMixer() {}
-
-protected:
-
-	/// Constructor
-	UAudioMixer() {}
-
 };
 
 

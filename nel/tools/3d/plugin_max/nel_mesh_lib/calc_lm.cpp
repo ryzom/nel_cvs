@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * <File description>
  *
- * $Id: calc_lm.cpp,v 1.10 2001/07/05 09:42:31 besson Exp $
+ * $Id: calc_lm.cpp,v 1.11 2001/07/11 08:27:24 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,8 @@
 #include "3d/bsp_tree.h"
 #include "3d/quad_grid.h"
 
+#include "calc_lm.h"
+
 #include <vector>
 
 using namespace std;
@@ -53,7 +55,6 @@ using namespace NLMISC;
 // TOOLS
 // *****
 
-#define MAXLIGHTMAPSIZE 1024
 
 // ***********************************************************************************************
 struct SLightBuild
@@ -86,6 +87,7 @@ struct SLightBuild
 		Ambient = CRGBA(0, 0, 0, 0);
 		Diffuse = CRGBA(0, 0, 0, 0);
 		Specular = CRGBA(0, 0, 0, 0);
+		bCastShadow = false;
 		rMult = 1.0f;
 		GroupName = "GlobalLight";
 		pProjMap = NULL;
@@ -116,26 +118,11 @@ struct SLightBuild
 			return false;
 
 		// Is the light is animatable ? (TEMP MAT)
-		Modifier *pModifier = CExportNel::getModifier( node, Class_ID(NEL_LIGHT_CLASS_ID_A, 
-																	NEL_LIGHT_CLASS_ID_B) );
-		if( pModifier != NULL )
-		{
-			int bDynamic;
-			string sGroup;
-			// Get the value of the parameters
-			CExportNel::getValueByNameUsingParamBlock2( *pModifier, "bDynamic", 
-														(ParamType2)TYPE_BOOL, &bDynamic, 0);
-			CExportNel::getValueByNameUsingParamBlock2( *pModifier, "sGroup", 
-														(ParamType2)TYPE_STRING, &sGroup, 0);
-			if( bDynamic )
-				this->GroupName = sGroup;
-			else
-				this->GroupName = "GlobalLight";
-		}
+		int bDynamic = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_DYNAMIC, 0);
+		if( bDynamic )
+			this->GroupName = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, "GlobalLight");
 		else
-		{
 			this->GroupName = "GlobalLight";
-		}
 
 		// Eval the light state fot this tvTime
 		// Set the light mode
@@ -277,10 +264,10 @@ struct SLightBuild
 };
 
 // ***********************************************************************************************
-struct SLMPixel
-{
-	CRGBAF p[8]; // 8 Layers of lightmap possible
-};
+//struct SLMPixel
+//{
+//	CRGBAF p[8]; // 8 Layers of lightmap possible
+//};
 
 // ***********************************************************************************************
 struct SLMPlane
@@ -292,79 +279,70 @@ struct SLMPlane
 						// 2 - Pixel is interior and is calculated
 						// 3 - Pixel is exterior in this plane but interior in another of the same smooth group
 						// 4 - Pixel is exterior and is extrapolated
-	vector<SLMPixel> col; // 32 bits value for each pixel of each layer
+	vector<CRGBAF> col; // 32 bits value for each pixel of each layer.The layers are contiguous.
+	vector<uint8> ray;	// Raytrace composante
+						// 0 - Ray passed
+						// 1 - 254 - Ray blocked for one or more light
+						// 255 - Ray passed through spot
 	uint32 nNbLayerUsed;
 	vector<CMesh::CFace*> faces;	
 
 	// -----------------------------------------------------------------------------------------------
 	SLMPlane()
 	{ 
-		nNbLayerUsed = 0;
+		nNbLayerUsed = 1;
 		x = y = 0; w = h = 1; msk.resize(1); msk[0] = 0; 
 		col.resize(1); 
-		for( sint32 i = 0; i < 8; ++i )
-		{ col[0].p[i].R = col[0].p[i].G = col[0].p[i].B = col[0].p[i].A = 0.0f; }
+		col[0].R = col[0].G = col[0].B = col[0].A = 0.0f;
+		ray.resize(1);
+		ray[0] = 0;
+	}
+
+	// -----------------------------------------------------------------------------------------------
+	void newLayer()
+	{
+		col.resize( w*h*(nNbLayerUsed+1), CRGBAF(0.0f,0.0f,0.0f,0.0f) );
+		nNbLayerUsed += 1;
 	}
 
 	// -----------------------------------------------------------------------------------------------
 	bool isAllBlack (uint8 nLayerNb)
 	{
 		for( uint32 i = 0; i < w*h; ++i )
-			if( (col[i].p[nLayerNb].R > 0.06f) || // around 15/255
-				(col[i].p[nLayerNb].G > 0.06f) ||
-				(col[i].p[nLayerNb].B > 0.06f) )
+			if( (col[i+w*h*nLayerNb].R > 0.06f) || // around 15/255
+				(col[i+w*h*nLayerNb].G > 0.06f) ||
+				(col[i+w*h*nLayerNb].B > 0.06f) )
 				return false; // Not all is black
 		return true;
 	}
 
 	// -----------------------------------------------------------------------------------------------
-	void copyColToBitmap32( CBitmap* pImage, sint32 nLayerNb )
+	void copyColToBitmap32( CBitmap* pImage, uint32 nLayerNb )
 	{
+		if( nLayerNb >= nNbLayerUsed )
+			return;
 		if( ( pImage->getWidth() != w ) ||
 			( pImage->getHeight() != h ) )
 		{
-			// ResizeBitmap32
-			vector<uint8> vImgTemp;
-			uint32 i, j;
-
-			vImgTemp.resize( 4*w*h );
-			for( i = 0; i < 4*w*h; ++i )
-				vImgTemp[i] = 0;
-
-			vector<uint8> &vBitmap = pImage->getPixels();
-			uint32 nCurSizeX = pImage->getWidth();
-			uint32 nCurSizeY = pImage->getHeight();
-			for( j = 0; j < min(nCurSizeY,h); ++j )
-			for( i = 0; i < min(nCurSizeX,w); ++i )
-			{
-				vImgTemp[4*(i+j*w)+0] = vBitmap[4*(i+j*pImage->getWidth())+0];
-				vImgTemp[4*(i+j*w)+1] = vBitmap[4*(i+j*pImage->getWidth())+1];
-				vImgTemp[4*(i+j*w)+2] = vBitmap[4*(i+j*pImage->getWidth())+2];
-				vImgTemp[4*(i+j*w)+3] = vBitmap[4*(i+j*pImage->getWidth())+3];
-			}
-
 			pImage->resize(w,h);
-			vBitmap = pImage->getPixels();
-			for( i = 0; i < 4*w*h; ++i )
-				vBitmap[i] = vImgTemp[i];
 		}
 
 		vector<uint8> &vBitmap = pImage->getPixels();
 
 		for( uint32 i = 0; i < w*h; ++i )
 		{
-			if( (127.0*col[i].p[nLayerNb].R) > 255.0 )
+			if( (127.0*col[i+w*h*nLayerNb].R) > 255.0 )
 				vBitmap[4*i+0] = 255;
 			else
-				vBitmap[4*i+0] = (uint8)(127.0*col[i].p[nLayerNb].R);
-			if( (127.0*col[i].p[nLayerNb].G) > 255.0 )
+				vBitmap[4*i+0] = (uint8)(127.0*col[i+w*h*nLayerNb].R);
+			if( (127.0*col[i+w*h*nLayerNb].G) > 255.0 )
 				vBitmap[4*i+1] = 255;
 			else
-				vBitmap[4*i+1] = (uint8)(127.0*col[i].p[nLayerNb].G);
-			if( (127.0*col[i].p[nLayerNb].B) > 255.0 )
+				vBitmap[4*i+1] = (uint8)(127.0*col[i+w*h*nLayerNb].G);
+			if( (127.0*col[i+w*h*nLayerNb].B) > 255.0 )
 				vBitmap[4*i+2] = 255;
 			else
-				vBitmap[4*i+2] = (uint8)(127.0*col[i].p[nLayerNb].B);
+				vBitmap[4*i+2] = (uint8)(127.0*col[i+w*h*nLayerNb].B);
 			vBitmap[4*i+3] = 255;
 		}
 	}
@@ -373,7 +351,11 @@ struct SLMPlane
 	// Put me in the plane Dst (copy the col and mask or mask only)
 	void putIn( SLMPlane &Dst, bool bMaskOnly = false )
 	{
-		uint32 a, b;
+		uint32 a, b, c;
+
+		while( this->nNbLayerUsed > Dst.nNbLayerUsed )
+			Dst.newLayer();
+
 		if( ( (this->w + this->x) > Dst.w ) || ( (this->h + this->y) > Dst.h ) )
 		{
 			a = 0; b = 0;
@@ -384,7 +366,8 @@ struct SLMPlane
 			{
 				Dst.msk[(this->x+a)+(this->y+b)*Dst.w] = this->msk[a+b*this->w];
 				if( bMaskOnly == false )
-					Dst.col[(this->x+a)+(this->y+b)*Dst.w] = this->col[a+b*this->w];
+					for( c = 0; c < this->nNbLayerUsed; ++c )
+						Dst.col[(this->x+a)+(this->y+b)*Dst.w+Dst.w*Dst.h*c] = this->col[a+b*this->w+w*h*c];
 			}
 	}
 
@@ -426,35 +409,46 @@ struct SLMPlane
 	void resize( uint32 nNewSizeX, uint32 nNewSizeY )
 	{
 		vector<uint8> vImgTemp;
-		vector<SLMPixel> vImgTemp2;
-		uint32 i, j;
+		vector<CRGBAF> vImgTemp2;
+		uint32 i, j, k;
 
+		// Resize the mask
 		vImgTemp.resize(nNewSizeX*nNewSizeY);
 		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
 			vImgTemp[i] = 0;
 
 		for( j = 0; j < min(this->h,nNewSizeY); ++j )
 		for( i = 0; i < min(this->w,nNewSizeX); ++i )
-		{
 			vImgTemp[i+j*nNewSizeX] = this->msk[i+j*this->w];
-		}
 
 		this->msk.resize(nNewSizeX*nNewSizeY);
 		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
 			this->msk[i] = vImgTemp[i];
 
-		// The same as the mask but for the bitmap
-		vImgTemp2.resize(nNewSizeX*nNewSizeY);
+		// Resize the raytrace information
 		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-			for( j = 0; j < 8; ++j )
-			{ vImgTemp2[i].p[j].R = vImgTemp2[i].p[j].G = vImgTemp2[i].p[j].B = vImgTemp2[i].p[j].A = 0.0f; }
+			vImgTemp[i] = 0;
 
 		for( j = 0; j < min(this->h,nNewSizeY); ++j )
 		for( i = 0; i < min(this->w,nNewSizeX); ++i )
-			vImgTemp2[i+j*nNewSizeX] = this->col[i+j*this->w];
+			vImgTemp[i+j*nNewSizeX] = this->ray[i+j*this->w];
 
-		this->col.resize(nNewSizeX*nNewSizeY);
+		this->ray.resize(nNewSizeX*nNewSizeY);
 		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
+			this->ray[i] = vImgTemp[i];
+
+		// The same as the mask but for the bitmap
+		vImgTemp2.resize(nNewSizeX*nNewSizeY*nNbLayerUsed);
+		for( i = 0; i < nNewSizeX*nNewSizeY*nNbLayerUsed; ++i )
+		{ vImgTemp2[i].R = vImgTemp2[i].G = vImgTemp2[i].B = vImgTemp2[i].A = 0.0f; }
+
+		for( k = 0; k < nNbLayerUsed; ++k )
+			for( j = 0; j < min(this->h,nNewSizeY); ++j )
+			for( i = 0; i < min(this->w,nNewSizeX); ++i )
+				vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k] = this->col[i+j*this->w+w*h*k];
+
+		this->col.resize(nNewSizeX*nNewSizeY*nNbLayerUsed);
+		for( i = 0; i < nNewSizeX*nNewSizeY*nNbLayerUsed; ++i )
 			this->col[i] = vImgTemp2[i];
 
 		this->w = nNewSizeX;
@@ -471,21 +465,25 @@ struct SLMPlane
 		uint32 nNewSizeX = (uint32)(this->w * osFactor);
 		uint32 nNewSizeY = (uint32)(this->h * osFactor);
 		vector<uint8> vImgTemp;
-		vector<SLMPixel> vImgTemp2;
+		vector<uint8> vImgTempRay;
+		vector<CRGBAF> vImgTemp2;
 		uint32 i, j, k;
 
 		// Reduce the color
-		vImgTemp2.resize( nNewSizeX * nNewSizeY );
+		vImgTempRay.resize(nNewSizeX * nNewSizeY);
 		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-			for( j = 0; j < 8; ++j )
-			{ vImgTemp2[i].p[j].R = vImgTemp2[i].p[j].G = vImgTemp2[i].p[j].B = vImgTemp2[i].p[j].A = 0.0f; }
+			vImgTempRay[i] = 0;	
+
+		vImgTemp2.resize( nNewSizeX * nNewSizeY * nNbLayerUsed );
+		for( i = 0; i < nNewSizeX*nNewSizeY*nNbLayerUsed; ++i )
+		{ vImgTemp2[i].R = vImgTemp2[i].G = vImgTemp2[i].B = vImgTemp2[i].A = 0.0f; }
 
 		vImgTemp.resize( nNewSizeX * nNewSizeY );
 		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
 			vImgTemp[i] = 0;
 
 		double dx, dy, x, y;
-		if( osFactor > 1.0 ) // Up
+		if( osFactor > 1.0 ) // Enlarge the image
 		{
 			dx = 1.0/osFactor;
 			dy = 1.0/osFactor;
@@ -499,19 +497,20 @@ struct SLMPlane
 					{
 						vImgTemp[i+j*nNewSizeX] = 1;
 					}
-					for( k = 0; k < 8; ++k )
+					for( k = 0; k < nNbLayerUsed; ++k )
 					{
-						vImgTemp2[i+j*nNewSizeX].p[k].R += this->col[((sint32)x)+((sint32)y)*this->w].p[k].R;
-						vImgTemp2[i+j*nNewSizeX].p[k].G += this->col[((sint32)x)+((sint32)y)*this->w].p[k].G;
-						vImgTemp2[i+j*nNewSizeX].p[k].B += this->col[((sint32)x)+((sint32)y)*this->w].p[k].B;
-						vImgTemp2[i+j*nNewSizeX].p[k].A += 1.0f;
+						vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].R += col[((sint32)x)+((sint32)y)*w+w*h*k].R;
+						vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].G += col[((sint32)x)+((sint32)y)*w+w*h*k].G;
+						vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].B += col[((sint32)x)+((sint32)y)*w+w*h*k].B;
+						vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].A += 1.0f;
 					}
+					vImgTempRay[i+j*nNewSizeX] = ray[((sint32)x)+((sint32)y)*w];
 					x += dx;
 				}
 				y += dy;
 			}
 		}
-		else // Down
+		else // Reduce image
 		{
 			dx = osFactor;
 			dy = osFactor;
@@ -525,42 +524,134 @@ struct SLMPlane
 					{
 						vImgTemp[((sint32)x)+((sint32)y)*nNewSizeX] = 1;
 					}
-					for( k = 0; k < 8; ++k )
+					for( k = 0; k < nNbLayerUsed; ++k )
 					{
-						vImgTemp2[((sint32)x)+((sint32)y)*nNewSizeX].p[k].R += this->col[i+j*this->w].p[k].R;
-						vImgTemp2[((sint32)x)+((sint32)y)*nNewSizeX].p[k].G += this->col[i+j*this->w].p[k].G;
-						vImgTemp2[((sint32)x)+((sint32)y)*nNewSizeX].p[k].B += this->col[i+j*this->w].p[k].B;
-						vImgTemp2[((sint32)x)+((sint32)y)*nNewSizeX].p[k].A += 1.0f;
+						vImgTemp2[((sint32)x)+((sint32)y)*nNewSizeX+nNewSizeX*nNewSizeY*k].R += col[i+j*w+w*h*k].R;
+						vImgTemp2[((sint32)x)+((sint32)y)*nNewSizeX+nNewSizeX*nNewSizeY*k].G += col[i+j*w+w*h*k].G;
+						vImgTemp2[((sint32)x)+((sint32)y)*nNewSizeX+nNewSizeX*nNewSizeY*k].B += col[i+j*w+w*h*k].B;
+						vImgTemp2[((sint32)x)+((sint32)y)*nNewSizeX+nNewSizeX*nNewSizeY*k].A += 1.0f;
 					}
+					vImgTempRay[((sint32)x)+((sint32)y)*nNewSizeX] = ray[i+j*w];
 					x += dx;
 				}
 				y += dy;
 			}
 		}
 
+		for( k = 0; k < nNbLayerUsed; ++k )
 		for( j = 0; j < nNewSizeY; ++j )
 		for( i = 0; i < nNewSizeX; ++i )
-		for( k = 0; k < 8; ++k )
-		if( vImgTemp2[i+j*nNewSizeX].p[k].A > 1.0f )
+		if( vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].A > 1.0f )
 		{
-			vImgTemp2[i+j*nNewSizeX].p[k].R /= vImgTemp2[i+j*nNewSizeX].p[k].A;
-			vImgTemp2[i+j*nNewSizeX].p[k].G /= vImgTemp2[i+j*nNewSizeX].p[k].A;
-			vImgTemp2[i+j*nNewSizeX].p[k].B /= vImgTemp2[i+j*nNewSizeX].p[k].A;
-			vImgTemp2[i+j*nNewSizeX].p[k].A = 1.0f;			
+			vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].R /= vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].A;
+			vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].G /= vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].A;
+			vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].B /= vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].A;
+			vImgTemp2[i+j*nNewSizeX+nNewSizeX*nNewSizeY*k].A = 1.0f;
 		}
 
-		this->col.resize( nNewSizeX * nNewSizeY );
-		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-			this->col[i] = vImgTemp2[i];
+		col.resize( nNewSizeX * nNewSizeY * nNbLayerUsed );
+		for( i = 0; i < nNewSizeX*nNewSizeY*nNbLayerUsed; ++i )
+			col[i] = vImgTemp2[i];
 
-		this->msk.resize( nNewSizeX * nNewSizeY );
+		msk.resize( nNewSizeX * nNewSizeY );
 		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
-			this->msk[i] = vImgTemp[i];
+			msk[i] = vImgTemp[i];
+
+		ray.resize( nNewSizeX * nNewSizeY );
+		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
+			ray[i] = vImgTempRay[i];
 
 		this->w = nNewSizeX;
 		this->h = nNewSizeY;
 		this->x = (sint32)(this->x * osFactor);
 		this->y = (sint32)(this->y * osFactor);
+	}
+
+	// -----------------------------------------------------------------------------------------------
+	void createFrom(SLMPlane &Src)
+	{
+		uint i;
+		// Resize to the same size
+		resize(Src.w,Src.h);
+		x = Src.x;
+		y = Src.y;
+		// Copy the mask
+		for( i = 0; i < Src.w*Src.h; ++i )
+			msk[i] = Src.msk[i];
+		// Copy the faces
+		faces.resize(Src.faces.size());
+		for( i = 0; i < Src.faces.size(); ++i )
+			faces[i] = Src.faces[i];
+	}
+
+	// -----------------------------------------------------------------------------------------------
+	void copyFirstLayerTo(SLMPlane &Dst, uint8 nDstLayer)
+	{
+		uint i;
+
+		if( ( Dst.w != w ) || ( Dst.h != h ) )
+			Dst.resize( w, h );
+
+		while( nDstLayer >= Dst.nNbLayerUsed )
+			Dst.newLayer();
+
+		for( i = 0; i < w*h; ++i )
+			Dst.col[i+w*h*nDstLayer] = col[i];
+	}
+
+	// -----------------------------------------------------------------------------------------------
+	void contourDetect()
+	{
+		uint i, j;
+		vector<uint8> vImgTemp;
+		vImgTemp.resize(w*h);
+		for( i = 0; i < w*h; ++i )
+			vImgTemp[i] = 0;
+
+		for( j = 0; j < h; ++j )
+		for( i = 0; i < w; ++i )
+		{
+			if( i > 0 )
+			if( ray[i+j*w] != ray[i-1+j*w] )
+				vImgTemp[i+j*w] = 1;
+			if( i < (w-1) )
+			if( ray[i+j*w] != ray[i+1+j*w] )
+				vImgTemp[i+j*w] = 1;
+			if( j > 0 )
+			if( ray[i+j*w] != ray[i+(j-1)*w] )
+				vImgTemp[i+j*w] = 1;
+			if( j < (h-1) )
+			if( ray[i+j*w] != ray[i+(j+1)*w] )
+				vImgTemp[i+j*w] = 1;
+
+			if( ray[i+j*w] == 255 )
+				vImgTemp[i+j*w] = 1;
+		}
+
+		for( i = 0; i < w*h; ++i )
+			ray[i] = vImgTemp[i];
+
+
+		/*{
+			CBitmap b;
+			COFile f( "c:\\temp\\gloup.tga" );
+			b.resize(w,h);
+			vector<uint8>&bits = b.getPixels();
+			for( i = 0; i < w*h; ++i )
+			{
+				bits[i*4+0] = bits[i*4+1] = bits[i*4+2] = bits[i*4+3] = ray[i]*255;
+			}
+
+			b.writeTGA( f, 32 );
+		}*/
+	}
+
+	// -----------------------------------------------------------------------------------------------
+	void andRayWidthMask()
+	{
+		for( uint i = 0; i < w*h; ++i )
+		if( ray[i] == 0 ) 
+			msk[i] = 0;
 	}
 };
 
@@ -992,12 +1083,18 @@ struct SWorldRT
 // -----------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
 
+TTicks timerTotalTime = 0;
+TTicks timerBuildWorldRT = 0;
 TTicks timerCalcRT = 0;
 TTicks timerExportLighting = 0;
 TTicks timerInit = 0;
 TTicks timerCalc = 0;
 TTicks timerPlac = 0;
 TTicks timerSave = 0;
+TTicks timerCreate = 0;
+TTicks timerCreateResize = 0;
+TTicks timerModify = 0;
+TTicks timerModifyStretch, timerModifyCreate, timerModifyPutIn;
 
 CExportNelOptions gOptions;
 
@@ -1946,6 +2043,7 @@ void SortPlanesBySurface( vector<sint32> &PlaneGroup, vector<CMesh::CFace*>::ite
 // -----------------------------------------------------------------------------------------------
 void CreateLMPlaneFromFace( SLMPlane &Out, CMesh::CFace *pF )
 {
+	TTicks ttTemp = CTime::getPerformanceTime();
 	double	lumx1 = pF->Corner[0].Uvs[1].U, lumy1 = pF->Corner[0].Uvs[1].V, 
 			lumx2 = pF->Corner[1].Uvs[1].U, lumy2 = pF->Corner[1].Uvs[1].V, 
 			lumx3 = pF->Corner[2].Uvs[1].U, lumy3 = pF->Corner[2].Uvs[1].V;
@@ -1967,26 +2065,29 @@ void CreateLMPlaneFromFace( SLMPlane &Out, CMesh::CFace *pF )
 	if( maxy < lumy3 ) maxy = lumy3;
 
 	// Put the piece in the new basis (nPosX,nPosY)
-	Out.x = ((sint32)floor(minx-0.5));
-	Out.y = ((sint32)floor(miny-0.5));
+	//Out.x = ((sint32)floor(minx-0.5));
+	//Out.y = ((sint32)floor(miny-0.5));
+	sint32 decalX = ((sint32)floor(minx-0.5)) - Out.x;
+	sint32 decalY = ((sint32)floor(miny-0.5)) - Out.y;
+	sint32 sizeX = 1 + ((sint32)floor(maxx+0.5)) - ((sint32)floor(minx-0.5));
+	sint32 sizeY = 1 + ((sint32)floor(maxy+0.5)) - ((sint32)floor(miny-0.5));
 
 	lumx1 -= Out.x; lumy1 -= Out.y;
 	lumx2 -= Out.x; lumy2 -= Out.y;
 	lumx3 -= Out.x;	lumy3 -= Out.y;
 
-	Out.resize( 1 + ((sint32)floor(maxx+0.5)) - ((sint32)floor(minx-0.5)),
-				1 + ((sint32)floor(maxy+0.5)) - ((sint32)floor(miny-0.5)) );
-
-	for( j = 0; j < Out.w*Out.h; ++j )
-	{
-		Out.msk[j] = 0;
-	}
+	//TTicks ttTemp2 = CTime::getPerformanceTime();
+	//Out.resize( 1 + ((sint32)floor(maxx+0.5)) - ((sint32)floor(minx-0.5)),
+	//			1 + ((sint32)floor(maxy+0.5)) - ((sint32)floor(miny-0.5)) );
+	//timerCreateResize += CTime::getPerformanceTime() - ttTemp2;
+	//for( j = 0; j < Out.w*Out.h; ++j )
+	//	Out.msk[j] = 0;
 
 // The square interact with the triangle if an edge of the square is cut by an edge of the triangle
 // Or the square is in the triangle
 	
-	for( j = 0; j < Out.h-1; ++j )
-	for( k = 0; k < Out.w-1; ++k )
+	for( j = decalY; j < (decalY+sizeY-1); ++j )
+	for( k = decalX; k < (decalX+sizeX-1); ++k )
 	{
 		// Is the square (j,k) is interacting with the triangle
 		// This means : The square contains a point of the triangle (can be done for the 3 points)
@@ -2002,7 +2103,7 @@ void CreateLMPlaneFromFace( SLMPlane &Out, CMesh::CFace *pF )
 			Out.msk[k   + (1+j)*Out.w] = 1;
 			Out.msk[1+k + (1+j)*Out.w] = 1;
 		}
-
+		else
 		if( segmentIntersection(k+0.5, j+0.5, k+1.5, j+0.5, lumx1, lumy1, lumx2, lumy2) ||
 			segmentIntersection(k+0.5, j+0.5, k+1.5, j+0.5, lumx2, lumy2, lumx3, lumy3) ||
 			segmentIntersection(k+0.5, j+0.5, k+1.5, j+0.5, lumx3, lumy3, lumx1, lumy1) ||
@@ -2044,7 +2145,7 @@ void CreateLMPlaneFromFace( SLMPlane &Out, CMesh::CFace *pF )
 	Out.msk[1+((sint32)(lumx3-0.5)) + ((sint32)(lumy3-0.5))    *Out.w] = 1;
 	Out.msk[((sint32)(lumx3-0.5))   + (1+((sint32)(lumy3-0.5)))*Out.w] = 1;
 	Out.msk[1+((sint32)(lumx3-0.5)) + (1+((sint32)(lumy3-0.5)))*Out.w] = 1;
-
+	timerCreate += CTime::getPerformanceTime() - ttTemp;
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -2084,46 +2185,68 @@ void CreateLMPlaneFromFaceGroup( SLMPlane &Plane, vector<CMesh::CFace*>::iterato
 	{
 		pF = *ItParseI;
 		// Create Mask
-		SLMPlane Piece;
-
-		CreateLMPlaneFromFace( Piece, pF );
+		//SLMPlane Piece;
+		//CreateLMPlaneFromFace( Piece, pF );
 		// Because all is in absolute coordinate
-		Piece.x -= Plane.x;
-		Piece.y -= Plane.y;
-		Piece.putIn( Plane );
-		
+		//Piece.x -= Plane.x;
+		//Piece.y -= Plane.y;
+		//Piece.putIn( Plane );
+
+		CreateLMPlaneFromFace( Plane, pF );
+
 		++ItParseI;
 	}
 }
 
 // -----------------------------------------------------------------------------------------------
-void ModifyLMPlaneWithOverSampling( SLMPlane *pPlane, double rOverSampling )
-{	
+void ModifyLMPlaneWithOverSampling( SLMPlane *pPlane, double rOverSampling, bool bCreateMask )
+{
+	TTicks ttTemp = CTime::getPerformanceTime();
 	uint32 i, j;
 	vector<CMesh::CFace*>::iterator ItFace = pPlane->faces.begin();
 	uint32 nNbFace = pPlane->faces.size();
 
+	TTicks ttTemp2 = CTime::getPerformanceTime();
 	pPlane->stretch( rOverSampling );
-	for( j = 0; j < pPlane->w*pPlane->h; ++j ) // Reset the mask
-		pPlane->msk[j] = 0;
+	timerModifyStretch += CTime::getPerformanceTime() - ttTemp2;
+
 	MultiplyFaceUV1( ItFace, nNbFace, rOverSampling );
-	ItFace = pPlane->faces.begin();
-	// Recreate the form
-	for( i = 0; i < nNbFace; ++i )
+
+	if( bCreateMask )
 	{
-		CMesh::CFace *pF = *ItFace;
-		SLMPlane Piece;
-		CreateLMPlaneFromFace( Piece, pF );
-		Piece.x -= pPlane->x;
-		Piece.y -= pPlane->y;
-		Piece.putIn( *pPlane, true );		
-		++ItFace;
+		// Reset the mask
+		for( j = 0; j < pPlane->w*pPlane->h; ++j )
+			pPlane->msk[j] = 0;
+
+		ItFace = pPlane->faces.begin();
+		// Recreate the form
+		for( i = 0; i < nNbFace; ++i )
+		{
+			CMesh::CFace *pF = *ItFace;
+			//SLMPlane Piece;
+			//TTicks ttTemp3 = CTime::getPerformanceTime();
+			//CreateLMPlaneFromFace( Piece, pF );
+			//timerModifyCreate += CTime::getPerformanceTime() - ttTemp3;
+			//Piece.x -= pPlane->x;
+			//Piece.y -= pPlane->y;
+			//TTicks ttTemp4 = CTime::getPerformanceTime();
+			//Piece.putIn( *pPlane, true );
+			//timerModifyPutIn += CTime::getPerformanceTime() - ttTemp4;
+
+			TTicks ttTemp3 = CTime::getPerformanceTime();
+			CreateLMPlaneFromFace( *pPlane, pF );
+			timerModifyCreate += CTime::getPerformanceTime() - ttTemp3;
+
+			++ItFace;
+		}
 	}
+	timerModify += CTime::getPerformanceTime() - ttTemp;
 }
 
 // -----------------------------------------------------------------------------------------------
 void PlaceLMPlaneInLMPLane( SLMPlane &Dst, SLMPlane &Src )
 {
+	TTicks ttTemp = CTime::getPerformanceTime();
 	while( true )
 	{
 		if( ! Src.tryAllPosToPutIn( Dst ) )
@@ -2148,10 +2271,11 @@ void PlaceLMPlaneInLMPLane( SLMPlane &Dst, SLMPlane &Src )
 			break;
 		}
 	}
+	timerPlac += CTime::getPerformanceTime() - ttTemp;
 }
 
 // -----------------------------------------------------------------------------------------------
-CRGBAF TestRay( CVector &vLightPos, CVector &vVertexPos, SWorldRT &wrt, sint32 nLightNb )
+CRGBAF TestRay( CVector &vLightPos, CVector &vVertexPos, SWorldRT &wrt, sint32 nLightNb, uint8& rtVal )
 {
 	CRGBAF retValue(1.0f, 1.0f, 1.0f, 1.0f);
 	// Optim avec Cube Grid
@@ -2170,35 +2294,9 @@ CRGBAF TestRay( CVector &vLightPos, CVector &vVertexPos, SWorldRT &wrt, sint32 n
 
 		if( t.intersect( vLightPos, vVertexPos, hit, plane ) )
 		{
-			if( cell.pMBB->Materials[cell.pF->MaterialId].getBlend() )
+			if( cell.pMBB->Materials[cell.pF->MaterialId].getBlend() ||
+				cell.pMBB->Materials[cell.pF->MaterialId].getAlphaTest() )
 			{ // This is a transparent face we have to look in the texture
-				/*
-				ITexture *pT = cell.pMB->Materials[cell.pF->MaterialId].getTexture(0);
-				if( pT == NULL )
-				{
-					retValue *= 1.0f - (cell.pMB->Materials[cell.pF->MaterialId].getOpacity()/255.0f);
-				}
-				else
-				{
-					CVector gradU, gradV;
-					t.computeGradient(	cell.pF->Corner[0].Uvs[0].U,
-										cell.pF->Corner[1].Uvs[0].U,
-										cell.pF->Corner[2].Uvs[0].U, gradU );
-					t.computeGradient(	cell.pF->Corner[0].Uvs[0].V,
-										cell.pF->Corner[1].Uvs[0].V,
-										cell.pF->Corner[2].Uvs[0].V, gradV );
-					float u = cell.pF->Corner[0].Uvs[0].U+gradU*(hit-t.V0);
-					float v = cell.pF->Corner[0].Uvs[0].V+gradV*(hit-t.V0);
-					u = fmodf( u, 1.0f ); if( u < 0.0f ) u += 1.0f;
-					v = fmodf( v, 1.0f ); if( v < 0.0f ) v += 1.0f;
-
-					if( pT->getWidth() == 0 )
-						((CTextureFile*)pT)->doGenerate();
-					CRGBAF cPixMap = pT->getColor( u,v );
-					cPixMap /= 255.0f;
-					retValue *= 1.0f - (cPixMap.A * cell.pMB->Materials[cell.pF->MaterialId].getOpacity()/255.0f);
-				}
-				*/
 				ITexture *pT = cell.pMBB->Materials[cell.pF->MaterialId].getTexture(0);
 				CRGBAF cPixMap;
 				if( pT == NULL )
@@ -2238,9 +2336,11 @@ CRGBAF TestRay( CVector &vLightPos, CVector &vVertexPos, SWorldRT &wrt, sint32 n
 				{
 					retValue *= (1.0f - cPixMap.A);
 				}
+				rtVal = 255;
 			}
 			else
 			{ // This is not a transparent face so if we intersect we get shadow
+				if( rtVal < 255 ) rtVal += 1;
 				return CRGBAF(0.0f, 0.0f, 0.0f, 0.0f);
 			}
 		}
@@ -2252,11 +2352,11 @@ CRGBAF TestRay( CVector &vLightPos, CVector &vVertexPos, SWorldRT &wrt, sint32 n
 }
 
 // -----------------------------------------------------------------------------------------------
-CRGBAF RayTraceAVertex( CVector &p, SWorldRT &wrt, sint32 nLightNb, SLightBuild& rLight )
+CRGBAF RayTraceAVertex( CVector &p, SWorldRT &wrt, sint32 nLightNb, SLightBuild& rLight, uint8& rtVal )
 {
-	CRGBAF Factor = CRGBAF(0.0f, 0.0f, 0.0f, 0.0f);
+	TTicks ttTemp = CTime::getPerformanceTime();
 
-	TTicks zeTime = CTime::getPerformanceTime();
+	CRGBAF Factor = CRGBAF(0.0f, 0.0f, 0.0f, 0.0f);
 
 	switch( rLight.Type )
 	{
@@ -2271,7 +2371,7 @@ CRGBAF RayTraceAVertex( CVector &p, SWorldRT &wrt, sint32 nLightNb, SLightBuild&
 			light_p_distance = light_p_distance - (0.01f+(0.05f*light_p_distance/100.0f)); // Substract n centimeter
 			light_p.normalize();
 			light_p *= light_p_distance;
-			Factor = TestRay( rLight.Position, rLight.Position + light_p, wrt, nLightNb );
+			Factor = TestRay( rLight.Position, rLight.Position + light_p, wrt, nLightNb, rtVal );
 		}
 		break;
 		case SLightBuild::LightDir:
@@ -2288,13 +2388,13 @@ CRGBAF RayTraceAVertex( CVector &p, SWorldRT &wrt, sint32 nLightNb, SLightBuild&
 		break;
 	}
 
-	timerCalcRT += CTime::getPerformanceTime() - zeTime;
+	timerCalcRT += CTime::getPerformanceTime() - ttTemp;
 
 	return Factor;
 }
 
 // -----------------------------------------------------------------------------------------------
-CRGBAF LightAVertex( CVector &pRT, CVector &p, CVector &n, 
+CRGBAF LightAVertex( uint8 &rtVal, CVector &pRT, CVector &p, CVector &n, 
 					vector<sint32> &vLights, vector<SLightBuild> &AllLights,
 					SWorldRT &wrt, bool bDoubleSided, bool bRcvShadows )
 {
@@ -2435,7 +2535,7 @@ CRGBAF LightAVertex( CVector &pRT, CVector &p, CVector &n,
 		if( light_intensity > 0.0f )
 		{
 			if( bRcvShadows && rLight.bCastShadow && gOptions.bShadow )
-				RTFactor = RayTraceAVertex( pRT, wrt, vLights[nLight], rLight );
+				RTFactor = RayTraceAVertex( pRT, wrt, vLights[nLight], rLight, rtVal );
 			else
 				RTFactor = CRGBAF(1.0f, 1.0f, 1.0f, 1.0f);
 		}
@@ -2500,7 +2600,7 @@ void FirstLight( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, SLMPla
 	{
 		pF = *ItFace;
 
-		bool doubleSided = pMBB->Materials[pF->MaterialId].detDoubleSided();
+		bool doubleSided = pMBB->Materials[pF->MaterialId].getDoubleSided();
 		CRGBA matDiff = pMBB->Materials[pF->MaterialId].getDiffuse();
 		
 		// Select bounding square of the triangle
@@ -2525,6 +2625,7 @@ void FirstLight( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, SLMPla
 		// Process all the interior
 		for( k = nPosMinV; k <= nPosMaxV; ++k )
 		for( j = nPosMinU; j <= nPosMaxU; ++j )
+		if( Plane.msk[j-Plane.x + (k-Plane.y)*Plane.w] == 1 )
 		{
 			if( isInTriangleOrEdge( j+0.5, k+0.5,
 									pF->Corner[0].Uvs[1].U, pF->Corner[0].Uvs[1].V,
@@ -2534,11 +2635,13 @@ void FirstLight( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, SLMPla
 				CVector p = g.getInterpolatedVertex( j+0.5, k+0.5);
 				CVector n = g.getInterpolatedNormal( j+0.5, k+0.5);
 				CRGBAF vl = g.getInterpolatedColor( j+0.5, k+0.5);
-				CRGBAF col = LightAVertex( p, p, n, vLights, AllLights, wrt, doubleSided, pMBB->bRcvShadows );
-				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].R = col.R*(vl.R/255.0f)*(matDiff.R/255.0f);
-				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].G = col.G*(vl.G/255.0f)*(matDiff.G/255.0f);
-				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].B = col.B*(vl.B/255.0f)*(matDiff.B/255.0f);
-				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].A = 1.0f;
+				uint8 rtVal = Plane.ray[j-Plane.x + (k-Plane.y)*Plane.w];
+				CRGBAF col = LightAVertex( rtVal, p, p, n, vLights, AllLights, wrt, doubleSided, pMBB->bRcvShadows );
+				Plane.ray[j-Plane.x + (k-Plane.y)*Plane.w] = rtVal;
+				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w+Plane.w*Plane.h*nLayerNb].R = col.R*(vl.R/255.0f)*(matDiff.R/255.0f);
+				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w+Plane.w*Plane.h*nLayerNb].G = col.G*(vl.G/255.0f)*(matDiff.G/255.0f);
+				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w+Plane.w*Plane.h*nLayerNb].B = col.B*(vl.B/255.0f)*(matDiff.B/255.0f);
+				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w+Plane.w*Plane.h*nLayerNb].A = 1.0f;
 				// Darken the plane to indicate pixel is calculated
 				Plane.msk[j-Plane.x + (k-Plane.y)*Plane.w] = 2;
 			}
@@ -2566,14 +2669,14 @@ void SecondLight( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB,
 		sint32 nPosMinU, nPosMaxU, nPosMinV, nPosMaxV;
 		SGradient g;
 		
-		SLMPlane *pPlane1 = *ItPlanes1;
-		vector<CMesh::CFace*>::iterator ItParseI = pPlane1->faces.begin();
-		uint32 nNbFace1 = pPlane1->faces.size();
+		SLMPlane *pP1 = *ItPlanes1;
+		vector<CMesh::CFace*>::iterator ItParseI = pP1->faces.begin();
+		uint32 nNbFace1 = pP1->faces.size();
 		for( i = 0; i < nNbFace1; ++i )
 		{
 			CMesh::CFace *pF1 = *ItParseI;
 			double rMinU = 1000000.0, rMaxU = -1000000.0, rMinV = 1000000.0, rMaxV = -1000000.0;
-			bool doubleSided = pMBB->Materials[pF1->MaterialId].detDoubleSided();
+			bool doubleSided = pMBB->Materials[pF1->MaterialId].getDoubleSided();
 			CRGBA matDiff = pMBB->Materials[pF1->MaterialId].getDiffuse();
 
 			// Select bounding square of the triangle
@@ -2602,10 +2705,10 @@ void SecondLight( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB,
 			// Process all the exterior and try to link with other planes
 			for( k = nPosMinV; k < nPosMaxV; ++k )
 			for( j = nPosMinU; j < nPosMaxU; ++j )
-			if( ( pPlane1->msk[j-pPlane1->x   + (k-pPlane1->y)*pPlane1->w]   == 1 ) ||
-				( pPlane1->msk[1+j-pPlane1->x + (k-pPlane1->y)*pPlane1->w]   == 1 ) ||
-				( pPlane1->msk[1+j-pPlane1->x + (1+k-pPlane1->y)*pPlane1->w] == 1 ) ||
-				( pPlane1->msk[j-pPlane1->x   + (1+k-pPlane1->y)*pPlane1->w] == 1 ) )
+			if( ( pP1->msk[j-pP1->x   + (k-pP1->y)*pP1->w]   == 1 ) ||
+				( pP1->msk[1+j-pP1->x + (k-pP1->y)*pP1->w]   == 1 ) ||
+				( pP1->msk[1+j-pP1->x + (1+k-pP1->y)*pP1->w] == 1 ) ||
+				( pP1->msk[j-pP1->x   + (1+k-pP1->y)*pP1->w] == 1 ) )
 			if( segmentIntersection(j+0.5, k+0.5, j+1.5, k+0.5, lumx1, lumy1, lumx2, lumy2) ||
 				segmentIntersection(j+0.5, k+0.5, j+1.5, k+0.5, lumx2, lumy2, lumx3, lumy3) ||
 				segmentIntersection(j+0.5, k+0.5, j+1.5, k+0.5, lumx3, lumy3, lumx1, lumy1) ||
@@ -2623,7 +2726,7 @@ void SecondLight( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB,
 				segmentIntersection(j+1.5, k+1.5, j+0.5, k+1.5, lumx3, lumy3, lumx1, lumy1) )
 			{
 				// If all segment of the current face are linked with a face in this plane, no need to continue
-				vector<CMesh::CFace*>::iterator ItParseM = pPlane1->faces.begin();
+				vector<CMesh::CFace*>::iterator ItParseM = pP1->faces.begin();
 				uint32 nNbSeg = 0;
 				uint32 m, n;
 				for( m = 0; m < nNbFace1; ++m )
@@ -2640,41 +2743,45 @@ void SecondLight( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB,
 				vector<SLMPlane*>::iterator ItParsePlanes = ItPlanes;
 				for( m = 0; m < nNbPlanes; ++m )
 				{
-					SLMPlane *pPlane2 = *ItParsePlanes;
-					if( pPlane2 != pPlane1 )
-					for( n = 0; n < pPlane2->faces.size(); ++n )
+					SLMPlane *pP2 = *ItParsePlanes;
+					if( pP2 != pP1 )
+					for( n = 0; n < pP2->faces.size(); ++n )
 					{
-						CMesh::CFace *pF2 = pPlane2->faces[n];
+						CMesh::CFace *pF2 = pP2->faces[n];
 						if( FaceContinuous( pF1, pF2 ) )
 						{
 							for( uint32 o = 0; o < 4; ++o )
 							{
 								sint32 nAbsX = j + (o/2), nAbsY = k + (o%2);
 								// Is it a pixel to treat and pixel in the 2nd plane
-								if( ( pPlane1->msk[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w] == 1 ) &&
-									(nAbsX >= pPlane2->x) && (nAbsX < (pPlane2->x+(sint32)pPlane2->w) ) &&
-									(nAbsY >= pPlane2->y) && (nAbsY < (pPlane2->y+(sint32)pPlane2->h) ) )
+								if( ( pP1->msk[nAbsX-pP1->x + (nAbsY-pP1->y)*pP1->w] == 1 ) &&
+									(nAbsX >= pP2->x) && (nAbsX < (pP2->x+(sint32)pP2->w) ) &&
+									(nAbsY >= pP2->y) && (nAbsY < (pP2->y+(sint32)pP2->h) ) )
 								{
 									// Is it an interior calculated pixel ?
-									if( pPlane2->msk[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w] == 2 )
+									if( pP2->msk[nAbsX-pP2->x + (nAbsY-pP2->y)*pP2->w] == 2 )
 									{ // Yes -> ok so get it
-										pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb] = 
-													pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb];
-										pPlane1->msk[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w] = 3;
+										pP1->col[nAbsX-pP1->x + (nAbsY-pP1->y)*pP1->w+pP1->w*pP1->h*nLayerNb] = 
+											pP2->col[nAbsX-pP2->x + (nAbsY-pP2->y)*pP2->w+pP2->w*pP2->h*nLayerNb];
+										pP1->msk[nAbsX-pP1->x + (nAbsY-pP1->y)*pP1->w] = 3;
+										pP1->ray[nAbsX-pP1->x + (nAbsY-pP1->y)*pP1->w] = 
+											pP2->ray[nAbsX-pP2->x + (nAbsY-pP2->y)*pP2->w];
 									}
 									else
-									if( pPlane2->msk[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w] == 1 )
+									if( pP2->msk[nAbsX-pP2->x + (nAbsY-pP2->y)*pP2->w] == 1 )
 									{ // No -> Add extrapolated value
 										CVector iv = g.getInterpolatedVertex( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5);
 										CVector in = g.getInterpolatedNormal( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5);
 										CRGBAF vl = g.getInterpolatedColor( j+0.5, k+0.5);
 										CVector rv = g.getInterpolatedVertexInFace( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5, pF1 );
-										CRGBAF col = LightAVertex( rv, iv, in, vLights, AllLights, wrt, doubleSided, pMBB->bRcvShadows );
+										uint8 rtVal = pP2->ray[nAbsX-pP2->x + (nAbsY-pP2->y)*pP2->w];
+										CRGBAF col = LightAVertex( rtVal, rv, iv, in, vLights, AllLights, wrt, doubleSided, pMBB->bRcvShadows );
+										pP2->ray[nAbsX-pP2->x + (nAbsY-pP2->y)*pP2->w] = rtVal;
 										//float f = 1.0f;
-										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].R += col.R*(vl.R/255.0f)*(matDiff.R/255.0f);
-										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].G += col.G*(vl.G/255.0f)*(matDiff.G/255.0f);
-										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].B += col.B*(vl.B/255.0f)*(matDiff.B/255.0f);
-										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].A += 1.0f;
+										pP2->col[nAbsX-pP2->x + (nAbsY-pP2->y)*pP2->w+pP2->w*pP2->h*nLayerNb].R += col.R*(vl.R/255.0f)*(matDiff.R/255.0f);
+										pP2->col[nAbsX-pP2->x + (nAbsY-pP2->y)*pP2->w+pP2->w*pP2->h*nLayerNb].G += col.G*(vl.G/255.0f)*(matDiff.G/255.0f);
+										pP2->col[nAbsX-pP2->x + (nAbsY-pP2->y)*pP2->w+pP2->w*pP2->h*nLayerNb].B += col.B*(vl.B/255.0f)*(matDiff.B/255.0f);
+										pP2->col[nAbsX-pP2->x + (nAbsY-pP2->y)*pP2->w+pP2->w*pP2->h*nLayerNb].A += 1.0f;
 									}
 								}
 							}
@@ -2686,18 +2793,20 @@ void SecondLight( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB,
 				for( sint32 o = 0; o < 4; ++o )
 				{
 					sint32 nAbsX = j + (o/2), nAbsY = k + (o%2);
-					if( pPlane1->msk[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w] == 1 )
+					if( pP1->msk[nAbsX-pP1->x + (nAbsY-pP1->y)*pP1->w] == 1 )
 					{
 						CVector iv = g.getInterpolatedVertex( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5);
 						CVector in = g.getInterpolatedNormal( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5);
 						CRGBAF vl = g.getInterpolatedColor( j+0.5, k+0.5);
 						CVector rv = g.getInterpolatedVertexInFace( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5, pF1 );
-						CRGBAF col = LightAVertex( rv, iv, in, vLights, AllLights, wrt, doubleSided, pMBB->bRcvShadows );
+						uint8 rtVal = pP1->ray[nAbsX-pP1->x + (nAbsY-pP1->y)*pP1->w];
+						CRGBAF col = LightAVertex( rtVal, rv, iv, in, vLights, AllLights, wrt, doubleSided, pMBB->bRcvShadows );
+						pP1->ray[nAbsX-pP1->x + (nAbsY-pP1->y)*pP1->w] = rtVal;
 						//float f = 1.0f;
-						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].R += col.R*(vl.R/255.0f)*(matDiff.R/255.0f);
-						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].G += col.G*(vl.G/255.0f)*(matDiff.G/255.0f);
-						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].B += col.B*(vl.B/255.0f)*(matDiff.B/255.0f);
-						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].A += 1.0f;
+						pP1->col[nAbsX-pP1->x + (nAbsY-pP1->y)*pP1->w+pP1->w*pP1->h*nLayerNb].R += col.R*(vl.R/255.0f)*(matDiff.R/255.0f);
+						pP1->col[nAbsX-pP1->x + (nAbsY-pP1->y)*pP1->w+pP1->w*pP1->h*nLayerNb].G += col.G*(vl.G/255.0f)*(matDiff.G/255.0f);
+						pP1->col[nAbsX-pP1->x + (nAbsY-pP1->y)*pP1->w+pP1->w*pP1->h*nLayerNb].B += col.B*(vl.B/255.0f)*(matDiff.B/255.0f);
+						pP1->col[nAbsX-pP1->x + (nAbsY-pP1->y)*pP1->w+pP1->w*pP1->h*nLayerNb].A += 1.0f;
 					}
 				}
 			}
@@ -2711,19 +2820,19 @@ void SecondLight( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB,
 	for( nPlanes1 = 0; nPlanes1 < nNbPlanes; ++nPlanes1 )
 	{
 		uint32 j, k;
-		SLMPlane *pPlane1 = *ItPlanes1;
+		SLMPlane *pP1 = *ItPlanes1;
 		
-		for( k = 0; k < pPlane1->h; ++k )
-		for( j = 0; j < pPlane1->w; ++j )
+		for( k = 0; k < pP1->h; ++k )
+		for( j = 0; j < pP1->w; ++j )
 		{
-			if( pPlane1->msk[j+k*pPlane1->w] == 1 )
+			if( pP1->msk[j+k*pP1->w] == 1 )
 			{
-				sint32 nNbNormals = (sint32)pPlane1->col[j + k*pPlane1->w].p[nLayerNb].A;
-				pPlane1->col[j + k*pPlane1->w].p[nLayerNb].R /= nNbNormals;
-				pPlane1->col[j + k*pPlane1->w].p[nLayerNb].G /= nNbNormals;
-				pPlane1->col[j + k*pPlane1->w].p[nLayerNb].B /= nNbNormals;
-				pPlane1->col[j + k*pPlane1->w].p[nLayerNb].A = 1.0f;
-				pPlane1->msk[j + k*pPlane1->w] = 4;
+				sint32 nNbNormals = (sint32)pP1->col[j + k*pP1->w+pP1->w*pP1->h*nLayerNb].A;
+				pP1->col[j + k*pP1->w+pP1->w*pP1->h*nLayerNb].R /= nNbNormals;
+				pP1->col[j + k*pP1->w+pP1->w*pP1->h*nLayerNb].G /= nNbNormals;
+				pP1->col[j + k*pP1->w+pP1->w*pP1->h*nLayerNb].B /= nNbNormals;
+				pP1->col[j + k*pP1->w+pP1->w*pP1->h*nLayerNb].A = 1.0f;
+				pP1->msk[j + k*pP1->w] = 4;
 			}
 		}
 		++ItPlanes1;
@@ -2871,7 +2980,7 @@ void getLightInteract( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, 
 				if( AllLights[vvLights[j].operator[](0)].GroupName == AllLights[i].GroupName )
 					break;
 			// The light name does not exist create a new group
-			if( ( j == nNbGroup ) && ( nNbGroup < 8 ) )
+			if( j == nNbGroup )
 			{
 				vvLights.push_back( vlbTmp ); // Static lighting
 				vvLights[nNbGroup].push_back( i );
@@ -2978,6 +3087,7 @@ void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, vector< CMeshBase:
 void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip, bool absPath )
 {
 	uint32 i, j, k;
+	TTicks ttTemp = CTime::getPerformanceTime();
 
 	// Get all the nodes in the scene
 	if( gOptions.bExcludeNonSelected )
@@ -3062,6 +3172,7 @@ void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip,
 		}
 		wrt.proj[i].buildMipMaps();
 	}
+	timerBuildWorldRT += CTime::getPerformanceTime() - ttTemp;
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -3193,6 +3304,11 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 {
 	uint32 i, j;
 
+	timerTotalTime = CTime::getPerformanceTime();
+	timerBuildWorldRT = timerCalc = timerCalcRT = timerPlac = timerModify = timerCreate = 0;
+	timerModifyStretch = timerModifyCreate = timerModifyPutIn = 0;
+	timerCreateResize = 0;
+
 	gOptions = structExport;
 
 	SWorldRT WorldRT; // The static world for raytrace
@@ -3288,7 +3404,8 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 				for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
 				{
 					AllPlanes[AllPlanesPrevSize+nPlaneNb] = new SLMPlane;
-					AllPlanes[AllPlanesPrevSize+nPlaneNb]->nNbLayerUsed = vvLights.size();
+					for( nLight = 0; nLight < vvLights.size()-1; ++nLight )
+						AllPlanes[AllPlanesPrevSize+nPlaneNb]->newLayer();
 					// Fill planes (part of lightmap)
 					CreateLMPlaneFromFaceGroup( *AllPlanes[AllPlanesPrevSize+nPlaneNb], 
 												AllFaces.begin()+offsetPlane, FaceGroupByPlane[nPlaneNb] );
@@ -3296,7 +3413,63 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 					offsetPlane += FaceGroupByPlane[nPlaneNb];
 				}
 				// Make join between all planes (all planes must be created)
+				for( nLight = 0; nLight < vvLights.size(); ++nLight )
+				{
+					vector<SLMPlane*> TempPlanes;
+					TempPlanes.resize(FaceGroupByPlane.size());
+					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+					{
+						TempPlanes[nPlaneNb] = new SLMPlane;
+						TempPlanes[nPlaneNb]->createFrom(*AllPlanes[AllPlanesPrevSize+nPlaneNb]);
+					}
+					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+					{					
+						// Light the LightMap for the plane (interior only)
+						FirstLight( pMB, pMBB, *TempPlanes[nPlaneNb], 
+									AllVertices, MBMatrix, vvLights[nLight], AllLights,
+									0, WorldRT );
+					}
+					// Make extoriors
+					SecondLight( pMB, pMBB, TempPlanes.begin(), FaceGroupByPlane.size(),
+								AllVertices, MBMatrix, vvLights[nLight], AllLights,
+								0, WorldRT );
 
+					// Oversampling optimization
+					if( gOptions.nOverSampling > 1 )
+					{
+						for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+						{
+							// Detect which pixels need to be oversampled						
+							TempPlanes[nPlaneNb]->contourDetect();
+							// Enlarge image
+							ModifyLMPlaneWithOverSampling( TempPlanes[nPlaneNb], gOptions.nOverSampling, true );
+							// And the contour detection and the mask
+							TempPlanes[nPlaneNb]->andRayWidthMask();
+						}
+
+						for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+							FirstLight( pMB, pMBB, *TempPlanes[nPlaneNb], 
+										AllVertices, MBMatrix, vvLights[nLight], AllLights,
+										0, WorldRT );
+						SecondLight( pMB, pMBB, TempPlanes.begin(), FaceGroupByPlane.size(),
+									AllVertices, MBMatrix, vvLights[nLight],  AllLights,
+									0, WorldRT );
+
+						for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+							ModifyLMPlaneWithOverSampling( TempPlanes[nPlaneNb],
+															1.0/((double)gOptions.nOverSampling), false );
+					}
+
+
+					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+						TempPlanes[nPlaneNb]->copyFirstLayerTo(*AllPlanes[AllPlanesPrevSize+nPlaneNb],nLight);
+
+					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+						delete TempPlanes[nPlaneNb];
+				}
+
+
+				/*
 				for( nLight = 0; nLight < vvLights.size(); ++nLight )
 				{
 					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
@@ -3330,6 +3503,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 						ModifyLMPlaneWithOverSampling( AllPlanes[AllPlanesPrevSize+nPlaneNb],
 														1.0/((double)gOptions.nOverSampling) );
 				}
+				*/
 				// Next group of face with the same smooth group and the same material
 				offsetSmooth += FaceGroupBySmooth[nSmoothNb];
 			}
@@ -3412,6 +3586,43 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		delete WorldRT.vMBB[i];
 	}
 
+
+	// Temp Mat.
+/*
+	timerTotalTime = CTime::getPerformanceTime() - timerTotalTime;
+	char sDisp[2048];
+	char sTemp[128];
+	sDisp[0] = 0;
+	sprintf( sTemp, "Total=%f\n", (float)CTime::ticksToSecond( timerTotalTime ) );
+	strcat( sDisp, sTemp );
+	sprintf( sTemp, "buildWorldRT=%f\n", (float)CTime::ticksToSecond( timerBuildWorldRT ) );
+	strcat( sDisp, sTemp );	
+	sprintf( sTemp, "ModifyLMPlaneWithOverSampling=%f\n", (float)CTime::ticksToSecond( timerModify ) );
+	strcat( sDisp, sTemp );
+
+	sprintf( sTemp, "  stretch=%f\n", (float)CTime::ticksToSecond( timerModifyStretch ) );
+	strcat( sDisp, sTemp );
+	sprintf( sTemp, "  create=%f\n", (float)CTime::ticksToSecond( timerModifyCreate ) );
+	strcat( sDisp, sTemp );
+	sprintf( sTemp, "  putIn=%f\n", (float)CTime::ticksToSecond( timerModifyPutIn ) );
+	strcat( sDisp, sTemp );
+
+	sprintf( sTemp, "CreateLMPlaneFromFace=%f\n", (float)CTime::ticksToSecond( timerCreate ) );
+	strcat( sDisp, sTemp );
+
+	sprintf( sTemp, "  resize=%f\n", (float)CTime::ticksToSecond( timerCreateResize ) );
+	strcat( sDisp, sTemp );
+	
+	sprintf( sTemp, "PlaceLMPlaneInLMPLane=%f\n", (float)CTime::ticksToSecond( timerPlac ) );
+	strcat( sDisp, sTemp );
+	sprintf( sTemp, "RayTraceAVertex=%f\n", (float)CTime::ticksToSecond( timerCalcRT ) );
+	strcat( sDisp, sTemp );
+	
+	MessageBox( NULL, sDisp, "Some Info", MB_OK );
+*/
+	// Temp Mat.
+
+	
 	return true;	
 }
 

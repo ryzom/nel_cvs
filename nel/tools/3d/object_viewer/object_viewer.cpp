@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.33 2001/08/30 12:52:21 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.34 2001/09/04 16:19:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,9 @@
 #include <nel/misc/path.h>
 #include <nel/misc/time_nl.h>
 #include <nel/misc/config_file.h>
+
+#include <nel/sound/u_audio_mixer.h>
+
 
 #include "editable_range.h"
 #include "range_manager.h"
@@ -477,11 +480,26 @@ void CObjectViewer::go ()
 		sint64 newTime=NLMISC::CTime::getPerformanceTime ();
 		float fps = (float)(1.0 / NLMISC::CTime::ticksToSecond (newTime-lastTime));
 		lastTime=newTime;
-		char msgBar[512];
-		sprintf (msgBar, "Fps: %03.1f -- Nb tri: %d -- Texture VRAM used (Mo): %5.2f - Texture VRAM allocated (Mo): %5.2f -- Distance: %5.0f", fps, 
-			in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips, (float)CNELU::Driver->getUsedTextureMemory () / (float)(1024*1024), 
-			(float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024), 
-			(_SceneCenter-CNELU::Camera->getMatrix().getPos()).norm() );
+		char msgBar[1024];
+		uint nbPlayingSources, nbSources;
+		if (CSoundSystem::getAudioMixer())
+		{
+			nbPlayingSources = CSoundSystem::getAudioMixer()->getPlayingSourcesNumber();
+			nbSources = CSoundSystem::getAudioMixer()->getSourcesNumber();
+		}
+		else
+		{
+			nbPlayingSources = nbSources = NULL;
+		}
+														   
+		sprintf (msgBar, "Nb tri: %d -Texture VRAM used (Mo): %5.2f -Texture VRAM allocated (Mo): %5.2f -Distance: %5.0f -Sounds: %d/%d -Fps: %03.1f",						 
+						 in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips, (float)CNELU::Driver->getUsedTextureMemory () / (float)(1024*1024), 
+						 (float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024), 
+						 (_SceneCenter-CNELU::Camera->getMatrix().getPos()).norm(),						 
+						 nbPlayingSources,
+						 nbSources,
+						 fps
+						 );
 		_MainFrame->StatusBar.SetWindowText (msgBar);
 
 	
@@ -537,9 +555,7 @@ void CObjectViewer::releaseUI ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	// release sound
-	CSoundSystem::releaseSoundSystem();
-
+	
 	if (CNELU::Driver->isActive())
 	{
 		// register window position
@@ -557,6 +573,9 @@ void CObjectViewer::releaseUI ()
 
 	// exit
 	CNELU::release();
+
+	// release sound
+	CSoundSystem::releaseSoundSystem();
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.4 2001/08/27 08:24:36 berenguier Exp $
+ * $Id: u_transform.h,v 1.5 2002/01/07 10:23:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,6 +119,19 @@ public:
 	 */
 	virtual	void			unfreezeHRC()=0;
 	// @}
+
+
+	/** Set the current ordering layer for this transform.
+	  * Typically, this is used to sort transparent objects. Isn't used with solid objects.
+	  * For now :
+	  * Layer 0 is for underwater
+	  * Layer 1 is for water surfaces
+	  * Layer 2 is for object above water
+	  */
+	virtual void  setOrderingLayer(uint layer) = 0;
+
+	/// Get the ordering layer
+	virtual uint getOrderingLayer() const = 0;
 
 };
 

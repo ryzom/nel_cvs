@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.31 2000/12/07 09:15:52 chafik Exp $
+ * $Id: stream.h,v 1.32 2000/12/08 09:27:42 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,22 +198,22 @@ public:
 	 */
 	//@{
 
-	void			serial(uint8 &b) throw(EStream);
-	void			serial(sint8 &b) throw(EStream);
-	void			serial(uint16 &b) throw(EStream);
-	void			serial(sint16 &b) throw(EStream);
-	void			serial(uint32 &b) throw(EStream);
-	void			serial(sint32 &b) throw(EStream);
-	void			serial(uint64 &b) throw(EStream);
-	void			serial(sint64 &b) throw(EStream);
-	void			serial(float &b) throw(EStream);
-	void			serial(double &b) throw(EStream);
-	void			serial(bool &b) throw(EStream);
+	virtual void	serial(uint8 &b) throw(EStream);
+	virtual void	serial(sint8 &b) throw(EStream);
+	virtual void	serial(uint16 &b) throw(EStream);
+	virtual void	serial(sint16 &b) throw(EStream);
+	virtual void	serial(uint32 &b) throw(EStream);
+	virtual void	serial(sint32 &b) throw(EStream);
+	virtual void	serial(uint64 &b) throw(EStream);
+	virtual void	serial(sint64 &b) throw(EStream);
+	virtual void	serial(float &b) throw(EStream);
+	virtual void	serial(double &b) throw(EStream);
+	virtual void	serial(bool &b) throw(EStream);
 #ifndef NL_OS_CYGWIN
-	void			serial(char &b) throw(EStream);
+	virtual void	serial(char &b) throw(EStream);
 #endif
-	void			serial(std::string &b) throw(EStream);
-	void			serial(ucstring &b) throw(EStream);
+	virtual void	serial(std::string &b) throw(EStream);
+	virtual void	serial(ucstring &b) throw(EStream);
 	//@}
 
 

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.23 2002/02/15 16:59:30 vizerie Exp $
+ * $Id: particle_system.h,v 1.24 2002/04/25 08:26:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,27 +209,39 @@ public:
 	  */
 
 		//@{
-		/** attach a process (such as a located : see particle_system_process.h, and ps_located.h) to the system. 
+		/** Attach a process (such as a located : see particle_system_process.h, and ps_located.h) to the system. 
 		 *  It is then owned by the process and will be deleted by it. 
 		 *  if already present -> nl assert	 
 		 */
-		void attach(CParticleSystemProcess *ptr);
+		void						attach(CParticleSystemProcess *process);
 
-		/** remove a process
+		/** Detach a process from the system (but do not delete it)		  
+		  */ 
+		CParticleSystemProcess		*detach(uint index);
+
+		/** Test wether a process is part of this system
+		  */
+		bool						isProcess(CParticleSystemProcess *process) const;
+
+		/** Given its pointer, return an index to a process.
+		  * The process must be part of the system, otherwise an assertion is raised
+		  */
+		uint						getIndexOf(const CParticleSystemProcess *process) const;
+
+		/** Remove a process
 		 * It is deleted by the system
 		 *  if not present -> nl assert
 		 */
-		void remove(CParticleSystemProcess *ptr);
+		void						remove(CParticleSystemProcess *process);
 
 		/// get the number of process that are attached to the system
-
-		uint32 getNbProcess(void) const { return _ProcessVect.size(); }
+		uint32						getNbProcess(void) const { return _ProcessVect.size(); }
 
 		/**
 		 *  Get a pointer to the nth process.
 		 *  Out of range -> nlassert
 		 */	
-		CParticleSystemProcess *getProcess(uint32 index)
+		CParticleSystemProcess		*getProcess(uint32 index)
 		{ 
 			nlassert(index < _ProcessVect.size());
 			return _ProcessVect[index]; 

@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.8 2002/02/20 11:08:34 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.9 2002/04/25 08:26:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,13 +93,31 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		virtual bool			computeBBox(NLMISC::CAABBox &aabbox) const = 0 ;
 
 		/// Set the process owner. Called by the particle system during attachment.
-		void					setOwner(CParticleSystem *ps) { _Owner = ps ; }
+		void					setOwner(CParticleSystem *ps) 
+		{ 
+			if (ps == NULL)
+			{
+				releaseAllRef();
+			}
+			_Owner = ps ; 
+		}
 
 		/// Retrieve the particle system that owns this process
 		CParticleSystem			*getOwner(void) { return _Owner ; }
 
 		/// retrieve the particle system that owns this process (const version)
 		const CParticleSystem	*getOwner(void) const { return _Owner ; }
+
+		/** Release any reference this process may have on the given process.
+		  * Force example, this may be used to remove a target from a force.
+		  * For example, this is used when detaching a process of a system.
+		  */
+		virtual	void			 releaseRefTo(const CParticleSystemProcess *other) = 0;
+
+		/** Release any reference this process may have to other process of the system
+		  * For example, this is used when detaching a process of a system.
+		  */
+		virtual void			 releaseAllRef() = 0;
 
 		/// \name Useful methods for edition
 		//@{

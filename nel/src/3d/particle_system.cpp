@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.46 2002/02/28 12:59:50 besson Exp $
+ * $Id: particle_system.cpp,v 1.47 2002/04/25 08:26:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -711,6 +711,45 @@ void CParticleSystem::activatePresetBehaviour(TPresetBehaviour behaviour)
 	}
 	_PresetBehaviour = behaviour;
 }
+
+
+///=======================================================================================
+CParticleSystemProcess *CParticleSystem::detach(uint index)
+{
+	nlassert(index < _ProcessVect.size());
+	CParticleSystemProcess *proc = _ProcessVect[index];	
+	// release references other process may have to this system
+	for(TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
+	{
+		(*it)->releaseRefTo(proc);
+	}
+	// erase from the vector
+	_ProcessVect.erase(_ProcessVect.begin() + index);
+	proc->setOwner(NULL);
+	// not part of this system any more	
+	return proc;
+}
+
+///=======================================================================================
+bool CParticleSystem::isProcess(CParticleSystemProcess *process) const
+{
+	for(TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
+	{
+		if (*it == process) return true;
+	}
+	return false;
+}
+
+///=======================================================================================
+uint CParticleSystem::getIndexOf(const CParticleSystemProcess *process) const
+{
+	for(uint k = 0; k < _ProcessVect.size(); ++k)
+	{
+		if (_ProcessVect[k] == process) return k;
+	}
+	nlassert(0); // not a process of this system
+}
+
 
 
 } // NL3D

@@ -82,10 +82,13 @@ void cEventToCLogicEvent( CEvent& event, CLogicEvent& logicEvent )
 	else
 	{
 		/// message destination
-		logicEvent.EventAction.EventMessage.MessageDestination = string( (LPCSTR)event.m_sMessageDestination );
+		logicEvent.EventAction.EventMessage.Destination = string( (LPCSTR)event.m_sMessageDestination );
+		
+		/// message id
+		logicEvent.EventAction.EventMessage.MessageId = "LOGIC"; //string( (LPCSTR)event.m_sMessageID ); //TEMP!!!
 
 		/// message arguments
-		logicEvent.EventAction.EventMessage.MessageArguments = string( (LPCSTR)event.m_sArguments );
+		logicEvent.EventAction.EventMessage.Arguments = string( (LPCSTR)event.m_sArguments );
 	}
 
 } // cEventToCLogicEvent //
@@ -216,9 +219,9 @@ void cLogicStateToCState( CLogicState& logicState, CState& state )
 		
 		event->m_bActionIsMessage = !(*itEvt).EventAction.IsStateChange;
 		
-		event->m_sMessageDestination = CString( (*itEvt).EventAction.EventMessage.MessageDestination.c_str() );
-		//event->m_sMessageID = CString( (*itEvt).EventAction.EventMessage.MessageId.c_str() );
-		event->m_sArguments = CString( (*itEvt).EventAction.EventMessage.MessageArguments.c_str() );
+		event->m_sMessageDestination = CString( (*itEvt).EventAction.EventMessage.Destination.c_str() );
+		event->m_sMessageID = CString( (*itEvt).EventAction.EventMessage.MessageId.c_str() );
+		event->m_sArguments = CString( (*itEvt).EventAction.EventMessage.Arguments.c_str() );
 	
 		event->m_sStateChange = CString( (*itEvt).EventAction.StateChange.c_str() );
 		

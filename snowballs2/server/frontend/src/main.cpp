@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Frontend Service.
  *
- * $Id: main.cpp,v 1.4 2001/07/24 17:30:03 lecroart Exp $
+ * $Id: main.cpp,v 1.5 2001/07/25 12:36:47 lecroart Exp $
  */
 
 /*
@@ -261,7 +261,7 @@ void cbAddService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 		ItPlayer = localPlayers.find(to);
 		if ( ItPlayer == localPlayers.end() )
 		{
-			nlinfo( "New player id %s not found !", to );
+			nlinfo( "New player id %u not found !", to );
 		}
 		else
 		{
@@ -503,7 +503,7 @@ void onConnectionClient (TSockId from, const CLoginCookie &cookie)
 
 	id = cookie.getUserId();
 
-	nlinfo( "The client with uniq Id %d is connected", id );
+	nlinfo( "The client with uniq Id %u is connected", id );
 
 	// Add new client to the list of player managed by this FrontEnd
 	pair<_pmap::iterator, bool>
@@ -512,7 +512,10 @@ void onConnectionClient (TSockId from, const CLoginCookie &cookie)
 																  from )));
 	
 	// store the player info in appId
-	from->setAppId((uint64)(uint)&(player.second));
+
+	_pmap::iterator it = player.first;
+	_player *p = &((*it).second);
+	from->setAppId((uint64)(uint)p);
 
 	// Output: send the IDENTIFICATION number to the new connected client
 	CMessage msgout( CNetManager::getSIDA( "FS" ), "IDENTIFICATION" );
@@ -532,12 +535,15 @@ void onDisconnectClient (const std::string &serviceName, TSockId from, void *arg
 {
 	uint32 id;
 
-	id = ((_player *)(uint)(from->appId()))->id;
+
+	uint64 i = from->appId();
+	_player *p = (_player *)(uint)i;
+	id = p->id;
 
 	// remove the player from the local player list
 	localPlayers.erase(id);
 
-	nlinfo ("A client with uniq Id %d has disconnected", id );
+	nlinfo ("A client with uniq Id %u has disconnected", id );
 
 	// tell the login system that this client is disconnected
 	CLoginServer::clientDisconnected ( id );

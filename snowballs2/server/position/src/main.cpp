@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Position Service.
  *
- * $Id: main.cpp,v 1.4 2001/07/24 20:09:48 valignat Exp $
+ * $Id: main.cpp,v 1.5 2001/07/25 12:36:47 lecroart Exp $
  */
 
 /*
@@ -167,7 +167,7 @@ void cbPosition ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	ItPlayer = playerList.find( id );
 	if ( ItPlayer == playerList.end() )
 	{
-		nlinfo( "Player id %s not found !", id );
+		nlinfo( "Player id %u not found !", id );
 	}
 	else
 	{

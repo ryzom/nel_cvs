@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.55 2003/10/20 14:34:22 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.56 2003/10/22 09:50:31 cado Exp $
  *
  */
 
@@ -1828,7 +1828,7 @@ NLMISC_DYNVARIABLE(uint32, NetError, "Number of error on all networks cards")
 
 #endif // NL_OS_UNIX
 
-NLMISC_COMMAND (system, "Execute a system() call", "<command>")
+NLMISC_COMMAND (aes_system, "Execute a system() call", "<command>")
 {
 	if(args.size() <= 0)
 		return false;

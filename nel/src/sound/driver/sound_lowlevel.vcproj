@@ -73,6 +73,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/EHa /GX"
 				Optimization="3"
 				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="1"
@@ -82,6 +83,9 @@
 				OptimizeForWindowsApplication="TRUE"
 				PreprocessorDefinitions="NL_RELEASE_DEBUG;_LIB;_AFXDLL;LIBXML_STATIC;WIN32;NDEBUG"
 				StringPooling="TRUE"
+				ExceptionHandling="FALSE"
+				BasicRuntimeChecks="0"
+				SmallerTypeCheck="FALSE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
@@ -91,6 +95,7 @@
 				ProgramDataBaseFileName=".\../../../obj/ReleaseDebug/sound_lowlevel/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
+				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>

@@ -11,7 +11,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver_direct3d", "src\3d\d
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver_dsound", "src\sound\driver\dsound\driver_dsound.vcproj", "{309F8A55-BFBA-433B-8C3E-CB2223F799C3}"
 	ProjectSection(ProjectDependencies) = postProject
-		{4AF7ADB2-DAF8-4F04-9793-F92010001470} = {4AF7ADB2-DAF8-4F04-9793-F92010001470}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver_opengl", "src\3d\driver\opengl\driver_opengl.vcproj", "{6EBC5C17-A42F-4EA2-B790-D97E3DA72AC7}"
@@ -59,7 +58,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sound_lowlevel", "src\sound
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver_fmod", "src\sound\driver\fmod\driver_fmod.vcproj", "{9440443B-97BA-43C2-A762-31EEC8958BEE}"
 	ProjectSection(ProjectDependencies) = postProject
-		{89064E9B-14E9-4FB2-8536-A9151DF55C68} = {89064E9B-14E9-4FB2-8536-A9151DF55C68}
 	EndProjectSection
 EndProject
 Global

@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.17 2002/10/21 13:53:37 cado Exp $
+ * $Id: sheet_id.cpp,v 1.18 2002/10/21 13:59:50 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -278,9 +278,9 @@ string CSheetId::toString() const
 	else
 	{
 		// This nlwarning is commented out because the loggers are mutexed, therefore
-		// you couldn't you toString() within a nlwarning().
+		// you couldn't use toString() within a nlwarning().
 		//nlwarning("<CSheetId::toString> The sheet %08x is not in sheet_id.bin",_Id.Id);
-		return "";
+		return ::toString( "<Sheet %d not found in sheet_id.bin>", _Id.Id );
 	}
 
 } // toString //

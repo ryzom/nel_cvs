@@ -1,7 +1,7 @@
 /** \file animation_playlist.h
  * <File description>
  *
- * $Id: animation_playlist.h,v 1.2 2001/03/19 14:03:57 berenguier Exp $
+ * $Id: animation_playlist.h,v 1.3 2001/03/20 15:30:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,24 @@ namespace NL3D
 class CAnimationPlaylist : public NLMISC::CRefCount
 {
 public:
-	enum { empty=0xffffffff };
+	enum 
+	{ 
+		// 
+		empty=0xffffffff
+	};
+
+	/// Wrap mode for the play list
+	enum TWrapMode
+	{ 
+		/// Clamp the animation time. (default)
+		Clamp=0,
+
+		/// Repeat the animation.
+		Repeat,
+		
+		/// Disable the animation.
+		Disable,
+	};
 
 	/// Constructor
 	CAnimationPlaylist();
@@ -208,6 +225,22 @@ public:
 	  */
 	static float getWeightValue (float startWeightTime, float endWeightTime, float time, float startWeight, float endWeight, float smoothness);
 
+	/**
+	  * Set the wrap mode to use in the play list.
+	  *
+	  * Wrap mode tells the play list how to use an animation when current time is not in the animation.
+	  * \param wrapMode is the mode to use.
+	  */
+	void setWrapMode (TWrapMode wrapMode);
+
+	/**
+	  * Get the wrap mode in use in the play list.
+	  *
+	  * Wrap mode tells the play list how to use an animation when current time is not in the animation.
+	  * \return the wrap mode in use.
+	  */
+	TWrapMode getWrapMode () const;
+
 private:
 
 	// Animation in slot
@@ -239,6 +272,9 @@ private:
 
 	// Smoothness of the 
 	float				_Smoothness[CChannelMixer::NumAnimationSlot];
+
+	// Wrap mode
+	TWrapMode			_WrapMode;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file animation_playlist.cpp
  * <File description>
  *
- * $Id: animation_playlist.cpp,v 1.1 2001/03/16 16:29:28 corvazier Exp $
+ * $Id: animation_playlist.cpp,v 1.2 2001/03/20 15:30:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/3d/animation_playlist.h"
+#include <math.h>
 
 
 namespace NL3D 
@@ -35,6 +36,9 @@ CAnimationPlaylist::CAnimationPlaylist()
 {
 	// Empty the playlist
 	emptyPlayList ();
+
+	// Set default wrap mode
+	_WrapMode=Clamp;
 }
 
 // ***************************************************************************
@@ -165,27 +169,10 @@ void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, CAnimationTime time) 
 	// For each slot
 	for (uint8 s=0; s<CChannelMixer::NumAnimationSlot; s++)
 	{
-		// *** Set the animation
-
-		// empty ?
-		if (_Animations[s]==empty)
-			// Empty the slot
-			mixer.emptySlot (s);
-		else
-			// Set the animation id
-			mixer.setSlotAnimation (s, _Animations[s]);
-
-		// *** Set the skeleton weight
-
-		// empty ?
-		if (_SkeletonWeight[s]==empty)
-			// Empty the slot
-			mixer.resetSkeletonWeight (s);
-		else
-			// Set the animation id
-			mixer.applySkeletonWeight (s, _SkeletonWeight[s], 	_InvertWeight[s]);
-
 		// *** Set the time
+
+		// Animation enabled
+		bool enabled=true;
 
 		// Get the animationSet pointer from the mixer
 		const CAnimationSet *animSet=mixer.getAnimationSet ();
@@ -193,22 +180,72 @@ void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, CAnimationTime time) 
 		// If is exists
 		if (animSet)
 		{
-			// Get the animation
-			const CAnimation *pAnimation=animSet->getAnimation (_Animations[s]);
-
-			// If this animation exists
-			if (pAnimation)
+			if (_Animations[s]!=empty)
 			{
-				// Compute time
-				CAnimationTime animTime=pAnimation->getBeginTime ()+(time-_TimeOrigin[s])/_SpeedFactor[s];
+				// Get the animation
+				const CAnimation *pAnimation=animSet->getAnimation (_Animations[s]);
 
-				// Set the time
-				mixer.setSlotTime (s, animTime);
+				// If this animation exists
+				if (pAnimation)
+				{
+					// Compute the non-wrapped time
+					CAnimationTime wrappedTime=pAnimation->getBeginTime ()+(time-_TimeOrigin[s])/_SpeedFactor[s];
+
+					// Wrap mode
+					switch (_WrapMode)
+					{
+					case Clamp:
+						break;
+					case Repeat:
+						// Mod repeat the time
+						wrappedTime=pAnimation->getBeginTime()+(float)fmod (wrappedTime-pAnimation->getBeginTime(), pAnimation->getEndTime ()-
+							pAnimation->getBeginTime());
+						break;
+					case Disable:
+						// Disable the animation if out of bounds
+						if ((wrappedTime<pAnimation->getBeginTime ())||(wrappedTime>pAnimation->getEndTime ()))
+							enabled=false;
+						break;
+					}
+
+					// Set the time
+					if (enabled)
+						mixer.setSlotTime (s, wrappedTime);
+				}
 			}
 		}
 
-		// *** Set the weight
-		mixer.setSlotWeight (s, getWeightValue (_StartWeightTime[s], _EndWeightTime[s], time, _StartWeight[s], _EndWeight[s], _Smoothness[s]));
+		// *** Set the animation
+	
+		// Still enabled
+		if (enabled)
+		{
+			// empty ?
+			if (_Animations[s]==empty)
+				// Empty the slot
+				mixer.emptySlot (s);
+			else
+				// Set the animation id
+				mixer.setSlotAnimation (s, _Animations[s]);
+
+			// *** Set the skeleton weight
+
+			// empty ?
+			if (_SkeletonWeight[s]==empty)
+				// Empty the slot
+				mixer.resetSkeletonWeight (s);
+			else
+				// Set the animation id
+				mixer.applySkeletonWeight (s, _SkeletonWeight[s], 	_InvertWeight[s]);
+
+			// *** Set the weight
+			mixer.setSlotWeight (s, getWeightValue (_StartWeightTime[s], _EndWeightTime[s], time, _StartWeight[s], _EndWeight[s], _Smoothness[s]));
+		}
+		else
+		{
+			// Disable this slot
+			mixer.emptySlot (s);
+		}
 	}
 }
 
@@ -245,5 +282,17 @@ float CAnimationPlaylist::getWeightValue (float startWeightTime, float endWeight
 }
 
 // ***************************************************************************
+
+void CAnimationPlaylist::setWrapMode (TWrapMode wrapMode)
+{
+	_WrapMode=wrapMode;
+}
+
+// ***************************************************************************
+
+CAnimationPlaylist::TWrapMode CAnimationPlaylist::getWrapMode () const
+{
+	return _WrapMode;
+}
 
 } // NL3D

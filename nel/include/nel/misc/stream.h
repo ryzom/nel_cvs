@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.62 2004/02/19 09:47:04 vizerie Exp $
+ * $Id: stream.h,v 1.63 2004/02/20 11:34:54 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,10 @@ namespace	NLMISC
 
 class	IStream;
 class	CMemStream;
+
+struct nelhash {
+  size_t operator()(const uint64 &x) const { return x; }
+};
 
 
 // ======================================================================================================
@@ -887,9 +891,9 @@ private:
 
 	// Ptr registry. We store 64 bit Id, to be compatible with futur 64+ bits pointers.
 	uint32								_NextSerialPtrId;
-	std::hash_map<uint64, void*>		_IdMap;
-	typedef std::hash_map<uint64, void*>::iterator	ItIdMap;
-	typedef std::hash_map<uint64, void*>::value_type	ValueIdMap;
+	std::hash_map<uint64, void*,nelhash>		_IdMap;
+	typedef std::hash_map<uint64, void*,nelhash>::iterator	ItIdMap;
+	typedef std::hash_map<uint64, void*,nelhash>::value_type	ValueIdMap;
 
 	// Ptr serialisation.
 	void			serialIStreamable(IStreamable* &ptr) ;

@@ -1,7 +1,7 @@
 /** \file visual_collision_manager_user.h
  * UVisualCollisionManager implementation.
  *
- * $Id: visual_collision_manager_user.h,v 1.6 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: visual_collision_manager_user.h,v 1.7 2004/05/07 11:41:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,13 +80,13 @@ public:
 		_Manager.setSunContributionPower (power, maxThreshold);
 	}
 
-	virtual float					getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone)
+	virtual float					getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone, bool playerIsInside)
 	{
 		NL3D_MEM_CAMERA_COLLISION
-		return _Manager.getCameraCollision (start, end, radius, cone);
+		return _Manager.getCameraCollision (start, end, radius, cone, playerIsInside);
 	}
 	
-	virtual uint					addMeshInstanceCollision(const UVisualCollisionMesh &mesh, const NLMISC::CMatrix &instanceMatrix);
+	virtual uint					addMeshInstanceCollision(const UVisualCollisionMesh &mesh, const NLMISC::CMatrix &instanceMatrix, bool avoidCollisionWhenInside, bool avoidCollisionWhenOutside);
 
 	virtual void					removeMeshCollision(uint id)
 	{

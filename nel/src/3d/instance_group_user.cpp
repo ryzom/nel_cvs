@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.36 2004/04/09 14:32:01 vizerie Exp $
+ * $Id: instance_group_user.cpp,v 1.37 2004/05/07 11:41:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -587,6 +587,23 @@ void			CInstanceGroupUser::displayDebugClusters(UDriver *drv, UTextContext *txtC
 	((CDriverUser*)drv)->restoreMatrixContext();
 }
 
+// ***************************************************************************
+bool			CInstanceGroupUser::dontCastShadowForInterior(uint instance) const
+{
+	NL3D_MEM_IG
+	if (instance>=_InstanceGroup.getNumInstance ())
+		return false;
+	return _InstanceGroup.getInstance(instance).DontCastShadowForInterior;
+}
+
+// ***************************************************************************
+bool			CInstanceGroupUser::dontCastShadowForExterior(uint instance) const
+{
+	NL3D_MEM_IG
+	if (instance>=_InstanceGroup.getNumInstance ())
+		return false;
+	return _InstanceGroup.getInstance(instance).DontCastShadowForExterior;
+}
 
 
 } // NL3D

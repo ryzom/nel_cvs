@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.cpp
  * <File description>
  *
- * $Id: visual_collision_manager.cpp,v 1.9 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: visual_collision_manager.cpp,v 1.10 2004/05/07 11:41:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,7 +141,7 @@ void					CVisualCollisionManager::setSunContributionPower(float power, float max
 
 
 // ***************************************************************************
-float					CVisualCollisionManager::getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone)
+float					CVisualCollisionManager::getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone, bool playerIsInside)
 {
 	float	minCol= 1;
 
@@ -159,6 +159,13 @@ float					CVisualCollisionManager::getCameraCollision(const CVector &start, cons
 	CQuadGrid<CMeshInstanceCol*>::CIterator		it;
 	for(it= _MeshQuadGrid.begin();it!=_MeshQuadGrid.end();it++)
 	{
+		// Skip this mesh according to special flag (known as the "matis serre bug")
+		if((*it)->AvoidCollisionWhenPlayerInside && playerIsInside)
+			continue;
+		if((*it)->AvoidCollisionWhenPlayerOutside && !playerIsInside)
+			continue;
+		
+		// collide
 		float	meshCol= (*it)->getCameraCollision(camCol);
 		// Keep only yhe smallest value
 		minCol= min(minCol, meshCol);
@@ -188,7 +195,7 @@ float		CVisualCollisionManager::CMeshInstanceCol::getCameraCollision(CCameraCol 
 
 
 // ***************************************************************************
-uint					CVisualCollisionManager::addMeshInstanceCollision(CVisualCollisionMesh *mesh, const CMatrix &instanceMatrix)
+uint					CVisualCollisionManager::addMeshInstanceCollision(CVisualCollisionMesh *mesh, const CMatrix &instanceMatrix, bool avoidCollisionWhenInside, bool avoidCollisionWhenOutside)
 {
 	if(!mesh)
 		return 0;
@@ -203,7 +210,9 @@ uint					CVisualCollisionManager::addMeshInstanceCollision(CVisualCollisionMesh 
 	meshInst.Mesh= mesh;
 	meshInst.WorldMatrix= instanceMatrix;
 	meshInst.WorldBBox= mesh->computeWorldBBox(instanceMatrix);
-
+	meshInst.AvoidCollisionWhenPlayerInside= avoidCollisionWhenInside;
+	meshInst.AvoidCollisionWhenPlayerOutside= avoidCollisionWhenOutside;
+	
 	// insert in quadGrid
 	meshInst.QuadGridIt= _MeshQuadGrid.insert(meshInst.WorldBBox.getMin(), meshInst.WorldBBox.getMax(), &meshInst);
 

@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.h
  * <File description>
  *
- * $Id: visual_collision_manager.h,v 1.6 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: visual_collision_manager.h,v 1.7 2004/05/07 11:41:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,17 +111,20 @@ public:
 	 *	For landscape, it is done only against TileFaces (ie only under approx 50 m)
 	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.
 	 *	\param radius is the radius of the 'cylinder'
+	 *	\param playerIsInside specail falg for the matis serre bug. set to true if the player is not in landscape
 	 *	\param cone if true, the object tested is a cone (radius goes to end)
 	 */
-	float						getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone);
+	float						getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone, bool playerIsInside);
 
 
 	/** Add a Mesh Instance to the collision manager. For now it is used only for Camera Collision
 	 *	\param mesh the collision mesh (keep a refptr on it)
 	 *	\param instanceMatrix the matrix instance to apply to this mesh
+	 *	\param avoidCollisionWhenInside special flag for the matis serre bug. if true this collision instance won't be tested if the player is "inside"
+	 *	\param avoidCollisionWhenOutside special flag for the matis serre bug. if true this collision instance won't be tested if the player is "outside"
 	 *	\return the id used for remove, 0 if not succeed
 	 */
-	uint						addMeshInstanceCollision(CVisualCollisionMesh *mesh, const CMatrix &instanceMatrix);
+	uint						addMeshInstanceCollision(CVisualCollisionMesh *mesh, const CMatrix &instanceMatrix, bool avoidCollisionWhenInside, bool avoidCollisionWhenOutside);
 
 	/** Remove a Mesh from the collision manager.
 	 */
@@ -148,7 +151,10 @@ private:
 		NLMISC::CAABBox						WorldBBox;
 		// The pos in Mesh Instance quadgrid
 		CQuadGrid<CMeshInstanceCol*>::CIterator	QuadGridIt;
-
+		// see addMeshInstanceCollision for those special flags
+		bool								AvoidCollisionWhenPlayerInside;
+		bool								AvoidCollisionWhenPlayerOutside;
+		
 	public:
 		/// get collision with camera. [0,1] value
 		float		getCameraCollision(class CCameraCol &camCol);

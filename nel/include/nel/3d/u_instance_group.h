@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.31 2004/04/09 14:15:50 vizerie Exp $
+ * $Id: u_instance_group.h,v 1.32 2004/05/07 11:41:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -335,6 +335,16 @@ public:
 
 	/// For debug purpose, display clusters as poly/lines. The matrixs and frustum should have been setuped
 	virtual void			displayDebugClusters(UDriver *drv, class UTextContext *txtCtx) = 0;
+
+	/** return the DontCastShadowForInterior flag of an instance. 
+	  *	Warning: if DontCastShadow=true, and DontCastShadowForInterior=false, false is still returned
+	  */
+	virtual bool			dontCastShadowForInterior(uint instance) const =0;
+
+	/** return the DontCastShadowForExterior flag of an instance. 
+	  *	Warning: if DontCastShadow=true, and DontCastShadowForExterior=false, false is still returned
+	  */
+	virtual bool			dontCastShadowForExterior(uint instance) const =0;
 
 };
 

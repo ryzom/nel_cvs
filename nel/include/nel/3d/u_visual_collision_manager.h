@@ -1,7 +1,7 @@
 /** \file u_visual_collision_manager.h
  * Interface to visual collision manager.
  *
- * $Id: u_visual_collision_manager.h,v 1.6 2004/03/23 15:39:21 berenguier Exp $
+ * $Id: u_visual_collision_manager.h,v 1.7 2004/05/07 11:41:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,17 +89,20 @@ public:
 	 *	For landscape, it is done only against TileFaces (ie only under approx 50 m)
 	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.
 	 *	\param radius is the radius of the 'cylinder'
+	 *	\param playerIsInside specail falg for the matis serre bug. set to true if the player is not in landscape
 	 *	\param cone if true, the object tested is a cone (radius goes to end)
 	 */
-	virtual float					getCameraCollision(const NLMISC::CVector &start, const NLMISC::CVector &end, float radius, bool cone) =0;
+	virtual float					getCameraCollision(const NLMISC::CVector &start, const NLMISC::CVector &end, float radius, bool cone, bool playerIsInside) =0;
 
 
 	/** Add a Mesh to the collision manager. For now it is used only for Camera Collision
 	 *	\param mesh the collision mesh (keep a refptr on it)
 	 *	\param instanceMatrix the matrix instance to apply to this mesh
+	 *	\param avoidCollisionWhenInside special flag for the matis serre bug. if true this collision instance won't be tested if the player is "inside"
+	 *	\param avoidCollisionWhenOutside special flag for the matis serre bug. if true this collision instance won't be tested if the player is "outside"
 	 *	\return the id used for remove, 0 if not succeed
 	 */
-	virtual uint					addMeshInstanceCollision(const UVisualCollisionMesh &mesh, const NLMISC::CMatrix &instanceMatrix) =0;
+	virtual uint					addMeshInstanceCollision(const UVisualCollisionMesh &mesh, const NLMISC::CMatrix &instanceMatrix, bool avoidCollisionWhenInside, bool avoidCollisionWhenOutside) =0;
 	/** Remove a Mesh from the collision manager.
 	 */
 	virtual void					removeMeshCollision(uint id) =0;

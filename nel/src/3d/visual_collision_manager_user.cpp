@@ -1,7 +1,7 @@
 /** \file visual_collision_manager_user.cpp
  * <File description>
  *
- * $Id: visual_collision_manager_user.cpp,v 1.4 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: visual_collision_manager_user.cpp,v 1.5 2004/05/07 11:41:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,13 +33,13 @@ namespace NL3D {
 
 
 // ***************************************************************************
-uint		CVisualCollisionManagerUser::addMeshInstanceCollision(const UVisualCollisionMesh &mesh, const NLMISC::CMatrix &instanceMatrix)
+uint		CVisualCollisionManagerUser::addMeshInstanceCollision(const UVisualCollisionMesh &mesh, const NLMISC::CMatrix &instanceMatrix, bool avoidCollisionWhenInside, bool avoidCollisionWhenOutside)
 {
 	NL3D_MEM_CAMERA_COLLISION
 	// if empty proxy abort
 	if(mesh.empty())
 		return 0;
-	return _Manager.addMeshInstanceCollision(mesh.getMeshPtr(), instanceMatrix);
+	return _Manager.addMeshInstanceCollision(mesh.getMeshPtr(), instanceMatrix, avoidCollisionWhenInside, avoidCollisionWhenOutside);
 }
 
 	

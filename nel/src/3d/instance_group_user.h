@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.29 2004/04/09 14:32:01 vizerie Exp $
+ * $Id: instance_group_user.h,v 1.30 2004/05/07 11:41:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,12 +134,13 @@ private:
 
 	virtual void			displayDebugClusters(UDriver *drv, UTextContext *txtCtx);
 	
+	virtual bool			dontCastShadowForInterior(uint instance) const;
+	virtual bool			dontCastShadowForExterior(uint instance) const;
+
 	friend class CTransformUser;
 	friend class CSceneUser;
 
 	void		removeInstancesUser();
-
-
 	
 public:
 	// Debug purpose only.

@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.14 2001/07/09 08:26:26 legros Exp $
+ * $Id: chain.cpp,v 1.15 2001/08/10 12:09:44 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,12 @@ static inline bool	isEqual(const CVector &a, const CVector &b)
 
 void	NLPACS::COrderedChain3f::serial(IStream &f)
 {
+	/*
+	Version 0:
+		- base version.
+	*/
+	sint	ver= f.serialVersion(0);
+
 	f.serialCont(_Vertices);
 	f.serial(_Forward);
 	f.serial(_ParentId);
@@ -113,6 +119,12 @@ void	NLPACS::COrderedChain::traverse(sint from, sint to, bool forward, vector<NL
 // serialises the ordered chain
 void	NLPACS::COrderedChain::serial(IStream &f)
 {
+	/*
+	Version 0:
+		- base version.
+	*/
+	sint	ver= f.serialVersion(0);
+
 	f.serialCont(_Vertices);
 	f.serial(_Forward);
 	f.serial(_ParentId);
@@ -193,6 +205,12 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 // serialises the CChain
 void	NLPACS::CChain::serial(IStream &f)
 {
+	/*
+	Version 0:
+		- base version.
+	*/
+	sint	ver= f.serialVersion(0);
+
 	f.serialCont(_SubChains);
 	f.serial(_Left, _Right);
 	f.serial(_StartTip, _StopTip);

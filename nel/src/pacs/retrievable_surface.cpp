@@ -1,7 +1,7 @@
 /** \file retrievable_surface.cpp
  *
  *
- * $Id: retrievable_surface.cpp,v 1.7 2001/06/13 08:46:42 legros Exp $
+ * $Id: retrievable_surface.cpp,v 1.8 2001/08/10 12:09:44 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,12 @@ float			NLPACS::Models[NumCreatureModels][NumModelCharacteristics] =
 
 void	NLPACS::CRetrievableSurface::serial(IStream &f)
 {
+	/*
+	Version 0:
+		- base version.
+	*/
+	sint	ver= f.serialVersion(0);
+
 	uint	i;
 	f.serial(_NormalQuanta);
 	f.serial(_OrientationQuanta);

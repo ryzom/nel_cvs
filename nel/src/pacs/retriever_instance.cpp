@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.20 2001/08/07 14:14:32 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.21 2001/08/10 12:09:44 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -575,6 +575,12 @@ void	NLPACS::CRetrieverInstance::testExteriorCollision(NLPACS::CCollisionSurface
 
 void	NLPACS::CRetrieverInstance::serial(NLMISC::IStream &f)
 {
+	/*
+	Version 0:
+		- base version.
+	*/
+	sint	ver= f.serialVersion(0);
+
 	uint	i;
 	f.serial(_InstanceId, _RetrieverId, _Orientation, _Origin);
 	f.serialCont(_Neighbors);

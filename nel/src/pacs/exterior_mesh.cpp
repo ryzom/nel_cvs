@@ -1,7 +1,7 @@
 /** \file exterior_mesh.cpp
  *
  *
- * $Id: exterior_mesh.cpp,v 1.2 2001/08/07 14:14:32 legros Exp $
+ * $Id: exterior_mesh.cpp,v 1.3 2001/08/10 12:09:44 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,12 @@ namespace NLPACS
 
 	void	CExteriorMesh::serial(NLMISC::IStream &f)
 	{
+		/*
+		Version 0:
+			- base version.
+		*/
+		sint	ver= f.serialVersion(0);
+
 		f.serialCont(_Edges);
 		f.serialCont(_OrderedEdges);
 		f.serialCont(_Links);

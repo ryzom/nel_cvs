@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.22 2001/08/07 14:14:32 legros Exp $
+ * $Id: local_retriever.cpp,v 1.23 2001/08/10 12:09:44 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -671,7 +671,7 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 {
 	/*
 	Version 0:
-		- base verison (with collision info).
+		- base version (with collision info).
 	*/
 	sint	ver= f.serialVersion(0);
 

@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.4 2001/07/10 08:34:43 legros Exp $
+ * $Id: retriever_bank.h,v 1.5 2001/08/10 12:09:44 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,6 +84,12 @@ public:
 	/// Serialises this CRetrieverBank.
 	void								serial(NLMISC::IStream &f)
 	{
+		/*
+		Version 0:
+			- base version.
+		*/
+		sint	ver= f.serialVersion(0);
+
 		f.serialCont(_Retrievers);
 	}
 };

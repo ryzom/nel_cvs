@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.43 2003/09/26 14:24:01 lecroart Exp $
+ * $Id: common.cpp,v 1.44 2003/10/20 14:35:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -705,14 +705,14 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 
 	if (res)
 	{
-		nldebug("Successful launch '%s' with arg '%s'", programName.c_str(), arguments.c_str());
+		nldebug("LAUNCH: Successful launch '%s' with arg '%s'", programName.c_str(), arguments.c_str());
 		return true;
 	}
 	else
 	{
 		LPVOID lpMsgBuf;
 		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf, 0, NULL);
-		nlwarning("Failed launched '%s' with arg '%s' err %d: '%s'", programName.c_str(), arguments.c_str(), GetLastError (), lpMsgBuf);
+		nlwarning("LAUNCH: Failed launched '%s' with arg '%s' err %d: '%s'", programName.c_str(), arguments.c_str(), GetLastError (), lpMsgBuf);
 		LocalFree(lpMsgBuf);
 	}
 
@@ -741,7 +741,7 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 	if (status == -1)
 	{
 		char *err = strerror (errno);
-		nlwarning("Failed launched '%s' with arg '%s' err %d: '%s'", programName.c_str(), arguments.c_str(), errno, err);
+		nlwarning("LAUNCH: Failed launched '%s' with arg '%s' err %d: '%s'", programName.c_str(), arguments.c_str(), errno, err);
 	}
 	else if (status == 0)
     {
@@ -779,11 +779,11 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 	}
 	else
 	{
-		nldebug("Successful launch '%s' with arg '%s'", programName.c_str(), arguments.c_str());
+		nldebug("LAUNCH: Successful launch '%s' with arg '%s'", programName.c_str(), arguments.c_str());
 		return true;
 	}
 #else
-	nlwarning ("launchProgram() not implemented");
+	nlwarning ("LAUNCH: launchProgram() not implemented");
 #endif
 
 	return false;

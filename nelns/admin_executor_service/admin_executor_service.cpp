@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.54 2003/09/01 16:23:33 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.55 2003/10/20 14:34:22 lecroart Exp $
  *
  */
 
@@ -89,7 +89,7 @@ struct CRequest
 {
 	CRequest (uint32 id, uint16 sid) : Id(id), NbWaiting(0), NbReceived(0), SId(sid)
 	{
-		nldebug ("++ NbWaiting %d NbReceived %d", NbWaiting, NbReceived);
+		nldebug ("REQUEST: ++ NbWaiting %d NbReceived %d", NbWaiting, NbReceived);
 		Time = CTime::getSecondsSince1970 ();
 	}
 
@@ -356,7 +356,7 @@ static void cbGraphUpdate (CMessage &msgin, const std::string &serviceName, uint
 	}
 	CUnifiedNetwork::getInstance ()->send ("AS", msgout);
 
-	nlinfo ("Forwarded graph update to AS");
+	nlinfo ("GRAPH: Forwarded graph update to AS");
 }
 
 // decode a service in a form 'alias/shortname-sid'
@@ -467,7 +467,7 @@ void startService (uint32 delay, const string &serviceAlias)
 		{
 			if (WaitingToLaunchServices[i].second == serviceAlias)
 			{
-				nlwarning ("service %s already in waiting queue to launch", serviceAlias.c_str());
+				nlwarning ("Service %s already in waiting queue to launch", serviceAlias.c_str());
 				return;
 			}
 		}
@@ -508,7 +508,7 @@ void addRequestWaitingNb (uint32 rid)
 		if (Requests[i].Id == rid)
 		{
 			Requests[i].NbWaiting++;
-			nldebug ("++ i %d rid %d NbWaiting+ %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			nldebug ("REQUEST: ++ i %d rid %d NbWaiting+ %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 			// if we add a waiting, reset the timer
 			Requests[i].Time = CTime::getSecondsSince1970 ();
 			return;
@@ -524,7 +524,7 @@ void subRequestWaitingNb (uint32 rid)
 		if (Requests[i].Id == rid)
 		{
 			Requests[i].NbWaiting--;
-			nldebug ("++ i %d rid %d NbWaiting- %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			nldebug ("REQUEST: ++ i %d rid %d NbWaiting- %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 			return;
 		}
 	}
@@ -546,7 +546,7 @@ void aesAddRequestAnswer (uint32 rid, const vector <pair<vector<string>, vector<
 				Requests[i].Answers.push_back (make_pair(answer[t].first, answer[t].second));
 			}
 			Requests[i].NbReceived++;
-			nldebug ("++ i %d rid %d NbWaiting %d NbReceived+ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			nldebug ("REQUEST: ++ i %d rid %d NbWaiting %d NbReceived+ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 			return;
 		}
 	}
@@ -569,7 +569,7 @@ void aesAddRequestAnswer (uint32 rid, const vector<string> &variables, const vec
 			Requests[i].Answers.push_back (make_pair(variables, values));
 
 			Requests[i].NbReceived++;
-			nldebug ("++ i %d rid %d NbWaiting %d NbReceived+ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			nldebug ("REQUEST: ++ i %d rid %d NbWaiting %d NbReceived+ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 			
 			return;
 		}
@@ -614,11 +614,11 @@ void cleanRequest ()
 				}
 			}
 		}
-		nlinfo ("Waiting request %d: NbRef %d NbWaiting %d NbReceived %d", Requests[t].Id, NbRef, NbWaiting, NbReceived);
+		nlinfo ("REQUEST: Waiting request %d: NbRef %d NbWaiting %d NbReceived %d", Requests[t].Id, NbRef, NbWaiting, NbReceived);
 		
 		if (NbRef != NbWaiting - NbReceived)
 		{
-			nlwarning ("**** i %d rid %d -> NbRef (%d) != NbWaiting (%d) - NbReceived(%d) ", t, Requests[t].Id, NbRef, NbWaiting, NbReceived);
+			nlwarning ("REQUEST: **** i %d rid %d -> NbRef (%d) != NbWaiting (%d) - NbReceived(%d) ", t, Requests[t].Id, NbRef, NbWaiting, NbReceived);
 		}
 	}
 
@@ -627,7 +627,7 @@ void cleanRequest ()
 		// timeout
 		if (currentTime >= Requests[i].Time+RequestTimeout)
 		{
-			nlwarning ("Request %d timeouted, only %d on %d services have replied", Requests[i].Id, Requests[i].NbReceived, Requests[i].NbWaiting);
+			nlwarning ("REQUEST: Request %d timeouted, only %d on %d services have replied", Requests[i].Id, Requests[i].NbReceived, Requests[i].NbWaiting);
 
 			vector<string> vara;
 			vector<string> vala;
@@ -659,7 +659,12 @@ void cleanRequest ()
 			}
 			if (Requests[i].NbWaiting != Requests[i].NbReceived)
 			{
-				nlwarning ("**** i %d rid %d -> Requests[i].NbWaiting (%d) != Requests[i].NbReceived (%d)", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+				nlwarning ("REQUEST: **** i %d rid %d -> Requests[i].NbWaiting (%d) != Requests[i].NbReceived (%d)", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+				nlwarning ("REQUEST: Need to add dummy answer");
+				vala.clear ();
+				vala.push_back ("UnknownService");
+				while (Requests[i].NbWaiting != Requests[i].NbReceived)
+					aesAddRequestAnswer (Requests[i].Id, vara, vala);
 			}
 		}
 
@@ -678,7 +683,7 @@ void cleanRequest ()
 
 			if (Requests[i].SId == 0)
 			{
-				nlinfo ("Receive an answer for the fake request %d with %d answers", Requests[i].Id, Requests[i].Answers.size ());
+				nlinfo ("REQUEST: Receive an answer for the fake request %d with %d answers", Requests[i].Id, Requests[i].Answers.size ());
 				for (uint j = 0; j < Requests[i].Answers.size (); j++)
 				{
 					uint k;
@@ -700,7 +705,7 @@ void cleanRequest ()
 
 			// set to 0 to erase it
 			Requests[i].NbWaiting = 0;
-			nldebug ("++ i %d rid %d NbWaiting0 %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			nldebug ("REQUEST: ++ i %d rid %d NbWaiting0 %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 		}
 
 		if (Requests[i].NbWaiting == 0)
@@ -782,7 +787,7 @@ public:
 	
 	void run ()
 	{
-		nlinfo ("start service '%s'", ServiceCommand.c_str());
+		nlinfo ("Start service '%s'", ServiceCommand.c_str());
 		
 #ifdef NL_OS_WINDOWS
 		WinExec (ServiceCommand.c_str(), SW_MINIMIZE/*SW_SHOWNORMAL*/);
@@ -790,7 +795,7 @@ public:
 		system (ServiceCommand.c_str());
 #endif
 		
-		nlinfo ("end service '%s'", ServiceCommand.c_str());
+		nlinfo ("End service '%s'", ServiceCommand.c_str());
 	}
 };
 
@@ -802,7 +807,7 @@ public:
 
 void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 {
-	nlinfo ("addRequest from %hu: '%s'", sid, rawvarpath.c_str ());
+	nlinfo ("REQUEST: addRequest from %hu: '%s'", sid, rawvarpath.c_str ());
 
 	string str;
 	CLog logDisplayVars;
@@ -865,7 +870,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 							msgout.serial (varpath.Destination[i].second);
 							nlassert (Services[j].ServiceId);
 							CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
-							nlinfo ("Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), Services[j].toString ().c_str());
+							nlinfo ("REQUEST: Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), Services[j].toString ().c_str());
 						}
 					}
 				}
@@ -878,7 +883,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 				serviceGetView (rid, varpath.Destination[i].second, answer);
 				
 				aesAddRequestAnswer (rid, answer);
-				nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
+				nlinfo ("REQUEST: Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
 			}
 			else if (service == "#")
 			{
@@ -926,7 +931,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 						}
 
 						aesAddRequestAnswer (rid, vara, vala);
-						nlinfo ("Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), RegisteredServices[j].c_str());
+						nlinfo ("REQUEST: Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), RegisteredServices[j].c_str());
 					}
 					else
 					{
@@ -939,7 +944,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 						msgout.serial (varpath.Destination[i].second);
 						nlassert ((*sit).ServiceId);
 						CUnifiedNetwork::getInstance ()->send ((*sit).ServiceId, msgout);
-						nlinfo ("Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), (*sit).toString ().c_str());
+						nlinfo ("REQUEST: Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), (*sit).toString ().c_str());
 					}
 				}
 
@@ -956,7 +961,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 						msgout.serial (varpath.Destination[i].second);
 						nlassert (Services[j].ServiceId);
 						CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
-						nlinfo ("Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), Services[j].toString ().c_str());
+						nlinfo ("REQUEST: Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), Services[j].toString ().c_str());
 					}
 				}
 
@@ -967,7 +972,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 				
 				serviceGetView (rid, varpath.Destination[i].second, answer);
 				aesAddRequestAnswer (rid, answer);
-				nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), "AES");
+				nlinfo ("REQUEST: Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), "AES");
 			}
 			else
 			{
@@ -980,7 +985,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 					
 					serviceGetView (rid, varpath.Destination[i].second, answer);
 					aesAddRequestAnswer (rid, answer);
-					nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
+					nlinfo ("REQUEST: Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
 				}
 				else
 				{
@@ -1054,7 +1059,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 							}
 							
 							aesAddRequestAnswer (rid, vara, vala);
-							nlinfo ("Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
+							nlinfo ("REQUEST: Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
 						}
 					}
 					else
@@ -1095,7 +1100,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 							msgout.serial (varpath.Destination[i].second);
 							nlassert ((*sit).ServiceId);
 							CUnifiedNetwork::getInstance ()->send ((*sit).ServiceId, msgout);
-							nlinfo ("Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), (*sit).toString ().c_str());
+							nlinfo ("REQUEST: Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), (*sit).toString ().c_str());
 						}
 					}
 				}
@@ -1132,11 +1137,11 @@ public:
 
 	void run ()
 	{
-		nlinfo ("start executing '%s'", Command.c_str());
+		nlinfo ("Start executing '%s'", Command.c_str());
 		
 		system (Command.c_str());
 		
-		nlinfo ("end executing: %s", Command.c_str());
+		nlinfo ("End executing: %s", Command.c_str());
 	}
 };
 
@@ -1718,7 +1723,7 @@ NLMISC_COMMAND (clearRequests, "clear all pending requests", "")
 		if (Requests[i].NbWaiting <= Requests[i].NbReceived)
 		{
 			Requests[i].NbWaiting = Requests[i].NbReceived;
-			nldebug ("++ i %d rid %d NbWaiting= %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			nldebug ("REQUEST: ++ i %d rid %d NbWaiting= %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.36 2003/09/01 16:39:17 distrib Exp $
+ * $Id: admin_service.cpp,v 1.37 2003/10/20 14:34:57 lecroart Exp $
  *
  */
 
@@ -263,31 +263,31 @@ MYSQL_ROW sqlQuery (const char *format, ...)
 	
 	if (DatabaseConnection == 0)
 	{
-		nlwarning ("mysql_query (%s) failed: DatabaseConnection is 0", query);
+		nlwarning ("MYSQL: mysql_query (%s) failed: DatabaseConnection is 0", query);
 		return NULL;
 	}
 	
 	int ret = mysql_query (DatabaseConnection, query);
 	if (ret != 0)
 	{
-		nlwarning ("mysql_query () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
+		nlwarning ("MYSQL: mysql_query () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
 		return 0;
 	}
 	
 	sqlCurrentQueryResult = mysql_store_result(DatabaseConnection);
 	if (sqlCurrentQueryResult == 0)
 	{
-		nlwarning ("mysql_store_result () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
+		nlwarning ("MYSQL: mysql_store_result () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
 		return 0;
 	}
 	
 	MYSQL_ROW row = mysql_fetch_row(sqlCurrentQueryResult);
 	if (row == 0)
 	{
-		nlwarning ("mysql_fetch_row () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
+		nlwarning ("MYSQL: mysql_fetch_row () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
 	}
 	
-	nldebug ("sqlQuery(%s) returns %d rows", query, mysql_num_rows(sqlCurrentQueryResult));
+	nldebug ("MYSQL: sqlQuery(%s) returns %d rows", query, mysql_num_rows(sqlCurrentQueryResult));
 	
 	return row;	
 }
@@ -315,7 +315,7 @@ void sendAdminAlert (const char *format, ...)
 	if (AdminAlertAccumlationTime == -1)
 	{
 		// we don't send email so just display a warning
-		nlwarning ("%s", text);
+		nlwarning ("ALERT: %s", text);
 	}
 	else
 	{
@@ -329,7 +329,7 @@ void sendAdminAlert (const char *format, ...)
 			Email += "\n";
 			Email += text;
 		}
-		nldebug ("pushing email into queue: %s", text);
+		nldebug ("ALERT: pushing email into queue: %s", text);
 	}
 }
 
@@ -377,7 +377,7 @@ void updateSendAdminAlert ()
 					}
 					else
 					{
-						nlinfo ("Sent email to admin %s the subject: %s", var.asString(i).c_str(), subject.c_str());
+						nlinfo ("ALERT: Sent email to admin %s the subject: %s", var.asString(i).c_str(), subject.c_str());
 					}
 				}
 			}
@@ -440,7 +440,7 @@ static void cbGraphUpdate (CMessage &msgin, const std::string &serviceName, uint
 		}
 		else
 		{
-			nlwarning ("shard server service var val is empty");
+			nlwarning ("Shard server service var val is empty");
 		}
 	}
 }
@@ -469,7 +469,7 @@ void addRequestWaitingNb (uint32 rid)
 			return;
 		}
 	}
-	nlwarning ("Received an answer from an unknown resquest %d (perhaps due to a AS timeout)", rid);
+	nlwarning ("REQUEST: Received an answer from an unknown resquest %d (perhaps due to a AS timeout)", rid);
 }
 
 void subRequestWaitingNb (uint32 rid)
@@ -482,7 +482,7 @@ void subRequestWaitingNb (uint32 rid)
 			return;
 		}
 	}
-	nlwarning ("Received an answer from an unknown resquest %d (perhaps due to a AS timeout)", rid);
+	nlwarning ("REQUEST: Received an answer from an unknown resquest %d (perhaps due to a AS timeout)", rid);
 }
 
 void addRequestReceived (uint32 rid)
@@ -496,7 +496,7 @@ void addRequestReceived (uint32 rid)
 			return;
 		}
 	}
-	nlwarning ("Received an answer from an unknown resquest %d (perhaps due to a AS timeout)", rid);
+	nlwarning ("REQUEST: Received an answer from an unknown resquest %d (perhaps due to a AS timeout)", rid);
 }
 
 void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector<string> &values)
@@ -527,7 +527,7 @@ void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector
 			return;
 		}
 	}
-	nlwarning ("Received an answer from an unknown resquest %d (perhaps due to a AS timeout)", rid);
+	nlwarning ("REQUEST: Received an answer from an unknown resquest %d (perhaps due to a AS timeout)", rid);
 }
 
 bool emptyRequest (uint32 rid)
@@ -561,7 +561,7 @@ void cleanRequest ()
 
 			if (timeout)
 			{
-				nlwarning ("Request %d timeouted, only %d on %d services have replied", Requests[i].Id, Requests[i].NbReceived, Requests[i].NbWaiting);
+				nlwarning ("REQUEST: Request %d timeouted, only %d on %d services have replied", Requests[i].Id, Requests[i].NbReceived, Requests[i].NbWaiting);
 			}
 			
 			if (Requests[i].Log.empty())
@@ -653,18 +653,18 @@ void sqlInit ()
 // Functions
 //
 
-void displayServices ()
+/*void displayServices ()
 {
 	for (AESIT aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
 	{
 		nlinfo ("> Admin");
-/*		for (SIT sit = (*aesit).Services.begin(); sit != (*aesit).Services.end(); sit++)
+		for (SIT sit = (*aesit).Services.begin(); sit != (*aesit).Services.end(); sit++)
 		{
 			nlinfo ("  > '%s' '%s' '%s' '%s' %d %d", (*aesit).SockId->asString().c_str(), (*sit).AliasName.c_str(), (*sit).ShortName.c_str(), (*sit).LongName.c_str(), (*aesit).Id, (*sit).Id);
 		}
-*/	}
+	}
 }
-
+*/
 /*
 // send a message to a client. if ok is 0 it s an error or it s a normal 
 void messageToClient (uint8 ok, string msg, TSockId from = NULL)
@@ -1692,7 +1692,7 @@ void addRequest (const string &rawvarpath, TSockId from)
 					msgout.serial (rid);
 					msgout.serial (subvarpath.Destination[j].second);
 					CUnifiedNetwork::getInstance ()->send ((*aesit).SId, msgout);
-					nlinfo ("Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
+					nlinfo ("REQUEST: Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
 				}
 			}
 			else if (shard == "*" && server == "#")
@@ -1714,7 +1714,7 @@ void addRequest (const string &rawvarpath, TSockId from)
 						msgout.serial (rid);
 						msgout.serial (subvarpath.Destination[j].second);
 						CUnifiedNetwork::getInstance ()->send ((*aesit).SId, msgout);
-						nlinfo ("Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
+						nlinfo ("REQUEST: Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
 						
 					}
 					else if (server == "#")
@@ -1758,7 +1758,7 @@ void addRequest (const string &rawvarpath, TSockId from)
 						msgout.serial (rid);
 						msgout.serial (subvarpath.Destination[j].second);
 						CUnifiedNetwork::getInstance ()->send ((*aesit).SId, msgout);
-						nlinfo ("Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
+						nlinfo ("REQUEST: Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
 
 					}
 					else if (server == "#")
@@ -1796,7 +1796,7 @@ void addRequest (const string &rawvarpath, TSockId from)
 					msgout.serial (rid);
 					msgout.serial (subvarpath.Destination[j].second);
 					CUnifiedNetwork::getInstance ()->send ((*aesit).SId, msgout);
-					nlinfo ("Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
+					nlinfo ("REQUEST: Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
 				}
 				else
 				{

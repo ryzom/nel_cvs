@@ -1,7 +1,7 @@
 /** \file connection_web.cpp
  * 
  *
- * $Id: connection_web.cpp,v 1.3 2003/08/27 16:17:36 distrib Exp $
+ * $Id: connection_web.cpp,v 1.4 2003/10/20 14:34:57 lecroart Exp $
  *
  */
 
@@ -56,7 +56,7 @@ using namespace NLNET;
 // Variables
 //
 
-CBufServer *WebServer = NULL;
+CBufServer *WebServer = 0;
 
 
 //
@@ -83,9 +83,9 @@ WebCallback WebCallbackArray[] =
 
 void sendString (TSockId from, const string &str)
 {
-	nlinfo ("send '%s' to php '%s'", str.c_str (), from->asString ().c_str());
+	nlinfo ("REQUEST: Send '%s' to php '%s'", str.c_str (), from->asString ().c_str());
 
-	if(from == NULL)
+	if(from == 0)
 		return;
 
 	CMemStream msgout;
@@ -97,10 +97,10 @@ void sendString (TSockId from, const string &str)
 
 void connectionWebInit ()
 {
-	nlassert(WebServer == NULL);
+	nlassert(WebServer == 0);
 
 	WebServer = new CBufServer ();
-	nlassert(WebServer != NULL);
+	nlassert(WebServer != 0);
 
 	uint16 port = (uint16) IService::getInstance ()->ConfigFile.getVar ("WebPort").asInt();
 	WebServer->init (port);
@@ -110,7 +110,7 @@ void connectionWebInit ()
 
 void connectionWebUpdate ()
 {
-	nlassert(WebServer != NULL);
+	nlassert(WebServer != 0);
 
 	try
 	{
@@ -133,7 +133,7 @@ void connectionWebUpdate ()
 			}
 			catch (Exception &e)
 			{
-				nlwarning ("Error during receiving: '%s'", e.what ());
+				nlwarning ("Error during receive: '%s'", e.what ());
 			}
 
 			if(messageType>=0 && messageType<(sint8)(sizeof(WebCallbackArray)/sizeof(WebCallbackArray[0])))
@@ -154,7 +154,7 @@ void connectionWebUpdate ()
 
 void connectionWebRelease ()
 {
-	nlassert(WebServer != NULL);
+	nlassert(WebServer != 0);
 
 	delete WebServer;
 	WebServer = 0;

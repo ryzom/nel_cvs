@@ -1,7 +1,7 @@
 /** \file landscape_collision_grid.cpp
  * <File description>
  *
- * $Id: landscape_collision_grid.cpp,v 1.2 2001/06/14 08:13:35 berenguier Exp $
+ * $Id: landscape_collision_grid.cpp,v 1.3 2001/06/14 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,7 +132,7 @@ static inline sint __stdcall fastFloor(float x)
 #else
 static inline void  fastFloorBegin() {}
 static inline void  fastFloorEnd() {}
-static inline sint fastfloor(float x)
+static inline sint fastFloor(float x)
 {
 	return (sint)floor(x);
 }

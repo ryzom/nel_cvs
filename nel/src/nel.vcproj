@@ -13,8 +13,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\../obj/Debug"
-			IntermediateDirectory=".\../obj/Debug"
+			OutputDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			IntermediateDirectory="..\obj\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="10"
 			UseOfMFC="0">
 			<Tool
@@ -43,8 +43,8 @@
 		</Configuration>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\../obj/ReleaseDebug"
-			IntermediateDirectory=".\../obj/ReleaseDebug"
+			OutputDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			IntermediateDirectory="..\obj\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="10"
 			UseOfMFC="0">
 			<Tool
@@ -58,8 +58,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\../obj/Release"
-			IntermediateDirectory=".\../obj/Release"
+			OutputDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			IntermediateDirectory="..\obj\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="10"
 			UseOfMFC="0">
 			<Tool

@@ -1,7 +1,7 @@
 /** \file network.cpp
  * manage the connection to the shard and messages
  *
- * $Id: network.cpp,v 1.3 2001/07/12 17:39:12 lecroart Exp $
+ * $Id: network.cpp,v 1.4 2001/07/17 13:57:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
 
-CCallbackClient Connection;
+CCallbackClient *Connection = NULL;
 
 static void cbClientDisconnected (TSockId from, void *arg)
 {
@@ -91,7 +91,7 @@ static TCallbackItem ClientCallbackArray[] =
 
 bool	isOnline ()
 {
-	return Connection.connected ();
+	return Connection != NULL && Connection->connected ();
 }
 
 void	sendChatLine (string Line)
@@ -119,19 +119,26 @@ void	sendEntityPos (const CEntity &entity)
 
 void	initNetwork()
 {
-	Connection.addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
-	Connection.setDisconnectionCallback (cbClientDisconnected, NULL);
+	Connection = new CCallbackClient;
+	Connection->addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
+	Connection->setDisconnectionCallback (cbClientDisconnected, NULL);
 }
 
 void	updateNetwork()
 {
-	Connection.update ();
+	Connection->update ();
 }
 
 void	releaseNetwork()
 {
-	if (Connection.connected ())
-		Connection.disconnect ();
+	if (Connection != NULL)
+	{
+		if (Connection->connected ())
+			Connection->disconnect ();
+
+		delete Connection;
+		Connection = NULL;
+	}
 }
 
 
@@ -161,7 +168,7 @@ NLMISC_COMMAND(disconnect,"disconnect from the shard","")
 
 	if (!isOnline()) log.displayNL ("You already are offline");
 
-	Connection.disconnect ();
+	Connection->disconnect ();
 
 	return true;
 }
@@ -173,7 +180,7 @@ NLMISC_COMMAND(select,"select a shard using his number","<shard_number>")
 
 	uint32 num = (uint32) atoi (args[0].c_str());
 
-	string res = CLoginClient::connectToShard (num, Connection);
+	string res = CLoginClient::connectToShard (num, *Connection);
 	if (!res.empty ()) log.displayNL ("Connection failed: %s", res.c_str());
 
 	log.displayNL ("You are online!!!");

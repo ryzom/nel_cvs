@@ -1,7 +1,7 @@
 /** \file camera.h
  * 
  *
- * $Id: camera.h,v 1.4 2001/07/17 12:27:42 legros Exp $
+ * $Id: camera.h,v 1.5 2001/07/17 13:57:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,8 +36,15 @@ void	initCamera();
 void	updateCamera();
 void	releaseCamera();
 
+void	updateSky ();
+
 extern NL3D::UCamera				*Camera;
 extern NL3D::UVisualCollisionEntity	*CamCollisionEntity;
+
+extern float			ViewLagBehind;
+extern float			ViewHeight;
+extern float			ViewTargetHeight;
+extern NL3D::UCamera	*Camera;
 
 #endif // CAMERA_H
 

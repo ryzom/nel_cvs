@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: commands.cpp,v 1.9 2001/07/13 09:58:06 lecroart Exp $
+ * $Id: commands.cpp,v 1.10 2001/07/17 13:57:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,7 @@
 
 #include "network.h"
 #include "client.h"
+#include "interface.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -131,6 +132,9 @@ class CCommandsListener : public IEventListener
 {
 	virtual void	operator() ( const CEvent& event )
 	{
+		// ignore keys if interface is open
+		if (interfaceOpen ()) return;
+
 		CEventChar &ec = (CEventChar&)event;
 
 		switch ( ec.Char )

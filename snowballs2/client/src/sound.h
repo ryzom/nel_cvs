@@ -1,7 +1,7 @@
-/** \file network.h
+/** \file sound.h
  * 
  *
- * $Id: network.h,v 1.4 2001/07/17 13:57:34 lecroart Exp $
+ * $Id: sound.h,v 1.1 2001/07/17 13:57:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,30 +23,27 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NETWORK_H
-#define NETWORK_H
+#ifndef SOUND_H
+#define SOUND_H
 
-#include <string>
+#include <nel/sound/u_audio_mixer.h>
+#include <nel/sound/u_env_sound.h>
+#include <nel/sound/u_listener.h>
+#include <nel/sound/u_source.h>
 
 #include "entities.h"
 
-namespace NLNET
-{
-	class CCallbackClient;
-}
+extern NLSOUND::UAudioMixer *AudioMixer;
 
-extern NLNET::CCallbackClient	*Connection;
+extern NLSOUND::TSoundId SoundId;
 
+void	initSound();
+void	updateSound();
+void	releaseSound();
 
-// return true if the client is online
-bool	isOnline ();
-void	sendChatLine (std::string Line);
-void	sendEntityPos (const CEntity &entity);
+void	playSound (CEntity &entity, NLSOUND::TSoundId id);
+void	deleteSound (CEntity &entity);
 
-void	initNetwork ();
-void	updateNetwork ();
-void	releaseNetwork ();
+#endif // SOUND_H
 
-#endif // NETWORK_H
-
-/* End of network.h */
+/* End of sound.h */

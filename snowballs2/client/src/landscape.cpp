@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape management with user interface
  *
- * $Id: landscape.cpp,v 1.6 2001/07/17 13:49:45 legros Exp $
+ * $Id: landscape.cpp,v 1.7 2001/07/17 13:57:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,6 +74,9 @@ void	initLandscape()
 										   ConfigFile.getVar("StartPoint").asFloat(1),
 										   ConfigFile.getVar("StartPoint").asFloat(2)), 
 								   1000.0f);
+
+	// color of the shadow
+	Landscape->setupStaticLight(CRGBA(241, 226, 244), CRGBA(17, 54, 100), 1.1f);	// Init light color
 }
 
 void	updateLandscape()

@@ -158,11 +158,27 @@ SOURCE=.\src\entities.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\interface.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\interface.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\landscape.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\landscape.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\lens_flare.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\lens_flare.h
 # End Source File
 # Begin Source File
 
@@ -187,6 +203,14 @@ SOURCE=.\src\pacs.cpp
 # Begin Source File
 
 SOURCE=.\src\pacs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound.h
 # End Source File
 # End Target
 # End Project

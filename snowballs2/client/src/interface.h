@@ -1,7 +1,7 @@
-/** \file network.h
+/** \file interface.h
  * 
  *
- * $Id: network.h,v 1.4 2001/07/17 13:57:34 lecroart Exp $
+ * $Id: interface.h,v 1.1 2001/07/17 13:57:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,30 +23,22 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NETWORK_H
-#define NETWORK_H
+#ifndef INTERFACE_H
+#define INTERFACE_H
 
 #include <string>
 
-#include "entities.h"
+#include <nel/misc/rgba.h>
 
-namespace NLNET
-{
-	class CCallbackClient;
-}
+void	initInterface();
+void	updateInterface();
+void	releaseInterface();
 
-extern NLNET::CCallbackClient	*Connection;
+// prompt -> 0=normal, 1=with_star 2=no_prompt
+void	askString (const std::string &queryString, const std::string &defaultString="", sint prompt=0, const NLMISC::CRGBA &color=NLMISC::CRGBA(0,0,64,128));
+bool	haveAnswer (std::string &answer);
+bool	interfaceOpen ();
 
+#endif // INTERFACE_H
 
-// return true if the client is online
-bool	isOnline ();
-void	sendChatLine (std::string Line);
-void	sendEntityPos (const CEntity &entity);
-
-void	initNetwork ();
-void	updateNetwork ();
-void	releaseNetwork ();
-
-#endif // NETWORK_H
-
-/* End of network.h */
+/* End of interface.h */

@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.11 2001/07/17 12:27:42 legros Exp $
+ * $Id: entities.h,v 1.12 2001/07/17 13:57:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,10 +31,15 @@
 #include <nel/misc/vector.h>
 #include <nel/misc/time_nl.h>
 
+namespace NLSOUND
+{
+	class USource;
+}
+
 namespace NLPACS
 {
 	class UMovePrimitive;
-};
+}
 
 namespace NL3D
 {
@@ -42,13 +47,15 @@ namespace NL3D
 	class UVisualCollisionEntity;
 	class UPlayList;
 	class USkeleton;
-};
+}
 
 class CEntity
 {
 public:
 	
-	CEntity () : Id(0xffffffff), Name("<Unknown>"), AutoMove(false), Instance(NULL), Skeleton(NULL), Particule(NULL), PlayList(NULL), CurrentAnimId(0xffffffff) { }
+	CEntity () :
+	  Id(0xffffffff), Name("<Unknown>"), AutoMove(false), Instance(NULL), Skeleton(NULL),
+	  Particule(NULL), PlayList(NULL), CurrentAnimId(0xffffffff), NextEmptySlot(0), Source (NULL) { }
 
 	uint32							Id;
 
@@ -82,7 +89,10 @@ public:
 
 	NL3D::UPlayList					*PlayList;
 
+	NLSOUND::USource				*Source;
+
 	uint							 CurrentAnimId;
+	uint							 NextEmptySlot;
 
 	void	setState (TState state);
 

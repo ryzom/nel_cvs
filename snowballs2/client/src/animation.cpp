@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * manage anmiation
  *
- * $Id: animation.cpp,v 1.1 2001/07/16 13:17:47 lecroart Exp $
+ * $Id: animation.cpp,v 1.2 2001/07/17 13:57:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,9 +62,57 @@ void	playAnimation (CEntity &entity, uint id)
 
 	nlinfo ("set animation for entity %u from %u to %u", entity.Id, entity.CurrentAnimId, id);
 
-	entity.PlayList->setAnimation (0, id);
-	entity.PlayList->setTimeOrigin (0, float(CTime::getLocalTime ())/1000.0f);
-	entity.PlayList->setWrapMode (0, UPlayList::Repeat);
+	uint newSlot, oldSlot;
+	if (entity.NextEmptySlot == 0)
+	{
+		newSlot = 0; oldSlot = 1; entity.NextEmptySlot = 1;
+	}
+	else
+	{
+		newSlot = 1; oldSlot = 0; entity.NextEmptySlot = 0;
+	}
+
+	CAnimationTime CurrentTime = CAnimationTime(CTime::getLocalTime ())/1000.0f;
+
+	entity.PlayList->setAnimation (newSlot, id);
+	entity.PlayList->setTimeOrigin (newSlot, CurrentTime);
+	entity.PlayList->setWrapMode (newSlot, UPlayList::Repeat);
+
+	CAnimationTime OldStartWeight, OldEndWeight;
+	entity.PlayList->getStartWeight (oldSlot, OldStartWeight);
+	
+	CAnimationTime dt = CurrentTime - OldStartWeight;
+
+	CAnimationTime NewStartWeight;
+	CAnimationTime NewEndWeight;
+
+	CAnimationTime TransitionTime = 0.25f;
+
+	// compute new transition value depending of the current time
+	if (dt > TransitionTime)
+	{
+		OldStartWeight = CurrentTime;
+		OldEndWeight = CurrentTime + TransitionTime;
+		
+		NewStartWeight = CurrentTime;
+		NewEndWeight = CurrentTime + TransitionTime;
+	}
+	else
+	{
+		OldStartWeight = CurrentTime - (TransitionTime - dt);
+		OldEndWeight = CurrentTime + dt;
+		
+		NewStartWeight = CurrentTime;
+		NewEndWeight = CurrentTime + dt;
+	}
+
+	entity.PlayList->setStartWeight (oldSlot, 1.0f, OldStartWeight);
+	entity.PlayList->setEndWeight (oldSlot, 0.0f, OldEndWeight);
+	entity.PlayList->setWeightSmoothness (oldSlot, 1.0f);
+
+	entity.PlayList->setStartWeight (newSlot, 0.0f, NewStartWeight);
+	entity.PlayList->setEndWeight (newSlot, 1.0f, OldEndWeight);
+	entity.PlayList->setWeightSmoothness (newSlot, 1.0f);
 
 	entity.CurrentAnimId = id;
 }

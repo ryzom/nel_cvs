@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.29 2001/07/17 13:49:45 legros Exp $
+ * $Id: client.cpp,v 1.30 2001/07/17 13:57:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,6 +55,7 @@
 
 #include <nel/pacs/u_move_primitive.h>
 
+#include <nel/net/login_client.h>
 
 #include "commands.h"
 #include "landscape.h"
@@ -63,11 +64,15 @@
 #include "pacs.h"
 #include "animation.h"
 #include "network.h"
+#include "sound.h"
+#include "interface.h"
+#include "lens_flare.h"
 #include "mouse_listener.h"
 
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
+using namespace NLNET;
 
 //
 // Globals
@@ -95,6 +100,88 @@ bool				NeedExit = false;
 bool				ShowRadar;
 bool				ShowCommands;
 bool				SnapSnowballs;
+
+
+uint loginState = 0;
+string login;
+
+void startLoginInterface ()
+{
+	loginState = 1;
+	askString ("Please enter your login:", ConfigFile.getVar("Login").asString ());
+	login = "";
+}
+
+void updateLoginInterface ()
+{
+	string str;
+	if (haveAnswer (str))
+	{
+		nlinfo ("result %s", str.c_str());
+
+		// esc pressed, stop all only before the shard selection
+		if (str.empty () && loginState < 3)
+		{
+			loginState = 0;
+			return;
+		}
+
+		switch (loginState)
+		{
+		case 1:
+			nlinfo ("login entered");
+			login = str;
+			askString ("Please enter your password:", ConfigFile.getVar("Password").asString (), 1);
+			loginState++;
+			break;
+		case 2:
+			{
+				nlinfo ("password entered");
+				string password = str;
+
+				string LoginSystemHost = ConfigFile.getVar("LoginSystemHost").asString ();
+				string res = CLoginClient::authenticate (LoginSystemHost+":49999", login, password, 1);
+
+				if (!res.empty ())
+				{
+					string err = string ("Authentification failed: ") + res;
+					askString (err, "", 2, CRGBA(64,0,0,128));
+					loginState = 0;
+				}
+				else
+				{
+					string list = "Please enter the shard number you want to connected to\n\n";
+					for (uint32 i = 0; i < CLoginClient::ShardList.size (); i++)
+					{
+						list += "Shard "+toString (i)+": "+CLoginClient::ShardList[i].ShardName+" ("+CLoginClient::ShardList[i].WSAddr+")\n";
+					}
+					askString (list, toString(ConfigFile.getVar("ShardNumber").asInt()));
+					loginState++;
+				}
+			}
+			break;
+		case 3:
+			{
+				nlinfo ("shard selected");
+				uint32 shardNum = atoi (str.c_str());
+
+				string res = CLoginClient::connectToShard (shardNum, *Connection);
+				if (!res.empty ())
+				{
+					string err = string ("Connection to shard failed: ") + res;
+					askString (err, "", 2, CRGBA(64,0,0,128));
+					loginState = 0;
+				}
+				else
+				{
+					askString ("You are online!!!", "", 2, CRGBA(0,64,0,128));
+					loginState = 0;
+				}
+			}
+			break;
+		}
+	}
+}
 
 //
 // Main
@@ -127,6 +214,7 @@ int main(int argc, char **argv)
 	CPath::addSearchPath (dataPath + "shapes/");
 	CPath::addSearchPath (dataPath + "maps/");
 	CPath::addSearchPath (dataPath + "pacs/");
+	CPath::addSearchPath (dataPath + "anims/");
 
 	// Create a driver
 	Driver = UDriver::createDriver();
@@ -166,6 +254,12 @@ int main(int argc, char **argv)
 	MouseListener->setMouseMode (U3dMouseListener::firstPerson);
 	MouseListener->setSpeed(PlayerSpeed);
 
+	// Init sound control
+	initInterface();
+
+	// Init sound control
+	initSound();
+
 	// Init the command control
 	initCommands ();
 
@@ -177,6 +271,9 @@ int main(int argc, char **argv)
 
 	// Init animation
 	initAnimation ();
+
+	// Init animation
+	initLensFlare ();
 
 	// Creates a self entity
 	addEntity(0xFFFFFFFF, CEntity::Self, CVector(ConfigFile.getVar("StartPoint").asFloat(0),
@@ -193,9 +290,13 @@ int main(int argc, char **argv)
 	nlinfo ("Welcome to Snowballs 2");
 
 	NewTime = CTime::getLocalTime();
+	
+	startLoginInterface ();
 
 	while ((!NeedExit) && Driver->isActive())
 	{
+		updateLoginInterface ();
+		
 		// Clear
 		Driver->clearBuffers (CRGBA (192,192,200,0));
 
@@ -217,11 +318,20 @@ int main(int argc, char **argv)
 		// Update the landscape
 		updateLandscape ();
 
+		// Update the sound
+		updateSound ();
+
 		// Set new animation date
 		Scene->animate (float(NewTime)/1000);
 
+		// Render the sky first
+		updateSky ();
+
 		// Render
 		Scene->render ();
+
+		// Render the lens flare
+		updateLensFlare ();
 
 		// Update the commands panel
 		if (ShowCommands) updateCommands ();
@@ -230,6 +340,8 @@ int main(int argc, char **argv)
 		if (ShowRadar) updateRadar ();
 
 		renderEntitiesNames();
+
+		updateInterface ();
 
 		TextContext->setHotSpot (UTextContext::TopRight);
 		TextContext->setColor (isOnline()?CRGBA(0, 255, 0):CRGBA(255, 0, 0));
@@ -244,7 +356,7 @@ int main(int argc, char **argv)
 		Driver->EventServer.pump();
 
 		// Manage the keyboard
-		if (Driver->AsyncListener.isKeyPushed (KeyESCAPE))
+		if (Driver->AsyncListener.isKeyDown (KeySHIFT) && Driver->AsyncListener.isKeyDown (KeyESCAPE))
 		{
 			NeedExit = true;
 		}
@@ -291,6 +403,17 @@ int main(int argc, char **argv)
 */
 			}
 		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF1))
+		{
+			if (!isOnline())
+				startLoginInterface ();
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF2))
+		{
+			if (isOnline())
+				Connection->disconnect ();
+		}
+
 
 		// Update network messages
 		updateNetwork ();
@@ -302,11 +425,15 @@ int main(int argc, char **argv)
 	Driver->setCapture(false);
 	Driver->showCursor(true);
 
+	releaseLensFlare ();
+	releaseInterface ();
 	releaseNetwork ();
 	releaseAnimation ();
 	releaseAiming();
 	releasePACS();
 	releaseLandscape();
+	releaseAnimation ();
+	releaseSound ();
 
 	MouseListener->removeFromServer(Driver->EventServer);
 	delete MouseListener;

@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.15 2001/07/17 13:49:45 legros Exp $
+ * $Id: entities.cpp,v 1.16 2001/07/17 13:57:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,7 @@
 #include "pacs.h"
 #include "animation.h"
 #include "camera.h"
+#include "sound.h"
 #include "mouse_listener.h"
 #include "landscape.h"
 
@@ -225,6 +226,8 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.Instance = Scene->createInstance("snowball.ps");
 		entity.Speed = SnowballSpeed;
 
+		playSound (entity, SoundId);
+
 		entity.setState (CEntity::Normal);
 		break;
 	}
@@ -233,6 +236,9 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.Skeleton->setPos (startPosition);
 	else
 		entity.Instance->setPos (startPosition);
+
+	if (entity.Source != NULL)
+		entity.Source->setPosition (startPosition);
 
 	if (entity.Particule != NULL)
 		entity.Particule->setPos (startPosition);
@@ -339,6 +345,8 @@ void stateDisappear (CEntity &entity)
 			entity.MovePrimitive = NULL;
 		}
 
+		deleteSound (entity);
+
 		nlinfo ("Remove the entity %u from the Entities list", entity.Id);
 		EIT eit = findEntity (entity.Id);
 		Entities.erase (eit);
@@ -370,6 +378,8 @@ void stateNormal (CEntity &entity)
 		entity.ServerPosition += CVector((float)cos(entity.Angle),
 										 (float)sin(entity.Angle),
 										 0.0f)*EntityMaxSpeed;
+
+		playAnimation (entity, WalkAnimId);
 	}
 	else if (entity.Type == CEntity::Snowball && entity.AutoMove && pDelta.norm() < 0.1f)
 	{
@@ -567,8 +577,15 @@ void updateEntities ()
 			entity.VisualCollisionEntity->snapToGround(entity.Position);
 		}
 
-
-		if (entity.Instance != NULL)
+		if (entity.Type == CEntity::Snowball && SnapSnowballs)
+		{
+			CVector	snapPos = entity.Position;
+			entity.VisualCollisionEntity->snapToGround(snapPos);
+			entity.Instance->setPos(snapPos);
+			CVector	jdir = CVector((float)cos(entity.Angle), (float)sin(entity.Angle), 0.0f);
+			entity.Instance->setRotQuat(jdir);
+		}
+		else if (entity.Instance != NULL)
 		{
 			CVector	jdir = CVector(-(float)cos(entity.Angle), -(float)sin(entity.Angle), 0.0f);
 
@@ -583,6 +600,9 @@ void updateEntities ()
 				entity.Instance->setRotQuat(jdir);
 			}
 		}
+
+		if (entity.Source != NULL)
+			entity.Source->setPosition (entity.Position);
 
 		if (entity.Particule != NULL)
 		{
@@ -691,12 +711,13 @@ void displayRadarPoint (const CVector &Position, const CVector &Center, float Si
 	// userpos is between -0.5 -> +0.5
 	userPosX *= RadarZoom;
 	userPosY *= RadarZoom;
+/*
 	/// \todo virer kan ca marchera
 	string str = toString(userPosX) + " / " + toString(userPosY) + " ** ";
 	str += toString(Center.x) + " / " + toString(Center.y) + " *** ";
 	str += toString(Position.x) + " / " + toString(Position.y);
 	TextContext->printfAt (0.1f, 0.5f, str.c_str());
-
+*/
 	if (userPosX > 0.5f || userPosX < -0.5f || userPosY > 0.5f || userPosY < -0.5f)
 		return;
 	userPosX += 0.5f;
@@ -731,9 +752,13 @@ void updateRadar ()
 		Center.y = Self->Position.y;
 	}
 
+	float entitySize = RadarEntitySize * ((RadarZoom <= 1.0f) ? 1.0f : RadarZoom);
+	if (entitySize > RadarBorder) entitySize = RadarBorder;
+	if (entitySize < RadarEntitySize * 16) entitySize = RadarEntitySize * 16;
+
 	for (EIT eit = Entities.begin (); eit != Entities.end (); eit++)
 	{
-		float entitySize = RadarEntitySize * ((RadarZoom <= 1.0f) ? 1.0f : RadarZoom);
+
 		CRGBA entityColor = ((*eit).second.Type == CEntity::Self) ? RadarSelfColor : RadarFrontColor;
 
 		displayRadarPoint ((*eit).second.Position, Center, entitySize, entityColor);

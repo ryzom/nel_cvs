@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera management
  *
- * $Id: camera.cpp,v 1.8 2001/07/17 12:27:41 legros Exp $
+ * $Id: camera.cpp,v 1.9 2001/07/17 13:57:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include <math.h>
 #include <nel/misc/vectord.h>
 #include <nel/3d/u_camera.h>
+#include <nel/3d/u_driver.h>
 #include <nel/3d/u_scene.h>
 #include <nel/3d/u_instance.h>
 #include <nel/3d/u_skeleton.h>
@@ -50,6 +51,11 @@ float				ViewTargetHeight = 2.0f;
 
 UInstance			*Snow = NULL;
 
+
+UScene				*SkyScene = NULL;
+UCamera				*SkyCamera = NULL;
+UInstance			*Sky = NULL;
+
 void	initCamera()
 {
 	Camera = Scene->getCam();
@@ -65,6 +71,16 @@ void	initCamera()
 
 	Snow = Scene->createInstance("snow.ps");
 	Snow->setTransformMode (UTransformable::DirectMatrix);
+
+	SkyScene = Driver->createScene();
+
+	SkyCamera = SkyScene->getCam ();
+	SkyCamera->setTransformMode (UTransformable::DirectMatrix);
+	SkyCamera->setFrustum (Camera->getFrustum ());
+
+	Sky = SkyScene->createInstance("sky.shape");
+	Sky->setTransformMode (UTransformable::DirectMatrix);
+	Sky->setMatrix(CMatrix::Identity);
 }
 
 void	updateCamera()
@@ -73,8 +89,30 @@ void	updateCamera()
 	CMatrix	mat = CMatrix::Identity;
 	mat.setPos (Camera->getMatrix().getPos());
 	Snow->setMatrix(mat);
+
+/*old
+	CVector pos = mat.getPos ();
+	CMatrix mat2;
+	mat2.setPos (pos);
+	Snow->setMatrix (mat2);
+*/}
+
+
+void	updateSky ()
+{
+	CMatrix skyCameraMatrix;
+	skyCameraMatrix.identity();
+	skyCameraMatrix= Camera->getMatrix();
+	skyCameraMatrix.setPos(CVector::Null);
+	SkyCamera->setMatrix(skyCameraMatrix);
+
+	SkyScene->animate (float(NewTime)/1000);
+	SkyScene->render ();
+	// Must clear ZBuffer For incoming rendering.
+	Driver->clearZBuffer();
 }
 
 void	releaseCamera()
 {
+	Driver->deleteScene (SkyScene);
 }

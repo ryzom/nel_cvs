@@ -1,7 +1,7 @@
 /** \file pacs.h
  * 
  *
- * $Id: pacs.h,v 1.2 2001/07/12 17:06:58 legros Exp $
+ * $Id: pacs.h,v 1.3 2001/07/17 13:57:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,12 +31,12 @@ namespace NLPACS
 	class URetrieverBank;
 	class UGlobalRetriever;
 	class UMoveContainer;
-};
+}
 
 namespace NL3D
 {
 	class UVisualCollisionManager;
-};
+}
 
 extern NLPACS::URetrieverBank			*RetrieverBank;
 extern NLPACS::UGlobalRetriever			*GlobalRetriever;

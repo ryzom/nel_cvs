@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.32.4.2 2003/09/01 16:23:09 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.32.4.3 2003/09/01 16:39:27 coutelas Exp $
  *
  */
 
@@ -1106,7 +1106,7 @@ void sendAESInformations (uint16 sid)
 					string c  = varpath2.Destination[j].first, d = (*aesit).Name;
 					if(varpath2.Destination[j].first == "*" || varpath2.Destination[j].first == (*aesit).Name)
 					{
-						nlinfo ("Adding '%s' '%s' '%s' in graph to AES-%hu", row[0], row[1], sid);
+						nlinfo ("Adding '%s' '%s' in graph to AES-%hu", row[0], row[1], sid);
 						informations.push_back (row[0]);
 						informations.push_back (row[1]);
 					}

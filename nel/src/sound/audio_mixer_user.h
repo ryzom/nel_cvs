@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.10 2001/08/24 12:43:17 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.11 2001/09/03 14:19:19 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,10 +104,17 @@ public:
 	virtual TSoundId			getSoundId( const char *name );
 
 
-	/// Add a logical sound source (returns NULL if name not found). To remove a source, just delete it.
-	virtual USource				*createSource( const char *name );
-	/// Add a logical sound source (by sound id). To remove a source, just delete it.
-	virtual USource				*createSource( TSoundId id );
+	/** Add a logical sound source (returns NULL if name not found).
+	 * If spawn is true, the source will auto-delete after playing. If so, the return USource* pointer
+	 * is valid only before the time when calling play() plus the duration of the sound: be careful!
+	 */
+	virtual USource				*createSource( const char *name, bool spawn=false );
+	/// Add a logical sound source (by sound id). To remove a source, just delete it. See createSource(const char*)
+	virtual USource				*createSource( TSoundId id, bool spawn=false );
+	/** Delete a logical sound source. If you don't call it, the source will be auto-deleted
+	 * when deleting the audio mixer object
+	 */
+	virtual void				removeSource( USource *source );
 
 
 	/// Return the listener interface
@@ -120,14 +127,18 @@ public:
 	virtual void				update(); 
 
 
-	/// Return the number of mixing tracks (voices)
-	virtual uint				getPolyphony() const { return _NbTracks; }
 	/// Return the names of the sounds (call this method after loadSoundBuffers())
 	virtual void				getSoundNames( std::vector<const char *>& names ) const;
+	/// Return the number of mixing tracks (voices)
+	virtual uint				getPolyphony() const { return _NbTracks; }
+	/// Return the number of sources (slow)
+	virtual uint				getSourcesNumber() const { return _Sources.size(); }
+	/// Return the number of playing sources (slow)
+	virtual uint				getPlayingSourcesNumber() const;
+	/// Return a string showing the playing sources (slow)
+	virtual std::string			getSourcesStats() const;
 
 
-	/// Remove logical sound source (called by CSourceUser's destructor)
-	void						removeSource( USource *source );
 	/// Add a source which was created by an EnvSound
 	void						addSource( CSourceUser *source )		{ _Sources.insert( source ); }
 	/// Put source into a track
@@ -142,6 +153,10 @@ public:
 	CEnvSoundUser				*getEnvSounds()							{ return _EnvSounds; }
 	/// Return the listen pos vector
 	const NLMISC::CVector&		getListenPosVector() const				{ return _ListenPosition; }
+	/** Same as removeSource() but does not delete the object (e.g. when not allocated by new,
+	 * as the CAmbiantSource channels)
+	 */
+	void						removeMySource( USource *source );
 	// Allow to load sound files (nss) when the corresponding wave file is missing (see CSound)
 	//static void					allowMissingWave( bool b )				{ CSound::allowMissingWave( b ); }
 	
@@ -156,6 +171,8 @@ protected:
 	bool						moreSourcesThanTracks() const			{ return _NbTracks < _Sources.size(); }
 	/// Redispatch the sources (call only if moreSourcesThanTracks() returns true)
 	void						redispatchSourcesToTrack();
+	/// See removeSource(USource*) and removeMySource(USource*)
+	void						removeSource( std::set<CSourceUser*>::iterator ips, bool deleteit );
 
 private:
 

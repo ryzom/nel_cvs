@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.12 2001/08/29 17:13:36 vizerie Exp $
+ * $Id: audio_mixer_user.cpp,v 1.13 2001/09/03 14:19:19 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,9 @@ namespace NLSOUND {
 
 // The audio mixer singleton instance
 CAudioMixerUser		*CAudioMixerUser::_Instance = NULL;
+
+
+const char *PriToCStr [3] = { "Hi", "Md", "Lo" };
 
 
 /*
@@ -95,17 +98,17 @@ CAudioMixerUser::~CAudioMixerUser()
 	// Env. sounds tree
 	if ( _EnvSounds != NULL )
 	{
-		_EnvSounds->stop();
+		//_EnvSounds->stop( true );
 		delete _EnvSounds;
 	}
 
-	// Remaining sources (should have been removed and deleted by the user !)
+	// Remaining sources
 	set<CSourceUser*>::iterator ipsrc, ipOld;
 	for ( ipsrc=_Sources.begin(); ipsrc!=_Sources.end(); )
 	{
 		ipOld = ipsrc;
 		++ipsrc;
-		delete (*ipOld); // 3D sources, the envsounds were removed above
+		removeSource( ipOld, true ); // 3D sources, the envsounds were removed above
 	}
 
 	// EnvEffects
@@ -335,14 +338,23 @@ void				CAudioMixerUser::applyListenerMove( const NLMISC::CVector& listenerpos )
 }
 
 
-//const char *PriToCStr [3] = { "Hi", "Md ", "Lo" };
-
-
 /*
  * Update audio mixer (call evenly)
  */
 void				CAudioMixerUser::update()
 {
+	// Manage spawned sources
+	std::set<CSourceUser*>::iterator ips, ipOld;
+	for ( ips=_Sources.begin(); ips!=_Sources.end(); )
+	{
+		ipOld = ips;
+		++ips;
+		if ( (*ipOld)->isSpawn() && (*ipOld)->isStopped() )
+		{
+			removeSource( ipOld, true );
+		}
+	}
+
 	// Update envsounds
 	if ( _EnvSounds != NULL )
 	{
@@ -359,7 +371,8 @@ void				CAudioMixerUser::update()
 
 			// If source not a looping source,
 			// check source playing state to false if the playing stopped on its own
-			uint i;
+			// (commented out: unneeded because now it's in CSourceUser::isPlaying())
+			/*uint i;
 			for ( i=0; i!=_NbTracks; i++ )
 			{
 				if ( (_Tracks[i]!=NULL) && (!_Tracks[i]->isPlaying()) )
@@ -370,7 +383,7 @@ void				CAudioMixerUser::update()
 						_Tracks[i]->getUserSource()->stop();
 					}
 				}
-			}
+			}*/
 
 			// Auto-Balance
 			balanceSources();
@@ -418,10 +431,12 @@ TSoundId			CAudioMixerUser::getSoundId( const char *name )
 }
 
 
-/*
- * Add a logical sound source (by sound id). To remove a source, just delete it.
+/* Add a logical sound source (returns NULL if name not found).
+ * To remove a source, just delete it (if spawn is false).
+ * If spawn is true, the source will auto-delete after playing. If so, the return USource* pointer
+ * is valid only before the time when calling play() plus the duration of the sound: be careful!
  */
-USource				*CAudioMixerUser::createSource( TSoundId id )
+USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn )
 {
 	if ( id == NULL )
 	{
@@ -430,7 +445,7 @@ USource				*CAudioMixerUser::createSource( TSoundId id )
 	}
 
 	// Create source
-	CSourceUser *source = new CSourceUser( id );
+	CSourceUser *source = new CSourceUser( id, spawn );
 	_Sources.insert( source );
 
 	// Link the position to the listener position if it'a stereo source
@@ -452,9 +467,9 @@ USource				*CAudioMixerUser::createSource( TSoundId id )
 /*
  * Add a logical sound source (returns NULL if name not found). To remove a source, just delete it.
  */
-USource				*CAudioMixerUser::createSource( const char *name )
+USource				*CAudioMixerUser::createSource( const char *name, bool spawn )
 {
-	return createSource( getSoundId( name ) );
+	return createSource( getSoundId( name ), spawn );
 }
 
 
@@ -468,13 +483,49 @@ void				CAudioMixerUser::removeSource( USource *source )
 	if ( ips == _Sources.end() )
 	{
 		nlwarning( "AM: Cannot remove source: not found" );
+		//releaseTrack( source );
+		delete source;
 	}
 	else
 	{
-		CSourceUser *src = *ips;
-		_Sources.erase( ips );
-		releaseTrack( src );
-		nldebug( "AM: Source removed" );
+		removeSource( ips, true );
+	}
+}
+
+
+/* Same as removeSource() but does not delete the object (e.g. when not allocated by new,
+ * as the CAmbiantSource channels)
+ */
+void				CAudioMixerUser::removeMySource( USource *source )
+{
+	nlassert( source != NULL );
+	set<CSourceUser*>::const_iterator ips = _Sources.find( static_cast<CSourceUser*>(source) );
+	if ( ips == _Sources.end() )
+	{
+		nlwarning( "AM: Cannot remove source: not found" );
+		//releaseTrack( source );
+	}
+	else
+	{
+		removeSource( ips, false );
+	}
+}
+
+
+/*
+ * Remove a source (by iterator)
+ */
+void				CAudioMixerUser::removeSource( std::set<CSourceUser*>::iterator ips, bool deleteit )
+{
+	nlassert( ips != _Sources.end() );
+	CSourceUser *src = *ips;
+	_Sources.erase( ips );
+	releaseTrack( src );
+	nldebug( "AM: Source %s removed", src->getSound() ? src->getSound()->getName().c_str() : "" );
+
+	if ( deleteit )
+	{
+		delete src;
 	}
 }
 
@@ -563,6 +614,49 @@ void			CAudioMixerUser::getSoundNames( std::vector<const char *>& names ) const
 	{
 		names.push_back( (*ism).first );
 	}
+}
+
+
+/*
+ * Return the number of playing sources (slow)
+ */
+uint			CAudioMixerUser::getPlayingSourcesNumber() const
+{
+	uint nb = 0;	
+	set<CSourceUser*>::const_iterator ips;
+	for ( ips=_Sources.begin(); ips!=_Sources.end(); ++ips )
+	{
+		if ( (*ips)->isPlaying() )
+		{
+			++nb;
+		}
+	}
+	return nb;
+}
+
+
+/*
+ * Return a string showing the playing sources (slow)
+ */
+string			CAudioMixerUser::getSourcesStats() const
+{
+	string s;
+	set<CSourceUser*>::iterator ips;
+	for ( ips=_Sources.begin(); ips!=_Sources.end(); ++ips )
+	{
+		if ( (*ips)->isPlaying() )
+		{
+			char line [80];
+			nlassert( (*ips)->getSound() && (*ips)->getSound()->getBuffer() );
+			smprintf( line, 80, "%s: %u%% %s %s",
+					  (*ips)->getSound()->getName().c_str(),
+					  (uint32)((*ips)->getGain()*100.0f),
+					  (*ips)->getSound()->getBuffer()->isStereo()?"ST":"MO",
+					  PriToCStr[(*ips)->getPriority()] );
+			s += string(line) + "\n";
+		}
+	}
+	return s;
 }
 
 

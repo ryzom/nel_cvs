@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.7 2001/08/24 12:44:54 cado Exp $
+ * $Id: u_audio_mixer.h,v 1.8 2001/09/03 14:18:05 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,10 +91,17 @@ public:
 	virtual TSoundId	getSoundId( const char *name ) = 0;
 
 
-	/// Add a logical sound source (returns NULL if name not found). To remove a source, just delete it.
-	virtual USource		*createSource( const char *name ) = 0;
-	/// Add a logical sound source (by sound id). To remove a source, just delete it.
-	virtual USource		*createSource( TSoundId id ) = 0;
+	/** Add a logical sound source (returns NULL if name not found).
+	 * If spawn is true, the source will auto-delete after playing. If so, the return USource* pointer
+	 * is valid only before the time when calling play() plus the duration of the sound: be careful!
+	 */
+	virtual USource		*createSource( const char *name, bool spawn=false ) = 0;
+	/// Add a logical sound source (by sound id). To remove a source, just delete it. See createSource(const char*)
+	virtual USource		*createSource( TSoundId id, bool spawn=false ) = 0;
+	/** Delete a logical sound source. If you don't call it, the source will be auto-deleted
+	 * when deleting the audio mixer object
+	 */
+	virtual void		removeSource( USource *source ) = 0;
 
 
 	/// Return the listener interface
@@ -107,10 +114,16 @@ public:
 	virtual void		update() = 0;
 
 
-	/// Return the number of mixing tracks (voices)
-	virtual uint		getPolyphony() const = 0;
 	/// Return the names of the sounds (call this method after loadSoundBuffers())
 	virtual void		getSoundNames( std::vector<const char *>& names ) const = 0;
+	/// Return the number of mixing tracks (voices)
+	virtual uint		getPolyphony() const = 0;
+	/// Return the number of sources
+	virtual uint		getSourcesNumber() const = 0;
+	/// Return the number of playing sources
+	virtual uint		getPlayingSourcesNumber() const = 0;
+	/// Return a string showing the playing sources
+	virtual std::string	getSourcesStats() const = 0;
 
 
 	/// Destructor

@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.21 2000/12/22 14:38:40 berenguier Exp $
+ * $Id: zone.cpp,v 1.22 2000/12/22 15:51:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,6 +165,10 @@ void			CZone::retrieve(std::vector<CPatchInfo> &patchs, std::vector<CBorderVerte
 		for(i=0;i<4;i++)
 			pi.BindEdges[i]= pc.BindEdges[i];
 	}
+
+	// retrieve bordervertices.
+	//=========================
+	borderVertices= BorderVertices;
 }
 
 

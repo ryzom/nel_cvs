@@ -1,7 +1,7 @@
 /** \file animation_optimizer.cpp
  * <File description>
  *
- * $Id: animation_optimizer.cpp,v 1.2 2002/06/06 08:47:16 berenguier Exp $
+ * $Id: animation_optimizer.cpp,v 1.3 2002/06/19 09:02:36 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -262,6 +262,8 @@ ITrack		*CAnimationOptimizer::optimizeTrack(const ITrack	*trackIn)
 	{
 		// Must be a quaternion track or vector track for now.
 		nlstop;
+		// Avoid warning.
+		return cloneTrack(trackIn);
 	}
 }
 

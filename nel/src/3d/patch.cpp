@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.86 2002/05/23 14:40:18 berenguier Exp $
+ * $Id: patch.cpp,v 1.87 2002/06/19 09:02:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1335,6 +1335,8 @@ CVector			CPatch::computeContinousVertex(float s, float t) const
 		if(edgeIdS==2 && edgeIdT==1)	return BaseVertices[2]->EndPos;
 		if(edgeIdS==2 && edgeIdT==3)	return BaseVertices[3]->EndPos;
 		nlstop;
+		// Error, but Avoid warning
+		return CVector::Null;
 	}
 	// test if on an edge
 	else if(edgeIdS>=0 || edgeIdT>=0)
@@ -1428,6 +1430,8 @@ CVector			CPatch::computeVertexButCorner(float s, float t, bool &onCorner) const
 		if(edgeIdS==2 && edgeIdT==1)	return BaseVertices[2]->EndPos;
 		if(edgeIdS==2 && edgeIdT==3)	return BaseVertices[3]->EndPos;
 		nlstop;
+		// Error, but Avoid warning
+		return CVector::Null;
 	}
 	// else, std case
 	else

@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.4 2002/10/11 13:25:53 robert Exp $
+ * $Id: classifier.cpp,v 1.5 2002/10/11 13:31:19 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,8 +170,6 @@ void CClassifierSystem::getDebugString(std::string &t) const
 		}
 		std::string actionName = (*itClassifiers)->Behavior;
 		sint16		prio = (*itClassifiers)->Priority;
-		//char v[8];
-		//dbg += "> " + actionName + " [" + itoa(prio,v,10) + "]\n";
 		dbg += "> " + actionName + " [" + NLMISC::toString(prio) + "]\n";
 	}
 	t += dbg;
@@ -364,9 +362,7 @@ void CMotivationEnergy::getDebugString(std::string &t) const
 	
 	for (itEnergyByMotivation = _EnergyByMotivation.begin(); itEnergyByMotivation!= _EnergyByMotivation.end(); itEnergyByMotivation++)
 	{
-		char v[8];
-		ret += " Motivation source : " + (*itEnergyByMotivation).first + " (" + itoa((*itEnergyByMotivation).second.Value * (*itEnergyByMotivation).second.PP,v,10) + ")\n";
-//		ret = ret + " Motivation value  : " + itoa((*itEnergyByMotivation).second.Value,v,10) + "\n";
+		ret += " Motivation source : " + (*itEnergyByMotivation).first + " (" + NLMISC::toString((*itEnergyByMotivation).second.Value * (*itEnergyByMotivation).second.PP) + ")\n";
 	}
 	t+=ret;
 }

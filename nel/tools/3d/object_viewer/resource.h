@@ -179,6 +179,7 @@
 #define IDD_ABOUT                       1079
 #define IDD_LB_EXTERN_IB                1080
 #define IDC_ATTR_BITMAP                 1081
+#define IDD_PICK_SOUND                  1081
 #define IDC_CONSTANT_VALUE_POS          1082
 #define IDC_AVAILABLE_TARGET            1086
 #define IDC_PARTICLE_COLOR              1087
@@ -257,6 +258,7 @@
 #define IDC_VERSION                     1164
 #define IDC_ENABLE_EXTERN_ID            1165
 #define IDC_ID_VALUE                    1166
+#define IDC_LIST1                       1168
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -334,9 +336,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1081
+#define _APS_NEXT_RESOURCE_VALUE        1082
 #define _APS_NEXT_COMMAND_VALUE         32860
-#define _APS_NEXT_CONTROL_VALUE         1168
+#define _APS_NEXT_CONTROL_VALUE         1169
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

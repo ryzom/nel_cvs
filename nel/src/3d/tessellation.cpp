@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.1 2000/10/23 12:14:34 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.2 2000/10/23 14:08:30 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -43,6 +43,12 @@ const	uint8	TileUvFmt3Tf2= 2;
 const	uint8	TileUvFmt1Tf4= 3;
 const	uint8	TileUvFmt2Tf4= 4;
 const	uint8	TileUvFmt3Tf4= 5;
+// maybe Same as an enum... but may be faster...
+const	uint8	TileMatNormal= 0;
+const	uint8	TileMatAlpha= 1;
+const	uint8	TileMatSpec= 2;
+const	uint8	TileMatAlphaSpec= 3;
+const	uint8	TileMatSpecAlpha= 4;
 
 
 // ***************************************************************************
@@ -66,6 +72,22 @@ float		CTessFace::TileDistNear= 50;
 float		CTessFace::TileDistFar= 75;
 float		CTessFace::OOTileDistDelta= 1.0f / (CTessFace::TileDistFar - CTessFace::TileDistNear);
 sint		CTessFace::TileMaxSubdivision=4;
+
+
+// ***************************************************************************
+ITileUv		*CTessFace::allocTileUv(uint8 fmt)
+{
+	switch (fmt)
+	{
+		case TileUvFmt1Tf2: return new CTileUv1Tf2; break;
+		case TileUvFmt2Tf2: return new CTileUv2Tf2; break;
+		case TileUvFmt3Tf2: return new CTileUv3Tf2; break;
+		case TileUvFmt1Tf4: return new CTileUv1Tf4; break;
+		case TileUvFmt2Tf4: return new CTileUv2Tf4; break;
+		case TileUvFmt3Tf4: return new CTileUv3Tf4; break;
+		default: nlassert(false);
+	}
+}
 
 	
 // ***************************************************************************
@@ -123,7 +145,7 @@ float		CTessFace::updateErrorMetric()
 	// Yoyo test. Same as Hoppe97, but with increased impact of perpendicular factor.
 	//----------------------------
 	/*
-	float	perpfact= (sqrdist - SQR(viewscal)) / sqrdist;
+	float	perpfact= (sqrdist - sqr(viewscal)) / sqrdist;
 	// perpfact E [0,1].  (since "Normal"==1.).
 	perpfact= pow(perpfact,2);			// rise it to N.
 	em= Size * perpfact / sqrdist;		// remark the similarity with trivial formula...
@@ -133,7 +155,7 @@ float		CTessFace::updateErrorMetric()
 	if(Patch->ComputeTileErrorMetric)
 	{
 		// TileMode Impact. We must split at least at TileLimitLevel.
-		if(Level<Patch->TileLimitLevel && sqrdist< SQR(TileDistFar))
+		if(Level<Patch->TileLimitLevel && sqrdist< sqr(TileDistFar))
 		{
 			// General formula for Level, function of Size, treshold etc...:
 			// Level= log2(BaseSize / sqrdist / threshold);
@@ -146,7 +168,7 @@ float		CTessFace::updateErrorMetric()
 			// If we are not so subdivided.
 			if(ProjectedSize<limit)
 			{
-				if(sqrdist< SQR(TileDistNear))
+				if(sqrdist< sqr(TileDistNear))
 						ProjectedSize=limit;
 				else
 				{
@@ -162,21 +184,6 @@ float		CTessFace::updateErrorMetric()
 	return ProjectedSize;
 }
 
-
-// ***************************************************************************
-ITileUv		*CTessFace::allocTileUv(uint8 fmt)
-{
-	switch (fmt)
-	{
-		case TileUvFmt1Tf2: return new CTileUv1Tf2; break;
-		case TileUvFmt2Tf2: return new CTileUv2Tf2; break;
-		case TileUvFmt3Tf2: return new CTileUv3Tf2; break;
-		case TileUvFmt1Tf4: return new CTileUv1Tf4; break;
-		case TileUvFmt2Tf4: return new CTileUv2Tf4; break;
-		case TileUvFmt3Tf4: return new CTileUv3Tf4; break;
-		default: nlassert(false);
-	}
-}
 
 // ***************************************************************************
 void		CTessFace::computeTileMaterial()
@@ -207,15 +214,16 @@ void		CTessFace::computeTileMaterial()
 
 	// 1. Compute Tile Material.
 	//--------------------------
-	// TODO: work with patch to create the good vertex format (TileType), link Pass to the good materials etc...
+	// TODO: work with patch to create the good vertex format (TileFmt/TileMat), link Pass to the good materials etc...
 	// for test only here....
-	TileType= TileUvFmt1Tf2;
+	TileFmt= TileUvFmt1Tf2;
+	TileMat= TileMatNormal;
 
 
 	// 2. Compute Uvs.
 	//----------------
 	// Must allocate the base uv.
-	TileUvBase= allocTileUv(TileType);
+	TileUvBase= allocTileUv(TileFmt);
 	// TODO: work with Patch, to create the good texcoordinates.
 	// for test only here....
 	((CTileUv1Tf2*)TileUvLeft)->P0Uv0.U= PVLeft.S<=middle.S? 0.0f: 1.0f;
@@ -231,8 +239,8 @@ void		CTessFace::computeTileMaterial()
 	}
 	else
 	{
-		TileUvLeft= allocTileUv(TileType);
-		TileUvRight= allocTileUv(TileType);
+		TileUvLeft= allocTileUv(TileFmt);
+		TileUvRight= allocTileUv(TileFmt);
 		// TODO: work with Patch, to create the good texcoordinates.
 		// for test only here....
 		((CTileUv1Tf2*)TileUvLeft)->P0Uv0.U= PVLeft.S<=middle.S? 0.0f: 1.0f;
@@ -341,7 +349,8 @@ void		CTessFace::split()
 	else if(SonLeft->Level > Patch->TileLimitLevel)
 	{
 		SonLeft->TileId= TileId;
-		SonLeft->TileType= TileType;
+		SonLeft->TileFmt= TileFmt;
+		SonLeft->TileMat= TileMat;
 		SonLeft->TilePass0= TilePass0;
 		SonLeft->TilePass1= TilePass1;
 		SonLeft->TilePass2= TilePass2;
@@ -349,7 +358,8 @@ void		CTessFace::split()
 		SonLeft->TileUvRight= TileUvLeft;
 
 		SonRight->TileId= TileId;
-		SonRight->TileType= TileType;
+		SonRight->TileFmt= TileFmt;
+		SonRight->TileMat= TileMat;
 		SonRight->TilePass0= TilePass0;
 		SonRight->TilePass1= TilePass1;
 		SonRight->TilePass2= TilePass2;
@@ -368,7 +378,7 @@ void		CTessFace::split()
 		}
 		else
 		{
-			switch (TileType)
+			switch (TileFmt)
 			{
 				// Create at middle: (TileUvLeft+TileUvRight) /2
 				case TileUvFmt1Tf2: tuv= new CTileUv1Tf2( (CTileUv1Tf2*)TileUvLeft, (CTileUv1Tf2*)TileUvRight ); break;
@@ -639,5 +649,7 @@ void		CTessFace::refine()
 	// Unstable case: the child tell to his father "NeedCompute=true", but the father previously said "NeedCompute=false".
 	// It is a normal case, at the next father->refine(), he will compute himslef.
 }
+
+
 
 } // NL3D

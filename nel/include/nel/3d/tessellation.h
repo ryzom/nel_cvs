@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.1 2000/10/23 12:13:42 berenguier Exp $
+ * $Id: tessellation.h,v 1.2 2000/10/23 14:08:15 berenguier Exp $
  */
 
 /** Copyright, 2000 Nevrax Ltd.
@@ -237,10 +237,6 @@ public:
  */
 class	CTessFace
 {
-private:
-	// Alloc a tile.
-	ITileUv		*allocTileUv(uint8 fmt);
-
 public:
 	class	CParamCoord
 	{
@@ -254,10 +250,10 @@ public:
 		CParamCoord	operator+(const CParamCoord &v) const	{return CParamCoord(S+v.S, T+v.T);}
 		CParamCoord	operator-(const CParamCoord &v) const	{return CParamCoord(S-v.S, T-v.T);}
 		CParamCoord	shifted() const	{return CParamCoord(S>>1, T>>1);}
-		float	getS() {return S*OO16384;}
-		float	getT() {return T*OO16384;}
+		float	getS() const {return S*OO16384;}
+		float	getT() const {return T*OO16384;}
 		// vertex on the border?
-		bool	onBorder() {return (S==0 || S==0x8000 || T==0 || T==0x8000);}
+		bool	onBorder() const {return (S==0 || S==0x8000 || T==0 || T==0x8000);}
 	};
 
 public:
@@ -281,8 +277,9 @@ public:
 	// @{
 	// The number of the tile relatively to the patch TileMap.
 	uint8			TileId;
-	// The type of the tile (1,2 or 3 t2f0/t2f1,  1,2 or 3 t2f0/t2f1/t2f2/t3f3).
-	uint8			TileType;
+	// The type of the tile.
+	uint8			TileFmt:5;		// (1,2 or 3 t2f0/t2f1,  1,2 or 3 t2f0/t2f1/t2f2/t3f3).
+	uint8			TileMat:3;		// Normal / Spec / Alpha / AlphaSpec / SpecAlpha
 	// The tile Materials. Each material=1 pass.
 	CTileMaterial	*TilePass0;				//  general Tile.
 	CTileMaterial	*TilePass1;				// (may be NULL) 2nd Tile Alpha. Or specular tile for TilePass0.
@@ -310,9 +307,9 @@ public:
 	~CTessFace() {}
 
 	// Utilities.
-	bool	isLeaf() {return SonLeft==NULL;}
-	bool	hasVertex(CTessVertex *v) {return VBase==v || VLeft==v || VRight==v;}
-	bool	hasEdge(CTessVertex *v0, CTessVertex *v1) {return hasVertex(v0) && hasVertex(v1);}
+	bool	isLeaf() const {return SonLeft==NULL;}
+	bool	hasVertex(CTessVertex *v) const {return VBase==v || VLeft==v || VRight==v;}
+	bool	hasEdge(CTessVertex *v0, CTessVertex *v1) const {return hasVertex(v0) && hasVertex(v1);}
 	void	changeNeighboor(CTessFace *from, CTessFace *to)
 	{
 		if(FBase==from) FBase=to;
@@ -366,9 +363,12 @@ public:
 	// can arise. must use Patch pointer.
 
 
-public:
+private:
 	// Faces have the same tile???
-	static bool	sameTile(CTessFace *a, CTessFace *b) {return (a->Patch==b->Patch && a->TileId==b->TileId);}
+	static bool			sameTile(const CTessFace *a, const CTessFace *b) 
+		{return (a->Patch==b->Patch && a->TileId==b->TileId);}
+	// Alloc a tile.
+	static ITileUv		*allocTileUv(uint8 fmt);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file common.h
  * <File description>
  *
- * $Id: common.h,v 1.2 2000/10/23 13:54:22 cado Exp $
+ * $Id: common.h,v 1.3 2000/10/23 14:08:06 berenguier Exp $
  */
 
 /** Copyright, 2000 Nevrax Ltd.
@@ -55,14 +55,15 @@ template<class T, class U, class V>	inline void clamp(T &v, const U &min, const 
 
 
 // ============================================================================================
-#ifndef SQR
-#define	SQR(_x) ((_x)*(_x))
-#endif
+template<class T>	inline T sqr(const T &v)
+{
+	return v*v;
+}
+
 
 // ============================================================================================
-#ifndef PI
-#define PI 3.1415926535897932384626433832795
-#endif
+const	double	PI= 3.1415926535897932384626433832795;
+
 
 // ============================================================================================
 // MIN/MAX extended functions.

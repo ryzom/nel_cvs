@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.2 2000/10/23 12:16:38 berenguier Exp $
+ * $Id: patch.h,v 1.3 2000/10/23 14:08:15 berenguier Exp $
  */
 
 /** Copyright, 2000 Nevrax Ltd.
@@ -32,10 +32,39 @@
 
 namespace NL3D {
 
+
 using NLMISC::CVector;
 
+
+class	CZone;
+class	CTessFace;
+class	CBezierPatch;
+
+
+// ***************************************************************************
+class	CVector3s
+{
+public:
+	sint16	x,y,z;
+
+	void	pack(const CVector &v, float bias, float scale)
+	{
+		x= (sint16)(v.x/scale - bias);
+		y= (sint16)(v.y/scale - bias);
+		z= (sint16)(v.z/scale - bias);
+	}
+	void	unpack(CVector &v, float bias, float scale)
+	{
+		v.x= x*scale + bias;
+		v.y= y*scale + bias;
+		v.z= z*scale + bias;
+	}
+};
+
+
+// ***************************************************************************
 /**
- * <Class description>
+ * A landscape patch.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -43,8 +72,30 @@ using NLMISC::CVector;
 class CPatch
 {
 public:
+	CZone		*Zone;
+	/// The patch coordinates (see CBezierPatch).
+	CVector3s	Vertices[4];
+	CVector3s	Tangents[8];
+	CVector3s	Interiors[4];
 	// Tile Order for the patch.
-	uint8	OrderS, OrderT;
+	uint8		OrderS, OrderT;
+	// The Base Size*bumpiness of the patch (/2 at each subdivide).
+	// May be setup to surface of patch, modulated by tangents and dispalcement map.
+	float		ErrorSize;
+	// The tesselation.
+	CTessFace	*Son0, *Son1;
+	/*
+		TODO:
+		- "UV correction" infos.
+		- displacement map (ptr/index).
+	*/
+
+	// Local info for tile. CPatch must setup them at the begining at refine()/render().
+	// Should we compute the error metric part for tile??
+	bool		ComputeTileErrorMetric;
+	// For this patch, which level is required to be a valid Tile??
+	sint		TileLimitLevel;
+
 
 public:
 
@@ -60,12 +111,19 @@ public:
 	CVector	computeVertex(float s, float t);
 
 
-public:
-	// Local info for tile. CPatch must setup them at the begining at refine()/render().
-	// Should we compute the error metric part for tile??
-	bool	ComputeTileErrorMetric;
-	// For this patch, which level is required to be a valid Tile??
-	sint	TileLimitLevel;
+
+
+private:
+	// unpack the patch into a floating point one.
+	CBezierPatch	*unpackIntoCache();
+	// unpack the patch into a floating point one.
+	void			unpack(CBezierPatch	&p);
+
+private:
+	// The cache (may be a short list/vector later...).
+	static	CBezierPatch	CachePatch;
+	// For cahcing.
+	static	CPatch			*LastPatch;
 };
 
 

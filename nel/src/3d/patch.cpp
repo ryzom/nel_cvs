@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.1 2000/10/23 12:14:34 berenguier Exp $
+ * $Id: patch.cpp,v 1.2 2000/10/23 14:08:30 berenguier Exp $
  */
 
 /** Copyright, 2000 Nevrax Ltd.
@@ -23,17 +23,44 @@
  * MA 02111-1307, USA.
  */
 
+
 #include "nel/3d/patch.h"
+#include "nel/3d/tessellation.h"
+#include "nel/3d/bezier_patch.h"
+#include "nel/misc/vector.h"
+using	namespace	std;
+using	namespace	NLMISC;
 
 
-namespace NL3D {
+namespace NL3D 
+{
 
 
-/*
- * Constructor
- */
+// ***************************************************************************
+CBezierPatch	CPatch::CachePatch;
+CPatch			*CPatch::LastPatch= NULL;
+
+
+// ***************************************************************************
 CPatch::CPatch()
 {
+}
+
+
+// ***************************************************************************
+CBezierPatch	*CPatch::unpackIntoCache()
+{
+	if(LastPatch!=this)
+	{
+		unpack(CachePatch);
+		LastPatch=this;
+	}
+	return &CachePatch;
+}
+// ***************************************************************************
+void			CPatch::unpack(CBezierPatch	&p)
+{
+	// TODODODODODODODODO
 }
 
 	}

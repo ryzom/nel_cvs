@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager_3d.cpp,v 1.4 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: async_file_manager_3d.cpp,v 1.5 2003/08/04 13:22:35 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,8 @@ void CAsyncFileManager3D::terminate ()
 	
 void CAsyncFileManager3D::loadMesh(const std::string& meshName, IShape **ppShp, IDriver *pDriver, const CVector &position, uint textureSlot)
 {
+	if (meshName.empty())
+		nlwarning ("Can't load an empty filename");
 	CAsyncFileManager::getInstance().addLoadTask(new CMeshLoad(meshName, ppShp, pDriver, position, textureSlot));
 }
 

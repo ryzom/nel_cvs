@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.cpp,v 1.11 2000/10/11 09:28:18 cado Exp $
+ * $Id: service.cpp,v 1.12 2000/10/11 10:05:19 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <iostream>
+#include <signal.h>
 
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
@@ -35,6 +36,79 @@ namespace NLNET
 {
 
 static IService *Service = NULL;
+
+
+///////////////////////////////
+
+/* "Constants" */
+
+static const int Signal[] = {
+  SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM
+};
+
+/* Variables */
+
+static const char **SignalName;
+
+/* Prototypes */
+
+static void SigHandler (int Sig);
+
+void InitSignal(void) {
+  
+  int I, SignalNb;
+  
+  SignalNb = 0;
+  for (I = 0; I < (int)(sizeof(Signal)/sizeof(Signal[0])); I++) {
+    if (Signal[I] >= SignalNb) SignalNb = Signal[I] + 1;
+  }
+  
+  SignalName = (const char **) malloc((size_t)(SignalNb*sizeof(char *)));
+  if (SignalName == NULL) exit(0);
+  for (I = 0; I < SignalNb; I++) SignalName[I] = NULL;
+  
+  for (I = 0; I < (int)(sizeof(Signal)/sizeof(Signal[0])); I++) {
+    switch (Signal[I]) {
+    case SIGABRT : SignalName[SIGABRT] = "SIGABRT"; break;
+    case SIGFPE  : SignalName[SIGFPE]  = "SIGFPE";  break;
+    case SIGILL  : SignalName[SIGILL]  = "SIGILL";  break;
+    case SIGINT  : SignalName[SIGINT]  = "SIGINT";  break;
+    case SIGSEGV : SignalName[SIGSEGV] = "SIGSEGV"; break;
+    case SIGTERM : SignalName[SIGTERM] = "SIGTERM"; break;
+    }
+    signal(Signal[I],SigHandler);
+  }
+}
+
+/* SigHandler() */
+
+static void SigHandler(int Sig) {
+  
+  signal(Sig,SigHandler);
+
+  if (SignalName[Sig] != NULL) {
+    printf("%s received\n", SignalName[Sig]);
+  } else {
+    printf("Signal #%d received\n",Sig);
+  }
+  
+  switch (Sig) {
+  case SIGABRT :
+  case SIGILL  :
+  case SIGINT  :
+  case SIGSEGV :
+  case SIGTERM :
+    printf("exitcalled()\n");
+    break;
+  }
+}
+
+
+///////////////////////////////
+
+
+
+
 
 void ExitFunc ()
 {

@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.4 2001/05/18 16:51:33 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.5 2001/05/31 16:44:54 lecroart Exp $
  *
  */
 
@@ -45,7 +45,7 @@ struct CService
 	CService () : Id(0xFFFFFFFF), Ready(false), Connected(false), InConfig(false) { }
 
 	uint32	Id;				/// uint32 to identify the service
-	string	ServiceAlias;	/// alias of the service used in the AES and AS to find him (unique per AES)
+	string	AliasName;		/// alias of the service used in the AES and AS to find him (unique per AES)
 	string	ShortName;		/// name of the service in short format ("NS" for example)
 	string	LongName;		/// name of the service in long format ("naming_service")
 	bool	Ready;			/// true if the service is ready
@@ -76,6 +76,18 @@ struct CAdminExecutorService
 		SIT sit;
 		for (sit = Services.begin(); sit != Services.end(); sit++)
 			if ((*sit).Id == sid)
+				break;
+
+		if (asrt)
+			nlassert (sit != Services.end());
+		return sit;
+	}
+
+	SIT findService (const string &alias, bool asrt = true)
+	{
+		SIT sit;
+		for (sit = Services.begin(); sit != Services.end(); sit++)
+			if ((*sit).AliasName == alias)
 				break;
 
 		if (asrt)
@@ -138,26 +150,23 @@ void displayServices ()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool ScriptRunning = false;
-string ScriptName;
-uint32 ScriptPos;
+bool StartAllServices = false;
+uint32 StartAllServicesPos;
 
-void doNextScriptStep ()
+void doNextStartAllServicesStep ()
 {
-	nlassert (ScriptRunning);
-
+	nlassert (StartAllServices);
 
 	// get the script
-
 	try
 	{
-		CConfigFile::CVar &script = IService::ConfigFile.getVar(ScriptName);
+		CConfigFile::CVar &script = IService::ConfigFile.getVar("Services");
 
 		// check the position
 
-		if (ScriptPos*2 >= (uint32)script.size())
+		if (StartAllServicesPos*2 >= (uint32)script.size())
 		{
-			ScriptRunning = false;
+			StartAllServices = false;
 			nlinfo("end of the script");
 			// todo send that the script is finish to the admin
 			return;
@@ -170,51 +179,62 @@ void doNextScriptStep ()
 
 		try
 		{
-			serverAlias = script.asString (ScriptPos*2);
-			serviceAlias = script.asString (ScriptPos*2+1);
+			serverAlias = script.asString (StartAllServicesPos*2);
+			serviceAlias = script.asString (StartAllServicesPos*2+1);
 		}
 		catch(EBadSize &)
 		{
-			nlwarning ("script '%s' not contains a good number of entries (must be a multiple of 2)", ScriptName.c_str());
-			ScriptRunning = false;
+			nlwarning ("'Services' variable does not contains a good number of entries (must be a multiple of 2)");
+			StartAllServices = false;
 			return;
 		}
 
 		AESIT aesit = findAdminExecutorService (serverAlias, false);
 		if (aesit == AdminExecutorServices.end())
 		{
-			ScriptRunning = false;
+			StartAllServices = false;
 			nlwarning("don't find the server");
 			return;
 		}
 
-		// send the resquest to the AES
+		// check if the service is not currently running
 
-		CMessage msgout (CNetManager::getSIDA((*aesit).ServerAlias), "STARTS");
-		msgout.serial (serviceAlias);
-		CNetManager::send ((*aesit).ServerAlias, msgout);
+		StartAllServicesPos++;
 
-		ScriptPos++;
+		SIT sit = (*aesit).findService (serviceAlias);
+		if ((*sit).Connected)
+		{
+			// the service is already running, go to the next process
+			doNextStartAllServicesStep ();
+		}
+		else
+		{
+			// send the resquest to the AES
+
+			CMessage msgout (CNetManager::getSIDA((*aesit).ServerAlias), "STARTS");
+			msgout.serial (serviceAlias);
+			CNetManager::send ((*aesit).ServerAlias, msgout);
+		}
 	}
 	catch(EUnknownVar&)
 	{
-		nlwarning ("script '%s' not found", ScriptName.c_str());
-		ScriptRunning = false;
+		nlwarning ("'Services' variable is not found");
+		StartAllServices = false;
 		return;
 	}
 }
 
-void initScript(string scriptName)
+void initStartAllServices ()
 {
-	if (ScriptRunning)
+	if (StartAllServices)
 	{
 		nlwarning("already running a script, reset it");
-		ScriptRunning = false;
+		StartAllServices = false;
 	}
 
 	try
 	{
-		CConfigFile::CVar &script = IService::ConfigFile.getVar(scriptName);
+		CConfigFile::CVar &script = IService::ConfigFile.getVar("Services");
 
 		for (sint i = 0 ; i < script.size (); i+=2)
 		{
@@ -222,7 +242,7 @@ void initScript(string scriptName)
 			AESIT aesit = findAdminExecutorService (serverAlias, false);
 			if (aesit == AdminExecutorServices.end())
 			{
-				nlwarning("aes not running, can't run the script");
+				nlwarning("aes '%s' not running, can't run the script", serverAlias.c_str());
 				return;
 			}
 		}
@@ -233,11 +253,10 @@ void initScript(string scriptName)
 		return;
 	}
 
-	ScriptName = scriptName;
-	ScriptPos = 0;
-	ScriptRunning = true;
+	StartAllServicesPos = 0;
+	StartAllServices = true;
 
-	doNextScriptStep();
+	doNextStartAllServicesStep();
 }
 
 
@@ -316,16 +335,57 @@ static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNet
 	CAdminExecutorService *aes = (CAdminExecutorService*) from->appId();
 
 	uint32 sid;
-	msgin.serial (sid);
+	string alias;
 
-	SIT sit = aes->findService(sid);
+	msgin.serial (sid, alias);
+
+	SIT sit;
+	if (!alias.empty())
+	{
+		sit = aes->findService (alias, false);
+
+		if (sit == aes->Services.end ())
+		{
+			// the alias is not found
+			nlwarning ("new service with alias (%s) but not in my list", alias.c_str());
+
+			aes->Services.push_back (CService ());
+			sit = aes->Services.end();
+			sit--;
+		}
+		else
+		{
+			// normal case
+		}
+	}
+	else
+	{
+		sit = aes->findService (sid, false);
+
+		if (sit == aes->Services.end ())
+		{
+			// normal case for unknown services
+			nlwarning ("new service with alias (%s) but not in my list", alias.c_str());
+		}
+		else
+		{
+			nlwarning ("new service without alias is already in my list with id %d", sid);
+		}
+		aes->Services.push_back (CService ());
+		sit = aes->Services.end();
+		sit--;
+	}
+
+	(*sit).Id = sid;
+	(*sit).AliasName = alias;
+	(*sit).Connected = true;
 	msgin.serial ((*sit).ShortName, (*sit).LongName);
 
-	nlinfo ("*:%d:%d is identified to be '%s' '%s'", aes->Id, sid, (*sit).ShortName.c_str(), (*sit).LongName.c_str());
+	nlinfo ("*:%d:%d is identified to be '%s' '%s' '%s'", aes->Id, sid, (*sit).AliasName.c_str(), (*sit).ShortName.c_str(), (*sit).LongName.c_str());
 
 	// broadcast the message to all admin client
 	CMessage msgout (CNetManager::getSIDA ("AS"), "SID");
-	msgout.serial (aes->Id, sid, (*sit).ShortName, (*sit).LongName);
+	msgout.serial (aes->Id, sid, (*sit).AliasName, (*sit).ShortName, (*sit).LongName);
 	CNetManager::send ("AS", msgout, 0);
 }
 
@@ -347,26 +407,29 @@ static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &net
 	CNetManager::send ("AS", msgout, 0);
 
 	// if we are in a script execution, continue
-	if (ScriptRunning)
-		doNextScriptStep();
+	if (StartAllServices)
+		doNextStartAllServicesStep();
 }
 
 static void cbServiceConnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-/*	CAdminExecutorService *aes = (CAdminExecutorService*) from->appId();
+	CAdminExecutorService *aes = (CAdminExecutorService*) from->appId();
 
 	uint32 sid;
 	msgin.serial (sid);
 
 	nlinfo ("*:%d:%d connected", aes->Id, sid);
 
-	aes->Services.push_back (CService(sid));
+	// don't do anything. we have to wait identification to add it in out lists
 
+/*
+	aes->Services.push_back (CService(sid));
+*/
 	// broadcast the message to all admin client
 	CMessage msgout (CNetManager::getSIDA ("AS"), "SC");
 	msgout.serial (aes->Id, sid);
 	CNetManager::send ("AS", msgout, 0);
-*/}
+}
 
 static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
@@ -384,7 +447,17 @@ static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetB
 	msgout.serial (aes->Id, (*sit).Id);
 	CNetManager::send ("AS", msgout, 0);
 
-	aes->Services.erase (sit);
+	if ((*sit).InConfig)
+	{
+		(*sit).Ready = (*sit).Connected = false;
+		(*sit).Id = 0xFFFFFFFF;
+		(*sit).ShortName = (*sit).LongName = "";
+	}
+	else
+	{
+		// erase only if it's not a service in the config
+		aes->Services.erase (sit);
+	}
 }
 
 // i'm connected to a new admin executor service
@@ -398,7 +471,7 @@ void cbAESConnection (const string &serviceName, TSockId from, void *arg)
 
 	aes->Connected = true;
 	nlinfo ("*:%d:* connected", aes->Id);
-/*	
+/*
 	// broadcast the message that an admin exec is connected to all admin client
 	CMessage msgout (CNetManager::getSIDA ("AS"), "AESC");
 	msgout.serial (aes->Id);
@@ -420,6 +493,15 @@ void cbAESDisconnection (const string &serviceName, TSockId from, void *arg)
 	CAdminExecutorService *aes = (CAdminExecutorService*) from->appId();
 
 	aes->Connected = false;
+
+	SIT sit;
+	for (sit = aes->Services.begin(); sit != aes->Services.end(); sit++)
+	{
+		(*sit).Id = 0xFFFFFFFF;
+		(*sit).ShortName = (*sit).LongName = "";
+		(*sit).Ready = (*sit).Connected = false;
+	}
+
 	nlinfo ("*:%d:* disconnected", aes->Id);
 /*	
 	// broadcast the message to all admin client that an admin exec is disconnected
@@ -521,7 +603,7 @@ void clientConnection (const string &serviceName, TSockId from, void *arg)
 		{
 			// send info about services of the AES
 			
-			msgout.serial ((*sit).Id, (*sit).ServiceAlias, (*sit).ShortName, (*sit).LongName);
+			msgout.serial ((*sit).Id, (*sit).AliasName, (*sit).ShortName, (*sit).LongName);
 			msgout.serial ((*sit).Ready, (*sit).Connected, (*sit).InConfig);
 		}
 	}
@@ -538,14 +620,6 @@ void clientConnection (const string &serviceName, TSockId from, void *arg)
 		msgout2.serialCont ((*aesit).ServiceAliasList);
 		CNetManager::send ("AS", msgout2, from);
 	}
-}
-
-
-static void cbExecuteScript (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
-{
-	string script;
-	msgin.serial (script);
-	initScript (script);
 }
 
 
@@ -574,10 +648,10 @@ static void cbExecuteSystemCommand (CMessage& msgin, TSockId from, CCallbackNetB
 
 static void cbStartService (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	string serviceName;
+	string serviceAlias;
 	uint32 aesid;
 	msgin.serial (aesid);
-	msgin.serial (serviceName);
+	msgin.serial (serviceAlias);
 
 	AESIT aesit = findAdminExecutorService (aesid, false);
 	if (aesit == AdminExecutorServices.end())
@@ -590,7 +664,7 @@ static void cbStartService (CMessage& msgin, TSockId from, CCallbackNetBase &net
 	// send the resquest to the AES
 
 	CMessage msgout (CNetManager::getSIDA((*aesit).ServerAlias), "STARTS");
-	msgout.serial (serviceName);
+	msgout.serial (serviceAlias);
 	CNetManager::send ((*aesit).ServerAlias, msgout);
 }
 
@@ -655,14 +729,35 @@ static void cbExecCommand (CMessage& msgin, TSockId from, CCallbackNetBase &netb
 	CNetManager::send ((*aesit).ServerAlias, msgout);
 }
 
+static void cbStartAllServices (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	initStartAllServices ();
+}
+
+static void cbStopAllServices (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	for (AESIT aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
+	{
+		for (SIT sit = (*aesit).Services.begin(); sit != (*aesit).Services.end(); sit++)
+		{
+			if ((*sit).Connected)
+			{
+				CMessage msgout (CNetManager::getSIDA((*aesit).ServerAlias), "STOPS");
+				msgout.serial ((*sit).Id);
+				CNetManager::send ((*aesit).ServerAlias, msgout);
+			}
+		}
+	}
+}
 
 TCallbackItem ClientCallbackArray[] =
 {
 	{ "SYS", cbExecuteSystemCommand },
-	{ "EXEC", cbExecuteScript },
 	{ "STARTS", cbStartService },
 	{ "STOPS", cbStopService },
 	{ "EXEC_COMMAND", cbExecCommand },
+	{ "START_ALL_SERVICES", cbStartAllServices },
+	{ "STOP_ALL_SERVICES", cbStopAllServices },
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -678,9 +773,9 @@ public:
 	/// Init the service, load the universal time.
 	void		init ()
 	{
-		DebugLog->addNegativeFilter ("L0:");
-		DebugLog->addNegativeFilter ("L1:");
-		DebugLog->addNegativeFilter ("L2:");
+//		DebugLog->addNegativeFilter ("L0:");
+//		DebugLog->addNegativeFilter ("L1:");
+//		DebugLog->addNegativeFilter ("L2:");
 		
 		
 		CNetManager::setConnectionCallback ("AS", clientConnection, NULL);
@@ -722,7 +817,7 @@ public:
 
 			// add new AES in the list
 			CService s;
-			s.ServiceAlias = serviceAlias;
+			s.AliasName = serviceAlias;
 			s.InConfig = true;
 			(*aesit).Services.push_back (s);
 		}

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.5 2001/05/18 16:51:33 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.6 2001/05/31 16:44:38 lecroart Exp $
  *
  */
 
@@ -58,6 +58,7 @@ struct CService
 
 	TSockId	SockId;			/// connection to the service
 	uint32	Id;				/// uint32 to identify the service
+	string	AliasName;		/// alias of the service used in the AES and AS to find him (unique per AES)
 	string	ShortName;		/// name of the service in short format ("NS" for example)
 	string	LongName;		/// name of the service in long format ("naming_service")
 	bool	Ready;			/// true if the service is ready
@@ -118,9 +119,38 @@ public:
 			_chdir(oldpath);
 
 		nlinfo ("end executing: %s", Command.c_str());
+
+
 	}
 };
 
+class CExecuteServiceThread : public IRunnable
+{
+public:
+	string ServiceAlias, ServiceCommand, ServicePath;
+
+	CExecuteServiceThread (string serviceAlias, string serviceCommand, string servicePath = "") :
+		ServiceCommand(serviceCommand), ServicePath(servicePath), ServiceAlias(serviceAlias) { }
+
+	void run ()
+	{
+		nlinfo ("start service '%s' '%s' in '%s' directory", ServiceAlias.c_str(), ServiceCommand.c_str(), ServicePath.c_str());
+		
+		char oldpath[256];
+		if (!ServicePath.empty())
+		{
+			_getcwd(oldpath,256);
+			_chdir(ServicePath.c_str());
+		}
+
+		system (ServiceCommand.c_str());
+		
+		if (!ServicePath.empty())
+			_chdir(oldpath);
+
+		nlinfo ("end service '%s' '%s' in '%s' directory", ServiceAlias.c_str(), ServiceCommand.c_str(), ServicePath.c_str());
+	}
+};
 
 void executeCommand (string command, bool background)
 {
@@ -221,13 +251,13 @@ static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNet
 {
 	CService *s = (CService*) from->appId();
 
-	msgin.serial (s->ShortName, s->LongName);
+	msgin.serial (s->AliasName, s->ShortName, s->LongName);
 
-	nlinfo ("*:*:%d is identified to be '%s' '%s'", s->Id, s->ShortName.c_str(), s->LongName.c_str());
+	nlinfo ("*:*:%d is identified to be '%s' '%s' '%s'", s->Id, s->AliasName.c_str(), s->ShortName.c_str(), s->LongName.c_str());
 
 	// broadcast the message to the admin service
 	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SID");
-	msgout.serial (s->Id, s->ShortName, s->LongName);
+	msgout.serial (s->Id, s->AliasName, s->ShortName, s->LongName);
 	CNetManager::send ("AESAS", msgout);
 }
 
@@ -336,9 +366,13 @@ static void cbStartService (CMessage& msgin, TSockId from, CCallbackNetBase &net
 		return;
 	}
 
+	// give the service alias to the service to forward it back when it will connected to the aes.
+	command += " -n";
+	command += serviceAlias.c_str();
+
 	command += " >NUL:";
 
-	IThread *thread = IThread::create (new CExecuteCommandThread (command, path));
+	IThread *thread = IThread::create (new CExecuteServiceThread (serviceAlias, command, path));
 	thread->start ();
 }
 

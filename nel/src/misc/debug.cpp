@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.74 2003/07/24 12:15:45 lecroart Exp $
+ * $Id: debug.cpp,v 1.75 2003/08/05 15:38:15 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -749,7 +749,12 @@ void force_exception_frame(...) {std::cout.flush();}
 
 static void exceptionTranslator(unsigned, EXCEPTION_POINTERS *pexp)
 {
-	// ace desactive because we can't debug if activated
+#ifdef FINAL_VERSION
+	// In final version, throw EDebug to display a smart dialog box with callstack & log when crashing
+	throw EDebug (pexp);
+#else
+	// In debug version, let the program crash and use a debugger (clicking "Cancel")
+	// Ace: 'if' not activated because we can't debug if enabled: keeping only 0xACEACE for nlstop...
 	//if (!TrapCrashInDebugger && IsDebuggerPresent ())
 	{
 		if (pexp->ExceptionRecord->ExceptionCode == 0xACE0ACE)
@@ -764,6 +769,7 @@ static void exceptionTranslator(unsigned, EXCEPTION_POINTERS *pexp)
 		else
 			throw EDebug (pexp);
 	}*/
+#endif
 }
 
 #endif // NL_OS_WINDOWS
@@ -805,6 +811,7 @@ void getCallStackAndLog (string &result, sint skipNFirst)
 #endif
 }
 
+
 void createDebug (const char *logPath, bool logInFile)
 {
 	NL_ALLOC_CONTEXT (_Debug)
@@ -823,7 +830,6 @@ void createDebug (const char *logPath, bool logInFile)
 			_set_se_translator(exceptionTranslator);
 		}
 #endif // NL_OS_WINDOWS
-
 
 		ErrorLog = new CLog (CLog::LOG_ERROR);
 		WarningLog = new CLog (CLog::LOG_WARNING);

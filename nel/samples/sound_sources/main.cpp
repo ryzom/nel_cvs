@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Simple example of NeL sound engine usage
  *
- * $Id: main.cpp,v 1.4 2001/09/03 14:22:42 cado Exp $
+ * $Id: main.cpp,v 1.5 2001/09/04 08:55:41 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -133,6 +133,11 @@ void OnMove( const CVector& listenerpos )
 	// Wait 20 ms
 	TTime time = CTime::getLocalTime();
 	while ( CTime::getLocalTime() < time+20 );
+
+	/* If we used spawned sources or "envsounds" or if we had
+	 * a large number of sources, we should call:
+	 * AudioMixer->update();
+	 */
 }
 
 

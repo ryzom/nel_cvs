@@ -109,9 +109,9 @@ instlist:	instlist inst { }
 
 inst:		VARIABLE ASSIGN expression SEMICOLON
 			{
-				DEBUG_PRINT("                                   (VARIABLE=");
+				DEBUG_PRINTF("                                   (TYPE %d VARIABLE=", $1.Type);
 				cf_print ($1);
-				DEBUG_PRINT("), (VALUE=");
+				DEBUG_PRINTF("), (TYPE %d VALUE=", $3.Type);
 				cf_print ($3);
 				DEBUG_PRINT(")\n");
 				int i;
@@ -120,7 +120,7 @@ inst:		VARIABLE ASSIGN expression SEMICOLON
 				{
 					if ((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Name == $1.String)
 					{
-						if (cf_OverwriteExistingVariable)
+						if (cf_OverwriteExistingVariable || (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Root || !strcmp($1.String,"RootConfigFilename"))
 						{
 							DEBUG_PRINTF("Variable '%s' existe deja, ecrasement\n", $1.String);
 						}
@@ -130,8 +130,16 @@ inst:		VARIABLE ASSIGN expression SEMICOLON
 				NLMISC::CConfigFile::CVar Var;
 				Var.Comp = false;
 				Var.Callback = NULL;
-				if (cf_CurrentVar.Comp) Var = cf_CurrentVar;
-				else cf_setVar (Var, $3);
+				if (cf_CurrentVar.Comp)
+				{
+					DEBUG_PRINTF ("yacc: new assign complex variable '%s'\n", $1.String);
+					Var = cf_CurrentVar;
+				}
+				else
+				{
+					DEBUG_PRINTF ("yacc: new assign normal variable '%s'\n", $1.String);
+					cf_setVar (Var, $3);
+				}
 				Var.Name = $1.String;
 				if (i == (int)((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size ()))
 				{
@@ -139,18 +147,18 @@ inst:		VARIABLE ASSIGN expression SEMICOLON
 					DEBUG_PRINTF ("yacc: new assign var '%s'\n", $1.String);
 					(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).push_back (Var);
 				}
-				else if (cf_OverwriteExistingVariable)
+				else if (cf_OverwriteExistingVariable || (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Root || !strcmp($1.String,"RootConfigFilename"))
 				{
-					// reaffectation d'une variable
+					// reaffectation d'une variable 
 					Var.Callback = (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Callback;
-					DEBUG_PRINTF ("yacc: reassign var '%s'\n", $1.String);
+					DEBUG_PRINTF ("yacc: reassign var name '%s' type %d\n", Var.Name.c_str(), Var.Type);
 					if (Var != (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] && Var.Callback != NULL)
 						(Var.Callback)(Var);
 					(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] = Var;
 				}
 				else
 				{
-					DEBUG_PRINTF ("yacc: don't reassign var '%s' because cf_OverwriteExistingVariable is false\n", $1.String);
+					DEBUG_PRINTF ("yacc: don't reassign var '%s' because the variable already exists\n", $1.String);
 				}
 
 				cf_CurrentVar.IntValues.clear ();
@@ -452,7 +460,7 @@ void cf_print (cf_value Val)
 /* put a value into a var */
 void cf_setVar (NLMISC::CConfigFile::CVar &Var, cf_value Val)
 {
-	DEBUG_PRINTF("push type %d in var name '%s' type %d with value : ", Val.Type, Var.Name.c_str(), Var.Type);
+	DEBUG_PRINTF("Set var (type %d var name '%s') with new var type %d with value : ", Var.Type, Var.Name.c_str(), Val.Type);
 	cf_print(Val);
 	DEBUG_PRINTF("\n");
 	Var.Root = LoadRoot;
@@ -460,7 +468,7 @@ void cf_setVar (NLMISC::CConfigFile::CVar &Var, cf_value Val)
 	{
 		if (Var.Type == NLMISC::CConfigFile::CVar::T_UNKNOWN)
 		{
-			DEBUG_PRINTF("val type is unknown, set to the var type\n");
+			DEBUG_PRINTF("var type is unknown, set to the val type\n");
 		}
 		else
 		{

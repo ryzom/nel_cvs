@@ -182,9 +182,9 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   103,   103,   103,   106,   107,   110,   164,   212,   213,   214,
-   215,   218,   219,   222,   223,   224,   227,   228,   229,   232,
-   233,   234,   235,   236,   237,   238,   241
+   103,   103,   103,   106,   107,   110,   172,   220,   221,   222,
+   223,   226,   227,   230,   231,   232,   235,   236,   237,   240,
+   241,   242,   243,   244,   245,   246,   249
 };
 #endif
 
@@ -820,9 +820,9 @@ case 5:
 case 6:
 #line 111 "cf_gramatical.yxx"
 {
-				DEBUG_PRINT("                                   (VARIABLE=");
+				DEBUG_PRINTF("                                   (TYPE %d VARIABLE=", yyvsp[-3].Val.Type);
 				cf_print (yyvsp[-3].Val);
-				DEBUG_PRINT("), (VALUE=");
+				DEBUG_PRINTF("), (TYPE %d VALUE=", yyvsp[-1].Val.Type);
 				cf_print (yyvsp[-1].Val);
 				DEBUG_PRINT(")\n");
 				int i;
@@ -831,7 +831,7 @@ case 6:
 				{
 					if ((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Name == yyvsp[-3].Val.String)
 					{
-						if (cf_OverwriteExistingVariable)
+						if (cf_OverwriteExistingVariable || (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Root || !strcmp(yyvsp[-3].Val.String,"RootConfigFilename"))
 						{
 							DEBUG_PRINTF("Variable '%s' existe deja, ecrasement\n", yyvsp[-3].Val.String);
 						}
@@ -841,8 +841,16 @@ case 6:
 				NLMISC::CConfigFile::CVar Var;
 				Var.Comp = false;
 				Var.Callback = NULL;
-				if (cf_CurrentVar.Comp) Var = cf_CurrentVar;
-				else cf_setVar (Var, yyvsp[-1].Val);
+				if (cf_CurrentVar.Comp)
+				{
+					DEBUG_PRINTF ("yacc: new assign complex variable '%s'\n", yyvsp[-3].Val.String);
+					Var = cf_CurrentVar;
+				}
+				else
+				{
+					DEBUG_PRINTF ("yacc: new assign normal variable '%s'\n", yyvsp[-3].Val.String);
+					cf_setVar (Var, yyvsp[-1].Val);
+				}
 				Var.Name = yyvsp[-3].Val.String;
 				if (i == (int)((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size ()))
 				{
@@ -850,18 +858,18 @@ case 6:
 					DEBUG_PRINTF ("yacc: new assign var '%s'\n", yyvsp[-3].Val.String);
 					(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).push_back (Var);
 				}
-				else if (cf_OverwriteExistingVariable)
+				else if (cf_OverwriteExistingVariable || (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Root || !strcmp(yyvsp[-3].Val.String,"RootConfigFilename"))
 				{
-					// reaffectation d'une variable
+					// reaffectation d'une variable 
 					Var.Callback = (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Callback;
-					DEBUG_PRINTF ("yacc: reassign var '%s'\n", yyvsp[-3].Val.String);
+					DEBUG_PRINTF ("yacc: reassign var name '%s' type %d\n", Var.Name.c_str(), Var.Type);
 					if (Var != (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] && Var.Callback != NULL)
 						(Var.Callback)(Var);
 					(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] = Var;
 				}
 				else
 				{
-					DEBUG_PRINTF ("yacc: don't reassign var '%s' because cf_OverwriteExistingVariable is false\n", yyvsp[-3].Val.String);
+					DEBUG_PRINTF ("yacc: don't reassign var '%s' because the variable already exists\n", yyvsp[-3].Val.String);
 				}
 
 				cf_CurrentVar.IntValues.clear ();
@@ -872,7 +880,7 @@ case 6:
 			;
     break;}
 case 7:
-#line 165 "cf_gramatical.yxx"
+#line 173 "cf_gramatical.yxx"
 {
 				DEBUG_PRINT("                                   (VARIABLE+=");
 				cf_print (yyvsp[-3].Val);
@@ -920,83 +928,83 @@ case 7:
 			;
     break;}
 case 8:
-#line 212 "cf_gramatical.yxx"
+#line 220 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; cf_CurrentVar.Comp = false; DEBUG_PRINT("false\n"); ;
     break;}
 case 9:
-#line 213 "cf_gramatical.yxx"
+#line 221 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[-1].Val; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); ;
     break;}
 case 10:
-#line 214 "cf_gramatical.yxx"
+#line 222 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[-2].Val; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); ;
     break;}
 case 11:
-#line 215 "cf_gramatical.yxx"
+#line 223 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); ;
     break;}
 case 12:
-#line 218 "cf_gramatical.yxx"
+#line 226 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; /*cf_CurrentVar.Type = $1.Type;*/ cf_setVar (cf_CurrentVar, yyvsp[0].Val); ;
     break;}
 case 13:
-#line 219 "cf_gramatical.yxx"
+#line 227 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; /*cf_CurrentVar.Type = $3.Type;*/ cf_setVar (cf_CurrentVar, yyvsp[0].Val); ;
     break;}
 case 14:
-#line 222 "cf_gramatical.yxx"
+#line 230 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 15:
-#line 223 "cf_gramatical.yxx"
+#line 231 "cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_PLUS); ;
     break;}
 case 16:
-#line 224 "cf_gramatical.yxx"
+#line 232 "cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MINUS); ;
     break;}
 case 17:
-#line 227 "cf_gramatical.yxx"
+#line 235 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 18:
-#line 228 "cf_gramatical.yxx"
+#line 236 "cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MULT); ;
     break;}
 case 19:
-#line 229 "cf_gramatical.yxx"
+#line 237 "cf_gramatical.yxx"
 { yyval.Val = cf_op (yyvsp[-2].Val, yyvsp[0].Val, OP_DIVIDE); ;
     break;}
 case 20:
-#line 232 "cf_gramatical.yxx"
+#line 240 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 21:
-#line 233 "cf_gramatical.yxx"
+#line 241 "cf_gramatical.yxx"
 { cf_value v; v.Type=NLMISC::CConfigFile::CVar::T_INT; /* just to avoid a warning, I affect 'v' with a dummy value */ yyval.Val = cf_op(yyvsp[0].Val,v,OP_NEG); ;
     break;}
 case 22:
-#line 234 "cf_gramatical.yxx"
+#line 242 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[-1].Val; ;
     break;}
 case 23:
-#line 235 "cf_gramatical.yxx"
+#line 243 "cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
 case 24:
-#line 236 "cf_gramatical.yxx"
+#line 244 "cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
 case 25:
-#line 237 "cf_gramatical.yxx"
+#line 245 "cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
 case 26:
-#line 238 "cf_gramatical.yxx"
+#line 246 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 27:
-#line 242 "cf_gramatical.yxx"
+#line 250 "cf_gramatical.yxx"
 {
 				DEBUG_PRINT("yacc: cont\n");
 				bool ok=false;
@@ -1251,7 +1259,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 274 "cf_gramatical.yxx"
+#line 282 "cf_gramatical.yxx"
 
 
 /* compute the good operation with a, b and op */
@@ -1433,7 +1441,7 @@ void cf_print (cf_value Val)
 /* put a value into a var */
 void cf_setVar (NLMISC::CConfigFile::CVar &Var, cf_value Val)
 {
-	DEBUG_PRINTF("push type %d in var name '%s' type %d with value : ", Val.Type, Var.Name.c_str(), Var.Type);
+	DEBUG_PRINTF("Set var (type %d var name '%s') with new var type %d with value : ", Var.Type, Var.Name.c_str(), Val.Type);
 	cf_print(Val);
 	DEBUG_PRINTF("\n");
 	Var.Root = LoadRoot;
@@ -1441,7 +1449,7 @@ void cf_setVar (NLMISC::CConfigFile::CVar &Var, cf_value Val)
 	{
 		if (Var.Type == NLMISC::CConfigFile::CVar::T_UNKNOWN)
 		{
-			DEBUG_PRINTF("val type is unknown, set to the var type\n");
+			DEBUG_PRINTF("var type is unknown, set to the val type\n");
 		}
 		else
 		{

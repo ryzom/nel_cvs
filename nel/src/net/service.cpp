@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.183 2003/08/19 15:34:49 lecroart Exp $
+ * $Id: service.cpp,v 1.184 2003/08/21 15:15:14 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -746,7 +746,29 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Load the config file
 		//
 
-		ConfigFile.load (_ConfigDir + _LongName + ".cfg");
+		string cfn = _ConfigDir + _LongName + ".cfg";
+		if (!CFile::fileExists(_ConfigDir + _LongName + ".cfg"))
+		{
+			// check if the default exists
+			if (!CFile::fileExists(_ConfigDir + _LongName + "_default.cfg"))
+			{
+				nlerror ("The config file '%s' is not found, neither the default one, can't launch the service", cfn.c_str());
+			}
+			else
+			{
+				// create the basic .cfg that link the default one
+				FILE *fp = fopen (cfn.c_str(), "w");
+				if (fp == NULL)
+				{
+					nlerror ("Can't create config file '%s'", cfn.c_str());
+				}
+				fprintf(fp, "// link the default config file for %s\n", _LongName.c_str());
+				fprintf(fp, "RootConfigFilename = \"%s_default.cfg\";\n", _LongName.c_str());
+				fclose (fp);
+			}
+		}	
+		
+		ConfigFile.load (cfn);
 
 
 		//
@@ -1751,7 +1773,7 @@ NLMISC_COMMAND(getWinDisplayerInfo, "display the info about the pos and size of 
 
 NLMISC_COMMAND(displayConfigFile, "display the variables of the default configfile", "")
 {
-	IService::getInstance()->ConfigFile.print(&log);
+	IService::getInstance()->ConfigFile.display (&log);
 	return true;
 }
 

@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.33 2003/03/20 15:40:54 corvazier Exp $
+ * $Id: config_file.h,v 1.34 2003/08/21 15:15:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,20 +224,23 @@ public:
 	/// save the config file
 	void save () const;
 
-	/// Clear
-	void clear();
+	/// Clear all the variable array (including information on variable callback etc)
+	void clear ();
+
+	/// set to 0 or "" all variable in the array (but not destroy them)
+	void clearVars ();
 
 	/// Returns true if the file has been loaded
 	bool loaded();
 
 	/// reload and reparse the file
-	void reparse (const char *filename = NULL, bool callingCallback = true);
+	void reparse (/*const char *filename = NULL, bool callingCallback = true*/);
 
 	/// display all variables with nlinfo (debug use)
-	void print () const;
+	void display () const;
 
 	/// display all variables with nlinfo (debug use)
-	void print (CLog *log) const;
+	void display (CLog *log) const;
 
 	/// set a callback function that is called when the config file is modified
 	void setCallback (void (*cb)());
@@ -245,13 +248,11 @@ public:
 	/// set a callback function to a variable, it will be called when this variable is modified
 	void setCallback (const std::string &VarName, void (*cb)(CConfigFile::CVar &var));
 
-	void setLastModifiedNow ();
-
 	/// contains the variable names that getVar() and getVarPtr() tried to access but not present in the cfg
 	std::vector<std::string> UnknownVariables;
 
-	/// returns the configfile name
-	std::string getFilename () const { return _FileName; }
+	/// returns the config file name
+	std::string getFilename () const { return FileNames[0]; }
 
 	/// set the time between 2 file checking (default value is 1 second)
 	/// \param timeout time in millisecond, if timeout=0, the check will be made each "frame"
@@ -268,13 +269,13 @@ private:
 	/// Internal use only
 	std::vector<CVar>	_Vars;
 
-	/// Internal use only
-	std::string _FileName;
+	// contains the configfilename (0) and roots configfilenames
+//	std::string	_FileName;
+//	std::vector<uint32>			_LastModified;
 
-	/// Internal use only
-	uint32	getLastModified ();
-	/// Internal use only
-	uint32	_LastModified;
+	// contains the configfilename (0) and roots configfilenames
+	std::vector<std::string>	FileNames;
+	std::vector<uint32>			LastModified;
 
 	static uint32	_Timeout;
 

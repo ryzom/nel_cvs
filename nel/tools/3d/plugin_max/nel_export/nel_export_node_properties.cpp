@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.21 2002/02/28 13:42:19 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.22 2002/03/01 14:05:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -215,6 +215,8 @@ void MRMStateChanged (HWND hwndDlg)
 void LightingStateChanged (HWND hwndDlg, CLodDialogBoxParam *currentParam)
 {
 	bool lightmapLight = (SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_LIGHT), BM_GETCHECK, 0, 0)!=BST_UNCHECKED);
+	lightmapLight |= (SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_REALTIME_LIGHT), BM_GETCHECK, 0, 0)!=BST_UNCHECKED);
+	lightmapLight |= (SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_ANIMATED), BM_GETCHECK, 0, 0)!=BST_UNCHECKED);
 	EnableWindow (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_NAME), lightmapLight);
 }
 

@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.24 2002/02/28 14:24:52 berenguier Exp $
+ * $Id: nel_export_view.cpp,v 1.25 2002/03/01 14:05:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -245,8 +245,8 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 			INode* pNode=ip.GetSelNode (nNode);
 
 			// Is it a automatic light ? if yes add tracks from nel_light (color controller)
-			Modifier *modifier = CExportNel::getModifier( pNode, Class_ID(NEL_LIGHT_CLASS_ID_A,NEL_LIGHT_CLASS_ID_B) );
-			if( modifier != NULL )
+			int bAnimated = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_LM_ANIMATED, 0);
+			if (bAnimated)
 				CExportNel::addAnimation( *autoAnim, *pNode, "", &ip, true, true);
 		}
 		view->setAutoAnimation (autoAnim);
@@ -366,44 +366,14 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				// Add tracks
 				CExportNel::addAnimation (*anim, *pNode, (CExportNel::getName (*pNode)+".").c_str(), &ip, true, true);
 			}
-			// Try to export a light for Ig. Only if ExportLighting
-			// Only if View only selected lights.
-			else if( sgLightBuild.canConvertFromMaxLight(pNode, time) && opt.bExportLighting && opt.bExcludeNonSelected)
-			{
-				// Convert it.
-				sgLightBuild.convertFromMaxLight(pNode, time);
-
-				// PointLight/SpotLight/AmbientLight ??
-				if(sgLightBuild.Type != SLightBuild::LightDir)
-				{
-					// Add to list of node for IgExport.
-					igVectNode.push_back(pNode);
-				}
-				// "SunLight" ??
-				else if( sgLightBuild.Type == SLightBuild::LightDir )
-				{
-					// if this light is checked to export as Sun Light
-					int		nExportSun= CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT, BST_UNCHECKED);
-					if(nExportSun== BST_CHECKED)
-					{
-						// Add to list of node for IgExport (enabling SunLight in the ig)
-						igVectNode.push_back(pNode);
-
-						// Replace sun Direciton.
-						igSunDirection= sgLightBuild.Direction;
-						// Replace sun Color.
-						igSunColor= sgLightBuild.Diffuse;
-					}
-				}
-			}
 
 			ProgBar.updateProgressBar (nNbMesh);
 			if( ProgBar.isCanceledProgressBar() )
 				break;
 		}
 
-		// if ExportLighting and Export all lights in scene (not only selected ones).
-		if(opt.bExportLighting && !opt.bExcludeNonSelected)
+		// if ExportLighting, Export all lights in scene (not only selected ones).
+		if(opt.bExportLighting)
 		{
 			// List all nodes in scene.
 			vector<INode*>	nodeList;

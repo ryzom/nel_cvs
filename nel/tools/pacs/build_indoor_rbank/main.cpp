@@ -1,7 +1,7 @@
 /** \file main.cpp
  * 
  *
- * $Id: main.cpp,v 1.2 2002/01/07 11:23:56 lecroart Exp $
+ * $Id: main.cpp,v 1.3 2002/07/18 16:01:43 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,7 @@ using namespace std;
 using namespace NLPACS;
 using namespace NLMISC;
 
+bool			AddToRetriever = true;
 bool			Merge = true;
 string			MergePath = "c:/data_test/";
 string			MergeInputPrefix = "fyros";
@@ -128,6 +129,7 @@ void	initConfig()
 		cf.load("build_indoor_rbank.cfg");
 	
 		Merge = getInt(cf, "Merge") != 0;
+		AddToRetriever = getInt(cf, "AddToRetriever") != 0;
 		MergePath = getString(cf, "MergePath");
 		MergeInputPrefix = getString(cf, "MergeInputPrefix");
 		MergeOutputPrefix = getString(cf, "MergeOutputPrefix");
@@ -180,9 +182,13 @@ void makeGlobalRetriever(vector<CVector> &translation)
 		openAndSerial(lr, OutputPath+Meshes[i]+".lr");
 
 		uint	rid = rb.addRetriever(lr);
-		uint	iid = (gr.makeInstance(rid, 0, -translation[i])).getInstanceId();
 
-		ninst.push_back(iid);
+		if (AddToRetriever)
+		{
+			uint	iid = (gr.makeInstance(rid, 0, -translation[i])).getInstanceId();
+
+			ninst.push_back(iid);
+		}
 	}
 
 	gr.initQuadGrid();
@@ -257,6 +263,9 @@ void createRetriever(vector<CVector> &translation)
 
 
 		computeRetriever(cmb, lr, translation[i], true);
+		int sharpPos = meshName.rfind ('#');
+		if (sharpPos != string::npos)
+			meshName = meshName.substr (0, sharpPos);
 		lr.setIdentifier(meshName);
 		serialAndSave(lr, OutputPath+meshName+".lr");
 	}
@@ -319,6 +328,9 @@ int main(int argc, char **argv)
 
 	start = CTime::getLocalTime();
 	createRetriever(translation);
+
+	translation[0] = CVector(-4670.0f, 3579.0f, 0.0f);
+
 	makeGlobalRetriever(translation);
 	end = CTime::getLocalTime();
 

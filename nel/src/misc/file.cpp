@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.33 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: file.cpp,v 1.34 2003/11/06 12:51:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -151,7 +151,7 @@ bool		CIFile::open(const std::string &path, bool text)
 
 	char mode[3];
 	mode[0] = 'r';
-	mode[1] = (text)?'\0':'b';
+	mode[1] = 'b'; // No more reading in text mode
 	mode[2] = '\0';
 
 	_FileName = path;

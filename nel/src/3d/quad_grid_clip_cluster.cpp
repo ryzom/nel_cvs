@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_cluster.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_cluster.cpp,v 1.4 2003/03/20 15:00:03 berenguier Exp $
+ * $Id: quad_grid_clip_cluster.cpp,v 1.5 2003/03/25 12:56:05 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,7 +46,7 @@ H_AUTO_DECL( NL3D_QuadClip_ClusterClip );
 CQuadGridClipCluster::CQuadGridClipCluster(float distMax) : _DistMax(distMax)
 {
 	_Empty= true;
-	_TestDistMax= _DistMax!=1;
+	_TestDistMax= _DistMax!=-1;
 }
 
 // ***************************************************************************

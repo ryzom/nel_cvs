@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.9 2001/07/24 08:46:50 vizerie Exp $
+ * $Id: driver.h,v 1.10 2001/08/07 14:19:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -483,6 +483,30 @@ public:
 	  * \param rect the in/out (wanted/clipped) part of ZBuffer to retrieve.
 	  */
 	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect) = 0;
+
+
+	/** Copy a portion of the FrameBuffer into a texture. 
+	  * The texture must have been right sized before the call.
+	  * This mark the texture as valid, but doesn't copy data to system memory.	  	  
+	  * This also mean that regenerating texture datas will erase what
+	  * has been copied before in the device memory.
+	  * This doesn't work with compressed textures.
+	  * Ideally, the FrameBuffer should have the same format than the texture.
+	  * \param tex					the texture to copy to.
+	  * \param level				the mipmap to copy texture to.
+	  * \param xoffset			    x position within the destination texture
+	  * \param yoffset			    y position within the destination texture
+	  * \param x					x position widthin the framebuffer
+	  * \param y					y position widthin the framebuffer
+	  * \param width				width of the area to be copied.
+	  * \param height				height of the area to be copied.	  	  
+	  */
+	virtual void			copyFrameBufferToTexture(ITexture *tex, uint32 level
+														, uint32 offsetx, uint32 offsety
+													    , uint32 x, uint32 y
+														, uint32 width, uint32 height														
+													) = 0 ;
+
 
 	/** Set the global polygon mode. Can be filled, line or point. The implementation driver must
 	  * call IDriver::setPolygonMode and active this mode.

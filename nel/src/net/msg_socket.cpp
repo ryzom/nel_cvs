@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.31 2000/11/27 10:06:48 cado Exp $
+ * $Id: msg_socket.cpp,v 1.32 2000/11/30 17:01:25 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -635,7 +635,7 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 		}
 		else
 		{
-			return false;
+			return callCallbackForOthers( msg, sock );
 		}
 	}
 	else
@@ -650,7 +650,15 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 		}
 		else
 		{
-			return ( (s=="C") || (s=="D") ); // the user does not have to write callback for connection/disconnection
+			// The user can write callbacks for connection/disconnection but it is not mandatory
+			if ( (s=="C") || (s=="D") )
+			{
+				return true; // C or D not found, but it doesn't matter	
+			}
+			else
+			{
+				return callCallbackForOthers( msg, sock );
+			}
 		}
 
 		if ( ! ((s=="C") || (s=="D") ) )
@@ -672,6 +680,25 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 		callback( msg, sock.senderId() );
 	}
 	return true;
+}
+
+
+
+bool CMsgSocket::callCallbackForOthers( CMessage& msg, CSocket& sock )
+{
+	// Find if the callback array contains a key "O" (for other messages)
+	string s = "O";
+	CSearchSet::iterator its = _SearchSet.find( CPtCallbackItem( s.c_str() ) );
+	if ( its != _SearchSet.end() )
+	{
+		// Call the callback function for O
+		(*its).pt()->Callback( msg, sock.senderId() );
+		return true; // Callback found
+	}
+	else
+	{
+		return false; // Callback not found
+	}
 }
 
 

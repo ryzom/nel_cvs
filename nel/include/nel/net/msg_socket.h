@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.24 2000/11/27 10:06:55 cado Exp $
+ * $Id: msg_socket.h,v 1.25 2000/11/30 17:01:34 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,6 +64,7 @@ typedef std::set<CPtCallbackItem> CSearchSet;
  *
  * To receive messages, you have to create some callbacks that will be called
  * when you call CMsgSocket::update() (which you are supposed to call every frame).
+ * The following callback names are reserved : "C", "D" and "O".
  * Please refer to the documentation of update() to know how to use it.
  *
  * \sa network Network system overview
@@ -172,7 +173,10 @@ public:
 	/** Updates the connected sockets and accepts new connections.
 	 * - When a new connection incomes (server mode only), the callback of name "C" is called if it exists. Its message contains the address of the remote socket (CInetAddress).
 	 *
-	 * - When a message is received, the callback of name msgTypeAsString() or of index msgTypeAsNumber() is called. An exception is raised it doesn't exist.
+	 * - When a message is received, the callback of name msgTypeAsString() or of index msgTypeAsNumber() is called.
+	 * If it doesn't exist, the callback of name "O" (for others) is called it it exists (and the input message
+	 * is the received message, thus in the callback you have to check the type of the message, which can be either a number
+	 * or a string), otherwise a warning is emitted.
 	 *
 	 * - When a connection is closed, the callback of name "D" is called if it exists. The message is empty.
 	 *
@@ -222,6 +226,9 @@ protected:
 	 * \return False if an error occurred (i.e. no callback defined for the message type)
 	 */
 	static bool		processReceivedMessage( CMessage& msg, CSocket& sock );
+
+	/// Calls the callback corresponding to "O" if it exists, otherwise returns false
+	static bool		callCallbackForOthers( CMessage& msg, CSocket& sock );
 
 	/// Returns if the listening socket of the server and the connection sockets have incoming data available.
 	static bool		getDataAvailableStatus();

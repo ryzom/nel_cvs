@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.69 2003/11/03 18:16:21 cado Exp $
+ * $Id: service.h,v 1.70 2003/11/18 15:19:05 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -315,6 +315,8 @@ public:
 
 	uint16								getPort() { return ListeningPort; }
 
+	uint32								getShardId() const { return _ShardId; }
+
 private:
 
 	/// \name methods. These methods are used by internal system.
@@ -380,13 +382,17 @@ private:
 	/// Require to reset the hierarchical timer
 	bool								_ResetMeasures;
 
+	/// Shard Id
+	uint32								_ShardId;
+
 	//@}
 
 	friend void serviceGetView (uint32 rid, const std::string &rawvarpath, std::vector<std::string> &vara, std::vector<std::string> &vala);
 	friend void cbAESConnection (const std::string &serviceName, uint16 sid, void *arg);
 	friend struct serviceInfoClass;
 	friend struct getWinDisplayerInfoClass;
-	friend void cbDirectoryChanged (const NLMISC::IVariable &var);		
+	friend void cbDirectoryChanged (const NLMISC::IVariable &var);
+	friend void cbReceiveShardId (NLNET::CMessage& msgin, const std::string &serviceName, uint16 serviceId);
 };
 
 

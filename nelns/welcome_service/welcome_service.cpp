@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.25 2003/09/04 13:49:51 cado Exp $
+ * $Id: welcome_service.cpp,v 1.26 2003/11/18 15:19:45 legros Exp $
  *
  */
 
@@ -365,6 +365,32 @@ void cbServiceUp (const std::string &serviceName, uint16 sid, void *arg)
 {
 	OnlineServices.addInstance( serviceName );
 	reportOnlineStatus( OnlineServices.getOnlineStatus() );
+
+	// send shard id to service
+	sint32 shardId;
+	if (IService::getInstance()->haveArg('S'))
+	{
+		// use the command line param if set
+		shardId = atoi(IService::getInstance()->getArg('S').c_str());
+	}
+	else if (IService::getInstance()->ConfigFile.exists ("ShardId"))
+	{
+		// use the config file param if set
+		shardId = IService::getInstance()->ConfigFile.getVar ("ShardId").asInt();
+	}
+	else
+	{
+		shardId = -1;
+	}
+
+	if (shardId == -1)
+	{
+		nlerror ("ShardId variable must be valid (>0)");
+	}
+
+	CMessage	msgout("R_SH_ID");
+	msgout.serial(shardId);
+	CUnifiedNetwork::getInstance()->send (sid, msgout);
 }
 
 

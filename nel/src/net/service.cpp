@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.197 2003/11/17 14:26:38 distrib Exp $
+ * $Id: service.cpp,v 1.198 2003/11/18 15:19:05 legros Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -239,6 +239,33 @@ void cbDirectoryChanged (IVariable &var)
 	}
 }
 
+
+//
+// Service built-in callbacks
+//
+
+void cbReceiveShardId (CMessage& msgin, const string &serviceName, uint16 serviceId)
+{
+	uint32	shardId;
+	msgin.serial(shardId);
+
+	if (serviceName != "WS")
+	{
+		nlwarning("SERVICE: received unauthorized R_SH_ID callback from service %s-%d asking to set ShardId to %d", serviceName.c_str(), serviceId, shardId);
+		return;
+	}
+
+	nlinfo("SERVICE: set ShardId to %d", shardId);
+	IService::getInstance()->_ShardId = shardId;
+}
+
+TUnifiedCallbackItem builtinServiceCallbacks [] =
+{
+	{ "R_SH_ID", cbReceiveShardId },
+};
+
+
+
 //
 // Class implementation
 //
@@ -390,7 +417,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	bool userInitCalled = false;
 //	bool resyncEvenly = false;
 	CConfigFile::CVar *var = NULL;
-	
+
 	// a short name service can't be a number
 	nlassert (atoi(serviceShortName) == 0);
 
@@ -496,6 +523,19 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		if (ConfigFile.exists ("Assert"))
 			setAssert (ConfigFile.getVar("Assert").asInt() == 1);
 
+		//
+		// Set the shard Id
+		//
+
+		if ((var = ConfigFile.getVarPtr("NoWSShardId")) != NULL)
+		{
+			_ShardId = var->asInt();
+		}
+		else
+		{
+			// something high enough as default
+			_ShardId = 666;
+		}
 
 		//
 		// Set the negative filter from the config file
@@ -883,6 +923,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 		// Add callback array
 		//
+
+		// add inner service callback array
+		NLNET::CUnifiedNetwork::getInstance()->addCallbackArray(builtinServiceCallbacks, sizeof(builtinServiceCallbacks)/sizeof(builtinServiceCallbacks[0]));
 
 		// add callback set in the NLNET_SERVICE_MAIN macro
 		NLNET::CUnifiedNetwork::getInstance()->addCallbackArray(_CallbackArray, _CallbackArraySize);

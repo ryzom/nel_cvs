@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.cpp,v 1.61 2002/08/08 08:57:42 portier Exp $
+ * $Id: actor_script.cpp,v 1.62 2002/08/08 13:09:27 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,8 +101,12 @@ namespace NLAIAGENT
 	CActorScript::~CActorScript()
 	{
 		while (  _Launched.size() )
-		{
-			_Launched.front()->Kill();
+		{			
+#ifdef NL_DEBUG
+	nlinfo (" _Launched 0x0%0x", _Launched.front());
+#endif
+			//_Launched.front()->setParent(NULL);
+			//_Launched.front()->Kill();
 			_Launched.front()->release();
 			_Launched.pop_front();
 		}
@@ -214,7 +218,7 @@ namespace NLAIAGENT
 		int i;
 		for ( i = 0; i < _NbComponents; i++ )
 		{
-			if ( _Components[i]->getType() && NLAIC::CTypeOfObject::tActor )
+			if ( ((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tActor )
 			{
 				( (CActorScript *) _Components[i] )->pause();
 			}
@@ -265,7 +269,7 @@ namespace NLAIAGENT
 		int i;
 		for ( i = 0; i < _NbComponents; i++ )
 		{
-			if ( _Components[i]->getType() && NLAIC::CTypeOfObject::tActor )
+			if ( ((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tActor )
 			{
 				( (CActorScript *) _Components[i] )->restart();
 			}
@@ -509,6 +513,7 @@ namespace NLAIAGENT
 					}
 
 					_Launched.push_back( (NLAIAGENT::IAgent *) child );
+					child->incRef();
 				}
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
@@ -660,6 +665,7 @@ namespace NLAIAGENT
 						((CActorScript *)child)->activate();
 */
 					_Launched.push_back( (NLAIAGENT::IAgent *) child );
+					child->incRef();
 
 				}
 				r.ResultState =  NLAIAGENT::processIdle;

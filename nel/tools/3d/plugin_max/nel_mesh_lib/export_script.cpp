@@ -1,7 +1,7 @@
 /** \file export_script.cpp
  * Export script utility from 3dsmax
  *
- * $Id: export_script.cpp,v 1.8 2002/06/05 15:46:04 berenguier Exp $
+ * $Id: export_script.cpp,v 1.9 2002/06/06 14:43:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,6 +111,7 @@ void CExportNel::setScriptAppData (Animatable *node, uint32 id, int value)
 
 	// Add data
 	node->AddAppDataChunk(MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, id, strlen (block)+1, copy);
+
 }
 
 // ***************************************************************************
@@ -125,8 +126,8 @@ float CExportNel::getScriptAppData (Animatable *node, uint32 id, float def)
 		return def;
 
 	// String to int
-	float value;
-	if (sscanf ((const char*)ap->data, "%f", &value)==1)
+	float value = 0.f;
+	if (toFloatMax((const char*)ap->data, value))
 		return value;
 	else
 		return def;
@@ -136,19 +137,17 @@ float CExportNel::getScriptAppData (Animatable *node, uint32 id, float def)
 
 void CExportNel::setScriptAppData (Animatable *node, uint32 id, float value)
 {
-	// Int to string
-	char block[100];
-	sprintf (block, "%f", value);
+	std::string str = toStringMax(value);	
 
 	// Remove data
 	node->RemoveAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, id);
 
 	// Copy data
-	char *copy=(char*)malloc (strlen (block)+1);
-	strcpy (copy, block);
+	char *copy=(char*)malloc (str.length() + 1);
+	strcpy (copy, str.c_str());
 
 	// Add data
-	node->AddAppDataChunk(MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, id, strlen (block)+1, copy);
+	node->AddAppDataChunk(MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, id, str.length() + 1, copy);
 }
 
 // ***************************************************************************

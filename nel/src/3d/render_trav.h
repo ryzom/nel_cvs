@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.4 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: render_trav.h,v 1.5 2002/02/11 16:54:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,8 +163,11 @@ public:
 	 *	cache cleared at each frame with resetLightSetup().
 	 *	NB: models which are sticked or skinned on a skeleton have same lightContribution 
 	 *	because lightSetup is made on the skeleton only. Hence the interest of this cache.
+	 *
+	 *	\param useLocalAttenuation if true, use Hardware Attenuation, else use global one 
+	 *	(attenuation with AttFactor)
 	 */
-	void		changeLightSetup(CLightContribution	*lightContribution);
+	void		changeLightSetup(CLightContribution	*lightContribution, bool useLocalAttenuation);
 
 	// @}
 
@@ -188,6 +191,7 @@ private:
 	// @{
 	// The last setup.
 	CLightContribution			*_CacheLightContribution;
+	bool						_LastLocalAttenuation;
 	// The number of light enabled
 	uint						_NumLightEnabled;
 
@@ -195,6 +199,7 @@ private:
 	uint						_LastSunFactor;
 	CPointLight					*_LastPointLight[NL3D_MAX_LIGHT_CONTRIBUTION];
 	uint8						_LastPointLightFactor[NL3D_MAX_LIGHT_CONTRIBUTION];
+	bool						_LastPointLightLocalAttenuation[NL3D_MAX_LIGHT_CONTRIBUTION];
 
 	CVector						_SunDirection;
 

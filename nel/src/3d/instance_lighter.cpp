@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: instance_lighter.cpp,v 1.2 2002/02/11 16:54:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -427,7 +427,30 @@ void CInstanceLighter::light (const CInstanceGroup &igIn, CInstanceGroup &igOut,
 			}
 		}
 
+
+		// Last chance to skip it: fully LightMapped ??
+		//-----------
+		if(iteMap!=shapeMap.end())
+		{
+			CMeshBase	*mesh= dynamic_cast<CMeshBase*>(iteMap->second);
+			if(mesh)
+			{
+				// If this mesh is not lightable (fully lightMapped)
+				if(!mesh->isLightable())
+				{
+					// Force Avoid StaticLight precomputing
+					_Instances[i].AvoidStaticLightPreCompute= true;
+					// Disable static lighting.
+					_Instances[i].StaticLightEnabled= false;
+					// Next instance.
+					continue;
+				}
+			}
+		}
+
+
 		// Compute pos and OverSamples
+		//-----------
 		{
 			// Compute bbox, or default bbox
 			CAABBox		bbox;

@@ -1,7 +1,7 @@
 /** \file point_light.cpp
  * <File description>
  *
- * $Id: point_light.cpp,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: point_light.cpp,v 1.2 2002/02/11 16:54:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,6 +114,13 @@ void			CPointLight::computeAttenuationFactors()
 		_ConstantAttenuation= dummyLight.getConstantAttenuation();
 		_LinearAttenuation= dummyLight.getLinearAttenuation();
 		_QuadraticAttenuation= dummyLight.getQuadraticAttenuation();
+
+		// setup _OODeltaAttenuation
+		_OODeltaAttenuation= _AttenuationEnd - _AttenuationBegin;
+		if(_OODeltaAttenuation <=0 )
+			_OODeltaAttenuation= 0;
+		else
+			_OODeltaAttenuation= 1.0f / _OODeltaAttenuation;
 	}
 }
 
@@ -140,6 +147,24 @@ void			CPointLight::serial(NLMISC::IStream &f)
 
 
 // ***************************************************************************
+float			CPointLight::computeLinearAttenuation(float dist) const
+{
+	if(_AttenuationEnd==0)
+		return 1;
+	else
+	{
+		if(dist<_AttenuationBegin)
+			return 1;
+		else if(dist<_AttenuationEnd)
+		{
+			return (_AttenuationEnd - dist) * _OODeltaAttenuation;
+		}
+		else
+			return 0;
+	}
+}
+
+// ***************************************************************************
 void			CPointLight::setupDriverLight(CLight &light, uint8 factor)
 {
 	// expand 0..255 to 0..256, to avoid loss of precision.
@@ -154,6 +179,24 @@ void			CPointLight::setupDriverLight(CLight &light, uint8 factor)
 	// setup the pointLight
 	light.setupPointLight(ambient, diffuse, specular, _Position, CVector::Null, 
 		_ConstantAttenuation, _LinearAttenuation, _QuadraticAttenuation);
+}
+
+
+// ***************************************************************************
+void			CPointLight::setupDriverLightUserAttenuation(CLight &light, uint8 factor)
+{
+	// expand 0..255 to 0..256, to avoid loss of precision.
+	uint	ufactor= factor + (factor>>7);	// add 0 or 1.
+
+	// modulate with factor
+	CRGBA	ambient, diffuse, specular;
+	ambient.modulateFromuiRGBOnly(_Ambient, ufactor);
+	diffuse.modulateFromuiRGBOnly(_Diffuse, ufactor);
+	specular.modulateFromuiRGBOnly(_Specular, ufactor);
+
+	// setup the pointLight, disabling attenuation.
+	light.setupPointLight(ambient, diffuse, specular, _Position, CVector::Null, 
+		1, 0, 0);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.13 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.14 2002/02/11 16:54:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -259,7 +259,7 @@ void		CRenderTrav::resetLightSetup()
 
 
 // ***************************************************************************
-void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution)
+void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution, bool useLocalAttenuation)
 {
 	// If lighting System disabled, skip
 	if(!LightingSystemEnabled)
@@ -269,7 +269,7 @@ void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution)
 	CLight		light;
 
 	// if same lightContribution, no-op.
-	if(_CacheLightContribution == lightContribution)
+	if(_CacheLightContribution == lightContribution &&  _LastLocalAttenuation == useLocalAttenuation)
 		return;
 	// else, must setup the lights into driver.
 	else
@@ -308,18 +308,30 @@ void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution)
 			while(lightContribution->PointLight[plId]!=NULL)
 			{
 				CPointLight		*pl= lightContribution->PointLight[plId];
-				uint			inf= lightContribution->Factor[plId];
+				uint			inf;
+				if(useLocalAttenuation)
+					inf= lightContribution->Factor[plId];
+				else
+					inf= lightContribution->AttFactor[plId];
 
 				// different PointLight setup than in cache??
-				// NB: pointLight setup can't change during renderPass, so need only to test pointer and factor.
-				if( pl!=_LastPointLight[plId] || inf!=_LastPointLightFactor[plId])
+				// NB: pointLight setup can't change during renderPass, so need only to test pointer, 
+				// attenuation mode and factor.
+				if( pl!=_LastPointLight[plId] || 
+					inf!=_LastPointLightFactor[plId] ||
+					useLocalAttenuation!=_LastPointLightLocalAttenuation[plId] )
 				{
 					// need to resetup the light. Cache it.
 					_LastPointLight[plId]= pl;
 					_LastPointLightFactor[plId]= inf;
+					_LastPointLightLocalAttenuation[plId]= useLocalAttenuation;
 
 					// compute the driver light
-					pl->setupDriverLight(light, inf);
+					if(useLocalAttenuation)
+						pl->setupDriverLight(light, inf);
+					else
+						// Compute it with user Attenuation
+						pl->setupDriverLightUserAttenuation(light, inf);
 
 					// setup driver. decal+1 because of sun.
 					Driver->setLight(plId+1, light);
@@ -354,6 +366,7 @@ void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution)
 			// cache the setup.
 			_CacheLightContribution = lightContribution;
 			_NumLightEnabled= newNumLightEnabled;
+			_LastLocalAttenuation= useLocalAttenuation;
 		}
 		else
 		{

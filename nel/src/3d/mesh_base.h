@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.8 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: mesh_base.h,v 1.9 2002/02/11 16:54:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,6 +80,7 @@ public:
 	{
 		bool					bCastShadows;
 		bool					bRcvShadows;
+		bool					UseLightingLocalAttenuation;
 
 		// Default value for position of this mesh
 		CVector					DefaultPos;
@@ -155,6 +156,9 @@ public:
 	/// Is this mesh lightable? true if one of his materials is not a lightmap. NB: result stored in file.
 	bool	isLightable() const {return _IsLightable;}
 
+	/// tells if the shape wants LocalAttenuation for RealTime lighting.  Default is false
+	virtual bool		useLightingLocalAttenuation () const;
+
 
 // ************************
 protected:
@@ -184,6 +188,9 @@ protected:
 
 	/// Is this mesh lightable??
 	bool						_IsLightable;
+	/// Is this mesh Use Lighting Local Attenuation ??
+	bool						_UseLightingLocalAttenuation;
+
 
 protected:
 	/// Just copy informations from a CMeshBaseBuild.

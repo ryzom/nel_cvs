@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.13 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: transform.h,v 1.14 2002/02/11 16:54:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -286,6 +286,8 @@ protected:
 
 	/// true if the object needs to updatelighting.
 	bool					_NeedUpdateLighting;
+	/// true if the object has a FrozenStaticLightSetup not correclty updated.
+	bool					_NeedUpdateFrozenStaticLightSetup;
 
 
 	/// true (default) if the user agree that the object is lightable.

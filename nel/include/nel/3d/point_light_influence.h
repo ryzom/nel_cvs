@@ -1,7 +1,7 @@
 /** \file point_light_influence.h
  * <File description>
  *
- * $Id: point_light_influence.h,v 1.1 2002/02/06 16:53:13 berenguier Exp $
+ * $Id: point_light_influence.h,v 1.2 2002/02/11 16:53:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,8 @@ public:
 	float			Influence;
 	// Internal Use only. Used by CLightingManager
 	float			BkupInfluence;
+	// Internal Use only. Used by CLightingManager
+	float			DistanceToModel;
 
 	// To sort by influence.
 	bool	operator<(const CPointLightInfluence &sl) const

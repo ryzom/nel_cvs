@@ -1,7 +1,7 @@
 /** \file light_contribution.h
  * <File description>
  *
- * $Id: light_contribution.h,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: light_contribution.h,v 1.2 2002/02/11 16:54:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,8 @@ public:
 	CPointLight::ItTransformList	TransformIterator[NL3D_MAX_LIGHT_CONTRIBUTION];
 	/// the factor of influence to apply to each point light.
 	uint8				Factor[NL3D_MAX_LIGHT_CONTRIBUTION];
+	/// the Attenuation factor of influence to apply to each point light. Used if the model
+	uint8				AttFactor[NL3D_MAX_LIGHT_CONTRIBUTION];
 
 
 	/// Tells if there is some frozen static light setup.

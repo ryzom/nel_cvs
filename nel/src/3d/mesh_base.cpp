@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.15 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.16 2002/02/11 16:54:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,8 @@ namespace NL3D
 // ***************************************************************************
 CMeshBase::CMeshBase()
 {
+	_UseLightingLocalAttenuation= false;
+
 	// To have same functionnality than previous version, init to identity.
 	_DefaultPos.setValue(CVector(0,0,0));
 	_DefaultPivot.setValue(CVector(0,0,0));
@@ -94,6 +96,7 @@ CMeshBase::CMeshBaseBuild::CMeshBaseBuild()
 
 	bCastShadows= false;
 	bRcvShadows= false;
+	UseLightingLocalAttenuation= false;
 }
 
 // ***************************************************************************
@@ -127,6 +130,8 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream
 void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 4:
+		- _UseLightingLocalAttenuation
 	Version 3:
 		- _IsLightable
 	Version 2:
@@ -137,7 +142,7 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- 1st version.
 	*/
-	sint ver = f.serialVersion(3);
+	sint ver = f.serialVersion(4);
 
 	if (ver >= 2)
 	{
@@ -163,6 +168,11 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 	else if( f.isReading() )
 		// update _IsLightable flag.
 		computeIsLightable();
+
+	if(ver>=4)
+		f.serial(_UseLightingLocalAttenuation);
+	else if( f.isReading() )
+		_UseLightingLocalAttenuation= false;
 
 }
 
@@ -195,6 +205,8 @@ void	CMeshBase::buildMeshBase(CMeshBaseBuild &m)
 
 	// update _IsLightable flag.
 	computeIsLightable();
+	// copy _UseLightingLocalAttenuation
+	_UseLightingLocalAttenuation= m.UseLightingLocalAttenuation;
 }
 
 
@@ -290,6 +302,13 @@ void	CMeshBase::computeIsLightable()
 			break;
 		}
 	}
+}
+
+
+// ***************************************************************************
+bool	CMeshBase::useLightingLocalAttenuation () const
+{
+	return _UseLightingLocalAttenuation;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.13 2002/02/11 13:15:54 berenguier Exp $
+ * $Id: export_lod.h,v 1.14 2002/02/11 16:54:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,6 +79,9 @@
 
 /// Export RealTime light
 #define NEL3D_APPDATA_EXPORT_REALTIME_LIGHT			(1423062588)
+// UseLightingLocalAttenuation
+#define NEL3D_APPDATA_USE_LIGHT_LOCAL_ATTENUATION	(1423062589)
+
 
 // ***************************************************************************
 

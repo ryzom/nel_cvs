@@ -1,7 +1,7 @@
 /** \file point_light.h
  * <File description>
  *
- * $Id: point_light.h,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: point_light.h,v 1.2 2002/02/11 16:54:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,8 +129,17 @@ public:
 	/// \name Render tools.
 	// @{
 
+	/// Compute a linear attenuation for a given distance from the pointLight. Return [0,1]
+	float			computeLinearAttenuation(float dist) const;
+
 	/// setup the CLight with current pointLight state. factor is used to modulate the colors.
 	void			setupDriverLight(CLight &light, uint8 factor);
+
+	/** setup the CLight with current pointLight state. Don't use driver Attenuation and use software one
+	 *	setuped with an additional userAttenuation
+	 *	\param factor is used to modulate the colors. Should also integrate light attenuation.
+	 */
+	void			setupDriverLightUserAttenuation(CLight &light, uint8 factor);
 
 	/// Dirt all models this light influence
 	void			resetLightedModels();
@@ -155,6 +164,7 @@ private:
 
 	// Attenuation. setup / preComputed.
 	float		_AttenuationBegin, _AttenuationEnd;
+	float		_OODeltaAttenuation;
 	float		_ConstantAttenuation;
 	float		_LinearAttenuation;
 	float		_QuadraticAttenuation;

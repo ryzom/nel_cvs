@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.8 2001/09/18 08:33:43 berenguier Exp $
+ * $Id: shape.h,v 1.9 2002/02/11 16:54:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,6 +118,17 @@ public:
 	virtual float				getNumTriangles (float distance)=0;
 
 	// @}
+
+
+	/// \name Lighting method
+	// @{
+
+	/** tells if the shape wants LocalAttenuation for RealTime lighting.  Default is false
+	 */
+	virtual bool				useLightingLocalAttenuation () const {return false;}
+
+	// @}
+
 };
 
 // ***************************************************************************

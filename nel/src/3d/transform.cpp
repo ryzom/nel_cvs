@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.31 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: transform.cpp,v 1.32 2002/02/11 16:54:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/skip_model.h"
 #include "3d/scene.h"
 #include "3d/root_model.h"
+#include "3d/fast_floor.h"
 
 
 using namespace NLMISC;
@@ -76,6 +77,7 @@ CTransform::CTransform()
 	_OrderingLayer = 0;
 
 	_NeedUpdateLighting= false;
+	_NeedUpdateFrozenStaticLightSetup= false;
 
 	// default, the model may be lighted.
 	_UserLightable= true;
@@ -693,6 +695,9 @@ void			CTransform::freezeStaticLightSetup(CPointLight *pointLight[NL3D_MAX_LIGHT
 		_LightContribution.PointLight[i]= pointLight[i];
 		// Enable at max.
 		_LightContribution.Factor[i]= 255;
+		// Compute static AttFactor Later because don't have WorlPosition of the model here!!
+		_NeedUpdateFrozenStaticLightSetup= true;
+
 		// Do NOT set the iterator, because it is a staticLight.
 	}
 	// End the list
@@ -711,6 +716,9 @@ void			CTransform::unfreezeStaticLightSetup()
 	_LightContribution.NumFrozenStaticLight= 0;
 	// End the list
 	_LightContribution.PointLight[0]= NULL;
+
+	// Don't need to update StaticLightSetup since no more exist.
+	_NeedUpdateFrozenStaticLightSetup= false;
 }
 
 
@@ -722,6 +730,29 @@ void	CTransformLightObs::traverse(IObs *caller)
 	// if the model do not need to update his lighting, just skip.
 	if(!transform->_NeedUpdateLighting)
 		return;
+
+
+	// If a freezeStaticLightSetup() has been called on this model recently.
+	if(transform->_NeedUpdateFrozenStaticLightSetup)
+	{
+		// Now, the correct matrix is computed.
+		CVector	worldModelPos= transform->getWorldMatrix().getPos();
+		uint	numPointLights= transform->_LightContribution.NumFrozenStaticLight;
+
+		// So we can compute AttFactor for each static light influencing this static object
+		for(uint i=0;i<numPointLights;i++)
+		{
+			const CPointLight	*pl= transform->_LightContribution.PointLight[i];
+			// don't worry about the precision of floor, because of *255.
+			float	distToModel= (pl->getPosition() - worldModelPos).norm();
+			sint	attFactor= OptFastFloor( 255 * pl->computeLinearAttenuation(distToModel) );
+			transform->_LightContribution.AttFactor[i]= (uint8)attFactor;
+		}
+
+		// clean.
+		transform->_NeedUpdateFrozenStaticLightSetup= false;
+	}
+
 
 	// see CTransformClipObs::clip(), here I am Lightable(), and I have no _AncestorSkeletonModel
 	// So I am sure that I really need to recompute my ModelLightContributions.

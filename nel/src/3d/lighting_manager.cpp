@@ -1,7 +1,7 @@
 /** \file lighting_manager.cpp
  * <File description>
  *
- * $Id: lighting_manager.cpp,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: lighting_manager.cpp,v 1.2 2002/02/11 16:54:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -270,7 +270,6 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 		}
 	}
 
-
 	// Second pass, in the lightList, choose the best suited light to lit this model
 	//=========
 
@@ -317,6 +316,9 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 		// modulate the influence with this factor
 		lightList[i].BkupInfluence= lightList[i].Influence;
 		lightList[i].Influence*= inf;
+
+		// Bkup distance to model.
+		lightList[i].DistanceToModel= dist;
 	}
 
 	// sort the light by influence
@@ -359,6 +361,7 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 				CPointLight	*pl= lightList[ligthSrcId].PointLight;
 				float		inf= lightList[ligthSrcId].Influence;
 				float		bkupInf= lightList[ligthSrcId].BkupInfluence;
+				float		distToModel= lightList[ligthSrcId].DistanceToModel;
 				// else fill it.
 				lightContrib.PointLight[i]= pl;
 
@@ -367,7 +370,7 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 				{
 					// For Static LightSetup BiLinear to work correctly, modulate with BkupInfluence
 					// don't worry about the precision of floor, because of *255.
-					lightContrib.Factor[i]= OptFastFloor(bkupInf*255);
+					lightContrib.Factor[i]= (uint8)OptFastFloor(bkupInf*255);
 				}
 				else
 				{
@@ -379,6 +382,11 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 					clamp(fi, 0, 255);
 					lightContrib.Factor[i]= fi;
 				}
+
+				// Compute the Final Att factor for models using Global Attenuation. NB: modulate with Factor
+				// don't worry about the precision of floor, because of *255.
+				sint	attFactor= OptFastFloor( lightContrib.Factor[i] * pl->computeLinearAttenuation(distToModel) );
+				lightContrib.AttFactor[i]= (uint8)attFactor;
 
 				// must append this lightedModel to the list in the light.
 				lightContrib.TransformIterator[i]= pl->appendLightedModel(model);

@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.18 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.19 2002/02/11 16:54:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,20 +107,28 @@ void	CTransformShapeRenderObs::traverse(IObs *caller)
 	// if the transform is lightable (ie not a fully lightmaped model), setup lighting
 	if(m->isLightable())
 	{
+		// useLocalAttenuation for this shape ??
+		bool				useLocalAttenuation;
+		if(m->Shape)
+			useLocalAttenuation= m->Shape->useLightingLocalAttenuation ();
+		else
+			useLocalAttenuation= false;
+
+		// Get HrcObs.
 		CTransformHrcObs	*hrcObs= (CTransformHrcObs*)HrcObs;
 
 		// the std case is to take my model lightContribution
 		if(hrcObs->_AncestorSkeletonModel==NULL)
-			trav->changeLightSetup(&m->getLightContribution());
+			trav->changeLightSetup(&m->getLightContribution(), useLocalAttenuation);
 		// but if skinned/sticked (directly or not) to a skeleton, take its.
 		else
-			trav->changeLightSetup(&hrcObs->_AncestorSkeletonModel->getLightContribution());
+			trav->changeLightSetup(&hrcObs->_AncestorSkeletonModel->getLightContribution(), useLocalAttenuation);
 	}
 	// else must disable the lightSetup
 	else
 	{
 		// setting NULL will disable all lights
-		trav->changeLightSetup(NULL);
+		trav->changeLightSetup(NULL, false);
 	}
 
 

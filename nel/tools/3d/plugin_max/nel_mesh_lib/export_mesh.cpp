@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.31 2001/12/18 13:40:03 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.32 2002/02/11 16:54:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -590,6 +590,9 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 {
 	buildMesh.bCastShadows = (node.CastShadows() != 0);
 	buildMesh.bRcvShadows  = (node.RcvShadows() != 0);
+	// Export RealTime lighting info.
+	buildMesh.UseLightingLocalAttenuation= CExportNel::getScriptAppData (&node, NEL3D_APPDATA_USE_LIGHT_LOCAL_ATTENUATION, BST_UNCHECKED) == BST_CHECKED;
+
 
 	// *** ****************
 	// *** Export materials

@@ -1,7 +1,7 @@
 /** \file form_loader.cpp
  * Georges form loader implementation
  *
- * $Id: form_loader.cpp,v 1.6 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: form_loader.cpp,v 1.7 2002/06/04 14:14:15 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -254,7 +254,7 @@ UForm *CFormLoader::loadForm (const char *filename)
 					read.init (file);
 
 					// Read the form
-					form->read (read.getRootNode (), *this, dfn);
+					form->read (read.getRootNode (), *this, dfn, filename);
 				}
 				else
 				{

@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.2 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: type.cpp,v 1.3 2002/06/04 14:14:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,8 +27,10 @@
 #include "stdgeorges.h"
 
 #include "nel/misc/i_xml.h"
+#include "nel/misc/eval_num_expr.h"
 #include "nel/georges/u_type.h"
 
+#include "georges/form.h"
 #include "georges/form_elm.h"
 
 #include "type.h"
@@ -310,6 +312,57 @@ const char *CType::getUIName (TUI type)
 
 // ***************************************************************************
 
+class CMyEvalNumExpr : public CEvalNumExpr
+{
+public:
+	CMyEvalNumExpr (const CForm *form)
+	{
+		Form = form;
+	}
+	CEvalNumExpr::TReturnState evalValue (const char *value, double &result)
+	{
+		// If a form is available
+		if (Form)
+		{
+			// Ask for the filename ?
+			if (strcmp (value, "$filename") == 0)
+			{
+				// Get the filename
+				const string &filename = Form->getFilename ();
+
+				// While the filename as a number
+				sint i;
+				for (i=filename.size ()-1; i>=0; i--)
+				{
+					if ((filename[i]<'0') || (filename[i]>'9'))
+						break;
+				}
+
+				// Number found..
+				if ((i >= 0) && (i<((sint)filename.size ()-1)))
+				{
+					i++;
+					// Set the result
+					result = atof (filename.c_str () + i);
+					return CEvalNumExpr::NoError;
+				}
+			}
+			else
+			{
+				// try to get a Form value
+				if (Form->getRootNode ().getValueByName (result, value))
+					return CEvalNumExpr::NoError;
+			}
+		}
+		return CEvalNumExpr::evalValue (value, result);
+	}
+
+	// The working form
+	const CForm		*Form;
+};
+
+// ***************************************************************************
+
 bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *node, const CFormDfn &parentDfn, uint parentIndex, bool evaluate, uint32 *where) const
 {
 	// Node exist ?
@@ -340,6 +393,7 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 	// evaluate the value ?
 	if (evaluate)
 	{
+		// Evaluate predefinition
 		uint i;
 		uint predefCount = Definitions.size ();
 		for (i=0; i<predefCount; i++)
@@ -353,6 +407,66 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 				result = def.Value;
 				break;
 			}
+		}
+
+		// Evaluate numerical expression
+		if ((Type == Double) || (Type == SignedInt) || (Type == UnsignedInt) || (Type == UnsignedInt))
+		{
+			double value;
+			CMyEvalNumExpr expr (form);
+			int offset;
+			CEvalNumExpr::TReturnState error = expr.evalExpression (result.c_str (), value, &offset);
+			if (error == CEvalNumExpr::NoError)
+			{
+				// To string
+				result = toString (value);
+			}
+			else
+			{
+				// Build a nice error output in warning
+				char msg[512] = {0};
+				if (offset<512)
+				{
+					int i;
+					for (i=0; i<offset; i++)
+						msg[i] = '-';
+					msg[i] = '^';
+					msg[i+1] = 0;
+				}
+				nlwarning ("Syntax error in expression: %s\n%s\n%s\n", expr.getErrorString (error), result.c_str (), msg);
+				return false;
+			}
+		}
+		else
+		{
+			// Not empty command ?
+			if (!result.empty ())
+			{
+				// Ref to a variable ?
+				if (result[0] == '"')
+				{
+					uint i;
+					for (i=1; i<result.size (); i++)
+					{
+						if (result[i]=='"')
+						{
+							break;
+						}
+					}
+					if (i == result.size ())
+					{
+						nlwarning ("Geroges (CType::getValue) Missing double quote in value : %s", result.c_str ());
+						return false;
+					}
+					string valueName = result.substr (1, i-1);
+
+					// try to get a Form value
+					if ((form) && (form->getRootNode ().getValueByName (result, valueName.c_str ())))
+						return true;
+					else
+						return false;
+				}
+			}	
 		}
 	}
 

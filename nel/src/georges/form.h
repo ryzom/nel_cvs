@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.6 2002/05/31 10:07:28 corvazier Exp $
+ * $Id: form.h,v 1.7 2002/06/04 14:14:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,7 +70,8 @@ public:
 	CFormElmStruct		Elements;
 
 	// ** IO functions
-	void				write (xmlDocPtr doc) const;
+	// Set the filename before saving the form
+	void				write (xmlDocPtr doc, const char *filename);
 
 	// ** Parent access
 
@@ -90,6 +91,9 @@ public:
 	// Clear parents
 	void				clearParents ();
 
+	// Get the form filename
+	const std::string	&getFilename () const;
+
 private:
 
 	// A parent structure
@@ -104,10 +108,14 @@ private:
 	std::vector<CParent>			ParentList;
 
 	// CFormLoader call it
-	void				read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn);
+	// Set the filename before reading the form
+	void				read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn, const char *filename);
 
 	// Called by read
 	void				readParent (const char *parent, CFormLoader &loader);
+
+	// The form filename
+	std::string			_Filename;
 };
 
 } // NLGEORGES

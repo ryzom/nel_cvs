@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.7 2002/05/31 10:07:28 corvazier Exp $
+ * $Id: form.cpp,v 1.8 2002/06/04 14:14:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "nel/misc/i_xml.h"
 #include "nel/misc/common.h"
+#include "nel/misc/path.h"
 
 #include "form.h"
 #include "form_loader.h"
@@ -58,8 +59,11 @@ const UFormElm& CForm::getRootNode () const
 
 // ***************************************************************************
 
-void CForm::write (xmlDocPtr doc) const
+void CForm::write (xmlDocPtr doc, const char *filename)
 {
+	// Save the filename
+	_Filename = CFile::getFilenameWithoutExtension (filename);
+
 	// Create the first node
 	xmlNodePtr node = xmlNewDocNode (doc, NULL, (const xmlChar*)"FORM", NULL);
 	xmlDocSetRootElement (doc, node);
@@ -119,8 +123,11 @@ void CForm::readParent (const char *parent, CFormLoader &loader)
 
 // ***************************************************************************
 
-void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn)
+void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn, const char *filename)
 {
+	// Save the filename
+	_Filename = CFile::getFilenameWithoutExtension (filename);
+
 	// Reset form
 	clean ();
 
@@ -255,6 +262,10 @@ void CForm::clearParents ()
 
 // ***************************************************************************
 
+const std::string &CForm::getFilename () const
+{
+	return _Filename;
+}
 
 } // NLGEORGES
 

@@ -1,7 +1,7 @@
 /** \file eval_num_expr.h
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.h,v 1.2 2002/06/04 10:14:58 corvazier Exp $
+ * $Id: eval_num_expr.h,v 1.3 2002/06/04 14:14:15 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@ public:
 		MustBeExpression,	// Should be an expression
 		NotUnaryOperator,	// Should not be an unary operator
 		MustBeEnd,			// Should be the end
+		MustBeDoubleQuote,	// Should be a double quote
 		ReturnValueCount
 	};
 
@@ -143,7 +144,8 @@ public:
 	  * constant:	e			// 2.7182818284590452353602874713527
 	  *				| pi		// 3.1415926535897932384626433832795
 	  *
-	  * string:		[^ 0-9\t\n/\*-+=<>&|\^!%~\(\)\.,][^ \t\n/\*-+=<>&|\^!%~\(\)\.,]*	// Labels ("$foo", "#foo01", "_001")
+	  * string:		[^ 0-9\t\n/\*-+=<>&|\^!%~\(\)\.,\"][^ \t\n/\*-+=<>&|\^!%~\(\)\.,\"]*	// Labels ($foo, #foo01, _001)
+	  *				| \"[]+\"		// All kind of labels between double quotes "123456" "foo.foo[12]"
 	  *
 	  * Operator precedence:
 	  *

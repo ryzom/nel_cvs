@@ -1,7 +1,7 @@
 /** \file eval_num_expr.cpp
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.cpp,v 1.2 2002/06/04 10:14:58 corvazier Exp $
+ * $Id: eval_num_expr.cpp,v 1.3 2002/06/04 14:14:15 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -439,6 +439,45 @@ CEvalNumExpr::TReturnState CEvalNumExpr::getNextToken (TToken &token)
 					return state;
 				}
 			}
+		}
+		// Is a string ?
+		else if (currentChar == '"')
+		{
+			// Look for the end of the string
+			_ExprPtr++;
+			currentChar = *_ExprPtr;
+			const char *start = _ExprPtr;
+			while ( (currentChar != 0) && (currentChar != '"') )
+			{
+				_ExprPtr++;
+				currentChar = *_ExprPtr;
+			}
+			
+			// End reached ?
+			if (currentChar == 0)
+				return MustBeDoubleQuote;
+
+			// This is a user string, copy the string
+			uint size = _ExprPtr - start;
+			if (size >= (InternalStringLen-1))
+			{
+				_InternalStlString.resize (size);
+				uint i;
+				for (i=0; i<size; i++)
+					_InternalStlString[i] = start[i];
+				_InternalStringPtr = _InternalStlString.c_str ();
+			}
+			else
+			{
+				memcpy (_InternalString, start, size);
+				_InternalString[size] = 0;
+				_InternalStringPtr = _InternalString;
+			}
+
+			// Token
+			_ExprPtr++;
+			token = String;
+			return NoError;
 		}
 	}
 
@@ -1234,6 +1273,7 @@ const char *CEvalNumExpr::_ErrorString[ReturnValueCount]=
 	"Should be an expression",
 	"Should not be an unary operator",
 	"Should be the end of the expression",
+	"Should be a double quote",
 };
 
 // ***************************************************************************

@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.23 2001/07/26 13:17:01 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.24 2001/10/04 14:11:37 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 namespace NLAIAGENT
 {
 
-	const StackMemSize = 4096*32;
+	const sint StackMemSize = 4096*32;
 	CMainAgentScript::CMainAgentScript(const CMainAgentScript &a): IMainAgent(a)
 	{
 		_Stack = new NLAISCRIPT::CStackPointer(StackMemSize);

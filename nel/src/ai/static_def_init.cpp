@@ -402,7 +402,8 @@
 		NLAIC::CTypeOfOperator::opNeg | 
 		NLAIC::CTypeOfOperator::opNot ); 
 
-	const NLAIC::CIdentType CFact::IdFact = NLAIC::CIdentType( "FactObject", NLAIC::CSelfClassFactory( CFact( CStringVarName("Inst") ) ),
+	CStringVarName TrucInst("Inst");
+	const NLAIC::CIdentType CFact::IdFact = NLAIC::CIdentType( "FactObject", NLAIC::CSelfClassFactory( CFact( TrucInst ) ),
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opEq |
 		NLAIC::CTypeOfOperator::opNeg | 

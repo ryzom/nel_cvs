@@ -90,9 +90,9 @@ BOOL CLogic_editorApp::initInstance()
 
 
 #ifdef _AFXDLL
-//	Enable3dControls();			// Call this when using MFC in a shared DLL
+	//Enable3dControls();			// Call this when using MFC in a shared DLL
 #else
-//	Enable3dControlsStatic();	// Call this when linking to MFC statically
+	//Enable3dControlsStatic();	// Call this when linking to MFC statically
 #endif
 
 
@@ -134,14 +134,76 @@ BOOL CLogic_editorApp::initInstance()
 	if (!ProcessShellCommand(cmdInfo))
 		return FALSE;
 
-	/*
+	
 	// The main window has been initialized, so show and update it.
-	pMainFrame->ShowWindow(m_nCmdShow);
-	pMainFrame->UpdateWindow();
-	*/
+	//pMainFrame->ShowWindow(m_nCmdShow);
+	//pMainFrame->UpdateWindow();
+	
 
 	return TRUE;
 }
+
+
+
+
+//-----------------------------------------------
+//	initInstanceLight
+//
+//-----------------------------------------------
+BOOL CLogic_editorApp::initInstanceLight( int x, int y, int cx, int cy )
+{
+	AfxEnableControlContainer();
+	
+	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+
+	// Load standard INI file options (including MRU)
+	LoadStdProfileSettings();  
+
+	// Register the application's document templates.  Document templates
+	//  serve as the connection between documents, frame windows and views.
+	CMultiDocTemplate* pDocTemplate;
+	pDocTemplate = new CMultiDocTemplate(
+		IDR_LOGIC_TYPE,
+		RUNTIME_CLASS(CLogic_editorDoc),
+		RUNTIME_CLASS(CChildFrame),
+		RUNTIME_CLASS(CLogic_editorView));
+	AddDocTemplate(pDocTemplate);
+
+	// create main MDI Frame window
+	CMainFrame* pMainFrame = new CMainFrame;
+	pMainFrame->createX = x;
+	pMainFrame->createY = y;
+	pMainFrame->createCX = cx;
+	pMainFrame->createCY = cy;
+	if (!pMainFrame->LoadFrame(IDR_MAINFRAME))
+		return FALSE;
+	m_pMainWnd = pMainFrame;
+	
+	/*
+	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createX = x;
+	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createY = y;
+	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createCX = cx;
+	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createCY = cy;
+	*/
+
+	// Enable drag/drop open
+	m_pMainWnd->DragAcceptFiles();
+
+	// Enable DDE Execute open
+	EnableShellOpen();
+	RegisterShellFileTypes(TRUE);
+
+	// Parse command line for standard shell commands, DDE, file open
+	CCommandLineInfo cmdInfo;
+	ParseCommandLine(cmdInfo);
+
+	// Dispatch commands specified on the command line
+	if (!ProcessShellCommand(cmdInfo))
+		return FALSE;
+
+	return TRUE;
+}
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -230,7 +292,7 @@ void CLogicEditor::initUI( HWND parent )
 	theApp.initInstance();
 		
 	// The main window has been initialized, so show and update it.
-	theApp.m_pMainWnd->ShowWindow(SW_SHOW);
+	theApp.m_pMainWnd->ShowWindow(SW_SHOWNORMAL);
 	theApp.m_pMainWnd->UpdateWindow();
 
 } // initUI //
@@ -245,12 +307,7 @@ void CLogicEditor::initUILight (int x, int y, int cx, int cy)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	
-	theApp.initInstance();
-
-	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createX = x;
-	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createY = y;
-	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createCX = cx;
-	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createCY = cy;
+	theApp.initInstanceLight(x,y,cx,cy);
 		
 	// The main window has been initialized, so show and update it.
 	theApp.m_pMainWnd->ShowWindow(SW_SHOW);

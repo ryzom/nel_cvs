@@ -32,6 +32,7 @@ public:
 	//virtual BOOL InitInstance();
 	//}}AFX_VIRTUAL
 	virtual BOOL initInstance();
+	virtual BOOL initInstanceLight( int x, int y, int cx, int cy );
 
 // Implementation
 	//{{AFX_MSG(CLogic_editorApp)
@@ -79,7 +80,6 @@ public:
 	 *	Get the main frame
 	 */
 	virtual void*getMainFrame ();
-
 
 	/**
 	 *	Release the UI

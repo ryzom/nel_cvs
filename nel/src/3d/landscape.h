@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.41 2002/07/23 12:20:31 corvazier Exp $
+ * $Id: landscape.h,v 1.42 2002/08/07 15:23:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -318,6 +318,11 @@ public:
 	 * \return Return a zone pointer. NULL if the zone doesn't exist or isn't loaded.
 	 */
 	const CZone*	getZone (sint zoneId) const;
+	/** Return list of zone loaded.
+	 */
+	void			getZoneList(std::vector<uint16>	&zoneIds) const;
+	/// From an Id, return the name of the zone, in the form "150_EM", without extension.
+	static void		buildZoneName(sint zoneId, std::string &zoneName);
 	// @}
 
 

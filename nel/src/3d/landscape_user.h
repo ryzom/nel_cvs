@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.15 2002/04/24 16:32:07 berenguier Exp $
+ * $Id: landscape_user.h,v 1.16 2002/08/07 15:23:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,7 @@ public:
 	virtual	void	refreshZonesAround(const CVector &pos, float radius, std::string &zoneAdded, std::string &zoneRemoved);
 	/// Delete old zones, or load new zones, around a position, until it is finished. This is a blocking call.
 	virtual	void	refreshAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded, std::vector<std::string> &zonesRemoved);
+	virtual	void	getAllZoneLoaded(std::vector<std::string>	&zoneLoaded) const;
 	// @}
 
 

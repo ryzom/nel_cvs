@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.16 2002/04/24 16:32:13 berenguier Exp $
+ * $Id: u_landscape.h,v 1.17 2002/08/07 15:23:42 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,10 @@ public:
 	virtual	void	refreshZonesAround(const CVector &pos, float radius, std::string &zoneAdded, std::string &zoneRemoved) =0;
 	/// Delete old zones, or load new zones, around a position, until it is finished. This is a blocking call.
 	virtual	void	refreshAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded, std::vector<std::string> &zonesRemoved) =0;
+	/** Get list of zones currently loaded in landscape.
+	 *	\zonesLoaded array of name of the zones added, without extension (eg: "150_EM").
+	 */
+	virtual	void	getAllZoneLoaded(std::vector<std::string>	&zoneLoaded) const =0;
 	// @}
 
 

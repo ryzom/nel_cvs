@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.118 2002/07/23 12:20:31 corvazier Exp $
+ * $Id: landscape.cpp,v 1.119 2002/08/07 15:23:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -488,14 +488,31 @@ bool			CLandscape::removeZone(uint16 zoneId)
 	return true;
 }
 // ***************************************************************************
+void			CLandscape::getZoneList(std::vector<uint16>	&zoneIds) const
+{
+	zoneIds.clear();
+	zoneIds.reserve(Zones.size());
+	std::map<uint16, CZone*>::const_iterator	it;
+	for(it= Zones.begin();it!=Zones.end();it++)
+	{
+		zoneIds.push_back((*it).first);
+	}
+}
+// ***************************************************************************
+void			CLandscape::buildZoneName(sint zoneId, std::string &zoneName)
+{
+	char	tmp[256];
+	sint	x= zoneId & 255;
+	sint	y= zoneId >> 8;
+	sprintf(tmp, "%d_%c%c", y+1, (char)('A'+(x/26)), (char)('A'+(x%26)));
+	zoneName= tmp;
+}
+// ***************************************************************************
 void			CLandscape::clear()
 {
 	// Build the list of zoneId.
 	vector<uint16>	zoneIds;
-	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
-	{
-		zoneIds.push_back((*it).first);
-	}
+	getZoneList(zoneIds);
 
 	// Remove each zone one by one.
 	sint i;

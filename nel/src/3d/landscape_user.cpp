@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.25 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.26 2002/08/07 15:23:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,6 +155,21 @@ void	CLandscapeUser::refreshAllZonesAround(const CVector &pos, float radius, std
 
 }
 
+// ***************************************************************************
+void	CLandscapeUser::getAllZoneLoaded(std::vector<std::string>	&zoneLoaded) const
+{
+	// Build the list of zoneId.
+	std::vector<uint16>	zoneIds;
+	_Landscape->Landscape.getZoneList(zoneIds);
+
+	// transcript
+	zoneLoaded.clear();
+	zoneLoaded.resize(zoneIds.size());
+	for(uint i=0;i<zoneLoaded.size();i++)
+	{
+		CLandscape::buildZoneName(zoneIds[i], zoneLoaded[i]);
+	}
+}
 
 //****************************************************************************
 void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius)

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.102 2004/03/12 16:51:13 lecroart Exp $
+ * $Id: path.cpp,v 1.103 2004/04/05 11:51:46 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1167,7 +1167,12 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 			}
 			// if the path is the same, don't warn
 			string path2 = inst->SSMpath.get((*it).second.idPath);
-			string sPathOnly = filepath.substr(0,filepath.rfind('@')+1);
+			string sPathOnly;
+			if(filepath.rfind('@') != string::npos)
+				sPathOnly = filepath.substr(0,filepath.rfind('@')+1);
+			else
+				sPathOnly = CFile::getPath(filepath);
+
 			if (path2 == sPathOnly)
 				return;
 			nlwarning ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), path2.c_str());

@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * <File description>
  *
- * $Id: mini_col.cpp,v 1.9 2001/01/12 11:09:23 berenguier Exp $
+ * $Id: mini_col.cpp,v 1.10 2001/01/12 17:02:27 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -323,6 +323,99 @@ bool			CMiniCol::snapToGround(CVector &pos, float hup, float hbot)
 
 	if(found)
 		pos.z= height;
+
+	return found;
+}
+
+
+
+// ***************************************************************************
+bool			CMiniCol::getGroundNormal(const CVector &pos, CVector &normal, float hup, float hbot)
+{
+	CVector	b1,b2;
+	bool	found=false;
+	float	height;
+
+
+	// Select quad nodes which contains pos.
+	b1=b2=pos;
+	b1.z-= hbot;
+	b2.z+= hup;
+	// Select.
+	_Grid.select(b1,b2);
+
+	// For each face, test if it is under pos, then test if height is correct.
+	CQuadGrid<CFace>::CIterator	iFace;
+	for(iFace= _Grid.begin();iFace!=_Grid.end();iFace++)
+	{
+		CTriangle	&pFace= (*iFace).Face;
+		CPlane		&pPlane= (*iFace).Plane;
+		// Order is important.
+		CVector		&p0= pFace.V0;
+		CVector		&p1= pFace.V1;
+		CVector		&p2= pFace.V2;
+
+		// TOIMP: This is VERY SLOW!!! (hope that the quadtree will help, but it still very slow...).
+
+		// Yoyo Debug, test, if the point may be IN the bbox.
+		CAABBox		bbFace;
+		bbFace.setCenter(p0);
+		bbFace.extend(p1);
+		bbFace.extend(p2);
+		CVector		bext=p0;
+		bext.z= maxof(p0.z, p1.z, p2.z)+hbot;
+		bbFace.extend(bext);
+		bext.z= minof(p0.z, p1.z, p2.z)-hup;
+		bbFace.extend(bext);
+		if(!bbFace.include(pos))
+			continue;
+
+		// Test if the face enclose the pos in X/Y plane.
+		// NB: compute and using a BBox to do a rapid test is not a very good idea, since it will 
+		// add an overhead which is NOT negligeable compared to the following test.
+		float		a,b,c;		// 2D cartesian coefficients of line in plane X/Y.
+		// Line p0-p1.
+		a= -(p1.y-p0.y);
+		b= (p1.x-p0.x);
+		c= -(p0.x*a + p0.y*b);
+		if( (a*pos.x + b*pos.y + c) < 0)	continue;
+		// Line p1-p2.
+		a= -(p2.y-p1.y);
+		b= (p2.x-p1.x);
+		c= -(p1.x*a + p1.y*b);
+		if( (a*pos.x + b*pos.y + c) < 0)	continue;
+		// Line p2-p0.
+		a= -(p0.y-p2.y);
+		b= (p0.x-p2.x);
+		c= -(p2.x*a + p2.y*b);
+		if( (a*pos.x + b*pos.y + c) < 0)	continue;
+
+
+		// Compute the possible height.
+		CVector		tmp;
+		// intersect the vertical line with the plane.
+		tmp= pPlane.intersect(pos, pos-CVector(0,0,100));
+		float		h= tmp.z;
+		// Test if it would fit in the wanted field.
+		if(h>pos.z+hup)	continue;
+		if(h<pos.z-hbot)	continue;
+
+		// OK!!
+		if(!found)
+		{
+			found=true;
+			height=h;
+			normal= pPlane.getNormal();
+		}
+		else
+		{
+			if(h>height)
+			{
+				normal= pPlane.getNormal();
+				height= h;
+			}
+		}
+	}
 
 	return found;
 }

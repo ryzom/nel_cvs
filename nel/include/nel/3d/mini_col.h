@@ -1,7 +1,7 @@
 /** \file mini_col.h
  * <File description>
  *
- * $Id: mini_col.h,v 1.4 2001/01/03 15:25:14 berenguier Exp $
+ * $Id: mini_col.h,v 1.5 2001/01/12 17:02:39 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,6 +81,13 @@ public:
 	 * hbot and hup are the margin where pos.z can't change. (the pos can't move higher than +hup and lower than -hbot)
 	 */
 	bool			snapToGround(CVector &pos, float hup=0.5, float hbot=1000);
+
+
+	/** This function get the ground normal under a position.
+	 * hbot and hup are the margin where face can be taken.
+	 */
+	bool			getGroundNormal(const CVector &pos, CVector &normal, float hup=0.5, float hbot=1000);
+
 
 
 // *****************************

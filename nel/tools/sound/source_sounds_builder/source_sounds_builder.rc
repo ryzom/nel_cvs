@@ -38,8 +38,8 @@ BEGIN
     PUSHBUTTON      "Add a Sound",IDC_AddSound,65,5,55,14
     PUSHBUTTON      "Save File...",IDC_Save,350,5,50,14
     PUSHBUTTON      "Load File...",IDC_Load,295,5,50,14
-    PUSHBUTTON      "Up",IDC_MoveUp,125,5,25,14
-    PUSHBUTTON      "Down",IDC_MoveDown,155,5,25,14
+    PUSHBUTTON      "Up",IDC_MoveUp,125,5,25,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Down",IDC_MoveDown,155,5,25,14,NOT WS_VISIBLE
     PUSHBUTTON      "Import Names...",IDC_Import,5,5,55,14
     LTEXT           "Directions\n\n1) Import sound names\n2) Set their properties, listen them and apply them\n3) Save them in a file",
                     IDC_STATIC,190,30,205,45

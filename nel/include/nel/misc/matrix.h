@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.15 2001/04/03 13:03:20 berenguier Exp $
+ * $Id: matrix.h,v 1.16 2001/04/04 12:59:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,6 +125,10 @@ public:
 	 * \param quat a UNIT qauternion
 	 */
 	void		setRot(const CQuat &quat);
+	/** Explicit setup the Rotation/Scale matrix (base) with the rotation part of an other matrix.
+	 * \param matrix the matrix to copy rot part.
+	 */
+	void		setRot(const CMatrix &matrix);
 	/** Explicit setup the Translation component.
 	 * v==Null is tested to see if the matrix now have a translation component.
 	 * \param v the translation vector.
@@ -245,6 +249,13 @@ public:
 	//@{
 	CMatrix	operator*(const CMatrix &) const;
 	CMatrix	&operator*=(const CMatrix &);
+	/** transpose the rotation part only of the matrix (swap columns/lines).
+	 */
+	void		transpose3x3();
+	/** transpose the matrix (swap columns/lines).
+	 * NB: this transpose the 4*4 matrix entirely (even proj/translate part).
+	 */
+	void		transpose();
 	/** Invert the matrix.
 	 * if the matrix can't be inverted, it is set to identity.
 	 */

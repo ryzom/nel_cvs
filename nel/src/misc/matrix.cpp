@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.24 2001/04/03 13:03:20 berenguier Exp $
+ * $Id: matrix.cpp,v 1.25 2001/04/04 12:59:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -235,6 +235,27 @@ void		CMatrix::setRot(const CVector &v, TRotOrder ro)
 	rot.getRot(m33);
 	setRot(m33, true);
 }
+
+
+// ======================================================================================================
+void		CMatrix::setRot(const CMatrix &matrix)
+{
+	// copy rotpart statebit from other.
+	StateBit|= matrix.StateBit & (MAT_ROT | MAT_SCALEUNI | MAT_SCALEANY);
+	// copy values.
+	if(hasRot())
+	{
+		a11= matrix.a11; a12= matrix.a12; a13= matrix.a13;
+		a21= matrix.a21; a22= matrix.a22; a23= matrix.a23;
+		a31= matrix.a31; a32= matrix.a32; a33= matrix.a33;
+	}
+	else
+	{
+		// we are rot identity, with undefined values.
+		StateBit&= ~MAT_VALIDROT;
+	}
+}
+
 
 // ======================================================================================================
 void		CMatrix::setPos(const CVector &v)
@@ -885,6 +906,52 @@ void		CMatrix::invert()
 
 	*this= inverted();
 }
+
+
+// ======================================================================================================
+void		CMatrix::transpose3x3()
+{
+	if(hasRot())
+	{
+		// swap values.
+		swap(a12, a21);
+		swap(a13, a31);
+		swap(a32, a23);
+		// Scale mode (none, uni, or any) is conserved. Scale33 too...
+	}
+}
+
+// ======================================================================================================
+void		CMatrix::transpose()
+{
+	transpose3x3();
+	if(hasTrans() || hasProj())
+	{
+		// if necessary, Get valid 0 on trans or proj part.
+		testExpandTrans();
+		testExpandProj();
+		// swap values
+		swap(a41, a14);
+		swap(a42, a24);
+		swap(a43, a34);
+		// swap StateBit flags, if not both were sets...
+		if(!hasTrans() || !hasProj())
+		{
+			// swap StateBit flags (swap trans with proj).
+			if(hasTrans())
+			{
+				StateBit&= ~MAT_TRANS;
+				StateBit|= MAT_PROJ;
+			}
+			else
+			{
+				StateBit&= ~MAT_PROJ;
+				StateBit|= MAT_TRANS;
+			}
+		}
+	}
+}
+
 
 // ======================================================================================================
 void	CMatrix::fastInvert33(CMatrix &ret) const

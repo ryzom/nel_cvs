@@ -1,7 +1,7 @@
 /** \file shared_memory.cpp
  * Encapsulation of shared memory APIs
  *
- * $Id: shared_memory.cpp,v 1.5 2003/06/03 10:04:14 cado Exp $
+ * $Id: shared_memory.cpp,v 1.6 2003/07/01 10:12:43 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -142,7 +142,7 @@ bool			CSharedMemory::closeSharedMemory( void *accessAddress )
 	// Unmap the file from memory address space
 	if ( UnmapViewOfFile( accessAddress ) == 0 )
 	{
-		nlwarning( "SHDMEM: UnmapViewOfFile failed" );
+		nlwarning( "SHDMEM: UnmapViewOfFile failed: error %u", GetLastError() );
 		result = false;
 	}
 

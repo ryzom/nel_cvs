@@ -60,8 +60,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "pacs___Win32_Debug"
-# PROP Intermediate_Dir "pacs___Win32_Debug"
+# PROP Output_Dir "Debug"
+# PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "__STL_DEBUG" /YX /FD /GZ /c
@@ -134,6 +134,14 @@ SOURCE=.\pacs\collision_desc.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\pacs\collision_desc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\edge_collide.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\edge_collide.h
 # End Source File
 # Begin Source File
 

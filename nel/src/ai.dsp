@@ -221,6 +221,10 @@ SOURCE=.\ai\agent\msg_notify.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\agent\msg_on_change.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\agent\paire_type.cpp
 # End Source File
 # End Group
@@ -765,6 +769,10 @@ SOURCE=.\ai\script\interpret_actor.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\script\interpret_message_action.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\script\interpret_methodes.cpp
 # End Source File
 # Begin Source File
@@ -898,6 +906,10 @@ SOURCE=..\include\nel\ai\script\gd_agent_class.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\script\interpret_actor.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\script\interpret_message_action.h
 # End Source File
 # Begin Source File
 

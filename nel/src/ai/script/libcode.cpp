@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.11 2001/03/07 11:23:49 chafik Exp $
+ * $Id: libcode.cpp,v 1.12 2001/03/07 13:06:06 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -214,6 +214,11 @@ namespace NLAISCRIPT
 		NLAIC::CSelfClassCFactory &fa = (NLAIC::CSelfClassCFactory&)*((CManagerClass::IdManagerClass).getFactory());
 		fa = CManagerClass(CManagerClass::IdManagerClass);
 		((CManagerClass *)fa.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CManagerClass::IdManagerClass));
+		NLAIAGENT::DigitalType::NullOperator.incRef();
+
+		NLAIC::CSelfClassCFactory &fl = (NLAIC::CSelfClassCFactory&)*((COnChangeMsgClass::IdOnChangeMsgClass).getFactory());
+		fl = COnChangeMsgClass(COnChangeMsgClass::IdOnChangeMsgClass);
+		((COnChangeMsgClass *)fa.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)COnChangeMsgClass::IdOnChangeMsgClass));
 		NLAIAGENT::DigitalType::NullOperator.incRef();
 	}
 }

@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.13 2001/03/07 11:23:49 chafik Exp $
+ * $Id: interpret_object_message.cpp,v 1.14 2001/03/07 13:06:06 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -179,7 +179,7 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *x = new NLAIAGENT::CGoalMsg( components,  (CMessageClass *) this );		
 		return x;
 	}	
-<<<<<<< interpret_object_message.cpp
+
 //#########################################
 //		CDebugMsgClass
 //#########################################
@@ -219,7 +219,6 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *x = new NLAIAGENT::CMsgDebug( components,  (CMessageClass *) this );		
 		return x;
 	}
-=======
 
 //#########################################
 //		COnChangeMsgClass
@@ -260,5 +259,4 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *x = new NLAIAGENT::COnChangeMsg( components,  (CMessageClass *) this );		
 		return x;
 	}	
->>>>>>> 1.12
 }

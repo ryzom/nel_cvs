@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.159 2002/09/05 17:59:54 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.160 2002/09/11 12:07:40 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1535,7 +1535,7 @@ void CDriverGL::showCursor(bool b)
 #ifdef NL_OS_WINDOWS
 	ShowCursor(b);
 #elif defined (NL_OS_UNIX)
-	return;
+
 	if (b)
 	{
 		if (cursor != None)

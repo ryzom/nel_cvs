@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.12 2002/07/11 10:10:32 lecroart Exp $
+# $Id: Makefile.am,v 1.13 2002/09/11 12:07:40 corvazier Exp $
 #
 
 MAINTAINERCLEANFILES         = Makefile.in
@@ -20,7 +20,11 @@ libnel_drv_opengl_la_SOURCES = driver_opengl.cpp                 \
                                driver_opengl_vertex.cpp          \
                                driver_opengl_vertex_program.cpp  \
                                unix_event_emitter.cpp            \
-                               unix_event_emitter.h
+                               unix_event_emitter.h              \
+			       driver_opengl_vertex_buffer_hard.cpp\
+			       driver_opengl_vertex_buffer_hard.h \
+			       stdopengl.cpp
+
 
 noinst_HEADERS		     = stdopengl.h
 

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.42 2004/02/19 09:50:46 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.43 2004/02/20 14:42:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -202,7 +202,7 @@ CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene)
 		myInstance->enumTexs(_CachedTex, *scene.getDriver());		
 		for(uint k = 0; k < _CachedTex.size(); ++k)
 		{		
-			scene.getDriver()->setupTexture (*(ITexture *)_CachedTex[k]);			
+			if (_CachedTex[k]) scene.getDriver()->setupTexture (*(ITexture *)_CachedTex[k]);			
 		}
 	}
 	else
@@ -319,7 +319,7 @@ void CParticleSystemShape::flushTextures(IDriver &driver, uint selectedTexture)
 	for(uint k = 0; k < _CachedTex.size(); ++k)
 	{				
 		//nlinfo(_CachedTex[k]->getShareName().c_str());
-		driver.setupTexture(*_CachedTex[k]);		
+		if (_CachedTex[k]) driver.setupTexture(*_CachedTex[k]);		
 	}
 }
 

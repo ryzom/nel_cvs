@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.21 2001/11/06 15:12:57 chafik Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.22 2002/08/20 12:41:50 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -487,8 +487,8 @@ namespace NLAISCRIPT
 	{
 		char* sourceFileName;
 		char* varName;
-		uint16 lineNumber;
-		sint16 first, last;
+		uint32 lineNumber;
+		sint32 first, last;
 		bool ret = false;
 
 		switch (buf[0])

@@ -1,7 +1,7 @@
 /** \file trav_scene.cpp
  * <File description>
  *
- * $Id: trav_scene.cpp,v 1.1 2002/04/12 16:25:31 vizerie Exp $
+ * $Id: trav_scene.cpp,v 1.2 2002/04/15 12:03:05 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,9 +22,6 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-
-#ifndef NL_TRAV_SCENE_H
-#define NL_TRAV_SCENE_H
 
 #include "std3d.h"
 

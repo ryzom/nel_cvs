@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.7 2002/02/28 12:59:49 besson Exp $
+ * $Id: cluster.cpp,v 1.8 2002/06/04 14:50:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@ namespace NL3D
 
 // 0.5 cm of precision
 #define CLUSTERPRECISION 0.005
+
 
 // ***************************************************************************
 CCluster::CCluster ()
@@ -182,8 +183,10 @@ void CCluster::setWorldMatrix (const CMatrix &WM)
 	for (i = 0; i < _LocalVolume.size(); ++i)
 		_Volume[i] = _LocalVolume[i] * invWM;
 
+	_BBox = NLMISC::CAABBox::transformAABBox(WM, _LocalBBox);
+
 	// Transform the bounding box
-	CVector p[8];
+	/*CVector p[8];
 	p[0].x = _LocalBBox.getMin().x;
 	p[0].y = _LocalBBox.getMin().y;
 	p[0].z = _LocalBBox.getMin().z;
@@ -224,7 +227,7 @@ void CCluster::setWorldMatrix (const CMatrix &WM)
 	boxTemp.setCenter(p[0]);
 	for (i = 1; i < 8; ++i)
 		boxTemp.extend(p[i]);
-	_BBox = boxTemp;
+	_BBox = boxTemp;*/
 }
 
 // ***************************************************************************
@@ -344,6 +347,27 @@ void CClusterClipObs::traverse (IObs *caller)
 	}
 
 	Visited = false;
+}
+
+
+// ***************************************************************************
+void CCluster::applyMatrix(const NLMISC::CMatrix &m)
+{
+	uint32 i;
+	CMatrix invM = m;
+	invM.invert();
+	nlassert(_Volume.size() == _LocalVolume.size());
+
+	// Transform the volume
+	for (i = 0; i < _LocalVolume.size(); ++i)
+	{	
+		_Volume[i] = _Volume[i] * invM;
+		_LocalVolume[i] = _LocalVolume[i] * invM;
+	}
+
+	// Transform the bounding boxes	
+	_BBox = NLMISC::CAABBox::transformAABBox(m, _BBox);
+	_LocalBBox = NLMISC::CAABBox::transformAABBox(m, _LocalBBox);	
 }
 
 

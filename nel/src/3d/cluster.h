@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.3 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: cluster.h,v 1.4 2002/06/04 14:50:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,6 +76,10 @@ public:
 	 * return false if the plane we want to add make the volume concave
 	 */
 	bool makeVolume (NLMISC::CVector& p1, NLMISC::CVector& p2, NLMISC::CVector& p3);
+	
+	
+	/// Apply the given matrix to this cluster local / world volume & bbox
+	void applyMatrix(const NLMISC::CMatrix &m);
 
 	/**
 	 * return true if the vertex is in the cluster volume
@@ -111,7 +115,7 @@ public:
 
 	void serial (NLMISC::IStream& f);
 
-	void setWorldMatrix (const CMatrix &WM);
+	void setWorldMatrix (const NLMISC::CMatrix &WM);
 
 	// Moving cluster
 	CQuadGrid<CCluster*>::CIterator AccelIt;

@@ -1,7 +1,7 @@
 /** \file texture_cube.cpp
  * Implementation of a texture cube
  *
- * $Id: texture_cube.cpp,v 1.2 2001/07/05 09:19:03 besson Exp $
+ * $Id: texture_cube.cpp,v 1.3 2001/07/30 14:41:08 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,6 +76,8 @@ void CTextureCube::doGenerate()
 
 	pRefTex->generate();
 	// The reference texture must be square and power of 2
+	// If not power of 2 resize to the power of 2 just below the current size
+	/*
 	if( ( !isPowerOf2(pRefTex->getWidth()) ) || ( pRefTex->getWidth() != pRefTex->getHeight() ) )
 	{
 		uint32 nNewSize = pRefTex->getWidth();
@@ -89,6 +91,7 @@ void CTextureCube::doGenerate()
 
 		pRefTex->resample( nNewSize, nNewSize );
 	}
+	*/
 
 	// All textures must be like the reference texture
 	for( i = 0; i < 6; ++i )

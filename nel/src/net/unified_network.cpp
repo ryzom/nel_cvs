@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.6 2001/11/13 13:05:58 legros Exp $
+ * $Id: unified_network.cpp,v 1.7 2001/11/13 14:36:18 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,6 +73,9 @@ void	cbDisconnection(TSockId from, void *arg)
 		// get the deconnection callback
 		CUnifiedNetwork::TNameMappedCallback::iterator	it = instance->_DownCallbacks.find(cnx.ServiceName);
 
+		// adds the connection to the disconnection stack
+		instance->_DisconnectionStack.push_back(cnx.ServiceId);
+
 		if (it != instance->_DownCallbacks.end())
 		{
 			// call it
@@ -86,8 +89,7 @@ void	cbDisconnection(TSockId from, void *arg)
 			instance->_DownUniCallback.first(cnx.ServiceName, cnx.ServiceId, instance->_DownUniCallback.second);
 		}
 
-		// adds the connection to the disconnection stack
-		instance->_DisconnectionStack.push_back(cnx.ServiceId);
+		nldebug("Received disconnection signal from service %s %d (appId=%d)", cnx.ServiceName.c_str(), cnx.ServiceId, (uint16)from->appId());
 	}
 
 }
@@ -284,7 +286,7 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 
 		cnx = CUnifiedConnection(name, sid, cbc);
 		nameAccess.value().insert(make_pair(name, sid));
-		cnx.IsConnected = true;
+		cnx.IsConnected = connectSuccess;
 		cnx.IsExternal = external;
 		cnx.AutoRetry = autoRetry;
 		cnx.ExtAddress = addr;
@@ -376,6 +378,7 @@ void	CUnifiedNetwork::updateConnectionTable()
 		try
 		{
 			cnx.Connection.CbClient->connect(cnx.ExtAddress);
+			cnx.Connection.CbClient->getSockId()->setAppId(cnx.ServiceId);
 			cnx.IsConnected = true;
 
 			if (cnx.SendId)

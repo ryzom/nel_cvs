@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.14 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.15 2004/03/08 11:21:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,13 @@ public:
 	// duplicate this attribute maker
 	virtual CPSAttribMakerBase *clone() const = 0;
 	// fast alloc for attrib makers
-	PS_FAST_OBJ_ALLOC
+	#if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
+	#undef new
+	#endif
+		PS_FAST_OBJ_ALLOC
+	#if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
+	#define new NL_NEW
+	#endif
 };
 
 

@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.14 2004/03/04 14:32:23 vizerie Exp $
+ * $Id: texture.h,v 1.15 2004/03/08 11:20:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,10 +105,15 @@ public:
  */
 class ITexture : public CBitmap, public NLMISC::CRefCount, public NLMISC::IStreamable
 {
-public:
+public:		
+	#if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
+		#undef new
+	#endif
 	NL_USES_DEFAULT_ARENA_OBJECT_ALLOCATOR // for fast alloc
+	#if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
+		#define new NL_NEW
+	#endif	
 	// Those enums MUST be the same than in UTexture!!
-
 	enum	TWrapMode
 	{
 		Repeat= 0,

@@ -1,6 +1,6 @@
 /** \file object_arena_allocator.h
  *
- * $Id: object_arena_allocator.h,v 1.2 2004/03/05 16:47:09 vizerie Exp $
+ * $Id: object_arena_allocator.h,v 1.3 2004/03/08 11:21:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -85,11 +85,27 @@ private:
 // This should be used inside the definition of the class.
 // All derived class will use the same allocator, so this definition can be used only at the top of the hierachy of class for
 // which it is of interest.
-#define NL_USES_DEFAULT_ARENA_OBJECT_ALLOCATOR \
-	void *operator new(size_t size) { return NLMISC::CObjectArenaAllocator::getDefaultAllocator().alloc((uint) size); }\
-void operator delete(void *block) { NLMISC::CObjectArenaAllocator::getDefaultAllocator().free(block); }
-
-	
+//
+// NB : if you are using NL_MEMORY, you will encounter a compilation error because of redefinition of the new operator.
+//      to solve this, do as follow :
+//
+// #if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
+//	   #undef new
+// #endif
+// NL_USES_DEFAULT_ARENA_OBJECT_ALLOCATOR // for fast alloc
+// #if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
+//	   #define new NL_NEW
+// #endif	
+#if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
+	#define NL_USES_DEFAULT_ARENA_OBJECT_ALLOCATOR \
+		void *operator new(size_t size, const char *filename, int line) { return NLMISC::CObjectArenaAllocator::getDefaultAllocator().alloc((uint) size); }\
+		void operator delete(void *block, const char *filename, int line) { NLMISC::CObjectArenaAllocator::getDefaultAllocator().free(block); }            \
+		void operator delete(void *block) { NLMISC::CObjectArenaAllocator::getDefaultAllocator().free(block); }
+#else	
+	#define NL_USES_DEFAULT_ARENA_OBJECT_ALLOCATOR \
+		void *operator new(size_t size) { return NLMISC::CObjectArenaAllocator::getDefaultAllocator().alloc((uint) size); }\
+		void operator delete(void *block) { NLMISC::CObjectArenaAllocator::getDefaultAllocator().free(block); }
+#endif	
 
 }
 

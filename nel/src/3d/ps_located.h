@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.31 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_located.h,v 1.32 2004/03/08 11:20:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,7 +130,13 @@ typedef CPSAttrib<CPSCollisionInfo> TPSAttribCollisionInfo;
 class CPSLocated : public CParticleSystemProcess
 {
 public:
-	PS_FAST_OBJ_ALLOC
+	#if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
+	#undef new
+	#endif
+		PS_FAST_OBJ_ALLOC
+	#if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
+	#define new NL_NEW
+	#endif
 	/// Constructor
 	CPSLocated();
 
@@ -812,7 +818,13 @@ const uint32 PSSound = 5;
 class CPSLocatedBindable : public NLMISC::IStreamable
 {
 public:	
-	PS_FAST_OBJ_ALLOC
+	#if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
+	#undef new
+	#endif
+		PS_FAST_OBJ_ALLOC
+	#if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
+	#define new NL_NEW
+	#endif
 	///\name Object
 	//@{
 		/// ctor	

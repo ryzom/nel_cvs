@@ -951,5 +951,45 @@ SOURCE=.\processes\ig_light\export_build_data.bat
 SOURCE=.\processes\ig_light\sh\install.sh
 # End Source File
 # End Group
+# Begin Group "Ligo"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\processes\ligo\0_setup.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ligo\1_clean.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ligo\2_export.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ligo\3_build.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ligo\4_install.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ligo\sh\build.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ligo\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ligo\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ligo\export_build_data.bat
+# End Source File
+# End Group
 # End Target
 # End Project

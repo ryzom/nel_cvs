@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.99 2001/05/07 14:41:57 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.100 2001/05/11 16:00:40 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -692,6 +692,7 @@ bool CDriverGL::clear2D(CRGBA rgba)
 bool CDriverGL::clearZBuffer(float zval)
 {
 	glClearDepth(zval);
+	glDepthMask(GL_TRUE);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	return true;
 }

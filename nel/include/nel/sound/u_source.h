@@ -1,7 +1,7 @@
 /** \file u_source.h
  * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.6 2001/08/27 08:51:12 cado Exp $
+ * $Id: u_source.h,v 1.7 2001/09/03 14:18:31 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,7 +88,7 @@ public:
 	virtual void					play() = 0;
 	/// Stop playing
 	virtual void					stop() = 0;
-	/// Get playing state (logical)
+	/// Get playing state. Return false even if the source has stopped on its own.
 	virtual bool					isPlaying() = 0;
 	//@}
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.9 2001/06/22 16:26:46 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.10 2001/06/26 10:12:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,15 @@ namespace NL3D
 
 
 // ***************************************************************************
+// ***************************************************************************
+// CMeshMRMGeom.
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+
+// ***************************************************************************
 static	NLMISC::CAABBoxExt	makeBBox(const std::vector<CVector>	&Vertices)
 {
 	NLMISC::CAABBox		ret;
@@ -56,19 +65,15 @@ static	NLMISC::CAABBoxExt	makeBBox(const std::vector<CVector>	&Vertices)
 
 
 // ***************************************************************************
-CMeshMRM::CMeshMRM()
+CMeshMRMGeom::CMeshMRMGeom()
 {
 	_Skinned= false;
 }
 
 
 // ***************************************************************************
-void			CMeshMRM::build(CMesh::CMeshBuild &m, const CMRMParameters &params)
+void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, const CMRMParameters &params)
 {
-	/// First, copy MeshBase info: materials ....
-	//======================
-	CMeshBase::buildMeshBase(m);
-
 
 	// Empty geometry?
 	if(m.Vertices.size()==0 || m.Faces.size()==0)
@@ -114,39 +119,7 @@ void			CMeshMRM::build(CMesh::CMeshBuild &m, const CMRMParameters &params)
 
 
 // ***************************************************************************
-CTransformShape		*CMeshMRM::createInstance(CScene &scene)
-{
-	// Create a CMeshMRMInstance, an instance of a mesh.
-	//===============================================
-	CMeshMRMInstance		*mi= (CMeshMRMInstance*)scene.createModel(NL3D::MeshMRMInstanceId);
-	mi->Shape= this;
-
-
-	// instanciate the material part of the MeshMRM, ie the CMeshBase.
-	CMeshBase::instanciateMeshBase(mi);
-
-
-	return mi;
-}
-
-
-// ***************************************************************************
-bool	CMeshMRM::clip(const std::vector<CPlane>	&pyramid)
-{
-	for(sint i=0;i<(sint)pyramid.size();i++)
-	{
-		// We are sure that pyramid has normalized plane normals.
-		if(!_BBox.clipBack(pyramid[i]))
-			return false;
-	}
-
-	return true;
-}
-
-
-
-// ***************************************************************************
-void	CMeshMRM::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod)
+void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod)
 {
 	// no geomorphs? quit.
 	if(geoms.size()==0)
@@ -316,7 +289,21 @@ void	CMeshMRM::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod)
 
 
 // ***************************************************************************
-void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
+bool	CMeshMRMGeom::clip(const std::vector<CPlane>	&pyramid)
+{
+	for(sint i=0;i<(sint)pyramid.size();i++)
+	{
+		// We are sure that pyramid has normalized plane normals.
+		if(!_BBox.clipBack(pyramid[i]))
+			return false;
+	}
+
+	return true;
+}
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans)
 {
 	nlassert(drv);
 	if(_Lods.size()==0)
@@ -331,7 +318,6 @@ void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
 	static	float	testTime= 0;
 	testTime+= 0.003f;
 	float	testAlpha= (1+(float)sin(testTime))/2;
-	testAlpha= 1;
 
 
 	// Choose what Lod to draw.
@@ -362,7 +348,7 @@ void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
 	//===========
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel		*skeleton;
-	skeleton= mi->_FatherSkeletonModel;
+	skeleton= mi->getSkeletonModel();
 	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and isSkinApply().
 	bool	skinOk= _Skinned && mi->isSkinApply() && skeleton;
 
@@ -416,16 +402,13 @@ void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
 
 
 // ***************************************************************************
-void	CMeshMRM::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+void	CMeshMRMGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
 	Version 0:
 		- base version.
 	*/
 	sint	ver= f.serialVersion(0);
-
-	// serial Materials infos contained in CMeshBase.
-	CMeshBase::serialMeshBase(f);
 
 
 	// must have good original Skinned Vertex before writing.
@@ -453,7 +436,7 @@ void	CMeshMRM::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 // ***************************************************************************
-void	CMeshMRM::bkupOriginalSkinVertices()
+void	CMeshMRMGeom::bkupOriginalSkinVertices()
 {
 	nlassert(_Skinned);
 
@@ -480,7 +463,7 @@ void	CMeshMRM::bkupOriginalSkinVertices()
 
 
 // ***************************************************************************
-void	CMeshMRM::restoreOriginalSkinVertices()
+void	CMeshMRMGeom::restoreOriginalSkinVertices()
 {
 	nlassert(_Skinned);
 
@@ -505,7 +488,7 @@ void	CMeshMRM::restoreOriginalSkinVertices()
 
 
 // ***************************************************************************
-void	CMeshMRM::restoreOriginalSkinPart(CLod &lod)
+void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod)
 {
 	nlassert(_Skinned);
 
@@ -637,7 +620,7 @@ struct	CMatrix3x4
 
 
 // ***************************************************************************
-void	CMeshMRM::applySkin(CLod &lod, const std::vector<CBone> &bones)
+void	CMeshMRMGeom::applySkin(CLod &lod, const std::vector<CBone> &bones)
 {
 	nlassert(_Skinned);
 	if(_SkinWeights.size()==0)
@@ -835,6 +818,90 @@ void	CMeshMRM::applySkin(CLod &lod, const std::vector<CBone> &bones)
 
 	// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
 	lod.OriginalSkinRestored= false;
+}
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// CMeshMRM.
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+
+// ***************************************************************************
+CMeshMRM::CMeshMRM()
+{
+}
+// ***************************************************************************
+void			CMeshMRM::build(CMesh::CMeshBuild &m, const CMRMParameters &params)
+{
+	/// copy MeshBase info: materials ....
+	CMeshBase::buildMeshBase(m);
+
+	// Then build the geom.
+	_MeshMRMGeom.build(m, params);
+}
+// ***************************************************************************
+void			CMeshMRM::build(CMeshBase::CMeshBaseBuild &m, const CMeshMRMGeom &mgeom)
+{
+	/// copy MeshBase info: materials ....
+	CMeshBase::buildMeshBase(m);
+
+	// Then copy the geom.
+	_MeshMRMGeom= mgeom;
+}
+
+
+
+// ***************************************************************************
+CTransformShape		*CMeshMRM::createInstance(CScene &scene)
+{
+	// Create a CMeshMRMInstance, an instance of a mesh.
+	//===============================================
+	CMeshMRMInstance		*mi= (CMeshMRMInstance*)scene.createModel(NL3D::MeshMRMInstanceId);
+	mi->Shape= this;
+
+
+	// instanciate the material part of the MeshMRM, ie the CMeshBase.
+	CMeshBase::instanciateMeshBase(mi);
+
+
+	return mi;
+}
+
+
+// ***************************************************************************
+bool	CMeshMRM::clip(const std::vector<CPlane>	&pyramid)
+{
+	return _MeshMRMGeom.clip(pyramid);
+}
+
+
+// ***************************************************************************
+void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
+{
+	_MeshMRMGeom.render(drv, trans);
+}
+
+
+// ***************************************************************************
+void	CMeshMRM::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	/*
+	Version 0:
+		- base version.
+	*/
+	sint	ver= f.serialVersion(0);
+
+	// serial Materials infos contained in CMeshBase.
+	CMeshBase::serialMeshBase(f);
+
+
+	// serial the geometry.
+	_MeshMRMGeom.serial(f);
 }
 
 

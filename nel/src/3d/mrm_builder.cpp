@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.13 2001/06/22 16:26:46 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.14 2001/06/26 10:12:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1607,13 +1607,13 @@ void			CMRMBuilder::normalizeBaseMeshSkin(CMRMMesh &baseMesh) const
 
 
 // ***************************************************************************
-void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRM::CMeshBuildMRM &mbuild, uint32 vbFlags, uint32 nbMats)
+void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeom::CMeshBuildMRM &mbuild, uint32 vbFlags, uint32 nbMats)
 {
 	sint	i,j,k;
 	sint	attId;
 
 	// reset the mbuild.
-	mbuild= CMeshMRM::CMeshBuildMRM();
+	mbuild= CMeshMRMGeom::CMeshBuildMRM();
 	// Setup VB.
 	mbuild.VBuffer.setVertexFormat(vbFlags);
 
@@ -1678,7 +1678,7 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRM::C
 	for(i=0; i<(sint)finalMRM.Lods.size(); i++)
 	{
 		const CMRMMeshFinal::CLod	&srcLod= finalMRM.Lods[i];
-		CMeshMRM::CLod				&destLod= mbuild.Lods[i];
+		CMeshMRMGeom::CLod			&destLod= mbuild.Lods[i];
 
 		// Basic.
 		//---------
@@ -1853,7 +1853,7 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRM::C
 
 
 // ***************************************************************************
-void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParameters &params, CMeshMRM::CMeshBuildMRM &mrmMesh)
+void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParameters &params, CMeshMRMGeom::CMeshBuildMRM &mrmMesh)
 {
 	uint32	nbMats= mbuild.Materials.size();
 	// Temp data.
@@ -1874,7 +1874,7 @@ void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParamete
 
 	// from mbuild, build an internal MRM mesh representation.
 	// vbFlags returned is the VBuffer format supported by CMRMBuilder.
-	// NB: skinning is removed because skinning is made in software in CMeshMRM.
+	// NB: skinning is removed because skinning is made in software in CMeshMRMGeom.
 	vbFlags= buildMrmBaseMesh(mbuild, baseMesh);
 
 	// If skinned, must ensure that skin weights have weights in ascending order.

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.23 2001/06/21 12:57:43 berenguier Exp $
+ * $Id: mesh.cpp,v 1.24 2001/06/26 10:12:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NL3D
 
 // ***************************************************************************
 // ***************************************************************************
-// Tools.
+// MeshGeom Tools.
 // ***************************************************************************
 // ***************************************************************************
 
@@ -59,24 +59,11 @@ static	NLMISC::CAABBoxExt	makeBBox(const std::vector<CVector>	&Vertices)
 
 
 // ***************************************************************************
-CMesh::CCorner::CCorner()
-{
-	sint	i;
-	Vertex= 0;
-	Normal= CVector::Null;
-	for(i=0;i<IDRV_VF_MAXSTAGES;i++)
-		Uvs[i]= CUV(0,0);
-	Color.set(255,255,255,255);
-	Specular.set(0,0,0,0);
-}
+sint	CMeshGeom::CCornerTmp::Flags=0;
 
 
 // ***************************************************************************
-sint	CMesh::CCornerTmp::Flags=0;
-
-
-// ***************************************************************************
-bool	CMesh::CCornerTmp::operator<(const CCornerTmp &c) const
+bool	CMeshGeom::CCornerTmp::operator<(const CCornerTmp &c) const
 {
 	sint	i;
 
@@ -115,73 +102,23 @@ bool	CMesh::CCornerTmp::operator<(const CCornerTmp &c) const
 
 
 // ***************************************************************************
-void CMesh::CCorner::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-{
-	f.serial(Vertex);
-	f.serial(Normal);
-	for(int i=0;i<IDRV_VF_MAXSTAGES;++i) f.serial(Uvs[i]);
-	f.serial(Color);
-	f.serial(Specular);
-}
-
 // ***************************************************************************
-void CMesh::CFace::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-{
-	for(int i=0;i<3;++i) 
-		f.serial(Corner[i]);
-	f.serial(MaterialId);
-}
-
-// ***************************************************************************
-void CMesh::CSkinWeight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-{
-	for(int i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;++i)
-	{
-		f.serial(MatrixId[i]);
-		f.serial(Weights[i]);
-	}
-}
-
-// ***************************************************************************
-void CMesh::CMeshBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-{
-	sint	ver= f.serialVersion(0);
-
-	// Serial mesh base (material info).
-	CMeshBaseBuild::serial(f);
-
-	// Serial Geometry.
-	f.serial( VertexFlags );
-	f.serialCont( Vertices );
-	f.serialCont( SkinWeights );
-	f.serialCont( Faces );
-
-}
-
-
-// ***************************************************************************
-// ***************************************************************************
-// CMesh.
+// CMeshGeom.
 // ***************************************************************************
 // ***************************************************************************
 
 
 // ***************************************************************************
-CMesh::CMesh()
+CMeshGeom::CMeshGeom()
 {
 	_Skinned= false;
 }
 
 
 // ***************************************************************************
-void	CMesh::build(CMeshBuild &m)
+void	CMeshGeom::build(CMesh::CMeshBuild &m)
 {
 	sint	i;
-
-
-	/// First, copy MeshBase info: materials ....
-	//======================
-	CMeshBase::buildMeshBase(m);
 
 
 	// Empty geometry?
@@ -322,24 +259,7 @@ void	CMesh::build(CMeshBuild &m)
 
 
 // ***************************************************************************
-CTransformShape		*CMesh::createInstance(CScene &scene)
-{
-	// Create a CMeshInstance, an instance of a mesh.
-	//===============================================
-	CMeshInstance		*mi= (CMeshInstance*)scene.createModel(NL3D::MeshInstanceId);
-	mi->Shape= this;
-
-
-	// instanciate the material part of the Mesh, ie the CMeshBase.
-	CMeshBase::instanciateMeshBase(mi);
-
-
-	return mi;
-}
-
-
-// ***************************************************************************
-bool	CMesh::clip(const std::vector<CPlane>	&pyramid)
+bool	CMeshGeom::clip(const std::vector<CPlane>	&pyramid)
 {
 	for(sint i=0;i<(sint)pyramid.size();i++)
 	{
@@ -352,7 +272,7 @@ bool	CMesh::clip(const std::vector<CPlane>	&pyramid)
 }
 
 // ***************************************************************************
-void	CMesh::render(IDriver *drv, CTransformShape *trans)
+void	CMeshGeom::render(IDriver *drv, CTransformShape *trans)
 {
 	nlassert(drv);
 	// get the mesh instance.
@@ -361,7 +281,7 @@ void	CMesh::render(IDriver *drv, CTransformShape *trans)
 
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel		*skeleton;
-	skeleton= mi->_FatherSkeletonModel;
+	skeleton= mi->getSkeletonModel();
 	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and isSkinApply().
 	bool	skinOk= _Skinned && mi->isSkinApply() && skeleton;
 
@@ -428,105 +348,13 @@ void	CMesh::render(IDriver *drv, CTransformShape *trans)
 
 
 // ***************************************************************************
-void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
-	Version 5+:
-		- see serialV5Plus
-	Version 4:
-		- lightinfo
-	Version 3:
-		- skinning.
-	Version 2:
-		- Default track for position.
-	Version 1:
-		- Animated Materials.
 	Version 0:
-		- base version.
+		- separate serialisation CMesh / CMeshGeom.
 	*/
-	sint	ver= f.serialVersion(5);
-
-	// Too much complicated here, call an other function.
-	if(ver>=5)
-	{
-		serialV5Plus(f, ver);
-		return;
-	}
-
-	// Else old serial version V4-.
-	//===================
-	f.serial(_VBuffer);
-
-	if(ver>=4)
-	{
-		f.serialCont(_LightInfos);
-	}
-	// New Architecture for V3+ meshs.
-	if(ver>=3)
-	{
-		f.serialCont(_Materials);
-		f.serialCont(_MatrixBlocks);
-	}
-	else
-	{
-		// Old versions: must read RdrPassV0 struct, then fill _Materials and RdrPass.
-		vector<CRdrPassOldV2>	oldRdrPass;
-		f.serialCont(oldRdrPass);
-
-		// copy to MatrixBlock 0.
-		_MatrixBlocks.resize(1);
-		_Materials.resize(oldRdrPass.size());
-		_MatrixBlocks[0].RdrPass.resize(oldRdrPass.size());
-		// fill V3+ rdrPass.
-		for(uint i=0;i<oldRdrPass.size(); i++)
-		{
-			_Materials[i]= oldRdrPass[i].Material;
-			_MatrixBlocks[0].RdrPass[i].PBlock= oldRdrPass[i].PBlock;
-			_MatrixBlocks[0].RdrPass[i].MaterialId= i;
-		}
-
-		// V2- => We are not skinned.
-		_Skinned= false;
-	}
-
-	f.serial(_BBox);
-
-	// _AnimatedMaterials
-	if(ver>=1)
-		f.serialCont(_AnimatedMaterials);
-	else
-	{
-		if(f.isReading())
-			_AnimatedMaterials.clear();
-	}
-
-	// New features
-	switch (ver)
-	{
-	case 3:
-		f.serial (_Skinned);
-	case 2:
-		f.serial (_DefaultPos);
-		f.serial (_DefaultPivot);
-		f.serial (_DefaultRotEuler);
-		f.serial (_DefaultRotQuat);
-		f.serial (_DefaultScale);
-	}
-}
-
-
-// ***************************************************************************
-void	CMesh::serialV5Plus(NLMISC::IStream &f, sint ver) throw(NLMISC::EStream)
-{
-	/*
-	Version 5:
-		- separate serialisation in CMeshBase / CMesh. this function will receive V5+ serialisation.
-	*/
-	// NB: the version is serialised in serial().
-	// so if you want to increment version, do it at beggining of serial().
-
-	// serial Materials infos contained in CMeshBase.
-	CMeshBase::serialMeshBase(f);
+	sint	ver= f.serialVersion(0);
 
 	// serial geometry.
 	f.serial(_VBuffer);
@@ -537,7 +365,6 @@ void	CMesh::serialV5Plus(NLMISC::IStream &f, sint ver) throw(NLMISC::EStream)
 }
 
 
-
 // ***************************************************************************
 // ***************************************************************************
 // Skinning.
@@ -546,7 +373,7 @@ void	CMesh::serialV5Plus(NLMISC::IStream &f, sint ver) throw(NLMISC::EStream)
 
 
 // ***************************************************************************
-void	CMesh::buildSkin(CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces)
+void	CMeshGeom::buildSkin(CMesh::CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces)
 {
 	sint	i,j,k;
 	TBoneMap		remainingBones;
@@ -557,7 +384,7 @@ void	CMesh::buildSkin(CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces)
 	//================================
 	for(i=0;i<(sint)m.SkinWeights.size();i++)
 	{
-		CSkinWeight	&sw= m.SkinWeights[i];
+		CMesh::CSkinWeight	&sw= m.SkinWeights[i];
 
 		// 0th weight must not be 0.
 		nlassert(sw.Weights[0]!=0);
@@ -583,7 +410,7 @@ void	CMesh::buildSkin(CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces)
 
 		for(j=0;j<3;j++)
 		{
-			CSkinWeight	&sw= m.SkinWeights[face.Corner[j].Vertex];
+			CMesh::CSkinWeight	&sw= m.SkinWeights[face.Corner[j].Vertex];
 			for(k=0;k<NL3D_MESH_SKINNING_MAX_MATRIX;k++)
 			{
 				// insert (if not already here) the used bone in the set.
@@ -692,7 +519,7 @@ void	CMesh::buildSkin(CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces)
 					// for all vertices of this face.
 					for(j=0;j<3;j++)
 					{
-						CSkinWeight	&sw= m.SkinWeights[face.Corner[j].Vertex];
+						CMesh::CSkinWeight	&sw= m.SkinWeights[face.Corner[j].Vertex];
 
 						// for each corner weight (4)
 						for(k=0;k<NL3D_MESH_SKINNING_MAX_MATRIX;k++)
@@ -830,7 +657,7 @@ void	CMesh::buildSkin(CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces)
 
 
 // ***************************************************************************
-void	CMesh::CFaceTmp::buildBoneUse(vector<uint>	&boneUse, vector<CMesh::CSkinWeight> &skinWeights)
+void	CMeshGeom::CFaceTmp::buildBoneUse(vector<uint>	&boneUse, vector<CMesh::CSkinWeight> &skinWeights)
 {
 	boneUse.clear();
 
@@ -856,7 +683,7 @@ void	CMesh::CFaceTmp::buildBoneUse(vector<uint>	&boneUse, vector<CMesh::CSkinWei
 
 
 // ***************************************************************************
-sint	CMesh::CMatrixBlock::getMatrixIdLocation(uint32 boneId) const
+sint	CMeshGeom::CMatrixBlock::getMatrixIdLocation(uint32 boneId) const
 {
 	for(uint i=0;i<NumMatrix;i++)
 	{
@@ -867,6 +694,210 @@ sint	CMesh::CMatrixBlock::getMatrixIdLocation(uint32 boneId) const
 	// not found.
 	return -1;
 }
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// CMeshBuild components.
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
+CMesh::CCorner::CCorner()
+{
+	sint	i;
+	Vertex= 0;
+	Normal= CVector::Null;
+	for(i=0;i<IDRV_VF_MAXSTAGES;i++)
+		Uvs[i]= CUV(0,0);
+	Color.set(255,255,255,255);
+	Specular.set(0,0,0,0);
+}
+
+
+// ***************************************************************************
+void CMesh::CCorner::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serial(Vertex);
+	f.serial(Normal);
+	for(int i=0;i<IDRV_VF_MAXSTAGES;++i) f.serial(Uvs[i]);
+	f.serial(Color);
+	f.serial(Specular);
+}
+
+// ***************************************************************************
+void CMesh::CFace::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	for(int i=0;i<3;++i) 
+		f.serial(Corner[i]);
+	f.serial(MaterialId);
+}
+
+// ***************************************************************************
+void CMesh::CSkinWeight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	for(int i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;++i)
+	{
+		f.serial(MatrixId[i]);
+		f.serial(Weights[i]);
+	}
+}
+
+// ***************************************************************************
+void CMesh::CMeshBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	sint	ver= f.serialVersion(0);
+
+	// Serial mesh base (material info).
+	CMeshBaseBuild::serial(f);
+
+	// Serial Geometry.
+	f.serial( VertexFlags );
+	f.serialCont( Vertices );
+	f.serialCont( SkinWeights );
+	f.serialCont( Faces );
+
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// CMesh.
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
+CMesh::CMesh()
+{
+	// create the MeshGeom
+	_MeshGeom= new CMeshGeom;
+}
+// ***************************************************************************
+CMesh::~CMesh()
+{
+	// delete the MeshGeom
+	delete _MeshGeom;
+}
+
+
+
+// ***************************************************************************
+void	CMesh::build(CMeshBuild &m)
+{
+	/// copy MeshBase info: materials ....
+	CMeshBase::buildMeshBase(m);
+
+	// build the geometry.
+	_MeshGeom->build(m);
+}
+
+
+// ***************************************************************************
+void	CMesh::build(CMeshBase::CMeshBaseBuild &mbuild, CMeshGeom &meshGeom)
+{
+	/// copy MeshBase info: materials ....
+	CMeshBase::buildMeshBase(mbuild);
+
+	// build the geometry.
+	*_MeshGeom= meshGeom;
+}
+
+
+// ***************************************************************************
+CTransformShape		*CMesh::createInstance(CScene &scene)
+{
+	// Create a CMeshInstance, an instance of a mesh.
+	//===============================================
+	CMeshInstance		*mi= (CMeshInstance*)scene.createModel(NL3D::MeshInstanceId);
+	mi->Shape= this;
+
+
+	// instanciate the material part of the Mesh, ie the CMeshBase.
+	CMeshBase::instanciateMeshBase(mi);
+
+
+	return mi;
+}
+
+
+// ***************************************************************************
+bool	CMesh::clip(const std::vector<CPlane>	&pyramid)
+{
+	return _MeshGeom->clip(pyramid);
+}
+
+
+// ***************************************************************************
+void	CMesh::render(IDriver *drv, CTransformShape *trans)
+{
+	_MeshGeom->render(drv, trans);
+}
+
+
+// ***************************************************************************
+void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	/*
+	Version 6:
+		- cut in serialisation, because of:
+			- bad ITexture serialisation (with no version....) => must cut.  (see CMeshBase serial).
+			- because of this and to simplify, make a cut too in CMesh serialisation.
+	NB : all old version code is dropped.
+	*/
+	sint	ver= f.serialVersion(6);
+
+
+	if(ver<6)
+		throw NLMISC::EStream("Mesh in Stream is too old (Mesh version < 6)");
+
+
+	// serial Materials infos contained in CMeshBase.
+	CMeshBase::serialMeshBase(f);
+
+
+	// serial geometry.
+	_MeshGeom->serial(f);
+
+}
+
+
+// ***************************************************************************
+const NLMISC::CAABBoxExt& CMesh::getBoundingBox() const
+{
+	return _MeshGeom->getBoundingBox();
+}
+// ***************************************************************************
+const CVertexBuffer &CMesh::getVertexBuffer() const 
+{ 
+	return _MeshGeom->getVertexBuffer() ; 
+}
+// ***************************************************************************
+uint CMesh::getNbMatrixBlock() const 
+{ 
+	return _MeshGeom->getNbMatrixBlock(); 
+}
+// ***************************************************************************
+uint CMesh::getNbRdrPass(uint matrixBlockIndex) const 
+{ 
+	return _MeshGeom->getNbRdrPass(matrixBlockIndex) ; 
+}
+// ***************************************************************************
+const CPrimitiveBlock &CMesh::getRdrPassPrimitiveBlock(uint matrixBlockIndex, uint renderingPassIndex) const
+{
+	return _MeshGeom->getRdrPassPrimitiveBlock(matrixBlockIndex, renderingPassIndex) ;
+}
+// ***************************************************************************
+uint32 CMesh::getRdrPassMaterial(uint matrixBlockIndex, uint renderingPassIndex) const
+{
+	return _MeshGeom->getRdrPassMaterial(matrixBlockIndex, renderingPassIndex) ;
+}
+
+
 
 
 } // NL3D

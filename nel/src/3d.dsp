@@ -559,6 +559,14 @@ SOURCE=.\3d\mesh_base.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mesh_geom.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_geom.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mesh_mrm.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mesh.h,v 1.2 2001/06/26 10:12:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "3d/primitive_block.h"
 #include "3d/animated_material.h"
 #include "3d/mesh_base.h"
+#include "3d/mesh_geom.h"
 #include <set>
 #include <vector>
 
@@ -47,6 +48,9 @@ namespace NL3D
 using	NLMISC::CVector;
 using	NLMISC::CPlane;
 using	NLMISC::CMatrix;
+
+
+class CMeshGeom;
 
 
 // ***************************************************************************
@@ -146,9 +150,16 @@ public:
 public:
 	/// Constructor
 	CMesh();
+	/// dtor
+	~CMesh();
 
 	/// Build a mesh, replacing old. WARNING: This has a side effect of deleting AnimatedMaterials.
 	void			build(CMeshBuild &mbuild);
+
+
+	/// Build a mesh from material info, and a builded MeshGeom. WARNING: This has a side effect of deleting AnimatedMaterials.
+	void			build(CMeshBase::CMeshBaseBuild &mbuild, CMeshGeom &meshGeom);
+
 
 	/// \name From IShape
 	// @{
@@ -167,6 +178,86 @@ public:
 	NLMISC_DECLARE_CLASS(CMesh);
 
 	// @}
+
+	/// \name Geometry accessors
+	// @{
+
+	/// get the extended axis aligned bounding box of the mesh
+	const NLMISC::CAABBoxExt& getBoundingBox() const;
+
+	/// get the vertex buffer used by the mesh
+	const CVertexBuffer &getVertexBuffer() const;
+
+	/// get the number of matrix block
+	uint getNbMatrixBlock() const;
+
+	/** get the number of rendering pass for a given matrix block
+	 *  \param matrixBlockIndex the index of the matrix block the rendering passes belong to
+	 */
+	uint getNbRdrPass(uint matrixBlockIndex) const;
+
+	/** get the primitive block associated with a rendering pass of a matrix block
+	 *  \param matrixBlockIndex the index of the matrix block the renderin pass belong to
+	 *  \param renderingPassIndex the index of the rendering pass in the matrix block
+	 */
+	const CPrimitiveBlock &getRdrPassPrimitiveBlock(uint matrixBlockIndex, uint renderingPassIndex) const;
+
+	/** get the material ID associated with a rendering pass of a matrix block
+	 *  \param matrixBlockIndex the index of the matrix block the renderin pass belong to
+	 *  \param renderingPassIndex the index of the rendering pass in the matrix block
+	 */
+	uint32 getRdrPassMaterial(uint matrixBlockIndex, uint renderingPassIndex) const;
+
+	// @}
+
+private:
+
+	// The geometry.
+	CMeshGeom		*_MeshGeom;
+
+
+	/// serialisation of Version 5+ mesh stream.
+	void	serialV5Plus(NLMISC::IStream &f, sint ver) throw(NLMISC::EStream);
+
+};
+
+
+
+
+// ***************************************************************************
+/**
+ * A mesh geometry.
+ * Skinning support: support only palette skinning.
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class CMeshGeom: public IMeshGeom
+{
+public:
+
+	/// Constructor
+	CMeshGeom();
+
+	/// Build a meshGeom
+	void			build(CMesh::CMeshBuild &mbuild);
+
+
+	/// \name From IMeshGeom
+	// @{
+
+	/// clip this mesh
+	virtual bool	clip(const std::vector<CPlane>	&pyramid);
+
+	/// render() this mesh in a driver.
+	virtual void	render(IDriver *drv, CTransformShape *trans);
+
+	/// serial this mesh.
+	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	NLMISC_DECLARE_CLASS(CMeshGeom);
+
+	// @}
+
 
 	/// \name Geometry accessors
 	// @{
@@ -233,21 +324,6 @@ private:
 	};
 
 
-	/// The V2- Old CRdrPass structure.
-	class	CRdrPassOldV2
-	{
-	public:
-		CMaterial			Material;
-		CPrimitiveBlock		PBlock;
-		void	serial(NLMISC::IStream &f)
-		{
-			sint	ver= f.serialVersion(0);
-			f.serial(Material);
-			f.serial(PBlock);
-		}
-	};
-
-
 	/// A block of RdrPasses, sorted by matrix use.
 	class	CMatrixBlock
 	{
@@ -283,7 +359,7 @@ private:
 	 * discontinuities. eg: a vertex use Matrix18. After Matrix grouping (16matrix max), Matrix18 could be Matrix2 for a group
 	 * of face, but Matrix13 for an other!!
 	 */
-	struct	CCornerTmp : public CCorner
+	struct	CCornerTmp : public CMesh::CCorner
 	{
 		CPaletteSkin	Palette;
 		float			Weights[NL3D_MESH_SKINNING_MAX_MATRIX];
@@ -308,7 +384,7 @@ private:
 		}
 
 		// copy from corner.
-		CCornerTmp &operator=(const CCorner &o)
+		CCornerTmp &operator=(const CMesh::CCorner &o)
 		{
 			Vertex= o.Vertex;
 			Normal= o.Normal;
@@ -361,7 +437,7 @@ private:
 		{
 			MatrixBlockId= -1;
 		}
-		CFaceTmp	&operator=(const CFace& o)
+		CFaceTmp	&operator=(const CMesh::CFace& o)
 		{
 			Corner[0]= o.Corner[0];
 			Corner[1]= o.Corner[1];
@@ -372,7 +448,7 @@ private:
 		}
 
 
-		void	buildBoneUse(std::vector<uint>	&boneUse, std::vector<CSkinWeight> &skinWeights);
+		void	buildBoneUse(std::vector<uint>	&boneUse, std::vector<CMesh::CSkinWeight> &skinWeights);
 
 	};
 
@@ -453,13 +529,12 @@ private:
 	}
 
 	// build skinning.
-	void	buildSkin(CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces);
-
-
-	/// serialisation of Version 5+ mesh stream.
-	void	serialV5Plus(NLMISC::IStream &f, sint ver) throw(NLMISC::EStream);
+	void	buildSkin(CMesh::CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces);
 
 };
+
+
+
 
 } // NL3D
 

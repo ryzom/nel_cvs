@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.5 2001/06/22 16:26:46 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.6 2001/06/26 10:12:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@
 #include "3d/mrm_mesh.h"
 #include "3d/mrm_parameters.h"
 #include "3d/bone.h"
+#include "3d/mesh_geom.h"
 #include <set>
 #include <vector>
 
@@ -56,12 +57,11 @@ class	CMRMBuilder;
 
 // ***************************************************************************
 /**
- * An instanciable MRM mesh.
+ * An MRM mesh geometry, with no materials information.
  *
- * To build a CMeshMRM, you should:
+ * To build a CMeshMRMGeom, you should:
  *	- build a CMesh::CMeshBuild   meshBuild (see CMesh)
- *	- call MeshMRM.build(mrmMeshBuild);
- *	- call if you want setAnimatedMaterial() etc...
+ *	- call MeshMRMGeom.build(MeshBuild);
  *
  * NB: internally, build() use CMRMBuilder, a builder of MRM.
  *
@@ -69,34 +69,31 @@ class	CMRMBuilder;
  * \author Nevrax France
  * \date 2001
  */
-class CMeshMRM : public CMeshBase
+class	CMeshMRMGeom : public IMeshGeom
 {
 public:
 	/// Constructor
-	CMeshMRM();
+	CMeshMRMGeom();
 
-	/** Build a mesh, replacing old. WARNING: This has a side effect of deleting AnimatedMaterials.
-	 * this is much slower than CMesh::build(), because it computes the MRM.
+	/** Build a mesh, replacing old.
+	 * this is much slower than CMeshGeom::build(), because it computes the MRM.
 	 * \param params parameters of the MRM build process.
 	 */
 	void			build(CMesh::CMeshBuild &m, const CMRMParameters &params= CMRMParameters());
 
 
-	/// \name From IShape
+	/// \name From IMeshGeom
 	// @{
 
-	/// Create a CMeshInstance, which contains materials.
-	virtual	CTransformShape		*createInstance(CScene &scene);
-
-	/// clip this mesh in a driver.
+	/// clip this mesh in a driver. true if visible.
 	virtual bool	clip(const std::vector<CPlane>	&pyramid);
 
-	/// render() this mesh in a driver.
+	/// render() this mesh in a driver, given an instance and his materials.
 	virtual void	render(IDriver *drv, CTransformShape *trans);
 
-	/// serial this mesh.
+	/// serial this meshGeom.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
-	NLMISC_DECLARE_CLASS(CMeshMRM);
+	NLMISC_DECLARE_CLASS(CMeshMRMGeom);
 
 	// @}
 
@@ -271,6 +268,117 @@ private:
 	void	applySkin(CLod &lod, const std::vector<CBone> &bones);
 	/// Skinning: same as restoreOriginalSkinVertices(), but for one Lod only.
 	void	restoreOriginalSkinPart(CLod &lod);
+
+};
+
+
+
+// ***************************************************************************
+/**
+ * An instanciable MRM mesh.
+ *
+ * To build a CMeshMRM, you should:
+ *	- build a CMesh::CMeshBuild   meshBuild (see CMesh)
+ *	- call MeshMRM.build(MeshBuild);
+ *	- call if you want setAnimatedMaterial() etc...
+ *
+ * NB: internally, build() use CMRMBuilder, a builder of MRM.
+ *
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CMeshMRM : public CMeshBase
+{
+public:
+	/// Constructor
+	CMeshMRM();
+
+	/** Build a mesh, replacing old. WARNING: This has a side effect of deleting AnimatedMaterials.
+	 * this is much slower than CMesh::build(), because it computes the MRM.
+	 * \param params parameters of the MRM build process.
+	 */
+	void			build(CMesh::CMeshBuild &m, const CMRMParameters &params= CMRMParameters());
+
+
+	/** Build a mesh, replacing old. build from a CMeshBaseBuild (materials info) and a previously builded CMeshMRMGeom.
+	 *	WARNING: This has a side effect of deleting AnimatedMaterials.
+	 *	this is much slower than CMesh::build(), because it computes the MRM.
+	 * \param params parameters of the MRM build process.
+	 */
+	void			build(CMeshBase::CMeshBaseBuild &m, const CMeshMRMGeom &mgeom);
+
+
+	/// \name From IShape
+	// @{
+
+	/// Create a CMeshInstance, which contains materials.
+	virtual	CTransformShape		*createInstance(CScene &scene);
+
+	/// clip this mesh in a driver.
+	virtual bool	clip(const std::vector<CPlane>	&pyramid);
+
+	/// render() this mesh in a driver.
+	virtual void	render(IDriver *drv, CTransformShape *trans);
+
+	/// serial this mesh.
+	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	NLMISC_DECLARE_CLASS(CMeshMRM);
+
+	// @}
+
+
+	/// \name Geometry accessors
+	// @{
+
+	/// get the extended axis aligned bounding box of the mesh
+	const NLMISC::CAABBoxExt& getBoundingBox() const
+	{
+		return _MeshMRMGeom.getBoundingBox();
+	}
+
+	/// get the vertex buffer used by the mrm mesh. NB: this VB store all Vertices used by All LODs.
+	const CVertexBuffer &getVertexBuffer() const { return _MeshMRMGeom.getVertexBuffer(); }
+
+
+	/** get the number of LOD.
+	 */
+	uint getNbLod() const { return _MeshMRMGeom.getNbLod()  ; }
+
+
+	/** get the number of rendering pass of a LOD.
+	 *	\param lodId the id of the LOD.
+	 */
+	uint getNbRdrPass(uint lodId) const { return _MeshMRMGeom.getNbRdrPass(lodId) ; }
+
+
+	/** get the primitive block associated with a rendering pass of a LOD.
+	 *	\param lodId the id of the LOD.
+	 *  \param renderingPassIndex the index of the rendering pass
+	 */
+	const CPrimitiveBlock &getRdrPassPrimitiveBlock(uint lodId, uint renderingPassIndex) const
+	{
+		return _MeshMRMGeom.getRdrPassPrimitiveBlock(lodId, renderingPassIndex) ;
+	}
+
+
+	/** get the material ID associated with a rendering pass of a LOD.
+	 *	\param lodId the id of the LOD.
+	 *	\param renderingPassIndex the index of the rendering pass in the matrix block
+	 */
+	uint32 getRdrPassMaterial(uint lodId, uint renderingPassIndex) const
+	{
+		return _MeshMRMGeom.getRdrPassMaterial(lodId, renderingPassIndex) ;
+	}
+
+	// @}
+
+
+// ************************
+private:
+
+	CMeshMRMGeom		_MeshMRMGeom;
+
 
 };
 

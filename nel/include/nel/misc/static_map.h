@@ -1,7 +1,7 @@
 /** \file static_map.h
  * a map that do not change over time. (lighter in memory consumption)
  *
- * $Id: static_map.h,v 1.2 2003/11/17 10:38:26 besson Exp $
+ * $Id: static_map.h,v 1.3 2003/11/17 10:47:08 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -180,8 +180,8 @@ public:
 	{
 		_DataSorted = false;
 		_Data.reserve(m.size());
-		std::map<Key,Typ,Comp>::const_iterator itEnd = m.end();
-		std::map<Key,Typ,Comp>::const_iterator it = m.begin();
+		typename std::map<Key,Typ,Comp>::const_iterator itEnd = m.end();
+		typename std::map<Key,Typ,Comp>::const_iterator it = m.begin();
 		for (; it != itEnd; it++)
 			_Data.push_back (std::pair<Key, Typ>::pair(it->first, it->second));
 	}

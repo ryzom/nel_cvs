@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.10 2001/07/05 09:38:49 besson Exp $
+ * $Id: render_trav.cpp,v 1.11 2001/08/24 16:38:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,6 +74,12 @@ void		CRenderTrav::traverse()
 	// Sort the observers by distance from camera
 	// This is done here and not in the addRenderObs because of the LoadBalancing traversal which can modify
 	// the transparency flag (multi lod for instance)
+
+	// clear the OTs.
+	OrderOpaqueList.reset();
+	OrderTransparentList.reset();
+
+	// fill the OTs.
 	std::vector<IBaseRenderObs*>::iterator it = RenderList.begin();
 	uint32 nNbObs = RenderList.size();
 	IBaseRenderObs *pObs;
@@ -139,8 +145,6 @@ void		CRenderTrav::traverse()
 void		CRenderTrav::clearRenderList()
 {
 	RenderList.clear();
-	OrderOpaqueList.reset();
-	OrderTransparentList.reset();
 }
 // ***************************************************************************
 void		CRenderTrav::addRenderObs(IBaseRenderObs *o)

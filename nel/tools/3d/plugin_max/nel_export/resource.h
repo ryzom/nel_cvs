@@ -90,6 +90,8 @@
 #define IDC_STATICINFO                  1055
 #define IDC_SHOWLUMEL                   1056
 #define IDC_CLUSTERIZE                  1057
+#define IDC_EXPORT_BG_COLOR             1057
+#define IDC_SHOWLUMEL2                  1057
 #define IDC_EXPORT_NOTE_TRACK           1058
 #define IDC_DONT_EXPORT                 1059
 #define IDC_EDIT_LUMELSIZEMUL           1060

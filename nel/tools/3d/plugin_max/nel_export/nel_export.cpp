@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.15 2001/11/05 09:30:14 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.16 2001/11/12 18:12:51 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,6 +106,10 @@ int CALLBACK OptionsDialogCallback (
 				SendMessage( GetDlgItem(hwndDlg,IDC_SHOWLUMEL), BM_SETCHECK, BST_CHECKED, 0 );
 			else
 				SendMessage( GetDlgItem(hwndDlg,IDC_SHOWLUMEL), BM_SETCHECK, BST_UNCHECKED, 0 );
+			if( theExportSceneStruct.bExportBgColor )
+				SendMessage( GetDlgItem(hwndDlg,IDC_EXPORT_BG_COLOR), BM_SETCHECK, BST_CHECKED, 0 );
+			else
+				SendMessage( GetDlgItem(hwndDlg,IDC_EXPORT_BG_COLOR), BM_SETCHECK, BST_UNCHECKED, 0 );
 		}
 		break;
 
@@ -164,6 +168,7 @@ int CALLBACK OptionsDialogCallback (
 						theExportSceneStruct.bShowLumel = true;
 					else
 						theExportSceneStruct.bShowLumel = false;
+					theExportSceneStruct.bExportBgColor = ( SendMessage( GetDlgItem(hwndDlg,IDC_EXPORT_BG_COLOR), BM_GETCHECK, 0, 0 ) == BST_CHECKED );
 
 					// End the dialog
 					EndDialog(hwndDlg, TRUE);

@@ -5,7 +5,7 @@
 
 \subsection networkintro Introduction
 
-A service is set of functionnality provided by a server.
+A service is set of functionnalities provided by a server.
 The class NLNET::IService is the base class of all services.
 
 NLNET::IService performs automatically the basic
@@ -18,19 +18,16 @@ are located in /code/server.
 \subsection new_service How to create a user-defined service ?
 
 -# Create a class inherited from NLNET::IService (optional).
-
 -# Set the default port for your service :
 \code
 uint16 IService::_DefaultPort = 40000;
 \endcode
-
 -# Create an array of callbacks. Example :
 \code
 void cbProcessConnection( CMessage& message, TSenderId from )
 {
 	// Process here
 }
-
 
 void cbProcessReceivedMsg( CMessage& message, TSenderId from )
 {
@@ -43,13 +40,11 @@ TCallbackItem CallbackArray[] =
 	{ "C", cbProcessConnection }
 };
 \endcode
-
 -# Reimplement the methods init(), update() and release()
 if you need to (optional).
 Before each call to update(), CMsgSocket::update() is
 automatically called, so that the server can handle
 incoming messages by calling the callbacks.
-
 -# Add in your source file the following line, where
 \e CNewService is the name of your class and where
 \e NAME is the name of your service :

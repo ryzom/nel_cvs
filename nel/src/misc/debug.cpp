@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.cpp,v 1.14 2000/10/12 10:13:52 cado Exp $
+ * $Id: debug.cpp,v 1.15 2000/10/12 16:23:49 cado Exp $
  *
  * Debug
  */
@@ -29,6 +29,7 @@
 
 /**
  * \page log_howto How to log information ?
+ * \author Olivier Cado
  * This document explains how to log some information (into the screen, into a file or to a logging server) , e.g. in order to debug your code.
  *
  * \subsection init_log Initialization

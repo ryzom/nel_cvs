@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.9 2001/03/06 15:15:50 corvazier Exp $
+ * $Id: zviewer.cpp,v 1.10 2001/03/07 17:44:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,7 @@ struct CViewerConfig
 	string			Bank;
 	string			FontPath;
 	CTextContext	TextContext;
+	CFontManager	FontManager;
 	float			ZFar;
 	float			LandscapeTileNear;
 	float			LandscapeThreshold;
@@ -733,11 +734,16 @@ void main()
 	{
 		initDebug();
 
-		ViewerCfg.TextContext.setFontGenerator("\\\\server\\code\\fonts\\arialuni.ttf");
-		
-		initViewerConfig("zviewer.cfg");
+		// Init NELU
+		NL3D::CNELU::init(ViewerCfg.Width, ViewerCfg.Height, CViewport(), ViewerCfg.Depth, ViewerCfg.Windowed);
 
-		NL3D::CNELU::init(ViewerCfg.Width, ViewerCfg.Height, CViewport(), ViewerCfg.Depth, ViewerCfg.Windowed); 
+		// Init the font manager
+		ViewerCfg.TextContext.init (CNELU::Driver, &ViewerCfg.FontManager);
+		ViewerCfg.TextContext.setFontGenerator("\\\\server\\code\\fonts\\arialuni.ttf");
+		ViewerCfg.TextContext.setFontSize(12);
+		ViewerCfg.FontManager.setMaxMemory(2000000);
+
+		initViewerConfig("zviewer.cfg");
 
 		displayZones();
 			
@@ -749,8 +755,10 @@ void main()
 	{
 		fprintf (stderr,"main trapped an exception: '%s'", e.what ());
 	}
+#ifndef NL_DEBUG
 	catch (...)
 	{
 		fprintf(stderr,"main trapped an unknown exception");
 	}
+#endif // NL_DEBUG
 }

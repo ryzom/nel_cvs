@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.36 2001/11/22 17:44:36 cado Exp $
+# $Id: Makefile.am,v 1.37 2001/11/28 14:43:59 cado Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -45,6 +45,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         rect.cpp                           \
                         rgba.cpp                           \
                         smart_ptr.cpp                      \
+			stop_watch.cpp			   \
                         stream.cpp                         \
                         string_id_array.cpp                \
                         system_info.cpp                    \

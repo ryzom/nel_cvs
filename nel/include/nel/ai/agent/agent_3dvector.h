@@ -1,7 +1,7 @@
 /** \file agent_3dvector.h
  * <File description>
  *
- * $Id: agent_3dvector.h,v 1.3 2001/03/27 10:19:33 chafik Exp $
+ * $Id: agent_3dvector.h,v 1.4 2001/04/05 15:29:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -251,8 +251,7 @@ namespace NLAIAGENT
 		
 		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLAIC::IBasicInterface *m = new VectorType(*this);
-			m->incRef();
+			NLAIC::IBasicInterface *m = new VectorType(*this);			
 			return m;
 		}
 		

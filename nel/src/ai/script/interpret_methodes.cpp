@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.13 2001/02/13 10:43:30 chafik Exp $
+ * $Id: interpret_methodes.cpp,v 1.14 2001/04/05 15:29:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,8 +31,8 @@ namespace NLAISCRIPT
 {
 	//const NLAIAGENT::TProcessStatement CParam::_RunState = NLAIAGENT::processIdle;
 
-	CParam::CParam():_Param(0){}
-	CParam::CParam(const CParam &p):NLAIAGENT::IObjectIA(p),_Param(p._Param.size())
+	CParam::CParam():_Param(0),_ParamInfo(NULL){}
+	CParam::CParam(const CParam &p):NLAIAGENT::IObjectIA(p),_Param(p._Param.size()),_ParamInfo(NULL)
 	{
 		for(sint32 i = 0; i<p.size(); i++)
 		{
@@ -40,7 +40,7 @@ namespace NLAISCRIPT
 		}
 	}
 
-	CParam::CParam(int count, ...)
+	CParam::CParam(int count, ...):_ParamInfo(NULL)
 	{
 		va_list marker;
 		
@@ -274,6 +274,15 @@ namespace NLAISCRIPT
 		}
 		strcat(txt,")");
 	}
+
+
+	void CParam::setInfo(NLAIAGENT::IBaseGroupType *pInfo)
+	{
+		if(_ParamInfo != NULL) _ParamInfo->release();
+		_ParamInfo = pInfo;
+	}
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////

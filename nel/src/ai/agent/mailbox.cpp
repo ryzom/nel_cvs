@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.13 2001/04/03 08:45:28 chafik Exp $
+ * $Id: mailbox.cpp,v 1.14 2001/04/05 15:29:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -273,13 +273,13 @@ namespace NLAIAGENT
 	{	
 
 		IMessageBase *msg = (IMessageBase *)_ListMessageIn.back();
+		_ListMessageIn.pop_back();
 		if(msg->getDispatch())
 		{
 			_ListSharedMessage.push_back(msg);
 		}
 		else
-		{
-			_ListMessageIn.pop_back();
+		{			
 			msg->release();
 		}
 	}

@@ -1,6 +1,6 @@
 /** \file opcode_call_method.cpp
  *
- * $Id: opcode_call_method.cpp,v 1.5 2001/01/18 15:04:57 portier Exp $
+ * $Id: opcode_call_method.cpp,v 1.6 2001/04/05 15:29:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,10 +101,12 @@ namespace NLAISCRIPT
 		context.Heap.restoreShift();
 		context.Heap.restoreStack();
 		context.ContextDebug.HeapDebug.restoreShift();
-		context.Param.back()->release();
+		NLAIAGENT::IObjectIA *obj = context.Param.back();
+		obj->release();
 		context.Param.pop_back();
-		context.ContextDebug.Param.back()->release();
-		context.ContextDebug.Param.pop_back();
+		/*obj = context.ContextDebug.Param.back();
+		obj->release();
+		context.ContextDebug.Param.pop_back();*/
 	}
 
 	//*************************************

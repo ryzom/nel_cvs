@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.17 2001/03/14 13:19:34 chafik Exp $
+ * $Id: var_control.cpp,v 1.18 2001/04/05 15:29:03 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -525,7 +525,7 @@ namespace NLAISCRIPT
 	}
 
 	bool CCompilateur::buildObject()
-	{		
+	{				
 		NLAIAGENT::CStringType *s = (NLAIAGENT::CStringType *)_LastStringParam.back()->get();
 		if(_LastStringParam.back()->size() == 1)
 		{		

@@ -8,6 +8,8 @@
 #include "nel/ai/c/registry_class.h"
 #include "nel/ai/agent/main_agent_script.h"
 #include "nel/ai/agent/agent_proxy_mailer.h"
+#include "nel/ai/script/test_method.h"
+#include "nel/ai/character/character.h"
 //#include "static_init.h"
 
 using namespace NLAIAGENT;
@@ -23,7 +25,10 @@ namespace NLAILINK
 		NLAISCRIPT::initExternalLib();		
 		NLAIAGENT::CAgentScript::initAgentScript();
 		NLAIAGENT::CProxyAgentMail::initClass();
-		
+		NLAISCRIPT::CLibTest::initClass();
+
+		NLAICHARACTER::CCharacterNoeud::initClass();
+		NLAICHARACTER::CCharacterChild::initClass();	
 	}
 
 	void releaseIALib()
@@ -34,6 +39,12 @@ namespace NLAILINK
 		NLAIAGENT::CAgentScript::releaseAgentScript();
 		if(NLAIAGENT::CProxyAgentMail::MainAgent != NULL) NLAIAGENT::CProxyAgentMail::MainAgent->release();
 		NLAIAGENT::CProxyAgentMail::releaseClass();
+		NLAISCRIPT::CLibTest::releaseClass();
+
+		NLAICHARACTER::CCharacterNoeud::releaseClass();
+		NLAICHARACTER::CCharacterChild::releaseClass();
+
+		staticReleaseLibClass();
 	}
 
 	void setLocalServerID(uint8 u)

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.49 2001/04/04 16:33:47 portier Exp $
+ * $Id: agent_script.cpp,v 1.50 2001/04/05 15:29:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,7 +141,8 @@ namespace NLAIAGENT
 																						1,
 																						new NLAISCRIPT::CObjectUnknown(IdMsgNotifyParentClass));
 
-		IdMsgNotifyParentClass->incRef();
+		IdMsgNotifyParentClass->incRef();		
+		ParamRunParentNotify->incRef();
 		StaticMethod[CAgentScript::TRunTellParentNotify] = new CAgentScript::CMethodCall(	_RUNTEL_, 
 																						CAgentScript::TRunTellParentNotify, ParamRunParentNotify,
 																						CAgentScript::CheckAll,
@@ -240,21 +241,23 @@ namespace NLAIAGENT
 
 	void CAgentScript::releaseAgentScript()
 	{		
-		SendParamMessageScript->release();
+		//SendParamMessageScript->release();
 		//IdMsgNotifyParentClass->release();		
 	////////////////////////////////////////////////////////////////////////
 	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
 	// IdGoalMsgClass->release();
 	// IdGoalMsg->release();
-		ParamGoalMsg->release();
-		ParamCancelGoalMsg->release();
+		//ParamGoalMsg->release();
+		//ParamCancelGoalMsg->release();
 	////////////////////////////////////////////////////////////////////////
 
-		ParamRunParentNotify->release();
-		SendCompParamMessageScript->release();
+		//ParamRunParentNotify->release();
+		//SendCompParamMessageScript->release();
 		sint i;
 		for(i = 0; i < CAgentScript::TLastM; i++)
+		{
 				delete StaticMethod[i];
+		}
 		delete StaticMethod;
 	}
 
@@ -865,7 +868,7 @@ namespace NLAIAGENT
 		context.Stack--;
 		processContinuation(msg, returnMsg);
 
-		returnMsg->release();	
+		returnMsg->release();
 	}
 
 	void CAgentScript::processContinuation(IMessageBase *msg, IMessageBase *returnMsg)

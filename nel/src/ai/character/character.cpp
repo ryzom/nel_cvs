@@ -1,6 +1,6 @@
 /** \file character.cpp
  *
- * $Id: character.cpp,v 1.5 2001/03/27 12:22:17 chafik Exp $
+ * $Id: character.cpp,v 1.6 2001/04/05 15:29:02 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,6 +134,11 @@ namespace NLAICHARACTER
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 	}
 
+	void CCharacterChild::releaseClass()
+	{
+		delete IDCharacterChild;
+	}
+
 /*
 ##############################
 	CCharacterNoeud
@@ -233,5 +238,10 @@ namespace NLAICHARACTER
 		IDCharacterNoeud = new NLAIC::CIdentType("CharacterNoeud",NLAIC::CSelfClassFactory(n),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+	}
+
+	void CCharacterNoeud::releaseClass()
+	{	
+		delete IDCharacterNoeud;
 	}
 }

@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.19 2001/03/29 16:02:30 portier Exp $
+ * $Id: yacc.cpp,v 1.20 2001/04/05 15:29:03 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -702,10 +702,10 @@ namespace NLAISCRIPT
 		CVarPStackParam::_Shift = _DecalageHeap;
 
 		NLAIAGENT::CStringType* debugStringAttrib;
-		NLAIAGENT::CGroupType* debugAttrib;
+		NLAIAGENT::CVectorGroupType* debugAttrib;
 		if (_Debug)
 		{
-			debugAttrib = new NLAIAGENT::CGroupType();			
+			debugAttrib = new NLAIAGENT::CVectorGroupType();			
 		}
 
 		while(_Attrib.size() != 0)
@@ -739,11 +739,14 @@ namespace NLAISCRIPT
 			_Attrib.back().second->release();
 			_Attrib.pop_back();
 		}
-		if (_Debug)
+
+		CMethodeName &thisMethod = ((IClassInterpret *)_SelfClass.get())->getBrancheCode();
+		thisMethod.getParam().setInfo(debugAttrib);
+		/*if (_Debug)
 		{
 			_LastBloc->addCode(new CAddParamNameDebug(*debugAttrib));
 			debugAttrib->release();
-		}
+		}*/
 		//_Param.back()->clear();
 		_Param.back()->release();
 		_Param.pop_back();
@@ -991,10 +994,10 @@ namespace NLAISCRIPT
 		_SelfClass.push(o);		
 		initParam();
 		setNewLine();
-		if (_Debug)
+		/*if (_Debug)
 		{
 			_LastBloc->addCode(new CAddParamNameDebug(NLAIAGENT::CGroupType()));			
-		}
+		}*/
 	}
 
 	bool CCompilateur::endMessageManager()

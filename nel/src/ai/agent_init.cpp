@@ -1,7 +1,7 @@
 /** \file agent_init.cpp
  * <File description>
  *
- * $Id: agent_init.cpp,v 1.2 2001/03/29 07:52:48 chafik Exp $
+ * $Id: agent_init.cpp,v 1.3 2001/04/05 15:29:02 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,13 +72,16 @@ void staticInitAgent()
 
 	IAgent::IdAgent = new NLAIC::CIdentType("GenericAgent", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)staticAgent), 
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
-															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
-
-	CCharacterNoeud::initClass();
-	CCharacterChild::initClass();
+															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 }
 
 void registerLibClass()
-{
+{	
+}
 
+void staticReleaseLibClass()
+{	
+	delete IAgent::IdAgent;
+	delete CObjectIdent::IdObjectIdent;
+	delete CLocWordNumRef::IdLocWordNumRef;
 }

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.23 2001/04/03 10:04:58 portier Exp $
+ * $Id: agent_script.h,v 1.24 2001/04/05 15:29:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,7 +88,7 @@ namespace NLAIAGENT
 		struct CMethodCall
 		{			
 
-			CMethodCall(const char *name, int i,const IObjectIA *a,TTypeCheck checkArg,int argCount,IObjectIA *r): 
+			CMethodCall(const char *name, int i,IObjectIA *a,TTypeCheck checkArg,int argCount,IObjectIA *r): 
 		 			MethodName (name),ArgType(a),ReturnValue(r)
 			{
 				Index = i;
@@ -98,20 +98,22 @@ namespace NLAIAGENT
 
 			~CMethodCall()
 			{
-				if(ReturnValue) ReturnValue->release();				
+				if(ReturnValue) ReturnValue->release();
+				if(ArgType != NULL) ArgType->release();
+
 			}
 			///Name of the method.
 			CStringVarName MethodName;
 			///Type of the method argument.
-			const IObjectIA *ArgType;
+			IObjectIA *ArgType;
 			///Return value type.
 			IObjectIA *ReturnValue;
 			///CheckArg is for force the method argument test. If its true we test juste the name coherence.
-			TTypeCheck CheckArgType;			
+			TTypeCheck CheckArgType;
 			///Count neaded when the CheckCount it set.
 			sint ArgCount;
 			///Index of the method in the class.
-			sint32 Index;				
+			sint32 Index;
 		};
 
 		static CMethodCall **StaticMethod;

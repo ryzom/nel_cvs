@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: test_method.cpp,v 1.7 2001/04/03 08:45:28 chafik Exp $
+ * $Id: test_method.cpp,v 1.8 2001/04/05 15:29:03 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,8 +40,8 @@ namespace NLAISCRIPT
 																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
 	//const char *IsNULL = ;
-	CLibTest::CMethodCall CLibTest::StaticMethod[] = 
-	{
+	CLibTest::CMethodCall **CLibTest::StaticMethod = NULL;
+	/*{
 		
 
 		CLibTest::CMethodCall(	_CONSTRUCTOR_,
@@ -76,8 +76,58 @@ namespace NLAISCRIPT
 								CLibTest::CheckAll,
 								2,
 								new CObjectUnknown(new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType))))
-	};
+	};*/
+	void CLibTest::initClass()
+	{
+		CLibTest::StaticMethod = new CLibTest::CMethodCall *[CLibTest::TLastM];
 
+		CLibTest::StaticMethod[CLibTest::TConst] = new CLibTest::CMethodCall(	_CONSTRUCTOR_,
+											CLibTest::TConst, NULL,
+											CLibTest::CheckCount,
+											0,
+											new CObjectUnknown(new NLAISCRIPT::COperandVoid));
+
+		CLibTest::StaticMethod[CLibTest::TIsNULL] = new CLibTest::CMethodCall(	
+												"IsNotNull", 
+												CLibTest::TIsNULL, NULL,
+												CLibTest::CheckCount,
+												1,
+												new CObjectUnknown(new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::DigitalType::IdDigitalType))));
+
+		CLibTest::StaticMethod[CLibTest::TRand1] = new CLibTest::CMethodCall(
+											"Rand", 
+											CLibTest::TRand1, 
+											new NLAISCRIPT::CParam(1,new NLAISCRIPT::COperandSimpleListOr(2,
+																		new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType),
+																		new NLAIC::CIdentType(NLAIAGENT::DigitalType::IdDigitalType))),
+											CLibTest::CheckAll,
+											1,
+											new CObjectUnknown(new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType))));
+
+		CLibTest::StaticMethod[CLibTest::TRand2] = new CLibTest::CMethodCall(
+											"Rand", 
+											CLibTest::TRand2, 
+											new NLAISCRIPT::CParam(2,new NLAISCRIPT::COperandSimpleListOr(2,
+																		new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType),
+																		new NLAIC::CIdentType(NLAIAGENT::DigitalType::IdDigitalType)),
+																		new NLAISCRIPT::COperandSimpleListOr(2,
+																		new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType),
+																		new NLAIC::CIdentType(NLAIAGENT::DigitalType::IdDigitalType))),
+											CLibTest::CheckAll,
+											2,
+											new CObjectUnknown(new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType))));
+
+	}
+
+	void CLibTest::releaseClass()
+	{
+		int i;
+		for(i = 0; i < CLibTest::TLastM; i++)
+		{
+			delete CLibTest::StaticMethod[i];
+		}
+		delete CLibTest::StaticMethod;
+	}
 
 
 	CLibTest::CLibTest()
@@ -108,34 +158,34 @@ namespace NLAISCRIPT
 			CLibTest::TMethodNumDef index;
 			for(i = 0; i < CLibTest::TLastM; i ++)
 			{
-				if(CLibTest::StaticMethod[i].MethodName == *methodName)
+				if(CLibTest::StaticMethod[i]->MethodName == *methodName)
 				{
-					index = (CLibTest::TMethodNumDef)CLibTest::StaticMethod[i].Index;
-					switch(CLibTest::StaticMethod[i].CheckArgType)
+					index = (CLibTest::TMethodNumDef)CLibTest::StaticMethod[i]->Index;
+					switch(CLibTest::StaticMethod[i]->CheckArgType)
 					{
 						case CLibTest::CheckAll:
 						{
-							double d = ((NLAISCRIPT::CParam &)*CLibTest::StaticMethod[i].ArgType).eval((NLAISCRIPT::CParam &)param);
+							double d = ((NLAISCRIPT::CParam &)*CLibTest::StaticMethod[i]->ArgType).eval((NLAISCRIPT::CParam &)param);
 							if(d >= 0.0)
 							{																
-								CLibTest::StaticMethod[i].ReturnValue->incRef();
-								r.push(NLAIAGENT::CIdMethod((CLibTest::getMethodIndexSize() + CLibTest::StaticMethod[i].Index),
+								CLibTest::StaticMethod[i]->ReturnValue->incRef();
+								r.push(NLAIAGENT::CIdMethod((CLibTest::getMethodIndexSize() + CLibTest::StaticMethod[i]->Index),
 															0.0,
 															NULL,
-															CLibTest::StaticMethod[i].ReturnValue));
+															CLibTest::StaticMethod[i]->ReturnValue));
 								return r;
 							}
 						}
 						break;
 						case CLibTest::CheckCount:
 						{
-							if(((NLAISCRIPT::CParam &)param).size() == CLibTest::StaticMethod[i].ArgCount)
+							if(((NLAISCRIPT::CParam &)param).size() == CLibTest::StaticMethod[i]->ArgCount)
 							{																
-								CLibTest::StaticMethod[i].ReturnValue->incRef();
-								r.push(NLAIAGENT::CIdMethod((CLibTest::getMethodIndexSize() + CLibTest::StaticMethod[i].Index),
+								CLibTest::StaticMethod[i]->ReturnValue->incRef();
+								r.push(NLAIAGENT::CIdMethod((CLibTest::getMethodIndexSize() + CLibTest::StaticMethod[i]->Index),
 															0.0,
 															NULL,
-															CLibTest::StaticMethod[i].ReturnValue ));
+															CLibTest::StaticMethod[i]->ReturnValue ));
 								return r;
 							}
 						}
@@ -143,11 +193,11 @@ namespace NLAISCRIPT
 
 					case CLibTest::DoNotCheck:
 						{														
-							CLibTest::StaticMethod[i].ReturnValue->incRef();
-							r.push(NLAIAGENT::CIdMethod((CLibTest::getMethodIndexSize() + CLibTest::StaticMethod[i].Index),
+							CLibTest::StaticMethod[i]->ReturnValue->incRef();
+							r.push(NLAIAGENT::CIdMethod((CLibTest::getMethodIndexSize() + CLibTest::StaticMethod[i]->Index),
 														0.0,
 														NULL,
-														CLibTest::StaticMethod[i].ReturnValue));
+														CLibTest::StaticMethod[i]->ReturnValue));
 							return r;						
 						}
 						break;					

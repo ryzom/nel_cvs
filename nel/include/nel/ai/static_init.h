@@ -1,7 +1,7 @@
 /** \file static_init.h
  * <File description>
  *
- * $Id: static_init.h,v 1.2 2001/03/29 10:26:52 chafik Exp $
+ * $Id: static_init.h,v 1.3 2001/04/05 15:29:15 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,5 +29,7 @@
 void staticInitAgent();
 
 void registerLibClass();
+
+void staticReleaseLibClass();
 
 #endif

@@ -1,7 +1,7 @@
 /** \file test_method.h
  * Library class exemple for the binary test.
  *
- * $Id: test_method.h,v 1.3 2001/03/30 12:40:34 chafik Exp $
+ * $Id: test_method.h,v 1.4 2001/04/05 15:29:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@ namespace NLAISCRIPT
 		///Structure to define the name, id and argument type of hard coded mathod.
 		struct CMethodCall
 		{
-			CMethodCall(const char *name, int i,const NLAIAGENT::IObjectIA *a,TTypeCheck checkArg,int argCount, NLAIAGENT::IObjectIA *r): 
+			CMethodCall(const char *name, int i,NLAIAGENT::IObjectIA *a,TTypeCheck checkArg,int argCount, NLAIAGENT::IObjectIA *r): 
 					MethodName (name),ArgType(a),ReturnValue(r)
 			{
 				Index = i;
@@ -68,12 +68,13 @@ namespace NLAISCRIPT
 
 			~CMethodCall()
 			{
-				ReturnValue->release();
+				if(ReturnValue != NULL) ReturnValue->release();
+				if(ArgType != NULL) ArgType->release();
 			}
 			///Name of the method.
 			NLAIAGENT::CStringVarName MethodName;
 			///Type of the method argument.
-			const NLAIAGENT::IObjectIA *ArgType;
+			NLAIAGENT::IObjectIA *ArgType;
 			///Return value type.
 			NLAIAGENT::IObjectIA *ReturnValue;
 			///CheckArg is for force the method argument test. If its true we test juste the name coherence.
@@ -84,7 +85,7 @@ namespace NLAISCRIPT
 			sint32 Index;				
 		};
 		///This variable its used to store method import characteristic.
-		static CMethodCall StaticMethod[];
+		static CMethodCall **StaticMethod;//[];
 
 	public:
 		static const NLAIC::CIdentType IdLibTest;
@@ -142,6 +143,10 @@ namespace NLAISCRIPT
 		{				
 		}
 		//@}
+
+	public:
+		static void initClass();
+		static void releaseClass();
 	};
 }
 #endif

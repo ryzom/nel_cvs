@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.26 2001/11/05 15:42:36 lecroart Exp $
+ * $Id: displayer.cpp,v 1.27 2001/11/19 14:06:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -206,6 +206,8 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 
 		if(ss2.str().size() < maxOutString)
 		{
+			//////////////////////////////////////////////////////////////////
+			// WARNING: READ THIS !!!!!!!!!!!!!!!! ///////////////////////////
 			// If at the release time, it freezes here, it's a microsoft bug:
 			// http://support.microsoft.com/support/kb/articles/q173/2/60.asp
 			OutputDebugString(ss2.str().c_str());

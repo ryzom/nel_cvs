@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_common.cpp,v 1.6 2003/07/03 15:16:12 boucher Exp $
+ * $Id: source_common.cpp,v 1.6.4.1 2003/08/07 17:43:31 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,6 +106,7 @@ bool					CSourceCommon::getLooping() const
  */
 void					CSourceCommon::play()
 {
+	CAudioMixerUser::instance()->incPlayingSource();
 	_Playing = true;
 	_PlayStart = CTime::getLocalTime();
 
@@ -118,6 +119,7 @@ void					CSourceCommon::play()
  */
 void					CSourceCommon::stop()
 {
+	CAudioMixerUser::instance()->decPlayingSource();
 	_Playing = false;
 
 	if (_UserVarControler != CStringMapper::emptyId())

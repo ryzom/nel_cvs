@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: complex_source.h,v 1.7 2003/07/03 15:16:12 boucher Exp $
+ * $Id: complex_source.h,v 1.7.4.1 2003/08/07 17:43:31 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,6 +113,8 @@ public:
 //	virtual void					setSourceRelativeMode( bool mode );
 	/// Get the source relative mode
 //	virtual bool					getSourceRelativeMode() const;
+
+	void							checkup();
 
 private:
 

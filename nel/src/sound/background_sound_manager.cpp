@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.19 2003/07/22 13:30:25 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.19.2.1 2003/08/07 17:43:32 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,8 +52,8 @@ namespace NLSOUND {
 
 // external sound are cliping after 10 meter inside the inner patate
 const float	INSIDE_FALLOF = 10.0f; 
+const float BACKGROUND_SOUND_ALTITUDE = 5.0f;
 
-//UAudioMixer *CBackgroundSoundManager::_AudioMixer = NULL;
 
 
 CBackgroundSoundManager::CBackgroundSoundManager()
@@ -1056,7 +1056,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 		// Compute new source mixing in this layer
 		{
 			/// Status of all selected sound ordered by surface.
-			map<float, TSoundStatus>	status;
+			multimap<float, TSoundStatus>	status;
 
 			// first loop to compute selected sound gain and position and order the result by surface..
 			{
@@ -1067,6 +1067,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 					CVector pos;
 					float	gain = 1.0f;
 					float	distance;
+					bool	inside = false;
 
 					// inside the patat ?
 					
@@ -1074,6 +1075,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 					{
 						pos = _LastPosition;	// use the real listener position, not the 0 z centered
 						gain = 1.0f;
+						inside = true;
 //						nlinfo ("inside patate %d name '%s' ", *first, sd.SoundName.c_str());
 					}
 					else
@@ -1092,7 +1094,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 					}
 
 					// store the status.
-					status.insert(make_pair(sd.Surface, TSoundStatus(sd, pos, gain, distance)));
+					status.insert(make_pair(sd.Surface, TSoundStatus(sd, pos, gain, distance, inside)));
 				}
 			}
 			// second loop thrue the surface ordered selected sound.
@@ -1102,20 +1104,27 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 
 				float	maskFactor = 1.0f;
 
-				map<float, TSoundStatus>::iterator first(status.begin()), last(status.end());
+				multimap<float, TSoundStatus>::iterator first(status.begin()), last(status.end());
 				for (; first != last; ++first)
 				{
 					TSoundStatus &ss = first->second;
 
 					if (maskFactor > 0.0f && ss.Gain > 0)
 					{
-						float gain = maskFactor * ss.Gain;
+						float gain;
+						
+						if (!ss.SoundData.IsPath && ss.SoundData.Points.size() > 1)
+							gain = maskFactor * ss.Gain;
+						else
+							gain = ss.Gain;
+
 //						maskFactor -= ss.Gain;
 
 						ss.SoundData.Selected = true;
 
 //						if (ss.Gain == 1)
-						if (ss.Distance == 0)
+//						if (ss.Distance == 0)
+						if (ss.Inside)
 						{
 							// inside a pattate, then decrease the mask factor will we are more inside the patate
 							maskFactor -= first->second.Distance / INSIDE_FALLOF;
@@ -1134,7 +1143,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 							// set the volume
 							ss.SoundData.Source->setRelativeGain(gain);
 							// and the position
-							ss.Position.z = _LastPosition.z + 5.0f;
+							ss.Position.z = _LastPosition.z + BACKGROUND_SOUND_ALTITUDE;
 							ss.SoundData.Source->setPos(ss.Position);
 
 //							nldebug("Setting source %s at %f", ss.SoundData.SoundName.c_str(), gain);
@@ -1143,6 +1152,8 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 								// start the sound is needed.
 								ss.SoundData.Source->play();
 							}
+							else if (ss.SoundData.Source->getType() != CSourceCommon::SOURCE_SIMPLE)
+								ss.SoundData.Source->checkup();
 						}
 					}
 					else if (ss.SoundData.Source != 0 && ss.SoundData.Source->isPlaying())

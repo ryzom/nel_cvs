@@ -102,19 +102,29 @@ uint32 CComplexSound::getDuration()
 		{
 			if (_SoundSeq.empty())
 				_Duration = 0;
+			else if (_DelaySeq.empty())
+			{
+				_Duration = durations[0];
+			}
+			else if (_DelaySeq.size() == 1)
+			{
+				_Duration = durations[0] + _DelaySeq[0];
+			}
 			else
 			{
 				uint soundIndex = 0;
-				_Duration = durations[soundIndex++];
+				_Duration = 0; //durations[soundIndex++];
 
 				std::vector<uint32>::iterator first(_DelaySeq.begin()), last(_DelaySeq.end());
 
+				_Duration+= *first;
+				++first;
 				for (; first != last; ++first)
 				{
-					// add the delay
-					_Duration += uint32(*first / _TicksPerSeconds);
 					// add the sound lenght
 					_Duration += durations[soundIndex++ % durations.size()];
+					// add the delay
+					_Duration += uint32(*first / _TicksPerSeconds);
 				}
 			}
 		}

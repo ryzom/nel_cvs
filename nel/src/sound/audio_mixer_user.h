@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.39 2003/07/03 15:16:12 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.39.4.1 2003/08/07 17:43:32 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,12 @@
 #include <numeric>
 
 
+namespace NLLIGO {
+
+class CLigoConfig;
+
+}
+
 namespace NLSOUND {
 
 
@@ -53,7 +59,6 @@ class CSoundBank;
 class CSourceCommon;
 class CClusteredSound;
 class CBackgroundSoundManager;
-
 
 /*
  * Max number of tracks (physical sources)
@@ -234,12 +239,16 @@ public:
 	virtual void				getSoundNames( std::vector<NLMISC::TStringId> &names ) const;
 	/// Return the number of mixing tracks (voices)
 	virtual uint				getPolyphony() const { return _NbTracks; }
-	/// Return the number of sources (slow)
-	virtual uint				getSourcesNumber() const { return _Sources.size(); }
+	/// Return the number of sources instance.
+	virtual uint				getSourcesInstanceCount() const { return _Sources.size(); }
 	/// Return the number of playing sources (slow)
-	virtual uint				getPlayingSourcesNumber() const;
+	virtual uint				getPlayingSourcesCount() const;
 	/// Return the number of available tracks
-	virtual uint				getNumberAvailableTracks() const;
+	virtual uint				getAvailableTracksCount() const;
+	/// Return the number of used tracks
+	virtual uint				getUsedTracksCount() const;
+	/// Return the number muted playing source
+	virtual uint				getMutedPlayingSourcesCount() const		{ return _PlayingSourcesMuted; }
 
 	/// Return a string showing the playing sources (slow)
 	virtual std::string			getSourcesStats() const;
@@ -309,6 +318,8 @@ public:
 
 	void						incPlayingSource()	{ ++_PlayingSources; };
 	void						decPlayingSource()	{ --_PlayingSources; };
+	void						incPlayingSourceMuted()	{ ++_PlayingSourcesMuted; };
+	void						decPlayingSourceMuted()	{ --_PlayingSourcesMuted; };
 
 	void		setUserVar(NLMISC::TStringId varName, float value);
 	float		getUserVar(NLMISC::TStringId varName);
@@ -528,6 +539,8 @@ public:
 
 	/// Number of source currently playing
 	uint32					_PlayingSources;
+	/// Number of source doing muted play
+	uint32					_PlayingSourcesMuted;
 
 public: // Temp (EDIT)
 	/// Physical sources array

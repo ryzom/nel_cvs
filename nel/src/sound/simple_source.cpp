@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSimpleSource: implementation of USource
  *
- * $Id: simple_source.cpp,v 1.6 2003/07/03 15:16:12 boucher Exp $
+ * $Id: simple_source.cpp,v 1.6.4.1 2003/08/07 17:43:31 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -189,10 +189,10 @@ void					CSimpleSource::play()
 		// there is no available track, just do a 'muted' play
 		mixer->addEvent(this, CTime::getLocalTime()+_Sound->getDuration());
 		_PlayMuted = true;
+		mixer->incPlayingSourceMuted();
 //		nldebug("CSimpleSource %p : MUTED play done", (CAudioMixerUser::IMixerEvent*)this);
 	}
 
-	mixer->incPlayingSource();
 	CSourceCommon::play();
 
 }
@@ -201,9 +201,13 @@ void CSimpleSource::onEvent()
 {
 //	nldebug("CSimpleSource %p : stop EVENT", (CAudioMixerUser::IMixerEvent*)this);
 	// A muted play is terminated.
-	nlassert(_Playing);
-	nlassert(_Track == 0);
+	if (!_Playing)
+		return;
+//	nlassert(_Playing);
+//	nlassert(_Track == 0);
 	_PlayMuted = false;
+	CAudioMixerUser::instance()->decPlayingSourceMuted();
+
 	stop();
 }
 
@@ -228,10 +232,11 @@ void					CSimpleSource::stop()
 	else if (_PlayMuted)
 	{
 		// clear the registered event because of a stop before normal end of play
+		CAudioMixerUser::instance()->decPlayingSourceMuted();
 		CAudioMixerUser::instance()->removeEvents(this);
 	}
 
-	CAudioMixerUser::instance()->decPlayingSource();
+//	CAudioMixerUser::instance()->decPlayingSource();
 	CSourceCommon::stop();
 
 	if (_Spawn)

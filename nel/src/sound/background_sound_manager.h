@@ -1,7 +1,7 @@
 /** \file background_sound_manager.h
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.h,v 1.7 2003/03/03 12:58:08 boucher Exp $
+ * $Id: background_sound_manager.h,v 1.7.6.1 2003/08/07 17:43:32 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -36,6 +36,7 @@
 namespace NLLIGO
 {
 	class CPrimRegion;
+	class CLigoConfig;
 }
 
 namespace NLSOUND {
@@ -271,9 +272,10 @@ private:
 		float				Gain;
 		/// The distance beween listener and source.
 		float				Distance;
+		bool				Inside;
 		/// Constructor.
-		TSoundStatus(TSoundData &sd, NLMISC::CVector position, float gain, float distance)
-			: SoundData(sd), Position(position), Gain(gain), Distance(distance)
+		TSoundStatus(TSoundData &sd, NLMISC::CVector position, float gain, float distance, bool inside)
+			: SoundData(sd), Position(position), Gain(gain), Distance(distance), Inside(inside)
 		{}
 	};
 	//@}

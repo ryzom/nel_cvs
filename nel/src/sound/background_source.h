@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSimpleSource: implementation of USource
  *
- * $Id: background_source.h,v 1.5 2003/03/03 12:58:08 boucher Exp $
+ * $Id: background_source.h,v 1.5.6.1 2003/08/07 17:43:32 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,7 +66,6 @@ public:
 	void							setDirection( const NLMISC::CVector& dir );
 
 	void							updateFilterValues(const float *filterValues);
-
 
 
 private:

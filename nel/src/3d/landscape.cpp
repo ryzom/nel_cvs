@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.49 2001/03/07 13:04:01 berenguier Exp $
+ * $Id: landscape.cpp,v 1.50 2001/03/30 12:50:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -900,10 +900,10 @@ void			CLandscape::flushTiles(IDriver *drv, uint16 tileStart, uint16 nbTiles)
 	{
 		const CPatchRdrPass	&pass= *it;
 		// If present and not already setuped...
-		if(pass.TextureDiffuse && !pass.TextureDiffuse->loadedIntoDriver())
+		if(pass.TextureDiffuse && !pass.TextureDiffuse->setupedIntoDriver())
 			drv->setupTexture(*pass.TextureDiffuse);
 		// If present and not already setuped...
-		if(pass.TextureAlpha && !pass.TextureAlpha->loadedIntoDriver())
+		if(pass.TextureAlpha && !pass.TextureAlpha->setupedIntoDriver())
 			drv->setupTexture(*pass.TextureAlpha);
 	}
 }

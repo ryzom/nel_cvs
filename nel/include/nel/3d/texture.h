@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.24 2001/02/28 14:21:00 berenguier Exp $
+ * $Id: texture.h,v 1.25 2001/03/30 12:50:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -283,7 +283,7 @@ public:
 	/** 
 	 * Tells if the texture has been setuped by the driver.
 	 */	
-	bool	loadedIntoDriver() const 
+	bool	setupedIntoDriver() const 
 	{
 		return TextureDrvShare!=NULL;
 	}

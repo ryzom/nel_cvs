@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.30 2004/05/19 10:19:55 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.31 2004/05/24 09:33:29 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -105,6 +105,8 @@ uint32			CPSSound::getType(void) const
 	return PSSound; 
 }
 
+
+
 //***************************************************************************************************
 void			CPSSound::step(TPSProcessPass pass)
 {
@@ -170,7 +172,12 @@ void			CPSSound::step(TPSProcessPass pass)
 					(*it)->setSoundParams(*currVol,
 										  localToWorld * *posIt,
 										  localToWorld.mulVector(*speedIt),
-										  *currPitch);  
+										  *currPitch);  										
+					if ((*it)->isLooping() && !(*it)->isPlaying())
+					{
+						// looping sources do not play when they are clipped, so "reminds" the source to play when possible.
+						(*it)->play();
+					}					
 				}
 				currVol += GainPtInc;
 				currPitch += pitchPtInc;

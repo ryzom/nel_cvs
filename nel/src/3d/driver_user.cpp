@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.49 2004/08/13 15:32:39 vizerie Exp $
+ * $Id: driver_user.cpp,v 1.50 2004/09/17 15:23:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -858,20 +858,32 @@ void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads,
 			for (uint32 i = 0; i < nbQuads; ++i)
 			{
 				const NLMISC::CQuadColorUV &qcuv = quads[i];
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V0;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv0;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color0;
 				dstPtr+= vSize;
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V1;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv1;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color1;
 				dstPtr+= vSize;
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V2;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv2;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color2;
 				dstPtr+= vSize;
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V3;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv3;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color3;
 				dstPtr+= vSize;
 			}
@@ -881,20 +893,32 @@ void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads,
 			for (uint32 i = 0; i < nbQuads; ++i)
 			{
 				const NLMISC::CQuadColorUV &qcuv = quads[i];
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V0;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv0;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color0;
 				dstPtr+= vSize;
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V1;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv1;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color1;
 				dstPtr+= vSize;
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V2;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv2;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CBGRA))
 				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color2;
 				dstPtr+= vSize;
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V3;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv3;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color3;
 				dstPtr+= vSize;
 			}
@@ -929,24 +953,40 @@ void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV2 *quads, uint32 nbQuads
 			for (uint32 i = 0; i < nbQuads; ++i)
 			{
 				const NLMISC::CQuadColorUV2 &qcuv = quads[i];
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V0;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv0;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs1, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv02;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color0;
 				dstPtr+= vSize;
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V1;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv1;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs1, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv12;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color1;
 				dstPtr+= vSize;
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V2;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv2;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs1, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv22;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color2;
 				dstPtr+= vSize;
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V3;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv3;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs1, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv32;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color3;
 				dstPtr+= vSize;
 			}
@@ -956,24 +996,40 @@ void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV2 *quads, uint32 nbQuads
 			for (uint32 i = 0; i < nbQuads; ++i)
 			{
 				const NLMISC::CQuadColorUV2 &qcuv = quads[i];
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V0;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv0;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs1, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv02;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color0;
 				dstPtr+= vSize;
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V1;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv1;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs1, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv12;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color1;
 				dstPtr+= vSize;
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V2;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv2;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs1, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv22;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color2;
 				dstPtr+= vSize;
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
 				*(CVector*)(dstPtr+0)= qcuv.V3;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv3;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs1, sizeof(CUV))
 				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv32;
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
 				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color3;
 				dstPtr+= vSize;
 			}
@@ -1641,6 +1697,13 @@ UDriver::TCullMode CDriverUser::getCullMode() const
 	return (TCullMode) _Driver->getCullMode();
 }
 
+// ***************************************************************************
+bool CDriverUser::isLost() const
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+	return _Driver->isLost();
+}
 
 
 // ***************************************************************************

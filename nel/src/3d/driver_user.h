@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.45 2004/08/13 15:32:39 vizerie Exp $
+ * $Id: driver_user.h,v 1.46 2004/09/17 15:23:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,6 +134,7 @@ public:
 	virtual	~CDriverUser();
 	// @}
 
+	virtual	bool			isLost() const;
 
 	/// \name Window / driver management.
 	// @{

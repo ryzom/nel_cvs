@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.77 2004/09/02 16:49:33 vizerie Exp $
+ * $Id: driver.h,v 1.78 2004/09/17 15:23:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,6 +168,10 @@ public:
 	virtual					~IDriver(void);
 
 	virtual bool			init (uint windowIcon = 0)=0;
+	
+	// Test if the device is lost. Can only happen with D3D.
+	// The calling application may skip some part of its rendering when it is the case (this is not a requirement, but may save cpu for other applications)
+	virtual	bool			isLost() const = 0;
 
 	/// \name Disable Hardware Feature 
 	/**	Disable some Feature that may be supported by the Hardware 

@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.12 2002/01/28 16:07:37 vizerie Exp $
+ * $Id: zone_lighter.cpp,v 1.13 2002/01/28 18:18:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1804,8 +1804,8 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 	
 	if (_WaterShapes.size() != 0) // any water shape in this zone ?
 	{
-		/// make a quad grid of each water shape
-		makeQuadGridFromWaterShapes();
+		/// make a quad grid of each water shape				
+		makeQuadGridFromWaterShapes(landscape.getZone(_ZoneToLight)->getZoneBB().getAABBox());
 
 		/// check for each tile if it is above / below water
 		computeTileFlagsForPositionTowardWater(lightDesc, leaves);
@@ -2668,41 +2668,21 @@ void CZoneLighter::addWaterShape(CWaterShape *shape, const NLMISC::CMatrix &MT)
 }
 
 ///***********************************************************
-void CZoneLighter::makeQuadGridFromWaterShapes()
+void CZoneLighter::makeQuadGridFromWaterShapes(NLMISC::CAABBox zoneBBox)
 {
 	if (!_WaterShapes.size()) return;
-	/// Compute the bbox of all shapes. We need this to dimension the quad grid
+
 	NLMISC::CAABBox tmpBox;
-
-	/// get the bbox of the first shape in the world
-	_WaterShapes[0].Shape->getAABBox(tmpBox);
-	NLMISC::CAABBox wbb = NLMISC::CAABBox::transformAABBox(_WaterShapes[0].MT, tmpBox);
-
-	TShapeVect::iterator it;	
-	
-	// make the union with all others bboxes.
-	for (it = _WaterShapes.begin() + 1; it != _WaterShapes.end(); ++it)
-	{
-		// get bbox in world
-		it->Shape->getAABBox(tmpBox);
-		NLMISC::CAABBox currBB = NLMISC::CAABBox::transformAABBox(it->MT, tmpBox);												         
-		/// make the union oh bboxes
-		wbb  = NLMISC::CAABBox::computeAABBoxUnion(currBB, wbb);
-	}
 
 	/// the number of cells we want in the quad grid
 	const uint numCells = 16;
 
 	/// get the dimension
-	float width  = wbb.getMax().x - wbb.getMin().x;
-	float height = wbb.getMax().y - wbb.getMin().y;
+	float width  = zoneBBox.getMax().x - zoneBBox.getMin().x;
+	float height = zoneBBox.getMax().y - zoneBBox.getMin().y;
 
 	float dim = std::max(width, height);
 
-	/// center the quad grid at the center of the shapes bboxes
-/*	NLMISC::CMatrix posMat;
-	posMat.setPos(wbb.getCenter());
-	_WaterShapeQuadGrid.changeBase(posMat.inverted());*/
 
 	/// init the quad grid
 	_WaterShapeQuadGrid.create(numCells, dim / numCells);
@@ -2711,13 +2691,18 @@ void CZoneLighter::makeQuadGridFromWaterShapes()
 	uint count = 0, totalCount = _WaterShapes.size();
 
 	/// now, insert all water shapes
-	for (it = _WaterShapes.begin(); it != _WaterShapes.end(); ++it, ++count)
+	for (TShapeVect::iterator it = _WaterShapes.begin(); it != _WaterShapes.end(); ++it, ++count)
 	{
 		CWaterShape *ws = NLMISC::safe_cast<CWaterShape *>(it->Shape);
 		/// get the current shape bbox in the world
 		it->Shape->getAABBox(tmpBox);
-		NLMISC::CAABBox currBB = NLMISC::CAABBox::transformAABBox(it->MT, tmpBox);												         
-		_WaterShapeQuadGrid.insert(currBB.getMin(), currBB.getMax(), NLMISC::safe_cast<CWaterShape *>(it->Shape));
+		NLMISC::CAABBox currBB = NLMISC::CAABBox::transformAABBox(it->MT, tmpBox);
+
+		/// test if it intesect the zone bbox
+		if (zoneBBox.intersect(currBB))
+		{
+			_WaterShapeQuadGrid.insert(currBB.getMin(), currBB.getMax(), NLMISC::safe_cast<CWaterShape *>(it->Shape));
+		}
 		progress("Building quadtree from water surfaces", (float) count / totalCount);
 	}
 
@@ -2842,7 +2827,7 @@ void CZoneLighter::computeTileFlagsForPositionTowardWater(const CLightDesc &ligh
 			
 			(*qgIt)->getShapeInWorldSpace(waterPoly);
 			NLMISC::CPolygon2D poly(waterPoly);
-			if (poly.intersect(tilePoly)) // above or below a water surface ?
+			if (poly.intersect(tilePoly)) // above or below a water surface ?		
 			{
 				/// height of water 
 				float waterHeight = waterPoly.Vertices[0].z;

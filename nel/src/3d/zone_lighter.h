@@ -1,7 +1,7 @@
 /** \file zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.5 2002/01/28 14:45:34 vizerie Exp $
+ * $Id: zone_lighter.h,v 1.6 2002/01/28 18:18:01 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -375,8 +375,9 @@ private:
 	
 	/** Make a quad grid of all the water shapes that where registered by calling addWaterShape()
 	  * The vector of water shapes is released then
+	  * \param bbox the bbox of the zone containing the water shapes
 	  */
-	void makeQuadGridFromWaterShapes();
+	void makeQuadGridFromWaterShapes(NLMISC::CAABBox zoneBBox);
 
 
 	/** For each tile of the current zone, check wether it below or above water. 

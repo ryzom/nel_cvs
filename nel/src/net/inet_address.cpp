@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.cpp,v 1.12 2000/10/10 15:28:15 cado Exp $
+ * $Id: inet_address.cpp,v 1.13 2000/10/11 13:23:50 valignat Exp $
  *
  * Implementation for CInetAddress.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -35,7 +35,7 @@
 
 #include <winsock2.h>
 
-#elif defined NL_OS_LINUX
+#elif defined NL_OS_UNIX
 
 #include <netinet/in.h>
 #define WSAGetLastError() 0

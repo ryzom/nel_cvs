@@ -7,7 +7,7 @@
 /*
  * Evalable constantes :
  *	NL_OS_WINDOWS		: windows operating system (32bits)
- *	NL_OS_LINUX			: linux operating system
+ *	NL_OS_UNIX			: linux operating system
  *
  *	NL_BIG_ENDIAN		: other processor
  *	NL_LITTLE_ENDIAN	: x86 processor
@@ -31,7 +31,7 @@
 #    define NL_RELEASE
 #  endif
 #else
-#  define NL_OS_LINUX
+#  define NL_OS_UNIX
 #  define NL_BIG_ENDIAN
 #endif
 
@@ -64,7 +64,7 @@ typedef	unsigned	__int64		uint64;
 typedef	signed		int			sint;			// at least 32bits (depend of processor)
 typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 
-#elif defined (NL_OS_LINUX)
+#elif defined (NL_OS_UNIX)
 
 typedef	signed		char		sint8;
 typedef	unsigned	char		uint8;

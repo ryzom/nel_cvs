@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.cpp,v 1.10 2000/10/10 15:28:15 cado Exp $
+ * $Id: base_socket.cpp,v 1.11 2000/10/11 13:23:50 valignat Exp $
  *
  * Implementation of CBaseSocket
  */
@@ -33,7 +33,7 @@
 #define ERROR_NUM WSAGetLastError()
 #define socklen_t int
 
-#elif defined NL_OS_LINUX
+#elif defined NL_OS_UNIX
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -152,7 +152,7 @@ void CBaseSocket::close()
 #ifdef NL_OS_WINDOWS
 		shutdown( _Sock, SD_BOTH );
 		closesocket( _Sock );
-#elif defined NL_OS_LINUX
+#elif defined NL_OS_UNIX
 		shutdown( _Sock, SHUT_RDWR );
 		::close( _Sock );
 #endif
@@ -294,7 +294,7 @@ void CBaseSocket::bind( uint16 port ) throw (ESocket)
 			case WSAEADDRNOTAVAIL : throw ESocket("Bind failed : address not available");
 			default : throw ESocket("Bind failed");
 		}
-#elif defined NL_OS_LINUX
+#elif defined NL_OS_UNIX
 		throw ESocket(strerror(errno));
 #endif
 	}

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.15 2000/10/09 14:09:03 cado Exp $
+ * $Id: socket.cpp,v 1.16 2000/10/11 13:23:50 valignat Exp $
  *
  * Implementation for CSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -36,7 +36,7 @@ using namespace std;*/
 
 #include <winsock2.h>
 
-#elif defined NL_OS_LINUX
+#elif defined NL_OS_UNIX
 
 #include <unistd.h>
 #include <sys/types.h>

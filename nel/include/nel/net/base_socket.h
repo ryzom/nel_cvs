@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.h,v 1.11 2000/10/09 14:09:03 cado Exp $
+ * $Id: base_socket.h,v 1.12 2000/10/11 13:23:50 valignat Exp $
  *
  * Interface of CBaseSocket
  */
@@ -81,7 +81,7 @@ public:
 //typedef SOCKET;
 #ifdef NL_OS_WINDOWS
 	typedef uint SOCKET;
-#elif defined NL_OS_LINUX
+#elif defined NL_OS_UNIX
 	typedef int SOCKET;
 #endif
 

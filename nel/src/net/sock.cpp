@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.25 2002/10/02 13:37:06 cado Exp $
+ * $Id: sock.cpp,v 1.26 2002/10/02 15:52:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,7 +115,7 @@ ESocket::ESocket( const char *reason, bool systemerror, CInetAddress *addr )
 		}
 		_Reason += ")";
 	}
-	nlwarning( "Exception will be launched: %s", _Reason.c_str() );
+	nlinfo( "Exception will be launched: %s", _Reason.c_str() );
 */
 }
 

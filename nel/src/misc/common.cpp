@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.24 2002/06/11 10:49:40 lecroart Exp $
+ * $Id: common.cpp,v 1.25 2002/10/02 15:52:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -479,18 +479,18 @@ sint nlstricmp(const std::string &lhs,const std::string &rhs)
 
 Exception::Exception() : _Reason("Unknown Exception")
 {
-//	nlwarning("Exception will be launched: %s", _Reason.c_str());
+//	nlinfo("Exception will be launched: %s", _Reason.c_str());
 }
 
 Exception::Exception(const std::string &reason) : _Reason(reason)
 {
-	nlwarning("Exception will be launched: %s", _Reason.c_str());
+	nlinfo("Exception will be launched: %s", _Reason.c_str());
 }
 
 Exception::Exception(const char *format, ...)
 {
 	NLMISC_CONVERT_VARGS (_Reason, format, NLMISC::MaxCStringSize);
-	nlwarning("Exception will be launched: %s", _Reason.c_str());
+	nlinfo("Exception will be launched: %s", _Reason.c_str());
 }
 
 const char	*Exception::what() const throw()

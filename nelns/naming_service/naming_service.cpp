@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.29 2003/06/25 10:15:51 cado Exp $
+ * $Id: naming_service.cpp,v 1.30 2003/06/30 09:50:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,7 @@
 
 #include "nel/misc/debug.h"
 #include "nel/misc/command.h"
+#include "nel/misc/variable.h"
 #include "nel/misc/displayer.h"
 
 #include "nel/net/callback_server.h"
@@ -402,8 +403,8 @@ list<CServiceEntry>::iterator doRemove (list<CServiceEntry>::iterator it)
 		}
 	}
 
-	nlinfo ("Before removing the service, we wait the ACK of %s", res.c_str());
-
+	nlinfo ("Before removing the service, we wait the ACK of '%s'", res.c_str());
+	
 	if ((*it).WaitingUnregistrationServices.empty())
 	{
 		return effectivelyRemove (it);
@@ -1099,6 +1100,10 @@ NLMISC_COMMAND (kill, "kill a service and send an unregister broadcast to other 
 	return true;
 }
 
+NLMISC_DYNVARIABLE(uint32, NbRegisteredServices, "display the number of service that are registered in naming service")
+{
+	if (get) *pointer = RegisteredServices.size();
+}
 
 NLMISC_COMMAND( displayServiceInstances, "SIM: Display info on service instances", "" )
 {

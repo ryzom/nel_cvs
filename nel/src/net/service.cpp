@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.147 2002/10/24 08:39:51 lecroart Exp $
+ * $Id: service.cpp,v 1.148 2002/10/24 14:37:37 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -210,26 +210,28 @@ void AESConnection (const string &serviceName, uint16 sid, void *arg)
 	}
 
 	// add the displayer to the standard logger
-	TSockId			hid;
-	CCallbackClient *client = dynamic_cast<CCallbackClient *>(CUnifiedNetwork::getInstance()->getNetBase("AES", hid));
-	commandDisplayer.setLogServer (client);
-	commandLog.addDisplayer (&commandDisplayer);
+//	TSockId			hid;
+//	CCallbackClient *client = dynamic_cast<CCallbackClient *>(CUnifiedNetwork::getInstance()->getNetBase("AES", hid));
+//	commandDisplayer.setLogServer (client);
+//	commandLog.addDisplayer (&commandDisplayer);
 }
 
 
 static void AESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 {
-	commandLog.removeDisplayer (&commandDisplayer);
+//	commandLog.removeDisplayer (&commandDisplayer);
 }
 
 
 static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
-	string command;
+	nlwarning ("AES: Deprecated function call cbExecCommand");
+
+/*	string command;
 	msgin.serial (command);
 
 	ICommand::execute (command, commandLog);
-}
+*/}
 
 
 static void cbStopService (CMessage &msgin, const std::string &serviceName, uint16 sid)

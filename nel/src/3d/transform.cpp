@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.47 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: transform.cpp,v 1.48 2002/07/18 16:28:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,11 +122,24 @@ void	CTransform::initModel()
 // ***************************************************************************
 CTransform::~CTransform()
 {
-	/* cannot detach me from skeleton here because detachSkeletonSon()
-		use some virtual calls of transform: setApplySkin().
-		Hence, It is the deriver job to detach himself from the skeleton.
-	*/
-	nlassert(_FatherSkeletonModel==NULL);
+	// If still binded to a father skeleton
+	if( _FatherSkeletonModel )
+	{
+		/* If skinned, cannot detach me from skeleton here because detachSkeletonSon()
+			use some virtual calls of transform: setApplySkin().
+			Hence, It is the deriver job to detach himself from the skeleton.
+
+			NB: test isSkinned(), not isSkinnable(), since isSkinned() is not virtual ....
+			This means that if a Mesh isSkinnable(), but never skinned, it is not asserted here.
+		*/
+		if( isSkinned() )
+		{
+			nlstop;
+		}
+		else
+			// Can detach Me. Important for UTransform sticked
+			_FatherSkeletonModel->detachSkeletonSon(this);
+	}
 
 	// resetLighting, removing me from PointLight Transform list.
 	// NB: not done for FrozenStaticLightSetup, because those lights don't owns me.

@@ -1,8 +1,10 @@
 #
-# $Id: Makefile.am,v 1.1 2001/07/11 15:17:40 legros Exp $
+# $Id: Makefile.am,v 1.2 2001/07/19 15:26:41 valignat Exp $
 #
 
-SUBDIRS              = moves_service
+MAINTAINERCLEANFILES = Makefile.in
+
+SUBDIRS              = frontend chat
 
 
 # End of Makefile.am

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.49 2001/10/26 08:16:16 vizerie Exp $
+# $Id: Makefile.am,v 1.50 2001/10/26 08:53:52 vizerie Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -16,6 +16,7 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        animated_lightmap.h                 \
                        animated_material.cpp               \
                        animated_material.h                 \
+                       animated_morph.cpp                  \
                        animated_value.cpp                  \
                        animated_value.h                    \
                        animation.cpp                       \
@@ -79,6 +80,8 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        height_map.cpp                      \
                        hrc_trav.cpp                        \
                        hrc_trav.h                          \
+                       init_3d.h                           \
+                       init_3d.cpp                         \
                        instance_group_user.cpp             \
                        instance_group_user.h               \
                        instance_material_user.cpp          \
@@ -90,13 +93,14 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        landscape.cpp                       \
                        landscape.h                         \
                        landscape_collision_grid.cpp        \
-                       landscape_collision_grid.h          \
+                       landscape_collision_grid.h          \                                              
+                       landscapeig_manager.cpp             \
                        landscape_model.cpp                 \
                        landscape_model.h                   \
                        landscape_profile.cpp               \
                        landscape_profile.h                 \
                        landscape_user.cpp                  \
-                       landscape_user.h                    \
+                       landscape_user.h                    \                       
                        light.cpp                           \
                        light.h                             \
                        light_trav.cpp                      \
@@ -118,7 +122,7 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        mesh_geom.cpp                       \
                        mesh_geom.h                         \
                        mesh_instance.cpp                   \
-                       mesh_instance.h                     \
+                       mesh_instance.h                     \                       
                        mesh_mrm.cpp                        \
                        mesh_mrm.h                          \
                        mesh_mrm_instance.cpp               \
@@ -143,6 +147,10 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        mrm_parameters.h                    \
                        nelu.cpp                            \
                        nelu.h                              \
+                       nv_tri_strip_objects.h              \
+                       nv_tri_strip_objects.cpp            \
+                       nv_vertex_cache.h                   \
+                       nv_vertex_cache.cpp                 \
                        ordering_table.h                    \
                        particle_system.cpp                 \
                        particle_system.h                   \
@@ -212,6 +220,8 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        ps_sound.h                          \
                        ps_sound.cpp                        \
                        quad_grid.h                         \
+                       quad_grid_clip_manager.cpp          \
+                       quad_grid_clip_manager.h            \
                        quad_effect.h                       \
                        quad_effect.cpp                     \
                        register_3d.cpp                     \
@@ -241,6 +251,8 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        skeleton_user.h                     \
                        skeleton_weight.cpp                 \
                        skeleton_weight.h                   \
+                       stripifier.h                        \
+                       stripifier.cpp                      \
                        tess_block.cpp                      \
                        tess_block.h                        \
                        tess_list.cpp                       \
@@ -306,6 +318,8 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        vertex_buffer.h                     \
                        vertex_buffer_hard.cpp              \
                        vertex_buffer_hard.h                \
+                       vertex_program.h                    \
+                       vertex_program.cpp                  \
                        viewport.cpp                        \
                        visual_collision_entity.cpp         \
                        visual_collision_entity.h           \
@@ -320,9 +334,13 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        water_pool_manager.cpp              \
                        water_pool_manager.h                \
                        water_shape.cpp                     \
-                       wtaer_shape.h                       \                       
+                       water_shape.h                       \                       
                        zone.cpp                            \
                        zone.h                              \
+                       zone_corner_smoother.h              \
+                       zone_corner_smoother.cpp            \
+                       zone_lighter.h                      \
+                       zone_lighter.cpp                    \
                        zone_manager.cpp                    \
                        zone_manager.h                      \
                        zone_search.cpp                     \

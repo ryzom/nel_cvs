@@ -251,7 +251,7 @@ BEGIN
                     "Button",BS_AUTO3STATE | WS_TABSTOP,170,180,125,10
     CONTROL         "Always group",IDC_LIGHT_GROUP_ALWAYS,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,170,80,150,15
-    CONTROL         "Day group",IDC_LIGHT_GROUP_DAY,"Button",
+    CONTROL         "Sun group",IDC_LIGHT_GROUP_DAY,"Button",
                     BS_AUTORADIOBUTTON,170,95,150,15
     CONTROL         "Night group",IDC_LIGHT_GROUP_NIGHT,"Button",
                     BS_AUTORADIOBUTTON,170,110,150,15

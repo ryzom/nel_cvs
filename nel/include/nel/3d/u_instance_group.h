@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.15 2002/04/29 09:07:27 besson Exp $
+ * $Id: u_instance_group.h,v 1.16 2002/05/02 12:43:07 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,30 @@ namespace NL3D
 {
 	class UInstance;
 	class UDriver;
+
+/**
+ * Callback class used at instancegroup loading
+ *
+ * \author Matthieu 'TrapII' Besson
+ * \author Nevrax France
+ * \date 2002
+ */
+
+class ITransformName
+{
+
+public:
+	/**
+	 * transformName is called at the addToScene(Async) moment to transform the name of an
+	 * instance to another name. This should be useful to replace various shapes by others 
+	 * like in a shape-template. The function is called with the name of the shape and the
+	 * user must return the new name of the shape.
+	 * \param Name is the name of the shape contained in the instance group
+	 * \return the new name of the shape which must be loaded in place of the param
+	 */
+	virtual std::string transformName (const std::string &Name) = 0;
+};
+
 /**
  * Game interface for managing group instance.
  *
@@ -60,6 +84,13 @@ public:
 	 * Instance group
 	 */
 	virtual ~UInstanceGroup () {};
+
+
+	/**
+	 * Set up the callback used at loading and instanciating of the instanceGroup
+	 * \param pTN is the transformName class that hold the callback
+	 */
+	virtual void setTransformNameCallback (ITransformName *pTN)=0;
 
 	/**
 	 * Add all the instances to the scene. By default, freezeHRC() those instances and the root.

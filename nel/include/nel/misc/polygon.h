@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.13 2004/03/08 17:45:09 vizerie Exp $
+ * $Id: polygon.h,v 1.14 2004/03/10 11:15:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,6 +127,9 @@ public:
 public:
 	/// default ctor
 	CPolygon2D() {}
+
+	// swap this poly content with another poly content
+	void swap(CPolygon2D &other) { Vertices.swap(other.Vertices); }	
 	
 	/** Build a 2D polygon from this 3D polygon, by using the given projection matrix
 	  * The x and y components of projected vertices are used to create the 2D polygon
@@ -201,12 +204,12 @@ private:
 		return index == Vertices.size() - 1 ?
 			   Vertices[0]                 :
 		       Vertices[index + 1];
-	}
-
-
-	
+	}	
 };
 
+// comparison of 2D polygon 
+bool operator == (const CPolygon2D &lhs, const CPolygon2D &rhs);
+bool operator < (const CPolygon2D &lhs, const CPolygon2D &rhs);
 
 } // NLMISC
 

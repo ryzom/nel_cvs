@@ -1,7 +1,7 @@
 /** \file sound_sources/main.cpp
  * Simple example of NeL sound engine usage
  *
- * $Id: main.cpp,v 1.9 2004/10/15 14:34:50 boucher Exp $
+ * $Id: main.cpp,v 1.10 2004/10/15 14:40:40 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -72,27 +72,8 @@ void Init()
 		AudioMixer->init(32, true, false, NULL, true, UAudioMixer::DriverFMod);
 //		AudioMixer->init(32, true, false, NULL, true);
 
-//		/*
-//		 * 2. Load a "sources sounds file" (.nss), its sound properties and
-//		 * its attached wave data files (.wav)
-//		 */
-//		AudioMixer->setSamplePath(".");
-//		AudioMixer->loadSampleBank("sounds");
-//		AudioMixer->loadSoundBank("sounds");
-
 		/*
-		 * In this small example, we don't have any environmental effects or
-		 * environment sounds. If so we would load an "environmental effects
-		 * file" (.nef) and an "environment sounds file" (.nes):
-		 *
-		 * AudioMixer->loadEnvEffects( "effects.nef" );
-		 *
-		 * UEnvSound *root;
-		 * AudioMixer->loadEnvSounds( "envsounds.nes", &root );
-		 */
-
-		/*
-		 * 3. Initialize listener's position and orientation (in NeL coordinate system).
+		 * 2. Initialize listener's position and orientation (in NeL coordinate system).
 		 */
 		CVector initpos ( 0.0f, 0.0f, 0.0f );
 		CVector frontvec( 0.0f, 1.0f, 0.0f );

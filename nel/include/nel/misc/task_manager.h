@@ -1,7 +1,7 @@
 /** \file task_manager.h
  * Manage a list of task in a separate thread
  *
- * $Id: task_manager.h,v 1.10 2002/04/29 09:07:27 besson Exp $
+ * $Id: task_manager.h,v 1.11 2002/10/10 12:42:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,16 +70,36 @@ public:
 	/// return false if exit() is required. task added with addTask() should test this flag.
 	bool	isThreadRunning() {return _ThreadRunning;}
 
+
 protected:
-	
-	//queue of tasks, using list container instead of queue for DeleteTask methode
+
+	/** If any, wait the current running task to complete
+	 *	this function MUST be called in a 'accessor to the _TaskQueue' statement because a mutex is required
+	 *	eg:
+	 *	\begincode
+	 *	{
+	 *		CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
+	 *		waitCurrentTaskToComplete();
+	 *	}
+	 *	\endcode
+	 */
+	void	waitCurrentTaskToComplete ();
+
+protected:
+
+	/// queue of tasks, using list container instead of queue for DeleteTask methode
 	CSynchronized<std::list<IRunnable *> > _TaskQueue;
 
-	//thread pointer
+	/// thread pointer
 	IThread *_Thread;
 
-	//flag indicate thread loop, if false cause thread exit
+	/// flag indicate thread loop, if false cause thread exit
 	volatile	bool _ThreadRunning;
+
+private:
+
+	volatile	bool _IsTaskRunning;
+
 };
 
 

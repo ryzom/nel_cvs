@@ -1,7 +1,7 @@
 /** \file task_manager.cpp
  * <File description>
  *
- * $Id: task_manager.cpp,v 1.8 2002/02/11 10:20:47 lecroart Exp $
+ * $Id: task_manager.cpp,v 1.9 2002/10/10 12:41:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@ namespace NLMISC {
  */
 CTaskManager::CTaskManager() : _TaskQueue ("")
 {
+	_IsTaskRunning = false;
 	_ThreadRunning = true;
 	_Thread = IThread::create(this);
 	_Thread->start();
@@ -55,7 +56,6 @@ CTaskManager::~CTaskManager()
 void CTaskManager::run(void)
 {
 	IRunnable *runnableTask;
-
 	while(_ThreadRunning)
 	{
 		{
@@ -66,6 +66,7 @@ void CTaskManager::run(void)
 			}
 			else
 			{
+				_IsTaskRunning = true;
 				runnableTask = acces.value().front();
 				acces.value().pop_front();
 			}
@@ -73,6 +74,7 @@ void CTaskManager::run(void)
 		if(runnableTask)
 		{
 			runnableTask->run();
+			_IsTaskRunning = false;
 		}
 		else
 		{
@@ -110,5 +112,13 @@ uint CTaskManager::taskListSize(void)
 	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
 	return acces.value().size();
 }
+
+
+void	CTaskManager::waitCurrentTaskToComplete ()
+{
+	while (_IsTaskRunning)
+		sleepTask();
+}
+
 
 } // NLMISC

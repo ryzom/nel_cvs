@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.9 2001/08/03 16:11:45 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.10 2001/08/24 12:43:17 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -515,7 +515,7 @@ void				CAudioMixerUser::loadEnvEffects( const char *filename )
 /*
  * Load buffers
  */
-void			CAudioMixerUser::loadSoundBuffers( const char *filename )
+uint32			CAudioMixerUser::loadSoundBuffers( const char *filename, std::vector<std::string> *notfoundfiles )
 {
 	nlassert( filename != NULL );
 	nldebug( "AM: Loading sound buffers..." );
@@ -524,12 +524,28 @@ void			CAudioMixerUser::loadSoundBuffers( const char *filename )
 	CIFile file;
 	if ( file.open( CPath::lookup( filename ) ) )
 	{
-		uint32 n = CSound::load( _Sounds, file );
+		uint32 n = CSound::load( _Sounds, file, notfoundfiles );
 		nldebug( "AM: Loaded %u sound buffers", n );
+		return n;
 	}
 	else
 	{
 		nlwarning( "AM: Sound description file not found: %s", filename );
+		return 0;
+	}
+}
+
+
+/*
+ * Return the names of the sounds (call this method after loadSoundBuffers())
+ */
+void			CAudioMixerUser::getSoundNames( std::vector<const char *>& names ) const
+{
+	names.clear();
+	TSoundMap::const_iterator ism;
+	for ( ism=_Sounds.begin(); ism!=_Sounds.end(); ++ism )
+	{
+		names.push_back( (*ism).first );
 	}
 }
 

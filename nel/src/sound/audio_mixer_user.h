@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.9 2001/08/23 14:29:13 lecroart Exp $
+ * $Id: audio_mixer_user.h,v 1.10 2001/08/24 12:43:17 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,8 +93,10 @@ public:
 	virtual void				init( uint32 balance_period=AUTOBALANCE_DEFAULT_PERIOD );
 	/// Load environmental effects
 	virtual void				loadEnvEffects( const char *filename );
-	/// Load buffers
-	virtual void				loadSoundBuffers( const char *filename );
+	/** Load buffers. Returns the number of buffers successfully loaded.
+	 *  If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
+	 */
+	virtual uint32				loadSoundBuffers( const char *filename, std::vector<std::string> *notfoundfiles=NULL );
 	/// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
 	virtual	void				loadEnvSounds( const char *filename,
 											   UEnvSound **treeRoot=NULL );
@@ -120,6 +122,8 @@ public:
 
 	/// Return the number of mixing tracks (voices)
 	virtual uint				getPolyphony() const { return _NbTracks; }
+	/// Return the names of the sounds (call this method after loadSoundBuffers())
+	virtual void				getSoundNames( std::vector<const char *>& names ) const;
 
 
 	/// Remove logical sound source (called by CSourceUser's destructor)
@@ -138,6 +142,9 @@ public:
 	CEnvSoundUser				*getEnvSounds()							{ return _EnvSounds; }
 	/// Return the listen pos vector
 	const NLMISC::CVector&		getListenPosVector() const				{ return _ListenPosition; }
+	// Allow to load sound files (nss) when the corresponding wave file is missing (see CSound)
+	//static void					allowMissingWave( bool b )				{ CSound::allowMissingWave( b ); }
+	
 
 protected:
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.53 2002/01/03 13:12:56 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.54 2002/02/04 17:15:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1600,6 +1600,22 @@ void CObjectViewer::removeMainLoopCallBack(IMainLoopCallBack *i)
 }
 
 // ***************************************************************************
+void CObjectViewer::activateTextureSet(uint index)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	std::vector<class NL3D::CTransformShape*>::iterator it;
+	for (it = _ListTransformShape.begin(); it != _ListTransformShape.end(); ++it)
+	{
+		if (dynamic_cast<NL3D::CMeshBaseInstance *>(*it))
+		{
+			static_cast<NL3D::CMeshBaseInstance *>(*it)->selectTextureSet(index);
+		}		
+	}	
+}
+
+// ***************************************************************************
+
 void CObjectViewer::removeAllInstancesFromScene()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -1614,6 +1630,7 @@ void CObjectViewer::removeAllInstancesFromScene()
 
 
 }
+
 
 // ***************************************************************************
 void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)

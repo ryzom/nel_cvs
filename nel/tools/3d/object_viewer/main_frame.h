@@ -119,6 +119,10 @@ public:
 	afx_msg void OnHelpAboutobjectviewer();
 	afx_msg void OnSetLag();
 	afx_msg void OnRemoveAllInstancesFromScene();
+	afx_msg void OnActivateTextureSet1();
+	afx_msg void OnActivateTextureSet2();
+	afx_msg void OnActivateTextureSet3();
+	afx_msg void OnActivateTextureSet4();
 	afx_msg void OnWindowVegetable();
 	afx_msg void OnUpdateWindowVegetable(CCmdUI* pCmdUI);
 	//}}AFX_MSG

@@ -1,7 +1,7 @@
 /** \file smart_ptr_inline.h
  * SmartPtr class inline definitions.
  *
- * $Id: smart_ptr_inline.h,v 1.5 2001/06/18 09:07:07 corvazier Exp $
+ * $Id: smart_ptr_inline.h,v 1.6 2003/06/19 13:56:31 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,9 @@ namespace	NLMISC
 inline CRefCount::~CRefCount()
 {
 	// This is the destruction of the objet.
+#ifdef NL_DEBUG
+	nlassert(crefs==0);
+#endif
 
 	// If a CRefPtr still points on me...
 	if(!pinfo->IsNullPtrInfo)

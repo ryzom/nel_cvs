@@ -1,7 +1,7 @@
 /** \file string_id_array.h
- * <File description>
+ * CStringIdArray
  *
- * $Id: string_id_array.h,v 1.10 2001/04/06 16:08:39 lecroart Exp $
+ * $Id: string_id_array.h,v 1.11 2001/04/23 09:23:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,8 @@ namespace NLMISC {
 
 
 /**
- * <Class description>
+ * The goal of this class is to associate number and string. It is used in the
+ * CCallbackNetBase for message id<->string associations.
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2001
@@ -53,6 +54,7 @@ public:
 
 	CStringIdArray () : _IgnoreAllUnknownId(false) { }
 
+	/// Adds a string in the string in the array
 	void addString(const std::string &str, TStringId id)
 	{
 		nlassert (id >= 0 && id < pow(2, sizeof (TStringId)*8));
@@ -69,6 +71,7 @@ public:
 		}
 	}
 
+	/// Adds a string in the string at the end of the array
 	void addString(const std::string &str)
 	{
 		nlassert (_StringArray.size () < pow(2, sizeof (TStringId)*8));
@@ -77,6 +80,9 @@ public:
 		addString (str, _StringArray.size ());
 	}
 
+	/** Returns the id associated to string str. If the id is not found, the string will be added in
+	 * _NeedToAskStringArray if ignoreAllUnknownId is false and IgnoreIfUnknown is false too.
+	 */
 	TStringId getId (const std::string &str, bool IgnoreIfUnknown = false)
 	{
 		// sorry for this bullshit but it's the simplest way ;)
@@ -116,6 +122,7 @@ public:
 		return -1;
 	}
 
+	/// Returns the string associated to this id
 	std::string getString (TStringId id) const
 	{
 		// sorry for this bullshit but it's the simplest way ;)
@@ -126,26 +133,31 @@ public:
 		return _StringArray[id];
 	}
 
+	/// Set the size of the _StringArray
 	void resize (TStringId size)
 	{
 		_StringArray.resize (size);
 	}
 
+	/// Returns the size of the _StringArray
 	TStringId size () const
 	{
 		return _StringArray.size ();
 	}
 
+	/// Returns all string in the _NeedToAskStringArray
 	const std::set<std::string> &getNeedToAskedStringArray () const
 	{
 		return _NeedToAskStringArray;
 	}
 
+	/// Returns all string in the _AskedStringArray
 	const std::set<std::string> &getAskedStringArray () const
 	{
 		return _AskedStringArray;
 	}
 
+	/// Moves string from _NeedToAskStringArray to _AskedStringArray
 	void moveNeedToAskToAskedStringArray ()
 	{
 		if (!_IgnoreAllUnknownId)
@@ -155,13 +167,26 @@ public:
 		}
 	}
 
+	/// If set to true, when we ask a string with no id, we don't put it in the _NeedToAskStringArray array
 	void ignoreAllUnknownId (bool b) { _IgnoreAllUnknownId = b; }
 
+	/// Clears the string id array
 	void clear ()
 	{
 		_StringArray.clear ();
 		_NeedToAskStringArray.clear ();
 		_AskedStringArray.clear ();
+	}
+
+	/// Displays all association of the array in a C style (useful to copy/paste in your C code)
+	void display ()
+	{
+		nlinfo ("static const char *OtherSideAssociations[] = {");
+		for (uint i = 0; i < _StringArray.size(); i++)
+		{
+			nlinfo(" \"%s\",", _StringArray[i].c_str());
+		}
+		nlinfo ("};");
 	}
 
 private:

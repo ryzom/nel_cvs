@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.85 2003/11/06 12:51:33 besson Exp $
+ * $Id: path.cpp,v 1.86 2003/11/07 08:56:54 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -85,7 +85,7 @@ CPath *CPath::_Instance = NULL;
 
 void CPath::getFileList(const std::string &extension, std::vector<std::string> &filenames)
 {
-	std::map<std::string, CFileEntry>::iterator first(getInstance()->_Files.begin()), last(getInstance()->_Files.end());
+	std::map<std::string, CFileEntry, CNoCaseComp>::iterator first(getInstance()->_Files.begin()), last(getInstance()->_Files.end());
 
 	if( !extension.empty() )
 	{
@@ -164,8 +164,8 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 		inst->_Extensions.erase (inst->_Extensions.begin() + n);
 
 		// remove mapping in the map
-		map<string, CFileEntry>::iterator it = inst->_Files.begin();
-		map<string, CFileEntry>::iterator nit = it;
+		map<string, CFileEntry, CNoCaseComp>::iterator it = inst->_Files.begin();
+		map<string, CFileEntry, CNoCaseComp>::iterator nit = it;
 		while (it != inst->_Files.end ())
 		{
 			nit++;
@@ -192,7 +192,7 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 
 		// adding mapping into the map
 		vector<string> newFiles;
-		map<string, CFileEntry>::iterator it = inst->_Files.begin();
+		map<string, CFileEntry, CNoCaseComp>::iterator it = inst->_Files.begin();
 		while (it != inst->_Files.end ())
 		{
 			string ext = inst->SSMext.get((*it).second.idExt);
@@ -242,7 +242,7 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 		str.resize (str.size()-1);
 	}
 
-	map<string, CFileEntry>::iterator it = inst->_Files.find (str);
+	map<string, CFileEntry, CNoCaseComp>::iterator it = inst->_Files.find (str);
 	// If found in the map, returns it
 	if (it != inst->_Files.end())
 	{
@@ -312,7 +312,7 @@ bool CPath::exists (const std::string &filename)
 		str.resize (str.size()-1);
 	}
 
-	map<string, CFileEntry>::iterator it = inst->_Files.find (str);
+	map<string, CFileEntry, CNoCaseComp>::iterator it = inst->_Files.find (str);
 	// If found in the map, returns it
 	if (it != inst->_Files.end())
 	{
@@ -1001,7 +1001,7 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 	CPath *inst = CPath::getInstance();
 
 	// find if the file already exist
-	map<string, CFileEntry>::iterator it = inst->_Files.find (strlwr(filename));
+	map<string, CFileEntry, CNoCaseComp>::iterator it = inst->_Files.find (strlwr(filename));
 	if (it != inst->_Files.end ())
 	{
 		string path = inst->SSMpath.get((*it).second.idPath);
@@ -1055,7 +1055,7 @@ void CPath::display ()
 	nlinfo ("PATH: Contents of the map:");
 	nlinfo ("PATH: %-25s %-5s %-5s %s", "filename", "ext", "remap", "full path");
 	nlinfo ("PATH: ----------------------------------------------------");
-	for (map<string, CFileEntry>::iterator it = inst->_Files.begin(); it != inst->_Files.end (); it++)
+	for (map<string, CFileEntry, CNoCaseComp>::iterator it = inst->_Files.begin(); it != inst->_Files.end (); it++)
 	{
 		string ext = inst->SSMext.get((*it).second.idExt);
 		string path = inst->SSMpath.get((*it).second.idPath);

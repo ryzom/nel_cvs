@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.9 2001/06/27 08:34:23 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.10 2001/07/05 08:26:07 lecroart Exp $
  *
  */
 
@@ -918,11 +918,6 @@ public:
 			(*aesit).Services.push_back (s);
 		}
 		displayServices ();
-	}
-
-	bool		update ()
-	{
-		return true;
 	}
 };
 

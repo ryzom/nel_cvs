@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.30 2002/03/13 11:13:33 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.31 2002/03/13 16:59:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -503,7 +503,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 					// Setup a CSurfaceLightingInfo
 					slInfo.CellSurfaceLightSize= opt.SurfaceLightingCellSize;
 					NLMISC::clamp(slInfo.CellSurfaceLightSize, 0.001f, 1000000.f);
-					slInfo.CellRaytraceDeltaZ= 0.20f;
+					slInfo.CellRaytraceDeltaZ= opt.SurfaceLightingDeltaZ;
 					slInfo.ColIdentifierPrefix= "col_";
 					slInfo.ColIdentifierSuffix= "_";
 					// Build RetrieverBank and GlobalRetriever from collisions in scene

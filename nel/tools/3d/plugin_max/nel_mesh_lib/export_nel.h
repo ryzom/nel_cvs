@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.46 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: export_nel.h,v 1.47 2002/03/13 16:59:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,6 +122,7 @@ struct CExportNelOptions
 	bool bShowLumel;
 	bool bTestSurfaceLighting;
 	float SurfaceLightingCellSize;
+	float SurfaceLightingDeltaZ;
 
 
 	CExportNelOptions::CExportNelOptions()
@@ -139,15 +140,18 @@ struct CExportNelOptions
 		bShowLumel = false;
 		bTestSurfaceLighting= true;
 		SurfaceLightingCellSize= 1.5f;
+		SurfaceLightingDeltaZ= 0.8f;
 	}
 
 	void serial(NLMISC::IStream& stream)
 	{
-		sint version = stream.serialVersion (3);
+		sint version = stream.serialVersion (4);
 
 		// Check version
 		switch (version)
 		{
+		case 4:
+			stream.serial (SurfaceLightingDeltaZ);
 		case 3:
 			stream.serial (bTestSurfaceLighting);
 			stream.serial (SurfaceLightingCellSize);

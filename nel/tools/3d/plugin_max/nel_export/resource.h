@@ -178,6 +178,8 @@
 #define IDC_CHECK_COLLISION_EXTERIOR    1127
 #define IDC_TEST_SURFACE_LIGHT          1127
 #define IDC_EDITCELLSIZE                1128
+#define IDC_EDITCELLDELTAZ              1129
+#define IDC_STATIC2                     1130
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -188,7 +190,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        124
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1129
+#define _APS_NEXT_CONTROL_VALUE         1131
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

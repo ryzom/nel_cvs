@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.23 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: nel_export.cpp,v 1.24 2002/03/13 16:59:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,6 +119,8 @@ int CALLBACK OptionsDialogCallback (
 				SendMessage( GetDlgItem(hwndDlg,IDC_TEST_SURFACE_LIGHT), BM_SETCHECK, BST_UNCHECKED, 0 );
 			sprintf( tmp, "%f", theExportSceneStruct.SurfaceLightingCellSize );
 			SendMessage( GetDlgItem(hwndDlg,IDC_EDITCELLSIZE), WM_SETTEXT, 0, (long)tmp );
+			sprintf( tmp, "%f", theExportSceneStruct.SurfaceLightingDeltaZ );
+			SendMessage( GetDlgItem(hwndDlg,IDC_EDITCELLDELTAZ), WM_SETTEXT, 0, (long)tmp );
 
 		}
 		break;
@@ -184,6 +186,8 @@ int CALLBACK OptionsDialogCallback (
 					theExportSceneStruct.bTestSurfaceLighting= (SendMessage( GetDlgItem(hwndDlg,IDC_TEST_SURFACE_LIGHT), BM_GETCHECK, 0, 0 ) == BST_CHECKED);
 					SendMessage( GetDlgItem(hwndDlg,IDC_EDITCELLSIZE), WM_GETTEXT, 1024, (long)tmp );
 					theExportSceneStruct.SurfaceLightingCellSize= (float)atof( tmp );
+					SendMessage( GetDlgItem(hwndDlg,IDC_EDITCELLDELTAZ), WM_GETTEXT, 1024, (long)tmp );
+					theExportSceneStruct.SurfaceLightingDeltaZ= (float)atof( tmp );
 
 					// End the dialog
 					EndDialog(hwndDlg, TRUE);

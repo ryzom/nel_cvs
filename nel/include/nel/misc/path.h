@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.13 2002/01/28 16:15:46 lecroart Exp $
+ * $Id: path.h,v 1.14 2002/02/04 16:01:13 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -111,6 +111,19 @@ public:
 
 	static void display ();
 
+	/**	eg: "C:\\Game/dir1\\" will become "C:/Game/dir1/" or "C:/Game/dir1"
+	 */
+	static std::string	standardizePath (const std::string &path, bool addFinalSlash = true);
+
+	/** List all files in a directory.
+	 *	\param path path where files are scanned
+	 *	\param recurse true if want to recurs directories
+	 *	\param wantDir true if want to add directorires in result
+	 *	\param wantFile true if want to add files in result
+	 *	\param result list of string where directories/files names are added.
+	 */
+	static void			getPathContent (const std::string &path, bool recurse, bool wantDir, bool wantFile, std::vector<std::string> &result);
+
 
 private:
 
@@ -138,8 +151,6 @@ private:
 	std::vector<std::pair<std::string, std::string> > _Extensions;
 
 	sint				findExtension (const std::string &ext1, const std::string &ext2);
-	static std::string	standardizePath (const std::string &path, bool addFinalSlash = true);
-	static void			getPathContent (const std::string &path, bool recurse, bool wantDir, bool wantFile, std::vector<std::string> &result);
 	static void			insertFileInMap (const std::string &filename, const std::string &filepath, bool remap, const std::string &extension);
 };
 

@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.49 2002/11/15 15:40:57 lecroart Exp $
+ * $Id: common.h,v 1.50 2002/11/15 16:51:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,6 @@
 #include "nel/misc/types_nl.h"
 
 #include <ctype.h>
-#include <process.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -41,6 +40,10 @@
 
 #ifndef NL_OS_WINDOWS
 #include <math.h>
+#include <process.h>
+#else
+#include <unistd.h>
+#include <sys/types.h>
 #endif
 
 /// This namespace contains all miscellaneous class used by other module

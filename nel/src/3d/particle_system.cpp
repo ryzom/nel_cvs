@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.71 2003/12/08 15:00:04 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.72 2003/12/08 15:01:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -464,7 +464,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 					_AutoLODEmitRatio = (1.f - _MaxDistLODBias) * finalValue + _MaxDistLODBias;
 				}
 			}			
-			nlinfo("system %s is %s", _Name.c_str(), _HiddenAtCurrentFrame ? "hidden" : "showed");
+			//nlinfo("system %s is %s", _Name.c_str(), _HiddenAtCurrentFrame ? "hidden" : "showed");
 			// set start position. Used by emitters that emit from Local basis to world			
 			if (!_HiddenAtPreviousFrame && !_HiddenAtCurrentFrame)
 			{			
@@ -491,9 +491,11 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			float realEt = _KeepEllapsedTimeForLifeUpdate ? (ellapsedTime / nbPass)
 														  : et;						
 
+			/*
 			nlinfo("Delta pos = (%f, %f, %f)", _CoordSystemInfo.Matrix->getPos().x - _CoordSystemInfo.OldPos.x,
 				                               _CoordSystemInfo.Matrix->getPos().y - _CoordSystemInfo.OldPos.y,
 											   _CoordSystemInfo.Matrix->getPos().y - _CoordSystemInfo.OldPos.y);
+			*/
 			do
 			{					
 				// position of the system at the end of the integration

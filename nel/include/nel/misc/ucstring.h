@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.6 2003/04/24 13:57:52 boucher Exp $
+ * $Id: ucstring.h,v 1.7 2003/08/29 15:34:15 lecroart Exp $
  *
  */
 
@@ -141,7 +141,47 @@ public:
 		return str;
 	}
 
-	/// Convert the utf8 string into this 16 bits string
+	/// Convert this ucstring (16bits char) into a utf8 string
+	std::string toUtf8() const
+	{
+		std::string	res;
+		ucstring::const_iterator first(begin()), last(end());
+		for (; first != last; ++first)
+		{
+			ucchar	c = *first;
+			uint nbLoop = 0;
+			if (*first < 0x80)
+				res += char(*first);
+			else if (*first < 0x800)
+			{
+				ucchar c = *first;
+				c = c >> 6;
+				c = c & 0x1F;
+				res += c | 0xC0;
+				nbLoop = 1;
+			}
+			else if (*first < 0x10000)
+			{
+				ucchar c = *first;
+				c = c >> 12;
+				c = c & 0x0F;
+				res += c | 0xE0;
+				nbLoop = 2;
+			}
+
+			for (uint i=0; i<nbLoop; ++i)
+			{
+				ucchar	c = *first;
+				c = c >> ((nbLoop - i - 1) * 6);
+				c = c & 0x3F;
+				res += char(c) | 0x80; 
+			}
+		}
+		return res;
+	}
+
+
+	/// Convert the utf8 string into this ucstring (16 bits char)
 	void fromUtf8(const std::string &stringUtf8)
 	{
 		// clear the string

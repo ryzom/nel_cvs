@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.38 2003/08/27 16:16:25 distrib Exp $
+ * $Id: i18n.cpp,v 1.39 2003/08/29 15:34:15 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -427,7 +427,7 @@ void CI18N::readTextBuffer(uint8 *buffer, uint size, ucstring &result, bool forc
 	{
 		// remove utf16 header
 		text = std::string(text, 2);
-		uint32 size = text.size();
+//		uint32 size = text.size();
 		// check pair number of bytes
 		nlassert((text.size() & 1) == 0);
 		// and do manual conversion
@@ -440,7 +440,7 @@ void CI18N::readTextBuffer(uint8 *buffer, uint size, ucstring &result, bool forc
 	{
 		// remove utf16 header
 		text = std::string(text, 2);
-		uint32 size = text.size();
+//		uint32 size = text.size();
 		// check pair number of bytes
 		nlassert((text.size() & 1) == 0);
 		// and do manual conversion
@@ -537,6 +537,8 @@ ucstring CI18N::makeMarkedString(ucchar openMark, ucchar closeMark, const ucstri
 
 string CI18N::encodeUTF8(const ucstring &str)
 {
+	return str.toUtf8();
+	/*	
 	string	res;
 	ucstring::const_iterator first(str.begin()), last(str.end());
 	for (; first != last; ++first)
@@ -570,8 +572,8 @@ string CI18N::encodeUTF8(const ucstring &str)
 			res += char(c) | 0x80; 
 		}
 	}
-
 	return res;
+	*/
 }
 
 /* UTF-8 conversion table

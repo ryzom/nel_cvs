@@ -1,7 +1,7 @@
 /** \file value_gradient_dlg.cpp
  * a dialog that allows to edit a gradient of value, used in a particle system
  *
- * $Id: value_gradient_dlg.cpp,v 1.4 2001/06/27 16:35:46 vizerie Exp $
+ * $Id: value_gradient_dlg.cpp,v 1.5 2001/07/04 12:11:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,6 +141,10 @@ void CValueGradientDlg::OnRemoveValue()
 			m_GradientList.SetCurSel(oldIndex - 1) ;
 		}
 		m_GradientList.Invalidate() ;
+
+		
+		OnSelchangeGradientList() ; /// this won't be called automatically ...
+
 	UpdateData(FALSE) ;		
 }
 

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.13 2001/01/18 17:53:51 chafik Exp $
+ * $Id: agent_script.cpp,v 1.14 2001/01/19 11:11:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/agent/agent_nombre.h"
+#include "nel/ai/agent/performative.h"
 
 namespace NLAIAGENT
 {	
@@ -42,7 +43,16 @@ namespace NLAIAGENT
 																							new NLAIC::CIdentType(CMessageVector::IdMessageVector),
 																							new NLAIC::CIdentType(NLAISCRIPT::CMessageClass::IdMessageClass));
 
-	static NLAISCRIPT::CParam SendParamMessageScript(2, new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(IntegerType::IdIntegerType)), msgType);
+	static NLAISCRIPT::COperandSimpleListOr *msgPerf = new NLAISCRIPT::COperandSimpleListOr(6,	
+																							new NLAIC::CIdentType(CPExec::IdPExec),
+																							new NLAIC::CIdentType(CPAchieve::IdPAchieve),
+																							new NLAIC::CIdentType(CPAsk::IdPAsk),
+																							new NLAIC::CIdentType(CPBreak::IdPBreak),
+																							new NLAIC::CIdentType(CPTell::IdPTell),
+																							new NLAIC::CIdentType(CPKill::IdPKill));
+
+
+	static NLAISCRIPT::CParam SendParamMessageScript(2,msgPerf, msgType);
 
 
 	CAgentScript::CMethodCall CAgentScript::StaticMethod[] = 

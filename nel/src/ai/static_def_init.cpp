@@ -15,6 +15,7 @@
 #include "nel/ai/agent/actor.h"
 #include "nel/ai/agent/actor_script.h"
 #include "nel/ai/script/interpret_actor.h"
+#include "nel/ai/agent/performative.h"
 
 #include "nel/ai/c/registry_class.h"
 
@@ -366,6 +367,36 @@
 	const NLAIC::CIdentType CLocalAgentMail::LocalAgentMail = NLAIC::CIdentType( "LocalAgentMail", 
 		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CLocalAgentMail()), 
 		NLAIC::CTypeOfObject::tAgent,
+		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
+
+	const NLAIC::CIdentType CPExec::IdPExec = NLAIC::CIdentType( "Exec", 
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPExec()), 
+		NLAIC::CTypeOfObject::tPerformative,
+		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
+
+	const NLAIC::CIdentType CPAchieve::IdPAchieve = NLAIC::CIdentType( "Achieve", 
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPAchieve()), 
+		NLAIC::CTypeOfObject::tPerformative,
+		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
+
+	const NLAIC::CIdentType CPAsk::IdPAsk = NLAIC::CIdentType( "Ask", 
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPAsk()), 
+		NLAIC::CTypeOfObject::tPerformative,
+		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
+
+	const NLAIC::CIdentType CPBreak::IdPBreak = NLAIC::CIdentType( "Break", 
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPBreak()), 
+		NLAIC::CTypeOfObject::tPerformative,
+		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
+
+	const NLAIC::CIdentType CPTell::IdPTell = NLAIC::CIdentType( "Tell", 
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPTell()), 
+		NLAIC::CTypeOfObject::tPerformative,
+		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
+
+	const NLAIC::CIdentType CPKill::IdPKill = NLAIC::CIdentType( "Kill", 
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPKill()), 
+		NLAIC::CTypeOfObject::tPerformative,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
 //}

@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.11 2001/01/18 17:53:47 chafik Exp $
+ * $Id: compilateur.h,v 1.12 2001/01/19 11:11:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -448,7 +448,7 @@ namespace NLAISCRIPT
 		void setTypeExpression(NLAIC::CTypeOfOperator::TTypeOp op,const char *txtOp);
 		void setTypeExpressionG();
 		void setTypeExpressionD(NLAIC::CTypeOfOperator::TTypeOp op,const char *txtOp);
-		void callFunction();
+		bool callFunction();
 		void callSend();
 		void initMessageManager();
 		bool endMessageManager();

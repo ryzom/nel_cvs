@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.10 2001/01/19 09:06:16 chafik Exp $
+ * $Id: yacc.cpp,v 1.11 2001/01/19 11:11:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/ai/script/constraint_find_run.h"
 #include "nel/ai/agent/main_agent_script.h"
 #include "nel/ai/script/interpret_object_manager.h"
+#include "nel/ai/agent/performative.h"
 
 namespace NLAISCRIPT
 {		
@@ -695,7 +696,7 @@ namespace NLAISCRIPT
 		//IConstraint *c = getMethodConstraint(CConstraintMethode(CConstraintMethode::normalCall, 0 , _LastbaseClass,_LastStringParam.back(),_Param.back(),0,0));
 	}
 
-	void CCompilateur::callFunction()
+	bool CCompilateur::callFunction()
 	{
 #ifdef NL_DEBUG
 	char mName[1024*8];
@@ -766,9 +767,7 @@ namespace NLAISCRIPT
 		if(sendOp != NULL)
 		{
 			NLAIAGENT::IBaseGroupType *nameRun = (NLAIAGENT::IBaseGroupType *)_LastStringParam.back()->clone();
-			((NLAIAGENT::IObjectIA *)nameRun->pop())->release();
-			nameRun->cpy(NLAIAGENT::CStringType ((NLAIAGENT::CStringVarName(_RUN_))));
-			nameRun->incRef();
+			((NLAIAGENT::IObjectIA *)nameRun->pop())->release();			
 #ifdef NL_DEBUG	
 	nameRun->getDebugString(mName);
 #endif
@@ -777,6 +776,25 @@ namespace NLAISCRIPT
 			IOpType *p = (IOpType *)(*_Param.back())[1];
 			p->incRef();
 			paramRun->push(p);
+
+			const NLAIC::CIdentType *id = ((IOpType *)(*_Param.back())[0])->getConstraintTypeOf();
+			if(id == NULL || !(((const NLAIC::CTypeOfObject &)*id) & NLAIC::CTypeOfObject::tPerformative) )
+			{								
+				yyerror("argument 1 of send is not an performatif");	
+				return false;
+			}
+			else
+			{
+			
+				NLAIAGENT::IPerformative *perf = (NLAIAGENT::IPerformative *)id->getFactory()->getClass();
+				char runName[1024*4]; 
+				sprintf(runName,"%s%s",_RUN_,perf->getName());
+				nameRun->cpy(NLAIAGENT::CStringType ((NLAIAGENT::CStringVarName(runName))));
+				nameRun->incRef();
+			}
+
+			/*nameRun->cpy(NLAIAGENT::CStringType ((NLAIAGENT::CStringVarName(_RUN_))));
+			nameRun->incRef();*/
 
 			int baseIsNew = false;
 			if(_LastbaseClass == NULL)
@@ -799,6 +817,7 @@ namespace NLAISCRIPT
 			}
 			sendOp->addConstraint(c);
 		}
+		return true;
 	}
 
 	CCodeBrancheRun *CCompilateur::getCode(bool isMain)

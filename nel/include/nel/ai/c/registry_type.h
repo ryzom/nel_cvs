@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some class for typing objects.
  *
- * $Id: registry_type.h,v 1.8 2001/01/17 10:32:29 chafik Exp $
+ * $Id: registry_type.h,v 1.9 2001/01/19 11:11:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -253,8 +253,10 @@ namespace NLAIC
 			tObject = 128,
 			///The object is an agent defiend with the interpret. Agents class must derived from NLAIAGENT::CAgentScript.
 			tAgentInterpret = 256,
+			///The object is an performative.
+			tPerformative = 512,
 			///Last definition.
-			tLast = tAgentInterpret,			
+			tLast = tAgentInterpret,
 			///That is an undef object.
 			tUndef = 0xFFFFFFFF - tLast*2
 			

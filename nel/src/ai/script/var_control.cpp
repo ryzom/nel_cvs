@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.10 2001/01/18 17:53:52 chafik Exp $
+ * $Id: var_control.cpp,v 1.11 2001/01/19 11:11:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/constraint_stack_component.h"
 #include "nel/ai/script/object_unknown.h"
+#include "nel/ai/agent/performative.h"
 
 namespace NLAISCRIPT
 {
@@ -355,26 +356,24 @@ namespace NLAISCRIPT
 		switch(p)
 		{
 		case NLAIAGENT::IMessageBase::PExec:
-			_LastFact.Value = &NLAIAGENT::IMessageBase::IdExec;
+			_LastFact.Value = new NLAIAGENT::CPExec();
 			break;
 		case NLAIAGENT::IMessageBase::PAchieve:
-			_LastFact.Value = &NLAIAGENT::IMessageBase::IdAchieve;
+			_LastFact.Value = new NLAIAGENT::CPAchieve();
 			break;
 		case NLAIAGENT::IMessageBase::PAsk:
-			_LastFact.Value = &NLAIAGENT::IMessageBase::IdAsk;
+			_LastFact.Value = new NLAIAGENT::CPAsk();
 			break;
 		case NLAIAGENT::IMessageBase::PBreak:
-			_LastFact.Value = &NLAIAGENT::IMessageBase::IdBreak;
+			_LastFact.Value = new NLAIAGENT::CPBreak();
 			break;
 		case NLAIAGENT::IMessageBase::PTell:
-			_LastFact.Value = &NLAIAGENT::IMessageBase::IdTell;
+			_LastFact.Value = new NLAIAGENT::CPTell();
 			break;
 		case NLAIAGENT::IMessageBase::PKill:
-			_LastFact.Value = &NLAIAGENT::IMessageBase::IdKill;
+			_LastFact.Value = new NLAIAGENT::CPKill();
 			break;
-		}
-
-		_LastFact.Value->incRef();
+		}		
 		_LastFact.VarType = varTypeImediate;
 		_LastFact.IsUsed = false;		
 		if(_FlotingExpressionType != NULL) _FlotingExpressionType->release();

@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: messagerie.h,v 1.9 2001/01/18 17:53:47 chafik Exp $
+ * $Id: messagerie.h,v 1.10 2001/01/19 11:11:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,7 @@ namespace NLAIAGENT
 		* \author Nevrax France
 		* \date 2000
 	*/
-	class IntegerType;
+	
 	class IMessageBase: public IBaseGroupType
 	{
 	public:
@@ -60,12 +60,12 @@ namespace NLAIAGENT
 			PKill
 		};
 
-		static IntegerType IdExec;
+		/*static IntegerType IdExec;
 		static IntegerType IdAchieve;
 		static IntegerType IdAsk;
 		static IntegerType IdBreak;
 		static IntegerType IdTell;
-		static IntegerType IdKill;
+		static IntegerType IdKill;*/
 
 
 	private:

@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.3 2001/01/18 15:04:46 portier Exp $
+ * $Id: baseai.h,v 1.4 2001/01/19 11:11:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -229,11 +229,27 @@ namespace NLAIAGENT
 		*/
 		virtual sint32 getStaticMemberIndex(const IVarName &) const;
 		/**
-		to get the pointer of a given components index.
+		to get the pointer of a given components referened by an index.
 		*/
 		virtual const IObjectIA *getStaticMember(sint32) const;
+
 		/**
-		to cahnge a given components index with an other.
+		to get the pointer of a given components referened by an string.
+		*/
+		const IObjectIA *getStaticMember(const IVarName &compName) const
+		{
+			return getStaticMember(getStaticMemberIndex(compName));
+		}
+		/**
+		to cahnge a given components given by an index.
+		*/
+		void setStaticMember(const IVarName &compName,IObjectIA *change)
+		{
+			setStaticMember(getStaticMemberIndex(compName),change);
+		}
+
+		/**
+		to cahnge a given components given by a string.
 		*/
 		virtual void setStaticMember(sint32,IObjectIA *);
 

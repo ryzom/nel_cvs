@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.7 2001/01/18 15:16:19 puzin Exp $
+ * $Id: agent_digital.h,v 1.8 2001/01/19 11:11:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,8 +73,7 @@ namespace NLAIAGENT
 		//@{
 		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLAIC::IBasicInterface *m = new DigitalType(*this);
-			m->incRef();
+			NLAIC::IBasicInterface *m = new DigitalType(*this);			
 			return m;
 		}
 		
@@ -137,9 +136,8 @@ namespace NLAIAGENT
 		//@{
 		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLAIC::IBasicInterface *m = new BorneDigitalType(*this);
-			m->incRef();
-				return m;
+			NLAIC::IBasicInterface *m = new BorneDigitalType(*this);			
+			return m;
 		}		
 
 		virtual const NLAIC::IBasicType *newInstance() const
@@ -200,8 +198,7 @@ namespace NLAIAGENT
 		//@{
 		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLAIC::IBasicInterface *m = new DDigitalType(*this);
-			m->incRef();
+			NLAIC::IBasicInterface *m = new DDigitalType(*this);			
 			return m;
 		}
 		
@@ -265,9 +262,8 @@ namespace NLAIAGENT
 		//@{
 		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLAIC::IBasicInterface *m = new BorneDDigitalType(*this);
-			m->incRef();
-				return m;
+			NLAIC::IBasicInterface *m = new BorneDDigitalType(*this);			
+			return m;
 		}		
 
 		virtual const NLAIC::IBasicType *newInstance() const
@@ -324,8 +320,7 @@ namespace NLAIAGENT
 
 		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLAIC::IBasicInterface *m = new IntegerType(*this);
-			m->incRef();
+			NLAIC::IBasicInterface *m = new IntegerType(*this);			
 			return m;
 		}
 		
@@ -380,8 +375,7 @@ namespace NLAIAGENT
 
 		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLAIC::IBasicInterface *m = new ShortIntegerType(*this);
-			m->incRef();
+			NLAIC::IBasicInterface *m = new ShortIntegerType(*this);			
 			return m;
 		}
 		
@@ -435,8 +429,7 @@ namespace NLAIAGENT
 		
 		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLAIC::IBasicInterface *m = new CharType(*this);
-			m->incRef();
+			NLAIC::IBasicInterface *m = new CharType(*this);			
 			return m;
 		}
 		

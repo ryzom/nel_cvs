@@ -1442,7 +1442,7 @@ case 71:
 {	
 								_ExpressionType = _ExpressionTypeTmp.back();
 								_ExpressionTypeTmp.pop_back();								
-								callFunction();								
+								if(!callFunction()) return 0;	
 							;
     break;}
 case 72:

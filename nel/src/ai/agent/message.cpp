@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: message.cpp,v 1.5 2001/01/18 17:53:51 chafik Exp $
+ * $Id: message.cpp,v 1.6 2001/01/19 11:11:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,12 +28,12 @@
 namespace NLAIAGENT
 {
 
-	IntegerType IMessageBase::IdExec = IntegerType(IMessageBase::PExec);
+	/*IntegerType IMessageBase::IdExec = IntegerType(IMessageBase::PExec);
 	IntegerType IMessageBase::IdAchieve = IntegerType(IMessageBase::PAchieve);
 	IntegerType IMessageBase::IdAsk = IntegerType(IMessageBase::PAsk);
 	IntegerType IMessageBase::IdBreak = IntegerType(IMessageBase::PBreak);
 	IntegerType IMessageBase::IdTell = IntegerType(IMessageBase::PTell);
-	IntegerType IMessageBase::IdKill = IntegerType(IMessageBase::PKill);
+	IntegerType IMessageBase::IdKill = IntegerType(IMessageBase::PKill);*/
 
 
 	IObjectIA &IMessageBase::operator = (const IObjectIA &a)

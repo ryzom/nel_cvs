@@ -900,7 +900,7 @@ SOURCE=.\ai\script\lex_yacc\lexicon.lex
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\include\nel\ai\e\ia_exception.h
+SOURCE=..\include\nel\ai\e\ai_exception.h
 # End Source File
 # Begin Source File
 

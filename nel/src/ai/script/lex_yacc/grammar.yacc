@@ -460,7 +460,7 @@ using  namespace NLAIFUZZY;
 							{	
 								_ExpressionType = _ExpressionTypeTmp.back();
 								_ExpressionTypeTmp.pop_back();								
-								callFunction();								
+								if(!callFunction()) return 0;	
 							}
 						;
 	

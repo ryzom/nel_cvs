@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.20 2001/11/27 17:33:07 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.21 2001/11/27 17:53:12 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -447,7 +447,7 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 			uint16		ssid = _SId;
 			msg.serial(_Name);
 			msg.serial(ssid);	// serializes a 16 bits service id
-			send(name, msg);
+			send(sid, msg);
 		}
 
 		// call the connection callback associated to this service

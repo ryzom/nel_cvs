@@ -118,12 +118,12 @@ SOURCE=.\zone_dependencies.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\zone_welder\zone_utility.cpp
+SOURCE=..\zone_lib\zone_utility.cpp
 # ADD CPP /YX
 # End Source File
 # Begin Source File
 
-SOURCE=..\zone_welder\zone_utility.h
+SOURCE=..\zone_lib\zone_utility.h
 # End Source File
 # End Group
 # Begin Group "Header Files"

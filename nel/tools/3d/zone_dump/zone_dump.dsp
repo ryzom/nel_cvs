@@ -89,7 +89,7 @@ SOURCE=.\zone_dump.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\zone_welder\zone_utility.cpp
+SOURCE=..\zone_lib\zone_utility.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -97,7 +97,7 @@ SOURCE=..\zone_welder\zone_utility.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=..\zone_welder\zone_utility.h
+SOURCE=..\zone_lib\zone_utility.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

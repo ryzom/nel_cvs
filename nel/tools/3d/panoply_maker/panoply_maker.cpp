@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.3 2002/02/06 17:57:46 vizerie Exp $
+ * $Id: panoply_maker.cpp,v 1.4 2002/05/13 15:44:57 valignat Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -207,7 +207,7 @@ static void BuildMasksFromConfigFile(NLMISC::CConfigFile &cf,
 			)
 
 		{
-			throw std::exception("All color descriptors must have the same number of arguments");
+			throw NLMISC::Exception("All color descriptors must have the same number of arguments");
 		}
 		colorMasks[k].CMs.resize(luminosities.size());
 		for (uint l = 0; l < (uint) luminosities.size(); ++l)
@@ -314,7 +314,7 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 				if (li.Mask.getWidth() != srcBitmap.getWidth()
 					|| li.Mask.getHeight() != srcBitmap.getHeight())
 				{
-					throw std::exception("Bitmap and mask do not have the same size");
+					throw NLMISC::Exception("Bitmap and mask do not have the same size");
 				}
 
 				masks.push_back(li);	
@@ -390,3 +390,4 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 		if (l == masks.size()) break; // all cases dones
 	}
 }
+

@@ -1,7 +1,7 @@
 /** \file zone_utility.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_utility.cpp,v 1.5 2001/08/29 12:38:53 corvazier Exp $
+ * $Id: zone_utility.cpp,v 1.1 2002/05/13 15:44:57 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

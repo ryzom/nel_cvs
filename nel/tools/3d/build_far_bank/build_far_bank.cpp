@@ -14,7 +14,7 @@ using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 
-#define VERSION "1.0"
+#define BUILD_FAR_BANK_VERSION "1.0"
 
 #if defined (NL_OS_WINDOWS)
 #define STAT _stat
@@ -138,19 +138,19 @@ int main (int argc, char **argv)
 	// Check for options
 	for (int n=1; n<argc; n++)
 	{
-		if (stricmp (argv[n], "-r")==0)
+		if (strcmp (argv[n], "-r")==0 || strcmp (argv[n], "-R")==0)
 			useCurrentPath=true;
-		if (stricmp (argv[n], "-f")==0)
+		if (strcmp (argv[n], "-f")==0 || strcmp (argv[n], "-F")==0)
 			forceRecomputation=true;
-		if (stricmp (argv[n], "-v")==0)
+		if (strcmp (argv[n], "-v")==0 || strcmp (argv[n], "-V")==0)
 			outputVersion=true;
-		if (stricmp (argv[n], "-?")==0)
+		if (strcmp (argv[n], "-?")==0)
 			outputHelp=true;
 	}
 
 	// Output version?
 	if (outputVersion)
-		printf ("Version %s\n", VERSION);
+		printf ("Version %s\n", BUILD_FAR_BANK_VERSION);
 
 	// Output help?
 	if (outputHelp)

@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.16 2002/02/15 17:29:13 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.17 2002/05/13 15:44:57 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@
 #include "3d/register_3d.h"
 #include "3d/water_shape.h"
 
-#include "../zone_welder/zone_utility.h"	// load a header file from zone_welder project
+#include "../zone_lib/zone_utility.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -84,7 +84,8 @@ class CMyZoneLighter : public CZoneLighter
 		uint	pgId= (uint)(progress*(float)BAR_LENGTH);
 		pgId= min(pgId, (uint)(BAR_LENGTH-1));
 		sprintf (msg, "\r%s: %s", message, progressbar[pgId]);
-		for (uint i=strlen(msg); i<79; i++)
+		uint i;
+		for (i=strlen(msg); i<79; i++)
 			msg[i]=' ';
 		msg[i]=0;
 		printf (msg);

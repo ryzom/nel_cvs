@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.8 2002/03/27 17:31:20 corvazier Exp $
+ * $Id: zone_dependencies.cpp,v 1.9 2002/05/13 15:44:57 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "../zone_welder/zone_utility.h"
+#include "../zone_lib/zone_utility.h"
 
 #include "3d/zone.h"
 #include "3d/quad_grid.h"
@@ -85,7 +85,8 @@ void progress (const char *message, float progress)
 	uint	pgId= (uint)(progress*(float)BAR_LENGTH);
 	pgId= min(pgId, (uint)(BAR_LENGTH-1));
 	sprintf (msg, "\r%s: %s", message, progressbar[pgId]);
-	for (uint i=strlen(msg); i<79; i++)
+	uint i;
+	for (i=strlen(msg); i<79; i++)
 		msg[i]=' ';
 	msg[i]=0;
 	printf (msg);

@@ -1,7 +1,7 @@
 /** \file ig_lighter.cpp
  * ig_lighter.cpp : Instance lighter
  *
- * $Id: ig_lighter.cpp,v 1.7 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: ig_lighter.cpp,v 1.8 2002/05/13 15:44:57 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,7 +88,8 @@ public:
 		uint	pgId= (uint)(progress*(float)BAR_LENGTH);
 		pgId= min(pgId, (uint)(BAR_LENGTH-1));
 		sprintf (msg, "\r%s: %s", message, progressbar[pgId]);
-		for (uint i=strlen(msg); i<79; i++)
+		uint i;
+		for (i=strlen(msg); i<79; i++)
 			msg[i]=' ';
 		msg[i]=0;
 		printf (msg);

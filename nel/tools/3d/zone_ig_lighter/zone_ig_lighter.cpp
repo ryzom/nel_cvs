@@ -2,7 +2,7 @@
  * zone_ig_lighter.cpp : instance lighter for ig in landscape zones
  * greatly copied from ../zone_lighter/zone_lighter.cpp
  *
- * $Id: zone_ig_lighter.cpp,v 1.6 2002/02/18 13:28:32 berenguier Exp $
+ * $Id: zone_ig_lighter.cpp,v 1.7 2002/05/13 15:44:57 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@
 #include "3d/transform_shape.h"
 #include "3d/register_3d.h"
 
-#include "../zone_welder/zone_utility.h"	// load a header file from zone_welder project
+#include "../zone_lib/zone_utility.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -84,7 +84,8 @@ class CMyIgZoneLighter : public CInstanceLighter
 		uint	pgId= (uint)(progress*(float)BAR_LENGTH);
 		pgId= min(pgId, (uint)(BAR_LENGTH-1));
 		sprintf (msg, "\r%s: %s", message, progressbar[pgId]);
-		for (uint i=strlen(msg); i<79; i++)
+		uint i;
+		for (i=strlen(msg); i<79; i++)
 			msg[i]=' ';
 		msg[i]=0;
 		printf (msg);

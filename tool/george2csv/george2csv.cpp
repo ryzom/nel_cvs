@@ -1117,6 +1117,10 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 				else
 				{
 					form->write(output, true);
+					output.close();
+					
+					if	(!CPath::exists(filename + ext))
+						CPath::addSearchFile(absoluteFileName);					
 				}					
 
 			}

@@ -1,7 +1,7 @@
 /** \file value_gradient_dlg.h
  * a dialog that allows to edit a gradient of value, used in a particle system
  *
- * $Id: value_gradient_dlg.h,v 1.5 2001/09/17 14:04:01 vizerie Exp $
+ * $Id: value_gradient_dlg.h,v 1.6 2001/12/19 15:50:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,7 @@ struct IValueGradientDlgClient
 	virtual CEditAttribDlg *createDialog(uint index, CValueGradientDlg *grad) = 0;
 
 	/// this enumerate the action that we can apply on a gradient
-	enum TAction { Add, Insert, Delete };
+	enum TAction { Add, Insert, Delete, Up, Down };
 
 	/// a function that can add, remove, or insert a new element in the gradient
 	virtual void modifyGradient(TAction, uint index) = 0;

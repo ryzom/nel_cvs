@@ -1,7 +1,7 @@
 /** \file value_gradient_dlg.cpp
  * a dialog that allows to edit a gradient of value, used in a particle system
  *
- * $Id: value_gradient_dlg.cpp,v 1.7 2001/12/18 18:41:39 vizerie Exp $
+ * $Id: value_gradient_dlg.cpp,v 1.8 2001/12/19 15:50:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,16 +55,16 @@ CValueGradientDlg::CValueGradientDlg(IValueGradientDlgClient *clientInterface, b
 {
 	//{{AFX_DATA_INIT(CValueGradientDlg)
 	//}}AFX_DATA_INIT	
-	_NbStepDlg = new CEditableRangeUInt(std::string("GRADIENT NB STEP"), 1, 255) ;
+	_NbStepDlg = new CEditableRangeUInt(std::string("GRADIENT NB STEP"), 1, 255);
 }
 
 
 CValueGradientDlg::~CValueGradientDlg()
 {	
 	if (_DestroyClientInterface) delete _ClientInterface;
-	delete _EditValueDlg ;
-	_NbStepDlg->DestroyWindow() ;
-	delete _NbStepDlg ;
+	delete _EditValueDlg;
+	_NbStepDlg->DestroyWindow();
+	delete _NbStepDlg;
 }
 
 void CValueGradientDlg::init(CWnd *pParent)
@@ -104,141 +104,140 @@ END_MESSAGE_MAP()
 
 void CValueGradientDlg::OnAddValue() 
 {
-	nlassert(_ClientInterface) ;
-	UpdateData() ;
-		++_Size ;
-		_ClientInterface->modifyGradient(IValueGradientDlgClient::Add, 0) ;
-		m_GradientList.AddString("value") ;		
-		m_RemoveCtrl.EnableWindow(TRUE) ;
+	nlassert(_ClientInterface);
+	UpdateData();
+	++_Size;
+	_ClientInterface->modifyGradient(IValueGradientDlgClient::Add, 0);
+	m_GradientList.AddString("value");		
+	m_RemoveCtrl.EnableWindow(TRUE);
 
-		m_GradientList.SetCurSel(_Size - 1) ;
-		m_GradientList.Invalidate() ;
-		OnSelchangeGradientList() ;
-	UpdateData(FALSE) ;
+	m_GradientList.SetCurSel(_Size - 1);
+	m_GradientList.Invalidate();
+	OnSelchangeGradientList();
+	UpdateData(FALSE);
 }
 
 void CValueGradientDlg::OnInsertValue() 
 {
-	nlassert(_ClientInterface) ;
-	UpdateData() ;
-		uint oldIndex = m_GradientList.GetCurSel() ;
-		++_Size ;
-		_ClientInterface->modifyGradient(IValueGradientDlgClient::Insert, m_GradientList.GetCurSel()) ;
-		m_GradientList.InsertString(m_GradientList.GetCurSel(), "value") ;		
-		m_GradientList.Invalidate() ;
-		m_GradientList.SetCurSel(oldIndex) ;
-		OnSelchangeGradientList() ;
-	UpdateData(FALSE) ;	
+	nlassert(_ClientInterface);
+	UpdateData();
+	uint oldIndex = m_GradientList.GetCurSel();
+	++_Size;
+	_ClientInterface->modifyGradient(IValueGradientDlgClient::Insert, m_GradientList.GetCurSel());
+	m_GradientList.InsertString(m_GradientList.GetCurSel(), "value");		
+	m_GradientList.Invalidate();
+	m_GradientList.SetCurSel(oldIndex);
+	OnSelchangeGradientList();
+	UpdateData(FALSE);	
 }
 
 void CValueGradientDlg::OnRemoveValue() 
 {
-	nlassert(_ClientInterface) ;
-	UpdateData() ;
-		uint oldIndex = m_GradientList.GetCurSel() ;
-		--_Size ;
-		_ClientInterface->modifyGradient(IValueGradientDlgClient::Delete, m_GradientList.GetCurSel()) ;
-		m_GradientList.DeleteString(m_GradientList.GetCurSel()) ;				
+	nlassert(_ClientInterface);
+	UpdateData();
 
-		if (_Size <= _MinSize)
-		{
-			m_RemoveCtrl.EnableWindow(FALSE) ;
-		}
-		if (oldIndex < _Size)
-		{
-			m_GradientList.SetCurSel(oldIndex) ;
-		}
-		else
-		{
-			m_GradientList.SetCurSel(oldIndex - 1) ;
-		}
-		m_GradientList.Invalidate() ;
+	uint oldIndex = m_GradientList.GetCurSel();
+	--_Size;
+	_ClientInterface->modifyGradient(IValueGradientDlgClient::Delete, m_GradientList.GetCurSel());
+	m_GradientList.DeleteString(m_GradientList.GetCurSel());				
 
-		
-		OnSelchangeGradientList() ; /// this won't be called automatically ...
-
-	UpdateData(FALSE) ;		
+	if (_Size <= _MinSize)
+	{
+		m_RemoveCtrl.EnableWindow(FALSE);
+	}
+	if (oldIndex < _Size)
+	{
+		m_GradientList.SetCurSel(oldIndex);
+	}
+	else
+	{
+		m_GradientList.SetCurSel(oldIndex - 1);
+	}
+	m_GradientList.Invalidate();	
+	OnSelchangeGradientList(); /// this won't be called automatically ...
+	UpdateData(FALSE);		
 }
 
 void CValueGradientDlg::OnValueDown() 
 {
-	// TODO: Add your control notification handler code here
-	
+	nlassert(_ClientInterface);
+	UpdateData();	
+	uint currIndex = m_GradientList.GetCurSel();
+	if (currIndex == (uint) (m_GradientList.GetCount() - 1)) return;
+	_ClientInterface->modifyGradient(IValueGradientDlgClient::Down, currIndex);	
+	m_GradientList.SetCurSel(currIndex + 1);
+	m_GradientList.Invalidate();
+	OnSelchangeGradientList();
+	UpdateData(FALSE);	
 }
 
 void CValueGradientDlg::OnValueUp() 
 {
-	// TODO: Add your control notification handler code here
-	
+	nlassert(_ClientInterface);
+	UpdateData();	
+	uint currIndex = m_GradientList.GetCurSel();
+	if (currIndex == 0) return;
+	_ClientInterface->modifyGradient(IValueGradientDlgClient::Up, currIndex);	
+	m_GradientList.SetCurSel(currIndex - 1);
+	m_GradientList.Invalidate();
+	OnSelchangeGradientList();
+	UpdateData(FALSE);	
 }
 
 BOOL CValueGradientDlg::OnInitDialog() 
 {
-	nlassert(_ClientInterface) ;
-	_Size = _ClientInterface->getSchemeSize() ;
+	nlassert(_ClientInterface);
+	_Size = _ClientInterface->getSchemeSize();
 	CDialog::OnInitDialog();
-	UpdateData() ;
-
-	m_GradientList.InitStorage(_Size, 16) ;
-
-	for (uint k = 0 ; k < _Size ; ++k)
+	UpdateData();
+	m_GradientList.InitStorage(_Size, 16);
+	for (uint k = 0; k < _Size; ++k)
 	{
-		m_GradientList.AddString("value") ;
+		m_GradientList.AddString("value");
 	}
-	
-
-
-	m_RemoveCtrl.EnableWindow(_Size > _MinSize ? TRUE : FALSE) ;
-
-
-	m_GradientList.SetCurSel(0) ;
-
-	m_GradientList.setCtrlID(IDC_GRADIENT_LIST) ;
-	m_GradientList.setDrawer(_ClientInterface) ;
+	m_RemoveCtrl.EnableWindow(_Size > _MinSize ? TRUE : FALSE);
+	m_GradientList.SetCurSel(0);
+	m_GradientList.setCtrlID(IDC_GRADIENT_LIST);
+	m_GradientList.setDrawer(_ClientInterface);
 
 	if (_CanTuneNbStages)
 	{
-		_NbStepWrapper.I = _ClientInterface ;
-		_NbStepDlg->setWrapper(&_NbStepWrapper) ;
-		_NbStepDlg->init(181, 45, this) ;
-		_NbStepDlg->enableLowerBound(0, true) ;
+		_NbStepWrapper.I = _ClientInterface;
+		_NbStepDlg->setWrapper(&_NbStepWrapper);
+		_NbStepDlg->init(181, 45, this);
+		_NbStepDlg->enableLowerBound(0, true);
 	}
 	else
 	{
-		m_NoSamples.ShowWindow(SW_HIDE) ;
+		m_NoSamples.ShowWindow(SW_HIDE);
 	}
-
-
-	UpdateData(FALSE) ;		
-
-
-	OnSelchangeGradientList() ;
-
+	UpdateData(FALSE);		
+	OnSelchangeGradientList();
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 void CValueGradientDlg::OnSelchangeGradientList() 
 {
-	nlassert(_ClientInterface) ;
-	UpdateData(TRUE) ;
-	delete _EditValueDlg ;	
-	_EditValueDlg =	_ClientInterface->createDialog(m_GradientList.GetCurSel(), this) ;
+	nlassert(_ClientInterface);
+	UpdateData(TRUE);
+	delete _EditValueDlg;	
+	_EditValueDlg =	_ClientInterface->createDialog(m_GradientList.GetCurSel(), this);
 
-	RECT r, or ;
-	GetWindowRect(&or) ;
-	m_Value.GetWindowRect(&r) ;
-	_EditValueDlg->init(r.left - or.left, r.top - or.top, this) ;
-	UpdateData(FALSE) ;
+	RECT r, or;
+	GetWindowRect(&or);
+	m_Value.GetWindowRect(&r);
+	_EditValueDlg->init(r.left - or.left, r.top - or.top, this);
+	UpdateData(FALSE);
 	
 }
 
 
 void CValueGradientDlg::invalidateGrad(void)
 {
-	UpdateData(TRUE) ;
-		m_GradientList.Invalidate() ;
-	UpdateData(FALSE) ;
+	UpdateData(TRUE);
+		m_GradientList.Invalidate();
+	UpdateData(FALSE);
 }
 
 void CValueGradientDlg::OnClose() 

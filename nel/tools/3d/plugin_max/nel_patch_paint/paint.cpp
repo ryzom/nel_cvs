@@ -3685,7 +3685,14 @@ void EPM_PaintCMode::DoPaint ()
 #if (MAX_RELEASE < 4000)
 					int otherPatch=(patch->edges[mYedge].patch1==p)?patch->edges[mYedge].patch2:patch->edges[mYedge].patch1;
 #else // (MAX_RELEASE < 4000)
-					int otherPatch=(patch->edges[mYedge].patches[0]==p)?patch->edges[mYedge].patches[1]:patch->edges[mYedge].patches[0];
+//					int otherPatch=(patch->edges[mYedge].patches[0]==p)?patch->edges[mYedge].patches[1]:patch->edges[mYedge].patches[0];
+					int otherPatch = -1;
+					if (patch->edges[mYedge].patches[0]==p) {
+						if (patch->edges[mYedge].patches.Count() > 1)
+							otherPatch = patch->edges[mYedge].patches[1];
+					}
+					else
+						otherPatch = patch->edges[mYedge].patches[0];
 #endif // (MAX_RELEASE < 4000)
 					int nMeshIndex;
 					if (otherPatch!=-1)

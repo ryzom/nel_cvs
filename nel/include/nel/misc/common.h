@@ -1,7 +1,7 @@
 /** \file common.h
  * <File description>
  *
- * $Id: common.h,v 1.7 2000/11/06 18:19:18 corvazier Exp $
+ * $Id: common.h,v 1.8 2000/11/06 18:26:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,7 @@ template<class T>	inline T sqr(const T &v)
 
 
 // ============================================================================================
-const	double	PI= 3.1415926535897932384626433832795;
+const	double	DOUBLE_PI= 3.1415926535897932384626433832795;
 
 
 // ============================================================================================
@@ -91,8 +91,6 @@ template<class T>	inline contReset (T& a)
 	new (&a) T;
 }
 
-=======
-
 // ============================================================================================
 /// Return the value maximized to the next power of 2 of v.   eg: raiseToNextPowerOf2(8)==8.  raiseToNextPowerOf2(5)==8.
 inline uint	raiseToNextPowerOf2(uint v)
@@ -118,8 +116,6 @@ inline uint	getPowerOf2(uint v)
 	return ret;
 }
 
-
->>>>>>> 1.6
 }
 
 

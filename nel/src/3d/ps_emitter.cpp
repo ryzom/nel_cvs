@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.42 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_emitter.cpp,v 1.43 2002/10/10 13:32:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1134,6 +1134,32 @@ void	CPSEmitter::setMaxEmissionCount(uint8 count)
 	_MaxEmissionCount = count;
 	updateMaxCountVect();	
 }
+
+
+
+////////////////////////////////////////////
+// implementation of CPSModulatedEmitter  //
+////////////////////////////////////////////
+
+void CPSModulatedEmitter::serialEmitteeSpeedScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	bool useScheme;			
+	if (!f.isReading())
+	{
+		useScheme = useEmitteeSpeedScheme();
+	}
+	f.serial(useScheme);
+	if (useScheme)
+	{
+		f.serialPolyPtr(_EmitteeSpeedScheme);
+	}
+	else
+	{
+		f.serial(_EmitteeSpeed);
+	}
+}
+
+
 
 ////////////////////////////////////////////
 // implementation of CPSEmitterOmni		  //

@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.19 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_emitter.h,v 1.20 2002/10/10 13:32:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -360,25 +360,8 @@ class CPSModulatedEmitter
 		bool useEmitteeSpeedScheme(void) const { return _EmitteeSpeedScheme != NULL; }
 
 		/// serialization 
-		void serialEmitteeSpeedScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
-		{
-
-			bool useScheme;			
-			if (!f.isReading())
-			{
-				useScheme = useEmitteeSpeedScheme();
-			}
-			f.serial(useScheme);
-			if (useScheme)
-			{
-				f.serialPolyPtr(_EmitteeSpeedScheme);
-			}
-			else
-			{
-				f.serial(_EmitteeSpeed);
-			}
-		}
-
+		void serialEmitteeSpeedScheme(NLMISC::IStream &f) throw(NLMISC::EStream);
+		
 	protected:
 
 		// emitter must define this in order to allow this class to access the located owner

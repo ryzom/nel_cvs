@@ -132,14 +132,6 @@ LIB32=link.exe -lib
 # Name "ligo - Win32 ReleaseDebug"
 # Begin Source File
 
-SOURCE=.\ligo\export.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ligo\export.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\ligo\ligo_config.cpp
 # End Source File
 # Begin Source File

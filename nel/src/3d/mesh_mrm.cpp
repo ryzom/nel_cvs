@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.51 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: mesh_mrm.cpp,v 1.52 2002/08/30 11:59:42 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -467,8 +467,8 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 		// apply the geomorph
 		applyGeomorphWithVBHardPtr(geoms, alphaLod, vertexDestPtr);
 
-		// unlock
-		currentVBHard->unlock();
+		// unlock. ATI: copy only geomorphed vertices.
+		currentVBHard->unlock(0, geoms.size());
 	}
 	else
 		applyGeomorphWithVBHardPtr(geoms, alphaLod, NULL);

@@ -1,7 +1,7 @@
 /** \file mesh_skin_manager.cpp
  * <File description>
  *
- * $Id: mesh_skin_manager.cpp,v 1.1 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: mesh_skin_manager.cpp,v 1.2 2002/08/30 11:59:42 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -108,9 +108,10 @@ uint8			*CMeshSkinManager::lock()
 	return	(uint8*)_VBHard[_CurentVBHard]->lock();
 }
 // ***************************************************************************
-void			CMeshSkinManager::unlock()
+void			CMeshSkinManager::unlock(uint numVertices)
 {
-	_VBHard[_CurentVBHard]->unlock();
+	// ATI: release only vertices used.
+	_VBHard[_CurentVBHard]->unlock(0, numVertices);
 }
 // ***************************************************************************
 void			CMeshSkinManager::activate()

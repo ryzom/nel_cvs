@@ -1,7 +1,7 @@
 /** \file mesh_skin_manager.h
  * <File description>
  *
- * $Id: mesh_skin_manager.h,v 1.1 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: mesh_skin_manager.h,v 1.2 2002/08/30 11:59:42 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -79,8 +79,8 @@ public:
 
 	/// lock the currently activated VBHard, for future filling
 	uint8			*lock();
-	/// unlock the currently activated VBHard
-	void			unlock();
+	/// unlock the currently activated VBHard. Tell how many vertices have changed.
+	void			unlock(uint numVertices);
 
 	/// activate the currentVBhard as the current VB in the driver, for future rendering
 	void			activate();

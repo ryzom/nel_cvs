@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.37 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: driver.h,v 1.38 2002/08/30 11:58:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -294,6 +294,11 @@ public:
 	/** return true if driver support VertexBufferHard.
 	 */
 	virtual	bool			supportVertexBufferHard() const =0;
+
+
+	/** return true if driver support VertexBufferHard, but vbHard->unlock() are slow (ATI-openGL).
+	 */
+	virtual	bool			slowUnlockVertexBufferHard() const =0;
 
 
 	/** return How many vertices VertexBufferHard support

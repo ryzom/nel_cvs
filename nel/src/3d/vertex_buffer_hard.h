@@ -1,7 +1,7 @@
 /** \file vertex_buffer_hard.h
  * <File description>
  *
- * $Id: vertex_buffer_hard.h,v 1.3 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: vertex_buffer_hard.h,v 1.4 2002/08/30 11:58:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,13 @@ public:
 	/** UnLock the VertexBuffer so the Gfx card can now use it.
 	 */
 	virtual void			unlock() =0;
+	/** Same as unlock() but give hints to driver on vertices that have changed. Used by ATI-OpenGL drivers.
+	 *	NB: driver may still ignore this information, and so take into acount all vertices
+	 *	\param	startVert the fisrt vertex to update
+	 *	\param	endVert the last vertex (not included) to update => numVertices= vertEnd-vertBegin.
+	 *	Hence unlock() as the same effect as unlock(0, getNumVertices());
+	 */
+	virtual void			unlock(uint startVert, uint endVert) =0;
 	// @}
 
 

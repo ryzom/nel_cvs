@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.5 2002/08/09 14:56:57 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.6 2002/08/30 11:59:42 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -233,8 +233,8 @@ void			CLodCharacterManager::deleteVertexBuffer()
 		// A vbufferhard should still exist only if driver still exist.
 		nlassert(_Driver!=NULL);
 
-		// must unlock VBhard before.
-		_VBHard->unlock();
+		// must unlock VBhard before. ATI: No need to update any vertices.
+		_VBHard->unlock(0,0);
 
 		// delete it from driver.
 		_Driver->deleteVertexBufferHard(_VBHard);
@@ -474,7 +474,8 @@ void			CLodCharacterManager::endRender()
 	// UnLock Buffer.
 	if(_VBHard)
 	{
-		_VBHard->unlock();
+		// ATI: copy only used vertices.
+		_VBHard->unlock(0, _CurrentVertexId);
 	}
 
 	// Render the VBuffer and the primitives.

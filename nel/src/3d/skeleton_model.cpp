@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.33 2002/08/14 12:39:25 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.34 2002/08/30 11:59:42 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1221,8 +1221,8 @@ void			CSkeletonModelRenderObs::renderSkinList(NLMISC::CObjectVector<CTransform*
 				skinId++;
 			}
 
-			// release buffer
-			meshSkinManager.unlock();
+			// release buffer. ATI: release only vertices used.
+			meshSkinManager.unlock(currentBaseVertex);
 
 			// Second pass, render the primitives.
 			//------------

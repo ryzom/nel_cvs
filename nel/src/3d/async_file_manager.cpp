@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.6 2002/04/17 12:09:22 besson Exp $
+ * $Id: async_file_manager.cpp,v 1.7 2002/04/18 08:30:00 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,8 +35,6 @@
 
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
-
-#include <windows.h>
 
 
 using namespace std;
@@ -98,6 +96,13 @@ void CAsyncFileManager::loadIGUser (const std::string& IGName, UInstanceGroup **
 void CAsyncFileManager::loadFile (const std::string& sFileName, uint8 **ppFile)
 {
 	addTask (new CFileLoad (sFileName, ppFile));
+}
+
+// ***************************************************************************
+
+void CAsyncFileManager::loadFiles (const std::vector<std::string> &vFileNames, const std::vector<uint8**> &vPtrs)
+{
+	addTask (new CMultipleFileLoad (vFileNames, vPtrs));
 }
 
 // ***************************************************************************
@@ -322,7 +327,7 @@ CAsyncFileManager::CFileLoad::CFileLoad (const std::string& sFileName, uint8 **p
 // ***************************************************************************
 void CAsyncFileManager::CFileLoad::run (void)
 {
-	HANDLE hFile = CreateFile (_FileName.c_str(),
+/*	HANDLE hFile = CreateFile (_FileName.c_str(),
 								GENERIC_READ,
 								FILE_SHARE_READ|FILE_SHARE_WRITE,
 								NULL,
@@ -346,7 +351,26 @@ void CAsyncFileManager::CFileLoad::run (void)
 	{
 		*_ppFile = (uint8*)-1;
 	}
+*/
 
+	FILE *f = fopen (_FileName.c_str(), "rb");
+	if (f != NULL)
+	{
+		uint8 *ptr;
+		fseek (f, 0, SEEK_END);
+		long filesize = ftell (f);
+		nlSleep(5);
+		fseek (f, 0, SEEK_SET);
+		ptr = new uint8[filesize];
+		fread (ptr, filesize, 1, f);
+		fclose (f);
+
+		*_ppFile = ptr;
+	}
+	else
+	{
+		*_ppFile = (uint8*)-1;
+	}
 	// The following are tests please do not remove until 
 
 
@@ -441,8 +465,41 @@ void CAsyncFileManager::CFileLoad::run (void)
 		}*/
 //	fclose (f);
 
-	
 }
+
+CAsyncFileManager::CMultipleFileLoad::CMultipleFileLoad (const std::vector<std::string> &vFileNames, const std::vector<uint8**> &vPtrs)
+{
+	_FileNames = vFileNames;
+	_Ptrs = vPtrs;
+}
+
+void CAsyncFileManager::CMultipleFileLoad::run (void)
+{
+	for (uint32 i = 0; i < _FileNames.size(); ++i)
+	{
+		FILE *f = fopen (_FileNames[i].c_str(), "rb");
+		if (f != NULL)
+		{
+			uint8 *ptr;
+			fseek (f, 0, SEEK_END);
+			long filesize = ftell (f);
+			nlSleep(5);
+			fseek (f, 0, SEEK_SET);
+			ptr = new uint8[filesize];
+			fread (ptr, filesize, 1, f);
+			fclose (f);
+
+			*_Ptrs[i] = ptr;
+		}
+		else
+		{
+			*_Ptrs[i] = (uint8*)-1;
+		}
+	}
+
+}
+
+
 
 }
 

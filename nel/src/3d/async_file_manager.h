@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * <File description>
  *
- * $Id: async_file_manager.h,v 1.2 2002/04/17 12:09:22 besson Exp $
+ * $Id: async_file_manager.h,v 1.3 2002/04/18 08:30:00 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,7 @@ public:
 	void loadIGUser (const std::string &igName, UInstanceGroup **ppIG);
 
 	void loadFile (const std::string &fileName, uint8 **pPtr);
+	void loadFiles (const std::vector<std::string> &vFileNames, const std::vector<uint8**> &vPtrs);
 
 private:
 
@@ -105,6 +106,16 @@ private:
 		uint8 **_ppFile;
 	public:
 		CFileLoad (const std::string& sFileName, uint8 **ppFile);
+		void run (void);
+	};
+
+	// Load multiple files
+	class CMultipleFileLoad : public NLMISC::IRunnable
+	{
+		std::vector<std::string> _FileNames;
+		std::vector<uint8**> _Ptrs;
+	public:
+		CMultipleFileLoad (const std::vector<std::string> &vFileNames, const std::vector<uint8**> &vPtrs);
 		void run (void);
 	};
 

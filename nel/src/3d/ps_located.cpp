@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.54 2003/04/14 15:26:22 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.55 2003/05/22 15:25:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -574,7 +574,7 @@ bool CPSLocated::bind(CPSLocatedBindable *lb)
 
 	if (_Owner)
 	{
-		const CParticleSystem *ps = _Owner;
+		CParticleSystem *ps = _Owner;
 		if (ps->getBypassMaxNumIntegrationSteps())
 		{
 			if (!ps->canFinish())
@@ -582,7 +582,13 @@ bool CPSLocated::bind(CPSLocatedBindable *lb)
 				unbind(getIndexOf(lb));
 				nlwarning("<CPSLocated::bind> Can't bind the located : this causes the system to last forever, and it has been flagged with 'BypassMaxNumIntegrationSteps'. Located is not bound.");
 				return false;
-			}
+			}		
+		}
+		// if there's an extern id, register in lb list
+		if (lb->getExternID() != 0)
+		{
+			// register in ID list
+			ps->registerLocatedBindableExternID(lb->getExternID(), lb);
 		}
 	}
 	return true;
@@ -1777,12 +1783,15 @@ void CPSLocatedBindable::setupDriverModelMatrix(void)
 void	CPSLocatedBindable::setExternID(uint32 id)
 {
 	if (id == _ExternID) return;
-	nlassert(_Owner && _Owner->getOwner()); // to call this method, this locatedBindable must be inserted in a system!! 
-											// (e.g not standalone)
-	_Owner->getOwner()->unregisterLocatedBindableExternID(this);
+	CParticleSystem *ps = NULL;
+	if (_Owner && _Owner->getOwner())
+	{
+		ps = _Owner->getOwner();
+	}	
+	if (ps) ps->unregisterLocatedBindableExternID(this);
 	if (id != 0)
 	{	
-		_Owner->getOwner()->registerLocatedBindableExternID(id, this);
+		if (ps) ps->registerLocatedBindableExternID(id, this);
 		_ExternID = id;
 	}	
 }

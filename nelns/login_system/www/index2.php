@@ -105,15 +105,6 @@
 						$priv = $row["Privilege"];
 						$extended = $row["ExtendedPrivilege"];
 						$res = true;
-
-if ($fh=fopen("/tmp/toto","w")) {
-  fputs($fh,$id . "*" . $priv . "*". $extended . "*\n");
- foreach ($row as $v => $w)
-  	fputs($fh, $v.'='.$w."\n");
-  fclose($fh);
-} else {
-  echo "Failed to open port.";
-} 
 					}
 				}
 			}

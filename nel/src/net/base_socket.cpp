@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.17 2000/11/14 15:58:34 cado Exp $
+ * $Id: base_socket.cpp,v 1.18 2000/11/14 17:11:26 stefan.nilsen_at_telia.com Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@
 
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -258,7 +259,11 @@ bool CBaseSocket::dataAvailable() throw (ESocket)
 void CBaseSocket::setLocalAddress()
 {
 	sockaddr saddr;
+#ifdef NL_OS_WINDOWS
 	int saddrlen = sizeof(saddr);
+#elif defined NL_OS_UNIX
+	socklen_t saddrlen = sizeof(saddr);
+#endif
 	if ( getsockname( _Sock, &saddr, &saddrlen ) != 0 )
 	{
 		ESocket( "Unable to find local address", ERROR_NUM );
@@ -341,7 +346,11 @@ bool CBaseSocket::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr ) th
 
 	// Receive incoming message
 	sockaddr_in saddr;
+#ifdef NL_OS_WINDOWS
 	int saddrlen = sizeof(saddr);
+#elif defined NL_OS_UNIX
+	socklen_t saddrlen = sizeof(saddr);
+#endif
 	int brecvd = ::recvfrom( _Sock, (char*)buffer, len , 0, (sockaddr*)&saddr, &saddrlen );
 	if ( brecvd == SOCKET_ERROR )
 	{

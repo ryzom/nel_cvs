@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.18 2003/10/13 09:42:27 berenguier Exp $
+ * $Id: driver_opengl_states.cpp,v 1.19 2003/11/12 11:16:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -581,6 +581,12 @@ void			CDriverGLStates::enableSecondaryColorArray(bool enable)
 		else
 			glDisableClientState(GL_SECONDARY_COLOR_ARRAY_EXT);
 		_SecondaryColorArrayEnabled= enable;
+		// If disable
+		if(!enable)
+		{
+			// GeForceFx Bug: Must reset Secondary color to 0 (if comes from a VP), else bugs
+			nglSecondaryColor3ubEXT(0,0,0);
+		}
 	}
 }
 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.6 2002/06/12 10:21:02 lecroart Exp $
+# $Id: Makefile.am,v 1.7 2002/11/13 16:59:55 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -10,7 +10,7 @@ EXTRA_DIST            =	common.cfg \
 
 sbin_PROGRAMS         = admin_service
 
-admin_service_SOURCES = admin_service.cpp
+admin_service_SOURCES = admin_service.cpp connection_web.cpp
 
 # End of Makefile.am
 

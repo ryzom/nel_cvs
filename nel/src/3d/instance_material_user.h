@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.5 2002/06/11 14:25:13 vizerie Exp $
+ * $Id: instance_material_user.h,v 1.6 2002/06/14 08:34:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -245,6 +245,12 @@ public:
 
 private:
 	CMaterial	*_Material;
+
+public:
+
+	// Internal Use only.
+	CMaterial	*getMaterial() const {return _Material;}
+
 };
 
 

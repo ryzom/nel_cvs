@@ -1,7 +1,7 @@
 /** \file stdafx.h
  * <File description>
  *
- * $Id: stdafx.h,v 1.2 2002/08/08 11:01:50 lecroart Exp $
+ * $Id: stdafx.h,v 1.3 2002/08/08 11:42:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,6 @@
 
 #pragma warning (disable : 4786)
 #include "Max.h"
-#include "maxversion.h"
 #include "istdplug.h"
 #include "meshadj.h"
 #include "iparamb2.h"

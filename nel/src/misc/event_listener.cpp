@@ -1,7 +1,7 @@
 /** \file event_listener.cpp
  * <File description>
  *
- * $Id: event_listener.cpp,v 1.14 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: event_listener.cpp,v 1.15 2003/07/03 09:09:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,9 +57,9 @@ CEventListenerAsync::CEventListenerAsync()
 // ***************************************************************************
 void CEventListenerAsync::addToServer (CEventServer& server)
 {
-	server.addListener (EventKeyUpId, this);
 	server.addListener (EventKeyDownId, this);
 	server.addListener (EventSetFocusId, this);
+	server.addListener (EventKeyUpId, this);
 }
 // ***************************************************************************
 void CEventListenerAsync::removeFromServer (CEventServer& server)

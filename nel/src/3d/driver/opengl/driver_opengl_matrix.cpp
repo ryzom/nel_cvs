@@ -1,7 +1,7 @@
 /** \file driver_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.3 2000/12/18 08:57:17 lecroart Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.4 2001/03/06 18:16:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,11 +74,38 @@ CMatrix CDriverGL::getViewMatrix(void) const
 
 void CDriverGL::setupModelMatrix(const CMatrix& mtx, uint8 n)
 {
-	CMatrix tmp;
+	// Check args
+	nlassert ((n==0)||(n==1));		// Only support for 1 or 2 matrices.
 
-//	nlassert(n);
+	// Put the matrix in the opengl world
+	CMatrix tmp;
 	tmp=_ViewMtx*mtx;
-	glLoadMatrixf( tmp.get() );
+
+	if (n==0)
+	{
+		// By default, the first model matrix is active
+		glLoadMatrixf( tmp.get() );
+	}
+	else	// n>0
+	{
+		// Choose an extension to setup a second matrix
+		if (_Extensions.EXTVertexWeighting)
+		{
+			// Active the second model matrix
+			glMatrixMode(GL_MODELVIEW1_EXT);
+
+			// Set it
+			glLoadMatrixf( tmp.get() );
+
+			// Active first model matrix
+			glMatrixMode(GL_MODELVIEW);
+		}
+		else
+		{
+			// TODO_SOFTWARE_SKINNIG: We must make the skinning by software.
+			// TODO_HARDWARE_SKINNIG: we must make the skinning by hardware (Radeon, NV20).
+		}
+	}
 }
 
 } // NL3D

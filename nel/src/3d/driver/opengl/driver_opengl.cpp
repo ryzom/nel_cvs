@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.77 2001/03/05 11:13:48 coutelas Exp $
+ * $Id: driver_opengl.cpp,v 1.78 2001/03/06 18:16:59 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -532,6 +532,53 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 	flags=VB.getVertexFormat();
 
+	// disble vertex weight
+	bool disableVertexWeight=_Extensions.EXTVertexWeighting;
+
+	// Check for some weight param in vertex buffer
+	if (flags & (IDRV_VF_W[0]|IDRV_VF_W[1]|IDRV_VF_W[2]|IDRV_VF_W[3]))
+	{
+		// 4 weights ?
+		if (flags & IDRV_VF_W[3])
+		{
+			// TODO_HARDWARE_SKINNIG: we must implement the 4 matrices mode by hardware (Radeon, NV20).
+			// TODO_SOFTWARE_SKINNIG: we must implement the 4 matrices mode by software.
+		}
+		// 3 weights ?
+		else if (flags & IDRV_VF_W[2])
+		{
+			// TODO_HARDWARE_SKINNIG: we must implement the 3 matrices mode by hardware (Radeon, NV20).
+			// TODO_SOFTWARE_SKINNIG: we must implement the 3 matrices mode by software.
+		}
+		// 2 weights ?
+		else
+		{
+			// Check if vertex weighting extension is available
+			if (_Extensions.EXTVertexWeighting)
+			{
+				// Active skinning
+				glEnable (GL_VERTEX_WEIGHTING_EXT);
+
+				// Don't disable it
+				disableVertexWeight=false;
+
+				// Setup
+				glEnableClientState(GL_VERTEX_WEIGHT_ARRAY_EXT);
+				glVertexWeightPointerEXT(1,GL_FLOAT,VB.getVertexSize(),VB.getWeightPointer());
+			}
+			else
+			{
+				// TODO_HARDWARE_SKINNIG: we must implement the 2 matrices mode by hardware (Radeon, NV20).
+				// TODO_SOFTWARE_SKINNIG: we must implement the 2 matrices mode by software.
+			}
+		}
+	}
+
+	// Disable vertex weight
+	if (disableVertexWeight)
+		glDisable (GL_VERTEX_WEIGHTING_EXT);
+
+	// Check for color param in vertex buffer
 	if (flags & IDRV_VF_COLOR)
 	{
 		glEnableClientState(GL_COLOR_ARRAY);
@@ -540,6 +587,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 	else
 		glDisableClientState(GL_COLOR_ARRAY);
 
+	// Check for normal param in vertex buffer
 	if (flags & IDRV_VF_NORMAL)
 	{
 		glEnableClientState(GL_NORMAL_ARRAY);
@@ -547,7 +595,6 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 	}
 	else
 		glDisableClientState(GL_NORMAL_ARRAY);
-
 
 	// Active UVs.
 	for(sint i=0; i<getNbTextureStages(); i++)

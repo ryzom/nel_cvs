@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.7 2001/02/08 10:02:29 lecroart Exp $
+ * $Id: driver_opengl_extension.h,v 1.8 2001/03/06 18:16:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,7 @@ struct	CGlExtensions
 	bool	ARBTextureCompression;
 	bool	NVVertexArrayRange;
 	bool	EXTTextureCompressionS3TC;
+	bool	EXTVertexWeighting;
 
 
 public:
@@ -82,6 +83,7 @@ public:
 		ARBTextureCompression= false;
 		NVVertexArrayRange= false;
 		EXTTextureCompressionS3TC= false;
+		EXTVertexWeighting= false;
 	};
 };
 
@@ -155,10 +157,16 @@ extern PFNGLGETCOMPRESSEDTEXIMAGEARBPROC	glGetCompressedTexImageARB;
 // VertexArrayRangeNV.
 //====================
 typedef void *(APIENTRY * PFNWGLALLOCATEMEMORYNVPROC) (GLsizei size, GLfloat readFrequency, GLfloat writeFrequency, GLfloat priority);
-extern PFNGLFLUSHVERTEXARRAYRANGENVPROC	glFlushVertexArrayRangeNV;
-extern PFNGLVERTEXARRAYRANGENVPROC		glVertexArrayRangeNV;
-extern PFNWGLALLOCATEMEMORYNVPROC		wglAllocateMemoryNV;
+extern PFNGLFLUSHVERTEXARRAYRANGENVPROC		glFlushVertexArrayRangeNV;
+extern PFNGLVERTEXARRAYRANGENVPROC			glVertexArrayRangeNV;
+extern PFNWGLALLOCATEMEMORYNVPROC			wglAllocateMemoryNV;
 
+
+// VertexWeighting.
+//====================
+extern PFNGLVERTEXWEIGHTFEXTPROC			glVertexWeightfEXT;
+extern PFNGLVERTEXWEIGHTFVEXTPROC			glVertexWeightfvEXT;
+extern PFNGLVERTEXWEIGHTPOINTEREXTPROC		glVertexWeightPointerEXT;
 
 #endif
 

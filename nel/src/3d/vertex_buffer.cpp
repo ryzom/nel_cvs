@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.12 2001/02/28 14:28:57 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.13 2001/03/06 18:16:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,7 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 		{
 			_Flags|=IDRV_VF_W[i];
 			_WOff[i]=_VertexSize;
-			_VertexSize+=3*sizeof(float);			
+			_VertexSize+=sizeof(float);			
 		}
 	}
 	if (flags & IDRV_VF_NORMAL)

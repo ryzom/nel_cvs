@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.4 2001/01/22 17:30:19 lecroart Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.5 2001/03/06 18:16:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,6 +90,13 @@ PFNGLGETCOMPRESSEDTEXIMAGEARBPROC	glGetCompressedTexImageARB;
 PFNGLFLUSHVERTEXARRAYRANGENVPROC	glFlushVertexArrayRangeNV;
 PFNGLVERTEXARRAYRANGENVPROC			glVertexArrayRangeNV;
 PFNWGLALLOCATEMEMORYNVPROC			wglAllocateMemoryNV;
+
+
+// VertexWeighting.
+//====================
+PFNGLVERTEXWEIGHTFEXTPROC			glVertexWeightfEXT;
+PFNGLVERTEXWEIGHTFVEXTPROC			glVertexWeightfvEXT;
+PFNGLVERTEXWEIGHTPOINTEREXTPROC		glVertexWeightPointerEXT;
 
 #endif // NL_OS_WINDOWS
 
@@ -215,6 +222,22 @@ static bool	setupEXTTextureCompressionS3TC(const char	*glext)
 }
 
 
+// *********************************
+static bool	setupEXTVertexWeighting(const char	*glext)
+{
+	if(strstr (glext, "GL_EXT_vertex_weighting")==NULL)
+		return false;
+
+#ifdef NL_OS_WINDOWS
+	if(!(glVertexWeightfEXT=(PFNGLVERTEXWEIGHTFEXTPROC)wglGetProcAddress("glVertexWeightfEXT")))return false;
+	if(!(glVertexWeightfvEXT=(PFNGLVERTEXWEIGHTFVEXTPROC)wglGetProcAddress("glVertexWeightfvEXT")))return false;
+	if(!(glVertexWeightPointerEXT=(PFNGLVERTEXWEIGHTPOINTEREXTPROC)wglGetProcAddress("glVertexWeightPointerEXT")))return false;
+#endif
+
+	return true;
+}
+
+
 // ***************************************************************************
 // Extension Check.
 void	registerGlExtensions(CGlExtensions &ext)
@@ -234,6 +257,9 @@ void	registerGlExtensions(CGlExtensions &ext)
 
 	// Compression S3TC OK iff ARBTextureCompression.
 	ext.EXTTextureCompressionS3TC= (ext.ARBTextureCompression && setupEXTTextureCompressionS3TC(glext)); 
+
+	// Check if NVidia GL_EXT_vertex_weighting is available.
+	ext.EXTVertexWeighting= setupEXTVertexWeighting(glext);
 }
 
 

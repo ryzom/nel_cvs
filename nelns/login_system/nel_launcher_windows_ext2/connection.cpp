@@ -1,6 +1,6 @@
 /** \file connexion.cpp
  *
- * $Id: connection.cpp,v 1.6 2004/02/19 13:09:30 lecroart Exp $
+ * $Id: connection.cpp,v 1.7 2004/05/05 10:18:46 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -69,7 +69,10 @@ static bool connect()
 
 	try
 	{
-		sock.connect(CInetAddress(server, 80));
+		// add the default port if no port in the cfg
+		if(server.find(':') == string::npos)
+			server+=":80";
+		sock.connect(CInetAddress(server));
 		if(!sock.connected())
 		{
 			nlwarning("Can't connect to web server '%s'", server.c_str());

@@ -801,6 +801,14 @@ SOURCE=..\include\nel\misc\rgba.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\sheet_id.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\sheet_id.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\smart_ptr.cpp
 # End Source File
 # Begin Source File

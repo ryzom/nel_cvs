@@ -180,14 +180,6 @@ SOURCE=..\include\nel\georges\load_form.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\georges\sheet_id.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\sheet_id.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\georges\stdgeorges.cpp
 # ADD CPP /Yc"stdgeorges.h"
 # End Source File

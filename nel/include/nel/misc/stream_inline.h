@@ -6,7 +6,7 @@
  * Pkoi? : pour optimiser la lecture/ecriture (plus de if du tout). Plus rapide pour olivier de faire des copies
  * de messages (brut) que de se taper un if dans le CMessage.
  *
- * $Id: stream_inline.h,v 1.26 2004/05/14 10:13:12 cado Exp $
+ * $Id: stream_inline.h,v 1.26.8.1 2004/11/15 11:20:31 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -281,8 +281,10 @@ inline	void		IStream::serial(std::string &b)
 	if(isReading())
 	{
 		serial(len);
-		if (len>1000000)
-			throw NLMISC::EInvalidDataStream( "IStream: Trying to read a string of %u bytes", len );
+
+		// check stream holds enough bytes (avoid STL to crash on resize)
+		checkStreamSize(len);
+
 		b.resize(len);
 	}
 	else
@@ -292,9 +294,15 @@ inline	void		IStream::serial(std::string &b)
 			throw NLMISC::EInvalidDataStream( "IStream: Trying to write a string of %u bytes", len );
 		serial(len);
 	}
+
+/*
 	// Read/Write the string.
 	for(sint i=0;i<len;i++)
 		serial(b[i]);
+*/
+
+	if (len > 0)
+		serialBuffer((uint8*)(&(b[0])), len);
 }
 
 
@@ -306,8 +314,10 @@ inline	void		IStream::serial(ucstring &b)
 	if(isReading())
 	{
 		serial(len);
-		if (len>1000000)
-			throw NLMISC::EInvalidDataStream( "IStream: Trying to read an ucstring of %u bytes", len );
+
+		// check stream holds enough bytes (avoid STL to crash on resize)
+		checkStreamSize(len);
+
 		b.resize(len);
 	}
 	else

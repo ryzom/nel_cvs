@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.70 2004/05/25 08:33:55 berenguier Exp $
+ * $Id: stream.h,v 1.70.8.1 2004/11/15 11:20:31 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include	"nel/misc/types_nl.h"
 #include	"nel/misc/ucstring.h"
 #include	"nel/misc/class_registry.h"
+#include	"nel/misc/common.h"
 #include	<utility>
 #include	<string>
 #include	<vector>
@@ -872,6 +873,16 @@ protected:
 	 */
 	virtual uint			getDbgStreamSize() const {return 0;}
 
+	/**
+	 * Elementarly check at least n bytes can be serialised from this stream (or throw EStreamOverflow)
+	 */
+	void				checkStreamSize(uint numBytes) const
+	{
+		uint			ssize = getDbgStreamSize();
+		if (ssize > 0 && ssize < numBytes)
+			throw EStreamOverflow("stream does not contain at least %u bytes for check", numBytes);
+	}
+
 public:
 	//@{
 	/** Method to be specified by the Deriver.
@@ -919,13 +930,8 @@ private:
 
 		if(isReading())
 		{
-			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-			sint32	ssize= getDbgStreamSize();
-			if(ssize)
-			{
-				// NB: suppose the serial of the element serialize at least one byte
-				nlassert(ssize >= len);
-			}
+			// check stream holds enough bytes (avoid STL to crash on resize)
+			checkStreamSize(len);
 
 			for(sint i=0;i<len;i++)
 			{
@@ -1023,13 +1029,8 @@ protected:
 		{
 			serial(len);
 
-			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-			sint32	ssize= getDbgStreamSize();
-			if(ssize)
-			{
-				// NB: suppose the serial of the element serialize at least one byte
-				nlassert(ssize >= len);
-			}
+			// check stream holds enough bytes (avoid STL to crash on resize)
+			checkStreamSize(len);
 			
 			// Open a node header
 			xmlPushEnd ();
@@ -1086,14 +1087,8 @@ private:
 
 		if(isReading())
 		{
-			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-			sint32	ssize= getDbgStreamSize();
-			if(ssize)
-			{
-				// NB: suppose the serial of the element serialize at least one byte
-				nlassert(ssize >= len);
-			}
-			
+			// check stream holds enough bytes (avoid STL to crash on resize)
+			checkStreamSize(len);
 			
 			for(sint i=0;i<len;i++)
 			{
@@ -1170,6 +1165,10 @@ private:
 			serial(len);
 			// special version for vector: adjut good size.
 			contReset(cont);
+
+			// check stream holds enough bytes (avoid STL to crash on resize)
+			checkStreamSize(len);
+
 			cont.reserve(len);
 		}
 		else
@@ -1201,14 +1200,8 @@ private:
 
 		if(isReading())
 		{
-			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-			sint32	ssize= getDbgStreamSize();
-			if(ssize)
-			{
-				// NB: suppose the serial of the element serialize at least one byte
-				nlassert(ssize >= len);
-			}
-			
+			// check stream holds enough bytes (avoid STL to crash on resize)
+			checkStreamSize(len);
 			
 			for(sint i=0;i<len;i++)
 			{
@@ -1273,6 +1266,10 @@ private:
 			serial(len);
 			// special version for vector: adjut good size.
 			contReset(cont);
+
+			// check stream holds enough bytes (avoid STL to crash on resize)
+			checkStreamSize(len);
+
 			cont.reserve(len);
 		}
 		else
@@ -1330,14 +1327,8 @@ private:
 			cont.clear();
 			serial(len);
 
-			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-			sint32	ssize= getDbgStreamSize();
-			if(ssize)
-			{
-				// NB: suppose the serial of the element serialize at least one byte
-				nlassert(ssize >= len);
-			}
-			
+			// check stream holds enough bytes (avoid STL to crash on resize)
+			checkStreamSize(len);
 			
 			// Close the node header
 			xmlPushEnd ();
@@ -1428,13 +1419,8 @@ private:
 			cont.clear();
 			serial(len);
 
-			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-			sint32	ssize= getDbgStreamSize();
-			if(ssize)
-			{
-				// NB: suppose the serial of the element serialize at least one byte
-				nlassert(ssize >= len);
-			}
+			// check stream holds enough bytes (avoid STL to crash on resize)
+			checkStreamSize(len);
 			
 			
 			// Close the node header

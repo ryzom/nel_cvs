@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.46 2003/08/19 12:53:26 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.47 2003/08/22 09:06:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,9 +88,6 @@ using NL3D::CPSLocatedBindable;
 static const uint IconIDs[] = { IDB_FORCE, IDB_PARTICLE, IDB_EMITTER, IDB_LIGHT, IDB_COLLISION_ZONE, IDB_SOUND
 								, IDB_PARTICLE_SYSTEM, IDB_LOCATED, IDB_LOCATED_INSTANCE };
 static const uint NumIconIDs = sizeof(IconIDs) / sizeof(uint);
-
-
-const char *PS_NO_FINITE_DURATION_ARROR_MSG = "Can't perform operation : the system is flagged with 'No max nb steps' or uses the preset 'Spell FX', and thus, should have a finite duration. Please remove that flag first.";
 
 // this map is used to create increasing names
 static std::map<std::string, uint> _PSElementIdentifiers;
@@ -276,14 +273,14 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 		{
 			if (dynamic_cast<NL3D::CPSEmitter *>(nt->Bind))
 			{
-				CEmitterDlg *ed =  new CEmitterDlg(static_cast<NL3D::CPSEmitter *>(nt->Bind));
+				CEmitterDlg *ed =  new CEmitterDlg(static_cast<NL3D::CPSEmitter *>(nt->Bind), _ParticleDlg);
 				ed->init(_ParticleDlg);
 				_ParticleDlg->setRightPane(ed);
 			}
 			else
 			if (dynamic_cast<NL3D::CPSTargetLocatedBindable *>(nt->Bind))
 			{
-				CLocatedTargetDlg *ltd =  new CLocatedTargetDlg(static_cast<NL3D::CPSTargetLocatedBindable *>(nt->Bind));
+				CLocatedTargetDlg *ltd =  new CLocatedTargetDlg(static_cast<NL3D::CPSTargetLocatedBindable *>(nt->Bind), _ParticleDlg);
 				ltd->init(_ParticleDlg);
 				_ParticleDlg->setRightPane(ltd);
 			}
@@ -620,8 +617,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			_ParticleDlg->StartStopDlg->removeLocated(loc);
 
 			_ParticleDlg->getCurrPSModel()->touchTransparencyState();
-			_ParticleDlg->getCurrPSModel()->touchLightableState();
-			
+			_ParticleDlg->getCurrPSModel()->touchLightableState();			
+			_ParticleDlg->StartStopDlg->resetAutoCount();
 
 			return TRUE;
 			
@@ -655,8 +652,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			
 			_ParticleDlg->getCurrPSModel()->touchTransparencyState();
 			_ParticleDlg->getCurrPSModel()->touchLightableState();
-			
-			
+			_ParticleDlg->StartStopDlg->resetAutoCount();			
 			return TRUE;			
 		}
 		break;
@@ -672,6 +668,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			NL3D::CPSEmitter::setBypassEmitOnDeath(false);
 			delete nt;
 			rebuildLocatedInstance();			
+			_ParticleDlg->StartStopDlg->resetAutoCount();
 		}
 		break; 
 
@@ -695,6 +692,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			// insert the element in the tree
 			InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, "instance", 8, 8, 0, 0, (LPARAM) nt, GetSelectedItem(), TVI_LAST);
 			Invalidate();
+			_ParticleDlg->StartStopDlg->resetAutoCount();
 		}
 		break;
 
@@ -755,8 +753,13 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			}
 			else
 			{
-				MessageBox(PS_NO_FINITE_DURATION_ARROR_MSG, "Error", MB_ICONEXCLAMATION);
+				CString mess;
+				mess.LoadString(IDS_PS_NO_FINITE_DURATION);
+				CString errorStr;
+				errorStr.LoadString(IDS_ERROR);
+				MessageBox((LPCTSTR) mess, (LPCTSTR) errorStr, MB_ICONEXCLAMATION);
 			}
+			_ParticleDlg->StartStopDlg->resetAutoCount();
 		}
 		break;
 		case IDM_PASTE_BINDABLE:
@@ -773,8 +776,13 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			else
 			{
 				delete copy;
-				MessageBox(PS_NO_FINITE_DURATION_ARROR_MSG, "Error", MB_ICONEXCLAMATION);
+				CString mess;
+				mess.LoadString(IDS_PS_NO_FINITE_DURATION);
+				CString errorStr;
+				errorStr.LoadString(IDS_ERROR);
+				MessageBox((LPCTSTR) mess, (LPCTSTR) errorStr, MB_ICONEXCLAMATION);
 			}
+			_ParticleDlg->StartStopDlg->resetAutoCount();
 		}
 		break;
 
@@ -789,92 +797,93 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		}
 		break;
 		case ID_MENU_LOAD_PS:
-		{
-
-
-				try
-				{				
-					_ParticleDlg->StartStopDlg->stop();
-					static char BASED_CODE szFilter[] = "ps & shapes files(*.ps;*.shape)|*.ps; *.shape||";
-					CFileDialog fd( TRUE, ".ps", "*.ps;*.shape", 0, szFilter);
-					int res = fd.DoModal();
-					if (res != IDOK)
-					{ 
-						return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
-					}
-					
-					// Add to the path
-					char drive[256];
-					char dir[256];
-					char path[256];
-
-					// Add search path for the texture
-					_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
-					_makepath (path, drive, dir, NULL, NULL);
-					NLMISC::CPath::addSearchPath (path);
-														
-				
-				
-					NL3D::IShape *sh = nt->PSModel->Shape;																			
-					NL3D::CNELU::Scene.deleteInstance(nt->PSModel);
-					NL3D::CNELU::Scene.getShapeBank()->reset();						
-				
-					DeleteItem(TVI_ROOT);				
-				
-					NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance(std::string((LPCTSTR) fd.GetFileName())));
-
-					if (newModel)
-					{		
-						newModel->setTransformMode(NL3D::CTransform::DirectMatrix);
-						newModel->setMatrix(NLMISC::CMatrix::Identity);
-						// link to the root for manipulation
-						_ParticleDlg->_ObjView->getSceneRoot()->hrcLinkSon(newModel);
-
-						_ParticleDlg->StartStopDlg->reset();
-						CParticleSystemModel *psm = newModel;					
-						psm->setEditionMode(true); // this also force the system instanciation
-						for(uint k = 0; k < NL3D::MaxPSUserParam; ++k)
-						{
-							psm->bypassGlobalUserParamValue(k);
-						}
-						CParticleSystem      *ps  = psm->getPS();
-
-						psm->enableAutoGetEllapsedTime(false);
-						psm->setEllapsedTime(0.f); // system is paused
-						psm->enableDisplayTools(true);							
-				
-						_ParticleDlg->setRightPane(NULL);
-						_ParticleDlg->setNewCurrPS(ps, psm);
-
-						ps->setFontManager(_ParticleDlg->FontManager);
-						ps->setFontGenerator(_ParticleDlg->FontGenerator);
-						ps->stopSound();
-						
-						buildTreeFromPS(ps, psm);
-						
-					}
-					else
-					{
-						throw NLMISC::Exception("Unable to load or intanciate the system");
-						
-					}								
+		{			
+			try
+			{				
+				_ParticleDlg->StartStopDlg->stop();
+				static char BASED_CODE szFilter[] = "ps & shapes files(*.ps;*.shape)|*.ps; *.shape||";
+				CFileDialog fd( TRUE, ".ps", "*.ps;*.shape", 0, szFilter);
+				int res = fd.DoModal();
+				if (res != IDOK)
+				{ 
+					return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 				}
-
-				catch (NLMISC::Exception &e)
-				{
-					MessageBox(e.what(), "error loading particle system");				
-					// create a blank system
-					_ParticleDlg->resetSystem();
-					_ParticleDlg->setRightPane(NULL);
-					buildTreeFromPS(_ParticleDlg->getCurrPS(), _ParticleDlg->getCurrPSModel());
-				}		
 				
-									
-				rebuildLocatedInstance();
-				_LastClickedPS = NULL;
+				// Add to the path
+				char drive[256];
+				char dir[256];
+				char path[256];
 
-				// reset the camera
-				_ParticleDlg->MainFrame->OnResetCamera();
+				// Add search path for the texture
+				_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
+				_makepath (path, drive, dir, NULL, NULL);
+				NLMISC::CPath::addSearchPath (path);
+													
+			
+			
+				NL3D::IShape *sh = nt->PSModel->Shape;																			
+				NL3D::CNELU::Scene.deleteInstance(nt->PSModel);
+				NL3D::CNELU::Scene.getShapeBank()->reset();						
+			
+				DeleteItem(TVI_ROOT);				
+			
+				NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance(std::string((LPCTSTR) fd.GetFileName())));
+
+				if (newModel)
+				{		
+					newModel->setTransformMode(NL3D::CTransform::DirectMatrix);
+					newModel->setMatrix(NLMISC::CMatrix::Identity);
+					// link to the root for manipulation
+					_ParticleDlg->_ObjView->getSceneRoot()->hrcLinkSon(newModel);
+
+					_ParticleDlg->StartStopDlg->reset();
+					CParticleSystemModel *psm = newModel;					
+					psm->setEditionMode(true); // this also force the system instanciation
+					for(uint k = 0; k < NL3D::MaxPSUserParam; ++k)
+					{
+						psm->bypassGlobalUserParamValue(k);
+					}
+					CParticleSystem      *ps  = psm->getPS();
+
+					psm->enableAutoGetEllapsedTime(false);
+					psm->setEllapsedTime(0.f); // system is paused
+					psm->enableDisplayTools(true);							
+			
+					_ParticleDlg->setRightPane(NULL);
+					_ParticleDlg->setNewCurrPS(ps, psm);
+
+					ps->setFontManager(_ParticleDlg->FontManager);
+					ps->setFontGenerator(_ParticleDlg->FontGenerator);
+					ps->stopSound();
+					
+					buildTreeFromPS(ps, psm);
+					
+				}
+				else
+				{
+					throw NLMISC::Exception("Unable to load or intanciate the system");
+					
+				}								
+			}
+
+			catch (NLMISC::Exception &e)
+			{
+				MessageBox(e.what(), "error loading particle system");				
+				// create a blank system
+				_ParticleDlg->resetSystem();
+				_ParticleDlg->setRightPane(NULL);
+				buildTreeFromPS(_ParticleDlg->getCurrPS(), _ParticleDlg->getCurrPSModel());
+			}		
+			
+			_ParticleDlg->setAutoBBox(false);
+			rebuildLocatedInstance();
+			_LastClickedPS = NULL;							
+			_ParticleDlg->StartStopDlg->enableAutoCount(false);
+			_ParticleDlg->getCurrPS()->setAutoCountFlag(false);
+			_ParticleDlg->StartStopDlg->resetAutoCount(true);
+
+			// reset the camera
+			_ParticleDlg->MainFrame->OnResetCamera();
 
 		}
 		break;
@@ -907,7 +916,11 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 						if (!nt->PSModel->getPS()->merge( NLMISC::safe_cast<NL3D::CParticleSystemShape *>((NL3D::IShape *) newModel->Shape)))
 						{
-							MessageBox(PS_NO_FINITE_DURATION_ARROR_MSG, "Error", MB_ICONEXCLAMATION);
+							CString mess;
+							mess.LoadString(IDS_PS_NO_FINITE_DURATION);
+							CString errorStr;
+							errorStr.LoadString(IDS_ERROR);
+							MessageBox((LPCTSTR) mess, (LPCTSTR) errorStr, MB_ICONEXCLAMATION);
 						}
 					}
 					NL3D::CNELU::Scene.deleteInstance(newModel);
@@ -924,10 +937,21 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				MessageBox(e.what(), "error merging particle system");						
 			}	
 			_ParticleDlg->refreshRightPane();
+			_ParticleDlg->StartStopDlg->resetAutoCount();
 		}
 		break;
 		case ID_MENU_SAVE_PS:
 		{
+			if (_ParticleDlg->StartStopDlg->getResetFlag() && nt->PS->getAutoCountFlag())
+			{
+				CString caption;
+				CString mess;
+				caption.LoadString(IDS_WARNING);
+				mess.LoadString(IDS_AUTO_COUNT_ERROR);
+				MessageBox((LPCTSTR) mess, (LPCTSTR) caption, MB_ICONEXCLAMATION);				
+			}
+			else
+			{			
 				_ParticleDlg->StartStopDlg->stop();
 				std::string fileName;
 				if (nt->PS->getName() != std::string())
@@ -971,6 +995,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 						MessageBox(E.what(), "save error");
 					}	
 				}
+			}
 		}
 		break;
 		case ID_MENU_DELETE_PS:
@@ -1001,6 +1026,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				_ParticleDlg->setRightPane(NULL);
 				buildTreeFromPS(_ParticleDlg->getCurrPS(), _ParticleDlg->getCurrPSModel());																	
 				_LastClickedPS = NULL;
+				_ParticleDlg->StartStopDlg->enableAutoCount(false);
+				_ParticleDlg->StartStopDlg->resetAutoCount();
 			}
 		}
 		break;
@@ -1103,8 +1130,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		_ParticleDlg->getCurrPSModel()->touchTransparencyState();		
 		_ParticleDlg->getCurrPSModel()->touchLightableState();
 		Invalidate();
-
 		_ParticleDlg->refreshRightPane();
+		_ParticleDlg->StartStopDlg->resetAutoCount();
 	}
 	return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }

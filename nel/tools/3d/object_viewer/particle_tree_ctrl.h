@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.h,v 1.13 2003/08/08 16:58:59 vizerie Exp $
+ * $Id: particle_tree_ctrl.h,v 1.14 2003/08/22 09:06:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -171,9 +171,6 @@ private:
 
 	DECLARE_MESSAGE_MAP()
 };
-
-
-extern const char *PS_NO_FINITE_DURATION_ARROR_MSG;
 
 /////////////////////////////////////////////////////////////////////////////
 

@@ -1,7 +1,7 @@
 /** \file o_xml.cpp
  * Output xml stream
  *
- * $Id: o_xml.cpp,v 1.12 2003/11/18 10:16:30 corvazier Exp $
+ * $Id: o_xml.cpp,v 1.13 2004/04/29 15:53:30 distrib Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -647,6 +647,9 @@ void COXml::flush ()
 
 int xmlOutputWriteCallbackForNeL ( void *context, const char *buffer, int len)
 {
+	// no need to save empty buffer
+	if(len == 0) return;
+
 	// Get the object
 	COXml *object = (COXml*) context;
 

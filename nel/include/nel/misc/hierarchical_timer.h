@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.10 2002/05/30 08:37:10 cado Exp $
+ * $Id: hierarchical_timer.h,v 1.11 2002/05/30 16:17:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -220,6 +220,12 @@ public:
 	  * \param wantStandardDeviation When true, benchs will report the standard deviation of values. This require more memory, howeve, because each samples must be kept.	  
 	  */
 	static void		startBench(bool wantStandardDeviation = false);
+	/** For backward compatibility
+	  */ 
+	static void		bench() { startBench(); }	
+	/** For backward compatibility
+	  */ 
+	static void		adjust() {}
 	/// Ends a bench session
 	static void		endBench();
 	/** Display results
@@ -263,8 +269,9 @@ private:
 		CNode					*Parent;
 		TNodeVect				Sons;
 		CHTimer					*Owner;	   // the hierarchical timer this node is associated with		
-		uint64					TotalTime; // the total time spent in that node, including sons
-		uint64					TotalTimeWithoutSons; // the local time spent in that node
+		uint64					TotalTime; // the total time spent in that node, including sons		
+		uint64					LastSonsTotalTime; 
+		uint64					SonsTotalTime; // maybe different from LastSonsTotalTime while benching the sons and if the display is called in a benched node
 		TTimeVect				Measures;  // All time measures. Used only when standard deviation is wanted
 		uint64					MinTime;   // the minimum time spent in that node
 		uint64					MaxTime;   // the maximum time spent in that node
@@ -286,20 +293,19 @@ private:
 		// reset this node measures
 		void	reset()
 		{
-			TotalTimeWithoutSons = 0;
+			SonsTotalTime		 = 0;
 			TotalTime			 = 0;
 			MaxTime				 = 0;
 			MinTime				 = (uint64) -1;
 			NumVisits			 = 0;
-			SonsPreambule	     = 0;
+			SonsPreambule	     = 0;			
+			LastSonsTotalTime    = 0;
 			NLMISC::contReset(Measures);
 		}
 		// Display this node path
 		void	displayPath() const;
 		// Get this node path
-		void    getPath(std::string &dest) const;
-		// Get the time spent in this node without its sons time
-		uint64	getSonsTime() const;
+		void    getPath(std::string &dest) const;		
 	};
 
 	/** Some statistics
@@ -446,13 +452,13 @@ inline void	CHTimer::after(bool displayAfter /*= false*/)
 	_CurrNode->Clock.stop();		
 	_PreambuleClock.start();
 	//		
+	//nlinfo((std::string("clock ") + _Name + std::string(" time = ") + NLMISC::toString(_CurrNode->Clock.getNumTicks())).c_str());
 	uint64 numTicks = _CurrNode->Clock.getNumTicks()  - _CurrNode->SonsPreambule - (CSimpleClock::getStartStopNumTicks() << 1);
-	_CurrNode->TotalTime += numTicks;
-	uint64 sonsTime = _CurrNode->getSonsTime();
-	//nlassert(sonsTime <= numTicks);
-	_CurrNode->TotalTimeWithoutSons += numTicks - sonsTime;
+
+	_CurrNode->TotalTime += numTicks;		
 	_CurrNode->MinTime = std::min(_CurrNode->MinTime, numTicks);
 	_CurrNode->MaxTime = std::max(_CurrNode->MaxTime, numTicks);
+	_CurrNode->LastSonsTotalTime = _CurrNode->SonsTotalTime;
 	if (displayAfter)
 	{		
 		nlinfo("FEHTIMER> %s %.3fms loop number %d", _Name, numTicks * _MsPerTick, _CurrNode->NumVisits);
@@ -466,12 +472,13 @@ inline void	CHTimer::after(bool displayAfter /*= false*/)
 	if (_Parent)
 	{
 		_CurrTimer = _Parent;
-	}
+	}	
 	//
 	if (_CurrNode->Parent)
 	{
 		_PreambuleClock.stop();
 		_CurrNode = _CurrNode->Parent;
+		_CurrNode->SonsTotalTime += numTicks;
 		_CurrNode->SonsPreambule += _PreambuleClock.getNumTicks();
 	}
 	else

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.48 2004/08/13 16:06:12 vizerie Exp $
+ * $Id: u_driver.h,v 1.49 2004/09/17 15:13:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -154,6 +154,10 @@ public:
 	UDriver();
 	virtual	~UDriver();
 	// @}
+
+	// Test if the device is lost. Can only happen with D3D.
+	// The calling application may skip some part of its rendering when it is the case (this is not a requirement, but may save cpu for other applications)
+	virtual	bool			isLost() const = 0;
 
 
 	/// \name Disable Hardware Feature 

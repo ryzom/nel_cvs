@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.63 2004/03/09 13:45:55 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.64 2004/04/09 14:28:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@
 #include "3d/clip_trav.h"
 #include "3d/render_trav.h"
 #include "3d/skeleton_model.h"
-
+#include "3d/particle_system_instance_user.h"
 
 #include "cluster.h" // ask trap
 
@@ -467,7 +467,7 @@ ITrack* CParticleSystemModel::getDefaultTrack (uint valueId)
 }
 
 ///=====================================================================================
-	void CParticleSystemModel::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix /* =std::string() */)
+void CParticleSystemModel::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix /* =std::string() */)
 {
 	CTransformShape::registerToChannelMixer(chanMixer, prefix);
 	addValue(chanMixer, PSParam0, OwnerBit, prefix, true);
@@ -1091,6 +1091,12 @@ void CParticleSystemModel::forceSetUserMatrix(const NLMISC::CMatrix &userMatrix)
 	{
 		getPS()->setUserMatrix(&_UserMatrix);
 	}
+}
+
+//===================================================================
+CInstanceUser *CParticleSystemModel::buildMatchingUserInterfaceObject(bool deleteIt)
+{
+	return new CParticleSystemInstanceUser(getOwnerScene(), this, deleteIt)	;
 }
 
  

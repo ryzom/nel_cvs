@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ia_exception.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: ai_exception.h,v 1.1 2001/01/11 16:38:30 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)

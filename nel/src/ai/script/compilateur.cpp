@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
+ * $Id: compilateur.cpp,v 1.5 2001/01/11 16:38:22 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,27 @@ namespace NLAISCRIPT
 		}
 
 	};*/
+
+	NLAIC::CIdentType CCompilateur::getTypeOfClass(const NLAIAGENT::IVarName &className)/// throw (NLAIE::IException)
+	{
+		try
+		{				
+			NLAIC::CIdentType id(className.getString());
+			return id;
+		}
+		catch (NLAIE::IException &err)
+		{				
+			IClassInterpret *cl= _SelfClass.find(&className);								
+			if(cl == NULL) 
+			{
+				throw CExceptionHaveNoType(err.what());
+			}
+			else
+			{
+				return getTypeOfClass(*cl->getInheritanceName());
+			}				
+		}
+	}
 
 	void CCompilateur::Echo(char *Er,...)
 	{

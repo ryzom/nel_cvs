@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.7 2001/01/09 17:16:52 chafik Exp $
+ * $Id: compilateur.h,v 1.8 2001/01/11 16:38:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -384,23 +384,7 @@ namespace NLAISCRIPT
 		bool getDebugMode() const {return _Debug;}
 
 	protected:
-		NLAIC::CIdentType getTypeOfClass(const NLAIAGENT::IVarName &className)/// throw (NLAIE::IException)
-		{
-			try
-			{				
-				NLAIC::CIdentType id(className.getString());
-				return id;
-			}
-			catch (NLAIE::IException &err)
-			{				
-				IClassInterpret *cl= _SelfClass.find(&className);								
-				if(cl == NULL) throw CExceptionHaveNoType(err.what());
-				else
-				{
-					return getTypeOfClass(*cl->getInheritanceName());
-				}				
-			}
-		}
+		NLAIC::CIdentType getTypeOfClass(const NLAIAGENT::IVarName &className);/// throw (NLAIE::IException)		
 
 		CCodeBrancheRun *getCode(bool isMain = false);
 		sint32 runTypeConstraint();

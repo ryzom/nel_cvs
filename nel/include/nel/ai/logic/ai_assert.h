@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Base class for assertions
  *
- * $Id: ia_assert.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: ai_assert.h,v 1.1 2001/01/11 16:38:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,6 +1,6 @@
 /** \file identifiant.cpp
  *
- * $Id: identifiant.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
+ * $Id: ident.cpp,v 1.1 2001/01/11 16:38:22 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.22 2003/01/22 11:13:52 corvazier Exp $
+ * $Id: driver_user.h,v 1.23 2003/01/28 13:23:08 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,7 +140,7 @@ public:
 	virtual void			disableHardwareTextureShader();
 
 	/// create the window.
-	virtual	void			setDisplay(const CMode &mode) ;
+	virtual	bool			setDisplay(const CMode &mode) ;
 	/// Release the window.
 	virtual	void			release() ;
 
@@ -148,6 +148,8 @@ public:
 	virtual bool			activate(void);
 	/// Return true if driver is still active. Return false else. If he user close the window, must return false.
 	virtual bool			isActive();
+	/// Return an OS dependent window handle. Under Win32, it is a HWND.
+	virtual void			*getDisplay ();
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.28 2003/01/22 11:13:52 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.29 2003/01/28 13:23:08 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -212,34 +212,41 @@ void			CDriverUser::disableHardwareTextureShader()
 }
 
 // ***************************************************************************
-void			CDriverUser::setDisplay(const CMode &mode) 
+bool			CDriverUser::setDisplay(const CMode &mode) 
 {
 	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	// window init.
-	nlverify(_Driver->setDisplay(NULL, GfxMode(mode.Width, mode.Height, mode.Depth, mode.Windowed)));
-	nlverify(activate());
-	_WindowInit= true;
+	if (_Driver->setDisplay(NULL, GfxMode(mode.Width, mode.Height, mode.Depth, mode.Windowed, false, mode.Frequency)))
+	{
+		// Always true
+		nlverify (activate());
 
-	// Event init.
-	AsyncListener.reset ();
-	EventServer.addEmitter(_Driver->getEventEmitter());
-	AsyncListener.addToServer(EventServer);
+		_WindowInit= true;
 
-	// Matrix Context (2D).
-	_CurrentMatrixContext.Viewport.initFullScreen();
-	_CurrentMatrixContext.Scissor.initFullScreen();
-	setMatrixMode2D11();
+		// Event init.
+		AsyncListener.reset ();
+		EventServer.addEmitter(_Driver->getEventEmitter());
+		AsyncListener.addToServer(EventServer);
 
-	// 2D Material.
-	_MatFlat.initUnlit();
-	_MatFlat.setZFunc(UMaterial::always);
-	_MatFlat.setZWrite(false);
-	_MatText.initUnlit();
-	_MatText.setZFunc(UMaterial::always);
-	_MatText.setZWrite(false);
+		// Matrix Context (2D).
+		_CurrentMatrixContext.Viewport.initFullScreen();
+		_CurrentMatrixContext.Scissor.initFullScreen();
+		setMatrixMode2D11();
 
+		// 2D Material.
+		_MatFlat.initUnlit();
+		_MatFlat.setZFunc(UMaterial::always);
+		_MatFlat.setZWrite(false);
+		_MatText.initUnlit();
+		_MatText.setZFunc(UMaterial::always);
+		_MatText.setZWrite(false);
+
+		// Done
+		return true;
+	}
+	return false;
 }
 // ***************************************************************************
 void			CDriverUser::release() 
@@ -286,6 +293,16 @@ bool			CDriverUser::isActive()
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _Driver->isActive();
+}
+
+
+// ***************************************************************************
+void			*CDriverUser::getDisplay ()
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER;
+
+	return _Driver->getDisplay ();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.24 2003/01/22 11:13:52 corvazier Exp $
+ * $Id: u_driver.h,v 1.25 2003/01/28 13:23:08 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,6 +103,7 @@ public:
 		uint16				Width;
 		uint16				Height;
 		uint8				Depth;
+		uint				Frequency;	// In hz. Used only in fullscreen, default is 60hz
 
 							CMode(void) 
 							{ 
@@ -110,13 +111,15 @@ public:
 								Width=0;
 								Height=0;
 								Depth=0;
+								Frequency=60;
 							}
-							CMode(uint16 w, uint16 h, uint8 d, bool windowed= true)
+							CMode(uint16 w, uint16 h, uint8 d, bool windowed= true, uint frequency = 60)
 							{
 								Windowed=windowed;
 								Width=w;
 								Height=h;
 								Depth=d;
+								Frequency=frequency;
 							}
 	};
 
@@ -165,8 +168,8 @@ public:
 	/// Enum All Fullscreen modes.
 	virtual TModeList		enumModes()=0;
 
-	/// create the window. call activate().
-	virtual	void			setDisplay(const CMode &mode) =0;
+	/// create the window. call activate(). Return true if mode activated, false if it failed.
+	virtual	bool			setDisplay(const CMode &mode) =0;
 	/// Release the window. All components are released (Texture, materials, scene, textcontexts).
 	virtual	void			release() =0;
 
@@ -175,6 +178,8 @@ public:
 	/// Return true if driver is still active. Return false else. If he user close the window, must return false.
 	virtual bool			isActive()=0;
 
+	/// Return an OS dependent window handle. Under Win32, it is a HWND.
+	virtual void			*getDisplay () = 0;
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.170 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.171 2003/01/28 13:23:09 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -693,11 +693,13 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 				devMode.dmSize= sizeof(DEVMODE);
 				devMode.dmDriverExtra= 0;
-				devMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+				devMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY;
 				devMode.dmPelsWidth= width;
 				devMode.dmPelsHeight= height;
 				devMode.dmBitsPerPel= mode.Depth;
-				ChangeDisplaySettings(&devMode, CDS_FULLSCREEN);
+				devMode.dmDisplayFrequency= mode.Frequency;
+				if (ChangeDisplaySettings(&devMode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+					return false;
 			}
 			WndRect.left=0;
 			WndRect.top=0;

@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.cpp,v 1.73 2002/12/06 12:41:25 corvazier Exp $
+ * $Id: driver.cpp,v 1.74 2003/01/28 13:23:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,13 +123,14 @@ bool		IDriver::release(void)
 
 
 // ***************************************************************************
-GfxMode::GfxMode(uint16 w, uint16 h, uint8 d, bool windowed, bool offscreen)
+GfxMode::GfxMode(uint16 w, uint16 h, uint8 d, bool windowed, bool offscreen, uint frequency)
 {
 	Windowed= windowed;
 	Width= w;
 	Height= h;
 	Depth= d;
 	OffScreen= offscreen;
+	Frequency= frequency;
 }
 
 // ***************************************************************************

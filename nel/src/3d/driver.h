@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.45 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: driver.h,v 1.46 2003/01/28 13:23:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,7 @@ public:
 	uint16				Width;
 	uint16				Height;
 	uint8				Depth;
+	uint				Frequency;	// In hz. Used only in fullscreen, default is 60hz
 
 						GfxMode(void) 
 						{ 
@@ -94,8 +95,9 @@ public:
 							Width=0;
 							Height=0;
 							Depth=0;
+							Frequency=60;
 						}
-						GfxMode(uint16 w, uint16 h, uint8 d, bool windowed= true, bool offscreen=false);
+						GfxMode(uint16 w, uint16 h, uint8 d, bool windowed= true, bool offscreen=false, uint frequency = 60);
 };
 
 typedef std::vector<GfxMode> ModeList;

@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.15 2002/01/16 10:56:43 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.16 2002/01/16 12:14:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,6 +119,8 @@ void	CLandscapeUser::refreshAllZonesAround(const CVector &pos, float radius, std
 	zonesAdded.clear();
 	zonesRemoved.clear();
 	std::string		za, zr;
+
+	_ZoneManager.loadAllZonesAround((uint)pos.x, (uint)(-pos.y), (uint)radius, true);
 
 	// refresh until finished
 	do

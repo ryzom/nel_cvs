@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.10 2001/06/18 09:15:16 cado Exp $
+ * $Id: naming_service.cpp,v 1.11 2001/08/23 15:43:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1229,6 +1229,20 @@ TCallbackItem CallbackArray[] =
 
 void CNamingService::init()
 {
+/*	CWinDisplayer *wd = dynamic_cast<CWinDisplayer *>(DebugLog->getDisplayer ("DEFAULT_WD"));
+
+	CLog mylog;
+
+	if (wd != NULL)
+	{
+		DebugLog->removeDisplayer ("DEFAULT_WD");
+		InfoLog->removeDisplayer ("DEFAULT_WD");
+		WarningLog->removeDisplayer ("DEFAULT_WD");
+		mylog.addDisplayer (wd);
+		wd->clear ();
+	}
+*/
+
 	// we don't try to associate message from client
 	CNetManager::getNetBase ("NS")->ignoreAllUnknownId (true);
 

@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Console Application" 0x0103
 
-CFG=login_service - Win32 Debug
+CFG=login_service - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,13 +13,14 @@ CFG=login_service - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "login_service.mak" CFG="login_service - Win32 Debug"
+!MESSAGE NMAKE /f "login_service.mak" CFG="login_service - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "login_service - Win32 Release" (based on "Win32 (x86) Console Application")
 !MESSAGE "login_service - Win32 Debug" (based on "Win32 (x86) Console Application")
 !MESSAGE "login_service - Win32 ReleaseDebug" (based on "Win32 (x86) Console Application")
+!MESSAGE "login_service - Win32 DebugFast" (based on "Win32 (x86) Console Application")
 !MESSAGE 
 
 # Begin Project
@@ -69,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "_DEBUG" /D "__STL_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /FR /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_DEBUG" /D "__STL_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /FR /FD /GZ /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
@@ -108,6 +109,35 @@ LINK32=link.exe
 # ADD LINK32 winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386
 # SUBTRACT LINK32 /pdb:none
 
+!ELSEIF  "$(CFG)" == "login_service - Win32 DebugFast"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "login_service___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "login_service___Win32_DebugFast"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "DebugFast"
+# PROP Intermediate_Dir "DebugFast"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_DEBUG" /D "__STL_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /FR /FD /GZ /c
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_WINDOWS" /D "_DEBUG" /D "WIN32" /D "_MBCS" /FR /FD /GZ /c
+# SUBTRACT CPP /YX /Yc /Yu
+# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD RSC /l 0x40c /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"libcmtd.lib" /nodefaultlib:"libcd.lib" /pdbtype:sept
+# SUBTRACT BASE LINK32 /pdb:none
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"libcmtd.lib" /nodefaultlib:"libcd.lib" /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none
+
 !ENDIF 
 
 # Begin Target
@@ -115,6 +145,7 @@ LINK32=link.exe
 # Name "login_service - Win32 Release"
 # Name "login_service - Win32 Debug"
 # Name "login_service - Win32 ReleaseDebug"
+# Name "login_service - Win32 DebugFast"
 # Begin Source File
 
 SOURCE=.\connection_client.cpp

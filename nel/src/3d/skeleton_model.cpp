@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.59 2004/07/27 16:16:07 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.60 2004/08/25 17:07:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -766,8 +766,7 @@ void	CSkeletonModel::traverseAnimDetail()
 		_BoneToComputeDirty= true;
 	}
 
-	// If needed, let's know which bone has to be computed, and enable / disable (lod) channels in channelMixer.
-	bool forceUpdate= _BoneToComputeDirty;
+	// If needed, let's know which bone has to be computed, and enable / disable (lod) channels in channelMixer.	
 	updateBoneToCompute();
 
 	// Animate skeleton.
@@ -801,51 +800,37 @@ void	CSkeletonModel::traverseAnimDetail()
 	{
 		lodBoneInterp=1.f;
 	}
-	// If the interpolation value is different from last one, must update.
-	if(lodBoneInterp != _CurLodInterp)
-	{
-		// set new one.
-		_CurLodInterp= lodBoneInterp;
-		// must update bone compute.
-		forceUpdate= true;
-	}
-
+	_CurLodInterp= lodBoneInterp;
 
 
 	// Compute bones
 	//===============
+	
 
-	// If User AnimCtrl, then must update
-	if(_AnimCtrlUsage>0)
-		forceUpdate= true;
+	// test if bones must be updated. either if animation change or if BoneUsage change.	
+	// Retrieve the WorldMatrix of the current CTransformShape.
+	const CMatrix		&modelWorldMatrix= getWorldMatrix();
 
-	// test if bones must be updated. either if animation change or if BoneUsage change.
-	if(IAnimatable::isTouched(CSkeletonModel::OwnerBit) || forceUpdate)
+	// must test / update the hierarchy of Bones.
+	// Since they are orderd in depth-first order, we are sure that parent are computed before sons.
+	uint							numBoneToCompute= _BoneToCompute.size();
+	CSkeletonModel::CBoneCompute	*pBoneCompute= numBoneToCompute? &_BoneToCompute[0] : NULL;
+	// traverse only bones which need to be computed
+	for(;numBoneToCompute>0;numBoneToCompute--, pBoneCompute++)
 	{
-		// Retrieve the WorldMatrix of the current CTransformShape.
-		const CMatrix		&modelWorldMatrix= getWorldMatrix();
+		// compute the bone with his father, if any
+		pBoneCompute->Bone->compute( pBoneCompute->Father, modelWorldMatrix, this);
 
-		// must test / update the hierarchy of Bones.
-		// Since they are orderd in depth-first order, we are sure that parent are computed before sons.
-		uint							numBoneToCompute= _BoneToCompute.size();
-		CSkeletonModel::CBoneCompute	*pBoneCompute= numBoneToCompute? &_BoneToCompute[0] : NULL;
-		// traverse only bones which need to be computed
-		for(;numBoneToCompute>0;numBoneToCompute--, pBoneCompute++)
+		// Lod interpolation on this bone .. only if interp is enabled now, and if bone wants it
+		if(lodNext && pBoneCompute->MustInterpolate)
 		{
-			// compute the bone with his father, if any
-			pBoneCompute->Bone->compute( pBoneCompute->Father, modelWorldMatrix, this);
-
-			// Lod interpolation on this bone .. only if interp is enabled now, and if bone wants it
-			if(lodNext && pBoneCompute->MustInterpolate)
-			{
-				// interpolate with my father matrix.
-				const CMatrix		&fatherMatrix= pBoneCompute->Father->getBoneSkinMatrix();
-				pBoneCompute->Bone->interpolateBoneSkinMatrix(fatherMatrix, lodBoneInterp);
-			}
+			// interpolate with my father matrix.
+			const CMatrix		&fatherMatrix= pBoneCompute->Father->getBoneSkinMatrix();
+			pBoneCompute->Bone->interpolateBoneSkinMatrix(fatherMatrix, lodBoneInterp);
 		}
-
-		IAnimatable::clearFlag(CSkeletonModel::OwnerBit);
 	}
+
+	IAnimatable::clearFlag(CSkeletonModel::OwnerBit);	
 
 	// Sticked Objects: 
 	// they will update their WorldMatrix after, because of the AnimDetail traverse scheme:

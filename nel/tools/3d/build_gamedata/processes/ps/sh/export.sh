@@ -23,6 +23,7 @@ date
 for i in $ps_source_directories ; do
 	# Copy
 	cp -u -p $database_directory/$i/*.[pP][sS] ps 2>> log.log
+	cp -u -p $database_directory/$i/*.[sS][hH][aA][pP][eE] ps 2>> log.log
 
 	# Idle
 	../../idle.bat

@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.48 2002/02/11 10:01:34 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.49 2002/02/15 17:44:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -412,9 +412,9 @@ bool CDriverGL::setupTexture(ITexture& tex)
 													GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB,
 													GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
 													GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB };
+					CTextureCube *pTC = NLMISC::safe_cast<CTextureCube *>(&tex);
 					// Regenerate all the texture.
-					tex.generate();
-					CTextureCube *pTC = (CTextureCube *)&tex;
+					tex.generate();					
 					for(uint nText = 0; nText < 6; ++nText)
 					if(pTC->getTexture((CTextureCube::TFace)nText) != NULL)
 					{
@@ -426,7 +426,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 						sint	nMipMaps;
 						if(glSrcFmt==GL_RGBA && pTInTC->getPixelFormat()!=CBitmap::RGBA )
 							pTInTC->convertToType(CBitmap::RGBA);
-						if(pTC->mipMapOn())
+						if(tex.mipMapOn())
 						{
 							pTInTC->buildMipMaps();
 							nMipMaps= pTInTC->getMipMapCount();

@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.16 2004/02/23 14:38:45 lecroart Exp $
+ * $Id: source_al.cpp,v 1.17 2004/05/10 17:43:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -295,7 +295,7 @@ void					CSourceAL::getDirection( NLMISC::CVector& dir ) const
  */
 void					CSourceAL::setGain( float gain )
 {
-	nlassert( (gain >= 0.0f) && (gain <= 1.0f ) );
+	clamp(gain, 0.0f, 1.0f);
 	alSourcef( _SourceName, AL_GAIN, gain );
 	TestALError();
 }

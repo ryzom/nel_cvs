@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_common.cpp,v 1.7 2003/08/21 09:29:58 boucher Exp $
+ * $Id: source_common.cpp,v 1.8 2004/05/10 17:41:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -185,7 +185,7 @@ void					CSourceCommon::setDirection( const NLMISC::CVector& dir )
  */
 void					CSourceCommon::setGain( float gain )
 {
-	nlassert( (gain >= 0.0f) && (gain <= 1.0f ) );
+	clamp(gain, 0.0f, 1.0f);
 	_InitialGain = _Gain = gain;
 }
 
@@ -194,7 +194,7 @@ void					CSourceCommon::setGain( float gain )
  */
 void					CSourceCommon::setRelativeGain( float gain )
 {
-	nlassert( (gain >= 0.0f) && (gain <= 1.0f ) );
+	clamp(gain, 0.0f, 1.0f);
 
 	_Gain = _InitialGain * gain;
 }

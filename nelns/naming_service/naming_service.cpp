@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.3 2001/05/03 16:30:27 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.4 2001/05/04 14:42:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -502,7 +502,7 @@ static void cbLookupSId (CMessage& msgin, TSockId from, CCallbackNetBase &netbas
 {
 	// Receive id
 	TServiceId sid;
-	message.serial (sid);
+	msgin.serial (sid);
 
 	// Find and return a service
 	doLookup ("", sid, from, netbase, false, true);
@@ -641,7 +641,7 @@ static void cbLookupSId (CMessage& msgin, TSockId from, CCallbackNetBase &netbas
  * Returns false in case of failure of sid allocation or bad sid provided
  * Note: the reply is included in this function, because it must be done before things such as syncUniTime()
  */
-bool doRegister (const string &name, const CInetAddress &addr, bool alloc_sid, TServiceId sid, TSockId from, CCallbackNetBase &netbase)
+bool doRegister (const string &name, const CInetAddress &addr, TServiceId sid, TSockId from, CCallbackNetBase &netbase)
 {/*
 	CInetAddressRef addrr ( addr );
 
@@ -720,6 +720,7 @@ bool doRegister (const string &name, const CInetAddress &addr, bool alloc_sid, T
 */
 //////////////
 
+	// find if the service is not already registered
 	uint8 ok = true;
 	bool needRegister = true;
 	for (list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
@@ -746,33 +747,53 @@ bool doRegister (const string &name, const CInetAddress &addr, bool alloc_sid, T
 
 	if (needRegister)
 	{
-		// we have to find a sid
-		sid = CNamingService::BaseSId;
-		bool found = false;
-		while (!found)
+		if (sid == 0)
 		{
+			// we have to find a sid
+			sid = CNamingService::BaseSId;
+			bool found = false;
+			while (!found)
+			{
+				list<CServiceEntry>::iterator it;
+				for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+				{
+					if ((*it).SId == sid)
+					{
+						break;
+					}
+				}
+				if (it == RegisteredServices.end ())
+				{
+					// ok, we have an empty sid
+					found = true;
+				}
+				else
+				{
+					sid++;
+					if (sid == 0) // round the clock
+					{
+						nlwarning ("Service identifier allocation overflow");
+						ok = false;
+						break;
+					}
+				}
+			}
+		}
+		else
+		{
+			// we have to check that the user provided sid is available
 			list<CServiceEntry>::iterator it;
 			for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
 			{
 				if ((*it).SId == sid)
 				{
-					break;
-				}
-			}
-			if (it == RegisteredServices.end ())
-			{
-				// ok, we have an empty sid
-				found = true;
-			}
-			else
-			{
-				sid++;
-				if (sid == 0) // round the clock
-				{
-					nlwarning ("Service identifier allocation overflow");
 					ok = false;
 					break;
 				}
+			}
+			if (it != RegisteredServices.end ())
+			{
+				ok = true;
 			}
 		}
 
@@ -932,10 +953,12 @@ static void cbRegister (CMessage& msgin, TSockId from, CCallbackNetBase &netbase
 {
 	string name;
 	CInetAddress addr;
+	TServiceId sid;
 	msgin.serial (name);
 	msgin.serial (addr);
+	msgin.serial (sid);
 
-	doRegister (name, addr, true, 0, from, netbase);
+	doRegister (name, addr, sid, from, netbase);
 }
 
 
@@ -1159,7 +1182,7 @@ TCallbackItem CallbackArray[] =
 
 	{ "LKI", cbLookupSId },
 //	{ "LAI", cbLookupAlternateSId },
-//	{ "RGI", cbRegisterWithSId },
+//	{ "RGI", cbRegisterWithSId },	// done by RG now
 	{ "UNI", cbUnregisterSId },
 
 	{ "LKA", cbLookupAll },

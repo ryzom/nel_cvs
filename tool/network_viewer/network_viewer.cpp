@@ -1,7 +1,7 @@
 /** \file network_viewer.cpp
  * network_viewer prototype
  *
- * $Id: network_viewer.cpp,v 1.6 2000/12/19 16:06:42 lecroart Exp $
+ * $Id: network_viewer.cpp,v 1.7 2000/12/19 16:07:18 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,9 +72,9 @@ sint32 SelectedLine = -1;
 #include "nel/net/service.h"
 
 const char NLNET::IService::_Name[] = "toto";
-const uint16 NLNET::IService::_DefaultPort = 123456;
+const uint16 NLNET::IService::_DefaultPort = 12345;
 sint16 CallbackArraySize = 0;
-NLNET::TCallbackItem CallbackArray [] = {};
+NLNET::TCallbackItem CallbackArray [] = { NULL, };
 
 /*
 
@@ -761,12 +761,27 @@ class CMCallback : public IEventListener
 sint64 str2sint64(string &str)
 {
 	sint64 num = 0;
-	for (sint i = 0; i < (sint) str.size (); i++)
+	if (str.size() == 0) return 0;
+	sint i = 0;
+	bool neg = false;
+
+	if (str[i] == '-') 
+	{
+		neg = true;
+		i++;
+	}
+	else if (str[i] == '+')
+	{
+		i++;
+	}
+
+	for (; i < (sint) str.size (); i++)
 	{
 		nlassert (str[i] >= '0' && str[i] <= '9');
 		num *= 10;
 		num += str[i] - '0';
 	}
+	if (neg) num = -num;
 	return num;
 }
 
@@ -822,6 +837,11 @@ void cbProcessReceivedMsg( CMessage& message, TSenderId from )
 		res++;
 
 		sint64 timesrc = str2sint64 (timesrcname);
+		if (timesrc < 0)
+		{
+			nlwarning ("Received a negative time!!!");
+			timesrc = 0;
+		}
 
 		if (name == "") name = "<Empty>";
 		if (timesrc == 0) timesrc = CUniTime::getUniTime ();
@@ -857,6 +877,11 @@ void cbProcessReceivedMsg( CMessage& message, TSenderId from )
 		res++;
 
 		sint64 timedst = str2sint64 (timedstname);
+		if (timedst < 0)
+		{
+			nlwarning ("Received a negative time!!!");
+			timedst = 0;
+		}
 
 		if (timedst == 0) timedst = CUniTime::getUniTime ();
 		setMessage (timedst, cnxsrcname, atoi(numname.c_str()), procdstname, cnxdstname);

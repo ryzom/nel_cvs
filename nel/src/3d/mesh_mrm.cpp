@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.52 2002/08/30 11:59:42 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.53 2002/09/09 17:02:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2444,11 +2444,15 @@ void	CMeshMRMGeom::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
 	// For all Bones used.
 	for(uint i=0; i<_BonesIdExt.size();i++)
 	{
+		uint	boneId= _BonesIdExt[i];
+		// Some explicit Error.
+		if(boneId>=sm->Bones.size())
+			nlerror(" Skin is incompatible with Skeleton: tries to use bone %d", boneId);
 		// increment or decrement not Forced, because CMeshGeom use getActiveBoneSkinMatrix().
 		if(increment)
-			sm->incBoneUsage(_BonesIdExt[i], CSkeletonModel::UsageNormal);
+			sm->incBoneUsage(boneId, CSkeletonModel::UsageNormal);
 		else
-			sm->decBoneUsage(_BonesIdExt[i], CSkeletonModel::UsageNormal);
+			sm->decBoneUsage(boneId, CSkeletonModel::UsageNormal);
 	}
 }
 

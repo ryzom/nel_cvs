@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.69 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: mesh.cpp,v 1.70 2002/09/09 17:02:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1551,11 +1551,15 @@ void	CMeshGeom::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
 	// For all Bones used by this mesh.
 	for(uint i=0; i<_BonesIdExt.size();i++)
 	{
+		uint	boneId= _BonesIdExt[i];
+		// Some explicit Error.
+		if(boneId>=sm->Bones.size())
+			nlerror(" Skin is incompatible with Skeleton: tries to use bone %d", boneId);
 		// increment or decrement not Forced, because CMeshGeom use getActiveBoneSkinMatrix().
 		if(increment)
-			sm->incBoneUsage(_BonesIdExt[i], CSkeletonModel::UsageNormal);
+			sm->incBoneUsage(boneId, CSkeletonModel::UsageNormal);
 		else
-			sm->decBoneUsage(_BonesIdExt[i], CSkeletonModel::UsageNormal);
+			sm->decBoneUsage(boneId, CSkeletonModel::UsageNormal);
 	}
 }
 

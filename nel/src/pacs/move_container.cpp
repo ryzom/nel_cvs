@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.13 2001/09/04 15:09:58 saffray Exp $
+ * $Id: move_container.cpp,v 1.14 2001/09/06 15:35:57 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1266,7 +1266,7 @@ void CMoveContainer::reaction (const CCollisionOTInfo& first)
 
 		// Dynamic collision
 		wI->reaction ( staticInfo->getCollisionDesc (), staticInfo->getGlobalPosition (),
-						*_Retriever, staticInfo->getDeltaTime(), *staticInfo->getPrimitive (), *this, staticInfo->getWorldImage());
+						*_Retriever, staticInfo->getDeltaTime(), _DeltaTime, *staticInfo->getPrimitive (), *this, staticInfo->getWorldImage());
 	}
 	else
 	{

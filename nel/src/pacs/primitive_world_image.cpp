@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.9 2001/09/06 08:54:27 legros Exp $
+ * $Id: primitive_world_image.cpp,v 1.10 2001/09/06 15:35:57 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1335,7 +1335,7 @@ void CPrimitiveWorldImage::reaction (CPrimitiveWorldImage& second, const CCollis
 // ***************************************************************************
 
 void CPrimitiveWorldImage::reaction (const CCollisionSurfaceDesc&	surfaceDesc, const UGlobalPosition& globalPosition,
-							   CGlobalRetriever& retriever, double deltaTime, CMovePrimitive &primitive, CMoveContainer &container,
+							   CGlobalRetriever& retriever, double ratio, double dt, CMovePrimitive &primitive, CMoveContainer &container,
 							   uint8 worldImage)
 {
 	// Reaction type
@@ -1347,20 +1347,11 @@ void CPrimitiveWorldImage::reaction (const CCollisionSurfaceDesc&	surfaceDesc, c
 	// Relfexion or slide ?
 	if ((type==UMovePrimitive::Reflexion)||(type==UMovePrimitive::Slide))
 	{
-		// Cut last delta from distance to the wall.
-		_Speed*=(1.0-deltaTime);
-
 		// Slide ?
 		if (type==UMovePrimitive::Slide)
 		{
 			// Project last delta on plane of collision.
-
-			double	nspeed = surfaceDesc.ContactNormal*_Speed;
-			double	nnspeed = surfaceDesc.ContactNormal*_Speed-NELPACS_DIST_BACK;
-
-			_Speed-= surfaceDesc.ContactNormal*(surfaceDesc.ContactNormal*_Speed-NELPACS_DIST_BACK);
-
-			double	residual = _Speed * surfaceDesc.ContactNormal;
+			_Speed-= surfaceDesc.ContactNormal*(surfaceDesc.ContactNormal*_Speed-NELPACS_DIST_BACK/(dt-surfaceDesc.ContactTime));
 		}
 
 		// Reflexion ?
@@ -1368,7 +1359,7 @@ void CPrimitiveWorldImage::reaction (const CCollisionSurfaceDesc&	surfaceDesc, c
 		{
 			// Project last delta on plane of collision.
 			double speedProj=surfaceDesc.ContactNormal*_Speed;
-			_Speed-=surfaceDesc.ContactNormal*(speedProj+speedProj*primitive.getAttenuation()-NELPACS_DIST_BACK);
+			_Speed-=surfaceDesc.ContactNormal*(speedProj+speedProj*primitive.getAttenuation()-NELPACS_DIST_BACK/(dt-surfaceDesc.ContactTime));
 		}
 	}
 	else

@@ -1,7 +1,7 @@
 /** \file primitive_world_image.h
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.h,v 1.5 2001/09/06 08:54:27 legros Exp $
+ * $Id: primitive_world_image.h,v 1.6 2001/09/06 15:35:57 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -377,7 +377,7 @@ public:
 
 	// Reaction with a static collision. Return true if one object has been modified.
 	void reaction (	const CCollisionSurfaceDesc&	surfaceDesc, const UGlobalPosition& globalPosition,
-					CGlobalRetriever& retriever, double deltaTime, CMovePrimitive &primitive, CMoveContainer &container,
+					CGlobalRetriever& retriever, double ratio, double dt, CMovePrimitive &primitive, CMoveContainer &container,
 					uint8 worldImage);
 
 private:

@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.12 2004/06/23 09:11:27 berenguier Exp $
+ * $Id: shadow_map_manager.cpp,v 1.13 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/3d/scissor.h"
 #include "3d/dru.h"
 #include "3d/texture_mem.h"
+#include "3d/visual_collision_manager.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/fast_floor.h"
 
@@ -66,7 +67,6 @@ CShadowMapManager::CShadowMapManager()
 	setQuadGridSize(NL3D_SMM_QUADGRID_SIZE, NL3D_SMM_QUADCELL_SIZE);
 	_ShadowCasters.reserve(256);
 	_GenerateShadowCasters.reserve(256);
-	_NumShadowReceivers= 0;
 	_PolySmooth= true;
 
 	// **** Setup Fill
@@ -205,11 +205,6 @@ CShadowMapManager::CShadowMapManager()
 	_ReceiveShadowMaterial.texEnvOpAlpha(0, CMaterial::Replace);
 	_ReceiveShadowMaterial.texEnvArg0Alpha(0, CMaterial::Previous, CMaterial::SrcAlpha);
 
-	// Trans matrix from Nel basis (Z up) to UVW basis (V up)
-	_XYZToUWVMatrix.setRot(CVector::I, CVector::K, CVector::J, true);
-	// Trans Matrix so Y is now the U (for clamp map).
-	_XYZToWUVMatrix.setRot(CVector::K, CVector::I, CVector::J, true);
-
 	// **** Setup Casting
 	_CasterShadowMaterial.initUnlit();
 	_CasterShadowMaterial.setColor(CRGBA::White);
@@ -227,7 +222,6 @@ CShadowMapManager::~CShadowMapManager()
 	_ShadowReceiverGrid.clear();
 	_ShadowCasters.clear();
 	clearGenerateShadowCasters();
-	_NumShadowReceivers= 0;
 }
 
 // ***************************************************************************
@@ -249,8 +243,6 @@ void			CShadowMapManager::addShadowReceiver(CTransform *model)
 	model->getReceiverBBox(bb);
 
 	_ShadowReceiverGrid.insert(bb.getMin(), bb.getMax(), model);
-
-	_NumShadowReceivers++;
 }
 
 // ***************************************************************************
@@ -276,11 +268,9 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 
 	// if not needed or if not possible, exit. test for wndSize is also important when window is minimized
 	if( _ShadowCasters.empty() || 
-		_NumShadowReceivers==0 ||
 		textDestW<baseTextureSize || textDestH<baseTextureSize)
 	{
 		_ShadowReceiverGrid.clear();
-		_NumShadowReceivers= 0;
 		_ShadowCasters.clear();
 		clearGenerateShadowCasters();
 		return;
@@ -529,9 +519,8 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 void			CShadowMapManager::renderProject(CScene *scene)
 {
 	// if not needed exit. NB renderGenerate() must have been called before.
-	if( _NumShadowReceivers==0 )
+	if( _ShadowCasters.empty() )
 	{
-		nlassert(_ShadowCasters.empty());
 		return;
 	}
 
@@ -549,6 +538,14 @@ void			CShadowMapManager::renderProject(CScene *scene)
 	IDriver	*driver= scene->getRenderTrav().getDriver();
 	CRGBA	bkupFogColor= driver->getFogColor();
 	driver->setupFog(driver->getFogStart(), driver->getFogEnd(), CRGBA::White);
+
+	/* Light case: CVisualCollisionManager use a fakeLight to avoid ShadowMapping on backFaces of meshs
+		Hence must clean all lights, and enalbe only the Light0 in driver
+	*/
+	// Use CRenderTrav::resetLightSetup() to do so, to reset its Cache information
+	scene->getRenderTrav().resetLightSetup();
+	driver->enableLight(0, true);
+
 
 	// For each ShadowMap
 	for(uint i=0;i<_ShadowCasters.size();i++)
@@ -572,7 +569,6 @@ void			CShadowMapManager::renderProject(CScene *scene)
 
 			// Now compute the textureMatrix, from WorldSpace to UV.
 			CMatrix		wsTextMat;
-			CMatrix		osTextMat;
 			wsTextMat= worldProjMat;
 			wsTextMat.invert();
 
@@ -581,6 +577,11 @@ void			CShadowMapManager::renderProject(CScene *scene)
 			/// Get The Mean Ambiant and Diffuse the caster receive (and cast, by approximation)
 			CRGBA	ambient, diffuse;
 			computeShadowColors(scene, caster, ambient, diffuse);
+			// In some case, the ambient may be black, which cause problems because the shadow pop while diffuse fade.
+			// ThereFore, supose always a minimum of ambiant 10.
+			ambient.R= max(uint8(10), ambient.R);
+			ambient.G= max(uint8(10), ambient.G);
+			ambient.B= max(uint8(10), ambient.B);
 			// copute the shadowColor so that modulating a Medium diffuse terrain will  get the correct result.
 			uint	R= ambient.R + (diffuse.R>>1);
 			uint	G= ambient.G + (diffuse.G>>1);
@@ -608,6 +609,8 @@ void			CShadowMapManager::renderProject(CScene *scene)
 			}
 			_ReceiveShadowMaterial.setColor(CRGBA(R,G,B,255));
 
+			// init the _ShadowMapProjector
+			_ShadowMapProjector.setWorldSpaceTextMat(wsTextMat);
 
 			// select receivers.
 			_ShadowReceiverGrid.select(worldBB.getMin(), worldBB.getMax());
@@ -620,23 +623,19 @@ void			CShadowMapManager::renderProject(CScene *scene)
 				if(receiver==caster)
 					continue;
 
-				/* The problem is material don't support WorldSpace Coordinate Generation, but ObjectSpace ones.
-					Hence must take back the coordinate in ObjectSpace before set textMat. 
-					see getReceiverRenderWorldMatrix() Doc for why using this instead of getWorldMatrix()
-				*/
-				osTextMat.setMulMatrix(wsTextMat, receiver->getReceiverRenderWorldMatrix());
-
-				/* Set the TextureMatrix for ShadowMap projection so that UVW= mat * XYZ. 
-					its osTextMat but must rotate so Z map to V
-				*/
-				_ReceiveShadowMaterial.setUserTexMat(0, _XYZToUWVMatrix * osTextMat);
-				/* Set the TextureMatrix for ClampMap projection so that UVW= mat * XYZ. 
-					its osTextMat but must rotate so Y map to U
-				*/
-				_ReceiveShadowMaterial.setUserTexMat(1, _XYZToWUVMatrix * osTextMat);
+				// update the material texture projection
+				// see getReceiverRenderWorldMatrix() Doc for why using this instead of getWorldMatrix()
+				_ShadowMapProjector.applyToMaterial(receiver->getReceiverRenderWorldMatrix(), _ReceiveShadowMaterial);
 
 				// cast the shadow on them
 				receiver->receiveShadowMap(sm, casterPos, _ReceiveShadowMaterial);
+			}
+
+			// Additionaly, the VisualCollisionManager may manage some shadow receiving 
+			CVisualCollisionManager		*shadowVcm= scene->getVisualCollisionManagerForShadow();
+			if(shadowVcm)
+			{
+				shadowVcm->receiveShadowMap(driver, sm, casterPos, _ReceiveShadowMaterial, _ShadowMapProjector);
 			}
 		}
 	}
@@ -644,6 +643,9 @@ void			CShadowMapManager::renderProject(CScene *scene)
 	// Restore fog color
 	driver->setupFog(driver->getFogStart(), driver->getFogEnd(), bkupFogColor);
 
+	// Leave Light Setup in a clean State
+	scene->getRenderTrav().resetLightSetup();
+	
 
 	// TestYoyo. Display Projection BBox.
 	/*{
@@ -725,7 +727,6 @@ void			CShadowMapManager::renderProject(CScene *scene)
 	// ********
 	_ShadowReceiverGrid.clear();
 	_ShadowCasters.clear();
-	_NumShadowReceivers= 0;
 }
 
 
@@ -757,6 +758,27 @@ void			CShadowMapManager::computeShadowDirection(CScene *scene, CTransform *sc, 
 
 	// normalize merged dir
 	lightDir.normalize();
+
+	// clamp the light direction in z, according to Caster restriction
+	float	zThre= sc->getShadowMapDirectionZThreshold();
+	if(lightDir.z>zThre)
+	{
+		/* normalize the x/y component so z=zthre
+			we want this: sqrt(x2+y2+z2)==1, which solve for x2+y2= 1-z2
+			the scale to apply to x and y is therefore deduced from:
+					sqr(scale)=(1-z2)/(x2+y2)
+		*/
+		float	scale= 0.f;
+		if(lightDir.x!=0.f || lightDir.y!=0.f)
+			scale= sqrtf( (1-sqr(zThre)) / (sqr(lightDir.x)+sqr(lightDir.y)) );
+		lightDir.x*= scale;
+		lightDir.y*= scale;
+		// force z component to be at least zthre
+		lightDir.z= zThre;
+
+		// re-normalize in case of precision problems
+		lightDir.normalize();
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * Interface for transform objects.
  *
- * $Id: u_transform.h,v 1.22 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: u_transform.h,v 1.23 2004/06/24 17:34:06 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -238,6 +238,27 @@ public:
 	void			enableReceiveShadowMap(bool state);
 	/// true if the instance receive shadow. By default false
 	bool			canReceiveShadowMap() const ;
+
+	/** To limit some problems when the light direction is too on the XY axis.
+	 *	This method set an "angle" threshold for the shadow direction
+	 *	Actually, you give the minimum negative Z (not ang angle) the normalized shadow direction must have
+	 *	\param zthre possible values are in [-1,1]. 
+	 *		-1 force the direction to be (0,0,-1) in all case
+	 *		0 means the z may be 0 (the direction is totaly XY), but at least the direction must go downward
+	 *		1 means there is no restriction, the shadow direction can either be upward
+	 *	default is -0.5 (this implies a minimum angle of 30 degrees with the XY plane)
+	 */
+	void				setShadowMapDirectionZThreshold(float zthre);
+	float				getShadowMapDirectionZThreshold() const;
+
+	/** To limit some problems with interior, a limit of shadow depth by caster can be given.
+	 *	This is the length in the lightDir direction where the shadow can touch receivers.
+	 *	Can be used also to have some big objects that cast shadows further.
+	 *	Default to 8.0.
+	 */
+	void				setShadowMapMaxDepth(float depth);
+	float				getShadowMapMaxDepth() const;
+
 	// @}
 	
 	/** Force the transform to always be attached to the root

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.74 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: transform.cpp,v 1.75 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/transform.h"
 #include "3d/skeleton_model.h"
 #include "3d/scene.h"
+#include "3d/scene_group.h"
 #include "3d/root_model.h"
 #include "nel/3d/u_transform.h"
 #include "nel/misc/fast_floor.h"
@@ -40,6 +41,10 @@ using namespace std;
 namespace	NL3D
 {
 
+
+// ***************************************************************************
+#define	NL3D_TRANSFORM_DEFAULT_SHADOW_MAP_DEPTH		8.f
+	
 
 // ***************************************************************************
 void	CTransform::registerBasic()
@@ -86,6 +91,9 @@ CTransform::CTransform()
 	// default MeanColor value
 	_MeanColor.set(255,255,255,255);
 
+	// Default ShadowMap direction
+	_ShadowMapDirectionZThreshold= -0.5f;
+	_ShadowMapMaxDepth= NL3D_TRANSFORM_DEFAULT_SHADOW_MAP_DEPTH;
 
 	// Setup some state.
 
@@ -805,6 +813,35 @@ void	CTransform::traverseHrc()
 
 
 // ***************************************************************************
+void	CTransform::setClusterSystem(CInstanceGroup *pCS)
+{
+	if (pCS != NULL)
+	{
+		nlassert(!getStateFlag(ForceClipRoot)); // the transform must be linked to the root, and have not cluster system when this flag is set
+	}
+	// Special case for the "AutoClusterSystem" when pCS==-1
+	if(pCS==(CInstanceGroup*)-1)
+	{
+		_ClusterSystem = NULL;
+		setStateFlag(ClusterSystemAuto, true);
+	}
+	else
+	{
+		_ClusterSystem = pCS;
+		setStateFlag(ClusterSystemAuto, false);
+	}
+}
+
+// ***************************************************************************
+CInstanceGroup*		CTransform::getClusterSystem ()
+{
+	if(getStateFlag(ClusterSystemAuto))
+		return (CInstanceGroup*)-1;
+	else
+		return _ClusterSystem;
+}
+
+// ***************************************************************************
 void	CTransform::traverseClip()
 {
 	// disable H_AUTO, because slowdown when lot of models (eg 1000-2000 tested in forest)
@@ -1401,5 +1438,20 @@ UTransform *CTransform::buildMatchingUserInterfaceObject()
 {
 	return new UTransform(this);
 }
+
+// ***************************************************************************
+void CTransform::setShadowMapDirectionZThreshold(float zthre)
+{
+	clamp(zthre, -1.f, 1.f);
+	_ShadowMapDirectionZThreshold= zthre;
+}
+
+// ***************************************************************************
+void CTransform::setShadowMapMaxDepth(float depth)
+{
+	depth= max(0.f, depth);
+	_ShadowMapMaxDepth= depth;
+}
+
 
 }

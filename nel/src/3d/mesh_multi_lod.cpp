@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.36 2004/05/19 14:25:02 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.37 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -843,7 +843,7 @@ void	CMeshMultiLod::compileRunTime()
 					// ok, can build!
 					_VisualCollisionMesh= new CVisualCollisionMesh;
 					// if fails to build cause of too many vertices/indices for instance
-					if(!_VisualCollisionMesh->build(vertices, indices))
+					if(!_VisualCollisionMesh->build(vertices, indices,const_cast<CVertexBuffer&>(meshGeom->getVertexBuffer())))
 					{
 						// delete
 						delete _VisualCollisionMesh;

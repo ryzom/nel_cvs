@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.h
  * <File description>
  *
- * $Id: shadow_map_manager.h,v 1.7 2004/06/23 09:11:27 berenguier Exp $
+ * $Id: shadow_map_manager.h,v 1.8 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -115,7 +115,6 @@ private:
 	// This is a quadGrid of ShadowReceiver.
 	typedef CQuadGrid<CTransform*>	TShadowReceiverGrid;
 	TShadowReceiverGrid			_ShadowReceiverGrid;
-	uint						_NumShadowReceivers;
 
 	void			computeShadowDirection(CScene *scene, CTransform *sc, CVector &lightDir);
 	void			computeShadowColors(CScene *scene, CTransform *sc, CRGBA &ambient, CRGBA &diffuse);
@@ -152,9 +151,8 @@ private:
 
 	// For Receiving
 	CMaterial					_ReceiveShadowMaterial;
-	CMatrix						_XYZToUWVMatrix;
-	CMatrix						_XYZToWUVMatrix;
 	NLMISC::CSmartPtr<ITexture>	_ClampTexture;
+	CShadowMapProjector			_ShadowMapProjector;
 
 	// For Receiving
 	CMaterial					_CasterShadowMaterial;

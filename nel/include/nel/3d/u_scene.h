@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.54 2004/05/14 15:51:13 vizerie Exp $
+ * $Id: u_scene.h,v 1.55 2004/06/24 17:34:06 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -544,10 +544,6 @@ public:
 	virtual	uint			getShadowMapTextureSize() const =0;
 	/// must be a power of 2.
 	virtual	void			setShadowMapTextureSize(uint size) =0;
-	/// return the current ShadowMap Max Depth. This is the length in the lightDir direction where the shadow can touch receivers
-	virtual	float			getShadowMapMaxDepth() const =0;
-	/// set the ShadowMap Extent
-	virtual	void			setShadowMapMaxDepth(float depth) =0;
 	/// get the size of the blur (<=3 means number of fakeBlur).
 	virtual	uint			getShadowMapBlurSize() const =0;
 	/// set the size of the blur (<=3 means number of fakeBlur).
@@ -570,6 +566,8 @@ public:
 	virtual	void			setShadowMapMaxCasterAround(uint num) =0;
 	virtual	uint			getShadowMapMaxCasterAround() const =0;
 
+	/// The scene may have one special VisualCollisionManager which can manage some shadow receiving
+	virtual	void			setVisualCollisionManagerForShadow(UVisualCollisionManager *vcm) =0;
 	// @}
 
 	// set a callback to know when a water surface is instanciated

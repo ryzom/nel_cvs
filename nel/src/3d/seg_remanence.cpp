@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.16 2004/06/02 16:29:16 vizerie Exp $
+ * $Id: seg_remanence.cpp,v 1.17 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -24,6 +24,7 @@
 
 #include "std3d.h"
 
+#include "3d/scene_group.h"
 #include "3d/seg_remanence.h"
 #include "3d/seg_remanence_shape.h"
 #include "3d/vertex_buffer.h"

@@ -1,7 +1,7 @@
 /** \file u_transform.cpp
  * Interface for transform objects.
  *
- * $Id: u_transform.cpp,v 1.2 2004/05/12 12:51:50 corvazier Exp $
+ * $Id: u_transform.cpp,v 1.3 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -389,5 +389,36 @@ void UTransform::setTransparencyPriority(uint8 priority)
 }
 
 // ***************************************************************************
+void UTransform::setShadowMapDirectionZThreshold(float zthre)
+{
+	NL3D_MEM_TRANSFORM
+	CTransform	*object = getObjectPtr();
+	object->setShadowMapDirectionZThreshold(zthre);
+}
+
+// ***************************************************************************
+float UTransform::getShadowMapDirectionZThreshold() const
+{
+	NL3D_MEM_TRANSFORM
+	CTransform	*object = getObjectPtr();
+	return object->getShadowMapDirectionZThreshold();
+}
+
+// ***************************************************************************
+void UTransform::setShadowMapMaxDepth(float depth)
+{
+	NL3D_MEM_TRANSFORM
+	CTransform	*object = getObjectPtr();
+	object->setShadowMapMaxDepth(depth);
+}
+
+// ***************************************************************************
+float	UTransform::getShadowMapMaxDepth() const
+{
+	NL3D_MEM_TRANSFORM
+	CTransform	*object = getObjectPtr();
+	return object->getShadowMapMaxDepth();
+}
+
 
 } // NL3D

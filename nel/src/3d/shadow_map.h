@@ -1,7 +1,7 @@
 /** \file shadow_map.h
  * <File description>
  *
- * $Id: shadow_map.h,v 1.3 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: shadow_map.h,v 1.4 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -41,6 +41,8 @@ using	NLMISC::CRefPtr;
 using	NLMISC::CAABBox;
 
 class	CShadowMapManager;
+class	CMaterial;
+
 
 // ***************************************************************************
 /**
@@ -127,7 +129,7 @@ public:
 	 *	J axis according to backPoint and Shadow Depth.
 	 *	NB: automatically calls the buildClipInfoFromMatrix() method
 	 */
-	void			buildProjectionInfos(const CMatrix &cameraMatrix, const CVector &backPoint, const CScene *scene);
+	void			buildProjectionInfos(const CMatrix &cameraMatrix, const CVector &backPoint, float shadowMaxDepth);
 
 	/** The ShadowMap Caster can call this method after setting LocalProjectionMatrix. It computes auto the
 	 *	LocalClipPlanes and LocalBoundingBox from it. NB: don't use it if you use buildProjectionInfos().
@@ -153,6 +155,25 @@ private:
 	float							_FadeAround;
 	float							_FinalFade;
 
+};
+
+
+// ***************************************************************************
+/** Used to recompute the projection matrix, according to the receiver worldMatrix
+ *  The problem is material don't support WorldSpace Coordinate Generation, but ObjectSpace ones.
+ *	Hence must take back the coordinate in ObjectSpace before set textMat. 
+ */
+class CShadowMapProjector
+{
+public:
+	CShadowMapProjector();
+	void	setWorldSpaceTextMat(const CMatrix &ws);
+	void	applyToMaterial(const CMatrix &receiverWorldMatrix, CMaterial &material);
+
+private:
+	CMatrix			_WsTextMat;
+	CMatrix			_XYZToUWVMatrix;
+	CMatrix			_XYZToWUVMatrix;
 };
 
 

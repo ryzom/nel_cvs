@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.53 2004/06/23 09:11:28 berenguier Exp $
+ * $Id: transform.h,v 1.54 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -327,8 +327,9 @@ public:
 	}
 
 
+	// A RefPtr is kept on the clusterSystem, so getClusterSystem() will return NULL if the instance group has been deleted
 	void				setClusterSystem (CInstanceGroup *pCS);
-	CInstanceGroup*		getClusterSystem () { return _ClusterSystem; }
+	CInstanceGroup*		getClusterSystem ();
 
 
 	/// name Lighting Behavior.
@@ -537,6 +538,26 @@ public:
 	 */
 	virtual void		renderIntoSkeletonShadowMap(CSkeletonModel *rootSkeleton, CMaterial	&castMat) {}
 
+	/** To limit some problems when the light direction is too on the XY axis.
+	 *	This method set an "angle" threshold for the shadow direction
+	 *	Actually, you give the minimum negative Z (not ang angle) the normalized shadow direction must have
+	 *	\param zthre possible values are in [-1,1]. 
+	 *		-1 force the direction to be (0,0,-1) in all case
+	 *		0 means the z may be 0 (the direction is totaly XY), but at least the direction must go downward
+	 *		1 means there is no restriction, the shadow direction can either be upward
+	 *	default is -0.5 (this implies a minimum angle of 30 degrees with the XY plane)
+	 */
+	void				setShadowMapDirectionZThreshold(float zthre);
+	float				getShadowMapDirectionZThreshold() const {return _ShadowMapDirectionZThreshold;}
+
+	/** To limit some problems with interior, a limit of shadow depth by caster can be given.
+	 *	This is the length in the lightDir direction where the shadow can touch receivers.
+	 *	Can be used also to have some big objects that cast shadows further.
+	 *	Default to 8.0.
+	 */
+	void				setShadowMapMaxDepth(float depth);
+	float				getShadowMapMaxDepth() const {return _ShadowMapMaxDepth;}
+	
 	// @}
 
 	/** Force the transform to always be attached to the root
@@ -745,7 +766,7 @@ private:
 	// Last date of ITransformable matrix.
 	uint64			_LastTransformableMatrixDate;
 
-	CInstanceGroup* _ClusterSystem;
+	NLMISC::CRefPtr<CInstanceGroup>		_ClusterSystem;
 
 
 	enum	TFreezeHRCState	{ FreezeHRCStateDisabled=0, FreezeHRCStateRequest, FreezeHRCStateReady, FreezeHRCStateEnabled};
@@ -770,6 +791,9 @@ private:
 	/// For Shadow Caster registration to list
 	std::list<CTransform*>::iterator		_ItShadowCasterInScene;
 	
+	/// For Shadow Casters
+	float						_ShadowMapDirectionZThreshold;
+	float						_ShadowMapMaxDepth;
 
 	/// \name State Flag mgt (boolean compression)
 	// @{
@@ -811,10 +835,12 @@ private:
 		IsFinalShadowMapReceiver= 0x800000,	// set if the model can receive ShadowMap AND the user want it
 		IsGeneratingShadowMap=	0x1000000,	// temp set if the model is asked to render its shadowMap this frame.
 
-		ForceClipRoot			= 0x2000000 // Force the object to always be attached to the root
+		ForceClipRoot			= 0x2000000,// Force the object to always be attached to the root
 		                                    // As a consequence, it can't be inserted into a cluster system (even the root cluster)
 											// and is thus always visible when in the frustum
-		// NB: may continue on >=0x2000000
+		ClusterSystemAuto		= 0x4000000
+
+		// NB: may continue on >=0x8000000
 	};
 
 	/// Flags for the General State of the Transform. They are both static or dynamic flags.
@@ -921,18 +947,6 @@ protected:
 	// @}
 
 };
-
-/////////////
-// INLINES //
-/////////////
-inline void	CTransform::setClusterSystem(CInstanceGroup *pCS)
-{
-	if (pCS != NULL)
-	{
-		nlassert(!getStateFlag(ForceClipRoot)); // the transform must be linked to the root, and have not cluster system when this flag is set
-	}
-	_ClusterSystem = pCS;
-}
 
 
 } // namespace NL3D

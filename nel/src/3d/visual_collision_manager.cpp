@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.cpp
  * <File description>
  *
- * $Id: visual_collision_manager.cpp,v 1.10 2004/05/07 11:41:11 berenguier Exp $
+ * $Id: visual_collision_manager.cpp,v 1.11 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "3d/visual_collision_entity.h"
 #include "3d/landscape.h"
 #include "3d/camera_col.h"
+#include "3d/shadow_map.h"
+#include "3d/light.h"
 #include "nel/misc/common.h"
 
 
@@ -63,6 +65,8 @@ CVisualCollisionManager::CVisualCollisionManager() :
 	_MeshQuadGrid.create(MeshColQuadGridSize, MeshColQuadGridEltSize);
 	// valid id start at 1
 	_MeshIdPool= 1;
+
+	_PlayerInside= false;
 }
 // ***************************************************************************
 CVisualCollisionManager::~CVisualCollisionManager()
@@ -141,7 +145,14 @@ void					CVisualCollisionManager::setSunContributionPower(float power, float max
 
 
 // ***************************************************************************
-float					CVisualCollisionManager::getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone, bool playerIsInside)
+void					CVisualCollisionManager::setPlayerInside(bool state)
+{
+	_PlayerInside= state;
+}
+
+
+// ***************************************************************************
+float					CVisualCollisionManager::getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone)
 {
 	float	minCol= 1;
 
@@ -159,10 +170,10 @@ float					CVisualCollisionManager::getCameraCollision(const CVector &start, cons
 	CQuadGrid<CMeshInstanceCol*>::CIterator		it;
 	for(it= _MeshQuadGrid.begin();it!=_MeshQuadGrid.end();it++)
 	{
-		// Skip this mesh according to special flag (known as the "matis serre bug")
-		if((*it)->AvoidCollisionWhenPlayerInside && playerIsInside)
+		// Skip this mesh according to special flag (IBBR problem)
+		if((*it)->AvoidCollisionWhenPlayerInside && _PlayerInside)
 			continue;
-		if((*it)->AvoidCollisionWhenPlayerOutside && !playerIsInside)
+		if((*it)->AvoidCollisionWhenPlayerOutside && !_PlayerInside)
 			continue;
 		
 		// collide
@@ -230,6 +241,86 @@ void					CVisualCollisionManager::removeMeshCollision(uint id)
 		_MeshQuadGrid.erase(it->second.QuadGridIt);
 		// remove from the map
 		_Meshs.erase(it);
+	}
+}
+
+
+// ***************************************************************************
+void					CVisualCollisionManager::receiveShadowMap(IDriver *drv, CShadowMap *shadowMap, const CVector &casterPos, CMaterial &shadowMat, CShadowMapProjector &smp)
+{
+	// Build a shadow context
+	CVisualCollisionMesh::CShadowContext	shadowContext(shadowMat, _ShadowIndexBuffer, smp);
+	shadowContext.Driver= drv;
+	shadowContext.ShadowMap= shadowMap;
+	shadowContext.CasterPos= casterPos;
+	shadowContext.ShadowWorldBB= shadowMap->LocalBoundingBox;
+	shadowContext.ShadowWorldBB.setCenter(shadowContext.ShadowWorldBB.getCenter() + casterPos);
+
+	// bkup shadowColor
+	CRGBA	shadowColor= shadowContext.ShadowMaterial.getColor();
+	
+	// try to intersect with any instance meshs in quadgrid
+	_MeshQuadGrid.select(shadowContext.ShadowWorldBB.getMin(), shadowContext.ShadowWorldBB.getMax());
+	CQuadGrid<CMeshInstanceCol*>::CIterator		it;
+	bool		lightSetupFaked= false;
+	for(it= _MeshQuadGrid.begin();it!=_MeshQuadGrid.end();it++)
+	{
+		/* NB: this is a collision flag, but the problem is exactly the same for shadows:
+			If the player is outside, then an "outside entity" can cast shadow only on "outside mesh"
+		*/
+		// Skip this mesh according to special flag (IBBR problem)
+		if((*it)->AvoidCollisionWhenPlayerInside && _PlayerInside)
+			continue;
+		if((*it)->AvoidCollisionWhenPlayerOutside && !_PlayerInside)
+			continue;
+
+
+		/* Avoid BackFace Shadowing on CVisualCollisionMesh. To do this simply and smoothly, use a trick:
+			Use a FakeLight: a directional light in reverse direction of the shadow direction 
+			The material is now a lighted material, with
+				Emissive= ShadowColor so we get correct dark color, for frontfaces agst shadow direction 
+				(which are actually backfaces agst FakeLight)
+				Diffuse= White so shadow is off, for pure backFace agst shadow direction 
+				(which are actually frontFaces agst FakeLight)
+			NB: CShadowMapManager::renderProject() has called CRenderTrav::resetLighting() and enableLight(0, true) so we get clean setup here
+		*/
+		// need to do it only one time per shadowMap reception
+		if(!lightSetupFaked)
+		{
+			lightSetupFaked= true;
+			// Build the light direction as the opposite to shadow direction (in LocalProjectionMatrix.getJ())
+			CLight	fakeLight;
+			fakeLight.setupDirectional(CRGBA::Black, CRGBA::White, CRGBA::Black, -shadowMap->LocalProjectionMatrix.getJ());
+			drv->setLight(0, fakeLight);
+			// setup the material
+			shadowContext.ShadowMaterial.setLighting(true, shadowColor, CRGBA::Black, CRGBA::White, CRGBA::Black);
+		}
+
+		// cast shadow
+		(*it)->receiveShadowMap(shadowContext);
+	}
+
+	// if the material has been faked, reset
+	if(lightSetupFaked)
+	{
+		shadowContext.ShadowMaterial.setLighting(false);
+		shadowContext.ShadowMaterial.setColor(shadowColor);
+	}
+}
+
+
+// ***************************************************************************
+void		CVisualCollisionManager::CMeshInstanceCol::receiveShadowMap(const CVisualCollisionMesh::CShadowContext &shadowContext)
+{
+	// if mesh still present (else it s may be an error....)
+	if(Mesh)
+	{
+		// first test if intersect with the bboxes
+		if(!shadowContext.ShadowWorldBB.intersect(WorldBBox))
+			return;
+		
+		// get the collision with the mesh
+		Mesh->receiveShadowMap(WorldMatrix, shadowContext);
 	}
 }
 

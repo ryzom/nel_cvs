@@ -1,7 +1,7 @@
 /** \file visual_collision_mesh.cpp
  * <File description>
  *
- * $Id: visual_collision_mesh.cpp,v 1.2 2004/04/13 17:01:15 berenguier Exp $
+ * $Id: visual_collision_mesh.cpp,v 1.3 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -28,15 +28,27 @@
 #include "3d/visual_collision_mesh.h"
 #include "3d/quad_grid.h"
 #include "3d/camera_col.h"
+#include "3d/driver.h"
+#include "3d/shadow_map.h"
 
 
 using namespace std;
 using namespace NLMISC;
 
 
+// TestYoyo. external debug flag
+bool	TESTYOYO_VCM_RedShadow= false;
+
+
 namespace NL3D 
 {
 
+
+// ***************************************************************************
+#define		NL3D_VCM_SHADOW_NUM_CLIP_PLANE			7
+#define		NL3D_VCM_SHADOW_NUM_CLIP_PLANE_SHIFT	(1<<NL3D_VCM_SHADOW_NUM_CLIP_PLANE)
+#define		NL3D_VCM_SHADOW_NUM_CLIP_PLANE_MASK		(NL3D_VCM_SHADOW_NUM_CLIP_PLANE_SHIFT-1)
+	
 
 // ***************************************************************************
 // ***************************************************************************
@@ -216,7 +228,7 @@ CVisualCollisionMesh::CVisualCollisionMesh()
 }
 
 // ***************************************************************************
-bool					CVisualCollisionMesh::build(const std::vector<CVector> &vertices, const std::vector<uint32> &triangles)
+bool					CVisualCollisionMesh::build(const std::vector<CVector> &vertices, const std::vector<uint32> &triangles, CVertexBuffer &vbForShadowRender)
 {
 	uint	i;
 	// if no vertices, or no triangles, abort
@@ -229,12 +241,12 @@ bool					CVisualCollisionMesh::build(const std::vector<CVector> &vertices, const
 		return false;
 	
 	// copy
-	Vertices= vertices;
+	_Vertices= vertices;
 	
 	// compress indexes to 16 bits
-	Triangles.resize(triangles.size());
-	for(i=0;i<Triangles.size();i++)
-		Triangles[i]= (uint16)triangles[i];
+	_Triangles.resize(triangles.size());
+	for(i=0;i<_Triangles.size();i++)
+		_Triangles[i]= (uint16)triangles[i];
 	
 	// Build the Local bbox for this col mesh
 	CAABBox		localBBox;
@@ -244,19 +256,24 @@ bool					CVisualCollisionMesh::build(const std::vector<CVector> &vertices, const
 	
 	// Build the Static Grid
 	uint	numTris= triangles.size()/3;
-	QuadGrid.create(16, numTris, localBBox);
+	_QuadGrid.create(16, numTris, localBBox);
 	// Add all triangles
 	for(i=0;i<numTris;i++)
 	{
 		CAABBox		bb;
-		bb.setCenter(Vertices[Triangles[i*3+0]]);
-		bb.extend(Vertices[Triangles[i*3+1]]);
-		bb.extend(Vertices[Triangles[i*3+2]]);
-		QuadGrid.add(i, bb);
+		bb.setCenter(_Vertices[_Triangles[i*3+0]]);
+		bb.extend(_Vertices[_Triangles[i*3+1]]);
+		bb.extend(_Vertices[_Triangles[i*3+2]]);
+		_QuadGrid.add(i, bb);
 	}
 	// compile
-	QuadGrid.compile();
+	_QuadGrid.compile();
 	
+
+	// Keep a RefPtr on the AGP vertex Buffer for shadow receiving
+	_VertexBuffer= &vbForShadowRender;
+
+
 	return true;
 }
 
@@ -270,7 +287,7 @@ float					CVisualCollisionMesh::getCameraCollision(const CMatrix &instanceMatrix
 
 	// Select triangles
 	static std::vector<uint16>		selection;
-	uint	numSel= QuadGrid.select(camColLocal.BBox, selection);
+	uint	numSel= _QuadGrid.select(camColLocal.BBox, selection);
 	
 	// **** For all triangles, test if intersect the camera collision
 	float		sqrMinDist= FLT_MAX;
@@ -279,9 +296,9 @@ float					CVisualCollisionMesh::getCameraCollision(const CMatrix &instanceMatrix
 		uint			triId= selection[i];
 		// build the triangle
 		camColLocal.minimizeDistanceAgainstTri(
-			Vertices[Triangles[triId*3+0]],
-			Vertices[Triangles[triId*3+1]],
-			Vertices[Triangles[triId*3+2]],
+			_Vertices[_Triangles[triId*3+0]],
+			_Vertices[_Triangles[triId*3+1]],
+			_Vertices[_Triangles[triId*3+2]],
 			sqrMinDist);
 	}
 	
@@ -305,16 +322,160 @@ float					CVisualCollisionMesh::getCameraCollision(const CMatrix &instanceMatrix
 NLMISC::CAABBox			CVisualCollisionMesh::computeWorldBBox(const CMatrix &instanceMatrix)
 {
 	CAABBox		ret;
-	if(!Vertices.empty())
+	if(!_Vertices.empty())
 	{
-		ret.setCenter(instanceMatrix*Vertices[0]);
-		for(uint i=1;i<Vertices.size();i++)
+		ret.setCenter(instanceMatrix*_Vertices[0]);
+		for(uint i=1;i<_Vertices.size();i++)
 		{
-			ret.extend(instanceMatrix*Vertices[i]);
+			ret.extend(instanceMatrix*_Vertices[i]);
 		}
 	}
 
 	return ret;
 }
+
+
+// ***************************************************************************
+void		CVisualCollisionMesh::receiveShadowMap(const NLMISC::CMatrix &instanceMatrix, const CShadowContext &shadowContext)
+{
+	// empty mesh => no op
+	if(_Vertices.empty())
+		return;
+
+	// The VertexBuffer RefPtr has been released? quit
+	if(_VertexBuffer == NULL)
+		return;
+
+
+	// **** Select triangles to be rendered with quadGrid
+	// select with quadGrid local in mesh
+	CAABBox		localBB;
+	localBB= CAABBox::transformAABBox(instanceMatrix.inverted(), shadowContext.ShadowWorldBB);
+	static	std::vector<uint16>		triInQuadGrid;
+	uint	numTrisInQuadGrid= _QuadGrid.select(localBB, triInQuadGrid);
+
+	// no intersection at all? quit
+	if(numTrisInQuadGrid==0)
+		return;
+	
+
+	// **** prepare more precise Clip with shadow pyramid
+	// enlarge temp flag array
+	static	std::vector<uint8>	vertexFlags;
+	if(vertexFlags.size()<_Vertices.size())
+		vertexFlags.resize(_Vertices.size());
+	// reset all to 0
+	memset(&vertexFlags[0], 0, _Vertices.size()*sizeof(uint8));
+
+	// Compute the "LocalToInstance" shadow Clip Volume
+	static	std::vector<CPlane>		localClipPlanes;
+	/*	We want to apply to plane this matrix: IM-1 * MCasterPos, 
+		where IM=instanceMatrix and MCasterPos= matrix translation of "shadowContext.CasterPos"
+		BUT, since to transform a plane, we must do plane * M-1, then compute this matrix:
+		localMat= MCasterPos-1 * IM
+	*/
+	CMatrix		localMat;
+	localMat.setPos(-shadowContext.CasterPos);
+	localMat*= instanceMatrix;
+	// Allow max bits of planes clip.
+	localClipPlanes.resize(min((uint)shadowContext.ShadowMap->LocalClipPlanes.size(), (uint)NL3D_VCM_SHADOW_NUM_CLIP_PLANE));
+	// Transform into Mesh local space
+	for(uint i=0;i<localClipPlanes.size();i++)
+	{
+		localClipPlanes[i]= shadowContext.ShadowMap->LocalClipPlanes[i] * localMat;
+	}
+	
+
+	// **** Clip and fill the triangles
+	uint	currentTriIdx= 0;
+	// enlarge the index buffer as max of triangles possibly intersected
+	if(shadowContext.IndexBuffer.getNumIndexes()<numTrisInQuadGrid*3)
+		shadowContext.IndexBuffer.setNumIndexes(numTrisInQuadGrid*3);
+
+	// Start to clip and fill
+	{
+		CIndexBufferReadWrite	iba;
+		shadowContext.IndexBuffer.lock(iba);
+		uint32	*ibPtr= iba.getPtr();
+
+		// for all triangles selected with the quadgrid
+		for(uint triq=0; triq<numTrisInQuadGrid;triq++)
+		{
+			uint			triId[3];
+			triId[0]= _Triangles[uint(triInQuadGrid[triq])*3+0];
+			triId[1]= _Triangles[uint(triInQuadGrid[triq])*3+1];
+			triId[2]= _Triangles[uint(triInQuadGrid[triq])*3+2];
+			uint			triFlag= NL3D_VCM_SHADOW_NUM_CLIP_PLANE_MASK;
+			
+			// for all vertices, clip them
+			for(uint i=0;i<3;i++)
+			{
+				uint	vid= triId[i];
+				uint	vf= vertexFlags[vid];
+				
+				// if this vertex is still not computed
+				if(!vf)
+				{
+					// For all planes of the Clip Volume, clip this vertex.
+					for(uint j=0;j<localClipPlanes.size();j++)
+					{
+						// out if in front
+						bool	out= localClipPlanes[j]*_Vertices[vid] > 0;
+						
+						vf|= ((uint)out)<<j;
+					}
+					
+					// add the bit flag to say "computed".
+					vf|= NL3D_VCM_SHADOW_NUM_CLIP_PLANE_SHIFT;
+					
+					// store
+					vertexFlags[vid]= vf;
+				}
+				
+				// And all vertex bits.
+				triFlag&= vf;
+			}
+			
+			// if triangle not clipped, add the triangle
+			if( (triFlag & NL3D_VCM_SHADOW_NUM_CLIP_PLANE_MASK)==0 )
+			{
+				// Add the 3 index to the index buffer.
+				ibPtr[currentTriIdx++]= triId[0];
+				ibPtr[currentTriIdx++]= triId[1];
+				ibPtr[currentTriIdx++]= triId[2];
+			}
+		}
+	}
+
+
+	// **** Render
+	// if some triangle to render
+	if(currentTriIdx)
+	{
+		IDriver	*drv= shadowContext.Driver;
+		// setup the collision instance matrix
+		drv->setupModelMatrix(instanceMatrix);
+		// update the material projection matrix, cause matrix changed
+		shadowContext.ShadowMapProjector.applyToMaterial(instanceMatrix, shadowContext.ShadowMaterial);
+		// render
+		drv->activeVertexBuffer(*_VertexBuffer);
+		drv->activeIndexBuffer(shadowContext.IndexBuffer);
+		drv->renderTriangles(shadowContext.ShadowMaterial, 0, currentTriIdx/3);
+		// TestYoyo. Show in Red triangles selected
+		/*if(TESTYOYO_VCM_RedShadow)
+		{
+			static	CMaterial	tam;
+			tam.initUnlit();
+			tam.setColor(CRGBA(255,0,0,128));
+			tam.setZFunc(CMaterial::always);
+			tam.setZWrite(false);
+			tam.setBlend(true);
+			tam.setBlendFunc(CMaterial::srcalpha, CMaterial::invsrcalpha);
+			tam.setDoubleSided(true);
+			drv->renderTriangles(tam, 0, currentTriIdx/3);
+		}*/
+	}
+}
+
 
 } // NL3D

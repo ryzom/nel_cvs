@@ -1,7 +1,7 @@
 /** \file shadow_map.cpp
  * <File description>
  *
- * $Id: shadow_map.cpp,v 1.2 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: shadow_map.cpp,v 1.3 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -29,7 +29,6 @@
 #include "3d/texture_mem.h"
 #include "nel/misc/common.h"
 #include "3d/driver.h"
-#include "3d/scene.h"
 #include "3d/shadow_map_manager.h"
 
 
@@ -135,7 +134,10 @@ void			CShadowMap::buildClipInfoFromMatrix()
 void			CShadowMap::buildCasterCameraMatrix(const CVector &lightDir, const CMatrix &localPosMatrix, const CAABBox &bbShape, CMatrix &cameraMatrix)
 {
 	// compute the orthogonal LightSpace camera matrix. Remind that J look forward and K is up here.
-	cameraMatrix.setRot(CVector::I, lightDir, CVector::K);
+	if(fabs(lightDir.z)<0.9f)
+		cameraMatrix.setRot(CVector::I, lightDir, CVector::K);
+	else
+		cameraMatrix.setRot(CVector::I, lightDir, CVector::J);
 	cameraMatrix.normalize(CMatrix::YZX);
 
 	CAABBox		bbLocal;
@@ -164,7 +166,7 @@ void			CShadowMap::buildCasterCameraMatrix(const CVector &lightDir, const CMatri
 
 
 // ***************************************************************************
-void			CShadowMap::buildProjectionInfos(const CMatrix &cameraMatrix, const CVector &backPoint, const CScene *scene)
+void			CShadowMap::buildProjectionInfos(const CMatrix &cameraMatrix, const CVector &backPoint, float shadowMaxDepth)
 {
 	// Modify the cameraMatrix to define the Aera of Shadow.
 	CVector		projp= cameraMatrix.getPos();
@@ -173,7 +175,7 @@ void			CShadowMap::buildProjectionInfos(const CMatrix &cameraMatrix, const CVect
 	CVector		projk= cameraMatrix.getK();
 	// modify the J vector so that it gets the Wanted Len
 	CVector	vj= projj.normed();
-	projj= vj*scene->getShadowMapMaxDepth();
+	projj= vj*shadowMaxDepth;
 	// Must move Pos so that the IK plane include the backPoint
 	projp+= (backPoint*vj-projp*vj) * vj;
 	// set the matrix
@@ -205,6 +207,38 @@ void			CShadowMap::processFades()
 	*/
 	if(getFadeAround()==1)
 		resetTexture();
+}
+
+
+// ***************************************************************************
+CShadowMapProjector::CShadowMapProjector()
+{
+	// Trans matrix from Nel basis (Z up) to UVW basis (V up)
+	_XYZToUWVMatrix.setRot(CVector::I, CVector::K, CVector::J, true);
+	// Trans Matrix so Y is now the U (for clamp map).
+	_XYZToWUVMatrix.setRot(CVector::K, CVector::I, CVector::J, true);
+}
+
+// ***************************************************************************
+void	CShadowMapProjector::setWorldSpaceTextMat(const CMatrix &ws)
+{
+	_WsTextMat= ws;
+}
+
+// ***************************************************************************
+void	CShadowMapProjector::applyToMaterial(const CMatrix &receiverWorldMatrix, CMaterial &material)
+{
+	CMatrix		osTextMat;
+	osTextMat.setMulMatrix(_WsTextMat, receiverWorldMatrix);
+
+	/* Set the TextureMatrix for ShadowMap projection so that UVW= mat * XYZ. 
+		its osTextMat but must rotate so Z map to V
+	*/
+	material.setUserTexMat(0, _XYZToUWVMatrix * osTextMat);
+	/* Set the TextureMatrix for ClampMap projection so that UVW= mat * XYZ. 
+		its osTextMat but must rotate so Y map to U
+	*/
+	material.setUserTexMat(1, _XYZToWUVMatrix * osTextMat);
 }
 
 

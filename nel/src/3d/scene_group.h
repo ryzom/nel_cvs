@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.28 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: scene_group.h,v 1.29 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/quat.h"
+#include "nel/misc/smart_ptr.h"
 #include "3d/portal.h"
 #include "3d/cluster.h"
 #include "3d/transform.h"
@@ -67,7 +68,7 @@ struct IIGAddBegin;
   * \author Nevrax France
   * \date 2001
   */
-class CInstanceGroup
+class CInstanceGroup : public NLMISC::CRefCount
 {
 public:
 

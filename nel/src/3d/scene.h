@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.54 2004/06/23 09:11:27 berenguier Exp $
+ * $Id: scene.h,v 1.55 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,7 @@ class	CLodCharacterManager;
 class	CAsyncTextureManager;
 class	CSkeletonModel;
 class	CRootModel;
+class	CVisualCollisionManager;
 
 
 // ***************************************************************************
@@ -572,10 +573,6 @@ public:
 	uint			getShadowMapTextureSize() const {return _ShadowMapTextureSize;}
 	/// must be a power of 2.
 	void			setShadowMapTextureSize(uint size);
-	/// return the current ShadowMap Max Depth. This is the length in the lightDir direction where the shadow can touch receivers
-	float			getShadowMapMaxDepth() const {return _ShadowMapMaxDepth;}
-	/// set the ShadowMap Extent
-	void			setShadowMapMaxDepth(float depth);
 	/// get the size of the blur (<=3 means number of fakeBlur).
 	uint			getShadowMapBlurSize() const {return _ShadowMapBlurSize;}
 	/// set the size of the blur (<=3 means number of fakeBlur).
@@ -597,6 +594,10 @@ public:
 	/// ShadowMap max Caster Around (optimize memory)
 	void			setShadowMapMaxCasterAround(uint num);
 	uint			getShadowMapMaxCasterAround() const {return _ShadowMapMaxCasterAround;}
+
+	/// The scene may have one special VisualCollisionManager which can manage some shadow receiving
+	void					setVisualCollisionManagerForShadow(CVisualCollisionManager *vcm) {_VisualCollisionManagerForShadow= vcm;}
+	CVisualCollisionManager *getVisualCollisionManagerForShadow() const {return _VisualCollisionManagerForShadow;}
 	// @}
 
 	void			setWaterCallback(IWaterSurfaceAddedCallback *wcb) { _WaterCallback = wcb; }
@@ -758,12 +759,12 @@ private:
 
 	// ShadowMap Options
 	uint			_ShadowMapTextureSize;
-	float			_ShadowMapMaxDepth;
 	uint			_ShadowMapBlurSize;
 	float			_ShadowMapDistFadeStart;
 	float			_ShadowMapDistFadeEnd;
 	uint			_ShadowMapMaxCasterInScreen;
 	uint			_ShadowMapMaxCasterAround;
+	CVisualCollisionManager		*_VisualCollisionManagerForShadow;
 
 	// Delaied model delete
 	bool			_DeleteModelLater;

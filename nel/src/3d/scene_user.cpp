@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.62 2004/05/11 16:20:32 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.63 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -936,7 +936,14 @@ void						CSceneUser::deleteVisualCollisionManager(UVisualCollisionManager *mgr)
 	NL3D_MEM_VISUAL_COLLISION
 	NL3D_HAUTO_ELT_SCENE;
 
-	_VisualCollisionManagers.erase(dynamic_cast<CVisualCollisionManagerUser*>(mgr));
+	CVisualCollisionManagerUser	*vcmUser= dynamic_cast<CVisualCollisionManagerUser*>(mgr);
+
+	// if it was the one used for shadow receiving in this scene, then set NULL
+	if(_Scene.getVisualCollisionManagerForShadow()==&vcmUser->getVCM())
+		_Scene.setVisualCollisionManagerForShadow(NULL);
+	
+	// and delete it
+	_VisualCollisionManagers.erase(vcmUser);
 }
 
 
@@ -1050,18 +1057,6 @@ void			CSceneUser::setShadowMapTextureSize(uint size)
 }
 
 // ***************************************************************************
-float			CSceneUser::getShadowMapMaxDepth() const
-{
-	return _Scene.getShadowMapMaxDepth();
-}
-
-// ***************************************************************************
-void			CSceneUser::setShadowMapMaxDepth(float depth)
-{
-	_Scene.setShadowMapMaxDepth(depth);
-}
-
-// ***************************************************************************
 uint			CSceneUser::getShadowMapBlurSize() const
 {
 	return _Scene.getShadowMapBlurSize();
@@ -1124,6 +1119,17 @@ void			CSceneUser::setShadowMapMaxCasterAround(uint num)
 uint			CSceneUser::getShadowMapMaxCasterAround() const
 {
 	return _Scene.getShadowMapMaxCasterAround();
+}
+// ***************************************************************************
+void			CSceneUser::setVisualCollisionManagerForShadow(UVisualCollisionManager *vcm)
+{
+	if(vcm==NULL)
+		_Scene.setVisualCollisionManagerForShadow(NULL);
+	else
+	{
+		CVisualCollisionManagerUser	*vcmUser= static_cast<CVisualCollisionManagerUser*>(vcm);
+		_Scene.setVisualCollisionManagerForShadow(&vcmUser->getVCM());
+	}
 }
 // ***************************************************************************
 void CSceneUser::setWaterCallback(IWaterSurfaceAddedCallback *wcb)

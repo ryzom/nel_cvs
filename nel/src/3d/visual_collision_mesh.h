@@ -1,7 +1,7 @@
 /** \file visual_collision_mesh.h
  * <File description>
  *
- * $Id: visual_collision_mesh.h,v 1.2 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: visual_collision_mesh.h,v 1.3 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -30,14 +30,24 @@
 #include "nel/misc/object_vector.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/aabbox.h"
+#include "3d/vertex_buffer.h"
+#include "3d/index_buffer.h"
+
 
 namespace NL3D 
 {
 
 
+class IDriver;
+class CShadowMap;
+class CShadowMapProjector;
+class CMaterial;
+
+
 // ***************************************************************************
 /**
  * Collision mesh used for camera collision for instance
+ *	Additionally used for ShadowMap receiving
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2003
@@ -45,12 +55,36 @@ namespace NL3D
 class CVisualCollisionMesh : public NLMISC::CRefCount
 {
 public:
+	// for receiveShadowMap
+	class CShadowContext
+	{
+	public:
+		IDriver				*Driver;
+		CShadowMap			*ShadowMap;
+		NLMISC::CVector		CasterPos;
+		NLMISC::CAABBox		ShadowWorldBB;
+		CShadowMapProjector &ShadowMapProjector;
+		CMaterial			&ShadowMaterial;
+		CIndexBuffer		&IndexBuffer;
+
+	public:
+		CShadowContext(CMaterial &mat, CIndexBuffer &ib, CShadowMapProjector &smp) : 
+		  ShadowMaterial(mat), IndexBuffer(ib), ShadowMapProjector(smp)
+		{
+			Driver= NULL;
+			ShadowMap= NULL;
+		}
+	};
+	
+public:
 
 	/// Constructor
 	CVisualCollisionMesh();
 
-	/// build. NB: fails if too much vertices/triangles (>=65536) or if 0 vertices / triangles
-	bool		build(const std::vector<NLMISC::CVector> &vertices, const std::vector<uint32> &triangles);
+	/** build. NB: fails if too much vertices/triangles (>=65536) or if 0 vertices / triangles
+	 *	\param vbForShadowRender: a RefPtr is kept on this VB for shadow rendering
+	 */
+	bool		build(const std::vector<NLMISC::CVector> &vertices, const std::vector<uint32> &triangles, CVertexBuffer &vbForShadowRender);
 
 	/// get collision with camera. [0,1] value
 	float		getCameraCollision(const NLMISC::CMatrix &instanceMatrix, class CCameraCol &camCol);
@@ -58,6 +92,9 @@ public:
 	/// compute the world bbox of an instance
 	NLMISC::CAABBox	computeWorldBBox(const NLMISC::CMatrix &instanceMatrix);
 
+	/// receive a shadowMap. render in driver the triangles that intersect the shadow
+	void		receiveShadowMap(const NLMISC::CMatrix &instanceMatrix, const CShadowContext &shadowContext);
+		
 // *********************
 private:
 
@@ -109,11 +146,13 @@ private:
 private:
 
 	// Data
-	std::vector<NLMISC::CVector>	Vertices;
-	std::vector<uint16>		Triangles;
+	std::vector<NLMISC::CVector>	_Vertices;
+	std::vector<uint16>				_Triangles;
 	// The Local Triangle Quadgrid
-	CStaticGrid				QuadGrid;
-	
+	CStaticGrid						_QuadGrid;
+
+	// For ShadowMap receiving. Point to the original Mesh VB (should be in AGP)
+	NLMISC::CRefPtr<CVertexBuffer>	_VertexBuffer;
 };
 
 

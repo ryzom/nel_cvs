@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.123 2004/06/23 09:11:27 berenguier Exp $
+ * $Id: scene.cpp,v 1.124 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,7 +85,6 @@ const	float	NL3D_QuadGridClipMaxDist= 1000;
 
 
 #define	NL3D_SCENE_DEFAULT_SHADOW_MAP_SIZE		64
-#define	NL3D_SCENE_DEFAULT_SHADOW_MAP_DEPTH		8.f
 #define	NL3D_SCENE_DEFAULT_SHADOW_MAP_BLUR_SIZE	2
 #define	NL3D_SCENE_DEFAULT_SHADOW_MAP_DIST_FADE_START			40
 #define	NL3D_SCENE_DEFAULT_SHADOW_MAP_DIST_FADE_END				50
@@ -181,12 +180,12 @@ CScene::CScene(bool bSmallScene) : LightTrav(bSmallScene)
 	_FlareContext = 0;
 
 	_ShadowMapTextureSize= NL3D_SCENE_DEFAULT_SHADOW_MAP_SIZE;
-	_ShadowMapMaxDepth= NL3D_SCENE_DEFAULT_SHADOW_MAP_DEPTH;
 	_ShadowMapBlurSize= NL3D_SCENE_DEFAULT_SHADOW_MAP_BLUR_SIZE;
 	_ShadowMapDistFadeStart= NL3D_SCENE_DEFAULT_SHADOW_MAP_DIST_FADE_START;
 	_ShadowMapDistFadeEnd= NL3D_SCENE_DEFAULT_SHADOW_MAP_DIST_FADE_END;
 	_ShadowMapMaxCasterInScreen= NL3D_SCENE_DEFAULT_SHADOW_MAP_MAX_CASTER_IN_SCREEN;
 	_ShadowMapMaxCasterAround= NL3D_SCENE_DEFAULT_SHADOW_MAP_MAX_CASTER_AROUND;
+	_VisualCollisionManagerForShadow= NULL;
 
 	_WaterCallback = NULL;
 	_DeleteModelLater = false;
@@ -1246,12 +1245,6 @@ void			CScene::setShadowMapTextureSize(uint size)
 	size= max(size, 2U);
 	size= raiseToNextPowerOf2(size);
 	_ShadowMapTextureSize= size;
-}
-
-// ***************************************************************************
-void			CScene::setShadowMapMaxDepth(float depth)
-{
-	_ShadowMapMaxDepth= depth;
 }
 
 // ***************************************************************************

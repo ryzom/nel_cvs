@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.55 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: scene_user.h,v 1.56 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -283,8 +283,6 @@ public:
 	// @{
 	virtual	uint			getShadowMapTextureSize() const;
 	virtual	void			setShadowMapTextureSize(uint size);
-	virtual	float			getShadowMapMaxDepth() const;
-	virtual	void			setShadowMapMaxDepth(float depth);
 	virtual	uint			getShadowMapBlurSize() const;
 	virtual	void			setShadowMapBlurSize(uint bs);
 	virtual	void			enableShadowPolySmooth(bool enable);
@@ -297,6 +295,7 @@ public:
 	virtual	uint			getShadowMapMaxCasterInScreen() const;
 	virtual	void			setShadowMapMaxCasterAround(uint num);
 	virtual	uint			getShadowMapMaxCasterAround() const;
+	virtual	void			setVisualCollisionManagerForShadow(UVisualCollisionManager *vcm);
 	// @}
 
 	void						setWaterCallback(IWaterSurfaceAddedCallback *wcb);

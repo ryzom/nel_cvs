@@ -1,7 +1,7 @@
 /** \file texture_user.cpp
  * <File description>
  *
- * $Id: texture_user.cpp,v 1.3 2002/02/28 12:59:52 besson Exp $
+ * $Id: texture_user.cpp,v 1.4 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,9 @@ namespace NL3D
 {
 
 
+void	dummyToAvoidStupidCompilerWarning_texture_user_cpp()
+{
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.56 2004/06/23 09:11:27 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.57 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1839,7 +1839,7 @@ void		CSkeletonModel::generateShadowMap(const CVector &lightDir)
 	backPoint-= getWorldMatrix().getPos();
 
 	// Compute LocalProjectionMatrix and other infos from cameraMatrix and backPoint?
-	_ShadowMap->buildProjectionInfos(cameraMatrix, backPoint, scene);
+	_ShadowMap->buildProjectionInfos(cameraMatrix, backPoint, getShadowMapMaxDepth());
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.22 2004/06/23 09:11:27 berenguier Exp $
+ * $Id: mesh_instance.cpp,v 1.23 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -231,7 +231,7 @@ void		CMeshInstance::generateShadowMap(const CVector &lightDir)
 	backPoint-= ldir*lenXY;
 
 	// Compute LocalProjectionMatrix and other infos from cameraMatrix and backPoint?
-	_ShadowMap->buildProjectionInfos(cameraMatrix, backPoint, scene);
+	_ShadowMap->buildProjectionInfos(cameraMatrix, backPoint, getShadowMapMaxDepth());
 }
 
 // ***************************************************************************

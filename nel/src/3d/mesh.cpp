@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.83 2004/05/19 14:25:02 berenguier Exp $
+ * $Id: mesh.cpp,v 1.84 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2488,7 +2488,7 @@ void	CMesh::compileRunTime()
 			// ok, can build!
 			_VisualCollisionMesh= new CVisualCollisionMesh;
 			// if fails to build cause of too many vertices/indices for instance
-			if(!_VisualCollisionMesh->build(vertices, indices))
+			if( !_VisualCollisionMesh->build(vertices, indices,const_cast<CVertexBuffer&>(_MeshGeom->getVertexBuffer())) )
 			{
 				// delete
 				delete _VisualCollisionMesh;

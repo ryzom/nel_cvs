@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.cpp
  * <File description>
  *
- * $Id: shadow_poly_receiver.cpp,v 1.6 2004/04/27 11:57:43 berenguier Exp $
+ * $Id: shadow_poly_receiver.cpp,v 1.7 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -231,6 +231,7 @@ void			CShadowPolyReceiver::render(IDriver *drv, CMaterial &shadowMat, const CSh
 	{
 		CVertexBufferReadWrite vba;
 		_VB.lock(vba);
+		// TODODO: en D3D, ca rame ptet ca paske ca fait un indexBuffer::lock() par triangle
 
 		// For All triangles, clip them.
 		uint	currentVbIdx= 0;

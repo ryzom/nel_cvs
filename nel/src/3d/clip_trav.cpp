@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.44 2004/06/23 09:11:27 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.45 2004/06/24 17:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -631,7 +631,7 @@ void	CClipTrav::clipShadowCasters()
 				sphere.Center= sc->getWorldMatrix().getPos();
 				// Add to this sphere the max Depth extent. 
 				// NB: works because suppose that the Shadow BBox include the model Center.
-				sphere.Radius= objectRadius + Scene->getShadowMapMaxDepth();
+				sphere.Radius= objectRadius + sc->getShadowMapMaxDepth();
 
 				// Clip This sphere against the Frustum.
 				visible= true;

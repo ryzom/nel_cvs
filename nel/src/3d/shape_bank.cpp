@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.20 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: shape_bank.cpp,v 1.21 2003/06/19 15:23:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -307,18 +307,6 @@ bool CShapeBank::processWSUploadTexture (CWaitingShape &rWS, uint32 &nTotalUploa
 	CRect zeRect;
 	uint32 nFace, nWeight = 0, nMipMap;
 	
-	if (pText->mipMapOn())
-		nMipMap = pText->getMipMapCount();
-	else
-		nMipMap = 1;
-
-	uint32 nMM;
-	for (nMM = 0; nMM < nMipMap; ++nMM)
-		nWeight += pText->getSize (nMM) * CBitmap::bitPerPixels[pText->getPixelFormat()]/8;
-	if (pText->isTextureCube())
-		nWeight *= 6;
-
-	
 	if ((rWS.UpTextMipMap == 0) && (rWS.UpTextLine == 0))
 	{
 		// Create the texture only and do not upload anything
@@ -331,10 +319,15 @@ bool CShapeBank::processWSUploadTexture (CWaitingShape &rWS, uint32 &nTotalUploa
 			return true;
 	}
 	
+	if (pText->mipMapOn())
+		nMipMap = pText->getMipMapCount();
+	else
+		nMipMap = 1;
+	
 	// Upload all mipmaps
 	for (; rWS.UpTextMipMap < nMipMap; ++rWS.UpTextMipMap)
 	{
-		nMM = rWS.UpTextMipMap;
+		uint32 nMM = rWS.UpTextMipMap;
 		// What is left to upload ?
 		nWeight = pText->getSize (nMM) - rWS.UpTextLine*pText->getWidth(nMM);
 		nWeight *= CBitmap::bitPerPixels[pText->getPixelFormat()]/8;

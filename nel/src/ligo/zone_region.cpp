@@ -1,7 +1,7 @@
 /** \file zone_region.cpp
  * <File description>
  *
- * $Id: zone_region.cpp,v 1.1 2002/02/14 11:16:43 besson Exp $
+ * $Id: zone_region.cpp,v 1.2 2002/03/14 15:37:35 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,10 @@ namespace NLLIGO
 {
 
 string CZoneRegion::_StringOutOfBound;
+
+// ***************************************************************************
+// SZoneUnit
+// ***************************************************************************
 
 // ---------------------------------------------------------------------------
 CZoneRegion::SZoneUnit::SZoneUnit()
@@ -81,6 +85,68 @@ const CZoneRegion::SZoneUnit& CZoneRegion::SZoneUnit::operator=(const CZoneRegio
 	return *this;
 }
 
+
+// ***************************************************************************
+// SZoneUnit2
+// ***************************************************************************
+
+// ---------------------------------------------------------------------------
+CZoneRegion::SZoneUnit2::SZoneUnit2()
+{
+	DateLow = 0;
+	DateHigh = 0;
+}
+
+// ---------------------------------------------------------------------------
+void CZoneRegion::SZoneUnit2::serial (NLMISC::IStream &f)
+{
+	sint32 version = f.serialVersion (0);
+
+	SZoneUnit::serial (f);
+	f.serial (DateLow);
+	f.serial (DateHigh);
+}
+
+// ---------------------------------------------------------------------------
+const CZoneRegion::SZoneUnit2& CZoneRegion::SZoneUnit2::operator=(const CZoneRegion::SZoneUnit2&zu)
+{
+	this->ZoneName	= zu.ZoneName;
+	this->PosX		= zu.PosX;
+	this->PosY		= zu.PosY;
+	this->Rot		= zu.Rot;
+	this->Flip		= zu.Flip;
+	for (uint32 i = 0; i < 4; ++i)
+	{
+		this->SharingMatNames[i] = zu.SharingMatNames[i];
+		this->SharingCutEdges[i] = zu.SharingCutEdges[i];
+	}
+	this->DateLow	= zu.DateLow;
+	this->DateHigh	= zu.DateHigh;
+	return *this;
+}
+
+// ---------------------------------------------------------------------------
+const CZoneRegion::SZoneUnit2& CZoneRegion::SZoneUnit2::operator=(const CZoneRegion::SZoneUnit&zu)
+{
+	this->ZoneName	= zu.ZoneName;
+	this->PosX		= zu.PosX;
+	this->PosY		= zu.PosY;
+	this->Rot		= zu.Rot;
+	this->Flip		= zu.Flip;
+	for (uint32 i = 0; i < 4; ++i)
+	{
+		this->SharingMatNames[i] = zu.SharingMatNames[i];
+		this->SharingCutEdges[i] = zu.SharingCutEdges[i];
+	}
+	this->DateLow	= 0;
+	this->DateHigh	= 0;
+	return *this;
+}
+
+// ***************************************************************************
+// CZoneRegion
+// ***************************************************************************
+
 // ---------------------------------------------------------------------------
 CZoneRegion::CZoneRegion()
 {
@@ -90,13 +156,26 @@ CZoneRegion::CZoneRegion()
 // ---------------------------------------------------------------------------
 void CZoneRegion::serial (NLMISC::IStream &f)
 {
-	sint32 version = f.serialVersion (0);
+	sint32 version = f.serialVersion (1);
 	f.serialCheck ((uint32)'DNAL');
 	f.serial (_MinX);
 	f.serial (_MinY);
 	f.serial (_MaxX);
 	f.serial (_MaxY);
-	f.serialCont (_Zones);
+
+	if (version == 1)
+	{
+		f.serialCont (_Zones);
+	}
+
+	if (version == 0)
+	{
+		std::vector<SZoneUnit> vZonesTmp;
+		f.serialCont (vZonesTmp);
+		_Zones.resize (vZonesTmp.size());
+		for (uint32 i = 0; i < vZonesTmp.size(); ++i)
+			_Zones[i] = vZonesTmp[i];
+	}
 
 }
 
@@ -185,11 +264,28 @@ uint8 CZoneRegion::getCutEdge (sint32 x, sint32 y, uint8 pos)
 }
 
 // ---------------------------------------------------------------------------
+uint32 CZoneRegion::getDate (sint32 x, sint32 y, uint8 lowOrHigh) // lowOrHigh == 0 -> low
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+	{
+		return 0;
+	}
+	else
+	{
+		if (lowOrHigh == 0)
+			return _Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].DateLow;
+		else
+			return _Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].DateHigh;
+	}
+}
+
+// ---------------------------------------------------------------------------
 void CZoneRegion::resize (sint32 newMinX, sint32 newMaxX, sint32 newMinY, sint32 newMaxY)
 {
 	sint32 i, j;
-	vector<SZoneUnit> newZones;
-	SZoneUnit zuTmp;
+	vector<SZoneUnit2> newZones;
+	SZoneUnit2 zuTmp;
 
 	newZones.resize ((1+newMaxX-newMinX)*(1+newMaxY-newMinY));
 	sint32 newStride = 1+newMaxX-newMinX;
@@ -203,9 +299,6 @@ void CZoneRegion::resize (sint32 newMinX, sint32 newMaxX, sint32 newMinY, sint32
 		}
 		else
 		{
-			zuTmp.ZoneName = STRING_UNUSED;
-			zuTmp.PosX = 0;
-			zuTmp.PosY = 0;
 			newZones[(i-newMinX)+(j-newMinY)*newStride] = zuTmp;
 		}
 	}

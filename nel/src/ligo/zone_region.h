@@ -1,7 +1,7 @@
 /** \file zone_region.h
  * <File description>
  *
- * $Id: zone_region.h,v 1.1 2002/02/14 11:16:43 besson Exp $
+ * $Id: zone_region.h,v 1.2 2002/03/14 15:37:35 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,6 +71,7 @@ public:
 	uint8				getRot (sint32 x, sint32 y);
 	uint8				getFlip (sint32 x, sint32 y);
 	uint8				getCutEdge (sint32 x, sint32 y, uint8 pos); // pos==0 -> getUpCE, pos==1 -> getDownCE, ...
+	uint32				getDate (sint32 x, sint32 y, uint8 lowOrHigh); // lowOrHigh == 0 -> low
 
 	sint32				getMinX () { return _MinX; }
 	sint32				getMaxX () { return _MaxX; }
@@ -90,16 +91,27 @@ protected:
 		std::string			SharingMatNames[4];	//  [0 1]
 		uint8				SharingCutEdges[4]; // 0-Up, 1-Down, 2-Left, 3-Right (value [0-2])
 
-		SZoneUnit();
+		SZoneUnit ();
 		void			serial (NLMISC::IStream &f);
-		const SZoneUnit&operator=(const SZoneUnit&zu);
+		const SZoneUnit&operator= (const SZoneUnit&zu);
+	};
+
+	struct SZoneUnit2 : public SZoneUnit
+	{
+		uint32				DateLow;
+		uint32				DateHigh;
+		
+		SZoneUnit2 ();
+		void			serial (NLMISC::IStream &f);
+		const SZoneUnit2&operator= (const SZoneUnit2&zu);
+		const SZoneUnit2&operator= (const SZoneUnit&zu);
 	};
 
 	static std::string			_StringOutOfBound;
 
 protected:
 
-	std::vector<SZoneUnit>		_Zones;
+	std::vector<SZoneUnit2>		_Zones;
 	sint32						_MinX, _MinY;
 	sint32						_MaxX, _MaxY;
 

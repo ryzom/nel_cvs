@@ -1,7 +1,7 @@
 /** \file main.h
  * mini agent exemple
  *
- * $Id: main.h,v 1.3 2002/03/11 17:39:17 chafik Exp $
+ * $Id: main.h,v 1.4 2002/04/16 08:03:50 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 #include "nel/misc/types_nl.h"
-#include "nel/net/service_5.h"
+#include "nel/net/service.h"
 #include "nel/net/unified_network.h"
 
 
@@ -89,7 +89,7 @@ namespace Expl
 	/**
 	This class allow us to make the service.
 	*/
-	class CAgentService : public NLNET::IService5
+	class CAgentService : public NLNET::IService
 	{
 	public:
 		static CAgentManager *Agent;

@@ -1,7 +1,7 @@
 /** \file main.cpp
  * mini agent exemple
  *
- * $Id: main.cpp,v 1.3 2002/03/11 17:39:17 chafik Exp $
+ * $Id: main.cpp,v 1.4 2002/04/16 08:03:50 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ namespace Expl
 
 	void CAgentService::init()
 	{
-		NLAILINK::setLocalServerID((uint8)serviceId());
+		NLAILINK::setLocalServerID((uint8)getServiceId());
 		//This for uinitialize the ai lib
 		NLAILINK::initIALib();
 		//This for uinitialize the manager how deliver distruibuted message.
@@ -117,17 +117,17 @@ namespace Expl
 
 	void CAgentService::release()
 	{
-		Agent->release();
-		//This lines is to run the agent internal timer.
-		{
-			NLMISC::CSynchronized<NLAIAGENT::CAgentScript *>::CAccessor accessor(NLAIAGENT::CAgentManagerTimer::TimerManager);
-			accessor.value()->run();
-		}
+		Agent->release();		
 	}
 
 	bool CAgentService::update()
 	{
 		Agent->run();
+		//This lines is to run the agent internal timer.
+		{
+			NLMISC::CSynchronized<NLAIAGENT::CAgentScript *>::CAccessor accessor(NLAIAGENT::CAgentManagerTimer::TimerManager);
+			accessor.value()->run();
+		}
 		return true;
 	}
 
@@ -166,5 +166,5 @@ NLNET::TUnifiedCallbackItem CallbackArray [] =
 	{ "AGT", Expl::CAgentService::cbProcessAgentMessage }	
 };
 
-NLNET_SERVICE_MAIN( Expl::CAgentService, AgentServiceName, "ag_s", 0, CallbackArray );
+NLNET_SERVICE_MAIN( Expl::CAgentService, AgentServiceName, "minAg_s", 0, CallbackArray, ".", "." );
 

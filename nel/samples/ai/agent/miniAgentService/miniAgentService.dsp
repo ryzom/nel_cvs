@@ -120,6 +120,10 @@ SOURCE=.\main_agent.h
 
 SOURCE=.\script\agent\test.ras
 # End Source File
+# Begin Source File
+
+SOURCE=.\script\agent\timer.ras
+# End Source File
 # End Group
 # Begin Source File
 

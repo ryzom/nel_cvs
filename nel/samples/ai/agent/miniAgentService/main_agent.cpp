@@ -1,7 +1,7 @@
 /** \file main_agent.cpp
  * mini agent exemple
  *
- * $Id: main_agent.cpp,v 1.2 2002/03/11 17:39:17 chafik Exp $
+ * $Id: main_agent.cpp,v 1.3 2002/04/16 08:03:50 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 #include "nel/misc/types_nl.h"
-#include "nel/net/service_5.h"
+#include "nel/net/service.h"
 
 #include "nel/ai/nl_ai.h"
 #include "nel/ai/agent/agent.h"

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.164 2004/04/01 19:10:38 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.165 2004/04/06 13:42:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1084,7 +1084,7 @@ private:
 			static const uint _EVSNumConstant;
 			// 
 			bool   setupEXTVertexShader(const CVPParser::TProgram &program, GLuint id, uint variants[EVSNumVariants], uint16 &usedInputRegisters);
-			bool   setupARBVertexProgram (const CVPParser::TProgram &parsedProgram, GLuint id);
+			bool   setupARBVertexProgram (const CVPParser::TProgram &parsedProgram, GLuint id, bool &specularWritten);
 			//			
 	// @}
 

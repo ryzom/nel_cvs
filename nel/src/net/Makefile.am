@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.7 2001/02/23 12:52:22 cado Exp $
+# $Id: Makefile.am,v 1.8 2001/03/05 09:32:58 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -13,7 +13,7 @@ libnelnet_la_SOURCES = base_socket.cpp cubic_entity_interpolator.cpp \
                        net_displayer.cpp net_log.cpp pt_callback_item.cpp \
                        remote_entity.cpp replica.cpp service.cpp socket.cpp \
                        unitime.cpp callback_net_base.cpp callback_client.cpp \
-                       callback_server.cpp new_service.cpp
+                       callback_server.cpp
 
 libnelnet_la_LIBADD  = -lc
 

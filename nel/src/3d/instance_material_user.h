@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.10 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: instance_material_user.h,v 1.11 2002/11/14 17:30:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -218,6 +218,9 @@ public:
 	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0);
 	// @}
 
+	virtual void				emptyTexture(uint stage = 0);
+
+
 	virtual sint				getLastTextureStage() const
 	{
 		NL3D_MEM_MATERIAL_INSTANCE
@@ -232,6 +235,45 @@ public:
 		return lastStage;
 	}
 
+	/// \name Blending.
+	// @{
+	virtual void			setBlend(bool active) 
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		_Material->setBlend(active);
+	}
+	virtual void			setBlendFunc(TBlend src, TBlend dst) 
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		_Material->setBlendFunc((CMaterial::TBlend)(uint32)src, (CMaterial::TBlend)(uint32)dst);
+	}
+	virtual void			setSrcBlend(TBlend val) 
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		_Material->setSrcBlend((CMaterial::TBlend)(uint32)val);
+	}
+	virtual void			setDstBlend(TBlend val) 
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		_Material->setDstBlend((CMaterial::TBlend)(uint32)val);
+	}
+
+	virtual bool			getBlend() const 
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		return _Material->getBlend();
+	}
+	virtual TBlend			getSrcBlend(void)  const 
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		return (UInstanceMaterial::TBlend)(uint32)_Material->getSrcBlend();
+	}
+	virtual TBlend			getDstBlend(void)  const 
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		return (UInstanceMaterial::TBlend)(uint32)_Material->getDstBlend();
+	}
+	// @}
 
 private:
 	CMeshBaseInstance	*_MBI;

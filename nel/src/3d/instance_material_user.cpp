@@ -1,7 +1,7 @@
 /** \file instance_material_user.cpp
  * <File description>
  *
- * $Id: instance_material_user.cpp,v 1.6 2002/10/29 14:40:00 berenguier Exp $
+ * $Id: instance_material_user.cpp,v 1.7 2002/11/14 17:30:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,9 +103,23 @@ void				CInstanceMaterialUser::setTextureFileName(const std::string &fileName, u
 		}
 		CTextureFile *tf = new CTextureFile(*otherTex);
 		tf->setFileName(fileName);
+		NLMISC::CSmartPtr<ITexture> old = _Material->getTexture(stage);
 		_Material->setTexture(stage, tf);
 	}
 }
+
+// ***************************************************************************
+void CInstanceMaterialUser::emptyTexture(uint stage /*=0*/)
+{
+	NL3D_MEM_MATERIAL_INSTANCE
+	if (stage >= IDRV_MAT_MAXTEXTURES)
+	{
+		nlwarning("UInstanceMaterialUser::emptyTexture : invalid stage");
+		return;
+	}
+	_Material->setTexture(stage, NULL);
+}
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.24 2002/11/19 16:40:31 miller Exp $
+ * $Id: entity_id.h,v 1.25 2003/04/22 14:21:00 ledorze Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,36 +155,40 @@ public :
 
 	explicit CEntityId (const char *str)
 	{
-		char *ident = (char*)str;
-		char *id;
-		char *type;
-		char *creator;
-		char *dyn;
-		id = ident;
-		uint base = 10;
+		CEntityId ();
+		fromString(str);
 
-//Sameh si le nombre est en hexa alors mettre la base à 16.
-		if(str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
-		{
-			base = 16;
-			str+=2;
-		}
-
-		ident = (char*)str;
-		id = ident;
-
-		while(*ident != ':') if (*ident!=0) ++ident; else {*this=Unknown; return;}		
-		type = ident;
-		while(*ident != ':') if (*ident!=0) ++ident; else {*this=Unknown; return;}		
-		creator = ident;
-		while(*ident != ':') if (*ident!=0) ++ident; else {*this=Unknown; return;}		
-		dyn = ident;	
-
-//Sameh conversion en fonction de la base.
-		DetailedId.DynamicId = atoiInt64(dyn, base);
-		DetailedId.CreatorId = atoiInt64(creator, base);
-		DetailedId.Type = atoiInt64(type, base);
-		DetailedId.Id = atoiInt64(id, base);
+//	Old version code (doesn't work) i thought it has never been tested :(
+// 		char *ident = (char*)str;
+//		char *id;
+//		char *type;
+//		char *creator;
+//		char *dyn;
+//		id = ident;
+//		uint base = 10;
+//
+////Sameh si le nombre est en hexa alors mettre la base à 16.
+//		if(str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+//		{
+//			base = 16;
+//			str+=2;
+//		}
+//
+//		ident = (char*)str;
+//		id = ident;
+//
+//		while(*ident != ':') if (*ident!=0) ++ident; else {*this=Unknown; return;}		
+//		type = ident;
+//		while(*ident != ':') if (*ident!=0) ++ident; else {*this=Unknown; return;}		
+//		creator = ident;
+//		while(*ident != ':') if (*ident!=0) ++ident; else {*this=Unknown; return;}		
+//		dyn = ident;	
+//
+////Sameh conversion en fonction de la base.
+//		DetailedId.DynamicId = atoiInt64(dyn, base);
+//		DetailedId.CreatorId = atoiInt64(creator, base);
+//		DetailedId.Type = atoiInt64(type, base);
+//		DetailedId.Id = atoiInt64(id, base);
 	}
 	//@}	
 	

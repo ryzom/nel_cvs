@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.18 2005/02/22 10:19:22 besson Exp $
+ * $Id: ligo_config.cpp,v 1.19 2005/03/10 14:44:27 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -322,6 +322,80 @@ bool CLigoConfig::isPrimitiveLinked (const NLLIGO::IPrimitive &primitive)
 		}
 	}
 	return false;
+}
+
+// ***************************************************************************
+
+const NLLIGO::IPrimitive *CLigoConfig::getLinkedPrimitive (const NLLIGO::IPrimitive &primitive) const
+{
+	// Get the parent
+	const IPrimitive *parent = primitive.getParent ();
+	if (parent)
+	{
+		uint childId;
+		if (parent->getChildId (childId, &primitive))
+		{
+			// Test the next primitive
+			
+			// Get the primitive class
+			string className;
+			if (primitive.getPropertyByName ("class", className))
+			{
+				// Get the class
+				std::map<std::string, CPrimitiveClass>::const_iterator ite = _PrimitiveClasses.find (className);
+				if (ite != _PrimitiveClasses.end ())
+				{
+					if (ite->second.LinkBrothers)
+					{
+						// Add the next child
+						const IPrimitive *brother;
+						if (parent->getChild (brother, childId+1))
+							return brother;
+					}
+				}
+			}
+		}
+	}
+	return NULL;
+}
+
+// ***************************************************************************
+
+const NLLIGO::IPrimitive *CLigoConfig::getPreviousLinkedPrimitive (const NLLIGO::IPrimitive &primitive) const
+{
+	// Get the parent
+	const IPrimitive *parent = primitive.getParent ();
+	if (parent)
+	{
+		uint childId;
+		if (parent->getChildId (childId, &primitive))
+		{
+			// Test the previous primitive
+			if (childId > 0)
+			{
+				const IPrimitive *brother;
+				if (parent->getChild (brother, childId-1) && brother)
+				{
+					// Get the primitive class
+					string className;
+					if (brother->getPropertyByName ("class", className))
+					{
+						// Get the class
+						std::map<std::string, CPrimitiveClass>::const_iterator ite = _PrimitiveClasses.find (className);
+						if (ite != _PrimitiveClasses.end ())
+						{
+							if (ite->second.LinkBrothers)
+							{
+								// Return the previous child
+								return brother;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return NULL;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file ligo_config.h
  * Ligo config file 
  *
- * $Id: ligo_config.h,v 1.7 2005/01/27 15:23:22 vuarand Exp $
+ * $Id: ligo_config.h,v 1.8 2005/03/10 14:44:27 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -124,6 +124,12 @@ public:
 
 	// Is the primitive linked to it's brother primitive ?
 	bool isPrimitiveLinked (const NLLIGO::IPrimitive &primitive);
+
+	// Return the next primitive linked to 'primitive', or NULL
+	const NLLIGO::IPrimitive *CLigoConfig::getLinkedPrimitive (const NLLIGO::IPrimitive &primitive) const;
+
+	// Return the previous primitive linked to 'primitive', or NULL
+	const NLLIGO::IPrimitive *CLigoConfig::getPreviousLinkedPrimitive (const NLLIGO::IPrimitive &primitive) const;
 
 	// Is the primitive deletable ?
 	bool isPrimitiveDeletable (const NLLIGO::IPrimitive &primitive);

@@ -1,7 +1,7 @@
 /** \file u_move_primitive.h
  * Description of movables primitives.
  *
- * $Id: u_move_primitive.h,v 1.7 2001/06/26 09:57:35 corvazier Exp $
+ * $Id: u_move_primitive.h,v 1.8 2001/09/28 12:26:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -386,6 +386,16 @@ public:
 	  * \param speed is the speed of the primitive.
 	  */
 	virtual void	move (const NLMISC::CVectorD& speed, uint8 worldImage) =0;
+
+	/**
+	  * Return the first world image
+	  */
+	virtual uint8				getFirstWorldImageV () const =0;
+
+	/**
+	  * Return the num of world image
+	  */
+	virtual uint8				getNumWorldImageV () const =0;
 };
 
 

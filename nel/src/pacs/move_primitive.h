@@ -1,7 +1,7 @@
 /** \file move_primitive.h
  * Description of movables primitives
  *
- * $Id: move_primitive.h,v 1.9 2001/09/12 10:07:05 legros Exp $
+ * $Id: move_primitive.h,v 1.10 2001/09/28 12:26:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,6 +120,9 @@ public:
 		else
 			return false;
 	}
+
+	virtual uint8				getFirstWorldImageV () const;
+	virtual uint8				getNumWorldImageV () const;
 
 	// Get first world image used
 	uint8	getFirstWorldImage () const

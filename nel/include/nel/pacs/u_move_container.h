@@ -1,7 +1,7 @@
 /** \file u_move_container.h
  * A container for movable objects
  *
- * $Id: u_move_container.h,v 1.6 2001/09/28 12:24:32 corvazier Exp $
+ * $Id: u_move_container.h,v 1.7 2001/09/28 12:26:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,16 +148,6 @@ public:
 	  * \param dest is the id of the destination world image for the copy.
 	  */
 	virtual void				duplicateWorldImage (uint8 source, uint8 dest) =0;
-
-	/**
-	  * Return the first world image
-	  */
-	virtual uint8				getFirstWorldImageV () const =0;
-
-	/**
-	  * Return the num of world image
-	  */
-	virtual uint8				getNumWorldImageV () const =0;
 
 	/// \name Triggers info.
 

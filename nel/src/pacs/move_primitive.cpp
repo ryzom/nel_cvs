@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.11 2001/07/19 15:17:46 corvazier Exp $
+ * $Id: move_primitive.cpp,v 1.12 2001/09/28 12:26:34 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -357,6 +357,20 @@ void CMovePrimitive::getGlobalPosition (UGlobalPosition& pos, uint8 worldImage) 
 		pos=getWorldImage (0)->getGlobalPosition();
 	else
 		pos=getWorldImage (worldImage)->getGlobalPosition();
+}
+
+// ***************************************************************************
+
+uint8 CMovePrimitive::getFirstWorldImageV () const
+{
+	return getFirstWorldImage ();
+}
+
+// ***************************************************************************
+
+uint8 CMovePrimitive::getNumWorldImageV () const
+{
+	return getNumWorldImageV ();
 }
 
 // ***************************************************************************

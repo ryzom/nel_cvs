@@ -99,6 +99,24 @@ namespace NLAISCRIPT
 
 		if ( _Goal != NULL )
 			_Goal->release();
+
+		std::vector< IOpCode *> _CondCode;
+		std::vector< IOpCode *> _ConcCode;
+
+		sint32 index = _CondCode.size() - 1;
+		for ( ; index >= 0; index-- )
+		{
+			_CondCode[index]->release();
+		}
+
+		index = _ConcCode.size() - 1;
+		for ( ; index >= 0; index-- )
+		{
+			_ConcCode[index]->release();
+		}
+
+		
+
 /*
 		int i;
 		for ( i = 0; i < (int) _CondCode.size(); i++ )
@@ -752,7 +770,10 @@ namespace NLAISCRIPT
 					std::string dbg_str;
 					result->getDebugString( dbg_str );
 #endif
-					if ( ! result->isTrue() )
+					bool br = !result->isTrue();
+					result->release();
+		
+					if ( br )
 						return false;
 				}
 
@@ -841,5 +862,74 @@ namespace NLAISCRIPT
 	{
 		_FuzzyVars.push_back( var_name );
 		_FuzzySets.push_back( fset );
+	}
+
+	void COperatorClass::RegisterMessage(NLAIAGENT::IMessageBase::TPerformatif perf, const std::string &msg_class, const std::string &msg_varname)
+	{
+		try
+		{
+
+			// Checks if a trigger with the same message or var doesn't already exist
+			std::vector<std::string>::iterator it_s = _TrigMsgVarname.begin();
+			while ( it_s != _TrigMsgVarname.end() )
+			{
+				if ( msg_varname == *it_s )
+				{
+					std::string debugString;
+					std::string text;
+					getDebugString(debugString);
+					text += NLAIC::stringGetBuild("MessageCond(%s) defined twice in operator class '%s'",msg_varname.c_str(), debugString.c_str());
+					throw NLAIE::CExceptionNotImplemented(text.c_str()); 
+				}
+				it_s++;
+			}
+
+			NLAIC::CIdentType id_class( msg_class.c_str() );
+			_TrigMsgClass.push_back( id_class );
+			_TrigMsgPerf.push_back( perf );
+			_TrigMsgVarname.push_back( msg_varname );
+
+			// Looks in the class components if the var already exists
+			sint32 id_var = getInheritedStaticMemberIndex( NLAIAGENT::CStringVarName((const char *) msg_varname.c_str()) );
+
+			if ( id_var != -1 )
+			{
+				// If it exists, stores its index
+				_TrigMsgPos.push_back( id_var );
+			}
+			else
+			{
+				// If it doesn't exist, registers the var as a component of the class
+				NLAIAGENT::CStringVarName class_name( (const char *) msg_class.c_str() );
+				NLAIAGENT::CStringVarName var_name( (const char *) msg_varname.c_str() );
+				registerComponent( class_name, var_name );
+				_TrigMsgPos.push_back( getInheritedStaticMemberIndex( NLAIAGENT::CStringVarName((const char *) msg_varname.c_str()) ) );
+			}
+		}
+		catch (NLAIE::IException &err)
+		{				
+			throw CExceptionHaveNoType(err.what());
+		}
+	}
+
+	// Checks if a message is in the PreCondition messages list
+	sint32 COperatorClass::checkTriggerMsg(const NLAIAGENT::IMessageBase *msg)
+	{
+		sint32 n = _TrigMsgPerf.size();
+
+		while ( n-- )
+		{
+			if ( msg->getPerformatif() == _TrigMsgPerf[n] )
+			{
+#ifdef NL_DEBUG
+				const char *msg_dbg = (const char *) msg->getType();
+				std::string buf;
+				msg->getDebugString(buf);
+#endif
+				if ( msg->getType() == _TrigMsgClass[n] )
+					return _TrigMsgPos[n];
+			}
+		}
+		return -1;
 	}
 }

@@ -240,7 +240,6 @@ namespace NLAIAGENT
 		if ( _IsActivated && _CurrentGoal != NULL && !_Maintain)
 			return true;
 
-
 		if ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL)
 		{
 //			if ( _CurrentGoal != NULL )
@@ -287,12 +286,16 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG
 		const char *dbg_class_name = (const char *) getType();
 #endif
+		// Checks for message triggers
+		if ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->NbMsgTrigger() != 0 && !checkTrigMsg() )
+			return false;
+
 		NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
 		context->Self = this;
 		return ((NLAISCRIPT::COperatorClass *)_AgentClass)->isValidFonc( context );
 	}
 
-	// Called by the gaol when canceles: removes all childs and unactivates the operator.
+	// Called by the goal when canceled: removes all childs and unactivates the operator.
 	void COperatorScript::cancel()
 	{
 		CActorScript::cancel();
@@ -575,6 +578,11 @@ namespace NLAIAGENT
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
 				return r;
+
+			case fid_achieve:
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				return r;
 		}
 		return r;
 	}
@@ -727,5 +735,40 @@ namespace NLAIAGENT
 		const char *dbg_exclusive = (const char *) getType();
 #endif
 		return _Exclusive;
+	}
+
+	bool COperatorScript::checkTrigMsg()
+	{
+		IBasicAgent *father = (IBasicAgent *) getParent();
+		if ( father != NULL )
+		{
+			IMailBox *mailbox = father->getMail();
+			if ( mailbox != NULL )
+			{
+				std::list<const IMessageBase *>::const_iterator it_msg;
+				const std::list<const IMessageBase *> &msg_list = mailbox->getMesseageListe();
+
+				it_msg = msg_list.begin();
+				while ( it_msg != msg_list.end() )
+				{
+					const IMessageBase *msg = *it_msg;
+#ifdef NL_DEBUG
+					const char *id = (const char *) msg->getType();
+					std::string buf;
+					msg->getDebugString( buf );
+#endif
+
+					sint32 msg_comp_pos = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->checkTriggerMsg( msg );
+					if ( msg_comp_pos == -1)
+						return false;
+					else
+					{
+						setStaticMember( msg_comp_pos, (NLAIAGENT::IObjectIA *) msg );
+					}
+					it_msg++;
+				}	
+			}
+		}
+		return false;
 	}
 }

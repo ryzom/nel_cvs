@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.5 2001/01/10 17:09:30 saffray Exp $
+ * $Id: agent_digital.h,v 1.6 2001/01/17 10:16:08 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,7 +88,7 @@ namespace NLAIAGENT
 
 		virtual void getDebugString(char *text) const
 		{
-			sprintf(text,"%f",getValue());
+			sprintf(text,"<float> %f",getValue());
 		}		
 
 		virtual const CProcessResult &run();
@@ -164,6 +164,8 @@ namespace NLAIAGENT
 	
 	This class store a double in an IObjectIA. 
 
+	* \author Chafik sameh	 
+	* \author Portier Pierre
 	* \author Saffray Alain
 	* \author Nevrax France
 	* \date 2001
@@ -225,8 +227,9 @@ namespace NLAIAGENT
 
 	* \author Chafik sameh	 
 	* \author Portier Pierre
+	* \author Saffray Alain
 	* \author Nevrax France
-	* \date 2000	
+	* \date 2001
 	*/
 	class BorneDDigitalType: public IBornNombre<double>
 	{			
@@ -286,14 +289,23 @@ namespace NLAIAGENT
 	};
 
 
-	/*class IntegerType: public INombre<sint32>
+	/**	
+	This class store a sint32 integer in an IObjectIA.
+
+	* \author Chafik sameh	 
+	* \author Portier Pierre
+	* \author Saffray Alain
+	* \author Nevrax France
+	* \date 2001
+	*/
+	class IntegerType: public INombre<sint32>
 	{
 	public:
 
 		static const NLAIC::CIdentType IdIntegerType;
 
 	public:
-		IntegerType(float value):INombre<sint32>((sint32)value)
+		IntegerType(sint32 value):INombre<sint32>(value)
 		{			
 		}
 
@@ -327,11 +339,178 @@ namespace NLAIAGENT
 
 		virtual void getDebugString(char *text) const
 		{
-			sprintf(text,"%f",getValue());
+			sprintf(text,"%d",getValue());
 		}		
 
 		virtual const CProcessResult &run();
-	};*/
+	};
+
+	/**	
+	This class store a sint16 short integer in an IObjectIA.
+
+	* \author Chafik sameh	 
+	* \author Portier Pierre
+	* \author Saffray Alain
+	* \author Nevrax France
+	* \date 2001
+	*/
+	class ShortIntegerType: public INombre<sint16>
+	{
+	public:
+
+		static const NLAIC::CIdentType IdShortIntegerType;
+
+	public:
+		ShortIntegerType(sint16 value):INombre<sint16>(value)
+		{			
+		}
+
+		ShortIntegerType():INombre<sint16>()
+		{			
+		}
+
+		ShortIntegerType(const ShortIntegerType &a):INombre<sint16>(a)
+		{			
+		}
+
+		ShortIntegerType(NLMISC::IStream &is):INombre<sint16>(is)
+		{
+		}
+		
+
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new ShortIntegerType(*this);
+			m->incRef();
+			return m;
+		}
+		
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+
+		virtual const NLAIC::CIdentType &getType() const;		
+		
+
+		virtual void getDebugString(char *text) const
+		{
+			sprintf(text,"%d",getValue());
+		}		
+
+		virtual const CProcessResult &run();
+	};
+
+	/**	
+	This class store a sint8 char in an IObjectIA.
+
+	* \author Chafik sameh	 
+	* \author Portier Pierre
+	* \author Saffray Alain
+	* \author Nevrax France
+	* \date 2001
+	*/
+	class CharType: public INombre<sint8>
+	{
+	public:
+
+		static const NLAIC::CIdentType IdCharType;
+
+	public:
+		CharType(sint8 value):INombre<sint8>(value)
+		{			
+		}
+
+		CharType():INombre<sint8>()
+		{			
+		}
+
+		CharType(const CharType &a):INombre<sint8>(a)
+		{			
+		}
+
+		CharType(NLMISC::IStream &is):INombre<sint8>(is)
+		{
+		}
+		
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new CharType(*this);
+			m->incRef();
+			return m;
+		}
+		
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+
+		virtual const NLAIC::CIdentType &getType() const;		
+		
+
+		virtual void getDebugString(char *text) const
+		{
+			sprintf(text,"%c",getValue());
+		}		
+
+		virtual const CProcessResult &run();
+	};
+
+	/**	
+	This class store a vector<float,float,float> in an IObjectIA.
+
+	* \author Chafik sameh	 
+	* \author Portier Pierre
+	* \author Saffray Alain
+	* \author Nevrax France
+	* \date 2001
+	*/
+	class VectorType: public IVector
+	{
+	public:
+
+		static const NLAIC::CIdentType IdVectorType;
+
+	public:
+		VectorType(float x, float y, float z):IVector(x, y, z)
+		{			
+		}
+
+		VectorType():IVector()
+		{			
+		}
+
+		VectorType(const VectorType &a):IVector(a)
+		{			
+		}
+
+		VectorType(NLMISC::IStream &is):IVector(is)
+		{
+		}
+		
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new VectorType(*this);
+			m->incRef();
+			return m;
+		}
+		
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+
+		virtual const NLAIC::CIdentType &getType() const;		
+		
+
+		virtual void getDebugString(char *text) const
+		{
+			sprintf(text,"Vector <%f %f %f>",getValue().x, getValue().y, getValue().z);
+		}		
+
+		virtual const CProcessResult &run();
+	};
 }
+
 
 #endif

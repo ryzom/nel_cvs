@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.5 2001/01/15 17:58:29 chafik Exp $
+ * $Id: group_type.cpp,v 1.6 2001/01/17 10:14:52 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,6 @@
 
 namespace NLAIAGENT
 {
-
 	const static sint32 _Const = 0;
 	const static sint32 _Push = 1;
 	const static sint32 _PushFront = 2;

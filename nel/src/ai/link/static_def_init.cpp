@@ -130,7 +130,7 @@
 																					NLAIC::CTypeOfOperator::opDiff));
 
 
-	/*const NLAIC::CIdentType IntegerType::IdIntegerType("Integer",	NLAIC::CSelfClassCFactory(IntegerType(0)),
+	const NLAIC::CIdentType IntegerType::IdIntegerType("Integer",	NLAIC::CSelfClassCFactory(IntegerType(0)),
 																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 																	NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 																	NLAIC::CTypeOfOperator::opSub | 
@@ -142,7 +142,43 @@
 																	NLAIC::CTypeOfOperator::opInfEq | 
 																	NLAIC::CTypeOfOperator::opSupEq |
 																	NLAIC::CTypeOfOperator::opNot |
-																	NLAIC::CTypeOfOperator::opDiff));*/
+																	NLAIC::CTypeOfOperator::opDiff));
+
+	const NLAIC::CIdentType ShortIntegerType::IdShortIntegerType("Short",	NLAIC::CSelfClassCFactory(ShortIntegerType(0)),
+																			NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
+																			NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+																			NLAIC::CTypeOfOperator::opSub | 
+																			NLAIC::CTypeOfOperator::opMul | 
+																			NLAIC::CTypeOfOperator::opDiv | 
+																			NLAIC::CTypeOfOperator::opEq | 
+																			NLAIC::CTypeOfOperator::opInf | 
+																			NLAIC::CTypeOfOperator::opSup | 
+																			NLAIC::CTypeOfOperator::opInfEq | 
+																			NLAIC::CTypeOfOperator::opSupEq |
+																			NLAIC::CTypeOfOperator::opNot |
+																			NLAIC::CTypeOfOperator::opDiff));
+
+	const NLAIC::CIdentType CharType::IdCharType("Char",	NLAIC::CSelfClassCFactory(CharType(0)),
+															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
+															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+															NLAIC::CTypeOfOperator::opSub | 
+															NLAIC::CTypeOfOperator::opMul | 
+															NLAIC::CTypeOfOperator::opDiv | 
+															NLAIC::CTypeOfOperator::opEq | 
+															NLAIC::CTypeOfOperator::opInf | 
+															NLAIC::CTypeOfOperator::opSup | 
+															NLAIC::CTypeOfOperator::opInfEq | 
+															NLAIC::CTypeOfOperator::opSupEq |
+															NLAIC::CTypeOfOperator::opNot |
+															NLAIC::CTypeOfOperator::opDiff));
+
+	const NLAIC::CIdentType VectorType::IdVectorType("CVector",	NLAIC::CSelfClassCFactory(VectorType(0, 0, 0)), 
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
+																NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+																NLAIC::CTypeOfOperator::opSub | 
+																NLAIC::CTypeOfOperator::opEq | 
+																NLAIC::CTypeOfOperator::opDiff));
+
 
 	/*const NLAIC::CIdentType CPaireType::IdPaireType("Paire",NLAIC::CSelfClassCFactory(CPaireType( CStringType(CStringVarName("XX")),BorneDigitalType(-1,1))),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));*/

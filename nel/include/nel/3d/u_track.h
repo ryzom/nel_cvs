@@ -1,7 +1,7 @@
 /** \file u_track.h
  * User interface to access tracks fonctionnalities
  *
- * $Id: u_track.h,v 1.5 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: u_track.h,v 1.6 2003/02/19 17:46:52 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,10 +173,50 @@ public:
 class UTrackKeyframer
 {
 public:
+	class UKeyLinearFloat
+	{
+	public:
+		TAnimationTime	Time;
+		float			Value;
+	};
+
+	class UKeyBezierFloat
+	{
+	public:
+		TAnimationTime	Time;
+		float			Value;
+		float			TanIn, TanOut;
+		bool			Step;
+	};
+
+	class UKeyTCBFloat
+	{
+	public:
+		TAnimationTime	Time;
+		float			Value;
+		float			Tension;
+		float			Continuity;
+		float			Bias;
+		float			EaseFrom;
+		float			EaseTo;
+	};
+
+	static	UTrackKeyframer	*createLinearFloatTrack();
+	static	UTrackKeyframer	*createBezierFloatTrack();
+	static	UTrackKeyframer	*createTCBFloatTrack();
+
+public:
 	/** Retrieve the keys that are in the given range ]t1, t2] of the track. They can then be evaluated
 	  * \param result a vector that will be cleared, and filled with the date ofthe keys
 	  */
 	virtual void getKeysInRange(TAnimationTime t1, TAnimationTime t2, std::vector<TAnimationTime> &result)=0;	
+
+	/// Fail if not A Float Linear Keyframer
+	virtual	bool	addLinearFloatKey(const UKeyLinearFloat &key) {return false;}
+	/// Fail if not A Float Bezier Keyframer
+	virtual	bool	addBezierFloatKey(const UKeyBezierFloat &key) {return false;}
+	/// Fail if not A Float TCB Keyframer
+	virtual	bool	addTCBFloatKey(const UKeyTCBFloat &key) {return false;}
 };
 
 

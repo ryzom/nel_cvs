@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.17 2001/02/14 15:12:59 corvazier Exp $
+ * $Id: tile_bank.h,v 1.18 2001/02/14 16:00:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -313,7 +313,7 @@ public:
 		nlassert (displacement<=LastDisplace);
 
 		// return file name
-		return *(_DisplacementFileName[displacement].c_str())!=NULL;
+		return *(_DisplacementFileName[displacement].c_str())!=0;
 	}
 
 	// get

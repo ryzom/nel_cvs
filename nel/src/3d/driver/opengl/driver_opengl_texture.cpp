@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.19 2001/01/23 14:15:15 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.20 2001/01/23 15:39:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -490,7 +490,7 @@ void		CDriverGL::activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
 
 
 	// cache mgt.
-	_CurrentTexEnv[stage].Env.Packed= env.Env.Packed;
+	_CurrentTexEnv[stage].EnvPacked= env.EnvPacked;
 
 	// Setup the gl env mode.
 	glActiveTextureARB(GL_TEXTURE0_ARB+stage);

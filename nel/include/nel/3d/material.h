@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.10 2001/01/18 14:13:43 berenguier Exp $
+ * $Id: material.h,v 1.11 2001/01/23 15:39:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -247,7 +247,7 @@ public:
 	{
 		union
 		{
-			uint32	Packed;
+			uint32	EnvPacked;
 			struct
 			{
 				uint32		OpRGB:3;
@@ -261,8 +261,8 @@ public:
 				uint32		OpArg0Alpha:2;
 				uint32		SrcArg1Alpha:2;
 				uint32		OpArg1Alpha:2;
-			};
-		}			Env;
+			}		Env;
+		};
 		CRGBA		ConstantColor;
 
 		void		setDefault()

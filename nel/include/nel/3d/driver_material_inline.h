@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.12 2001/01/11 13:53:29 lecroart Exp $
+ * $Id: driver_material_inline.h,v 1.13 2001/01/23 15:39:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -210,13 +210,13 @@ inline void					CMaterial::texConstantColor(uint stage, CRGBA color)
 inline uint32				CMaterial::getTexEnvMode(uint stage)
 {
 	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
-	return _TexEnvs[stage].Env.Packed;
+	return _TexEnvs[stage].EnvPacked;
 }
 // ***************************************************************************
 inline void					CMaterial::setTexEnvMode(uint stage, uint32 packed)
 {
 	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
-	_TexEnvs[stage].Env.Packed= packed;
+	_TexEnvs[stage].EnvPacked= packed;
 }
 // ***************************************************************************
 inline CRGBA				CMaterial::getTexConstantColor(uint stage)

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.20 2001/01/18 14:14:28 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.21 2001/01/23 15:39:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,7 +95,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		{
 			CMaterial::CTexEnv	&env= mat._TexEnvs[stage];
 
-			if(_CurrentTexEnv[stage].Env.Packed!= env.Env.Packed)
+			if(_CurrentTexEnv[stage].EnvPacked!= env.EnvPacked)
 			{
 				activateTexEnvMode(stage, env);
 			}

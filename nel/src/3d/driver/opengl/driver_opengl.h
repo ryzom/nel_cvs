@@ -9,11 +9,15 @@
 #include <gl/gl.h>
 #include "nel/3d/driver.h"
 #include "nel/misc/types_nl.h"
+#include "nel/misc/matrix.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
 
 namespace NL3D
 {
+
+using NLMISC::CMatrix;
+using NLMISC::CVector;
 
 // --------------------------------------------------
 
@@ -58,6 +62,8 @@ private:
 
 	bool					_setupVertexBuffer(CVertexBuffer& VB);
 
+	CMatrix					_ViewMtx;
+
 public:
 							CDriverGL() {};
 	virtual					~CDriverGL() { release(); };
@@ -75,6 +81,14 @@ public:
 	virtual bool			setupTexture(CTexture& tex);
 
 	virtual bool			setupMaterial(CMaterial& mat);
+
+	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective = true);
+
+	virtual void			setupViewMatrix(const CMatrix& mtx);
+
+	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n);
+
+	virtual CMatrix			getViewMatrix(void) const;
 
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB);
 

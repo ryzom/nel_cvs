@@ -98,5 +98,13 @@ SOURCE=R:\code\nel\src\3d\driver\driver_opengl\driver_opengl.def
 
 SOURCE=R:\code\nel\src\3d\driver\driver_opengl\driver_opengl.h
 # End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\driver\driver_opengl\driver_opengl_material.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\driver\driver_opengl\driver_opengl_matrix.cpp
+# End Source File
 # End Target
 # End Project

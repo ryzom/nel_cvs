@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.2 2000/10/27 15:06:46 viau Exp $
+ * $Id: driver_opengl.cpp,v 1.3 2000/10/30 14:52:03 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -211,98 +211,6 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(2,GL_FLOAT,VB.getVertexSize(),VB.getTexCoordPointer(0,0));
 	}
-	return(true);
-}
-
-// --------------------------------------------------
-
-/*
-
-  Driver::setupMaterial
-  -> crée le shader s'il n'existe pas
-  les infos shaders sont stockées dans IDriver
-  renderstates : abstrait
-  1 dans IDriver (le courant)
-  1 dans chaque shader
-  setupMaterial -> balance les renderstates du shader dans IDriver (seulement ceux necessaires)
-
-*/
-
-static bool convBlend(TBlend blend, GLenum& glenum)
-{
-	switch(blend)
-	{
-	case one:
-		glenum=GL_ONE;
-		return(true);
-	case zero:
-		glenum=GL_ZERO;
-		return(true);
-	case srcalpha:
-		glenum=GL_SRC_ALPHA;
-		return(true);
-	case invsrcalpha:
-		glenum=GL_ONE_MINUS_SRC_ALPHA;
-		return(true);
-	default:
-		break;
-	}
-	return(false);
-}
-
-static bool convZFunction(ZFunc zfunc, GLenum& glenum)
-{
-	switch(zfunc)
-	{
-	case always:
-		glenum=GL_ALWAYS;
-		return(true);
-	case never:
-		glenum=GL_NEVER;
-		return(true);
-	case equal:
-		glenum=GL_EQUAL;
-		return(true);
-	case notequal:
-		glenum=GL_NOTEQUAL;
-		return(true);
-	case less:
-		glenum=GL_LESS;
-		return(true);
-	case lessequal:
-		glenum=GL_LEQUAL;
-		return(true);
-	case greater:
-		glenum=GL_GREATER;
-		return(true);
-	case greaterequal:
-		glenum=GL_GEQUAL;
-		return(true);
-	default:
-		return(false);
-	}
-	return(false);
-}
-
-
-bool CDriverGL::setupMaterial(CMaterial& mat)
-{
-	CShaderGL*	pShader;
-	GLenum		glenum;
-
-	if (!mat.pShader)
-	{
-		mat.pShader=new CShaderGL;
-	}
-
-//	RKASSERT( dynamic_cast<CShaderGL*>((IShader*)(mat.pShader)) );
-	pShader=static_cast<CShaderGL*>((IShader*)(mat.pShader));
-
-	convBlend( mat.getSrcBlend(),glenum );
-	pShader->SrcBlend=glenum;
-	convBlend( mat.getDstBlend(),glenum );
-	pShader->DstBlend=glenum;
-
 	return(true);
 }
 

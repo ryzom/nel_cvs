@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.1 2000/10/26 13:10:32 viau Exp $
+ * $Id: material.cpp,v 1.2 2000/10/30 14:51:32 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@ bool CTexture::fillData(const void* data)
 
 bool CTexture::fillData(const vector<CRGBA>& data)
 {
-	if (data.size()!=_Width*_Height)
+	if ( (uint16)data.size()!=(_Width*_Height) )
 	{
 		return(false);
 	}

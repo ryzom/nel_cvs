@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.2 2000/10/27 15:00:15 viau Exp $
+ * $Id: driver.h,v 1.3 2000/10/30 14:52:45 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
+#include "nel/misc/matrix.h"
 
 #include <vector>
 #include <list>
@@ -41,26 +42,14 @@ using NLMISC::CRefPtr;
 using NLMISC::CRefCount;
 using NLMISC::CSmartPtr;
 using NLMISC::CRGBA;
+using NLMISC::CMatrix;
 
 // --------------------------------------------------
-
-const uint32 IDRV_TOUCHED_SRCBLEND	=	0x00000001;
-const uint32 IDRV_TOUCHED_DSTBLEND	=	0x00000002;
-const uint32 IDRV_TOUCHED_OPACITY	=	0x00000004;
-const uint32 IDRV_TOUCHED_SHADER	=	0x00000008;
-const uint32 IDRV_TOUCHED_ZFUNC		=	0x00000010;
-const uint32 IDRV_TOUCHED_ZBIAS		=	0x00000020;
-const uint32 IDRV_TOUCHED_COLOR		=	0x00000040;
-const uint32 IDRV_TOUCHED_LIGHTING	=	0x00000080;
-const uint32 IDRV_TOUCHED_DEFMAT	=	0x00000100;
-const uint32 IDRV_TOUCHED_ALPHA		=	0x00000200;
 
 class IShader : public CRefCount
 {
 protected:
-	uint32			_Touched;
 public:
-	bool			Touch(uint32 flag);
 };
 
 // --------------------------------------------------
@@ -106,6 +95,17 @@ public:
 
 // --------------------------------------------------
 
+const uint32 IDRV_TOUCHED_SRCBLEND	=	0x00000001;
+const uint32 IDRV_TOUCHED_DSTBLEND	=	0x00000002;
+const uint32 IDRV_TOUCHED_OPACITY	=	0x00000004;
+const uint32 IDRV_TOUCHED_SHADER	=	0x00000008;
+const uint32 IDRV_TOUCHED_ZFUNC		=	0x00000010;
+const uint32 IDRV_TOUCHED_ZBIAS		=	0x00000020;
+const uint32 IDRV_TOUCHED_COLOR		=	0x00000040;
+const uint32 IDRV_TOUCHED_LIGHTING	=	0x00000080;
+const uint32 IDRV_TOUCHED_DEFMAT	=	0x00000100;
+const uint32 IDRV_TOUCHED_ALPHA		=	0x00000200;
+
 const uint32	IDRV_MAT_HIDE		= 0x00000001;
 const uint32	IDRV_MAT_TSP		= 0x00000002;
 const uint32	IDRV_MAT_ZWRITE		= 0x00000004;
@@ -131,6 +131,7 @@ private:
 	CRGBA					_Color;
 	CRGBA					_Emissive,_Ambient,_Diffuse,_Specular;
 	float					_Alpha;
+	uint32					_Touched;
 
 public:
 
@@ -141,48 +142,48 @@ public:
 	void					setShader(TShader val)
 	{
 		_ShaderType=val;
-		pShader->Touch(IDRV_TOUCHED_SHADER);
+		_Touched|=IDRV_TOUCHED_SHADER;
 	}
 
 	void					setOpacity(float val)
 	{
 		_Opacity=val;
-		pShader->Touch(IDRV_TOUCHED_OPACITY);
+		_Touched|=IDRV_TOUCHED_OPACITY;
 	}
 
 	TBlend					getSrcBlend(void) { return(_SrcBlend); }
 	void					setSrcBlend(TBlend val)
 	{
 		_SrcBlend=val;
-		pShader->Touch(IDRV_TOUCHED_SRCBLEND);
+		_Touched|=IDRV_TOUCHED_SRCBLEND;
 	}
 
 	TBlend					getDstBlend(void) { return(_DstBlend); }
 	void					setDstBlend(TBlend val)
 	{
 		_DstBlend=val;
-		pShader->Touch(IDRV_TOUCHED_DSTBLEND);
+		_Touched|=IDRV_TOUCHED_DSTBLEND;
 	}
 
 	ZFunc					getZFunc(void) { return(_ZFunction); }		
 	void					setZFunction(ZFunc val)
 	{
 		_ZFunction=val;
-		pShader->Touch(IDRV_TOUCHED_ZFUNC);
+		_Touched|=IDRV_TOUCHED_ZFUNC;
 	}
 
 	float					getZBias(void) { return(_ZBias); }
 	void					setZBias(float val)
 	{
 		_ZBias=val;
-		pShader->Touch(IDRV_TOUCHED_ZBIAS);
+		_Touched|=IDRV_TOUCHED_ZBIAS;
 	}
 
 	CRGBA					getColor(void) { return(_Color); }
 	void					setColor(CRGBA& rgba)
 	{
 		_Color=rgba;
-		pShader->Touch(IDRV_TOUCHED_COLOR);
+		_Touched|=IDRV_TOUCHED_COLOR;
 	}
 
 	void					setLighting(	bool active, bool DefMat=true,
@@ -211,13 +212,13 @@ public:
 		_Ambient=ambient;
 		_Diffuse=diffuse;
 		_Specular=specular;
-		pShader->Touch(IDRV_TOUCHED_LIGHTING);
+		_Touched|=IDRV_TOUCHED_LIGHTING;
 	}
 
 	void					setAlpha(float val)
 	{
 		_Alpha=val;
-		pShader->Touch(IDRV_TOUCHED_ALPHA);
+		_Touched|=IDRV_TOUCHED_ALPHA;
 	}
 };
 
@@ -358,6 +359,12 @@ public:
 
 	virtual bool			setupMaterial(CMaterial& mat)=0;
 
+	virtual void			setupViewMatrix(const CMatrix& mtx)=0;
+
+	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n)=0;
+
+	virtual CMatrix			getViewMatrix(void) const=0;
+
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB)=0;
 
 	virtual bool			render(CPrimitiveBlock& PB, CMaterial& Mat)=0;
@@ -366,12 +373,6 @@ public:
 
 	virtual bool			release(void)=0;
 };
-
-// --------------------------------------------------
-// --------------------------------------------------
-// --------------------------------------------------
-// --------------------------------------------------
-// --------------------------------------------------
 
 // --------------------------------------------------
 

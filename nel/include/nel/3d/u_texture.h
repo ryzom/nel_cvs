@@ -1,7 +1,7 @@
 /** \file u_texture.h
  * <File description>
  *
- * $Id: u_texture.h,v 1.3 2001/08/30 09:22:03 berenguier Exp $
+ * $Id: u_texture.h,v 1.4 2001/10/29 14:23:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,7 +76,7 @@ public:
 		Luminance,
 		Alpha,
 		AlphaLuminance,
-
+		DsDt,
 		UploadFormatCount
 	};
 

@@ -1,7 +1,7 @@
 /** \file path_mesh_alloc.h
  * <File description>
  *
- * $Id: path_mesh_alloc.h,v 1.1 2001/04/26 16:37:32 corvazier Exp $
+ * $Id: path_mesh_alloc.h,v 1.2 2002/08/23 15:41:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,11 +27,12 @@
 #define NL_PATH_MESH_ALLOC_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/smart_ptr.h"
 #include <vector>
 #include <list>
 
 template <class T>
-class CArrayElement
+class CArrayElement : public NLMISC::CRefCount
 {
 public:
 	CArrayElement (uint defaultSize)
@@ -76,10 +77,10 @@ public:
 		while (ite!=_ArrayList.end())
 		{
 			// Find one ?
-			if (!ite->get()->_Allocated)
+			if (!((*ite)->_Allocated))
 			{
-				ite->get()->_Allocated=true;
-				return &ite->get()->_Array;
+				(*ite)->_Allocated=true;
+				return &((*ite)->_Array);
 			}
 			ite++;
 		}
@@ -90,11 +91,11 @@ public:
 		CArrayElement<T>	*pElement=new CArrayElement<T> (_DefaultSize);
 
 		// Push back the enrty
-		_ArrayList.push_back (std::auto_ptr<CArrayElement<T> > (pElement));
+		_ArrayList.push_back (NLMISC::CSmartPtr<CArrayElement<T> > (pElement));
 		ite=_ArrayList.end();
 		ite--;
-		ite->get()->_Allocated=true;
-		return &ite->get()->_Array;
+		(*ite)->_Allocated=true;
+		return &((*ite)->_Array);
 	}
 
 	// Free a vector
@@ -112,9 +113,9 @@ public:
 		while (ite!=_ArrayList.end())
 		{
 			// Find one ?
-			if (&ite->get()->_Array==ptr)
+			if (&((*ite)->_Array)==ptr)
 			{
-				ite->get()->_Allocated=false;
+				(*ite)->_Allocated=false;
 				return;
 			}
 			ite++;
@@ -126,7 +127,7 @@ public:
 
 private:
 	// Typedef 
-typedef std::list< std::auto_ptr<CArrayElement<T> > > ListArray;
+typedef std::list< NLMISC::CSmartPtr<CArrayElement<T> > > ListArray;
 
 	uint										_DefaultSize;
 	uint										_BlockAllocated;

@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.cpp
  * <File description>
  *
- * $Id: nel_patch_mesh.cpp,v 1.9 2002/08/21 13:38:05 corvazier Exp $
+ * $Id: nel_patch_mesh.cpp,v 1.10 2002/08/23 15:41:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2428,6 +2428,9 @@ void RPatchMesh::BuildMesh(TimeValue t, PatchMesh& patch, Mesh *pMesh)
 			{
 				if (pChannelBit[nChannel])
 				{
+					// Activate this channel (mandatory for Max 4.2)
+					pMesh->setMapSupport(nChannel, TRUE);
+
 					if (rTess.KeepMapping||!bTextured||(nChannel!=1))
 					{
 						// Number of vertex
@@ -2677,10 +2680,11 @@ void RPatchMesh::BuildMesh(TimeValue t, PatchMesh& patch, Mesh *pMesh)
 								{
 									if (pChannelBit[nChannel])
 									{
-										TVFace *pTvP=pMesh->mapFaces(nChannel)+f;
+										TVFace *pTvP=pMesh->mapFaces(nChannel);
 										nlassert (pTvP);
 										if (pTvP)
 										{
+											pTvP+=f;
 											if (rTess.KeepMapping||!bTextured||(nChannel!=1))
 											{
 												pTvP->t[0]=offset+x;

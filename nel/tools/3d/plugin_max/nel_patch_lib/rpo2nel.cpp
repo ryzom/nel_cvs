@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.20 2002/08/21 13:38:06 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.21 2002/08/23 15:41:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -493,7 +493,7 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZo
 				}
 			}
 #else // (MAX_RELEASE < 4000)
-			if (edge.patches[1]>=0)
+			if (edge.patches.Count()>1)
 			{		
 				patchinfo[i].BindEdges[e].NPatchs=1;
 				// 'coz i don't know wether edge.patch1 or edge.patch2 is

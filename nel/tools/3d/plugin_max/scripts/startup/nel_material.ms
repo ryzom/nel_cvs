@@ -111,19 +111,19 @@ plugin textureMap NelBitmapTexture
     rollout AdditionnalBitmaps "Additionnal bitmaps" rolledUp:false
     (
 		edittext 	  cBitmap1FileName "ID 1:" width:230 across:3
-		button 		  browse1 "Get" align:left across:2 offset:[100, 0]
+		button 		  browse1 "Get" align:#left across:2 offset:[100, 0]
 		button        view1   "View" offset:[40, 0]
 		
 		edittext 	  cBitmap2FileName "ID 2:" width:230 across:3
-		button 		  browse2 "Get" align:left across:2 offset:[100, 0]
+		button 		  browse2 "Get" align:#left across:2 offset:[100, 0]
 		button        view2   "View" offset:[40, 0]
 		
 		edittext 	  cBitmap3FileName "ID 3:" width:230 across:3
-		button 		  browse3 "Get" align:left across:2 offset:[100, 0]
+		button 		  browse3 "Get" align:#left across:2 offset:[100, 0]
 		button        view3   "View" offset:[40, 0]
 		
 		edittext 	  cBitmap4FileName "ID 4:" width:230 across:3
-		button 		  browse4 "Get" align:left across:2 offset:[100, 0]
+		button 		  browse4 "Get" align:#left across:2 offset:[100, 0]
 		button        view4   "View" offset:[40, 0]
 
 						

@@ -1,7 +1,7 @@
 /** \file i_xml.h
  * Input xml stream
  *
- * $Id: i_xml.h,v 1.6 2003/03/10 18:13:33 corvazier Exp $
+ * $Id: i_xml.h,v 1.7 2003/03/24 18:08:20 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -60,23 +60,29 @@ struct EXmlParsingError : public EStream
 		CIFile file;
 
 		// open the file
-		file.open ("input.xml");
-
-		// XMl stream
-		CIXml input;
-
-		// Init, read all the input file...
-		if (input.init (file))
+		if (file.open ("input.xml"))
 		{
-			// Serial the class
-			myClass.serial (input);
-		}
+			// XMl stream
+			CIXml input;
 
-		// Close the file
-		file.close ();
+			// Init, read all the input file...
+			if (input.init (file))
+			{
+				// Serial the class
+				myClass.serial (input);
+			}
+
+			// Close the file
+			file.close ();
+		}
+		else
+		{
+			// File not found
+		}
 	}
 	catch (Exception &e)
 	{
+		// Something wrong appends
 	}
  \encode
  * \author Cyril 'Hulud' Corvazier

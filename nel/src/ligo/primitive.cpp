@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.36 2004/08/31 17:39:47 boucher Exp $
+ * $Id: primitive.cpp,v 1.37 2004/09/07 15:02:18 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1858,6 +1858,15 @@ bool IPrimitive::getChildId (uint &childId, const IPrimitive *child) const
 uint IPrimitive::getNumProperty () const 
 {
 	return _Properties.size ();
+}
+
+// ***************************************************************************
+
+std::string		IPrimitive::getName() const
+{
+	std::string	ret;
+	getPropertyByName("name", ret);
+	return ret;
 }
 
 // ***************************************************************************

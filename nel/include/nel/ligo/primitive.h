@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.30 2004/08/31 17:40:28 boucher Exp $
+ * $Id: primitive.h,v 1.31 2004/09/07 15:02:37 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -360,6 +360,9 @@ public:
 
 	// used for fast binary save/load (exploitation mode)
 	void serial(NLMISC::IStream &f);	
+
+	// shortcut to getPropertyByName("name", ret); return ret;
+	std::string					getName() const;
 
 private:
 

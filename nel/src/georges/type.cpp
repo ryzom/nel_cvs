@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.15 2002/12/02 13:47:57 brigand Exp $
+ * $Id: type.cpp,v 1.16 2002/12/04 14:22:59 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 
 #include "georges/form.h"
 #include "georges/form_elm.h"
-#include "georges\form_loader.h"
+#include "georges/form_loader.h"
 
 #include "type.h"
 

@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.25 2001/07/25 13:05:17 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.26 2001/08/07 14:10:26 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1008,9 +1008,10 @@ void CPSLocatedBindable::notifyTargetRemoved(CPSLocated *ptr)
 
 void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(2) ;
+	sint ver = f.serialVersion(3) ;
 	f.serialPtr(_Owner) ;
 	if (ver > 1) f.serialEnum(_LOD) ;
+	if (ver > 2) f.serial(_Name);
 }
 
 void CPSLocatedBindable::displayIcon2d(const CVector tab[], uint nbSegs, float scale)

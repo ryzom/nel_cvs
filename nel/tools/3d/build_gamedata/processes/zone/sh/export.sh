@@ -39,9 +39,44 @@ for i in $zone_source_directories ; do
 	cat $max_directory/log.log >> log.log
 done
 
+# ****************************
 # Try to copy ligo zone if any
+# ****************************
 
-cp -u ../ligo/output/*.zone ./zone_exported
+dir_current=`pwd`
+cd ../ligo/output
+list_zone=`ls -1 *.zone`
+for filename in $list_zone ; do
+	echo "Checking $filename for update"
+	if test -e ../../zone/zone_exported/$filename ; then
+		must_update=`diff --binary -q $filename ../../zone/zone_exported/$filename` ;
+	else
+		must_update=YES ;
+	fi
+	
+	if test -n "$must_update" ; then
+		echo "   Updating"
+		cp -u $filename ../../zone/zone_exported/$filename ;
+	fi
+done
+cd $dir_current
+
+# delete files only present in the zone_exported directory
+
+cd ./zone_exported
+list_zone=`ls -1 *.zone`
+for filename in $list_zone ; do
+	if test -e ../../ligo/output/$filename ; then
+		must_update=NO ;
+	else
+		echo "Removing $filename"
+		rm $filename ;
+	fi
+done
+cd ..
+
+# ****************************
+
 
 
 #copy each water map before lightmapping

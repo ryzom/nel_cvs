@@ -263,7 +263,7 @@ namespace NLAILOGIC
 					NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *) param->getFront();
 					param->popFront();
 #ifdef NL_DEBUG
-				const char *dbg_name = name->getStr().getString();
+					const char *dbg_name = name->getStr().getString();
 #endif
 					// If the constructor() function is explicitely called and the object has already been initialised
 					if ( _Name )
@@ -275,11 +275,10 @@ namespace NLAILOGIC
 					while ( param->size() )
 					{
 						_Args.push_back( (NLAIAGENT::IObjectIA *) param->getFront()->clone() );
-//						param->getFront()->incRef();
 						param->popFront();
 					}
 					return IObjectIA::CProcessResult();		
-				}
+				} 
 				break;
 			
 			case 1:

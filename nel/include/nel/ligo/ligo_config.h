@@ -1,7 +1,7 @@
 /** \file ligo_config.h
  * Ligo config file 
  *
- * $Id: ligo_config.h,v 1.1 2003/08/01 13:11:23 corvazier Exp $
+ * $Id: ligo_config.h,v 1.2 2003/11/07 15:50:19 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "primitive_class.h"
+#include "primitive_configuration.h"
 
 #define DEFAULT_PRIMITIVE_COLOR (CRGBA (128, 0, 0, 128))
 
@@ -107,6 +108,12 @@ public:
 	// Acces to the config string
 	const std::vector<std::string> &getContextString () const;
 
+	// Access the primitive configuration
+	const std::vector<CPrimitiveConfigurations> &getPrimitiveConfiguration() const
+	{
+		return _PrimitiveConfigurations;
+	}
+
 private:
 
 	// Init primitive class manager
@@ -120,6 +127,9 @@ private:
 
 	// The file context look up
 	std::map<std::string, std::string>	_ContextFilesLookup;
+
+	// The primitive configurations
+	std::vector<CPrimitiveConfigurations>	_PrimitiveConfigurations;
 };
 
 }

@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.7 2003/08/29 16:29:08 lecroart Exp $
+ * $Id: ligo_config.cpp,v 1.8 2003/11/07 15:50:20 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -60,11 +60,12 @@ bool CLigoConfig::read (const char *fileName)
 	// Clear the previous classes
 	_Contexts.clear();
 	_PrimitiveClasses.clear();
+	_PrimitiveConfigurations.clear();
 
 	// Read the primitive class name
 	if (!PrimitiveClassFilename.empty())
 	{
-		readPrimitiveClass (PrimitiveClassFilename.c_str());
+		return readPrimitiveClass (PrimitiveClassFilename.c_str());
 	}
 	return true;
 }
@@ -126,22 +127,44 @@ bool CLigoConfig::readPrimitiveClass (const char *_fileName)
 							return false;
 					}
 					while (primitive = CIXml::getNextChildNode (primitive, "PRIMITIVE"));
-					
-					// Add the context strings
-					{
-						set<string>::iterator ite = contextStrings.begin ();
-						while (ite != contextStrings.end ())
-						{
-							if (*ite != "default")
-								_Contexts.push_back (*ite);
-							ite++;
-						}
-						_Contexts.push_back ("default");
-					}
-
-					// Ok
-					return true;
 				}
+					
+				// Add the context strings
+				{
+					set<string>::iterator ite = contextStrings.begin ();
+					while (ite != contextStrings.end ())
+					{
+						if (*ite != "default")
+							_Contexts.push_back (*ite);
+						ite++;
+					}
+					_Contexts.push_back ("default");
+				}
+
+				// Get the first primitive configuration
+				_PrimitiveConfigurations.reserve (CIXml::countChildren (root, "CONFIGURATION"));
+				xmlNodePtr configuration = CIXml::getFirstChildNode (root, "CONFIGURATION");
+				if (configuration)
+				{
+					do
+					{
+						// Get the configuration name
+						std::string name;
+						if (getPropertyString (name, filename.c_str(), configuration, "NAME"))
+						{
+							// Add the configuration
+							_PrimitiveConfigurations.resize (_PrimitiveConfigurations.size()+1);
+							if (!_PrimitiveConfigurations.back().read (configuration, filename.c_str(), name.c_str (), *this))
+								return false;
+						}
+						else
+							return false;
+					}
+					while (configuration = CIXml::getNextChildNode (configuration, "CONFIGURATION"));
+				}
+
+				// Ok
+				return true;
 			}
 			else
 			{

@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.5 2003/11/04 14:55:50 corvazier Exp $
+ * $Id: primitive_class.cpp,v 1.6 2003/11/07 15:50:20 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -84,6 +84,37 @@ bool ReadBool (const char *propName, bool &result, xmlNodePtr xmlNode, const cha
 		return true;
 	}
 	return false;
+}
+
+// ***************************************************************************
+
+bool ReadColor (CRGBA &color, xmlNodePtr node)
+{
+	// Read the color
+	float r = DEFAULT_PRIMITIVE_COLOR.R;
+	float g = DEFAULT_PRIMITIVE_COLOR.G;
+	float b = DEFAULT_PRIMITIVE_COLOR.B;
+	float a = DEFAULT_PRIMITIVE_COLOR.A;
+
+	// Read the value
+	if (!ReadFloat ("R", r, node))
+		return false;
+	if (!ReadFloat ("G", g, node))
+		return false;
+	if (!ReadFloat ("B", b, node))
+		return false;
+	if (!ReadFloat ("A", a, node))
+		a = 255;
+
+	// Clamp
+	clamp (r, 0.f, 255.f);
+	clamp (g, 0.f, 255.f);
+	clamp (b, 0.f, 255.f);
+	clamp (a, 0.f, 255.f);
+
+	// Set
+	color.set((uint8)r, (uint8)g, (uint8)b, (uint8)a);
+	return true;
 }
 
 // ***************************************************************************
@@ -187,28 +218,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 		}
 
 		// Read the color
-		float r = DEFAULT_PRIMITIVE_COLOR.R;
-		float g = DEFAULT_PRIMITIVE_COLOR.G;
-		float b = DEFAULT_PRIMITIVE_COLOR.B;
-		float a = DEFAULT_PRIMITIVE_COLOR.A;
-
-		// Read the value
-		ReadFloat ("R", r, primitiveNode);
-		ReadFloat ("G", g, primitiveNode);
-		ReadFloat ("B", b, primitiveNode);
-		ReadFloat ("A", a, primitiveNode);
-
-		// Clamp
-		clamp (r, 0.f, 255.f);
-		clamp (g, 0.f, 255.f);
-		clamp (b, 0.f, 255.f);
-		clamp (a, 0.f, 255.f);
-
-		// Set
-		Color.R = (uint8)r;
-		Color.G = (uint8)g;
-		Color.B = (uint8)b;
-		Color.A = (uint8)a;
+		ReadColor (Color, primitiveNode);
 
 		// Autoinit
 		AutoInit = false;

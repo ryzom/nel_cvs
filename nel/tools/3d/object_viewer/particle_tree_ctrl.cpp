@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.13 2001/07/04 17:16:11 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.14 2001/07/12 16:04:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "particle_tree_ctrl.h"
 #include "located_bindable_dialog.h"
 #include "emitter_dlg.h"
+#include "particle_system_edit.h"
 
 #include "start_stop_particle_system.h"
 
@@ -318,7 +319,9 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 		break ;
 		case CNodeType::particleSystem:
 		{
-			_ParticleDlg->setRightPane(NULL) ;
+			CParticleSystemEdit *pse = new CParticleSystemEdit(nt->PS) ;
+			pse->init(_ParticleDlg) ;
+			_ParticleDlg->setRightPane(pse) ;
 			if (_LastClickedPS)
 			{
 				_LastClickedPS->setCurrentEditedElement(NULL) ;
@@ -394,6 +397,13 @@ void CParticleTreeCtrl::OnRButtonDown(UINT nFlags, CPoint point)
 			break ;
 			case CNodeType::locatedBindable:
 				menu.LoadMenu(IDR_LOCATED_BINDABLE_MENU) ;		 				
+				menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD1N2, MF_UNCHECKED | MF_BYCOMMAND) ;
+				menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD1, MF_UNCHECKED | MF_BYCOMMAND) ;
+				menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD2, MF_UNCHECKED | MF_BYCOMMAND) ;
+				// check the menu to tell which lod is used for this located bindable
+				if (nt->Bind->getLOD() == NL3D::PSLod1n2) menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD1N2, MF_CHECKED | MF_BYCOMMAND) ;
+				if (nt->Bind->getLOD() == NL3D::PSLod1) menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD1, MF_CHECKED | MF_BYCOMMAND) ;
+				if (nt->Bind->getLOD() == NL3D::PSLod2) menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD2, MF_CHECKED | MF_BYCOMMAND) ;
 			break ;
 			case CNodeType::particleSystem:
 				 menu.LoadMenu(IDR_PARTICLE_SYSTEM_MENU) ;	
@@ -547,7 +557,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			// , as they won't need to be restored when the stop button will be pressed
 			_ParticleDlg->StartStopDlg->removeLocated(loc) ;
 
-
+			_ParticleDlg->getCurrPSModel()->touchTransparencyState() ;
+			
 
 			return TRUE ;
 			
@@ -579,7 +590,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			_ParticleDlg->setRightPane(NULL) ;
 			DeleteItem(GetSelectedItem()) ;			
 			
-
+			_ParticleDlg->getCurrPSModel()->touchTransparencyState() ;
+			
 			
 			return TRUE ;			
 		}
@@ -587,9 +599,12 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 		case IDM_DELETE_LOCATED_INSTANCE:
 		{
-			nlassert(nt->Type == CNodeType::locatedInstance) ;
-			nt->Loc->deleteElement(nt->LocatedInstanceIndex) ;						
+			nlassert(nt->Type == CNodeType::locatedInstance) ;		
+			DeleteItem(GetSelectedItem()) ;			
+			_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt)) ;			
 			suppressLocatedInstanceNbItem(0) ;			
+			nt->Loc->deleteElement(nt->LocatedInstanceIndex) ;					
+			delete nt ;
 			rebuildLocatedInstance() ;			
 		}
 		break; 
@@ -616,6 +631,23 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			Invalidate() ;
 		}
 		break ;
+
+		////////////
+		// LOD OP //
+		////////////
+		case IDM_LB_LOD1N2:
+			nlassert(nt->Type = CNodeType::locatedBindable) ;
+			nt->Bind->setLOD(NL3D::PSLod1n2) ;
+		break ;
+		case IDM_LB_LOD1:
+			nlassert(nt->Type = CNodeType::locatedBindable) ;
+			nt->Bind->setLOD(NL3D::PSLod1) ;
+		break ;
+		case IDM_LB_LOD2:
+			nlassert(nt->Type = CNodeType::locatedBindable) ;
+			nt->Bind->setLOD(NL3D::PSLod2) ;
+		break ;
+
 
 		////////////////////////
 		// PARTICLE SYSTEM OP //
@@ -646,6 +678,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			_NodeTypes.push_back(newNt) ;
 			// insert item in tree
 			InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, name.c_str(), 6, 6, 0, 0, (LPARAM) newNt, GetSelectedItem(), TVI_LAST) ;
+			_ParticleDlg->getCurrPSModel()->touchTransparencyState() ;			
 			Invalidate() ;
 		}
 		break ;
@@ -801,6 +834,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 
 		InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, toCreate->getName().c_str(), toCreate->getType(), toCreate->getType(), 0, 0, (LPARAM) newNt, GetSelectedItem(), lastSon) ;
+
+		_ParticleDlg->getCurrPSModel()->touchTransparencyState() ;		
 		Invalidate() ;
 	}
 

@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Little easy displayers implementation
  *
- * $Id: displayer.h,v 1.6 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: displayer.h,v 1.7 2001/03/07 14:53:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,9 @@
 namespace NLMISC
 {
 
+class CMutex;
+
+
 /**
  * Displayer interface. Used to specialize a displayer to display a string.
  * \ref log_howto
@@ -45,15 +48,18 @@ class IDisplayer
 public:
 
 	/// Constructor
-	IDisplayer() {}
+	IDisplayer();
 
 	/// Destructor
-	virtual ~IDisplayer() {}
+	virtual ~IDisplayer();
 
 	/// Display the string where it does.
-	virtual void display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message) = 0;
+	void display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
 
 protected:
+
+	/// Method to implement in the deriver
+	virtual void doDisplay(time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message) = 0;
 
 	static const char *logTypeToString (CLog::TLogType logType, bool longFormat = false);
 
@@ -68,6 +74,10 @@ protected:
 
 	// Return the header string with date (for the first line of the log)
 	static const char *HeaderString ();
+
+private:
+
+	CMutex	*_Mutex;
 };
 
 
@@ -81,10 +91,10 @@ protected:
  */
 class CStdDisplayer : virtual public IDisplayer
 {
-public:
+protected:
 
 	/// Display the string to stdout and OutputDebugString on Windows
-	virtual void display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
+	virtual void doDisplay (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
 };
 
 
@@ -102,8 +112,9 @@ public:
 	/// Constructor
 	CFileDisplayer(const std::string& fileName, bool eraseLastLog = false);
 
+protected:
 	/// Put the string into the file.
-    virtual void display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
+    virtual void doDisplay (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
 
 private:
 	std::string _FileName;
@@ -125,8 +136,9 @@ public:
 	/// Constructor
 	CMsgBoxDisplayer() {}
 
+protected:
 	/// Put the string into the file.
-    virtual void display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
+    virtual void doDisplay (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
 };
 
 

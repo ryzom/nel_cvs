@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.9 2001/02/14 18:35:20 lecroart Exp $
+ * $Id: displayer.cpp,v 1.10 2001/03/07 14:53:57 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "nel/misc/common.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/path.h"
+#include "nel/misc/mutex.h"
+
 
 #ifdef NL_OS_WINDOWS
 // these defines is for IsDebuggerPresent(). it'll not compile on windows 95
@@ -91,9 +93,34 @@ const char *IDisplayer::HeaderString ()
 }
 
 
+IDisplayer::IDisplayer()
+{
+	_Mutex = new CMutex;
+}
+
+IDisplayer::~IDisplayer()
+{
+	delete _Mutex;
+}
+
+/*
+ * Display the string where it does.
+ */
+void IDisplayer::display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message)
+{
+	_Mutex->enter();
+	try
+	{
+		doDisplay( date, logType, processName, fileName, line, message );
+	}
+	catch ( ... )
+	{}
+	_Mutex->leave();
+}
+
 
 // Log format : "<LogType> <FileName> <Line>: <Msg>"
-void CStdDisplayer::display (time_t date, CLog::TLogType logType, const string &processName, const char *filename, sint line, const char *message)
+void CStdDisplayer::doDisplay (time_t date, CLog::TLogType logType, const string &processName, const char *filename, sint line, const char *message)
 {
 	bool needSpace = false;
 	stringstream ss;
@@ -148,7 +175,7 @@ CFileDisplayer::CFileDisplayer(const std::string& filename, bool eraseLastLog) :
 
 
 // Log format: "2000/01/15 12:05:30 <LogType>: <Msg>"
-void CFileDisplayer::display (time_t date, CLog::TLogType logType, const string &processName, const char *filename, sint line, const char *message)
+void CFileDisplayer::doDisplay (time_t date, CLog::TLogType logType, const string &processName, const char *filename, sint line, const char *message)
 {
 	bool needSpace = false;
 	stringstream ss;
@@ -191,7 +218,7 @@ void CFileDisplayer::display (time_t date, CLog::TLogType logType, const string 
 // Log format in clipboard: "2000/01/15 12:05:30 <LogType> <ProcessName> <FileName> <Line>: <Msg>"
 // Log format on the screen: in debug   "<ProcessName> <FileName> <Line>: <Msg>"
 //                           in release "<Msg>"
-void CMsgBoxDisplayer::display (time_t date, CLog::TLogType logType, const string &processName, const char *filename, sint line, const char *message)
+void CMsgBoxDisplayer::doDisplay (time_t date, CLog::TLogType logType, const string &processName, const char *filename, sint line, const char *message)
 {
 #ifdef NL_OS_WINDOWS
 

@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.6 2001/05/30 10:02:38 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.7 2001/05/31 12:16:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/3d/primitive_block.h"
 #include "nel/3d/material.h"
 #include "nel/3d/ps_util.h"
+#include "nel/3d/dru.h"
 #include "nel/misc/plane.h"
 
 #include <math.h>
@@ -124,37 +125,40 @@ CMatrix CPSZonePlane::buildBasis(uint32 index) const
 void CPSZonePlane::show(CAnimationTime)
 {
 	const float planeSize = 2.0f ;
-	CVertexBuffer vb ;
-	CMaterial mat ; 
-	CPrimitiveBlock pb ;
-	
-    vb.setVertexFormat(IDRV_VF_XYZ) ;
-    vb.setNumVertices(8) ;
-
-	vb.setVertexCoord(0, CVector(-planeSize, -planeSize, 0)) ;
-	vb.setVertexCoord(1, CVector(planeSize, -planeSize, 0)) ;
-	vb.setVertexCoord(2, CVector(planeSize, planeSize, 0)) ;
-	vb.setVertexCoord(3, CVector(-planeSize, planeSize, 0)) ;
-	vb.setVertexCoord(4, CVector(0, 0, 0)) ;
-	vb.setVertexCoord(5, CVector(0, 0, planeSize)) ;
-
-	pb.reserveLine(6) ;
-
-	pb.addLine(0, 1) ;
-	pb.addLine(1, 2) ;
-	pb.addLine(2, 3) ;
-	pb.addLine(3, 0) ;
-	pb.addLine(4, 5) ;
-
 	setupDriverModelMatrix() ;
 
 	IDriver *driver = getDriver() ;
-	uint32 k  = 0 ;
+	uint k  = 0 ;
+
+	setupDriverModelMatrix() ;
+
 	for (TPSAttribVector::const_iterator it = _Owner->getPos().begin() ; it != _Owner->getPos().end() ; ++it, ++k)
 	{	
-		driver->setupModelMatrix(getLocatedMat() * buildBasis(k)) ;
-		driver->activeVertexBuffer(vb) ;
-		driver->render(pb, mat) ;	
+		CMatrix mat = buildBasis(k) ;
+
+		CPSUtil::displayBasis(getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;
+
+
+		setupDriverModelMatrix() ;
+	
+		CDRU::drawLine(*it + (planeSize  + 3) * mat.getI() + planeSize * mat.getJ() 
+						, *it - (planeSize + 3) * mat.getI() + planeSize * mat.getJ()
+						, CRGBA::White
+						, *driver) ;
+
+		CDRU::drawLine(*it + (planeSize  + 3) * mat.getI() - planeSize * mat.getJ() 
+						, *it - (planeSize + 3) * mat.getI() - planeSize * mat.getJ()
+						, CRGBA::White
+						, *driver) ;
+
+		CDRU::drawLine(*it + planeSize  * mat.getI() + (planeSize + 3) * mat.getJ() 
+						, *it + planeSize * mat.getI() - (planeSize + 3) * mat.getJ()
+						, CRGBA::White
+						, *driver) ;
+		CDRU::drawLine(*it - planeSize  * mat.getI() + (planeSize + 3) * mat.getJ() 
+						, *it - planeSize * mat.getI() - (planeSize + 3) * mat.getJ()
+						, CRGBA::White
+						, *driver) ;
 	}
 	
 
@@ -367,7 +371,7 @@ void CPSZoneSphere::performMotion(CAnimationTime ellapsedTime)
 
 						const float invA = 1.f / a ;
 
-						const float r1 = .5f * (-b - 2.f * d) * a
+						const float r1 = .5f * (-b + 2.f * d) * a
 									, r2 = .5f * (-b - 2.f * d) * a ;
 
 						const float  r = std::min(r1, r2) ;
@@ -572,6 +576,10 @@ void CPSZoneDisc::show(CAnimationTime ellapsedTime)
 	{	
 		mat = CPSUtil::buildSchmidtBasis(*normalIt) ;
 		CPSUtil::displayDisc(*getDriver(), radiusIt->R, *posIt, mat) ;
+
+		mat.setPos(*posIt) ;
+		CPSUtil::displayBasis(getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;				
+		setupDriverModelMatrix() ;			
 	}	
 }
 	
@@ -931,12 +939,12 @@ void CPSZoneCylinder::performMotion(CAnimationTime ellapsedTime)
 				{
 					dest = pos + ellapsedTime *  speed ;
 					destTPos = dest - center ;
-					destProjectedPos = (1.f / dimIt->x) * (I * tPos) * I + (1.f / dimIt->y)  * (J * tPos) * J ;
+					destProjectedPos = (1.f / dimIt->x) * (I * destTPos) * I + (1.f / dimIt->y)  * (J * destTPos) * J ;
 
 					// test wether the new position is inside the cylinder
 
 					
-					if (!
+					if (
 						 (
 							((destTPos * K) < dimIt->z)
 							&& ((destTPos * K) > -dimIt->z)
@@ -986,9 +994,9 @@ void CPSZoneCylinder::performMotion(CAnimationTime ellapsedTime)
 						// coefficients of the equation : a * alpha ^ 2 + b * alpha + c = 0
 						const float a = (dx * dx) / (dimIt->x * dimIt->x)
 								  + (dy * dy) / (dimIt->y * dimIt->y) ;
-						const float b = 2.f * (ox * dx) / (dimIt->x * dimIt->x)
-								  + (oy * dy) / (dimIt->y * dimIt->y) ;
-						const float c = ox * ox + oy * oy - 1 ;
+						const float b = 2.f * ((ox * dx) / (dimIt->x * dimIt->x)
+								  + (oy * dy) / (dimIt->y * dimIt->y)) ;
+						const float c = (ox * ox) / (dimIt->x * dimIt->x) + (oy * oy) / (dimIt->y * dimIt->y)  - 1 ;
 
 						// discriminant
 						const float delta = b * b - 4.f * a * c ;
@@ -1000,16 +1008,20 @@ void CPSZoneCylinder::performMotion(CAnimationTime ellapsedTime)
 						else
 						{
 							const float deltaRoot = sqrtf(delta) ;
-							const float r1 = (- b - deltaRoot) / (2.f / a) ;
-							const float r2 = (- b - deltaRoot) / (2.f / a) ;
+							const float r1 = (- b + 2.f * deltaRoot) / (2.f * a) ;
+							const float r2 = (- b - 2.f * deltaRoot) / (2.f * a) ;
 
 							if (r1 < 0.f) alphaCyl = r2 ;
 								else if (r2 < 0.f) alphaCyl = r1 ;
 									else alphaCyl = r1 < r2 ? r1 : r2 ;
+
+									if (alphaCyl < 0.f) alphaCyl = 1.f ;
 						}
 
 
 						// now, choose the minimum positive dist
+
+					
 						
 						if (alphaTop < alphaBottom && alphaTop < alphaCyl)
 						{
@@ -1051,7 +1063,7 @@ void CPSZoneCylinder::performMotion(CAnimationTime ellapsedTime)
 								CVector normal = px / (dimIt->x * dimIt->x) * I + py / (dimIt->y * dimIt->y) * J ;
 								normal.normalize() ;
 
-								ci.newPos = pos + startEnd - PSCollideEpsilon * normal ;
+								ci.newPos = pos + startEnd + PSCollideEpsilon * normal ;
 								ci.dist = startEnd.norm() ;
 								ci.newSpeed = (-2.f * (speed * normal)) * normal + speed ;
 								ci.collisionZone = this ;
@@ -1079,7 +1091,14 @@ void CPSZoneCylinder::show(CAnimationTime ellapsedTime)
 	for ( ; posIt != endPosIt ; ++posIt, ++dimIt, ++basisIt) 
 	{			
 		mat.setRot(basisIt->X, basisIt->Y, basisIt->X ^ basisIt->Y) ;
+		mat.setPos(CVector::Null) ;
+		
 		CPSUtil::displayCylinder(*getDriver(), *posIt, mat, *dimIt, 32) ; 
+
+		mat.setPos(*posIt) ;
+		CPSUtil::displayBasis(getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;				
+		setupDriverModelMatrix() ;	
+	
 	}
 }
 	
@@ -1159,6 +1178,189 @@ void CPSZoneCylinder::deleteElement(uint32 index)
 	_Dim.remove(index) ;
 }
 
+
+//////////////////////////////////////////////
+//	implementation of CPSZoneRectangle      //
+//////////////////////////////////////////////
+
+
+
+
+
+void CPSZoneRectangle::performMotion(CAnimationTime ellapsedTime)
+{
+	// for each target, we must check wether they are going through the rectangle
+	// if so they must bounce
+	TPSAttribVector::const_iterator rectanglePosIt, rectanglePosEnd, targetPosIt, targetPosEnd ;
+	CPSAttrib<CPlaneBasis>::const_iterator basisIt = _Basis.begin() ;
+	TPSAttribFloat::const_iterator widthIt = _Width.begin(), heightIt = _Height.begin() ;
+
+	CVector dest ;
+	CPSCollisionInfo ci ;
+	CVector startEnd ;
+	uint32 k ;
+	const TPSAttribVector *speedAttr ;
+	float posSide, negSide ;
+	
+	// alpha is the ratio that gives the percent of endPos - startPos that hit the rectangle
+	float alpha ; 
+
+	CVector center ;
+
+	for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
+	{
+
+		speedAttr = &((*it)->getSpeed()) ;
+		// cycle through the rectangle
+
+		rectanglePosEnd = _Owner->getPos().end() ;
+		for (rectanglePosIt = _Owner->getPos().begin() ; rectanglePosIt != rectanglePosEnd
+				; ++rectanglePosIt, ++basisIt, ++widthIt, ++heightIt)
+		{
+			
+			// we must setup the rectangle in the good basis
+
+			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner) ;
+
+			
+
+			NLMISC::CPlane p ;
+			center = m * (*rectanglePosIt) ;
+
+			const CVector X = m.mulVector(basisIt->X) ;
+			const CVector Y = m.mulVector(basisIt->Y) ;
+
+			p.make(X ^ Y, center) ;		
+			
+			// deals with each particle
+
+
+			targetPosEnd = (*it)->getPos().end() ;
+			for (targetPosIt = (*it)->getPos().begin(), k = 0 ; targetPosIt != targetPosEnd ; ++targetPosIt, ++k)
+			{	
+				const CVector &pos = *targetPosIt ;
+				const CVector &speed = (*speedAttr)[k] ;
+				// check whether the located is going through the rectangle
+				dest = pos + ellapsedTime *  speed ;
+
+
+				posSide = p * pos ;
+				negSide = p * dest ;
+								
+				if ((posSide * negSide) < 0.0f)
+				{									
+						alpha = posSide / (posSide - negSide) ;
+						startEnd = alpha * (dest - pos) ;					
+						ci.dist = startEnd.norm() ;
+						// we translate the particle from an epsilon so that it won't get hooked to the rectangle
+						ci.newPos = pos + startEnd ;				
+					
+
+						
+
+						if ( fabs( (pos - center) * X ) < *widthIt && fabs( (pos - center) * Y ) < *heightIt) // check collision against rectangle
+						{
+							ci.newPos += PSCollideEpsilon * p.getNormal() ;
+							ci.newSpeed = _BounceFactor * (speed - 2.0f * (speed * p.getNormal()) * p.getNormal()) ;						
+							ci.collisionZone = this ;						
+							(*it)->collisionUpdate(ci, k) ;
+						}
+					
+				}
+			}	
+		}
+	}
+}
+
+
+void CPSZoneRectangle::show(CAnimationTime ellapsedTime)
+{
+	nlassert(_Owner) ;
+	const uint size = _Owner->getSize() ;
+	if (!size) return ;
+	setupDriverModelMatrix() ;	
+	CMatrix mat ;
+	
+	for (uint k = 0 ; k < size ; ++k) 
+	{	
+		const CVector &I = _Basis[k].X ;
+		const CVector &J = _Basis[k].Y ;
+		mat.setRot(I, J , I ^J) ;
+		mat.setPos(_Owner->getPos()[k]) ;
+		CPSUtil::displayBasis(getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;				
+		setupDriverModelMatrix() ;	
+
+		const CVector &pos = _Owner->getPos()[k] ;
+		CPSUtil::display3DQuad(*getDriver(), pos + I * _Width[k] + J * _Height[k]
+										   , pos + I * _Width[k] - J * _Height[k]
+										   , pos - I * _Width[k] - J * _Height[k]
+										   , pos - I * _Width[k] + J * _Height[k]) ;
+	}
+}
+	
+void CPSZoneRectangle::applyMatrix(uint32 index, const CMatrix &m)
+{
+	nlassert(_Owner) ;
+
+	_Owner->getPos()[index] = m * _Owner->getPos()[index] ;
+	CVector w = _Width[index] * _Basis[index].X ;
+	_Width[index] = (m.mulVector(w)).norm() ;
+
+	CVector h = _Height[index] * _Basis[index].Y ;
+
+	_Height[index] = (m.mulVector(h)).norm() ;
+
+	_Basis[index].X = m.mulVector(_Basis[index].X) ;
+	_Basis[index].X.normalize() ;
+
+	_Basis[index].Y = m.mulVector(_Basis[index].Y) ;
+	_Basis[index].Y.normalize() ;
+}
+
+
+CMatrix CPSZoneRectangle::getMatrix(uint32 index) const
+{
+	nlassert(_Owner) ;
+	CMatrix m ;
+	CVector N = _Basis[index].X ^ _Basis[index].Y ;
+	CVector I = _Width[index] * _Basis[index].X ;
+	CVector J = _Height[index] * _Basis[index].Y ;
+	m.setRot(I, J, N) ;
+	m.setPos(_Owner->getPos()[index]) ;
+	return m ;
+}
+
+void CPSZoneRectangle::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialCheck((uint32) 'ZREC') ;
+	CPSZone::serial(f) ;
+	f.serialVersion(1) ;
+	f.serial(_Basis) ;	
+	f.serial(_Width) ;
+	f.serial(_Height) ;
+}
+
+
+void CPSZoneRectangle::resize(uint32 size)
+{
+	_Basis.resize(size) ;
+	_Width.resize(size) ;
+	_Height.resize(size) ;
+}
+
+void CPSZoneRectangle::newElement(void)
+{
+	_Basis.insert(CPlaneBasis(CVector::K)) ;
+	_Width.insert(1.f) ;
+	_Height.insert(1.f) ;
+}
+
+void CPSZoneRectangle::deleteElement(uint32 index)
+{
+	_Basis.remove(index) ;
+	_Width.remove(index) ;
+	_Height.remove(index) ;
+}
 
 
 

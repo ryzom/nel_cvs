@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.8 2001/05/30 10:01:21 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.9 2001/05/31 12:16:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -520,6 +520,8 @@ public:
 	virtual void setDir(const CVector &v) ;
 
 protected:
+
+
 	
 	// tangent to emission plane
 	CVector _EI ;

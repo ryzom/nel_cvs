@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.13 2001/05/30 10:04:15 vizerie Exp $
+ * $Id: ps_particle.h,v 1.14 2001/05/31 12:16:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1238,8 +1238,7 @@ protected:
 } ; 
 
 
-/** This class is for mesh that have very simple geometry. For now there must be only one material
- *  for now. The texture is taken from the ifrst material.
+/** This class is for mesh that have very simple geometry. The constraint is that they can only have one matrix block. 
  *  They got a hint for constant rotation scheme. With little meshs, this is the best to draw a maximum of them
  */
 
@@ -1247,15 +1246,15 @@ class CPSConstraintMesh : public  CPSParticle, public CPSSizedParticle
 				, public CPSRotated3DPlaneParticle
 {
 public:	
-	CPSConstraintMesh()
+	CPSConstraintMesh() : _ModelShape(NULL), _ModelVb(NULL), _ModelBank(NULL)
 	{		
 	}
 
-	/** construct the mesh by using the given CMeshBuild
-	 *  It can only have one material
-	 */
+	virtual ~CPSConstraintMesh() ;
 
-	void build(const CMesh::CMeshBuild &meshBuild) ;
+	/** construct the mesh by using the given mesh shape file	
+	 */
+	void build(const std::string meshFileName) ;
 
 	/** Tells that all meshs are turning in the same manner, and only have a rotationnal bias
 	 *  This is a lot faster then other method. Any previous set scheme for 3d rotation is kept.
@@ -1294,8 +1293,7 @@ public:
 		/// serialisation. Derivers must override this, and call their parent version
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
-	virtual ~CPSConstraintMesh() ;
-
+	
 	NLMISC_DECLARE_CLASS(CPSConstraintMesh) ;
 	
 
@@ -1319,15 +1317,29 @@ protected:
 	virtual void resize(uint32 size)  ;	
 	
 
-	// material
+	/// a rendering pass
+	struct RdrPass
+	{
+		CMaterial Mat ;
+		CPrimitiveBlock Pb ;
+	} ;
 
-	CMaterial _Mat ;
+	// name of the mesh shape  it was generated from
+	std::string _MeshShapeFileName ;
 
-	// the primitive block for the model mesh. It consists of triangles lists
-	CPrimitiveBlock _ModelPb ;
+	// the shape bank containing the shape
+	CShapeBank  *_ModelBank ;
 
-	//  the vertex buffer for the model mesh
-	CVertexBuffer _ModelVb ;
+	//  the shape we're using
+	IShape  *_ModelShape ;
+
+	typedef std::vector<RdrPass> TRdrPassVect ;
+	// the rendering passes
+	TRdrPassVect _RdrPasses ;
+
+	
+	//  the only vertex buffer for the model mesh 5if points the vb of the mesh used as a model)
+	const CVertexBuffer *_ModelVb ;
 
 
 	// the vertex buffer for pre-rotated meshs (it is computed before each new mesh is shown)
@@ -1335,14 +1347,16 @@ protected:
 	CVertexBuffer  _PreRotatedMeshVb ;
 
 
-	/** the vertex buffer for a batch of primitive
+	/** the vertex buffer for a batch of mesh
 	 *  If contains all vertices data, and only position and normal (when used)	 are uspdated
 	 *  By using datas from _PreRotatedMeshVb
 	 */
-
 	CVertexBuffer _MeshBatchVb ;
 
-	// the primitive block for a batch of meshs. It is only computed once
+
+	/** the primitive block for a batch of meshs. It is only computed once when build() is called.
+	 *  It contains duplication of the original mesh pb
+	 */
 	CPrimitiveBlock _MeshBatchPb ;
 
 
@@ -1372,8 +1386,12 @@ protected:
 	/// when pre-rotated mesh are used, this setup the vb and ib used for copy
 	void setupPreRotatedVb(sint vertexFlags) ;
 
-	// when a new model mesh is set, this setup the Vb and Pb used for drawing
-	void setupVbAndPb(sint vertexFlags) ;
+	// when a new model mesh is set, this setup the Vb used for drawing
+	void setupVb(sint vertexFlags) ;
+
+
+	// release the model shape (dtor, or before loading)
+	void clean(void) ;
 
 
 

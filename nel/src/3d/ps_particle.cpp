@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.13 2001/05/30 10:04:15 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.14 2001/05/31 12:16:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -3874,35 +3874,147 @@ CPSMesh::~CPSMesh()
 
 
 
-/** this is used to fin a vertex that was previously construct
- * if NULL is returned, then the vertex must be built again
- * This is slow, and thus not suited for large amount of vertices ...
- * \param v : pointer to the vertex to find
- * \param vSize : size of the vertex
- * \param vTab : pointer to a table of vertices
- * \param numVerts : the number of vertices to saerch in
- * \return -1 if not found, or an index to the vertex
+/** This duplicate a primitive block n time in the destination primitive block
+ *  This is used to draw several mesh at once
+ *  For each duplication, vertices indices are shifted from the given offset
  */
 
-static sint ConstraintMeshFindVert(const uint8 *v, uint vSize, const uint8 *vTab, uint numVerts)
+static void DuplicatePrimitiveBlock(const CPrimitiveBlock &srcBlock, CPrimitiveBlock &destBlock, uint nbReplicate, uint vertOffset)
 {
-	nlassert(v) ;
-	nlassert(vTab) ;
-	nlassert(vSize > 0) ;
-	const uint8 *currV = vTab ;
-	for (uint k = 0 ; k < numVerts ; ++k)
+	// this must be update each time a new primitive is added
+	
+	// loop counters, and index of the current primitive in the dest pb
+	uint k, l, index ;
+
+	// the current vertex offset.
+	uint currVertOffset ;
+
+
+	// duplicate triangles
+
+	uint numTri = srcBlock.getNumTri() ;
+	destBlock.reserveTri(numTri * nbReplicate) ;
+	
+	index = 0 ;
+	currVertOffset = 0 ;
+
+	const uint32 *triPtr = srcBlock.getTriPointer() ;
+	const uint32 *currTriPtr ; // current Tri
+	for (k = 0 ; k < nbReplicate ; ++k)
 	{
-		
-		if (memcmp((const char *)currV, (const char *) v, vSize) == 0)
+		currTriPtr = triPtr ;
+		for (l = 0 ; l < numTri ; ++l)
 		{
-			return (currV -  vTab) / vSize ; 
+			destBlock.setTri(index, currTriPtr[0], currTriPtr[1], currTriPtr[2]) ;
+			currTriPtr += 3 ;
+			++ index ;
 		}
-		currV += vSize ;
+		currVertOffset += vertOffset ;
 	}
-	return -1 ;
+
+
+	// duplicate quads
+
+	uint numQuad = srcBlock.getNumQuad() ;
+	destBlock.reserveQuad(numQuad * nbReplicate) ;
+	
+	index = 0 ;
+	currVertOffset = 0 ;
+
+	const uint32 *QuadPtr = srcBlock.getQuadPointer() ;
+	const uint32 *currQuadPtr ; // current Quad
+	for (k = 0 ; k < nbReplicate ; ++k)
+	{
+		currQuadPtr = QuadPtr ;
+		for (l = 0 ; l < numQuad ; ++l)
+		{
+			destBlock.setQuad(index, currQuadPtr[0], currQuadPtr[1], currQuadPtr[2], currQuadPtr[3]) ;
+			currQuadPtr += 4 ;
+			++ index ;
+		}
+		currVertOffset += vertOffset ;
+	}
+
+	// duplicate lines
+
+	uint numLine = srcBlock.getNumLine() ;
+	destBlock.reserveLine(numLine * nbReplicate) ;
+	
+	index = 0 ;
+	currVertOffset = 0 ;
+
+	const uint32 *LinePtr = srcBlock.getLinePointer() ;
+	const uint32 *currLinePtr ; // current Line
+	for (k = 0 ; k < nbReplicate ; ++k)
+	{
+		currLinePtr = LinePtr ;
+		for (l = 0 ; l < numLine ; ++l)
+		{
+			destBlock.setLine(index, currLinePtr[0], currLinePtr[1]) ;
+			currLinePtr += 4 ;
+			++ index ;
+		}
+		currVertOffset += vertOffset ;
+	}
+
+	// duplicate lines
+
+
+	// TODO quad / strips duplication : (unimplemented in primitive blocks for now)
+
 }
 
 
+
+void CPSConstraintMesh::build(const std::string meshFileName)
+{
+
+	nlassert(_Owner->getOwner()->getScene()) ;
+
+	CScene *scene = _Owner->getOwner()->getScene() ;
+
+	CShapeBank *sb = scene->getShapeBank() ;
+
+	IShape *is = sb->addRef(meshFileName) ;
+
+
+	nlassert(dynamic_cast<CMesh *>(is)) ;
+	const CMesh &m  = * (CMesh *) is ;
+
+
+
+	_MeshShapeFileName = meshFileName ;
+
+	// we don't support skinning, so there must be only one matrix block
+	// duplicate rendering pass
+
+	nlassert(m.getNbMatrixBlock() == 1) ;  // SKINNING UNSUPPORTED
+
+	_RdrPasses.resize(m.getNbRdrPass(0)) ;
+
+	const CVertexBuffer &srcVb = m.getVertexBuffer() ;
+
+	
+	for (uint k = 0 ; k < m.getNbRdrPass(0) ; ++k)
+	{
+		_RdrPasses[k].Mat = m.getMaterial(m.getRdrPassMaterial(0, k)) ;
+		DuplicatePrimitiveBlock(m.getRdrPassPrimitiveBlock(0, k), _RdrPasses[k].Pb, constraintMeshBufSize, srcVb.getNumVertices() ) ;		
+	}
+	
+
+	// make a reference to the original vbuffer
+
+	_ModelVb = &m.getVertexBuffer() ;
+
+	setupPreRotatedVb(_ModelVb->getVertexFormat()) ;
+
+
+	_ModelBank = sb ;
+	_ModelShape = is ;
+	
+}
+
+/*
 void CPSConstraintMesh::build(const CMesh::CMeshBuild &mb)
 {
 	nlassert(mb.VertexFlags & IDRV_VF_XYZ) ; // need the position at least
@@ -3922,12 +4034,12 @@ void CPSConstraintMesh::build(const CMesh::CMeshBuild &mb)
 
 
 	// now we create our version of the mesh	
-	_ModelVb.setVertexFormat(mb.VertexFlags) ;
-	_ModelVb.setNumVertices(mb.Vertices.size()) ; // we may need to enlarge this later....
+	_ModelVb->setVertexFormat(mb.VertexFlags) ;
+	_ModelVb->setNumVertices(mb.Vertices.size()) ; // we may need to enlarge this later....
 	_ModelPb.setNumTri(mb.Faces.size()) ;
 
 	// size of vertices
-	uint vSize = _ModelVb.getVertexSize() ;
+	uint vSize = _ModelVb->getVertexSize() ;
 
 	//  vertex used before being copied in the before (it is copied only if we can't find a similar vertex)
 	uint8 *myVert = new uint8[vSize] ;
@@ -3956,30 +4068,30 @@ void CPSConstraintMesh::build(const CMesh::CMeshBuild &mb)
 			{
 				if (mb.VertexFlags & IDRV_VF_UV[l])
 				{
-					*(CUV *) (myVert + _ModelVb.getTexCoordOff(l)) = mb.Faces[k].Corner[m].Uvs[l] ;
+					*(CUV *) (myVert + _ModelVb->getTexCoordOff(l)) = mb.Faces[k].Corner[m].Uvs[l] ;
 				}
 			}
 
 			// normal 
 			if (mb.VertexFlags & IDRV_VF_NORMAL)
 			{
-				*(CVector *) (myVert + _ModelVb.getNormalOff()) = mb.Faces[k].Corner[m].Normal ;
+				*(CVector *) (myVert + _ModelVb->getNormalOff()) = mb.Faces[k].Corner[m].Normal ;
 			}	
 
 			// color
 			if (mb.VertexFlags & IDRV_VF_COLOR)
 			{
-				*(CRGBA *) (myVert + _ModelVb.getColorOff()) = mb.Faces[k].Corner[m].Color ;
+				*(CRGBA *) (myVert + _ModelVb->getColorOff()) = mb.Faces[k].Corner[m].Color ;
 			}	
 
 			// specular
 			if (mb.VertexFlags & IDRV_VF_SPECULAR)
 			{
-				*(CRGBA *) (myVert + _ModelVb.getSpecularOff()) = mb.Faces[k].Corner[m].Specular ;
+				*(CRGBA *) (myVert + _ModelVb->getSpecularOff()) = mb.Faces[k].Corner[m].Specular ;
 			}	
 
 
-			sint currVertIndex = ConstraintMeshFindVert(myVert, vSize, (uint8 *) _ModelVb.getVertexCoordPointer(), numVertices) ;
+			sint currVertIndex = ConstraintMeshFindVert(myVert, vSize, (uint8 *) _ModelVb->getVertexCoordPointer(), numVertices) ;
 
 			if (currVertIndex != -1)
 			{
@@ -3987,8 +4099,8 @@ void CPSConstraintMesh::build(const CMesh::CMeshBuild &mb)
 			}
 			else
 			{				
-				_ModelVb.setNumVertices(numVertices + 1) ;
-				memcpy((uint8 *) _ModelVb.getVertexCoordPointer() + vSize * numVertices, myVert, vSize) ;
+				_ModelVb->setNumVertices(numVertices + 1) ;
+				memcpy((uint8 *) _ModelVb->getVertexCoordPointer() + vSize * numVertices, myVert, vSize) ;
 				vertIndex[m] = numVertices ;
 				++ numVertices ;
 			}
@@ -4008,18 +4120,21 @@ void CPSConstraintMesh::build(const CMesh::CMeshBuild &mb)
 	setupVbAndPb(mb.VertexFlags) ;
 	
 }
+*/
+
 
 void CPSConstraintMesh::setupPreRotatedVb(sint vertexFlags)
 {
-	nlassert(vertexFlags & IDRV_VF_XYZ) ; // need the position at least
+	nlassert(vertexFlags & IDRV_VF_XYZ) ;
+	// in the prerotated Vb, we only need the normal and the position...
 	if (_PrecompBasis.size())
 	{
 		// we need only the position and the normal (when present ...)
 		_PreRotatedMeshVb.setVertexFormat(vertexFlags & (IDRV_VF_NORMAL | IDRV_VF_XYZ)) ;
-		_PreRotatedMeshVb.setNumVertices(_ModelVb.getNumVertices() * _PrecompBasis.size() ) ;
+		_PreRotatedMeshVb.setNumVertices(_ModelVb->getNumVertices() * _PrecompBasis.size() ) ;
 
 
-		const uint vSize = _ModelVb.getVertexSize() ;
+		const uint vSize = _ModelVb->getVertexSize() ;
 
 		// duplicate position and normals
 		uint index = 0 ;
@@ -4027,17 +4142,17 @@ void CPSConstraintMesh::setupPreRotatedVb(sint vertexFlags)
 
 		for (uint k = 0 ; k < _PrecompBasis.size() ; ++k)
 		{
-			for (uint l = 0 ; l < _ModelVb.getNumVertices() ; ++l)
+			for (uint l = 0 ; l < _ModelVb->getNumVertices() ; ++l)
 			{
 				_PreRotatedMeshVb.setVertexCoord(index
-												 , *(CVector *) ((uint8 *) _ModelVb.getVertexCoordPointer() + l * vSize) 
+												 , *(CVector *) ((uint8 *) _ModelVb->getVertexCoordPointer() + l * vSize) 
 												) ;
 
 				// duplicate the normal if present
 				if (vertexFlags  & IDRV_VF_NORMAL)
 				{
 					_PreRotatedMeshVb.setNormalCoord(index
-													 , *(CVector *) ((uint8 *) _ModelVb.getNormalCoordPointer() + l * vSize)
+													 , *(CVector *) ((uint8 *) _ModelVb->getNormalCoordPointer() + l * vSize)
 													) ;	
 				}
 				++ index ;
@@ -4048,40 +4163,23 @@ void CPSConstraintMesh::setupPreRotatedVb(sint vertexFlags)
 }
 
 	
-void CPSConstraintMesh::setupVbAndPb(sint vertexFlags)
+void CPSConstraintMesh::setupVb(sint vertexFlags)
 {
 	nlassert(vertexFlags & IDRV_VF_XYZ) ; // need the position at least
 
 	_MeshBatchVb.setVertexFormat(vertexFlags) ;
-	_MeshBatchVb.setNumVertices(_ModelVb.getNumVertices() * constraintMeshBufSize ) ;
+	_MeshBatchVb.setNumVertices(_ModelVb->getNumVertices() * constraintMeshBufSize ) ;
+	
 
-	_MeshBatchPb.setNumTri(_ModelPb.getNumTri() * constraintMeshBufSize) ;
-
-	// setup the primitive block
-	uint currTriIndex = 0 ;
-
-	uint k ;
-
-	for (k = 0 ; k < constraintMeshBufSize ; ++k)
-	{
-		for (uint l = 0 ; l < _ModelPb.getNumTri() ; ++l)
-		{
-			
-			uint32 *currTri = _ModelPb.getTriPointer() + 3 * l ;
-			uint offset = k * _ModelVb.getNumVertices() ;
-			_MeshBatchPb.setTri( currTriIndex, offset + currTri[0], offset + currTri[1], offset + currTri[2] ) ;
-			++currTriIndex ;
-		}
-	}
 
 	// duplicate the model mesh vertices data (even position and normal, though they will be updated each time a mesh is drawn)
 
-	const uint mSize = _MeshBatchVb.getVertexSize() * _ModelVb.getNumVertices() ;
+	const uint mSize = _MeshBatchVb.getVertexSize() * _ModelVb->getNumVertices() ;
 
 
-	for (k = 0 ; k < constraintMeshBufSize ; ++k)
+	for (uint k = 0 ; k < constraintMeshBufSize ; ++k)	
 	{
-		memcpy((uint8 *) _MeshBatchVb.getVertexCoordPointer() + k * mSize, _ModelVb.getVertexCoordPointer(), mSize) ;
+		memcpy((uint8 *) _MeshBatchVb.getVertexCoordPointer() + k * mSize, _ModelVb->getVertexCoordPointer(), mSize) ;
 	}
 }
 
@@ -4121,9 +4219,10 @@ void CPSConstraintMesh::hintRotateTheSame(uint32 nbConfiguration
 	 *  If this was'nt done, setupPreRotatedVb will be called during the build call
 	 */
 
-	if (_ModelVb.getNumVertices())
+
+	if (_ModelVb)
 	{
-		setupPreRotatedVb(_ModelVb.getVertexFormat()) ;
+		setupPreRotatedVb(_ModelVb->getVertexFormat()) ;
 	}
 }
 
@@ -4146,13 +4245,81 @@ void CPSConstraintMesh::fillIndexesInPrecompBasis(void)
 /// serialisation. Derivers must override this, and call their parent version
 void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	f.serialVersion(1) ;
+	if (f.isReading())
+	{
+		clean() ;
+	}
+
+	CPSParticle::serial(f) ;
+	CPSSizedParticle::serialSizeScheme(f) ;
+	CPSRotated3DPlaneParticle::serialPlaneBasisScheme(f) ;
+
+	// prerotations ...
+
+	if (f.isReading())
+	{
+		uint32 nbConfigurations ;
+		f.serial(nbConfigurations) ;
+		if (nbConfigurations)
+		{
+			f.serial(_MinAngularVelocity, _MaxAngularVelocity) ;		
+		}
+		hintRotateTheSame(nbConfigurations, _MinAngularVelocity, _MaxAngularVelocity) ;	
+	}
+	else	
+	{				
+		uint32 nbConfigurations = _PrecompBasis.size() ;
+		f.serial(nbConfigurations) ;
+		if (nbConfigurations)
+		{
+			f.serial(_MinAngularVelocity, _MaxAngularVelocity) ;		
+		}
+	}
+
+	// saves the model file name, or an empty string if nothing has been set
 	
+	static std::string emptyStr("") ;
+
+	if (f.isReading())
+	{
+		f.serial(_MeshShapeFileName) ;
+		if (_MeshShapeFileName != emptyStr)
+		{
+			build(_MeshShapeFileName) ;
+		}		
+	}
+	else
+	{
+		if (!_ModelVb)
+		{
+			f.serial(emptyStr) ;
+		}
+		else
+		{
+			f.serial(_MeshShapeFileName) ;
+		}
+	}
 
 }
 
 CPSConstraintMesh::~CPSConstraintMesh() 
 {
+	clean() ;
+}
 
+void CPSConstraintMesh::clean(void)
+{
+	if (_ModelBank)
+	{
+		nlassert(_ModelShape) ;
+		_ModelBank->release(_ModelShape) ;
+		_ModelBank = NULL ;
+		_ModelShape = NULL ;
+		_ModelVb = NULL ;
+	}
+
+	_RdrPasses.clear() ; 
 }
 
 	
@@ -4163,7 +4330,7 @@ void CPSConstraintMesh::draw(void)
 	nlassert(_Owner) ;
 
 
-	nlassert(_ModelVb.getNumVertices()) ; // the build method should have been called !!
+	if (!_ModelVb) return ; // no mesh has been set for now
 
 	const uint32 size = _Owner->getSize() ;
 
@@ -4175,13 +4342,13 @@ void CPSConstraintMesh::draw(void)
 
 
 	// size for model vertices
-	const uint vSize = _ModelVb.getVertexSize() ;
+	const uint vSize = _ModelVb->getVertexSize() ;
 
 
 
-	const uint normalOff = _ModelVb.getVertexFormat() & IDRV_VF_NORMAL ? _ModelVb.getNormalOff() : 0 ;
+	const uint normalOff = _ModelVb->getVertexFormat() & IDRV_VF_NORMAL ? _ModelVb->getNormalOff() : 0 ;
 
-	const uint nbVerticesInSource = _ModelVb.getNumVertices() ;
+	const uint nbVerticesInSource = _ModelVb->getNumVertices() ;
 
 	IDriver *driver = getDriver() ;
 
@@ -4213,7 +4380,7 @@ void CPSConstraintMesh::draw(void)
 		const uint vpSize = _PreRotatedMeshVb.getVertexSize() ;
 
 		// size of a complete prerotated model
-		const uint prerotatedModelSize = vpSize * _ModelVb.getNumVertices() ;
+		const uint prerotatedModelSize = vpSize * _ModelVb->getNumVertices() ;
 
 		// offset of normals in vertices of the prerotated model
 		const uint pNormalOff = _PreRotatedMeshVb.getVertexFormat() & IDRV_VF_NORMAL ? _PreRotatedMeshVb.getNormalOff() : 0 ;
@@ -4238,12 +4405,12 @@ void CPSConstraintMesh::draw(void)
 			mat.identity() ;
 			mat.setRot(it->Basis.X, it->Basis.Y, it->Basis.X ^ it->Basis.Y) ;
 
-			currSrcVertex = (uint8 *) _ModelVb.getVertexCoordPointer() ;
+			currSrcVertex = (uint8 *) _ModelVb->getVertexCoordPointer() ;
 
 			k = nbVerticesInSource ;
 
 			// check wether we need to rotate normals as well...
-			if (_ModelVb.getVertexFormat() & IDRV_VF_NORMAL)
+			if (_ModelVb->getVertexFormat() & IDRV_VF_NORMAL)
 			{
 				do
 				{
@@ -4299,7 +4466,7 @@ void CPSConstraintMesh::draw(void)
 
 				// do we need a normal ?
 
-				if (_ModelVb.getVertexFormat() & IDRV_VF_NORMAL)
+				if (_ModelVb->getVertexFormat() & IDRV_VF_NORMAL)
 				{
 					// offset of normals in the prerotated mesh				
 					do
@@ -4335,10 +4502,20 @@ void CPSConstraintMesh::draw(void)
 			}
 			while (posIt != endPosIt) ;
 			
-			// render meshs
+			// render meshs : we process each rendering pass
 
-			_MeshBatchPb.setNumTri(_ModelPb.getNumTri() * toProcess) ;
-			driver->render(_MeshBatchPb, _Mat) ;
+			for (TRdrPassVect::iterator rdrPassIt = _RdrPasses.begin() 
+				  ; rdrPassIt != _RdrPasses.end() ; ++rdrPassIt)
+			{
+				// TODO : update this when new primitive will be added
+
+				rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.getNumTri() * toProcess) ;
+				rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.getNumQuad() * toProcess) ;
+				rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.getNumLine() * toProcess) ;
+
+				driver->render(rdrPassIt->Pb, rdrPassIt->Mat) ;
+
+			}
 
 			leftToDo -= toProcess ;
 
@@ -4398,7 +4575,7 @@ void CPSConstraintMesh::draw(void)
 			do
 			{
 	
-				currSrcVertex = (uint8 *) _ModelVb.getVertexCoordPointer() ;
+				currSrcVertex = (uint8 *) _ModelVb->getVertexCoordPointer() ;
 				k = nbVerticesInSource ;
 
 				
@@ -4406,7 +4583,7 @@ void CPSConstraintMesh::draw(void)
 
 				// do we need a normal ?
 
-				if (_ModelVb.getVertexFormat() & IDRV_VF_NORMAL)
+				if (_ModelVb->getVertexFormat() & IDRV_VF_NORMAL)
 				{
 					M.identity() ;
 					M.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y) ;
@@ -4453,8 +4630,20 @@ void CPSConstraintMesh::draw(void)
 			
 			// render meshs
 
-			_MeshBatchPb.setNumTri(_ModelPb.getNumTri() * toProcess) ;
-			driver->render(_MeshBatchPb, _Mat) ;
+			// render meshs : we process each rendering pass
+
+			for (TRdrPassVect::iterator rdrPassIt = _RdrPasses.begin() 
+				  ; rdrPassIt != _RdrPasses.end() ; ++rdrPassIt)
+			{
+				// TODO : update this when new primitive will be added
+
+				rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.getNumTri() * toProcess) ;
+				rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.getNumQuad() * toProcess) ;
+				rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.getNumLine() * toProcess) ;
+
+				driver->render(rdrPassIt->Pb, rdrPassIt->Mat) ;
+
+			}
 
 			leftToDo -= toProcess ;
 

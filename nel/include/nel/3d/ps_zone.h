@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.8 2001/05/30 10:02:38 vizerie Exp $
+ * $Id: ps_zone.h,v 1.9 2001/05/31 12:16:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -321,6 +321,58 @@ class CPSZoneCylinder : public CPSZone, public IPSMover
 		virtual void newElement(void) ;
 
 		virtual void deleteElement(uint32 index) ;
+} ;
+
+
+
+/**
+ *	The same as a plane, but with a rectangle. We don't encode the plane by its normal, however...
+ */ 
+
+class CPSZoneRectangle : public CPSZone, public IPSMover
+{
+	public:
+		virtual void performMotion(CAnimationTime ellapsedTime) ;
+		virtual void show(CAnimationTime ellapsedTime)  ;
+	
+
+		NLMISC_DECLARE_CLASS(CPSZoneRectangle) ;
+
+
+		// left multiply the current matrix by the given one. No valid index -> assert
+		virtual void applyMatrix(uint32 index, const CMatrix &m) ;
+		// return a matrix of the system. No valid index -> assert
+		virtual CMatrix getMatrix(uint32 index) const ;
+
+		// serialization
+		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+		// inherited from IPSMover
+		virtual bool supportUniformScaling(void) const { return true ; }
+
+		// inherited from IPSMover
+		virtual bool supportScaling(void) const { return true ; }
+
+	protected:
+
+		
+		CPSAttrib<CPlaneBasis> _Basis ;				
+
+		//  width
+		TPSAttribFloat _Width ;
+
+		//  Height
+		TPSAttribFloat _Height ;
+
+
+		CMatrix buildBasis(uint32 index) const ;
+
+		virtual void resize(uint32 size) ;
+
+		virtual void newElement(void) ;
+
+		virtual void deleteElement(uint32 index) ;
+
 } ;
 
  

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.11 2001/05/30 10:04:49 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.12 2001/05/31 12:16:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,8 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSZonePlane) ;
 		NLMISC_REGISTER_CLASS(CPSZoneSphere) ;
 		NLMISC_REGISTER_CLASS(CPSZoneDisc) ;
+		NLMISC_REGISTER_CLASS(CPSZoneRectangle) ;
+		NLMISC_REGISTER_CLASS(CPSZoneCylinder) ;
 		NLMISC_REGISTER_CLASS(CPSColorBlender) ;
 		NLMISC_REGISTER_CLASS(CPSColorBlenderExact) ;
 		NLMISC_REGISTER_CLASS(CPSColorGradient) ;
@@ -196,10 +198,11 @@ void CPSUtil::displayBBox(const NLMISC::CAABBox &box)
 
 
 
-void CPSUtil::displayBasis(const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm)
+void CPSUtil::displayBasis(const CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm)
 {
 	CMaterial material  ;
 	IDriver *driver = CNELU::Driver ;
+	driver->setupModelMatrix(modelMat) ;
 	uint32 vTab[] = { 1, 2, 4,
 						  4, 2, 3,
 						  1, 2, 0,
@@ -220,10 +223,12 @@ void CPSUtil::displayBasis(const NLMISC::CMatrix &m, float size, CFontGenerator 
 	vb.setVertexFormat(IDRV_VF_XYZ) ;
 	vb.setNumVertices(5) ;  // 4 for the basis, 5 for the cone for each axis
 	
-	vb.setVertexCoord(0, CVector(0, 0, 0) ) ;
-	vb.setVertexCoord(1, CVector(size, 0, 0) ) ;
-	vb.setVertexCoord(2, CVector(0, size, 0) ) ;
-	vb.setVertexCoord(3, CVector(0, 0, size) ) ;
+
+
+	vb.setVertexCoord(0, m * CVector::Null ) ;
+	vb.setVertexCoord(1, m * (size * CVector::I) ) ;
+	vb.setVertexCoord(2, m * (size * CVector::J) ) ;
+	vb.setVertexCoord(3, m * (size * CVector::K) ) ;
 
 	CPrimitiveBlock pb ;
 	pb.reserveLine(3) ;
@@ -231,7 +236,7 @@ void CPSUtil::displayBasis(const NLMISC::CMatrix &m, float size, CFontGenerator 
 	pb.addLine(0, 2) ;
 	pb.addLine(0, 3) ;
 
-	driver->setupModelMatrix(m) ;
+
 	driver->activeVertexBuffer(vb, 0, 4) ;
 	driver->render(pb, material) ;
 	
@@ -241,40 +246,40 @@ void CPSUtil::displayBasis(const NLMISC::CMatrix &m, float size, CFontGenerator 
 	
 	// draw the x cone
 	
-	vb.setVertexCoord(0, CVector(size + 3.0f * coneSize, 0, 0) ) ;
-	vb.setVertexCoord(1, CVector(size, -coneSize, coneSize) ) ;
-	vb.setVertexCoord(2, CVector(size, coneSize, coneSize) ) ;
-	vb.setVertexCoord(3, CVector(size, coneSize, -coneSize) ) ;
-	vb.setVertexCoord(4, CVector(size, -coneSize, -coneSize) ) ;
+	vb.setVertexCoord(0, m * CVector(size + 3.0f * coneSize, 0, 0) ) ;
+	vb.setVertexCoord(1, m * CVector(size, -coneSize, coneSize) ) ;
+	vb.setVertexCoord(2, m * CVector(size, coneSize, coneSize) ) ;
+	vb.setVertexCoord(3, m * CVector(size, coneSize, -coneSize) ) ;
+	vb.setVertexCoord(4, m * CVector(size, -coneSize, -coneSize) ) ;
 
 	driver->renderTriangles(material, vTab, 6) ;
 
 	// draw the z cone
 	
-	vb.setVertexCoord(0, CVector(0, 0, size + 3.0f * coneSize) ) ;
-	vb.setVertexCoord(1, CVector(-coneSize, -coneSize, size) ) ;
-	vb.setVertexCoord(2, CVector(coneSize, -coneSize, size) ) ;
-	vb.setVertexCoord(3, CVector(coneSize, coneSize, size) ) ;
-	vb.setVertexCoord(4, CVector(-coneSize, coneSize, size) ) ;
+	vb.setVertexCoord(0, m * CVector(0, 0, size + 3.0f * coneSize) ) ;
+	vb.setVertexCoord(1, m * CVector(-coneSize, -coneSize, size) ) ;
+	vb.setVertexCoord(2, m * CVector(coneSize, -coneSize, size) ) ;
+	vb.setVertexCoord(3, m * CVector(coneSize, coneSize, size) ) ;
+	vb.setVertexCoord(4, m * CVector(-coneSize, coneSize, size) ) ;
 
 	driver->renderTriangles(material,  vTab, 6) ;
 
 	// draw the y cone
 
-	vb.setVertexCoord(0, CVector(0, size + 3.0f * coneSize, 0) ) ;
-	vb.setVertexCoord(1, CVector(-coneSize, size, -coneSize) ) ;
-	vb.setVertexCoord(2, CVector(coneSize, size, -coneSize) ) ;
-	vb.setVertexCoord(3, CVector(coneSize, size, coneSize) ) ;
-	vb.setVertexCoord(4, CVector(-coneSize, size ,coneSize) ) ;
+	vb.setVertexCoord(0, m * CVector(0, size + 3.0f * coneSize, 0) ) ;
+	vb.setVertexCoord(1, m * CVector(-coneSize, size, -coneSize) ) ;
+	vb.setVertexCoord(2, m * CVector(coneSize, size, -coneSize) ) ;
+	vb.setVertexCoord(3, m * CVector(coneSize, size, coneSize) ) ;
+	vb.setVertexCoord(4, m * CVector(-coneSize, size ,coneSize) ) ;
 
 	driver->renderTriangles(material,  vTab, 6) ;
 
 
 	// draw the letters
 
-	CPSUtil::print(std::string("x"), fg, fm, m * CVector(1.4f * size, 0, 0), 15.0f * size) ;
-	CPSUtil::print(std::string("y"), fg, fm, m * CVector(0, 1.4f  * size, 0), 15.0f * size) ;
-	CPSUtil::print(std::string("z"), fg, fm, m * CVector(0, 0, 1.4f  * size), 15.0f * size) ;
+	CPSUtil::print(std::string("x"), fg, fm, modelMat * m * CVector(1.4f * size, 0, 0), 15.0f * size) ;
+	CPSUtil::print(std::string("y"), fg, fm, modelMat * m * CVector(0, 1.4f  * size, 0), 15.0f * size) ;
+	CPSUtil::print(std::string("z"), fg, fm, modelMat * m * CVector(0, 0, 1.4f  * size), 15.0f * size) ;
 
 
 
@@ -296,10 +301,12 @@ void CPSUtil::print(const std::string &text, CFontGenerator &fg, CFontManager &f
 			
 	
 	CMatrix mat = driver->getViewMatrix() ;	
-	mat.setPos(CVector::Null) ;
+	mat.setPos(CVector::Null) ;	
 	mat.scale(CVector(size, size, size)) ;		
 	mat.transpose() ;
-	mat.setPos(pos) ;
+	mat.setPos(pos) ;	 
+
+
 	cptedString.render3D(*driver, mat) ;
 }
 
@@ -478,6 +485,16 @@ void CPSUtil::displayCylinder(IDriver &driver, const CVector &center, const CMat
 		
 		theta += thetaDelta ;
 	}	
+}
+
+
+void CPSUtil::display3DQuad(IDriver &driver, const CVector &c1, const CVector &c2
+								,const CVector &c3,  const CVector &c4, CRGBA color)
+{
+	CDRU::drawLine(c1, c2, color, driver) ;
+	CDRU::drawLine(c2, c3, color, driver) ;
+	CDRU::drawLine(c3, c4, color, driver) ;
+	CDRU::drawLine(c4, c1, color, driver) ;
 }
 
 

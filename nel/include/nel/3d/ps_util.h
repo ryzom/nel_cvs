@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.7 2001/05/30 10:04:49 vizerie Exp $
+ * $Id: ps_util.h,v 1.8 2001/05/31 12:16:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,17 +82,19 @@ struct CPSUtil
 	 */
 	static void displayCylinder(IDriver &driver, const CVector &center, const CMatrix &mat, const CVector &dim, uint nbSubdiv = 32, CRGBA color = CRGBA::White) ;
 
-	 
+	/// display a 3d quad in wireline, by using the 4 gicen corners
+	static void display3DQuad(IDriver &driver, const CVector &c1, const CVector &c2
+								,const CVector &c3,  const CVector &c4, CRGBA color = CRGBA::White) ;
+							
 
 	/// enlarge a bounding box by the specified radius	 
 	inline static void addRadiusToAABBox(NLMISC::CAABBox &box, float radius) ;
 	 
-	/// display a basis using the given matrix
+	/// display a basis using the given matrix. The model matrix must be restored after this call
+	static void displayBasis(const CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm) ;
 
-	static void displayBasis(const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm) ;
 
-
-	/// display a string at the given position
+	/// display a string at the given position. The model matrix must be restored after this call
 	static void print(const std::string &text, CFontGenerator &fg, CFontManager &fm, const NLMISC::CVector &pos, float size) ;
 
 

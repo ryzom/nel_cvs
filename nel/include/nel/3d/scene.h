@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.20 2001/04/25 08:55:11 corvazier Exp $
+ * $Id: scene.h,v 1.21 2001/05/31 12:16:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,6 +175,12 @@ public:
 	//@{
 	/// Set the shape bank
 	void			setShapeBank(CShapeBank*pShapeBank);
+
+	/// Get the shape bank
+	CShapeBank   *getShapeBank(void) { return _ShapeBank ; }
+
+	/// Get the shape bank (const version)
+	const CShapeBank   *getShapeBank(void) const { return _ShapeBank ; }
 
 	/** Create a model, instance of the shape "shapename". If not present, try to load "shapename" via the CPath.
 	 * If fails, return NULL.

@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.13 2003/12/02 11:23:05 besson Exp $
+ * $Id: texture.h,v 1.14 2004/03/04 14:32:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/rect.h"
 #include "nel/misc/bitmap.h"
+#include "nel/misc/bitmap.h"
+#include "nel/misc/object_arena_allocator.h"
 #include <string>
 #include <list>
 #include <map>
@@ -104,6 +106,7 @@ public:
 class ITexture : public CBitmap, public NLMISC::CRefCount, public NLMISC::IStreamable
 {
 public:
+	NL_USES_DEFAULT_ARENA_OBJECT_ALLOCATOR // for fast alloc
 	// Those enums MUST be the same than in UTexture!!
 
 	enum	TWrapMode

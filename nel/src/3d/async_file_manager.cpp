@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.9 2002/04/26 16:07:45 besson Exp $
+ * $Id: async_file_manager.cpp,v 1.10 2002/04/30 09:47:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,9 +219,9 @@ void CAsyncFileManager::CMeshLoad::run()
 		
 		// Call generate on all texture to force loading
 
-		CMesh *pMesh = dynamic_cast<CMesh*>(mesh.getShapePointer());
+		CMeshBase *pMesh = dynamic_cast<CMeshBase *>(mesh.getShapePointer());
 		// If the driver is not given so do not try to load the textures
-		if ((pMesh == NULL) || (_pDriver == NULL))
+		if (_pDriver == NULL)
 		{
 			nlwarning ("cant load %s", MeshName);
 			*_ppShp = (IShape*)-1;
@@ -229,64 +229,68 @@ void CAsyncFileManager::CMeshLoad::run()
 			return;
 		}
 
-		// Parse all materials of the mesh
-		uint i, j;
-		uint nNbMat = pMesh->getNbMaterial();
-		ITexture *pText;
-
-		for(i = 0; i < nNbMat; ++i)
+		if (pMesh != NULL) // there are also shapes that are not mesh (particle systems...)
 		{
-			const CMaterial &rMat = pMesh->getMaterial(i);
-			// Parse all textures from this material and generate them
-			for(j = 0; j < IDRV_MAT_MAXTEXTURES; ++j)
-			if (rMat.texturePresent(j))
-			{
-				pText = rMat.getTexture (j);
-				// For all texture that are texture file we have to load them
-				CTextureFile *pTextFile = dynamic_cast<CTextureFile*>(pText);
-				// Does this texture is a texture file ?
-				if(pTextFile != NULL)
-				// Yes -> Does the texture is already present in the driver ?
-				if( ! _pDriver->isTextureExist(*pTextFile) )
-				{
-					// No -> So we have perhaps to load it
-					TAlreadyPresentTextureSet::iterator aptmIt = AlreadyPresentTextureSet.find (pTextFile->getFileName());
-					// Is the texture already loaded ?
-					if(aptmIt == AlreadyPresentTextureSet.end())
-					{
-						// Texture not already present
-						// add it
-						AlreadyPresentTextureSet.insert (pTextFile->getFileName());
-						// And load it (to RAM only (upload in VRAM is done in the shape bank))
-						// printf("loading texture %s\n", pTextFile->getFileName().c_str());
-						pTextFile->generate();
-					}
-				}
-			}
+			
+			// Parse all materials of the mesh
+			uint i, j;
+			uint nNbMat = pMesh->getNbMaterial();
+			ITexture *pText;
 
-			// Do the same with lightmaps
-			if (rMat.getShader() == CMaterial::LightMap)
+			for(i = 0; i < nNbMat; ++i)
 			{
-				j = 0; pText = rMat.getLightMap (j);
-				while (pText != NULL)
+				const CMaterial &rMat = pMesh->getMaterial(i);
+				// Parse all textures from this material and generate them
+				for(j = 0; j < IDRV_MAT_MAXTEXTURES; ++j)
+				if (rMat.texturePresent(j))
 				{
+					pText = rMat.getTexture (j);
+					// For all texture that are texture file we have to load them
 					CTextureFile *pTextFile = dynamic_cast<CTextureFile*>(pText);
 					// Does this texture is a texture file ?
 					if(pTextFile != NULL)
 					// Yes -> Does the texture is already present in the driver ?
-					if (!_pDriver->isTextureExist(*pTextFile))
+					if( ! _pDriver->isTextureExist(*pTextFile) )
 					{
 						// No -> So we have perhaps to load it
 						TAlreadyPresentTextureSet::iterator aptmIt = AlreadyPresentTextureSet.find (pTextFile->getFileName());
 						// Is the texture already loaded ?
 						if(aptmIt == AlreadyPresentTextureSet.end())
 						{
-							// Texture not already present -> add it and load it to RAM
+							// Texture not already present
+							// add it
 							AlreadyPresentTextureSet.insert (pTextFile->getFileName());
+							// And load it (to RAM only (upload in VRAM is done in the shape bank))
+							// printf("loading texture %s\n", pTextFile->getFileName().c_str());
 							pTextFile->generate();
 						}
-					}				
-					++j; pText = rMat.getLightMap (j);
+					}
+				}
+
+				// Do the same with lightmaps
+				if (rMat.getShader() == CMaterial::LightMap)
+				{
+					j = 0; pText = rMat.getLightMap (j);
+					while (pText != NULL)
+					{
+						CTextureFile *pTextFile = dynamic_cast<CTextureFile*>(pText);
+						// Does this texture is a texture file ?
+						if(pTextFile != NULL)
+						// Yes -> Does the texture is already present in the driver ?
+						if (!_pDriver->isTextureExist(*pTextFile))
+						{
+							// No -> So we have perhaps to load it
+							TAlreadyPresentTextureSet::iterator aptmIt = AlreadyPresentTextureSet.find (pTextFile->getFileName());
+							// Is the texture already loaded ?
+							if(aptmIt == AlreadyPresentTextureSet.end())
+							{
+								// Texture not already present -> add it and load it to RAM
+								AlreadyPresentTextureSet.insert (pTextFile->getFileName());
+								pTextFile->generate();
+							}
+						}				
+						++j; pText = rMat.getLightMap (j);
+					}
 				}
 			}
 		}

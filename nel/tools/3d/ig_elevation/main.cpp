@@ -1,6 +1,6 @@
 /** \file main.cpp
  *
- * $Id: main.cpp,v 1.2 2002/06/04 13:53:44 vizerie Exp $
+ * $Id: main.cpp,v 1.3 2002/06/06 08:16:36 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -307,12 +307,21 @@ int main(int nNbArg, char**ppArgs)
 		HeightMap1 = new CBitmap;
 		try 
 		{
-			CIFile inFile (options.HeightMapFile1);
-			HeightMap1->load (inFile);
+			CIFile inFile;
+			if (inFile.open(options.HeightMapFile1))
+			{
+				HeightMap1->load (inFile);
+			}
+			else
+			{
+				outString(string("Couldn't not open " + options.HeightMapFile1 + " : heightmap 1 map ignored"));
+				delete HeightMap1;
+				HeightMap1 = NULL;
+			}
 		}
-		catch (Exception &)
+		catch (Exception &e)
 		{
-			string sTmp = string("Cant load height map : ") + options.HeightMapFile1;
+			string sTmp = string("Cant load height map : ") + options.HeightMapFile1 + " : " + e.what();
 			outString (sTmp);
 			delete HeightMap1;
 			HeightMap1 = NULL;
@@ -324,15 +333,24 @@ int main(int nNbArg, char**ppArgs)
 		HeightMap2 = new CBitmap;
 		try 
 		{
-			CIFile inFile (options.HeightMapFile2);
-			HeightMap2->load (inFile);
+			CIFile inFile;
+			if (inFile.open(options.HeightMapFile2))
+			{
+				HeightMap2->load (inFile);
+			}
+			else
+			{
+				outString(string("Couldn't not open " + options.HeightMapFile2 + " : heightmap 2 map ignored"));
+				delete HeightMap2;
+				HeightMap2 = NULL;
+			}
 		}
-		catch (Exception &)
+		catch (Exception &e)
 		{
-			string sTmp = string("Cant load height map : ") + options.HeightMapFile2;
+			string sTmp = string("Cant load height map : ") + options.HeightMapFile2 + " : " + e.what();
 			outString (sTmp);
 			delete HeightMap2;
-			HeightMap2 = NULL;
+			HeightMap1 = NULL;
 		}
 	}
 
@@ -346,6 +364,7 @@ int main(int nNbArg, char**ppArgs)
 	{
 		SetCurrentDirectory (options.InputIGDir.c_str());
 		CInstanceGroup *pIG = LoadInstanceGroup (vAllFiles[i].c_str());
+		SetCurrentDirectory (sCurDir);
 		if (pIG != NULL)
 		{
 			// For all instances !!!
@@ -416,8 +435,10 @@ int main(int nNbArg, char**ppArgs)
 			CInstanceGroup *pIGout = new CInstanceGroup;
 			pIGout->build (vGlobalPos, IA, Clusters, Portals, PLN);
 
+
 			SetCurrentDirectory (options.OutputIGDir.c_str());
 			SaveInstanceGroup (vAllFiles[i].c_str(), pIGout);
+			SetCurrentDirectory (sCurDir);
 			delete pIG;
 		}
 	}

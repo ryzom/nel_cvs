@@ -1,7 +1,7 @@
 /** \file lod_character_manager.h
  * <File description>
  *
- * $Id: lod_character_manager.h,v 1.4 2003/11/26 13:44:00 berenguier Exp $
+ * $Id: lod_character_manager.h,v 1.5 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -31,7 +31,6 @@
 #include "nel/misc/rgba.h"
 #include "nel/misc/object_vector.h"
 #include "3d/vertex_buffer.h"
-#include "3d/vertex_buffer_hard.h"
 #include "3d/material.h"
 #include "3d/texture_blank.h"
 #include "3d/vertex_stream_manager.h"
@@ -275,7 +274,7 @@ private:
 
 	// list of triangles
 	uint							_CurrentTriId;
-	std::vector<uint32>				_Triangles;
+	CIndexBuffer					_Triangles;
 	
 	// The inverse of the normal correction matrix.
 	CMatrix							_LightCorrectionMatrix;

@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.23 2003/02/20 16:56:14 berenguier Exp $
+ * $Id: rgba.h,v 1.24 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -400,7 +400,7 @@ public:
 	 */
 	uint	getPacked() const 
 	{
-		return ((uint)R<<24) + ((uint)G<<16) + ((uint)B<<8) + A;
+		return ((uint)B<<24) + ((uint)G<<16) + ((uint)R<<8) + A;
 	}
 
 	/** 
@@ -442,12 +442,12 @@ public:
 	 */
 	void set(uint8 r, uint8 g, uint8 b, uint8 a);
 
-	/// Red componant.
-	uint8	R;
-	/// Green componant.
-	uint8	G;
 	/// Blue componant.
 	uint8	B;
+	/// Green componant.
+	uint8	G;
+	/// Red componant.
+	uint8	R;
 	/// Alpha componant.
 	uint8	A;
 };
@@ -670,6 +670,18 @@ inline CRGBAF operator* (float f, const CRGBAF& c)
 {
 	return CRGBAF (c.R*f, c.G*f, c.B*f, c.A*f);
 }
+
+#ifdef NL_LITTLE_ENDIAN
+#define NL_RGBA_R_DWORD_MASK (0x000000ff)
+#define NL_RGBA_G_DWORD_MASK (0x0000ff00)
+#define NL_RGBA_B_DWORD_MASK (0x00ff0000)
+#define NL_RGBA_A_DWORD_MASK (0xff000000)
+#else // NL_LITTLE_ENDIAN
+#define NL_RGBA_R_DWORD_MASK (0xff0000)
+#define NL_RGBA_G_DWORD_MASK (0x00ff0000)
+#define NL_RGBA_B_DWORD_MASK (0x0000ff00)
+#define NL_RGBA_A_DWORD_MASK (0x000000ff)
+#endif // NL_LITTLE_ENDIAN
 
 } // NLMISC
 

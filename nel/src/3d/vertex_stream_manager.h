@@ -1,7 +1,7 @@
 /** \file vertex_stream_manager.h
  * <File description>
  *
- * $Id: vertex_stream_manager.h,v 1.1 2003/11/26 13:44:17 berenguier Exp $
+ * $Id: vertex_stream_manager.h,v 1.2 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -68,10 +68,8 @@ public:
 	/// release the VBHard. init() can be called after this.
 	void			release();
 
-	/// true if vbHard (fast) mode.
-	bool			vbHardMode() const {return _VBHardMode;}
 	/// get the numVBhard used (Nb: if !vbHardMode(), still returns the argument passed in init(), ie not 0 or 1)
-	uint			getNumVBHard() const {return _NumVBHard;}
+	uint			getNumVB() const {return _NumVB;}
 	/// return the driver used.
 	IDriver			*getDriver() const {return _Driver;}
 	/// get the vertexFormat
@@ -103,18 +101,17 @@ public:
 
 // ********************
 private:
-	uint			_NumVBHard;
+	uint			_NumVB;
 
 	NLMISC::CRefPtr<IDriver>			_Driver;
-	std::vector<NLMISC::CRefPtr<IVertexBufferHard> >	_VBHard;
-	CVertexBuffer	_VBSoft;
-	bool			_VBHardMode;
+	std::vector<CVertexBuffer>			_VB;
+	CVertexBufferReadWrite				_VBA;
 	bool			_InitOk;
 	uint			_VertexFormat;
 	uint			_VertexSize;
 	uint			_MaxVertices;
 
-	uint			_CurentVBHard;
+	uint			_CurentVB;
 
 };
 

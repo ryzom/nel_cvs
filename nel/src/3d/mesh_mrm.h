@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.48 2003/12/10 12:47:33 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.49 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,7 @@
 #include "nel/misc/uv.h"
 #include "3d/vertex_buffer.h"
 #include "3d/material.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/animated_material.h"
 #include "3d/mesh_base.h"
 #include "3d/mesh.h"
@@ -196,7 +196,7 @@ public:
 	 *	\param lodId the id of the LOD.
 	 *  \param renderingPassIndex the index of the rendering pass
 	 */
-	const CPrimitiveBlock &getRdrPassPrimitiveBlock(uint lodId, uint renderingPassIndex) const
+	const CIndexBuffer &getRdrPassPrimitiveBlock(uint lodId, uint renderingPassIndex) const
 	{
 		return _Lods[lodId].RdrPass[renderingPassIndex].PBlock ;
 	}
@@ -342,9 +342,9 @@ private:
 		// The id of this material.
 		uint32				MaterialId;
 		// The list of primitives.
-		CPrimitiveBlock		PBlock;
+		CIndexBuffer		PBlock;
 		// The same, precomputed for VBHeap Index Shifting
-		CPrimitiveBlock		VBHeapPBlock;
+		CIndexBuffer		VBHeapPBlock;
 
 		// Serialize a rdrpass.
 		void	serial(NLMISC::IStream &f)
@@ -526,27 +526,8 @@ private:
 	// @}
 
 
-	/// \name Hard VB
-	// @{
-
-	CRefPtr<IVertexBufferHard>	_VBHard;
-	// a refPtr on the driver, to delete VBuffer Hard at clear().
-	CRefPtr<IDriver>			_Driver;
-	bool						_VertexBufferHardDirty;
-
 	/// NB: HERE FOR PACKING ONLY. For clipping. Estimate if we must do a Precise clipping (ie with bboxes)
 	bool						_PreciseClipping;
-
-	/* try to create a vertexBufferHard. NB: enlarge capacity of the VBHard as necessary.
-		After this call, the vertexBufferHard may be NULL.
-	*/
-	void				updateVertexBufferHard(IDriver *drv, uint32 numVertices);
-	void				deleteVertexBufferHard();
-
-	// Fill skin in AGP, with a direct ptr onto AGP
-	void				fillAGPSkinPartWithVBHardPtr(CLod &lod, uint8 *vertexDst);
-
-	// @}
 
 	// The Mesh Morpher
 	CMeshMorpher				_MeshMorpher; 
@@ -581,7 +562,7 @@ private:
 	sint	chooseLod(float alphaMRM, float &alphaLod);
 
 	/// Apply the geomorph to the _VBuffer, or the VBhard, if exist/used
-	void	applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod, IVertexBufferHard *currentVBHard);
+	void	applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod);
 
 	/// Apply the geomorph to the VBhard ptr, if not NULL
 	void	applyGeomorphWithVBHardPtr(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod, uint8 *vertexDestPtr);
@@ -611,7 +592,7 @@ private:
 	void	applySkinWithTangentSpace(CLod &lod, const CSkeletonModel *skeleton, uint tangentSpaceTexCoord);
 
 	/// Skinning: same as restoreOriginalSkinVertices(), but for one Lod only.
-	void	restoreOriginalSkinPart(CLod &lod, IVertexBufferHard *currentVBHard);
+	void	restoreOriginalSkinPart(CLod &lod);
 
 
 	/// load the header of this mesh. return the version of the header.
@@ -779,7 +760,7 @@ public:
 	 *	\param lodId the id of the LOD.
 	 *  \param renderingPassIndex the index of the rendering pass
 	 */
-	const CPrimitiveBlock &getRdrPassPrimitiveBlock(uint lodId, uint renderingPassIndex) const
+	const CIndexBuffer &getRdrPassPrimitiveBlock(uint lodId, uint renderingPassIndex) const
 	{
 		return _MeshMRMGeom.getRdrPassPrimitiveBlock(lodId, renderingPassIndex) ;
 	}

@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.14 2004/03/17 17:09:34 cado Exp $
+ * $Id: seg_remanence.cpp,v 1.15 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -138,25 +138,30 @@ void CSegRemanence::registerBasic()
 
 
 //===============================================================
-void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb, CMaterial &mat)
+void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CIndexBuffer &pb, CMaterial &mat)
 {
 	CSegRemanenceShape *srs = NLMISC::safe_cast<CSegRemanenceShape *>((IShape *) Shape);		
 	const uint vertexSize = vb.getVertexSize();
-	uint8 *datas = (uint8 *) vb.getVertexCoordPointer();
-	uint numCorners = _Ribbons.size();
-	uint k;		
-	for(k = 0; k < numCorners; ++k)
 	{
-		_Ribbons[k].fillVB(datas, vertexSize, srs->getNumSlices(), _SliceTime);
-		datas += (_NumSlice + 1) * vertexSize;
-	}
-	//#define DEBUG_SEG_REMANENCE_DISPLAY 
-	#ifdef DEBUG_SEG_REMANENCE_DISPLAY
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		uint8 *datas = (uint8 *) vba.getVertexCoordPointer();
+		uint numCorners = _Ribbons.size();
+		uint k;		
+		for(k = 0; k < numCorners; ++k)
+		{
+			_Ribbons[k].fillVB(datas, vertexSize, srs->getNumSlices(), _SliceTime);
+			datas += (_NumSlice + 1) * vertexSize;
+		}
+//#define DEBUG_SEG_REMANENCE_DISPLAY 
+#ifdef DEBUG_SEG_REMANENCE_DISPLAY
 		drv->setupModelMatrix(CMatrix::Identity);
 		if (!numCorners) return;
 		/*
 		for(k = 0; k < numCorners - 1; ++k)
 		{
+			_Ribbons[k].fillVB(datas, vertexSize, srs->getNumSlices(), _SliceTime);
+			datas += (_NumSlice + 1) * vertexSize;
 			CDRU::drawLine(srs->getCorner(k), srs->getCorner(k + 1), CRGBA::White, *drv);
 		}
 		*/
@@ -175,7 +180,8 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb,
 			}
 		}
 
-	#endif
+#endif
+	}
 	
 	// roll / unroll using texture matrix
 	CMatrix texMat;	
@@ -186,7 +192,8 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb,
 	drv->setupModelMatrix(CMatrix::Identity);
 	
 	drv->activeVertexBuffer(vb);	
-	drv->render(pb, mat);
+	drv->activeIndexBuffer(pb);
+	drv->renderTriangles(mat, 0, pb.getNumIndexes()/3);
 
 	CScene *scene = getOwnerScene();
 	// change unroll ratio

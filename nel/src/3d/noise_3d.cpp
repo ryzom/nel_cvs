@@ -1,7 +1,7 @@
 /** \file noise_3d.cpp
  * cloud_scape implementation
  *
- * $Id: noise_3d.cpp,v 1.5 2004/02/06 18:06:56 vizerie Exp $
+ * $Id: noise_3d.cpp,v 1.6 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -156,8 +156,11 @@ void CNoise3d::render2passes (CQuadUV &qc, float wpos, float alpha)
 		_VertexBuffer.setNumVertices(_NbVertices+8);
 	}
 
+	CVertexBufferReadWrite vba;
+	_VertexBuffer.lock (vba);
+
 	uint32 nVSize = _VertexBuffer.getVertexSize ();
-	CVector *pVertices = (CVector*)_VertexBuffer.getVertexCoordPointer(_NbVertices);
+	CVector *pVertices = vba.getVertexCoordPointer(_NbVertices);
 	*pVertices = qc.V0; pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
 	*pVertices = qc.V1; pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
 	*pVertices = qc.V2; pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
@@ -167,7 +170,7 @@ void CNoise3d::render2passes (CQuadUV &qc, float wpos, float alpha)
 	*pVertices = qc.V2; pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
 	*pVertices = qc.V3;
 
-	CUV *pUV = (CUV*)_VertexBuffer.getTexCoordPointer (_NbVertices, 0);
+	CUV *pUV = vba.getTexCoordPointer (_NbVertices, 0);
 	*pUV = CUV(qc.Uv0.U*_ScaleW+_OffS[nSlice1].U, qc.Uv0.V*_ScaleH+_OffS[nSlice1].V); 
 	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
 	*pUV = CUV(qc.Uv1.U*_ScaleW+_OffS[nSlice1].U, qc.Uv1.V*_ScaleH+_OffS[nSlice1].V); 
@@ -187,7 +190,8 @@ void CNoise3d::render2passes (CQuadUV &qc, float wpos, float alpha)
 
 	uint8 finalAlpha = (uint8)(255*alphaPos*alpha);
 
-	uint8 *pColA = (uint8*)_VertexBuffer.getColorPointer(_NbVertices) + 3;
+	// todo hulud d3d vertex color RGBA / BGRA
+	uint8 *pColA = (uint8*)vba.getColorPointer(_NbVertices) + 3;
 	*pColA = finalAlpha; pColA = ((uint8*)pColA) + nVSize;
 	*pColA = finalAlpha; pColA = ((uint8*)pColA) + nVSize;
 	*pColA = finalAlpha; pColA = ((uint8*)pColA) + nVSize;
@@ -234,13 +238,16 @@ void CNoise3d::render (CQuadUV &qc, float wpos, float intensity)
 		_VertexBuffer.setNumVertices (_NbVertices+4);
 	}
 
-	CVector *pVertices = (CVector*)_VertexBuffer.getVertexCoordPointer(_NbVertices);
+	CVertexBufferReadWrite vba;
+	_VertexBuffer.lock (vba);
+
+	CVector *pVertices = vba.getVertexCoordPointer(_NbVertices);
 	*pVertices = qc.V0; pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
 	*pVertices = qc.V1; pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
 	*pVertices = qc.V2; pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
 	*pVertices = qc.V3;
 
-	CUV *pUV = (CUV*)_VertexBuffer.getTexCoordPointer (_NbVertices, 0);
+	CUV *pUV = vba.getTexCoordPointer (_NbVertices, 0);
 	*pUV = CUV(qc.Uv0.U/_NbSliceW+_OffS[nSlice1].U, qc.Uv0.V*_ScaleH+_OffS[nSlice1].V); 
 	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
 	*pUV = CUV(qc.Uv1.U/_NbSliceW+_OffS[nSlice1].U, qc.Uv1.V*_ScaleH+_OffS[nSlice1].V); 
@@ -249,7 +256,7 @@ void CNoise3d::render (CQuadUV &qc, float wpos, float intensity)
 	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
 	*pUV = CUV(qc.Uv3.U/_NbSliceW+_OffS[nSlice1].U, qc.Uv3.V*_ScaleH+_OffS[nSlice1].V); 
 
-	pUV = (CUV*)_VertexBuffer.getTexCoordPointer (_NbVertices, 1);
+	pUV = vba.getTexCoordPointer (_NbVertices, 1);
 	*pUV = CUV(qc.Uv0.U*_ScaleW+_OffS[nSlice2].U, qc.Uv0.V*_ScaleH+_OffS[nSlice2].V); 
 	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
 	*pUV = CUV(qc.Uv1.U*_ScaleW+_OffS[nSlice2].U, qc.Uv1.V*_ScaleH+_OffS[nSlice2].V); 
@@ -258,7 +265,8 @@ void CNoise3d::render (CQuadUV &qc, float wpos, float intensity)
 	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
 	*pUV = CUV(qc.Uv3.U*_ScaleW+_OffS[nSlice2].U, qc.Uv3.V*_ScaleH+_OffS[nSlice2].V); 
 
-	uint8 *pColA = (uint8*)_VertexBuffer.getColorPointer(_NbVertices) + 3;
+	// todo hulud d3d vertex color RGBA / BGRA
+	uint8 *pColA = (uint8*)vba.getColorPointer(_NbVertices) + 3;
 	*pColA = nAlphaPos; pColA = ((uint8*)pColA) + nVSize;
 	*pColA = nAlphaPos; pColA = ((uint8*)pColA) + nVSize;
 	*pColA = nAlphaPos; pColA = ((uint8*)pColA) + nVSize;
@@ -297,10 +305,14 @@ void CNoise3d::renderGrid (uint32 nbw, uint32 nbh, uint32 w, uint32 h,
 	UStart = UStart / _NbSliceW;
 	VStart = VStart / _NbSliceH;
 
-	pVertices = (CVector*)_VertexBuffer.getVertexCoordPointer(0);
-	pUV0 = (CUV*)_VertexBuffer.getTexCoordPointer (0, 0);
-	pUV1 = (CUV*)_VertexBuffer.getTexCoordPointer (0, 1);
-	pColA = (uint8*)_VertexBuffer.getColorPointer(0) + 3;
+	CVertexBufferReadWrite vba;
+	_VertexBuffer.lock (vba);
+
+	pVertices = vba.getVertexCoordPointer(0);
+	pUV0 = vba.getTexCoordPointer (0, 0);
+	pUV1 = vba.getTexCoordPointer (0, 1);
+	// todo hulud d3d vertex color RGBA / BGRA
+	pColA = (uint8*)vba.getColorPointer(0) + 3;
 
 	for (j = 0; j < nbh; ++j)
 	{
@@ -362,9 +374,13 @@ void CNoise3d::renderGrid2passes (uint32 nbw, uint32 nbh, uint32 w, uint32 h,
 	UStart = UStart / _NbSliceW;
 	VStart = VStart / _NbSliceH;
 
-	pVertices = (CVector*)_VertexBuffer.getVertexCoordPointer(0);
-	pUV0 = (CUV*)_VertexBuffer.getTexCoordPointer (0, 0);
-	pColA = (uint8*)_VertexBuffer.getColorPointer(0) + 3;
+	CVertexBufferReadWrite vba;
+	_VertexBuffer.lock (vba);
+
+	pVertices = vba.getVertexCoordPointer(0);
+	pUV0 = vba.getTexCoordPointer (0, 0);
+	// todo hulud d3d vertex color RGBA / BGRA
+	pColA = (uint8*)vba.getColorPointer(0) + 3;
 
 	for (j = 0; j < nbh; ++j)
 	{
@@ -428,7 +444,7 @@ void CNoise3d::flush ()
 	
 	_Mat->setColor(CRGBA(0,0,0,(uint8)(255*_Intensity)));
 	_Driver->activeVertexBuffer (_VertexBuffer);
-	_Driver->renderQuads (*_Mat, 0, _NbVertices/4);
+	_Driver->renderRawQuads (*_Mat, 0, _NbVertices/4);
 	_NbVertices = 0;
 }
 
@@ -436,7 +452,7 @@ void CNoise3d::flush ()
 void CNoise3d::flush2passes ()
 {
 	_Driver->activeVertexBuffer (_VertexBuffer);
-	_Driver->renderQuads (*_Mat, 0, _NbVertices/4);
+	_Driver->renderRawQuads (*_Mat, 0, _NbVertices/4);
 	_NbVertices = 0;
 }
 

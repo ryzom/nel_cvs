@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.14 2003/11/26 13:44:00 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.15 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -294,7 +294,7 @@ void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &manager
 	if(!mustChangeVertexStream)
 	{
 		mustChangeVertexStream= _MaxNumVertices != _VertexStream.getMaxVertices();
-		mustChangeVertexStream= mustChangeVertexStream || _NumVBHard != _VertexStream.getNumVBHard();
+		mustChangeVertexStream= mustChangeVertexStream || _NumVBHard != _VertexStream.getNumVB();
 	}
 	// re-init?
 	if( mustChangeVertexStream )
@@ -322,8 +322,8 @@ void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &manager
 
 
 	// Alloc a minimum of primitives (2*vertices), to avoid as possible reallocation in addRenderCharacterKey
-	if(_Triangles.size()<_MaxNumVertices * 2)
-		_Triangles.resize(_MaxNumVertices * 2);
+	if(_Triangles.getNumIndexes()<_MaxNumVertices * 2)
+		_Triangles.setNumIndexes(_MaxNumVertices * 2);
 
 	// Local manager matrix
 	_ManagerMatrixPos= managerPos;
@@ -705,14 +705,16 @@ bool			CLodCharacterManager::addRenderCharacterKey(CLodCharacterInstance &instan
 		uint	numTriIdxs= clod->getNumTriangles() * 3;
 
 		// realloc tris if needed.
-		if(_CurrentTriId+numTriIdxs > _Triangles.size())
+		if(_CurrentTriId+numTriIdxs > _Triangles.getNumIndexes())
 		{
-			_Triangles.resize(_CurrentTriId+numTriIdxs);
+			_Triangles.setNumIndexes(_CurrentTriId+numTriIdxs);
 		}
 
 		// reindex and copy tris
+		CIndexBufferReadWrite iba;
+		_Triangles.lock(iba);
 		const uint32	*srcIdx= clod->getTriangleArray();
-		uint32			*dstIdx= &_Triangles[_CurrentTriId];
+		uint32			*dstIdx= iba.getPtr()+_CurrentTriId;
 		for(;numTriIdxs>0;numTriIdxs--, srcIdx++, dstIdx++)
 		{
 			*dstIdx= *srcIdx + _CurrentVertexId;
@@ -761,7 +763,8 @@ void			CLodCharacterManager::endRender()
 			_VertexStream.activate();
 			
 			// render triangles
-			driver->renderTriangles(_Material, &_Triangles[0], _CurrentTriId/3);
+			driver->activeIndexBuffer(_Triangles);
+			driver->renderTriangles(_Material, 0, _CurrentTriId/3);
 		}
 		
 		// swap Stream VBHard

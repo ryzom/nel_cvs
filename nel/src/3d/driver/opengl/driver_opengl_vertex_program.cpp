@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.18 2003/11/04 18:17:47 vizerie Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.19 2004/03/19 10:11:36 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -27,7 +27,8 @@
 
 #include "stdopengl.h"
 
-#include "3d/primitive_block.h"
+#include "driver_opengl.h"
+#include "3d/index_buffer.h"
 #include "3d/vertex_program.h"
 #include "3d/vertex_program_parse.h"
 #include <algorithm>
@@ -282,7 +283,6 @@ static uint convInputRegisterToVBFlag(uint index)
 		case CVPOperand::ITex5:
 		case CVPOperand::ITex6:
 		case CVPOperand::ITex7:
-		case CVPOperand::ITex8:
 			return CVertexBuffer::TexCoord0Flag << (index - CVPOperand::ITex0);
 		default:
 			nlassert(0);
@@ -1420,6 +1420,14 @@ void CDriverGL::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver:
 		nglSetInvariantEXT(_EVSConstantHandle + index + 2, GL_FLOAT, matDatas + 8);
 		nglSetInvariantEXT(_EVSConstantHandle + index + 3, GL_FLOAT, matDatas + 12);
 	}		 
+}
+
+// ***************************************************************************
+
+void CDriverGL::setConstantFog (uint index)
+{
+	const float *values = _ModelViewMatrix.get();
+	setConstant (index, -values[2], -values[6], -values[10], -values[14]);
 }
 
 // ***************************************************************************

@@ -38,30 +38,31 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	if (objectViewer)
 	{
 		// Init ui
-		objectViewer->initUI ();
-
-		// Argument ?
-		if (strcmp (commandLinePtr, "")!=0)
+		if (objectViewer->initUI ())
 		{
-			// Make a string vector
-			vector<string> strVector;
-			strVector.push_back (commandLinePtr);
-
-			// Try to load a shape
-			if (objectViewer->loadMesh (strVector, ""))
+			// Argument ?
+			if (strcmp (commandLinePtr, "")!=0)
 			{
-				// Reset the camera
-				objectViewer->resetCamera ();
+				// Make a string vector
+				vector<string> strVector;
+				strVector.push_back (commandLinePtr);
+
+				// Try to load a shape
+				if (objectViewer->loadMesh (strVector, ""))
+				{
+					// Reset the camera
+					objectViewer->resetCamera ();
+				}
+				else
+					return 1;
 			}
-			else
-				return 1;
+
+			// Go
+			objectViewer->go ();
+
+			// Release ui
+			objectViewer->releaseUI ();
 		}
-
-		// Go
-		objectViewer->go ();
-
-		// Release ui
-		objectViewer->releaseUI ();
 
 		// Delete the pointer
 		IObjectViewer::releaseInterface (objectViewer);

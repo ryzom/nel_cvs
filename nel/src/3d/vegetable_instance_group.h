@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
  * <File description>
  *
- * $Id: vegetable_instance_group.h,v 1.10 2003/06/02 15:00:25 berenguier Exp $
+ * $Id: vegetable_instance_group.h,v 1.11 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "3d/vegetable_def.h"
 #include "3d/vegetable_light_ex.h"
 #include "3d/vegetable_uv8.h"
+#include "3d/index_buffer.h"
 #include <vector>
 
 
@@ -111,7 +112,7 @@ private:
 		// List of vertices used (used for deletion of the ig, and also for change of HardMode).
 		NLMISC::CObjectVector<uint32, false>	Vertices;
 		// List of faces indices to render. They points to vertex in VBuffer.
-		NLMISC::CObjectVector<uint32, false>	TriangleIndices;
+		CIndexBuffer							TriangleIndices;
 		// List of faces indices to render. They points to Vertices in this.
 		NLMISC::CObjectVector<uint32, false>	TriangleLocalIndices;
 		// List of faces indices to render. for lighting updates.

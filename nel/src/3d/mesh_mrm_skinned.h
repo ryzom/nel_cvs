@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangent space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.h,v 1.3 2004/01/15 17:33:18 lecroart Exp $
+ * $Id: mesh_mrm_skinned.h,v 1.4 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@
 #include "nel/misc/uv.h"
 #include "3d/vertex_buffer.h"
 #include "3d/material.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/animated_material.h"
 #include "3d/mesh_base.h"
 #include "3d/mesh.h"
@@ -175,7 +175,7 @@ public:
 	 *	\param lodId the id of the LOD.
 	 *  \param renderingPassIndex the index of the rendering pass
 	 */
-	void getRdrPassPrimitiveBlock(uint lodId, uint renderingPassIndex, CPrimitiveBlock &block) const
+	void getRdrPassPrimitiveBlock(uint lodId, uint renderingPassIndex, CIndexBuffer &block) const
 	{
 		_Lods[lodId].getRdrPassPrimitiveBlock(renderingPassIndex, block);
 	}
@@ -374,10 +374,10 @@ private:
 		void		optimizeTriangleOrder();
 
 		// Get the primitive block
-		void getRdrPassPrimitiveBlock (uint renderPass, CPrimitiveBlock &block) const;
+		void getRdrPassPrimitiveBlock (uint renderPass, CIndexBuffer &block) const;
 
 		// Build the primitive block
-		void buildPrimitiveBlock(uint renderPass, const CPrimitiveBlock &block);
+		void buildPrimitiveBlock(uint renderPass, const CIndexBuffer &block);
 	};
 
 	friend class	CLod;
@@ -563,9 +563,6 @@ private:
 
 	/// NB: HERE FOR PACKING ONLY. For clipping. Estimate if we must do a Precise clipping (ie with bboxes)
 	bool						_PreciseClipping;
-
-	// Fill skin in AGP, with a direct ptr onto AGP
-	void				fillAGPSkinPartWithVBHardPtr(CLod &lod, uint8 *vertexDst);
 
 	// @}
 
@@ -759,7 +756,7 @@ public:
 	 *	\param lodId the id of the LOD.
 	 *  \param renderingPassIndex the index of the rendering pass
 	 */
-	void getRdrPassPrimitiveBlock(uint lodId, uint renderingPassIndex, CPrimitiveBlock &block) const
+	void getRdrPassPrimitiveBlock(uint lodId, uint renderingPassIndex, CIndexBuffer &block) const
 	{
 		_MeshMRMGeom.getRdrPassPrimitiveBlock(lodId, renderingPassIndex, block);
 	}

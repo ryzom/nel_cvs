@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.20 2003/06/13 13:58:47 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.21 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -173,10 +173,16 @@ void	CFlareModel::traverseRender()
 		// setup vertex buffer
 		vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 		vb.setNumVertices(4);
-		vb.setTexCoord(0, 0, NLMISC::CUV(1, 0));
-		vb.setTexCoord(1, 0, NLMISC::CUV(1, 1));
-		vb.setTexCoord(2, 0, NLMISC::CUV(0, 1));
-		vb.setTexCoord(3, 0, NLMISC::CUV(0, 0));
+
+		{
+			CVertexBufferReadWrite vba;
+			vb.lock (vba);
+
+			vba.setTexCoord(0, 0, NLMISC::CUV(1, 0));
+			vba.setTexCoord(1, 0, NLMISC::CUV(1, 1));
+			vba.setTexCoord(2, 0, NLMISC::CUV(0, 1));
+			vba.setTexCoord(3, 0, NLMISC::CUV(0, 0));
+		}
 
 		setupDone = true;
 	}
@@ -231,7 +237,7 @@ void	CFlareModel::traverseRender()
 			vb.setVertexCoord(2, dazzleCenter - dI - dK);
 			vb.setVertexCoord(3, dazzleCenter - dI + dK);
 
-			drv->renderQuads(material, 0, 1);
+			drv->renderRawQuads(material, 0, 1);
 		}
 	}	*/	
 	if (!fs->getAttenuable() )
@@ -269,14 +275,19 @@ void	CFlareModel::traverseRender()
 		{
 			size = fs->getSize(0);
 
-			vb.setVertexCoord(0, upt + size * (I + K) );
-			vb.setVertexCoord(1, upt + size * (I - K) );
-			vb.setVertexCoord(2, upt + size * (-I - K) );
-			vb.setVertexCoord(3, upt + size * (-I + K) );
+			{
+				CVertexBufferReadWrite vba;
+				vb.lock (vba);
+
+				vba.setVertexCoord(0, upt + size * (I + K) );
+				vba.setVertexCoord(1, upt + size * (I - K) );
+				vba.setVertexCoord(2, upt + size * (-I - K) );
+				vba.setVertexCoord(3, upt + size * (-I + K) );
+			}
 
 
 			material.setTexture(0, tex);
-			drv->renderQuads(material, 0, 1);			
+			drv->renderRawQuads(material, 0, 1);			
 			k = 1;
 		}		
 	}
@@ -297,14 +308,18 @@ void	CFlareModel::traverseRender()
 
 
 			
+			{
+				CVertexBufferReadWrite vba;
+				vb.lock (vba);
 
-			size = fs->getSize(k) / renderTrav.Near;			
-			vb.setVertexCoord(0, scrPos + size * (I + K) );
-			vb.setVertexCoord(1, scrPos + size * (I - K) );
-			vb.setVertexCoord(2, scrPos + size * (-I - K) );
-			vb.setVertexCoord(3, scrPos + size * (-I + K) );
+				size = fs->getSize(k) / renderTrav.Near;			
+				vba.setVertexCoord(0, scrPos + size * (I + K) );
+				vba.setVertexCoord(1, scrPos + size * (I - K) );
+				vba.setVertexCoord(2, scrPos + size * (-I - K) );
+				vba.setVertexCoord(3, scrPos + size * (-I + K) );
+			}
 			material.setTexture(0, tex);
-			drv->renderQuads(material, 0, 1);		
+			drv->renderRawQuads(material, 0, 1);		
 		}
 		
 	}		

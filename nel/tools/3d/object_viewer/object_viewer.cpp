@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.113 2004/03/04 14:46:57 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.114 2004/03/19 10:11:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -201,7 +201,7 @@ IMPLEMENT_DYNCREATE(CObjView, CView)
 
 // ***************************************************************************
 
-void animateCNELUScene (uint64 deltaTime = 0)
+void animateCNELUScene (CCloudScape *cs, uint64 deltaTime = 0)
 {
 	static sint64 firstTime = NLMISC::CTime::getLocalTime();
 	static sint64 lastTime = NLMISC::CTime::getLocalTime();
@@ -210,7 +210,9 @@ void animateCNELUScene (uint64 deltaTime = 0)
 		deltaTime = NLMISC::CTime::getLocalTime() - lastTime;
 	}
 	lastTime += deltaTime;
-	CNELU::Scene->animate ( 0.001f * (float) (lastTime - firstTime));
+	float fdelta = 0.001f * (float) (lastTime - firstTime);
+	CNELU::Scene->animate ( fdelta);
+	cs->anim (fdelta, CNELU::Scene->getCam());
 }
 
 // ***************************************************************************
@@ -225,6 +227,7 @@ CObjectViewer::CObjectViewer ()
 
 	registerSerial3d();
 
+	_MainFrame = NULL;
 	_SlotDlg=NULL;
 	_AnimationSetDlg=NULL;
 	_AnimationDlg=NULL;
@@ -238,6 +241,12 @@ CObjectViewer::CObjectViewer ()
 	_LightGroupDlg = NULL;
 	_ChooseFrameDelayDlg = NULL;
 	_ChooseBGColorDlg = NULL;
+	_DayNightDlg = NULL;
+	_WaterPoolDlg = NULL;
+	_SoundAnimDlg = NULL;
+	_VegetableDlg = NULL;
+	_GlobalWindDlg = NULL;
+
 
 	// no frame delay is the default
 	_FrameDelay = 0;
@@ -260,12 +269,18 @@ CObjectViewer::CObjectViewer ()
 
 	_CharacterScalePos= 1;
 	_CurrentCamera = -1;
+	_Direct3d = false;
+	_Fog = false;
+	_FogStart = 0;
+	_FogEnd = 1;
+	_FogColor = NLMISC::CRGBA::Black;
 
 	_FXUserMatrix.identity();
 
 	_FXMatrixVisible = false;
 	_FXUserMatrixVisible = false;
 	_SceneMatrixVisible = false;
+	_CS = NULL;
 }
 
 // ***************************************************************************
@@ -481,6 +496,46 @@ void CObjectViewer::loadConfigFile()
 		catch (EUnknownVar &)
 		{
 		}
+
+		CConfigFile::CVar *var = cf.getVarPtr("driver");
+		_Direct3d = var && (var->asString() == "direct3d");
+
+		// Fog
+		var = cf.getVarPtr("fog");
+		if (var)
+			_Fog = var->asInt() != 0;
+		var = cf.getVarPtr("fog_start");
+		if (var)
+			_FogStart = var->asFloat();
+		var = cf.getVarPtr("fog_end");
+		if (var)
+			_FogEnd = var->asFloat();
+		var = cf.getVarPtr("fog_color");
+		if (var)
+			_FogColor = CRGBA ((uint8)(var->asInt(0)), (uint8)(var->asInt(1)), (uint8)(var->asInt(2)));
+
+		// Clouds
+		_CSS.NbCloud = 0;
+		if (var = cf.getVarPtr("cloud_count"))
+			_CSS.NbCloud = var->asInt();
+		if (var = cf.getVarPtr("cloud_diffuse"))
+		{
+			_CSS.Diffuse.R = var->asInt(0);
+			_CSS.Diffuse.G = var->asInt(1);
+			_CSS.Diffuse.B = var->asInt(2);
+		}
+		if (var = cf.getVarPtr("cloud_ambient"))
+		{
+			_CSS.Ambient.R = var->asInt(0);
+			_CSS.Ambient.G = var->asInt(1);
+			_CSS.Ambient.B = var->asInt(2);
+		}
+		if (var = cf.getVarPtr("cloud_speed"))
+			_CSS.CloudSpeed = var->asFloat();
+		if (var = cf.getVarPtr("cloud_update_period"))
+			_CSS.TimeToChange = var->asFloat();
+		if (var = cf.getVarPtr("cloud_wind_speed"))
+			_CSS.WindSpeed = var->asFloat();
 	}
 	catch (Exception& e)
 	{
@@ -545,7 +600,7 @@ void CObjectViewer::initCamera ()
 
 // ***************************************************************************
 
-void CObjectViewer::initUI (HWND parent)
+bool CObjectViewer::initUI (HWND parent)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());	
 
@@ -571,8 +626,11 @@ void CObjectViewer::initUI (HWND parent)
 	HICON hIcon = (HICON)LoadImage(theApp.m_hInstance, MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON,
 		16, 16, 0);
 
+	// load the config file
+	loadConfigFile();
+
 	// Create a doomy driver
-	IDriver *driver= CDRU::createGlDriver();
+	IDriver *driver= _Direct3d?CDRU::createD3DDriver():CDRU::createGlDriver();
 
 	// Get parent window
 	CWnd parentWnd;
@@ -624,11 +682,15 @@ void CObjectViewer::initUI (HWND parent)
 	_MainFrame->ShowWindow (SW_SHOW);
 	
 	// Init NELU
-	CNELU::init (640, 480, viewport, 32, true, view->m_hWnd);
+	if (!CNELU::init (640, 480, viewport, 32, true, view->m_hWnd, false, _Direct3d))
+	{
+		return false;
+	}
 	//CNELU::init (640, 480, viewport, 32, true, _MainFrame->m_hWnd);
 
-	// load the config file
-	loadConfigFile();
+	// Set the fog
+	CNELU::Driver->enableFog (_Fog);
+	CNELU::Driver->setupFog (_FogStart, _FogEnd, _FogColor);
 
 	// init sound	
 	CSoundSystem::initSoundSystem ();
@@ -762,6 +824,11 @@ void CObjectViewer::initUI (HWND parent)
 		}
 	}
 
+	// Create the cloud scape
+	_CS = new CCloudScape(CNELU::Driver);
+	_CS->init (&_CSS);
+
+	return true;
 }
 
 // ***************************************************************************
@@ -1081,16 +1148,17 @@ void CObjectViewer::go ()
 			// Animate the automatic animation in the scene
 			//CNELU::Scene->animate( (float) + NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
 
-			animateCNELUScene ();
+			animateCNELUScene (_CS);
 
 			// Eval channel mixer for transform
 			for (uint i=0; i<_ListInstance.size(); i++)
 				_ListInstance[i]->ChannelMixer.eval (false);
 
 			// Clear the buffers
+			CNELU::clearBuffers(_BackGroundColor);
 
-
-			CNELU::clearBuffers(_BackGroundColor);			
+			// Render the CS
+			_CS->render ();
 
 			// Draw the scene		
 			CNELU::Scene->render();		
@@ -1428,6 +1496,12 @@ void CObjectViewer::releaseUI ()
 
 	// Release all instances and all Igs.
 	removeAllInstancesFromScene();
+
+	// Remove
+
+	// Create the cloud scape
+	delete _CS;
+	_CS = NULL;
 
 	// release Root
 	CNELU::Scene->deleteModel(_SceneRoot);
@@ -3078,7 +3152,7 @@ bool		CObjectViewer::createVegetableLandscape()
 				_MouseListener.setHotSpot(landscapeBBox.getCenter());
 				matrix.setPos(landscapeBBox.getCenter());
 				matrix.rotateX(-(float)Pi/4);
-				matrix.translate(CVector(0,-100,0));
+				matrix.translate(CVector(0,-1000,0));
 				_MouseListener.setMatrix(matrix);
 			}
 
@@ -3582,7 +3656,7 @@ void		CObjectViewer::shootScene()
 				setupPlaylist (_AnimationDlg->getTime());
 
 				// Animate the automatic animation in the scene
-				animateCNELUScene ((uint64)(1000.f / _AnimationDlg->Speed));
+				animateCNELUScene (_CS, (uint64)(1000.f / _AnimationDlg->Speed));
 
 				// Eval channel mixer for transform
 				for (uint j=0; j<_ListInstance.size(); j++)
@@ -3590,6 +3664,9 @@ void		CObjectViewer::shootScene()
 
 				// Clear the buffers
 				CNELU::clearBuffers (_BackGroundColor);
+
+				// Render the CS
+				_CS->render ();
 
 				// Draw the scene		
 				CNELU::Scene->render ();

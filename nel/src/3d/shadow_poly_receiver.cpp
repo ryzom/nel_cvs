@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.cpp
  * <File description>
  *
- * $Id: shadow_poly_receiver.cpp,v 1.4 2004/03/12 16:27:52 berenguier Exp $
+ * $Id: shadow_poly_receiver.cpp,v 1.5 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -64,7 +64,7 @@ uint			CShadowPolyReceiver::addTriangle(const NLMISC::CTriangle &tri)
 		_Triangles.push_back(TTriangleGrid::CIterator());
 		id= _Triangles.size()-1;
 		// enlarge render size.
-		_RenderTriangles.resize(_Triangles.size() * 3);
+		_RenderTriangles.setNumIndexes(_Triangles.size() * 3);
 	}
 	else
 	{
@@ -225,64 +225,73 @@ void			CShadowPolyReceiver::render(IDriver *drv, CMaterial &shadowMat, const CSh
 		worldClipPlanes[i]= shadowMap->LocalClipPlanes[i] * worldMat;
 	}
 
-	// For All triangles, clip them.
 	uint	currentTriIdx= 0;
-	uint	currentVbIdx= 0;
-	for(it=_TriangleGrid.begin();it!=_TriangleGrid.end();it++)
 	{
-		CTriangleId		&triId= *it;
-		uint			triFlag= NL3D_SPR_NUM_CLIP_PLANE_MASK;
+		CVertexBufferReadWrite vba;
+		_VB.lock(vba);
 
-		// for all vertices, clip them
-		for(i=0;i<3;i++)
+		// For All triangles, clip them.
+		uint	currentVbIdx= 0;
+		for(it=_TriangleGrid.begin();it!=_TriangleGrid.end();it++)
 		{
-			uint	vid= triId.Vertex[i];
-			uint	vertexFlags= _Vertices[vid].Flags;
+			CTriangleId		&triId= *it;
+			uint			triFlag= NL3D_SPR_NUM_CLIP_PLANE_MASK;
 
-			// if this vertex is still not computed
-			if(!vertexFlags)
-			{
-				// For all planes of the Clip Volume, clip this vertex.
-				for(j=0;j<worldClipPlanes.size();j++)
-				{
-					// out if in front
-					bool	out= worldClipPlanes[j]*_Vertices[vid] > 0;
-
-					vertexFlags|= ((uint)out)<<j;
-				}
-
-				// add the bit flag to say "computed".
-				vertexFlags|= NL3D_SPR_NUM_CLIP_PLANE_SHIFT;
-
-				// store
-				_Vertices[vid].Flags= vertexFlags;
-			}
-
-			// And all vertex bits.
-			triFlag&= vertexFlags;
-		}
-
-		// if triangle not clipped, add the triangle
-		if( (triFlag & NL3D_SPR_NUM_CLIP_PLANE_MASK)==0 )
-		{
-			// Add the 3 vertices to the VB, and to the index buffer.
+			// for all vertices, clip them
 			for(i=0;i<3;i++)
 			{
 				uint	vid= triId.Vertex[i];
-				sint	vbId= _Vertices[vid].VBIdx;
+				uint	vertexFlags= _Vertices[vid].Flags;
 
-				// if not yet inserted in the VB, do it.
-				if(vbId==-1)
+				// if this vertex is still not computed
+				if(!vertexFlags)
 				{
-					// allocate a new place in the VBuffer
-					vbId= currentVbIdx++;
-					_Vertices[vid].VBIdx= vbId;
-					// set the coord
-					_VB.setVertexCoord(vbId, _Vertices[vid]+vertDelta);
+					// For all planes of the Clip Volume, clip this vertex.
+					for(j=0;j<worldClipPlanes.size();j++)
+					{
+						// out if in front
+						bool	out= worldClipPlanes[j]*_Vertices[vid] > 0;
+
+						vertexFlags|= ((uint)out)<<j;
+					}
+
+					// add the bit flag to say "computed".
+					vertexFlags|= NL3D_SPR_NUM_CLIP_PLANE_SHIFT;
+
+					// store
+					_Vertices[vid].Flags= vertexFlags;
 				}
 
-				// add the index to the tri list.
-				_RenderTriangles[currentTriIdx++]= vbId;
+				// And all vertex bits.
+				triFlag&= vertexFlags;
+			}
+
+			// if triangle not clipped, add the triangle
+			if( (triFlag & NL3D_SPR_NUM_CLIP_PLANE_MASK)==0 )
+			{
+				CIndexBufferReadWrite iba;
+				_RenderTriangles.lock (iba);
+				uint32 *ptr = iba.getPtr();
+
+				// Add the 3 vertices to the VB, and to the index buffer.
+				for(i=0;i<3;i++)
+				{
+					uint	vid= triId.Vertex[i];
+					sint	vbId= _Vertices[vid].VBIdx;
+
+					// if not yet inserted in the VB, do it.
+					if(vbId==-1)
+					{
+						// allocate a new place in the VBuffer
+						vbId= currentVbIdx++;
+						_Vertices[vid].VBIdx= vbId;
+						// set the coord
+						vba.setVertexCoord(vbId, _Vertices[vid]+vertDelta);
+					}
+
+					// add the index to the tri list.
+					ptr[currentTriIdx++]= vbId;
+				}
 			}
 		}
 	}
@@ -290,7 +299,8 @@ void			CShadowPolyReceiver::render(IDriver *drv, CMaterial &shadowMat, const CSh
 
 	// **** Render
 	drv->activeVertexBuffer(_VB);
-	drv->renderTriangles(shadowMat, &_RenderTriangles[0], currentTriIdx/3);
+	drv->activeIndexBuffer(_RenderTriangles);
+	drv->renderTriangles(shadowMat, 0, currentTriIdx/3);
 	// TestYoyo. Show in Red triangles selected
 	/*static	CMaterial	tam;
 	tam.initUnlit();

@@ -1,7 +1,7 @@
 /** \file motion_blur.cpp
  * <File description>
  *
- * $Id: motion_blur.cpp,v 1.4 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: motion_blur.cpp,v 1.5 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -77,57 +77,60 @@ void CMotionBlur::performMotionBlur(IDriver *driver, float motionBlurAmount)
 
 	driver->setFrustum(0, (float) width, 0, (float) height, -1, 1, false) ;
 
-	for (uint sn = 0 ; sn < 2 ; ++sn)
-	{
-		vb.setTexCoord(0, sn, CUV(0, 0)) ; 
-		vb.setTexCoord(1, sn, CUV(widthRatio, 0)) ; 
-		vb.setTexCoord(2, sn, CUV(widthRatio, heightRatio)) ; 
-		vb.setTexCoord(3, sn, CUV(0, heightRatio)) ; 
-	}
-
-
 	static CMaterial mbMat ;
-	static bool matSetup = false ; // set to true when mbMat has Been setup
-	if (!matSetup)
 	{
-		mbMat.setBlend(true) ;
-		mbMat.setBlendFunc(CMaterial::srcalpha, CMaterial::invsrcalpha) ;	
-		mbMat.setZWrite(false) ;
-		mbMat.setZFunc(CMaterial::always) ;	
-		// stage 0	    
-		mbMat.setTexture(0, _Tex) ;
-		mbMat.texEnvOpRGB(0, CMaterial::Replace );
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		for (uint sn = 0 ; sn < 2 ; ++sn)
+		{
+			vba.setTexCoord(0, sn, CUV(0, 0)) ; 
+			vba.setTexCoord(1, sn, CUV(widthRatio, 0)) ; 
+			vba.setTexCoord(2, sn, CUV(widthRatio, heightRatio)) ; 
+			vba.setTexCoord(3, sn, CUV(0, heightRatio)) ; 
+		}
 
-		mbMat.texEnvArg0Alpha(0, CMaterial::Diffuse, CMaterial::SrcAlpha);
-		mbMat.texEnvOpAlpha(0, CMaterial::Replace);
-		
-		mbMat.setDoubleSided(true) ;
-		matSetup = true ;
+
+		static bool matSetup = false ; // set to true when mbMat has Been setup
+		if (!matSetup)
+		{
+			mbMat.setBlend(true) ;
+			mbMat.setBlendFunc(CMaterial::srcalpha, CMaterial::invsrcalpha) ;	
+			mbMat.setZWrite(false) ;
+			mbMat.setZFunc(CMaterial::always) ;	
+			// stage 0	    
+			mbMat.setTexture(0, _Tex) ;
+			mbMat.texEnvOpRGB(0, CMaterial::Replace );
+
+			mbMat.texEnvArg0Alpha(0, CMaterial::Diffuse, CMaterial::SrcAlpha);
+			mbMat.texEnvOpAlpha(0, CMaterial::Replace);
+			
+			mbMat.setDoubleSided(true) ;
+			matSetup = true ;
+		}
+
+
+		mbMat.setColor(CRGBA(255, 255, 255, (uint8) (255.f * motionBlurAmount) ) ) ;		
+
+
+		vba.setVertexCoord(0, CVector((float) _X, 0, 0) ) ;
+		vba.setVertexCoord(1, CVector((float) (_X + _W), 0 ,0) ) ;
+		vba.setVertexCoord(2, CVector((float) (_X + _W), 0, (float) (_Y + _H) ) );
+		vba.setVertexCoord(3, CVector(0 , 0, (float) (_Y + _H) ) ) ;
 	}
-
-
-	mbMat.setColor(CRGBA(255, 255, 255, (uint8) (255.f * motionBlurAmount) ) ) ;		
-
-
-	vb.setVertexCoord(0, CVector((float) _X, 0, 0) ) ;
-	vb.setVertexCoord(1, CVector((float) (_X + _W), 0 ,0) ) ;
-	vb.setVertexCoord(2, CVector((float) (_X + _W), 0, (float) (_Y + _H) ) );
-	vb.setVertexCoord(3, CVector(0 , 0, (float) (_Y + _H) ) ) ;
 
 	driver->setupViewMatrix(CMatrix::Identity) ;
 	driver->setupModelMatrix(CMatrix::Identity) ;
 	
 
 	driver->activeVertexBuffer(vb) ;
-	driver->renderQuads(mbMat, 0, 1) ;
+	driver->renderRawQuads(mbMat, 0, 1) ;
 
 	// blit back frame buffer to save this frame
 
 
 
-	driver->copyFrameBufferToTexture(_Tex, 0, 0, 0, _X, _Y, _W, _H) ;
-	
-
+	// todo hulud : use the new render to texture interface
+	// driver->copyFrameBufferToTexture(_Tex, 0, 0, 0, _X, _Y, _W, _H) ;
 }
 
 

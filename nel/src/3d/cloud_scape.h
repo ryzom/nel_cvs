@@ -1,7 +1,7 @@
 /** \file cloud.h
  * Cloud definition to work with the cloudscape
  *
- * $Id: cloud_scape.h,v 1.3 2002/11/06 16:58:45 boucher Exp $
+ * $Id: cloud_scape.h,v 1.4 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -48,9 +48,15 @@ struct SCloudTexture3D
 	uint32 Width, Height, Depth;
 	uint32 NbW, NbH; // Number of slice in width and height (NbW*NbH = Depth)
 	uint8									*Mem;
+	uint8									*Mem2;
+	uint8									*MemBuffer;
 	NLMISC::CSmartPtr<NL3D::CTextureMem>	Tex;
-	NL3D::CMaterial							ToLight;
+	NLMISC::CSmartPtr<NL3D::CTextureMem>	Tex2;
+	NLMISC::CSmartPtr<NL3D::CTextureMem>	TexBuffer;
+	NL3D::CMaterial							ToLightRGB;
+	NL3D::CMaterial							ToLightAlpha;
 	NL3D::CMaterial							ToBill;
+	NL3D::CMaterial							MatCopy;
 
 	SCloudTexture3D ();
 	void init (uint32 nWidth, uint32 nHeight, uint32 nDepth);

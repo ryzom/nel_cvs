@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.52 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: landscape.h,v 1.53 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@
 #include "3d/tile_bank.h"
 #include "3d/patch_rdr_pass.h"
 #include "3d/vertex_buffer.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/material.h"
 #include "3d/tile_far_bank.h"
 #include "3d/texture_near.h"
@@ -622,6 +622,13 @@ public:
 	ULandscapeTileCallback *getTileCallback() const { return _TileCallback; }
 	// @}
 
+	// lockBuffers(), called by updateGlobalsAndLockBuffers().
+	void			lockBuffers ();
+	// unlockBuffers. This is the END call for updateGlobalsAndLockBuffers().
+	void			unlockBuffers (bool force = false);
+	// Check if buffers are locked
+	bool			isLocked() const { return _LockCount != 0; }
+
 // ********************************
 private:
 	// Private part used by CTessFace / CPatch / CZone.
@@ -681,12 +688,6 @@ private:
 
 	// Update globals value to CTessFace, and lock Buffers if possible.
 	void updateGlobalsAndLockBuffers (const CVector &refineCenter);
-	// lockBuffers(), called by updateGlobalsAndLockBuffers().
-	void lockBuffers ();
-	// unlockBuffers. This is the END call for updateGlobalsAndLockBuffers().
-	void unlockBuffers ();
-	// special for ATI. called in render()
-	void synchronizeATIVBHards();
 	// update TheFaceVector for which the faces may have been modified during refine(), refineAll() etc....
 	void updateTessBlocksFaceVector();
 
@@ -713,6 +714,7 @@ private:
 	CLandscapeVBAllocator		_Far0VB;
 	CLandscapeVBAllocator		_Far1VB;
 	CLandscapeVBAllocator		_TileVB;
+	uint						_LockCount;	// Lock counter
 	// True if we can compute Geomorph and Alpha with VertexShader.
 	bool						_VertexShaderOk;
 	// For CZone::refreshTesselationGeometry().

@@ -1,7 +1,7 @@
 /** \file vertex_buffer_heap.h
  * <File description>
  *
- * $Id: vertex_buffer_heap.h,v 1.3 2002/09/10 13:37:26 berenguier Exp $
+ * $Id: vertex_buffer_heap.h,v 1.4 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -85,9 +85,9 @@ public:
 	/// \name Rendering. Those methods must be called only if enabled(), else crash
 	// @{
 
-	/// lock the VB/VBHard, for future filling
+	/// lock the VB, for future filling
 	uint8			*lock(uint indexStart);
-	/// unlock the VB/VBHard. Mirror the IVertexBufferHard::unlock(start, end) scheme.
+	/// unlock the VB. Mirror the CVertexBuffer::unlock(start, end) scheme.
 	void			unlock(uint startVert, uint endVert);
 
 	/// activate the VB/VBHard as the current VB in the driver, for future rendering
@@ -98,7 +98,6 @@ public:
 // ********************
 private:
 	NLMISC::CRefPtr<IDriver>			_Driver;
-	NLMISC::CRefPtr<IVertexBufferHard>	_VBHard;
 	CVertexBuffer						_VBSoft;
 	NLMISC::CHeapMemory					_HeapManager;
 	uint8								*_HeapStart;

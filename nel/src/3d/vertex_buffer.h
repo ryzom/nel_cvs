@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.11 2004/01/14 10:32:48 vizerie Exp $
+ * $Id: vertex_buffer.h,v 1.12 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,7 @@ namespace NL3D
 using NLMISC::CRefCount;
 using NLMISC::CRefPtr;
 using NLMISC::CRGBA;
+using NLMISC::CBGRA;
 using NLMISC::CVector;
 using NLMISC::CVectorD;
 using NLMISC::CUV;
@@ -60,6 +61,7 @@ class	IDriver;
 
 // List typedef.
 class	IVBDrvInfos;
+class CVertexBuffer;
 typedef	std::list<IVBDrvInfos*>			TVBDrvInfoPtrList;
 typedef	TVBDrvInfoPtrList::iterator		ItVBDrvInfoPtrList;
 
@@ -72,9 +74,24 @@ class IVBDrvInfos : public CRefCount
 private:
 	IDriver				*_Driver;
 	ItVBDrvInfoPtrList	_DriverIterator;
+	CRefPtr<CVertexBuffer>	_VertexBuffer;
 
 public:
-	IVBDrvInfos(IDriver	*drv, ItVBDrvInfoPtrList it) {_Driver= drv; _DriverIterator= it;}
+	IVBDrvInfos(IDriver	*drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb) {_Driver= drv; _DriverIterator= it; _VertexBuffer = vb;}
+
+	/** Lock method.
+	  * \param first is the first vertex to be accessed. Put 0 to select all the vertices. What ever is this index, 
+	  * the indexices in the vertex buffer remain the same.
+	  * \param last is the last vertex to be accessed + 1. Put 0 to select all the vertices.
+	  */
+	virtual uint8	*lock (uint first, uint last, bool readOnly) =0;
+
+	/** Unlock method.
+	  * \param first is the index of the first vertices to update. 0 to update all the vertices.
+	  * \param last is the index of the last vertices to update + 1. 0 to update all the vertices.
+	  */
+	virtual void	unlock (uint first, uint last) =0;
+
 	// The virtual dtor is important.
 	virtual ~IVBDrvInfos();
 };
@@ -96,6 +113,10 @@ struct	CPaletteSkin
 /**
  * A vertex buffer to work with the driver
  *
+ * Before the vertex buffer is resident (IDriver::activeVertexBuffer), it is in system memory.
+ * Once the vertex buffer is resident, the driver creates its proprietary vertex buffer and release the internal vertex buffer.
+ * At this moment the vertex buffer can be in VRAM, AGP or system memory.
+ *
  */
 /* *** IMPORTANT ********************
  * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
@@ -105,6 +126,31 @@ struct	CPaletteSkin
 class CVertexBuffer : public CRefCount
 {
 public:
+	friend class CVertexBufferReadWrite;
+	friend class CVertexBufferRead;
+
+	/**
+	  * Type of preferred memory
+	  */
+	enum TPreferredMemory
+	{
+		RAMPreferred = 0,
+		AGPPreferred,
+		VRAMPreferred,
+		PreferredCount,
+	};
+
+	/**
+	  * Type of vertex buffer location
+	  */
+	enum TLocation
+	{
+		RAMResident = 0,
+		AGPResident,
+		VRAMResident,
+		NotResident,
+		LocationCount,
+	};
 
 	/**
 	  * Value ID, there is 16 value id
@@ -169,18 +215,18 @@ public:
 	  */
 	enum TType
 	{ 
-		Double1=0, 
+		Double1=0,	// Deprecated
 		Float1, 
-		Short1, 
-		Double2, 
+		Short1,		// Deprecated
+		Double2,	// Deprecated
 		Float2, 
-		Short2, 
-		Double3, 
+		Short2,		// Deprecated
+		Double3,	// Deprecated
 		Float3, 
-		Short3,
-		Double4, 
+		Short3,		// Deprecated
+		Double4,	// Deprecated
 		Float4, 
-		Short4,
+		Short4,		// Deprecated
 		UChar4,
 		NumType
 	};
@@ -198,6 +244,15 @@ public:
 	};
 
 	/**
+	  * Vertex color format
+	  */
+	enum TVertexColorType 
+	{ 
+		TRGBA = 0,
+		TBGRA = 1
+	};
+
+	/**
 	  * Static array with the size in byte of each value type
 	  */
 	static const uint SizeType[NumType];
@@ -212,8 +267,6 @@ public:
 	  */
 	static const uint  NumComponentsType[NumType];
 
-private:
-
 	/**
 	  * Internal flags
 	  */
@@ -225,51 +278,29 @@ private:
 		/// Num vertices touched
 		TouchedNumVertices		= 2,
 
+		/// Reserve touched
+		TouchedReserve			= 4,
+
 		/// All touhched
 		TouchedAll				= 0xFFFF
 	};
-
-	// Type of data stored in each value
-	uint8					_Type[NumValue];	// Offset 0 : aligned
-	uint8					_Pad;				// Offset 13 : aligned
-
-	// Size of the vertex (sum of the size of each value
-	uint16					_VertexSize;		// Offset 14 : aligned
-
-	// Flags: bit #n is 1 if the value #n is used
-	uint16					_Flags;				// Offset 16 : aligned
-
-	// Internal flags
-	uint16					_InternalFlags;		// Offset 18 : aligned
-
-	// Vertex count in the buffer
-	uint32					_NbVerts;			// Offset 20 : aligned
-
-	// Capacity of the buffer
-	uint32					_Capacity;
-
-	// Vertex array
-	std::vector<uint8>		_Verts;
-
-	// Offset of each value
-	uint16					_Offset[NumValue];
-
-	// The UV routing table
-	uint8					_UVRouting[MaxStage];
 
 public:
 
 	// \name Private. For Driver only.
 	// @{
+	TLocation				Location;		// The driver implementation must set the location after activeVertexBuffer.
 	CRefPtr<IVBDrvInfos>	DrvInfos;
 	uint					getTouchFlags() const { return _InternalFlags&TouchedAll; }
 	void					resetTouchFlags() {_InternalFlags &= ~TouchedAll;}
+	void					releaseNonResidentVertices ();
+	void					restoreNonResidentVertices ();
 	// @}
 
 public:
 
 	/**
-	  * Default constructor. Make an empty vertex buffer. No value, no vertex.
+	  * Default constructor. Make an empty vertex buffer. No value, no vertex. Vertex color format is set to TRGBA.
 	  */
 	CVertexBuffer(void);
 
@@ -287,8 +318,58 @@ public:
 	/**
 	  * Copy operator.
 	  * Do not copy DrvInfos, copy all infos and set IDRV_VF_TOUCHED_ALL.
+	  * All the destination vertex buffer is invalidated. Data are lost.
+	  * The vertex buffer must not be locked.
 	  */
 	CVertexBuffer			&operator=(const CVertexBuffer &vb);
+
+	/**
+	  * Set the vertex buffer preferred memory. Default preferred memory is RAM.
+	  *
+	  * If VRAM memory allocation failed, the driver will try with AGP and then with RAM.
+	  * If AGP memory allocation failed, the driver will try with RAM.
+	  * RAM allocation should never failed
+	  *
+ 	  *	Performance note:
+	  *	 - for RAM CVertexBuffer, you can read / write as you like.
+	  *	 - for AGP CVertexBuffer, you should write sequentially to take full advantage of the write combiners.
+	  *	 - for VRAM CVertexBuffer, you should write only one time, to init.
+	  *
+	  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
+	  * The vertex buffer is invalidated. Data are lost.
+	  * The vertex buffer must not be locked.
+	  */
+	void setPreferredMemory (TPreferredMemory preferredMemory);
+
+	/**
+	  * Get the vertex buffer preferred memory.
+	  */
+	TPreferredMemory getPreferredMemory () const { return _PreferredMemory; }
+
+	/**
+	  * Get the vertex buffer current location.
+	  */
+	TLocation getLocation () const { return Location; }
+
+	/**
+	  * Set the write only memory flag for each memory type. If set, the user must not read the memory of this vertex buffer.
+	  * Default is false for RAMPreferred and true for AGPPreferred and VRAMPreferred.
+	  *
+	  * If the vertex buffer is resident in the memory type modified, the data are lost and the vertex buffer is no more resident,
+	  * the vertex buffer is invalidated. Data are lost and the vertex buffer must not be locked.
+	  */ 
+	void setWriteOnly(TPreferredMemory preferredMemory, bool writeOnly);
+
+	/**
+	  * Get write only memory flag.
+	  */ 
+	bool getWriteOnly(TPreferredMemory preferredMemory) const {return _WriteOnly[preferredMemory];}
+
+	/**
+	  * Returns if the vertex buffer is driver resident or not.
+	  * The vertex buffer is resident after a call to IDriver::activeVertexBuffer().
+	  */
+	bool isResident () const { return (Location != NotResident) && DrvInfos; }
 
 	/**
 	  * \name Standard values vertex buffer mgt.
@@ -302,6 +383,10 @@ public:
 		  * Use one or several flag between : PositionFlag, WeightFlag, NormalFlag, PrimaryColorFlag, 
 		  * SecondaryColorFlag, FogFlag, TexCoord0Flag, TexCoord1Flag, TexCoord2Flag, 
 		  * TexCoord3Flag, TexCoord4Flag, TexCoord5Flag, TexCoord6Flag, TexCoord7Flag, PaletteSkinFlag
+		  *
+		  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
+		  * The vertex buffer is invalidated. Data are lost.
+		  * The vertex buffer must not be locked.
 		  *
 		  * If WeightFlag is specified, 4 float are used to setup the skinning value on 4 bones.
 		  */
@@ -322,51 +407,19 @@ public:
 		/// Returns the number of texture coordinate stages used by this vertex buffer
 		uint					getNumTexCoordUsed() const;
 
-		// It is an error (assert) to set a vertex component if not setuped in setVertexFormat().
-		inline void				setVertexCoord(uint idx, float x, float y, float z);
-		inline void				setVertexCoord(uint idx, const CVector &v);
-		inline void				setNormalCoord(uint idx, const CVector &v);
-		inline void				setTexCoord(uint idx, uint8 stage, float u, float v);
-		inline void				setTexCoord(uint idx, uint8 stage, const CUV &uv);
-		inline void				setColor(uint idx, CRGBA rgba);
-		inline void				setSpecular(uint idx, CRGBA rgba);
-		inline void				setWeight(uint idx, uint8 wgt, float w);
-		inline void				setPaletteSkin(uint idx, CPaletteSkin ps);
-
 		// It is an error (assert) to query a vertex offset of a vertex component not setuped in setVertexFormat().
 		// NB: The Vertex offset is always 0.
 		sint					getNormalOff() const {nlassert(_Flags & NormalFlag); return _Offset[Normal];}
 		sint					getTexCoordOff(uint8 stage=0) const  {nlassert(_Flags & (TexCoord0Flag<<stage)); return _Offset[TexCoord0+stage]; }
+
+		/** See getColorPointer() */
   		sint					getColorOff() const {nlassert(_Flags & PrimaryColorFlag); return _Offset[PrimaryColor];}
+		/** See getColorPointer() */
 		sint					getSpecularOff() const {nlassert(_Flags & SecondaryColorFlag); return _Offset[SecondaryColor];}
+
 		/// NB: it is ensured that   WeightOff(i)==WeightOff(0)+i*sizeof(float).
 		sint					getWeightOff(sint wgt) const {nlassert(_Flags & WeightFlag); return _Offset[Weight]+(wgt*sizeof(float));}
 		sint					getPaletteSkinOff() const {nlassert(_Flags & PaletteSkin); return _Offset[PaletteSkin];}
-
-		/** NB: the order of those methods follow the order in memory of the elements:
-		 *	- VertexCoord
-		 *	- NormalCoord
-		 *	- TexCoord
-		 *	- Color
-		 *	- Specular
-		 *	- Weight
-		 *	- PaletteSkin
-		 */
-		void*					getVertexCoordPointer(uint idx=0);
-		void*					getNormalCoordPointer(uint idx=0);
-		void*					getTexCoordPointer(uint idx=0, uint8 stage=0);
-		void*					getColorPointer(uint idx=0);
-		void*					getSpecularPointer(uint idx=0);
-		void*					getWeightPointer(uint idx=0, uint8 wgt=0);
-		void*					getPaletteSkinPointer(uint idx=0);
-
-		const void*				getVertexCoordPointer(uint idx=0) const ;
-		const void*				getNormalCoordPointer(uint idx=0) const ;
-		const void*				getTexCoordPointer(uint idx=0, uint8 stage=0) const ;
-		const void*				getColorPointer(uint idx=0) const ;
-		const void*				getSpecularPointer(uint idx=0) const ;
-		const void*				getWeightPointer(uint idx=0, uint8 wgt=0) const ;
-		const void*				getPaletteSkinPointer(uint idx=0) const ;
 	// @}
 
 	/**
@@ -387,11 +440,19 @@ public:
 		/**
 		  * Clear all value in the vertex buffer. After this call, call addValue for each value you want in your vertex
 		  * buffer then call initEx() to init the vertex buffer.
+		  *
+		  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
+		  * The vertex buffer is invalidated. Data are lost.
+		  * The vertex buffer must not be locked.
 		  */
 		void				clearValueEx ();		
 
 		/**
 		  * Add a value in the vertex buffer. After this call, call initEx() to init the vertex buffer.
+		  *
+		  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
+		  * The vertex buffer is invalidated. Data are lost.
+		  * The vertex buffer must not be locked.
 		  *
 		  * \param valueId is the value id to setup.
 		  * \param type is the type used for this value.
@@ -403,37 +464,12 @@ public:
 
 		/**
 		  * Init the vertex buffer in extended mode.
+		  *
+		  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
+		  * The vertex buffer is invalidated. Data are lost.
+		  * The vertex buffer must not be locked.
 		  */
 		void				initEx ();
-
-		/**
-		  * Setup values. nlassert are raised if wrong value type is setuped.
-		  */
-		inline void			setValueDouble1Ex (TValue valueId, uint idx, double value);
-		inline void			setValueDouble2Ex (TValue valueId, uint idx, double x, double y);
-		inline void			setValueDouble3Ex (TValue valueId, uint idx, double x, double y, double z);
-		inline void			setValueDouble3Ex (TValue valueId, uint idx, const CVectorD& vector);
-		inline void			setValueDouble4Ex (TValue valueId, uint idx, double x, double y, double z, double w);
-		inline void			setValueFloat1Ex (TValue valueId, uint idx, float value);
-		inline void			setValueFloat2Ex (TValue valueId, uint idx, float x, float y);
-		inline void			setValueFloat3Ex (TValue valueId, uint idx, float x, float y, float z);
-		inline void			setValueFloat3Ex (TValue valueId, uint idx, const CVector& vector);
-		inline void			setValueFloat4Ex (TValue valueId, uint idx, float x, float y, float z, float w);
-		inline void			setValueShort1Ex (TValue valueId, uint idx, uint16 value);
-		inline void			setValueShort2Ex (TValue valueId, uint idx, uint16 x, uint16 y);
-		inline void			setValueShort3Ex (TValue valueId, uint idx, uint16 x, uint16 y, uint16 z);
-		inline void			setValueShort4Ex (TValue valueId, uint idx, uint16 x, uint16 y, uint16 z, uint16 w);
-		inline void			setValueUChar4Ex (TValue valueId, uint idx, CRGBA rgba);
-
-		/**
-		  * Get writable value pointer.
-		  */
-		void*				getValueEx (TValue valueId, uint idx=0) { nlassert (_Flags & (1<<valueId));	return (void*)((&(*_Verts.begin()))+idx*_VertexSize+getValueOffEx (valueId)); }
-
-		/**
-		  * Get readable value pointer.
-		  */
-		const void*			getValueEx (TValue valueId, uint idx=0) const { nlassert (_Flags & (1<<valueId));	return (void*)((&(*_Verts.begin()))+idx*_VertexSize+getValueOffEx (valueId)); };
 
 		/**
 		  * Get value offset.
@@ -444,6 +480,8 @@ public:
 
 	/** 
 	  * Set the number of active vertices. It enlarge capacity, if needed.
+	  * If the new size is bigger than capacity, reserve() will be called. see reserve().
+	  * If the new size is smaller than capacity, the data are keeped, the vertex buffer stay resident if it is resident.
 	  */
 	void					setNumVertices(uint32 n);
 	
@@ -454,11 +492,20 @@ public:
 
 	/**
 	  * Reset all the vertices from memory (contReset()), so that capacity() == getNumVertices() == 0.
+	  *
+	  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
+	  * The vertex buffer is invalidated. Data are lost.
+	  * The vertex buffer must not be locked.
 	  */
 	void					deleteAllVertices();
 
 	/**
 	  * Reserve space for nVerts vertices. You are allowed to write your vertices on this space.
+	  * If the index buffer is resident in a write only memory, the data are lost and the index buffer is no more resident.
+	  * If the index buffer is not resident or resident in a readable memory, the data are keeped.
+	  *
+	  * The vertex buffer is invalidated. Data are lost.
+	  * The vertex buffer must not be locked.
 	  */
 	void					reserve(uint32 nVerts);
 	
@@ -487,8 +534,39 @@ public:
 	  */
 	uint8					getNumWeight () const;
 
+	/**
+	  * If the vertex buffer is resident, the data are lost and the vertex buffer is no more resident.
+	  * The vertex buffer is invalidated.
+	  * The vertex buffer must not be locked.
+	  */
 	void		serial(NLMISC::IStream &f);
 
+	/**
+	  * Access vertices. Multi lock is possible only if no regions are used. Each lock need an accessor to be unlocked.
+	  *
+	  * Lock the vertex buffer and return and fill an accessor object. Once the object is destroyed, the buffer in unlocked.
+	  *
+	  * \param accessor is the accessor object to fill
+	  * \param first is the first vertex to be accessed. Put 0 to select all the vertices. What ever is this index, 
+	  * the indexices in the vertex buffer remain the same.
+	  * \param last is the last vertex to be accessed + 1. Put 0 to select all the vertices.
+	  */
+	inline void	lock (CVertexBufferReadWrite &accessor, uint first=0, uint last=0);
+
+	/**
+	  * Read only vertices access. Multi lock is possible only if no regions are used. Each lock need an accessor to be unlocked.
+	  *
+	  * Lock the vertex buffer and return and fill an accessor object. Once the object is destroyed, the buffer in unlocked.
+	  *
+	  * \param accessor is the accessor object to fill
+	  * \param first is the first vertex to be accessed. Put 0 to select all the vertices. What ever is this index, 
+	  * the indexices in the vertex buffer remain the same.
+	  * \param last is the last vertex to be accessed + 1. Put 0 to select all the vertices.
+	  */
+	inline void	lock (CVertexBufferRead &accessor, uint first=0, uint last=0) const;
+
+	// Return true if the vetx buffer is locked
+	bool		isLocked () const {return _LockCounter!=0;}
 
 	/// \name Lod VB serialisation.
 	// @{
@@ -504,31 +582,250 @@ public:
 	const uint8	*getUVRouting () const { return _UVRouting; }
 	void		setUVRouting (uint8 uvChannel, uint newUVRouting) { _UVRouting[uvChannel] = newUVRouting; }
 
+	/** 
+	  * Set the vertex color format. If the vertex buffer is not in this format, the colors will be converted 
+	  * See getColorPointer() 
+	  *
+	  * The vertex buffer must not be resident.
+	  *
+	  * The vertex buffer is invalidated.
+	  * The vertex buffer must not be locked.
+	  * \return false if the vertex buffer is resident.
+	  */
+	bool		setVertexColorFormat (TVertexColorType format);
+
+	/** 
+	  * Get the vertex color format. See getColorPointer() 
+	  */
+	TVertexColorType	getVertexColorFormat () const
+	{
+		return (TVertexColorType)_VertexColorFormat;
+	}
+
 	// for debug : dump format of vertex buffer
 	void		dumpFormat() const;
+	void		setName (const std::string &name) { _Name = name; };
+	const std::string &getName () const { return _Name; };
 
 private:
+
+	// Check locked buffers
+	bool checkLockedBuffer () const { return _LockedBuffer || (!isResident() && _NonResidentVertices.empty()); }
+
+	/**
+	  * Unlock the vertex buffer. Called by CVertexBufferReadWrite.
+	  * \param first the first vertex that as been modified.
+	  * \param last the last vertex that as been modified + 1.
+	  */
+	inline void	unlock (uint first, uint last);
+
+	/**
+	  * Unlock the vertex buffer. Called by CVertexBufferRead.
+	  * \param first the first vertex that as been modified.
+	  * \param last the last vertex that as been modified + 1.
+	  */
+	inline void	unlock () const;
+	
 	/// Old version serialisation. V0 and V1.
 	void		serialOldV1Minus(NLMISC::IStream &f, sint ver);
 
 	/// Translate old flags
 	uint16		remapV2Flags (uint32 oldFlags, uint& weightCount);
+
+private:
+
+	// Type of data stored in each value
+	uint8					_Type[NumValue];	// Offset 0 : aligned
+	uint8					_VertexColorFormat;	// Offset 13 : aligned
+
+	// Size of the vertex (sum of the size of each value
+	uint16					_VertexSize;		// Offset 14 : aligned
+
+	// Flags: bit #n is 1 if the value #n is used
+	uint16					_Flags;				// Offset 16 : aligned
+
+	// Internal flags
+	uint16					_InternalFlags;		// Offset 18 : aligned
+
+	// Vertex count in the buffer
+	uint32					_NbVerts;			// Offset 20 : aligned
+
+	// Capacity of the buffer
+	uint32					_Capacity;
+
+	// Vertex array
+	std::vector<uint8>		_NonResidentVertices;
+
+	// The locked vertex buffer
+	mutable uint8*			_LockedBuffer;
+
+	// Offset of each value
+	uint16					_Offset[NumValue];
+
+	// The UV routing table
+	uint8					_UVRouting[MaxStage];
+	
+	// The vertex buffer is locked n times
+	mutable uint			_LockCounter;
+
+	// Prefered memory
+	TPreferredMemory		_PreferredMemory;
+
+	// Write only
+	bool					_WriteOnly[PreferredCount];
+
+	// Debug string
+	std::string				_Name;
 };
 
+/**
+ * The vertex buffer accessor read / write
+ */
+class CVertexBufferReadWrite
+{
+public:
+	friend class CVertexBuffer;
+
+	CVertexBufferReadWrite()
+	{
+		_Parent = NULL;
+	}
+	~CVertexBufferReadWrite()
+	{
+		unlock();
+	}
+
+	/**
+	  * Unlock the vertex buffer.
+	  * After this call, the accessor should not be used before a new lock.
+	  */
+	void unlock()
+	{
+		if (_Parent)
+		{
+			_Parent->unlock(_First, _Last);
+			_Parent = NULL;
+		}
+	}
+
+	/* Set a value into the vertex buffer. */
+	inline void				setVertexCoord(uint idx, float x, float y, float z);
+	inline void				setVertexCoord(uint idx, const CVector &v);
+	inline void				setNormalCoord(uint idx, const CVector &v);
+	inline void				setTexCoord(uint idx, uint8 stage, float u, float v);
+	inline void				setTexCoord(uint idx, uint8 stage, const CUV &uv);
+	inline void				setColor(uint idx, CRGBA rgba);
+	inline void				setSpecular(uint idx, CRGBA rgba);
+	inline void				setWeight(uint idx, uint8 wgt, float w);
+	inline void				setPaletteSkin(uint idx, CPaletteSkin ps);
+	inline void				setValueFloat1Ex (CVertexBuffer::TValue valueId, uint idx, float value);
+	inline void				setValueFloat2Ex (CVertexBuffer::TValue valueId, uint idx, float x, float y);
+	inline void				setValueFloat3Ex (CVertexBuffer::TValue valueId, uint idx, float x, float y, float z);
+	inline void				setValueFloat3Ex (CVertexBuffer::TValue valueId, uint idx, const CVector& vector);
+	inline void				setValueFloat4Ex (CVertexBuffer::TValue valueId, uint idx, float x, float y, float z, float w);
+	inline void				setValueUChar4Ex (CVertexBuffer::TValue valueId, uint idx, CRGBA rgba);
+
+	/** Get a pointer on a value. 
+	 *
+	 *  For Color pointers :
+	 *  This method returns a (CRGBA*) or a (CBGRA*) regarding the vertex color format returned by CVertexBufferReadWrite::getVertexColorFormat().
+	 *	A call to IDriver::activeVertexBuffer() will change this format to the format returned by IDriver::getVertexColorFormat().
+	 *	So, before each write of vertex color in the vertex buffer, the vertex color format must be checked with CVertexBuffer::getVertexColorFormat().
+	 */
+	NLMISC::CVector*		getVertexCoordPointer(uint idx=0);
+	NLMISC::CVector*		getNormalCoordPointer(uint idx=0);
+	NLMISC::CUV*			getTexCoordPointer(uint idx=0, uint8 stage=0);
+	void*					getColorPointer(uint idx=0);
+	void*					getSpecularPointer(uint idx=0);
+	float*					getWeightPointer(uint idx=0, uint8 wgt=0);
+	CPaletteSkin*			getPaletteSkinPointer(uint idx=0);
+	void*					getValueEx (CVertexBuffer::TValue valueId, uint idx=0) { nlassert (_Parent->checkLockedBuffer()); nlassert (_Parent->_Flags & (1<<valueId));	return (void*)(_Parent->_LockedBuffer+idx*_Parent->_VertexSize+_Parent->getValueOffEx (valueId)); }
+
+	/** Touch the updated vertices. If the method is not call, the accessor update all the vertices.
+	  * \param first is the index of the first vertices to update.
+	  * \param last is the index of the last vertices to update + 1.
+	  */
+	void					touchVertices (uint first, uint last);
+
+private:
+
+	// No copy operators available
+	void		operator=(const CVertexBufferReadWrite& other) {};
+	CVertexBufferReadWrite(const CVertexBufferReadWrite& other) {};
+
+	CVertexBuffer		*_Parent;
+	uint				_First, _Last;
+};
+
+/**
+ * The vertex buffer read accessor 
+ */
+class CVertexBufferRead
+{
+public:
+	friend class CVertexBuffer;
+
+	CVertexBufferRead()
+	{
+		_Parent = NULL;
+	}
+	~CVertexBufferRead()
+	{
+		unlock();
+	}
+
+	/**
+	  * Unlock the vertex buffer.
+	  * After this call, the accessor should not be used before a new lock.
+	  */
+	void unlock()
+	{
+		if (_Parent)
+		{
+			_Parent->unlock();
+			_Parent = NULL;
+		}
+	}
+
+	/** Get a pointer on a value. 
+	 *
+	 *  For Color pointers :
+	 *  This method returns a (CRGBA*) or a (CBGRA*) regarding the vertex color format returned by CVertexBufferRead::getVertexColorFormat().
+	 *	A call to IDriver::activeVertexBuffer() will change this format to the format returned by IDriver::getVertexColorFormat().
+	 *	So, before each write of vertex color in the vertex buffer, the vertex color format must be checked with CVertexBuffer::getVertexColorFormat().
+	 */
+	const NLMISC::CVector*	getVertexCoordPointer(uint idx=0) const;
+	const NLMISC::CVector*	getNormalCoordPointer(uint idx=0) const;
+	const NLMISC::CUV*		getTexCoordPointer(uint idx=0, uint8 stage=0) const;
+	const void*				getColorPointer(uint idx=0) const;
+	const void*				getSpecularPointer(uint idx=0) const;
+	const float*			getWeightPointer(uint idx=0, uint8 wgt=0) const;
+	const CPaletteSkin*		getPaletteSkinPointer(uint idx=0) const;
+	const void*				getValueEx (CVertexBuffer::TValue valueId, uint idx=0) const { nlassert (_Parent->_Flags & (1<<valueId));	return (void*)(_Parent->_LockedBuffer+idx*_Parent->_VertexSize+_Parent->getValueOffEx (valueId)); }
+
+private:
+	
+	// No copy operators available
+	void		operator=(const CVertexBufferRead& other) {};
+	CVertexBufferRead(const CVertexBufferRead& other) {};
+
+	const CVertexBuffer		*_Parent;
+};
 
 //////////////////////////////////////
 // implementation of inline methods //
 //////////////////////////////////////
 // --------------------------------------------------
 
-inline void CVertexBuffer::setVertexCoord(uint idx, float x, float y, float z)
+inline void CVertexBufferReadWrite::setVertexCoord(uint idx, float x, float y, float z)
 {
 	float*	ptr;
 
-	nlassert (_Flags & PositionFlag);
-	nlassert (_Type[Position]==Float3);
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert (_Parent->_Flags & CVertexBuffer::PositionFlag);
+	nlassert (_Parent->_Type[CVertexBuffer::Position]==CVertexBuffer::Float3);
 
-	ptr=(float*)(&_Verts[idx*_VertexSize]);
+	ptr=(float*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
 	*ptr=x;
 	ptr++;
 	*ptr=y;
@@ -538,76 +835,83 @@ inline void CVertexBuffer::setVertexCoord(uint idx, float x, float y, float z)
 
 // --------------------------------------------------
 
-inline void CVertexBuffer::setVertexCoord(uint idx, const CVector &v)
+inline void CVertexBufferReadWrite::setVertexCoord(uint idx, const CVector &v)
 {
 	uint8*	ptr;
 
-	nlassert (_Flags & PositionFlag);
-	nlassert (_Type[Position]==Float3);
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert (_Parent->_Flags & CVertexBuffer::PositionFlag);
+	nlassert (_Parent->_Type[CVertexBuffer::Position]==CVertexBuffer::Float3);
 
-	ptr=&_Verts[idx*_VertexSize];
+	ptr=&_Parent->_LockedBuffer[idx*_Parent->_VertexSize];
 	memcpy(ptr, &(v.x), 3*sizeof(float));
 }
 
 // --------------------------------------------------
 
-inline void CVertexBuffer::setNormalCoord(uint idx, const CVector &v)
+inline void CVertexBufferReadWrite::setNormalCoord(uint idx, const CVector &v)
 {
 	uint8*	ptr;
 
-	nlassert (_Flags & NormalFlag);
-	nlassert (_Type[Normal]==Float3);
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert (_Parent->_Flags & CVertexBuffer::NormalFlag);
+	nlassert (_Parent->_Type[CVertexBuffer::Normal]==CVertexBuffer::Float3);
 
-	ptr=&_Verts[idx*_VertexSize];
-	ptr+=_Offset[Normal];
+	ptr=&_Parent->_LockedBuffer[idx*_Parent->_VertexSize];
+	ptr+=_Parent->_Offset[CVertexBuffer::Normal];
 	memcpy(ptr, &(v.x), 3*sizeof(float));
 }
 
 // --------------------------------------------------
 
-inline void CVertexBuffer::setColor(uint idx, CRGBA rgba)
+inline void CVertexBufferReadWrite::setColor(uint idx, CRGBA rgba)
 {
 	uint8*	ptr;
-	CRGBA	*pCol;
 
-	nlassert(_Flags & PrimaryColorFlag);
-	nlassert (_Type[PrimaryColor]==UChar4);
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert(_Parent->_Flags & CVertexBuffer::PrimaryColorFlag);
+	nlassert (_Parent->_Type[CVertexBuffer::PrimaryColor]==CVertexBuffer::UChar4);
 
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[PrimaryColor];
-	pCol= (CRGBA*)ptr;
-	*pCol= rgba;
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[CVertexBuffer::PrimaryColor];
+	if (_Parent->getVertexColorFormat () == CVertexBuffer::TRGBA)
+		*(CRGBA*)ptr = rgba;
+	else
+		*(CBGRA*)ptr = rgba;
 }
 
 // --------------------------------------------------
 
-inline void CVertexBuffer::setSpecular(uint idx, CRGBA rgba)
+inline void CVertexBufferReadWrite::setSpecular(uint idx, CRGBA rgba)
 {
 	uint8*	ptr;
-	CRGBA	*pCol;
 
-	nlassert(_Flags & SecondaryColorFlag);
-	nlassert (_Type[SecondaryColor]==UChar4);
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert(_Parent->_Flags & CVertexBuffer::SecondaryColorFlag);
+	nlassert (_Parent->_Type[CVertexBuffer::SecondaryColor]==CVertexBuffer::UChar4);
 
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[SecondaryColor];
-	pCol= (CRGBA*)ptr;
-	*pCol= rgba;
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[CVertexBuffer::SecondaryColor];
+	if (_Parent->getVertexColorFormat () == CVertexBuffer::TRGBA)
+		*(CRGBA*)ptr = rgba;
+	else
+		*(CBGRA*)ptr = rgba;
 }
 
 // --------------------------------------------------
 
-inline void CVertexBuffer::setTexCoord(uint idx, uint8 stage, float u, float v)
+inline void CVertexBufferReadWrite::setTexCoord(uint idx, uint8 stage, float u, float v)
 {
 	uint8*	ptr;
 	float*	ptrf;
 
-	nlassert(stage<MaxStage);
-	nlassert(_Flags & (TexCoord0Flag<<stage));
-	nlassert (_Type[TexCoord0+stage]==Float2);
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert(stage<CVertexBuffer::MaxStage);
+	nlassert(_Parent->_Flags & (CVertexBuffer::TexCoord0Flag<<stage));
+	nlassert (_Parent->_Type[CVertexBuffer::TexCoord0+stage]==CVertexBuffer::Float2);
 
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[TexCoord0+stage];
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[CVertexBuffer::TexCoord0+stage];
 	ptrf=(float*)ptr;
 	*ptrf=u;
 	ptrf++;
@@ -616,17 +920,18 @@ inline void CVertexBuffer::setTexCoord(uint idx, uint8 stage, float u, float v)
 
 // --------------------------------------------------
 
-inline void	CVertexBuffer::setTexCoord(uint idx, uint8 stage, const CUV &uv)
+inline void	CVertexBufferReadWrite::setTexCoord(uint idx, uint8 stage, const CUV &uv)
 {
 	uint8*	ptr;
 	CUV*	ptruv;
 
-	nlassert(stage<MaxStage);
-	nlassert(_Flags & (TexCoord0Flag<<stage));
-	nlassert (_Type[TexCoord0+stage]==Float2);
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert(stage<CVertexBuffer::MaxStage);
+	nlassert(_Parent->_Flags & (CVertexBuffer::TexCoord0Flag<<stage));
+	nlassert (_Parent->_Type[CVertexBuffer::TexCoord0+stage]==CVertexBuffer::Float2);
 
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[TexCoord0+stage];
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[CVertexBuffer::TexCoord0+stage];
 	ptruv=(CUV*)ptr;
 	*ptruv=uv;
 }
@@ -634,157 +939,70 @@ inline void	CVertexBuffer::setTexCoord(uint idx, uint8 stage, const CUV &uv)
 
 // --------------------------------------------------
 
-inline void CVertexBuffer::setWeight(uint idx, uint8 wgt, float w)
+inline void CVertexBufferReadWrite::setWeight(uint idx, uint8 wgt, float w)
 {
 	uint8*	ptr;
 	float*	ptrf;
 
-	nlassert(wgt<MaxWeight);
-	nlassert(_Flags & (WeightFlag));
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert(wgt<CVertexBuffer::MaxWeight);
+	nlassert(_Parent->_Flags & (CVertexBuffer::WeightFlag));
 
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[Weight]+sizeof(float)*wgt;
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[CVertexBuffer::Weight]+sizeof(float)*wgt;
 	ptrf=(float*)ptr;
 	*ptrf=w;
 }
 
 // --------------------------------------------------
 
-inline void	CVertexBuffer::setPaletteSkin(uint idx, CPaletteSkin ps)
+inline void	CVertexBufferReadWrite::setPaletteSkin(uint idx, CPaletteSkin ps)
 {
 	uint8*	ptr;
 	CPaletteSkin	*pPalSkin;
 
-	nlassert ( (_Flags & PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag);
-	nlassert (_Type[PaletteSkin]==UChar4);
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert ( (_Parent->_Flags & CVertexBuffer::PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag);
+	nlassert (_Parent->_Type[CVertexBuffer::PaletteSkin]==CVertexBuffer::UChar4);
 
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[PaletteSkin];
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[CVertexBuffer::PaletteSkin];
 	pPalSkin= (CPaletteSkin*)ptr;
 	*pPalSkin= ps;
 }
 
 // --------------------------------------------------
 
-inline void CVertexBuffer::setValueDouble1Ex (TValue valueId, uint idx, double value)
-{
-	uint8*	ptr;
-	double*	ptrd;
-
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert((_Type[valueId]==Double4)||(_Type[valueId]==Double3)||(_Type[valueId]==Double2)||(_Type[valueId]==Double1));
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
-	ptrd=(double*)ptr;
-	*ptrd=value;
-}
-
-// --------------------------------------------------
-
-inline void CVertexBuffer::setValueDouble2Ex (TValue valueId, uint idx, double x, double y)
-{
-	uint8*	ptr;
-	double*	ptrd;
-
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert((_Type[valueId]==Double4)||(_Type[valueId]==Double3)||(_Type[valueId]==Double2));
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
-	ptrd=(double*)ptr;
-	ptrd[0]=x;
-	ptrd[1]=y;
-}
-
-// --------------------------------------------------
-
-inline void CVertexBuffer::setValueDouble3Ex (TValue valueId, uint idx, double x, double y, double z)
-{
-	uint8*	ptr;
-	double*	ptrd;
-
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert((_Type[valueId]==Double4)||(_Type[valueId]==Double3));
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
-	ptrd=(double*)ptr;
-	ptrd[0]=x;
-	ptrd[1]=y;
-	ptrd[2]=z;
-}
-
-// --------------------------------------------------
-
-inline void CVertexBuffer::setValueDouble3Ex (TValue valueId, uint idx, const NLMISC::CVectorD& vector)
-{
-	uint8*	ptr;
-	double*	ptrd;
-
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert((_Type[valueId]==Double4)||(_Type[valueId]==Double3));
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
-	ptrd=(double*)ptr;
-	memcpy (ptrd, &vector, sizeof(double)*3);
-}
-
-// --------------------------------------------------
-
-inline void CVertexBuffer::setValueDouble4Ex (TValue valueId, uint idx, double x, double y, double z, double w)
-{
-	uint8*	ptr;
-	double*	ptrd;
-
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert(_Type[valueId]==Double4);
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
-	ptrd=(double*)ptr;
-	ptrd[0]=x;
-	ptrd[1]=y;
-	ptrd[2]=z;
-	ptrd[3]=w;
-}
-
-// --------------------------------------------------
-
-inline void CVertexBuffer::setValueFloat1Ex (TValue valueId, uint idx, float value)
+inline void CVertexBufferReadWrite::setValueFloat1Ex (CVertexBuffer::TValue valueId, uint idx, float value)
 {
 	uint8*	ptr;
 	float*	ptrf;
 
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert((_Type[valueId]==Float4)||(_Type[valueId]==Float3)||(_Type[valueId]==Float2)||(_Type[valueId]==Float1));
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert(valueId<CVertexBuffer::NumValue);
+	nlassert(_Parent->_Flags & (1<<(uint)valueId));
+	nlassert((_Parent->_Type[valueId]==CVertexBuffer::Float4)||(_Parent->_Type[valueId]==CVertexBuffer::Float3)||(_Parent->_Type[valueId]==CVertexBuffer::Float2)||(_Parent->_Type[valueId]==CVertexBuffer::Float1));
 
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[valueId];
 	ptrf=(float*)ptr;
 	*ptrf=value;
 }
 
 // --------------------------------------------------
 
-inline void CVertexBuffer::setValueFloat2Ex (TValue valueId, uint idx, float x, float y)
+inline void CVertexBufferReadWrite::setValueFloat2Ex (CVertexBuffer::TValue valueId, uint idx, float x, float y)
 {
 	uint8*	ptr;
 	float*	ptrf;
 
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert((_Type[valueId]==Float4)||(_Type[valueId]==Float3)||(_Type[valueId]==Float2));
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert(valueId<CVertexBuffer::NumValue);
+	nlassert(_Parent->_Flags & (1<<(uint)valueId));
+	nlassert((_Parent->_Type[valueId]==CVertexBuffer::Float4)||(_Parent->_Type[valueId]==CVertexBuffer::Float3)||(_Parent->_Type[valueId]==CVertexBuffer::Float2));
 
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[valueId];
 	ptrf=(float*)ptr;
 	ptrf[0]=x;
 	ptrf[1]=y;
@@ -792,17 +1010,18 @@ inline void CVertexBuffer::setValueFloat2Ex (TValue valueId, uint idx, float x, 
 
 // --------------------------------------------------
 
-inline void CVertexBuffer::setValueFloat3Ex (TValue valueId, uint idx, float x, float y, float z)
+inline void CVertexBufferReadWrite::setValueFloat3Ex (CVertexBuffer::TValue valueId, uint idx, float x, float y, float z)
 {
 	uint8*	ptr;
 	float*	ptrf;
 
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert((_Type[valueId]==Float4)||(_Type[valueId]==Float3));
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert(valueId<CVertexBuffer::NumValue);
+	nlassert(_Parent->_Flags & (1<<(uint)valueId));
+	nlassert((_Parent->_Type[valueId]==CVertexBuffer::Float4)||(_Parent->_Type[valueId]==CVertexBuffer::Float3));
 
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[valueId];
 	ptrf=(float*)ptr;
 	ptrf[0]=x;
 	ptrf[1]=y;
@@ -811,34 +1030,36 @@ inline void CVertexBuffer::setValueFloat3Ex (TValue valueId, uint idx, float x, 
 
 // --------------------------------------------------
 
-inline void CVertexBuffer::setValueFloat3Ex (TValue valueId, uint idx, const NLMISC::CVector& vector)
+inline void CVertexBufferReadWrite::setValueFloat3Ex (CVertexBuffer::TValue valueId, uint idx, const NLMISC::CVector& vector)
 {
 	uint8*	ptr;
 	float*	ptrf;
 
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert((_Type[valueId]==Float4)||(_Type[valueId]==Float3));
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert(valueId<CVertexBuffer::NumValue);
+	nlassert(_Parent->_Flags & (1<<(uint)valueId));
+	nlassert((_Parent->_Type[valueId]==CVertexBuffer::Float4)||(_Parent->_Type[valueId]==CVertexBuffer::Float3));
 
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[valueId];
 	ptrf=(float*)ptr;
 	memcpy (ptrf, &vector, sizeof(float)*3);
 }
 
 // --------------------------------------------------
 
-inline void CVertexBuffer::setValueFloat4Ex (TValue valueId, uint idx, float x, float y, float z, float w)
+inline void CVertexBufferReadWrite::setValueFloat4Ex (CVertexBuffer::TValue valueId, uint idx, float x, float y, float z, float w)
 {
 	uint8*	ptr;
 	float*	ptrf;
 
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert(_Type[valueId]==Float4);
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert(valueId<CVertexBuffer::NumValue);
+	nlassert(_Parent->_Flags & (1<<(uint)valueId));
+	nlassert(_Parent->_Type[valueId]==CVertexBuffer::Float4);
 
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[valueId];
 	ptrf=(float*)ptr;
 	ptrf[0]=x;
 	ptrf[1]=y;
@@ -848,93 +1069,122 @@ inline void CVertexBuffer::setValueFloat4Ex (TValue valueId, uint idx, float x, 
 
 // --------------------------------------------------
 
-inline void CVertexBuffer::setValueShort1Ex (TValue valueId, uint idx, uint16 value)
-{
-	uint8*	ptr;
-	uint16*	ptri;
-
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert((_Type[valueId]==Short4)||(_Type[valueId]==Short3)||(_Type[valueId]==Short2)||(_Type[valueId]==Short1));
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
-	ptri=(uint16*)ptr;
-	*ptri=value;
-}
-
-// --------------------------------------------------
-
-inline void CVertexBuffer::setValueShort2Ex (TValue valueId, uint idx, uint16 x, uint16 y)
-{
-	uint8*	ptr;
-	uint16*	ptri;
-
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert((_Type[valueId]==Short4)||(_Type[valueId]==Short3)||(_Type[valueId]==Short2));
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
-	ptri=(uint16*)ptr;
-	ptri[0]=x;
-	ptri[1]=y;
-}
-
-// --------------------------------------------------
-
-inline void CVertexBuffer::setValueShort3Ex (TValue valueId, uint idx, uint16 x, uint16 y, uint16 z)
-{
-	uint8*	ptr;
-	uint16*	ptri;
-
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert((_Type[valueId]==Short4)||(_Type[valueId]==Short3));
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
-	ptri=(uint16*)ptr;
-	ptri[0]=x;
-	ptri[1]=y;
-	ptri[2]=z;
-}
-
-// --------------------------------------------------
-
-inline void CVertexBuffer::setValueShort4Ex (TValue valueId, uint idx, uint16 x, uint16 y, uint16 z, uint16 w)
-{
-	uint8*	ptr;
-	uint16*	ptri;
-
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert(_Type[valueId]==Short4);
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
-	ptri=(uint16*)ptr;
-	ptri[0]=x;
-	ptri[1]=y;
-	ptri[2]=z;
-	ptri[3]=w;
-}
-
-// --------------------------------------------------
-
-inline void CVertexBuffer::setValueUChar4Ex (TValue valueId, uint idx, CRGBA rgba)
+inline void CVertexBufferReadWrite::setValueUChar4Ex (CVertexBuffer::TValue valueId, uint idx, CRGBA rgba)
 {
 	uint8*	ptr;
 	CRGBA*	ptrr;
 
-	nlassert(valueId<NumValue);
-	nlassert(_Flags & (1<<(uint)valueId));
-	nlassert(_Type[valueId]==UChar4);
+	nlassert (_Parent->checkLockedBuffer());
+	nlassert(valueId<CVertexBuffer::NumValue);
+	nlassert(_Parent->_Flags & (1<<(uint)valueId));
+	nlassert(_Parent->_Type[valueId]==CVertexBuffer::UChar4);
 
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[valueId];
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[valueId];
 	ptrr=(CRGBA*)ptr;
 	*ptrr=rgba;
+}
+
+// --------------------------------------------------
+
+inline void CVertexBuffer::lock (CVertexBufferReadWrite &accessor, uint first, uint last)
+{
+	accessor.unlock();
+	accessor._Parent = this;
+	accessor._First = 0;
+	accessor._Last = 0;
+
+	// Already locked ?
+	if (_LockCounter == 0)
+	{
+		nlassert (_LockedBuffer == NULL);
+
+		// No
+		if (isResident())
+			_LockedBuffer = DrvInfos->lock (first, last, false);
+		else
+		{
+			if (_NonResidentVertices.empty())
+				_LockedBuffer = NULL;
+			else
+				_LockedBuffer = &(_NonResidentVertices[0]);
+		}
+	}
+	else
+		nlassert ((first==0)&&(last==0));
+		
+	_LockCounter++;
+}
+
+// --------------------------------------------------
+
+inline void CVertexBuffer::lock (CVertexBufferRead &accessor, uint first, uint last) const
+{
+	accessor.unlock();
+	accessor._Parent = this;
+
+	// Already locked ?
+	if (_LockCounter == 0)
+	{
+		nlassert (_LockedBuffer == NULL);
+
+		// No
+		if (isResident())
+		{
+			// Can read it ?
+			nlassertex (!_WriteOnly[Location], ("Try to read a write only vertex buffer"));
+			_LockedBuffer = DrvInfos->lock (first, last, true);
+		}
+		else
+		{
+			if (_NonResidentVertices.empty())
+				_LockedBuffer = NULL;
+			else
+				_LockedBuffer = const_cast<uint8*>(&(_NonResidentVertices[0]));
+		}
+	}
+	else
+		nlassert ((first==0)&&(last==0));
+		
+	_LockCounter++;
+}
+
+// --------------------------------------------------
+
+inline void CVertexBuffer::unlock (uint first, uint end)
+{
+	nlassertex (_LockCounter!=0, ("Vertex buffer not locked"));
+	nlassert (_LockedBuffer || (!isResident() && _NonResidentVertices.empty()));
+
+	if (_LockCounter)
+		_LockCounter--;
+
+	if (_LockCounter == 0)
+	{
+		if (isResident())
+			DrvInfos->unlock (0, 0);
+
+		_LockedBuffer = NULL;
+	}
+}
+
+// --------------------------------------------------
+
+inline void CVertexBuffer::unlock () const
+{
+	nlassertex (_LockCounter!=0, ("Vertex buffer not locked"));
+	nlassert (_LockedBuffer || (!isResident() && _NonResidentVertices.empty()));
+
+	if (_LockCounter)
+		_LockCounter--;
+
+	if (_LockCounter == 0)
+	{
+		if (isResident())
+			DrvInfos->unlock (0, 0);
+
+		_LockedBuffer = NULL;
+	}
 }
 
 // --------------------------------------------------

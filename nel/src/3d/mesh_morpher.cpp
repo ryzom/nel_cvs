@@ -1,7 +1,7 @@
 /** \file mesh_morpher.cpp
  * <File description>
  *
- * $Id: mesh_morpher.cpp,v 1.9 2004/02/09 11:11:17 besson Exp $
+ * $Id: mesh_morpher.cpp,v 1.10 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,6 @@
 
 #include "3d/mesh_morpher.h"
 #include "3d/vertex_buffer.h"
-#include "3d/vertex_buffer_hard.h"
 #include "3d/raw_skin.h"
 
 
@@ -61,7 +60,6 @@ CMeshMorpher::CMeshMorpher()
 {
 	_VBOri = NULL;
 	_VBDst = NULL;
-	_VBDstHrd = NULL;
 
 	_Vertices = NULL;
 	_Normals = NULL;
@@ -70,18 +68,16 @@ CMeshMorpher::CMeshMorpher()
 }
 
 // ***************************************************************************
-void CMeshMorpher::init (CVertexBuffer *vbOri, CVertexBuffer *vbDst, IVertexBufferHard *vbDstHrd, bool hasTgSpace)
+void CMeshMorpher::init (CVertexBuffer *vbOri, CVertexBuffer *vbDst, bool hasTgSpace)
 {
 	_VBOri = vbOri;
 	_VBDst = vbDst;
-	_VBDstHrd = vbDstHrd;
 	_UseTgSpace = hasTgSpace;
 }
 
 // ***************************************************************************
 void CMeshMorpher::initSkinned (CVertexBuffer *vbOri,
 							CVertexBuffer *vbDst,
-							IVertexBufferHard *vbDstHrd,
 							bool hasTgSpace,
 							std::vector<CVector> *vVertices,
 							std::vector<CVector> *vNormals,
@@ -90,7 +86,6 @@ void CMeshMorpher::initSkinned (CVertexBuffer *vbOri,
 {
 	_VBOri = vbOri;
 	_VBDst = vbDst;
-	_VBDstHrd = vbDstHrd;
 	_UseTgSpace = hasTgSpace;
 
 	_Vertices = vVertices;
@@ -127,8 +122,12 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 
 	// Cleaning with original vertex buffer
 	uint32 VBVertexSize = _VBOri->getVertexSize();
-	uint8 *pOri = (uint8*)_VBOri->getVertexCoordPointer ();
-	uint8 *pDst = (uint8*)_VBDst->getVertexCoordPointer ();
+	CVertexBufferRead srcvba;
+	_VBOri->lock (srcvba);
+	CVertexBufferReadWrite dstvba;
+	_VBDst->lock (dstvba);
+	const uint8 *pOri = (const uint8*)srcvba.getVertexCoordPointer ();
+	uint8 *pDst = (uint8*)dstvba.getVertexCoordPointer ();
 	
 	for (i= 0; i < _Flags.size(); ++i)
 	if (_Flags[i] >= Modified)
@@ -163,21 +162,21 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 			if (_VBDst->getVertexFormat() & CVertexBuffer::PositionFlag)
 			if (rBS.deltaPos.size() > 0)
 			{
-				CVector *pV = (CVector*)_VBDst->getVertexCoordPointer (vp);
+				CVector *pV = dstvba.getVertexCoordPointer (vp);
 				*pV += rBS.deltaPos[j] * rFactor;
 			}
 
 			if (_VBDst->getVertexFormat() & CVertexBuffer::NormalFlag)
 			if (rBS.deltaNorm.size() > 0)
 			{
-				CVector *pV = (CVector*)_VBDst->getNormalCoordPointer (vp);
+				CVector *pV = dstvba.getNormalCoordPointer (vp);
 				*pV += rBS.deltaNorm[j] * rFactor;
 			}
 
 			if (_UseTgSpace)
 			if (rBS.deltaTgSpace.size() > 0)
 			{
-				CVector *pV = (CVector*)_VBDst->getTexCoordPointer (vp, tgSpaceStage);
+				CVector *pV = (CVector*)dstvba.getTexCoordPointer (vp, tgSpaceStage);
 				*pV += rBS.deltaTgSpace[j] * rFactor;
 			}
 
@@ -186,14 +185,15 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 			if (_VBDst->getVertexFormat() & CVertexBuffer::TexCoord0Flag)
 			if (rBS.deltaUV.size() > 0)
 			{
-				CUV *pUV = (CUV*)_VBDst->getTexCoordPointer (vp);
+				CUV *pUV = dstvba.getTexCoordPointer (vp);
 				*pUV += rBS.deltaUV[j] * rFactor;
 			}
 
 			if (_VBDst->getVertexFormat() & CVertexBuffer::PrimaryColorFlag)
 			if (rBS.deltaCol.size() > 0)
 			{
-				CRGBA *pRGBA = (CRGBA*)_VBDst->getColorPointer (vp);
+				// todo hulud d3d vertex color RGBA / BGRA
+				CRGBA *pRGBA = (CRGBA*)dstvba.getColorPointer (vp);
 				CRGBAF rgbf(*pRGBA);
 				rgbf.R += rBS.deltaCol[j].R * rFactor;
 				rgbf.G += rBS.deltaCol[j].G * rFactor;
@@ -209,25 +209,6 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 			// Modified
 			_Flags[vp] = Modified;
 		}
-	}
-
-	// Copying to hardware vertex buffer if some
-	if (_VBDstHrd != NULL)
-	{
-		uint8 *pDstHrd = (uint8*)_VBDstHrd->lock();
-		for (i = 0; i < _Flags.size(); ++i)
-		{
-			if (_Flags[i] != OriginalAll) // Not OriginalAll ?
-			{
-				for(j = 0; j < VBVertexSize; ++j)
-					pDstHrd[j+i*VBVertexSize] = pDst[j+i*VBVertexSize];
-			}
-			// if this vertex is original in the VBDst
-			if (_Flags[i] == OriginalVBDst)
-				// then it is now copied into the VBHard
-				_Flags[i] = OriginalAll;
-		}
-		_VBDstHrd->unlock();
 	}
 }
 
@@ -268,8 +249,12 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 
 	// Cleaning with original vertex buffer
 	uint32 VBVertexSize = _VBOri->getVertexSize();
-	uint8 *pOri = (uint8*)_VBOri->getVertexCoordPointer ();
-	uint8 *pDst = (uint8*)_VBDst->getVertexCoordPointer ();
+	CVertexBufferRead srcvba;
+	_VBOri->lock (srcvba);
+	CVertexBufferReadWrite dstvba;
+	_VBDst->lock (dstvba);
+	const uint8 *pOri = (const uint8*)srcvba.getVertexCoordPointer ();
+	uint8 *pDst = (uint8*)dstvba.getVertexCoordPointer ();
 	
 	for (i= 0; i < _Flags.size(); ++i)
 	if (_Flags[i] >= Modified)
@@ -328,14 +313,15 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 			if (_VBDst->getVertexFormat() & CVertexBuffer::TexCoord0Flag)
 			if (rBS.deltaUV.size() > 0)
 			{
-				CUV *pUV = (CUV*)_VBDst->getTexCoordPointer (vp);
+				CUV *pUV = dstvba.getTexCoordPointer (vp);
 				*pUV += rBS.deltaUV[j] * rFactor;
 			}
 
 			if (_VBDst->getVertexFormat() & CVertexBuffer::PrimaryColorFlag)
 			if (rBS.deltaCol.size() > 0)
 			{
-				CRGBA *pRGBA = (CRGBA*)_VBDst->getColorPointer (vp);
+				// todo hulud d3d vertex color RGBA / BGRA
+				CRGBA *pRGBA = (CRGBA*)dstvba.getColorPointer (vp);
 				CRGBAF rgbf(*pRGBA);
 				rgbf.R += rBS.deltaCol[j].R * rFactor;
 				rgbf.G += rBS.deltaCol[j].G * rFactor;
@@ -351,34 +337,6 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 			// Modified
 			_Flags[vp] = Modified;
 		}
-	}
-
-	// Do some transfert to the VBHard if exist.
-	if (_VBDstHrd != NULL)
-	{
-		// lock.
-		uint8 *pDstHrd = (uint8*)_VBDstHrd->lock();
-
-		// If the skin is applied we have nothing to do 
-		// Because the skinning will transfert ALL the vertices of interest
-		if (!_SkinApplied) 
-		{
-			for (i = 0; i < _Flags.size(); ++i)
-			{
-				if (_Flags[i] != OriginalAll) // Not OriginalAll ?
-				{
-					// We must write the whole vertex because the skinning may not copy 
-					// vertex and normal changes into VBHard
-					for(j = 0; j < VBVertexSize; ++j)
-						pDstHrd[j+i*VBVertexSize] = pDst[j+i*VBVertexSize];
-				}
-				if (_Flags[i] == OriginalVBDst) // OriginalVBDst ?
-					_Flags[i] = OriginalAll; // So OriginalAll !
-			}
-		}
-
-		// unlock.
-		_VBDstHrd->unlock();
 	}
 }
 
@@ -413,7 +371,9 @@ void CMeshMorpher::updateRawSkin (CVertexBuffer *vbOri,
 	nlassert(NL3D_RAWSKIN_UV_OFF == vbOri->getTexCoordOff(0));
 	
 	// Cleaning with original vertex buffer
-	uint8			*pOri = (uint8*)vbOri->getVertexCoordPointer ();
+	CVertexBufferRead srcvba;
+	vbOri->lock (srcvba);
+	const uint8			*pOri = (const uint8*)srcvba.getVertexCoordPointer ();
 	CRawSkinVertex	**vRemap= vertexRemap.getPtr();
 	uint			numVertices= vbOri->getNumVertices();
 	

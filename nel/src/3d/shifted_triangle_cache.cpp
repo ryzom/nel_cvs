@@ -1,7 +1,7 @@
 /** \file shifted_triangle_cache.cpp
  * <File description>
  *
- * $Id: shifted_triangle_cache.cpp,v 1.1 2002/08/05 12:17:29 berenguier Exp $
+ * $Id: shifted_triangle_cache.cpp,v 1.2 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NL3D
 // ***************************************************************************
 void				CShiftedTriangleCache::clearArrays()
 {
-	RawIndices.clear();
+	RawIndices.deleteAllIndexes();
 	RdrPass.clear();
 }
 

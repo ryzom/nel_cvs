@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.33 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: nelu.cpp,v 1.34 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,7 @@ CEventServer		CNELU::EventServer;
 CEventListenerAsync	CNELU::AsyncListener;
 
 
-bool			CNELU::initDriver (uint w, uint h, uint bpp, bool windowed, void *systemWindow, bool offscreen) throw(EDru)
+bool			CNELU::initDriver (uint w, uint h, uint bpp, bool windowed, void *systemWindow, bool offscreen, bool direct3d) throw(EDru)
 {
 	// Init debug system
 //	NLMISC::InitDebug();
@@ -64,7 +64,20 @@ bool			CNELU::initDriver (uint w, uint h, uint bpp, bool windowed, void *systemW
 	ShapeBank = new CShapeBank;
 
 	// Init driver.
-	CNELU::Driver= CDRU::createGlDriver();
+#ifdef NL_OS_WINDOWS
+	if (direct3d)
+	{
+		CNELU::Driver= CDRU::createD3DDriver();
+	}
+	else
+	{
+		CNELU::Driver= CDRU::createGlDriver();
+	}
+#else // NL_OS_WINDOWS
+
+	CNELU::Driver= CDRU::createD3DDriver();
+
+#endif // NL_OS_WINDOWS
 	if (!CNELU::Driver->init())
 	{
 		nlwarning ("CNELU::initDriver: init() failed");
@@ -169,10 +182,10 @@ void			CNELU::releaseDriver()
 	}
 }
 
-bool			CNELU::init (uint w, uint h, CViewport viewport, uint bpp, bool windowed, void *systemWindow, bool offscreen) throw(EDru)
+bool			CNELU::init (uint w, uint h, CViewport viewport, uint bpp, bool windowed, void *systemWindow, bool offscreen, bool direct3d) throw(EDru)
 {
 	NL3D::registerSerial3d();
-	if (initDriver(w,h,bpp,windowed,systemWindow,offscreen))
+	if (initDriver(w,h,bpp,windowed,systemWindow,offscreen,direct3d))
 	{
 		initScene(viewport);
 		initEventServer();

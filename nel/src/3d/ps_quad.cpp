@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.10 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.11 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,15 +98,17 @@ CVertexBuffer    * const CPSQuad::_VbTab[] =
 static void SetupQuadVBTexCoords(CVertexBuffer &vb, uint texCoordSet)
 {
 	nlassert(texCoordSet < 2);
+	CVertexBufferReadWrite vba;
+	vb.lock (vba);
 	// the size used for buffer can't be higher than quad buf size
 	// to have too large buffer will broke the cache
 	for (uint32 k = 0; k < CPSQuad::quadBufSize; ++k)
 	{		
 
-		vb.setTexCoord(k * 4, texCoordSet, CUV(0, 0));
-		vb.setTexCoord(k * 4 + 1, texCoordSet, CUV(1, 0));
-		vb.setTexCoord(k * 4 + 2, texCoordSet, CUV(1, 1));
-		vb.setTexCoord(k * 4 + 3, texCoordSet, CUV(0, 1));	
+		vba.setTexCoord(k * 4, texCoordSet, CUV(0, 0));
+		vba.setTexCoord(k * 4 + 1, texCoordSet, CUV(1, 0));
+		vba.setTexCoord(k * 4 + 2, texCoordSet, CUV(1, 1));
+		vba.setTexCoord(k * 4 + 3, texCoordSet, CUV(0, 1));	
 	}		
 }
 
@@ -389,10 +391,14 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 
 	if (!size) return;
 
+	CVertexBufferReadWrite vba;
+	vb.lock (vba);
+
 	if (_ColorScheme)
 	{
 		// compute the colors, each color is replicated 4 times
-		_ColorScheme->make4(_Owner, startIndex, vb.getColorPointer(), vb.getVertexSize(), size, srcStep);
+		// todo hulud d3d vertex color RGBA / BGRA
+		_ColorScheme->make4(_Owner, startIndex, vba.getColorPointer(), vb.getVertexSize(), size, srcStep);
 	}
 
 
@@ -400,7 +406,7 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 	{	
 		sint32 textureIndex[quadBufSize];
 		const uint32 stride = vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1;
-		uint8 *currUV = (uint8 *) vb.getTexCoordPointer();				
+		uint8 *currUV = (uint8 *) vba.getTexCoordPointer();				
 		
 
 		const sint32 *currIndex;		
@@ -454,11 +460,11 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 					// animation of texture 1 with main speed
 					if (!getUseLocalDate())
 					{
-						FillQuadCoords((uint8 *) vb.getTexCoordPointer(0, 0), vb.getVertexSize(), _TexScroll[0], date, size);
+						FillQuadCoords((uint8 *) vba.getTexCoordPointer(0, 0), vb.getVertexSize(), _TexScroll[0], date, size);
 					}
 					else
 					{
-						FillQuadCoordsLocalTime((uint8 *) vb.getTexCoordPointer(0, 0), vb.getVertexSize(), _TexScroll[0], *_Owner, startIndex, size, srcStep);
+						FillQuadCoordsLocalTime((uint8 *) vba.getTexCoordPointer(0, 0), vb.getVertexSize(), _TexScroll[0], *_Owner, startIndex, size, srcStep);
 					}
 				}
 			}
@@ -469,11 +475,11 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 					// animation of texture 1 with alternate speed
 					if (!getUseLocalDateAlt())
 					{
-						FillQuadCoords((uint8 *) vb.getTexCoordPointer(0, 0), vb.getVertexSize(), _TexScrollAlternate[0], date, size);
+						FillQuadCoords((uint8 *) vba.getTexCoordPointer(0, 0), vb.getVertexSize(), _TexScrollAlternate[0], date, size);
 					}
 					else
 					{
-						FillQuadCoordsLocalTime((uint8 *) vb.getTexCoordPointer(0, 0), vb.getVertexSize(), _TexScrollAlternate[0], *_Owner, startIndex, size, srcStep);
+						FillQuadCoordsLocalTime((uint8 *) vba.getTexCoordPointer(0, 0), vb.getVertexSize(), _TexScrollAlternate[0], *_Owner, startIndex, size, srcStep);
 					}
 				}
 			}
@@ -487,11 +493,11 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 				// animation of texture 2 with main speed
 				if (!getUseLocalDate())
 				{
-					FillQuadCoords((uint8 *) vb.getTexCoordPointer(0, 1), vb.getVertexSize(), _TexScroll[1], date, size);
+					FillQuadCoords((uint8 *) vba.getTexCoordPointer(0, 1), vb.getVertexSize(), _TexScroll[1], date, size);
 				}
 				else
 				{
-					FillQuadCoordsLocalTime((uint8 *) vb.getTexCoordPointer(0, 1), vb.getVertexSize(), _TexScroll[1], *_Owner, startIndex, size, srcStep);
+					FillQuadCoordsLocalTime((uint8 *) vba.getTexCoordPointer(0, 1), vb.getVertexSize(), _TexScroll[1], *_Owner, startIndex, size, srcStep);
 				}
 			}
 		}
@@ -502,11 +508,11 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 				// animation of texture 2 with alternate speed
 				if (!getUseLocalDateAlt())
 				{
-					FillQuadCoords((uint8 *) vb.getTexCoordPointer(0, 1), vb.getVertexSize(), _TexScrollAlternate[1], date, size);
+					FillQuadCoords((uint8 *) vba.getTexCoordPointer(0, 1), vb.getVertexSize(), _TexScrollAlternate[1], date, size);
 				}				
 				else
 				{
-					FillQuadCoordsLocalTime((uint8 *) vb.getTexCoordPointer(0, 1), vb.getVertexSize(), _TexScrollAlternate[1], *_Owner, startIndex, size, srcStep);
+					FillQuadCoordsLocalTime((uint8 *) vba.getTexCoordPointer(0, 1), vb.getVertexSize(), _TexScrollAlternate[1], *_Owner, startIndex, size, srcStep);
 				}
 			}
 		}

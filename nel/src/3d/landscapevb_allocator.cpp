@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.13 2003/08/07 08:47:52 berenguier Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.14 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,8 +48,8 @@ namespace NL3D
 
 
 #define	NL3D_VERTEX_FREE_MEMORY_RESERVE	1024
-// 65000 is a maximum because of GeForce limitations.
-#define	NL3D_VERTEX_MAX_VERTEX_VBHARD	40000
+/*// 65000 is a maximum because of GeForce limitations.
+#define	NL3D_VERTEX_MAX_VERTEX_VBHARD	40000*/
 
 
 // ***************************************************************************
@@ -61,9 +61,9 @@ CLandscapeVBAllocator::CLandscapeVBAllocator(TType type, const std::string &vbNa
 
 	_ReallocationOccur= false;
 	_NumVerticesAllocated= 0;
-	_VBHardOk= false;
-	_ATIVBHardOk= false;
 	_BufferLocked= false;
+	_LastFarVB = NULL;
+	_LastNearVB = NULL;
 
 	for(uint i=0;i<MaxVertexProgram;i++)
 		_VertexProgram[i]= NULL;
@@ -85,9 +85,6 @@ void			CLandscapeVBAllocator::updateDriver(IDriver *driver)
 	{
 		deleteVertexBuffer();
 		_Driver= driver;
-		// Don't use std VBHard scheme if ATI slow unlock case.
-		_ATIVBHardOk = _Driver->supportVertexBufferHard() && _Driver->slowUnlockVertexBufferHard();
-		_VBHardOk =	   _Driver->supportVertexBufferHard() && !_Driver->slowUnlockVertexBufferHard();
 
 
 		// If change of driver, delete the VertexProgram first, if any
@@ -100,13 +97,6 @@ void			CLandscapeVBAllocator::updateDriver(IDriver *driver)
 		if( _NumVerticesAllocated>0 )
 			allocateVertexBuffer(_NumVerticesAllocated);
 	}
-	else
-	{
-		// if VBHard possible, and if vbHardDeleted but space needed, reallocate.
-		if( _VBHardOk && _VBHard==NULL && _NumVerticesAllocated>0 )
-			allocateVertexBuffer(_NumVerticesAllocated);
-	}
-
 }
 
 
@@ -126,8 +116,6 @@ void			CLandscapeVBAllocator::clear()
 	// clear other states.
 	_ReallocationOccur= false;
 	_Driver= NULL;
-	_VBHardOk= false;
-	_ATIVBHardOk= false;
 }
 
 
@@ -209,18 +197,13 @@ void			CLandscapeVBAllocator::deleteVertex(uint vid)
 void			CLandscapeVBAllocator::lockBuffer(CFarVertexBufferInfo &farVB)
 {
 	nlassert( _Type==Far0 || _Type==Far1 );
+	
 	// force unlock
 	unlockBuffer();
 
-	if(_VBHard)
-	{
-		void	*data= _VBHard->lock();
-		farVB.setupVertexBufferHard(*_VBHard, data, _VertexProgram[0]!=NULL );
-	}
-	else
-	{
-		farVB.setupVertexBuffer(_VB, _VertexProgram[0]!=NULL );
-	}
+	_LastFarVB = &farVB;
+
+	farVB.setupVertexBuffer(_VB, _VertexProgram[0]!=NULL );
 
 	_BufferLocked= true;
 }
@@ -228,18 +211,13 @@ void			CLandscapeVBAllocator::lockBuffer(CFarVertexBufferInfo &farVB)
 void			CLandscapeVBAllocator::lockBuffer(CNearVertexBufferInfo &tileVB)
 {
 	nlassert(_Type==Tile);
+
 	// force unlock
 	unlockBuffer();
 
-	if(_VBHard)
-	{
-		void	*data= _VBHard->lock();
-		tileVB.setupVertexBufferHard(*_VBHard, data, _VertexProgram[0]!=NULL );
-	}
-	else
-	{
-		tileVB.setupVertexBuffer(_VB, _VertexProgram[0]!=NULL );
-	}
+	_LastNearVB = &tileVB;
+
+	tileVB.setupVertexBuffer(_VB, _VertexProgram[0]!=NULL );
 
 	_BufferLocked= true;
 }
@@ -248,53 +226,13 @@ void			CLandscapeVBAllocator::unlockBuffer()
 {
 	if(_BufferLocked)
 	{
-		if(_VBHard)
-			_VBHard->unlock();
+		if (_LastFarVB)
+			_LastFarVB->setupNullPointers();
+		_LastFarVB = NULL;
+		if (_LastNearVB)
+			_LastNearVB->setupNullPointers();
+		_LastNearVB = NULL;
 		_BufferLocked= false;
-	}
-}
-
-// ***************************************************************************
-void			CLandscapeVBAllocator::synchronizeATIVBHard()
-{
-	// no-op if disabled, or if std _VBHard scheme
-	if(!_ATIVBHardOk)
-		return;
-
-	// num verts to sync
-	uint	numVertices= _VB.getNumVertices();
-
-	// if the ATI VBhard do not exist, or if too small, allocate it now
-	if( _ATIVBHard==NULL || _ATIVBHard->getNumVertices()<numVertices )
-	{
-		// delete possible old _ATIVBHard
-		if(_ATIVBHard!=NULL)
-		{
-			// VertexBufferHard lifetime < Driver lifetime.
-			nlassert(_Driver!=NULL);
-			_Driver->deleteVertexBufferHard(_ATIVBHard);
-		}
-
-		// try to create new one, in AGP Ram
-		// If too many vertices wanted, abort VBHard.
-		if(numVertices <= NL3D_VERTEX_MAX_VERTEX_VBHARD)
-			_ATIVBHard= _Driver->createVertexBufferHard(_VB.getVertexFormat(), _VB.getValueTypePointer(), numVertices, IDriver::VBHardAGP, _VB.getUVRouting());
-		else
-			_ATIVBHard= NULL;
-
-		// If KO, never try again.
-		if(_ATIVBHard==NULL)
-			_ATIVBHardOk= false;
-	}
-
-	// if still ok, fill the VBHard with std VB.
-	if(_ATIVBHardOk)
-	{
-		void	*dst= _ATIVBHard->lock();
-		// fill the entire buffer.
-		CFastMem::memcpy(dst, _VB.getVertexCoordPointer(), numVertices*_VB.getVertexSize() );
-		// unlock the entire buffer
-		_ATIVBHard->unlock();
 	}
 }
 
@@ -319,15 +257,7 @@ void			CLandscapeVBAllocator::activate(uint vpId)
 		nlverify(_Driver->activeVertexProgram(_VertexProgram[vpId]));
 	}
 
-	// Activate VB.
-	if(_VBHard)
-		_Driver->activeVertexBufferHard(_VBHard);
-	// If ATI VBHard possible, use it
-	else if(_ATIVBHard)
-		_Driver->activeVertexBufferHard(_ATIVBHard);
-	// must use std VB
-	else
-		_Driver->activeVertexBuffer(_VB);
+	_Driver->activeVertexBuffer(_VB);
 }
 
 
@@ -336,28 +266,6 @@ void				CLandscapeVBAllocator::deleteVertexBuffer()
 {
 	// must unlock VBhard before.
 	unlockBuffer();
-
-	// test (refptr) if the object still exist in memory.
-	if(_VBHard!=NULL)
-	{
-		// A vbufferhard should still exist only if driver still exist.
-		nlassert(_Driver!=NULL);
-
-		// delete it from driver.
-		_Driver->deleteVertexBufferHard(_VBHard);
-		_VBHard= NULL;
-	}
-
-	// Do the same for ATI one if exist
-	if(_ATIVBHard!=NULL)
-	{
-		// A vbufferhard should still exist only if driver still exist.
-		nlassert(_Driver!=NULL);
-
-		// delete it from driver.
-		_Driver->deleteVertexBufferHard(_ATIVBHard);
-		_ATIVBHard= NULL;
-	}
 
 	// delete the soft one.
 	_VB.deleteAllVertices();
@@ -375,46 +283,10 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 	// must unlock VBhard before.
 	unlockBuffer();
 
-	// trye to allocate a vbufferhard if possible.
-	if( _VBHardOk )
-	{
-		// delete possible old _VBHard.
-		if(_VBHard!=NULL)
-		{
-			// VertexBufferHard lifetime < Driver lifetime.
-			nlassert(_Driver!=NULL);
-			_Driver->deleteVertexBufferHard(_VBHard);
-		}
-
-		// try to create new one, in AGP Ram
-		// If too many vertices wanted, abort VBHard.
-		if(numVertices <= NL3D_VERTEX_MAX_VERTEX_VBHARD)
-		{
-			_VBHard= _Driver->createVertexBufferHard(_VB.getVertexFormat(), _VB.getValueTypePointer(), numVertices, IDriver::VBHardAGP, _VB.getUVRouting());
-			// Set Name For lock Profiling.
-			if(_VBHard)
-				_VBHard->setName(_VBName);
-		}
-		else
-			_VBHard= NULL;
-
-		// If KO, never try again.
-		if(_VBHard==NULL)
-			_VBHardOk= false;
-	}
-
-	// else, or if last fails, allocate a standard VB.
-	if(!_VBHardOk)
-	{
-		// This always works.
-		_VB.setNumVertices(numVertices);
-	}
-
-	/*
-		NB: ATI VBHard allocation is done in synchronizeATIVBHard()
-	*/
-
-	//nlinfo("Alloc a LandVB %s of %d vertices in %s", _Type==Far0?"Far0":(_Type==Far1?"Far1":"Tile"), numVertices, _VBHardOk?"VBHard":"VBSoft");
+	// This always works.
+	_VB.setPreferredMemory(CVertexBuffer::AGPPreferred);
+	_VB.setNumVertices(numVertices);
+	_VB.setName (_VBName);
 }
 
 
@@ -469,7 +341,7 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 	Fog is computed on geomorphed position R1.
 	R1.w==1, and suppose that ModelViewMatrix has no Projection Part.
 	Then Homogenous-coordinate == Non-Homogenous-coordinate.
-	Hence we need only (ModelView*R1).z to get the FogC value.
+	Hence we need only (FogVector*R1).z to get the FogC value.
 	=> computed in just on instruction.
 */
 
@@ -579,7 +451,7 @@ const char* NL3D_LandscapeFar0EndProgram=
 	DP4 o[HPOS].w, c[3], R1;															\n\
 	MOV o[TEX0].xy, v[8];																\n\
 	MOV o[TEX1].xy, v[9];																\n\
-	DP4	o[FOGC].x, c[10], -R1;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
+	DP4	o[FOGC].x, c[10], R1;															\n\
 	END																					\n\
 ";
 
@@ -606,7 +478,7 @@ const char* NL3D_LandscapeFar1EndProgram=
 	DP4 o[HPOS].w, c[3], R1;															\n\
 	MOV o[TEX0].xy, v[8];																\n\
 	MOV o[TEX1].xy, v[9];																\n\
-	DP4	o[FOGC].x, c[10], -R1;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
+	DP4	o[FOGC].x, c[10], R1;															\n\
 	END																					\n\
 ";
 
@@ -626,7 +498,7 @@ const char* NL3D_LandscapeTileEndProgram=
 	DP4 o[HPOS].w, c[3], R1;															\n\
 	MOV o[TEX0].xy, v[8];																\n\
 	MOV o[TEX1].xy, v[9];																\n\
-	DP4	o[FOGC].x, c[10], -R1;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
+	DP4	o[FOGC].x, c[10], R1;															\n\
 	END																					\n\
 ";
 
@@ -639,7 +511,7 @@ const char* NL3D_LandscapeTileLightMapEndProgram=
 	DP4 o[HPOS].w, c[3], R1;															\n\
 	MOV o[TEX0].xy, v[13];																\n\
 	MOV o[TEX1].xy, v[9];																\n\
-	DP4	o[FOGC].x, c[10], -R1;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
+	DP4	o[FOGC].x, c[10], R1;															\n\
 	END																					\n\
 ";
 

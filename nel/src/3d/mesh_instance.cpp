@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.20 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: mesh_instance.cpp,v 1.21 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -181,7 +181,7 @@ void		CMeshInstance::generateShadowMap(const CVector &lightDir)
 	{
 		nlassert(_ShadowGeom);
 	}
-	if(!_ShadowMap || _ShadowGeom->CasterTriangles.empty())
+	if(!_ShadowMap || (_ShadowGeom->CasterTriangles.getNumIndexes()==0))
 		return;
 
 	// compute the ProjectionMatrix.
@@ -208,7 +208,8 @@ void		CMeshInstance::generateShadowMap(const CVector &lightDir)
 	// render the Cached VB/Primtives
 	driver->activeVertexBuffer(_ShadowGeom->CasterVBuffer);
 	CMaterial	&castMat= renderTrav.getShadowMapManager().getCasterShadowMaterial();
-	driver->renderTriangles(castMat, &_ShadowGeom->CasterTriangles[0], _ShadowGeom->CasterTriangles.size()/3);
+	driver->activeIndexBuffer(_ShadowGeom->CasterTriangles);
+	driver->renderTriangles(castMat, 0, _ShadowGeom->CasterTriangles.getNumIndexes()/3);
 
 	// Infos.
 	// ****
@@ -270,10 +271,14 @@ void		CMeshInstance::createShadowMap()
 		_ShadowGeom->CasterVBuffer.setVertexFormat(CVertexBuffer::PositionFlag);
 		uint	numVerts= vbSrc.getNumVertices();
 		_ShadowGeom->CasterVBuffer.setNumVertices(numVerts);
+		CVertexBufferRead srcvba;
+		vbSrc.lock (srcvba);
+		CVertexBufferReadWrite dstvba;
+		_ShadowGeom->CasterVBuffer.lock (dstvba);
 		// fill
 		for(i=0;i<numVerts;i++)
 		{
-			_ShadowGeom->CasterVBuffer.setVertexCoord(i, *(CVector*)vbSrc.getVertexCoordPointer(i));
+			dstvba.setVertexCoord(i, *srcvba.getVertexCoordPointer(i));
 		}
 
 		// TODO: OPTIM : VBHard
@@ -291,22 +296,26 @@ void		CMeshInstance::createShadowMap()
 			uint	nbRP= mesh->getNbRdrPass(i);
 			for(uint j=0;j<nbRP;j++)
 			{
-				numTris+= mesh->getRdrPassPrimitiveBlock(i, j).getNumTri();
+				numTris+= mesh->getRdrPassPrimitiveBlock(i, j).getNumIndexes()/3;
 			}
 		}
 		if(numTris)
 		{
 			// allocate
-			_ShadowGeom->CasterTriangles.resize(numTris*3);
+			_ShadowGeom->CasterTriangles.setNumIndexes(numTris*3);
 			// Copy.
-			uint32	*triPtr= &_ShadowGeom->CasterTriangles[0];
+			CIndexBufferReadWrite iba;
+			_ShadowGeom->CasterTriangles.lock(iba);
+			uint32	*triPtr= iba.getPtr();
 			for(i=0;i<nbMB;i++)
 			{
 				uint	nbRP= mesh->getNbRdrPass(i);
 				for(uint j=0;j<nbRP;j++)
 				{
-					uint	passNummTri= mesh->getRdrPassPrimitiveBlock(i, j).getNumTri();
-					memcpy(triPtr, mesh->getRdrPassPrimitiveBlock(i, j).getTriPointer(), passNummTri*3*sizeof(uint32));
+					uint	passNummTri= mesh->getRdrPassPrimitiveBlock(i, j).getNumIndexes()/3;
+					CIndexBufferRead iba;
+					mesh->getRdrPassPrimitiveBlock(i, j).lock (iba);
+					memcpy(triPtr, iba.getPtr(), passNummTri*3*sizeof(uint32));
 					triPtr+= passNummTri*3;
 				}
 			}
@@ -394,8 +403,9 @@ void	CMeshInstance::renderIntoSkeletonShadowMap(CSkeletonModel *rootSkeleton, CM
 	{
 		for(uint rp=0;rp<mesh->getNbRdrPass(mb);rp++)
 		{
-			const CPrimitiveBlock	&pb= mesh->getRdrPassPrimitiveBlock(mb, rp);
-			driver->render(const_cast<CPrimitiveBlock&>(pb), castMat);
+			const CIndexBuffer	&pb= mesh->getRdrPassPrimitiveBlock(mb, rp);
+			driver->activeIndexBuffer(const_cast<CIndexBuffer&>(pb));
+			driver->renderTriangles(castMat, 0, pb.getNumIndexes()/3);
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.12 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.13 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -328,7 +328,7 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 
 	CVBnPB						&VBnPB = getVBnPB(); // get the appropriate vb (build it if needed)
 	CVertexBuffer				&VB = VBnPB.VB;
-	CPrimitiveBlock				&PB = VBnPB.PB;
+	CIndexBuffer				&PB = VBnPB.PB;
 
 	const uint32				vertexSize  = VB.getVertexSize();
 	uint						colorOffset=0;
@@ -422,7 +422,9 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 		}	
 		
 		
-		currVert = (uint8 *) VB.getVertexCoordPointer();
+		CVertexBufferReadWrite vba;
+		VB.lock (vba);
+		currVert = (uint8 *) vba.getVertexCoordPointer();
 		for (uint k = ribbonIndex; k < ribbonIndex + toProcess; ++k)
 		{			
 			
@@ -512,9 +514,11 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 		}
 		
 
-		PB.setNumTri((_UsedNbSegs << 1) * toProcess);
+		vba.unlock();
+		PB.setNumIndexes((_UsedNbSegs << 1) * toProcess * 3);
 		// display the result
-		drv->render(PB, _Mat);
+		drv->activeIndexBuffer (PB);
+		drv->renderTriangles (_Mat, 0, PB.getNumIndexes()/3);
 		ribbonIndex += toProcess;		
 	}
 	while (ribbonIndex != nbRibbons);
@@ -562,10 +566,14 @@ CPSRibbonLookAt::CVBnPB &CPSRibbonLookAt::getVBnPB()
 						   CVertexBuffer::TexCoord0Flag | 
 						   (_ColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
 		vb.setNumVertices(2 * (_UsedNbSegs + 1) * numRibbonInVB );
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
 
 		// set the primitive block size
-		CPrimitiveBlock &pb = VBnPB.PB;
-		pb.setNumTri((_UsedNbSegs << 1) * numRibbonInVB);
+		CIndexBuffer &pb = VBnPB.PB;
+		pb.setNumIndexes((_UsedNbSegs << 1) * numRibbonInVB * 3);
+		CIndexBufferReadWrite iba;
+		pb.lock (iba);
 		/// Setup the pb and vb parts. Not very fast but executed only once
 		uint vbIndex = 0;
 		uint pbIndex = 0; 
@@ -573,13 +581,14 @@ CPSRibbonLookAt::CVBnPB &CPSRibbonLookAt::getVBnPB()
 		{
 			for (uint k = 0; k < (_UsedNbSegs + 1); ++k)
 			{				
-				vb.setTexCoord(vbIndex, 0, CUV((1.f - k / (float) _UsedNbSegs), 0)); /// top vertex
-				vb.setTexCoord(vbIndex + 1, 0, CUV((1.f - k / (float) _UsedNbSegs), 1)); /// bottom vertex
+				vba.setTexCoord(vbIndex, 0, CUV((1.f - k / (float) _UsedNbSegs), 0)); /// top vertex
+				vba.setTexCoord(vbIndex + 1, 0, CUV((1.f - k / (float) _UsedNbSegs), 1)); /// bottom vertex
 				if (k != _UsedNbSegs)
 				{
 					/// add 2 tri in the primitive block
-					pb.setTri(pbIndex ++, vbIndex + 1, vbIndex + 2, vbIndex);
-					pb.setTri(pbIndex ++, vbIndex + 1, vbIndex + 3, vbIndex + 2);
+					iba.setTri(pbIndex, vbIndex + 1, vbIndex + 2, vbIndex);
+					iba.setTri(pbIndex+3, vbIndex + 1, vbIndex + 3, vbIndex + 2);
+					pbIndex+=6;
 				}
 				vbIndex += 2;
 			}

@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.10 2003/03/20 17:55:16 lecroart Exp $
+ * $Id: driver_material_inline.h,v 1.11 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -216,6 +216,7 @@ inline void					CMaterial::texEnvOpRGB(uint stage, TTexOperator ope)
 	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].Env.OpRGB= ope;
+	_Touched|=IDRV_TOUCHED_TEXENV;
 }
 // ***************************************************************************
 inline void					CMaterial::texEnvArg0RGB(uint stage, TTexSource src, TTexOperand oper)
@@ -224,6 +225,7 @@ inline void					CMaterial::texEnvArg0RGB(uint stage, TTexSource src, TTexOperand
 	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].Env.SrcArg0RGB= src;
 	_TexEnvs[stage].Env.OpArg0RGB= oper;
+	_Touched|=IDRV_TOUCHED_TEXENV;
 }
 // ***************************************************************************
 inline void					CMaterial::texEnvArg1RGB(uint stage, TTexSource src, TTexOperand oper)
@@ -233,6 +235,7 @@ inline void					CMaterial::texEnvArg1RGB(uint stage, TTexSource src, TTexOperand
 	nlassert(src!=Texture);
 	_TexEnvs[stage].Env.SrcArg1RGB= src;
 	_TexEnvs[stage].Env.OpArg1RGB= oper;
+	_Touched|=IDRV_TOUCHED_TEXENV;
 }
 
 
@@ -242,6 +245,7 @@ inline void					CMaterial::texEnvOpAlpha(uint stage, TTexOperator ope)
 	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].Env.OpAlpha= ope;
+	_Touched|=IDRV_TOUCHED_TEXENV;
 }
 // ***************************************************************************
 inline void					CMaterial::texEnvArg0Alpha(uint stage, TTexSource src, TTexOperand oper)
@@ -251,6 +255,7 @@ inline void					CMaterial::texEnvArg0Alpha(uint stage, TTexSource src, TTexOpera
 	nlassert(oper==SrcAlpha || oper==InvSrcAlpha);
 	_TexEnvs[stage].Env.SrcArg0Alpha= src;
 	_TexEnvs[stage].Env.OpArg0Alpha= oper;
+	_Touched|=IDRV_TOUCHED_TEXENV;
 }
 // ***************************************************************************
 inline void					CMaterial::texEnvArg1Alpha(uint stage, TTexSource src, TTexOperand oper)
@@ -261,6 +266,7 @@ inline void					CMaterial::texEnvArg1Alpha(uint stage, TTexSource src, TTexOpera
 	nlassert(src!=Texture);
 	_TexEnvs[stage].Env.SrcArg1Alpha= src;
 	_TexEnvs[stage].Env.OpArg1Alpha= oper;
+	_Touched|=IDRV_TOUCHED_TEXENV;
 }
 
 
@@ -270,6 +276,7 @@ inline void					CMaterial::texConstantColor(uint stage, CRGBA color)
 	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].ConstantColor= color;
+	_Touched|=IDRV_TOUCHED_TEXENV;
 }
 
 
@@ -286,6 +293,7 @@ inline void					CMaterial::setTexEnvMode(uint stage, uint32 packed)
 	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].EnvPacked= packed;
+	_Touched|=IDRV_TOUCHED_TEXENV;
 }
 // ***************************************************************************
 inline CRGBA				CMaterial::getTexConstantColor(uint stage)
@@ -308,6 +316,7 @@ inline void					CMaterial::setTexCoordGen(uint stage, bool generate)
 		_Flags|=(IDRV_MAT_GEN_TEX_0<<stage);
 	else
 		_Flags&=~(IDRV_MAT_GEN_TEX_0<<stage);
+	_Touched|=IDRV_TOUCHED_TEXGEN;
 }
 
 
@@ -323,6 +332,7 @@ inline void					CMaterial::setUserColor(CRGBA userColor)
 	nlassert(_ShaderType==CMaterial::UserColor);
 	// setup stage 0 constant color (don't use texConstantColor() because of assert).
 	_TexEnvs[0].ConstantColor= userColor;
+	_Touched|=IDRV_TOUCHED_TEXENV;
 }
 
 // ***************************************************************************
@@ -381,6 +391,15 @@ inline const NLMISC::CMatrix  &CMaterial::getUserTexMat(uint stage) const
 	return _TexUserMat->TexMat[stage];
 }
 
+// ***************************************************************************
+inline void	CMaterial::setTexCoordGenMode(uint stage, TTexCoordGenMode mode)
+{
+	if(stage>=IDRV_MAT_MAXTEXTURES)
+		return;
+	_TexCoordGenMode&= ~ (IDRV_MAT_TEX_GEN_MASK << (stage*IDRV_MAT_TEX_GEN_SHIFT));
+	_TexCoordGenMode|=   ((mode&IDRV_MAT_TEX_GEN_MASK) << (stage*IDRV_MAT_TEX_GEN_SHIFT));
+	_Touched|=IDRV_TOUCHED_TEXGEN;
+}
 
 }
 

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.79 2003/07/30 16:00:16 vizerie Exp $
+ * $Id: mesh.cpp,v 1.80 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,7 +124,6 @@ CMeshGeom::CMeshGeom()
 {
 	_Skinned= false;
 	_OriginalSkinRestored= true;
-	_VertexBufferHardDirty= true;
 	_MeshMorpher = new CMeshMorpher;
 	_BoneIdComputed = false;
 	_BoneIdExtended= false;
@@ -135,16 +134,6 @@ CMeshGeom::CMeshGeom()
 // ***************************************************************************
 CMeshGeom::~CMeshGeom()
 {
-	// test (refptr) if the object still exist in memory.
-	if(_VertexBufferHard!=NULL)
-	{
-		// A vbufferhard should still exist only if driver still exist.
-		nlassert(_Driver!=NULL);
-
-		// delete it from driver.
-		_Driver->deleteVertexBufferHard(_VertexBufferHard);
-		_VertexBufferHard= NULL;
-	}
 	delete _MeshMorpher;
 }
 
@@ -172,9 +161,6 @@ void	CMeshGeom::optimizeTriangleOrder()
 void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 {
 	sint	i;
-
-	// Dirt the VBuffer.
-	_VertexBufferHardDirty= true;
 
 	// Empty geometry?
 	if(m.Vertices.size()==0 || m.Faces.size()==0)
@@ -351,7 +337,12 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 		sint	mbId= pFace->MatrixBlockId;
 		nlassert(mbId>=0 && mbId<(sint)_MatrixBlocks.size());
 		// Insert the face in good MatrixBlock/RdrPass.
-		_MatrixBlocks[mbId].RdrPass[pFace->MaterialId].PBlock.addTri(pFace->Corner[0].VBId, pFace->Corner[1].VBId, pFace->Corner[2].VBId);
+		CIndexBuffer &ib = _MatrixBlocks[mbId].RdrPass[pFace->MaterialId].PBlock;
+		uint index = ib.getNumIndexes();
+		ib.setNumIndexes (index+3);
+		CIndexBufferReadWrite iba;
+		ib.lock (iba);
+		iba.setTri(index, pFace->Corner[0].VBId, pFace->Corner[1].VBId, pFace->Corner[2].VBId);
 	}
 
 
@@ -364,7 +355,7 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 		for( itPass=_MatrixBlocks[mb].RdrPass.begin(); itPass!=_MatrixBlocks[mb].RdrPass.end(); )
 		{
 			// If this pass is empty, remove it.
-			if( itPass->PBlock.getNumTri()==0 )
+			if( itPass->PBlock.getNumIndexes()==0 )
 				itPass= _MatrixBlocks[mb].RdrPass.erase(itPass);
 			else
 				itPass++;
@@ -439,6 +430,9 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 		_BoneIdExtended = false;
 	}
 
+	// Set the vertex buffer preferred memory
+	bool avoidVBHard= _Skinned || ( _MeshMorpher && _MeshMorpher->BlendShapes.size()>0 );
+	_VBuffer.setPreferredMemory (avoidVBHard?CVertexBuffer::RAMPreferred:CVertexBuffer::AGPPreferred);
 
 	// End!!
 	// Some runtime not serialized compilation
@@ -520,81 +514,6 @@ bool	CMeshGeom::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMat
 }
 
 // ***************************************************************************
-void	CMeshGeom::updateVertexBufferHard(IDriver *drv)
-{
-	if(!drv->supportVertexBufferHard())
-		return;
-
-
-	/* If the mesh is skinned, still use normal CVertexBuffer.
-	 * \todo yoyo: optimize. not done now because CMesh Skinned are not so used in game, 
-	 *	and CMesh skinning is far not optimized (4 matrix mul all the time). Should use later the renderSkinGroupGeom()
-	 *	scheme
-	 *	Also, if the driver has slow VBhard unlock()  (ie ATI gl extension), avoid use of them if MeshMorpher 
-	 *	is used.
-	 */
-	bool	avoidVBHard;
-	avoidVBHard= _Skinned || ( _MeshMorpher && _MeshMorpher->BlendShapes.size()>0 && drv->slowUnlockVertexBufferHard() );
-	if( _VertexBufferHardDirty && avoidVBHard )
-	{
-		// delete possible old VBHard.
-		if(_VertexBufferHard!=NULL)
-		{
-			// VertexBufferHard lifetime < Driver lifetime.
-			nlassert(_Driver!=NULL);
-			_Driver->deleteVertexBufferHard(_VertexBufferHard);
-		}
-		return;
-	}
-
-	// If the vbufferhard is not synced to the vbuffer.
-	if(_VertexBufferHardDirty || _VertexBufferHard==NULL)
-	{
-		_VertexBufferHardDirty= false;
-
-		// delete possible old VBHard.
-		if(_VertexBufferHard!=NULL)
-		{
-			// VertexBufferHard lifetime < Driver lifetime.
-			nlassert(_Driver!=NULL);
-			_Driver->deleteVertexBufferHard(_VertexBufferHard);
-		}
-
-		// bkup drv in a refptr. (so we know if the vbuffer hard has to be deleted).
-		_Driver= drv;
-		// try to create new one, in AGP Ram
-		_VertexBufferHard= _Driver->createVertexBufferHard(_VBuffer.getVertexFormat(), _VBuffer.getValueTypePointer (), _VBuffer.getNumVertices(), IDriver::VBHardAGP, _VBuffer.getUVRouting());
-
-		// If KO, use normal VertexBuffer.
-		if(_VertexBufferHard==NULL)
-			return;
-		// else, setup and Fill it with VertexBuffer.
-		else
-		{
-			// If the mesh is static: not skinned/no meshMorpher, then setup a static VBHard -> runs faster under NVidia
-			if( !_Skinned && ( !_MeshMorpher || _MeshMorpher->BlendShapes.size()==0) )
-				_VertexBufferHard->lockHintStatic(true);
-
-
-			// Fill VB
-			void	*vertexPtr= _VertexBufferHard->lock();
-
-			nlassert(_VBuffer.getVertexFormat() == _VertexBufferHard->getVertexFormat());
-			nlassert(_VBuffer.getNumVertices() == _VertexBufferHard->getNumVertices());
-			nlassert(_VBuffer.getVertexSize() == _VertexBufferHard->getVertexSize());
-
-			// \todo yoyo: TODO_DX8 and DX8 ???
-			// Because same internal format, just copy all block.
-			memcpy(vertexPtr, _VBuffer.getVertexCoordPointer(), _VBuffer.getNumVertices() * _VBuffer.getVertexSize() );
-
-			_VertexBufferHard->unlock();
-		}
-
-	}
-}
-
-
-// ***************************************************************************
 void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount, uint32 rdrFlags, float globalAlpha)
 {
 	nlassert(drv);
@@ -605,14 +524,9 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 	// get a ptr on renderTrav
 	CRenderTrav		*renderTrav= &ownerScene->getRenderTrav();
 
-	// update the VBufferHard (create/delete), to maybe render in AGP memory.
-	updateVertexBufferHard (drv);
-	/* currentVBHard is NULL if must disable it temporarily
-		For now, never disable it, but switch of VBHard may be VERY EXPENSIVE if NV_vertex_array_range2 is not
-		supported (old drivers).
-	*/
-	IVertexBufferHard		*currentVBHard= _VertexBufferHard;
-
+	// Soft vb if not supported by the driver
+	if (drv->slowUnlockVertexBufferHard())
+		_VBuffer.setPreferredMemory (CVertexBuffer::RAMPreferred);
 
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel		*skeleton;
@@ -639,7 +553,6 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 		{
 			_MeshMorpher->initSkinned(&_VBufferOri,
 								 &_VBuffer,
-								 currentVBHard,
 								 useTangentSpace,
 								 &_OriginalSkinVertices,
 								 &_OriginalSkinNormals,
@@ -651,7 +564,6 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 		{
 			_MeshMorpher->init(&_VBufferOri,
 								 &_VBuffer,
-								 currentVBHard,
 								 useTangentSpace);
 			_MeshMorpher->update (mi->getBlendShapeFactors());
 		}
@@ -691,10 +603,7 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 	// Render the mesh.
 	//===========
 	// active VB.
-	if(currentVBHard != NULL)
-		drv->activeVertexBufferHard(currentVBHard);
-	else
-		drv->activeVertexBuffer(_VBuffer);
+	drv->activeVertexBuffer(_VBuffer);
 
 
 	// Global alpha used ?
@@ -732,14 +641,12 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 					// Setup VP material
 					if (useMeshVP)
 					{
-						if(currentVBHard)
-							_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, currentVBHard);
-						else
-							_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBuffer);
+						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBuffer);
 					}
 
 					// Render
-					drv->render(rdrPass.PBlock, material);
+					drv->activeIndexBuffer(rdrPass.PBlock);
+					drv->renderTriangles(material, 0, rdrPass.PBlock.getNumIndexes()/3);
 
 					// Resetup material/driver
 					blender.restoreRender(material, drv, gaDisableZWrite);
@@ -762,14 +669,12 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 					// Setup VP material
 					if (useMeshVP)
 					{
-						if(currentVBHard)
-							_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, currentVBHard);
-						else
-							_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBuffer);
+						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBuffer);
 					}									
 
 					// render primitives
-					drv->render(rdrPass.PBlock, material);
+					drv->activeIndexBuffer(rdrPass.PBlock);
+					drv->renderTriangles(material, 0, rdrPass.PBlock.getNumIndexes()/3);
 				}
 			}
 		}
@@ -797,16 +702,6 @@ void	CMeshGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 	IDriver			*drv= renderTrav->getDriver();
 	nlassert(drv);
 
-
-	// update the VBufferHard (create/delete), to maybe render in AGP memory.
-	updateVertexBufferHard (drv);
-	/* currentVBHard is NULL if must disable it temporarily
-		For now, never disable it, but switch of VBHard may be VERY EXPENSIVE if NV_vertex_array_range2 is not
-		supported (old drivers).
-	*/
-	IVertexBufferHard		*currentVBHard= _VertexBufferHard;
-
-
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel		*skeleton;
 	skeleton= mi->getSkeletonModel();
@@ -828,7 +723,6 @@ void	CMeshGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 		// Since Skinned we must update original skin vertices and normals because skinning use it
 		_MeshMorpher->initSkinned(&_VBufferOri,
 							 &_VBuffer,
-							 currentVBHard,
 							 useTangentSpace,
 							 &_OriginalSkinVertices,
 							 &_OriginalSkinNormals,
@@ -866,10 +760,7 @@ void	CMeshGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 	// Render the mesh.
 	//===========
 	// active VB.
-	if(currentVBHard != NULL)
-		drv->activeVertexBufferHard(currentVBHard);
-	else
-		drv->activeVertexBuffer(_VBuffer);
+	drv->activeVertexBuffer(_VBuffer);
 
 
 	// For all _MatrixBlocks
@@ -890,14 +781,12 @@ void	CMeshGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 			// Setup VP material
 			if (useMeshVP)
 			{
-				if(currentVBHard)
-					_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, currentVBHard);
-				else
-					_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBuffer);
+				_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBuffer);
 			}									
 
 			// render primitives
-			drv->render(rdrPass.PBlock, material);
+			drv->activeIndexBuffer(rdrPass.PBlock);
+			drv->renderTriangles(material, 0, rdrPass.PBlock.getNumIndexes()/3);
 		}
 	}
 
@@ -937,7 +826,8 @@ void	CMeshGeom::renderSimpleWithMaterial(IDriver *drv, const CMatrix &worldMatri
 			CRdrPass	&rdrPass= mBlock.RdrPass[i];
 
 			// render primitives
-			drv->render(rdrPass.PBlock, mat);
+			drv->activeIndexBuffer(rdrPass.PBlock);
+			drv->renderTriangles(mat, 0, rdrPass.PBlock.getNumIndexes()/3);
 		}
 	}
 
@@ -948,6 +838,8 @@ void	CMeshGeom::renderSimpleWithMaterial(IDriver *drv, const CMatrix &worldMatri
 void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 5:
+		- Preferred memory.
 	Version 4:
 		- BonesName.
 	Version 3:
@@ -1018,6 +910,7 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	// serial geometry.
 	f.serial (_VBuffer);
+
 	f.serialCont (_MatrixBlocks);
 	f.serial (_BBox);
 	f.serial (_Skinned);
@@ -1026,8 +919,6 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// If _VertexBuffer changed, flag the VertexBufferHard.
 	if(f.isReading())
 	{
-		_VertexBufferHardDirty = true;
-
 		// if >= version 2, reorder of triangles is precomputed, else compute it now.
 		if(ver < 2 )
 		{
@@ -1055,6 +946,13 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// Some runtime not serialized compilation
 	if(f.isReading())
 		compileRunTime();
+
+	// Set the preferred memory
+	if (ver < 5)
+	{
+		bool avoidVBHard= _Skinned || ( _MeshMorpher && _MeshMorpher->BlendShapes.size()>0 );
+		_VBuffer.setPreferredMemory (avoidVBHard?CVertexBuffer::RAMPreferred:CVertexBuffer::AGPPreferred);
+	}
 }
 
 
@@ -1445,7 +1343,7 @@ float	CMeshGeom::getNumTriangles (float distance)
 			CRdrPass &pass=block.RdrPass[pb];
 
 			// Sum tri
-			triCount+=pass.PBlock.getNumTriangles ();
+			triCount+=pass.PBlock.getNumIndexes ()/3;
 		}
 	}
 	return (float)triCount;
@@ -1624,6 +1522,9 @@ void	CMeshGeom::bkupOriginalSkinVertices()
 	// get num of vertices
 	uint	numVertices= _VBuffer.getNumVertices();
 
+	CVertexBufferRead vba;
+	_VBuffer.lock (vba);
+
 	// Copy VBuffer content into Original vertices normals.
 	if(_VBuffer.getVertexFormat() & CVertexBuffer::PositionFlag)
 	{
@@ -1631,7 +1532,7 @@ void	CMeshGeom::bkupOriginalSkinVertices()
 		_OriginalSkinVertices.resize(numVertices);
 		for(uint i=0; i<numVertices;i++)
 		{
-			_OriginalSkinVertices[i]= *(CVector*)_VBuffer.getVertexCoordPointer(i);
+			_OriginalSkinVertices[i]= *vba.getVertexCoordPointer(i);
 		}
 	}
 	if(_VBuffer.getVertexFormat() & CVertexBuffer::NormalFlag)
@@ -1640,7 +1541,7 @@ void	CMeshGeom::bkupOriginalSkinVertices()
 		_OriginalSkinNormals.resize(numVertices);
 		for(uint i=0; i<numVertices;i++)
 		{
-			_OriginalSkinNormals[i]= *(CVector*)_VBuffer.getNormalCoordPointer(i);
+			_OriginalSkinNormals[i]= *vba.getNormalCoordPointer(i);
 		}
 	}
 
@@ -1653,7 +1554,7 @@ void	CMeshGeom::bkupOriginalSkinVertices()
 		_OriginalTGSpace.resize(numVertices);
 		for(uint i=0; i<numVertices;i++)
 		{
-			_OriginalTGSpace[i]= *(CVector*)_VBuffer.getTexCoordPointer(i, tgSpaceStage);
+			_OriginalTGSpace[i]= *(CVector*)vba.getTexCoordPointer(i, tgSpaceStage);
 		}
 	}
 }
@@ -1667,13 +1568,16 @@ void	CMeshGeom::restoreOriginalSkinVertices()
 	// get num of vertices
 	uint	numVertices= _VBuffer.getNumVertices();
 
+	CVertexBufferReadWrite vba;
+	_VBuffer.lock (vba);
+
 	// Copy VBuffer content into Original vertices normals.
 	if(_VBuffer.getVertexFormat() & CVertexBuffer::PositionFlag)
 	{
 		// copy vertices from VBuffer. (NB: unusefull geomorphed vertices are still copied, but doesn't matter).
 		for(uint i=0; i<numVertices;i++)
 		{
-			*(CVector*)_VBuffer.getVertexCoordPointer(i)= _OriginalSkinVertices[i];
+			*vba.getVertexCoordPointer(i)= _OriginalSkinVertices[i];
 		}
 	}
 	if(_VBuffer.getVertexFormat() & CVertexBuffer::NormalFlag)
@@ -1681,7 +1585,7 @@ void	CMeshGeom::restoreOriginalSkinVertices()
 		// copy normals from VBuffer. (NB: unusefull geomorphed normals are still copied, but doesn't matter).
 		for(uint i=0; i<numVertices;i++)
 		{
-			*(CVector*)_VBuffer.getNormalCoordPointer(i)= _OriginalSkinNormals[i];
+			*vba.getNormalCoordPointer(i)= _OriginalSkinNormals[i];
 		}
 	}
 	if (_MeshVertexProgram && _MeshVertexProgram->needTangentSpace())
@@ -1692,7 +1596,7 @@ void	CMeshGeom::restoreOriginalSkinVertices()
 		// copy tangent space vectors
 		for(uint i = 0; i < numVertices; ++i)
 		{
-			*(CVector*)_VBuffer.getTexCoordPointer(i, numTexCoords - 1)= _OriginalTGSpace[i];
+			*(CVector*)vba.getTexCoordPointer(i, numTexCoords - 1)= _OriginalTGSpace[i];
 		}
 	}
 
@@ -1745,6 +1649,8 @@ void	CMeshGeom::applySkin(CSkeletonModel *skeleton)
 	// reset all flags
 	memset(&skinFlags[0], NL3D_SOFTSKIN_VNEEDCOMPUTE, numVertices );
 
+	CVertexBufferRead vba;
+	_VBuffer.lock (vba);
 
 	// For all MatrixBlocks
 	//===================
@@ -1760,16 +1666,16 @@ void	CMeshGeom::applySkin(CSkeletonModel *skeleton)
 		// Get VB src/dst ptrs.
 		uint8		*pFlag= &skinFlags[0];
 		CVector		*srcVector= &_OriginalSkinVertices[0];
-		uint8		*srcPal= (uint8*)_VBuffer.getPaletteSkinPointer(0);
-		uint8		*srcWgt= (uint8*)_VBuffer.getWeightPointer(0);
-		uint8		*dstVector= (uint8*)_VBuffer.getVertexCoordPointer(0);
+		uint8		*srcPal= (uint8*)vba.getPaletteSkinPointer(0);
+		uint8		*srcWgt= (uint8*)vba.getWeightPointer(0);
+		uint8		*dstVector= (uint8*)vba.getVertexCoordPointer(0);
 		// Normal.
 		CVector		*srcNormal= NULL;
 		uint8		*dstNormal= NULL;
 		if(skinType>=SkinWithNormal)
 		{
 			srcNormal= &_OriginalSkinNormals[0];
-			dstNormal= (uint8*)_VBuffer.getNormalCoordPointer(0);
+			dstNormal= (uint8*)vba.getNormalCoordPointer(0);
 		}
 		// TgSpace.
 		CVector		*srcTgSpace= NULL;
@@ -1777,7 +1683,7 @@ void	CMeshGeom::applySkin(CSkeletonModel *skeleton)
 		if(skinType>=SkinWithTgSpace)
 		{
 			srcTgSpace= &_OriginalTGSpace[0];
-			dstTgSpace= (uint8*)_VBuffer.getTexCoordPointer(0, tgSpaceStage);
+			dstTgSpace= (uint8*)vba.getTexCoordPointer(0, tgSpaceStage);
 		}
 
 
@@ -1837,7 +1743,7 @@ void	CMeshGeom::flagSkinVerticesForMatrixBlock(uint8 *skinFlags, CMatrixBlock &m
 {
 	for(uint i=0; i<mb.RdrPass.size(); i++)
 	{
-		CPrimitiveBlock	&PB= mb.RdrPass[i].PBlock;
+		CIndexBuffer	&PB= mb.RdrPass[i].PBlock;
 
 		uint32	*pIndex;
 		uint	nIndex;
@@ -1848,18 +1754,11 @@ void	CMeshGeom::flagSkinVerticesForMatrixBlock(uint8 *skinFlags, CMatrixBlock &m
 		// for all prims, indicate which vertex we must compute.
 		// nothing if not already computed (ie 0), because 0&1==0.
 		// Lines.
-		pIndex= (uint32*)PB.getLinePointer();
-		nIndex= PB.getNumLine()*2;
-		for(;nIndex>0;nIndex--, pIndex++)
-			skinFlags[*pIndex]&= NL3D_SOFTSKIN_VMUSTCOMPUTE;
 		// Tris.
-		pIndex= (uint32*)PB.getTriPointer();
-		nIndex= PB.getNumTri()*3;
-		for(;nIndex>0;nIndex--, pIndex++)
-			skinFlags[*pIndex]&= NL3D_SOFTSKIN_VMUSTCOMPUTE;
-		// Quads.
-		pIndex= (uint32*)PB.getQuadPointer();
-		nIndex= PB.getNumQuad()*4;
+		CIndexBufferRead iba;
+		PB.lock (iba);
+		pIndex= (uint32*)iba.getPtr();
+		nIndex= PB.getNumIndexes();
 		for(;nIndex>0;nIndex--, pIndex++)
 			skinFlags[*pIndex]&= NL3D_SOFTSKIN_VMUSTCOMPUTE;
 	}
@@ -1948,7 +1847,7 @@ void	CMeshGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans,
 			if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (rdrFlags & IMeshGeom::RenderOpaqueMaterial) ) ||
 				 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (rdrFlags & IMeshGeom::RenderTransparentMaterial) ) )
 			{
-				triCount+= rdrPass.PBlock.getNumTri();
+				triCount+= rdrPass.PBlock.getNumIndexes()/3;
 			}
 		}
 	}
@@ -1961,7 +1860,7 @@ void	CMeshGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans,
 			_VBuffer.getVertexFormat(), triCount);
 
 		// VBHard
-		if(_VertexBufferHard)
+		if(_VBuffer.getPreferredMemory()!=CVertexBuffer::RAMPreferred)
 			rdrTrav->Scene->BenchRes.NumMeshVBufferHard++;
 		else
 			rdrTrav->Scene->BenchRes.NumMeshVBufferStd++;
@@ -2028,9 +1927,6 @@ void	CMeshGeom::beginMesh(CMeshGeomRenderContext &rdrCtx)
 	}
 	else
 	{
-		// update the VBufferHard (create/delete), to maybe render in AGP memory.
-		updateVertexBufferHard ( rdrCtx.Driver );
-
 		// use MeshVertexProgram effect?
 		if( _MeshVertexProgram != NULL && _MeshVertexProgram->isMBRVpOk(rdrCtx.Driver) )
 		{
@@ -2040,18 +1936,8 @@ void	CMeshGeom::beginMesh(CMeshGeomRenderContext &rdrCtx)
 			_MeshVertexProgram->beginMBRMesh(rdrCtx.Driver, rdrCtx.Scene );
 		}
 
-
-		// if VB Hard is here, use it.
-		if(_VertexBufferHard != NULL)
-		{
-			// active VB Hard.
-			rdrCtx.Driver->activeVertexBufferHard(_VertexBufferHard);
-		}
-		else
-		{
-			// active VB. SoftwareSkinning: reset flags for skinning.
-			rdrCtx.Driver->activeVertexBuffer(_VBuffer);
-		}
+		// active VB. SoftwareSkinning: reset flags for skinning.
+		rdrCtx.Driver->activeVertexBuffer(_VBuffer);
 	}
 }
 // ***************************************************************************
@@ -2089,11 +1975,17 @@ void	CMeshGeom::renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *mi
 		}
 
 		if(rdrCtx.RenderThroughVBHeap)
+		{
 			// render shifted primitives
-			rdrCtx.Driver->render(rdrPass.VBHeapPBlock, material);
+			rdrCtx.Driver->activeIndexBuffer(rdrPass.VBHeapPBlock);
+			rdrCtx.Driver->renderTriangles(material, 0, rdrPass.VBHeapPBlock.getNumIndexes()/3);
+		}
 		else
+		{
 			// render primitives
-			rdrCtx.Driver->render(rdrPass.PBlock, material);
+			rdrCtx.Driver->activeIndexBuffer(rdrPass.PBlock);
+			rdrCtx.Driver->renderTriangles(material, 0, rdrPass.PBlock.getNumIndexes()/3);
+		}
 	}
 }
 // ***************************************************************************
@@ -2133,7 +2025,9 @@ bool	CMeshGeom::getVBHeapInfo(uint &vertexFormat, uint &numVertices)
 void	CMeshGeom::computeMeshVBHeap(void *dst, uint indexStart)
 {
 	// Fill dst with Buffer content.
-	memcpy(dst, _VBuffer.getVertexCoordPointer(), _VBuffer.getNumVertices()*_VBuffer.getVertexSize() );
+	CVertexBufferRead vba;
+	_VBuffer.lock (vba);
+	memcpy(dst, vba.getVertexCoordPointer(), _VBuffer.getNumVertices()*_VBuffer.getVertexSize() );
 
 	// NB: only 1 MB is possible ...
 	nlassert(_MatrixBlocks.size()==1);
@@ -2142,33 +2036,21 @@ void	CMeshGeom::computeMeshVBHeap(void *dst, uint indexStart)
 	for(uint i=0;i<mBlock.RdrPass.size();i++)
 	{
 		// shift the PB
-		CPrimitiveBlock	&srcPb= mBlock.RdrPass[i].PBlock;
-		CPrimitiveBlock	&dstPb= mBlock.RdrPass[i].VBHeapPBlock;
+		CIndexBuffer	&srcPb= mBlock.RdrPass[i].PBlock;
+		CIndexBuffer	&dstPb= mBlock.RdrPass[i].VBHeapPBlock;
 		uint j;
 
-		// Lines.
-		dstPb.setNumLine(srcPb.getNumLine());
-		uint32			*srcLinePtr= srcPb.getLinePointer();
-		uint32			*dstLinePtr= dstPb.getLinePointer();
-		for(j=0; j<dstPb.getNumLine()*2;j++)
-		{
-			dstLinePtr[j]= srcLinePtr[j]+indexStart;
-		}
 		// Tris.
-		dstPb.setNumTri(srcPb.getNumTri());
-		uint32			*srcTriPtr= srcPb.getTriPointer();
-		uint32			*dstTriPtr= dstPb.getTriPointer();
-		for(j=0; j<dstPb.getNumTri()*3;j++)
+		dstPb.setNumIndexes(srcPb.getNumIndexes());
+		CIndexBufferRead ibaRead;
+		srcPb.lock (ibaRead);
+		CIndexBufferReadWrite ibaWrite;
+		dstPb.lock (ibaWrite);
+		const uint32	*srcTriPtr= ibaRead.getPtr();
+		uint32			*dstTriPtr= ibaWrite.getPtr();
+		for(j=0; j<dstPb.getNumIndexes();j++)
 		{
 			dstTriPtr[j]= srcTriPtr[j]+indexStart;
-		}
-		// Quads.
-		dstPb.setNumQuad(srcPb.getNumQuad());
-		uint32			*srcQuadPtr= srcPb.getQuadPointer();
-		uint32			*dstQuadPtr= dstPb.getQuadPointer();
-		for(j=0; j<dstPb.getNumQuad()*4;j++)
-		{
-			dstQuadPtr[j]= srcQuadPtr[j]+indexStart;
 		}
 	}
 }
@@ -2444,7 +2326,7 @@ uint CMesh::getNbRdrPass(uint matrixBlockIndex) const
 	return _MeshGeom->getNbRdrPass(matrixBlockIndex) ; 
 }
 // ***************************************************************************
-const CPrimitiveBlock &CMesh::getRdrPassPrimitiveBlock(uint matrixBlockIndex, uint renderingPassIndex) const
+const CIndexBuffer &CMesh::getRdrPassPrimitiveBlock(uint matrixBlockIndex, uint renderingPassIndex) const
 {
 	return _MeshGeom->getRdrPassPrimitiveBlock(matrixBlockIndex, renderingPassIndex) ;
 }

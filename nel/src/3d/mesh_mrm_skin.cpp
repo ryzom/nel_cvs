@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.16 2003/11/28 15:07:48 berenguier Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.17 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -212,7 +212,9 @@ void	CMeshMRMGeom::applySkin(CLod &lod, const CSkeletonModel *skeleton)
 
 	// get vertexPtr.
 	//===========================
-	uint8		*destVertexPtr= (uint8*)_VBufferFinal.getVertexCoordPointer();
+	CVertexBufferReadWrite vba;
+	_VBufferFinal.lock (vba);
+	uint8		*destVertexPtr= (uint8*)vba.getVertexCoordPointer();
 	uint		flags= _VBufferFinal.getVertexFormat();
 	sint32		vertexSize= _VBufferFinal.getVertexSize();
 	// must have XYZ.
@@ -402,47 +404,6 @@ uint	CMeshMRMGeom::NumCacheVertexShadow= NL_BlockByteL1 / sizeof(CMeshMRMGeom::C
 // Misc.
 // ***************************************************************************
 // ***************************************************************************
-
-
-
-// ***************************************************************************
-void				CMeshMRMGeom::fillAGPSkinPartWithVBHardPtr(CLod &lod, uint8 *vertexDst)
-{
-	// Fill AGP vertices used by this lod from RAM. (not geomorphed ones).
-	if( lod.SkinVertexBlocks.size()>0 )
-	{
-		// Get VB info, and lock buffers.
-		uint8		*vertexSrc= (uint8*)_VBufferFinal.getVertexCoordPointer();
-		uint32		vertexSize= _VBufferFinal.getVertexSize();
-
-		// big copy of all vertices and their data.
-		// NB: this not help RAM bandwidth, but this help AGP write combiners.
-		// For the majority of mesh (vertex/normal/uv), this is better (6/10).
-
-		// Also, this is a requirement for MeshMorpher to work, because the MehsMorpher may modify
-		// UV and color
-
-
-		// For all block of vertices.
-		CVertexBlock	*vBlock= &lod.SkinVertexBlocks[0];
-		uint	n= lod.SkinVertexBlocks.size();
-
-		/*
-			It appears that it is not a so good idea to use CFastMem::memcpySSE() here, maybe because
-			data is often already in cache (written by skinning), and maybe because movntq is not usefull here since
-			AGP is already a write-combining memory.
-		*/
-		for(;n>0; n--, vBlock++)
-		{
-			// For all vertices of this block, copy it from RAM to VRAM.
-			uint8		*src= vertexSrc + vertexSize * vBlock->VertexStart;
-			uint8		*dst= vertexDst + vertexSize * vBlock->VertexStart;
-
-			memcpy(dst, src, vBlock->NVertices * vertexSize);
-		}
-	}
-}
-
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.40 2004/02/20 14:38:34 vizerie Exp $
+ * $Id: water_model.cpp,v 1.41 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -388,22 +388,31 @@ static void DrawPoly2D(CVertexBuffer &vb, IDriver *drv, const NLMISC::CMatrix &m
 {
 	uint k;
 
-	for (k = 0; k < p.Vertices.size(); ++k)
 	{
-		NLMISC::CVector tPos = mat * NLMISC::CVector(p.Vertices[k].x, p.Vertices[k].y, 0);
-		vb.setValueFloat3Ex (WATER_VB_POS, k, tPos.x, tPos.y, tPos.z);								 			
-		vb.setValueFloat2Ex (WATER_VB_DX,  k, 0, 0);			
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		for (k = 0; k < p.Vertices.size(); ++k)
+		{
+			NLMISC::CVector tPos = mat * NLMISC::CVector(p.Vertices[k].x, p.Vertices[k].y, 0);
+			vba.setValueFloat3Ex (WATER_VB_POS, k, tPos.x, tPos.y, tPos.z);								 			
+			vba.setValueFloat2Ex (WATER_VB_DX,  k, 0, 0);			
+		}
 	}
-	static std::vector<uint32> ib;
-	ib.resize(3 * p.Vertices.size());
-
-	for (k = 0; k < p.Vertices.size() - 2; ++k)
+	static CIndexBuffer ib;
+	ib.setNumIndexes(3 * p.Vertices.size());
 	{
-		ib[ k * 3      ] = 0;
-		ib[ k * 3  + 1 ] = k + 1;
-		ib[ k * 3  + 2 ] = k + 2;
-	}	
-	drv->renderSimpleTriangles(&ib[0], p.Vertices.size() - 2);	
+		CIndexBufferReadWrite ibaWrite;
+		ib.lock (ibaWrite);
+		uint32 *ptr = ibaWrite.getPtr();
+		for (k = 0; k < p.Vertices.size() - 2; ++k)
+		{
+			ptr[ k * 3      ] = 0;
+			ptr[ k * 3  + 1 ] = k + 1;
+			ptr[ k * 3  + 2 ] = k + 2;
+		}	
+	}
+	drv->activeIndexBuffer(ib);
+	drv->renderSimpleTriangles(0, p.Vertices.size() - 2);
 }
 
 
@@ -662,7 +671,7 @@ void	CWaterModel::traverseRender()
 			currHV += (startY - 0.5f  * isAbove) * yStep;
 
 			// current index buffer used. We swap each time a row has been drawn
-			std::vector<uint32> *currIB = &CWaterShape::_IBUpDown, *otherIB = &CWaterShape::_IBDownUp;
+			CIndexBuffer *currIB = &CWaterShape::_IBUpDown, *otherIB = &CWaterShape::_IBDownUp;
 
 					
 			sint vIndex = 0; // index in vertices	
@@ -740,17 +749,21 @@ void	CWaterModel::traverseRender()
 					}
 
 					
-					uint8 *vbPointer = (uint8 *) shape->_VB.getVertexCoordPointer() + shape->_VB.getVertexSize() * (vIndex + realStartX + rotBorderSize);												
-						
+					{
+						CVertexBufferReadWrite vba;
+						shape->_VB.lock (vba);
+						uint8 *vbPointer = (uint8 *) vba.getVertexCoordPointer() + shape->_VB.getVertexSize() * (vIndex + realStartX + rotBorderSize);												
+							
 
-					for (sint k = realStartX; k <= realEndX; ++k)
-					{	
-						t =   denom / currV.z;						
-						// compute intersection with plane											
-						NLMISC::CVector inter = t * currV;
-						inter.z += obsPos.z;
-						SetupWaterVertex(qLeft, qRight, qUp, qDown, qSubLeft, qSubDown, inter, invWaterRatio, doubleWaterHeightMapSize, whm, vbPointer, obsPos.x, obsPos.y);
-						currV += xStep;						
+						for (sint k = realStartX; k <= realEndX; ++k)
+						{	
+							t =   denom / currV.z;						
+							// compute intersection with plane											
+							NLMISC::CVector inter = t * currV;
+							inter.z += obsPos.z;
+							SetupWaterVertex(qLeft, qRight, qUp, qDown, qSubLeft, qSubDown, inter, invWaterRatio, doubleWaterHeightMapSize, whm, vbPointer, obsPos.x, obsPos.y);
+							currV += xStep;						
+						}
 					}
 
 					if (l != 0) // 2 line of the ib done ?
@@ -758,8 +771,8 @@ void	CWaterModel::traverseRender()
 						sint count = oldEndX - oldStartX;
 						if (count > 0)
 						{												
-							drv->renderSimpleTriangles(&((*currIB)[(oldStartX + rotBorderSize) * 6]),
-												 2 * count );							
+							drv->activeIndexBuffer(*currIB);
+							drv->renderSimpleTriangles((oldStartX + rotBorderSize) * 6, 2 * count );							
 						}		
 					}
 
@@ -907,6 +920,7 @@ void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, c
 
 	/// set matrix		
 	drv->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
+	drv->setConstantFog(18);
 
 	// retrieve current time
 	float date  = 0.001f * (NLMISC::CTime::getLocalTime() & 0xffffff); // must keep some precision.
@@ -1223,7 +1237,7 @@ void CWaterModel::doSimpleRender(IDriver *drv)
 	}
 	//	
 	static std::vector<CSimpleVertexInfo> verts;	
-	static std::vector<uint32> indices;
+	static CIndexBuffer indices;
 	//
 	NLMISC::CPolygon2D &poly = shape->_Poly;
 	uint numVerts = poly.Vertices.size();
@@ -1274,7 +1288,9 @@ void CWaterModel::doSimpleRender(IDriver *drv)
 		minU = floorf(minU);
 		minV = floorf(minV);		
 		//
-		uint8 *data = (uint8 *) _SimpleRenderVB.getVertexCoordPointer();
+		CVertexBufferReadWrite vba;
+		_SimpleRenderVB.lock (vba);
+		uint8 *data = (uint8 *) vba.getVertexCoordPointer();
 		for(k = 0; k < numVerts; ++k)
 		{
 			((NLMISC::CVector *) data)->set(poly.Vertices[k].x, poly.Vertices[k].y, 0.f);			
@@ -1297,8 +1313,10 @@ void CWaterModel::doSimpleRender(IDriver *drv)
 		// version with a color map : it remplace the emboss texture						
 		_SimpleWaterMat.setTexture(1, shape->_ColorMap);		
 		_SimpleRenderVB.setNumVertices(numVerts);
+		CVertexBufferReadWrite vba;
+		_SimpleRenderVB.lock (vba);
 		//
-		uint8 *data = (uint8 *) _SimpleRenderVB.getVertexCoordPointer();
+		uint8 *data = (uint8 *) vba.getVertexCoordPointer();
 		for(k = 0; k < numVerts; ++k)
 		{
 			* (NLMISC::CVector *) data = poly.Vertices[k];
@@ -1323,16 +1341,22 @@ void CWaterModel::doSimpleRender(IDriver *drv)
 	drv->activeVertexBuffer(_SimpleRenderVB);		
 	
 	// create an index buffer to do the display	
-	indices.resize((numVerts - 2) * 3);	
-	for(k = 0; k < (numVerts - 2); ++k)
+	indices.setNumIndexes((numVerts - 2) * 3);	
 	{
-		
-		indices[ k * 3      ] = 0;
-		indices[ k * 3  + 1 ] = k + 1;
-		indices[ k * 3  + 2 ] = k + 2;		
-	}	
+		CIndexBufferReadWrite ibaWrite;
+		indices.lock (ibaWrite);
+		uint32 *ptr = ibaWrite.getPtr();
+		for(k = 0; k < (numVerts - 2); ++k)
+		{
+			
+			ptr[ k * 3      ] = 0;
+			ptr[ k * 3  + 1 ] = k + 1;
+			ptr[ k * 3  + 2 ] = k + 2;		
+		}	
+	}
 	drv->setupMaterial(_SimpleWaterMat);
-	drv->renderSimpleTriangles(&indices[0], numVerts - 2);	
+	drv->activeIndexBuffer(indices);
+	drv->renderSimpleTriangles(0, numVerts - 2);	
 }
 
 //***********************************************************************************************************

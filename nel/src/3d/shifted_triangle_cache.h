@@ -1,7 +1,7 @@
 /** \file shifted_triangle_cache.h
  * <File description>
  *
- * $Id: shifted_triangle_cache.h,v 1.2 2003/05/13 15:25:12 berenguier Exp $
+ * $Id: shifted_triangle_cache.h,v 1.3 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/object_vector.h"
+#include "3d/index_buffer.h"
 
 
 namespace NL3D 
@@ -48,13 +49,13 @@ public:
 	struct	CRdrPass
 	{
 		/// Point to CShiftedTriangleCache::Triangles
-		uint32				*Triangles;
+		uint32				Triangles;
 		uint32				NumTriangles;
 	};
 
 public:
 	/// The Raw triangles array
-	NLMISC::CObjectVector<uint32, false>		RawIndices;
+	CIndexBuffer								RawIndices;
 	/// List of triangles, per rdrPass
 	NLMISC::CObjectVector<CRdrPass, false>		RdrPass;
 

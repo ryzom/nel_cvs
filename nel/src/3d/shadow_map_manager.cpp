@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.5 2004/01/15 17:33:18 lecroart Exp $
+ * $Id: shadow_map_manager.cpp,v 1.6 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -80,31 +80,56 @@ CShadowMapManager::CShadowMapManager()
 		CVertexBuffer::TexCoord1Flag |
 		CVertexBuffer::TexCoord2Flag |
 		CVertexBuffer::TexCoord3Flag);
+
 	// Only 2 quads are used to blur
 	_BlurQuads.setNumVertices(8);
-	_BlurMaterial.initUnlit();
-	_BlurMaterial.setColor(CRGBA::White);
-	_BlurMaterial.setZWrite(false);
-	_BlurMaterial.setZFunc(CMaterial::always);
-	_BlurMaterial.setDoubleSided(true);
-	// Setup The Blur. NB: it will take advantage of Max 4 texture driver support, but will still 
-	// work with 2 or 3 (less beautifull).
-	for(i=1;i<4;i++)
+	for (i=0;i<2;i++)
 	{
-		_BlurMaterial.texEnvOpRGB(i, CMaterial::InterpolateConstant);
-		_BlurMaterial.texEnvArg0RGB(i, CMaterial::Texture, CMaterial::SrcColor);
-		_BlurMaterial.texEnvArg1RGB(i, CMaterial::Previous, CMaterial::SrcColor);
-		_BlurMaterial.texEnvOpAlpha(i, CMaterial::InterpolateConstant);
-		_BlurMaterial.texEnvArg0Alpha(i, CMaterial::Texture, CMaterial::SrcAlpha);
-		_BlurMaterial.texEnvArg1Alpha(i, CMaterial::Previous, CMaterial::SrcAlpha);
+		_BlurMaterial[i].initUnlit();
+		_BlurMaterial[i].setColor(CRGBA::White);
+		_BlurMaterial[i].setZWrite(false);
+		_BlurMaterial[i].setZFunc(CMaterial::always);
+		_BlurMaterial[i].setDoubleSided(true);
+		// Setup The Blur. NB: it will take advantage of Max 4 texture driver support, but will still 
+		// work with 2 or 3 (less beautifull).
+		uint j;
+		for(j=1;j<4;j++)
+		{
+			_BlurMaterial[i].texEnvOpRGB(j, CMaterial::InterpolateConstant);
+			_BlurMaterial[i].texEnvArg0RGB(j, CMaterial::Texture, CMaterial::SrcColor);
+			_BlurMaterial[i].texEnvArg1RGB(j, CMaterial::Previous, CMaterial::SrcColor);
+			_BlurMaterial[i].texEnvOpAlpha(j, CMaterial::InterpolateConstant);
+			_BlurMaterial[i].texEnvArg0Alpha(j, CMaterial::Texture, CMaterial::SrcAlpha);
+			_BlurMaterial[i].texEnvArg1Alpha(j, CMaterial::Previous, CMaterial::SrcAlpha);
+		}
+		// Factor for Stage so the sum is 1.
+		_BlurMaterial[i].texConstantColor(1, CRGBA(128,128,128,128));		// factor= 1/2
+		_BlurMaterial[i].texConstantColor(2, CRGBA(85,85,85,85));			// factor= 1/3
+		_BlurMaterial[i].texConstantColor(3, CRGBA(64,64,64,64));			// factor= 1/4
 	}
-	// Factor for Stage so the sum is 1.
-	_BlurMaterial.texConstantColor(1, CRGBA(128,128,128,128));		// factor= 1/2
-	_BlurMaterial.texConstantColor(2, CRGBA(85,85,85,85));			// factor= 1/3
-	_BlurMaterial.texConstantColor(3, CRGBA(64,64,64,64));			// factor= 1/4
 
 	_BlurTextureW= 0;
 	_BlurTextureH= 0;
+
+	// *** Setup copy
+	_CopyQuads.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
+	_CopyQuads.setNumVertices(4);
+	CVertexBufferReadWrite vba;
+	_CopyQuads.lock (vba);
+	vba.setVertexCoord (0, CVector (0, 0, 0));
+	vba.setVertexCoord (1, CVector (1, 0, 0));
+	vba.setVertexCoord (2, CVector (1, 0, 1));
+	vba.setVertexCoord (3, CVector (0, 0, 1));
+
+	// Copy material
+	_CopyMaterial.initUnlit();
+	_CopyMaterial.setColor(CRGBA::White);
+	_CopyMaterial.setZWrite(false);
+	_CopyMaterial.setZFunc(CMaterial::always);
+	_CopyMaterial.setDoubleSided(true);
+	_CopyMaterial.setBlend (false);
+	_CopyMaterial.setAlphaTest (false);
+	_CopyMaterial.setBlendFunc (CMaterial::one, CMaterial::zero);
 
 	// **** Setup Receiving
 
@@ -242,7 +267,7 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 
 	// Init
 	// ********
-	uint32	wndW= 0, wndH= 0;
+	uint32	wndW= _BlurTextureW, wndH= _BlurTextureH;
 	// get some text/screen size.
 	if(driverForShadowGeneration)
 		driverForShadowGeneration->getWindowSize(wndW, wndH);
@@ -281,8 +306,8 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 	uint	maxSCPerPass= numTextW * numTextH;
 
 	// compute vp float size.
-	float	vpWidth= (float)baseTextureSize / (float)wndW;
-	float	vpHeight= (float)baseTextureSize / (float)wndH;
+	float	vpWidth= (float)baseTextureSize / (float)(numTextW*baseTextureSize);
+	float	vpHeight= (float)baseTextureSize / (float)(numTextH*baseTextureSize);
 
 
 	// Create / Update the Blur Texture 
@@ -307,6 +332,14 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 	while(numSC>0)
 	{
 		uint	numPassSC= min(maxSCPerPass, numSC);
+		// number of line including the last line if not empty
+		uint	numTotalLine= (numPassSC+numTextW-1)/numTextW;
+		// number of column.
+		uint	numTotalCol= (numPassSC<numTextW)?numPassSC:numTextW;
+
+		// Render to the blur texture
+		driverForShadowGeneration->setRenderTarget (_BlurTexture[0], 0, 0, numTotalCol*baseTextureSize, numTotalLine*baseTextureSize);
+
 		uint	textX, textY;
 		uint	i;
 
@@ -314,8 +347,8 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 		// ********
 
 		// Render the polygons with Smooth Anti-Alias. Less jittering for little performance overcost
-		if(_PolySmooth)
-			driverForShadowGeneration->enablePolygonSmoothing(true);
+/*		if(_PolySmooth)
+			driverForShadowGeneration->enablePolygonSmoothing(true);*/
 
 		textX=0;
 		textY=0;
@@ -330,13 +363,13 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 
 			// setup viewport to render to
 			CViewport	vp;
-			vp.init(textX*baseTextureSize/(float)wndW, textY*baseTextureSize/(float)wndH, vpWidth, vpHeight);
+			vp.init(textX*baseTextureSize/(float)_BlurTextureW, textY*baseTextureSize/(float)_BlurTextureH, vpWidth, vpHeight);
 			driverForShadowGeneration->setupViewport(vp);
 
 			// TODO_SHADOW: optim: one big erase per pass, but just bbox needed (according to number of SC to render)
 			// do a siccor or prefer do a polygon clear?
 			CScissor	sic;
-			sic.init(textX*baseTextureSize/(float)wndW, textY*baseTextureSize/(float)wndH, vpWidth, vpHeight);
+			sic.init(textX*baseTextureSize/(float)_BlurTextureW, textY*baseTextureSize/(float)_BlurTextureH, vpWidth, vpHeight);
 			driverForShadowGeneration->setupScissor(sic);
 			driverForShadowGeneration->clear2D(CRGBA(0,0,0,0));
 
@@ -364,7 +397,7 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 		CViewport	vp;
 		vp.initFullScreen();
 		driverForShadowGeneration->setupViewport(vp);
-		driverForShadowGeneration->setFrustum(0, (float)wndW, 0, (float)wndH, -1,1,false);
+		driverForShadowGeneration->setFrustum(0, (float)_BlurTextureW, 0, (float)_BlurTextureH, -1,1,false);
 		driverForShadowGeneration->setupViewMatrix(CMatrix::Identity);
 		driverForShadowGeneration->setupModelMatrix(CMatrix::Identity);
 
@@ -375,17 +408,26 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 		// ********
 		uint	numBlur= scene->getShadowMapBlurSize();
 		clamp(numBlur, 0U, 3U);
+		uint blurTarget = 0;
 		for(i=0;i<numBlur;i++)
 		{
 			// copy from FB to BlurTexture
-			copyScreenToBlurTexture(driverForShadowGeneration, numPassSC, numTextW, numTextH, baseTextureSize);
+			/* todo hulud remove
+			copyScreenToBlurTexture(driverForShadowGeneration, numPassSC, numTextW, numTextH, baseTextureSize);*/
+			// Set the blur texture target
+			blurTarget = (i+1)&1;
+			const uint blurSource = i&1;
+			driverForShadowGeneration->setRenderTarget (_BlurTexture[blurTarget], 0, 0, numTotalCol*baseTextureSize, numTotalLine*baseTextureSize);
 
 			// blur
-			applyFakeGaussianBlur(driverForShadowGeneration, numPassSC, numTextW, numTextH, baseTextureSize);
+			applyFakeGaussianBlur(driverForShadowGeneration, numPassSC, numTextW, numTextH, baseTextureSize, blurSource);
 
 			// Ensure the One pixel black security on texture border
 			fillBlackBorder(driverForShadowGeneration, numPassSC, numTextW, numTextH, baseTextureSize);
 		}
+
+		// Copy the last blur texture
+		_CopyMaterial.setTexture(0, _BlurTexture[blurTarget]);
 
 		// Store Screen in ShadowMaps
 		// ********
@@ -402,7 +444,54 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 				if(text)
 				{
 					uint	bts= baseTextureSize;
-					driverForShadowGeneration->copyFrameBufferToTexture(text, 0, 0, 0, textX*bts, textY*bts, bts, bts);
+
+					// Try the temporary buffer trick (openGL)
+					//if (!driverForShadowGeneration->copyTargetToTexture (text, 0, 0, textX*bts, textY*bts, bts, bts))
+					{
+						// Copy the texture
+						driverForShadowGeneration->setRenderTarget (text, 0, 0, bts, bts);
+						driverForShadowGeneration->clear2D (CRGBA(0,0,0,0));
+
+						// Viewport is already fullscreen, set the frustum
+						driverForShadowGeneration->setFrustum(0, 1, 0, 1, -1,1,false);
+
+						// Set the vertex buffer UV
+						{
+							CVertexBufferReadWrite vba;
+							_CopyQuads.lock (vba);
+							const float u= (float)(textX*bts)*_BlurTextureOOW;
+							const float v= (float)(textY*bts)*_BlurTextureOOH;
+							const float width= (float)bts*_BlurTextureOOW;
+							const float height= (float)bts*_BlurTextureOOH;
+							vba.setTexCoord	(0, 0, u, v);
+							vba.setTexCoord	(1, 0, u+width, v);
+							vba.setTexCoord	(2, 0, u+width, v+height);
+							vba.setTexCoord	(3, 0, u, v+height);
+						}
+
+						// Vertex buffer
+						driverForShadowGeneration->activeVertexBuffer (_CopyQuads);
+
+						CScissor	sic;
+						sic.initFullScreen();
+						// TODO_SHADOW: optim: need scissor?
+						driverForShadowGeneration->setupScissor(sic);
+						
+						driverForShadowGeneration->setupViewMatrix(CMatrix::Identity);
+						driverForShadowGeneration->setupModelMatrix(CMatrix::Identity);
+
+						// Render the shadow in the final shadow texture
+						vp.init (0, 0, 1, 1);
+						driverForShadowGeneration->setupViewport(vp);
+						driverForShadowGeneration->renderRawQuads (_CopyMaterial, 0, 1);
+
+						/* todo hulud remove*/
+						// driverForShadowGeneration->copyFrameBufferToTexture(text, 0, 0, 0, textX*bts, textY*bts, bts, bts);
+
+						// Set default render target
+						driverForShadowGeneration->setRenderTarget (NULL);
+					}
+
 					// Indicate to the ShadowMap that we have updated his Texture
 					sm->LastGenerationFrame= scene->getNumRender();
 				}
@@ -422,6 +511,9 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 		baseSC+= numPassSC;
 		numSC-= numPassSC;
 	}
+
+	// Set default render target
+	driverForShadowGeneration->setRenderTarget (NULL);
 
 	// Allow Writing on all.
 	driverForShadowGeneration->setColorMask(true, true, true, true);
@@ -582,6 +674,60 @@ void			CShadowMapManager::renderProject(CScene *scene)
 		}
 	}*/
 
+	/* // hulud test
+	CScissor	sic;
+	sic.initFullScreen();
+	// TODO_SHADOW: optim: need scissor?
+	driver->setupScissor(sic);
+	driver->setupViewMatrix(CMatrix::Identity);
+	driver->setupModelMatrix(CMatrix::Identity);
+	driver->setFrustum (0,1,0,1,-1,1,false);
+	// Render the shadow in the final shadow texture
+	CViewport vp;
+	vp.init (0, 0, 0.5f, 0.5f);
+	driver->setupViewport(vp);
+
+	static CVertexBuffer CopyQuads;
+	static CMaterial CopyMaterial;
+	CopyMaterial.initUnlit();
+	CopyMaterial.setColor(CRGBA::White);
+	CopyMaterial.setZWrite(false);
+	CopyMaterial.setZFunc(CMaterial::always);
+	CopyMaterial.setDoubleSided(true);
+	CopyMaterial.setBlend (false);
+	CopyMaterial.setAlphaTest (false);
+	CopyMaterial.setBlendFunc (CMaterial::one, CMaterial::zero);
+	CopyMaterial.texEnvOpRGB(0, CMaterial::Replace);
+	CopyMaterial.texEnvArg0RGB(0, CMaterial::Texture, CMaterial::SrcAlpha);
+	CopyQuads.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
+	CopyQuads.setNumVertices(4);
+	{
+		CVertexBufferReadWrite vba;
+		CopyQuads.lock (vba);
+		vba.setVertexCoord (0, CVector (0, 0, 0));
+		vba.setVertexCoord (1, CVector (1, 0, 0));
+		vba.setVertexCoord (2, CVector (1, 0, 1));
+		vba.setVertexCoord (3, CVector (0, 0, 1));
+		vba.setTexCoord	(0, 0, 0, 0);
+		vba.setTexCoord	(1, 0, 1, 0);
+		vba.setTexCoord	(2, 0, 1, 1);
+		vba.setTexCoord	(3, 0, 0, 1);
+	}
+	driver->activeVertexBuffer (CopyQuads);
+
+	if (_ShadowCasters.size()>0)
+	{
+		// get the transform to compute shadow map.
+		CTransform	*sc= _ShadowCasters[0];
+
+		CShadowMap	*sm= sc->getShadowMap();
+		if(sm)
+		{
+			CopyMaterial.setTexture (0, sm->getTexture());
+			driver->renderRawQuads (CopyMaterial, 0, 1);
+		}
+	}*/
+
 
 	// Release pass.
 	// ********
@@ -723,7 +869,7 @@ void			CShadowMapManager::fillBlackBorder(IDriver *drv, uint numPassText, uint n
 	// Render Quads
 	_FillMaterial.setColor(CRGBA(0,0,0,0));
 	drv->activeVertexBuffer(_FillQuads);
-	drv->renderQuads(_FillMaterial, 0, numHQuads+numVQuads);
+	drv->renderRawQuads(_FillMaterial, 0, numHQuads+numVQuads);
 }
 
 
@@ -735,10 +881,12 @@ void			CShadowMapManager::setBlackQuad(uint index, sint x, sint y, sint w, sint 
 	float	x1= (float)x+(float)w;
 	float	y1= (float)y+(float)h;
 	index*= 4;
-	_FillQuads.setVertexCoord (index+0, CVector (x0, 0, y0));
-	_FillQuads.setVertexCoord (index+1, CVector (x1, 0, y0));
-	_FillQuads.setVertexCoord (index+2, CVector (x1, 0, y1));
-	_FillQuads.setVertexCoord (index+3, CVector (x0, 0, y1));
+	CVertexBufferReadWrite vba;
+	_FillQuads.lock(vba);
+	vba.setVertexCoord (index+0, CVector (x0, 0, y0));
+	vba.setVertexCoord (index+1, CVector (x1, 0, y0));
+	vba.setVertexCoord (index+2, CVector (x1, 0, y1));
+	vba.setVertexCoord (index+3, CVector (x0, 0, y1));
 }
 
 // ***************************************************************************
@@ -751,27 +899,38 @@ void			CShadowMapManager::updateBlurTexture(uint w, uint h)
 		return;
 
 	// release old SmartPtr
-	_BlurMaterial.setTexture(0, NULL);
-	_BlurMaterial.setTexture(1, NULL);
-	_BlurMaterial.setTexture(2, NULL);
-	_BlurMaterial.setTexture(3, NULL);
-	_BlurTexture= NULL;
+	uint i;
+	for (i=0; i<2; i++)
+	{
+		_BlurMaterial[i].setTexture(0, NULL);
+		_BlurMaterial[i].setTexture(1, NULL);
+		_BlurMaterial[i].setTexture(2, NULL);
+		_BlurMaterial[i].setTexture(3, NULL);
+	}
+	_BlurTexture[0]= NULL;
+	_BlurTexture[1]= NULL;
 	_BlurTextureW= w;
 	_BlurTextureH= h;
 	// NB: the format must be RGBA; else slow copyFrameBufferToTexture()
-	uint8	*tmpMem= new uint8[4*_BlurTextureW*_BlurTextureH];
-	_BlurTexture = new CTextureMem (tmpMem, 4*_BlurTextureW*_BlurTextureH, true, false, _BlurTextureW, _BlurTextureH);
-	_BlurTexture->setWrapS (ITexture::Clamp);
-	_BlurTexture->setWrapT (ITexture::Clamp);
-	_BlurTexture->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
-	_BlurTexture->generate();
-	_BlurTexture->setReleasable (false);
+	for (i=0; i<2; i++)
+	{
+		uint8	*tmpMem= new uint8[4*_BlurTextureW*_BlurTextureH];
+		_BlurTexture[i] = new CTextureMem (tmpMem, 4*_BlurTextureW*_BlurTextureH, true, false, _BlurTextureW, _BlurTextureH);
+		_BlurTexture[i]->setWrapS (ITexture::Clamp);
+		_BlurTexture[i]->setWrapT (ITexture::Clamp);
+		_BlurTexture[i]->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
+		_BlurTexture[i]->generate();
+		_BlurTexture[i]->setReleasable (false);
+	}
 
 	// set to the material
-	_BlurMaterial.setTexture(0, _BlurTexture);
-	_BlurMaterial.setTexture(1, _BlurTexture);
-	_BlurMaterial.setTexture(2, _BlurTexture);
-	_BlurMaterial.setTexture(3, _BlurTexture);
+	for (i=0; i<2; i++)
+	{
+		_BlurMaterial[i].setTexture(0, _BlurTexture[i]);
+		_BlurMaterial[i].setTexture(1, _BlurTexture[i]);
+		_BlurMaterial[i].setTexture(2, _BlurTexture[i]);
+		_BlurMaterial[i].setTexture(3, _BlurTexture[i]);
+	}
 
 	// compute values for texturing
 	_BlurTextureOOW= 1.f / _BlurTextureW;
@@ -795,11 +954,12 @@ void			CShadowMapManager::copyScreenToBlurTexture(IDriver *drv, uint numPassText
 	// number of column.
 	uint	numTotalCol= (numPassText<numTextW)?numPassText:numTextW;
 
-	drv->copyFrameBufferToTexture(_BlurTexture, 0, 0, 0, 0, 0, numTotalCol*baseTextureSize, numTotalLine*baseTextureSize);
+	/* todo hulud shadows
+	drv->copyFrameBufferToTexture(_BlurTexture, 0, 0, 0, 0, 0, numTotalCol*baseTextureSize, numTotalLine*baseTextureSize); */
 }
 
 // ***************************************************************************
-void			CShadowMapManager::applyFakeGaussianBlur(IDriver *drv, uint numPassText, uint numTextW, uint numTextH, uint baseTextureSize)
+void			CShadowMapManager::applyFakeGaussianBlur(IDriver *drv, uint numPassText, uint numTextW, uint numTextH, uint baseTextureSize, uint blurSource)
 {
 	if(numPassText==0)
 		return;
@@ -818,7 +978,7 @@ void			CShadowMapManager::applyFakeGaussianBlur(IDriver *drv, uint numPassText, 
 
 	// render
 	drv->activeVertexBuffer(_BlurQuads);
-	drv->renderQuads(_BlurMaterial, 0, index);
+	drv->renderRawQuads(_BlurMaterial[blurSource], 0, index);
 }
 
 
@@ -838,29 +998,31 @@ void			CShadowMapManager::setBlurQuadFakeGaussian(uint index, sint x, sint y, si
 	// NB: the order of the Delta (--,++,-+,+-) is made so it works well with 2,3 or 4 texture support.
 
 	// vertex 0
-	_BlurQuads.setVertexCoord (index+0, CVector (x0, 0, y0));
-	_BlurQuads.setTexCoord(index+0, 0, u0-_BlurTextureD05W, v0-_BlurTextureD05H);
-	_BlurQuads.setTexCoord(index+0, 1, u0+_BlurTextureD05W, v0+_BlurTextureD05H);
-	_BlurQuads.setTexCoord(index+0, 2, u0-_BlurTextureD05W, v0+_BlurTextureD05H);
-	_BlurQuads.setTexCoord(index+0, 3, u0+_BlurTextureD05W, v0-_BlurTextureD05H);
+	CVertexBufferReadWrite vba;
+	_BlurQuads.lock(vba);
+	vba.setVertexCoord (index+0, CVector (x0, 0, y0));
+	vba.setTexCoord(index+0, 0, u0-_BlurTextureD05W, v0-_BlurTextureD05H);
+	vba.setTexCoord(index+0, 1, u0+_BlurTextureD05W, v0+_BlurTextureD05H);
+	vba.setTexCoord(index+0, 2, u0-_BlurTextureD05W, v0+_BlurTextureD05H);
+	vba.setTexCoord(index+0, 3, u0+_BlurTextureD05W, v0-_BlurTextureD05H);
 	// vertex 1
-	_BlurQuads.setVertexCoord (index+1, CVector (x1, 0, y0));
-	_BlurQuads.setTexCoord(index+1, 0, u1-_BlurTextureD05W, v0-_BlurTextureD05H);
-	_BlurQuads.setTexCoord(index+1, 1, u1+_BlurTextureD05W, v0+_BlurTextureD05H);
-	_BlurQuads.setTexCoord(index+1, 2, u1-_BlurTextureD05W, v0+_BlurTextureD05H);
-	_BlurQuads.setTexCoord(index+1, 3, u1+_BlurTextureD05W, v0-_BlurTextureD05H);
+	vba.setVertexCoord (index+1, CVector (x1, 0, y0));
+	vba.setTexCoord(index+1, 0, u1-_BlurTextureD05W, v0-_BlurTextureD05H);
+	vba.setTexCoord(index+1, 1, u1+_BlurTextureD05W, v0+_BlurTextureD05H);
+	vba.setTexCoord(index+1, 2, u1-_BlurTextureD05W, v0+_BlurTextureD05H);
+	vba.setTexCoord(index+1, 3, u1+_BlurTextureD05W, v0-_BlurTextureD05H);
 	// vertex 2
-	_BlurQuads.setVertexCoord (index+2, CVector (x1, 0, y1));
-	_BlurQuads.setTexCoord(index+2, 0, u1-_BlurTextureD05W, v1-_BlurTextureD05H);
-	_BlurQuads.setTexCoord(index+2, 1, u1+_BlurTextureD05W, v1+_BlurTextureD05H);
-	_BlurQuads.setTexCoord(index+2, 2, u1-_BlurTextureD05W, v1+_BlurTextureD05H);
-	_BlurQuads.setTexCoord(index+2, 3, u1+_BlurTextureD05W, v1-_BlurTextureD05H);
+	vba.setVertexCoord (index+2, CVector (x1, 0, y1));
+	vba.setTexCoord(index+2, 0, u1-_BlurTextureD05W, v1-_BlurTextureD05H);
+	vba.setTexCoord(index+2, 1, u1+_BlurTextureD05W, v1+_BlurTextureD05H);
+	vba.setTexCoord(index+2, 2, u1-_BlurTextureD05W, v1+_BlurTextureD05H);
+	vba.setTexCoord(index+2, 3, u1+_BlurTextureD05W, v1-_BlurTextureD05H);
 	// vertex 3
-	_BlurQuads.setVertexCoord (index+3, CVector (x0, 0, y1));
-	_BlurQuads.setTexCoord(index+3, 0, u0-_BlurTextureD05W, v1-_BlurTextureD05H);
-	_BlurQuads.setTexCoord(index+3, 1, u0+_BlurTextureD05W, v1+_BlurTextureD05H);
-	_BlurQuads.setTexCoord(index+3, 2, u0-_BlurTextureD05W, v1+_BlurTextureD05H);
-	_BlurQuads.setTexCoord(index+3, 3, u0+_BlurTextureD05W, v1-_BlurTextureD05H);
+	vba.setVertexCoord (index+3, CVector (x0, 0, y1));
+	vba.setTexCoord(index+3, 0, u0-_BlurTextureD05W, v1-_BlurTextureD05H);
+	vba.setTexCoord(index+3, 1, u0+_BlurTextureD05W, v1+_BlurTextureD05H);
+	vba.setTexCoord(index+3, 2, u0-_BlurTextureD05W, v1+_BlurTextureD05H);
+	vba.setTexCoord(index+3, 3, u0+_BlurTextureD05W, v1-_BlurTextureD05H);
 }
 
 

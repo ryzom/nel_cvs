@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.37 2003/11/18 11:02:50 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.38 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,6 +165,9 @@ void	CLandscapeModel::clipAndRenderLandscape()
 	// The real Landscape clip is done here, after std clip
 	H_AUTO( NL3D_Landscape_Clip );
 
+	// Should be unlocked
+	nlassert (!Landscape.isLocked());
+
 	CClipTrav		&clipTrav= getOwnerScene()->getClipTrav();
 	CRenderTrav		&renderTrav= getOwnerScene()->getRenderTrav();
 
@@ -187,6 +190,8 @@ void	CLandscapeModel::clipAndRenderLandscape()
 		refineCenter= clipTrav.CamPos;
 	else
 		refineCenter= _RefineCenterUser;
+
+	Landscape.lockBuffers ();
 
 	// Use the Clustered pyramid for Patch, but Frustum pyramid for TessBlocks.
 	// We are sure that pyramid has normalized plane normals.
@@ -251,6 +256,9 @@ void	CLandscapeModel::clipAndRenderLandscape()
 	H_BEFORE( NL3D_Landscape_Render );
 	Landscape.render(refineCenter, renderTrav.CamLook, CurrentPyramid, isAdditive ());
 	H_AFTER( NL3D_Landscape_Render );
+
+	// Should be unlocked by render
+	nlassert (!Landscape.isLocked());
 }
 
 // ***************************************************************************

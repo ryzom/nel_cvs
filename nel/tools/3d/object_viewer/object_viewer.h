@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.52 2003/11/25 14:40:48 vizerie Exp $
+ * $Id: object_viewer.h,v 1.53 2004/03/19 10:11:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,6 +62,7 @@
 #include <3d/event_mouse_listener.h>
 #include <3d/light.h>
 #include <3d/font_manager.h>
+#include <3d/cloud_scape.h>
 #include <nel/misc/event_listener.h>
 #include <nel/misc/stream.h>
 
@@ -223,7 +224,7 @@ public:
 	virtual ~CObjectViewer ();
 
 	// Init the UI
-	void initUI (HWND parent=NULL);
+	bool initUI (HWND parent=NULL);
 	
 
 	// Go
@@ -610,6 +611,19 @@ private:
 
 	// Scale the pos of the skeleton
 	float										_CharacterScalePos;
+
+	// Driver in direct3d ?
+	bool										_Direct3d;
+
+	// Fog
+	bool										_Fog;
+	float										_FogStart;
+	float										_FogEnd;
+	NLMISC::CRGBA								_FogColor;
+
+	// Cloud scape
+	NL3D::SCloudScapeSetup						_CSS;
+	NL3D::CCloudScape							*_CS;
 
 	// The root of all objects added to the scene. Rotated for user convenience
 	NL3D::CTransform							*_SceneRoot;

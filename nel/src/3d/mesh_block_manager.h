@@ -1,7 +1,7 @@
 /** \file mesh_block_manager.h
  * <File description>
  *
- * $Id: mesh_block_manager.h,v 1.3 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh_block_manager.h,v 1.4 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -110,8 +110,10 @@ private:
 		/// List of MeshGeom. small realloc are performed, since same vector used each frame.
 		std::vector<IMeshGeom*>		RdrMeshGeoms;
 
+#if 0		// todo hulud remove / restore VBHeap
 		/// The actual VertexBufferHeap
 		CVertexBufferHeap			VBHeap;
+#endif		// todo hulud remove / restore VBHeap
 		/// List of MeshGeom to clear VBHeap info.
 		std::vector<IMeshGeom*>		AllocatedMeshGeoms;
 		/// List of Id free in AllocatedMeshGeoms

@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.11 2003/12/18 18:02:52 vizerie Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.12 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -188,6 +188,9 @@ void CSegRemanenceShape::setupVBnPB()
 	_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 	_VB.setNumVertices(numCorners * (_NumSlices + 1));
 	uint k, l;
+
+	CVertexBufferReadWrite vba;
+	_VB.lock (vba);
 	
 	// set tex coords
 	for(l = 0; l < numCorners; ++l)
@@ -195,18 +198,20 @@ void CSegRemanenceShape::setupVBnPB()
 		for(k = 0; k <= _NumSlices; ++k)
 		{
 		
-			_VB.setTexCoord((_NumSlices + 1) * l + k, 0, (float) k / _NumSlices, (float) l / (numCorners - 1));
+			vba.setTexCoord((_NumSlices + 1) * l + k, 0, (float) k / _NumSlices, (float) l / (numCorners - 1));
 		}
 	}
 	// create primitive block
-	_PB.setNumTri(2 * (numCorners - 1) * _NumSlices);
+	_PB.setNumIndexes(3 * 2 * (numCorners - 1) * _NumSlices);
+	CIndexBufferReadWrite ibaWrite;
+	_PB.lock (ibaWrite);
 	//
 	for(l = 0; l < numCorners - 1; ++l)
 	{
 		for(k = 0; k < _NumSlices; ++k)
 		{
-			_PB.setTri(2 * (l * _NumSlices + k), (_NumSlices + 1) * l + k,  (_NumSlices + 1) * (l + 1) + k + 1, (_NumSlices + 1) * (l + 1) + k);
-			_PB.setTri(2 * (l * _NumSlices + k) + 1, (_NumSlices + 1) * l + k, (_NumSlices + 1) * l + k + 1, (_NumSlices + 1) * (l + 1) + k + 1);
+			ibaWrite.setTri(3 * 2 * (l * _NumSlices + k), (_NumSlices + 1) * l + k,  (_NumSlices + 1) * (l + 1) + k + 1, (_NumSlices + 1) * (l + 1) + k);
+			ibaWrite.setTri(3 * 2 * (l * _NumSlices + k) + 1, (_NumSlices + 1) * l + k, (_NumSlices + 1) * l + k + 1, (_NumSlices + 1) * (l + 1) + k + 1);
 		}
 	}
 	_GeomTouched = false;	

@@ -1,7 +1,7 @@
 /** \file vegetable_shape.h
  * <File description>
  *
- * $Id: vegetable_shape.h,v 1.7 2002/04/04 14:45:32 berenguier Exp $
+ * $Id: vegetable_shape.h,v 1.8 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/vertex_buffer.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 
 
 namespace NL3D 
@@ -61,7 +61,7 @@ public:
 	 */
 	CVertexBuffer		VB;
 	/// only triangles of PB are used.
-	CPrimitiveBlock		PB;
+	CIndexBuffer		PB;
 	/// If this shape must be lighted
 	bool				Lighted;
 	/// if Lighted && PreComputeLighting, lighting is precomputed per instance.

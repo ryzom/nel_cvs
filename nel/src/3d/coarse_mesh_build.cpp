@@ -1,7 +1,7 @@
 /** \file coarse_mesh_build.cpp
  * <File description>
  *
- * $Id: coarse_mesh_build.cpp,v 1.5 2003/01/31 16:14:10 corvazier Exp $
+ * $Id: coarse_mesh_build.cpp,v 1.6 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -443,6 +443,8 @@ void CCoarseMeshBuild::remapCoordinates (const std::vector<CCoarseMeshDesc>& coa
 
 		// The vertex buffer
 		CVertexBuffer &vertexBuffer=const_cast<CVertexBuffer&> (meshGeom->getVertexBuffer());
+		CVertexBufferReadWrite vba;
+		vertexBuffer.lock(vba);
 
 		// For each matrix block
 		uint matrixBlock;
@@ -496,21 +498,17 @@ void CCoarseMeshBuild::remapCoordinates (const std::vector<CCoarseMeshDesc>& coa
 					const CBitmapDesc& descBitmap=ite->second;
 
 					// Get primitives
-					const CPrimitiveBlock &primitiveBlock=meshGeom->getRdrPassPrimitiveBlock(matrixBlock,renderPass);
+					const CIndexBuffer &primitiveBlock=meshGeom->getRdrPassPrimitiveBlock(matrixBlock,renderPass);
 
 					// Set of vertex to remap
 					std::set<uint> vertexToRemap;
 
 					// Remap triangles
 					uint index;
-					const uint32 *indexPtr=primitiveBlock.getTriPointer();
-					uint32 numIndex=3*primitiveBlock.getNumTri();
-					for (index=0; index<numIndex; index++)
-						vertexToRemap.insert (indexPtr[index]);
-
-					// Remap quad
-					indexPtr=primitiveBlock.getQuadPointer();
-					numIndex=4*primitiveBlock.getNumQuad();
+					CIndexBufferRead ibaRead;
+					primitiveBlock.lock (ibaRead);
+					const uint32 *indexPtr=ibaRead.getPtr();
+					uint32 numIndex=primitiveBlock.getNumIndexes();
 					for (index=0; index<numIndex; index++)
 						vertexToRemap.insert (indexPtr[index]);
 
@@ -519,7 +517,7 @@ void CCoarseMeshBuild::remapCoordinates (const std::vector<CCoarseMeshDesc>& coa
 					while (iteRemap!=vertexToRemap.end())
 					{
 						// Remap the vertex
-						float *UVCoordinate=(float*)vertexBuffer.getTexCoordPointer(*iteRemap);
+						float *UVCoordinate=(float*)vba.getTexCoordPointer(*iteRemap);
 						UVCoordinate[0]=UVCoordinate[0]*descBitmap.FactorU+descBitmap.U;
 						UVCoordinate[1]=UVCoordinate[1]*descBitmap.FactorV+descBitmap.V;
 

@@ -1,8 +1,8 @@
 /** \file driver.cpp
  * Generic driver.
- * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
+ * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.cpp,v 1.80 2003/08/07 08:29:21 berenguier Exp $
+ * $Id: driver.cpp,v 1.81 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ namespace NL3D
 {
 
 // ***************************************************************************
-const uint32 IDriver::InterfaceVersion = 0x4e;
+const uint32 IDriver::InterfaceVersion = 0x50;
 
 // ***************************************************************************
 IDriver::IDriver() : _SyncTexDrvInfos( "IDriver::_SyncTexDrvInfos" )
@@ -63,8 +63,9 @@ IDriver::~IDriver()
 	}
 
 	nlassert(_TexDrvShares.size()==0);
-	nlassert(_Shaders.size()==0);
+	nlassert(_MatDrvInfos.size()==0);
 	nlassert(_VBDrvInfos.size()==0);
+	nlassert(_IBDrvInfos.size()==0);
 	nlassert(_VtxPrgDrvInfos.size()==0);
 }
 
@@ -94,11 +95,19 @@ bool		IDriver::release(void)
 		nlassert(rTexDrvInfos.empty());
 	}
 
-	// Release Shader drv.
-	ItShaderPtrList		itshd;
-	while( (itshd = _Shaders.begin()) != _Shaders.end() )
+	// Release material drv.
+	ItMatDrvInfoPtrList		itmat;
+	while( (itmat = _MatDrvInfos.begin()) != _MatDrvInfos.end() )
 	{
-		// NB: at IShader deletion, this->_Shaders is updated (entry deleted);
+		// NB: at IShader deletion, this->_MatDrvInfos is updated (entry deleted);
+		delete *itmat;
+	}
+
+	// Release Shader drv.
+	ItShaderDrvInfoPtrList		itshd;
+	while( (itshd = _ShaderDrvInfos.begin()) != _ShaderDrvInfos.end() )
+	{
+		// NB: at IShader deletion, this->_MatDrvInfos is updated (entry deleted);
 		delete *itshd;
 	}
 
@@ -108,6 +117,14 @@ bool		IDriver::release(void)
 	{
 		// NB: at IVBDrvInfo deletion, this->_VBDrvInfos is updated (entry deleted);
 		delete *itvb;
+	}
+
+	// Release IBs drv.
+	ItIBDrvInfoPtrList		itib;
+	while( (itib = _IBDrvInfos.begin()) != _IBDrvInfos.end() )
+	{
+		// NB: at IIBDrvInfo deletion, this->_IBDrvInfos is updated (entry deleted);
+		delete *itib;
 	}
 
 	// Release VtxPrg drv.
@@ -216,6 +233,11 @@ void			IDriver::removeVBDrvInfoPtr(ItVBDrvInfoPtrList  vbDrvInfoIt)
 	_VBDrvInfos.erase(vbDrvInfoIt);
 }
 // ***************************************************************************
+void			IDriver::removeIBDrvInfoPtr(ItIBDrvInfoPtrList  ibDrvInfoIt)
+{
+	_IBDrvInfos.erase(ibDrvInfoIt);
+}
+// ***************************************************************************
 void			IDriver::removeTextureDrvInfoPtr(ItTexDrvInfoPtrMap texDrvInfoIt)
 {
 	CSynchronized<TTexDrvInfoPtrMap>::CAccessor access(&_SyncTexDrvInfos);
@@ -229,9 +251,14 @@ void			IDriver::removeTextureDrvSharePtr(ItTexDrvSharePtrList texDrvShareIt)
 	_TexDrvShares.erase(texDrvShareIt);
 }
 // ***************************************************************************
-void			IDriver::removeShaderPtr(ItShaderPtrList shaderIt)
+void			IDriver::removeMatDrvInfoPtr(ItMatDrvInfoPtrList shaderIt)
 {
-	_Shaders.erase(shaderIt);
+	_MatDrvInfos.erase(shaderIt);
+}
+// ***************************************************************************
+void			IDriver::removeShaderDrvInfoPtr(ItShaderDrvInfoPtrList shaderIt)
+{
+	_ShaderDrvInfos.erase(shaderIt);
 }
 // ***************************************************************************
 void			IDriver::removeVtxPrgDrvInfoPtr(ItVtxPrgDrvInfoPtrList vtxPrgDrvInfoIt)

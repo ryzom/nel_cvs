@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.41 2004/01/15 15:34:12 berenguier Exp $
+ * $Id: font_manager.cpp,v 1.42 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "3d/font_generator.h"
 #include "3d/texture_font.h"
 #include "3d/computed_string.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/material.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/debug.h"
@@ -143,70 +143,76 @@ void CFontManager::computeString (const ucstring &s,
 	sint32 nMaxZ = -1000000, nMinZ = 1000000;
 	output.StringHeight = 0;
 
-	// For all chats
 	uint j = 0;
-	for (uint i = 0; i < s.size(); i++)
 	{
-		// Creating font
-		k.Char = s[i];
-		k.FontGenerator = fontGen;
-		k.Size = fontSize;
-		CTextureFont::SLetterInfo *pLI = pTexFont->getLetterInfo (k);
-		if(pLI != NULL)
+		CVertexBufferReadWrite vba;
+		output.Vertices.lock (vba);
+
+
+		// For all chats
+		for (uint i = 0; i < s.size(); i++)
 		{
-			if ((pLI->CharWidth > 0) && (pLI->CharHeight > 0))
+			// Creating font
+			k.Char = s[i];
+			k.FontGenerator = fontGen;
+			k.Size = fontSize;
+			CTextureFont::SLetterInfo *pLI = pTexFont->getLetterInfo (k);
+			if(pLI != NULL)
 			{
-				// Creating vertices
-				dx = pLI->Left;
-				dz = -((sint32)pLI->CharHeight-(sint32)(pLI->Top));
-				u1 = pLI->U - hlfPixTexW;
-				v1 = pLI->V - hlfPixTexH;
-				u2 = pLI->U + ((float)pLI->CharWidth) * TexRatioW + hlfPixTexW;
-				v2 = pLI->V + ((float)pLI->CharHeight) * TexRatioH + hlfPixTexH;
+				if ((pLI->CharWidth > 0) && (pLI->CharHeight > 0))
+				{
+					// Creating vertices
+					dx = pLI->Left;
+					dz = -((sint32)pLI->CharHeight-(sint32)(pLI->Top));
+					u1 = pLI->U - hlfPixTexW;
+					v1 = pLI->V - hlfPixTexH;
+					u2 = pLI->U + ((float)pLI->CharWidth) * TexRatioW + hlfPixTexW;
+					v2 = pLI->V + ((float)pLI->CharHeight) * TexRatioH + hlfPixTexH;
 
-				x1 = (penx + dx) - hlfPixScrW;
-				z1 = (penz + dz) - hlfPixScrH;
-				x2 = (penx + dx + (sint32)pLI->CharWidth)  + hlfPixScrW;
-				z2 = (penz + dz + (sint32)pLI->CharHeight) + hlfPixScrH;
+					x1 = (penx + dx) - hlfPixScrW;
+					z1 = (penz + dz) - hlfPixScrH;
+					x2 = (penx + dx + (sint32)pLI->CharWidth)  + hlfPixScrW;
+					z2 = (penz + dz + (sint32)pLI->CharHeight) + hlfPixScrH;
 
-				output.Vertices.setVertexCoord	(j, x1, 0, z1);
-				output.Vertices.setTexCoord		(j, 0, u1, v2);
-				++j;
+					vba.setVertexCoord	(j, x1, 0, z1);
+					vba.setTexCoord		(j, 0, u1, v2);
+					++j;
 
-				output.Vertices.setVertexCoord	(j, x2, 0, z1);
-				output.Vertices.setTexCoord		(j, 0, u2, v2);
-				++j;
+					vba.setVertexCoord	(j, x2, 0, z1);
+					vba.setTexCoord		(j, 0, u2, v2);
+					++j;
 
-				output.Vertices.setVertexCoord	(j, x2, 0, z2); 
-				output.Vertices.setTexCoord		(j, 0, u2, v1);
-				++j;
+					vba.setVertexCoord	(j, x2, 0, z2); 
+					vba.setTexCoord		(j, 0, u2, v1);
+					++j;
 
-				output.Vertices.setVertexCoord	(j, x1, 0, z2); 
-				output.Vertices.setTexCoord		(j, 0, u1, v1);
-				++j;
-				
-				// String Bound
-				output.XMin= min(output.XMin, x1);
-				output.XMin= min(output.XMin, x2);
-				output.XMax= max(output.XMax, x1);
-				output.XMax= max(output.XMax, x2);
-				output.ZMin= min(output.ZMin, z1);
-				output.ZMin= min(output.ZMin, z2);
-				output.ZMax= max(output.ZMax, z1);
-				output.ZMax= max(output.ZMax, z2);
+					vba.setVertexCoord	(j, x1, 0, z2); 
+					vba.setTexCoord		(j, 0, u1, v1);
+					++j;
+					
+					// String Bound
+					output.XMin= min(output.XMin, x1);
+					output.XMin= min(output.XMin, x2);
+					output.XMax= max(output.XMax, x1);
+					output.XMax= max(output.XMax, x2);
+					output.ZMin= min(output.ZMin, z1);
+					output.ZMin= min(output.ZMin, z2);
+					output.ZMax= max(output.ZMax, z1);
+					output.ZMax= max(output.ZMax, z2);
 
-				// String info
-				sint32	nZ1 = (sint32)pLI->Top-(sint32)pLI->CharHeight;
-				sint32	nZ2 = pLI->Top;
-				
-				if (nZ1 < nMinZ) nMinZ = nZ1;
-				if (nZ2 > nMaxZ) nMaxZ = nZ2;
+					// String info
+					sint32	nZ1 = (sint32)pLI->Top-(sint32)pLI->CharHeight;
+					sint32	nZ2 = pLI->Top;
+					
+					if (nZ1 < nMinZ) nMinZ = nZ1;
+					if (nZ2 > nMaxZ) nMaxZ = nZ2;
+				}
+				penx += pLI->AdvX;
 			}
-			penx += pLI->AdvX;
-		}
 
-		// Building Material
-		output.Material = pMatFont;
+			// Building Material
+			output.Material = pMatFont;
+		}
 	}
 	output.Vertices.setNumVertices (j);
 

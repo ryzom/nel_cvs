@@ -1,7 +1,7 @@
 /** \file landscape_def.h
  * Global Definitions for Landscape
  *
- * $Id: landscape_def.h,v 1.11 2002/08/26 13:01:42 berenguier Exp $
+ * $Id: landscape_def.h,v 1.12 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/bsphere.h"
 #include "3d/landscapevb_info.h"
+#include "3d/index_buffer.h"
 
 
 namespace NL3D 
@@ -159,7 +160,8 @@ public:
 	// Globals for speed render.
 	static IDriver				*PatchCurrentDriver;
 	// The triangles array for the current pass rendered.
-	static std::vector<uint32>	PassTriArray;
+	static CIndexBuffer			PassTriArray;
+	static CIndexBufferReadWrite	PassTriArrayIBA;
 
 };
 

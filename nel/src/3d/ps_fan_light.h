@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * FanLight particles
  *
- * $Id: ps_fan_light.h,v 1.7 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_fan_light.h,v 1.8 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "3d/ps_particle_basic.h"
 #include "3d/vertex_buffer.h"
+#include "3d/index_buffer.h"
 
 #include <vector>
 #include <hash_map>
@@ -150,8 +151,7 @@ protected:
 private:
 	friend class CPSFanLightHelper;
 	typedef std::hash_map<uint, CVertexBuffer>  TVBMap;
-	typedef std::vector<uint32> TIndexBuffer;
-	typedef std::hash_map<uint, TIndexBuffer >  TIBMap;
+	typedef std::hash_map<uint, CIndexBuffer >  TIBMap;
 private:
 	uint32						_NbFans;
 	uint32						_PhaseSmoothness;	
@@ -173,7 +173,7 @@ private:
 	virtual void init(void);		
 	virtual void draw(bool opaque);	
 	// setup and get the needed vb for display
-	void getVBnIB(CVertexBuffer *&vb, TIndexBuffer *&ib);
+	void getVBnIB(CVertexBuffer *&vb, CIndexBuffer *&ib);
 	uint getNumFanlightsInVB() const;
 	void setupMaterial();
 

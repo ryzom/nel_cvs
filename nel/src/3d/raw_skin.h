@@ -1,7 +1,7 @@
 /** \file raw_skin.h
  * Packed struct used for faster Software skinning
  *
- * $Id: raw_skin.h,v 1.3 2003/12/10 12:47:33 berenguier Exp $
+ * $Id: raw_skin.h,v 1.4 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -110,7 +110,7 @@ public:
 	// The RawSkin Geomorphs.
 	std::vector<CMRMWedgeGeom>		Geomorphs;
 	// The Raw Primitives.
-	std::vector<CPrimitiveBlock>	RdrPass;
+	std::vector<CIndexBuffer>	RdrPass;
 
 	/// What RawSkin lod this cache represent. -1 if NULL
 	sint					LodId;

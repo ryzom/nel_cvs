@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.39 2004/02/19 09:57:52 vizerie Exp $
+ * $Id: driver_user.cpp,v 1.40 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,10 +95,10 @@ void					UDriver::setMatrixMode2D43()
 
 
 // ***************************************************************************
-UDriver					*UDriver::createDriver(uint windowIcon)
+UDriver					*UDriver::createDriver(uint windowIcon, bool direct3d)
 {
 	NL3D_MEM_DRIVER
-	return new CDriverUser (windowIcon);
+	return new CDriverUser (windowIcon, direct3d);
 }
 
 
@@ -124,7 +124,7 @@ bool	CDriverUser::_StaticInit= false;
 
 
 // ***************************************************************************
-CDriverUser::CDriverUser (uint windowIcon)
+CDriverUser::CDriverUser (uint windowIcon, bool direct3d)
 {
 	NL3D_MEM_DRIVER
 
@@ -146,7 +146,10 @@ CDriverUser::CDriverUser (uint windowIcon)
 	}
 
 	// Create/Init Driver.
-	_Driver= CDRU::createGlDriver();
+	if (direct3d)
+		_Driver= CDRU::createD3DDriver();
+	else
+		_Driver= CDRU::createGlDriver();
 	nlassert(_Driver);
 	_Driver->init (windowIcon);
 
@@ -165,15 +168,15 @@ CDriverUser::CDriverUser (uint windowIcon)
 	_VBUv.setNumVertices(4);
 	_VBColorUv.setNumVertices(4); 
 
-	_PBLine.setNumLine(1);
-	_PBLine.setLine(0, 0, 1);
-	_PBTri.setNumTri(1);
-	_PBTri.setTri(0, 0, 1, 2);
-	_PBQuad.setNumQuad(1);
-	_PBQuad.setQuad(0, 0, 1, 2, 3);
+	_PBLine.setNumIndexes(2);
+	CIndexBufferReadWrite iba;
+	_PBLine.lock (iba);
+	iba.setLine(0, 0, 1);
+	_PBTri.setNumIndexes(3);
+	_PBTri.lock (iba);
+	iba.setTri(0, 0, 1, 2);
 
 	_ShapeBank._DriverUser = this;
-
 }
 // ***************************************************************************
 CDriverUser::~CDriverUser()
@@ -183,24 +186,6 @@ CDriverUser::~CDriverUser()
 
 	delete _Driver;
 	_Driver= NULL;
-}
-
-// ***************************************************************************
-UDriver::TModeList		CDriverUser::enumModes()
-{
-	NL3D_HAUTO_UI_DRIVER;
-	NL3D_MEM_DRIVER
-
-	ModeList	dlist;
-	TModeList	retlist;
-
-	dlist= _Driver->enumModes();
-	for(sint i=0;i<(sint)dlist.size();i++)
-	{
-		retlist.push_back(CMode(dlist[i].Width, dlist[i].Height, dlist[i].Depth, dlist[i].Windowed));
-	}
-
-	return retlist;
 }
 
 // ***************************************************************************
@@ -507,13 +492,18 @@ void			CDriverUser::drawLine(const NLMISC::CLine &shp, UMaterial &mat)
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBFlat;
-	CPrimitiveBlock		&pb= _PBLine;
+	CIndexBuffer		&pb= _PBLine;
 
-	vb.setVertexCoord (0, shp.V0);
-	vb.setVertexCoord (1, shp.V1);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, shp.V0);
+		vba.setVertexCoord (1, shp.V1);
+	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->render(pb, convMat(mat));
+	_Driver->activeIndexBuffer(pb);
+	_Driver->renderLines(convMat(mat), 0, 1);
 }
 // ***************************************************************************
 void			CDriverUser::drawLine(const NLMISC::CLineColor &shp, UMaterial &mat) 
@@ -522,15 +512,20 @@ void			CDriverUser::drawLine(const NLMISC::CLineColor &shp, UMaterial &mat)
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBColor;
-	CPrimitiveBlock		&pb= _PBLine;
+	CIndexBuffer		&pb= _PBLine;
 
-	vb.setVertexCoord (0, shp.V0);
-	vb.setVertexCoord (1, shp.V1);
-	vb.setColor(0, shp.Color0);
-	vb.setColor(1, shp.Color1);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, shp.V0);
+		vba.setVertexCoord (1, shp.V1);
+		vba.setColor(0, shp.Color0);
+		vba.setColor(1, shp.Color1);
+	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->render(pb, convMat(mat));
+	_Driver->activeIndexBuffer(pb);
+	_Driver->renderLines(convMat(mat), 0, 1);
 }
 // ***************************************************************************
 void			CDriverUser::drawLine(const NLMISC::CLineUV &shp, UMaterial &mat) 
@@ -539,15 +534,20 @@ void			CDriverUser::drawLine(const NLMISC::CLineUV &shp, UMaterial &mat)
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBUv;
-	CPrimitiveBlock		&pb= _PBLine;
+	CIndexBuffer		&pb= _PBLine;
 
-	vb.setVertexCoord (0, shp.V0);
-	vb.setVertexCoord (1, shp.V1);
-	vb.setTexCoord (0, 0, shp.Uv0);
-	vb.setTexCoord (1, 0, shp.Uv1);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, shp.V0);
+		vba.setVertexCoord (1, shp.V1);
+		vba.setTexCoord (0, 0, shp.Uv0);
+		vba.setTexCoord (1, 0, shp.Uv1);
+	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->render(pb, convMat(mat));
+	_Driver->activeIndexBuffer(pb);
+	_Driver->renderLines(convMat(mat), 0, 1);
 }
 // ***************************************************************************
 void			CDriverUser::drawLine(const NLMISC::CLineColorUV &shp, UMaterial &mat) 
@@ -556,17 +556,22 @@ void			CDriverUser::drawLine(const NLMISC::CLineColorUV &shp, UMaterial &mat)
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBColorUv;
-	CPrimitiveBlock		&pb= _PBLine;
+	CIndexBuffer		&pb= _PBLine;
 
-	vb.setVertexCoord (0, shp.V0);
-	vb.setVertexCoord (1, shp.V1);
-	vb.setColor(0, shp.Color0);
-	vb.setColor(1, shp.Color1);
-	vb.setTexCoord (0, 0, shp.Uv0);
-	vb.setTexCoord (1, 0, shp.Uv1);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, shp.V0);
+		vba.setVertexCoord (1, shp.V1);
+		vba.setColor(0, shp.Color0);
+		vba.setColor(1, shp.Color1);
+		vba.setTexCoord (0, 0, shp.Uv0);
+		vba.setTexCoord (1, 0, shp.Uv1);
+	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->render(pb, convMat(mat));
+	_Driver->activeIndexBuffer(pb);
+	_Driver->renderLines(convMat(mat), 0, 1);
 }
 
 
@@ -578,14 +583,19 @@ void			CDriverUser::drawTriangle(const NLMISC::CTriangle &shp, UMaterial &mat)
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBFlat;
-	CPrimitiveBlock		&pb= _PBTri;
+	CIndexBuffer		&pb= _PBTri;
 
-	vb.setVertexCoord (0, shp.V0);
-	vb.setVertexCoord (1, shp.V1);
-	vb.setVertexCoord (2, shp.V2);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, shp.V0);
+		vba.setVertexCoord (1, shp.V1);
+		vba.setVertexCoord (2, shp.V2);
+	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->render(pb, convMat(mat));
+	_Driver->activeIndexBuffer(pb);
+	_Driver->renderTriangles(convMat(mat), 0, 1);
 }
 // ***************************************************************************
 void			CDriverUser::drawTriangle(const NLMISC::CTriangleColor &shp, UMaterial &mat) 
@@ -594,17 +604,22 @@ void			CDriverUser::drawTriangle(const NLMISC::CTriangleColor &shp, UMaterial &m
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBColor;
-	CPrimitiveBlock		&pb= _PBTri;
+	CIndexBuffer		&pb= _PBTri;
 
-	vb.setVertexCoord (0, shp.V0);
-	vb.setVertexCoord (1, shp.V1);
-	vb.setVertexCoord (2, shp.V2);
-	vb.setColor(0, shp.Color0);
-	vb.setColor(1, shp.Color1);
-	vb.setColor(2, shp.Color2);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, shp.V0);
+		vba.setVertexCoord (1, shp.V1);
+		vba.setVertexCoord (2, shp.V2);
+		vba.setColor(0, shp.Color0);
+		vba.setColor(1, shp.Color1);
+		vba.setColor(2, shp.Color2);
+	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->render(pb, convMat(mat));
+	_Driver->activeIndexBuffer(pb);
+	_Driver->renderTriangles(convMat(mat), 0, 1);
 }
 // ***************************************************************************
 void			CDriverUser::drawTriangle(const NLMISC::CTriangleUV &shp, UMaterial &mat) 
@@ -613,17 +628,22 @@ void			CDriverUser::drawTriangle(const NLMISC::CTriangleUV &shp, UMaterial &mat)
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBUv;
-	CPrimitiveBlock		&pb= _PBTri;
+	CIndexBuffer		&pb= _PBTri;
 
-	vb.setVertexCoord (0, shp.V0);
-	vb.setVertexCoord (1, shp.V1);
-	vb.setVertexCoord (2, shp.V2);
-	vb.setTexCoord (0, 0, shp.Uv0);
-	vb.setTexCoord (1, 0, shp.Uv1);
-	vb.setTexCoord (2, 0, shp.Uv2);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, shp.V0);
+		vba.setVertexCoord (1, shp.V1);
+		vba.setVertexCoord (2, shp.V2);
+		vba.setTexCoord (0, 0, shp.Uv0);
+		vba.setTexCoord (1, 0, shp.Uv1);
+		vba.setTexCoord (2, 0, shp.Uv2);
+	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->render(pb, convMat(mat));
+	_Driver->activeIndexBuffer(pb);
+	_Driver->renderTriangles(convMat(mat), 0, 1);
 }
 // ***************************************************************************
 void			CDriverUser::drawTriangle(const NLMISC::CTriangleColorUV &shp, UMaterial &mat) 
@@ -632,20 +652,25 @@ void			CDriverUser::drawTriangle(const NLMISC::CTriangleColorUV &shp, UMaterial 
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBColorUv;
-	CPrimitiveBlock		&pb= _PBTri;
+	CIndexBuffer		&pb= _PBTri;
 
-	vb.setVertexCoord (0, shp.V0);
-	vb.setVertexCoord (1, shp.V1);
-	vb.setVertexCoord (2, shp.V2);
-	vb.setColor(0, shp.Color0);
-	vb.setColor(1, shp.Color1);
-	vb.setColor(2, shp.Color2);
-	vb.setTexCoord (0, 0, shp.Uv0);
-	vb.setTexCoord (1, 0, shp.Uv1);
-	vb.setTexCoord (2, 0, shp.Uv2);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, shp.V0);
+		vba.setVertexCoord (1, shp.V1);
+		vba.setVertexCoord (2, shp.V2);
+		vba.setColor(0, shp.Color0);
+		vba.setColor(1, shp.Color1);
+		vba.setColor(2, shp.Color2);
+		vba.setTexCoord (0, 0, shp.Uv0);
+		vba.setTexCoord (1, 0, shp.Uv1);
+		vba.setTexCoord (2, 0, shp.Uv2);
+	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->render(pb, convMat(mat));
+	_Driver->activeIndexBuffer(pb);
+	_Driver->renderTriangles(convMat(mat), 0, 1);
 }
 
 
@@ -657,15 +682,18 @@ void			CDriverUser::drawQuad(const NLMISC::CQuad &shp, UMaterial &mat)
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBFlat;
-	CPrimitiveBlock		&pb= _PBQuad;
 
-	vb.setVertexCoord (0, shp.V0);
-	vb.setVertexCoord (1, shp.V1);
-	vb.setVertexCoord (2, shp.V2);
-	vb.setVertexCoord (3, shp.V3);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, shp.V0);
+		vba.setVertexCoord (1, shp.V1);
+		vba.setVertexCoord (2, shp.V2);
+		vba.setVertexCoord (3, shp.V3);
+	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->render(pb, convMat(mat));
+	_Driver->renderRawQuads(convMat(mat), 0, 1);
 }
 // ***************************************************************************
 void			CDriverUser::drawQuad(const NLMISC::CQuadColor &shp, UMaterial &mat) 
@@ -674,19 +702,22 @@ void			CDriverUser::drawQuad(const NLMISC::CQuadColor &shp, UMaterial &mat)
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBColor;
-	CPrimitiveBlock		&pb= _PBQuad;
 
-	vb.setVertexCoord (0, shp.V0);
-	vb.setVertexCoord (1, shp.V1);
-	vb.setVertexCoord (2, shp.V2);
-	vb.setVertexCoord (3, shp.V3);
-	vb.setColor(0, shp.Color0);
-	vb.setColor(1, shp.Color1);
-	vb.setColor(2, shp.Color2);
-	vb.setColor(3, shp.Color3);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, shp.V0);
+		vba.setVertexCoord (1, shp.V1);
+		vba.setVertexCoord (2, shp.V2);
+		vba.setVertexCoord (3, shp.V3);
+		vba.setColor(0, shp.Color0);
+		vba.setColor(1, shp.Color1);
+		vba.setColor(2, shp.Color2);
+		vba.setColor(3, shp.Color3);
+	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->render(pb, convMat(mat));
+	_Driver->renderRawQuads(convMat(mat), 0, 1);
 }
 // ***************************************************************************
 void			CDriverUser::drawQuad(const NLMISC::CQuadUV &shp, UMaterial &mat) 
@@ -695,19 +726,22 @@ void			CDriverUser::drawQuad(const NLMISC::CQuadUV &shp, UMaterial &mat)
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBUv;
-	CPrimitiveBlock		&pb= _PBQuad;
 
-	vb.setVertexCoord (0, shp.V0);
-	vb.setVertexCoord (1, shp.V1);
-	vb.setVertexCoord (2, shp.V2);
-	vb.setVertexCoord (3, shp.V3);
-	vb.setTexCoord (0, 0, shp.Uv0);
-	vb.setTexCoord (1, 0, shp.Uv1);
-	vb.setTexCoord (2, 0, shp.Uv2);
-	vb.setTexCoord (3, 0, shp.Uv3);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, shp.V0);
+		vba.setVertexCoord (1, shp.V1);
+		vba.setVertexCoord (2, shp.V2);
+		vba.setVertexCoord (3, shp.V3);
+		vba.setTexCoord (0, 0, shp.Uv0);
+		vba.setTexCoord (1, 0, shp.Uv1);
+		vba.setTexCoord (2, 0, shp.Uv2);
+		vba.setTexCoord (3, 0, shp.Uv3);
+	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->render(pb, convMat(mat));
+	_Driver->renderRawQuads(convMat(mat), 0, 1);
 }
 // ***************************************************************************
 void			CDriverUser::drawQuad(const NLMISC::CQuadColorUV &shp, UMaterial &mat) 
@@ -716,23 +750,26 @@ void			CDriverUser::drawQuad(const NLMISC::CQuadColorUV &shp, UMaterial &mat)
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBColorUv;
-	CPrimitiveBlock		&pb= _PBQuad;
 
-	vb.setVertexCoord (0, shp.V0);
-	vb.setVertexCoord (1, shp.V1);
-	vb.setVertexCoord (2, shp.V2);
-	vb.setVertexCoord (3, shp.V3);
-	vb.setColor(0, shp.Color0);
-	vb.setColor(1, shp.Color1);
-	vb.setColor(2, shp.Color2);
-	vb.setColor(3, shp.Color3);
-	vb.setTexCoord (0, 0, shp.Uv0);
-	vb.setTexCoord (1, 0, shp.Uv1);
-	vb.setTexCoord (2, 0, shp.Uv2);
-	vb.setTexCoord (3, 0, shp.Uv3);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, shp.V0);
+		vba.setVertexCoord (1, shp.V1);
+		vba.setVertexCoord (2, shp.V2);
+		vba.setVertexCoord (3, shp.V3);
+		vba.setColor(0, shp.Color0);
+		vba.setColor(1, shp.Color1);
+		vba.setColor(2, shp.Color2);
+		vba.setColor(3, shp.Color3);
+		vba.setTexCoord (0, 0, shp.Uv0);
+		vba.setTexCoord (1, 0, shp.Uv1);
+		vba.setTexCoord (2, 0, shp.Uv2);
+		vba.setTexCoord (3, 0, shp.Uv3);
+	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->render(pb, convMat(mat));
+	_Driver->renderRawQuads(convMat(mat), 0, 1);
 }
 // ***************************************************************************
 void			CDriverUser::drawQuads(const std::vector<NLMISC::CQuadColorUV> &q, UMaterial &mat)
@@ -763,34 +800,65 @@ void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads,
 	CVertexBuffer		&vb = _VBQuadsColUv;
 
 	vb.setNumVertices (4*nbQuads);
-	uint8	*dstPtr= (uint8*)vb.getVertexCoordPointer();
-	uint32	colorOfs= vb.getColorOff();
-	uint32	uvOfs= vb.getTexCoordOff();
-	uint32	vSize= vb.getVertexSize();
-	
-	for (uint32 i = 0; i < nbQuads; ++i)
 	{
-		const NLMISC::CQuadColorUV &qcuv = quads[i];
-		*(CVector*)(dstPtr+0)= qcuv.V0;
-		*(CUV*)(dstPtr+uvOfs)= qcuv.Uv0;
-		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color0;
-		dstPtr+= vSize;
-		*(CVector*)(dstPtr+0)= qcuv.V1;
-		*(CUV*)(dstPtr+uvOfs)= qcuv.Uv1;
-		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color1;
-		dstPtr+= vSize;
-		*(CVector*)(dstPtr+0)= qcuv.V2;
-		*(CUV*)(dstPtr+uvOfs)= qcuv.Uv2;
-		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color2;
-		dstPtr+= vSize;
-		*(CVector*)(dstPtr+0)= qcuv.V3;
-		*(CUV*)(dstPtr+uvOfs)= qcuv.Uv3;
-		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color3;
-		dstPtr+= vSize;
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+
+		uint8	*dstPtr= (uint8*)vba.getVertexCoordPointer();
+		uint32	colorOfs= vb.getColorOff();
+		uint32	uvOfs= vb.getTexCoordOff();
+		uint32	vSize= vb.getVertexSize();
+		
+		if (vb.getVertexColorFormat() == CVertexBuffer::TRGBA)
+		{
+			for (uint32 i = 0; i < nbQuads; ++i)
+			{
+				const NLMISC::CQuadColorUV &qcuv = quads[i];
+				*(CVector*)(dstPtr+0)= qcuv.V0;
+				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv0;
+				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color0;
+				dstPtr+= vSize;
+				*(CVector*)(dstPtr+0)= qcuv.V1;
+				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv1;
+				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color1;
+				dstPtr+= vSize;
+				*(CVector*)(dstPtr+0)= qcuv.V2;
+				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv2;
+				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color2;
+				dstPtr+= vSize;
+				*(CVector*)(dstPtr+0)= qcuv.V3;
+				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv3;
+				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color3;
+				dstPtr+= vSize;
+			}
+		}
+		else
+		{
+			for (uint32 i = 0; i < nbQuads; ++i)
+			{
+				const NLMISC::CQuadColorUV &qcuv = quads[i];
+				*(CVector*)(dstPtr+0)= qcuv.V0;
+				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv0;
+				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color0;
+				dstPtr+= vSize;
+				*(CVector*)(dstPtr+0)= qcuv.V1;
+				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv1;
+				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color1;
+				dstPtr+= vSize;
+				*(CVector*)(dstPtr+0)= qcuv.V2;
+				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv2;
+				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color2;
+				dstPtr+= vSize;
+				*(CVector*)(dstPtr+0)= qcuv.V3;
+				*(CUV*)(dstPtr+uvOfs)= qcuv.Uv3;
+				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color3;
+				dstPtr+= vSize;
+			}
+		}
 	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->renderQuads(convMat(mat), 0, nbQuads);
+	_Driver->renderRawQuads(convMat(mat), 0, nbQuads);
 }
 
 
@@ -803,39 +871,73 @@ void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV2 *quads, uint32 nbQuads
 	CVertexBuffer		&vb = _VBQuadsColUv2;
 
 	vb.setNumVertices (4*nbQuads);
-	uint8	*dstPtr= (uint8*)vb.getVertexCoordPointer();
-	uint32	colorOfs= vb.getColorOff();
-	uint32	uvOfs0= vb.getTexCoordOff(0);
-	uint32	uvOfs1= vb.getTexCoordOff(1);
-	uint32	vSize= vb.getVertexSize();
-	
-	for (uint32 i = 0; i < nbQuads; ++i)
 	{
-		const NLMISC::CQuadColorUV2 &qcuv = quads[i];
-		*(CVector*)(dstPtr+0)= qcuv.V0;
-		*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv0;
-		*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv02;
-		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color0;
-		dstPtr+= vSize;
-		*(CVector*)(dstPtr+0)= qcuv.V1;
-		*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv1;
-		*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv12;
-		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color1;
-		dstPtr+= vSize;
-		*(CVector*)(dstPtr+0)= qcuv.V2;
-		*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv2;
-		*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv22;
-		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color2;
-		dstPtr+= vSize;
-		*(CVector*)(dstPtr+0)= qcuv.V3;
-		*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv3;
-		*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv32;
-		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color3;
-		dstPtr+= vSize;
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		uint8	*dstPtr= (uint8*)vba.getVertexCoordPointer();
+		uint32	colorOfs= vb.getColorOff();
+		uint32	uvOfs0= vb.getTexCoordOff(0);
+		uint32	uvOfs1= vb.getTexCoordOff(1);
+		uint32	vSize= vb.getVertexSize();
+		
+		if (vb.getVertexColorFormat() == CVertexBuffer::TRGBA)
+		{
+			for (uint32 i = 0; i < nbQuads; ++i)
+			{
+				const NLMISC::CQuadColorUV2 &qcuv = quads[i];
+				*(CVector*)(dstPtr+0)= qcuv.V0;
+				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv0;
+				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv02;
+				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color0;
+				dstPtr+= vSize;
+				*(CVector*)(dstPtr+0)= qcuv.V1;
+				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv1;
+				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv12;
+				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color1;
+				dstPtr+= vSize;
+				*(CVector*)(dstPtr+0)= qcuv.V2;
+				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv2;
+				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv22;
+				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color2;
+				dstPtr+= vSize;
+				*(CVector*)(dstPtr+0)= qcuv.V3;
+				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv3;
+				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv32;
+				*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color3;
+				dstPtr+= vSize;
+			}
+		}
+		else
+		{
+			for (uint32 i = 0; i < nbQuads; ++i)
+			{
+				const NLMISC::CQuadColorUV2 &qcuv = quads[i];
+				*(CVector*)(dstPtr+0)= qcuv.V0;
+				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv0;
+				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv02;
+				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color0;
+				dstPtr+= vSize;
+				*(CVector*)(dstPtr+0)= qcuv.V1;
+				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv1;
+				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv12;
+				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color1;
+				dstPtr+= vSize;
+				*(CVector*)(dstPtr+0)= qcuv.V2;
+				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv2;
+				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv22;
+				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color2;
+				dstPtr+= vSize;
+				*(CVector*)(dstPtr+0)= qcuv.V3;
+				*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv3;
+				*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv32;
+				*(CBGRA*)(dstPtr+colorOfs)= qcuv.Color3;
+				dstPtr+= vSize;
+			}
+		}
 	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->renderQuads(convMat(mat), 0, nbQuads);
+	_Driver->renderRawQuads(convMat(mat), 0, nbQuads);
 }
 
 

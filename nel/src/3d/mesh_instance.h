@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.14 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.15 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/material.h"
 #include "3d/animated_material.h"
 #include "3d/vertex_buffer.h"
+#include "3d/index_buffer.h"
 
 
 namespace NL3D
@@ -116,7 +117,7 @@ private:
 		/// This is a cache for the Caster Model. stores its simplified geometry for rendering in this buffer.
 		CVertexBuffer					CasterVBuffer;
 		/// A cache for the caster triangles primitives.
-		std::vector<uint32>				CasterTriangles;
+		CIndexBuffer					CasterTriangles;
 	};
 	CShadowGeom			*_ShadowGeom;
 

@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.h
  * <File description>
  *
- * $Id: meshvp_wind_tree.h,v 1.5 2003/12/22 10:28:35 berenguier Exp $
+ * $Id: meshvp_wind_tree.h,v 1.6 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -93,11 +93,6 @@ public:
 									 IDriver *drv,
 									 CScene *scene,
 									 CVertexBuffer *vb);
-	// hard vb version
-	virtual void	setupForMaterial(const CMaterial &mat,
-									 IDriver *drv,
-									 CScene *scene,
-									 IVertexBufferHard *vb);
 
 	/** \name MBR support For WindTree
 	 */

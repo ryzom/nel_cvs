@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.13 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: water_shape.h,v 1.14 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -231,8 +231,8 @@ private:
 	static uint32							_YGridBorder;
 
 	static CVertexBuffer					_VB;
-	static std::vector<uint32>				_IBUpDown;
-	static std::vector<uint32>				_IBDownUp;	
+	static CIndexBuffer						_IBUpDown;
+	static CIndexBuffer						_IBDownUp;	
 	static bool								_GridSizeTouched;
 
 	//

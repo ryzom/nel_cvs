@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.cpp
  * <File description>
  *
- * $Id: lod_texture_builder.cpp,v 1.3 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: lod_texture_builder.cpp,v 1.4 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -92,9 +92,11 @@ bool			CLodTextureBuilder::computeTexture(const CMesh &mesh, NL3D::CLodCharacter
 	_Samples.reserve(1000);
 	// Get vertex info
 	const CVertexBuffer	&VB= mesh.getVertexBuffer();
-	uint8				*srcPos= (uint8*)VB.getVertexCoordPointer();
-	uint8				*srcNormal= (uint8*)VB.getNormalCoordPointer();
-	uint8				*srcUV= (uint8*)VB.getTexCoordPointer();
+	CVertexBufferRead vba;
+	VB.lock (vba);
+	const uint8			*srcPos= (const uint8*)vba.getVertexCoordPointer();
+	const uint8			*srcNormal= (const uint8*)vba.getNormalCoordPointer();
+	const uint8			*srcUV= (const uint8*)vba.getTexCoordPointer();
 	uint				vertexSize= VB.getVertexSize();
 	// For all matrix blocks..
 	for(uint mb=0; mb<mesh.getNbMatrixBlock();mb++)
@@ -102,10 +104,12 @@ bool			CLodTextureBuilder::computeTexture(const CMesh &mesh, NL3D::CLodCharacter
 		// for all rdrPass
 		for(uint rp=0; rp<mesh.getNbRdrPass(mb);rp++)
 		{
-			const CPrimitiveBlock	&pb= mesh.getRdrPassPrimitiveBlock(mb, rp);
+			const CIndexBuffer	&pb= mesh.getRdrPassPrimitiveBlock(mb, rp);
+			CIndexBufferRead iba;
+			pb.lock (iba);
 			uint	matId= mesh.getRdrPassMaterial(mb, rp);
 			// samples the tris of this pass
-			addSampleTris(srcPos, srcNormal, srcUV, vertexSize, pb.getTriPointer(), pb.getNumTri(), matId, edgeSet);
+			addSampleTris(srcPos, srcNormal, srcUV, vertexSize, iba.getPtr(), pb.getNumIndexes()/3, matId, edgeSet);
 		}
 	}
 
@@ -127,10 +131,12 @@ bool			CLodTextureBuilder::computeTexture(const CMeshMRM &meshMRM, NL3D::CLodCha
 	_Samples.reserve(1000);
 	// Get vertex info
 	CVertexBuffer		&VB= const_cast<CVertexBuffer&>(meshMRM.getVertexBuffer());
-	uint8				*srcPos= (uint8*)VB.getVertexCoordPointer();
-	uint8				*srcNormal= (uint8*)VB.getNormalCoordPointer();
-	uint8				*srcUV= (uint8*)VB.getTexCoordPointer();
-	uint				vertexSize= VB.getVertexSize();
+	CVertexBufferRead vba;
+	VB.lock (vba);
+	const uint8			*srcPos= (const uint8*)vba.getVertexCoordPointer();
+	const uint8			*srcNormal= (const uint8*)vba.getNormalCoordPointer();
+	const uint8			*srcUV= (const uint8*)vba.getTexCoordPointer();
+	uint				vertexSize = VB.getVertexSize();
 	// For the more precise lod
 	uint	lodId= meshMRM.getNbLod()-1;
 	// Resolve Geomoprh problem: copy End to all geomorphs dest. Hence sure that all ids points to good vertex data
@@ -146,10 +152,12 @@ bool			CLodTextureBuilder::computeTexture(const CMeshMRM &meshMRM, NL3D::CLodCha
 	// for all rdrPass
 	for(uint rp=0; rp<meshMRM.getNbRdrPass(lodId);rp++)
 	{
-		const CPrimitiveBlock	&pb= meshMRM.getRdrPassPrimitiveBlock(lodId, rp);
+		const CIndexBuffer	&pb= meshMRM.getRdrPassPrimitiveBlock(lodId, rp);
+		CIndexBufferRead iba;
+		pb.lock (iba);
 		uint	matId= meshMRM.getRdrPassMaterial(lodId, rp);
 		// samples the tris of this pass
-		addSampleTris(srcPos, srcNormal, srcUV, vertexSize, pb.getTriPointer(), pb.getNumTri(), matId, edgeSet);
+		addSampleTris(srcPos, srcNormal, srcUV, vertexSize, iba.getPtr(), pb.getNumIndexes()/3, matId, edgeSet);
 	}
 
 
@@ -172,9 +180,11 @@ bool			CLodTextureBuilder::computeTexture(const CMeshMRMSkinned &meshMRM, NL3D::
 	// Get vertex info
 	CVertexBuffer tmp;
 	meshMRM.getVertexBuffer(tmp);
-	uint8				*srcPos= (uint8*)tmp.getVertexCoordPointer();
-	uint8				*srcNormal= (uint8*)tmp.getNormalCoordPointer();
-	uint8				*srcUV= (uint8*)tmp.getTexCoordPointer();
+	CVertexBufferRead vba;
+	tmp.lock (vba);
+	const uint8			*srcPos= (const uint8*)vba.getVertexCoordPointer();
+	const uint8			*srcNormal= (const uint8*)vba.getNormalCoordPointer();
+	const uint8			*srcUV= (const uint8*)vba.getTexCoordPointer();
 	uint				vertexSize= tmp.getVertexSize();
 	// For the more precise lod
 	uint	lodId= meshMRM.getNbLod()-1;
@@ -191,11 +201,13 @@ bool			CLodTextureBuilder::computeTexture(const CMeshMRMSkinned &meshMRM, NL3D::
 	// for all rdrPass
 	for(uint rp=0; rp<meshMRM.getNbRdrPass(lodId);rp++)
 	{
-		CPrimitiveBlock	pb;
+		CIndexBuffer	pb;
 		meshMRM.getRdrPassPrimitiveBlock(lodId, rp, pb);
 		uint	matId= meshMRM.getRdrPassMaterial(lodId, rp);
+		CIndexBufferRead iba;
+		pb.lock (iba);
 		// samples the tris of this pass
-		addSampleTris(srcPos, srcNormal, srcUV, vertexSize, pb.getTriPointer(), pb.getNumTri(), matId, edgeSet);
+		addSampleTris(srcPos, srcNormal, srcUV, vertexSize, iba.getPtr(), pb.getNumIndexes()/3, matId, edgeSet);
 	}
 
 
@@ -207,7 +219,7 @@ bool			CLodTextureBuilder::computeTexture(const CMeshMRMSkinned &meshMRM, NL3D::
 
 
 // ***************************************************************************
-void			CLodTextureBuilder::addSampleTris(uint8 *srcPos, uint8 *srcNormal, uint8 *srcUV, uint vertexSize, 
+void			CLodTextureBuilder::addSampleTris(const uint8 *srcPos, const uint8 *srcNormal, const uint8 *srcUV, uint vertexSize, 
 	const uint32 *triPointer, uint numTris, uint materialId, TEdgeSet &edgeSet)
 {
 	nlassert(srcPos);

@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.15 2004/01/15 17:33:18 lecroart Exp $
+ * $Id: instance_lighter.cpp,v 1.16 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,6 +180,8 @@ void CInstanceLighter::addTriangles (const CMeshGeom &meshGeom, const CMatrix& m
 {
 	// Get the vertex buffer
 	const CVertexBuffer &vb=meshGeom.getVertexBuffer();
+	CVertexBufferRead vba;
+	vb.lock (vba);
 
 	// For each matrix block
 	uint numBlock=meshGeom.getNbMatrixBlock();
@@ -190,37 +192,23 @@ void CInstanceLighter::addTriangles (const CMeshGeom &meshGeom, const CMatrix& m
 		for (uint pass=0; pass<numRenderPass; pass++)
 		{
 			// Get the primitive block
-			const CPrimitiveBlock &primitive=meshGeom.getRdrPassPrimitiveBlock ( block, pass);
+			const CIndexBuffer &primitive=meshGeom.getRdrPassPrimitiveBlock ( block, pass);
 
 			// Dump triangles
-			const uint32* triIndex=primitive.getTriPointer ();
-			uint numTri=primitive.getNumTri ();
+			CIndexBufferRead iba;
+			primitive.lock (iba);
+			const uint32* triIndex=iba.getPtr ();
+			uint numTri=primitive.getNumIndexes ()/3;
 			uint tri;
 			for (tri=0; tri<numTri; tri++)
 			{
 				// Vertex
-				CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3]));
-				CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+1]));
-				CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+2]));
+				CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
+				CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
+				CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
 
 				// Make a triangle
 				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), instanceId));
-			}
-
-			// Dump quad
-			triIndex=primitive.getQuadPointer ();
-			numTri=primitive.getNumQuad ();
-			for (tri=0; tri<numTri; tri++)
-			{
-				// Vertex
-				CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4]));
-				CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+1]));
-				CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+2]));
-				CVector v3=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+3]));
-
-				// Make 2 triangles
-				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), instanceId));
-				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v2, v3), instanceId));
 			}
 		}
 	}
@@ -232,43 +220,31 @@ void CInstanceLighter::addTriangles (const CMeshMRMGeom &meshGeom, const CMatrix
 {
 	// Get the vertex buffer
 	const CVertexBuffer &vb=meshGeom.getVertexBuffer();
+	CVertexBufferRead vba;
+	vb.lock (vba);
 
 	// For each render pass
 	uint numRenderPass=meshGeom.getNbRdrPass(0);
 	for (uint pass=0; pass<numRenderPass; pass++)
 	{
 		// Get the primitive block
-		const CPrimitiveBlock &primitive=meshGeom.getRdrPassPrimitiveBlock ( 0, pass);
+		const CIndexBuffer &primitive=meshGeom.getRdrPassPrimitiveBlock ( 0, pass);
 
 		// Dump triangles
-		const uint32* triIndex=primitive.getTriPointer ();
-		uint numTri=primitive.getNumTri ();
+		CIndexBufferRead iba;
+		primitive.lock (iba);
+		const uint32* triIndex=iba.getPtr ();
+		uint numTri=primitive.getNumIndexes ()/3;
 		uint tri;
 		for (tri=0; tri<numTri; tri++)
 		{
 			// Vertex
-			CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3]));
-			CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+1]));
-			CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+2]));
+			CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
+			CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
+			CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
 
 			// Make a triangle
 			triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), instanceId));
-		}
-
-		// Dump quad
-		triIndex=primitive.getQuadPointer ();
-		numTri=primitive.getNumQuad ();
-		for (tri=0; tri<numTri; tri++)
-		{
-			// Vertex
-			CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4]));
-			CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+1]));
-			CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+2]));
-			CVector v3=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+3]));
-
-			// Make 2 triangles
-			triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), instanceId));
-			triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v2, v3), instanceId));
 		}
 	}
 }

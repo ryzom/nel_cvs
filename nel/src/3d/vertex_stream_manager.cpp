@@ -1,7 +1,7 @@
 /** \file vertex_stream_manager.cpp
  * <File description>
  *
- * $Id: vertex_stream_manager.cpp,v 1.1 2003/11/26 13:44:17 berenguier Exp $
+ * $Id: vertex_stream_manager.cpp,v 1.2 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -39,12 +39,11 @@ namespace NL3D
 CVertexStreamManager::CVertexStreamManager()
 {
 	_InitOk= false;
-	_VBHardMode= false;
 	_VertexFormat= 0;
 	_VertexSize= 0;
 	_MaxVertices= 0;
-	_CurentVBHard= 0;
-	_NumVBHard= 0;
+	_CurentVB= 0;
+	_NumVB= 0;
 }
 // ***************************************************************************
 CVertexStreamManager::~CVertexStreamManager()
@@ -62,94 +61,52 @@ void			CVertexStreamManager::init(IDriver *driver, uint vertexFormat, uint maxVe
 	// Create VBHard placeholder
 	if(numVBHard==0 || maxVertices==0)
 		return;
-	_NumVBHard= numVBHard;
-	_VBHard.resize(_NumVBHard, NULL);
+
+	_NumVB= numVBHard;
+	_VB.resize(_NumVB);
 
 	// setup, => correct for possible release below
 	_Driver= driver;
 
-	// setup the VB soft, for easy setup
-	_VBSoft.setVertexFormat(vertexFormat);
-
-	// For the moment, all UV channel are routed to UV0
-	uint i;
-	for (i=0; i<CVertexBuffer::MaxStage; i++)
-		_VBSoft.setUVRouting (i, 0);
-
 	// create the VBHard, if possible
-	_VBHardMode= true;
-	for(i=0;i<_NumVBHard;i++)
+	uint i;
+	for(i=0;i<_NumVB;i++)
 	{
-		_VBHard[i]= _Driver->createVertexBufferHard(_VBSoft.getVertexFormat(), _VBSoft.getValueTypePointer(), maxVertices, IDriver::VBHardAGP, _VBSoft.getUVRouting());
-		// if filas, release all, and quit
-		if(_VBHard[i]==NULL)
-		{
-			_VBHardMode= false;
-			break;
-		}
-		// ok, set name for lock profiling
-		else
-		{
-			_VBHard[i]->setName(vbName + NLMISC::toString(i));
-		}
-	}
+		_VB[i].setVertexFormat(vertexFormat);
 
-	// if fails to create vbHard, abort, and create only one vbSoft
-	if(!_VBHardMode)
-	{
-		// release all vbhard created
-		for(uint i=0;i<_NumVBHard;i++)
-		{
-			if(_VBHard[i])
-				_Driver->deleteVertexBufferHard(_VBHard[i]);
-		}
-		_VBHard.clear();
+		// For the moment, all UV channel are routed to UV0
+		uint j;
+		for (j=0; j<CVertexBuffer::MaxStage; j++)
+			_VB[i].setUVRouting (j, 0);
 
-		// create the Soft One
-		_VBSoft.setNumVertices(maxVertices);
+		_VB[i].setNumVertices (maxVertices);
+		_VB[i].setPreferredMemory (CVertexBuffer::AGPPreferred);
+		_VB[i].setName(vbName + NLMISC::toString(i));
 	}
 
 	// init misc
 	_InitOk= true;
-	_VertexFormat= _VBSoft.getVertexFormat();
-	_VertexSize= _VBSoft.getVertexSize();
+	_VertexFormat= _VB[0].getVertexFormat();
+	_VertexSize= _VB[0].getVertexSize();
 	_MaxVertices= maxVertices;
-	_CurentVBHard= 0;
-
-	// release the VBsoft if in vbHardMode (no more used)
-	if(_VBHardMode)
-	{
-		contReset(_VBSoft);
-	}
+	_CurentVB= 0;
 }
 // ***************************************************************************
 void			CVertexStreamManager::release()
 {
 	// release driver/VBHard
 	if(_Driver)
-	{
-		for(uint i=0;i<_NumVBHard;i++)
-		{
-			if(_VBHard[i])
-				_Driver->deleteVertexBufferHard(_VBHard[i]);
-			_VBHard[i]= NULL;
-		}
 		_Driver= NULL;
-	}
 
-	_VBHard.clear();
-
-	// release VBSoft
-	contReset(_VBSoft);
+	_VB.clear();
 
 	// misc
 	_InitOk= false;
-	_VBHardMode= false;
 	_VertexFormat= 0;
 	_VertexSize= 0;
 	_MaxVertices= 0;
-	_CurentVBHard= 0;
-	_NumVBHard= 0;
+	_CurentVB= 0;
+	_NumVB= 0;
 }
 // ***************************************************************************
 uint8			*CVertexStreamManager::lock()
@@ -157,10 +114,8 @@ uint8			*CVertexStreamManager::lock()
 	H_AUTO( NL3D_VertexStreamManager_lock )
 	nlassert(_InitOk);
 
-	if(_VBHardMode)
-		return	(uint8*)_VBHard[_CurentVBHard]->lock();
-	else
-		return 	(uint8*)_VBSoft.getVertexCoordPointer();
+	_VB[_CurentVB].lock (_VBA);
+	return 	(uint8*)_VBA.getVertexCoordPointer();
 }
 // ***************************************************************************
 void			CVertexStreamManager::unlock(uint numVertices)
@@ -168,11 +123,8 @@ void			CVertexStreamManager::unlock(uint numVertices)
 	H_AUTO( NL3D_VertexStreamManager_unlock )
 	nlassert(_InitOk);
 	
-	if(_VBHardMode)
-	{
-		// ATI: release only vertices used.
-		_VBHard[_CurentVBHard]->unlock(0, numVertices);
-	}
+	_VBA.touchVertices (0, numVertices);
+	_VBA.unlock ();
 }
 // ***************************************************************************
 void			CVertexStreamManager::activate()
@@ -180,21 +132,15 @@ void			CVertexStreamManager::activate()
 	H_AUTO( NL3D_VertexStreamManager_activate )
 	nlassert(_InitOk);
 	
-	if(_VBHardMode)
-		_Driver->activeVertexBufferHard(_VBHard[_CurentVBHard]);
-	else
-		_Driver->activeVertexBuffer(_VBSoft);
+	_Driver->activeVertexBuffer(_VB[_CurentVB]);
 }
 // ***************************************************************************
 void			CVertexStreamManager::swapVBHard()
 {
 	nlassert(_InitOk);
 	
-	if(_VBHardMode)
-	{
-		_CurentVBHard++;
-		_CurentVBHard= _CurentVBHard%_NumVBHard;
-	}
+	_CurentVB++;
+	_CurentVB= _CurentVB%_NumVB;
 }
 
 

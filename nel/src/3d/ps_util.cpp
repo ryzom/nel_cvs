@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.40 2003/11/25 14:36:49 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.41 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,7 @@
 #include "3d/particle_system.h"
 #include "3d/driver.h"
 #include "3d/vertex_buffer.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/material.h"
 #include "3d/nelu.h"
 #include "3d/font_generator.h"
@@ -123,14 +123,18 @@ void CPSUtil::displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLM
 	vb.setVertexFormat(CVertexBuffer::PositionFlag);
 	vb.setNumVertices(8);
 
-	vb.setVertexCoord(0, min);
-	vb.setVertexCoord(1, CVector(max.x, min.y, min.z));
-	vb.setVertexCoord(2, CVector(min.x, max.y, min.z));
-	vb.setVertexCoord(3, CVector(max.x, max.y, min.z));
-	vb.setVertexCoord(4, CVector(min.x, min.y, max.z));
-	vb.setVertexCoord(5, CVector(max.x, min.y, max.z));
-	vb.setVertexCoord(6, CVector(min.x, max.y, max.z));
-	vb.setVertexCoord(7, max);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord(0, min);
+		vba.setVertexCoord(1, CVector(max.x, min.y, min.z));
+		vba.setVertexCoord(2, CVector(min.x, max.y, min.z));
+		vba.setVertexCoord(3, CVector(max.x, max.y, min.z));
+		vba.setVertexCoord(4, CVector(min.x, min.y, max.z));
+		vba.setVertexCoord(5, CVector(max.x, min.y, max.z));
+		vba.setVertexCoord(6, CVector(min.x, max.y, max.z));
+		vba.setVertexCoord(7, max);
+	}
 
 
 	CMaterial material;
@@ -143,25 +147,30 @@ void CPSUtil::displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLM
 
 
 
-	CPrimitiveBlock pb;
-	pb.reserveLine(12);
-	pb.addLine(0, 1); 
-	pb.addLine(1, 5); 
-	pb.addLine(5, 4); 
-	pb.addLine(4, 0); 
-	pb.addLine(0, 2); 
-	pb.addLine(1, 3); 
-	pb.addLine(4, 6); 
-	pb.addLine(5, 7); 
-	pb.addLine(6, 7); 
-	pb.addLine(7, 3); 
-	pb.addLine(3, 2); 
-	pb.addLine(2, 6); 
+	CIndexBuffer pb;
+	pb.setNumIndexes(2*12);
+	{
+		CIndexBufferReadWrite ibaWrite;
+		pb.lock (ibaWrite);
+		ibaWrite.setLine(0, 0, 1); 
+		ibaWrite.setLine(2, 1, 5); 
+		ibaWrite.setLine(4, 5, 4); 
+		ibaWrite.setLine(6, 4, 0); 
+		ibaWrite.setLine(8, 0, 2); 
+		ibaWrite.setLine(10, 1, 3); 
+		ibaWrite.setLine(12, 4, 6); 
+		ibaWrite.setLine(14, 5, 7); 
+		ibaWrite.setLine(16, 6, 7); 
+		ibaWrite.setLine(18, 7, 3); 
+		ibaWrite.setLine(20, 3, 2); 
+		ibaWrite.setLine(22, 2, 6); 
+	}
 
 
 
 	driver->activeVertexBuffer(vb);
-	driver->render(pb, material);
+	driver->activeIndexBuffer(pb);
+	driver->renderLines(material, 0, pb.getNumIndexes()/2);
 }
 
 
@@ -171,12 +180,21 @@ void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector 
 
 	const float coneSize = size * 0.1f;
 
-	uint32 vTab[] = { 1, 2, 4,
-						  4, 2, 3,
-						  1, 2, 0,
-						  2, 3, 0,
-						  3, 4, 0,
-						  4, 1, 0 };
+	static CIndexBuffer vTab;
+	static const uint32 vTabIndexes[] = 
+	{ 1, 2, 4,
+	  4, 2, 3,
+	  1, 2, 0,
+	  2, 3, 0,
+	  3, 4, 0,
+	  4, 1, 0 };
+	if (vTab.getNumIndexes()==0)
+	{
+		vTab.setNumIndexes (sizeof(vTabIndexes)/sizeof(uint32));
+		CIndexBufferReadWrite iba;
+		vTab.lock(iba);
+		memcpy (iba.getPtr(), vTabIndexes, sizeof(vTabIndexes));
+	}
 
 	CVector end = start + size * v;
 	CDRU::drawLine(start, end, col1, *driver);
@@ -188,12 +206,15 @@ void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector 
 	vb.setNumVertices(5); 
 	
 	
-
-	vb.setVertexCoord(0, end + m * CVector(0, 0, 3.0f * coneSize) );
-	vb.setVertexCoord(1, end + m * CVector(-coneSize, -coneSize, 0) );
-	vb.setVertexCoord(2, end + m * CVector(coneSize, -coneSize, 0) );
-	vb.setVertexCoord(3, end + m * CVector(coneSize, coneSize, 0) );
-	vb.setVertexCoord(4, end + m * CVector(-coneSize, coneSize, 0) );
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord(0, end + m * CVector(0, 0, 3.0f * coneSize) );
+		vba.setVertexCoord(1, end + m * CVector(-coneSize, -coneSize, 0) );
+		vba.setVertexCoord(2, end + m * CVector(coneSize, -coneSize, 0) );
+		vba.setVertexCoord(3, end + m * CVector(coneSize, coneSize, 0) );
+		vba.setVertexCoord(4, end + m * CVector(-coneSize, coneSize, 0) );
+	}
 
 	CMaterial material;
 
@@ -204,8 +225,9 @@ void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector 
 	material.setBlend(true);
 	material.setDoubleSided(true);
 
-	driver->activeVertexBuffer(vb, 0, 5);
-	driver->renderTriangles(material,  vTab, 6);
+	driver->activeVertexBuffer(vb);
+	driver->activeIndexBuffer(vTab);
+	driver->renderTriangles(material, 0, 6);
 }
 
 //==========================================================================

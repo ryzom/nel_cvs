@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.77 2004/03/04 14:26:08 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.78 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "3d/driver.h"
 #include "3d/vertex_buffer.h"
 #include "3d/material.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/nelu.h"
 #include "3d/ps_util.h"
 #include "3d/ps_particle.h"

@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.cpp
  * <File description>
  *
- * $Id: meshvp_wind_tree.cpp,v 1.10 2003/12/22 10:28:35 berenguier Exp $
+ * $Id: meshvp_wind_tree.cpp,v 1.11 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -52,7 +52,7 @@ std::auto_ptr<CVertexProgram>	CMeshVPWindTree::_VertexProgram[CMeshVPWindTree::N
 
 static const char*	WindTreeVPCodeWave=
 "!!VP1.0																				\n\
-	# extract from color.R the 3 factors into R0.xyz									\n\
+  # extract from color.R the 3 factors into R0.xyz									\n\
 	MAD	R0, v[3].x, c[9].x, c[9].yzww;	# col.R*3										\n\
 	MIN	R0, R0, c[8].yyyy;				# clamp each to 0,1								\n\
 	MAX	R0, R0, c[8].xxxx;																\n\
@@ -82,11 +82,11 @@ static const char*	WindTreeVPCodeEnd=
 	DP4 o[HPOS].z, c[2], R5;															\n\
 	DP4 o[HPOS].w, c[3], R5;															\n\
 	MOV o[TEX0].xy, v[8];																\n\
-	MOV o[TEX1].xy, v[9];																\n\
-	DP4	o[FOGC].x, c[6], -R5;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
+	# hulud : remove this line for the moment because it doesn't work under d3d, if it is needed, we will have to create 2 CVertexProgram objects.\n\
+	#MOV o[TEX1].xy, v[9];																\n\
+	DP4	o[FOGC].x, c[6], R5;															\n\
 	END																					\n\
 ";
-
 
 // ***************************************************************************
 float	CMeshVPWindTree::speedCos(float angle)
@@ -248,8 +248,8 @@ inline	void		CMeshVPWindTree::setupPerInstanceConstants(IDriver *driver, CScene 
 
 	// c[0..3] take the ModelViewProjection Matrix. After setupModelMatrix();
 	driver->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
-	// c[4..7] take the ModelView Matrix. After setupModelMatrix();
-	driver->setConstantMatrix(4, IDriver::ModelView, IDriver::Identity);
+	// c[4..7] take the ModelView Matrix. After setupModelMatrix();00
+	driver->setConstantFog(6);
 
 
 	// c[15] take Wind of level 0.
@@ -348,15 +348,6 @@ void	CMeshVPWindTree::setupForMaterial(const CMaterial &mat,
 										  CVertexBuffer *)
 {	
 	SetupForMaterial(mat, scene);	
-}
-
-// ***************************************************************************
-void	CMeshVPWindTree::setupForMaterial(const CMaterial &mat,
-										  IDriver *drv,
-										  CScene *scene,
-										  IVertexBufferHard *vb)
-{
-	SetupForMaterial(mat, scene);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.31 2004/02/05 20:24:56 berenguier Exp $
+ * $Id: computed_string.cpp,v 1.32 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "3d/computed_string.h"
 #include "3d/texture.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/material.h"
 #include "nel/3d/frustum.h"
 
@@ -141,7 +141,7 @@ void CComputedString::render2D (IDriver& driver,
 	Material->setColor (Color);
 	// Clamp for selection
 	uint32	nNumQuad= Vertices.getNumVertices()/4;
-	driver.renderQuads (*Material, SelectStart, min(nNumQuad, SelectSize) );
+	driver.renderRawQuads (*Material, SelectStart*4, min(nNumQuad, SelectSize) );
 }
 
 
@@ -173,7 +173,7 @@ void CComputedString::render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot)
 	Material->setColor (Color);
 	// Clamp for selection
 	uint32	nNumQuad= Vertices.getNumVertices()/4;
-	driver.renderQuads (*Material, SelectStart, min(nNumQuad, SelectSize) );
+	driver.renderRawQuads (*Material, SelectStart*4, min(nNumQuad, SelectSize) );
 }
 
 
@@ -223,11 +223,18 @@ void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuf
 	}
 
 	// prepare copy.
+	CVertexBuffer::TVertexColorType vtype = driver.getVertexColorFormat();
+	Vertices.setVertexColorFormat (vtype);
+	rdrBuffer.Vertices.setVertexColorFormat (vtype);
+	CVertexBufferReadWrite srcvba;
+	Vertices.lock (srcvba);
+	CVertexBufferReadWrite dstvba;
+	rdrBuffer.Vertices.lock (dstvba);
 	sint	ofsSrcUV= Vertices.getTexCoordOff();
 	sint	ofsDstUV= rdrBuffer.Vertices.getTexCoordOff();
 	sint	ofsDstColor= rdrBuffer.Vertices.getColorOff();
-	uint8	*srcPtr= (uint8*)Vertices.getVertexCoordPointer();
-	uint8	*dstPtr= (uint8*)rdrBuffer.Vertices.getVertexCoordPointer(rdrBuffer.NumQuads*4);
+	uint8	*srcPtr= (uint8*)srcvba.getVertexCoordPointer();
+	uint8	*dstPtr= (uint8*)dstvba.getVertexCoordPointer(rdrBuffer.NumQuads*4);
 	sint	srcSize= Vertices.getVertexSize();
 	sint	dstSize= rdrBuffer.Vertices.getVertexSize();
 
@@ -248,7 +255,10 @@ void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuf
 			// uv
 			*((CUV*)(dstPtr+ofsDstUV))= *((CUV*)(srcPtr+ofsSrcUV));
 			// color
-			*((CRGBA*)(dstPtr+ofsDstColor))= Color;
+			if (vtype == CVertexBuffer::TRGBA)
+				*((CRGBA*)(dstPtr+ofsDstColor))= Color;
+			else
+				*((CBGRA*)(dstPtr+ofsDstColor))= Color;
 
 			// next
 			srcPtr+= srcSize;
@@ -290,20 +300,31 @@ void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuf
 				// v0
 				*((CVector*) (dstPtr + dstSize*0))= *((CVector*) (srcPtr + srcSize*0));
 				*((CUV*)	 (dstPtr + dstSize*0 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*0 + ofsSrcUV));
-				*((CRGBA*)	 (dstPtr + dstSize*0 + ofsDstColor))= Color;
+				if (vtype == CVertexBuffer::TRGBA)
+					*((CRGBA*)	 (dstPtr + dstSize*0 + ofsDstColor))= Color;
+				else
+					*((CBGRA*)	 (dstPtr + dstSize*0 + ofsDstColor))= Color;
 				// v1
 				*((CVector*) (dstPtr + dstSize*1))= *((CVector*) (srcPtr + srcSize*1));
 				*((CUV*)	 (dstPtr + dstSize*1 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*1 + ofsSrcUV));
-				*((CRGBA*)	 (dstPtr + dstSize*1 + ofsDstColor))= Color;
+				if (vtype == CVertexBuffer::TRGBA)
+					*((CRGBA*)	 (dstPtr + dstSize*1 + ofsDstColor))= Color;
+				else
+					*((CBGRA*)	 (dstPtr + dstSize*1 + ofsDstColor))= Color;
 				// v2
 				*((CVector*) (dstPtr + dstSize*2))= *((CVector*) (srcPtr + srcSize*2));
 				*((CUV*)	 (dstPtr + dstSize*2 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*2 + ofsSrcUV));
-				*((CRGBA*)	 (dstPtr + dstSize*2 + ofsDstColor))= Color;
+				if (vtype == CVertexBuffer::TRGBA)
+					*((CRGBA*)	 (dstPtr + dstSize*2 + ofsDstColor))= Color;
+				else
+					*((CBGRA*)	 (dstPtr + dstSize*2 + ofsDstColor))= Color;
 				// v3
 				*((CVector*) (dstPtr + dstSize*3))= *((CVector*) (srcPtr + srcSize*3));
 				*((CUV*)	 (dstPtr + dstSize*3 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*3 + ofsSrcUV));
-				*((CRGBA*)	 (dstPtr + dstSize*3 + ofsDstColor))= Color;
-
+				if (vtype == CVertexBuffer::TRGBA)
+					*((CRGBA*)	 (dstPtr + dstSize*3 + ofsDstColor))= Color;
+				else
+					*((CBGRA*)	 (dstPtr + dstSize*3 + ofsDstColor))= Color;
 
 				// translate dest
 				pClipPos0->x += x; pClipPos1->x += x; pClipPos2->x += x; pClipPos3->x += x;
@@ -417,11 +438,18 @@ void CComputedString::render2DUnProjected (IDriver& driver, CRenderStringBuffer 
 	}
 
 	// prepare copy.
+	CVertexBuffer::TVertexColorType vtype = driver.getVertexColorFormat();
+	Vertices.setVertexColorFormat (vtype);
+	rdrBuffer.Vertices.setVertexColorFormat (vtype);
+	CVertexBufferReadWrite srcvba;
+	Vertices.lock (srcvba);
+	CVertexBufferReadWrite dstvba;
+	rdrBuffer.Vertices.lock (dstvba);
 	sint	ofsSrcUV= Vertices.getTexCoordOff();
 	sint	ofsDstUV= rdrBuffer.Vertices.getTexCoordOff();
 	sint	ofsDstColor= rdrBuffer.Vertices.getColorOff();
-	uint8	*srcPtr= (uint8*)Vertices.getVertexCoordPointer();
-	uint8	*dstPtr= (uint8*)rdrBuffer.Vertices.getVertexCoordPointer(rdrBuffer.NumQuads*4);
+	uint8	*srcPtr= (uint8*)srcvba.getVertexCoordPointer();
+	uint8	*dstPtr= (uint8*)dstvba.getVertexCoordPointer(rdrBuffer.NumQuads*4);
 	sint	srcSize= Vertices.getVertexSize();
 	sint	dstSize= rdrBuffer.Vertices.getVertexSize();
 
@@ -444,7 +472,10 @@ void CComputedString::render2DUnProjected (IDriver& driver, CRenderStringBuffer 
 			// uv
 			*((CUV*)(dstPtr+ofsDstUV))= *((CUV*)(srcPtr+ofsSrcUV));
 			// color
-			*((CRGBA*)(dstPtr+ofsDstColor))= Color;
+			if (vtype == CVertexBuffer::TRGBA)
+				*((CRGBA*)(dstPtr+ofsDstColor))= Color;
+			else
+				*((CBGRA*)(dstPtr+ofsDstColor))= Color;
 
 			// next
 			srcPtr+= srcSize;
@@ -486,19 +517,31 @@ void CComputedString::render2DUnProjected (IDriver& driver, CRenderStringBuffer 
 				// v0
 				*((CVector*) (dstPtr + dstSize*0))= *((CVector*) (srcPtr + srcSize*0));
 				*((CUV*)	 (dstPtr + dstSize*0 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*0 + ofsSrcUV));
-				*((CRGBA*)	 (dstPtr + dstSize*0 + ofsDstColor))= Color;
+				if (vtype == CVertexBuffer::TRGBA)
+					*((CRGBA*)	 (dstPtr + dstSize*0 + ofsDstColor))= Color;
+				else
+					*((CBGRA*)	 (dstPtr + dstSize*0 + ofsDstColor))= Color;
 				// v1
 				*((CVector*) (dstPtr + dstSize*1))= *((CVector*) (srcPtr + srcSize*1));
 				*((CUV*)	 (dstPtr + dstSize*1 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*1 + ofsSrcUV));
-				*((CRGBA*)	 (dstPtr + dstSize*1 + ofsDstColor))= Color;
+				if (vtype == CVertexBuffer::TRGBA)
+					*((CRGBA*)	 (dstPtr + dstSize*1 + ofsDstColor))= Color;
+				else
+					*((CBGRA*)	 (dstPtr + dstSize*1 + ofsDstColor))= Color;
 				// v2
 				*((CVector*) (dstPtr + dstSize*2))= *((CVector*) (srcPtr + srcSize*2));
 				*((CUV*)	 (dstPtr + dstSize*2 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*2 + ofsSrcUV));
-				*((CRGBA*)	 (dstPtr + dstSize*2 + ofsDstColor))= Color;
+				if (vtype == CVertexBuffer::TRGBA)
+					*((CRGBA*)	 (dstPtr + dstSize*2 + ofsDstColor))= Color;
+				else
+					*((CBGRA*)	 (dstPtr + dstSize*2 + ofsDstColor))= Color;
 				// v3
 				*((CVector*) (dstPtr + dstSize*3))= *((CVector*) (srcPtr + srcSize*3));
 				*((CUV*)	 (dstPtr + dstSize*3 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*3 + ofsSrcUV));
-				*((CRGBA*)	 (dstPtr + dstSize*3 + ofsDstColor))= Color;
+				if (vtype == CVertexBuffer::TRGBA)
+					*((CRGBA*)	 (dstPtr + dstSize*3 + ofsDstColor))= Color;
+				else
+					*((CBGRA*)	 (dstPtr + dstSize*3 + ofsDstColor))= Color;
 
 
 				// translate dest
@@ -626,7 +669,7 @@ void	CRenderStringBuffer::flush(IDriver& driver, CMaterial *fontMat)
 	driver.activeVertexBuffer (Vertices);
 	
 	// *** rendering
-	driver.renderQuads (*fontMat, 0, NumQuads );
+	driver.renderRawQuads (*fontMat, 0, NumQuads );
 	
 	// *** reset
 	NumQuads= 0;
@@ -647,7 +690,7 @@ void	CRenderStringBuffer::flushUnProjected(IDriver& driver, CMaterial *fontMat, 
 	driver.activeVertexBuffer (Vertices);
 	
 	// *** rendering
-	driver.renderQuads (*fontMat, 0, NumQuads );
+	driver.renderRawQuads (*fontMat, 0, NumQuads );
 
 	// *** reset
 	NumQuads= 0;

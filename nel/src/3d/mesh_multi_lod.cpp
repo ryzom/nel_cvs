@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.32 2003/07/30 16:01:00 vizerie Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.33 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -474,6 +474,10 @@ void CMeshMultiLod::renderMeshGeom (uint slot, IDriver *drv, CMeshMultiLodInstan
 
 				// render simple the coarseMesh
 				CMeshGeom *meshGeom= safe_cast<CMeshGeom*>(slotRef.MeshGeom);
+
+				// Force corse mesh vertex buffer in system memory
+				const_cast<CVertexBuffer&>(meshGeom->getVertexBuffer ()).setPreferredMemory (CVertexBuffer::RAMPreferred);
+
 				meshGeom->renderSimpleWithMaterial(drv, trans->getWorldMatrix(), material);
 
 
@@ -782,7 +786,7 @@ void	CMeshMultiLod::compileCoarseMeshes()
 				// 1st count
 				for(uint i=0;i<meshGeom->getNbRdrPass(0);i++)
 				{
-					slotRef.CoarseNumTris+= meshGeom->getRdrPassPrimitiveBlock(0, i).getNumTri();
+					slotRef.CoarseNumTris+= meshGeom->getRdrPassPrimitiveBlock(0, i).getNumIndexes()/3;
 				}
 
 				// 2snd allocate and fill
@@ -792,9 +796,11 @@ void	CMeshMultiLod::compileCoarseMeshes()
 					uint32	*dstPtr= &slotRef.CoarseTriangles[0];
 					for(uint i=0;i<meshGeom->getNbRdrPass(0);i++)
 					{
-						const CPrimitiveBlock	&pb= meshGeom->getRdrPassPrimitiveBlock(0, i);
-						uint	numTris= pb.getNumTri();
-						memcpy(dstPtr, pb.getTriPointer(), numTris*3*sizeof(uint32));
+						const CIndexBuffer	&pb= meshGeom->getRdrPassPrimitiveBlock(0, i);
+						CIndexBufferRead ibaRead;
+						pb.lock (ibaRead);
+						uint	numTris= pb.getNumIndexes()/3;
+						memcpy(dstPtr, ibaRead.getPtr(), numTris*3*sizeof(uint32));
 						dstPtr+= numTris*3;
 					}
 				}

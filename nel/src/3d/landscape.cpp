@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.140 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: landscape.cpp,v 1.141 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -261,11 +261,11 @@ CLandscape::CLandscape() :
 
 
 	// Alloc some global space for tri rendering.
-	if( CLandscapeGlobals::PassTriArray.size() < 1000 )
-		CLandscapeGlobals::PassTriArray.resize( 1000 );
+	if( CLandscapeGlobals::PassTriArray.getNumIndexes() < 1000 )
+		CLandscapeGlobals::PassTriArray.setNumIndexes( 1000 );
 
 	_TileCallback =	NULL;
-
+	_LockCount = 0;
 }
 // ***************************************************************************
 CLandscape::~CLandscape()
@@ -842,54 +842,59 @@ void			CLandscape::updateGlobalsAndLockBuffers (const CVector &refineCenter)
 	CLandscapeGlobals::CurrentFar1VBAllocator= &_Far1VB;
 	CLandscapeGlobals::CurrentTileVBAllocator= &_TileVB;
 
-	// Must check driver, and create VB infos,locking buffers.
 	if(_Driver)
-	{
-		_Far0VB.updateDriver(_Driver);
-		_Far1VB.updateDriver(_Driver);
-		_TileVB.updateDriver(_Driver);
-
-		// must do the same for _VegetableManager.
-		if(_DriverOkForVegetable)
-			_VegetableManager->updateDriver(_Driver);
-
 		lockBuffers ();
-	}
 }
 
 
 // ***************************************************************************
 void			CLandscape::lockBuffers ()
 {
-	_Far0VB.lockBuffer(CLandscapeGlobals::CurrentFar0VBInfo);
-	_Far1VB.lockBuffer(CLandscapeGlobals::CurrentFar1VBInfo);
-	_TileVB.lockBuffer(CLandscapeGlobals::CurrentTileVBInfo);
+	// Already locked
+	if ((_LockCount++) == 0)
+	{
+		// Must check driver, and create VB infos,locking buffers.
+		if(_Driver)
+		{
+			_Far0VB.updateDriver(_Driver);
+			_Far1VB.updateDriver(_Driver);
+			_TileVB.updateDriver(_Driver);
 
-	// lock buffer of the vegetable manager.
-	_VegetableManager->lockBuffers();
+			// must do the same for _VegetableManager.
+			if(_DriverOkForVegetable)
+				_VegetableManager->updateDriver(_Driver);
+		}
 
-	// VertexProgrma mode???
-	CLandscapeGlobals::VertexProgramEnabled= _VertexShaderOk;
+		_Far0VB.lockBuffer(CLandscapeGlobals::CurrentFar0VBInfo);
+		_Far1VB.lockBuffer(CLandscapeGlobals::CurrentFar1VBInfo);
+		_TileVB.lockBuffer(CLandscapeGlobals::CurrentTileVBInfo);
+
+		// lock buffer of the vegetable manager.
+		_VegetableManager->lockBuffers();
+
+		// VertexProgrma mode???
+		CLandscapeGlobals::VertexProgramEnabled= _VertexShaderOk;
+	}
 }
 
 
 // ***************************************************************************
-void			CLandscape::unlockBuffers()
+void			CLandscape::unlockBuffers(bool force)
 {
-	_Far0VB.unlockBuffer();
-	_Far1VB.unlockBuffer();
-	_TileVB.unlockBuffer();
+	// Already locked
+	if ((_LockCount == 1) || force)
+	{
+		_Far0VB.unlockBuffer();
+		_Far1VB.unlockBuffer();
+		_TileVB.unlockBuffer();
 
-	// unlock buffer of the vegetable manager.
-	_VegetableManager->unlockBuffers();
-}
+		// unlock buffer of the vegetable manager.
+		_VegetableManager->unlockBuffers();
+		_LockCount = 0;
+	}
 
-// ***************************************************************************
-void			CLandscape::synchronizeATIVBHards()
-{
-	_Far0VB.synchronizeATIVBHard();
-	_Far1VB.synchronizeATIVBHard();
-	_TileVB.synchronizeATIVBHard();
+	if (_LockCount > 0)
+		_LockCount--;
 }
 
 // ***************************************************************************
@@ -916,20 +921,25 @@ static inline void	initPassTriArray(CPatchRdrPass &pass)
 {
 	uint	numIndices= pass.getMaxRenderedFaces()*3;
 	// realloc if necessary
-	if( CLandscapeGlobals::PassTriArray.size() < numIndices )
-		CLandscapeGlobals::PassTriArray.resize( numIndices );
+	if( CLandscapeGlobals::PassTriArray.getNumIndexes() < numIndices )
+		CLandscapeGlobals::PassTriArray.setNumIndexes( numIndices );
 	// reset ptr.
-	NL3D_LandscapeGlobals_PassTriCurPtr= &CLandscapeGlobals::PassTriArray[0];
+	nlassert (!CLandscapeGlobals::PassTriArray.isLocked());
+	CLandscapeGlobals::PassTriArray.lock (CLandscapeGlobals::PassTriArrayIBA);
+	NL3D_LandscapeGlobals_PassTriCurPtr= CLandscapeGlobals::PassTriArrayIBA.getPtr();
 }
 
 
 // ***************************************************************************
 static inline void	drawPassTriArray(CMaterial &mat)
 {
+	nlassert (CLandscapeGlobals::PassTriArray.isLocked());
+	CLandscapeGlobals::PassTriArrayIBA.unlock();
 	if(NL3D_LandscapeGlobals_PassNTri>0)
 	{
 		CLandscapeGlobals::PatchCurrentDriver->setupMaterial(mat);
-		CLandscapeGlobals::PatchCurrentDriver->renderSimpleTriangles(&CLandscapeGlobals::PassTriArray[0], NL3D_LandscapeGlobals_PassNTri);
+		CLandscapeGlobals::PatchCurrentDriver->activeIndexBuffer(CLandscapeGlobals::PassTriArray);
+		CLandscapeGlobals::PatchCurrentDriver->renderSimpleTriangles(0, NL3D_LandscapeGlobals_PassNTri);
 		NL3D_LandscapeGlobals_PassNTri= 0;
 	}
 }
@@ -1045,7 +1055,7 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 
 		// Then recompute good VBInfo (those in CurrentVBInfo are false!!).
 		// Do it by unlocking then re-locking Buffers.
-		unlockBuffers();
+		unlockBuffers(true);
 		lockBuffers();
 
 		// Finally, fill the VB for all patchs visible.
@@ -1101,11 +1111,7 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	// Must realase VB Buffers Now!! The VBuffers are now OK!
 	// NB: no parallelism is made between 3dCard and Fill of vertices.
 	// We Suppose Fill of vertices is rare, and so do not need to be parallelized.
-	unlockBuffers();
-
-
-	// Special for ATI: only copy all VBs to VBHard one time per frame
-	synchronizeATIVBHards();
+	unlockBuffers(true);
 
 
 	// If VertexShader enabled, setup VertexProgram Constants.
@@ -1119,8 +1125,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		driver->setConstant(5, refineCenter);
 		// c[6] take info for Geomorph trnasition to TileNear.
 		driver->setConstant(6, CLandscapeGlobals::TileDistFarSqr, CLandscapeGlobals::OOTileDistDeltaSqr, 0, 0);
-		// c[8..11] take the ModelView Matrix.
-		driver->setConstantMatrix(8, IDriver::ModelView, IDriver::Identity);
+		// c[10] take the fog vector.
+		driver->setConstantFog(10);
 		// c[12] take the current landscape Center / delta Pos to apply
 		driver->setConstant(12, _PZBModelPosition);
 	}
@@ -1301,6 +1307,7 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 					tileToRdr->TileMaterial->renderTilePassRGB0();
 					tileToRdr= (CRdrTileId*)tileToRdr->getNext();
 				}
+
 				// Render triangles.
 				drawPassTriArray(TileMaterial);
 			}
@@ -1526,6 +1533,7 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 			patchToRdr->renderFar1();
 			patchToRdr= patchToRdr->getNextFar1ToRdr();
 		}
+
 		// Render triangles.
 		drawPassTriArray(FarMaterial);
 
@@ -1624,7 +1632,6 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		}
 		_VegetableManager->render(refineCenter, frontVector, vegetablePyramid, _TextureDLM, driver);
 	}
-
 }
 
 

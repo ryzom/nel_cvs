@@ -1,7 +1,7 @@
 /** \file stripifier.h
  * <File description>
  *
- * $Id: stripifier.h,v 1.1 2001/10/15 14:21:39 berenguier Exp $
+ * $Id: stripifier.h,v 1.2 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_STRIPIFIER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 
 
 namespace NL3D {
@@ -52,7 +52,7 @@ public:
 	 *	any list of lines / quads in out are not modified.
 	 *	NB: &in == &out is possible.
 	 */
-	void		optimizeTriangles(const CPrimitiveBlock &in, CPrimitiveBlock &out, uint cacheSize= 10);
+	void		optimizeTriangles(const CIndexBuffer &in, CIndexBuffer &out, uint cacheSize= 10);
 
 };
 

@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.cpp
  * <File description>
  *
- * $Id: vegetablevb_allocator.cpp,v 1.10 2003/08/07 08:47:21 berenguier Exp $
+ * $Id: vegetablevb_allocator.cpp,v 1.11 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,7 +63,6 @@ CVegetableVBAllocator::CVegetableVBAllocator()
 
 	// Init vbhard
 	_VBHardOk= false;
-	_BufferLocked= false;
 	_AGPBufferPtr= NULL;
 }
 
@@ -89,7 +88,7 @@ CVegetableVBAllocator::~CVegetableVBAllocator()
 void			CVegetableVBAllocator::updateDriver(IDriver *driver)
 {
 	// test change of driver.
-	nlassert(driver && !_BufferLocked);
+	nlassert(driver && !_VBHard.isLocked());
 	// If change of driver
 	if( _Driver==NULL || driver!=_Driver )
 	{
@@ -116,7 +115,7 @@ void			CVegetableVBAllocator::updateDriver(IDriver *driver)
 	else
 	{
 		// if VBHard possible, and if vbHardDeleted but space needed, reallocate.
-		if( _VBHardOk && _VBHard==NULL && _NumVerticesAllocated>0 )
+		if( _VBHardOk && _VBHard.getNumVertices()==0 && _NumVerticesAllocated>0 )
 			allocateVertexBufferAndFillVBHard(_NumVerticesAllocated);
 	}
 
@@ -146,22 +145,16 @@ void			CVegetableVBAllocator::lockBuffer()
 	// force unlock
 	unlockBuffer();
 
-	if(_VBHard)
-	{
-		_AGPBufferPtr= (uint8*)_VBHard->lock();
-	}
-
-	_BufferLocked= true;
+	_VBHard.lock(_VBAHard);
+	_AGPBufferPtr=(uint8*)_VBAHard.getVertexCoordPointer();
 }
 
 // ***************************************************************************
 void			CVegetableVBAllocator::unlockBuffer()
 {
-	if(_BufferLocked)
+	if(_VBHard.isLocked())
 	{
-		if(_VBHard)
-			_VBHard->unlock();
-		_BufferLocked= false;
+		_VBAHard.unlock();
 		_AGPBufferPtr= NULL;
 	}
 }
@@ -244,19 +237,17 @@ void			CVegetableVBAllocator::deleteVertex(uint vid)
 }
 
 // ***************************************************************************
-void			*CVegetableVBAllocator::getVertexPointer(uint i)
-{
-	return _VB.getVertexCoordPointer(i);
-}
-
-// ***************************************************************************
 void			CVegetableVBAllocator::flushVertex(uint i)
 {
 	if(_VBHardOk)
 	{
-		nlassert(_VBHard && _BufferLocked);
+		nlassert(_VBHard.getNumVertices() && _VBHard.isLocked());
+		
 		// copy the VB soft to the VBHard.
-		void	*src= getVertexPointer(i);
+		CVertexBufferRead vba;
+		_VB.lock(vba);
+
+		const void *src= vba.getVertexCoordPointer(i);
 		void	*dst= _AGPBufferPtr + i*_VB.getVertexSize();
 		memcpy(dst, src, _VB.getVertexSize());
 	}
@@ -266,11 +257,11 @@ void			CVegetableVBAllocator::flushVertex(uint i)
 void			CVegetableVBAllocator::activate()
 {
 	nlassert(_Driver);
-	nlassert(!_BufferLocked);
+	nlassert(!_VBHard.isLocked());
 
 	// Activate VB.
-	if(_VBHard)
-		_Driver->activeVertexBufferHard(_VBHard);
+	if(_VBHard.getNumVertices())
+		_Driver->activeVertexBuffer(_VBHard);
 	else
 		_Driver->activeVertexBuffer(_VB);
 }
@@ -290,14 +281,13 @@ void				CVegetableVBAllocator::deleteVertexBufferHard()
 	unlockBuffer();
 
 	// test (refptr) if the object still exist in memory.
-	if(_VBHard!=NULL)
+	if(_VBHard.getNumVertices()!=0)
 	{
 		// A vbufferhard should still exist only if driver still exist.
 		nlassert(_Driver!=NULL);
 
 		// delete it from driver.
-		_Driver->deleteVertexBufferHard(_VBHard);
-		_VBHard= NULL;
+		_VBHard.deleteAllVertices ();
 	}
 
 }
@@ -319,27 +309,36 @@ void				CVegetableVBAllocator::allocateVertexBufferAndFillVBHard(uint32 numVerti
 	if( _VBHardOk )
 	{
 		// delete possible old _VBHard.
-		if(_VBHard!=NULL)
+		if(_VBHard.getNumVertices()!=0)
 		{
 			// VertexBufferHard lifetime < Driver lifetime.
 			nlassert(_Driver!=NULL);
-			_Driver->deleteVertexBufferHard(_VBHard);
+			_VBHard.deleteAllVertices();
 		}
 
 		// try to create new one, in AGP Ram
 		// If too many vertices wanted, abort VBHard.
 		if(numVertices <= _MaxVertexInBufferHard)
 		{
-			_VBHard= _Driver->createVertexBufferHard(_VB.getVertexFormat(), _VB.getValueTypePointer(), numVertices, IDriver::VBHardAGP, _VB.getUVRouting());
+			_VBHard = _VB;
+			_VBHard.setPreferredMemory(CVertexBuffer::AGPPreferred);
+			_VBHard.setNumVertices (numVertices);
+
+			// Force this VB to be hard
+			nlverify (_Driver->activeVertexBuffer (_VBHard));
+			nlassert (_VBHard.isResident());
+			if (_VBHard.getLocation() == CVertexBuffer::RAMResident)
+				_VBHard.deleteAllVertices();
+
 			// Set Name For lock Profiling.
-			if(_VBHard)
-				_VBHard->setName("VegetableVB");
+			if(_VBHard.getNumVertices()!=0)
+				_VBHard.setName("VegetableVB");
 		}
 		else
-			_VBHard= NULL;
+			_VBHard.deleteAllVertices();
 
 		// If KO, never try again.
-		if(_VBHard==NULL)
+		if(_VBHard.getNumVertices()==0)
 			_VBHardOk= false;
 		else
 		{
@@ -347,8 +346,11 @@ void				CVegetableVBAllocator::allocateVertexBufferAndFillVBHard(uint32 numVerti
 			// lock before the AGP buffer
 			lockBuffer();
 
+			CVertexBufferRead vba;
+			_VB.lock (vba);
+
 			// copy all the vertices to AGP.
-			memcpy(_AGPBufferPtr, _VB.getVertexCoordPointer(0), _VB.getVertexSize() * numVertices);
+			memcpy(_AGPBufferPtr, vba.getVertexCoordPointer(0), _VB.getVertexSize() * numVertices);
 
 			// If was not locked before, unlock this VB
 			if(!wasLocked)

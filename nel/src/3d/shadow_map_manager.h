@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.h
  * <File description>
  *
- * $Id: shadow_map_manager.h,v 1.3 2003/08/19 14:11:34 berenguier Exp $
+ * $Id: shadow_map_manager.h,v 1.4 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -130,7 +130,7 @@ private:
 
 	void			updateBlurTexture(uint w, uint h);
 	void			copyScreenToBlurTexture(IDriver *drv, uint numPassText, uint numTextW, uint numTextH, uint baseTextureSize);
-	void			applyFakeGaussianBlur(IDriver *drv, uint numPassText, uint numTextW, uint numTextH, uint baseTextureSize);
+	void			applyFakeGaussianBlur(IDriver *drv, uint numPassText, uint numTextW, uint numTextH, uint baseTextureSize, uint blurSource);
 	void			setBlurQuadFakeGaussian(uint index, sint x, sint y, sint w, sint h);
 
 	bool						_PolySmooth;
@@ -140,15 +140,19 @@ private:
 	CMaterial					_FillMaterial;
 
 	// For Blurring
-	CSmartPtr<ITexture>			_BlurTexture;
+	CSmartPtr<ITexture>			_BlurTexture[2];
 	uint32						_BlurTextureW;
 	uint32						_BlurTextureH;
 	float						_BlurTextureOOW;
 	float						_BlurTextureOOH;
 	float						_BlurTextureD05W;
 	float						_BlurTextureD05H;
-	CMaterial					_BlurMaterial;
+	CMaterial					_BlurMaterial[2];
 	CVertexBuffer				_BlurQuads;
+
+	// For copy
+	CVertexBuffer				_CopyQuads;
+	CMaterial					_CopyMaterial;
 
 	// For Receiving
 	CMaterial					_ReceiveShadowMaterial;

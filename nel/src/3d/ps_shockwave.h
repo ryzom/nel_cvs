@@ -1,7 +1,7 @@
 /** \file ps_shockwave.h
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.h,v 1.6 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_shockwave.h,v 1.7 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "3d/ps_particle_basic.h"
 #include "3d/vertex_buffer.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include <hash_map>
 
 namespace NL3D 
@@ -134,7 +134,7 @@ protected:
 
 private:
 	typedef std::hash_map<uint, CVertexBuffer> TVBMap;
-	typedef std::hash_map<uint, CPrimitiveBlock> TPBMap;
+	typedef std::hash_map<uint, CIndexBuffer> TPBMap;
 private:
 	static TPBMap _PBMap; // the primitive blocks
 	static TVBMap _VBMap; // vb ith unanimated texture
@@ -150,7 +150,7 @@ private:
 private:		
 	friend class CPSShockWaveHelper;
 	// setup and get the needed vb for display
-	void getVBnPB(CVertexBuffer *&vb, CPrimitiveBlock *&pb);
+	void getVBnPB(CVertexBuffer *&vb, CIndexBuffer *&pb);
 	// get the number of shockwave that can be stored in the current vb
 	uint getNumShockWavesInVB() const;
 	//	

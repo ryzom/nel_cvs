@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.23 2004/01/30 13:52:25 besson Exp $
+ * $Id: material.h,v 1.24 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,24 +46,27 @@ using NLMISC::CRefPtr;
 
 const uint32 IDRV_MAT_MAXTEXTURES	=	4;
 
-const uint32 IDRV_TOUCHED_BLENDFUNC	=		0x00000001;
-const uint32 IDRV_TOUCHED_BLEND			=	0x00000002;
-const uint32 IDRV_TOUCHED_SHADER		=	0x00000004;
-const uint32 IDRV_TOUCHED_ZFUNC			=	0x00000008;
-const uint32 IDRV_TOUCHED_ZBIAS			=	0x00000010;
-const uint32 IDRV_TOUCHED_COLOR			=	0x00000020;
-const uint32 IDRV_TOUCHED_LIGHTING		=	0x00000040;
-const uint32 IDRV_TOUCHED_DEFMAT		=	0x00000080;
-const uint32 IDRV_TOUCHED_ZWRITE		=	0x00000100;
-const uint32 IDRV_TOUCHED_DOUBLE_SIDED	=	0x00000200;
-const uint32 IDRV_TOUCHED_LIGHTMAP		=	0x00000400;
-const uint32 IDRV_TOUCHED_ALPHA_TEST	=	0x00000800;
+const uint32 IDRV_TOUCHED_BLENDFUNC			=	0x00000001;
+const uint32 IDRV_TOUCHED_BLEND				=	0x00000002;
+const uint32 IDRV_TOUCHED_SHADER			=	0x00000004;
+const uint32 IDRV_TOUCHED_ZFUNC				=	0x00000008;
+const uint32 IDRV_TOUCHED_ZBIAS				=	0x00000010;
+const uint32 IDRV_TOUCHED_COLOR				=	0x00000020;
+const uint32 IDRV_TOUCHED_LIGHTING			=	0x00000040;
+const uint32 IDRV_TOUCHED_DEFMAT			=	0x00000080;
+const uint32 IDRV_TOUCHED_ZWRITE			=	0x00000100;
+const uint32 IDRV_TOUCHED_DOUBLE_SIDED		=	0x00000200;
+const uint32 IDRV_TOUCHED_LIGHTMAP			=	0x00000400;
+const uint32 IDRV_TOUCHED_ALPHA_TEST		=	0x00000800;
 const uint32 IDRV_TOUCHED_ALPHA_TEST_THRE	=	0x00001000;
+const uint32 IDRV_TOUCHED_TEXENV			=	0x00002000;
+const uint32 IDRV_TOUCHED_TEXGEN			=	0x00004000;
 
 
 // Start texture touch at 0x10000.
 const uint32 IDRV_TOUCHED_TEX[IDRV_MAT_MAXTEXTURES]		=
 	{0x00010000, 0x00020000, 0x00040000, 0x00080000};
+const uint32 IDRV_TOUCHED_ALLTEX	=	0x000F0000;
 const uint32 IDRV_TOUCHED_ALL		=	0xFFFFFFFF;
 
 
@@ -106,6 +109,27 @@ const uint32 IDRV_MAT_TEX_GEN_SHIFT  =   2;
 const uint32 IDRV_MAT_TEX_GEN_MASK  =   0x03;
 
 
+// List typedef.
+class	IMaterialDrvInfos;
+typedef	std::list<IMaterialDrvInfos*>			TMatDrvInfoPtrList;
+typedef	TMatDrvInfoPtrList::iterator	ItMatDrvInfoPtrList;
+
+// ***************************************************************************
+/** 
+ *  Driver info for the material
+ */
+class IMaterialDrvInfos : public CRefCount
+{
+private:
+	IDriver				*_Driver;
+	ItMatDrvInfoPtrList		_DriverIterator;
+
+public:
+	IMaterialDrvInfos(IDriver	*drv, ItMatDrvInfoPtrList it) {_Driver= drv; _DriverIterator= it;}
+	// The virtual dtor is important.
+	virtual ~IMaterialDrvInfos();
+
+};
 
 // ***************************************************************************
 /**
@@ -184,7 +208,7 @@ public:
 	 *  NB : for EMBM, this must be supported by driver.
 	 */
 	enum TTexOperator		{ Replace=0, Modulate, Add, AddSigned, 
-							  InterpolateTexture, InterpolatePrevious, InterpolateDiffuse, InterpolateConstant, EMBM };
+							  InterpolateTexture, InterpolatePrevious, InterpolateDiffuse, InterpolateConstant, EMBM, TexOperatorCount };
 
 	/** Source argument.
 	 * Texture:		the arg is taken from the current texture of the stage.
@@ -192,7 +216,7 @@ public:
 	 * Diffuse:		the arg is taken from the primary color vertex.
 	 * Constant:	the arg is taken from the constant color setuped for this texture stage.
 	 */
-	enum TTexSource			{ Texture=0, Previous, Diffuse, Constant };
+	enum TTexSource			{ Texture=0, Previous, Diffuse, Constant, TexSourceCount };
 
 	/** Operand for the argument.
 	 * For Alpha arguments, only SrcAlpha and InvSrcAlpha are Valid!! \n
@@ -201,7 +225,7 @@ public:
 	 * SrcAlpha:	arg= AlphaSource.
 	 * InvSrcAlpha:	arg= 1-AlphaSource.
 	 */
-	enum TTexOperand		{ SrcColor=0, InvSrcColor, SrcAlpha, InvSrcAlpha };
+	enum TTexOperand		{ SrcColor=0, InvSrcColor, SrcAlpha, InvSrcAlpha, TexOperandCount };
 	// @}
 
 	/** \name Texture Addressing Modes. They are valid only with the normal texture shader. 
@@ -589,7 +613,7 @@ public:
 	CSmartPtr<ITexture>		_Textures[IDRV_MAT_MAXTEXTURES];
 	uint8				    _TexAddrMode[IDRV_MAT_MAXTEXTURES]; // texture addressing enum packed as bytes
 	CTexEnv					_TexEnvs[IDRV_MAT_MAXTEXTURES];
-	CRefPtr<IShader>		pShader;
+	CRefPtr<IMaterialDrvInfos>	_MatDrvInfo;
 
 	// Private. For Driver only. LightMaps.
 	struct	CLightMap

@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.14 2003/03/13 14:15:51 berenguier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.15 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,7 +31,7 @@
 
 #include "3d/transform.h"
 #include "3d/material.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/vertex_buffer.h"
 
 namespace NL3D 
@@ -121,7 +121,7 @@ public:
 private:
 
 	CVertexBuffer						_VBuffer;
-	std::vector<uint32>					_Triangles;
+	CIndexBuffer						_Triangles;
 	uint								_CurrentNumVertices;
 	uint								_CurrentNumTriangles;
 

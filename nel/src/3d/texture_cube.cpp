@@ -1,7 +1,7 @@
 /** \file texture_cube.cpp
  * Implementation of a texture cube
  *
- * $Id: texture_cube.cpp,v 1.12 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_cube.cpp,v 1.13 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NL3D
 {
 
 // ***************************************************************************
-	CTextureCube::CTextureCube() : _NoFlip(false)
+	CTextureCube::CTextureCube()
 {
 	for( uint i = 0; i < 6; ++i )
 		_Textures[i] = NULL;
@@ -140,23 +140,6 @@ void CTextureCube::doGenerate(bool async)
 				_Textures[i]->resample( pRefTex->getWidth(), pRefTex->getHeight() );
 			}
 		}
-
-		// Let's apply the flips depending on the texture
-		if (!_NoFlip)
-		{
-			if( ((TFace)i) == positive_x )
-				_Textures[i]->flipH();
-			if( ((TFace)i) == negative_x )
-				_Textures[i]->flipH();
-			if( ((TFace)i) == positive_y )
-				_Textures[i]->flipH();
-			if( ((TFace)i) == negative_y )
-				_Textures[i]->flipH();
-			if( ((TFace)i) == positive_z )
-				_Textures[i]->flipV();
-			if( ((TFace)i) == negative_z )
-				_Textures[i]->flipV();
-		}
 	}
 }
 
@@ -172,7 +155,7 @@ void	CTextureCube::release()
 // ***************************************************************************
 void	CTextureCube::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint	ver= f.serialVersion(1);
+	sint	ver= f.serialVersion(2);
 
 	// serial the base part of ITexture.
 	ITexture::serial(f);
@@ -186,9 +169,10 @@ void	CTextureCube::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if( f.isReading() )
 		touch();
 
-	if (ver >= 1)
+	if (ver == 1)
 	{
-		f.serial(_NoFlip);
+		bool temp;
+		f.serial(temp);
 	}
 }
 
@@ -222,7 +206,6 @@ ITexture *CTextureCube::buildNonSelectableVersion(uint index)
 
 	// copy basic texture parameters
 	(ITexture &) *tc.get() = (ITexture &) *this; // invoke ITexture = op for basics parameters
-	_NoFlip = tc->_NoFlip;
 
 	for( uint i = 0; i < 6; ++i )
 	{

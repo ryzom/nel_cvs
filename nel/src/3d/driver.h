@@ -1,8 +1,8 @@
 /** \file driver.h
  * Generic driver header.
- * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
+ * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.64 2004/02/13 10:48:38 lecroart Exp $
+ * $Id: driver.h,v 1.65 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@
 #include "3d/texture.h"
 #include "3d/shader.h"
 #include "3d/vertex_buffer.h"
-#include "3d/vertex_buffer_hard.h"
+#include "3d/index_buffer.h"
 #include "3d/vertex_program.h"
 #include "3d/material.h"
 #include "nel/misc/mutex.h"
@@ -68,7 +68,7 @@ using NLMISC::CSynchronized;
 
 
 class CMaterial;
-class CPrimitiveBlock;
+class CIndexBuffer;
 class CLight;
 class CScissor;
 class CViewport;
@@ -99,9 +99,6 @@ public:
 						}
 						GfxMode(uint16 w, uint16 h, uint8 d, bool windowed= true, bool offscreen=false, uint frequency = 60);
 };
-
-typedef std::vector<GfxMode> ModeList;
-
 
 //****************************************************************************
 // Exceptions.
@@ -148,30 +145,23 @@ public:
 	enum TMatrixCount { MaxModelMatrix= 16 };
 
 
-	/**
-	  * Driver VertexBufferHard type.
-	  * \see createVertexBufferHard()
-	  */
-	enum TVBHardType { VBHardAGP=0, VBHardVRAM, CountVBHard };
-
-
 protected:
 
 	CSynchronized<TTexDrvInfoPtrMap> _SyncTexDrvInfos;
 
 	TTexDrvSharePtrList		_TexDrvShares;
-	TShaderPtrList			_Shaders;
+	TMatDrvInfoPtrList		_MatDrvInfos;
 	TVBDrvInfoPtrList		_VBDrvInfos;
+	TIBDrvInfoPtrList		_IBDrvInfos;
 	TPolygonMode			_PolygonMode;
 	TVtxPrgDrvInfoPtrList	_VtxPrgDrvInfos;
+	TShaderDrvInfoPtrList	_ShaderDrvInfos;
 
 public:
 							IDriver(void);
 	virtual					~IDriver(void);
 
 	virtual bool			init (uint windowIcon = 0)=0;
-
-	virtual ModeList		enumModes()=0;
 
 	/// \name Disable Hardware Feature 
 	/**	Disable some Feature that may be supported by the Hardware 
@@ -218,8 +208,10 @@ public:
 
 	virtual NLMISC::IEventEmitter*	getEventEmitter(void)=0;
 
+	/* Clear the current target surface pixels. The function ignores the viewport settings but uses the scissor. */
 	virtual bool			clear2D(CRGBA rgba)=0;
 
+	/* Clear the current target surface zbuffer. The function ignores the viewport settings but uses the scissor. */
 	virtual bool			clearZBuffer(float zval=1)=0;
 
 	/// Set the color mask filter through where the operation done will pass
@@ -245,6 +237,7 @@ public:
 
 	/** The texture must be created or uploadTexture do nothing.
 	 *  These function can be used to upload piece by piece a texture. Use it in conjunction with setupTextureEx(..., false);
+	 *  For compressed textures, the rect must aligned on pixel block. (a block of pixel size is 4x4 pixels).
 	 */
 	virtual bool			uploadTexture (ITexture& tex, NLMISC::CRect& rect, uint8 nNumMipMap)=0;
 	virtual bool			uploadTextureCube (ITexture& tex, NLMISC::CRect& rect, uint8 nNumMipMap, uint8 nNumFace)=0;
@@ -274,6 +267,11 @@ public:
 
 
 	virtual bool			setupMaterial(CMaterial& mat)=0;
+	
+	/**
+	  * Activate a shader, NULL to disable the current shader.
+	  */
+	virtual bool			activeShader(CShader *shd)=0;
 
 	/** Special for Faster Specular Setup. Call this between lot of primitives rendered with Specular Materials.
 	 *	Visual Errors may arise if you don't correclty call endSpecularBatch().
@@ -323,15 +321,6 @@ public:
 	 * NB: you must setupModelMatrix() AFTER setupViewMatrix(), or else undefined results.
 	 */
 	virtual void			setupModelMatrix(const CMatrix& mtx)=0;
-
-	/** multipliy the model matrix.
-	 * NB: you must use multiplyModelMatrix() AFTER setupModelMatrix() (and so setupViewMatrix()) or an other multiplyModelMatrix(), 
-	 *	or else undefined results.
-	 *
-	 *	Using of multiplyModelMatrix() instead of just one setupModelMatrix() may be usefull for precision consideration.
-	 */
-	virtual void			multiplyModelMatrix(const CMatrix& mtx)=0;
-
 
 	virtual CMatrix			getViewMatrix(void)const=0;
 
@@ -383,67 +372,91 @@ public:
 	*/
 	virtual uint32			getAvailableVertexVRAMMemory () =0;
 	
-	
-	/** create a IVertexBufferHard. delete it with deleteVertexBufferHard.
-	 *	NB: user should (must) keep a CRefPtr<> on this ptr, because if driver is deleted (for any reason)
-	 *	the pointer will be no longer valid.
-	 *
-	 *	NB: return NULL if driver do not support the requested VertexBufferHard.Reason for failures are:
-	 *	- Driver do not support VertexBufferHard at all. ie supportVertexBufferHard() return false.
-	 *	- Driver do not support the vbType wanted or the vertexFormat for vertexBufferHard
-	 *	- Driver do not support the numVertices wanted.
-	 *	- Driver can't allocate any more ressource.
-	 *
-	 *	\param vertexFormat see CVertexBuffer::setVertexFormat().
-	 *	\param numVertices the number of vertices to be created.
-	 *	\param vbType kind of RAM shere the VB will be allocated.
-	 *	\param uvRouting is the uv routing table. If NULL, set the default routing table.
-	 *	\return a vertexBufferHard interface. 
-	 */
-	virtual	IVertexBufferHard	*createVertexBufferHard(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, 
-														TVBHardType vbType, const uint8 *uvRouting) =0;
-
-
-	/** delete a IVertexBufferHard. NB: VertexBufferHard are automatically deleted at IDriver::release();
-	 */
-	virtual	void			deleteVertexBufferHard(IVertexBufferHard *VB) =0;
-
-
-	/** active a current VB Hard, for future render().
-	 *
-	 * NB: please make sure you have setuped / unsetuped the current vertex program BEFORE activate the vertex buffer.
-	 *
-	 * \see activeVertexProgram
-	 */
-	virtual void			activeVertexBufferHard(IVertexBufferHard *VB)=0;
-
-
 
 	/** active a current VB, for future render().
 	 * This method suppose that all vertices in the VB will be used.
 	 *
 	 * NB: please make sure you have setuped / unsetuped the current vertex program BEFORE activate the vertex buffer.
+	 * Don't change the vertex buffer format/size after having activated it.
+	 * Don't lock the vertex buffer after having activated it.
 	 *
 	 * \see activeVertexProgram
 	 */
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB)=0;
+	
 
-
-	/** active a current VB, for future render().
-	 * This method suppose that only vertices in given range will be used in future render(). 
-	 * This could be usefull for DX or OpenGL driver.
-	 * Undefined results if primitives in render() use vertices not in this range.
+	/** active a current IB, for future render().
 	 *
-	 * NB: please make sure you have setuped / unsetuped the current vertex program BEFORE activate the vertex buffer.
-	 *
-	 * \param VB the vertexBuffer to activate.
-	 * \param first the first vertex important for render (begin to 0). nlassert(first<=end);
-	 * \param end the last vertex important for render, +1. count==end-first. nlassert(end<=VB.getNumVertices);
-	 *
-	 * \see activeVertexProgram
+	 * Don't change the index buffer format/size after having activated it.
+	 * Don't lock the index buffer after having activated it.
 	 */
-	virtual bool			activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)=0;
+	virtual bool			activeIndexBuffer(CIndexBuffer& IB)=0;
 
+
+	/** Render a list of indexed lines with previously setuped VertexBuffer / IndexBuffer / Matrixes.
+	 *  \param mat is the material to use during this rendering
+	 *  \param firstIndex is the first index in the index buffer to use as first line.
+	 *  \param nlines is the number of line to render.
+	 */
+	virtual bool			renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)=0;
+
+	/** Render a list of indexed triangles with previously setuped VertexBuffer / IndexBuffer / Matrixes.
+	 *  \param mat is the material to use during this rendering
+	 *  \param firstIndex is the first index in the index buffer to use as first triangle.
+	 *  \param ntris is the number of triangle to render.
+	 */
+	virtual bool			renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris)=0;
+
+	/** Render a list of triangles with previously setuped VertexBuffer / IndexBuffer / Matrixes, AND previously setuped MATERIAL!!
+	 * This use the last material setuped. It should be a "Normal shader" material, because no multi-pass is allowed
+	 * with this method.
+	 * Actually, it is like a straight drawTriangles() in OpenGL.
+	 * NB: nlassert() if ntris is 0!!!! this is unlike other render() call methods. For optimisation concern.
+	 * NB: this is usefull for landscape....
+	 *  \param firstIndex is the first index in the index buffer to use as first triangle.
+	 *  \param ntris is the number of triangle to render.
+	 */
+	virtual bool			renderSimpleTriangles(uint32 firstIndex, uint32 ntris)=0;
+
+	/** Render points with previously setuped VertexBuffer / Matrixes.
+	 *  Points are stored as a sequence in the vertex buffer.
+	 *  \param mat is the material to use during this rendering
+	 *  \param startVertex is the first vertex to use during this rendering.
+	 *  \param numPoints is the number of point to render.
+	 */
+	virtual bool			renderRawPoints(CMaterial& mat, uint32 startVertex, uint32 numPoints)=0;
+
+	/** Render lines with previously setuped VertexBuffer / Matrixes.
+	 *  Lines are stored as a sequence in the vertex buffer.
+	 *  \param mat is the material to use during this rendering
+	 *  \param startVertex is the first vertex to use during this rendering.
+	 *  \param numLine is the number of line to render.
+	 */
+	virtual bool			renderRawLines(CMaterial& mat, uint32 startVertex, uint32 numTri)=0;
+
+	/** Render triangles with previously setuped VertexBuffer / Matrixes.
+	 *  Triangles are stored as a sequence in the vertex buffer.
+	 *  \param mat is the material to use during this rendering
+	 *  \param startVertex is the first vertex to use during this rendering.
+	 *  \param numTri is the number of triangle to render.
+	 */
+	virtual bool			renderRawTriangles(CMaterial& mat, uint32 startVertex, uint32 numTri)=0;
+
+	/** render quads with previously setuped VertexBuffer / Matrixes.
+	 *  Quads are stored as a sequence in the vertex buffer.
+	 * There's a garanty for the orientation of its diagonal, which is drawn as follow :
+     *
+	 *  3----2
+     *  |  / |
+	 *  | /  |
+	 *  |/   |
+	 *  0----1
+	 * 
+	 *  \param mat is the material to use during this rendering
+	 *  \param startVertex is the first vertex to use during this rendering.
+	 *  \param numQuad is the number of quad to render.
+	 */
+	virtual bool			renderRawQuads(CMaterial& mat, uint32 startVertex, uint32 numQuads)=0;
 
 	/** Say what Texture Stage use what UV coord. 
 	 *	by default activeVertexBuffer*() methods map all stage i to UV i. You can change this behavior, 
@@ -457,50 +470,6 @@ public:
 	 *	(and so render*()) is called. But Normal shader doesn't do it.
 	 */
 	virtual	void			mapTextureStageToUV(uint stage, uint uv)=0;
-
-
-	/** render a block of primitive with previously setuped VertexBuffer / Matrixes.
-	 */
-	virtual bool			render(CPrimitiveBlock& PB, CMaterial& Mat)=0;
-
-	/** render a list of triangles with previously setuped VertexBuffer / Matrixes.
-	 * NB: this "was" usefull for landscape....
-	 */
-	virtual void			renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)=0;
-
-
-	/** render a list of triangles with previously setuped VertexBuffer / Matrixes, AND previously setuped MATERIAL!!
-	 * This use the last material setuped. It should be a "Normal shader" material, because no multi-pass is allowed
-	 * with this method.
-	 * Actually, it is like a straight drawTriangles() in OpenGL.
-	 * NB: nlassert() if ntris is 0!!!! this is unlike other render() call methods. For optimisation concern.
-	 * NB: this is usefull for landscape....
-	 */
-	virtual void			renderSimpleTriangles(uint32 *tri, uint32 ntris)=0;
-
-
-	/** render points with previously setuped VertexBuffer / Matrixes.
-	 */
-	virtual void			renderPoints(CMaterial& Mat, uint32 numPoints)=0;
-
-	/** render quads with previously setuped VertexBuffer / Matrixes.
-	 *  Quads are stored as a sequence in the vertex buffer.
-	 */
-	virtual void			renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)=0;
-
-	/** Render quads with previously setuped VertexBuffer / Matrixes.
-	  * There's a garanty for the orientation of its diagonal, which is drawn as follow :
-      *
-	  *  3----2
-      *  |  / |
-	  *  | /  |
-	  *  |/   |
-	  *  0----1
-	  * 
-	  * The rendering may be slower than with 'renderQuads', however
-	  * This orientation is not garanteed with renderQuads, and depends on the hardware
-      */
-	virtual void		   renderOrientedQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)=0;
 
 	/// Swap the back and front buffers.
 	virtual bool			swapBuffers(void)=0;
@@ -578,7 +547,7 @@ public:
 	// @{
 	virtual	bool			fogEnabled()=0;
 	virtual	void			enableFog(bool enable)=0;
-	/// setup fog parameters. fog must enabled to see result. start and end are in [0,1] range.
+	/// setup fog parameters. fog must enabled to see result. start and end are distance values.
 	virtual	void			setupFog(float start, float end, CRGBA color)=0;
 	/// Get.
 	virtual	float			getFogStart() const =0;
@@ -720,31 +689,86 @@ public:
 	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect) = 0;
 
 
-	/** Copy a portion of the FrameBuffer into a texture. 
+	/** Set the current render target.
+	  *
+	  * The render target can be a texture (tex pointer) or the back buffer (tex = NULL).
 	  * The texture must have been right sized before the call.
-	  * This mark the texture as valid, but doesn't copy data to system memory.	  	  
+	  * This mark the texture as valid, but doesn't copy data to system memory.
 	  * This also mean that regenerating texture datas will erase what
 	  * has been copied before in the device memory.
 	  * This doesn't work with compressed textures.
 	  * Ideally, the FrameBuffer should have the same format than the texture.
-	  * \param tex					the texture to copy to.
-	  * \param level				the mipmap to copy texture to.
-	  * \param xoffset			    x position within the destination texture
-	  * \param yoffset			    y position within the destination texture
-	  * \param x					x position widthin the framebuffer
-	  * \param y					y position widthin the framebuffer
-	  * \param width				width of the area to be copied.
-	  * \param height				height of the area to be copied.	  	  
+	  *
+	  * When direct render to texture is not available (openGl), it uses the frame buffer for the rendering and copy the frame buffer
+	  * content into the texture when setRenderTarget(NULL) is called.
+	  *
+	  * The x, y, width and height parameters are only used in this case to optimize the copy from the framebuffer
+	  * to the texture.
+	  *
+	  * If a texture is set as target, the viewport and the frustum are now relative to the texture sizes,
+	  * and not to the x, y, width and height parameters.
+	  *
+	  * The texture content can be lost after the first setRenderTarget().
+	  *
+	  * \param tex					the texture to render into.
+	  * \param x					x position within the destination texture of the renderable area.
+	  * \param y					y position within the destination texture of the renderable area.
+	  * \param width				width of the renderable area, if 0, use the whole size.
+	  * \param height				height of the renderable area, if 0, use the whole size.
+	  * \param mipmapLevel			the mipmap to copy texture to.
+	  * \param cubaFace				the face of the cube to copy texture to.
+	  * \return true if the render target has been changed
 	  */
-	virtual void			copyFrameBufferToTexture(ITexture *tex,
-		                                             uint32 level,
-													 uint32 offsetx,
-													 uint32 offsety,
-													 uint32 x,
-													 uint32 y,
-													 uint32 width,
-													 uint32 height														
+	virtual bool			setRenderTarget (ITexture *tex,
+													uint32 x = 0,
+													uint32 y = 0,
+													uint32 width = 0,
+													uint32 height = 0,
+													uint32 mipmapLevel = 0, 
+													uint32 cubeFace = 0
 													) = 0 ;
+	
+	/** Trick method : copy the current texture target into another texture without updating the current texture.
+	  *
+	  * This method copies the current texture into another texture.
+	  * WARNING : at the next setRenderTarget () call, the current texture target WILL NOT BE UPDATED.
+	  *
+	  * When direct render to texture is not available, this method can save a texture copy :
+	  *
+	  * Use this method to copy a temporary texture target into a destination texture. 
+	  * Then, resets the rendering target with setRenderTarget().
+	  *
+	  * The temporary texture is copied into the final texture direct from the frame buffer. The temporary texture is not filled in VRAM when
+	  * the framebuffer is set back as render target.
+	  * 
+	  * Works only if a texture is used as render target.
+	  * 
+	  * This method invalidates the vertex buffer, the view and model matrices, the viewport and the frustum.
+	  *
+	  * \param tex					the texture to render into.
+	  * \param offsetx				x position within the destination texture.
+	  * \param y					y position within the destination texture.
+	  * \param x					x position within the current texture target.
+	  * \param y					y position within the current texture target.
+	  * \param width				width of the renderable area to copy, if 0, use the whole size.
+	  * \param height				height of the renderable area  to copy, if 0, use the whole size.
+	  * \param mipmapLevel			the mipmap to copy texture to.
+	  */
+	virtual bool			copyTargetToTexture (ITexture *tex,
+													 uint32 offsetx = 0,
+													 uint32 offsety = 0,
+													 uint32 x = 0,
+													 uint32 y = 0,
+													 uint32 width = 0,
+													 uint32 height = 0,
+		                                             uint32 mipmapLevel = 0
+													) = 0;
+
+	/** Retrieve the render target size.
+	  * If the render target is the frame buffer, it returns the size of the frame buffer.
+	  * It the render target is a texture, it returns the size of the texture mipmap selected as render target.
+	  */
+	virtual bool			getRenderTargetSize (uint32 &width, uint32 &height) = 0;
 
 	/** fill the RGBA back buffer
 	  *
@@ -872,7 +896,6 @@ public:
 	/// setup several 4 double csts taken from the given tab
 	virtual void			setConstant (uint index, uint num, const double *src) =0;
 
-
 	/**
 	  * Setup constants with a current matrix.
 	  *
@@ -885,6 +908,20 @@ public:
 	  *
 	  */
 	virtual void			setConstantMatrix (uint index, TMatrix matrix, TTransform transform) =0;
+
+	/**
+	  * Setup the constant with the fog vector. This vector must be used to get the final fog value in a vertex shader.
+	  * You must use it like this:
+	  * DP4 o[FOGC].x, c[4], R4;
+	  * With c[4] the constant used for the fog vector and R4 the vertex local position.
+	  *
+	  *	This call must be done after setFrustum(), setupViewMatrix(), setupModelMatrix() and setupFog() to get correct
+	  *	results.
+	  *
+	  * \param index is the index where to store the vector.
+	  *
+	  */
+	virtual void			setConstantFog (uint index) =0;
 
 	/// Check if the driver support double sided colors vertex programs
 	virtual bool		    supportVertexProgramDoubleSidedColor() const = 0;
@@ -987,19 +1024,61 @@ public:
 	 */
 	virtual	uint			getTextureHandle(const ITexture&tex)=0;
 
+	// Adpater class
+	class CAdapter
+	{
+	public:
+		std::string			Driver;
+		std::string			Description;
+		std::string			DeviceName;
+		std::string			Vendor;
+		sint64				DriverVersion;
+		uint32				VendorId;
+		uint32				DeviceId;
+		uint32				SubSysId;
+		uint32				Revision;
+	};
+
+	// Get the number of hardware renderer available on the client plateform.
+	virtual uint			getNumAdapter() const=0;
+
+	// Get a hardware renderer description.
+	virtual bool			getAdapter(uint adapter, CAdapter &desc) const=0;
+
+	/** Choose the hardware renderer.
+	 *  Call it before the setDisplay and enumModes methods
+	 *	Choose adapter = 0xffffffff for the default one.
+	 */
+	virtual bool			setAdapter(uint adapter)=0;
+
+	/** Tell if the vertex color memory format is RGBA (openGL) or BGRA (directx)
+	  * BGRA : 
+   	  *			*****************************************************************
+	  *	Offset:	*    0          *      1        *     2         *     3         *
+   	  *			*****************************************************************
+	  *	RGBA	*    red        *      green    *     blue      *     alpha     *
+	  *			*****************************************************************
+	  *	BGRA	*    blue       *      green    *     red       *     alpha     *
+	  *			*****************************************************************
+	  */
+	virtual CVertexBuffer::TVertexColorType getVertexColorFormat() const =0;
 
 protected:
 	friend	class	IVBDrvInfos;
+	friend	class	IIBDrvInfos;
 	friend	class	CTextureDrvShare;
 	friend	class	ITextureDrvInfos;
-	friend	class	IShader;
+	friend	class	IMaterialDrvInfos;
 	friend	class	IVertexProgramDrvInfos;
+	friend	class	IShaderDrvInfos;
 
 	/// remove ptr from the lists in the driver.
 	void			removeVBDrvInfoPtr(ItVBDrvInfoPtrList  vbDrvInfoIt);
+	void			removeIBDrvInfoPtr(ItIBDrvInfoPtrList  ibDrvInfoIt);
 	void			removeTextureDrvInfoPtr(ItTexDrvInfoPtrMap texDrvInfoIt);
 	void			removeTextureDrvSharePtr(ItTexDrvSharePtrList texDrvShareIt);
-	void			removeShaderPtr(ItShaderPtrList shaderIt);
+	void			removeMatDrvInfoPtr(ItMatDrvInfoPtrList shaderIt);
+	void			removeShaderDrvInfoPtr(ItShaderDrvInfoPtrList shaderIt);
 	void			removeVtxPrgDrvInfoPtr(ItVtxPrgDrvInfoPtrList vtxPrgDrvInfoIt);
 };
 

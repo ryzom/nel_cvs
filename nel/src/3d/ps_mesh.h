@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.16 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.17 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -33,7 +33,7 @@
 #include "3d/ps_plane_basis.h"
 #include "3d/vertex_buffer.h"
 #include "3d/material.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/shape.h"
 #include "3d/mesh.h"
 #include "3d/particle_system.h"
@@ -437,7 +437,8 @@ protected:
 	{
 		CMaterial			Mat;
 		CMaterial			SourceMat;
-		CPrimitiveBlock		Pb;		
+		CIndexBuffer		PbLine;
+		CIndexBuffer		PbTri;
 	};
 
 	/// A set of rendering pass.	

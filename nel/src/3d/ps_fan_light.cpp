@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.9 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_fan_light.cpp,v 1.10 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,7 +79,7 @@ public:
 		const CVector K = f.computeK();		
 		//		
 		CVertexBuffer *vb;
-		CPSFanLight::TIndexBuffer  *ib;
+		CIndexBuffer  *ib;
 		// get (and build if necessary) the vb and the ib
 		f.getVBnIB(vb, ib);
 		IDriver *driver = f.getDriver();
@@ -112,85 +112,92 @@ public:
 		uint leftToDo = size;
 		do
 		{				
-			uint8 *ptVect = (uint8 *) vb->getVertexCoordPointer();
-			uint toProcess = std::min(leftToDo, maxNumFanLightToDealWith);							
-			// compute individual colors if needed
-			if (f._ColorScheme)
+			uint toProcess = std::min(leftToDo, maxNumFanLightToDealWith);
 			{
-				// we change the color at each fan light center
-				f._ColorScheme->make(f._Owner, size - leftToDo, vb->getColorPointer(), vb->getVertexSize() * (f._NbFans + 2), toProcess, false, srcStep);
-			}
-			if (f._SizeScheme)
-			{
-				currentSizePt  = (float *) (f._SizeScheme->make(f._Owner, size - leftToDo, pSizes, sizeof(float), toProcess, true, srcStep));
-				currentSizePt = pSizes;
-			}
-			else
-			{
-				currentSizePt = &f._ParticleSize;
-			}
-			if (f._Angle2DScheme)
-			{
-				currentAnglePt = (float *) (f._Angle2DScheme->make(f._Owner, size - leftToDo, pAngles, sizeof(float), toProcess, true, srcStep));					
-			}
-			else
-			{
-				currentAnglePt = &f._Angle2D;
-			}			
-			//								
-			float fSize, firstSize, sizeStepBase=0.0, sizeStep;
-			if (f._PhaseSmoothness)
-			{
-				sizeStepBase = 1.f / f._PhaseSmoothness;
-			}
-			endPosIt = posIt + toProcess;
-			for (;posIt != endPosIt; ++posIt, ++timeIt)
-			{	
-				
-				CHECK_VERTEX_BUFFER(*vb, ptVect);
-				*(CVector *) ptVect = *posIt;				
-				// the start angle
-				currentAngle = *currentAnglePt;
-				const uint8 phaseAdd = (uint8) (f._PhaseSpeed * (*timeIt));
-				ptVect += stride;
-				const float fanSize = *currentSizePt * 0.5f;
-				const float moveIntensity = f._MoveIntensity * fanSize;				
-				// compute radius & vect for first fan
-				firstSize  = fanSize + (moveIntensity * CPSUtil::getCos(randomPhaseTab[0] + phaseAdd));
-				*(CVector *) ptVect = (*posIt) + I * firstSize * (CPSUtil::getCos((sint32) currentAngle))
-									  + K * firstSize * (CPSUtil::getSin((sint32) currentAngle));
-				currentAngle += angleStep;
-				ptVect += stride;
-				fSize = firstSize;
-				// computes other fans
-				const sint32 upperBound = (sint32) (f._NbFans - f._PhaseSmoothness - 1);
-				for (k = 1; k <= upperBound; ++k)
-				{
-					fSize  = fanSize + (moveIntensity * CPSUtil::getCos(randomPhaseTab[k] + phaseAdd));
-					*(CVector *) ptVect = (*posIt) + I * fSize * (CPSUtil::getCos((sint32) currentAngle))
-										  + K * fSize * (CPSUtil::getSin((sint32) currentAngle));
-					currentAngle += angleStep;
-					ptVect += stride;
-				}
+				CVertexBufferReadWrite vba;
+				vb->lock (vba);
 
-				// interpolate radius, so that the fanlight loops correctly
-				sizeStep = sizeStepBase * (firstSize - fSize);
-				for (; k <= (sint32) (f._NbFans - 1); ++k)
-				{				
-					*(CVector *) ptVect = (*posIt) + I * fSize * (CPSUtil::getCos((sint32) currentAngle))
-										  + K * fSize * (CPSUtil::getSin((sint32) currentAngle));
+				uint8 *ptVect = (uint8 *) vba.getVertexCoordPointer();
+				// compute individual colors if needed
+				if (f._ColorScheme)
+				{
+					// we change the color at each fan light center
+					// todo hulud d3d vertex color RGBA / BGRA
+					f._ColorScheme->make(f._Owner, size - leftToDo, vba.getColorPointer(), vb->getVertexSize() * (f._NbFans + 2), toProcess, false, srcStep);
+				}
+				if (f._SizeScheme)
+				{
+					currentSizePt  = (float *) (f._SizeScheme->make(f._Owner, size - leftToDo, pSizes, sizeof(float), toProcess, true, srcStep));
+					currentSizePt = pSizes;
+				}
+				else
+				{
+					currentSizePt = &f._ParticleSize;
+				}
+				if (f._Angle2DScheme)
+				{
+					currentAnglePt = (float *) (f._Angle2DScheme->make(f._Owner, size - leftToDo, pAngles, sizeof(float), toProcess, true, srcStep));					
+				}
+				else
+				{
+					currentAnglePt = &f._Angle2D;
+				}			
+				//								
+				float fSize, firstSize, sizeStepBase=0.0, sizeStep;
+				if (f._PhaseSmoothness)
+				{
+					sizeStepBase = 1.f / f._PhaseSmoothness;
+				}
+				endPosIt = posIt + toProcess;
+				for (;posIt != endPosIt; ++posIt, ++timeIt)
+				{	
+					
+					CHECK_VERTEX_BUFFER(*vb, ptVect);
+					*(CVector *) ptVect = *posIt;				
+					// the start angle
+					currentAngle = *currentAnglePt;
+					const uint8 phaseAdd = (uint8) (f._PhaseSpeed * (*timeIt));
+					ptVect += stride;
+					const float fanSize = *currentSizePt * 0.5f;
+					const float moveIntensity = f._MoveIntensity * fanSize;				
+					// compute radius & vect for first fan
+					firstSize  = fanSize + (moveIntensity * CPSUtil::getCos(randomPhaseTab[0] + phaseAdd));
+					*(CVector *) ptVect = (*posIt) + I * firstSize * (CPSUtil::getCos((sint32) currentAngle))
+										  + K * firstSize * (CPSUtil::getSin((sint32) currentAngle));
 					currentAngle += angleStep;
 					ptVect += stride;
-					fSize  += sizeStep;
-				}
-				// last fan
-				*(CVector *) ptVect = (*posIt) + I * firstSize * (CPSUtil::getCos((sint32) *currentAnglePt))
-										  + K * firstSize * (CPSUtil::getSin((sint32) *currentAnglePt));
-				ptVect += stride;
-				currentSizePt += currentSizePtIncrement;
-				currentAnglePt += currentAnglePtIncrement;
-			}			
-			driver->renderTriangles(f._Mat, &((*ib)[0]), toProcess * f._NbFans);
+					fSize = firstSize;
+					// computes other fans
+					const sint32 upperBound = (sint32) (f._NbFans - f._PhaseSmoothness - 1);
+					for (k = 1; k <= upperBound; ++k)
+					{
+						fSize  = fanSize + (moveIntensity * CPSUtil::getCos(randomPhaseTab[k] + phaseAdd));
+						*(CVector *) ptVect = (*posIt) + I * fSize * (CPSUtil::getCos((sint32) currentAngle))
+											  + K * fSize * (CPSUtil::getSin((sint32) currentAngle));
+						currentAngle += angleStep;
+						ptVect += stride;
+					}
+
+					// interpolate radius, so that the fanlight loops correctly
+					sizeStep = sizeStepBase * (firstSize - fSize);
+					for (; k <= (sint32) (f._NbFans - 1); ++k)
+					{				
+						*(CVector *) ptVect = (*posIt) + I * fSize * (CPSUtil::getCos((sint32) currentAngle))
+											  + K * fSize * (CPSUtil::getSin((sint32) currentAngle));
+						currentAngle += angleStep;
+						ptVect += stride;
+						fSize  += sizeStep;
+					}
+					// last fan
+					*(CVector *) ptVect = (*posIt) + I * firstSize * (CPSUtil::getCos((sint32) *currentAnglePt))
+											  + K * firstSize * (CPSUtil::getSin((sint32) *currentAnglePt));
+					ptVect += stride;
+					currentSizePt += currentSizePtIncrement;
+					currentAnglePt += currentAnglePtIncrement;
+				}			
+			}
+			driver->activeIndexBuffer(*ib);
+			driver->renderTriangles(f._Mat, 0, toProcess * f._NbFans);
 			leftToDo -= toProcess;
 		}		
 		while (leftToDo != 0);
@@ -456,7 +463,7 @@ void CPSFanLight::updateMatAndVbForColor(void)
 }
 
 ///====================================================================================
-void CPSFanLight::getVBnIB(CVertexBuffer *&retVb, CPSFanLight::TIndexBuffer *&retIb)
+void CPSFanLight::getVBnIB(CVertexBuffer *&retVb, CIndexBuffer *&retIb)
 {
 	TVBMap &vbMap = _ColorScheme ? (_Tex == NULL  ? _ColoredVBMap : _ColoredTexVBMap)
 								 : (_Tex == NULL  ? _VBMap : _TexVBMap);
@@ -472,16 +479,21 @@ void CPSFanLight::getVBnIB(CVertexBuffer *&retVb, CPSFanLight::TIndexBuffer *&re
 	{		
 		// create an entry (we setup the primitive block at the same time, this could be avoided, but doesn't make much difference)		
 		CVertexBuffer &vb = vbMap[_NbFans]; // create a vb
-		TIndexBuffer &ib = _IBMap[_NbFans]; // eventually create a pb
+		CIndexBuffer &ib = _IBMap[_NbFans]; // eventually create a pb
 		const uint32 size = getNumFanlightsInVB();
 		vb.setVertexFormat(CVertexBuffer::PositionFlag |
 						   CVertexBuffer::PrimaryColorFlag |
 						   (_Tex != NULL ?  CVertexBuffer::TexCoord0Flag : 0) 
 						  );
 		vb.setNumVertices(size * (2 + _NbFans));			
-		ib.resize(size * _NbFans * 3);		
+		ib.setNumIndexes(size * _NbFans * 3);		
 		// pointer on the current index to fill
-		TIndexBuffer::iterator ptIndex = ib.begin();	
+		CIndexBufferReadWrite iba;
+		ib.lock (iba);
+		uint32 *ptIndex = iba.getPtr();
+
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
 		
 		// index of the first vertex of the current fanFilght
 		uint currVertFan = 0;
@@ -504,25 +516,25 @@ void CPSFanLight::getVBnIB(CVertexBuffer *&retVb, CPSFanLight::TIndexBuffer *&re
 		{			
 			if (_Tex)
 			{
-				vb.setTexCoord(k * (_NbFans + 2), 0, NLMISC::CUV(0, 0));
+				vba.setTexCoord(k * (_NbFans + 2), 0, NLMISC::CUV(0, 0));
 			}
 			if (!_ColorScheme)
 			{
-				vb.setColor(k * (_NbFans + 2), CRGBA::White);			
+				vba.setColor(k * (_NbFans + 2), CRGBA::White);			
 			}		
 			if (!_Tex)
 			{
 				for(l = 1; l <= _NbFans + 1; ++l)
 				{
-					vb.setColor(l + k * (_NbFans + 2), CRGBA(0, 0, 0));
+					vba.setColor(l + k * (_NbFans + 2), CRGBA(0, 0, 0));
 				}
 			}
 			else
 			{
 				for(l = 1; l <= _NbFans + 1; ++l)
 				{
-					vb.setColor(l + k * (_NbFans + 2), CRGBA(0, 0, 0));
-					vb.setTexCoord(l + k * (_NbFans + 2), 0, NLMISC::CUV((l - 1) / (float) _NbFans, 1));
+					vba.setColor(l + k * (_NbFans + 2), CRGBA(0, 0, 0));
+					vba.setTexCoord(l + k * (_NbFans + 2), 0, NLMISC::CUV((l - 1) / (float) _NbFans, 1));
 				}
 			}
 		}

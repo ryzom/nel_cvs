@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.19 2003/11/12 11:16:04 berenguier Exp $
+ * $Id: driver_opengl_states.cpp,v 1.20 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "stdopengl.h"
 
+#include "driver_opengl.h"
 
 // ***************************************************************************
 // define it For Debug purpose only. Normal use is to hide this line

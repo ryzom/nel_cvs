@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.15 2004/03/08 11:20:21 vizerie Exp $
+ * $Id: texture.h,v 1.16 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -236,6 +236,8 @@ public:
 	 *  texture could rebuild only this part of texture and the driver will update only those rectangles.
 	 *
 	 *  This method is incompatible with textures which support sharing (see class description).
+	 *  This method is incompatible with compressed textures.
+	 *  This method is incompatible with cube textures.
      *
 	 * \see isAllInvalidated(), generate(), touch(), touched(), _ListInvalidRect
 	 */
@@ -243,6 +245,7 @@ public:
 	{ 
 		// The texture must not support sharing....
 		nlassert(!supportSharing());
+		nlassert(!isTextureCube());
 		// Don't invalidate the rectangle if the full texture is already invalidated.
 		if (!isAllInvalidated ())
 		{

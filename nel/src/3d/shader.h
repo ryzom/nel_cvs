@@ -1,7 +1,7 @@
 /** \file shader.h
  * <File description>
  *
- * $Id: shader.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: shader.h,v 1.2 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,35 +38,65 @@ using NLMISC::CRefCount;
 
 class	IDriver;
 
+// List typedef.
+class	IShaderDrvInfos;
+typedef	std::list<IShaderDrvInfos*>		TShaderDrvInfoPtrList;
+typedef	TShaderDrvInfoPtrList::iterator	ItShaderDrvInfoPtrList;
 
 /**
- * <Class description>
- *
+  * Interface for shader driver infos.
+  */
+class IShaderDrvInfos : public CRefCount
+{
+private:
+	IDriver				*_Driver;
+	ItShaderDrvInfoPtrList		_DriverIterator;
+
+public:
+	IShaderDrvInfos(IDriver	*drv, ItShaderDrvInfoPtrList it) {_Driver= drv; _DriverIterator= it;}
+	// The virtual dtor is important.
+	virtual ~IShaderDrvInfos();
+};
+
+
+/**
+ * Shader resource for the driver. It is just a container for a ".fx" text file.
  */
 /* *** IMPORTANT ********************
  * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
  * **********************************
  */
 // --------------------------------------------------
-
-
-// List typedef.
-class	IShader;
-typedef	std::list<IShader*>			TShaderPtrList;
-typedef	TShaderPtrList::iterator	ItShaderPtrList;
-
-
-class IShader : public CRefCount
+class CShader
 {
-private:
-	IDriver				*_Driver;
-	ItShaderPtrList		_DriverIterator;
+public:
+	CShader();
+	~CShader();
+
+	// Load a shader file
+	bool loadShaderFile (const char *filename);
+
+	// Set the shader text
+	void setText (const char *text);
+
+	// Get the shader text
+	const char *getText () const { return _Text.c_str(); }
+
+	// Set the shader name
+	void setName (const char *name);
+
+	// Get the shader name
+	const char *getName () const { return _Name.c_str(); }
 
 public:
-	IShader(IDriver	*drv, ItShaderPtrList it) {_Driver= drv; _DriverIterator= it;}
-	// The virtual dtor is important.
-	virtual ~IShader();
-
+	// Private. For Driver only.
+	bool								_ShaderChanged;
+	NLMISC::CRefPtr<IShaderDrvInfos>	_DrvInfo;
+private:
+	// The shader
+	std::string					_Text;
+	// The shader name
+	std::string					_Name;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.33 2004/01/15 17:33:18 lecroart Exp $
+ * $Id: mrm_builder.cpp,v 1.34 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1999,13 +1999,16 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 	if(_Skinned)
 		mbuild.SkinWeights.resize(finalMRM.Wedges.size());
 
+	CVertexBufferReadWrite vba;
+	mbuild.VBuffer.lock (vba);
+
 	// fill the VB.
 	for(i=0; i<(sint)finalMRM.Wedges.size(); i++)
 	{
 		const CMRMMeshFinal::CWedge	&wedge= finalMRM.Wedges[i];
 
 		// setup Vertex.
-		mbuild.VBuffer.setVertexCoord(i, wedge.Vertex);
+		vba.setVertexCoord(i, wedge.Vertex);
 
 		// seutp attributes.
 		attId= 0;
@@ -2013,17 +2016,17 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 		// For all activated attributes in mbuild, retriev the attribute from the finalMRM.
 		if(vbFlags & CVertexBuffer::NormalFlag)
 		{
-			mbuild.VBuffer.setNormalCoord(i, wedge.Attributes[attId] );
+			vba.setNormalCoord(i, wedge.Attributes[attId] );
 			attId++;
 		}
 		if(vbFlags & CVertexBuffer::PrimaryColorFlag)
 		{
-			mbuild.VBuffer.setColor(i, attToColor(wedge.Attributes[attId]) );
+			vba.setColor(i, attToColor(wedge.Attributes[attId]) );
 			attId++;
 		}
 		if(vbFlags & CVertexBuffer::SecondaryColorFlag)
 		{
-			mbuild.VBuffer.setSpecular(i, attToColor(wedge.Attributes[attId]) );
+			vba.setSpecular(i, attToColor(wedge.Attributes[attId]) );
 			attId++;
 		}
 		for(k=0; k<CVertexBuffer::MaxStage;k++)
@@ -2033,12 +2036,12 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 				switch(mb.NumCoords[k])
 				{
 					case 2:				
-						mbuild.VBuffer.setTexCoord(i, k, (CUV) attToUvw(wedge.Attributes[attId]) );
+						vba.setTexCoord(i, k, (CUV) attToUvw(wedge.Attributes[attId]) );
 					break;
 					case 3:
 					{
 						CUVW uvw = attToUvw(wedge.Attributes[attId]);
-						mbuild.VBuffer.setValueFloat3Ex((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + k), i, uvw.U, uvw.V, uvw.W);
+						vba.setValueFloat3Ex((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + k), i, uvw.U, uvw.V, uvw.W);
 					}
 					break;
 					default:
@@ -2111,7 +2114,7 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 				// assign the good materialId to this rdrPass.
 				destLod.RdrPass[idRdrPass].MaterialId= j;
 				// reserve the array of faces of this rdrPass.
-				destLod.RdrPass[idRdrPass].PBlock.reserveTri(matCount[j]);
+				destLod.RdrPass[idRdrPass].PBlock.reserve(3*matCount[j]);
 			}
 		}
 
@@ -2124,7 +2127,12 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 			sint	w0= srcLod.Faces[j].WedgeId[0];
 			sint	w1= srcLod.Faces[j].WedgeId[1];
 			sint	w2= srcLod.Faces[j].WedgeId[2];
-			destLod.RdrPass[idRdrPass].PBlock.addTri(w0, w1, w2);
+			CIndexBuffer &ib = destLod.RdrPass[idRdrPass].PBlock;
+			uint index = ib.getNumIndexes();
+			ib.setNumIndexes(index+3);
+			CIndexBufferReadWrite ibaWrite;
+			ib.lock (ibaWrite);
+			ibaWrite.setTri(index, w0, w1, w2);
 		}
 
 
@@ -2491,6 +2499,10 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMSki
 	// ========================
 	// resize the VB.
 	mbuild.VBuffer.setNumVertices(finalMRM.Wedges.size());
+
+	CVertexBufferReadWrite vba;
+	mbuild.VBuffer.lock (vba);
+
 	// Setup SkinWeights.
 	if(_Skinned)
 		mbuild.SkinWeights.resize(finalMRM.Wedges.size());
@@ -2501,7 +2513,7 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMSki
 		const CMRMMeshFinal::CWedge	&wedge= finalMRM.Wedges[i];
 
 		// setup Vertex.
-		mbuild.VBuffer.setVertexCoord(i, wedge.Vertex);
+		vba.setVertexCoord(i, wedge.Vertex);
 
 		// seutp attributes.
 		attId= 0;
@@ -2509,17 +2521,17 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMSki
 		// For all activated attributes in mbuild, retriev the attribute from the finalMRM.
 		if(vbFlags & CVertexBuffer::NormalFlag)
 		{
-			mbuild.VBuffer.setNormalCoord(i, wedge.Attributes[attId] );
+			vba.setNormalCoord(i, wedge.Attributes[attId] );
 			attId++;
 		}
 		if(vbFlags & CVertexBuffer::PrimaryColorFlag)
 		{
-			mbuild.VBuffer.setColor(i, attToColor(wedge.Attributes[attId]) );
+			vba.setColor(i, attToColor(wedge.Attributes[attId]) );
 			attId++;
 		}
 		if(vbFlags & CVertexBuffer::SecondaryColorFlag)
 		{
-			mbuild.VBuffer.setSpecular(i, attToColor(wedge.Attributes[attId]) );
+			vba.setSpecular(i, attToColor(wedge.Attributes[attId]) );
 			attId++;
 		}
 		for(k=0; k<CVertexBuffer::MaxStage;k++)
@@ -2529,12 +2541,12 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMSki
 				switch(mb.NumCoords[k])
 				{
 					case 2:				
-						mbuild.VBuffer.setTexCoord(i, k, (CUV) attToUvw(wedge.Attributes[attId]) );
+						vba.setTexCoord(i, k, (CUV) attToUvw(wedge.Attributes[attId]) );
 					break;
 					case 3:
 					{
 						CUVW uvw = attToUvw(wedge.Attributes[attId]);
-						mbuild.VBuffer.setValueFloat3Ex((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + k), i, uvw.U, uvw.V, uvw.W);
+						vba.setValueFloat3Ex((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + k), i, uvw.U, uvw.V, uvw.W);
 					}
 					break;
 					default:

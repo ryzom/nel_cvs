@@ -1,7 +1,7 @@
 /** \file cloud.cpp
  * cloud implementation
  *
- * $Id: cloud.cpp,v 1.5 2003/07/02 16:16:36 berenguier Exp $
+ * $Id: cloud.cpp,v 1.6 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -116,17 +116,26 @@ void CCloud::generate (CNoise3d &noise)
 	// Setup the matrices view&model, viewport and frustum
 	setMode2D ();
 
+	// Active the render target
+	_Driver->setRenderTarget (_CloudTexTmp->Tex, 0, 0, _Width*_NbW, _Height*_NbH);
+	_Driver->setFrustum (0, (float)_CloudTexTmp->Tex->getWidth(), 0, (float)_CloudTexTmp->Tex->getHeight(), -1, 1, false);
+
 	// Clear background
 	CVertexBuffer &rVB = _CloudScape->_VertexBuffer;
 	uint32 nVSize = rVB.getVertexSize ();
-	CVector *pVertices = (CVector*)rVB.getVertexCoordPointer (0);
-	*pVertices = CVector(0.0f,				0.0f,				0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = CVector((float)_NbW*_Width,0.0f,				0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = CVector((float)_NbW*_Width,(float)_NbH*_Height,0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = CVector(0.0f,				(float)_NbH*_Height,0.0f);
-	_CloudScape->_MatClear.setColor (CRGBA(0,0,0,0));
+	{
+		CVertexBufferReadWrite vba;
+		rVB.lock (vba);
+		CVector *pVertices = vba.getVertexCoordPointer (0);
+		*pVertices = CVector(0.0f,				0.0f,				0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = CVector((float)_NbW*_Width,0.0f,				0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = CVector((float)_NbW*_Width,(float)_NbH*_Height,0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = CVector(0.0f,				(float)_NbH*_Height,0.0f);
+		_CloudScape->_MatClear.setColor (CRGBA(0,0,0,0));
+	}
+
 	_Driver->activeVertexBuffer (rVB);
-	_Driver->renderQuads (_CloudScape->_MatClear, 0, 1);
+	_Driver->renderRawQuads (_CloudScape->_MatClear, 0, 1);
 
 	// Create cloud from noise
 	for (nOct = 0; nOct < _NbOctave; ++nOct)
@@ -161,18 +170,22 @@ void CCloud::generate (CNoise3d &noise)
 	}
 
 	// Apply attenuation texture (not needed to resetup position again (done when clearing to black))
-	CUV *pUV = (CUV*)rVB.getTexCoordPointer (0, 0);
-	pUV->U = 0.0f;		pUV->V = 0.0f;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-	pUV->U = 1.0f;		pUV->V = 0.0f;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-	pUV->U = 1.0f;		pUV->V = 1.0f;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-	pUV->U = 0.0f;		pUV->V = 1.0f;
+	{
+		CVertexBufferReadWrite vba;
+		rVB.lock (vba);
+		CUV *pUV = vba.getTexCoordPointer (0, 0);
+		pUV->U = 0.0f;		pUV->V = 0.0f;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+		pUV->U = 1.0f;		pUV->V = 0.0f;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+		pUV->U = 1.0f;		pUV->V = 1.0f;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+		pUV->U = 0.0f;		pUV->V = 1.0f;
+	}
 	uint8 colpow = (uint8)(255-(((uint32)CloudPower*(255-(uint32)CloudDistAtt)) / 255));
 	_CloudTexClamp->ToClamp.setColor (CRGBA(255, 255, 255, colpow));
 	_Driver->activeVertexBuffer (rVB);
-	_Driver->renderQuads (_CloudTexClamp->ToClamp, 0, 1);
+	_Driver->renderRawQuads (_CloudTexClamp->ToClamp, 0, 1);
 
-	// We have generated to the screen the texture cloud so now copy from screen to the texture
-	_Driver->copyFrameBufferToTexture (_CloudTexTmp->Tex, 0, 0, 0, 0, 0, _Width*_NbW, _Height*_NbH);
+	// Restaure render target
+	_Driver->setRenderTarget (NULL);
 
 	_CloudTexTmp->Tex->setFilterMode (ITexture::Nearest, ITexture::NearestMipMapOff);
 }
@@ -189,17 +202,30 @@ void CCloud::light ()
 	// Destination position for lighting accumulation buffer from (0, 0) size (_Width, _Height)
 	CVertexBuffer &rVB = _CloudScape->_VertexBuffer;
 	uint32 nVSize = rVB.getVertexSize ();
-	CVector *pVertices = (CVector*)rVB.getVertexCoordPointer (0);
-	*pVertices = CVector((float)0.0f,	(float)0.0f,	0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = CVector((float)_Width,	(float)0.0f,	0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = CVector((float)_Width,	(float)_Height,	0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = CVector((float)0.0f,	(float)_Height,	0.0f);
+	{
+		CVertexBufferReadWrite vba;
+		rVB.lock (vba);
+		CVector *pVertices = vba.getVertexCoordPointer (0);
+		*pVertices = CVector((float)0.0f,	(float)0.0f,	0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = CVector((float)1.f,	(float)0.0f,	0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = CVector((float)1.f,	(float)1.f,		0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = CVector((float)0.0f,	(float)1.f,		0.0f);
+	}
 
-	// Clear the screen accumulatorfor lighting
+	// Active the render target
+	_Driver->setRenderTarget (_CloudTexTmp->TexBuffer, 0, 0, _Width, _Height);
+
+	// Set the frustum and viewport on all the billboards to clear them
+	_Driver->setFrustum (0, 1, 0, 1, -1, 1, false);
+	CViewport viewport;
+	viewport.init (0, 0, 1, 1);
+	_Driver->setupViewport (viewport);
+
+	// Clear the screen accumulator for lighting
 	CloudDiffuse.A = 255;
-	_CloudScape->_MatClear.setColor (CloudDiffuse);
+	// _CloudScape->_MatClear.setColor (CloudDiffuse);
 	_Driver->activeVertexBuffer (rVB);
-	_Driver->renderQuads (_CloudScape->_MatClear, 0, 1);
+	_Driver->clear2D (CloudDiffuse);
 
 	CUV *pUV;
 	// Lighting : render the alpha of one layer into rgb of the screen
@@ -211,38 +237,75 @@ void CCloud::light ()
 	{
 		for (i = 0; i < _NbW; ++i)
 		{
+			// Active the render target
+			_Driver->setRenderTarget (_CloudTexTmp->TexBuffer, 0, 0, _Width, _Height);
+
+			// Set the frustum and viewport on the current billboard
+			viewport.init (0, 0, 1, 1);
+			_Driver->setupViewport (viewport);
+
 			// Add the alpha of the previous layer into the RGB of the destination
 			if ((i+j) > 0)
 			{
-				_Driver->setColorMask (true, true, true, false);
-				pUV = (CUV*)rVB.getTexCoordPointer (0, 0);
-				pUV->U = previ*oneOverNbW;		pUV->V = prevj*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-				pUV->U = (previ+1)*oneOverNbW;	pUV->V = prevj*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-				pUV->U = (previ+1)*oneOverNbW;	pUV->V = (prevj+1)*oneOverNbH;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-				pUV->U = previ*oneOverNbW;		pUV->V = (prevj+1)*oneOverNbH;
+				{
+					CVertexBufferReadWrite vba;
+					rVB.lock (vba);
 
-				_CloudTexTmp->ToLight.setBlend (true);
-				_Driver->renderQuads (_CloudTexTmp->ToLight, 0, 1);
+					_Driver->setColorMask (true, true, true, false);
+					pUV = vba.getTexCoordPointer (0, 0);
+					pUV->U = previ*oneOverNbW;		pUV->V = prevj*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+					pUV->U = (previ+1)*oneOverNbW;	pUV->V = prevj*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+					pUV->U = (previ+1)*oneOverNbW;	pUV->V = (prevj+1)*oneOverNbH;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+					pUV->U = previ*oneOverNbW;		pUV->V = (prevj+1)*oneOverNbH;
+				}
+
+				_Driver->renderRawQuads (_CloudTexTmp->ToLightRGB, 0, 1);
 			}
 			// Replace the alpha of the destination by the alpha of the current layer
 			_Driver->setColorMask (false, false, false, true);
 
-			pUV = (CUV*)rVB.getTexCoordPointer (0, 0);
-			pUV->U = i*oneOverNbW;		pUV->V = j*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-			pUV->U = (i+1)*oneOverNbW;	pUV->V = j*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-			pUV->U = (i+1)*oneOverNbW;	pUV->V = (j+1)*oneOverNbH;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-			pUV->U = i*oneOverNbW;		pUV->V = (j+1)*oneOverNbH;
+			{
+				CVertexBufferReadWrite vba;
+				rVB.lock (vba);
 
-			_CloudTexTmp->ToLight.setBlend (false);
-			_Driver->renderQuads (_CloudTexTmp->ToLight, 0, 1);
+				pUV = vba.getTexCoordPointer (0, 0);
+				pUV->U = i*oneOverNbW;		pUV->V = j*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+				pUV->U = (i+1)*oneOverNbW;	pUV->V = j*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+				pUV->U = (i+1)*oneOverNbW;	pUV->V = (j+1)*oneOverNbH;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+				pUV->U = i*oneOverNbW;		pUV->V = (j+1)*oneOverNbH;
+			}
 
-			// Copy from accumulator to the texture
-			_Driver->copyFrameBufferToTexture(_CloudTexTmp->Tex, 0, i*_Width, j*_Height, 0, 0, _Width, _Height);
+			_Driver->renderRawQuads (_CloudTexTmp->ToLightAlpha, 0, 1);
+
+			// Copy the billboard
+			_Driver->setColorMask (true, true, true, true);
+
+			/* The copy target trick. If not available, render the temporary texture in Tex2 */
+			if (!_Driver->copyTargetToTexture (_CloudTexTmp->Tex2, i*_Width, j*_Height, 0, 0, 0, 0, 0))
+			{
+				_Driver->setRenderTarget (_CloudTexTmp->Tex2, i*_Width, j*_Height, _Width, _Height);
+				viewport.init ((float)i*oneOverNbW, (float)j*oneOverNbH, oneOverNbW, oneOverNbH);
+				_Driver->setupViewport (viewport);
+
+				{
+					CVertexBufferReadWrite vba;
+					rVB.lock (vba);
+
+					pUV = vba.getTexCoordPointer (0, 0);
+					pUV->U = 0;		pUV->V = 0;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+					pUV->U = 1;		pUV->V = 0;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+					pUV->U = 1;		pUV->V = 1;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+					pUV->U = 0;		pUV->V = 1;
+				}
+
+				_Driver->renderRawQuads (_CloudTexTmp->MatCopy, 0, 1);
+			}
+
 			previ = i;
 			prevj = j;
 		}
 	}
-	_Driver->setColorMask (true, true, true, true);
+	_Driver->setRenderTarget (NULL);
 
 	_CloudTexTmp->Tex->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 }
@@ -276,18 +339,25 @@ void CCloud::reset (NL3D::CCamera *pViewer)
 
 	// Clear background
 	CVertexBuffer &rVB = _CloudScape->_VertexBuffer;
-	uint32 nVSize = rVB.getVertexSize ();
-	CVector *pVertices = (CVector*)rVB.getVertexCoordPointer (0);
-	*pVertices = CVector(0.0f, 0.0f, 0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = CVector(5.0f, 0.0f, 0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = CVector(5.0f, 5.0f, 0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = CVector(0.0f, 5.0f, 0.0f);
-	_CloudScape->_MatClear.setColor (CRGBA(0,0,0,0));
+	{
+		CVertexBufferReadWrite vba;
+		rVB.lock (vba);
+		uint32 nVSize = rVB.getVertexSize ();
+		CVector *pVertices = vba.getVertexCoordPointer (0);
+		*pVertices = CVector(0.0f, 0.0f, 0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = CVector(5.0f, 0.0f, 0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = CVector(5.0f, 5.0f, 0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = CVector(0.0f, 5.0f, 0.0f);
+		_CloudScape->_MatClear.setColor (CRGBA(0,0,0,0));
+	}
 	_Driver->activeVertexBuffer (rVB);
-	_Driver->renderQuads (_CloudScape->_MatClear, 0, 1);
 
-	_Driver->copyFrameBufferToTexture (_TexBill, 0, 0, 0, 0, 0, 4, 4);
-	_Driver->copyFrameBufferToTexture (_TexOldBill, 0, 0, 0, 0, 0, 4, 4);
+	_Driver->setRenderTarget (_TexBill, 0, 0, 4, 4);
+	_Driver->setFrustum (0, 4, 0, 4, -1, 1, false);
+	_Driver->renderRawQuads (_CloudScape->_MatClear, 0, 1);
+	_Driver->setRenderTarget (_TexOldBill, 0, 0, 4, 4);
+	_Driver->renderRawQuads (_CloudScape->_MatClear, 0, 1);
+	_Driver->setRenderTarget (NULL);
 
 //	CMatrix CamMat = pViewer->getMatrix();
 //	CVector Viewer = CamMat.getPos();
@@ -372,16 +442,20 @@ void CCloud::disp ()
 	}
 
 	CVertexBuffer &rVB = _CloudScape->_VertexBuffer;
-	rVB.setVertexCoord (0, qc.V0);
-	rVB.setVertexCoord (1, qc.V1);
-	rVB.setVertexCoord (2, qc.V2);
-	rVB.setVertexCoord (3, qc.V3);
-	rVB.setTexCoord (0, 0, qc.Uv0);
-	rVB.setTexCoord (1, 0, qc.Uv1);
-	rVB.setTexCoord (2, 0, qc.Uv2);
-	rVB.setTexCoord (3, 0, qc.Uv3);
+	{
+		CVertexBufferReadWrite vba;
+		rVB.lock (vba);
+		vba.setVertexCoord (0, qc.V0);
+		vba.setVertexCoord (1, qc.V1);
+		vba.setVertexCoord (2, qc.V2);
+		vba.setVertexCoord (3, qc.V3);
+		vba.setTexCoord (0, 0, qc.Uv0);
+		vba.setTexCoord (1, 0, qc.Uv1);
+		vba.setTexCoord (2, 0, qc.Uv2);
+		vba.setTexCoord (3, 0, qc.Uv3);
+	}
 	_Driver->activeVertexBuffer (rVB);
-	_Driver->renderQuads (*dispMat, 0, 1);
+	_Driver->renderRawQuads (*dispMat, 0, 1);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -408,26 +482,41 @@ void CCloud::dispXYZ (CMaterial *pMat)
 		{
 			uint32 d = i+j*_NbW;
 
-			pVertices = (CVector*)rVB.getVertexCoordPointer (0);
-			*pVertices = CVector(_Pos.x,			_Pos.y,			_Pos.z+_Size.z*(_NbW*_NbH-d)*oneOverNbWNbH); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-			*pVertices = CVector(_Pos.x+_Size.x,	_Pos.y,			_Pos.z+_Size.z*(_NbW*_NbH-d)*oneOverNbWNbH); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-			*pVertices = CVector(_Pos.x+_Size.x,	_Pos.y+_Size.y,	_Pos.z+_Size.z*(_NbW*_NbH-d)*oneOverNbWNbH); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-			*pVertices = CVector(_Pos.x,			_Pos.y+_Size.y,	_Pos.z+_Size.z*(_NbW*_NbH-d)*oneOverNbWNbH);
+			{
+				CVertexBufferReadWrite vba;
+				rVB.lock (vba);
 
-			pUV = (CUV*)rVB.getTexCoordPointer (0, 0);
-			pUV->U = i*oneOverNbW;		pUV->V = j*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-			pUV->U = (i+1)*oneOverNbW;	pUV->V = j*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-			pUV->U = (i+1)*oneOverNbW;	pUV->V = (j+1)*oneOverNbH;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-			pUV->U = i*oneOverNbW;		pUV->V = (j+1)*oneOverNbH;
+				pVertices = vba.getVertexCoordPointer (0);
+				*pVertices = CVector(_Pos.x,			_Pos.y,			_Pos.z+_Size.z*(_NbW*_NbH-d)*oneOverNbWNbH); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+				*pVertices = CVector(_Pos.x+_Size.x,	_Pos.y,			_Pos.z+_Size.z*(_NbW*_NbH-d)*oneOverNbWNbH); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+				*pVertices = CVector(_Pos.x+_Size.x,	_Pos.y+_Size.y,	_Pos.z+_Size.z*(_NbW*_NbH-d)*oneOverNbWNbH); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+				*pVertices = CVector(_Pos.x,			_Pos.y+_Size.y,	_Pos.z+_Size.z*(_NbW*_NbH-d)*oneOverNbWNbH);
 
-			pUV = (CUV*)rVB.getTexCoordPointer (0, 1);
-			pUV->U = i*oneOverNbW;		pUV->V = j*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-			pUV->U = (i+1)*oneOverNbW;	pUV->V = j*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-			pUV->U = (i+1)*oneOverNbW;	pUV->V = (j+1)*oneOverNbH;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-			pUV->U = i*oneOverNbW;		pUV->V = (j+1)*oneOverNbH;
+				pUV = vba.getTexCoordPointer (0, 0);
+				pUV->U = i*oneOverNbW;		pUV->V = j*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+				pUV->U = (i+1)*oneOverNbW;	pUV->V = j*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+				pUV->U = (i+1)*oneOverNbW;	pUV->V = (j+1)*oneOverNbH;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+				pUV->U = i*oneOverNbW;		pUV->V = (j+1)*oneOverNbH;
 
-			_Driver->renderQuads (*pMat, 0, 1);
+				pUV = vba.getTexCoordPointer (0, 1);
+				pUV->U = i*oneOverNbW;		pUV->V = j*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+				pUV->U = (i+1)*oneOverNbW;	pUV->V = j*oneOverNbH;		pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+				pUV->U = (i+1)*oneOverNbW;	pUV->V = (j+1)*oneOverNbH;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+				pUV->U = i*oneOverNbW;		pUV->V = (j+1)*oneOverNbH;
+			}
+
+			_Driver->renderRawQuads (*pMat, 0, 1);
 		}
+	}
+
+	{
+		CVertexBufferReadWrite vba;
+		rVB.lock (vba);
+		CVector *pVertices = vba.getVertexCoordPointer (0);
+		*pVertices = CVector((float)0.25f,	0, (float)0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = CVector((float)0.75f,	0, (float)0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = CVector((float)0.75f,	0, (float)0.75f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = CVector((float)0.25f,	0, (float)0.75f);
 	}
 }
 
@@ -508,12 +597,8 @@ void CCloud::calcBill (const CVector &Viewer, const CVector &Center, const CVect
 // Create the billboard (in the screen at pos (NbW*Width, 0)
 void CCloud::genBill (CCamera *pCam, uint32 nBillSize)
 {
-	// If minimized mode (screenW / H is 0) abort.
-	uint32 nScreenW, nScreenH;
-	_Driver->getWindowSize (nScreenW, nScreenH);
-	if(nScreenW<=0 || nScreenH<=0)
-		return;
-
+	// Render target
+	_Driver->setFrustum (0, (float)_BillSize, 0, (float)_BillSize, -1, 1, false);
 
 	// Compute the Bill
 	uint32 sizeTMP = _OldBillSize;
@@ -541,9 +626,14 @@ void CCloud::genBill (CCamera *pCam, uint32 nBillSize)
 		_TexBill->generate();
 	}
 
+	// Render target size
+	uint32 textureW = _TexBill->getWidth();
+	uint32 textureH = _TexBill->getHeight();
+	_Driver->setRenderTarget (_TexBill, 0, 0, _BillSize, _BillSize);
+
 	CViewport viewport, viewportOLD;
 	viewportOLD.initFullScreen();
-	viewport.init(0.0f, 0.0f, ((float)_BillSize+1)/((float)nScreenW), ((float)_BillSize+1)/((float)nScreenH));
+	viewport.init(0.0f, 0.0f, ((float)_BillSize+1)/((float)textureW), ((float)_BillSize+1)/((float)textureH));
 	_Driver->setupViewport (viewport);
 
 	//CMatrix CamMat = pCam->getMatrix();
@@ -569,15 +659,21 @@ void CCloud::genBill (CCamera *pCam, uint32 nBillSize)
 
 	CVertexBuffer &rVB = _CloudScape->_VertexBuffer;
 	uint32 nVSize = rVB.getVertexSize ();
-	CVector *pVertices = (CVector*)rVB.getVertexCoordPointer (0);
-	*pVertices = CVector(0.0f,	0.0f,	0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = CVector(1.0f,	0.0f,	0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = CVector(1.0f,	0.0f,	1.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = CVector(0.0f,	0.0f,	1.0f);
+	{
+		CVertexBufferReadWrite vba;
+		rVB.lock (vba);
+		{
+			CVector *pVertices = vba.getVertexCoordPointer (0);
+			*pVertices = CVector(0.0f,	0.0f,	0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+			*pVertices = CVector(1.0f,	0.0f,	0.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+			*pVertices = CVector(1.0f,	0.0f,	1.0f); pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+			*pVertices = CVector(0.0f,	0.0f,	1.0f);
+		}
+	}
 
 	_CloudScape->_MatClear.setColor (CRGBA(0,0,0,0));
 	_Driver->activeVertexBuffer (rVB);
-	_Driver->renderQuads (_CloudScape->_MatClear, 0, 1);
+	_Driver->renderRawQuads (_CloudScape->_MatClear, 0, 1);
 
 	// Render 
 	_Driver->setFrustum(Left, Right, Bottom, Top, Near, Far);
@@ -585,9 +681,11 @@ void CCloud::genBill (CCamera *pCam, uint32 nBillSize)
 	_Driver->setupModelMatrix (CMatrix::Identity);
 
 	_CloudTexTmp->ToBill.setColor (CloudAmbient);
+	
 	dispXYZ (&_CloudTexTmp->ToBill);
 
-	_Driver->copyFrameBufferToTexture (_TexBill, 0, 0, 0, 0, 0, _BillSize, _BillSize);
+	// Restaure render target
+	_Driver->setRenderTarget (NULL);
 
 	// This is the end of render to texture like so reset all stuff
 	_Driver->setupViewport (viewportOLD);
@@ -677,27 +775,32 @@ void CCloud::dispBill (CCamera *pCam)
 	_CloudScape->_MatBill.setTexture (1, _TexBill);
 	_CloudScape->_MatBill.setColor (CRGBA(255, 255, 255, (uint8)(255*((float)Time/(float)FuturTime))));
 	CVertexBuffer &rVB = _CloudScape->_VertexBuffer;
-	uint32 nVSize = rVB.getVertexSize ();
-	CVector *pVertices = (CVector*)rVB.getVertexCoordPointer (0);
-	*pVertices = qc.V0; pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = qc.V1; pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = qc.V2; pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
-	*pVertices = qc.V3;
+	{
+		CVertexBufferReadWrite vba;
+		rVB.lock (vba);
 
-	CUV *pUV = (CUV*)rVB.getTexCoordPointer (0, 0);
-	pUV->U = 0;	pUV->V = 0;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-	pUV->U = 1;	pUV->V = 0;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-	pUV->U = 1;	pUV->V = 1;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-	pUV->U = 0;	pUV->V = 1;
+		uint32 nVSize = rVB.getVertexSize ();
+		CVector *pVertices = vba.getVertexCoordPointer (0);
+		*pVertices = qc.V0; pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = qc.V1; pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = qc.V2; pVertices = (CVector*)( ((uint8*)pVertices) + nVSize );
+		*pVertices = qc.V3;
 
-	pUV = (CUV*)rVB.getTexCoordPointer (0, 1);
-	pUV->U = 0;	pUV->V = 0;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-	pUV->U = 1;	pUV->V = 0;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-	pUV->U = 1;	pUV->V = 1;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
-	pUV->U = 0;	pUV->V = 1;
+		CUV *pUV = vba.getTexCoordPointer (0, 0);
+		pUV->U = 0;	pUV->V = 0;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+		pUV->U = 1;	pUV->V = 0;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+		pUV->U = 1;	pUV->V = 1;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+		pUV->U = 0;	pUV->V = 1;
+
+		pUV = vba.getTexCoordPointer (0, 1);
+		pUV->U = 0;	pUV->V = 0;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+		pUV->U = 1;	pUV->V = 0;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+		pUV->U = 1;	pUV->V = 1;	pUV = (CUV*)( ((uint8*)pUV) + nVSize );
+		pUV->U = 0;	pUV->V = 1;
+	}
 
 	_Driver->activeVertexBuffer (rVB);
-	_Driver->renderQuads (_CloudScape->_MatBill, 0, 1);
+	_Driver->renderRawQuads (_CloudScape->_MatBill, 0, 1);
 
 	//nlinfo ("ok");
 	
@@ -741,7 +844,7 @@ void CCloud::dispBill (CCamera *pCam)
 			mTmp->setColor(CRGBA(255,0,0,255));
 
 		_Driver->setPolygonMode(IDriver::Line);
-		_Driver->renderQuads (*mTmp, 0, 1);
+		_Driver->renderRawQuads (*mTmp, 0, 1);
 		_Driver->setPolygonMode(IDriver::Filled);
 	}
 
@@ -758,9 +861,6 @@ void CCloud::setMode2D ()
 	Scissor.initFullScreen();
 	_Driver->setupScissor (Scissor);
 	_Driver->setupViewport (CViewport());
-	uint32 nScreenW, nScreenH;
-	_Driver->getWindowSize (nScreenW, nScreenH);
-	_Driver->setFrustum (0, (float)nScreenW, 0, (float)nScreenH, -1, 1, false);
 	_Driver->setupViewMatrix (ViewMatrix);
 	_Driver->setupModelMatrix (CMatrix::Identity);
 }

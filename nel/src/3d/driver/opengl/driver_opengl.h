@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.157 2004/02/06 18:06:57 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.158 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -134,12 +134,22 @@ public:
 class CVBDrvInfosGL : public IVBDrvInfos
 {
 public:
-	CVBDrvInfosGL(IDriver *drv, ItVBDrvInfoPtrList it) : IVBDrvInfos(drv, it) {}
+	CVBDrvInfosGL(CDriverGL *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb);
+
+	// Verex buffer hard ?
+	IVertexBufferHardGL		*_VBHard;
+	class CDriverGL			*_DriverGL;
+
+
+	// From IVBDrvInfos
+	virtual ~CVBDrvInfosGL();
+	virtual uint8	*lock (uint first, uint last, bool readOnly);
+	virtual void	unlock (uint first, uint last);
 };
 
 
 // ***************************************************************************
-class CShaderGL : public IShader
+class CShaderGL : public IMaterialDrvInfos
 {
 public:
 	GLenum		SrcBlend;
@@ -159,7 +169,7 @@ public:
 	// The supported Shader type.
 	CMaterial::TShader	SupportedShader;
 
-	CShaderGL(IDriver *drv, ItShaderPtrList it) : IShader(drv, it) {}
+	CShaderGL(IDriver *drv, ItMatDrvInfoPtrList it) : IMaterialDrvInfos(drv, it) {}
 };
 
 
@@ -194,6 +204,19 @@ public:
 
 
 // ***************************************************************************
+/// Info for the last IndexBuffer setuped (iether normal or hard).
+class	CIndexBufferInfo
+{
+public:
+	const uint32			*_Values;
+
+	CIndexBufferInfo ();
+	void					setupIndexBuffer(CIndexBuffer &vb);
+};
+
+
+
+// ***************************************************************************
 class CDriverGL : public IDriver
 {
 public:
@@ -215,8 +238,6 @@ public:
 	virtual					~CDriverGL();
 
 	virtual bool			init (uint windowIcon = 0);
-
-	virtual ModeList		enumModes();
 
 	virtual void			disableHardwareVertexProgram();
 	virtual void			disableHardwareVertexArrayAGP();
@@ -291,9 +312,9 @@ public:
 
 	virtual void			setupModelMatrix(const CMatrix& mtx);
 
-	virtual void			multiplyModelMatrix(const CMatrix& mtx);
-
 	virtual CMatrix			getViewMatrix() const;
+
+	virtual bool			activeShader(CShader *shd);
 
 	virtual	void			forceNormalize(bool normalize)
 	{
@@ -320,31 +341,19 @@ public:
 
 	virtual	bool			initVertexArrayRange(uint agpMem, uint vramMem);
 
-	virtual	IVertexBufferHard	*createVertexBufferHard(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, 
-														IDriver::TVBHardType vbType, const uint8 *uvRouting);
-
-	virtual	void			deleteVertexBufferHard(IVertexBufferHard *VB);
-
-	virtual void			activeVertexBufferHard(IVertexBufferHard *VB);
-
-
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB);
 
-	virtual bool			activeVertexBuffer(CVertexBuffer& VB, uint first, uint end);
+	virtual bool			activeIndexBuffer(CIndexBuffer& IB);
 
 	virtual	void			mapTextureStageToUV(uint stage, uint uv);
 
-	virtual bool			render(CPrimitiveBlock& PB, CMaterial& Mat);
-
-	virtual void			renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris);
-
-	virtual void			renderSimpleTriangles(uint32 *tri, uint32 ntris);
-
-	virtual void			renderPoints(CMaterial& Mat, uint32 numPoints) ;
-	
-	virtual void			renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads);
-
-	virtual void		    renderOrientedQuads(CMaterial &mat, uint32 startIndex, uint32 numQuads);
+	virtual bool			renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines);
+	virtual bool			renderTriangles(CMaterial& Mat, uint32 firstIndex, uint32 ntris);
+	virtual bool			renderSimpleTriangles(uint32 firstTri, uint32 ntris);
+	virtual bool			renderRawPoints(CMaterial& Mat, uint32 startIndex, uint32 numPoints);
+	virtual bool			renderRawLines(CMaterial& Mat, uint32 startIndex, uint32 numLines);
+	virtual bool			renderRawTriangles(CMaterial& Mat, uint32 startIndex, uint32 numTris);
+	virtual bool			renderRawQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads);
 
 	virtual bool			swapBuffers();
 
@@ -424,15 +433,14 @@ public:
 
 	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect);
 		
-	virtual void			copyFrameBufferToTexture(ITexture *tex,
-		                                             uint32 level,
-													 uint32 offsetx,
-													 uint32 offsety,
-													 uint32 x,
-													 uint32 y,
-													 uint32 width,
-													 uint32 height														
-													);
+	virtual bool			setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, 
+												uint32 mipmapLevel, uint32 cubeFace);
+
+	virtual bool			copyTargetToTexture (ITexture *tex, uint32 offsetx, uint32 offsety, uint32 x, uint32 y, 
+													uint32 width, uint32 height, uint32 mipmapLevel);
+
+	virtual bool			getRenderTargetSize (uint32 &width, uint32 &height);
+
 
 	virtual bool			fillBuffer (CBitmap &bitmap);
 
@@ -510,8 +518,15 @@ public:
 	virtual void			endMaterialMultiPass() { 	endMultiPass(); }
 	// @}
 
+	/// Adaptor information
+	virtual uint			getNumAdapter() const;
+	virtual bool			getAdapter(uint adapter, CAdapter &desc) const;
+	virtual bool			setAdapter(uint adapter);
+
+	virtual CVertexBuffer::TVertexColorType getVertexColorFormat() const;
 
 private:
+	virtual class IVertexBufferHardGL	*createVertexBufferHard(uint size, uint numVertices, CVertexBuffer::TPreferredMemory vbType, CVertexBuffer *vb);
 	friend class					CTextureDrvInfosGL;
 	friend class					CVertexProgamDrvInfosGL;
 
@@ -730,7 +745,16 @@ private:
 	// Clip the wanted rectangle with window. return true if rect is not NULL.
 	bool					clipRect(NLMISC::CRect &rect);
 
-	
+	// Copy the frame buffer to a texture
+	void					copyFrameBufferToTexture(ITexture *tex,
+		                                             uint32 level,
+													 uint32 offsetx,
+													 uint32 offsety,
+													 uint32 x,
+													 uint32 y,
+													 uint32 width,
+													 uint32 height														
+													);
 
 	/// \name Material multipass.
 	/**	NB: setupMaterial() must be called before thoses methods.
@@ -745,9 +769,8 @@ private:
 	// @}
 
 	/// LastVB for UV setup.
-	CVertexBufferInfo	_LastVB;
-	
-
+	CVertexBufferInfo		_LastVB;
+	CIndexBufferInfo		_LastIB;
 
 	/// setup a texture stage with an UV from VB.
 	void			setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId);
@@ -882,6 +905,7 @@ private:
 	friend class					CVertexBufferHardGLATI;
 	friend class					CVertexArrayRangeMapObjectATI;
 	friend class					CVertexBufferHardGLMapObjectATI;
+	friend class					CVBDrvInfosGL;
 
 	// The VertexArrayRange activated.
 	IVertexArrayRange				*_CurrentVertexArrayRange;
@@ -924,7 +948,7 @@ private:
 	// VBHard Lock Profiling
 	struct	CVBHardProfile
 	{
-		NLMISC::CRefPtr<IVertexBufferHard>		VBHard;
+		NLMISC::CRefPtr<CVertexBuffer>			VBHard;
 		NLMISC::TTicks							AccumTime;
 		// true if the VBHard was not always the same for the same chronogical place.
 		bool									Change;
@@ -939,7 +963,7 @@ private:
 	std::vector<CVBHardProfile>							_VBHardProfiles;
 	uint												_CurVBHardLockCount;
 	uint												_NumVBHardProfileFrame;
-	void							appendVBHardLockProfile(NLMISC::TTicks time, IVertexBufferHard *vb);
+	void							appendVBHardLockProfile(NLMISC::TTicks time, CVertexBuffer *vb);
 
 	// @}
 
@@ -956,6 +980,7 @@ private:
 	void			setConstant (uint index, uint num, const float *src);	
 	void			setConstant (uint index, uint num, const double *src);
 	void			setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform);	
+	void			setConstantFog (uint index);
 	void			enableVertexProgramDoubleSidedColor(bool doubleSided);
 	bool		    supportVertexProgramDoubleSidedColor() const;
 
@@ -1080,6 +1105,17 @@ private:
 	bool                _ATIFogRangeFixed;
 
 	void		retrieveATIDriverVersion();
+
+	/// \Render to texture
+	// @{
+	CSmartPtr<ITexture>		_TextureTarget;
+	uint32					_TextureTargetLevel;
+	uint32					_TextureTargetX;
+	uint32					_TextureTargetY;
+	uint32					_TextureTargetWidth;
+	uint32					_TextureTargetHeight;
+	bool					_TextureTargetUpdload;
+	// @}
 };
 
 

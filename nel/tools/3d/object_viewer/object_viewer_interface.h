@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.19 2003/07/11 16:50:16 corvazier Exp $
+ * $Id: object_viewer_interface.h,v 1.20 2004/03/19 10:11:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,7 +59,7 @@ public:
 	virtual ~IObjectViewer () {};
 
 	// Init the UI
-	virtual void initUI (HWND parent=NULL)=0;
+	virtual bool initUI (HWND parent=NULL)=0;
 
 	// Test wether an instance of the viewer is running
 	virtual bool	isInstanceRunning() = 0;

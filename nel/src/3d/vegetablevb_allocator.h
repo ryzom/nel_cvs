@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.h
  * <File description>
  *
- * $Id: vegetablevb_allocator.h,v 1.2 2001/11/12 14:00:08 berenguier Exp $
+ * $Id: vegetablevb_allocator.h,v 1.3 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,8 +106,8 @@ public:
 
 	/// \name Buffer access.
 	// @{
-	/// get the software VB pointer to the ith index. valid only beetween 2 allocateVertex().
-	void			*getVertexPointer(uint i);
+	// return soft VB, for info only.
+	CVertexBuffer			&getSoftwareVertexBuffer() {return _VB;}
 	// return soft VB, for info only.
 	const CVertexBuffer		&getSoftwareVertexBuffer() const {return _VB;}
 	/// If VBHard ok, copy the vertex in AGP. Warning: buffer must be locked!
@@ -117,7 +117,7 @@ public:
 	void			lockBuffer();
 	/// if any, unlock the AGP buffer.
 	void			unlockBuffer();
-	bool			bufferLocked() const {return _BufferLocked;}
+	bool			bufferLocked() const {return _VBHard.isLocked();}
 
 	/** activate the VB or the VBHard in Driver setuped. nlassert if driver is NULL or if buffer is locked.
 	 */
@@ -148,13 +148,13 @@ private:
 
 	// Our software VB. always here, and always correct.
 	CVertexBuffer						_VB;
+	CVertexBuffer						_VBHard;
+	CVertexBufferReadWrite				_VBAHard;
 
 	// a refPtr on the driver, to delete VBuffer Hard at clear().
 	NLMISC::CRefPtr<IDriver>			_Driver;
 	// tell if VBHard is possible.
 	bool								_VBHardOk;
-	NLMISC::CRefPtr<IVertexBufferHard>	_VBHard;
-	bool								_BufferLocked;
 	uint8								*_AGPBufferPtr;
 	/// Maximum vertices in BufferHard allowed for this VBAllocator
 	uint								_MaxVertexInBufferHard;

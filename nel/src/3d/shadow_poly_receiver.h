@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.h
  * <File description>
  *
- * $Id: shadow_poly_receiver.h,v 1.3 2004/03/12 16:27:52 berenguier Exp $
+ * $Id: shadow_poly_receiver.h,v 1.4 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/triangle.h"
 #include "3d/quad_grid.h"
 #include "3d/vertex_buffer.h"
+#include "3d/index_buffer.h"
 
 
 namespace NL3D {
@@ -110,7 +111,7 @@ private:
 	// Render
 	// TODO_SHADOW: optim: VBHard.
 	CVertexBuffer						_VB;
-	std::vector<uint32>					_RenderTriangles;
+	CIndexBuffer						_RenderTriangles;
 
 
 	// Vertex Mgt.

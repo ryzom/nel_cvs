@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.16 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.17 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -252,6 +252,8 @@ void		CMeshMultiLodInstance::setUVCoarseMesh( CMeshGeom &geom, uint vtDstSize, u
 
 	// Src vertex buffer
 	const CVertexBuffer &vbSrc=geom.getVertexBuffer();
+	CVertexBufferRead vba;
+	vbSrc.lock (vba);
 
 	// Check the vertex format and src Vertices
 	nlassert (vbSrc.getVertexFormat() & (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag) );
@@ -261,7 +263,7 @@ void		CMeshMultiLodInstance::setUVCoarseMesh( CMeshGeom &geom, uint vtDstSize, u
 	uint vtSrcSize=vbSrc.getVertexSize ();
 
 	// Copy vector
-	const uint8 *vSrc = (const uint8 *)vbSrc.getTexCoordPointer(0,0);
+	const uint8 *vSrc = (const uint8 *)vba.getTexCoordPointer(0,0);
 	uint8 *vDest = &_CoarseMeshVB[0];
 	vDest+= dstUvOff;
 
@@ -283,6 +285,8 @@ void		CMeshMultiLodInstance::setPosCoarseMesh( CMeshGeom &geom, const CMatrix &m
 
 	// Src vertex buffer
 	const CVertexBuffer &vbSrc=geom.getVertexBuffer();
+	CVertexBufferRead vba;
+	vbSrc.lock (vba);
 
 	// Check the vertex format and src Vertices
 	nlassert (vbSrc.getVertexFormat() & (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag) );
@@ -292,7 +296,7 @@ void		CMeshMultiLodInstance::setPosCoarseMesh( CMeshGeom &geom, const CMatrix &m
 	uint vtSrcSize=vbSrc.getVertexSize ();
 
 	// Copy vector
-	const uint8 *vSrc = (const uint8 *)vbSrc.getVertexCoordPointer (0);
+	const uint8 *vSrc = (const uint8 *)vba.getVertexCoordPointer (0);
 	uint8 *vDest = &_CoarseMeshVB[0];
 	
 	// Transform it

@@ -1,7 +1,7 @@
 /** \file deform_2d.cpp
  * <File description>
  *
- * $Id: deform_2d.cpp,v 1.5 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: deform_2d.cpp,v 1.6 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -136,7 +136,8 @@ void CDeform2d::doDeform(const TPoint2DVect &surf, IDriver *drv, IPerturbUV *uvp
 	// get back datas from frame buffer
 	for (it = dest.begin(); it != dest.end(); ++it)
 	{
-		drv->copyFrameBufferToTexture(_Tex, 0, (uint32) it->x,(uint32) it->y, (uint32) it->x, (uint32) it->y, _XGranularity, _YGranularity);		
+		// todo hulud use the new render to texture interface
+		// drv->copyFrameBufferToTexture(_Tex, 0, (uint32) it->x,(uint32) it->y, (uint32) it->x, (uint32) it->y, _XGranularity, _YGranularity);		
 	}
 
 
@@ -145,39 +146,44 @@ void CDeform2d::doDeform(const TPoint2DVect &surf, IDriver *drv, IPerturbUV *uvp
 	  */
 	vb.setNumVertices(dest.size() << 2);
 	mat.setTexture(0, _Tex);
-	uint k = 0; // current index in the vertex buffer
-	for (it = dest.begin(); it != dest.end(); ++it, k += 4)
 	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
 
-		// \todo optimize this by a direct access to the vertex buffer (if needed)
-		// blit data to frame buffer and apply deformations
+		uint k = 0; // current index in the vertex buffer
+		for (it = dest.begin(); it != dest.end(); ++it, k += 4)
+		{
 
-		vb.setVertexCoord(k, NLMISC::CVector(it->x, 0, it->y));
-		vb.setVertexCoord(k + 1, NLMISC::CVector(it->x + _XGranularity, 0, it->y));
-		vb.setVertexCoord(k + 2, NLMISC::CVector(it->x + _XGranularity, 0, it->y + _YGranularity));
-		vb.setVertexCoord(k + 3, NLMISC::CVector(it->x , 0, it->y + _YGranularity));
+			// \todo optimize this by a direct access to the vertex buffer (if needed)
+			// blit data to frame buffer and apply deformations
 
-		// perturbation of the uv coordinates
+			vba.setVertexCoord(k, NLMISC::CVector(it->x, 0, it->y));
+			vba.setVertexCoord(k + 1, NLMISC::CVector(it->x + _XGranularity, 0, it->y));
+			vba.setVertexCoord(k + 2, NLMISC::CVector(it->x + _XGranularity, 0, it->y + _YGranularity));
+			vba.setVertexCoord(k + 3, NLMISC::CVector(it->x , 0, it->y + _YGranularity));
 
-		u =  it->x * iDu;
-		v = it->y * iDv;
-	    uvp->perturbUV(u, v, du, dv);
-		vb.setTexCoord(k, 0, (u + du) * widthRatio, (v + dv) * heightRatio );	
+			// perturbation of the uv coordinates
 
-		u2 =  (it->x + _XGranularity) * iDu;
-		uvp->perturbUV(u2, v, du, dv);
-		vb.setTexCoord(k + 1, 0, (u2 + du) * widthRatio, (v + dv) * heightRatio );	
+			u =  it->x * iDu;
+			v = it->y * iDv;
+			uvp->perturbUV(u, v, du, dv);
+			vba.setTexCoord(k, 0, (u + du) * widthRatio, (v + dv) * heightRatio );	
 
-		v =  (it->y + _YGranularity) * iDv;
-		uvp->perturbUV(u2, v, du, dv);
-		vb.setTexCoord(k + 2, 0, (u2 + du) * widthRatio, (v + dv) * heightRatio );	
+			u2 =  (it->x + _XGranularity) * iDu;
+			uvp->perturbUV(u2, v, du, dv);
+			vba.setTexCoord(k + 1, 0, (u2 + du) * widthRatio, (v + dv) * heightRatio );	
 
-		uvp->perturbUV(u, v, du, dv);
-		vb.setTexCoord(k + 3, 0, (u + du) * widthRatio, (v + dv) * heightRatio );	
+			v =  (it->y + _YGranularity) * iDv;
+			uvp->perturbUV(u2, v, du, dv);
+			vba.setTexCoord(k + 2, 0, (u2 + du) * widthRatio, (v + dv) * heightRatio );	
+
+			uvp->perturbUV(u, v, du, dv);
+			vba.setTexCoord(k + 3, 0, (u + du) * widthRatio, (v + dv) * heightRatio );	
+		}
 	}
 
 	drv->activeVertexBuffer(vb);
-	drv->renderQuads(mat, 0, dest.size());
+	drv->renderRawQuads(mat, 0, dest.size());
 }
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.33 2004/03/09 19:00:14 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.34 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -466,8 +466,8 @@ static uint getMeshNumTri(const CMesh &m)
 	{
 		for (uint l = 0; l  < m.getNbRdrPass(k); ++l)
 		{
-			const CPrimitiveBlock pb = m.getRdrPassPrimitiveBlock(k, l);
-			numFaces += (pb.getNumLine() << 1) + pb.getNumTri() + (pb.getNumQuad() << 1);
+			const CIndexBuffer pb = m.getRdrPassPrimitiveBlock(k, l);
+			numFaces += pb.getNumIndexes()/3;
 
 		}
 	}
@@ -522,6 +522,8 @@ public:
 	{
 		CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>((IShape *) m._Meshes[0]);	
 		const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
+		CVertexBufferRead vba;
+		modelVb.lock (vba);
 
 		// size for model vertices
 		const uint inVSize	  = modelVb.getVertexSize(); // vertex size				
@@ -567,217 +569,226 @@ public:
 		
 		do
 		{
-			uint8 *outVertex = (uint8 *) outVb.getVertexCoordPointer();		
-
-			toProcess = std::min(leftToDo, ConstraintMeshBufSize);
-
-			if (m._SizeScheme)
 			{
-				ptCurrSize  = (float *) (m._SizeScheme->make(m._Owner, size -leftToDo, &sizes[0], sizeof(float), toProcess, true, srcStep));				
-			}
-			else
-			{
-				ptCurrSize = &m._ParticleSize;
-			}
+				CVertexBufferReadWrite vba;
+				outVb.lock (vba);
+				uint8 *outVertex = (uint8 *) vba.getVertexCoordPointer();		
 
-			if (m._PlaneBasisScheme)
-			{
-				ptBasis = (CPlaneBasis *) (m._PlaneBasisScheme->make(m._Owner, size -leftToDo, &planeBasis[0], sizeof(CPlaneBasis), toProcess, true, srcStep));
-			}
-			else
-			{
-				ptBasis = &m._PlaneBasis;
-			}
-			
+				toProcess = std::min(leftToDo, ConstraintMeshBufSize);
 
-			endPosIt = posIt + toProcess;
-			// transfo matrix & scaled transfo matrix;
-			CMatrix  M, sM;
-
-		
-			if (m._Meshes.size() == 1)
-			{
-				/// unmorphed case
-				do
+				if (m._SizeScheme)
 				{
-
-					uint8 *inVertex = (uint8 *) modelVb.getVertexCoordPointer();
-					uint k = nbVerticesInSource;
-
-					// do we need a normal ?
-					if (modelVb.getVertexFormat() & CVertexBuffer::NormalFlag)
-					{
-						M.identity();
-						M.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
-						sM = M;
-						sM.scale(*ptCurrSize);
-
-						// offset of normals in the prerotated mesh				
-						do
-						{
-							CHECK_VERTEX_BUFFER(modelVb, inVertex);	
-							CHECK_VERTEX_BUFFER(outVb,	  outVertex);	
-							CHECK_VERTEX_BUFFER(modelVb, inVertex + inNormalOff);	
-							CHECK_VERTEX_BUFFER(outVb,	  outVertex + outNormalOff);	
-
-							// translate and resize the vertex (relatively to the mesh origin)
-							*(CVector *) outVertex = *posIt + sM * *(CVector *) inVertex;										
-							// copy the normal
-							*(CVector *) (outVertex + outNormalOff) = M * *(CVector *) (inVertex + inNormalOff);
-							
-
-							inVertex  += inVSize;
-							outVertex += outVSize;
-						}
-						while (--k);
-					}
-					else
-					{
-						// no normal to transform
-						sM.identity();
-						sM.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
-						sM.scale(*ptCurrSize);
-
-						do
-						{
-							CHECK_VERTEX_BUFFER(modelVb, inVertex);
-							CHECK_VERTEX_BUFFER(outVb, outVertex);
-
-							// translate and resize the vertex (relatively to the mesh origin)
-							*(CVector *) outVertex = *posIt + sM * *(CVector *) inVertex;				
-
-							inVertex  += inVSize;
-							outVertex += outVSize;
-						}
-						while (--k);
-					}
-
-					
-					++posIt;
-					ptCurrSize += ptCurrSizeIncrement;
-					ptBasis += ptBasisIncrement;
+					ptCurrSize  = (float *) (m._SizeScheme->make(m._Owner, size -leftToDo, &sizes[0], sizeof(float), toProcess, true, srcStep));				
 				}
-				while (posIt != endPosIt);
-			}
-			else
-			{
-				// morphed case
+				else
+				{
+					ptCurrSize = &m._ParticleSize;
+				}
+
+				if (m._PlaneBasisScheme)
+				{
+					ptBasis = (CPlaneBasis *) (m._PlaneBasisScheme->make(m._Owner, size -leftToDo, &planeBasis[0], sizeof(CPlaneBasis), toProcess, true, srcStep));
+				}
+				else
+				{
+					ptBasis = &m._PlaneBasis;
+				}
 				
-				// first, compute the morph value for each mesh
-				float	morphValues[ConstraintMeshBufSize];
-				float	*currMorphValue;
-				uint	morphValueIncr;
 
-				if (m._MorphScheme) // variable case
+				endPosIt = posIt + toProcess;
+				// transfo matrix & scaled transfo matrix;
+				CMatrix  M, sM;
+
+			
+				if (m._Meshes.size() == 1)
 				{
-					currMorphValue = (float *) m._MorphScheme->make(m._Owner, size - leftToDo, &morphValues[0], sizeof(float), toProcess, true, srcStep);
-					morphValueIncr  = 1;
-				}
-				else /// constant case
-				{
-					currMorphValue = &m._MorphValue;
-					morphValueIncr  = 0;
-				}
-
-				do
-				{
-					const uint numShapes = m._Meshes.size();
-					const uint8 *m0, *m1;
-					float lambda;
-					float opLambda;
-					const CVertexBuffer *inVB0, *inVB1;
-					if (*currMorphValue >= numShapes - 1)
+					/// unmorphed case
+					do
 					{
-						lambda = 0.f;
-						opLambda = 1.f;
-						inVB0 = inVB1 = &(m._Meshes[numShapes - 1]->getVertexBuffer());
-					}
-					else if (*currMorphValue <= 0)
-					{
-						lambda = 0.f;
-						opLambda = 1.f;
-						inVB0 = inVB1 = &(m._Meshes[0]->getVertexBuffer());
-					}
-					else
-					{
-						uint iMeshIndex = (uint) *currMorphValue;
-						lambda = *currMorphValue - iMeshIndex;
-						opLambda = 1.f - lambda;
-						inVB0 = &(m._Meshes[iMeshIndex]->getVertexBuffer());
-						inVB1 = &(m._Meshes[iMeshIndex + 1]->getVertexBuffer());
-					}
+						CVertexBufferRead vbaRead;
+						modelVb.lock (vbaRead);
+						const uint8 *inVertex = (const uint8 *) vbaRead.getVertexCoordPointer();
+						uint k = nbVerticesInSource;
 
-					m0 = (uint8 *) inVB0->getVertexCoordPointer();
-					m1 = (uint8 *) inVB1->getVertexCoordPointer();
-
-							
-					uint k = nbVerticesInSource;
-					// do we need a normal ?
-					if (modelVb.getVertexFormat() & CVertexBuffer::NormalFlag)
-					{
-						M.identity();
-						M.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
-						sM = M;
-						sM.scale(*ptCurrSize);
-
-						// offset of normals in the prerotated mesh				
-						do
+						// do we need a normal ?
+						if (modelVb.getVertexFormat() & CVertexBuffer::NormalFlag)
 						{
-							CHECK_VERTEX_BUFFER((*inVB0),	  m0);							
-							CHECK_VERTEX_BUFFER((*inVB1),	  m1);	
-							CHECK_VERTEX_BUFFER((*inVB0),	  m0 + inNormalOff);			
-							CHECK_VERTEX_BUFFER((*inVB1),	  m1 + inNormalOff);
-							CHECK_VERTEX_BUFFER(outVb,	  outVertex);							
-							CHECK_VERTEX_BUFFER(outVb,	  outVertex + outNormalOff);	
+							M.identity();
+							M.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
+							sM = M;
+							sM.scale(*ptCurrSize);
 
-							// morph, and transform the vertex
-							*(CVector *) outVertex = *posIt + sM * (opLambda * *(CVector *) m0 + lambda * *(CVector *) m1);
-							// morph, and transform the normal
-							*(CVector *) (outVertex + outNormalOff) = M * (opLambda * *(CVector *) (m0 + inNormalOff)
-																		  + lambda * *(CVector *) (m1 + inNormalOff)).normed();
-							
+							// offset of normals in the prerotated mesh				
+							do
+							{
+								CHECK_VERTEX_BUFFER(modelVb, inVertex);	
+								CHECK_VERTEX_BUFFER(outVb,	  outVertex);	
+								CHECK_VERTEX_BUFFER(modelVb, inVertex + inNormalOff);	
+								CHECK_VERTEX_BUFFER(outVb,	  outVertex + outNormalOff);	
 
-							m0  += inVSize;
-							m1  += inVSize;
-							outVertex += outVSize;
+								// translate and resize the vertex (relatively to the mesh origin)
+								*(CVector *) outVertex = *posIt + sM * *(CVector *) inVertex;										
+								// copy the normal
+								*(CVector *) (outVertex + outNormalOff) = M * *(CVector *) (inVertex + inNormalOff);
+								
+
+								inVertex  += inVSize;
+								outVertex += outVSize;
+							}
+							while (--k);
 						}
-						while (--k);
-					}
-					else
-					{
-						// no normal to transform
-						sM.identity();
-						sM.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
-						sM.scale(*ptCurrSize);
+						else
+						{
+							// no normal to transform
+							sM.identity();
+							sM.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
+							sM.scale(*ptCurrSize);
 
-						do
-						{			
-							CHECK_VERTEX_BUFFER((*inVB0),	  m0);							
-							CHECK_VERTEX_BUFFER((*inVB1),	  m1);		
-							CHECK_VERTEX_BUFFER(outVb, outVertex);
-							// morph, and transform the vertex
-							*(CVector *) outVertex = *posIt + sM * (opLambda * *(CVector *) m0 + opLambda * *(CVector *) m1);
+							do
+							{
+								CHECK_VERTEX_BUFFER(modelVb, inVertex);
+								CHECK_VERTEX_BUFFER(outVb, outVertex);
 
-							m0  += inVSize;
-							m1  += inVSize;
-							outVertex += outVSize;
+								// translate and resize the vertex (relatively to the mesh origin)
+								*(CVector *) outVertex = *posIt + sM * *(CVector *) inVertex;				
+
+								inVertex  += inVSize;
+								outVertex += outVSize;
+							}
+							while (--k);
 						}
-						while (--k);
-					}
 
-					
-					++posIt;
-					ptCurrSize += ptCurrSizeIncrement;
-					ptBasis += ptBasisIncrement;
-					currMorphValue += morphValueIncr;
+						
+						++posIt;
+						ptCurrSize += ptCurrSizeIncrement;
+						ptBasis += ptBasisIncrement;
+					}
+					while (posIt != endPosIt);
 				}
-				while (posIt != endPosIt);
-			}		
+				else
+				{
+					// morphed case
+					
+					// first, compute the morph value for each mesh
+					float	morphValues[ConstraintMeshBufSize];
+					float	*currMorphValue;
+					uint	morphValueIncr;
 
-			// compute colors if needed
-			if (m._ColorScheme)
-			{
-				m.computeColors(outVb, modelVb, size - leftToDo, toProcess, srcStep);
+					if (m._MorphScheme) // variable case
+					{
+						currMorphValue = (float *) m._MorphScheme->make(m._Owner, size - leftToDo, &morphValues[0], sizeof(float), toProcess, true, srcStep);
+						morphValueIncr  = 1;
+					}
+					else /// constant case
+					{
+						currMorphValue = &m._MorphValue;
+						morphValueIncr  = 0;
+					}
+
+					do
+					{
+						const uint numShapes = m._Meshes.size();
+						const uint8 *m0, *m1;
+						float lambda;
+						float opLambda;
+						const CVertexBuffer *inVB0, *inVB1;
+						if (*currMorphValue >= numShapes - 1)
+						{
+							lambda = 0.f;
+							opLambda = 1.f;
+							inVB0 = inVB1 = &(m._Meshes[numShapes - 1]->getVertexBuffer());
+						}
+						else if (*currMorphValue <= 0)
+						{
+							lambda = 0.f;
+							opLambda = 1.f;
+							inVB0 = inVB1 = &(m._Meshes[0]->getVertexBuffer());
+						}
+						else
+						{
+							uint iMeshIndex = (uint) *currMorphValue;
+							lambda = *currMorphValue - iMeshIndex;
+							opLambda = 1.f - lambda;
+							inVB0 = &(m._Meshes[iMeshIndex]->getVertexBuffer());
+							inVB1 = &(m._Meshes[iMeshIndex + 1]->getVertexBuffer());
+						}
+						CVertexBufferRead vba0;
+						inVB0->lock (vba0);
+						CVertexBufferRead vba1;
+						inVB1->lock (vba1);
+
+						m0 = (uint8 *) vba0.getVertexCoordPointer();
+						m1 = (uint8 *) vba1.getVertexCoordPointer();
+
+								
+						uint k = nbVerticesInSource;
+						// do we need a normal ?
+						if (modelVb.getVertexFormat() & CVertexBuffer::NormalFlag)
+						{
+							M.identity();
+							M.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
+							sM = M;
+							sM.scale(*ptCurrSize);
+
+							// offset of normals in the prerotated mesh				
+							do
+							{
+								CHECK_VERTEX_BUFFER((*inVB0),	  m0);							
+								CHECK_VERTEX_BUFFER((*inVB1),	  m1);	
+								CHECK_VERTEX_BUFFER((*inVB0),	  m0 + inNormalOff);			
+								CHECK_VERTEX_BUFFER((*inVB1),	  m1 + inNormalOff);
+								CHECK_VERTEX_BUFFER(outVb,	  outVertex);							
+								CHECK_VERTEX_BUFFER(outVb,	  outVertex + outNormalOff);	
+
+								// morph, and transform the vertex
+								*(CVector *) outVertex = *posIt + sM * (opLambda * *(CVector *) m0 + lambda * *(CVector *) m1);
+								// morph, and transform the normal
+								*(CVector *) (outVertex + outNormalOff) = M * (opLambda * *(CVector *) (m0 + inNormalOff)
+																			  + lambda * *(CVector *) (m1 + inNormalOff)).normed();
+								
+
+								m0  += inVSize;
+								m1  += inVSize;
+								outVertex += outVSize;
+							}
+							while (--k);
+						}
+						else
+						{
+							// no normal to transform
+							sM.identity();
+							sM.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
+							sM.scale(*ptCurrSize);
+
+							do
+							{			
+								CHECK_VERTEX_BUFFER((*inVB0),	  m0);							
+								CHECK_VERTEX_BUFFER((*inVB1),	  m1);		
+								CHECK_VERTEX_BUFFER(outVb, outVertex);
+								// morph, and transform the vertex
+								*(CVector *) outVertex = *posIt + sM * (opLambda * *(CVector *) m0 + opLambda * *(CVector *) m1);
+
+								m0  += inVSize;
+								m1  += inVSize;
+								outVertex += outVSize;
+							}
+							while (--k);
+						}
+
+						
+						++posIt;
+						ptCurrSize += ptCurrSizeIncrement;
+						ptBasis += ptBasisIncrement;
+						currMorphValue += morphValueIncr;
+					}
+					while (posIt != endPosIt);
+				}		
+
+				// compute colors if needed
+				if (m._ColorScheme)
+				{
+					m.computeColors(outVb, modelVb, size - leftToDo, toProcess, srcStep);
+				}
 			}
 			
 			// render meshs
@@ -857,72 +868,78 @@ public:
 					
 		do
 		{			
-			toProcess = std::min(leftToDo, ConstraintMeshBufSize);
+			{
+				CVertexBufferReadWrite vba;
+				outVb.lock (vba);
+				CVertexBufferRead PrerotVba;
+				prerotVb.lock (PrerotVba);
 
-			if (m._SizeScheme)
-			{
-				// compute size
-				ptCurrSize = (float *) (m._SizeScheme->make(m._Owner, size - leftToDo, &sizes[0], sizeof(float), toProcess, true, srcStep));				
-			}
-			else
-			{
-				// pointer on constant size
-				ptCurrSize = &m._ParticleSize;
-			}
+				toProcess = std::min(leftToDo, ConstraintMeshBufSize);
 
-			endPosIt = posIt + toProcess;
-			uint8 *outVertex  = (uint8 *) outVb.getVertexCoordPointer();
-			/// copy datas for several mesh
-			do
-			{
-				uint8 *inVertex = (uint8 *) prerotVb.getVertexCoordPointer() + prerotatedModelSize * *indexIt; // prerotated vertex			
-				uint k = nbVerticesInSource;
-				
-				if (prerotVb.getVertexFormat() & CVertexBuffer::NormalFlag) // has it a normal ?
+				if (m._SizeScheme)
 				{
-					do
-					{
-						CHECK_VERTEX_BUFFER(outVb, outVertex);
-						CHECK_VERTEX_BUFFER(prerotVb, inVertex);
-						CHECK_VERTEX_BUFFER(outVb, outVertex + normalOff);
-						CHECK_VERTEX_BUFFER(prerotVb, inVertex + pNormalOff);
-
-
-						// translate and resize the vertex (relatively to the mesh origin)
-						*(CVector *)  outVertex						 = *posIt + *ptCurrSize * *(CVector *) inVertex;
-						// copy the normal
-						*(CVector *)  (outVertex + normalOff ) = *(CVector *) (inVertex + pNormalOff);
-						inVertex  += inVSize;
-						outVertex += outVSize;
-					}
-					while (--k);
+					// compute size
+					ptCurrSize = (float *) (m._SizeScheme->make(m._Owner, size - leftToDo, &sizes[0], sizeof(float), toProcess, true, srcStep));				
 				}
 				else
 				{
-					do
-					{					
-						// translate and resize the vertex (relatively to the mesh origin)
-						CHECK_VERTEX_BUFFER(outVb, outVertex);
-						CHECK_VERTEX_BUFFER(prerotVb, inVertex);
-						*(CVector *)  outVertex = *posIt + *ptCurrSize * *(CVector *) inVertex;													
-						inVertex  += inVSize;
-						outVertex += outVSize;
-					}
-					while (--k);
+					// pointer on constant size
+					ptCurrSize = &m._ParticleSize;
 				}
-				
-				++indexIt;
-				++posIt;
-				ptCurrSize += ptCurrSizeIncrement;
-			}
-			while (posIt != endPosIt);
 
-			// compute colors if needed
-			if (m._ColorScheme)
-			{
-				m.computeColors(outVb, modelVb, size - leftToDo, toProcess, srcStep);
-			}
+				endPosIt = posIt + toProcess;
+				uint8 *outVertex  = (uint8 *) vba.getVertexCoordPointer();
+				/// copy datas for several mesh
+				do
+				{
+					uint8 *inVertex = (uint8 *) PrerotVba.getVertexCoordPointer() + prerotatedModelSize * *indexIt; // prerotated vertex			
+					uint k = nbVerticesInSource;
 					
+					if (prerotVb.getVertexFormat() & CVertexBuffer::NormalFlag) // has it a normal ?
+					{
+						do
+						{
+							CHECK_VERTEX_BUFFER(outVb, outVertex);
+							CHECK_VERTEX_BUFFER(prerotVb, inVertex);
+							CHECK_VERTEX_BUFFER(outVb, outVertex + normalOff);
+							CHECK_VERTEX_BUFFER(prerotVb, inVertex + pNormalOff);
+
+
+							// translate and resize the vertex (relatively to the mesh origin)
+							*(CVector *)  outVertex						 = *posIt + *ptCurrSize * *(CVector *) inVertex;
+							// copy the normal
+							*(CVector *)  (outVertex + normalOff ) = *(CVector *) (inVertex + pNormalOff);
+							inVertex  += inVSize;
+							outVertex += outVSize;
+						}
+						while (--k);
+					}
+					else
+					{
+						do
+						{					
+							// translate and resize the vertex (relatively to the mesh origin)
+							CHECK_VERTEX_BUFFER(outVb, outVertex);
+							CHECK_VERTEX_BUFFER(prerotVb, inVertex);
+							*(CVector *)  outVertex = *posIt + *ptCurrSize * *(CVector *) inVertex;													
+							inVertex  += inVSize;
+							outVertex += outVSize;
+						}
+						while (--k);
+					}
+					
+					++indexIt;
+					++posIt;
+					ptCurrSize += ptCurrSizeIncrement;
+				}
+				while (posIt != endPosIt);
+
+				// compute colors if needed
+				if (m._ColorScheme)
+				{
+					m.computeColors(outVb, modelVb, size - leftToDo, toProcess, srcStep);
+				}
+			}
 
 			/// render the result
 			m.doRenderPasses(driver, toProcess, md.RdrPasses, opaque);
@@ -1532,6 +1549,10 @@ CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb, TA
 {
 	// get a VB that has positions and eventually normals
 	CVertexBuffer &prerotatedVb = inVb.getVertexFormat() & CVertexBuffer::NormalFlag ? _PreRotatedMeshVBWithNormal : _PreRotatedMeshVB;
+	CVertexBufferReadWrite vba;
+	prerotatedVb.lock (vba);
+	CVertexBufferRead vbaIn;
+	inVb.lock (vbaIn);
 
 	// size of vertices for source VB
 	const uint vSize = inVb.getVertexSize();
@@ -1554,7 +1575,7 @@ CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb, TA
 
 	// rotate basis
 	// and compute the set of prerotated meshs that will then duplicated (with scale and translation) to create the Vb of what must be drawn
-	uint8 *outVertex = (uint8 *) prerotatedVb.getVertexCoordPointer();
+	uint8 *outVertex = (uint8 *) vba.getVertexCoordPointer();
 	for (CPSVector<CPlaneBasisPair>::V::iterator it = _PrecompBasis.begin(); it != _PrecompBasis.end(); ++it)
 	{
 		// not optimized at all, but this will apply to very few elements anyway...
@@ -1566,7 +1587,7 @@ CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb, TA
 		mat.identity();
 		mat.setRot(it->Basis.X, it->Basis.Y, it->Basis.X ^ it->Basis.Y);
 
-		uint8 *inVertex = (uint8 *) inVb.getVertexCoordPointer();
+		uint8 *inVertex = (uint8 *) vbaIn.getVertexCoordPointer();
 
 		uint k = nbVerticesInSource;
 
@@ -1809,12 +1830,14 @@ void	CPSConstraintMesh::doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet
 		if ((opaque && Mat.getZWrite()) || (!opaque && ! Mat.getZWrite()))
 		{
 			/// setup number of primitives to be rendered
-			rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.capacityTri()   * numObj / ConstraintMeshBufSize);
-			rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.capacityQuad() * numObj / ConstraintMeshBufSize);
-			rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.capacityLine() * numObj / ConstraintMeshBufSize);
+			rdrPassIt->PbTri.setNumIndexes(((rdrPassIt->PbTri.capacity()/3)   * numObj / ConstraintMeshBufSize) * 3);
+			rdrPassIt->PbLine.setNumIndexes(((rdrPassIt->PbLine.capacity()/2) * numObj / ConstraintMeshBufSize) * 2);
 
 			/// render the primitives
-			driver->render(rdrPassIt->Pb, rdrPassIt->Mat);
+			driver->activeIndexBuffer (rdrPassIt->PbTri);
+			driver->renderTriangles(rdrPassIt->Mat, 0, rdrPassIt->PbTri.getNumIndexes()/3);
+			driver->activeIndexBuffer (rdrPassIt->PbLine);
+			driver->renderLines(rdrPassIt->Mat, 0, rdrPassIt->PbLine.getNumIndexes()/2);
 		}
 	}
 
@@ -1828,13 +1851,21 @@ void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer 
 	// there are 2 case : 1 - the source mesh has colors, which are modulated with the current color
 	//					  2 - the source mesh has no colors : colors are directly copied into the dest vb
 
+	CVertexBufferReadWrite vba;
+	outVB.lock (vba);
+	CVertexBufferRead vbaIn;
+	inVB.lock (vbaIn);
+
 	if (inVB.getVertexFormat() & CVertexBuffer::PrimaryColorFlag) // case 1
 	{
 		// TODO: optimisation : avoid to duplicate colors...
-		_ColorScheme->makeN(_Owner, startIndex, outVB.getColorPointer(), outVB.getVertexSize(), toProcess, inVB.getNumVertices(), srcStep);
+		// todo hulud d3d vertex color RGBA / BGRA
+		_ColorScheme->makeN(_Owner, startIndex, vba.getColorPointer(), outVB.getVertexSize(), toProcess, inVB.getNumVertices(), srcStep);
 		// modulate from the source mesh
-		uint8 *vDest  = (uint8 *) outVB.getColorPointer();
-		uint8 *vSrc   = (uint8 *) inVB.getColorPointer();
+		// todo hulud d3d vertex color RGBA / BGRA
+		uint8 *vDest  = (uint8 *) vba.getColorPointer();
+		// todo hulud d3d vertex color RGBA / BGRA
+		uint8 *vSrc   = (uint8 *) vbaIn.getColorPointer();
 		const uint vSize = outVB.getVertexSize();
 		const uint numVerts = inVB.getNumVertices();
 		uint  meshSize = vSize * numVerts;		
@@ -1846,7 +1877,8 @@ void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer 
 	}
 	else // case 2
 	{
-		_ColorScheme->makeN(_Owner, startIndex, outVB.getColorPointer(), outVB.getVertexSize(), toProcess, inVB.getNumVertices(), srcStep);
+		// todo hulud d3d vertex color RGBA / BGRA
+		_ColorScheme->makeN(_Owner, startIndex, vba.getColorPointer(), outVB.getVertexSize(), toProcess, inVB.getNumVertices(), srcStep);
 	}
 }
 
@@ -1934,7 +1966,7 @@ bool	CPSConstraintMesh::isStageModulationForced(uint stage) const
  *  For each duplication, vertices indices are shifted from the given offset (number of vertices in the mesh)
  */
 
-static void DuplicatePrimitiveBlock(const CPrimitiveBlock &srcBlock, CPrimitiveBlock &destBlock, uint nbReplicate, uint vertOffset)
+static void DuplicatePrimitiveBlock(const CIndexBuffer &srcBlock, CIndexBuffer &destBlock, uint nbReplicate, uint vertOffset)
 {
 	PARTICLES_CHECK_MEM;
 
@@ -1948,68 +1980,30 @@ static void DuplicatePrimitiveBlock(const CPrimitiveBlock &srcBlock, CPrimitiveB
 
 
 	// duplicate triangles
-	uint numTri = srcBlock.getNumTri();
-	destBlock.reserveTri(numTri * nbReplicate);
+	uint numTri = srcBlock.getNumIndexes()/3;
+	destBlock.reserve(3 * numTri * nbReplicate);
 	
 	index = 0;
 	currVertOffset = 0;
 
-	const uint32 *triPtr = srcBlock.getTriPointer();
+	CIndexBufferRead ibaRead;
+	srcBlock.lock (ibaRead);
+	CIndexBufferReadWrite ibaWrite;
+	destBlock.lock (ibaWrite);
+
+	const uint32 *triPtr = ibaRead.getPtr();
 	const uint32 *currTriPtr; // current Tri
 	for (k = 0; k < nbReplicate; ++k)
 	{
 		currTriPtr = triPtr;
 		for (l = 0; l < numTri; ++l)
 		{
-			destBlock.setTri(index, currTriPtr[0] + currVertOffset, currTriPtr[1] + currVertOffset, currTriPtr[2] + currVertOffset);
+			ibaWrite.setTri(3*index, currTriPtr[0] + currVertOffset, currTriPtr[1] + currVertOffset, currTriPtr[2] + currVertOffset);
 			currTriPtr += 3;
 			++ index;
 		}
 		currVertOffset += vertOffset;
 	}
-
-
-	// duplicate quads
-	uint numQuad = srcBlock.getNumQuad();
-	destBlock.reserveQuad(numQuad * nbReplicate);
-	
-	index = 0;
-	currVertOffset = 0;
-
-	const uint32 *QuadPtr = srcBlock.getQuadPointer();
-	const uint32 *currQuadPtr; // current Quad
-	for (k = 0; k < nbReplicate; ++k)
-	{
-		currQuadPtr = QuadPtr;
-		for (l = 0; l < numQuad; ++l)
-		{
-			destBlock.setQuad(index, currQuadPtr[0] + currVertOffset, currQuadPtr[1] + currVertOffset, currQuadPtr[2] + currVertOffset, currQuadPtr[3] + currVertOffset);
-			currQuadPtr += 4;
-			++ index;
-		}
-		currVertOffset += vertOffset;
-	}
-
-	// duplicate lines
-	uint numLine = srcBlock.getNumLine();
-	destBlock.reserveLine(numLine * nbReplicate);
-	
-	index = 0;
-	currVertOffset = 0;
-
-	const uint32 *LinePtr = srcBlock.getLinePointer();
-	const uint32 *currLinePtr; // current Line
-	for (k = 0; k < nbReplicate; ++k)
-	{
-		currLinePtr = LinePtr;
-		for (l = 0; l < numLine; ++l)
-		{
-			destBlock.setLine(index, currLinePtr[0] + currVertOffset, currLinePtr[1] + currVertOffset);
-			currLinePtr += 4;
-			++ index;
-		}
-		currVertOffset += vertOffset;
-	}	
 
 
 	// TODO quad / strips duplication : (unimplemented in primitive blocks for now)
@@ -2073,7 +2067,7 @@ void CPSConstraintMesh::CMeshDisplayShare::buildRdrPassSet(TRdrPassSet &dest,  c
 	{
 		dest[k].Mat = m.getMaterial(m.getRdrPassMaterial(0, k));
 		dest[k].SourceMat = dest[k].Mat;
-		DuplicatePrimitiveBlock(m.getRdrPassPrimitiveBlock(0, k), dest[k].Pb, ConstraintMeshBufSize, srcVb.getNumVertices() );		
+		DuplicatePrimitiveBlock(m.getRdrPassPrimitiveBlock(0, k), dest[k].PbTri, ConstraintMeshBufSize, srcVb.getNumVertices() );		
 	}	
 }
 
@@ -2090,9 +2084,13 @@ void CPSConstraintMesh::CMeshDisplayShare::buildVB(CVertexBuffer &dest, const CM
 		dest.setUVRouting((uint8) k, meshVb.getUVRouting()[k]);
 	}
 
+	CVertexBufferReadWrite vba;
+	dest.lock (vba);
+	CVertexBufferRead vbaIn;
+	meshVb.lock (vbaIn);
 
-	uint8 *outPtr = (uint8 *) dest.getVertexCoordPointer();
-	uint8 *inPtr = (uint8 *)  meshVb.getVertexCoordPointer();
+	uint8 *outPtr = (uint8 *) vba.getVertexCoordPointer();
+	uint8 *inPtr = (uint8 *)  vbaIn.getVertexCoordPointer();
 	uint  meshSize  = dest.getVertexSize() * meshVb.getNumVertices();
 
 	if (destFormat == meshVb.getVertexFormat()) // no color added

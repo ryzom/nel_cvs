@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.44 2004/01/30 13:52:25 besson Exp $
+ * $Id: material.cpp,v 1.45 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,6 +95,7 @@ CMaterial		&CMaterial::operator=(const CMaterial &mat)
 	_Specular= mat._Specular;
 	_Shininess= mat._Shininess;
 	_AlphaTestThreshold= mat._AlphaTestThreshold;
+	_TexCoordGenMode= mat._TexCoordGenMode;
 
 	for(uint32 i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 	{
@@ -131,7 +132,7 @@ CMaterial		&CMaterial::operator=(const CMaterial &mat)
 CMaterial::~CMaterial()
 {
 	// Must kill the drv mirror of this material.
-	pShader.kill();	
+	_MatDrvInfo.kill();	
 }
 
 
@@ -139,6 +140,8 @@ CMaterial::~CMaterial()
 void		CMaterial::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 8:
+		- Serial _TexCoordGenMode
 	Version 7:
 		- Lightmap color and Mulx2
 	Version 6:
@@ -157,7 +160,7 @@ void		CMaterial::serial(NLMISC::IStream &f)
 		- base version.
 	*/
 
-	sint	ver= f.serialVersion(7);
+	sint	ver= f.serialVersion(8);
 	// For the version <=1:
 	nlassert(IDRV_MAT_MAXTEXTURES==4);
 
@@ -177,6 +180,12 @@ void		CMaterial::serial(NLMISC::IStream &f)
 	{
 		f.serial(_AlphaTestThreshold);
 	}
+	if(ver>=8)
+	{
+		f.serial(_TexCoordGenMode);
+	}
+	else
+		_TexCoordGenMode = 0;
 
 
 	for(uint32 i=0;i<IDRV_MAT_MAXTEXTURES;i++)
@@ -564,13 +573,13 @@ void		CMaterial::selectTextureSet(uint index)
 }
 
 // ***************************************************************************
-void		CMaterial::setTexCoordGenMode(uint stage, TTexCoordGenMode mode)
+
+IMaterialDrvInfos::~IMaterialDrvInfos()
 {
-	if(stage>=IDRV_MAT_MAXTEXTURES)
-		return;
-	_TexCoordGenMode&= ~ (IDRV_MAT_TEX_GEN_MASK << (stage*IDRV_MAT_TEX_GEN_SHIFT));
-	_TexCoordGenMode|=   ((mode&IDRV_MAT_TEX_GEN_MASK) << (stage*IDRV_MAT_TEX_GEN_SHIFT));
+	_Driver->removeMatDrvInfoPtr(_DriverIterator);
 }
+
+// ***************************************************************************
 
 }
 

@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.h
  *
- * $Id: seg_remanence_shape.h,v 1.7 2003/12/18 18:02:52 vizerie Exp $
+ * $Id: seg_remanence_shape.h,v 1.8 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -36,7 +36,7 @@
 #include "3d/shape.h"
 #include "3d/material.h"
 #include "3d/vertex_buffer.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/animated_material.h"
 
 
@@ -175,7 +175,7 @@ private:
 	//
 	CMaterial					_Mat;
 	CVertexBuffer				_VB;
-	CPrimitiveBlock				_PB;
+	CIndexBuffer				_PB;
 	/// For clipping.
 	NLMISC::CAABBoxExt			_BBox;
 	CMaterialBase				*_AnimatedMat;

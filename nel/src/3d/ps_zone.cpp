@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.25 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.26 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "3d/ps_zone.h"
 #include "3d/vertex_buffer.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/material.h"
 #include "3d/ps_util.h"
 #include "3d/dru.h"

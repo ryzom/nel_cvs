@@ -1,7 +1,7 @@
 /** \file ps_dot.cpp
  * Dot particles
  *
- * $Id: ps_dot.cpp,v 1.5 2003/12/05 11:08:17 vizerie Exp $
+ * $Id: ps_dot.cpp,v 1.6 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,9 @@ inline void DrawDot(T it,
 					uint32 srcStep
 				   )
 {	
+	CVertexBufferReadWrite vba;
+	vb.lock (vba);
+
 	nlassert(leftToDo != 0);
 	const uint total = leftToDo;
 	T itEnd;
@@ -68,10 +71,11 @@ inline void DrawDot(T it,
 
 		if (colorScheme)
 		{
+			// todo hulud d3d vertex color RGBA / BGRA
 			// compute the colors
 			colorScheme->make(owner,
 							  total - leftToDo,
-							  vb.getColorPointer(),
+							  vba.getColorPointer(),
 							  vb.getVertexSize(),
 							  toProcess,
 							  false,
@@ -79,7 +83,7 @@ inline void DrawDot(T it,
 							 );
 
 			itEnd = it + toProcess;			
-			uint8    *currPos = (uint8 *) vb.getVertexCoordPointer();	
+			uint8    *currPos = (uint8 *) vba.getVertexCoordPointer();	
 			uint32 stride = vb.getVertexSize();
 			do
 			{
@@ -93,13 +97,13 @@ inline void DrawDot(T it,
 		else if (srcStep == (1 << 16)) // make sure we haven't got auto-lod and that the step is 1.0
 		{
 			// there's no color information in the buffer, so we can copy it directly
-			::memcpy(vb.getVertexCoordPointer(), &(*it), sizeof(NLMISC::CVector) * toProcess);
+			::memcpy(vba.getVertexCoordPointer(), &(*it), sizeof(NLMISC::CVector) * toProcess);
 			it += toProcess;
 		}
 		else
 		{
 			itEnd = it + toProcess;			
-			uint8    *currPos = (uint8 *) vb.getVertexCoordPointer();				
+			uint8    *currPos = (uint8 *) vba.getVertexCoordPointer();				
 			do
 			{
 				CHECK_VERTEX_BUFFER(vb, currPos);
@@ -110,7 +114,7 @@ inline void DrawDot(T it,
 			while (it != itEnd);
 		}
 				
-		driver->renderPoints(mat, toProcess);
+		driver->renderRawPoints(mat, 0, toProcess);
 
 		leftToDo -= toProcess;
 	}

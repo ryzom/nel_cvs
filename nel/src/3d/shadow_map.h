@@ -1,7 +1,7 @@
 /** \file shadow_map.h
  * <File description>
  *
- * $Id: shadow_map.h,v 1.2 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: shadow_map.h,v 1.3 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -29,7 +29,6 @@
 #include "nel/misc/types_nl.h"
 #include "3d/texture.h"
 #include "3d/vertex_buffer.h"
-#include "3d/vertex_buffer_hard.h"
 #include "nel/misc/aabbox.h"
 
 

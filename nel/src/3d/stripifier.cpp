@@ -1,7 +1,7 @@
 /** \file stripifier.cpp
  * <File description>
  *
- * $Id: stripifier.cpp,v 1.4 2003/03/17 17:34:05 berenguier Exp $
+ * $Id: stripifier.cpp,v 1.5 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ CStripifier::CStripifier()
 	NVidia(tm) 's method get better performance (8ms on 50K faces meshe, instead of 8.9ms), but 
 	precomputing is much slower (1'40 instead of 0'??  :)  ).
 */
-/*void		CStripifier::optimizeTriangles(const CPrimitiveBlock &in, CPrimitiveBlock &out, uint cacheSize)
+/*void		CStripifier::optimizeTriangles(const CIndexBuffer &in, CIndexBuffer &out, uint cacheSize)
 {
 	NvStripifier	stripifier;
 	WordVec			inIndices;
@@ -60,7 +60,7 @@ CStripifier::CStripifier()
 	inIndices.resize(in.getNumTri()*3);
 	for(i=0;i< (sint)inIndices.size(); i++)
 	{
-		inIndices[i]= in.getTriPointer()[i];
+		inIndices[i]= in.getPtr()[i];
 	}
 
 	// build strips.
@@ -161,9 +161,13 @@ struct	COrderFace
 	sint	v[3];
 	bool	Inserted;
 
-	void	insertInPB(CPrimitiveBlock &out, CVertexCache &vertexCache)
+	void	insertInPB(CIndexBuffer &out, CVertexCache &vertexCache)
 	{
-		out.addTri(v[0], v[1], v[2]);
+		uint index = out.getNumIndexes ();
+		out.setNumIndexes (index+3);
+		CIndexBufferReadWrite ibaWrite;
+		out.lock (ibaWrite);
+		ibaWrite.setTri(index, v[0], v[1], v[2]);
 		vertexCache.touchVertex(v[0]);
 		vertexCache.touchVertex(v[1]);
 		vertexCache.touchVertex(v[2]);
@@ -193,19 +197,19 @@ struct	CCornerNode
 
 
 // ***************************************************************************
-void		CStripifier::optimizeTriangles(const CPrimitiveBlock &in, CPrimitiveBlock &out, uint cacheSize)
+void		CStripifier::optimizeTriangles(const CIndexBuffer &in, CIndexBuffer &out, uint cacheSize)
 {
 	vector<COrderFace>	inFaces;
 	sint			i;
-	sint			numTris= in.getNumTri();
+	sint			numTris= in.getNumIndexes()/3;
 
 	// TestYoyo: All the same tri => perfect vertex caching...
 	/*out.setNumTri(numTris);
 	for(i=0;i< numTris; i++)
 	{
-		uint32	v0= *(in.getTriPointer()+0);
-		uint32	v1= *(in.getTriPointer()+1);
-		uint32	v2= *(in.getTriPointer()+2);
+		uint32	v0= *(in.getPtr()+0);
+		uint32	v1= *(in.getPtr()+1);
+		uint32	v2= *(in.getPtr()+2);
 		out.setTri(i, v0, v1, v2);
 	}
 	return;*/
@@ -213,13 +217,17 @@ void		CStripifier::optimizeTriangles(const CPrimitiveBlock &in, CPrimitiveBlock 
 
 	// prepare inIndices.
 	//--------------------
-	inFaces.resize(numTris);
-	for(i=0;i< numTris; i++)
 	{
-		inFaces[i].v[0]= in.getTriPointer()[i*3 + 0];
-		inFaces[i].v[1]= in.getTriPointer()[i*3 + 1];
-		inFaces[i].v[2]= in.getTriPointer()[i*3 + 2];
-		inFaces[i].Inserted= false;
+		CIndexBufferRead ibaRead;
+		in.lock (ibaRead);
+		inFaces.resize(numTris);
+		for(i=0;i< numTris; i++)
+		{
+			inFaces[i].v[0]= ibaRead.getPtr()[i*3 + 0];
+			inFaces[i].v[1]= ibaRead.getPtr()[i*3 + 1];
+			inFaces[i].v[2]= ibaRead.getPtr()[i*3 + 2];
+			inFaces[i].Inserted= false;
+		}
 	}
 
 
@@ -266,8 +274,8 @@ void		CStripifier::optimizeTriangles(const CPrimitiveBlock &in, CPrimitiveBlock 
 
 	// build output optimized triangles
 	//--------------------
-	out.setNumTri(0);
-	out.reserveTri(numTris);
+	out.setNumIndexes(0);
+	out.reserve(3*numTris);
 
 	for(i=0; i<numTris; i++)
 	{

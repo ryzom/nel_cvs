@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.66 2004/02/20 14:43:49 vizerie Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.67 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 
 #include "stdopengl.h"
 
+#include "driver_opengl.h"
 #include "3d/texture_cube.h"
 #include "nel/misc/rect.h"
 #include "nel/misc/file.h" // temp
@@ -510,12 +511,29 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 												GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
 												GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB };
 				CTextureCube *pTC = NLMISC::safe_cast<CTextureCube *>(&tex);
+				
 				// Regenerate all the texture.
 				tex.generate();					
+
 				for(uint nText = 0; nText < 6; ++nText)
 				if(pTC->getTexture((CTextureCube::TFace)nText) != NULL)
 				{
 					ITexture *pTInTC = pTC->getTexture((CTextureCube::TFace)nText);
+
+					// In open GL, we have to flip the faces of the cube map
+					if( ((CTextureCube::TFace)nText) == CTextureCube::positive_x )
+						pTInTC->flipH();
+					if( ((CTextureCube::TFace)nText) == CTextureCube::negative_x )
+						pTInTC->flipH();
+					if( ((CTextureCube::TFace)nText) == CTextureCube::positive_y )
+						pTInTC->flipH();
+					if( ((CTextureCube::TFace)nText) == CTextureCube::negative_y )
+						pTInTC->flipH();
+					if( ((CTextureCube::TFace)nText) == CTextureCube::positive_z )
+						pTInTC->flipV();
+					if( ((CTextureCube::TFace)nText) == CTextureCube::negative_z )
+						pTInTC->flipV();
+
 					// Get the correct texture format from texture...
 					GLint	glfmt= getGlTextureFormat(*pTInTC, gltext->Compressed);
 					GLint	glSrcFmt= getGlSrcTextureFormat(*pTInTC, glfmt);
@@ -1228,6 +1246,104 @@ uint CDriverGL::getTextureHandle(const ITexture &tex)
 	return t0->ID;
 }
 
+// ***************************************************************************
+
+/*
+	Under opengl, "render to texture" uses the frame buffer. The scene is rendered into the current frame buffer and the result
+	is copied into the texture.
+
+	setRenderTarget (tex) does nothing but backup the framebuffer area used and updates the viewport and the frustum.
+	setRenderTarget (NULL) copies the modified framebuffer area into "tex" and then, updates the viewport and the frustum.
+ */
+
+bool CDriverGL::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, uint32 mipmapLevel, uint32 cubeFace)
+{
+	// Have a previous texture ?
+	if (_TextureTarget && _TextureTarget != tex && _TextureTargetUpdload)
+	{
+		// Flush it
+		copyFrameBufferToTexture (_TextureTarget, _TextureTargetLevel, _TextureTargetX, _TextureTargetY, 0,
+			0, _TextureTargetWidth, _TextureTargetHeight);
+	}
+
+	// Backup the texture
+	_TextureTarget = tex;
+
+	// Set a new texture as render target ?
+	if (tex)
+	{
+		// Backup the parameters
+		_TextureTargetLevel = mipmapLevel;
+		_TextureTargetX = x;
+		_TextureTargetY = y;
+		_TextureTargetWidth = width;
+		_TextureTargetHeight = height;
+		_TextureTargetUpdload = true;
+	}
+
+	// Update the viewport
+	setupViewport (_CurrViewport);		
+
+	return true;
+}
+
+// ***************************************************************************
+
+bool CDriverGL::copyTargetToTexture (ITexture *tex,
+												 uint32 offsetx,
+												 uint32 offsety,
+												 uint32 x,
+												 uint32 y,
+												 uint32 width,
+												 uint32 height,
+		                                         uint32 mipmapLevel)
+{
+	if (!_TextureTarget)
+		return false;
+	_TextureTargetUpdload = false;
+	if ((width == 0) || (height == 0))
+	{
+		uint32 _width;
+		uint32 _height;
+		getRenderTargetSize (_width, _height);
+		if (width == 0)
+			width = _width;
+		if (height == 0)
+			height = _height;
+	}
+	copyFrameBufferToTexture(tex, mipmapLevel, offsetx, offsety, x, y, width, height);
+	return true;
+}
+
+// ***************************************************************************
+
+bool CDriverGL::getRenderTargetSize (uint32 &width, uint32 &height)
+{
+	if (_TextureTarget)
+	{
+		width = _TextureTarget->getWidth();
+		height = _TextureTarget->getHeight();
+	}
+	else
+	{
+#ifdef NL_OS_WINDOWS
+		width = _WindowWidth;
+		height = _WindowHeight;
+#else // NL_OS_WINDOWS
+	XWindowAttributes win_attributes;
+	if (!XGetWindowAttributes(dpy, win, &win_attributes))
+		throw EBadDisplay("Can't get window attributes.");
+
+	// Setup gl viewport
+	width = win_attributes.width;
+	height = win_attributes.height;
+#endif // NL_OS_WINDOWS
+	}
+
+	return false;
+}
+
+// ***************************************************************************
 
 } // NL3D
 

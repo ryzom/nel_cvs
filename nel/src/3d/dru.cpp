@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.38 2003/08/07 08:28:02 berenguier Exp $
+ * $Id: dru.cpp,v 1.39 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "3d/driver.h"
 #include "3d/material.h"
 #include "3d/vertex_buffer.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 
 
 #ifdef NL_OS_WINDOWS
@@ -66,7 +66,7 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 	// WINDOWS code.
 	HINSTANCE			hInst;
 
-	hInst=LoadLibrary(NL3D_DLL_NAME);
+	hInst=LoadLibrary(NL3D_GL_DLL_NAME);
 
 	if (!hInst)
 	{
@@ -74,8 +74,8 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 	}
 
 	char buffer[1024], *ptr;
-	SearchPath (NULL, NL3D_DLL_NAME, NULL, 1023, buffer, &ptr);
-	nlinfo ("Using the library '"NL3D_DLL_NAME"' that is in the directory: '%s'", buffer);
+	SearchPath (NULL, NL3D_GL_DLL_NAME, NULL, 1023, buffer, &ptr);
+	nlinfo ("Using the library '"NL3D_GL_DLL_NAME"' that is in the directory: '%s'", buffer);
 
 	createDriver = (IDRV_CREATE_PROC) GetProcAddress (hInst, IDRV_CREATE_PROC_NAME);
 	if (createDriver == NULL)
@@ -94,11 +94,11 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 
 #elif defined (NL_OS_UNIX)
 
-	void *handle = dlopen(NL3D_DLL_NAME, RTLD_NOW);
+	void *handle = dlopen(NL3D_GL_DLL_NAME, RTLD_NOW);
 
 	if (handle == NULL)
 	{
-		nlwarning ("when loading dynamic library '%s': %s", NL3D_DLL_NAME, dlerror());
+		nlwarning ("when loading dynamic library '%s': %s", NL3D_GL_DLL_NAME, dlerror());
 		throw EDruOpenglDriverNotFound();
 	}
 
@@ -106,7 +106,7 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 	createDriver = (IDRV_CREATE_PROC) dlsym (handle, IDRV_CREATE_PROC_NAME);
 	if (createDriver == NULL)
 	{
-		nlwarning ("when getting function in dynamic library '%s': %s", NL3D_DLL_NAME, dlerror());
+		nlwarning ("when getting function in dynamic library '%s': %s", NL3D_GL_DLL_NAME, dlerror());
 		throw EDruOpenglDriverCorrupted();
 	}
 
@@ -131,8 +131,54 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 	return ret;
 }
 
+// ***************************************************************************
+
+#ifdef NL_OS_WINDOWS
+IDriver		*CDRU::createD3DDriver() throw (EDru)
+{
+	IDRV_CREATE_PROC	createDriver = NULL;
+	IDRV_VERSION_PROC	versionDriver = NULL;
+
+	// WINDOWS code.
+	HINSTANCE			hInst;
+
+	hInst=LoadLibrary(NL3D_D3D_DLL_NAME);
+
+	if (!hInst)
+	{
+		throw EDruDirect3dDriverNotFound();
+	}
+
+	char buffer[1024], *ptr;
+	SearchPath (NULL, NL3D_D3D_DLL_NAME, NULL, 1023, buffer, &ptr);
+	nlinfo ("Using the library '"NL3D_D3D_DLL_NAME"' that is in the directory: '%s'", buffer);
+
+	createDriver = (IDRV_CREATE_PROC) GetProcAddress (hInst, IDRV_CREATE_PROC_NAME);
+	if (createDriver == NULL)
+	{
+		throw EDruDirect3dDriverCorrupted();
+	}
+
+	versionDriver = (IDRV_VERSION_PROC) GetProcAddress (hInst, IDRV_VERSION_PROC_NAME);
+	if (versionDriver != NULL)
+	{
+		if (versionDriver()<IDriver::InterfaceVersion)
+			throw EDruDirect3dDriverOldVersion();
+		else if (versionDriver()>IDriver::InterfaceVersion)
+			throw EDruDirect3dDriverUnknownVersion();
+	}
+
+	IDriver		*ret= createDriver();
+	if (ret == NULL)
+	{
+		throw EDruDirect3dDriverCantCreateDriver();
+	}
+	return ret;
+}
+#endif // NL_OS_WINDOWS
 
 // ***************************************************************************
+
 void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& texture, IDriver& driver, CViewport viewport, bool blend)
 {
 	CMatrix mtx;
@@ -151,21 +197,31 @@ void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& te
 	static CVertexBuffer vb;
 	vb.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag);
 	vb.setNumVertices (4);
-	vb.setVertexCoord (0, CVector (x, 0, y));
-	vb.setVertexCoord (1, CVector (x+width, 0, y));
-	vb.setVertexCoord (2, CVector (x+width, 0, y+height));
-	vb.setVertexCoord (3, CVector (x, 0, y+height));
-	vb.setTexCoord (0, 0, 0.f, 1.f);
-	vb.setTexCoord (1, 0, 1.f, 1.f);
-	vb.setTexCoord (2, 0, 1.f, 0.f);
-	vb.setTexCoord (3, 0, 0.f, 0.f);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, CVector (x, 0, y));
+		vba.setVertexCoord (1, CVector (x+width, 0, y));
+		vba.setVertexCoord (2, CVector (x+width, 0, y+height));
+		vba.setVertexCoord (3, CVector (x, 0, y+height));
+		vba.setTexCoord (0, 0, 0.f, 1.f);
+		vba.setTexCoord (1, 0, 1.f, 1.f);
+		vba.setTexCoord (2, 0, 1.f, 0.f);
+		vba.setTexCoord (3, 0, 0.f, 0.f);
+	}
 	driver.activeVertexBuffer(vb);
 
-	CPrimitiveBlock pb;
-	pb.setNumQuad (1);
-	pb.setQuad (0, 0, 1, 2, 3);
+	static CIndexBuffer pb;
+	pb.setNumIndexes (6);
+	{
+		CIndexBufferReadWrite iba;
+		pb.lock (iba);
+		iba.setTri (0, 0, 1, 2);
+		iba.setTri (3, 2, 3, 0);
+	}
 
-	driver.render(pb, mat);
+	driver.activeIndexBuffer(pb);
+	driver.renderTriangles(mat, 0, 2);
 }
 
 
@@ -190,15 +246,24 @@ void	CDRU::drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	static CVertexBuffer vb;
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (2);
-	vb.setVertexCoord (0, CVector (x0, 0, y0));
-	vb.setVertexCoord (1, CVector (x1, 0, y1));
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, CVector (x0, 0, y0));
+		vba.setVertexCoord (1, CVector (x1, 0, y1));
+	}
 	driver.activeVertexBuffer(vb);
 
-	CPrimitiveBlock pb;
-	pb.setNumLine (1);
-	pb.setLine (0, 0, 1);
+	static CIndexBuffer pb;
+	pb.setNumIndexes (2);
+	{
+		CIndexBufferReadWrite iba;
+		pb.lock (iba);
+		iba.setLine (0, 0, 1);
+	}
 
-	driver.render(pb, mat);
+	driver.activeIndexBuffer(pb);
+	driver.renderLines(mat, 0, 1);
 }
 
 
@@ -223,16 +288,25 @@ void	CDRU::drawTriangle (float x0, float y0, float x1, float y1, float x2, float
 	static CVertexBuffer vb;
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (3);
-	vb.setVertexCoord (0, CVector (x0, 0, y0));
-	vb.setVertexCoord (1, CVector (x1, 0, y1));
-	vb.setVertexCoord (2, CVector (x2, 0, y2));
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, CVector (x0, 0, y0));
+		vba.setVertexCoord (1, CVector (x1, 0, y1));
+		vba.setVertexCoord (2, CVector (x2, 0, y2));
+	}
 	driver.activeVertexBuffer(vb);
 
-	CPrimitiveBlock pb;
-	pb.setNumTri (1);
-	pb.setTri (0, 0, 1, 2);
+	static CIndexBuffer pb;
+	pb.setNumIndexes (3);
+	{
+		CIndexBufferReadWrite iba;
+		pb.lock (iba);
+		iba.setTri (0, 0, 1, 2);
+	}
 
-	driver.render(pb, mat);
+	driver.activeIndexBuffer(pb);
+	driver.renderTriangles(mat, 0, 1);
 }
 
 
@@ -258,18 +332,17 @@ void	CDRU::drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	static CVertexBuffer vb;
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (4);
-	vb.setVertexCoord (0, CVector (x0, 0, y0));
-	vb.setVertexCoord (1, CVector (x1, 0, y0));
-	vb.setVertexCoord (2, CVector (x1, 0, y1));
-	vb.setVertexCoord (3, CVector (x0, 0, y1));
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, CVector (x0, 0, y0));
+		vba.setVertexCoord (1, CVector (x1, 0, y0));
+		vba.setVertexCoord (2, CVector (x1, 0, y1));
+		vba.setVertexCoord (3, CVector (x0, 0, y1));
+	}
 	
 	driver.activeVertexBuffer(vb);
-
-	CPrimitiveBlock pb;
-	pb.setNumQuad (1);
-	pb.setQuad (0, 0, 1, 2, 3);
-
-	driver.render(pb, mat);
+	driver.renderRawQuads(mat, 0, 1);
 }
 
 
@@ -294,18 +367,17 @@ void	CDRU::drawQuad (float xcenter, float ycenter, float radius, IDriver& driver
 	static CVertexBuffer vb;
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (4);
-	vb.setVertexCoord (0, CVector (xcenter-radius, 0, ycenter-radius));
-	vb.setVertexCoord (1, CVector (xcenter+radius, 0, ycenter-radius));
-	vb.setVertexCoord (2, CVector (xcenter+radius, 0, ycenter+radius));
-	vb.setVertexCoord (3, CVector (xcenter-radius, 0, ycenter+radius));
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, CVector (xcenter-radius, 0, ycenter-radius));
+		vba.setVertexCoord (1, CVector (xcenter+radius, 0, ycenter-radius));
+		vba.setVertexCoord (2, CVector (xcenter+radius, 0, ycenter+radius));
+		vba.setVertexCoord (3, CVector (xcenter-radius, 0, ycenter+radius));
+	}
 	
 	driver.activeVertexBuffer(vb);
-
-	CPrimitiveBlock pb;
-	pb.setNumQuad (1);
-	pb.setQuad (0, 0, 1, 2, 3);
-
-	driver.render(pb, mat);
+	driver.renderRawQuads(mat, 0, 1);
 }
 
 
@@ -344,22 +416,29 @@ void			CDRU::drawTrianglesUnlit(const NLMISC::CTriangleUV	*trilist, sint ntris, 
 	vb.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 	vb.setNumVertices (ntris*3);
 
-	static	CPrimitiveBlock pb;
-	pb.setNumTri(ntris);
+	static	CIndexBuffer pb;
+	pb.setNumIndexes(ntris*3);
 
-	for(sint i=0;i<ntris;i++)
 	{
-		vb.setVertexCoord (i*3+0, trilist[i].V0);
-		vb.setVertexCoord (i*3+1, trilist[i].V1);
-		vb.setVertexCoord (i*3+2, trilist[i].V2);
-		vb.setTexCoord (i*3+0, 0, trilist[i].Uv0);
-		vb.setTexCoord (i*3+1, 0, trilist[i].Uv1);
-		vb.setTexCoord (i*3+2, 0, trilist[i].Uv2);
-		pb.setTri(i, i*3+0, i*3+1, i*3+2);
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		CIndexBufferReadWrite iba;
+		pb.lock (iba);
+		for(sint i=0;i<ntris;i++)
+		{
+			vba.setVertexCoord (i*3+0, trilist[i].V0);
+			vba.setVertexCoord (i*3+1, trilist[i].V1);
+			vba.setVertexCoord (i*3+2, trilist[i].V2);
+			vba.setTexCoord (i*3+0, 0, trilist[i].Uv0);
+			vba.setTexCoord (i*3+1, 0, trilist[i].Uv1);
+			vba.setTexCoord (i*3+2, 0, trilist[i].Uv2);
+			iba.setTri(i*3, i*3+0, i*3+1, i*3+2);
+		}
 	}
 	
 	driver.activeVertexBuffer(vb);
-	driver.render(pb, mat);
+	driver.activeIndexBuffer(pb);
+	driver.renderTriangles(mat, 0, ntris);
 }
 
 
@@ -380,18 +459,25 @@ void			CDRU::drawLinesUnlit(const NLMISC::CLine	*linelist, sint nlines, CMateria
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (nlines*2);
 
-	static	CPrimitiveBlock pb;
-	pb.setNumLine(nlines);
+	static	CIndexBuffer pb;
+	pb.setNumIndexes(nlines*2);
 
-	for(sint i=0;i<nlines;i++)
 	{
-		vb.setVertexCoord (i*2+0, linelist[i].V0);
-		vb.setVertexCoord (i*2+1, linelist[i].V1);
-		pb.setLine(i, i*2+0, i*2+1);
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		CIndexBufferReadWrite iba;
+		pb.lock (iba);
+		for(sint i=0;i<nlines;i++)
+		{
+			vba.setVertexCoord (i*2+0, linelist[i].V0);
+			vba.setVertexCoord (i*2+1, linelist[i].V1);
+			iba.setLine(i*2, i*2+0, i*2+1);
+		}
 	}
 	
 	driver.activeVertexBuffer(vb);
-	driver.render(pb, mat);
+	driver.activeIndexBuffer(pb);
+	driver.renderLines(mat, 0, nlines);
 }
 // ***************************************************************************
 void			CDRU::drawLinesUnlit(const std::vector<NLMISC::CLine> &linelist, CMaterial &mat, IDriver& driver)
@@ -440,22 +526,21 @@ void			CDRU::drawQuad (float x0, float y0, float x1, float y1, CRGBA col0, CRGBA
 	static CVertexBuffer vb;
 	vb.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::PrimaryColorFlag);
 	vb.setNumVertices (4);
-	vb.setVertexCoord (0, CVector (x0, 0, y0));
-	vb.setColor (0, col0);
-	vb.setVertexCoord (1, CVector (x1, 0, y0));
-	vb.setColor (1, col1);
-	vb.setVertexCoord (2, CVector (x1, 0, y1));
-	vb.setColor (2, col2);
-	vb.setVertexCoord (3, CVector (x0, 0, y1));
-	vb.setColor (3, col3);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord (0, CVector (x0, 0, y0));
+		vba.setColor (0, col0);
+		vba.setVertexCoord (1, CVector (x1, 0, y0));
+		vba.setColor (1, col1);
+		vba.setVertexCoord (2, CVector (x1, 0, y1));
+		vba.setColor (2, col2);
+		vba.setVertexCoord (3, CVector (x0, 0, y1));
+		vba.setColor (3, col3);
+	}
 
 	driver.activeVertexBuffer(vb);
-
-	CPrimitiveBlock pb;
-	pb.setNumQuad (1);
-	pb.setQuad (0, 0, 1, 2, 3);
-
-	driver.render(pb, mat);
+	driver.renderRawQuads(mat, 0, 1);
 }
 
 // ***************************************************************************

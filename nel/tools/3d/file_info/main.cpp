@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.14 2003/12/16 18:01:11 corvazier Exp $
+ * $Id: main.cpp,v 1.15 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,7 @@ void	displayGeom(FILE *logStream, const CMeshGeom &geom)
 	{
 		for(j=0;j<geom.getNbRdrPass(i);j++)
 		{
-			numFaces+= geom.getRdrPassPrimitiveBlock(i,j).getNumTri();
+			numFaces+= geom.getRdrPassPrimitiveBlock(i,j).getNumIndexes()/3;
 		}
 	}
 	fprintf(logStream, "Standard Mesh %s\n", geom.isSkinned()?"Skinned":"" );
@@ -72,7 +72,7 @@ void	displayMRMGeom(FILE *logStream, const CMeshMRMGeom &geom)
 	{
 		for(j=0;j<geom.getNbRdrPass(i);j++)
 		{
-			uint	nPassFaces= geom.getRdrPassPrimitiveBlock(i,j).getNumTri();
+			uint	nPassFaces= geom.getRdrPassPrimitiveBlock(i,j).getNumIndexes()/3;
 			numFaces+= nPassFaces;
 			if(i==geom.getNbLod()-1)
 				numFacesLodMax+= nPassFaces;
@@ -99,9 +99,9 @@ void	displayMRMSkinnedGeom(FILE *logStream, const CMeshMRMSkinnedGeom &geom)
 	{
 		for(j=0;j<geom.getNbRdrPass(i);j++)
 		{
-			CPrimitiveBlock block;
+			CIndexBuffer block;
 			geom.getRdrPassPrimitiveBlock(i,j,block);
-			uint	nPassFaces= block.getNumTri();
+			uint	nPassFaces= block.getNumIndexes()*3;
 			numFaces+= nPassFaces;
 			if(i==geom.getNbLod()-1)
 				numFacesLodMax+= nPassFaces;

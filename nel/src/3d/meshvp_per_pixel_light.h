@@ -1,7 +1,7 @@
 /** \file meshvp_per_pixel_light.h
  * <File description>
  *
- * $Id: meshvp_per_pixel_light.h,v 1.2 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: meshvp_per_pixel_light.h,v 1.3 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -77,10 +77,6 @@ public:
 										 CScene *scene,
 										 CVertexBuffer *vb
 										);
-		virtual void	setupForMaterial(const CMaterial &mat,
-									 IDriver *drv,
-									 CScene *scene,
-									 IVertexBufferHard *vb);
 		virtual	bool	needTangentSpace() const { return true; }
 		NLMISC_DECLARE_CLASS(CMeshVPPerPixelLight);
 	// @}			

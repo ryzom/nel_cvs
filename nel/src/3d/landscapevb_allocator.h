@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.h
  * <File description>
  *
- * $Id: landscapevb_allocator.h,v 1.6 2003/08/07 08:47:52 berenguier Exp $
+ * $Id: landscapevb_allocator.h,v 1.7 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,9 +110,6 @@ public:
 	void			unlockBuffer();
 	bool			bufferLocked() const {return _BufferLocked;}
 
-	/// only if ATI VBHard is enabled intenally. Copy the entire VBuffer to _ATIVBHard. This last is used in activate().
-	void			synchronizeATIVBHard();
-
 	/** activate the VB or the VBHard in Driver setuped. nlassert if driver is NULL or if buffer is locked.
 	 * If vertexProgram possible, activate the vertexProgram too. 
 	 * Give a vertexProgram Id to activate. Always 0, but 1 For tile Lightmap Pass.
@@ -140,6 +137,8 @@ private:
 	std::vector<CVertexInfo>	_VertexInfos;
 	uint						_NumVerticesAllocated;
 
+	class CFarVertexBufferInfo	*_LastFarVB;
+	class CNearVertexBufferInfo	*_LastNearVB;
 
 	/// \name VB mgt .
 	// @{
@@ -147,9 +146,7 @@ private:
 	// a refPtr on the driver, to delete VBuffer Hard at clear().
 	NLMISC::CRefPtr<IDriver>			_Driver;
 	// tell if VBHard is possible. NB: for ATI, it is false because of slow unlock.
-	bool								_VBHardOk;
 	CVertexBuffer						_VB;
-	NLMISC::CRefPtr<IVertexBufferHard>	_VBHard;
 	bool								_BufferLocked;
 
 	/* try to create a vertexBufferHard or a vbSoft if not possible.
@@ -157,13 +154,6 @@ private:
 	*/
 	void				deleteVertexBuffer();
 	void				allocateVertexBuffer(uint32 numVertices);
-	// @}
-
-
-	/// \name Special ATI VBHard mgt.
-	// @{
-	bool								_ATIVBHardOk;
-	NLMISC::CRefPtr<IVertexBufferHard>	_ATIVBHard;
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.7 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_shockwave.cpp,v 1.8 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,7 +73,7 @@ public:
 
 		// get / build the vertex buffer and the primitive block
 		CVertexBuffer *vb;
-		CPrimitiveBlock *pb;
+		CIndexBuffer *pb;
 		s.getVBnPB(vb, pb);
 
 		const uint32 vSize = vb->getVertexSize();
@@ -109,72 +109,79 @@ public:
 
 		do
 		{
-			currVertex = (uint8 *) vb->getVertexCoordPointer();
-			toProcess = leftToDo > numShockWaveToDealWith ? numShockWaveToDealWith : leftToDo;
-			endIt = posIt + toProcess;
-			if (s._SizeScheme)
 			{
-				ptCurrSize  = (float *) (s._SizeScheme->make(s._Owner, size - leftToDo, (void *) sizes, sizeof(float), toProcess, true, srcStep));			
-			}
-			else
-			{
-				ptCurrSize = &s._ParticleSize;
-			}
+				CVertexBufferReadWrite vba;
+				vb->lock (vba);
 
-			if (s._PlaneBasisScheme)
-			{
-				ptCurrBasis  = (CPlaneBasis *) (s._PlaneBasisScheme->make(s._Owner, size - leftToDo, (void *) planeBasis, sizeof(CPlaneBasis), toProcess, true, srcStep));			
-			}
-			else
-			{
-				ptCurrBasis = &s._PlaneBasis;
-			}
-
-			if (s._Angle2DScheme)
-			{
-				ptCurrAngle  = (float *) (s._Angle2DScheme->make(s._Owner, size - leftToDo, (void *) angles, sizeof(float), toProcess, true, srcStep));			
-			}
-			else
-			{
-				ptCurrAngle = &s._Angle2D;
-			}
-			
-
-			s.updateVbColNUVForRender(size - leftToDo, toProcess, srcStep, *vb);
-			do
-			{			
-				currAngle = *ptCurrAngle;
-				if (fabsf(*ptCurrSize) > 10E-6)
+				currVertex = (uint8 *) vba.getVertexCoordPointer();
+				toProcess = leftToDo > numShockWaveToDealWith ? numShockWaveToDealWith : leftToDo;
+				endIt = posIt + toProcess;
+				if (s._SizeScheme)
 				{
-					radiusRatio = (*ptCurrSize - s._RadiusCut) / *ptCurrSize;
+					ptCurrSize  = (float *) (s._SizeScheme->make(s._Owner, size - leftToDo, (void *) sizes, sizeof(float), toProcess, true, srcStep));			
 				}
 				else
 				{
-					radiusRatio = 0.f;
+					ptCurrSize = &s._ParticleSize;
 				}
 
-				for (k = 0; k <= s._NbSeg; ++k)
+				if (s._PlaneBasisScheme)
 				{
-					radVect = *ptCurrSize * (CPSUtil::getCos((sint32) currAngle) * ptCurrBasis->X + CPSUtil::getSin((sint32) currAngle) * ptCurrBasis->Y);
-					innerVect = radiusRatio * radVect;
-					CHECK_VERTEX_BUFFER(*vb, currVertex);
-					* (CVector *) currVertex = *posIt + radVect;
-					currVertex += vSize;
-					CHECK_VERTEX_BUFFER(*vb, currVertex);
-					* (CVector *) currVertex = *posIt + innerVect;
-					currVertex += vSize;
-					currAngle += angleStep;				
+					ptCurrBasis  = (CPlaneBasis *) (s._PlaneBasisScheme->make(s._Owner, size - leftToDo, (void *) planeBasis, sizeof(CPlaneBasis), toProcess, true, srcStep));			
+				}
+				else
+				{
+					ptCurrBasis = &s._PlaneBasis;
+				}
+
+				if (s._Angle2DScheme)
+				{
+					ptCurrAngle  = (float *) (s._Angle2DScheme->make(s._Owner, size - leftToDo, (void *) angles, sizeof(float), toProcess, true, srcStep));			
+				}
+				else
+				{
+					ptCurrAngle = &s._Angle2D;
 				}
 				
-				++posIt;
-				ptCurrBasis +=  ptCurrBasisIncrement;
-				ptCurrSize  +=  ptCurrSizeIncrement;
-				ptCurrAngle  +=  ptCurrAngleIncrement;
-			}
-			while (posIt != endIt);			
 
-			pb->setNumQuad(toProcess * s._NbSeg);
-			driver->render(*pb, s._Mat);
+				s.updateVbColNUVForRender(size - leftToDo, toProcess, srcStep, *vb);
+				do
+				{			
+					currAngle = *ptCurrAngle;
+					if (fabsf(*ptCurrSize) > 10E-6)
+					{
+						radiusRatio = (*ptCurrSize - s._RadiusCut) / *ptCurrSize;
+					}
+					else
+					{
+						radiusRatio = 0.f;
+					}
+
+					for (k = 0; k <= s._NbSeg; ++k)
+					{
+						radVect = *ptCurrSize * (CPSUtil::getCos((sint32) currAngle) * ptCurrBasis->X + CPSUtil::getSin((sint32) currAngle) * ptCurrBasis->Y);
+						innerVect = radiusRatio * radVect;
+						CHECK_VERTEX_BUFFER(*vb, currVertex);
+						* (CVector *) currVertex = *posIt + radVect;
+						currVertex += vSize;
+						CHECK_VERTEX_BUFFER(*vb, currVertex);
+						* (CVector *) currVertex = *posIt + innerVect;
+						currVertex += vSize;
+						currAngle += angleStep;				
+					}
+					
+					++posIt;
+					ptCurrBasis +=  ptCurrBasisIncrement;
+					ptCurrSize  +=  ptCurrSizeIncrement;
+					ptCurrAngle  +=  ptCurrAngleIncrement;
+				}
+				while (posIt != endIt);			
+			}
+
+			const uint numTri = 2 * toProcess * s._NbSeg;
+			pb->setNumIndexes(3 * numTri);
+			driver->activeIndexBuffer(*pb);
+			driver->renderTriangles(s._Mat, 0, numTri);
 			leftToDo -= toProcess;		
 		}
 		while (leftToDo);
@@ -381,18 +388,21 @@ void CPSShockWave::init(void)
 void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size, uint32 srcStep, CVertexBuffer &vb)
 {
 	nlassert(_Owner);
+	CVertexBufferReadWrite vba;
+	vb.lock (vba);
 	if (!size) return;
 	if (_ColorScheme)
 	{
 		// compute the colors, each color is replicated n times...
-		_ColorScheme->makeN(_Owner, startIndex, vb.getColorPointer(), vb.getVertexSize(), size, (_NbSeg + 1) << 1, srcStep);
+		// todo hulud d3d vertex color RGBA / BGRA
+		_ColorScheme->makeN(_Owner, startIndex, vba.getColorPointer(), vb.getVertexSize(), size, (_NbSeg + 1) << 1, srcStep);
 	}
 
 	if (_TexGroup) // if it has a constant texture we are sure it has been setupped before...
 	{	
 		sint32 textureIndex[ShockWaveBufSize];
 		const uint32 stride = vb.getVertexSize(), stride2 = stride << 1;
-		uint8 *currUV = (uint8 *) vb.getTexCoordPointer();				
+		uint8 *currUV = (uint8 *) vba.getTexCoordPointer();				
 		uint k;		
 
 		uint32 currIndexIncr;
@@ -476,7 +486,7 @@ void CPSShockWave::resize(uint32 aSize)
 }
 
 ///=================================================================================
-void CPSShockWave::getVBnPB(CVertexBuffer *&retVb, CPrimitiveBlock *&retPb)
+void CPSShockWave::getVBnPB(CVertexBuffer *&retVb, CIndexBuffer *&retPb)
 {
 	TVBMap &vbMap = _ColorScheme == NULL  ? (_TexGroup == NULL ?  _VBMap : _AnimTexVBMap)
 										  : (_TexGroup == NULL ?  _ColoredVBMap : _ColoredAnimTexVBMap);
@@ -494,26 +504,34 @@ void CPSShockWave::getVBnPB(CVertexBuffer *&retVb, CPrimitiveBlock *&retPb)
 	{		
 		// create an entry (we setup the primitive block at the same time, this could be avoided, but doesn't make much difference)		
 		CVertexBuffer &vb = vbMap[_NbSeg]; // create a vb
-		CPrimitiveBlock &pb = _PBMap[_NbSeg]; // eventually create a pb
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		CIndexBuffer &pb = _PBMap[_NbSeg]; // eventually create a pb
 		const uint32 size = getNumShockWavesInVB();
 		vb.setVertexFormat(CVertexBuffer::PositionFlag |
 						   CVertexBuffer::TexCoord0Flag |
 						   (_ColorScheme != NULL ?  CVertexBuffer::PrimaryColorFlag : 0) 
 						  );	
 		vb.setNumVertices((size * (_NbSeg + 1)) << 1 );		
-		pb.reserveQuad(size * _NbSeg);
+		pb.reserve(2 * 3 * size * _NbSeg);
+		CIndexBufferReadWrite ibaWrite;
+		pb.lock (ibaWrite);
+		uint finalIndex = 0;
 		for (uint32 k = 0; k < size; ++k)
 		{
 			for (uint32 l = 0; l < _NbSeg; ++l)
 			{	
 				const uint32 index = ((k * (_NbSeg + 1)) + l) << 1;						
-				pb.setQuad(l + (k * _NbSeg) , index , index + 2, index + 3, index + 1);			
-				vb.setTexCoord(index, 0, CUV((float) l, 0));
-				vb.setTexCoord(index + 1, 0, CUV((float) l, 1));			
+				ibaWrite.setTri(finalIndex, index , index + 2, index + 3);
+				finalIndex+=3;
+				ibaWrite.setTri(finalIndex, index + 2, index + 3, index + 1);
+				finalIndex+=3;
+				vba.setTexCoord(index, 0, CUV((float) l, 0));
+				vba.setTexCoord(index + 1, 0, CUV((float) l, 1));			
 			}
 			const uint32 index = ((k * (_NbSeg + 1)) + _NbSeg) << 1;
-			vb.setTexCoord(index, 0, CUV((float) _NbSeg, 0));
-			vb.setTexCoord(index + 1, 0, CUV((float) _NbSeg, 1));			
+			vba.setTexCoord(index, 0, CUV((float) _NbSeg, 0));
+			vba.setTexCoord(index + 1, 0, CUV((float) _NbSeg, 1));			
 		}
 		retVb = &vb;
 		retPb = &pb;

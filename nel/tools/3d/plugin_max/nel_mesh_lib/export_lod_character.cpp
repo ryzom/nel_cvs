@@ -1,7 +1,7 @@
 /** \file export_lod_character.cpp
  * Export from 3dsmax a NeL lod character
  *
- * $Id: export_lod_character.cpp,v 1.3 2002/11/08 18:43:37 berenguier Exp $
+ * $Id: export_lod_character.cpp,v 1.4 2004/03/19 10:11:37 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -113,11 +113,13 @@ bool  CExportNel::buildLodCharacter (NL3D::CLodCharacterShapeBuild& lodBuild, IN
 				if( (format & CVertexBuffer::PositionFlag) && meshMRMGeom.isSkinned() )
 				{
 					uint		i;
+					CVertexBufferRead vba;
+					VB.lock (vba);
 
 					// build vertices and skinWeights
 					lodBuild.Vertices.resize(numVerts);
 					for(i=0;i<numVerts;i++)
-						lodBuild.Vertices[i]= *(CVector*)VB.getVertexCoordPointer(i);
+						lodBuild.Vertices[i]= *(const CVector*)vba.getVertexCoordPointer(i);
 					// copy skinWeights
 					lodBuild.SkinWeights= meshMRMGeom.getSkinWeights();
 					nlassert(lodBuild.SkinWeights.size() == numVerts);
@@ -130,12 +132,12 @@ bool  CExportNel::buildLodCharacter (NL3D::CLodCharacterShapeBuild& lodBuild, IN
 					if( format & CVertexBuffer::TexCoord0Flag )
 					{
 						for(i=0;i<numVerts;i++)
-							lodBuild.UVs[i]= *(CUV*)VB.getTexCoordPointer(i);
+							lodBuild.UVs[i]= *(const CUV*)vba.getTexCoordPointer(i);
 					}
 					if( format & CVertexBuffer::NormalFlag )
 					{
 						for(i=0;i<numVerts;i++)
-							lodBuild.Normals[i]= *(CVector*)VB.getNormalCoordPointer(i);
+							lodBuild.Normals[i]= *(const CVector*)vba.getNormalCoordPointer(i);
 					}
 
 					// build triangles.
@@ -145,18 +147,20 @@ bool  CExportNel::buildLodCharacter (NL3D::CLodCharacterShapeBuild& lodBuild, IN
 					uint	dstTriIdx= 0;
 					for(i=0;i<meshMRMGeom.getNbRdrPass(0);i++)
 					{
-						const CPrimitiveBlock &pb= meshMRMGeom.getRdrPassPrimitiveBlock(0, i);
-						nlassert(dstTriIdx+pb.getNumTri()*3 <= lodBuild.TriangleIndices.size());
+						const CIndexBuffer &pb= meshMRMGeom.getRdrPassPrimitiveBlock(0, i);
+						CIndexBufferRead iba;
+						pb.lock (iba);
+						nlassert(dstTriIdx+pb.getNumIndexes() <= lodBuild.TriangleIndices.size());
 						// copy the index block
-						memcpy(&lodBuild.TriangleIndices[dstTriIdx], pb.getTriPointer(), pb.getNumTri()*3*sizeof(uint32));
+						memcpy(&lodBuild.TriangleIndices[dstTriIdx], iba.getPtr(), pb.getNumIndexes()*sizeof(uint32));
 						// if the material of this pass is the 0th material, flag tris for TextureInfo selection
 						if(meshMRMGeom.getRdrPassMaterial(0,i)==0)
 						{
-							for(uint tri= dstTriIdx/3; tri<dstTriIdx/3+pb.getNumTri(); tri++)
+							for(uint tri= dstTriIdx/3; tri<dstTriIdx/3+pb.getNumIndexes()/3; tri++)
 								triangleSelection[tri]= true;
 						}
 						// next
-						dstTriIdx+= pb.getNumTri()*3;
+						dstTriIdx+= pb.getNumIndexes();
 					}
 					nlassert(dstTriIdx == lodBuild.TriangleIndices.size());
 

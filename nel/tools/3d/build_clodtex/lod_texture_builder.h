@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.h
  * <File description>
  *
- * $Id: lod_texture_builder.h,v 1.2 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: lod_texture_builder.h,v 1.3 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -92,7 +92,7 @@ private:
 	typedef TEdgeSet::iterator			ItEdgeSet;
 
 	// samples the triangles into _Samples
-	void			addSampleTris(uint8 *srcPos, uint8 *srcNormal, uint8 *srcUV, uint vertexSize, 
+	void			addSampleTris(const uint8 *srcPos, const uint8 *srcNormal, const uint8 *srcUV, uint vertexSize, 
 		const uint32 *triPointer, uint numTris, uint materialId, TEdgeSet &edgeSet);
 	/// build text with _Samples.
 	bool			computeTextureFromSamples(NL3D::CLodCharacterTexture &text);

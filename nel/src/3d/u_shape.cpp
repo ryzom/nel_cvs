@@ -1,7 +1,7 @@
 /** \file u_shape.cpp
  * <File description>
  *
- * $Id: u_shape.cpp,v 1.1 2004/03/12 16:27:52 berenguier Exp $
+ * $Id: u_shape.cpp,v 1.2 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -83,12 +83,16 @@ bool		UShape::getMeshTriangles(std::vector<NLMISC::CVector> &vertices, std::vect
 	// build vertices
 	const CVertexBuffer	&vb= meshGeom->getVertexBuffer();
 	vertices.resize(vb.getNumVertices());
-	const uint8	*pVert= (const uint8*)vb.getVertexCoordPointer(0);
-	uint		vSize= vb.getVertexSize();
-	for(i=0;i<vertices.size();i++)
 	{
-		vertices[i]= *(const CVector*)pVert;
-		pVert+= vSize;
+		CVertexBufferRead vba;
+		vb.lock (vba);
+		const uint8	*pVert= (const uint8*)vba.getVertexCoordPointer(0);
+		uint		vSize= vb.getVertexSize();
+		for(i=0;i<vertices.size();i++)
+		{
+			vertices[i]= *(const CVector*)pVert;
+			pVert+= vSize;
+		}
 	}
 
 	// count numTris
@@ -97,7 +101,7 @@ bool		UShape::getMeshTriangles(std::vector<NLMISC::CVector> &vertices, std::vect
 	{
 		for(uint rp=0;rp<meshGeom->getNbRdrPass(i);rp++)
 		{
-			numTris+= meshGeom->getRdrPassPrimitiveBlock(i, rp).getNumTri();
+			numTris+= meshGeom->getRdrPassPrimitiveBlock(i, rp).getNumIndexes()/3;
 		}
 	}
 	indices.resize(numTris*3);
@@ -108,11 +112,13 @@ bool		UShape::getMeshTriangles(std::vector<NLMISC::CVector> &vertices, std::vect
 	{
 		for(uint rp=0;rp<meshGeom->getNbRdrPass(i);rp++)
 		{
-			const CPrimitiveBlock	&pb= meshGeom->getRdrPassPrimitiveBlock(i, rp);
+			const CIndexBuffer	&pb= meshGeom->getRdrPassPrimitiveBlock(i, rp);
+			CIndexBufferRead iba;
+			pb.lock (iba);
 			// copy
-			memcpy(&indices[triIdx*3], pb.getTriPointer(), pb.getNumTri()*3*sizeof(uint32));
+			memcpy(&indices[triIdx*3], iba.getPtr(), pb.getNumIndexes()*sizeof(uint32));
 			// next
-			triIdx+= pb.getNumTri();
+			triIdx+= pb.getNumIndexes()/3;
 		}
 	}
 	

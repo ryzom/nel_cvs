@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.15 2003/03/13 14:15:50 berenguier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.16 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,7 @@ CCoarseMeshManager::CCoarseMeshManager()
 	// ** Init Geometry
 	_VBuffer.setVertexFormat(NL3D_COARSEMESH_VERTEX_FORMAT_MGR);
 	_VBuffer.setNumVertices(NL3D_COARSEMESH_VERTEXBUFFER_SIZE);
-	_Triangles.resize(NL3D_COARSEMESH_TRIANGLE_SIZE*3);
+	_Triangles.setNumIndexes(NL3D_COARSEMESH_TRIANGLE_SIZE*3);
 	_CurrentNumVertices= 0;
 	_CurrentNumTriangles= 0;
 }
@@ -99,12 +99,17 @@ bool CCoarseMeshManager::addMesh (uint numVertices, const uint8 *vBuffer, uint n
 	
 	// Copy Vertices to VBuffer
 	uint	baseVertex= _CurrentNumVertices;
-	CFastMem::memcpy(_VBuffer.getVertexCoordPointer(baseVertex), vBuffer, numVertices*_VBuffer.getVertexSize());
+	CVertexBufferReadWrite vba;
+	_VBuffer.lock (vba);
+	CFastMem::memcpy(vba.getVertexCoordPointer(baseVertex), vBuffer, numVertices*_VBuffer.getVertexSize());
+
 	// next
 	_CurrentNumVertices+= numVertices;
 
 	// Copy tris to triangles, adding baseVertex to index
-	uint32			*triDst= &_Triangles[_CurrentNumTriangles*3];
+	CIndexBufferReadWrite iba;
+	_Triangles.lock(iba);
+	uint32			*triDst= iba.getPtr()+_CurrentNumTriangles*3;
 	const uint32	*triSrc= indexBuffer;
 	uint	numIdx= numTris*3;
 	// NB: for the majority of CoarseMesh (4 faces==48 bytes of indices), not interressant to use CFastMem::precache()
@@ -132,9 +137,10 @@ void CCoarseMeshManager::flushRender (IDriver *drv)
 
 		// Set VB
 		drv->activeVertexBuffer(_VBuffer);
+		drv->activeIndexBuffer(_Triangles);
 
 		// render
-		drv->renderTriangles(_Material, &_Triangles[0], _CurrentNumTriangles);
+		drv->renderTriangles(_Material, 0, _CurrentNumTriangles);
 	}
 
 	// reset

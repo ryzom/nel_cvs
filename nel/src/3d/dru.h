@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.7 2003/08/07 08:28:02 berenguier Exp $
+ * $Id: dru.h,v 1.8 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,32 +38,40 @@
 #	if _MSC_VER >= 1300	// visual .NET, use different dll name
 // must test debug fast first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
 #		ifdef NL_DEBUG_FAST
-#			define NL3D_DLL_NAME "nldriver_opengl_df.dll"
+#			define NL3D_GL_DLL_NAME "nldriver_opengl_df.dll"
+#			define NL3D_D3D_DLL_NAME "nldriver_direct3d_df.dll"
 #		elif defined (NL_DEBUG)
-#			define NL3D_DLL_NAME "nldriver_opengl_d.dll"
+#			define NL3D_GL_DLL_NAME "nldriver_opengl_d.dll"
+#			define NL3D_D3D_DLL_NAME "nldriver_direct3d_d.dll"
 #		elif defined (NL_RELEASE_DEBUG)
-#			define NL3D_DLL_NAME "nldriver_opengl_rd.dll"
+#			define NL3D_GL_DLL_NAME "nldriver_opengl_rd.dll"
+#			define NL3D_D3D_DLL_NAME "nldriver_direct3d_rd.dll"
 #		elif defined (NL_RELEASE)
-#			define NL3D_DLL_NAME "nldriver_opengl_r.dll"
+#			define NL3D_GL_DLL_NAME "nldriver_opengl_r.dll"
+#			define NL3D_D3D_DLL_NAME "nldriver_direct3d_r.dll"
 #		else
 #			error "Unknown dll name"
 #		endif
 #	else // visual 6 or lesser
 // must test debug fast first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
 #		ifdef NL_DEBUG_FAST
-#			define NL3D_DLL_NAME "nel_drv_opengl_win_df.dll"
+#			define NL3D_GL_DLL_NAME "nel_drv_opengl_win_df.dll"
+#			define NL3D_D3D_DLL_NAME "nel_drv_direct3d_win_df.dll"
 #		elif defined (NL_DEBUG)
-#			define NL3D_DLL_NAME "nel_drv_opengl_win_d.dll"
+#			define NL3D_GL_DLL_NAME "nel_drv_opengl_win_d.dll"
+#			define NL3D_D3D_DLL_NAME "nel_drv_direct3d_win_d.dll"
 #		elif defined (NL_RELEASE_DEBUG)
-#			define NL3D_DLL_NAME "nel_drv_opengl_win_rd.dll"
+#			define NL3D_GL_DLL_NAME "nel_drv_opengl_win_rd.dll"
+#			define NL3D_D3D_DLL_NAME "nel_drv_direct3d_win_rd.dll"
 #		elif defined (NL_RELEASE)
-#			define NL3D_DLL_NAME "nel_drv_opengl_win_r.dll"
+#			define NL3D_GL_DLL_NAME "nel_drv_opengl_win_r.dll"
+#			define NL3D_D3D_DLL_NAME "nel_drv_direct3d_win_r.dll"
 #		else
 #			error "Unknown dll name"
 #		endif
 #	endif
 #elif defined (NL_OS_UNIX)
-#	define NL3D_DLL_NAME "libnel_drv_opengl.so.0"
+#	define NL3D_GL_DLL_NAME "libnel_drv_opengl.so.0"
 #else
 #	error "Unknown system"
 #endif // NL_OS_UNIX
@@ -79,28 +87,55 @@ struct EDru : public NLMISC::Exception
 
 struct EDruOpenglDriverNotFound : public EDru
 {
-	EDruOpenglDriverNotFound() : EDru( NL3D_DLL_NAME " not found" ) {}
+	EDruOpenglDriverNotFound() : EDru( NL3D_GL_DLL_NAME " not found" ) {}
 };
 
 struct EDruOpenglDriverCorrupted : public EDru
 {
-	EDruOpenglDriverCorrupted() : EDru( "Can't get NL3D_createIDriverInstance from " NL3D_DLL_NAME " (Bad dll?)" ) {}
+	EDruOpenglDriverCorrupted() : EDru( "Can't get NL3D_createIDriverInstance from " NL3D_GL_DLL_NAME " (Bad dll?)" ) {}
 };
 
 struct EDruOpenglDriverOldVersion : public EDru
 {
-	EDruOpenglDriverOldVersion() : EDru( NL3D_DLL_NAME " is a too old version. Ask for a more recent file" ) {}
+	EDruOpenglDriverOldVersion() : EDru( NL3D_GL_DLL_NAME " is a too old version. Ask for a more recent file" ) {}
 };
 
 struct EDruOpenglDriverUnknownVersion : public EDru
 {
-	EDruOpenglDriverUnknownVersion() : EDru( NL3D_DLL_NAME " is more recent than the application" ) {}
+	EDruOpenglDriverUnknownVersion() : EDru( NL3D_GL_DLL_NAME " is more recent than the application" ) {}
 };
 
 struct EDruOpenglDriverCantCreateDriver : public EDru
 {
-	EDruOpenglDriverCantCreateDriver() : EDru( NL3D_DLL_NAME " can't create driver" ) {}
+	EDruOpenglDriverCantCreateDriver() : EDru( NL3D_GL_DLL_NAME " can't create driver" ) {}
 };
+
+#ifdef NL_OS_WINDOWS
+struct EDruDirect3dDriverNotFound : public EDru
+{
+	EDruDirect3dDriverNotFound() : EDru( NL3D_D3D_DLL_NAME " not found" ) {}
+};
+
+struct EDruDirect3dDriverCorrupted : public EDru
+{
+	EDruDirect3dDriverCorrupted() : EDru( "Can't get NL3D_createIDriverInstance from " NL3D_D3D_DLL_NAME " (Bad dll?)" ) {}
+};
+
+struct EDruDirect3dDriverOldVersion : public EDru
+{
+	EDruDirect3dDriverOldVersion() : EDru( NL3D_D3D_DLL_NAME " is a too old version. Ask for a more recent file" ) {}
+};
+
+struct EDruDirect3dDriverUnknownVersion : public EDru
+{
+	EDruDirect3dDriverUnknownVersion() : EDru( NL3D_D3D_DLL_NAME " is more recent than the application" ) {}
+};
+
+struct EDruDirect3dDriverCantCreateDriver : public EDru
+{
+	EDruDirect3dDriverCantCreateDriver() : EDru( NL3D_D3D_DLL_NAME " can't create driver" ) {}
+};
+#endif // NL_OS_WINDOWS
 
 /// The driver Utilities class of static.
 class	CDRU
@@ -109,6 +144,11 @@ public:
 	
 	/// Portable Function which create a GL Driver (using gl dll...).
 	static IDriver		*createGlDriver() throw(EDru);
+	
+#ifdef NL_OS_WINDOWS
+	/// Windows Function which create a Direct3d Driver.
+	static IDriver		*createD3DDriver() throw(EDru);
+#endif // NL_OS_WINDOWS
 
 	/// \name 2D render.
 	// @{

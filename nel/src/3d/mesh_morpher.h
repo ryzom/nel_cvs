@@ -1,7 +1,7 @@
 /** \file mesh_morpher.h
  * <File description>
  *
- * $Id: mesh_morpher.h,v 1.5 2003/12/10 12:47:33 berenguier Exp $
+ * $Id: mesh_morpher.h,v 1.6 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,6 @@ namespace NL3D
 {
 
 class CVertexBuffer;
-class IVertexBufferHard;
 class CRawSkinVertex;
 
 // ***************************************************************************
@@ -78,10 +77,9 @@ public:
 
 	CMeshMorpher();
 	// The allocation of the buffers must be managed by the caller
-	void init (CVertexBuffer *vbOri, CVertexBuffer *vbDst, IVertexBufferHard *vbDstHrd, bool hasTgSpace);
+	void init (CVertexBuffer *vbOri, CVertexBuffer *vbDst, bool hasTgSpace);
 	void initSkinned (CVertexBuffer *vbOri,
 				  CVertexBuffer *vbDst,
-				  IVertexBufferHard *vbDstHrd,
 				  bool hasTgSpace,
 				  std::vector<CVector> *vVertices,
 				  std::vector<CVector> *vNormals,
@@ -102,7 +100,6 @@ private:
 
 	CVertexBuffer			*_VBOri;
 	CVertexBuffer			*_VBDst;
-	IVertexBufferHard		*_VBDstHrd;
 
 	std::vector<CVector>	*_Vertices;
 	std::vector<CVector>	*_Normals;

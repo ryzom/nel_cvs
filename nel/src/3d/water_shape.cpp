@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.30 2004/03/04 14:32:58 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.31 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -81,7 +81,7 @@ const char *WaterVPStartCode =
 	MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
 	DP3 R2.x, R1.xyww, R1.xyww;                                                 \n\
 	# MUL R1, R2.x, R1;                                                         \n\
-	DP4 o[FOGC].x, c[2], R4;	    #setup fog								    \n\
+	DP4 o[FOGC].x, c[18], R4;	    #setup fog								    \n\
 ";
 
 /*
@@ -107,7 +107,7 @@ const char *WaterVPStartCode =
 	DP4 o[HPOS].z, c[2], R4;												    \n\
 	DP4 o[HPOS].w, c[3], R4;												    \n\
 	MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
-	DP4 o[FOGC].x, c[2], -R4;	    #setup fog								    \n\
+	DP4 o[FOGC].x, c[18], R4;	    #setup fog								    \n\
 ";
 */
 
@@ -162,7 +162,7 @@ const char *WaterVpNoBumpCode = "  DP3 R2.x, R1, R0;				#project view vector on 
 								   ADD R2, R0, R0;															\n\
 								   ADD R0, R2, -R1;				#compute reflection vector					\n\
 								   MAD o[TEX0].xy, R0, c[8], c[8];											\n\
-								   DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
+								   DP4 o[FOGC].x, c[18], R4;	#setup fog									\n\
 								 ";
 
 
@@ -174,8 +174,8 @@ uint32									CWaterShape::_XGridBorder = 4;
 uint32									CWaterShape::_YGridBorder = 4;
 uint32									CWaterShape::_MaxGridSize;
 CVertexBuffer							CWaterShape::_VB;
-std::vector<uint32>						CWaterShape::_IBUpDown;
-std::vector<uint32>						CWaterShape::_IBDownUp;
+CIndexBuffer							CWaterShape::_IBUpDown;
+CIndexBuffer							CWaterShape::_IBDownUp;
 //NLMISC::CSmartPtr<IDriver>				CWaterShape::_Driver;
 bool									CWaterShape::_GridSizeTouched = true;
 std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramBump1;
@@ -293,29 +293,34 @@ void CWaterShape::setupVertexBuffer()
 	// We need 2 vb, because, each time 2 lines of the vertex buffer are filled, we start at the beginning again
 	// So we need 1 vb for triangle drawn up to down, and one other for triangle drawn down to top	
 
-	_IBUpDown.resize(6 * w);	
+	_IBUpDown.setNumIndexes(6 * w);	
+	CIndexBufferReadWrite ibaWrite;
+	_IBUpDown.lock (ibaWrite);
+	uint32 *ptr = ibaWrite.getPtr();
 	for (x = 0; x < w; ++x)
 	{
-		_IBUpDown [ 6 * x      ] = x;
-		_IBUpDown [ 6 * x  + 1 ] = x + 1 + (w + 1);
-		_IBUpDown [ 6 * x  + 2 ] = x + 1;
+		ptr [ 6 * x      ] = x;
+		ptr [ 6 * x  + 1 ] = x + 1 + (w + 1);
+		ptr [ 6 * x  + 2 ] = x + 1;
 
-		_IBUpDown [ 6 * x  + 3 ] = x;
-		_IBUpDown [ 6 * x  + 4 ] = x + 1 + (w + 1);
-		_IBUpDown [ 6 * x  + 5 ] = x     + (w + 1);
+		ptr [ 6 * x  + 3 ] = x;
+		ptr [ 6 * x  + 4 ] = x + 1 + (w + 1);
+		ptr [ 6 * x  + 5 ] = x     + (w + 1);
 
 	}
 
-	_IBDownUp.resize(6 * w);
+	_IBDownUp.setNumIndexes(6 * w);
+	_IBDownUp.lock (ibaWrite);
+	ptr = ibaWrite.getPtr();
 	for (x = 0; x < w; ++x)
 	{
-		_IBDownUp [ 6 * x      ] = x;
-		_IBDownUp [ 6 * x  + 1 ] = x + 1;
-		_IBDownUp [ 6 * x  + 2 ] = x + 1 + (w + 1);
+		ptr [ 6 * x      ] = x;
+		ptr [ 6 * x  + 1 ] = x + 1;
+		ptr [ 6 * x  + 2 ] = x + 1 + (w + 1);
 
-		_IBDownUp [ 6 * x  + 3 ] = x;
-		_IBDownUp [ 6 * x  + 4 ] = x     + (w + 1);
-		_IBDownUp [ 6 * x  + 5 ] = x + 1 + (w + 1);
+		ptr [ 6 * x  + 3 ] = x;
+		ptr [ 6 * x  + 4 ] = x     + (w + 1);
+		ptr [ 6 * x  + 5 ] = x + 1 + (w + 1);
 
 	}
 

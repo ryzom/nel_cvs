@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.h
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.h,v 1.8 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_ribbon_look_at.h,v 1.9 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 
 #include "3d/ps_ribbon_base.h"
 #include "3d/vertex_buffer.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include <hash_map>
 
 
@@ -150,7 +150,7 @@ private:
 			struct CVBnPB
 			{
 				CVertexBuffer		VB;
-				CPrimitiveBlock		PB;
+				CIndexBuffer		PB;
 			};
 			typedef std::hash_map<uint, CVBnPB> TVBMap;
 

@@ -1,7 +1,7 @@
 /** \file landscapevb_info.h
  * <File description>
  *
- * $Id: landscapevb_info.h,v 1.3 2002/04/18 13:06:52 berenguier Exp $
+ * $Id: landscapevb_info.h,v 1.4 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_LANDSCAPEVB_INFO_H
 
 #include "nel/misc/types_nl.h"
+#include "3d/vertex_buffer.h"
 
 
 namespace NL3D 
@@ -34,7 +35,6 @@ namespace NL3D
 
 
 class	CVertexBuffer;
-class	IVertexBufferHard;
 
 
 // ***************************************************************************
@@ -42,6 +42,7 @@ class	IVertexBufferHard;
 class	CFarVertexBufferInfo
 {
 public:
+	CVertexBufferReadWrite	Accessor;
 	uint32		VertexFormat;
 	uint32		VertexSize;
 	uint32		NumVertices;
@@ -63,10 +64,9 @@ public:
 
 
 	void		setupVertexBuffer(CVertexBuffer &vb, bool forVertexProgram);
-	void		setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord, bool forVertexProgram);
+	void		setupNullPointers();
 
 private:
-	void		setupNullPointers();
 	void		setupPointersForVertexProgram();
 };
 
@@ -76,6 +76,7 @@ private:
 class	CNearVertexBufferInfo
 {
 public:
+	CVertexBufferReadWrite	Accessor;
 	uint32		VertexFormat;
 	uint32		VertexSize;
 	uint32		NumVertices;
@@ -96,10 +97,9 @@ public:
 
 
 	void		setupVertexBuffer(CVertexBuffer &vb, bool forVertexProgram);
-	void		setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord, bool forVertexProgram);
+	void		setupNullPointers();
 
 private:
-	void		setupNullPointers();
 	void		setupPointersForVertexProgram();
 };
 

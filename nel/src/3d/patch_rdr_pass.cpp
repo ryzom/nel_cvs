@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.cpp
  * <File description>
  *
- * $Id: patch_rdr_pass.cpp,v 1.12 2003/04/23 10:12:50 berenguier Exp $
+ * $Id: patch_rdr_pass.cpp,v 1.13 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "std3d.h"
 
 #include "3d/patch_rdr_pass.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 
 
 namespace NL3D 

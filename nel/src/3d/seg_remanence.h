@@ -1,6 +1,6 @@
 /** \file seg_remanence.h
  * A segment that let a remanence on the screen (for sword trace)
- * $Id: seg_remanence.h,v 1.7 2003/12/18 18:02:52 vizerie Exp $
+ * $Id: seg_remanence.h,v 1.8 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NL3D
 
 class IDriver;
 class CVertexBuffer;
-class CPrimitiveBlock;
+class CIndexBuffer;
 class CMaterial;
 class CScene;
 
@@ -68,7 +68,7 @@ public:
 	/// to instanciate that model from a scene
 	static CTransform		*creator() { return new CSegRemanence; }	
 	// Render this model with currently setupped material and matrix
-	void					render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb, CMaterial &mat);
+	void					render(IDriver *drv, CVertexBuffer &vb, CIndexBuffer &pb, CMaterial &mat);
 	// sample current position
 	void					samplePos(float date);
 	/** Setup from the shape (no effect if geometry described in the shape didn't change)	  

@@ -1,7 +1,7 @@
 /** \file ps_face.cpp
  * Face particles.
  *
- * $Id: ps_face.cpp,v 1.7 2004/03/09 19:00:15 vizerie Exp $
+ * $Id: ps_face.cpp,v 1.8 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,51 +83,56 @@ public:
 		{					
 			do
 			{		
-				toProcess = leftFaces > CPSQuad::quadBufSize ? CPSQuad::quadBufSize : leftFaces;
-				currVertex = (uint8 *) vb.getVertexCoordPointer() ; 
-				if (f._SizeScheme)
-				{				
-					ptSize = (float *) (f._SizeScheme->make(f._Owner, size - leftFaces, sizeBuf, sizeof(float), toProcess, true, srcStep));								
-				}
-				else
-				{	
-					ptSize = &f._ParticleSize;			
-				}					
-				f.updateVbColNUVForRender(vb, size - leftFaces, toProcess, srcStep);			
-				const uint32 stride = vb.getVertexSize();
-				endPosIt = posIt + toProcess;							
-				do		
-				{			
-					const CPlaneBasis &currBasis = f._PrecompBasis[*indexIt].Basis;
-					CHECK_VERTEX_BUFFER(vb, currVertex);
-					((CVector *) currVertex)->x = (*posIt).x  + *ptSize * currBasis.X.x;  			
-					((CVector *) currVertex)->y = (*posIt).y  + *ptSize * currBasis.X.y;  			
-					((CVector *) currVertex)->z = (*posIt).z  + *ptSize * currBasis.X.z;  			
-					currVertex += stride;
+				{
+					CVertexBufferReadWrite vba;
+					vb.lock (vba);
+					toProcess = leftFaces > CPSQuad::quadBufSize ? CPSQuad::quadBufSize : leftFaces;
+					currVertex = (uint8 *) vba.getVertexCoordPointer() ; 
+					if (f._SizeScheme)
+					{				
+						ptSize = (float *) (f._SizeScheme->make(f._Owner, size - leftFaces, sizeBuf, sizeof(float), toProcess, true, srcStep));								
+					}
+					else
+					{	
+						ptSize = &f._ParticleSize;			
+					}					
+					f.updateVbColNUVForRender(vb, size - leftFaces, toProcess, srcStep);			
+					const uint32 stride = vb.getVertexSize();
+					endPosIt = posIt + toProcess;							
+					do		
+					{			
+						const CPlaneBasis &currBasis = f._PrecompBasis[*indexIt].Basis;
+						CHECK_VERTEX_BUFFER(vb, currVertex);
+						((CVector *) currVertex)->x = (*posIt).x  + *ptSize * currBasis.X.x;  			
+						((CVector *) currVertex)->y = (*posIt).y  + *ptSize * currBasis.X.y;  			
+						((CVector *) currVertex)->z = (*posIt).z  + *ptSize * currBasis.X.z;  			
+						currVertex += stride;
 
-					CHECK_VERTEX_BUFFER(vb, currVertex);
-					((CVector *) currVertex)->x = (*posIt).x  + *ptSize * currBasis.Y.x;  			
-					((CVector *) currVertex)->y = (*posIt).y  + *ptSize * currBasis.Y.y;  			
-					((CVector *) currVertex)->z = (*posIt).z  + *ptSize * currBasis.Y.z;  			
-					currVertex += stride;
+						CHECK_VERTEX_BUFFER(vb, currVertex);
+						((CVector *) currVertex)->x = (*posIt).x  + *ptSize * currBasis.Y.x;  			
+						((CVector *) currVertex)->y = (*posIt).y  + *ptSize * currBasis.Y.y;  			
+						((CVector *) currVertex)->z = (*posIt).z  + *ptSize * currBasis.Y.z;  			
+						currVertex += stride;
 
-					CHECK_VERTEX_BUFFER(vb, currVertex);
-					((CVector *) currVertex)->x = (*posIt).x  - *ptSize * currBasis.X.x;  			
-					((CVector *) currVertex)->y = (*posIt).y  - *ptSize * currBasis.X.y;  			
-					((CVector *) currVertex)->z = (*posIt).z  - *ptSize * currBasis.X.z;  			
-					currVertex += stride;
+						CHECK_VERTEX_BUFFER(vb, currVertex);
+						((CVector *) currVertex)->x = (*posIt).x  - *ptSize * currBasis.X.x;  			
+						((CVector *) currVertex)->y = (*posIt).y  - *ptSize * currBasis.X.y;  			
+						((CVector *) currVertex)->z = (*posIt).z  - *ptSize * currBasis.X.z;  			
+						currVertex += stride;
 
-					CHECK_VERTEX_BUFFER(vb, currVertex);
-					((CVector *) currVertex)->x = (*posIt).x  - *ptSize * currBasis.Y.x;  			
-					((CVector *) currVertex)->y = (*posIt).y  - *ptSize * currBasis.Y.y;  			
-					((CVector *) currVertex)->z = (*posIt).z  - *ptSize * currBasis.Y.z;  			
-					currVertex += stride;						
-					ptSize += ptSizeIncrement;
-					++indexIt;
-					++posIt;
+						CHECK_VERTEX_BUFFER(vb, currVertex);
+						((CVector *) currVertex)->x = (*posIt).x  - *ptSize * currBasis.Y.x;  			
+						((CVector *) currVertex)->y = (*posIt).y  - *ptSize * currBasis.Y.y;  			
+						((CVector *) currVertex)->z = (*posIt).z  - *ptSize * currBasis.Y.z;  			
+						currVertex += stride;						
+						ptSize += ptSizeIncrement;
+						++indexIt;
+						++posIt;
+					}
+					while (posIt != endPosIt);
 				}
 				while (posIt != endPosIt);
-				driver->renderQuads(f._Mat, 0, toProcess);				
+				driver->renderRawQuads(f._Mat, 0, toProcess);
 				leftFaces -= toProcess;
 			}
 			while (leftFaces);
@@ -141,59 +146,64 @@ public:
 			const uint32 vSize = vb.getVertexSize();
 			do
 			{			
-				toProcess = leftFaces > CPSQuad::quadBufSize ? CPSQuad::quadBufSize : leftFaces;
-				currVertex = (uint8 *) vb.getVertexCoordPointer() ; 
-				if (f._SizeScheme)
-				{				
-					ptSize  = (float *) (f._SizeScheme->make(f._Owner, size - leftFaces, sizeBuf, sizeof(float), toProcess, true, srcStep));								
-				}
-				else
-				{	
-					ptSize = &f._ParticleSize;			
-				}
-
-				if (f._PlaneBasisScheme)
 				{
-					currBasis = (CPlaneBasis *) (f._PlaneBasisScheme->make(f._Owner, size - leftFaces, planeBasis, sizeof(CPlaneBasis), toProcess, true, srcStep));				
-				}
-				else
-				{
-					currBasis = &f._PlaneBasis;
-				}						
-				f.updateVbColNUVForRender(vb, size - leftFaces, toProcess, srcStep);						
-				endPosIt = posIt + toProcess;					
-				do		
-				{			
-					// we use this instead of the + operator, because we avoid 4 constructor calls this way
-					CHECK_VERTEX_BUFFER(vb, currVertex);
-					((CVector *) currVertex)->x = (*posIt).x  + *ptSize * currBasis->X.x;  			
-					((CVector *) currVertex)->y = (*posIt).y  + *ptSize * currBasis->X.y;  			
-					((CVector *) currVertex)->z = (*posIt).z  + *ptSize * currBasis->X.z;  			
-					currVertex += vSize;
+					CVertexBufferReadWrite vba;
+					vb.lock (vba);
+					toProcess = leftFaces > CPSQuad::quadBufSize ? CPSQuad::quadBufSize : leftFaces;
+					currVertex = (uint8 *) vba.getVertexCoordPointer() ; 
+					if (f._SizeScheme)
+					{				
+						ptSize  = (float *) (f._SizeScheme->make(f._Owner, size - leftFaces, sizeBuf, sizeof(float), toProcess, true, srcStep));								
+					}
+					else
+					{	
+						ptSize = &f._ParticleSize;			
+					}
 
-					CHECK_VERTEX_BUFFER(vb, currVertex);
-					((CVector *) currVertex)->x = (*posIt).x  + *ptSize * currBasis->Y.x;  			
-					((CVector *) currVertex)->y = (*posIt).y  + *ptSize * currBasis->Y.y;  			
-					((CVector *) currVertex)->z = (*posIt).z  + *ptSize * currBasis->Y.z;  			
-					currVertex += vSize;
+					if (f._PlaneBasisScheme)
+					{
+						currBasis = (CPlaneBasis *) (f._PlaneBasisScheme->make(f._Owner, size - leftFaces, planeBasis, sizeof(CPlaneBasis), toProcess, true, srcStep));				
+					}
+					else
+					{
+						currBasis = &f._PlaneBasis;
+					}						
+					f.updateVbColNUVForRender(vb, size - leftFaces, toProcess, srcStep);						
+					endPosIt = posIt + toProcess;					
+					do		
+					{			
+						// we use this instead of the + operator, because we avoid 4 constructor calls this way
+						CHECK_VERTEX_BUFFER(vb, currVertex);
+						((CVector *) currVertex)->x = (*posIt).x  + *ptSize * currBasis->X.x;  			
+						((CVector *) currVertex)->y = (*posIt).y  + *ptSize * currBasis->X.y;  			
+						((CVector *) currVertex)->z = (*posIt).z  + *ptSize * currBasis->X.z;  			
+						currVertex += vSize;
 
-					CHECK_VERTEX_BUFFER(vb, currVertex);
-					((CVector *) currVertex)->x = (*posIt).x  - *ptSize * currBasis->X.x;  			
-					((CVector *) currVertex)->y = (*posIt).y  - *ptSize * currBasis->X.y;  			
-					((CVector *) currVertex)->z = (*posIt).z  - *ptSize * currBasis->X.z;  			
-					currVertex += vSize;
+						CHECK_VERTEX_BUFFER(vb, currVertex);
+						((CVector *) currVertex)->x = (*posIt).x  + *ptSize * currBasis->Y.x;  			
+						((CVector *) currVertex)->y = (*posIt).y  + *ptSize * currBasis->Y.y;  			
+						((CVector *) currVertex)->z = (*posIt).z  + *ptSize * currBasis->Y.z;  			
+						currVertex += vSize;
 
-					CHECK_VERTEX_BUFFER(vb, currVertex);
-					((CVector *) currVertex)->x = (*posIt).x  - *ptSize * currBasis->Y.x;  			
-					((CVector *) currVertex)->y = (*posIt).y  - *ptSize * currBasis->Y.y;  			
-					((CVector *) currVertex)->z = (*posIt).z  - *ptSize * currBasis->Y.z;  			
-					currVertex += vSize;
-					ptSize += ptSizeIncrement;						
-					++posIt;
-					currBasis += ptPlaneBasisIncrement;
+						CHECK_VERTEX_BUFFER(vb, currVertex);
+						((CVector *) currVertex)->x = (*posIt).x  - *ptSize * currBasis->X.x;  			
+						((CVector *) currVertex)->y = (*posIt).y  - *ptSize * currBasis->X.y;  			
+						((CVector *) currVertex)->z = (*posIt).z  - *ptSize * currBasis->X.z;  			
+						currVertex += vSize;
+
+						CHECK_VERTEX_BUFFER(vb, currVertex);
+						((CVector *) currVertex)->x = (*posIt).x  - *ptSize * currBasis->Y.x;  			
+						((CVector *) currVertex)->y = (*posIt).y  - *ptSize * currBasis->Y.y;  			
+						((CVector *) currVertex)->z = (*posIt).z  - *ptSize * currBasis->Y.z;  			
+						currVertex += vSize;
+						ptSize += ptSizeIncrement;						
+						++posIt;
+						currBasis += ptPlaneBasisIncrement;
+					}
+					while (posIt != endPosIt);
 				}
 				while (posIt != endPosIt);
-				driver->renderQuads(f._Mat, 0, toProcess);				
+				driver->renderRawQuads(f._Mat, 0, toProcess);
 				leftFaces -= toProcess;
 			}
 			while (leftFaces);

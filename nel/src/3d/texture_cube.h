@@ -1,7 +1,7 @@
 /** \file texture_cube.h
  * Cube mapping (6 maps around the object)
  *
- * $Id: texture_cube.h,v 1.6 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_cube.h,v 1.7 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,13 +97,8 @@ public:
 	virtual ITexture		*buildNonSelectableVersion(uint index);
 
 
-	/// No flip is done on faces (to match OpenGL / DX orientation)
-	void	setNoFlip(bool noFip = true) { _NoFlip = true; }
-	bool	getNoFlip() const { return _NoFlip; }
-
 private:
 	NLMISC::CSmartPtr<ITexture> _Textures[6];
-	bool						_NoFlip;
 };
 
 

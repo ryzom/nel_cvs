@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.46 2004/02/20 14:34:22 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.47 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,7 +98,8 @@ void MakeWhite(CBitmap &bitmaps)
 	{
 		uint size = bitmaps.getPixels (i).size ();
 		bitmaps.getPixels (i).resize (0);
-		bitmaps.getPixels (i).resize (size, 0xff);
+		bitmaps.getPixels (i).resize (size);
+		bitmaps.getPixels (i).fill (0xff);
 	}
 }
 #endif // NEL_ALL_BITMAP_WHITE

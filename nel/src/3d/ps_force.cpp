@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.34 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.35 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "3d/ps_force.h"
 #include "3d/driver.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/material.h"
 #include "3d/vertex_buffer.h"
 #include "3d/computed_string.h"
@@ -416,27 +416,35 @@ void CPSGravity::show(TAnimationTime ellapsedTime)
 	CVector K = CVector(0,0,1);	    
 
 	// this is not designed for efficiency (target : edition code)
-	CPrimitiveBlock	 pb;
+	CIndexBuffer	 pb;
 	CVertexBuffer vb;
 	CMaterial material;
 	IDriver *driver = getDriver();
 	const float toolSize = 0.2f;
-
+	
 	vb.setVertexFormat(CVertexBuffer::PositionFlag);
 	vb.setNumVertices(6);
-	vb.setVertexCoord(0, -toolSize * I);
-	vb.setVertexCoord(1, toolSize * I);
-	vb.setVertexCoord(2, CVector(0, 0, 0));
-	vb.setVertexCoord(3, -6.0f * toolSize * K);
-	vb.setVertexCoord(4, -toolSize * I  - 5.0f * toolSize * K);
-	vb.setVertexCoord(5, toolSize * I - 5.0f * toolSize * K);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
+		vba.setVertexCoord(0, -toolSize * I);
+		vba.setVertexCoord(1, toolSize * I);
+		vba.setVertexCoord(2, CVector(0, 0, 0));
+		vba.setVertexCoord(3, -6.0f * toolSize * K);
+		vba.setVertexCoord(4, -toolSize * I  - 5.0f * toolSize * K);
+		vba.setVertexCoord(5, toolSize * I - 5.0f * toolSize * K);
+	}
 
-	pb.reserveLine(4);
-	pb.addLine(0, 1);
-	pb.addLine(2, 3);
-	pb.addLine(4, 3);
-	pb.addLine(3, 5);	
-	
+	pb.setNumIndexes(2*4);
+	{
+		CIndexBufferReadWrite ibaWrite;
+		pb.lock (ibaWrite);
+		ibaWrite.setLine(0, 0, 1);
+		ibaWrite.setLine(2, 2, 3);
+		ibaWrite.setLine(4, 4, 3);
+		ibaWrite.setLine(6, 3, 5);
+	}
+		
 	material.setColor(CRGBA(127, 127, 127));
 	material.setLighting(false);
 	material.setBlendFunc(CMaterial::one, CMaterial::one);
@@ -454,7 +462,8 @@ void CPSGravity::show(TAnimationTime ellapsedTime)
 		
 		driver->setupModelMatrix(mat);
 		driver->activeVertexBuffer(vb);
-		driver->render(pb, material);
+		driver->activeIndexBuffer(pb);
+		driver->renderLines(material, 0, pb.getNumIndexes()/2);
 	
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_vertex_program.h
  * <File description>
  *
- * $Id: mesh_vertex_program.h,v 1.4 2003/12/22 10:28:35 berenguier Exp $
+ * $Id: mesh_vertex_program.h,v 1.5 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -47,7 +47,6 @@ class	CScene;
 class	CMeshBaseInstance;
 class	CLight;
 class	CVertexBuffer;
-class	IVertexBufferHard;
 
 
 /**
@@ -96,11 +95,6 @@ public:
 									 IDriver *drv,
 									 CScene *scene,
 									 CVertexBuffer *vb) = 0;
-	/// The same as setupForMaterial, but with a hard vb
-	virtual void	setupForMaterial(const CMaterial &mat,
-									 IDriver *drv,
-									 CScene *scene,
-									 IVertexBufferHard *vb) = 0;
 
 	// Test wether this vertex program need tangent space informations (stored in the last texture coordinate of the mesh)
 	virtual	bool	needTangentSpace() const { return false; }

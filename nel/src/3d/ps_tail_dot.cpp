@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.10 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_tail_dot.cpp,v 1.11 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -249,7 +249,7 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	uint8						*currVert;
 	CVBnPB						&VBnPB = getVBnPB(); // get the appropriate vb (built it if needed)
 	CVertexBuffer				&VB = VBnPB.VB;
-	CPrimitiveBlock				&PB = VBnPB.PB;
+	CIndexBuffer				&PB = VBnPB.PB;
 	const uint32				vertexSize  = VB.getVertexSize();
 	uint						colorOffset=0;	
 	
@@ -297,52 +297,58 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	uint32 fpRibbonIndex = 0; // fixed point index in source
 	do
 	{
-		toProcess = std::min((uint) (nbRibbons - ribbonIndex) /* = left to do */, numRibbonBatch);
-		currVert = (uint8 *) VB.getVertexCoordPointer();
-			
-		/// compute colors
-		if (_ColorScheme)
-		{			
-			_ColorScheme->makeN(this->_Owner, ribbonIndex, currVert + colorOffset, vertexSize, toProcess, _UsedNbSegs + 1, srcStep);			
-		}			
-		uint k = toProcess;
-		//////////////////////////////////////////////////////////////////////////////////////
-		// interpolate and project points the result is directly setup in the vertex buffer //
-		//////////////////////////////////////////////////////////////////////////////////////
-		if (!_Parametric)
 		{
+			CVertexBufferReadWrite vba;
+			VB.lock (vba);
+			toProcess = std::min((uint) (nbRibbons - ribbonIndex) /* = left to do */, numRibbonBatch);
+			currVert = (uint8 *) vba.getVertexCoordPointer();
+				
+			/// compute colors
+			if (_ColorScheme)
+			{			
+				_ColorScheme->makeN(this->_Owner, ribbonIndex, currVert + colorOffset, vertexSize, toProcess, _UsedNbSegs + 1, srcStep);			
+			}			
+			uint k = toProcess;
+			//////////////////////////////////////////////////////////////////////////////////////
+			// interpolate and project points the result is directly setup in the vertex buffer //
+			//////////////////////////////////////////////////////////////////////////////////////
+			if (!_Parametric)
+			{
 
-			//////////////////////
-			// INCREMENTAL CASE //
-			//////////////////////
-			do
-			{
-				// the parent class has a method to get the ribbons positions
-				computeRibbon((uint) (fpRibbonIndex >> 16), (CVector *) currVert, vertexSize);
-				currVert += vertexSize * (_UsedNbSegs + 1);
-				fpRibbonIndex += srcStep;
+				//////////////////////
+				// INCREMENTAL CASE //
+				//////////////////////
+				do
+				{
+					// the parent class has a method to get the ribbons positions
+					computeRibbon((uint) (fpRibbonIndex >> 16), (CVector *) currVert, vertexSize);
+					currVert += vertexSize * (_UsedNbSegs + 1);
+					fpRibbonIndex += srcStep;
+				}
+				while (--k);			
 			}
-			while (--k);			
+			else
+			{
+				//////////////////////
+				// PARAMETRIC  CASE //
+				//////////////////////
+				do
+				{
+					// we compute each pos thanks to the parametric curve				
+					_Owner->integrateSingle(date - _UsedSegDuration * (_UsedNbSegs + 1), _UsedSegDuration, _UsedNbSegs + 1, (uint) (fpRibbonIndex >> 16),
+											(NLMISC::CVector *) currVert, vertexSize);
+					currVert += vertexSize * (_UsedNbSegs + 1);
+					fpRibbonIndex += srcStep;
+				}
+				while (--k);
+				
+			}
 		}
-		else
-		{
-			//////////////////////
-			// PARAMETRIC  CASE //
-			//////////////////////
-			do
-			{
-				// we compute each pos thanks to the parametric curve				
-				_Owner->integrateSingle(date - _UsedSegDuration * (_UsedNbSegs + 1), _UsedSegDuration, _UsedNbSegs + 1, (uint) (fpRibbonIndex >> 16),
-										(NLMISC::CVector *) currVert, vertexSize);
-				currVert += vertexSize * (_UsedNbSegs + 1);
-				fpRibbonIndex += srcStep;
-			}
-			while (--k);
-			
-		}																				
-		PB.setNumLine(_UsedNbSegs * toProcess);
+		const uint numLine = _UsedNbSegs * toProcess;
+		PB.setNumIndexes(2 * numLine);
 		// display the result
-		drv->render(PB, _Mat);
+		drv->activeIndexBuffer(PB);
+		drv->renderLines (_Mat, 0, numLine);
 		ribbonIndex += toProcess;		
 	}
 	while (ribbonIndex != nbRibbons);
@@ -397,11 +403,15 @@ CPSTailDot::CVBnPB &CPSTailDot::getVBnPB()
 		vb.setNumVertices((_UsedNbSegs + 1) * numRibbonInVB ); // 1 seg = 1 line + terminal vertices
 
 		// set the primitive block size
-		CPrimitiveBlock &pb = VBnPB.PB;
-		pb.setNumLine(_UsedNbSegs * numRibbonInVB);
+		CIndexBuffer &pb = VBnPB.PB;
+		pb.setNumIndexes(2 * _UsedNbSegs * numRibbonInVB);
 		/// Setup the pb and vb parts. Not very fast but executed only once
 		uint vbIndex = 0;
 		uint pbIndex = 0; 
+		CIndexBufferReadWrite ibaWrite;
+		pb.lock (ibaWrite);
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
 		for (uint i = 0; i < numRibbonInVB; ++i)
 		{
 			for (uint k = 0; k < (_UsedNbSegs + 1); ++k)
@@ -409,19 +419,20 @@ CPSTailDot::CVBnPB &CPSTailDot::getVBnPB()
 				
 				if (_ColorScheme && _ColorFading)
 				{
-					vb.setTexCoord(vbIndex, 0, 0.5f - 0.5f * ((float) k / _UsedNbSegs), 0);
+					vba.setTexCoord(vbIndex, 0, 0.5f - 0.5f * ((float) k / _UsedNbSegs), 0);
 				}
 				else if (_ColorFading)
 				{
 					uint8 intensity = (uint8) (255 * (1.f - ((float) k / _UsedNbSegs)));
 					NLMISC::CRGBA col(intensity, intensity, intensity, intensity);
-					vb.setColor(vbIndex, col);						
+					vba.setColor(vbIndex, col);						
 				}
 					
 					/// add 1 line in the primitive block
 				if (k != _UsedNbSegs)
 				{					
-					pb.setLine(pbIndex ++, vbIndex, vbIndex + 1);					
+					ibaWrite.setLine(pbIndex, vbIndex, vbIndex + 1);
+					pbIndex+=2;
 				}				
 				++vbIndex;
 			}

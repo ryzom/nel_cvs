@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.11 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.12 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -478,7 +478,7 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	uint8						*currVert;
 	CVBnPB						&VBnPB = getVBnPB(); // get the appropriate vb (built it if needed)
 	CVertexBuffer				&VB = VBnPB.VB;
-	CPrimitiveBlock				&PB = VBnPB.PB;
+	CIndexBuffer				&PB = VBnPB.PB;
 	const uint32				vertexSize  = VB.getVertexSize();
 	uint						colorOffset=0;	
 	
@@ -532,139 +532,146 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 		uint32 fpRibbonIndex = 0; // fixed point index in source
 		do
 		{
-			toProcess = std::min((uint) (nbRibbons - ribbonIndex) , numRibbonBatch);
-			currVert = (uint8 *) VB.getVertexCoordPointer();
+			{
+				CVertexBufferReadWrite vba;
+				VB.lock (vba);
 				
-			/// setup sizes
-			const float	*ptCurrSize;
-			uint32  ptCurrSizeIncrement;
-			if (_SizeScheme)
-			{			
-				ptCurrSize = (float *) _SizeScheme->make(this->_Owner, ribbonIndex, &sizes[0], sizeof(float), toProcess, true, srcStep);			
-				ptCurrSizeIncrement = 1;
-			}
-			else
-			{
-				ptCurrSize = &_ParticleSize;
-				ptCurrSizeIncrement = 0;
-			}
-
-			/// compute colors
-			if (_ColorScheme)
-			{			
-				_ColorScheme->makeN(this->_Owner, ribbonIndex, currVert + colorOffset, vertexSize, toProcess, numVerticesInSlice * (_UsedNbSegs + 1), srcStep);			
-			}			
-			uint k = toProcess;	
-			//////////////////////////////////////////////////////////////////////////////////////
-			// interpolate and project points the result is directly setup in the vertex buffer //
-			//////////////////////////////////////////////////////////////////////////////////////
-			if (!_Parametric)
-			{
-				//////////////////////
-				// INCREMENTAL CASE //
-				//////////////////////				
-				if (_Tex != NULL) // textured case
-				{
-					do
-					{
-						const float ribbonSizeIncrement = *ptCurrSize / (float) _UsedNbSegs;
-						ptCurrSize += ptCurrSizeIncrement;
-						// the parent class has a method to get the ribbons positions
-						computeRibbon((uint) (fpRibbonIndex >> 16), &ribbonPos[0], sizeof(NLMISC::CVector));
-						currVert = ComputeTexturedRibbonMesh(currVert,
-															 vertexSize,
-															 &ribbonPos[0],
-															 &_Shape[0],
-															 _UsedNbSegs,
-															 numVerticesInShape,
-															 ribbonSizeIncrement,
-															 *ptCurrSize
-															);
-						fpRibbonIndex += srcStep;
-					}
-					while (--k);
+				toProcess = std::min((uint) (nbRibbons - ribbonIndex) , numRibbonBatch);
+				currVert = (uint8 *) vba.getVertexCoordPointer();
+					
+				/// setup sizes
+				const float	*ptCurrSize;
+				uint32  ptCurrSizeIncrement;
+				if (_SizeScheme)
+				{			
+					ptCurrSize = (float *) _SizeScheme->make(this->_Owner, ribbonIndex, &sizes[0], sizeof(float), toProcess, true, srcStep);			
+					ptCurrSizeIncrement = 1;
 				}
-				else // untextured case
+				else
 				{
-					do
-					{
-						const float ribbonSizeIncrement = *ptCurrSize / (float) _UsedNbSegs;
-						ptCurrSize += ptCurrSizeIncrement;
-						// the parent class has a method to get the ribbons positions
-						computeRibbon((uint) (fpRibbonIndex >> 16), &ribbonPos[0], sizeof(NLMISC::CVector));
-						currVert = ComputeUntexturedRibbonMesh(currVert,
-															   vertexSize,
-															   &ribbonPos[0],
-															   &_Shape[0],
-															   _UsedNbSegs,
-															   numVerticesInShape,
-															   ribbonSizeIncrement,
-															   *ptCurrSize
-															  );
-						fpRibbonIndex += srcStep;
-					}
-					while (--k);	
+					ptCurrSize = &_ParticleSize;
+					ptCurrSizeIncrement = 0;
 				}
+
+				/// compute colors
+				if (_ColorScheme)
+				{			
+					_ColorScheme->makeN(this->_Owner, ribbonIndex, currVert + colorOffset, vertexSize, toProcess, numVerticesInSlice * (_UsedNbSegs + 1), srcStep);			
+				}			
+				uint k = toProcess;	
+				//////////////////////////////////////////////////////////////////////////////////////
+				// interpolate and project points the result is directly setup in the vertex buffer //
+				//////////////////////////////////////////////////////////////////////////////////////
+				if (!_Parametric)
+				{
+					//////////////////////
+					// INCREMENTAL CASE //
+					//////////////////////				
+					if (_Tex != NULL) // textured case
+					{
+						do
+						{
+							const float ribbonSizeIncrement = *ptCurrSize / (float) _UsedNbSegs;
+							ptCurrSize += ptCurrSizeIncrement;
+							// the parent class has a method to get the ribbons positions
+							computeRibbon((uint) (fpRibbonIndex >> 16), &ribbonPos[0], sizeof(NLMISC::CVector));
+							currVert = ComputeTexturedRibbonMesh(currVert,
+																 vertexSize,
+																 &ribbonPos[0],
+																 &_Shape[0],
+																 _UsedNbSegs,
+																 numVerticesInShape,
+																 ribbonSizeIncrement,
+																 *ptCurrSize
+																);
+							fpRibbonIndex += srcStep;
+						}
+						while (--k);
+					}
+					else // untextured case
+					{
+						do
+						{
+							const float ribbonSizeIncrement = *ptCurrSize / (float) _UsedNbSegs;
+							ptCurrSize += ptCurrSizeIncrement;
+							// the parent class has a method to get the ribbons positions
+							computeRibbon((uint) (fpRibbonIndex >> 16), &ribbonPos[0], sizeof(NLMISC::CVector));
+							currVert = ComputeUntexturedRibbonMesh(currVert,
+																   vertexSize,
+																   &ribbonPos[0],
+																   &_Shape[0],
+																   _UsedNbSegs,
+																   numVerticesInShape,
+																   ribbonSizeIncrement,
+																   *ptCurrSize
+																  );
+							fpRibbonIndex += srcStep;
+						}
+						while (--k);	
+					}
+				}
+				else
+				{
+					//////////////////////
+					// PARAMETRIC  CASE //
+					//////////////////////				
+					if (_Tex != NULL) // textured case
+					{
+						do
+						{
+							const float ribbonSizeIncrement = *ptCurrSize / (float) _UsedNbSegs;
+							ptCurrSize += ptCurrSizeIncrement;
+							_Owner->integrateSingle(date - _UsedSegDuration * (_UsedNbSegs + 1),
+													_UsedSegDuration,
+													_UsedNbSegs + 1,
+													(uint) (fpRibbonIndex >> 16),
+													&ribbonPos[0]);
+
+							currVert = ComputeTexturedRibbonMesh(currVert,
+																 vertexSize,
+																 &ribbonPos[0],
+																 &_Shape[0],
+																 _UsedNbSegs,
+																 numVerticesInShape,
+																 ribbonSizeIncrement,
+																 *ptCurrSize
+																);
+							fpRibbonIndex += srcStep;
+						}
+						while (--k);
+					}
+					else // untextured case
+					{
+						do
+						{
+							const float ribbonSizeIncrement = *ptCurrSize / (float) _UsedNbSegs;
+							ptCurrSize += ptCurrSizeIncrement;
+							_Owner->integrateSingle(date - _UsedSegDuration * (_UsedNbSegs + 1),
+													_UsedSegDuration,
+													_UsedNbSegs + 1,
+													(uint) (fpRibbonIndex >> 16),
+													&ribbonPos[0]);
+
+							currVert = ComputeUntexturedRibbonMesh(currVert,
+																   vertexSize,
+																   &ribbonPos[0],
+																   &_Shape[0],
+																   _UsedNbSegs,
+																   numVerticesInShape,
+																   ribbonSizeIncrement,
+																   *ptCurrSize
+																  );				
+							fpRibbonIndex += srcStep;
+						}
+						while (--k);
+					}							
+				}			
 			}
-			else
-			{
-				//////////////////////
-				// PARAMETRIC  CASE //
-				//////////////////////				
-				if (_Tex != NULL) // textured case
-				{
-					do
-					{
-						const float ribbonSizeIncrement = *ptCurrSize / (float) _UsedNbSegs;
-						ptCurrSize += ptCurrSizeIncrement;
-						_Owner->integrateSingle(date - _UsedSegDuration * (_UsedNbSegs + 1),
-												_UsedSegDuration,
-												_UsedNbSegs + 1,
-												(uint) (fpRibbonIndex >> 16),
-												&ribbonPos[0]);
-
-						currVert = ComputeTexturedRibbonMesh(currVert,
-															 vertexSize,
-															 &ribbonPos[0],
-															 &_Shape[0],
-															 _UsedNbSegs,
-															 numVerticesInShape,
-															 ribbonSizeIncrement,
-															 *ptCurrSize
-														    );
-						fpRibbonIndex += srcStep;
-					}
-					while (--k);
-				}
-				else // untextured case
-				{
-					do
-					{
-						const float ribbonSizeIncrement = *ptCurrSize / (float) _UsedNbSegs;
-						ptCurrSize += ptCurrSizeIncrement;
-						_Owner->integrateSingle(date - _UsedSegDuration * (_UsedNbSegs + 1),
-												_UsedSegDuration,
-												_UsedNbSegs + 1,
-												(uint) (fpRibbonIndex >> 16),
-												&ribbonPos[0]);
-
-						currVert = ComputeUntexturedRibbonMesh(currVert,
-															   vertexSize,
-															   &ribbonPos[0],
-															   &_Shape[0],
-															   _UsedNbSegs,
-															   numVerticesInShape,
-															   ribbonSizeIncrement,
-															   *ptCurrSize
-															  );				
-						fpRibbonIndex += srcStep;
-					}
-					while (--k);
-				}							
-			}			
 			// display the result
-			PB.setNumTri((numVerticesInShape * _UsedNbSegs * toProcess) << 1);			
-			drv->render(PB, _Mat);
+			const uint numTri = (numVerticesInShape * _UsedNbSegs * toProcess) << 1;
+			PB.setNumIndexes(3 * numTri);
+			drv->activeIndexBuffer(PB);
+			drv->renderTriangles(_Mat, 0, numTri);
 			ribbonIndex += toProcess;		
 		}
 		while (ribbonIndex != nbRibbons);
@@ -735,6 +742,8 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 		/// In the case of a ribbon with color and fading, we encode the fading in a texture
 		/// If the ribbon has fading, but only a global color, we encode it in the primary color
 		CVertexBuffer &vb = VBnPB.VB;
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
 		vb.setVertexFormat(CVertexBuffer::PositionFlag	| /* alway need position */
 						   (_ColorScheme || _ColorFading ? CVertexBuffer::PrimaryColorFlag : 0) | /* need a color ? */
 						   ((_ColorScheme && _ColorFading) ||  _Tex != NULL ? CVertexBuffer::TexCoord0Flag : 0) | /* need texture coordinates ? */
@@ -743,8 +752,10 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 		vb.setNumVertices((_UsedNbSegs + 1) * numRibbonInVB * numVerticesInSlice); // 1 seg = 1 line + terminal vertices
 
 		// set the primitive block size
-		CPrimitiveBlock &pb = VBnPB.PB;
-		pb.setNumTri((_UsedNbSegs * numRibbonInVB * _Shape.size()) << 1);
+		CIndexBuffer &pb = VBnPB.PB;
+		CIndexBufferReadWrite ibaWrite;
+		pb.lock (ibaWrite);
+		pb.setNumIndexes(3 * ((_UsedNbSegs * numRibbonInVB * _Shape.size()) << 1));
 		/// Setup the pb and vb parts. Not very fast but executed only once
 		uint vbIndex = 0;
 		uint pbIndex = 0; 
@@ -760,17 +771,20 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 					uint vIndex = vbIndex;
 					for (l = 0; l < (numVerticesInShape - 1); ++l) /// deals with each ribbon vertices
 					{																			
-						pb.setTri(pbIndex ++, vIndex, vIndex + numVerticesInSlice, vIndex + numVerticesInSlice + 1);
-						pb.setTri(pbIndex ++, vIndex, vIndex + numVerticesInSlice + 1, vIndex + 1);
+						ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice, vIndex + numVerticesInSlice + 1);
+						pbIndex+=3;
+						ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice + 1, vIndex + 1);
+						pbIndex+=3;
 						++ vIndex;
 					}	
 					
 					/// the last 2 index don't loop if there's a texture
 					uint nextVertexIndex = (numVerticesInShape == numVerticesInSlice) ?	vIndex + 1 - numVerticesInShape // no texture -> we loop 
 										   : vIndex + 1; // a texture is used : use onemore vertex										
-					pb.setTri(pbIndex ++, vIndex, vIndex + numVerticesInSlice, nextVertexIndex + numVerticesInSlice);
-					pb.setTri(pbIndex ++, vIndex, nextVertexIndex + numVerticesInSlice, nextVertexIndex);
-
+					ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice, nextVertexIndex + numVerticesInSlice);
+					pbIndex+=3;
+					ibaWrite.setTri(pbIndex, vIndex, nextVertexIndex + numVerticesInSlice, nextVertexIndex);
+					pbIndex+=3;
 				}
 
 				/// setup vb
@@ -780,7 +794,7 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 					/// setup texture (if any)
 					if (_Tex != NULL)
 					{						
-						vb.setTexCoord(vbIndex,
+						vba.setTexCoord(vbIndex,
 									   _ColorScheme && _ColorFading ? 1 : 0,		// must we use the second texture coord ? (when 1st one used by the gradient texture : we can't encode it in the diffuse as it encodes each ribbon color)
 									   (float) k / _UsedNbSegs,				  // u
 									   1.f - (l / (float) numVerticesInShape) // v
@@ -795,11 +809,11 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 						{
 							uint8 intensity = (uint8) (255 * (1.f - ((float) k / _UsedNbSegs)));
 							NLMISC::CRGBA col(intensity, intensity, intensity, intensity);
-							vb.setColor(vbIndex, col);						
+							vba.setColor(vbIndex, col);						
 						}
 						else // encode it in the first texture
 						{
-							vb.setTexCoord(vbIndex, 0, 0.5f - 0.5f * ((float) k / _UsedNbSegs), 0);
+							vba.setTexCoord(vbIndex, 0, 0.5f - 0.5f * ((float) k / _UsedNbSegs), 0);
 						}
 					}
 					++ vbIndex;

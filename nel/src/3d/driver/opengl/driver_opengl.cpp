@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.202 2004/02/13 10:48:38 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.203 2004/03/19 10:11:36 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -26,6 +26,7 @@
  */
 
 #include "stdopengl.h"
+#include "driver_opengl.h"
 
 #ifdef NL_OS_WINDOWS
 
@@ -34,6 +35,8 @@
 #include <windowsx.h>
 #include <string>
 
+#undef min
+#undef max
 
 #else // NL_OS_UNIX
 
@@ -49,7 +52,7 @@
 #include "nel/3d/u_driver.h"
 #include "3d/vertex_buffer.h"
 #include "3d/light.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "nel/misc/rect.h"
 #include "nel/misc/di_event_emitter.h"
 #include "nel/misc/mouse_device.h"
@@ -351,30 +354,6 @@ bool CDriverGL::init (uint windowIcon)
 
 #endif
 	return true;
-}
-
-// --------------------------------------------------
-
-ModeList CDriverGL::enumModes()
-{
-	ModeList	ML;
-#ifdef NL_OS_WINDOWS
-	DEVMODE		devmode;
-	sint		n;
-	GfxMode		Mode;
-
-	n=0;
-	while( EnumDisplaySettings(NULL, n, &devmode) )
-	{
-		Mode.Windowed=false;
-		Mode.Width=(uint16)devmode.dmPelsWidth;
-		Mode.Height=(uint16)devmode.dmPelsHeight;	
-		Mode.Depth=(uint8)devmode.dmBitsPerPel;	
-		ML.push_back(Mode);
-		n++;	
-	}
-#endif // NL_OS_WINDOWS
-	return ML;
 }
 
 // --------------------------------------------------
@@ -1510,8 +1489,20 @@ bool CDriverGL::isTextureExist(const ITexture&tex)
 
 bool CDriverGL::clear2D(CRGBA rgba)
 {
+	// A texture is setuped ?
+	int scissor[4];
+	if (_TextureTarget)
+	{
+		glGetIntegerv (GL_SCISSOR_BOX, scissor);
+		glScissor(0, 0, _TextureTargetWidth, _TextureTargetHeight);
+	}
+
 	glClearColor((float)rgba.R/255.0f,(float)rgba.G/255.0f,(float)rgba.B/255.0f,(float)rgba.A/255.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	if (_TextureTarget)
+		glScissor(scissor[0], scissor[1], scissor[2], scissor[3]);
+
 	return true;
 }
 
@@ -1519,9 +1510,21 @@ bool CDriverGL::clear2D(CRGBA rgba)
 
 bool CDriverGL::clearZBuffer(float zval)
 {
+	// A texture is setuped ?
+	int scissor[4];
+	if (_TextureTarget)
+	{
+		glGetIntegerv (GL_SCISSOR_BOX, scissor);
+		glScissor(0, 0, _TextureTargetWidth, _TextureTargetHeight);
+	}
+
 	glClearDepth(zval);
 	_DriverGLStates.enableZWrite(true);
 	glClear(GL_DEPTH_BUFFER_BIT);
+
+	if (_TextureTarget)
+		glScissor(scissor[0], scissor[1], scissor[2], scissor[3]);
+
 	return true;
 }
 
@@ -1839,6 +1842,9 @@ void CDriverGL::setupViewport (const class CViewport& viewport)
 
 #endif // NL_OS_WINDOWS
 
+	// Backup the viewport
+	_CurrViewport = viewport;
+
 	// Get viewport
 	float x;
 	float y;
@@ -1846,20 +1852,28 @@ void CDriverGL::setupViewport (const class CViewport& viewport)
 	float height;
 	viewport.getValues (x, y, width, height);
 
+	// Render to texture : adjuste the viewport
+	if (_TextureTarget)
+	{
+		float factorX = (float)_TextureTarget->getWidth() / (float)clientWidth;
+		float factorY = (float)_TextureTarget->getHeight() / (float)clientHeight;
+		x *= factorX;
+		y *= factorY;
+		width *= factorX;
+		height *= factorY;
+	}
+
 	// Setup gl viewport
-	int ix=(int)((float)clientWidth*x);
+	int ix=(int)((float)clientWidth*x+0.5f);
 	clamp (ix, 0, clientWidth);
-	int iy=(int)((float)clientHeight*y);
+	int iy=(int)((float)clientHeight*y+0.5f);
 	clamp (iy, 0, clientHeight);
-	int iwidth=(int)((float)clientWidth*width);
+	int iwidth=(int)((float)clientWidth*width+0.5f);
 	clamp (iwidth, 0, clientWidth-ix);
-	int iheight=(int)((float)clientHeight*height);
+	int iheight=(int)((float)clientHeight*height+0.5f);
 	clamp (iheight, 0, clientHeight-iy);
 	glViewport (ix, iy, iwidth, iheight);
 
-	_CurrViewport.init(ix / (float) clientWidth, iy / (float) clientHeight,
-					   iwidth / (float) clientWidth, iheight / (float) clientHeight);
-		
 }
 
 // --------------------------------------------------
@@ -3128,7 +3142,7 @@ void	CDriverGL::endProfileVBHardLock(vector<std::string> &result)
 }
 
 // ***************************************************************************
-void	CDriverGL::appendVBHardLockProfile(NLMISC::TTicks time, IVertexBufferHard *vb)
+void	CDriverGL::appendVBHardLockProfile(NLMISC::TTicks time, CVertexBuffer *vb)
 {
 	// must allocate a new place?
 	if(_CurVBHardLockCount>=_VBHardProfiles.size())
@@ -3169,8 +3183,8 @@ void	CDriverGL::profileVBHardAllocation(std::vector<std::string> &result)
 		IVertexBufferHardGL	*vbHard= *it;
 		if(vbHard)
 		{
-			uint	vSize= vbHard->getVertexSize();
-			uint	numVerts= vbHard->getNumVertices();
+			uint	vSize= vbHard->VB->getVertexSize();
+			uint	numVerts= vbHard->VB->getNumVertices();
 			totalMemUsed+= vSize*numVerts;
 		}
 	}
@@ -3181,10 +3195,10 @@ void	CDriverGL::profileVBHardAllocation(std::vector<std::string> &result)
 		IVertexBufferHardGL	*vbHard= *it;
 		if(vbHard)
 		{
-			uint	vSize= vbHard->getVertexSize();
-			uint	numVerts= vbHard->getNumVertices();
+			uint	vSize= vbHard->VB->getVertexSize();
+			uint	numVerts= vbHard->VB->getNumVertices();
 			result.push_back(toString("  %16s: %4d ko (format: %d / numVerts: %d)", 
-				vbHard->getName().c_str(), vSize*numVerts/1000, vSize, numVerts ));
+				vbHard->VB->getName().c_str(), vSize*numVerts/1000, vSize, numVerts ));
 		}
 	}
 }
@@ -3295,26 +3309,54 @@ void CDriverGL::retrieveATIDriverVersion()
 	#endif			
 }
 
+// ***************************************************************************
+
+uint CDriverGL::getNumAdapter() const
+{
+	return 1;
+}
+
+// ***************************************************************************
+
+bool CDriverGL::getAdapter(uint adapter, CAdapter &desc) const
+{
+	if (adapter == 0)
+	{
+		desc.DeviceName = (const char *) glGetString (GL_RENDERER);
+		desc.Driver = (const char *) glGetString (GL_VERSION);
+		desc.Vendor= (const char *) glGetString (GL_VENDOR);
+		desc.Description = "Default openGL adapter";
+		desc.DeviceId = 0;
+		desc.DriverVersion = 0;
+		desc.Revision = 0;
+		desc.SubSysId = 0;
+		desc.VendorId = 0;
+		return true;
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CDriverGL::setAdapter(uint adapter)
+{
+	return adapter == 0;
+}
+
+// ***************************************************************************
+
+CVertexBuffer::TVertexColorType CDriverGL::getVertexColorFormat() const
+{
+	return CVertexBuffer::TRGBA;
+}
+
+// ***************************************************************************
+
+bool CDriverGL::activeShader(CShader *shd)
+{
+	return false;
+}
+
+// ***************************************************************************
 
 } // NL3D
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.cpp,v 1.2 2004/01/15 17:33:18 lecroart Exp $
+ * $Id: mesh_mrm_skinned.cpp,v 1.3 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,7 +100,7 @@ void		CMeshMRMSkinnedGeom::CLod::optimizeTriangleOrder()
 		// stripify list of triangles of this pass.
 		CRdrPass	&pass= RdrPass[rp];
 
-		CPrimitiveBlock block;
+		CIndexBuffer block;
 		getRdrPassPrimitiveBlock(rp, block);
 
 		stripifier.optimizeTriangles(block, block);
@@ -111,30 +111,33 @@ void		CMeshMRMSkinnedGeom::CLod::optimizeTriangleOrder()
 
 
 // ***************************************************************************
-void	CMeshMRMSkinnedGeom::CLod::getRdrPassPrimitiveBlock (uint renderPass, CPrimitiveBlock &block) const
+void	CMeshMRMSkinnedGeom::CLod::getRdrPassPrimitiveBlock (uint renderPass, CIndexBuffer &block) const
 {
 	const CRdrPass &rd = RdrPass[renderPass];
-	block.setNumLine (0);
-	block.setNumQuad (0);
 	const uint count = rd.getNumTriangle();
-	block.setNumTri (count);
+	block.setNumIndexes (count*3);
+
+	CIndexBufferReadWrite ibaWrite;
+	block.lock (ibaWrite);
 
 	uint i;
 	for (i=0; i<count; i++)
 	{
-		block.setTri (i, rd.PBlock[i*3+0], rd.PBlock[i*3+1], rd.PBlock[i*3+2]);
+		ibaWrite.setTri (i*3, rd.PBlock[i*3+0], rd.PBlock[i*3+1], rd.PBlock[i*3+2]);
 	}
 }
 
 // ***************************************************************************
 
-void	CMeshMRMSkinnedGeom::CLod::buildPrimitiveBlock(uint renderPass, const CPrimitiveBlock &block)
+void	CMeshMRMSkinnedGeom::CLod::buildPrimitiveBlock(uint renderPass, const CIndexBuffer &block)
 {
 	CRdrPass &rd = RdrPass[renderPass];
-	const uint count = block.getNumTri();
+	const uint count = block.getNumIndexes()/3;
 	rd.PBlock.resize (3*count);
 	uint i;
-	const uint32 *triPtr = block.getTriPointer ();
+	CIndexBufferRead ibaRead;
+	block.lock (ibaRead);
+	const uint32 *triPtr = ibaRead.getPtr ();
 	for (i=0; i<count; i++)
 	{
 		rd.PBlock[i*3+0] = (uint16)(triPtr[3*i+0]);
@@ -669,11 +672,12 @@ void	CMeshMRMSkinnedGeom::render(IDriver *drv, CTransformShape *trans, float pol
 				/* Hulud
 				 * This is slow but, we don't care because this method is called for debug purpose only (watch skin without skinning)
 				 */
-				CPrimitiveBlock block;
+				CIndexBuffer block;
 				lod.getRdrPassPrimitiveBlock (i, block);
 
 				// Render
-				drv->render(block, material);
+				drv->activeIndexBuffer(block);
+				drv->renderTriangles(material, 0, block.getNumIndexes()/3);
 
 				// Resetup material/driver
 				blender.restoreRender(material, drv, gaDisableZWrite);
@@ -695,11 +699,12 @@ void	CMeshMRMSkinnedGeom::render(IDriver *drv, CTransformShape *trans, float pol
 				/* Hulud
 				 * This is slow but, we don't care because this method is called for debug purpose only (watch skin without skinning)
 				 */
-				CPrimitiveBlock block;
+				CIndexBuffer block;
 				lod.getRdrPassPrimitiveBlock (i, block);
 
 				// Render with the Materials of the MeshInstance.
-				drv->render(block, material);
+				drv->activeIndexBuffer(block);
+				drv->renderTriangles(material, 0, block.getNumIndexes()/3);
 			}
 		}
 	}
@@ -861,12 +866,8 @@ void	CMeshMRMSkinnedGeom::renderSkinGroupPrimitives(CMeshMRMSkinnedInstance	*mi,
 			// Get the shifted triangles.
 			CShiftedTriangleCache::CRdrPass		&shiftedRdrPass= mi->_ShiftedTriangleCache->RdrPass[i];
 
-			// This speed up 4 ms for 80K polys.
-			uint	memToCache= shiftedRdrPass.NumTriangles*12;
-			memToCache= min(memToCache, 4096U);
-			CFastMem::precache(shiftedRdrPass.Triangles, memToCache);
-
 			// Render with the Materials of the MeshInstance.
+			drv->activeIndexBuffer(mi->_ShiftedTriangleCache->RawIndices);
 			drv->renderTriangles(material, shiftedRdrPass.Triangles, shiftedRdrPass.NumTriangles);
 		}
 	}
@@ -904,12 +905,8 @@ void	CMeshMRMSkinnedGeom::renderSkinGroupSpecularRdrPass(CMeshMRMSkinnedInstance
 	// Get the shifted triangles.
 	CShiftedTriangleCache::CRdrPass		&shiftedRdrPass= mi->_ShiftedTriangleCache->RdrPass[rdrPassId];
 
-	// This speed up 4 ms for 80K polys.
-	uint	memToCache= shiftedRdrPass.NumTriangles*12;
-	memToCache= min(memToCache, 4096U);
-	CFastMem::precache(shiftedRdrPass.Triangles, memToCache);
-
 	// Render with the Materials of the MeshInstance.
+	drv->activeIndexBuffer(mi->_ShiftedTriangleCache->RawIndices);
 	drv->renderTriangles(material, shiftedRdrPass.Triangles, shiftedRdrPass.NumTriangles);
 }
 
@@ -936,7 +933,7 @@ void	CMeshMRMSkinnedGeom::updateShiftedTriangleCache(CMeshMRMSkinnedInstance *mi
 		mi->_ShiftedTriangleCache->BaseVertex= baseVertex;
 
 		// Build list of PBlock. From Lod, or from RawSkin cache.
-		static	vector<CPrimitiveBlock*>	pbList;
+		static	vector<CIndexBuffer*>	pbList;
 		pbList.clear();
 		nlassert(mi->_RawSkinCache);
 		pbList.resize(mi->_RawSkinCache->RdrPass.size());
@@ -953,29 +950,33 @@ void	CMeshMRMSkinnedGeom::updateShiftedTriangleCache(CMeshMRMSkinnedInstance *mi
 		uint	i;
 		for(i=0;i<pbList.size();i++)
 		{
-			mi->_ShiftedTriangleCache->RdrPass[i].NumTriangles= pbList[i]->getNumTri();
-			totalTri+= pbList[i]->getNumTri();
+			mi->_ShiftedTriangleCache->RdrPass[i].NumTriangles= pbList[i]->getNumIndexes()/3;
+			totalTri+= pbList[i]->getNumIndexes()/3;
 		}
 
 		// Allocate triangles indices.
-		mi->_ShiftedTriangleCache->RawIndices.resize(totalTri*3);
-		uint32		*rawPtr= mi->_ShiftedTriangleCache->RawIndices.getPtr();
+		mi->_ShiftedTriangleCache->RawIndices.setNumIndexes(totalTri*3);
+
+		CIndexBufferReadWrite iba;
+		mi->_ShiftedTriangleCache->RawIndices.lock(iba);
 
 		// Second pass, fill ptrs, and fill Arrays
 		uint	indexTri= 0;
 		for(i=0;i<pbList.size();i++)
 		{
 			CShiftedTriangleCache::CRdrPass	&dstRdrPass= mi->_ShiftedTriangleCache->RdrPass[i];
-			dstRdrPass.Triangles= rawPtr + indexTri*3;
+			dstRdrPass.Triangles= indexTri*3;
 
 			// Fill the array
-			uint	numTris= pbList[i]->getNumTri();
+			uint	numTris= pbList[i]->getNumIndexes()/3;
 			if(numTris)
 			{
 				uint	nIds= numTris*3;
 				// index, and fill
-				uint32	*pSrcTri= pbList[i]->getTriPointer();
-				uint32	*pDstTri= dstRdrPass.Triangles;
+				CIndexBufferRead ibaRead;
+				pbList[i]->lock (ibaRead);
+				const uint32	*pSrcTri= ibaRead.getPtr();
+				uint32	*pDstTri= iba.getPtr() + dstRdrPass.Triangles;
 				for(;nIds>0;nIds--,pSrcTri++,pDstTri++)
 					*pDstTri= *pSrcTri + baseVertex;
 			}
@@ -1796,9 +1797,11 @@ void		CMeshMRMSkinnedGeom::updateRawSkinNormal(bool enabled, CMeshMRMSkinnedInst
 			for(i=0;i<skinLod.RdrPass.size();i++)
 			{
 				// remap tris.
-				skinLod.RdrPass[i].setNumTri(lod.RdrPass[i].getNumTriangle());
-				uint16	*srcTriPtr= &(lod.RdrPass[i].PBlock[0]);
-				uint32	*dstTriPtr= skinLod.RdrPass[i].getTriPointer();
+				skinLod.RdrPass[i].setNumIndexes(lod.RdrPass[i].getNumTriangle()*3);
+				const uint16	*srcTriPtr= &(lod.RdrPass[i].PBlock[0]);
+				CIndexBufferReadWrite ibaWrite;
+				skinLod.RdrPass[i].lock (ibaWrite);
+				uint32	*dstTriPtr= ibaWrite.getPtr();
 				uint32	numIndices= lod.RdrPass[i].PBlock.size();
 				for(uint j=0;j<numIndices;j++, srcTriPtr++, dstTriPtr++)
 				{
@@ -1891,16 +1894,20 @@ void			CMeshMRMSkinnedGeom::renderShadowSkinPrimitives(CMeshMRMSkinnedInstance	*
 	// NB: the normalize flag has already been setuped by CSkeletonModel
 
 	// TODO_SHADOW: optim: Special triangle cache for shadow!
-	static	vector<uint32>		shiftedTris;
-	if(shiftedTris.size()<_ShadowSkinTriangles.size())
+	static	CIndexBuffer		shiftedTris;
+	if(shiftedTris.getNumIndexes()<_ShadowSkinTriangles.size())
 	{
-		shiftedTris.resize(_ShadowSkinTriangles.size());
+		shiftedTris.setNumIndexes(_ShadowSkinTriangles.size());
 	}
-	uint32	*src= &_ShadowSkinTriangles[0];
-	uint32	*dst= &shiftedTris[0];
-	for(uint n= _ShadowSkinTriangles.size();n>0;n--, src++, dst++)
 	{
-		*dst= *src + baseVertex;
+		CIndexBufferReadWrite iba;
+		shiftedTris.lock(iba);
+		const uint32	*src= &_ShadowSkinTriangles[0];
+		uint32	*dst= iba.getPtr();
+		for(uint n= _ShadowSkinTriangles.size();n>0;n--, src++, dst++)
+		{
+			*dst= *src + baseVertex;
+		}
 	}
 
 	// Render Triangles with cache
@@ -1908,13 +1915,9 @@ void			CMeshMRMSkinnedGeom::renderShadowSkinPrimitives(CMeshMRMSkinnedInstance	*
 
 	uint	numTris= _ShadowSkinTriangles.size()/3;
 
-	// This speed up 4 ms for 80K polys.
-	uint	memToCache= numTris*12;
-	memToCache= min(memToCache, 4096U);
-	CFastMem::precache(&shiftedTris[0], memToCache);
-
 	// Render with the Materials of the MeshInstance.
-	drv->renderTriangles(castMat, &shiftedTris[0], numTris);
+	drv->activeIndexBuffer(shiftedTris);
+	drv->renderTriangles(castMat, 0, numTris);
 }
 
 // ***************************************************************************
@@ -2026,10 +2029,13 @@ void CMeshMRMSkinnedGeom::CPackedVertexBuffer::build (const CVertexBuffer &buffe
 	// default scale
 	_DecompactScale = NL3D_MESH_MRM_SKINNED_DEFAULT_POS_SCALE;
 
+	CVertexBufferRead vba;
+	buffer.lock (vba);
+
 	if (numVertices)
 	{
 		// Get the min max of the bbox
-		CVector _min = *(const CVector*)buffer.getVertexCoordPointer(0);
+		CVector _min = *vba.getVertexCoordPointer(0);
 		CVector _max = _min;
 
 		// For each vertex
@@ -2037,7 +2043,7 @@ void CMeshMRMSkinnedGeom::CPackedVertexBuffer::build (const CVertexBuffer &buffe
 		for (i=1; i<numVertices; i++)
 		{
 			// Update min max
-			const CVector &vect = *(const CVector*)buffer.getVertexCoordPointer(i);
+			const CVector &vect = *vba.getVertexCoordPointer(i);
 			_min.minof(_min, vect);
 			_max.maxof(_max, vect);
 		}
@@ -2053,13 +2059,13 @@ void CMeshMRMSkinnedGeom::CPackedVertexBuffer::build (const CVertexBuffer &buffe
 			CPackedVertex &vertex = _PackedBuffer[i];
 
 			// Position
-			vertex.setPos (*(const CVector*)buffer.getVertexCoordPointer(i), _DecompactScale);
+			vertex.setPos (*vba.getVertexCoordPointer(i), _DecompactScale);
 
 			// Normal
-			vertex.setNormal (*(const CVector*)buffer.getNormalCoordPointer(i));
+			vertex.setNormal (*vba.getNormalCoordPointer(i));
 
 			// UV
-			const float *uv = (const float*)buffer.getTexCoordPointer(i, 0);
+			const float *uv = (const float*)vba.getTexCoordPointer(i, 0);
 			vertex.setUV (uv[0], uv[1]);
 
 			// Matrices
@@ -2090,13 +2096,15 @@ void CMeshMRMSkinnedGeom::getVertexBuffer(CVertexBuffer &output) const
 	output.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::NormalFlag|CVertexBuffer::TexCoord0Flag);
 	const uint numVertices = _VBufferFinal.getNumVertices();
 	output.setNumVertices (numVertices);
+	CVertexBufferReadWrite vba;
+	output.lock (vba);
 	uint i;
 	const CPackedVertexBuffer::CPackedVertex	*vertex = _VBufferFinal.getPackedVertices();
 	for (i=0; i<numVertices; i++)
 	{
-		_VBufferFinal.getPos(*(CVector*)output.getVertexCoordPointer(i), vertex[i]);
-		vertex[i].getNormal(*(CVector*)output.getNormalCoordPointer(i));
-		float *texCoord = (float*)output.getTexCoordPointer(i,0);
+		_VBufferFinal.getPos(*vba.getVertexCoordPointer(i), vertex[i]);
+		vertex[i].getNormal(*vba.getNormalCoordPointer(i));
+		float *texCoord = (float*)vba.getTexCoordPointer(i,0);
 		vertex[i].getU(texCoord[0]);
 		vertex[i].getV(texCoord[1]);
 	}

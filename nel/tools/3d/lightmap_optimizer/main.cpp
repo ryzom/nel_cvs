@@ -196,21 +196,17 @@ void FlagVertices (CMeshGeom &mg, uint InMatID, vector<bool> &verticesNeedRemap)
 			if (matId == InMatID) // Same Material -> Flag all vertices of this pass
 			{
 				// Get primitives
-				const CPrimitiveBlock &primitiveBlock=mg.getRdrPassPrimitiveBlock(matrixBlock,renderPass);
+				const CIndexBuffer &primitiveBlock=mg.getRdrPassPrimitiveBlock(matrixBlock,renderPass);
+				CIndexBufferRead iba;
+				primitiveBlock.lock (iba);
 
 				// Set of vertex to remap
 				std::set<uint> vertexToRemap;
 
 				// Remap triangles
 				uint index;
-				const uint32 *indexPtr=primitiveBlock.getTriPointer();
-				uint32 numIndex=3*primitiveBlock.getNumTri();
-				for (index=0; index<numIndex; index++)
-					vertexToRemap.insert (indexPtr[index]);
-
-				// Remap quad
-				indexPtr=primitiveBlock.getQuadPointer();
-				numIndex=4*primitiveBlock.getNumQuad();
+				const uint32 *indexPtr=iba.getPtr();
+				uint32 numIndex=primitiveBlock.getNumIndexes();
 				for (index=0; index<numIndex; index++)
 					vertexToRemap.insert (indexPtr[index]);
 
@@ -248,21 +244,17 @@ void FlagVerticesMRM (CMeshMRMGeom &mg, uint InMatID, vector<bool> &verticesNeed
 			if (matId == InMatID) // Same Material -> Flag all vertices of this pass
 			{
 				// Get primitives
-				const CPrimitiveBlock &primitiveBlock=mg.getRdrPassPrimitiveBlock(matrixBlock,renderPass);
+				const CIndexBuffer &primitiveBlock=mg.getRdrPassPrimitiveBlock(matrixBlock,renderPass);
+				CIndexBufferRead iba;
+				primitiveBlock.lock (iba);
 
 				// Set of vertex to remap
 				std::set<uint> vertexToRemap;
 
 				// Remap triangles
 				uint index;
-				const uint32 *indexPtr=primitiveBlock.getTriPointer();
-				uint32 numIndex=3*primitiveBlock.getNumTri();
-				for (index=0; index<numIndex; index++)
-					vertexToRemap.insert (indexPtr[index]);
-
-				// Remap quad
-				indexPtr=primitiveBlock.getQuadPointer();
-				numIndex=4*primitiveBlock.getNumQuad();
+				const uint32 *indexPtr=iba.getPtr();
+				uint32 numIndex=primitiveBlock.getNumIndexes();
 				for (index=0; index<numIndex; index++)
 					vertexToRemap.insert (indexPtr[index]);
 
@@ -689,12 +681,14 @@ int main(int nNbArg, char **ppArgs)
 								const CMeshGeom *pMG = dynamic_cast<const CMeshGeom*>(&pMeshML->getMeshGeom(m));
 								pVB = const_cast<CVertexBuffer*>(&pMG->getVertexBuffer());
 							}
+							CVertexBufferReadWrite vba; 
+							pVB->lock (vba);
 
 							vector<bool> &rVNR = VerticesNeedRemap[m];
 							for (n = 0; n < (sint32)rVNR.size(); ++n)
 							if (rVNR[n])
 							{
-								CUV *pUV = (CUV*)pVB->getTexCoordPointer (n,1);
+								CUV *pUV = (CUV*)vba.getTexCoordPointer (n,1);
 								pUV->U = (pUV->U*pBI->getWidth() + x) / pBJ->getWidth();
 								pUV->V = (pUV->V*pBI->getHeight() + y) / pBJ->getHeight();
 								bMustSave = true;

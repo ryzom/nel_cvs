@@ -1,7 +1,7 @@
 /** \file cloud_scape.cpp
  * cloud_scape implementation
  *
- * $Id: cloud_scape.cpp,v 1.7 2003/03/20 09:15:26 besson Exp $
+ * $Id: cloud_scape.cpp,v 1.8 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -51,18 +51,28 @@ namespace NL3D
 SCloudTexture3D::SCloudTexture3D ()
 {
 	Mem = NULL;
-	ToLight.initUnlit();
-	ToLight.setShader (CMaterial::Normal);
-	//ToLight.setTexture (0, Tex);
-	ToLight.setZFunc (CMaterial::always);
-	ToLight.setZWrite (false);
-	ToLight.texEnvOpRGB (0, CMaterial::Replace);
-	ToLight.texEnvArg0RGB (0, CMaterial::Diffuse, CMaterial::SrcColor);
-	ToLight.texEnvOpAlpha (0, CMaterial::Replace);
-	ToLight.texEnvArg0Alpha (0, CMaterial::Texture, CMaterial::InvSrcAlpha);
-	ToLight.setBlend (true);
-	ToLight.setBlendFunc (CMaterial::invsrcalpha, CMaterial::srcalpha);
-	ToLight.setColor (CRGBA(0,0,0,255));
+	Mem2 = NULL;
+	MemBuffer = NULL;
+	ToLightRGB.initUnlit();
+	ToLightRGB.setShader (CMaterial::Normal);
+	ToLightRGB.setZFunc (CMaterial::always);
+	ToLightRGB.setZWrite (false);
+	ToLightRGB.texEnvOpRGB (0, CMaterial::Replace);
+	ToLightRGB.texEnvArg0RGB (0, CMaterial::Diffuse, CMaterial::SrcColor);
+	ToLightRGB.texEnvOpAlpha (0, CMaterial::Replace);
+	ToLightRGB.texEnvArg0Alpha (0, CMaterial::Texture, CMaterial::SrcAlpha);
+	ToLightRGB.setBlend (true);
+	ToLightRGB.setBlendFunc (CMaterial::invsrcalpha, CMaterial::srcalpha);
+	ToLightRGB.setColor (CRGBA(0,0,0,255));
+	ToLightAlpha.initUnlit();
+	ToLightAlpha.setShader (CMaterial::Normal);
+	ToLightAlpha.setZFunc (CMaterial::always);
+	ToLightAlpha.setZWrite (false);
+	ToLightAlpha.texEnvOpRGB (0, CMaterial::Replace);
+	ToLightAlpha.texEnvArg0RGB (0, CMaterial::Diffuse, CMaterial::SrcColor);
+	ToLightAlpha.texEnvOpAlpha (0, CMaterial::Replace);
+	ToLightAlpha.texEnvArg0Alpha (0, CMaterial::Texture, CMaterial::InvSrcAlpha);
+	ToLightAlpha.setColor (CRGBA(0,0,0,255));
 
 	ToBill.initUnlit();
 	ToBill.setZFunc (CMaterial::always);
@@ -85,6 +95,17 @@ SCloudTexture3D::SCloudTexture3D ()
 
 	ToBill.setBlendFunc (CMaterial::one, CMaterial::invsrcalpha);
 	ToBill.setBlend (true);
+
+	MatCopy.initUnlit();
+	MatCopy.setShader (CMaterial::Normal);
+	MatCopy.setZFunc (CMaterial::always);
+	MatCopy.setZWrite (false);
+	MatCopy.texEnvOpRGB (0, CMaterial::Replace);
+	MatCopy.texEnvArg0RGB (0, CMaterial::Texture, CMaterial::SrcColor);
+	MatCopy.texEnvOpAlpha (0, CMaterial::Replace);
+	MatCopy.texEnvArg0Alpha (0, CMaterial::Texture, CMaterial::SrcAlpha);
+	MatCopy.setBlend (false);
+	MatCopy.setColor (CRGBA(255,255,255,255));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -104,18 +125,33 @@ void SCloudTexture3D::init (uint32 nWidth, uint32 nHeight, uint32 nDepth)
 		NbH = 1 << (vdpo2 / 2);
 
 	Mem = new uint8[4*NbW*Width*NbH*Height];
+	Mem2 = new uint8[4*NbW*Width*NbH*Height];
+	MemBuffer = new uint8[4*Width*Height];
 	Tex = new CTextureMem (Mem, 4*NbW*Width*NbH*Height, true, false, NbW*Width, NbH*Height, CBitmap::RGBA);
+	Tex2 = new CTextureMem (Mem2, 4*NbW*Width*NbH*Height, true, false, NbW*Width, NbH*Height, CBitmap::RGBA);
+	TexBuffer = new CTextureMem (MemBuffer, 4*Width*Height, true, false, Width, Height, CBitmap::RGBA);
 
 	Tex->setWrapS (ITexture::Clamp);
 	Tex->setWrapT (ITexture::Clamp);
 	Tex->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 	Tex->setReleasable (false);
 	Tex->generate ();
+	Tex2->setWrapS (ITexture::Clamp);
+	Tex2->setWrapT (ITexture::Clamp);
+	Tex2->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
+	Tex2->setReleasable (false);
+	Tex2->generate ();
+	TexBuffer->setWrapS (ITexture::Clamp);
+	TexBuffer->setWrapT (ITexture::Clamp);
+	TexBuffer->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
+	TexBuffer->setReleasable (false);
+	TexBuffer->generate ();
 
-	ToLight.setTexture (0, Tex);
-
-	ToBill.setTexture(0, Tex);
-	ToBill.setTexture(1, Tex);
+	ToLightRGB.setTexture (0, Tex);
+	ToLightAlpha.setTexture (0, Tex);
+	ToBill.setTexture(0, Tex2);
+	ToBill.setTexture(1, Tex2);
+	MatCopy.setTexture(0, TexBuffer);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -250,7 +286,7 @@ CCloudScape::CCloudScape (NL3D::IDriver *pDriver) : _Noise3D (pDriver)
 	_MatBill.setZFunc (CMaterial::always);
 	_MatBill.setZWrite (false);
 	_MatBill.setDoubleSided (true);
-	_MatBill.setAlphaTest(true);
+	//_MatBill.setAlphaTest(true);
 	_MatBill.setAlphaTestThreshold(2.0f/256.0f);
 
 	_LODQualityThreshold = 160.0f;
@@ -425,6 +461,10 @@ void CCloudScape::anim (double dt, NL3D::CCamera *pCamera)
 {
 	sint32 i;
 
+	// Disable fog
+	bool fog = _Driver->fogEnabled();
+	_Driver->enableFog (false);
+
 	_ViewerCam = pCamera;
 
 	// 10 fps -> 200 fps
@@ -529,6 +569,9 @@ void CCloudScape::anim (double dt, NL3D::CCamera *pCamera)
 
 		_TimeNewCSS += 0.04/_NbHalfCloudToUpdate;
 	}
+
+	// Backup fog
+	_Driver->enableFog (fog);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -780,6 +823,10 @@ void CCloudScape::render ()
 	
 	CVector Viewer = CVector (0,0,0);
 
+	// Disable fog
+	bool fog = _Driver->fogEnabled();
+	_Driver->enableFog (false);
+
 	CMatrix viewMat;
 	viewMat = _ViewerCam->getMatrix ();
 	viewMat.setPos(CVector(0,0,0));
@@ -823,6 +870,9 @@ void CCloudScape::render ()
 		if ((pC->CloudPower > 0) || (pC->LastCloudPower > 0))
 			pC->dispBill (_ViewerCam);
 	}
+
+	// Backup fog
+	_Driver->enableFog (fog);
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file mesh_block_manager.cpp
  * <File description>
  *
- * $Id: mesh_block_manager.cpp,v 1.7 2004/03/12 16:32:48 berenguier Exp $
+ * $Id: mesh_block_manager.cpp,v 1.8 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -140,7 +140,9 @@ void			CMeshBlockManager::flush(IDriver *drv, CScene *scene, CRenderTrav *render
 			// set to true => avoid mesh to setup their own VB.
 			_RenderCtx.RenderThroughVBHeap= true;
 			// activate current VB in driver
+#if 0		// todo hulud remove / restore VBHeap
 			hb->VBHeap.activate();
+#endif		// todo hulud remove / restore VBHeap
 		}
 
 
@@ -230,7 +232,9 @@ void			CMeshBlockManager::render(CVBHeapBlock	*vbHeapBlock, IMeshGeom *meshGeom,
 			if(needVBHeapLock)
 			{
 				// Lock the VBHeap
+#if 0		// todo hulud remove / restore VBHeap
 				vbDst= vbHeapBlock->VBHeap.lock(meshGeom->_MeshVBHeapIndexStart);
+#endif		// todo hulud remove / restore VBHeap
 			}
 
 			// activate this instance
@@ -239,8 +243,10 @@ void			CMeshBlockManager::render(CVBHeapBlock	*vbHeapBlock, IMeshGeom *meshGeom,
 			if(needVBHeapLock)
 			{
 				// unlock only what vertices have changed (ATI problem)
+#if 0		// todo hulud remove / restore VBHeap
 				vbHeapBlock->VBHeap.unlock(meshGeom->_MeshVBHeapIndexStart, 
 					meshGeom->_MeshVBHeapIndexStart + meshGeom->_MeshVBHeapNumVertices);
+#endif		// todo hulud remove / restore VBHeap
 			}
 
 			// number of renderPasses for this mesh.
@@ -293,9 +299,11 @@ void			CMeshBlockManager::allocateMeshVBHeap(IMeshGeom *mesh)
 	uint	vbHeapId= it->second;
 	CVBHeapBlock	*vbHeapBlock= _VBHeapBlocks[vbHeapId];
 	// try to allocate sapce into the heap. Fail=> abort.
+#if 0		// todo hulud remove / restore VBHeap
 	uint	indexStart;
 	if( !vbHeapBlock->VBHeap.allocate(numVertices, indexStart) )
 		return;
+#endif		// todo hulud remove / restore VBHeap
 
 	// All is Ok here => setup infos.
 	//==================
@@ -317,17 +325,20 @@ void			CMeshBlockManager::allocateMeshVBHeap(IMeshGeom *mesh)
 	}
 
 	// info for delete in mesh
+#if 0		// todo hulud remove / restore VBHeap
 	mesh->_MeshVBHeapIndexStart= indexStart;
 	mesh->_MeshVBHeapId= vbHeapId + (meshId<<NL3D_MBM_VBHEAP_MESH_SHIFT);
 	mesh->_MeshVBHeapNumVertices= numVertices;
-
+#endif		// todo hulud remove / restore VBHeap
 
 	// Fill VB.
 	//==================
+#if 0		// todo hulud remove / restore VBHeap
 	uint8	*dst= vbHeapBlock->VBHeap.lock(indexStart);
 	mesh->computeMeshVBHeap(dst, indexStart);
 	// unlock only what vertices have changed (ATI problem)
 	vbHeapBlock->VBHeap.unlock(indexStart, indexStart+numVertices);
+#endif		// todo hulud remove / restore VBHeap
 }
 
 // ***************************************************************************
@@ -343,7 +354,9 @@ void			CMeshBlockManager::freeMeshVBHeap(IMeshGeom *mesh)
 	CVBHeapBlock	*vbHeapBlock= _VBHeapBlocks[vbHeapId];
 
 	// free VB memory.
+#if 0		// todo hulud remove / restore VBHeap
 	vbHeapBlock->VBHeap.free(mesh->_MeshVBHeapIndexStart);
+#endif		// todo hulud remove / restore VBHeap
 
 	// free this space
 	nlassert(meshId<vbHeapBlock->AllocatedMeshGeoms.size());
@@ -392,6 +405,8 @@ void			CMeshBlockManager::releaseVBHeaps()
 // ***************************************************************************
 bool			CMeshBlockManager::addVBHeap(IDriver *drv, uint vertexFormat, uint maxVertices)
 {
+	return false;	// todo hulud remove / restore VBHeap
+
 	// if find an existing vertexFormat, abort.
 	TVBHeapMap::iterator	it= _VBHeapMap.find(vertexFormat);
 	// if found, abort
@@ -402,7 +417,9 @@ bool			CMeshBlockManager::addVBHeap(IDriver *drv, uint vertexFormat, uint maxVer
 	CVBHeapBlock	*hb= new CVBHeapBlock;
 
 	// allocate vertex space
+#if 0		// todo hulud remove / restore VBHeap
 	hb->VBHeap.init(drv, vertexFormat, maxVertices);
+#endif		// todo hulud remove / restore VBHeap
 
 	// add an entry to the array, and the map.
 	_VBHeapBlocks.push_back(hb);

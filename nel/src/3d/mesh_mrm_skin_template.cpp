@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin_template.cpp
  * File not compiled. Included from mesh_mrm_skin.cpp. It is a "old school" template.
  *
- * $Id: mesh_mrm_skin_template.cpp,v 1.9 2003/12/10 12:47:33 berenguier Exp $
+ * $Id: mesh_mrm_skin_template.cpp,v 1.10 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -351,7 +351,9 @@ void	CMeshMRMGeom::applySkinWithNormal(CLod &lod, const CSkeletonModel *skeleton
 
 	// get vertexPtr / normalOff.
 	//===========================
-	uint8		*destVertexPtr= (uint8*)_VBufferFinal.getVertexCoordPointer();
+	CVertexBufferReadWrite vba;
+	_VBufferFinal.lock (vba);
+	uint8		*destVertexPtr= (uint8*)vba.getVertexCoordPointer();
 	uint		flags= _VBufferFinal.getVertexFormat();
 	sint32		vertexSize= _VBufferFinal.getVertexSize();
 	// must have XYZ and Normal.
@@ -415,7 +417,9 @@ void	CMeshMRMGeom::applySkinWithTangentSpace(CLod &lod, const CSkeletonModel *sk
 
 	// get vertexPtr / normalOff / tangent space offset.
 	//===========================
-	uint8		*destVertexPtr= (uint8*)_VBufferFinal.getVertexCoordPointer();
+	CVertexBufferReadWrite vba;
+	_VBufferFinal.lock (vba);
+	uint8		*destVertexPtr= (uint8*)vba.getVertexCoordPointer();
 	uint		flags= _VBufferFinal.getVertexFormat();
 	sint32		vertexSize= _VBufferFinal.getVertexSize();
 	// must have XYZ.

@@ -1,7 +1,7 @@
 /** \file shader.cpp
  * <File description>
  *
- * $Id: shader.cpp,v 1.4 2002/02/28 12:59:51 besson Exp $
+ * $Id: shader.cpp,v 1.5 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,16 +27,94 @@
 
 #include "3d/shader.h"
 #include "3d/driver.h"
+#include "nel/misc/path.h"
+#include "nel/misc/file.h"
 
+using namespace std;
+using namespace NLMISC;
 
 namespace NL3D 
 {
 
+// ***************************************************************************
 
-IShader::~IShader()
+CShader::~CShader()
 {
-	_Driver->removeShaderPtr(_DriverIterator);
+	// Must kill the drv mirror of this shader.
+	_DrvInfo.kill();
 }
 
+// ***************************************************************************
+
+CShader::CShader()
+{
+	_ShaderChanged = true;
+}
+
+// ***************************************************************************
+
+void CShader::setText (const char *text)
+{
+	_Text = text;
+	_ShaderChanged = true;
+}
+
+// ***************************************************************************
+
+void CShader::setName (const char *name)
+{
+	_Name = name;
+	_ShaderChanged = true;
+}
+
+// ***************************************************************************
+
+bool CShader::loadShaderFile (const char *filename)
+{
+	_Text = "";
+	// Lookup
+	string _filename = CPath::lookup(filename, false, true, true);
+	if (!_filename.empty())
+	{
+		// File length
+		uint size = CFile::getFileSize (_filename);
+		_Text.reserve (size+1);
+
+		try
+		{
+			CIFile file;
+			if (file.open (_filename))
+			{
+				// Read it
+				while (!file.eof ())
+				{
+					char line[512];
+					file.getline (line, 512);
+					_Text += line;
+				}
+
+				// Set the shader name
+				_Name = CFile::getFilename (filename);
+				return true;
+			}
+			else
+			{
+				nlwarning ("Can't open the file %s for reading", _filename.c_str());
+			}
+		}
+		catch (Exception &e)
+		{
+			nlwarning ("Error while reading %s : %s", _filename.c_str(), e.what());
+		}
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+IShaderDrvInfos::~IShaderDrvInfos()
+{
+	_Driver->removeShaderDrvInfoPtr(_DriverIterator);
+}
 
 } // NL3D

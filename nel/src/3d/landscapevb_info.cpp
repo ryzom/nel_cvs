@@ -1,7 +1,7 @@
 /** \file landscapevb_info.cpp
  * <File description>
  *
- * $Id: landscapevb_info.cpp,v 1.4 2002/04/18 13:06:52 berenguier Exp $
+ * $Id: landscapevb_info.cpp,v 1.5 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,6 @@
 
 #include "3d/landscapevb_info.h"
 #include "3d/vertex_buffer.h"
-#include "3d/vertex_buffer_hard.h"
 #include "3d/landscapevb_allocator.h"
 
 
@@ -45,6 +44,7 @@ namespace NL3D
 // ***************************************************************************
 void		CFarVertexBufferInfo::setupNullPointers()
 {
+	Accessor.unlock();
 	VertexCoordPointer= NULL;
 	TexCoordPointer0= NULL;
 	TexCoordPointer1= NULL;
@@ -82,7 +82,8 @@ void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb, bool forVertexP
 		return;
 	}
 
-	VertexCoordPointer= vb.getVertexCoordPointer();
+	vb.lock (Accessor);
+	VertexCoordPointer = Accessor.getVertexCoordPointer();
 
 	if(forVertexProgram)
 	{
@@ -103,14 +104,15 @@ void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb, bool forVertexP
 	{
 		TexCoordOff0= vb.getTexCoordOff(0);
 		TexCoordOff1= vb.getTexCoordOff(1);
-		TexCoordPointer0= vb.getTexCoordPointer(0, 0);
-		TexCoordPointer1= vb.getTexCoordPointer(0, 1);
+		TexCoordPointer0= Accessor.getTexCoordPointer(0, 0);
+		TexCoordPointer1= Accessor.getTexCoordPointer(0, 1);
 
 		// In Far0, we don't have Color component.
 		if(VertexFormat & CVertexBuffer::PrimaryColorFlag)
 		{
 			ColorOff= vb.getColorOff();
-			ColorPointer= vb.getColorPointer();
+			// todo hulud d3d vertex color RGBA / BGRA
+			ColorPointer= Accessor.getColorPointer();
 		}
 		else
 		{
@@ -119,62 +121,13 @@ void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb, bool forVertexP
 		}
 	}
 
-}
-// ***************************************************************************
-void		CFarVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord, bool forVertexProgram)
-{
-	VertexFormat= vb.getVertexFormat();
-	VertexSize= vb.getVertexSize();
-	NumVertices= vb.getNumVertices();
-
-	if(NumVertices==0)
-	{
-		setupNullPointers();
-		return;
-	}
-
-	VertexCoordPointer= vcoord;
-
-	if(forVertexProgram)
-	{
-		// With VertexCoordPointer setuped, init for VP.
-		TexCoordOff0= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_TEX0);				// v[8]= Tex0.
-		TexCoordOff1= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_TEX1);				// v[9]= Tex1.
-		GeomInfoOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_GEOMINFO);				// v[10]= GeomInfos.
-		DeltaPosOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_DELTAPOS);				// v[11]= EndPos-StartPos
-		// Init Alpha Infos only if enabled (enabled if Value 5 are).
-		AlphaInfoOff= 0;
-		if( vb.getVertexFormat() & (1<<NL3D_LANDSCAPE_VPPOS_ALPHAINFO) )
-			AlphaInfoOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_ALPHAINFO);		// v[12]= AlphaInfos
-
-		// update Ptrs.
-		setupPointersForVertexProgram();
-	}
-	else
-	{
-		TexCoordOff0= vb.getValueOff (CVertexBuffer::TexCoord0);
-		TexCoordOff1= vb.getValueOff (CVertexBuffer::TexCoord1);
-		TexCoordPointer0= (uint8*)vcoord + TexCoordOff0;
-		TexCoordPointer1= (uint8*)vcoord + TexCoordOff1;
-
-		// In Far0, we don't have Color component.
-		if(VertexFormat & CVertexBuffer::PrimaryColorFlag)
-		{
-			ColorOff= vb.getValueOff (CVertexBuffer::PrimaryColor);
-			ColorPointer= (uint8*)vcoord + ColorOff;
-		}
-		else
-		{
-			ColorOff= 0;
-			ColorPointer= NULL;
-		}
-	}
 }
 
 
 // ***************************************************************************
 void		CNearVertexBufferInfo::setupNullPointers()
 {
+	Accessor.unlock();
 	VertexCoordPointer= NULL;
 	TexCoordPointer0= NULL;
 	TexCoordPointer1= NULL;
@@ -212,7 +165,8 @@ void		CNearVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb, bool forVertex
 		return;
 	}
 
-	VertexCoordPointer= vb.getVertexCoordPointer();
+	vb.lock (Accessor);
+	VertexCoordPointer= Accessor.getVertexCoordPointer();
 
 	if(forVertexProgram)
 	{
@@ -228,51 +182,13 @@ void		CNearVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb, bool forVertex
 	}
 	else
 	{
-		TexCoordPointer0= vb.getTexCoordPointer(0, 0);
-		TexCoordPointer1= vb.getTexCoordPointer(0, 1);
-		TexCoordPointer2= vb.getTexCoordPointer(0, 2);
+		TexCoordPointer0= Accessor.getTexCoordPointer(0, 0);
+		TexCoordPointer1= Accessor.getTexCoordPointer(0, 1);
+		TexCoordPointer2= Accessor.getTexCoordPointer(0, 2);
 
 		TexCoordOff0= vb.getTexCoordOff(0);
 		TexCoordOff1= vb.getTexCoordOff(1);
 		TexCoordOff2= vb.getTexCoordOff(2);
-	}
-}
-// ***************************************************************************
-void		CNearVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord, bool forVertexProgram)
-{
-	VertexFormat= vb.getVertexFormat();
-	VertexSize= vb.getVertexSize();
-	NumVertices= vb.getNumVertices();
-
-	if(NumVertices==0)
-	{
-		setupNullPointers();
-		return;
-	}
-
-	VertexCoordPointer= vcoord;
-
-	if(forVertexProgram)
-	{
-		// With VertexCoordPointer setuped, init for VP.
-		TexCoordOff0= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_TEX0);				// v[8]= Tex0.
-		TexCoordOff1= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_TEX1);				// v[9]= Tex1.
-		TexCoordOff2= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_TEX2);				// v[9]= Tex1.
-		GeomInfoOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_GEOMINFO);				// v[10]= GeomInfos.
-		DeltaPosOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_DELTAPOS);				// v[11]= EndPos-StartPos
-
-		// update Ptrs.
-		setupPointersForVertexProgram();
-	}
-	else
-	{
-		TexCoordPointer0= (uint8*)vcoord + vb.getValueOff (CVertexBuffer::TexCoord0);
-		TexCoordPointer1= (uint8*)vcoord + vb.getValueOff (CVertexBuffer::TexCoord1);
-		TexCoordPointer2= (uint8*)vcoord + vb.getValueOff (CVertexBuffer::TexCoord2);
-
-		TexCoordOff0= vb.getValueOff (CVertexBuffer::TexCoord0);
-		TexCoordOff1= vb.getValueOff (CVertexBuffer::TexCoord1);
-		TexCoordOff2= vb.getValueOff (CVertexBuffer::TexCoord2);
 	}
 }
 

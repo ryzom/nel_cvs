@@ -1,7 +1,7 @@
 /** \file cube_map_builder.cpp
  * a function that helps to build cube maps
  *
- * $Id: cube_map_builder.cpp,v 1.4 2003/02/03 15:56:26 coutelas Exp $
+ * $Id: cube_map_builder.cpp,v 1.5 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -115,10 +115,10 @@ CTextureCube *BuildCubeMap(sint mapSize, ICubeMapFunctor &f, bool luminanceOnly 
 
 	static const NLMISC::CVector uDir[] = 
 	{ 
-		- NLMISC::CVector::K,		/// positive_x
-		NLMISC::CVector::K,			/// negative_x
-		NLMISC::CVector::I,			/// positive_y
-		NLMISC::CVector::I,			/// negative_y
+		NLMISC::CVector::K,		/// positive_x
+		- NLMISC::CVector::K,			/// negative_x
+		- NLMISC::CVector::I,			/// positive_y
+		- NLMISC::CVector::I,			/// negative_y
 		NLMISC::CVector::I,			/// positive_z
 		-NLMISC::CVector::I,			/// negative_z
 	};
@@ -129,11 +129,10 @@ CTextureCube *BuildCubeMap(sint mapSize, ICubeMapFunctor &f, bool luminanceOnly 
 		- NLMISC::CVector::J,		/// negative_x
 		NLMISC::CVector::K,			/// positive_y
 		- NLMISC::CVector::K,		/// negative_y
-		- NLMISC::CVector::J,		/// positive_z
-		- NLMISC::CVector::J,		/// negative_z
+		NLMISC::CVector::J,		/// positive_z
+		NLMISC::CVector::J,		/// negative_z
 	};
 	
-
 
 	uint k;
 
@@ -165,8 +164,6 @@ CTextureCube *BuildCubeMap(sint mapSize, ICubeMapFunctor &f, bool luminanceOnly 
 	{
 		cubeMap->setTexture(toTC[k], faces[k].release());	
 	}
-
-	cubeMap->setNoFlip(); // keep faces texture as it
 
 	return cubeMap.release();
 }

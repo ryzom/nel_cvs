@@ -1,7 +1,7 @@
 /** \file ps_macro.h
  * Some macros used by the particle systems for rendering.
  *
- * $Id: ps_macro.h,v 1.4 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: ps_macro.h,v 1.5 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -33,17 +33,17 @@
 
 /// this macro is used to see whether a write in a vertex buffer is correct
 #ifdef NL_DEBUG
-	#define CHECK_VERTEX_BUFFER(vb, pt) nlassert((uint8 *) (pt) >= (uint8 *) (vb).getVertexCoordPointer()  \
-										&& (uint8 *) (pt) < ((uint8 *) (vb).getVertexCoordPointer() + (vb).getVertexSize() * (vb).getNumVertices()));
+	#define CHECK_VERTEX_BUFFER(vb, pt) { CVertexBufferRead vba; (vb).lock (vba); \
+										nlassert((uint8 *) (pt) >= (uint8 *) vba.getVertexCoordPointer()  \
+				&& (uint8 *) (pt) < ((uint8 *) vba.getVertexCoordPointer() + (vb).getVertexSize() * (vb).getNumVertices()));}
 #else
 	#define CHECK_VERTEX_BUFFER(a,b)
 #endif
 
-// this macro check the memory integrity (windows platform for now). It may be useful after violent vb access
+// private usage : macro to check the memory integrity
 #if defined(NL_DEBUG) && defined(NL_OS_WINDOWS)
-	// #include <crtdbg.h>
-	#define PARTICLES_CHECK_MEM
-//  nlassert(_CrtCheckMemory());    
+	// #define PARTICLES_CHECK_MEM NLMEMORY::CheckHeap(true);
+	#define PARTICLES_CHECK_MEM 
 #else
 	#define PARTICLES_CHECK_MEM
 #endif

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.68 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.69 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@
 #include "3d/shape_bank.h"
 #include "nel/3d/u_instance_group.h"
 #include "3d/vertex_buffer.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/text_context.h"
 #include "nel/misc/polygon.h"
 
@@ -1257,14 +1257,14 @@ void			CInstanceGroup::displayDebugClusters(IDriver *drv, class CTextContext *tx
 	const uint	maxVertices= 10000;
 	vb.setVertexFormat(CVertexBuffer::PositionFlag);
 	vb.setNumVertices(maxVertices);
-	CPrimitiveBlock		clusterTriangles;
-	CPrimitiveBlock		clusterLines;
-	CPrimitiveBlock		portalTriangles;
-	CPrimitiveBlock		portalLines;
-	clusterTriangles.reserveTri(maxVertices);
-	clusterLines.reserveLine(maxVertices);
-	portalTriangles.reserveTri(maxVertices);
-	portalLines.reserveLine(maxVertices);
+	CIndexBuffer		clusterTriangles;
+	CIndexBuffer		clusterLines;
+	CIndexBuffer		portalTriangles;
+	CIndexBuffer		portalLines;
+	clusterTriangles.reserve(maxVertices*3);
+	clusterLines.reserve(maxVertices*2);
+	portalTriangles.reserve(maxVertices*3);
+	portalLines.reserve(maxVertices*2);
 	
 	// setup identity matrix
 	drv->setupModelMatrix(CMatrix::Identity);
@@ -1340,8 +1340,20 @@ void			CInstanceGroup::displayDebugClusters(IDriver *drv, class CTextContext *tx
 				uint	j;
 
 				// build the cluster geometry
-				clusterTriangles.setNumTri(0);
-				clusterLines.setNumLine(0);
+				clusterTriangles.setNumIndexes(0);
+				clusterLines.setNumIndexes(0);
+
+				// Locks
+				CVertexBufferReadWrite vba;
+				vb.lock (vba);
+				CIndexBufferReadWrite ibaCT;
+				clusterTriangles.lock (ibaCT);
+				CIndexBufferReadWrite ibaCL;
+				clusterLines.lock (ibaCL);
+
+				uint numTriIndexes = 0;
+				uint numLineIndexes = 0;
+
 				for(j=0;j<polygons.size();j++)
 				{
 					CPolygon	&poly= polygons[j];
@@ -1350,24 +1362,52 @@ void			CInstanceGroup::displayDebugClusters(IDriver *drv, class CTextContext *tx
 						uint	k;
 						// add the vertices
 						for(k=0;k<poly.Vertices.size();k++)
-							vb.setVertexCoord(iVert+k, poly.Vertices[k]);
+							vba.setVertexCoord(iVert+k, poly.Vertices[k]);
 
 						// add the triangles
 						for(k=0;k<poly.Vertices.size()-2;k++)
-							clusterTriangles.addTri(iVert+0, iVert+k+1, iVert+k+2);
+						{
+							if (numTriIndexes<clusterTriangles.capacity())
+							{
+								ibaCT.setTri(numTriIndexes, iVert+0, iVert+k+1, iVert+k+2);
+								numTriIndexes += 3;
+							}
+						}
 
 						// add the lines
 						for(k=0;k<poly.Vertices.size();k++)
-							clusterLines.addLine(iVert+k, iVert+ ((k+1)%poly.Vertices.size()) );
+						{
+							if (numLineIndexes<clusterLines.capacity())
+							{
+								ibaCL.setLine(numLineIndexes, iVert+k, iVert+ ((k+1)%poly.Vertices.size()) );
+								numLineIndexes += 2;
+							}
+						}
 
 						iVert+= poly.Vertices.size();
 					}
 				}
 
+				// Unlocks
+				ibaCT.unlock ();
+				ibaCL.unlock ();
+				clusterTriangles.setNumIndexes(numTriIndexes);
+				clusterLines.setNumIndexes(numLineIndexes);
+
 				// build the portal geometry
-				portalTriangles.setNumTri(0);
-				portalLines.setNumLine(0);
-					for(j=0;j<cluster->_Portals.size();j++)
+				portalTriangles.setNumIndexes(0);
+				portalLines.setNumIndexes(0);
+
+				// Locks
+				CIndexBufferReadWrite ibaPT;
+				portalTriangles.lock (ibaPT);
+				CIndexBufferReadWrite ibaPL;
+				portalLines.lock (ibaPL);
+
+				numTriIndexes = 0;
+				numLineIndexes = 0;
+
+				for(j=0;j<cluster->_Portals.size();j++)
 				{
 					std::vector<CVector>	&portalVerts= cluster->_Portals[j]->_Poly;
 					if(portalVerts.size()>=3)
@@ -1375,20 +1415,39 @@ void			CInstanceGroup::displayDebugClusters(IDriver *drv, class CTextContext *tx
 						uint	k;
 						// add the vertices
 						for(k=0;k<portalVerts.size();k++)
-							vb.setVertexCoord(iVert+k, portalVerts[k]);
+							vba.setVertexCoord(iVert+k, portalVerts[k]);
 						
 						// add the triangles
 						for(k=0;k<portalVerts.size()-2;k++)
-							portalTriangles.addTri(iVert+0, iVert+k+1, iVert+k+2);
+						{
+							if (numTriIndexes<clusterTriangles.capacity())
+							{
+								ibaPT.setTri(numTriIndexes, iVert+0, iVert+k+1, iVert+k+2);
+								numTriIndexes += 3;
+							}
+						}
 						
 						// add the lines
 						for(k=0;k<portalVerts.size();k++)
-							portalLines.addLine(iVert+k, iVert+ ((k+1)%portalVerts.size()) );
-						
+						{
+							if (numTriIndexes<clusterTriangles.capacity())
+							{
+								ibaPL.setLine(numLineIndexes, iVert+k, iVert+ ((k+1)%portalVerts.size()) );
+								numLineIndexes += 2;
+							}
+						}
+
 						iVert+= portalVerts.size();
 					}
 				}
-				
+
+				// Unlock
+				ibaPT.unlock ();
+				ibaPL.unlock ();
+				portalTriangles.setNumIndexes(numTriIndexes);
+				portalLines.setNumIndexes(numLineIndexes);
+				vba.unlock ();
+
 				// render 2 pass with or without ZBuffer (for clearness)
 				for(uint pass=0;pass<2;pass++)
 				{
@@ -1406,10 +1465,14 @@ void			CInstanceGroup::displayDebugClusters(IDriver *drv, class CTextContext *tx
 					}
 
 					drv->activeVertexBuffer(vb);
-					drv->render(clusterTriangles, clusterMat);
-					drv->render(clusterLines, lineMat);
-					drv->render(portalTriangles, portalMat);
-					drv->render(portalLines, lineMat);
+					drv->activeIndexBuffer(clusterTriangles);
+					drv->renderTriangles (clusterMat, 0, clusterTriangles.getNumIndexes()/3);
+					drv->activeIndexBuffer(clusterLines);
+					drv->renderLines (lineMat, 0, clusterLines.getNumIndexes()/2);
+					drv->activeIndexBuffer(portalTriangles);
+					drv->renderTriangles (portalMat, 0, portalTriangles.getNumIndexes()/3);
+					drv->activeIndexBuffer(portalLines);
+					drv->renderLines (lineMat, 0, portalLines.getNumIndexes()/2);
 				}
 			}
 

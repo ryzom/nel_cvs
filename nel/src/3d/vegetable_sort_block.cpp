@@ -1,7 +1,7 @@
 /** \file vegetable_sort_block.cpp
  * <File description>
  *
- * $Id: vegetable_sort_block.cpp,v 1.7 2003/07/30 16:08:29 vizerie Exp $
+ * $Id: vegetable_sort_block.cpp,v 1.8 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,14 +106,14 @@ void			CVegetableSortBlock::updateSortBlock(CVegetableManager &vegetManager)
 	if(_NTriangles == 0)
 	{
 		// reset the array of indices.
-		_SortedTriangleArray.clear();
+		_SortedTriangleArray.deleteAllIndexes();
 		// bye
 		return;
 	}
 	else
 	{
 		// else, re-allocate the array
-		_SortedTriangleArray.resize(_NIndices * NL3D_VEGETABLE_NUM_QUADRANT);
+		_SortedTriangleArray.setNumIndexes(_NIndices * NL3D_VEGETABLE_NUM_QUADRANT);
 	}
 
 	// resize an array for sorting.
@@ -136,7 +136,9 @@ void			CVegetableSortBlock::updateSortBlock(CVegetableManager &vegetManager)
 		while(ptrIg)
 		{
 			CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ptrIg->_RdrPass[NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT];
-			uint32		*triSrcPtr= vegetRdrPass.TriangleIndices.getPtr();
+			CIndexBufferRead ibaRead;
+			vegetRdrPass.TriangleIndices.lock (ibaRead);
+			const uint32		*triSrcPtr= ibaRead.getPtr();
 
 			// add only zsort rdrPass triangles.
 			for(uint i=0; i<vegetRdrPass.NTriangles; i++)
@@ -189,10 +191,12 @@ void			CVegetableSortBlock::updateSortBlock(CVegetableManager &vegetManager)
 		// Fill result.
 		//-------------
 		// init quadrant ptr.
-		_SortedTriangleIndices[quadrant]= _SortedTriangleArray.getPtr() + quadrant * _NIndices;
+		_SortedTriangleIndices[quadrant]= quadrant * _NIndices;
 
 		// fill the indices.
-		uint32	*pIdx= _SortedTriangleIndices[quadrant];
+		CIndexBufferReadWrite ibaReadWrite;
+		_SortedTriangleArray.lock (ibaReadWrite);
+		uint32	*pIdx= ibaReadWrite.getPtr() + _SortedTriangleIndices[quadrant];
 		for(uint i=0; i<_NTriangles; i++)
 		{
 			uint32	idTriIdx= triSort[i].TriIndex * 3;

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.82 2004/02/06 18:07:25 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.83 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "stdopengl.h"
+#include "driver_opengl.h"
 #include "3d/cube_map_builder.h"
 #include "3d/texture_mem.h"
 #include "3d/texture_bump.h"
@@ -268,17 +269,17 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 
 	// 0. Retrieve/Create driver shader.
 	//==================================
-	if (!mat.pShader)
+	if (!mat._MatDrvInfo)
 	{
 		// insert into driver list. (so it is deleted when driver is deleted).
-		ItShaderPtrList		it= _Shaders.insert(_Shaders.end());
+		ItMatDrvInfoPtrList		it= _MatDrvInfos.insert(_MatDrvInfos.end());
 		// create and set iterator, for future deletion.
-		*it= mat.pShader= new CShaderGL(this, it);
+		*it= mat._MatDrvInfo= new CShaderGL(this, it);
 
 		// Must create all OpenGL shader states.
 		touched= IDRV_TOUCHED_ALL;
 	}
-	pShader=static_cast<CShaderGL*>((IShader*)(mat.pShader));
+	pShader=static_cast<CShaderGL*>((IMaterialDrvInfos*)(mat._MatDrvInfo));
 
 
 	// 1. Setup modified fields of material.
@@ -435,7 +436,6 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		_DriverGLStates.enableZWrite(mat.getFlags()&IDRV_MAT_ZWRITE);
 		_DriverGLStates.depthFunc(pShader->ZComp);
 		_DriverGLStates.setDepthRange (mat.getZBias () * _OODeltaZ);
-
 
 		// Color-Lighting Part.
 		//=====================

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.70 2004/01/15 17:33:18 lecroart Exp $
+ * $Id: mesh_mrm.cpp,v 1.71 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -203,7 +203,6 @@ static	NLMISC::CAABBoxExt	makeBBox(const std::vector<CVector>	&Vertices)
 // ***************************************************************************
 CMeshMRMGeom::CMeshMRMGeom()
 {
-	_VertexBufferHardDirty= true;
 	_Skinned= false;
 	_NbLodLoaded= 0;
 	_BoneIdComputed = false;
@@ -220,7 +219,6 @@ CMeshMRMGeom::CMeshMRMGeom()
 // ***************************************************************************
 CMeshMRMGeom::~CMeshMRMGeom()
 {
-	deleteVertexBufferHard();
 }
 
 
@@ -246,10 +244,6 @@ void			CMeshMRMGeom::changeMRMDistanceSetup(float distanceFinest, float distance
 void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*> &bsList,
 									uint numMaxMaterial, const CMRMParameters &params)
 {
-
-	// Dirt the VBuffer.
-	_VertexBufferHardDirty= true;
-
 	// Empty geometry?
 	if(m.Vertices.size()==0 || m.Faces.size()==0)
 	{
@@ -332,7 +326,7 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 		{
 			CRdrPass &pass= firstLod.RdrPass[pb];
 			// Sum tri
-			_LevelDetail.MinFaceUsed+= pass.PBlock.getNumTriangles ();
+			_LevelDetail.MinFaceUsed+= pass.PBlock.getNumIndexes ()/3;
 		}
 		// Compute MaxFaces.
 		CLod	&lastLod= _Lods[_Lods.size()-1];
@@ -340,7 +334,7 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 		{
 			CRdrPass &pass= lastLod.RdrPass[pb];
 			// Sum tri
-			_LevelDetail.MaxFaceUsed+= pass.PBlock.getNumTriangles ();
+			_LevelDetail.MaxFaceUsed+= pass.PBlock.getNumIndexes ()/3;
 		}
 	}
 
@@ -474,23 +468,9 @@ void	CMeshMRMGeom::applyMaterialRemap(const std::vector<sint> &remap)
 }
 
 // ***************************************************************************
-void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod, IVertexBufferHard *currentVBHard)
+void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod)
 {
-	if(currentVBHard!=NULL)
-	{
-		// must write into it
-		uint8	*vertexDestPtr= (uint8*)currentVBHard->lock();
-		nlassert(_VBufferFinal.getVertexSize() == currentVBHard->getVertexSize());
-
-		// apply the geomorph
-		applyGeomorphWithVBHardPtr(geoms, alphaLod, vertexDestPtr);
-
-		// unlock. ATI: copy only geomorphed vertices.
-		currentVBHard->unlock(0, geoms.size());
-	}
-	else
-		applyGeomorphWithVBHardPtr(geoms, alphaLod, NULL);
-
+	applyGeomorphWithVBHardPtr(geoms, alphaLod, NULL);
 }
 
 
@@ -507,7 +487,9 @@ void	CMeshMRMGeom::applyGeomorphWithVBHardPtr(std::vector<CMRMWedgeGeom>  &geoms
 
 
 	// info from VBuffer.
-	uint8		*vertexPtr= (uint8*)_VBufferFinal.getVertexCoordPointer();
+	CVertexBufferReadWrite vba;
+	_VBufferFinal.lock (vba);
+	uint8		*vertexPtr= (uint8*)vba.getVertexCoordPointer();
 	uint		flags= _VBufferFinal.getVertexFormat();
 	sint32		vertexSize= _VBufferFinal.getVertexSize();
 	// because of the unrolled code for 4 first UV, must assert this.
@@ -956,13 +938,6 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 	// Update the vertexBufferHard (if possible).
 	// \toto yoyo: TODO_OPTIMIZE: allocate only what is needed for the current Lod (Max of all instances, like
 	// the loading....) (see loadHeader()).
-	updateVertexBufferHard(drv, _VBufferFinal.getNumVertices());
-	/* currentVBHard is NULL if must disable it temporarily
-		For now, never disable it, but switch of VBHard may be VERY EXPENSIVE if NV_vertex_array_range2 is not
-		supported (old drivers).
-	*/
-	IVertexBufferHard		*currentVBHard= _VBHard;
-
 
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel *skeleton;
@@ -989,7 +964,6 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 		{
 			_MeshMorpher.initSkinned(&_VBufferOriginal,
 								 &_VBufferFinal,
-								 currentVBHard,
 								 useTangentSpace,
 								 &_OriginalSkinVertices,
 								 &_OriginalSkinNormals,
@@ -1001,7 +975,6 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 		{
 			_MeshMorpher.init(&_VBufferOriginal,
 								 &_VBufferFinal,
-								 currentVBHard,
 								 useTangentSpace);
 			_MeshMorpher.update (mi->getBlendShapeFactors());
 		}
@@ -1014,7 +987,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 	{
 		// do it for this Lod only, and if cache say it is necessary.
 		if (!lod.OriginalSkinRestored)
-			restoreOriginalSkinPart(lod, currentVBHard);
+			restoreOriginalSkinPart(lod);
 	}
 
 
@@ -1027,7 +1000,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 	// Geomorph the choosen Lod (if not the coarser mesh).
 	if(numLod>0)
 	{
-		applyGeomorph(lod.Geomorphs, alphaLod, currentVBHard);
+		applyGeomorph(lod.Geomorphs, alphaLod);
 	}
 
 
@@ -1053,10 +1026,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 	// Render the lod.
 	//===========
 	// active VB.
-	if(currentVBHard)
-		drv->activeVertexBufferHard(currentVBHard);
-	else
-		drv->activeVertexBuffer(_VBufferFinal);
+	drv->activeVertexBuffer(_VBufferFinal);
 
 
 	// Global alpha used ?
@@ -1086,14 +1056,12 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 				// Setup VP material
 				if (useMeshVP)
 				{
-					if(currentVBHard)
-						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, currentVBHard);
-					else
-						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBufferFinal);
+					_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBufferFinal);
 				}
 
 				// Render
-				drv->render(rdrPass.PBlock, material);
+				drv->activeIndexBuffer(rdrPass.PBlock);
+				drv->renderTriangles(material, 0, rdrPass.PBlock.getNumIndexes()/3);
 
 				// Resetup material/driver
 				blender.restoreRender(material, drv, gaDisableZWrite);
@@ -1115,14 +1083,12 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 				// Setup VP material
 				if (useMeshVP)
 				{
-					if(currentVBHard)
-						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, currentVBHard);
-					else
-						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBufferFinal);
+					_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBufferFinal);
 				}	
 
 				// Render with the Materials of the MeshInstance.
-				drv->render(rdrPass.PBlock, material);
+				drv->activeIndexBuffer(rdrPass.PBlock);
+				drv->renderTriangles(material, 0, rdrPass.PBlock.getNumIndexes()/3);
 			}
 		}
 	}
@@ -1203,7 +1169,6 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 		// Since Skinned we must update original skin vertices and normals because skinning use it
 		_MeshMorpher.initSkinned(&_VBufferOriginal,
 							 &_VBufferFinal,
-							 NULL,
 							 useTangentSpace,
 							 &_OriginalSkinVertices,
 							 &_OriginalSkinNormals,
@@ -1257,7 +1222,7 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 	// Geomorph the choosen Lod (if not the coarser mesh).
 	if(numLod>0)
 	{
-		applyGeomorph(lod.Geomorphs, alphaLod, NULL);
+		applyGeomorph(lod.Geomorphs, alphaLod);
 	}
 
 
@@ -1296,7 +1261,8 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 		}
 
 		// Render with the Materials of the MeshInstance.
-		drv->render(rdrPass.PBlock, material);
+		drv->activeIndexBuffer(rdrPass.PBlock);
+		drv->renderTriangles(material, 0, rdrPass.PBlock.getNumIndexes()/3);
 	}
 
 	// End VertexProgram effect
@@ -1472,12 +1438,8 @@ void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVert
 			// Get the shifted triangles.
 			CShiftedTriangleCache::CRdrPass		&shiftedRdrPass= mi->_ShiftedTriangleCache->RdrPass[i];
 
-			// This speed up 4 ms for 80K polys.
-			uint	memToCache= shiftedRdrPass.NumTriangles*12;
-			memToCache= min(memToCache, 4096U);
-			CFastMem::precache(shiftedRdrPass.Triangles, memToCache);
-
 			// Render with the Materials of the MeshInstance.
+			drv->activeIndexBuffer(mi->_ShiftedTriangleCache->RawIndices);
 			drv->renderTriangles(material, shiftedRdrPass.Triangles, shiftedRdrPass.NumTriangles);
 		}
 	}
@@ -1515,12 +1477,8 @@ void	CMeshMRMGeom::renderSkinGroupSpecularRdrPass(CMeshMRMInstance	*mi, uint rdr
 	// Get the shifted triangles.
 	CShiftedTriangleCache::CRdrPass		&shiftedRdrPass= mi->_ShiftedTriangleCache->RdrPass[rdrPassId];
 
-	// This speed up 4 ms for 80K polys.
-	uint	memToCache= shiftedRdrPass.NumTriangles*12;
-	memToCache= min(memToCache, 4096U);
-	CFastMem::precache(shiftedRdrPass.Triangles, memToCache);
-
 	// Render with the Materials of the MeshInstance.
+	drv->activeIndexBuffer(mi->_ShiftedTriangleCache->RawIndices);
 	drv->renderTriangles(material, shiftedRdrPass.Triangles, shiftedRdrPass.NumTriangles);
 }
 
@@ -1547,7 +1505,7 @@ void	CMeshMRMGeom::updateShiftedTriangleCache(CMeshMRMInstance *mi, sint curLodI
 		mi->_ShiftedTriangleCache->BaseVertex= baseVertex;
 
 		// Build list of PBlock. From Lod, or from RawSkin cache.
-		static	vector<CPrimitiveBlock*>	pbList;
+		static	vector<CIndexBuffer*>	pbList;
 		pbList.clear();
 		if(mi->_RawSkinCache)
 		{
@@ -1575,29 +1533,35 @@ void	CMeshMRMGeom::updateShiftedTriangleCache(CMeshMRMInstance *mi, sint curLodI
 		uint	i;
 		for(i=0;i<pbList.size();i++)
 		{
-			mi->_ShiftedTriangleCache->RdrPass[i].NumTriangles= pbList[i]->getNumTri();
-			totalTri+= pbList[i]->getNumTri();
+			mi->_ShiftedTriangleCache->RdrPass[i].NumTriangles= pbList[i]->getNumIndexes()/3;
+			totalTri+= pbList[i]->getNumIndexes()/3;
 		}
 
 		// Allocate triangles indices.
-		mi->_ShiftedTriangleCache->RawIndices.resize(totalTri*3);
-		uint32		*rawPtr= mi->_ShiftedTriangleCache->RawIndices.getPtr();
+		mi->_ShiftedTriangleCache->RawIndices.setNumIndexes(totalTri*3);
+
+		// Lock the index buffer
+		CIndexBufferReadWrite ibaWrite;
+		mi->_ShiftedTriangleCache->RawIndices.lock (ibaWrite);
+		uint32 *dstPtr = ibaWrite.getPtr();
 
 		// Second pass, fill ptrs, and fill Arrays
 		uint	indexTri= 0;
 		for(i=0;i<pbList.size();i++)
 		{
 			CShiftedTriangleCache::CRdrPass	&dstRdrPass= mi->_ShiftedTriangleCache->RdrPass[i];
-			dstRdrPass.Triangles= rawPtr + indexTri*3;
+			dstRdrPass.Triangles= indexTri*3;
 
 			// Fill the array
-			uint	numTris= pbList[i]->getNumTri();
+			uint	numTris= pbList[i]->getNumIndexes()/3;
 			if(numTris)
 			{
 				uint	nIds= numTris*3;
 				// index, and fill
-				uint32	*pSrcTri= pbList[i]->getTriPointer();
-				uint32	*pDstTri= dstRdrPass.Triangles;
+				CIndexBufferRead ibaRead;
+				pbList[i]->lock (ibaRead);
+				const uint32	*pSrcTri= ibaRead.getPtr();
+				uint32	*pDstTri= dstPtr+dstRdrPass.Triangles;
 				for(;nIds>0;nIds--,pSrcTri++,pDstTri++)
 					*pDstTri= *pSrcTri + baseVertex;
 			}
@@ -1756,11 +1720,6 @@ sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 // ***************************************************************************
 void	CMeshMRMGeom::load(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-
-	// because loading, flag the VertexBufferHard.
-	_VertexBufferHardDirty= true;
-
-
 	// Load the header of the stream.
 	// ==================
 	sint	verHeader= loadHeader(f);
@@ -1950,10 +1909,6 @@ void	CMeshMRMGeom::serialLodVertexData(NLMISC::IStream &f, uint startWedge, uint
 // ***************************************************************************
 void	CMeshMRMGeom::loadFirstLod(NLMISC::IStream &f)
 {
-
-	// because loading, flag the VertexBufferHard.
-	_VertexBufferHardDirty= true;
-
 	// Load the header of the stream.
 	// ==================
 	sint	verHeader= loadHeader(f);
@@ -2000,10 +1955,6 @@ void	CMeshMRMGeom::loadFirstLod(NLMISC::IStream &f)
 // ***************************************************************************
 void	CMeshMRMGeom::loadNextLod(NLMISC::IStream &f)
 {
-
-	// because loading, flag the VertexBufferHard.
-	_VertexBufferHardDirty= true;
-
 	// If all is loaded, quit.
 	if(getNbLodLoaded() == getNbLod())
 		return;
@@ -2056,6 +2007,9 @@ void	CMeshMRMGeom::bkupOriginalSkinVerticesSubset(uint wedgeStart, uint wedgeEnd
 {
 	nlassert(_Skinned);
 
+	CVertexBufferReadWrite vba;
+	_VBufferFinal.lock (vba);
+
 	// Copy VBuffer content into Original vertices normals.
 	if(_VBufferFinal.getVertexFormat() & CVertexBuffer::PositionFlag)
 	{
@@ -2063,7 +2017,7 @@ void	CMeshMRMGeom::bkupOriginalSkinVerticesSubset(uint wedgeStart, uint wedgeEnd
 		_OriginalSkinVertices.resize(_VBufferFinal.getNumVertices());
 		for(uint i=wedgeStart; i<wedgeEnd;i++)
 		{
-			_OriginalSkinVertices[i]= *(CVector*)_VBufferFinal.getVertexCoordPointer(i);
+			_OriginalSkinVertices[i]= *vba.getVertexCoordPointer(i);
 		}
 	}
 	if(_VBufferFinal.getVertexFormat() & CVertexBuffer::NormalFlag)
@@ -2072,7 +2026,7 @@ void	CMeshMRMGeom::bkupOriginalSkinVerticesSubset(uint wedgeStart, uint wedgeEnd
 		_OriginalSkinNormals.resize(_VBufferFinal.getNumVertices());
 		for(uint i=wedgeStart; i<wedgeEnd;i++)
 		{
-			_OriginalSkinNormals[i]= *(CVector*)_VBufferFinal.getNormalCoordPointer(i);
+			_OriginalSkinNormals[i]= *vba.getNormalCoordPointer(i);
 		}
 	}
 
@@ -2085,7 +2039,7 @@ void	CMeshMRMGeom::bkupOriginalSkinVerticesSubset(uint wedgeStart, uint wedgeEnd
 		_OriginalTGSpace.resize(_VBufferFinal.getNumVertices());
 		for(uint i=wedgeStart; i<wedgeEnd;i++)
 		{
-			_OriginalTGSpace[i]= *(CVector*)_VBufferFinal.getTexCoordPointer(i, tgSpaceStage);
+			_OriginalTGSpace[i]= *(CVector*)vba.getTexCoordPointer(i, tgSpaceStage);
 		}
 	}
 }
@@ -2096,13 +2050,16 @@ void	CMeshMRMGeom::restoreOriginalSkinVertices()
 {
 	nlassert(_Skinned);
 
+	CVertexBufferReadWrite vba;
+	_VBufferFinal.lock (vba);
+
 	// Copy VBuffer content into Original vertices normals.
 	if(_VBufferFinal.getVertexFormat() & CVertexBuffer::PositionFlag)
 	{
 		// copy vertices from VBuffer. (NB: unusefull geomorphed vertices are still copied, but doesn't matter).
 		for(uint i=0; i<_VBufferFinal.getNumVertices();i++)
 		{
-			*(CVector*)_VBufferFinal.getVertexCoordPointer(i)= _OriginalSkinVertices[i];
+			*vba.getVertexCoordPointer(i)= _OriginalSkinVertices[i];
 		}
 	}
 	if(_VBufferFinal.getVertexFormat() & CVertexBuffer::NormalFlag)
@@ -2110,7 +2067,7 @@ void	CMeshMRMGeom::restoreOriginalSkinVertices()
 		// copy normals from VBuffer. (NB: unusefull geomorphed normals are still copied, but doesn't matter).
 		for(uint i=0; i<_VBufferFinal.getNumVertices();i++)
 		{
-			*(CVector*)_VBufferFinal.getNormalCoordPointer(i)= _OriginalSkinNormals[i];
+			*vba.getNormalCoordPointer(i)= _OriginalSkinNormals[i];
 		}
 	}
 	if (_MeshVertexProgram && _MeshVertexProgram->needTangentSpace())
@@ -2121,14 +2078,14 @@ void	CMeshMRMGeom::restoreOriginalSkinVertices()
 		// copy tangent space vectors
 		for(uint i = 0; i < _VBufferFinal.getNumVertices(); ++i)
 		{
-			*(CVector*)_VBufferFinal.getTexCoordPointer(i, numTexCoords - 1)= _OriginalTGSpace[i];
+			*(CVector*)vba.getTexCoordPointer(i, numTexCoords - 1)= _OriginalTGSpace[i];
 		}
 	}
 }
 
 
 // ***************************************************************************
-void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod, IVertexBufferHard *currentVBHard)
+void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod)
 {
 	nlassert(_Skinned);
 
@@ -2140,7 +2097,9 @@ void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod, IVertexBufferHard *current
 
 	// get vertexPtr / normalOff.
 	//===========================
-	uint8		*destVertexPtr= (uint8*)_VBufferFinal.getVertexCoordPointer();
+	CVertexBufferReadWrite vba;
+	_VBufferFinal.lock (vba);
+	uint8		*destVertexPtr= (uint8*)vba.getVertexCoordPointer();
 	uint		flags= _VBufferFinal.getVertexFormat();
 	sint32		vertexSize= _VBufferFinal.getVertexSize();
 	// must have XYZ.
@@ -2204,90 +2163,6 @@ float CMeshMRMGeom::getNumTriangles (float distance)
 }
 
 
-
-// ***************************************************************************
-void				CMeshMRMGeom::deleteVertexBufferHard()
-{
-	// test (refptr) if the object still exist in memory.
-	if(_VBHard!=NULL)
-	{
-		// A vbufferhard should still exist only if driver still exist.
-		nlassert(_Driver!=NULL);
-
-		// delete it from driver.
-		_Driver->deleteVertexBufferHard(_VBHard);
-		_VBHard= NULL;
-	}
-}
-
-// ***************************************************************************
-void				CMeshMRMGeom::updateVertexBufferHard(IDriver *drv, uint32 numVertices)
-{
-	if(!drv->supportVertexBufferHard() || numVertices==0)
-		return;
-
-
-	/** If the mesh is skinned, still use normal CVertexBuffer.
-	 *	Doens't use VBuffer hard when Skinned, for AGP memory optimisation. See renderSkin() note.
-	 *	It's because most of the MRM skins are rendered through renderSkinGroup*() methods, which use a global VBHard
-	 *	NB: meshs which are skinned but not skin applied are not optimized too. But this case is not a "realtime" game
-	 *	situation
-	 *
-	 *	Also, if the driver has slow VBhard unlock()  (ie ATI gl extension), avoid use of them if MeshMorpher 
-	 *	is used.
-	 */
-	bool	avoidVBHard;
-	avoidVBHard= _Skinned || ( _MeshMorpher.BlendShapes.size()>0 && drv->slowUnlockVertexBufferHard() );
-	if( _VertexBufferHardDirty && avoidVBHard )
-	{
-		// delete possible old VBHard.
-		if(_VBHard!=NULL)
-		{
-			// VertexBufferHard lifetime < Driver lifetime.
-			nlassert(_Driver!=NULL);
-			_Driver->deleteVertexBufferHard(_VBHard);
-		}
-		return;
-	}
-
-
-	// If the vbufferhard is not here, or if dirty, or if do not have enough vertices.
-	if(_VBHard==NULL || _VertexBufferHardDirty || _VBHard->getNumVertices() < numVertices)
-	{
-		_VertexBufferHardDirty= false;
-
-		// delete possible old _VBHard.
-		if(_VBHard!=NULL)
-		{
-			// VertexBufferHard lifetime < Driver lifetime.
-			nlassert(_Driver!=NULL);
-			_Driver->deleteVertexBufferHard(_VBHard);
-		}
-
-		// bkup drv in a refptr. (so we know if the vbuffer hard has to be deleted).
-		_Driver= drv;
-		// try to create new one, in AGP Ram
-		_VBHard= _Driver->createVertexBufferHard(_VBufferFinal.getVertexFormat(), _VBufferFinal.getValueTypePointer (), numVertices, IDriver::VBHardAGP, _VBufferFinal.getUVRouting());
-
-
-		// If KO, use normal VertexBuffer, else, Fill it with VertexBuffer.
-		if(_VBHard!=NULL)
-		{
-			void	*vertexPtr= _VBHard->lock();
-
-			nlassert(_VBufferFinal.getVertexFormat() == _VBHard->getVertexFormat());
-			nlassert(_VBufferFinal.getNumVertices() >= numVertices);
-			nlassert(_VBufferFinal.getVertexSize() == _VBHard->getVertexSize());
-
-			// \todo yoyo: TODO_DX8 and DX8 ???
-			// Because same internal format, just copy all block.
-			memcpy(vertexPtr, _VBufferFinal.getVertexCoordPointer(), numVertices * _VBufferFinal.getVertexSize() );
-
-			_VBHard->unlock();
-		}
-	}
-
-}
 
 // ***************************************************************************
 void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
@@ -2568,19 +2443,6 @@ void	CMeshMRMGeom::compileRunTime()
 			_VBufferFinal.getVertexFormat() == NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT &&
 			_VBufferFinal.getNumVertices() < NL3D_MESH_SKIN_MANAGER_MAXVERTICES &&
 			!_MeshVertexProgram;
-		// Additionally, NONE of the RdrPass should have Quads or lines...
-		for(uint i=0;i<_Lods.size();i++)
-		{
-			for(uint j=0;j<_Lods[i].RdrPass.size();j++)
-			{
-				CPrimitiveBlock		&pb= _Lods[i].RdrPass[j].PBlock;
-				if( pb.getNumQuad() || pb.getNumLine() )
-				{
-					_SupportSkinGrouping= false;
-					break;
-				}
-			}
-		}
 
 		// Support Shadow SkinGrouping if Shadow setuped, and if not too many vertices.
 		_SupportShadowSkinGrouping= !_ShadowSkinVertices.empty() &&
@@ -2621,7 +2483,7 @@ void	CMeshMRMGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *tra
 		if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (rdrFlags & IMeshGeom::RenderOpaqueMaterial) ) ||
 			 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (rdrFlags & IMeshGeom::RenderTransparentMaterial) ) )
 		{
-			triCount+= rdrPass.PBlock.getNumTri();
+			triCount+= rdrPass.PBlock.getNumIndexes()/3;
 		}
 	}
 
@@ -2633,7 +2495,7 @@ void	CMeshMRMGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *tra
 			_VBufferFinal.getVertexFormat(), triCount);
 
 		// VBHard
-		if(_VBHard)
+		if(_VBufferFinal.getPreferredMemory()!=CVertexBuffer::RAMPreferred)
 			rdrTrav->Scene->BenchRes.NumMeshMRMVBufferHard++;
 		else
 			rdrTrav->Scene->BenchRes.NumMeshMRMVBufferStd++;
@@ -2715,17 +2577,7 @@ void	CMeshMRMGeom::beginMesh(CMeshGeomRenderContext &rdrCtx)
 	}
 	else
 	{
-		updateVertexBufferHard(drv, _VBufferFinal.getNumVertices());
-
-		// active VB.
-		if(_VBHard)
-		{
-			drv->activeVertexBufferHard(_VBHard);
-		}
-		else
-		{
-			drv->activeVertexBuffer(_VBufferFinal);
-		}
+		drv->activeVertexBuffer(_VBufferFinal);
 	}
 
 
@@ -2755,7 +2607,7 @@ void	CMeshMRMGeom::activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInsta
 		if(rdrCtx.RenderThroughVBHeap)
 			applyGeomorphWithVBHardPtr(_Lods[_MBRCurrentLodId].Geomorphs, alphaLod, (uint8*)vbDst);
 		else
-			applyGeomorph(_Lods[_MBRCurrentLodId].Geomorphs, alphaLod, _VBHard);
+			applyGeomorph(_Lods[_MBRCurrentLodId].Geomorphs, alphaLod);
 	}
 
 	// set the instance worldmatrix.
@@ -2780,10 +2632,16 @@ void	CMeshMRMGeom::renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance 
 
 		// Render with the Materials of the MeshInstance.
 		if(rdrCtx.RenderThroughVBHeap)
+		{
 			// render shifted primitives
-			rdrCtx.Driver->render(rdrPass.VBHeapPBlock, material);
+			rdrCtx.Driver->activeIndexBuffer(rdrPass.VBHeapPBlock);
+			rdrCtx.Driver->renderTriangles(material, 0, rdrPass.VBHeapPBlock.getNumIndexes()/3);
+		}
 		else
-			rdrCtx.Driver->render(rdrPass.PBlock, material);
+		{
+			rdrCtx.Driver->activeIndexBuffer(rdrPass.PBlock);
+			rdrCtx.Driver->renderTriangles(material, 0, rdrPass.PBlock.getNumIndexes()/3);
+		}
 	}
 }
 
@@ -2811,7 +2669,9 @@ bool	CMeshMRMGeom::getVBHeapInfo(uint &vertexFormat, uint &numVertices)
 void	CMeshMRMGeom::computeMeshVBHeap(void *dst, uint indexStart)
 {
 	// Fill dst with Buffer content.
-	memcpy(dst, _VBufferFinal.getVertexCoordPointer(), _VBufferFinal.getNumVertices()*_VBufferFinal.getVertexSize() );
+	CVertexBufferRead vba;
+	_VBufferFinal.lock (vba);
+	memcpy(dst, vba.getVertexCoordPointer(), _VBufferFinal.getNumVertices()*_VBufferFinal.getVertexSize() );
 
 	// For All Lods
 	for(uint lodId=0; lodId<_Lods.size();lodId++)
@@ -2822,33 +2682,21 @@ void	CMeshMRMGeom::computeMeshVBHeap(void *dst, uint indexStart)
 		for(uint i=0;i<lod.RdrPass.size();i++)
 		{
 			// shift the PB
-			CPrimitiveBlock	&srcPb= lod.RdrPass[i].PBlock;
-			CPrimitiveBlock	&dstPb= lod.RdrPass[i].VBHeapPBlock;
+			CIndexBuffer	&srcPb= lod.RdrPass[i].PBlock;
+			CIndexBuffer	&dstPb= lod.RdrPass[i].VBHeapPBlock;
 			uint j;
 
-			// Lines.
-			dstPb.setNumLine(srcPb.getNumLine());
-			uint32			*srcLinePtr= srcPb.getLinePointer();
-			uint32			*dstLinePtr= dstPb.getLinePointer();
-			for(j=0; j<dstPb.getNumLine()*2;j++)
-			{
-				dstLinePtr[j]= srcLinePtr[j]+indexStart;
-			}
 			// Tris.
-			dstPb.setNumTri(srcPb.getNumTri());
-			uint32			*srcTriPtr= srcPb.getTriPointer();
-			uint32			*dstTriPtr= dstPb.getTriPointer();
-			for(j=0; j<dstPb.getNumTri()*3;j++)
+			CIndexBufferRead ibaRead;
+			srcPb.lock (ibaRead);
+			CIndexBufferReadWrite ibaWrite;
+			srcPb.lock (ibaWrite);
+			dstPb.setNumIndexes(srcPb.getNumIndexes());
+			const uint32	*srcTriPtr= ibaRead.getPtr();
+			uint32			*dstTriPtr= ibaWrite.getPtr();
+			for(j=0; j<dstPb.getNumIndexes();j++)
 			{
 				dstTriPtr[j]= srcTriPtr[j]+indexStart;
-			}
-			// Quads.
-			dstPb.setNumQuad(srcPb.getNumQuad());
-			uint32			*srcQuadPtr= srcPb.getQuadPointer();
-			uint32			*dstQuadPtr= dstPb.getQuadPointer();
-			for(j=0; j<dstPb.getNumQuad()*4;j++)
-			{
-				dstQuadPtr[j]= srcQuadPtr[j]+indexStart;
 			}
 		}
 	}
@@ -3087,6 +2935,9 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 		{
 			H_AUTO( NL3D_CMeshMRMGeom_updateRawSkinNormal );
 
+			CVertexBufferRead vba;
+			_VBufferFinal.lock (vba);
+
 			CRawSkinNormalCache	&skinLod= *mi->_RawSkinCache;
 			CLod				&lod= _Lods[curLodId];
 			uint				i;
@@ -3193,7 +3044,7 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 				skinLod.Vertices1[rawIdx].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
 				skinLod.Vertices1[rawIdx].Vertex.Pos= _OriginalSkinVertices[vid];
 				skinLod.Vertices1[rawIdx].Vertex.Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices1[rawIdx].Vertex.UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
+				skinLod.Vertices1[rawIdx].Vertex.UV= *vba.getTexCoordPointer(vid);
 			}
 
 			// 2 Matrix skinning.
@@ -3217,7 +3068,7 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 				skinLod.Vertices2[rawIdx].Weights[1]= _SkinWeights[vid].Weights[1];
 				skinLod.Vertices2[rawIdx].Vertex.Pos= _OriginalSkinVertices[vid];
 				skinLod.Vertices2[rawIdx].Vertex.Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices2[rawIdx].Vertex.UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
+				skinLod.Vertices2[rawIdx].Vertex.UV= *vba.getTexCoordPointer(vid);
 			}
 
 			// 3 Matrix skinning.
@@ -3243,7 +3094,7 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 				skinLod.Vertices3[rawIdx].Weights[2]= _SkinWeights[vid].Weights[2];
 				skinLod.Vertices3[rawIdx].Vertex.Pos= _OriginalSkinVertices[vid];
 				skinLod.Vertices3[rawIdx].Vertex.Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices3[rawIdx].Vertex.UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
+				skinLod.Vertices3[rawIdx].Vertex.UV= *vba.getTexCoordPointer(vid);
 			}
 
 			// 4 Matrix skinning.
@@ -3271,7 +3122,7 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 				skinLod.Vertices4[rawIdx].Weights[3]= _SkinWeights[vid].Weights[3];
 				skinLod.Vertices4[rawIdx].Vertex.Pos= _OriginalSkinVertices[vid];
 				skinLod.Vertices4[rawIdx].Vertex.Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices4[rawIdx].Vertex.UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
+				skinLod.Vertices4[rawIdx].Vertex.UV= *vba.getTexCoordPointer(vid);
 			}
 
 			// Remap Geomorphs.
@@ -3292,13 +3143,15 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 			{
 				// NB: since RawSkin is possible only with SkinGrouping, and since SkniGrouping is 
 				// possible only with no Quads/Lines, we should have only Tris here.
-				nlassert( lod.RdrPass[i].PBlock.getNumQuad()== 0);
-				nlassert( lod.RdrPass[i].PBlock.getNumLine()== 0);
 				// remap tris.
-				skinLod.RdrPass[i].setNumTri(lod.RdrPass[i].PBlock.getNumTri());
-				uint32	*srcTriPtr= lod.RdrPass[i].PBlock.getTriPointer();
-				uint32	*dstTriPtr= skinLod.RdrPass[i].getTriPointer();
-				uint32	numIndices= lod.RdrPass[i].PBlock.getNumTri()*3;
+				skinLod.RdrPass[i].setNumIndexes(lod.RdrPass[i].PBlock.getNumIndexes());
+				CIndexBufferRead ibaRead;
+				lod.RdrPass[i].PBlock.lock (ibaRead);
+				CIndexBufferReadWrite ibaWrite;
+				skinLod.RdrPass[i].lock (ibaWrite);
+				const uint32	*srcTriPtr= ibaRead.getPtr();
+				uint32	*dstTriPtr= ibaWrite.getPtr();
+				uint32	numIndices= lod.RdrPass[i].PBlock.getNumIndexes();
 				for(uint j=0;j<numIndices;j++, srcTriPtr++, dstTriPtr++)
 				{
 					uint	vid= *srcTriPtr;
@@ -3424,16 +3277,20 @@ void			CMeshMRMGeom::renderShadowSkinPrimitives(CMeshMRMInstance	*mi, CMaterial 
 	// NB: the normalize flag has already been setuped by CSkeletonModel
 
 	// TODO_SHADOW: optim: Special triangle cache for shadow!
-	static	vector<uint32>		shiftedTris;
-	if(shiftedTris.size()<_ShadowSkinTriangles.size())
+	static	CIndexBuffer shiftedTris;
+	if(shiftedTris.getNumIndexes()<_ShadowSkinTriangles.size())
 	{
-		shiftedTris.resize(_ShadowSkinTriangles.size());
+		shiftedTris.setNumIndexes(_ShadowSkinTriangles.size());
 	}
-	uint32	*src= &_ShadowSkinTriangles[0];
-	uint32	*dst= &shiftedTris[0];
-	for(uint n= _ShadowSkinTriangles.size();n>0;n--, src++, dst++)
 	{
-		*dst= *src + baseVertex;
+		CIndexBufferReadWrite iba;
+		shiftedTris.lock(iba);
+		const uint32	*src= &_ShadowSkinTriangles[0];
+		uint32	*dst= iba.getPtr();
+		for(uint n= _ShadowSkinTriangles.size();n>0;n--, src++, dst++)
+		{
+			*dst= *src + baseVertex;
+		}
 	}
 
 	// Render Triangles with cache
@@ -3441,13 +3298,9 @@ void			CMeshMRMGeom::renderShadowSkinPrimitives(CMeshMRMInstance	*mi, CMaterial 
 
 	uint	numTris= _ShadowSkinTriangles.size()/3;
 
-	// This speed up 4 ms for 80K polys.
-	uint	memToCache= numTris*12;
-	memToCache= min(memToCache, 4096U);
-	CFastMem::precache(&shiftedTris[0], memToCache);
-
 	// Render with the Materials of the MeshInstance.
-	drv->renderTriangles(castMat, &shiftedTris[0], numTris);
+	drv->activeIndexBuffer(shiftedTris);
+	drv->renderTriangles(castMat, 0, numTris);
 }
 
 

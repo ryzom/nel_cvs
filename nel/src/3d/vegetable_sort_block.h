@@ -1,7 +1,7 @@
 /** \file vegetable_sort_block.h
  * <File description>
  *
- * $Id: vegetable_sort_block.h,v 1.5 2002/02/18 18:11:55 berenguier Exp $
+ * $Id: vegetable_sort_block.h,v 1.6 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/object_vector.h"
 #include "3d/tess_list.h"
+#include "3d/index_buffer.h"
 #include "3d/vegetable_instance_group.h"
 
 
@@ -104,9 +105,9 @@ private:
 
 	/// Quadrants.
 	/// the big array of indices, for the NL3D_VEGETABLE_NUM_QUADRANT quadrants.
-	NLMISC::CObjectVector<uint32, false>		_SortedTriangleArray;
+	CIndexBuffer	_SortedTriangleArray;
 	/// start ptr.
-	uint32					*_SortedTriangleIndices[NL3D_VEGETABLE_NUM_QUADRANT];
+	uint32					_SortedTriangleIndices[NL3D_VEGETABLE_NUM_QUADRANT];
 	/// number of triangles.
 	uint					_NTriangles;
 	/// number of indeices= numTriangles*3.

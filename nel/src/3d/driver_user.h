@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.34 2003/11/26 13:44:00 berenguier Exp $
+ * $Id: driver_user.h,v 1.35 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,7 @@
 #include "3d/driver.h"
 #include "3d/register_3d.h"
 #include "3d/vertex_buffer.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/font_manager.h"
 #include "3d/material_user.h"
 #include "3d/ptr_set.h"
@@ -103,7 +103,7 @@ protected:
 	CVertexBuffer			_VBColor;
 	CVertexBuffer			_VBUv;
 	CVertexBuffer			_VBColorUv;
-	CPrimitiveBlock			_PBLine, _PBTri, _PBQuad;
+	CIndexBuffer			_PBLine, _PBTri;
 
 	CVertexBuffer			_VBQuadsColUv;
 	CVertexBuffer			_VBQuadsColUv2;
@@ -126,16 +126,13 @@ public:
 
 	/// \name Object
 	// @{
-	CDriverUser (uint windowIcon = 0);
+	CDriverUser (uint windowIcon = 0, bool direct3d = false);
 	virtual	~CDriverUser();
 	// @}
 
 
 	/// \name Window / driver management.
 	// @{
-
-	/// Enum All Fullscreen modes.
-	virtual TModeList		enumModes();
 
 	virtual void			disableHardwareVertexProgram();
 	virtual void			disableHardwareVertexArrayAGP();

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.39 2003/12/10 12:47:33 berenguier Exp $
+ * $Id: mesh.h,v 1.40 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,9 +33,8 @@
 #include "nel/misc/uv.h"
 #include "nel/misc/bit_set.h"
 #include "3d/vertex_buffer.h"
-#include "3d/vertex_buffer_hard.h"
 #include "3d/material.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/animated_material.h"
 #include "3d/mesh_base.h"
 #include "3d/mesh_geom.h"
@@ -296,7 +295,7 @@ public:
 	 *  \param matrixBlockIndex the index of the matrix block the renderin pass belong to
 	 *  \param renderingPassIndex the index of the rendering pass in the matrix block
 	 */
-	const CPrimitiveBlock &getRdrPassPrimitiveBlock(uint matrixBlockIndex, uint renderingPassIndex) const;
+	const CIndexBuffer &getRdrPassPrimitiveBlock(uint matrixBlockIndex, uint renderingPassIndex) const;
 
 	/** get the material ID associated with a rendering pass of a matrix block
 	 *  \param matrixBlockIndex the index of the matrix block the renderin pass belong to
@@ -401,7 +400,7 @@ public:
 	 *  \param matrixBlockIndex the index of the matrix block the renderin pass belong to
 	 *  \param renderingPassIndex the index of the rendering pass in the matrix block
 	 */
-	const CPrimitiveBlock &getRdrPassPrimitiveBlock(uint matrixBlockIndex, uint renderingPassIndex) const
+	const CIndexBuffer &getRdrPassPrimitiveBlock(uint matrixBlockIndex, uint renderingPassIndex) const
 	{
 		return _MatrixBlocks[matrixBlockIndex].RdrPass[renderingPassIndex].PBlock ;
 	}
@@ -487,10 +486,10 @@ private:
 		// The id of this material.
 		uint32				MaterialId;
 		// The list of primitives.
-		CPrimitiveBlock		PBlock;
+		CIndexBuffer		PBlock;
 
 		// The same, shifted for VBHeap rendering.
-		CPrimitiveBlock		VBHeapPBlock;
+		CIndexBuffer		VBHeapPBlock;
 
 
 		// Serialize a rdrpass.
@@ -677,21 +676,6 @@ private:
 	/// Same as _BonesId but with parent of bones added. (used for bone usage)
 	std::vector<sint32>			_BonesIdExt;
 
-
-	/// \name VBufferHard mgt.
-	// @{
-	/// The only one VBufferHard of the mesh. NULL by default. 
-	CRefPtr<IVertexBufferHard>		_VertexBufferHard;
-	/// This is the driver used to setup the vbuffer hard. error if a mesh has not the same driver in his life.
-	CRefPtr<IDriver>				_Driver;
-	/// This tells if the VBuffer has changed since the last time or not.
-	bool							_VertexBufferHardDirty;
-
-	/// update the VertexBufferHard if NULL (ie not created or deleted by driver) or if VertexBufferDirty.
-	void							updateVertexBufferHard(IDriver *drv);
-	// @}
-
-
 	/// \name Mesh Block Render Implementation
 	// @{
 	/// setuped at compileRunTime.
@@ -744,11 +728,15 @@ private:
 			// Fill the VBuffer.
 			_VBuffer.setNumVertices(currentVBIndex);
 			sint	id= currentVBIndex-1;
+
+			CVertexBufferReadWrite vba;
+			_VBuffer.lock (vba);
+
 			// XYZ.
-			_VBuffer.setVertexCoord(id, vert);
+			vba.setVertexCoord(id, vert);
 			// Normal
 			if(CCornerTmp::Flags & CVertexBuffer::NormalFlag)
-				_VBuffer.setNormalCoord(id, corn->Normal);
+				vba.setNormalCoord(id, corn->Normal);
 			// Uvws.
 			for(i=0;i<CVertexBuffer::MaxStage;i++)
 			{
@@ -757,10 +745,10 @@ private:
 					switch(mb.NumCoords[i])
 					{
 						case 2:
-							_VBuffer.setTexCoord(id, i, corn->Uvws[i].U, corn->Uvws[i].V);
+							vba.setTexCoord(id, i, corn->Uvws[i].U, corn->Uvws[i].V);
 						break;
 						case 3:
-							_VBuffer.setValueFloat3Ex((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + i), id, corn->Uvws[i].U, corn->Uvws[i].V, corn->Uvws[i].W);
+							vba.setValueFloat3Ex((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + i), id, corn->Uvws[i].U, corn->Uvws[i].V, corn->Uvws[i].W);
 						break;
 						default: // not supported
 							nlassert(0);
@@ -770,17 +758,17 @@ private:
 			}
 			// Color.
 			if(CCornerTmp::Flags & CVertexBuffer::PrimaryColorFlag)
-				_VBuffer.setColor(id, corn->Color);
+				vba.setColor(id, corn->Color);
 			// Specular.
 			if(CCornerTmp::Flags & CVertexBuffer::SecondaryColorFlag)
-				_VBuffer.setSpecular(id, corn->Specular);
+				vba.setSpecular(id, corn->Specular);
 
 			// setup palette skinning.
 			if ((CCornerTmp::Flags & CVertexBuffer::PaletteSkinFlag)==CVertexBuffer::PaletteSkinFlag)
 			{
-				_VBuffer.setPaletteSkin(id, corn->Palette);
+				vba.setPaletteSkin(id, corn->Palette);
 				for(i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)
-					_VBuffer.setWeight(id, i, corn->Weights[i]);
+					vba.setWeight(id, i, corn->Weights[i]);
 			}
 		}
 	}

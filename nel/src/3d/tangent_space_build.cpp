@@ -1,7 +1,7 @@
 /** \file tangent_space_build.cpp
  * A function that add tangent space information to a vertex buffer
  *
- * $Id: tangent_space_build.cpp,v 1.3 2002/09/24 14:48:01 vizerie Exp $
+ * $Id: tangent_space_build.cpp,v 1.4 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #include "std3d.h"
 
 #include "3d/tangent_space_build.h"
-#include "3d/primitive_block.h"
+#include "3d/index_buffer.h"
 #include "3d/vertex_buffer.h"
 #include "nel/misc/triangle.h"
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.h
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.h,v 1.5 2003/03/31 11:57:02 vizerie Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.h,v 1.6 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,7 +27,6 @@
 #define NL_DRIVER_OPENGL_VERTEX_BUFFER_HARD_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/vertex_buffer_hard.h"
 
 
 namespace NL3D 
@@ -57,11 +56,11 @@ public:
 	virtual	~IVertexArrayRange();
 
 	/// allocate a vertex array space. false if error. client must free before re-allocate.
-	virtual	bool					allocate(uint32 size, IDriver::TVBHardType vbType)= 0;
+	virtual	bool					allocate(uint32 size, CVertexBuffer::TPreferredMemory vbType)= 0;
 	/// free this space.
 	virtual	void					free()= 0;
 	/// create a IVertexBufferHardGL
-	virtual	IVertexBufferHardGL		*createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting) =0;
+	virtual	IVertexBufferHardGL		*createVBHardGL(uint size, CVertexBuffer *vb) =0;
 	/// return the size allocated. 0 if not allocated or failure
 	virtual	uint					sizeAllocated() const =0;
 
@@ -75,22 +74,24 @@ protected:
 /** Common interface for both NVidia and ATI extenstion
  *
  */
-class IVertexBufferHardGL : public IVertexBufferHard
+class IVertexBufferHardGL
 {
 public:
 
-	IVertexBufferHardGL(CDriverGL *drv);
+	IVertexBufferHardGL(CDriverGL *drv, CVertexBuffer *vb);
 	virtual	~IVertexBufferHardGL();
 
 
 	// ATI and NVidia have their own methods.
-	//virtual	void		*lock();
-	//virtual	void		unlock();
-	//virtual void			unlock(uint startVert, uint endVert);
+	virtual	void		*lock() = 0;
+	virtual	void		unlock() = 0;
+	virtual void		unlock(uint startVert, uint endVert) = 0;
+	virtual void		*getPointer() = 0;
 
 	virtual	void			enable() =0;
 	virtual	void			disable() =0;
 
+	virtual void		setupATIMode (bool &enabled, uint &vertexObjectId) = 0;
 
 	enum TVBType { NVidiaVB, ATIVB, ATIMapObjectVB, UnknownVB };
 	// true if NVidia vertex buffer hard.
@@ -100,12 +101,8 @@ public:
 
 
 public:
-	// shortcut to IVertexBufferHard::initFormat()
-	void					initFormat (uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting)
-	{
-		IVertexBufferHard::initFormat(vertexFormat, typeArray, numVertices, uvRouting);
-	}
 
+	CVertexBuffer		*VB;
 
 protected:
 	CDriverGL			*_Driver;
@@ -133,11 +130,11 @@ public:
 	/// \name Implementation
 	// @{
 	/// allocate a vertex array sapce. false if error. must free before re-allocate.
-	virtual	bool					allocate(uint32 size, IDriver::TVBHardType vbType);
+	virtual	bool					allocate(uint32 size, CVertexBuffer::TPreferredMemory vbType);
 	/// free this space.
 	virtual	void					free();
 	/// create a IVertexBufferHardGL
-	virtual	IVertexBufferHardGL		*createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting);
+	virtual	IVertexBufferHardGL		*createVBHardGL(uint size, CVertexBuffer *vb);
 	/// return the size allocated. 0 if not allocated or failure
 	virtual	uint					sizeAllocated() const;
 	// @}
@@ -176,7 +173,7 @@ class CVertexBufferHardGLNVidia : public IVertexBufferHardGL
 {
 public:
 
-	CVertexBufferHardGLNVidia(CDriverGL *drv);
+	CVertexBufferHardGLNVidia(CDriverGL *drv, CVertexBuffer *vb);
 	virtual	~CVertexBufferHardGLNVidia();
 
 
@@ -185,9 +182,11 @@ public:
 	virtual	void		*lock();
 	virtual	void		unlock();
 	virtual void		unlock(uint startVert, uint endVert);
+	virtual void		*getPointer();
 	virtual	void		enable();
 	virtual	void		disable();
 	virtual void		lockHintStatic(bool staticLock);
+	virtual void		setupATIMode (bool &enabled, uint &vertexObjectId);
 	// @}
 
 
@@ -205,14 +204,6 @@ public:
 	void			testFence();
 
 	bool			getLockHintStatic() const {return _LockHintStatic;}
-
-public:
-	void				*getNVidiaValueEx (uint value)
-	{
-		nlassert(_VertexPtr);
-		return (uint8*)_VertexPtr + getValueOff (value);
-	}
-
 
 // *************************
 private:
@@ -256,11 +247,11 @@ public:
 	/// \name Implementation
 	// @{
 	/// allocate a vertex array sapce. false if error. must free before re-allocate.
-	virtual	bool					allocate(uint32 size, IDriver::TVBHardType vbType);
+	virtual	bool					allocate(uint32 size, CVertexBuffer::TPreferredMemory vbType);
 	/// free this space.
 	virtual	void					free();
 	/// create a IVertexBufferHardGL
-	virtual	IVertexBufferHardGL		*createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting);
+	virtual	IVertexBufferHardGL		*createVBHardGL(uint size, CVertexBuffer *vb);
 	/// return the size allocated. 0 if not allocated or failure
 	virtual	uint					sizeAllocated() const;
 	// @}
@@ -306,7 +297,7 @@ class CVertexBufferHardGLATI : public IVertexBufferHardGL
 {
 public:
 
-	CVertexBufferHardGLATI(CDriverGL *drv);
+	CVertexBufferHardGLATI(CDriverGL *drv, CVertexBuffer *vb);
 	virtual	~CVertexBufferHardGLATI();
 
 
@@ -315,9 +306,11 @@ public:
 	virtual	void		*lock();
 	virtual	void		unlock();
 	virtual void		unlock(uint startVert, uint endVert);
+	virtual void		*getPointer();
 	virtual	void		enable();
 	virtual	void		disable();
 	virtual void		lockHintStatic(bool staticLock);
+	virtual void		setupATIMode (bool &enabled, uint &vertexObjectId);
 	// @}
 
 
@@ -330,12 +323,6 @@ public:
 
 
 public:
-	uint					getATIValueOffset (uint value)
-	{
-		nlassert(_VertexPtr);
-		// To get the correct offset, remove the dummy MEM offset.
-		return ((uint)_VertexPtr + getValueOff (value)) - NL3D_DRV_ATI_FAKE_MEM_START;
-	}
 
 	/// get Handle of the ATI buffer.
 	uint					getATIVertexObjectId() const {return _VertexArrayRange->getATIVertexObjectId();}
@@ -369,11 +356,11 @@ public:
 	/** Allocate a vertex array space. false if error. must free before re-allocate.
 	  * Will always succeed, because vb are not managed in a heap, but are rather kept as separate objects
 	  */
-	virtual	bool					allocate(uint32 size, IDriver::TVBHardType vbType);
+	virtual	bool					allocate(uint32 size, CVertexBuffer::TPreferredMemory vbType);
 	/// free this space.
 	virtual	void					free();
 	/// create a IVertexBufferHardGL
-	virtual	IVertexBufferHardGL		*createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting);
+	virtual	IVertexBufferHardGL		*createVBHardGL(uint size, CVertexBuffer *vb);
 	/// return the size allocated. 0 if not allocated or failure
 	virtual	uint					sizeAllocated() const { return _SizeAllocated; }	
 	// @}
@@ -391,7 +378,7 @@ public:
 	
 // *************************
 private:
-	IDriver::TVBHardType _VBType;
+	CVertexBuffer::TPreferredMemory _VBType;
 	uint32				 _SizeAllocated;	
 };
 
@@ -402,7 +389,7 @@ class CVertexBufferHardGLMapObjectATI : public IVertexBufferHardGL
 {
 public:
 
-	CVertexBufferHardGLMapObjectATI(CDriverGL *drv);
+	CVertexBufferHardGLMapObjectATI(CDriverGL *drv, CVertexBuffer *vb);
 	virtual	~CVertexBufferHardGLMapObjectATI();
 
 
@@ -411,9 +398,11 @@ public:
 	virtual	void		*lock();
 	virtual	void		unlock();
 	virtual void		unlock(uint startVert, uint endVert);
+	virtual void		*getPointer();
 	virtual	void		enable();
 	virtual	void		disable();
 	virtual void		lockHintStatic(bool staticLock);
+	virtual void		setupATIMode (bool &enabled, uint &vertexObjectId);
 	// @}
 
    /**	setup ptrs allocated by createVBHard()
@@ -422,10 +411,6 @@ public:
 
 	
 public:
-	uint					getATIValueOffset (uint value)
-	{				
-		return (uint) getValueOff (value);
-	}
 
 	/// get Handle of the ATI buffer.
 	uint					getATIVertexObjectId() const { return _VertexObjectId;}

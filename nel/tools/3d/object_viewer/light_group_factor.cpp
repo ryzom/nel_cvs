@@ -51,8 +51,8 @@ BOOL CLightGroupFactor::OnInitDialog()
 	
 	// Light group
 	LightGroup1Ctrl.SetRange (0, 255);
-	LightGroup2Ctrl.SetRange (1, 255);
-	LightGroup3Ctrl.SetRange (2, 255);
+	LightGroup2Ctrl.SetRange (0, 255);
+	LightGroup3Ctrl.SetRange (0, 255);
 	LightGroup1 = 255;
 	LightGroup2 = 255;
 	LightGroup3 = 255;

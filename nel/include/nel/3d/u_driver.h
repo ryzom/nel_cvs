@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.37 2004/02/13 10:48:38 lecroart Exp $
+ * $Id: u_driver.h,v 1.38 2004/03/19 10:11:33 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,9 +164,6 @@ public:
 
 	/// \name Window / driver management.
 	// @{
-
-	/// Enum All Fullscreen modes.
-	virtual TModeList		enumModes()=0;
 
 	/**
 	  * create the window. call activate(). Return true if mode activated, false if it failed.
@@ -671,7 +668,7 @@ public:
 	/**
 	 *	This is the static function which build a UDriver, the root for all 3D functions.
 	 */
-	static	UDriver			*createDriver(uint windowIcon = 0);
+	static	UDriver			*createDriver(uint windowIcon = 0, bool direct3d = false);
 
 	/**
 	 *	Purge static memory

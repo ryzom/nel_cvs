@@ -1,7 +1,7 @@
 /** \file tangent_space_build.h
  * A function that add tangent space information to a vertex buffer
  *
- * $Id: tangent_space_build.h,v 1.1 2002/03/14 18:20:13 vizerie Exp $
+ * $Id: tangent_space_build.h,v 1.2 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NL3D
 {
 
 class CVertexBuffer;
-class CPrimitiveBlock;
+class CIndexBuffer;
 	
 /** This add tangent space information to a vertex buffer. The result is an added 3d texture coordinate
   * that contains the T vector of the tangent space basis (T is oriented toward increasing s coordinates). The binormal can be computed in a vertex program

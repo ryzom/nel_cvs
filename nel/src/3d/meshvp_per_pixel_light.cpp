@@ -1,7 +1,7 @@
 /** \file meshvp_per_pixel_light.cpp
  * <File description>
  *
- * $Id: meshvp_per_pixel_light.cpp,v 1.6 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: meshvp_per_pixel_light.cpp,v 1.7 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -570,19 +570,6 @@ void	CMeshVPPerPixelLight::setupForMaterial(const CMaterial &mat,
 	if (setupForMaterial(mat, drv, scene)) // a switch from v.p enabled / disabled force to reactivate the vertex buffer.
 	{
 		drv->activeVertexBuffer(*vb);		
-	}
-}
-
-//=================================================================================
-void	CMeshVPPerPixelLight::setupForMaterial(const CMaterial &mat,
-											   IDriver *drv,
-											   CScene *scene,
-											   IVertexBufferHard *vb)
-{
-	
-	if (setupForMaterial(mat, drv, scene)) // a switch from v.p enabled / disabled force to reactivate the vertex buffer.
-	{
-		drv->activeVertexBufferHard(vb);		
 	}
 }
 

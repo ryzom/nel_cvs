@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.38 2003/11/03 18:08:54 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.39 2004/03/19 10:11:36 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -27,7 +27,8 @@
 
 #include "stdopengl.h"
 
-#include "3d/primitive_block.h"
+#include "driver_opengl.h"
+#include "3d/index_buffer.h"
 #include "driver_opengl_vertex_buffer_hard.h"
 
 
@@ -54,37 +55,93 @@ using namespace NLMISC;
 namespace NL3D
 {
 
+// ***************************************************************************
 
+CVBDrvInfosGL::CVBDrvInfosGL(CDriverGL *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb) : IVBDrvInfos(drv, it, vb)
+{
+	_DriverGL = drv;
+	_VBHard = NULL;
+}
+		
+// ***************************************************************************
+
+CVBDrvInfosGL::~CVBDrvInfosGL()
+{
+	if (_VBHard)
+	{
+		_VBHard->disable();
+		_DriverGL->_VertexBufferHardSet.erase(_VBHard);
+	}
+	_VBHard = NULL;
+}
+		
+// ***************************************************************************
+uint8 *CVBDrvInfosGL::lock (uint first, uint last, bool readOnly)
+{
+	nlassert (_VBHard);
+	return (uint8*)_VBHard->lock ();
+}
+
+// ***************************************************************************
+void CVBDrvInfosGL::unlock (uint first, uint last)
+{
+	nlassert (_VBHard);
+	_VBHard->unlock(first, last);
+}
 
 // ***************************************************************************
 bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 {
-	// 1. Retrieve/Create driver shader.
+	// 2. If necessary, do modifications.
 	//==================================
-	if (!VB.DrvInfos)
+	const bool touched = (VB.getTouchFlags() & (CVertexBuffer::TouchedReserve|CVertexBuffer::TouchedVertexFormat)) != 0;
+	if( touched || (VB.DrvInfos == NULL))
 	{
+		// 1. Retrieve/Create driver shader.
+		//==================================
+		VB.DrvInfos = NULL;
 		// insert into driver list. (so it is deleted when driver is deleted).
 		ItVBDrvInfoPtrList	it= _VBDrvInfos.insert(_VBDrvInfos.end());
 		// create and set iterator, for future deletion.
-		*it= VB.DrvInfos= new CVBDrvInfosGL(this, it);
-	}
+		CVBDrvInfosGL *info = new CVBDrvInfosGL(this, it, &VB);
+		*it= VB.DrvInfos = info;
 
-	// 2. If necessary, do modifications.
-	//==================================
-	if( VB.getTouchFlags()!=0 )
-	{
-		// nop
+		// Preferred memory
+		const uint size = VB.capacity()*VB.getVertexSize();
+		uint preferredMemory = _Extensions.DisableHardwareVertexArrayAGP?CVertexBuffer::RAMPreferred:VB.getPreferredMemory ();
+		while (preferredMemory != CVertexBuffer::RAMPreferred)
+		{
+			// Vertex buffer hard
+			info->_VBHard = createVertexBufferHard(size, VB.capacity(), (CVertexBuffer::TPreferredMemory)preferredMemory, &VB);
+			if (info->_VBHard)
+			{
+				// Copy the vertex buffer
+				uint8 *out = info->lock (0, 0, false);
+				nlassert (out);
+				{
+					CVertexBufferRead vba;
+					VB.lock(vba);
+					memcpy (out, vba.getVertexCoordPointer(), size);
+				}
+				info->unlock (0, 0);
+
+				VB.Location = (CVertexBuffer::TLocation)preferredMemory;
+				VB.releaseNonResidentVertices();
+				break;
+			}
+			preferredMemory--;
+		}
+
 		// OK!
 		VB.resetTouchFlags();
 	}
-
 
 	return true;
 }
 
 
 // ***************************************************************************
-bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
+bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 {
 	// NB: must duplicate changes in activeVertexBufferHard()
 
@@ -96,9 +153,6 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	if (VB.getNumVertices()==0)
 		return true;
 
-	nlassert(end<=VB.getNumVertices());
-	nlassert(first<=end);
-
 	// Get VB flags, to setup matrixes and arrays.
 	flags=VB.getVertexFormat();
 
@@ -106,15 +160,29 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	// 2. Setup Arrays.
 	//===================
 
-	// Fence mgt.
-	fenceOnCurVBHardIfNeeded(NULL);
-
 	// For MultiPass Material.
 	_LastVB.setupVertexBuffer(VB);
+	CVBDrvInfosGL		*info= safe_cast<CVBDrvInfosGL*>((IVBDrvInfos*)VB.DrvInfos);
+	if (info->_VBHard == NULL)
+	{
+		// Fence mgt.
+		fenceOnCurVBHardIfNeeded(NULL);
 
-	// Disable the current vertexBufferHard if setuped.
-	if(_CurrentVertexBufferHard)
-		_CurrentVertexBufferHard->disable();
+		// Disable the current vertexBufferHard if setuped.
+		if(_CurrentVertexBufferHard)
+			_CurrentVertexBufferHard->disable();
+	}
+	else
+	{
+		// 2. Setup Arrays.
+		//===================
+
+		// Fence mgt.
+		fenceOnCurVBHardIfNeeded(info->_VBHard);
+
+		// Enable the vertexArrayRange of this array.
+		info->_VBHard->enable();
+	}
 
 	// Setup the OpenGL arrays.
 	setupGlArrays(_LastVB);
@@ -123,25 +191,23 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	return true;
 }
 
-
 // ***************************************************************************
-bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
+bool CDriverGL::activeIndexBuffer(CIndexBuffer& IB)
 {
-	return activeVertexBuffer(VB, 0, VB.getNumVertices());
+	_LastIB.setupIndexBuffer(IB);
+	return true;
 }
 
-
 // ***************************************************************************
-bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
+
+bool CDriverGL::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 {	
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
 	// setup material
-	if ( !setupMaterial(Mat) )
+	if ( !setupMaterial(mat) || _LastIB._Values == NULL )
 		return false;
-
-	
 
 	// render primitives.
 	//==============================
@@ -154,46 +220,35 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 		// setup the pass.
 		setupPass(pass);		
 		// draw the primitives.
-		if(PB.getNumTri()!=0)
-			glDrawElements(GL_TRIANGLES,3*PB.getNumTri(),GL_UNSIGNED_INT,PB.getTriPointer());
-		if(PB.getNumQuad()!=0)
-			glDrawElements(GL_QUADS,4*PB.getNumQuad(),GL_UNSIGNED_INT,PB.getQuadPointer());
-		if(PB.getNumLine()!=0)
-			glDrawElements(GL_LINES,2*PB.getNumLine(),GL_UNSIGNED_INT,PB.getLinePointer());
+		if(nlines)
+			glDrawElements(GL_LINES,2*nlines,GL_UNSIGNED_INT,_LastIB._Values+firstIndex);
 	}
 	// end multipass.
 	endMultiPass();
 
 
 	// Profiling.
-	_PrimitiveProfileIn.NLines+= PB.getNumLine();
-	_PrimitiveProfileIn.NTriangles+= PB.getNumTri();
-	_PrimitiveProfileIn.NQuads+= PB.getNumQuad();
-	_PrimitiveProfileOut.NLines+= PB.getNumLine() * nPass;
-	_PrimitiveProfileOut.NTriangles+= PB.getNumTri() * nPass;
-	_PrimitiveProfileOut.NQuads+= PB.getNumQuad() * nPass;
+	_PrimitiveProfileIn.NLines+= nlines;
+	_PrimitiveProfileOut.NLines+= nlines;
 
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
 		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
 
 	return true;
-
-
 }
 
-
 // ***************************************************************************
-void	CDriverGL::renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)
-{
+
+bool CDriverGL::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris)
+{	
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
 	// setup material
-	if ( !setupMaterial(Mat) )
-		return;
+	if ( !setupMaterial(mat) || _LastIB._Values == NULL )
+		return false;
 
-	
 	// render primitives.
 	//==============================
 	// start multipass.
@@ -203,10 +258,10 @@ void	CDriverGL::renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)
 	for(uint pass=0;pass<nPass; pass++)
 	{
 		// setup the pass.
-		setupPass(pass);
+		setupPass(pass);		
 		// draw the primitives.
-		if(ntris!=0)
-			glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT, tri);
+		if(ntris)
+			glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT,_LastIB._Values+firstIndex);
 	}
 	// end multipass.
 	endMultiPass();
@@ -219,11 +274,15 @@ void	CDriverGL::renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
 		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
+
+	return true;
+
+
 }
 
-
 // ***************************************************************************
-void	CDriverGL::renderSimpleTriangles(uint32 *tri, uint32 ntris)
+
+bool CDriverGL::renderSimpleTriangles(uint32 firstTri, uint32 ntris)
 {
 	nlassert(ntris>0);
 
@@ -237,7 +296,7 @@ void	CDriverGL::renderSimpleTriangles(uint32 *tri, uint32 ntris)
 	//==============================
 	// NO MULTIPASS HERE!!
 	// draw the primitives. (nb: ntrsi>0).
-	glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT, tri);
+	glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT, _LastIB._Values+firstTri);
 
 	// Profiling.
 	_PrimitiveProfileIn.NTriangles+= ntris;
@@ -246,19 +305,19 @@ void	CDriverGL::renderSimpleTriangles(uint32 *tri, uint32 ntris)
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
 		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
+	return true;
 }
 
-
 // ***************************************************************************
-void	CDriverGL::renderPoints(CMaterial& Mat, uint32 numPoints)
+
+bool CDriverGL::renderRawPoints(CMaterial& mat, uint32 startIndex, uint32 numPoints)
 {
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
 	// setup material
-	if ( !setupMaterial(Mat) )
-		return;	
-
+	if ( !setupMaterial(mat) )
+		return false;
 
 	// render primitives.
 	//==============================
@@ -272,7 +331,7 @@ void	CDriverGL::renderPoints(CMaterial& Mat, uint32 numPoints)
 		setupPass(pass);
 		// draw the primitives.
 		if(numPoints)
-			glDrawArrays(GL_POINTS,0, numPoints);
+			glDrawArrays(GL_POINTS, startIndex, numPoints);
 	}
 	// end multipass.
 	endMultiPass();
@@ -285,39 +344,20 @@ void	CDriverGL::renderPoints(CMaterial& Mat, uint32 numPoints)
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
 		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
+	
+	return true;
 }
 
 // ***************************************************************************
-void CDriverGL::renderOrientedQuads(CMaterial &mat, uint32 startIndex, uint32 numQuads)
+
+bool CDriverGL::renderRawLines(CMaterial& mat, uint32 startIndex, uint32 numLines)
 {
-	if (!numQuads) return;
-	
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
 	// setup material
 	if ( !setupMaterial(mat) )
-		return;	
-
-	const uint32 QUAD_BATCH_SIZE = 2048;
-	static GLshort defaultIndices[QUAD_BATCH_SIZE * 6];
-	static bool	init = false;
-	if (!init)
-	{
-		// setup the base index buffer
-		for(uint k = 0; k < QUAD_BATCH_SIZE; ++k)
-		{
-			// first tri
-			defaultIndices[k * 6] = (GLshort) (k * 4);
-			defaultIndices[k * 6 + 1] = (GLshort) (k * 4 + 2);
-			defaultIndices[k * 6 + 2] = (GLshort) (k * 4 + 1);
-			// second tri
-			defaultIndices[k * 6 + 3] = (GLshort) (k * 4);
-			defaultIndices[k * 6 + 4] = (GLshort) (k * 4 + 2);
-			defaultIndices[k * 6 + 5] = (GLshort) (k * 4 + 3);
-		}
-		init = true;
-	}
+		return false;
 
 	// render primitives.
 	//==============================
@@ -329,93 +369,73 @@ void CDriverGL::renderOrientedQuads(CMaterial &mat, uint32 startIndex, uint32 nu
 	{
 		// setup the pass.
 		setupPass(pass);
-		
-		uint32 currIndex = startIndex;
-		uint32 numLeftQuads = numQuads;
-
-		// draw first batch of quads using the static setupped array
-		if (startIndex < QUAD_BATCH_SIZE)
-		{
-			// draw first quads (as pair of tri to have guaranteed orientation)
-			uint numQuadsToDraw = std::min(QUAD_BATCH_SIZE - startIndex, numQuads);
-			glDrawElements(GL_TRIANGLES, 6 * numQuadsToDraw, GL_UNSIGNED_SHORT, defaultIndices + 6 * startIndex);
-			numLeftQuads -= numQuadsToDraw;
-			currIndex += 4 * numQuadsToDraw;
-		}
-
-		// draw remaining quads
-		while (numLeftQuads)
-		{
-			// TODO : resetting vertex pointer would avoid the need to rebuild indices each times
-			uint32 numQuadsToDraw = std::min(numLeftQuads, QUAD_BATCH_SIZE);
-			// draw all quads
-			if (4 * numQuadsToDraw + currIndex <= (1 << 16))
-			{
-				// indices fits on 16 bits
-				GLshort indices[QUAD_BATCH_SIZE * 6];
-				GLshort *curr = indices;
-				GLshort *end = indices + 6 * numQuadsToDraw;
-				uint16 vertexIndex = (uint16) currIndex;
-				do 
-				{
-					*curr++ = vertexIndex;
-					*curr++ = vertexIndex + 2;
-					*curr++ = vertexIndex + 1;
-					*curr++ = vertexIndex;
-					*curr++ = vertexIndex + 2;
-					*curr++ = vertexIndex + 3;
-					vertexIndex += 4;
-				} 
-				while(curr != end);
-				glDrawElements(GL_TRIANGLES, 6 * numQuadsToDraw, GL_UNSIGNED_SHORT, indices);
-			}
-			else
-			{	
-				// indices fits on 32 bits
-				GLint indices[QUAD_BATCH_SIZE];
-				GLint *curr = indices;
-				GLint *end = indices + 6 * numQuadsToDraw;
-				uint32 vertexIndex = currIndex;
-				do 
-				{
-					*curr++ = vertexIndex;
-					*curr++ = vertexIndex + 2;
-					*curr++ = vertexIndex + 1;
-					*curr++ = vertexIndex;
-					*curr++ = vertexIndex + 2;
-					*curr++ = vertexIndex + 3;
-					vertexIndex += 4;
-				} 
-				while(curr != end);
-				glDrawElements(GL_TRIANGLES, 6 * numQuadsToDraw, GL_UNSIGNED_INT, indices);
-			}
-			numLeftQuads -= numQuadsToDraw;
-			currIndex += 4 * numQuadsToDraw;
-		}
+		// draw the primitives.
+		if(numLines)
+			glDrawArrays(GL_LINES, startIndex << 1, numLines << 1);
 	}
 	// end multipass.
 	endMultiPass();
 
 
 	// Profiling.
-	_PrimitiveProfileIn.NQuads  += numQuads ;
-	_PrimitiveProfileOut.NQuads += numQuads  * nPass;
+	_PrimitiveProfileIn.NLines  += numLines ;
+	_PrimitiveProfileOut.NLines += numLines  * nPass;
 
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
 		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
+	return true;
 }
 
 // ***************************************************************************
-void	CDriverGL::renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)
+
+bool CDriverGL::renderRawTriangles(CMaterial& mat, uint32 startIndex, uint32 numTris)
 {
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
 	// setup material
-	if ( !setupMaterial(Mat) )
-		return;	
+	if ( !setupMaterial(mat) )
+		return false;
 
+	// render primitives.
+	//==============================
+	// start multipass.
+	uint	nPass;
+	nPass= beginMultiPass();
+	// draw all passes.
+	for(uint pass=0;pass<nPass; pass++)
+	{
+		// setup the pass.
+		setupPass(pass);
+		// draw the primitives.
+		if(numTris)
+			glDrawArrays(GL_TRIANGLES, startIndex*3, numTris*3);
+	}
+	// end multipass.
+	endMultiPass();
+
+
+	// Profiling.
+	_PrimitiveProfileIn.NTriangles  += numTris ;
+	_PrimitiveProfileOut.NTriangles += numTris  * nPass;
+
+	// We have render some prims. inform the VBHard.
+	if(_CurrentVertexBufferHard)
+		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
+	return true;
+}
+
+// ***************************************************************************
+
+bool CDriverGL::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuads)
+{
+	// update matrix and Light in OpenGL if needed
+	refreshRenderSetup();
+
+	// setup material
+	if ( !setupMaterial(mat) )
+		return false;
 
 	// render primitives.
 	//==============================
@@ -442,10 +462,11 @@ void	CDriverGL::renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
 		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
+	return true;
 }
 
-
 // ***************************************************************************
+
 void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 {
 	// sould not be called with vertex program Array setuped.
@@ -513,16 +534,16 @@ uint			CDriverGL::getMaxVerticesByVertexBufferHard() const
 
 
 // ***************************************************************************
-IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, IDriver::TVBHardType vbType, const uint8 *uvRouting)
+IVertexBufferHardGL	*CDriverGL::createVertexBufferHard(uint size, uint numVertices, CVertexBuffer::TPreferredMemory vbType, CVertexBuffer *vb)
 {
 	// choose the VertexArrayRange of good type
 	IVertexArrayRange	*vertexArrayRange= NULL;
 	switch(vbType)
 	{
-	case IDriver::VBHardAGP: 
+	case CVertexBuffer::AGPPreferred: 
 		vertexArrayRange= _AGPVertexArrayRange;
 		break;
-	case IDriver::VBHardVRAM:
+	case CVertexBuffer::VRAMPreferred:
 		vertexArrayRange= _VRAMVertexArrayRange;
 		break;
 	};
@@ -537,77 +558,20 @@ IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint16 vertexFormat, const 
 			return NULL;
 
 		// Create a CVertexBufferHardGL
-		IVertexBufferHardGL		*vb;
+		IVertexBufferHardGL		*vbHard;
 		// let the VAR create the vbhard.
-		vb= vertexArrayRange->createVBHardGL(vertexFormat, typeArray, numVertices, uvRouting);
+		vbHard= vertexArrayRange->createVBHardGL(size, vb);
 		// if fails
-		if(!vb)
+		if(!vbHard)
 		{
 			return NULL;
 		}
 		else
 		{
 			// insert in list.
-			return _VertexBufferHardSet.insert(vb);
+			return _VertexBufferHardSet.insert(vbHard);
 		}
 	}
-}
-
-
-// ***************************************************************************
-void			CDriverGL::deleteVertexBufferHard(IVertexBufferHard *VB)
-{
-	// If one _CurrentVertexBufferHard enabled, first End its drawning, and disable it.
-	// This is very important, because after deletion, the space is free. 
-	// If the GPU has not finisehd his drawing, and if any allocation occurs on this free space, and if 
-	// the user locks to fill this space (feww!) Then some data crash may results....
-	if(_CurrentVertexBufferHard)
-	{
-		// Must ensure it has ended any drawing
-		_CurrentVertexBufferHard->lock();
-		_CurrentVertexBufferHard->unlock();
-		// disable the VBHard.
-		_CurrentVertexBufferHard->disable();
-	}
-
-	// Then just delete the VBuffer hard from list.
-	_VertexBufferHardSet.erase(safe_cast<IVertexBufferHardGL*>(VB));
-}
-
-
-
-// ***************************************************************************
-void			CDriverGL::activeVertexBufferHard(IVertexBufferHard *iVB)
-{
-	// NB: must duplicate changes in activeVertexBuffer()
-
-	nlassert(iVB);
-	IVertexBufferHardGL		*VB= safe_cast<IVertexBufferHardGL*>(iVB);
-
-	uint32	flags;
-
-	if (VB->getNumVertices()==0)
-		return;
-
-	// Get VB flags, to setup matrixes and arrays.
-	flags=VB->getVertexFormat();
-
-
-	// 2. Setup Arrays.
-	//===================
-
-	// Fence mgt.
-	fenceOnCurVBHardIfNeeded(VB);
-
-	// For MultiPass Material.
-	_LastVB.setupVertexBufferHard(*VB);
-
-	// Enable the vertexArrayRange of this array.
-	VB->enable();
-
-	// Setup the OpenGL arrays.
-	setupGlArrays(_LastVB);
-
 }
 
 
@@ -1084,6 +1048,22 @@ void		CVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 	// No VBhard.
 	ATIVBHardMode= false;
 
+	// Lock the buffer
+	CVertexBufferReadWrite access;
+	uint8 *ptr;
+	if (vb.isResident())
+	{
+		CVBDrvInfosGL *info= safe_cast<CVBDrvInfosGL*>((IVBDrvInfos*)vb.DrvInfos);
+		nlassert (info);
+		ptr = (uint8*)info->_VBHard->getPointer();
+		info->_VBHard->setupATIMode (ATIVBHardMode, ATIVertexObjectId);
+	}
+	else
+	{
+		vb.lock (access);
+		ptr = (uint8*)access.getVertexCoordPointer();
+	}
+
 	// Get value pointer
 	for (i=0; i<CVertexBuffer::NumValue; i++)
 	{
@@ -1091,7 +1071,7 @@ void		CVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 		if (VertexFormat&(1<<i))
 		{
 			// Get the pointer
-			ValuePtr[i]=vb.getValueEx ((CVertexBuffer::TValue)i);
+			ValuePtr[i]= ptr+vb.getValueOffEx((CVertexBuffer::TValue)i);
 
 			// Type of the value
 			Type[i]=vb.getValueType (i);
@@ -1105,102 +1085,6 @@ void		CVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 		UVRouting[i] = uvRouting[i];
 	}
 }
-
-
-// ***************************************************************************
-void		CVertexBufferInfo::setupVertexBufferHard(IVertexBufferHardGL &vb)
-{
-	sint	i;
-	uint	flags= vb.getVertexFormat();
-	VertexFormat= flags;
-	VertexSize= vb.getVertexSize();
-	NumVertices= vb.getNumVertices();
-	NumWeight= vb.getNumWeight();
-
-	// Not ATI VBHard by default
-	ATIVBHardMode= false;
-
-	
-	// Setup differs from ATI or NVidia VBHard.
-	switch(vb.VBType)
-	{
-		case IVertexBufferHardGL::NVidiaVB:
-		{
-			CVertexBufferHardGLNVidia	&vbHardNV= static_cast<CVertexBufferHardGLNVidia&>(vb);
-			// Get value pointer
-			for (i=0; i<CVertexBuffer::NumValue; i++)
-			{
-				// Value used ?
-				if (VertexFormat&(1<<i))
-				{
-					// Get the pointer
-					ValuePtr[i]= vbHardNV.getNVidiaValueEx(i);
-
-					// Type of the value
-					Type[i]= vbHardNV.getValueType (i);
-				}
-			}
-		}
-		break;
-		case IVertexBufferHardGL::ATIVB:
-		{
-			CVertexBufferHardGLATI	&vbHardATI= static_cast<CVertexBufferHardGLATI &>(vb);
-			// special setup in setupGlArrays()...
-			ATIVBHardMode= true;
-
-			// store the VertexObject Id.
-			ATIVertexObjectId= vbHardATI.getATIVertexObjectId();
-
-			// Get value offset
-			for (i=0; i<CVertexBuffer::NumValue; i++)
-			{
-				// Value used ?
-				if (VertexFormat&(1<<i))
-				{
-					// Get the pointer
-					ATIValueOffset[i]= vbHardATI.getATIValueOffset(i);
-
-					// Type of the value
-					Type[i]= vbHardATI.getValueType (i);
-				}
-			}
-		}
-		break;
-		case IVertexBufferHardGL::ATIMapObjectVB:
-		{
-			CVertexBufferHardGLMapObjectATI	&vbHardATI= static_cast<CVertexBufferHardGLMapObjectATI &>(vb);
-			// special setup in setupGlArrays()...
-			ATIVBHardMode= true;
-
-			// store the VertexObject Id.
-			ATIVertexObjectId= vbHardATI.getATIVertexObjectId();
-
-			// Get value offset
-			for (i=0; i<CVertexBuffer::NumValue; i++)
-			{
-				// Value used ?
-				if (VertexFormat&(1<<i))
-				{
-					// Get the pointer
-					ATIValueOffset[i]= vbHardATI.getATIValueOffset(i);
-
-					// Type of the value
-					Type[i]= vbHardATI.getValueType (i);
-				}
-			}
-		}
-		break;
-	}	
-	
-
-	// Copy the UVRouting table
-	const uint8 *uvRouting = vb.getUVRouting ();
-	for (i=0; i<CVertexBuffer::MaxStage; i++)
-	{
-		UVRouting[i] = uvRouting[i];
-	}
-}
-
 
 
 // ***************************************************************************
@@ -1246,7 +1130,7 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 		agpMem= max(agpMem, (uint)NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE);
 		while(agpMem>= NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE)
 		{
-			if(_AGPVertexArrayRange->allocate(agpMem, IDriver::VBHardAGP))
+			if(_AGPVertexArrayRange->allocate(agpMem, CVertexBuffer::AGPPreferred))
 			{
 				nlinfo("VAR: %.d vertices supported", _MaxVerticesByVBHard);
 				nlinfo("VAR: Success to allocate %.1f Mo of AGP VAR Ram", agpMem / 1000000.f);
@@ -1275,7 +1159,7 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 		vramMem= max(vramMem, (uint)NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE);
 		while(vramMem>= NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE)
 		{
-			if(_VRAMVertexArrayRange->allocate(vramMem, IDriver::VBHardVRAM))
+			if(_VRAMVertexArrayRange->allocate(vramMem, CVertexBuffer::VRAMPreferred))
 				break;
 			else
 			{
@@ -1348,5 +1232,22 @@ void				CDriverGL::fenceOnCurVBHardIfNeeded(IVertexBufferHardGL *newVBHard)
 	}
 }
 
+// ***************************************************************************
+
+CIndexBufferInfo::CIndexBufferInfo()
+{
+	_Values = NULL;
+}
+
+// ***************************************************************************
+
+void CIndexBufferInfo::setupIndexBuffer(CIndexBuffer &ib)
+{
+	CIndexBufferReadWrite access;
+	ib.lock (access);
+	_Values = access.getPtr();
+}
+
+// ***************************************************************************
 
 } // NL3D

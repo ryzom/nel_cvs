@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.36 2003/12/18 14:34:50 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.37 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -253,7 +253,7 @@ CVegetableVBAllocator	&CVegetableManager::getVBAllocatorForRdrPassAndVBHardMode(
 	--------
 	Setuped at beginning of CVegetableManager::render()
 	c[0..3]= ModelViewProjection Matrix.
-	c[4..7]= ModelView Matrix (for Fog).
+	c[6]= Fog vector.
 	c[8]= {0, 1, 0.5, 2}
 	c[9]= unit world space Directionnal light.
 	c[10]= camera pos in world space.
@@ -890,7 +890,7 @@ void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CV
 	for(rdrPass= 0; rdrPass<NL3D_VEGETABLE_NRDRPASS; rdrPass++)
 	{
 		CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ig->_RdrPass[rdrPass];
-		nlassert(vegetRdrPass.TriangleIndices.size()==0);
+		nlassert(vegetRdrPass.TriangleIndices.getNumIndexes()==0);
 		nlassert(vegetRdrPass.TriangleLocalIndices.size()==0);
 		nlassert(vegetRdrPass.Vertices.size()==0);
 		nlassert(vegetRdrPass.LightedInstances.size()==0);
@@ -910,7 +910,7 @@ void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CV
 		uint	numTris= vegetIgReserve._RdrPass[rdrPass].NTriangles;
 		uint	numLightedInstances= vegetIgReserve._RdrPass[rdrPass].NLightedInstances;
 		// reserve triangles indices and vertices for this rdrPass.
-		vegetRdrPass.TriangleIndices.resize(numTris*3);
+		vegetRdrPass.TriangleIndices.setNumIndexes(numTris*3);
 		vegetRdrPass.TriangleLocalIndices.resize(numTris*3);
 		vegetRdrPass.Vertices.resize(numVertices);
 		// reserve ligthedinstances space.
@@ -1214,18 +1214,24 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		worldVertices.resize(numNewVertices);
 	}
 
+	CVertexBufferRead vba;
+	shape->VB.lock (vba);
 
 	// For all vertices of shape, transform and store manager indices in temp shape.
 	for(i=0; i<(sint)numNewVertices;i++)
 	{
 		// allocate a Vertex
 		uint	vid= allocator->allocateVertex();
+		
+		CVertexBufferReadWrite vbaOut;
+		allocator->getSoftwareVertexBuffer ().lock(vbaOut);
+
 		// store in tmp shape.
 		shape->InstanceVertices[i]= vid;
 
 		// Fill this vertex.
-		uint8	*srcPtr= (uint8*)shape->VB.getVertexCoordPointer(i);
-		uint8	*dstPtr= (uint8*)allocator->getVertexPointer(vid);
+		const uint8	*srcPtr= (uint8*)vba.getVertexCoordPointer(i);
+		uint8	*dstPtr= (uint8*)vbaOut.getVertexCoordPointer(vid);
 
 		// Get bendWeight for this vertex.
 		float	vertexBendWeight= ((CUV*)(srcPtr + srcTex1Off))->U * bendFactor;
@@ -1431,7 +1437,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 	// verify user has correclty used reserveIg system.
 	nlassert(offVertex + numNewVertices <= vegetRdrPass.Vertices.size());
-	nlassert(offTriIdx + numNewIndices <= vegetRdrPass.TriangleIndices.size());
+	nlassert(offTriIdx + numNewIndices <= vegetRdrPass.TriangleIndices.getNumIndexes());
 	nlassert(offTriIdx + numNewIndices <= vegetRdrPass.TriangleLocalIndices.size());
 
 
@@ -1440,12 +1446,15 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 	// insert array of triangles in ig.
 	// for all indices, fill IG
+	CIndexBufferReadWrite ibaWrite;
+	vegetRdrPass.TriangleIndices.lock (ibaWrite);
+	uint32 *ptr = ibaWrite.getPtr();
 	for(i=0; i<(sint)numNewIndices; i++)
 	{
 		// get the index of the vertex in the shape
 		uint	vid= shape->TriangleIndices[i];
 		// re-direction, using InstanceVertices;
-		vegetRdrPass.TriangleIndices[offTriIdx + i]= shape->InstanceVertices[vid];
+		ptr[offTriIdx + i]= shape->InstanceVertices[vid];
 		// local re-direction: adding vertexOffset.
 		vegetRdrPass.TriangleLocalIndices[offTriIdx + i]= offVertex + vid;
 	}
@@ -1506,6 +1515,9 @@ void			CVegetableManager::swapIgRdrPassHardMode(CVegetableInstanceGroup *ig, uin
 	uint	vbSize= srcAllocator.getSoftwareVertexBuffer().getVertexSize();
 	nlassert(vbSize == dstAllocator.getSoftwareVertexBuffer().getVertexSize());
 
+	CVertexBufferRead vbaIn;
+	srcAllocator.getSoftwareVertexBuffer ().lock(vbaIn);
+
 	// for all vertices of the IG, change of VBAllocator
 	uint i;
 	// Do it only for current Vertices setuped!!! because a swapIgRdrPassHardMode awlays arise when the ig is 
@@ -1518,9 +1530,12 @@ void			CVegetableManager::swapIgRdrPassHardMode(CVegetableInstanceGroup *ig, uin
 		// allocate a verex in the dst allocator.
 		uint	dstId= dstAllocator.allocateVertex();
 
+		CVertexBufferReadWrite vbaOut;
+		dstAllocator.getSoftwareVertexBuffer ().lock(vbaOut);
+
 		// copy from VBsoft of src to dst.
-		void	*vbSrc= srcAllocator.getVertexPointer(srcId);
-		void	*vbDst= dstAllocator.getVertexPointer(dstId);
+		const void	*vbSrc= vbaIn.getVertexCoordPointer(srcId);
+		void	*vbDst= vbaOut.getVertexCoordPointer(dstId);
 		memcpy(vbDst, vbSrc, vbSize);
 		// release src vertex.
 		srcAllocator.deleteVertex(srcId);
@@ -1533,15 +1548,18 @@ void			CVegetableManager::swapIgRdrPassHardMode(CVegetableInstanceGroup *ig, uin
 	}
 
 	// For all triangles, bind correct triangles.
-	nlassert(vegetRdrPass.TriangleIndices.size() == vegetRdrPass.TriangleLocalIndices.size());
+	nlassert(vegetRdrPass.TriangleIndices.getNumIndexes() == vegetRdrPass.TriangleLocalIndices.size());
 	// Do it only for current Triangles setuped!!! same reason as vertices
 	// For all setuped triangles indices
+	CIndexBufferReadWrite ibaWrite;
+	vegetRdrPass.TriangleIndices.lock (ibaWrite);
+	uint32 *ptr = ibaWrite.getPtr();
 	for(i=0;i<vegetRdrPass.NTriangles*3;i++)
 	{
 		// get the index in Vertices.
 		uint	localVid= vegetRdrPass.TriangleLocalIndices[i];
 		// get the index in new VBufffer (dstAllocator), and copy to TriangleIndices
-		vegetRdrPass.TriangleIndices[i]= vegetRdrPass.Vertices[localVid];
+		ptr[i]= vegetRdrPass.Vertices[localVid];
 	}
 
 	// Since change is made, flag the IG rdrpass
@@ -1667,8 +1685,8 @@ void			CVegetableManager::setupVertexProgramConstants(IDriver *driver)
 	// setup VertexProgram constants.
 	// c[0..3] take the ModelViewProjection Matrix. After setupModelMatrix();
 	driver->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
-	// c[4..7] take the ModelView Matrix. After setupModelMatrix();
-	driver->setConstantMatrix(4, IDriver::ModelView, IDriver::Identity);
+	// c[6] take the Fog vector. After setupModelMatrix();
+	driver->setConstantFog(6);
 	// c[8] take usefull constants.
 	driver->setConstant(8, 0, 1, 0.5f, 2);
 	// c[9] take normalized directional light
@@ -1901,6 +1919,7 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 
 				// activate Vertex program first.
 				//nlinfo("\nSTARTVP\n%s\nENDVP\n", _VertexProgram[rdrPass]->getProgram().c_str());
+
 				nlverify(driver->activeVertexProgram(_VertexProgram[rdrPass]));
 
 				// Activate the good VBuffer
@@ -1927,7 +1946,8 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 								// Ok, Render the faces.
 								if(vegetRdrPass.NTriangles)
 								{
-									driver->renderSimpleTriangles(&vegetRdrPass.TriangleIndices[0], 
+									driver->activeIndexBuffer(vegetRdrPass.TriangleIndices);
+									driver->renderSimpleTriangles(0,
 										vegetRdrPass.NTriangles);
 								}
 							}
@@ -2418,7 +2438,10 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 	uint	dstColor0Off= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR0);
 	uint	dstColor1Off= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR1);
 	
-
+	CVertexBufferRead vba;
+	shape->VB.lock (vba);
+	CVertexBufferReadWrite vbaOut;
+	allocator->getSoftwareVertexBuffer ().lock(vbaOut);
 
 	// For all vertices, recompute lighting.
 	//---------
@@ -2430,8 +2453,8 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 		shape->InstanceVertices[i]= vid;
 
 		// Fill this vertex.
-		uint8	*srcPtr= (uint8*)shape->VB.getVertexCoordPointer(i);
-		uint8	*dstPtr= (uint8*)allocator->getVertexPointer(vid);
+		const uint8	*srcPtr= (const uint8*)vba.getVertexCoordPointer(i);
+		uint8	*dstPtr= (uint8*)vbaOut.getVertexCoordPointer(vid);
 
 
 		// if !precomputeLighting (means destLighted...)

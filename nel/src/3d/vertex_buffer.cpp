@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.38 2004/01/14 10:32:48 vizerie Exp $
+ * $Id: vertex_buffer.cpp,v 1.39 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,6 +103,13 @@ CVertexBuffer::CVertexBuffer()
 	_NbVerts = 0;
 	_InternalFlags = 0;
 	_VertexSize = 0;
+	_VertexColorFormat = TRGBA;
+	_LockCounter = 0;
+	_LockedBuffer = NULL;
+	_PreferredMemory = RAMPreferred;
+	_WriteOnly[RAMPreferred] = false;
+	_WriteOnly[AGPPreferred] = true;
+	_WriteOnly[VRAMPreferred] = true;
 
 	// Default routing
 	uint i; 
@@ -118,6 +125,13 @@ CVertexBuffer::CVertexBuffer(const CVertexBuffer &vb)
 	_Capacity = 0;
 	_NbVerts = 0;
 	_VertexSize = 0;
+	_LockCounter = 0;
+	_LockedBuffer = NULL;
+	_PreferredMemory = RAMPreferred;
+	Location = NotResident;
+	_WriteOnly[RAMPreferred] = false;
+	_WriteOnly[AGPPreferred] = true;
+	_WriteOnly[VRAMPreferred] = true;
 	operator=(vb);
 
 	// Default routing
@@ -138,13 +152,22 @@ CVertexBuffer::~CVertexBuffer()
 
 CVertexBuffer	&CVertexBuffer::operator=(const CVertexBuffer &vb)
 {
+	nlassertex (!isLocked(), ("The vertex buffer is locked."));
+
 	// Single value
 	_VertexSize = vb._VertexSize;
 	_Flags = vb._Flags;
 	_InternalFlags = vb._InternalFlags;
 	_NbVerts = vb._NbVerts;
 	_Capacity = vb._Capacity;
-	_Verts = vb._Verts;
+	_NonResidentVertices = vb._NonResidentVertices;
+	_VertexColorFormat = vb._VertexColorFormat;
+	_PreferredMemory = vb._PreferredMemory;
+	uint i;
+	for (i=0; i<PreferredCount; i++)
+		_WriteOnly[i] = vb._WriteOnly[i];
+	_LockCounter = 0;
+	_LockedBuffer = NULL;
 
 	// Arraies
 	for (uint value=0; value<NumValue; value++)
@@ -154,12 +177,12 @@ CVertexBuffer	&CVertexBuffer::operator=(const CVertexBuffer &vb)
 	}
 
 	// Copy the routing
-	uint i;
 	for (i=0; i<MaxStage; i++)
 		_UVRouting[i] = vb._UVRouting[i];
 
 	// Set touch flags
 	_InternalFlags |= TouchedAll;
+	Location = NotResident;
 
 	return *this;
 }
@@ -168,6 +191,8 @@ CVertexBuffer	&CVertexBuffer::operator=(const CVertexBuffer &vb)
 
 bool CVertexBuffer::setVertexFormat(uint32 flags)
 {
+	nlassertex (!isLocked(), ("The vertex buffer is locked."));
+
 	uint	i;
 
 	// Clear extended values 
@@ -270,6 +295,8 @@ CVertexBuffer::TValue CVertexBuffer::getValueIdByNumberEx (uint valueNumber)
 
 void CVertexBuffer::clearValueEx ()
 {
+	nlassertex (!isLocked(), ("The vertex buffer is locked."));
+
 	// Reset format flags
 	_Flags=0;
 }
@@ -337,6 +364,8 @@ void CVertexBuffer::dumpFormat() const
 
 void CVertexBuffer::addValueEx (TValue valueId, TType type)
 {
+	nlassertex (!isLocked(), ("The vertex buffer is locked."));
+
 	// Reset format flags
 	_Flags |= 1<<valueId;
 
@@ -368,8 +397,11 @@ bool CVertexBuffer::hasValueEx(TValue valueId) const
 
 void CVertexBuffer::initEx ()
 {
+	nlassert (!isLocked());
+
 	// Reset internal flag
-	_InternalFlags=TouchedAll;
+	_InternalFlags=TouchedVertexFormat;
+	Location = NotResident;
 
 	// Calc vertex size and set value's offset
 	_VertexSize=0;
@@ -391,7 +423,7 @@ void CVertexBuffer::initEx ()
 
 	// Compute new capacity
 	if (_VertexSize)
-		_Capacity = _Verts.size()/_VertexSize;
+		_Capacity = _NonResidentVertices.size()/_VertexSize;
 	else
 		_Capacity = 0;
 }
@@ -400,8 +432,38 @@ void CVertexBuffer::initEx ()
 
 void CVertexBuffer::reserve(uint32 n)
 {
-	_Verts.resize(n*_VertexSize);
-	_Capacity= n;
+	nlassert (!isLocked());
+	if (_Capacity != n)
+	{
+		nlassert (!isLocked());
+		const uint oldSize = _Capacity;
+		_NonResidentVertices.resize(n*_VertexSize);
+		_Capacity= n;
+		if (_NbVerts!=std::min (_NbVerts,_Capacity))
+		{
+			_NbVerts=std::min (_NbVerts,_Capacity);
+			_InternalFlags |= TouchedNumVertices;
+		}
+
+		// Download old buffer
+		if (isResident())
+		{
+			// Readable memory ?
+			if (!_WriteOnly[Location])
+			{
+				const uint copySize = std::min ((uint)oldSize, (uint)_Capacity);
+				if (copySize)
+				{
+					nlassert (DrvInfos);
+					const uint8 *ptr = DrvInfos->lock (0, copySize, true);
+					memcpy (&(_NonResidentVertices[0]), ptr, copySize);
+					DrvInfos->unlock (0, 0);
+				}
+			}
+		}
+		_InternalFlags |= TouchedReserve;
+		Location = NotResident;
+	}
 }
 
 // --------------------------------------------------
@@ -423,236 +485,37 @@ void CVertexBuffer::setNumVertices(uint32 n)
 
 void	CVertexBuffer::deleteAllVertices()
 {
-	// free memory.
-	contReset(_Verts);
-	_Capacity= 0;
-	if(_NbVerts!=0)
+	if (_Capacity)
 	{
-		_NbVerts=0;
-		_InternalFlags |= TouchedNumVertices;
+		nlassert (!isLocked());
+		// free memory.
+		contReset(_NonResidentVertices);
+		_Capacity= 0;
+		if(_NbVerts!=0)
+		{
+			_NbVerts=0;
+			_InternalFlags |= TouchedNumVertices;
+		}
+
+		// If resident, touch all, data are lost
+		_InternalFlags |= TouchedReserve;
+		Location = NotResident;
+
+		// Delete driver info
+		DrvInfos.kill();
 	}
 }
 
 // --------------------------------------------------
 
-void* CVertexBuffer::getVertexCoordPointer(uint idx)
+void CVertexBuffer::setWriteOnly(TPreferredMemory preferredMemory, bool writeOnly)
 {
-	uint8*	ptr;
-
-	ptr=&(*_Verts.begin());
-	ptr+=(idx*_VertexSize);
-	return((void*)ptr);
-}
-
-// --------------------------------------------------
-
-void* CVertexBuffer::getNormalCoordPointer(uint idx)
-{
-	uint8*	ptr;
-
-	if ( !(_Flags & NormalFlag) )
+	if ((preferredMemory == _PreferredMemory) && (_WriteOnly[preferredMemory] != writeOnly))
 	{
-		return(NULL);
+		_WriteOnly[preferredMemory] = writeOnly;
+		_InternalFlags |= TouchedVertexFormat;
+		Location = NotResident;
 	}
-	ptr=&(*_Verts.begin());
-	ptr+=_Offset[Normal];
-	ptr+=idx*_VertexSize;
-	return((void*)ptr);
-}
-
-// --------------------------------------------------
-
-void* CVertexBuffer::getColorPointer(uint idx)
-{
-	uint8*	ptr;
-
-	if ( !(_Flags & PrimaryColorFlag) )
-	{
-		return(NULL);
-	}
-	ptr=&(*_Verts.begin());
-	ptr+=_Offset[PrimaryColor];
-	ptr+=idx*_VertexSize;
-	return((void*)ptr);
-}
-
-// --------------------------------------------------
-
-void* CVertexBuffer::getSpecularPointer(uint idx)
-{
-	uint8*	ptr;
-
-	if ( !(_Flags & SecondaryColorFlag) )
-	{
-		return(NULL);
-	}
-	ptr=&(*_Verts.begin());
-	ptr+=_Offset[SecondaryColor];
-	ptr+=idx*_VertexSize;
-	return((void*)ptr);
-}
-
-// --------------------------------------------------
-
-void* CVertexBuffer::getTexCoordPointer(uint idx, uint8 stage)
-{
-	uint8*	ptr;
-
-	if ( !(_Flags & (TexCoord0Flag<<stage)) )
-	{
-		return(NULL);
-	}
-	ptr=&(*_Verts.begin());
-	ptr+=_Offset[TexCoord0+stage];
-	ptr+=idx*_VertexSize;
-	return((void*)ptr);
-}
-
-// --------------------------------------------------
-
-void* CVertexBuffer::getWeightPointer(uint idx, uint8 wgt)
-{
-	uint8*	ptr;
-
-	nlassert(wgt<MaxWeight);
-	if( !(_Flags & WeightFlag))
-		return NULL;
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[Weight]+wgt*sizeof(float);
-
-	return ptr;
-}
-
-// --------------------------------------------------
-
-void* CVertexBuffer::getPaletteSkinPointer(uint idx)
-{
-	uint8*	ptr;
-
-	if ( (_Flags & PaletteSkinFlag) != CVertexBuffer::PaletteSkinFlag )
-	{
-		return(NULL);
-	}
-	ptr=&(*_Verts.begin());
-	ptr+=_Offset[PaletteSkin];
-	ptr+=idx*_VertexSize;
-	return((void*)ptr);
-}
-
-// --------------------------------------------------
-
-
-////////////////////
-// const versions //
-////////////////////
-
-
-// --------------------------------------------------
-
-const void* CVertexBuffer::getVertexCoordPointer(uint idx) const 
-{
-	const uint8*	ptr;
-
-	ptr=&(*_Verts.begin());
-	ptr+=(idx*_VertexSize);
-	return((void*)ptr);
-}
-
-// --------------------------------------------------
-
-const void* CVertexBuffer::getNormalCoordPointer(uint idx) const
-{
-	const uint8*	ptr;
-
-	if ( !(_Flags & NormalFlag) )
-	{
-		return(NULL);
-	}
-	ptr=&(*_Verts.begin());
-	ptr+=_Offset[Normal];
-	ptr+=idx*_VertexSize;
-	return((void*)ptr);
-}
-
-// --------------------------------------------------
-
-const void* CVertexBuffer::getColorPointer(uint idx) const
-{
-	const uint8*	ptr;
-
-	if ( !(_Flags & PrimaryColorFlag) )
-	{
-		return(NULL);
-	}
-	ptr=&(*_Verts.begin());
-	ptr+=_Offset[PrimaryColor];
-	ptr+=idx*_VertexSize;
-	return((void*)ptr);
-}
-
-// --------------------------------------------------
-
-const void* CVertexBuffer::getSpecularPointer(uint idx) const
-{
-	const uint8*	ptr;
-
-	if ( !(_Flags & SecondaryColorFlag) )
-	{
-		return(NULL);
-	}
-	ptr=&(*_Verts.begin());
-	ptr+=_Offset[SecondaryColor];
-	ptr+=idx*_VertexSize;
-	return((void*)ptr);
-}
-
-// --------------------------------------------------
-
-const void* CVertexBuffer::getTexCoordPointer(uint idx, uint8 stage) const
-{
-	const uint8*	ptr;
-
-	if ( !(_Flags & (TexCoord0Flag<<stage)) )
-	{
-		return(NULL);
-	}
-	ptr=&(*_Verts.begin());
-	ptr+=_Offset[TexCoord0+stage];
-	ptr+=idx*_VertexSize;
-	return((void*)ptr);
-}
-
-// --------------------------------------------------
-
-const void* CVertexBuffer::getWeightPointer(uint idx, uint8 wgt) const
-{
-	const uint8*	ptr;
-
-	nlassert(wgt<MaxWeight);
-	if( !(_Flags & WeightFlag))
-		return NULL;
-
-	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
-	ptr+=_Offset[Weight]+wgt*sizeof(float);
-
-	return ptr;
-}
-
-// --------------------------------------------------
-
-const void* CVertexBuffer::getPaletteSkinPointer(uint idx) const
-{
-	const uint8*	ptr;
-
-	if ( (_Flags & PaletteSkinFlag) != CVertexBuffer::PaletteSkinFlag )
-	{
-		return(NULL);
-	}
-	ptr=&(*_Verts.begin());
-	ptr+=_Offset[PaletteSkin];
-	ptr+=idx*_VertexSize;
-	return((void*)ptr);
 }
 
 // --------------------------------------------------
@@ -771,7 +634,7 @@ void		CVertexBuffer::serialOldV1Minus(NLMISC::IStream &f, sint ver)
 	reserve(0);
 	setVertexFormat(newFlags);
 	setNumVertices(nbVert);
-	// All other infos (but _Verts) are computed by setVertexFormat() and setNumVertices().
+	// All other infos (but _NonResidentVertices) are computed by setVertexFormat() and setNumVertices().
 
 	// Weight count ?
 	switch (weightCount)
@@ -794,16 +657,18 @@ void		CVertexBuffer::serialOldV1Minus(NLMISC::IStream &f, sint ver)
 	//============================
 	for(sint id=0;id<(sint)_NbVerts;id++)
 	{
+		uint8 *pointer = &(*_NonResidentVertices.begin());
+		uint stridedId = id * _VertexSize;
 		// XYZ.
 		if(_Flags & PositionFlag)
 		{
-			CVector		&vert= *(CVector*)getVertexCoordPointer(id);
+			CVector		&vert= *(CVector*)(pointer + stridedId + _Offset[Position]);
 			f.serial(vert);
 		}
 		// Normal
 		if(_Flags & NormalFlag)
 		{
-			CVector		&norm= *(CVector*)getNormalCoordPointer(id);
+			CVector		&norm= *(CVector*)(pointer + stridedId + _Offset[Normal]);
 			f.serial(norm);
 		}
 		// Uvs.
@@ -811,33 +676,33 @@ void		CVertexBuffer::serialOldV1Minus(NLMISC::IStream &f, sint ver)
 		{
 			if(_Flags & (TexCoord0Flag<<i))
 			{
-				CUV		&uv= *(CUV*)getTexCoordPointer(id, i);
+				CUV		&uv= *(CUV*)(pointer + stridedId + _Offset[TexCoord0+i]);
 				f.serial(uv);
 			}
 		}
 		// Color.
 		if(_Flags & PrimaryColorFlag)
 		{
-			CRGBA		&col= *(CRGBA*)getColorPointer(id);
+			CRGBA		&col= *(CRGBA*)(pointer + stridedId + _Offset[PrimaryColor]);
 			f.serial(col);
 		}
 		// Specular.
 		if(_Flags & SecondaryColorFlag)
 		{
-			CRGBA		&col= *(CRGBA*)getSpecularPointer(id);
+			CRGBA		&col= *(CRGBA*)(pointer + stridedId + _Offset[SecondaryColor]);
 			f.serial(col);
 		}
 		// Weights
 		for(i=0;i<weightCount;i++)
 		{
 			// Weight channel available ?
-			float	&w= *(float*)getWeightPointer(id, i);
+			float	&w= *(float*)(pointer + stridedId + _Offset[Weight] + i*sizeof(float));
 			f.serial(w);
 		}
 		// CPaletteSkin (version 1+ only).
 		if((ver>=1) && ((_Flags & PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag) )
 		{
-			CPaletteSkin	&ps= *(CPaletteSkin*)getPaletteSkinPointer(id);
+			CPaletteSkin	&ps= *(CPaletteSkin*)(pointer + stridedId + _Offset[PaletteSkin]);
 			f.serial(ps);
 		}
 
@@ -846,7 +711,10 @@ void		CVertexBuffer::serialOldV1Minus(NLMISC::IStream &f, sint ver)
 	// Set touch flags
 	_InternalFlags = 0;
 	if(f.isReading())
+	{
 		_InternalFlags |= TouchedAll;
+		Location = NotResident;
+	}
 }
 
 // --------------------------------------------------
@@ -861,6 +729,7 @@ void		CVertexBuffer::serial(NLMISC::IStream &f)
 	Version 0:
 		- base verison.
 	*/
+	nlassert (!isLocked());
 	sint	ver= f.serialVersion(2);
 
 	if (ver<2)
@@ -883,12 +752,16 @@ void		CVertexBuffer::serial(NLMISC::IStream &f)
 void		CVertexBuffer::serialHeader(NLMISC::IStream &f)
 {
 	/*
+	Version 3:
+		- Preferred memory.
+	Version 2:
+		- Vertex color format management.
 	Version 1:
 		- Extended vertex format management.
 	Version 0:
 		- base verison of the header serialisation.
 	*/
-	sint	ver= f.serialVersion(1);
+	sint	ver= f.serialVersion(2);
 
 	// Serial VBuffers format/size.
 	//=============================
@@ -968,7 +841,31 @@ void		CVertexBuffer::serialHeader(NLMISC::IStream &f)
 		// Set num of vertices
 		setNumVertices(nbVerts);
 	}
-	// All other infos (but _Verts) are computed by initEx() and setNumVertices().
+	// All other infos (but _NonResidentVertices) are computed by initEx() and setNumVertices().
+
+	if (ver>=2)
+		f.serial (_VertexColorFormat);
+
+	if (ver>=3)
+	{
+		f.serialEnum(_PreferredMemory);
+		uint i;
+		for (i=0; i<PreferredCount; i++)
+			f.serial(_WriteOnly[i]);
+		f.serial(_Name);
+	}
+	else
+	{
+		// Init preferred memory
+		if(f.isReading())
+		{
+			_PreferredMemory = RAMPreferred;
+			_WriteOnly[RAMPreferred] = false;
+			_WriteOnly[AGPPreferred] = true;
+			_WriteOnly[VRAMPreferred] = true;
+			_Name = "";
+		}
+	}
 }
 
 
@@ -1029,7 +926,7 @@ void		CVertexBuffer::serialSubset(NLMISC::IStream &f, uint vertexStart, uint ver
 			if (_Flags&(1<<value))
 			{
 				// Get the pointer on it
-				void *ptr=getValueEx ((TValue)value, id);
+				void *ptr=(void*)((&(*_NonResidentVertices.begin()))+id*_VertexSize+getValueOffEx ((TValue)value));
 				f.serialBuffer ((uint8*)ptr, SizeType[_Type[value]]);
 			}
 		}
@@ -1051,7 +948,86 @@ void		CVertexBuffer::serialSubset(NLMISC::IStream &f, uint vertexStart, uint ver
 
 	// Set touch flags
 	if(f.isReading())
+	{
 		_InternalFlags |= TouchedAll;
+		Location = NotResident;
+	}
+}
+
+// --------------------------------------------------
+
+bool CVertexBuffer::setVertexColorFormat (TVertexColorType format)
+{
+	// If resident, quit
+	if (isResident())
+		return false;
+
+	nlassert (!isLocked());
+
+	// Format is not good ?
+	if ((TVertexColorType)_VertexColorFormat != format)
+	{
+		// Diffuse or specualr component ?
+		if (_Flags & (PrimaryColorFlag|SecondaryColorFlag))
+		{
+			uint i;
+			uint32 *ptr0 = (_Flags&PrimaryColorFlag)?(uint32*)&(_NonResidentVertices[_Offset[PrimaryColor]]):NULL;
+			uint32 *ptr1 = (_Flags&SecondaryColorFlag)?(uint32*)&(_NonResidentVertices[_Offset[SecondaryColor]]):NULL;
+			for (i=0; i<_NbVerts; i++)
+			{
+				if (ptr0)
+				{
+					const register uint32 value = *ptr0;
+#ifdef NL_LITTLE_ENDIAN
+					*ptr0 = (value&0xff00ff00)|((value&0xff)<<16)|((value&0xff0000)>>16);
+#else // NL_LITTLE_ENDIAN
+					*ptr0 = (value&0x00ff00ff)|((value&0xff00)<<16)|((value&0xff000000)>>16);
+#endif // NL_LITTLE_ENDIAN
+					ptr0 = (uint32*)(((uint8*)ptr0)+_VertexSize);
+				}
+				if (ptr1)
+				{
+					const register uint32 value = *ptr1;
+#ifdef NL_LITTLE_ENDIAN
+					*ptr1 = (value&0xff00ff00)|((value&0xff)<<16)|((value&0xff0000)>>16);
+#else // NL_LITTLE_ENDIAN
+					*ptr1 = (value&0x00ff00ff)|((value&0xff00)<<16)|((value&0xff000000)>>16);
+#endif // NL_LITTLE_ENDIAN
+					ptr1 = (uint32*)(((uint8*)ptr1)+_VertexSize);
+				}
+			}
+		}
+		_VertexColorFormat = (uint8)format;
+		_InternalFlags |= TouchedVertexFormat;
+		Location = NotResident;
+	}
+	return true;
+}
+
+// --------------------------------------------------
+
+void CVertexBuffer::setPreferredMemory (TPreferredMemory preferredMemory)
+{
+	if (_PreferredMemory != preferredMemory)
+	{
+		_PreferredMemory = preferredMemory;
+		_InternalFlags |= TouchedVertexFormat;
+		Location = NotResident;
+	}
+}
+
+// --------------------------------------------------
+
+void CVertexBuffer::releaseNonResidentVertices ()
+{
+	contReset(_NonResidentVertices);
+}
+
+// --------------------------------------------------
+
+void CVertexBuffer::restoreNonResidentVertices ()
+{
+	_NonResidentVertices.resize (_NbVerts*_VertexSize);
 }
 
 // --------------------------------------------------
@@ -1066,7 +1042,253 @@ void	CPaletteSkin::serial(NLMISC::IStream &f)
 
 IVBDrvInfos::~IVBDrvInfos()
 {
+	if (_VertexBuffer)
+	{
+		_VertexBuffer->Location = CVertexBuffer::NotResident;
+		_VertexBuffer->restoreNonResidentVertices ();
+	}
 	_Driver->removeVBDrvInfoPtr(_DriverIterator);
+}
+
+// --------------------------------------------------
+// CVertexBufferReadWrite
+// --------------------------------------------------
+
+NLMISC::CVector* CVertexBufferReadWrite::getVertexCoordPointer(uint idx)
+{
+	nlassert (_Parent->checkLockedBuffer());
+	uint8*	ptr;
+
+	ptr=_Parent->_LockedBuffer;
+	ptr+=(idx*_Parent->_VertexSize);
+	return((NLMISC::CVector*)ptr);
+}
+
+// --------------------------------------------------
+
+NLMISC::CVector* CVertexBufferReadWrite::getNormalCoordPointer(uint idx)
+{
+	nlassert (_Parent->checkLockedBuffer());
+	uint8*	ptr;
+
+	if ( !(_Parent->_Flags & CVertexBuffer::NormalFlag) )
+	{
+		return(NULL);
+	}
+	ptr=_Parent->_LockedBuffer;
+	ptr+=_Parent->_Offset[CVertexBuffer::Normal];
+	ptr+=idx*_Parent->_VertexSize;
+	return((NLMISC::CVector*)ptr);
+}
+
+// --------------------------------------------------
+
+void* CVertexBufferReadWrite::getColorPointer(uint idx)
+{
+	nlassert (_Parent->checkLockedBuffer());
+	uint8*	ptr;
+
+	if ( !(_Parent->_Flags & CVertexBuffer::PrimaryColorFlag) )
+	{
+		return(NULL);
+	}
+	ptr=_Parent->_LockedBuffer;
+	ptr+=_Parent->_Offset[CVertexBuffer::PrimaryColor];
+	ptr+=idx*_Parent->_VertexSize;
+	return((void*)ptr);
+}
+
+// --------------------------------------------------
+
+void* CVertexBufferReadWrite::getSpecularPointer(uint idx)
+{
+	nlassert (_Parent->checkLockedBuffer());
+	uint8*	ptr;
+
+	if ( !(_Parent->_Flags & CVertexBuffer::SecondaryColorFlag) )
+	{
+		return(NULL);
+	}
+	ptr=_Parent->_LockedBuffer;
+	ptr+=_Parent->_Offset[CVertexBuffer::SecondaryColor];
+	ptr+=idx*_Parent->_VertexSize;
+	return((void*)ptr);
+}
+
+// --------------------------------------------------
+
+NLMISC::CUV* CVertexBufferReadWrite::getTexCoordPointer(uint idx, uint8 stage)
+{
+	nlassert (_Parent->checkLockedBuffer());
+	uint8*	ptr;
+
+	if ( !(_Parent->_Flags & (CVertexBuffer::TexCoord0Flag<<stage)) )
+	{
+		return(NULL);
+	}
+	ptr=_Parent->_LockedBuffer;
+	ptr+=_Parent->_Offset[CVertexBuffer::TexCoord0+stage];
+	ptr+=idx*_Parent->_VertexSize;
+	return((NLMISC::CUV*)ptr);
+}
+
+// --------------------------------------------------
+
+float* CVertexBufferReadWrite::getWeightPointer(uint idx, uint8 wgt)
+{
+	nlassert (_Parent->checkLockedBuffer());
+	uint8*	ptr;
+
+	nlassert(wgt<CVertexBuffer::MaxWeight);
+	if( !(_Parent->_Flags & CVertexBuffer::WeightFlag))
+		return NULL;
+
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[CVertexBuffer::Weight]+wgt*sizeof(float);
+
+	return (float*)ptr;
+}
+
+// --------------------------------------------------
+
+CPaletteSkin* CVertexBufferReadWrite::getPaletteSkinPointer(uint idx)
+{
+	nlassert (_Parent->checkLockedBuffer());
+	uint8*	ptr;
+
+	if ( (_Parent->_Flags & CVertexBuffer::PaletteSkinFlag) != CVertexBuffer::PaletteSkinFlag )
+	{
+		return(NULL);
+	}
+	ptr=_Parent->_LockedBuffer;
+	ptr+=_Parent->_Offset[CVertexBuffer::PaletteSkin];
+	ptr+=idx*_Parent->_VertexSize;
+	return((CPaletteSkin*)ptr);
+}
+
+// --------------------------------------------------
+
+void CVertexBufferReadWrite::touchVertices (uint first, uint last)
+{
+	nlassert (_Parent->checkLockedBuffer());
+	_First = first;
+	_Last = last;
+}
+
+// --------------------------------------------------
+// CVertexBufferRead
+// --------------------------------------------------
+
+const NLMISC::CVector* CVertexBufferRead::getVertexCoordPointer(uint idx) const
+{
+	nlassert (_Parent->checkLockedBuffer());
+	const uint8*	ptr;
+
+	ptr=_Parent->_LockedBuffer;
+	ptr+=(idx*_Parent->_VertexSize);
+	return((const NLMISC::CVector*)ptr);
+}
+
+// --------------------------------------------------
+
+const NLMISC::CVector* CVertexBufferRead::getNormalCoordPointer(uint idx) const
+{
+	nlassert (_Parent->checkLockedBuffer());
+	const uint8*	ptr;
+
+	if ( !(_Parent->_Flags & CVertexBuffer::NormalFlag) )
+	{
+		return(NULL);
+	}
+	ptr=_Parent->_LockedBuffer;
+	ptr+=_Parent->_Offset[CVertexBuffer::Normal];
+	ptr+=idx*_Parent->_VertexSize;
+	return((const NLMISC::CVector*)ptr);
+}
+
+// --------------------------------------------------
+
+const void* CVertexBufferRead::getColorPointer(uint idx) const
+{
+	nlassert (_Parent->checkLockedBuffer());
+	const uint8*	ptr;
+
+	if ( !(_Parent->_Flags & CVertexBuffer::PrimaryColorFlag) )
+	{
+		return(NULL);
+	}
+	ptr=_Parent->_LockedBuffer;
+	ptr+=_Parent->_Offset[CVertexBuffer::PrimaryColor];
+	ptr+=idx*_Parent->_VertexSize;
+	return((const void*)ptr);
+}
+
+// --------------------------------------------------
+
+const void* CVertexBufferRead::getSpecularPointer(uint idx) const
+{
+	nlassert (_Parent->checkLockedBuffer());
+	const uint8*	ptr;
+
+	if ( !(_Parent->_Flags & CVertexBuffer::SecondaryColorFlag) )
+	{
+		return(NULL);
+	}
+	ptr=_Parent->_LockedBuffer;
+	ptr+=_Parent->_Offset[CVertexBuffer::SecondaryColor];
+	ptr+=idx*_Parent->_VertexSize;
+	return((const void*)ptr);
+}
+
+// --------------------------------------------------
+
+const NLMISC::CUV* CVertexBufferRead::getTexCoordPointer(uint idx, uint8 stage) const
+{
+	nlassert (_Parent->checkLockedBuffer());
+	const uint8*	ptr;
+
+	if ( !(_Parent->_Flags & (CVertexBuffer::TexCoord0Flag<<stage)) )
+	{
+		return(NULL);
+	}
+	ptr=_Parent->_LockedBuffer;
+	ptr+=_Parent->_Offset[CVertexBuffer::TexCoord0+stage];
+	ptr+=idx*_Parent->_VertexSize;
+	return((const NLMISC::CUV*)ptr);
+}
+
+// --------------------------------------------------
+
+const float* CVertexBufferRead::getWeightPointer(uint idx, uint8 wgt) const
+{
+	nlassert (_Parent->checkLockedBuffer());
+	const uint8*	ptr;
+
+	nlassert(wgt<CVertexBuffer::MaxWeight);
+	if( !(_Parent->_Flags & CVertexBuffer::WeightFlag))
+		return NULL;
+
+	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
+	ptr+=_Parent->_Offset[CVertexBuffer::Weight]+wgt*sizeof(float);
+
+	return (float*)ptr;
+}
+
+// --------------------------------------------------
+
+const CPaletteSkin* CVertexBufferRead::getPaletteSkinPointer(uint idx) const
+{
+	nlassert (_Parent->checkLockedBuffer());
+	const uint8*	ptr;
+
+	if ( (_Parent->_Flags & CVertexBuffer::PaletteSkinFlag) != CVertexBuffer::PaletteSkinFlag )
+	{
+		return(NULL);
+	}
+	ptr=_Parent->_LockedBuffer;
+	ptr+=_Parent->_Offset[CVertexBuffer::PaletteSkin];
+	ptr+=idx*_Parent->_VertexSize;
+	return((const CPaletteSkin*)ptr);
 }
 
 // --------------------------------------------------

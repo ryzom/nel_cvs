@@ -1,7 +1,7 @@
 /** \file driver_opengl_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.18 2003/05/22 09:02:56 berenguier Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.19 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "stdopengl.h"
 
+#include "driver_opengl.h"
 namespace NL3D {
 
 // ***************************************************************************
@@ -138,19 +139,6 @@ void CDriverGL::setupModelMatrix(const CMatrix& mtx)
 	mat.setPos(mtx.getPos() - _PZBCameraPos);
 	_ModelViewMatrix= _ViewMtx*mat;
 }
-
-// ***************************************************************************
-void CDriverGL::multiplyModelMatrix(const CMatrix& mtx)
-{
-	// Dirt flags.
-	_ModelViewMatrixDirty= true;
-	_RenderSetupDirty= true;
-
-
-	// multiply this modelMatrix with the _ModelViewMatrix.
-	_ModelViewMatrix= _ModelViewMatrix*mtx;
-}
-
 
 // ***************************************************************************
 void CDriverGL::doRefreshRenderSetup()

@@ -17,16 +17,16 @@ using namespace std;
 
 // ***************************************************************************
 
-const CPrimitiveBlock *getRdrPassPrimitiveBlock(const CMeshMRMGeom *mesh, uint lodId, uint renderPass)
+const CIndexBuffer *getRdrPassPrimitiveBlock(const CMeshMRMGeom *mesh, uint lodId, uint renderPass)
 {
 	return &(mesh->getRdrPassPrimitiveBlock(lodId, renderPass));
 }
 
 // ***************************************************************************
 
-const CPrimitiveBlock *getRdrPassPrimitiveBlock(const CMeshMRMSkinnedGeom *mesh, uint lodId, uint renderPass)
+const CIndexBuffer *getRdrPassPrimitiveBlock(const CMeshMRMSkinnedGeom *mesh, uint lodId, uint renderPass)
 {
-	static CPrimitiveBlock block;
+	static CIndexBuffer block;
 	mesh->getRdrPassPrimitiveBlock(lodId, renderPass, block);
 	return &block;
 }
@@ -36,6 +36,8 @@ const CPrimitiveBlock *getRdrPassPrimitiveBlock(const CMeshMRMSkinnedGeom *mesh,
 template<class T>
 void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const std::vector<CMesh::CSkinWeight> &skinWeights, const CVertexBuffer &vertexBuffer)
 {
+	CVertexBufferRead vba;
+	vertexBuffer.lock (vba);
 	uint	i, j;
 
 	// **** Select the Lod.
@@ -61,9 +63,11 @@ void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const st
 	// Parse all triangles.
 	for(i=0;i<meshIn->getNbRdrPass(lodId);i++)
 	{
-		const CPrimitiveBlock *pb = getRdrPassPrimitiveBlock(meshIn, lodId, i);
-		const uint32	*triPtr= pb->getTriPointer();
-		for(j=0;j<pb->getNumTri()*3;j++)
+		const CIndexBuffer *pb = getRdrPassPrimitiveBlock(meshIn, lodId, i);
+		CIndexBufferRead iba;
+		pb->lock (iba);
+		const uint32	*triPtr= iba.getPtr();
+		for(j=0;j<pb->getNumIndexes();j++)
 		{
 			uint	idx= *triPtr;
 			// Flag the vertex with its own index => used.
@@ -99,7 +103,7 @@ void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const st
 		{
 			// Build the vertex
 			T::CShadowVertex	shadowVert;
-			shadowVert.Vertex= *(CVector*)vertexBuffer.getVertexCoordPointer(i);
+			shadowVert.Vertex= *(CVector*)vba.getVertexCoordPointer(i);
 			// Select the best Matrix.
 			CMesh::CSkinWeight		sw= skinWeights[i];
 			float	maxW= 0;
@@ -152,9 +156,11 @@ void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const st
 	// Parse all input tri of the mesh.
 	for(i=0;i<meshIn->getNbRdrPass(lodId);i++)
 	{
-		const CPrimitiveBlock *pb = getRdrPassPrimitiveBlock(meshIn, lodId, i);
-		const uint32	*triPtr= pb->getTriPointer();
-		for(j=0;j<pb->getNumTri()*3;j++)
+		const CIndexBuffer *pb = getRdrPassPrimitiveBlock(meshIn, lodId, i);
+		CIndexBufferRead iba;
+		pb->lock (iba);
+		const uint32	*triPtr= iba.getPtr();
+		for(j=0;j<pb->getNumIndexes();j++)
 		{
 			uint	idx= *triPtr;
 			// Get the real Vertex (ie not the geomporhed one).
@@ -170,12 +176,14 @@ void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const st
 	// Re-Optim VertexCache Hard usage
 	if(shadowTriangles.size())
 	{
-		CPrimitiveBlock		pb;
+		CIndexBuffer		pb;
 		// fill
-		pb.setNumTri(shadowTriangles.size()/3);
+		pb.setNumIndexes(shadowTriangles.size());
+		CIndexBufferReadWrite iba;
+		pb.lock (iba);
 		for(i=0;i<shadowTriangles.size()/3;i++)
 		{
-			pb.setTri(i, shadowTriangles[i*3 + 0],
+			iba.setTri(i*3, shadowTriangles[i*3 + 0],
 						 shadowTriangles[i*3 + 1],
 						 shadowTriangles[i*3 + 2]);
 		}
@@ -183,7 +191,7 @@ void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const st
 		CStripifier		stripifier;
 		stripifier.optimizeTriangles(pb, pb);
 		// get.
-		const uint32	*triPtr= pb.getTriPointer();
+		const uint32	*triPtr= iba.getPtr();
 		for(i=0;i<shadowTriangles.size();i++)
 		{
 			shadowTriangles[i]= *triPtr;

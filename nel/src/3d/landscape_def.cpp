@@ -1,7 +1,7 @@
 /** \file landscape_def.cpp
  * Definition for Landscape
  *
- * $Id: landscape_def.cpp,v 1.7 2002/08/26 13:01:42 berenguier Exp $
+ * $Id: landscape_def.cpp,v 1.8 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,7 +77,8 @@ CLandscapeVBAllocator	*CLandscapeGlobals::CurrentTileVBAllocator= NULL;
 
 
 IDriver					*CLandscapeGlobals::PatchCurrentDriver= NULL;
-std::vector<uint32>		CLandscapeGlobals::PassTriArray;
+CIndexBuffer			CLandscapeGlobals::PassTriArray;
+CIndexBufferReadWrite	CLandscapeGlobals::PassTriArrayIBA;
 uint					NL3D_LandscapeGlobals_PassNTri= 0;
 uint32					*NL3D_LandscapeGlobals_PassTriCurPtr= NULL;
 

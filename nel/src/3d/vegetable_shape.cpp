@@ -1,7 +1,7 @@
 /** \file vegetable_shape.cpp
  * <File description>
  *
- * $Id: vegetable_shape.cpp,v 1.8 2002/04/04 14:45:32 berenguier Exp $
+ * $Id: vegetable_shape.cpp,v 1.9 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,16 +92,23 @@ void		CVegetableShape::build(CVegetableShapeBuild &vbuild)
 	//---------
 	uint	i;
 	// resisz
-	TriangleIndices.resize(vbuild.PB.getNumTri() * 3);
-	uint32	*srcTri= vbuild.PB.getTriPointer();
+	TriangleIndices.resize(vbuild.PB.getNumIndexes());
+	CIndexBufferRead ibaRead;
+	vbuild.PB.lock (ibaRead);
+	const uint32	*srcTri= ibaRead.getPtr();
 	// fill
-	for(i=0; i<vbuild.PB.getNumTri(); i++)
+	for(i=0; i<vbuild.PB.getNumIndexes()/3; i++)
 	{
 		TriangleIndices[i*3+0]= *(srcTri++);
 		TriangleIndices[i*3+1]= *(srcTri++);
 		TriangleIndices[i*3+2]= *(srcTri++);
 	}
 
+
+	CVertexBufferRead vba;
+	vbuild.VB.lock (vba);
+	CVertexBufferReadWrite vbaOut;
+	VB.lock (vbaOut);
 
 	// Fill vertices.
 	//---------
@@ -118,7 +125,7 @@ void		CVegetableShape::build(CVegetableShapeBuild &vbuild)
 		// get the maximum Z.
 		for(i=0;i<nbVerts;i++)
 		{
-			float	z= ((CVector*)vbuild.VB.getVertexCoordPointer(i))->z;
+			float	z= (vba.getVertexCoordPointer(i))->z;
 			maxZ= max(z, maxZ);
 		}
 		// if no positive value, bend will always be 0.
@@ -130,29 +137,30 @@ void		CVegetableShape::build(CVegetableShapeBuild &vbuild)
 	for(i=0;i<nbVerts;i++)
 	{
 		// Position.
-		CVector		*srcPos= (CVector*)vbuild.VB.getVertexCoordPointer(i);
-		CVector		*dstPos= (CVector*)VB.getVertexCoordPointer(i);
+		const CVector		*srcPos= vba.getVertexCoordPointer(i);
+		CVector		*dstPos= vbaOut.getVertexCoordPointer(i);
 		*dstPos= *srcPos;
 
 		// Normal
 		if(Lighted)
 		{
-			CVector		*srcNormal= (CVector*)vbuild.VB.getNormalCoordPointer(i);
-			CVector		*dstNormal= (CVector*)VB.getNormalCoordPointer(i);
+			const CVector *srcNormal= vba.getNormalCoordPointer(i);
+			CVector		*dstNormal= vbaOut.getNormalCoordPointer(i);
 			*dstNormal= *srcNormal;
 		}
 
 		// Texture.
-		CUV		*srcUV= (CUV*)vbuild.VB.getTexCoordPointer(i, 0);
-		CUV		*dstUV= (CUV*)VB.getTexCoordPointer(i, 0);
+		const CUV		*srcUV= vba.getTexCoordPointer(i, 0);
+		CUV		*dstUV= vbaOut.getTexCoordPointer(i, 0);
 		*dstUV= *srcUV;
 
 		// Bend.
 		// copy to texture stage 1.
-		CUV		*dstUVBend= (CUV*)VB.getTexCoordPointer(i, 1);
+		CUV		*dstUVBend= vbaOut.getTexCoordPointer(i, 1);
 		if(bendFromColor)
 		{
-			CRGBA	*srcColor= (CRGBA*)vbuild.VB.getColorPointer(i);
+			// todo hulud d3d vertex color RGBA / BGRA
+			const CRGBA	*srcColor= (const CRGBA*)vba.getColorPointer(i);
 			// Copy and scale by MaxBendWeight
 			dstUVBend->U= (srcColor->R / 255.f) * vbuild.MaxBendWeight;
 		}

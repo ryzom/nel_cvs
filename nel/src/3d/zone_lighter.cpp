@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.34 2004/01/15 17:33:18 lecroart Exp $
+ * $Id: zone_lighter.cpp,v 1.35 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1718,6 +1718,8 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshGeom &mes
 {
 	// Get the vertex buffer
 	const CVertexBuffer &vb=meshGeom.getVertexBuffer();
+	CVertexBufferRead vba;
+	vb.lock (vba);
 
 	// For each matrix block
 	uint numBlock=meshGeom.getNbMatrixBlock();
@@ -1728,7 +1730,7 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshGeom &mes
 		for (uint pass=0; pass<numRenderPass; pass++)
 		{
 			// Get the primitive block
-			const CPrimitiveBlock &primitive=meshGeom.getRdrPassPrimitiveBlock ( block, pass);
+			const CIndexBuffer &primitive=meshGeom.getRdrPassPrimitiveBlock ( block, pass);
 
 			// Get the material
 			const CMaterial &material = meshBase.getMaterial (meshGeom.getRdrPassMaterial ( block, pass));
@@ -1744,15 +1746,17 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshGeom &mes
 			if (getTexture (material, texture, clampU, clampV, alphaTestThreshold, doubleSided))
 			{
 				// Dump triangles
-				const uint32* triIndex=primitive.getTriPointer ();
-				uint numTri=primitive.getNumTri ();
+				CIndexBufferRead iba;
+				primitive.lock (iba);
+				const uint32* triIndex=iba.getPtr ();
+				uint numTri=primitive.getNumIndexes ()/3;
 				uint tri;
 				for (tri=0; tri<numTri; tri++)
 				{
 					// Vertex
-					CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3]));
-					CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+1]));
-					CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+2]));
+					CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
+					CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
+					CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
 
 					// UV
 					float u[3];
@@ -1760,7 +1764,7 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshGeom &mes
 					for (uint i=0; i<3; i++)
 					{
 						// Get UV coordinates
-						float *uv = (float*)vb.getTexCoordPointer (triIndex[tri*3+i], 0);
+						const float *uv = (const float*)vba.getTexCoordPointer (triIndex[tri*3+i], 0);
 						if (uv)
 						{
 							// Copy it
@@ -1771,43 +1775,6 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshGeom &mes
 
 					// Make a triangle
 					triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), doubleSided, texture, clampU, clampV, u, v, 
-						alphaTestThreshold));
-				}
-
-				// Dump quad
-				triIndex=primitive.getQuadPointer ();
-				numTri=primitive.getNumQuad ();
-				for (tri=0; tri<numTri; tri++)
-				{
-					// Vertex
-					CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4]));
-					CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+1]));
-					CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+2]));
-					CVector v3=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+3]));
-
-					// UV
-					float u[4];
-					float v[4];
-					for (uint i=0; i<4; i++)
-					{
-						// Get UV coordinates
-						float *uv = (float*)vb.getTexCoordPointer (triIndex[tri*4+i], 0);
-						if (uv)
-						{
-							// Copy it
-							u[i] = uv[0];
-							v[i] = uv[1];
-						}
-					}
-
-					// Make 2 triangles
-					triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), doubleSided, texture, clampU, clampV, u, v, 
-						alphaTestThreshold));
-					u[1] = u[2];
-					u[2] = u[3];
-					v[1] = v[2];
-					v[2] = v[3];
-					triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v2, v3), doubleSided, texture, clampU, clampV, u, v, 
 						alphaTestThreshold));
 				}
 			}
@@ -1888,13 +1855,15 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshMRMGeom &
 {
 	// Get the vertex buffer
 	const CVertexBuffer &vb=meshGeom.getVertexBuffer();
+	CVertexBufferRead vba;
+	vb.lock (vba);
 
 	// For each render pass
 	uint numRenderPass=meshGeom.getNbRdrPass(0);
 	for (uint pass=0; pass<numRenderPass; pass++)
 	{
 		// Get the primitive block
-		const CPrimitiveBlock &primitive=meshGeom.getRdrPassPrimitiveBlock ( 0, pass);
+		const CIndexBuffer &primitive=meshGeom.getRdrPassPrimitiveBlock ( 0, pass);
 
 		// Get the material
 		const CMaterial &material = meshBase.getMaterial (meshGeom.getRdrPassMaterial (0, pass));
@@ -1910,15 +1879,17 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshMRMGeom &
 		if (getTexture (material, texture, clampU, clampV, alphaTestThreshold, doubleSided))
 		{
 			// Dump triangles
-			const uint32* triIndex=primitive.getTriPointer ();
-			uint numTri=primitive.getNumTri ();
+			CIndexBufferRead iba;
+			primitive.lock (iba);
+			const uint32* triIndex=iba.getPtr ();
+			uint numTri=primitive.getNumIndexes ()/3;
 			uint tri;
 			for (tri=0; tri<numTri; tri++)
 			{
 				// Vertex
-				CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3]));
-				CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+1]));
-				CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+2]));
+				CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
+				CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
+				CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
 
 				// UV
 				float u[3];
@@ -1926,7 +1897,7 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshMRMGeom &
 				for (uint i=0; i<3; i++)
 				{
 					// Get UV coordinates
-					float *uv = (float*)vb.getTexCoordPointer (triIndex[tri*3+i], 0);
+					float *uv = (float*)vba.getTexCoordPointer (triIndex[tri*3+i], 0);
 					if (uv)
 					{
 						// Copy it
@@ -1937,43 +1908,6 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshMRMGeom &
 
 				// Make a triangle
 				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), doubleSided, texture, clampU, clampV, u, v, 
-					alphaTestThreshold));
-			}
-
-			// Dump quad
-			triIndex=primitive.getQuadPointer ();
-			numTri=primitive.getNumQuad ();
-			for (tri=0; tri<numTri; tri++)
-			{
-				// Vertex
-				CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4]));
-				CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+1]));
-				CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+2]));
-				CVector v3=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+3]));
-
-				// UV
-				float u[4];
-				float v[4];
-				for (uint i=0; i<4; i++)
-				{
-					// Get UV coordinates
-					float *uv = (float*)vb.getTexCoordPointer (triIndex[tri*4+i], 0);
-					if (uv)
-					{
-						// Copy it
-						u[i] = uv[0];
-						v[i] = uv[1];
-					}
-				}
-
-				// Make 2 triangles
-				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), doubleSided, texture, clampU, clampV, u, v, 
-					alphaTestThreshold));
-				u[1] = u[2];
-				u[2] = u[3];
-				v[1] = v[2];
-				v[2] = v[3];
-				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v2, v3), doubleSided, texture, clampU, clampV, u, v, 
 					alphaTestThreshold));
 			}
 		}

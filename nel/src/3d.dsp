@@ -616,6 +616,14 @@ SOURCE=.\3d\dru.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\index_buffer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\index_buffer.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\light.cpp
 # End Source File
 # Begin Source File
@@ -629,14 +637,6 @@ SOURCE=.\3d\material.cpp
 # Begin Source File
 
 SOURCE=.\3d\material.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\primitive_block.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\primitive_block.h
 # End Source File
 # Begin Source File
 
@@ -661,14 +661,6 @@ SOURCE=.\3d\vertex_buffer.cpp
 # Begin Source File
 
 SOURCE=.\3d\vertex_buffer.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\vertex_buffer_hard.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\vertex_buffer_hard.h
 # End Source File
 # Begin Source File
 
@@ -2734,6 +2726,7 @@ SOURCE=.\3d\std3d.h
 # Begin Source File
 
 SOURCE=.\3d\vertex_buffer_heap.cpp
+# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 

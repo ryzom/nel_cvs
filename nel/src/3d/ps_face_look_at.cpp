@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.8 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_face_look_at.cpp,v 1.9 2004/03/19 10:11:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,7 +120,9 @@ public:
 			do
 			{			
 				// restart at the beginning of the vertex buffer
-				ptPos = (uint8 *) vb.getVertexCoordPointer();
+				CVertexBufferReadWrite vba;
+				vb.lock (vba);
+				ptPos = (uint8 *) vba.getVertexCoordPointer();
 				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
 
 				if (la._SizeScheme)
@@ -229,7 +231,8 @@ public:
 					}					
 				}				
 				// uint64 startTick = NLMISC::CTime::getPerformanceTime();				
-				driver->renderQuads(la._Mat, 0, toProcess);				
+				vba.unlock();
+				driver->renderRawQuads(la._Mat, 0, toProcess);				
 				// PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;
 				leftToDo -= toProcess;				
 			}
@@ -242,7 +245,9 @@ public:
 			do
 			{			
 				// restart at the beginning of the vertex buffer
-				ptPos = (uint8 *) vb.getVertexCoordPointer();
+				CVertexBufferReadWrite vba;
+				vb.lock (vba);
+				ptPos = (uint8 *) vba.getVertexCoordPointer();
 				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
 				if (la._SizeScheme)
 				{
@@ -364,7 +369,8 @@ public:
 				NLMISC::OptFastFloorEnd();				
 				//tmp
 				// uint64 startTick = NLMISC::CTime::getPerformanceTime();				
-				driver->renderQuads(la._Mat, 0, toProcess);				
+				vba.unlock();
+				driver->renderRawQuads(la._Mat, 0, toProcess);				
 				// PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;
 				leftToDo -= toProcess;
 			}
@@ -411,7 +417,9 @@ public:
 			do
 			{			
 				// restart at the beginning of the vertex buffer
-				ptPos = (uint8 *) vb.getVertexCoordPointer();
+				CVertexBufferReadWrite vba;
+				vb.lock (vba);
+				ptPos = (uint8 *) vba.getVertexCoordPointer();
 				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
 
 				if (la._SizeScheme)
@@ -552,7 +560,8 @@ public:
 					}		
 					//tmp
 					//uint64 startTick = NLMISC::CTime::getPerformanceTime();					
-					driver->renderQuads(la._Mat, 0, toProcess);					
+					vba.unlock();
+					driver->renderRawQuads(la._Mat, 0, toProcess);					
 					//PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;
 				}
 				else
@@ -693,7 +702,8 @@ public:
 						currentSize += currentSizeStep;					
 					}
 					//uint64 startTick = NLMISC::CTime::getPerformanceTime();					
-					driver->renderOrientedQuads(la._Mat, 0, toProcess);
+					vba.unlock();
+					driver->renderRawQuads(la._Mat, 0, toProcess);
 					//PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;
 				}							
 				leftToDo -= toProcess;				
@@ -707,7 +717,9 @@ public:
 			do
 			{			
 				// restart at the beginning of the vertex buffer
-				ptPos = (uint8 *) vb.getVertexCoordPointer();
+				CVertexBufferReadWrite vba;
+				vb.lock (vba);
+				ptPos = (uint8 *) vba.getVertexCoordPointer();
 				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
 				if (la._SizeScheme)
 				{
@@ -824,7 +836,8 @@ public:
 				NLMISC::OptFastFloorEnd();											
 				//tmp
 				// uint64 startTick = NLMISC::CTime::getPerformanceTime();				
-				driver->renderQuads(la._Mat, 0, toProcess);				
+				vba.unlock();
+				driver->renderRawQuads(la._Mat, 0, toProcess);				
 				//PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;*/
 				leftToDo -= toProcess;
 			}

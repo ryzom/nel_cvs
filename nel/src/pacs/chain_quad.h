@@ -1,7 +1,7 @@
 /** \file chain_quad.h
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.h,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: chain_quad.h,v 1.3 2002/12/18 15:07:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,18 @@ public:
 
 	/// serial.
 	void								serial(NLMISC::IStream &f);
+
+	/// clear
+	void			clear()
+	{
+		NLMISC::contReset(_Quad);
+		_Width = 0;
+		_Height = 0;
+		_X = 0;
+		_Y = 0;
+		delete [] _QuadData;
+		_QuadDataLen = 0;
+	}
 
 
 // **************************

@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.10 2000/12/14 15:30:57 lecroart Exp $
+ * $Id: i18n.cpp,v 1.11 2000/12/18 13:49:10 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -25,9 +25,10 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/i18n.h"
 
 #include <sstream>
+
+#include "nel/misc/i18n.h"
 
 using namespace std;
 
@@ -234,11 +235,11 @@ void CI18N::load (uint32 lid)
 	// if the file does not exist, it'll be create automatically
 	if (!cf.open (_FileName, true))
 	{
-		nlwarning ("Could not open file \"%s\" (this file should contain the %s language (lid:%d))", _FileName.c_str (), _LanguageNames[lid].toString (), lid);
+		nlwarning ("Could not open file \"%s\" (this file should contain the %s language (lid:%d))", _FileName.c_str (), _LanguageNames[lid].toString().c_str(), lid);
 		createLanguageFile (lid);
 		return;
 	}
-	nldebug ("Loading file \"%s\" (this file should contain the %s language (lid:%d))", _FileName.c_str (), _LanguageNames[lid].toString (), lid);
+	nldebug ("Loading file \"%s\" (this file should contain the %s language (lid:%d))", _FileName.c_str (), _LanguageNames[lid].toString ().c_str(), lid);
 
 	bool startstr = false, equal = false, second = false;
 	int line = 1;

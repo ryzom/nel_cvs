@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.26 2001/11/22 08:49:23 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.27 2001/11/26 13:16:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1676,57 +1676,7 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 							   NLMISC::CVector2f(B.getK().x, B.getK().y));
 
 
-			/** compute the texture offset and scale
-			  * U must be mapped along the x coordinates
-			  * V must be mapped along the y coordinate
-			  */
-	/*
-			const std::vector<NLMISC::CVector2f> &v = projDest.Vertices;
-			float minX = v[0].x, maxX = v[0].x;
-			float minY = v[0].y, maxY = v[0].y;
 
-			uint k;
-			for (k = 0; k < CHNumVerts; ++k)
-			{
-				minX = std::min(v[k].x, minX);
-				maxX = std::max(v[k].x, maxX);
-				minY = std::min(v[k].y, minY);
-				maxY = std::max(v[k].y, maxY);
-			}
-
-			// gets the UVs from the mesh
-			float minU = pMesh->getTVert(0).x;
-			float maxU = pMesh->getTVert(0).x;
-
-
-			float minV = 1.f - pMesh->getTVert(0).y;
-			float maxV = 1.f - pMesh->getTVert(0).y;
-			
-			for (k = 0; k < (uint) numVerts; ++k)
-			{
-				minU = std::min(pMesh->getTVert(k).x, minU);
-				maxU = std::max(pMesh->getTVert(k).x, maxU);
-				minV = std::min(1.f - pMesh->getTVert(k).y, minV);
-				maxV = std::max(1.f - pMesh->getTVert(k).y, maxV);
-			}
-
-
-			NLMISC::CVector2f scale;
-			NLMISC::CVector2f offset;
-			if (minX != maxX && minY != maxY)
-			{
-				scale.set((maxU - minU) / (maxX - minX), (maxV - minV) / (minY - maxY));
-				offset.set((maxX * minU - minX * maxU) / (maxX - minX),
-						   (maxY * minV - minY * maxV)  / (maxY - minY));
-						   
-			}
-			else
-			{
-				scale.set(0, 0);
-				offset.set(0, 0);
-			}			
-			ws->setColorMapPos(scale, offset);
-			*/
 		}
 
 		
@@ -1754,10 +1704,11 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 
 
 
+
 		// Delete the triObject if we should...
 		if (deleteIt)
 			delete tri;
-
+		nlinfo("WaterShape : build succesful");
 		return ws;
 	}
 	else

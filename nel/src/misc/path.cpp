@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.47 2002/07/10 17:08:10 lecroart Exp $
+ * $Id: path.cpp,v 1.48 2002/07/16 14:15:28 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1078,5 +1078,29 @@ void CFile::checkFileChange (TTime frequency)
 }
 
 
+static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool failIfExists = false)
+{
+	if (!dest || !src) return false;
+	if (!strlen(dest) || !strlen(src)) return false;	
+#ifdef NL_OS_WINDOWS
+	std::string dosdest = CPath::standardizeDosPath(dest);
+	std::string dossrc = CPath::standardizeDosPath(src);
+
+	return copyFile  ? CopyFile(dossrc.c_str(), dosdest.c_str(), failIfExists) != FALSE
+					 : MoveFile(dossrc.c_str(), dosdest.c_str()) != FALSE;
+#else
+	nlstop; // not implemented yet
+#endif	
+}
+
+bool CFile::copyFile(const char *dest, const char *src, bool failIfExists /*=false*/)
+{
+	return CopyMoveFile(dest, src, true, failIfExists);
+}
+
+bool CFile::moveFile(const char *dest,const char *src)
+{
+	return CopyMoveFile(dest, src, false);
+}
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.25 2002/07/02 15:56:05 lecroart Exp $
+ * $Id: path.h,v 1.26 2002/07/16 14:15:21 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -288,6 +288,18 @@ struct CFile
 	 * \param frequency the time in millisecond that we wait before check another time (1s by default).
 	 */
 	static void checkFileChange (TTime frequency = 1000);
+
+	/** Copy a file 
+	  * NB this keeps file attributes
+	  * \param failIfExists If the destination file exists, nothing is done, and it returns false.
+	  * \return true if the copy succeeded
+	  */
+	static bool copyFile(const char *dest, const char *src, bool failIfExists = false);
+
+	/** Move a file
+	  * NB this keeps file attributes
+	  */
+	static bool moveFile(const char *dest, const char *src);	  
 };
 
 

@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.11 2004/02/27 17:41:06 fleury Exp $
+ * $Id: eid_translator.h,v 1.12 2004/03/01 18:22:10 fleury Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -60,8 +60,8 @@ public:
 	void				registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName);
 	void				unregisterEntity (const CEntityId &eid);
 
-	// set an association entityName / entityStringId
-	void				setEntityNameStringId(const ucstring &entityName, uint32 stringId);
+	// set an association entityName / entityStringId, return true if association has been set
+	bool				setEntityNameStringId(const ucstring &entityName, uint32 stringId);
 	// get string id for entityId
 	uint32				getEntityNameStringId(const CEntityId &eid);
 	

@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.21 2004/03/01 10:01:07 fleury Exp $
+ * $Id: eid_translator.cpp,v 1.22 2004/03/01 18:22:19 fleury Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -517,7 +517,7 @@ void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entit
 	}
 }
 
-void CEntityIdTranslator::setEntityNameStringId(const ucstring &entityName, uint32 stringId)
+bool CEntityIdTranslator::setEntityNameStringId(const ucstring &entityName, uint32 stringId)
 {
 	const reit itEnd = RegisteredEntities.end();
 	for (reit it = RegisteredEntities.begin(); it != itEnd ; ++it)
@@ -525,9 +525,11 @@ void CEntityIdTranslator::setEntityNameStringId(const ucstring &entityName, uint
 		if ((*it).second.EntityName == entityName)
 		{
 			(*it).second.EntityNameStringId = stringId;
-			return;
+			return true;
 		}
 	}
+
+	return false;
 }
 
 uint32 CEntityIdTranslator::getEntityNameStringId(const CEntityId &eid)

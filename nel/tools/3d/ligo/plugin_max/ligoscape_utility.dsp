@@ -225,6 +225,10 @@ SOURCE=.\ligoscript.txt
 # End Source File
 # Begin Source File
 
+SOURCE=.\scripts\nel_ligo_export.ms
+# End Source File
+# Begin Source File
+
 SOURCE=.\macroscripts\nel_ligoscape.mcr
 # End Source File
 # Begin Source File

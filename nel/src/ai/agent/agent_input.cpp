@@ -1,7 +1,7 @@
 /** \file agent_input.cpp
  * <File description>
  *
- * $Id: agent_input.cpp,v 1.2 2001/03/26 14:50:01 chafik Exp $
+ * $Id: agent_input.cpp,v 1.3 2001/03/27 08:13:02 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,13 +28,21 @@
 
 namespace NLAIAGENT
 {
-
 IAgentInput::IAgentInput():_ActiveInput(false),_LocalValue(NULL)
 {	 
 }
 
+IAgentInput::IAgentInput(IObjectIA *o):_ActiveInput(false),_LocalValue(o)
+{	 
+}
+
+IAgentInput::IAgentInput(const IAgentInput &c):_ActiveInput(c._ActiveInput),_LocalValue(c._LocalValue != NULL? (IObjectIA *)c._LocalValue->clone() : NULL)
+{
+}
+
 IAgentInput::~IAgentInput()
 {
+	if(_LocalValue != NULL) _LocalValue->release();
 }
 
 void IAgentInput::addInputConnection(IConnectIA* obj)
@@ -64,6 +72,12 @@ const IObjectIA::CProcessResult IAgentInput::runMsg(COnChangeMsg &msg)
 	return IAgentInput::_ConnexionList.sendMessage(&msg);
 }
 
+void IAgentInput::setValue(IObjectIA *o)
+{
+	if(_LocalValue != NULL) _LocalValue->release();
+	_LocalValue = o;
+}
+
 const IObjectIA::CProcessResult&  IAgentInput::run ()
 {
 	if (IAgentInput::_ActiveInput)
@@ -72,7 +86,7 @@ const IObjectIA::CProcessResult&  IAgentInput::run ()
 		if (!(*value == *_LocalValue))
 		{
 			// If the component value as changed, we send a message to the list of interested IConnectIA.
-			_LocalValue = value;
+			setValue((IObjectIA*) value);
 			COnChangeMsg msg;
 			IAgentInput::_ConnexionList.sendMessage(&msg);
 		}
@@ -94,4 +108,10 @@ void IAgentInput::load(NLMISC::IStream &is)
 	is.serial(_ConnexionList);
 }
 
+
+bool IAgentInput::isEqual(const IBasicObjectIA &a) const
+{
+	if(_LocalValue != NULL) return _LocalValue->isEqual(a);
+	return false;
+}
 } // NLAIAGENT

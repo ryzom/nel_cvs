@@ -182,11 +182,7 @@
 															NLAIC::CTypeOfOperator::opInfEq | 
 															NLAIC::CTypeOfOperator::opSupEq |
 															NLAIC::CTypeOfOperator::opNot |
-															NLAIC::CTypeOfOperator::opDiff));
-
-
-	/*const NLAIC::CIdentType CPaireType::IdPaireType("Paire",NLAIC::CSelfClassFactory(CPaireType( CStringType(CStringVarName("XX")),BorneDigitalType(-1,1))),
-															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));*/
+															NLAIC::CTypeOfOperator::opDiff));	
 	
 	const NLAIC::CIdentType CVectorGroupManager::IdVectorGroupManager("VectorGroupManager",NLAIC::CSelfClassFactory(CVectorGroupManager()),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: new_service.cpp,v 1.3 2001/02/23 13:09:27 lecroart Exp $
+ * $Id: new_service.cpp,v 1.4 2001/02/23 13:53:30 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -460,7 +460,7 @@ sint INewService::main (int argc, char **argv)
 
 		try
 		{
-			nlerror ("NeL Exception: Error running the service \"%s\": %s", _Name, e.what());
+			nlerror ("NeL Exception: Error running the service \"%s\": %s", _Name.c_str(), e.what());
 		}
 		catch (EFatalError &)
 		{
@@ -522,7 +522,7 @@ sint INewService::main (int argc, char **argv)
 		setStatus (EXIT_FAILURE);
 		try
 		{
-			nlerror ("NeL Exception: Error releasing the service \"%s\": %s", _Name, e.what());
+			nlerror ("NeL Exception: Error releasing the service \"%s\": %s", _Name.c_str(), e.what());
 		}
 		catch (EFatalError &)
 		{

@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.13 2002/05/13 07:49:25 besson Exp $
+ * $Id: async_file_manager.cpp,v 1.14 2002/05/21 10:01:30 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -355,9 +355,16 @@ void CAsyncFileManager::CIGLoadUser::run (void)
 	try
 	{
 		CInstanceGroupUser *pIG = new CInstanceGroupUser();
-		pIG->init (_IGName);
-
-		*_ppIG = pIG;
+		if (pIG->init (_IGName))
+		{		
+			*_ppIG = pIG;
+		}
+		else
+		{
+			*_ppIG = (UInstanceGroup*)-1;
+			delete this;
+			return;
+		}
 	}
 	catch(EPathNotFound &)
 	{

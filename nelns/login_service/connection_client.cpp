@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_client.cpp,v 1.8 2002/01/23 10:55:13 lecroart Exp $
+ * $Id: connection_client.cpp,v 1.9 2002/03/04 10:24:54 lecroart Exp $
  *
  */
 
@@ -446,9 +446,16 @@ static void cbClientDisconnection (const string &serviceName, TSockId from, void
 	{
 		if ((*it).SockId == from)
 		{
-			// remove the authorized user because he's not here anymore
-		  // bug? the second param was NULL??? really?
-		        disconnectClient (*it, false, false);
+			if ((*it).State == CUser::Awaiting)
+			{
+				// the user is disconnected from me because he have to connect to the front end right now, so we wait...
+			}
+			else
+			{
+				// prematurated disconnection, clean everything
+				disconnectClient (*it, false, false);
+			}
+			(*it).SockId = NULL;
 			return;
 		}
 	}

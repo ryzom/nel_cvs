@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.12 2002/02/11 16:07:18 lecroart Exp $
+ * $Id: login_service.cpp,v 1.13 2002/03/04 10:24:54 lecroart Exp $
  *
  */
 
@@ -127,7 +127,7 @@ void checkClients ()
 
 void disconnectClient (CUser &user, bool disconnectClient, bool disconnectShard)
 {
-	nlinfo ("User %d '%s' was disconnected from me (%d %d %d)", user.Id, user.Login.c_str(), user.State, disconnectClient, disconnectShard);
+	nlinfo ("User %d '%s' need to be disconnect (%d %d %d)", user.Id, user.Login.c_str(), user.State, disconnectClient, disconnectShard);
 
 	switch (user.State)
 	{
@@ -139,12 +139,10 @@ void disconnectClient (CUser &user, bool disconnectClient, bool disconnectShard)
 		{
 			CNetManager::getNetBase("LS")->disconnect(user.SockId);
 		}
-		user.SockId = NULL;
 		user.Cookie.clear ();
 		break;
 
 	case CUser::Awaiting:
-		user.ShardId = NULL;
 		break;
 
 	case CUser::Online:
@@ -163,6 +161,7 @@ void disconnectClient (CUser &user, bool disconnectClient, bool disconnectShard)
 		break;
 	}
 
+	user.SockId = NULL;
 	user.State = CUser::Offline;
 }
 
@@ -501,6 +500,27 @@ NLNET_SERVICE_MAIN (CLoginService, "LS", "login_service", 49999, EmptyCallbackAr
 
 
 //
+// Variables
+//
+
+NLMISC_DYNVARIABLE(uint32, online_users_nb, "number of connected users")
+{
+	// we can only read the value
+	if (get)
+	{
+		uint32 nbusers = 0;
+		for (uint i = 0; i < Users.size(); i++)
+		{
+			if (Users[i].State == CUser::Online)
+				nbusers++;
+		}
+		*pointer = nbusers;
+	}
+}
+
+
+
+//
 // Commands
 //
 
@@ -521,7 +541,7 @@ NLMISC_COMMAND (shards, "displays the list of all registered shards", "")
 	return true;
 }
 
-NLMISC_COMMAND (users, "displays the list of all registered users", "")
+NLMISC_COMMAND (registered_users, "displays the list of all registered users", "")
 {
 	if(args.size() != 0) return false;
 
@@ -531,6 +551,29 @@ NLMISC_COMMAND (users, "displays the list of all registered users", "")
 		log.displayNL ("> %d %d '%s' '%s' '%s' '%s' '%s'", Users[i].Id, Users[i].State, Users[i].Login.c_str(), Users[i].Cookie.toString().c_str(), Users[i].SockId->asString().c_str(), Users[i].ShardId->asString().c_str(), Users[i].ShardPrivilege.c_str());
 	}
 	log.displayNL ("End ot the list");
+
+	checkClients ();
+
+	return true;
+}
+
+NLMISC_COMMAND (online_users, "displays the list of online users", "")
+{
+	if(args.size() != 0) return false;
+
+	uint32 nbusers = 0, nbauth = 0, nbwait = 0;
+	log.displayNL ("Display the online users :", Users.size());
+	for (uint i = 0; i < Users.size(); i++)
+	{
+		if (Users[i].State == CUser::Online)
+		{
+			log.displayNL ("> %d '%s' '%s' '%s' '%s' '%s'", Users[i].Id, Users[i].Login.c_str(), Users[i].Cookie.toString().c_str(), Users[i].SockId->asString().c_str(), Users[i].ShardId->asString().c_str(), Users[i].ShardPrivilege.c_str());
+			nbusers++;
+		}
+		else if (Users[i].State == CUser::Awaiting) nbwait++;
+		else if (Users[i].State == CUser::Authorized) nbauth++;
+	}
+	log.displayNL ("End ot the list (%d online users, %d authorized, %d awaiting)", nbusers, nbauth, nbwait);
 
 	checkClients ();
 

@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.5 2002/02/11 16:07:18 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.6 2002/03/04 10:24:54 lecroart Exp $
  *
  */
 
@@ -175,17 +175,16 @@ static void cbWSShardChooseShard (CMessage &msgin, TSockId from, CCallbackNetBas
 		{
 			CNetManager::send ("LS", msgout, (*it).SockId);
 
-			disconnectClient (*it, true, false);
-
 			if (reason.empty())
 			{
 				// Now we wait the message from WS saying that the client is well connected to the shard
 				(*it).State = CUser::Awaiting;
+				(*it).Cookie.clear ();
 			}
 			else
 			{
 				// the WS haven't accepted the client
-				(*it).State = CUser::Offline;
+				disconnectClient (*it, true, false);
 			}
 
 			return;
@@ -324,7 +323,7 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 	uint32 Id;
 	uint8 con;
 	msgin.serial (Id);
-	msgin.serial (con);
+	msgin.serial (con);	// con=1 means a client is connected on the shard, 0 means a client disconnected
 
 	sint pos = findUser (Id);
 	if (pos == -1)
@@ -352,6 +351,7 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 
 	if (con == 1)
 	{
+		// new client on the shard
 		Users[pos].State = CUser::Online;
 		Users[pos].ShardId = from;
 
@@ -374,6 +374,7 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 	}
 	else
 	{
+		// client removed from the shard (true is for potential other client with the same id that wait for a connection)
 		disconnectClient (Users[pos], true, false);
 
 		sint ShardPos = findShard(from);
@@ -382,7 +383,7 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 		else
 			nlwarning ("user disconnected shard isn't in the shard list");
 		
-		nldebug ("Id %d is discconnected from the shard", Id);
+		nldebug ("Id %d is disconnected from the shard", Id);
 		Output.displayNL ("###: %3d User disconnected from the shard", Id);
 
 		nbPlayer--;

@@ -1,7 +1,7 @@
 /** \file login_service.h
  * <File description>
  *
- * $Id: login_service.h,v 1.7 2002/02/11 16:07:18 lecroart Exp $
+ * $Id: login_service.h,v 1.8 2002/03/04 10:24:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,9 +139,15 @@ void readPlayerDatabase ();
 void writePlayerDatabase ();
 void displayShards ();
 void displayUsers ();
-void disconnectClient (CUser &user, bool disconnectClient, bool disconnectShard);
 sint findUser (uint32 Id);
 void beep (uint freq = 400, uint nb = 2, uint beepDuration = 100, uint pauseDuration = 100);
+
+/*
+ * disconnectClient is true if we need to disconnect the client on connected on the login system (during the login process)
+ * disconnectShard is true if we need to send a message to the shard to disconnect the client from the shard
+ */
+void disconnectClient (CUser &user, bool disconnectClient, bool disconnectShard);
+
 
 
 #endif // NL_LOGIN_SERVICE_H

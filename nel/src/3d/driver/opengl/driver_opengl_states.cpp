@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.13 2002/02/11 10:01:34 berenguier Exp $
+ * $Id: driver_opengl_states.cpp,v 1.14 2002/02/26 13:58:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -358,6 +358,16 @@ void			CDriverGLStates::setShininess(float shin)
 
 
 // ***************************************************************************
+static void	convColor(CRGBA col, GLfloat glcol[4])
+{
+	static	const float	OO255= 1.0f/255;
+	glcol[0]= col.R*OO255;
+	glcol[1]= col.G*OO255;
+	glcol[2]= col.B*OO255;
+	glcol[3]= col.A*OO255;
+}
+
+// ***************************************************************************
 void			CDriverGLStates::setVertexColorLighted(bool enable)
 {
 #ifndef NL3D_GLSTATE_DISABLE_CACHE
@@ -374,6 +384,15 @@ void			CDriverGLStates::setVertexColorLighted(bool enable)
 		else
 		{
 			glDisable (GL_COLOR_MATERIAL);
+			// Since we leave glColorMaterial mode, GL diffuse is now scracth. reset him to current value.
+			CRGBA	diffCol;
+			diffCol.R= (_CurDiffuse >> 24) & 255;
+			diffCol.G= (_CurDiffuse >> 16) & 255;
+			diffCol.B= (_CurDiffuse >>  8) & 255;
+			diffCol.A= (_CurDiffuse      ) & 255;
+			GLfloat	glColor[4];
+			convColor(diffCol, glColor);
+			glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, glColor);
 		}
 	}
 }

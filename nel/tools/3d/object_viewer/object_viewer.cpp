@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.50 2001/11/26 13:14:44 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.51 2001/11/26 13:37:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -194,6 +194,7 @@ CObjectViewer::CObjectViewer ()
 	_VegetableLandscape= NULL;
 	_VegetableCollisionManager= NULL;
 	_VegetableCollisionEntity= NULL;
+	_CameraFocal = 75.f; // default value for the focal
 
 	// no lag is the default
 	_Lag = 0;
@@ -261,7 +262,6 @@ CObjectViewer::CObjectViewer ()
 		}
 		catch (EUnknownVar &)
 		{
-			_CameraFocal = 75.f; // default value for the focal
 		}
 
 

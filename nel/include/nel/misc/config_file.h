@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: config_file.h,v 1.4 2000/10/04 15:37:17 lecroart Exp $
+ * $Id: config_file.h,v 1.5 2000/10/04 16:06:18 lecroart Exp $
  *
  * Manage a configuration files
  */
@@ -140,7 +140,7 @@ public:
 		// Get the size of the variable. It's the number of element of the array or 1 if it's not an array.
 		int			 size ();
 
-		/// \name Internal use. You should never use these stuffs
+		/// \name Internal use. \internal
 		//@{
 		static char *TypeName[];
 
@@ -171,24 +171,32 @@ public:
 	/// display all variables
 	void print ();
 
+	/// set a callback function that is called when the config file is modified
 	void setCallback (void (*cb)());
+
+	/// set a callback function to a variable, it will be called when this variable is modified
 	void setCallback (const std::string VarName, void (*cb)(CConfigFile::CVar &var));
 
+	/// \internal
 	static void checkConfigFiles ();
 
 private:
 
-	void (*Callback)();
+	/// \internal
+	void (*_Callback)();
 
-	/// Get the content of the variable as a STL string
-	std::vector<CVar>	Vars;
+	/// \internal
+	std::vector<CVar>	_Vars;
 
-	std::string FileName;
+	/// \internal
+	std::string _FileName;
 
+	/// \internal
 	uint32	getLastModified ();
-	uint32	LastModified;
+	/// \internal
+	uint32	_LastModified;
 
-	static std::vector<CConfigFile *> ConfigFiles;
+	static std::vector<CConfigFile *> _ConfigFiles;
 };
 
 struct EConfigFile : public Exception

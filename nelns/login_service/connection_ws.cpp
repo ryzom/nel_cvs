@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.16 2002/10/24 08:15:56 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.17 2002/11/05 11:11:39 lecroart Exp $
  *
  */
 
@@ -325,20 +325,24 @@ static void cbWSIdentification (CMessage &msgin, const std::string &serviceName,
 		sint32 s = findShard (shardId);
 		if (s != -1)
 		{
-			// the shard should be already online, bad!
-			refuseShard (sid, "Bad shard identification, ShardId %d is already online", shardId);
-			return;
-		}
+			// the shard is already online, disconnect the old one and set the new one
+			refuseShard (Shards[s].SId, "A new shard connects with the same IP/ShardId, you was replaced");
 
-		string query = "update shard set Online=Online+1 where ShardId="+toString(shardId);
-		sint ret = mysql_query (DatabaseConnection, query.c_str ());
-		if (ret != 0)
+			Shards[s].SId = sid;
+			Shards[s].ShardId = shardId;
+		}
+		else
 		{
-			refuseShard (sid, "mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
-			return;
-		}
+			string query = "update shard set Online=Online+1 where ShardId="+toString(shardId);
+			sint ret = mysql_query (DatabaseConnection, query.c_str ());
+			if (ret != 0)
+			{
+				refuseShard (sid, "mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+				return;
+			}
 
-		Shards.push_back (CShard (shardId, sid));
+			Shards.push_back (CShard (shardId, sid));
+		}
 
 		// ok, the shard is identified correctly
 		nlinfo("ShardId %d with ip '%s' is online!", shardId, ia.ipAddress ().c_str ());

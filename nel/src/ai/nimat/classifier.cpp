@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.9 2003/01/21 16:35:44 robert Exp $
+ * $Id: classifier.cpp,v 1.10 2003/01/30 18:06:27 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,11 +24,13 @@
  */
 
 #include "nel/ai/nimat/classifier.h"
-#include "nel/misc/debug.h"
 
 namespace NLAINIMAT
 {
+	using namespace NLMISC;
 
+	static const TTargetId NullTargetId = 0;
+				
 ///////////////////////////
 // CClassifierSystem
 ///////////////////////////
@@ -48,7 +50,7 @@ CClassifierSystem::~CClassifierSystem()
 	}
 }
 
-void CClassifierSystem::addClassifier(const TSensorMap &conditionsMap, double priority, CActionsBox::TAction behavior)
+void CClassifierSystem::addClassifier(const TSensorMap &conditionsMap, double priority, TAction behavior)
 {
 	// We build a new classifier.
 	CClassifier* classifier = new CClassifier();
@@ -56,7 +58,7 @@ void CClassifierSystem::addClassifier(const TSensorMap &conditionsMap, double pr
 	classifier->Priority = priority;
 
 	CClassifierConditionCell* condCell;
-	std::map<CSensorsBox::TSensor, char>::const_iterator itCondition;
+	std::map<TSensor, char>::const_iterator itCondition;
 	for (itCondition = conditionsMap.begin(); itCondition != conditionsMap.end(); itCondition++)
 	{
 		// We add the new sensor in the sensor map and init it with a joker value '#'
@@ -89,21 +91,28 @@ void CClassifierSystem::addClassifierSystem(const CClassifierSystem &cs)
 	}
 }
 
-sint16 CClassifierSystem::selectBehavior( const TSensorMap &sensorMap)
+std::pair<sint16, TTargetId> CClassifierSystem::selectBehavior( const CCSPerception* psensorMap)
 {
-	// We update the internal sensor values.
-	std::map<CSensorsBox::TSensor, char>::const_iterator itConditionsmap;
-	for (itConditionsmap = sensorMap.begin(); itConditionsmap != sensorMap.end(); itConditionsmap++)
+	TTargetId myTarget = NullTargetId;
+	// We update the internal sensor values for the no target sensors
+	// We use an internal sensor map, because each condition cell is mapped to this intrenal map.
+	TSensorMap::iterator itSensors;
+	TSensorMap::const_iterator itNoTargetSensors;
+	for (itSensors = _sensors.begin(); itSensors != _sensors.end(); itSensors++)
 	{
-		char c =  (*itConditionsmap).second;
-		CSensorsBox::TSensor sensName = (*itConditionsmap).first;
-		_sensors[sensName ] = c;
+		TSensor sensName = (*itSensors).first;
+		itNoTargetSensors = psensorMap->NoTargetSensors.find(sensName);
+		if (itNoTargetSensors != psensorMap->NoTargetSensors.end())
+		{
+			char c = (*itNoTargetSensors).second;
+			(*itSensors).second = c;
+		}
 	}
 
 	// We select the activables classifiers
 	typedef	std::map<sint16, CClassifier*>::iterator  TitClassifiers;
-	std::map<double, TitClassifiers> mapCSweel;
-	std::map<sint16, CClassifier*>::iterator itClassifiers = _classifiers.begin();
+	std::map<double, std::pair<TitClassifiers, TTargetId> > mapCSweel;
+	TitClassifiers itClassifiers = _classifiers.begin();
 	std::list<CClassifierConditionCell*>::iterator itConditions;
 	bool activable;
 	double totalPriority = 0;
@@ -124,16 +133,57 @@ sint16 CClassifierSystem::selectBehavior( const TSensorMap &sensorMap)
 		if (activable)
 		{
 			totalPriority += (*itClassifiers).second->Priority;
-			mapCSweel[totalPriority] = itClassifiers;
+			mapCSweel[totalPriority] = std::make_pair(itClassifiers,myTarget);
 		}
 		itClassifiers++;
 	}
 
-	// We set the sensors back to the default value.
-	for (itConditionsmap = sensorMap.begin(); itConditionsmap != sensorMap.end(); itConditionsmap++)
+	// We now do the same, but with target sensors.
+	std::map<TTargetId, TSensorMap>::const_iterator itTargetSensorMap;
+	for (itTargetSensorMap = psensorMap->TargetSensors.begin(); itTargetSensorMap != psensorMap->TargetSensors.end(); itTargetSensorMap++)
 	{
-		CSensorsBox::TSensor sensName = (*itConditionsmap).first;
-		_sensors[sensName ] = '#';
+		myTarget = (*itTargetSensorMap).first;
+		// We update the internal sensor values for the target sensors
+		TSensorMap::const_iterator itTargetSensors;
+		for (itSensors = _sensors.begin(); itSensors != _sensors.end(); itSensors++)
+		{
+			TSensor sensName = (*itSensors).first;
+			itTargetSensors = (*itTargetSensorMap).second.find(sensName);
+			if (itTargetSensors != (*itTargetSensorMap).second.end())
+			{
+				char c = (*itTargetSensors).second;
+				(*itSensors).second = c;
+			}
+		}
+		
+		// We select the activables classifiers
+		itClassifiers = _classifiers.begin();
+		while (itClassifiers != _classifiers.end())
+		{
+			activable = true;
+			itConditions = (*itClassifiers).second->Condition.begin();
+			while (itConditions != (*itClassifiers).second->Condition.end())
+			{
+				if (! (*itConditions)->isActivable() )
+				{
+					activable = false;
+					break;
+				}
+				itConditions++;
+			}
+			if (activable)
+			{
+				totalPriority += (*itClassifiers).second->Priority;
+				mapCSweel[totalPriority] = std::make_pair(itClassifiers,myTarget);
+			}
+			itClassifiers++;
+		}		
+	}
+	
+	// We set the sensors back to the default value.
+	for (itSensors = _sensors.begin(); itSensors != _sensors.end(); itSensors++)
+	{
+		(*itSensors).second = '#';
 	}
 
 	// If totalPriority == 0, there's no activable classifier. ***G*** But here we must add a rule creation mechanisme.
@@ -141,19 +191,20 @@ sint16 CClassifierSystem::selectBehavior( const TSensorMap &sensorMap)
 	{
 		// We select a classifier in the active classifier with a roullette wheel random.
 		double randomeNumber = (rand()%(int(totalPriority*100)))/100.0;
-		std::map<double, TitClassifiers>::iterator itMapCSweel = mapCSweel.upper_bound(randomeNumber);
-		CClassifier* pClassifierSelection = (*((*itMapCSweel).second)).second;
-		sint16 selectionNumber = (*((*itMapCSweel).second)).first;
+		std::map<double, std::pair<TitClassifiers, TTargetId> >::iterator itMapCSweel = mapCSweel.upper_bound(randomeNumber);
+		CClassifier* pClassifierSelection = (*((*itMapCSweel).second.first)).second;
+		sint16 selectionNumber = (*((*itMapCSweel).second.first)).first;
+		myTarget = (*itMapCSweel).second.second;
 
-		return selectionNumber;
+		return std::make_pair(selectionNumber, myTarget);
 	}
 	else
 	{
-		return -1;
+		return std::make_pair(-1,NullTargetId);
 	}
 }
 
-CActionsBox::TAction CClassifierSystem::getActionPart(sint16 classifierNumber)
+TAction CClassifierSystem::getActionPart(sint16 classifierNumber)
 {
 	std::map<sint16, CClassifier*>::iterator itClassifiers = _classifiers.find(classifierNumber);
 	nlassert(itClassifiers != _classifiers.end());
@@ -172,9 +223,9 @@ void CClassifierSystem::getDebugString(std::string &t) const
 		for (itConditions = (*itClassifiers).second->Condition.begin(); itConditions != (*itClassifiers).second->Condition.end(); itConditions++)
 		{
 			CClassifierConditionCell* condCell = (*itConditions);
-			dbg += " (" + NLMISC::toString(condCell->getSensorName()) + "=" + condCell->getValue() + ") +"; // ***G*** maitre le vrai debug du sensor
+			dbg += " (" + conversionSensor.toString(condCell->getSensorName()) + "=" + condCell->getValue() + ") +";
 		}
-		std::string actionName = CActionsBox::getNameFromId((*itClassifiers).second->Behavior);
+		std::string actionName = conversionAction.toString((*itClassifiers).second->Behavior);
 		double		prio = (*itClassifiers).second->Priority;
 		dbg += "> " + actionName + " [" + NLMISC::toString(prio) + "]\n";
 	}
@@ -217,7 +268,7 @@ bool CClassifierSystem::CClassifierConditionCell::isActivable() const
 		return false;
 }
 
-CSensorsBox::TSensor CClassifierSystem::CClassifierConditionCell::getSensorName() const
+TSensor CClassifierSystem::CClassifierConditionCell::getSensorName() const
 {
 	return (*_itSensor).first;
 }
@@ -230,7 +281,7 @@ char CClassifierSystem::CClassifierConditionCell::getValue()
 ///////////////////////////
 // CActionCS
 ///////////////////////////
-CActionCS::CActionCS(CActionsBox::TAction name)
+CActionCS::CActionCS(TAction name)
 {
 	_Name = name;
 }
@@ -240,12 +291,12 @@ CActionCS::~CActionCS()
 }
 
 /// Return the action name
-CActionsBox::TAction CActionCS::getName() const
+TAction CActionCS::getName() const
 {
 	return _Name;
 }
 
-void CActionCS::addMotivationRule (CMotivationsBox::TMotivation motivationName, const TSensorMap &conditionsMap, double priority)
+void CActionCS::addMotivationRule (TMotivation motivationName, const TSensorMap &conditionsMap, double priority)
 {
 	CClassifierSystem* pCS;
 
@@ -253,7 +304,7 @@ void CActionCS::addMotivationRule (CMotivationsBox::TMotivation motivationName, 
 	pCS->addClassifier(conditionsMap, priority, _Name);
 }
 
-void CActionCS::addVirtualActionRule (CActionsBox::TAction virtualActionName, const TSensorMap &conditionsMap, double priority)
+void CActionCS::addVirtualActionRule (TAction virtualActionName, const TSensorMap &conditionsMap, double priority)
 {
 	CClassifierSystem* pCS;
 
@@ -261,11 +312,11 @@ void CActionCS::addVirtualActionRule (CActionsBox::TAction virtualActionName, co
 	pCS->addClassifier(conditionsMap, priority, _Name);
 }
 
-const std::map<CMotivationsBox::TMotivation, CClassifierSystem> *CActionCS::getClassifiersByMotivationMap () const
+const std::map<TMotivation, CClassifierSystem> *CActionCS::getClassifiersByMotivationMap () const
 {
 	return &_ClassifiersByMotivation;
 }
-const std::map<CActionsBox::TAction, CClassifierSystem> *CActionCS::getClassifiersByVirtualActionMap () const
+const std::map<TAction, CClassifierSystem> *CActionCS::getClassifiersByVirtualActionMap () const
 {
 	return &_ClassifiersByVirtualAction;
 }
@@ -273,17 +324,17 @@ const std::map<CActionsBox::TAction, CClassifierSystem> *CActionCS::getClassifie
 /// Chaine de debug
 void CActionCS::getDebugString(std::string &t) const
 {
-	std::string ret = "\nACTION :\t" + CActionsBox::getNameFromId(_Name) + "\n";
-	std::map<CMotivationsBox::TMotivation, CClassifierSystem>::const_iterator ItClassifiersByMotivation;
+	std::string ret = "\nACTION :\t" + conversionAction.toString(_Name) + "\n";
+	std::map<TMotivation, CClassifierSystem>::const_iterator ItClassifiersByMotivation;
 	for (ItClassifiersByMotivation = _ClassifiersByMotivation.begin(); ItClassifiersByMotivation != _ClassifiersByMotivation.end(); ItClassifiersByMotivation++)
 	{
-		ret += "\nMotivation : " + CMotivationsBox::getNameFromId((*ItClassifiersByMotivation).first) + "\n";
+		ret += "\nMotivation : " + conversionMotivation.toString((*ItClassifiersByMotivation).first) + "\n";
 		(*ItClassifiersByMotivation).second.getDebugString(ret);
 	}
-	std::map<CActionsBox::TAction, CClassifierSystem>::const_iterator ItClassifiersByVirtualAction;
+	std::map<TAction, CClassifierSystem>::const_iterator ItClassifiersByVirtualAction;
 	for (ItClassifiersByVirtualAction = _ClassifiersByVirtualAction.begin(); ItClassifiersByVirtualAction != _ClassifiersByVirtualAction.end(); ItClassifiersByVirtualAction++)
 	{
-		ret += "\nMotivation : " + CActionsBox::getNameFromId((*ItClassifiersByVirtualAction).first) + "\n";
+		ret += "\nMotivation : " + conversionAction.toString((*ItClassifiersByVirtualAction).first) + "\n";
 		(*ItClassifiersByVirtualAction).second.getDebugString(ret);
 	}
 	t+=ret;
@@ -307,37 +358,37 @@ double CMotivationEnergy::getSumValue() const
 	return _SumValue;
 }
 
-void CMotivationEnergy::removeProvider(CMotivationsBox::TMotivation providerName)
+void CMotivationEnergy::removeProvider(TMotivation providerName)
 {
 	_MotivationProviders.erase(providerName);
 	computeMotivationValue();
 }
 
-void CMotivationEnergy::removeProvider(CActionsBox::TAction providerName)
+void CMotivationEnergy::removeProvider(TAction providerName)
 {
 	_VirtualActionProviders.erase(providerName);
 	computeMotivationValue();
 }
 
-void CMotivationEnergy::addProvider(CMotivationsBox::TMotivation providerName, const CMotivationEnergy& providerMotivation)
+void CMotivationEnergy::addProvider(TMotivation providerName, const CMotivationEnergy& providerMotivation)
 {
 	_MotivationProviders[providerName] = providerMotivation._EnergyByMotivation ;
 	computeMotivationValue();
 }
 
-void CMotivationEnergy::addProvider(CActionsBox::TAction providerName, const CMotivationEnergy& providerMotivation)
+void CMotivationEnergy::addProvider(TAction providerName, const CMotivationEnergy& providerMotivation)
 {
 	_VirtualActionProviders[providerName] = providerMotivation._EnergyByMotivation ;
 	computeMotivationValue();
 }
 
-void CMotivationEnergy::updateProvider(CMotivationsBox::TMotivation providerName, const CMotivationEnergy& providerMotivation)
+void CMotivationEnergy::updateProvider(TMotivation providerName, const CMotivationEnergy& providerMotivation)
 {
 	_MotivationProviders[providerName] = providerMotivation._EnergyByMotivation ;
 	computeMotivationValue();
 }
 
-void CMotivationEnergy::updateProvider(CActionsBox::TAction providerName, const CMotivationEnergy& providerMotivation)
+void CMotivationEnergy::updateProvider(TAction providerName, const CMotivationEnergy& providerMotivation)
 {
 	_VirtualActionProviders[providerName] = providerMotivation._EnergyByMotivation ;
 	computeMotivationValue();
@@ -348,14 +399,14 @@ void CMotivationEnergy::computeMotivationValue()
 	_EnergyByMotivation.clear();
 
 	// We look for motivation values comming directly from Motivations
-	std::map<CMotivationsBox::TMotivation, TEnergyByMotivation>::iterator itMotivationProviders;
+	std::map<TMotivation, TEnergyByMotivation>::iterator itMotivationProviders;
 	for (itMotivationProviders = _MotivationProviders.begin(); itMotivationProviders != _MotivationProviders.end(); itMotivationProviders++)
 	{
 		TEnergyByMotivation &motivation = (*itMotivationProviders).second;
 		TEnergyByMotivation::iterator itMotivation, itMyMotivation;
 		for (itMotivation = motivation.begin(); itMotivation != motivation.end(); itMotivation++)
 		{
-			CMotivationsBox::TMotivation motivSource = (*itMotivation).first;
+			TMotivation motivSource = (*itMotivation).first;
 			double motiveValue = (*itMotivation).second.Value;
 			double motivePP = (*itMotivation).second.PP;
 			itMyMotivation = _EnergyByMotivation.find(motivSource);
@@ -377,14 +428,14 @@ void CMotivationEnergy::computeMotivationValue()
 	}
 
 	// We look for motivation values comming from virtual actions
-	std::map<CActionsBox::TAction, TEnergyByMotivation>::iterator itVirtualActionProviders;
+	std::map<TAction, TEnergyByMotivation>::iterator itVirtualActionProviders;
 	for (itVirtualActionProviders = _VirtualActionProviders.begin(); itVirtualActionProviders != _VirtualActionProviders.end(); itVirtualActionProviders++)
 	{
 		TEnergyByMotivation &motivation = (*itVirtualActionProviders).second;
 		TEnergyByMotivation::iterator itMotivation, itMyMotivation;
 		for (itMotivation = motivation.begin(); itMotivation != motivation.end(); itMotivation++)
 		{
-			CMotivationsBox::TMotivation motivSource = (*itMotivation).first;
+			TMotivation motivSource = (*itMotivation).first;
 			double motiveValue = (*itMotivation).second.Value;
 			double motivePP = (*itMotivation).second.PP;
 			itMyMotivation = _EnergyByMotivation.find(motivSource);
@@ -416,7 +467,7 @@ void CMotivationEnergy::computeMotivationValue()
 }
 
 /// Donne la Puissance Propre d'une Motivation
-void CMotivationEnergy::setMotivationPP(CMotivationsBox::TMotivation motivationName, double PP)
+void CMotivationEnergy::setMotivationPP(TMotivation motivationName, double PP)
 {
 	_SumValue -= _EnergyByMotivation[motivationName].Value * _EnergyByMotivation[motivationName].PP;
 	_SumValue += _EnergyByMotivation[motivationName].Value * PP;
@@ -426,7 +477,7 @@ void CMotivationEnergy::setMotivationPP(CMotivationsBox::TMotivation motivationN
 }
 
 /// Fixe la valeur d'une motivation
-void CMotivationEnergy::setMotivationValue(CMotivationsBox::TMotivation motivationName, double value)
+void CMotivationEnergy::setMotivationValue(TMotivation motivationName, double value)
 {
 	_SumValue -= _EnergyByMotivation[motivationName].Value * _EnergyByMotivation[motivationName].PP;
 	_SumValue += value * _EnergyByMotivation[motivationName].PP;
@@ -443,7 +494,7 @@ void CMotivationEnergy::getDebugString(std::string &t) const
 	
 	for (itEnergyByMotivation = _EnergyByMotivation.begin(); itEnergyByMotivation!= _EnergyByMotivation.end(); itEnergyByMotivation++)
 	{
-		ret += " " + CMotivationsBox::getNameFromId((*itEnergyByMotivation).first) + " (" + NLMISC::toString((*itEnergyByMotivation).second.Value * (*itEnergyByMotivation).second.PP) + ") ";
+		ret += " " + conversionMotivation.toString((*itEnergyByMotivation).first) + " (" + NLMISC::toString((*itEnergyByMotivation).second.Value * (*itEnergyByMotivation).second.PP) + ") ";
 	}
 	t+=ret;
 }
@@ -467,61 +518,67 @@ void CMHiCSagent::getDebugString(std::string &t) const
 {
 	std::string ret = "\n\n---------------------------";
 	ret += "\nMotivations :";
-	std::map<CMotivationsBox::TMotivation, CMotivateCS>::const_iterator itClassifiersAndMotivationIntensity;
+	std::map<TMotivation, CMotivateCS>::const_iterator itClassifiersAndMotivationIntensity;
 	for (itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.begin();
 		 itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end();
 		 itClassifiersAndMotivationIntensity++)
 	{
-		ret += "\n " + NLMISC::toString((*itClassifiersAndMotivationIntensity).second.dbgNumberOfActivations) + "<" + CMotivationsBox::getNameFromId((*itClassifiersAndMotivationIntensity).first) + "> ";
+		ret += "\n " + NLMISC::toString((*itClassifiersAndMotivationIntensity).second.dbgNumberOfActivations) + "<" + conversionMotivation.toString((*itClassifiersAndMotivationIntensity).first) + "> ";
 		ret += "[MI=" + NLMISC::toString((*itClassifiersAndMotivationIntensity).second.MotivationIntensity.getSumValue()) + "] :";
 		(*itClassifiersAndMotivationIntensity).second.MotivationIntensity.getDebugString(ret);
 		ret += "\n  -> Classifier number " + NLMISC::toString((*itClassifiersAndMotivationIntensity).second.ClassifierNumber); 
 		ret += "\n";
 	}
 	ret += "\nVirtual Actions :";
-	std::map<CActionsBox::TAction, CMotivateCS>::const_iterator itClassifiersAndVirtualActionIntensity;
+	std::map<TAction, CMotivateCS>::const_iterator itClassifiersAndVirtualActionIntensity;
 	for (itClassifiersAndVirtualActionIntensity = _ClassifiersAndVirtualActionIntensity.begin();
 		 itClassifiersAndVirtualActionIntensity != _ClassifiersAndVirtualActionIntensity.end();
 		 itClassifiersAndVirtualActionIntensity++)
 	{
-		ret += "\n " + NLMISC::toString((*itClassifiersAndVirtualActionIntensity).second.dbgNumberOfActivations) + "<" + CActionsBox::getNameFromId((*itClassifiersAndVirtualActionIntensity).first) + "> ";
+		ret += "\n " + NLMISC::toString((*itClassifiersAndVirtualActionIntensity).second.dbgNumberOfActivations) + "<" + conversionAction.toString((*itClassifiersAndVirtualActionIntensity).first) + "> ";
 		ret += "[MI=" + NLMISC::toString((*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.getSumValue()) + "] :";
 		(*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.getDebugString(ret);
+		std::map<TAction, TTargetId>::const_iterator itIdByActions = _IdByActions.find((*itClassifiersAndVirtualActionIntensity).first);
+		nlassert (itIdByActions != _IdByActions.end())
+		ret += " on target n#" + NLMISC::toString((*itIdByActions).second);
 		ret += "\n  -> Classifier number " + NLMISC::toString((*itClassifiersAndVirtualActionIntensity).second.ClassifierNumber); 
 		ret += "\n";
 	}
 	ret += "\nACTIONS :";
-	std::map<CActionsBox::TAction, CMotivationEnergy>::const_iterator itActionsExecutionIntensity;
+	std::map<TAction, CMotivationEnergy>::const_iterator itActionsExecutionIntensity;
 	for (itActionsExecutionIntensity = _ActionsExecutionIntensity.begin(); itActionsExecutionIntensity != _ActionsExecutionIntensity.end(); itActionsExecutionIntensity++)
 	{
-		ret += "\n <" + CActionsBox::getNameFromId((* itActionsExecutionIntensity).first) + "> [EI=" + NLMISC::toString((*itActionsExecutionIntensity).second.getSumValue()) + "] : ";
+		ret += "\n <" + conversionAction.toString((* itActionsExecutionIntensity).first) + "> [EI=" + NLMISC::toString((*itActionsExecutionIntensity).second.getSumValue()) + "] : ";
 		(*itActionsExecutionIntensity).second.getDebugString(ret);
+		std::map<TAction, TTargetId>::const_iterator itIdByActions = _IdByActions.find((*itActionsExecutionIntensity).first);
+		nlassert (itIdByActions != _IdByActions.end())
+		ret += " on target n#" + NLMISC::toString((*itIdByActions).second);
 	}
 	t+=ret;
 }
 
 /// Donne la Puissance Propre d'une Motivation
-void CMHiCSagent::setMotivationPP(CMotivationsBox::TMotivation motivationName, double PP)
+void CMHiCSagent::setMotivationPP(TMotivation motivationName, double PP)
 {
 	_ClassifiersAndMotivationIntensity[motivationName].MotivationIntensity.setMotivationPP(motivationName, PP);
 	spreadMotivationReckon(motivationName);
 }
 
 /// Fixe la valeur d'une motivation
-void CMHiCSagent::setMotivationValue(CMotivationsBox::TMotivation motivationName, double value)
+void CMHiCSagent::setMotivationValue(TMotivation motivationName, double value)
 {
 	_ClassifiersAndMotivationIntensity[motivationName].MotivationIntensity.setMotivationValue(motivationName, value);
 	spreadMotivationReckon(motivationName);
 }
 
-void CMHiCSagent::spreadMotivationReckon(CMotivationsBox::TMotivation CS)
+void CMHiCSagent::spreadMotivationReckon(TMotivation CS)
 {
-	std::map<CMotivationsBox::TMotivation, CMotivateCS>::iterator itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.find(CS);
+	std::map<TMotivation, CMotivateCS>::iterator itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.find(CS);
 	nlassert(itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end());
 	sint16 lastClassifierNumber = (*itClassifiersAndMotivationIntensity).second.ClassifierNumber;
 	if (lastClassifierNumber >=0 )
 	{
-		CActionsBox::TAction lastActionName = _pMHiCSbase->getActionPart(CS, lastClassifierNumber);
+		TAction lastActionName = _pMHiCSbase->getActionPart(CS, lastClassifierNumber);
 		if (_pMHiCSbase->isAnAction(lastActionName))
 		{
 			_ActionsExecutionIntensity[lastActionName].updateProvider(CS, (*itClassifiersAndMotivationIntensity).second.MotivationIntensity);
@@ -546,14 +603,14 @@ void CMHiCSagent::spreadMotivationReckon(CMotivationsBox::TMotivation CS)
 	}
 }
 
-void CMHiCSagent::spreadMotivationReckon(CActionsBox::TAction CS)
+void CMHiCSagent::spreadMotivationReckon(TAction CS)
 {
-	std::map<CActionsBox::TAction, CMotivateCS>::iterator itClassifiersAndVirtualActionIntensity = _ClassifiersAndVirtualActionIntensity.find(CS);
+	std::map<TAction, CMotivateCS>::iterator itClassifiersAndVirtualActionIntensity = _ClassifiersAndVirtualActionIntensity.find(CS);
 	nlassert(itClassifiersAndVirtualActionIntensity != _ClassifiersAndVirtualActionIntensity.end());
 	sint16 lastClassifierNumber = (*itClassifiersAndVirtualActionIntensity).second.ClassifierNumber;
 	if (lastClassifierNumber >=0 )
 	{
-		CActionsBox::TAction lastActionName = _pMHiCSbase->getActionPart(CS, lastClassifierNumber);
+		TAction lastActionName = _pMHiCSbase->getActionPart(CS, lastClassifierNumber);
 		if (_pMHiCSbase->isAnAction(lastActionName))
 		{
 			_ActionsExecutionIntensity[lastActionName].updateProvider(CS, (*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity);
@@ -586,9 +643,9 @@ void CMHiCSagent::motivationCompute()
 	Je met à jour l'énergie du vainqueur
 	*/
 	double somme = 0;
-	typedef	std::map<CMotivationsBox::TMotivation, CMotivateCS>::iterator TitNameAndMotivation;
+	typedef	std::map<TMotivation, CMotivateCS>::iterator TitNameAndMotivation;
 	std::map<double, TitNameAndMotivation > mapCSweel;
-	std::map<CMotivationsBox::TMotivation, CMotivateCS>::iterator itClassifiersAndMotivationIntensity;
+	std::map<TMotivation, CMotivateCS>::iterator itClassifiersAndMotivationIntensity;
 	// On calcule la somme
 	for (itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.begin();
 		 itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end();
@@ -608,21 +665,22 @@ void CMHiCSagent::motivationCompute()
 		double randomeNumber = (rand()%(int(somme*100)))/100.0;
 		std::map<double, TitNameAndMotivation>::iterator itMapCSweel = mapCSweel.upper_bound(randomeNumber);
 		CMotivateCS* pCSselection = &((*((*itMapCSweel).second)).second);
-		CMotivationsBox::TMotivation selectionName = (*((*itMapCSweel).second)).first;
+		TMotivation selectionName = (*((*itMapCSweel).second)).first;
 
 		// Updating the number of activation counter
 		pCSselection->dbgNumberOfActivations++;
 
 		// On fait calculer le CS
-		sint16 selectedClassifierNumber = _pMHiCSbase->selectBehavior(selectionName,_SensorsValues);
+		std::pair<sint16, TTargetId> mySelection = _pMHiCSbase->selectBehavior(selectionName,_pSensorsValues);
+		sint16 selectedClassifierNumber = mySelection.first;
 		if (selectedClassifierNumber < 0) return; // ***G*** Ici on décide de rien faire si on sait pas quoi faire. En fait il faudrait créer un règle.
-		CActionsBox::TAction behav = _pMHiCSbase->getActionPart(selectionName, selectedClassifierNumber);
+		TAction behav = _pMHiCSbase->getActionPart(selectionName, selectedClassifierNumber);
 
 		// We check the last action selected by the current motivation to remove the motivation influence on this action.
 		sint16 lastClassifierNumber = _ClassifiersAndMotivationIntensity[selectionName].ClassifierNumber;
 		if (lastClassifierNumber >= 0)
 		{
-			CActionsBox::TAction lastActionName = _pMHiCSbase->getActionPart(selectionName, lastClassifierNumber);
+			TAction lastActionName = _pMHiCSbase->getActionPart(selectionName, lastClassifierNumber);
 
 			// We check if we have selected the same behavior.
 			if (lastActionName != behav)
@@ -665,6 +723,11 @@ void CMHiCSagent::motivationCompute()
 			_ClassifiersAndVirtualActionIntensity[behav].MotivationIntensity.addProvider(selectionName, pCSselection->MotivationIntensity);
 			spreadMotivationReckon(behav);
 		}
+		
+		// We set the Id of this action.
+		// For moment there's no test to see if it is the same target or not. In the futur it can be usefull to make this test
+		// to avoid unwilled target switch.
+		_IdByActions[behav] = mySelection.second;
 	}
 }
 
@@ -676,9 +739,9 @@ void CMHiCSagent::virtualActionCompute()
 	Je met à jour l'énergie du vainqueur
 	*/
 	double somme = 0;
-	typedef	std::map<CActionsBox::TAction, CMotivateCS>::iterator TitNameAndVirtualAction;
+	typedef	std::map<TAction, CMotivateCS>::iterator TitNameAndVirtualAction;
 	std::map<double, TitNameAndVirtualAction > mapCSweel;
-	std::map<CActionsBox::TAction, CMotivateCS>::iterator itClassifiersAndVirtualActionIntensity;
+	std::map<TAction, CMotivateCS>::iterator itClassifiersAndVirtualActionIntensity;
 	// On calcule la somme
 	for (itClassifiersAndVirtualActionIntensity = _ClassifiersAndVirtualActionIntensity.begin();
 		 itClassifiersAndVirtualActionIntensity != _ClassifiersAndVirtualActionIntensity.end();
@@ -698,21 +761,22 @@ void CMHiCSagent::virtualActionCompute()
 		double randomeNumber = (rand()%(int(somme*100)))/100.0;
 		std::map<double, TitNameAndVirtualAction>::iterator itMapCSweel = mapCSweel.upper_bound(randomeNumber);
 		CMotivateCS* pCSselection = &((*((*itMapCSweel).second)).second);
-		CActionsBox::TAction selectionName = (*((*itMapCSweel).second)).first;
+		TAction selectionName = (*((*itMapCSweel).second)).first;
 
 		// Updating the number of activation counter
 		pCSselection->dbgNumberOfActivations++;
 
 		// On fait calculer le CS
-		sint16 selectedClassifierNumber = _pMHiCSbase->selectBehavior(selectionName,_SensorsValues);
+		std::pair<sint16, TTargetId> mySelection = _pMHiCSbase->selectBehavior(selectionName,_pSensorsValues);
+		sint16 selectedClassifierNumber = mySelection.first;
 		if (selectedClassifierNumber < 0) return; // ***G*** Ici on décide de rien faire si on sait pas quoi faire. En fait il faudrait créer un règle.
-		CActionsBox::TAction behav = _pMHiCSbase->getActionPart(selectionName, selectedClassifierNumber);
+		TAction behav = _pMHiCSbase->getActionPart(selectionName, selectedClassifierNumber);
 
 		// We check the last action selected by the current motivation to remove the motivation influence on this action.
 		sint16 lastClassifierNumber = _ClassifiersAndVirtualActionIntensity[selectionName].ClassifierNumber;
 		if (lastClassifierNumber >= 0)
 		{
-			CActionsBox::TAction lastActionName = _pMHiCSbase->getActionPart(selectionName, lastClassifierNumber);
+			TAction lastActionName = _pMHiCSbase->getActionPart(selectionName, lastClassifierNumber);
 
 			// We check if we have selected the same behavior.
 			if (lastActionName != behav)
@@ -755,6 +819,11 @@ void CMHiCSagent::virtualActionCompute()
 			_ClassifiersAndVirtualActionIntensity[behav].MotivationIntensity.addProvider(selectionName, pCSselection->MotivationIntensity);
 			spreadMotivationReckon(behav);
 		}
+
+		// We set the Id of this action.
+		// For moment there's no test to see if it is the same target or not. In the futur it can be usefull to make this test
+		// to avoid unwilled target switch.
+		_IdByActions[behav] = mySelection.second;
 	}
 }
 
@@ -765,18 +834,18 @@ void CMHiCSagent::run()
 }
 
 
-void CMHiCSagent::setSensors(const TSensorMap &sensorMap)
+void CMHiCSagent::setSensors(CCSPerception* psensorMap)
 {
-	_SensorsValues = sensorMap;
+	_pSensorsValues = psensorMap;
 }
 
 
-CActionsBox::TAction CMHiCSagent::selectBehavior()
+TAction CMHiCSagent::selectBehavior()
 {
 	// On prend le max
-	CActionsBox::TAction ret;
+	TAction ret;
 	double executionIntensity = 0;
-	std::map<CActionsBox::TAction, CMotivationEnergy>::iterator itActionsExecutionIntensity;
+	std::map<TAction, CMotivationEnergy>::iterator itActionsExecutionIntensity;
 	for (itActionsExecutionIntensity = _ActionsExecutionIntensity.begin(); itActionsExecutionIntensity != _ActionsExecutionIntensity.end(); itActionsExecutionIntensity++)
 	{
 		double value = (*itActionsExecutionIntensity).second.getSumValue();
@@ -803,27 +872,24 @@ CMHiCSbase::~CMHiCSbase()
 
 void CMHiCSbase::addVirtualActionCS(const CActionCS &action)
 {
-//	std::map<CMotivationsBox::TMotivation, CClassifierSystem>	_ClassifiersByMotivation;
-//	std::map<CActionsBox::TAction, CClassifierSystem>			_ClassifiersByVirtualAction;
-
-	const std::map<CMotivationsBox::TMotivation, CClassifierSystem> *mapActionByMotivation = action.getClassifiersByMotivationMap();
-	std::map<CMotivationsBox::TMotivation, CClassifierSystem>::const_iterator ItMapActionByMotivation;
+	const std::map<TMotivation, CClassifierSystem> *mapActionByMotivation = action.getClassifiersByMotivationMap();
+	std::map<TMotivation, CClassifierSystem>::const_iterator ItMapActionByMotivation;
 	for (ItMapActionByMotivation = mapActionByMotivation->begin(); ItMapActionByMotivation != mapActionByMotivation->end(); ItMapActionByMotivation++)
 	{
 		CClassifierSystem* pCS;
-		CMotivationsBox::TMotivation motivationName = (*ItMapActionByMotivation).first;
+		TMotivation motivationName = (*ItMapActionByMotivation).first;
 		const CClassifierSystem* pOtherCS = &((*ItMapActionByMotivation).second);
 
 		pCS = &(_MotivationClassifierSystems[motivationName]);
 		pCS->addClassifierSystem(*pOtherCS);
 	}
 
-	const std::map<CActionsBox::TAction, CClassifierSystem> *mapActionByVirtualAction = action.getClassifiersByVirtualActionMap();
-	std::map<CActionsBox::TAction, CClassifierSystem>::const_iterator ItMapActionByVirtualAction;
+	const std::map<TAction, CClassifierSystem> *mapActionByVirtualAction = action.getClassifiersByVirtualActionMap();
+	std::map<TAction, CClassifierSystem>::const_iterator ItMapActionByVirtualAction;
 	for (ItMapActionByVirtualAction = mapActionByVirtualAction->begin(); ItMapActionByVirtualAction != mapActionByVirtualAction->end(); ItMapActionByVirtualAction++)
 	{
 		CClassifierSystem* pCS;
-		CActionsBox::TAction virtualActionName = (*ItMapActionByVirtualAction).first;
+		TAction virtualActionName = (*ItMapActionByVirtualAction).first;
 		const CClassifierSystem* pOtherCS = &((*ItMapActionByVirtualAction).second);
 
 		pCS = &(_VirtualActionClassifierSystems[virtualActionName]);
@@ -837,37 +903,37 @@ void CMHiCSbase::addActionCS(const CActionCS& action)
 	_ActionSet.insert(action.getName());
 }
 
-sint16 CMHiCSbase::selectBehavior(CMotivationsBox::TMotivation motivationName, const TSensorMap &sensorMap)
+std::pair<sint16, TTargetId> CMHiCSbase::selectBehavior(TMotivation motivationName, const CCSPerception* psensorMap)
 {
-	std::map<CMotivationsBox::TMotivation, CClassifierSystem>::iterator itMotivationClassifierSystems = _MotivationClassifierSystems.find(motivationName);
+	std::map<TMotivation, CClassifierSystem>::iterator itMotivationClassifierSystems = _MotivationClassifierSystems.find(motivationName);
 	nlassert(itMotivationClassifierSystems != _MotivationClassifierSystems.end());
-	return (*itMotivationClassifierSystems).second.selectBehavior(sensorMap);
+	return (*itMotivationClassifierSystems).second.selectBehavior(psensorMap);
 }
 
-sint16 CMHiCSbase::selectBehavior(CActionsBox::TAction motivationName, const TSensorMap &sensorMap)
+std::pair<sint16, TTargetId> CMHiCSbase::selectBehavior(TAction motivationName, const CCSPerception* psensorMap)
 {
-	std::map<CActionsBox::TAction, CClassifierSystem>::iterator itVirtualActionClassifierSystems = _VirtualActionClassifierSystems.find(motivationName);
+	std::map<TAction, CClassifierSystem>::iterator itVirtualActionClassifierSystems = _VirtualActionClassifierSystems.find(motivationName);
 	nlassert(itVirtualActionClassifierSystems != _VirtualActionClassifierSystems.end());
-	return (*itVirtualActionClassifierSystems).second.selectBehavior(sensorMap);
+	return (*itVirtualActionClassifierSystems).second.selectBehavior(psensorMap);
 }
 
-CActionsBox::TAction CMHiCSbase::getActionPart(CMotivationsBox::TMotivation motivationName, sint16 classifierNumber)
+TAction CMHiCSbase::getActionPart(TMotivation motivationName, sint16 classifierNumber)
 {
-	std::map<CMotivationsBox::TMotivation, CClassifierSystem>::iterator itMotivationClassifierSystems = _MotivationClassifierSystems.find(motivationName);
+	std::map<TMotivation, CClassifierSystem>::iterator itMotivationClassifierSystems = _MotivationClassifierSystems.find(motivationName);
 	nlassert(itMotivationClassifierSystems != _MotivationClassifierSystems.end());
 	return (*itMotivationClassifierSystems).second.getActionPart(classifierNumber);
 }
 
-CActionsBox::TAction CMHiCSbase::getActionPart(CActionsBox::TAction motivationName, sint16 classifierNumber)
+TAction CMHiCSbase::getActionPart(TAction motivationName, sint16 classifierNumber)
 {
-	std::map<CActionsBox::TAction, CClassifierSystem>::iterator itVirtualActionClassifierSystems = _VirtualActionClassifierSystems.find(motivationName);
+	std::map<TAction, CClassifierSystem>::iterator itVirtualActionClassifierSystems = _VirtualActionClassifierSystems.find(motivationName);
 	nlassert(itVirtualActionClassifierSystems != _VirtualActionClassifierSystems.end());
 	return (*itVirtualActionClassifierSystems).second.getActionPart(classifierNumber);
 }
 
-bool CMHiCSbase::isAnAction(CActionsBox::TAction behav) const
+bool CMHiCSbase::isAnAction(TAction behav) const
 {
-	std::set<CActionsBox::TAction>::const_iterator itActionSet = _ActionSet.find(behav);
+	std::set<TAction>::const_iterator itActionSet = _ActionSet.find(behav);
 	return (itActionSet != _ActionSet.end());
 }
 
@@ -875,165 +941,39 @@ bool CMHiCSbase::isAnAction(CActionsBox::TAction behav) const
 void CMHiCSbase::getDebugString(std::string &t) const
 {
 	std::string ret = "\n---------------------------";
-	std::map<CMotivationsBox::TMotivation, CClassifierSystem>::const_iterator itMotivationClassifierSystems;
+	std::map<TMotivation, CClassifierSystem>::const_iterator itMotivationClassifierSystems;
 	for (itMotivationClassifierSystems = _MotivationClassifierSystems.begin(); itMotivationClassifierSystems != _MotivationClassifierSystems.end(); itMotivationClassifierSystems++)
 	{
-		ret += "\nMotivation : " + CMotivationsBox::getNameFromId((*itMotivationClassifierSystems).first);
+		ret += "\nMotivation : " + conversionMotivation.toString((*itMotivationClassifierSystems).first);
 		(*itMotivationClassifierSystems).second.getDebugString(ret);
 	}
-	std::map<CActionsBox::TAction, CClassifierSystem>::const_iterator itVirtualActionClassifierSystems;
+	std::map<TAction, CClassifierSystem>::const_iterator itVirtualActionClassifierSystems;
 	for (itVirtualActionClassifierSystems = _VirtualActionClassifierSystems.begin(); itVirtualActionClassifierSystems != _VirtualActionClassifierSystems.end(); itVirtualActionClassifierSystems++)
 	{
-		ret += "\nVirtual Action : " + CActionsBox::getNameFromId((*itVirtualActionClassifierSystems).first);
+		ret += "\nVirtual Action : " + conversionAction.toString((*itVirtualActionClassifierSystems).first);
 		(*itVirtualActionClassifierSystems).second.getDebugString(ret);
 	}
 	ret += "\nACTIONS :\n";
-	std::set<CActionsBox::TAction>::const_iterator itActionSet;
+	std::set<TAction>::const_iterator itActionSet;
 	for (itActionSet = _ActionSet.begin(); itActionSet != _ActionSet.end(); itActionSet++)
 	{
-		ret += CActionsBox::getNameFromId((*itActionSet)) + "\n";
+		ret += conversionAction.toString((*itActionSet)) + "\n";
 	}
 	t+=ret;
 }
 
 ///////////////////////////
-// CSensorsBox
+// CCSPerception
 ///////////////////////////
-
-CSensorsBox::CSensorsBox()
+CCSPerception::CCSPerception()
 {
 	;
 }
 
-CSensorsBox::~CSensorsBox()
+CCSPerception::~CCSPerception()
 {
 	;
 }
 
-char CSensorsBox::getSensorValue(TSensor sensorId, uint64 targetID)
-{
-	switch (sensorId)
-	{
-	case MunitionsAmount :
-	case FoodType :
-	case IsAlive :
-	case IAmStronger :
-	case IAmAttacked :
-	default :
-		return '#';
-	}
-}
-
-std::string CSensorsBox::getNameFromId(TSensor sensorId)
-{
-	switch (sensorId)
-	{
-	case MunitionsAmount :
-		return "MunitionsAmount";
-	case FoodType :
-		return "FoodType";
-	case IsAlive :
-		return "IsAlive";
-	case IAmStronger :
-		return "IAmStronger";
-	case IAmAttacked :
-		return "IAmAttacked";
-	default :
-		return "NULL";
-	}
-}
-
-///////////////////////////
-// CActionsBox
-///////////////////////////
-
-CActionsBox::CActionsBox()
-{
-	;
-}
-
-CActionsBox::~CActionsBox()
-{
-	;
-}
-
-void CActionsBox::executeAction(TAction actionId, uint64 targetID)
-{
-	switch (actionId)
-	{
-	case closeCombat :
-	case distanceCombat :
-	case flee :
-	case eat :
-	case rest :
-	case v_fight :
-	default :
-		return;
-	}
-}
-
-std::string CActionsBox::getNameFromId(TAction actionId)
-{
-	switch (actionId)
-	{
-	case closeCombat :
-		return "closeCombat";
-	case distanceCombat :
-		return "distanceCombat";
-	case flee :
-		return "flee";
-	case eat :
-		return "eat";
-	case rest :
-		return "rest";
-	case v_fight :
-			return "v_fight";
-	default :
-		return "NULL";
-	}
-}
-
-///////////////////////////
-// CMotivationsBox
-///////////////////////////
-CMotivationsBox::CMotivationsBox()
-{
-	;
-}
-
-CMotivationsBox::~CMotivationsBox()
-{
-	;
-}
-	
-double CMotivationsBox::getMotivationValue(TMotivation motivationId)
-{
-	switch (motivationId)
-	{
-	case HUNGER :
-	case AGGRO :
-	case FEAR :
-	case FATIGUE :
-	default :
-		return 0;	// ***G*** To Implement
-	}
-}
-
-std::string CMotivationsBox::getNameFromId(TMotivation motivationId)
-{
-	switch (motivationId)
-	{
-	case HUNGER :
-		return "HUNGER";
-	case AGGRO :
-		return "AGGRO";
-	case FEAR :
-		return "FEAR";
-	case FATIGUE :
-		return "FATIGUE";
-	default :
-		return "NULL";
-	}
-}
 
 } // NLAINIMAT

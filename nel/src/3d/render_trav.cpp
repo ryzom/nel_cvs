@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.51 2004/04/09 14:25:08 vizerie Exp $
+ * $Id: render_trav.cpp,v 1.52 2004/06/29 13:38:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,220 +84,299 @@ CRenderTrav::CRenderTrav()
 	_ShadowMeshSkinManager= NULL;
 
 	_LayersRenderingOrder= true;		
+	
 }
 // ***************************************************************************
-void		CRenderTrav::traverse()
+void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 {
-	H_AUTO( NL3D_TravRender );
-
+	H_AUTO( NL3D_TravRender );		
 	CTravCameraScene::update();
-
 	// Bind to Driver.
 	setupDriverCamera();
 	getDriver()->setupViewport(_Viewport);
 
 	// reset the light setup, and set global ambient.
 	resetLightSetup();
-
-
-	// reset the Skin manager, if needed
-	if(_MeshSkinManager)
-	{
-		if(Driver!=_MeshSkinManager->getDriver())
-		{
-			_MeshSkinManager->release();
-			_MeshSkinManager->init(Driver, 
-				NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT, 
-				NL3D_MESH_SKIN_MANAGER_MAXVERTICES, 
-				NL3D_MESH_SKIN_MANAGER_NUMVB, 
-				"MRMSkinVB");
-		}
-	}
-
-	// Same For Shadow ones. NB: use AuxDriver here!!!
-	if(_ShadowMeshSkinManager)
-	{
-		if(getAuxDriver()!=_ShadowMeshSkinManager->getDriver())
-		{
-			_ShadowMeshSkinManager->release();
-			_ShadowMeshSkinManager->init(getAuxDriver(), 
-				NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT, 
-				NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES,
-				NL3D_SHADOW_MESH_SKIN_MANAGER_NUMVB,
-				"ShadowSkinVB");
-		}
-	}
-
-
-	// Fill OT with models, for both Opaque and transparent pass
-	// =============================
-
-	// Sort the models by distance from camera
-	// This is done here and not in the addRenderModel because of the LoadBalancing traversal which can modify
-	// the transparency flag (multi lod for instance)
-
-	// clear the OTs, and prepare to allocate max element space
-	OrderOpaqueList.reset(_CurrentNumVisibleModels);		
-	for(uint k = 0; k <= (uint) _MaxTransparencyPriority; ++k)
+	if (newRender)
 	{	
-		_OrderTransparentListByPriority[k].reset(_CurrentNumVisibleModels);	// all table share the same allocator (CLayeredOrderingTable::shareAllocator has been called) 
-	                                                                    // and an object can be only inserted in one table, so we only need to init the main allocator
-	}
+		
 
-	// fill the OTs.
-	CTransform			**itRdrModel= NULL;
-	uint32				nNbModels = _CurrentNumVisibleModels;
-	if(nNbModels)	
-		itRdrModel= &RenderList[0];
-	float	rPseudoZ, rPseudoZ2;
 
-	// Some precalc
-	float	OOFar= 1.0f / this->Far;
-	uint32	opaqueOtSize= OrderOpaqueList.getSize();
-	uint32	opaqueOtMax= OrderOpaqueList.getSize()-1;
-	uint32	transparentOtSize= _OrderTransparentListByPriority[0].getSize(); // there is at least one list, and all list have the same number of entries
-	uint32	transparentOtMax= _OrderTransparentListByPriority[0].getSize()-1;
-	uint32	otId;
-	// fast floor
-	NLMISC::OptFastFloorBegin();
-	// For all rdr models
-	for( ; nNbModels>0; itRdrModel++, nNbModels-- )
-	{
-		CTransform			*pTransform = *itRdrModel;
-
-		// Yoyo: skins are rendered through skeletons, so models WorldMatrix are all good here (even sticked objects)
-		rPseudoZ = (pTransform->getWorldMatrix().getPos() - CamPos).norm();
-
-		// rPseudoZ from 0.0 -> 1.0
-		rPseudoZ =  sqrtf( rPseudoZ * OOFar );
-
-		if( pTransform->isOpaque() )
+		// reset the Skin manager, if needed
+		if(_MeshSkinManager)
 		{
-			// since norm, we are sure that rPseudoZ>=0
-			rPseudoZ2 = rPseudoZ * opaqueOtSize;
-			otId= NLMISC::OptFastFloor(rPseudoZ2);
-			otId= min(otId, opaqueOtMax);
-			OrderOpaqueList.insert( otId, pTransform );
-		}
-		if( pTransform->isTransparent() )
-		{
-			// since norm, we are sure that rPseudoZ>=0
-			rPseudoZ2 = rPseudoZ * transparentOtSize;
-			otId= NLMISC::OptFastFloor(rPseudoZ2);
-			otId= min(otId, transparentOtMax);
-			// must invert id, because transparent, sort from back to front			
-			_OrderTransparentListByPriority[std::min(pTransform->getTransparencyPriority(), _MaxTransparencyPriority)].insert( pTransform->getOrderingLayer(), pTransform, transparentOtMax-otId );
+			if(Driver!=_MeshSkinManager->getDriver())
+			{
+				_MeshSkinManager->release();
+				_MeshSkinManager->init(Driver, 
+					NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT, 
+					NL3D_MESH_SKIN_MANAGER_MAXVERTICES, 
+					NL3D_MESH_SKIN_MANAGER_NUMVB, 
+					"MRMSkinVB");
+			}
 		}
 
+		// Same For Shadow ones. NB: use AuxDriver here!!!
+		if(_ShadowMeshSkinManager)
+		{
+			if(getAuxDriver()!=_ShadowMeshSkinManager->getDriver())
+			{
+				_ShadowMeshSkinManager->release();
+				_ShadowMeshSkinManager->init(getAuxDriver(), 
+					NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT, 
+					NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES,
+					NL3D_SHADOW_MESH_SKIN_MANAGER_NUMVB,
+					"ShadowSkinVB");
+			}
+		}
+
+
+		// Fill OT with models, for both Opaque and transparent pass
+		// =============================
+
+		// Sort the models by distance from camera
+		// This is done here and not in the addRenderModel because of the LoadBalancing traversal which can modify
+		// the transparency flag (multi lod for instance)
+
+		// clear the OTs, and prepare to allocate max element space
+		OrderOpaqueList.reset(_CurrentNumVisibleModels);		
+		for(uint k = 0; k <= (uint) _MaxTransparencyPriority; ++k)
+		{	
+			_OrderTransparentListByPriority[k].reset(_CurrentNumVisibleModels);	// all table share the same allocator (CLayeredOrderingTable::shareAllocator has been called) 
+																			// and an object can be only inserted in one table, so we only need to init the main allocator
+		}
+
+		// fill the OTs.
+		CTransform			**itRdrModel= NULL;
+		uint32				nNbModels = _CurrentNumVisibleModels;
+		if(nNbModels)	
+			itRdrModel= &RenderList[0];
+		float	rPseudoZ, rPseudoZ2;
+
+		// Some precalc
+		float	OOFar= 1.0f / this->Far;
+		uint32	opaqueOtSize= OrderOpaqueList.getSize();
+		uint32	opaqueOtMax= OrderOpaqueList.getSize()-1;
+		uint32	transparentOtSize= _OrderTransparentListByPriority[0].getSize(); // there is at least one list, and all list have the same number of entries
+		uint32	transparentOtMax= _OrderTransparentListByPriority[0].getSize()-1;
+		uint32	otId;
+		// fast floor
+		NLMISC::OptFastFloorBegin();
+		// For all rdr models
+		for( ; nNbModels>0; itRdrModel++, nNbModels-- )
+		{
+			CTransform			*pTransform = *itRdrModel;
+
+			// Yoyo: skins are rendered through skeletons, so models WorldMatrix are all good here (even sticked objects)
+			rPseudoZ = (pTransform->getWorldMatrix().getPos() - CamPos).norm();
+
+			// rPseudoZ from 0.0 -> 1.0
+			rPseudoZ =  sqrtf( rPseudoZ * OOFar );
+
+			if( pTransform->isOpaque() )
+			{
+				// since norm, we are sure that rPseudoZ>=0
+				rPseudoZ2 = rPseudoZ * opaqueOtSize;
+				otId= NLMISC::OptFastFloor(rPseudoZ2);
+				otId= min(otId, opaqueOtMax);
+				OrderOpaqueList.insert( otId, pTransform );
+			}
+			if( pTransform->isTransparent() )
+			{
+				// since norm, we are sure that rPseudoZ>=0
+				rPseudoZ2 = rPseudoZ * transparentOtSize;
+				otId= NLMISC::OptFastFloor(rPseudoZ2);
+				otId= min(otId, transparentOtMax);
+				// must invert id, because transparent, sort from back to front			
+				_OrderTransparentListByPriority[std::min(pTransform->getTransparencyPriority(), _MaxTransparencyPriority)].insert( pTransform->getOrderingLayer(), pTransform, transparentOtMax-otId );
+			}
+
+		}
+		// fast floor
+		NLMISC::OptFastFloorEnd();
 	}
-	// fast floor
-	NLMISC::OptFastFloorEnd();
 
+	if (renderPart & UScene::RenderOpaque)
+	{	
+		// Render Opaque stuff.
+		// =============================
 
-	// Render Opaque stuff.
-	// =============================
+		// TestYoyo
+		//OrderOpaqueList.reset(0);
+		//OrderTransparentList.reset(0);
 
-	// TestYoyo
-	//OrderOpaqueList.reset(0);
-	//OrderTransparentList.reset(0);
+		// Clear any landscape
+		clearRenderLandscapeList();
 
-	// Clear any landscape
-	clearRenderLandscapeList();
+		// Start LodCharacter Manager render.
+		CLodCharacterManager	*clodMngr= Scene->getLodCharacterManager();
+		if(clodMngr)
+			clodMngr->beginRender(getDriver(), CamPos);
 
-	// Start LodCharacter Manager render.
-	CLodCharacterManager	*clodMngr= Scene->getLodCharacterManager();
-	if(clodMngr)
-		clodMngr->beginRender(getDriver(), CamPos);
-
-	// Render the opaque materials
-	_CurrentPassOpaque = true;
-	OrderOpaqueList.begin();
-	while( OrderOpaqueList.get() != NULL )
-	{
-		CTransform	*tr= OrderOpaqueList.get();
-		tr->traverseRender();
-		OrderOpaqueList.next();
-	}
-
-	/* Render MeshBlock Manager. 
-		Some Meshs may be render per block. Interesting to remove VertexBuffer and Material setup overhead.
-		Faster if rendered before lods, for ZBuffer optimisation: render first near objects then far. 
-		Lods are usually far objects.
-	*/
-	MeshBlockManager.flush(Driver, Scene, this);
-
-
-	// End LodCharacter Manager render.
-	if(clodMngr)
-		clodMngr->endRender();
-
-
-	/* Render Scene CoarseMeshManager. 
-		Important to render them at end of Opaque rendering, because coarses instances are created/removed during
-		this model opaque rendering pass.
-	*/
-	if( Scene->getCoarseMeshManager() )
-		Scene->getCoarseMeshManager()->flushRender(Driver);
-
-	/* Render ShadowMaps.
-		Important to render them at end of Opaque rendering, because alphaBlended objects must blend with opaque
-		objects shadowed.
-		Therefore, transparent objects neither can't cast or receive shadows...
-
-		NB: Split in 2 calls and interleave Landscape Rendering between the 2. WHY???
-		Because it is far more efficient for VBLock (but not for ZBuffer optim...) because in renderGenerate()
-		the ShadowMeshSkinManager do lot of VBLocks that really stall (because only 2 VBHard with swap scheme). 
-
-		Therefore the first Lock that stall will wait not only for the first MeshSkin to finish but also for the
-		preceding landscape render to finish too! => big STALL.
-	*/
-
-	// Generate ShadowMaps
-	_ShadowMapManager.renderGenerate(Scene);
-
-	// Render the Landscape
-	renderLandscapes();
-
-	// Project ShadowMaps.
-	_ShadowMapManager.renderProject(Scene);
-
-
-	// Profile this frame?
-	if(Scene->isNextRenderProfile())
-	{
+		// Render the opaque materials
+		_CurrentPassOpaque = true;
 		OrderOpaqueList.begin();
 		while( OrderOpaqueList.get() != NULL )
 		{
-			OrderOpaqueList.get()->profileRender();
+			CTransform	*tr= OrderOpaqueList.get();
+			tr->traverseRender();
 			OrderOpaqueList.next();
+		}
+
+		/* Render MeshBlock Manager. 
+			Some Meshs may be render per block. Interesting to remove VertexBuffer and Material setup overhead.
+			Faster if rendered before lods, for ZBuffer optimisation: render first near objects then far. 
+			Lods are usually far objects.
+		*/
+		MeshBlockManager.flush(Driver, Scene, this);
+
+
+		// End LodCharacter Manager render.
+		if(clodMngr)
+			clodMngr->endRender();
+
+
+		/* Render Scene CoarseMeshManager. 
+			Important to render them at end of Opaque rendering, because coarses instances are created/removed during
+			this model opaque rendering pass.
+		*/
+		if( Scene->getCoarseMeshManager() )
+			Scene->getCoarseMeshManager()->flushRender(Driver);
+
+		/* Render ShadowMaps.
+			Important to render them at end of Opaque rendering, because alphaBlended objects must blend with opaque
+			objects shadowed.
+			Therefore, transparent objects neither can't cast or receive shadows...
+
+			NB: Split in 2 calls and interleave Landscape Rendering between the 2. WHY???
+			Because it is far more efficient for VBLock (but not for ZBuffer optim...) because in renderGenerate()
+			the ShadowMeshSkinManager do lot of VBLocks that really stall (because only 2 VBHard with swap scheme). 
+
+			Therefore the first Lock that stall will wait not only for the first MeshSkin to finish but also for the
+			preceding landscape render to finish too! => big STALL.
+		*/
+
+		// Generate ShadowMaps
+		_ShadowMapManager.renderGenerate(Scene);
+
+		// Render the Landscape
+		renderLandscapes();
+
+		// Project ShadowMaps.
+		_ShadowMapManager.renderProject(Scene);
+
+
+		// Profile this frame?
+		if(Scene->isNextRenderProfile())
+		{
+			OrderOpaqueList.begin();
+			while( OrderOpaqueList.get() != NULL )
+			{
+				OrderOpaqueList.get()->profileRender();
+				OrderOpaqueList.next();
+			}
 		}
 	}
 
-	// Render Transparent stuff.
-	// =============================
-
-	 // Render transparent materials (draw higher priority last, because their appear in front)
-	_CurrentPassOpaque = false;
-	for(std::vector<CLayeredOrderingTable<CTransform> >::iterator it = _OrderTransparentListByPriority.begin(); it != _OrderTransparentListByPriority.end(); ++it)
-	{		
-		it->begin(_LayersRenderingOrder);	
-		while( it->get() != NULL )
-		{				
-			it->get()->traverseRender();
-			it->next();
-		}
-	}	
-
-	// Profile this frame?
-	if(Scene->isNextRenderProfile())
+	if ((renderPart & UScene::RenderTransparent) && 
+		(renderPart & UScene::RenderFlare)
+	   )
 	{
+		// Render all transparent stuffs including flares.
+		// =============================
+		 // Render transparent materials (draw higher priority last, because their appear in front)
+		_CurrentPassOpaque = false;
 		for(std::vector<CLayeredOrderingTable<CTransform> >::iterator it = _OrderTransparentListByPriority.begin(); it != _OrderTransparentListByPriority.end(); ++it)
-		{
-			it->begin();
+		{		
+			it->begin(_LayersRenderingOrder);	
 			while( it->get() != NULL )
-			{
-				it->get()->profileRender();
+			{				
+				it->get()->traverseRender();
 				it->next();
+			}
+		}	
+
+		// Profile this frame?
+		if(Scene->isNextRenderProfile())
+		{
+			for(std::vector<CLayeredOrderingTable<CTransform> >::iterator it = _OrderTransparentListByPriority.begin(); it != _OrderTransparentListByPriority.end(); ++it)
+			{
+				it->begin();
+				while( it->get() != NULL )
+				{
+					it->get()->profileRender();
+					it->next();
+				}
+			}
+		}
+	}
+	else if (renderPart & UScene::RenderTransparent)
+	{
+		// Render all transparent stuffs, don't render flares
+		// =============================
+		_CurrentPassOpaque = false;
+		for(std::vector<CLayeredOrderingTable<CTransform> >::iterator it = _OrderTransparentListByPriority.begin(); it != _OrderTransparentListByPriority.end(); ++it)
+		{		
+			it->begin(_LayersRenderingOrder);	
+			while( it->get() != NULL )
+			{			
+				if (!it->get()->isFlare())
+				{				
+					it->get()->traverseRender();
+				}
+				it->next();
+			}
+		}	
+
+		// Profile this frame?
+		if(Scene->isNextRenderProfile())
+		{
+			for(std::vector<CLayeredOrderingTable<CTransform> >::iterator it = _OrderTransparentListByPriority.begin(); it != _OrderTransparentListByPriority.end(); ++it)
+			{
+				it->begin();
+				while( it->get() != NULL )
+				{
+					if (!it->get()->isFlare())
+					{
+						it->get()->profileRender();
+					}
+					it->next();
+				}
+			}
+		}
+	}
+	else if (renderPart & UScene::RenderFlare)
+	{
+		// Render flares only
+		// =============================
+		_CurrentPassOpaque = false;
+		for(std::vector<CLayeredOrderingTable<CTransform> >::iterator it = _OrderTransparentListByPriority.begin(); it != _OrderTransparentListByPriority.end(); ++it)
+		{		
+			it->begin(_LayersRenderingOrder);	
+			while( it->get() != NULL )
+			{			
+				if (it->get()->isFlare())
+				{				
+					it->get()->traverseRender();
+				}
+				it->next();
+			}
+		}	
+
+		// Profile this frame?
+		if(Scene->isNextRenderProfile())
+		{
+			for(std::vector<CLayeredOrderingTable<CTransform> >::iterator it = _OrderTransparentListByPriority.begin(); it != _OrderTransparentListByPriority.end(); ++it)
+			{
+				it->begin();
+				while( it->get() != NULL )
+				{
+					if (it->get()->isFlare())
+					{
+						it->get()->profileRender();
+					}
+					it->next();
+				}
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.124 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: scene.cpp,v 1.125 2004/06/29 13:36:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,7 +131,7 @@ void	CScene::registerBasics()
 
 // ***************************************************************************
 CScene::CScene(bool bSmallScene) : LightTrav(bSmallScene)
-{
+{	
 	HrcTrav.Scene= this;
 	ClipTrav.Scene= this;
 	LightTrav.Scene= this;
@@ -189,6 +189,10 @@ CScene::CScene(bool bSmallScene) : LightTrav(bSmallScene)
 
 	_WaterCallback = NULL;
 	_DeleteModelLater = false;
+
+	_FirstFlare = NULL;
+
+	_RenderedPart = UScene::RenderNothing;
 }
 // ***************************************************************************
 void	CScene::release()
@@ -294,75 +298,103 @@ void	CScene::initQuadGridClipManager ()
 
 
 // ***************************************************************************
-void	CScene::render(bool	doHrcPass)
-{
+void	CScene::render(bool	doHrcPass, UScene::TRenderPart renderPart /* = UScene::RenderAll */)
+{	
 	// Do not delete model during the rendering
 	_DeleteModelLater = true;
+		
+	if ((renderPart & _RenderedPart) != 0) // start to render again ?
+	{
+		_RenderedPart = UScene::RenderNothing;
+		// **** Misc.
+		/** Particle system handling (remove the resources of those which are too far, as their clusters may not have been parsed).
+		  * Note that only a few of them are tested at each call
+		  */
+		_ParticleSystemManager.refreshModels(ClipTrav.WorldFrustumPyramid, ClipTrav.CamPos);
+		
+		// Waiting Instance handling
+		double deltaT = _DeltaSystemTimeBetweenRender;
+		clamp (deltaT, 0.01, 0.1);
+		updateWaitingInstances(deltaT);
+		
+		// Reset profiling
+		_NextRenderProfile= false;
+	}
 
-	double fNewGlobalSystemTime = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());
-	_DeltaSystemTimeBetweenRender= fNewGlobalSystemTime - _GlobalSystemTime;
-	_GlobalSystemTime = fNewGlobalSystemTime;
-	//
-	++ _NumRender;
-	//
-	nlassert(CurrentCamera);
+	if (_RenderedPart == UScene::RenderNothing)
+	{			
 
-	// update models.
-	updateModels();
+		_FirstFlare = NULL;
 
-	// Use the camera to setup Clip / Render pass.
-	float left, right, bottom, top, znear, zfar;
-	CurrentCamera->getFrustum(left, right, bottom, top, znear, zfar);
+		double fNewGlobalSystemTime = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());
+		_DeltaSystemTimeBetweenRender= fNewGlobalSystemTime - _GlobalSystemTime;
+		_GlobalSystemTime = fNewGlobalSystemTime;
+		//
+		++ _NumRender;
+		//
+		nlassert(CurrentCamera);
 
-	// setup basic camera.
-	ClipTrav.setFrustum(left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+		// update models.
+		updateModels();
 
-	RenderTrav.setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
-	RenderTrav.setViewport (_Viewport);
+		// Use the camera to setup Clip / Render pass.
+		float left, right, bottom, top, znear, zfar;
+		CurrentCamera->getFrustum(left, right, bottom, top, znear, zfar);
 
-	LoadBalancingTrav.setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+		// setup basic camera.
+		ClipTrav.setFrustum(left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+
+		RenderTrav.setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+		RenderTrav.setViewport (_Viewport);
+
+		LoadBalancingTrav.setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
 
 
-	// Set Infos for cliptrav.
-	ClipTrav.Camera = CurrentCamera;
-	ClipTrav.setQuadGridClipManager (_QuadGridClipManager);
+		// Set Infos for cliptrav.
+		ClipTrav.Camera = CurrentCamera;
+		ClipTrav.setQuadGridClipManager (_QuadGridClipManager);
 
 
-	// **** For all render traversals, traverse them (except the Hrc one), in ascending order.
-	if( doHrcPass )
-		HrcTrav.traverse();	
+		// **** For all render traversals, traverse them (except the Hrc one), in ascending order.
+		if( doHrcPass )
+			HrcTrav.traverse();	
 
-	// Set Cam World Matrix for all trav that need it
-	ClipTrav.setCamMatrix(CurrentCamera->getWorldMatrix());
-	RenderTrav.setCamMatrix (CurrentCamera->getWorldMatrix());
-	LoadBalancingTrav.setCamMatrix (CurrentCamera->getWorldMatrix());
+		// Set Cam World Matrix for all trav that need it
+		ClipTrav.setCamMatrix(CurrentCamera->getWorldMatrix());
+		RenderTrav.setCamMatrix (CurrentCamera->getWorldMatrix());
+		LoadBalancingTrav.setCamMatrix (CurrentCamera->getWorldMatrix());
 
-	
-	// clip
-	ClipTrav.traverse();
-	// animDetail
-	AnimDetailTrav.traverse();
-	// loadBalance
-	LoadBalancingTrav.traverse();
-	//
-	_ParticleSystemManager.processAnimate(_EllapsedTime); // deals with permanently animated particle systems	
-	// Light
-	LightTrav.traverse();
+		
+		// clip
+		ClipTrav.traverse();
+		// animDetail
+		AnimDetailTrav.traverse();
+		// loadBalance
+		LoadBalancingTrav.traverse();
+		//
+		_ParticleSystemManager.processAnimate(_EllapsedTime); // deals with permanently animated particle systems	
+		// Light
+		LightTrav.traverse();
+	}
 	// render
-	RenderTrav.traverse();
-
-
-	// **** Misc.
-
-	/** Particle system handling (remove the resources of those which are too far, as their clusters may not have been parsed).
-      * Note that only a few of them are tested at each call
-	  */
-	_ParticleSystemManager.refreshModels(ClipTrav.WorldFrustumPyramid, ClipTrav.CamPos);
-	
-	// Waiting Instance handling
-	double deltaT = _DeltaSystemTimeBetweenRender;
-	clamp (deltaT, 0.01, 0.1);
-	updateWaitingInstances(deltaT);
+	RenderTrav.traverse(renderPart, _RenderedPart == UScene::RenderNothing);	
+	if (renderPart & UScene::RenderFlare)
+	{	
+		if (_FirstFlare)
+		{
+			IDriver *drv = getDriver();
+			CFlareModel::updateOcclusionQueryBegin(drv);
+			CFlareModel	*currFlare = _FirstFlare;
+			do 
+			{
+				currFlare->updateOcclusionQuery(drv);
+				currFlare = currFlare->Next;
+			} 
+			while(currFlare);
+			CFlareModel::updateOcclusionQueryEnd(drv);
+		}
+	}
+	_RenderedPart = (UScene::TRenderPart) (_RenderedPart | renderPart);
 
 	// Delete model deleted during the rendering
 	_DeleteModelLater = false;
@@ -370,10 +402,6 @@ void	CScene::render(bool	doHrcPass)
 	for (i=0; i<_ToDelete.size(); i++)
 		deleteModel (_ToDelete[i]);
 	_ToDelete.clear ();
-
-	// Reset profiling
-	_NextRenderProfile= false;
-
 
 	/*
 	uint64 total = PSStatsRegisterPSModelObserver +
@@ -606,7 +634,7 @@ void CScene::setShapeBank(CShapeBank*pShapeBank)
 // ***************************************************************************
 
 CTransformShape	*CScene::createInstance(const string &shapeName)
-{
+{	
 	NL3D_MEM_INSTANCE
 
 	// We must attach a bank to the scene (a ShapeBank handle the shape caches and 
@@ -759,6 +787,9 @@ void CScene::animate( TGlobalAnimationTime atTime )
 		// Set the light factor
 		ig->setPointLightFactor(*this);
 	}
+
+	// Rendered part are invalidate
+	_RenderedPart = UScene::RenderNothing;
 }
 
 
@@ -1432,6 +1463,44 @@ CInstanceGroup *CScene::findCameraClusterSystemFromRay(CInstanceGroup *startClus
 
 	return resultCS;
 }
+
+// ***************************************************************************
+void CScene::renderOcclusionTestMeshsWithCurrMaterial()
+{
+	for(std::set<CTransform*>::iterator it = _Models.begin(); it != _Models.end(); ++it)
+	{
+		if ((*it)->isFlare())
+		{
+			CFlareModel *flare = NLMISC::safe_cast<CFlareModel *>(*it);
+			flare->renderOcclusionTestMesh(*RenderTrav.getDriver());
+		}
+	}
+}
+
+// ***************************************************************************
+void CScene::renderOcclusionTestMeshs()
+{
+	nlassert(RenderTrav.getDriver());
+	RenderTrav.getDriver()->setupViewport(RenderTrav.getViewport());	
+	RenderTrav.getDriver()->activeVertexProgram(NULL);
+	IDriver::TPolygonMode oldPolygonMode = RenderTrav.getDriver()->getPolygonMode();
+	CMaterial m;
+	m.initUnlit();
+	m.setColor(CRGBA(255, 255, 255, 127));
+	m.setBlend(true);
+	m.setDstBlend(CMaterial::invsrcalpha);
+	m.setSrcBlend(CMaterial::srcalpha);
+	m.setZWrite(false);
+	RenderTrav.getDriver()->setupMaterial(m);
+	getDriver()->setPolygonMode(IDriver::Filled);
+	renderOcclusionTestMeshsWithCurrMaterial();
+	m.setColor(CRGBA::Black);
+	RenderTrav.getDriver()->setupMaterial(m);
+	getDriver()->setPolygonMode(IDriver::Line);
+	renderOcclusionTestMeshsWithCurrMaterial();
+	getDriver()->setPolygonMode(oldPolygonMode);
+}
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.23 2004/03/23 10:15:49 vizerie Exp $
+ * $Id: render_trav.h,v 1.24 2004/06/29 13:38:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "3d/light.h"
 #include "3d/mesh_block_manager.h"
 #include "3d/shadow_map_manager.h"
+#include "nel/3d/u_scene.h"
 #include <vector>
 
 
@@ -108,8 +109,10 @@ public:
 	//@{
 	/** First traverse the root (if any), then render the render list.
 	 * NB: no Driver clear buffers (color or ZBuffer) are done....
+	 * \param renderPart : The part of the scene that must be rendered
+	 * \param newRender true If scene render is beginning. Otherwise other parts of the scene have already been rendered.
 	 */
-	void				traverse();
+	void				traverse(UScene::TRenderPart renderPart, bool newRender);
 	//@}
 
 	/// \name RenderList.
@@ -323,7 +326,7 @@ public:
 
 	// ReSetup the Driver Frustum/Camera. Called internally and by ShadowMapManager only.
 	void			setupDriverCamera();
-
+	
 private:	
 
 	// A grow only list of models to be rendered.
@@ -417,8 +420,7 @@ private:
 	std::vector<CLandscapeModel*>	_LandscapeRenderList;
 
 	// @}
-
-
+		
 };
 
 

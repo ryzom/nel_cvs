@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.63 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.64 2004/06/29 13:36:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -535,7 +535,7 @@ sint32				CSceneUser::getCLodAnimIdByName(uint32 shapeId, const std::string &nam
 
 
 // ***************************************************************************
-void			CSceneUser::render()
+void			CSceneUser::render(TRenderPart renderPart /*= RenderAll*/, bool updateWaitingInstancesFlag /*= true*/, bool restoreMatrixContextAfterRender /*= true*/)
 {	
 	NL3D_MEM_SCENE_RENDER
 
@@ -545,13 +545,13 @@ void			CSceneUser::render()
 
 		if(_Scene.getCam() == NULL)
 			nlerror("render(): try to render with no camera linked (may have been deleted)");
-		_Scene.render();
+		_Scene.render(true, renderPart);
 	}
 
-	updateWaitingInstances();
+	if (updateWaitingInstancesFlag) updateWaitingInstances();
 
 	// Must restore the matrix context, so 2D/3D interface not disturbed.
-	_DriverUser->restoreMatrixContext();
+	if (restoreMatrixContextAfterRender) _DriverUser->restoreMatrixContext();
 }
 
 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.74 2002/03/26 14:37:46 valignat Exp $
+# $Id: Makefile.am,v 1.75 2002/03/28 16:34:43 berenguier Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -74,6 +74,8 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        event_mouse_listener.h                          \
                        fast_floor.cpp                                  \
                        fast_floor.h                                    \
+                       fast_mem.cpp                                    \
+                       fast_mem.h                                      \
                        flare_model.cpp                                 \
                        flare_model.h                                   \
                        flare_shape.cpp                                 \
@@ -157,6 +159,7 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        mesh_instance.h                                 \
                        mesh_morpher.cpp                                \
                        mesh_morpher.h                                  \
+                       mesh_mrm_skin.cpp                               \
                        mesh_mrm.cpp                                    \
                        mesh_mrm.h                                      \
                        mesh_mrm_instance.cpp                           \

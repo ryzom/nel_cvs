@@ -1003,6 +1003,10 @@ SOURCE=..\include\nel\3d\ps_attrib.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\3d\ps_edit.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\ps_emitter.cpp
 # End Source File
 # Begin Source File

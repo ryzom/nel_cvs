@@ -1,7 +1,7 @@
 /** \file operation.cpp
  * <File description>
  *
- * $Id: operation.cpp,v 1.3 2002/06/06 09:12:14 chafik Exp $
+ * $Id: operation.cpp,v 1.4 2002/06/12 16:07:09 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -368,7 +368,7 @@ namespace NLAIAGENT
 	}
 	void CAgentOperation::releaseClass()
 	{
-		delete CAgentOperation::IdAgentOperation;
+		//delete CAgentOperation::IdAgentOperation;
 		delete CAgentOperation::idMsgOnChangeMsg;
 		delete CAgentOperation::MsgOnChangeMsg;
 

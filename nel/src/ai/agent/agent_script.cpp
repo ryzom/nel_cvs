@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.120 2002/06/06 09:27:16 portier Exp $
+ * $Id: agent_script.cpp,v 1.121 2002/06/12 16:07:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -298,6 +298,7 @@ namespace NLAIAGENT
 																				1,
 																				new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid)) ;
 
+		ParamIdInitComponentMsg->incRef();
 		StaticMethod[CAgentScript::TInitComponent] = new CAgentScript::CMethodCall(	_RUNTEL_, 
 																				CAgentScript::TInitComponent, ParamInitComponentMsg,
 																				CAgentScript::CheckAll,
@@ -380,6 +381,8 @@ namespace NLAIAGENT
 			_Components = NULL;
 
 		_AgentManager = a._AgentManager;
+
+		mapSet = a.mapSet;
 		//if(_AgentManager) _AgentManager->incRef();
 
 /*		std::vector<NLAILOGIC::IBaseOperator *>::const_iterator it_o = a._Operators.begin();

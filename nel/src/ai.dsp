@@ -303,6 +303,10 @@ SOURCE=.\ai\agent\msg_stream.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\agent\operation.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\agent\paire_type.cpp
 # End Source File
 # Begin Source File
@@ -459,6 +463,10 @@ SOURCE=..\include\nel\ai\agent\msg_notify.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ai\agent\msg_on_change.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\ai\agent\msg_setvalue.h
 # End Source File
 # Begin Source File
@@ -472,6 +480,10 @@ SOURCE=..\include\nel\ai\agent\object_ident.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\agent\object_type.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\operation.h
 # End Source File
 # Begin Source File
 

@@ -1,0 +1,56 @@
+#
+# $Id: Makefile.am,v 1.1 2001/06/21 16:34:44 valignat Exp $
+#
+
+MAINTAINERCLEANFILES  = Makefile.in
+
+lib_LTLIBRARIES       = libnelpacs.la
+
+libnelpacs_la_SOURCES = chain.cpp                    \
+                        chain.h                      \
+                        chain_quad.cpp               \
+                        chain_quad.h                 \
+                        collision_callback.cpp       \
+                        collision_callback.h         \
+                        collision_desc.cpp           \
+                        collision_desc.h             \
+                        collision_ot.cpp             \
+                        collision_ot.h               \
+                        collision_surface_temp.cpp   \
+                        collision_surface_temp.h     \
+                        edge_collide.cpp             \
+                        edge_collide.h               \
+                        global_retriever.cpp         \
+                        global_retriever.h           \
+                        local_retriever.cpp          \
+                        local_retriever.h            \
+                        move_cell.cpp                \
+                        move_cell.h                  \
+                        move_container.cpp           \
+                        move_container.h             \
+                        move_container_inline.h      \
+                        move_element.cpp             \
+                        move_element.h               \
+                        move_element_inline.h        \
+                        move_primitive.cpp           \
+                        move_primitive.h             \
+                        primitive_world_image.cpp    \
+                        primitive_world_image.h      \
+                        retrievable_surface.cpp      \
+                        retrievable_surface.h        \
+                        retriever_bank.cpp           \
+                        retriever_bank.h             \
+                        retriever_instance.cpp       \
+                        retriever_instance.h         \
+                        surface_quad.cpp             \
+                        surface_quad.h               \
+                        vector_2s.cpp                \
+                        vector_2s.h
+
+libnelpacs_la_LIBADD  = -lc
+
+libnelpacs_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
+
+
+# End of Makefile.am
+

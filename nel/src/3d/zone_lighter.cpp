@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.22 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: zone_lighter.cpp,v 1.23 2003/01/30 17:43:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3382,14 +3382,14 @@ uint CZoneLighter::getAPatch (uint process)
 		// Next patch
 		index++;
 
+		// Last patch ?
+		if (index == _PatchInfo.size())
+			index = 0;
+
 		// First ?
 		if (firstIndex == index)
 			// no more patches
 			return 0xffffffff;
-
-		// Last patch ?
-		if (index == _PatchInfo.size())
-			index = 0;
 	}
 
 	// Visited

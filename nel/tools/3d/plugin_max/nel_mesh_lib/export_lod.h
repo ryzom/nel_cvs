@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.7 2001/09/03 10:00:01 besson Exp $
+ * $Id: export_lod.h,v 1.8 2001/10/10 15:39:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,10 @@
 #define NEL3D_APPDATA_DONTEXPORT					(1423062565)
 #define NEL3D_APPDATA_EXPORT_NOTE_TRACK				(1423062566)
 
+#define NEL3D_APPDATA_LUMELSIZEMUL					(1423062567)
+#define NEL3D_APPDATA_SOFTSHADOW_RADIUS				(1423062568)
+#define NEL3D_APPDATA_SOFTSHADOW_CONELENGTH			(1423062569)
+
 // ***************************************************************************
 
 #define NEL3D_APPDATA_LOD_BLEND_IN_DEFAULT			1
@@ -73,6 +77,9 @@
 #define NEL3D_APPDATA_LOD_DISTANCE_FINEST_DEFAULT	5.f
 #define NEL3D_APPDATA_LOD_DISTANCE_MIDDLE_DEFAULT	30.f
 #define NEL3D_APPDATA_LOD_DISTANCE_COARSEST_DEFAULT	200.f
+
+#define NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT		1.4f
+#define NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT	15.0f
 
 // ***************************************************************************
 

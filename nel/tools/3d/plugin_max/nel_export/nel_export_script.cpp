@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.6 2001/09/06 12:31:44 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.7 2001/10/10 15:39:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #include "std_afx.h"
 #include "nel_export.h"
 #include "../nel_mesh_lib/export_nel.h"
+#include "../nel_mesh_lib/export_lod.h"
+
 
 #define EXPORT_GET_ALLOCATOR
 
@@ -69,6 +71,10 @@ Value* export_shape_cf (Value** arg_list, int count)
 
 	// Ok ?
 	Boolean *ret=&false_value;
+
+	// Is the flag dont export set ?
+	if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, 0))
+		return ret;
 
 	// For the moment load the default config file.
 	CExportNelOptions opt;

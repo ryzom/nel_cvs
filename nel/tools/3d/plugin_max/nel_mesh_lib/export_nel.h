@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.25 2001/09/18 14:41:24 corvazier Exp $
+ * $Id: export_nel.h,v 1.26 2001/10/10 15:39:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,8 @@
 #define NEL_PARTICLE_SYSTEM_CLASS_ID	0x58ce2893
 #define NEL_FLARE_CLASS_ID_A			0x4e913532
 #define NEL_FLARE_CLASS_ID_B			0x3c2f2307
+#define MAX_MORPHER_CLASS_ID			Class_ID(0x17bb6854, 0xa5cba2a3)
+
 
 
 // ***************************************************************************
@@ -187,7 +189,8 @@ public:
 	  * 
 	  * This method does not care of the skeletonShape
 	  */
-	static NL3D::CMesh::CMeshBuild*	createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath, NL3D::CMesh::CMeshBaseBuild*& baseBuild);
+	static NL3D::CMesh::CMeshBuild*	createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath, 
+													NL3D::CMesh::CMeshBaseBuild*& baseBuild, const NLMISC::CMatrix &finalSpace = NLMISC::CMatrix::Identity);
 
 	/**
 	  * Build a NeL instance group
@@ -208,6 +211,12 @@ public:
 	static bool						hasLightMap (INode& node, TimeValue time);
 	static void						deleteLM (INode& node, CExportNelOptions& structExport);
 	static bool						calculateLM (NL3D::CMesh::CMeshBuild *pZeMeshBuild, 
+												NL3D::CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild,
+												INode& ZeNode, 
+												Interface& ip, TimeValue tvTime, bool absolutePath,
+												CExportNelOptions& structExport);
+
+	static bool						calculateLMRad(NL3D::CMesh::CMeshBuild *pZeMeshBuild, 
 												NL3D::CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild,
 												INode& ZeNode, 
 												Interface& ip, TimeValue tvTime, bool absolutePath,
@@ -485,8 +494,14 @@ private:
 	  */
 	static void						buildMeshInterface (TriObject &tri, NL3D::CMesh::CMeshBuild& buildMesh, const CMaxMeshBaseBuild& maxBaseBuild,
 														INode& node, TimeValue time, const TInodePtrInt* nodeMap, bool absolutePath, 
-														const NLMISC::CMatrix& newBasis=NLMISC::CMatrix::Identity);
+														const NLMISC::CMatrix& newBasis=NLMISC::CMatrix::Identity, const NLMISC::CMatrix& finalSpace=NLMISC::CMatrix::Identity);
 
+
+	/**
+	  * Get all the blend shapes from a node in the meshbuild form
+	  */
+	static void						getBSMeshBuild (std::vector<NL3D::CMesh::CMeshBuild*> &bsList, INode &node, TimeValue time, bool skined);
+	
 	/**
 	  * Build a NeL mrm parameters block
 	  */
@@ -498,6 +513,9 @@ private:
 	static NL3D::IMeshGeom			*buildMeshGeom (INode& node, Interface& ip, TimeValue time, const TInodePtrInt *nodeMap, bool absolutePath,
 													CExportNelOptions &opt, NL3D::CMeshBase::CMeshBaseBuild &buildBaseMesh, std::vector<std::string>& listMaterialName,
 													bool& isTransparent, bool& isOpaque, const NLMISC::CMatrix& WorldToparentMatrix, bool view);
+	/**
+	  * Build the mesh morpher info in the mesh geom	  */
+	static void						buildMeshMorph (NL3D::CMesh::CMeshBuild& buildMesh, INode &node, TimeValue time, bool skined);
 
 	// Get the normal of a face for a given corner in localSpace
 	static Point3					getLocalNormal (int face, int corner, Mesh& mesh);
@@ -530,6 +548,9 @@ private:
 	// Add tracks for the light
 	static void						addLightTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
 
+	// Add tracks for the morphing
+	static void						addMorphTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
+	
 	// Add tracks for the object
 	static void						addObjTracks (NL3D::CAnimation& animation, Object& obj, const char* parentName, Interface *ip);
 

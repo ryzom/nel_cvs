@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.18 2001/09/26 16:04:12 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.19 2001/10/10 15:39:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,6 +113,9 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 
 		// Add particle system tracks
 		addParticleSystemTracks(animation, node, sBaseName, ip);
+
+		// Add morph tracks
+		addMorphTracks (animation, node, sBaseName, ip);
 
 		// Add bones track
 		uint childrenCont=(uint)node.NumberOfChildren();
@@ -640,6 +643,49 @@ void CExportNel::addLightTracks (NL3D::CAnimation& animation, INode& node, const
 		}
 	}
 }
+
+// --------------------------------------------------
+
+void CExportNel::addMorphTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip)
+{
+	CExportDesc desc;
+	Modifier *pMorphMod = getModifier (&node, MAX_MORPHER_CLASS_ID);
+
+	if (pMorphMod == NULL)
+		return;
+
+	uint32 i;
+
+	for (i = 0; i < 100; ++i)
+	{
+		INode *pNode = (INode*)pMorphMod->GetReference (101+i);
+		if (pNode == NULL)
+			continue;
+		std::string name = parentName;
+		name += pNode->GetName();
+		name += "MorphFactor";
+		
+		IParamBlock *pb = (IParamBlock*)(pMorphMod->SubAnim (i+1));
+		Control *c = pb->GetController (0);
+		
+		if (c != NULL)
+		{
+			ITrack *pTrack = buildATrack (animation, *c, typeFloat, node, desc, ip, NULL, NULL);
+			if (pTrack)
+			{
+				if (animation.getTrackByName (name.c_str()))
+				{
+					delete pTrack;
+				}
+				else
+				{
+					animation.addTrack (name.c_str(), pTrack);
+				}
+			}
+		}
+	}
+}
+
 
 // --------------------------------------------------
 

@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.8 2001/09/03 10:00:01 besson Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.9 2001/10/10 15:39:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,6 +112,9 @@ public:
 	int						DontExport;
 	int						ExportNoteTrack;
 
+	std::string				LumelSizeMul;
+	std::string				SoftShadowRadius;
+	std::string				SoftShadowConeLength;
 };
 
 // ***************************************************************************
@@ -265,6 +268,9 @@ int CALLBACK LodDialogCallback (
 			else
 				EnableWindow (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), false);
 
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_LUMELSIZEMUL), currentParam->LumelSizeMul.c_str());
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_SOFTSHADOW_RADIUS), currentParam->SoftShadowRadius.c_str());
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_SOFTSHADOW_CONELENGTH), currentParam->SoftShadowConeLength.c_str());
 			
 			// Move dialog
 			RECT windowRect, desktopRect;
@@ -358,6 +364,13 @@ int CALLBACK LodDialogCallback (
 							currentParam->InstanceGroupName=tmp;
 							currentParam->DontExport=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), BM_GETCHECK, 0, 0);
 							currentParam->ExportNoteTrack=SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_GETCHECK, 0, 0);
+
+							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_LUMELSIZEMUL), tmp, 512);
+							currentParam->LumelSizeMul = tmp;
+							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_SOFTSHADOW_RADIUS), tmp, 512);
+							currentParam->SoftShadowRadius = tmp;
+							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_SOFTSHADOW_CONELENGTH), tmp, 512);
+							currentParam->SoftShadowConeLength = tmp;
 							// Quit
 							EndDialog(hwndDlg, IDOK);
 						}
@@ -596,6 +609,9 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.InstanceGroupName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_IGNAME, "");
 		param.DontExport=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED);
 		param.ExportNoteTrack=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED);
+		param.LumelSizeMul=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, "1.0");
+		param.SoftShadowRadius=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toString(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT));
+		param.SoftShadowConeLength=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, toString(NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT));
 		
 
 		// Something selected ?
@@ -648,6 +664,13 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.DontExport= BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED)!=param.ExportNoteTrack)
 				param.ExportNoteTrack = BST_INDETERMINATE;
+
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, "1.0")!=param.LumelSizeMul)
+				param.LumelSizeMul = "";
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toString(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT))!=param.SoftShadowRadius)
+				param.SoftShadowRadius = "";
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, toString(NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT))!=param.SoftShadowConeLength)
+				param.SoftShadowConeLength = "";
 
 			// Get name count for this node
 			std::list<std::string> tmplist;
@@ -727,6 +750,12 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					if (param.ExportNoteTrack != BST_INDETERMINATE)
 						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, param.ExportNoteTrack);
 				}
+				if (param.LumelSizeMul != "")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, param.LumelSizeMul);
+				if (param.SoftShadowRadius != "")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, param.SoftShadowRadius);
+				if (param.SoftShadowConeLength != "")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, param.SoftShadowConeLength);
 
 				if (param.ListActived)
 				{

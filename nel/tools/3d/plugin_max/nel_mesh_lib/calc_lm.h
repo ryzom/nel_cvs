@@ -1,7 +1,7 @@
 /** \file calc_lm.h
  * LightMap Calculation settings
  *
- * $Id: calc_lm.h,v 1.1 2001/07/11 10:11:42 besson Exp $
+ * $Id: calc_lm.h,v 1.2 2001/10/10 15:39:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,21 +26,70 @@
 #ifndef NL_CALC_LM_H
 #define NL_CALC_LM_H
 
-// ***************************************************************************
+// ***********************************************************************************************
+
+#include "nel/misc/rgba.h"
+
+#include <string>
+#include <set>
+
+// ***********************************************************************************************
 
 #define MAXLIGHTMAPSIZE		1024
 
-// ***************************************************************************
+// ***********************************************************************************************
 
 #define NEL3D_APPDATA_LM			41654684
 #define NEL3D_APPDATA_LM_DYNAMIC	(NEL3D_APPDATA_LM)
 #define NEL3D_APPDATA_LM_GROUPNAME	(NEL3D_APPDATA_LM+1)
 #define NEL3D_APPDATA_LM_ANIMATED	(NEL3D_APPDATA_LM+2)
 
-// ***************************************************************************
+// ***********************************************************************************************
+extern void convertToWorldCoordinate	(NL3D::CMesh::CMeshBuild *pMB, 
+										NL3D::CMeshBase::CMeshBaseBuild *pMBB, 
+										NLMISC::CVector &translation = NLMISC::CVector(0.0f, 0.0f, 0.0f));
 
+extern NLMISC::CMatrix getObjectToWorldMatrix	(NL3D::CMesh::CMeshBuild *pMB, 
+												NL3D::CMeshBase::CMeshBaseBuild *pMBB);
 
-// ***************************************************************************
+// ***********************************************************************************************
+// Light representation from max
+struct SLightBuild
+{
+	std::string GroupName;
+	enum EType { LightAmbient, LightPoint, LightDir, LightSpot };
+	EType			Type;
+	NLMISC::CVector Position;				// Used by LightPoint and LightSpot
+	NLMISC::CVector Direction;				// Used by LightSpot and LightDir
+	float			rRadiusMin, rRadiusMax;	// Used by LightPoint and LightSpot
+	float			rHotspot, rFallof;		// Used by LightSpot
+	NLMISC::CRGBA	Ambient;
+	NLMISC::CRGBA	Diffuse;
+	NLMISC::CRGBA	Specular;
+	bool			bCastShadow;
+	float			rMult;
+
+	NLMISC::CBitmap ProjBitmap;				// For projector (bitmap)
+	NLMISC::CMatrix mProj;					// For projector (matrix)
+
+	float			rDirRadius;				// Accel for directionnal lights : Radius of the 
+											// cylinder passing trough the bounding sphere of the 
+											// object under consideration
+
+	std::set<std::string> setExclusion;		// List of object name excluded by this light
+
+	float			rSoftShadowRadius;		// The radius max used when calculating soft shadows
+	float			rSoftShadowConeLength;	// The distance between vertex and cylinder beginning
+	
+	// -------------------------------------------------------------------------------------------
+
+	SLightBuild ();
+	bool canConvertFromMaxLight (INode *node, TimeValue tvTime);
+	void convertFromMaxLight (INode *node,TimeValue tvTime);
+
+};
+
+// ***********************************************************************************************
 
 #endif // NL_CALC_LM_H
 

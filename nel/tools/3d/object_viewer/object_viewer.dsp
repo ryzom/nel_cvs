@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=object_viewer - Win32 Debug
+CFG=object_viewer - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,13 +13,14 @@ CFG=object_viewer - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "object_viewer.mak" CFG="object_viewer - Win32 Debug"
+!MESSAGE NMAKE /f "object_viewer.mak" CFG="object_viewer - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "object_viewer - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "object_viewer - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "object_viewer - Win32 ReleaseDebug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "object_viewer - Win32 DebugFast" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -104,7 +105,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"std_afx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"std_afx.h" /FD /Zm200 /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_RELEASE_DEBUG" /Yu"std_afx.h" /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
@@ -116,6 +117,35 @@ LINK32=link.exe
 # ADD BASE LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
 # ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
 
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 DebugFast"
+
+# PROP BASE Use_MFC 6
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "object_viewer___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "object_viewer___Win32_DebugFast"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 6
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "DebugFast"
+# PROP Intermediate_Dir "DebugFast"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /Yu"std_afx.h" /FD /D /GZ /Zm200 /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_DEBUG_FAST" /FR /Yu"std_afx.h" /FD /D /GZ /Zm200 /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
+# SUBTRACT BASE LINK32 /pdb:none /incremental:no
+# ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none /incremental:no
+
 !ENDIF 
 
 # Begin Target
@@ -123,6 +153,7 @@ LINK32=link.exe
 # Name "object_viewer - Win32 Release"
 # Name "object_viewer - Win32 Debug"
 # Name "object_viewer - Win32 ReleaseDebug"
+# Name "object_viewer - Win32 DebugFast"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"

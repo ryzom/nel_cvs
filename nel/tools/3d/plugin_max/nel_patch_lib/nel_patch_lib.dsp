@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=nel_patch_lib - Win32 Hybrid
+CFG=nel_patch_lib - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,7 +13,7 @@ CFG=nel_patch_lib - Win32 Hybrid
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "nel_patch_lib.mak" CFG="nel_patch_lib - Win32 Hybrid"
+!MESSAGE NMAKE /f "nel_patch_lib.mak" CFG="nel_patch_lib - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -21,6 +21,7 @@ CFG=nel_patch_lib - Win32 Hybrid
 !MESSAGE "nel_patch_lib - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE "nel_patch_lib - Win32 Hybrid" (based on "Win32 (x86) Static Library")
 !MESSAGE "nel_patch_lib - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
+!MESSAGE "nel_patch_lib - Win32 DebugFast" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -109,8 +110,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "nel_patch_lib___Win32_ReleaseDebug"
-# PROP Intermediate_Dir "nel_patch_lib___Win32_ReleaseDebug"
+# PROP Output_Dir "ReleaseDebug"
+# PROP Intermediate_Dir "ReleaseDebug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /FD /c
 # SUBTRACT BASE CPP /YX /Yc /Yu
@@ -118,6 +119,29 @@ LIB32=link.exe -lib
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo
+# ADD LIB32 /nologo
+
+!ELSEIF  "$(CFG)" == "nel_patch_lib - Win32 DebugFast"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "nel_patch_lib___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "nel_patch_lib___Win32_DebugFast"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "DebugFast"
+# PROP Intermediate_Dir "DebugFast"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "__STL_DEBUG" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "NL_DEBUG_FAST" /FR /Yu"stdafx.h" /FD /GZ /c
+# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -133,6 +157,7 @@ LIB32=link.exe -lib
 # Name "nel_patch_lib - Win32 Debug"
 # Name "nel_patch_lib - Win32 Hybrid"
 # Name "nel_patch_lib - Win32 ReleaseDebug"
+# Name "nel_patch_lib - Win32 DebugFast"
 # Begin Source File
 
 SOURCE=.\nel_patch_mesh.cpp
@@ -167,6 +192,8 @@ SOURCE=.\rpo.cpp
 
 # ADD BASE CPP /Yu"stdafx.h"
 # ADD CPP /Yu"stdafx.h"
+
+!ELSEIF  "$(CFG)" == "nel_patch_lib - Win32 DebugFast"
 
 !ENDIF 
 

@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.9 2001/09/05 15:46:53 vizerie Exp $
+ * $Id: export_scene.cpp,v 1.10 2001/10/10 15:39:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,8 +46,8 @@ using namespace std;
 
 // ***************************************************************************
 
-// \todo remove this and make a method
-extern void convertToWorldCoordinate( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB );
+#include "calc_lm.h" // For convertToWorldCoordinate
+
 extern CVector vGlobalPos;
 
 // ***************************************************************************

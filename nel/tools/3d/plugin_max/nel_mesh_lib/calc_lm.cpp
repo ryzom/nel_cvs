@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.24 2001/10/05 14:59:46 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.25 2001/10/10 15:39:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
+#include "export_lod.h"
 #include "../nel_patch_lib/rpo.h"
 #include "nel/misc/time_nl.h"
 #include "nel/misc/file.h"
@@ -48,6 +49,7 @@ using namespace NLMISC;
 
 #include "calc_lm.h"
 #include "calc_lm_plane.h"
+#include "calc_lm_rt.h"
 
 
 
@@ -58,201 +60,231 @@ using namespace NLMISC;
 CVector vGlobalPos;
 
 // ***********************************************************************************************
-struct SLightBuild
+// SLightBuild
+// ***********************************************************************************************
+
+// -----------------------------------------------------------------------------------------------
+SLightBuild::SLightBuild()
 {
-	string GroupName;
-	enum EType { LightAmbient, LightPoint, LightDir, LightSpot };
-	EType Type;
-	CVector Position;				// Used by LightPoint and LightSpot
-	CVector Direction;				// Used by LightSpot and LightDir
-	float rRadiusMin, rRadiusMax;	// Used by LightPoint and LightSpot
-	float rHotspot, rFallof;		// Used by LightSpot
-	CRGBA Ambient;
-	CRGBA Diffuse;
-	CRGBA Specular;
-	bool bCastShadow;
-	float rMult;
-	Bitmap *pProjMap;
-	CMatrix mProj;
+	Type = LightPoint;
+	Position = CVector(0.0, 0.0, 0.0);
+	Direction = CVector(1.0, 0.0, 0.0);
+	rRadiusMin = 1.0f;
+	rRadiusMax = 2.0f;
+	Ambient = CRGBA(0, 0, 0, 0);
+	Diffuse = CRGBA(0, 0, 0, 0);
+	Specular = CRGBA(0, 0, 0, 0);
+	bCastShadow = false;
+	rMult = 1.0f;
+	GroupName = "GlobalLight";
+	rDirRadius = 0.0f;
+}
 
-	// Accel for dir light
-	float rDirRadius; // Radius of the cylinder passing trough the bounding sphere of the object
+// -----------------------------------------------------------------------------------------------
+bool SLightBuild::canConvertFromMaxLight (INode *node, TimeValue tvTime)
+{
+	// Get a pointer on the object's node
+	Object *obj = node->EvalWorldState(tvTime).obj;
 
-	set<string> setExclusion;
+	// Check if there is an object
+	if (!obj)
+		return false;
 
-	// -----------------------------------------------------------------------------------------------
-	SLightBuild()
+	// Get a GenLight from the node
+	if (!(obj->SuperClassID()==LIGHT_CLASS_ID))
+		return false;
+
+	GenLight *maxLight = (GenLight *) obj;
+	bool deleteIt=false;
+	if (obj != maxLight) 
+		deleteIt = true;
+
+	Interval valid=NEVER;
+	LightState ls;
+	if (maxLight->EvalLightState(tvTime, valid, &ls)!=REF_SUCCEED)
+		return false;
+
+	if( deleteIt )
+		delete maxLight;
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------------------------
+void SLightBuild::convertFromMaxLight (INode *node,TimeValue tvTime)
+{
+	// Get a pointer on the object's node
+	Object *obj = node->EvalWorldState(tvTime).obj;
+
+	// Check if there is an object
+	if (!obj) return;
+
+	// Get a GenLight from the node
+	if (!(obj->SuperClassID()==LIGHT_CLASS_ID))
+		return ;
+
+	GenLight *maxLight = (GenLight *) obj;
+	bool deleteIt = false;
+	if (obj != maxLight) 
+		deleteIt = true;
+
+	Interval valid=NEVER;
+	LightState ls;
+	if (maxLight->EvalLightState(tvTime, valid, &ls)!=REF_SUCCEED)
+		return;
+
+	// Is the light is animatable ? (TEMP MAT)
+	int bDynamic = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_DYNAMIC, 0);
+	if( bDynamic )
+		this->GroupName = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, "GlobalLight");
+	else
+		this->GroupName = "GlobalLight";
+
+	// Eval the light state fot this tvTime
+	// Set the light mode
+	switch (maxLight->Type())
 	{
-		Type = LightPoint;
-		Position = CVector(0.0, 0.0, 0.0);
-		Direction = CVector(1.0, 0.0, 0.0);
-		rRadiusMin = 1.0f;
-		rRadiusMax = 2.0f;
-		Ambient = CRGBA(0, 0, 0, 0);
-		Diffuse = CRGBA(0, 0, 0, 0);
-		Specular = CRGBA(0, 0, 0, 0);
-		bCastShadow = false;
-		rMult = 1.0f;
-		GroupName = "GlobalLight";
-		pProjMap = NULL;
-		rDirRadius = 0.0f;
+		case OMNI_LIGHT:
+			this->Type = SLightBuild::EType::LightPoint;
+		break;
+		case TSPOT_LIGHT:
+		case FSPOT_LIGHT:
+			this->Type = SLightBuild::EType::LightSpot;
+		break;
+		case DIR_LIGHT:
+		case TDIR_LIGHT:
+			this->Type = SLightBuild::EType::LightDir;
+		break;
+		default:
+			// Not initialized
+		break;
 	}
 
-	// -----------------------------------------------------------------------------------------------
-	bool convertFromMaxLight (INode*node, TimeValue tvTime)
+	// *** Set the light color
+
+	// Get the color
+	CRGBA nelColor;
+	Point3 maxColor = maxLight->GetRGBColor(tvTime);
+
+	// Mul by multiply
+	CRGBAF nelFColor;
+	nelFColor.R = maxColor.x;
+	nelFColor.G = maxColor.y;
+	nelFColor.B = maxColor.z;
+	nelFColor.A = 1.f;
+	// nelFColor   *= maxLight->GetIntensity(tvTime);
+	nelColor = nelFColor;
+
+	// Affect the ambiant color ?
+	this->Ambient = CRGBA (0,0,0);
+	this->Diffuse = CRGBA (0,0,0);
+	this->Specular = CRGBA (0,0,0);
+
+	
+	if (maxLight->GetAmbientOnly())
 	{
-		// Get a pointer on the object's node
-		Object *obj = node->EvalWorldState(tvTime).obj;
+		this->Ambient = nelColor;
+	}
+	else
+	{
+		// Affect the diffuse color ?
+		if( maxLight->GetAffectDiffuse() )
+			this->Diffuse = nelColor;
+		// Affect the specular color ?
+		if (maxLight->GetAffectSpecular())
+			this->Specular = nelColor;
+	}
 
-		// Check if there is an object
-		if (!obj)
-			return false;
+	// Set the light position
+	Point3 pos = node->GetNodeTM(tvTime).GetTrans ();
+	CVector position;
+	position.x=pos.x;
+	position.y=pos.y;
+	position.z=pos.z;
 
-		// Get a GenLight from the node
-		if (!(obj->SuperClassID()==LIGHT_CLASS_ID))
-			return false;
+	// Set the position
+	this->Position = position - vGlobalPos;
 
-		GenLight *maxLight = (GenLight *) obj;
-		bool deleteIt=false;
-		if (obj != maxLight) 
-			deleteIt = true;
+	// Set the light direction
+	CVector direction;
+	INode* target = node->GetTarget ();
+	if (target)
+	{
+		// Get the position of the target
+		Point3 posTarget=target->GetNodeTM (tvTime).GetTrans ();
+		CVector positionTarget;
+		positionTarget.x=posTarget.x;
+		positionTarget.y=posTarget.y;
+		positionTarget.z=posTarget.z;
 
-		Interval valid=NEVER;
-		LightState ls;
-		if (maxLight->EvalLightState(tvTime, valid, &ls)!=REF_SUCCEED)
-			return false;
+		// Direction
+		direction=positionTarget-position;
+		direction.normalize ();
+	}
+	else	// No target
+	{
+		// Get orientation of the source as direction
+		CMatrix nelMatrix;
+		CExportNel::convertMatrix (nelMatrix, node->GetNodeTM(tvTime));
 
-		// Is the light is animatable ? (TEMP MAT)
-		int bDynamic = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_DYNAMIC, 0);
-		if( bDynamic )
-			this->GroupName = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, "GlobalLight");
-		else
-			this->GroupName = "GlobalLight";
+		// Direction is -Z
+		direction=-nelMatrix.getK();
+		direction.normalize ();
+	}
 
-		// Eval the light state fot this tvTime
-		// Set the light mode
-		switch (maxLight->Type())
+	// Set the direction
+	this->Direction = direction;
+
+	this->rHotspot = (float)(Pi * maxLight->GetHotspot(tvTime) /(2.0*180.0));
+	this->rFallof =  (float)(Pi * maxLight->GetFallsize(tvTime)/(2.0*180.0));
+
+	if (maxLight->GetUseAtten())
+	{
+		this->rRadiusMin = maxLight->GetAtten (tvTime, ATTEN_START);
+		this->rRadiusMax = maxLight->GetAtten (tvTime, ATTEN_END);
+	}
+	else
+	{	// Limit
+		this->rRadiusMin = 10.0;
+		this->rRadiusMax = 10.0;
+	}
+
+	this->bCastShadow = ( maxLight->GetShadow() != 0 );
+	this->rMult = maxLight->GetIntensity (tvTime);
+
+	// Construct the bitmap projector if there is a projector
+	if (maxLight->GetProjector() != 0)
+	{
+		Texmap* tm = maxLight->GetProjMap();
+		CExportNel::convertMatrix (this->mProj, node->GetNodeTM(tvTime));
+		if (CExportNel::isClassIdCompatible( *tm, Class_ID (BMTEX_CLASS_ID,0)))
 		{
-			case OMNI_LIGHT:
-				this->Type = SLightBuild::EType::LightPoint;
-			break;
-			case TSPOT_LIGHT:
-			case FSPOT_LIGHT:
-				this->Type = SLightBuild::EType::LightSpot;
-			break;
-			case DIR_LIGHT:
-			case TDIR_LIGHT:
-				this->Type = SLightBuild::EType::LightDir;
-			break;
-			default:
-				// Not initialized
-			break;
-		}
+			BitmapTex* bmt = (BitmapTex*)tm;
+			Bitmap *pProjMap = bmt->GetBitmap(tvTime);
 
-		// *** Set the light color
 
-		// Get the color
-		CRGBA nelColor;
-		Point3 maxColor = maxLight->GetRGBColor(tvTime);
-
-		// Mul by multiply
-		CRGBAF nelFColor;
-		nelFColor.R = maxColor.x;
-		nelFColor.G = maxColor.y;
-		nelFColor.B = maxColor.z;
-		nelFColor.A = 1.f;
-		// nelFColor   *= maxLight->GetIntensity(tvTime);
-		nelColor = nelFColor;
-
-		// Affect the ambiant color ?
-		this->Ambient = CRGBA (0,0,0);
-		this->Diffuse = CRGBA (0,0,0);
-		this->Specular = CRGBA (0,0,0);
-
-		
-		if (maxLight->GetAmbientOnly())
-		{
-			this->Ambient = nelColor;
-		}
-		else
-		{
-			// Affect the diffuse color ?
-			if( maxLight->GetAffectDiffuse() )
-				this->Diffuse = nelColor;
-			// Affect the specular color ?
-			if (maxLight->GetAffectSpecular())
-				this->Specular = nelColor;
-		}
-
-		// Set the light position
-		Point3 pos = node->GetNodeTM(tvTime).GetTrans ();
-		CVector position;
-		position.x=pos.x;
-		position.y=pos.y;
-		position.z=pos.z;
-
-		// Set the position
-		this->Position = position - vGlobalPos;
-
-		// Set the light direction
-		CVector direction;
-		INode* target = node->GetTarget ();
-		if (target)
-		{
-			// Get the position of the target
-			Point3 posTarget=target->GetNodeTM (tvTime).GetTrans ();
-			CVector positionTarget;
-			positionTarget.x=posTarget.x;
-			positionTarget.y=posTarget.y;
-			positionTarget.z=posTarget.z;
-
-			// Direction
-			direction=positionTarget-position;
-			direction.normalize ();
-		}
-		else	// No target
-		{
-			// Get orientation of the source as direction
-			CMatrix nelMatrix;
-			CExportNel::convertMatrix (nelMatrix, node->GetNodeTM(tvTime));
-
-			// Direction is -Z
-			direction=-nelMatrix.getK();
-			direction.normalize ();
-		}
-
-		// Set the direction
-		this->Direction = direction;
-
-		this->rHotspot = (float)(Pi * maxLight->GetHotspot(tvTime) /(2.0*180.0));
-		this->rFallof =  (float)(Pi * maxLight->GetFallsize(tvTime)/(2.0*180.0));
-
-		if (maxLight->GetUseAtten())
-		{
-			this->rRadiusMin = maxLight->GetAtten (tvTime, ATTEN_START);
-			this->rRadiusMax = maxLight->GetAtten (tvTime, ATTEN_END);
-		}
-		else
-		{	// Limit
-			this->rRadiusMin = 10.0;
-			this->rRadiusMax = 10.0;
-		}
-
-		this->bCastShadow = ( maxLight->GetShadow() != 0 );
-		this->rMult = maxLight->GetIntensity (tvTime);
-
-		if (maxLight->GetProjector() != 0)
-		{
-			Texmap* tm = maxLight->GetProjMap();
-			CExportNel::convertMatrix (this->mProj, node->GetNodeTM(tvTime));
-			if (CExportNel::isClassIdCompatible( *tm, Class_ID (BMTEX_CLASS_ID,0)))
+			// Construct the projector bitmap if some
+			if( pProjMap != NULL )
 			{
-				BitmapTex* bmt = (BitmapTex*)tm;
-				this->pProjMap = bmt->GetBitmap(tvTime);
+				ProjBitmap.resize (pProjMap->Width(), pProjMap->Height(), CBitmap::RGBA);
+				// Copy the bitmap
+				std::vector<uint8> &rBitmap = ProjBitmap.getPixels();
+				BMM_Color_64 OnePixel;
+				for( uint32 k = 0; k < ProjBitmap.getHeight(); ++k )
+				for( uint32 j = 0; j < ProjBitmap.getWidth(); ++j )
+				{
+					pProjMap->GetPixels( j, k, 1, &OnePixel );
+					rBitmap[(j+k*ProjBitmap.getWidth())*4+0] = OnePixel.r>>8;
+					rBitmap[(j+k*ProjBitmap.getWidth())*4+1] = OnePixel.g>>8;
+					rBitmap[(j+k*ProjBitmap.getWidth())*4+2] = OnePixel.b>>8;
+					rBitmap[(j+k*ProjBitmap.getWidth())*4+3] = OnePixel.a>>8;
+				}
+				ProjBitmap.buildMipMaps();
 			}
 		}
+	}
 
-		/// \todo hulud: modify this code to work under max4
+	/// \todo hulud: modify this code to work under max4
 #if (MAX_RELEASE < 4000)
 		// Convert exclusion list
 		NameTab& ntExclu = maxLight->GetExclusionList();
@@ -262,15 +294,19 @@ struct SLightBuild
 			this->setExclusion.insert( tmp );
 		}
 #endif // (MAX_RELEASE < 4000)
-	
-		if( deleteIt )
-			delete maxLight;
 
-		return true;
-	}
+	// Get Soft Shadow informations
+	string sTmp = CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toString(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT));
+	this->rSoftShadowRadius = (float)atof(sTmp.c_str());
+	sTmp = CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, toString(NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT));
+	this->rSoftShadowConeLength = (float)atof(sTmp.c_str());
 
-};
+	if( deleteIt )
+		delete maxLight;
+}
 
+// ***********************************************************************************************
+// SGradient
 // ***********************************************************************************************
 struct SGradient
 {
@@ -473,366 +509,8 @@ struct SGradient
 
 };
 
-// ***********************************************************************************************
-// An element of the cube grid and the directionnal light grid
-struct SGridCell
-{
-	CMesh::CFace* pF;
-	CMesh::CMeshBuild* pMB;
-	CMeshBase::CMeshBaseBuild* pMBB;
-};
-
-// ***********************************************************************************************
-// Represent a cube made of grids centered on (0,0,0) with a size of 1
-class SCubeGrid
-{
-	enum gridPos { kUp = 0, kDown, kLeft, kRight, kFront, kBack };
-	CQuadGrid<SGridCell> grids[6];
-
-	sint32 nSelGrid;
-	CQuadGrid<SGridCell>::CIterator itSel;
-
-public:
-
-	// -----------------------------------------------------------------------------------------------
-	void project( CTriangle &tri, CPlane pyr[4], CPlane &gridPlane, 
-					sint32 nGridNb, SGridCell &cell )
-	{
-		CVector vIn[7], vOut[7];
-		sint32 i, nOut;
-		vIn[0] = tri.V0; vIn[1] = tri.V1; vIn[2] = tri.V2;
-		nOut = pyr[0].clipPolygonFront( vIn, vOut, 3 );
-		if( nOut == 0 ) return;
-		for( i = 0; i < nOut; ++i ) vIn[i] = vOut[i];
-		nOut = pyr[1].clipPolygonFront( vIn, vOut, nOut );
-		if( nOut == 0 ) return;
-		for( i = 0; i < nOut; ++i ) vIn[i] = vOut[i];
-		nOut = pyr[2].clipPolygonFront( vIn, vOut, nOut );
-		if( nOut == 0 ) return;
-		for( i = 0; i < nOut; ++i ) vIn[i] = vOut[i];
-		nOut = pyr[3].clipPolygonFront( vIn, vOut, nOut );
-		if( nOut >= 3 )
-		{
-			CVector vMin(1,1,1), vMax(-1,-1,-1);
-			for( i = 0; i < nOut; ++i )
-			{
-				vOut[i] = gridPlane.intersect( CVector(0,0,0), vOut[i] );
-				if( vMin.x > vOut[i].x ) vMin.x = vOut[i].x;
-				if( vMin.y > vOut[i].y ) vMin.y = vOut[i].y;
-				if( vMin.z > vOut[i].z ) vMin.z = vOut[i].z;
-				if( vMax.x < vOut[i].x ) vMax.x = vOut[i].x;
-				if( vMax.y < vOut[i].y ) vMax.y = vOut[i].y;
-				if( vMax.z < vOut[i].z ) vMax.z = vOut[i].z;
-			}
-			// Create the bbox
-			grids[nGridNb].insert( vMin, vMax, cell );
-		}
-	}
-
-public :
-	
-	// -----------------------------------------------------------------------------------------------
-	SCubeGrid()
-	{
-		CMatrix	tmp;
-		CVector	I, J, K;
-
-		// grids[kUp].changeBase(  );
-		I = CVector(  1,  0,  0 );
-		J = CVector(  0, -1,  0 );
-		K = CVector(  0,  0, -1 );
-		tmp.identity(); tmp.setRot( I, J, K, true );
-		grids[kDown].changeBase( tmp );
-
-		I = CVector(  0,  0,  1 );
-		J = CVector(  0,  1,  0 );
-		K = CVector( -1,  0,  0 );
-		tmp.identity(); tmp.setRot( I, J, K, true);
-		grids[kLeft].changeBase( tmp );
-
-		I = CVector(  0,  0, -1 );
-		J = CVector(  0,  1,  0 );
-		K = CVector(  1,  0,  0 );
-		tmp.identity(); tmp.setRot( I, J, K, true);
-		grids[kRight].changeBase( tmp );
-
-		I = CVector(  1,  0,  0 );
-		J = CVector(  0,  0,  1 );
-		K = CVector(  0, -1,  0 );
-		tmp.identity(); tmp.setRot( I, J, K, true);
-		grids[kFront].changeBase( tmp );
-
-		I = CVector(  1,  0,  0 );
-		J = CVector(  0,  0, -1 );
-		K = CVector(  0,  1,  0 );
-		tmp.identity(); tmp.setRot( I, J, K, true);
-		grids[kBack].changeBase( tmp );
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	void create( int nSize )
-	{
-		grids[kUp].create	( nSize, 1.0f / ((float)nSize) );
-		grids[kDown].create	( nSize, 1.0f / ((float)nSize) );
-		grids[kLeft].create	( nSize, 1.0f / ((float)nSize) );
-		grids[kRight].create( nSize, 1.0f / ((float)nSize) );
-		grids[kFront].create( nSize, 1.0f / ((float)nSize) );
-		grids[kBack].create	( nSize, 1.0f / ((float)nSize) );
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	void insert( CTriangle &tri, SGridCell &cell )
-	{
-		CPlane p[4], gp;
-		// Construct clip pyramid for grid : UP
-		p[0].make( CVector(0,0,0), CVector( -1,-1,+1 ), CVector( +1,-1,+1 ) );
-		p[1].make( CVector(0,0,0), CVector( +1,-1,+1 ), CVector( +1,+1,+1 ) );
-		p[2].make( CVector(0,0,0), CVector( +1,+1,+1 ), CVector( -1,+1,+1 ) );
-		p[3].make( CVector(0,0,0), CVector( -1,+1,+1 ), CVector( -1,-1,+1 ) );
-		gp.make( CVector(0,0,1), CVector(0,0,0.5) );
-		project( tri, p, gp, kUp, cell );
-		// Construct clip pyramid for grid : DOWN
-		p[0].make( CVector(0,0,0), CVector( +1,-1,-1 ), CVector( -1,-1,-1 ) );
-		p[1].make( CVector(0,0,0), CVector( -1,-1,-1 ), CVector( -1,+1,-1 ) );
-		p[2].make( CVector(0,0,0), CVector( -1,+1,-1 ), CVector( +1,+1,-1 ) );
-		p[3].make( CVector(0,0,0), CVector( +1,+1,-1 ), CVector( +1,-1,-1 ) );
-		gp.make( CVector(0,0,-1), CVector(0,0,-0.5) );
-		project( tri, p, gp, kDown, cell );
-		// Construct clip pyramid for grid : LEFT
-		p[0].make( CVector(0,0,0), CVector( -1,-1,-1 ), CVector( -1,-1,+1 ) );
-		p[1].make( CVector(0,0,0), CVector( -1,-1,+1 ), CVector( -1,+1,+1 ) );
-		p[2].make( CVector(0,0,0), CVector( -1,+1,+1 ), CVector( -1,+1,-1 ) );
-		p[3].make( CVector(0,0,0), CVector( -1,+1,-1 ), CVector( -1,-1,-1 ) );
-		gp.make( CVector(-1,0,0), CVector(-0.5,0,0) );
-		project( tri, p, gp, kLeft, cell );
-		// Construct clip pyramid for grid : RIGHT
-		p[0].make( CVector(0,0,0), CVector( +1,-1,+1 ), CVector( +1,-1,-1 ) );
-		p[1].make( CVector(0,0,0), CVector( +1,-1,-1 ), CVector( +1,+1,-1 ) );
-		p[2].make( CVector(0,0,0), CVector( +1,+1,-1 ), CVector( +1,+1,+1 ) );
-		p[3].make( CVector(0,0,0), CVector( +1,+1,+1 ), CVector( +1,-1,+1 ) );
-		gp.make( CVector(1,0,0), CVector(0.5,0,0) );
-		project( tri, p, gp, kRight, cell );
-		// Construct clip pyramid for grid : FRONT
-		p[0].make( CVector(0,0,0), CVector( -1,-1,-1 ), CVector( +1,-1,-1 ) );
-		p[1].make( CVector(0,0,0), CVector( +1,-1,-1 ), CVector( +1,-1,+1 ) );
-		p[2].make( CVector(0,0,0), CVector( +1,-1,+1 ), CVector( -1,-1,+1 ) );
-		p[3].make( CVector(0,0,0), CVector( -1,-1,+1 ), CVector( -1,-1,-1 ) );
-		gp.make( CVector(0,-1,0), CVector(0,-0.5,0) );
-		project( tri, p, gp, kFront, cell );
-		// Construct clip pyramid for grid : BACK
-		p[0].make( CVector(0,0,0), CVector( +1,+1,+1 ), CVector( +1,+1,-1 ) );
-		p[1].make( CVector(0,0,0), CVector( +1,+1,-1 ), CVector( -1,+1,-1 ) );
-		p[2].make( CVector(0,0,0), CVector( -1,+1,-1 ), CVector( -1,+1,+1 ) );
-		p[3].make( CVector(0,0,0), CVector( -1,+1,+1 ), CVector( +1,+1,+1 ) );
-		gp.make( CVector(0,1,0), CVector(0,0.5,0) );
-		project( tri, p, gp, kBack, cell );
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	// Select the square of one of the 6 grids which is intersected by the 
-	// following ray : (0,0,0) -> v
-	void select( CVector &v )
-	{
-		CPlane gp;
-		// Get the plane
-		if( ( -v.z <= v.x ) && ( v.x <= v.z ) &&
-			( -v.z <= v.y ) && ( v.y <= v.z ) &&
-			( 0.0f <= v.z ) )
-		{
-			nSelGrid = kUp;
-			gp.make( CVector(0,0,1), CVector(0,0,0.5) );
-		}
-		if( ( v.z <= v.x ) && ( v.x <= -v.z ) &&
-			( v.z <= v.y ) && ( v.y <= -v.z ) &&
-			( v.z <= 0.0f ) )
-		{
-			nSelGrid = kDown;
-			gp.make( CVector(0,0,-1), CVector(0,0,-0.5) );
-		}
-		if( ( v.x <= 0.0f ) &&
-			( v.x <= v.y ) && ( v.y <= -v.x ) &&
-			( v.x <= v.z ) && ( v.z <= -v.x ) )
-		{
-			nSelGrid = kLeft;
-			gp.make( CVector(-1,0,0), CVector(-0.5,0,0) );
-		}
-		if( ( 0.0f <= v.x ) &&
-			( -v.x <= v.y ) && ( v.y <= v.x ) &&
-			( -v.x <= v.z ) && ( v.z <= v.x ) )
-		{
-			nSelGrid = kRight;
-			gp.make( CVector(1,0,0), CVector(0.5,0,0) );
-		}
-		if( ( v.y <= v.x ) && ( v.x <= -v.y ) &&
-			( v.y <= 0.0f ) &&
-			( v.y <= v.z ) && ( v.z <= -v.y ) )
-		{
-			nSelGrid = kFront;
-		gp.make( CVector(0,-1,0), CVector(0,-0.5,0) );
-		}
-		if( ( -v.y <= v.x ) && ( v.x <= v.y ) &&
-			( 0.0f <= v.y ) &&
-			( -v.y <= v.z ) && ( v.z <= v.y ) )
-		{
-			nSelGrid = kBack;
-			gp.make( CVector(0,1,0), CVector(0,0.5,0) );
-		}
-		nlassert(nSelGrid!=-1);
-		CVector newV = gp.intersect( CVector(0,0,0), v );
-		grids[nSelGrid].select(newV, newV);
-		itSel = grids[nSelGrid].begin();
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	SGridCell getSel()
-	{
-		return *itSel;
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	void nextSel()
-	{
-		++itSel;
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	// To call after a nextSel to test if this is the end of the selection
-	bool isEndSel()
-	{
-		return (itSel == grids[nSelGrid].end());
-	}
-};
-
-// ***********************************************************************************************
-// Grid aligned on a directionnal light
-struct SDirGrid
-{
-	CQuadGrid<SGridCell> grid;
-	CMatrix invMat;
-	CQuadGrid<SGridCell>::CIterator itSel;
-	
-	float rMin, rMax;	// distance min and max from the light position to clip all rays 
-						// the distance is given in the direction of the light direction
-
-	// -----------------------------------------------------------------------------------------------
-	SDirGrid()
-	{
-		rMin = 100000.0f;
-		rMax = -100000.0f;
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	void create (int nSize, float rRadius, CVector &vDirection)
-	{
-		grid.create	( nSize, 2*rRadius );
-
-		CMatrix	tmp;
-		CVector	I = (fabs(vDirection*CVector(1.f,0,0))>0.99)?CVector(0.f,1.f,0.f):CVector(1.f,0.f,0.f);
-		CVector	K = vDirection;
-		CVector	J = K^I;
-		J.normalize();
-		I=J^K;
-		I.normalize();
-		
-		tmp.identity();
-		tmp.setRot (I, J, K, true);
-		invMat = tmp;		
-		invMat.invert ();
-
-		tmp.identity();
-		grid.changeBase (tmp);
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	void insert (CTriangle &tri, SGridCell &cell)
-	{
-		CVector vMin;
-		CVector vMax;
-		CTriangle t = tri;
-
-		t.V0 = invMat.mulPoint (t.V0);
-		t.V1 = invMat.mulPoint (t.V1);
-		t.V2 = invMat.mulPoint (t.V2);
-
-		vMin = t.V0; vMax = t.V0;
-		
-		if (vMin.x > t.V1.x) vMin.x = t.V1.x;
-		if (vMin.y > t.V1.y) vMin.y = t.V1.y;
-		if (vMin.z > t.V1.z) vMin.z = t.V1.z;
-		if (vMin.x > t.V2.x) vMin.x = t.V2.x;
-		if (vMin.y > t.V2.y) vMin.y = t.V2.y;
-		if (vMin.z > t.V2.z) vMin.z = t.V2.z;
-
-		if (vMax.x < t.V1.x) vMax.x = t.V1.x;
-		if (vMax.y < t.V1.y) vMax.y = t.V1.y;
-		if (vMax.z < t.V1.z) vMax.z = t.V1.z;
-		if (vMax.x < t.V2.x) vMax.x = t.V2.x;
-		if (vMax.y < t.V2.y) vMax.y = t.V2.y;
-		if (vMax.z < t.V2.z) vMax.z = t.V2.z;
-
-		grid.insert (vMin, vMax, cell);
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	// Select the square of one of the 6 grids which is intersected by the 
-	// following ray : (0,0,0) -> v
-	void select( CVector &v )
-	{
-		CVector vSel = v;
-		vSel = invMat.mulPoint (vSel);
-		grid.select (vSel, vSel);
-		itSel = grid.begin();
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	SGridCell getSel()
-	{
-		return *itSel;
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	void nextSel()
-	{
-		++itSel;
-	}
-
-	// -----------------------------------------------------------------------------------------------
-	// To call after a nextSel to test if this is the end of the selection
-	bool isEndSel()
-	{
-		return (itSel == grid.end());
-	}
-
-
-};
-
-// ***********************************************************************************************
-struct SWorldRT
-{
-	vector<CMesh::CMeshBuild *>			vMB;
-	vector<CMeshBase::CMeshBaseBuild *> vMBB;
-	vector<INode *>						vINode;
-	
-	vector<SCubeGrid> cgAccel;	// One cube grid by light point or spot
-	vector<CBitmap> proj;		// One projector by light spot
-	vector<SDirGrid> dirAccel;	// One grid by light (directionnal only)
-};
-
 // -----------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
-
-TTicks timerTotalTime = 0;
-TTicks timerBuildWorldRT = 0;
-TTicks timerCalcRT = 0;
-TTicks timerExportLighting = 0;
-TTicks timerInit = 0;
-TTicks timerCalc = 0;
-TTicks timerPlac = 0;
-TTicks timerSave = 0;
-TTicks timerCreate = 0;
-TTicks timerCreateResize = 0;
-TTicks timerModify = 0;
-TTicks timerModifyStretch, timerModifyCreate, timerModifyPutIn;
 
 CExportNelOptions gOptions;
 
@@ -1203,67 +881,6 @@ bool vertexInSquare(double xs, double ys, double ws, double hs, double xv, doubl
 }
 
 // -----------------------------------------------------------------------------------------------
-bool intersectionTriangleSphere( CTriangle &t, CBSphere &s )
-{
-	// if a vertex of the triangle is in the sphere
-	CVector v = t.V0 - s.Center;
-	float f = v.norm();
-	if( f < s.Radius )
-		return true;
-	v = t.V1 - s.Center;
-	f = v.norm();
-	if( f < s.Radius )
-		return true;
-	v = t.V2 - s.Center;
-	f = v.norm();
-	if( f < s.Radius )
-		return true;
-	// Ok sonow project the center of the triangle on the plane
-	CPlane p;
-	p.make( t.V0, t.V1, t.V2 );
-	p.normalize();
-	
-	CVector newCenter = p.project( s.Center );
-	v = newCenter - s.Center;
-	float newRadius = v.norm() / s.Radius;
-	if( newRadius > 1.0 )
-		newRadius = 1.0;
-	newRadius = cosf( newRadius * PI / 2.0f );
-
-	CVector n = p.getNormal();
-	CPlane p2;
-	p2.make( t.V0, t.V1, t.V0 + n ); p2.normalize();
-	f = p2*newCenter;
-	p2.make( t.V1, t.V2, t.V1 + n ); p2.normalize();
-	float f2 = p2*newCenter;
-	p2.make( t.V2, t.V0, t.V2 + n ); p2.normalize();
-	float f3 = p2*newCenter;
-
-	// Is the newcenter insied the triangle ?
-	if( ( f <= 0.0 ) && ( f2 <= 0.0 ) && ( f3 <= 0.0 ) )
-		return true;
-	if( ( f >= 0.0 ) && ( f2 >= 0.0 ) && ( f3 >= 0.0 ) )
-		return true;
-
-	// Is the newCenter at a distance < newradius from one of the triangle edge ?
-	if( ( fabs(f) < newRadius ) || ( fabs(f2) < newRadius ) || ( fabs(f3) < newRadius ) )
-		return true;
-	return false;
-}
-
-// -----------------------------------------------------------------------------------------------
-bool intersectionSphereCylinder (CBSphere &s, CVector &cyCenter, CVector &cyDir, float cyRadius)
-{
-	float t = ((s.Center - cyCenter)*cyDir) / (cyDir*cyDir);
-	CVector Xp = cyCenter + t*cyDir;
-	float d = (s.Center-Xp).norm();
-	if (d <= (cyRadius+s.Radius))
-		return true;
-	else
-		return false;
-}
-
-// -----------------------------------------------------------------------------------------------
 // Automatic mapping of a face (dont remove)
 void MapFace( CMesh::CFace *pFace, vector<CVector> &Vertices, float rRatio )
 {
@@ -1332,19 +949,19 @@ float getUVDist( CUV& UV1, CUV& UV2 )
 }
 
 // -----------------------------------------------------------------------------------------------
-void getLightBuildList(std::vector<SLightBuild>& vectLight, TimeValue tvTime, Interface& ip, INode*node=NULL )
+void getLightNodeList (std::vector<INode*>& vectLightNode, TimeValue tvTime, Interface& ip, INode*node=NULL )
 {
 	if( node == NULL )
 		node = ip.GetRootNode();
 
 	SLightBuild nelLight;
 
-	if( nelLight.convertFromMaxLight(node, tvTime))
-		vectLight.push_back (nelLight);
+	if (nelLight.canConvertFromMaxLight(node, tvTime))
+		vectLightNode.push_back (node);
 
 	// Recurse sub node
 	for (int i=0; i<node->NumberOfChildren(); i++)
-		getLightBuildList(vectLight, tvTime, ip, node->GetChildNode(i));
+		getLightNodeList (vectLightNode, tvTime, ip, node->GetChildNode(i));
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -1360,8 +977,16 @@ void getLightBuilds( vector<SLightBuild> &lights, TimeValue tvTime, Interface& i
 	amb.Ambient.A = 255;
 	amb.Specular = amb.Diffuse = CRGBA(0,0,0,0);
 	lights.push_back( amb );
-	getLightBuildList( lights, tvTime, ip );
 
+	vector<INode*> nodeLights;
+
+	getLightNodeList (nodeLights, tvTime, ip);
+
+	lights.resize(nodeLights.size());
+	for(uint32 i = 0; i < nodeLights.size(); ++i)
+	{
+		lights[i].convertFromMaxLight (nodeLights[i], tvTime);
+	}
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -1576,14 +1201,11 @@ void SortPlanesBySurface( vector<SLMPlane*> &planes )
 // -----------------------------------------------------------------------------------------------
 void ModifyLMPlaneWithOverSampling( SLMPlane *pPlane, double rOverSampling, bool bCreateMask )
 {
-	TTicks ttTemp = CTime::getPerformanceTime();
 	uint32 i, j;
 	vector<CMesh::CFace*>::iterator ItFace = pPlane->faces.begin();
 	uint32 nNbFace = pPlane->faces.size();
 
-	TTicks ttTemp2 = CTime::getPerformanceTime();
 	pPlane->stretch( rOverSampling );
-	timerModifyStretch += CTime::getPerformanceTime() - ttTemp2;
 
 	MultiplyFaceUV1( ItFace, nNbFace, rOverSampling );
 
@@ -1601,12 +1223,10 @@ void ModifyLMPlaneWithOverSampling( SLMPlane *pPlane, double rOverSampling, bool
 
 			TTicks ttTemp3 = CTime::getPerformanceTime();
 			pPlane->createFromFace (pF);
-			timerModifyCreate += CTime::getPerformanceTime() - ttTemp3;
 
 			++ItFace;
 		}
 	}
-	timerModify += CTime::getPerformanceTime() - ttTemp;
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -1637,168 +1257,12 @@ void PlaceLMPlaneInLMPLane( SLMPlane &Dst, SLMPlane &Src )
 			break;
 		}
 	}
-	timerPlac += CTime::getPerformanceTime() - ttTemp;
-}
-
-// -----------------------------------------------------------------------------------------------
-// rtVal is the raytrace information see SLMPlane.ray for more information
-void testCell (CRGBAF &retValue, SGridCell &cell, CVector &vLightPos, CVector &vVertexPos, uint8& rtVal)
-{
-	CVector hit;
-
-	CTriangle t(cell.pMB->Vertices[cell.pF->Corner[0].Vertex],
-				cell.pMB->Vertices[cell.pF->Corner[1].Vertex],
-				cell.pMB->Vertices[cell.pF->Corner[2].Vertex] );
-	CPlane plane;
-	plane.make( t.V0, t.V1, t.V2 );
-
-	if( t.intersect( vLightPos, vVertexPos, hit, plane ) )
-	{
-		if( cell.pMBB->Materials[cell.pF->MaterialId].getBlend() ||
-			cell.pMBB->Materials[cell.pF->MaterialId].getAlphaTest() )
-		{ // This is a transparent face we have to look in the texture
-			ITexture *pT = cell.pMBB->Materials[cell.pF->MaterialId].getTexture(0);
-			CRGBAF cPixMap;
-			if( pT == NULL )
-			{
-				retValue *= 1.0f - (cell.pMBB->Materials[cell.pF->MaterialId].getOpacity()/255.0f);
-				cPixMap = CRGBAF(1.0f, 1.0f, 1.0f, 0.0f);
-			}
-			else
-			{
-				CVector gradU, gradV;
-				t.computeGradient(	cell.pF->Corner[0].Uvs[0].U,
-									cell.pF->Corner[1].Uvs[0].U,
-									cell.pF->Corner[2].Uvs[0].U, gradU );
-				t.computeGradient(	cell.pF->Corner[0].Uvs[0].V,
-									cell.pF->Corner[1].Uvs[0].V,
-									cell.pF->Corner[2].Uvs[0].V, gradV );
-				float u = cell.pF->Corner[0].Uvs[0].U+gradU*(hit-t.V0);
-				float v = cell.pF->Corner[0].Uvs[0].V+gradV*(hit-t.V0);
-				u = fmodf( u, 1.0f ); if( u < 0.0f ) u += 1.0f;
-				v = fmodf( v, 1.0f ); if( v < 0.0f ) v += 1.0f;
-
-				if( pT->getWidth() == 0 )
-					((CTextureFile*)pT)->generate();
-				cPixMap = pT->getColor( u,v );
-				cPixMap /= 255.0f;
-			}
-			cPixMap.A *= cell.pMBB->Materials[cell.pF->MaterialId].getOpacity()/255.0f;
-			cPixMap.R *= cell.pMBB->Materials[cell.pF->MaterialId].getDiffuse().R/255.0f;
-			cPixMap.G *= cell.pMBB->Materials[cell.pF->MaterialId].getDiffuse().G/255.0f;
-			cPixMap.B *= cell.pMBB->Materials[cell.pF->MaterialId].getDiffuse().B/255.0f;
-			if (cell.pMBB->Materials[cell.pF->MaterialId].getStainedGlassWindow())
-			{
-				retValue = (1.0f - cPixMap.A)*(	retValue*(1.0f-cPixMap.A) + 
-												retValue*cPixMap*cPixMap.A );
-			}
-			else
-			{
-				retValue *= (1.0f - cPixMap.A);
-			}
-			rtVal = 255;
-		}
-		else
-		{ // This is not a transparent face so if we intersect we get shadow
-			if( rtVal < 255 ) rtVal += 1;
-			retValue = CRGBAF(0.0f, 0.0f, 0.0f, 0.0f);
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------------------------
-CRGBAF testRayLightPointSpot (CVector &vLightPos, CVector &vVertexPos, SWorldRT &wrt, sint32 nLightNb, uint8& rtVal)
-{
-	CRGBAF retValue(1.0f, 1.0f, 1.0f, 1.0f);
-	// Optim avec Cube Grid
-	wrt.cgAccel[nLightNb].select( vVertexPos - vLightPos );
-	while( !wrt.cgAccel[nLightNb].isEndSel() )
-	{
-		// Get selected element
-		SGridCell cell = wrt.cgAccel[nLightNb].getSel();
-
-		testCell (retValue, cell, vLightPos, vVertexPos, rtVal);
-		if ((retValue.R == 0.0f) &&
-			(retValue.G == 0.0f) &&
-			(retValue.B == 0.0f))
-			return retValue;
-			
-		// Next selected element
-		wrt.cgAccel[nLightNb].nextSel();
-	}
-	return retValue;
-}
-
-// -----------------------------------------------------------------------------------------------
-CRGBAF testRayLightDir (CVector &vLightPos, CVector &vVertexPos, SWorldRT &wrt, sint32 nLightNb, uint8& rtVal)
-{
-	CRGBAF retValue(1.0f, 1.0f, 1.0f, 1.0f);
-
-	// Optim avec Grid pour la direction
-	wrt.dirAccel[nLightNb].select (vVertexPos);
-	while (!wrt.dirAccel[nLightNb].isEndSel())
-	{
-		// Get selected element
-		SGridCell cell = wrt.dirAccel[nLightNb].getSel();
-
-		testCell (retValue, cell, vLightPos, vVertexPos, rtVal);
-		if ((retValue.R == 0.0f) &&
-			(retValue.G == 0.0f) &&
-			(retValue.B == 0.0f))
-			return retValue;
-		
-		// Next selected element
-		wrt.dirAccel[nLightNb].nextSel();
-	}
-
-	return retValue;
-}
-
-// -----------------------------------------------------------------------------------------------
-CRGBAF RayTraceAVertex( CVector &p, SWorldRT &wrt, sint32 nLightNb, SLightBuild& rLight, uint8& rtVal )
-{
-	TTicks ttTemp = CTime::getPerformanceTime();
-
-	CRGBAF Factor = CRGBAF(0.0f, 0.0f, 0.0f, 0.0f);
-
-	switch( rLight.Type )
-	{
-		case SLightBuild::LightAmbient:
-			Factor = CRGBAF(1.0f, 1.0f, 1.0f, 1.0f);
-		break;
-		case SLightBuild::LightSpot:
-		case SLightBuild::LightPoint:
-		{
-			CVector light_p = p - rLight.Position;
-			float light_p_distance = light_p.norm();
-			light_p_distance = light_p_distance - (0.01f+(0.05f*light_p_distance/100.0f)); // Substract n centimeter
-			light_p.normalize();
-			light_p *= light_p_distance;
-			Factor = testRayLightPointSpot (rLight.Position, rLight.Position + light_p, wrt, nLightNb, rtVal);
-		}
-		break;
-		case SLightBuild::LightDir:
-		{
-			float lightdist = ((p - rLight.Position)*rLight.Direction) / (rLight.Direction*rLight.Direction);
-			lightdist = lightdist - wrt.dirAccel[nLightNb].rMin;
-			CVector lightpos = p - rLight.Direction*lightdist;
-			CVector vertexpos = p - (0.01f+(0.05f*lightdist/100.0f))*rLight.Direction;
-			Factor = testRayLightDir(lightpos, vertexpos, wrt, nLightNb, rtVal);
-		}
-		break;
-		default:
-		break;
-	}
-
-	timerCalcRT += CTime::getPerformanceTime() - ttTemp;
-
-	return Factor;
 }
 
 // -----------------------------------------------------------------------------------------------
 CRGBAF LightAVertex( uint8 &rtVal, CVector &pRT, CVector &p, CVector &n, 
 					vector<sint32> &vLights, vector<SLightBuild> &AllLights,
-					SWorldRT &wrt, bool bDoubleSided, bool bRcvShadows )
+					CRTWorld &wrt, bool bDoubleSided, bool bRcvShadows )
 {
 	CRGBAF rgbafRet;
 					
@@ -1835,7 +1299,6 @@ CRGBAF LightAVertex( uint8 &rtVal, CVector &pRT, CVector &p, CVector &n,
 					light_intensity = 1.0f - (p_light_distance-rLight.rRadiusMin)/(rLight.rRadiusMax-rLight.rRadiusMin);
 				p_light.normalize();
 
-				// ??? light_intensity *= light_intensity * light_intensity;
 				if( bDoubleSided && (n*p_light < 0.0f) )
 				{
 					p_light = -p_light;
@@ -1893,7 +1356,7 @@ CRGBAF LightAVertex( uint8 &rtVal, CVector &pRT, CVector &p, CVector &n,
 				if( ang > rLight.rHotspot )
 					light_intensity *= 1.0f - (ang-rLight.rHotspot)/(rLight.rFallof-rLight.rHotspot);
 				light_intensity *= rLight.rMult;
-				// ??? light_intensity *= light_intensity * light_intensity;
+
 				if( bDoubleSided && (n*p_light < 0.0f) )
 				{
 					p_light = -p_light;
@@ -1907,7 +1370,9 @@ CRGBAF LightAVertex( uint8 &rtVal, CVector &pRT, CVector &p, CVector &n,
 				lightDiffCol.G = light_intensity * rLight.Diffuse.G / 255.0f;
 				lightDiffCol.B = light_intensity * rLight.Diffuse.B / 255.0f;
 				lightDiffCol.A = light_intensity * rLight.Diffuse.A / 255.0f;
-				if (( rLight.pProjMap != NULL ) && (light_intensity > 0.0f ))
+
+				// Apply projected image if some
+				if ((rLight.ProjBitmap.getHeight() != 0) && (light_intensity > 0.0f))
 				{
 					// Make the plane where the texture is
 					CPlane plane; // Projection plane
@@ -1923,7 +1388,7 @@ CRGBAF LightAVertex( uint8 &rtVal, CVector &pRT, CVector &p, CVector &n,
 					x = ((x / tanf( rLight.rFallof ))+1.0f)/2.0f;
 					y = ((y / tanf( rLight.rFallof ))+1.0f)/2.0f;
 					
-					CRGBAF col = wrt.proj[vLights[nLight]].getColor(x, y);
+					CRGBAF col = rLight.ProjBitmap.getColor(x, y);
 					lightDiffCol.R *= col.R/255.0f;
 					lightDiffCol.G *= col.G/255.0f;
 					lightDiffCol.B *= col.B/255.0f;
@@ -1937,7 +1402,7 @@ CRGBAF LightAVertex( uint8 &rtVal, CVector &pRT, CVector &p, CVector &n,
 		if( light_intensity > 0.0f )
 		{
 			if( bRcvShadows && rLight.bCastShadow && gOptions.bShadow )
-				RTFactor = RayTraceAVertex( pRT, wrt, vLights[nLight], rLight, rtVal );
+				RTFactor = wrt.raytrace (pRT, nLight, rtVal, gOptions.nExportLighting==1);
 			else
 				RTFactor = CRGBAF(1.0f, 1.0f, 1.0f, 1.0f);
 		}
@@ -1978,11 +1443,10 @@ bool segmentIntersectBSphere( CVector &p1, CVector &p2, CBSphere &bs )
 	return false;
 }
 
-
 // -----------------------------------------------------------------------------------------------
 void FirstLight( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, SLMPlane &Plane, vector<CVector> &vVertices, 
 				CMatrix& ToWorldMat, vector<sint32> &vLights, vector<SLightBuild> &AllLights,
-				uint32 nLayerNb, SWorldRT &wrt )
+				uint32 nLayerNb, CRTWorld &wrt )
 {
 	// Fill interiors
 	vector<CMesh::CFace*>::iterator ItFace = Plane.faces.begin();
@@ -2058,7 +1522,7 @@ void SecondLight( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB,
 				 vector<SLMPlane*>::iterator ItPlanes, uint32 nNbPlanes,
 					vector<CVector> &vVertices, CMatrix& ToWorldMat, 
 					vector<sint32> &vLights, vector<SLightBuild> &AllLights,
-					uint32 nLayerNb, SWorldRT &wrt)
+					uint32 nLayerNb, CRTWorld &wrt)
 {
 	// Fill interiors
 	uint32 nPlanes1;
@@ -2281,7 +1745,7 @@ bool isAllFaceMapped( vector<CMesh::CFace*>::iterator ItFace, sint32 nNbFaces )
 }
 
 // -----------------------------------------------------------------------------------------------
-CAABBox getMeshBBox( CMesh::CMeshBuild& rMB, CMeshBase::CMeshBaseBuild &rMBB, bool bNeedToTransform )
+CAABBox getMeshBBox (CMesh::CMeshBuild& rMB, CMeshBase::CMeshBaseBuild &rMBB, bool bNeedToTransform)
 {
 	CAABBox meshBox;
 	if( bNeedToTransform )
@@ -2370,30 +1834,6 @@ bool isInteractionLightMesh( SLightBuild &rSLB, CMesh::CMeshBuild &rMB, CMeshBas
 }
 
 // -----------------------------------------------------------------------------------------------
-bool isInteractionLightMeshWithoutAmbient( SLightBuild &rSLB, CMesh::CMeshBuild &rMB, CMeshBase::CMeshBaseBuild &rMBB )
-{
-	CAABBox meshBox;
-
-	if (rSLB.Type == SLightBuild::LightAmbient)
-		return false;
-
-	meshBox = getMeshBBox( rMB, rMBB, true );
-
-	if (rSLB.Type == SLightBuild::LightDir)
-	{
-		// Use acceleration for dir light to not select all nodes in scene
-		CBSphere s;
-		s.Radius = meshBox.getHalfSize().norm();
-		s.Center = meshBox.getCenter();
-		// Test against the cylinder
-		if (intersectionSphereCylinder (s, rSLB.Position, rSLB.Direction, rSLB.rDirRadius))
-			return true;
-		return false;
-	}
-	return isLightCanCastShadowOnBox( rSLB, meshBox );
-}
-
-// -----------------------------------------------------------------------------------------------
 // Get all lights that can cast shadows on the current mesh
 void getLightInteract( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, vector<SLightBuild> &AllLights, vector< vector<sint32> >&vvLights )
 {
@@ -2427,98 +1867,11 @@ void getLightInteract( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, 
 }
 
 // -----------------------------------------------------------------------------------------------
-void getAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes,  vector< CMeshBase::CMeshBaseBuild* > &MeshesBase,
-						vector< INode* > &INodes, Interface& ip, vector<SLightBuild> &AllLights, bool bAbsPath )
-{
-	// Get time
-	TimeValue tvTime = ip.GetTime();
-	// Get node count
-	int nNumSelNode = ip.GetSelNodeCount();
-	// Save all selected objects
-	for (int nNode=0; nNode<nNumSelNode; nNode++)
-	{
-		// Get the node
-		INode* pNode = ip.GetSelNode (nNode);
-
-		if (! RPO::isZone (*pNode, tvTime) )
-		if (CExportNel::isMesh (*pNode, tvTime))
-		{
-			CMesh::CMeshBuild *pMB;
-			CMeshBase::CMeshBaseBuild *pMBB;
-			pMB = CExportNel::createMeshBuild ( *pNode, tvTime, bAbsPath, pMBB);
-			// If the mesh has no interaction with one of the light selected we do not need it
-			bool bInteract = false;
-			if( pMBB->bCastShadows )
-			for( uint32 i = 0; i < AllLights.size(); ++i )
-			if( isInteractionLightMeshWithoutAmbient (AllLights[i], *pMB, *pMBB))
-			{
-				bInteract = true;
-				break;
-			}
-			if( bInteract )
-			{
-				Meshes.push_back( pMB );
-				MeshesBase.push_back( pMBB );
-				INodes.push_back( pNode );
-			}
-			else
-			{
-				delete pMB; // No interaction so delete the mesh
-				delete pMBB; // No interaction so delete the mesh
-			}
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------------------------
-void getAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, vector< CMeshBase::CMeshBaseBuild* > &BaseMeshes, vector< INode* > &INodes,
-					   Interface& ip, vector<SLightBuild> &AllLights, bool bAbsPath,
-					   INode* pNode = NULL )
-{
-	if( pNode == NULL )
-		pNode = ip.GetRootNode();
-
-	// Get a pointer on the object's node
-	TimeValue tvTime = ip.GetTime();
-
-	if( ! RPO::isZone( *pNode, tvTime ) )
-	if( CExportNel::isMesh( *pNode, tvTime ) )
-	{
-		CMesh::CMeshBuild *pMB;
-		CMeshBase::CMeshBaseBuild *pMBB;
-		pMB = CExportNel::createMeshBuild( *pNode, tvTime, bAbsPath, pMBB);
-		// If the mesh has no interaction with one of the light selected we do not need it
-		bool bInteract = false;
-		if( pMBB->bCastShadows )
-		for( uint32 i = 0; i < AllLights.size(); ++i )
-		if (isInteractionLightMeshWithoutAmbient (AllLights[i], *pMB,*pMBB))
-		{
-			bInteract = true;
-			break;
-		}
-		if( bInteract )
-		{
-			Meshes.push_back( pMB );
-			BaseMeshes.push_back( pMBB );
-			INodes.push_back( pNode );
-		}
-		else
-		{
-			delete pMB; // No interaction so delete the mesh
-			delete pMBB; // No interaction so delete the mesh
-		}
-	}
-
-	for( sint32 i = 0; i < pNode->NumberOfChildren(); ++i )
-		getAllNodeInScene( Meshes, BaseMeshes, INodes, ip, AllLights, bAbsPath, pNode->GetChildNode(i) );
-}
-
-// -----------------------------------------------------------------------------------------------
-void convertToWorldCoordinate( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB )
+void convertToWorldCoordinate (CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB, CVector &translation)
 {
 	uint32 j, k;
 	CMatrix MBMatrix = getObjectToWorldMatrix (pMB, pMBB);
-	MBMatrix.movePos (-vGlobalPos);
+	MBMatrix.movePos (translation);
 	// Update vertices
 	for( j = 0; j < pMB->Vertices.size(); ++j )
 		pMB->Vertices[j] = MBMatrix * pMB->Vertices[j];
@@ -2529,143 +1882,6 @@ void convertToWorldCoordinate( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild
 		for( k = 0; k < 3 ; ++k )
 			pMB->Faces[j].Corner[k].Normal = 
 								MBMatrix.mulVector( pMB->Faces[j].Corner[k].Normal );
-}
-
-// -----------------------------------------------------------------------------------------------
-// Build the world for the raytracing and intialize all the accelerators
-void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip, bool absPath )
-{
-	uint32 i, j, k;
-	TTicks ttTemp = CTime::getPerformanceTime();
-
-	// Get all the nodes in the scene
-	if( gOptions.bExcludeNonSelected )
-		getAllSelectedNode (wrt.vMB, wrt.vMBB, wrt.vINode, ip, AllLights, absPath);
-	else
-		getAllNodeInScene (wrt.vMB, wrt.vMBB, wrt.vINode, ip, AllLights, absPath);
-
-	// Transform the meshbuilds vertices and normals to have world coordinates
-	for( i = 0; i < wrt.vMB.size(); ++i )
-	{
-		convertToWorldCoordinate( wrt.vMB[i], wrt.vMBB[i] );
-	}
-
-	// Construct all cube grids from all lights
-	wrt.cgAccel.resize( AllLights.size() );
-	wrt.dirAccel.resize( AllLights.size() );
-	for( i = 0; i < AllLights.size(); ++i )
-	{
-		SLightBuild &rLight = AllLights[i];
-		switch( rLight.Type )
-		{
-			case SLightBuild::LightAmbient:
-				// No ambient handled for the moment
-			break;
-			// --------------------------
-			case SLightBuild::LightSpot: // For the moment spot like point
-			case SLightBuild::LightPoint:
-			{
-			wrt.cgAccel[i].create( 64 ); // width of each grid in number of square
-			for( j = 0; j < wrt.vMB.size(); ++j )
-			{
-				if( rLight.setExclusion.find( wrt.vINode[j]->GetName() ) != rLight.setExclusion.end() ) 
-					continue;
-				
-				for( k = 0; k < wrt.vMB[j]->Faces.size(); ++k )
-				{
-					SGridCell cell;
-					cell.pF = &(wrt.vMB[j]->Faces[k]);
-					cell.pMB = wrt.vMB[j];
-					cell.pMBB = wrt.vMBB[j];
-					CTriangle tri = CTriangle( 
-						cell.pMB->Vertices[cell.pF->Corner[0].Vertex] - rLight.Position,
-						cell.pMB->Vertices[cell.pF->Corner[1].Vertex] - rLight.Position,
-						cell.pMB->Vertices[cell.pF->Corner[2].Vertex] - rLight.Position );
-					if( intersectionTriangleSphere( tri, CBSphere(CVector(0,0,0), rLight.rRadiusMax) ) )
-						wrt.cgAccel[i].insert( tri, cell );
-				}
-			}
-			}
-			break;
-			// ------------------------
-			case SLightBuild::LightDir:
-			{
-			wrt.dirAccel[i].create (64, rLight.rDirRadius/64.0f, rLight.Direction);
-			for( j = 0; j < wrt.vMB.size(); ++j )
-			{
-				if( rLight.setExclusion.find( wrt.vINode[j]->GetName() ) != rLight.setExclusion.end() ) 
-					continue;
-				
-				for( k = 0; k < wrt.vMB[j]->Faces.size(); ++k )
-				{
-					SGridCell cell;
-					cell.pF = &(wrt.vMB[j]->Faces[k]);
-					cell.pMB = wrt.vMB[j];
-					cell.pMBB = wrt.vMBB[j];
-					CTriangle tri = CTriangle( 
-						cell.pMB->Vertices[cell.pF->Corner[0].Vertex],
-						cell.pMB->Vertices[cell.pF->Corner[1].Vertex],
-						cell.pMB->Vertices[cell.pF->Corner[2].Vertex] );
-					// Convert the triangle into a sphere
-					CBSphere s;
-					s.Center = (tri.V0 + tri.V1 + tri.V2)/3.0f;
-					s.Radius = (tri.V0-s.Center).norm();
-					float tmp = (tri.V1-s.Center).norm();
-					if (tmp > s.Radius) s.Radius = tmp;
-					tmp = (tri.V2-s.Center).norm();
-					if (tmp > s.Radius) s.Radius = tmp;
-
-					if (intersectionSphereCylinder (s, rLight.Position, rLight.Direction, rLight.rDirRadius))
-					{
-						float t = ((s.Center - rLight.Position)*rLight.Direction) / (rLight.Direction*rLight.Direction);
-
-						if ((t-s.Radius) < wrt.dirAccel[i].rMin)
-							wrt.dirAccel[i].rMin = t - s.Radius;
-
-						if ((t+s.Radius) > wrt.dirAccel[i].rMax)
-							wrt.dirAccel[i].rMax = t + s.Radius;
-
-						wrt.dirAccel[i].insert (tri, cell);
-					}
-				}
-			}
-			}
-			break;
-		}
-	}
-
-	// Construct the projector bitmap
-	wrt.proj.resize( AllLights.size() );
-	for( i = 0; i < AllLights.size(); ++i )
-	if( AllLights[i].Type == SLightBuild::LightSpot )
-	if( AllLights[i].pProjMap != NULL )
-	{
-		wrt.proj[i].resize( AllLights[i].pProjMap->Width(), AllLights[i].pProjMap->Height(), CBitmap::RGBA );
-		// Copy the bitmap
-		std::vector<uint8> &rBitmap = wrt.proj[i].getPixels();
-		BMM_Color_64 OnePixel;
-		for( k = 0; k < wrt.proj[i].getHeight(); ++k )
-		for( j = 0; j < wrt.proj[i].getWidth(); ++j )
-		{
-			AllLights[i].pProjMap->GetPixels( j, k, 1, &OnePixel );
-			rBitmap[(j+k*wrt.proj[i].getWidth())*4+0] = OnePixel.r>>8;
-			rBitmap[(j+k*wrt.proj[i].getWidth())*4+1] = OnePixel.g>>8;
-			rBitmap[(j+k*wrt.proj[i].getWidth())*4+2] = OnePixel.b>>8;
-			rBitmap[(j+k*wrt.proj[i].getWidth())*4+3] = OnePixel.a>>8;
-		}
-		wrt.proj[i].buildMipMaps();
-	}
-	timerBuildWorldRT += CTime::getPerformanceTime() - ttTemp;
-}
-
-// -----------------------------------------------------------------------------------------------
-void unbuildWorldRT (SWorldRT& wrt)
-{
-	for (uint32 i = 0; i < wrt.vMB.size(); ++i)
-	{
-		delete wrt.vMB[i];
-		delete wrt.vMBB[i];
-	}
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -2799,6 +2015,7 @@ struct SSurObj
 };
 
 // Get the objects next to one
+/*
 void sans_majuscule_au_debut_LinkToObjectAround (CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB, 
 												 vector<CVector>& vertices,
 												 SWorldRT& wrt)
@@ -2857,7 +2074,7 @@ void sans_majuscule_au_debut_LinkToObjectAround (CMesh::CMeshBuild *pMB, CMeshBa
 	// Here objs contains the objects of the worldRT structure that touch the reference mesh
 	// And it contains the pointer to the face that must be rendered to give continuity to our object
 }
-
+*/
 
 // -----------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
@@ -2872,26 +2089,30 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 {
 	uint32 i, j;
 
-	timerTotalTime = CTime::getPerformanceTime();
-	timerBuildWorldRT = timerCalc = timerCalcRT = timerPlac = timerModify = timerCreate = 0;
-	timerModifyStretch = timerModifyCreate = timerModifyPutIn = 0;
-	timerCreateResize = 0;
-
 	gOptions = structExport;
+
+	string sLumelSizeMul = CExportNel::getScriptAppData (&ZeNode, NEL3D_APPDATA_LUMELSIZEMUL, "1.0");
+	float rLumelSizeMul = (float)atof(sLumelSizeMul.c_str());
+
+	if (rLumelSizeMul > 0.0f)
+		gOptions.rLumelSize *= rLumelSizeMul;
+
+	//if (gOptions.nExportLighting == 1)
+	//	return calculateLMRad (pZeMeshBuild, pZeMeshBaseBuild, ZeNode, ip, tvTime, absolutePath, gOptions);
 
 	if(gOptions.FeedBack != NULL)
 	{
-		string sTmp = "LumelSize = " + toString(structExport.rLumelSize);
-		if (structExport.bShadow)
+		string sTmp = "LumelSize = " + toString(gOptions.rLumelSize);
+		if (gOptions.bShadow)
 			sTmp += ",Shadow On";
 		else
 			sTmp += ",Shadow Off";
-		sTmp += ",OverSampling = " +toString(structExport.nOverSampling*structExport.nOverSampling);
+		sTmp += ",OverSampling = " +toString(gOptions.nOverSampling*gOptions.nOverSampling);
 		gOptions.FeedBack->setLine (1, sTmp);
 	}
 
 
-	SWorldRT WorldRT; // The static world for raytrace
+	CRTWorld WorldRT; // The static world for raytrace
 	vector<SLightBuild> AllLights;
 
 	CMatrix mtmp = getObjectToWorldMatrix (pZeMeshBuild, pZeMeshBaseBuild);
@@ -2912,7 +2133,8 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	// Get all lights L that have influence over the mesh selected
 	supprLightNoInteractOne( AllLights, pZeMeshBuild, pZeMeshBaseBuild, ZeNode );
 	// Get all meshes that are influenced by the lights L			
-	buildWorldRT( WorldRT, AllLights, ip, true );
+	//buildWorldRT( WorldRT, AllLights, ip, true );
+	WorldRT.build (ip, AllLights, -vGlobalPos, gOptions.bExcludeNonSelected);
 
 	//for( nNode=0; nNode < nNbMesh; ++nNode )
 	{
@@ -2951,7 +2173,6 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		ClearFaceWithNoLM( pMB, pMBB, AllFaces );
 		if( AllFaces.size() == 0 )
 		{
-			unbuildWorldRT( WorldRT );
 			return false;
 		}
 
@@ -2969,7 +2190,6 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			thetext += ZeNode.GetName();
 			thetext = "have all faces NOT mapped (UV2)";
 			MessageBox( NULL, thetext.c_str(), "LightMap ERROR", MB_OK|MB_ICONERROR );
-			unbuildWorldRT( WorldRT );
 			return false;
 		}
 
@@ -3076,7 +2296,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 					{
 						for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
 						{
-							// Detect which pixels need to be oversampled						
+							// Detect which pixels need to be& oversampled						
 							TempPlanes[nPlaneNb]->contourDetect();
 							// Enlarge image
 							ModifyLMPlaneWithOverSampling( TempPlanes[nPlaneNb], gOptions.nOverSampling, true );
@@ -3186,7 +2406,6 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		// Next mesh
 	}
 
-	unbuildWorldRT (WorldRT);
 
 	// End of the lighting process for this node we have to export the data
 	CMesh::CMeshBuild *pMB = pZeMeshBuild;
@@ -3200,42 +2419,6 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		pMBB->Materials[i].setColor( CRGBA(255,255,255,255) );
 	}
 
-	// Temp Mat.
-/*
-	timerTotalTime = CTime::getPerformanceTime() - timerTotalTime;
-	char sDisp[2048];
-	char sTemp[128];
-	sDisp[0] = 0;
-	sprintf( sTemp, "Total=%f\n", (float)CTime::ticksToSecond( timerTotalTime ) );
-	strcat( sDisp, sTemp );
-	sprintf( sTemp, "buildWorldRT=%f\n", (float)CTime::ticksToSecond( timerBuildWorldRT ) );
-	strcat( sDisp, sTemp );	
-	sprintf( sTemp, "ModifyLMPlaneWithOverSampling=%f\n", (float)CTime::ticksToSecond( timerModify ) );
-	strcat( sDisp, sTemp );
-
-	sprintf( sTemp, "  stretch=%f\n", (float)CTime::ticksToSecond( timerModifyStretch ) );
-	strcat( sDisp, sTemp );
-	sprintf( sTemp, "  create=%f\n", (float)CTime::ticksToSecond( timerModifyCreate ) );
-	strcat( sDisp, sTemp );
-	sprintf( sTemp, "  putIn=%f\n", (float)CTime::ticksToSecond( timerModifyPutIn ) );
-	strcat( sDisp, sTemp );
-
-	sprintf( sTemp, "CreateLMPlaneFromFace=%f\n", (float)CTime::ticksToSecond( timerCreate ) );
-	strcat( sDisp, sTemp );
-
-	sprintf( sTemp, "  resize=%f\n", (float)CTime::ticksToSecond( timerCreateResize ) );
-	strcat( sDisp, sTemp );
-	
-	sprintf( sTemp, "PlaceLMPlaneInLMPLane=%f\n", (float)CTime::ticksToSecond( timerPlac ) );
-	strcat( sDisp, sTemp );
-	sprintf( sTemp, "RayTraceAVertex=%f\n", (float)CTime::ticksToSecond( timerCalcRT ) );
-	strcat( sDisp, sTemp );
-	
-	MessageBox( NULL, sDisp, "Some Info", MB_OK );
-*/
-	// Temp Mat.
-
-	
 	return true;	
 }
 

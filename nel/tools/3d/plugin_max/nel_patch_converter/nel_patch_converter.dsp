@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
-CFG=nel_patch_converter - Win32 Hybrid
+CFG=nel_patch_converter - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,7 +13,7 @@ CFG=nel_patch_converter - Win32 Hybrid
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "nel_patch_converter.mak" CFG="nel_patch_converter - Win32 Hybrid"
+!MESSAGE NMAKE /f "nel_patch_converter.mak" CFG="nel_patch_converter - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -21,6 +21,7 @@ CFG=nel_patch_converter - Win32 Hybrid
 !MESSAGE "nel_patch_converter - Win32 Debug" (based on "Win32 (x86) Application")
 !MESSAGE "nel_patch_converter - Win32 Hybrid" (based on "Win32 (x86) Application")
 !MESSAGE "nel_patch_converter - Win32 ReleaseDebug" (based on "Win32 (x86) Application")
+!MESSAGE "nel_patch_converter - Win32 DebugFast" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -76,8 +77,8 @@ PreLink_Cmds=buildinc version.ver nel_patch_converter.rc	rc /l 0x40c /fo"Release
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "C:\3dsmax3_1\Maxsdk\include ..\RPO" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "__STL_DEBUG" /FR /FD /c
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "C:\3dsmax3_1\Maxsdk\include ..\RPO" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "__STL_DEBUG" /FD /c
+# SUBTRACT CPP /Fr /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
@@ -143,6 +144,35 @@ LINK32=link.exe
 # ADD BASE LINK32 maxscrpt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /machine:I386 /out:"C:\3dsmax3_1\plugins\nelconvertpatch.dlm" /libpath:"C:\3dsmax3_1\Maxsdk\lib" /release
 # ADD LINK32 maxscrpt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1\plugins\nelconvertpatch.dlm" /libpath:"C:\3dsmax3_1\Maxsdk\lib" /release
 
+!ELSEIF  "$(CFG)" == "nel_patch_converter - Win32 DebugFast"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "nel_patch_converter___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "nel_patch_converter___Win32_DebugFast"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "DebugFast"
+# PROP Intermediate_Dir "DebugFast"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "C:\3dsmax3_1\Maxsdk\include ..\RPO" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "__STL_DEBUG" /FD /c
+# SUBTRACT BASE CPP /Fr /YX /Yc /Yu
+# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /I "C:\3dsmax3_1\Maxsdk\include ..\RPO" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "NL_DEBUG_FAST" /Fr /FD /c
+# SUBTRACT CPP /YX /Yc /Yu
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD RSC /l 0x40c /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 maxscrpt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelconvertpatch.dlm" /pdbtype:sept /libpath:"C:\3dsmax3_1\Maxsdk\lib"
+# ADD LINK32 maxscrpt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelconvertpatch.dlm" /pdbtype:sept /libpath:"C:\3dsmax3_1\Maxsdk\lib"
+
 !ENDIF 
 
 # Begin Target
@@ -151,6 +181,7 @@ LINK32=link.exe
 # Name "nel_patch_converter - Win32 Debug"
 # Name "nel_patch_converter - Win32 Hybrid"
 # Name "nel_patch_converter - Win32 ReleaseDebug"
+# Name "nel_patch_converter - Win32 DebugFast"
 # Begin Source File
 
 SOURCE=.\DllEntry.cpp

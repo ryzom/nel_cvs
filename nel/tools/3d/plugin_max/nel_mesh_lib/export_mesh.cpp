@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.20 2001/09/06 07:25:38 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.21 2001/10/10 15:39:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,8 @@ void buildNeLMatrix (CMatrix& tm, const CVector& scale, const CQuat& rot, const 
 // ***************************************************************************
 
 
-CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath, CMesh::CMeshBaseBuild*& baseBuild)
+CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath, 
+												CMesh::CMeshBaseBuild*& baseBuild, const CMatrix &masterNodeMat)
 {
 	CMesh::CMeshBuild *pMeshBuild = new CMesh::CMeshBuild();
 	baseBuild = new CMeshBase::CMeshBaseBuild();
@@ -98,7 +99,7 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bo
 			baseBuild->Materials.clear();
 
 			buildBaseMeshInterface (*baseBuild, maxBaseBuild, node, tvTime, bAbsPath);
-			buildMeshInterface (*tri, *pMeshBuild, maxBaseBuild, node, tvTime, NULL, bAbsPath);
+			buildMeshInterface (*tri, *pMeshBuild, maxBaseBuild, node, tvTime, NULL, bAbsPath, CMatrix::Identity, masterNodeMat);
 
 			// Delete the triObject if we should...
 			if (deleteIt)
@@ -120,9 +121,6 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 	// Here, we must check what kind of node we can build with this mesh.
 	// For the time, just Triobj is supported.
 	IShape *retShape=NULL;
-
-	if (CExportNel::getScriptAppData (&node, NEL3D_APPDATA_DONTEXPORT, 0))
-		return NULL;
 
 	// If skinning, disable skin modifier
 	if (nodeMap)
@@ -444,8 +442,12 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 						// Make a CMesh object
 						CMeshMRM* meshMRM=new CMeshMRM;
 
+						// Get the blend shapes that can be linked
+						std::vector<CMesh::CMeshBuild*> bsList;
+						getBSMeshBuild (bsList, node, time, nodeMap!=NULL);
+
 						// Build the mesh with the build interface
-						meshMRM->build (buildBaseMesh, buildMesh, parameters);
+						meshMRM->build (buildBaseMesh, buildMesh, bsList, parameters);
 
 						// Return this pointer
 						meshBase=meshMRM;
@@ -457,6 +459,11 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 
 						// Build the mesh with the build interface
 						mesh->build (buildBaseMesh, buildMesh);
+
+						// Must be done after the build to update vertex links
+						// Pass to buildMeshMorph if the original mesh is skinned or not
+						buildMeshMorph (buildMesh, node, time, nodeMap!=NULL);
+						mesh->setBlendShapes (buildMesh.BlendShapes);
 
 						// Return this pointer
 						meshBase=mesh;
@@ -579,6 +586,20 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 	buildMesh.DefaultPivot=CVector (0,0,0);
 	buildMesh.DefaultPos=pos;
 
+	// \todo : get the default blend shapes factor
+	Modifier *pMorphMod = getModifier (&node, MAX_MORPHER_CLASS_ID);
+	if (pMorphMod != NULL)
+	for (uint32 i = 0; i < 100; ++i)
+	{
+		INode *pNode = (INode*)pMorphMod->GetReference (101+i);
+		if (pNode == NULL)
+			continue;
+		// get factor here !
+		buildMesh.DefaultBSFactors.push_back(0.0f);
+		std::string sTemp = pNode->GetName();
+		buildMesh.BSNames.push_back (sTemp);
+	}
+
 	// Ok, done.
 }
 
@@ -587,7 +608,7 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 // Build a mesh interface
 void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMesh, const CMaxMeshBaseBuild& maxBaseBuild, 
 									 INode& node, TimeValue time, const TInodePtrInt* nodeMap, bool absolutePath, 
-									 const CMatrix& newBasis)
+									 const CMatrix& newBasis, const CMatrix& finalSpace)
 {
 	// Get a pointer on the 3dsmax mesh
 	Mesh *pMesh=&tri.mesh;
@@ -663,7 +684,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 
 		// Invert matrix in NeL format
 		convertMatrix (ToExportSpace, objectToLocal);
-		ToExportSpace=newBasis*ToExportSpace;
+		ToExportSpace=newBasis*ToExportSpace*finalSpace;
 		FromExportSpace=ToExportSpace;
 		FromExportSpace.invert ();
 	}
@@ -952,6 +973,46 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 
 // ***************************************************************************
 
+void CExportNel::getBSMeshBuild (std::vector<CMesh::CMeshBuild*> &bsList, INode &node, TimeValue time, bool skined)
+{
+	Modifier *pMorphMod = getModifier (&node, MAX_MORPHER_CLASS_ID);
+
+	if (pMorphMod == NULL)
+		return;
+
+	uint32 i, j;
+
+	j = 0;
+	for (i = 0; i < 100; ++i)
+	{
+		INode *pNode = (INode*)pMorphMod->GetReference (101+i);
+		if (pNode == NULL)
+			continue;
+		++j;
+	}
+
+	bsList.resize (j);
+
+	j = 0;
+	for (i = 0; i < 100; ++i)
+	{
+		INode *pNode = (INode*)pMorphMod->GetReference (101+i);
+		if (pNode == NULL)
+			continue;
+
+		CBlendShape bs;
+		CMeshBase::CMeshBaseBuild *pMBB;
+		CMatrix finalSpace = CMatrix::Identity;
+		if (skined)
+			convertMatrix(finalSpace, node.GetNodeTM(time));
+		bsList[j] = createMeshBuild (*pNode, time, true, pMBB, finalSpace);
+		++j;
+	}
+}
+
+
+// ***************************************************************************
+
 void CExportNel::buildMRMParameters (Animatable& node, CMRMParameters& params)
 {
 	// Lods count
@@ -1071,11 +1132,18 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 				// Make a CMesh object
 				CMeshMRMGeom* meshMRMGeom=new CMeshMRMGeom;
 
+				// Get the blend shapes but in mesh build form
+				std::vector<CMesh::CMeshBuild*> bsList;
+				getBSMeshBuild (bsList, node, time, nodeMap!=NULL);
+
 				// Build the mesh with the build interface
-				meshMRMGeom->build (buildMesh, buildBaseMesh.Materials.size(), parameters);
+				meshMRMGeom->build (buildMesh, bsList, buildBaseMesh.Materials.size(), parameters);
 
 				// Return this pointer
 				meshGeom=meshMRMGeom;
+
+				for (uint32 bsListIt = 0; bsListIt < bsList.size(); ++bsListIt)
+					delete bsList[bsListIt];
 			}
 			else
 			{
@@ -1108,6 +1176,149 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 
 	// Return the shape pointer or NULL if an error occured.
 	return meshGeom;
+}
+
+// ***************************************************************************
+void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, TimeValue time,bool skined)
+{
+	Modifier *pMorphMod = getModifier (&node, MAX_MORPHER_CLASS_ID);
+
+	if (pMorphMod == NULL)
+		return;
+
+	uint32 i, j, k;
+
+	uint32 nNbVertVB = 0;
+
+	for (i = 0; i < buildMesh.VertLink.size(); ++i)
+		if (buildMesh.VertLink[i].VertVB > nNbVertVB)
+			nNbVertVB = buildMesh.VertLink[i].VertVB;
+	++nNbVertVB; // Because we have the highest index to transform to a number
+
+	for (i = 0; i < 100; ++i)
+	{
+		INode *pNode = (INode*)pMorphMod->GetReference (101+i);
+		if (pNode == NULL)
+			continue;
+
+		CBlendShape bs;
+		CMeshBase::CMeshBaseBuild *pMBB;
+		CMatrix finalSpace = CMatrix::Identity;
+		if (skined)
+			convertMatrix(finalSpace, node.GetNodeTM(time));
+		CMesh::CMeshBuild *pMB = createMeshBuild (*pNode, time, true, pMBB, finalSpace);
+
+
+		bs.Name = pNode->GetName();
+
+		bool bIsDeltaPos = false;
+		bs.deltaPos.resize (nNbVertVB, CVector(0.0f,0.0f,0.0f));
+		bool bIsDeltaNorm = false;
+		bs.deltaNorm.resize (nNbVertVB, CVector(0.0f,0.0f,0.0f));
+		bool bIsDeltaUV = false;
+		bs.deltaUV.resize (nNbVertVB, CUV(0.0f,0.0f));
+		bool bIsDeltaCol = false;
+		bs.deltaCol.resize (nNbVertVB, CRGBAF(0.0f,0.0f,0.0f,0.0f));
+
+		bs.VertRefs.resize (nNbVertVB, 0xffffffff);
+
+		for (j = 0; j < buildMesh.VertLink.size(); ++j)
+		{
+			uint32 nFace = buildMesh.VertLink[j].nFace;
+			uint32 nCorner = buildMesh.VertLink[j].nCorner;
+			uint32 VertRef = buildMesh.Faces[nFace].Corner[nCorner].Vertex;
+			uint32 VertTar = pMB->Faces[nFace].Corner[nCorner].Vertex;
+			uint32 iVB = buildMesh.VertLink[j].VertVB;
+
+			CVector delta = pMB->Vertices[VertTar] - buildMesh.Vertices[VertRef];
+			if (delta.norm() > 0.001f)
+			{
+				bs.deltaPos[iVB] = delta;
+				bs.VertRefs[iVB] = iVB;
+				bIsDeltaPos = true;
+			}
+
+			CVector NormRef = buildMesh.Faces[nFace].Corner[nCorner].Normal;
+			CVector NormTar = pMB->Faces[nFace].Corner[nCorner].Normal;
+			delta = NormTar - NormRef;
+			if (delta.norm() > 0.001f)
+			{
+				bs.deltaNorm[iVB] = delta;
+				bs.VertRefs[iVB] = iVB;
+				bIsDeltaNorm = true;
+			}
+
+			CUV UVRef = buildMesh.Faces[nFace].Corner[nCorner].Uvs[0];
+			CUV UVTar = pMB->Faces[nFace].Corner[nCorner].Uvs[0];
+			CUV deltaUV = UVTar - UVRef;
+			if ((deltaUV.U*deltaUV.U + deltaUV.V*deltaUV.V) > 0.0001f)
+			{
+				bs.deltaUV[iVB] = deltaUV;
+				bs.VertRefs[iVB] = iVB;
+				bIsDeltaUV = true;
+			}
+			
+			CRGBAF RGBARef = buildMesh.Faces[nFace].Corner[nCorner].Color;
+			CRGBAF RGBATar = pMB->Faces[nFace].Corner[nCorner].Color;
+			CRGBAF deltaRGBA = RGBATar - RGBARef;
+			if ((deltaRGBA.R*deltaRGBA.R + deltaRGBA.G*deltaRGBA.G +
+				deltaRGBA.B*deltaRGBA.B + deltaRGBA.A*deltaRGBA.A) > 0.0001f)
+			{
+				bs.deltaCol[iVB] = deltaRGBA;
+				bs.VertRefs[iVB] = iVB;
+				bIsDeltaCol = true;
+			}
+		}
+
+		// Delete unused items
+		sint32 nNbVertUsed = nNbVertVB;
+		sint32 nDstPos = 0;
+		for (j = 0; j < nNbVertVB; ++j)
+		{
+			if (bs.VertRefs[j] == 0xffffffff) // Is vertex UNused
+			{
+				--nNbVertUsed;
+			}
+			else // Vertex used
+			{
+				if (nDstPos != j)
+				{
+					bs.VertRefs[nDstPos]	= bs.VertRefs[j];
+					bs.deltaPos[nDstPos]	= bs.deltaPos[j];
+					bs.deltaNorm[nDstPos]	= bs.deltaNorm[j];
+					bs.deltaUV[nDstPos]		= bs.deltaUV[j];
+					bs.deltaCol[nDstPos]	= bs.deltaCol[j];
+				}
+				++nDstPos;
+			}
+		}
+
+		if (bIsDeltaPos)
+			bs.deltaPos.resize (nNbVertUsed);
+		else
+			bs.deltaPos.resize (0);
+
+		if (bIsDeltaNorm)
+			bs.deltaNorm.resize (nNbVertUsed);
+		else
+			bs.deltaNorm.resize (0);
+
+		if (bIsDeltaUV)
+			bs.deltaUV.resize (nNbVertUsed);
+		else
+			bs.deltaUV.resize (0);
+
+		if (bIsDeltaCol)
+			bs.deltaCol.resize (nNbVertUsed);
+		else
+			bs.deltaCol.resize (0);
+
+		bs.VertRefs.resize (nNbVertUsed);
+
+		// Add the new blend shape
+		buildMesh.BlendShapes.push_back (bs);
+	}
+
 }
 
 // ***************************************************************************

@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=nel_mesh_lib - Win32 Hybrid
+CFG=nel_mesh_lib - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,7 +13,7 @@ CFG=nel_mesh_lib - Win32 Hybrid
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "nel_mesh_lib.mak" CFG="nel_mesh_lib - Win32 Hybrid"
+!MESSAGE NMAKE /f "nel_mesh_lib.mak" CFG="nel_mesh_lib - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -21,6 +21,7 @@ CFG=nel_mesh_lib - Win32 Hybrid
 !MESSAGE "nel_mesh_lib - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE "nel_mesh_lib - Win32 Hybrid" (based on "Win32 (x86) Static Library")
 !MESSAGE "nel_mesh_lib - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
+!MESSAGE "nel_mesh_lib - Win32 DebugFast" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -66,7 +67,8 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "D:\3DSMAX3\Maxsdk\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "__STL_DEBUG" /FR /Yu"stdafx.h" /FD /GZ /Zm200 /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "D:\3DSMAX3\Maxsdk\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "__STL_DEBUG" /Yu"stdafx.h" /FD /GZ /Zm200 /c
+# SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -122,6 +124,30 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
+!ELSEIF  "$(CFG)" == "nel_mesh_lib - Win32 DebugFast"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "nel_mesh_lib___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "nel_mesh_lib___Win32_DebugFast"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "DebugFast"
+# PROP Intermediate_Dir "DebugFast"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "D:\3DSMAX3\Maxsdk\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "__STL_DEBUG" /Yu"stdafx.h" /FD /GZ /Zm200 /c
+# SUBTRACT BASE CPP /Fr
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /I "D:\3DSMAX3\Maxsdk\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "NL_DEBUG_FAST" /Fr /Yu"stdafx.h" /FD /GZ /Zm200 /c
+# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD RSC /l 0x40c /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo
+# ADD LIB32 /nologo
+
 !ENDIF 
 
 # Begin Target
@@ -130,6 +156,7 @@ LIB32=link.exe -lib
 # Name "nel_mesh_lib - Win32 Debug"
 # Name "nel_mesh_lib - Win32 Hybrid"
 # Name "nel_mesh_lib - Win32 ReleaseDebug"
+# Name "nel_mesh_lib - Win32 DebugFast"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -140,6 +167,14 @@ SOURCE=.\calc_lm.cpp
 # Begin Source File
 
 SOURCE=.\calc_lm_plane.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\calc_lm_rad.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\calc_lm_rt.cpp
 # End Source File
 # Begin Source File
 
@@ -170,6 +205,8 @@ SOURCE=.\export_mesh.cpp
 !ELSEIF  "$(CFG)" == "nel_mesh_lib - Win32 Hybrid"
 
 !ELSEIF  "$(CFG)" == "nel_mesh_lib - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "nel_mesh_lib - Win32 DebugFast"
 
 !ENDIF 
 
@@ -206,6 +243,10 @@ SOURCE=.\calc_lm.h
 # Begin Source File
 
 SOURCE=.\calc_lm_plane.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\calc_lm_rt.h
 # End Source File
 # Begin Source File
 

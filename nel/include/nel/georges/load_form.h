@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.6 2002/07/05 14:59:58 lecroart Exp $
+ * $Id: load_form.h,v 1.7 2002/07/29 17:14:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,7 +90,6 @@
  *
  */
 
-
 /** This function is used to load values from georges sheet in a quick way.
  * \param sheetFilter a string to filter the sheet (ie: ".item")
  * \param packedFilename the name of the file that this function will generate (extension must be "packed_sheets")
@@ -176,44 +175,65 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 
 	NLGEORGES::UFormLoader *formLoader = NULL;
 
-	for (uint j = 0; j < filenames.size(); j++)
+	vector<uint> NeededToRecompute;
+
+	for (uint k = 0; k < filenames.size(); k++)
 	{
-		std::string p = NLMISC::CPath::lookup (filenames[j], false, false);
+		std::string p = NLMISC::CPath::lookup (filenames[k], false, false);
 		if (p.empty()) continue;
 		uint32 d = NLMISC::CFile::getFileModificationDate(p);
 
 		// no need to remove this sheet
-		sheetToRemove[sheetIds[j]] = false;
+		sheetToRemove[sheetIds[k]] = false;
 
-		if( d > packedFiledate || container.find (sheetIds[j]) == container.end())
+		if( d > packedFiledate || container.find (sheetIds[k]) == container.end())
 		{
-			// create the georges loader if necessary
-			if (formLoader == NULL)
-			{
-				WarningLog->addNegativeFilter("CFormLoader: Can't open the form file");
-				formLoader = NLGEORGES::UFormLoader::createLoader ();
-			}
-
-			// Load the form with given sheet id
-			NLMISC::CSmartPtr<NLGEORGES::UForm> form = formLoader->loadForm (sheetIds[j].toString().c_str ());
-			if (form)
-			{
-				if (packedFiledate > 0)
-				{
-					if (d > packedFiledate)
-						nlinfo ("loadForm(): the sheet '%s' is newer than the packed one, I reload it", p.c_str());
-					else
-						nlinfo ("loadForm(): the sheet '%s' is not in the packed sheets, I load it", p.c_str());
-				}
-				
-				// add the new creature, it could be already loaded by the packed sheets but will be overwrite with the new one
-				std::pair<std::map<NLMISC::CSheetId, T>::iterator, bool> res = container.insert(std::make_pair(sheetIds[j],T()));
-
-				(*res.first).second.readGeorges (form, sheetIds[j]);
-				containerChanged = true;
-			}
+			NeededToRecompute.push_back(k);
 		}
 	}
+
+	nlinfo ("%d sheets checked, %d need to be recomputed", filenames.size(), NeededToRecompute.size());
+
+	TTime last = CTime::getLocalTime ();
+	TTime start = CTime::getLocalTime ();
+
+	for (uint j = 0; j < NeededToRecompute.size(); j++)
+	{
+		if(CTime::getLocalTime () > last + 5000)
+		{
+			last = CTime::getLocalTime ();
+			if(j>0)
+				nlinfo ("%.0f%% completed (%d/%d), %d seconds remaining", (float)j*100.0/NeededToRecompute.size(),j,NeededToRecompute.size(), (NeededToRecompute.size()-j)*(last-start)/j/1000);
+		}
+
+		// create the georges loader if necessary
+		if (formLoader == NULL)
+		{
+			WarningLog->addNegativeFilter("CFormLoader: Can't open the form file");
+			formLoader = NLGEORGES::UFormLoader::createLoader ();
+		}
+
+		// Load the form with given sheet id
+		NLMISC::CSmartPtr<NLGEORGES::UForm> form = formLoader->loadForm (sheetIds[j].toString().c_str ());
+		if (form)
+		{
+/*			if (packedFiledate > 0)
+			{
+				if (d > packedFiledate)
+					nlinfo ("loadForm(): the sheet '%s' is newer than the packed one, I reload it", p.c_str());
+				else
+					nlinfo ("loadForm(): the sheet '%s' is not in the packed sheets, I load it", p.c_str());
+			}
+*/			
+			// add the new creature, it could be already loaded by the packed sheets but will be overwrite with the new one
+			std::pair<std::map<NLMISC::CSheetId, T>::iterator, bool> res = container.insert(std::make_pair(sheetIds[j],T()));
+
+			(*res.first).second.readGeorges (form, sheetIds[j]);
+			containerChanged = true;
+		}
+	}
+
+	nlinfo ("%d seconds to recompute %d sheets", (uint32)(CTime::getLocalTime()-start)/1000, NeededToRecompute.size());
 
 	// free the georges loader if necessary
 	if (formLoader != NULL)

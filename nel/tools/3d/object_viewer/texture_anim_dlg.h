@@ -6,6 +6,7 @@
 #endif 
 
 #include "ps_wrapper.h"
+#include "3d/ps_particle.h"
 #include "value_gradient_dlg.h"
 
 

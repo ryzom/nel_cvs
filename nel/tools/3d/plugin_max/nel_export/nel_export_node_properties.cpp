@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.14 2001/12/11 14:06:45 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.15 2001/12/12 10:35:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,6 +121,7 @@ public:
 	std::string				InstanceGroupName;
 	int						DontExport;
 	int						ExportNoteTrack;
+	int						ExportAnimatedMaterials;
 
 	std::string				LumelSizeMul;
 	std::string				SoftShadowRadius;
@@ -892,9 +893,9 @@ int CALLBACK MiscDialogCallback (
 			// Param pointers
 			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
-
 			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_SETCHECK, currentParam->ExportNoteTrack, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_FLOATING_OBJECT), BM_SETCHECK, currentParam->FloatingObject, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATED_MATERIALS), BM_SETCHECK, currentParam->ExportAnimatedMaterials, 0);
 		}
 		break;
 
@@ -911,10 +912,12 @@ int CALLBACK MiscDialogCallback (
 						{
 							currentParam->ExportNoteTrack=SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_GETCHECK, 0, 0);
 							currentParam->FloatingObject=SendMessage (GetDlgItem (hwndDlg, IDC_FLOATING_OBJECT), BM_GETCHECK, 0, 0);
+							currentParam->ExportAnimatedMaterials = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATED_MATERIALS), BM_GETCHECK, 0, 0);
 						}
 					break;
 					case IDC_EXPORT_NOTE_TRACK:
 					case IDC_FLOATING_OBJECT:
+					case IDC_EXPORT_ANIMATED_MATERIALS:
 						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
 							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
 						break;
@@ -1514,6 +1517,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.InstanceGroupName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_IGNAME, "");
 		param.DontExport=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED);
 		param.ExportNoteTrack=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED);
+		param.ExportAnimatedMaterials=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, BST_UNCHECKED);
 		param.FloatingObject=CExportNel::getScriptAppData (node, NEL3D_APPDATA_FLOATING_OBJECT, BST_UNCHECKED);
 		param.LumelSizeMul=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, "1.0");
 		param.SoftShadowRadius=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toString(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT));
@@ -1578,6 +1582,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.DontExport= BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED)!=param.ExportNoteTrack)
 				param.ExportNoteTrack = BST_INDETERMINATE;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, BST_UNCHECKED)!=param.ExportAnimatedMaterials)
+				param.ExportAnimatedMaterials = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_FLOATING_OBJECT, BST_UNCHECKED)!=param.FloatingObject)
 				param.FloatingObject = BST_INDETERMINATE;
 
@@ -1683,6 +1689,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, param.DontExport);
 					if (param.ExportNoteTrack != BST_INDETERMINATE)
 						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, param.ExportNoteTrack);
+					if (param.ExportAnimatedMaterials != BST_INDETERMINATE)
+						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, param.ExportAnimatedMaterials);
 				}
 				if (param.LumelSizeMul != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, param.LumelSizeMul);

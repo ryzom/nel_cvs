@@ -204,6 +204,9 @@ BEGIN
                     BS_AUTO3STATE | WS_TABSTOP,5,20,95,9
     CONTROL         "Floating Object",IDC_FLOATING_OBJECT,"Button",
                     BS_AUTO3STATE | WS_TABSTOP,5,5,65,12
+    CONTROL         "Export animated materials",
+                    IDC_EXPORT_ANIMATED_MATERIALS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,5,32,98,12
 END
 
 IDD_VEGETABLE DIALOG DISCARDABLE  0, 0, 360, 200

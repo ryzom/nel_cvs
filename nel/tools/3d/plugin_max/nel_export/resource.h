@@ -121,6 +121,7 @@
 #define IDC_CENTER_NULL                 1075
 #define IDC_CENTER_Z                    1076
 #define IDC_VEGETABLE_BEND_FACTOR       1077
+#define IDC_EXPORT_ANIMATED_MATERIALS   1078
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -131,7 +132,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        122
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1078
+#define _APS_NEXT_CONTROL_VALUE         1079
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

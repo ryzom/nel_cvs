@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.35 2004/11/29 10:50:20 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.36 2004/12/09 09:38:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1883,6 +1883,8 @@ public:
 			else
 			{				
 				drvInfo->Effect->Pass (pass);
+				//drvInfo->Effect->BeginPass (pass);
+				//drvInfo->Effect->EndPass ();
 			}
 		}
 

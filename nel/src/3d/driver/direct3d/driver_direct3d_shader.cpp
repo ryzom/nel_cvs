@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.12 2004/10/26 16:08:47 corvazier Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.13 2004/12/09 09:38:40 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1122,6 +1122,8 @@ void CFXCache::begin(CShaderDrvInfosD3D *si, CDriverD3D *driver)
 		{						
 			pr.Target = &Passes[k];			
 			si->Effect->Pass(k);
+			//si->Effect->BeginPass(k);
+			//si->Effect->EndPass();
 		}
 		r = si->Effect->End();
 		nlassert(r == D3D_OK);
@@ -1146,6 +1148,8 @@ void CFXCache::applyPass(class CDriverD3D &drv, CShaderDrvInfosD3D *si, uint pas
 	if (Passes.empty())
 	{
 		HRESULT r = si->Effect->Pass(passIndex);
+		//HRESULT r = si->Effect->BeginPass(passIndex);
+		//si->Effect->EndPass();
 		nlassert(r == D3D_OK);
 	}
 	else

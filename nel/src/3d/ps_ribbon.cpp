@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.20 2004/08/13 15:40:43 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.21 2004/08/17 07:46:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -733,7 +733,7 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 		do
 		{			
 			toProcess = std::min((uint) (nbRibbons - ribbonIndex) , numRibbonBatch);			
-			VB.setNumVertices((_UsedNbSegs + 1) * toProcess * numVerticesInShape);
+			VB.setNumVertices((_UsedNbSegs + 1) * toProcess * numVerticesInSlice);
 			{
 				CVertexBufferReadWrite vba;
 				VB.lock(vba);				

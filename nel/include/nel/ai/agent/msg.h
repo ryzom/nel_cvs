@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: msg.h,v 1.4 2001/02/13 10:43:18 chafik Exp $
+ * $Id: msg.h,v 1.5 2001/02/21 11:07:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,8 @@ namespace NLAIAGENT
 			PBreak,
 			PTell,
 			PKill,
-			PError
+			PError,
+			PEven
 		};
 
 	private:
@@ -96,6 +97,8 @@ namespace NLAIAGENT
 		TPerformatif _Performatif;
 		///This bool allow to know here the message come from: scriptes agent or hard coded agent.
 		bool _comeFromC_PLUS;
+		///Is true if agent want to dispatch it to its child;
+		bool _Dispatch;
 
 	protected:
 		void setMessageGroup(IBaseGroupType *g)
@@ -117,6 +120,7 @@ namespace NLAIAGENT
 			_Continuation = NULL;
 			_Performatif = PUndefine;
 			_comeFromC_PLUS = true;
+			_Dispatch = false;
 		}
 		IMessageBase(IObjectIA *sender,IBaseGroupType *g):_Sender(sender),_MsgGroup(NULL),_Message(g)
 		{
@@ -126,6 +130,7 @@ namespace NLAIAGENT
 			_Continuation = NULL;
 			_Performatif = PUndefine;
 			_comeFromC_PLUS = true;
+			_Dispatch = false;
 		}
 		IMessageBase(IObjectIA *sender, IBasicMessageGroup &msg_group,IBaseGroupType *g):
 			_Sender(sender),_MsgGroup((IBasicMessageGroup *)msg_group.clone()),_Message(g)
@@ -136,6 +141,7 @@ namespace NLAIAGENT
 			_Continuation = NULL;
 			_Performatif = PUndefine;
 			_comeFromC_PLUS = true;
+			_Dispatch = false;
 		}
 		IMessageBase(const IMessageBase &m)
 		{
@@ -153,6 +159,7 @@ namespace NLAIAGENT
 			_ReservedHeritanceIndexVar = m._ReservedHeritanceIndexVar;			
 			_Performatif = m._Performatif;
 			_comeFromC_PLUS = m._comeFromC_PLUS;
+			_Dispatch = m._Dispatch;
 		}
 
 		virtual ~IMessageBase()
@@ -205,6 +212,16 @@ namespace NLAIAGENT
 		{			
 			if(_Continuation) _Continuation->release();
 			_Continuation = r;
+		}
+
+		void setDispatch(bool state = true)
+		{
+			_Dispatch = state;
+		}
+
+		bool getDispatch() const
+		{
+			return _Dispatch;
 		}
 
 		const IObjectIA *getSender() const

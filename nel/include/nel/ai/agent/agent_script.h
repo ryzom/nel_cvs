@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.14 2001/02/08 17:27:45 chafik Exp $
+ * $Id: agent_script.h,v 1.15 2001/02/21 11:07:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ namespace NLAIAGENT
 		///This enum define ident for hard coded method that we have to import its under the script.
 		enum  TMethodNumDef {
 			TSend, ///Index of the send method
-			TSendContinuation, ///Index of the send with continuation method.
+			TSendComponent, ///Index of the send with continuation method.
 			TGetChildTag, ///Index of the getChild method
 			TAddChildTag,///Index of the addChild method
 			TRemoveChild,///Index of the removeDynamic method
@@ -230,8 +230,9 @@ namespace NLAIAGENT
 		virtual bool isEqual(const IBasicObjectIA &a) const;
 		virtual bool haveActivity() const;
 
+		
 		IObjectIA::CProcessResult sendMethod(IObjectIA *);
-		IObjectIA::CProcessResult sendMethodContinuation(IObjectIA *);
+		IObjectIA::CProcessResult sendMethodCompoment(IObjectIA *);
 		virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
 		virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);		
 
@@ -249,6 +250,7 @@ namespace NLAIAGENT
 		virtual	IObjectIA::CProcessResult runMethodeMember(sint32 index,IObjectIA *);		
 
 		virtual	CProcessResult sendMessage(IObjectIA *);
+		virtual	CProcessResult sendMessage(const IVarName &,IObjectIA *);
 
 		virtual const IObjectIA::CProcessResult &run();
 		//@}

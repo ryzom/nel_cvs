@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.7 2001/02/08 17:27:45 chafik Exp $
+ * $Id: baseai.h,v 1.8 2001/02/21 11:07:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -302,6 +302,12 @@ namespace NLAIAGENT
 		The method sendMessage(const IObjectIA &msg) allow us to achive a message defined in msg.
 		*/		
 		virtual	CProcessResult sendMessage(IObjectIA *);
+
+		/**
+		This method allow to send a message to an compoment given by an string IVarName.
+		*/
+		virtual	CProcessResult sendMessage(const IVarName &,IObjectIA *);
+		
 		/**
 		The method canProcessMessage(const IVarName &msgName) allow us to know if agent can preocess given by msgName.
 

@@ -1,7 +1,7 @@
-/** \file identifiant.h
+/** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.13 2001/02/13 10:43:18 chafik Exp $
+ * $Id: ident.h,v 1.14 2001/02/21 11:07:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -497,6 +497,11 @@ namespace NLAIAGENT
 		CNumericIndex(const CAgentNumber &i):_Id (i)
 		{			
 		}		
+
+		///init with a string.
+		CNumericIndex(const char *id):_Id(id)
+		{
+		}
 
 
 		///construct from a stream.

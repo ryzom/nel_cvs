@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.12 2001/02/12 09:54:00 robert Exp $
+ * $Id: agent.h,v 1.13 2001/02/21 11:07:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,19 @@ namespace NLAIAGENT
 			char text[2048*8];
 			getDebugString(debugString);
 			sprintf(text,"IMessageBase *runExec(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
+			throw NLAIE::CExceptionNotImplemented(text);
+			return NULL;
+		}
+
+		/**
+		RunExec is to processing reltative to PExec Performatif. its call from the IObjectIA *run(const IMessageBase &m) method.
+		*/
+		virtual IMessageBase *runEven(const IMessageBase &m)
+		{
+			char debugString[1024*4];
+			char text[2048*8];
+			getDebugString(debugString);
+			sprintf(text,"IMessageBase *runEven(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
 			throw NLAIE::CExceptionNotImplemented(text);
 			return NULL;
 		}
@@ -214,11 +227,11 @@ namespace NLAIAGENT
 		/**
 		Add a message acount in the mail box.
 		*/
-		virtual void addMsgGroup(IBasicMessageGroup &grp);
+		//virtual void addMsgGroup(IBasicMessageGroup &grp);
 		/**
 		Remove a message acount from the mail box.
 		*/
-		virtual void removeMsgGroup(IBasicMessageGroup &grp);
+		//virtual void removeMsgGroup(IBasicMessageGroup &grp);
 
 		/**
 		The processMessages method, process the loop/Run message.

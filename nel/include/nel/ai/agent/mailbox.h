@@ -1,7 +1,7 @@
 /** \file mailbox.h
  * class for mailing box.
  *
- * $Id: mailbox.h,v 1.7 2001/01/31 16:58:33 chafik Exp $
+ * $Id: mailbox.h,v 1.8 2001/02/21 11:07:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,14 +53,15 @@ namespace NLAIAGENT
 		virtual void removeMailBox(IMailBox *) = 0;
 
 		virtual const IMessageBase &getMessage() = 0;
+		virtual void shareMessage() = 0;
 		virtual void popMessage() = 0;
 		virtual sint32	getMessageCount() const = 0;
 
-		virtual std::list<const IMessageBase *> *pumpMessages(IBasicMessageGroup &) const= 0;
+		virtual std::list<const IMessageBase *> *pumpMessages(/*IBasicMessageGroup &*/) const= 0;
 
-		virtual void addGroup(IBasicMessageGroup &) = 0;
+		/*virtual void addGroup(IBasicMessageGroup &) = 0;
 		virtual void removeGroup(IBasicMessageGroup &) = 0;
-		virtual std::list<IBasicMessageGroup *> &getGroups() = 0;
+		virtual std::list<IBasicMessageGroup *> &getGroups() = 0;*/
 
 	};
 
@@ -91,13 +92,11 @@ namespace NLAIAGENT
 		virtual void addMessage(IMessageBase *msg);
 		virtual void addMailBox(IMailBox *);
 		virtual void removeMailBox(IMailBox *);
+		virtual void shareMessage() {}
 		virtual const IMessageBase &getMessage();
 		virtual void popMessage();
-		virtual sint32	getMessageCount() const;
-		virtual std::list<const IMessageBase *> *pumpMessages(IBasicMessageGroup &) const;
-		virtual void addGroup(IBasicMessageGroup &);
-		virtual void removeGroup(IBasicMessageGroup &);
-		virtual std::list<IBasicMessageGroup *> &getGroups();
+		virtual sint32	getMessageCount() const;		
+		virtual std::list<const IMessageBase *> *pumpMessages(/*IBasicMessageGroup &*/) const;		
 		virtual const CProcessResult &getState() const;
 		virtual void setState(TProcessStatement state, IObjectIA *result);
 		virtual const IObjectIA::CProcessResult &run();
@@ -129,9 +128,11 @@ namespace NLAIAGENT
 
 		private:						
 			IObjectIA::CProcessResult	_RunState;
-			CVectorMsgContainer _ListMessageIn;
+			tListMessage _ListMessageIn;
+			tListMessage _ListSharedMessage;
 			tListMailBox _ListMailBox;
-			std::list<IBasicMessageGroup *> _Msg_grps;
+
+			
 		public:
 	
 			CLocalMailBox (const IWordNumRef *parent);
@@ -139,9 +140,10 @@ namespace NLAIAGENT
 			CLocalMailBox (const CLocalMailBox &A);
 			virtual ~CLocalMailBox();
 			virtual const IMessageBase &getMessage();
+			virtual void shareMessage();
 			virtual void popMessage();
 			virtual sint32	getMessageCount() const;
-			virtual void sendMessage(const IBasicAgent &,const IBaseGroupType &);
+			//virtual void sendMessage(const IBasicAgent &,const IBaseGroupType &);
 			virtual IObjectIA::CProcessResult sendMessage(IMessageBase *);
 			virtual void addMessage(IMessageBase *msg);
 			// Ajoute une boite aux lettre dans la liste des boites aux lettres "source" (les bals à consulter).
@@ -158,12 +160,12 @@ namespace NLAIAGENT
 			virtual void load(NLMISC::IStream &is);
 			virtual const CProcessResult &getState() const ;
 			virtual void setState(TProcessStatement state, IObjectIA *result);
-			virtual std::list<const IMessageBase *> *pumpMessages(IBasicMessageGroup &grp) const;
+			virtual std::list<const IMessageBase *> *pumpMessages(/*IBasicMessageGroup &grp*/) const;
 			virtual const IObjectIA::CProcessResult &run();
 			virtual void getDebugString(char *t) const;
-			virtual void addGroup(IBasicMessageGroup &grp);
+			/*virtual void addGroup(IBasicMessageGroup &grp);
 			virtual std::list<IBasicMessageGroup *> &getGroups() ;
-			virtual void removeGroup(IBasicMessageGroup &grp);
+			virtual void removeGroup(IBasicMessageGroup &grp);*/
 		private:
 			void fillMailBox();
 
@@ -192,6 +194,6 @@ namespace NLAIAGENT
 			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual const NLAIC::CIdentType &getType() const;
 
-	};
+	};	
 }
 #endif

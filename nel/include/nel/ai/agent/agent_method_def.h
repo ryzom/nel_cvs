@@ -1,7 +1,7 @@
 /** \file agent_method_def.h
  * Sevral define name method manipulation.
  *
- * $Id: agent_method_def.h,v 1.11 2001/02/08 17:27:45 chafik Exp $
+ * $Id: agent_method_def.h,v 1.12 2001/02/21 11:07:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,5 +63,6 @@
 #define _SENDER_		"Sender"
 #define _RECEIVER_		"Receiver"
 #define _CONTINUATION_	"Continuation"
+#define _SETCONTINUATION_	"SetContinuation"
 
 #endif

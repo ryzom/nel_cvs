@@ -1,7 +1,7 @@
 /** \file main_agent_script.h
  * class for the man agent.
  *
- * $Id: main_agent_script.h,v 1.8 2001/02/13 10:43:18 chafik Exp $
+ * $Id: main_agent_script.h,v 1.9 2001/02/21 11:07:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,7 +67,7 @@ namespace NLAIAGENT
 	class CMainAgentScript : public IMainAgent 
 	{
 	
-	private:
+	protected:
 
 		///Context for the script.
 		NLAISCRIPT::CCodeContext	*_CodeContext;

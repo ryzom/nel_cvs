@@ -1,7 +1,7 @@
 /** \file performative.h
  *	
  *
- * $Id: performative.h,v 1.5 2001/02/12 09:54:11 robert Exp $
+ * $Id: performative.h,v 1.6 2001/02/21 11:07:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -295,6 +295,41 @@ namespace NLAIAGENT
 		virtual const char *getName() const
 		{
 			return "Error";
+		}
+		
+	};
+
+	class CPEven: public IPerformative
+	{
+	public:
+		static const NLAIC::CIdentType IdEven;
+	public:
+		CPEven():IPerformative(IMessageBase::PEven)
+		{
+		}
+
+		/// \name Base class member method.			
+		//@{
+		virtual const NLAIC::CIdentType &getType() const
+		{
+			return IdEven;
+		}
+
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new CPEven();
+			return m;
+		}
+		
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+		//@}
+		
+		virtual const char *getName() const
+		{
+			return "Even";
 		}
 		
 	};

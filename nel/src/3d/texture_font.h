@@ -1,7 +1,7 @@
 /** \file texture_font.h
  * <File description>
  *
- * $Id: texture_font.h,v 1.5 2001/09/07 12:51:29 besson Exp $
+ * $Id: texture_font.h,v 1.6 2001/09/17 14:25:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,8 @@ public:
 
 	// This function manage the cache if the letter wanted does not exist
 	SLetterInfo* getLetterInfo (SLetterKey& k);
+
+	void dumpTextureFont (const char *filename);
 
 private:
 

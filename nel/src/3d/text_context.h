@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.2 2001/09/06 15:20:54 besson Exp $
+ * $Id: text_context.h,v 1.3 2001/09/17 14:25:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -431,6 +431,11 @@ public:
 	 */
 	bool	getKeep800x600Ratio() const {return _Keep800x600Ratio;}
 
+
+	void	dumpCache (const char *filename)
+	{
+		_FontManager->dumpCache (filename);
+	}
 
 	/// destructor
 	~CTextContext()

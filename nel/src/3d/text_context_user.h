@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.3 2001/09/07 08:35:24 besson Exp $
+ * $Id: text_context_user.h,v 1.4 2001/09/17 14:25:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -204,6 +204,11 @@ public:
 		return _TextContext.getLastXBound();
 	}
 	// @}
+
+	void			dumpCacheTexture (const char *filename)
+	{
+		_TextContext.dumpCache (filename);
+	}
 
 };
 

@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.11 2001/09/07 15:25:38 besson Exp $
+ * $Id: texture_font.cpp,v 1.12 2001/09/17 14:25:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,14 +147,15 @@ CTextureFont::~CTextureFont()
 	sint posY = 0;
 }
 
-/*
-void dumpTextureFont(CTextureFont*ctf)
+
+// ---------------------------------------------------------------------------
+void CTextureFont::dumpTextureFont(const char *filename)
 {
 	CBitmap b;
-	COFile f( "c:\\temp\\zzz.tga" );
+	COFile f( filename );
 	b.resize (TextureSizeX, TextureSizeY, CBitmap::RGBA);
 	vector<uint8>&bits = b.getPixels();
-	vector<uint8>&src = ctf->getPixels();
+	vector<uint8>&src = getPixels();
 
 	for (uint i = 0; i < (TextureSizeX*TextureSizeY); ++i)
 	{
@@ -163,7 +164,7 @@ void dumpTextureFont(CTextureFont*ctf)
 
 	b.writeTGA (f, 32);
 }
-*/
+
 
 // ---------------------------------------------------------------------------
 // cat : categories where the letter is

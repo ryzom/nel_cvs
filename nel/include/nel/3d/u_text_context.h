@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_text_context.h,v 1.2 2001/09/17 14:25:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -222,6 +222,8 @@ public:
 	 */
 	virtual	float			getLastXBound() const =0;
 	// @}
+
+	virtual void			dumpCacheTexture (const char *filename) = 0;
 
 };
 

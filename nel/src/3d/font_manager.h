@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.2 2001/09/06 15:20:54 besson Exp $
+ * $Id: font_manager.h,v 1.3 2001/09/17 14:25:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,6 +156,11 @@ public:
 	 * return a string given information about the cache
 	 */	
 	std::string getCacheInformation() const;
+
+	void	dumpCache (const char *filename)
+	{
+		_TexFont->dumpTextureFont (filename);
+	}
 
 };
 

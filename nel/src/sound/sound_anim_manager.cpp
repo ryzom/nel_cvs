@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.cpp,v 1.2 2002/06/20 08:36:24 hanappe Exp $
+ * $Id: sound_anim_manager.cpp,v 1.3 2002/06/28 19:33:15 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #include "stdsound.h"
 #include "nel/sound/sound_anim_manager.h"
 #include "nel/sound/sound_animation.h"
-#include "nel/sound/sound_anim_player.h"
+//#include "nel/sound/sound_anim_player.h"
 #include "nel/misc/common.h"
 #include "nel/misc/path.h"
 
@@ -49,13 +49,14 @@ CSoundAnimManager::CSoundAnimManager(NLSOUND::UAudioMixer* mixer) : _Mixer(mixer
 	}
 
 	_Instance = this;
-	_PlayerId = 0;
+	//_PlayerId = 0;
 }
 
 // ********************************************************
 
 CSoundAnimManager::~CSoundAnimManager()
 {
+	/*
 	set<CSoundAnimPlayer*>::iterator iter;
 
 	for (iter = _Players.begin(); iter != _Players.end(); iter++)
@@ -65,6 +66,7 @@ CSoundAnimManager::~CSoundAnimManager()
 	}
 
 	_Players.clear();
+	*/
 }
 
 // ********************************************************
@@ -73,47 +75,39 @@ TSoundAnimId CSoundAnimManager::loadAnimation(std::string& name)
 {
 	nlassert(!name.empty());
 
-	string filename = name;
-	filename.append(".sound_anim");
+	string filename;
+	if (name.find(".anim") != name.npos)
+	{
+		filename = CFile::getFilenameWithoutExtension(name);
+		filename.append(".sound_anim");
+	}
+	else
+	{
+		filename = name;
+		filename.append(".sound_anim");
+	}
+
+	if (filename == "FY_HOM_course.sound_anim")
+	{
+		int debug = 0;
+	}
 
 	// throws exception if file not found
-	filename = CPath::lookup(filename, true, false, true);
+	filename = CPath::lookup(filename, false, false, true);
+	if (filename.empty())
+	{
+		return CSoundAnimationNoId;
+	}
 
 	TSoundAnimId id = createAnimation(name);
-	if (id == CSoundAnimation::NoId)
+	if (id == CSoundAnimationNoId)
 	{
-		throw exception("Duplicate sound animation");
+		return CSoundAnimationNoId;
 	}
 
 	CSoundAnimation* anim = _Animations[id];
 	anim->setFilename(filename);
 	anim->load();
-
-	/*
-	CIFile file;
-
-	// Open the file
-	if (!file.open(filename.c_str()))
-	{
-		throw exception("Can't open the file for reading");
-	}
-
-	anim->setFilename(filename);
-
-	// Create the XML stream
-	CIXml input;
-
-	// Init
-	if (input.init (file))
-	{
-		xmlNodePtr root = input.getRootNode ();
-
-		anim->load (input, root);
-	}
-
-	// Close the file
-	file.close ();
-*/
 
 	return id;
 }
@@ -136,7 +130,7 @@ TSoundAnimId CSoundAnimManager::createAnimation(std::string& name)
 	{
 		nlwarning("Duplicate sound animation \"%s\"", name.c_str());
 		delete anim;
-		return CSoundAnimation::NoId;
+		return CSoundAnimationNoId;
 	}
 
 	return id;
@@ -155,7 +149,7 @@ CSoundAnimation* CSoundAnimManager::findAnimation(std::string& name)
 TSoundAnimId CSoundAnimManager::getAnimationFromName(std::string& name)
 {
 	TSoundAnimMap::iterator iter = _IdMap.find(name.c_str());
-	return (iter == _IdMap.end())? CSoundAnimation::NoId : (*iter).second;	
+	return (iter == _IdMap.end())? CSoundAnimationNoId : (*iter).second;	
 }
 
 // ********************************************************
@@ -167,48 +161,19 @@ void CSoundAnimManager::saveAnimation(CSoundAnimation* anim, std::string& filena
 
 	anim->setFilename(filename);
 	anim->save ();
-
-	/*
-	// File stream
-	COFile file;
-
-	// Open the file
-	if (!file.open(filename.c_str()))
-	{
-		throw exception("Can't open the file for writing");
-	}
-
-	anim->setFilename(filename);
-
-	// Create the XML stream
-	COXml output;
-
-	// Init
-	if (output.init (&file, "1.0"))
-	{
-		xmlDocPtr xmlDoc = output.getDocument();
-
-		anim->save (xmlDoc);
-
-		// Flush the stream, write all the output file
-		output.flush ();
-	}
-
-	// Close the file
-	file.close ();
-	*/
 }
 
 // ********************************************************
-
+/*
 TSoundAnimPlayId CSoundAnimManager::playAnimation(TSoundAnimId id, float time, CVector* position)
 {
-	nlassert(id != CSoundAnimation::NoId);
+	nlassert(id != CSoundAnimationNoId);
 	nlassert((uint32) id < _Animations.size());
 	nlassert(position);
 
 	CSoundAnimation* anim = _Animations[id];
 	nlassert(anim);
+
 
 	_PlayerId++;
 	CSoundAnimPlayer* player = new CSoundAnimPlayer(anim, time, position, _Mixer, _PlayerId);
@@ -218,9 +183,26 @@ TSoundAnimPlayId CSoundAnimManager::playAnimation(TSoundAnimId id, float time, C
 
 	return _PlayerId;
 }
+*/
+
+void CSoundAnimManager::playAnimation(TSoundAnimId id, float lastTime, float curTime, CVector& position)
+{
+	//nlassert(id != CSoundAnimationNoId);
+	if (id == CSoundAnimationNoId) 
+	{
+		return;
+	}
+
+	nlassert((uint32) id < _Animations.size());
+
+	CSoundAnimation* anim = _Animations[id];
+	nlassert(anim);
+
+	anim->play(_Mixer, lastTime, curTime, position);
+}
 
 // ********************************************************
-
+/*
 TSoundAnimPlayId CSoundAnimManager::playAnimation(string& name, float time, CVector* position)
 {
 	nlassert(position);
@@ -228,9 +210,10 @@ TSoundAnimPlayId CSoundAnimManager::playAnimation(string& name, float time, CVec
 	TSoundAnimId id = getAnimationFromName(name);
 	return (id == CSoundAnimation::NoId)? -1 : _PlayerId;
 }
+*/
 
 // ********************************************************
-
+/*
 void CSoundAnimManager::stopAnimation(TSoundAnimPlayId playbackId)
 {
 	nlassert(playbackId >= 0);
@@ -247,9 +230,9 @@ void CSoundAnimManager::stopAnimation(TSoundAnimPlayId playbackId)
 		}
 	}
 }
-
+*/
 // ********************************************************
-
+/*
 bool CSoundAnimManager::isPlaying(TSoundAnimPlayId playbackId)
 {
 	nlassert(playbackId >= 0);
@@ -267,9 +250,9 @@ bool CSoundAnimManager::isPlaying(TSoundAnimPlayId playbackId)
 
 	return false;
 }
-
+*/
 // ********************************************************
-
+/*
 void CSoundAnimManager::update(float lastTime, float curTime)
 {
 	set<CSoundAnimPlayer*>::iterator iter;
@@ -300,6 +283,7 @@ void CSoundAnimManager::update(float lastTime, float curTime)
 		}
 	}
 }
+*/
 
 } // namespace NLSOUND 
 

@@ -1,7 +1,7 @@
 /** \file sound_anim_marker.cpp
  * A sound event marker on a sound track
  *
- * $Id: sound_anim_marker.cpp,v 1.1 2002/06/18 16:02:46 hanappe Exp $
+ * $Id: sound_anim_marker.cpp,v 1.2 2002/06/28 19:33:15 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,11 +25,9 @@
 
 #include "stdsound.h"
 #include "nel/sound/sound_anim_marker.h"
+#include "nel/sound/u_audio_mixer.h"
+#include "nel/sound/u_source.h"
 #include "nel/misc/common.h"
-/*
-#include "nel/misc/i_xml.h"
-#include "nel/misc/o_xml.h"
-*/
 
 using namespace std;
 using namespace NLSOUND;
@@ -41,6 +39,20 @@ namespace NLSOUND {
 
 CSoundAnimMarker::~CSoundAnimMarker()
 {
+}
+
+// ********************************************************
+
+void CSoundAnimMarker::play(UAudioMixer* mixer, CVector& position)
+{
+	set<string>::iterator iter;
+
+	for (iter = _Sounds.begin(); iter != _Sounds.end(); iter++)
+	{
+		USource* source = mixer->createSource((*iter).c_str(), true);
+		source->setPos(position);
+		source->play();
+	}
 }
 
 // ********************************************************
@@ -82,61 +94,6 @@ void CSoundAnimMarker::getSounds(vector<const char*>& sounds)
 	}
 }
 
-// ********************************************************
-/*
-void CSoundAnimMarker::save(xmlNodePtr parent)
-{
-	set<string>::iterator iter;
-
-	char s[64];
-	smprintf(s, 64, "%f", _Time);
-
-	xmlNodePtr markerNode = xmlNewChild ( parent, NULL, (const xmlChar*)"MARKER", NULL );
-	xmlSetProp (markerNode, (const xmlChar*)"time", (const xmlChar*) s);
-
-	for (iter = _Sounds.begin(); iter != _Sounds.end(); iter++)
-	{
-		xmlNodePtr soundNode = xmlNewChild ( markerNode, NULL, (const xmlChar*)"SOUND", NULL );
-		xmlSetProp (soundNode, (const xmlChar*)"name", (const xmlChar*) (*iter).c_str());
-	}
-}
-*/
-
-// ********************************************************
-/*
-void CSoundAnimMarker::load(CIXml& input, xmlNodePtr node)
-{
-	const char *time = (const char*) xmlGetProp(node, (xmlChar*) "time");
-	if (time == 0)
-	{
-		throw exception("Invalid sound animation marker");
-	}
-
-	setTime((float) atof(time));
-	xmlFree ((void*)time);
-
-
-
-	xmlNodePtr sound = input.getFirstChildNode(node, "SOUND");
-
-	while (sound != 0)
-	{
-		char *name = (char*) xmlGetProp(node, (xmlChar*) "name");
-		if (name == 0)
-		{
-			throw exception("Invalid sound animation marker");
-		}
-
-		addSound(string(name));
-
-		xmlFree ((void*)name);
-
-		sound = input.getNextChildNode(node, "SOUND");
-	}
-}
-
-
-*/
 
 
 } // namespace NLSOUND

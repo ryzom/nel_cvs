@@ -1,7 +1,7 @@
 /** \file sound_anim_track.cpp
  * An animation sound track
  *
- * $Id: sound_animation.cpp,v 1.1 2002/06/18 16:02:46 hanappe Exp $
+ * $Id: sound_animation.cpp,v 1.2 2002/06/28 19:33:15 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,23 +72,6 @@ void CSoundAnimation::sort()
 
 // ********************************************************
 
-/*
-void CSoundAnimation::save(xmlDocPtr xmlDoc)
-{
-	// Create the first node
-	xmlNodePtr root = xmlNewDocNode (xmlDoc, NULL, (const xmlChar*)"SOUNDANIMATION", NULL);
-	xmlDocSetRootElement (xmlDoc, root);
-
-	vector<CSoundAnimMarker*>::iterator iter;
-	for (iter = _Markers.begin(); iter != _Markers.end(); iter++)
-	{
-		(*iter)->save(root);
-	}
-}
-*/
-
-// ********************************************************
-
 void CSoundAnimation::save()
 {
 	// File stream
@@ -149,20 +132,21 @@ void CSoundAnimation::save()
 }
 
 // ********************************************************
-/*
-void CSoundAnimation::load(CIXml& input, xmlNodePtr node)
+
+void CSoundAnimation::play(UAudioMixer* mixer, float lastTime, float curTime, NLMISC::CVector& position)
 {
-	xmlNodePtr markerNode = input.getFirstChildNode(node, "MARKER");
-
-	while (markerNode != 0)
+	vector<CSoundAnimMarker*>::iterator iter;
+	for (iter = _Markers.begin(); iter != _Markers.end(); iter++)
 	{
-		CSoundAnimMarker* marker = new CSoundAnimMarker();
-		marker->load(input, markerNode);
+		CSoundAnimMarker* marker = *iter;
+		nlassert(marker);
 
-		markerNode = input.getNextChildNode(node, "MARKER");
+		if ((lastTime <= marker->getTime()) && (marker->getTime() < curTime))
+		{
+			marker->play(mixer, position);
+		}
 	}
 }
-*/
 
 // ********************************************************
 

@@ -1,7 +1,7 @@
 /** \file sound_anim_player.cpp
  * A sound event marer on a sound track
  *
- * $Id: sound_anim_player.cpp,v 1.2 2002/06/20 08:37:14 hanappe Exp $
+ * $Id: sound_anim_player.cpp,v 1.3 2002/06/28 19:33:15 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,7 +78,7 @@ void CSoundAnimPlayer::update(float lastTime, float curTime)
 
 		if ((lastTime <= markerTime) && (markerTime < curTime))
 		{
-			marker->getSounds(_Sounds);
+			marker->play(_Sounds);
 			vector<const char*>::iterator iter;
 			for (iter = _Sounds.begin(); iter != _Sounds.end(); iter++)
 			{

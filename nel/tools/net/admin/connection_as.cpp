@@ -1,7 +1,7 @@
 /** \file connection_as.cpp
  * 
  *
- * $Id: connection_as.cpp,v 1.8 2001/07/05 14:16:06 lecroart Exp $
+ * $Id: connection_as.cpp,v 1.9 2001/10/05 15:06:45 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -427,7 +427,7 @@ static void cbASConnection (const string &serviceName, TSockId from, void *arg)
 	as->SockId = from;
 
 //	interfAddAS(as);
-	setBitmap ("as_cnt.xpm", as->Bitmap);
+	setBitmap ("as_on.xpm", as->Bitmap);
 
 	nlinfo ("%d:*:* connected", as->Id);
 }
@@ -445,7 +445,7 @@ static void cbASDisconnection (const string &serviceName, TSockId from, void *ar
 	//AdminServices.erase (asit);
 	as->Connected = false;
 	as->SockId = NULL;
-	setBitmap ("as_dcnt.xpm", as->Bitmap);
+	setBitmap ("as_off.xpm", as->Bitmap);
 	removeSubTree (as);
 	as->AdminExecutorServices.clear();
 }

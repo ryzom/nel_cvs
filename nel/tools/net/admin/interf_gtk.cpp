@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.8 2001/07/06 17:26:52 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.9 2001/10/05 15:06:45 lecroart Exp $
  *
  *
  */
@@ -58,7 +58,7 @@ using namespace NLNET;
 
 
 
-#define NO_DEBUG_OUTPUT
+#undef NO_DEBUG_OUTPUT
 
 //
 // Variables
@@ -378,7 +378,7 @@ static void cbDisconnectToAS()
 
 	printf("disconnecting to...%p\n", PopupAS);
 
-	setBitmap ("as_dcnt.xpm", PopupAS->Bitmap);
+	setBitmap ("as_off.xpm", PopupAS->Bitmap);
 
 	connectionASRelease (PopupAS);
 
@@ -557,7 +557,7 @@ void interfAddAS (CAdminService *as)
 	// create the item
 	createTreeItem (RootSubTree, as->RootTreeItem, as->Bitmap, as->Label);
 	
-	setBitmap ("as_dcnt.xpm", as->Bitmap);
+	setBitmap ("as_off.xpm", as->Bitmap);
 
 	string name;
 #ifdef NO_DEBUG_OUTPUT
@@ -594,9 +594,9 @@ void interfUpdateAES (CAdminExecutorService *aes)
 
 	string icon;
 	if (aes->Connected)
-		icon = "aes_cnt.xpm";
+		icon = "aes_on.xpm";
 	else
-		icon = "aes_dcnt.xpm";
+		icon = "aes_off.xpm";
 
 	// check if we already create widgets
 	nlassert (aes->RootTreeItem != NULL);
@@ -748,16 +748,16 @@ void interfUpdateService (CService *s)
 #ifdef NO_DEBUG_OUTPUT
 	name = s->AliasName + " " + s->ShortName + " " + s->LongName;
 #else // NO_DEBUG_OUTPUT
-	name = "S" + toString(s->Id) + " '" + s->AliasName + "' '" + s->ShortName + "' '" + s->LongName + "' (U" + toString(s->Unknown) + ", C" + toString(s->Connected) + ", I" + toString(s->InConfig) + ", R" + toString(s->Ready) + ")";
+	name = "S" + toString((sint32)s->Id) + " '" + s->AliasName + "' '" + s->ShortName + "' '" + s->LongName + "' (U" + toString(s->Unknown) + ", C" + toString(s->Connected) + ", I" + toString(s->InConfig) + ", R" + toString(s->Ready) + ")";
 #endif // NO_DEBUG_OUTPUT
 
 	string icon;
 	if (s->Unknown)
 		icon = "s_ukn.xpm";
 	else if (s->Connected)
-		icon = "s_cnt.xpm";
+		icon = "s_on.xpm";
 	else
-		icon = "s_dcnt.xpm";
+		icon = "s_off.xpm";
 
 	// check if we already create widgets
 	nlassert (s->RootTreeItem != NULL);

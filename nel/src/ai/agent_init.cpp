@@ -1,7 +1,7 @@
 /** \file agent_init.cpp
  * <File description>
  *
- * $Id: agent_init.cpp,v 1.1 2001/03/27 08:13:02 chafik Exp $
+ * $Id: agent_init.cpp,v 1.2 2001/03/29 07:52:48 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,8 +54,10 @@
 #include "nel/ai/agent/msg_action.h"
 #include "nel/ai/agent/msg_on_change.h"
 #include "nel/ai/agent/gd_agent_script.h"
+#include "nel/ai/character/character.h"
 
 using namespace NLAIAGENT;
+using namespace NLAICHARACTER;
 
 void staticInitAgent()
 {
@@ -71,6 +73,9 @@ void staticInitAgent()
 	IAgent::IdAgent = new NLAIC::CIdentType("GenericAgent", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)staticAgent), 
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+
+	CCharacterNoeud::initClass();
+	CCharacterChild::initClass();
 }
 
 void registerLibClass()

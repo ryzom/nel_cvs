@@ -121,6 +121,14 @@ SOURCE=.\ai\agent\actor_script.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\agent\agent_3dvector.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\agent\agent_input.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\agent\agent_local_mailer.cpp
 # End Source File
 # Begin Source File
@@ -253,7 +261,15 @@ SOURCE=..\include\nel\ai\agent\agent.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ai\agent\agent_3dvector.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\ai\agent\agent_digital.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\agent_input.h
 # End Source File
 # Begin Source File
 
@@ -310,6 +326,10 @@ SOURCE=..\include\nel\ai\agent\gd_agent_script.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\agent\ident.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\identtype.h
 # End Source File
 # Begin Source File
 
@@ -521,6 +541,10 @@ SOURCE=..\include\nel\ai\fuzzy\interpret_fuzzy_controler.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\ai\agent_init.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\ai.cpp
 # End Source File
 # Begin Source File
@@ -534,6 +558,10 @@ SOURCE=.\ai\static_def_init.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\ai\nl_ai.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\static_init.h
 # End Source File
 # End Group
 # End Group
@@ -585,7 +613,19 @@ SOURCE=.\ai\logic\fo_operator.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\logic\fsm_script.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\logic\fsm_seq_script.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\logic\goal.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\script\interpret_fsm.h
 # End Source File
 # Begin Source File
 
@@ -654,6 +694,14 @@ SOURCE=..\include\nel\ai\logic\fo_assert.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\logic\fo_operator.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\logic\fsm_script.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\logic\fsm_seq_script.h
 # End Source File
 # Begin Source File
 
@@ -786,6 +834,10 @@ SOURCE=.\ai\script\init.cpp
 # Begin Source File
 
 SOURCE=.\ai\script\interpret_actor.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\script\interpret_fsm.cpp
 # End Source File
 # Begin Source File
 
@@ -1110,6 +1162,26 @@ SOURCE=..\include\nel\ai\character\character.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\character\zone.h
+# End Source File
+# End Group
+# End Group
+# Begin Group "tools"
+
+# PROP Default_Filter ""
+# Begin Group "tolls_cpp"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\ai\tools\automata_desc.cpp
+# End Source File
+# End Group
+# Begin Group "tools_h"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\include\nel\ai\tools\automata_desc.h
 # End Source File
 # End Group
 # End Group

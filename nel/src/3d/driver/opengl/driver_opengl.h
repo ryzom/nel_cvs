@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.112 2002/03/14 18:28:20 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.113 2002/03/18 14:46:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -401,6 +401,8 @@ public:
 
 	virtual void			setupViewMatrix(const CMatrix& mtx);
 
+	virtual void			setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos);
+
 	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n=0);
 
 	virtual void			multiplyModelMatrix(const CMatrix& mtx, uint8 n=0);
@@ -658,12 +660,20 @@ private:
 	// Backup znear and zfar
 	float					_OODeltaZ;
 
+	// Current View matrix, in NEL basis. This is the parameter passed in setupViewMatrix*().
+	CMatrix					_UserViewMtx;
 	// Current (OpenGL basis) View matrix.
+	// NB: if setuped with setupViewMatrixEx(), _ViewMtx.Pos()==(0,0,0)
 	CMatrix					_ViewMtx;
 	// Matrix used for specular
 	CMatrix					_TexMtx;
+	// Precision ZBuffer: The Current cameraPosition, to remove from each model Position.
+	CVector					_PZBCameraPos;
+
 
 	// Current computed (OpenGL basis) ModelView matrix.
+	// NB: Thoses matrix have already substracted the _PZBCameraPos
+	// Hence thoses matrix represent the Exact eye-space basis (only _ViewMtx is a bit tricky).
 	CMatrix					_ModelViewMatrix[MaxModelMatrix];
 	// For software skinning.
 	CMatrix					_ModelViewMatrixNormal[MaxModelMatrix];

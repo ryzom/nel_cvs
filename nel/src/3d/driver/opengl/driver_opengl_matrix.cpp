@@ -1,7 +1,7 @@
 /** \file driver_opengl_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.13 2002/02/20 18:07:42 lecroart Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.14 2002/03/18 14:46:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 namespace NL3D {
 
+// ***************************************************************************
 void CDriverGL::setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective)
 {
 	glMatrixMode(GL_PROJECTION);
@@ -46,10 +47,12 @@ void CDriverGL::setFrustum(float left, float right, float bottom, float top, flo
 	glMatrixMode(GL_MODELVIEW);
 }
 
-// --------------------------------------------------
 
-void CDriverGL::setupViewMatrix(const CMatrix& mtx)
+// ***************************************************************************
+void CDriverGL::setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos)
 {
+	_UserViewMtx= mtx;
+
 	// Setup the matrix to transform the CScene basis in openGL basis.
 	CMatrix		changeBasis;
 	CVector		I(1,0,0);
@@ -58,9 +61,37 @@ void CDriverGL::setupViewMatrix(const CMatrix& mtx)
 
 	changeBasis.identity();
 	changeBasis.setRot(I,J,K, true);
-	// Optimize it...
-//	changeBasis*= mtx;
 	_ViewMtx=changeBasis*mtx;
+	// Reset the viewMtx position.
+	_ViewMtx.setPos(CVector::Null);
+	_PZBCameraPos= cameraPos;
+
+	_MatrixSetupDirty= true;
+	_ViewMatrixSetupDirty= true;
+
+	_TexMtx = _ViewMtx;
+	_TexMtx.setPos(CVector(0.0f,0.0f,0.0f));
+	_TexMtx.invert();
+	_TexMtx = changeBasis *	_TexMtx;
+}
+
+
+// ***************************************************************************
+void CDriverGL::setupViewMatrix(const CMatrix& mtx)
+{
+	_UserViewMtx= mtx;
+
+	// Setup the matrix to transform the CScene basis in openGL basis.
+	CMatrix		changeBasis;
+	CVector		I(1,0,0);
+	CVector		J(0,0,-1);
+	CVector		K(0,1,0);
+
+	changeBasis.identity();
+	changeBasis.setRot(I,J,K, true);
+	_ViewMtx=changeBasis*mtx;
+	// Just set the PZBCameraPos to 0.
+	_PZBCameraPos= CVector::Null;
 
 	_MatrixSetupDirty= true;
 	_ViewMatrixSetupDirty= true;
@@ -72,19 +103,13 @@ void CDriverGL::setupViewMatrix(const CMatrix& mtx)
 
 }
 
+// ***************************************************************************
 CMatrix CDriverGL::getViewMatrix(void) const
 {
-	// Setup the matrix to transform the CScene basis in openGL basis.
-	CMatrix		changeBasis;
-	CVector		I(1,0,0);
-	CVector		J(0,0,1);
-	CVector		K(0,-1,0);
-
-	changeBasis.identity();
-	changeBasis.setRot(I,J,K, true);
-	return(changeBasis*_ViewMtx);
+	return _UserViewMtx;
 }
 
+// ***************************************************************************
 void CDriverGL::setupModelMatrix(const CMatrix& mtx, uint8 n)
 {
 	// Check args
@@ -101,10 +126,14 @@ void CDriverGL::setupModelMatrix(const CMatrix& mtx, uint8 n)
 	_ModelViewMatrixDirtyPaletteSkin.set(n);
 
 
-	// Put the matrix in the opengl world, and store it.
-	_ModelViewMatrix[n]= _ViewMtx*mtx;
+	// Put the matrix in the opengl eye space, and store it.
+	CMatrix		mat= mtx;
+	// remove first the _PZBCameraPos
+	mat.setPos(mtx.getPos() - _PZBCameraPos);
+	_ModelViewMatrix[n]= _ViewMtx*mat;
 }
 
+// ***************************************************************************
 void CDriverGL::multiplyModelMatrix(const CMatrix& mtx, uint8 n)
 {
 	// Check args

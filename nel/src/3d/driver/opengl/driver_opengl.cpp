@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.138 2002/03/14 18:28:20 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.139 2002/03/18 14:46:16 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -813,6 +813,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	_ForceNormalize= false;
 	// Setup defaults for blend, lighting ...
 	_DriverGLStates.forceDefaults(getNbTextureStages());
+	// Default delta camera pos.
+	_PZBCameraPos= CVector::Null;
 
 	if (_NVTextureShaderEnabled)
 	{
@@ -1694,9 +1696,10 @@ void				CDriverGL::cleanViewMatrix ()
 				GLfloat vectorGL[4];
 
 				// Set the GL array
-				vectorGL[0]=_WorldLightPos[i].x;
-				vectorGL[1]=_WorldLightPos[i].y;
-				vectorGL[2]=_WorldLightPos[i].z;
+				// Must Substract CameraPos, because ViewMtx may not be the exact view.
+				vectorGL[0]=_WorldLightPos[i].x - _PZBCameraPos.x;
+				vectorGL[1]=_WorldLightPos[i].y - _PZBCameraPos.y;
+				vectorGL[2]=_WorldLightPos[i].z - _PZBCameraPos.z;
 				vectorGL[3]=1.f;
 	
 				// Set it

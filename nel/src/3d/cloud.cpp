@@ -1,7 +1,7 @@
 /** \file cloud.cpp
  * cloud implementation
  *
- * $Id: cloud.cpp,v 1.7 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: cloud.cpp,v 1.8 2004/04/27 12:17:18 vizerie Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -106,6 +106,7 @@ void CCloud::init (uint32 nVoxelW, uint32 nVoxelH, uint32 nVoxelD, float rBaseFr
 
 }
 
+
 // ------------------------------------------------------------------------------------------------
 void CCloud::generate (CNoise3d &noise)
 {
@@ -194,6 +195,7 @@ void CCloud::generate (CNoise3d &noise)
 // ------------------------------------------------------------------------------------------------
 void CCloud::light ()
 {
+
 	uint32 i, j;
 
 	// Setup the matrices view&model, viewport and frustum
@@ -310,6 +312,7 @@ void CCloud::light ()
 	_CloudTexTmp->Tex->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 }
 
+
 // ------------------------------------------------------------------------------------------------
 void CCloud::reset (NL3D::CCamera *pViewer)
 {
@@ -396,6 +399,7 @@ void CCloud::anim (double dt, double dt2)
 	//Time += dt2;
 }
 
+
 // ------------------------------------------------------------------------------------------------
 void CCloud::disp ()
 {
@@ -459,6 +463,7 @@ void CCloud::disp ()
 	_Driver->activeVertexBuffer (rVB);
 	_Driver->renderRawQuads (*dispMat, 0, 1);
 }
+
 
 // ------------------------------------------------------------------------------------------------
 void CCloud::dispXYZ (CMaterial *pMat)
@@ -528,6 +533,7 @@ void CCloud::dispXYZ (CMaterial *pMat)
 void CCloud::calcBill (const CVector &Viewer, const CVector &Center, const CVector &Size, CVector &I, CVector &J, CVector &K,
 				float &Left, float &Right, float &Top, float &Bottom, float &Near, float &Far)
 {
+	
 	CVector ViewDir = Center - Viewer;
 	float ViewDist = ViewDir.norm();
 	ViewDir.normalize();
@@ -595,12 +601,12 @@ void CCloud::calcBill (const CVector &Viewer, const CVector &Center, const CVect
 	}
 }
 
+
 // ------------------------------------------------------------------------------------------------
 // Create the billboard (in the screen at pos (NbW*Width, 0)
 void CCloud::genBill (CCamera *pCam, uint32 nBillSize)
 {
 	// Render target
-	_Driver->setFrustum (0, (float)_BillSize, 0, (float)_BillSize, -1, 1, false);
 
 	// Compute the Bill
 	uint32 sizeTMP = _OldBillSize;
@@ -702,6 +708,7 @@ void CCloud::genBill (CCamera *pCam, uint32 nBillSize)
 
 	_LastX = _Pos.x;
 }
+
 
 // ------------------------------------------------------------------------------------------------
 void CCloud::dispBill (CCamera *pCam)
@@ -852,6 +859,7 @@ void CCloud::dispBill (CCamera *pCam)
 	}
 
 }
+
 
 // ------------------------------------------------------------------------------------------------
 void CCloud::setMode2D ()

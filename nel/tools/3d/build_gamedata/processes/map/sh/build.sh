@@ -25,6 +25,7 @@ mkdir hlsinfo
 # Copy panoply containt into cache if the process as been stopped before the end of build.
 echo Copy panoply into cache 
 cp -u -p -R panoply/. cache 2>> log.log
+cp -u -p -R hlsinfo/. cache 2>> log.log
 
 # Bin
 panoply_maker='panoply_maker.exe'
@@ -128,7 +129,7 @@ echo Rename panoply as cache
 mv panoply cache 2>> log.log
 
 echo Move hlsinfo into cache
-mv hlsinfo/* cache 2>> log.log
+cp -u -p -R hlsinfo/. cache 2>> log.log
 
 echo Remove the hlsinfo
 rm -r hlsinfo 2>> log.log

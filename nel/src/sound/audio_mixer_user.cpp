@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.28 2002/07/26 09:02:37 lecroart Exp $
+ * $Id: audio_mixer_user.cpp,v 1.29 2002/07/30 14:25:26 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,11 +114,11 @@ CAudioMixerUser::~CAudioMixerUser()
 {
 	nldebug( "AM: Releasing..." );
 
+	CBackgroundSoundManager::release();
+
 	reset();
 
 	_Leaving = true;
-
-	CBackgroundSoundManager::release();
 
 	// EnvEffects
 	vector<CEnvEffect*>::iterator ipee;

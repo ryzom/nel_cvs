@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.17 2002/05/13 12:45:25 vizerie Exp $
+ * $Id: export_scene.cpp,v 1.18 2002/06/06 17:35:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 
 		if ((nAccelType&3) == 0) // If not an accelerator
 		if (!RPO::isZone (*pNode, tvTime))
-		if (CExportNel::isMesh (*pNode, tvTime))
+		if (CExportNel::isMesh (*pNode, tvTime) || CExportNel::isDummy(*pNode, tvTime))
 		{
 			++nNbInstance;
 		}
@@ -87,7 +87,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 
 		if ((nAccelType&3) == 0) // If not an accelerator
 		if (!RPO::isZone( *pNode, tvTime ))
-		if (CExportNel::isMesh( *pNode, tvTime ))
+		if (CExportNel::isMesh( *pNode, tvTime ) || CExportNel::isDummy(*pNode, tvTime))
 		{
 			aIGArray[nNumIG].DontAddToScene = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_DONT_ADD_TO_SCENE, 0)?true:false;
 			aIGArray[nNumIG].InstanceName = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_INSTANCE_NAME, "");

@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.23 2002/06/06 14:42:48 vizerie Exp $
+ * $Id: export_misc.cpp,v 1.24 2002/06/06 17:35:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -631,6 +631,15 @@ bool CExportNel::isMesh (INode& node, TimeValue time, bool excludeCollision)
 	// Return result
 	return bRet;
 }
+
+// --------------------------------------------------
+
+bool	CExportNel::isDummy (INode& node, TimeValue time)
+{
+	ObjectState os = node.EvalWorldState(time);
+	return os.obj->ClassID().PartA() == DUMMY_CLASS_ID;
+}
+
 
 // --------------------------------------------------
 

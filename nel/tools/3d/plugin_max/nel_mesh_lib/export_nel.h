@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.55 2002/06/06 14:42:22 vizerie Exp $
+ * $Id: export_nel.h,v 1.56 2002/06/06 17:35:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -311,6 +311,7 @@ public:
 	  *	else don't test NL3D_APPDATA_COLLISION.
 	  */
 	static bool						isMesh (INode& node, TimeValue time, bool excludeCollision= true);
+	static bool						isDummy (INode& node, TimeValue time);
 	static bool						isVegetable (INode& node, TimeValue time);
 
 	/** Compute an  aabbox of a mesh, in world.

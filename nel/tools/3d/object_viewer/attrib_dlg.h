@@ -1,7 +1,7 @@
 /** \file attrib_dlg.h
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.h,v 1.8 2001/07/12 16:09:39 vizerie Exp $
+ * $Id: attrib_dlg.h,v 1.9 2001/09/12 13:23:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,12 +37,16 @@
 #include "editable_range.h"
 
 
+namespace NL3D
+{
+	class CPSAttribMakerBase;
+}
 
-using NLMISC::CRGBA ;
+using NLMISC::CRGBA;
 
 
 
-class CEditAttribDlg ;
+class CEditAttribDlg;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -57,15 +61,17 @@ public:
 	  * \param : enableConstantValue when false, only a scheme is available
 	  */
 	CAttribDlg(const std::string &valueID, bool enableConstantValue = true);   // standard constructor
-	CAttribDlg::~CAttribDlg() ;
+	CAttribDlg::~CAttribDlg();
 	
 
 	/// must be called before init, disable constant value usage
-	void disableConstantValue(void) { _EnableConstantValue = false ; }
+	void disableConstantValue(void) { _EnableConstantValue = false; }
 
 // Dialog Data
 	//{{AFX_DATA(CAttribDlg)
 	enum { IDD = IDD_ATTRIB_DLG };
+	CButton	m_PutScheme;
+	CButton	m_GetScheme;
 	CButton	m_EditUserParam;
 	CComboBox	m_SchemeInput;
 	CStatic	m_CstValuePos;
@@ -81,7 +87,7 @@ public:
 
 
 	/// init the dialog with the given bitmap
-	void init(HBITMAP bitmap, sint x, sint y, CWnd *pParent = NULL) ;
+	void init(HBITMAP bitmap, sint x, sint y, CWnd *pParent = NULL);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -94,20 +100,20 @@ public:
 	/** Disable the possibility to choose a scheme that has memory. (for example, a scheme for lifetime of a located has no sense
 	  * because located have already some memory to store it)
 	  */
-	void enableMemoryScheme(bool enabled = false) { _DisableMemoryScheme = !enabled ; }
+	void enableMemoryScheme(bool enabled = false) { _DisableMemoryScheme = !enabled; }
 
 	/** tells wether memory schemes are enables
 	  * \see enableMemoryScheme()
 	  */
-	bool isMemorySchemeEnabled(void) const { return !_DisableMemoryScheme ; }
+	bool isMemorySchemeEnabled(void) const { return !_DisableMemoryScheme; }
 
 
 public:
 	// private usage (not private because accessed by a static function) : return the nbCycles parameter of the scheme (e.g the input multiplier).
-	virtual float getSchemeNbCycles(void) const = 0 ;
+	virtual float getSchemeNbCycles(void) const = 0;
 
 	// private usage (not private because accessed by a static function) : set the nbCycles parameter of the scheme (e.g the input multiplier)
-	virtual void setSchemeNbCycles(float nbCycles) = 0 ;
+	virtual void setSchemeNbCycles(float nbCycles) = 0;
 
 	BOOL EnableWindow( BOOL bEnable = TRUE );
 
@@ -115,82 +121,88 @@ public:
 protected:
 	
 	// true if constant values are allowed
-	bool _EnableConstantValue ;
+	bool _EnableConstantValue;
 
 	// change the dialog for constant values
-	void cstValueUpdate() ;
+	void cstValueUpdate();
 
 	/// enable / disable the 'edit input' button, when input can be edited
-	void inputValueUpdate(void) ;
+	void inputValueUpdate(void);
 
 
 	// toggle back from scheme to cst value
-	virtual void resetCstValue(void) = 0 ;
+	virtual void resetCstValue(void) = 0;
 
 	// change the dialog for scheme usage
-	void schemeValueUpdate() ;
+	void schemeValueUpdate();
 
 	// return true if a scheme is used
-	virtual bool useScheme(void) const = 0 ;
+	virtual bool useScheme(void) const = 0;
 
 
 	// get the number of attributes makers  (schemes) that are available
-	virtual uint getNumScheme(void) const = 0 ;
+	virtual uint getNumScheme(void) const = 0;
 
 	// get the text associated with an attribute maker
-	virtual std::string getSchemeName(uint index) const = 0 ;
+	virtual std::string getSchemeName(uint index) const = 0;
 
 	// edit the current scheme
-	virtual void editScheme(void) = 0 ;
+	virtual void editScheme(void) = 0;
 
 	// set the current scheme
-	virtual void setCurrentScheme(uint index) = 0 ;
+	virtual void setCurrentScheme(uint index) = 0;
+
+	// set the current scheme ptr
+	virtual void setCurrentSchemePtr(NL3D::CPSAttribMakerBase *) = 0;
 
 	// get the current scheme, -1 if the scheme is unknow (created outside the editor ?)
-	virtual sint getCurrentScheme(void) const = 0 ;
+	virtual sint getCurrentScheme(void) const = 0;
+
+	/// get a pointer on the current scheme base class
+	virtual NL3D::CPSAttribMakerBase *getCurrentSchemePtr(void) const = 0;
 
 
 	// this must return the right dialog for a constant value (created with nex)
-	virtual CEditAttribDlg *createConstantValueDlg() = 0 ;
+	virtual CEditAttribDlg *createConstantValueDlg() = 0;
 
 
 	// tells wether the scheme supports custom input
-	virtual bool hasSchemeCustomInput(void) const = 0 ;
+	virtual bool hasSchemeCustomInput(void) const = 0;
 	// retrieve the scheme input id
-	virtual NL3D::CPSInputType getSchemeInput(void) const = 0 ;
+	virtual NL3D::CPSInputType getSchemeInput(void) const = 0;
 	// set the scheme input id
-	virtual void setSchemeInput(const NL3D::CPSInputType &input) = 0 ;
+	virtual void setSchemeInput(const NL3D::CPSInputType &input) = 0;
 
 	// tells wether the scheme input value is clamped or not
-	virtual bool isSchemeClamped(void) const = 0 ;
+	virtual bool isSchemeClamped(void) const = 0;
 	// clamp / unclamp the scheme
-	virtual void clampScheme(bool clamped = true) = 0 ;
+	virtual void clampScheme(bool clamped = true) = 0;
 	// return true if clamping is supported
-	virtual bool isClampingSupported(void) const = 0 ;
+	virtual bool isClampingSupported(void) const = 0;
 
 
 	// the dialog used to tune the nb cycles param (when available)
-	CEditableRangeFloat *_NbCyclesDlg ;	
+	CEditableRangeFloat *_NbCyclesDlg;	
 
 	// this is equal to true when memory schemes are not permitted
-	bool _DisableMemoryScheme ;
+	bool _DisableMemoryScheme;
 
 	// wrapper to tune the number of cycles
 	struct CNbCyclesWrapper : public IPSWrapperFloat
 	{
-			CAttribDlg *Dlg ;
-			float get(void) const { return Dlg->getSchemeNbCycles() ; }
-			void set(const float &v) { Dlg->setSchemeNbCycles(v) ; }
-	} _NbCyclesWrapper ;
+			CAttribDlg *Dlg;
+			float get(void) const { return Dlg->getSchemeNbCycles(); }
+			void set(const float &v) { Dlg->setSchemeNbCycles(v); }
+	} _NbCyclesWrapper;
 
 	
 	// true when created, it is set to false once a constant, or scheme dialog has bee shown
 
-	bool _FirstDrawing ;
+	bool _FirstDrawing;
 
 
 	// the dialog used to tune a constant value
-	CEditAttribDlg *_CstValueDlg ;
+	CEditAttribDlg *_CstValueDlg;
 
 
 	// Generated message map functions
@@ -201,15 +213,22 @@ protected:
 	afx_msg void OnSelchangeSchemeInput();
 	afx_msg void OnClampAttrib();
 	afx_msg void OnEditInput();
+	afx_msg void OnGetScheme();
+	afx_msg void OnPutScheme();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
 
+
+
+
+
+
+
+
 /**
  * a template class that helps to specialize the attrib maker edition dialog with various types 
  */
-
-
 template <typename T> class CAttribDlgT : public CAttribDlg
 {	
 public:
@@ -220,35 +239,39 @@ public:
 	}
 		
 
-	void setWrapper(IPSWrapper<T> *wrapper) { nlassert(wrapper) ; _Wrapper = wrapper ; }
-	void setSchemeWrapper(IPSSchemeWrapper<T> *schemeWrapper) { nlassert(schemeWrapper) ; _SchemeWrapper = schemeWrapper ; }
+	void setWrapper(IPSWrapper<T> *wrapper) { nlassert(wrapper); _Wrapper = wrapper; }
+	void setSchemeWrapper(IPSSchemeWrapper<T> *schemeWrapper) { nlassert(schemeWrapper); _SchemeWrapper = schemeWrapper; }
 	
 	// inherited from CAttribDlg
-	virtual uint getNumScheme(void) const = 0 ;	
-	virtual std::string getSchemeName(uint index) const = 0 ;	
-	virtual void editScheme(void) = 0 ;	
-	virtual void setCurrentScheme(uint index) = 0 ;
-	virtual sint getCurrentScheme(void) const  = 0 ;
+	virtual uint getNumScheme(void) const = 0;	
+	virtual std::string getSchemeName(uint index) const = 0;	
+	virtual void editScheme(void) = 0;	
+	virtual void setCurrentScheme(uint index) = 0;
+	virtual sint getCurrentScheme(void) const  = 0;
 
 	virtual void resetCstValue(void) 
 	{ 
-		_Wrapper->set(_Wrapper->get()) ; // reuse current color 
+		_Wrapper->set(_Wrapper->get()); // reuse current color 
 	}
 
-	virtual bool hasSchemeCustomInput(void) const { return _SchemeWrapper->getScheme()->hasCustomInput() ; }
-	virtual NL3D::CPSInputType getSchemeInput(void) const { return  _SchemeWrapper->getScheme()->getInput() ; }	
-	virtual void setSchemeInput(const NL3D::CPSInputType &input) { _SchemeWrapper->getScheme()->setInput(input) ; }
+	virtual bool hasSchemeCustomInput(void) const { return _SchemeWrapper->getScheme()->hasCustomInput(); }
+	virtual NL3D::CPSInputType getSchemeInput(void) const { return  _SchemeWrapper->getScheme()->getInput(); }	
+	virtual void setSchemeInput(const NL3D::CPSInputType &input) { _SchemeWrapper->getScheme()->setInput(input); }
 
 
-	virtual float getSchemeNbCycles(void) const { return _SchemeWrapper->getScheme()->getNbCycles() ; }
-	virtual void setSchemeNbCycles(float nbCycles) { _SchemeWrapper->getScheme()->setNbCycles(nbCycles) ; }
+	virtual float getSchemeNbCycles(void) const { return _SchemeWrapper->getScheme()->getNbCycles(); }
+	virtual void setSchemeNbCycles(float nbCycles) { _SchemeWrapper->getScheme()->setNbCycles(nbCycles); }
 
 
 	
-	virtual bool isSchemeClamped(void) const { return _SchemeWrapper->getScheme()->getClamping() ; }
-	virtual void clampScheme(bool clamped = true) { _SchemeWrapper->getScheme()->setClamping(clamped) ; }	
-	virtual bool isClampingSupported(void) const { return _SchemeWrapper->getScheme()->isClampingSupported() ; } ;
-
+	virtual bool isSchemeClamped(void) const { return _SchemeWrapper->getScheme()->getClamping(); }
+	virtual void clampScheme(bool clamped = true) { _SchemeWrapper->getScheme()->setClamping(clamped); }	
+	virtual bool isClampingSupported(void) const { return _SchemeWrapper->getScheme()->isClampingSupported(); };
+	virtual NL3D::CPSAttribMakerBase *getCurrentSchemePtr(void) const { return _SchemeWrapper->getScheme(); }
+	virtual void setCurrentSchemePtr(NL3D::CPSAttribMakerBase *s) 
+	{ 
+		_SchemeWrapper->setScheme(NLMISC::safe_cast<NL3D::CPSAttribMaker<T> *>(s));
+	}
 
 
 protected:
@@ -256,29 +279,24 @@ protected:
 
 	virtual bool useScheme(void) const
 	{
-		nlassert(_SchemeWrapper) ;
-		return(_SchemeWrapper->getScheme() != NULL) ;
+		nlassert(_SchemeWrapper);
+		return(_SchemeWrapper->getScheme() != NULL);
 	}
 
 
 public:
 	// wrapper to set/get a constant float
-	IPSWrapper<T> *_Wrapper ;
+	IPSWrapper<T> *_Wrapper;
 
 	// wrapper to set/get a scheme
 	IPSSchemeWrapper<T> *_SchemeWrapper	;
 
-} ;
-
-
-
-
-
+};
 
 /** an attribute editor specialized for float values
  */
 
-class CAttribDlgFloat : public CAttribDlgT<float>
+class CAttribDlgFloat : public CAttribDlgT<float>, public CBoundCheckerFloat
 {	
 public:
 	/** ctor
@@ -286,31 +304,31 @@ public:
 	 *  \param minValue : the min value for the editable range dlg(for constant value)
 	 *  \param maxValue : the min value for the editable range dlg (for constant value)
 	 */
-	CAttribDlgFloat(const std::string &valueID, float minValue = 0, float maxValue = 10)  ;
+	CAttribDlgFloat(const std::string &valueID, float minValue = 0, float maxValue = 10);
 
 	
 	// inherited from CAttribDlg
-	virtual uint getNumScheme(void) const ;	
-	virtual std::string getSchemeName(uint index) const ;	
-	virtual void editScheme(void) ;	
-	virtual void setCurrentScheme(uint index) ;
-	virtual sint getCurrentScheme(void) const  ;
+	virtual uint getNumScheme(void) const;	
+	virtual std::string getSchemeName(uint index) const;	
+	virtual void editScheme(void);	
+	virtual void setCurrentScheme(uint index);
+	virtual sint getCurrentScheme(void) const;
 
 
 
 protected:
 
-	virtual CEditAttribDlg *createConstantValueDlg() ;
+	virtual CEditAttribDlg *createConstantValueDlg();
 	// ID for the cst float value  edition dialog
-	std::string _CstValueId ;
-	float _MinRange, _MaxRange ;
-} ;
+	std::string _CstValueId;
+	float _MinRange, _MaxRange;
+};
 
 
 /** an attribute editor specialized for unsigned int values
  */
 
-class CAttribDlgUInt : public CAttribDlgT<uint32>
+class CAttribDlgUInt : public CAttribDlgT<uint32>, public CBoundCheckerUInt
 {	
 public:
 	/** ctor
@@ -318,32 +336,32 @@ public:
 	 *  \param minValue : the min value for the editable range dlg(for constant value)
 	 *  \param maxValue : the min value for the editable range dlg (for constant value)
 	 */
-	CAttribDlgUInt(const std::string &valueID, uint32 minValue = 0, uint32 maxValue = 10)  ;
+	CAttribDlgUInt(const std::string &valueID, uint32 minValue = 0, uint32 maxValue = 10);
 
 	
 	// inherited from CAttribDlg
-	virtual uint getNumScheme(void) const ;	
-	virtual std::string getSchemeName(uint index) const ;	
-	virtual void editScheme(void) ;	
-	virtual void setCurrentScheme(uint index) ;
-	virtual sint getCurrentScheme(void) const  ;
+	virtual uint getNumScheme(void) const;	
+	virtual std::string getSchemeName(uint index) const;	
+	virtual void editScheme(void);	
+	virtual void setCurrentScheme(uint index);
+	virtual sint getCurrentScheme(void) const;
 
 
 
 protected:
 
-	virtual CEditAttribDlg *createConstantValueDlg() ;
+	virtual CEditAttribDlg *createConstantValueDlg();
 	// ID for the cst float value  edition dialog
-	std::string _CstValueId ;
-	uint32 _MinRange, _MaxRange ;
-} ;
+	std::string _CstValueId;
+	uint32 _MinRange, _MaxRange;
+};
 
 
 
 /** an attribute editor specialized for signed int values
  */
 
-class CAttribDlgInt : public CAttribDlgT<sint32>
+class CAttribDlgInt : public CAttribDlgT<sint32>, public CBoundCheckerInt
 {	
 public:
 	/** ctor
@@ -351,25 +369,25 @@ public:
 	 *  \param minValue : the min value for the editable range dlg(for constant value)
 	 *  \param maxValue : the min value for the editable range dlg (for constant value)
 	 */
-	CAttribDlgInt(const std::string &valueID, sint32 minValue = 0, sint32 maxValue = 10)  ;
+	CAttribDlgInt(const std::string &valueID, sint32 minValue = 0, sint32 maxValue = 10);
 
 	
 	// inherited from CAttribDlg
-	virtual uint getNumScheme(void) const ;	
-	virtual std::string getSchemeName(uint index) const ;	
-	virtual void editScheme(void) ;	
-	virtual void setCurrentScheme(uint index) ;
-	virtual sint getCurrentScheme(void) const  ;
+	virtual uint getNumScheme(void) const;	
+	virtual std::string getSchemeName(uint index) const;	
+	virtual void editScheme(void);	
+	virtual void setCurrentScheme(uint index);
+	virtual sint getCurrentScheme(void) const;
 
 
 
 protected:
 
-	virtual CEditAttribDlg *createConstantValueDlg() ;
+	virtual CEditAttribDlg *createConstantValueDlg();
 	// ID for the cst float value  edition dialog
-	std::string _CstValueId ;
-	sint32 _MinRange, _MaxRange ;
-} ;
+	std::string _CstValueId;
+	sint32 _MinRange, _MaxRange;
+};
 
 
 
@@ -383,24 +401,24 @@ public:
 	/** ctor
 	 *  \param valueID an unique id for the constant value editable range dialog
 	 */
-	CAttribDlgRGBA(const std::string &valueID)  ;
+	CAttribDlgRGBA(const std::string &valueID);
 
 	
 	// inherited from CAttribDlg
-	virtual uint getNumScheme(void) const ;	
-	virtual std::string getSchemeName(uint index) const ;	
-	virtual void editScheme(void) ;	
-	virtual void setCurrentScheme(uint index) ;
-	virtual sint getCurrentScheme(void) const  ;
+	virtual uint getNumScheme(void) const;	
+	virtual std::string getSchemeName(uint index) const;	
+	virtual void editScheme(void);	
+	virtual void setCurrentScheme(uint index);
+	virtual sint getCurrentScheme(void) const;
 
 
 
 protected:
 
-	virtual CEditAttribDlg *createConstantValueDlg() ;
+	virtual CEditAttribDlg *createConstantValueDlg();
 	// ID for the cst float value  edition dialog
-	std::string _CstValueId ;	
-} ;
+	std::string _CstValueId;	
+};
 
 
 /** an attribute editor specialized for plane basis values
@@ -412,24 +430,24 @@ public:
 	/** ctor
 	 *  \param valueID an unique id for the constant value editable range dialog
 	 */
-	CAttribDlgPlaneBasis(const std::string &valueID)  ;
+	CAttribDlgPlaneBasis(const std::string &valueID);
 
 	
 	// inherited from CAttribDlg
-	virtual uint getNumScheme(void) const ;	
-	virtual std::string getSchemeName(uint index) const ;	
-	virtual void editScheme(void) ;	
-	virtual void setCurrentScheme(uint index) ;
-	virtual sint getCurrentScheme(void) const  ;
+	virtual uint getNumScheme(void) const;	
+	virtual std::string getSchemeName(uint index) const;	
+	virtual void editScheme(void);	
+	virtual void setCurrentScheme(uint index);
+	virtual sint getCurrentScheme(void) const;
 
 
 
 protected:
 
-	virtual CEditAttribDlg *createConstantValueDlg() ;
+	virtual CEditAttribDlg *createConstantValueDlg();
 	// ID for the cst float value  edition dialog
-	std::string _CstValueId ;	
-} ;
+	std::string _CstValueId;	
+};
 
 
 

@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.5 2001/01/25 10:12:12 berenguier Exp $
+ * $Id: zviewer.cpp,v 1.6 2001/01/26 16:24:50 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -300,7 +300,8 @@ void displayZones()
 	{
 		nlwarning( "You need to recompute bank.farbank for the far textures" );
 	}
- 
+	bankFile.close();
+	farbankFile.close();
 	
 	
 	// Init light color

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.57 2003/03/18 15:34:47 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.58 2003/04/01 17:07:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,12 +148,9 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 	{
 		Class_ID  clid = obj->ClassID();
 		// is the object a particle system ? (we do this defore meshs, because for now there is a mesh in max scenes to say where a particle system is...)
-
-
 		///////////////
 		// FX EXPORT //
 		///////////////
-
 
 		if (clid.PartA() == NEL_PARTICLE_SYSTEM_CLASS_ID)
 		{
@@ -1139,6 +1136,15 @@ void CExportNel::getBSMeshBuild (std::vector<CMesh::CMeshBuild*> &bsList, INode 
 
 	uint32 i, j;
 
+	CMatrix finalSpace = CMatrix::Identity;
+		if (skined)
+			convertMatrix(finalSpace, node.GetNodeTM(time));
+
+	CMeshBase::CMeshBaseBuild *dummyMBB = NULL;		
+	std::auto_ptr<CMesh::CMeshBuild> baseMB(createMeshBuild (node, time, dummyMBB, finalSpace));
+	delete dummyMBB;
+	if (baseMB.get() == NULL) return;
+
 	j = 0;
 	for (i = 0; i < 100; ++i)
 	{
@@ -1158,11 +1164,29 @@ void CExportNel::getBSMeshBuild (std::vector<CMesh::CMeshBuild*> &bsList, INode 
 			continue;
 
 		CBlendShape bs;
-		CMeshBase::CMeshBaseBuild *pMBB;
-		CMatrix finalSpace = CMatrix::Identity;
-		if (skined)
-			convertMatrix(finalSpace, node.GetNodeTM(time));
+		CMeshBase::CMeshBaseBuild *pMBB = NULL;		
 		bsList[j] = createMeshBuild (*pNode, time, pMBB, finalSpace);
+		delete pMBB;
+		// copy src normals from src mesh for vertices that are on interfaces
+		CMesh::CMeshBuild *mb = bsList[j];
+		if (mb)
+		{		
+			if (baseMB->InterfaceVertexFlag.size() != 0)
+			{		
+				for(uint k = 0; k < mb->Faces.size(); ++k)
+				{
+					for(uint l = 0; l < 3; ++l)
+					{
+						uint vert = mb->Faces[k].Corner[l].Vertex;
+						if (vert < baseMB->InterfaceVertexFlag.size() && baseMB->InterfaceVertexFlag[vert])
+						{
+							mb->Faces[k].Corner[l].Normal = baseMB->Faces[k].Corner[l].Normal;
+						}
+					}
+				}
+			}
+		}
+		//
 		++j;
 	}
 }
@@ -1444,14 +1468,18 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 				bIsDeltaPos = true;
 			}
 
-			CVector NormRef = buildMesh.Faces[nFace].Corner[nCorner].Normal;
-			CVector NormTar = pMB->Faces[nFace].Corner[nCorner].Normal;
-			delta = NormTar - NormRef;
-			if (delta.norm() > 0.001f)
-			{
-				bs.deltaNorm[iVB] = delta;
-				bs.VertRefs[iVB] = iVB;
-				bIsDeltaNorm = true;
+			// check for normal change only if the vertex is not on an interface
+			if (buildMesh.InterfaceVertexFlag.size() == 0 || !buildMesh.InterfaceVertexFlag[VertRef])
+			{	
+				CVector NormRef = buildMesh.Faces[nFace].Corner[nCorner].Normal;
+				CVector NormTar = pMB->Faces[nFace].Corner[nCorner].Normal;
+				delta = NormTar - NormRef;
+				if (delta.norm() > 0.001f)
+				{
+					bs.deltaNorm[iVB] = delta;
+					bs.VertRefs[iVB] = iVB;
+					bIsDeltaNorm = true;
+				}
 			}
 
 			if (wantTangentSpace)
@@ -1703,23 +1731,23 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "tTexture_6", (ParamType2)TYPE_TEXMAP, &maxDisplaceMap, time);
 		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "tTexture_7", (ParamType2)TYPE_TEXMAP, &maxDiffuseMap, time);
 
-		if (!isClassIdCompatible(*maxDisplaceMap, Class_ID (BMTEX_CLASS_ID,0))) 
+		if (!maxDisplaceMap || !isClassIdCompatible(*maxDisplaceMap, Class_ID (BMTEX_CLASS_ID,0))) 
 		{
 			nlinfo("ERROR : BuildWaterShape : displace map is not a valid bitmap (when exporting water node : %s)", node.GetName());
 			return NULL;
 		}
-		if (!isClassIdCompatible(*maxBumpMap, Class_ID (BMTEX_CLASS_ID,0)))
+		if (!maxBumpMap || !isClassIdCompatible(*maxBumpMap, Class_ID (BMTEX_CLASS_ID,0)))
 		{
 			nlinfo("ERROR : BuildWaterShape : bump map is not a valid bitmap (when exporting water node : %s)", node.GetName());
 			return NULL;
 		}
-		if (!isClassIdCompatible(*maxEnvMap, Class_ID (BMTEX_CLASS_ID,0)))
+		if (!maxEnvMap || !isClassIdCompatible(*maxEnvMap, Class_ID (BMTEX_CLASS_ID,0)))
 		{
 			nlinfo("ERROR : BuildWaterShape : env map is not a valid bitmap (when exporting water node : %s)", node.GetName());
 			return NULL;
 		}
 
-		if (mapEnable7)
+		if (mapEnable7 && maxDiffuseMap)
 		{
 			if (!isClassIdCompatible(*maxDiffuseMap, Class_ID (BMTEX_CLASS_ID,0))) 
 			{
@@ -1728,7 +1756,7 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 			}
 		}
 
-		if (mapEnable2)
+		if (mapEnable2 && maxEnvMap2)
 		{
 			if (!isClassIdCompatible(*maxEnvMap2, Class_ID (BMTEX_CLASS_ID,0))) 
 			{
@@ -1738,7 +1766,7 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 		}
 		
 
-		if (mapEnable3)
+		if (mapEnable3 && maxEnvMapUnderWater)
 		{
 			if (!isClassIdCompatible(*maxEnvMapUnderWater, Class_ID (BMTEX_CLASS_ID,0))) 
 			{
@@ -1747,7 +1775,7 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 			}
 		}
 
-		if (mapEnable4)
+		if (mapEnable4 && maxEnvMapUnderWater2)
 		{
 			if (!isClassIdCompatible(*maxEnvMapUnderWater2, Class_ID (BMTEX_CLASS_ID,0))) 
 			{

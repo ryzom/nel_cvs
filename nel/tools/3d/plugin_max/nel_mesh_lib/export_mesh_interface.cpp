@@ -1,6 +1,6 @@
 /** \file export_mesh_interface.cpp
  *
- * $Id: export_mesh_interface.cpp,v 1.7 2002/11/20 10:21:36 berenguier Exp $
+ * $Id: export_mesh_interface.cpp,v 1.8 2003/04/01 17:07:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -241,6 +241,7 @@ static void ApplyMeshInterfacesForMRM(std::vector<CMeshInterface> &interfaces, C
 			{
 				mbuild.InterfaceLinks[k].InterfaceId= m;
 				mbuild.InterfaceLinks[k].InterfaceVertexId= snapTo;
+				mbuild.InterfaceVertexFlag.set(k);
 				break;
 			}
 		}
@@ -701,7 +702,9 @@ void CExportNel::applyInterfaceToMeshBuild(INode &node, CMesh::CMeshBuild &mbuil
 		return;
 	}
 
-	// store interface info in mesh for MRM
+	mbuild.InterfaceVertexFlag.resize(mbuild.Vertices.size());
+
+	// store interface info in mesh for MRM, & mark vertices that are on an interface
 	::ApplyMeshInterfacesForMRM(meshInterface, mbuild, toWorldMat, threshold);
 
 	// process the mesh build to correct normal

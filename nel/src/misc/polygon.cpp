@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.6 2001/11/28 15:53:32 vizerie Exp $
+ * $Id: polygon.cpp,v 1.7 2001/12/14 17:36:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -261,12 +261,11 @@ void		CPolygon2D::buildConvexHull(CPolygon2D &dest) const
 			}			
 		}
 
-		nlassert(bestIt != leftIndex.end());
-		leftIndex.erase(bestIt);
+		nlassert(bestIt != leftIndex.end());		
 		if (*bestIt == p1Index)
 		{			
 			return; // if we reach the start point we have finished
-		}		
+		}				
 		prev = curr;
 		curr = Vertices[*bestIt];
 		pPrev = pCurr;
@@ -274,6 +273,7 @@ void		CPolygon2D::buildConvexHull(CPolygon2D &dest) const
 		// add new point to the destination
 		dest.Vertices.push_back(curr);
 		++step;
+		leftIndex.erase(bestIt);
 	}
 }
 

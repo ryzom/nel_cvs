@@ -45,6 +45,8 @@ extern int cf_CurrentLine;
 
 bool cf_Ignore;
 
+void comment ();
+
 %}
 
 alpha		[A-Za-z]
@@ -75,7 +77,7 @@ string		\"[^\"]*\"
 
 "\n"		{ /* ignore new line but count them */ cf_CurrentLine++; DEBUG_PRINTF("*****line++ %d\n", cf_CurrentLine); }
 
-"//".*\n	{ /* ignore one line comment but count the new line */ cf_CurrentLine++; DEBUG_PRINTF("*****line++ %d\n", cf_CurrentLine); }
+"//"		{ comment(); }
 
 \/\*		{ /* Start of a comment */ cf_Ignore = true; }
 
@@ -137,4 +139,19 @@ string		\"[^\"]*\"
 int yywrap()
 {
 	return 1;
+}
+
+//"//".*\n	{ /* ignore one line comment but count the new line */ cf_CurrentLine++; DEBUG_PRINTF("*****line++ %d\n", cf_CurrentLine); }
+void comment ()
+{
+	char c;
+
+	do
+	{
+		c = yyinput ();
+	}
+	while (c != '\n' && c != -1);
+
+	if (c != '\n')
+		cf_CurrentLine++;
 }

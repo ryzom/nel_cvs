@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * <File description>
  *
- * $Id: ps_mesh.cpp,v 1.2 2001/12/12 10:27:22 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.3 2001/12/13 10:03:00 valignat Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -841,7 +841,7 @@ void CPSConstraintMesh::draw(bool opaque)
 
 //====================================================================================
 // Private func used to force modulation on a material and to store the preious state
-static inline ForceMaterialModulation(CMaterial &destMat, CMaterial &srcMat, uint8 modulatedStages)
+static inline void ForceMaterialModulation(CMaterial &destMat, CMaterial &srcMat, uint8 modulatedStages)
 {
 	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
 	{		

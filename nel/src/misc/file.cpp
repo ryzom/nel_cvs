@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.22 2002/05/22 13:30:22 lecroart Exp $
+ * $Id: file.cpp,v 1.23 2002/06/12 10:10:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -210,6 +210,52 @@ void		CIFile::flush()
 			fflush (_F);
 		}
 	}
+}
+
+// ======================================================================================================
+void		CIFile::getline (char *buffer, uint32 bufferSize)
+{
+	if (bufferSize == 0)
+		return;
+
+	uint read = 0;
+	while (true)
+	{
+		if (read == bufferSize -1)
+		{
+			*buffer = '\0';
+			return;
+		}
+
+		try
+		{
+			// read one byte
+			serialBuffer ((uint8 *)buffer, 1);
+		}
+		catch (EFile &)
+		{
+			*buffer = '\0';
+			return;
+		}
+
+		if (*buffer == '\n')
+		{
+			*buffer = '\0';
+			return;
+		}
+
+		// skip '\r' char
+		if (*buffer != '\r')
+			buffer++;
+	}
+
+}
+
+
+// ======================================================================================================
+bool		CIFile::eof ()
+{
+	return _ReadPos >= (sint32)_FileSize;
 }
 
 // ======================================================================================================

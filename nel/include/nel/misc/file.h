@@ -1,7 +1,7 @@
 /** \file file.h
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.17 2002/04/30 13:48:55 besson Exp $
+ * $Id: file.h,v 1.18 2002/06/12 10:10:46 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,6 +99,13 @@ public:		// Advanced Usage.
 
 	// Imp the Name of the stream as the name of the file.
 	virtual std::string		getStreamName() const;
+
+	// same function that in ifstream
+	// return a string separated by \n or eof, used to parsing text file
+	void getline (char *buffer, uint32 bufferSize);
+
+	// return true if there s nothing more to read (same as ifstream)
+	bool eof ();
 
 protected:
 	virtual void		serialBuffer(uint8 *buf, uint len)throw(EReadError);

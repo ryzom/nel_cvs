@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.12 2003/08/27 09:23:07 legros Exp $
+ * $Id: build_rbank.cpp,v 1.13 2003/11/18 15:17:29 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -220,6 +220,44 @@ void moulineZone(string &zoneName)
 						// search in group for water instance
 						for (j=0; j<ig._InstancesInfos.size(); ++j)
 						{
+							string	shapeName = ig._InstancesInfos[j].Name;
+							if (CFile::getExtension (shapeName) == "")
+								shapeName += ".shape";
+
+							string	shapeNameLookup = CPath::lookup (shapeName, false, false);
+							if (!shapeNameLookup.empty())
+							{
+								CIFile			f;
+								if (f.open (shapeNameLookup))
+								{
+									CShapeStream	shape;
+									shape.serial(f);
+
+									CWaterShape	*wshape = dynamic_cast<CWaterShape *>(shape.getShapePointer());
+									if (wshape == NULL)
+										continue;
+
+									CMatrix	matrix;
+									ig.getInstanceMatrix(j, matrix);
+
+									CPolygon			wpoly;
+									wshape->getShapeInWorldSpace(wpoly);
+
+									uint	k;
+									for (k=0; k<wpoly.Vertices.size(); ++k)
+									{
+										//wpoly.Vertices[k].z = 0.0f;
+										wpoly.Vertices[k] = matrix * wpoly.Vertices[k];
+									}
+
+									tessellation.addWaterShape(wpoly);
+								}
+								else
+								{
+									nlwarning ("Can't load shape %s", shapeNameLookup.c_str());
+								}
+							}
+/*
 							// c'est degueulasse, mais c'est les coders a la 3D, y savent pas coder
 							CIFile			monfile(CPath::lookup(ig._InstancesInfos[j].Name+".shape"));
 							CShapeStream	shape;
@@ -233,6 +271,7 @@ void moulineZone(string &zoneName)
 							wshape->getShapeInWorldSpace(wpoly);
 
 							tessellation.addWaterShape(wpoly);
+*/
 						}
 					}
 					catch (Exception &e)

@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.5 2002/07/03 08:45:51 corvazier Exp $
+ * $Id: main.cpp,v 1.6 2003/11/18 15:17:29 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/common.h"
 #include "nel/misc/displayer.h"
 #include "nel/misc/file.h"
+#include "nel/misc/matrix.h"
 
 #include "nel/misc/aabbox.h"
 
@@ -43,6 +44,7 @@
 #include <string>
 #include <map>
 #include <deque>
+#include <set>
 
 using namespace std;
 using namespace NLMISC;
@@ -65,6 +67,7 @@ public:
 };
 
 vector<CIGBox>										Boxes;
+set<string>											NonWaterShapes;
 
 
 //
@@ -143,6 +146,8 @@ int main(int argc, char **argv)
 			CAABBox			igBBox;
 			bool			boxSet = false;
 
+			nlinfo("Generating BBOX for %s", igName.c_str());
+
 			// search in group for water instance
 			for (j=0; j<ig._InstancesInfos.size(); ++j)
 			{
@@ -154,43 +159,61 @@ int main(int argc, char **argv)
 				string	shapeName = ig._InstancesInfos[j].Name;
 				if (CFile::getExtension (shapeName) == "")
 					shapeName += ".shape";
+
+				if (NonWaterShapes.find(shapeName) != NonWaterShapes.end())
+					continue;
+
 				string	shapeNameLookup = CPath::lookup (shapeName, false, false);
 				if (!shapeNameLookup.empty())
-					shapeName = shapeNameLookup;
-
-				CIFile			f;
-				if (f.open (shapeName))
 				{
-					CShapeStream	shape;
-					shape.serial(f);
-
-					CWaterShape	*wshape = dynamic_cast<CWaterShape *>(shape.getShapePointer());
-					if (wshape == NULL)
-						continue;
-
-					CPolygon			wpoly;
-					wshape->getShapeInWorldSpace(wpoly);
-
-					for (k=0; k<wpoly.Vertices.size(); ++k)
+					CIFile			f;
+					if (f.open (shapeNameLookup))
 					{
-						if (boxSet)
+						CShapeStream	shape;
+						shape.serial(f);
+
+						CWaterShape	*wshape = dynamic_cast<CWaterShape *>(shape.getShapePointer());
+						if (wshape == NULL)
 						{
-							igBBox.extend(wpoly.Vertices[k]);
+							NonWaterShapes.insert(shapeName);
+							continue;
 						}
-						else
+
+						CMatrix	matrix;
+						ig.getInstanceMatrix(j, matrix);
+
+						CPolygon			wpoly;
+						wshape->getShapeInWorldSpace(wpoly);
+
+						for (k=0; k<wpoly.Vertices.size(); ++k)
 						{
-							igBBox.setCenter(wpoly.Vertices[k]);
-							boxSet = true;
+							if (boxSet)
+							{
+								igBBox.extend(matrix * wpoly.Vertices[k]);
+							}
+							else
+							{
+								igBBox.setCenter(matrix * wpoly.Vertices[k]);
+								boxSet = true;
+							}
 						}
+					}
+					else
+					{
+						nlwarning ("Can't load shape %s", shapeNameLookup.c_str());
 					}
 				}
 				else
 				{
-					nlwarning ("Can't load shape %s", shapeName.c_str());
+					NonWaterShapes.insert(shapeName);
 				}
 			}
 
-			Boxes.push_back(CIGBox(igName, igBBox));
+			if (boxSet)
+			{
+				Boxes.push_back(CIGBox(igName, igBBox));
+				nlinfo("Bbox: (%.1f,%.1f)-(%.1f,%.1f)", igBBox.getMin().x, igBBox.getMin().y, igBBox.getMax().x, igBBox.getMax().y);
+			}
 		}
 
 		COFile	output(Output);

@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.14 2003/08/27 09:23:07 legros Exp $
+ * $Id: build_surf.cpp,v 1.15 2003/11/18 15:17:29 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -563,7 +563,7 @@ void	NLPACS::CSurfElement::computeQuantas()
 					continue;
 
 				computeElevation(elevation,
-								 Models[model][ModelRadius],
+								 Models[model][ModelRadius], 
 								 Models[model][ModelHeight],
 								 0.2f);
 
@@ -606,7 +606,7 @@ void	NLPACS::CSurfElement::computeQuantas()
 		uint	shape = (*it);
 		CPolygon	&poly = Root->RootZoneTessellation->WaterShapes[shape];
 		if (isInside(poly, *this) &&
-			((*Vertices)[Tri[0]].z < poly.Vertices[0].z || (*Vertices)[Tri[0]].z < poly.Vertices[1].z || (*Vertices)[Tri[0]].z < poly.Vertices[2].z))
+			((*Vertices)[Tri[0]].z < poly.Vertices[0].z || (*Vertices)[Tri[1]].z < poly.Vertices[0].z || (*Vertices)[Tri[2]].z < poly.Vertices[0].z))
 		{
 			WaterShape = shape;
 			break;

@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.11 2003/08/27 09:23:07 legros Exp $
+ * $Id: main.cpp,v 1.12 2003/11/18 15:17:29 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,7 +128,7 @@ void	initMoulinette()
 	{
 		CConfigFile cf;
 		int			i;
-	
+
 		cf.load("build_rbank.cfg");
 
 		// Read paths

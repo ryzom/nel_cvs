@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.10 2002/06/18 14:51:52 vizerie Exp $
+ * $Id: zone_dependencies.cpp,v 1.11 2002/06/18 15:46:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -260,6 +260,8 @@ int main (int argc, char* argv[])
 					for (y=firstY; y<=lastY; y++)
 					for (x=firstX; x<=lastX; x++)
 					{
+						
+
 						// Progress
 						progress ("Build bounding boxes", (float)(x+y*lastX)/(float)(lastX*lastY));
 
@@ -304,7 +306,9 @@ int main (int argc, char* argv[])
 								// Insert in the quad grid
 								quadGrid.insert (zoneDesc.BBox.getMin(), zoneDesc.BBox.getMax(), zoneDesc);
 
-								// Insert in the depee)+(y-firstY)*(lastX-firstX+1);
+								// Insert in the dependencies
+								// Index 
+								uint index=(x-firstX)+(y-firstY)*(lastX-firstX+1);
 
 								// Loaded
 								dependencies[index].Loaded=true;

@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.11 2005/02/22 10:14:13 besson Exp $
+ * $Id: primitive_utils.h,v 1.12 2005/03/16 11:23:57 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -268,9 +268,8 @@ class CPrimitiveSetFilter
 {
 public:
 
-	void filterSet(const std::vector<IPrimitive*> &source, TPrimitiveSet &result)
+	void filterSet(const std::vector<IPrimitive*> &source, Pred &predicate, TPrimitiveSet &result)
 	{
-		Pred	predicate;
 		std::vector<IPrimitive*>::const_iterator first(source.begin()), last(source.end());
 		for (; first != last; ++first)
 		{

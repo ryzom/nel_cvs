@@ -5,54 +5,54 @@
 \author Cyril Corvazier
 
 
-The rendering process is composed of several traversals. Each tranversals make actions on there models using an observer.
+The rendering process is composed of several traversals. Each traversal acts on their models using an observer.
 The rendering process is done following this pipeline:
 
-	- Traversal transform's animation
-	- Traversal transform
-	- Traversal load balancing stats
-	- Traversal view determination (culling)
-	- Traversal detail animation
-	- Traversal lighting
-	- Traversal render
+	- Transform animation traversal 
+	- Transform traversal
+	- Load ballancing traversal
+	- View determination and culling traversal
+	- Detail animation traversal
+	- Lighting traversal
+	- Render traversal
 
-\subsection trans_anim Traversal transform's animation
+\subsection trans_anim transform's animation Traversal 
 
-This traversal must eval the transform's animated value to get the final parent relative world matrix of each traversal.
+This traversal must eval the transform's animated value to get the final parent relative world matrix of each model.
 We must do this pass to know where each model is.
 
-\subsection trans Traversal transform
+\subsection trans Transform traversal
 
-This traversal compose each transform's matrix with the parent one to get the final world matrix.
+This traversal composes each transform's matrix with the parent one to get the final world matrix.
 This pass is used to perform hierarchical animation of models.
 
-\subsection balance Traversal load balancing
+\subsection balance Load balancing traversal
 
-This traversal eval for each model traversed how many resources it needs to be rendered.
-It count the number of primitives it needs to be rendered and amount of vram used by its textures.
+For each model traversed this traversal evaluates what rendering resources the model requires.
+It counts the number of primitives that it needs to have rendered and amount of vram used by their textures.
 
-\subsection cull Traversal view determination
+\subsection cull View determination and culling traversal
 
-This traversal clip model that are not visible. It uses a cluster/portal for interior and a frustrum clipping for exterior.
+This traversal clips models that are not visible. It uses clusters/portals for interiors and a frustrum clipping for exteriors.
 
-\subsection detail_anim Traversal detail animation
+\subsection detail_anim Detail animation traversal
 
-This traversal compute the animation for all values not animated in the first pass (transform animation).
-Animation is made in 2 passes because the first must be done to get models's world bounding box used in
-view determination. The second pass is made only on visible objects.
+This traversal computes the animation for all values not animated in the first pass (transform animation).
+Animation is done in 2 passes because the first must be done to get models' world bounding box used in
+view determination. The second pass is done only on visible objects.
 
-\subsection lighting Traversal lighting
+\subsection lighting Lighting traversal
 
-This traversal compute dynamic lighting of each visible model with not cliped lights.
+This traversal computes dynamic lighting for each visible model with non-clipped lights.
 
-\subsection render Traversal render
+\subsection render Render traversal
 
 Render is the most complex traversal. 
 
-	- If model uses skinning, it will perform the computation of bones world matrix. Matrix have been set by second animation pass but they need to be composed with there parent.
-	- If model have an inverse kinematics solver attached, eval it now.
-	- If model supports resources load balancing, it will determine the final count of primitives used to render the object. For that it will balance the count of resources attribued to its group on the distance.
-	- Build the primitives to send to the driver.
-	- Render the primitives
+	- If the model uses skinning, it will compute bones world matrices. Matrices have been set by second animation pass but they need to be combined with their parents.
+	- If the model has an inverse kinematics solver attached, it is evaluated next.
+	- If the model supports resource load ballancing, the final count of rendering primitives is ajusted in function of the distance from the camera.
+	- The primitives to send to the driver are built.
+	- The primitives are rendered by the driver.
 
 */

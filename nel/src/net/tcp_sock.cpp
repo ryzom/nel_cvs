@@ -1,7 +1,7 @@
 /** \file tcp_sock.cpp
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.cpp,v 1.2 2001/08/22 15:50:55 cado Exp $
+ * $Id: tcp_sock.cpp,v 1.3 2001/08/23 14:22:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,7 +184,7 @@ void CTcpSock::connectWithCustomWindowSize( const CInetAddress& addr, int window
 uint32 CTcpSock::getWindowSize()
 {
 	int windowsize = 0;
-	int len	= sizeof( windowsize );
+	socklen_t len = sizeof( windowsize );
 
 	/* send buffer -- query for buffer size */
 	if ( getsockopt( _Sock, SOL_SOCKET, SO_SNDBUF, (char*) &windowsize, &len ) == 0 )

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.24 2002/05/28 08:09:13 legros Exp $
+ * $Id: move_container.cpp,v 1.25 2002/06/06 15:29:20 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 #include "pacs/move_primitive.h"
 #include "pacs/move_element.h"
 #include "pacs/primitive_block.h"
+
+#include "nel/misc/hierarchical_timer.h"
 
 #include "nel/misc/i_xml.h"
 #include <math.h>
@@ -154,6 +156,8 @@ void CMoveContainer::init (CGlobalRetriever* retriever, uint widthCellCount, uin
 
 void  CMoveContainer::evalCollision (double deltaTime, uint8 worldImage)
 {
+//	H_AUTO(PACS_MC_evalCollision);
+
 	// New test time
 	_TestTime++;
 
@@ -240,6 +244,8 @@ void  CMoveContainer::evalCollision (double deltaTime, uint8 worldImage)
 
 bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed, double deltaTime, uint8 worldImage)
 {
+//	H_AUTO(PACS_MC_testMove);
+
 	// Cast
 	nlassert (dynamic_cast<CMovePrimitive*>(primitive));
 	CMovePrimitive* prim=static_cast<CMovePrimitive*>(primitive);
@@ -285,26 +291,33 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 	// Result
 	bool result=false;
 	bool testMoveValid;
+	double collisionTime;
 
 	// Eval first each static world images
-	std::set<uint8>::iterator ite=_StaticWorldImage.begin();
-	while (ite!=_StaticWorldImage.end())
+	result=evalOneTerrainCollision (0, prim, primitiveWorldImage, true, testMoveValid, collisionTime);
+
+	// Eval first each static world images
+	if (!result)
 	{
+		std::set<uint8>::iterator ite=_StaticWorldImage.begin();
+		while (ite!=_StaticWorldImage.end())
+		{
 
-		// Eval in this world image
-		result=evalOneCollision (0, prim, *ite, primitiveWorldImage, true, true, testMoveValid);
+			// Eval in this world image
+			result=evalOnePrimitiveCollision (0, prim, *ite, primitiveWorldImage, true, true, testMoveValid, collisionTime);
 
-		// If found, abort
-		if (result)
-			break;
+			// If found, abort
+			if (result)
+				break;
 
-		// Next world image
-		ite++;
+			// Next world image
+			ite++;
+		}
 	}
 
 	// Eval collisions if not found and not tested
 	if ((!result) && (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end()))
-		result=evalOneCollision (0, prim, worldImage, primitiveWorldImage, true, false, testMoveValid);
+		result=evalOnePrimitiveCollision (0, prim, worldImage, primitiveWorldImage, true, false, testMoveValid, collisionTime);
 
 	// Backup speed only if the primitive is inserted in the world image
 	if (prim->isInserted (primitiveWorldImage))
@@ -329,6 +342,8 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 
 void CMoveContainer::updatePrimitives (double beginTime, uint8 worldImage)
 {
+//	H_AUTO(PACS_MC_updatePrimitives);
+
 	// For each changed primitives
 	CMovePrimitive *changed=_ChangedRoot[worldImage];
 	while (changed)
@@ -360,6 +375,8 @@ void CMoveContainer::updatePrimitives (double beginTime, uint8 worldImage)
 
 void CMoveContainer::updateCells (CMovePrimitive *primitive, uint8 worldImage)
 {
+//	H_AUTO(PACS_MC_updateCells);
+
 	// Get the primitive world image
 	CPrimitiveWorldImage *wI=primitive->getWorldImage (worldImage);
 
@@ -463,6 +480,8 @@ void CMoveContainer::updateCells (CMovePrimitive *primitive, uint8 worldImage)
 
 void CMoveContainer::getCells (CMovePrimitive *primitive, uint8 worldImage, uint8 primitiveWorldImage, CMoveElement **elementArray)
 {
+//	H_AUTO(PACS_MC_getCells);
+
 	// Get the primitive world image
 	CPrimitiveWorldImage *wI;
 	if (primitive->isNonCollisionable())
@@ -587,9 +606,11 @@ void CMoveContainer::checkSortedList ()
 
 // ***************************************************************************
 
-bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, uint8 primitiveWorldImage, 
-									   bool testMove, bool secondIsStatic, bool &testMoveValid)
+bool CMoveContainer::evalOneTerrainCollision (double beginTime, CMovePrimitive *primitive, uint8 primitiveWorldImage, 
+									   bool testMove, bool &testMoveValid, double &collisionTime)
 {
+//	H_AUTO(PACS_MC_evalOneCollision);
+
 	// Find its collisions
 	bool found=false;
 
@@ -634,19 +655,25 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 					isWall= true;
 				else
 					isWall= !(surf->isFloor() || surf->isCeiling());
+
 				// stop on a wall.
 				if(isWall)
 				{
+					// Return the collision time
+					collisionTime = desc.ContactTime;
+
 					// Test move ?
 					if (testMove)
 						return true;
 					else
 					{
-						// OK, collision
-						newCollision (primitive, desc, primitiveWorldImage, beginTime);
+						// OK, collision if we are a collisionable primitive
+						if (primitive->isCollisionable ())
+							newCollision (primitive, desc, primitiveWorldImage, beginTime);
 
 						// One collision found
 						found=true;
+						break;
 					}
 				}
 			}
@@ -655,6 +682,28 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 			// More than maxtest made, exit
 			return false;
 	}
+	return found;
+}
+
+// ***************************************************************************
+
+bool CMoveContainer::evalOnePrimitiveCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, uint8 primitiveWorldImage, 
+									   bool testMove, bool secondIsStatic, bool &testMoveValid, double &collisionTime)
+{
+//	H_AUTO(PACS_MC_evalOneCollision);
+
+	// Find its collisions
+	bool found=false;
+
+	// Get the primitive world image
+	CPrimitiveWorldImage *wI;
+	if (primitive->isNonCollisionable())
+		wI=primitive->getWorldImage (0);
+	else
+		wI=primitive->getWorldImage (primitiveWorldImage);
+
+	// Begin time must be the same as beginTime
+	nlassert (wI->getInitTime()==beginTime);
 
 	// Element table
 	CMoveElement	tableNotInserted[4];
@@ -720,8 +769,8 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 						// Look if valid in Y
 						if ( (wI->getBBYMin() < otherWI->getBBYMax()) && (otherWI->getBBYMin() < wI->getBBYMax()) )
 						{
-							if (evalFinalCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
-								primitiveWorldImage, worldImage, secondIsStatic))
+							if (evalPrimAgainstPrimCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
+								primitiveWorldImage, worldImage, secondIsStatic, collisionTime))
 							{
 								if (testMove)
 									return true;
@@ -752,8 +801,8 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 					// Look if valid in Y
 					if ( (wI->getBBYMin() < otherWI->getBBYMax()) && (otherWI->getBBYMin() < wI->getBBYMax()) )
 					{
-						if (evalFinalCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
-							primitiveWorldImage, worldImage, secondIsStatic))
+						if (evalPrimAgainstPrimCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
+							primitiveWorldImage, worldImage, secondIsStatic, collisionTime))
 						{
 							if (testMove)
 								return true;
@@ -773,10 +822,12 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 
 // ***************************************************************************
 
-bool CMoveContainer::evalFinalCollision (double beginTime, CMovePrimitive *primitive, CMovePrimitive *otherPrimitive, 
+bool CMoveContainer::evalPrimAgainstPrimCollision (double beginTime, CMovePrimitive *primitive, CMovePrimitive *otherPrimitive, 
 											CPrimitiveWorldImage *wI, CPrimitiveWorldImage *otherWI, bool testMove,
-											uint8 firstWorldImage, uint8 secondWorldImage, bool secondIsStatic)
+											uint8 firstWorldImage, uint8 secondWorldImage, bool secondIsStatic, double &collisionTime)
 {
+//	H_AUTO(PACS_MC_evalPrimAgainstPrimCollision);
+
 	// Test the primitive
 	CCollisionDesc desc;
 	double firstTime, lastTime;
@@ -793,13 +844,17 @@ bool CMoveContainer::evalFinalCollision (double beginTime, CMovePrimitive *primi
 		// Test move ?
 		if (collision)
 		{
+			// Return collision time
+			collisionTime = firstTime;
+
 			if (testMove) 
 				return true;
 			else
 			{
 				// TODO: make new collision when collision==false to raise triggers
 				// OK, collision
-				newCollision (primitive, otherPrimitive, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic);
+				if (primitive->isCollisionable ())
+					newCollision (primitive, otherPrimitive, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic);
 
 				// Collision
 				return true;
@@ -813,6 +868,8 @@ bool CMoveContainer::evalFinalCollision (double beginTime, CMovePrimitive *primi
 
 void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 {
+//	H_AUTO(PACS_MC_evalAllCollisions);
+
 	// First primitive
 	CMovePrimitive	*primitive=_ChangedRoot[worldImage];
 
@@ -840,13 +897,17 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 		// Find a collision
 		bool found=false;
 		bool testMoveValid=false;
+		double collisionTime;
+
+		// Eval collision on the terrain
+		found|=evalOneTerrainCollision (beginTime, primitive, primitiveWorldImage, false, testMoveValid, collisionTime);
 
 		// Eval collision in each static world image
 		std::set<uint8>::iterator ite=_StaticWorldImage.begin();
 		while (ite!=_StaticWorldImage.end())
 		{
 			// Eval in this world image
-			found|=evalOneCollision (beginTime, primitive, *ite, primitiveWorldImage, false, true, testMoveValid);
+			found|=evalOnePrimitiveCollision (beginTime, primitive, *ite, primitiveWorldImage, false, true, testMoveValid, collisionTime);
 
 			// Next world image
 			ite++;
@@ -857,7 +918,7 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 
 		// Eval collision in the world image if not already tested
 		if (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end())
-			found|=evalOneCollision (beginTime, primitive, worldImage, primitiveWorldImage, false, false, testMoveValid);
+			found|=evalOnePrimitiveCollision (beginTime, primitive, worldImage, primitiveWorldImage, false, false, testMoveValid, collisionTime);
 
 		CVectorD d2=wI->getDeltaPosition();
 		CVector f2=_SurfaceTemp.PrecDeltaPos;
@@ -889,6 +950,8 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc, bool collision, bool enter, bool exit,
 								   uint firstWorldImage, uint secondWorldImage, bool secondIsStatic)
 {
+//	H_AUTO(PACS_MC_newCollision_short);
+
 	// Get an ordered time index. Always round to the future.
 	int index=(int)(ceil (desc.ContactTime*(double)_OtSize/_DeltaTime) );
 
@@ -923,6 +986,8 @@ void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second
 
 void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, uint8 worldImage, double beginTime)
 {
+//	H_AUTO(PACS_MC_newCollision_long);
+
 	// Check
 	nlassert (_Retriever);
 
@@ -1364,6 +1429,8 @@ void CMoveContainer::unlinkMoveElement  (CMoveElement *element, uint8 worldImage
 
 void CMoveContainer::reaction (const CCollisionOTInfo& first)
 {
+//	H_AUTO(PACS_MC_reaction);
+
 	// Static collision ?
 	if (first.isCollisionAgainstStatic())
 	{
@@ -1675,6 +1742,111 @@ void UMoveContainer::getPACSCoordsFromMatrix(NLMISC::CVector &pos,float &angle,c
 
 }
 
+// ***************************************************************************
+bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive *primitive, uint8 worldImage)
+{
+	// New test time
+	_TestTime++;
+
+	// Only non-collisionable primitives
+	if (!primitive->isCollisionable())
+	{
+		// Delta time
+		_DeltaTime=deltaTime;
+
+		// Begin of the time slice to compute
+		double beginTime = 0;
+
+		// Get the world image
+		CPrimitiveWorldImage *wI = ((CMovePrimitive*)primitive)->getWorldImage (0);
+
+		bool found;
+		do
+		{
+			// Update the primitive
+			wI->update (beginTime, deltaTime, *(CMovePrimitive*)primitive);
+
+			CVectorD d0=wI->getDeltaPosition();
+			CVector f0=wI->getDeltaPosition();
+			CVector f0bis=_SurfaceTemp.PrecDeltaPos;
+
+			// Eval collision again the terrain
+			bool testMoveValid = false;
+			double collisionTime = deltaTime;
+			found = evalOneTerrainCollision (beginTime, (CMovePrimitive*)primitive, worldImage, false, testMoveValid, collisionTime);
+
+			// Eval collision again the static primitives
+			std::set<uint8>::iterator ite=_StaticWorldImage.begin();
+			while (ite!=_StaticWorldImage.end())
+			{
+				// Eval in this world image
+				double tmp;
+				if (evalOnePrimitiveCollision (beginTime, (CMovePrimitive*)primitive, *ite, worldImage, false, true, testMoveValid, tmp))
+				{
+					// First collision..
+					if (found)
+						collisionTime = std::min (collisionTime, tmp);
+					else
+					{
+						found = true;
+						collisionTime = tmp;
+					}
+				}
+
+				// Next world image
+				ite++;
+			}
+
+			// Checks
+			CVectorD d1=wI->getDeltaPosition();
+			CVector f1=_SurfaceTemp.PrecDeltaPos;
+
+			// Eval collision again the world image
+			double tmp;
+			if (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end())
+			{
+				if (evalOnePrimitiveCollision (beginTime, (CMovePrimitive*)primitive, worldImage, worldImage, false, false, testMoveValid, tmp))
+				{
+					// First collision..
+					if (found)
+						collisionTime = std::min (collisionTime, tmp);
+					else
+					{
+						found = true;
+						collisionTime = tmp;
+					}
+				}
+			}
+
+			// Checks
+			CVectorD d2=wI->getDeltaPosition();
+			CVector f2=_SurfaceTemp.PrecDeltaPos;
+			nlassert ((d0==d1)&&(d0==d2));
+
+//			if (found)
+//				nlstop;
+
+			// Retriever mode ?
+			if (_Retriever&&testMoveValid)
+			{								
+				// Do move
+				wI->doMove (*_Retriever, _SurfaceTemp, deltaTime, collisionTime, ((CMovePrimitive*)primitive)->getDontSnapToGround());
+			}
+			else
+			{
+				// Do move
+				wI->doMove (_DeltaTime);
+			}
+
+			beginTime = collisionTime;
+		}
+		while (found);
+	}
+	else
+		return false;
+
+	return true;
+}
 
 
 } // NLPACS

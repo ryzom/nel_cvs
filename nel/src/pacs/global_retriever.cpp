@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.61 2002/05/28 08:09:13 legros Exp $
+ * $Id: global_retriever.cpp,v 1.62 2002/06/06 15:29:20 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,8 @@
 
 #include "nel/misc/path.h"
 #include "nel/misc/line.h"
+
+#include "nel/misc/hierarchical_timer.h"
 
 #include "pacs/global_retriever.h"
 #include "pacs/retriever_bank.h"
@@ -979,20 +981,25 @@ const NLPACS::CRetrievableSurface	*NLPACS::CGlobalRetriever::getSurfaceById(cons
 // ***************************************************************************
 void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, const NLMISC::CAABBox &bboxMove, const NLMISC::CVector &origin) const
 {
+//	H_AUTO(PACS_GR_findCollisionChains);
+
 	sint	i,j;
 
 	// 0. reset.
 	//===========
 	// reset possible chains.
+//	H_BEFORE(PACS_GR_findCC_reset);
 	cst.CollisionChains.clear();
 	cst.resetEdgeCollideNodes();
-
+//	H_AFTER(PACS_GR_findCC_reset);
 
 	// 1. Find Instances which may hit this movement.
 	//===========
+//	H_BEFORE(PACS_GR_findCC_selectInstances);
 	CAABBox		bboxMoveGlobal= bboxMove;
 	bboxMoveGlobal.setCenter(bboxMoveGlobal.getCenter()+origin);
 	selectInstances(bboxMoveGlobal, cst);
+//	H_AFTER(PACS_GR_findCC_selectInstances);
 	// \todo yoyo: TODO_INTERIOR: add interiors meshes (static/dynamic houses etc...) to this list.
 	// -> done automatically with the select
 
@@ -1002,6 +1009,7 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 	// For each possible surface mesh, test collision.
 	for(i=0 ; i<(sint)cst.CollisionInstances.size(); i++)
 	{
+//		H_BEFORE(PACS_GR_findCC_getAndComputeMove);
 		// get retrieverInstance.
 		sint32	curInstance= cst.CollisionInstances[i];
 		const CRetrieverInstance	&retrieverInstance= getInstance(curInstance);
@@ -1025,6 +1033,9 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 		//================
 		sint		firstCollisionChain= cst.CollisionChains.size();
 		CVector2f	transBase(-deltaOrigin.x, -deltaOrigin.y);
+//		H_AFTER(PACS_GR_findCC_getAndComputeMove);
+
+//		H_BEFORE(PACS_GR_findCC_testCollision);
 		// Go! fill collision chains that this movement intersect.
 		localRetriever.testCollision(cst, bboxMoveLocal, transBase);
 		// if an interior, also test for external collisions
@@ -1034,10 +1045,12 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 
 		// how many collision chains added?  : nCollisionChain-firstCollisionChain.
 		sint		nCollisionChain= cst.CollisionChains.size();
+//		H_AFTER(PACS_GR_findCC_testCollision);
 
 
 		// For all collision chains added, fill good SurfaceIdent info.
 		//================
+//		H_BEFORE(PACS_GR_findCC_fillSurfIdent);
 		for(j=firstCollisionChain; j<nCollisionChain; j++)
 		{
 			CCollisionChain		&cc= cst.CollisionChains[j];
@@ -1085,11 +1098,13 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 			nlassert(cc.LeftSurface.RetrieverInstanceId < (sint)_Instances.size());
 			nlassert(cc.RightSurface.RetrieverInstanceId < (sint)_Instances.size());
 		}
+//		H_AFTER(PACS_GR_findCC_fillSurfIdent);
 
 
 		// For all collision chains added, look if they are a copy of preceding collsion chain (same Left/Right). Then delete them.
 		//================
 		// \todo yoyo: TODO_OPTIMIZE: this is a N² complexity.
+//		H_BEFORE(PACS_GR_findCC_removeDouble);
 		for(j=firstCollisionChain; j<nCollisionChain; j++)
 		{
 			const CCollisionChain	&cj = cst.CollisionChains[j];
@@ -1160,7 +1175,7 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 			}
 
 		}
-
+//		H_AFTER(PACS_GR_findCC_removeDouble);
 	}
 
 }
@@ -1170,6 +1185,8 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &deltaCol,
 		CSurfaceIdent startSurface, float radius, const CVector2f bboxStart[4], TCollisionType colType) const
 {
+//	H_AUTO(PACS_GR_testCollisionWithCollisionChains);
+
 	// start currentSurface with surface start.
 	CSurfaceIdent	currentSurface= startSurface;
 	uint			nextCollisionSurfaceTested=0;
@@ -1368,6 +1385,8 @@ bool			NLPACS::CGlobalRetriever::verticalChain(const CCollisionChain &colChain) 
 NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &endCol,
 		CSurfaceIdent startSurface) const
 {
+//	H_AUTO(PACS_GR_testMovementWithCollisionChains);
+
 	// start currentSurface with surface start.
 	CSurfaceIdent	currentSurface= startSurface;
 	sint			i;
@@ -1502,6 +1521,8 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 const	NLPACS::TCollisionSurfaceDescVector	
 	*NLPACS::CGlobalRetriever::testCylinderMove(const UGlobalPosition &startPos, const NLMISC::CVector &delta, float radius, CCollisionSurfaceTemp &cst) const
 {
+//	H_AUTO(PACS_GR_testCylinderMove);
+
 	CSurfaceIdent	startSurface(startPos.InstanceId, startPos.LocalPosition.Surface);
 
 	// 0. reset.
@@ -1574,6 +1595,8 @@ const	NLPACS::TCollisionSurfaceDescVector
 	*NLPACS::CGlobalRetriever::testBBoxMove(const UGlobalPosition &startPos, const NLMISC::CVector &delta, 
 	const NLMISC::CVector &locI, const NLMISC::CVector &locJ, CCollisionSurfaceTemp &cst) const
 {
+//	H_AUTO(PACS_GR_testBBoxMove);
+
 	CSurfaceIdent	startSurface(startPos.InstanceId, startPos.LocalPosition.Surface);
 
 	// 0. reset.
@@ -1662,6 +1685,8 @@ const	NLPACS::TCollisionSurfaceDescVector
 NLPACS::UGlobalPosition		
 	NLPACS::CGlobalRetriever::doMove(const NLPACS::UGlobalPosition &startPos, const NLMISC::CVector &delta, float t, NLPACS::CCollisionSurfaceTemp &cst, bool rebuildChains) const
 {
+//	H_AUTO(PACS_GR_doMove);
+
 	CSurfaceIdent	startSurface(startPos.InstanceId, startPos.LocalPosition.Surface);
 
 	// clamp factor.
@@ -1722,6 +1747,8 @@ NLPACS::UGlobalPosition
 	// If asked, we must rebuild array of collision chains.
 	if(rebuildChains)
 	{
+//		H_AUTO(PACS_GR_doMove_rebuildChains);
+
 		// compute bboxmove.
 		CAABBox		bboxMove;
 		// must add some extent, to be sure to include snapped CLocalRetriever vertex (2.0f/256 should be sufficient).
@@ -1852,6 +1879,8 @@ NLPACS::UGlobalPosition
 const NLPACS::TCollisionSurfaceDescVector	&NLPACS::CGlobalRetriever::testBBoxRot(const CGlobalPosition &startPos, 
 	const NLMISC::CVector &locI, const NLMISC::CVector &locJ, CCollisionSurfaceTemp &cst) const
 {
+//	H_AUTO(PACS_GR_testBBoxRot);
+
 	CSurfaceIdent	startSurface(startPos.InstanceId, startPos.LocalPosition.Surface);
 
 	// 0. reset.
@@ -1916,6 +1945,8 @@ const NLPACS::TCollisionSurfaceDescVector	&NLPACS::CGlobalRetriever::testBBoxRot
 // ***************************************************************************
 void	NLPACS::CGlobalRetriever::testRotCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, CSurfaceIdent startSurface, const CVector2f bbox[4]) const
 {
+//	H_AUTO(PACS_GR_testRotCollisionWithCollisionChains);
+
 	// start currentSurface with surface start.
 	CSurfaceIdent	currentSurface= startSurface;
 	sint			i;

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.48 2002/04/10 12:45:44 corvazier Exp $
+ * $Id: local_retriever.cpp,v 1.49 2002/06/06 15:29:20 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "pacs/collision_desc.h"
 #include "pacs/retriever_instance.h"
 
+#include "nel/misc/hierarchical_timer.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -1484,11 +1485,15 @@ void	NLPACS::CLocalRetriever::computeCollisionChainQuad()
 // ***************************************************************************
 void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CAABBox &bboxMove, const CVector2f &transBase) const
 {
+//	H_AUTO(PACS_LR_testCollision);
+
 	sint	i;
 
 	// 0. select ordered chains in the chainquad.
 	//=====================================
+//	H_BEFORE(PACS_LR_testCol_selEdges);
 	sint	nEce= _ChainQuad.selectEdges(bboxMove, cst);
+//	H_AFTER(PACS_LR_testCol_selEdges);
 	// NB: cst.OChainLUT is assured to be full of 0xFFFF after this call (if was right before).
 
 
@@ -1516,6 +1521,7 @@ void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CA
 		// if never added.
 		if(chainLUT[chainId]==0xFFFF)
 		{
+//			H_AUTO(PACS_LR_testCol_addToLUT);
 			// add a new CCollisionChain.
 			ccId= cst.CollisionChains.size();
 			cst.CollisionChains.push_back(CCollisionChain());
@@ -1541,6 +1547,7 @@ void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CA
 
 		// add edge collide to the list.
 		//=================================
+//		H_BEFORE(PACS_LR_testCol_addToList);
 		CCollisionChain			&colChain= cst.CollisionChains[ccId];
 		const std::vector<CVector2s>	&oChainVertices= oChain.getVertices();
 		for(sint edge=ece.EdgeStart; edge<ece.EdgeEnd; edge++)
@@ -1561,6 +1568,7 @@ void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CA
 			p1+= transBase;
 			ecn.make(p0, p1);
 		}
+//		H_AFTER(PACS_LR_testCol_addToList);
 	}
 
 
@@ -1568,13 +1576,14 @@ void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CA
 	// 2. Reset LUT to 0xFFFF.
 	//=====================================
 
+//	H_BEFORE(PACS_LR_testCol_resetLUT);
 	// for all collisions chains inserted (starting from firstChainAdded), reset LUT.
 	for(i=firstChainAdded; i<(sint)cst.CollisionChains.size(); i++)
 	{
 		uint	ccId= cst.CollisionChains[i].ChainId;
 		chainLUT[ccId]= 0xFFFF;
 	}
-
+//	H_AFTER(PACS_LR_testCol_resetLUT);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.13 2002/05/24 12:34:50 vizerie Exp $
+ * $Id: primitive_world_image.cpp,v 1.14 2002/06/06 15:29:20 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,8 @@
  */
 
 #include "stdpacs.h"
+
+#include "nel/misc/hierarchical_timer.h"
 
 #include "pacs/primitive_world_image.h"
 #include "pacs/move_primitive.h"
@@ -80,6 +82,8 @@ bool CPrimitiveWorldImage::evalCollision (CPrimitiveWorldImage& other, CCollisio
 									uint32 maxTestIteration, double &firstContactTime, double &lastContactTime, CMovePrimitive& primitive,
 									CMovePrimitive& otherPrimitive)
 {
+//	H_AUTO(PACS_PWI_evalCollision_long);
+
 	// Mask test
 	if (( (primitive.getCollisionMaskInternal() & otherPrimitive.getOcclusionMaskInternal())  == 0) && 
 		( (primitive.getOcclusionMaskInternal() & otherPrimitive.getCollisionMaskInternal())  == 0))
@@ -162,6 +166,8 @@ bool CPrimitiveWorldImage::evalCollision (CPrimitiveWorldImage& other, CCollisio
 const TCollisionSurfaceDescVector *CPrimitiveWorldImage::evalCollision (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, 
 																  uint32 testTime, uint32 maxTestIteration, CMovePrimitive& primitive)
 {
+//	H_AUTO(PACS_PWI_evalCollision_short);
+
 	// Test time
 	if (!primitive.checkTestTime (testTime, maxTestIteration))
 		return NULL;
@@ -194,6 +200,8 @@ const TCollisionSurfaceDescVector *CPrimitiveWorldImage::evalCollision (CGlobalR
 
 void CPrimitiveWorldImage::doMove (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, double originalMax, double finalMax, bool keepZ /*= false*/)
 {
+//	H_AUTO(PACS_PWI_doMove_long);
+
 	// Time to avance
 	double ratio;
 	if (finalMax!=originalMax)
@@ -220,6 +228,8 @@ void CPrimitiveWorldImage::doMove (CGlobalRetriever &retriever, CCollisionSurfac
 
 void CPrimitiveWorldImage::doMove (double timeMax)
 {
+//	H_AUTO(PACS_PWI_doMove_short);
+
 	// Make the move
 	_Position.setPos (_Position.getPos ()+_Speed*(timeMax-_InitTime));
 
@@ -1163,6 +1173,8 @@ void CPrimitiveWorldImage::reaction (CPrimitiveWorldImage& second, const CCollis
 							   CMovePrimitive &otherPrimitive, CMoveContainer *container, uint8 worldImage, uint8 secondWorldImage,
 							   bool secondConst)
 {
+//	H_AUTO(PACS_PWI_reaction_long);
+
 	// TODO: reaction for no collision must be made on the full deltaTime not only to CollisionTime
 
 	// Get the two reaction codes
@@ -1344,6 +1356,8 @@ void CPrimitiveWorldImage::reaction (const CCollisionSurfaceDesc&	surfaceDesc, c
 							   CGlobalRetriever& retriever, double ratio, double dt, CMovePrimitive &primitive, CMoveContainer &container,
 							   uint8 worldImage)
 {
+//	H_AUTO(PACS_PWI_reaction_short);
+
 	// Reaction type
 	uint32 type=primitive.getReactionTypeInternal();
 

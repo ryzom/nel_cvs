@@ -1,7 +1,7 @@
 /** \file u_move_container.h
  * A container for movable objects
  *
- * $Id: u_move_container.h,v 1.13 2002/05/28 08:08:55 legros Exp $
+ * $Id: u_move_container.h,v 1.14 2002/06/06 15:28:27 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,14 +141,28 @@ public:
 
 	/**
 	  * Evaluation of a worldImage of the collision system.
-	  * This method will evaluate the move of each modified primitives inserted in the world image.
-	  * The method test first collisions against primitives inserted in the world images declared as static,
+	  * This method will evaluate the move of each modified collisionable primitives inserted in the world image.
+	  * The method test first collisions against the terrai, then test collisions against primitives 
+	  * inserted in the world images declared as static,
 	  * then test the collision against the primitives inserted in the world image to evaluate.
 	  *
 	  * \param deltaTime is the delta time of the system evaluation.
 	  * \param worldImage is the world image to eval.
 	  */
 	virtual void				evalCollision (double deltaTime, uint8 worldImage) =0;
+
+	/**
+	  * Evaluation of a single non collisionable primitive.
+	  * The method test first collisions against the terrai, then test collisions against primitives 
+	  * inserted in the world images declared as static,
+	  * then test the collision against the primitives inserted in the world image to evaluate.
+	  *
+	  * \param deltaTime is the delta time of the system evaluation.
+	  * \param primitive is the prmitive pointer
+	  * \param worldImage is the world image to eval.
+	  * \return false if the primitive is a collisionable primitive.
+	  */
+	virtual bool				evalNCPrimitiveCollision (double deltaTime, UMovePrimitive *primitive, uint8 worldImage) = 0;
 
 	/**
 	  * Test the move of a primitive in a specific world image.

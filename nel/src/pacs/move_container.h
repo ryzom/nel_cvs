@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.12 2002/05/28 08:09:13 legros Exp $
+ * $Id: move_container.h,v 1.13 2002/06/06 15:29:20 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,6 +106,9 @@ public:
 
 	/// Evaluation of the collision system
 	void						evalCollision (double deltaTime, uint8 worldImage);
+
+	// Evaluation of collision for one non-collisionable primitive
+	bool						evalNCPrimitiveCollision (double deltaTime, UMovePrimitive *primitive, uint8 worldImage);
 
 	/// Make a move test
 	bool						testMove (UMovePrimitive* primitive, const NLMISC::CVectorD& speed, double deltaTime, uint8 worldImage);
@@ -218,15 +221,19 @@ private:
 	// Check the OT is cleared and linked
 	void						checkOT ();
 
-	// Eval one collision
-	bool						evalOneCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, 
+	// Eval one terrain collision
+	bool						evalOneTerrainCollision (double beginTime, CMovePrimitive *primitive, 
+													uint8 primitiveWorldImage, bool testMove, bool &testMoveValid, double &collisionTime);
+
+	// Eval one primitive collision
+	bool						evalOnePrimitiveCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, 
 													uint8 primitiveWorldImage, bool testMove, bool secondIsStatic, 
-													bool &testMoveValid);
+													bool &testMoveValid, double &collisionTime);
 
 	// Eval final step
-	bool						evalFinalCollision (double beginTime, CMovePrimitive *primitive, CMovePrimitive *otherPrimitive, 
+	bool						evalPrimAgainstPrimCollision (double beginTime, CMovePrimitive *primitive, CMovePrimitive *otherPrimitive, 
 													CPrimitiveWorldImage *wI, CPrimitiveWorldImage *otherWI, bool testMove,
-													uint8 firstWorldImage, uint8 secondWorldImage, bool secondIsStatic);
+													uint8 firstWorldImage, uint8 secondWorldImage, bool secondIsStatic, double &collisionTime);
 
 	// Eval all collision for modified primitives
 	void						evalAllCollisions (double beginTime, uint8 worldImage);

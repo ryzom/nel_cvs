@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.10 2003/11/28 15:04:09 corvazier Exp $
+ * $Id: ligo_config.cpp,v 1.11 2004/06/15 13:22:50 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -59,6 +59,7 @@ bool CLigoConfig::read (const char *fileName)
 	
 	// Clear the previous classes
 	_Contexts.clear();
+	_Contexts.push_back ("default");
 	_PrimitiveClasses.clear();
 	_PrimitiveConfigurations.clear();
 
@@ -138,11 +139,10 @@ bool CLigoConfig::readPrimitiveClass (const char *_fileName)
 							_Contexts.push_back (*ite);
 						ite++;
 					}
-					_Contexts.push_back ("default");
 				}
 
 				// Get the first primitive configuration
-				_PrimitiveConfigurations.reserve (CIXml::countChildren (root, "CONFIGURATION"));
+				_PrimitiveConfigurations.reserve (_PrimitiveConfigurations.size()+CIXml::countChildren (root, "CONFIGURATION"));
 				xmlNodePtr configuration = CIXml::getFirstChildNode (root, "CONFIGURATION");
 				if (configuration)
 				{
@@ -223,6 +223,10 @@ bool CLigoConfig::isPrimitiveLinked (const NLLIGO::IPrimitive &primitive)
 
 bool CLigoConfig::isPrimitiveDeletable (const NLLIGO::IPrimitive &primitive)
 {
+	// If it is a static child, it can't be deleted.
+	if (isStaticChild (primitive))
+		return false;
+
 	// Get the class
 	string className;
 	if (primitive.getPropertyByName ("class", className))
@@ -405,6 +409,43 @@ const CPrimitiveClass *CLigoConfig::getPrimitiveClass (const char *className) co
 		return &(ite->second);
 	}
 	return NULL;
+}
+
+// ***************************************************************************
+
+void CLigoConfig::resetPrimitiveConfiguration ()
+{
+	_PrimitiveConfigurations.clear ();
+}
+
+// ***************************************************************************
+
+bool CLigoConfig::isStaticChild (const NLLIGO::IPrimitive &primitive)
+{
+	// Has a parent ?
+	const IPrimitive *parent = primitive.getParent ();
+	if (parent)
+	{
+		// Get the classes
+		const CPrimitiveClass *parentClass = getPrimitiveClass (*parent);
+		string className;
+		string name;
+		if (parentClass && primitive.getPropertyByName ("class", className) && primitive.getPropertyByName ("name", name))
+		{
+			// Does it belong to the static children ?
+			uint i;
+			for (i=0; i<parentClass->StaticChildren.size(); i++)
+			{
+				if (parentClass->StaticChildren[i].Name == name &&
+					parentClass->StaticChildren[i].ClassName == className)
+				{
+					// Found
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 // ***************************************************************************

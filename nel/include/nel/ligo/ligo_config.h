@@ -1,7 +1,7 @@
 /** \file ligo_config.h
  * Ligo config file 
  *
- * $Id: ligo_config.h,v 1.3 2003/11/17 14:26:37 distrib Exp $
+ * $Id: ligo_config.h,v 1.4 2004/06/15 13:22:49 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -63,6 +63,9 @@ public:
 	  */
 	bool readPrimitiveClass (const char *fileName);
 
+	/// Reset the primitive configurations
+	void resetPrimitiveConfiguration ();
+
 	/// \name Public value
 
 	/// Size of a cell of the ligoscape in meter
@@ -87,6 +90,9 @@ public:
 
 	// Get the primitive color
 	NLMISC::CRGBA getPrimitiveColor (const NLLIGO::IPrimitive &primitive);
+
+	// Is the primitive deletable ?
+	bool isStaticChild (const NLLIGO::IPrimitive &primitive);
 
 	// Is the primitive linked to it's brother primitive ?
 	bool isPrimitiveLinked (const NLLIGO::IPrimitive &primitive);

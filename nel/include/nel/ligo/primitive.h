@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.27 2004/06/11 16:36:41 boucher Exp $
+ * $Id: primitive.h,v 1.28 2004/06/15 13:22:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -335,7 +335,13 @@ public:
 	  **/
 	void				removeProperties ();
 
-	// Read the primitive
+	/* Init default primitive's parameters
+	 *
+	 * This method will add all the properties declared in the primitive class and create default properties.
+	 */
+	void				initDefaultValues (CLigoConfig &config);
+
+	// Read the primitive, calls initDefaultValue (CLigoConfig &config)
 	virtual bool read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config);
 
 	// Write the primitive
@@ -593,7 +599,6 @@ public:
 
 	// serial the primitive. Used for binary files.
 	void			serial(NLMISC::IStream &f);
-
 
 private:
 	// Conversion internal methods

@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.30 2004/06/11 12:29:05 boucher Exp $
+ * $Id: primitive.cpp,v 1.31 2004/06/15 13:22:50 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1575,6 +1575,65 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, C
 		while ((propNode = CIXml::getNextChildNode (propNode, "PROPERTY")));
 	}
 
+	// Initialise default value
+	initDefaultValues (config);
+
+	// Read children
+	xmlNodePtr childNode;
+	childNode = CIXml::getFirstChildNode (xmlNode, "CHILD");
+	if (childNode)
+	{
+		do
+		{
+			// Get the property class
+			string type;
+			if (GetPropertyString (type, filename, childNode, "TYPE"))
+			{
+				// Primitive
+				if (type=="node")
+					type="CPrimNode";
+				if (type=="point")
+					type="CPrimPoint";
+				if (type=="path")
+					type="CPrimPath";
+				if (type=="zone")
+					type="CPrimZone";
+				IPrimitive *primitive = static_cast<IPrimitive *> (CClassRegistry::create (type));
+
+				// Primitive type not found ?
+				if (primitive == NULL)
+				{
+					XMLError (childNode, filename, "IPrimitive::read : Unknown primitive type (%s)", type.c_str ());
+					return false;
+				}
+
+				// Read it
+				primitive->read (childNode, filename, version, config);
+
+				// Add it
+				insertChild (primitive);
+			}
+			else
+			{
+				return false;
+			}
+		}
+		while ((childNode = CIXml::getNextChildNode (childNode, "CHILD")));
+	}
+
+#ifdef NLLIGO_DEBUG
+	// store debug data
+ 	getPropertyByName("class", _DebugClassName);
+	getPropertyByName("name", _DebugPrimitiveName);
+#endif
+	// Done
+	return true;
+}
+
+// ***************************************************************************
+
+void IPrimitive::initDefaultValues (CLigoConfig &config)
+{
 	// Get the primitive class
 	const CPrimitiveClass *primitiveClass = config.getPrimitiveClass (*this);
 	if (primitiveClass)
@@ -1636,57 +1695,6 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, C
 			}
 		}
 	}
-
-	// Read children
-	xmlNodePtr childNode;
-	childNode = CIXml::getFirstChildNode (xmlNode, "CHILD");
-	if (childNode)
-	{
-		do
-		{
-			// Get the property class
-			string type;
-			if (GetPropertyString (type, filename, childNode, "TYPE"))
-			{
-				// Primitive
-				if (type=="node")
-					type="CPrimNode";
-				if (type=="point")
-					type="CPrimPoint";
-				if (type=="path")
-					type="CPrimPath";
-				if (type=="zone")
-					type="CPrimZone";
-				IPrimitive *primitive = static_cast<IPrimitive *> (CClassRegistry::create (type));
-
-				// Primitive type not found ?
-				if (primitive == NULL)
-				{
-					XMLError (childNode, filename, "IPrimitive::read : Unknown primitive type (%s)", type.c_str ());
-					return false;
-				}
-
-				// Read it
-				primitive->read (childNode, filename, version, config);
-
-				// Add it
-				insertChild (primitive);
-			}
-			else
-			{
-				return false;
-			}
-		}
-		while ((childNode = CIXml::getNextChildNode (childNode, "CHILD")));
-	}
-
-#ifdef NLLIGO_DEBUG
-	// store debug data
- 	getPropertyByName("class", _DebugClassName);
-	getPropertyByName("name", _DebugPrimitiveName);
-#endif
-	// Done
-	return true;
 }
 
 // ***************************************************************************

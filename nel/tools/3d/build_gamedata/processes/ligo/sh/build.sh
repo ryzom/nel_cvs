@@ -62,12 +62,9 @@ echo "CellSize = 160;" >> land_exporter.cfg
 # ZoneRegionFile is the .land to compute
 
 dir_current=`pwd`
-cd $dir_database/$dir_ligosrc
-list_land=`ls -1 *.land`
-cd $dir_current
-for i in $list_land ; do
-	echo "ZoneRegionFile = \"$dir_database/$dir_ligosrc/$i\";" >> land_exporter.cfg
-done
+
+land_name=`cat ../../cfg/config.cfg | grep "ligo_export_land" | sed -e 's/ligo_export_land//' | sed -e 's/ //g' | sed -e 's/=//g'`
+echo "ZoneRegionFile = \"$dir_database/$dir_ligosrc/$land_name\";" >> land_exporter.cfg
 
 # ok the CFG is generated now launch the exporter
 ../../bin/land_export.exe land_exporter.cfg

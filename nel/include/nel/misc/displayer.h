@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.16 2002/08/23 12:20:24 lecroart Exp $
+ * $Id: displayer.h,v 1.17 2002/11/12 17:25:04 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -150,6 +150,8 @@ protected:
 
 private:
 	std::string _FileName;
+
+	FILE		*_FilePointer;
 
 	bool		_NeedHeader;
 };

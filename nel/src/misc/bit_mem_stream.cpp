@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.8 2001/11/13 17:53:53 lecroart Exp $
+ * $Id: bit_mem_stream.cpp,v 1.9 2001/11/22 09:50:54 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -193,7 +193,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 			value = 0;
 		}
 
-		// Clear high-order bits after _FreeBits (otherwise wrong values are read)
+		// Clear high-order bits after _FreeBits
 		uint8 v = *_BufPos & ((1 << _FreeBits) - 1);
 
 		if ( nbits > _FreeBits )
@@ -208,7 +208,8 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 		}
 		else
 		{
-			//nldebug( "Reading last byte %u from %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
+			//nlinfo( "Reading last byte %u from %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
+			//displayByteBits( *_BufPos, 8, _FreeBits-1 );
 			value |= (v >> (_FreeBits-nbits));
 			displayByteBits( *_BufPos, 8, _FreeBits-1 );
 			if ( _FreeBits == nbits )
@@ -233,7 +234,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 		}
 
 		// Clear high-order bits after nbits
-		displayDwordBits( value, 32, nbits-1 );
+		//displayDwordBits( value, 32, nbits-1 );
 
 		//uint32 mask = (-1 >> (32-nbits)); // does not work
 		uint32 v;

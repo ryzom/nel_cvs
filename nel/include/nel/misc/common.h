@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.68 2004/02/13 10:03:10 lecroart Exp $
+ * $Id: common.h,v 1.69 2004/03/04 14:34:35 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -550,6 +550,17 @@ inline int nlisprint(int c)
 #else
 #define nlisprint isprint
 #endif
+
+
+// hash function for 64 bits integer
+struct CHashFunctionUInt64
+{
+	size_t operator()(const uint64 &x) const { return (size_t)x; }
+};
+
+
+
+
 
 } // NLMISC
 

@@ -26,7 +26,7 @@ CFG=misc - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=cl.exe
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "misc - Win32 Release"
@@ -49,7 +49,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nlmisc.lib"
 
@@ -72,7 +72,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nlmisc_debug.lib"
 
@@ -95,7 +95,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo /out:"../lib/nlmisc.lib"
 # ADD LIB32 /nologo /out:"../lib/nlmisc_rd.lib"
 
@@ -151,6 +151,38 @@ SOURCE=..\include\nel\misc\stream_inline.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\misc\aabbox.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\aabbox.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\bsphere.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\bsphere.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\geom_ext.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\geom_ext.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\line.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\line.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\matrix.cpp
 # End Source File
 # Begin Source File
@@ -171,6 +203,14 @@ SOURCE=..\include\nel\misc\plane_inline.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\polygon.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\polygon.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\quat.cpp
 # End Source File
 # Begin Source File
@@ -184,6 +224,22 @@ SOURCE=.\misc\rect.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\rect.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\triangle.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\triangle.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\uv.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\uv.h
 # End Source File
 # Begin Source File
 
@@ -320,6 +376,14 @@ SOURCE=..\include\nel\misc\bit_set.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\bitmap.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\bitmap.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\buf_fifo.cpp
 # End Source File
 # Begin Source File
@@ -405,6 +469,14 @@ SOURCE=.\misc\path.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\path.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\quad.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\quad.h
 # End Source File
 # Begin Source File
 

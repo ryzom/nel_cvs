@@ -26,7 +26,7 @@ CFG=3d - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=cl.exe
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "3d - Win32 Release"
@@ -48,7 +48,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d.lib"
 
@@ -71,7 +71,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d_debug.lib"
 
@@ -94,7 +94,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo /out:"../lib/nl3d.lib"
 # ADD LIB32 /nologo /out:"../lib/nl3d_rd.lib"
 
@@ -184,6 +184,46 @@ SOURCE=..\include\nel\3d\transform_shape.h
 # Begin Group "Landscape"
 
 # PROP Default_Filter ""
+# Begin Group "ZoneManager"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\zone_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\zone_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\zone_search.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\zone_search.h
+# End Source File
+# End Group
+# Begin Group "Tools"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\zone_smoother.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\zone_smoother.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\zone_tgt_smoother.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\zone_tgt_smoother.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\3d\bezier_patch.cpp
@@ -296,22 +336,6 @@ SOURCE=.\3d\zone.cpp
 
 SOURCE=..\include\nel\3d\zone.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\3d\zone_smoother.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\zone_smoother.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\zone_tgt_smoother.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\zone_tgt_smoother.h
-# End Source File
 # End Group
 # Begin Group "Driver"
 
@@ -376,82 +400,6 @@ SOURCE=.\3d\vertex_buffer.cpp
 
 SOURCE=..\include\nel\3d\vertex_buffer.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\3d\viewport.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\viewport.h
-# End Source File
-# End Group
-# Begin Group "Math"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\3d\aabbox.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\aabbox.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\bsphere.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\bsphere.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\frustum.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\frustum.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\line.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\line.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\polygon.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\polygon.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\triangle.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\triangle.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\triangle_ext.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\triangle_ext.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\uv.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\uv.h
-# End Source File
 # End Group
 # Begin Group "Font"
 
@@ -492,6 +440,14 @@ SOURCE=..\include\nel\3d\text_context.h
 # Begin Group "Container"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\ptr_set.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\ptr_set.h
+# End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\3d\quad_grid.h
@@ -544,14 +500,6 @@ SOURCE=..\include\nel\3d\shape.h
 # Begin Group "Textures"
 
 # PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\3d\bitmap.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\bitmap.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\3d\texture_file.cpp
@@ -663,6 +611,138 @@ SOURCE=.\3d\track.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\track.h
+# End Source File
+# End Group
+# Begin Group "UserImp"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\camera_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\camera_user.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\driver_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\driver_user.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\frustum.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\instance_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\instance_user.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\landscape_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\landscape_user.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\material_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\material_user.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\scene_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\scene_user.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\text_context_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\text_context_user.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\texture_user.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\transform_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\transform_user.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\viewport.cpp
+# End Source File
+# End Group
+# Begin Group "User"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\user\nel\3d\frustum.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\user\nel\3d\u_camera.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\user\nel\3d\u_driver.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\user\nel\3d\u_instance.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\user\nel\3d\u_landscape.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\user\nel\3d\u_material.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\user\nel\3d\u_scene.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\user\nel\3d\u_text_context.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\user\nel\3d\u_texture.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\user\nel\3d\u_transform.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\user\nel\3d\viewport.h
 # End Source File
 # End Group
 # Begin Source File

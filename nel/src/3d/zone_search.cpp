@@ -1,0 +1,144 @@
+/** \file zone_search.cpp
+ * CZoneSearch class
+ *
+ * $Id: zone_search.cpp,v 1.1 2001/02/28 14:43:19 berenguier Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#include <stdio.h>
+#include <iostream>
+
+#include "nel/3d/zone_search.h"
+
+using namespace std;
+
+
+namespace NL3D
+{
+
+
+/**
+* Constructor : Initialize some privates members
+*/
+CZoneSearch::CZoneSearch()
+{
+	/// Size X is named of AA to ZZ, current size is IB = 26 * 8 + 2  (AA is zone number 1, AZ zone number 26, BA zone number 27...)
+	_NbZoneX = 26 * 8 + 2;
+
+	/// Number zones on Y axis of landscape
+	_NbZoneY = 297;
+	
+	/// Size X of one zone (in meters)
+	_SizeZoneX = 160;
+
+	/// Size X of one zone (in meters)
+	_SizeZoneY = 160;
+}
+
+
+/**
+* Get the zone name corresponding to coordinate
+* \param x is axis X coordinate (in meters)
+* \param y is axis Y coordinate (in meters)
+* \param cx is axis X coordinate of center area (in meters)
+* \param cy is axis Y coordinate of center area (in meters)
+* \return a pair of the zone name and square distance between zone and center area (in zone unit)
+*/
+pair<string, uint32> CZoneSearch::getZoneName(uint x, uint y, uint cx, uint cy)
+{
+	char name[13];
+
+	uint zoneY = y / _SizeZoneY + 1;
+	uint zoneX = x / _SizeZoneX;
+
+	uint zoneCenterY = cy / _SizeZoneY + 1;
+	uint zoneCenterX = cx / _SizeZoneX;
+
+	uint32 distance = (zoneX - zoneCenterX) * (zoneX - zoneCenterX) + (zoneY - zoneCenterY) * (zoneY - zoneCenterY);
+
+	char firstLetter = zoneX / 26 + 'a';
+	char secondLetter = zoneX % 26 + 'a';
+
+	sprintf(name, "%d_%c%c.zonew", zoneY, firstLetter, secondLetter);
+
+	return make_pair<string, uint32>(string(name), distance);
+}
+
+
+/*
+* Get a list of zone name around a position
+* \param x is axis X ccordinate (in meter)
+* \param y is axis Y coordinate (in meter)
+* \param sizeArea is area of zone research (in meter)
+* \param l is a reference to a list of pair of string and uint32
+* \return a liste contained name of all zone around indicated position and and square distance between zone and center area (in zone unit)
+*/
+void CZoneSearch::getListZoneName(uint x, uint y, uint sizeArea, list<pair<string, uint32> >& l)
+{
+	sint startPosX, startPosY;
+	uint lastPosX, lastPosY, sizeAreaX, sizeAreaY;
+
+	startPosX = x - sizeArea;
+	startPosY = y - sizeArea;
+
+	sizeArea += sizeArea;
+	sizeAreaX = sizeAreaY = sizeArea;
+
+	if(startPosX < 0)
+	{
+		sizeAreaX += startPosX;
+		startPosX = 0;
+	}
+
+	lastPosX = startPosX + sizeAreaX;
+	if(lastPosX >= (_NbZoneX * _SizeZoneX))
+	{
+		sizeAreaX -= _NbZoneX * _SizeZoneX - lastPosX;
+		lastPosX = _NbZoneX * _SizeZoneX - 1;
+	}
+
+	if(startPosY < 0)
+	{
+		sizeAreaY += startPosY;
+		startPosY = 0;
+	}
+
+	lastPosY = startPosY + sizeAreaY;
+	if(lastPosY >= (_NbZoneY * _SizeZoneY))
+	{
+		sizeAreaY -= _NbZoneY * _SizeZoneY - lastPosY;
+		lastPosY = _NbZoneY * _SizeZoneY - 1;
+	}
+
+	l.clear();
+
+	for(uint i = startPosY; i <= lastPosY; i += _SizeZoneY)
+	{
+		for(uint j = startPosX; j <= lastPosX; j += _SizeZoneX)
+		{
+			l.push_back(getZoneName(j, i, x, y));
+		}
+	}
+}
+
+
+} // NL3D
+

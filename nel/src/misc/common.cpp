@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.38 2003/04/09 13:35:00 lecroart Exp $
+ * $Id: common.cpp,v 1.39 2003/04/09 13:36:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,8 @@ using namespace std;
 #    define STL_STR_VER "4.5.3"
 #  elif(__SGI_STL_PORT > 0x452)
 #    define STL_STR_VER "> 4.5.3"
+#  else
+#    define STL_STR_VER "Unknown"
 #  endif // __SGI_STL_PORT
 #  pragma message("Using STLport version "STL_STR_VER" in "STL_MODE" mode")
 #endif // NL_OS_WINDOWS

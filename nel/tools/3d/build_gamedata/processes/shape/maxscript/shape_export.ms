@@ -191,7 +191,7 @@ fn haveCoarseMesh node =
 			if (lod != undefined) then
 			(
 				-- Select a node
-				nd = execute ("$"+lod)
+				nd = execute ("$'"+lod+"'")
 
 				-- Node exist ?
 				if (nd != undefined) then
@@ -273,11 +273,11 @@ try
 										-- Select a node
 										try
 										(
-											nd = execute ("$"+lod)
+											execute ("$'"+lod+"'")
 										)
 										catch
 										(
-											nlerror ("Error in Execute $"+lod+" from node "+node.name)
+											nlerror ("Error in Execute $'"+lod+"' from node "+node.name)
 											nd = undefined
 										)
 

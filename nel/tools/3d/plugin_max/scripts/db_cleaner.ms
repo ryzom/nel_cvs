@@ -414,7 +414,7 @@ on collapse_nel_patch_all pressed do
 
 		loadMaxFile (ProjectPath + Files_listbox.selected )
 
-		patch_name="$"+(substring maxfilename 1 (maxfilename.count-4))
+		patch_name="$'"+(substring maxfilename 1 (maxfilename.count-4))+"'"
 		execute (" obj_to_check = " + patch_name)
 		if obj_to_check.modifiers.count != 0 
 		then 

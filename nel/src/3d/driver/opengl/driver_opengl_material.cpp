@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.1 2000/10/30 10:57:24 viau Exp $
+ * $Id: driver_opengl_material.cpp,v 1.2 2000/11/06 14:34:14 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,18 +35,6 @@
 namespace NL3D
 {
 // --------------------------------------------------
-
-/*
-
-  Driver::setupMaterial
-  -> crée le shader s'il n'existe pas
-  les infos shaders sont stockées dans IDriver
-  renderstates : abstrait
-  1 dans IDriver (le courant)
-  1 dans chaque shader
-  setupMaterial -> balance les renderstates du shader dans IDriver (seulement ceux necessaires)
-
-*/
 
 static bool convBlend(TBlend blend, GLenum& glenum)
 {
@@ -110,13 +98,12 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 {
 	CShaderGL*	pShader;
 	GLenum		glenum;
+	uint		i;
 
 	if (!mat.pShader)
 	{
 		mat.pShader=new CShaderGL;
 	}
-
-//	RKASSERT( dynamic_cast<CShaderGL*>((IShader*)(mat.pShader)) );
 	pShader=static_cast<CShaderGL*>((IShader*)(mat.pShader));
 
 	convBlend( mat.getSrcBlend(),glenum );
@@ -124,6 +111,21 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	convBlend( mat.getDstBlend(),glenum );
 	pShader->DstBlend=glenum;
 
+	for(i=0 ; i<4 ; i++)
+	{
+		if ( mat.texturePresent(i) )
+		{
+			if ( mat.getTouched() & (IDRV_TOUCHED_TEX0<<i) )
+			{
+				if ( !setupTexture(mat.getTexture(i)) )
+				{
+					return(false);
+				}
+				mat.clearTouched();
+			}
+		}
+	}
+	mat.clearTouched();
 	return(true);
 }
 

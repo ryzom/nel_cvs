@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.3 2000/10/30 14:52:03 viau Exp $
+ * $Id: driver_opengl.cpp,v 1.4 2000/11/06 14:34:14 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,8 @@
 namespace NL3D
 {
 
+	uint CDriverGL::_Registered=0;
+
 // --------------------------------------------------
 
 __declspec(dllexport) IDriver* NL3D_createIDriverInstance(void)
@@ -42,11 +44,62 @@ __declspec(dllexport) IDriver* NL3D_createIDriverInstance(void)
 	return( new CDriverGL );
 }
 
+// --------------------------------------------------
+
+#ifdef WIN32
+static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch(message)
+	{
+	// ---
+	case WM_DESTROY:
+		break;
+	// ---
+	case WM_KEYDOWN:
+		if (wParam==VK_ESCAPE)
+		{
+			PostQuitMessage(0x01);
+		}
+		break;
+	// ---
+	case WM_COMMAND:
+		break;
+	// ---
+	default:
+		break;
+	// ---
+	}
+	return( DefWindowProc(hWnd, message, wParam, lParam) );
+}
+#endif
 
 // --------------------------------------------------
 
 bool CDriverGL::init(void)
 {
+#ifdef WIN32
+	WNDCLASS		wc;
+
+	if (!_Registered)
+	{
+		memset(&wc,0,sizeof(wc));
+		wc.style			= CS_HREDRAW | CS_VREDRAW;
+		wc.lpfnWndProc		= (WNDPROC)WndProc;
+		wc.cbClsExtra		= 0;
+		wc.cbWndExtra		= 0;
+		wc.hInstance		= GetModuleHandle(NULL);
+		wc.hIcon			= NULL;
+		wc.hCursor			= NULL;
+		wc.hbrBackground	= WHITE_BRUSH;
+		wc.lpszClassName	= "NLClass";
+		wc.lpszMenuName		= NULL;
+		if ( !RegisterClass(&wc) ) 
+		{
+			return(false);
+		}
+		_Registered=1;
+	}
+#endif
 	return(true);
 }
 
@@ -74,15 +127,69 @@ ModeList CDriverGL::enumModes()
 
 // --------------------------------------------------
 
+bool CDriverGL::processMessages(void)
+{
+#ifdef WIN32
+	MSG	msg;
+
+	while ( PeekMessage(&msg,NULL,0,0,PM_NOREMOVE) )
+	{
+		if ( !GetMessage(&msg,NULL,0,0) )
+		{ 
+			return(false);
+		}
+		if (msg.message==WM_QUIT)
+		{
+			return(false);
+		}
+		TranslateMessage(&msg); 
+		DispatchMessage(&msg);
+	}
+#endif
+	return(true);
+}
+
+// --------------------------------------------------
+
 bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 {
 	uint8					Depth;
+#ifdef WIN32
 	int						pf;
 
-#ifdef WIN32
-	_hWnd=(HWND)wnd;
+//	OutputDebugString("----- SETDISPLAY");
+	if (wnd)
+	{
+		_hWnd=(HWND)wnd;
+	}
+	else
+	{
+		ULONG	WndFlags;
+		RECT	WndRect;
+
+		WndFlags=WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS;
+		WndRect.left=0;
+		WndRect.top=0;
+		WndRect.right=mode.Width;
+		WndRect.bottom=mode.Height;
+		AdjustWindowRect(&WndRect,WndFlags,FALSE);
+		_hWnd = CreateWindow(	"NLClass",
+								"",
+								WndFlags,
+								CW_USEDEFAULT,CW_USEDEFAULT,
+								WndRect.right,WndRect.bottom,
+								NULL,
+								NULL,
+								GetModuleHandle(NULL),
+								NULL);
+		if (!_hWnd) 
+		{
+			return(false);
+		}
+		ShowWindow(_hWnd,SW_SHOW);
+	}
 	_hDC=GetDC(_hWnd);
-	Depth=GetDeviceCaps(_hDC,BITSPIXEL);
+	Depth=24;//GetDeviceCaps(_hDC,BITSPIXEL);
 	// ---
 	memset(&_pfd,0,sizeof(_pfd));
 	_pfd.nSize        = sizeof(_pfd);
@@ -91,21 +198,21 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 	_pfd.iPixelType   = PFD_TYPE_RGBA;
 	_pfd.cColorBits   = (char)Depth;
 	_pfd.cDepthBits   = 16;
-	_pfd.iLayerType   = PFD_MAIN_PLANE;
+	_pfd.iLayerType	  = PFD_MAIN_PLANE;
+//	OutputDebugString("----- Chosse pixel format");
 	pf=ChoosePixelFormat(_hDC,&_pfd);
 	if (!pf) 
 	{
 		return(false);
 	} 
+//	OutputDebugString("----- set pixel format");
 	if ( !SetPixelFormat(_hDC,pf,&_pfd) ) 
 	{
 		return(false);
 	} 
-	DescribePixelFormat(_hDC,pf,sizeof(PIXELFORMATDESCRIPTOR),&_pfd);
-	ReleaseDC(_hWnd,_hDC);
-	// ---
-	_hDC=GetDC(_hWnd);
+//	OutputDebugString("----- create context");
     _hRC=wglCreateContext(_hDC);
+//	OutputDebugString("----- make current");
     wglMakeCurrent(_hDC,_hRC);
 #endif
 	glMatrixMode(GL_MODELVIEW);
@@ -124,6 +231,18 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_GREATER);
+	return(true);
+}
+
+// --------------------------------------------------
+
+bool CDriverGL::activate(void)
+{
+	HGLRC hglrc=wglGetCurrentContext();
+	if (hglrc!=_hRC)
+	{
+		wglMakeCurrent(_hDC,_hRC);
+	}
 	return(true);
 }
 
@@ -164,7 +283,6 @@ bool CDriverGL::setupTexture(CTexture& tex)
 //		tex.DrvInfos= static_cast<CTextureDrvInfosGL*>(tex.DrvInfos);
 //		tex.DrvInfos=new CTextureDrvInfosGL;
 //		CTextureDrvInfosGL* infos=(CTextureDrvInfosGL*)((ITextureDrvInfos*)(tex.DrvInfos));
-
 		glGenTextures(1,&infos->ID);
 		glBindTexture(GL_TEXTURE_2D,infos->ID);
 		glPixelStorei(GL_UNPACK_ALIGNMENT,1);
@@ -221,7 +339,7 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 	ITextureDrvInfos*	iinfos;
 	CTextureDrvInfosGL*	infosgl;
 
-	iinfos=Mat.pTex[0]->DrvInfos;
+	iinfos=(Mat.getTexture(0)).DrvInfos;
 	infosgl=static_cast<CTextureDrvInfosGL*>(iinfos);
 	glBindTexture(GL_TEXTURE_2D,infosgl->ID);
 	glDrawElements(GL_TRIANGLES,3*PB.getNumTri(),GL_UNSIGNED_INT,PB.getTriPointer());

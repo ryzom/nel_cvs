@@ -48,7 +48,6 @@ public:
 
 // --------------------------------------------------
 
-
 class CDriverGL : public IDriver
 {
 private:
@@ -57,6 +56,7 @@ private:
 	HDC						_hDC;
 	PIXELFORMATDESCRIPTOR	_pfd;
     HGLRC					_hRC;
+	static uint				_Registered;
 #endif
 	CShaderGL				_Shader;
 
@@ -73,6 +73,10 @@ public:
 	virtual ModeList		enumModes();
 
 	virtual bool			setDisplay(void* wnd, const GfxMode& mode);
+
+	virtual bool			activate(void);
+
+	virtual bool			processMessages(void);
 
 	virtual bool			clear2D(CRGBA& rgba);
 

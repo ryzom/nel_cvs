@@ -1,7 +1,7 @@
 /** \file track_tcb.h
  * ITrack TCB implementation
  *
- * $Id: track_tcb.h,v 1.2 2001/03/27 09:13:12 berenguier Exp $
+ * $Id: track_tcb.h,v 1.3 2001/03/27 15:32:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -276,7 +276,8 @@ protected:
 			// rangeDelta is the length of effective Range - length of LastKey-FirstKey.
 			// NB: if RangeLock, rangeDelta==0.
 			float	rangeDelta;
-			rangeDelta= getRangeDelta();
+			// NB: _RangeDelta has just been compiled in ITrackKeyFramer<CKeyT>::compile().
+			rangeDelta= getCompiledRangeDelta();
 
 			// Compute all middle keys.
 			for(;it!=_MapKey.end();)
@@ -470,7 +471,8 @@ public:
 		// rangeDelta is the length of effective Range - length of LastKey-FirstKey.
 		// NB: if RangeLock, rangeDelta==0.
 		float	rangeDelta;
-		rangeDelta= getRangeDelta();
+		// NB: _RangeDelta has just been compiled in ITrackKeyFramer<CKeyTCBQuat>::compile().
+		rangeDelta= getCompiledRangeDelta();
 
 		it= _MapKey.begin();				// first key.
 		itNext= it; itNext++;				// second key.

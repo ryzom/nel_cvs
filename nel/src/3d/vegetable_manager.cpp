@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.39 2004/04/09 14:19:53 vizerie Exp $
+ * $Id: vegetable_manager.cpp,v 1.40 2004/07/12 17:14:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -491,6 +491,7 @@ const char* NL3D_LightedStartVegetableProgram=
 	MAX	R0.y, -R0.x, c[8].x;		# R0.y= diffFactor= max(0, -R6*LightDir)			\n\
 	MUL	R1.xyz, R0.y, v[3];			# R7= diffFactor*DiffuseColor						\n\
 	ADD	o[COL0].xyz, R1, v[4];		# col0.RGB= AmbientColor + diffFactor*DiffuseColor	\n\
+	MOV o[COL0].w, c[8].y;																\n\
 ";
 
 
@@ -502,17 +503,19 @@ const char* NL3D_LightedStartVegetableProgram=
 // ***********************
 
 
-// Common start program.
-// Lighting.
-const char* NL3D_UnlitStartVegetableProgram= 
+// Unlit no alpha blend.
+const char* NL3D_UnlitVegetableProgram= 
 "	MOV o[COL0].xyz, v[3];			# col.RGBA= vertex color							\n\
 																						\n\
+	MOV o[COL0].w, c[8].y;																\n\
 ";
 
 
-//	AlphaBlend.
+// Unlit with AlphaBlend.
 const char* NL3D_UnlitAlphaBlendVegetableProgram=
-"	#Blend transition. NB: in R5, we already have the position relative to the camera	\n\
+"	MOV o[COL0].xyz, v[3];			# col.RGBA= vertex color							\n\
+																						\n\
+	#Blend transition. NB: in R5, we already have the position relative to the camera	\n\
 	DP3	R0.x, R5, R5;				# R0.x= sqr(dist to viewer).						\n\
 	RSQ R0.y, R0.x;																		\n\
 	MUL R0.x, R0.x, R0.y;			# R0.x= dist to viewer								\n\
@@ -580,10 +583,9 @@ void					CVegetableManager::initVertexProgram(uint vpType)
 		break;
 	case NL3D_VEGETABLE_RDRPASS_UNLIT:		
 	case NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED:		
-		vpgram+= string(NL3D_UnlitStartVegetableProgram);
+		vpgram+= string(NL3D_UnlitVegetableProgram);
 		break;
 	case NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT:		
-		vpgram+= string(NL3D_UnlitStartVegetableProgram);
 		vpgram+= string(NL3D_UnlitAlphaBlendVegetableProgram);
 		break;	
 	}

@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * <File description>
  *
- * $Id: texture_grouped.cpp,v 1.2 2001/05/09 13:39:25 vizerie Exp $
+ * $Id: texture_grouped.cpp,v 1.3 2001/05/09 13:52:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -213,7 +213,7 @@ std::string		CTextureGrouped::getShareName() const
 
 
 
-void CTextureGrouped::serial(NLMISC::IStream &f)
+void CTextureGrouped::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1) ;
 	if (f.isReading())

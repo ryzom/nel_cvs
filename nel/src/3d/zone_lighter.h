@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.18 2004/05/05 17:08:11 berenguier Exp $
+ * $Id: zone_lighter.h,v 1.19 2004/05/06 13:26:04 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -320,6 +320,10 @@ public:
 	void light (CLandscape &landscape, CZone& output, uint zoneToLight, const CLightDesc& description, 
 		std::vector<CTriangle>& obstacles, std::vector<uint> &listZone);
 
+	// patch a zone, to compute only the tile water states. 
+	void computeTileFlagsOnly (CLandscape &landscape, CZone& output, uint zoneToLight, const CLightDesc& description, 
+		std::vector<uint> &listZone);
+	
 	// Add triangles from a landscape
 	void addTriangles (CLandscape &landscape, std::vector<uint> &listZone, uint order, std::vector<CTriangle>& triangleArray);
 
@@ -335,6 +339,9 @@ public:
 	/// Add a water shape. This is needed to decide wether tiles are above / below water
 	void addWaterShape(CWaterShape *shape, const NLMISC::CMatrix &MT);	 
 
+	/// get the number of water shapes added
+	uint getNumWaterShape() const {return _WaterShapes.size();}
+	
 	/// check wether a shape is lightable.
 	static bool isLightableShape(IShape &shape);
 

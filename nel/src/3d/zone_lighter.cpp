@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.37 2004/05/05 17:08:11 berenguier Exp $
+ * $Id: zone_lighter.cpp,v 1.38 2004/05/06 13:26:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1261,6 +1261,7 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 void CZoneLighter::copyTileFlags(CZone &destZone, const CZone &srcZone)
 {
 	nlassert(destZone.getZoneId() == srcZone.getZoneId());
+	nlassert(destZone.getNumPatchs() == srcZone.getNumPatchs());
 	for (sint k = 0; k < srcZone.getNumPatchs(); ++k)
 	{
 		destZone.copyTilesFlags(k, srcZone.getPatch(k));
@@ -2679,6 +2680,107 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 			}
 		}
 	}
+}
+
+// ***************************************************************************
+void CZoneLighter::computeTileFlagsOnly (CLandscape &landscape, CZone& output, uint zoneToLight, const CLightDesc& description, 
+						   std::vector<uint> &listZone)
+{
+	// Zone to light
+	_ZoneToLight=zoneToLight;
+	
+	// Landscape 
+	_Landscape=&landscape;
+
+	
+	// Zone count
+	uint zoneCount=listZone.size();
+
+	// For each zone
+	for (uint zone=0; zone<zoneCount; zone++)
+	{
+		// Get num patches
+		uint patchCount=landscape.getZone(listZone[zone])->getNumPatchs();
+
+		// Insert zone id
+		_ZoneId.insert (map<uint, uint>::value_type (listZone[zone], zone));
+
+		// For each patch
+		uint patch;
+		for (patch=0; patch<patchCount; patch++)
+		{
+			// Progress bar
+			progress ("Scan all patches", (float)patch/(float)patchCount);
+
+			// This is the zone to light ?
+			if (listZone[zone]==_ZoneToLight)
+			{
+				// unExclude all the patches from refine all
+				landscape.excludePatchFromRefineAll (listZone[zone], patch, false);
+			}
+			else
+			{
+				// Exclude all the patches from refine all
+				landscape.excludePatchFromRefineAll (listZone[zone], patch, true);
+			}
+		}
+	}
+
+	// *** Now tesselate this zone to max accuracy
+
+	// Setup the landscape
+	landscape.setThreshold (0);
+	landscape.setTileMaxSubdivision (0);
+
+	// Refine all
+	progress ("Refine landscape to maximum", 0.5f);
+	landscape.refineAll (CVector (0, 0, 0));
+
+	// Get tesselated faces
+	std::vector<const CTessFace*> leaves;
+	landscape.getTessellationLeaves(leaves);
+	
+	
+	// compute only the water states
+	if (_WaterShapes.size() != 0) // any water shape in this zone ?
+	{
+		/// make a quad grid of each water shape				
+		makeQuadGridFromWaterShapes(landscape.getZone(_ZoneToLight)->getZoneBB().getAABBox());
+
+		/// check for each tile if it is above / below water
+		computeTileFlagsForPositionTowardWater(description, leaves);
+	}
+	else
+	{
+		setTileFlagsToDefault(leaves);
+	}
+
+	/// verify that the zonew and the zonel (output) are compatible
+	bool	ok= true;
+	CZone	&zonew= *(landscape.getZone(zoneToLight));
+	if(zonew.getNumPatchs() == output.getNumPatchs())
+	{
+		// verify for each patch that the tile array are same
+		for(uint i=0;i<(uint)zonew.getNumPatchs();i++)
+		{
+			const CPatch	&p0= *const_cast<const CZone&>(zonew).getPatch(i);
+			const CPatch	&p1= *const_cast<const CZone&>(output).getPatch(i);
+			if( p0.getOrderS()!=p1.getOrderS() || p0.getOrderT()!=p1.getOrderT() )
+			{
+				ok= false;
+				break;
+			}
+		}
+	}
+	else
+		ok= false;
+
+	// can't copy tile flags
+	if(!ok)
+		throw Exception("The input zonew, and ouput zonel are too different: not same patchs!!");
+
+	/// copy the tiles flags from the zone to light to the output zone
+	copyTileFlags(output, zonew);
 }
 
 // ***************************************************************************

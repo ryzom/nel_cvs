@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.30 2004/02/13 10:10:38 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.31 2004/05/06 13:29:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -288,10 +288,17 @@ int main(int argc, char* argv[])
 	if (argc<5)
 	{
 		// Help message
-		printf ("%s [zonein.zone] [zoneout.zone] [parameter_file] [dependancy_file]\n", argv[0]);
+		printf ("%s [zonein.zone] [zoneout.zone] [parameter_file] [dependancy_file] [-waterpatch bkupdir] \n", argv[0]);
 	}
 	else
 	{
+		// to patch only the tiles flags
+		bool	tileWaterPatchOnly;
+		tileWaterPatchOnly= argc==7 && string(argv[5])=="-waterpatch";
+		string	tileWaterPatchBkupDir;
+		if(tileWaterPatchOnly)
+			tileWaterPatchBkupDir = argv[6];
+
 		// Ok, read the zone
 		CIFile inputFile;
 
@@ -662,7 +669,9 @@ int main(int argc, char* argv[])
 
 				// Add triangles from landscape
 				landscape->enableAutomaticLighting (false);
-				lighter.addTriangles (*landscape, listZoneId, 0, vectorTriangle);
+				// no need to add obstacles in case of water patch
+				if(!tileWaterPatchOnly)
+					lighter.addTriangles (*landscape, listZoneId, 0, vectorTriangle);
 
 				// Map of shape
 				std::map<string, IShape*> shapeMap;
@@ -740,7 +749,9 @@ int main(int argc, char* argv[])
 									CMatrix mt=pos*rot*scale;
 
 									// Add triangles
-									lighter.addTriangles (*iteMap->second, mt, vectorTriangle);
+									// no need to add obstacles in case of water patch
+									if(!tileWaterPatchOnly)
+										lighter.addTriangles (*iteMap->second, mt, vectorTriangle);
 
 									/** If it is a lightable shape and we are dealing with the ig of the main zone,
 									  * add it to the lightable shape list
@@ -749,6 +760,7 @@ int main(int argc, char* argv[])
 									if (ite == instanceGroup.begin()  /* are we dealing with main zone */ 
 										&& zoneIgLoaded               /* ig of the main zone loaded successfully (so its indeed the ig of the first zone) ? */								
 										&& CZoneLighter::isLightableShape(*shape)
+										&& !tileWaterPatchOnly
 									   )
 									{
 										lighter.addLightableShape(shape, mt);
@@ -767,8 +779,8 @@ int main(int argc, char* argv[])
 						}
 					}
 
-					// For each point light of the ig
-					if (ite->AddLight)
+					// For each point light of the ig. No need wor tileWaterPatchOnly
+					if (ite->AddLight && !tileWaterPatchOnly)
 					{
 						const std::vector<CPointLightNamed>	&pointLightList= group->getPointLightList();
 						for (uint plId=0; plId<pointLightList.size(); plId++)
@@ -782,6 +794,15 @@ int main(int argc, char* argv[])
 					ite++;
 				}
 
+				// If no waterpatch, and no WaterShape at all, no op
+				bool	tileWaterSkip= false;
+				if(continu && tileWaterPatchOnly && lighter.getNumWaterShape()==0)
+				{
+					nlinfo("NO WATER INTERSECTION FOUND: don't patch at all");
+					continu= false;
+					tileWaterSkip= true;
+				}
+				
 				// Continue ?
 				if (continu)
 				{
@@ -792,8 +813,64 @@ int main(int argc, char* argv[])
 					// Output zone
 					CZone output;
 
-					// Light the zone
-					lighter.light (*landscape, output, zone.getZoneId(), lighterDesc, vectorTriangle, listZoneId);
+					// normal lighting
+					if(!tileWaterPatchOnly)
+					{
+						// Light the zone
+						lighter.light (*landscape, output, zone.getZoneId(), lighterDesc, vectorTriangle, listZoneId);
+					}
+					else
+					{
+						// Load the zonel.
+						CIFile zonelFile;
+
+						// load the zonel (keep lighting)
+						if (zonelFile.open (argv[2]))
+						{
+							// load the new zone
+							try
+							{
+								// load it
+								output.serial (zonelFile);
+							}
+							catch (Exception& except)
+							{
+								// Error message
+								nlwarning ("ERROR reading %s: %s\n", argv[2], except.what());
+								throw;
+							}
+						}
+						else
+						{
+							// Error can't open the file
+							nlwarning ("ERROR Can't open %s for reading\n", argv[1]);
+							throw Exception("ERROR Can't open the zonel for tile water patching. abort");
+						}
+						zonelFile.close();
+
+
+						// Bkup the zone
+						COFile outputFile;
+						string	bkupFile= tileWaterPatchBkupDir + "/" +	CFile::getFilename(argv[2]);
+						if (outputFile.open (bkupFile))
+						{
+							try
+							{
+								output.serial (outputFile);
+							}
+							catch (Exception& except)
+							{
+								nlwarning ("ERROR backuping %s: %s\n", bkupFile.c_str(), except.what());
+							}
+							outputFile.close();
+						}
+						else
+							nlwarning ("ERROR Can't open %s for writing\n", bkupFile.c_str());
+						
+
+						// patch water flags
+						lighter.computeTileFlagsOnly(*landscape, output, zone.getZoneId(), lighterDesc, listZoneId);
+					}
 
 					// Save the zone
 					COFile outputFile;
@@ -816,7 +893,7 @@ int main(int argc, char* argv[])
 					else
 					{
 						// Error can't open the file
-						nlwarning ("ERROR Can't open %s for writing\n", argv[1]);
+						nlwarning ("ERROR Can't open %s for writing\n", argv[2]);
 					}
 
 					// Compute time
@@ -825,8 +902,9 @@ int main(int argc, char* argv[])
 				}
 				else
 				{
-					// Error
-					nlwarning ("ERROR Abort: files are missing.\n");
+					if(!tileWaterSkip)
+						// Error
+						nlwarning ("ERROR Abort: files are missing.\n");
 				}
 			}
 			catch (Exception& except)

@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * <File description>
  *
- * $Id: animation_dlg.h,v 1.11 2003/02/05 17:45:19 corvazier Exp $
+ * $Id: animation_dlg.h,v 1.12 2003/10/07 12:27:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,7 @@ class CAnimationDlg : public CDialog
 public:
 	CAnimationDlg(class CObjectViewer * main, CWnd* pParent = NULL);   // standard constructor
 
+	BOOL  EnableWindow(BOOL enable = TRUE);
 // Dialog Data
 	//{{AFX_DATA(CAnimationDlg)
 	enum { IDD = IDD_ANIMATION };
@@ -54,7 +55,7 @@ public:
 	CButton	StopCtrl;
 	float	End;
 	float	Speed;
-	float	Start;
+	float	Start;	
 	BOOL	Loop;
 	int		UICurrentFrame;
 	BOOL	Inplace;
@@ -81,6 +82,8 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
+
+
 
 // Implementation
 protected:

@@ -1,7 +1,7 @@
 /** \file ig_lighter.cpp
  * ig_lighter.cpp : Instance lighter
  *
- * $Id: ig_lighter.cpp,v 1.5 2002/02/15 17:29:13 corvazier Exp $
+ * $Id: ig_lighter.cpp,v 1.6 2002/02/18 13:24:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -233,6 +233,12 @@ void	lightIg(const CInstanceGroup &igIn, CInstanceGroup &igOut, CInstanceLighter
 	//=======
 	// Init
 	instLighter.init();
+
+	// For interiors ig, disable Sun contrib according to ig.
+	lightDesc.DisableSunContribution= !igIn.getRealTimeSunContribution();
+	// Copy it to igOut, just to keep same setup data for in and out.
+	igOut.enableRealTimeSunContribution(!lightDesc.DisableSunContribution);
+
 
 	// Add obstacles.
 	std::vector<CInstanceLighter::CTriangle>	obstacles;
@@ -477,7 +483,7 @@ void	lightIg(const CInstanceGroup &igIn, CInstanceGroup &igOut, CInstanceLighter
 	instLighter.light(igIn, igOut, lightDesc, obstacles, NULL, igSurfaceLightBuild);
 
 	// Output a debug mesh??
-	if(igSurfaceLightBuild && slInfo.BuildDebugSurfaceShape)
+	if(igSurfaceLightBuild && slInfo.BuildDebugSurfaceShape && !igSurfaceLightBuild->RetrieverGridMap.empty() )
 	{
 		// compute
 		CMesh::CMeshBuild			meshBuild;
@@ -620,6 +626,8 @@ int main(int argc, char* argv[])
 			// try to open gr and rbank
 			CRetrieverBank		*retrieverBank= NULL;
 			CGlobalRetriever	*globalRetriever= NULL;
+			uint32		grFileDate= 0;
+			uint32		rbankFileDate= 0;
 			if( grFile!="" && rbankFile!="" )
 			{
 				CIFile	fin;
@@ -636,6 +644,10 @@ int main(int argc, char* argv[])
 				globalRetriever->setRetrieverBank(retrieverBank);
 				fin.serial(*globalRetriever);
 				fin.close();
+
+				// Get File Dates
+				rbankFileDate= CFile::getFileModificationDate(CPath::lookup(rbankFile));
+				grFileDate= CFile::getFileModificationDate(CPath::lookup(grFile));
 
 				// And init them.
 				globalRetriever->initAll();
@@ -676,11 +688,15 @@ int main(int argc, char* argv[])
 				string	fileNameIn= listIgFileName[iIg];
 				string	fileNameOut= pathOut + fileNameIn;
 
-				// If File Out exist and newer than file In, skip
+				// If File Out exist 
 				if(CFile::fileExists(fileNameOut))
 				{
-					if(	CFile::getFileModificationDate(fileNameOut) >
-						CFile::getFileModificationDate(listIgPathName[iIg]) )
+					// If newer than file In (and also newer than retrieverInfos), skip
+					uint32		fileOutDate= CFile::getFileModificationDate(fileNameOut);
+					if(	fileOutDate > CFile::getFileModificationDate(listIgPathName[iIg]) &&
+						fileOutDate > rbankFileDate && 
+						fileOutDate > grFileDate 
+						)
 					{
 						printf("Skiping %s\n", fileNameIn.c_str());
 						continue;

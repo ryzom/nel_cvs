@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.18 2002/02/11 16:54:51 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.19 2002/02/18 13:27:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,6 +132,8 @@ public:
 	// misc
 	int						FloatingObject;
 	int						ExportRealTimeLight;
+	int						ExportLightMapLight;
+	int						ExportAsSunLight;
 	int						UseLightingLocalAttenuation;
 
 
@@ -911,6 +913,8 @@ int CALLBACK MiscDialogCallback (
 
 			// Lighting
 			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_REALTIME_LIGHT), BM_SETCHECK, currentParam->ExportRealTimeLight, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_LIGHT), BM_SETCHECK, currentParam->ExportLightMapLight, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_AS_SUN_LIGHT), BM_SETCHECK, currentParam->ExportAsSunLight, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_USE_LIGHT_LOCAL_ATTENUATION), BM_SETCHECK, currentParam->UseLightingLocalAttenuation, 0);
 		}
 		break;
@@ -938,6 +942,8 @@ int CALLBACK MiscDialogCallback (
 
 							// RealTime light
 							currentParam->ExportRealTimeLight = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_REALTIME_LIGHT), BM_GETCHECK, 0, 0);
+							currentParam->ExportLightMapLight = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_LIGHT), BM_GETCHECK, 0, 0);
+							currentParam->ExportAsSunLight = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_AS_SUN_LIGHT), BM_GETCHECK, 0, 0);
 							currentParam->UseLightingLocalAttenuation = SendMessage (GetDlgItem (hwndDlg, IDC_USE_LIGHT_LOCAL_ATTENUATION), BM_GETCHECK, 0, 0);
 						}
 					break;
@@ -946,6 +952,8 @@ int CALLBACK MiscDialogCallback (
 					case IDC_EXPORT_ANIMATED_MATERIALS:
 					case IDC_EXPORT_REALTIME_LIGHT:
 					case IDC_USE_LIGHT_LOCAL_ATTENUATION:
+					case IDC_EXPORT_LIGHTMAP_LIGHT:
+					case IDC_EXPORT_AS_SUN_LIGHT:
 						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
 							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
 						break;
@@ -1567,6 +1575,12 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		// RealTimeLigt.
 		param.ExportRealTimeLight= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_UNCHECKED);
 
+		// LightmapLigt. (true by default)
+		param.ExportLightMapLight= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LIGHTMAP_LIGHT, BST_CHECKED);
+
+		// ExportAsSunLight.
+		param.ExportAsSunLight= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT, BST_UNCHECKED);
+
 		// UseLightingLocalAttenuation
 		param.UseLightingLocalAttenuation= CExportNel::getScriptAppData (node, NEL3D_APPDATA_USE_LIGHT_LOCAL_ATTENUATION, BST_UNCHECKED);
 
@@ -1680,6 +1694,14 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			// RealTimeLight
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_UNCHECKED) != param.ExportRealTimeLight)
 				param.ExportRealTimeLight= BST_INDETERMINATE;
+
+			// ExportLightMapLight
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LIGHTMAP_LIGHT, BST_CHECKED) != param.ExportLightMapLight)
+				param.ExportLightMapLight= BST_INDETERMINATE;
+
+			// ExportAsSunLight
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT, BST_UNCHECKED) != param.ExportAsSunLight)
+				param.ExportAsSunLight= BST_INDETERMINATE;
 
 			// UseLightingLocalAttenuation
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_USE_LIGHT_LOCAL_ATTENUATION, BST_UNCHECKED) != param.UseLightingLocalAttenuation)
@@ -1798,6 +1820,14 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				// RealTime Light.
 				if (param.ExportRealTimeLight != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, param.ExportRealTimeLight);
+
+				// ExportLightMapLight.
+				if (param.ExportLightMapLight != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_LIGHTMAP_LIGHT, param.ExportLightMapLight);
+
+				// ExportAsSunLight.
+				if (param.ExportAsSunLight != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT, param.ExportAsSunLight);
 
 				// UseLightingLocalAttenuation
 				if (param.UseLightingLocalAttenuation != BST_INDETERMINATE)

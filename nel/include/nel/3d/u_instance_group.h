@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.12 2002/02/06 16:53:13 berenguier Exp $
+ * $Id: u_instance_group.h,v 1.13 2002/02/18 13:23:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -216,7 +216,7 @@ public:
 	 *	NB: all are get with help of UGlobalPosition. localPos= gp.LocalPosition.Estimated
 	 */
 	virtual	bool			getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const NLMISC::CVector &localPos, 
-		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution) =0;
+		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient) =0;
 
 	// @}
 

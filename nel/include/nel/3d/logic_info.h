@@ -1,7 +1,7 @@
 /** \file logic_info.h
  * <File description>
  *
- * $Id: logic_info.h,v 1.1 2002/02/06 16:53:13 berenguier Exp $
+ * $Id: logic_info.h,v 1.2 2002/02/18 13:23:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_LOGIC_INFO_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/rgba.h"
 #include "nel/3d/point_light_influence.h"
 #include <vector>
 
@@ -63,8 +64,12 @@ public:
 	 *	
 	 *	\param pointLightList append to this list static pointLights which may influence this object.
 	 *	\param sunContribution contribution factor of the sun to apply to the transform.
+	 *	\param localAmbient ig or landscape may replace sunAmbient with their special ambient. 
+	 *	localAmbient.A tells the fraction of this color to take (255 => full contribution of the localAmbient, and 
+	 *	no contribution of the ambient of the sun)
 	 */
-	virtual	void		getStaticLightSetup(std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution) =0;
+	virtual	void		getStaticLightSetup(std::vector<CPointLightInfluence> &pointLightList, 
+		uint8 &sunContribution, NLMISC::CRGBA &localAmbient) =0;
 
 
 };

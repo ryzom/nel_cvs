@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.31 2002/01/16 15:24:17 besson Exp $
+ * $Id: calc_lm.cpp,v 1.32 2002/02/18 13:27:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -183,10 +183,12 @@ void SLightBuild::convertFromMaxLight (INode *node,TimeValue tvTime)
 	
 	if (maxLight->GetAmbientOnly())
 	{
+		this->bAmbientOnly= true;
 		this->Ambient = nelColor;
 	}
 	else
 	{
+		this->bAmbientOnly= false;
 		// Affect the diffuse color ?
 		if( maxLight->GetAffectDiffuse() )
 			this->Diffuse = nelColor;
@@ -957,7 +959,12 @@ void getLightNodeList (std::vector<INode*>& vectLightNode, TimeValue tvTime, Int
 	SLightBuild nelLight;
 
 	if (nelLight.canConvertFromMaxLight(node, tvTime))
-		vectLightNode.push_back (node);
+	{
+		// Yoyo: if this light is checked to lightMap export
+		int		nLMExport= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LIGHTMAP_LIGHT, BST_CHECKED);
+		if(nLMExport == BST_CHECKED)
+			vectLightNode.push_back (node);
+	}
 
 	// Recurse sub node
 	for (int i=0; i<node->NumberOfChildren(); i++)

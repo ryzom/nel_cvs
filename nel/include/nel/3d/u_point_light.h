@@ -1,7 +1,7 @@
 /** \file u_point_light.h
  * <File description>
  *
- * $Id: u_point_light.h,v 1.1 2002/02/06 16:53:13 berenguier Exp $
+ * $Id: u_point_light.h,v 1.2 2002/02/18 13:23:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,40 @@ public:
 	virtual float			getAttenuationBegin() const =0;
 	/// get the end radius of the attenuation.
 	virtual float			getAttenuationEnd() const =0;
+
+
+	/** Setup SpotLight. SpotLight is disabled by default. The direction of the spot is lead by the J vector of the 
+	 *	UPointLight WorldMatrix
+	 */
+	virtual void			enableSpotlight(bool enable) =0;
+	/// Is Spotlight enabled?
+	virtual bool			isSpotlight() const =0;
+	/** setup the spot AngleBegin and AngleEnd that define spot attenuation of the light. Usefull only if SpotLight
+	 *	NB: clamp(angleBegin, 0, PI); clamp(angleEnd, angleBegin, PI); Default is PI/4, PI/2
+	 */
+	virtual void			setupSpotAngle(float spotAngleBegin, float spotAngleEnd) =0;
+	/// get the begin radius of the SpotAngles.
+	virtual float			getSpotAngleBegin() const =0;
+	/// get the end radius of the SpotAngles.
+	virtual float			getSpotAngleEnd() const =0;
+
+
+
+
+	/**	setup the deltaPosToSkeletonWhenOutOfFrustum
+	 *	When a light is sticked to a skeleton, and if this skeleton is clipped, then the position of the light 
+	 *	can't be computed correctly without animating the skeleton. To allow good position of the light,
+	 *	and to avoid recomputing the skeleton even if it is clipped, the light position is set to 
+	 *	skeletonMatrix * this "deltaPosToSkeletonWhenOutOfFrustum".
+	 *
+	 *	Default is (0, 0, 1.5).
+	 *	You may change this according to the approximate size of the skeleton (dwarf or giant), and you must
+	 *	take into account any mount (horse etc...). eg for a man on a elephant, a good value would be (0,0,5) :)
+	 */
+	virtual void			setDeltaPosToSkeletonWhenOutOfFrustum(const CVector &deltaPos) =0;
+	/// see setDeltaPosToSkeletonWhenOutOfFrustum()
+	virtual const CVector	&getDeltaPosToSkeletonWhenOutOfFrustum() const =0;
+
 
 };
 

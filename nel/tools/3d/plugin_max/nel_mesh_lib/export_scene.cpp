@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.12 2002/02/12 15:47:12 berenguier Exp $
+ * $Id: export_scene.cpp,v 1.13 2002/02/18 13:27:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -417,6 +417,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 
 	// PointLight part
 	//=================
+	bool	sunLightEnabled= false;
 	sint	nNumPointLight = 0;
 	vector<CPointLightNamed>	pointLights;
 	pointLights.resize(vectNode.size());
@@ -438,30 +439,63 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 				// get Max Light info.
 				sLightBuild.convertFromMaxLight(pNode, tvTime);
 
-				// Skip if not pointLight.
-				if(sLightBuild.Type != SLightBuild::LightPoint)
-					continue;
+				// Skip if LightDir
+				if(sLightBuild.Type != SLightBuild::LightDir)
+				{
+					// Fill PointLight Info.
+					NL3D::CPointLightNamed	&plNamed= pointLights[nNumPointLight];
 
-				// Fill PointLight Info.
-				NL3D::CPointLightNamed	&plNamed= pointLights[nNumPointLight];
+					// Position
+					plNamed.setPosition(sLightBuild.Position);
+					// Attenuation
+					plNamed.setupAttenuation(sLightBuild.rRadiusMin, sLightBuild.rRadiusMax);
+					// Colors
+					// Ensure A=255 for localAmbient to work.
+					NLMISC::CRGBA	ambient= sLightBuild.Ambient;
+					ambient.A= 255;
+					plNamed.setDefaultAmbient(ambient);
+					plNamed.setAmbient(ambient);
+					plNamed.setDefaultDiffuse(sLightBuild.Diffuse);
+					plNamed.setDiffuse(sLightBuild.Diffuse);
+					plNamed.setDefaultSpecular(sLightBuild.Specular);
+					plNamed.setSpecular(sLightBuild.Specular);
+					// GroupName.
+					plNamed.LightGroupName= sLightBuild.GroupName;
 
-				// Position
-				plNamed.setPosition(sLightBuild.Position);
-				// Attenuation
-				plNamed.setupAttenuation(sLightBuild.rRadiusMin, sLightBuild.rRadiusMax);
-				// Colors
-				plNamed.setDefaultAmbient(sLightBuild.Ambient);
-				plNamed.setAmbient(sLightBuild.Ambient);
-				plNamed.setDefaultDiffuse(sLightBuild.Diffuse);
-				plNamed.setDiffuse(sLightBuild.Diffuse);
-				plNamed.setDefaultSpecular(sLightBuild.Specular);
-				plNamed.setSpecular(sLightBuild.Specular);
-				// GroupName.
-				plNamed.LightGroupName= sLightBuild.GroupName;
+					// Which light type??
+					if(sLightBuild.bAmbientOnly || sLightBuild.Type== SLightBuild::LightAmbient)
+						plNamed.setType(CPointLight::AmbientLight);
+					else if(sLightBuild.Type== SLightBuild::LightPoint)
+						plNamed.setType(CPointLight::PointLight);
+					else if(sLightBuild.Type== SLightBuild::LightSpot)
+					{
+						plNamed.setType(CPointLight::SpotLight);
+						// Export Spot infos.
+						plNamed.setupSpotDirection(sLightBuild.Direction);
+						plNamed.setupSpotAngle(sLightBuild.rHotspot, sLightBuild.rFallof);
+					}
+					else
+					{
+						// What???
+						nlstop;
+					}
 
 
-				// inc Size
-				++nNumPointLight;
+					// inc Size
+					++nNumPointLight;
+				}
+			}
+
+			// if this light is a directionnal and checked to export as Sun Light
+			int		nExportSun= CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT, BST_UNCHECKED);
+			if(nExportSun== BST_CHECKED)
+			{
+				// get Max Light info.
+				sLightBuild.convertFromMaxLight(pNode, tvTime);
+
+				// Skip if not dirLight.
+				if(sLightBuild.Type == SLightBuild::LightDir)
+					sunLightEnabled= true;
 			}
 		}
 	}
@@ -476,6 +510,9 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 
 	// Link portals and clusters and create meta cluster if one
 	pIG->build (vGlobalPos,  aIGArray, vClusters, vPortals, pointLights);
+
+	// IG touched by sun ??
+	pIG->enableRealTimeSunContribution(sunLightEnabled);
 
 	return pIG;
 }

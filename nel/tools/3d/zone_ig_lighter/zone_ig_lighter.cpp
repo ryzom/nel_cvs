@@ -2,7 +2,7 @@
  * zone_ig_lighter.cpp : instance lighter for ig in landscape zones
  * greatly copied from ../zone_lighter/zone_lighter.cpp
  *
- * $Id: zone_ig_lighter.cpp,v 1.5 2002/02/18 13:01:28 corvazier Exp $
+ * $Id: zone_ig_lighter.cpp,v 1.6 2002/02/18 13:28:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -373,6 +373,9 @@ int main(int argc, char* argv[])
 				clamp(lighterDesc.OverSampling, 0U, 16U);
 				if(lighterDesc.OverSampling<2)
 					lighterDesc.OverSampling= 0;
+
+				// For ig of Zones, never disable Sun contrib !!!
+				lighterDesc.DisableSunContribution= false;
 
 
 				// A vector of CInstanceLighter::CTriangle

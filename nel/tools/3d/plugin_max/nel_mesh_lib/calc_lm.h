@@ -1,7 +1,7 @@
 /** \file calc_lm.h
  * LightMap Calculation settings
  *
- * $Id: calc_lm.h,v 1.2 2001/10/10 15:39:11 besson Exp $
+ * $Id: calc_lm.h,v 1.3 2002/02/18 13:27:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,7 @@ struct SLightBuild
 	NLMISC::CRGBA	Diffuse;
 	NLMISC::CRGBA	Specular;
 	bool			bCastShadow;
+	bool			bAmbientOnly;			// true if LightPoint|LightSpot|LightDir with GetAmbientOnly().
 	float			rMult;
 
 	NLMISC::CBitmap ProjBitmap;				// For projector (bitmap)

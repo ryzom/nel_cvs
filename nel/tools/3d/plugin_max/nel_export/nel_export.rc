@@ -215,10 +215,16 @@ BEGIN
     CONTROL         "Export RealTime Light (if Light)",
                     IDC_EXPORT_REALTIME_LIGHT,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,10,70,135,10
-    GROUPBOX        "Static",IDC_STATIC,5,60,155,40
+    GROUPBOX        "Static",IDC_STATIC,5,60,155,65
     CONTROL         "Use Lighting Local attenuation (if Mesh)",
-                    IDC_USE_LIGHT_LOCAL_ATTENUATION,"Button",BS_AUTOCHECKBOX | 
+                    IDC_USE_LIGHT_LOCAL_ATTENUATION,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,10,110,140,10
+    CONTROL         "Export LightMap Light (if light)",
+                    IDC_EXPORT_LIGHTMAP_LIGHT,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,10,85,140,10
+    CONTROL         "Export as RealTime Sun Light (if light)",
+                    IDC_EXPORT_AS_SUN_LIGHT,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,10,95,140,15
 END
 
 IDD_VEGETABLE DIALOG DISCARDABLE  0, 0, 360, 200

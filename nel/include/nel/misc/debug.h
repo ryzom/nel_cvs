@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.38 2002/03/14 13:49:36 lecroart Exp $
+ * $Id: debug.h,v 1.39 2002/03/25 09:24:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,7 +59,7 @@ void nlFatalError (const char *format, ...);
 void nlError (const char *format, ...);
 
 // internal use only
-void createDebug ();
+void createDebug (const char *logPath = NULL);
 
 // Macros
 

@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.29 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.30 2004/05/19 10:19:55 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -146,7 +146,7 @@ void			CPSSound::step(TPSProcessPass pass)
 	
 
 	CPSAttrib<UPSSoundInstance *>::iterator it = _Sounds.begin(),
-												 endIt = _Sounds.end();
+												 endIt;
 	CPSAttrib<NLMISC::CVector>::const_iterator posIt = _Owner->getPos().begin();
 	CPSAttrib<NLMISC::CVector>::const_iterator speedIt = _Owner->getSpeed().begin();
 

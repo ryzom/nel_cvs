@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.20 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.21 2004/05/19 10:19:55 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -123,8 +123,10 @@ public:
 	// from CPSParticle
 	virtual bool supportGlobalColorLighting() const { return false; }
 
-	// from CPSParticle. No-op for meshs
+	// from CPSParticle. No-op for meshs	virtual float getZBias() { return 0.f; }
+
 	virtual void setZBias(float value) {}
+	virtual float getZBias() const { return 0.f; }
 		
 protected:
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
@@ -377,6 +379,7 @@ public:
 
 	// from CPSParticle. No-op for meshs
 	virtual void setZBias(float value) {}
+	virtual float getZBias() const { return 0.f; }
 
 protected:
 	friend class CPSConstraintMeshHelper;

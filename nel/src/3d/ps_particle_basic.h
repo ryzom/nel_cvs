@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.17 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.18 2004/05/19 10:19:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,6 +141,7 @@ public:
 
 	// Change z-bias of material. this must be redefined for all renderable particles
 	virtual void			setZBias(float value) = 0;
+	virtual float			getZBias() const = 0;
 
 protected:
 
@@ -839,8 +840,11 @@ public:
 	// test if z test is enabled
 	bool isZTestEnabled() const;
 
-	// set z-bias. This state isn't serialized
+	// set z-bias
 	void setZBias(float value) { _Mat.setZBias(value); }	
+	float getZBias() const { return _Mat.getZBias(); }	
+
+	
 
 protected:
 	CMaterial _Mat;		

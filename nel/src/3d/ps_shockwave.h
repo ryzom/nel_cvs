@@ -1,7 +1,7 @@
 /** \file ps_shockwave.h
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.h,v 1.10 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_shockwave.h,v 1.11 2004/05/19 10:19:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,6 +97,7 @@ public:
 
 	// from CPSParticle
 	virtual void setZBias(float value) { CPSMaterial::setZBias(value); }	
+	virtual float getZBias() const { return CPSMaterial::getZBias(); }
 
 protected:
 

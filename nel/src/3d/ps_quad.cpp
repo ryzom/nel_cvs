@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.14 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.15 2004/05/19 10:19:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -675,6 +675,8 @@ void CPSQuad::setZBias(float value)
 {
 	CPSMaterial::setZBias(value);
 }
+
+
 
 //*****************************************************************************************************
 void CPSQuad::updateTexWrapMode()

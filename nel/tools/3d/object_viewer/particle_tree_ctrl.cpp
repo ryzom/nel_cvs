@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.52 2004/03/04 14:38:41 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.53 2004/05/19 10:20:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,7 @@
 
 #include "object_viewer.h"
 #include "ps_mover_dlg.h"
+#include "set_value_dlg.h"
 
 
 
@@ -1037,6 +1038,34 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				_ParticleDlg->StartStopDlg->resetAutoCount();
 			}
 		}
+		break;
+		//////////
+		// MISC //
+		//////////
+		case  IDM_FORCE_ZBIAS:
+			// querry zbias
+			CSetValueDlg valueDlg;			
+			// Set default value
+			valueDlg.Value="0.00";
+			valueDlg.Title.LoadString(IDS_FORCE_ZBIAS);			
+			// Open dialog
+			if (valueDlg.DoModal ()==IDOK)
+			{
+				float value;		
+				int dummy; // to avoid non numeric characters at the end
+				if (sscanf ((LPCTSTR)(valueDlg.Value + "\n0"), "%f\n%d", &value, &dummy) == 2)
+				{
+					_ParticleDlg->getCurrPS()->setZBias(-value);
+				}
+				else
+				{
+					CString caption;
+					CString mess;
+					caption.LoadString(IDS_CAPTION_ERROR);
+					mess.LoadString(IDS_BAD_ZBIAS);								
+					MessageBox((LPCTSTR) mess, (LPCTSTR) caption, MB_ICONERROR);
+				}
+			}			
 		break;
 	}
 

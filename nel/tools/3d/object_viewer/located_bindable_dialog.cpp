@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.28 2004/02/20 16:29:31 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.29 2004/05/19 10:20:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,7 @@ CLocatedBindableDialog::CLocatedBindableDialog(NL3D::CPSLocatedBindable *bindabl
 {
 	//{{AFX_DATA_INIT(CLocatedBindableDialog)
 	m_IndependantSizes = FALSE;
-	//}}AFX_DATA_INIT
+	//}}AFX_DATA_INIT	
 }
 
 /// dtor
@@ -110,17 +110,20 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 	// has the particle a material ?
 	if (dynamic_cast<NL3D::CPSMaterial *>(_Bindable))
 	{
+		NL3D::CPSMaterial *material = dynamic_cast<NL3D::CPSMaterial *>(_Bindable);
 		// blending mode
-		m_BlendingMode.SetCurSel((uint) (dynamic_cast<NL3D::CPSMaterial *>(_Bindable))->getBlendingMode() );
-		// z-test
-		bool ztest = dynamic_cast<NL3D::CPSMaterial *>(_Bindable)->isZTestEnabled();
-		((CButton *) GetDlgItem(IDC_ZTEST))->SetCheck(ztest ? BST_CHECKED : BST_UNCHECKED);
+		m_BlendingMode.SetCurSel((uint) material->getBlendingMode() );
+		// z-test		
+		((CButton *) GetDlgItem(IDC_ZTEST))->SetCheck(material->isZTestEnabled ? BST_CHECKED : BST_UNCHECKED);
+		// z-bias
+		GetDlgItem(IDC_ZBIAS)->SetWindowText(NLMISC::toString("%.2f", -material->getZBias()).c_str());						
 	}
 	else
 	{
 		m_BlendingMode.ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_BLENDING_MODE_STATIC)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_ZTEST)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_ZBIAS)->ShowWindow(SW_HIDE);
 	}
 	GetDlgItem(IDC_ALIGN_ON_MOTION)->ShowWindow(SW_HIDE);
 	// enable disable z-test	
@@ -536,6 +539,7 @@ void CLocatedBindableDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CLocatedBindableDialog)
+	DDX_Control(pDX, IDC_ZBIAS, m_ZBias);
 	DDX_Control(pDX, IDC_BLENDING_MODE, m_BlendingMode);
 	DDX_Check(pDX, IDC_INDE_SIZES, m_IndependantSizes);
 	//}}AFX_DATA_MAP
@@ -552,6 +556,8 @@ BEGIN_MESSAGE_MAP(CLocatedBindableDialog, CDialog)
 	ON_BN_CLICKED(ID_GLOBAL_COLOR_LIGHTING, OnGlobalColorLighting)
 	ON_BN_CLICKED(IDC_ALIGN_ON_MOTION, OnAlignOnMotion)
 	ON_BN_CLICKED(IDC_ZTEST, OnZtest)
+	ON_EN_CHANGE(IDC_ZBIAS, OnChangeZbias)
+	ON_EN_KILLFOCUS(IDC_ZBIAS, OnKillfocusZbias)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -700,4 +706,61 @@ void CLocatedBindableDialog::OnZtest()
 	NL3D::CPSMaterial *mat = dynamic_cast<NL3D::CPSMaterial *>(_Bindable);
 	nlassert(mat);
 	mat->enableZTest(((CButton *) GetDlgItem(IDC_ZTEST))->GetCheck() != BST_UNCHECKED);
+}
+
+// TODO: factor this code
+static	void concatEdit2Lines(CEdit &edit)
+{
+	const	uint lineLen= 1000;
+	uint	n;
+	// retrieve the 2 lines.
+	char	tmp0[2*lineLen];
+	char	tmp1[lineLen];
+	n= edit.GetLine(0, tmp0, lineLen);	tmp0[n]= 0;
+	n= edit.GetLine(1, tmp1, lineLen);	tmp1[n]= 0;
+	// concat and update the CEdit.
+	edit.SetWindowText(strcat(tmp0, tmp1));
+}
+
+//***************************************************************************************************************************
+void CLocatedBindableDialog::updateZBias()
+{
+	CString value;
+	m_ZBias.GetWindowText(value);
+	float zbias = 0.f;		
+	int dummy; // to test if end of string as no not wanted extra characters
+	if (sscanf((LPCTSTR) (value + "\n0"), "%f\n%d", &zbias, &dummy) == 2)
+	{
+		NLMISC::safe_cast<NL3D::CPSParticle *>(_Bindable)->setZBias(-zbias);
+	}
+	else
+	{
+		CString caption;
+		CString mess;
+		caption.LoadString(IDS_CAPTION_ERROR);
+		mess.LoadString(IDS_BAD_ZBIAS);				
+		m_ZBias.SetWindowText("0.00");
+		MessageBox((LPCTSTR) mess, (LPCTSTR) caption, MB_ICONERROR);
+		NLMISC::safe_cast<NL3D::CPSParticle *>(_Bindable)->setZBias(0);
+	}
+}
+
+//***************************************************************************************************************************
+void CLocatedBindableDialog::OnChangeZbias() 
+{
+	UpdateData();	
+	// Trick to track "Enter" keypress: CEdit are multiline. If GetLineCount()>1, then
+	// user has press enter.
+	if(m_ZBias.GetLineCount()>1)
+	{
+		// must ccat 2 lines of the CEdit.
+		concatEdit2Lines(m_ZBias);		
+		updateZBias();
+	}
+}
+
+//***************************************************************************************************************************
+void CLocatedBindableDialog::OnKillfocusZbias() 
+{
+	updateZBias();	
 }

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.18 2004/02/20 16:29:31 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.19 2004/05/19 10:20:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CLocatedBindableDialog)
 	enum { IDD = IDD_LOCATED_BINDABLE };
+	CEdit	m_ZBias;
 	CComboBox	m_BlendingMode;
 	BOOL	m_IndependantSizes;
 	//}}AFX_DATA
@@ -95,8 +96,8 @@ protected:
 
 	// enables or disabled controls for independant sizes
 	void updateIndependantSizes(void);
-
-
+	//  update zbias from edit box & display error mb if needed
+	void updateZBias();
 	/// create the size control, or update it if it has been created. It returns the heivht of the control
 	uint updateSizeControl();
 
@@ -104,7 +105,7 @@ protected:
 	CParticleDlg					*_ParticleDlg; // the dialog that owns us
 	class CAttribDlgFloat			*_SizeCtrl;	// the control used for size
 	sint							_SizeCtrlX;	// x position of the control used for size
-	sint							_SizeCtrlY;	// x position of the control used for size
+	sint							_SizeCtrlY;	// x position of the control used for size	
 	
 	// look at specific : pointer on windows to edit motion blur params
 	std::vector<CWnd *>				_MotionBlurWnd;
@@ -120,6 +121,8 @@ protected:
 	afx_msg void OnGlobalColorLighting();
 	afx_msg void OnAlignOnMotion();
 	afx_msg void OnZtest();
+	afx_msg void OnChangeZbias();
+	afx_msg void OnKillfocusZbias();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

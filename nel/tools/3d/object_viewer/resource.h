@@ -623,6 +623,8 @@
 #define IDC_DIRECTION_MODE              1391
 #define IDC_KEEP_ORIGINAL_PITCH         1392
 #define IDC_ZTEST                       1393
+#define IDC_ZBIAS_TEXT                  1394
+#define IDC_ZBIAS                       1395
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -771,7 +773,9 @@
 #define IDM_ACTIVATE_TEXTURE_SET_5      32879
 #define IDS_NUM_WANTED_FACES            32879
 #define IDM_ACTIVATE_TEXTURE_SET_6      32880
+#define IDS_BAD_ZBIAS                   32880
 #define IDM_ACTIVATE_TEXTURE_SET_7      32881
+#define IDS_FORCE_ZBIAS                 32881
 #define IDM_ACTIVATE_TEXTURE_SET_8      32882
 #define ID_WINDOW_GLOBALWIND            32883
 #define ID_EDIT_MOVE_OBJECT_LIGHT_TEST  32884
@@ -822,14 +826,15 @@
 #define IDM_SHOW_SCENE_MATRIX           32964
 #define IDM_SHOW_FX_MATRIX              32965
 #define IDM_SHOW_FX_USER_MATRIX         32966
+#define IDM_FORCE_ZBIAS                 32967
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1134
-#define _APS_NEXT_COMMAND_VALUE         32967
-#define _APS_NEXT_CONTROL_VALUE         1394
+#define _APS_NEXT_COMMAND_VALUE         32968
+#define _APS_NEXT_CONTROL_VALUE         1396
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

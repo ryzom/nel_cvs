@@ -195,6 +195,12 @@ BEGIN
     IDS_NUM_WANTED_FACES    "Num wanted faces :"
 END
 
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_BAD_ZBIAS           "Invalid ZBias value"
+    IDS_FORCE_ZBIAS         "Force all object ZBias"
+END
+
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -571,6 +577,9 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,82,21,57,8
     CONTROL         "Z-Test",IDC_ZTEST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     142,21,31,9
+    LTEXT           "ZBias",IDC_ZBIAS_TEXT,180,21,19,8
+    EDITTEXT        IDC_ZBIAS,200,19,32,11,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_AUTOHSCROLL
 END
 
 IDD_COLOR_EDIT DIALOG DISCARDABLE  0, 0, 226, 32
@@ -2403,6 +2412,8 @@ BEGIN
         END
         MENUITEM "Bind s&ound",                 IDM_SOUND_LOC
         MENUITEM "Bind &l&ight",                IDM_LIGHT_LOC
+        MENUITEM SEPARATOR
+        MENUITEM "Force &ZBias",                IDM_FORCE_ZBIAS
     END
 END
 

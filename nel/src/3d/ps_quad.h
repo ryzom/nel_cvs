@@ -1,7 +1,7 @@
 /** \file ps_quad.h
  * Base quads particles.
  *
- * $Id: ps_quad.h,v 1.9 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_quad.h,v 1.10 2004/05/19 10:19:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,7 @@ public:
 
 	// from CPSParticle
 	virtual void setZBias(float value);
+	virtual float getZBias() const { return CPSMaterial::getZBias(); }
 
 	// from CPSLocatedBindable
 	virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);	

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: new_path.cpp,v 1.2 2001/11/22 11:23:58 lecroart Exp $
+ * $Id: new_path.cpp,v 1.3 2001/11/22 17:44:36 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -32,7 +32,10 @@
 #ifdef NL_OS_WINDOWS
 #	include <windows.h>
 #else
+#   include <sys/types.h>
+#   include <sys/stat.h>
 #	include <dirent.h>
+#   include <unistd.h>
 #endif // NL_OS_WINDOWS
 
 using namespace std;
@@ -143,7 +146,7 @@ void CNewPath::remapExtension (const string &ext1, const string &ext2, bool subs
 			if (!(*it).second.Remapped && (*it).second.Extension == ext1)
 			{
 				// find if already exist
-				sint pos = (*it).first.find (".");
+				sint pos = (*it).first.find_last_of (".");
 				if (pos != string::npos)
 				{
 					string file = (*it).first.substr (0, pos + 1);
@@ -172,7 +175,6 @@ string CNewPath::lookup (const string &filename)
 	// Try to find in the map directories
 	CNewPath *inst = CNewPath::getInstance();
 	map<string, CNewFileEntry>::iterator it = inst->_Files.find (filename);
-
 	// If found in the map, returns it
 	if (it != inst->_Files.end())
 	{
@@ -197,7 +199,7 @@ string CNewPath::lookup (const string &filename)
 			if ( CNewFile::fileExists(rs) )
 			{
 				NL_DISPLAY_PATH("CNewPath::lookup(%s): found in the alternative directory: '%s'", filename.c_str(), rs.c_str());
-				return s;
+				return rs;
 			}
 		}
 	}
@@ -207,7 +209,7 @@ string CNewPath::lookup (const string &filename)
 	return "";
 }
 
-string CNewPath::standardizePath (const string &path)
+string CNewPath::standardizePath (const string &path, bool addFinalSlash)
 {
 	string newPath;
 
@@ -231,7 +233,7 @@ string CNewPath::standardizePath (const string &path)
 	}
 
 	// add terminal slash
-	if (newPath[path.size()-1] != '/')
+	if (addFinalSlash && newPath[path.size()-1] != '/')
 		newPath += '/';
 
 	return newPath;
@@ -246,9 +248,10 @@ static char sDirBackup[512];
 static WIN32_FIND_DATA findData;
 static HANDLE hFind;
 
-DIR *opendir (const string &path)
+DIR *opendir (const char *path)
 {
-	nlassert (!path.empty());
+	nlassert (path != NULL);
+	nlassert (path[0] != '\0');
 
 	nlassert (sDirBackup[0] == '\0');
 	if (GetCurrentDirectory (512, sDirBackup) == 0)
@@ -342,7 +345,7 @@ string getname (dirent *de)
 
 void CNewPath::getPathContent (const string &path, bool recurse, bool wantDir, bool wantFile, vector<string> &result)
 {
-	DIR *dir = opendir (path);
+	DIR *dir = opendir (path.c_str());
 	if (dir == NULL)
 	{
 		NL_DISPLAY_PATH("CNewPath::getPathContent(%s, %d, %d, %d): could not open the directory", path.c_str(), recurse, wantDir, wantFile);
@@ -398,30 +401,30 @@ void CNewPath::getPathContent (const string &path, bool recurse, bool wantDir, b
 void CNewPath::addSearchPath (const string &path, bool recurse, bool alternative)
 {
 	CNewPath *inst = CNewPath::getInstance();
+	string newPath = standardizePath(path);
 
 	// check empty directory
-	if (path.empty())
+	if (newPath.empty())
 	{
 		nlwarning ("CNewPath::addSearchPath(%s, %d, %d): can't add empty directory, skip it", path.c_str(), recurse, alternative);
 		return;
 	}
 
 	// check if it s a directory
-	if (!CNewFile::isExists (path))
+	if (!CNewFile::isExists (newPath))
 	{
-		nlwarning ("CNewPath::addSearchPath(%s, %d, %d): '%s' is not found, skip it", path.c_str(), recurse, alternative, path.c_str());
+		nlwarning ("CNewPath::addSearchPath(%s, %d, %d): '%s' is not found, skip it", path.c_str(), recurse, alternative, newPath.c_str());
 		return;
 	}
 
 	// check if it s a directory
-	if (!CNewFile::isDirectory (path))
+	if (!CNewFile::isDirectory (newPath))
 	{
-		nlwarning ("CNewPath::addSearchPath(%s, %d, %d): '%s' is not a directory, skip it", path.c_str(), recurse, alternative, path.c_str());
+		nlwarning ("CNewPath::addSearchPath(%s, %d, %d): '%s' is not a directory, skip it", path.c_str(), recurse, alternative, newPath.c_str());
 		return;
 	}
 
-	string newPath = standardizePath(path);
-	NL_DISPLAY_PATH("CNewPath::addSearchPath(%s, %d, %d): try to add '%s'", newPath.c_str(), recurse, alternative, newPath.c_str());
+	NL_DISPLAY_PATH("CNewPath::addSearchPath(%s, %d, %d): try to add '%s'", path.c_str(), recurse, alternative, newPath.c_str());
 
 	if (alternative)
 	{
@@ -477,35 +480,36 @@ void CNewPath::addSearchPath (const string &path, bool recurse, bool alternative
 void CNewPath::addSearchFile (const string &file, bool remap, const string &virtual_ext)
 {
 	CNewPath *inst = CNewPath::getInstance();
+	string newFile = standardizePath(file, false);
 
 	// check empty file
-	if (file.empty())
+	if (newFile.empty())
 	{
 		nlwarning ("CNewPath::addSearchFile(%s, %d, %s): can't add empty file, skip it", file.c_str(), remap, virtual_ext.c_str());
 		return;
 	}
 
 	// check if the file exists
-	if (!CNewFile::isExists (file))
+	if (!CNewFile::isExists (newFile))
 	{
-		nlwarning ("CNewPath::addSearchFile(%s, %d, %s): '%s' is not found, skip it", file.c_str(), remap, virtual_ext.c_str(), file.c_str());
+		nlwarning ("CNewPath::addSearchFile(%s, %d, %s): '%s' is not found, skip it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
 		return;
 	}
 
 	// check if it s a file
-	if (CNewFile::isDirectory (file))
+	if (CNewFile::isDirectory (newFile))
 	{
-		nlwarning ("CNewPath::addSearchFile(%s, %d, %s): '%s' is not a file, skip it", file.c_str(), remap, virtual_ext.c_str(), file.c_str());
+		nlwarning ("CNewPath::addSearchFile(%s, %d, %s): '%s' is not a file, skip it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
 		return;
 	}
 
-	string filenamewoext = CNewFile::getFilenameWithoutExtension (file);
+	string filenamewoext = CNewFile::getFilenameWithoutExtension (newFile);
 	string filename, ext;
 	
 	if (virtual_ext.empty())
 	{
-		filename = CNewFile::getFilename (file);
-		ext = CNewFile::getExtension (file);
+		filename = CNewFile::getFilename (newFile);
+		ext = CNewFile::getExtension (filename);
 	}
 	else
 	{
@@ -517,7 +521,7 @@ void CNewPath::addSearchFile (const string &file, bool remap, const string &virt
 	if (it == inst->_Files.end ())
 	{
 		// ok, the room is empty, let s add it
-		insertFileInMap (filename, file, remap, ext);
+		insertFileInMap (filename, newFile, remap, ext);
 	}
 	else
 	{
@@ -535,7 +539,7 @@ void CNewPath::addSearchFile (const string &file, bool remap, const string &virt
 			if (inst->_Extensions[i].first == ext)
 			{
 				// need to remap
-				addSearchFile (file, true, inst->_Extensions[i].second);
+				addSearchFile (newFile, true, inst->_Extensions[i].second);
 			}
 		}
 	}
@@ -585,7 +589,7 @@ void CNewPath::insertFileInMap (const string &filename, const string &filepath, 
 	map<string, CNewFileEntry>::iterator it = inst->_Files.find (filename);
 	if (it != inst->_Files.end ())
 	{
-		nlwarning ("CNewPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path);
+		nlwarning ("CNewPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path.c_str());
 	}
 	else
 	{
@@ -739,20 +743,33 @@ string CNewFile::getPath (const string &filename)
 
 bool CNewFile::isDirectory (const string &filename)
 {
+#ifdef NL_OS_WINDOWS
 	DWORD res = GetFileAttributes(filename.c_str());
 	nlassert (res != -1);
 	return (res & FILE_ATTRIBUTE_DIRECTORY) != 0;
+#else // NL_OS_WINDOWS
+	struct stat buf;
+	int result = stat (filename.c_str (), &buf);
+	nlassert (result == 0);
+	return (buf.st_mode & S_IFDIR) != 0;
+#endif // NL_OS_WINDOWS
 }
 
-bool CNewFile::isExists (const string& filename)
+bool CNewFile::isExists (const string &filename)
 {
+#ifdef NL_OS_WINDOWS
 	return (GetFileAttributes(filename.c_str()) != -1);
+#else // NL_OS_WINDOWS
+	struct stat buf;
+	return stat (filename.c_str (), &buf) == 0;
+#endif NL_OS_WINDOWS
 }
 
 bool CNewFile::fileExists (const string& filename)
 {
 	return ! ! fstream( filename.c_str(), ios::in );
 }
+
 
 string CNewFile::findNewFile (const string &filename)
 {

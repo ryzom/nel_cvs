@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: new_path.h,v 1.1 2001/11/22 11:08:31 lecroart Exp $
+ * $Id: new_path.h,v 1.2 2001/11/22 17:44:36 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -61,8 +61,8 @@ public:
 	 */
 	static void			addSearchPath (const std::string &path, bool recurse, bool alternative);
 
-	/** Used only for compatibility with the old CPath */
-	static void			addSearchPath (const std::string &path) { addSearchPath (path, false, false); }
+	/** Used only for compatibility with the old CPath. In this case, we don't use the map to have the same behavior as the old CPath */
+	static void			addSearchPath (const std::string &path) { addSearchPath (path, false, true); }
 
 	/** Same as AddSearchPath but with a file "c:/autoexec.bat" this file only will included. wildwards *doesn't* work */
 	static void			addSearchFile (const std::string &file, bool remap = false, const std::string &virtual_ext = "");
@@ -130,7 +130,7 @@ private:
 	std::vector<std::pair<std::string, std::string> > _Extensions;
 
 	sint		findExtension (const std::string &ext1, const std::string &ext2);
-	static std::string	standardizePath (const std::string &path);
+	static std::string	standardizePath (const std::string &path, bool addFinalSlash = true);
 	static void		getPathContent (const std::string &path, bool recurse, bool wantDir, bool wantFile, std::vector<std::string> &result);
 	static void		insertFileInMap (const std::string &filename, const std::string &filepath, bool remap, const std::string &extension);
 };

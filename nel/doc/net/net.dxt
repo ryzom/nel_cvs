@@ -9,6 +9,7 @@ Conceptually, the network subsystem is divided into layers :
 -# Layer 3 is the message handling layer : it allows to listen for messages and to call event-driven callback functions.
 -# The recipient of a connection need not be an Internet address. It can be pointed to as a specific service using a Naming Service.
 -# Any object can be serialized to/from a message.
+-# Server software are called services and have a common interface.
 
 Here is the implementation point of view :
 -# Layer 1 is implemented by NLNET::CBaseSocket.
@@ -16,6 +17,7 @@ Here is the implementation point of view :
 -# Layer 3 is implemented by NLNET::CMsgSocket.
 -# The addresses are implemented by NLNET::CInetAddress.
 -# The NLNET::CMessage class inherits from NLMISC::IStream.
+-# All services inherit from NLNET::IService.
 
 \subsection networkusing Using the network engine
 

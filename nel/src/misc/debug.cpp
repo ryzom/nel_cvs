@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.cpp,v 1.10 2000/10/10 16:07:39 cado Exp $
+ * $Id: debug.cpp,v 1.11 2000/10/10 16:30:52 cado Exp $
  *
  * Debug
  */
@@ -59,9 +59,9 @@
  * }
  * \endcode
  *
- * How to log string without repeating the header ?
+ * - How to log a string without repeating the header ?
  *
- * The macros nldebug and nlerror call a few methods of NLMISC::CLog, including displayNL().
+ * The macros nldebug() and nlerror() call some methods of NLMISC::CLog, including displayNL().
  * It prints a string with an information header.
  * If you don't want to print the header, use the others methods of NLMISC::CLog.
  *

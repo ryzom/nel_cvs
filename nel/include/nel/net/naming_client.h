@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: naming_client.h,v 1.2 2000/10/10 16:07:39 cado Exp $
+ * $Id: naming_client.h,v 1.3 2000/10/10 16:30:52 cado Exp $
  *
  * Interface for CNamingClient
  */
@@ -53,8 +53,10 @@ typedef std::map<std::string,CInetAddress> CRegServices;
  * If you plan to call several times these methods in a block, set TransactionMode to false
  * and call open() at the beginning of the block and close() at the end.
  *
- * \todo cado/lecroart Move service registration to IService (but not for the NS itself) and
+ * \todo cado/lecroart: Move service registration to IService (but not for the NS itself) and
  * ensure unregistration is called when stopping the service (Ctrl-C must call release())
+ * \todo cado: Manage validity time: a new request must be done when the time is out and
+ * the caller must disconnect from its service provider and connect to the new one.
  * \test Test program is /code/test/network/log_service/main.cpp
  * \author Olivier Cado
  * \author Nevrax France
@@ -65,7 +67,7 @@ class CNamingClient
 public:
 
 	/** Constructor.
-	 * \param transactionmode See \ref nsrequests "Requests to the Naming Service".
+	 * \param transactionmode See "Requests to the Naming Service" in the static public methods.
 	 */
 	CNamingClient( bool transactionmode = true );
 
@@ -81,7 +83,7 @@ public:
 	/// Disconnection from the naming service
 	static void			close();
 
-	/** \name \anchor nsrequests Requests to the Naming Service. 
+	/** \name Requests to the Naming Service. 
 	 * \brief If TransactionMode is true, these method perform open() and close() themselves.
 	 */
 	//@{

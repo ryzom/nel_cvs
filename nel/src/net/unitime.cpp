@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.14 2000/12/13 14:38:14 cado Exp $
+ * $Id: unitime.cpp,v 1.15 2000/12/14 17:43:04 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,7 +66,7 @@ void CUniTime::syncUniTimeFromService (CInetAddress *addr)
 	if (server.connected ())
 	{
 		sint attempt = 0;
-		TTime bestdelta = 0;
+		TTime bestdelta = 60000;	// 1 minute
 		while (attempt < 10)
 		{
 			CMessage msgout( "" );

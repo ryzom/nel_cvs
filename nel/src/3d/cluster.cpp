@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.19.4.1 2003/09/03 10:09:39 corvazier Exp $
+ * $Id: cluster.cpp,v 1.19.4.2 2003/09/03 12:13:38 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -295,8 +295,8 @@ void CCluster::serial (IStream&f)
 	if (version >= 3)
 	{
 		bool dummy;
-		serial(dummy);
-		serial(dummy);
+		f.serial(dummy);
+		f.serial(dummy);
 	}
 }
 

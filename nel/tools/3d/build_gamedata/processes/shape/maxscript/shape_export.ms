@@ -72,11 +72,18 @@ fn isAccelerator node =
 fn isToBeExported node =
 (
 	if (isAccelerator node) == true then
-	(
 		return false
-	)
 
-	if (classof node == nel_ps) then
+	if ((classof node) == RklPatch) then
+		return false
+
+	if ((classof node) == nel_ps) then
+		return false
+
+	if ((classof node) == nel_pacs_cylinder) then
+		return false
+
+	if ((classof node) == nel_pacs_box) then
 		return false
 
 	doNotExport = getappdata node NEL3D_APPDATA_DONOTEXPORT

@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.27 2002/02/27 10:45:07 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.28 2002/03/04 13:03:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -597,8 +597,7 @@ void CExportNel::addLightTracks (NL3D::CAnimation& animation, INode& node, const
 		return;
 
 	// Create a track name
-
-	std::string name = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_LM_GROUPNAME, "GlobalLight");
+	std::string name = CExportNel::getLightGroupName (&node);
 	name = "LightmapController." + name;
 
 	int bAnimated = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_LM_ANIMATED, 0);

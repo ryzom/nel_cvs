@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.22 2002/03/01 14:05:29 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.23 2002/03/04 13:03:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2120,7 +2120,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.VegetableAlphaBlendOffDoubleSided = CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_DOUBLE_SIDED, BST_UNCHECKED);
 		param.VegetableBendCenter = CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_CENTER, 0);
 		param.VegetableBendFactor = toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, NEL3D_APPDATA_BEND_FACTOR_DEFAULT));
-		param.ExportLightMapName = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, "GlobalLight");
+		param.ExportLightMapName = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, NEL3D_LM_GROUPNAME_DEFAULT);
 
 		// Ligoscape
 		param.LigoSymmetry = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_SYMMETRY, BST_UNCHECKED);
@@ -2280,7 +2280,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.ExportAsSunLight= BST_INDETERMINATE;
 
 			// Lightmap name
-			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, "GlobalLight")!=param.ExportLightMapName)
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, NEL3D_LM_GROUPNAME_DEFAULT)!=param.ExportLightMapName)
 			{
 				param.ExportLightMapName = "";
 			}

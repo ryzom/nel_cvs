@@ -1,7 +1,7 @@
 /** \file calc_lm.h
  * LightMap Calculation settings
  *
- * $Id: calc_lm.h,v 1.4 2002/02/26 17:30:25 corvazier Exp $
+ * $Id: calc_lm.h,v 1.5 2002/03/04 13:03:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,8 @@
 #define NEL3D_APPDATA_LM			41654684
 #define NEL3D_APPDATA_LM_GROUPNAME	(NEL3D_APPDATA_LM+1)
 #define NEL3D_APPDATA_LM_ANIMATED	(NEL3D_APPDATA_LM+2)
+
+#define NEL3D_LM_GROUPNAME_DEFAULT	"(Use NelLight Modifier)"
 
 // ***********************************************************************************************
 extern void convertToWorldCoordinate	(NL3D::CMesh::CMeshBuild *pMB, 

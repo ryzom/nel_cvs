@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.33 2002/02/26 17:30:24 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.34 2002/03/04 13:03:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -133,8 +133,8 @@ void SLightBuild::convertFromMaxLight (INode *node,TimeValue tvTime)
 	if (maxLight->EvalLightState(tvTime, valid, &ls)!=REF_SUCCEED)
 		return;
 
-	// Is the light is animatable ? (TEMP MAT)
-	this->GroupName = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, "GlobalLight");
+	// Retrieve the correct light Group Name
+	this->GroupName = CExportNel::getLightGroupName (node);
 
 	// Eval the light state fot this tvTime
 	// Set the light mode

@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.15 2002/02/28 14:24:46 berenguier Exp $
+ * $Id: export_misc.cpp,v 1.16 2002/03/04 13:03:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdafx.h"
 #include "export_nel.h"
 #include "export_lod.h"
+#include "calc_lm.h"
 #include <3d/texture_file.h>
 #include <modstack.h> // class IDerivedObject
 #include <decomp.h> // class IDerivedObject
@@ -753,3 +754,38 @@ void CExportNel::getObjectNodes (std::vector<INode*>& vectNode, TimeValue time, 
 		getObjectNodes (vectNode, time, ip, node->GetChildNode(i));
 }
 
+
+// --------------------------------------------------
+std::string		CExportNel::getLightGroupName (INode *node)
+{
+	std::string		ret;
+	ret = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, NEL3D_LM_GROUPNAME_DEFAULT);
+	// Not Defined => Use old Modifier style?
+	if(ret == NEL3D_LM_GROUPNAME_DEFAULT)
+	{
+		// Modifier NelLight attached to the light?
+		Modifier *pModifier = CExportNel::getModifier( node, Class_ID(NEL_LIGHT_CLASS_ID_A, 
+																	NEL_LIGHT_CLASS_ID_B) );
+		if( pModifier != NULL )
+		{
+			int bDynamic;
+			std::string sGroup;
+			// Get the value of the parameters
+			CExportNel::getValueByNameUsingParamBlock2( *pModifier, "bDynamic", 
+														(ParamType2)TYPE_BOOL, &bDynamic, 0);
+			CExportNel::getValueByNameUsingParamBlock2( *pModifier, "sGroup", 
+														(ParamType2)TYPE_STRING, &sGroup, 0);
+			if( bDynamic )
+				ret = sGroup;
+			else
+				ret = "GlobalLight";
+		}
+		else
+		{
+			ret = "GlobalLight";
+		}
+	}
+
+
+	return ret;
+}

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.15 2002/02/27 10:45:07 corvazier Exp $
+ * $Id: driver_opengl_states.cpp,v 1.16 2002/09/24 14:44:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -603,6 +603,7 @@ void			CDriverGLStates::enableTexCoordArray(bool enable)
 		_TexCoordArrayEnabled[_CurrentClientActiveTextureARB]= enable;
 	}
 }
+
 // ***************************************************************************
 void			CDriverGLStates::enableVertexAttribArray(uint glIndex, bool enable)
 {
@@ -615,6 +616,70 @@ void			CDriverGLStates::enableVertexAttribArray(uint glIndex, bool enable)
 		_VertexAttribArrayEnabled[glIndex]= enable;
 	}
 }
+
+
+// ***************************************************************************
+void CDriverGLStates::enableVertexAttribArrayForEXTVertexShader(uint glIndex, bool enable, uint *variants)
+{
+	if(_VertexAttribArrayEnabled[glIndex] != enable)
+	{		
+		switch(glIndex)
+		{
+			case 0: // position 
+				enableVertexArray(enable);
+			break;
+			case 1: // skin weight
+				if(enable)
+					nglEnableVariantClientStateEXT(variants[CDriverGL::EVSSkinWeightVariant]);
+				else
+					nglDisableVariantClientStateEXT(variants[CDriverGL::EVSSkinWeightVariant]);	
+			break;
+			case 2: // normal
+				enableNormalArray(enable);
+			break;
+			case 3: // color
+				enableColorArray(enable);
+			break;
+			case 4: // secondary color
+				if(enable)
+					nglEnableVariantClientStateEXT(variants[CDriverGL::EVSSecondaryColorVariant]);
+				else
+					nglDisableVariantClientStateEXT(variants[CDriverGL::EVSSecondaryColorVariant]);	
+			break;
+			case 5: // fog coordinate
+				if(enable)
+					nglEnableVariantClientStateEXT(variants[CDriverGL::EVSFogCoordsVariant]);
+				else
+					nglDisableVariantClientStateEXT(variants[CDriverGL::EVSFogCoordsVariant]);
+			break;
+			case 6: // palette skin
+				if(enable)
+					nglEnableVariantClientStateEXT(variants[CDriverGL::EVSPaletteSkinVariant]);
+				else
+					nglDisableVariantClientStateEXT(variants[CDriverGL::EVSPaletteSkinVariant]);
+			break;
+			case 7: // empty
+				nlstop
+			break;
+			case 8:
+			case 9:
+			case 10:
+			case 11:
+			case 12:
+			case 13:
+			case 14:
+			case 15:
+				clientActiveTextureARB(glIndex - 8);
+				enableTexCoordArray(enable);
+			break;
+			default:
+				nlstop; // invalid value
+			break;
+		}		
+		_VertexAttribArrayEnabled[glIndex]= enable;
+	}	
+}
+
 
 
 } // NL3D

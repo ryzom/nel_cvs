@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.10 2001/11/30 13:15:48 berenguier Exp $
+ * $Id: driver_opengl_states.h,v 1.11 2002/09/24 14:44:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,8 +149,15 @@ public:
 	void			clientActiveTextureARB(uint stage);
 	/// NB: caller must call correct clientActiveTextureARB() before.
 	void			enableTexCoordArray(bool enable);
-	/// For vertexProgram. do not check if supported or not.
+	/** For vertexProgram. do not check if supported or not.	
+	  */
 	void			enableVertexAttribArray(uint glIndex, bool enable);
+	/** Same as enableVertexAttribArray, but for EXTVertexShader (need variant ID)
+	  * \param firstVariantSymbol the first variant symbol
+	  */
+	void			enableVertexAttribArrayForEXTVertexShader(uint glIndex, bool enable, uint *variants);	
+
+
 	// @}
 	
 private:
@@ -174,7 +181,7 @@ private:
 
 	bool			_TextureCubeMapSupported;
 	uint			_CurrentActiveTextureARB;
-	TTextureMode	_TextureMode[IDRV_MAT_MAXTEXTURES];
+	TTextureMode	_TextureMode[8];
 
 	bool			_VertexArrayEnabled;
 	bool			_NormalArrayEnabled;
@@ -182,11 +189,11 @@ private:
 	bool			_ColorArrayEnabled;
 	bool			_SecondaryColorArrayEnabled;
 	uint			_CurrentClientActiveTextureARB;
-	bool			_TexCoordArrayEnabled[IDRV_MAT_MAXTEXTURES];
+	bool			_TexCoordArrayEnabled[8];
 	bool			_VertexAttribArrayEnabled[CVertexBuffer::NumValue];	
 
-	bool			_TexGen[IDRV_MAT_MAXTEXTURES];
-	GLint			_TexGenMode[IDRV_MAT_MAXTEXTURES];
+	bool			_TexGen[8];
+	GLint			_TexGenMode[8];
 
 	float			_CurZRangeDelta;
 };

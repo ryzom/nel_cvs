@@ -1,7 +1,7 @@
 /** \file primitive_block.h
  * Block of PACS primitive
  *
- * $Id: primitive_block.h,v 1.3 2003/05/20 15:50:44 corvazier Exp $
+ * $Id: primitive_block.h,v 1.4 2003/10/10 07:13:41 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -108,6 +108,9 @@ public:
 	//@{
 	static UPrimitiveBlock *createPrimitiveBlock(NLMISC::IStream &src);
 	static UPrimitiveBlock *createPrimitiveBlockFromFile(const std::string &fileName);
+	uint						getNbPrimitive() { return Primitives.size(); }
+	UMovePrimitive::TUserData	getUserData(uint nPrimNb) { nlassert(nPrimNb < Primitives.size()); 
+															return Primitives[nPrimNb].UserData; }
 	//@}	
 };
 

@@ -1,6 +1,6 @@
 /** \file u_primitive_block.h
  *
- * $Id: u_primitive_block.h,v 1.1 2002/05/23 09:56:24 vizerie Exp $
+ * $Id: u_primitive_block.h,v 1.2 2003/10/10 07:14:23 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -56,6 +56,12 @@ public:
 	  * This may raise exceptions if loading failed.	  
 	  */
 	static UPrimitiveBlock *createPrimitiveBlockFromFile(const std::string &fileName);
+
+	/// get the number of primitives in the block
+	virtual uint						getNbPrimitive() = 0;
+
+	/// return the user data for a primitive of the block
+	virtual UMovePrimitive::TUserData	getUserData(uint nPrimNb) = 0;
 };
 
 }

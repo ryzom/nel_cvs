@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.23 2001/08/15 12:04:54 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.24 2001/08/16 17:08:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NL3D {
 
 
 // number of emitter to be processed at once
-const uint emitterBuffSize = 512 ;
+const uint emitterBuffSize = 512;
 
 ///////////////////////////////
 // CPSEmitter implementation //
@@ -52,53 +52,61 @@ CPSEmitter::CPSEmitter() : _EmissionType(regular), _Period(0), _EmittedType(NULL
 
 CPSEmitter::~CPSEmitter()
 {
-	delete _PeriodScheme ;
-	delete _GenNbScheme ;
+	delete _PeriodScheme;
+	delete _GenNbScheme;
 	// if a located is emitted, unregister us as an observer
 	if (_EmittedType)
 	{
-		_EmittedType->unregisterDtorObserver(this) ;
+		_EmittedType->unregisterDtorObserver(this);
 	}
 }
+
+
+
+void	CPSEmitter::setEmissionType(TEmissionType freqType)
+{ 
+	_EmissionType = freqType; 
+}
+
 
 void CPSEmitter::setEmittedType(CPSLocated *et) 
 {
 	if (_EmittedType)
 	{
-		_EmittedType->unregisterDtorObserver(this) ;
+		_EmittedType->unregisterDtorObserver(this);
 	}
 	if (et)
 	{
-		et->registerDtorObserver(this) ;
+		et->registerDtorObserver(this);
 	}	
 
-	_EmittedType = et ;
+	_EmittedType = et;
 }
 
 
 void CPSEmitter::notifyTargetRemoved(CPSLocated *ptr)
 {
-	nlassert(ptr == _EmittedType) ;
-	_EmittedType = NULL ;
+	nlassert(ptr == _EmittedType);
+	_EmittedType = NULL;
 }
 
 void CPSEmitter::setPeriod(float period)
 {
 	if (_PeriodScheme)
 	{
-		delete _PeriodScheme ;
-		_PeriodScheme = NULL ;
+		delete _PeriodScheme;
+		_PeriodScheme = NULL;
 	}
-	_Period = period ;
+	_Period = period;
 }
 
 
 void CPSEmitter::setPeriodScheme(CPSAttribMaker<float> *scheme)
 {
 	
-	 delete _PeriodScheme ;	
-	_PeriodScheme = scheme ;
-	if (_Owner && scheme->hasMemory()) scheme->resize(_Owner->getMaxSize(), _Owner->getSize()) ;
+	 delete _PeriodScheme;	
+	_PeriodScheme = scheme;
+	if (_Owner && scheme->hasMemory()) scheme->resize(_Owner->getMaxSize(), _Owner->getSize());
 }
 
 
@@ -107,83 +115,92 @@ void CPSEmitter::setGenNb(uint32 genNb)
 {
 	if (_GenNbScheme)
 	{
-		delete _GenNbScheme ;
-		_GenNbScheme = NULL ;
+		delete _GenNbScheme;
+		_GenNbScheme = NULL;
 	}
-	_GenNb = genNb ;	
+	_GenNb = genNb;	
 }
 
 
 void CPSEmitter::setGenNbScheme(CPSAttribMaker<uint32> *scheme)
 {
-	delete _GenNbScheme ;	
-	_GenNbScheme = scheme ;
-	if (_Owner && scheme->hasMemory()) scheme->resize(_Owner->getMaxSize(), _Owner->getSize()) ;
+	delete _GenNbScheme;	
+	_GenNbScheme = scheme;
+	if (_Owner && scheme->hasMemory()) scheme->resize(_Owner->getMaxSize(), _Owner->getSize());
 }
 
 
 
 void CPSEmitter::showTool(void) 
 {
-	uint32 size = _Owner->getSize() ;
-	if (!size) return ;		
-	setupDriverModelMatrix() ;	
+	uint32 size = _Owner->getSize();
+	if (!size) return;		
+	setupDriverModelMatrix();	
 
-	const CVector I = computeI() ;
-	const CVector K = computeK() ;
+	const CVector I = computeI();
+	const CVector K = computeK();
 
 	// ugly slow code, but not for runtime
-	for (uint  k = 0 ; k < size ; ++k)
+	for (uint  k = 0; k < size; ++k)
 	{
 		// center of the current particle
-		const CVector p = _Owner->getPos()[k]  ;
-		const float sSize =0.1f ;	
-		std::vector<NLMISC::CLine> lines ;
-		NLMISC::CLine l ;
-		l.V0 = p - sSize * I ; l.V1 =  p + sSize * I ; lines.push_back(l) ;
-		l.V0 = p - sSize * K ; l.V1 =  p + sSize * K ; lines.push_back(l) ;
-		l.V0 = p - sSize * (I + K) ; l.V1 = p + sSize * (I + K) ; lines.push_back(l) ;
-		l.V0 = p - sSize * (I - K) ; l.V1 = p + sSize * (I - K) ; lines.push_back(l) ;
+		const CVector p = _Owner->getPos()[k];
+		const float sSize =0.1f;	
+		std::vector<NLMISC::CLine> lines;
+		NLMISC::CLine l;
+		l.V0 = p - sSize * I; l.V1 =  p + sSize * I; lines.push_back(l);
+		l.V0 = p - sSize * K; l.V1 =  p + sSize * K; lines.push_back(l);
+		l.V0 = p - sSize * (I + K); l.V1 = p + sSize * (I + K); lines.push_back(l);
+		l.V0 = p - sSize * (I - K); l.V1 = p + sSize * (I - K); lines.push_back(l);
 							
 											
 		
 		
 	
-		CMaterial mat ;
+		CMaterial mat;
 
-		mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
-		mat.setZWrite(false) ;
-		mat.setLighting(false) ;
-		mat.setBlend(true) ;
-		mat.setZFunc(CMaterial::less) ;
+		mat.setBlendFunc(CMaterial::one, CMaterial::one);
+		mat.setZWrite(false);
+		mat.setLighting(false);
+		mat.setBlend(true);
+		mat.setZFunc(CMaterial::less);
 		
 	
 
-		CPSLocated *loc ;		
-		uint32 index ;
-		CPSLocatedBindable *lb ;
-		_Owner->getOwner()->getCurrentEditedElement(loc, index, lb) ;
+		CPSLocated *loc;		
+		uint32 index;
+		CPSLocatedBindable *lb;
+		_Owner->getOwner()->getCurrentEditedElement(loc, index, lb);
 
-		mat.setColor((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;
+		mat.setColor((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127));
 		
 
-		CDRU::drawLinesUnlit(lines, mat, *getDriver() ) ;
+		CDRU::drawLinesUnlit(lines, mat, *getDriver() );
 	}
 
+}
+
+
+/// process a single emission. For external use (in the user interface layer)
+void CPSEmitter::singleEmit(uint32 index, uint quantity)
+{
+	nlassert(_Owner);
+	const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner,0) : _GenNb;		
+	processEmit(index, quantity * nbToGenerate);
 }
 
 void CPSEmitter::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 {
 if (pass == PSToolRender)
 {
-	showTool() ;
-	return ;
+	showTool();
+	return;
 }
-if (pass != PSMotion) return ;
-const uint32 size = _Owner->getSize() ;
-if (!size) return ;
+if (pass != PSMotion) return;
+const uint32 size = _Owner->getSize();
+if (!size) return;
 
-if (ellapsedTime == 0.f) return ; // do nothing when paused
+if (ellapsedTime == 0.f) return; // do nothing when paused
 
 // our behaviour depend of the frequency
 switch (_EmissionType)
@@ -191,111 +208,111 @@ switch (_EmissionType)
 	case CPSEmitter::once :
 	{
 		TPSAttribTime::iterator timeIt = _Phase.begin()
-									  , timeEndIt = _Phase.end() ;
+									  , timeEndIt = _Phase.end();
 
 		while (timeIt != timeEndIt)
 		{
 			if (*timeIt == 0.f)
 			{
-				const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, timeIt - _Phase.begin()) : _GenNb ;		
-				processEmit(timeIt - _Phase.begin(), nbToGenerate) ;		
-				*timeIt = 1.f ;
+				const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, timeIt - _Phase.begin()) : _GenNb;		
+				processEmit(timeIt - _Phase.begin(), nbToGenerate);		
+				*timeIt = 1.f;
 			}
-			++timeIt ;
+			++timeIt;
 		}
 		
 	}
-	break ;
+	break;
 	case (CPSEmitter::regular):
 	{
-		uint leftToDo = size , toProcess ;
+		uint leftToDo = size , toProcess;
 	
 
-		float emitPeriod[emitterBuffSize] ; 
+		float emitPeriod[emitterBuffSize]; 
 
-		float *currEmitPeriod ;
-		uint currEmitPeriodPtrInc = _PeriodScheme ? 1 : 0 ;
+		float *currEmitPeriod;
+		uint currEmitPeriodPtrInc = _PeriodScheme ? 1 : 0;
 
 		
-		sint32 nbToGenerate ;
+		sint32 nbToGenerate;
 
 
-		TPSAttribTime::iterator phaseIt = _Phase.begin(), endPhaseIt ; 
+		TPSAttribTime::iterator phaseIt = _Phase.begin(), endPhaseIt; 
 
 		// we don't use an iterator here
 		// because it could be invalidated if size change (a located ould generate itself)	
 
 		do
 		{
-			toProcess = leftToDo < emitterBuffSize ? leftToDo : emitterBuffSize ;
+			toProcess = leftToDo < emitterBuffSize ? leftToDo : emitterBuffSize;
 
 
 			if (_PeriodScheme)
 			{
-				currEmitPeriod = (float *) (_PeriodScheme->make(_Owner, size - leftToDo, emitPeriod, sizeof(float), toProcess, true)) ;				
+				currEmitPeriod = (float *) (_PeriodScheme->make(_Owner, size - leftToDo, emitPeriod, sizeof(float), toProcess, true));				
 			}
 			else
 			{
-				currEmitPeriod = &_Period ;
+				currEmitPeriod = &_Period;
 			}
 
-			endPhaseIt = phaseIt + toProcess ;
+			endPhaseIt = phaseIt + toProcess;
 
 			do			
 			{
-				*phaseIt += ellapsedTime ;
+				*phaseIt += ellapsedTime;
 				if ( *phaseIt >= *currEmitPeriod) // phase is greater than period -> must emit
 				{
-					*phaseIt -= *currEmitPeriod ;
-					const uint32 k = phaseIt - (_Phase.begin()) ;
-					nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, k) : _GenNb ;					
-					processEmit(k, nbToGenerate) ;										
+					*phaseIt -= *currEmitPeriod;
+					const uint32 k = phaseIt - (_Phase.begin());
+					nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, k) : _GenNb;					
+					processEmit(k, nbToGenerate);										
 				}	
 				
-				++phaseIt ;
-				currEmitPeriod += currEmitPeriodPtrInc ;
+				++phaseIt;
+				currEmitPeriod += currEmitPeriodPtrInc;
 			}
-			while (phaseIt != endPhaseIt) ;
+			while (phaseIt != endPhaseIt);
 
-			leftToDo -= toProcess ;
+			leftToDo -= toProcess;
 		}
-		while (leftToDo) ;
+		while (leftToDo);
 	}
-	break ;	
+	break;	
 }
 }
 
 
 void CPSEmitter::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {	
-	nlassert(_Phase.getSize() != _Phase.getMaxSize()) ;	
+	nlassert(_Phase.getSize() != _Phase.getMaxSize());	
 
-	_Phase.insert(0.f) ;
+	_Phase.insert(0.f);
 
-	if (_PeriodScheme && _PeriodScheme->hasMemory()) _PeriodScheme->newElement(emitterLocated, emitterIndex) ;
-	if (_GenNbScheme && _GenNbScheme->hasMemory()) _GenNbScheme->newElement(emitterLocated, emitterIndex) ;
+	if (_PeriodScheme && _PeriodScheme->hasMemory()) _PeriodScheme->newElement(emitterLocated, emitterIndex);
+	if (_GenNbScheme && _GenNbScheme->hasMemory()) _GenNbScheme->newElement(emitterLocated, emitterIndex);
 
 }
 
 void CPSEmitter::deleteElement(uint32 index)
 {	
-	if (_PeriodScheme && _PeriodScheme->hasMemory()) _PeriodScheme->deleteElement(index) ;
-	if (_GenNbScheme && _GenNbScheme->hasMemory()) _GenNbScheme->deleteElement(index) ;
+	if (_PeriodScheme && _PeriodScheme->hasMemory()) _PeriodScheme->deleteElement(index);
+	if (_GenNbScheme && _GenNbScheme->hasMemory()) _GenNbScheme->deleteElement(index);
 
 	if (_EmissionType == CPSEmitter::onDeath)
 	{
-		const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, index) : _GenNb ;		
-		processEmit(index, nbToGenerate) ;		
+		const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, index) : _GenNb;		
+		processEmit(index, nbToGenerate);		
 	}		
 
-	_Phase.remove(index) ;
+	_Phase.remove(index);
 }
 
 void CPSEmitter::resize(uint32 size)
 {
-	if (_PeriodScheme && _PeriodScheme->hasMemory()) _PeriodScheme->resize(size, _Owner->getSize()) ;
-	if (_GenNbScheme && _GenNbScheme->hasMemory()) _GenNbScheme->resize(size, _Owner->getSize()) ;
-	_Phase.resize(size) ;
+	if (_PeriodScheme && _PeriodScheme->hasMemory()) _PeriodScheme->resize(size, _Owner->getSize());
+	if (_GenNbScheme && _GenNbScheme->hasMemory()) _GenNbScheme->resize(size, _Owner->getSize());
+	_Phase.resize(size);
 }
 
 void CPSEmitter::bounceOccured(uint32 index)
@@ -303,8 +320,8 @@ void CPSEmitter::bounceOccured(uint32 index)
 	// TODO : avoid duplication with deleteElement
 	if (_EmissionType == CPSEmitter::onBounce)
 	{
-		const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, index) : _GenNb ;		
-		processEmit(index, nbToGenerate) ;
+		const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, index) : _GenNb;		
+		processEmit(index, nbToGenerate);
 	}		
 }
 
@@ -312,18 +329,18 @@ void CPSEmitter::bounceOccured(uint32 index)
 void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 
-	f.serialVersion(1) ;	
-	CPSLocatedBindable::serial(f) ;
+	f.serialVersion(1);	
+	CPSLocatedBindable::serial(f);
 	
-	f.serialPolyPtr(_EmittedType) ;
-	f.serial(_Phase) ;
-	f.serial(_SpeedInheritanceFactor) ;
-	f.serial(_SpeedBasisEmission) ;
+	f.serialPolyPtr(_EmittedType);
+	f.serial(_Phase);
+	f.serial(_SpeedInheritanceFactor);
+	f.serial(_SpeedBasisEmission);
 	
-	f.serialEnum(_EmissionType) ;
+	f.serialEnum(_EmissionType);
 
 	// this is for use with serial
-	bool trueB = true, falseB = false ;
+	bool trueB = true, falseB = false;
 
 	if (!f.isReading())
 	{
@@ -332,61 +349,61 @@ void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			case CPSEmitter::regular:			
 				if (_PeriodScheme)
 				{
-					f.serial(trueB) ;
-					f.serialPolyPtr(_PeriodScheme) ;
+					f.serial(trueB);
+					f.serialPolyPtr(_PeriodScheme);
 				}
 				else
 				{
-					 f.serial(falseB) ;
-					 f.serial(_Period) ;
+					 f.serial(falseB);
+					 f.serial(_Period);
 				}				
-			break ;
+			break;
 			default:
-			break ;
+			break;
 		}
 		if (_GenNbScheme)
 		{
-			f.serial(trueB) ;
-			f.serialPolyPtr(_GenNbScheme) ;
+			f.serial(trueB);
+			f.serialPolyPtr(_GenNbScheme);
 		}
 		else
 		{
-			 f.serial(falseB) ;
-			 f.serial(_GenNb) ;
+			 f.serial(falseB);
+			 f.serial(_GenNb);
 		}
 	}
 	else
 	{
-		bool useScheme ;
+		bool useScheme;
 		switch (_EmissionType)
 		{
 			case CPSEmitter::regular:
 			{				
-				f.serial(useScheme) ;
+				f.serial(useScheme);
 				if (useScheme)
 				{
-					delete _PeriodScheme ;					
-					f.serialPolyPtr(_PeriodScheme) ;
+					delete _PeriodScheme;					
+					f.serialPolyPtr(_PeriodScheme);
 				}
 				else
 				{					 
-					 f.serial(_Period) ;
+					 f.serial(_Period);
 				}				
 			}
-			break ;
+			break;
 			default:
-			break ;
+			break;
 		}
 
-		f.serial(useScheme) ; 
+		f.serial(useScheme); 
 		if (useScheme)
 		{
-			delete _GenNbScheme ;
-			f.serialPolyPtr(_GenNbScheme) ;
+			delete _GenNbScheme;
+			f.serialPolyPtr(_GenNbScheme);
 		}
 		else
 		{				
-			 f.serial(_GenNb) ;
+			 f.serial(_GenNb);
 		}
 	}
 
@@ -398,42 +415,42 @@ void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 void CPSEmitterOmni::emit(uint32 index, CVector &pos, CVector &speed)
 {
 	// TODO : verifier que ca marche si une particule s'emet elle-mem
-	nlassert(_EmittedType) ;	
+	nlassert(_EmittedType);	
 	
 	CVector v( ((rand() % 1000) -500) / 500.0f
 				   , ((rand() % 1000) -500) / 500.0f
-				   , ((rand() % 1000) -500) / 500.0f) ;
-	v.normalize() ;
-	v *= _EmitteeSpeedScheme ? _EmitteeSpeedScheme->get(_Owner, index) : _EmitteeSpeed ;		
+				   , ((rand() % 1000) -500) / 500.0f);
+	v.normalize();
+	v *= _EmitteeSpeedScheme ? _EmitteeSpeedScheme->get(_Owner, index) : _EmitteeSpeed;		
 
-	pos = _Owner->getPos()[index] ;
-	speed = v ;	
+	pos = _Owner->getPos()[index];
+	speed = v;	
 }
 
 
 
 void CPSEmitterOmni::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1) ;	
-	CPSEmitter::serial(f) ;
-	CPSModulatedEmitter::serialEmitteeSpeedScheme(f) ;
+	f.serialVersion(1);	
+	CPSEmitter::serial(f);
+	CPSModulatedEmitter::serialEmitteeSpeedScheme(f);
 }
 
 
 void CPSEmitterOmni::newElement(CPSLocated *emitter, uint32 emitterIndex)
 {
-	CPSEmitter::newElement(emitter, emitterIndex) ;
-	newEmitteeSpeedElement(emitter, emitterIndex) ;
+	CPSEmitter::newElement(emitter, emitterIndex);
+	newEmitteeSpeedElement(emitter, emitterIndex);
 }
 void CPSEmitterOmni::deleteElement(uint32 index)
 {	
-	CPSEmitter::deleteElement(index) ;
-	deleteEmitteeSpeedElement(index) ;
+	CPSEmitter::deleteElement(index);
+	deleteEmitteeSpeedElement(index);
 }
 void CPSEmitterOmni::resize(uint32 capacity)
 {
-	CPSEmitter::resize(capacity) ;
-	resizeEmitteeSpeed(capacity) ;
+	CPSEmitter::resize(capacity);
+	resizeEmitteeSpeed(capacity);
 }
 
 
@@ -441,37 +458,37 @@ void CPSEmitterOmni::resize(uint32 capacity)
 void CPSEmitterDirectionnal::emit(uint32 index, CVector &pos, CVector &speed)
 {
 	// TODO : verifier que ca marche si une particule s'emet elle-mem
-	nlassert(_EmittedType) ;	
+	nlassert(_EmittedType);	
 	
 
-	speed = (_EmitteeSpeedScheme ? _EmitteeSpeedScheme->get(_Owner, index) : _EmitteeSpeed) * _Dir ;		
-	pos = _Owner->getPos()[index] ;	
+	speed = (_EmitteeSpeedScheme ? _EmitteeSpeedScheme->get(_Owner, index) : _EmitteeSpeed) * _Dir;		
+	pos = _Owner->getPos()[index];	
 }
 
 void CPSEmitterDirectionnal::newElement(CPSLocated *emitter, uint32 emitterIndex)
 {
-	CPSEmitter::newElement(emitter, emitterIndex) ;
-	newEmitteeSpeedElement(emitter, emitterIndex) ;
+	CPSEmitter::newElement(emitter, emitterIndex);
+	newEmitteeSpeedElement(emitter, emitterIndex);
 }
 void CPSEmitterDirectionnal::deleteElement(uint32 index)
 {	
-	CPSEmitter::deleteElement(index) ;
-	deleteEmitteeSpeedElement(index) ;
+	CPSEmitter::deleteElement(index);
+	deleteEmitteeSpeedElement(index);
 }
 void CPSEmitterDirectionnal::resize(uint32 capacity)
 {
-	CPSEmitter::resize(capacity) ;
-	resizeEmitteeSpeed(capacity) ;
+	CPSEmitter::resize(capacity);
+	resizeEmitteeSpeed(capacity);
 }
 
 
 
 void CPSEmitterDirectionnal::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1) ;	
-	CPSEmitter::serial(f) ;
-	CPSModulatedEmitter::serialEmitteeSpeedScheme(f) ;
-	f.serial(_Dir) ;
+	f.serialVersion(1);	
+	CPSEmitter::serial(f);
+	CPSModulatedEmitter::serialEmitteeSpeedScheme(f);
+	f.serial(_Dir);
 }
 
 
@@ -481,24 +498,24 @@ void CPSEmitterDirectionnal::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 void CPSEmitterRectangle::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1) ;	
-	CPSEmitter::serial(f) ;
-	CPSModulatedEmitter::serialEmitteeSpeedScheme(f) ;
-	f.serial(_Basis) ;	
-	f.serial(_Width) ;
-	f.serial(_Height) ;
-	f.serial(_Dir) ;
+	f.serialVersion(1);	
+	CPSEmitter::serial(f);
+	CPSModulatedEmitter::serialEmitteeSpeedScheme(f);
+	f.serial(_Basis);	
+	f.serial(_Width);
+	f.serial(_Height);
+	f.serial(_Dir);
 
 }
 
 
 void CPSEmitterRectangle::emit(uint32 index, CVector &pos, CVector &speed)
 {
-	CVector N = _Basis[index].X ^ _Basis[index].Y ;
+	CVector N = _Basis[index].X ^ _Basis[index].Y;
 	pos = _Owner->getPos()[index] + ((rand() % 32000) * (1.f / 16000) - 1.f) *  _Width[index] *  _Basis[index].X 
-								  + ((rand() % 32000) * (1.f / 16000) - 1.f) *  _Height[index] * _Basis[index].Y ;
+								  + ((rand() % 32000) * (1.f / 16000) - 1.f) *  _Height[index] * _Basis[index].Y;
 	speed = (_EmitteeSpeedScheme ? _EmitteeSpeedScheme->get(_Owner, index) : _EmitteeSpeed) 
-					* (_Dir.x * _Basis[index].X+ _Dir.y * _Basis[index].Y + _Dir.z *  N) ;
+					* (_Dir.x * _Basis[index].X+ _Dir.y * _Basis[index].Y + _Dir.z *  N);
 }
 
 
@@ -508,98 +525,98 @@ void CPSEmitterRectangle::emit(uint32 index, CVector &pos, CVector &speed)
 
 void CPSEmitterRectangle::setMatrix(uint32 index, const CMatrix &m)
 {
-	_Owner->getPos()[index] = m.getPos() ;
+	_Owner->getPos()[index] = m.getPos();
 
 	
-	 _Basis[index].X = m.getI() ;
-	 _Basis[index].Y = m.getJ() ;
+	 _Basis[index].X = m.getI();
+	 _Basis[index].Y = m.getJ();
 }
 
 CMatrix CPSEmitterRectangle::getMatrix(uint32 index) const
 {
-	CMatrix m ;
-	m.setPos(_Owner->getPos()[index]) ;
-	m.setRot(_Basis[index].X, _Basis[index].Y, _Basis[index].X ^ _Basis[index].Y, true) ;
-	return m ;
+	CMatrix m;
+	m.setPos(_Owner->getPos()[index]);
+	m.setRot(_Basis[index].X, _Basis[index].Y, _Basis[index].X ^ _Basis[index].Y, true);
+	return m;
 }
 
 
 
 void CPSEmitterRectangle::setScale(uint32 index, float scale)
 {
-	_Width[index] = scale ;
-	_Height[index] = scale ;
+	_Width[index] = scale;
+	_Height[index] = scale;
 }
 void CPSEmitterRectangle::setScale(uint32 index, const CVector &s)
 {
-	_Width[index] = s.x ;
-	_Height[index] = s.y ;
+	_Width[index] = s.x;
+	_Height[index] = s.y;
 }
 CVector CPSEmitterRectangle::getScale(uint32 index) const
 {	
-	return CVector(_Width[index], _Height[index], 1.f) ; 
+	return CVector(_Width[index], _Height[index], 1.f); 
 }
 
 		
 void CPSEmitterRectangle::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
-	CPSEmitter::newElement(emitterLocated, emitterIndex) ;
-	newEmitteeSpeedElement(emitterLocated, emitterIndex) ;
-	_Basis.insert(CPlaneBasis(CVector::K)) ;
-	_Width.insert(1.f) ;
-	_Height.insert(1.f) ;
+	CPSEmitter::newElement(emitterLocated, emitterIndex);
+	newEmitteeSpeedElement(emitterLocated, emitterIndex);
+	_Basis.insert(CPlaneBasis(CVector::K));
+	_Width.insert(1.f);
+	_Height.insert(1.f);
 }
 
 	
 void CPSEmitterRectangle::deleteElement(uint32 index)
 {
-	CPSEmitter::deleteElement(index) ;
-	deleteEmitteeSpeedElement(index) ;
-	_Basis.remove(index) ;
-	_Width.remove(index) ;
-	_Height.remove(index) ;
+	CPSEmitter::deleteElement(index);
+	deleteEmitteeSpeedElement(index);
+	_Basis.remove(index);
+	_Width.remove(index);
+	_Height.remove(index);
 }
 
 void CPSEmitterRectangle::resize(uint32 size)
 {
-	CPSEmitter::resize(size) ;
-	resizeEmitteeSpeed(size) ;
-	_Basis.resize(size) ;
-	_Width.resize(size) ;
-	_Height.resize(size) ;
+	CPSEmitter::resize(size);
+	resizeEmitteeSpeed(size);
+	_Basis.resize(size);
+	_Width.resize(size);
+	_Height.resize(size);
 }
 
 void CPSEmitterRectangle::showTool(void)
 {
-	nlassert(_Owner) ;
-	const uint size = _Owner->getSize() ;
-	if (!size) return ;
-	setupDriverModelMatrix() ;	
-	CMatrix mat ;
+	nlassert(_Owner);
+	const uint size = _Owner->getSize();
+	if (!size) return;
+	setupDriverModelMatrix();	
+	CMatrix mat;
 	
-	CPSLocated *loc ;
-	uint32 index ;
-	CPSLocatedBindable *lb ;
-	_Owner->getOwner()->getCurrentEditedElement(loc, index, lb) ;
+	CPSLocated *loc;
+	uint32 index;
+	CPSLocatedBindable *lb;
+	_Owner->getOwner()->getCurrentEditedElement(loc, index, lb);
 
-	for (uint k = 0 ; k < size ; ++k) 
+	for (uint k = 0; k < size; ++k) 
 	{	
-		const CVector &I = _Basis[k].X ;
-		const CVector &J = _Basis[k].Y ;
-		mat.setRot(I, J , I ^J) ;
-		mat.setPos(_Owner->getPos()[k]) ;
-		CPSUtil::displayBasis(getDriver() ,getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;				
-		setupDriverModelMatrix() ;	
+		const CVector &I = _Basis[k].X;
+		const CVector &J = _Basis[k].Y;
+		mat.setRot(I, J , I ^J);
+		mat.setPos(_Owner->getPos()[k]);
+		CPSUtil::displayBasis(getDriver() ,getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager());				
+		setupDriverModelMatrix();	
 
-		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;
+		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127));
 	
 
 
-		const CVector &pos = _Owner->getPos()[k] ;
+		const CVector &pos = _Owner->getPos()[k];
 		CPSUtil::display3DQuad(*getDriver(), pos + I * _Width[k] + J * _Height[k]
 										   , pos + I * _Width[k] - J * _Height[k]
 										   , pos - I * _Width[k] - J * _Height[k]
-										   , pos - I * _Width[k] + J * _Height[k], col) ;
+										   , pos - I * _Width[k] + J * _Height[k], col);
 	}
 }
 
@@ -612,16 +629,16 @@ void CPSEmitterRectangle::showTool(void)
 
 void CPSEmitterConic::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1) ;	
-	CPSEmitterDirectionnal::serial(f) ;
-	f.serial(_Radius) ;	
+	f.serialVersion(1);	
+	CPSEmitterDirectionnal::serial(f);
+	f.serial(_Radius);	
 }
 	
 
 
 void CPSEmitterConic::setDir(const CVector &v)
 {
-	CPSEmitterDirectionnal::setDir(v) ;
+	CPSEmitterDirectionnal::setDir(v);
 	
 }
 
@@ -629,29 +646,29 @@ void CPSEmitterConic::setDir(const CVector &v)
 void CPSEmitterConic::emit(uint32 index, CVector &pos, CVector &speed)
 {
 	// TODO : optimize that
-	nlassert(_EmittedType) ;	
+	nlassert(_EmittedType);	
 	
 	// we choose a custom direction like with omnidirectionnal emitter
 	// then we force the direction vect to have the unit size
 
-	static double divRand = (2.f / RAND_MAX) ;
+	static double divRand = (2.f / RAND_MAX);
 
 	CVector dir((float) (rand() * divRand - 1)
 				, (float) (rand() * divRand - 1)
-				, (float) (rand() * divRand - 1) ) ;
+				, (float) (rand() * divRand - 1) );
 
-	const float n =dir.norm() ;
+	const float n =dir.norm();
 
-	dir *= _Radius / n ;
+	dir *= _Radius / n;
 
-	dir -= (_Dir * dir) * _Dir ;
-	dir += _Dir ;
-	dir.normalize() ;
+	dir -= (_Dir * dir) * _Dir;
+	dir += _Dir;
+	dir.normalize();
 	
 	
 	speed = (_EmitteeSpeedScheme ? _EmitteeSpeedScheme->get(_Owner, index) : _EmitteeSpeed) 
-		    * dir ;
-	pos = _Owner->getPos()[index] ;	
+		    * dir;
+	pos = _Owner->getPos()[index];	
 }
 
 
@@ -662,11 +679,11 @@ void CPSEmitterConic::emit(uint32 index, CVector &pos, CVector &speed)
 
 void CPSSphericalEmitter::emit(uint32 index, CVector &pos, CVector &speed)
 {
-	static double divRand = (2.f / RAND_MAX) ;
-	CVector dir((float) (rand() * divRand - 1), (float) (rand() * divRand - 1) , (float) (rand() * divRand - 1) ) ;
-	dir.normalize() ;
-	pos = _Radius[index] * dir ;
-	speed = (_EmitteeSpeedScheme ? _EmitteeSpeedScheme->get(_Owner, index) : _EmitteeSpeed)  * dir ;	
+	static double divRand = (2.f / RAND_MAX);
+	CVector dir((float) (rand() * divRand - 1), (float) (rand() * divRand - 1) , (float) (rand() * divRand - 1) );
+	dir.normalize();
+	pos = _Radius[index] * dir;
+	speed = (_EmitteeSpeedScheme ? _EmitteeSpeedScheme->get(_Owner, index) : _EmitteeSpeed)  * dir;	
 }
 
 
@@ -674,68 +691,68 @@ void CPSSphericalEmitter::emit(uint32 index, CVector &pos, CVector &speed)
 	
 void CPSSphericalEmitter::showTool(void)
 {
-	CPSLocated *loc ;
-	uint32 index ;
-	CPSLocatedBindable *lb ;
-	_Owner->getOwner()->getCurrentEditedElement(loc, index, lb) ;
+	CPSLocated *loc;
+	uint32 index;
+	CPSLocatedBindable *lb;
+	_Owner->getOwner()->getCurrentEditedElement(loc, index, lb);
 
 
-	TPSAttribFloat::const_iterator radiusIt = _Radius.begin() ;
-	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt = _Owner->getPos().end() ;
-	setupDriverModelMatrix() ;	
-	for (uint k = 0  ; posIt != endPosIt ; ++posIt, ++radiusIt, ++k) 
+	TPSAttribFloat::const_iterator radiusIt = _Radius.begin();
+	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt = _Owner->getPos().end();
+	setupDriverModelMatrix();	
+	for (uint k = 0; posIt != endPosIt; ++posIt, ++radiusIt, ++k) 
 	{	
-		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;		
-		CPSUtil::displaySphere(*getDriver(), *radiusIt, *posIt, 5, col) ;
+		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127));		
+		CPSUtil::displaySphere(*getDriver(), *radiusIt, *posIt, 5, col);
 	}
 }
 
 void CPSSphericalEmitter::setMatrix(uint32 index, const CMatrix &m)
 {
-	nlassert(index < _Radius.getSize()) ;		
+	nlassert(index < _Radius.getSize());		
 	// compute new pos
-	_Owner->getPos()[index] = m.getPos() ;
+	_Owner->getPos()[index] = m.getPos();
 	
 }
 
 CMatrix CPSSphericalEmitter::getMatrix(uint32 index) const
 {
-	nlassert(index < _Radius.getSize()) ;
-	CMatrix m ;
-	m.identity() ;
-	m.translate(_Owner->getPos()[index]) ;	
-	return m ; 
+	nlassert(index < _Radius.getSize());
+	CMatrix m;
+	m.identity();
+	m.translate(_Owner->getPos()[index]);	
+	return m; 
 }
 		
 	
 
 void CPSSphericalEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1) ;	
-	CPSEmitter::serial(f) ;
-	CPSModulatedEmitter::serialEmitteeSpeedScheme(f) ;
-	f.serial(_Radius) ;
+	f.serialVersion(1);	
+	CPSEmitter::serial(f);
+	CPSModulatedEmitter::serialEmitteeSpeedScheme(f);
+	f.serial(_Radius);
 }
 		
 void CPSSphericalEmitter::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
-	CPSEmitter::newElement(emitterLocated, emitterIndex) ;
-	newEmitteeSpeedElement(emitterLocated, emitterIndex) ;	
-	_Radius.insert(1.f) ;
+	CPSEmitter::newElement(emitterLocated, emitterIndex);
+	newEmitteeSpeedElement(emitterLocated, emitterIndex);	
+	_Radius.insert(1.f);
 }
 
 void CPSSphericalEmitter::deleteElement(uint32 index)
 {
-	CPSEmitter::deleteElement(index) ;
-	deleteEmitteeSpeedElement(index) ;	
-	_Radius.remove(index) ;
+	CPSEmitter::deleteElement(index);
+	deleteEmitteeSpeedElement(index);	
+	_Radius.remove(index);
 }
 
 void CPSSphericalEmitter::resize(uint32 size)
 {
-	CPSEmitter::resize(size) ;
-	resizeEmitteeSpeed(size) ;	
-	_Radius.resize(size) ;
+	CPSEmitter::resize(size);
+	resizeEmitteeSpeed(size);	
+	_Radius.resize(size);
 }
 
 

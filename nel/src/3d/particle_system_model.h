@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.14 2001/08/09 08:01:21 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.15 2001/08/16 17:06:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,6 +65,8 @@ class CParticleSystemModel : public CTransformShape
 			/// register the basic models and observers
 			static	void				registerBasic();
 			//@}
+
+
 	
 		///\name Embedded particle system
 			//@{

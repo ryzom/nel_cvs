@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.10 2001/08/06 10:03:45 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.11 2001/08/16 17:08:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,11 +102,14 @@ public:
 	 *  onDeath     : emit when the particle is destroyed
 	 *  once        : emit when the particle is created
 	 *  onBounce    : emit when the particle bounce
+	 *  externEmit  : emitted explicitly by the system user. A 4 letter id must be used to identify this kind of emitters
+	 *                the default ID is NON
 	 */
-	enum TEmissionType { regular = 0, onDeath = 1,  once = 2, onBounce = 3 } ;
+	enum TEmissionType { regular = 0, onDeath = 1,  once = 2, onBounce = 3, externEmit = 4 } ;
 
-	/// set the frequency type
-	void							setEmissionType(TEmissionType freqType) { _EmissionType = freqType ; }
+	/** Set the frequency type. Please note that if the type is externEmit, this located need to have been attached to the system (the system is holding the ID-Located map)
+	  */
+	void							setEmissionType(TEmissionType freqType);
 
 	/// get the frequency type
 	TEmissionType					getEmissionType(void) const { return _EmissionType ; }
@@ -182,8 +185,11 @@ public:
 	 */
 	bool							isSpeedBasisEmissionEnabled(void) const { return _SpeedBasisEmission ; }
 	
+	/// process a single emission. For external use (in the user interface layer)
+	void singleEmit(uint32 index, uint quantity);
 
-protected:
+
+protected:	
 
 	/// this will call emit, and will add additionnal features (speed addition and so on)
 	inline void						processEmit(uint32 index, sint nbToGenerate) ;

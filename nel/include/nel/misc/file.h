@@ -1,7 +1,7 @@
 /** \file file.h
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.21 2002/10/10 12:43:25 berenguier Exp $
+ * $Id: file.h,v 1.22 2003/03/25 16:04:45 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,21 +45,22 @@ struct EFile : public EStream
 public:
 	EFile () : EStream( "Unknown file error" ) {}
 	EFile (const std::string& filename) : EStream( "Unknown file error in '"+filename+"'" ) {}
+	EFile (const std::string& text, bool ) : EStream( text ) {}
 };
 
 struct EFileNotOpened : public EFile
 {
-	EFileNotOpened( const std::string& filename ) : EFile( "File '"+filename+"' not opened" ) {}
+	EFileNotOpened( const std::string& filename ) : EFile( "File '"+filename+"' not opened", true ) {}
 };
 
 struct EReadError : public EFile
 {
-	EReadError( const std::string& filename ) : EFile( "Read error in file '" +filename+"' (End of file?)" ) {}
+	EReadError( const std::string& filename ) : EFile( "Read error in file '" +filename+"' (End of file?)", true ) {}
 };
 
 struct EWriteError : public EFile
 {
-	EWriteError( const std::string& filename ) : EFile( "Write Error in file '" +filename+"'" ) {}
+	EWriteError( const std::string& filename ) : EFile( "Write Error in file '" +filename+"'", true ) {}
 };
 
 

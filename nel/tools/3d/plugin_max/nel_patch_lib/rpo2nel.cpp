@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.13 2002/02/25 11:04:17 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.14 2002/03/07 10:33:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -151,6 +151,35 @@ int getScriptAppData (Animatable *node, uint32 id, int def)
 		return value;
 	else
 		return def;
+}
+
+// ***************************************************************************
+
+bool RPatchMesh::getTileSymmetryRotate (const CTileBank &bank, uint tile, bool &symmetry, uint &rotate)
+{
+	// Tile exist ?
+	if (tile < (uint)bank.getTileCount())
+	{
+		// Get xref
+		int tileSet;
+		int number;
+		CTileBank::TTileType type;
+
+		// Get tile xref
+		bank.getTileXRef ((int)tile, tileSet, number, type);
+
+		// Is it an oriented tile ?
+		if (bank.getTileSet (tileSet)->getOriented())
+		{
+			// New rotation value
+			rotate = 0;
+		}
+
+		// Ok
+		return true;
+	}
+
+	return false;
 }
 
 // ***************************************************************************
@@ -476,8 +505,22 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 					uint tile = desc.getLayer (l).Tile;
 					uint tileRotation = desc.getLayer (l).Rotate;
 
-					// Transform the tile
-					if (!transformTile (bank, tile, tileRotation, symmetry, (-rotate)&3))
+					// Get rot and symmetry for this tile
+					uint tileRotate = rotate;
+					bool tileSymmetry = symmetry;
+
+					// Transform the transfo
+					if (getTileSymmetryRotate (bank, tile, tileSymmetry, tileRotate))
+					{
+						// Transform the tile
+						if (!transformTile (bank, tile, tileRotation, tileSymmetry, (4-tileRotate)&3))
+						{
+							// Info
+							nlwarning ("Error getting symmetrical / rotated zone tile.");
+							return false;
+						}
+					}
+					else
 					{
 						// Info
 						nlwarning ("Error getting symmetrical / rotated zone tile.");
@@ -499,7 +542,16 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 				{
 					// Transform 256 case
 					uint case256 = desc.getCase()-1;
-					transform256Case (bank, case256, 0 /*desc.getLayer (l).Rotate*/, symmetry, (-rotate)&3);
+
+					// Get rot and symmetry for this tile
+					uint tileRotate = rotate;
+					bool tileSymmetry = symmetry;
+
+					// Transform the transfo
+					getTileSymmetryRotate (bank, pi.Tiles[uSymmetry+v*pi.OrderS].Tile[0], tileSymmetry, tileRotate);
+
+					// Transform the case
+					transform256Case (bank, case256, 0, tileSymmetry, (4-tileRotate)&3);
 
 					pi.Tiles[uSymmetry+v*pi.OrderS].setTile256Info (true, case256);
 				}

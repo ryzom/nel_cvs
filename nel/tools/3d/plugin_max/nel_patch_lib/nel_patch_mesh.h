@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.h
  * <File description>
  *
- * $Id: nel_patch_mesh.h,v 1.8 2002/01/03 13:12:56 corvazier Exp $
+ * $Id: nel_patch_mesh.h,v 1.9 2002/03/07 10:33:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -781,6 +781,7 @@ public:
 	}
 
 	// Transform tile and 256 case with rotation and symmetry parameters
+	static bool getTileSymmetryRotate (const NL3D::CTileBank &bank, uint tile, bool &symmetry, uint &rotate);
 	static bool transformTile (const NL3D::CTileBank &bank, uint &tile, uint &tileRotation, bool symmetry, uint rotate);
 	static void transform256Case (const NL3D::CTileBank &bank, uint &case256, uint tileRotation, bool symmetry, uint rotate);
 };

@@ -131,6 +131,8 @@ extern const unsigned char light[];
 extern const unsigned int lightSize;
 extern const unsigned char lock[];
 extern const unsigned int lockSize;
+extern const unsigned char oriented[];
+extern const unsigned int orientedSize;
 
 /*-------------------------------------------------------------------*/
 
@@ -262,6 +264,7 @@ CBankCont::CBankCont (CTileBank& bank, HINSTANCE hInstance)
 	allBitmap		=	new CTextureMem ((uint8*)all, allSize, false);
 	lightBitmap		=	new CTextureMem ((uint8*)light, lightSize, false);
 	lockBitmap		=	new CTextureMem ((uint8*)lock, lockSize, false);
+	orientedBitmap	=	new CTextureMem ((uint8*)oriented, orientedSize, false);
 
 	// Resize the tileset array
 	TileSet.resize (bank.getTileSetCount());

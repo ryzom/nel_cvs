@@ -250,6 +250,16 @@ void drawInterface (TModeMouse select, TModePaint mode, PaintPatchMod *pobj, IDr
 		// *** Draw the current tile
 		if ((pobj->CurrentTileSet!=-1)&&(mode==ModeTile))
 		{
+			// Draw the oriented icon
+			if (bank.getTileSet (pobj->CurrentTileSet)->getOriented())
+			{
+				// Get pointer
+				ITexture *tex=bankCont->orientedBitmap;
+
+				// Draw the bitmap
+				CDRU::drawBitmap ( (float)(MOD_WIDTH-1)/(float)MOD_WIDTH, (float)(0)/(float)MOD_HEIGHT, 1.f/(float)MOD_WIDTH, 1.f/(float)MOD_HEIGHT, *tex, driver, CViewport(), true);
+			}
+
 			if (pobj->TileGroup==0)
 			{
 				// Get pointer
@@ -450,7 +460,15 @@ void transformDesc (tileDesc &desc, bool symmetry, uint rotate)
 	{
 		// Transform the case
 		uint case256 = desc.getCase()-1;
-		RPatchMesh::transform256Case (bank, case256, 0 /*desc.getLayer (0).Rotate*/ , symmetry, rotate);
+
+		// Get rot and symmetry for this tile
+		uint tileRotate = rotate;
+		bool tileSymmetry = symmetry;
+
+		// Transform the transfo		
+		RPatchMesh::getTileSymmetryRotate (bank, desc.getLayer(0).Tile, tileSymmetry, tileRotate);
+
+		RPatchMesh::transform256Case (bank, case256, 0, tileSymmetry, tileRotate);
 		desc.setCase (case256+1);
 	}
 
@@ -460,11 +478,19 @@ void transformDesc (tileDesc &desc, bool symmetry, uint rotate)
 		uint tile = desc.getLayer (l).Tile;
 		uint tileRotation = desc.getLayer (l).Rotate;
 
-		// Transform it
-		if (RPatchMesh::transformTile (bank, tile, tileRotation, symmetry, rotate))
+		// Get rot and symmetry for this tile
+		uint tileRotate = rotate;
+		bool tileSymmetry = symmetry;
+
+		// Transform the transfo
+		if (RPatchMesh::getTileSymmetryRotate (bank, tile, tileSymmetry, tileRotate))
 		{
-			desc.getLayer (l).Tile = tile;
-			desc.getLayer (l).Rotate = tileRotation;
+			// Transform it
+			if (RPatchMesh::transformTile (bank, tile, tileRotation, tileSymmetry, tileRotate))
+			{
+				desc.getLayer (l).Tile = tile;
+				desc.getLayer (l).Rotate = tileRotation;
+			}
 		}
 	}
 }

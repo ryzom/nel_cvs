@@ -1417,6 +1417,66 @@ InputName=medium
 !ENDIF 
 
 # End Source File
+# Begin Source File
+
+SOURCE=.\oriented.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\oriented.tga
+
+!IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\oriented.tga
+InputName=oriented
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 Debug"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\oriented.tga
+InputName=oriented
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 Hybrid"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\oriented.tga
+InputName=oriented
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 ReleaseDebug"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\oriented.tga
+InputName=oriented
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ENDIF 
+
+# End Source File
 # End Group
 # Begin Group "Source Files"
 

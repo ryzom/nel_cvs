@@ -69,6 +69,7 @@ public:
 	CSmartPtr<CTextureMem>				allBitmap;
 	CSmartPtr<CTextureMem>				lightBitmap;
 	CSmartPtr<CTextureMem>				lockBitmap;
+	CSmartPtr<CTextureMem>				orientedBitmap;
 
 	// Handle on 
 	HCURSOR								HCur;

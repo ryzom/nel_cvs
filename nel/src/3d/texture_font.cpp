@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.10 2001/09/07 12:51:29 besson Exp $
+ * $Id: texture_font.cpp,v 1.11 2001/09/07 15:25:38 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -196,7 +196,8 @@ void CTextureFont::rebuildLetter (sint cat, sint x, sint y)
 														rLetter.AdvX, rLetter.GlyphIndex );
 
 	// Copy FreeType buffer
-	for (uint i = 0; i < rLetter.CharHeight; ++i)
+	uint i;
+	for (i = 0; i < rLetter.CharHeight; ++i)
 	{
 		uint8 *pDst = &_Data[0][posx + (posy+i)*TextureSizeY];
 		uint8 *pSrc = &bitmap[i*pitch];
@@ -207,6 +208,20 @@ void CTextureFont::rebuildLetter (sint cat, sint x, sint y)
 			++pSrc;
 		}
 	}
+	// Bordure noire a gauche et a droite
+	rLetter.CharHeight += 1;
+	rLetter.CharWidth += 1;
+
+	for (i = 0; i < rLetter.CharHeight; ++i)
+	{
+		_Data[0][posx + rLetter.CharWidth-1 + (posy+i)*TextureSizeY] = 0;
+	}
+
+	for (i = 0; i < rLetter.CharWidth; ++i)
+	{
+		_Data[0][posx + i + (posy+rLetter.CharHeight-1)*TextureSizeY] = 0;
+	}
+
 	/*
 	dumpTextureFont (this);
 	int a = 5;
@@ -314,7 +329,8 @@ CTextureFont::SLetterInfo* CTextureFont::getLetterInfo (SLetterKey& k)
 	sint32 nLeft, nTop, nAdvX;
 	k.FontGenerator->getBitmap (k.Char, k.Size, width, height, nPitch, nLeft, nTop, 
 														nAdvX, nGlyphIndex );
-
+	width += 1;
+	height += 1;
 	cat = 0;
 
 	if (((sint)width > Categories[TEXTUREFONT_NBCATEGORY-1]) ||

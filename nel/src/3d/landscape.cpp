@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.48 2001/02/28 14:28:57 berenguier Exp $
+ * $Id: landscape.cpp,v 1.49 2001/03/07 13:04:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -742,7 +742,16 @@ void			CLandscape::loadTile(uint16 tileId)
 	CPatchRdrPass	pass;
 	// The diffuse part for a tile is inevitable.
 	if(tile)
-		pass.TextureDiffuse= findTileTexture(TileBank.getAbsPath()+tile->getRelativeFileName(CTile::diffuse));
+	{
+		textName= tile->getRelativeFileName(CTile::diffuse);
+		if(textName!="")
+			pass.TextureDiffuse= findTileTexture(TileBank.getAbsPath()+textName);
+		else
+		{
+			pass.TextureDiffuse= new CTextureCross;
+			nldebug("Missing Tile diffuse texname: %d", tileId);
+		}
+	}
 	else
 		pass.TextureDiffuse= new CTextureCross;
 	if(tile)

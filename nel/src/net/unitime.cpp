@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.2 2000/11/10 16:58:35 cado Exp $
+ * $Id: unitime.cpp,v 1.3 2000/11/21 10:57:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,8 +47,7 @@ TTime CUniTime::getUniTime ()
 {
 	if (!Sync)
 	{
-		nlwarning ("called getUniTime before calling syncUniTimeFromServer");
-		return 0;
+		nlerror ("called getUniTime before calling syncUniTimeFromServer");
 	}
 	return getLocalTime () - (_SyncLocalTime - _SyncUniTime);
 }
@@ -99,7 +98,7 @@ void CUniTime::syncUniTimeFromService ()
 	}
 	else
 	{
-		nlwarning ("CTS not found, can't syncronize universal time");
+		nlerror ("CTS not found, can't syncronize universal time");
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file cubic_entity_interpolator.cpp
  * Cubic interpolation of entity
  *
- * $Id: cubic_entity_interpolator.cpp,v 1.1 2000/11/20 15:51:49 cado Exp $
+ * $Id: cubic_entity_interpolator.cpp,v 1.2 2000/11/21 10:57:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,7 +96,8 @@ void CCubicEntityInterpolator::begin( const IMovingEntity& src, const IMovingEnt
 	//setTV( src.pos(), src.pos()+src.trajVector(), dest.pos(), dest.pos()-dest.trajVector() );
 
 	CMatrix controlmatrix;
-	controlmatrix.setRot( p1, p2, p3 );
+	controlmatrix.identity();
+	controlmatrix.setRot( p1, p2, p3, true );
 	controlmatrix.setPos( p4 );
 	_CubicMatrix = controlmatrix * CCubicEntityInterpolator::_BezierMatrix;
 

@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_manager.cpp,v 1.4 2001/09/21 13:39:24 berenguier Exp $
+ * $Id: quad_grid_clip_manager.cpp,v 1.5 2001/09/21 16:01:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -204,11 +204,11 @@ bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp, CClipTrav *pCl
 	// Transform the box in the world
 	const CMatrix &wm = pTfmShp->getWorldMatrix();
 	// compute center in world.
-	CVector c  = box.getCenter();
-	c = wm * c;
+	CVector cLocal  = box.getCenter();
+	CVector cWorld  = wm * cLocal;
 	// prepare bbox.
 	CAABBox worldBBox;
-	worldBBox.setCenter(c);
+	worldBBox.setCenter(cWorld);
 	CVector hs = box.getHalfSize();
 
 	// For 8 corners.
@@ -216,7 +216,7 @@ bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp, CClipTrav *pCl
 	{
 		CVector		corner;
 		// compute the corner of the bbox.
-		corner= c;
+		corner= cLocal;
 		if(i&1)		corner.x+=hs.x;
 		else		corner.x-=hs.x;
 		if((i/2)&1)	corner.y+=hs.y;
@@ -232,8 +232,8 @@ bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp, CClipTrav *pCl
 
 	// Position in the grid.
 	sint	x,y;
-	x= (sint)floor( c.x / _ClusterSize);
-	y= (sint)floor( c.y / _ClusterSize);
+	x= (sint)floor( cWorld.x / _ClusterSize);
+	y= (sint)floor( cWorld.y / _ClusterSize);
 
 	// verify if IN the current grid of clusters created.
 	if( x>=_X && x<_X+_Width && y>=_Y && y<_Y+_Height )

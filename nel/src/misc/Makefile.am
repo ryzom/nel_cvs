@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.62 2002/11/21 14:01:03 coutelas Exp $
+# $Id: Makefile.am,v 1.63 2002/12/09 11:20:43 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -45,6 +45,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         path.cpp                           \
                         plane.cpp                          \
                         polygon.cpp                        \
+			progress_callback.cpp		   \
                         quad.cpp                           \
                         quat.cpp                           \
                         rect.cpp                           \

@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.5 2001/03/22 17:53:22 saffray Exp $
+ * $Id: identtype.h,v 1.6 2001/03/29 07:53:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -146,25 +146,40 @@ namespace NLAIAGENT
 		///saving the nomber in an output stream.
 		virtual void save(NLMISC::IStream &os)
 		{			
-			uint8 p = (uint8)CreatorId;
+			uint64 p = AgentNumber;
+			p <<= 8;
+			p |= (uint64)CreatorId;
+			p <<= 8;
+			p |= (uint64)DynamicId;
+
+			/*uint64 p = (uint64)CreatorId;
 			os.serial(p);
-			p = (uint8)DynamicId;
+			p = DynamicId;
 			os.serial(p);
 			uint64 x = AgentNumber;
-			os.serial(x);
+			os.serial(x);*/
 		}
 
 		///loading the nomber from an input stream.
 		virtual void load(NLMISC::IStream &is)
 		{
-			uint8 p;
+			uint64 p;
+			is.serial(p);
+
+			DynamicId = (uint64)(p & 0xff);
+			p >>= 8;
+			CreatorId = (uint64)(p & 0xff);
+			p >>= 8;
+			AgentNumber = (uint64)(p & (1<<48));
+
+			/*uint64 p;
 			is.serial(p);
 			CreatorId = (uint64)p;
 			is.serial(p);
 			DynamicId = (uint64)p;
 			uint64 x;
 			is.serial(x);
-			AgentNumber = x;
+			AgentNumber = x;*/
 
 		}
 		///Have a debug string.

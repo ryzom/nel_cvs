@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.76 2002/02/12 17:19:47 berenguier Exp $
+ * $Id: patch.cpp,v 1.77 2002/02/18 18:11:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ namespace NL3D
 // ***************************************************************************
 CBezierPatch	CPatch::CachePatch;
 const CPatch	*CPatch::LastPatch= NULL;
-uint32			CPatch::_Version=5;
+uint32			CPatch::_Version=6;
 
 
 // ***************************************************************************
@@ -1351,6 +1351,8 @@ void			CPatch::resetRenderFar()
 void			CPatch::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 6:
+		- default UnderWater flags for tileElements before version 6.
 	Version 5:
 		- TileLightInfluences serialized.
 	Version 4:
@@ -1436,6 +1438,17 @@ void			CPatch::serial(NLMISC::IStream &f)
 			resetTileLightInfluences();
 		}
 	}
+
+	// if read a too old version, 
+	if(ver<6 && f.isReading())
+	{
+		// reset tileElements vegetableState to AboveWater.
+		for(uint i=0; i<Tiles.size(); i++)
+		{
+			Tiles[i].setVegetableState(CTileElement::AboveWater);
+		}
+	}
+
 
 }
 

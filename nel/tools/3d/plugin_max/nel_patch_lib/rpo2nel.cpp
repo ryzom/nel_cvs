@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.11 2002/01/03 13:12:56 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.12 2002/02/18 18:10:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -505,6 +505,9 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 				}
 			}
 			pi.Tiles[uSymmetry+v*pi.OrderS].setTileSubNoise (desc.getDisplace());
+
+			// Default VegetableState: AboveWater. Important: must not be VegetableDisabled
+			pi.Tiles[uSymmetry+v*pi.OrderS].setVegetableState (CTileElement::AboveWater);
 		}
 
 		// ** Export tile colors

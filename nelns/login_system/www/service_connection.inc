@@ -273,7 +273,7 @@
 		}
 		//printf("reason size %d", strlen($res));
 			
-		if(strlen($res) == 0)
+		//if(strlen($res) == 0)
 		{
 			$ok = true;
 		}

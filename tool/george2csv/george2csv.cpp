@@ -76,7 +76,7 @@ std::vector<std::string> files;
 
 vector<string>		inputScriptFiles;
 vector<string>		inputCsvFiles;
-string				inputSheetPath;
+vector<string>		inputSheetPaths;
 bool				inputSheetPathLoaded = false;
 map<string, string>	inputSheetPathContent;
 
@@ -550,11 +550,14 @@ void	loadSheetPath()
 
 	vector<string> files;
 	vector<string> pathsToAdd;
-	explode( inputSheetPath, "*", pathsToAdd );
-	for ( vector<string>::const_iterator ip=pathsToAdd.begin(); ip!=pathsToAdd.end(); ++ip )
+	for (uint i=0; i<inputSheetPaths.size(); ++i)
 	{
-		CPath::addSearchPath( *ip, true, false );
-		CPath::getPathContent( *ip, true, false, true, files );
+		explode( inputSheetPaths[i], "*", pathsToAdd );
+		for ( vector<string>::const_iterator ip=pathsToAdd.begin(); ip!=pathsToAdd.end(); ++ip )
+		{
+			CPath::addSearchPath( *ip, true, false );
+			CPath::getPathContent( *ip, true, false, true, files );
+		}
 	}
 	
 	uint	i;
@@ -659,7 +662,8 @@ string OutputPath;
  */
 void	convertCsvFile( const string &file, bool generate, const string& sheetType )
 {
-	char			lineBuffer[2048];
+	const uint			BUFFER_SIZE = 16*1024;
+	char			lineBuffer[BUFFER_SIZE];
 	FILE			*s;
 
 	vector<string>	fields;
@@ -678,7 +682,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 	NLMISC::CSmartPtr<UFormDfn> formDfn;
 
 
-	fgets(lineBuffer, 2048, s);
+	fgets(lineBuffer, BUFFER_SIZE, s);
 	explode(lineBuffer, SEPARATOR, fields);
 
 	vector<bool> activeFields( fields.size(), true );
@@ -825,7 +829,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 	while (!feof(s))
 	{
 		lineBuffer[0] = '\0';
-		fgets(lineBuffer, 2048, s);
+		fgets(lineBuffer, BUFFER_SIZE, s);
 		explode(lineBuffer, SEPARATOR, args);
 
 		if (args.size() < 1)
@@ -839,7 +843,11 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			continue;
 
 		//nldebug( "%s: %u", args[0].c_str(), args.size() );
-		string	filebase = dirmapSheetCode+args[0]+"."+sheetType;
+		string	filebase = dirmapSheetCode+args[0]; /*+"."+sheetType;*/
+		if (filebase.find("."+sheetType) == string::npos)
+		{
+			filebase += "." + sheetType;
+		}
 		strlwr	(filebase);
 		string	filename, dirbase;
 		bool	isNewSheet=true;
@@ -957,11 +965,11 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 				{
 					// This is slow. Opti: insertParent() should have an option to do it without loading the form
 					//	parent have same type that this object (postulat).
-					string	localExtension=(val.find(addExtension)==string::npos)?addExtension:"";
 					uint	nbinsertedparents=0;
 
 					for ( uint p=0; p!=parentVals.size(); ++p )
 					{						
+						string	localExtension=(parentVals[p].find(addExtension)==string::npos)?addExtension:"";
 						string	parentName=parentVals[p]+localExtension;
 
 						CSmartPtr<CForm> parentForm = (CForm*)formLoader->loadForm(CFile::getFilename(parentName.c_str()).c_str());
@@ -1067,13 +1075,18 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 						if	(	!isNewSheet
 							&&	fieldForm!=NULL)
 						{
-							string	test;
-							if	(	fieldForm->getArrayValue(test, currentMemberIndex)
-								&&	test==memberVal	)
+							uint arraySize;
+							const UFormElm *arrayNode = NULL;
+							if (fieldForm->isArray() 
+								&& fieldForm->getArraySize(arraySize) && arraySize == memberVals.size())
 							{
-								continue;
+								string	test;
+								if	(	fieldForm->getArrayValue(test, currentMemberIndex)
+									&&	test==memberVal	)
+								{
+									continue;
+								}
 							}
-
 						}
 						//nldebug( "%s: %s '%s'", args[0].c_str(), var.c_str(), memberVal.c_str() );
 						// need to put the value at the correct index.
@@ -1209,7 +1222,7 @@ int main(int argc, char* argv[])
 					usage(argv[0], stderr);
 					exit(0);
 				}
-				inputSheetPath = argv[i];
+				inputSheetPaths.push_back(argv[i]);
 				break;
 			case 's':
 				++i;

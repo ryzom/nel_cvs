@@ -17,8 +17,9 @@
 // ---------------------------------------------------------------------------
 
 using namespace std;
+using namespace NLMISC;
 
-// ---------------------------------------------------------------------------
+// ***************************************************************************
 char sExeDir[MAX_PATH];
 
 void outString (const string &sText)
@@ -31,42 +32,11 @@ void outString (const string &sText)
 	SetCurrentDirectory (sCurDir);
 }
 
-// ---------------------------------------------------------------------------
-void dir (const std::string &sFilter, std::vector<std::string> &sAllFiles, bool bFullPath)
-{
-	WIN32_FIND_DATA findData;
-	HANDLE hFind;
-	char sCurDir[MAX_PATH];
-	sAllFiles.clear ();
-	GetCurrentDirectory (MAX_PATH, sCurDir);
-	hFind = FindFirstFile (sFilter.c_str(), &findData);	
-	while (hFind != INVALID_HANDLE_VALUE)
-	{
-		if (!(GetFileAttributes(findData.cFileName)&FILE_ATTRIBUTE_DIRECTORY))
-		{
-			if (bFullPath)
-				sAllFiles.push_back(string(sCurDir) + "\\" + findData.cFileName);
-			else
-				sAllFiles.push_back(findData.cFileName);
-		}
-		if (FindNextFile (hFind, &findData) == 0)
-			break;
-	}
-	FindClose (hFind);
-}
+// ***************************************************************************
+// test every 4 pixels for 2 reason: DXTC and speed
+const	uint32	posStep= 4;
 
-// ---------------------------------------------------------------------------
-bool fileExist (const std::string &sFileName)
-{
-	HANDLE hFile = CreateFile (sFileName.c_str(), GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, 
-				OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (hFile == INVALID_HANDLE_VALUE)
-		return false;
-	CloseHandle (hFile);
-	return true;
-}
-
-// -----------------------------------------------------------------------------------------------
+// ***************************************************************************
 // Try all position to put pSrc in pDst
 bool tryAllPos (NLMISC::CBitmap *pSrc, NLMISC::CBitmap *pDst, sint32 &x, sint32 &y)
 {
@@ -81,8 +51,8 @@ bool tryAllPos (NLMISC::CBitmap *pSrc, NLMISC::CBitmap *pDst, sint32 &x, sint32 
 	if (nSrcHeight > pDst->getHeight() ) return false;
 
 	// For all position test if the Src plane can be put in
-	for (j = 0; j <= (pDst->getHeight() - nSrcHeight); ++j)
-	for (i = 0; i <= (pDst->getWidth() - nSrcWidth); ++i)
+	for (j = 0; j <= (pDst->getHeight() - nSrcHeight); j+= posStep)
+	for (i = 0; i <= (pDst->getWidth() - nSrcWidth); i+= posStep)
 	{
 		x = i; y = j;
 		
@@ -107,31 +77,67 @@ bool tryAllPos (NLMISC::CBitmap *pSrc, NLMISC::CBitmap *pDst, sint32 &x, sint32 
 	return false;
 }
 
-// -----------------------------------------------------------------------------------------------
+// ***************************************************************************
+void	putPixel(uint8 *dst, uint8 *src, bool alphaTransfert)
+{
+	dst[0] = src[0];
+	dst[1] = src[1];
+	dst[2] = src[2];
+	if (alphaTransfert)
+		dst[3] = src[3];
+	else
+		dst[3] = 255;
+}
+
+// ***************************************************************************
 bool putIn (NLMISC::CBitmap *pSrc, NLMISC::CBitmap *pDst, sint32 x, sint32 y, bool alphaTransfert=true)
 {
 	uint32 a, b;
 
-	vector<uint8> &rSrcPix = pSrc->getPixels();
-	vector<uint8> &rDstPix = pDst->getPixels();
+	uint8 *rSrcPix = &pSrc->getPixels()[0];
+	uint8 *rDstPix = &pDst->getPixels()[0];
 
-	for (b = 0; b < pSrc->getHeight(); ++b)
-	for (a = 0; a < pSrc->getWidth(); ++a)
+	uint	wSrc= pSrc->getWidth();
+	uint	hSrc= pSrc->getHeight();
+	for (b = 0; b < hSrc; ++b)
+	for (a = 0; a < wSrc; ++a)
 	{
 		if (rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] != 0)
 			return false;
-		rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+0] = rSrcPix[4*(a+b*pSrc->getWidth())+0];
-		rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+1] = rSrcPix[4*(a+b*pSrc->getWidth())+1];
-		rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+2] = rSrcPix[4*(a+b*pSrc->getWidth())+2];
-		if (alphaTransfert)
-			rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] = rSrcPix[4*(a+b*pSrc->getWidth())+3];
-		else
-			rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] = 255;
+		// write
+		putPixel(rDstPix + 4*((x+a)+(y+b)*pDst->getWidth()), rSrcPix+ 4*(a+b*pSrc->getWidth()), alphaTransfert);
 	}
+
+	// DXTC compression optim: fill last column block and last row block of 4 pixels with block color (don't let black or undefined)
+	uint	wSrc4= 4*((wSrc+3)/4);
+	uint	hSrc4= 4*((hSrc+3)/4);
+	// expand on W
+	if(wSrc<wSrc4)
+	{
+		for(a=wSrc;a<wSrc4;a++)
+		{
+			for(b=0;b<hSrc4;b++)
+			{
+				putPixel(rDstPix + 4*((x+a)+(y+b)*pDst->getWidth()), rDstPix + 4*((x+wSrc-1)+(y+b)*pDst->getWidth()), alphaTransfert);
+			}
+		}
+	}
+	// expand on H
+	if(hSrc<hSrc4)
+	{
+		for(b=hSrc;b<hSrc4;b++)
+		{
+			for(a=0;a<wSrc4;a++)
+			{
+				putPixel(rDstPix + 4*((x+a)+(y+b)*pDst->getWidth()), rDstPix + 4*((x+a)+(y+hSrc-1)*pDst->getWidth()), alphaTransfert);
+			}
+		}
+	}
+
 	return true;
 }
 
-// ---------------------------------------------------------------------------
+// ***************************************************************************
 string getBaseName (const string &fullname)
 {
 	string sTmp2 = "";
@@ -141,7 +147,7 @@ string getBaseName (const string &fullname)
 	return sTmp2;
 }
 
-// ---------------------------------------------------------------------------
+// ***************************************************************************
 // resize the bitmap to the next power of 2 and preserve content
 void enlargeCanvas (NLMISC::CBitmap &b)
 {
@@ -163,38 +169,35 @@ void enlargeCanvas (NLMISC::CBitmap &b)
 }
 
 
-// ---------------------------------------------------------------------------
+// ***************************************************************************
 // main
-// ---------------------------------------------------------------------------
+// ***************************************************************************
 int main(int nNbArg, char **ppArgs)
 {
-	
-	if (nNbArg != 3)
+	GetCurrentDirectory (MAX_PATH, sExeDir);
+
+	if (nNbArg < 3)
 	{
 		outString ("ERROR : Wrong number of arguments\n");
-		outString ("USAGE : build_interface <path_maps> <out_tga_name>\n");
+		outString ("USAGE : build_interface <out_tga_name> <path_maps1> [path_maps2] [path_maps3] ....\n");
 		return -1;
 	}
 	
-	char sMapsDir[MAX_PATH];
-
-	GetCurrentDirectory (MAX_PATH, sExeDir);
-	// Get absolute directory for lightmaps
-	if (!SetCurrentDirectory(ppArgs[1]))
-	{
-		outString (string("ERROR : directory ") + ppArgs[1] + " do not exists\n");
-		return -1;
-	}
-	GetCurrentDirectory (MAX_PATH, sMapsDir);
-	SetCurrentDirectory (sExeDir);
-
 	vector<string> AllMapNames;
+	for(sint iPath=0;iPath<nNbArg-2;iPath++)
+	{
+		if( !CFile::isDirectory(ppArgs[2+iPath]) )
+		{
+			outString (string("ERROR : directory ") + ppArgs[2+iPath] + " do not exists\n");
+			return -1;
+		}
+		CPath::getPathContent(ppArgs[2+iPath], false, false, true, AllMapNames);
+	}
+
 	vector<NLMISC::CBitmap*> AllMaps;
 	sint32 i, j;
 
 	// Load all maps
-	SetCurrentDirectory (sMapsDir);
-	dir ("*.tga", AllMapNames, false);
 	AllMaps.resize (AllMapNames.size());
 	for (i = 0; i < (sint32)AllMapNames.size(); ++i)
 	{
@@ -202,7 +205,7 @@ int main(int nNbArg, char **ppArgs)
 		{
 			NLMISC::CBitmap *pBtmp = new NLMISC::CBitmap;
 			NLMISC::CIFile inFile;
-			inFile.open(AllMapNames[i]);
+			inFile.open( AllMapNames[i] );
 			pBtmp->load(inFile);
 			AllMaps[i] = pBtmp;
 		}
@@ -261,7 +264,7 @@ int main(int nNbArg, char **ppArgs)
 		/* // Do not remove this is usefull for debugging
 		{
 			NLMISC::COFile outTga;
-			string fmtName = ppArgs[2];
+			string fmtName = ppArgs[1];
 			if (fmtName.rfind('.') == string::npos)
 				fmtName += ".tga";
 			if (outTga.open(fmtName))
@@ -272,7 +275,7 @@ int main(int nNbArg, char **ppArgs)
 		}
 		{
 			NLMISC::COFile outTga;
-			string fmtName = ppArgs[2];
+			string fmtName = ppArgs[1];
 			if (fmtName.rfind('.') == string::npos)
 				fmtName += "_msk.tga";
 			else
@@ -300,7 +303,7 @@ int main(int nNbArg, char **ppArgs)
 	SetCurrentDirectory (sExeDir);
 
 	NLMISC::COFile outTga;
-	string fmtName = ppArgs[2];
+	string fmtName = ppArgs[1];
 	if (fmtName.rfind('.') == string::npos)
 		fmtName += ".tga";
 	if (outTga.open(fmtName))
@@ -322,7 +325,9 @@ int main(int nNbArg, char **ppArgs)
 	{
 		for (i = 0; i < (sint32)AllMapNames.size(); ++i)
 		{
-			fprintf (f, "%s %f %f %f %f\n", AllMapNames[i].c_str(), UVMin[i].U, UVMin[i].V, 
+			// get the string whitout path
+			string fileName= CFile::getFilename(AllMapNames[i]);
+			fprintf (f, "%s %.12f %.12f %.12f %.12f\n", fileName.c_str(), UVMin[i].U, UVMin[i].V, 
 											UVMax[i].U, UVMax[i].V);
 		}
 		fclose (f);

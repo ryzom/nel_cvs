@@ -1,7 +1,7 @@
 /** \file transformable_user.cpp
  * <File description>
  *
- * $Id: transformable_user.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: transformable_user.cpp,v 1.3 2001/08/02 12:08:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,28 @@
 
 namespace NL3D 
 {
+
+
+const char *UTransformable::getPosValueName ()
+{
+	return ITransformable::getPosValueName ();
+}
+const char *UTransformable::getRotEulerValueName()
+{
+	return ITransformable::getRotEulerValueName();
+}
+const char *UTransformable::getRotQuatValueName()
+{
+	return ITransformable::getRotQuatValueName();
+}
+const char *UTransformable::getScaleValueName()
+{
+	return ITransformable::getScaleValueName();
+}
+const char *UTransformable::getPivotValueName()
+{
+	return ITransformable::getPivotValueName();
+}
 
 
 } // NL3D

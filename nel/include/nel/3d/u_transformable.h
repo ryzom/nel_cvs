@@ -1,7 +1,7 @@
 /** \file u_transformable.h
  * <File description>
  *
- * $Id: u_transformable.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_transformable.h,v 1.2 2001/08/02 12:08:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -157,6 +157,17 @@ public:
 	  * \param roll is the roll angle in radian along the object's Y axis.
 	  */
 	virtual	void			lookAt (const CVector& eye, const CVector& target, float roll=0.f) =0;
+	// @}
+
+
+
+	/// \name Channel name
+	// @{
+	static const char *getPosValueName ();
+	static const char *getRotEulerValueName();
+	static const char *getRotQuatValueName();
+	static const char *getScaleValueName();
+	static const char *getPivotValueName();
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.52 2002/10/24 08:47:09 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.53 2002/10/29 17:20:16 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1279,6 +1279,7 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &
 	if (count <= 0)
 	{
 		nlwarning ("HNETL5: couldn't access the service %s", name.c_str());
+		host = InvalidSockId;
 		return NULL;
 	}
 	else if (count > 1)
@@ -1292,6 +1293,8 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &
 	if (connectionId == 0xff)	// failed
 	{
 		nlwarning ("Can't getNetBase %s because no connection available", name.c_str());
+		host = InvalidSockId;
+		return NULL;
 	}
 
 	host = _IdCnx[(*itnmc).second].Connection[connectionId].HostId;
@@ -1315,6 +1318,8 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(uint16 sid, TSockId &host, uint8 n
 	if (connectionId == 0xff)	// failed
 	{
 		nlwarning ("Can't getNetBase %hu because no connection available", sid);
+		host = InvalidSockId;
+		return NULL;
 	}
 
 	host = _IdCnx[sid].Connection[connectionId].HostId;

@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.7 2001/03/19 14:05:24 berenguier Exp $
+ * $Id: channel_mixer.cpp,v 1.8 2001/03/27 17:36:58 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,7 +123,7 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 		for (uint a=0; a<numActive; a++)
 		{
 			// Slot number
-			uint slot=activeSlot[s];
+			uint slot=activeSlot[a];
 
 			// Is this an active slot ?
 			if (_SlotArray[slot]._Animation!=NULL)
@@ -159,6 +159,9 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 				pChannel->_Object->touch (pChannel->_ValueId);
 			}
 		}
+
+		// Next channel
+		pChannel=pChannel->_Next;
 	}
 }
 
@@ -320,8 +323,9 @@ void CChannelMixer::applySkeletonWeight (uint slot, uint skeleton, bool invert)
 				float weight=pSkeleton->getNodeWeight (n);
 
 				// Set the weight of this channel for this slot (only if channel setuped!!)
-				if(_Channels.find(channelId)!=_Channels.end())
-					_Channels[channelId]._Weights[slot]=invert?1.f-weight:weight;
+				std::map<uint, CChannel>::iterator ite=_Channels.find(channelId);
+				if (ite!=_Channels.end())
+					ite->second._Weights[slot]=invert?1.f-weight:weight;
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.63 2004/09/22 18:22:41 distrib Exp $
+ * $Id: displayer.cpp,v 1.64 2004/09/30 16:16:18 vuarand Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -643,7 +643,10 @@ void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *m
 		else
 			body += "File: " + string(args.FileName) + "\n";
 		body += "Line: " + toString(args.Line) + "\n";
-		body += "FuncName: " + string(args.FuncName) + "\n";
+		if (args.FuncName == NULL)
+			body += "FuncName: <Unknown>\n";
+		else
+			body += "FuncName: " + string(args.FuncName) + "\n";
 		body += "Reason: " + toString(message);
 
 		body += args.CallstackAndLog;

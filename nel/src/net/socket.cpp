@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.17 2000/10/24 10:16:50 cado Exp $
+ * $Id: socket.cpp,v 1.18 2000/10/24 12:45:36 cado Exp $
  *
  * Implementation for CSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -105,12 +105,12 @@ void CSocket::send( CMessage& message ) throw(ESocket)
 	{
 		if ( message.typeIsNumber() )
 		{
-			rkdebug( "Socket %d sent message %hd (%s) (%d bytes)",
+			nldebug( "Socket %d sent message %hd (%s) (%d bytes)",
 				_Sock, message.typeAsNumber(), message.typeAsString().c_str(), alldata.length() );
 		}
 		else
 		{
-			rkdebug( "Socket %d sent message %s (%d bytes)",
+			nldebug( "Socket %d sent message %s (%d bytes)",
 				_Sock, message.typeAsString().c_str(), alldata.length() );
 		}
 	}
@@ -144,7 +144,7 @@ void CSocket::processBindMessage( CMessage& message )
 	_MsgMap.insert( TMsgMapItem(key,num) );
 	if ( _Logging )
 	{
-		rkdebug( "Socket %d : %s is now known as %hu for received messages", _Sock, key.c_str(), num );
+		nldebug( "Socket %d : %s is now known as %hu for received messages", _Sock, key.c_str(), num );
 	}
 }
 
@@ -333,12 +333,12 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 	{
 		if ( message.typeIsNumber() )
 		{
-			rkdebug( "Socket %d received message %hd (%d bytes)",
+			nldebug( "Socket %d received message %hd (%d bytes)",
 				_Sock, message.typeAsNumber(), sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
 		}
 		else
 		{
-			rkdebug( "Socket %d received message %s (%d bytes)",
+			nldebug( "Socket %d received message %s (%d bytes)",
 				_Sock, message.typeAsString().c_str(), sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
 		}
 	}
@@ -356,12 +356,12 @@ void CSocket::sendTo( CMessage& message, const CInetAddress& addr ) throw (ESock
 	{
 		if ( message.typeIsNumber() )
 		{
-			rkdebug( "Socket %d sent message %hd (%s)",
+			nldebug( "Socket %d sent message %hd (%s)",
 				_Sock, message.typeAsNumber(), message.typeAsString().c_str() );
 		}
 		else
 		{
-			rkdebug( "Socket %d sent message %s of %d bytes",
+			nldebug( "Socket %d sent message %s of %d bytes",
 				_Sock, message.typeAsString().c_str() );
 		}
 	}
@@ -384,12 +384,12 @@ bool CSocket::receivedFrom( CMessage& message, CInetAddress& addr ) throw (ESock
 		{
 			if ( message.typeIsNumber() )
 			{
-				rkdebug( "Socket %d received message %hd",
+				nldebug( "Socket %d received message %hd",
 					_Sock, message.typeAsNumber() );
 			}
 			else
 			{
-				rkdebug( "Socket %d received message %s",
+				nldebug( "Socket %d received message %s",
 					_Sock, message.typeAsString().c_str() );
 			}
 		}

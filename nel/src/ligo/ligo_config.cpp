@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.6 2003/08/27 16:16:25 distrib Exp $
+ * $Id: ligo_config.cpp,v 1.7 2003/08/29 16:29:08 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -302,7 +302,7 @@ void CLigoConfig::syntaxError (const char *filename, xmlNodePtr xmlNode, const c
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	errorMessage ("(%s), node (%s), line (%d) :\n%s", filename, xmlNode->name, (int)xmlNode->content, buffer);
@@ -316,7 +316,7 @@ void CLigoConfig::errorMessage (const char *format, ... )
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	nlwarning (buffer);

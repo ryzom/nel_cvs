@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.18 2003/08/13 08:43:15 corvazier Exp $
+ * $Id: primitive.cpp,v 1.19 2003/08/29 16:29:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,7 @@ void Error (const char *filename, const char *format, ...)
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	nlwarning ("In File (%s) %s", filename, buffer);
@@ -58,7 +58,7 @@ void XMLError (xmlNodePtr xmlNode, const char *filename, const char *format, ...
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	Error (filename, "node (%s), line (%d) : %s", xmlNode->name, (int)xmlNode->content, buffer);

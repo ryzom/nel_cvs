@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.10 2001/06/14 10:23:18 chafik Exp $
+ * $Id: ident_type.cpp,v 1.11 2001/10/16 09:33:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,19 +35,6 @@
 
 namespace NLAIC
 {
-#ifdef NL_DEBUG
-	void (*userDebugIncMem)(IPointerGestion &) = NULL;
-	void (*userDebugDecMem)(IPointerGestion &) = NULL;
-
-	void callDebugMemeDec(IPointerGestion &o)
-	{
-		if(userDebugDecMem != NULL) userDebugDecMem(o);
-	}
-	void callDebugMemeInc(IPointerGestion &o)
-	{
-		if(userDebugIncMem != NULL) userDebugIncMem(o);
-	}
-#endif
 
 	//freopen( "file.txt", "w", stdout ); 
 	char *stringBuild(const char *str, ...)

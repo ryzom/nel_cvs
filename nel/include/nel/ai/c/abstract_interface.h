@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.20 2001/06/28 15:47:44 chafik Exp $
+ * $Id: abstract_interface.h,v 1.21 2001/10/16 09:33:17 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,11 +44,6 @@
 
 namespace NLAIC //Gen pour general.
 {
-#ifdef NL_DEBUG
-	class IPointerGestion;
-	void  callDebugMemeDec(IPointerGestion &);
-	void  callDebugMemeInc(IPointerGestion &);
-#endif
 
 	///this method give an char pointer hows it contents a string define by a const char* same as printf. It use for initialise string objects.
 	char *stringBuild(const char *str, ...);	
@@ -86,9 +81,6 @@ namespace NLAIC //Gen pour general.
 		///Inc a reference. We use this when we have to conserve a pointer memeory for exemple in a list.
 		void incRef()
 		{
-#ifdef NL_DEBUG
-			callDebugMemeInc(*this);
-#endif			
 			_Ref ++;
 		}
 		
@@ -102,9 +94,6 @@ namespace NLAIC //Gen pour general.
 		///Decrement the reference of an object.
 		sint32 decRef()
 		{
-#ifdef NL_DEBUG
-			callDebugMemeDec(*this);
-#endif
 			return --_Ref;
 		}
 

@@ -1,6 +1,6 @@
 /** \file fixed_size_allocator.cpp
  *
- * $Id: fixed_size_allocator.cpp,v 1.1 2004/03/04 14:33:15 vizerie Exp $
+ * $Id: fixed_size_allocator.cpp,v 1.2 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -204,5 +204,3 @@ void CFixedSizeAllocator::CNode::link()
 }
 
 } // NLMISC
-
-	

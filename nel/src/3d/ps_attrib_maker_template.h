@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.20 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.21 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -469,7 +469,6 @@ inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValu
 	_NbValues = _Tab.size() - 1;	
 	
 }
-
 
 
 

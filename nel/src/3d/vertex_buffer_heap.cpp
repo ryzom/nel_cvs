@@ -1,7 +1,7 @@
 /** \file vertex_buffer_heap.cpp
  * <File description>
  *
- * $Id: vertex_buffer_heap.cpp,v 1.5 2003/03/18 10:24:44 corvazier Exp $
+ * $Id: vertex_buffer_heap.cpp,v 1.6 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -30,6 +30,9 @@
 
 using namespace NLMISC;
 
+// This code is not used actually and doesn't compile
+// just preproc comment it
+#if 0
 
 namespace NL3D
 {
@@ -188,3 +191,5 @@ void			CVertexBufferHeap::activate()
 
 
 } // NL3D
+
+#endif // 0

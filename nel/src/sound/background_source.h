@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSimpleSource: implementation of USource
  *
- * $Id: background_source.h,v 1.6 2003/08/21 09:27:38 boucher Exp $
+ * $Id: background_source.h,v 1.7 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file coarse_mesh_build.cpp
  * <File description>
  *
- * $Id: coarse_mesh_build.cpp,v 1.6 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: coarse_mesh_build.cpp,v 1.7 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,8 +142,8 @@ bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMe
 						CBitmapDesc &descBitmap = ite->second;
 
 						// Backup original size
-						uint originalWidth;
-						uint originalHeight;
+						uint originalWidth = 0;
+						uint originalHeight = 0;
 
 						// For each bitmaps
 						uint i;

@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.24 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: rgba.h,v 1.25 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -385,7 +385,7 @@ public:
 	 * \param a Alpha componant.
 	 */
 	CBGRA(uint8 r, uint8 g, uint8 b, uint8 a=255) :
-		R(r), G(g), B(b), A(a) {}
+		B(b), G(g), R(r), A(a) {}
 
 	/**
 	 * Cast operator to CRGBA.

@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skinned_template.cpp
  * File not compiled. Included from mesh_mrm_skinned.cpp. It is a "old school" template.
  *
- * $Id: mesh_mrm_skinned_template.cpp,v 1.1 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: mesh_mrm_skinned_template.cpp,v 1.2 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,11 @@
 // Raw "Vertex/Normal only" ApplySkin methods.
 // ***************************************************************************
 // ***************************************************************************
+
+// ace: before including this, #define this define to use it
+//      the goal is to be able to compile every .cpp file with no
+//      special case (GNU/Linux needs)
+#ifdef ADD_MESH_MRM_SKINNED_TEMPLATE
 
 
 #define	NL3D_RAWSKIN_NORMAL_OFF		12
@@ -1108,3 +1113,4 @@ void	CMeshMRMSkinnedGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinnedNormalCac
 
 }
 
+#endif // ADD_MESH_MRM_SKINNED_TEMPLATE

@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.15 2003/12/08 13:18:02 boucher Exp $
+ * $Id: clustered_sound.cpp,v 1.16 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -117,7 +117,7 @@ float EAX_MATERIAL_PARAM[] =
 	float(pow(10, -6000/2000)),
 	float(pow(10, -1200/2000))
 };
-#define EAXLISTENER_MAXENVIRONMENTSIZE 100;
+#define EAXLISTENER_MAXENVIRONMENTSIZE 100
 #endif	// EAX_AVAILABLE
 
 
@@ -428,7 +428,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 		else
 		{
 			// else, clip the env size to max eax supported size
-			size = min(size, EAXLISTENER_MAXENVIRONMENTSIZE);
+			size = std::min(size, (float)EAXLISTENER_MAXENVIRONMENTSIZE);
 		}
 
 		uint newEnv;
@@ -1169,7 +1169,5 @@ float CClusteredSound::getAABoxNearestPos(const CAABBox &box, const CVector &pos
 
 	return (pos-nearPos).norm();
 }
-
-
 
 }

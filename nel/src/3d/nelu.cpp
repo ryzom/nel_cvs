@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.34 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: nelu.cpp,v 1.35 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,7 +75,8 @@ bool			CNELU::initDriver (uint w, uint h, uint bpp, bool windowed, void *systemW
 	}
 #else // NL_OS_WINDOWS
 
-	CNELU::Driver= CDRU::createD3DDriver();
+	CNELU::Driver= CDRU::createGlDriver();
+	//CNELU::Driver= CDRU::createD3DDriver();
 
 #endif // NL_OS_WINDOWS
 	if (!CNELU::Driver->init())

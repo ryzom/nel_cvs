@@ -1,7 +1,7 @@
 /** \file words_dictionary.cpp
  * Words dictionary
  *
- * $Id: words_dictionary.cpp,v 1.6 2004/03/17 10:30:48 cado Exp $
+ * $Id: words_dictionary.cpp,v 1.7 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -111,7 +111,7 @@ bool CWordsDictionary::init( const string& configFileName )
 	for ( vector<string>::const_iterator ifl=fileList.begin(); ifl!=fileList.end(); ++ifl )
 	{
 		const string& filename = (*ifl);
-		string::size_type p;
+		string::size_type p = 0;
 		bool isAdditionalFile = false;
 
 		// Test if filename is in additional file list

@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.21 2003/11/26 16:31:03 corvazier Exp $
+ * $Id: primitive_world_image.cpp,v 1.22 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1131,7 +1131,7 @@ void CPrimitiveWorldImage::addMoveElementendOfList (CMoveCell& cell, uint16 x, u
 void CPrimitiveWorldImage::removeMoveElement (uint i, CMoveContainer &container, uint8 worldImage)
 {
 	// Check
-	nlassert ((i>=0)||(i<4));
+	nlassert (i<4);
 	nlassert (_MoveElement[i]!=NULL);
 
 	// Unlink the element

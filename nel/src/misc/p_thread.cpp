@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * class CPThread (Posix threads)
  *
- * $Id: p_thread.cpp,v 1.11 2002/05/22 14:01:29 lecroart Exp $
+ * $Id: p_thread.cpp,v 1.12 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,13 +44,15 @@ IThread *IThread::create( IRunnable *runnable )
 }
 
 
+CPThread CurrentThread(NULL);
+
 /*
  * Get the current thread
  */
 IThread *IThread::getCurrentThread ()
 {
 	/// \todo: implement this functionnality for posix thread
-	return NULL;
+	return &CurrentThread;
 } 
 
 /*

@@ -1,7 +1,7 @@
 /** \file u_keyboard_device.cpp
  * <File description>
  *
- * $Id: keyboard_device.cpp,v 1.1 2002/03/28 10:34:08 vizerie Exp $
+ * $Id: keyboard_device.cpp,v 1.2 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -23,7 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/u_keyboard_device.h"
+
+//#include "nel/3d/u_keyboard_device.h"
 
 
 namespace NL3D {
@@ -32,9 +33,9 @@ namespace NL3D {
 /*
  * Constructor
  */
-UKeyboardDevice::UKeyboardDevice()
+/*UKeyboardDevice::UKeyboardDevice()
 {
-}
+}*/
 
 
 } // NL3D

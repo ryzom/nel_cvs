@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.69 2004/03/04 14:34:35 vizerie Exp $
+ * $Id: common.h,v 1.70 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -223,6 +223,7 @@ char			*strupr ( char *str );
   */
 #ifndef NL_OS_WINDOWS
 inline int stricmp(const char *lhs, const char *rhs) { return strcasecmp(lhs, rhs); }
+inline int strnicmp(const char *lhs, const char *rhs, size_t n) { return strncasecmp(lhs, rhs, n); }
 #endif
 
 inline sint nlstricmp(const char *lhs, const char *rhs) { return stricmp(lhs, rhs); }

@@ -1,6 +1,6 @@
 /** \file ps_light.cpp
  *
- * $Id: ps_light.cpp,v 1.6 2004/02/24 09:46:50 vizerie Exp $
+ * $Id: ps_light.cpp,v 1.7 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -396,6 +396,5 @@ void CPSLight::show()
 		//
 	}
 }
-
 
 } // namespace NL3D

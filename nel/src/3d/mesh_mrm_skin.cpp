@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.17 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.18 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -395,6 +395,7 @@ uint	CMeshMRMGeom::NumCacheVertexShadow= NL_BlockByteL1 / sizeof(CMeshMRMGeom::C
 	Was used before to reuse same code for and without SSE.
 	Unuseful now because SSE removed, but keep it for possible future work on it.
 */
+#define ADD_MESH_MRM_SKIN_TEMPLATE
 #include "mesh_mrm_skin_template.cpp"
 
 

@@ -1,7 +1,7 @@
 /** \file di_game_device.cpp
  * <File description>
  *
- * $Id: di_game_device.cpp,v 1.1 2002/03/28 10:30:15 vizerie Exp $
+ * $Id: di_game_device.cpp,v 1.2 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 
 #include "stdmisc.h"
-#include "misc/di_game_device.h"
+#include "di_game_device.h"
 #include "nel/misc/game_device_events.h"
 #include <stddef.h>
 #include <memory>

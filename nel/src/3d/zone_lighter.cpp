@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.35 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.36 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,7 +183,7 @@ inline void transformVectorToZBuffer (const CZoneLighter::CZBuffer& zbuffer, con
 
 // ***********************************************************
 
-const static sint DeltaZ[9][2]=
+static const sint DeltaZ[9][2]=
 {
 	{0, 0},
 	{-1, 0},
@@ -513,8 +513,8 @@ void RenderTriangle (const CZoneLighter::CTriangle &triangle, const CZoneLighter
 		}
 
 		// Texture informations
-		uint width;
-		uint height;
+		uint width=0;
+		uint height=0;
 		const CObjectVector<uint8> *pixels;
 		if (needUV)
 		{
@@ -537,8 +537,8 @@ void RenderTriangle (const CZoneLighter::CTriangle &triangle, const CZoneLighter
 			// Gradient y for ooz, u and v
 			const float deltaY = (float)y - zBasis.Vertices[0].y;
 			const float oozGradientY = deltaY * ozzGradient.y;
-			float uGradientY;
-			float vGradientY;
+			float uGradientY=0.0f;
+			float vGradientY=0.0f;
 			if (needUV)
 			{
 				uGradientY = deltaY * uGradient.y;
@@ -553,8 +553,8 @@ void RenderTriangle (const CZoneLighter::CTriangle &triangle, const CZoneLighter
 				// Gradient x for ooz, u and v
 				const float deltaX = (float)x - zBasis.Vertices[0].x;
 				const float oozGradientX = deltaX * ozzGradient.x;
-				float uGradientX;
-				float vGradientX;
+				float uGradientX=0.0f;
+				float vGradientX=0.0f;
 				if (needUV)
 				{
 					uGradientX = deltaX * uGradient.x;
@@ -2436,9 +2436,9 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 			float fT=(face->PVBase.getT()+face->PVLeft.getT()+face->PVRight.getT())/3.f;
 			uint s=(uint)((float)orderS*4*fS);
 			uint t=(uint)((float)orderT*4*fT);
-			nlassert (s>=0);
+			//nlassert (s>=0);
 			nlassert (s<orderS*4);
-			nlassert (t>=0);
+			//nlassert (t>=0);
 			nlassert (t<orderT*4);
 
 			// Triangle index

@@ -1,7 +1,7 @@
 /** \file di_mouse.cpp
  * <File description>
  *
- * $Id: di_mouse_device.cpp,v 1.7 2004/02/11 09:52:26 vizerie Exp $
+ * $Id: di_mouse_device.cpp,v 1.8 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "stdmisc.h"
 
-#include "misc/di_mouse_device.h"
+#include "di_mouse_device.h"
 #include "nel/misc/game_device_events.h"
 #include "nel/misc/win_event_emitter.h"
 

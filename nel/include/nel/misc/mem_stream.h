@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.35 2004/02/19 09:57:14 vizerie Exp $
+ * $Id: mem_stream.h,v 1.36 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -549,8 +549,8 @@ inline uint32 atoui( const char *ident)
 	return (uint32) strtoul (ident, NULL, 10);
 }
 
-const char SEPARATOR = ' ';
-const int SEP_SIZE = 1; // the code is easier to read with that
+static const char SEPARATOR = ' ';
+static const int SEP_SIZE = 1; // the code is easier to read with that
 
 //
 // inline serial functions

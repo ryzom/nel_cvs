@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.16 2003/04/23 10:06:28 berenguier Exp $
+ * $Id: zone_lighter.h,v 1.17 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -607,9 +607,9 @@ private:
 	TWaterShapeQuadGrid							_WaterShapeQuadGrid;
 
 	/// Some constants
-	const static sint8 CZoneLighter::TriangleIndexes[10][2][3];
-	const static sint8 CZoneLighter::VertexThanCanBeSnappedOnABorder[8][4];
-	const static sint8 CZoneLighter::VertexThanCanBeSnappedOnACorner[3][2];
+	static const sint8 CZoneLighter::TriangleIndexes[10][2][3];
+	static const sint8 CZoneLighter::VertexThanCanBeSnappedOnABorder[8][4];
+	static const sint8 CZoneLighter::VertexThanCanBeSnappedOnACorner[3][2];
 };
 
 } // NL3D

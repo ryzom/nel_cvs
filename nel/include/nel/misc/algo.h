@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.11 2003/11/24 13:53:48 berenguier Exp $
+ * $Id: algo.h,v 1.12 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -187,7 +187,7 @@ bool		strFindReplace(T &str, const T &strFind, const U &strReplace)
 template<class T, class U>
 bool		strFindReplace(T &str, const char *strFind, const U &strReplace)
 {
-	T	tempStr= strFind;
+	T	tempStr(strFind);
 	return strFindReplace(str, tempStr, strReplace);
 }
 

@@ -1,7 +1,7 @@
 /** \file zone_template.cpp
  * Ligo zone template implementation
  *
- * $Id: zone_template.cpp,v 1.8 2003/11/17 14:26:38 distrib Exp $
+ * $Id: zone_template.cpp,v 1.9 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -667,12 +667,12 @@ void CZoneTemplate::serial (NLMISC::IStream& s)
 void CZoneTemplate::getMask (std::vector<bool> &mask, uint &width, uint &height)
 {
 	// Some constantes
-	const static sint32 addX[4] = { 1, 0, -1, 0 };
-	const static sint32 addY[4] = { 0, 1, 0, -1 };
-	const static sint32 cellX[4] = { 0, -1, -1, 0 };
-	const static sint32 cellY[4] = { 0, 0, -1, -1 };
-	const static sint32 moveX[4] = { 0, 1, 0, -1 };
-	const static sint32 moveY[4] = { -1, 0, 1, 0 };
+	static const sint32 addX[4] = { 1, 0, -1, 0 };
+	static const sint32 addY[4] = { 0, 1, 0, -1 };
+	static const sint32 cellX[4] = { 0, -1, -1, 0 };
+	static const sint32 cellY[4] = { 0, 0, -1, -1 };
+	static const sint32 moveX[4] = { 0, 1, 0, -1 };
+	static const sint32 moveY[4] = { -1, 0, 1, 0 };
 
 	// Max
 	sint32 xMax = 0x80000000;

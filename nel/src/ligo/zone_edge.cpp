@@ -1,7 +1,7 @@
 /** \file zone_edge.cpp
  * A ZoneEdge descriptor
  *
- * $Id: zone_edge.cpp,v 1.4 2003/11/17 14:26:38 distrib Exp $
+ * $Id: zone_edge.cpp,v 1.5 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -42,7 +42,7 @@ bool CZoneEdge::build (const std::vector<NLMISC::CVector> &theEdge, const std::v
 				sint32 offsetX, sint32 offsetY, const CLigoConfig &config, CLigoError &errors)
 {
 	// Some checks
-	nlassert (rotation>=0);
+// no need, it s an uint	nlassert (rotation>=0);
 	nlassert (rotation<=3);
 	nlassert (theEdge.size() == theId.size());
 

@@ -1,7 +1,7 @@
 /** \file sound_anim_track.cpp
  * An animation sound track
  *
- * $Id: sound_animation.cpp,v 1.7 2003/07/03 15:16:12 boucher Exp $
+ * $Id: sound_animation.cpp,v 1.8 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,7 +87,7 @@ void CSoundAnimation::save()
 	// Open the file
 	if (!file.open(_Filename.c_str()))
 	{
-		throw exception("Can't open the file for writing");
+		throw NLMISC::Exception("Can't open the file for writing");
 	}
 
 	// Create the XML stream
@@ -164,7 +164,7 @@ void CSoundAnimation::load()
 	// Open the file
 	if (!file.open(_Filename.c_str()))
 	{
-		throw exception("Can't open the file for reading");
+		throw NLMISC::Exception("Can't open the file for reading");
 	}
 
 	// Create the XML stream
@@ -183,7 +183,7 @@ void CSoundAnimation::load()
 			const char *time = (const char*) xmlGetProp(markerNode, (xmlChar*) "time");
 			if (time == 0)
 			{
-				throw exception("Invalid sound animation marker");
+				throw NLMISC::Exception("Invalid sound animation marker");
 			}
 
 			marker->setTime((float) atof(time));
@@ -197,7 +197,7 @@ void CSoundAnimation::load()
 				char *name = (char*) xmlGetProp(soundNode, (xmlChar*) "name");
 				if (name == 0)
 				{
-					throw exception("Invalid sound animation marker");
+					throw NLMISC::Exception("Invalid sound animation marker");
 				}
 
 				marker->addSound(CStringMapper::map(string(name)));

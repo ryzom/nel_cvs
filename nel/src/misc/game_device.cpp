@@ -1,7 +1,7 @@
 /** \file play_device.cpp
  * <File description>
  *
- * $Id: game_device.cpp,v 1.1 2002/03/28 10:34:08 vizerie Exp $
+ * $Id: game_device.cpp,v 1.2 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -22,9 +22,6 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-
-#include "nel/misc/play_device.h"
-
 
 namespace NLMISC {
 

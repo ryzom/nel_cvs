@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.12 2004/03/01 18:22:10 fleury Exp $
+ * $Id: eid_translator.h,v 1.13 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -90,11 +90,11 @@ public:
 	struct CEntity
 	{
 		CEntity () :
-		EntitySlot(-1), UId(~0), Online(false), EntityNameStringId(0)
+		EntityNameStringId(0), EntitySlot(-1), UId(~0), Online(false)
 		{ }
 		
 		CEntity (const ucstring &entityName, uint32 uid, const std::string &userName, sint8 entitySlot) :
-		EntityName(entityName), EntitySlot(entitySlot), UId(uid), UserName(userName), Online(false), EntityNameStringId(0)
+		EntityName(entityName), EntityNameStringId(0), EntitySlot(entitySlot), UId(uid), UserName(userName), Online(false)
 		{ }
 		
 		ucstring	EntityName;

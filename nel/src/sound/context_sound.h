@@ -1,6 +1,6 @@
 /** \file context_sound.h
  *
- * $Id: context_sound.h,v 1.6 2003/07/03 15:16:12 boucher Exp $
+ * $Id: context_sound.h,v 1.7 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "sound.h"
 #include <hash_map>
 #include <nel/misc/fast_mem.h>
+#include <nel/misc/string_mapper.h>
 
 namespace NLSOUND {
 
@@ -135,7 +136,7 @@ class CContextSoundContainer : public IContextSoundContainer
 
 	virtual void		addSound(CSound *sound, const std::string &baseName)
 	{
-		const std::string &patternName = CStringMapper::unmap(sound->getName());
+		const std::string &patternName = NLMISC::CStringMapper::unmap(sound->getName());
 		nlassert(patternName.size() >= baseName.size());
 
 		std::string arg;
@@ -239,7 +240,7 @@ class CContextSoundContainer : public IContextSoundContainer
 			THashContextSound::iterator it = _ContextSounds.find(cm);
 			nlassert(it != _ContextSounds.end());
 
-			nlwarning("Sound %s has the same context matcher as the sound %s", CStringMapper::unmap(sound->getName()).c_str(), CStringMapper::unmap(it->second->getName()).c_str());
+			nlwarning("Sound %s has the same context matcher as the sound %s", NLMISC::CStringMapper::unmap(sound->getName()).c_str(), NLMISC::CStringMapper::unmap(it->second->getName()).c_str());
 		}
 	}
 
@@ -265,7 +266,7 @@ class CContextSoundContainer : public IContextSoundContainer
 		THashContextSound::const_iterator first(_ContextSounds.begin()), last(_ContextSounds.end());
 		for (; first != last; ++first)
 		{
-			subsounds.push_back(std::make_pair(CStringMapper::unmap(first->second->getName()), first->second));
+			subsounds.push_back(std::make_pair(NLMISC::CStringMapper::unmap(first->second->getName()), first->second));
 		}
 	}
 

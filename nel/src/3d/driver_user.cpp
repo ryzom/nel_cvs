@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.40 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.41 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,10 +146,15 @@ CDriverUser::CDriverUser (uint windowIcon, bool direct3d)
 	}
 
 	// Create/Init Driver.
+#ifdef NL_OS_WINDOWS
 	if (direct3d)
 		_Driver= CDRU::createD3DDriver();
 	else
 		_Driver= CDRU::createGlDriver();
+#else
+	_Driver= CDRU::createGlDriver();
+#endif
+
 	nlassert(_Driver);
 	_Driver->init (windowIcon);
 

@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.cpp,v 1.3 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh_mrm_skinned.cpp,v 1.4 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2345,6 +2345,7 @@ uint	CMeshMRMSkinnedGeom::NumCacheVertexShadow= NL_BlockByteL1 / sizeof(CMeshMRM
 	Was used before to reuse same code for and without SSE.
 	Unuseful now because SSE removed, but keep it for possible future work on it.
 */
+#define ADD_MESH_MRM_SKINNED_TEMPLATE
 #include "mesh_mrm_skinned_template.cpp"
 
 

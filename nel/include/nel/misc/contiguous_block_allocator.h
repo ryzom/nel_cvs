@@ -1,6 +1,6 @@
 /** \file contiguous_block_allocator.h
  *
- * $Id: contiguous_block_allocator.h,v 1.1 2004/03/04 14:34:50 vizerie Exp $
+ * $Id: contiguous_block_allocator.h,v 1.2 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -86,18 +86,6 @@ private:
 		uint _NumFree;
 	#endif
 };
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
 

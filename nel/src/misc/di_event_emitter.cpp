@@ -1,7 +1,7 @@
 /** \file dx_event_emitter.cpp
  * <File description>
  *
- * $Id: di_event_emitter.cpp,v 1.4 2003/06/18 14:38:57 corvazier Exp $
+ * $Id: di_event_emitter.cpp,v 1.5 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -30,9 +30,9 @@
 #include "nel/misc/events.h"
 #include "nel/misc/win_event_emitter.h"
 //
-#include "misc/di_mouse_device.h"
-#include "misc/di_keyboard_device.h"
-#include "misc/di_game_device.h"
+#include "di_mouse_device.h"
+#include "di_keyboard_device.h"
+#include "di_game_device.h"
 //
 #include <memory>
 #include <algorithm>

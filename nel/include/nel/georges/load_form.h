@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.31 2003/11/04 09:25:09 distrib Exp $
+ * $Id: load_form.h,v 1.32 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -592,7 +592,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		ifile.serial (nbEntries);
 		ifile.serial (ver);
 		if(ver != T::getVersion ())
-			throw Exception("The packed sheet version in stream is different of the code");
+			throw NLMISC::Exception("The packed sheet version in stream is different of the code");
 		ifile.serialCont (container);
 		ifile.close ();
 	}

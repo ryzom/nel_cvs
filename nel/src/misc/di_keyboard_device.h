@@ -1,7 +1,7 @@
 /** \file di_keyboard_device.h
  * <File description>
  *
- * $Id: di_keyboard_device.h,v 1.2 2002/04/10 12:38:11 vizerie Exp $
+ * $Id: di_keyboard_device.h,v 1.3 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -170,4 +170,3 @@ private:
 #endif // NL_DI_KEYBOARD_H
 
 /* End of di_keyboard.h */
-	

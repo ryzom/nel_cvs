@@ -1,7 +1,7 @@
 /** \file device_manager.cpp
  * <File description>
  *
- * $Id: device_manager.cpp,v 1.1 2002/03/28 10:30:34 vizerie Exp $
+ * $Id: device_manager.cpp,v 1.2 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -23,6 +23,10 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/misc/types_nl.h"
+
+#ifdef NL_OS_WINDOWS
+
 #include "nel/misc/device_manager.h"
 
 
@@ -38,3 +42,5 @@ IDeviceManager::IDeviceManager()
 
 
 } // NLMISC
+
+#endif

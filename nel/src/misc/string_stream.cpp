@@ -1,7 +1,7 @@
 /** \file string_stream.cpp
  * Class CStringStream (plain text memory streams)
  *
- * $Id: string_stream.cpp,v 1.8 2003/08/05 14:46:13 cado Exp $
+ * $Id: string_stream.cpp,v 1.9 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,15 +23,19 @@
  * MA 02111-1307, USA.
  */
 
+// DEPRECATED
+#if 0
+
 #include "nel/misc/string_stream.h"
+#include "nel/misc/object_vector.h"
 
 #include <vector>
 
 namespace NLMISC {
 
 
-const char SEPARATOR = ' ';
-const int SEP_SIZE = 1; // the code is easier to read with that
+//static const char SEPARATOR = ' ';
+//static const int SEP_SIZE = 1; // the code is easier to read with that
 
 
 
@@ -386,3 +390,5 @@ void	CStringStream::serialHex(uint32 &b)
 
 
 } // NLMISC
+
+#endif

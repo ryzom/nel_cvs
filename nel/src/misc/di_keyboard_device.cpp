@@ -1,7 +1,7 @@
 /** \file di_keyboard.cpp
  * <File description>
  *
- * $Id: di_keyboard_device.cpp,v 1.12 2003/05/27 09:00:21 vizerie Exp $
+ * $Id: di_keyboard_device.cpp,v 1.13 2004/03/19 16:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,7 +26,7 @@
 
 
 #include "stdmisc.h"
-#include "misc/di_keyboard_device.h"
+#include "di_keyboard_device.h"
 
 #ifdef NL_OS_WINDOWS
 
@@ -696,5 +696,4 @@ void CDIKeyboard::getDisabledRepetitions(TKey *destTab) const
 
 } // NLMISC
 
-
-#endif NL_OS_WINDOWS
+#endif // NL_OS_WINDOWS

@@ -1,6 +1,6 @@
 /** \file texture_emboss.h
  *
- * $Id: texture_emboss.h,v 1.2 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_emboss.h,v 1.3 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -92,6 +92,5 @@ protected:
 
 
 } // NL3D
-
 
 #endif

@@ -1,7 +1,7 @@
 /** \file u_source.h
  * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.16 2003/08/21 09:25:13 boucher Exp $
+ * $Id: u_source.h,v 1.17 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,10 +54,10 @@ struct CSoundContext
 			Args[i] = -1;
 	}
 
-	float			RelativeGain;
-	NLMISC::CVector Position;
 	sint32			Args[SoundContextNbArgs];
+	NLMISC::CVector Position;
 	uint32			PreviousRandom;
+	float			RelativeGain;
 };
 
 

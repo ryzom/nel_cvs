@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.203 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.204 2004/03/19 16:31:28 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1410,6 +1410,8 @@ bool CDriverGL::getModes(std::vector<GfxMode> &modes)
 		// Mode index
 		modeIndex++;
 	}
+#else
+	nlwarning("LINUXTODO: enumerate all available modes. now returns empty array");
 #endif
 	return true;
 }

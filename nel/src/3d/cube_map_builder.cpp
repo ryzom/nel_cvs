@@ -1,7 +1,7 @@
 /** \file cube_map_builder.cpp
  * a function that helps to build cube maps
  *
- * $Id: cube_map_builder.cpp,v 1.5 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: cube_map_builder.cpp,v 1.6 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -168,14 +168,4 @@ CTextureCube *BuildCubeMap(sint mapSize, ICubeMapFunctor &f, bool luminanceOnly 
 	return cubeMap.release();
 }
 
-
-
-
-
-
-
 } // NL3D
-
-
- 
- 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin_template.cpp
  * File not compiled. Included from mesh_mrm_skin.cpp. It is a "old school" template.
  *
- * $Id: mesh_mrm_skin_template.cpp,v 1.10 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh_mrm_skin_template.cpp,v 1.11 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,10 @@
  * MA 02111-1307, USA.
  */
 
-
+// ace: before including this, #define this define to use it
+//      the goal is to be able to compile every .cpp file with no
+//      special case (GNU/Linux needs)
+#ifdef ADD_MESH_MRM_SKIN_TEMPLATE
 
 // ***************************************************************************
 // ***************************************************************************
@@ -1569,6 +1572,6 @@ void	CMeshMRMGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinNormalCache &rawSki
 			destVertexPtr+= nInf * NL3D_RAWSKIN_VERTEX_SIZE;
 		}
 	}
-
 }
 
+#endif // ADD_MESH_MRM_SKIN_TEMPLATE

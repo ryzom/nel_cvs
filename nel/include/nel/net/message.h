@@ -1,7 +1,7 @@
 /** \file message.h
  * CMessage class
  *
- * $Id: message.h,v 1.19 2001/05/03 13:29:22 lecroart Exp $
+ * $Id: message.h,v 1.20 2001/05/03 16:30:54 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,6 +121,15 @@ public:
 			uint8 LongFormat = false;
 			serial (LongFormat);
 			serial (id);
+		}
+		else
+		{
+			// we set the id, now, we try to set the name if available in the sida
+			if (_SIDA != NULL)
+			{
+				_Name = _SIDA->getString (id);
+				TypeHasAName = true;
+			}
 		}
 
 		_TypeSet = true;

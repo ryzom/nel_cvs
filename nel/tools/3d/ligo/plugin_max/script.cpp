@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.9 2002/02/28 16:31:24 berenguier Exp $
+ * $Id: script.cpp,v 1.10 2002/03/13 14:25:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -705,53 +705,57 @@ Value* check_zone_with_material_cf (Value** arg_list, int count)
 				// Success ?
 				if (res)
 				{
-					// The material
-					NLLIGO::CMaterial material;
-
-					// Read the template
-					CIFile inputfile;
-
-					// Catch exception
-					try
+					// Material to check ?
+					if (fileName != "")
 					{
-						// Open the selected template file
-						if (inputfile.open (fileName))
+						// The material
+						NLLIGO::CMaterial material;
+
+						// Read the template
+						CIFile inputfile;
+
+						// Catch exception
+						try
 						{
-							// Create an xml stream
-							CIXml inputXml;
-							inputXml.init (inputfile);
-
-							// Serial the class
-							material.serial (inputXml);
-
-							// Get the zone edges
-							const std::vector<CZoneEdge> &zoneEdges = zoneTemplate.getEdges ();
-
-							// All edge ok
-							res = true;
-
-							// For each zone edge
-							for (uint edge=0; edge<zoneEdges.size(); edge++)
+							// Open the selected template file
+							if (inputfile.open (fileName))
 							{
-								// Check it
-								if (!material.getEdge().isTheSame (zoneEdges[edge], config, ScriptErrors[0]))
-									res = false;
+								// Create an xml stream
+								CIXml inputXml;
+								inputXml.init (inputfile);
+
+								// Serial the class
+								material.serial (inputXml);
+
+								// Get the zone edges
+								const std::vector<CZoneEdge> &zoneEdges = zoneTemplate.getEdges ();
+
+								// All edge ok
+								res = true;
+
+								// For each zone edge
+								for (uint edge=0; edge<zoneEdges.size(); edge++)
+								{
+									// Check it
+									if (!material.getEdge().isTheSame (zoneEdges[edge], config, ScriptErrors[0]))
+										res = false;
+								}
+							}
+							else
+							{
+								// Error message
+								char tmp[512];
+								smprintf (tmp, 512, "Can't open the zone template file %s for reading.", fileName);
+								CMaxToLigo::errorMessage (tmp, "NeL Ligo check zone", *MAXScript_interface, errorInDialog);
 							}
 						}
-						else
+						catch (Exception &e)
 						{
 							// Error message
 							char tmp[512];
-							smprintf (tmp, 512, "Can't open the zone template file %s for reading.", fileName);
+							smprintf (tmp, 512, "Error while loading the file %s : %s", fileName, e.what());
 							CMaxToLigo::errorMessage (tmp, "NeL Ligo check zone", *MAXScript_interface, errorInDialog);
 						}
-					}
-					catch (Exception &e)
-					{
-						// Error message
-						char tmp[512];
-						smprintf (tmp, 512, "Error while loading the file %s : %s", fileName, e.what());
-						CMaxToLigo::errorMessage (tmp, "NeL Ligo check zone", *MAXScript_interface, errorInDialog);
 					}
 				}
 

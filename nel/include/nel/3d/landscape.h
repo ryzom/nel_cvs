@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.40 2001/05/21 17:03:54 cado Exp $
+ * $Id: landscape.h,v 1.41 2001/05/22 08:55:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,6 +89,7 @@ public:
 
 public:
 	EBadBind() : Exception( "Landscape Bind Error in (3DSMax indices!! (+1) ): " ) {}
+	virtual const char	*what() const throw();
 
 };
 

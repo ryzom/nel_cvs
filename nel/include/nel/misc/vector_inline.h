@@ -1,7 +1,7 @@
 /** \file vector_inline.h
  * CVector class inline definitions
  *
- * $Id: vector_inline.h,v 1.11 2000/12/20 10:19:46 saffray Exp $
+ * $Id: vector_inline.h,v 1.12 2004/10/08 13:32:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #define NL_VECTOR_INLINE_H
 
 
+#include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
 
 

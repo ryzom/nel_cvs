@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.22 2004/03/10 11:15:12 vizerie Exp $
+ * $Id: polygon.cpp,v 1.23 2004/04/28 18:22:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -176,15 +176,47 @@ typedef std::map<float, CConcavePolygonsVertexDesc> TCConcavePolygonsVertexMap;
 
 bool CPolygon::toConvexPolygonsEdgeIntersect (const CVector2f& a0, const CVector2f& a1, const CVector2f& b0, const CVector2f& b1)
 {
-	float Aa = (a0.y - a1.y) / (a0.x - a1.x);
-	float Ba = a0.y - a0.x * Aa;
-	float Ab = (b0.y - b1.y) / (b0.x - b1.x);
-	float Bb = b0.y - b0.x * Ab;
+	// both vertical?
+	if( a0.x-a1.x==0 && b0.x-b1.x==0 )
+		return false;
 
-	// Intersection 
+	// compute intersection of both lines
 	CVector2f intersection;
-	intersection.x = (Bb - Ba) / (Aa - Ab);
-	intersection.y = Aa * intersection.x + Ba;
+
+	// first edge vertical?
+	if(a0.x - a1.x==0)
+	{
+		float Ab = (b0.y - b1.y) / (b0.x - b1.x);
+		
+		// Intersection 
+		intersection.x = a0.x;
+		intersection.y = b0.y + (a0.x-b0.x) * Ab;
+	}
+	// second edge vertical?
+	else if(b0.x - b1.x==0)
+	{
+		float Aa = (a0.y - a1.y) / (a0.x - a1.x);
+		
+		// Intersection 
+		intersection.x = b0.x;
+		intersection.y = a0.y + (b0.x-a0.x) * Aa;
+	}
+	// standard case
+	else
+	{
+		float Aa = (a0.y - a1.y) / (a0.x - a1.x);
+		float Ba = a0.y - a0.x * Aa;
+		float Ab = (b0.y - b1.y) / (b0.x - b1.x);
+		float Bb = b0.y - b0.x * Ab;
+
+		// colinear?
+		if(Aa==Ab)
+			return false;
+
+		// Intersection 
+		intersection.x = (Bb - Ba) / (Aa - Ab);
+		intersection.y = Aa * intersection.x + Ba;
+	}
 
 	// In it ?
 	return ( ( (a0-intersection)*(a1-intersection) < 0 ) && ( (b0-intersection)*(b1-intersection) < 0 ) );
@@ -1249,7 +1281,10 @@ static void ScanOuterEdgeRight(CPolygon2D::TRaster *r, float x1, float y1, float
 		else
 		{		
 			deltaY = y2 - y1;		
-			inverseSlope = deltaX / deltaY;
+			if(deltaY)
+				inverseSlope = deltaX / deltaY;
+			else
+				inverseSlope = 0;
 			iInverseSlope = (sint32) (65536.0 * inverseSlope);
 			currRaster = r + ((sint) floorf(y1) - minY);
 			iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceilf(y1) - y1))); // sub-pixel accuracy
@@ -1268,7 +1303,10 @@ static void ScanOuterEdgeRight(CPolygon2D::TRaster *r, float x1, float y1, float
 	else
 	{
 		deltaY = y2 - y1;		
-		inverseSlope = deltaX / deltaY;
+		if(deltaY)
+			inverseSlope = deltaX / deltaY;
+		else
+			inverseSlope = 0;
 		iInverseSlope = (sint32) (65536.0 * inverseSlope);
 		currRaster = r + ((sint) floorf(y1) - minY);
 		currRaster->second = std::max((sint) floorf(x1), currRaster->second);
@@ -1305,7 +1343,10 @@ static void ScanOuterEdgeLeft(CPolygon2D::TRaster *r, float x1, float y1, float 
 		else
 		{		
 			deltaY = y2 - y1;		
-			inverseSlope = deltaX / deltaY;
+			if(deltaY)
+				inverseSlope = deltaX / deltaY;
+			else
+				inverseSlope = 0;
 			iInverseSlope = (sint32) (65536.0 * inverseSlope);
 			currRaster = r + ((sint) floorf(y1) - minY);
 			iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceilf(y1) - y1))); // sub-pixel accuracy
@@ -1324,7 +1365,10 @@ static void ScanOuterEdgeLeft(CPolygon2D::TRaster *r, float x1, float y1, float 
 	else
 	{
 		deltaY = y2 - y1;		
-		inverseSlope = deltaX / deltaY;
+		if(deltaY)
+			inverseSlope = deltaX / deltaY;
+		else
+			inverseSlope = 0;
 		iInverseSlope = (sint32) (65536.0 * inverseSlope);
 		currRaster = r + ((sint) floorf(y1) - minY);
 		currRaster->first = std::min((sint) floorf(x1), currRaster->first);
@@ -1526,7 +1570,10 @@ static void ScanInnerEdge(CPolygon2D::TRaster *r, float x1, float y1, float x2, 
 	height = (sint) (ceilf(y2) - floorf(y1));
 	if (height <= 0) return;
 	deltaY = y2 - y1;		
-	inverseSlope = deltaX / deltaY;
+	if(deltaY)
+		inverseSlope = deltaX / deltaY;
+	else
+		inverseSlope = 0;
 	iInverseSlope = (sint32) (rol16 * inverseSlope);
 	currRaster = r + ((sint) floorf(y1) - minY);
 	iposx = (sint32) (rol16 * (x1 + inverseSlope * (ceilf(y1) - y1))); // sub-pixel accuracy	

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.215 2004/04/27 12:12:00 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.216 2004/04/28 18:20:13 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1966,8 +1966,12 @@ void CDriverGL::setupViewport (const class CViewport& viewport)
 	// Render to texture : adjuste the viewport
 	if (_TextureTarget)
 	{
-		float factorX = (float)_TextureTarget->getWidth() / (float)clientWidth;
-		float factorY = (float)_TextureTarget->getHeight() / (float)clientHeight;
+		float factorX = 1;
+		float factorY = 1;
+		if(clientWidth)
+			factorX = (float)_TextureTarget->getWidth() / (float)clientWidth;
+		if(clientHeight)
+			factorY = (float)_TextureTarget->getHeight() / (float)clientHeight;
 		x *= factorX;
 		y *= factorY;
 		width *= factorX;
@@ -2031,8 +2035,12 @@ void	CDriverGL::setupScissor (const class CScissor& scissor)
 	// Render to texture : adjuste the scissor
 	if (_TextureTarget)
 	{
-		float factorX = (float)_TextureTarget->getWidth() / (float)clientWidth;
-		float factorY = (float)_TextureTarget->getHeight() / (float)clientHeight;
+		float factorX = 1;
+		float factorY = 1;
+		if(clientWidth)
+			factorX = (float)_TextureTarget->getWidth() / (float)clientWidth;
+		if(clientHeight)
+			factorY = (float)_TextureTarget->getHeight() / (float)clientHeight;
 		x *= factorX;
 		y *= factorY;
 		width *= factorX;

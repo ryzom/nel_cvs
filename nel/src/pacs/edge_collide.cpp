@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.14 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: edge_collide.cpp,v 1.15 2002/08/21 10:30:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -177,8 +177,15 @@ CRational64	CEdgeCollide::testPointMove(const CVector2f &start, const CVector2f 
 	double		denominator= (moveD1-moveD0)*1024*1024;
 	sint64		numeratorInt= (sint64)numerator;
 	sint64		denominatorInt= (sint64)denominator;
+/*
 	nlassert(numerator == numeratorInt);
 	nlassert(denominator == denominatorInt);
+*/
+	if (numerator != numeratorInt)
+		nlwarning("numerator(%f) != numeratorInt(%"NL_I64"d)", numerator, numeratorInt);
+	if (denominator != denominatorInt)
+		nlwarning("denominator(%f) != denominatorInt(%"NL_I64"d)", denominator, denominatorInt);
+
 	return CRational64(numeratorInt, denominatorInt);
 }
 

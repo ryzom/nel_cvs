@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.31 2004/05/24 09:33:29 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.32 2004/06/01 16:23:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -65,6 +65,7 @@ void	CPSSound::stopSound()
 	{
 		if (*it)
 		{
+			(*it)->setLooping(false);
 			(*it)->release();
 			(*it) = NULL;
 		}
@@ -428,6 +429,18 @@ void	CPSSound::resize(uint32 size)
 	nlassert(size < (1 << 16));
 	if (_GainScheme && _GainScheme->hasMemory()) _GainScheme->resize(size, getOwner()->getSize());
 	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->resize(size, getOwner()->getSize());
+	if (size < _Sounds.getSize())
+	{
+		// if vector size has been shrunk, must delete sounds instances
+		for(uint k = size; k < _Sounds.getSize(); ++k)
+		{
+			if (_Sounds[k])
+			{
+				_Sounds[k]->setLooping(false);
+				_Sounds[k]->release();
+			}	
+		}
+	}
 	_Sounds.resize(size);
 }
 

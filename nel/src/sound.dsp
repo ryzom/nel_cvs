@@ -289,14 +289,6 @@ SOURCE=.\sound\sound_bank.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\sound\sound_pattern.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\sound_pattern.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\sound\stdsound.cpp
 # ADD CPP /Yc"stdsound.h"
 # End Source File

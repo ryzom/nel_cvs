@@ -408,6 +408,14 @@ SOURCE=.\3d\landscape_profile.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\landscape_vegetable_block.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\landscape_vegetable_block.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\landscapevb_allocator.cpp
 # End Source File
 # Begin Source File
@@ -1800,7 +1808,6 @@ SOURCE=.\3d\vegetablevb_allocator.cpp
 SOURCE=.\3d\vegetablevb_allocator.h
 # End Source File
 # End Group
-
 # Begin Source File
 
 SOURCE=.\3d\async_file_manager.cpp

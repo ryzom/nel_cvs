@@ -1,7 +1,7 @@
 /** \file anim_ctrl.h
  * <File description>
  *
- * $Id: anim_ctrl.h,v 1.1 2003/07/09 16:31:02 berenguier Exp $
+ * $Id: anim_ctrl.h,v 1.1.2.1 2003/07/10 13:01:54 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.

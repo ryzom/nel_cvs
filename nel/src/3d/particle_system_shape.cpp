@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.14 2001/07/17 15:55:58 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.15 2001/07/24 08:43:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,8 +153,6 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	// render particles
 	
 
-    // TODO : do this during load balancing traversal or the like
-
 	ps->setDriver(drv) ;
 
 	// draw particle
@@ -177,15 +175,5 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 		PARTICLES_CHECK_MEM ;
 	}
 }
-
-// ***************************************************************************
-
-float CParticleSystemShape::getNumTriangles (float distance)
-{
-	/// \todo hulud: return num of triangle wanted by this system.
-	return 0;
-}
-
-// ***************************************************************************
 
 } // NL3D

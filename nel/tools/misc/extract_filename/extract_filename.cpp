@@ -1,7 +1,7 @@
 /** \file extract_filename.cpp
  * This utility extract filename from any files.
  *
- * $Id: extract_filename.cpp,v 1.2 2003/07/01 15:31:21 distrib Exp $
+ * $Id: extract_filename.cpp,v 1.3 2003/10/23 18:20:44 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -421,12 +421,12 @@ bool loadConfigFiles (const char *ext, const char *input_files, const char *avai
 		}
 		else
 		{
-			nlwarning ("ERROR can't load input files %s", extensions);
+			nlwarning ("ERROR can't load input files %s", ext);
 		}
 	}
 	else
 	{
-		nlwarning ("ERROR can't load extension file %s", extensions);
+		nlwarning ("ERROR can't load extension file %s", ext);
 	}
 
 	return false;

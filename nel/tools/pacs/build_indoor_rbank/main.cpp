@@ -1,7 +1,7 @@
 /** \file main.cpp
  * 
  *
- * $Id: main.cpp,v 1.9 2003/07/01 12:15:44 legros Exp $
+ * $Id: main.cpp,v 1.10 2003/10/23 18:20:44 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -253,7 +253,7 @@ void createRetriever(vector<CVector> &translation)
 
 		string					meshName = Meshes[i];
 
-		nlinfo("compute retriever %s", meshName);
+		nlinfo("compute retriever %s", meshName.c_str());
 
 		try
 		{

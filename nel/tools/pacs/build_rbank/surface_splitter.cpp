@@ -1,7 +1,7 @@
 /** \file surface_splitter.cpp
  * <File description>
  *
- * $Id: surface_splitter.cpp,v 1.1 2002/12/17 16:23:04 legros Exp $
+ * $Id: surface_splitter.cpp,v 1.2 2003/10/23 18:20:44 distrib Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -200,7 +200,7 @@ void	CSurfaceSplitter::splitChain(TChainMap::iterator it, uint &numInters)
 
 			if (ichain == NULL)
 			{
-				nlwarning("Couldn't find referenced chain %d", iedge.Chain);
+				nlwarning("Couldn't find referenced chain %d", iedge.Chain.Id);
 				continue;
 			}
 

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.67 2004/05/19 14:27:54 berenguier Exp $
+ * $Id: export_mesh.cpp,v 1.68 2004/08/03 16:30:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1653,6 +1653,8 @@ NL3D::IShape				*CExportNel::buildWaveMakerShape(INode& node, TimeValue time)
 	return wms;
 }
 
+
+
 // ***************************************************************************
 NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 {
@@ -1921,7 +1923,13 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 		ws->setHeightMapSpeed(0, displaceMapSpeed);
 		ws->setHeightMapSpeed(1, bumpMapSpeed);
 
-
+		// scene envmap usage
+		int waterUseSceneEnvMapAbove = 0;
+		int waterUseSceneEnvMapUnder = 0;
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "bWaterUseSceneEnvMapAbove", (ParamType2)TYPE_BOOL, &waterUseSceneEnvMapAbove, time);
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "bWaterUseSceneEnvMapUnder", (ParamType2)TYPE_BOOL, &waterUseSceneEnvMapUnder, time);
+		ws->setUseSceneWaterEnvMap(0, waterUseSceneEnvMapAbove != 0);
+		ws->setUseSceneWaterEnvMap(1, waterUseSceneEnvMapUnder != 0);
 
 		if (colorMap != NULL)
 		{

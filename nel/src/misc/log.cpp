@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.34 2002/01/04 10:20:32 lecroart Exp $
+ * $Id: log.cpp,v 1.35 2002/01/04 10:23:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -303,7 +303,7 @@ void CLog::displayRaw( const char *format, ... )
 		args.Line = -1;
 
 		// Send to the attached displayers
-		for ( CDisplayers::iterator idi=_Displayers.begin(); idi<_Displayers.end(); idi++ )
+		for ( CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
 		{
 			(*idi)->display( args, str );
 		}

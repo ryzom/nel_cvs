@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.88 2004/01/06 17:33:21 corvazier Exp $
+ * $Id: global_retriever.cpp,v 1.89 2004/01/08 15:10:00 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,7 +95,7 @@ void	NLPACS::CGlobalRetriever::initRetrieveTable()
 		if (_Instances[i].getInstanceId() != -1 && _Instances[i].getRetrieverId() != -1)
 		{
 			const CLocalRetriever	&retriever = getRetriever(_Instances[i].getRetrieverId());
-			size =  std::max(retriever.getSurfaces().size(), size);
+			size =  std::max((uint)retriever.getSurfaces().size(), size);
 		}
 	}
 

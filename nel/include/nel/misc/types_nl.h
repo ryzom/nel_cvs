@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.43 2003/11/17 10:25:24 lecroart Exp $
+ * $Id: types_nl.h,v 1.44 2004/01/08 15:13:03 lecroart Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -201,7 +201,7 @@ typedef	unsigned	__int32		uint32;
 typedef	signed		__int64		sint64;
 typedef	unsigned	__int64		uint64;
 
-typedef	signed		int			sint;			// at least 32bits (depend of processor)
+typedef			int			sint;			// at least 32bits (depend of processor)
 typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 
 #define	NL_I64	\
@@ -217,10 +217,10 @@ typedef	int16_t		sint16;
 typedef	u_int16_t	uint16;
 typedef	int32_t		sint32;
 typedef	u_int32_t	uint32;
-typedef	int64_t		sint64;
-typedef	u_int64_t	uint64;
+typedef	long long int		sint64;
+typedef	unsigned long long int	uint64;
 
-typedef	signed		int			sint;			// at least 32bits (depend of processor)
+typedef			int			sint;			// at least 32bits (depend of processor)
 typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 
 #define	NL_I64	\
@@ -239,8 +239,12 @@ typedef	uint16	ucchar;
 // to define a 64bits constant
 #ifdef NL_OS_WINDOWS
 #define INT64_CONSTANT(c)  (c) 
+#define UINT64_CONSTANT(c)  (c) 
+#define SINT64_CONSTANT(c)  (c) 
 #else 
 #define INT64_CONSTANT(c)  (c##LL)
+#define SINT64_CONSTANT(c)  (c##LL)
+#define UINT64_CONSTANT(c)  (c##ULL)
 #endif
 
 #ifdef NL_OS_WINDOWS

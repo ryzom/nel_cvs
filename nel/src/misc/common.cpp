@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.50 2004/01/08 14:58:14 saffray Exp $
+ * $Id: common.cpp,v 1.51 2004/01/08 15:13:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -938,7 +938,7 @@ int	nlfseek64( FILE *stream, sint64 offset, int origin )
 // This code doesn't work under windows : fseek() implementation uses a signed 32 bits offset. What ever we do, it can't seek more than 2 Go.
 // For the moment, i don't know if it works under linux for seek of more than 2 Go.
 
-	nlassert ((offset < INT64_CONSTANT(2147483647)) && (offset > INT64_CONSTANT(-2147483648)));
+	nlassert ((offset < SINT64_CONSTANT(2147483647)) && (offset > SINT64_CONSTANT(-2147483648)));
 
 	bool first = true;
 	do
@@ -946,9 +946,9 @@ int	nlfseek64( FILE *stream, sint64 offset, int origin )
 		// Get the size of the next fseek
 		sint nextSeek;
 		if (offset > 0)
-			nextSeek = (sint)std::min (INT64_CONSTANT(2147483647), offset);
+			nextSeek = (sint)std::min (SINT64_CONSTANT(2147483647), offset);
 		else
-			nextSeek = (sint)std::max (-INT64_CONSTANT(2147483648), offset);
+			nextSeek = (sint)std::max (-SINT64_CONSTANT(2147483648), offset);
 
 		// Make a seek
 		int result = fseek ( stream, nextSeek, first?origin:SEEK_CUR );

@@ -1,6 +1,6 @@
 /** \file string_mapper.cpp
  *
- * $Id: string_mapper.h,v 1.9 2004/01/07 18:31:13 lecroart Exp $
+ * $Id: string_mapper.h,v 1.10 2004/01/08 15:13:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,11 @@ namespace NLMISC
 {
 
 // const string *  as  uint (the TStringId returned by CStringMapper is a pointer to a string object)
+#ifdef HAVE_X86_64
+typedef uint64 TStringId;
+#else
 typedef uint TStringId;
+#endif
 
 /** A static class that map string to integer and vice-versa
  * Each different string is tranformed into an unique integer identifier.

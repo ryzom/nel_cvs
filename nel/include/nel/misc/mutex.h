@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.26 2003/03/31 14:02:55 cado Exp $
+ * $Id: mutex.h,v 1.27 2004/01/08 15:13:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,7 +114,17 @@ private:
 // - immediate values prefixed by $
 
 // Tested: works on multi-processor
-#define ASM_ASWAP_FOR_GCC_XCHG __asm__ volatile( \
+#ifdef HAVE_X86_64
+#	define ASM_ASWAP_FOR_GCC_XCHG __asm__ volatile( \
+		    "mov %1, %%rcx;" \
+		    "mov $1, %%eax;" \
+		    "xchg %%eax, (%%rcx);" \
+		    "mov %%eax, %0" \
+	        : "=m" (result) \
+		    : "m" (lockPtr) \
+		    : "eax", "rcx", "memory" ); // force to use registers and memory
+#else
+#	define ASM_ASWAP_FOR_GCC_XCHG __asm__ volatile( \
 		    "mov %1, %%ecx;" \
 		    "mov $1, %%eax;" \
 		    "xchg %%eax, (%%ecx);" \
@@ -122,6 +132,7 @@ private:
 	        : "=m" (result) \
 		    : "m" (lockPtr) \
 		    : "eax", "ecx", "memory" ); // force to use registers and memory
+#endif
 
 // Tested: does not work (at least on multi-processor)! (with or without 'lock' prefix)
 #define ASM_ASWAP_FOR_GCC_CMPXCHG __asm__ volatile( \

@@ -1,7 +1,7 @@
 /** \file value_smoother.h
  * <File description>
  *
- * $Id: value_smoother.h,v 1.8 2003/12/30 09:27:17 distrib Exp $
+ * $Id: value_smoother.h,v 1.9 2004/01/08 15:13:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,7 +97,7 @@ public:
 		
 		// update the number of frames added.
 		_NumFrame++;
-		_NumFrame= std::min(_NumFrame, _LastFrames.size());
+		_NumFrame= std::min(_NumFrame, (uint)_LastFrames.size());
 	}
 	
 	/// get the smoothed value.

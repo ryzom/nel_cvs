@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.33 2003/12/17 16:03:59 legros Exp $
+ * $Id: hierarchical_timer.cpp,v 1.34 2004/01/08 15:13:03 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -511,7 +511,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 			resultName.resize(labelNumChar);
 			std::fill(resultName.begin(), resultName.end(), '.');
 			uint startIndex = depth * indentationStep;
-			uint endIndex = std::min(startIndex + ::strlen(currTimer->_Name), labelNumChar);			
+			uint endIndex = std::min(startIndex + (uint)::strlen(currTimer->_Name), labelNumChar);			
 			if ((sint) (endIndex - startIndex) >= 1)
 			{
 				std::copy(currTimer->_Name, currTimer->_Name + (endIndex - startIndex), resultName.begin() + startIndex);
@@ -638,7 +638,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 			resultName.resize(labelNumChar);
 			std::fill(resultName.begin(), resultName.end(), '.');
 			uint startIndex = (examStack.size()-1) * indentationStep;
-			uint endIndex = std::min(startIndex + ::strlen(node->Owner->_Name), labelNumChar);			
+			uint endIndex = std::min(startIndex + (uint)::strlen(node->Owner->_Name), labelNumChar);			
 			if ((sint) (endIndex - startIndex) >= 1)
 			{
 				std::copy(node->Owner->_Name, node->Owner->_Name + (endIndex - startIndex), resultName.begin() + startIndex);
@@ -758,7 +758,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 			resultName.resize(labelNumChar);
 			std::fill(resultName.begin(), resultName.end(), '.');
 			uint startIndex = (examStack.size()-1) * indentationStep;
-			uint endIndex = std::min(startIndex + ::strlen(node->Owner->_Name), labelNumChar);			
+			uint endIndex = std::min(startIndex + (uint)::strlen(node->Owner->_Name), labelNumChar);			
 			if ((sint) (endIndex - startIndex) >= 1)
 			{
 				std::copy(node->Owner->_Name, node->Owner->_Name + (endIndex - startIndex), resultName.begin() + startIndex);

@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.41 2001/07/10 08:34:48 berenguier Exp $
+ * $Id: zone.cpp,v 1.42 2001/07/10 10:01:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -879,6 +879,25 @@ void			CZone::refineAll()
 	}
 
 }
+
+
+// ***************************************************************************
+void			CZone::averageTesselationVertices()
+{
+	nlassert(Compiled);
+
+	// Fuck stlport....
+	if(Patchs.size()==0)
+		return;
+
+	// averageTesselationVertices of ALL patchs.
+	CPatch		*pPatch= &(*Patchs.begin());
+	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+	{
+		pPatch->averageTesselationVertices();
+	}
+}
+
 
 // ***************************************************************************
 void			CZone::preRender(const std::vector<CPlane>	&pyramid)

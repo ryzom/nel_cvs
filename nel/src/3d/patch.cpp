@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.56 2001/07/10 08:34:48 berenguier Exp $
+ * $Id: patch.cpp,v 1.57 2001/07/10 10:01:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1050,6 +1050,33 @@ void			CPatch::refine()
 	Son0->refine();
 	Son1->refine();
 }
+
+
+// ***************************************************************************
+void			CPatch::averageTesselationVertices()
+{
+	nlassert(Son0);
+	nlassert(Son1);
+
+	// Recompute the BaseVertices. This is usefull for Pacs.
+	// Because CLandscape::averageTesselationVertices() is made on a strict order for patchs (map of zones, then 
+	// array of patchs), we are sure to overwrite BaseVertices in this order.
+	CTessVertex *a= BaseVertices[0];
+	CTessVertex *b= BaseVertices[1];
+	CTessVertex *c= BaseVertices[2];
+	CTessVertex *d= BaseVertices[3];
+	// Set positions.
+	a->Pos= a->StartPos= a->EndPos= computeVertex(0,0);
+	b->Pos= b->StartPos= b->EndPos= computeVertex(0,1);
+	c->Pos= c->StartPos= c->EndPos= computeVertex(1,1);
+	d->Pos= d->StartPos= d->EndPos= computeVertex(1,0);
+
+
+	// Average the tesselation of sons.
+	Son0->averageTesselationVertices();
+	Son1->averageTesselationVertices();
+}
+
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.6 2001/07/10 08:34:48 berenguier Exp $
+ * $Id: patch.h,v 1.7 2001/07/10 10:01:19 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -365,6 +365,9 @@ public:
 	/// For changing TileMaxSubdivision. force tesselation to be under tile.
 	void			forceMergeAtTileLevel();
 
+	/** This is especially for Pacs. see CLandscape desc.
+	 */
+	void			averageTesselationVertices();
 
 	/// Classify this patch as UnClipped.
 	void			forceNoClip() {Clipped= false;}

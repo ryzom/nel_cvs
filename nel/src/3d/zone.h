@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.4 2001/07/10 08:34:48 berenguier Exp $
+ * $Id: zone.h,v 1.5 2001/07/10 10:01:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -373,7 +373,9 @@ public:
 	void			refineAll();
 	/// This is especially for Pacs. exlude a patch to be refineAll()ed.
 	void			excludePatchFromRefineAll(uint patch, bool exclude);
-
+	/** This is especially for Pacs. see CLandscape desc.
+	 */
+	void			averageTesselationVertices();
 
 	// Accessors.
 	const CVector	&getPatchBias() const {return PatchBias;}

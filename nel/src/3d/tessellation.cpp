@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.46 2001/07/06 17:03:42 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.47 2001/07/10 10:01:19 berenguier Exp $
  *
  */
 
@@ -1902,6 +1902,58 @@ void		CTessFace::forceMergeAtTileLevel()
 			forceMerge();
 	}
 }
+
+
+// ***************************************************************************
+void		CTessFace::averageTesselationVertices()
+{
+	// If we are not splitted, no-op.
+	if(isLeaf())
+		return;
+
+
+	CTessFace	*neighbor;
+	// Normal square case.
+	if(!isRectangular())
+	{
+		neighbor= FBase;
+	}
+	// Special Rectangular case.
+	else
+	{
+		// NB: here, just need to compute average of myself with FLeft, because my neighbor FBase 
+		// is on same patch (see splitRectangular()), and is average with its FLeft neighbor is done 
+		// on an other branch of the recurs call.
+		neighbor= FLeft;
+	}
+
+
+	/* Try to average with neighbor.
+		- if no neighbor, no-op :).
+		- if neighbor is bind 1/N (CantMergeFace), no-op too, because the vertex is a BaseVertex, so don't modify.
+		- if my patch is same than my neighbor, then we are on a same patch :), and so no need to average.
+	*/
+	if(neighbor!=NULL && neighbor!=&CantMergeFace && Patch!= neighbor->Patch)
+	{
+		nlassert(neighbor->Patch);
+		nlassert(!neighbor->isLeaf());
+		// must compute average beetween me and my neighbor.
+		// NB: this work with both rectangular and square triangles (see split*()).
+		nlassert(SonLeft->VBase == neighbor->SonLeft->VBase);
+
+		CVector		v0= Patch->computeVertex(SonLeft->PVBase.getS(), SonLeft->PVBase.getT());
+		CVector		v1= neighbor->Patch->computeVertex(neighbor->SonLeft->PVBase.getS(), neighbor->SonLeft->PVBase.getT());
+
+		// And so set the average.
+		SonLeft->VBase->EndPos= (v0+v1)/2;
+	}
+
+
+	// Do same thing for sons. NB: see above, we are not a leaf.
+	SonLeft->averageTesselationVertices();
+	SonRight->averageTesselationVertices();
+}
+
 
 
 // ***************************************************************************

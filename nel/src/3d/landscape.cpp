@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.66 2001/07/10 08:34:48 berenguier Exp $
+ * $Id: landscape.cpp,v 1.67 2001/07/10 10:01:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -430,6 +430,23 @@ void			CLandscape::excludePatchFromRefineAll(sint zoneId, uint patch, bool exclu
 	}
 
 }
+
+
+// ***************************************************************************
+void			CLandscape::averageTesselationVertices()
+{
+	// -1. Update globals
+	updateGlobals (CVector::Null);
+
+	// Increment the update date.
+	CTessFace::CurrentDate++;
+
+	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+	{
+		(*it).second->averageTesselationVertices();
+	}
+}
+
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.6 2001/07/10 08:34:48 berenguier Exp $
+ * $Id: landscape.h,v 1.7 2001/07/10 10:01:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,6 +207,14 @@ public:
 	void			refineAll(const CVector &refineCenter);
 	/// This is especially for Pacs. exlude a patch to be refineAll()ed.
 	void			excludePatchFromRefineAll(sint zoneId, uint patch, bool exclude);
+
+
+	/** This is especially for Pacs. Each Vertex->EndPos which is not a corner of a patch
+	 *	is set to the mean of its 2 shared Patchs.
+	 *	NB: Works with special cases of rectangular patchs and binded patchs.
+	 */
+	void			averageTesselationVertices();
+
 
 	// @}
 

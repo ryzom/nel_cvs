@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.3 2001/07/06 12:26:49 berenguier Exp $
+ * $Id: tessellation.h,v 1.4 2001/07/10 10:01:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -327,6 +327,9 @@ public:
 	void			updateBindAndSplit();
 	// Used by CPatch::forceMergeAtTileLevel(). force the merging of face (as possible).
 	void			forceMergeAtTileLevel();
+
+	// Used by CPatch::averageTesselationVertices(). See CLandscape doc. recurs call.
+	void			averageTesselationVertices();
 
 
 	// Used by CZone::changePatchTexture().

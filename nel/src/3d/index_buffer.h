@@ -1,7 +1,7 @@
 /** \file index_buffer.h
  * Index buffers.
  *
- * $Id: index_buffer.h,v 1.6 2004/08/13 15:35:40 vizerie Exp $
+ * $Id: index_buffer.h,v 1.7 2004/09/17 15:21:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -468,6 +468,8 @@ public:
 	  */
 	void					touchIndexes (uint first, uint last);
 
+	const CIndexBuffer *getParent() const { return _Parent; }
+
 private:
 
 	// No copy operators available
@@ -514,6 +516,8 @@ public:
 		nlassert (_Parent->checkLockedBuffer());
 		return &(_Parent->_LockedBuffer[0]);
 	}
+
+	const CIndexBuffer *getParent() const { return _Parent; }
 
 private:
 	

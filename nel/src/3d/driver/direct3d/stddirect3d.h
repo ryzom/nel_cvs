@@ -1,7 +1,7 @@
 /** \file stddirect3d.h
  * Direct 3d driver implementation
  *
- * $Id: stddirect3d.h,v 1.1 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: stddirect3d.h,v 1.2 2004/09/17 15:03:35 vizerie Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -41,6 +41,12 @@
 #include <exception>
 #include <utility>
 #include <deque>
+
+
+#ifdef NL_DEBUG
+	// add Direct3D debug infos
+	#define D3D_DEBUG_INFO
+#endif
 
 // Directx includes
 #include <d3d9.h>

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.48 2002/03/21 10:44:55 berenguier Exp $
+ * $Id: mesh.cpp,v 1.49 2002/03/26 15:25:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -537,8 +537,8 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 {
 	nlassert(drv);
 	// get the mesh instance.
-	nlassert(dynamic_cast<CMeshInstance*>(trans));
-	CMeshInstance	*mi= (CMeshInstance*)trans;
+	nlassert(dynamic_cast<CMeshBaseInstance*>(trans));
+	CMeshBaseInstance	*mi= (CMeshBaseInstance*)trans;
 	// get a ptr on scene
 	CScene			*ownerScene= mi->getScene();
 	// get a ptr on renderTrav

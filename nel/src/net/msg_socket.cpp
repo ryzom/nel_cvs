@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.44 2000/12/20 10:08:17 cado Exp $
+ * $Id: msg_socket.cpp,v 1.45 2001/01/04 17:05:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -345,7 +345,7 @@ void CMsgSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (
  */
 bool CMsgSocket::serviceExpired()
 {
-	return ( difftime( time(NULL), _ConnectTime ) > _ValidityTime );
+	return ( (_ServiceName != "") && difftime( time(NULL), _ConnectTime ) > _ValidityTime );
 }
 
 

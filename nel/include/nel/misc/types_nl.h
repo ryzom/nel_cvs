@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * basic types, define and class
  *
- * $Id: types_nl.h,v 1.19 2000/12/13 17:00:28 cado Exp $
+ * $Id: types_nl.h,v 1.20 2001/01/04 17:05:21 cado Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -68,7 +68,7 @@
 // Check the STLPort presence
 
 #ifndef __SGI_STL_PORT
-#  error "You need STLPort to compile this project (www.stlport.org)"
+#  error "You need STLPort to compile this project (www.sltport.org)"
 #endif // __SGI_STL_PORT
 
 
@@ -274,7 +274,8 @@ public:
 	}
 
 
-	void toString (std::string &str)
+	/// Converts the controlled ucstring to a string str
+	void toString (std::string &str) const
 	{
 		str.resize (size ());
 		for (sint i = 0; i < (sint) str.size (); i++)
@@ -283,8 +284,8 @@ public:
 		}
 	}
 
-	
-	std::string toString ()
+	/// Converts the controlled ucstring and returns the resulting string
+	std::string toString () const
 	{
 		std::string str;
 		toString(str);

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.84 2001/09/13 09:10:40 lecroart Exp $
+ * $Id: service.cpp,v 1.85 2001/09/13 09:17:19 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -1006,5 +1006,33 @@ NLMISC_COMMAND(removefilter_debug, "remove a filter on DebugLog", "<filterstr>")
 	return true;
 }
 
+NLMISC_COMMAND(addposfilter_info, "add a positive filter on InfoLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	
+	InfoLog->addPositiveFilter( args[0].c_str() );
+
+	return true;
+}
+
+
+NLMISC_COMMAND(addnegfilter_info, "add a negative filter on InfoLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	
+	InfoLog->addNegativeFilter( args[0].c_str() );
+
+	return true;
+}
+
+
+NLMISC_COMMAND(removefilter_info, "remove a filter on InfoLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	
+	InfoLog->removeFilter( args[0].c_str() );
+
+	return true;
+}
 
 } //NLNET

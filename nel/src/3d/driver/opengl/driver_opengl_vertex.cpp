@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.8 2001/07/16 08:29:28 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.9 2001/07/24 09:14:48 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -455,6 +455,42 @@ void	CDriverGL::renderPoints(CMaterial& Mat, uint32 numPoints)
 	// Profiling.
 	_PrimitiveProfileIn.NPoints+= numPoints;
 	_PrimitiveProfileOut.NPoints+= numPoints * nPass;
+}
+
+
+
+
+// ***************************************************************************
+void	CDriverGL::renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)
+{
+	// Check user code :)
+	nlassert(!_MatrixSetupDirty);
+
+	if ( !setupMaterial(Mat) )
+		return;	
+
+
+	// render primitives.
+	//==============================
+	// start multipass.
+	uint	nPass;
+	nPass= beginMultiPass(Mat);
+	// draw all passes.
+	for(uint pass=0;pass<nPass; pass++)
+	{
+		// setup the pass.
+		setupPass(Mat, pass);
+		// draw the primitives.
+		if(numQuads)
+			glDrawArrays(GL_QUADS, startIndex << 2, numQuads << 2) ;
+	}
+	// end multipass.
+	endMultiPass(Mat);
+
+
+	// Profiling.
+	_PrimitiveProfileIn.NQuads  += numQuads ;
+	_PrimitiveProfileOut.NQuads += numQuads  * nPass;
 }
 
 

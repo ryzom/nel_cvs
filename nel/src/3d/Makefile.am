@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.99 2003/04/14 09:24:17 lecroart Exp $
+# $Id: Makefile.am,v 1.100 2003/10/13 10:15:32 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -85,8 +85,6 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        dru.h \
                        event_mouse_listener.cpp \
                        event_mouse_listener.h \
-                       fast_floor.cpp \
-                       fast_floor.h \
                        fast_ptr_list.cpp \
                        fast_ptr_list.h \
 		       fasthls_modifier.cpp \
@@ -233,8 +231,6 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        nelu.h \
 		       noise_3d.cpp \
 		       noise_3d.h \
-                       noise_value.cpp \
-                       noise_value.h \
                        ordering_table.h \
                        particle_system.cpp \
                        particle_system.h \

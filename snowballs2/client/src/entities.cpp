@@ -1,7 +1,7 @@
 /** \file commands.cpp
- * commands management with user interface
+ * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.24 2001/07/18 17:14:21 legros Exp $
+ * $Id: entities.cpp,v 1.25 2001/07/18 17:30:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,10 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+//
+// Includes
+//
 
 #include <math.h>
 #include <map>
@@ -53,8 +57,6 @@
 #include <nel/pacs/u_global_retriever.h>
 #include <nel/pacs/u_global_position.h>
 
-
-
 #include "client.h"
 #include "entities.h"
 #include "pacs.h"
@@ -64,10 +66,18 @@
 #include "mouse_listener.h"
 #include "landscape.h"
 
+//
+// Namespaces
+//
+
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 using namespace NLPACS;
+
+//
+// Variables
+//
 
 // The collision bits used by pacs (dynamic collisions)
 enum
@@ -103,6 +113,9 @@ float					SnowballSpeed = 10.0f;	// 36 km/h
 float					EntityNameSize;
 CRGBA					EntityNameColor;
 
+//
+// Functions
+//
 
 // Set the state of the entity (Appear, Normal, Disappear)
 void CEntity::setState (TState state)

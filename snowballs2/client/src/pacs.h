@@ -1,7 +1,7 @@
 /** \file pacs.h
- * 
+ * Pacs interface between the game and NeL
  *
- * $Id: pacs.h,v 1.4 2001/07/18 15:24:26 legros Exp $
+ * $Id: pacs.h,v 1.5 2001/07/18 17:30:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,10 @@
 #ifndef PACS_H
 #define PACS_H
 
+//
+// External definitions
+//
+
 namespace NLPACS
 {
 	class URetrieverBank;
@@ -38,11 +42,19 @@ namespace NL3D
 	class UVisualCollisionManager;
 }
 
+//
+// External variables
+//
+
 extern NLPACS::URetrieverBank			*RetrieverBank;
 extern NLPACS::UGlobalRetriever			*GlobalRetriever;
 extern NLPACS::UMoveContainer			*MoveContainer;
 
 extern NL3D::UVisualCollisionManager	*VisualCollisionManager;
+
+//
+// External functions
+//
 
 void	initPACS();
 void	releasePACS();

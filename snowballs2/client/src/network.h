@@ -1,7 +1,7 @@
 /** \file network.h
  * Network interface between the game and NeL
  *
- * $Id: network.h,v 1.5 2001/07/18 16:06:20 lecroart Exp $
+ * $Id: network.h,v 1.6 2001/07/18 17:30:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,18 +26,33 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+//
+// Includes
+//
+
 #include <string>
 
 #include "entities.h"
+
+//
+// External definitions
+//
 
 namespace NLNET
 {
 	class CCallbackClient;
 }
 
+//
+// External variables
+//
+
 // Pointer to the connection to the server
 extern NLNET::CCallbackClient	*Connection;
 
+//
+// External functions
+//
 
 // Return true if the client is online
 bool	isOnline ();

@@ -1,7 +1,7 @@
 /** \file landscape.h
- * 
+ * Landscape interface between the game and NeL
  *
- * $Id: landscape.h,v 1.5 2001/07/18 15:24:26 legros Exp $
+ * $Id: landscape.h,v 1.6 2001/07/18 17:30:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,21 @@
 #ifndef LANDSCAPE_H
 #define LANDSCAPE_H
 
+//
+// Includes
+//
+
 #include <nel/3d/u_landscape.h>
+
+//
+// External variables
+//
+
+extern NL3D::ULandscape		*Landscape;
+
+//
+// External functions
+//
 
 void			initLandscape();
 void			updateLandscape();
@@ -38,8 +52,6 @@ void			releaseAiming();
 // Compute the collision with the landscape from the start position, using the given step,
 // at maximum numSteps steps from the start.
 NLMISC::CVector	getTarget(const NLMISC::CVector &start, const NLMISC::CVector &step, uint numSteps);
-
-extern NL3D::ULandscape		*Landscape;
 
 #endif // LANDSCAPE_H
 

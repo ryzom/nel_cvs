@@ -1,7 +1,7 @@
 /** \file mouse_listener.h
- * <File description>
+ * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.h,v 1.3 2001/07/17 17:20:29 lecroart Exp $
+ * $Id: mouse_listener.h,v 1.4 2001/07/18 17:30:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,10 @@
 #ifndef MOUSE_LISTENER_H
 #define MOUSE_LISTENER_H
 
+//
+// Includes
+//
+
 #include <nel/misc/types_nl.h>
 #include <nel/misc/event_listener.h>
 #include <nel/misc/matrix.h>
@@ -33,8 +37,16 @@
 #include <nel/3d/frustum.h>
 #include <nel/3d/u_3d_mouse_listener.h>
 
+//
+// External definitions
+//
+
 using NLMISC::CVector;
 using NLMISC::CMatrix;
+
+//
+// External classes
+//
 
 /**
  * C3dMouseListener is a listener that handle a 3d matrix with mouse events.
@@ -288,6 +300,10 @@ private:
 	  */
 	void truncateVect(CVector &v) ;
 };
+
+//
+// External functions
+//
 
 void	initMouseListenerConfig();
 

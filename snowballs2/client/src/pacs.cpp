@@ -1,7 +1,7 @@
 /** \file pacs.cpp
  * pacs management
  *
- * $Id: pacs.cpp,v 1.4 2001/07/18 15:24:26 legros Exp $
+ * $Id: pacs.cpp,v 1.5 2001/07/18 17:30:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+//
+// Includes
+//
 
 #include <nel/pacs/u_retriever_bank.h>
 #include <nel/pacs/u_global_retriever.h>
@@ -35,10 +38,18 @@
 #include "landscape.h"
 #include "pacs.h"
 
+//
+// Namespaces
+//
+
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 using namespace NLPACS;
+
+//
+// Variables
+//
 
 // The retriever bank used in the world
 URetrieverBank			*RetrieverBank;
@@ -50,6 +61,9 @@ UMoveContainer			*MoveContainer;
 // The collision manager for ground snappping
 UVisualCollisionManager	*VisualCollisionManager;
 
+//
+// Functions
+//
 
 void	initPACS()
 {

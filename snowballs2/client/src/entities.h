@@ -1,7 +1,7 @@
 /** \file entities.h
- * 
+ * Snowballs 2 specific code for managing the entities
  *
- * $Id: entities.h,v 1.17 2001/07/18 17:14:21 legros Exp $
+ * $Id: entities.h,v 1.18 2001/07/18 17:30:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,11 +26,19 @@
 #ifndef ENTITIES_H
 #define ENTITIES_H
 
+//
+// Includes
+//
+
 #include <string>
 #include <map>
 
 #include <nel/misc/vector.h>
 #include <nel/misc/time_nl.h>
+
+//
+// External definitions
+//
 
 namespace NLSOUND
 {
@@ -49,6 +57,10 @@ namespace NL3D
 	class UPlayList;
 	class USkeleton;
 }
+
+//
+// External classes
+//
 
 // An entity that will move through the landscape.
 // The possible entities are the Self (the player's avatar), the Other and the Snowball
@@ -122,6 +134,10 @@ public:
 
 };
 
+//
+// External variables
+//
+
 // The entity representing the player avatar
 extern CEntity								*Self;
 
@@ -132,6 +148,9 @@ extern float								PlayerSpeed;
 extern std::map<uint32, CEntity>			Entities;
 typedef std::map<uint32, CEntity>::iterator	EIT;
 
+//
+// External functions
+//
 
 void	addEntity (uint32 eid, CEntity::TType type, const NLMISC::CVector &startPosition, const NLMISC::CVector &serverPosition);
 void	removeEntity (uint32 eid);

@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
- * <File description>
+ * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.cpp,v 1.5 2001/07/18 17:14:21 legros Exp $
+ * $Id: mouse_listener.cpp,v 1.6 2001/07/18 17:30:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,10 @@
  * MA 02111-1307, USA.
  */
 
+//
+// Includes
+//
+
 #include <nel/misc/event_server.h>
 #include <nel/3d/u_driver.h>
 #include <nel/3d/u_camera.h>
@@ -31,18 +35,29 @@
 #include <nel/misc/quat.h>
 #include <nel/misc/plane.h>
 
-
 #include "client.h"
 #include "mouse_listener.h"
 #include "entities.h"
 #include "camera.h"
 
+//
+// Namespaces
+//
+
 using namespace NLMISC;
 using namespace NL3D;
 
-float MouseZoomStep;
+//
+// Variables
+//
 
-float GroundCamLimit = 0.5f;
+static float MouseZoomStep;
+
+static float GroundCamLimit = 0.5f;
+
+//
+// Functions
+//
 
 C3dMouseListener::C3dMouseListener() :  _CurrentModelRotationAxis(zAxis),
 										_XModelTranslateEnabled(true),

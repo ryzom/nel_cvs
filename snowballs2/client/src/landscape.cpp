@@ -1,7 +1,7 @@
 /** \file landscape.cpp
- * Landscape management with user interface
+ * Landscape interface between the game and NeL
  *
- * $Id: landscape.cpp,v 1.9 2001/07/18 16:06:20 lecroart Exp $
+ * $Id: landscape.cpp,v 1.10 2001/07/18 17:30:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,16 +23,20 @@
  * MA 02111-1307, USA.
  */
 
+//
+// Includes
+//
+
 #include "nel/misc/types_nl.h"
+
+#include <string>
+#include <deque>
 
 #include "nel/misc/command.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/path.h"
 #include "nel/misc/i18n.h"
 #include "nel/misc/config_file.h"
-
-#include <string>
-#include <deque>
 
 #include <nel/3d/u_camera.h>
 #include <nel/3d/u_driver.h>
@@ -49,13 +53,24 @@
 #include "pacs.h"
 #include "mouse_listener.h"
 
+//
+// Namespaces
+//
+
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 
+//
+// Variables
+//
+
 ULandscape				*Landscape = NULL;
 UVisualCollisionEntity	*AimingEntity = NULL;
 
+//
+// Functions
+//
 
 void	initLandscape()
 {

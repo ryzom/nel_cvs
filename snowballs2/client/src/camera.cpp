@@ -1,7 +1,7 @@
 /** \file camera.cpp
- * Camera management
+ * Camera interface between the game and NeL
  *
- * $Id: camera.cpp,v 1.12 2001/07/18 16:06:20 lecroart Exp $
+ * $Id: camera.cpp,v 1.13 2001/07/18 17:30:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,10 @@
  * MA 02111-1307, USA.
  */
 
+//
+// Includes
+//
+
 #include <math.h>
 #include <nel/misc/vectord.h>
 #include <nel/3d/u_camera.h>
@@ -38,9 +42,17 @@
 #include "mouse_listener.h"
 #include "pacs.h"
 
+//
+// Namespaces
+//
+
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
+
+//
+// Variables
+//
 
 // The camera for the whole scene
 UCamera					*Camera = NULL;
@@ -54,6 +66,10 @@ static UInstance			*Snow = NULL;
 static UScene				*SkyScene = NULL;
 static UCamera				*SkyCamera = NULL;
 static UInstance			*Sky = NULL;
+
+//
+// Functions
+//
 
 void	initCamera()
 {

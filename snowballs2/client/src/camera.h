@@ -1,7 +1,7 @@
 /** \file camera.h
- * 
+ * Animation interface between the game and NeL
  *
- * $Id: camera.h,v 1.6 2001/07/18 13:18:51 legros Exp $
+ * $Id: camera.h,v 1.7 2001/07/18 17:30:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,11 +26,27 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+//
+// External definitions
+//
+
 namespace NL3D
 {
 	class UCamera;
 	class UVisualCollisionEntity;
 };
+
+
+//
+// External variables
+//
+
+extern NL3D::UCamera				*Camera;
+extern NL3D::UVisualCollisionEntity	*CamCollisionEntity;
+
+//
+// External functions
+//
 
 void	initCamera();
 void	updateCamera();
@@ -39,9 +55,6 @@ void	releaseCamera();
 // Update the sky for this frame, and render it.
 // Must be called before ANY rendering
 void	updateSky ();
-
-extern NL3D::UCamera				*Camera;
-extern NL3D::UVisualCollisionEntity	*CamCollisionEntity;
 
 #endif // CAMERA_H
 

@@ -1,7 +1,7 @@
 /** \file commands.cpp
- * commands management with user interface
+ * Snowballs 2 specific code for managing the command interface
  *
- * $Id: commands.cpp,v 1.12 2001/07/18 16:06:20 lecroart Exp $
+ * $Id: commands.cpp,v 1.13 2001/07/18 17:30:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

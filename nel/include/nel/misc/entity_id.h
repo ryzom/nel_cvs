@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.29 2003/07/09 15:18:05 cado Exp $
+ * $Id: entity_id.h,v 1.30 2003/08/19 11:54:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -484,7 +484,10 @@ public :
 		uint		dynamicId;
 
 		if (sscanf(str, "(%"NL_I64"x:%x:%x:%x)", &id, &type, &creatorId, &dynamicId) != 4)
+		{
+			*this = Unknown;
 			return;
+		}
 
 		DetailedId.Id = id;
 		DetailedId.Type = type;

@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.15 2001/12/17 13:25:48 vizerie Exp $
+ * $Id: water_model.cpp,v 1.16 2001/12/18 18:32:29 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -909,7 +909,7 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 
 				
 
-		/// set bumpmap matrix		
+		/// set matrix		
 		drv->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
 
 		// retrieve current time

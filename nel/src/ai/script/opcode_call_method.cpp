@@ -1,6 +1,6 @@
 /** \file opcode_call_method.cpp
  *
- * $Id: opcode_call_method.cpp,v 1.8 2002/11/05 14:07:50 chafik Exp $
+ * $Id: opcode_call_method.cpp,v 1.9 2003/01/24 15:51:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
 
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/agent/agent_script.h"
+#include "nel/ai/agent/message_script.h"
 #include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/script/interpret_object_message.h"
 

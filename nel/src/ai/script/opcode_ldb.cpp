@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.15 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: opcode_ldb.cpp,v 1.16 2003/01/24 15:51:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,7 @@
  */
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/agent/agent_script.h"
+#include "nel/ai/agent/message_script.h"
 #include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/script/interpret_object_message.h"
 

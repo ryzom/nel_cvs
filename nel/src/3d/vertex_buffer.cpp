@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.26 2001/09/07 07:32:08 corvazier Exp $
+ * $Id: vertex_buffer.cpp,v 1.27 2001/09/07 09:16:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -614,7 +614,7 @@ void		CVertexBuffer::serialOldV1Minus(NLMISC::IStream &f, sint ver)
 
 	// Remap the flags
 	uint weightCount;
-	_Flags=remapV2Flags (oldFlags, weightCount);
+	uint16 newFlags=remapV2Flags (oldFlags, weightCount);
 
 	// Must be reading
 	nlassert (f.isReading());
@@ -640,10 +640,11 @@ void		CVertexBuffer::serialOldV1Minus(NLMISC::IStream &f, sint ver)
 		break;
 	}
 
-	f.serial(_NbVerts);
+	uint32 nbVert;	// Read only
+	f.serial(nbVert);
 	reserve(0);
-	setVertexFormat(_Flags);
-	setNumVertices(_NbVerts);
+	setVertexFormat(newFlags);
+	setNumVertices(nbVert);
 	// All other infos (but _Verts) are computed by setVertexFormat() and setNumVertices().
 
 

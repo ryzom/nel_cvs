@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.35 2001/06/22 16:12:25 besson Exp $
+ * $Id: scene.cpp,v 1.36 2001/06/29 09:48:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/clip_trav.h"
 #include "3d/light_trav.h"
 #include "3d/anim_detail_trav.h"
+#include "3d/load_balancing_trav.h"
 #include "3d/render_trav.h"
 #include "3d/transform.h"
 #include "3d/camera.h"
@@ -80,6 +81,7 @@ CScene::CScene()
 	ClipTrav= NULL;
 	LightTrav= NULL;
 	AnimDetailTrav= NULL;
+	LoadBalancingTrav= NULL;
 	RenderTrav= NULL;
 
 	_ShapeBank = NULL;
@@ -121,6 +123,12 @@ void	CScene::release()
 		AnimDetailTrav= NULL;
 	}
 
+	if (LoadBalancingTrav != NULL)
+	{
+		delete LoadBalancingTrav;
+		LoadBalancingTrav= NULL;
+	}
+
 	if (RenderTrav != NULL)
 	{
 		delete	RenderTrav;
@@ -143,6 +151,7 @@ void	CScene::initDefaultTravs()
 	ClipTrav= new CClipTrav;
 	LightTrav= new CLightTrav;
 	AnimDetailTrav= new CAnimDetailTrav;
+	LoadBalancingTrav= new CLoadBalancingTrav;
 	RenderTrav= new CRenderTrav;
 
 	// Register them to the scene.
@@ -150,6 +159,7 @@ void	CScene::initDefaultTravs()
 	addTrav(ClipTrav);
 	addTrav(LightTrav);
 	addTrav(AnimDetailTrav);
+	addTrav(LoadBalancingTrav);
 	addTrav(RenderTrav);
 }
 // ***************************************************************************
@@ -160,6 +170,7 @@ void	CScene::initDefaultRoots()
 	HrcTrav->setRoot(Root);
 	ClipTrav->setRoot(Root);
 	AnimDetailTrav->setRoot(Root);
+	LoadBalancingTrav->setRoot(Root);
 
 	// TODO: create / setRoot the lightgroup.
 }
@@ -200,6 +211,9 @@ void	CScene::render(bool	doHrcPass)
 	RenderTrav->setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
 	RenderTrav->setViewport (_Viewport);
 
+	LoadBalancingTrav->setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+
+
 	// Set the renderTrav for cliptrav.
 	ClipTrav->setRenderTrav(RenderTrav);
 
@@ -219,6 +233,7 @@ void	CScene::render(bool	doHrcPass)
 			CTransformHrcObs	*camObs= (CTransformHrcObs*)CMOT::getModelObs(CurrentCamera, HrcTravId);
 			ClipTrav->setCamMatrix(camObs->WorldMatrix);
 			RenderTrav->setCamMatrix (camObs->WorldMatrix);
+			LoadBalancingTrav->setCamMatrix (camObs->WorldMatrix);
 		}
 	}
 
@@ -441,6 +456,41 @@ void CScene::animate( CAnimationTime atTime )
 {
 	_LMAnimsAuto.animate( atTime );
 }
+
+
+// ***************************************************************************
+void	CScene::setLoadMaxPolygon(uint nFaces)
+{
+	nlassert(LoadBalancingTrav);
+	nFaces= max(nFaces, (uint)1);
+	LoadBalancingTrav->setNbFaceWanted(nFaces);
+}
+
+
+// ***************************************************************************
+uint	CScene::getLoadMaxPolygon() const
+{
+	nlassert(LoadBalancingTrav);
+	return LoadBalancingTrav->getNbFaceWanted();
+}
+
+
+// ***************************************************************************
+void	CScene::setPolygonBalancingMode(TPolygonBalancingMode polBalMode)
+{
+	nlassert(LoadBalancingTrav);
+	LoadBalancingTrav->PolygonBalancingMode= (CLoadBalancingTrav::TPolygonBalancingMode)(uint)polBalMode;
+}
+
+
+// ***************************************************************************
+CScene::TPolygonBalancingMode	CScene::getPolygonBalancingMode() const
+{
+	nlassert(LoadBalancingTrav);
+	return (CScene::TPolygonBalancingMode)(uint)LoadBalancingTrav->PolygonBalancingMode;
+}
+
+
 
 }
 

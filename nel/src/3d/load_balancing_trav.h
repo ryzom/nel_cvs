@@ -1,7 +1,7 @@
-/** \file anim_detail_trav.h
- * <File description>
+/** \file load_balancing_trav.h
+ * The LoadBalancing traversal.
  *
- * $Id: anim_detail_trav.h,v 1.2 2001/06/29 09:48:57 berenguier Exp $
+ * $Id: load_balancing_trav.h,v 1.1 2001/06/29 09:48:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_ANIM_DETAIL_TRAV_H
-#define NL_ANIM_DETAIL_TRAV_H
+#ifndef NL_LOAD_BALANCING_TRAV_H
+#define NL_LOAD_BALANCING_TRAV_H
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
@@ -32,7 +32,7 @@
 #include "3d/trav_scene.h"
 
 
-namespace NL3D
+namespace NL3D 
 {
 
 
@@ -41,70 +41,93 @@ using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
 
-class IBaseAnimDetailObs;
+class IBaseLoadBalancingObs;
 class IBaseHrcObs;
 class IBaseClipObs;
 
 
 // ***************************************************************************
 // ClassIds.
-const NLMISC::CClassId		AnimDetailTravId=NLMISC::CClassId(0x373f6772, 0x3f562fa3);
+const NLMISC::CClassId		LoadBalancingTravId=NLMISC::CClassId(0x7181548, 0x36ad3c10);
 
 
 
 // ***************************************************************************
 /**
- * The AnimDetail traversal.
- * AnimDetail observers MUST derive from IBaseAnimDetailObs.
+ * The LoadBalancing traversal. It needs a camera setup (see ITravCameraScene).
+ * LoadBalancing observers MUST derive from IBaseLoadBalancingObs.
  *
  * NB: see CScene for 3d conventions (orthonormal basis...)
- * \sa CScene IBaseAnimDetailObs
+ * \sa CScene IBaseLoadBalancingObs
  * \author Lionel Berenguier
  * \author Nevrax France
- * \date 2000
+ * \date 2001
  */
-class CAnimDetailTrav : public ITravScene
+class CLoadBalancingTrav : public ITravCameraScene
 {
 public:
 
 	/// Constructor
-	CAnimDetailTrav()
-	{
-		CurrentDate=0;
-	}
+	CLoadBalancingTrav();
 
 
 	/// \name ITrav/ITravScene Implementation.
 	//@{
 	IObs				*createDefaultObs() const;
-	NLMISC::CClassId	getClassId() const {return AnimDetailTravId;}
-	/** render after Clip and before light.
-	 * This order is important for possibles lights sticked to bones of skeletons.
+	NLMISC::CClassId	getClassId() const {return LoadBalancingTravId;}
+	/** render after AnimDetailObs.
+	 * This order is important to get correct object matrix sticked to skeletons.
 	 */
-	sint				getRenderOrder() const {return 2200;}
-	void				traverse()
-	{
-		// Inc the date.
-		CurrentDate++;
-		// Traverse the graph.
-		if(Root)
-			Root->traverse(NULL);
-	}
+	sint				getRenderOrder() const {return 2300;}
+	void				traverse();
+	//@}
+
+
+
+	/// \name LoadBalancing mgt.
+	//@{
+
+	// see CScene.
+	enum			TPolygonBalancingMode {PolygonBalancingOff=0, PolygonBalancingOn, PolygonBalancingClamp, CountPolygonBalancing };
+	// The PolygonBalancingMode
+	TPolygonBalancingMode	PolygonBalancingMode;
+
+
+	void				setNbFaceWanted(uint nFaces) {_NbFaceWanted= nFaces;}
+	uint				getNbFaceWanted() {return _NbFaceWanted;}
+
 	//@}
 
 
 public:
 	// ONLY FOR OBSERVERS.
+	// The number of faces count in Pass0.
+	float				NbFacePass0;
 
-	sint64		CurrentDate;	// The current date of the traversal, usefull for evaldetail just one time..
+	uint				getLoadPass() {return _LoadPass;}
+
+	/** Compute the number of face to be rendered for thismodel, according to the number of faces he want to draw
+	 * and to his distance from camera.
+	 */
+	float				computeModelNbFace(float faceIn, float camDist);
+
+
+private:
+	// The number of face the user want
+	uint				_NbFaceWanted;
+
+	// Pass: 0 (compute faceCount from all models) or 1 (setup wanted faceCount).
+	uint				_LoadPass;
+
+	// use this ratio into Pass 1 to reduce faces.
+	float				_FaceRatio;
 };
-
 
 
 // ***************************************************************************
 /**
- * The base interface for AnimDetail traversal.
- * AnimDetail observers MUST derive from IBaseAnimDetailObs.
+ * The base interface for LoadBalancing traversal.
+ * LoadBalancing observers MUST derive from IBaseLoadBalancingObs.
  * This observer:
  * - leave the notification system to DO NOTHING.
  * - leave traverse() undefined
@@ -113,12 +136,12 @@ public:
  * - implement the notification system (see IObs for details).
  * - implement the traverse() method.
  *
- * \sa CAnimDetailTrav
+ * \sa CLoadBalancingTrav
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
  */
-class IBaseAnimDetailObs : public IObs
+class IBaseLoadBalancingObs : public IObs
 {
 public:
 	/// Shortcut to observers.
@@ -128,7 +151,7 @@ public:
 public:
 
 	/// Constructor.
-	IBaseAnimDetailObs()
+	IBaseLoadBalancingObs()
 	{
 		HrcObs=NULL;
 		ClipObs= NULL;
@@ -148,23 +171,23 @@ public:
 
 // ***************************************************************************
 /**
- * The default AnimDetail observer, used by unspecified models.
+ * The default LoadBalancing observer, used by unspecified models.
  * This observer:
  * - leave the notification system to DO NOTHING.
  * - implement the traverse() method to DO NOTHING, but traverseSons.
  *
- * \sa IBaseAnimDetailObs
+ * \sa IBaseLoadBalancingObs
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
  */
-class CDefaultAnimDetailObs : public IBaseAnimDetailObs
+class CDefaultLoadBalancingObs : public IBaseLoadBalancingObs
 {
 public:
 
 
 	/// Constructor.
-	CDefaultAnimDetailObs() {}
+	CDefaultLoadBalancingObs() {}
 
 	/// \name The base doit method.
 	//@{
@@ -177,10 +200,9 @@ public:
 };
 
 
-
 } // NL3D
 
 
-#endif // NL_ANIM_DETAIL_TRAV_H
+#endif // NL_LOAD_BALANCING_TRAV_H
 
-/* End of anim_detail_trav.h */
+/* End of load_balancing_trav.h */

@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: transform_shape.h,v 1.3 2001/06/29 09:48:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/transform.h"
 #include "3d/shape.h"
 #include "3d/render_trav.h"
+#include "3d/load_balancing_trav.h"
 #include <vector>
 
 
@@ -44,6 +45,7 @@ using NLMISC::CPlane;
 
 class	CTransformShapeClipObs;
 class	CTransformShapeRenderObs;
+class	CTransformShapeLoadBalancingObs;
 
 
 // ***************************************************************************
@@ -68,10 +70,11 @@ public:
 	/// The shape, the object instancied.
 	CSmartPtr<IShape>		Shape;
 
+
 	/// \name Load balancing methods
 	// @{
 
-	/** get an approximation of the number of triangles this instance will render for a fixed distance.
+	/** get an approximation of the number of triangles this instance want render for a fixed distance.
 	  *
 	  * \param distance is the distance of the shape from the eye.
 	  * \return the approximate number of triangles this instance will render at this distance. This
@@ -80,11 +83,17 @@ public:
 	  */
 	virtual float			getNumTriangles (float distance);
 
+	/** get an approximation of the number of triangles this instance should render.
+	 * This method is valid only for IShape classes (in render()), after LoadBalancing traversal is performed.
+	 * NB: It is not guaranted that this instance will render those number of triangles.
+	 */
+	float					getNumTrianglesAfterLoadBalancing() {return _NumTrianglesAfterLoadBalancing;}
+
 	// @}
 
 protected:
 	/// Constructor
-	CTransformShape() {}
+	CTransformShape() {_NumTrianglesAfterLoadBalancing= 100;}
 	/// Destructor
 	virtual ~CTransformShape() {}
 
@@ -92,6 +101,9 @@ private:
 	static IModel	*creator() {return new CTransformShape;}
 	friend class	CTransformShapeClipObs;
 	friend class	CTransformShapeRdrObs;
+	friend class	CTransformShapeLoadBalancingObs;
+
+	float			_NumTrianglesAfterLoadBalancing;
 };
 
 
@@ -146,6 +158,48 @@ public:
 	virtual	void	traverse(IObs *caller);
 	
 	static IObs	*creator() {return new CTransformShapeRenderObs;}
+};
+
+
+// ***************************************************************************
+/**
+ * This observer:
+ * - leave the notification system to DO NOTHING.
+ * - implement the traverse method.
+ *
+ * \sa CHrcTrav IBaseHrcObs
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class	CTransformShapeLoadBalancingObs : public IBaseLoadBalancingObs
+{
+public:
+
+	/** this do all the good things:
+	 *	- LoadBalancing: get the position of the transform (or the skeleton), and use it as center.
+	 *	- traverseSons().
+	 */
+	virtual	void	traverse(IObs *caller);
+
+	static IObs	*creator() {return new CTransformShapeLoadBalancingObs;}
+
+
+protected:
+
+	// The position of the model computed in Pass0.
+	CVector		_ModelPos;
+
+	// The distance of the model to the camera computed in Pass0.
+	float		_ModelDist;
+
+	// The number of face computed in Pass0.
+	float		_FaceCount;
+
+
+	void		traversePass0();
+	void		traversePass1();
+
 };
 
 

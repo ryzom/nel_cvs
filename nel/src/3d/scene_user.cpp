@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.3 2001/06/26 09:48:32 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.4 2001/06/29 09:48:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,5 +58,33 @@ void			CSceneUser::deletePlayListManager(UPlayListManager	*playListManager)
 {
 	_PlayListManagers.erase((CPlayListManagerUser*)playListManager, "deletePlayListManager(): Bad PlayListManager ptr");
 }
+
+
+
+// ***************************************************************************
+void			CSceneUser::setPolygonBalancingMode(CSceneUser::TPolygonBalancingMode polBalMode)
+{
+	nlassert( (uint)CScene::CountPolygonBalancing == (uint)CSceneUser::CountPolygonBalancing );
+	_Scene.setPolygonBalancingMode((CScene::TPolygonBalancingMode)(uint)(polBalMode));
+}
+
+// ***************************************************************************
+CSceneUser::TPolygonBalancingMode	CSceneUser::getPolygonBalancingMode() const
+{
+	nlassert( (uint)CScene::CountPolygonBalancing == (uint)CSceneUser::CountPolygonBalancing );
+	return (CSceneUser::TPolygonBalancingMode)(uint)_Scene.getPolygonBalancingMode();
+}
+
+// ***************************************************************************
+void				CSceneUser::setLoadMaxPolygon(uint nFaces)
+{
+	_Scene.setLoadMaxPolygon(nFaces);
+}
+// ***************************************************************************
+uint				CSceneUser::getLoadMaxPolygon() const
+{
+	return _Scene.getLoadMaxPolygon();
+}
+
 
 } // NL3D

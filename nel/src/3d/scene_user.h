@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.4 2001/06/26 09:48:32 corvazier Exp $
+ * $Id: scene_user.h,v 1.5 2001/06/29 09:48:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -334,6 +334,16 @@ public:
 	{
 		_VisualCollisionManagers.erase(dynamic_cast<CVisualCollisionManagerUser*>(mgr));
 	}
+	//@}
+
+
+	/// \name LoadBalancing mgt.
+	//@{
+	virtual	void				setPolygonBalancingMode(TPolygonBalancingMode polBalMode);
+	virtual	TPolygonBalancingMode	getPolygonBalancingMode() const;
+
+	virtual	void				setLoadMaxPolygon(uint nFaces);
+	virtual	uint				getLoadMaxPolygon() const;
 	//@}
 
 

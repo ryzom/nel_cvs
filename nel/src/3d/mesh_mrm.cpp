@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.12 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: mesh_mrm.cpp,v 1.13 2001/06/29 09:48:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,13 +104,33 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, const CMRMParameters &params)
 	mrmBuilder.compileMRM(m, params, meshBuildMRM);
 
 	// Then just copy result!
+	//================================================
 	_VBuffer= meshBuildMRM.VBuffer;
 	_Lods= meshBuildMRM.Lods;
 	_Skinned= meshBuildMRM.Skinned;
 	_SkinWeights= meshBuildMRM.SkinWeights;
 
 
+	// Compute degradation control.
+	//================================================
+	_DistanceFinest= meshBuildMRM.DistanceFinest;
+	_DistanceMiddle= meshBuildMRM.DistanceMiddle;
+	_DistanceCoarsest= meshBuildMRM.DistanceCoarsest;
+	nlassert(_DistanceFinest>=0);
+	nlassert(_DistanceMiddle > _DistanceFinest);
+	nlassert(_DistanceCoarsest > _DistanceMiddle);
+	// Compute _OODistDelta.
+	_OODistanceDelta= 1.0f / (_DistanceCoarsest - _DistanceFinest);
+	/* Compute exponent pow, such that 0.5= dMiddle^pow;
+		ie 0.5= e(ln dMiddle * pow)
+	*/
+	float	dMiddle= (_DistanceCoarsest - _DistanceMiddle) * _OODistanceDelta;
+	_DistancePow= (float)(log(0.5) / log(dMiddle));
+
+
+
 	// Build the _LodInfos.
+	//================================================
 	_LodInfos.resize(_Lods.size());
 	uint32	precNWedges= 0;
 	for(uint i=0;i<_Lods.size();i++)
@@ -124,12 +144,54 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, const CMRMParameters &params)
 	_NbLodLoaded= _Lods.size();
 
 
+	// For load balancing.
+	//================================================
+	// compute Max Face Used
+	_MaxFaceUsed= 0;
+	_MinFaceUsed= 0;
+	// Count of primitive block
+	if(_Lods.size()>0)
+	{
+		uint	pb;
+		// Compute MinFaces.
+		CLod	&firstLod= _Lods[0];
+		for (pb=0; pb<firstLod.RdrPass.size(); pb++)
+		{
+			CRdrPass &pass= firstLod.RdrPass[pb];
+			// Sum tri
+			_MinFaceUsed+= pass.PBlock.getNumTriangles ();
+		}
+		// Compute MaxFaces.
+		CLod	&lastLod= _Lods[_Lods.size()-1];
+		for (pb=0; pb<lastLod.RdrPass.size(); pb++)
+		{
+			CRdrPass &pass= lastLod.RdrPass[pb];
+			// Sum tri
+			_MaxFaceUsed+= pass.PBlock.getNumTriangles ();
+		}
+	}
+
+
 	// For skinning.
+	//================================================
 	if( _Skinned )
 	{
 		bkupOriginalSkinVertices();
 	}
 
+}
+
+
+// ***************************************************************************
+float	CMeshMRMGeom::getLevelDetailFromDist(float dist)
+{
+	if(dist <= _DistanceFinest)
+		return 1;
+	if(dist >= _DistanceCoarsest)
+		return 0;
+
+	float	d= (_DistanceCoarsest - dist) * _OODistanceDelta;
+	return  (float)pow(d, _DistancePow);
 }
 
 
@@ -328,18 +390,22 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans)
 	nlassert(dynamic_cast<CMeshMRMInstance*>(trans));
 	CMeshMRMInstance	*mi= (CMeshMRMInstance*)trans;
 
-	// TempYoyo.
-	// TODODO.
-	static	float	testTime= 0;
-	testTime+= 0.03f;
-	float	testAlpha= (1+(float)sin(testTime))/2;
+
+	// get the result of the Load Balancing.
+	float	alphaMRM;
+	if(_MaxFaceUsed > _MinFaceUsed)
+	{
+		// compute the level of detail we want.
+		alphaMRM= (trans->getNumTrianglesAfterLoadBalancing() - _MinFaceUsed) / (_MaxFaceUsed - _MinFaceUsed);
+		clamp(alphaMRM, 0, 1);
+	}
+	else
+		alphaMRM= 1;
 
 
 	// Choose what Lod to draw.
-	float	alpha= testAlpha;
-	clamp(alpha, 0, 1);
-	alpha*= _Lods.size()-1;
-	sint	numLod= (sint)ceil(alpha);
+	alphaMRM*= _Lods.size()-1;
+	sint	numLod= (sint)ceil(alphaMRM);
 	float	alphaLod;
 	if(numLod==0)
 	{
@@ -349,7 +415,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans)
 	else
 	{
 		// Lerp beetween lod i-1 and lod i.
-		alphaLod= alpha-(numLod-1);
+		alphaLod= alphaMRM-(numLod-1);
 	}
 
 
@@ -452,6 +518,13 @@ void	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// ==================
 	f.serial(_Skinned);
 	f.serial(_BBox);
+	f.serial(_MaxFaceUsed);
+	f.serial(_MinFaceUsed);
+	f.serial(_DistanceFinest);
+	f.serial(_DistanceMiddle);
+	f.serial(_DistanceCoarsest);
+	f.serial(_OODistanceDelta);
+	f.serial(_DistancePow);
 	// preload the Lods.
 	f.serialCont(_LodInfos);
 
@@ -546,6 +619,13 @@ void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// ==================
 	f.serial(_Skinned);
 	f.serial(_BBox);
+	f.serial(_MaxFaceUsed);
+	f.serial(_MinFaceUsed);
+	f.serial(_DistanceFinest);
+	f.serial(_DistanceMiddle);
+	f.serial(_DistanceCoarsest);
+	f.serial(_OODistanceDelta);
+	f.serial(_DistancePow);
 	f.serialCont(_LodInfos);
 
 	// save number of wedges.
@@ -826,8 +906,11 @@ void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod)
 
 float CMeshMRMGeom::getNumTriangles (float distance)
 {
-	/// \todo Hulud: return good number of polygons.
-	return 0;
+	// NB: this is an approximation, but this is continious.
+	// return the lod detail [0,1].
+	float	ld= getLevelDetailFromDist(distance);
+	// return in nb face.
+	return _MinFaceUsed + ld * (_MaxFaceUsed - _MinFaceUsed);
 }
 
 

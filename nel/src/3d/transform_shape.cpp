@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.7 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: transform_shape.cpp,v 1.8 2001/06/29 09:48:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "3d/transform_shape.h"
 #include "3d/driver.h"
+#include "3d/skeleton_model.h"
 
 
 namespace NL3D 
@@ -37,6 +38,7 @@ void		CTransformShape::registerBasic()
 	CMOT::registerModel(TransformShapeId, TransformId, CTransformShape::creator);
 	CMOT::registerObs(ClipTravId, TransformShapeId, CTransformShapeClipObs::creator);
 	CMOT::registerObs(RenderTravId, TransformShapeId, CTransformShapeRenderObs::creator);
+	CMOT::registerObs(LoadBalancingTravId, TransformShapeId, CTransformShapeLoadBalancingObs::creator);
 }
 
 
@@ -87,5 +89,66 @@ void	CTransformShapeRenderObs::traverse(IObs *caller)
 
 
 // ***************************************************************************
+void	CTransformShapeLoadBalancingObs::traverse(IObs *caller)
+{
+	CLoadBalancingTrav		*loadTrav= (CLoadBalancingTrav*)Trav;
+	if(loadTrav->getLoadPass()==0)
+		traversePass0();
+	else
+		traversePass1();
+
+	// important for the root only. Else, There is no reason to do a hierarchy for LoadBalancing.
+	traverseSons();
+}
+
+
+
+// ***************************************************************************
+void	CTransformShapeLoadBalancingObs::traversePass0()
+{
+	CLoadBalancingTrav		*loadTrav= (CLoadBalancingTrav*)Trav;
+	CTransformShape			*trans= static_cast<CTransformShape*>(Model);
+	CSkeletonModel			*skeleton= trans->getSkeletonModel();
+
+	// If this isntance is binded or skinned to a skeleton, take the world matrix of this one as
+	// center for LoadBalancing Resolution.
+	if(skeleton)
+	{
+		// Take the root bone of the skeleton as reference (bone 0)
+		// And so get our position.
+		_ModelPos= skeleton->Bones[0].getWorldMatrix().getPos();
+	}
+	else
+	{
+		// get our position from 
+		_ModelPos= HrcObs->WorldMatrix.getPos();
+	}
+
+
+	// Then compute distance from camera.
+	_ModelDist= ( loadTrav->CamPos - _ModelPos).norm();
+
+
+	// Get the number of triangles this model use now.
+	_FaceCount= trans->getNumTriangles(_ModelDist);
+
+
+	loadTrav->NbFacePass0+= _FaceCount;
+}
+
+
+// ***************************************************************************
+void	CTransformShapeLoadBalancingObs::traversePass1()
+{
+	CLoadBalancingTrav		*loadTrav= (CLoadBalancingTrav*)Trav;
+	CTransformShape			*trans= static_cast<CTransformShape*>(Model);
+
+
+	// Set the result into the isntance.
+	trans->_NumTrianglesAfterLoadBalancing= loadTrav->computeModelNbFace(_FaceCount, _ModelDist);
+
+}
+
+
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.14 2001/06/26 10:12:03 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.15 2001/06/29 09:48:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1863,6 +1863,11 @@ void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParamete
 	uint32	vbFlags;
 
 
+	nlassert(params.DistanceFinest>=0);
+	nlassert(params.DistanceMiddle > params.DistanceFinest);
+	nlassert(params.DistanceCoarsest > params.DistanceMiddle);
+
+
 	// Copy some parameters.
 	_SkinReduction= params.SkinReduction;
 
@@ -1891,6 +1896,12 @@ void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParamete
 
 	// From this finalMRM, build output: a CMeshBuildMRM.
 	buildMeshBuildMrm(finalMRM, mrmMesh, vbFlags, nbMats);
+
+
+	// Copy degradation control params.
+	mrmMesh.DistanceFinest= params.DistanceFinest;
+	mrmMesh.DistanceMiddle= params.DistanceMiddle;
+	mrmMesh.DistanceCoarsest= params.DistanceCoarsest;
 }
 
 

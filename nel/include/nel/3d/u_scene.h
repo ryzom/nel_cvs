@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.2 2001/06/26 09:48:32 corvazier Exp $
+ * $Id: u_scene.h,v 1.3 2001/06/29 09:48:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,6 +160,31 @@ public:
 	//@{
 	virtual	UVisualCollisionManager		*createVisualCollisionManager() =0;
 	virtual	void						deleteVisualCollisionManager(UVisualCollisionManager *mgr) =0;
+	//@}
+
+
+	/// \name LoadBalancing mgt.
+	//@{
+
+	/** The mode of polygon balancing.
+	 * PolygonBalancingOff => Models will be rendered with the number of faces they want to render.
+	 * PolygonBalancingOn  => Models will be rendered with the number of faces the LoadBalancing want.
+	 * PolygonBalancingClamp => Same as PolygonBalancingOn, but factor <= 1, ie models won't be rendered
+	 *	with more face they want to render.
+	 */
+	enum			TPolygonBalancingMode {PolygonBalancingOff=0, PolygonBalancingOn, PolygonBalancingClamp, CountPolygonBalancing };
+
+	/// Set the PolygonBalancingMode
+	virtual	void				setPolygonBalancingMode(TPolygonBalancingMode polBalMode) =0;
+	/// Get the PolygonBalancingMode
+	virtual	TPolygonBalancingMode	getPolygonBalancingMode() const =0;
+
+
+	/// Setup the number of faces max you want, (for Shapes only, not landscape)
+	virtual	void				setLoadMaxPolygon(uint nFaces) =0;
+	virtual	uint				getLoadMaxPolygon() const =0;
+
+
 	//@}
 
 };

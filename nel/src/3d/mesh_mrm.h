@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.8 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: mesh_mrm.h,v 1.9 2001/06/29 09:48:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -268,6 +268,17 @@ private:
 		// Lod array, computed with CMRMBuilder and ready to used
 		std::vector<CLod>		Lods;
 
+
+		/// \Degradation control.
+		// @{
+		/// The MRM has its max faces when dist<=DistanceFinest.
+		float					DistanceFinest;
+		/// The MRM has 50% of its faces at dist==DistanceMiddle.
+		float					DistanceMiddle;
+		/// The MRM has faces/Divisor when dist>=DistanceCoarsest.
+		float					DistanceCoarsest;
+		// @}
+
 	};
 	//@}
 
@@ -310,6 +321,10 @@ private:
 	std::vector<CLod>			_Lods;
 	/// For clipping. this is the BB of all vertices of all Lods.
 	NLMISC::CAABBoxExt			_BBox;
+	/// For Load balancing, the min number of faces this MRM use.
+	uint32						_MinFaceUsed;
+	/// For Load balancing, the max number of faces this MRM use.
+	uint32						_MaxFaceUsed;
 
 
 	/// Info for pre-loading Lods.
@@ -317,6 +332,24 @@ private:
 	uint						_NbLodLoaded;
 
 
+	/// \Degradation control.
+	// @{
+	/// The MRM has its max faces when dist<=DistanceFinest. nlassert if <0.
+	float						_DistanceFinest;
+	/// The MRM has 50% of its faces at dist==DistanceMiddle. nlassert if <= DistanceFinest.
+	float						_DistanceMiddle;
+	/// The MRM has faces/Divisor when dist>=DistanceCoarsest. nlassert if <= DistanceMiddle.
+	float						_DistanceCoarsest;
+
+	float						_OODistanceDelta;
+	float						_DistancePow;
+
+	/// return a float [0,1], computed from a distance (should be >0).
+	float						getLevelDetailFromDist(float dist);
+	// @}
+
+
+private:
 	/// serial a subset of the vertices.
 	void	serialLodVertexData(NLMISC::IStream &f, uint startWedge, uint endWedge);
 

@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.3 2001/06/22 12:45:41 besson Exp $
+ * $Id: scene.h,v 1.4 2001/06/29 09:48:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,7 @@ class	CHrcTrav;
 class	CClipTrav;
 class	CLightTrav;
 class	CAnimDetailTrav;
+class	CLoadBalancingTrav;
 class	CRenderTrav;
 class	CDefaultHrcObs;
 class	CDefaultClipObs;
@@ -74,6 +75,7 @@ class	CShapeBank;
  *		- CClipTrav
  *		- CLightTrav
  *		- CAnimDetailTrav
+ *		- CLoadBalancingTrav
  *		- CRenderTrav
  * - add others user-specified traversals with addTrav().
  * - initRootModels() to create/setRoot the defaults models roots for the basic traversals:
@@ -126,7 +128,7 @@ public:
 	CScene();
 	/// Destructor. release().
 	~CScene();
-	/// Create / register the 5 basic traversals:CHrcTrav, CClipTrav, CLightTrav, CAnimDetailTrav, CRenderTravInit.
+	/// Create / register the 5 basic traversals:CHrcTrav, CClipTrav, CLightTrav, CAnimDetailTrav, CLoadBalancingTrav, CRenderTravInit.
 	void			initDefaultTravs();
 	/// Create/setRoot the defaults models roots: a CTransform and a CLightGroup.
 	void			initDefaultRoots();
@@ -211,6 +213,31 @@ public:
 	//void addDynamicLight(CLight*); // ??? Vertex lighting
 	//@}
 
+
+	/// \name LoadBalancing mgt.
+	//@{
+
+	/// Setup the number of faces max you want, (for Shapes only, not landscape)
+	void			setLoadMaxPolygon(uint nFaces);
+	uint			getLoadMaxPolygon() const;
+
+
+	/** The mode of polygon balancing.
+	 * PolygonBalancingOff => Models will be rendered with the number of faces they want to render.
+	 * PolygonBalancingOn  => Models will be rendered with the number of faces the LoadBalancing want.
+	 * PolygonBalancingClamp => Same as PolygonBalancingOn, but factor <= 1, ie models won't be rendered
+	 *	with more face they want to render.
+	 */
+	enum			TPolygonBalancingMode {PolygonBalancingOff=0, PolygonBalancingOn, PolygonBalancingClamp, CountPolygonBalancing};
+
+	/// Set the PolygonBalancingMode
+	void			setPolygonBalancingMode(TPolygonBalancingMode polBalMode);
+	/// Get the PolygonBalancingMode
+	TPolygonBalancingMode	getPolygonBalancingMode() const;
+
+	//@}
+
+
 private:
 	typedef			std::map<sint, ITravScene*>	TTravMap;
 	TTravMap		RenderTraversals;	// Sorted via their getRenderOrder().
@@ -225,6 +252,7 @@ private:
 	CClipTrav		*ClipTrav;
 	CLightTrav		*LightTrav;
 	CAnimDetailTrav	*AnimDetailTrav;
+	CLoadBalancingTrav	*LoadBalancingTrav;
 	CRenderTrav		*RenderTrav;
 	//@}
 

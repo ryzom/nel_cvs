@@ -143,6 +143,14 @@ SOURCE=.\3d\light_trav.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\load_balancing_trav.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\load_balancing_trav.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\render_trav.cpp
 # End Source File
 # Begin Source File

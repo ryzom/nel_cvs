@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.47 2004/04/27 12:02:54 vizerie Exp $
+ * $Id: material.cpp,v 1.48 2004/05/14 14:57:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -432,14 +432,15 @@ void					CMaterial::setLightMapFactor(uint lmapId, CRGBA factor)
 }
 
 // ***************************************************************************
-void					CMaterial::setLightMapColor(uint lmapId, CRGBA color)
+void					CMaterial::setLMCColors(uint lmapId, CRGBA ambColor, CRGBA diffColor)
 {
 	if (_ShaderType==CMaterial::LightMap)
 	{
 		if(lmapId>=_LightMaps.size())
 			_LightMaps.resize(lmapId+1);
-		_LightMaps[lmapId].Color= color;
-
+		_LightMaps[lmapId].LMCAmbient= ambColor;
+		_LightMaps[lmapId].LMCDiffuse= diffColor;
+		
 		_Touched|=IDRV_TOUCHED_LIGHTMAP;
 	}
 }
@@ -466,10 +467,12 @@ void			CMaterial::CLightMap::serial(NLMISC::IStream &f)
 // ***************************************************************************
 void			CMaterial::CLightMap::serial2(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
-
+	sint	ver= f.serialVersion(1);
+	
 	f.serial(Factor);
-	f.serial(Color);
+	f.serial(LMCDiffuse);
+	if(ver>=1)
+		f.serial(LMCAmbient);
 	// Serial texture descriptor.
 	ITexture*	text= NULL;
 	if(f.isReading())

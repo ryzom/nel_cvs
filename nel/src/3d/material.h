@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.26 2004/04/27 12:02:54 vizerie Exp $
+ * $Id: material.h,v 1.27 2004/05/14 14:57:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -489,10 +489,10 @@ public:
 	ITexture				*getLightMap(uint lmapId) const;
 	/// Set the lightmap intensity. (def : White)
 	void					setLightMapFactor(uint lmapId, CRGBA factor);
-	/// Set the lightmap color (usefull in 8 bits format) (def : White)
-	void					setLightMapColor(uint lmapId, CRGBA color);
 	/// Set the multiply x 2 mode to burn colors (used with lightmaps 8 bits) (def: false)
 	void					setLightMapMulx2(bool val) { _LightMapsMulx2 = val; }
+	/// Used for LightMap Compression (LMC). Set the LMC color terms. default to black/white (no compression)
+	void					setLMCColors(uint lmapId, CRGBA ambColor, CRGBA diffColor);
 	// @}
 
 
@@ -656,11 +656,14 @@ public:
 	{
 		CSmartPtr<ITexture>		Texture;
 		CRGBA					Factor;
-		CRGBA					Color;
+		// Lightmap compression Factors (typically for 8 bits lightmaps)
+		CRGBA					LMCAmbient;
+		CRGBA					LMCDiffuse;
 		CLightMap()
 		{
 			Factor.set(255, 255, 255, 255);
-			Color.set(255, 255, 255, 255);
+			LMCAmbient.set(0,0,0,0);
+			LMCDiffuse.set(255, 255, 255, 255);
 		}
 
 		void	serial(NLMISC::IStream &f); // Deprecated...

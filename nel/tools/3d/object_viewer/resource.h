@@ -259,6 +259,10 @@
 #define IDC_ENABLE_EXTERN_ID            1165
 #define IDC_ID_VALUE                    1166
 #define IDC_LIST1                       1168
+#define IDC_SPAWN                       1169
+#define IDC_BUTTON1                     1170
+#define IDC_MUTE                        1171
+#define IDC_PLAY_SOUND                  1171
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -338,7 +342,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1082
 #define _APS_NEXT_COMMAND_VALUE         32860
-#define _APS_NEXT_CONTROL_VALUE         1169
+#define _APS_NEXT_CONTROL_VALUE         1172
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

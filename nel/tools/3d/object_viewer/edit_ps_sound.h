@@ -15,6 +15,9 @@ namespace NLSOUND
 
 
 class CAttribDlgFloat;
+template <typename T>
+class CEditableRangeT;
+typedef CEditableRangeT<float> CEditableRangeFloat;
 
 
 /// particle system sound system initialisation
@@ -46,6 +49,8 @@ public:
 	//{{AFX_DATA(CEditPSSound)
 	enum { IDD = IDD_SOUND };
 	CString	m_SoundName;
+	BOOL	m_Spawn;
+	BOOL	m_Mute;
 	//}}AFX_DATA
 
 
@@ -58,15 +63,20 @@ public:
 
 // Implementation
 protected:
-	NL3D::CPSSound *		_Sound;				// the sound being edited	
-	CAttribDlgFloat *	_GainDlg;			// dlg to tune sounds gain
-	CAttribDlgFloat *	_PitchDlg;	// dlg to tune sounds pitch
+	NL3D::CPSSound         *_Sound;				// the sound being edited	
+	CAttribDlgFloat        *_GainDlg;			// dlg to tune sounds gain
+	CAttribDlgFloat		   *_PitchDlg;			// dlg to tune sounds pitch
+	CEditableRangeFloat    *_PercentDlg;		// dialog to tune the percent of sound emissions
+
 
 	// Generated message map functions
 	//{{AFX_MSG(CEditPSSound)
 	afx_msg void OnBrowseSound();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnChangeSoundName();
+	afx_msg void OnSpawn();
+	afx_msg void OnPlaySound();
+	afx_msg void OnMute();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -83,7 +93,7 @@ protected:
 		void setScheme(scheme_type *s) { S->setGainScheme(s); }
 	} _GainWrapper;
 	////////////////////////////////////////////
-	// wrapper to set the pitch of sounds //
+	// wrapper to set the pitch of sounds	  //
 	////////////////////////////////////////////
 	struct CPitchWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
 	{
@@ -93,6 +103,16 @@ protected:
 		scheme_type *getScheme(void) const { return S->getPitchScheme(); }
 		void setScheme(scheme_type *s) { S->setPitchScheme(s); }
 	} _PitchWrapper;
+	//////////////////////////////////////////////////////
+	// wrapper to set the percentage of sound emissions //
+	//////////////////////////////////////////////////////
+	struct CEmissionPercentWrapper : public IPSWrapperFloat
+	{
+		NL3D::CPSSound *S;
+		float get(void) const { return S->getEmissionPercent(); }
+		void  set(const float &v) { S->setEmissionPercent(v); }	
+	} _EmissionPercentWrapper;
+
 
 };
 

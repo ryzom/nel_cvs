@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.27 2001/10/03 15:51:47 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.28 2001/10/04 12:32:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -532,7 +532,10 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		case IDM_SPHERICAL_EMITTER:
 			toCreate = new NL3D::CPSSphericalEmitter;
 		break;
-
+		case IDM_RADIAL_EMITTER_LOC:  createLocAndBindable = true;
+		case IDM_RADIAL_EMITTER:
+			toCreate = new NL3D::CPSRadialEmitter;
+		break;
 
 		////////////////
 		//   Zones    //

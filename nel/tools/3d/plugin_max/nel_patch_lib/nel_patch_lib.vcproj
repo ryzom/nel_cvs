@@ -3,7 +3,6 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="nel_patch_lib"
-	ProjectGUID="{A4B356C6-AFB7-41DA-AC22-371D752FA1BD}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -125,7 +124,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_LIB;NL_RELEASE_DEBUG;WIN32;NDEBUG;PLUGIN_UE_CATCH"
+				PreprocessorDefinitions="_LIB;NL_RELEASE_DEBUG;WIN32;NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"

@@ -201,7 +201,7 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="nlligo_d.lib nlgeorges_d.lib libxml2d_a.lib freetype219MT_D.lib shlwapi.lib version.lib libjpeg.lib"
+				AdditionalDependencies="libxml2_a.lib freetype219MT_D.lib shlwapi.lib version.lib libjpeg.lib"
 				OutputFile="../../../lib/object_viewer_debug.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -1347,6 +1347,9 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\tune_mrm_dlg.cpp">
+			</File>
+			<File
 				RelativePath="water_pool_editor.cpp">
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
@@ -1479,6 +1482,9 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 			</File>
 			<File
 				RelativePath="std_afx.h">
+			</File>
+			<File
+				RelativePath=".\tune_mrm_dlg.h">
 			</File>
 			<File
 				RelativePath="water_pool_editor.h">

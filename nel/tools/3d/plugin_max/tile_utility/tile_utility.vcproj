@@ -251,7 +251,7 @@ rc /l 0x40c /fo&quot;Release/tile_utility.res&quot; /d &quot;NDEBUG&quot; tile_u
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				OptimizeForProcessor="0"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG"
 				RuntimeLibrary="3"
 				BufferSecurityCheck="TRUE"

@@ -3,7 +3,6 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="memory"
-	ProjectGUID="{B169656A-F0EE-4153-9D49-778228E26CF9}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -24,10 +23,8 @@
 				Optimization="0"
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;MEMORY_EXPORTS;_STL_USE_DEBUG_LIB"
-				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				PrecompiledHeaderFile=".\../obj/DebugFast/memory/memory.pch"
 				AssemblerListingLocation=".\../obj/DebugFast/memory/"
@@ -86,16 +83,11 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
+				Optimization="2"
 				InlineFunctionExpansion="1"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				EnableFiberSafeOptimizations="TRUE"
-				OptimizeForWindowsApplication="TRUE"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;MEMORY_EXPORTS"
 				StringPooling="TRUE"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				PrecompiledHeaderFile=".\../obj/Release/memory/memory.pch"
@@ -112,9 +104,6 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ProgramDatabaseFile=".\../obj/Release/memory/nel_memory_r.pdb"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
 				ImportLibrary="../lib/nlmemory_r.lib"
 				TargetMachine="1"/>
 			<Tool
@@ -159,9 +148,7 @@
 				Optimization="0"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;MEMORY_EXPORTS;__STL_DEBUG"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				PrecompiledHeaderFile=".\../obj/Debug/memory/memory.pch"
 				AssemblerListingLocation=".\../obj/Debug/memory/"
@@ -220,20 +207,11 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/EHa /GX"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
+				Optimization="2"
 				InlineFunctionExpansion="1"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				EnableFiberSafeOptimizations="TRUE"
-				OptimizeForWindowsApplication="TRUE"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;MEMORY_EXPORTS;NL_RELEASE_DEBUG;WIN32;NDEBUG"
 				StringPooling="TRUE"
-				ExceptionHandling="FALSE"
-				BasicRuntimeChecks="0"
-				SmallerTypeCheck="FALSE"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				PrecompiledHeaderFile=".\../obj/ReleaseDebug/memory/memory.pch"
@@ -242,7 +220,6 @@
 				ProgramDataBaseFileName=".\../obj/ReleaseDebug/memory/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -253,9 +230,6 @@
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\../obj/ReleaseDebug/memory/nel_memory_rd.pdb"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
 				ImportLibrary="../lib/nlmemory_rd.lib"
 				TargetMachine="1"/>
 			<Tool

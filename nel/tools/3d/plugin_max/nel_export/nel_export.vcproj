@@ -4,6 +4,7 @@
 	Version="7.10"
 	Name="nel_export"
 	ProjectGUID="{5D392987-6615-4D41-86D1-79098AF88F60}"
+	RootNamespace="nel_export"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -299,9 +300,7 @@ rc /l 0x40c /fo&quot;Release/nel_export.res&quot; /d &quot;NDEBUG&quot; nel_expo
 				TypeLibraryName=".\Debug/nel_export.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				Description="copy dans max normal"
-				CommandLine="xcopy &quot;C:\3dsmax3_1 debug\exe\*.dl*&quot; &quot;C:\3dsmax3_1&quot; /D /S /Y"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -377,11 +376,7 @@ rc /l 0x40c /fo&quot;Release/nel_export.res&quot; /d &quot;NDEBUG&quot; nel_expo
 				TypeLibraryName=".\DebugFast/nel_export.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				Description="copy dans max normal"
-				CommandLine="copy &quot;c:\3dsmax3_1 debug\exe\plugins\nelexport.dlu&quot; &quot;c:\3dsmax3_1\plugins&quot;
-echo copie dans max
-"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.27 2004/02/12 16:30:10 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.28 2004/03/31 11:56:33 cado Exp $
  *
  */
 
@@ -58,6 +58,12 @@
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
+
+
+CVariable<sint> PlayerLimit(
+	"PlayerLimit", "Rough max number of players accepted on this shard (-1 for Unlimited)",
+	5000,
+	0, true );
 
 
 /**
@@ -199,9 +205,13 @@ struct CFES
 
 list<CFES> FESList;
 
-// find the best front end service
-CFES *findBestFES ()
+/*
+ * Find the best front end service for a new connecting user (return NULL if there is no suitable FES).
+ * Additionally, calculate totalNbUsers.
+ */
+CFES *findBestFES ( uint& totalNbUsers )
 {
+	totalNbUsers = 0;
 	if (FESList.empty ()) return NULL;
 	list<CFES>::iterator best = FESList.begin();
 	for (list<CFES>::iterator it = best; it != FESList.end(); it++)
@@ -210,6 +220,7 @@ CFES *findBestFES ()
 		{
 			best = it;
 		}
+		totalNbUsers += (*it).NbUser;
 	}
 	return &(*best);
 }
@@ -438,12 +449,25 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 		nlwarning ("LS didn't give me the user privilege for user '%s', set to empty", userName.c_str());
 	}
 
-	CFES *best = findBestFES();
+	uint totalNbUsers;
+	CFES *best = findBestFES( totalNbUsers );
 	if (best == NULL)
 	{
-		// answer to the LS that we can't accept the user
+		// answer the LS that we can't accept the user
 		CMessage msgout ("SCS");
-		string reason = "No front end service available";
+		string reason = "No front-end server available";
+		msgout.serial (reason);
+		msgout.serial (cookie);
+		CUnifiedNetwork::getInstance()->send(sid, msgout);
+		return;
+	}
+
+	// Check the player limit number
+	if ((PlayerLimit.get() != -1) && (totalNbUsers >= (uint)(PlayerLimit.get())))
+	{
+		// answer the LS that we can't accept the user
+		CMessage msgout ("SCS");
+		string reason = "The server is full";
 		msgout.serial (reason);
 		msgout.serial (cookie);
 		CUnifiedNetwork::getInstance()->send(sid, msgout);

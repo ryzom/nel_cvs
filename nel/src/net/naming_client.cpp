@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.24 2001/02/23 10:27:44 cado Exp $
+ * $Id: naming_client.cpp,v 1.25 2001/03/15 16:38:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -535,9 +535,10 @@ bool CNamingClient::lookupAndConnect( const std::string& name, CSocket& sock, ui
 				sock.connect( servaddr );
 				service_ok = true;
 			}
-			catch ( ESocketConnectionFailed& )
+			catch ( ESocketConnectionFailed& e )
 			{
 				// If the connection failed, inform the Naming Service and try another server
+				nldebug( "Connection to %s failed: %s", servaddr.asString().c_str(), e.what() );
 				if ( ! CNamingClient::lookupAlternate( name, servaddr, validitytime ) )
 				{
 					return false;
@@ -571,9 +572,10 @@ bool CNamingClient::lookupAndConnect( const std::string& name, CCallbackClient& 
 				sock.connect( servaddr );
 				service_ok = true;
 			}
-			catch ( ESocketConnectionFailed& )
+			catch ( ESocketConnectionFailed& e )
 			{
 				// If the connection failed, inform the Naming Service and try another server
+				nldebug( "Connection to %s failed: %s", servaddr.asString().c_str(), e.what() );
 				if ( ! CNamingClient::lookupAlternate( name, servaddr, validitytime ) )
 				{
 					return false;

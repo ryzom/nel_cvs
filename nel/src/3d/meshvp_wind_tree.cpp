@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.cpp
  * <File description>
  *
- * $Id: meshvp_wind_tree.cpp,v 1.3 2002/03/06 13:45:26 berenguier Exp $
+ * $Id: meshvp_wind_tree.cpp,v 1.4 2002/03/14 18:13:26 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -181,8 +181,11 @@ void	CMeshVPWindTree::initInstance(CMeshBaseInstance *mbi)
 	mbi->_VPWindTreePhase= frand(1);
 }
 // ***************************************************************************
-void	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *mbi)
+bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat, const NLMISC::CVector & /*viewerPos*/)
 {
+	if (!(driver->isVertexProgramSupported() && !driver->isVertexProgramEmulated())) return false;
+	//
+	setupLighting(scene, mbi, invertedModelMat);						   	
 	// Get info from scene/instance
 	float	windPower= scene->getGlobalWindPower();
 	float	instancePhase= mbi->_VPWindTreePhase;
@@ -287,6 +290,7 @@ void	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 	// Enable normalize only if requested by user. Because lighting don't manage correct "scale lighting"
 	uint	idVP= (SpecularLighting?2:0) + (driver->isForceNormalize()?1:0) ;
 	driver->activeVertexProgram(_VertexProgram[idVP].get());
+	return true;
 }
 // ***************************************************************************
 void	CMeshVPWindTree::end(IDriver *driver)
@@ -295,15 +299,39 @@ void	CMeshVPWindTree::end(IDriver *driver)
 	driver->activeVertexProgram(NULL);
 }
 
-
 // ***************************************************************************
-bool	CMeshVPWindTree::useSceneVPLightSetup(bool &supportSpecular, uint &lightCteStart) const
+// tool fct
+static inline void SetupForMaterial(const CMaterial &mat, CScene *scene)
 {
-	supportSpecular= SpecularLighting;
-	lightCteStart= VPLightConstantStart;
-	return true;
+	CRenderTrav		*renderTrav= scene->getRenderTrav();
+	renderTrav->changeVPLightSetupMaterial(mat, false /* don't exclude strongest */);
 }
 
+// ***************************************************************************
+void	CMeshVPWindTree::setupForMaterial(const CMaterial &mat,
+										  IDriver *drv,
+									      CScene *scene,
+										  CVertexBuffer *)
+{	
+	SetupForMaterial(mat, scene);	
+}
 
+// ***************************************************************************
+void	CMeshVPWindTree::setupForMaterial(const CMaterial &mat,
+										  IDriver *drv,
+										  CScene *scene,
+										  IVertexBufferHard *vb)
+{
+	SetupForMaterial(mat, scene);
+}
+
+// ***************************************************************************
+void	CMeshVPWindTree::setupLighting(CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat)
+{
+		nlassert(scene != NULL);
+		CRenderTrav		*renderTrav= scene->getRenderTrav();
+		// setup cte for lighting
+		renderTrav->beginVPLightSetup(VPLightConstantStart, SpecularLighting, invertedModelMat);
+}
 
 } // NL3D

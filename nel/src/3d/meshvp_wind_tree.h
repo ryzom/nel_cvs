@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.h
  * <File description>
  *
- * $Id: meshvp_wind_tree.h,v 1.1 2002/02/26 14:17:55 berenguier Exp $
+ * $Id: meshvp_wind_tree.h,v 1.2 2002/03/14 18:13:26 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -44,6 +44,7 @@ namespace NL3D {
 class CMeshVPWindTree : public IMeshVertexProgram
 {
 public:
+	
 
 	enum	{HrcDepth= 3};
 
@@ -79,11 +80,25 @@ public:
 	/// Setup a rand phase for wind in mbi
 	virtual	void	initInstance(CMeshBaseInstance *mbi);
 	/// Setup Wind constants, Light constants, and activate the VP.
-	virtual	void	begin(IDriver *drv, CScene *scene, CMeshBaseInstance *mbi);
+	virtual	bool	begin(IDriver *drv,
+						  CScene *scene,
+						  CMeshBaseInstance *mbi,
+						  const NLMISC::CMatrix &invertedModelMat,
+						  const NLMISC::CVector & /*viewerPos*/);
 	/// disable the VertexProgram.
-	virtual	void	end(IDriver *drv);
-	/// use Lighting. (ret true). supportSpecular= SpecularLighting
-	virtual bool	useSceneVPLightSetup(bool &supportSpecular, uint &lightCteStart) const;
+	virtual	void	end(IDriver *drv);	
+
+	// Setup this shader for the given material. 
+	virtual void	setupForMaterial(const CMaterial &mat,
+									 IDriver *drv,
+									 CScene *scene,
+									 CVertexBuffer *vb);
+	// hard vb version
+	virtual void	setupForMaterial(const CMaterial &mat,
+									 IDriver *drv,
+									 CScene *scene,
+									 IVertexBufferHard *vb);
+
 
 
 	// Serial.
@@ -92,6 +107,8 @@ public:
 
 	// @}
 
+private:
+	void	setupLighting(CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat);
 private:
 
 	// The 4 versions: Specular or not (0 or 2), + normalize normal or not (0 or 1).
@@ -104,6 +121,10 @@ private:
 
 	// Compute a cosinus with an angle given in 0-1 <=> 0-2Pi. Actual values goes from 0 to 2.
 	static float	speedCos(float angle);
+
+	
+	
+	
 };
 
 

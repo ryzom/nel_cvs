@@ -1,7 +1,7 @@
 /** \file zone_region.cpp
  * <File description>
  *
- * $Id: zone_region.cpp,v 1.3 2002/11/28 16:19:14 corvazier Exp $
+ * $Id: zone_region.cpp,v 1.4 2002/11/29 14:49:15 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,6 +151,8 @@ const CZoneRegion::SZoneUnit2& CZoneRegion::SZoneUnit2::operator=(const CZoneReg
 CZoneRegion::CZoneRegion()
 {
 	_StringOutOfBound = STRING_OUT_OF_BOUND;
+	_MinX = _MinY = 0;
+	_MaxX = _MaxY = -1;
 }
 
 // ---------------------------------------------------------------------------

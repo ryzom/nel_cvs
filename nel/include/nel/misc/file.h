@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: file.h,v 1.3 2000/09/12 15:41:22 berenguier Exp $
+ * $Id: file.h,v 1.4 2000/10/12 13:55:34 lecroart Exp $
  *
  * Standard File Input/Output.
  */
@@ -63,7 +63,7 @@ public:		// Basic Usage.
 	~CIFile();
 
 	/// Open a file for reading. false if failed. close() if a file was opened.
-	bool	open(std::string path);
+	bool	open(std::string path, bool text=false);
 
 	
 public:		// Advanced Usage.
@@ -96,7 +96,7 @@ public:		// Basic Usage.
 	~COFile();
 
 	/// Open a file for writing. false if failed. close() if a file was opened.
-	bool	open(std::string path);
+	bool	open(std::string path, bool append=false, bool text=false);
 
 	
 public:		// Advanced Usage.
@@ -105,8 +105,10 @@ public:		// Advanced Usage.
 	/// flush the file.
 	void	flush();
 
-protected:
+	// very useful to serialize string in text mode (without the size)
 	virtual void		serialBuffer(uint8 *buf, uint len) throw(EWriteError);
+
+protected:
 	virtual void		serialBit(bool &bit) throw(EWriteError);
 
 private:

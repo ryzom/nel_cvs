@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.cpp,v 1.16 2000/10/12 10:43:11 cado Exp $
+ * $Id: service.cpp,v 1.17 2000/10/12 13:55:34 lecroart Exp $
  *
  * implementation of all debug functions
  *
@@ -169,7 +169,7 @@ sint IService::main (int argc, char **argv)
 		{
 			try
 			{
-				CNamingClient::registerService( IService::_Name, *(_Server->listenAddress()) );
+//				CNamingClient::registerService( IService::_Name, *(_Server->listenAddress()) );
 			}
 			catch ( ESocketConnectionFailed& )
 			{

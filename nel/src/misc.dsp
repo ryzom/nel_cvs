@@ -227,6 +227,14 @@ SOURCE=..\include\nel\misc\displayer.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\i18n.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\i18n.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\log.cpp
 # End Source File
 # Begin Source File

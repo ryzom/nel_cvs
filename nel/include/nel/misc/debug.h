@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.h,v 1.9 2000/10/12 10:13:52 cado Exp $
+ * $Id: debug.h,v 1.10 2000/10/12 13:55:34 lecroart Exp $
  *
  * This file contains all features that help us to debug applications/
  */
@@ -62,13 +62,15 @@ void InitDebug ();
 	}
  *\endcode
  */
-#define nldebug NLMISC::DebugLog.setParam( __LINE__, __FILE__ ); NLMISC::DebugLog.displayNL
+#define nldebug \
+NLMISC::DebugLog.setParam( __LINE__, __FILE__ ); NLMISC::DebugLog.displayNL
 
 /**
  * \def nlinfo(exp)
  * Same as nldebug but it will be display in debug and in release mode.
  */
-#define nlinfo NLMISC::InfoLog.setParam( __LINE__, __FILE__ ); NLMISC::InfoLog.displayNL
+#define nlinfo \
+NLMISC::InfoLog.setParam( __LINE__, __FILE__ ); NLMISC::InfoLog.displayNL
 
 /**
  * \def nlwarning(exp)
@@ -87,7 +89,8 @@ void InitDebug ();
 	}
  *\endcode
  */
-#define nlwarning NLMISC::WarningLog.setParam( __LINE__, __FILE__ ); NLMISC::WarningLog.displayNL
+#define nlwarning \
+NLMISC::WarningLog.setParam( __LINE__, __FILE__ ); NLMISC::WarningLog.displayNL
 
 /**
  * \def nlerror(exp)
@@ -105,7 +108,13 @@ void InitDebug ();
 	}
  *\endcode
  */
-#define nlerror NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); nlError
+#if defined (NL_DEBUG) && defined (NL_OS_WINDOWS)
+#define nlerror \
+_asm int 3; //
+#else
+#define nlerror \
+NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); nlError
+#endif
 
 /**
  * \def nlassert(exp)
@@ -300,15 +309,24 @@ void InitDebug ();
 
 #else // NL_DEBUG
 
-#define nlassert(exp) NULL
-#define nlassertonce(exp) NULL
-#define nlassertex(exp, str) NULL
-#define nlverify(exp) { exp; }
-#define nlverifyonce(exp) { exp; }
-#define nlverifyex(exp, str) {exp; }
-#define nlstop NULL
-#define nlstoponce NULL
-#define nlstopex(str) NULL
+#define nlassert(exp) \
+NULL
+#define nlassertonce(exp) \
+NULL
+#define nlassertex(exp, str) \
+NULL
+#define nlverify(exp) \
+{ exp; }
+#define nlverifyonce(exp) \
+{ exp; }
+#define nlverifyex(exp, str) \
+{ exp; }
+#define nlstop \
+NULL
+#define nlstoponce \
+NULL
+#define nlstopex(str) \
+NULL
 
 #endif // NL_DEBUG
 

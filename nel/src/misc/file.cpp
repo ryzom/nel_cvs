@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: file.cpp,v 1.5 2000/09/14 16:40:53 cado Exp $
+ * $Id: file.cpp,v 1.6 2000/10/12 13:55:34 lecroart Exp $
  *
  * Standard File Input/Output.
  */
@@ -34,10 +34,17 @@ CIFile::~CIFile()
 	close();
 }
 // ======================================================================================================
-bool	CIFile::open(std::string path)
+bool	CIFile::open(std::string path, bool text)
 {
 	close();
-	_F=fopen(path.c_str(), "rb");
+
+	char mode[3];
+	mode[0] = 'r';
+	mode[1] = (text)?'\0':'b';
+	mode[2] = '\0';
+
+	_F=fopen(path.c_str(), mode);
+
 	return _F!=NULL;
 }
 // ======================================================================================================
@@ -93,10 +100,17 @@ COFile::~COFile()
 	close();
 }
 // ======================================================================================================
-bool	COFile::open(std::string path)
+bool	COFile::open(std::string path, bool append, bool text)
 {
 	close();
-	_F=fopen(path.c_str(), "wb");
+
+	char mode[3];
+	mode[0] = (append)?'a':'w';
+	mode[1] = (text)?'\0':'b';
+	mode[2] = '\0';
+
+	_F=fopen(path.c_str(), mode);
+
 	return _F!=NULL;
 }
 // ======================================================================================================

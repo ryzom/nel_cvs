@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.31 2001/06/26 15:26:23 cado Exp $
+ * $Id: common.h,v 1.32 2001/07/04 12:41:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -262,7 +262,20 @@ uint getThreadId();
 std::string stringFromVector( const std::vector<uint8>& v );
 
 
-/** Returns a string corresponding to the class T in string format
+/// Convert a string into an sint64 (same as atoi() function but for 64 bits intergers)
+sint64 atoiInt64 (const char *ident, sint64 base = 10);
+
+/// Convert an sint64 into a string (same as itoa() function but for 64 bits intergers)
+void itoaInt64 (sint64 number, char *str, sint64 base = 10);
+
+
+
+
+
+
+
+
+/** Returns a string corresponding to the class T in string format.
  * Example:
  *  string num = toString (1234); // num = "1234";
  */
@@ -273,11 +286,176 @@ template<class T> std::string toString (const T &t)
 	return ss.str();
 }
 
-/// Convert a string into an sint64 (same as atoi() function but for 64 bits intergers)
-sint64 atoiInt64 (const char *ident, sint64 base = 10);
+/* All the code above is used to add our types (uint8, ...) in the stringstream (used by the toString() function).
+ * So we can use stringstream operator << and >> with all NeL simple types (except for ucchar and ucstring)
+ */
 
-/// Convert an sint64 into a string (same as itoa() function but for 64 bits intergers)
-void itoaInt64 (sint64 number, char *str, sint64 base = 10);
+#ifdef NL_OS_WINDOWS
+
+#define NLMISC_ADD_BASIC_ISTREAM_OPERATOR(__type,__casttype) \
+template <class _CharT, class _Traits> \
+std::basic_istream<_CharT, _Traits>& __STL_CALL \
+operator>>(std::basic_istream<_CharT, _Traits>& __is, __type& __z) \
+{ \
+	__casttype __z2 = (__casttype) __z; \
+	__is.operator>>(__z2); \
+	__z = (__type) __z2; \
+	return __is; \
+} \
+ \
+template <class _CharT, class _Traits> \
+std::basic_ostream<_CharT, _Traits>& __STL_CALL \
+operator<<(std::basic_ostream<_CharT, _Traits>& __os, const __type& __z) \
+{ \
+	std::basic_ostringstream<_CharT, _Traits, std::allocator<_CharT> > __tmp; \
+	__tmp << (__casttype) __z; \
+	return __os << __tmp.str(); \
+}
+
+NLMISC_ADD_BASIC_ISTREAM_OPERATOR(uint8, unsigned int);
+NLMISC_ADD_BASIC_ISTREAM_OPERATOR(sint8, signed int);
+NLMISC_ADD_BASIC_ISTREAM_OPERATOR(uint16, unsigned int);
+NLMISC_ADD_BASIC_ISTREAM_OPERATOR(sint16, signed int);
+NLMISC_ADD_BASIC_ISTREAM_OPERATOR(uint32, unsigned int);
+NLMISC_ADD_BASIC_ISTREAM_OPERATOR(sint32, signed int);
+
+
+template <class _CharT, class _Traits>
+std::basic_istream<_CharT, _Traits>& __STL_CALL
+operator>>(std::basic_istream<_CharT, _Traits>& __is, uint64& __z)
+{
+	__z = 0;
+	bool neg = false;
+	char c;
+	do
+	{
+		__is >> c;
+	}
+	while (isspace(c));
+
+	if (c == '-')
+	{
+		neg = true;
+		__is >> c;
+	}
+
+	while (isdigit(c))
+	{
+		__z *= 10;
+		__z += c-'0';
+		__is >> c;
+		if (__is.fail())
+			break;
+	}
+
+	if (neg) __z = 0;
+
+	return __is;
+}
+
+template <class _CharT, class _Traits>
+std::basic_ostream<_CharT, _Traits>& __STL_CALL
+operator<<(std::basic_ostream<_CharT, _Traits>& __os, const uint64& __z)
+{
+	std::basic_ostringstream<_CharT, _Traits, std::allocator<_CharT> > __res;
+
+	if (__z == 0)
+	{
+		__res << '0';
+	}
+	else
+	{
+		std::basic_ostringstream<_CharT, _Traits, std::allocator<_CharT> > __tmp;
+		uint64	__z2 = __z;
+		while (__z2 != 0)
+		{
+			__tmp << (char)((__z2%10)+'0');
+			__z2 /= 10;
+		}
+
+		uint __s = __tmp.str().size();
+		for (uint i = 0; i < __s; i++)
+			__res << __tmp.str()[__s - 1 - i];
+	}
+	return __os << __res.str();
+}
+
+template <class _CharT, class _Traits>
+std::basic_istream<_CharT, _Traits>& __STL_CALL
+operator>>(std::basic_istream<_CharT, _Traits>& __is, sint64& __z)
+{
+	__z = 0;
+	bool neg = false;
+	char c;
+	do
+	{
+		__is >> c;
+	}
+	while (isspace(c));
+
+	if (c == '-')
+	{
+		neg = true;
+		__is >> c;
+	}
+
+	while (isdigit(c))
+	{
+		__z *= 10;
+		__z += c-'0';
+		__is >> c;
+		if (__is.fail())
+			break;
+	}
+
+	if (neg) __z = -__z;
+
+	return __is;
+}
+
+template <class _CharT, class _Traits>
+std::basic_ostream<_CharT, _Traits>& __STL_CALL
+operator<<(std::basic_ostream<_CharT, _Traits>& __os, const sint64& __z)
+{
+	std::basic_ostringstream<_CharT, _Traits, std::allocator<_CharT> > __res;
+
+	if (__z == 0)
+	{
+		__res << '0';
+	}
+	else 
+	{
+		sint64	__z2 = __z;
+
+		if (__z2 < 0)
+		{
+			__res << '-';
+		}
+
+		std::basic_ostringstream<_CharT, _Traits, std::allocator<_CharT> > __tmp;
+		while (__z2 != 0)
+		{
+			if (__z2 < 0)
+			{
+				__tmp << (char)((-(__z2%10))+'0');
+			}
+			else
+			{
+				__tmp << (char)((__z2%10)+'0');
+			}
+			__z2 /= 10;
+		}
+
+		uint __s = __tmp.str().size();
+		for (uint i = 0; i < __s; i++)
+			__res << __tmp.str()[__s - 1 - i];
+	}
+	return __os << __res.str();
+}
+
+#endif // NL_OS_WINDOWS
+
+
 
 
 }	// NLMISC

@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.21 2001/03/07 14:52:05 cado Exp $
+ * $Id: common.h,v 1.22 2001/04/11 14:58:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,8 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <string>
+#include <vector>
+
 
 namespace	NLMISC
 {
@@ -314,6 +316,9 @@ void nlSleep( uint32 ms );
 
 /// Returns Thread Id (note: on Linux, Process Id is the same as the Thread Id)
 uint getThreadId();
+
+/// Returns a readable string from a vector of bytes. '\0' are replaced by ' '
+std::string stringFromVector( const std::vector<uint8>& v );
 
 
 }	// NLMISC

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.4 2001/03/09 14:56:32 cado Exp $
+ * $Id: common.cpp,v 1.5 2001/04/11 15:00:06 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,9 @@
 #elif defined NL_OS_UNIX
 #include <unistd.h>
 #endif
+
+using namespace std;
+
 
 namespace	NLMISC
 {
@@ -68,6 +71,30 @@ uint getThreadId()
 
 }
 
+
+/*
+ * Returns a readable string from a vector of bytes. '\0' are replaced by ' '
+ */
+string stringFromVector( const vector<uint8>& v )
+{
+	string s;
+
+	// Copy contents
+	s.resize( v.size() );
+	memcpy( &*s.begin(), &*v.begin(), v.size() );
+
+	// Replace '\0' characters
+	string::iterator is;
+	for ( is=s.begin(); is!=s.end(); ++is )
+	{
+		if ( ! isprint((*is)) )
+		{
+			(*is) = ' ';
+		}
+	}
+
+	return s;
+}
 
 
 

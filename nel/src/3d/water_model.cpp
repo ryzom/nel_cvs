@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * TODO: File description
  *
- * $Id: water_model.cpp,v 1.53 2005/02/21 15:15:02 vizerie Exp $
+ * $Id: water_model.cpp,v 1.54 2005/02/21 17:53:00 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1315,6 +1315,7 @@ uint CWaterModel::getNumWantedVertices()
 	{	
 		for(sint y = height - bottomGap; y < height; ++y)
 		{		
+			nlassert (y >= 0 && y < (sint)_Inside.size());
 			_Inside[y].first =  border[y].first;
 			_Inside[y].second = border[y].first - 1; // insert null raster
 		}	
@@ -1324,11 +1325,13 @@ uint CWaterModel::getNumWantedVertices()
 	{
 		if (_Inside[y].first > _Inside[y].second)
 		{
+			nlassert (y >= 0 && y < (sint)_Inside.size());
 			_Inside[y].first =  border[y].first;
 			_Inside[y].second = border[y].first - 1;
 		}		
 		else if (border[y].first > border[y].second)
 		{
+			nlassert (y >= 0 && y < (sint)_Inside.size());
 			border[y].first = _Inside[y].first;
 			border[y].second = _Inside[y].first - 1;
 		}		
@@ -1665,6 +1668,7 @@ uint CWaterModel::fillVBHard(void *datas, uint startTri)
 //***************************************************************************************************************
 void	CWaterModel::traverseRender()
 {				
+	NL_ALLOC_CONTEXT( RdrWate )
 	H_AUTO( NL3D_Water_Render );	
 
 	CRenderTrav					&renderTrav		= getOwnerScene()->getRenderTrav();

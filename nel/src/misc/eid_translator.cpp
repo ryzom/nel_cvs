@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.27 2004/07/12 14:02:04 miller Exp $
+ * $Id: eid_translator.cpp,v 1.28 2004/08/13 18:53:49 brigand Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -181,7 +181,7 @@ void CEntityIdTranslator::getByEntity (const ucstring &entityName, vector<CEntit
 	}
 }
 
-bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *log, bool acceptBlanks)
+bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *log)
 {
 	H_AUTO(EIdTrans_isValidEntityName);
 	// 3 char at least
@@ -197,45 +197,7 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *lo
 		return false;
 	}
 
-	if ( acceptBlanks )
-	{
-		// no blanks at the beginning or at the end
-		if ( entityName[0] ==(uint16)0x20 )
-		{
-			log->displayNL("Bad entity name '%s' : start with a blank", entityName.toString().c_str());
-			return false;
-		}
-		if ( entityName[entityName.size() - 1] ==(uint16)0x20 )
-		{
-			log->displayNL("Bad entity name '%s' : end with a blank", entityName.toString().c_str());
-			return false;
-		}
-		bool previousBlank = false;
-		for (uint i = 0; i < entityName.size(); i++)
-		{
-			if( entityName[i] == (uint16)0x20 )
-			{
-				// don't accept consecutive blanks
-				if ( previousBlank )
-				{
-					log->displayNL("Bad entity name '%s' consecutive blanks are not allowed", entityName.toString().c_str());
-					return false;
-				}
-				previousBlank = true;
-			}
-			else
-			{
-				// accept name with alphabetic and numeric value [a-zA-Z]
-				if (!isalpha (entityName[i]))
-				{
-					log->displayNL("Bad entity name '%s' (only char and num)", entityName.toString().c_str());
-					return false;
-				}
-				previousBlank = false;
-			}
-		}
-	}
-	else for (uint i = 0; i < entityName.size(); i++)
+	for (uint i = 0; i < entityName.size(); i++)
 	{
 		// only accept name with alphabetic and numeric value [a-zA-Z]
 		if (!isalpha (entityName[i]))
@@ -246,7 +208,7 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *lo
 	}
 
 	// now check with the invalid name list
-	string en = getRegisterableString( entityName, acceptBlanks);
+	string en = getRegisterableString( entityName );
 
 	for (uint i = 0; i < InvalidEntityNames.size(); i++)
 	{
@@ -260,15 +222,19 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *lo
 	return true;
 }
 
-bool CEntityIdTranslator::entityNameExists (const ucstring &entityName, bool acceptBlanks )
+bool CEntityIdTranslator::checkEntityName (const ucstring &entityName )
 {
 	H_AUTO(EIdTrans_entityNameExists);
 	// if bad name, don't accept it
-	if (!isValidEntityName (entityName,NLMISC::InfoLog,acceptBlanks)) return true;
+	if (!isValidEntityName (entityName,NLMISC::InfoLog)) return false;
+	return !entityNameExists( entityName );
+}
 
+bool CEntityIdTranslator::entityNameExists (const ucstring &entityName )
+{
 	// Names are stored in case dependant, so we have to test them without case.
 	string registerable = getRegisterableString (entityName);
-
+	
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
 		if (getRegisterableString ((*it).second.EntityName) == registerable)
@@ -293,7 +259,7 @@ void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &
 		return;
 	}
 
-	if (entityNameExists(entityName))
+	if (!checkEntityName(entityName))
 	{
 		nlwarning ("EIT: Can't register EId %s EntityName %s UId %d UserName %s because EntityName is already in the map", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 		return;
@@ -344,7 +310,7 @@ void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &ent
 	{
 		nlwarning ("EIT: Check failed because EId is not in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 		
-		if (entityNameExists(entityName))
+		if (checkEntityName(entityName))
 		{
 			nlwarning ("EIT: Check failed because entity name already exist (%s) for EId %s EntityName '%s' UId %d UserName '%s'", getByEntity(entityName).toString().c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 		}
@@ -611,7 +577,7 @@ bool CEntityIdTranslator::isEntityOnline (const CEntityId &eid)
 	}
 }
 
-std::string CEntityIdTranslator::getRegisterableString( const ucstring & entityName,bool removeBlanks )
+std::string CEntityIdTranslator::getRegisterableString( const ucstring & entityName )
 {
 	string ret = toLower( entityName.toString() );
 	uint pos = ret.find( 0x20 );
@@ -695,7 +661,7 @@ NLMISC_CATEGORISED_COMMAND(nel,entityNameValid,"Tell if an entity name is valid 
 	}
 	else
 	{
-		if (CEntityIdTranslator::getInstance()->entityNameExists(args[0]))
+		if (CEntityIdTranslator::getInstance()->checkEntityName(args[0]))
 		{
 			log.displayNL("Entity name '%s' is already used by another player", args[0].c_str());
 		}

@@ -1,7 +1,7 @@
 /** \file event_emitter.cpp
  * <File description>
  *
- * $Id: event_emitter.cpp,v 1.5 2000/11/10 11:04:55 corvazier Exp $
+ * $Id: event_emitter.cpp,v 1.6 2000/11/13 10:02:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,12 @@ void CEventEmitterWin32::submitEvents(CEventServer & server)
 				case WM_MBUTTONUP:
 					server.postEvent (new CEventMouseUp (GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
 				*/	
+				break;
+				case WM_ACTIVATE:
+					if (WA_INACTIVE)
+						server.postEvent (new CEventActivate (false));
+					else
+						server.postEvent (new CEventActivate (true));
 				break;
 			}
 		}

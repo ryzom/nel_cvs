@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.4 2000/11/10 11:05:24 corvazier Exp $
+ * $Id: events.h,v 1.5 2000/11/13 10:02:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ const CClassId EventKeyUpId (0x1e62e85, 0x68a35d46);
 const CClassId EventCharId (0x552255fe, 0x75a2373f);
 const CClassId EventMouseDownId (0x35b7878, 0x5d4a0f86);
 const CClassId EventMouseUpId (0xcce1f7e, 0x7ed344d7);
-
+const CClassId EventActivateId (0x7da66b0a, 0x1ef74519);
 enum TKey 
 {
 	Key0				='0',
@@ -270,7 +270,26 @@ public:
 	}	
 };
 
+/**
+ * CEventActivate. Called when window is actived / disactived.
+ */
+class CEventActivate : public CEvent
+{
+public:
+	/**
+	  * True if window is actived, false if it is disactived.
+	  */
+	bool Activate;
 
+	/**
+	  * Create a activate message. Notify the activation disactivation of a window.
+	  * \param activate is True if window is actived, false if it is disactived.
+	  */
+	CEventActivate (bool activate) : CEvent (EventActivateId)
+	{
+		Activate = activate;
+	}
+};
 
 } // NLMISC
 

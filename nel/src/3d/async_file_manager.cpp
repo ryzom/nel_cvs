@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.11 2002/04/30 13:48:46 besson Exp $
+ * $Id: async_file_manager.cpp,v 1.12 2002/05/03 08:11:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -208,7 +208,7 @@ void CAsyncFileManager::CMeshLoad::run()
 		// Is the pointer is invalid return -1
 		if (mesh.getShapePointer() == NULL)
 		{
-			nlwarning ("cant load %s", MeshName);
+			nlwarning ("cant load %s", MeshName.c_str());
 			*_ppShp = (IShape*)-1;
 			delete this;
 			return;
@@ -291,7 +291,7 @@ void CAsyncFileManager::CMeshLoad::run()
 	}
 	catch(EPathNotFound &)
 	{
-		nlwarning ("cant load %s", MeshName);
+		nlwarning ("cant load %s", MeshName.c_str());
 		*_ppShp = (IShape*)-1;
 		delete this;
 		return;

@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.26 2004/05/14 15:01:32 berenguier Exp $
+ * $Id: nel_export_script.cpp,v 1.27 2004/06/09 16:42:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,8 @@ def_visible_primitive ( export_pacs_primitives,	"NelExportPACSPrimitives" );
 def_visible_primitive ( export_lod_character,	"NelExportLodCharacter" );
 def_visible_primitive ( node_properties,	"NelNodeProperties" );
 def_visible_primitive ( mirror_physique, 	"NelMirrorPhysique" );
+def_visible_primitive ( get_file_modification_date, 	"NeLGetFileModificationDate" );
+def_visible_primitive ( set_file_modification_date, 	"NeLSetFileModificationDate" );
 
 char *sExportShapeErrorMsg = "NeLExportShape [Object] [Filename.shape]";
 char *sExportShapeExErrorMsg = "NeLExportShapeEx [Object] [Filename.shape] [bShadow] [bExportLighting] [sLightmapPath] [nLightingLimit] [fLumelSize] [nOverSampling] [bExcludeNonSelected] [bShowLumel]";
@@ -786,6 +788,82 @@ Value* mirror_physique_cf (Value** arg_list, int count)
 	return &true_value;
 }
 
+
+// ***************************************************************************
+
+Value* get_file_modification_date_cf (Value** arg_list, int count)
+{
+	// **** retrieve args.
+	// Make sure we have the correct number of arguments (3)
+	check_arg_count(NeLGetFileModificationDate , 1, count);
+	
+	// Check to see if the arguments match up to what we expect
+	char *message = "date NeLGetFileModificationDate [filename] - If an error occured, returns undefined.";
+	
+	//type_check
+	type_check (arg_list[0], String, message);
+	
+	// get the node
+	string sPath = arg_list[0]->to_string();
+
+	// get vertices indices
+	string result;
+	HANDLE file = CreateFile (sPath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (file)
+	{
+		FILETIME lastWriteTime;
+		if (GetFileTime(file, NULL, NULL, &lastWriteTime))
+		{
+			char number[512];
+			sprintf (number, "%08x%08x", lastWriteTime.dwHighDateTime, lastWriteTime.dwLowDateTime);
+			result = number;
+		}
+		CloseHandle (file);
+	}
+	
+	if (result.empty())
+		return &undefined;
+	else
+		return new String((char*)result.c_str());
+}
+
+// ***************************************************************************
+
+Value* set_file_modification_date_cf (Value** arg_list, int count)
+{
+	// **** retrieve args.
+	// Make sure we have the correct number of arguments (3)
+	check_arg_count(NeLSetFileModificationDate , 2, count);
+	
+	// Check to see if the arguments match up to what we expect
+	char *message = "bool NeLSetFileModificationDate [filename] [date] - If an error occured, returns false.";
+	
+	//type_check
+	type_check (arg_list[0], String, message);
+	type_check (arg_list[1], String, message);
+	
+	// get the node
+	string sPath = arg_list[0]->to_string();
+	string sDate = arg_list[1]->to_string();
+
+	// get vertices indices
+	string result;
+	HANDLE file = CreateFile (sPath.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (file)
+	{
+		FILETIME lastWriteTime;
+		if (sscanf (sDate.c_str(), "%08x%08x", &lastWriteTime.dwHighDateTime, &lastWriteTime.dwLowDateTime) == 2)
+		{
+			if (SetFileTime(file, NULL, NULL, &lastWriteTime))
+			{
+				return &true_value;
+			}
+		}
+		CloseHandle (file);
+	}
+	
+	return &false_value;
+}
 
 /*===========================================================================*\
  |	MAXScript Plugin Initialization

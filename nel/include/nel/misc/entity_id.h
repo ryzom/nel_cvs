@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.11 2002/01/07 13:45:27 saffray Exp $
+ * $Id: entity_id.h,v 1.12 2002/01/22 14:11:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,14 +44,22 @@ struct CEntityId
 	static uint8 ServerId;
 	static const uint64 MaxEntityId;
 
-	/// Id of the service where the entity is.
-	uint64	DynamicId   :  8;
-	/// Id of the service who created the entity.
-	uint64	CreatorId   :  8;
-	/// Type of the entity.
-	uint64	Type :  8;
-	/// Local agent number.
-	uint64	Id : 40;
+	union
+	{
+		struct
+		{
+			/// Id of the service where the entity is.
+			uint64	DynamicId   :  8;
+			/// Id of the service who created the entity.
+			uint64	CreatorId   :  8;
+			/// Type of the entity.
+			uint64	Type :  8;
+			/// Local agent number.
+			uint64	Id : 40;
+		};
+
+		uint64	RawId;
+	};
 
 	CEntityId()
 	{
@@ -248,6 +256,8 @@ struct CEntityId
 		Id = (uint64)(p);
 	}
 
+	///Have a debug string.
+	virtual std::string toString() const;
 	
 	///Have a debug string.
 	virtual void getDebugString(std::string &str) const

@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.h,v 1.9 2002/11/04 15:40:42 boucher Exp $
+ * $Id: sound_anim_manager.h,v 1.10 2002/11/25 14:05:22 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,6 +138,10 @@ public:
 	 *  animation.
 	 */
 	virtual void					playAnimation(TSoundAnimId id, float lastTime, float curTime, CSoundContext &context);
+
+	/** Convert back from an anim ID to the anim name.
+	 */
+	virtual std::string				idToName(TSoundAnimId id);
 
 protected:
 

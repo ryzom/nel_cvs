@@ -444,10 +444,11 @@ BEGIN
                     226,24
     CONTROL         "Clamp",IDC_CLAMP_ATTRIB,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,9,46,41,11
-    CONTROL         "",IDC_ATTRIB_NB_CYCLES,"Static",SS_ETCHEDFRAME,113,39,
-                    226,24
-    LTEXT           "Input mutliplier :",IDC_STATIC,58,47,61,11
-    LTEXT           "Src:",IDC_STATIC,257,12,14,11
+    CONTROL         "",IDC_ATTRIB_NB_CYCLES,"Static",SS_ETCHEDFRAME | NOT 
+                    WS_VISIBLE,113,39,226,24
+    LTEXT           "Input mutliplier :",IDC_INPUT_MULTIPLIER_TXT,58,47,61,
+                    11
+    LTEXT           "Src:",IDC_SRC_INPUT_TXT,257,12,14,11
     COMBOBOX        IDC_SCHEME_INPUT,274,10,46,77,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Button2",IDC_ATTR_BITMAP,7,7,34,26,BS_BITMAP | BS_FLAT
@@ -458,18 +459,20 @@ END
 
 IDD_LOCATED_BINDABLE DIALOG DISCARDABLE  0, 0, 273, 419
 STYLE WS_CHILD
-FONT 10, "MS Serif"
+FONT 10, "MS Sans Serif"
 BEGIN
-    COMBOBOX        IDC_BLENDING_MODE,59,4,52,46,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_BLENDING_MODE,55,4,52,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     LTEXT           "Blending Mode :",IDC_BLENDING_MODE_STATIC,7,6,47,9
     CONTROL         "Independant sizes",IDC_INDE_SIZES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,116,4,61,12
-    CONTROL         "Width",IDC_SIZE_WIDTH,"Button",BS_AUTORADIOBUTTON,181,5,
-                    29,11
-    CONTROL         "Height",IDC_SIZE_HEIGHT,"Button",BS_AUTORADIOBUTTON,213,
-                    5,29,11
-    GROUPBOX        "",IDC_WIDTH_HEIGHT_BOX,177,0,71,18
+                    BS_AUTOCHECKBOX | WS_TABSTOP,109,4,61,12
+    CONTROL         "W",IDC_SIZE_WIDTH,"Button",BS_AUTORADIOBUTTON,176,5,19,
+                    11
+    CONTROL         "H",IDC_SIZE_HEIGHT,"Button",BS_AUTORADIOBUTTON,196,5,14,
+                    11
+    GROUPBOX        "",IDC_WIDTH_HEIGHT_BOX,172,0,40,18
+    CONTROL         "No Auto LOD",IDC_NO_AUTO_LOD,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,216,6,50,11
 END
 
 IDD_COLOR_EDIT DIALOG DISCARDABLE  0, 0, 226, 32
@@ -537,7 +540,7 @@ BEGIN
     COMBOBOX        IDC_EMITTED_TYPE,69,2,100,107,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Use emitter speed basis",IDC_USE_SPEED_BASIS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,186,7,176,14
+                    BS_AUTOCHECKBOX | WS_TABSTOP,186,7,88,14
     LTEXT           "Speed inheritance factor :",IDC_STATIC,5,37,57,17
     CONTROL         "Convert speed vector from emitter basis",
                     IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS,"Button",
@@ -550,6 +553,8 @@ BEGIN
                     WS_VISIBLE
     GROUPBOX        "",IDC_MAX_EMISSION_COUNT_FRAME,81,77,225,25,NOT 
                     WS_VISIBLE
+    CONTROL         "Force consistent emission",IDC_CONSISTENT_EMISSION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,281,8,97,11
 END
 
 IDD_TEXTURE_CHOOSER DIALOG DISCARDABLE  0, 0, 226, 24
@@ -735,8 +740,8 @@ STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Integration",IDC_STATIC,5,23,297,73
-    CONTROL         "Enable SlowDown",IDC_ENABLE_SLOW_DOWN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,33,74,12
+    CONTROL         "Enable motion slowDown",IDC_ENABLE_SLOW_DOWN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,33,93,12
     CONTROL         "Accurate integration",IDC_ACCURATE_INTEGRATION,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,9,11,81,11
     LTEXT           "Time threshold :",IDC_STATIC,16,46,38,18
@@ -750,17 +755,17 @@ BEGIN
     LTEXT           "Max view dist :",IDC_STATIC,9,206,56,11
     LTEXT           "LOD Ratio :",IDC_STATIC,10,229,56,11
     CONTROL         "Use Precomputed Bounding Box",IDC_PRECOMPUTE_BBOX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,249,121,12
-    GROUPBOX        "",IDC_STATIC,4,258,267,38
-    EDITTEXT        IDC_BB_X,8,266,47,16,ES_AUTOHSCROLL
-    EDITTEXT        IDC_BB_Y,57,266,47,16,ES_AUTOHSCROLL
-    EDITTEXT        IDC_BB_Z,106,266,47,16,ES_AUTOHSCROLL
-    LTEXT           "X",IDC_STATIC,28,284,8,10
-    LTEXT           "Y",IDC_STATIC,78,285,8,10
-    LTEXT           "Z",IDC_STATIC,126,285,8,10
-    PUSHBUTTON      "Update",IDC_UPDATE_BBOX,156,266,43,16
-    PUSHBUTTON      "+ 10 %",IDC_INC_BBOX,201,266,31,16
-    PUSHBUTTON      "- 10 %",IDC_DEC_BBOX,235,266,31,16
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,251,121,8
+    GROUPBOX        "",IDC_STATIC,4,256,186,38
+    EDITTEXT        IDC_BB_X,8,264,29,16,ES_AUTOHSCROLL
+    EDITTEXT        IDC_BB_Y,39,264,27,16,ES_AUTOHSCROLL
+    EDITTEXT        IDC_BB_Z,69,264,28,16,ES_AUTOHSCROLL
+    LTEXT           "X",IDC_STATIC,19,282,8,10
+    LTEXT           "Y",IDC_STATIC,50,283,8,10
+    LTEXT           "Z",IDC_STATIC,81,283,8,10
+    PUSHBUTTON      "Update",IDC_UPDATE_BBOX,102,264,29,16
+    PUSHBUTTON      "+ 10 %",IDC_INC_BBOX,134,264,26,16
+    PUSHBUTTON      "- 10 %",IDC_DEC_BBOX,162,264,24,16
     GROUPBOX        "",IDC_STATIC,4,298,295,78
     CONTROL         "Model removed when out of range",
                     IDC_DIE_WHEN_OUT_OF_RANGE,"Button",BS_AUTOCHECKBOX | 
@@ -782,9 +787,18 @@ BEGIN
     COMBOBOX        IDC_LIFE_MGT_PRESETS,67,310,92,77,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Sharable",IDC_SHARABLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,170,311,46,11
-    CONTROL         "Auto-LOD",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,221,311,46,11
+                    WS_TABSTOP,162,311,46,11
+    CONTROL         "Auto-LOD",IDC_ENABLE_AUTO_LOD,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,209,311,46,11
+    PUSHBUTTON      "Settings...",IDC_EDIT_AUTO_LOD,258,309,34,13
+    CONTROL         "Force lifetime update",IDC_FORCE_LIFE_TIME_UPDATE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,119,34,93,12
+    CONTROL         "Enable global color",IDC_GLOBAL_COLOR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,202,251,74,10
+    PUSHBUTTON      "Edit...",IDC_EDIT_GLOBAL_COLOR,202,262,32,10
+    GROUPBOX        "",IDC_STATIC,196,244,91,55
+    LTEXT           "(Wrn : Bypass multitex, not supported by all types)",
+                    IDC_STATIC,204,273,81,24
 END
 
 IDD_BIN_OP DIALOG DISCARDABLE  0, 0, 390, 174
@@ -1206,18 +1220,18 @@ CAPTION "Multitexturing"
 FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "",IDC_STATIC,5,5,272,62
-    EDITTEXT        IDC_U_SPEED_1,47,40,25,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_V_SPEED_1,47,52,25,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_U_SPEED_2,112,40,25,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_V_SPEED_2,112,53,25,12,ES_AUTOHSCROLL
-    LTEXT           "U speed 1:",IDS_U_SPEED_1,9,40,35,10
-    LTEXT           "V speed 1:",IDS_V_SPEED_1,10,53,34,10
-    LTEXT           "U speed 2:",IDS_U_SPEED_2,76,41,35,10
-    LTEXT           "V speed 2:",IDS_V_SPEED_2,76,55,35,10
-    PUSHBUTTON      "Update",IDC_UPDATE_SPEED,140,41,27,12
-    LTEXT           "Op :",IDC_STATIC,173,43,18,10
+    EDITTEXT        IDC_U_SPEED_1,46,40,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_V_SPEED_1,46,52,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_U_SPEED_2,111,40,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_V_SPEED_2,111,53,25,12,ES_AUTOHSCROLL
+    LTEXT           "U speed 1:",IDS_U_SPEED_1,8,40,36,10
+    LTEXT           "V speed 1:",IDS_V_SPEED_1,9,53,35,10
+    LTEXT           "U speed 2:",IDS_U_SPEED_2,75,41,35,10
+    LTEXT           "V speed 2:",IDS_V_SPEED_2,75,55,35,10
+    PUSHBUTTON      "Update",IDC_UPDATE_SPEED,243,17,27,12
+    LTEXT           "Op :",IDC_STATIC,199,43,14,10
     GROUPBOX        "",IDC_TEX_CHOOSER,8,10,226,24
-    GROUPBOX        "",IDC_STATIC,6,78,271,65
+    GROUPBOX        "",IDC_STATIC,7,78,271,65
     EDITTEXT        IDC_U_SPEED_1_ALTERNATE,48,116,25,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_V_SPEED_1_ALTERNATE,48,128,25,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_U_SPEED_2_ALTERNATE,112,116,25,12,ES_AUTOHSCROLL
@@ -1229,7 +1243,7 @@ BEGIN
     PUSHBUTTON      "Update",IDC_UPDATE_SPEED_ALTERNATE,140,116,27,12
     LTEXT           "Op :",IDC_STATIC,174,118,18,10
     GROUPBOX        "",IDC_TEX_CHOOSER_ALTERNATE,8,85,226,24
-    COMBOBOX        IDC_MAIN_OP,195,40,58,57,CBS_DROPDOWNLIST | WS_VSCROLL | 
+    COMBOBOX        IDC_MAIN_OP,216,40,58,57,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     COMBOBOX        IDC_ALTERNATE_OP,195,115,55,57,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
@@ -1240,7 +1254,9 @@ BEGIN
     CONTROL         "Use Particle Date",IDC_USE_PARTICLE_DATE2,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,140,130,72,12
     CONTROL         "Use Particle Date",IDC_USE_PARTICLE_DATE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,139,55,72,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,200,55,72,12
+    LTEXT           "Bump factor:",IDC_BUMP_FACTOR_TXT,143,40,22,18
+    EDITTEXT        IDC_BUMP_FACTOR,166,41,26,12,ES_AUTOHSCROLL
 END
 
 IDD_CONSTRAINT_MESH_DLG DIALOG DISCARDABLE  0, 0, 238, 72
@@ -1341,6 +1357,28 @@ BEGIN
     LTEXT           "Length (m) :",IDC_STATIC,4,24,37,9
     GROUPBOX        "",IDC_LOD_DEGRADATION,51,37,226,24,NOT WS_VISIBLE
     LTEXT           "LOD Degradation :",IDC_STATIC,4,45,47,21
+END
+
+IDD_AUTO_LOD DIALOG DISCARDABLE  0, 0, 296, 42
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Auto LOD"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Start percent DIST :",IDC_STATIC,3,9,66,9
+    GROUPBOX        "",IDC_START_PERCENT_DIST,70,0,226,24,NOT WS_VISIBLE
+    LTEXT           "Degradation exponent :",IDC_STATIC,3,30,74,9
+    COMBOBOX        IDC_DEGRADATION_EXPONENT,85,27,52,49,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Skip particles",IDC_SKIP_PARTICLES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,155,28,73,11
+END
+
+IDD_GLOBAL_COLOR DIALOG DISCARDABLE  0, 0, 356, 81
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "System Global Color"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "",IDC_COLOR_ATTRIB,6,2,344,71,NOT WS_VISIBLE
 END
 
 
@@ -1830,6 +1868,22 @@ BEGIN
         RIGHTMARGIN, 278
         TOPMARGIN, 7
         BOTTOMMARGIN, 64
+    END
+
+    IDD_AUTO_LOD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 289
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 35
+    END
+
+    IDD_GLOBAL_COLOR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 349
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 74
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2328,6 +2382,26 @@ BEGIN
     0
 END
 
+IDD_AUTO_LOD DLGINIT
+BEGIN
+    IDC_DEGRADATION_EXPONENT, 0x403, 2, 0
+0x0031, 
+    IDC_DEGRADATION_EXPONENT, 0x403, 2, 0
+0x0032, 
+    IDC_DEGRADATION_EXPONENT, 0x403, 2, 0
+0x0033, 
+    IDC_DEGRADATION_EXPONENT, 0x403, 2, 0
+0x0034, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_CURSOR1             CURSOR  DISCARDABLE     "cursor1.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //

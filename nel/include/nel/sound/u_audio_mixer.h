@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.12 2001/09/05 14:49:59 cado Exp $
+ * $Id: u_audio_mixer.h,v 1.13 2001/09/15 17:53:46 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,13 +72,14 @@ public:
 	 * In case of failure, can throw one of these ESoundDriver (Exception) objects:
 	 * ESoundDriverNotFound, ESoundDriverCorrupted, ESoundDriverOldVersion, ESoundDriverUnknownVersion.
 	 *
-	 * The sources will be auto-balanced every "balance_period" calls to update()
+	 * The sources will be auto-balanced every "balance_period" in millisecond (but in update())
 	 * (set 0 for "never auto-balance")
 	 */
 	virtual void		init( uint32 balance_period=AUTOBALANCE_DEFAULT_PERIOD ) = 0;
 	/// Resets the audio system (deletes all the sources, include envsounds)
 	virtual void		reset() = 0;
-
+	/// Disables or reenables the sound
+	virtual void		enable( bool b ) = 0;
 
 	/// Load environment effects
 	virtual void		loadEnvEffects( const char *filename ) = 0;

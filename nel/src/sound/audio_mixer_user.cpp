@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.19 2001/09/14 14:40:14 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.20 2001/09/15 17:53:37 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,7 +73,8 @@ UAudioMixer	*UAudioMixer::createAudioMixer()
  * Constructor
  */
 CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL), _NbTracks(0), _CurEnvEffect(NULL),
-	_BalancePeriod(0), _ListenPosition(CVector::Null), _Leaving(false), _EnvSounds(NULL)
+	_BalancePeriod(0), _ListenPosition(CVector::Null), _Leaving(false), _EnvSounds(NULL),
+	_MaxNbTracks(0)
 {
 	if ( _Instance == NULL )
 	{
@@ -238,6 +239,8 @@ void				CAudioMixerUser::init( uint32 balance_period )
 		//delete _Tracks[i]; // Bug: the desctructor would not work because the source's name is invalid
 	}
 
+	_MaxNbTracks = _NbTracks;
+	
 	for ( i=_NbTracks+1; i<MAX_TRACKS; i++ )
 	{
 		_Tracks[i] = NULL;
@@ -245,6 +248,32 @@ void				CAudioMixerUser::init( uint32 balance_period )
 	_BalancePeriod = balance_period;
 
 	nlinfo( "Initialized audio mixer with %u voices", _NbTracks );
+}
+
+
+/*
+ * Disables or reenables the sound
+ */
+void				CAudioMixerUser::enable( bool b )
+{
+	if ( b )
+	{
+		// Reenable
+		_NbTracks = _MaxNbTracks;
+	}
+	else
+	{
+		// Disable
+		uint i;
+		for ( i=0; i!=_NbTracks; i++ )
+		{
+			if ( ! _Tracks[i]->isAvailable() )
+			{
+				_Tracks[i]->getUserSource()->leaveTrack();
+			}
+		}
+		_NbTracks = 0;
+	}
 }
 
 
@@ -333,16 +362,17 @@ void				CAudioMixerUser::releaseTrack( CSourceUser *source )
  */
 void				CAudioMixerUser::getFreeTracks( uint nb, CTrack **tracks )
 {
-	nlassert( nb <= _NbTracks );
-	
 	uint found=0, i;
-	for ( found=0, i=0; (found!=nb) && (i!=_NbTracks); i++ )
+	if ( nb <= _NbTracks )
 	{
-		if ( _Tracks[i]->isAvailable() )
+		for ( found=0, i=0; (found!=nb) && (i!=_NbTracks); i++ )
 		{
-			tracks[found] = _Tracks[i];
-			found++;
-			//nldebug( "AM: Acquiring track number %u", i );
+			if ( _Tracks[i]->isAvailable() )
+			{
+				tracks[found] = _Tracks[i];
+				found++;
+				//nldebug( "AM: Acquiring track number %u", i );
+			}
 		}
 	}
 	for ( i=found; i!=nb; i++ )
@@ -405,10 +435,15 @@ void				CAudioMixerUser::update()
 	// Balance sources
 	if ( _BalancePeriod != 0 )
 	{
-		static uint32 update_counter = 1;
-		if ( update_counter == _BalancePeriod )
+		/*static uint32 update_counter = 1;
+		if ( update_counter == _BalancePeriod )*/
+		static TTime lastupd = CTime::getLocalTime();
+		TTime delta = CTime::getLocalTime() - lastupd;
+
+		if ( delta > _BalancePeriod )
 		{
-			update_counter = 1;
+			lastupd += delta;
+			//update_counter = 1;
 
 			// If source not a looping source,
 			// check source playing state to false if the playing stopped on its own
@@ -429,10 +464,10 @@ void				CAudioMixerUser::update()
 			// Auto-Balance
 			balanceSources();
 		}
-		else
+		/*else
 		{
 			update_counter++;
-		}
+		}*/
 	}
 
 	// Debug info
@@ -766,6 +801,11 @@ struct CompareSources : public binary_function<CSourceUser*,CSourceUser*,bool>
  */
 void			CAudioMixerUser::redispatchSourcesToTrack()
 {
+	if ( _NbTracks == 0 )
+	{
+		return;
+	}
+
 	nldebug( "AM: Redispatching sources" );
 	
 	CVector listenerpos;
@@ -776,8 +816,8 @@ void			CAudioMixerUser::redispatchSourcesToTrack()
 	nlassert( sources_copy.size() >= _NbTracks );
 
 	// Select the nbtracks "smallest" sources (the ones that have the higher priorities)
-	set<CSourceUser*> selected_sources;
 	set<CSourceUser*>::iterator ips;
+	set<CSourceUser*> selected_sources;
 	uint32 i;
 	for ( i=0; i!=_NbTracks; i++ )
 	{

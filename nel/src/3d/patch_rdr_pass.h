@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.h
  * <File description>
  *
- * $Id: patch_rdr_pass.h,v 1.2 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: patch_rdr_pass.h,v 1.3 2001/09/24 12:22:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,12 +100,24 @@ public:
 	/// \name The Patch/Tile List for this pass.. updated at each render(), (in CPatch::preRender() and CLandscape::render()).
 	// @{
 	void		clearAllRenderList();
-	void		appendRdrPatchFar0(CRdrPatchId *rdrPatch);
-	void		appendRdrPatchFar1(CRdrPatchId *rdrPatch);
-	void		appendRdrPatchTile(uint pass, CRdrTileId *rdrTile);
-	CRdrPatchId *getRdrPatchFar0();
-	CRdrPatchId *getRdrPatchFar1();
-	CRdrTileId  *getRdrTileRoot(uint pass);
+	void		appendRdrPatchFar0(CRdrPatchId *rdrPatch)
+	{
+		rdrPatch->_Next= _Far0ListRoot;
+		_Far0ListRoot= rdrPatch;
+	}
+	void		appendRdrPatchFar1(CRdrPatchId *rdrPatch)
+	{
+		rdrPatch->_Next= _Far1ListRoot;
+		_Far1ListRoot= rdrPatch;
+	}
+	void		appendRdrPatchTile(uint pass, CRdrTileId *rdrTile)
+	{
+		rdrTile->_Next= _TileListRoot[pass];
+		_TileListRoot[pass]= rdrTile;
+	}
+	CRdrPatchId *getRdrPatchFar0() {return _Far0ListRoot;}
+	CRdrPatchId *getRdrPatchFar1() {return _Far1ListRoot;}
+	CRdrTileId  *getRdrTileRoot(uint pass) {return _TileListRoot[pass];}
 	// @}
 
 

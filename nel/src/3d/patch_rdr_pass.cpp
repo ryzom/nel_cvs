@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.cpp
  * <File description>
  *
- * $Id: patch_rdr_pass.cpp,v 1.8 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: patch_rdr_pass.cpp,v 1.9 2001/09/24 12:22:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,37 +68,6 @@ void	CPatchRdrPass::clearAllRenderList()
 		_TileListRoot[i]= NULL;
 	}
 }
-
-
-// ***************************************************************************
-void		CPatchRdrPass::appendRdrPatchFar0(CRdrPatchId *rdrPatch)
-{
-	rdrPatch->_Next= _Far0ListRoot;
-	_Far0ListRoot= rdrPatch;
-}
-void		CPatchRdrPass::appendRdrPatchFar1(CRdrPatchId *rdrPatch)
-{
-	rdrPatch->_Next= _Far1ListRoot;
-	_Far1ListRoot= rdrPatch;
-}
-void		CPatchRdrPass::appendRdrPatchTile(uint pass, CRdrTileId *rdrTile)
-{
-	rdrTile->_Next= _TileListRoot[pass];
-	_TileListRoot[pass]= rdrTile;
-}
-CRdrPatchId *CPatchRdrPass::getRdrPatchFar0()
-{
-	return _Far0ListRoot;
-}
-CRdrPatchId	*CPatchRdrPass::getRdrPatchFar1()
-{
-	return _Far1ListRoot;
-}
-CRdrTileId  *CPatchRdrPass::getRdrTileRoot(uint pass)
-{
-	return _TileListRoot[pass];
-}
-
 
 
 } // NL3D

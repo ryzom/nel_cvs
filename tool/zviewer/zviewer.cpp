@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.10 2001/03/07 17:44:57 corvazier Exp $
+ * $Id: zviewer.cpp,v 1.11 2001/05/18 07:48:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,9 +37,12 @@
 #include "nel/3d/mini_col.h"
 #include "nel/3d/nelu.h"
 
-#include "nel/net/local_entity.h"
+//#include "nel/net/local_entity.h"
 
 #include "move_listener.h"
+
+// Tempyoyo.
+#include "nel/3d/tmp/height_map.h"
 
 
 #include <string>
@@ -48,7 +51,6 @@
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
-using namespace NLNET;
 
 
 //#define BANK_PAH_RELATIVE
@@ -77,7 +79,15 @@ struct CViewerConfig
 	float			LandscapeTileNear;
 	float			LandscapeThreshold;
 	vector<string>	Zones;
-	
+
+	// HeightField.
+	string			HeightFieldName;
+	float			HeightFieldMaxZ;
+	float			HeightFieldOriginX;
+	float			HeightFieldOriginY;
+	float			HeightFieldSizeX;
+	float			HeightFieldSizeY;
+
 	CViewerConfig()
 	{
 		Windowed = true;
@@ -95,6 +105,14 @@ struct CViewerConfig
 		ZFar = 1000;
 		LandscapeTileNear = 50.0f;
 		LandscapeThreshold = 0.001f;
+
+		HeightFieldName= "";
+		HeightFieldMaxZ= 100;
+		HeightFieldOriginX= 16000;
+		HeightFieldOriginY= -24000;
+		HeightFieldSizeX= 160;
+		HeightFieldSizeY= 160;
+
 	}
 };
 
@@ -199,6 +217,7 @@ void displayOrientation()
 	mtx.rotateY(MoveListener.getRotZ() );
 	mtx.translate(CVector(0,0,radius));
 	CNELU::Driver->setupModelMatrix (mtx);
+	CNELU::Driver->activeVertexBuffer(vb);
 	CNELU::Driver->render(pbTri, mat);
 
 	mat.setColor(CRGBA(50,50,255,150));
@@ -209,6 +228,7 @@ void displayOrientation()
 	mtx.rotateY(MoveListener.getRotZ() + (float)Pi);
 	mtx.translate(CVector(0,0,radius));
 	CNELU::Driver->setupModelMatrix (mtx);
+	CNELU::Driver->activeVertexBuffer(vb);
 	CNELU::Driver->render(pbTri, mat);
 
 	// left
@@ -217,6 +237,7 @@ void displayOrientation()
 	mtx.rotateY(MoveListener.getRotZ() - (float)Pi/2);
 	mtx.translate(CVector(0,0,radius));
 	CNELU::Driver->setupModelMatrix (mtx);
+	CNELU::Driver->activeVertexBuffer(vb);
 	CNELU::Driver->render(pbTri, mat);
 
 	// right
@@ -225,6 +246,7 @@ void displayOrientation()
 	mtx.rotateY(MoveListener.getRotZ() + (float)Pi/2);
 	mtx.translate(CVector(0,0,radius));
 	CNELU::Driver->setupModelMatrix (mtx);
+	CNELU::Driver->activeVertexBuffer(vb);
 	CNELU::Driver->render(pbTri, mat);
 	
 	// center
@@ -232,6 +254,7 @@ void displayOrientation()
 	mtx.translate(CVector(x,0,y));
 	mtx.rotateY(MoveListener.getRotZ());
 	CNELU::Driver->setupModelMatrix (mtx);
+	CNELU::Driver->activeVertexBuffer(vb);
 	CNELU::Driver->render(pbQuad, mat);
 	
 }
@@ -267,7 +290,22 @@ void displayZones()
 	Landscape = (CLandscapeModel*)CNELU::Scene.createModel(LandscapeModelId);
 	Landscape->Landscape.setTileNear(ViewerCfg.LandscapeTileNear);
 	Landscape->Landscape.setThreshold(ViewerCfg.LandscapeThreshold);
-	
+
+
+	// HeightField.
+	CBitmap		heightBitmap;
+	if( ViewerCfg.HeightFieldName!="" && heightBitmap.load(CIFile(ViewerCfg.HeightFieldName)) )
+	{
+		CHeightMap	heightMap;
+		heightMap.buildFromBitmap(heightBitmap);
+		heightMap.MaxZ= ViewerCfg.HeightFieldMaxZ;
+		heightMap.OriginX= ViewerCfg.HeightFieldOriginX;
+		heightMap.OriginY= ViewerCfg.HeightFieldOriginY;
+		heightMap.SizeX = ViewerCfg.HeightFieldSizeX;
+		heightMap.SizeY = ViewerCfg.HeightFieldSizeY;
+		Landscape->Landscape.setHeightField(heightMap);
+	}
+
 	
 	// Init TileBank.
 	CNELU::clearBuffers(CRGBA(0,0,0));
@@ -635,6 +673,15 @@ void writeConfigFile(const char * configFileName)
 	fprintf(f,"BanksPath = \"%s\";\n",ViewerCfg.BanksPath.c_str());
 	fprintf(f,"Bank = \"%s\";\n",ViewerCfg.Bank.c_str());
 	fprintf(f,"ZonesPath = \"%s\";\n",ViewerCfg.ZonesPath.c_str());
+
+
+	fprintf(f,"HeightFieldName = \"%s\";\n", ViewerCfg.HeightFieldName.c_str());
+	fprintf(f,"HeightFieldMaxZ = %f;\n", ViewerCfg.HeightFieldMaxZ);
+	fprintf(f,"HeightFieldOriginX = %f;\n", ViewerCfg.HeightFieldOriginX);
+	fprintf(f,"HeightFieldOriginY = %f;\n", ViewerCfg.HeightFieldOriginY);
+	fprintf(f,"HeightFieldSizeX = %f;\n", ViewerCfg.HeightFieldSizeX);
+	fprintf(f,"HeightFieldSizeY = %f;\n", ViewerCfg.HeightFieldSizeY);
+
 	fprintf(f,"Zones = {\n");
 	fprintf(f,"};\n");
 	fclose(f);
@@ -709,11 +756,32 @@ void initViewerConfig(const char * configFileName)
 		ViewerCfg.ZonesPath = cvZonesPath.asString();
 		CPath::addSearchPath(cvZonesPath.asString());
 
+
+		CConfigFile::CVar &cvHeightFieldName = cf.getVar("HeightFieldName");
+		ViewerCfg.HeightFieldName = cvHeightFieldName.asString();
+		
+		CConfigFile::CVar &cvHeightFieldMaxZ = cf.getVar("HeightFieldMaxZ");
+		ViewerCfg.HeightFieldMaxZ = cvHeightFieldMaxZ.asFloat();
+
+		CConfigFile::CVar &cvHeightFieldOriginX = cf.getVar("HeightFieldOriginX");
+		ViewerCfg.HeightFieldOriginX = cvHeightFieldOriginX.asFloat();
+
+		CConfigFile::CVar &cvHeightFieldOriginY = cf.getVar("HeightFieldOriginY");
+		ViewerCfg.HeightFieldOriginY = cvHeightFieldOriginY.asFloat();
+
+		CConfigFile::CVar &cvHeightFieldSizeX = cf.getVar("HeightFieldSizeX");
+		ViewerCfg.HeightFieldSizeX = cvHeightFieldSizeX.asFloat();
+
+		CConfigFile::CVar &cvHeightFieldSizeY = cf.getVar("HeightFieldSizeY");
+		ViewerCfg.HeightFieldSizeY = cvHeightFieldSizeY.asFloat();
+
+
 		CConfigFile::CVar &cvZones = cf.getVar("Zones");
 		for(int i=0; i<cvZones.size(); i++)
 		{
 			ViewerCfg.Zones.push_back(cvZones.asString(i));
 		}
+
 	}
 	catch (EConfigFile &e)
 	{
@@ -732,10 +800,9 @@ void main()
 {
 	try
 	{
-		initDebug();
-
 		// Init NELU
 		NL3D::CNELU::init(ViewerCfg.Width, ViewerCfg.Height, CViewport(), ViewerCfg.Depth, ViewerCfg.Windowed);
+		NL3D::CNELU::Camera->setTransformMode(ITransformable::DirectMatrix);
 
 		// Init the font manager
 		ViewerCfg.TextContext.init (CNELU::Driver, &ViewerCfg.FontManager);

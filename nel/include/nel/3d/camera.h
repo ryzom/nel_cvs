@@ -1,7 +1,7 @@
 /** \file camera.h
- * <File description>
+ * 
  *
- * $Id: camera.h,v 1.3 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: camera.h,v 1.4 2000/11/14 13:38:21 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

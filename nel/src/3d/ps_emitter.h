@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.8 2001/07/12 15:48:38 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.9 2001/07/17 15:54:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,6 +88,9 @@ public:
 
 	/// return priority for forces
 	virtual uint32 getPriority(void) const { return 500 ; }
+
+	/// return true if this located bindable derived class holds alive emitters
+	virtual bool hasEmitters(void) { nlassert(_Owner) ; return _Owner->getSize() != 0 ; }
 	
 	/**
 	* Process the emissions.

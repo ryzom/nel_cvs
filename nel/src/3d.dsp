@@ -1093,6 +1093,14 @@ SOURCE=.\3d\texture_cube.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\texture_emboss.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_emboss.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\texture_file.cpp
 # End Source File
 # Begin Source File

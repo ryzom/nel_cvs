@@ -247,13 +247,6 @@ $exec_timeout $procglobal_timeout $build_rbank -t -m -l -G
 
 
 
-
-
-
-
-
-
-
 # ***** Build the cfg for interiors
 
 rm build_indoor_rbank.cfg
@@ -304,12 +297,12 @@ $exec_timeout $indoor_timeout $build_indoor_rbank
 
 echo >> log.log
 echo ------- >> log.log
-echo --- Build RBank : Copy gr and rbank >> log.log
+echo --- Build RBank : Copy gr, rbank and lr >> log.log
 echo ------- >> log.log
 echo >> log.log
 echo 
 echo ------- 
-echo --- Build RBank : Copy gr and rbank
+echo --- Build RBank : Copy gr, rbank and lr
 echo ------- 
 echo 
 date >> log.log
@@ -317,8 +310,11 @@ date
 
 
 
-
 # Copy the files
 mv "retrievers"/tempMerged.rbank output/$rbank_rbank_name".rbank" 2>> log.log
 mv "retrievers"/tempMerged.gr output/$rbank_rbank_name".gr" 2>> log.log
+for i in "retrievers"/tempMerged_*.lr ; do
+	finalname=`echo $i | sed -e "s/tempMerged/$rbank_rbank_name/" | sed -e 's/retrievers/output/'`
+	mv $i $finalname
+done
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape management with user interface
  *
- * $Id: landscape.cpp,v 1.1 2001/07/11 16:09:03 legros Exp $
+ * $Id: landscape.cpp,v 1.2 2001/07/11 16:57:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,13 +53,23 @@ ULandscape	*Landscape = NULL;
 
 void	initLandscape()
 {
-	Landscape = Scene->createLandscape ();
-	Landscape->loadBankFiles (ConfigFile.getVar("BankName").asString (), ConfigFile.getVar("FarBankName").asString ());
-	Landscape->setZonePath ("zones\\");
+	// create the landscape
+	Landscape = Scene->createLandscape();
+
+	// load the bank files
+	Landscape->loadBankFiles (CPath::lookup(ConfigFile.getVar("BankName").asString()), 
+							  CPath::lookup(ConfigFile.getVar("FarBankName").asString()));
+
+	// setup the zone path
+	Landscape->setZonePath (ConfigFile.getVar("DataPath").asString() + "zones/");
+
+	// and eventually, load the zones around the starting point.
+	Landscape->loadAllZonesAround (CVector(1000.0f, 1000.0f, 0.0f), 1000.f);
 }
 
 void	updateLandscape()
 {
+	Landscape->refreshZonesAround (CVector(1000.0f, 1000.0f, 0.0f), 1000);
 }
 
 void	releaseLandscape()

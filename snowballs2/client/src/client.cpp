@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.8 2001/07/11 16:39:07 lecroart Exp $
+ * $Id: client.cpp,v 1.9 2001/07/11 16:57:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,17 +27,18 @@
 // Includes
 // 
 
-#include "nel/misc/types_nl.h"
+#include <nel/misc/types_nl.h>
 
 #if defined(NL_OS_WINDOWS) && defined (NL_RELEASE)
 #include <windows.h>
 #endif
 
-#include "nel/misc/command.h"
-#include "nel/misc/debug.h"
-#include "nel/misc/path.h"
-#include "nel/misc/i18n.h"
-#include "nel/misc/config_file.h"
+#include <nel/misc/command.h>
+#include <nel/misc/debug.h>
+#include <nel/misc/path.h>
+#include <nel/misc/i18n.h>
+#include <nel/misc/config_file.h>
+#include <nel/misc/vectord.h>
 
 #include <string>
 #include <deque>
@@ -65,8 +66,11 @@ using namespace NL3D;
 
 CConfigFile ConfigFile;
 
-UDriver			*Driver = NULL;
-UScene			*Scene = NULL;
+UDriver				*Driver = NULL;
+UScene				*Scene = NULL;
+UCamera				*Camera = NULL;
+U3dMouseListener	*MouseListener = NULL;
+
 UTextContext	*TextContext = NULL;
 
 //
@@ -90,7 +94,10 @@ int main(int argc, char **argv)
 	string dataPath = ConfigFile.getVar("DataPath").asString ();
 	if (dataPath[dataPath.size()-1] != '/') dataPath += '/';
 	CPath::addSearchPath (dataPath);
-//	CPath::addSearchPath (dataPath + "zones/");
+	CPath::addSearchPath (dataPath + "zones/");
+	CPath::addSearchPath (dataPath + "tiles/");
+	CPath::addSearchPath (dataPath + "meshes/");
+	CPath::addSearchPath (dataPath + "materials/");
 
 	// Create a driver
 	Driver = UDriver::createDriver();
@@ -106,6 +113,18 @@ int main(int argc, char **argv)
 
 	// Create a scene
 	Scene = Driver->createScene();
+
+	// Camera
+	Camera = Scene->getCam();
+	Camera->setTransformMode (UTransformable::DirectMatrix);
+	Camera->setPerspective ((float)Pi/2.f, 1.33f, 0.1f, 1000);
+
+	// Create a 3D mouse listener
+	MouseListener = Driver->create3dMouseListener ();
+	MouseListener->setHotSpot (CVectorD (0,0,0));
+	MouseListener->setFrustrum (Camera->getFrustum());
+	MouseListener->setMatrix (Camera->getMatrix());
+	MouseListener->setMouseMode (U3dMouseListener::edit3d);
 
 	// Init the landscape using the previously created UScene
 	initLandscape();

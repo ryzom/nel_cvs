@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.79 2002/09/24 12:53:12 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.80 2002/10/02 09:50:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -573,14 +573,14 @@ void CObjectViewer::initUI (HWND parent)
 	_MainFrame->OnResetCamera();
 
 	// Create animation set dialog
-	_AnimationDlg=new CAnimationDlg (this, _MainFrame);
-	_AnimationDlg->Create (IDD_ANIMATION);
-	getRegisterWindowState (_AnimationDlg, REGKEY_OBJ_VIEW_ANIMATION_DLG, false);
-
-	// Create animation set dialog
 	_AnimationSetDlg=new CAnimationSetDlg (this, _MainFrame);
 	_AnimationSetDlg->Create (IDD_ANIMATION_SET);
 	getRegisterWindowState (_AnimationSetDlg, REGKEY_OBJ_VIEW_ANIMATION_SET_DLG, false);
+
+	// Create animation set dialog
+	_AnimationDlg=new CAnimationDlg (this, _MainFrame);
+	_AnimationDlg->Create (IDD_ANIMATION);
+	getRegisterWindowState (_AnimationDlg, REGKEY_OBJ_VIEW_ANIMATION_DLG, false);
 
 	// Create the main dialog
 	_SlotDlg=new CMainDlg (this, _MainFrame);
@@ -920,6 +920,18 @@ void CObjectViewer::setupPlaylist (float time)
 	}
 }
 
+
+// tool funct : this if a window has another window as a parent (recursive)
+// if parent == true, this return true
+static bool isParentWnd(HWND parent, HWND son)
+{
+	if (parent == son) return true;
+	HWND directParent = GetParent (son);
+	if (!directParent) return false;
+	if (directParent == parent) return true;
+	return isParentWnd(parent, directParent);
+}
+
 // ***************************************************************************
 
 void CObjectViewer::go ()
@@ -930,11 +942,8 @@ void CObjectViewer::go ()
 	_InstanceRunning = true;
 
 	do
-	{
-		// Get the foreground window
-		HWND foreGroundWindow = GetForegroundWindow();
-		HWND parent = GetParent (foreGroundWindow);
-		if ((foreGroundWindow == _MainFrame->m_hWnd) || (_MainFrame->m_hWnd == parent))
+	{				
+		if (isParentWnd(_MainFrame->m_hWnd, GetForegroundWindow()))
 		{
  			CNELU::Driver->activate ();
 
@@ -1200,10 +1209,8 @@ void CObjectViewer::go ()
 				if (!IsWindow (_MainFrame->m_hWnd))
 					break;
 
-				// Get the foreground window
-				HWND foreGroundWindow = GetForegroundWindow();
-				HWND parent = GetParent (foreGroundWindow);
-				if ((foreGroundWindow == _MainFrame->m_hWnd) || (_MainFrame->m_hWnd == parent))
+				// Get the foreground window				
+				if (isParentWnd(_MainFrame->m_hWnd, GetForegroundWindow()))
 					break;
 			}
 		}

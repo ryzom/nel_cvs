@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.19 2001/05/22 16:08:16 chafik Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.20 2001/09/25 08:41:10 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -478,7 +478,7 @@ namespace NLAISCRIPT
 				NLAIAGENT::CStringType *o = (NLAIAGENT::CStringType *)Ita++;
 				NLAIAGENT::CStringType *p = (NLAIAGENT::CStringType *)Itb++;
 				p->getDebugString(buf);
-				InputOutput->Echo("%s = %s\n", o->getStr().getString(), buf);
+//				InputOutput->Echo("%s = %s\n", o->getStr().getString(), buf);
 			}
 		}
 	}

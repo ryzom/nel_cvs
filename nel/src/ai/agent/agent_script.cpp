@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.86 2001/09/07 08:40:02 portier Exp $
+ * $Id: agent_script.cpp,v 1.87 2001/09/25 08:41:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -379,7 +379,7 @@ namespace NLAIAGENT
 #endif
 		IObjectIA *old_comp = _Components[ index ];
 		_Components[ index ] = op;
-		//op->incRef();
+		op->incRef();
 		if(op != old_comp) old_comp->release();
 
 

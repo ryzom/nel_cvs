@@ -130,7 +130,7 @@ namespace NLAIAGENT
 		}
 #endif
 
-		// Checks the goal and preconditions after a certain number of cycles (defined in the script after the UdpateEvery keyword)
+		// Checks the goal and preconditions after a certain number of cycles (defined in the script using the UdpateEvery keyword)
 		if ( _CyclesBeforeUpdate == 0 )
 		{
 			_IsActivable = checkActivation();
@@ -155,7 +155,7 @@ namespace NLAIAGENT
 				if ( ( _CurrentGoal != NULL && _CurrentGoal->isSelected() ) || ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() == NULL)
 				{
 					activate();
-					execOnActivate();	// Execs onActivate() function in the script if defined otherwise the C++ one inherited from CActorScript.
+					execOnActivate();	// Execs onActivate() function in the script if defined, otherwise the C++ one inherited from CActorScript.
 				}
 			}
 			else
@@ -498,6 +498,18 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG
 		const char *dbg_class = (const char *) getType();
 #endif
+
+#ifdef NL_DEBUG_UPDATE
+		std::string dbugId;
+		std::string opid;
+		NLAIAGENT::CAgentNumber &ids = (NLAIAGENT::CAgentNumber &)((const NLAIAGENT::IWordNumRef &)*(getParent()->getParent())).getNumIdent().getId();
+		ids.getDebugString(dbugId);
+		getDebugString(opid);
+
+		dbugId = "Creature " + dbugID + " operateur " + opid + " reçu MESSAGE SUCCESS ~~~~ ";
+		dataUpdateCreature << dbugStr << std::endl;
+#endif
+
 		if(_CurrentGoal == NULL) 
 			return;
 		_CurrentGoal->operatorSuccess( this );

@@ -1,7 +1,7 @@
 /** \file driver_opengl_light.cpp
  * OpenGL driver implementation : light
  *
- * $Id: driver_opengl_light.cpp,v 1.8 2002/06/20 09:45:04 berenguier Exp $
+ * $Id: driver_opengl_light.cpp,v 1.9 2003/05/22 09:02:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,6 +121,9 @@ void	CDriverGL::setLight (uint8 num, const CLight& light)
 			glLighti (lightNum, GL_SPOT_EXPONENT, 0);
 		}
 
+		// Flag this light as dirt.
+		_LightDirty[num]= true;
+
 		// dirt the lightSetup and hence the render setup
 		_LightSetupDirty= true;
 		_RenderSetupDirty=true;
@@ -142,7 +145,15 @@ void	CDriverGL::enableLight (uint8 num, bool enable)
 
 		// Enable GL
 		if (enable)
+		{
 			glEnable ((GLenum)(GL_LIGHT0+num));
+			// If this light is dirty, and reenabled, then it must be refresh at next render => set the global flag.
+			if(_LightDirty[num])
+			{
+				_LightSetupDirty= true;
+				_RenderSetupDirty= true;
+			}
+		}
 		else
 			glDisable ((GLenum)(GL_LIGHT0+num));
 	}
@@ -176,8 +187,8 @@ void				CDriverGL::cleanLightSetup ()
 	// For each lights
 	for (uint i=0; i<_MaxDriverLight; i++)
 	{
-		// Is this light enabled ?
-		if (_LightEnable[i])
+		// Is this light enabled and dirty?
+		if (_LightEnable[i] && _LightDirty[i])
 		{
 			// If first light
 			if (first)
@@ -238,6 +249,9 @@ void				CDriverGL::cleanLightSetup ()
 				// Set it
 				glLightfv ((GLenum)(GL_LIGHT0+i), (GLenum)GL_POSITION, vectorGL);
 			}
+
+			// Cleaned!
+			_LightDirty[i]= false;
 		}
 	}
 

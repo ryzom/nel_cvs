@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.187 2003/05/19 13:14:13 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.188 2003/05/22 09:02:56 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -224,6 +224,11 @@ CDriverGL::CDriverGL()
 	_LightSetupDirty= false;
 	_ModelViewMatrixDirty= false;
 	_RenderSetupDirty= false;
+	// All lights default pos.
+	uint i;
+	for(i=0;i<MaxLight;i++)
+		_LightDirty[i]= false;
+
 	
 
 	_CurrentGlNormalize= false;
@@ -250,7 +255,6 @@ CDriverGL::CDriverGL()
 
 
 	// Compute the Flag which say if one texture has been changed in CMaterial.
-	uint	i;
 	_MaterialAllTextureTouchedFlag= 0;
 	for(i=0; i < IDRV_MAT_MAXTEXTURES; i++)
 	{

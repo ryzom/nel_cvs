@@ -1,7 +1,7 @@
 /** \file driver_opengl_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.17 2003/05/06 15:27:17 berenguier Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.18 2003/05/22 09:02:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,6 +71,9 @@ void CDriverGL::setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos)
 	_LightSetupDirty= true;
 	_ModelViewMatrixDirty= true;
 	_RenderSetupDirty= true;
+	// All lights must be refresh.
+	for(uint i=0;i<MaxLight;i++)
+		_LightDirty[i]= true;
 
 	_SpecularTexMtx = _ViewMtx;
 	_SpecularTexMtx.setPos(CVector(0.0f,0.0f,0.0f));
@@ -100,6 +103,9 @@ void CDriverGL::setupViewMatrix(const CMatrix& mtx)
 	_LightSetupDirty= true;
 	_ModelViewMatrixDirty= true;
 	_RenderSetupDirty= true;
+	// All lights must be refresh.
+	for(uint i=0;i<MaxLight;i++)
+		_LightDirty[i]= true;
 
 	_SpecularTexMtx = _ViewMtx;
 	_SpecularTexMtx.setPos(CVector(0.0f,0.0f,0.0f));

@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.25 2001/06/13 10:19:19 lecroart Exp $
+ * $Id: unitime.cpp,v 1.26 2001/06/18 09:09:20 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,8 @@ namespace NLNET
 
 TTime CUniTime::_SyncUniTime = 0;
 TTime CUniTime::_SyncLocalTime = 0;
+bool CUniTime::_Simulate = false;
+
 bool CUniTime::Sync = false;
 
 
@@ -128,6 +130,7 @@ static bool GetUniversalTime;
 static uint32 GetUniversalTimeSecondsSince1970;
 static TTime GetUniversalTimeUniTime;
 
+
 static void cbGetUniversalTime (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	// get the association between a date and unitime
@@ -141,7 +144,7 @@ static TCallbackItem UniTimeCallbackArray[] =
 	{ "GUT", cbGetUniversalTime }
 };
 
-void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
+void CUniTime::syncUniTimeFromService (CCallbackNetBase::TRecordingState rec, const CInetAddress *addr)
 {
 	TTime deltaAdjust, lt;
 	uint32 firstsecond, nextsecond;
@@ -149,7 +152,7 @@ void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
 
 	// create a message with type in the full text format
 	CMessage msgout ("AUT");
-	CCallbackClient server;
+	CCallbackClient server( rec, "TS.nmr" );
 	server.addCallbackArray (UniTimeCallbackArray, sizeof (UniTimeCallbackArray) / sizeof (UniTimeCallbackArray[0]));
 
 	if (addr == NULL)
@@ -175,6 +178,8 @@ void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
 		if (!server.connected()) goto error;
 			
 		server.update ();
+
+		nlSleep( 1 );
 	}
 
 	// after, before and delta is not used. It's only for information purpose.
@@ -198,19 +203,26 @@ void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
 	// get the local time of the beginning of the next second
 	lt = CTime::getLocalTime ();
 
-	if (abs((sint32)((TTime)nextsecond - (TTime)GetUniversalTimeSecondsSince1970)) > 10)
+	if ( ! _Simulate )
 	{
-		nlerror ("the time delta (between me and the Time Service) is too big (more than 10s), servers aren't NTP synchronized");
-		goto error;
+		if (abs((sint32)((TTime)nextsecond - (TTime)GetUniversalTimeSecondsSince1970)) > 10)
+		{
+			nlerror ("the time delta (between me and the Time Service) is too big (more than 10s), servers aren't NTP synchronized");
+			goto error;
+		}
+		
+		// compute the delta between the other side and our side number of second since 1970
+		deltaAdjust = ((TTime) nextsecond - (TTime) GetUniversalTimeSecondsSince1970) * 1000;
+
+		// adjust the unitime to the current localtime
+		GetUniversalTimeUniTime += deltaAdjust;
+
+		nlinfo ("CUniTime::syncUniTimeFromService(): rtime:%ds, runitime:%"NL_I64"ds, rlocaltime:%"NL_I64"d, deltaAjust:%"NL_I64"dms", nextsecond, GetUniversalTimeUniTime, lt, deltaAdjust);
 	}
-	
-	// compute the delta between the other side and our side number of second since 1970
-	deltaAdjust = ((TTime) nextsecond - (TTime) GetUniversalTimeSecondsSince1970) * 1000;
-
-	// adjust the unitime to the current localtime
-	GetUniversalTimeUniTime += deltaAdjust;
-
-	nlinfo ("CUniTime::syncUniTimeFromService(): rtime:%ds, runitime:%"NL_I64"ds, rlocaltime:%"NL_I64"d, deltaAjust:%"NL_I64"dms", nextsecond, GetUniversalTimeUniTime, lt, deltaAdjust);
+	else
+	{
+		nlinfo ("CUniTime::syncUniTimeFromService(): runitime:%"NL_I64"ds, rlocaltime:%"NL_I64"d", GetUniversalTimeUniTime, lt);
+	}
 
 	CUniTime::setUniTime (GetUniversalTimeUniTime, lt);
 

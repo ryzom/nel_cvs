@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.70 2001/06/15 14:15:37 lecroart Exp $
+ * $Id: service.cpp,v 1.71 2001/06/18 09:09:20 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -28,6 +28,7 @@
 
 
 #include "nel/misc/types_nl.h"
+#include "nel/net/unitime.h"
 
 #include <stdlib.h>
 #include <signal.h>
@@ -423,6 +424,32 @@ sint IService::main (int argc, char **argv, void *wd)
 
 		getCustomParams();
 
+		// Load the recording state from the config file
+		try
+		{
+			string srecstate = ConfigFile.getVar("Rec").asString();
+			strupr( srecstate );
+			if ( srecstate == "RECORD" )
+			{
+				_RecordingState = CCallbackNetBase::Record;
+				nlinfo( "Service recording messages" );
+			}
+			else if ( srecstate == "REPLAY" )
+			{
+				_RecordingState = CCallbackNetBase::Replay;
+				nlinfo( "Service replaying messages" );
+			}
+			else
+			{
+				_RecordingState = CCallbackNetBase::Off;
+			}
+		}
+		catch ( EUnknownVar& )
+		{
+			// Not found
+			_RecordingState = CCallbackNetBase::Off;
+		}
+
 		//
 		// Layer4 Startup (Connect to the Naming Service (except for the NS itself and Login Service))
 		//
@@ -436,7 +463,7 @@ sint IService::main (int argc, char **argv, void *wd)
 				CInetAddress loc(ConfigFile.getVar("NSHost").asString(), ConfigFile.getVar("NSPort").asInt());
 				try
 				{
-					CNetManager::init (&loc);
+					CNetManager::init( &loc, _RecordingState );
 					ok = true;
 				}
 				catch (ESocketConnectionFailed &)
@@ -448,7 +475,7 @@ sint IService::main (int argc, char **argv, void *wd)
 		}
 		else
 		{
-			CNetManager::init (NULL);
+			CNetManager::init( NULL, _RecordingState );
 		}
 
 		//
@@ -531,10 +558,14 @@ sint IService::main (int argc, char **argv, void *wd)
 			// Get the universal time (useful for debugging)
 			//
 
+			// Don't call the sync if it's the Time Service or the Naming Service
 			if ( IService::_ShortName != "TS" )
 			{
-				// Don't call the sync if it's the Time Service and Naming Service
-				CUniTime::syncUniTimeFromService ();
+				if ( _RecordingState == CCallbackNetBase::Replay )
+				{
+					CUniTime::simulate(); 
+				}
+				CUniTime::syncUniTimeFromService ( _RecordingState );
 				resyncEvenly = true;
 			}
 
@@ -652,9 +683,18 @@ sint IService::main (int argc, char **argv, void *wd)
 			if (resyncEvenly)
 			{
 				static TTime LastSyncTime = CTime::getLocalTime ();
+
+				//---------------------------------------
+				// To simulate Ctrl-C in the debugger... Exit after 1 min !
+				/*if (CTime::getLocalTime () - LastSyncTime > 60 * 1000 )
+				{
+					ExitSignalAsked = 1;
+				}*/
+				//---------------------------------------
+
 				if (CTime::getLocalTime () - LastSyncTime > 60*60*1000)
 				{
-					CUniTime::syncUniTimeFromService ();
+					CUniTime::syncUniTimeFromService ( _RecordingState );
 					LastSyncTime = CTime::getLocalTime ();
 				}
 			}

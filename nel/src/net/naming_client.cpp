@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.33 2001/06/13 12:11:02 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.34 2001/06/18 09:09:20 cado Exp $
  *
  */
 
@@ -172,14 +172,14 @@ static TCallbackItem NamingClientCallbackArray[] =
 	{ "UNB", cbUnregisterBroadcast },
 };
 
-void CNamingClient::connect (const CInetAddress &addr)
+void CNamingClient::connect( const CInetAddress &addr, CCallbackNetBase::TRecordingState rec )
 {
 	nlassert (_Connection == NULL || _Connection != NULL && !_Connection->connected ());
 	_ThreadId = getThreadId ();
 
 	if (_Connection == NULL)
 	{
-		_Connection = new CCallbackClient;
+		_Connection = new CCallbackClient( rec, "naming_client.nmr" );
 		_Connection->addCallbackArray (NamingClientCallbackArray, sizeof (NamingClientCallbackArray) / sizeof (NamingClientCallbackArray[0]));
 	}
 
@@ -336,7 +336,10 @@ uint16 CNamingClient::queryServicePort ()
 	// wait the answer of the naming service "LK"
 	Lookup = false;
 	while (!Lookup)
+	{
 		_Connection->update ();
+		nlSleep( 1 );
+	}
 
 	nldebug ("NC: Got lookup answer");
 

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.28 2001/06/15 09:59:15 lecroart Exp $
+ * $Id: service.h,v 1.29 2001/06/18 09:07:59 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,6 +173,12 @@ public:
 
 	void setCallbackArray (TCallbackItem *callbackArray, uint16 callbackArraySize) { _CallbackArray=callbackArray; _CallbackArraySize=callbackArraySize; }
 
+	/// Changes the recording state (use if you know what you are doing)
+	void				setRecordingState( CCallbackNetBase::TRecordingState rec ) { _RecordingState = rec; }
+
+	/// Returns the recording state
+	static CCallbackNetBase::TRecordingState recordingState() { return Instance->_RecordingState; }
+
 	static NLMISC::CConfigFile	ConfigFile;
 
 	/// Returns a pointer to the CCallbackServer object
@@ -185,6 +191,9 @@ protected:
 
 	/// Port for listening
 	uint16						_Port;
+
+	/// Recording state
+	CCallbackNetBase::TRecordingState _RecordingState;
 
 	/// @name Static members that must be defined by the deriver class
 	//@{

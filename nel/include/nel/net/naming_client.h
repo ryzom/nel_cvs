@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.24 2001/06/13 12:10:44 lecroart Exp $
+ * $Id: naming_client.h,v 1.25 2001/06/18 09:07:59 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,7 +59,7 @@ class CNamingClient
 public:
 
 	/// Connect to the naming service.
-	static void			connect (const CInetAddress& addr);
+	static void			connect( const CInetAddress& addr, CCallbackNetBase::TRecordingState rec );
 
 	/// Return true if the connection to the Naming Service was done.
 	static bool			connected () { return _Connection != NULL && _Connection->connected (); }

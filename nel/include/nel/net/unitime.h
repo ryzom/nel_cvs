@@ -1,7 +1,7 @@
 /** \file unitime.h
  * CUniTime class
  *
- * $Id: unitime.h,v 1.9 2001/05/25 08:51:07 lecroart Exp $
+ * $Id: unitime.h,v 1.10 2001/06/18 09:07:59 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/time_nl.h"
 #include "nel/misc/debug.h"
+#include "nel/net/callback_net_base.h"
 
 namespace NLNET
 {
@@ -65,7 +66,7 @@ public:
 	 * This function can be called *ONLY* by services that are inside of the shard.
 	 * Don't use it for a client or a service outside of the shard.
 	 */
-	static void				syncUniTimeFromService (const CInetAddress *addr = NULL);
+	static void				syncUniTimeFromService (CCallbackNetBase::TRecordingState rec=CCallbackNetBase::Off, const CInetAddress *addr = NULL);
 
 	/** Call this function in the init part of the front end service to enable time syncro between
 	 * shard and clients.
@@ -83,11 +84,21 @@ public:
 	/// \internal
 	static void				setUniTime (NLMISC::TTime uTime);
 
+	/**
+	 * Call this method before to prevent syncUniTimeFromService() from real synchronization:
+	 * syncUniTimeFromService() will still communicate with the time service, as usual,
+	 * but the local time will not be synchronized.
+	 */
+	static void				simulate() { _Simulate = true; }
+
 	static bool				Sync;				// true if the synchronization occured
 private:
 
 	static NLMISC::TTime	_SyncUniTime;		// time in millisecond when the universal time received
 	static NLMISC::TTime	_SyncLocalTime;		// time in millisecond when the syncro with universal time occured
+
+	// If true, do not synchronize
+	static bool				_Simulate;
 };
 
 } // NLNET

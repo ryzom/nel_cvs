@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.60 2001/04/04 16:22:30 berenguier Exp $
+ * $Id: driver.h,v 1.61 2001/04/06 14:53:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,7 @@ class IVBDrvInfos;
 class CMaterial;
 class CVertexBuffer;
 class CPrimitiveBlock;
-
+class CLight;
 
 
 //****************************************************************************
@@ -358,6 +358,36 @@ public:
 	{
 		_PolygonMode=mode;
 	}
+
+	/** 
+	  * Setup a light.
+	  *
+	  * You must call enableLight() to active the ligth.
+	  *
+	  * \param num is the number of the light to set.
+	  * \param light is a light to set in this slot.
+	  * \see enableLight()
+	  */
+	virtual void			setLight (uint8 num, const CLight& light) = 0;
+
+	/** 
+	  * Enable / disable light.
+	  *
+	  * You must call setLight() if you active the ligth.
+	  *
+	  * \param num is the number of the light to enable / disable.
+	  * \param enable is true to enable the light, false to disable it.
+	  * \see setLight()
+	  */
+	virtual void			enableLight (uint8 num, bool enable=true) = 0;
+
+	/** 
+	  * Set ambiant.
+	  *
+	  * \param color is the new global ambiant color for the scene.
+	  * \see setLight(), enableLight()
+	  */
+	virtual void			setAmbientColor (CRGBA color) = 0;
 
 	/** Get the global polygon mode.
 	  *

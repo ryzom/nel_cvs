@@ -137,6 +137,10 @@ SOURCE=.\driver_opengl_extension.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\driver_opengl_light.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\driver_opengl_material.cpp
 # End Source File
 # Begin Source File

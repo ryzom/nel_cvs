@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.23 2001/03/26 14:59:01 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.24 2001/04/06 14:54:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,6 +184,17 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		else
 		{
 			glDisable(GL_BLEND);
+		}
+
+		// Double Sided Part.
+		//=================
+		if(mat.getFlags()&IDRV_MAT_DOUBLE_SIDED)
+		{
+			glDisable(GL_CULL_FACE);
+		}
+		else
+		{
+			glEnable(GL_CULL_FACE);
 		}
 
 		// Bind ZBuffer Part.

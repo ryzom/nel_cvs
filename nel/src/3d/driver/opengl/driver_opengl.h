@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.55 2001/04/04 16:22:30 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.56 2001/04/06 14:54:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,6 +124,9 @@ class CDriverGL : public IDriver
 {
 public:
 
+	// Some constants
+	enum { MaxLight=8 };
+
 	// Acces
 	uint32					getHwnd ()
 	{
@@ -227,6 +230,12 @@ public:
 
 	virtual void			setPolygonMode (TPolygonMode mode);
 
+	virtual void			setLight (uint8 num, const CLight& light);
+
+	virtual void			enableLight (uint8 num, bool enable=true);
+
+	virtual void			setAmbientColor (CRGBA color);
+
 	/// \name Fog support.
 	// @{
 	virtual	bool			fogEnabled();
@@ -276,6 +285,10 @@ private:
 
 	// To know if matrix setup has been changed from last activeVertexBuffer() (any call to setupViewMatrix() / setupModelMatrix()).
 	bool					_MatrixSetupDirty;
+
+	// To know if view matrix setup has been changed from last activeVertexBuffer() (any call to setupViewMatrix()).
+	bool					_ViewMatrixSetupDirty;
+
 	// for each model matrix, a flag to know if setuped.
 	NLMISC::CBitSet			_ModelViewMatrixDirty;
 	// same flag, but for palette Skinning (because they don't share same setup).
@@ -306,6 +319,13 @@ private:
 	// Fog.
 	bool					_FogEnabled;
 
+	// Num lights return by GL_MAX_LIGHTS
+	uint						_MaxDriverLight;
+	bool						_LightEnable[MaxLight];				// Light enable.
+	uint						_LightMode[MaxLight];				// Light mode.
+	CVector						_WorldLightPos[MaxLight];			// World position of the lights.
+	CVector						_WorldLightDirection[MaxLight];		// World direction of the lights.
+
 	// Prec settings, for optimisation.
 	ITexture*				_CurrentTexture[IDRV_MAT_MAXTEXTURES];
 	CMaterial*				_CurrentMaterial;
@@ -317,6 +337,10 @@ private:
 	bool					activateTexture(uint stage, ITexture *tex);
 	void					activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env);
 	void					activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env);
+
+	// Called by activeVertexBuffer when _ViewMatrixSetupDirty is true to clean the view matrix.
+	// set _ViewMatrixSetupDirty to false;
+	void					cleanViewMatrix ();
 
 	// According to extensions, retrieve GL tex format of the texture.
 	GLint					getGlTextureFormat(ITexture& tex, bool &compressed);

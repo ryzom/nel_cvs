@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.85 2001/04/04 16:22:30 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.86 2001/04/06 14:54:10 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -48,6 +48,7 @@
 #include "driver_opengl.h"
 #include "nel/3d/tmp/viewport.h"
 #include "nel/3d/vertex_buffer.h"
+#include "nel/3d/light.h"
 #include "nel/3d/primitive_block.h"
 #include "nel/misc/rect.h"
 
@@ -162,6 +163,7 @@ CDriverGL::CDriverGL()
 
 
 	_MatrixSetupDirty= false;
+	_ViewMatrixSetupDirty= false;
 	_ModelViewMatrixDirty.resize(MaxModelMatrix);
 	_ModelViewMatrixDirty.clearAll();
 	_ModelViewMatrixDirtyPaletteSkin.resize(MaxModelMatrix);
@@ -507,6 +509,17 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		activateTexEnvColor(stage, env);
 	}
 
+	// Get num of light for this driver
+	int numLight;
+	glGetIntegerv (GL_MAX_LIGHTS, &numLight);
+	_MaxDriverLight=(uint)numLight;
+	if (_MaxDriverLight>MaxLight)
+		_MaxDriverLight=MaxLight;
+
+	// Reset the lights position flags
+	for (uint i=0; i<MaxLight; i++)
+		_LightEnable[i]=false;
+
 	_Initialized = true;
 
 	return true;
@@ -617,6 +630,15 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 
 	// 0. Setup Matrixes.
 	//===================
+
+	// Check if view matrix has been modified
+	if (_ViewMatrixSetupDirty)
+		// Recompute stuff touched by the view matrix
+		cleanViewMatrix ();
+
+	// Check view matrix is good
+	nlassert (_ViewMatrixSetupDirty==false);
+
 	// Just to inform render*() that Matrix mode is OK.
 	_MatrixSetupDirty= false;
 
@@ -1394,8 +1416,8 @@ void			CDriverGL::setupFog(float start, float end, CRGBA color)
 	glFogfv(GL_FOG_COLOR, col);
 }
 
-
 // ***************************************************************************
+
 void			CDriverGL::computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pDst)
 {
 	CMatrix		*pMat;
@@ -1431,8 +1453,8 @@ void			CDriverGL::computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pDst)
 
 }
 
-
 // ***************************************************************************
+
 void			CDriverGL::computeSoftwareNormalSkinning(uint8 *pSrc, CVector *pDst)
 {
 	CMatrix		*pMat;
@@ -1465,11 +1487,10 @@ void			CDriverGL::computeSoftwareNormalSkinning(uint8 *pSrc, CVector *pDst)
 	// 3th matrix influence.
 	pMat= _ModelViewMatrixNormal + srcPal->MatrixId[3];
 	*pDst+= pMat->mulVector(*srcNormal) * srcWgt[3];
-
 }
 
-
 // ***************************************************************************
+
 void	CDriverGL::refreshSoftwareSkinning()
 {
 	// traverse All vertices in range, testing if we must compute those vertices.
@@ -1503,5 +1524,89 @@ void	CDriverGL::refreshSoftwareSkinning()
 	}
 }
 
+// ***************************************************************************
+
+void				CDriverGL::cleanViewMatrix ()
+{
+	// Should be dirty
+	nlassert (_ViewMatrixSetupDirty);
+	
+	// First light
+	bool first=true;
+
+	// For each lights
+	for (uint i=0; i<_MaxDriverLight; i++)
+	{
+		// Is this light enabled ?
+		if (_LightEnable[i])
+		{
+			// If first light
+			if (first)
+			{
+				first=false;
+
+				// Push the matrix
+				glPushMatrix ();
+
+				// Load the view matrix
+				glLoadMatrixf (_ViewMtx.get());
+			}
+
+			// Light is directionnal ?
+			if (_LightMode[i]==(uint)CLight::DirectionalLight)
+			{
+				// GL vector
+				GLfloat vectorGL[4];
+
+				// Set the GL array
+				vectorGL[0]=-_WorldLightDirection[i].x;
+				vectorGL[1]=-_WorldLightDirection[i].y;
+				vectorGL[2]=-_WorldLightDirection[i].z;
+				vectorGL[3]=0.f;
+	
+				// Set it
+				glLightfv (GL_LIGHT0+i, GL_POSITION, vectorGL);
+			}
+
+			// Spotlight ?
+			if (_LightMode[i]==(uint)CLight::SpotLight)
+			{
+				// GL vector
+				GLfloat vectorGL[4];
+
+				// Set the GL array
+				vectorGL[0]=_WorldLightDirection[i].x;
+				vectorGL[1]=_WorldLightDirection[i].y;
+				vectorGL[2]=_WorldLightDirection[i].z;
+	
+				// Set it
+				glLightfv (GL_LIGHT0+i, GL_SPOT_DIRECTION, vectorGL);
+			}
+
+			// Position 
+			if (_LightMode[i]!=(uint)CLight::DirectionalLight)
+			{
+				// GL vector
+				GLfloat vectorGL[4];
+
+				// Set the GL array
+				vectorGL[0]=_WorldLightPos[i].x;
+				vectorGL[1]=_WorldLightPos[i].y;
+				vectorGL[2]=_WorldLightPos[i].z;
+				vectorGL[3]=1.f;
+	
+				// Set it
+				glLightfv (GL_LIGHT0+i, GL_POSITION, vectorGL);
+			}
+		}
+	}
+
+	// Pop old matrix
+	if (!first)
+		glPopMatrix ();
+
+	// Clean flag
+	_ViewMatrixSetupDirty=false;
+}
 
 } // NL3D

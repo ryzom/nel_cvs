@@ -1,7 +1,7 @@
 /** \file driver_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.5 2001/04/03 13:02:56 berenguier Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.6 2001/04/06 14:54:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,7 @@ void CDriverGL::setupViewMatrix(const CMatrix& mtx)
 	_ViewMtx=changeBasis;
 
 	_MatrixSetupDirty= true;
+	_ViewMatrixSetupDirty= true;
 }
 
 CMatrix CDriverGL::getViewMatrix(void) const

@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.3 2003/05/06 15:23:55 lecroart Exp $
+ * $Id: eid_translator.h,v 1.3.4.1 2003/08/21 13:36:48 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -45,19 +45,23 @@ public:
 
 	// get all eid for a user using the user name or the user id
 	void				getByUser (uint32 uid, std::vector<NLMISC::CEntityId> &res);
-	void				getByUser (const std::string &userName, std::vector<NLMISC::CEntityId> &res);
+	void				getByUser (const std::string &userName, std::vector<NLMISC::CEntityId> &res, bool exact=true);
 	
 	// get entity name using the eid
-	ucstring	getByEntity (const NLMISC::CEntityId &eid);
+	ucstring			getByEntity (const NLMISC::CEntityId &eid);
 
 	// get eid using the entity name
-	CEntityId	getByEntity (const ucstring &entityName);
-
+	CEntityId			getByEntity (const ucstring &entityName);
+	void				getByEntity (const ucstring &entityName, std::vector<NLMISC::CEntityId> &res, bool exact);
+	
 	// return true if an entity name already exists
 	bool				entityNameExists (const ucstring &entityName);
 		
 	void				registerEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const std::string &userName);
 	void				unregisterEntity (const CEntityId &eid);
+
+	// check if parameters are coherent with the content of the class, if not, set with the parameters and warn
+	void				checkEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const std::string &userName);
 	
 	void				load (const std::string &fileName);
 
@@ -67,21 +71,19 @@ public:
 	uint32				getUId (const std::string &userName);
 	std::string			getUserName (uint32 uid);
 	
-private:
-
 	struct CEntity
 	{
 		CEntity () { }
 		
 		CEntity (const ucstring &entityName, uint32 uid, const std::string &userName) :
-			EntityName (entityName), UId (uid), UserName (userName)
+		EntityName (entityName), UId (uid), UserName (userName)
 		{ }
-
+		
 		ucstring EntityName;
-
+		
 		uint32 UId;
 		std::string UserName;
-
+		
 		void serial (NLMISC::IStream &s)
 		{
 			s.serial (EntityName);
@@ -89,6 +91,10 @@ private:
 			s.serial (UserName);
 		}
 	};
+
+	const std::map<NLMISC::CEntityId, CEntity>	&getRegisteredEntities () { return RegisteredEntities; }
+	
+private:
 
 	typedef std::map<NLMISC::CEntityId, CEntity>::iterator reit;
 

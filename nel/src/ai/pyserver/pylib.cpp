@@ -1,6 +1,6 @@
 /** \file pylib.cpp
  *
- * $Id: pylib.cpp,v 1.10 2003/01/07 17:46:20 miller Exp $
+ * $Id: pylib.cpp,v 1.11 2003/01/14 13:04:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include <iostream.h>
 #include <string.h>
 #include "nel/ai/pyserver/pylib.h"
+#include "nel/misc/file.h"
 #include "osdefs.h"
 
 namespace NLAIPYSERVER
@@ -301,25 +302,23 @@ namespace NLAIPYSERVER
 	}
 
 	char *CPyExport::getCodeFromFile(const char *FileName)
-	{
-		FILE* f;
-		char *buf;
+	{		
+		uint8 *buf;
 		char* code;
 		sint32 si;
 		uint16 ui,uk;
 
-		f = fopen(FileName,"rb");
-		si=CFile::getFileSize (f);
+		NLMISC::CIFile f(FileName);
+		si = f.getFileSize ();
 //		fseek(f,0,SEEK_END);
 //		si = ftell(f);
 //		rewind(f);
-		buf = new char [si + 1];
-		fread(buf, sizeof( char ), si, f);
-		fclose(f);
+		buf = new uint8 [si + 1];
+		f.serialBuffer(buf, sizeof( uint8  )*si);
 		buf[si] = 0;
 
-		code = new char[strlen(buf)];
-		for(ui=0,uk=0; ui < strlen(buf); ui++)
+		code = new char[si + 1];
+		for(ui=0,uk=0; ui < si; ui++)
 		{
 			if(buf[ui] != '\r') 
 			{

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.6 2001/07/09 17:17:06 corvazier Exp $
+ * $Id: mesh_multi_lod.h,v 1.7 2001/07/11 07:43:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,6 +147,22 @@ public:
 			return ite->DistMax;
 		else
 			return 0;
+	}
+
+	/// Get slot mesh count.
+	uint			getNumSlotMesh ()
+	{
+		return _MeshVector.size();
+	}
+
+	/// Get a slot mesh.
+	IMeshGeom		*getSlotMesh (uint i, bool& coarseMesh)
+	{
+		// Coarse mesh ?
+		coarseMesh=(_MeshVector[i].Flags&CMeshSlot::CoarseMesh)!=0;
+
+		// Return the mesh pointer
+		return _MeshVector[i].MeshGeom;
 	}
 
 private:

@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.3 2001/07/09 17:17:05 corvazier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.4 2001/07/11 07:43:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,7 @@ CCoarseMeshManager::CCoarseMeshManager()
 
 	// Double sided
 	_Material.setDoubleSided (true);
+	_Material.setBlend (true);
 
 	// Texture
 	_Material.setTexture (0, _Texture);
@@ -415,22 +416,34 @@ void CCoarseMeshManager::CRenderPass::render (IDriver *drv, CMaterial& mat)
 
 uint CCoarseMeshManager::CRenderPass::CPrimitiveBlockInfo::addMesh (uint16 vertexBufferId, const CMeshGeom& geom, uint32 firstVertexIndex)
 {
+	// Get num tri in the primitive block
+	uint oldNumTri=PrimitiveBlock.getNumTri();
+
+	// Total new tri count
+	uint triCount=0;
+
 	// Count number of triangles
-	nlassert (geom.getNbMatrixBlock()==1);
-	if (geom.getNbMatrixBlock()==1)
+	uint numMatrixBlock=geom.getNbMatrixBlock();
+	uint matrixBlock;
+	for (matrixBlock=0; matrixBlock<numMatrixBlock; matrixBlock++)
 	{
 		// One render pass
-		nlassert (geom.getNbRdrPass (0));
-		if (geom.getNbRdrPass (0))
+		uint numRenderPass=geom.getNbRdrPass (matrixBlock);
+		uint renderPass;
+		for (renderPass=0; renderPass<numRenderPass; renderPass++)
 		{
 			// Get the render pass
-			const CPrimitiveBlock &pBlock=geom.getRdrPassPrimitiveBlock(0, 0);
+			const CPrimitiveBlock &pBlock=geom.getRdrPassPrimitiveBlock (matrixBlock, renderPass);
+
+			// Get num tri in the primitive block
+			uint numTri=PrimitiveBlock.getNumTri();
 
 			// Check there is enought room to insert this primitives
-			uint numTri=PrimitiveBlock.getNumTri();
 			uint wantedNumTri=pBlock.getNumTri ();
 			if ( wantedNumTri <= (PrimitiveBlock.capacityTri()-numTri ) )
 			{
+				triCount+=wantedNumTri;
+
 				// Resize pblock
 				PrimitiveBlock.setNumTri (numTri+wantedNumTri);
 
@@ -446,16 +459,15 @@ uint CCoarseMeshManager::CRenderPass::CPrimitiveBlockInfo::addMesh (uint16 verte
 					pTriDest[index]=pTriSrc[index]+firstVertexIndex;
 				}
 
-				// Add a mesh info in the list
-				MeshIdList.push_back (CMeshInfo (numTri, wantedNumTri, vertexBufferId));
-
-				// Ok
-				return Success;
 			}
 		}
 	}
 
-	return Failed;
+	// Add a mesh info in the list
+	MeshIdList.push_back (CMeshInfo (oldNumTri, triCount, vertexBufferId));
+
+	// Ok
+	return Success;
 }
 
 // ***************************************************************************

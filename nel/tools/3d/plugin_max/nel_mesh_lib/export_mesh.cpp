@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.9 2001/07/09 17:17:06 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.10 2001/07/11 07:43:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -199,7 +199,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 
 							// Get matrix node
 							CMatrix nodeTM;
-							convertMatrix (nodeTM, node.GetNodeTM (time));
+							convertMatrix (nodeTM, lodNode->GetNodeTM (time));
 
 							// Fill the structure
 							multiLodBuild.LodMeshes[index].MeshGeom=buildMeshGeom (*lodNode, ip, time, skeletonShape, absolutePath, opt, multiLodBuild.BaseMesh, 

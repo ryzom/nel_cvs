@@ -1347,6 +1347,14 @@ SOURCE=.\3d\async_file_manager.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\coarse_mesh_build.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\coarse_mesh_build.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\event_mouse_listener.cpp
 # End Source File
 # Begin Source File

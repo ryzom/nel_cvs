@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.109 2001/07/09 15:39:43 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.110 2001/07/11 07:43:55 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -708,6 +708,14 @@ bool CDriverGL::clearZBuffer(float zval)
 
 bool CDriverGL::swapBuffers()
 {
+	// Reset VertexArrayRange.
+	if(_CurrentVertexArrayRange)
+	{
+		_CurrentVertexArrayRange->disable();
+		_CurrentVertexArrayRange= NULL;
+	}
+
+
 #ifdef NL_OS_WINDOWS
 	SwapBuffers(_hDC);
 #else // NL_OS_WINDOWS

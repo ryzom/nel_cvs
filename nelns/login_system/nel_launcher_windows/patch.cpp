@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.3 2002/10/22 08:42:23 lecroart Exp $
+ * $Id: patch.cpp,v 1.4 2002/12/16 16:14:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,15 +24,6 @@
 
 #include "stdafx.h"
 
-#include "Wininet.h"
-#include <process.h>
-#include <direct.h>
-#include <sys/utime.h>
-
-#include <queue>
-
-#include "zlib.h"
-
 #include "nel/misc/debug.h"
 #include "nel/misc/path.h"
 #include "nel/misc/thread.h"
@@ -55,15 +46,33 @@ struct CEntry
 	CEntry(const string &fn, uint32 s, uint32 d) : Filename(fn), Size(s), Date(d) { }
 };
 
+void setRWAccess (const string &filename)
+{
+	if (!NLMISC::CFile::setRWAccess(filename))
+		throw Exception ("Can't have read/write access to '%s' file : code=%d %s", filename.c_str(), errno, strerror(errno));
+}
+
+void deleteFile (const string &filename)
+{
+	if (!NLMISC::CFile::deleteFile(filename))
+		throw Exception ("Can't delete '%s' file : code=%d %s", filename.c_str(), errno, strerror(errno));
+}
 
 void setVersion(const std::string &version)
 {
 	string fn = "VERSION";
+	
+	setRWAccess(fn);
 	FILE *fp = fopen (fn.c_str(), "wb");
 	if (fp == NULL)
-		throw ("Can't open file '%s'", fn.c_str ());
+	{
+		throw Exception ("Can't open file '%s' : code=%d %s", fn.c_str (), errno, strerror(errno));
+	}
 
-	fputs (version.c_str (), fp);
+	if (fputs (version.c_str (), fp) == EOF)
+	{
+		throw Exception ("Can't write file '%s' : code=%d %s", fn.c_str (), errno, strerror(errno));
+	}
 	fclose (fp);
 }
 
@@ -78,7 +87,15 @@ string getVersion()
 		{
 			return ver;
 		}
+		else
+		{
+			throw Exception ("Can't read file '%s' : code=%d %s", fn.c_str (), errno, strerror(errno));
+		}
 		fclose (fp);
+	}
+	else
+	{
+		nlwarning ("Can't open file '%s' : code=%d %s", fn.c_str (), errno, strerror(errno));
 	}
 	return "";
 }
@@ -132,17 +149,25 @@ private:
 			if (!NLMISC::CFile::isExists ("patch"))
 			{
 				setState(true, "Creating patch directory");
-				_mkdir ("patch");
+				if (_mkdir ("patch") == -1)
+				{
+					throw Exception ("Can't create patch directory : code=%d %s", errno, strerror(errno));
+				}
 			}
 
 			// first, get the file that contains all files
-			_unlink (DirFilename.c_str());
+			deleteFile (DirFilename.c_str());
+
 			downloadFile (ServerRootPath+DirFilename, DirFilename);
 
 			// now parse the file
 			gzFile gz = gzopen (DirFilename.c_str (), "rb");
 			if (gz == NULL)
-				throw Exception ("Can't open file '%s'", DirFilename.c_str());
+			{
+				int gzerrno;
+				const char *gzerr = gzerror (gz, &gzerrno);
+				throw Exception ("Can't open file '%s': code=%d %s", DirFilename.c_str(), gzerrno, gzerr);
+			}
 
 			vector<CEntry> filesList;
 			vector<CEntry> needToGetFilesList;
@@ -150,17 +175,27 @@ private:
 			setState(true, "Parsing %s...", DirFilename.c_str());
 
 			char buffer[2000];
-			gzgets (gz, buffer, 2000);
+			if (gzgets (gz, buffer, 2000) == NULL)
+			{
+				int gzerrno;
+				const char *gzerr = gzerror (gz, &gzerrno);
+				throw Exception ("Can't read header of'%s' : code=%d %s", DirFilename.c_str(), gzerrno, gzerr);
+			}
 
 			if (string(buffer) != "FILESLIST\n")
 			{
-				throw Exception ("%s has not a valid content", DirFilename.c_str());
+				throw Exception ("%s has not a valid content '%s' : code=8888", DirFilename.c_str(), buffer);
 			}
 
 			while (!gzeof(gz))
 			{
-				gzgets (gz, buffer, 2000);
-
+				if (gzgets (gz, buffer, 2000) == NULL)
+				{
+					int gzerrno;
+					const char *gzerr = gzerror (gz, &gzerrno);
+					throw Exception ("Can't read '%s' : code=%d %s", DirFilename.c_str(), gzerrno, gzerr);
+				}
+				
 				string b = buffer;
 				uint pos1 = b.find ("/");
 				uint pos2 = b.find ("/", pos1+1);
@@ -242,13 +277,13 @@ private:
 					string file = ClientPatchPath+res[i];
 					nlinfo ("Deleting %s", file.c_str());
 					setState(true, "Deleting %s", res[i]);
-					_unlink (file.c_str ());
+					deleteFile (file);
 				}
 			}
 
 			// remove the files list file
 			nlinfo ("Deleting %s", DirFilename.c_str());
-			_unlink (DirFilename.c_str());
+			deleteFile (DirFilename);
 
 			// now that all is ok, we set the new client version
 			setState (true, "set client version to %s", ServerVersion.c_str ());
@@ -284,17 +319,32 @@ private:
 		gzFile gz = gzopen (filename.c_str (), "rb");
 		if (gz == NULL)
 		{
-			_unlink (filename.c_str ());
-			throw Exception ("Can't open compressed file '%s'", filename.c_str());
+			string err = toString("Can't open compressed file '%s' : ", filename.c_str());
+			if(errno == 0)
+			{
+				// gzerror
+				int gzerrno;
+				const char *gzerr = gzerror (gz, &gzerrno);
+				err += toString("code=%d %s", gzerrno, gzerr);
+			}
+			else
+			{
+				err += toString("code=%d %s", errno, strerror (errno));
+			}
+			deleteFile (filename);
+			throw Exception (err);
 		}
 
 		string dest = filename.substr(0, filename.size ()-3);
+		setRWAccess(dest);
 		FILE *fp = fopen (dest.c_str(), "wb");
 		if (fp == NULL)
 		{
+			string err = toString("Can't open file '%s' : code=%d %s", dest.c_str(), errno, strerror(errno));
+			
 			gzclose(gz);
-			_unlink (filename.c_str ());
-			throw Exception ("Can't open file '%s'", dest.c_str());
+			deleteFile (filename);
+			throw Exception (err);
 		}
 		
 		uint8 buffer[10000];
@@ -303,25 +353,29 @@ private:
 			int res = gzread (gz, buffer, 10000);
 			if (res == -1)
 			{
+				int gzerrno;
+				const char *gzerr = gzerror (gz, &gzerrno);
 				gzclose(gz);
 				fclose(fp);
-				_unlink (filename.c_str ());
-				throw Exception ("Can't read compressed file '%s'", filename.c_str());
+				deleteFile (filename);
+				throw Exception ("Can't read compressed file '%s' : code=%d %s", filename.c_str(), gzerrno, gzerr);
 			}
 
 			int res2 = fwrite (buffer, 1, res, fp);
 			if (res2 != res)
 			{
+				string err = toString("Can't write file '%s' : code=%d %s", dest.c_str(), errno, strerror(errno));
+
 				gzclose(gz);
 				fclose(fp);
-				_unlink (filename.c_str ());
-				throw Exception ("Can't write file '%s'", dest.c_str());
+				deleteFile (filename);
+				throw Exception (err);
 			}
 		}
 
 		gzclose(gz);
 		fclose(fp);
-		_unlink (filename.c_str ());
+		deleteFile (filename);
 
 		// change the file time for having the same as the server side
 
@@ -329,9 +383,10 @@ private:
 		{
 			_utimbuf utb;
 			utb.actime = utb.modtime = date;
+			setRWAccess(dest);
 			if (_utime (dest.c_str (), &utb) == -1)
 			{
-				nlwarning ("Can't change file time for %s", dest.c_str ());
+				nlwarning ("Can't change file time for '%s' : code=%d %s", dest.c_str (), errno, strerror(errno));
 			}
 		}
 	}
@@ -347,9 +402,12 @@ private:
 
 		HINTERNET hUrlDump = InternetOpenUrl(RootInternet, source.c_str(), NULL, NULL, INTERNET_FLAG_NO_AUTO_REDIRECT | INTERNET_FLAG_RAW_DATA, 0);
 
+		setRWAccess(dest);
 		FILE *fp = fopen (dest.c_str(), "wb");
 		if (fp == NULL)
-			throw Exception ("Can't open file '%s'", dest.c_str());
+		{
+			throw Exception ("Can't open file '%s' : code=%d %s", dest.c_str (), errno, strerror(errno));
+		}
 
 		CurrentFilesToGet++;
 
@@ -384,14 +442,22 @@ private:
 					break;
 				}
 
-				fwrite (buffer, realSize, 1, fp);
+				int res2 = fwrite (buffer, 1, realSize, fp);
+				if (res2 != realSize)
+				{
+					string err = toString("Can't write file '%s' : code=%d %s", dest.c_str(), errno, strerror(errno));
 
+					fclose(fp);
+					deleteFile (dest);
+					throw Exception (err);
+				}
+				
 				CurrentBytesToGet += realSize;
 
 				if (TotalBytesToGet == 0 && TotalFilesToGet == 0)
 					setState(false, "Getting %s, %d bytes downloaded", NLMISC::CFile::getFilename (source).c_str (), CurrentBytesToGet);
 				else
-					setState(false, "Getting file %d on %d, %d bytes on %d bytes, filename %s", CurrentFilesToGet, TotalFilesToGet, CurrentBytesToGet, TotalBytesToGet, NLMISC::CFile::getFilename (source).c_str ());
+					setState(false, "Getting file %d on %d, %d bytes, filename %s", CurrentFilesToGet, TotalFilesToGet, CurrentBytesToGet, NLMISC::CFile::getFilename (source).c_str ());
 
 			}
 		}

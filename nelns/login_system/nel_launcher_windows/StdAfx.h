@@ -20,7 +20,19 @@
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
+#include <Wininet.h>
+#include <io.h>
+#include <process.h>
+#include <direct.h>
+#include <sys/utime.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
+
+#include <queue>
 #include <string>
+
+#include <zlib.h>
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

@@ -26,7 +26,6 @@ namespace NLAIAGENT
 		_Maintain = a._Maintain;
 		_Priority = 0;
 		_Exclusive = a._Exclusive;
-		_FactBase = NULL;
 	}
 
 	COperatorScript::COperatorScript(IAgentManager *manager, 
@@ -173,7 +172,6 @@ namespace NLAIAGENT
 				if ( _CurrentGoal == NULL && ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL )
 				{
 					_CurrentGoal = selectGoal();							// Select a goal among possible ones
-					//_CurrentGoal->incRef();
 					_CurrentGoal->addSuccessor( (IBasicAgent *) this );		// Adds the operator to the list of operators launched for this goal
 					linkGoalArgs( _CurrentGoal );							// Instanciates the goal's args values into the operator's components
 				}
@@ -289,9 +287,19 @@ namespace NLAIAGENT
 			// If no goal is posted corresponding to this operator's one, returns false
 			if ( _ActivatedGoals.empty() )
 				return false;	
+
+			std::list<NLAILOGIC::CGoal *>::iterator it_goal = _ActivatedGoals.begin();
+			while ( it_goal != _ActivatedGoals.end() )
+			{
+				linkGoalArgs( *it_goal );
+				if ( checkPreconditions() == true )
+					return true;
+				it_goal++;
+			}
+			return false;
 		}
-		// Checks the boolean funcs conditions
-		return checkPreconditions();
+		else
+			return checkPreconditions();
 	}
 
 	// Looks for the goals the operator could process in the father's goal stack
@@ -764,7 +772,8 @@ namespace NLAIAGENT
 					else
 					{
 						if(!setStaticMember( msg_comp_pos, (NLAIAGENT::IObjectIA *) msg ))
-																				msg->incRef();						
+							msg->incRef();		
+						return true;
 					}
 					it_msg++;
 				}	

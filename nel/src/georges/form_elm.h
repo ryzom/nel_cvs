@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.2 2002/05/17 11:38:42 corvazier Exp $
+ * $Id: form_elm.h,v 1.3 2002/05/17 11:45:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -261,7 +261,7 @@ public:
 	bool				isArray () const;
 	bool				getArraySize (uint &size) const;
 	bool				getArrayNode (const UFormElm **result, uint arrayIndex) const;
-	bool				getArrayNodegetArrayNode (UFormElm **result, uint arrayIndex);
+	bool				getArrayNode (UFormElm **result, uint arrayIndex);
 	bool				getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	bool				getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	bool				getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;

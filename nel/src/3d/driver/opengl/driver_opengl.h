@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.146 2003/04/30 09:44:21 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.147 2003/05/06 15:26:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -275,6 +275,9 @@ public:
 
 	virtual bool			setupMaterial(CMaterial& mat);
 
+	virtual void			startSpecularBatch();
+	virtual void			endSpecularBatch();
+
 	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective = true);
 
 	virtual void			setupViewMatrix(const CMatrix& mtx);
@@ -470,6 +473,8 @@ public:
 
 	virtual void			swapTextureHandle(ITexture &tex0, ITexture &tex1);
 
+	virtual	uint			getTextureHandle(const ITexture&tex);
+
 	/// \name Material multipass.
 	/**	NB: setupMaterial() must be called before thoses methods.
 	 *  NB: This is intended to be use with the rendering of simple primitives.
@@ -569,7 +574,7 @@ private:
 	// NB: if setuped with setupViewMatrixEx(), _ViewMtx.Pos()==(0,0,0)
 	CMatrix					_ViewMtx;
 	// Matrix used for specular
-	CMatrix					_TexMtx;
+	CMatrix					_SpecularTexMtx;
 	// Precision ZBuffer: The Current cameraPosition, to remove from each model Position.
 	CVector					_PZBCameraPos;
 
@@ -614,7 +619,6 @@ private:
 	enum	CTexEnvSpecial {
 		TexEnvSpecialDisabled= 0, 
 		TexEnvSpecialLightMap, 
-		TexEnvSpecialSpecularStage0,
 		TexEnvSpecialSpecularStage1,
 		TexEnvSpecialSpecularStage1NoText,
 		TexEnvSpecialPPLStage0,
@@ -754,6 +758,9 @@ private:
 	sint			beginSpecularMultiPass();
 	void			setupSpecularPass(uint pass);
 	void			endSpecularMultiPass();
+	void			setupSpecularBegin();
+	void			setupSpecularEnd();
+	bool			_SpecularBatchOn;
 	// @}
 
 

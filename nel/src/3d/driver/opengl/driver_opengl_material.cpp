@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.72 2003/04/29 08:49:35 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.73 2003/05/06 15:29:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -369,11 +369,13 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	// Activate the textures.
 	// Do not do it for Lightmap and per pixel lighting , because done in multipass in a very special fashion.
 	// This avoid the useless multiple change of texture states per lightmapped object.
+	// Don't do it also for Specular because the EnvFunction and the TexGen may be special.
 	if(matShader != CMaterial::LightMap
 		&& matShader != CMaterial::PerPixelLighting
 		/* && matShader != CMaterial::Caustics	*/
 		&& matShader != CMaterial::Cloud
 		&& matShader != CMaterial::Water
+		&& matShader != CMaterial::Specular
 	   )
 	{
 		for(stage=0 ; stage<inlGetNumTextStages() ; stage++)
@@ -936,14 +938,88 @@ void			CDriverGL::resetLightMapVertexSetup()
 
 
 // ***************************************************************************
+void			CDriverGL::startSpecularBatch()
+{
+	_SpecularBatchOn= true;
+
+	setupSpecularBegin();
+}
+
+// ***************************************************************************
+void			CDriverGL::endSpecularBatch()
+{
+	_SpecularBatchOn= false;
+
+	setupSpecularEnd();
+}
+
+// ***************************************************************************
+void			CDriverGL::setupSpecularBegin()
+{
+	// ---- Reset any textures with id>=2
+	sint	stage= 2;
+	for(; stage<inlGetNumTextStages() ; stage++)
+	{
+		// disable texturing
+		activateTexture(stage, NULL);
+	}
+
+	// ---- Stage 0 Common Setup.
+	// Setup the env for stage 0 only.
+	// Result RGB : Texture*Diffuse, Alpha : Texture
+	CMaterial::CTexEnv	env;
+	env.Env.OpAlpha= CMaterial::Replace;
+	activateTexEnvMode(0, env);
+
+	// Disable texGen for stage 0
+	_DriverGLStates.activeTextureARB(0);
+	_DriverGLStates.enableTexGen (0, false);
+
+	// ---- Stage 1 Common Setup.
+	// NB don't setup the TexEnv here (stage1 setuped in setupSpecularPass() according to extensions)
+	// For all cases, setup the TexCoord gen for stage1
+	_DriverGLStates.activeTextureARB(1);
+	_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
+	_DriverGLStates.setTexGenMode (1, GL_REFLECTION_MAP_ARB);
+	_DriverGLStates.enableTexGen (1, true);
+	// setup the good matrix for stage 1.
+	glMatrixMode(GL_TEXTURE);
+	glLoadMatrixf( _SpecularTexMtx.get() );
+	glMatrixMode(GL_MODELVIEW);
+}
+
+// ***************************************************************************
+void			CDriverGL::setupSpecularEnd()
+{
+	// Disable Texture coord generation.
+	_DriverGLStates.activeTextureARB(1);
+	_DriverGLStates.enableTexGen (1, false);
+
+	// Happiness !!! we have already enabled the stage 1
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+}
+
+// ***************************************************************************
 sint			CDriverGL::beginSpecularMultiPass()
 {
 	const CMaterial &mat= *_CurrentMaterial;
 
-	_DriverGLStates.activeTextureARB(1);
-	glMatrixMode(GL_TEXTURE);
-	glLoadMatrixf( _TexMtx.get() );
-	glMatrixMode(GL_MODELVIEW);
+	// activate the 2 textures here
+	uint	stage;
+	uint	numStages= std::min(2, inlGetNumTextStages());
+	for(stage=0 ; stage<numStages; stage++)
+	{
+		ITexture	*text= mat.getTexture(stage);
+
+		// activate the texture, or disable texturing if NULL.
+		activateTexture(stage,text);
+	}
+
+	// End specular , only if not Batching mode.
+	if(!_SpecularBatchOn)
+		setupSpecularBegin();
 
 	// Manage the rare case when the SpecularMap is not provided (fault of graphist).
 	if(mat.getTexture(1)==NULL)
@@ -951,12 +1027,11 @@ sint			CDriverGL::beginSpecularMultiPass()
 
 	if(!_Extensions.ARBTextureCubeMap)
 		return 1;
-
+	
 	if( _Extensions.NVTextureEnvCombine4 || _Extensions.ATIXTextureEnvCombine3) // NVidia or ATI optimization
 		return 1;
 	else
 		return 2;
-
 }
 // ***************************************************************************
 void			CDriverGL::setupSpecularPass(uint pass)
@@ -976,40 +1051,6 @@ void			CDriverGL::setupSpecularPass(uint pass)
 	if( _Extensions.NVTextureEnvCombine4 )
 	{	// Ok we can do it in a single pass
 		_DriverGLStates.enableBlend(false);
-
-		// Stage 0
-		if(_CurrentTexEnvSpecial[0] != TexEnvSpecialSpecularStage0)
-		{
-			// TexEnv is special.
-			_CurrentTexEnvSpecial[0] = TexEnvSpecialSpecularStage0;
-
-			_DriverGLStates.activeTextureARB(0);
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
-			// Operator.
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD );
-			// Arg0.
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR );
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_TEXTURE );
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_ALPHA );
-			// Arg1.
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_ZERO );
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_ONE_MINUS_SRC_ALPHA );
-			// Arg2.
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_ZERO );
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR );
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, GL_ZERO );
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_SRC_ALPHA );
-			// Arg3.
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO );
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_SRC_COLOR);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_ALPHA_NV, GL_ZERO );
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_ALPHA_NV, GL_SRC_ALPHA );
-			// Result RGB : Texture*Diffuse, Alpha : Texture
-		}
 
 		// Set Stage 1
 		// Special: not the same sepcial env if there is or not texture in stage 0.
@@ -1051,39 +1092,11 @@ void			CDriverGL::setupSpecularPass(uint pass)
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
 			// Result : Texture*Previous.Alpha+Previous
 		}
-
-		// Setup TexCoord gen for stage1.
-		_DriverGLStates.activeTextureARB(1);
-		_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
-		_DriverGLStates.setTexGenMode (1, GL_REFLECTION_MAP_ARB);
-		_DriverGLStates.enableTexGen (1, true);
 	}
 	else if (_Extensions.ATIXTextureEnvCombine3)
 	{
 		// Ok we can do it in a single pass
 		_DriverGLStates.enableBlend(false);
-
-		// Stage 0
-		if(_CurrentTexEnvSpecial[0] != TexEnvSpecialSpecularStage0)
-		{
-			// TexEnv is special.
-			_CurrentTexEnvSpecial[0] = TexEnvSpecialSpecularStage0;
-
-			_DriverGLStates.activeTextureARB(0);		
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
-			// Operator Mad (Arg0 * Arg2 + Arg1)			
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE );
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_REPLACE );
-			// Arg0.
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR );
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_TEXTURE );
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_ALPHA );
-			// Arg1.
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);			
-			// Result RGB : Texture*Diffuse, Alpha : Texture
-		}
 
 		// Set Stage 1
 		// Special: not the same sepcial env if there is or not texture in stage 0.
@@ -1122,15 +1135,11 @@ void			CDriverGL::setupSpecularPass(uint pass)
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR );			
 			// Result : Texture*Previous.Alpha+Previous
 		}
-
-		// Setup TexCoord gen for stage1.
-		_DriverGLStates.activeTextureARB(1);
-		_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
-		_DriverGLStates.setTexGenMode (1, GL_REFLECTION_MAP_ARB);
-		_DriverGLStates.enableTexGen (1, true);
 	}
 	else
 	{ // We have to do it in 2 passes
+
+		// For Both Pass, setup correct Env.
 
 		if( pass == 0 )
 		{ // Just display the texture
@@ -1172,27 +1181,15 @@ void			CDriverGL::setupSpecularPass(uint pass)
 			}
 
 			activateTexEnvMode(1, env);
-
-			// Set Stage 1
-			_DriverGLStates.activeTextureARB(1);
-			_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
-			_DriverGLStates.setTexGenMode (1, GL_REFLECTION_MAP_ARB);
-			_DriverGLStates.enableTexGen (1, true);
 		}
 	}
 }
 // ***************************************************************************
 void			CDriverGL::endSpecularMultiPass()
 {
-	// Disable Texture coord generation.
-	_DriverGLStates.activeTextureARB(1);
-	_DriverGLStates.enableTexGen (1, false);
-	//_DriverGLStates.setTextureMode(1, CDriverGLStates::TextureDisabled);
-
-	// Happiness !!! we have already enabled the stage 1
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	// End specular , only if not Batching mode.
+	if(!_SpecularBatchOn)
+		setupSpecularEnd();
 }
 
 

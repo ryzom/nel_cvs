@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.185 2003/04/30 09:44:21 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.186 2003/05/06 15:26:41 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -280,9 +280,10 @@ CDriverGL::CDriverGL()
 	ATIWaterShaderHandle = 0;
 
 	std::fill(ARBWaterShader, ARBWaterShader + 4, 0);
-	
+
 ///	buildCausticCubeMapTex();
 
+	_SpecularBatchOn= false;
 }
 
 

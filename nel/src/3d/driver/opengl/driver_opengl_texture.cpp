@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.62 2003/04/25 13:46:57 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.63 2003/05/06 15:27:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1162,6 +1162,22 @@ void		CDriverGL::swapTextureHandle(ITexture &tex0, ITexture &tex1)
 	swap(t0->MagFilter, t1->MagFilter);
 	swap(t0->MinFilter, t1->MinFilter);
 
+}
+
+
+// ***************************************************************************
+uint CDriverGL::getTextureHandle(const ITexture &tex)
+{
+	// If DrvShare not setuped
+	if(!tex.TextureDrvShare)
+		return 0;
+
+	// If DrvInfo not setuped
+	const CTextureDrvInfosGL	*t0= (const CTextureDrvInfosGL*)(const ITextureDrvInfos*)(tex.TextureDrvShare->DrvTexture);
+	if(!t0)
+		return 0;
+
+	return t0->ID;
 }
 
 

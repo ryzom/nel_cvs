@@ -1,7 +1,7 @@
 /** \file driver_opengl_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.16 2002/09/24 14:44:32 vizerie Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.17 2003/05/06 15:27:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,10 +72,10 @@ void CDriverGL::setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos)
 	_ModelViewMatrixDirty= true;
 	_RenderSetupDirty= true;
 
-	_TexMtx = _ViewMtx;
-	_TexMtx.setPos(CVector(0.0f,0.0f,0.0f));
-	_TexMtx.invert();
-	_TexMtx = changeBasis *	_TexMtx;
+	_SpecularTexMtx = _ViewMtx;
+	_SpecularTexMtx.setPos(CVector(0.0f,0.0f,0.0f));
+	_SpecularTexMtx.invert();
+	_SpecularTexMtx = changeBasis *	_SpecularTexMtx;
 }
 
 
@@ -101,10 +101,10 @@ void CDriverGL::setupViewMatrix(const CMatrix& mtx)
 	_ModelViewMatrixDirty= true;
 	_RenderSetupDirty= true;
 
-	_TexMtx = _ViewMtx;
-	_TexMtx.setPos(CVector(0.0f,0.0f,0.0f));
-	_TexMtx.invert();
-	_TexMtx = changeBasis *	_TexMtx;
+	_SpecularTexMtx = _ViewMtx;
+	_SpecularTexMtx.setPos(CVector(0.0f,0.0f,0.0f));
+	_SpecularTexMtx.invert();
+	_SpecularTexMtx = changeBasis *	_SpecularTexMtx;
 
 }
 

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.55 2003/04/30 09:43:11 berenguier Exp $
+ * $Id: driver.h,v 1.56 2003/05/06 15:25:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -208,7 +208,9 @@ public:
 	/// Get the number of texture stage avaliable, for multitexturing (Normal material shaders). Valid only after setDisplay().
 	virtual	sint			getNbTextureStages() const =0;
 
-	/// is the texture is set up in the driver
+	/** is the texture is set up in the driver
+	 *	NB: this method is thread safe.
+	 */
 	virtual bool			isTextureExist(const ITexture&tex)=0;
 
 	virtual NLMISC::IEventEmitter*	getEventEmitter(void)=0;
@@ -269,6 +271,12 @@ public:
 
 
 	virtual bool			setupMaterial(CMaterial& mat)=0;
+
+	/** Special for Faster Specular Setup. Call this between lot of primitives rendered with Specular Materials.
+	 *	Visual Errors may arise if you don't correclty call endSpecularBatch().
+	 */
+	virtual void			startSpecularBatch()=0;
+	virtual void			endSpecularBatch()=0;
 
 	/// \name Material multipass.
 	/**	NB: setupMaterial() must be called before thoses methods.
@@ -921,6 +929,13 @@ public:
 	 *	NB: internally, all textures slots are disabled.
 	 */
 	virtual void			swapTextureHandle(ITexture &tex0, ITexture &tex1) =0;
+
+	/** Advanced usage. Get the texture Handle. Usefull for texture sorting for instance
+	 *	NB: if the texture is not setuped in the driver, 0 is returned.
+	 *	NB: if implementation does not support it, 0 may be returned. OpenGL ones return the Texture ID.
+	 *	NB: unlike isTextureExist(), this method is not thread safe.
+	 */
+	virtual	uint			getTextureHandle(const ITexture&tex)=0;
 
 
 protected:

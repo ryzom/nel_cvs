@@ -251,6 +251,14 @@ SOURCE=..\include\nel\3d\scene.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\texture.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\texture.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\tile_bank.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.159 2004/03/19 17:50:32 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.160 2004/03/23 10:25:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -985,6 +985,8 @@ private:
 	void			enableVertexProgramDoubleSidedColor(bool doubleSided);
 	bool		    supportVertexProgramDoubleSidedColor() const;
 
+	virtual	bool			supportMADOperator() const ;
+	
 	
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.205 2004/03/19 17:50:32 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.206 2004/03/23 10:25:16 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -3328,8 +3328,15 @@ void CDriverGL::retrieveATIDriverVersion()
 	#endif			
 }
 
-// ***************************************************************************
 
+// ***************************************************************************
+bool CDriverGL::supportMADOperator() const
+{
+	return _Extensions.NVTextureEnvCombine4 || _Extensions.ATIXTextureEnvCombine3;
+}
+
+
+// ***************************************************************************
 uint CDriverGL::getNumAdapter() const
 {
 	return 1;

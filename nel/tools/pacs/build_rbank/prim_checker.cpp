@@ -1,7 +1,7 @@
 /** \file prim_checker.cpp
  * <File description>
  *
- * $Id: prim_checker.cpp,v 1.5 2004/02/13 16:16:39 legros Exp $
+ * $Id: prim_checker.cpp,v 1.6 2004/10/08 09:26:06 boucher Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -76,7 +76,7 @@ bool	CPrimChecker::build(const string &primitivesPath, const string &igLandPath,
 	NLLIGO::Register();
 
 	// Init ligo
-	if (!LigoConfig.readPrimitiveClass ("world_editor_classes.xml"))
+	if (!LigoConfig.readPrimitiveClass ("world_editor_classes.xml", false))
 	{
 		// Should be in l:\leveldesign\world_edit_files
 		nlwarning ("Can't load ligo primitive config file world_editor_classes.xml");

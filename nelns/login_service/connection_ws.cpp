@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.9 2002/09/16 14:50:07 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.10 2002/09/18 10:11:52 lecroart Exp $
  *
  */
 
@@ -353,6 +353,7 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 	msgin.serial (Id);
 	msgin.serial (con);	// con=1 means a client is connected on the shard, 0 means a client disconnected
 
+	nlinfo ("Received a validation that a client is well on the frontend");
 
 	string query = "select * from user where UId="+toString(Id);
 	int ret = mysql_query (DatabaseConnection, query.c_str ());

@@ -1,7 +1,7 @@
 /** \file object_ident.h
  * class for identification an objects fonctionality.
  *
- * $Id: object_ident.h,v 1.1 2001/02/21 13:21:16 chafik Exp $
+ * $Id: object_ident.h,v 1.2 2001/03/05 13:48:59 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

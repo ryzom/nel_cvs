@@ -14,12 +14,14 @@ namespace NLAILINK
 	{
 		NLAIC::initRegistry();
 		NLAISCRIPT::initExternalLib();		
+		NLAIAGENT::CAgentScript::initAgentScript();
 	}
 
 	void releaseIALib()
 	{
 		CIndexedVarName::releaseClass();
 		NLAIC::releaseRegistry();
-		CLocWordNumRef::clear();		
+		CLocWordNumRef::clear();
+		NLAIAGENT::CAgentScript::releaseAgentScript();
 	}
 }

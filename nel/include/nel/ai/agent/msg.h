@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: msg.h,v 1.1 2001/01/31 16:54:52 chafik Exp $
+ * $Id: msg.h,v 1.2 2001/02/05 10:36:24 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,8 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#ifndef NL_MESSAGERIE_H
-#define NL_MESSAGERIE_H
+#ifndef NL_MSG_H
+#define NL_MSG_H
 
 #include "nel/ai/agent/agentexport.h"
 #include "nel/ai/c/registry_class.h"
@@ -297,7 +297,7 @@ namespace NLAIAGENT
 		* \author Nevrax France
 		* \date 2000
 	*/
-	class CMessage: public IMessageBase
+	class CMessageList: public IMessageBase
 	{
 	private:
 		
@@ -306,31 +306,31 @@ namespace NLAIAGENT
 		static const NLAIC::CIdentType IdMessage;
 	public:
 
-		CMessage()
+		CMessageList()
 		{
 			CGroupType *x = new CGroupType();
 			setMessageGroup(x);
 		}
 
-		CMessage(const CGroupType &m)
+		CMessageList(const CGroupType &m)
 		{
 			setMessageGroup((CGroupType *)m.clone());
 		}
 
-		CMessage(const CGroupType &m,IObjectIA *sender): IMessageBase(sender,(CGroupType *)m.clone())
+		CMessageList(const CGroupType &m,IObjectIA *sender): IMessageBase(sender,(CGroupType *)m.clone())
 		{
 		}
 
-		CMessage(const CGroupType &m,IObjectIA *sender, IBasicMessageGroup &msg_group):IMessageBase(sender,msg_group,(CGroupType *)m.clone())
+		CMessageList(const CGroupType &m,IObjectIA *sender, IBasicMessageGroup &msg_group):IMessageBase(sender,msg_group,(CGroupType *)m.clone())
 		{
 		}
 
-		CMessage(const CMessage &m):IMessageBase(m)
+		CMessageList(const CMessageList &m):IMessageBase(m)
 		{
 		}		
 		
 
-		virtual ~CMessage()
+		virtual ~CMessageList()
 		{			
 		}
 
@@ -342,13 +342,13 @@ namespace NLAIAGENT
 
 		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLAIC::IBasicInterface *c = (NLAIC::IBasicInterface *)new CMessage(*this);
+			NLAIC::IBasicInterface *c = (NLAIC::IBasicInterface *)new CMessageList(*this);
 			return c;
 		}		
 
 		virtual const NLAIC::IBasicType *newInstance() const
 		{									
-			CMessage *instance = new CMessage;
+			CMessageList *instance = new CMessageList;
 			return instance;
 		}		
 		//@}

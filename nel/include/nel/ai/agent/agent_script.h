@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.12 2001/02/01 17:15:20 chafik Exp $
+ * $Id: agent_script.h,v 1.13 2001/02/05 10:36:24 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,7 +74,8 @@ namespace NLAIAGENT
 
 		///Structure to define the name, id and argument type of hard coded mathod.
 		struct CMethodCall
-		{
+		{			
+
 			CMethodCall(const char *name, int i,const IObjectIA *a,TTypeCheck checkArg,int argCount,IObjectIA *r): 
 					MethodName (name),ArgType(a),ReturnValue(r)
 			{
@@ -85,7 +86,7 @@ namespace NLAIAGENT
 
 			~CMethodCall()
 			{
-				ReturnValue->release();
+				if(ReturnValue) ReturnValue->release();				
 			}
 			///Name of the method.
 			CStringVarName MethodName;
@@ -100,9 +101,8 @@ namespace NLAIAGENT
 			///Index of the method in the class.
 			sint32 Index;				
 		};
-		///This variable its used to store method import characteristic.
-		static CMethodCall StaticMethod[];
 
+		static CMethodCall **StaticMethod;
 	private:
 		///Type def for the map witch store the name of dynamic agent store in the agent.
 		typedef std::map<CStringType, std::list<IBasicAgent *>::iterator> tmapDefNameAgent;
@@ -130,8 +130,7 @@ namespace NLAIAGENT
 		NLAISCRIPT::CAgentClass *_AgentClass;
 
 	public:
-		static const NLAIC::CIdentType IdAgentScript;
-				
+		static const NLAIC::CIdentType IdAgentScript;		
 
 	public:
 		///Construct with copy constructor.
@@ -261,6 +260,9 @@ namespace NLAIAGENT
 		virtual void getDebugString(char *t) const;
 		virtual const NLAIC::CIdentType &getType() const;
 		//@}
+
+		static void initAgentScript();
+		static void releaseAgentScript();
 	};
 }
 #endif

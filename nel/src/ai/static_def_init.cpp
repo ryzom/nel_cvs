@@ -201,7 +201,7 @@
 	const NLAIC::CIdentType CMessageGroup::IdMessageGroup(	"MessageGroup",NLAIC::CSelfClassCFactory(CMessageGroup(1)),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CMessage::IdMessage("MessageGroup",	NLAIC::CSelfClassCFactory(CMessage()),
+	const NLAIC::CIdentType CMessageList::IdMessage("MessageList",	NLAIC::CSelfClassCFactory(CMessageList()),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | NLAIC::CTypeOfOperator::opSub ));
 	const NLAIC::CIdentType CMessageVector::IdMessageVector("MessageVector",	NLAIC::CSelfClassCFactory(CMessageVector()),

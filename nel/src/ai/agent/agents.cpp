@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.18 2001/02/01 17:16:36 chafik Exp $
+ * $Id: agents.cpp,v 1.19 2001/02/05 10:35:48 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -308,8 +308,7 @@ namespace NLAIAGENT
 		IBasicAgent::CMethodCall(_RUNTEL_,_RunTel),
 		IBasicAgent::CMethodCall(_RUNASK_,_RunAsk)
 	};
-
-	NLAISCRIPT::CParam paramMsg(1,new NLAISCRIPT::COperandSimple (new NLAIC::CIdentType(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass)));
+	
 
 	sint32 IBasicAgent::getMethodIndexSize() const
 	{
@@ -320,13 +319,17 @@ namespace NLAIAGENT
 	{			
 		if(className == NULL)
 		{
-			tQueue a;
+			tQueue a;		
+			
+
 			for(int i = 0; i < _LastM; i++)
 			{
 				if(*methodName == IBasicAgent::_Method[i].MethodName)
 				{					
 					if(i == _RunTel || i == _RunAsk)
 					{
+						static NLAISCRIPT::CParam paramMsg(1,new NLAISCRIPT::COperandSimple (new NLAIC::CIdentType(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass)));
+
 						if(paramMsg.eval((NLAISCRIPT::CParam &)p) < 0.0) continue;
 					}
 					CObjectType *c = new CObjectType(new NLAIC::CIdentType(CLocalAgentMail::LocalAgentMail));

@@ -1,6 +1,6 @@
 /** \file constraint_find_run.cpp
  *
- * $Id: constraint_find_run.cpp,v 1.8 2001/01/23 16:39:32 chafik Exp $
+ * $Id: constraint_find_run.cpp,v 1.9 2001/02/05 10:36:00 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,15 +46,15 @@ namespace NLAISCRIPT
 
 	void CConstraintFindRun::run(CCompilateur &c)
 	{		
-#ifdef NL_DEBUG
-		char mtxt[1024*2];
-		char ptxt[1024*2];
-		char txt[1024*8];
+/*#ifdef NL_DEBUG
+		char mtxt[1024];
+		char ptxt[1024];
+		char txt[1024*2];
 		
 		_MethodName->getDebugString(mtxt);
 		_Param->getDebugString(ptxt);
 		sprintf(txt,"%s%s",mtxt,ptxt);
-#endif	
+#endif*/
 
 		if(_BaseClass)
 		{
@@ -62,10 +62,11 @@ namespace NLAISCRIPT
 			if(_BaseClass->satisfied())
 			{
 				const NLAIAGENT::IObjectIA *cl = (const NLAIAGENT::IObjectIA *)(_BaseClass->getConstraintTypeOf()->getFactory())->getClass();
-				CFunctionTag method;
-				NLAIAGENT::IBaseGroupType *m = (NLAIAGENT::IBaseGroupType *)_MethodName->clone();
+				CFunctionTag method;				
+				NLAIAGENT::IBaseGroupType *m = (NLAIAGENT::IBaseGroupType *)_MethodName->clone();								
 				const NLAIAGENT::IObjectIA *b = c.validateHierarchyMethode(method.Member,method.Inheritance,cl,*m);
 				m->release();
+				//const NLAIAGENT::IObjectIA *b = c.validateHierarchyMethode(method.Member,method.Inheritance,cl,*_MethodName);
 				if(b)
 				{					
 					if(!(( (const NLAIC::CTypeOfObject &)b->getType() ) & NLAIC::CTypeOfObject::tAgentInterpret))

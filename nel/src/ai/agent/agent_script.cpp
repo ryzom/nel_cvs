@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.25 2001/02/01 17:16:44 chafik Exp $
+ * $Id: agent_script.cpp,v 1.26 2001/02/05 10:35:48 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,61 +40,125 @@ namespace NLAIAGENT
 {	
 	static CGroupType listBidon;
 
-	static NLAISCRIPT::COperandSimpleListOr *msgType = new NLAISCRIPT::COperandSimpleListOr(3,	
-																							new NLAIC::CIdentType(CMessage::IdMessage),
-																							new NLAIC::CIdentType(CMessageVector::IdMessageVector),
-																							new NLAIC::CIdentType(NLAISCRIPT::CMessageClass::IdMessageClass));
+	static NLAISCRIPT::COperandSimpleListOr *msgType;
+	static NLAISCRIPT::COperandSimpleListOr *msgPerf;
+	static NLAISCRIPT::CParam *SendParamMessageScript;
+	static NLAISCRIPT::COperandSimple *IdMsgNotifyParentClass;
+	static NLAISCRIPT::COperandSimpleListOr *IdMsgNotifyParent;
+	static NLAISCRIPT::CParam *ParamRunParentNotify;
+	CAgentScript::CMethodCall **CAgentScript::StaticMethod = NULL;
 
-	static NLAISCRIPT::COperandSimpleListOr *msgPerf = new NLAISCRIPT::COperandSimpleListOr(6,	
-																							new NLAIC::CIdentType(CPExec::IdPExec),
-																							new NLAIC::CIdentType(CPAchieve::IdPAchieve),
-																							new NLAIC::CIdentType(CPAsk::IdPAsk),
-																							new NLAIC::CIdentType(CPBreak::IdPBreak),
-																							new NLAIC::CIdentType(CPTell::IdPTell),
-																							new NLAIC::CIdentType(CPKill::IdPKill));
-
-
-	static NLAISCRIPT::CParam SendParamMessageScript(2,msgPerf, msgType);
-	static NLAISCRIPT::COperandSimple *IdMsgNotifyParentClass = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass));
-	static NLAISCRIPT::COperandSimpleListOr *IdMsgNotifyParent = new NLAISCRIPT::COperandSimpleListOr(2,
-															new NLAIC::CIdentType(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass),
-															new NLAIC::CIdentType(CNotifyParentScript::IdNotifyParentScript));
-	static NLAISCRIPT::CParam ParamRunParentNotify(1,IdMsgNotifyParent);
-
-
-	CAgentScript::CMethodCall CAgentScript::StaticMethod[] = 
+	void CAgentScript::initAgentScript()
 	{
-		CAgentScript::CMethodCall(	_RUNASK_, 
-									CAgentScript::TRunAskParentNotify, &ParamRunParentNotify,
-									CAgentScript::CheckAll,
-									1,
-									new NLAISCRIPT::CObjectUnknown(IdMsgNotifyParentClass)),
+		
+		msgType = new NLAISCRIPT::COperandSimpleListOr(3,	
+														new NLAIC::CIdentType(CMessageList::IdMessage),
+														new NLAIC::CIdentType(CMessageVector::IdMessageVector),
+														new NLAIC::CIdentType(NLAISCRIPT::CMessageClass::IdMessageClass));
 
-		CAgentScript::CMethodCall(	_RUNTEL_, 
-									CAgentScript::TRunTellParentNotify, &ParamRunParentNotify,
-									CAgentScript::CheckAll,
-									1,
-									new NLAISCRIPT::CObjectUnknown(IdMsgNotifyParentClass)),
+		msgPerf = new NLAISCRIPT::COperandSimpleListOr(6,	
+														new NLAIC::CIdentType(CPExec::IdPExec),
+														new NLAIC::CIdentType(CPAchieve::IdPAchieve),
+														new NLAIC::CIdentType(CPAsk::IdPAsk),
+														new NLAIC::CIdentType(CPBreak::IdPBreak),
+														new NLAIC::CIdentType(CPTell::IdPTell),
+														new NLAIC::CIdentType(CPKill::IdPKill));
 
-		CAgentScript::CMethodCall(	_SEND_, 
-									CAgentScript::TSend, &SendParamMessageScript,
-									CAgentScript::CheckAll,
-									2,
-									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid)),
 
-		///Send with continuation arg count must be 3.
-		CAgentScript::CMethodCall(	_SEND_, 
-									CAgentScript::TSendContinuation, 
-									NULL,CAgentScript::CheckCount,
-									3,
-									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid)),
+		SendParamMessageScript = new NLAISCRIPT::CParam(2,msgPerf, msgType);
+		IdMsgNotifyParentClass = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass));
 
-		CAgentScript::CMethodCall(	_GETCHILD_, 
-									CAgentScript::TGetChildTag, 
-									NULL,
-									CAgentScript::CheckCount,
-									1,
-									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(IAgent::IdAgent)))),
+		IdMsgNotifyParent = new NLAISCRIPT::COperandSimpleListOr(2,
+																new NLAIC::CIdentType(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass),
+																new NLAIC::CIdentType(CNotifyParentScript::IdNotifyParentScript));
+
+		ParamRunParentNotify = new NLAISCRIPT::CParam(1,IdMsgNotifyParent);
+
+		StaticMethod = new CAgentScript::CMethodCall *[CAgentScript::TLastM];
+
+		StaticMethod[CAgentScript::TRunAskParentNotify] = new CAgentScript::CMethodCall(	_RUNASK_, 
+																						CAgentScript::TRunAskParentNotify, ParamRunParentNotify,
+																						CAgentScript::CheckAll,
+																						1,
+																						new NLAISCRIPT::CObjectUnknown(IdMsgNotifyParentClass));
+
+		StaticMethod[CAgentScript::TRunTellParentNotify] = new CAgentScript::CMethodCall(	_RUNTEL_, 
+																						CAgentScript::TRunTellParentNotify, ParamRunParentNotify,
+																						CAgentScript::CheckAll,
+																						1,
+																						new NLAISCRIPT::CObjectUnknown(IdMsgNotifyParentClass));
+
+		StaticMethod[CAgentScript::TSend] = new CAgentScript::CMethodCall(	_SEND_, 
+																		CAgentScript::TSend, SendParamMessageScript,
+																		CAgentScript::CheckAll,
+																		2,
+																		new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid));
+
+		StaticMethod[CAgentScript::TSendContinuation] = new CAgentScript::CMethodCall(	_SEND_, 
+																		CAgentScript::TSendContinuation, 
+																		NULL,CAgentScript::CheckCount,
+																		3,
+																		new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid));
+
+		StaticMethod[CAgentScript::TGetChildTag] = new CAgentScript::CMethodCall(	_GETCHILD_,
+																				CAgentScript::TGetChildTag, 
+																				NULL,
+																				CAgentScript::CheckCount,
+																				1,
+																				new NLAISCRIPT::CObjectUnknown(new 
+																				NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(IAgent::IdAgent))));
+		StaticMethod[CAgentScript::TAddChildTag] = new CAgentScript::CMethodCall(	_ADDCHILD_, 
+																						CAgentScript::TAddChildTag, 
+																						NULL,CAgentScript::CheckCount,
+																						2,
+																						new NLAISCRIPT::CObjectUnknown(
+																						new NLAISCRIPT::COperandSimple(
+																						new NLAIC::CIdentType(DigitalType::IdDigitalType))));
+
+		StaticMethod[CAgentScript::TFather] = new CAgentScript::CMethodCall(	_FATHER_, 
+																			CAgentScript::TFather, 
+																			NULL,CAgentScript::CheckCount,
+																			0,
+																			new NLAISCRIPT::CObjectUnknown(
+																			new NLAISCRIPT::COperandSimple(
+																			new NLAIC::CIdentType(CAgentScript::IdAgentScript))));
+
+		StaticMethod[CAgentScript::TSelf] = new CAgentScript::CMethodCall(	_SELF_, 
+																		CAgentScript::TSelf, 
+																		NULL,CAgentScript::CheckCount,
+																		0,
+																		new NLAISCRIPT::CObjectUnknown( new NLAISCRIPT::COperandSimple(
+																		new NLAIC::CIdentType(CAgentScript::IdAgentScript))));
+
+		StaticMethod[CAgentScript::TGetName] = new CAgentScript::CMethodCall(	_GETNAME_, 
+																			CAgentScript::TGetName, 
+																			NULL,CAgentScript::CheckCount,
+																			1,
+																			new NLAISCRIPT::CObjectUnknown(
+																			new NLAISCRIPT::COperandSimple(
+																			new NLAIC::CIdentType(CAgentScript::IdAgentScript))));
+
+		StaticMethod[CAgentScript::TRemoveChild] = new CAgentScript::CMethodCall(	_REMOVECHILD_, 
+																				CAgentScript::TRemoveChild, 
+																				NULL,CAgentScript::CheckCount,
+																				0,
+																				new NLAISCRIPT::CObjectUnknown(
+																				new NLAISCRIPT::COperandSimple(
+																				new NLAIC::CIdentType(DigitalType::IdDigitalType))));
+
+		
+	}
+
+	void CAgentScript::releaseAgentScript()
+	{		
+		SendParamMessageScript->release();
+		IdMsgNotifyParentClass->release();		
+		ParamRunParentNotify->release();
+	}
+
+	/*CAgentScript::CMethodCall CAgentScript::StaticMethod[] = 
+	{				
+		
 
 		CAgentScript::CMethodCall(	_ADDCHILD_, 
 									CAgentScript::TAddChildTag, 
@@ -125,10 +189,8 @@ namespace NLAIAGENT
 									NULL,CAgentScript::CheckCount,
 									0,
 									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType))))
-/*
 
-*/
-	};
+	};*/
 
 	CAgentScript::CAgentScript(const CAgentScript &a): IAgentManager(a)
 	{
@@ -1089,22 +1151,22 @@ namespace NLAIAGENT
 		CAgentScript::TMethodNumDef index = CAgentScript::TLastM;
 		for(i = 0; i < CAgentScript::TLastM; i ++)
 		{
-			if(CAgentScript::StaticMethod[i].MethodName == *methodName)
+			if(CAgentScript::StaticMethod[i]->MethodName == *methodName)
 			{
-				index = (CAgentScript::TMethodNumDef)CAgentScript::StaticMethod[i].Index;
-				switch(CAgentScript::StaticMethod[i].CheckArgType)
+				index = (CAgentScript::TMethodNumDef)CAgentScript::StaticMethod[i]->Index;
+				switch(CAgentScript::StaticMethod[i]->CheckArgType)
 				{
 				case CAgentScript::CheckAll:
 					{
-						double d = ((NLAISCRIPT::CParam &)*CAgentScript::StaticMethod[i].ArgType).eval((NLAISCRIPT::CParam &)param);
+						double d = ((NLAISCRIPT::CParam &)*CAgentScript::StaticMethod[i]->ArgType).eval((NLAISCRIPT::CParam &)param);
 						if(d >= 0.0)
 						{								
 							tQueue r;
-							CAgentScript::StaticMethod[i].ReturnValue->incRef();
-							r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i].Index),
+							CAgentScript::StaticMethod[i]->ReturnValue->incRef();
+							r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i]->Index),
 												0.0,
 												NULL,
-												CAgentScript::StaticMethod[i].ReturnValue));
+												CAgentScript::StaticMethod[i]->ReturnValue));
 							return r;
 						}
 					}	
@@ -1114,14 +1176,14 @@ namespace NLAIAGENT
 
 				case CAgentScript::CheckCount:
 					{
-						if(((NLAISCRIPT::CParam &)param).size() == CAgentScript::StaticMethod[i].ArgCount)
+						if(((NLAISCRIPT::CParam &)param).size() == CAgentScript::StaticMethod[i]->ArgCount)
 						{								
 							tQueue r;
-							CAgentScript::StaticMethod[i].ReturnValue->incRef();
-							r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i].Index),
+							CAgentScript::StaticMethod[i]->ReturnValue->incRef();
+							r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i]->Index),
 												0.0,
 												NULL,
-												CAgentScript::StaticMethod[i].ReturnValue ));
+												CAgentScript::StaticMethod[i]->ReturnValue ));
 							return r;
 						}
 					}
@@ -1131,11 +1193,11 @@ namespace NLAIAGENT
 				case CAgentScript::DoNotCheck:
 					{							
 						tQueue r;
-						CAgentScript::StaticMethod[i].ReturnValue->incRef();
-						r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i].Index),
+						CAgentScript::StaticMethod[i]->ReturnValue->incRef();
+						r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i]->Index),
 											0.0,
 											NULL,
-											CAgentScript::StaticMethod[i].ReturnValue));
+											CAgentScript::StaticMethod[i]->ReturnValue));
 						return r;						
 					}
 					index = CAgentScript::TLastM;

@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.9 2001/01/31 17:24:28 chafik Exp $
+ * $Id: group_type.cpp,v 1.10 2001/02/05 10:35:48 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -471,7 +471,7 @@ namespace NLAIAGENT
 		{
 			erase(*i++);								
 		}
-	}		
+	}
 
 	bool CGroupType::isEqual(const IBasicObjectIA &a) const
 	{
@@ -561,6 +561,7 @@ namespace NLAIAGENT
 			o->release();
 			_List.pop_front();
 		}
+		_List.clear();
 	}
 
 	CGroupType::~CGroupType()
@@ -839,7 +840,7 @@ namespace NLAIAGENT
 		{
 			erase(*i++);								
 		}
-	}		
+	}
 
 	bool CVectorGroupType::isEqual(const IBasicObjectIA &a) const
 	{

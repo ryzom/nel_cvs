@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.1 2001/01/31 16:54:44 chafik Exp $
+ * $Id: msg.cpp,v 1.2 2001/02/05 10:35:48 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,6 +221,7 @@ namespace NLAIAGENT
 	{
 		_Message->erase(obj);
 	}
+ 
 	void IMessageBase::erase(std::list<const IObjectIA *> &l)
 	{
 		_Message->erase(l);
@@ -316,7 +317,7 @@ namespace NLAIAGENT
 	}
 
 
-	const NLAIC::CIdentType &CMessage::getType() const
+	const NLAIC::CIdentType &CMessageList::getType() const
 	{
 		return IdMessage;
 	}

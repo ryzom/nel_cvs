@@ -1,7 +1,7 @@
 /** \file vector.cpp
  * CVector class
  *
- * $Id: vector.cpp,v 1.2 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: vector.cpp,v 1.3 2000/11/21 17:19:54 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,3 +35,4 @@ const CVector	CVector::J(0,1,0);
 const CVector	CVector::K(0,0,1);
 
 }
+

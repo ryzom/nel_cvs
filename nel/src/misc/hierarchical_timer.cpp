@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.32 2003/11/17 14:56:33 berenguier Exp $
+ * $Id: hierarchical_timer.cpp,v 1.33 2003/12/17 16:03:59 legros Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -672,6 +672,127 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 }
 
 //=================================================================
+/*static*/ void		CHTimer::displaySummary(CLog *log, TSortCriterion criterion, bool displayEx, uint labelNumChar, uint indentationStep, uint maxDepth)
+{
+
+	CSimpleClock	benchClock;
+	benchClock.start();
+	nlassert(_BenchStartedOnce); // should have done at least one bench
+
+	// get root total time.
+	CStats	rootStats;
+	rootStats.buildFromNode(&_RootNode, _MsPerTick);
+
+
+	// display header.
+	CLog::TDisplayInfo	dummyDspInfo;
+	log->displayRawNL("HTIMER: =========================================================================");
+	log->displayRawNL("HTIMER: Hierarchical display of bench by execution path");
+	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |  loc%%/ glb%% |       min |       max |      mean", labelNumChar, "");
+
+
+	// use list because vector of vector is bad.
+	std::list< CExamStackEntry >	examStack;
+
+	// Add the root to the stack.
+	examStack.push_back( CExamStackEntry( &_RootNode ) );
+	CStats		currNodeStats;
+	std::string resultName;
+	std::string resultStats;
+
+	while (!examStack.empty())
+	{
+		CNode				*node = examStack.back().Node;
+		std::vector<CNode*>	&children= examStack.back().Children;
+		uint				child = examStack.back().CurrentChild;
+		uint				depth = examStack.back().Depth;
+
+		// If child 0, then must first build children info and display me.
+		if (child == 0)
+		{
+			// Build Sons Infos.
+			// ==============
+			
+			// resize array
+			children.resize(node->Sons.size());
+
+			// If no sort, easy.
+			if(criterion == NoSort)
+			{
+				children= node->Sons;
+			}
+			// else, Sort them with criterion.
+			else
+			{
+				std::vector<CNodeStat>		stats;
+				std::vector<CNodeStat *>	ptrStats;
+				stats.resize(children.size());
+				ptrStats.resize(children.size());
+
+				// build stats.
+				uint	i;
+				for(i=0; i<children.size(); i++)
+				{
+					CNode	*childNode= node->Sons[i];
+					stats[i].buildFromNode(childNode, _MsPerTick);
+					stats[i].Node = childNode;
+					ptrStats[i]= &stats[i];
+				}
+
+				// sort.
+				CStatSorter	sorter;
+				sorter.Criterion= criterion;
+				std::sort(ptrStats.begin(), ptrStats.end(), sorter);		
+
+				// fill children.
+				for(i=0; i<children.size(); i++)
+				{
+					children[i]= ptrStats[i]->Node;
+				}
+			}
+
+
+			// Display our infos
+			// ==============
+			// build the indented node name.
+			resultName.resize(labelNumChar);
+			std::fill(resultName.begin(), resultName.end(), '.');
+			uint startIndex = (examStack.size()-1) * indentationStep;
+			uint endIndex = std::min(startIndex + ::strlen(node->Owner->_Name), labelNumChar);			
+			if ((sint) (endIndex - startIndex) >= 1)
+			{
+				std::copy(node->Owner->_Name, node->Owner->_Name + (endIndex - startIndex), resultName.begin() + startIndex);
+			}
+
+			// build the stats string.
+			currNodeStats.buildFromNode(node, _MsPerTick);			
+			currNodeStats.getStats(resultStats, displayEx, rootStats.TotalTime, _WantStandardDeviation);
+
+			// display
+			log->displayRawNL("HTIMER: %s", (resultName + resultStats).c_str());
+		}
+
+		// End of sons?? stop.
+		if (child >= children.size())
+		{
+			examStack.pop_back();
+			continue;
+		}
+
+		// next son.
+		++(examStack.back().CurrentChild);
+
+		// process the current son.
+		if (depth+1 < maxDepth)
+			examStack.push_back( CExamStackEntry( children[child], depth+1 ) );
+	}
+
+	//
+	benchClock.stop();
+	_CurrNode->SonsPreambule += benchClock.getNumTicks();
+}
+
+//=================================================================
 void	CHTimer::clear()
 {
 	// should not be benching !
@@ -896,10 +1017,18 @@ void	CHTimer::doAfter(bool displayAfter)
 // Commands
 //
 
-NLMISC_COMMAND(displayMeasures, "display hierarchical timer", "")
+NLMISC_COMMAND(displayMeasures, "display hierarchical timer", "[depth]")
 {
-	CHTimer::display(&log);
-	CHTimer::displayHierarchicalByExecutionPathSorted (&log, CHTimer::TotalTime, true, 64);
+	if (args.size() < 1)
+	{
+		CHTimer::display(&log);
+		CHTimer::displayHierarchicalByExecutionPathSorted (&log, CHTimer::TotalTime, true, 64);
+	}
+	else
+	{
+		CHTimer::displaySummary(&log, CHTimer::TotalTime, true, 64, 2, atoi(args[0].c_str()));
+	}
+
 	return true;
 }
 

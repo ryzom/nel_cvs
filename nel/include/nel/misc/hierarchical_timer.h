@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.27 2003/12/16 18:01:59 lecroart Exp $
+ * $Id: hierarchical_timer.h,v 1.28 2003/12/17 16:04:16 legros Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -266,6 +266,12 @@ public:
 	  */
 	static void		displayHierarchicalByExecutionPathSorted(CLog *log= InfoLog, TSortCriterion criterion = TotalTime, bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2);
 
+	/** Hierarchical display, sorting is done in branchs
+	  * \param displayEx	 true to display more detailed infos.
+	  * \param labelNumChar  
+	  */
+	static void		displaySummary(CLog *log= InfoLog, TSortCriterion criterion = TotalTime, bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2, uint maxDepth = 3);
+
 	/// Clears stats, and reinits all timer structure
 	static void		clear();		
 
@@ -386,11 +392,21 @@ private:
 		uint				CurrentChild;
 		// The childs, sorted by specific criterion.
 		std::vector<CNode*>	Children;
+		// The depth of the entry
+		uint				Depth;
 
 		explicit	CExamStackEntry(CNode *node)
 		{
 			Node= node;
 			CurrentChild= 0;
+			Depth = 0;
+		}
+
+		explicit	CExamStackEntry(CNode *node, uint depth)
+		{
+			Node= node;
+			CurrentChild= 0;
+			Depth = depth;
 		}
 	};
 

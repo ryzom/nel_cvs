@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.8 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: command.cpp,v 1.9 2002/03/14 09:48:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,27 +110,125 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log)
 	vector<string> args;
 	string command;
 
-	char seps[]   = " ,\t\n";
-	char *token;
-	token = strtok ((char *)commandWithArgs.c_str(), seps);
-	if (token == NULL)
+	bool firstArg = true;
+	uint i = 0;
+	while (true)
 	{
-		command = commandWithArgs;
-	}
-	else
-	{
-		command = token;
-
-		token = strtok (NULL, seps);
-		while (token != NULL)
+		// skip whitespace
+		while (true)
 		{
-			args.push_back(token);
-			token = strtok (NULL, seps);
+			if (i == commandWithArgs.size())
+			{
+				goto end;
+				return;
+			}
+			if (commandWithArgs[i] != ' ' && commandWithArgs[i] != '\t' && commandWithArgs[i] != '\n' && commandWithArgs[i] != '\r')
+			{
+				break;
+			}
+			i++;
+		}
+		
+		// get param
+		string arg;
+		if (commandWithArgs[i] == '\"')
+		{
+			// starting with a quote "
+			i++;
+			while (true)
+			{
+				if (i == commandWithArgs.size())
+				{
+					log.displayNL ("Missing end quote character \"");
+					return;
+				}
+				if (commandWithArgs[i] == '"')
+				{
+					i++;
+					break;
+				}
+				if (commandWithArgs[i] == '\\')
+				{
+					// manage escape char backslash
+					i++;
+					if (i == commandWithArgs.size())
+					{
+						log.displayNL ("Missing character after the backslash \\ character");
+						return;
+					}
+					switch (commandWithArgs[i])
+					{
+						case '\\':	arg += '\\'; break; // double backslash
+						case 'n':	arg += '\n'; break; // new line
+						case '"':	arg += '"'; break; // "
+						default:
+							log.displayNL ("Unknown escape code '\\%c'", commandWithArgs[i]);
+							return;
+					}
+					i++;
+				}
+				else
+				{
+					arg += commandWithArgs[i++];
+				}
+			}
+		}
+		else
+		{
+			// normal word
+			while (true)
+			{
+				if (commandWithArgs[i] == '\\')
+				{
+					// manage escape char backslash
+					i++;
+					if (i == commandWithArgs.size())
+					{
+						log.displayNL ("Missing character after the backslash \\ character");
+						return;
+					}
+					switch (commandWithArgs[i])
+					{
+						case '\\':	arg += '\\'; break; // double backslash
+						case 'n':	arg += '\n'; break; // new line
+						case '"':	arg += '"'; break; // "
+						default:
+							log.displayNL ("Unknown escape code '\\%c'", commandWithArgs[i]);
+							return;
+					}
+					i++;
+				}
+				else
+				{
+					arg += commandWithArgs[i++];
+				}
+				if (i == commandWithArgs.size() || commandWithArgs[i] == ' ' || commandWithArgs[i] == '\t' || commandWithArgs[i] == '\n' || commandWithArgs[i] == '\r')
+				{
+					break;
+				}
+			}
+		}
+		if (firstArg)
+		{
+			command = arg;
+			firstArg = false;
+		}
+		else
+		{
+			args.push_back (arg);
 		}
 	}
+end:
+
+/* displays args fordebug purpose
+	nlinfo ("c '%s'", command.c_str());
+	for (uint t = 0; t < args.size (); t++)
+	{
+		nlinfo ("p%d '%s'", t, args[t].c_str());
+	}
+*/
 	
 	// find the command	
-	
 	TCommand::iterator comm = (*Commands).find(commandWithArgs.c_str());
 	if (comm == (*Commands).end ())
 	{

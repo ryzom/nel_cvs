@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.36 2003/04/18 15:15:04 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.37 2004/05/26 14:34:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,11 +111,17 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 			addObjTracks (animation, *obj, sBaseName);
 
 		// Export material tracks of this object
-		Mtl* mtl=node.GetMtl();
-		if (mtl)
+		int exportNodeMaterial = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, 0);
 		{
-			// Add material tracks in the animation
-			addMtlTracks (animation, *mtl, sBaseName);
+			if (exportNodeMaterial)
+			{			
+				Mtl* mtl=node.GetMtl();
+				if (mtl)
+				{
+					// Add material tracks in the animation
+					addMtlTracks (animation, *mtl, sBaseName);
+				}
+			}
 		}
 
 		// Add bones tracks

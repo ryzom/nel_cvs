@@ -26,7 +26,7 @@ CFG=3d - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=cl.exe
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "3d - Win32 Release"
@@ -48,7 +48,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d.lib"
 
@@ -71,7 +71,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d_debug.lib"
 
@@ -94,7 +94,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo /out:"../lib/nl3d.lib"
 # ADD LIB32 /nologo /out:"../lib/nl3d_rd.lib"
 
@@ -199,6 +199,14 @@ SOURCE=.\3d\landscape.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\landscape.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\landscape_profile.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\landscape_profile.h
 # End Source File
 # Begin Source File
 

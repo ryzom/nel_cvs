@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.33 2001/01/30 13:44:13 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.34 2001/02/01 16:32:23 berenguier Exp $
  *
  */
 
@@ -28,12 +28,14 @@
 #include "nel/3d/patch.h"
 #include "nel/3d/zone.h"
 #include "nel/misc/common.h"
+#include "nel/3d/landscape_profile.h"
 using namespace NLMISC;
 using namespace std;
 
 
 namespace NL3D 
 {
+
 
 
 // ***************************************************************************
@@ -159,6 +161,8 @@ CTessFace::CTessFace()
 
 	RecursMarkCanMerge=false;
 	RecursMarkForceMerge=false;
+
+	NL3D_PROFILE_LAND_ADD(ProfNTessFace, 1);
 }
 
 
@@ -178,6 +182,8 @@ CTessFace::~CTessFace()
 
 	FBase=FLeft=FRight= NULL;
 	*/
+
+	NL3D_PROFILE_LAND_ADD(ProfNTessFace, -1);
 }
 
 

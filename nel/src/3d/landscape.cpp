@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.41 2001/01/30 13:44:13 berenguier Exp $
+ * $Id: landscape.cpp,v 1.42 2001/02/01 16:32:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/3d/bsphere.h"
 #include "nel/3d/texture_file.h"
 #include "nel/3d/texture_far.h"
+#include "nel/3d/landscape_profile.h"
 using namespace NLMISC;
 using namespace std;
 
@@ -278,6 +279,15 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 	ItZoneMap	it;
 	sint		i;
 
+	// Yoyo: profile.
+	NL3D_PROFILE_LAND_SET(ProfNRdrFar0, 0);
+	NL3D_PROFILE_LAND_SET(ProfNRdrFar1, 0);
+	for(i=0;i<NL3D_MAX_TILE_PASS;i++)
+	{
+		NL3D_PROFILE_LAND_SET(ProfNRdrTile[i], 0);
+	}
+
+
 	// -1. Update globals
 	updateGlobals (refineCenter);
 
@@ -350,7 +360,7 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 					TileMaterial.texEnvArg0RGB(1, CMaterial::Previous, CMaterial::SrcColor);
 					// take the alpha from current stage.
 					TileMaterial.texEnvOpAlpha(1, CMaterial::Replace);
-					TileMaterial.texEnvArg1Alpha(1, CMaterial::Texture, CMaterial::SrcAlpha);
+					TileMaterial.texEnvArg0Alpha(1, CMaterial::Texture, CMaterial::SrcAlpha);
 					break;
 				case NL3D_TILE_PASS_LIGHTMAP: 
 					// modulate.
@@ -401,6 +411,9 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 
 				// Render!
 				driver->render(PBlock, TileMaterial);
+
+				// Yoyo: profile.
+				NL3D_PROFILE_LAND_ADD(ProfNRdrTile[i], PBlock.getNumTri());
 			}
 		}
 		else
@@ -425,6 +438,9 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 
 				// Render!
 				driver->render(PBlock, TileMaterial);
+
+				// Yoyo: profile.
+				NL3D_PROFILE_LAND_ADD(ProfNRdrTile[i], PBlock.getNumTri());
 			}
 		}
 	}
@@ -466,6 +482,9 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 
 		// Next render pass
 		itTile++;
+
+		// Yoyo: profile.
+		NL3D_PROFILE_LAND_ADD(ProfNRdrFar0, PBlock.getNumTri());
 	}
 
 	// 3. Far1Render pass.
@@ -505,6 +524,9 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 
 		// Next render pass
 		itTile++;
+
+		// Yoyo: profile.
+		NL3D_PROFILE_LAND_ADD(ProfNRdrFar1, PBlock.getNumTri());
 	}
 
 

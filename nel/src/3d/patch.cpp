@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.39 2001/01/30 13:44:13 berenguier Exp $
+ * $Id: patch.cpp,v 1.40 2001/02/01 16:32:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -761,7 +761,6 @@ static	uint8	*CurVBPtr;
 static	sint	CurVertexSize;
 static	sint	CurUV0Off;
 static	sint	CurUV1Off;
-static	sint	CurColorOff;
 void			CPatch::computeTileVertex(CTessVertex *vert, ITileUv *uv, sint idUv)
 {
 	// Compute/build the new vertex.
@@ -886,7 +885,6 @@ void			CPatch::renderTile(sint pass)
 		CurVertexSize= CTessFace::CurrentVB->getVertexSize();
 		CurUV0Off= CTessFace::CurrentVB->getTexCoordOff(0);
 		CurUV1Off= CTessFace::CurrentVB->getTexCoordOff(1);
-		CurColorOff= CTessFace::CurrentVB->getColorOff();
 
 		// Add tris.
 		CTessFace	*pFace= RdrTileRoot[pass];

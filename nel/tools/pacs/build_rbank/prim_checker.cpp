@@ -1,7 +1,7 @@
 /** \file prim_checker.cpp
  * <File description>
  *
- * $Id: prim_checker.cpp,v 1.3 2004/02/03 15:25:34 legros Exp $
+ * $Id: prim_checker.cpp,v 1.4 2004/02/03 16:36:21 legros Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -91,7 +91,6 @@ bool	CPrimChecker::build(const string &primitivesPath, const string &igLandPath,
 	vector<string>	files;
 	CPath::getPathContent(primitivesPath, true, false, true, files);
 
-/*
 	for (i=0; i<files.size(); ++i)
 	{
 		if (CFile::getExtension(files[i]) == "primitive")
@@ -99,7 +98,7 @@ bool	CPrimChecker::build(const string &primitivesPath, const string &igLandPath,
 			readFile(files[i]);
 		}
 	}
-*/
+
 	files.clear();
 	CPath::getPathContent(igLandPath, true, false, true, files);
 	CPath::getPathContent(igVillagePath, true, false, true, files);

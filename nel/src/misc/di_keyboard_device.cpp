@@ -1,7 +1,7 @@
 /** \file di_keyboard.cpp
  * <File description>
  *
- * $Id: di_keyboard_device.cpp,v 1.10 2003/05/19 13:13:49 corvazier Exp $
+ * $Id: di_keyboard_device.cpp,v 1.11 2003/05/20 14:04:26 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -114,6 +114,7 @@ static const CKeyConv DIToNel[] =
 	{DIK_LWIN, KeyLWIN, "LEFT WIN", false},
 	{DIK_RWIN, KeyRWIN, "RIGHT WIN", false},
 	{DIK_APPS, KeyAPPS, "APPS", false},		
+	{DIK_BACK, KeyBACK, "BACK", true},		
 	//
 	{DIK_SYSRQ, KeySNAPSHOT, "SNAPSHOT", false},
 	{DIK_SCROLL, KeySCROLL, "SCROLL", false},

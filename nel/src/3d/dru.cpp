@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.40 2004/08/13 15:33:34 vizerie Exp $
+ * $Id: dru.cpp,v 1.41 2004/10/19 12:48:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -214,7 +214,8 @@ void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& te
 
 	static CIndexBuffer pb;
 	if (pb.getName().empty()) NL_SET_IB_NAME(pb, "CDRU::drawBitmap");
-	pb.setNumIndexes (6);
+	pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+	pb.setNumIndexes (6);	
 	{
 		CIndexBufferReadWrite iba;
 		pb.lock (iba);
@@ -259,7 +260,8 @@ void	CDRU::drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CR
 
 	static CIndexBuffer pb;
 	if (pb.getName().empty()) NL_SET_IB_NAME(pb, "CDRU::drawLine");
-	pb.setNumIndexes (2);
+	pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+	pb.setNumIndexes (2);	
 	{
 		CIndexBufferReadWrite iba;
 		pb.lock (iba);
@@ -304,7 +306,8 @@ void	CDRU::drawTriangle (float x0, float y0, float x1, float y1, float x2, float
 
 	static CIndexBuffer pb;
 	if (pb.getName().empty()) NL_SET_IB_NAME(pb, "CDRU::drawTriangle");
-	pb.setNumIndexes (3);
+	pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+	pb.setNumIndexes (3);	
 	{
 		CIndexBufferReadWrite iba;
 		pb.lock (iba);
@@ -426,8 +429,12 @@ void			CDRU::drawTrianglesUnlit(const NLMISC::CTriangleUV	*trilist, sint ntris, 
 	vb.setNumVertices (ntris*3);
 
 	static	CIndexBuffer pb;
-	pb.setNumIndexes(ntris*3);
-
+	pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+	pb.setNumIndexes(ntris*3);	
+	if (pb.getFormat() == CIndexBuffer::Indices16)
+	{
+		nlassert(ntris * 3 <= 0xffff); 
+	}
 	{
 		CVertexBufferReadWrite vba;
 		vb.lock (vba);
@@ -470,7 +477,9 @@ void			CDRU::drawLinesUnlit(const NLMISC::CLine	*linelist, sint nlines, CMateria
 	vb.setNumVertices (nlines*2);
 
 	static	CIndexBuffer pb;
+	pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	pb.setNumIndexes(nlines*2);
+
 
 	{
 		CVertexBufferReadWrite vba;

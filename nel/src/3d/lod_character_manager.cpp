@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.19 2004/09/23 18:50:16 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.20 2004/10/19 12:50:20 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -321,10 +321,13 @@ void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &manager
 	// NB: addRenderCharacterKey() loop hardCoded for Vertex+UV+Normal+Color only.
 	nlassert( _VertexSize == NL3D_CLOD_VERTEX_SIZE );	// Vector + Normal + UV + RGBA
 
-
+	
 	// Alloc a minimum of primitives (2*vertices), to avoid as possible reallocation in addRenderCharacterKey
 	if(_Triangles.getNumIndexes()<_MaxNumVertices * 2)
+	{
+		_Triangles.setFormat(NL_LOD_CHARACTER_INDEX_FORMAT);
 		_Triangles.setNumIndexes(_MaxNumVertices * 2);
+	}
 
 	// Local manager matrix
 	_ManagerMatrixPos= managerPos;
@@ -720,14 +723,16 @@ bool			CLodCharacterManager::addRenderCharacterKey(CLodCharacterInstance &instan
 			// realloc tris if needed.
 			if(_CurrentTriId+numTriIdxs > _Triangles.getNumIndexes())
 			{
+				_Triangles.setFormat(NL_LOD_CHARACTER_INDEX_FORMAT);
 				_Triangles.setNumIndexes(_CurrentTriId+numTriIdxs);
 			}
 
 			// reindex and copy tris
 			CIndexBufferReadWrite iba;
 			_Triangles.lock(iba);
-			const uint32	*srcIdx= clod->getTriangleArray();
-			uint32			*dstIdx= iba.getPtr()+_CurrentTriId;
+			const TLodCharacterIndexType	*srcIdx= clod->getTriangleArray();
+			nlassert(sizeof(TLodCharacterIndexType) == _Triangles.getIndexNumBytes());
+			TLodCharacterIndexType		*dstIdx= (TLodCharacterIndexType *) iba.getPtr()+_CurrentTriId;
 			for(;numTriIdxs>0;numTriIdxs--, srcIdx++, dstIdx++)
 			{
 				*dstIdx= *srcIdx + _CurrentVertexId;

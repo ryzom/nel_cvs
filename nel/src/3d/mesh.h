@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.43 2004/08/13 15:38:05 vizerie Exp $
+ * $Id: mesh.h,v 1.44 2004/10/19 12:51:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -520,6 +520,7 @@ private:
 		{
 			NL_SET_IB_NAME(PBlock, "CMesh::CRdrPass::PBlock");
 			NL_SET_IB_NAME(VBHeapPBlock, "CMesh::CRdrPass::VBHeapPBlock");
+			PBlock.setFormat(NL_MESH_INDEX_FORMAT);
 		}
 	};
 

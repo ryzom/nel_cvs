@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.86 2004/10/05 17:03:01 vizerie Exp $
+ * $Id: mesh.cpp,v 1.87 2004/10/19 12:51:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,8 +224,7 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 		_MatrixBlocks.clear();
 		// build matrix blocks, and link faces to good matrix blocks.
 		buildSkin(m, tmpFaces);
-	}
-
+	}	
 
 	/// 2. Then, for all faces, resolve continuities, building VBuffer.
 	//================================================
@@ -329,8 +328,10 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 		for(i=0;i<(sint)_MatrixBlocks[mb].RdrPass.size(); i++)
 		{
 			_MatrixBlocks[mb].RdrPass[i].MaterialId= i;
+			// for build, force 32 bit indices
+			_MatrixBlocks[mb].RdrPass[i].PBlock.setFormat(CIndexBuffer::Indices32);
 		}
-	}
+	}	
 
 	
 	/// 4. Then, for all faces, build the RdrPass PBlock.
@@ -1069,7 +1070,15 @@ bool	CMeshGeom::retrieveTriangles(std::vector<uint32> &indices) const
 			CIndexBufferRead iba;
 			pb.lock (iba);
 			// copy
-			memcpy(&indices[triIdx*3], iba.getPtr(), pb.getNumIndexes()*sizeof(uint32));
+			if (pb.getFormat() == CIndexBuffer::Indices32)
+			{
+				memcpy(&indices[triIdx*3], iba.getPtr(), pb.getNumIndexes()*sizeof(uint32));
+			}
+			else
+			{
+				// std::copy will convert from 16 bits index to 32 bit index
+				std::copy((uint16 *) iba.getPtr(), ((uint16 *) iba.getPtr()) +  pb.getNumIndexes(), &indices[triIdx*3]);
+			}
 			// next
 			triIdx+= pb.getNumIndexes()/3;
 		}
@@ -1831,8 +1840,7 @@ void	CMeshGeom::flagSkinVerticesForMatrixBlock(uint8 *skinFlags, CMatrixBlock &m
 	for(uint i=0; i<mb.RdrPass.size(); i++)
 	{
 		CIndexBuffer	&PB= mb.RdrPass[i].PBlock;
-
-		uint32	*pIndex;
+		
 		uint	nIndex;
 
 		// This may be better to flags in 2 pass (first traverse primitives, then test vertices).
@@ -1844,10 +1852,19 @@ void	CMeshGeom::flagSkinVerticesForMatrixBlock(uint8 *skinFlags, CMatrixBlock &m
 		// Tris.
 		CIndexBufferRead iba;
 		PB.lock (iba);
-		pIndex= (uint32*)iba.getPtr();
 		nIndex= PB.getNumIndexes();
-		for(;nIndex>0;nIndex--, pIndex++)
-			skinFlags[*pIndex]&= NL3D_SOFTSKIN_VMUSTCOMPUTE;
+		if (iba.getFormat() == CIndexBuffer::Indices32)
+		{
+			uint32 *pIndex= (uint32*)iba.getPtr();
+			for(;nIndex>0;nIndex--, pIndex++)
+				skinFlags[*pIndex]&= NL3D_SOFTSKIN_VMUSTCOMPUTE;
+		}
+		else
+		{
+			uint16 *pIndex= (uint16*)iba.getPtr();
+			for(;nIndex>0;nIndex--, pIndex++)
+				skinFlags[*pIndex]&= NL3D_SOFTSKIN_VMUSTCOMPUTE;
+		}
 	}
 }
 
@@ -2046,7 +2063,7 @@ void	CMeshGeom::activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance
 }
 // ***************************************************************************
 void	CMeshGeom::renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *mi, float polygonCount, uint rdrPassId) 
-{
+{	
 	CMatrixBlock	&mBlock= _MatrixBlocks[0];
 
 	CRdrPass		&rdrPass= mBlock.RdrPass[rdrPassId];
@@ -2133,8 +2150,11 @@ void	CMeshGeom::computeMeshVBHeap(void *dst, uint indexStart)
 		srcPb.lock (ibaRead);
 		CIndexBufferReadWrite ibaWrite;
 		dstPb.lock (ibaWrite);
-		const uint32	*srcTriPtr= ibaRead.getPtr();
-		uint32			*dstTriPtr= ibaWrite.getPtr();
+		// nico : apparently not used, so don't manage 16 bits index here
+		nlassert(ibaRead.getFormat() == CIndexBuffer::Indices32);
+		nlassert(ibaWrite.getFormat() == CIndexBuffer::Indices32);
+		const uint32	*srcTriPtr= (const uint32 *) ibaRead.getPtr();
+		uint32			*dstTriPtr= (uint32 *) ibaWrite.getPtr();
 		for(j=0; j<dstPb.getNumIndexes();j++)
 		{
 			dstTriPtr[j]= srcTriPtr[j]+indexStart;

@@ -1,7 +1,7 @@
 /** \file lod_character_shape.cpp
  * <File description>
  *
- * $Id: lod_character_shape.cpp,v 1.10 2004/09/21 09:13:41 lecroart Exp $
+ * $Id: lod_character_shape.cpp,v 1.11 2004/10/19 12:50:38 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -285,9 +285,29 @@ void	CLodCharacterShapeBuild::serial(NLMISC::IStream &f)
 
 	f.serialCont(Vertices);
 	f.serialCont(SkinWeights);
-	f.serialCont(BonesNames);
-	f.serialCont(TriangleIndices);
-
+	f.serialCont(BonesNames);	
+	#ifdef NL_LOD_CHARACTER_INDEX16	
+		// must serial 16 bits index as 32 bits
+		if (f.isReading())
+		{
+			std::vector<uint32> readVect;
+			f.serialCont(readVect);
+			TriangleIndices.resize(readVect.size());
+			for(uint k = 0; k < readVect.size(); ++k)
+			{
+				nlassert(readVect[k] <= 0xffff);
+				TriangleIndices[k] = (uint16) readVect[k];
+			}
+		}
+		else
+		{
+			std::vector<uint32> saveVect(TriangleIndices.size());
+			std::copy(TriangleIndices.begin(), TriangleIndices.end(), saveVect.begin()); //  copy will do the job
+			f.serialCont(saveVect);
+		}
+	#else	
+		f.serialCont(TriangleIndices);
+	#endif
 	if(ver>=1)
 	{
 		f.serialCont(UVs);
@@ -362,7 +382,16 @@ void			CLodCharacterShape::buildMesh(const std::string &name, const CLodCharacte
 	_Name= name;
 	_NumVertices= numVertices;
 	_NumTriangles= triangleIndices.size()/3;
-	_TriangleIndices= triangleIndices;
+	#ifdef NL_LOD_CHARACTER_INDEX16
+		_TriangleIndices.resize(triangleIndices.size());
+		for(uint k = 0; k < triangleIndices.size(); ++k)
+		{
+			nlassert(triangleIndices[k] <= 0xffff);
+			_TriangleIndices[k] = (uint16) triangleIndices[k];
+		}
+	#else
+		_TriangleIndices= triangleIndices;
+	#endif
 	_UVs= uvs;
 	_Normals= normals;
 
@@ -520,7 +549,32 @@ void			CLodCharacterShape::serial(NLMISC::IStream &f)
 	f.serial(_NumTriangles);
 	f.serialCont(_Bones);
 	f.serialCont(_BoneMap);
-	f.serialCont(_TriangleIndices);
+	// nb : indices are always saved in 32 bits for compatibility
+	#ifndef NL_LOD_CHARACTER_INDEX16	
+		f.serialCont(_TriangleIndices);
+	#else	
+		if (f.isReading())
+		{
+			std::vector<uint32> savedIndices;
+			f.serialCont(savedIndices);
+			_TriangleIndices.resize(savedIndices.size());
+			for(uint k = 0; k < savedIndices.size(); ++k)
+			{
+				nlassert(savedIndices[k] <= 0xffff); 
+				_TriangleIndices[k] = (uint16) savedIndices[k];
+			}
+		}
+		else
+		{
+			std::vector<uint32> savedIndices;
+			savedIndices.resize(_TriangleIndices.size());
+			for(uint k = 0; k < savedIndices.size(); ++k)
+			{
+				savedIndices[k] = _TriangleIndices[k];
+			}
+			f.serialCont(savedIndices);
+		}
+	#endif
 	f.serialCont(_Anims);
 	f.serialCont(_AnimMap);
 
@@ -560,7 +614,7 @@ sint			CLodCharacterShape::getBoneIdByName(const std::string &name) const
 
 
 // ***************************************************************************
-const uint32	*CLodCharacterShape::getTriangleArray() const
+const TLodCharacterIndexType	*CLodCharacterShape::getTriangleArray() const
 {
 	if(_NumTriangles)
 		return &_TriangleIndices[0];

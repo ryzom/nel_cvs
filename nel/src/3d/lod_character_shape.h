@@ -1,7 +1,7 @@
 /** \file lod_character_shape.h
  * <File description>
  *
- * $Id: lod_character_shape.h,v 1.5 2003/11/21 16:19:55 berenguier Exp $
+ * $Id: lod_character_shape.h,v 1.6 2004/10/19 12:50:59 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -193,7 +193,7 @@ public:
 	sint			getBoneIdByName(const std::string &name) const;
 
 	/// get a ptr to the triangles indices
-	const uint32	*getTriangleArray() const;
+	const TLodCharacterIndexType *getTriangleArray() const;
 
 	/// get a ptr on the UVs.
 	const CUV		*getUVs() const;
@@ -291,7 +291,7 @@ private:
 	TStrIdMap				_BoneMap;
 
 	/// numTriangles * 3.
-	std::vector<uint32>		_TriangleIndices;
+	std::vector<TLodCharacterIndexType>		_TriangleIndices;
 
 	/// List of animation.
 	std::vector<CAnim>		_Anims;

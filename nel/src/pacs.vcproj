@@ -12,26 +12,35 @@
 	<Configurations>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\../obj/ReleaseDebug"
-			IntermediateDirectory=".\../obj/ReleaseDebug"
+			OutputDirectory="..\lib7\"
+			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="TRUE"
+				ImproveFloatingPointConsistency="TRUE"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="TRUE"
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,NL_RELEASE_DEBUG"
 				StringPooling="TRUE"
+				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
+				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdpacs.h"
-				PrecompiledHeaderFile=".\../obj/ReleaseDebug/pacs.pch"
-				AssemblerListingLocation=".\../obj/ReleaseDebug/"
-				ObjectFile=".\../obj/ReleaseDebug/"
-				ProgramDataBaseFileName=".\../obj/ReleaseDebug/"
+				PrecompiledHeaderThrough="std$(ProjectName).h"
+				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
+				AssemblerListingLocation="$(IntDir)"
+				ObjectFile="$(IntDir)"
+				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -39,7 +48,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib/nlpacs_rd.lib"
+				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -58,33 +67,42 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\../obj/Release"
-			IntermediateDirectory=".\../obj/Release"
+			OutputDirectory="..\lib7\"
+			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="TRUE"
+				ImproveFloatingPointConsistency="TRUE"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="TRUE"
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB"
 				StringPooling="TRUE"
+				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
+				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdpacs.h"
-				PrecompiledHeaderFile=".\../obj/Release/pacs.pch"
-				AssemblerListingLocation=".\../obj/Release/"
-				ObjectFile=".\../obj/Release/"
-				ProgramDataBaseFileName=".\../obj/Release/"
+				PrecompiledHeaderThrough="std$(ProjectName).h"
+				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
+				AssemblerListingLocation="$(IntDir)"
+				ObjectFile="$(IntDir)"
+				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib/nlpacs.lib"
+				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -103,8 +121,8 @@
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory=".\../obj/DebugFast"
-			IntermediateDirectory=".\../obj/DebugFast"
+			OutputDirectory="..\lib7\"
+			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -115,16 +133,20 @@
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_LIB,WIN32,_DEBUG,NL_DEBUG_FAST"
 				StringPooling="TRUE"
+				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
+				BufferSecurityCheck="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdpacs.h"
-				PrecompiledHeaderFile=".\../obj/DebugFast/pacs.pch"
-				AssemblerListingLocation=".\../obj/DebugFast/"
-				ObjectFile=".\../obj/DebugFast/"
-				ProgramDataBaseFileName=".\../obj/DebugFast/"
-				BrowseInformation="1"
+				PrecompiledHeaderThrough="std$(ProjectName).h"
+				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
+				AssemblerListingLocation="$(IntDir)"
+				ObjectFile="$(IntDir)"
+				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -132,7 +154,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib/nlpacs_debug_fast.lib"
+				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -151,8 +173,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\../obj/Debug"
-			IntermediateDirectory=".\../obj/Debug"
+			OutputDirectory="..\lib7\"
+			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -162,24 +184,28 @@
 				Optimization="0"
 				PreprocessorDefinitions="_LIB,__STL_DEBUG,WIN32,_DEBUG"
 				StringPooling="TRUE"
+				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
+				BufferSecurityCheck="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdpacs.h"
-				PrecompiledHeaderFile=".\../obj/Debug/pacs.pch"
-				AssemblerListingLocation=".\../obj/Debug/"
-				ObjectFile=".\../obj/Debug/"
-				ProgramDataBaseFileName=".\../obj/Debug/"
-				BrowseInformation="1"
+				PrecompiledHeaderThrough="std$(ProjectName).h"
+				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
+				AssemblerListingLocation="$(IntDir)"
+				ObjectFile="$(IntDir)"
+				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="4"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib/nlpacs_debug.lib"
+				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>

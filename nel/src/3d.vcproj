@@ -12,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\../obj/Release"
-			IntermediateDirectory=".\../obj/Release"
+			OutputDirectory="..\lib7\"
+			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -21,25 +21,34 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
-				InlineFunctionExpansion="1"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="TRUE"
+				ImproveFloatingPointConsistency="TRUE"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="TRUE"
 				PreprocessorDefinitions="_LIB,WIN32,NDEBUG"
 				StringPooling="TRUE"
+				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
+				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std3d.h"
-				PrecompiledHeaderFile=".\../obj/Release/3d.pch"
-				AssemblerListingLocation=".\../obj/Release/"
-				ObjectFile=".\../obj/Release/"
-				ProgramDataBaseFileName=".\../obj/Release/"
+				PrecompiledHeaderThrough="std$(ProjectName).h"
+				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
+				AssemblerListingLocation="$(IntDir)"
+				ObjectFile="$(IntDir)"
+				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib/nl3d.lib"
+				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -58,8 +67,8 @@
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory=".\../obj/DebugFast"
-			IntermediateDirectory=".\../obj/DebugFast"
+			OutputDirectory="..\lib7\"
+			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -71,16 +80,20 @@
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_LIB,WIN32,_DEBUG,NL_DEBUG_FAST"
 				StringPooling="TRUE"
+				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
+				BufferSecurityCheck="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std3d.h"
-				PrecompiledHeaderFile=".\../obj/DebugFast/3d.pch"
-				AssemblerListingLocation=".\../obj/DebugFast/"
-				ObjectFile=".\../obj/DebugFast/"
-				ProgramDataBaseFileName=".\../obj/DebugFast/"
-				BrowseInformation="1"
+				PrecompiledHeaderThrough="std$(ProjectName).h"
+				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
+				AssemblerListingLocation="$(IntDir)"
+				ObjectFile="$(IntDir)"
+				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -88,7 +101,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib/nl3d_debug_fast.lib"
+				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -107,8 +120,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\../obj/Debug"
-			IntermediateDirectory=".\../obj/Debug"
+			OutputDirectory="..\lib7\"
+			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -119,23 +132,28 @@
 				Optimization="0"
 				PreprocessorDefinitions="_LIB,__STL_DEBUG,WIN32,_DEBUG"
 				StringPooling="TRUE"
+				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
+				BufferSecurityCheck="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std3d.h"
-				PrecompiledHeaderFile=".\../obj/Debug/3d.pch"
-				AssemblerListingLocation=".\../obj/Debug/"
-				ObjectFile=".\../obj/Debug/"
-				ProgramDataBaseFileName=".\../obj/Debug/"
+				PrecompiledHeaderThrough="std$(ProjectName).h"
+				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
+				AssemblerListingLocation="$(IntDir)"
+				ObjectFile="$(IntDir)"
+				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="4"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib/nl3d_debug.lib"
+				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -154,8 +172,8 @@
 		</Configuration>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\../obj/ReleaseDebug"
-			IntermediateDirectory=".\../obj/ReleaseDebug"
+			OutputDirectory="..\lib7\"
+			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -163,18 +181,27 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
-				InlineFunctionExpansion="1"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="TRUE"
+				ImproveFloatingPointConsistency="TRUE"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="TRUE"
 				PreprocessorDefinitions="_LIB,WIN32,NDEBUG,NL_RELEASE_DEBUG"
 				StringPooling="TRUE"
+				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
+				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std3d.h"
-				PrecompiledHeaderFile=".\../obj/ReleaseDebug/3d.pch"
-				AssemblerListingLocation=".\../obj/ReleaseDebug/"
-				ObjectFile=".\../obj/ReleaseDebug/"
-				ProgramDataBaseFileName=".\../obj/ReleaseDebug/"
+				PrecompiledHeaderThrough="std$(ProjectName).h"
+				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
+				AssemblerListingLocation="$(IntDir)"
+				ObjectFile="$(IntDir)"
+				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -182,7 +209,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib/nl3d_rd.lib"
+				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -1442,16 +1469,16 @@
 						RelativePath=".\3d\ps_particle.h">
 					</File>
 					<File
-						RelativePath=".\3d\ps_particle_basic.cpp">
-					</File>
-					<File
-						RelativePath=".\3d\ps_particle_basic.h">
-					</File>
-					<File
 						RelativePath=".\3d\ps_particle2.cpp">
 					</File>
 					<File
 						RelativePath=".\3d\ps_particle2.h">
+					</File>
+					<File
+						RelativePath=".\3d\ps_particle_basic.cpp">
+					</File>
+					<File
+						RelativePath=".\3d\ps_particle_basic.h">
 					</File>
 					<File
 						RelativePath=".\3d\ps_quad.cpp">

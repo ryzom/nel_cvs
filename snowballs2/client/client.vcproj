@@ -12,7 +12,7 @@
 	<Configurations>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\ReleaseDebug"
+			OutputDirectory="ReleaseDebug"
 			IntermediateDirectory=".\ReleaseDebug"
 			ConfigurationType="1"
 			UseOfMFC="0"
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="freetype.lib odbc32.lib odbccp32.lib libxml2.lib"
+				AdditionalDependencies="libxml2.lib freetype.lib odbc32.lib odbccp32.lib"
 				OutputFile="ReleaseDebug/snowballs.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -68,7 +68,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
+			OutputDirectory="Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
 			UseOfMFC="0"
@@ -79,7 +79,9 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				PreprocessorDefinitions="WIN32,_DEBUG,_CONSOLE,__STL_DEBUG"
+				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
@@ -96,7 +98,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="freetype.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="libxml2.lib freetype.lib odbc32.lib odbccp32.lib"
 				OutputFile="Debug/snowballs.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -123,7 +125,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
+			OutputDirectory="Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="1"
 			UseOfMFC="0"
@@ -150,7 +152,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib"
+				AdditionalDependencies="libxml2.lib freetype.lib odbc32.lib odbccp32.lib"
 				OutputFile="Release/snowballs.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"

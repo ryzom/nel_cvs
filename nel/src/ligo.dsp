@@ -160,6 +160,10 @@ SOURCE=.\ligo\primitive.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ligo\primitive.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\ligo\transition.cpp
 # End Source File
 # Begin Source File

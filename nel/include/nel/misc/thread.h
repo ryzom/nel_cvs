@@ -1,7 +1,7 @@
 /** \file misc/thread.h
  * Base OS independant class interface for the thread management
  *
- * $Id: thread.h,v 1.16 2002/02/27 10:45:47 corvazier Exp $
+ * $Id: thread.h,v 1.17 2002/02/27 15:38:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,8 +82,18 @@ class IThread
 {
 public:
 
-	/// Implemented in the derived class
+	/** 
+	  * Create a new thread.
+	  * Implemented in the derived class.
+	  */
 	static IThread *create(IRunnable *runnable);
+
+	/** 
+	  * Return a pointer on the current thread.
+	  * Implemented in the derived class.
+	  * Not implemented under Linux.
+	  */
+	static IThread *getCurrentThread ();
 
 	virtual ~IThread () { }
 	
@@ -99,11 +109,19 @@ public:
 	/// Return a pointer to the runnable object
 	virtual IRunnable *getRunnable()=0;
 
-	// Return process CPU mask. This method can be call anytime, even if the thread is not started.
-	virtual uint64 getProcessCPUMask()=0;
-
-	// Set the CPU mask for this thread. Thread must have been started before.
+	/**
+	  * Set the CPU mask of this thread. Thread must have been started before.
+	  * The mask must be a subset of the CPU mask returned by IProcess::getCPUMask() thread process.
+	  * Not implemented under Linux.
+	  */
 	virtual bool setCPUMask(uint64 cpuMask)=0;
+
+	/**
+	  * Get the CPU mask of this thread. Thread must have been started before.
+	  * The mask should be a subset of the CPU mask returned by IProcess::getCPUMask() thread process.
+	  * Not implemented under Linux.
+	  */
+	virtual uint64 getCPUMask()=0;
 };
 
 
@@ -113,6 +131,30 @@ public:
 struct EThread : public Exception
 {
 	EThread (const char* message) : Exception (message) {};
+};
+
+
+/**
+ * Process base interface, must be implemented for all OS
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2000
+ */
+class IProcess
+{
+public:
+
+	/** 
+	  * Return a pointer on the current process.
+	  * Implemented in the derived class.
+	  */
+	static IProcess *getCurrentProcess ();
+
+	/**
+	  * Return process CPU mask. Each bit stand for a CPU usable by the process threads.
+	  * Not implemented under Linux.
+	  */
+	virtual uint64 getCPUMask()=0;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.7 2002/02/27 10:45:47 corvazier Exp $
+ * $Id: win_thread.cpp,v 1.8 2002/02/27 15:38:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,31 +33,79 @@
 
 namespace NLMISC {
 
+CWinThread MainThread ((void*)GetCurrentThread (), GetCurrentThreadId());
+DWORD TLSThreadPointer = 0xFFFFFFFF;
+
 // the IThread static creator
 IThread *IThread::create (IRunnable *runnable)
 {
 	return new CWinThread (runnable);
 }
 
+IThread *IThread::getCurrentThread ()
+{
+	// TLS alloc must have been done	
+	nlassert (TLSThreadPointer != 0xffffffff);
+
+	// Get the thread pointer
+	IThread *thread = (IThread*)TlsGetValue (TLSThreadPointer);
+
+	// Return current thread
+	return thread;
+}
+ 
 static unsigned long __stdcall ProxyFunc (void *arg)
 {
 	CWinThread *parent = (CWinThread *) arg;
-	parent->Runnable->run();
 
+	// TLS alloc must have been done	
+	nlassert (TLSThreadPointer != 0xffffffff);
+
+	// Set the thread pointer in TLS memory
+	nlverify (TlsSetValue (TLSThreadPointer, (void*)parent));
+
+	// Run the thread
+	parent->Runnable->run();
+	
 	return 0;
 }
-
-
 
 CWinThread::CWinThread (IRunnable *runnable)
 {
 	this->Runnable = runnable;
 	ThreadHandle = NULL;
+	_MainThread = false;
+}
+
+CWinThread::CWinThread (void* threadHandle, uint32 threadId)
+{
+	// Main thread
+	_MainThread = true;
+	this->Runnable = NULL;
+	ThreadHandle = threadHandle;
+	ThreadId = threadId;
+
+	// TLS alloc must have been done	
+	TLSThreadPointer = TlsAlloc ();
+	nlassert (TLSThreadPointer!=0xffffffff);
+ 
+	// Set the thread pointer in TLS memory
+	nlverify (TlsSetValue (TLSThreadPointer, (void*)this));
 }
 
 CWinThread::~CWinThread ()
 {
-	if (ThreadHandle != NULL) terminate();
+	// If not the main thread
+	if (_MainThread)
+	{
+		if (ThreadHandle != NULL) terminate();
+	}
+	else
+	{
+		// Free TLS memory
+		nlassert (TLSThreadPointer!=0xffffffff);
+		TlsFree (TLSThreadPointer);
+	}
 }
 
 void CWinThread::start ()
@@ -89,20 +137,6 @@ void CWinThread::wait ()
 	ThreadHandle = NULL;
 }
 
-uint64 CWinThread::getProcessCPUMask()
-{
-	// Ask the system for number of processor available for this process
-	DWORD processAffinityMask;
-	DWORD systemAffinityMask;
-	if (GetProcessAffinityMask(GetCurrentProcess(), &processAffinityMask, &systemAffinityMask))
-	{
-		// Return the CPU mask
-		return (uint64)processAffinityMask;
-	}
-	else
-		return 1;
-}
-
 bool CWinThread::setCPUMask(uint64 cpuMask)
 {
 	// Thread must exist
@@ -111,6 +145,59 @@ bool CWinThread::setCPUMask(uint64 cpuMask)
 
 	// Ask the system for number of processor available for this process
 	return SetThreadAffinityMask ((HANDLE)ThreadHandle, (DWORD)cpuMask) != 0;
+}
+
+uint64 CWinThread::getCPUMask()
+{
+	// Thread must exist
+	if (ThreadHandle == NULL)
+		return 1;
+
+	// Get the current process mask
+	uint64 mask=IProcess::getCurrentProcess ()->getCPUMask ();
+
+	// Get thread affinity mask
+	DWORD old = SetThreadAffinityMask ((HANDLE)ThreadHandle, (DWORD)mask);
+	nlassert (old != 0);
+	if (old == 0)
+		return 1;
+
+	// Reset it
+	SetThreadAffinityMask ((HANDLE)ThreadHandle, (DWORD)old);
+
+	// Return the mask
+	return old;
+}
+
+// **** Process
+
+// The current process
+CWinProcess CurrentProcess ((void*)GetCurrentProcess());
+
+// Get the current process
+IProcess *IProcess::getCurrentProcess ()
+{
+	return &CurrentProcess;
+}
+
+CWinProcess::CWinProcess (void *handle)
+{
+	// Get the current process handle
+	_ProcessHandle = handle;
+}
+
+uint64 CWinProcess::getCPUMask()
+{
+	// Ask the system for number of processor available for this process
+	DWORD processAffinityMask;
+	DWORD systemAffinityMask;
+	if (GetProcessAffinityMask((HANDLE)_ProcessHandle, &processAffinityMask, &systemAffinityMask))
+	{
+		// Return the CPU mask
+		return (uint64)processAffinityMask;
+	}
+	else
+		return 1;
 }
 
 

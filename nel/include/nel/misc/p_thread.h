@@ -1,7 +1,7 @@
 /** \file p_thread.h
  * Posix implementation of CThread class (look at thread.h)
  *
- * $Id: p_thread.h,v 1.7 2002/02/27 10:45:47 corvazier Exp $
+ * $Id: p_thread.h,v 1.8 2002/02/27 15:38:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,8 +54,8 @@ public:
 	virtual void start();
 	virtual void terminate();
 	virtual void wait();
-	virtual uint64	getProcessCPUMask()
 	virtual bool setCPUMask(uint64 cpuMask);
+	virtual uint64 getCPUMask();
 
 	virtual IRunnable *getRunnable()
 	{
@@ -69,6 +69,19 @@ private:
 	bool		_Started;
 	pthread_t	_ThreadHandle;
 
+};
+
+/**
+ * Posix Process
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CPProcess : public IProcess
+{
+public:
+
+	virtual uint64 getCPUMask();
 };
 
 } // NLMISC

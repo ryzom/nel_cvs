@@ -1,7 +1,7 @@
 /** \file win_thread.h
  * Windows implementation of CThread class (look at thread.h)
  *
- * $Id: win_thread.h,v 1.7 2002/02/27 10:45:47 corvazier Exp $
+ * $Id: win_thread.h,v 1.8 2002/02/27 15:38:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,13 +47,16 @@ public:
 	/// Constructor
 	CWinThread(IRunnable *runnable);
 
+	/// Don't use this constructor, only used to initialise the main thread class
+	CWinThread (void* threadHandle, uint32 threadId);
+
 	virtual ~CWinThread();
 	
 	virtual void start();
 	virtual void terminate();
 	virtual void wait();
-	virtual uint64	getProcessCPUMask();
 	virtual bool setCPUMask(uint64 cpuMask);
+	virtual uint64 getCPUMask();
 
 	virtual IRunnable *getRunnable()
 	{
@@ -67,8 +70,26 @@ private:
 
 	void		*ThreadHandle;	// HANDLE	don't put it to avoid including windows.h
 	uint32		ThreadId;		// DWORD	don't put it to avoid including windows.h
+	bool		_MainThread;	// true if ths thread is the main thread, else false
 };
 
+/**
+ * Windows Process
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CWinProcess : public IProcess
+{
+public:
+
+	CWinProcess (void *handle);
+
+	virtual uint64 getCPUMask();
+
+private:
+	void	*_ProcessHandle;
+};
 
 } // NLMISC
 

@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * class CPThread (Posix threads)
  *
- * $Id: p_thread.cpp,v 1.7 2002/02/27 10:45:47 corvazier Exp $
+ * $Id: p_thread.cpp,v 1.8 2002/02/27 15:38:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,16 @@ IThread *IThread::create( IRunnable *runnable )
 	return new CPThread( runnable );
 }
 
+
+/*
+ * Get the current thread
+ */
+IThread *IThread::getCurrentThread ()
+{
+	/// \todo: implement this functionnality for posix thread
+	return NULL;
+)
+ 
 
 /*
  * Thread beginning
@@ -122,22 +132,42 @@ void CPThread::wait ()
 
 
 /*
- * getProcessCPUMask
- */
-uint64 CPThread::getProcessCPUMask()
-{
-	/// \todo: handle processor selection under posix thread
-	return 1;
-}
-
-
-/*
  * setCPUMask
  */
 bool CPThread::setCPUMask(uint64 cpuMask)
 {
 	/// \todo: handle processor selection under posix thread
 	return true;
+}
+
+
+/*
+ * getCPUMask
+ */
+uint64 CPThread::getCPUMask()
+{
+	/// \todo: handle processor selection under posix thread
+	return 1;
+}
+
+// **** Process
+
+// The current process
+CPProcess CurrentProcess;
+
+// Get the current process
+IProcess *IProcess::getCurrentProcess ()
+{
+	return &CurrentProcess;
+}
+
+/*
+ * getCPUMask
+ */
+uint64 CPProcess::getCPUMask()
+{
+	/// \todo: handle processor selection under posix thread
+	return 1;
 }
 
 

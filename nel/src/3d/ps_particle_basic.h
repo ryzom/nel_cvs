@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * <File description>
  *
- * $Id: ps_particle_basic.h,v 1.2 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_particle_basic.h,v 1.3 2001/12/06 16:51:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_PS_PARTICLE_BASIC_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/vector_2f.h"
 #include "3d/ps_located.h"
 #include "3d/ps_plane_basis.h"
 #include "3d/material.h"
@@ -394,10 +395,7 @@ class CPSTexturedParticle
 		void setTextureIndex(sint32 index);
 
 		/// get the animated texture index. MeaningFul only if a texture group was set
-		sint32 getTextureIndex(void) const { return _TextureIndex; } 
-
-
-		
+		sint32 getTextureIndex(void) const { return _TextureIndex; } 		
 
 		/// set the texture group being used. It toggles animation on
 		void setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> texGroup);
@@ -407,10 +405,6 @@ class CPSTexturedParticle
 
 		/// get the texture group used if there's a texture scheme, const version. (if null, there's no texture animation)
 		const CTextureGrouped *getTextureGroup(void) const { return _TexGroup; }
-
-
-
-
 
 		/** Set a constant texture for the particle
 		 *	This discard any previous scheme
@@ -426,18 +420,15 @@ class CPSTexturedParticle
 
 
 		/// ctor : default have no texture. You must set it, otherwise you'll get an assertion when it's drawn
-
-
 		CPSTexturedParticle();
 
 		/// dtor
 		~CPSTexturedParticle();
 
 		/// serialization. We choose a different name because of multiple-inheritance
-
 		void serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::EStream);		
 
-
+		
 	protected:	
 		
 		/// deriver must return their owner there
@@ -476,9 +467,148 @@ class CPSTexturedParticle
 
 
 
+/** This class add multitexturing support to particles. It doesn't support texture animation however.
+  * It adds a second texture that is combined with the main texture by using a given operation.
+  * An alternate mode must be provided, for gfx boards that doesn't support the op.
+  * For now, 2 stages only are supported.
+  */
+class CPSMultiTexturedParticle
+{
+public:
+	/// ctor
+	CPSMultiTexturedParticle();
 
+	/// we only use a useful set of operations
+	enum TOperator { Add = 0, Modulate, Decal, EnvBumpMap, Last = 0xff };
+
+	/// when set to false, this discard the textures that have been set
+	void						enableMultiTexture(bool enabled = true);
+	bool						isMultiTextureEnabled() const	{ return (_MultiTexState & (uint8) MultiTextureEnabled) != 0; }
+
+	/// Set the main texture for multitexturing. Convert the texture to / from a bumpmap if needed (so you just provide its heightmap)
+	void						setTexture2(ITexture *tex);	
+
+	/// Get the main texture for multitexturing
+	const ITexture				*getTexture2() const { return _Texture2; }
+	ITexture					*getTexture2() { return _Texture2; }
+
+	/** Set the operation for the main texture. When EnvBumpMap is used, setTexture2 must be called with a bump map,
+	  * and the primary texture must be convertible to rgba. Convert the texture to / from a bumpmap if needed
+	  */
+	void						setMainTexOp(TOperator op);
+	
+
+	TOperator					getMainTexOp() const	   { return _MainOp; }
+
+	// Enable the use of an alternate texture for multitexturing. When disabled, this discard the textures that may have been set.
+	void						enableAlternateTex(bool enabled = true);
+	bool						isAlternateTexEnabled() const { return (_MultiTexState & (uint8) AlternateTextureEnabled) != 0; }
+	
+	/// Set the alternate texture for multitexturing. It is used when the main operator is not supported by the gfx board.
+	// Convert the texture to / from a bumpmap if needed. (so you just provide its heightmap)
+	void						setTexture2Alternate(ITexture *tex);
+
+	/// Get the alternate texture for multitexturing.
+	const ITexture				*getTexture2Alternate() const { return _AlternateTexture2; }
+	ITexture					*getTexture2Alternate() { return _AlternateTexture2; }
+
+	/// Set the operation for the alternate texture. Convert the texture to / from a bumpmap if needed.
+	void						setAlternateTexOp(TOperator op); 
+	
+	TOperator					getAlternateTexOp() const	    
+	{ 		
+		return _AlternateOp; 
+	}
+
+	/** set the scroll speed for tex 1 & 2 when the main op is used
+	  * \param stage can be set to 0 or one
+	  */
+	void						setScrollSpeed(uint stage, const NLMISC::CVector2f &sp) 
+	{
+		nlassert(stage < 2);
+		_TexScroll[stage] = sp;		
+	}
+	const NLMISC::CVector2f		&getScrollSpeed(uint stage) const
+	{
+		nlassert(stage < 2);
+		return _TexScroll[stage];
+	}
+
+
+
+	/** set the scroll speed for tex 1 & 2 when the alternate op is used
+	  * \param stage can be set to 0 or one
+	  */
+	void						setAlternateScrollSpeed(uint stage, const NLMISC::CVector2f &sp) 
+	{
+		nlassert(stage < 2);
+		_TexScrollAlternate[stage] = sp;
+	}
+	const NLMISC::CVector2f		&getAlternateScrollSpeed(uint stage) const
+	{
+		nlassert(stage < 2);
+		return _TexScrollAlternate[stage];
+	}
+
+	/// serial this object
+	void serialMultiTex(NLMISC::IStream &f) throw(NLMISC::EStream);	
+
+
+	/** setup a material from this object and a primary texture
+	  * drv is used to check the device caps.
+	  * Must be called before display when multitextureing is used
+	  */
+	void setupMaterial(ITexture *primary, IDriver *drv, CMaterial &mat);
+
+
+	/** this act as if the system had the most basic caps supported (no EMBM for example...)
+	  * Should be used only in edition mode for test
+	  */
+	static void forceBasicCaps(bool force = true) { _ForceBasicCaps =  force; }
+
+	/// test wether basic caps are forced
+	static  bool areBasicCapsForced() { return _ForceBasicCaps; }
+
+	/// Use the particle age rather than the global time to compute textures coordinates.
+	void	setUseLocalDate(bool use);
+	bool	getUseLocalDate() { return (_MultiTexState & ScrollUseLocalDate) != 0; }
+
+	/// Use the particle age rather than the global time to compute textures coordinates. (when alternate texture is used)
+	void	setUseLocalDateAlt(bool use);
+	bool	getUseLocalDateAlt() { return (_MultiTexState & ScrollUseLocalDateAlternate) != 0; }
+
+protected:	
+	void						setupMultiTexEnv(TOperator op, ITexture *tex1, ITexture *tex2, CMaterial &mat);	
+	TOperator					_MainOp, _AlternateOp;
+	NLMISC::CSmartPtr<ITexture> _Texture2;
+	NLMISC::CSmartPtr<ITexture> _AlternateTexture2;	
+
+	/// texture scrolling 
+	NLMISC::CVector2f _TexScroll[2];
+	/// alternate texture scrollMultiTextureEnabled
+	NLMISC::CVector2f _TexScrollAlternate[2];
+	
+	enum TMultiTexState {  TouchFlag = 0x01, MultiTextureEnabled = 0x02, AlternateTextureEnabled = 0x04, AlternateTextureUsed = 0x08, EnvBumpMapUsed = 0x10, BasicCapsForced = 0x20,
+							ScrollUseLocalDate = 0x40, ScrollUseLocalDateAlternate = 0x80
+						};
+	uint8   _MultiTexState;
+
+	/// test wether the alternate texture is used
+	bool	isAlternateTextureUsed() const { return (_MultiTexState & AlternateTextureUsed) != 0; }
+	bool	isEnvBumpMapUsed() const { return (_MultiTexState & EnvBumpMapUsed) != 0; }
+
+	void touch()		{ _MultiTexState |= (uint8) TouchFlag; }
+	void unTouch()		{ _MultiTexState &= ~ (uint8) TouchFlag; }
+	bool isTouched()	{ return (_MultiTexState & TouchFlag) != 0; }	
+	bool areBasicCapsForcedLocal() const { return (_MultiTexState & BasicCapsForced) != 0; }
+	void forceBasicCapsLocal(bool force) 
+	{ 
+		if (force) _MultiTexState |= BasicCapsForced;
+		else _MultiTexState &= ~BasicCapsForced;
+	}
+	static bool _ForceBasicCaps;	
+};
  
-
 
 /** this class adds tunable 3D rotation to a PLANE particle, it can be used by public multiple inheritance
  *  It must just produce 2 vectors that give the x and y vector of the local basis.
@@ -626,7 +756,7 @@ struct CPSShapeParticle
 };
 
 
-/** this contains material of a particle, this doesn't initilize anything, this just give the abylity to 
+/** this contains material of a particle, this doesn't initiliaze anything, this just give the abylity to 
   * change the blending mode
   */
 class CPSMaterial
@@ -638,7 +768,7 @@ public:
 	/// this enum summarize the useful modes for blending to the framebuffer
 	enum TBlendingMode { add, modulate, alphaBlend, alphaTest };	
 
-	/// serialization (not serial because it will be used via multiple-inheritance)
+	/// serialization (not named 'serial' because it will be used via multiple-inheritance)
 	void serialMaterial(NLMISC::IStream &f) throw(NLMISC::EStream);	
 
 	/// set the blending mode. The default is ass
@@ -646,6 +776,7 @@ public:
 
 	/// return the blending mode currently used
 	CPSMaterial::TBlendingMode getBlendingMode(void) const;
+	
 protected:
 	CMaterial _Mat;		
 };

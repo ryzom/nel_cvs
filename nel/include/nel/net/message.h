@@ -1,7 +1,7 @@
 /** \file message.h
  * CMessage class
  *
- * $Id: message.h,v 1.21 2001/05/07 09:32:11 chafik Exp $
+ * $Id: message.h,v 1.22 2001/05/23 08:41:31 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,23 @@
 #ifndef NL_MESSAGE_H
 #define NL_MESSAGE_H
 
+
+/* Choose between plain text messages and binary messages
+ * using the macro MESSAGES_PLAIN_TEXT
+ * Warning: if you choose plain_text, all the interdependant programs
+ * of your system must have the same encoding.
+ */
+#undef MESSAGES_PLAIN_TEXT
+
+
 #include <sstream>
 
+#ifdef MESSAGES_PLAIN_TEXT
+#include "nel/misc/string_stream.h"
+#else
 #include "nel/misc/mem_stream.h"
+#endif
+
 #include "nel/misc/string_id_array.h"
 
 #include <vector>
@@ -39,33 +53,53 @@ namespace NLNET
 
 /**
  * Message memory stream for network. Can be serialized to/from (see SerialBuffer()). Can be sent or received
- * over a network, using a CSocket or preferably a CMsgSocket object.
- *
- * warning: if you don't give a sida, the message type will not be associated with id so, it'll not be optimized
+ * over a network, using the NeL network engine.
+ * If MESSAGES_PLAIN_TEXT is defined, the messages will be serialized to/from plain text (human-readable),
+ * instead of binary.
+ * Warning: if you don't give a "sida", the message type will not be associated with id so, it'll not be optimized
  *
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2001
  */
+#ifdef MESSAGES_PLAIN_TEXT
+class CMessage : public NLMISC::CStringStream
+#else
 class CMessage : public NLMISC::CMemStream
+#endif
 {
 public:
 
 	CMessage (NLMISC::CStringIdArray &sida, const std::string &name = "", bool inputStream = false, uint32 defaultCapacity = 0) :
-		CMemStream (inputStream, defaultCapacity), _TypeSet (false), _SIDA (&sida), _HeaderSize(0xFFFFFFFF)
+#ifdef MESSAGES_PLAIN_TEXT
+	    CStringStream( inputStream, defaultCapacity ),
+#else
+		CMemStream (inputStream, defaultCapacity),
+#endif
+		_TypeSet (false), _SIDA (&sida), _HeaderSize(0xFFFFFFFF)
 	{
 		if (!name.empty())
 			setType (name);
 	}
 
 	CMessage (const std::string &name = "", bool inputStream = false, uint32 defaultCapacity = 0) :
-		CMemStream (inputStream, defaultCapacity), _TypeSet (false), _SIDA (NULL), _HeaderSize(0xFFFFFFFF)
+#ifdef MESSAGES_PLAIN_TEXT
+	    CStringStream( inputStream, defaultCapacity ),
+#else
+		CMemStream (inputStream, defaultCapacity),
+#endif
+		_TypeSet (false), _SIDA (NULL), _HeaderSize(0xFFFFFFFF)
 	{
 		if (!name.empty())
 			setType (name);
 	}
 
-	CMessage (NLMISC::CMemStream &memstr) : _HeaderSize(0xFFFFFFFF)
+#ifdef MESSAGES_PLAIN_TEXT
+	CMessage( NLMISC::CStringStream &memstr) :
+#else
+	CMessage (NLMISC::CMemStream &memstr) :
+#endif
+	_HeaderSize(0xFFFFFFFF)
 	{
 		fill (memstr.buffer (), memstr.length ());
 		uint8 LongFormat;

@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.16 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: message.cpp,v 1.17 2001/05/23 08:40:11 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,12 @@
  */
 
 #include "nel/net/message.h"
+
+#ifdef MESSAGES_PLAIN_TEXT
+#pragma message( "CMessage: compiling messages as plain text" )
+#else
+#pragma message( "CMessage: compiling messages as binary" )
+#endif
 
 namespace NLNET
 {

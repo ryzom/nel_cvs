@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.66 2002/06/17 14:22:41 lecroart Exp $
+ * $Id: object_viewer.cpp,v 1.67 2002/06/17 15:06:59 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -273,7 +273,7 @@ CObjectViewer::CObjectViewer ()
 			else
 			{
 				for (uint i=0; i<(uint)extensions_remapping.size(); i+=2)
-					CPath::remapExtension(extensions_remapping.asString(i), extensions_remapping.asString(i+1));
+					CPath::remapExtension(extensions_remapping.asString(i), extensions_remapping.asString(i+1), true);
 			}
 		}
 		catch (EUnknownVar &)

@@ -104,16 +104,28 @@ fn refresh_project_list =
 	project_file_list = getFiles (ligo_root_path + "*.max")
 	-- Refresh rollouts
 	-- material template
-	material_rollout.refresh_list ()
+	if material_rollout != undefined then
+	(
+		material_rollout.refresh_list ()
+	)
 	-- material zone
-	material_zone_rollout.refresh_mat_list ()
-	material_zone_rollout.refresh_zone_list material_zone_rollout.MaterialDDL.selected
+	if material_zone_rollout != undefined then
+	(
+		material_zone_rollout.refresh_mat_list ()
+		material_zone_rollout.refresh_zone_list material_zone_rollout.MaterialDDL.selected
+	)
 	-- transition template
-	transition_rollout.refresh_mat_list ()
-	transition_rollout.refresh_list ()
+	if transition_rollout != undefined then
+	(
+		transition_rollout.refresh_mat_list ()
+		transition_rollout.refresh_list ()
+	)
 	-- transition zone
-	transition_zone_rollout.refresh_trans_list ()
-	transition_zone_rollout.refresh_list transition_zone_rollout.TransitionDDL.selected
+	if transition_zone_rollout != undefined then
+	(
+		transition_zone_rollout.refresh_trans_list ()
+		transition_zone_rollout.refresh_list transition_zone_rollout.TransitionDDL.selected
+	)
 )
 
 -- Is this node a debug markers ?
@@ -1174,6 +1186,7 @@ group "Projects management"
 		)
 	)
 )
+
 
 rollout transition_rollout "Transition Template"
 (
@@ -2456,7 +2469,9 @@ group "Directories"
 
 )
 
--- Main entry
+-- ========== --
+-- Main entry --
+-- ========== --
 
 if ligoscape_tools_floater != undefined do
 (
@@ -2469,10 +2484,9 @@ if ligopath != "" then ligo_root_path = ligopath
 ligopath = getINISetting ((GetDir #plugcfg)+"\\ligo.ini") "LigoConfig" "LigoExportPath" 
 if ligopath != "" then ligo_export_path = ligopath
 
--- Get the project list
-refresh_project_list ()
-
 ligoscape_tools_floater = newRolloutFloater "NeL Ligoscape" 225 600
+
+refresh_project_list ()
 
 addrollout material_rollout ligoscape_tools_floater rolledUp:true
 addrollout transition_rollout ligoscape_tools_floater rolledUp:true
@@ -2480,6 +2494,7 @@ addrollout material_zone_rollout ligoscape_tools_floater rolledUp:true
 addrollout transition_zone_rollout ligoscape_tools_floater rolledUp:true
 addrollout properties_rollout ligoscape_tools_floater rolledUp:true
 addrollout options_rollout ligoscape_tools_floater rolledUp:true
+
 
 fn updataCallBack =
 (

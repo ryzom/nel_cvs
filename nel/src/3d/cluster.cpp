@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.8 2002/06/04 14:50:09 vizerie Exp $
+ * $Id: cluster.cpp,v 1.9 2002/06/13 13:47:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,50 @@ CCluster::CCluster ()
 	FatherVisible = VisibleFromFather = false;
 	Father = NULL;
 }
+
+
+// ***************************************************************************
+CCluster::~CCluster()
+{
+	unlinkFromClusterTree();
+}
+
+
+// ***************************************************************************
+void CCluster::unlinkFromParent()
+{
+	// unlink from father sons list
+	if (Father)
+	{
+		 Father->Children.erase(std::remove(Father->Children.begin(), Father->Children.end(), this), Father->Children.end());
+		 Father = NULL;
+	}
+}
+
+// ***************************************************************************
+void CCluster::unlinkSons()
+{
+	// tells all sons that they have no more father
+	for(uint k = 0; k < Children.size(); ++k)
+	{
+		if (Children[k]->Father == this)
+		{
+			Children[k]->Father = NULL;
+		}
+	}
+	NLMISC::contReset(Children);
+}
+
+
+
+// ***************************************************************************
+void CCluster::unlinkFromClusterTree()
+{
+	unlinkFromParent();
+	unlinkSons();	
+}
+
+
 
 // ***************************************************************************
 void CCluster::registerBasic ()

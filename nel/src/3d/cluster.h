@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.4 2002/06/04 14:50:09 vizerie Exp $
+ * $Id: cluster.h,v 1.5 2002/06/13 13:47:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,6 +70,8 @@ public:
 
 	CCluster();
 
+	~CCluster();
+
 	/**
 	 * Make the cluster volume from a plane made with 3 points
 	 * All the faces passed must be connected with at least one of the others
@@ -130,6 +132,7 @@ public:
 
 	bool isRoot() { return _LocalVolume.size() == 0; }
 
+	
 private:
 
 	static IModel *creator () {return new CCluster;}
@@ -154,6 +157,14 @@ private:
 	NLMISC::CAABBox _BBox;
 	/// All planes are oriented to the exterior of the volume
 	std::vector<NLMISC::CPlane> _Volume;
+private:
+	// This unlink this cluster from its sons and its parents
+	void	unlinkFromClusterTree();
+	//		unlink this cluster from its parent
+	void	unlinkFromParent();
+	//		unlink this cluster sons
+	void	unlinkSons();
+
 
 	/// Friends classes
 	friend class CInstanceGroup;

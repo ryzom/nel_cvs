@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.29 2003/07/03 10:14:35 lecroart Exp $
+ * $Id: login_server.cpp,v 1.30 2003/07/03 19:13:29 lecroart Exp $
  *
  */
 
@@ -54,6 +54,8 @@ static CCallbackServer *Server = NULL;
 static string ListenAddr;
 
 static bool AcceptInvalidCookie = false;
+
+static string DefaultUserPriv = "";
 
 static TDisconnectClientCallback DisconnectClientCallback = NULL;
 
@@ -259,6 +261,14 @@ void cfcbListenAddress (CConfigFile::CVar &var)
 	setListenAddress (var.asString());
 }
 
+void cfcbDefaultUserPriv(CConfigFile::CVar &var)
+{
+	// set the new ListenAddr
+	DefaultUserPriv = var.asString();
+	
+	nlinfo("The default user priv is '%s'", DefaultUserPriv.c_str());
+}
+
 void cfcbAcceptInvalidCookie(CConfigFile::CVar &var)
 {
 	// set the new ListenAddr
@@ -288,10 +298,15 @@ void CLoginServer::init (const string &listenAddress)
 	connectToWS ();
 	
 	try {
+		cfcbDefaultUserPriv(IService::getInstance()->ConfigFile.getVar("DefaultUserPriv"));
+		IService::getInstance()->ConfigFile.setCallback("DefaultUserPriv", cfcbDefaultUserPriv);
+	} catch(Exception &) { }
+	
+	try {
 		cfcbAcceptInvalidCookie (IService::getInstance()->ConfigFile.getVar("AcceptInvalidCookie"));
 		IService::getInstance()->ConfigFile.setCallback("AcceptInvalidCookie", cfcbAcceptInvalidCookie);
 	} catch(Exception &) { }
-	
+
 	try {
 		cfcbTimeBeforeEraseCookie (IService::getInstance()->ConfigFile.getVar("TimeBeforeEraseCookie"));
 		IService::getInstance()->ConfigFile.setCallback("TimeBeforeEraseCookie", cfcbTimeBeforeEraseCookie);
@@ -382,6 +397,7 @@ string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, st
 	if (AcceptInvalidCookie)
 	{
 		userName = "InvalidUserName";
+		userPriv = DefaultUserPriv;
 		return "";
 	}
 

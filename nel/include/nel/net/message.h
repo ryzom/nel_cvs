@@ -1,7 +1,7 @@
 /** \file message.h
  * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.32 2002/01/30 10:07:57 lecroart Exp $
+ * $Id: message.h,v 1.33 2002/02/18 12:58:05 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,9 +59,9 @@ public:
 
 	enum TStreamFormat { UseDefault, Binary, String };
 
-	CMessage (NLMISC::CStringIdArray &sida, const std::string &name = "", bool inputStream = false, TStreamFormat streamformat = UseDefault, uint32 defaultCapacity = 0);
+	CMessage (NLMISC::CStringIdArray &sida, const std::string &name = "", bool inputStream = false, TStreamFormat streamformat = UseDefault, uint32 defaultCapacity = 1000);
 
-	CMessage (const std::string &name = "", bool inputStream = false, TStreamFormat streamformat = UseDefault, uint32 defaultCapacity = 0);
+	CMessage (const std::string &name = "", bool inputStream = false, TStreamFormat streamformat = UseDefault, uint32 defaultCapacity = 1000);
 
 	CMessage (NLMISC::CMemStream &memstr);
 

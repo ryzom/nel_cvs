@@ -1,7 +1,7 @@
 /** \file build_clod_bank.cpp
  * build a .clodbank with a config file.
  *
- * $Id: build_clod_bank.cpp,v 1.1 2002/05/14 13:46:55 berenguier Exp $
+ * $Id: build_clod_bank.cpp,v 1.2 2002/05/14 16:21:42 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -54,9 +54,9 @@ int	main(int argc, char *argv[])
 	// Init serial
 	registerSerial3d();
 
-	if(argc<3)
+	if(argc<4)
 	{
-		puts("Usage:    build_clod_bank  config_file  destfile.clodbank");
+		puts("Usage:    build_clod_bank  path_file.cfg  config_file.cfg  destfile.clodbank  [bakeFrameRate=20] ");
 		return 0;
 	}
 
@@ -67,35 +67,40 @@ int	main(int argc, char *argv[])
 		CLodCharacterShapeBank	lodShapeBank;
 
 
-		// parse the config file.
+		// Read the frameRate to process bake of anims
+		float	bakeFrameRate= 20;
+		if(argc>=5)
+		{
+			bakeFrameRate= (float)atof(argv[4]);
+			if(bakeFrameRate<=1)
+			{
+				nlwarning("bad bakeFrameRate value, use a default of 20");
+				bakeFrameRate= 20;
+			}
+		}
+
+
+		// parse the path file.
 		//==================
 
 		// try to load the config file.
-		CConfigFile config;
-		config.load (argv[1]);
+		CConfigFile pathConfig;
+		pathConfig.load (argv[1]);
 
 		// Get the search pathes
-		CConfigFile::CVar &search_pathes = config.getVar ("search_pathes");
+		CConfigFile::CVar &search_pathes = pathConfig.getVar ("search_pathes");
 		for (i = 0; i < (uint)search_pathes.size(); i++)
 		{
 			// Add to search path
 			CPath::addSearchPath (search_pathes.asString(i));
 		}
 
-		// Read the frameRate to process bake of anims
-		float	bakeFrameRate;
-		try
-		{
-			CConfigFile::CVar &bake_frame_rate = config.getVar ("bake_frame_rate");
-			bakeFrameRate= bake_frame_rate.asFloat();
-			if(bakeFrameRate<=1)
-				throw (Exception());
-		}
-		catch(...)
-		{
-			nlwarning("bake_frame_rate var not found or bad value (must be >1), use a default of 20");
-			bakeFrameRate= 20;
-		}
+		// parse the config file.
+		//==================
+
+		// try to load the config file.
+		CConfigFile config;
+		config.load (argv[2]);
 
 		// For all .clod to process
 		//==================
@@ -105,6 +110,8 @@ int	main(int argc, char *argv[])
 		{
 			string	lodFileName= clod_list.asString(lodId);
 			string	lodName= CFile::getFilenameWithoutExtension(lodFileName);
+
+			printf("Process LOD: %s\n", lodFileName.c_str());
 
 			// Search the variable with this name.
 			try
@@ -158,6 +165,9 @@ int	main(int argc, char *argv[])
 				{
 					string	animFileName= clod_anim_list.asString(animId);
 
+					// display.
+					printf("Process Anim: %d/%d\r", animId, clod_anim_list.size()-1);
+
 					// Try to load the animation
 					CAnimation			*anim= new CAnimation;
 					// NB: fatal error if anim not found
@@ -167,6 +177,7 @@ int	main(int argc, char *argv[])
 					// Add to the builder. NB: animation will be delete in this method.
 					lodBuilder.addAnim(CFile::getFilenameWithoutExtension(animFileName).c_str(), anim, bakeFrameRate);
 				}
+				printf("\n");
 
 				// Add to the bank.
 				//===========================
@@ -188,7 +199,7 @@ int	main(int argc, char *argv[])
 		lodShapeBank.compile();
 
 		// Save
-		COFile	oFile(argv[2]);
+		COFile	oFile(argv[3]);
 		oFile.serial(lodShapeBank);
 		oFile.close();
 	}

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.60 2003/05/28 12:57:29 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.61 2003/07/16 16:59:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -414,8 +414,8 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 					}
 				}
 
-				// check wether this mesh is auto-animated
-				if (CExportNel::getScriptAppData (&node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, 0) != 0)
+				// check wether this mesh is auto-animated. Force to false if in view mode
+				if ( !_View && (CExportNel::getScriptAppData (&node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, 0) != 0) )
 				{
 					// yes, it is
 					meshBase->setAutoAnim(true);

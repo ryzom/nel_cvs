@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.13 2000/11/21 17:31:29 valignat Exp $
+ * $Id: message.cpp,v 1.14 2000/12/05 11:10:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,21 +28,17 @@
 namespace NLNET
 {
 
-
 uint32	CMessage::_MaxLength = 65536;
 uint32	CMessage::_MaxHeaderLength = 64;
 
 
 /*
- * Initialization constructor
+ * Constructor
  */
 CMessage::CMessage( std::string name, bool inputStream, uint32 defaultcapacity ) :
-	NLMISC::IStream( inputStream, true ),
+	CMemStream( inputStream, defaultcapacity ),
 	_MsgType( 0 )
 {
-	_Buffer.reserve( defaultcapacity );
-	_BufPos = _Buffer.begin();
-
 	if ( name != "" )
 	{
 		setType( name );
@@ -54,123 +50,22 @@ CMessage::CMessage( std::string name, bool inputStream, uint32 defaultcapacity )
  * Copy constructor
  */
 CMessage::CMessage( const CMessage& other ) :
-	NLMISC::IStream( other.isReading(), true )
+	NLMISC::CMemStream( other.isReading() )
 {
 	operator=( other );
 }
 
 
 /*
- * Assignment operator
+ * Assignment
  */
 CMessage& CMessage::operator=( const CMessage& other )
 {
-	_Buffer = other._Buffer;
-	_BufPos = _Buffer.begin() + other.lengthS();
+	CMemStream::operator=( other );
 	_MsgType = other._MsgType;
 	_MsgName = other._MsgName;
 	_TypeIsNumber = other._TypeIsNumber;
 	return *this;
-}
-
-
-/*
- * serial (inherited from IStream)
- */
-void CMessage::serialBuffer(uint8 *buf, uint len) throw(EStreamOverflow)
-{
-	if ( isReading() )
-	{
-		// Check that we don't read more than there is to read
-		if ( lengthS()+len > lengthR() )
-		{
-			//_asm int 3
-			throw EStreamOverflow();
-		}
-		// Serialize in
-		memcpy( buf, &(*_BufPos), len );
-		_BufPos += len;
-	}
-	else
-	{
-		// Serialize out
-		_Buffer.resize( _Buffer.size() + len );
-		_BufPos = _Buffer.end() - len;
-		memcpy( &(*_BufPos), buf, len );
-		_BufPos = _Buffer.end();
-	}
-}
-
-
-
-/*
- * serialBit (inherited from IStream)
- */
-void CMessage::serialBit(bool &bit) throw(EStreamOverflow)
-{
-	uint len = sizeof(uint8);
-	uint8 thebuf;
-
-	if ( isReading() )
-	{
-		// Check that we don't read more than there is to read
-		if ( lengthS()+len > lengthR() )
-		{
-			throw EStreamOverflow();
-		}
-		// Serialize in
-		memcpy( &thebuf, &(*_BufPos), len );
-		_BufPos += len;
-		bit = (thebuf!=0);
-	}
-	else
-	{
-		thebuf = (uint8)bit;
-		// Serialize out
-		_Buffer.resize( _Buffer.size() + len );
-		_BufPos = _Buffer.end() - len;
-		memcpy( &(*_BufPos), &thebuf, len );
-		_BufPos = _Buffer.end();
-	}
-}
-
-
-/*
- * Clears the message
- */
-void CMessage::clear()
-{
-	_Buffer.clear();
-	_BufPos = _Buffer.begin();
-}
-
-
-
-/*
- * Fills the message buffer
- */
-void CMessage::fill( const uint8 *srcbuf, uint32 len )
-{
-	if (len == 0) return;
-
-	_Buffer.resize( len );
-	_BufPos = _Buffer.begin();
-	memcpy( &(*_BufPos), srcbuf, len );
-}
-
-
-/* EXPERIMENTAL: Returns a pointer to the message buffer for filling by an external function (use at your own risk,
- * you MUST fill the number of bytes you specify in "msgsize").
- * This method prevents from doing one useless buffer copy, using fill().
- */
-uint8 *CMessage::bufferToFill( uint32 msgsize )
-{
-	if (msgsize == 0) return NULL;
-
-	// Same as fill() but the memcpy is done by an external function
-	_Buffer.resize( msgsize );
-	_BufPos = _Buffer.begin();
-	return &(*_BufPos);
 }
 
 

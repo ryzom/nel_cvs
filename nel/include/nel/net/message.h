@@ -1,7 +1,7 @@
 /** \file message.h
  * CMessage class
  *
- * $Id: message.h,v 1.14 2000/11/24 11:22:13 cado Exp $
+ * $Id: message.h,v 1.15 2000/12/05 11:10:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,97 +26,35 @@
 #ifndef NL_MESSAGE_H
 #define NL_MESSAGE_H
 
-#include "nel/misc/stream.h"
+#include "nel/misc/mem_stream.h"
 #include <vector>
 
 namespace NLNET
 {
 
-/// Exception class for CMessage
-class EMessage : public NLMISC::EStream
-{};
-
-/*class EMessageTypeNbr : public EMessage
-{
-	/// Returns the exception name
-	virtual const char	*what() const throw() {return "Bad message type code";}
-};
-
-class EMessageTypeStr : public EMessage
-{
-	/// Returns the exception name
-	virtual const char	*what() const throw() {return "Bad message type name";}
-};*/
-
-/// This exception is raised when someone tries to serialize in more than there is.
-class EStreamOverflow : public EMessage
-{
-	/// Returns the exception name
-	virtual const char	*what() const throw() {return "Stream Overflow Error";}
-};
-
-
 /// Type of message as a number
 typedef sint16 TTypeNum;
 
 
-/// Vector of uint8
-typedef std::vector<uint8> CVector8;
-
-/// Iterator on CVector8
-typedef CVector8::iterator It8;
-
-
 /**
- * Message memory stream. Can be serialized to/from (see SerialBuffer()). Can be sent or received
+ * Message memory stream for network. Can be serialized to/from (see SerialBuffer()). Can be sent or received
  * over a network, using a CSocket or preferably a CMsgSocket object.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
  */
-class CMessage : public NLMISC::IStream
+class CMessage : public NLMISC::CMemStream
 {
 public:
 
-	/// Initialization constructor
-	CMessage( std::string type="", bool inputStream=false, uint32 defaultcapacity=0 );
+	/// Constructor
+	CMessage( std::string name="", bool inputStream=false, uint32 defaultcapacity=0 );
 
 	/// Copy constructor
 	CMessage( const CMessage& other );
 
 	/// Assignment operator
 	CMessage&		operator=( const CMessage& other );
-
-	/// Method inherited from IStream
-	virtual void	serialBuffer(uint8 *buf, uint len) throw(EStreamOverflow);
-
-	/// Method inherited from IStream
-	virtual void	serialBit(bool &bit) throw(EStreamOverflow);
-
-	/// Clears the message
-	void			clear();
-
-	/** Returns the length (size) of the message, in bytes.
-	 * If isReading(), it is the number of bytes that can be read,
-	 * otherwise it is the number of bytes that have been written.
-	 */
-	uint32			length() const
-	{
-		if ( isReading() )
-		{
-			return lengthR();
-		}
-		else
-		{
-			return lengthS();
-		}
-	}
-
-	/// Returns a pointer to the message buffer (read only)
-	const uint8		*buffer() const
-	{
-		return &(*_Buffer.begin());
-	}
 
 	/// Returns if the message type is a number (and not a string)
 	bool			typeIsNumber() const
@@ -136,9 +74,6 @@ public:
 		return _MsgName;
 	}
 
-	/// Fills the message buffer, for reading
-	void			fill( const uint8 *srcbuf, uint32 len );
-
 	/// Sets the message type as a number (in range 0..32767)
 	void			setType( const TTypeNum msgtype )
 	{
@@ -152,12 +87,6 @@ public:
 		_MsgName = msgname;
 		_TypeIsNumber = false;
 	}
-
-	/** EXPERIMENTAL: Returns a pointer to the message buffer for filling by an external function (use at your own risk,
-	 * you MUST fill the number of bytes you specify in "msgsize").
-	 * This method prevents from doing one useless buffer copy, using fill().
-	 */
-	uint8			*bufferToFill( uint32 msgsize );
 
 	/// Returns the maximum message total size (header + payload)
 	static uint32	maxLength()
@@ -183,32 +112,14 @@ public:
 		return maxHeaderLength() - sizeof(sint16) - sizeof(uint32);
 	}
 
-protected:
-
-	/// Returns the serialized length (number of bytes written or read)
-	uint32			lengthS() const
-	{
-		return _BufPos-_Buffer.begin();
-
-	}
-
-	/// Returns the "read" message size (number of bytes to read)
-	uint32			lengthR() const
-	{
-		return _Buffer.size();
-	}
-
 private:
 
-	static uint32	_MaxLength;
-	static uint32	_MaxHeaderLength;
+	static uint32		_MaxLength;
+	static uint32		_MaxHeaderLength;
 
-	CVector8		_Buffer;
-	It8				_BufPos;
-	
-	TTypeNum		_MsgType;
-	std::string		_MsgName;
-	bool			_TypeIsNumber;
+	TTypeNum	_MsgType;
+	std::string			_MsgName;
+	bool				_TypeIsNumber;
 
 };
 

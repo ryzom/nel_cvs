@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.2 2000/12/05 10:38:35 corvazier Exp $
+ * $Id: mem_stream.cpp,v 1.3 2000/12/05 11:10:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,24 +29,14 @@ namespace NLMISC
 {
 
 
-uint32	CMemStream::_MaxLength = 65536;
-uint32	CMemStream::_MaxHeaderLength = 64;
-
-
 /*
  * Initialization constructor
  */
-CMemStream::CMemStream( std::string name, bool inputStream, uint32 defaultcapacity ) :
-	NLMISC::IStream( inputStream, true ),
-	_MsgType( 0 )
+CMemStream::CMemStream( bool inputStream, uint32 defaultcapacity ) :
+	NLMISC::IStream( inputStream, true )
 {
 	_Buffer.reserve( defaultcapacity );
 	_BufPos = _Buffer.begin();
-
-	if ( name != "" )
-	{
-		setType( name );
-	}
 }
 
 
@@ -67,9 +57,6 @@ CMemStream& CMemStream::operator=( const CMemStream& other )
 {
 	_Buffer = other._Buffer;
 	_BufPos = _Buffer.begin() + other.lengthS();
-	_MsgType = other._MsgType;
-	_MsgName = other._MsgName;
-	_TypeIsNumber = other._TypeIsNumber;
 	return *this;
 }
 

@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.14 2000/12/01 10:06:37 cado Exp $
+ * $Id: local_area.cpp,v 1.15 2000/12/05 11:10:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,9 @@ using namespace std;
 // Pointer to the local area singleton
 CLocalArea* CLocalArea::Instance = NULL;
 
+// Pointer to the client msg socket
+CMsgSocket *ClientSocket;
+
 
 // Creates a new remote entity
 inline void NLNET::createRemoteEntity( const IMovingEntity& es )
@@ -48,7 +51,7 @@ inline void NLNET::createRemoteEntity( const IMovingEntity& es )
 	{
 		CLocalArea::Instance->_NewEntityCallback( new_entity );
 	}
-	nlinfo( "New remote entity created at %f , %f", new_entity->pos().x, new_entity->pos().y );
+	nlinfo( "New remote entity %s created at %f , %f", new_entity->name().c_str(), new_entity->pos().x, new_entity->pos().y );
 }
 
 
@@ -120,10 +123,30 @@ void NLNET::cbProcessEntityStateFull( CMessage& msgin, TSenderId idfrom )
  */
 void NLNET::cbAssignId( CMessage& msgin, TSenderId idfrom )
 {
+	// Receive id
 	TEntityId id = 0;
 	msgin.serial( id );
 	CLocalArea::Instance->User.setId( id );
-	nldebug( "Local entity has id %u", id );
+	nldebug( "Local entity %s has id %u", CLocalArea::Instance->User.name().c_str(), id );
+
+	// Send entity state and name
+	CMessage msgout( "NAM" );
+	msgout.serial( CLocalArea::Instance->User );
+	msgout.serial( const_cast<string&>(CLocalArea::Instance->User.name()) );
+	ClientSocket->send( msgout );
+
+	// Create other remote entities
+	uint32 number;
+	string name;
+	msgin.serial( number );
+	IMovingEntity es;
+	for ( uint i=0; i!=number; i++ )
+	{
+		msgin.serial( es );
+		msgin.serial( name );
+		es.setName( name );
+		createRemoteEntity( es );
+	}
 }
 
 
@@ -140,6 +163,24 @@ void NLNET::cbRemoveEntity( CMessage& msgin, TSenderId idfrom )
 		CLocalArea::Instance->_EntityRemovedCallback( id );
 	}
 	nldebug( "Removed entity %u", id );
+}
+
+
+/*
+ * Callback cbCreateNewEntity (friend of CLocalArea)
+ */
+void NLNET::cbCreateNewEntity( CMessage& msgin, TSenderId idfrom )
+{
+	// Receive name
+	IMovingEntity es;
+	string name;
+	msgin.serial( es );
+	msgin.serial( name );
+	
+	// Create remote entity and set name
+	es.setName( name );
+	createRemoteEntity( es );
+	nldebug( "Entity %u is %s", es.id(), name.c_str() );
 }
 
 
@@ -174,12 +215,10 @@ TCallbackItem CbArray [] =
 	{ "FES", cbProcessEntityStateFull },
 	{ "ID", cbAssignId },
 	{ "RM", cbRemoveEntity },
+	{ "CRE", cbCreateNewEntity },
 	{ "D", cbHandleDisconnection },
 	{ "O", cbHandleUnknownMessage }
 };
-
-
-CMsgSocket *ClientSocket;
 
 
 namespace NLNET {
@@ -188,7 +227,7 @@ namespace NLNET {
 /*
  * Constructor
  */
-CLocalArea::CLocalArea() :
+CLocalArea::CLocalArea( const CVector& userpos, const CVector& userhdg ) :
 	_Radius( 400 ),
 	_NewEntityCallback( NULL ),
 	_EntityRemovedCallback( NULL ),
@@ -196,6 +235,8 @@ CLocalArea::CLocalArea() :
 {
 	nlassert( CLocalArea::Instance == NULL );
 	CLocalArea::Instance = this;
+	User.resetPos( userpos );
+	User.resetBodyHeading( userhdg );
 	ClientSocket = new CMsgSocket( CbArray, sizeof(CbArray)/sizeof(CbArray[0]), "DRServer" );
 	ClientSocket->setTimeout( 0 );
 }
@@ -276,6 +317,30 @@ void CLocalArea::update()
 		if ( !erased )
 		{
 			ipe++;
+		}
+	}
+}
+
+
+/*
+ * Returns the name of an entity in the local area
+ */
+const string *CLocalArea::nameFromId( TEntityId id )
+{
+	if ( id == User.id() )
+	{
+		return &(User.name());
+	}
+	else
+	{
+		CRemoteEntities::iterator ipr = _Neighbors.find( id );
+		if ( ipr != _Neighbors.end() )
+		{
+			return &((*ipr).second->name());
+		}
+		else
+		{
+			return NULL;
 		}
 	}
 }

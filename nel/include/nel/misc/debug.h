@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.18 2000/11/27 11:34:21 lecroart Exp $
+ * $Id: debug.h,v 1.19 2000/12/05 11:10:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,7 @@ NLMISC::DebugLog.setParam( __LINE__, __FILE__ ); NLMISC::DebugLog.displayNL
  * Same as nldebug but it will be display in debug and in release mode.
  */
 #define nlinfo \
-NLMISC::InfoLog.setParam( __LINE__, __FILE__ ); NLMISC::InfoLog.displayNL
+/*NLMISC::InfoLog.setParam( __LINE__, __FILE__ );*/ NLMISC::InfoLog.displayNL
 
 /**
  * \def nlwarning(exp)

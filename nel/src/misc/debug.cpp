@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.20 2000/12/01 10:11:44 corvazier Exp $
+ * $Id: debug.cpp,v 1.21 2000/12/05 11:10:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,6 +153,7 @@ void InitDebug ()
 		ErrorLog.addDisplayer (&sd);
 		WarningLog.addDisplayer (&sd);
 		InfoLog.addDisplayer (&sd);
+		InfoLog.setLongInfo(false);
 #ifdef NL_DEBUG
 		DebugLog.addDisplayer (&sd);
 		AssertLog.addDisplayer (&sd);

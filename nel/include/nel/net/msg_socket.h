@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.25 2000/11/30 17:01:34 cado Exp $
+ * $Id: msg_socket.h,v 1.26 2000/12/05 11:10:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -193,6 +193,20 @@ public:
 
 	/// Returns the address of a connected host
 	static const CInetAddress	*addressFromId( TSenderId id );
+
+	/// Returns the local address (client mode only)
+	const CInetAddress&			localAddr() const
+	{
+		//nlassert( _ClientSock!=NULL );
+		return _ClientSock->localAddr();
+	}
+
+	/// Returns the remote address (client mode only)
+	const CInetAddress&			remoteAddr() const
+	{
+		//nlassert( _ClientSock!=NULL );
+		return _ClientSock->remoteAddr();
+	}
 
 protected:
 

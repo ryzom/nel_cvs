@@ -1,7 +1,7 @@
 /** \file moving_entity.h
  * Interface for all moving entities
  *
- * $Id: moving_entity.h,v 1.7 2000/11/30 17:03:10 cado Exp $
+ * $Id: moving_entity.h,v 1.8 2000/12/05 11:10:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include <string>
 
 
 namespace NLNET {
@@ -96,6 +97,8 @@ public:
 	/// Returns identifier
 	TEntityId				id() const			{ return _Id; }
 
+	const std::string&		name() const		{ return _Name; }
+
 	/// Returns entity type
 	TEntityType				type() const		{ return _EntityType; }
 
@@ -134,6 +137,7 @@ public:
 	IMovingEntity&			operator= ( const IMovingEntity& other )
 	{
 		_Id = other._Id;
+		_Name = other._Name;
 		_EntityType = other._EntityType;
 		_Pos = other._Pos;
 		_BodyHdg = other._BodyHdg;
@@ -162,6 +166,12 @@ public:
 	 * The body heading is never transmitted.
 	 */
 	void					serial ( NLMISC::IStream &s );
+
+	/// Sets name
+	void					setName( const std::string& name )
+	{
+		_Name = name;
+	}
 
 	/// Sets id from outside
 	void					setId( TEntityId id )
@@ -206,6 +216,10 @@ public:
 	/// Sets angular velocity
 	void					setAngularVelocity ( TAngVelocity av )			{ _AngVel = av; }
 
+	// Custom data
+	uint32					Tag;
+	//void*					Data;
+
 protected:
 
 	/// Computes position using heading and velocity
@@ -224,6 +238,9 @@ private:
 	// Entity identifier
 	TEntityId				_Id;
 
+	// Name
+	std::string				_Name;
+	
 	// Type of entity
 	TEntityType				_EntityType;
 

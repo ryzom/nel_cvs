@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.10 2000/11/30 17:03:10 cado Exp $
+ * $Id: local_area.h,v 1.11 2000/12/05 11:10:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/net/socket.h"
 #include "nel/misc/time_nl.h"
 #include "nel/net/pt_callback_item.h"
+#include "nel/misc/vector.h"
 #include <map>
 
 
@@ -66,7 +67,7 @@ class CLocalArea
 public:
 
 	/// Constructor
-	CLocalArea();
+	CLocalArea( const NLMISC::CVector& userpos=NLMISC::CVector(), const NLMISC::CVector& userhdg=NLMISC::CVector() );
 
 	/// Destructor
 	~CLocalArea();
@@ -83,8 +84,8 @@ public:
 		_Neighbors.insert( std::make_pair(neighbor->id(),neighbor) );
 	}
 
-	/// Read access to the neighbors
-	const CRemoteEntities&	neighbors() const
+	/// Read/write access to the neighbors
+	CRemoteEntities&		neighbors()
 	{
 		return _Neighbors;
 	}
@@ -107,6 +108,9 @@ public:
 		_UnknownMessagesCallback = cb;
 	}
 
+	/// Returns the name of an entity in the local area
+	const std::string		*nameFromId( TEntityId id );	
+
 	/// The entity controlled by the player
 	CLocalEntity			User;
 
@@ -120,6 +124,7 @@ public:
 	friend void cbProcessEntityStateFull( CMessage& msgin, TSenderId idfrom );
 	friend void cbAssignId( CMessage& msgin, TSenderId idfrom );
 	friend void cbRemoveEntity( CMessage& msgin, TSenderId idfrom );
+	friend void cbCreateNewEntity( CMessage& msgin, TSenderId idfrom );
 	friend void cbHandleDisconnection( CMessage& msgin, TSenderId idfrom );
 	friend void cbHandleUnknownMessage( CMessage& msgin, TSenderId idfrom );
 	

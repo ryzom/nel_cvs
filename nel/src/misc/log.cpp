@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.11 2000/11/21 14:01:24 valignat Exp $
+ * $Id: log.cpp,v 1.12 2000/12/05 11:10:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,14 +141,14 @@ void CLog::display( const char *format, ... )
 	{
 		ss << cstime << " ";
 	}
-	ss << priorityStr().c_str() << " ";
+	ss << priorityStr().c_str();
 	if ( _Long )
 	{
 		ss << _LocalHostAndService.c_str();
 	}
 	if ( _File != NULL )
 	{
-		ss << getFilename(_File) << " " << _Line << " ";
+		ss << " " << getFilename(_File) << " " << _Line;
 	}
 	ss << ": " << cstring ;//<< endl;
 

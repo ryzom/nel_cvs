@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * CMemStream class
  *
- * $Id: mem_stream.h,v 1.2 2000/12/05 10:38:54 corvazier Exp $
+ * $Id: mem_stream.h,v 1.3 2000/12/05 11:10:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,10 +56,6 @@ class EStreamOverflow : public EMemStream
 };
 
 
-/// Type of message as a number
-typedef sint16 TTypeNum;
-
-
 /// Vector of uint8
 typedef std::vector<uint8> CVector8;
 
@@ -79,7 +75,7 @@ class CMemStream : public NLMISC::IStream
 public:
 
 	/// Initialization constructor
-	CMemStream( std::string type="", bool inputStream=false, uint32 defaultcapacity=0 );
+	CMemStream( bool inputStream=false, uint32 defaultcapacity=0 );
 
 	/// Copy constructor
 	CMemStream( const CMemStream& other );
@@ -144,40 +140,9 @@ public:
 		return &(*_Buffer.begin());
 	}
 
-	/// Returns if the message type is a number (and not a string)
-	bool			typeIsNumber() const
-	{
-		return _TypeIsNumber;
-	}
-
-	/// Returns message type code. Valid if typeIsNumber()
-	uint16			typeAsNumber() const
-	{
-		return _MsgType;
-	}
-
-	/// Returns message name. Valid if !typeIsNumber()
-	std::string		typeAsString() const
-	{
-		return _MsgName;
-	}
-
 	/// Fills the message buffer, for reading
 	void			fill( const uint8 *srcbuf, uint32 len );
 
-	/// Sets the message type as a number (in range 0..32767)
-	void			setType( const TTypeNum msgtype )
-	{
-		_MsgType = msgtype;
-		_TypeIsNumber = true;
-	}
-
-	/// Sets the message type as a string
-	void			setType( const std::string& msgname )
-	{
-		_MsgName = msgname;
-		_TypeIsNumber = false;
-	}
 
 	/** EXPERIMENTAL: Returns a pointer to the message buffer for filling by an external function (use at your own risk,
 	 * you MUST fill the number of bytes you specify in "msgsize").
@@ -185,29 +150,6 @@ public:
 	 */
 	uint8			*bufferToFill( uint32 msgsize );
 
-	/// Returns the maximum message total size (header + payload)
-	static uint32	maxLength()
-	{
-		return CMemStream::_MaxLength;
-	}
-
-	/// Returns the maximum message header size
-	static uint32	maxHeaderLength()
-	{
-		return CMemStream::_MaxHeaderLength;
-	}
-
-	/// Returns the maximum message payload size
-	static uint32	maxPayloadLength()
-	{
-		return maxLength() - maxHeaderLength();
-	}
-
-	/// Returns the maximum message name length
-	static uint32	maxNameLength()
-	{
-		return maxHeaderLength() - sizeof(sint16) - sizeof(uint32);
-	}
 
 protected:
 
@@ -226,16 +168,9 @@ protected:
 
 private:
 
-	static uint32	_MaxLength;
-	static uint32	_MaxHeaderLength;
-
 	CVector8		_Buffer;
 	It8				_BufPos;
 	
-	TTypeNum		_MsgType;
-	std::string		_MsgName;
-	bool			_TypeIsNumber;
-
 };
 
 }

@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.5 2001/07/17 16:57:42 cado Exp $
+ * $Id: source_user.cpp,v 1.6 2001/07/19 12:49:26 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,7 +118,7 @@ void					CSourceUser::setLooping( bool l )
 	_Looping = l;
 	if ( _Track != NULL )
 	{
-		_Track->DrvSource->setLooping( true );
+		_Track->DrvSource->setLooping( l );
 	}
 }
 

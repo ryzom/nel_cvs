@@ -1,7 +1,7 @@
 /** \file class_registry.cpp
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.cpp,v 1.6 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: class_registry.cpp,v 1.7 2002/03/11 10:15:36 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@ IClassable	*CClassRegistry::create(const string &className)  throw(ERegistry)
 
 	node.ClassName= className;
 	it=RegistredClasses.find(node);
+
 	if(it==RegistredClasses.end())
 		return NULL;
 	else

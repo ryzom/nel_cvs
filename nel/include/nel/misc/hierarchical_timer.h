@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.13 2002/06/07 15:12:09 vizerie Exp $
+ * $Id: hierarchical_timer.h,v 1.14 2002/06/10 09:24:26 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -54,6 +54,13 @@
 #	define H_AUTO(__name)		static NLMISC::CHTimer	__name##_timer(#__name); NLMISC::CAutoTimer	__name##_auto(&__name##_timer);
 	// display the timer info after each loop call
 #	define H_AUTO_INST(__name)	static NLMISC::CHTimer	__name##_timer(#__name); NLMISC::CAutoTimer	__name##_auto(&__name##_timer, true);
+
+/** H_AUTO splitted in 2. The declaration of the static timer, and a CAutoTimer instance.
+ *	Usefull to group same timer bench in different functions for example
+ */
+#	define H_AUTO_DECL(__name)		static NLMISC::CHTimer	__name##_timer(#__name); 
+#	define H_AUTO_USE(__name)		NLMISC::CAutoTimer	__name##_auto(&__name##_timer);
+
 #else
 	// void macros
 #	define H_TIME(name, inst)	
@@ -61,6 +68,8 @@
 #	define H_AFTER(__name)	
 #	define H_AUTO(__name)	
 #	define H_AUTO_INST(__name)
+#	define H_AUTO_DECL(__name)
+#	define H_AUTO_USE(__name)
 #endif
 
 
@@ -251,6 +260,13 @@ public:
 	  */
 	static void		displayHierarchicalByExecutionPath(bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2);
 
+	/** Hierarchical display, sorting is done in branchs
+	  * \param IDisplayer	 if NULL, display to nlinfoLog, else display to the displayer.
+	  * \param displayEx	 true to display more detailed infos.
+	  * \param labelNumChar  
+	  */
+	static void		displayHierarchicalByExecutionPathSorted(IDisplayer *displayer= NULL, TSortCriterion criterion = TotalTime, bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2);
+
 	/// Clears stats, and reinits all timer structure
 	static void		clear();		
 
@@ -361,6 +377,27 @@ private:
 		// Less operator
 		bool operator()(const CStats *lhs, const CStats *rhs);
 	};
+
+
+	/** For Hierarchical + sorted display. displayHierarchicalByExecutionPath()
+	 *
+	 */
+	struct	CExamStackEntry
+	{
+		// The node.
+		CNode				*Node;
+		// The current child to process.
+		uint				CurrentChild;
+		// The childs, sorted by specific criterion.
+		std::vector<CNode*>	Children;
+
+		explicit	CExamStackEntry(CNode *node)
+		{
+			Node= node;
+			CurrentChild= 0;
+		}
+	};
+
 
 private:
 	// walk the tree to current execution node, creating it if necessary

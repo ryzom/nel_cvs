@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.10 2002/06/07 15:12:23 vizerie Exp $
+ * $Id: hierarchical_timer.cpp,v 1.11 2002/06/10 09:25:15 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -507,32 +507,103 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 	_CurrNode->SonsPreambule += benchClock.getNumTicks();
 }
 
+
 //=================================================================
-/*static*/ void CHTimer::displayHierarchicalByExecutionPath(bool displayEx /*=true*/,uint labelNumChar /*=32*/, uint indentationStep /*= 2*/)
+/*static*/ void		CHTimer::displayHierarchicalByExecutionPath(bool displayEx, uint labelNumChar, uint indentationStep)
 {
+	displayHierarchicalByExecutionPathSorted(NULL, NoSort, displayEx, labelNumChar, indentationStep);
+}
+
+
+//=================================================================
+/*static*/ void		CHTimer::displayHierarchicalByExecutionPathSorted(IDisplayer *displayer, TSortCriterion criterion, bool displayEx, uint labelNumChar, uint indentationStep)
+{
+
 	CSimpleClock	benchClock;
 	benchClock.start();
-	nlinfo("HTIMER: =========================================================================");
-	InfoLog->displayRawNL("HTIMER: Hierarchical display of bench by execution path");
 	nlassert(_BenchStartedOnce); // should have done at least one bench
 	bool wasBenching = _Benching;	
 
-	//
-	std::vector< std::pair< CNode*, uint > >	examStack;
-	examStack.push_back( std::make_pair<CNode*,uint>(&_RootNode, 0) );
+	// display header.
+	TDisplayInfo	dummyDspInfo;
+	if(displayer)
+	{
+		displayer->display(dummyDspInfo, "Hierarchical display of bench by execution path -----");
+		char	msg[512];
+		NLMISC::smprintf(msg, 512, "%*s |      total |      local |       visits |       min |       max |      mean", labelNumChar, "");
+		displayer->display(dummyDspInfo, msg);
+	}
+	else
+	{
+		nlinfo("HTIMER: =========================================================================");
+		InfoLog->displayRawNL("HTIMER: Hierarchical display of bench by execution path");
+		InfoLog->displayRawNL("HTIMER: %*s |      total |      local |       visits |       min |       max |      mean", labelNumChar, "");
+	}
+
+
+	// use list because vector of vector is bad.
+	std::list< CExamStackEntry >	examStack;
+
+	// Add the root to the stack.
+	examStack.push_back( CExamStackEntry( &_RootNode ) );
 	CStats		currNodeStats;
 	std::string resultName;
 	std::string resultStats;
 
-	InfoLog->displayRawNL("HTIMER: %*s |      total |      local |       visits |       min |       max |      mean", labelNumChar, "");
-
 	while (!examStack.empty())
 	{
-		CNode	*node = examStack.back().first;
-		uint	child = examStack.back().second;
+		CNode				*node = examStack.back().Node;
+		std::vector<CNode*>	&children= examStack.back().Children;
+		uint				child = examStack.back().CurrentChild;
 
+		// If child 0, then must first build children info and display me.
 		if (child == 0)
 		{
+			// Build Sons Infos.
+			// ==============
+			
+			// resize array
+			children.resize(node->Sons.size());
+
+			// If no sort, easy.
+			if(criterion == NoSort)
+			{
+				children= node->Sons;
+			}
+			// else, Sort them with criterion.
+			else
+			{
+				std::vector<CNodeStat>		stats;
+				std::vector<CNodeStat *>	ptrStats;
+				stats.resize(children.size());
+				ptrStats.resize(children.size());
+
+				// build stats.
+				uint	i;
+				for(i=0; i<children.size(); i++)
+				{
+					CNode	*childNode= node->Sons[i];
+					stats[i].buildFromNodes(&childNode, 1, _MsPerTick);
+					stats[i].Node = childNode;
+					ptrStats[i]= &stats[i];
+				}
+
+				// sort.
+				CStatSorter	sorter;
+				sorter.Criterion= criterion;
+				std::sort(ptrStats.begin(), ptrStats.end(), sorter);		
+
+				// fill children.
+				for(i=0; i<children.size(); i++)
+				{
+					children[i]= ptrStats[i]->Node;
+				}
+			}
+
+
+			// Display our infos
+			// ==============
+			// build the indented node name.
 			resultName.resize(labelNumChar);
 			std::fill(resultName.begin(), resultName.end(), '.');
 			uint startIndex = (examStack.size()-1) * indentationStep;
@@ -542,20 +613,35 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 				std::copy(node->Owner->_Name, node->Owner->_Name + (endIndex - startIndex), resultName.begin() + startIndex);
 			}
 
+			// build the stats string.
 			currNodeStats.buildFromNodes(&node, 1, _MsPerTick);			
 			currNodeStats.getStats(resultStats, displayEx, _WantStandardDeviation);
-			InfoLog->displayRawNL("HTIMER: %s", (resultName + resultStats).c_str());
+
+			// display
+			if(displayer)
+			{
+				char	msg[512];
+				NLMISC::smprintf(msg, 512, "%s", (resultName + resultStats).c_str());
+				displayer->display(dummyDspInfo, msg);
+			}
+			else
+			{
+				InfoLog->displayRawNL("HTIMER: %s", (resultName + resultStats).c_str());
+			}
 		}
 
-		if (child >= node->Sons.size())
+		// End of sons?? stop.
+		if (child >= children.size())
 		{
 			examStack.pop_back();
 			continue;
 		}
 
-		++(examStack.back().second);
+		// next son.
+		++(examStack.back().CurrentChild);
 
-		examStack.push_back( std::make_pair<CNode*,uint>(node->Sons[child], 0) );
+		// process the current son.
+		examStack.push_back( CExamStackEntry( children[child] ) );
 	}
 
 	//

@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.30 2001/08/29 13:48:27 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.31 2001/08/29 14:33:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1657,7 +1657,8 @@ CTileNoise::CTileNoise ()
 CTileNoise::CTileNoise (const CTileNoise &src)
 {
 	// Default ctor
-	this->CTileNoise::CTileNoise ();
+	_TileNoiseMap=NULL;
+	_FileName="";
 
 	// Copy
 	*this=src;

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.h,v 1.10 2000/10/02 16:42:23 cado Exp $
+ * $Id: socket.h,v 1.11 2000/10/03 13:27:12 cado Exp $
  *
  * Interface for CSocket
  */
@@ -52,6 +52,11 @@ typedef std::pair<std::string,TTypeNum> TMsgMapItem;
  * Client socket (for TCP connected streams). Allows to send/receive CMessage objects.
  * Note: there are two methods for receiving : receive() which is blocking, and
  * received() which is non-blocking.
+ *
+ * For message handling, use CMsgSocket.
+ * Each socket object contains a message map used to retrieve a message type code
+ * from a message name (the key), because the remote host is the one who decides about
+ * the binding.
  *
  * The "logging" boolean value is necessary because in this implementation we always log
  * to one single global CLog object : there is not one CLog object per socket. Therefore
@@ -113,8 +118,8 @@ public:
 	/// Transforms a message replacing its string type by the corresponding num type if it is bound
 	void	packMessage( CMessage& message );
 
-	
-	friend class CServerSocket;
+	/// CMsgSocket handle _DataAvailable, _SenderId, _IsListening
+	friend class CMsgSocket;
 
 protected:
 
@@ -131,7 +136,7 @@ private:
 
 	CMsgMap			_MsgMap;
 
-	bool			_DataAvailable; // can be modified only by CServerSocket
+	bool			_DataAvailable; // can be modified only by CMsgSocket
 	TSenderId		_SenderId;		// the same
 	bool			_IsListening;	// the same
 

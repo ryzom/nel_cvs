@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.cpp,v 1.6 2000/10/02 16:42:23 cado Exp $
+ * $Id: base_socket.cpp,v 1.7 2000/10/03 13:27:12 cado Exp $
  *
  * Implementation of CBaseSocket
  */
@@ -111,11 +111,11 @@ void CBaseSocket::close()
 {
 	if ( _Sock != INVALID_SOCKET )
 	{
-		shutdown( _Sock, SD_BOTH ); // SD_BOTH defined as 2 on Unix ?
-		
 		#ifdef NL_OS_WINDOWS
+			shutdown( _Sock, SD_BOTH );
 			closesocket( _Sock );
 		#elif defined NL_OS_LINUX
+			shutdown( _Sock, SHUT_RDWR ):
 			::close( _Sock );
 		#endif
 	if ( _Logging )

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: message.h,v 1.8 2000/10/02 16:42:23 cado Exp $
+ * $Id: message.h,v 1.9 2000/10/03 13:27:11 cado Exp $
  *
  * Interface of CMessage
  */
@@ -69,7 +69,7 @@ typedef CVector8::iterator It8;
 
 /**
  * Message memory stream. Can be serialized to/from (see SerialBuffer()). Can be sent or received
- * over a network, using a CSocket object.
+ * over a network, using a CSocket or preferably a CMsgSocket object.
  * \test Test program is /code/test/test_rknet/main1.cpp
  * \author Olivier Cado
  * \author Nevrax France

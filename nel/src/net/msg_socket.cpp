@@ -1,4 +1,4 @@
-/* server_socket.cpp
+/* msg_socket.cpp
  *
  * Copyright, 2000 Nevrax Ltd.
  *
@@ -18,14 +18,14 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.8 2000/10/02 16:42:23 cado Exp $
+ * $Id: msg_socket.cpp,v 1.9 2000/10/03 13:27:12 cado Exp $
  *
- * Implementation of CServerSocket.
+ * Implementation of CMsgSocket.
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  */
 
-#include "nel/net/server_socket.h"
+#include "nel/net/msg_socket.h"
 #include "nel/net/message.h"
 #include "nel/misc/log.h"
 extern NLMISC::CLog Log;
@@ -55,21 +55,21 @@ using namespace std;
 namespace NLNET
 {
 
-bool				CServerSocket::_Binded;
-CConnections		CServerSocket::_Connections;
-TSenderId			CServerSocket::_SenderIdNb;
-long				CServerSocket::_TimeoutS = 0;
-long				CServerSocket::_TimeoutM = 0;
+bool				CMsgSocket::_Binded;
+CConnections		CMsgSocket::_Connections;
+TSenderId			CMsgSocket::_SenderIdNb;
+long				CMsgSocket::_TimeoutS = 0;
+long				CMsgSocket::_TimeoutM = 0;
 
-TCallbackItem		*CServerSocket::_CallbackArray;
-TTypeNum			CServerSocket::_CbaSize;
-CSearchSet			CServerSocket::_SearchSet;
+TCallbackItem		*CMsgSocket::_CallbackArray;
+TTypeNum			CMsgSocket::_CbaSize;
+CSearchSet			CMsgSocket::_SearchSet;
 
   
 /*
  * Constructs a server object, listening on specified port
  */
-CServerSocket::CServerSocket( TCallbackItem *callbackarray, TTypeNum arraysize, uint16 port ) :
+CMsgSocket::CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, uint16 port ) :
 	_ClientSock( NULL )
 {
 	init( callbackarray, arraysize );
@@ -83,7 +83,7 @@ CServerSocket::CServerSocket( TCallbackItem *callbackarray, TTypeNum arraysize, 
 /*
  * Constructs a client object, that connects to servaddr.
  */
-CServerSocket::CServerSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const CInetAddress& servaddr )
+CMsgSocket::CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const CInetAddress& servaddr )
 {
 	init( callbackarray, arraysize );
 	_ClientSock = new CSocket();
@@ -96,7 +96,7 @@ CServerSocket::CServerSocket( TCallbackItem *callbackarray, TTypeNum arraysize, 
 /*
  * Part of constructor contents
  */
-void CServerSocket::init( TCallbackItem *callbackarray, TTypeNum arraysize )
+void CMsgSocket::init( TCallbackItem *callbackarray, TTypeNum arraysize )
 {
 	_Binded = false;
 	_SenderIdNb = 0;
@@ -112,9 +112,9 @@ void CServerSocket::init( TCallbackItem *callbackarray, TTypeNum arraysize )
 
 
 /*
- * Destructor. It closes all sockets (connections) that have been created by this CServerSocket object
+ * Destructor. It closes all sockets (connections) that have been created by this CMsgSocket object
  */
-CServerSocket::~CServerSocket()
+CMsgSocket::~CMsgSocket()
 {
 	CConnections::iterator its;
 	for ( its=_Connections.begin(); its!=_Connections.end(); its++ )
@@ -127,7 +127,7 @@ CServerSocket::~CServerSocket()
 /*
  * Prepares to receive connections on a specified port
  */
-void CServerSocket::listen( CSocket *listensock, uint16 port ) throw (ESocket)
+void CMsgSocket::listen( CSocket *listensock, uint16 port ) throw (ESocket)
 {
 	CInetAddress localaddr = CInetAddress::localHost();
 	localaddr.setPort( port );
@@ -138,7 +138,7 @@ void CServerSocket::listen( CSocket *listensock, uint16 port ) throw (ESocket)
 /*
  * Prepares to receive connections on a specified address/port (useful when the host has several addresses)
  */
-void CServerSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (ESocket)
+void CMsgSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (ESocket)
 {
 	if ( _Binded )
 	{
@@ -185,7 +185,7 @@ void CServerSocket::listen( CSocket *listensock, const CInetAddress& addr ) thro
 /*
  * Send a message (client mode only)
  */
-void CServerSocket::send( CMessage& outmsg )
+void CMsgSocket::send( CMessage& outmsg )
 {
 	if ( _ClientSock != NULL )
 	{
@@ -197,7 +197,7 @@ void CServerSocket::send( CMessage& outmsg )
 /*
  * Send a message to the specified host id
  */
-void CServerSocket::send( CMessage& outmsg, TSenderId id )
+void CMsgSocket::send( CMessage& outmsg, TSenderId id )
 {
 	CSocket *sock = socketFromId( id );
 	if ( sock != NULL )
@@ -212,9 +212,9 @@ void CServerSocket::send( CMessage& outmsg, TSenderId id )
 
 
 /*
- *
+ * See header file
  */
-void CServerSocket::receive()
+void CMsgSocket::receive()
 {
 	// Check data available on all sockets, including the server socket
 	if ( getDataAvailableStatus() )
@@ -232,9 +232,8 @@ void CServerSocket::receive()
 					CMessage msg;
 					CSocket& sock = accept( (*ilps)->descriptor() );
 					msg.setType( "C" );
-					msg.serial( sock.remoteAddr().hostName() ); // add serial() to CInetAddress ?
-					uint16 port = sock.remoteAddr().port();
-					msg.serial( port );
+					CInetAddress addr = sock.remoteAddr();
+					msg.serial( addr );
 					processReceivedMessage( msg, sock );
 				}
 				else
@@ -280,11 +279,11 @@ void CServerSocket::receive()
 
 
 /* Wait for a client to connect, then creates a new socket connected to the client, and adds it to the list of connections.
- * It returns a reference on this socket object, which is maintained by the CServerSocket object.
+ * It returns a reference on this socket object, which is maintained by the CMsgSocket object.
  * Usage : \code CSocket& sock = servsock.accept(); \endcode
  * If you don't want the server thread to block, use receive() instead.
  */
-CSocket& CServerSocket::accept( SOCKET listen_descr ) throw (ESocket)
+CSocket& CMsgSocket::accept( SOCKET listen_descr ) throw (ESocket)
 {
 	// Accept connection
 	sockaddr_in saddr;
@@ -308,7 +307,7 @@ CSocket& CServerSocket::accept( SOCKET listen_descr ) throw (ESocket)
 /*
  * Add a new connection socket
  */
-void CServerSocket::addNewConnection( CSocket *connection )
+void CMsgSocket::addNewConnection( CSocket *connection )
 {
 	connection->_SenderId = newSenderId();
 	_Connections.push_back( connection );
@@ -317,7 +316,7 @@ void CServerSocket::addNewConnection( CSocket *connection )
 
 /* Returns if the connection sockets have incoming data available.
  */
-bool CServerSocket::getDataAvailableStatus()
+bool CMsgSocket::getDataAvailableStatus()
 {
 	// Put all socket descriptors in select list and find maximum descriptor number
 	if ( _Connections.empty() )
@@ -364,7 +363,7 @@ bool CServerSocket::getDataAvailableStatus()
 /*
  * Sets timeout for receive() in milliseconds
  */
-void CServerSocket::setTimeout( uint32 ms )
+void CMsgSocket::setTimeout( uint32 ms )
 {
 	_TimeoutS = ms/1000;
 	_TimeoutM = (_TimeoutS%1000)*1000;
@@ -374,7 +373,7 @@ void CServerSocket::setTimeout( uint32 ms )
 /*
  * Returns true if msg is a binding message
  */
-bool CServerSocket::msgIsBinding( const CMessage& msg )
+bool CMsgSocket::msgIsBinding( const CMessage& msg )
 {
 	return ( msg.typeAsString() == "B" );
 }
@@ -384,7 +383,7 @@ bool CServerSocket::msgIsBinding( const CMessage& msg )
  * \param msg [in] An input message to pass to the callback
  * \param sock [in] The socket from which the message was received
  */
-void CServerSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
+void CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 {
 	if ( msg.typeIsNumber() )
 	{
@@ -438,7 +437,7 @@ void CServerSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 /*
  * Returns a pointer to the socket object having the specified sender id
  */
-CSocket *CServerSocket::socketFromId( TSenderId id )
+CSocket *CMsgSocket::socketFromId( TSenderId id )
 {
 	CConnections::iterator itps;
 	for ( itps=_Connections.begin(); itps!=_Connections.end(); itps++ )

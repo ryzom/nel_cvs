@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: datagram_socket.h,v 1.5 2000/10/02 16:42:23 cado Exp $
+ * $Id: datagram_socket.h,v 1.6 2000/10/03 13:27:11 cado Exp $
  *
  * Interface for CDatagramSocket
  */
@@ -54,6 +54,7 @@ class CMessage;
 
 /**
  * Socket for UDP unconnected transfers
+ * \bug CDatagramSocket is not compatible with the message system yet. Please do not use it :-)
  * \test Test program is /code/test/test_rknet/main1.cpp
  * \author Olivier Cado
  * \author Nevrax France

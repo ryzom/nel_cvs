@@ -18,9 +18,9 @@
  */
 
 /*
- * $Id: pt_callback_item.cpp,v 1.1 2000/10/02 16:42:23 cado Exp $
+ * $Id: pt_callback_item.cpp,v 1.2 2000/10/03 13:27:12 cado Exp $
  *
- * Impl for CPtCallbackItem
+ * Implementation for CPtCallbackItem
  */
 
 #include "nel/net/pt_callback_item.h"

@@ -1,4 +1,4 @@
-/* server_socket.h
+/* msg_socket.h
  *
  * Copyright, 2000 Nevrax Ltd.
  *
@@ -18,9 +18,9 @@
  */
 
 /*
- * $Id: msg_socket.h,v 1.8 2000/10/02 16:42:23 cado Exp $
+ * $Id: msg_socket.h,v 1.9 2000/10/03 13:27:12 cado Exp $
  *
- * Interface for CServerSocket
+ * Interface for CMsgSocket
  */
 
 #ifndef NL_SERVER_SOCKET_H
@@ -49,26 +49,39 @@ typedef std::set<CPtCallbackItem> CSearchSet;
 
 
 /**
- * A server socket object allows to receive messages from connected sockets.
+ * A message socket object allows to send/receive messages to/from connected sockets.
  * It has two modes, depending on the constructor called: client and server.
+ *
+ * A CMsgSocket maintains a list of connections (CSocket objects).
+ *
+ * Call CMsgSocket::receive() every frame.
+ * Several methods and members are static, so that only one "select" is done for all message sockets.
  *
  * \test Test program is /code/test/test_rknet/main1.cpp
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
  */
-class CServerSocket
+class CMsgSocket
 {
 public:
 
-	/// Constructs a server object, listening on specified port 
-	CServerSocket( TCallbackItem *callbackarray, TTypeNum arraysize, uint16 port );
+	/** Constructs a server object, listening on specified port.
+	 * \param callbackarray Define this array statically.
+	 * \param arraysize Use sizeof(callbackarray)-sizeof(callbackarray[0])
+	 * \param port Port on which the server must listen and accept connections
+	 */
+	CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, uint16 port );
 
-	/// Constructs a client object, that connects to servaddr.
-	CServerSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const CInetAddress& servaddr );
+	/** Constructs a client object, that connects to servaddr. 
+	 * \param callbackarray Define this array statically.
+	 * \param arraysize Use sizeof(callbackarray)-sizeof(callbackarray[0])
+	 * \param port Address of the server
+	 */
+	CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const CInetAddress& servaddr );
 
-	/// Destructor. It closes all sockets (connections) that have been created by this CServerSocket object
-	~CServerSocket();
+	/// Destructor. It closes all sockets (connections) that have been created by this CMsgSocket object
+	~CMsgSocket();
 
 	/// Send a message (client mode only)
 	void			send( CMessage& outmsg );
@@ -77,9 +90,14 @@ public:
 	static void		send( CMessage& outmsg, TSenderId id );
 
 	/** Updates the connected sockets and accept new connections.
-	 * - When a new connection incomes (server mode only), the callback of name "C" is called if it exists. Its message contains hostname and port.
-	 * - When a message is received, the callback of name the msgName() is called. An exception is raised it doesn't exist.
+	 * - When a new connection incomes (server mode only), the callback of name "C" is called if it exists. Its message contains the address of the remote socket (CInetAddress).
+	 * - When a message is received, the callback of name msgTypeAsString() or of index msgTypeAsNumber() is called. An exception is raised it doesn't exist.
 	 * - When a connection is closed, the callback of name "D" is called if it exists. The message is empty.
+	 *
+	 * When a message with a name (as a string) is received, a binding message is replied to the sender, so that
+	 * next time it sends this type of message, the type is represented by a message type code.
+	 *
+	 * At present, receive() processes only 1 received message at a time by connection.
 	 */
 	static void		receive();
 
@@ -98,9 +116,8 @@ protected:
 	void			listen( CSocket *listensock, const CInetAddress& addr ) throw (ESocket);
 
 	/** Wait for a client to connect, then creates a new socket connected to the client, and adds it to the list of connections.
-	 * It returns a reference on this socket object, which is maintained by the CServerSocket object.
+	 * It returns a reference on this socket object, which is maintained by the CMsgSocket object.
 	 * Usage : \code CSocket& sock = servsock.accept(); \endcode
-	 * If you don't want the server thread to block, use receive() instead.
 	 */
 	static CSocket&	accept( SOCKET listen_descr ) throw (ESocket);
 
@@ -122,7 +139,7 @@ protected:
 	/// Returns a pointer to the socket object having the specified sender id
 	static CSocket	*socketFromId( TSenderId id );
 
-	// Gets new sender id
+	/// Gets new sender id
 	static TSenderId newSenderId()
 	{
 		TSenderId sid = _SenderIdNb;
@@ -152,4 +169,4 @@ private:
 
 #endif // NL_SERVER_SOCKET_H
 
-/* End of server_socket.h */
+/* End of msg_socket.h */

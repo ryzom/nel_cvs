@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.h,v 1.6 2000/10/02 16:42:23 cado Exp $
+ * $Id: base_socket.h,v 1.7 2000/10/03 13:27:11 cado Exp $
  *
  * Interface of CBaseSocket
  */
@@ -36,7 +36,7 @@ namespace NLNET {
 
 /**
  * Network exceptions. Note: this exception class is called ESocket and not EBaseSocket
- * but it is used by CSocket, CDatagramSocket and CServerSocket.
+ * but it is used by CSocket, CDatagramSocket and CMsgSocket.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -73,7 +73,7 @@ private:
 //typedef SOCKET;
 #ifdef NL_OS_WINDOWS
 	typedef uint SOCKET;
-#elif NL_OS_LINUX
+#elif defined NL_OS_LINUX
 	typedef int SOCKET;
 #endif
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.11 2000/10/02 16:42:23 cado Exp $
+ * $Id: socket.cpp,v 1.12 2000/10/03 13:27:12 cado Exp $
  *
  * Implementation for CSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -199,7 +199,7 @@ bool CSocket::dataAvailable() throw (ESocket)
 	{
 		return false;
 	}
-	if ( _DataAvailable ) // true if a CServerSocket object has just tested positively the socket
+	if ( _DataAvailable ) // true if a CMsgSocket object has just tested positively the socket
 	{
 		return true;
 	}

@@ -18,9 +18,9 @@
  */
 
 /*
- * $Id: pt_callback_item.h,v 1.1 2000/10/02 16:42:23 cado Exp $
+ * $Id: pt_callback_item.h,v 1.2 2000/10/03 13:27:12 cado Exp $
  *
- * <Replace this by a description of the file>
+ * Interface for CPtCallbackItem
  */
 
 #ifndef NL_PT_CALLBACK_ITEM_H
@@ -45,7 +45,10 @@ typedef struct
 
 
 /**
- * Elements of the set used for fast search in callback arrays
+ * Elements of the set used for fast search in callback arrays.
+ * A CPtCallbackItem object can contain either a pointer to a callback item {Key,Callback} 
+ * (it is the case when it is saved in the search set), or a key (use it when you want
+ * to find a callback item by name).
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -57,7 +60,7 @@ public:
 	/// Constructor
 	CPtCallbackItem( const char *key )
 	{
-		_Key = (char*)key; // TODO: or strdup() ?
+		_Key = (char*)key; // Not using strdup() at the moment
 		_Pt = NULL;
 	}
 

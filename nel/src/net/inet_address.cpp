@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.cpp,v 1.8 2000/10/02 16:42:23 cado Exp $
+ * $Id: inet_address.cpp,v 1.9 2000/10/03 13:27:12 cado Exp $
  *
  * Implementation for CInetAddress.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -45,9 +45,6 @@ using namespace std;
 namespace NLNET
 {
 
-/** \todo cado Choose to keep or suppress CInetAddress::RetrieveNames
- * \sa setSockAddr
- */
 bool CInetAddress::RetrieveNames = true;
 
 

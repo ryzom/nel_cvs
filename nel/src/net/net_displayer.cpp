@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: net_displayer.cpp,v 1.2 2000/10/02 16:42:23 cado Exp $
+ * $Id: net_displayer.cpp,v 1.3 2000/10/03 13:27:12 cado Exp $
  *
  * Implementation of CNetDisplayer
  */
@@ -42,11 +42,11 @@ CNetDisplayer::CNetDisplayer( const CInetAddress& logServerAddr ) :
 	try
 	{
 		_Server.connect( _ServerAddr );
-		// Check if the server is a logging server
-		if ( ! handshake() )
-		{
-			_Server.close();
-		}
+		// No check if the server is a logging server
+		//if ( ! handshake() )
+		//{
+		//	_Server.close();
+		//}
 	}
 	catch( ESocket& )
 	{
@@ -72,10 +72,10 @@ void CNetDisplayer::display( const std::string& str )
 		if ( ! _Server.connected() )
 		{
 			_Server.connect( _ServerAddr );
-			if ( ! handshake() )
-			{
-				_Server.close();
-			}
+			//if ( ! handshake() )
+			//{
+			//	_Server.close();
+			//}
 		}
 		CMessage msg( false );
 		msg.setType( 0 ); // we don't listen for incoming replies, therefore we must not use a type as string
@@ -93,10 +93,10 @@ void CNetDisplayer::display( const std::string& str )
  * Handshake between us and the server. Returns true if the connected server is a logging server.
  * At the moment, it does nothing and always returns true.
  */
-bool CNetDisplayer::handshake()
-{
-	return true;
-}
+//bool CNetDisplayer::handshake()
+//{
+//	return true;
+//}
 
 
 } // NLNET

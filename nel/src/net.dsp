@@ -106,19 +106,19 @@ SOURCE=..\include\nel\net\inet_address.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\net\log_service.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\log_service.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\net\message.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\net\message.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\msg_socket.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\msg_socket.h
 # End Source File
 # Begin Source File
 
@@ -135,14 +135,6 @@ SOURCE=.\net\pt_callback_item.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\net\pt_callback_item.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\net\server_socket.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\server_socket.h
 # End Source File
 # Begin Source File
 

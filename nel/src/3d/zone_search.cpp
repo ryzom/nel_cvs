@@ -1,7 +1,7 @@
 /** \file zone_search.cpp
  * CZoneSearch class
  *
- * $Id: zone_search.cpp,v 1.8 2002/10/14 15:52:50 besson Exp $
+ * $Id: zone_search.cpp,v 1.9 2002/10/29 12:53:18 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,8 +143,6 @@ void CZoneSearch::getListZoneName(uint x, uint y, uint sizeArea, list<pair<strin
 
 uint16 CZoneSearch::getZoneId (uint x, uint y)
 {
-	char name[13];
-
 	uint zoneY = y / _SizeZoneY;
 	uint zoneX = x / _SizeZoneX;
 

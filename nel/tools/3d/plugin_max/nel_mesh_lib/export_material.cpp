@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.39 2003/09/26 14:25:33 lecroart Exp $
+ * $Id: export_material.cpp,v 1.40 2004/03/03 17:49:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ using namespace std;
 #define BMTEX_CROP_W_NAME "clipw"
 #define BMTEX_CROP_H_NAME "cliph"
 
-#define MAT_SLOTS 2
+#define MAT_SLOTS 4
 
 #define SHADER_NORMAL 1
 #define SHADER_BUMP 2

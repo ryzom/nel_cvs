@@ -328,7 +328,7 @@ plugin material NelMaterial
     classID:#(0x64c75fec, 0x222b9eb9)
     extends:standard 
 	replaceUI:false 
-	version:6.0
+	version:7.0
 (
 	local loadShader
 	local globalUpdateUI
@@ -456,12 +456,44 @@ plugin material NelMaterial
 		iConstantAlpha_2		type:#integer default:255 ui:sdConstantAlpha
 	)
 
-    parameters slot3
+    parameters slot3 rollout:NelMultitextureSlot3
     (
+		-- New in version 7
+		cConstant_3				type:#color default:[255,255,255] ui:cpConstant
+		iRgbOperation_3			type:#integer default:1
+		iRgbBlendSource_3		type:#integer default:1
+		iRgbArg0_3				type:#integer default:1
+		iRgbArg1_3				type:#integer default:1
+		iRgbArg0Operand_3		type:#integer default:1
+		iRgbArg1Operand_3		type:#integer default:1
+		iAlphaOperation_3		type:#integer default:1
+		iAlphaBlendSource_3		type:#integer default:1
+		iAlphaArg0_3			type:#integer default:1
+		iAlphaArg1_3			type:#integer default:1
+		iAlphaArg0Operand_3		type:#integer default:3
+		iAlphaArg1Operand_3		type:#integer default:3
+		iTextureShader_3		type:#integer default:1
+		iConstantAlpha_3		type:#integer default:255 ui:sdConstantAlpha
 	)
 
-    parameters slot4
+    parameters slot4 rollout:NelMultitextureSlot4
     (
+		-- New in version 7
+		cConstant_4				type:#color default:[255,255,255] ui:cpConstant
+		iRgbOperation_4			type:#integer default:1
+		iRgbBlendSource_4		type:#integer default:1
+		iRgbArg0_4				type:#integer default:1
+		iRgbArg1_4				type:#integer default:1
+		iRgbArg0Operand_4		type:#integer default:1
+		iRgbArg1Operand_4		type:#integer default:1
+		iAlphaOperation_4		type:#integer default:1
+		iAlphaBlendSource_4		type:#integer default:1
+		iAlphaArg0_4			type:#integer default:1
+		iAlphaArg1_4			type:#integer default:1
+		iAlphaArg0Operand_4		type:#integer default:3
+		iAlphaArg1Operand_4		type:#integer default:3
+		iTextureShader_4		type:#integer default:1
+		iConstantAlpha_4		type:#integer default:255 ui:sdConstantAlpha
 	)
 
     parameters slot5
@@ -751,8 +783,8 @@ plugin material NelMaterial
 			(
 				cbEnableSlot_1.enabled = true
 				cbEnableSlot_2.enabled = (not bLightmap) and (not bPerPixelLightingShader)
-				cbEnableSlot_3.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
-				cbEnableSlot_4.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				cbEnableSlot_3.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bPerPixelLightingShader)
+				cbEnableSlot_4.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bPerPixelLightingShader)
 				cbEnableSlot_5.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
 				cbEnableSlot_6.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
 				cbEnableSlot_7.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
@@ -760,8 +792,8 @@ plugin material NelMaterial
 
 				mbTexture_1.enabled = bEnableSlot_1
 				mbTexture_2.enabled = bEnableSlot_2 and (not bLightmap) and (not bUserColor) and (not bPerPixelLightingShader)
-				mbTexture_3.enabled = bEnableSlot_3 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
-				mbTexture_4.enabled = bEnableSlot_4 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				mbTexture_3.enabled = bEnableSlot_3 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bPerPixelLightingShader)
+				mbTexture_4.enabled = bEnableSlot_4 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bPerPixelLightingShader)
 				mbTexture_5.enabled = bEnableSlot_5 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
 				mbTexture_6.enabled = bEnableSlot_6 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
 				mbTexture_7.enabled = bEnableSlot_7 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
@@ -769,8 +801,8 @@ plugin material NelMaterial
 
 				cbTexGen_1.enabled = bNormalShader and bEnableSlot_1
 				cbTexGen_2.enabled = bNormalShader and bEnableSlot_2 and (not bLightmap) and (not bUserColor) and (not bPerPixelLightingShader)
-				cbTexGen_3.enabled = bNormalShader and bEnableSlot_3 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
-				cbTexGen_4.enabled = bNormalShader and bEnableSlot_4 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				cbTexGen_3.enabled = bNormalShader and bEnableSlot_3 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bPerPixelLightingShader)
+				cbTexGen_4.enabled = bNormalShader and bEnableSlot_4 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bPerPixelLightingShader)
 				cbTexGen_5.enabled = bNormalShader and bEnableSlot_5 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
 				cbTexGen_6.enabled = bNormalShader and bEnableSlot_6 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
 				cbTexGen_7.enabled = bNormalShader and bEnableSlot_7 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
@@ -1238,6 +1270,326 @@ plugin material NelMaterial
 		)
 	)
 
+	rollout NelMultitextureSlot3 "Nel Slot 3" rolledUp:true
+    (
+		group "RGB"
+		(
+			dropdownlist dlRgbOperation		"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend" ) across:2
+			dropdownlist dlRgbBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:4
+			dropdownlist dlRgbArg0Operand	"Arg0 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg1Operand	"Arg1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+		)
+		group "Alpha"
+		(
+			dropdownlist dlAlphaOperation	"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend" ) across:2
+			dropdownlist dlAlphaBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:4
+			dropdownlist dlAlphaArg0Operand	"Arg0 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg1Operand	"Arg1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+		)
+		group "Extended"
+		(
+			dropdownlist dlTextureShader "Texture Shader" items:#( "Disable", "TextureOff", "FetchTexture", "PassThrough", "CullFragment", "OffsetTexture", "OffsetTextureScale", "DependentARTexture", "DependentGBTexture", "DP3", "DP3Texture2D", "DP3CubeMap", "DP3ReflectCubeMap", "DP3ConstEyeReflectCubeMap", "DP3DiffuseCubeMap", "DP3DepthReplace" ) width:100 across:2
+			ColorPicker cpConstant "Constant Color" align:#right height:40
+			Label		ldConstantAlpha "Constant Alpha" align:#left across:2
+			Spinner		 sdConstantAlpha ""  range:[0,255,255] type:#integer scale:1 align:#left width:50
+		)
+
+		fn updateUI update =
+		(
+			if (version >= 4) then
+			(
+				-- update droplist
+				if update == true then
+				(
+					dlRgbOperation.selection = iRgbOperation_3
+					dlRgbBlendSource.selection = iRgbBlendSource_3
+					dlRgbArg0.selection = iRgbArg0_3
+					dlRgbArg1.selection = iRgbArg1_3
+					dlRgbArg0Operand.selection = iRgbArg0Operand_3
+					dlRgbArg1Operand.selection = iRgbArg1Operand_3
+					dlAlphaOperation.selection = iAlphaOperation_3
+					dlAlphaBlendSource.selection = iAlphaBlendSource_3
+					dlAlphaArg0.selection = iAlphaArg0_3 
+					dlAlphaArg1.selection = iAlphaArg1_3 
+					dlAlphaArg0Operand.selection = iAlphaArg0Operand_3
+					dlAlphaArg1Operand.selection = iAlphaArg1Operand_3
+					dlTextureShader.selection = iTextureShader_3 
+				)
+				else
+				(
+					iRgbOperation_3 = dlRgbOperation.selection
+					iRgbBlendSource_3 = dlRgbBlendSource.selection
+					iRgbArg0_3 = dlRgbArg0.selection
+					iRgbArg1_3 = dlRgbArg1.selection
+					iRgbArg0Operand_3 = dlRgbArg0Operand.selection
+					iRgbArg1Operand_3 = dlRgbArg1Operand.selection
+					iAlphaOperation_3 = dlAlphaOperation.selection
+					iAlphaBlendSource_3 = dlAlphaBlendSource.selection
+					iAlphaArg0_3 = dlAlphaArg0.selection
+					iAlphaArg1_3 = dlAlphaArg1.selection
+					iAlphaArg0Operand_3 = dlAlphaArg0Operand.selection
+					iAlphaArg1Operand_3 = dlAlphaArg1Operand.selection
+					iTextureShader_3 = dlTextureShader.selection
+				)
+
+				cpConstant.enabled = bEnableSlot_3 and bNormalShader
+				dlRgbOperation.enabled = bEnableSlot_3 and bNormalShader
+				dlRgbBlendSource.enabled = (bEnableSlot_3 == true) and (iRgbOperation_3 == 5) and bNormalShader
+				dlRgbArg0.enabled = bEnableSlot_3 and bNormalShader
+				dlRgbArg1.enabled = bEnableSlot_3 and bNormalShader
+				dlRgbArg0Operand.enabled = bEnableSlot_3 and bNormalShader
+				dlRgbArg1Operand.enabled = bEnableSlot_3 and bNormalShader
+				dlAlphaOperation.enabled = bEnableSlot_3 and bNormalShader
+				dlAlphaBlendSource.enabled = (bEnableSlot_3 == true) and (iAlphaOperation_3 == 5) and bNormalShader
+				dlAlphaArg0.enabled = bEnableSlot_3 and bNormalShader
+				dlAlphaArg1.enabled = bEnableSlot_3 and bNormalShader
+				dlAlphaArg0Operand.enabled = bEnableSlot_3 and bNormalShader
+				dlAlphaArg1Operand.enabled = bEnableSlot_3 and bNormalShader
+				dlTextureShader.enabled = bEnableSlot_3 and bNormalShader
+				sdConstantAlpha.enabled = bEnableSlot_3 and bNormalShader
+			)
+		)
+
+		on NelMultitextureSlot3 open do
+		(
+			updateUI true
+		)
+
+		on dlRgbOperation selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaOperation selected newState do
+		(
+			updateUI false
+		)
+
+		on dlRgbArg0Operand selected newState do
+		(
+			updateUI false
+		)
+
+		on dlRgbArg1Operand selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaArg0Operand selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaArg1Operand selected newState do
+		(
+			updateUI false
+		)
+
+		on dlMappingCoordinates selected newState do
+		(
+			updateUI false
+		)
+
+		on dlTextureShader selected newState do
+		(
+			updateUI false
+		)
+
+		on dlRgbBlendSource selected newState do
+		(
+			updateUI false
+		)
+
+		on dlRgbArg0 selected newState do
+		(
+			updateUI false
+		)
+
+		on dlRgbArg1 selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaBlendSource selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaArg0 selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaArg1 selected newState do
+		(
+			updateUI false
+		)
+	)
+
+	rollout NelMultitextureSlot4 "Nel Slot 4" rolledUp:true
+    (
+		group "RGB"
+		(
+			dropdownlist dlRgbOperation		"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend" ) across:2
+			dropdownlist dlRgbBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:4
+			dropdownlist dlRgbArg0Operand	"Arg0 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg1Operand	"Arg1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+		)
+		group "Alpha"
+		(
+			dropdownlist dlAlphaOperation	"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend" ) across:2
+			dropdownlist dlAlphaBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:4
+			dropdownlist dlAlphaArg0Operand	"Arg0 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg1Operand	"Arg1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+		)
+		group "Extended"
+		(
+			dropdownlist dlTextureShader "Texture Shader" items:#( "Disable", "TextureOff", "FetchTexture", "PassThrough", "CullFragment", "OffsetTexture", "OffsetTextureScale", "DependentARTexture", "DependentGBTexture", "DP3", "DP3Texture2D", "DP3CubeMap", "DP3ReflectCubeMap", "DP3ConstEyeReflectCubeMap", "DP3DiffuseCubeMap", "DP3DepthReplace" ) width:100 across:2
+			ColorPicker cpConstant "Constant Color" align:#right height:40
+			Label		ldConstantAlpha "Constant Alpha" align:#left across:2
+			Spinner		 sdConstantAlpha ""  range:[0,255,255] type:#integer scale:1 align:#left width:50
+		)
+
+		fn updateUI update =
+		(
+			if (version >= 4) then
+			(
+				-- update droplist
+				if update == true then
+				(
+					dlRgbOperation.selection = iRgbOperation_4
+					dlRgbBlendSource.selection = iRgbBlendSource_4
+					dlRgbArg0.selection = iRgbArg0_4
+					dlRgbArg1.selection = iRgbArg1_4
+					dlRgbArg0Operand.selection = iRgbArg0Operand_4
+					dlRgbArg1Operand.selection = iRgbArg1Operand_4
+					dlAlphaOperation.selection = iAlphaOperation_4
+					dlAlphaBlendSource.selection = iAlphaBlendSource_4
+					dlAlphaArg0.selection = iAlphaArg0_4 
+					dlAlphaArg1.selection = iAlphaArg1_4 
+					dlAlphaArg0Operand.selection = iAlphaArg0Operand_4
+					dlAlphaArg1Operand.selection = iAlphaArg1Operand_4
+					dlTextureShader.selection = iTextureShader_4 
+				)
+				else
+				(
+					iRgbOperation_4 = dlRgbOperation.selection
+					iRgbBlendSource_4 = dlRgbBlendSource.selection
+					iRgbArg0_4 = dlRgbArg0.selection
+					iRgbArg1_4 = dlRgbArg1.selection
+					iRgbArg0Operand_4 = dlRgbArg0Operand.selection
+					iRgbArg1Operand_4 = dlRgbArg1Operand.selection
+					iAlphaOperation_4 = dlAlphaOperation.selection
+					iAlphaBlendSource_4 = dlAlphaBlendSource.selection
+					iAlphaArg0_4 = dlAlphaArg0.selection
+					iAlphaArg1_4 = dlAlphaArg1.selection
+					iAlphaArg0Operand_4 = dlAlphaArg0Operand.selection
+					iAlphaArg1Operand_4 = dlAlphaArg1Operand.selection
+					iTextureShader_4 = dlTextureShader.selection
+				)
+
+				cpConstant.enabled = bEnableSlot_4 and bNormalShader
+				dlRgbOperation.enabled = bEnableSlot_4 and bNormalShader
+				dlRgbBlendSource.enabled = (bEnableSlot_4 == true) and (iRgbOperation_4 == 5) and bNormalShader
+				dlRgbArg0.enabled = bEnableSlot_4 and bNormalShader
+				dlRgbArg1.enabled = bEnableSlot_4 and bNormalShader
+				dlRgbArg0Operand.enabled = bEnableSlot_4 and bNormalShader
+				dlRgbArg1Operand.enabled = bEnableSlot_4 and bNormalShader
+				dlAlphaOperation.enabled = bEnableSlot_4 and bNormalShader
+				dlAlphaBlendSource.enabled = (bEnableSlot_4 == true) and (iAlphaOperation_4 == 5) and bNormalShader
+				dlAlphaArg0.enabled = bEnableSlot_4 and bNormalShader
+				dlAlphaArg1.enabled = bEnableSlot_4 and bNormalShader
+				dlAlphaArg0Operand.enabled = bEnableSlot_4 and bNormalShader
+				dlAlphaArg1Operand.enabled = bEnableSlot_4 and bNormalShader
+				dlTextureShader.enabled = bEnableSlot_4 and bNormalShader
+				sdConstantAlpha.enabled = bEnableSlot_4 and bNormalShader
+			)
+		)
+
+		on NelMultitextureSlot4 open do
+		(
+			updateUI true
+		)
+
+		on dlRgbOperation selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaOperation selected newState do
+		(
+			updateUI false
+		)
+
+		on dlRgbArg0Operand selected newState do
+		(
+			updateUI false
+		)
+
+		on dlRgbArg1Operand selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaArg0Operand selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaArg1Operand selected newState do
+		(
+			updateUI false
+		)
+
+		on dlMappingCoordinates selected newState do
+		(
+			updateUI false
+		)
+
+		on dlTextureShader selected newState do
+		(
+			updateUI false
+		)
+
+		on dlRgbBlendSource selected newState do
+		(
+			updateUI false
+		)
+
+		on dlRgbArg0 selected newState do
+		(
+			updateUI false
+		)
+
+		on dlRgbArg1 selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaBlendSource selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaArg0 selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaArg1 selected newState do
+		(
+			updateUI false
+		)
+	)
+
 	fn loadShader shader =
 	(
 		-- Disable all slot
@@ -1547,6 +1899,8 @@ plugin material NelMaterial
 		NelTexture.updateUI update
 		NelMultitextureSlot1.updateUI update
 		NelMultitextureSlot2.updateUI update
+		NelMultitextureSlot3.updateUI update
+		NelMultitextureSlot4.updateUI update
 	)
 
 	fn updateTextureName =

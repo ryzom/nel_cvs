@@ -1,7 +1,7 @@
 /** \file listener_al.cpp
  * OpenAL sound listener
  *
- * $Id: listener_al.cpp,v 1.1 2001/06/26 15:28:56 cado Exp $
+ * $Id: listener_al.cpp,v 1.2 2001/07/04 13:11:03 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,11 +34,23 @@ using namespace NLMISC;
 namespace NLSOUND {
 
 
+// The instance of the singleton
+CListenerAL	*CListenerAL::_Instance = NULL;
+
+
 /*
  * Constructor
  */
 CListenerAL::CListenerAL() : IListener()
 {
+	if ( _Instance == NULL )
+	{
+		_Instance = this;
+	}
+	else
+	{
+		nlerror( "Listener singleton instanciated twice" );
+	}
 }
 
 
@@ -114,6 +126,31 @@ void					CListenerAL::getOrientation( NLMISC::CVector& front, NLMISC::CVector& u
 }
 
 
+/* Set the gain (volume value inside [0 , 1]). (default: 1)
+ * 0.0 -> silence
+ * 0.5 -> -6dB
+ * 1.0 -> no attenuation
+ * values > 1 (amplification) not supported by most drivers
+ */
+void					CListenerAL::setGain( float gain )
+{
+	alListenerf( AL_GAIN, gain );
+	nlassert( alGetError() == AL_NO_ERROR );
+}
+
+
+/*
+ * Get the gain
+ */
+float					CListenerAL::getGain() const
+{
+	ALfloat gain;
+	alGetListenerf( AL_GAIN, &gain );
+	nlassert( alGetError() == AL_NO_ERROR );
+	return gain;
+}
+
+
 /*
  * Set the doppler factor (default: 1) to exaggerate or not the doppler effect
  */
@@ -130,7 +167,7 @@ void					CListenerAL::setDopplerFactor( float f )
 void					CListenerAL::setRolloffFactor( float f )
 {
 	nlassert( CSoundDriverAL::instance() != NULL );
-	(static_cast<CSoundDriverAL*>(CSoundDriverAL::instance()))->applyRolloffFactor( f );
+	CSoundDriverAL::instance()->applyRolloffFactor( f );
 }
 
 

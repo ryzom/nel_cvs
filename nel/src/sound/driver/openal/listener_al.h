@@ -1,7 +1,7 @@
 /** \file listener_al.h
  * OpenAL sound listener
  *
- * $Id: listener_al.h,v 1.1 2001/06/26 15:28:56 cado Exp $
+ * $Id: listener_al.h,v 1.2 2001/07/04 13:11:03 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,9 @@ public:
 	/// Constructor
 	CListenerAL();
 
+	/// Return the instance of the singleton
+	static CListenerAL		*instance() { return _Instance; }
+
 	/// \name Listener properties
 	//@{
 	/// Set the position vector (default: (0,0,0)) (3D mode only)
@@ -62,6 +65,15 @@ public:
 	virtual void			setOrientation( const NLMISC::CVector& front, const NLMISC::CVector& up );
 	/// Get the orientation vectors
 	virtual void			getOrientation( NLMISC::CVector& front, NLMISC::CVector& up ) const;
+	/** Set the gain (volume value inside [0 , 1]). (default: 1)
+	 * 0.0 -> silence
+	 * 0.5 -> -6dB
+	 * 1.0 -> no attenuation
+	 * values > 1 (amplification) not supported by most drivers
+	 */
+	virtual void			setGain( float gain );
+	/// Get the gain
+	virtual float			getGain() const;
 	//@}
 
 	/// \name Global properties
@@ -77,8 +89,12 @@ public:
 	//@}
 
 	/// Destructor
-	virtual					~CListenerAL() {}
+	virtual					~CListenerAL() { _Instance = NULL; }
 
+private:
+
+	// The instance of the singleton
+	static CListenerAL		*_Instance;
 };
 
 

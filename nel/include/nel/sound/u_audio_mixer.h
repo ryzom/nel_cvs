@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.23 2003/03/05 15:14:52 boucher Exp $
+ * $Id: u_audio_mixer.h,v 1.24 2003/03/24 17:09:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -204,6 +204,10 @@ public:
 	/** Return the total size in byte of loaded samples.
 	 */
 	virtual uint32		getLoadedSampleSize() =0;
+
+	/** Return a list of loaded sample bank with theire size.
+	*/
+	virtual void		getLoadedSampleBankInfo(std::vector<std::pair<std::string, uint> > &result) =0;
 	//@}
 
 	/// Get a TSoundId from a name (returns NULL if not found)

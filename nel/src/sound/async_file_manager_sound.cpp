@@ -1,7 +1,7 @@
 /** \file async_file_manager_sound.cpp
  * <File description>
  *
- * $Id: async_file_manager_sound.cpp,v 1.3 2003/03/05 15:14:52 boucher Exp $
+ * $Id: async_file_manager_sound.cpp,v 1.4 2003/03/24 17:09:25 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "stdsound.h"
 #include "nel/misc/file.h"
+#include "nel/misc/path.h"
 #include "async_file_manager_sound.h"
 #include "nel/misc/async_file_manager.h"
 #include "driver/sound_driver.h"
@@ -174,7 +175,7 @@ void CAsyncFileManagerSound::CLoadWavFile::run (void)
 	}
 	try
 	{
-		NLMISC::CIFile	ifile(_Filename);
+		NLMISC::CIFile	ifile(NLMISC::CPath::lookup(_Filename));
 		uint size = ifile.getFileSize();
 		uint8 *buffer = new uint8[ifile.getFileSize()];
 		ifile.serialBuffer(buffer, size);

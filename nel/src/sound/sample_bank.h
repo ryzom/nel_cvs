@@ -1,7 +1,7 @@
 /** \file sample_bank.h
  * CSampleBank: a set of samples
  *
- * $Id: sample_bank.h,v 1.5 2003/03/05 15:14:52 boucher Exp $
+ * $Id: sample_bank.h,v 1.6 2003/03/24 17:09:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,6 +80,11 @@ public:
 	/// Return the total loaded samples size.
 	static uint				getTotalByteSize()				{	return _LoadedSize; };
 
+	/// Fill a vector with current loaded sample banks.
+	static void				getLoadedSampleBankInfo(std::vector<std::pair<std::string, uint> > &result);
+
+
+
 	/// Constructor
 	CSampleBank(const std::string& name, ISoundDriver *sd);
 
@@ -131,7 +136,7 @@ private:
 	// The map off all loaded sample banks
 	static TSampleBankContainer			_Banks;
 	// The total size of loaded samples.
-	static	uint								_LoadedSize;
+	static	uint						_LoadedSize;
 
 	// Sound driver
 	ISoundDriver		*_SoundDriver;

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.42 2003/03/05 15:14:52 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.43 2003/03/24 17:09:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1602,6 +1602,11 @@ struct CompareSources : public binary_function<const CSimpleSource*, const CSimp
 uint32			CAudioMixerUser::getLoadedSampleSize()
 {
 	return CSampleBank::getTotalByteSize();
+}
+
+void			CAudioMixerUser::getLoadedSampleBankInfo(std::vector<std::pair<std::string, uint> > &result)
+{
+	CSampleBank::getLoadedSampleBankInfo(result);
 }
 
 

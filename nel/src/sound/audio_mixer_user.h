@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.32 2003/03/05 15:14:52 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.33 2003/03/24 17:09:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,6 +175,8 @@ public:
 	virtual bool				unloadSampleBank( const std::string &name);
 	virtual void				reloadSampleBanks(bool async);
 	virtual uint32				getLoadedSampleSize();
+	virtual void				getLoadedSampleBankInfo(std::vector<std::pair<std::string, uint> > &result);
+
 
 
 	/// Load sounds. Returns the number of sounds successfully loaded.

@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: complex_source.cpp,v 1.5 2003/03/03 12:58:08 boucher Exp $
+ * $Id: complex_source.cpp,v 1.6 2003/03/24 17:09:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -495,10 +495,13 @@ void CComplexSource::onUpdate()
 				// determine the XFade lenght (if next sound is too short.
 				_FadeLength = minof<uint32>(uint32(_PatternSound->getFadeLenght()/_TickPerSecond), (sound2->getDuration()-100) / 2, (_Source1->getSound()->getDuration()-100)/2);
 				_Source2 = mixer->createSource(sound2, false, 0, 0, _Cluster);
-				_Source2->setPriority(_Priority);
-				// there is a next sound, add event for xfade.
-				nldebug("Seting event for sound %s in %u millisec (XFade = %u).", CStringMapper::unmap(_Source1->getSound()->getName()).c_str(), _Source1->getSound()->getDuration()-_FadeLength, _FadeLength);
-				mixer->addEvent(this, _StartTime1 + _Source1->getSound()->getDuration() - _FadeLength -100);
+				if (_Source2)
+				{
+					_Source2->setPriority(_Priority);
+					// there is a next sound, add event for xfade.
+					nldebug("Seting event for sound %s in %u millisec (XFade = %u).", CStringMapper::unmap(_Source1->getSound()->getName()).c_str(), _Source1->getSound()->getDuration()-_FadeLength, _FadeLength);
+					mixer->addEvent(this, _StartTime1 + _Source1->getSound()->getDuration() - _FadeLength -100);
+				}
 			}
 			else
 			{

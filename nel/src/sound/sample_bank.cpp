@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.12 2003/03/18 10:24:44 corvazier Exp $
+ * $Id: sample_bank.cpp,v 1.13 2003/03/24 17:09:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,26 @@ void	 CSampleBank::reload(bool async)
 		first->second->load(async);
 	}
 }
+
+
+void CSampleBank::getLoadedSampleBankInfo(std::vector<std::pair<std::string, uint> > &result)
+{
+	result.clear();
+
+	TSampleBankContainer::iterator first(_Banks.begin()), last(_Banks.end());
+	for (; first != last; ++first)
+	{
+		std::pair<std::string, uint> p;
+		if (first->second->isLoaded())
+		{
+			p.first = NLMISC::CStringMapper::unmap(first->first);
+			p.second = first->second->getSize();
+			result.push_back(p);
+		}
+	}
+}
+
+
 
 
 

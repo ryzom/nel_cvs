@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.25 2002/03/29 14:58:33 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.26 2002/04/05 13:30:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,11 @@
 using namespace NL3D;
 using namespace NLMISC;
 
-CNelExport theCNelExport;
+CNelExport	theCNelExport;
+Interface	*theIP;
+HWND		theHBar;
+HWND		theHPanel;
+
 //CNelExportSceneStruct theExportSceneStruct;
 CExportNelOptions theExportSceneStruct;
 
@@ -294,7 +298,8 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					theCNelExport.initOptions();
 
 					// Init the exporter
-					theCNelExport.init (false, true);
+					nlassert (theIP);
+					theCNelExport.init (false, true, theIP);
 
 					// Register 3d models
 					// done in dllentry registerSerial3d();
@@ -394,7 +399,8 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					// done in dllentry registerSerial3d();
 
 					// Init the exporter
-					theCNelExport.init (false, true);
+					nlassert (theIP);
+					theCNelExport.init (false, true, theIP);
 
 					// Get time
 					TimeValue time=theCNelExport._Ip->GetTime();
@@ -441,7 +447,8 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					TimeValue time=theCNelExport._Ip->GetTime();
 
 					// Init the exporter
-					theCNelExport.init (false, true);
+					nlassert (theIP);
+					theCNelExport.init (false, true, theIP);
 					
 					// Get node count
 					int nNumSelNode=theCNelExport._Ip->GetSelNodeCount();
@@ -493,7 +500,8 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			case ID_VIEW:
 				{
 					// Init the exporter
-					theCNelExport.init (true, true);
+					nlassert (theIP);
+					theCNelExport.init (true, true, theIP);
 
 					// Get time
 					TimeValue time=theCNelExport._Ip->GetTime();
@@ -507,7 +515,8 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			case ID_SAVESWT:
 				{
 					// Init the exporter
-					theCNelExport.init (false, true);
+					nlassert (theIP);
+					theCNelExport.init (false, true, theIP);
 					
 					uint nNumSelNode = theCNelExport._Ip->GetSelNodeCount();
 
@@ -543,7 +552,8 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				case ID_OPTIONS:
 				{
 					// Init the exporter
-					theCNelExport.init (false, true);
+					nlassert (theIP);
+					theCNelExport.init (false, true, theIP);
 					
 					char sConfigFileName[512];
 					strcpy( sConfigFileName, theCNelExport._Ip->GetDir(APP_PLUGCFG_DIR) );
@@ -572,7 +582,8 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				case ID_NODE_PROPERTIES:
 				{
 					// Init the exporter
-					theCNelExport.init (false, true);
+					nlassert (theIP);
+					theCNelExport.init (false, true, theIP);
 					
 					// Build a seleted set
 					std::set<INode*> listNode;
@@ -594,7 +605,8 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				case ID_EXPORTINSTANCEGROUP:
 				{
 					// Init the exporter
-					theCNelExport.init (false, true);
+					nlassert (theIP);
+					theCNelExport.init (false, true, theIP);
 					
 					uint nNumSelNode = theCNelExport._Ip->GetSelNodeCount();
 
@@ -627,7 +639,8 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				case ID_SAVESKELETON:
 				{
 					// Init the exporter
-					theCNelExport.init (false, true);
+					nlassert (theIP);
+					theCNelExport.init (false, true, theIP);
 					
 					uint nNumSelNode = theCNelExport._Ip->GetSelNodeCount();
 					if (nNumSelNode!=1)
@@ -683,7 +696,6 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 //--- CNelExport -------------------------------------------------------
 CNelExport::CNelExport()
 {
-	iu = NULL;
 	_Ip = NULL;	
 	hPanel = NULL;
 }
@@ -696,15 +708,15 @@ CNelExport::~CNelExport()
 void CNelExport::BeginEditParams(Interface *_Ip,IUtil *iu) 
 {
 	this->iu = iu;
-	this->_Ip = _Ip;
+	theIP = _Ip;
 	if (_ExportNel)
 	{
 		delete (_ExportNel);
 		_ExportNel = NULL;
 	}
-	hPanel = _Ip->AddRollupPage(hInstance,MAKEINTRESOURCE(IDD_PANEL),CNelExportDlgProc,GetString(IDS_PARAMS),0);
-	hBar=GetDlgItem(hPanel,ID_BAR);
-	SendMessage(hBar,PBM_SETPOS,0,0);
+	theHPanel	= _Ip->AddRollupPage(hInstance,MAKEINTRESOURCE(IDD_PANEL),CNelExportDlgProc,GetString(IDS_PARAMS),0);
+	theHBar		= GetDlgItem(hPanel,ID_BAR);
+	SendMessage(theHBar,PBM_SETPOS,0,0);
 }
 	
 void CNelExport::EndEditParams(Interface *_Ip,IUtil *iu) 
@@ -769,7 +781,7 @@ void CNelExport::initOptions()
 	}
 }
 
-void CNelExport::init (bool view, bool errorInDialog)
+void CNelExport::init (bool view, bool errorInDialog, Interface *ip)
 {
 	if (_ExportNel)
 	{
@@ -778,5 +790,6 @@ void CNelExport::init (bool view, bool errorInDialog)
 	}
 	
 	// Create a new nelexport
-	_ExportNel = new CExportNel (errorInDialog, view, view, _Ip, "NeL Export");
+	_Ip = ip;
+	_ExportNel = new CExportNel (errorInDialog, view, view, ip, "NeL Export");
 }

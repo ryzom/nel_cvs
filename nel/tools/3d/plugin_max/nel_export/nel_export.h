@@ -1,7 +1,7 @@
 /** \file nel_export.h
  * <File description>
  *
- * $Id: nel_export.h,v 1.13 2002/03/29 14:58:33 corvazier Exp $
+ * $Id: nel_export.h,v 1.14 2002/04/05 13:30:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,9 +60,7 @@ public:
 
 	~CNelExport();
 
-	void init (bool view, bool errorInDialog);
-
-	HWND			hBar;
+	void init (bool view, bool errorInDialog, Interface	*ip);
 
 	TCHAR* fixupName(TCHAR* name);
 	bool nodeEnum(INode* pNode, bool selected);
@@ -100,9 +98,6 @@ public:
 	ULONG ProcessDir(char* Dir, const char* Mask, unsigned long flag, ULONG Fnct(char* FileName) );
 	ULONG CleanFileName(char* FileName);
 	ULONG CreateBAKFile(char* FileName);
-
-	HWND			hPanel;
-	IUtil			*iu;
 
 	// The nel export objtect
 	CExportNel		*_ExportNel;

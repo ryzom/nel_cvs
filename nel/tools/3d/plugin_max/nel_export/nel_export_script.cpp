@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.16 2002/03/29 14:58:33 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.17 2002/04/05 13:30:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,13 +78,13 @@ Value* export_shape_cf (Value** arg_list, int count)
 	INode *node = arg_list[0]->to_node();
 	nlassert (node);
 
-	theCNelExport.init (false, false);
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	theCNelExport.init (false, false, ip);
 
 	// Export path 
 	const char* sPath=arg_list[1]->to_string();
-
-	// Get a good interface pointer
-	Interface *ip = MAXScript_interface;
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -144,7 +144,10 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 	type_check (arg_list[8], Boolean, sExportShapeExErrorMsg);
 	type_check (arg_list[9], Boolean, sExportShapeExErrorMsg);
 
-	theCNelExport.init (false, false);
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	theCNelExport.init (false, false, ip);
 
 	// Get a INode pointer from the argument passed to us
 	INode *node = arg_list[0]->to_node();
@@ -163,9 +166,6 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 	opt.nOverSampling = arg_list[7]->to_int();
 	opt.bExcludeNonSelected = arg_list[8]->to_bool()!=FALSE;
 	opt.bShowLumel = arg_list[9]->to_bool()!=FALSE;
-
-	// Get a good interface pointer
-	Interface *ip = MAXScript_interface;
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -204,7 +204,10 @@ Value* export_skeleton_cf (Value** arg_list, int count)
 	type_check (arg_list[0], MAXNode, "NelExportSkeleton [root node] [Filename]");
 	type_check (arg_list[1], String, "NelExportSkeleton [root node] [Filename]");
 
-	theCNelExport.init (false, false);
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	theCNelExport.init (false, false, ip);
 
 	// Get a INode pointer from the argument passed to us
 	INode *node = arg_list[0]->to_node();
@@ -212,9 +215,6 @@ Value* export_skeleton_cf (Value** arg_list, int count)
 
 	// Export path 
 	const char* sPath=arg_list[1]->to_string();
-
-	// Get a good interface pointer
-	Interface *ip = MAXScript_interface;
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -244,7 +244,10 @@ Value* export_animation_cf (Value** arg_list, int count)
 	type_check (arg_list[1], String, sExportAnimationErrorMsg);
 	type_check (arg_list[2], Boolean, sExportAnimationErrorMsg);
 
-	theCNelExport.init (false, false);
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	theCNelExport.init (false, false, ip);
 
 	// Export path 
 	const char* sPath=arg_list[1]->to_string();
@@ -307,7 +310,10 @@ Value* export_ig_cf (Value** arg_list, int count)
 	type_check (arg_list[0], Array, "NelExportInstanceGroup [Object array] [Filename]");
 	type_check (arg_list[1], String, "NelExportInstanceGroup [Object array] [Filename]");
 
-	theCNelExport.init (false, false);
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	theCNelExport.init (false, false, ip);
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -334,9 +340,6 @@ Value* export_ig_cf (Value** arg_list, int count)
 				// Export path 
 				const char* sPath=arg_list[1]->to_string();
 
-				// Get a good interface pointer
-				Interface *ip = MAXScript_interface;
-
 				// Export
 				if (theCNelExport.exportInstanceGroup (sPath, vect))
 					ret=&true_value;
@@ -362,7 +365,10 @@ Value* export_skeleton_weight_cf (Value** arg_list, int count)
 	type_check (arg_list[0], Array, "NelExportSkeletonWeight [Object array] [Filename]");
 	type_check (arg_list[1], String, "NelExportSkeletonWeight [Object array] [Filename]");
 
-	theCNelExport.init (false, false);
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	theCNelExport.init (false, false, ip);
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -389,9 +395,6 @@ Value* export_skeleton_weight_cf (Value** arg_list, int count)
 				// Export path 
 				const char* sPath=arg_list[1]->to_string();
 
-				// Get a good interface pointer
-				Interface *ip = MAXScript_interface;
-
 				// Export
 				if (theCNelExport.exportSWT (sPath, vect))
 					ret=&true_value;
@@ -414,7 +417,7 @@ Value* view_shape_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (true, true);
+	theCNelExport.init (true, true, ip);
 
 	// View
 	// For the moment load the default options for lightmap
@@ -449,7 +452,10 @@ Value* test_file_date_cf (Value** arg_list, int count)
 	type_check (arg_list[0], String, "NeLTestFileDate [DestFilename] [SrcFilename]");
 	type_check (arg_list[1], String, "NeLTestFileDate [DestFilename] [SrcFilename]");
 
-	theCNelExport.init (false, false);
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	theCNelExport.init (false, false, ip);
 
 	// The 2 filenames
 	string file0 = arg_list[0]->to_string();
@@ -522,10 +528,10 @@ Value* export_vegetable_cf (Value** arg_list, int count)
 	// Message in dialog
 	bool dialogMessage = arg_list[2]->to_bool() != FALSE;
 
-	theCNelExport.init (false, dialogMessage);
-
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
+
+	theCNelExport.init (false, dialogMessage, ip);
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -544,7 +550,10 @@ Value* reload_texture_cf (Value** arg_list, int count)
 	char *message = "NelReloadTexture [BitmapTex]";
 	//type_check (arg_list[0], TextureMap, message);
 
-	theCNelExport.init (false, false);
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	theCNelExport.init (false, false, ip);
 
 	// The 2 filenames
 	Texmap *texmap = arg_list[0]->to_texmap ();
@@ -576,7 +585,10 @@ Value* export_collision_cf (Value** arg_list, int count)
 	type_check (arg_list[0], Array, sExportCollisionErrorMsg);
 	type_check (arg_list[1], String, sExportCollisionErrorMsg);
 
-	theCNelExport.init (false, false);
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	theCNelExport.init (false, false, ip);
 
 	// Export path 
 	string sPath = arg_list[1]->to_string();
@@ -628,7 +640,10 @@ Value* export_pacs_primitives_cf (Value** arg_list, int count)
 	type_check (arg_list[0], Array, sExportPACSPrimitivesErrorMsg);
 	type_check (arg_list[1], String, sExportPACSPrimitivesErrorMsg);
 
-	theCNelExport.init (false, false);
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	theCNelExport.init (false, false, ip);
 
 	// Export path 
 	string sPath = arg_list[1]->to_string();

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.6 2001/04/03 13:02:56 berenguier Exp $
+ * $Id: vertex_buffer.h,v 1.7 2001/04/13 09:49:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,7 +90,7 @@ const uint32	IDRV_VF_PALETTE_SKIN=  0x00010000 | IDRV_VF_W[0] | IDRV_VF_W[1] | I
 // Touch Flags.
 const uint32	IDRV_VF_TOUCHED_VERTEX_FORMAT	=	0x00000001;
 const uint32	IDRV_VF_TOUCHED_NUM_VERTICES	=	0x00000002;
-
+const uint32	IDRV_VF_TOUCHED_ALL				=	0xFFFFFFFF;
 
 /**
  * <Class description>
@@ -132,7 +132,7 @@ public:
 	// see operator=.
 	CVertexBuffer(const CVertexBuffer &vb);
 	~CVertexBuffer(void);
-	// Do not copy DrvInfos, copy all infos and set IDRV_TOUCHED_ALL.
+	// Do not copy DrvInfos, copy all infos and set IDRV_VF_TOUCHED_ALL.
 	CVertexBuffer			&operator=(const CVertexBuffer &vb);
 
 

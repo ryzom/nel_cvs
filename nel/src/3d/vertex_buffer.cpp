@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.14 2001/04/03 13:02:56 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.15 2001/04/13 09:49:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,7 +78,8 @@ CVertexBuffer	&CVertexBuffer::operator=(const CVertexBuffer &vb)
 	for(i=0;i<IDRV_VF_MAXSTAGES;i++)
 		_UVOff[i]= vb._UVOff[i];
 
-	// Should Set touch flags here (no one for now...)
+	// Set touch flags
+	_Touch= IDRV_VF_TOUCHED_ALL;
 
 	return *this;
 }
@@ -482,6 +483,11 @@ void		CVertexBuffer::serial(NLMISC::IStream &f)
 		}
 
 	}
+
+	// Set touch flags
+	if(f.isReading())
+		_Touch= IDRV_VF_TOUCHED_ALL;
+
 }
 
 // CPaletteSkin serial (no version chek).

@@ -15,21 +15,30 @@ namespace NLAIAGENT
 	/////////////////////////////////////////////////////////////
 	// Succes and failure messages declaration
 
-	NLAISCRIPT::COperandSimpleListOr *CFsmScript::ParamIdSuccessMsg = new NLAISCRIPT::COperandSimpleListOr(2,
+	NLAISCRIPT::COperandSimpleListOr *CFsmScript::ParamIdSuccessMsg = NULL;
+	NLAISCRIPT::CParam *CFsmScript::ParamSuccessMsg = NULL;
+	NLAISCRIPT::COperandSimpleListOr *CFsmScript::ParamIdFailureMsg = NULL;
+	NLAISCRIPT::CParam *CFsmScript::ParamFailureMsg = NULL;
+
+	void CFsmScript::initClass()
+	{
+		CFsmScript::ParamIdSuccessMsg = new NLAISCRIPT::COperandSimpleListOr(2,
 															  new NLAIC::CIdentType(NLAIAGENT::CSuccessMsg::IdSuccessMsg),
 															  new NLAIC::CIdentType(NLAISCRIPT::CSuccessMsgClass::IdSuccessMsgClass)	);
+		CFsmScript::ParamSuccessMsg = new NLAISCRIPT::CParam(1,ParamIdSuccessMsg);		
+		CFsmScript::ParamIdFailureMsg = new NLAISCRIPT::COperandSimpleListOr(2,
+																  new NLAIC::CIdentType(NLAIAGENT::CFailureMsg::IdFailureMsg),
+																  new NLAIC::CIdentType(NLAISCRIPT::CFailureMsgClass::IdFailureMsgClass)	);
 
-	NLAISCRIPT::CParam *CFsmScript::ParamSuccessMsg = new NLAISCRIPT::CParam(1,ParamIdSuccessMsg);
-
-	
-	
-
-	NLAISCRIPT::COperandSimpleListOr *CFsmScript::ParamIdFailureMsg = new NLAISCRIPT::COperandSimpleListOr(2,
-															  new NLAIC::CIdentType(NLAIAGENT::CFailureMsg::IdFailureMsg),
-															  new NLAIC::CIdentType(NLAISCRIPT::CFailureMsgClass::IdFailureMsgClass)	);
-
-	NLAISCRIPT::CParam *CFsmScript::ParamFailureMsg = new NLAISCRIPT::CParam(1,ParamIdFailureMsg);
-
+		CFsmScript::ParamFailureMsg = new NLAISCRIPT::CParam(1,ParamIdFailureMsg);
+	}
+	void CFsmScript::releaseClass()
+	{
+		CFsmScript::ParamIdSuccessMsg->release();
+		CFsmScript::ParamSuccessMsg->release();
+		CFsmScript::ParamIdFailureMsg->release();
+		CFsmScript::ParamFailureMsg->release();
+	}
 
 	/////////////////////////////////////////////////////////////
 

@@ -2,7 +2,7 @@
  *	
  *	Instances of finite state machines
  *
- * $Id: fsm_script.h,v 1.2 2001/04/05 16:29:41 portier Exp $
+ * $Id: fsm_script.h,v 1.3 2001/04/06 13:29:17 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -110,6 +110,9 @@ namespace NLAIAGENT
 			/// These functions are called by other operators or goals who failed or succeeded
 			virtual void onSuccess( IObjectIA *);
 			virtual void onFailure( IObjectIA *);
+		public:
+			static void initClass();
+			static void releaseClass();
 	};
 }
 #endif

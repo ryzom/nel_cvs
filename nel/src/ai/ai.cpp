@@ -24,6 +24,7 @@ namespace NLAILINK
 		NLAIC::initRegistry();
 		NLAISCRIPT::initExternalLib();		
 		NLAIAGENT::CAgentScript::initAgentScript();
+		NLAIAGENT::CFsmScript::initClass();
 		NLAIAGENT::CProxyAgentMail::initClass();
 		NLAISCRIPT::CLibTest::initClass();
 
@@ -37,6 +38,7 @@ namespace NLAILINK
 		NLAIC::releaseRegistry();
 		NLAIAGENT::CLocWordNumRef::clear();
 		NLAIAGENT::CAgentScript::releaseAgentScript();
+		NLAIAGENT::CFsmScript::releaseClass();
 		if(NLAIAGENT::CProxyAgentMail::MainAgent != NULL) NLAIAGENT::CProxyAgentMail::MainAgent->release();
 		NLAIAGENT::CProxyAgentMail::releaseClass();
 		NLAISCRIPT::CLibTest::releaseClass();

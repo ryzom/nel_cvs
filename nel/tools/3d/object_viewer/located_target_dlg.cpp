@@ -1,7 +1,7 @@
 /** \file located_target_dlg.cpp
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.cpp,v 1.7 2002/11/04 15:40:44 boucher Exp $
+ * $Id: located_target_dlg.cpp,v 1.8 2002/11/18 17:58:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,119 +69,119 @@ END_MESSAGE_MAP()
 
 void CLocatedTargetDlg::init(CWnd* pParent)
 {
-	Create(IDD_LOCATED_TARGET_DLG, pParent) ;
-	ShowWindow(SW_SHOW) ;
+	Create(IDD_LOCATED_TARGET_DLG, pParent);
+	ShowWindow(SW_SHOW);
 }
 
 
 void CLocatedTargetDlg::OnAddTarget() 
 {
-	UpdateData() ;
+	UpdateData();
 	
-	int totalCount = m_AvailableTargets.GetCount() ;
-	nlassert(totalCount) ;
-	std::vector<int> indexs ;
-	indexs.resize(totalCount) ;
-	int selCount = m_AvailableTargets.GetSelItems(totalCount, &indexs[0]) ;
+	int totalCount = m_AvailableTargets.GetCount();
+	nlassert(totalCount);
+	std::vector<int> indexs;
+	indexs.resize(totalCount);
+	int selCount = m_AvailableTargets.GetSelItems(totalCount, &indexs[0]);
 
-	std::sort(indexs.begin(), indexs.begin() + selCount) ; // we never know ...
+	std::sort(indexs.begin(), indexs.begin() + selCount); // we never know ...
 
-	for (int k = 0 ; k < selCount ; ++k)
+	for (int k = 0; k < selCount; ++k)
 	{
-		NL3D::CPSLocated *loc = (NL3D::CPSLocated *) m_AvailableTargets.GetItemData(indexs[k] - k) ;
-		nlassert(loc) ;
-		_LBTarget->attachTarget(loc) ;
-		m_AvailableTargets.DeleteString(indexs[k] - k) ;
-		int l = m_Targets.AddString(loc->getName().c_str()) ;
-		m_Targets.SetItemData(l, (DWORD) loc) ;
+		NL3D::CPSLocated *loc = (NL3D::CPSLocated *) m_AvailableTargets.GetItemData(indexs[k] - k);
+		nlassert(loc);
+		_LBTarget->attachTarget(loc);
+		m_AvailableTargets.DeleteString(indexs[k] - k);
+		int l = m_Targets.AddString(loc->getName().c_str());
+		m_Targets.SetItemData(l, (DWORD) loc);
 	}
 
 	
-	UpdateData(FALSE) ;
+	UpdateData(FALSE);
 
 
 }
 
 void CLocatedTargetDlg::OnRemoveTarget() 
 {
-	UpdateData() ;	
+	UpdateData();	
 
 
-	int totalCount = m_Targets.GetCount() ;
-	nlassert(totalCount) ;
-	std::vector<int> indexs ;
-	indexs.resize(totalCount) ;
-	int selCount = m_Targets.GetSelItems(totalCount, &indexs[0]) ;
+	int totalCount = m_Targets.GetCount();
+	nlassert(totalCount);
+	std::vector<int> indexs;
+	indexs.resize(totalCount);
+	int selCount = m_Targets.GetSelItems(totalCount, &indexs[0]);
 
-	std::sort(indexs.begin(), indexs.begin() + selCount) ; // we never know ...
+	std::sort(indexs.begin(), indexs.begin() + selCount); // we never know ...
 
-	for (int k = 0 ; k < selCount ; ++k)
+	for (int k = 0; k < selCount; ++k)
 	{
-		NL3D::CPSLocated *loc = (NL3D::CPSLocated *) m_Targets.GetItemData(indexs[k] - k) ;
-		nlassert(loc) ;
-		_LBTarget->detachTarget(loc) ;
-		m_Targets.DeleteString(indexs[k] - k) ;
-		int l = m_AvailableTargets.AddString(loc->getName().c_str()) ;
+		NL3D::CPSLocated *loc = (NL3D::CPSLocated *) m_Targets.GetItemData(indexs[k] - k);
+		nlassert(loc);
+		_LBTarget->detachTarget(loc);
+		m_Targets.DeleteString(indexs[k] - k);
+		int l = m_AvailableTargets.AddString(loc->getName().c_str());
 	
-		m_AvailableTargets.SetItemData(l, (DWORD) loc) ;
+		m_AvailableTargets.SetItemData(l, (DWORD) loc);
 	}
 
-	UpdateData(FALSE) ;	
+	UpdateData(FALSE);	
 }
 
 BOOL CLocatedTargetDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
 	
-	RECT r ;
+	RECT r;
 
-	uint k ;
-	uint nbTarg = _LBTarget->getNbTargets() ;
+	uint k;
+	uint nbTarg = _LBTarget->getNbTargets();
 
-	m_Targets.InitStorage(nbTarg, 128) ;
+	m_Targets.InitStorage(nbTarg, 128);
 
-	std::set<NL3D::CPSLocated *> targetSet ;
+	std::set<NL3D::CPSLocated *> targetSet;
 
 	// fill the box thta tells us what the target are
-	for(k = 0 ; k < nbTarg ; ++k)
+	for(k = 0; k < nbTarg; ++k)
 	{
-		m_Targets.AddString(_LBTarget->getTarget(k)->getName().c_str() ) ;
-		m_Targets.SetItemData(k, (DWORD) _LBTarget->getTarget(k) ) ;
-		targetSet.insert(_LBTarget->getTarget(k)) ;
-	} ;
+		m_Targets.AddString(_LBTarget->getTarget(k)->getName().c_str() );
+		m_Targets.SetItemData(k, (DWORD) _LBTarget->getTarget(k) );
+		targetSet.insert(_LBTarget->getTarget(k));
+	};
 
 	// fill abox with the available targets
-	NL3D::CParticleSystem  *ps = _LBTarget->getOwner()->getOwner() ;
+	NL3D::CParticleSystem  *ps = _LBTarget->getOwner()->getOwner();
 
-	uint nbLocated = ps->getNbProcess() ;
+	uint nbLocated = ps->getNbProcess();
 
 
 	
-	m_AvailableTargets.InitStorage(nbTarg, 128) ;
-	for (k = 0 ; k < nbLocated ; ++k)
+	m_AvailableTargets.InitStorage(nbTarg, 128);
+	for (k = 0; k < nbLocated; ++k)
 	{
-		NL3D::CPSLocated *loc = dynamic_cast<NL3D::CPSLocated *>(ps->getProcess(k)) ;
+		NL3D::CPSLocated *loc = dynamic_cast<NL3D::CPSLocated *>(ps->getProcess(k));
 		if (loc)
 		{
 			if (targetSet.find(loc) == targetSet.end())
 			{
-				int l = m_AvailableTargets.AddString(loc->getName().c_str() ) ;				
-				m_AvailableTargets.SetItemData(l, (DWORD) loc ) ;				
+				int l = m_AvailableTargets.AddString(loc->getName().c_str() );				
+				m_AvailableTargets.SetItemData(l, (DWORD) loc );				
 			}
 		}
 	}
 
 
-	const sint posX = 5 ;
-	sint posY = 180 ;
+	const sint posX = 5;
+	sint posY = 180;
 
 	// collision zone case
 
 	if (dynamic_cast<NL3D::CPSZone *>(_LBTarget))
 	{
-		CCollisionZoneDlg *czd = new CCollisionZoneDlg(dynamic_cast<NL3D::CPSZone *>(_LBTarget)) ;
-		pushWnd(czd) ;
-		czd->init(posX, posY, this) ;
+		CCollisionZoneDlg *czd = new CCollisionZoneDlg(dynamic_cast<NL3D::CPSZone *>(_LBTarget));
+		pushWnd(czd);
+		czd->init(posX, posY, this);
 	}
 
 
@@ -189,79 +189,80 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 
 	if (dynamic_cast<NL3D::CPSForceIntensity *>(_LBTarget))
 	{
-		_ForceIntensityWrapper.F = dynamic_cast<NL3D::CPSForceIntensity *>(_LBTarget) ;
-		CAttribDlgFloat *fi = new CAttribDlgFloat(std::string("FORCE INTENSITY"), 0, 100) ;
-		pushWnd(fi) ;			
-		fi->setWrapper(&_ForceIntensityWrapper) ;
-		fi->setSchemeWrapper(&_ForceIntensityWrapper) ;
+		_ForceIntensityWrapper.F = dynamic_cast<NL3D::CPSForceIntensity *>(_LBTarget);
+		CAttribDlgFloat *fi = new CAttribDlgFloat(std::string("FORCE INTENSITY"), 0, 100);
+		pushWnd(fi);			
+		fi->setWrapper(&_ForceIntensityWrapper);
+		fi->setSchemeWrapper(&_ForceIntensityWrapper);
 
-		HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_FORCE_INTENSITY)) ;
-		fi->init(bmh, posX, posY, this) ;
+		HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_FORCE_INTENSITY));
+		fi->init(bmh, posX, posY, this);
 		
 
-		fi->GetClientRect(&r) ;
-		posY += r.bottom + 3 ;			
+		fi->GetClientRect(&r);
+		posY += r.bottom + 3;			
 	}
 
 	// vortex (to tune viscosity)
 	if (dynamic_cast<NL3D::CPSCylindricVortex *>(_LBTarget))
 	{
-		CEditableRangeFloat *rv = new CEditableRangeFloat(std::string("RADIAL_VISCOSITY"), 0, 1) ;
-		pushWnd(rv) ;
-		_RadialViscosityWrapper.V = dynamic_cast<NL3D::CPSCylindricVortex *>(_LBTarget) ;
-		rv->setWrapper(&_RadialViscosityWrapper) ;
-		rv->init(posX + 140, posY, this) ;
-		CStatic *s = new CStatic ;			
-		pushWnd(s) ;
-		s->Create("Radial viscosity : ", SS_LEFT, CRect(posX, posY, posX + 139, posY + 32), this) ;
-		s->ShowWindow(SW_SHOW) ;
+		CEditableRangeFloat *rv = new CEditableRangeFloat(std::string("RADIAL_VISCOSITY"), 0, 1);
+		pushWnd(rv);
+		_RadialViscosityWrapper.V = dynamic_cast<NL3D::CPSCylindricVortex *>(_LBTarget);
+		rv->setWrapper(&_RadialViscosityWrapper);
+		rv->init(posX + 140, posY, this);
+		CStatic *s = new CStatic;			
+		pushWnd(s);
+		s->Create("Radial viscosity : ", SS_LEFT, CRect(posX, posY, posX + 139, posY + 32), this);
+		s->ShowWindow(SW_SHOW);
 
 
-		rv->GetClientRect(&r) ;
-		posY += r.bottom + 3 ;
+		rv->GetClientRect(&r);
+		posY += r.bottom + 3;
 
-		CEditableRangeFloat *tv = new CEditableRangeFloat(std::string("TANGENTIAL_VISCOSITY"), 0, 1) ;
-		pushWnd(tv) ;
-		_TangentialViscosityWrapper.V = dynamic_cast<NL3D::CPSCylindricVortex *>(_LBTarget) ;
-		tv->setWrapper(&_TangentialViscosityWrapper) ;
-		tv->init(posX + 140, posY, this) ;
+		CEditableRangeFloat *tv = new CEditableRangeFloat(std::string("TANGENTIAL_VISCOSITY"), 0, 1);
+		pushWnd(tv);
+		_TangentialViscosityWrapper.V = dynamic_cast<NL3D::CPSCylindricVortex *>(_LBTarget);
+		tv->setWrapper(&_TangentialViscosityWrapper);
+		tv->init(posX + 140, posY, this);
 
-		s = new CStatic ;			
-		pushWnd(s) ;
-		s->Create("Tangential Viscosity : ", SS_LEFT, CRect(posX, posY, posX + 139, posY + 32), this) ;
-		s->ShowWindow(SW_SHOW) ;
+		s = new CStatic;			
+		pushWnd(s);
+		s->Create("Tangential Viscosity : ", SS_LEFT, CRect(posX, posY, posX + 139, posY + 32), this);
+		s->ShowWindow(SW_SHOW);
 
-		tv->GetClientRect(&r) ;
-		posY += r.bottom + 3 ;
+		tv->GetClientRect(&r);
+		posY += r.bottom + 3;
 	}
 
 	// deals with emitters that have a direction
 	if (dynamic_cast<NL3D::CPSDirection *>(_LBTarget))
 	{
-		CDirectionAttr *da = new CDirectionAttr(std::string("DIRECTION")) ;
-		pushWnd(da) ;
-		da->init(posX, posY, this) ;
-		_DirectionWrapper.E = dynamic_cast<NL3D::CPSDirection *>(_LBTarget) ;
-		da->setWrapper(&_DirectionWrapper) ;
-		da->GetClientRect(&r) ;
-		posY += r.bottom ;
+		CDirectionAttr *da = new CDirectionAttr(std::string("DIRECTION"));
+		pushWnd(da);		
+		_DirectionWrapper.E = dynamic_cast<NL3D::CPSDirection *>(_LBTarget);
+		da->setWrapper(&_DirectionWrapper);
+		da->setDirectionWrapper(dynamic_cast<NL3D::CPSDirection *>(_LBTarget));
+		da->init(posX, posY, this);
+		da->GetClientRect(&r);
+		posY += r.bottom;
 	}
 
 	// Brownian (to tune parametric factor)
 	if (dynamic_cast<NL3D::CPSBrownianForce *>(_LBTarget))
 	{
-		CEditableRangeFloat *rv = new CEditableRangeFloat(std::string("PARAMETRIC_FACTOR"), 0, 64) ;
-		pushWnd(rv) ;
-		_ParamFactorWrapper.F = static_cast<NL3D::CPSBrownianForce *>(_LBTarget) ;
-		rv->setWrapper(&_ParamFactorWrapper) ;
-		rv->init(posX + 140, posY, this) ;
-		CStatic *s = new CStatic ;			
-		pushWnd(s) ;
-		s->Create("Parametric factor : ", SS_LEFT, CRect(posX, posY, posX + 139, posY + 40), this) ;
-		s->ShowWindow(SW_SHOW) ;
+		CEditableRangeFloat *rv = new CEditableRangeFloat(std::string("PARAMETRIC_FACTOR"), 0, 64);
+		pushWnd(rv);
+		_ParamFactorWrapper.F = static_cast<NL3D::CPSBrownianForce *>(_LBTarget);
+		rv->setWrapper(&_ParamFactorWrapper);
+		rv->init(posX + 140, posY, this);
+		CStatic *s = new CStatic;			
+		pushWnd(s);
+		s->Create("Parametric factor : ", SS_LEFT, CRect(posX, posY, posX + 139, posY + 40), this);
+		s->ShowWindow(SW_SHOW);
 
-		rv->GetClientRect(&r) ;
-		posY += r.bottom + 3 ;
+		rv->GetClientRect(&r);
+		posY += r.bottom + 3;
 	
 	}
 

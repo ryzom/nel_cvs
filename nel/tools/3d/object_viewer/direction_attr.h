@@ -2,7 +2,7 @@
  * a dialog to choose a direction (normalized vector). It gives several choices, or allow 
  * to call a more complete dialog (CDirectionEdit)
  *
- * $Id: direction_attr.h,v 1.3 2001/12/18 18:36:18 vizerie Exp $
+ * $Id: direction_attr.h,v 1.4 2002/11/18 17:56:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,14 @@
 #include "ps_wrapper.h"
 #include "popup_notify.h"
 
-/// This dialog helps to choose from several preset directions, or to choose a custom one
+namespace NL3D
+{
+	class CPSDirection;
+}
+
+/** This dialog helps to choose from several preset directions, or to choose a custom one.
+  * This also allow to bind the direction to a global variable when it is supported
+  */
 class CDirectionAttr : public CEditAttribDlg, public IPopupNotify
 {
 // Construction
@@ -46,9 +53,13 @@ public:
 
 	// inherited from CEditAttribDlg
 	virtual void init(uint32 x, uint32 y, CWnd *pParent);
-
+	//
 	void setWrapper(IPSWrapper<NLMISC::CVector> *wrapper) { _Wrapper = wrapper; }
 
+	/** The CPSDirection object is used to see if a global variable can be bound to the direction.
+	  * When set to NULL it has no effect (the default)
+	  */
+	void setDirectionWrapper(NL3D::CPSDirection *wrapper) { _DirectionWrapper = wrapper; }	
 
 	BOOL EnableWindow( BOOL bEnable = TRUE );
 
@@ -80,8 +91,8 @@ protected:
 	// inherited from IPopupNotify
 	void childPopupClosed(CWnd *);
 	
-
 	IPSWrapper<NLMISC::CVector> *_Wrapper;
+	NL3D::CPSDirection			*_DirectionWrapper;
 
 	// Generated message map functions
 	//{{AFX_MSG(CDirectionAttr)
@@ -93,6 +104,7 @@ protected:
 	afx_msg void OnVectMinusK();
 	afx_msg void OnCustomDirection();
 	afx_msg void OnDestroy();
+	afx_msg void OnGlobalDirection();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -2,7 +2,7 @@
  * a dialog to choose a direction (normalized vector). It gives several choices, or allow 
  * to call a more complete dialog (CDirectionEdit)
  *
- * $Id: direction_attr.cpp,v 1.4 2002/11/04 15:40:44 boucher Exp $
+ * $Id: direction_attr.cpp,v 1.5 2002/11/18 17:56:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,36 +28,43 @@
 #include "object_viewer.h"
 #include "direction_attr.h"
 #include "direction_edit.h"
+#include "choose_name.h"
+#include "3d/ps_direction.h"
+#include "3d/particle_system.h"
+
 
 
 /////////////////////////////////////////////////////////////////////////////
 // CDirectionAttr dialog
-
-
-CDirectionAttr::CDirectionAttr(const std::string &id): _DirectionDlg(NULL)
+CDirectionAttr::CDirectionAttr(const std::string &id): _DirectionDlg(NULL), _Wrapper(NULL), _DirectionWrapper(NULL)
 {
 	//{{AFX_DATA_INIT(CDirectionAttr)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 }
 
-
-
+//=======================================================================================
 void CDirectionAttr::init(uint32 x, uint32 y, CWnd *pParent)
 {
-	Create(IDD_DIRECTION_ATTR, pParent) ;
-	RECT r ;
-	GetClientRect(&r) ;
-	CRect wr ;
-	wr.left = r.left + x ;
-	wr.top = r.top + y ;
-	wr.bottom = r.bottom + y ;
-	wr.right = r.right + x ;
-	MoveWindow(wr) ;
-	ShowWindow(SW_SHOW) ;	
-
+	Create(IDD_DIRECTION_ATTR, pParent);
+	RECT r;
+	GetClientRect(&r);
+	CRect wr;
+	wr.left = r.left + x;
+	wr.top = r.top + y;
+	wr.bottom = r.bottom + y;
+	wr.right = r.right + x;
+	MoveWindow(wr);
+	if (_DirectionWrapper && _DirectionWrapper->supportGlobalVectorValue())
+	{
+		GetDlgItem(IDC_GLOBAL_DIRECTION)->ShowWindow(TRUE);
+	}
+	EnableWindow(TRUE);
+	ShowWindow(SW_SHOW);	
 }
 
+
+//=======================================================================================
 void CDirectionAttr::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -77,86 +84,114 @@ BEGIN_MESSAGE_MAP(CDirectionAttr, CDialog)
 	ON_BN_CLICKED(IDC_VECT_MINUS_K, OnVectMinusK)
 	ON_BN_CLICKED(IDC_CUSTOM_DIRECTION, OnCustomDirection)
 	ON_WM_DESTROY()
+	ON_BN_CLICKED(IDC_GLOBAL_DIRECTION, OnGlobalDirection)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CDirectionAttr message handlers
 
+
+//=======================================================================================
 void CDirectionAttr::OnVectI() 
 {
-	nlassert(_Wrapper) ;	
-	_Wrapper->set(NLMISC::CVector::I) ;
+	nlassert(_Wrapper);	
+	_Wrapper->set(NLMISC::CVector::I);
 }
 
+//=======================================================================================
 void CDirectionAttr::OnVectJ() 
 {
-	nlassert(_Wrapper) ;	
-	_Wrapper->set(NLMISC::CVector::J) ;
+	nlassert(_Wrapper);	
+	_Wrapper->set(NLMISC::CVector::J);
 }
 
+//=======================================================================================
 void CDirectionAttr::OnVectK() 
 {
-	_Wrapper->set(NLMISC::CVector::K) ;
+	_Wrapper->set(NLMISC::CVector::K);
 }
 
+//=======================================================================================
 void CDirectionAttr::OnVectMinusI() 
 {
-	_Wrapper->set( - NLMISC::CVector::I) ;	
+	_Wrapper->set( - NLMISC::CVector::I);	
 }
 
+//=======================================================================================
 void CDirectionAttr::OnVectMinusJ() 
 {
-	_Wrapper->set(- NLMISC::CVector::J) ;
+	_Wrapper->set(- NLMISC::CVector::J);
 }
 
+//=======================================================================================
 void CDirectionAttr::OnVectMinusK() 
 {
-	_Wrapper->set(- NLMISC::CVector::K) ;	
+	_Wrapper->set(- NLMISC::CVector::K);	
 }	
 
-BOOL CDirectionAttr::EnableWindow( BOOL bEnable)
+//=======================================================================================
+BOOL CDirectionAttr::EnableWindow(BOOL bEnable)
 {
-	GetDlgItem(IDC_VECT_I)->EnableWindow(bEnable) ;
-	GetDlgItem(IDC_VECT_J)->EnableWindow(bEnable) ;
-	GetDlgItem(IDC_VECT_K)->EnableWindow(bEnable) ;
-
-	GetDlgItem(IDC_VECT_MINUS_I)->EnableWindow(bEnable) ;
-	GetDlgItem(IDC_VECT_MINUS_J)->EnableWindow(bEnable) ;
-	GetDlgItem(IDC_VECT_MINUS_K)->EnableWindow(bEnable) ;
-	GetDlgItem(IDC_CUSTOM_DIRECTION)->EnableWindow(bEnable) ;
-
-	return CEditAttribDlg::EnableWindow(bEnable) ;
+	BOOL enableUserDirection = TRUE;
+	if (_DirectionWrapper && _DirectionWrapper->supportGlobalVectorValue() && !_DirectionWrapper->getGlobalVectorValueName().empty())
+	{
+		enableUserDirection = FALSE;
+	}	
+	GetDlgItem(IDC_VECT_I)->EnableWindow(bEnable & enableUserDirection);
+	GetDlgItem(IDC_VECT_J)->EnableWindow(bEnable & enableUserDirection);
+	GetDlgItem(IDC_VECT_K)->EnableWindow(bEnable & enableUserDirection);
+	GetDlgItem(IDC_VECT_MINUS_I)->EnableWindow(bEnable & enableUserDirection);
+	GetDlgItem(IDC_VECT_MINUS_J)->EnableWindow(bEnable & enableUserDirection);
+	GetDlgItem(IDC_VECT_MINUS_K)->EnableWindow(bEnable & enableUserDirection);
+	GetDlgItem(IDC_CUSTOM_DIRECTION)->EnableWindow(bEnable & enableUserDirection);
+	GetDlgItem(IDC_DIRECTION_TEXT)->EnableWindow(bEnable & enableUserDirection);
+	GetDlgItem(IDC_GLOBAL_DIRECTION)->EnableWindow(bEnable);
+	return CEditAttribDlg::EnableWindow(bEnable);
 }
 
-
-
+//=======================================================================================
 void CDirectionAttr::OnCustomDirection() 
 {
-	_DirectionDlg = new CDirectionEdit(_Wrapper) ;
-	_DirectionDlg->init(this, this) ;
-	EnableWindow(FALSE) ;	
+	_DirectionDlg = new CDirectionEdit(_Wrapper);
+	_DirectionDlg->init(this, this);
+	EnableWindow(FALSE);	
 }
 
-
+//=======================================================================================
 void CDirectionAttr::childPopupClosed(CWnd *)
 {
-	_DirectionDlg->DestroyWindow() ;
-	delete _DirectionDlg ;
-	_DirectionDlg = NULL ;
-
-	EnableWindow(TRUE) ;
+	_DirectionDlg->DestroyWindow();
+	delete _DirectionDlg;
+	_DirectionDlg = NULL;
+	EnableWindow(TRUE);
 
 }
 
+//=======================================================================================
 void CDirectionAttr::OnDestroy() 
 {
-	CDialog::OnDestroy();
-	
+	CDialog::OnDestroy();	
 	if (_DirectionDlg)
 	{
-		_DirectionDlg->DestroyWindow() ;
+		_DirectionDlg->DestroyWindow();
 	}
-	delete _DirectionDlg ;
+	delete _DirectionDlg;
 }
 
+//=======================================================================================
+void CDirectionAttr::OnGlobalDirection() 
+{
+	nlassert(_DirectionWrapper)
+
+	CChooseName cn(_DirectionWrapper->getGlobalVectorValueName().c_str());
+	if (cn.DoModal() == IDOK)
+	{
+		_DirectionWrapper->enableGlobalVectorValue(cn.getName());
+		if (!cn.getName().empty())
+		{
+			NL3D::CParticleSystem::setGlobalVectorValue(cn.getName(), NLMISC::CVector::I); // take a non NULL value for the direction
+		}
+	}
+	EnableWindow(TRUE);
+}

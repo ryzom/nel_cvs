@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.cpp
  * TODO: File description
  *
- * $Id: nel_patch_mesh.cpp,v 1.12 2004/11/15 10:25:11 lecroart Exp $
+ * $Id: nel_patch_mesh.cpp,v 1.13 2005/02/08 15:03:23 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -349,7 +349,7 @@ int CheckBind (int nVert, int nSeg, int& v0, int& v1, int& v2, int& v3, const CV
 					nlassert (0);
 			}
 #else // (MAX_RELEASE < 4000)
-			if ((patch.edges[nSeg].patches[1]!=-1)&&bCreate)
+			if ((patch.edges[nSeg].patches.Count()>1)&&bCreate)
 			{
 				if (bAssert)
 					nlassert (0);
@@ -371,7 +371,7 @@ int CheckBind (int nVert, int nSeg, int& v0, int& v1, int& v2, int& v3, const CV
 							config=0;
 					}
 #else // (MAX_RELEASE < 4000)
-					if ((patch.edges[nSeg0].patches[1]==-1)&&(patch.edges[nSeg1].patches[1]==-1))
+					if ((patch.edges[nSeg0].patches.Count()<2)&&(patch.edges[nSeg1].patches.Count()<2))
 					{
 						if (!IsVertexInPatch (nVert, patch.edges[nSeg].patches[0], patch))
 							config=0;
@@ -408,10 +408,10 @@ int CheckBind (int nVert, int nSeg, int& v0, int& v1, int& v2, int& v3, const CV
 							(!IsVertexInPatch (v2, patch.edges[nSeg].patch1, patch))&&
 							(!IsVertexInPatch (v3, patch.edges[nSeg].patch1, patch)))
 #else // (MAX_RELEASE < 4000)
-							(patch.edges[nEdge0].patches[1]==-1)&&
-							(patch.edges[nEdge1].patches[1]==-1)&&
-							(patch.edges[nEdge2].patches[1]==-1)&&
-							(patch.edges[nEdge3].patches[1]==-1)&&
+							(patch.edges[nEdge0].patches.Count()<2)&&
+							(patch.edges[nEdge1].patches.Count()<2)&&
+							(patch.edges[nEdge2].patches.Count()<2)&&
+							(patch.edges[nEdge3].patches.Count()<2)&&
 							(!IsVertexInPatch (nVert, patch.edges[nSeg].patches[0], patch))&&
 							(!IsVertexInPatch (v2, patch.edges[nSeg].patches[0], patch))&&
 							(!IsVertexInPatch (v3, patch.edges[nSeg].patches[0], patch)))
@@ -1299,7 +1299,7 @@ void RPatchMesh::AddHook (int nVert, int nSeg, PatchMesh& patch)
 	BindingVertex (nVert, patch.edges[nSeg].patch1, nEdge, nVert, BIND_SINGLE);
 #else // (MAX_RELEASE < 4000)
 	// Une side of the edge must be cleared
-	nlassert (patch.edges[nSeg].patches[1]==-1);
+	nlassert (patch.edges[nSeg].patches.Count()<2);
 
 	int nEdge=WhereIsTheEdge (patch.edges[nSeg].patches[0], nSeg, patch);
 	nlassert (patch.patches[patch.edges[nSeg].patches[0]].edge[nEdge]==nSeg);
@@ -1324,7 +1324,7 @@ void RPatchMesh::AddHook (int nVert0, int nVert1, int nVert2, int nSeg, PatchMes
 	BindingVertex (nVert2, patch.edges[nSeg].patch1, nEdge, nVert1, BIND_75);
 #else // (MAX_RELEASE < 4000)
 	// Une side of the edge must be cleared
-	nlassert (patch.edges[nSeg].patches[1]==-1);
+	nlassert (patch.edges[nSeg].patches.Count()<2);
 
 	int nEdge=WhereIsTheEdge (patch.edges[nSeg].patches[0], nSeg, patch);
 

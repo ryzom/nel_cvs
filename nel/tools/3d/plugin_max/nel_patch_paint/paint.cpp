@@ -3690,14 +3690,16 @@ void EPM_PaintCMode::DoPaint ()
 #if (MAX_RELEASE < 4000)
 					int otherPatch=(patch->edges[mYedge].patch1==p)?patch->edges[mYedge].patch2:patch->edges[mYedge].patch1;
 #else // (MAX_RELEASE < 4000)
-//					int otherPatch=(patch->edges[mYedge].patches[0]==p)?patch->edges[mYedge].patches[1]:patch->edges[mYedge].patches[0];
 					int otherPatch = -1;
-					if (patch->edges[mYedge].patches[0]==p) {
-						if (patch->edges[mYedge].patches.Count() > 1)
-							otherPatch = patch->edges[mYedge].patches[1];
+					if(patch->edges[mYedge].patches.Count()>0)
+					{
+						if (patch->edges[mYedge].patches[0]==p) {
+							if (patch->edges[mYedge].patches.Count() > 1)
+								otherPatch = patch->edges[mYedge].patches[1];
+						}
+						else
+							otherPatch = patch->edges[mYedge].patches[0];
 					}
-					else
-						otherPatch = patch->edges[mYedge].patches[0];
 #endif // (MAX_RELEASE < 4000)
 					int nMeshIndex;
 					if (otherPatch!=-1)
@@ -3794,10 +3796,10 @@ void EPM_PaintCMode::DoPaint ()
 											//
 											int pp=patch2->edges[ee].patch1==-1 ? patch2->edges[ee].patch2:patch2->edges[ee].patch1;
 #else // (MAX_RELEASE < 4000)
-										if ((patch2->edges[ee].patches[0]==-1)||(patch2->edges[ee].patches[1]==-1))
+										if (patch2->edges[ee].patches.Count()>0)
 										{
 											//
-											int pp=patch2->edges[ee].patches[0]==-1 ? patch2->edges[ee].patches[1]:patch2->edges[ee].patches[0];
+											int pp=patch2->edges[ee].patches[0];
 #endif // (MAX_RELEASE < 4000)
 											nlassert (pp!=-1);
 

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.81 2004/05/11 17:34:54 boucher Exp $
+ * $Id: unified_network.cpp,v 1.82 2004/05/11 18:33:23 distrib Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -52,6 +52,9 @@ static uint32 TotalCallbackCalled = 0;
 /// Yield method (Unix only)
 CVariable<uint32> UseYieldMethod( "UseYieldMethod", "0=select 1=usleep 2=nanosleep 3=sched_yield 4=none", 0, 0, true );
 #endif
+
+/// Reduce sending lag
+CVariable<bool> FlushSendsBeforeSleep( "FlushSendsBeforeSleep", "If true, send buffers will be flushed before sleep, not in next update", true, 0, true );
 
 /// Receiving size limit
 CVariablePtr<uint32> DefaultMaxExpectedBlockSize( "DefaultMaxExpectedBlockSize", "If receiving more than this value in bytes, the connection will be dropped", &CBufNetBase::DefaultMaxExpectedBlockSize, true );
@@ -1002,6 +1005,29 @@ void	CUnifiedNetwork::update(TTime timeout)
 		}
 
 		enableRetry = false;
+
+		if ( FlushSendsBeforeSleep.get() )
+		{
+			// Flush all connections
+			H_AUTO(L5FlushSendsBeforeSleep);
+			for (uint k = 0; k<_UsedConnection.size(); ++k) 
+			{ 
+				H_AUTO(UNBrowseConnections); 
+				CUnifiedConnection &uc = _IdCnx[_UsedConnection[k]]; 
+				nlassert (uc.State == CUnifiedNetwork::CUnifiedConnection::Ready); 
+				for (uint j = 0; j < uc.Connection.size (); j++) 
+				{ 
+					H_AUTO(UNBrowseSubConnections); 
+					if (!uc.Connection[j].valid()) 
+						continue; 
+					
+					if (uc.Connection[j].CbNetBase->connected ()) 
+					{ 
+						uc.Connection[j].CbNetBase->flush(uc.Connection[j].HostId); 
+					} 
+				} 
+			}
+		}
 
 		// If it's the end, don't nlSleep()
 		TTime remainingTime = t0 + timeout - CTime::getLocalTime();

@@ -1,7 +1,7 @@
 /** \file net_log.h
  * Implementation of the CLog (look at log.h) that display on a network connection (deprecated)
  *
- * $Id: net_log.h,v 1.6 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: net_log.h,v 1.7 2002/10/24 08:44:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,16 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+
+
+/**************************************************************************
+********************* THIS CLASS IS DEPRECATED ****************************
+**************************************************************************/
+
+
+
+
 
 #ifndef NL_NET_LOG_H
 #define NL_NET_LOG_H

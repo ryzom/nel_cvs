@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.16 2002/09/16 14:58:28 lecroart Exp $
+ * $Id: net_manager.h,v 1.17 2002/10/24 08:44:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,16 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+
+
+
+/**************************************************************************
+********************* THIS CLASS IS DEPRECATED ****************************
+**************************************************************************/
+
+
+
 
 #ifndef NL_NET_MANAGER_H
 #define NL_NET_MANAGER_H

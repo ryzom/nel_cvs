@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.25 2002/09/16 14:58:21 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.26 2002/10/24 08:44:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,16 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+
+
+
+/**************************************************************************
+********************* THIS CLASS IS DEPRECATED ****************************
+**************************************************************************/
+
+
+
 
 #include "stdnet.h"
 

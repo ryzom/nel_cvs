@@ -1,7 +1,7 @@
 /** \file net_log.cpp
  * Class CNetLog (logger for network transfers)
  *
- * $Id: net_log.cpp,v 1.12 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: net_log.cpp,v 1.13 2002/10/24 08:44:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,22 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+
+
+
+
+
+/**************************************************************************
+********************* THIS CLASS IS DEPRECATED ****************************
+**************************************************************************/
+
+
+
+
+
+
+
 
 #include "stdnet.h"
 

@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.9 2002/09/26 14:54:12 legros Exp $
+ * $Id: build_surf.cpp,v 1.10 2002/12/17 16:14:02 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -695,15 +695,20 @@ void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
 	vector<CPlane>	planes;
 	planes.resize(3);
 
-	planes[0].make((tri1.Vertices[1]-tri1.Vertices[0])^CVector::K, tri1.Vertices[0]);
-	planes[1].make((tri1.Vertices[2]-tri1.Vertices[1])^CVector::K, tri1.Vertices[1]);
-	planes[2].make((tri1.Vertices[0]-tri1.Vertices[2])^CVector::K, tri1.Vertices[2]);
+	CVector	norm;
+
+	norm = ((tri1.Vertices[1]-tri1.Vertices[0])^CVector::K).normed();
+	planes[0].make(norm, tri1.Vertices[0]+norm*0.05f);
+	norm = ((tri1.Vertices[2]-tri1.Vertices[1])^CVector::K).normed();
+	planes[1].make(norm, tri1.Vertices[1]+norm*0.05f);
+	norm = ((tri1.Vertices[0]-tri1.Vertices[2])^CVector::K).normed();
+	planes[2].make(norm, tri1.Vertices[2]+norm*0.05f);
 
 	uint			level = 0;
 	CVector			center = ((*Vertices)[Tri[0]]+(*Vertices)[Tri[1]]+(*Vertices)[Tri[2]])/3.0f;
 
 	CAABBox			centerBox = getBBox();
-	centerBox.setHalfSize(centerBox.getHalfSize()+CVector(0.05f, 0.05f, 0.40f));
+	centerBox.setHalfSize(centerBox.getHalfSize()+CVector(0.1f, 0.1f, 0.40f));
 
 	grid.select(centerBox.getMin(), centerBox.getMax());
 	CQuadGrid<CSurfElement *>::CIterator	it;
@@ -711,60 +716,6 @@ void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
 	CVector		emin = centerBox.getMin(),
 				emax = centerBox.getMax();
 	
-/*
-	vector<CAABBox>	checkedBoxes;
-	uint			i;
-
-	for (it=grid.begin(); it!=grid.end(); ++it)
-	{
-		CSurfElement	&el = *(*it);
-
-		const CVector	&V0 = (*(el.Vertices))[el.Tri[0]],
-						&V1 = (*(el.Vertices))[el.Tri[1]],
-						&V2 = (*(el.Vertices))[el.Tri[2]];
-
-		if (&el == this || centerBox.intersect(V0, V1, V2))
-			continue;
-
-		float			minz = std::min(V0.z, std::min(V1.z, V2.z));
-		float			maxz = std::max(V0.z, std::max(V1.z, V2.z));
-
-		if (minz > centerBox.getCenter().z+centerBox.getHalfSize().z)
-			continue;
-
-		for (i=0; i<checkedBoxes.size(); ++i)
-			if (checkedBoxes[i].intersect(V0, V1, V2))
-				break;
-
-		if (i<checkedBoxes.size())
-		{
-			checkedBoxes[i].extend(V0);
-			checkedBoxes[i].extend(V1);
-			checkedBoxes[i].extend(V2);
-			continue;
-		}
-
-		tri2.Vertices.clear();
-
-		tri2.Vertices.push_back(V0);
-		tri2.Vertices.push_back(V1);
-		tri2.Vertices.push_back(V2);
-
-		tri2.clip(planes);
-
-		if (!tri2.Vertices.empty())
-		{
-			++level;
-
-			CAABBox		box;
-
-			box.setCenter(CVector(centerBox.getCenter().x, centerBox.getCenter().y, (maxz+minz)/2.0f));
-			box.setHalfSize(CVector(centerBox.getHalfSize().x, centerBox.getHalfSize().y, (maxz-minz)/2.0f+0.1f));
-
-			checkedBoxes.push_back(box);
-		}
-	}
-*/
 	vector<CAABBox>	checkedBoxes;
 	uint			i;
 
@@ -779,6 +730,9 @@ void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
 						&V2 = (*(el.Vertices))[el.Tri[2]];
 
 		CAABBox			box = el.getBBox();
+
+		box.setHalfSize(box.getHalfSize()+CVector(0.1f, 0.1f, 0.1f));
+
 		CVector			bmin = box.getMin(),
 						bmax = box.getMax();
 
@@ -789,11 +743,11 @@ void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
 		// drop patch neighbors
 		if (centerBox.intersect(box))
 			continue;
-
+/*
 		// drop higher elements
 		if (bmin.z > centerBox.getCenter().z+centerBox.getHalfSize().z)
 			continue;
-
+*/
 		for (i=0; i<checkedBoxes.size(); ++i)
 			if (checkedBoxes[i].intersect(V0, V1, V2))
 				break;

@@ -115,7 +115,8 @@ BOOL CGeorgesApp::initInstance(int x, int y, int cx, int cy)
 
 	sxrootdirectory = "U:\\";
 	sxworkdirectory = "U:\\";
-	NLMISC::CPath::clearMap();
+	NLMISC::CPath::removeAllAlternativeSearchPath();
+					
     NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
     NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
 
@@ -181,7 +182,7 @@ void CGeorgesApp::SetWorkDirectory( const CStringEx _sxworkdirectory )
 	if( sxworkdirectory != _sxworkdirectory )
 	{
 		sxworkdirectory = _sxworkdirectory;
-		NLMISC::CPath::clearMap();
+		NLMISC::CPath::removeAllAlternativeSearchPath();
 		NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
 		NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
 	}
@@ -192,7 +193,7 @@ void CGeorgesApp::SetRootDirectory( const CStringEx _sxrootdirectory )
 	if( sxrootdirectory != _sxrootdirectory )
 	{
 		sxrootdirectory = _sxrootdirectory;
-		NLMISC::CPath::clearMap();
+		NLMISC::CPath::removeAllAlternativeSearchPath();
 		NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
 		NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
 	}

@@ -187,18 +187,21 @@ void * CGeorgesImpl::getMainFrame ()
 
 void CGeorgesImpl::SetWorkDirectory( const std::string& _sxworkdirectory )
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
-	papp->SetRootDirectory( _sxworkdirectory );
+	papp->SetWorkDirectory( _sxworkdirectory );
 } // SetWorkDirectory //
 
 void CGeorgesImpl::SetRootDirectory( const std::string& _sxrootdirectory )
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
 	papp->SetRootDirectory( _sxrootdirectory );
 } // SetRootDirectory //
 
 void CGeorgesImpl::SetTypPredef( const std::string& _sxfilename, const std::vector< std::string >& _pvs )
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
 	CLoader* ploader = papp->GetLoader();
 	std::vector< CStringEx > vsx;
@@ -209,6 +212,7 @@ void CGeorgesImpl::SetTypPredef( const std::string& _sxfilename, const std::vect
 
 void CGeorgesImpl::MakeDfn( const std::string& _sxfullname, const std::vector< std::pair< std::string, std::string > >* const _pvdefine  )
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
 	CLoader* ploader = papp->GetLoader();
 	std::vector< std::pair< CStringEx, CStringEx > >* vsx = 0;
@@ -224,6 +228,7 @@ void CGeorgesImpl::MakeDfn( const std::string& _sxfullname, const std::vector< s
 
 void CGeorgesImpl::MakeTyp( const std::string& _sxfullname, const std::string& _sxtype, const std::string& _sxformula, const std::string& _sxenum, const std::string& _sxlow, const std::string& _sxhigh, const std::string& _sxdefault, const std::vector< std::pair< std::string, std::string > >* const _pvpredef , const std::vector< std::pair< std::string, std::string > >* const _pvparent  )
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
 	CLoader* ploader = papp->GetLoader();
 	std::vector< std::pair< CStringEx, CStringEx > >* vsx = 0;
@@ -247,54 +252,63 @@ void CGeorgesImpl::MakeTyp( const std::string& _sxfullname, const std::string& _
 
 void CGeorgesImpl::SetDocumentWorkDirectory( const std::string& _sxworkdirectory )
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
 	pgdoc->SetWorkDirectory( _sxworkdirectory );
 } // SetDocumentWorkDirectory //
 
 void CGeorgesImpl::SetDocumentRootDirectory( const std::string& _sxrootdirectory )
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
 	pgdoc->SetRootDirectory( _sxrootdirectory );
 } // SetDocumentRootDirectory //
 
 void CGeorgesImpl::LoadDocument( const std::string& _sxfullname )
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
 	pgdoc->OnOpenDocument( _sxfullname.c_str() );
 } // LoadDocument //
 
 void CGeorgesImpl::SaveDocument( const std::string& _sxfullname )
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
 	pgdoc->OnSaveDocument( _sxfullname.c_str() );
 } // SaveDocument //
 
 void CGeorgesImpl::SaveAllDocument()
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
 	papp->SaveAllDocument();
 } // SetRootDirectory //
 
 void CGeorgesImpl::NewDocument( const std::string& _sxdfnname)
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
 	pgdoc->NewDocument( _sxdfnname );
 } // NewDocument //
 
 void CGeorgesImpl::NewDocument()
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
 	pgdoc->OnNewDocument();
 } // NewDocument //
 
 void CGeorgesImpl::CloseDocument()
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( ( (CMainFrame*)theApp.m_pMainWnd )->GetActiveDocument() );
 	pgdoc->OnCloseDocument();
 } // CloseDocument //
 
 void CGeorgesImpl::CloseAllDocument()
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
 	papp->CloseAllDocument();
 } // CloseAllDocument //

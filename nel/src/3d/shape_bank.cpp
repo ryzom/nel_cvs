@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.10 2002/04/17 12:09:22 besson Exp $
+ * $Id: shape_bank.cpp,v 1.11 2002/04/24 13:47:21 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -155,6 +155,18 @@ bool CShapeBank::isPresent(const string &shapeName)
 						//---rMat.getTexture(j)->setFilterMode(ITexture::Linear, ITexture::LinearMipMapOff);
 						_pDriver->setupTexture(*rMat.getTexture(j));
 					}
+
+					// Do the same with lightmaps
+					if (rMat.getShader() == CMaterial::LightMap)
+					{
+						uint j = 0; ITexture *pText = rMat.getLightMap (j);
+						while (pText != NULL)
+						{
+							_pDriver->setupTexture (*pText);
+							++j; pText = rMat.getLightMap (j);
+						}
+					}
+
 				}
 			}
 			

@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.21 2004/01/15 17:27:40 lecroart Exp $
+ * $Id: displayer.h,v 1.22 2004/02/13 10:03:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,9 +124,11 @@ class CFileDisplayer : virtual public IDisplayer
 public:
 
 	/// Constructor
-	CFileDisplayer (const std::string &filename, bool eraseLastLog = false, const char *displayerName = "");
+	CFileDisplayer (const std::string &filename, bool eraseLastLog = false, const char *displayerName = "", bool raw = false);
 
 	CFileDisplayer ();
+
+	~CFileDisplayer ();
 
 	/// Set Parameter of the displayer if not set at the ctor time
 	void setParam (const std::string &filename, bool eraseLastLog = false);
@@ -143,6 +145,8 @@ private:
 	bool		_NeedHeader;
 
 	uint		_LastLogSizeChecked;
+
+	bool		_Raw;
 };
 
 /**

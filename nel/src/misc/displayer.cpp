@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.58 2003/12/29 13:36:25 lecroart Exp $
+ * $Id: displayer.cpp,v 1.59 2004/02/13 10:03:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -325,15 +325,26 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 #endif
 }
 
-CFileDisplayer::CFileDisplayer (const std::string &filename, bool eraseLastLog, const char *displayerName) : IDisplayer (displayerName), _NeedHeader(true), _LastLogSizeChecked(0)
+CFileDisplayer::CFileDisplayer (const std::string &filename, bool eraseLastLog, const char *displayerName, bool raw) :
+	IDisplayer (displayerName), _NeedHeader(true), _LastLogSizeChecked(0), _Raw(raw)
 {
 	_FilePointer = (FILE*)1;
 	setParam (filename, eraseLastLog);
 }
 
-CFileDisplayer::CFileDisplayer () : IDisplayer (""), _NeedHeader(true), _LastLogSizeChecked(0)
+CFileDisplayer::CFileDisplayer () :
+	IDisplayer (""), _NeedHeader(true), _LastLogSizeChecked(0), _Raw(false)
 {
 	_FilePointer = (FILE*)1;
+}
+
+CFileDisplayer::~CFileDisplayer ()
+{
+	if (_FilePointer > (FILE*)1)
+	{
+		fclose(_FilePointer);
+		_FilePointer = NULL;
+	}
 }
 
 void CFileDisplayer::setParam (const std::string &filename, bool eraseLastLog)
@@ -374,13 +385,13 @@ void CFileDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mes
 	// if the filename is not set, don't log
 	if (_FileName.empty()) return;
 
-	if (args.Date != 0)
+	if (args.Date != 0 && !_Raw)
 	{
 		str += dateToHumanString(args.Date);
 		needSpace = true;
 	}
 
-	if (args.LogType != CLog::LOG_NO)
+	if (args.LogType != CLog::LOG_NO && !_Raw)
 	{
 		if (needSpace) { str += " "; needSpace = false; }
 		str += logTypeToString(args.LogType);
@@ -388,28 +399,28 @@ void CFileDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mes
 	}
 
 	// Write thread identifier
-	if ( args.ThreadId != 0 )
+	if ( args.ThreadId != 0 && !_Raw)
 	{
 		if (needSpace) { str += " "; needSpace = false; }
 		str += NLMISC::toString(args.ThreadId);
 		needSpace = true;
 	}
 
-	if (!args.ProcessName.empty())
+	if (!args.ProcessName.empty() && !_Raw)
 	{
 		if (needSpace) { str += " "; needSpace = false; }
 		str += args.ProcessName;
 		needSpace = true;
 	}
 
-	if (args.Filename != NULL)
+	if (args.Filename != NULL && !_Raw)
 	{
 		if (needSpace) { str += " "; needSpace = false; }
 		str += CFile::getFilename(args.Filename);
 		needSpace = true;
 	}
 
-	if (args.Line != -1)
+	if (args.Line != -1 && !_Raw)
 	{
 		if (needSpace) { str += " "; needSpace = false; }
 		str += NLMISC::toString(args.Line);

@@ -1,7 +1,7 @@
 /** \file nelu.h
  * <File description>
  *
- * $Id: nelu.h,v 1.11 2001/01/11 15:29:01 berenguier Exp $
+ * $Id: nelu.h,v 1.12 2001/04/17 12:15:06 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/3d/scene.h"
+#include "nel/3d/shape_bank.h"
 #include "nel/3d/dru.h"
 #include "nel/misc/event_server.h"
 #include "nel/misc/event_listener.h"
@@ -136,6 +137,7 @@ public:
 public:
 	static IDriver				*Driver;
 	static CScene				Scene;
+	static CShapeBank			ShapeBank;
 	static CRefPtr<CCamera>		Camera;
 	static NLMISC::CEventServer			EventServer;
 	static NLMISC::CEventListenerAsync	AsyncListener;

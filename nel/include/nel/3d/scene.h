@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.17 2001/03/29 09:48:46 corvazier Exp $
+ * $Id: scene.h,v 1.18 2001/04/17 12:15:06 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "nel/misc/rgba.h"
 #include "nel/misc/smart_ptr.h"
 #include <map>
+#include <list>
 
 
 namespace NL3D
@@ -57,7 +58,7 @@ class	CDefaultRenderObs;
 class	CTransform;
 class	CTransformShape;
 class	IDriver;
-
+class	CShapeBank;
 
 // ***************************************************************************
 /**
@@ -172,20 +173,16 @@ public:
 
 	/// \name Instance Mgt.
 	//@{
-	/// Register manually a shape into the scene. If already here, remplaced.
-	void			addShape(const std::string &shapeName, CSmartPtr<IShape> shape);
-	/// delete a shape from the scene. It will be really deleted when all instances which points to it will be deleted.
-	///  no-op if not exist.
-	void			delShape(const std::string &shapeName);
-	/// Create a model, instance of the shape "shapename". If not present, try to load "shapename" via the CPath.
-	/// If fails, return NULL.
-	virtual	CTransformShape	*createInstance(const std::string &shapeName);
-	/** Delete an instance via his pointer. This is a synonym for deleteModel().
-	 * \see deleteModel()
+	/// Set the shape bank
+	void			setShapeBank(CShapeBank*pShapeBank);
+	/** Create a model, instance of the shape "shapename". If not present, try to load "shapename" via the CPath.
+	 * If fails, return NULL.
 	 */
-	void	deleteInstance(IModel *model) {deleteModel(model);}
+	virtual	CTransformShape	*createInstance(const std::string &shapeName);
+	/** Delete an instance via his pointer. An instance is an entity which reference a shape.
+	 */
+	void			deleteInstance(CTransformShape*model);
 	//@}
-
 
 private:
 	typedef			std::map<sint, ITravScene*>	TTravMap;
@@ -208,13 +205,11 @@ private:
 	CTransform		*Root;
 	// TODO: define the lightgroup model.
 
-
 	/// \name Shape/Instances.
 	//@{
-	typedef			CSmartPtr<IShape>	PShape;
-	typedef			std::map<std::string, PShape>	TShapeMap;
-	TShapeMap		ShapeMap;
+	CShapeBank		*_ShapeBank;
 	//@}
+
 };
 
 

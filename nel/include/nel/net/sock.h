@@ -1,7 +1,7 @@
 /** \file sock.h
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.15 2003/12/29 13:32:53 lecroart Exp $
+ * $Id: sock.h,v 1.16 2004/12/22 19:46:16 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -228,8 +228,8 @@ public:
 	/// @name Properties
 	//@{
 
-	/// Returns if the socket is connected (mutexed)
-	bool				connected();
+	/// Returns if the socket is connected (volatile)
+	bool				connected() { return _Connected; }
 	
 	/// Returns a const reference on the local address
 	const CInetAddress&	localAddr() const {	return _LocalAddr; }

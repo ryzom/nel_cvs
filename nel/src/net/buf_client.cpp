@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.30 2004/07/12 13:56:54 miller Exp $
+ * $Id: buf_client.cpp,v 1.31 2004/12/22 19:46:16 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -418,14 +418,18 @@ void CClientReceiveTask::run()
 	_NBBufSock->Sock->setTimeOutValue( 60, 0 );
 
 	bool connected = true;
-	while ( connected ) // does not call _Sock->connected() to avoid mutex (not needed for client)
+	while ( connected )
 	{
 		try
 		{
 			// ADDED: non-blocking client connection
 
 			// Wait until some data are received (sleepin' select inside)
-			while ( ! _NBBufSock->Sock->dataAvailable() );
+			while ( ! _NBBufSock->Sock->dataAvailable() )
+			{
+				if ( ! _NBBufSock->Sock->connected() )
+					throw ESocketConnectionClosed();
+			}
 
 			// Process the data received
 			if ( _NBBufSock->receivePart( 1 ) ) // 1 for the event type

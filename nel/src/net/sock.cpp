@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.37 2004/01/07 18:32:19 lecroart Exp $
+ * $Id: sock.cpp,v 1.38 2004/12/22 19:46:16 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -590,23 +590,6 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 	}*/
 	_BytesReceived += len;
 	return CSock::Ok;
-}
-
-
-/*
- * Returns if the socket is connected
- */
-bool CSock::connected()
-{
-  /*bool b;
-  {
-    //nldebug( "LNETL0: CSock::connected-BEGIN (socket %u)", descriptor() );
-    CSynchronized<bool>::CAccessor sync( &_SyncConnected );
-    b = sync.value();
-  }
-  //nldebug( "LNETL0: CSock::connected-END" );
-  return b;*/
-	return _Connected;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.10 2002/03/21 16:07:51 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.11 2002/05/06 09:57:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,6 +142,14 @@ public:
 	 */
 	const NLMISC::CMatrix	&getActiveBoneSkinMatrix(uint boneId) const;
 
+
+	/** Tool function, especially for animation bake. It updates all bones (independent of bone usage, 
+	 *	and lod interpolation), and take a user skeleton worldMatrix as input.
+	 *	NB: no detail animation is performed here, just the compute of bone hierarchy.
+	 */
+	void		computeAllBones(const CMatrix &modelWorldMatrix);
+
+
 	// @}
 
 
@@ -192,7 +200,7 @@ private:
 	{
 		/// The bone Usage (refCount).
 		uint8			Usage;
-		/// Same as Usage, but must be animated/computed, even if Skeleton Lods say not (stickedObjects, std Meshes, old MRM meshes).
+		/// Same as Usage, but must be animated/computed, even if Skeleton Lods say not (stickedObjects).
 		uint8			ForcedUsage;
 		/// The current state: which bones need to be computed. ie (Usage & currentLodUsage) | ForcedUsage.
 		uint8			MustCompute;

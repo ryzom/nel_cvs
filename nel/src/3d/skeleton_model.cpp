@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.13 2002/03/21 16:07:51 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.14 2002/05/06 09:57:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -495,6 +495,26 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 	// Sticked Objects: 
 	// they will update their WorldMatrix after, because of the AnimDetail traverse scheme:
 	// traverse visible ClipObs, and if skeleton, traverse Hrc sons.
+}
+
+
+// ***************************************************************************
+void		CSkeletonModel::computeAllBones(const CMatrix &modelWorldMatrix)
+{
+	// must test / update the hierarchy of Bones.
+	// Since they are orderd in depth-first order, we are sure that parent are computed before sons.
+	for(uint i=0;i<Bones.size();i++)
+	{
+		sint	fatherId= Bones[i].getFatherId();
+		// if a root bone...
+		if(fatherId==-1)
+			// Compute root bone worldMatrix.
+			Bones[i].compute( NULL, modelWorldMatrix);
+		else
+			// Compute bone worldMatrix.
+			Bones[i].compute( &Bones[fatherId], modelWorldMatrix);
+	}
+
 }
 
 

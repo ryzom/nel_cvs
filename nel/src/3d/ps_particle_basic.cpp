@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.14 2004/07/21 09:11:51 vizerie Exp $
+ * $Id: ps_particle_basic.cpp,v 1.15 2004/08/03 16:24:21 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -908,6 +908,10 @@ void	CPSMultiTexturedParticle::setupMultiTexEnv(TOperator op, ITexture *tex1, IT
 							mat.texEnvOpAlpha(k, CMaterial::EMBM);
 							mat.setTexture(0, tex1);
 							mat.texEnvOpRGB(0, CMaterial::Modulate);
+							mat.texEnvArg0RGB(0, CMaterial::Texture, CMaterial::SrcColor);
+							mat.texEnvArg1RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
+							mat.texEnvArg0Alpha(0, CMaterial::Texture, CMaterial::SrcAlpha);
+							mat.texEnvArg1Alpha(0, CMaterial::Diffuse, CMaterial::SrcAlpha);
 						}
 						else
 						{
@@ -921,6 +925,10 @@ void	CPSMultiTexturedParticle::setupMultiTexEnv(TOperator op, ITexture *tex1, IT
 							mat.texEnvOpRGB(k, CMaterial::EMBM);
 							mat.setTexture(k + 1, tex1);
 							mat.texEnvOpRGB(k + 1, CMaterial::Modulate);
+							mat.texEnvArg0RGB(k + 1, CMaterial::Texture, CMaterial::SrcColor);
+							mat.texEnvArg1RGB(k + 1, CMaterial::Diffuse, CMaterial::SrcColor);
+							mat.texEnvArg0Alpha(k + 1, CMaterial::Texture, CMaterial::SrcAlpha);
+							mat.texEnvArg1Alpha(k + 1, CMaterial::Diffuse, CMaterial::SrcAlpha);
 						}
 						break;
 					}					

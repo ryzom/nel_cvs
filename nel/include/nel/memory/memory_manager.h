@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.10 2003/07/01 15:33:14 corvazier Exp $
+ * $Id: memory_manager.h,v 1.11 2003/07/02 17:06:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,9 @@
 
 // Malloc
 #include <malloc.h>
+
+// STL
+#include <new>
 
 /*	Doc:
 	----

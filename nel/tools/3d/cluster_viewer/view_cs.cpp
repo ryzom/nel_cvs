@@ -1,7 +1,7 @@
 /** \file view_cs.cpp
  * viewer of cluster system
  *
- * $Id: view_cs.cpp,v 1.3 2003/11/07 14:29:32 besson Exp $
+ * $Id: view_cs.cpp,v 1.4 2004/03/12 17:55:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,7 +184,7 @@ void LoadSceneScript (const char *ScriptName, CScene* pScene, vector<SDispCS> &D
 				ITemp->setRotQuat (ITemp->getRotQuat() * CQuat(CVector::I, roti));
 				ITemp->setRotQuat (ITemp->getRotQuat() * CQuat(CVector::J, rotj));
 				ITemp->setRotQuat (ITemp->getRotQuat() * CQuat(CVector::K, rotk));
-				ITemp->setClusterSystem (father);
+				ITemp->setClusterSystemForInstances (father);
 				ITemp->addToScene (*pScene);
 			}
 			pile.push_back (ITemp);

@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.27 2001/08/01 15:42:41 berenguier Exp $
+ * $Id: matrix.cpp,v 1.28 2001/11/29 11:17:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -255,6 +255,7 @@ void		CMatrix::setRot(const CVector &v, TRotOrder ro)
 void		CMatrix::setRot(const CMatrix &matrix)
 {
 	// copy rotpart statebit from other.
+	StateBit&= ~(MAT_ROT | MAT_SCALEUNI | MAT_SCALEANY);
 	StateBit|= matrix.StateBit & (MAT_ROT | MAT_SCALEUNI | MAT_SCALEANY);
 	// copy values.
 	if(hasRot())
@@ -262,6 +263,9 @@ void		CMatrix::setRot(const CMatrix &matrix)
 		a11= matrix.a11; a12= matrix.a12; a13= matrix.a13;
 		a21= matrix.a21; a22= matrix.a22; a23= matrix.a23;
 		a31= matrix.a31; a32= matrix.a32; a33= matrix.a33;
+		// if has scale, copy from matrix.
+		if(StateBit & MAT_SCALEUNI)
+			Scale33= matrix.Scale33;
 	}
 	else
 	{
@@ -963,7 +967,10 @@ void		CMatrix::transpose()
 				StateBit|= MAT_TRANS;
 			}
 		}
+		// reset validity. NB, maybe not usefull, but simpler, and bugfree.
+		StateBit&= ~(MAT_VALIDTRANS | MAT_VALIDPROJ);
 	}
+	// NB: if no Trans or no Proj, do nothing, so don't need to modify VALIDTRANS and VALIDPROJ too.
 }
 
 

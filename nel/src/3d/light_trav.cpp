@@ -1,7 +1,7 @@
 /** \file light_trav.cpp
  * TODO: File description
  *
- * $Id: light_trav.cpp,v 1.17 2005/02/22 10:19:10 besson Exp $
+ * $Id: light_trav.cpp,v 1.18 2005/03/29 13:53:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,7 +101,9 @@ void		CLightTrav::traverse()
 
 
 	// By default, lightmaped objects are not lit by any light
-	Scene->getDriver()->setLightMapDynamicLight(false, CLight());
+	CLight	noLight;
+	noLight.setupDirectional(CRGBA::Black, CRGBA::Black, CRGBA::Black, CVector::K);
+	Scene->getDriver()->setLightMapDynamicLight(false, noLight);
 
 	// clear the quadGrid of dynamicLights
 	LightingManager.clearDynamicLights();

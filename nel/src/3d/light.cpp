@@ -1,7 +1,7 @@
 /** \file 3d/light.cpp
  * CLight definition
  *
- * $Id: light.cpp,v 1.9 2005/02/22 10:19:10 besson Exp $
+ * $Id: light.cpp,v 1.10 2005/03/29 13:53:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,11 @@ void CLight::setupDirectional (const CRGBA& ambiant, const CRGBA& diffuse, const
 	setConstantAttenuation (constant);
 	setLinearAttenuation (linear);
 	setQuadraticAttenuation (quadratic);
+
+	// Dummy to avoid uninit data, and problems of cache
+	setPosition(CVector::Null);
+	setExponent(0.f);
+	setCutoff(0.f);
 }
 	
 // ***************************************************************************
@@ -75,6 +80,10 @@ void CLight::setupPointLight (const CRGBA& ambiant, const CRGBA& diffuse, const 
 	setConstantAttenuation (constant);
 	setLinearAttenuation (linear);
 	setQuadraticAttenuation (quadratic);
+
+	// Dummy to avoid uninit data, and problems of cache
+	setExponent(0.f);
+	setCutoff(0.f);
 }
 
 // ***************************************************************************

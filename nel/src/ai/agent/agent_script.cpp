@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.121 2002/06/12 16:07:09 chafik Exp $
+ * $Id: agent_script.cpp,v 1.122 2002/06/21 15:57:13 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1472,7 +1472,8 @@ namespace NLAIAGENT
 					o = IBasicAgent::run( msg );
 					if(o != NULL) o->release();
 				}
-				mail->popMessage();
+				if ( mail->size() != 0 )
+					mail->popMessage();
 			}
 			else 
 			{

@@ -117,7 +117,7 @@ namespace NLAIAGENT
 		t += text;
 		t += "\n\t";
 
-		CAgentScript::getDebugString(t);
+//		CAgentScript::getDebugString(t); //***G*** Je l'ai retiré pour une meilleur lecture de debug.
 	}
 
 	bool COperatorScript::isEqual(const IBasicObjectIA &a) const
@@ -172,6 +172,12 @@ namespace NLAIAGENT
 				if ( _CurrentGoal == NULL && ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL )
 				{
 					_CurrentGoal = selectGoal();							// Select a goal among possible ones
+#ifdef NL_DEBUG
+	{
+//		static sint untrucMerdic = 0;
+//		nlinfo("_CurrentGoal = 0x%4x, at untrucMerdic = %d",_CurrentGoal, untrucMerdic ++);
+	}
+#endif
 					_CurrentGoal->addSuccessor( (IBasicAgent *) this );		// Adds the operator to the list of operators launched for this goal
 					linkGoalArgs( _CurrentGoal );							// Instanciates the goal's args values into the operator's components
 				}
@@ -203,6 +209,7 @@ namespace NLAIAGENT
 			if ( _IsActivated == true )		// If the operator is curently activated, unactivates it
 			{
 				unActivate();
+				_CurrentGoal = NULL;				
 			}
 			processMessages();
 			return IObjectIA::ProcessRun;
@@ -348,6 +355,7 @@ namespace NLAIAGENT
 	{
 		_CurrentGoal = NULL;
 		CActorScript::cancel();
+		_CurrentGoal = NULL;
 	}
 
 	// The priority of an operator is calculated as follow:
@@ -361,14 +369,14 @@ namespace NLAIAGENT
 		double pri = 1.0;
 		for ( i = 0; i < (int) ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getFuzzyVars().size(); i++)
 		{
-			static CComponentHandle var_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzySets() )[i],(IAgent *)getParent(), true );
-			static CComponentHandle set_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzyVars() )[i],(IAgent *)getParent(), true );
-			static CComponentHandle this_var_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzySets() )[i], this, true );
+			CComponentHandle var_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzySets() )[i],(IAgent *)getParent(), true );
+			CComponentHandle set_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzyVars() )[i],(IAgent *)getParent(), true );
+			CComponentHandle this_var_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzySets() )[i], this, true );
 
 			NLAIFUZZY::IFuzzySet *set = (NLAIFUZZY::IFuzzySet *) set_handle.getValue();
 			DigitalType *var = (DigitalType *) var_handle.getValue();
 
-			if ( var = NULL )
+			if ( var == NULL )
 				var = (DigitalType *) this_var_handle.getValue();
 
 			// Min

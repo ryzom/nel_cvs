@@ -328,7 +328,7 @@ plugin material NelMaterial
     classID:#(0x64c75fec, 0x222b9eb9)
     extends:standard 
 	replaceUI:false 
-	version:7.0
+	version:8.0
 (
 	local loadShader
 	local globalUpdateUI
@@ -424,14 +424,18 @@ plugin material NelMaterial
 		iRgbBlendSource_1		type:#integer default:1
 		iRgbArg0_1				type:#integer default:1
 		iRgbArg1_1				type:#integer default:1
+		iRgbArg2_1				type:#integer default:1
 		iRgbArg0Operand_1		type:#integer default:1
 		iRgbArg1Operand_1		type:#integer default:1
+		iRgbArg2Operand_1		type:#integer default:1
 		iAlphaOperation_1		type:#integer default:1
 		iAlphaBlendSource_1		type:#integer default:1
 		iAlphaArg0_1			type:#integer default:1
 		iAlphaArg1_1			type:#integer default:1
+		iAlphaArg2_1			type:#integer default:1
 		iAlphaArg0Operand_1		type:#integer default:3
 		iAlphaArg1Operand_1		type:#integer default:3
+		iAlphaArg2Operand_1		type:#integer default:3
 		iTextureShader_1		type:#integer default:1
 		iConstantAlpha_1		type:#integer default:255 ui:sdConstantAlpha
 	)
@@ -444,14 +448,18 @@ plugin material NelMaterial
 		iRgbBlendSource_2		type:#integer default:1
 		iRgbArg0_2				type:#integer default:1
 		iRgbArg1_2				type:#integer default:1
+		iRgbArg2_2				type:#integer default:1
 		iRgbArg0Operand_2		type:#integer default:1
 		iRgbArg1Operand_2		type:#integer default:1
+		iRgbArg2Operand_2		type:#integer default:1
 		iAlphaOperation_2		type:#integer default:1
 		iAlphaBlendSource_2		type:#integer default:1
 		iAlphaArg0_2			type:#integer default:1
 		iAlphaArg1_2			type:#integer default:1
+		iAlphaArg2_2			type:#integer default:1
 		iAlphaArg0Operand_2		type:#integer default:3
 		iAlphaArg1Operand_2		type:#integer default:3
+		iAlphaArg2Operand_2		type:#integer default:3
 		iTextureShader_2		type:#integer default:1
 		iConstantAlpha_2		type:#integer default:255 ui:sdConstantAlpha
 	)
@@ -464,14 +472,18 @@ plugin material NelMaterial
 		iRgbBlendSource_3		type:#integer default:1
 		iRgbArg0_3				type:#integer default:1
 		iRgbArg1_3				type:#integer default:1
+		iRgbArg2_3				type:#integer default:1
 		iRgbArg0Operand_3		type:#integer default:1
 		iRgbArg1Operand_3		type:#integer default:1
+		iRgbArg2Operand_3		type:#integer default:1
 		iAlphaOperation_3		type:#integer default:1
 		iAlphaBlendSource_3		type:#integer default:1
 		iAlphaArg0_3			type:#integer default:1
 		iAlphaArg1_3			type:#integer default:1
+		iAlphaArg2_3			type:#integer default:1
 		iAlphaArg0Operand_3		type:#integer default:3
 		iAlphaArg1Operand_3		type:#integer default:3
+		iAlphaArg2Operand_3		type:#integer default:3
 		iTextureShader_3		type:#integer default:1
 		iConstantAlpha_3		type:#integer default:255 ui:sdConstantAlpha
 	)
@@ -484,14 +496,18 @@ plugin material NelMaterial
 		iRgbBlendSource_4		type:#integer default:1
 		iRgbArg0_4				type:#integer default:1
 		iRgbArg1_4				type:#integer default:1
+		iRgbArg2_4				type:#integer default:1
 		iRgbArg0Operand_4		type:#integer default:1
 		iRgbArg1Operand_4		type:#integer default:1
+		iRgbArg2Operand_4		type:#integer default:1
 		iAlphaOperation_4		type:#integer default:1
 		iAlphaBlendSource_4		type:#integer default:1
 		iAlphaArg0_4			type:#integer default:1
 		iAlphaArg1_4			type:#integer default:1
+		iAlphaArg2_4			type:#integer default:1
 		iAlphaArg0Operand_4		type:#integer default:3
 		iAlphaArg1Operand_4		type:#integer default:3
+		iAlphaArg2Operand_4		type:#integer default:3
 		iTextureShader_4		type:#integer default:1
 		iConstantAlpha_4		type:#integer default:255 ui:sdConstantAlpha
 	)
@@ -954,21 +970,25 @@ plugin material NelMaterial
     (
 		group "RGB"
 		(
-			dropdownlist dlRgbOperation		"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend" ) across:2
+			dropdownlist dlRgbOperation		"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend", "Arg0*Arg1+Arg2" ) across:2
 			dropdownlist dlRgbBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
-			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:4
-			dropdownlist dlRgbArg0Operand	"Arg0 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
+			dropdownlist dlRgbArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant" )
-			dropdownlist dlRgbArg1Operand	"Arg1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg1Operand	"Oper1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg2			"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Alpha"
 		(
-			dropdownlist dlAlphaOperation	"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend" ) across:2
+			dropdownlist dlAlphaOperation	"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend", "Arg0*Arg1+Arg2" ) across:2
 			dropdownlist dlAlphaBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
-			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:4
-			dropdownlist dlAlphaArg0Operand	"Arg0 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
+			dropdownlist dlAlphaArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant" )
-			dropdownlist dlAlphaArg1Operand	"Arg1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg2		"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Extended"
 		(
@@ -989,14 +1009,18 @@ plugin material NelMaterial
 					dlRgbBlendSource.selection = iRgbBlendSource_1
 					dlRgbArg0.selection = iRgbArg0_1
 					dlRgbArg1.selection = iRgbArg1_1
+					dlRgbArg2.selection = iRgbArg2_1
 					dlRgbArg0Operand.selection = iRgbArg0Operand_1
 					dlRgbArg1Operand.selection = iRgbArg1Operand_1
+					dlRgbArg2Operand.selection = iRgbArg2Operand_1
 					dlAlphaOperation.selection = iAlphaOperation_1
 					dlAlphaBlendSource.selection = iAlphaBlendSource_1
 					dlAlphaArg0.selection = iAlphaArg0_1 
 					dlAlphaArg1.selection = iAlphaArg1_1 
+					dlAlphaArg2.selection = iAlphaArg2_1 
 					dlAlphaArg0Operand.selection = iAlphaArg0Operand_1
 					dlAlphaArg1Operand.selection = iAlphaArg1Operand_1
+					dlAlphaArg2Operand.selection = iAlphaArg2Operand_1
 					dlTextureShader.selection = iTextureShader_1 
 				)
 				else
@@ -1005,14 +1029,18 @@ plugin material NelMaterial
 					iRgbBlendSource_1 = dlRgbBlendSource.selection
 					iRgbArg0_1 = dlRgbArg0.selection
 					iRgbArg1_1 = dlRgbArg1.selection
+					iRgbArg2_1 = dlRgbArg2.selection
 					iRgbArg0Operand_1 = dlRgbArg0Operand.selection
 					iRgbArg1Operand_1 = dlRgbArg1Operand.selection
+					iRgbArg2Operand_1 = dlRgbArg2Operand.selection
 					iAlphaOperation_1 = dlAlphaOperation.selection
 					iAlphaBlendSource_1 = dlAlphaBlendSource.selection
 					iAlphaArg0_1 = dlAlphaArg0.selection
 					iAlphaArg1_1 = dlAlphaArg1.selection
+					iAlphaArg2_1 = dlAlphaArg2.selection
 					iAlphaArg0Operand_1 = dlAlphaArg0Operand.selection
 					iAlphaArg1Operand_1 = dlAlphaArg1Operand.selection
+					iAlphaArg2Operand_1 = dlAlphaArg2Operand.selection
 					iTextureShader_1 = dlTextureShader.selection
 				)
 
@@ -1021,14 +1049,18 @@ plugin material NelMaterial
 				dlRgbBlendSource.enabled = (bEnableSlot_1 == true) and (iRgbOperation_1 == 5) and bNormalShader
 				dlRgbArg0.enabled = bEnableSlot_1 and bNormalShader
 				dlRgbArg1.enabled = bEnableSlot_1 and bNormalShader
+				dlRgbArg2.enabled = bEnableSlot_1 and bNormalShader and (iRgbOperation_1 == 6)
 				dlRgbArg0Operand.enabled = bEnableSlot_1 and bNormalShader
 				dlRgbArg1Operand.enabled = bEnableSlot_1 and bNormalShader
+				dlRgbArg2Operand.enabled = dlRgbArg2.enabled
 				dlAlphaOperation.enabled = bEnableSlot_1 and bNormalShader
 				dlAlphaBlendSource.enabled = (bEnableSlot_1 == true) and (iAlphaOperation_1 == 5) and bNormalShader
 				dlAlphaArg0.enabled = bEnableSlot_1 and bNormalShader
 				dlAlphaArg1.enabled = bEnableSlot_1 and bNormalShader
+				dlAlphaArg2.enabled = bEnableSlot_1 and bNormalShader and (iAlphaOperation_1 == 6)
 				dlAlphaArg0Operand.enabled = bEnableSlot_1 and bNormalShader
 				dlAlphaArg1Operand.enabled = bEnableSlot_1 and bNormalShader
+				dlAlphaArg2Operand.enabled = dlAlphaArg2.enabled
 				dlTextureShader.enabled = bEnableSlot_1 and bNormalShader
 				sdConstantAlpha.enabled = bEnableSlot_1 and bNormalShader
 			)
@@ -1059,12 +1091,22 @@ plugin material NelMaterial
 			updateUI false
 		)
 
+		on dlRgbArg2Operand selected newState do
+		(
+			updateUI false
+		)
+
 		on dlAlphaArg0Operand selected newState do
 		(
 			updateUI false
 		)
 
 		on dlAlphaArg1Operand selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaArg2Operand selected newState do
 		(
 			updateUI false
 		)
@@ -1094,6 +1136,11 @@ plugin material NelMaterial
 			updateUI false
 		)
 
+		on dlRgbArg2 selected newState do
+		(
+			updateUI false
+		)
+
 		on dlAlphaBlendSource selected newState do
 		(
 			updateUI false
@@ -1108,27 +1155,36 @@ plugin material NelMaterial
 		(
 			updateUI false
 		)
+
+		on dlAlphaArg2 selected newState do
+		(
+			updateUI false
+		)
 	)
     
 	rollout NelMultitextureSlot2 "Nel Slot 2" rolledUp:true
     (
 		group "RGB"
 		(
-			dropdownlist dlRgbOperation		"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend" ) across:2
+			dropdownlist dlRgbOperation		"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend", "Arg0*Arg1+Arg2" ) across:2
 			dropdownlist dlRgbBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
-			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:4
-			dropdownlist dlRgbArg0Operand	"Arg0 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
+			dropdownlist dlRgbArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant" )
-			dropdownlist dlRgbArg1Operand	"Arg1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg2			"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Alpha"
 		(
-			dropdownlist dlAlphaOperation	"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend" ) across:2
+			dropdownlist dlAlphaOperation	"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend", "Arg0*Arg1+Arg2" ) across:2
 			dropdownlist dlAlphaBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
-			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:4
-			dropdownlist dlAlphaArg0Operand	"Arg0 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
+			dropdownlist dlAlphaArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant" )
-			dropdownlist dlAlphaArg1Operand	"Arg1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg2		"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Extended"
 		(
@@ -1149,14 +1205,18 @@ plugin material NelMaterial
 					dlRgbBlendSource.selection = iRgbBlendSource_2
 					dlRgbArg0.selection = iRgbArg0_2
 					dlRgbArg1.selection = iRgbArg1_2
+					dlRgbArg2.selection = iRgbArg2_2
 					dlRgbArg0Operand.selection = iRgbArg0Operand_2
 					dlRgbArg1Operand.selection = iRgbArg1Operand_2
+					dlRgbArg2Operand.selection = iRgbArg2Operand_2
 					dlAlphaOperation.selection = iAlphaOperation_2
 					dlAlphaBlendSource.selection = iAlphaBlendSource_2
 					dlAlphaArg0.selection = iAlphaArg0_2 
 					dlAlphaArg1.selection = iAlphaArg1_2 
+					dlAlphaArg2.selection = iAlphaArg2_2 
 					dlAlphaArg0Operand.selection = iAlphaArg0Operand_2
 					dlAlphaArg1Operand.selection = iAlphaArg1Operand_2
+					dlAlphaArg2Operand.selection = iAlphaArg2Operand_2
 					dlTextureShader.selection = iTextureShader_2 
 				)
 				else
@@ -1165,14 +1225,18 @@ plugin material NelMaterial
 					iRgbBlendSource_2 = dlRgbBlendSource.selection
 					iRgbArg0_2 = dlRgbArg0.selection
 					iRgbArg1_2 = dlRgbArg1.selection
+					iRgbArg2_2 = dlRgbArg2.selection
 					iRgbArg0Operand_2 = dlRgbArg0Operand.selection
 					iRgbArg1Operand_2 = dlRgbArg1Operand.selection
+					iRgbArg2Operand_2 = dlRgbArg2Operand.selection
 					iAlphaOperation_2 = dlAlphaOperation.selection
 					iAlphaBlendSource_2 = dlAlphaBlendSource.selection
 					iAlphaArg0_2 = dlAlphaArg0.selection
 					iAlphaArg1_2 = dlAlphaArg1.selection
+					iAlphaArg2_2 = dlAlphaArg2.selection
 					iAlphaArg0Operand_2 = dlAlphaArg0Operand.selection
 					iAlphaArg1Operand_2 = dlAlphaArg1Operand.selection
+					iAlphaArg2Operand_2 = dlAlphaArg2Operand.selection
 					iTextureShader_2 = dlTextureShader.selection
 				)
 
@@ -1181,14 +1245,18 @@ plugin material NelMaterial
 				dlRgbBlendSource.enabled = (bEnableSlot_2 == true) and (iRgbOperation_2 == 5) and bNormalShader
 				dlRgbArg0.enabled = bEnableSlot_2 and bNormalShader
 				dlRgbArg1.enabled = bEnableSlot_2 and bNormalShader
+				dlRgbArg2.enabled = bEnableSlot_2 and bNormalShader and (iRgbOperation_2 == 6)
 				dlRgbArg0Operand.enabled = bEnableSlot_2 and bNormalShader
 				dlRgbArg1Operand.enabled = bEnableSlot_2 and bNormalShader
+				dlRgbArg2Operand.enabled = dlRgbArg2.enabled
 				dlAlphaOperation.enabled = bEnableSlot_2 and bNormalShader
 				dlAlphaBlendSource.enabled = (bEnableSlot_2 == true) and (iAlphaOperation_2 == 5) and bNormalShader
 				dlAlphaArg0.enabled = bEnableSlot_2 and bNormalShader
 				dlAlphaArg1.enabled = bEnableSlot_2 and bNormalShader
+				dlAlphaArg2.enabled = bEnableSlot_2 and bNormalShader and (iAlphaOperation_2 == 6)
 				dlAlphaArg0Operand.enabled = bEnableSlot_2 and bNormalShader
 				dlAlphaArg1Operand.enabled = bEnableSlot_2 and bNormalShader
+				dlAlphaArg2Operand.enabled = dlAlphaArg2.enabled
 				dlTextureShader.enabled = bEnableSlot_2 and bNormalShader
 				sdConstantAlpha.enabled = bEnableSlot_2 and bNormalShader
 			)
@@ -1219,12 +1287,22 @@ plugin material NelMaterial
 			updateUI false
 		)
 
+		on dlRgbArg2Operand selected newState do
+		(
+			updateUI false
+		)
+
 		on dlAlphaArg0Operand selected newState do
 		(
 			updateUI false
 		)
 
 		on dlAlphaArg1Operand selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaArg2Operand selected newState do
 		(
 			updateUI false
 		)
@@ -1254,6 +1332,11 @@ plugin material NelMaterial
 			updateUI false
 		)
 
+		on dlRgbArg2 selected newState do
+		(
+			updateUI false
+		)
+
 		on dlAlphaBlendSource selected newState do
 		(
 			updateUI false
@@ -1268,27 +1351,36 @@ plugin material NelMaterial
 		(
 			updateUI false
 		)
+
+		on dlAlphaArg2 selected newState do
+		(
+			updateUI false
+		)
 	)
 
 	rollout NelMultitextureSlot3 "Nel Slot 3" rolledUp:true
     (
 		group "RGB"
 		(
-			dropdownlist dlRgbOperation		"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend" ) across:2
+			dropdownlist dlRgbOperation		"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend", "Arg0*Arg1+Arg2" ) across:2
 			dropdownlist dlRgbBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
-			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:4
-			dropdownlist dlRgbArg0Operand	"Arg0 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
+			dropdownlist dlRgbArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant" )
-			dropdownlist dlRgbArg1Operand	"Arg1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg2			"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Alpha"
 		(
-			dropdownlist dlAlphaOperation	"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend" ) across:2
+			dropdownlist dlAlphaOperation	"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend", "Arg0*Arg1+Arg2" ) across:2
 			dropdownlist dlAlphaBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
-			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:4
-			dropdownlist dlAlphaArg0Operand	"Arg0 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
+			dropdownlist dlAlphaArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant" )
-			dropdownlist dlAlphaArg1Operand	"Arg1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg2		"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Extended"
 		(
@@ -1309,14 +1401,18 @@ plugin material NelMaterial
 					dlRgbBlendSource.selection = iRgbBlendSource_3
 					dlRgbArg0.selection = iRgbArg0_3
 					dlRgbArg1.selection = iRgbArg1_3
+					dlRgbArg2.selection = iRgbArg2_3
 					dlRgbArg0Operand.selection = iRgbArg0Operand_3
 					dlRgbArg1Operand.selection = iRgbArg1Operand_3
+					dlRgbArg2Operand.selection = iRgbArg2Operand_3
 					dlAlphaOperation.selection = iAlphaOperation_3
 					dlAlphaBlendSource.selection = iAlphaBlendSource_3
 					dlAlphaArg0.selection = iAlphaArg0_3 
 					dlAlphaArg1.selection = iAlphaArg1_3 
+					dlAlphaArg2.selection = iAlphaArg2_3 
 					dlAlphaArg0Operand.selection = iAlphaArg0Operand_3
 					dlAlphaArg1Operand.selection = iAlphaArg1Operand_3
+					dlAlphaArg2Operand.selection = iAlphaArg2Operand_3
 					dlTextureShader.selection = iTextureShader_3 
 				)
 				else
@@ -1325,14 +1421,18 @@ plugin material NelMaterial
 					iRgbBlendSource_3 = dlRgbBlendSource.selection
 					iRgbArg0_3 = dlRgbArg0.selection
 					iRgbArg1_3 = dlRgbArg1.selection
+					iRgbArg2_3 = dlRgbArg2.selection
 					iRgbArg0Operand_3 = dlRgbArg0Operand.selection
 					iRgbArg1Operand_3 = dlRgbArg1Operand.selection
+					iRgbArg2Operand_3 = dlRgbArg2Operand.selection
 					iAlphaOperation_3 = dlAlphaOperation.selection
 					iAlphaBlendSource_3 = dlAlphaBlendSource.selection
 					iAlphaArg0_3 = dlAlphaArg0.selection
 					iAlphaArg1_3 = dlAlphaArg1.selection
+					iAlphaArg2_3 = dlAlphaArg2.selection
 					iAlphaArg0Operand_3 = dlAlphaArg0Operand.selection
 					iAlphaArg1Operand_3 = dlAlphaArg1Operand.selection
+					iAlphaArg2Operand_3 = dlAlphaArg2Operand.selection
 					iTextureShader_3 = dlTextureShader.selection
 				)
 
@@ -1341,14 +1441,18 @@ plugin material NelMaterial
 				dlRgbBlendSource.enabled = (bEnableSlot_3 == true) and (iRgbOperation_3 == 5) and bNormalShader
 				dlRgbArg0.enabled = bEnableSlot_3 and bNormalShader
 				dlRgbArg1.enabled = bEnableSlot_3 and bNormalShader
+				dlRgbArg2.enabled = bEnableSlot_3 and bNormalShader and (iRgbOperation_3 == 6)
 				dlRgbArg0Operand.enabled = bEnableSlot_3 and bNormalShader
 				dlRgbArg1Operand.enabled = bEnableSlot_3 and bNormalShader
+				dlRgbArg2Operand.enabled = dlRgbArg2.enabled
 				dlAlphaOperation.enabled = bEnableSlot_3 and bNormalShader
 				dlAlphaBlendSource.enabled = (bEnableSlot_3 == true) and (iAlphaOperation_3 == 5) and bNormalShader
 				dlAlphaArg0.enabled = bEnableSlot_3 and bNormalShader
 				dlAlphaArg1.enabled = bEnableSlot_3 and bNormalShader
+				dlAlphaArg2.enabled = bEnableSlot_3 and bNormalShader and (iAlphaOperation_3 == 6)
 				dlAlphaArg0Operand.enabled = bEnableSlot_3 and bNormalShader
 				dlAlphaArg1Operand.enabled = bEnableSlot_3 and bNormalShader
+				dlAlphaArg2Operand.enabled = dlAlphaArg2.enabled
 				dlTextureShader.enabled = bEnableSlot_3 and bNormalShader
 				sdConstantAlpha.enabled = bEnableSlot_3 and bNormalShader
 			)
@@ -1379,12 +1483,22 @@ plugin material NelMaterial
 			updateUI false
 		)
 
+		on dlRgbArg2Operand selected newState do
+		(
+			updateUI false
+		)
+
 		on dlAlphaArg0Operand selected newState do
 		(
 			updateUI false
 		)
 
 		on dlAlphaArg1Operand selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaArg2Operand selected newState do
 		(
 			updateUI false
 		)
@@ -1414,6 +1528,11 @@ plugin material NelMaterial
 			updateUI false
 		)
 
+		on dlRgbArg2 selected newState do
+		(
+			updateUI false
+		)
+
 		on dlAlphaBlendSource selected newState do
 		(
 			updateUI false
@@ -1428,27 +1547,36 @@ plugin material NelMaterial
 		(
 			updateUI false
 		)
+
+		on dlAlphaArg2 selected newState do
+		(
+			updateUI false
+		)
 	)
 
 	rollout NelMultitextureSlot4 "Nel Slot 4" rolledUp:true
     (
 		group "RGB"
 		(
-			dropdownlist dlRgbOperation		"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend" ) across:2
+			dropdownlist dlRgbOperation		"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend", "Arg0*Arg1+Arg2" ) across:2
 			dropdownlist dlRgbBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
-			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:4
-			dropdownlist dlRgbArg0Operand	"Arg0 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
+			dropdownlist dlRgbArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant" )
-			dropdownlist dlRgbArg1Operand	"Arg1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlRgbArg2			"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Alpha"
 		(
-			dropdownlist dlAlphaOperation	"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend" ) across:2
+			dropdownlist dlAlphaOperation	"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend", "Arg0*Arg1+Arg2" ) across:2
 			dropdownlist dlAlphaBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
-			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:4
-			dropdownlist dlAlphaArg0Operand	"Arg0 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
+			dropdownlist dlAlphaArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant" )
-			dropdownlist dlAlphaArg1Operand	"Arg1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
+			dropdownlist dlAlphaArg2		"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Extended"
 		(
@@ -1469,14 +1597,18 @@ plugin material NelMaterial
 					dlRgbBlendSource.selection = iRgbBlendSource_4
 					dlRgbArg0.selection = iRgbArg0_4
 					dlRgbArg1.selection = iRgbArg1_4
+					dlRgbArg2.selection = iRgbArg1_4
 					dlRgbArg0Operand.selection = iRgbArg0Operand_4
 					dlRgbArg1Operand.selection = iRgbArg1Operand_4
+					dlRgbArg2Operand.selection = iRgbArg1Operand_4
 					dlAlphaOperation.selection = iAlphaOperation_4
 					dlAlphaBlendSource.selection = iAlphaBlendSource_4
 					dlAlphaArg0.selection = iAlphaArg0_4 
 					dlAlphaArg1.selection = iAlphaArg1_4 
+					dlAlphaArg2.selection = iAlphaArg1_4 
 					dlAlphaArg0Operand.selection = iAlphaArg0Operand_4
 					dlAlphaArg1Operand.selection = iAlphaArg1Operand_4
+					dlAlphaArg2Operand.selection = iAlphaArg1Operand_4
 					dlTextureShader.selection = iTextureShader_4 
 				)
 				else
@@ -1485,14 +1617,18 @@ plugin material NelMaterial
 					iRgbBlendSource_4 = dlRgbBlendSource.selection
 					iRgbArg0_4 = dlRgbArg0.selection
 					iRgbArg1_4 = dlRgbArg1.selection
+					iRgbArg2_4 = dlRgbArg2.selection
 					iRgbArg0Operand_4 = dlRgbArg0Operand.selection
 					iRgbArg1Operand_4 = dlRgbArg1Operand.selection
+					iRgbArg2Operand_4 = dlRgbArg2Operand.selection
 					iAlphaOperation_4 = dlAlphaOperation.selection
 					iAlphaBlendSource_4 = dlAlphaBlendSource.selection
 					iAlphaArg0_4 = dlAlphaArg0.selection
 					iAlphaArg1_4 = dlAlphaArg1.selection
+					iAlphaArg2_4 = dlAlphaArg2.selection
 					iAlphaArg0Operand_4 = dlAlphaArg0Operand.selection
 					iAlphaArg1Operand_4 = dlAlphaArg1Operand.selection
+					iAlphaArg2Operand_4 = dlAlphaArg2Operand.selection
 					iTextureShader_4 = dlTextureShader.selection
 				)
 
@@ -1501,14 +1637,18 @@ plugin material NelMaterial
 				dlRgbBlendSource.enabled = (bEnableSlot_4 == true) and (iRgbOperation_4 == 5) and bNormalShader
 				dlRgbArg0.enabled = bEnableSlot_4 and bNormalShader
 				dlRgbArg1.enabled = bEnableSlot_4 and bNormalShader
+				dlRgbArg2.enabled = bEnableSlot_4 and bNormalShader and (iRgbOperation_4 == 6)
 				dlRgbArg0Operand.enabled = bEnableSlot_4 and bNormalShader
 				dlRgbArg1Operand.enabled = bEnableSlot_4 and bNormalShader
+				dlRgbArg2Operand.enabled = dlRgbArg2.enabled
 				dlAlphaOperation.enabled = bEnableSlot_4 and bNormalShader
 				dlAlphaBlendSource.enabled = (bEnableSlot_4 == true) and (iAlphaOperation_4 == 5) and bNormalShader
 				dlAlphaArg0.enabled = bEnableSlot_4 and bNormalShader
 				dlAlphaArg1.enabled = bEnableSlot_4 and bNormalShader
+				dlAlphaArg2.enabled = bEnableSlot_4 and bNormalShader and (iAlphaOperation_4 == 6)
 				dlAlphaArg0Operand.enabled = bEnableSlot_4 and bNormalShader
 				dlAlphaArg1Operand.enabled = bEnableSlot_4 and bNormalShader
+				dlAlphaArg2Operand.enabled = dlAlphaArg2.enabled
 				dlTextureShader.enabled = bEnableSlot_4 and bNormalShader
 				sdConstantAlpha.enabled = bEnableSlot_4 and bNormalShader
 			)
@@ -1539,12 +1679,22 @@ plugin material NelMaterial
 			updateUI false
 		)
 
+		on dlRgbArg2Operand selected newState do
+		(
+			updateUI false
+		)
+
 		on dlAlphaArg0Operand selected newState do
 		(
 			updateUI false
 		)
 
 		on dlAlphaArg1Operand selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaArg2Operand selected newState do
 		(
 			updateUI false
 		)
@@ -1574,6 +1724,11 @@ plugin material NelMaterial
 			updateUI false
 		)
 
+		on dlRgbArg2 selected newState do
+		(
+			updateUI false
+		)
+
 		on dlAlphaBlendSource selected newState do
 		(
 			updateUI false
@@ -1585,6 +1740,11 @@ plugin material NelMaterial
 		)
 
 		on dlAlphaArg1 selected newState do
+		(
+			updateUI false
+		)
+
+		on dlAlphaArg2 selected newState do
 		(
 			updateUI false
 		)

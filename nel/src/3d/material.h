@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.24 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: material.h,v 1.25 2004/03/23 10:20:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,11 +204,12 @@ public:
 	 * Interpolate*:	out= arg0*As + arg1*(1-As),  where As is taken from the SrcAlpha of 
 	 *		Texture/Previous/Diffuse/Constant, respectively if operator is
 	 *		InterpolateTexture/InterpolatePrevious/InterpolateDiffuse/InterpolateConstant.
+	 * Multiply-Add (Mad) out= arg0 * arg1 + arg2. Must be supported by driver (see IDriver::supportMADOperator)
 	 * EMBM : apply to both color and alpha : the current texture, whose format is DSDT, is used to offset the texture in the next stage.
 	 *  NB : for EMBM, this must be supported by driver.
 	 */
 	enum TTexOperator		{ Replace=0, Modulate, Add, AddSigned, 
-							  InterpolateTexture, InterpolatePrevious, InterpolateDiffuse, InterpolateConstant, EMBM, TexOperatorCount };
+							  InterpolateTexture, InterpolatePrevious, InterpolateDiffuse, InterpolateConstant, EMBM, Mad, TexOperatorCount };
 
 	/** Source argument.
 	 * Texture:		the arg is taken from the current texture of the stage.
@@ -289,6 +290,8 @@ public:
 
 	ITexture*				getTexture(uint8 stage) const;
 	bool					texturePresent(uint8 stage) const;
+	// get the number of stages for which a texture is used
+	uint					getNumUsedTextureStages() const;
 	// @}
 
 
@@ -424,9 +427,11 @@ public:
 	void					texEnvOpRGB(uint stage, TTexOperator ope);
 	void					texEnvArg0RGB(uint stage, TTexSource src, TTexOperand oper);
 	void					texEnvArg1RGB(uint stage, TTexSource src, TTexOperand oper);
+	void					texEnvArg2RGB(uint stage, TTexSource src, TTexOperand oper);
 	void					texEnvOpAlpha(uint stage, TTexOperator ope);
 	void					texEnvArg0Alpha(uint stage, TTexSource src, TTexOperand oper);
 	void					texEnvArg1Alpha(uint stage, TTexSource src, TTexOperand oper);
+	void					texEnvArg2Alpha(uint stage, TTexSource src, TTexOperand oper);
 	/// Setup the constant color for a stage. Used for the TTexSource:Constant.
 	void					texConstantColor(uint stage, CRGBA color);
 	/// For push/pop only, get the packed version of the environnment mode.
@@ -434,6 +439,11 @@ public:
 	/// For push/pop only, set the packed version of the environnment mode.
 	void					setTexEnvMode(uint stage, uint32 packed);
 	CRGBA					getTexConstantColor(uint stage);
+
+	// Get rgb operation at the given stage. Must use Normal shader or nlassert(0)
+	TTexOperator			getTexEnvOpRGB(uint stage) const;
+	// Get alpha operation at the given stage. Must use Normal shader or nlassert(0)
+	TTexOperator			getTexEnvOpAlpha(uint stage) const;
 
 	// Enable or disable TexCoordGeneration
 	void					setTexCoordGen(uint stage, bool generate);
@@ -517,6 +527,9 @@ public:
 		void		selectTextureSet(uint index);
 	// @}
 
+	// test if material a driver supports rendering of that material
+	bool			isSupportedByDriver(IDriver &drv) const;
+
 // **********************************
 // Private part.
 public:
@@ -533,12 +546,16 @@ public:
 				uint32		OpArg0RGB:2;
 				uint32		SrcArg1RGB:2;
 				uint32		OpArg1RGB:2;
+				uint32		SrcArg2RGB:2;
+				uint32		OpArg2RGB:2;
 
 				uint32		OpAlpha:4;
 				uint32		SrcArg0Alpha:2;
 				uint32		OpArg0Alpha:2;
 				uint32		SrcArg1Alpha:2;
 				uint32		OpArg1Alpha:2;
+				uint32		SrcArg2Alpha:2;
+				uint32		OpArg2Alpha:2;
 			}		Env;
 		};
 		CRGBA		ConstantColor;
@@ -553,30 +570,46 @@ public:
 			Env.OpArg0RGB= SrcColor;
 			Env.SrcArg1RGB= Previous;
 			Env.OpArg1RGB= SrcColor;
+			Env.SrcArg2RGB= Previous;
+			Env.OpArg2RGB= SrcColor;
 
 			Env.OpAlpha= Modulate;
 			Env.SrcArg0Alpha= Texture;
 			Env.OpArg0Alpha= SrcAlpha;
 			Env.SrcArg1Alpha= Previous;
 			Env.OpArg1Alpha= SrcAlpha;
-
+			Env.SrcArg2Alpha= Previous;
+			Env.OpArg2Alpha= SrcAlpha;
 			ConstantColor.set(255,255,255,255);
 		}
 
-		void		serial(NLMISC::IStream &f)
+		// Version added because only CMaterial has version number
+		// Version 0 : binary ops & lerp
+		// Version 1 : added 'mad' operator
+		void		serial(NLMISC::IStream &f, sint version)
 		{
+			
 			Env.OpRGB= f.serialBitField8(Env.OpRGB);
 			Env.SrcArg0RGB= f.serialBitField8(Env.SrcArg0RGB);
 			Env.OpArg0RGB= f.serialBitField8(Env.OpArg0RGB);
 			Env.SrcArg1RGB= f.serialBitField8(Env.SrcArg1RGB);
 			Env.OpArg1RGB= f.serialBitField8(Env.OpArg1RGB);
+			if (version > 0)
+			{
+				Env.SrcArg2RGB= f.serialBitField8(Env.SrcArg2RGB);
+				Env.OpArg2RGB= f.serialBitField8(Env.OpArg2RGB);
+			}
 
 			Env.OpAlpha= f.serialBitField8(Env.OpAlpha);
 			Env.SrcArg0Alpha= f.serialBitField8(Env.SrcArg0Alpha);
 			Env.OpArg0Alpha= f.serialBitField8(Env.OpArg0Alpha);
 			Env.SrcArg1Alpha= f.serialBitField8(Env.SrcArg1Alpha);
 			Env.OpArg1Alpha= f.serialBitField8(Env.OpArg1Alpha);
-
+			if (version > 0)
+			{
+				Env.SrcArg2Alpha= f.serialBitField8(Env.SrcArg2Alpha);
+				Env.OpArg2Alpha= f.serialBitField8(Env.OpArg2Alpha);
+			}
 			f.serial(ConstantColor);
 		}
 

@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.45 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: material.cpp,v 1.46 2004/03/23 10:20:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,6 +140,8 @@ CMaterial::~CMaterial()
 void		CMaterial::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 9:
+		- Added support for third operand (for Mad operator)
 	Version 8:
 		- Serial _TexCoordGenMode
 	Version 7:
@@ -160,7 +162,7 @@ void		CMaterial::serial(NLMISC::IStream &f)
 		- base version.
 	*/
 
-	sint	ver= f.serialVersion(8);
+	sint	ver= f.serialVersion(9);
 	// For the version <=1:
 	nlassert(IDRV_MAT_MAXTEXTURES==4);
 
@@ -206,7 +208,7 @@ void		CMaterial::serial(NLMISC::IStream &f)
 		// Read texture environnement, or setup them.
 		if(ver>=1)
 		{
-			f.serial(_TexEnvs[i]);
+			_TexEnvs[i].serial(f, ver >= 9 ? 1 : 0);
 		}
 		else
 		{
@@ -579,7 +581,62 @@ IMaterialDrvInfos::~IMaterialDrvInfos()
 	_Driver->removeMatDrvInfoPtr(_DriverIterator);
 }
 
+
 // ***************************************************************************
+uint CMaterial::getNumUsedTextureStages() const
+{	
+	for(uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+	{
+		if (!_Textures[k]) return k;
+	}
+	return IDRV_MAT_MAXTEXTURES;
+}
+
+// ***************************************************************************
+bool CMaterial::isSupportedByDriver(IDriver &drv) const
+{
+	switch(getShader())
+	{
+		case Normal:
+		{
+			if ((sint) getNumUsedTextureStages() > drv.getNbTextureStages()) return false;
+			// see if each tex env is supported
+			for(uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+			{
+				if (getTexture(k))
+				{
+					switch(getTexEnvOpRGB(k))
+					{
+						case InterpolateConstant: if (!drv.supportBlendConstantColor()) return false;
+						case EMBM:				  if (!drv.supportEMBM() || !drv.isEMBMSupportedAtStage(k)) return false;
+						case Mad:				  if (!drv.supportMADOperator()) return false;
+					}
+					switch(getTexEnvOpAlpha(k))
+					{
+						case InterpolateConstant: if (!drv.supportBlendConstantColor()) return false;
+						case EMBM:				  if (!drv.supportEMBM() || !drv.isEMBMSupportedAtStage(k)) return false;
+						case Mad:				  if (!drv.supportMADOperator()) return false;
+					}
+				}
+			}
+			return true;
+		}
+		break;
+		case Bump:					return false; // not impl.	
+		case UserColor:				return true;
+		case LightMap:				return true;
+		case Specular:				return true;
+		case Caustics:				return false;
+		case PerPixelLighting:		 return drv.supportPerPixelLighting(true);
+		case PerPixelLightingNoSpec: return drv.supportPerPixelLighting(false);
+		case Cloud:					return true;
+		case Water:					return true;
+		default:
+			nlassert(0); // unknown shader, must complete
+			return false;
+	}
+	return false;
+}
 
 }
 

@@ -1,7 +1,7 @@
 /** \file material_user.h
  * <File description>
  *
- * $Id: material_user.h,v 1.8 2003/01/22 11:13:52 corvazier Exp $
+ * $Id: material_user.h,v 1.9 2004/03/23 10:19:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,13 +31,14 @@
 #include "3d/material.h"
 #include "3d/texture_user.h"
 
+
 #define NL3D_MEM_MATERIAL						NL_ALLOC_CONTEXT( 3dMat )
 
 namespace NL3D 
 {
 
 
-class	CDriverUser;
+class UDriver;
 
 
 // ***************************************************************************
@@ -174,6 +175,12 @@ public:
 		NL3D_MEM_MATERIAL
 		_Material.texEnvArg1RGB (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
 	}
+
+	virtual void texEnvArg2RGB (uint stage, TTexSource src, TTexOperand oper)
+	{
+		NL3D_MEM_MATERIAL
+			_Material.texEnvArg2RGB (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
+	}
 	
 	virtual void texEnvOpAlpha(uint stage, TTexOperator ope)
 	{
@@ -191,6 +198,12 @@ public:
 	{
 		NL3D_MEM_MATERIAL
 		_Material.texEnvArg1Alpha (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
+	}
+
+	virtual void texEnvArg2Alpha(uint stage, TTexSource src, TTexOperand oper)
+	{
+		NL3D_MEM_MATERIAL
+			_Material.texEnvArg2Alpha (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
 	}
 	
 	// @}
@@ -273,7 +286,8 @@ public:
 	}
 	// @}
 
-
+	virtual	bool			isSupportedByDriver(UDriver &drv);
+	
 
 public:
 

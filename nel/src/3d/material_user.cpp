@@ -1,7 +1,7 @@
 /** \file material_user.cpp
  * <File description>
  *
- * $Id: material_user.cpp,v 1.3 2002/02/28 12:59:49 besson Exp $
+ * $Id: material_user.cpp,v 1.4 2004/03/23 10:19:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,13 +25,20 @@
 
 #include "std3d.h"
 
+
 #include "3d/material_user.h"
+#include "nel/3d/u_driver.h"
+#include "3d/driver_user.h"
 
 
 namespace NL3D
 {
 
-
+bool CMaterialUser::isSupportedByDriver(UDriver &drv)
+{
+	NL3D_MEM_MATERIAL		
+	return _Material.isSupportedByDriver(*(NLMISC::safe_cast<CDriverUser *>(&drv)->getDriver()));
+}
 
 
 } // NL3D

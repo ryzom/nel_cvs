@@ -25,7 +25,7 @@ CFG=misc - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=cl.exe
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "misc - Win32 Release"
@@ -47,7 +47,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -70,7 +70,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -80,10 +80,9 @@ LIB32=link.exe -lib
 
 # Name "misc - Win32 Release"
 # Name "misc - Win32 Debug"
-# Begin Source File
+# Begin Group "stream"
 
-SOURCE=..\include\nel\misc\assert.h
-# End Source File
+# PROP Default_Filter ""
 # Begin Source File
 
 SOURCE=.\misc\class_registry.cpp
@@ -112,9 +111,29 @@ SOURCE=..\include\nel\misc\stream.h
 
 SOURCE=..\include\nel\misc\stream_inline.h
 # End Source File
+# End Group
+# Begin Group "math"
+
+# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\include\nel\misc\types_nl.h
+SOURCE=R:\code\nel\src\misc\matrix.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\include\nel\misc\matrix.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\misc\plane.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\include\nel\misc\plane.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\include\nel\misc\plane_inline.h
 # End Source File
 # Begin Source File
 
@@ -127,6 +146,27 @@ SOURCE=..\include\nel\misc\vector.h
 # Begin Source File
 
 SOURCE=..\include\nel\misc\vector_inline.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\misc\vectord.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\include\nel\misc\vectord.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\include\nel\misc\vectord_inline.h
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=..\include\nel\misc\assert.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\types_nl.h
 # End Source File
 # End Target
 # End Project

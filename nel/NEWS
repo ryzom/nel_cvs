@@ -2,6 +2,7 @@ June 12 2002
 ============
 
 *  NLNET: Added custumizable command with button using DisplayedVariables in the config file.
+* NLMISC: Can lod config file inside of a bigfile using CIFile
 
 June 6 2002
 ===========

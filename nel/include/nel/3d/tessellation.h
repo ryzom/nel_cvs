@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.24 2001/01/30 13:44:12 berenguier Exp $
+ * $Id: tessellation.h,v 1.25 2001/02/06 17:09:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -275,11 +275,11 @@ public:
 	// @{
 	// Size could be computed from TileSize: Size= Patch->BaseSize / (1<<(TileSize-Patch->BaseTileSize)). (or optimized)
 	// But used by computeErrorMetric(), and must be as fast as possible.
+	sint			ProjectedSizeDate;	// The date of errormetric update.
 	float			Size;				// /2 at each split.
 	CVector			Center;				// Center of the face.
 	float			ProjectedSize;		// The result of errormetric: the projected size of face.
 	float			ErrorMetric;		// equal to ProjectedSize, but greater for the transition Far-Near.
-	sint			ProjectedSizeDate;	// The date of errormetric update.
 	// @}
 
 

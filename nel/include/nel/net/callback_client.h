@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.11 2002/05/21 16:38:21 lecroart Exp $
+ * $Id: callback_client.h,v 1.12 2002/05/22 08:04:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 
 #include "nel/net/callback_net_base.h"
-#include "nel/net/stream_client.h"
+#include "nel/net/buf_client.h"
 
 namespace NLNET {
 

@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.21 2002/05/21 16:37:38 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.22 2002/05/22 08:04:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,6 @@
 
 #include "nel/net/callback_net_base.h"
 #include "nel/net/callback_client.h"
-#include "nel/net/stream_client.h"
 
 #ifdef USE_MESSAGE_RECORDER
 #include "nel/net/message_recorder.h"
